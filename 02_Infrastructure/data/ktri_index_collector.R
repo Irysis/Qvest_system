@@ -187,6 +187,28 @@ KTRI_INDEX_CACHE <- file.path(CACHE_DIR, "ktri_indices.parquet")
 #──────────────────────────────────────────────────────────────────────────────
 # 4. KRX API 직접 호출: 특정일 수집 + 추가
 #──────────────────────────────────────────────────────────────────────────────
+#──────────────────────────────────────────────────────────────────────────────
+# Naver fallback fetch (도훈 mandate 2026-05-12 — KRX API fail 시 secondary path)
+#──────────────────────────────────────────────────────────────────────────────
+.ktri_fetch_naver_close <- function(symbol, target_date) {
+  # symbol: "KPI200" / "KOSDAQ" / "KOSPI"
+  # target_date: Date object — fetch close on this date from Naver
+  url <- sprintf("https://m.stock.naver.com/api/index/%s/price?pageSize=20&page=1", symbol)
+  r <- tryCatch(httr::GET(url,
+                          httr::add_headers(`User-Agent` = "Mozilla/5.0",
+                                            Referer = "https://m.stock.naver.com")),
+                error = function(e) NULL)
+  if (is.null(r) || httr::status_code(r) != 200) return(NA_real_)
+  d <- tryCatch(jsonlite::fromJSON(httr::content(r, "text", encoding = "UTF-8")),
+                error = function(e) NULL)
+  if (is.null(d) || !is.data.frame(d) || nrow(d) == 0) return(NA_real_)
+  d <- as.data.table(d)
+  d[, Date := as.Date(localTradedAt)]
+  matched <- d[Date == target_date]
+  if (nrow(matched) == 0) return(NA_real_)
+  as.numeric(gsub(",", "", matched$closePrice[1]))
+}
+
 ktri_update_from_api <- function(date_str) {
   # krx_data_collector.R 함수 필요
   if (!exists("krx_kospi_index")) {
@@ -229,12 +251,21 @@ ktri_update_from_api <- function(date_str) {
     }
   }
 
+  # KRX API에서 IKS200 못 가져왔으면 네이버 fallback (도훈 mandate 2026-05-12)
+  if (!"IKS200" %in% names(row) || is.na(row$IKS200)) {
+    naver_close <- .ktri_fetch_naver_close("KPI200", as.Date(date_str, "%Y%m%d"))
+    if (!is.na(naver_close)) {
+      row[, IKS200 := naver_close]
+      cat(sprintf("  [naver_fallback] IKS200 = %.2f (KPI200 close from Naver)\n", naver_close))
+    }
+  }
+
   # 핵심 데이터(IKS200)가 없으면 추가하지 않음 (API 지연/휴일)
   if (is.na(row$IKS200) %||% TRUE) {
     # IKS200 없으면 다른 지수로도 확인
     has_any <- any(!is.na(unlist(row[, -"Date", with = FALSE])))
     if (!has_any) {
-      cat(sprintf("  %s: no data from API (holiday or delay). Skipping.\n", date_str))
+      cat(sprintf("  %s: no data from API or Naver fallback (holiday or delay). Skipping.\n", date_str))
       return(invisible(NULL))
     }
   }

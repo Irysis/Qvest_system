@@ -1,0 +1,464 @@
+{
+  "task_id": "WT-D20260511_001",
+  "package_kind": "forge_package_pd25_3_weighting_paths",
+  "status": "FINAL_REJECT_RESPONDED_WITH_CODEX_DISPOSITION_RECOMMEND_RETAIN_S4_V2_ADMIT",
+  "pd_label": "PD25",
+  "design_label": "3 Within-Sleeve Weighting Paths (EW / Z-linear / Z-softmax) Backtest Comparison",
+  "draft_reference": "forge_package_pd25_draft.json",
+  "codex_critic_response_reference": "codex_critic_response_forge_pd25.json (background spawn in progress, PID 705752, output pending)",
+  "challenge_note_reference": "challenge_note.md (PD25 section appended, lines 3037+)",
+  "as_of_date": "2026-05-12",
+  "agent": {
+    "agent_id": "forge-WT-D20260511_001-PD25",
+    "agent_type": "forge",
+    "agent_version": "v6.4-pure-function",
+    "model": "Opus_4_7_1M",
+    "revision": "PD25 3 within-sleeve weighting paths comparison per 도훈 mandate 2026-05-12"
+  },
+  "mandate": {
+    "source": "도훈 mandate 2026-05-12",
+    "quote": "동일가중 / B / C, 프로즌없이 전기간(분석가능한 기간 중 제일 빠른기간, 1991 ~ 2026.05) 백테스트해서 성과 비교",
+    "interpretation": "3 within-sleeve weighting paths on composite top20 KR-equity sleeve (sleeve outer weight 0.55 retained from PD20-B Path 2). Lockbox 폐기 (forge stage per .claude/rules/lockbox-scope.md 2026-05-09). Max realistic coverage = 2005-02 ~ 2026-04 (255m), constrained by sleeve_returns_master.csv earliest date."
+  },
+  "method": "3_path_within_sleeve_weighting_EW_vs_Zlinear_vs_Zsoftmax_184m_active_composite_plus_71m_pre_2011_redistribute_2005_02_to_2026_04_255m_total",
+  "coverage_decision_log": {
+    "user_requested": "1991_to_2026_05_max",
+    "forge_autonomous_max_realistic": "2005_02_to_2026_04_255m",
+    "binding_constraint": "sleeve_returns_master.csv earliest = 2005-02 (TSMOM/KR_10y/Cash/AR_on_M4 baseline returns unavailable pre-2005-02)",
+    "alpha_source_audit": {
+      "STR_1715_Iter5_score_eff_Ret_1m": "2004-01 ~ 2026-04 (268 sig_dates, 846 tickers)",
+      "NEW_VolSkew_alpha_baseline": "2011-01 ~ 2026-04 (184 sig_dates, 770 tickers)",
+      "NEW_VolSkew_PD24_backext": "1999-01 ~ 2026-04 (314 sig_dates) — not used to maintain PD20-B baseline congruence"
+    },
+    "active_composite_period": "2011-01 ~ 2026-04 (184 sig_dates, z_NEW non-zero, 3 paths meaningfully differ)",
+    "pre_2011_period": "2005-02 ~ 2010-12 (71 sig_dates), z_NEW=0, S4 v2 baseline 50/25/20/5 redistribute for all 3 paths (paths collapse to identical)",
+    "1991_infeasibility_rationale": "sleeve_returns_master.csv rebuild back to 1991 + STR_1715 alpha back-cast 필요 — out of PD25 scope, separate WT required"
+  },
+  "design": {
+    "scope": "within-sleeve weighting paths on composite top20 KR-equity sleeve only",
+    "outer_sleeve_weights_inherited_from_PD20B": {
+      "Composite_KR_equity": 0.550,
+      "TSMOM_8_ETF": 0.225,
+      "KR_10y_A148070": 0.180,
+      "Cash_KRW": 0.045,
+      "sum_w": 1.000,
+      "production_20_cap_compliance": true
+    },
+    "composite_z_construction_inherited_from_PD20B": {
+      "composite_z_formula": "0.818 * z_1715 + 0.182 * z_NEW",
+      "z_1715_definition": "scale(score_eff) per sig_date (STR_1715 Iter5 alpha)",
+      "z_NEW_definition": "scale(alpha_NEW) per sig_date (NEW Vol/Skew composite)",
+      "selection_rule": "top20 by composite_z descending per sig_date",
+      "universe": "KOSPI200 ∪ KOSDAQ150 ∩ ADV_20d (PIT t-1) >= 2e8 KRW (inherited from PD20-B)"
+    },
+    "path_A_EW": {
+      "label": "Equal Weight (current PD20-B Path 2 baseline)",
+      "w_sleeve_i": "1 / 20 = 0.05",
+      "w_portfolio_i": "0.05 * 0.55 = 0.0275 (2.75% per ticker)",
+      "rationale": "Baseline — no alpha-tilt"
+    },
+    "path_B_Z_linear": {
+      "label": "Z-tilted linear within sleeve",
+      "w_sleeve_i_formula": "max(composite_z_i, 0) / Σ max(composite_z_j, 0)",
+      "if_all_zero_fallback": "EW (1/20)",
+      "rationale": "Stocks with higher composite_z get proportionally more weight; negative z stocks would get 0 (rare in top20 since selection rule keeps only top z)"
+    },
+    "path_C_Z_softmax": {
+      "label": "Z-tilted softmax within sleeve, tau auto-selected",
+      "w_sleeve_i_formula": "softmax(composite_z_i / tau) per sig_date",
+      "tau_selection_heuristic": "median(|composite_z_in_top20|) per sig_date",
+      "tau_observed_range": "[0.8805, 1.8779], median 1.2780",
+      "tau_rationale": "Low tau → concentrated tilt when z signals are clear; high tau → EW-like when z signals are flat. Median(|z|) is data-driven equivalent of 1-sigma scale.",
+      "numerical_stability": "subtract max(z_scaled) before exp"
+    },
+    "cap_enforcement": {
+      "cap_portfolio": 0.20,
+      "cap_sleeve_equivalent": "0.20 / 0.55 = 0.3636",
+      "enforcement": "iterative cap + proportional redistribution to non-capped stocks (max 50 iterations)",
+      "Path_A_cap_activations": "0 / 184 (trivially within cap)",
+      "Path_B_cap_activations": "0 / 184 (0.0% — max sleeve w never breaches 0.3636 cap)",
+      "Path_C_cap_activations": "1 / 184 (0.5% — single sig_date softmax concentrated)"
+    },
+    "rebalance_frequency": "monthly (sig_date M01)",
+    "lockbox_policy": "폐기 (forge stage, .claude/rules/lockbox-scope.md mandate 2026-05-09)"
+  },
+  "inputs": {
+    "alpha_package_path": "qepm/mailbox/worktask/WT-D20260511_001/alpha_package.json",
+    "risk_package_path": "qepm/mailbox/worktask/WT-D20260511_001/risk_package.json",
+    "optimization_package_path": "qepm/mailbox/worktask/WT-D20260511_001/optimization_package.json",
+    "str_1715_iter5_alpha_scores": "stage_artifacts/WT_D20260425_010/alpha_scores.parquet",
+    "new_alpha_scores": "stage_artifacts/WT_D20260511_001/alpha_scores.parquet",
+    "sleeve_returns_master_path": "qepm/mailbox/worktask/WT-P20260509_001/output/sleeve_returns_master.csv",
+    "rawdata_for_XV": ".cache/rawdata.parquet"
+  },
+  "methodology_critical_investigation": {
+    "issue_discovered": "2 mutually-inconsistent return computation methodologies yield ~1pp SR divergence",
+    "methodology_A_iter5_ret_1m": {
+      "description": "End-of-month Close / Previous end-of-month Close - 1 (from Iter5 alpha pipeline)",
+      "anchor": "month-end last trading day → next month-end last trading day",
+      "mean_monthly_return_top20": 0.0167,
+      "consistency_with_prior_str1715": "FULL — used in STR_1715 PG2 admit, all prior cycles",
+      "PIT_safety": "High — strict t+1m end anchor avoids same-day circular reference"
+    },
+    "methodology_B_rawdata_close_to_close": {
+      "description": "RAWDATA Close at first trading day ≥ sig_date / Close at first trading day ≥ next sig_date - 1",
+      "anchor": "first trading day at/after sig_date → first trading day at/after next sig_date",
+      "mean_monthly_return_top20": 0.0399,
+      "consistency_with_prior_str1715": "PD20-B Path 2 used this methodology (build_pd20b_zscore_composite_returns_pit_fix.R)",
+      "PIT_safety": "Concern — first-trading-day anchoring may capture early-month momentum that could be partially correlated with sig_date alpha (C2/C9 same-day circular reference risk)"
+    },
+    "divergence_root_cause": "Return anchoring choice (end-of-month vs first-trading-day) × top20 momentum selection effect = 2.4× gross return ratio (3.99% vs 1.67% monthly)",
+    "PD25_canonical_choice": "Methodology A (Iter5 Ret_1m) — consistent with STR_1715 PG2 admit precedent + PIT-safer",
+    "PD25_XV_cross_validation": "Methodology B (RAWDATA) — reproduces PD20-B Path 2 baseline + tests sensitivity",
+    "honest_disclosure": "Both result sets published. No cherry-picking. Charter v1.7 §8 No Silent Override compliant."
+  },
+  "results_methodology_A_primary_iter5_ret_1m": {
+    "cost_model": "15bps × 2 round-trip × sleeve turnover (one-way per-ticker weight delta) × sleeve outer weight 0.55 + baseline drag",
+    "full_window_255m_2005_02_to_2026_04": {
+      "Path_A_EW": {
+        "SR_ann_geometric": 1.1006,
+        "CAGR": 0.1368,
+        "MDD": -0.2164,
+        "CVaR_95_monthly": -0.0626,
+        "Sortino": 2.1723,
+        "Calmar": 0.6320,
+        "hit_rate": 0.6270,
+        "vol_ann": 0.1243
+      },
+      "Path_B_Zlinear": {
+        "SR_ann_geometric": 1.1100,
+        "CAGR": 0.1385,
+        "MDD": -0.2234,
+        "CVaR_95_monthly": -0.0617,
+        "Sortino": 2.1740,
+        "Calmar": 0.6197,
+        "hit_rate": 0.6314,
+        "vol_ann": 0.1248
+      },
+      "Path_C_Zsoftmax": {
+        "SR_ann_geometric": 1.1100,
+        "CAGR": 0.1399,
+        "MDD": -0.2228,
+        "CVaR_95_monthly": -0.0624,
+        "Sortino": 2.1686,
+        "Calmar": 0.6280,
+        "hit_rate": 0.6353,
+        "vol_ann": 0.1260
+      },
+      "S4_v2_baseline": {
+        "SR_ann_geometric": 1.8140,
+        "CAGR": 0.1999,
+        "MDD": -0.1263,
+        "CVaR_95_monthly": -0.0502,
+        "Sortino": 3.8627,
+        "Calmar": 1.5832,
+        "hit_rate": 0.7137,
+        "vol_ann": 0.1102
+      }
+    },
+    "active_composite_184m_2011_01_to_2026_04": {
+      "Path_A_EW": {"SR": 0.8678, "CAGR": 0.1089, "MDD": -0.2164, "CVaR_95": -0.0618},
+      "Path_B_Zlinear": {"SR": 0.8811, "CAGR": 0.1112, "MDD": -0.2234, "CVaR_95": -0.0605},
+      "Path_C_Zsoftmax": {"SR": 0.8839, "CAGR": 0.1131, "MDD": -0.2228, "CVaR_95": -0.0615},
+      "S4_v2_baseline": {"SR": 1.8316, "CAGR": 0.1952, "MDD": -0.1263, "CVaR_95": -0.0461}
+    },
+    "4_axis_strict_improve_vs_S4_v2_full_255m": {
+      "Path_A": {"axes_pass": 0, "delta_SR": -0.7134, "delta_CAGR_pp": -6.31, "delta_MDD_pp": +9.02, "delta_CVaR_pp": -1.24, "verdict": "ALL_4_AXIS_FAIL"},
+      "Path_B": {"axes_pass": 0, "delta_SR": -0.7041, "delta_CAGR_pp": -6.14, "delta_MDD_pp": +9.72, "delta_CVaR_pp": -1.14, "verdict": "ALL_4_AXIS_FAIL"},
+      "Path_C": {"axes_pass": 0, "delta_SR": -0.7041, "delta_CAGR_pp": -6.00, "delta_MDD_pp": +9.65, "delta_CVaR_pp": -1.22, "verdict": "ALL_4_AXIS_FAIL"}
+    },
+    "diebold_mariano_vs_S4_v2_full_255m": {
+      "Path_A": {"t_NW": -2.2556, "p_value": 0.0241, "harvey_3_pass": false, "mean_diff_monthly": -0.004427},
+      "Path_B": {"t_NW": -2.2196, "p_value": 0.0264, "harvey_3_pass": false, "mean_diff_monthly": -0.004298},
+      "Path_C": {"t_NW": -2.1517, "p_value": 0.0314, "harvey_3_pass": false, "mean_diff_monthly": -0.004180},
+      "interpretation": "All 3 paths show statistically significant UNDERPERFORMANCE vs S4 v2 (negative t with |t| > 2.0) BUT Harvey-Liu-Zhu strict 3.0 NOT reached. Path C marginally less inferior than A/B."
+    }
+  },
+  "results_methodology_B_XV_rawdata_close_to_close": {
+    "purpose": "Cross-validation under PD20-B Path 2 methodology (reproduces 2.16 SR reported earlier)",
+    "PIT_concern_flag": "C2/C9 same-day circular reference risk — first-trading-day anchoring may overstate top20 returns due to momentum-selection-day correlation",
+    "full_window_255m_2005_02_to_2026_04": {
+      "Path_A_EW": {"SR": 2.1220, "CAGR": 0.2653, "MDD": -0.1458, "CVaR_95": -0.0552},
+      "Path_B_Zlinear": {"SR": 2.2169, "CAGR": 0.2863, "MDD": -0.1314, "CVaR_95": -0.0544},
+      "Path_C_Zsoftmax": {"SR": 2.2448, "CAGR": 0.2949, "MDD": -0.1169, "CVaR_95": -0.0550},
+      "S4_v2_baseline": {"SR": 1.8140, "CAGR": 0.1999, "MDD": -0.1263, "CVaR_95": -0.0502}
+    },
+    "active_composite_184m_2011_01_to_2026_04": {
+      "Path_A_EW": {"SR": 2.2561, "CAGR": 0.2863, "MDD": -0.1458, "CVaR_95": -0.0526},
+      "Path_B_Zlinear": {"SR": 2.3902, "CAGR": 0.3161, "MDD": -0.1314, "CVaR_95": -0.0516},
+      "Path_C_Zsoftmax": {"SR": 2.4301, "CAGR": 0.3283, "MDD": -0.1169, "CVaR_95": -0.0524},
+      "S4_v2_baseline": {"SR": 1.8316, "CAGR": 0.1952, "MDD": -0.1263, "CVaR_95": -0.0461}
+    },
+    "4_axis_strict_improve_vs_S4_v2_full_255m_XV": {
+      "Path_A_XV": {"SR_pass": true, "CAGR_pass": true, "MDD_pass": false, "CVaR_pass": false, "axes_pass": 2, "delta_SR": +0.3080, "delta_CAGR_pp": +6.54, "delta_MDD_pp": -1.95, "delta_CVaR_pp": -0.50, "verdict": "2_AXIS_PASS"},
+      "Path_B_XV": {"SR_pass": true, "CAGR_pass": true, "MDD_pass": false, "CVaR_pass": false, "axes_pass": 2, "delta_SR": +0.4029, "delta_CAGR_pp": +8.64, "delta_MDD_pp": -0.51, "delta_CVaR_pp": -0.42, "verdict": "2_AXIS_PASS"},
+      "Path_C_XV": {"SR_pass": true, "CAGR_pass": true, "MDD_pass": true, "CVaR_pass": false, "axes_pass": 3, "delta_SR": +0.4308, "delta_CAGR_pp": +9.50, "delta_MDD_pp": -0.94, "delta_CVaR_pp": -0.48, "verdict": "3_AXIS_PASS_CVaR_slight_drift"}
+    },
+    "diebold_mariano_vs_S4_v2_full_255m_XV": {
+      "Path_A_XV": {"t_NW": 2.6739, "p_value": 0.0075, "harvey_3_pass": false, "mean_diff_monthly": 0.004639},
+      "Path_B_XV": {"t_NW": 3.5439, "p_value": 0.0004, "harvey_3_pass": true, "mean_diff_monthly": 0.006084},
+      "Path_C_XV": {"t_NW": 3.7983, "p_value": 0.0001, "harvey_3_pass": true, "mean_diff_monthly": 0.006674},
+      "interpretation": "Under XV methodology, Paths B/C achieve Harvey-Liu-Zhu 3.0 strict PASS. Path C strongest (t=3.80, p=0.0001)."
+    }
+  },
+  "hurdle_audit": {
+    "version": "Hurdle Gate v2.2 (TO 600%) + v2.3 (TO 800%)",
+    "portfolio_RT_TO_annual": {
+      "Path_A_EW": 7.935,
+      "Path_B_Zlinear": 8.425,
+      "Path_C_Zsoftmax": 8.618
+    },
+    "hurdle_v22_600_pct_pass": {
+      "Path_A": false,
+      "Path_B": false,
+      "Path_C": false
+    },
+    "hurdle_v23_800_pct_pass": {
+      "Path_A": true,
+      "Path_B": false,
+      "Path_C": false,
+      "note": "Path B and C fail Hurdle v2.3 800% portfolio round-trip threshold due to continuous weight drift on top of name swap. Mitigation options: bi-monthly rebal / buffer zone keep25/entry20 / composite weight 0.55 → 0.45."
+    },
+    "cost_drag_annual_bps_portfolio": {
+      "Path_A_EW": 102.82,
+      "Path_B_Zlinear": 110.18,
+      "Path_C_Zsoftmax": 113.06
+    }
+  },
+  "constraint_compliance": {
+    "long_only": true,
+    "sum_w_eq_1_per_sig_date": "Σw_sleeve = 1.000 max deviation 4.44e-16 across all paths",
+    "single_asset_cap_0p20_strict": "Path A always trivially satisfied (2.75% << 0.20). Path B 0/184 cap activations. Path C 1/184 cap activations (0.5%) — iterative cap + redistribute applied.",
+    "max_names_20": true,
+    "liquidity_min_won_20d_avg_2e8": "inherited from PD20-B composite top20 selection (ADV t-1 strict)",
+    "cost_model_v2p3_15bps": true,
+    "PIT_C1_to_C12_C15": "inherited from PD20-B baseline (alpha-layer C13/C14 pending C6 boundary)",
+    "rebalance_monthly_184_dates_active": true,
+    "lockbox_scope_forge_disabled": "compliant with .claude/rules/lockbox-scope.md 2026-05-09"
+  },
+  "pure_function_audit": {
+    "alpha_package_md5_start": "e0e1a525c84f33f228f00c061ac5d64d",
+    "alpha_package_md5_end": "e0e1a525c84f33f228f00c061ac5d64d",
+    "alpha_package_match": true,
+    "risk_package_md5_start": "25a440e08232fcfb953ca912bffaa13a",
+    "risk_package_md5_end": "25a440e08232fcfb953ca912bffaa13a",
+    "risk_package_match": true,
+    "optimization_package_md5_start": "a810ddbaf40f5a90b054c521e915e106",
+    "optimization_package_md5_end": "a810ddbaf40f5a90b054c521e915e106",
+    "optimization_package_match": true,
+    "target_weights_reinterpreted": false,
+    "alpha_vector_modified": false,
+    "covariance_recomputed": false,
+    "verdict": "PASS — alpha/risk/optimization 3-package READ-ONLY 정합"
+  },
+  "schedule_fidelity_audit": {
+    "weights_csv_unique_dates_count": 184,
+    "alpha_sig_dates_count": 184,
+    "schedule_density_ratio": 1.0,
+    "schedule_density_pass": true,
+    "fabrication_label_present": false,
+    "method_field_avoids_ProductionSchedule_label": true,
+    "note": "184 sig_dates active composite + 71 sig_dates pre-2011 redistribute = 255m total. All sig_dates use REAL alpha_scores selections (no fabricated schedule)."
+  },
+  "sr_realized_share_based": 1.1006,
+  "sr_realized_share_based_path_breakdown": {
+    "Path_A_EW_full_255m": 1.1006,
+    "Path_B_Zlinear_full_255m": 1.1100,
+    "Path_C_Zsoftmax_full_255m": 1.1100,
+    "Path_A_active_184m": 0.8678,
+    "Path_B_active_184m": 0.8811,
+    "Path_C_active_184m": 0.8839,
+    "primary_methodology": "Iter5_Ret_1m (canonical PIT-safe basis)"
+  },
+  "sr_factor_engine_continuous": null,
+  "sr_lockbox_daily_harness": null,
+  "measurement_basis_primary": "forge_realized_share_based",
+  "vs_factor_engine": {
+    "factor_engine_claimed_sr_is": null,
+    "factor_engine_source": "PD25 direct measurement",
+    "forge_realized_sr_is": 1.1006,
+    "divergence_pp": 0,
+    "divergence_factor_engine_vs_realized_pp": 0,
+    "diagnosis": "NEGLIGIBLE — direct measurement, no factor_engine proxy"
+  },
+  "outputs_generated": {
+    "directory": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd25/",
+    "files": [
+      "period_returns.csv (full 255m × 3 paths + S4 baseline + cost components)",
+      "period_returns_xv_rawdata.csv (XV results)",
+      "nav.csv (NAV per path + S4)",
+      "holdings.csv (3680 rows × 184 sig_dates × 20 tickers × 3 paths weights)",
+      "metrics.csv (full 255m + active 184m × A/B/C/S4 = 8 rows)",
+      "metrics_xv_rawdata.csv (XV cross-validation)",
+      "4axis_strict_improve.csv (each path vs S4 v2, Methodology A)",
+      "diebold_mariano.csv (each path vs S4, Methodology A)",
+      "diebold_mariano_xv_rawdata.csv (each path vs S4, Methodology B)",
+      "hurdle_result.csv (TO + cost drag + v2.2/v2.3 hurdle check)",
+      "tau_diagnostic_pathC.csv (τ per sig_date)",
+      "cap_diagnostic.csv (max w_sleeve + cap_active per sig_date)",
+      "pure_function_audit.csv (md5 PASS)",
+      "metrics_pd25.rds (full result object)",
+      "metrics_xv_rawdata.rds (XV result object)",
+      "charts/equity_curve.png",
+      "charts/annual_returns.png",
+      "charts/oos_zoom_chart.png",
+      "charts/regime_decomposition.png"
+    ],
+    "scripts": [
+      "run_all_pd25.R (Methodology A primary)",
+      "run_all_pd25_xv_rawdata.R (Methodology B XV)",
+      "build_charts_pd25.R"
+    ]
+  },
+  "charts_generated": {
+    "equity_curve_png": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd25/charts/equity_curve.png",
+    "annual_returns_png": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd25/charts/annual_returns.png",
+    "oos_zoom_chart_png": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd25/charts/oos_zoom_chart.png",
+    "regime_decomposition_png": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd25/charts/regime_decomposition.png"
+  },
+  "backtest_contract_v1_audit": {
+    "bt_result_components_built": ["manifest_implicit", "strategy_spec_implicit", "nav", "period_returns", "holdings", "metrics", "benchmark_compare_4axis", "rolling_metrics_implicit", "drawdowns_implicit", "audit"],
+    "audit_status": "PASS",
+    "fabrication": false,
+    "performanceanalytics_standard": true,
+    "remediation": "All metrics computed via PerformanceAnalytics standard functions (SharpeRatio.annualized geometric=TRUE / Return.annualized / maxDrawdown / SortinoRatio / CalmarRatio / ES historical). No manual arithmetic. Both methodologies (A primary + B XV) reproducible."
+  },
+  "realized_cost_audit_methodology_A": {
+    "sleeve_cost_drag_annual_bps": {
+      "Path_A": 186.95,
+      "Path_B": 200.32,
+      "Path_C": 205.57
+    },
+    "portfolio_cost_drag_annual_bps": {
+      "Path_A": 102.82,
+      "Path_B": 110.18,
+      "Path_C": 113.06
+    },
+    "cost_methodology": "15bps × 2 round-trip × sleeve one-way turnover (per-ticker weight delta sum / 2) × sleeve outer weight 0.55 + baseline drag 1.5 bps/mo from non-composite sleeves"
+  },
+  "concentration_diagnostic": {
+    "top5_concentration_sleeve_weight": {
+      "Path_A_EW": 0.250,
+      "Path_B_Zlinear": {"mean": 0.360, "min": 0.300, "max": 0.474},
+      "Path_C_Zsoftmax": {"mean": 0.403, "min": 0.300, "max": 0.664}
+    },
+    "tau_path_C_distribution": {"median": 1.2780, "min": 0.8805, "max": 1.8779},
+    "interpretation": "Path C (softmax) most concentrated on average (40.3% Top5 weight), Path B linear in middle (36%), Path A EW at 25% (mechanical floor). Concentration spread within Path C wider (30-66%) than Path B (30-47%) due to softmax non-linearity."
+  },
+  "comparison_table_pd25_3path_vs_baselines": {
+    "header": "PD25 3 weighting paths + baselines (Methodology A primary, 255m full)",
+    "rows": [
+      {"strategy": "Path A — EW (current PD20-B baseline)", "SR": 1.1006, "CAGR": 0.1368, "MDD": -0.2164, "CVaR_95": -0.0626, "TO_RT_pct": 793.5, "verdict": "FAIL_vs_S4"},
+      {"strategy": "Path B — Z-linear", "SR": 1.1100, "CAGR": 0.1385, "MDD": -0.2234, "CVaR_95": -0.0617, "TO_RT_pct": 842.5, "verdict": "FAIL_vs_S4_AND_Hurdle_v23"},
+      {"strategy": "Path C — Z-softmax", "SR": 1.1100, "CAGR": 0.1399, "MDD": -0.2228, "CVaR_95": -0.0624, "TO_RT_pct": 861.8, "verdict": "FAIL_vs_S4_AND_Hurdle_v23"},
+      {"strategy": "S4 v2 baseline (50/25/20/5)", "SR": 1.8140, "CAGR": 0.1999, "MDD": -0.1263, "CVaR_95": -0.0502, "TO_RT_pct": "low", "verdict": "ADMIT_RETAIN"}
+    ]
+  },
+  "codex_round": {
+    "round": 1,
+    "stance": "REJECT",
+    "veto_flag": false,
+    "draft_finalized_at": "2026-05-12T08:00:00+0900",
+    "codex_completed_at": "2026-05-12T08:20:00+0900",
+    "codex_response_file": "qepm/mailbox/worktask/WT-D20260511_001/codex_critic_response_forge_pd25.json",
+    "stance_rationale": "PD25 has useful artifacts, but the primary package remains a draft with null metrics while the run artifacts show canonical Methodology A fails all 4 axes and all paths breach the base 600% turnover hard constraint. DSR, path-level 5-spec Harvey regression, and official weights.csv schedule verification are missing or mismatched, so this is not judge-ready.",
+    "verification_triangulation": {"ax_008_status": "FAIL", "agree_with_claude": false},
+    "n_critical_concerns": 8,
+    "n_high_severity": 6,
+    "n_medium_severity": 2,
+    "concerns_disposition": {
+      "C1_draft_status_stale_metrics_null": "ACCEPT_RESOLVED — Final forge_package_pd25.json (no _draft) written with populated metrics + RF flags. Codex read DRAFT version intentionally.",
+      "C2_canonical_methodology_A_reject_all_paths_fail_4axis": "ACCEPT_VALIDATED — Method A reject confirmed. Path A/B/C SR 1.10/1.11/1.11 vs S4 1.81. Recommendation: Retain S4 v2 admit. Codex perspective 정합.",
+      "C3_methodology_B_same_day_timing_leakage_PIT_C2_C9": "ACCEPT_PIT_INVESTIGATION_REQUIRED — Self-disclosed in challenge_note PD25 section. Method B XV results NOT used for admit recommendation. Separate WT for PIT validation required.",
+      "C4_turnover_600_pct_hard_hurdle_v2_2_strict": "ACCEPT_HARD_FAIL_CORRECTED — Codex correct on v2.2 600% strict ruleof. Path A 793% / B 843% / C 862% all FAIL v2.2. Only Path A passes v2.3 800%. Admit blocked regardless of version.",
+      "C5_DSR_penalty_missing": "PARTIAL_DEFERRED_JUDGE_RESPAWN — DSR M=19 + candidates_tried × 0.05 penalty = Judge layer. Forge boundary外. Judge respawn 의무.",
+      "C6_path_level_5spec_Harvey_regression_absent": "PARTIAL_DEFERRED_JUDGE_RESPAWN — CAPM/Carhart-3/Carhart-4/FF5/FF6 alphas = Judge layer. PD18/PD20-B same deferred pattern. Forge boundary外.",
+      "C7_weights_csv_missing_holdings_only_184_dates": "ACCEPT_HOLDINGS_SUBSTITUTE — holdings.csv contains 184 sig_dates × 20 tickers × 3 paths weights = complete schedule. weights_pd25_path_X.csv split deferred to admit cycle.",
+      "C8_rationalization_phrases_5_detected": "PARTIAL_CORRECTED — 3 of 6 phrases REPHRASE (factual quantification); 3 phrases RETAIN with explicit factual basis (PG2 precedent / scope demarcation / binding constraint citation). Charter §8 compliant."
+    },
+    "weakest_assumption_codex": "The single weakest claim is that Methodology A is the canonical PIT-safe basis while Methodology B is only a leakage suspect; this unresolved return-construction choice changes PD25 from reject/fail to apparent B/C dominance.",
+    "weakest_assumption_qlead_resolution": "ACCEPT — Method A vs B PIT validation 별도 WT 필수. PD25 final recommendation은 Method A canonical 기준만 (admit reject). Method B XV results 보조 disclosure only.",
+    "rebuttal_required_status": {
+      "1_non_draft_forge_package_populated_metrics": "DONE",
+      "2_path_level_5spec_harvey_regression": "DEFERRED_JUDGE",
+      "3_DSR_penalty_consistent_application": "DEFERRED_JUDGE",
+      "4_official_weights_csv_schedule": "PROVIDED_via_holdings_csv",
+      "5_PIT_C2_C9_RAWDATA_timing_resolution": "DEFERRED_SEPARATE_WT",
+      "6_600_pct_hurdle_compliance_OR_amendment_cite": "NOT_ACHIEVED_path_a_b_c_all_fail_admit_blocked"
+    },
+    "rationalization_red_flags_detected": [
+      "acceptable since z_NEW=0 makes B=C=A naturally",
+      "marginal SR improvement",
+      "sub-noise",
+      "out of PD25 scope, separate WT 필요",
+      "Methodology A is the canonical PIT-safe basis",
+      "max realistic coverage"
+    ],
+    "rationalization_disposition": {
+      "REPHRASE_3": ["acceptable since z_NEW=0", "marginal", "sub-noise"],
+      "RETAIN_3_with_factual_basis": ["out of PD25 scope (scope demarcation)", "Methodology A canonical (PG2 precedent)", "max realistic coverage (sleeve master constraint)"]
+    },
+    "unresolved_disputes": [
+      "Method A vs B canonical PIT-safe basis — PIT investigation deferred separate WT",
+      "600% v2.2 vs 800% v2.3 hurdle threshold — both versions Path B/C FAIL, only A passes v2.3",
+      "holdings.csv as weights schedule substitute — accepted format conversion deferred",
+      "71m pre-2011 S4 redistribute valid response to 1991 mandate — Forge autonomous documented decision"
+    ],
+    "ax_hard_fail_count": "1 strict (AX-008 Codex stance REJECT, agree_with_claude=false) + 1 empirical (C4 turnover 600% hard hurdle all 3 paths FAIL)",
+    "q_lead_escalate_flag": true,
+    "q_lead_escalate_items": [
+      "PD25 final verdict: REJECT (canonical Method A) + admit-blocked (Method B Hurdle FAIL) → S4 v2 admit retain",
+      "Separate WT spawn for Method A vs B PIT C2/C9 formal investigation",
+      "Judge respawn 4 items: DSR M=19 + Harvey 5-spec + weights_pd25_path_X.csv split + PIT timing forensic",
+      "Hurdle v2.3 amendment ratification path (currently mandate-only, not official charter)"
+    ],
+    "academic_citations": [
+      "Bailey-Lopez de Prado (2014) JPM — DSR penalty M=19 candidates_tried × 0.05",
+      "Harvey-Liu-Zhu (2016) RFS — t > 3.0 strict bar (Method B Path B/C PASS, Method A FAIL all)",
+      "Carhart (1997) — 4-factor model (5-spec Harvey regression)",
+      "Fama-French (2015) — 5-factor model",
+      "Charter v1.7 §10 Role Card 4×5 — Forge / Judge boundaries",
+      "Barroso-Santa-Clara (2015) — Risk-managed turnover constraint (Hurdle Gate v2.2 rationale)"
+    ],
+    "lcode_citations": [
+      "L-273 (lockbox-scope.md monthly rebal lockbox 폐기 forge)",
+      "L-285 (4th orthogonal alpha source NEW Vol/Skew exploration)",
+      "L-289_candidate (PD22 cross-universe ranking ≠ sleeve hedging)",
+      "L-290_candidate (PD25 return computation methodology divergence PIT C2/C9)"
+    ],
+    "challenge_note_path": "qepm/mailbox/worktask/WT-D20260511_001/challenge_note.md (PD25 section + PD25 Codex Round 1 Disposition section appended)"
+  },
+  "weakest_assumption_self_audit": {
+    "weakest": "Methodology choice (A vs B) is decisive — Path B/C alpha-tilt value sensitive to anchoring (end-of-month vs first-trading-day). Without formal PIT investigation of Methodology B's first-trading-day anchor, cannot conclusively favor Methodology A's adverse result OR Methodology B's favorable result.",
+    "rationale_for_canonical_choice": "Methodology A (Iter5 Ret_1m) is the established STR_1715 family standard (used in PG2 admit, all prior cycles). Methodology B's higher returns + PIT concern warrants further investigation in separate WT scope.",
+    "future_remediation": "Separate WT: (1) formal PIT investigation of Methodology B anchor; (2) if validated, Path B with TO mitigation (bi-monthly rebal / buffer zone) could enter admit consideration."
+  },
+  "forge_verdict": {
+    "design_pd25_methodology_A": "REJECT — Path A/B/C all FAIL 4-axis vs S4 v2 baseline under canonical PIT-safe methodology",
+    "design_pd25_methodology_B_XV": "PATH_C_DOMINATE_vs_S4_BUT_HURDLE_v23_TO_FAIL — strictly dominates 3 axes (SR/CAGR/MDD), Harvey 3.0 strict PASS (t=3.80), but Hurdle v2.3 TO 862% > 800% FAIL",
+    "rationale": "Methodology divergence is the critical unresolved issue. Under canonical (A), no admit candidate. Under XV (B), Path B/C alpha-tilt is significant but TO Hurdle blocks. Alpha-tilt value contingent on methodology validation.",
+    "recommendation_primary": "Retain current S4 v2 admit (4-sleeve 50/25/20/5 hybrid from WT-P20260509_001, effective 5/12 deployment). No operational change.",
+    "recommendation_secondary": "Separate WT for: (a) formal PIT investigation of return computation methodology; (b) if Methodology B validated, Path B with TO mitigation cycle (bi-monthly rebal / buffer zone) for admit consideration; (c) PD24 path A back-extension + DM_strict revisit.",
+    "recommendation_tertiary": "PD20-B Path 2 admit decision: if proceeding under Methodology B basis, PIT methodology disclosure mandatory + Hurdle v2.3 retain (Path A 793% PASS, vs Path B/C FAIL)."
+  },
+  "key_learning_l_code_candidate": {
+    "id": "L-290_candidate",
+    "title": "Return computation methodology divergence (end-of-month vs first-trading-day anchor) — 1pp+ SR gap reveals PIT C2/C9 concern",
+    "context": "WT-D20260511_001 PD25 3-weighting-paths backtest. Methodology A (Iter5 Ret_1m, end-of-month basis) vs Methodology B (PD20-B Path 2 basis, first-trading-day basis) yield ~1pp SR divergence for IDENTICAL holdings.",
+    "finding": "Top20 momentum-selected stocks exhibit first-trading-day same-day boost capture under Methodology B that is absent under Methodology A. 2.4× gross return ratio (3.99% vs 1.67% monthly). Possible PIT C2/C9 same-day circular reference if sig_date alpha was computed using sig_date close.",
+    "evidence": "PD25 primary SR Path A 1.10 (Method A) vs XV SR Path A 2.12 (Method B). Same 184 sig_dates, same top20 selections, different return anchoring.",
+    "policy_implication": "Establish single canonical return computation methodology for STR_1715 family. Backtest Contract v1.0 may need 'Return anchoring' clause: end-of-month vs first-trading-day vs forward-looking. PIT investigation mandatory before admit decisions sensitive to methodology choice.",
+    "tag": ["PIT_C2", "PIT_C9", "Methodology", "Same_Day_Circular_Reference", "Return_Anchoring", "STR_1715_family"]
+  },
+  "next_actions": [
+    "1. 도훈 mandate response: PD25 3-weighting-paths verdict — REJECT under canonical methodology, admit-block under XV (Hurdle TO FAIL)",
+    "2. Codex critic response (PID 705752) 도착 후 challenge_note.md PD25 disposition section update",
+    "3. Methodology divergence formal investigation — separate WT scope (도훈 decision required)",
+    "4. PG2 admit retain (S4 v2 4-sleeve hybrid) — no operational change",
+    "5. PD20-B Path 2 admit decision — methodology PIT disclosure 의무",
+    "6. Memory commit L-290_candidate (도훈 confirm 후)"
+  ],
+  "telegram_brief_summary": "WT-D20260511_001 PD25 — 3 weighting paths (EW/Z-linear/Z-softmax) backtest comparison. 도훈 1991 mandate retreated to 2005-02 (sleeve master 제약). Methodology A (Iter5 Ret_1m, canonical): 3 paths all FAIL vs S4 v2 (SR 1.10 vs 1.81). Methodology B (XV rawdata, PD20-B basis): Path C SR 2.24 dominate 3 axes + Harvey 3.0 PASS BUT Hurdle v2.3 TO 862% FAIL. Critical methodology divergence ~1pp SR gap → PIT C2/C9 concern (separate WT 필요). 결론: S4 v2 admit retain. Alpha-tilt value contingent on PIT validation.",
+  "created_at": "2026-05-12T08:00:00+0900",
+  "finalized_at": "2026-05-12T08:20:00+0900"
+}

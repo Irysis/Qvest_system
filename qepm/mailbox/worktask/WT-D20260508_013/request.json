@@ -1,0 +1,29 @@
+{
+  "task_id": "WT-D20260508_013",
+  "task_type": "discovery",
+  "path_label": "H",
+  "goal": "Left-tail momentum cross-section alpha — Atilgan et al 2020 JFE Korea application",
+  "academic_basis": [
+    "Atilgan-Bali-Demirtas-Gunaydin 2020 JFE Left-tail momentum: Underreaction to bad news, costly arbitrage and equity returns",
+    "Bali-Cakici-Whitelaw 2011 JFE Maxing Out: Stocks as Lotteries",
+    "Conrad-Dittmar-Ghysels 2013 JF Ex Ante Skewness and Expected Stock Returns",
+    "Goyal-Saretto 2009 JFE Cross-section of option returns and volatility"
+  ],
+  "input_data": {
+    "krx_option_chain": ".cache/krx_options/<YYYYMMDD>.parquet (4023 days)",
+    "rawdata": "RAWDATA + Factor DB load_month_factors",
+    "wt010_r14_alpha": "stage_artifacts/WT-D20260508_010/alpha_scores.parquet (보완 비교용)"
+  },
+  "signal_design": {
+    "core": "VaR_5pct rolling 250d (per-stock left-tail) × momentum 12_1",
+    "interaction": "left-tail × momentum cross multiplicative + rank-based composite",
+    "frequency": "monthly cross-section",
+    "universe": "KOSPI200 + KOSDAQ150 (현 production constraints)"
+  },
+  "constraints": {
+    "pit_strict": true,
+    "graduation_5_of_5": true,
+    "orthogonality_check": "vs Hybrid 70/15/15 + WT_009 BAB + WT_010 R14_DUVOL"
+  },
+  "ax_constraints": ["AX-001 v2 conditional defense", "AX-002 PIT", "AX-007 multi-sleeve EXCEPTION audit", "AX-008 triangulation 2/3"]
+}

@@ -1,0 +1,45 @@
+{
+  "ax_axiom": "AX-005 v1.2",
+  "rule": "KR market, defense family, top20_long_only, single-sleeve standalone FAIL",
+  "exception_4": ["multi-sleeve", "long-short", "50+ diversified", "ML sizing"],
+  "current_structure": "multi-sleeve (3 sleeves)",
+  "exception_match": "multi-sleeve",
+  "per_sleeve_diagnostic": {
+    "sleeve_BAB": {
+      "ic": 0.0172,
+      "icir": 0.1292,
+      "harvey_t": 1.6328,
+      "standalone_pass_3std": false,
+      "verdict": "FAIL standalone (t=1.63 < 3.0) — AX-005 v1.2 retained"
+    },
+    "sleeve_Q07": {
+      "ic": 0.0405,
+      "icir": 0.4949,
+      "harvey_t": 6.0972,
+      "standalone_pass_3std": true,
+      "verdict": "PASS standalone (t=6.10) but L-121 conditional KR proven crisis-positive"
+    },
+    "sleeve_QMA": {
+      "ic": 0.0719,
+      "icir": 0.724,
+      "harvey_t": 9.8649,
+      "standalone_pass_3std": true,
+      "verdict": "PASS standalone (t=9.86) — strongest sleeve"
+    },
+    "composite": {
+      "ic": 0.0544,
+      "icir": 0.5009,
+      "harvey_t": 6.0241,
+      "verdict": "Composite pass; BAB sleeve dilutive but multi-sleeve EXCLUSION 충족"
+    }
+  },
+  "exclusion_validation": {
+    "mechanism": "BAB single-sleeve standalone FAIL (AX-005 v1.2 retained empirically) — multi-sleeve composite path used",
+    "n_sleeves": 3,
+    "multi_sleeve_count_threshold": 3,
+    "standalone_alone_used": false,
+    "composite_used": true,
+    "interpretation": "AX-005 v1.2 multi-sleeve EXCLUSION 충족. BAB single-sleeve standalone retained as FAIL (axiom unchanged)."
+  },
+  "status": "PASS"
+}

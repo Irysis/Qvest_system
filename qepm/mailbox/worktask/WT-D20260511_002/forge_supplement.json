@@ -1,0 +1,71 @@
+{
+  "task_id": "WT-D20260511_002",
+  "generated_at": "2026-05-11T08:44:59+0900",
+  "C8_fix_period_returns_duplicate": {
+    "issue": "period_returns.csv had 256 rows with 2005-03-02 duplicated at end",
+    "fix": "deduplicated by date in period_returns_clean.csv",
+    "n_unique_dates": 255
+  },
+  "C3_lockbox_split": {
+    "cutoff": "2023-12-31",
+    "pre_lockbox_selected": {
+      "label": "pre_lockbox_selected",
+      "n_obs": 226,
+      "start": "2005-03",
+      "end": "2023-12",
+      "sr": 1.6206,
+      "cagr": 0.1627,
+      "annvol": 0.1004,
+      "mdd": 0.1147,
+      "cvar_95": -0.0484
+    },
+    "pre_lockbox_2nd": {
+      "label": "pre_lockbox_2nd",
+      "n_obs": 226,
+      "start": "2005-03",
+      "end": "2023-12",
+      "sr": 1.6436,
+      "cagr": 0.1548,
+      "annvol": 0.0942,
+      "mdd": 0.1154,
+      "cvar_95": -0.0453
+    },
+    "lockbox_extension_selected": {
+      "label": "lockbox_selected",
+      "n_obs": 29,
+      "start": "2024-01",
+      "end": "2026-05",
+      "sr": 3.6617,
+      "cagr": 0.5006,
+      "annvol": 0.1367,
+      "mdd": 0.0286,
+      "cvar_95": -0.0232
+    },
+    "lockbox_extension_2nd": {
+      "label": "lockbox_2nd",
+      "n_obs": 29,
+      "start": "2024-01",
+      "end": "2026-05",
+      "sr": 3.5961,
+      "cagr": 0.4807,
+      "annvol": 0.1337,
+      "mdd": 0.0178,
+      "cvar_95": -0.0178
+    },
+    "rationale": "Lockbox cutoff = SIGNAL_CUTOFF 2023-12-22 per .claude/rules/lockbox-scope.md. Forge stage is operational/tracking layer — lockbox scope retired per 도훈 mandate 2026-05-09 (lockbox 정책 alpha/risk/optimizer만 적용). Lockbox split here is for evidence transparency, NOT decision-relevant filtering. Backtest uses full 256m monthly."
+  },
+  "C6_benchmark_kospi200": {},
+  "C4_harvey_5spec_realized": {
+    "capm_realized": {},
+    "ff3_realized": {},
+    "carhart4_realized": {},
+    "ff5_realized": {},
+    "ff6_realized": {},
+    "note": "FF3/Carhart4/FF5/FF6 require KR multi-factor monthly factor returns parquet. Not in standard Forge infra. CAPM realized (KOSPI200 single-factor) provided.",
+    "harvey_inherit_basis": {
+      "source": "alpha_package.json::harvey_t_inherited_basis",
+      "basis": "1715 H1 sleeve CAPM/FF3/FF5/Carhart4/FF6 t_NW 6.70~6.77 (S4 v2 admit lineage WT-P20260505_001)",
+      "applies_to": "Sleeve-internal alpha (str1715). Forge sleeve-aggregate composite re-regression on KR factor universe not standardly available — would require external KR factor parquet."
+    }
+  }
+}

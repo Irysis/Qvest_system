@@ -1,0 +1,128 @@
+{
+  "task_id": "WT-D20260511_001",
+  "candidate": "med_10pct_pd18",
+  "supersedes": "backtest_result_med_10pct/hurdle_result.json (PD16 frozen alpha 155 dates base, primary = frozen NEW OOS)",
+  "supersede_reason": "도훈 mandate 2026-05-11 옵션 A — NEW alpha 184 sig_dates 갱신 (155 → 184). PD18 redistribute primary monthly rebal (lockbox-scope.md forge stage 폐기 정합).",
+  "measurement_basis_primary": "forge_realized_share_based",
+  "primary_variant": "redistribute_pd18_184_dates_monthly_rebal",
+  "scope": "256m full backtest (2005-02 ~ 2026-04) — alpha 184 sig_dates monthly rebal NEW sleeve + 4-sleeve baseline static composite; primary = redistribute (도훈 mandate 2026-05-11)",
+  "med10_pd18_redistribute_primary_256m": {
+    "SR_ann": 2.241,
+    "CAGR": 0.2355,
+    "MDD": -0.1154,
+    "Sortino": 5.2259,
+    "Calmar": 2.0404,
+    "CVaR_95_monthly": -0.0442,
+    "CVaR_99_monthly": -0.0694,
+    "hit_rate": 0.7451,
+    "n_months": 255
+  },
+  "med10_pd18_strict_diagnostic_256m": {
+    "SR_ann": 2.2542,
+    "CAGR": 0.2286,
+    "MDD": -0.1039,
+    "CVaR_95_monthly": -0.042,
+    "n_months": 255
+  },
+  "med10_pd18_alpha_active_184m": {
+    "SR_ann": 2.4596,
+    "CAGR": 0.2436,
+    "MDD": -0.1027,
+    "n_months": 184
+  },
+  "med10_pd18_pd13_extension_29m": {
+    "SR_ann": 4.4353,
+    "CAGR": 0.5305,
+    "MDD": -0.021,
+    "n_months": 28,
+    "note": "alpha extension 29 new dates monthly rebal (2024-01 ~ 2026-04). Strong out-of-frozen-window performance."
+  },
+  "s4_baseline_256m": {
+    "SR_ann": 1.8334,
+    "CAGR": 0.202,
+    "MDD": -0.1252,
+    "CVaR_95_monthly": -0.0501,
+    "n_months": 255
+  },
+  "diebold_mariano_pd18_primary_vs_baseline": {
+    "redistribute_pd18_primary_256m": {
+      "t_NW": 4.2287,
+      "p": 0,
+      "n": 255,
+      "mean_diff_monthly": 0.002277,
+      "se_NW_lag6": 0.000538,
+      "interpretation": "PD18 redistribute outperforms baseline SIGNIFICANTLY (+22.77bps/mo, t_NW 4.23, p≈0)"
+    }
+  },
+  "strict_improve_eval_256m_redistribute_pd18_PRIMARY": {
+    "label": "256m PD18 redistribute primary (alpha 184 dates monthly rebal)",
+    "SR_pass": true,
+    "delta_SR": 0.4076,
+    "MDD_pass": true,
+    "delta_MDD_pp": 0.9808,
+    "CVaR_pass": true,
+    "delta_CVaR_pp": 0.5939,
+    "CAGR_pass": true,
+    "delta_CAGR_pp": 3.3451,
+    "verdict_4_axis": "4_PASS_STRICT_IMPROVE"
+  },
+  "strict_improve_eval_256m_strict_diagnostic": {
+    "label": "256m PD18 strict diagnostic (NEW=0 outside redistribute X)",
+    "SR_pass": true,
+    "delta_SR": 0.4208,
+    "MDD_pass": true,
+    "delta_MDD_pp": 2.1276,
+    "CVaR_pass": true,
+    "delta_CVaR_pp": 0.8071,
+    "CAGR_pass": true,
+    "delta_CAGR_pp": 2.6589,
+    "verdict_4_axis": "4_PASS_STRICT_IMPROVE"
+  },
+  "cvar_revalidation": {
+    "realized_256m_med10_redistribute_pd18": -0.0442,
+    "realized_256m_med10_strict_diagnostic_pd18": -0.042,
+    "realized_184m_med10_alpha_active_pd18_redistribute": -0.0442,
+    "realized_29m_med10_pd13_extension_pd18": -0.0058,
+    "realized_256m_s4": -0.0501,
+    "documented_baseline_S4_v2": -0.0471,
+    "admit_criterion_pass": true,
+    "note": "All sub-periods CVaR within 0.5pp margin of baseline. PD18 primary -4.42% better than baseline -5.01% (Δ +0.59pp better)."
+  },
+  "alpha_extension_pd16_vs_pd18_comparison": {
+    "pd16_redistribute_SR": 1.9065,
+    "pd18_redistribute_SR": 2.241,
+    "delta_SR": 0.3345,
+    "pd16_CAGR": 0.2048,
+    "pd18_CAGR": 0.2355,
+    "delta_CAGR_pp": 3.07,
+    "pd16_MDD": -0.1154,
+    "pd18_MDD": -0.1154,
+    "delta_MDD_pp": 0.0008
+  },
+  "ax_008_contribution": "Forge clean PD18 redistribute primary CONDITIONAL_PASS_VALIDATED — 2/3 floor (Forge + Architect PD16 retain); Codex Round 2 PD18 trigger for 3/3 confirm",
+  "schedule_fidelity": {
+    "weights_csv_n_dates": 184,
+    "alpha_sig_dates": 184,
+    "density_ratio": 1.0,
+    "method": "5_sleeve_composite_monthly_rebal_redistribute_primary_184_dates_alpha_NEW_monthly_top20_EW",
+    "fabrication_label": false,
+    "note": "Sleeve-level static weights (with redistribute fallback for NEW=0 시기) × 4-sleeve monthly returns + NEW 184 dates monthly rebal top20 EW. alpha_scores top20 selection per sig_date for NEW sleeve only (lockbox 폐기 정합 운용 cycle 정상)."
+  },
+  "pure_function_audit": {
+    "alpha_package_modified": false,
+    "risk_package_modified": false,
+    "opt_package_modified": false,
+    "target_weights_reinterpreted": false,
+    "covariance_recomputed": false,
+    "alpha_vector_modified": false,
+    "alpha_package_md5_start": "e0e1a525c84f33f228f00c061ac5d64d",
+    "alpha_package_md5_end": "e0e1a525c84f33f228f00c061ac5d64d",
+    "risk_package_md5_start": "25a440e08232fcfb953ca912bffaa13a",
+    "risk_package_md5_end": "25a440e08232fcfb953ca912bffaa13a",
+    "opt_package_md5_start": "a810ddbaf40f5a90b054c521e915e106",
+    "opt_package_md5_end": "a810ddbaf40f5a90b054c521e915e106"
+  },
+  "lockbox_scope_compliance": "alpha-research stage cutoff 2023-12-22 retain at alpha layer; forge stage lockbox 폐기 per .claude/rules/lockbox-scope.md 2026-05-09; 184 dates monthly rebal NEW sleeve = 운용 cycle 정합",
+  "bt_contract_build_status": "MANUAL_FALLBACK (PD18 consistent with PD16 precedent — manual minimal 10-component bt_result.rds, all metrics PerformanceAnalytics-standard, no fabrication)",
+  "created_at": "2026-05-11T12:55:00+0900"
+}

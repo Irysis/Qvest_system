@@ -1,0 +1,79 @@
+{
+  "task_id": "WT-RES_20260512_STR_1715_AR_PRODUCTION",
+  "audit_version": "v1_production_weighting_strict",
+  "audit_timestamp": "2026-05-12T13:15:07+09:00",
+  "checks": {
+    "nav_monotone_dates": {
+      "pass": true,
+      "note": "monotone increasing"
+    },
+    "returns_finite": {
+      "pass": true,
+      "note": "n_finite=255"
+    },
+    "n_obs_sufficient": {
+      "pass": true,
+      "note": "n=255 months"
+    },
+    "cost_model_documented": {
+      "pass": true,
+      "note": "v2.3_kr_retail_15bps; base Iter31 TO in PR ret_net, AR Δβ × 0.0015 additional"
+    },
+    "pit_lag_applied": {
+      "pass": true,
+      "note": "M4 t-1 lag + β_t t-1 lag + bm_12m past-only frollsum shift(1)"
+    },
+    "perfanalytics_standard": {
+      "pass": true,
+      "note": "table.AnnualizedReturns + maxDrawdown + SortinoRatio + CalmarRatio"
+    },
+    "weighting_basis": {
+      "pass": true,
+      "note": "Iter31 linear_tilt λ=1.5 phi=3 ub=0.20 [PR ret_net baked]; EW disallow per 도훈 mandate"
+    },
+    "raw_cover_start_hardcoded": {
+      "pass": true,
+      "note": "decision 2004-01-01 | realized 2004-02-01 (PR first row)"
+    },
+    "layer_count": {
+      "pass": true,
+      "note": "5 layers: Original / MRS / M4 / AR_on_M4 / AR_on_Orig"
+    },
+    "sanity_l1_vs_admit": {
+      "pass": true,
+      "note": "L1 Sharpe delta vs admit L1 256m: -0.0234 (expected near 0 since same PR base, different N)"
+    }
+  },
+  "layer_4_admit_comparable_255m": {
+    "CAGR": 0.3868,
+    "Vol": 0.2212,
+    "Sharpe": 1.7486,
+    "MDD": -0.2481,
+    "Sortino": 1.0063,
+    "Calmar": 1.5592,
+    "n_months": 255
+  },
+  "layer_4_raw_cover_267m": {
+    "CAGR": 0.377,
+    "Vol": 0.2223,
+    "Sharpe": 1.6957,
+    "MDD": -0.2481,
+    "Sortino": 0.9788,
+    "Calmar": 1.5197,
+    "n_months": 267
+  },
+  "drift_vs_admit_256m_json": {
+    "delta_Sharpe": -0.0272,
+    "delta_CAGR_pp": 0.34,
+    "delta_MDD_pp": 0.34,
+    "interpretation": "Expected near 0 since same production base + same overlay (only 1m difference: admit 256m vs current 255m due to PR file last row)"
+  },
+  "drift_vs_ew_267m": {
+    "delta_Sharpe": 0.7107,
+    "delta_CAGR_pp": 16.64,
+    "delta_MDD_pp": 5.55,
+    "interpretation": "EW (alpha_top20 1/20) vs production Iter31 linear_tilt λ=1.5 measurement basis drift"
+  },
+  "integrity": "PASS",
+  "metric_type": "backtested"
+}

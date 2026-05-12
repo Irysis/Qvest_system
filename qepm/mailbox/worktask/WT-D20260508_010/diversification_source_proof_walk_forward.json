@@ -1,0 +1,126 @@
+{
+  "context": "WALK-FORWARD diversification source proof (Codex C4 ACCEPT — original was PIT-violating backfill)",
+  "pit_compliance": {
+    "method": "Per-month walk-forward: at each historical sig_date, top20 alpha names selected from alpha_panel using ONLY data <= sig_date (PIT-safe via load_month_factors). Forward 1m returns realized.",
+    "backfill_check": "REJECTED — no future-snapshot universe used"
+  },
+  "alpha_layer_reported_cor": -0.418,
+  "rho_realized_walk_forward": -0.0872,
+  "sigma_hybrid_monthly_wf": 0.0512,
+  "sigma_alpha_top20_walkforward_monthly": 0.0538,
+  "matched_months_wf": 59,
+  "matched_period_wf": {
+    "start": "2021-06-01",
+    "end": "2026-04-01"
+  },
+  "bootstrap_ci_rho": {
+    "lower_2_5": -0.2636,
+    "median": -0.0493,
+    "upper_97_5": 0.1786,
+    "n_bootstraps": 2000,
+    "block_size_months": 6,
+    "method": "Block bootstrap (Politis-Romano 1994)"
+  },
+  "markowitz_gain_grid_wf": [
+    {
+      "w_hybrid": 0.5,
+      "w_alpha": 0.5,
+      "sigma_indep": 0.0371,
+      "sigma_combo": 0.0355,
+      "gain_pct": 4.46
+    },
+    {
+      "w_hybrid": 0.7,
+      "w_alpha": 0.3,
+      "sigma_indep": 0.0393,
+      "sigma_combo": 0.038,
+      "gain_pct": 3.32
+    },
+    {
+      "w_hybrid": 0.85,
+      "w_alpha": 0.15,
+      "sigma_indep": 0.0442,
+      "sigma_combo": 0.0436,
+      "gain_pct": 1.58
+    },
+    {
+      "w_hybrid": 0.9,
+      "w_alpha": 0.1,
+      "sigma_indep": 0.0464,
+      "sigma_combo": 0.0459,
+      "gain_pct": 1.01
+    }
+  ],
+  "realized_combo_stats_wf": [
+    {
+      "w_hybrid": 0.5,
+      "w_alpha": 0.5,
+      "n_months": 59,
+      "mean_monthly": 0.0187,
+      "sd_monthly": 0.0355,
+      "sharpe_annual": 1.8271,
+      "cum_total": 1.8817,
+      "skew": -0.0343,
+      "nav_max": 2.8817,
+      "mdd": -0.2015
+    },
+    {
+      "w_hybrid": 0.7,
+      "w_alpha": 0.3,
+      "n_months": 59,
+      "mean_monthly": 0.0222,
+      "sd_monthly": 0.038,
+      "sharpe_annual": 2.0287,
+      "cum_total": 2.5209,
+      "skew": 0.5787,
+      "nav_max": 3.5209,
+      "mdd": -0.1801
+    },
+    {
+      "w_hybrid": 0.85,
+      "w_alpha": 0.15,
+      "n_months": 59,
+      "mean_monthly": 0.0249,
+      "sd_monthly": 0.0436,
+      "sharpe_annual": 1.9808,
+      "cum_total": 3.0555,
+      "skew": 0.8919,
+      "nav_max": 4.0555,
+      "mdd": -0.1766
+    },
+    {
+      "w_hybrid": 0.9,
+      "w_alpha": 0.1,
+      "n_months": 59,
+      "mean_monthly": 0.0258,
+      "sd_monthly": 0.0459,
+      "sharpe_annual": 1.9458,
+      "cum_total": 3.2442,
+      "skew": 0.9451,
+      "nav_max": 4.2442,
+      "mdd": -0.1759
+    }
+  ],
+  "hybrid_alone_baseline_wf": {
+    "n_months": 59,
+    "mean_monthly": 0.0276,
+    "sd_monthly": 0.0512,
+    "sharpe_annual": 1.8651,
+    "mdd": -0.1748
+  },
+  "verdict_wf": {
+    "diversification_source": "PARTIAL",
+    "sigma_reduction_70_30_pct": 3.32,
+    "sr_improvement_70_30": 0.1636,
+    "mdd_improvement_70_30": -0.0052,
+    "rho_in_negative_zone": false
+  },
+  "interpretation": "Walk-forward rho -0.0872 (CI [-0.2636, 0.1786]). PARTIAL diversification source. Sigma reduction at 70/30 = 3.32%. SR Δ +0.1636 / MDD Δ -0.0052.",
+  "caveat": "alpha-layer cor -0.418 is cross-sectional (signal vs Hybrid_proxy_z). Walk-forward time-series cor is realized portfolio-vs-portfolio. Different metrics. Walk-forward replaces prior backfilled estimate +0.063 (PIT-violating).",
+  "vs_original_backfill": {
+    "rho_backfill": 0.0625,
+    "rho_walkforward": -0.0872,
+    "delta": -0.1497,
+    "note": "If walk-forward rho close to backfill, original was incidentally PIT-clean. If divergent, magnitudes differ."
+  }
+}

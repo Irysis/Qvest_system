@@ -1,0 +1,86 @@
+{
+  "task_id": "WT-D20260508_013",
+  "as_of_date": "2026-04-30",
+  "validation_basis": "WALK_FORWARD_252_SIG_DATES_2005_05_TO_2026_04_PIT_C1_C15_STRICT_t_minus_1_LIQUIDITY_AFTER_CODEX_ROUND_1_CORRECTIONS",
+  "5_5_strict_graduation_full_panel": {
+    "1_min_rank_ic": {"threshold": 0.04, "observed": 0.0321, "PASS": false, "shortfall_pct": -19.75},
+    "2_min_icir":    {"threshold": 0.20, "observed": 0.1844, "PASS": false, "shortfall_pct": -7.80},
+    "3_min_subperiod_sign_consistency": {"threshold": "all post-2010 windows sign+", "observed": "3/3 PASS post-2010 (2010-14 +0.283, 2015-19 +0.153, 2020-26 +0.308); 2005-09 sign-neutral (-0.0002 IC) acknowledged", "PASS": true},
+    "4_min_harvey_t_NW": {"threshold": 3.0, "observed": 2.861, "PASS": false, "shortfall_pct": -4.63, "note": "Codex round 1 identified divide-by-n-twice formula bug; corrected from incorrect +44.4 to true +2.86. Just below 3.0 threshold."},
+    "5_min_dsr_BLP":     {"threshold": 0.5, "observed_HML_DSR_N5": 0.0, "observed_IC_DSR_N5": 0.0, "PASS": false, "psr_zero_HML": 0.989, "psr_zero_IC": 1.000}
+  },
+  "5_5_strict_graduation_recent_60m": {
+    "1_min_rank_ic":      {"threshold": 0.04, "observed": 0.0705, "PASS": true},
+    "2_min_icir":         {"threshold": 0.20, "observed": 0.4133, "PASS": true},
+    "3_min_harvey_t_NW":  {"threshold": 3.0,  "observed": 3.940,  "PASS": true, "note": "Manually verified: NW LRV 0.02867 / sqrt(LRV/60) gives SE 0.01788, t = 0.0705/0.01788 = 3.94"},
+    "comment": "Recent 60-month panel (2021-04 ~ 2026-03) PASSES strict 3 of 3 core gates with corrected Harvey-NW t."
+  },
+  "supplementary_diagnostics": {
+    "decile_monotonicity_rank_cor": {"threshold_RF_A6": 0.7, "observed": 0.709, "PASS": true},
+    "sector_neutral_ic_retention":  {"threshold": 0.5, "observed": 0.606, "PASS": true},
+    "turnover_annual":              {"threshold_max": 6.0, "observed": 3.226, "PASS": true},
+    "top_decile_adv_pass_2e8":      {"threshold": "all 35 / 35", "observed": "35 / 35", "PASS": true, "median_won": 63540878236, "min_won": 3169478446},
+    "rf_a3_recent_full_ratio":      {"threshold_max": 1.5, "observed": 2.687, "PASS": false, "interpretation": "RF-A3 alarm — recent 3Y ICIR much stronger than full panel; mechanism plausibly tied to KR retail-democratization 2020+, but ex-post narrative acknowledged"},
+    "ax001_v2_conditional_defense_ratio": {"threshold": 1.5, "observed": 17.887, "PASS": true, "note": "ic_bad +0.110 (n=63) / ic_normal +0.0062 (n=189) — extreme defensive characteristic"},
+    "atilgan_corner_HML_annual":    {"observed": 0.0531, "note": "Q5xQ5 (high-mom & low-VaR) minus Q1xQ1 (low-mom & high-VaR) annualized = +5.31% — confirms Atilgan 2020 mechanism direction"}
+  },
+  "orthogonality_check": {
+    "target_strong":   {"threshold_abs": 0.30, "verdict_field": "STRONG_ORTHO if |cor| < 0.30"},
+    "target_adequate": {"threshold_abs": 0.50, "verdict_field": "ADEQUATE_ORTHO if 0.30 <= |cor| < 0.50"},
+    "comparisons": {
+      "vs_WT010_R14_DUVOL": {"pearson": -0.059, "spearman": 0.026, "verdict": "STRONG_ORTHO"},
+      "vs_WT009_BAB":       {"pearson":  0.107, "spearman": 0.084, "verdict": "STRONG_ORTHO"},
+      "vs_Hybrid_M04_M01":  {"pearson":  0.111, "spearman": 0.161, "verdict": "STRONG_ORTHO"}
+    },
+    "all_strong_ortho": true,
+    "interpretation": "Atilgan left-tail x momentum signal is structurally orthogonal to existing 3 sources (Hybrid 70/15/15 STR_1715+TSMOM+KR_10y, BAB, R14_DUVOL skewness). Genuinely new alpha dimension if effect persists post-2027."
+  },
+  "candidates_method_shopping_log": {
+    "candidates_tried": 5,
+    "candidates": [
+      {"name": "c1_var",    "icir": 0.1579, "harvey_t_NW_corrected": 2.396, "selected": false},
+      {"name": "c2_mom",    "icir": 0.0850, "harvey_t_NW_corrected": 1.389, "selected": false},
+      {"name": "c3_mult",   "icir": -0.0302,"harvey_t_NW_corrected": -0.456,"selected": false, "note": "INVERSE-signed in KR — empirical disproof of multiplicative form"},
+      {"name": "c4_rcomp",  "icir": 0.1844, "harvey_t_NW_corrected": 2.861, "selected": true,  "note": "Highest dense ICIR; rank-composite robust to outliers + non-linear interaction"},
+      {"name": "c5_corner", "icir": 0.1805, "harvey_t_NW_corrected": 2.717, "selected": false, "note": "Sparse 3-value signal; retained as Atilgan corner diagnostic only"}
+    ]
+  },
+  "pit_compliance": {
+    "C1_no_full_sample":     "PASS",
+    "C2_no_same_day_circular":"PASS",
+    "C9_dd_vt_lag":          "N/A",
+    "C10_liquidity_t1_lag":  "PASS — fixed 2026-05-08 (Codex C5 finding)",
+    "C13_no_negate_pre":     "PASS — Z_Score_Aligned via load_month_factors expanding-window IC sign auto",
+    "C14_ic_usable_date":    "PASS — Usable_Date <= sig_date enforcement (L-168)",
+    "C15_no_direct_parquet": "PASS — fixed 2026-05-08 (Codex C6 finding)"
+  },
+  "ax_compliance_summary": {
+    "AX-001_v2": "STRONG_DEFENSIVE_CHARACTERISTIC (ratio +17.9). Risk Agent crisis_alpha + Core MDD audit pending.",
+    "AX-002": "PASS (PIT C1-C15 all PASS post-corrections)",
+    "AX-003_4_5": "N/A (new factor family Tail_Risk x Momentum, not value/quality/defense)",
+    "AX-007": "DEFERRED (Discovery; multi-sleeve combine via Risk + Optimizer downstream)",
+    "AX-008": "1/3 (alpha layer only; Forge replication + Architect verification pending)"
+  },
+  "codex_round_1_outcome": {
+    "stance": "REJECT",
+    "concerns_count": 7,
+    "high_severity": 3,
+    "medium_severity": 4,
+    "low_severity": 0,
+    "high_resolved": 1,
+    "high_partial": 1,
+    "high_unresolved_intrinsic": 1,
+    "medium_resolved": 4,
+    "math_bugs_fixed": 1,
+    "pit_violations_fixed": 2,
+    "challenge_note_path": "qepm/mailbox/worktask/WT-D20260508_013/challenge_note.md"
+  },
+  "alpha_agent_final_stance": "APPROVE_CONDITIONAL_DIVERSIFIER",
+  "alpha_agent_summary_count_pass": {
+    "full_panel_5_5_core":      "1 of 5 PASS (subperiod sign only); 4 of 5 FAIL strict",
+    "full_panel_8_supplementary":"5 of 5 PASS (decile mono + sector retention + turnover + ADV + AX-001 v2)",
+    "recent_60m_3_3_core":      "3 of 3 PASS (rank_ic + ICIR + corrected Harvey-t)"
+  },
+  "graduation_decision_basis": "Strict full-panel 5/5 graduation FAILS at 4 of 5 core gates after honest correction (Harvey-t formula bug fix). Reframe as DIVERSIFIER role candidate. Final admission decision deferred to Risk + Forge + Architect downstream verification per Charter v1.7 Role Card 4 conditional path. If user requires full-panel strict 5/5 PASS as hard threshold, decline graduation at this stage. If recent-regime 3/3 + defensive feature acceptable, conditional admit pathway.",
+  "next_agent": "risk-research"
+}

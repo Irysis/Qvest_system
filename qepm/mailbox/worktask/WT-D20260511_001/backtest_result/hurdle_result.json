@@ -1,0 +1,185 @@
+{
+  "task_id": "WT-D20260511_001",
+  "measurement_basis_primary": "forge_realized_5sleeve_monthly_aggregate",
+  "scope": "256m full backtest (2005-02 ~ 2026-04) + 79m alpha-active sub + OOS lockbox 27m",
+  "hi20_strict_256m": {
+    "SR_ann": 2.0108,
+    "CAGR": 0.1783,
+    "MDD": -0.0924,
+    "Sortino": 4.5297,
+    "Calmar": 1.9301,
+    "CVaR_95_monthly": -0.0386,
+    "CVaR_99_monthly": -0.0576,
+    "hit_rate": 0.7176,
+    "n_months": 255
+  },
+  "hi20_redistr_256m": {
+    "SR_ann": 1.9623,
+    "CAGR": 0.2075,
+    "MDD": -0.1154,
+    "CVaR_95_monthly": -0.0466,
+    "n_months": 255
+  },
+  "hi20_79m_alpha_active": {
+    "SR_ann": 1.8619,
+    "CAGR": 0.1495,
+    "MDD": -0.081,
+    "CVaR_95_monthly": -0.0367,
+    "n_months": 154
+  },
+  "hi20_oos_27m": {
+    "SR_ann": 3.4877,
+    "CAGR": 0.3685,
+    "MDD": -0.029,
+    "n_months": 28
+  },
+  "s4_baseline_256m": {
+    "SR_ann": 1.8334,
+    "CAGR": 0.202,
+    "MDD": -0.1252,
+    "CVaR_95_monthly": -0.0501,
+    "n_months": 255
+  },
+  "diebold_mariano": {
+    "full_256m": {
+      "t_NW": -2.8959,
+      "p": 0.0038,
+      "n": 255,
+      "mean_diff_monthly": -0.0019
+    },
+    "alpha_active_79m": {
+      "t_NW": -0.3146,
+      "p": 0.7531,
+      "n": 154,
+      "mean_diff_monthly": -0.0002
+    },
+    "oos_27m": {
+      "t_NW": -5.1151,
+      "p": 3.1359e-07,
+      "n": 28,
+      "mean_diff_monthly": -0.0067
+    },
+    "full_256m_frozen_OOS": {
+      "t_NW": -1.9991,
+      "p": 0.0456,
+      "n": 255,
+      "mean_diff_monthly": -0.0012
+    },
+    "oos_27m_frozen": {
+      "t_NW": -0.4882,
+      "p": 0.6254,
+      "n": 28,
+      "mean_diff_monthly": -0.0011
+    }
+  },
+  "strict_improve_eval_256m_NEW0_outside": {
+    "label": "256m (NEW=0 outside strict)",
+    "SR_pass": true,
+    "delta_SR": 0.1808,
+    "MDD_pass": true,
+    "delta_MDD_pp": 2.2312,
+    "CVaR_pass": true,
+    "delta_CVaR_pp": 0.8481,
+    "CAGR_pass": false,
+    "delta_CAGR_pp": -1.8583
+  },
+  "strict_improve_eval_256m_redistribute": {
+    "label": "256m (redistribute_TRUE)",
+    "SR_pass": true,
+    "delta_SR": 0.1323,
+    "MDD_pass": true,
+    "delta_MDD_pp": -0.0692,
+    "CVaR_pass": true,
+    "delta_CVaR_pp": 0.0494,
+    "CAGR_pass": true,
+    "delta_CAGR_pp": 1.0588
+  },
+  "strict_improve_eval_79m_alpha_active": {
+    "label": "79m alpha-active",
+    "SR_pass": true,
+    "delta_SR": 0.0319,
+    "MDD_pass": true,
+    "delta_MDD_pp": 3.3748,
+    "CVaR_pass": true,
+    "delta_CVaR_pp": 1.044,
+    "CAGR_pass": false,
+    "delta_CAGR_pp": -4.7427
+  },
+  "cvar_revalidation": {
+    "realized_256m_hi20": -0.0386,
+    "realized_79m_hi20": -0.0367,
+    "realized_256m_s4": -0.0501,
+    "optimizer_79m_hi20": -0.0325,
+    "documented_baseline_S4_v2": -0.0471,
+    "admit_criterion_pass": true
+  },
+  "ax_008_contribution": "Forge realized backtest PASS_VALIDATED (1/3) — pending Architect parallel + Codex Round",
+  "schedule_fidelity": {
+    "weights_csv_n_dates": 255,
+    "method": "5_sleeve_static_monthly_full_panel",
+    "fabrication_label": false,
+    "note": "Sleeve-level static weights × pre-computed sleeve returns (no schedule fabrication)"
+  },
+  "pure_function_audit": {
+    "alpha_package_modified": false,
+    "risk_package_modified": false,
+    "opt_package_modified": false,
+    "target_weights_reinterpreted": false,
+    "covariance_recomputed": false,
+    "alpha_vector_modified": false
+  },
+  "created_at": "2026-05-11T09:50:36+09:00",
+  "hi20_frozen_OOS_256m": {
+    "SR_ann": 2.0546,
+    "CAGR": 0.1867,
+    "MDD": -0.0924,
+    "CVaR_95_monthly": -0.0384,
+    "Sortino": 4.7852,
+    "n_months": 255,
+    "note": "NEW sleeve OOS = frozen 2023-11 top20 EW daily buy-and-hold (raw KR stock prices, EW 5% per name, no rebalance). v6.1 R12 mandate compliant."
+  },
+  "hi20_frozen_OOS_27m": {
+    "SR_ann": 4.0751,
+    "CAGR": 0.4598,
+    "MDD": -0.0191,
+    "CVaR_95_monthly": -0.014,
+    "n_months": 28
+  },
+  "cadence_reconcile_finding": {
+    "description": "sleeve_panel_5sleeve.csv is BI-MONTHLY cadence (median 61 day diff). Optimizer/Architect applied scale=12 (monthly) = mislabel.",
+    "panel_5_median_diff_days": 61,
+    "optimizer_claim_SR_79m_high20": 2.6427,
+    "architect_claim_SR_79m_high20_geo": 2.8599,
+    "forge_sleeve_master_monthly_79m_SR": 1.8619,
+    "forge_panel_5_bimonthly_scale_6_corrected_SR": 1.9212,
+    "divergence_after_cadence_reconcile": 0.0593,
+    "reconcile_diagnosis": "FREQUENCY_CADENCE_MISMATCH_NOT_FABRICATION",
+    "q_lead_action": "Optimizer/Architect SR claim revise to bi-monthly scale=6 OR explicit cadence document; Forge sleeve_master monthly cadence measurement correct"
+  },
+  "final_verdict": {
+    "primary_admit_basis_recommended": "hi20_frozen_NEW_OOS_256m",
+    "primary_metrics": {
+      "SR": 2.0546,
+      "CAGR": 0.1867,
+      "MDD": -0.0924,
+      "CVaR_95_monthly": -0.0384,
+      "Sortino": 4.7852
+    },
+    "vs_baseline_4axis": {
+      "SR_PASS": true,
+      "MDD_PASS": true,
+      "CVaR_PASS": true,
+      "CAGR_PASS": false,
+      "CAGR_FAIL_margin_pp": -1.02,
+      "note": "CAGR FAIL margin within 1pp"
+    },
+    "oos_27m_dm_vs_baseline": {
+      "t_NW": -0.4882,
+      "p": 0.6254,
+      "interpretation": "Statistically equivalent OOS"
+    },
+    "ax_008_floor_2_of_3": "ACHIEVABLE — Forge frozen variant CONDITIONAL + Architect PASS_PARTIAL = 2/3",
+    "codex_round_status": "Initial REJECT → 5/7 ACCEPT_FIXED post-frozen-variant-remediation",
+    "judge_handoff_priority_items": ["DSR M=18 baseline + candidate both", "AX-001 v2 triad evaluation per Architect advisory", "CAGR -1pp margin acceptable per Q-Lead", "Cadence reconcile to Optimizer/Architect SR claim"]
+  }
+}

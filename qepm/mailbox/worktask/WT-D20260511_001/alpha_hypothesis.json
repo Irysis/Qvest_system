@@ -1,0 +1,105 @@
+{
+  "task_id": "WT-D20260511_001",
+  "step_0_hypothesis_discovery": {
+    "generated_at": "2026-05-11T08:00:00+09:00",
+    "agent": "alpha-research-WT-D20260511_001 / Opus_4_7_1M",
+    "context_pre_research": {
+      "current_book_state": {
+        "version": "v1.5.0",
+        "n_admitted": 4,
+        "admitted_ids": [
+          "STR_1715_AR_threshold_overlay_PG2_v2_alpha_2026_04 (50%)",
+          "TSMOM_8_ETF_rotation_PG2_no_KR_bond_overlap (25%)",
+          "KR_10y_bond_ETF_PG2 (20%)",
+          "CASH_KRW_PG2_S4 (5%)"
+        ],
+        "baseline_metrics_S4_v2_inherited_v1_4_0": {
+          "sharpe": 1.665,
+          "cagr": 0.264,
+          "mdd": -0.166
+        },
+        "target_profile": {"sharpe": 2.0, "cagr": 0.16, "mdd": -0.25},
+        "gap": "SR +0.335 (P0). CAGR/MDD target already cleared."
+      },
+      "previous_5_path_failures_L_285_summary": {
+        "context": "WT-D20260508_009~013 + WT_004 + WT_010 + WT_011 + WT_012 + WT_013 모두 admit defer",
+        "patterns": [
+          "D (BAB) single sleeve EXCLUSION standalone — IC marginal",
+          "Skewness (R14_DUVOL) cross-section ML — overfitting",
+          "Option chain VRP — KR option data 부재 미해소",
+          "Tail-risk regime (option-implied) — design only, architect 후속",
+          "Atilgan 2020 left-tail momentum — KR 친순환 PRO-CYCLIC -132pp"
+        ],
+        "lesson": "5 path cross-section single-factor saturation 입증. 우회 전략 필요."
+      },
+      "previous_cash_replacement_audit_WT-S20260504_008": {
+        "7_candidates_evaluated": ["KR_10y (admit)", "CD91 (secondary)", "USD (cost fail)", "Gold (cost fail)", "CTA (KR no ETF)", "Lowvol (crisis fail)", "VKOSPI (delisted)"]
+      }
+    },
+    "candidate_hypotheses_generated": [
+      {
+        "name": "A. Macro Residual Cross-section (Path 1 — 5-path 권고 1순위)",
+        "mechanism": "ECOS 한국 거시 변화 (yield curve slope, credit spread, call rate Δ) × 종목 cross-section rolling β residual",
+        "expected_orthogonality_to_S4_v2": "0.10~0.25 (low, different risk premium category)",
+        "academic_anchors": [
+          "Cooper-Gulen-Schill 2008 RFS 'Asset Growth × macro state'",
+          "Belo-Lin-Vitorino 2014 RFS 'Brand capital macro-conditional'",
+          "Asness-Moskowitz-Pedersen 2013 JF 'Value/momentum everywhere (macro env)'",
+          "이상혁 외 2018 KFA 한국 거시 충격 cross-section",
+          "Lee-Ohk 2014 KR macro factor pricing"
+        ],
+        "L_codes": "L-454 (한국 internal > FRED), L-280/281 (cross-section orthogonality), L-484 (score-blend OK)",
+        "score": "27/30 (5 path 비교 1순위)",
+        "result_after_test": "HONEST FAIL — IC 0.004, NW-t 0.73 — univariate β regression too weak"
+      },
+      {
+        "name": "B. Multi-axis Volatility/Skewness Composite (D-family)",
+        "mechanism": "KR equity universe cross-section 4 axis (D43_Skewness + D05_MaxRet + D41_Vol_of_Vol + D58_Vol_Asymmetry) sector-neutral composite",
+        "expected_orthogonality_to_S4_v2": "0.05~0.20 (low, D-family vs STR_1715의 Q/C-family)",
+        "academic_anchors": [
+          "Boyer-Mitton-Vorkink 2010 RFS 'Expected Idiosyncratic Skewness'",
+          "Baltussen-VanBekkum-VanderGrient 2018 RFS 'Unknown Unknowns: Vol-of-Vol'",
+          "Ang-Chen-Xing 2006 RFS 'Downside Risk'",
+          "Bali-Cakici-Whitelaw 2011 JFE 'Maxing Out: Stocks as Lotteries'"
+        ],
+        "L_codes": "L-285 (5 path saturation), L-484 (score blend OK), L-119 (정적 블렌드 alpha 희석)",
+        "score": "24/30 (factor diversity 부족 risk)",
+        "result_after_iteration": "SELECTED 3-axis (D05 excluded). IC 0.074 / ICIR 0.87 / NW-t 8.62 / cor S4 -0.135 / cor crisis -0.338"
+      },
+      {
+        "name": "C. KR Foreign Investor Flow Residualized (INV13)",
+        "mechanism": "INV13_Foreign_Resid_Individual 21/63/126d × cross-section ranking",
+        "expected_orthogonality_to_S4_v2": "0.05~0.20 (low, flow vs fundamental)",
+        "academic_anchors": "Choe-Kho-Stulz 2005 JFE, 김민기 외 2017 KFA",
+        "score": "22/30 (cross-section 적용 baseline 부족)",
+        "result": "BACKLOG for next cycle"
+      },
+      {
+        "name": "D. Defensive Sector ETF (health/staples)",
+        "mechanism": "Single ETF — KODEX 헬스케어 or 필수소비재",
+        "expected_orthogonality_to_S4_v2": "0.20~0.40 (medium, equity exposure overlap)",
+        "L_codes": "WT-S20260504_008 7 candidate audit 참조",
+        "score": "18/30 (single ETF alpha 부족)",
+        "result": "REJECT — Q-Lead WT-S20260504_008에서 이미 KR_10y 채택, 추가 ETF는 cor 위반 위험"
+      }
+    ],
+    "selected_hypothesis": {
+      "name": "B. Multi-axis Volatility/Skewness Composite (D43+D41+D58 sector-neutral, D05 excluded)",
+      "selection_reason": [
+        "5 path saturation 후 우회 (cross-section vol/skew 미시도)",
+        "STR_1715 main factor (Q07/C-family)와 직교성 강함 (post-neutralization retention 102%)",
+        "cor S4 v2 baseline -0.135 (PASS <0.30), crisis -0.338 (강한 hedge)",
+        "Harvey t-pass count 4/4 (composite + 3 sub-factors all >3.0)",
+        "Subperiod stability 1.0 (3 periods all positive), Monotonicity 0.988",
+        "Sector-neutral + expanding direction-align PIT-strict + 36m burn-in"
+      ],
+      "alternative_kept_for_next_cycle": "A (macro residual), C (foreign flow), B-4axis with D05 (re-include if Codex Round critique 정합)"
+    },
+    "honest_concerns": [
+      "Turnover 556% annual ≫ 300% target — Optimizer 단계 turnover penalty 필수",
+      "Top20 EW SR 1.749 / ret_ann 50.65% — 학술 baseline 대비 강함 (small/mid-cap residual exposure 가능성)",
+      "AX-001 v2 ratio 1.215 (bad > normal) — anomaly (통상 0.5~1.0)",
+      "3-axis 모두 D-family → factor diversity 부족 (mitigate: standalone admit 아닌 S4 baseline 결합)"
+    ]
+  }
+}

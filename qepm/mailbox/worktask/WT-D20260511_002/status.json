@@ -1,0 +1,76 @@
+{
+  "task_id": "WT-D20260511_002",
+  "current_phase": "FORGE_DONE",
+  "updated_at": "2026-05-11T08:50:00+0900",
+  "blocker": null,
+  "phase_history": [
+    {"phase": "SPEC_APPROVED", "ts": "2026-05-11T07:33:09+0900"},
+    {"phase": "ALPHA_DONE", "ts": "2026-05-11T07:36:00+0900", "note": "inherit reference per codex_critic_skip_waiver"},
+    {"phase": "RISK_DONE", "ts": "2026-05-11T07:55:00+0900", "note": "Codex critic round REVISE — 3 HIGH escalated to Q-Lead (C2 4-sleeve singular / C3 CVaR cap / C7 alpha cert). 도훈 mandate 3건 해결."},
+    {"phase": "OPTIMIZER_DONE", "ts": "2026-05-11T08:35:00+0900", "note": "16 dynamic candidate 비교, DM test ALL p > 0.05. R12 No Silent Override 정합 static retain. Codex critic round REJECT → 8 concerns ACCEPT/PARTIAL/REBUTTAL 분류 후 final 반영."},
+    {"phase": "FORGE_DONE", "ts": "2026-05-11T08:50:00+0900", "note": "Pure Function 3-package integration. PerformanceAnalytics::Return.portfolio sleeve-aggregate backtest 256m. Static SR_net=1.8300 / MDD=-11.47% / CAGR=19.69% / Turnover_yr=15.03%. 2nd dynamic SR_net=1.8436 / Memmel DM p=0.7278 (STATISTICALLY_INDISTINGUISHABLE) → static retain consistent with Optimizer. Lockbox extension 28m SR 3.6617. Hurdle Grade A. Codex critic round REJECT → 9 concerns (4 REBUTTAL + 4 PARTIAL ACCEPT + 1 ACCEPT)."}
+  ],
+  "next_agent": "judge",
+  "next_agent_inputs": {
+    "forge_package": "qepm/mailbox/worktask/WT-D20260511_002/forge_package.json",
+    "forge_supplement": "qepm/mailbox/worktask/WT-D20260511_002/forge_supplement.json",
+    "backtest_summary": "qepm/mailbox/worktask/WT-D20260511_002/judge_ready/backtest_summary.json",
+    "hurdle_result": "qepm/mailbox/worktask/WT-D20260511_002/backtest_result/hurdle_result.json",
+    "bt_result_lite_rds": "qepm/mailbox/worktask/WT-D20260511_002/backtest_result/bt_result_lite.rds",
+    "charts_dir": "qepm/mailbox/worktask/WT-D20260511_002/output/",
+    "challenge_note": "qepm/mailbox/worktask/WT-D20260511_002/challenge_note.md (alpha + risk + optimizer + forge sections)",
+    "judge_handoff_action": "Gate 0~18 + PIT 재검증 + Architect verification (AX-008 3/3 완성 시도) + admission 검토"
+  },
+  "method_selected": "01_static_baseline_retain",
+  "method_2nd_candidate": "09_regime_crisis_aggr",
+  "method_3rd_candidate": "07_regime_crisis_mild",
+  "metrics_expected": {
+    "SR_net_256m": 1.8603,
+    "CAGR_256m": 0.2365,
+    "MDD_256m": -0.1523,
+    "CVaR_95_monthly": 0.0551,
+    "bootstrap_SR_95CI": [1.2574, 2.1539]
+  },
+  "codex_critic_optimizer": {
+    "stance": "REJECT",
+    "veto_flag": false,
+    "concerns_count": 8,
+    "concerns_addressed_in_final": 8,
+    "ax_008_status": "2/3 (Optimizer + Codex). Forge stage Architect 추가 시 3/3."
+  },
+  "codex_critic_forge": {
+    "stance": "REJECT",
+    "veto_flag": false,
+    "concerns_count": 9,
+    "concerns_addressed_in_final": 9,
+    "disposition_breakdown": "4 REBUTTAL (C1/C2/C5/C7) + 4 PARTIAL ACCEPT (C3/C4/C6/C9) + 1 ACCEPT (C8)",
+    "ax_008_status": "2/3 (Forge + Optimizer). Architect verification deferred."
+  },
+  "forge_realized_metrics": {
+    "method_selected": "01_static_baseline_retain",
+    "SR_net_full_256m": 1.8300,
+    "CAGR_full_256m": 0.1969,
+    "MDD_full_256m": -0.1147,
+    "Sortino_full_256m": 4.0252,
+    "Calmar_full_256m": 1.7162,
+    "CVaR_95_monthly": -0.0471,
+    "Turnover_yr": 0.1503,
+    "SR_net_pre_lockbox_226m": 1.6206,
+    "SR_net_lockbox_extension_29m": 3.6617,
+    "MDD_lockbox_extension": -0.0286,
+    "memmel_dm_test_2nd_vs_baseline_p": 0.7278,
+    "memmel_dm_conclusion": "STATISTICALLY_INDISTINGUISHABLE",
+    "hurdle_grade": "A",
+    "hurdle_hard_fail": false,
+    "schedule_density_ratio": 1.0,
+    "schedule_density_pass": true,
+    "pure_function_violation": false,
+    "vs_optimizer_expected_divergence_pp": 0.0303,
+    "vs_optimizer_expected_diagnosis": "NEGLIGIBLE"
+  },
+  "q_lead_escalation": {
+    "open_count": 0,
+    "previous_count": 3,
+    "resolution": "All 3 risk-phase HIGH (C2 covariance variant / C3 CVaR cap / C7 alpha cert) resolved by 도훈 mandate prior to optimizer entry. Optimizer codex REJECT 8 concerns all addressed in final via challenge_note + final package revision."
+  }
+}

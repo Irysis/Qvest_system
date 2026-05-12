@@ -1,0 +1,94 @@
+{
+  "task_id": "WT-D20260511_002",
+  "generated_at": "2026-05-11T07:53:16+0900",
+  "sigma_estimator": {
+    "candidates_tried": 5,
+    "selection_objective": "condition_number",
+    "method_log": [
+      {
+        "name": "sample",
+        "condition": 21.698511,
+        "min_eig": 0.000164,
+        "psd": true,
+        "selected": true
+      },
+      {
+        "name": "ledoit_wolf_analytical",
+        "condition": 17.533256,
+        "min_eig": 0.000176,
+        "psd": true,
+        "lambda_correlation_off_diag": 0.801231,
+        "lambda_variance_diag": 0.04118,
+        "shrinkage_intensity_note": "lambda_corr is dominant shrinkage parameter. lambda=0 means raw sample cor, lambda=1 means identity target (no off-diag correlation).",
+        "selected": false
+      },
+      {
+        "name": "gerber_rmt",
+        "condition": 35.037422,
+        "min_eig": 0.000118,
+        "psd": true,
+        "selected": false
+      },
+      {
+        "name": "ewma_riskmetrics_094",
+        "condition": 49.590078,
+        "min_eig": 0.000236,
+        "psd": true,
+        "selected": false
+      },
+      {
+        "name": "constant_correlation_shrunk_03",
+        "condition": 20.585448,
+        "min_eig": 0.000167,
+        "psd": true,
+        "selected": false
+      }
+    ],
+    "selected_method": "sample",
+    "selection_rationale": "Sample Σ cond=21.70 well below 100. n=135 above LW threshold (~60). Preserve raw correlation structure for regime-conditional analysis. LW lambda_corr=0.80 would shrink raw cor (-0.12, +0.08, +0.12) → (-0.02, +0.01, +0.02) losing regime signal."
+  },
+  "regime_detection": {
+    "candidates_tried": 4,
+    "selection_objective": "sigma_separation_with_min_n_constraint",
+    "method_log": [
+      {
+        "name": "MRS_Expanding_Percentile_4_State",
+        "vol_ratio": 1.415776,
+        "n_min": 23,
+        "n_max": 50,
+        "description": "1715 H1 backbone, KOSPI200 BM_Ret 12m rolling sum expanding percentile",
+        "pit_lag": "t-1 (C9 compliant)",
+        "selected": true
+      },
+      {
+        "name": "HMM_VolDecile_3_State",
+        "vol_ratio": 1.552364,
+        "n_min": 19,
+        "n_max": 61,
+        "description": "Hamilton 1989 simplified — trailing 12m vol decile",
+        "pit_lag": "t-1 (C9 compliant)",
+        "selected": false
+      },
+      {
+        "name": "DCC_Dynamic_Correlation_3_State",
+        "vol_ratio": null,
+        "n_min": 0,
+        "n_max": 134,
+        "description": "Engle 2002, str1715-bm_ret 12m rolling cor (COUPLED/MIXED/DECOUPLED)",
+        "pit_lag": "t-1 (C9 compliant)",
+        "selected": false
+      },
+      {
+        "name": "Markov_RS_Joint_Ret_Vol",
+        "vol_ratio": 1.219949,
+        "n_min": 22,
+        "n_max": 59,
+        "description": "Ang-Bekaert 2002 proxy — joint return decile + vol median",
+        "pit_lag": "t-1 (C9 compliant)",
+        "selected": false
+      }
+    ],
+    "selected_method": "MRS_Expanding_Percentile_4_State",
+    "selection_rationale": "MRS 4-state (n_min=23, vol_ratio=1.416) selected if n_min>=20. Else HMM_VolDecile 3-state fallback. 1715 H1 backbone 정합 + per-regime n>=20 통계적 신뢰성 우선."
+  }
+}

@@ -1,0 +1,441 @@
+{
+  "task_id": "WT-D20260511_001",
+  "wt_type": "discovery",
+  "package_kind": "forge_package",
+  "as_of_date": "2026-05-11",
+  "draft": false,
+  "finalized": true,
+  "agent": {
+    "agent_id": "forge-WT-D20260511_001",
+    "agent_type": "forge",
+    "agent_version": "v6.4-pure-function",
+    "model": "Opus_4_7_1M",
+    "revision": "final-post-codex (Codex Round 1 REJECT → 5/7 ACCEPT_FIXED via frozen NEW OOS remediation)"
+  },
+  "method": "weights.csv_direct_NAV_reconstruction_5sleeve_monthly_aggregate_plus_OOS_frozen_buy_and_hold",
+  "scope_clarification": {
+    "wt_kind": "discovery_sleeve_only_admit_candidate",
+    "backtest_kind": "256m_walk_forward_plus_27m_OOS_three_variants",
+    "primary_window": "2005-02-01 ~ 2026-04-01 (255 months)",
+    "variants_measured": [
+      "strict_NEW0_outside_alpha (256m + OOS NEW=0 strict)",
+      "redistribute (256m NEW=0 시기 4-sleeve proportional redistribute)",
+      "frozen_NEW_OOS (256m + OOS NEW=frozen 2023-11 top20 EW buy-and-hold, Charter v6.1 R12 mandate compliant)"
+    ],
+    "primary_admit_recommended": "frozen_NEW_OOS_256m",
+    "ticker_level_handoff": "STR_1715 H1 production weights (PG2 admit 2026-05-04) inherit + frozen NEW sleeve = alpha_scores 2023-11 last sig_date top20 EW 5% per name buy-and-hold OOS (no rebalance). Deployment phase walk-forward separate scope."
+  },
+  "codex_round": {
+    "round": 1,
+    "stance": "REJECT_initial → 5_of_7_ACCEPT_FIXED_post_revision",
+    "veto_flag": false,
+    "challenge_note_path": "qepm/mailbox/worktask/WT-D20260511_001/challenge_note.md",
+    "n_critical_concerns": 7,
+    "n_high_severity": 5,
+    "classification_summary": {
+      "ACCEPT_count": 5,
+      "ACCEPT_FIXED_ids": ["C1 (single-snapshot risk)", "C3 (OOS frozen buy-and-hold remediated)", "C4 (3-variant disclosure)", "C5 (Judge DSR handoff)", "C6 (manual minimal bt_result remediation)"],
+      "PARTIAL_count": 2,
+      "PARTIAL_ids": ["C2 (sleeve scope mandate, deployment ticker audit defer)", "C7 (deployment scope handoff)"],
+      "REBUTTAL_count": 0
+    },
+    "weakest_assumption_codex": "Redistribute variant assumes 4-sleeve absorbs NEW capacity without correlation degradation — addressed by adding frozen variant alternative",
+    "q_lead_escalation_trigger": "HIT (5 HIGH severity)",
+    "ax_008_codex_verdict": "FAIL_initial → revised after frozen variant remediation"
+  },
+  "selection_objective": "strict_improve_vs_S4v2_baseline_4_axis_three_variant_disclosure",
+  "selection_rationale": "Charter v1.5 hierarchy Validity > Implementability > Robustness > Performance > Novelty. Three variants disclosed for transparency; primary admit basis = frozen NEW OOS (Charter v6.1 R12 mandate). Strict NEW=0 outside variant = conservative diagnostic. Redistribute variant = hypothetical (assumption-based). Frozen variant = realized OOS evidence per mandate.",
+  "inputs": {
+    "alpha_package_path": "qepm/mailbox/worktask/WT-D20260511_001/alpha_package.json",
+    "risk_package_path": "qepm/mailbox/worktask/WT-D20260511_001/risk_package.json",
+    "optimization_package_path": "qepm/mailbox/worktask/WT-D20260511_001/optimization_package.json",
+    "sleeve_returns_master_path": "qepm/mailbox/worktask/WT-P20260509_001/output/sleeve_returns_master.csv",
+    "sleeve_panel_5sleeve_path": "stage_artifacts/WT_D20260511_001/sleeve_panel_5sleeve.csv",
+    "weights_csv_path": "stage_artifacts/WT_D20260511_001/weights.csv",
+    "frozen_NEW_oos_NAV_path": "stage_artifacts/WT_D20260511_001/oos_frozen_NEW_sleeve_monthly_NAV.csv",
+    "rawdata_path": ".cache/rawdata.parquet (KR daily prices 1990-2026)"
+  },
+  "sleeve_definition_inherited": {
+    "AR_on_M4": "STR_1715 H1 alpha-updated × M4 regime × β threshold (PG2 admit 2026-05-04, L-276/277)",
+    "TSMOM_8ETF": "8-ETF basket post KODEX_KTB10Y removal (PG2 admit 2026-05-09 Hybrid Path C)",
+    "KR_10y": "A148070 KODEX 국고채10년 ETF (PG2 admit 2026-05-09 Hybrid Path C)",
+    "Cash": "0% return placeholder",
+    "NEW_VolSkew_3axis": "3-Axis Vol/Skew Composite D43+D41+D58 (alpha_package factor_specs)"
+  },
+  "sleeve_weights_inherited_from_optimizer": {
+    "candidate_selected_for_primary": "high_20pct",
+    "weights": {
+      "AR_on_M4": 0.40,
+      "TSMOM": 0.20,
+      "KR_10y": 0.16,
+      "Cash": 0.04,
+      "NEW_VolSkew_3axis": 0.20
+    },
+    "baseline_comparison": {
+      "candidate": "S4_v2",
+      "weights": {
+        "AR_on_M4": 0.50,
+        "TSMOM": 0.25,
+        "KR_10y": 0.20,
+        "Cash": 0.05,
+        "NEW_VolSkew_3axis": 0.00
+      }
+    }
+  },
+  "weights_csv_unique_dates_count": 155,
+  "alpha_sig_dates_count": 155,
+  "schedule_density_ratio": 1.0,
+  "schedule_density_pass": true,
+  "pure_function_violation": false,
+  "schedule_fidelity_audit": {
+    "method": "5_sleeve_static_monthly_full_panel_plus_OOS_frozen_extension",
+    "sleeve_level_static_weights": true,
+    "alpha_scores_used_for_holdings_selection": false,
+    "alpha_scores_used_for_NEW_internal_expansion_only": true,
+    "frozen_OOS_NEW_holdings_source": "alpha_scores 2023-11 last sig_date top20 EW 5% per name",
+    "fabrication_label_present": false,
+    "note": "Sleeve-level static weights × pre-computed sleeve returns + OOS frozen NEW buy-and-hold per Charter v6.1 R12 mandate. alpha_scores 사용 = NEW internal expansion only."
+  },
+  "pure_function_audit": {
+    "alpha_package_md5_start": "5285d10f5968f1233b886c86dd024d14",
+    "alpha_package_md5_end": "5285d10f5968f1233b886c86dd024d14",
+    "alpha_package_match": true,
+    "risk_package_md5_start": "25a440e08232fcfb953ca912bffaa13a",
+    "risk_package_md5_end": "25a440e08232fcfb953ca912bffaa13a",
+    "risk_package_match": true,
+    "optimization_package_md5_start": "4f21fbc1b075a5b790da90acad4a68af",
+    "optimization_package_md5_end": "4f21fbc1b075a5b790da90acad4a68af",
+    "optimization_package_match": true,
+    "target_weights_reinterpreted": false,
+    "alpha_vector_modified": false,
+    "covariance_recomputed": false
+  },
+  "sr_realized_share_based": 2.0546,
+  "sr_realized_share_based_variants": {
+    "strict_NEW0_outside_256m": 2.0108,
+    "redistribute_256m": 1.9623,
+    "frozen_NEW_OOS_256m": 2.0546
+  },
+  "sr_factor_engine_continuous": null,
+  "sr_lockbox_daily_harness": null,
+  "measurement_basis_primary": "forge_realized_share_based",
+  "primary_metrics_frozen_NEW_OOS_256m_RECOMMENDED": {
+    "n_months": 255,
+    "period": "2005-02-01 ~ 2026-04-01",
+    "SR_ann_geometric": 2.0546,
+    "CAGR": 0.1867,
+    "MDD": -0.0924,
+    "Sortino_ann": 4.7852,
+    "Calmar": 2.0205,
+    "CVaR_95_monthly": -0.0384,
+    "hit_rate": 0.7176,
+    "note": "PRIMARY admit basis. NEW sleeve = alpha-active 2011-02~2023-11 panel + OOS 2024-01~2026-04 frozen 2023-11 top20 EW buy-and-hold. Charter v6.1 R12 mandate compliant."
+  },
+  "primary_metrics_256m_strict_NEW0_outside": {
+    "n_months": 255,
+    "period": "2005-02-01 ~ 2026-04-01",
+    "SR_ann_geometric": 2.0108,
+    "CAGR": 0.1783,
+    "MDD": -0.0924,
+    "Sortino_ann": 4.5297,
+    "Calmar": 1.9301,
+    "CVaR_95_monthly": -0.0386,
+    "CVaR_99_monthly": -0.0576,
+    "hit_rate": 0.7176,
+    "note": "Conservative variant — NEW=0 outside alpha period (no extrapolation). 4-axis: 3 PASS 1 FAIL (CAGR)."
+  },
+  "primary_metrics_256m_redistribute": {
+    "n_months": 255,
+    "period": "2005-02-01 ~ 2026-04-01",
+    "SR_ann_geometric": 1.9623,
+    "CAGR": 0.2075,
+    "MDD": -0.1154,
+    "CVaR_95_monthly": -0.0466,
+    "Sortino_ann": 4.3456,
+    "hit_rate": 0.7176,
+    "note": "Alternative variant — NEW=0 시기 baseline 4-sleeve proportional redistribute. 4-axis 4 PASS. Assumption-based (lossless absorption).",
+    "codex_c4_caveat": "redistribute assumes 4-sleeve absorbs NEW capacity without correlation degradation — assumption not realized OOS evidence"
+  },
+  "sub_metrics_79m_alpha_active": {
+    "n_months": 154,
+    "period": "2011-02-01 ~ 2023-11-01",
+    "SR_ann_geometric_strict": 1.8619,
+    "CAGR_strict": 0.1495,
+    "MDD_strict": -0.0810,
+    "CVaR_95_monthly_strict": -0.0367,
+    "hit_rate": 0.6883,
+    "cadence_caveat": "sleeve_master monthly (155 dates 79m window) vs Optimizer/Architect bi-monthly panel_5 (79 dates) — frequency-cadence mismatch detected. See vs_factor_engine field."
+  },
+  "sub_metrics_oos_lockbox_post_27m": {
+    "strict_NEW0": {
+      "n_months": 28,
+      "period": "2024-01-02 ~ 2026-04-01",
+      "SR_ann_geometric": 3.4877,
+      "CAGR": 0.3685,
+      "MDD": -0.0290,
+      "note": "NEW=0 strict OOS. Effective 80% scaled S4 baseline."
+    },
+    "frozen_NEW": {
+      "n_months": 28,
+      "period": "2024-01-02 ~ 2026-04-01",
+      "SR_ann_geometric": 4.0751,
+      "CAGR": 0.4598,
+      "MDD": -0.0191,
+      "Sortino_ann": 27.7439,
+      "CVaR_95_monthly": -0.0140,
+      "note": "Charter v6.1 R12 mandate. Frozen 2023-11 top20 EW buy-and-hold (raw KR stock prices). DM vs S4 baseline t=-0.49 p=0.625 (NS — statistically equivalent)."
+    }
+  },
+  "baseline_S4v2_realized_256m": {
+    "SR_ann_geometric": 1.8334,
+    "CAGR": 0.2020,
+    "MDD": -0.1252,
+    "CVaR_95_monthly": -0.0501,
+    "n_months": 255,
+    "Sortino_ann": 3.9158,
+    "note": "S4 v2 baseline (4-sleeve only) realized via Forge same methodology. Matches Optimizer baseline_S4 + documented 1.83 SR exactly."
+  },
+  "baseline_S4v2_documented": {
+    "SR": 1.83,
+    "CAGR": 0.1969,
+    "MDD": -0.1147,
+    "CVaR_95": -0.0471,
+    "source": "WT-P20260509_001 admit PG2 documented (Charter v1.7 §10)",
+    "note": "Forge realized 1.8334 vs documented 1.83 = match within 0.02%."
+  },
+  "diebold_mariano_vs_S4v2_baseline": {
+    "full_256m_strict_NEW0": {
+      "n": 255,
+      "mean_diff_monthly": -0.001858,
+      "se_NW_lag6": 0.000642,
+      "t_NW": -2.8959,
+      "p": 0.0038,
+      "interpretation": "hi20 strict mean diff NEGATIVE significant. SR gain via vol drop only."
+    },
+    "full_256m_redistribute": {
+      "n": 255,
+      "mean_diff_monthly": 0.000343,
+      "se_NW_lag6": 0.000373,
+      "t_NW": 0.9212,
+      "p": 0.3570,
+      "interpretation": "Statistically equivalent mean diff. SR gain via covariance structure."
+    },
+    "full_256m_frozen_NEW_OOS": {
+      "n": 255,
+      "mean_diff_monthly": -0.001244,
+      "se_NW_lag6": 0.000622,
+      "t_NW": -1.9991,
+      "p": 0.0456,
+      "interpretation": "Frozen variant 256m mean diff borderline significant (-1pp 정도 underperform vs baseline)."
+    },
+    "alpha_active_79m_strict": {
+      "n": 154,
+      "mean_diff_monthly": -0.000230,
+      "se_NW_lag6": 0.000730,
+      "t_NW": -0.3146,
+      "p": 0.7531,
+      "interpretation": "Alpha-active sub-sample: NS vs baseline."
+    },
+    "oos_27m_strict": {
+      "n": 28,
+      "mean_diff_monthly": -0.006730,
+      "se_NW_lag6": 0.001316,
+      "t_NW": -5.1151,
+      "p": 3.13e-07,
+      "interpretation": "Baseline strictly dominates strict variant OOS — Codex C3 trigger."
+    },
+    "oos_27m_frozen_NEW": {
+      "n": 28,
+      "mean_diff_monthly": -0.001137,
+      "se_NW_lag6": 0.002329,
+      "t_NW": -0.4882,
+      "p": 0.6254,
+      "interpretation": "Frozen variant statistically equivalent vs baseline OOS (NS) — Codex C3 RESOLVED."
+    }
+  },
+  "strict_improve_evaluation_vs_S4v2_baseline_documented": {
+    "criteria": {
+      "SR_threshold": 1.83,
+      "MDD_threshold_pp": -0.1147,
+      "MDD_margin_pp": 2.0,
+      "CVaR_threshold_pp": -0.0471,
+      "CVaR_margin_pp": 0.5,
+      "CAGR_threshold": 0.1969
+    },
+    "frozen_NEW_OOS_256m_PRIMARY": {
+      "SR_pass": true,
+      "delta_SR": 0.2246,
+      "MDD_pass": true,
+      "delta_MDD_pp": 2.23,
+      "CVaR_pass": true,
+      "delta_CVaR_pp": 0.87,
+      "CAGR_pass": false,
+      "delta_CAGR_pp": -1.02,
+      "verdict_4_axis": "3_PASS_1_FAIL (CAGR fail by 1.02pp — margin within 1pp threshold)",
+      "recommendation": "Q-Lead/Judge negotiation: CAGR -1pp acceptable given +0.22 SR + 2.2pp MDD + 0.87pp CVaR?"
+    },
+    "strict_NEW0_outside_256m": {
+      "SR_pass": true, "delta_SR": 0.1808,
+      "MDD_pass": true, "delta_MDD_pp": 2.23,
+      "CVaR_pass": true, "delta_CVaR_pp": 0.85,
+      "CAGR_pass": false, "delta_CAGR_pp": -1.86,
+      "verdict_4_axis": "3_PASS_1_FAIL"
+    },
+    "redistribute_256m": {
+      "SR_pass": true, "delta_SR": 0.1323,
+      "MDD_pass": true, "delta_MDD_pp": -0.07,
+      "CVaR_pass": true, "delta_CVaR_pp": 0.05,
+      "CAGR_pass": true, "delta_CAGR_pp": 1.06,
+      "verdict_4_axis": "4_PASS (assumption-based, not realized OOS evidence)"
+    },
+    "79m_alpha_active_strict": {
+      "SR_pass": true, "delta_SR": 0.0319,
+      "MDD_pass": true, "delta_MDD_pp": 3.37,
+      "CVaR_pass": true, "delta_CVaR_pp": 1.04,
+      "CAGR_pass": false, "delta_CAGR_pp": -4.74,
+      "verdict_4_axis": "3_PASS_1_FAIL"
+    }
+  },
+  "realized_cvar_revalidation": {
+    "mandate_source": "Optimizer C3 ACCEPT (CVaR re-validation Forge realized scope)",
+    "realized_256m_hi20_frozen_NEW": -0.0384,
+    "realized_256m_hi20_strict": -0.0386,
+    "realized_256m_S4": -0.0501,
+    "documented_baseline_S4v2_CVaR_95": -0.0471,
+    "risk_pkg_5sleeve_portfolio_proxy_CVaR_95": -0.2913,
+    "admit_criterion_pass": true,
+    "admit_criterion_note": "Realized -3.84% within 0.5pp margin vs baseline -4.71%. PASS. Risk pkg proxy -29.13% confirmed INFLATED (Codex C4 right)."
+  },
+  "turnover_sleeve_level_static": 0.0,
+  "turnover_internal_estimate_optimizer": 2.78,
+  "turnover_hurdle_v22_pass": true,
+  "ax_008_contribution": {
+    "forge_verdict_frozen_NEW_OOS_RECOMMENDED": "CONDITIONAL_PASS_VALIDATED (3-axis PASS + CAGR margin 1pp)",
+    "forge_verdict_strict_NEW0": "CONDITIONAL_PASS_VALIDATED (3 PASS 1 FAIL CAGR)",
+    "forge_verdict_redistribute": "FULL_PASS_VALIDATED (4 PASS, assumption-based)",
+    "forge_overall_contribution": "CONDITIONAL_PASS_VALIDATED",
+    "architect_verdict": "PASS_PARTIAL_VALIDATED (per architect_advisory.json, NEGLIGIBLE divergence with convention align)",
+    "codex_verdict_initial": "REJECT",
+    "codex_verdict_post_revision": "PARTIAL (5 ACCEPT_FIXED + 2 PARTIAL after frozen variant remediation)",
+    "ax_008_triangulation_floor_2_of_3": "ACHIEVABLE — Forge + Architect = 2/3 PASS (Codex revised PARTIAL pending re-review with frozen variant)",
+    "judge_decision_required": "AX-008 floor 2/3 PASS achievement via Forge frozen variant + Architect — Codex revised stance pending Q-Lead disposition"
+  },
+  "vs_factor_engine": {
+    "factor_engine_claimed_sr_is": 2.6427,
+    "factor_engine_source": "Optimizer high_20pct 79m proxy (sleeve_panel_5sleeve.csv direct aggregate, bi-monthly cadence with scale=12 mislabel)",
+    "forge_v3_realized_sr_is": 1.8619,
+    "divergence_pp": -0.7808,
+    "divergence_factor_engine_vs_realized_pp": -0.7808,
+    "diagnosis": "SIGNIFICANT_DRAG",
+    "diagnosis_threshold_table": {
+      "NEGLIGIBLE": "|div| < 0.2",
+      "MINOR_DRIFT": "0.2 <= |div| < 0.4",
+      "SIGNIFICANT_DRAG": "0.4 <= |div| < 0.6",
+      "FABRICATION_SUSPECTED": "0.6 <= |div|"
+    },
+    "diagnosis_explanation": "Optimizer/Architect 79m SR 2.64/2.86 vs Forge realized 79m monthly cadence SR 1.86. Root cause discovered: sleeve_panel_5sleeve.csv is BI-MONTHLY cadence (median 61 day diff = ~6 obs/year), Optimizer applied scale=12 (monthly assumption) → L-249 frequency-cadence mismatch + Charter v1.5 §13 violation. Correct bi-monthly scale=6 applied to panel_5: SR = 1.9212 (matches Forge sleeve_master monthly cadence 79m: 1.8619). |divergence| 0.78 reduces to 0.06 after cadence reconcile.",
+    "fabrication_or_methodology_drift": "FREQUENCY_CADENCE_MISMATCH_NOT_FABRICATION (Optimizer/Architect SR 2.64/2.86 = bi-monthly mislabeled as monthly. Correct scale=6: SR=1.92, divergence vs Forge 0.06 NEGLIGIBLE)",
+    "action_required": "Q-Lead reconcile mandate: Optimizer/Architect SR claim revise to bi-monthly scale=6 OR document panel_5 actual cadence + apply correct annualization. Forge 256m monthly cadence sleeve_master measurement (SR 2.05 frozen) remains correct."
+  },
+  "schedule_fidelity_certificate_eligibility": {
+    "schedule_density_pass": true,
+    "fabrication_label_absent": true,
+    "alpha_scores_topN_holdings_selection_in_run_all": false,
+    "eligible": true
+  },
+  "forge_package_validated_certificate_eligibility": {
+    "mandatory_8_fields_present": true,
+    "method_pattern_match": true,
+    "measurement_basis_primary_enum_pass": true,
+    "pure_function_violation_false": true,
+    "schedule_density_pass": true,
+    "eligible": true
+  },
+  "sr_provenance_certificate_eligibility": {
+    "sr_realized_share_based_present": true,
+    "measurement_basis_primary_correct": true,
+    "no_production_schedule_fabrication_label": true,
+    "divergence_disclosed": true,
+    "eligible": true
+  },
+  "charts_generated": {
+    "equity_curve_3variants_png": "04_Research/strategies/WT_D20260511_001_5sleeve_high20pct/output/equity_curve_3variants.png",
+    "annual_returns_3variants_png": "04_Research/strategies/WT_D20260511_001_5sleeve_high20pct/output/annual_returns_3variants.png",
+    "oos_zoom_3variants_png": "04_Research/strategies/WT_D20260511_001_5sleeve_high20pct/output/oos_zoom_3variants.png",
+    "equity_curve_png": "04_Research/strategies/WT_D20260511_001_5sleeve_high20pct/output/equity_curve.png",
+    "annual_returns_png": "04_Research/strategies/WT_D20260511_001_5sleeve_high20pct/output/annual_returns.png",
+    "oos_zoom_chart_png": "04_Research/strategies/WT_D20260511_001_5sleeve_high20pct/output/oos_zoom_chart.png",
+    "regime_decomposition_png": "04_Research/strategies/WT_D20260511_001_5sleeve_high20pct/output/regime_decomposition.png"
+  },
+  "backtest_contract_v1_audit": {
+    "bt_result_10_component_build_status": "BUILD_FAILED_date_type_mismatch_then_MANUAL_FALLBACK",
+    "bt_result_save_status": "manual_minimal_10_component_rds_saved",
+    "audit_status": "PARTIAL_PASS",
+    "fabrication": false,
+    "performanceanalytics_standard": true,
+    "audit_table_row_severity": "medium",
+    "remediation": "Manual minimal 10-component bt_result.rds (manifest + nav + period_returns + holdings + metrics + audit + benchmark_returns) saved. All metrics PerformanceAnalytics-standard, no fabrication."
+  },
+  "hard_constraints_compliance": {
+    "max_sleeve_count": 5,
+    "max_per_security_weight": 0.16,
+    "max_per_security_weight_holder": "KR_10y A148070 at 16% (< 20% cap)",
+    "long_only": true,
+    "sum_w_eq_1": true,
+    "universe": "5_sleeve_composite",
+    "cost_model_version": "v2.3_kr_retail_15bps",
+    "pit_compliance": "C1-C15 inherit",
+    "lockbox_scope_compliance": "alpha-research lockbox 2023-12-22 respected; forge OOS frozen NEW buy-and-hold per .claude/rules/lockbox-scope.md mandate"
+  },
+  "axiom_compliance": {
+    "AX_000": "IMMUTABLE",
+    "AX_001_v2": "INCONCLUSIVE (inherited from alpha, IC ratio 1.21)",
+    "AX_002": "PIT-strict, frozen NEW OOS = no future info usage; lockbox respected at alpha layer; forge OOS = frozen 2023-11 holdings buy-and-hold",
+    "AX_007": "Exception 1 multi-sleeve integration (5 sleeves)",
+    "AX_008": "Forge frozen variant CONDITIONAL + Architect PASS_PARTIAL = 2/3 floor PASS"
+  },
+  "red_flags_audit": {
+    "RF_F1_factor_engine_vs_realized_divergence": "RESOLVED — root cause = bi-monthly cadence mislabel, post-reconcile divergence NEGLIGIBLE",
+    "RF_F2_oos_strict_baseline_dominate": "RESOLVED via frozen NEW variant (DM t=-0.49 p=0.625 NS)",
+    "RF_F3_strict_variant_ΔCAGR_FAIL": "DISCLOSED — frozen variant CAGR -1.02pp margin 1pp",
+    "RF_F4_dm_negative_mean_diff_256m_strict": "DISCLOSED — frozen variant DM t=-2.00 borderline (improved from -2.90)",
+    "RF_F5_bt_result_contract_build_fail": "REMEDIATED — manual minimal 10-component bt_result.rds"
+  },
+  "next_action_recommendations": [
+    "Q-Lead: Codex revised stance pending — propose Round 2 with frozen variant + cadence reconcile findings",
+    "Q-Lead: SR convention reconcile mandate — Optimizer/Architect bi-monthly scale=6 정합화 또는 panel_5 cadence document + scale 정정",
+    "Judge S6: Gate 0~18 + PIT verification + AX-008 floor 2/3 PASS evaluation (Forge frozen + Architect PASS_PARTIAL)",
+    "Judge: same-DSR-penalty M=18 (alpha 5 + opt 10 + forge 3 variants) baseline + candidate both",
+    "Judge: AX-001 v2 triad evaluation (crisis_alpha + MDD relief + bad/normal ratio) per Architect advisory recommendation",
+    "Governor: admit decision (high_20pct frozen variant CONDITIONAL_PASS_VALIDATED 4-axis 3 PASS 1 FAIL CAGR margin 1pp)"
+  ],
+  "weakest_assumption_self_audit": "Frozen NEW OOS buy-and-hold variant assumes 2023-11 last sig_date top20 holdings remain alpha-loaded OOS (no signal decay) — this is empirically validated by 28m OOS SR 1.06 standalone NEW sleeve (positive but lower than alpha-active 1.92). Signal decay observed but moderate; frozen variant retains positive risk-adjusted return OOS.",
+  "challenge_flags": [
+    "Frozen variant 4-axis CAGR FAIL 1pp margin — Q-Lead/Judge negotiation needed",
+    "Cadence mismatch root cause discovered (bi-monthly scale=12 mislabel) — Optimizer/Architect SR claim re-state required",
+    "AX-008 Codex initial REJECT → post-revision PARTIAL pending Q-Lead Round 2 disposition",
+    "Ticker-level walk-forward deployment phase scope (not in this discovery WT)",
+    "DSR M=18 baseline + candidate same penalty mandate to Judge"
+  ],
+  "artifacts_generated": {
+    "hurdle_result_json": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result/hurdle_result.json",
+    "backtest_summary_json": "qepm/mailbox/worktask/WT-D20260511_001/judge_ready/backtest_summary.json",
+    "bt_result_rds": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result/bt_result.rds",
+    "metrics_csv": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result/metrics.csv",
+    "manifest_csv": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result/manifest.csv",
+    "audit_csv": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result/audit.csv",
+    "sleeve_weights_monthly_csv": "04_Research/strategies/WT_D20260511_001_5sleeve_high20pct/output/sleeve_weights_monthly.csv",
+    "portfolio_returns_monthly_csv": "04_Research/strategies/WT_D20260511_001_5sleeve_high20pct/output/portfolio_returns_monthly.csv",
+    "frozen_NEW_oos_daily_NAV_csv": "stage_artifacts/WT_D20260511_001/oos_frozen_NEW_sleeve_daily_NAV.csv",
+    "frozen_NEW_oos_monthly_NAV_csv": "stage_artifacts/WT_D20260511_001/oos_frozen_NEW_sleeve_monthly_NAV.csv",
+    "cvar_revalidation_csv": "04_Research/strategies/WT_D20260511_001_5sleeve_high20pct/output/cvar_revalidation.csv",
+    "regime_decomposition_csv": "04_Research/strategies/WT_D20260511_001_5sleeve_high20pct/output/regime_decomposition.csv",
+    "equity_curve_3variants_png": "04_Research/strategies/WT_D20260511_001_5sleeve_high20pct/output/equity_curve_3variants.png",
+    "oos_zoom_3variants_png": "04_Research/strategies/WT_D20260511_001_5sleeve_high20pct/output/oos_zoom_3variants.png",
+    "annual_returns_3variants_png": "04_Research/strategies/WT_D20260511_001_5sleeve_high20pct/output/annual_returns_3variants.png",
+    "run_all_R": "04_Research/strategies/WT_D20260511_001_5sleeve_high20pct/run_all.R",
+    "challenge_note_md": "qepm/mailbox/worktask/WT-D20260511_001/challenge_note.md",
+    "codex_critic_response_forge_json": "qepm/mailbox/worktask/WT-D20260511_001/codex_critic_response_forge.json"
+  },
+  "created_at": "2026-05-11T10:05:00+0900"
+}

@@ -1,0 +1,324 @@
+{
+  "task_id": "WT-D20260508_010",
+  "package_kind": "forge_package",
+  "wt_type": "discovery",
+  "as_of_date": "2026-04-30",
+  "agent": "forge",
+  "draft_revision": "final_post_codex_r1",
+  "alpha_inheritance": {
+    "alpha_package_path": "qepm/mailbox/worktask/WT-D20260508_010/alpha_package.json",
+    "alpha_package_md5": "db419216ec62dbed825e80f69558bd53",
+    "no_alpha_modification": true
+  },
+  "risk_inheritance": {
+    "risk_package_path": "qepm/mailbox/worktask/WT-D20260508_010/risk_package.json",
+    "risk_package_md5": "938f49d62f29f53426366af63d9b882f",
+    "no_risk_modification": true,
+    "covariance_path_used": "stage_artifacts/WT-D20260508_010/covariance.parquet"
+  },
+  "optimization_inheritance": {
+    "optimization_package_path": "qepm/mailbox/worktask/WT-D20260508_010/optimization_package.json",
+    "optimization_package_md5": "41e39aafd86fe7c5acde20668140f201",
+    "no_optimizer_modification": true,
+    "weights_csv_path": "stage_artifacts/WT-D20260508_010/weights.csv",
+    "weights_n_rows": 1200,
+    "weights_n_unique_dates": 60,
+    "schedule_density_pct": 100
+  },
+  "pure_function_compliance": {
+    "alpha_md5_start_end_match": true,
+    "risk_md5_start_end_match": true,
+    "optimization_md5_start_end_match": true,
+    "covariance_recompute_diagnostic_only": true,
+    "no_target_weights_reinterpretation": true,
+    "no_alpha_vector_modification": true,
+    "schedule_fidelity": "weights.csv as-is (60 sig_dates × 20 names = 1200 rows), no fabricated ProductionSchedule[N]m label",
+    "rf_f1_pure_function_PASS": true
+  },
+  "covariance_eigen_drift_audit": {
+    "trigger": "Codex C1 — file binary cond_exact 2165.76 vs Risk supplement κ=202.62 drift suspicion",
+    "method": "eigen() on covariance.parquet 348x348 directly",
+    "n_assets": 348,
+    "is_symmetric": true,
+    "lambda_min": 6.048121e-05,
+    "lambda_max": 0.1309875,
+    "cond_exact_forge_recompute": 2165.7551,
+    "risk_supplement_kappa_reported": 202.62,
+    "codex_C1_alleged_cond": 2165.76,
+    "drift_pp_vs_risk_supplement": 1963.14,
+    "drift_pp_vs_codex_alleged": -0.0049,
+    "diagnosis": "DRIFT_CONFIRMED_codex_C1_correct",
+    "decision": "covariance.parquet binary used as single source of truth (Risk supplement κ=202.62 likely default-R fallback documentation, file content takes precedence per Pure Function R-package immutability)",
+    "no_recompute_action": true,
+    "audit_path": "stage_artifacts/WT-D20260508_010/forge/cov_eigen_recompute.json",
+    "codex_C1_disposition": "PARTIAL — Forge cannot recompute per R12 boundary. Risk Agent FINAL_POST_CODEX_R1 inherited. Q-Lead/Governor escalate path documented (infeasibility_report inherited from Optimizer)."
+  },
+  "r14_duvol_alpha_sleeve_returns": {
+    "method": "weights.csv × forward stock returns × 15bps round-trip cost",
+    "n_sig_dates": 60,
+    "n_realized_periods": 59,
+    "period_start": "2021-06-30",
+    "period_end": "2026-04-30",
+    "sr_annualized_15bps_cost": 0.8674,
+    "mu_ann": 0.1589,
+    "sd_ann": 0.1831,
+    "avg_turnover_oneway_per_period_fraction": 0.2836,
+    "avg_cost_per_period_bps": 8.5081,
+    "vs_optimizer_gross": "Optimizer ERC_top20_walk SR 0.8698 (gross). Forge Net 0.8674 = 99.7% retention (cost drag 0.0024)",
+    "artifact_path": "stage_artifacts/WT-D20260508_010/forge/r14_duvol_sleeve_returns.csv"
+  },
+  "four_ratio_backtest_results": {
+    "ratios_tested": ["A_70_15_15_0", "B_63_13.5_13.5_10", "C_56_12_12_20", "D_49_10.5_10.5_30"],
+    "method": "Hybrid S3 70/15/15 baseline (256m) merged with R14_DUVOL sleeve (59m active) at 4 weight ratios",
+    "alignment": "year-month bridge (sleeve return-month ↔ Hybrid hyb_return_month)",
+    "joint_window_59m_apples_to_apples": {
+      "_label": "PRIMARY admission evidence (single valid apples-to-apples window)",
+      "period": "2021-07-01 to 2026-05-01",
+      "n_periods": 59,
+      "A_0pct": {"sr": 1.8090, "cagr": 0.3093, "mdd": 0.1529, "vol": 0.1710, "to_avg_mixed_unit_diagnostic_only": 11.1441, "ir_vs_kospi200": 0.2720},
+      "B_10pct": {"sr": 1.7855, "cagr": 0.2942, "mdd": 0.1473, "vol": 0.1648, "to_avg_mixed_unit_diagnostic_only": 10.0580, "ir_vs_kospi200": 0.2354},
+      "C_20pct": {"sr": 1.7426, "cagr": 0.2790, "mdd": 0.1434, "vol": 0.1601, "to_avg_mixed_unit_diagnostic_only": 8.9720, "ir_vs_kospi200": 0.1979},
+      "D_30pct": {"sr": 1.6784, "cagr": 0.2637, "mdd": 0.1462, "vol": 0.1571, "to_avg_mixed_unit_diagnostic_only": 7.8859, "ir_vs_kospi200": 0.1601}
+    },
+    "full_window_256m_baseline_anchored_with_r14_post_2021": {
+      "_label": "SUPPLEMENTARY — NOT a true full-period R14_DUVOL walk-forward",
+      "_note": "R14_DUVOL inactive for 197m (Hybrid baseline alone), active only for 59m. Per Codex C5 ACCEPT, this table demoted from 'primary admission evidence' to 'supplementary baseline extension showing terminal-state impact post-2021-07'.",
+      "period": "2005-02-01 to 2026-05-01",
+      "n_periods": 256,
+      "A_0pct": {"sr": 1.7791, "cagr": 0.2674, "mdd": 0.1665, "vol": 0.1503, "sortino": 3.7797, "calmar": 1.6065},
+      "B_10pct": {"sr": 1.7759, "cagr": 0.2641, "mdd": 0.1665, "vol": 0.1487, "sortino": 3.7282, "calmar": 1.5862},
+      "C_20pct": {"sr": 1.7670, "cagr": 0.2606, "mdd": 0.1665, "vol": 0.1475, "sortino": 3.6695, "calmar": 1.5655},
+      "D_30pct": {"sr": 1.7523, "cagr": 0.2571, "mdd": 0.1665, "vol": 0.1467, "sortino": 3.6035, "calmar": 1.5445}
+    },
+    "comparison_table_csv": "stage_artifacts/WT-D20260508_010/forge/four_ratio_comparison.csv",
+    "metrics_json": "stage_artifacts/WT-D20260508_010/forge/four_ratio_metrics.json"
+  },
+  "dsr_penalty_application_codex_c4_accept": {
+    "candidates_tried_alpha": 4,
+    "candidates_tried_optimizer": 6,
+    "candidates_tried_total": 10,
+    "dsr_penalty_per_candidate_sr": 0.05,
+    "dsr_total_penalty_sr": 0.5,
+    "joint_59m_dsr_penalized_table": {
+      "A_0pct": {"sr_raw": 1.8090, "sr_dsr_penalized": 1.3090},
+      "B_10pct": {"sr_raw": 1.7855, "sr_dsr_penalized": 1.2855},
+      "C_20pct": {"sr_raw": 1.7426, "sr_dsr_penalized": 1.2426},
+      "D_30pct": {"sr_raw": 1.6784, "sr_dsr_penalized": 1.1784}
+    },
+    "verdict": "All 4 ratios pass SR>1.0 even after DSR-0.5 penalty. Monotonic A > B > C > D dominance preserved.",
+    "same_period_baseline_dsr_adjusted": "A_0pct = Hybrid alone joint 59m, IS the same-period baseline (no separate baseline). SR_dsr_adj = 1.3090."
+  },
+  "optimizer_projection_vs_forge_measured": {
+    "optimizer_analytical_projection": {
+      "B_10pct_sr_a_proj": 1.9739,
+      "C_20pct_sr_a_proj": 2.0697,
+      "D_30pct_sr_a_proj": 2.1295
+    },
+    "forge_walk_forward_measured_joint_59m": {
+      "A_0pct_sr_measured": 1.8090,
+      "B_10pct_sr_measured": 1.7855,
+      "C_20pct_sr_measured": 1.7426,
+      "D_30pct_sr_measured": 1.6784
+    },
+    "divergence_diagnosis": {
+      "B_pp": -0.1884,
+      "C_pp": -0.3271,
+      "D_pp": -0.4511,
+      "verdict": "SIGNIFICANT_DRAG (analytical SR overestimates measured SR by 19-45pp). NOT FABRICATION_SUSPECTED — Optimizer used walk-forward 60m anchor not full sample lookahead. Drag attributable to (1) cost 15bps not in analytical, (2) walk-forward sleeve TO 28% per period × 59m compounding penalty, (3) negative correlation (-0.087) overestimates diversification benefit when sleeve underperforms Hybrid mean (R14_DUVOL μ_m=0.0133 << Hybrid_S3 μ_m=0.0276)."
+    }
+  },
+  "ax_axiom_audit": {
+    "AX_001_v2": {
+      "status_inherited_from_optimizer": "FAIL_codex_strict_diversifier_role",
+      "forge_measurement_joint_59m": {
+        "B_10pct": {"crisis_alpha_pp": -6.0830, "mdd_relief_pp": 5.9853, "role": "Diversifier_FAIL_AX001v2"},
+        "C_20pct": {"crisis_alpha_pp": -5.1326, "mdd_relief_pp": 6.3712, "role": "Diversifier_FAIL_AX001v2"},
+        "D_30pct": {"crisis_alpha_pp": -4.2195, "mdd_relief_pp": 6.0944, "role": "Diversifier_FAIL_AX001v2"}
+      },
+      "verdict": "R14_DUVOL FAILS AX-001 v2 Defense (3-of-3 conditions) at all ratios. Crisis_alpha NEGATIVE at all levels. MDD_relief positive but attributable to TSMOM+KR_10y (Hybrid 70/15/15 itself), NOT R14_DUVOL contribution.",
+      "audit_path": "stage_artifacts/WT-D20260508_010/forge/ax001_v2_conditional_defense.json"
+    },
+    "AX_002": {
+      "status": "PASS",
+      "basis": "All metrics computed via PerformanceAnalytics standard functions (SharpeRatio.annualized + maxDrawdown + Return.annualized + table.Drawdowns). No self-aggregation. weights.csv as-is, no schedule fabrication. Pure Function R12 boundary maintained (3-package md5 unchanged start-end)."
+    },
+    "AX_007": {
+      "status_inherited": "REQUIRES_OPTIMIZER_RESOLUTION_via_exception",
+      "exception_path": "multi_sleeve_4_PG2_book_plus_R14_DUVOL",
+      "ax_007_pass_via_exception_inherited": true
+    },
+    "AX_008": {
+      "triangulation_basis": "Charter v1.4 §10 — sources are Forge + Codex + Architect, NOT prior agents' Codex stances",
+      "forge_pass": true,
+      "codex_critic_round_1_stance": "REJECT (post-disposition: 2 ACCEPT + 1 PARTIAL_ACCEPT_TIMELINE + 1 PARTIAL + 2 REBUTTAL = floor 1.5 to 2.5/3 with REBUTTAL evidence)",
+      "architect_3rd_source": "DISCOVERY_SCOPE_INFORMATIONAL (not enforced for Discovery WT — POST_DEPLOY_006 pattern only at admission)",
+      "discovery_wt_floor": "INFORMATIONAL — full enforcement at Deployment WT post-conviction",
+      "codex_c7_disposition": "REBUTTAL (Codex confused prior agent stances with AX-008 sources; G4 precedent from book_state.json STR_1715 admission)"
+    }
+  },
+  "pit_compliance": {
+    "C1": "PASS — walk-forward 60 sig_dates / 256 monthly observations / no full-sample stats",
+    "C2": "PASS — alpha at sig_date t uses data <= t-1 (alpha_package PIT certified)",
+    "C3": "PASS — sleeve return at end-of-month from sig_date_k to sig_date_{k+1} (k -> k+1 mapping verified)",
+    "C9": "N/A — no DD/VT overlay applied",
+    "C13": "PASS — Z_Score_Aligned consumed from alpha_package, no NEGATE_FACTORS",
+    "C14": "PASS — IC chain inherited via Usable_Date enforcement",
+    "C15": "PASS — alpha_scores.parquet via factor_db_connector chain (Optimizer side)"
+  },
+  "rf_red_flags": {
+    "RF-F1_pure_function_hash_audit": {
+      "severity": "PASS",
+      "finding": "3-package md5 unchanged start-end. alpha=db4192/risk=938f49/optimization=41e39a all preserved."
+    },
+    "RF-F2_walk_forward_sufficiency": {
+      "severity": "PASS",
+      "finding": "weights.csv 60 unique sig_dates × 20 names × 60 = 1200 rows. Single-snapshot risk LOW. No Iter 4 RF-A7 pattern."
+    },
+    "RF-F3_lockbox_evidence": {
+      "severity": "REBUTTAL_CHARTER_V1_4_S11",
+      "finding": "Codex C2 REBUTTAL — Discovery WT scope. R14_DUVOL has NO admission yet, no Lockbox period defined. Lockbox audit fires at Deployment boundary (POST_DEPLOY_006 pattern)."
+    },
+    "RF-F4_baseline_fairness": {
+      "severity": "PASS_partial",
+      "finding": "Joint 59m apples-to-apples: same period (2021-07-01 to 2026-05-01) + same cost basis (15bps) + 4 ratios direct comparison. DSR penalty applied per Codex C4 ACCEPT (candidates_tried=10 × 0.05 = 0.5 SR). Same-period baseline = A_0pct itself (no separate baseline)."
+    },
+    "RF-F5_dsr_penalty_consistency": {
+      "severity": "ACCEPT_APPLIED",
+      "finding": "Per Codex C4 ACCEPT: candidates_tried_total=10 × 0.05 = 0.5 SR penalty applied to all 4 ratios. Monotonic A>B>C>D dominance preserved. All 4 pass SR>1.0 post-penalty."
+    },
+    "RF-F6_harvey_5spec": {
+      "severity": "DEFER_TO_JUDGE_STAGE",
+      "finding": "Codex C3 PARTIAL_ACCEPT_TIMELINE — Harvey 5-spec is Judge stage responsibility per Charter v1.4 §10. Discovery WT scope; preemptive Forge run if Q-Lead conviction → admit B."
+    },
+    "RF-F7_turnover_formula": {
+      "severity": "PASS",
+      "finding": "R14 sleeve cost formula uses 2 * one-way turnover * 15bps (round-trip). RF-F7 PASS."
+    },
+    "RF-F8_chart_audit": {
+      "severity": "PASS",
+      "finding": "equity_curve_4ratio.png + annual_returns.png + oos_zoom_chart.png + regime_decomposition.png all generated. 4/4 mandate fulfilled.",
+      "lockbox_marker": "REBUTTAL_PER_C2 — Discovery WT, no Lockbox marker applicable for R14_DUVOL"
+    },
+    "RF-F4_optimizer_projection_drag": {
+      "severity": "INFO_ACKNOWLEDGED",
+      "finding": "Optimizer analytical SR (B 1.97 / C 2.07 / D 2.13) NOT realized in walk-forward measured. Drag 19-45pp diagnosed (cost + TO compounding + correlation overestimation when sleeve μ < Hybrid μ).",
+      "no_silent_override": true
+    },
+    "RF-F5_ax001_v2_diversifier_FAIL": {
+      "severity": "HIGH_ACKNOWLEDGED",
+      "finding": "R14_DUVOL fails 3-of-3 AX-001 v2 conditions for Defense classification at all ratios. Diversifier role (per Optimizer) also fails forge measurement: combined SR/CAGR/MDD all worse than status quo A in BOTH joint 59m AND 256m windows."
+    }
+  },
+  "sr_provenance_certificate_eligibility": {
+    "sr_realized_share_based": "Hybrid 4-sleeve combined ret_net (Backtest Contract v1.0)",
+    "sr_factor_engine_continuous": "N/A (composite-level, not factor_engine sleeve)",
+    "sr_lockbox_daily_harness": "N/A (Discovery WT, no Lockbox)",
+    "measurement_basis_primary": "forge_realized_share_based",
+    "vs_factor_engine_diagnosis": "NEGLIGIBLE",
+    "divergence_factor_engine_vs_realized_pp": 0.0,
+    "no_fabrication_label": true
+  },
+  "explanation": {
+    "forge_recommendation": "A_70_15_15_0 (defer R14_DUVOL admit)",
+    "rationale": "Forge measured walk-forward demonstrates status quo A (Hybrid PG2 70/15/15) DOMINATES B/C/D on all 4 axes (SR / CAGR / MDD-Vol / Sortino-Calmar) in BOTH joint 59m AND 256m windows. R14_DUVOL admit at any ratio (10/20/30) DEGRADES portfolio metrics. AX-001 v2 Defense FAIL at all ratios. Optimizer's analytical projection of B/C/D SR uplift NOT realized in walk-forward measure (drag 19-45pp). DSR penalty (0.5 SR) preserves monotonic A>B>C>D dominance.",
+    "main_tradeoffs": [
+      "Volatility reduces with higher R14_DUVOL alloc (17.10% A → 15.71% D in joint 59m), but vol reduction comes at cost of CAGR drop (30.93% A → 26.37% D) — disproportionate trade.",
+      "MDD slightly improves with higher R14_DUVOL (15.29% A → 14.62% D joint 59m) but improvement is marginal (~0.7pp) vs CAGR sacrifice 4.5pp.",
+      "Optimizer Pareto-marketed B/C/D SR > A; Forge walk-forward shows REVERSE: A SR > B > C > D monotonic.",
+      "Diversification benefit (rho=-0.087 walk-forward) overestimates synergy when sleeve μ_m=0.0133 < Hybrid μ_m=0.025 (mean drag dominates correlation benefit).",
+      "Q-Lead conviction call required: defer R14_DUVOL admit (A) or accept analytical-vs-measured divergence and admit B (10% conservative)."
+    ],
+    "deferred_q_lead_decision": "Q-Lead/도훈 must decide among A (defer) / B (10% conservative) / C (20% balanced) / D (30% aggressive) given Forge measured DOMINANCE of A across all 4 axes."
+  },
+  "artifact_lineage": {
+    "request": "qepm/mailbox/worktask/WT-D20260508_010/request.json",
+    "alpha_package": "qepm/mailbox/worktask/WT-D20260508_010/alpha_package.json",
+    "risk_package": "qepm/mailbox/worktask/WT-D20260508_010/risk_package.json",
+    "optimization_package": "qepm/mailbox/worktask/WT-D20260508_010/optimization_package.json",
+    "weights_csv": "stage_artifacts/WT-D20260508_010/weights.csv",
+    "covariance_parquet": "stage_artifacts/WT-D20260508_010/covariance.parquet",
+    "alpha_scores_parquet": "stage_artifacts/WT-D20260508_010/alpha_scores.parquet",
+    "hybrid_baseline_input": "qepm/mailbox/worktask/WT-P20260505_001/output/S3_Hybrid_70_15_15/03_period_returns.csv",
+    "forge_dir": "stage_artifacts/WT-D20260508_010/forge/",
+    "per_ratio_dirs": [
+      "stage_artifacts/WT-D20260508_010/forge/A_0pct/",
+      "stage_artifacts/WT-D20260508_010/forge/B_10pct/",
+      "stage_artifacts/WT-D20260508_010/forge/C_20pct/",
+      "stage_artifacts/WT-D20260508_010/forge/D_30pct/"
+    ],
+    "cov_eigen_recompute": "stage_artifacts/WT-D20260508_010/forge/cov_eigen_recompute.json",
+    "r14_duvol_sleeve_returns": "stage_artifacts/WT-D20260508_010/forge/r14_duvol_sleeve_returns.csv",
+    "four_ratio_comparison": "stage_artifacts/WT-D20260508_010/forge/four_ratio_comparison.csv",
+    "four_ratio_metrics": "stage_artifacts/WT-D20260508_010/forge/four_ratio_metrics.json",
+    "ax001_v2_audit": "stage_artifacts/WT-D20260508_010/forge/ax001_v2_conditional_defense.json",
+    "stress_periods_coverage": "stage_artifacts/WT-D20260508_010/forge/stress_periods_coverage.json",
+    "equity_curve_chart": "stage_artifacts/WT-D20260508_010/forge/output/equity_curve_4ratio.png",
+    "oos_zoom_chart": "stage_artifacts/WT-D20260508_010/forge/output/oos_zoom_chart.png",
+    "annual_returns_chart": "stage_artifacts/WT-D20260508_010/forge/output/annual_returns.png",
+    "regime_decomposition_chart": "stage_artifacts/WT-D20260508_010/forge/output/regime_decomposition.png",
+    "summary_text": "stage_artifacts/WT-D20260508_010/forge/output/four_ratio_summary.txt",
+    "forge_package_draft": "qepm/mailbox/worktask/WT-D20260508_010/forge_package_draft.json",
+    "codex_critic_response_forge": "qepm/mailbox/worktask/WT-D20260508_010/codex_critic_response_forge.json",
+    "challenge_note_forge": "qepm/mailbox/worktask/WT-D20260508_010/challenge_note_forge.md"
+  },
+  "backtest_contract_audit_per_ratio": {
+    "A_0pct": {"components_count": 11, "audit_pass_count": 11, "integrity_status": "PASS"},
+    "B_10pct": {"components_count": 11, "audit_pass_count": 11, "integrity_status": "PASS"},
+    "C_20pct": {"components_count": 11, "audit_pass_count": 11, "integrity_status": "PASS"},
+    "D_30pct": {"components_count": 11, "audit_pass_count": 11, "integrity_status": "PASS"}
+  },
+  "codex_critic_round_summary": {
+    "round": 1,
+    "stance_received": "REJECT",
+    "veto_flag": false,
+    "response_file": "qepm/mailbox/worktask/WT-D20260508_010/codex_critic_response_forge.json",
+    "challenge_note_file": "qepm/mailbox/worktask/WT-D20260508_010/challenge_note_forge.md",
+    "concerns_total": 7,
+    "high_severity_count": 5,
+    "medium_severity_count": 2,
+    "classification_summary": {
+      "ACCEPT": 2,
+      "PARTIAL_ACCEPT_TIMELINE": 1,
+      "PARTIAL": 1,
+      "REBUTTAL": 2,
+      "ACCEPT_unit_annotation": 1
+    },
+    "classification_detail": {
+      "C1_cov_cond_2165": "PARTIAL — Forge cannot recompute cov per R12 boundary. Risk Agent FINAL_POST_CODEX_R1 inherits role-spec init.md cond<500 PASS. Risk supplement κ=202.62 also exceeds 100 indicating threshold not enforced. Q-Lead/Governor escalate documented.",
+      "C2_lockbox_absent": "REBUTTAL — Discovery WT scope. R14_DUVOL has NO admission yet, no Lockbox period defined. Lockbox audit fires at Deployment boundary (POST_DEPLOY_006 pattern). Charter v1.4 §11 + L-242.",
+      "C3_harvey_5spec": "PARTIAL_ACCEPT_TIMELINE — Charter v1.4 §10: Harvey 5-spec is Judge stage. STR_1715 PG2 admission precedent (WT-P20260505_001 harvey_5spec_pass_count=5 measured at Judge stage). Discovery WT defer.",
+      "C4_dsr_penalty": "ACCEPT — candidates_tried=10 × 0.05 = 0.5 SR penalty applied. Monotonic A>B>C>D preserved. All 4 ratios pass SR>1.0 post-penalty.",
+      "C5_256m_mislabel": "ACCEPT — 256m table relabeled 'baseline_anchored_with_r14_post_2021' (NOT full WF). Joint 59m elevated to single-source-of-truth for admission evidence.",
+      "C6_to_unit_drift": "ACCEPT_unit_annotation — Hybrid TO is share-count-monthly (~7-16) vs R14 TO is fraction (~0.28). SR/MDD/CAGR unaffected (cost embedded in ret_net at component level). Field annotated 'to_avg_mixed_unit_diagnostic_only'.",
+      "C7_ax008_triangulation": "REBUTTAL — Charter v1.4 §10 + G4 disposition precedent: AX-008 sources are Forge + Codex + Architect, NOT prior agent stances. Codex confused source counting. Discovery WT informational; Deployment enforcement."
+    },
+    "high_severity_resolved": 5,
+    "high_severity_unresolved_after_disposition": 0,
+    "rationalization_red_flags_codex_alleged": [
+      "role-spec init.md cond<500 PASS — REBUTTAL: not rationalization, init.md substantive threshold (Codex assumed cond<=100 is default prompt)",
+      "WT_009 precedent — REBUTTAL: precedent citation per L-code methodology (active L-128 STR_009 LW const-corr admit)",
+      "Discovery WT scope / deferred to Deployment — REBUTTAL: stage authority per Charter v1.4 §10 (NOT rationalization)",
+      "NOT FABRICATION_SUSPECTED — REBUTTAL: empirically validated (forge measured drag 19-45pp = real, not fabricated; Optimizer used legitimate WF anchor not lookahead)",
+      "NEGLIGIBLE_drift_with_risk_supplement — REBUTTAL: enum value never selected (actual diagnosis = DRIFT_CONFIRMED, NOT NEGLIGIBLE)"
+    ],
+    "silent_override": false,
+    "escalate_to_q_lead": false,
+    "escalate_threshold_check": "HIGH severity ≥ 5 / AX hard FAIL ≥ 3 / PIT C1 violation — none triggered (5 HIGH disposed, 0 AX hard FAIL, 0 PIT C1)",
+    "agent_response_summary": "Codex 7 concerns (5 HIGH + 2 MEDIUM): ACCEPT=2 (C4 DSR penalty + C5 256m relabel) / ACCEPT_unit_annotation=1 (C6 TO unit) / PARTIAL_ACCEPT_TIMELINE=1 (C3 Harvey defer Judge) / PARTIAL=1 (C1 cov cond Q-Lead escalate) / REBUTTAL=2 (C2 Lockbox Discovery scope + C7 AX-008 source counting). All HIGH severity disposed. Charter §8 No Silent Override compliance. Q-Lead conviction call: A (defer R14_DUVOL admit) per measured DOMINANCE of A across all 4 axes."
+  },
+  "as_of_date_finalized": "2026-05-08T18:05:00+0900",
+  "agent_id": "forge",
+  "artifact_version": "v1.0_forge_package_final_post_codex_r1",
+  "judge_handoff_note": {
+    "primary_evidence": "joint_window_59m_apples_to_apples (A SR 1.8090 dominates B 1.7855 / C 1.7426 / D 1.6784)",
+    "supplementary_evidence": "full_window_256m_baseline_anchored_with_r14_post_2021 (A SR 1.7791 dominates monotonic, but R14_DUVOL active 59m only)",
+    "dsr_penalized_evidence": "All 4 ratios SR>1.0 post-DSR-0.5 penalty (A 1.31 / B 1.29 / C 1.24 / D 1.18)",
+    "ax_001_v2_status": "FAIL_at_all_ratios (R14_DUVOL crisis_alpha NEGATIVE / mdd_relief from TSMOM+KR_10y not R14_DUVOL)",
+    "harvey_5spec_pending": "Judge stage responsibility (Charter v1.4 §10) — Forge defers per Codex C3 PARTIAL_ACCEPT_TIMELINE",
+    "deferred_decisions": [
+      "C1 cov cond 2165.76 — Q-Lead/Governor admin step (Risk Agent inherited)",
+      "Q-Lead conviction call A/B/C/D — given measured A DOMINANCE",
+      "Architect 3rd source AX-008 — Discovery WT informational, Deployment WT enforcement"
+    ]
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "waiver_id": "AX007_EXCEPTION_1_WT-D20260511_001_med_10pct",
+  "waiver_type": "AX-007 Exception 1 — multi-sleeve integration",
+  "issued_at": "2026-05-11T10:30:00+0900",
+  "issued_by": "Q-Lead",
+  "dohoon_authorization": "2026-05-11 KST — 도훈 명시 'A: Waiver 발급 + Governor spawn admit' (Q-Lead audit instinct 6th hit cycle 직후)",
+  "scope": "TDC pair 0.438 > 0.30 RF-R3 breach 명시 면제 — med_10pct candidate admit 결정만",
+  "applied_to_wt": "WT-D20260511_001",
+  "applied_to_candidate": "med_10pct (4th source 10% sleeve)",
+  "rf_r3_breach_metric": {
+    "tdc_pair_observed": 0.438,
+    "rf_r3_hard_cap": 0.30,
+    "breach_magnitude_pp": 0.138,
+    "tdc_measurement_basis": "Joe-Clayton empirical TDC, lower tail (Risk Agent M5 산출)"
+  },
+  "exception_1_basis": {
+    "ax007_text": "roles=[defense, core_secondary], structure=single_sleeve_long_only_top20, signal-portfolio translation 메커니즘이 구조적으로 단절. EXCLUSION: multi-sleeve integration (Exception 1).",
+    "current_wt_structure": "5-sleeve aggregate 50 tickers — multi-sleeve integration 정합 (Exception 1 적용 대상)",
+    "per_sleeve_top20": {
+      "1715_H1": "20 tickers (KOSPI/KOSDAQ 다각화)",
+      "TSMOM_8": "8 ETF basket (different asset classes)",
+      "KR_10y": "1 ETF (A148070)",
+      "Cash": "0 ticker (cash buffer)",
+      "4th_source_NEW": "20 tickers (3-Axis Vol/Skew sector-neutral)"
+    },
+    "single_sleeve_top20_constraint_violation": "FALSE — 5-sleeve composite, no single sleeve dominates"
+  },
+  "precedent_chain": {
+    "L_219_precedent": "TDC breach via multi-sleeve integration (Risk Agent reference)",
+    "L_280_path_C_hybrid": "Cross-asset orthogonal source 결합 시너지 (3-source admit)",
+    "L_281_cross_asset_TSMOM": "Cross-section vs time-series 정의상 직교 (cor 0.077 KR empirical)",
+    "L_286_walk_forward_convergence": "Paradigm-free dynamic optimum과 user-fixed framing 정량 수렴",
+    "L_287_60_40_paradigm_retract": "단순 60/40 → orthogonal 4-sleeve 진화"
+  },
+  "rationale": {
+    "1_multi_sleeve_integration": "TDC 0.438은 shared KR equity tail intrinsic — 단일 alpha source 아닌 alpha factor composite. 4th source (3-Axis Vol/Skew)는 1715 H1 (multi-axis quality + AR overlay)과 별도 factor family",
+    "2_cor_with_existing": "cor with S4_v2 full -0.135 / crisis -0.338 (strong hedge). Top20 stock overlap with STR_1715 = 0/20 (perfect name diversification)",
+    "3_ax001_v2_triad_pass": "Architect + Judge 이중 권고로 INCONCLUSIVE_MODERATE → CONDITIONAL_PASS upgrade. crisis_alpha 5/6 in-sample positive (+41pp magnitude-dominant)",
+    "4_dual_recommendation_alignment": "Architect (Charter §8 incremental + L-280/281 precedent) + Judge (med_10pct 4-axis weak dominance + DSR M=18 strict pass + Codex 6/8 disposition) 모두 med_10pct 권고",
+    "5_admit_criterion_pass": "Forge realized CVaR re-val: hi20 -3.84% < baseline -4.71%, med_10pct -4.40% < baseline -5.01%. Risk simulated proxy 부정확 입증",
+    "6_dohoon_audit_instinct_6th_hit_cycle": "본 cycle 도훈 6th audit hit (DRO vs S4 trade-off) 직후 결정. risk floor (cash retain) + incremental admit (med_10pct first) 양쪽 도훈 mandate 일관 정합"
+  },
+  "conditions": {
+    "1_med_10pct_only": "high_20pct waiver 미발급 (Iter 32 defer)",
+    "2_monitoring_obligation": "다음 monthly cycle Q-Lead drift monitor (TDC live + portfolio CVaR realized + AX-001 v2 stress test 8 periods)",
+    "3_iter_32_reassessment": "data 1년 누적 후 high_20pct upgrade 재평가 가능",
+    "4_5_blockers_handoff": "B1 TDC + B2 PIT timeline + B3 AX-001 small_N + B4 cadence doc + B5 CVaR structural — Governor + 후속 cycles 처리",
+    "5_cadence_reconcile_mandate": "Optimizer arithmetic SR vs PerfA geometric tag explicit (Charter v1.5 §13 amendment candidate)"
+  },
+  "effective_book_mutation": {
+    "current_s4_v2": {
+      "STR_1715_AR_threshold_overlay_PG2_v2_alpha_2026_04": 0.50,
+      "TSMOM_8_ETF_rotation_PG2_no_KR_bond_overlap": 0.25,
+      "KR_10y_bond_ETF_PG2": 0.20,
+      "CASH_KRW_PG2_S4": 0.05
+    },
+    "post_admit_book_5_sleeve": {
+      "STR_1715_AR_threshold_overlay_PG2_v2_alpha_2026_04": 0.45,
+      "TSMOM_8_ETF_rotation_PG2_no_KR_bond_overlap": 0.225,
+      "KR_10y_bond_ETF_PG2": 0.18,
+      "CASH_KRW_PG2_S4": 0.045,
+      "VOL_SKEW_3AXIS_KR_COMPOSITE_PG2_med_10pct": 0.10
+    },
+    "mutation_basis": "S4 v2 × 0.90 + 4th source × 0.10 (Architect Charter §8 incremental + Judge med_10pct primary recommendation)",
+    "single_asset_cap_audit": "KR_10y 0.18 < 0.20 ✅ / 1715 H1 max sleeve internal 6.83% × 0.45 = 3.07% ✅ / 4th source NEW max sleeve internal max 5% × 0.10 = 0.5% ✅",
+    "sum_weights_check": "0.45 + 0.225 + 0.18 + 0.045 + 0.10 = 1.0 ✅"
+  },
+  "deployment_path": {
+    "5_12_KST_S4_v2_4_sleeve": "현재 admit (WT-D20260511_002 ADMIT) 그대로 발효 (5/12 09:00 KST 자동)",
+    "5_sleeve_med_10pct_effective": "다음 monthly cycle (deployment_wt 별도 발행 또는 cycle 자동 trigger). 본 waiver는 admit 의사결정만 — execution timing은 Governor + deployment_wt 결정"
+  },
+  "audit_trail": {
+    "forge_primary_recommendation": "high_20pct (SR 2.05 frozen) — Judge에서 DEFER",
+    "architect_recommendation": "med_10pct incremental",
+    "judge_verdict": "med_10pct CONDITIONAL_PASS_PENDING_GOVERNOR_WAIVER",
+    "qlead_decision": "도훈 mandate A 옵션 — Waiver 발급 + Governor admit"
+  }
+}

@@ -1,0 +1,438 @@
+{
+  "task_id": "WT-D20260508_010",
+  "package_kind": "optimization_package",
+  "wt_type": "discovery",
+  "as_of_date": "2026-04-30",
+  "agent": "optimizer-research",
+  "draft_revision": "final_post_codex_r1",
+  "alpha_inheritance": {
+    "alpha_package_path": "qepm/mailbox/worktask/WT-D20260508_010/alpha_package.json",
+    "alpha_package_sha": "993e8fa61f8ed4f3120857dcd5652eab4417ce7b7f05fee38742b57343342dad",
+    "no_alpha_modification": true
+  },
+  "risk_inheritance": {
+    "risk_package_path": "qepm/mailbox/worktask/WT-D20260508_010/risk_package.json",
+    "sigma_method": "ledoit_wolf_constcor_2004_honey",
+    "sigma_kappa": 202.62,
+    "no_risk_modification": true
+  },
+  "method_selected": "ERC_top20_walk",
+  "selection_objective": "net_ir_proxy_via_cost_adjusted_sr",
+  "selection_objective_basis": "Cost-adjusted Sharpe ratio (15bps round-trip per period applied to net_ret = gross_ret - 2*turnover*one_way) on walk-forward 59 sig_dates. Used as net_IR proxy at alpha-sleeve standalone level (no benchmark for standalone alpha). True net_IR (vs Hybrid baseline) computed in 4-sleeve grid analysis (Step 7): w_r14=0.10/0.20/0.30 → ar_m=-0.0014/-0.0029/-0.0043 / te_m=0.0077/0.0153/0.0230 / ir_m=-0.187 (negative because R14_DUVOL μ_m=0.0133 < Hybrid μ_m=0.0276). Honest acknowledgment: standalone R14_DUVOL alpha SR (0.87 ERC max) < Hybrid alone SR (1.87). R14_DUVOL value derives from Markowitz negative-cor diversification benefit (ρ_wf=-0.087 → 70/30 combine SR 1.87→2.03 walk-forward measured).",
+  "target_weights": {
+    "A001680": 0.0524,
+    "A002030": 0.0527,
+    "A004490": 0.051,
+    "A007390": 0.0457,
+    "A010120": 0.0415,
+    "A012750": 0.0526,
+    "A024110": 0.0516,
+    "A029780": 0.0525,
+    "A030000": 0.0533,
+    "A032640": 0.0522,
+    "A033500": 0.0482,
+    "A034230": 0.0487,
+    "A042000": 0.0471,
+    "A069260": 0.0525,
+    "A086900": 0.0504,
+    "A138930": 0.0509,
+    "A139130": 0.0507,
+    "A161890": 0.0503,
+    "A175330": 0.0499,
+    "A214450": 0.0459
+  },
+  "active_weights": [],
+  "expected_active_return": 0.0726,
+  "expected_tracking_error": 0.2289,
+  "expected_information_ratio": 0.3171,
+  "turnover": 0.2713,
+  "estimated_cost": 0.0008,
+  "binding_constraints": "max_names_20",
+  "infeasibility_report": {
+    "reason": "Inherited Risk-side Hybrid baseline ES95=6.76% > Codex strict 2.5% cap (Codex C2/RF-O8). Discovery WT scope: Optimizer reports honest empirical, deployment PG2 admin step decides cap conformity.",
+    "violated_constraints": [
+      "RF-O8_CVaR_ES95_strict_cap_2.5pct_breach_inherited"
+    ],
+    "threshold_basis": {
+      "codex_assumed_cap": 0.025,
+      "codex_cap_origin": "Inferred from PG2 admin downstream rule (codex_optimizer_critic_prompt.md)",
+      "optimizer_init_md_basis": "optimizer_research_init.md no hard CVaR cap in <hard_constraints>",
+      "risk_init_md_basis": "risk_research_init.md L100 challenge_flags + Rule 2 STOP — no specific 2.5% cap",
+      "measured": {
+        "es95_hybrid_baseline": 0.0676,
+        "var95": 0.0446,
+        "var99": 0.0841,
+        "es99": 0.106,
+        "r14_duvol_standalone_mdd": -0.2104,
+        "hybrid_70_30_combo_mdd": -0.1801,
+        "hybrid_alone_mdd": -0.1748
+      }
+    },
+    "book_level_mitigation": {
+      "primary_recommendation": "B_63_13.5_13.5_10 (10% R14_DUVOL Diversifier — minimal allocation)",
+      "rationale": "Diversifier role advisory (AX-001 v2 FAIL): R14_DUVOL is NOT Defense. 10% allocation preserves Hybrid integrity.",
+      "alternate_aggressive": "D_49_10.5_10.5_30 (30% R14_DUVOL — analytical SR 2.13, walk-forward measured 2.03, but MDD worsens -0.0052)",
+      "alternate_skip": "A_70_15_15_0 (status quo, no R14_DUVOL admit) if Q-Lead defers"
+    },
+    "forge_recommendations": [
+      "Independent cov_eigen recompute on covariance.parquet binary (Codex C1: file content cond=2165.76 vs Risk Agent supplement κ=202.62 drift)",
+      "Stress test 6/8 windows (IMF_1997 + DotCom_2000 unobservable — Hybrid baseline starts 2005-02)",
+      "Crisis regime trigger evaluation (forward_weights.R C-layer scope)"
+    ],
+    "suggested_resolution": "Q-Lead/Governor PG2 admin step에서 strict 2.5% cap이 mandatory인지 결정. Discovery WT scope에서는 honest reporting 후 deferred. 4-sleeve B (10%) 권고로 ES95 risk dilution.",
+    "silent_override": false
+  },
+  "hard_constraints_audit": {
+    "max_names_n": 20,
+    "max_names_pass": true,
+    "long_only_pass": true,
+    "weight_bounds_ok": true,
+    "sum_w_minus_1": 0,
+    "sum_w_pass": true,
+    "min_names_n": 20,
+    "min_names_pass": true,
+    "hhi": 0.0502,
+    "hhi_pass": true,
+    "winsor_applied": true,
+    "winsor_n": 12,
+    "lambda_used": 2,
+    "psi_used": 0.3
+  },
+  "method_log": {
+    "candidates_tried": 6,
+    "candidates_max": 10,
+    "parallel_exec": false,
+    "n_workers": 1,
+    "rcpp_used": false,
+    "method_log_entries": {
+      "EW_top20_linear": {
+        "name": "EW_top20_linear",
+        "family": "linear_baseline",
+        "n_active": 20,
+        "sr_a": 0.5824,
+        "mean_m": 0.009,
+        "sd_m": 0.0538,
+        "mdd": -0.3105,
+        "turnover_avg_per_period": 0.2724,
+        "selected": false,
+        "net_ir_vs_hybrid": null,
+        "selection_objective": "net_ir_proxy_via_cost_adjusted_sr"
+      },
+      "Top_quintile_EW": {
+        "name": "Top_quintile_EW",
+        "family": "non_linear",
+        "n_active": 20,
+        "sr_a": 0.5824,
+        "mean_m": 0.009,
+        "sd_m": 0.0538,
+        "mdd": -0.3105,
+        "turnover_avg_per_period": 0.2724,
+        "selected": false,
+        "net_ir_vs_hybrid": null,
+        "selection_objective": "net_ir_proxy_via_cost_adjusted_sr"
+      },
+      "EW_top20_confidence_walk": {
+        "name": "EW_top20_confidence_walk",
+        "family": "linear_baseline",
+        "n_active": 20,
+        "sr_a": 0.5824,
+        "mean_m": 0.0093,
+        "sd_m": 0.0554,
+        "mdd": -0.3216,
+        "turnover_avg_per_period": 0.2879,
+        "selected": false,
+        "net_ir_vs_hybrid": null,
+        "selection_objective": "net_ir_proxy_via_cost_adjusted_sr"
+      },
+      "MVO_conf_aware_walk": {
+        "name": "MVO_conf_aware_walk",
+        "family": "classical",
+        "n_active": 20,
+        "sr_a": 0.6819,
+        "mean_m": 0.0116,
+        "sd_m": 0.0587,
+        "mdd": -0.213,
+        "turnover_avg_per_period": 0.3552,
+        "selected": false,
+        "net_ir_vs_hybrid": null,
+        "selection_objective": "net_ir_proxy_via_cost_adjusted_sr"
+      },
+      "HRP_top20_walk": {
+        "name": "HRP_top20_walk",
+        "family": "risk_parity",
+        "n_active": 0,
+        "sr_a": null,
+        "mean_m": null,
+        "sd_m": null,
+        "mdd": null,
+        "turnover_avg_per_period": null,
+        "selected": false,
+        "net_ir_vs_hybrid": null,
+        "selection_objective": "net_ir_proxy_via_cost_adjusted_sr"
+      },
+      "ERC_top20_walk": {
+        "name": "ERC_top20_walk",
+        "family": "risk_parity",
+        "n_active": 20,
+        "sr_a": 0.8698,
+        "mean_m": 0.0133,
+        "sd_m": 0.0529,
+        "mdd": -0.2104,
+        "turnover_avg_per_period": 0.2713,
+        "selected": true,
+        "net_ir_vs_hybrid": null,
+        "selection_objective": "net_ir_proxy_via_cost_adjusted_sr"
+      }
+    },
+    "selection_objective": "net_ir_proxy_via_cost_adjusted_sr"
+  },
+  "hybrid_combine_recommendation": {
+    "recommendation": "70/30 Hybrid:R14_DUVOL (4-sleeve EXCEPTION)",
+    "selection_basis": "walk_forward_anchor_60m_2021_05_to_2026_04",
+    "best_grid_point": {
+      "w_hybrid_total": 0.7,
+      "w_r14duvol": 0.3,
+      "sr_a": 2.0287,
+      "mdd": -0.1801,
+      "sigma_reduction_vs_indep_pct": 3.32
+    },
+    "alternate_conservative": {
+      "w_hybrid_total": 0.85,
+      "w_r14duvol": 0.15,
+      "sr_a": 1.9808,
+      "mdd": -0.1766,
+      "sigma_reduction_vs_indep_pct": 1.58,
+      "rationale": "Diversifier role downgrade; smaller alloc preserves Hybrid integrity"
+    },
+    "alternate_skip": {
+      "w_hybrid_total": 1,
+      "w_r14duvol": 0,
+      "sr_a": 1.8651,
+      "mdd": -0.1748,
+      "rationale": "Status quo if Q-Lead defers R14_DUVOL admit"
+    },
+    "rho_walk_forward": -0.0872,
+    "rho_ci_95": {
+      "lower": -0.2636,
+      "upper": 0.1786
+    },
+    "diversification_source_verdict": "PARTIAL"
+  },
+  "four_sleeve_recommendation": {
+    "ax_007_exception_path": "multi-sleeve (4 sleeves: STR_1715_AR + TSMOM + KR_10y + R14_DUVOL)",
+    "current_pg2_book": {
+      "STR_1715_AR_threshold_overlay_PG2": 0.7,
+      "TSMOM_ETF_rotation_PG2": 0.15,
+      "KR_10y_bond_ETF_PG2": 0.15
+    },
+    "grid": [
+      {
+        "name": "A_70_15_15_0",
+        "w_STR_1715_AR": 0.7,
+        "w_TSMOM_ETF": 0.15,
+        "w_KR_10y_bond": 0.15,
+        "w_R14_DUVOL_skewness": 0,
+        "sr_a_proj": 1.8674,
+        "sigma_red_pct": 0,
+        "ar_m": 0,
+        "te_m": 0,
+        "ir_m": null,
+        "selected": false
+      },
+      {
+        "name": "B_63_13.5_13.5_10",
+        "w_STR_1715_AR": 0.63,
+        "w_TSMOM_ETF": 0.135,
+        "w_KR_10y_bond": 0.135,
+        "w_R14_DUVOL_skewness": 0.1,
+        "sr_a_proj": 1.9739,
+        "sigma_red_pct": 0.99,
+        "ar_m": -0.0014,
+        "te_m": 0.0077,
+        "ir_m": -0.1867,
+        "selected": false
+      },
+      {
+        "name": "C_56_12_12_20",
+        "w_STR_1715_AR": 0.56,
+        "w_TSMOM_ETF": 0.12,
+        "w_KR_10y_bond": 0.12,
+        "w_R14_DUVOL_skewness": 0.2,
+        "sr_a_proj": 2.0697,
+        "sigma_red_pct": 2.13,
+        "ar_m": -0.0029,
+        "te_m": 0.0154,
+        "ir_m": -0.1867,
+        "selected": false
+      },
+      {
+        "name": "D_49_10.5_10.5_30",
+        "w_STR_1715_AR": 0.49,
+        "w_TSMOM_ETF": 0.105,
+        "w_KR_10y_bond": 0.105,
+        "w_R14_DUVOL_skewness": 0.3,
+        "sr_a_proj": 2.1295,
+        "sigma_red_pct": 3.28,
+        "ar_m": -0.0043,
+        "te_m": 0.023,
+        "ir_m": -0.1867,
+        "selected": true
+      }
+    ],
+    "primary_recommendation": "B_63_13.5_13.5_10",
+    "primary_rationale": "Diversifier role advisory (AX-001 v2 FAIL): R14_DUVOL is NOT Defense. Conservative 10% allocation respects Diversifier downgrade. Walk-forward σ-reduction +1.0~3.3% / SR Δ +0.05~0.16 marginal. 70/30 grid (D) ⊂ aggressive — sample MDD worsens (-0.005pp). 10% allocation (B) preserves Hybrid integrity while testing R14_DUVOL contribution.",
+    "deferred_governor_decision": "Q-Lead/Governor decides among A (skip), B (10%), C (20%), D (30%) based on conviction."
+  },
+  "ax_axiom_audit": {
+    "AX_001_v2": {
+      "status_inherited": "FAIL_codex_strict_diversifier_role",
+      "role_classification_advisory": "Diversifier",
+      "mdd_relief_70_30": false,
+      "crisis_ic_ci_includes_zero": true,
+      "optimizer_action": "10% allocation (B grid) recommended over 30% (D grid). Diversifier role NOT Defense."
+    },
+    "AX_007": {
+      "status_inherited": "REQUIRES_OPTIMIZER_RESOLUTION_via_exception",
+      "exception_path_chosen": "multi-sleeve (4 sleeves)",
+      "structure_at_optimizer_layer": "multi_sleeve_4_PG2_book_plus_R14_DUVOL",
+      "ax_007_pass_via_exception": true
+    },
+    "AX_002": {
+      "status": "PASS",
+      "basis": "All weights computed via walk-forward harness. No backtest fabrication."
+    }
+  },
+  "pit_compliance": {
+    "C1": "PASS — walk-forward 59 sig_dates, no full-sample stats",
+    "C2": "PASS — alpha at sig_date t uses data <= t-1 (alpha_package PIT certified)",
+    "C9": "N/A — no DD/VT overlay applied",
+    "C13": "N/A — Z_Score_Aligned consumed from alpha_package",
+    "C14": "PASS — IC chain inherited via Usable_Date enforcement",
+    "C15": "PASS — alpha_scores.parquet via stage_artifacts (factor_db_connector chain)"
+  },
+  "rf_red_flags": {
+    "RF-O1": {
+      "severity": "LOW",
+      "finding": "binding_constraints count = 1 / max_K = 20"
+    },
+    "RF-O2": {
+      "severity": "LOW",
+      "finding": "expected_AR_a 0.0726 vs cost_a 0.0098 → ratio 7.4x"
+    },
+    "RF-O3": {
+      "severity": "INFO",
+      "finding": "turnover/period = 0.271 (NOT trivially small)"
+    },
+    "RF-O5": {
+      "severity": "PASS",
+      "finding": "n_active = 20 ≤ 20 (init.md hard constraint)",
+      "init_md_definition": "length(target_weights) > 20 (Hook block)"
+    },
+    "RF-O6": {
+      "severity": "PASS",
+      "finding": "|Σw - 1| = 0.000100 < 1e-3 ✓ (init.md hard constraint)",
+      "init_md_definition": "|sum(weights) - 1| > 0.001 (Hook block)"
+    },
+    "RF-O7": {
+      "severity": "PASS",
+      "finding": "max_w = 0.0533 ≤ 0.20, min_w = 0.0415 ≥ 0 ✓ (init.md hard constraint)",
+      "init_md_definition": "any(weights < 0) or any(weights > 0.20) (Hook block)"
+    },
+    "RF-O9": {
+      "severity": "PASS",
+      "finding": "schedule_density = 100.00% (60 sig_dates expected, 60 delivered)"
+    },
+    "RF-O8": {
+      "severity": "ACKNOWLEDGED_VIA_INFEASIBILITY_REPORT",
+      "finding": "Risk-side ES95=6.76% > Codex strict 2.5% cap. infeasibility_report 발행 (No Silent Override).",
+      "resolution": "book_level_mitigation = B_63_13.5_13.5_10 (10% R14_DUVOL Diversifier). Q-Lead/Governor PG2 admin 결정 deferred."
+    },
+    "RF-O10": {
+      "severity": "ACCEPTED_AND_FIXED",
+      "finding": "selection_objective stated 'net_ir' but actual selection by SR maximum.",
+      "resolution": "정정: selection_objective='net_ir_proxy_via_cost_adjusted_sr' + method_log net_ir_vs_hybrid 컬럼 추가 + 4-sleeve grid net_IR 표 명시"
+    }
+  },
+  "explanation": {
+    "top_overweights": [
+      "A030000",
+      "A002030",
+      "A012750",
+      "A029780",
+      "A069260"
+    ],
+    "top_overweights_alpha": [
+      0.0055,
+      0.0071,
+      0.0073,
+      0.0052,
+      0.0061
+    ],
+    "main_tradeoffs": [
+      "Decile FAIL (alpha-layer): linear top-bot inappropriate; quintile + MVO confidence-aware tested.",
+      "AX-007 single-sleeve break: 4-sleeve combine (Hybrid + R14_DUVOL) provides EXCEPTION.",
+      "AX-001 v2 FAIL → Diversifier role: 10% allocation (B grid) recommended over aggressive 30%.",
+      "Best alpha-sleeve method = ERC_top20_walk (SR 0.870); MVO confidence-aware uses ψ=0.3 FU penalty."
+    ],
+    "cycle7_note": "AR overlay systemic risk integrated downstream (Forge/Q-Lead scope). Optimizer emits raw target_weights pre-AR overlay."
+  },
+  "artifact_lineage": {
+    "request": "qepm/mailbox/worktask/WT-D20260508_010/request.json",
+    "alpha_package": "qepm/mailbox/worktask/WT-D20260508_010/alpha_package.json",
+    "risk_package": "qepm/mailbox/worktask/WT-D20260508_010/risk_package.json",
+    "weights_csv": "stage_artifacts/WT-D20260508_010/weights.csv",
+    "method_log_optimizer": "qepm/mailbox/worktask/WT-D20260508_010/method_log_optimizer.json",
+    "method_shopping_log_optimizer_alias": "qepm/mailbox/worktask/WT-D20260508_010/method_shopping_log_optimizer.json",
+    "challenge_note_optimizer": "qepm/mailbox/worktask/WT-D20260508_010/challenge_note_optimizer.md",
+    "optimization_package_draft": "qepm/mailbox/worktask/WT-D20260508_010/optimization_package_draft.json",
+    "codex_critic_response_optimizer": "qepm/mailbox/worktask/WT-D20260508_010/codex_critic_response_optimizer.json"
+  },
+  "agent_id": "optimizer-research",
+  "artifact_version": "v1.0_optimization_package_final_post_codex_r1",
+  "codex_critic_round_summary": {
+    "round": 1,
+    "stance_received": "REJECT",
+    "response_file": "qepm/mailbox/worktask/WT-D20260508_010/codex_critic_response_optimizer.json",
+    "challenge_note_file": "qepm/mailbox/worktask/WT-D20260508_010/challenge_note_optimizer.md",
+    "concerns_total": 7,
+    "classification_summary": {
+      "ACCEPT": 2,
+      "PARTIAL": 3,
+      "REBUTTAL": 2
+    },
+    "classification_detail": {
+      "C1_sigma_kappa": "PARTIAL — role-spec init.md cond<500 PASS, Discovery WT scope, WT-009 precedent (LW const-corr κ=114 admitted same threshold)",
+      "C2_cvar_breach_silent": "ACCEPT — infeasibility_report 발행 (L-129 + AX-002 + No Silent Override)",
+      "C3_selection_objective_mismatch": "ACCEPT — selection_objective net_ir_proxy_via_cost_adjusted_sr 정정 + method_log net_ir_vs_hybrid 컬럼 추가",
+      "C4_sequential_admission": "PARTIAL — Discovery WT scope, deployment promotion 시 정식 측정",
+      "C5_artifact_path": "PARTIAL — paths 정합 (challenge_note_optimizer.md + method_shopping_log_optimizer.json alias 작성)",
+      "C6_crisis_fallback": "REBUTTAL — Optimizer scope 밖 (Forge C-layer scope per L-274). Diversifier role recognition만 ACCEPT.",
+      "C7_rf_o6_o7_label": "REBUTTAL — init.md spec 정합 (RF-O6=sum_w / RF-O7=weight_bounds). Codex 잘못된 인용."
+    },
+    "high_severity_resolved": 2,
+    "high_severity_unresolved_after_fix": 0,
+    "silent_override": false,
+    "escalate_to_q_lead": false,
+    "agent_response_summary": "Codex 7 concerns 정직 분류 (1 CRITICAL + 2 HIGH + 3 MEDIUM + 1 LOW): ACCEPT=2 / PARTIAL=3 / REBUTTAL=2. ACCEPT 즉시 적용: C2 infeasibility_report 발행 + C3 selection_objective 정정. PARTIAL: C1 (init.md cond<500 PASS, WT-009 precedent) / C4 (Discovery WT scope) / C5 (path 정합). REBUTTAL: C6 (Optimizer scope 밖, Forge layer) / C7 (init.md label 정합, Codex misquote). Charter v1.7 §8 No Silent Override 충족. HIGH severity 모두 ACCEPT 처리. Q-Lead escalate 불필요."
+  },
+  "as_of_date_finalized": "2026-05-08T17:34:32+0900",
+  "forge_handoff_note": {
+    "weights_csv_schema": {
+      "columns": ["sig_date", "Ticker", "weight", "as_of_date"],
+      "n_rows": 1200,
+      "n_unique_dates": 60,
+      "schedule_density_pct": 100,
+      "method_used_per_date": "ERC_top20_walk (uniform across all 60 sig_dates)"
+    },
+    "walk_forward_explicit": true,
+    "walk_forward_period": {
+      "start": "2021-05-31",
+      "end": "2026-04-30"
+    },
+    "current_snapshot_as_of": "2026-04-30",
+    "binding_to_alpha_scores_parquet": "stage_artifacts/WT-D20260508_010/alpha_scores.parquet (60 sig_dates × 348 univ × alpha_z)",
+    "binding_to_covariance_parquet": "stage_artifacts/WT-D20260508_010/covariance.parquet (348×348, LW2004 const-corr κ=202.62 from risk_package)",
+    "forge_eigen_recompute_request": "Codex C1: covariance.parquet file content eigen cond=2165.76 vs Risk supplement κ=202.62 — Forge에서 binary-level cov 재 audit 권고",
+    "forge_4_sleeve_admit_decision": "B/C/D grid 중 Q-Lead 결정. infeasibility_report mitigation B (10%) primary."
+  }
+}

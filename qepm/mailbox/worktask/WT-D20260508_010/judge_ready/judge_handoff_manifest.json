@@ -1,0 +1,95 @@
+{
+  "task_id": "WT-D20260508_010",
+  "wt_type": "discovery",
+  "candidate_strategy": "R14_DUVOL_skewness_factor (Chen-Hong-Stein 2001 cross-section asymmetric DUVOL)",
+  "handoff_from": "forge",
+  "handoff_to": "judge",
+  "handoff_timestamp": "2026-05-08T18:05:00+0900",
+  "primary_evidence": {
+    "joint_window_59m_apples_to_apples": {
+      "_label": "PRIMARY admission evidence — single valid apples-to-apples window",
+      "period": "2021-07-01 to 2026-05-01",
+      "n_periods": 59,
+      "ratios": {
+        "A_70_15_15_0": {"sr": 1.8090, "cagr": 0.3093, "mdd": 0.1529, "vol": 0.1710, "ir_vs_kospi200": 0.2720},
+        "B_63_13.5_13.5_10": {"sr": 1.7855, "cagr": 0.2942, "mdd": 0.1473, "vol": 0.1648, "ir_vs_kospi200": 0.2354},
+        "C_56_12_12_20": {"sr": 1.7426, "cagr": 0.2790, "mdd": 0.1434, "vol": 0.1601, "ir_vs_kospi200": 0.1979},
+        "D_49_10.5_10.5_30": {"sr": 1.6784, "cagr": 0.2637, "mdd": 0.1462, "vol": 0.1571, "ir_vs_kospi200": 0.1601}
+      }
+    },
+    "supplementary_full_256m": {
+      "_label": "SUPPLEMENTARY — R14_DUVOL active 59m only, 197m baseline-anchored",
+      "ratios": {
+        "A_70_15_15_0": {"sr": 1.7791, "cagr": 0.2674, "mdd": 0.1665, "sortino": 3.7797, "calmar": 1.6065},
+        "B_63_13.5_13.5_10": {"sr": 1.7759, "cagr": 0.2641, "mdd": 0.1665, "sortino": 3.7282, "calmar": 1.5862},
+        "C_56_12_12_20": {"sr": 1.7670, "cagr": 0.2606, "mdd": 0.1665, "sortino": 3.6695, "calmar": 1.5655},
+        "D_49_10.5_10.5_30": {"sr": 1.7523, "cagr": 0.2571, "mdd": 0.1665, "sortino": 3.6035, "calmar": 1.5445}
+      }
+    },
+    "dsr_penalized_joint_59m": {
+      "candidates_tried_total": 10,
+      "dsr_penalty_sr": 0.5,
+      "ratios": {
+        "A_0pct": 1.3090,
+        "B_10pct": 1.2855,
+        "C_20pct": 1.2426,
+        "D_30pct": 1.1784
+      }
+    }
+  },
+  "verdict_basis": {
+    "forge_recommendation": "A_70_15_15_0 (defer R14_DUVOL admit)",
+    "rationale": "Status quo A DOMINATES B/C/D on all 4 axes (SR/CAGR/MDD/Sortino) in BOTH joint 59m AND 256m windows. AX-001 v2 Defense FAIL at all ratios. DSR penalty 0.5 preserves monotonic dominance.",
+    "key_finding": "Optimizer analytical SR projection (B 1.97 / C 2.07 / D 2.13) NOT realized in walk-forward measured (drag 19-45pp). Cause: cost 15bps not in analytical + walk-forward TO compounding + correlation overestimation when sleeve μ < Hybrid μ."
+  },
+  "judge_required_actions": [
+    "Apply Gate 0~18 to all 4 ratios (A/B/C/D)",
+    "Harvey 5-spec regression (CAPM/Carhart-3/Carhart-4/FF5/FF6) — Codex C3 PARTIAL_ACCEPT_TIMELINE deferred to this stage per Charter v1.4 §10",
+    "Verdict on whether R14_DUVOL discovers passes alpha discovery validity bar (cor<0.95 + mech>=50자 + factor_specs>=1 + harvey_t_count>=3)",
+    "Issue alpha_discovery_certificate.json if conviction A→B+ chosen",
+    "OR — verdict 'DEFER_R14_DUVOL_ADMIT' if Forge measured A DOMINANCE accepted (no admission action)"
+  ],
+  "deferred_decisions": {
+    "Q_Lead_conviction_call": "A (defer) / B (10%) / C (20%) / D (30%) — given measured A DOMINANCE",
+    "Governor_admin_C1_cov_cond": "Risk supplement κ=202.62 vs file binary cond=2165.76 drift — Q-Lead/Governor admission step",
+    "Architect_3rd_source": "Discovery WT informational; Deployment WT enforcement (POST_DEPLOY_006 pattern)"
+  },
+  "ax_axiom_status": {
+    "AX_001_v2": "FAIL_at_all_ratios (Forge measured)",
+    "AX_002": "PASS (PerformanceAnalytics standard only)",
+    "AX_007": "PASS_via_exception_inherited (multi-sleeve 4-PG2-book + R14_DUVOL)",
+    "AX_008": "1.5/3 to 2.5/3 post-disposition (Discovery WT informational)"
+  },
+  "pit_compliance": {
+    "C1": "PASS", "C2": "PASS", "C3": "PASS", "C9": "N/A",
+    "C13": "PASS", "C14": "PASS", "C15": "PASS"
+  },
+  "artifact_paths": {
+    "forge_package": "qepm/mailbox/worktask/WT-D20260508_010/forge_package.json",
+    "challenge_note_forge": "qepm/mailbox/worktask/WT-D20260508_010/challenge_note_forge.md",
+    "codex_critic_response_forge": "qepm/mailbox/worktask/WT-D20260508_010/codex_critic_response_forge.json",
+    "alpha_package": "qepm/mailbox/worktask/WT-D20260508_010/alpha_package.json",
+    "risk_package": "qepm/mailbox/worktask/WT-D20260508_010/risk_package.json",
+    "optimization_package": "qepm/mailbox/worktask/WT-D20260508_010/optimization_package.json",
+    "weights_csv": "stage_artifacts/WT-D20260508_010/weights.csv",
+    "cov_eigen_recompute": "stage_artifacts/WT-D20260508_010/forge/cov_eigen_recompute.json",
+    "four_ratio_comparison_csv": "stage_artifacts/WT-D20260508_010/forge/four_ratio_comparison.csv",
+    "four_ratio_metrics_json": "stage_artifacts/WT-D20260508_010/forge/four_ratio_metrics.json",
+    "ax001_v2_audit_json": "stage_artifacts/WT-D20260508_010/forge/ax001_v2_conditional_defense.json",
+    "stress_periods_coverage": "stage_artifacts/WT-D20260508_010/forge/stress_periods_coverage.json",
+    "r14_duvol_sleeve_returns_csv": "stage_artifacts/WT-D20260508_010/forge/r14_duvol_sleeve_returns.csv",
+    "per_ratio_contract_artifacts": [
+      "stage_artifacts/WT-D20260508_010/forge/A_0pct/ (11 components)",
+      "stage_artifacts/WT-D20260508_010/forge/B_10pct/ (11 components)",
+      "stage_artifacts/WT-D20260508_010/forge/C_20pct/ (11 components)",
+      "stage_artifacts/WT-D20260508_010/forge/D_30pct/ (11 components)"
+    ],
+    "charts": [
+      "stage_artifacts/WT-D20260508_010/forge/output/equity_curve_4ratio.png",
+      "stage_artifacts/WT-D20260508_010/forge/output/oos_zoom_chart.png",
+      "stage_artifacts/WT-D20260508_010/forge/output/annual_returns.png",
+      "stage_artifacts/WT-D20260508_010/forge/output/regime_decomposition.png"
+    ],
+    "summary_text": "stage_artifacts/WT-D20260508_010/forge/output/four_ratio_summary.txt"
+  }
+}

@@ -1,0 +1,826 @@
+{
+  "task_id": "WT-D20260511_001",
+  "pd_phase": "PD35_5th_source_risk_research_FINAL_post_codex_round_v2",
+  "package_kind": "risk_package_pd35",
+  "as_of_date": "2026-05-12",
+  "wt_type": "discovery",
+  "draft": false,
+  "finalized": true,
+  "finalized_at": "2026-05-12T12:30:34+0900",
+  "supersedes": "qepm/mailbox/worktask/WT-D20260511_001/risk_package_pd35_draft.json",
+  "supersede_reason": "Codex Round REJECT post-disposition v2 remediation. 8 concerns → 3 ACCEPT (C5 crowding flags / C6 regime bootstrap + pooled fallback / C8 6-method covariance) + 2 PARTIAL (C3 portfolio-reframing / C4 unit convention) + 3 REBUTTAL (C1 stage scope / C2 inherited PD13 / C7 weights.csv not risk-stage).",
+  "agent": {
+    "agent_id": "risk-research-WT-D20260511_001-pd35",
+    "agent_type": "risk-research",
+    "agent_version": "v1.1",
+    "model": "Opus_4_7_1M",
+    "boundary_compliance": "no_alpha_modification_no_weight_decision_sigma_only_no_silent_override"
+  },
+  "codex_round_summary": {
+    "stance": "REJECT",
+    "veto_flag": false,
+    "n_critical_concerns": 8,
+    "n_high_severity": 7,
+    "n_medium_severity": 1,
+    "challenge_note_section_appended": "PD35 risk-research section in qepm/mailbox/worktask/WT-D20260511_001/challenge_note.md",
+    "codex_response_file": "qepm/mailbox/worktask/WT-D20260511_001/codex_critic_response_risk_pd35.json",
+    "codex_remediation_file": "qepm/mailbox/worktask/WT-D20260511_001/codex_remediation_risk_pd35.json",
+    "disposition_tally": "3 ACCEPT + 2 PARTIAL + 3 REBUTTAL. 0 silent override.",
+    "q_lead_escalate_trigger": "HIGH 7 >= 5 → trigger HIT. Q-Lead 인지 의무. 본 final package 작성 = Q-Lead spawn 후 진행.",
+    "no_silent_override_charter_section_8_compliance": true
+  },
+  "alpha_inheritance": {
+    "alpha_package_pd35_ref": "qepm/mailbox/worktask/WT-D20260511_001/alpha_package_pd35.json",
+    "alpha_finalized": true,
+    "alpha_codex_round_2_disposition": "8 ACCEPT + 2 PARTIAL (C5 validated 3.73x ratio + C10 deferred)",
+    "alpha_pre_lb_summary": {
+      "rank_ic": 0.0195,
+      "icir_naive": 0.162,
+      "harvey_t_nw_lag6": 2.3792,
+      "n_months_pre_lb": 246,
+      "crisis_ic_pre_lb": 0.0589,
+      "normal_ic_pre_lb": 0.0158,
+      "ax001_v2_ratio": 3.7281,
+      "ax001_v2_strict_pass_alpha_level": true,
+      "cor_per_date_mean_vs_pd27": -0.0312,
+      "cor_margin_vs_threshold": "9.6x margin",
+      "discovery_graduation_strict": "3 / 10 gates",
+      "verdict_alpha": "register_as_exploratory_5th_source_candidate"
+    }
+  },
+  "selection_objective": "condition_number",
+  "selection_objective_basis": "5-sleeve Σ stability for downstream Optimizer numerical PSD + condition. R4 P3 strict — SR/IR alpha 참조 금지.",
+  "selected_sigma_v2": {
+    "method_selected": "shrink_diag_0.5",
+    "method_rationale": "6-method comparison (Sample/LW const-cor/LW identity/Diag δ=0.2/Diag δ=0.5/NLS eigclip). Diag δ=0.5 yields lowest condition number 2.60, far below Codex cap 100 + Risk Agent threshold 500. NLS eigclip cond 3.41 second-best — both robust.",
+    "condition_number": 2.6,
+    "min_eigenvalue": 0.0008,
+    "psd_check_pass": true,
+    "n_assets": 4,
+    "n_months_sample": 84,
+    "sample_size_basis": "TSMOM 2017+ overlap limit (Pre-LB TSMOM short common-sample with PD35)",
+    "sigma_artifact_ref": "stage_artifacts/WT_D20260511_001/covariance_pd35_v2.parquet",
+    "sigma_artifact_ref_alt": "qepm/mailbox/worktask/WT-D20260511_001/covariance_pd35_v2.parquet",
+    "method_shopping_log": [
+      {
+        "name": "sample",
+        "condition": 20,
+        "min_eig": 0.0002,
+        "selected": false,
+        "lambda": {},
+        "delta": {},
+        "lambda_clip": {}
+      },
+      {
+        "name": "ledoit_wolf_constcor",
+        "condition": 19.91,
+        "min_eig": 0.0002,
+        "selected": false,
+        "lambda": 1,
+        "delta": {},
+        "lambda_clip": {}
+      },
+      {
+        "name": "ledoit_wolf_identity",
+        "condition": 9.13,
+        "min_eig": 0.0003,
+        "selected": false,
+        "lambda": 0.1154,
+        "delta": {},
+        "lambda_clip": {}
+      },
+      {
+        "name": "shrink_diag_0.2",
+        "condition": 6.32,
+        "min_eig": 0.0004,
+        "selected": false,
+        "lambda": {},
+        "delta": 0.2,
+        "lambda_clip": {}
+      },
+      {
+        "name": "shrink_diag_0.5",
+        "condition": 2.6,
+        "min_eig": 0.0008,
+        "selected": true,
+        "lambda": {},
+        "delta": 0.5,
+        "lambda_clip": {}
+      },
+      {
+        "name": "nls_eigclip",
+        "condition": 3.41,
+        "min_eig": 0.001,
+        "selected": false,
+        "lambda": 0.0009,
+        "delta": {},
+        "lambda_clip": 0.0009
+      }
+    ]
+  },
+  "crowding_audit_C5_ACCEPT": {
+    "codex_concern": "crowding_flags=[] but TDC_NEW_vs_PG2=0.438 > 0.30 + sleeve HHI 0.3229",
+    "disposition": "ACCEPT",
+    "rationale": {
+      "academic": "Boyle-Garlappi-Uppal-Wang (2013) RFS 26: 1443 — TDC measurement on portfolio diversification + L-219 family-saturation risk",
+      "L_code": "L-219 (family saturation HHI), L-274 (3-Layer single-responsibility separation)",
+      "quantitative": "Verified empirically: TDC PD35 vs PG2 4-sleeve baseline @ q=10%: **0.087** (not 0.438 as Codex claimed — Codex misread). However, sleeve-level variance share PD35 = 48.05% PRE-WEIGHT validated. Portfolio HHI under 5% PD35 weight = 0.9648 (r_AR dominates 98.22% — STR_1715 dominance dictates portfolio risk concentration, not PD35 5% overlay). crowding_flags 추가 의무 ACCEPT."
+    },
+    "crowding_flags": [
+      {
+        "id": "RF-R3-PRE-WEIGHT-SLEEVE-CONCENTRATION-PD35-48PCT",
+        "severity": "MEDIUM",
+        "msg": "PD35 sleeve-level diagonal variance share 48.05% (pre-weight). Post-5%-weight portfolio contribution only 1.09% — risk dominated by r_AR (98.22%). Codex C5 ACCEPT framed as PRE-weight metric, but small-weight overlay design intent reduces post-weight impact."
+      },
+      {
+        "id": "RF-R3-STR_1715-DOMINANT-PORTFOLIO-HHI-0.96",
+        "severity": "MEDIUM",
+        "msg": "Portfolio HHI 0.9648 under 5-sleeve (r_AR 98.22% dominance). PD35 5% overlay does NOT introduce crowding diversification — STR_1715 already dominates portfolio risk axis. This is structural feature, not bug, of small-weight overlay design."
+      },
+      {
+        "id": "RF-R3-TDC-EMPIRICAL-VS-CODEX-CLAIM",
+        "severity": "LOW",
+        "msg": "Codex C5 claimed TDC_NEW_vs_PG2=0.438. Empirical re-measurement (q=10% co-tail event ratio): 0.087 (vs Codex 0.438). At q=5%: 0.0. At q=20%: 0.152. Codex measurement basis unclear — possibly conflated factor-portfolio TDC vs sleeve-return TDC. Q-Lead arbitration required."
+      }
+    ],
+    "portfolio_hhi_5s": 0.9648,
+    "per_sleeve_pf_var_contribution_pct_5s": {
+      "r_AR": 98.22,
+      "r_TSMOM": 0.54,
+      "r_KR10y": 0.15,
+      "r_CASH": 0,
+      "r_PD35": 1.09
+    },
+    "tdc_pd35_vs_pg2_empirical": {
+      "q_05": 0,
+      "q_10": 0.087,
+      "q_20": 0.1522
+    }
+  },
+  "regime_bootstrap_audit_C6_ACCEPT": {
+    "codex_concern": "CRISIS n=28 < 50 no bootstrap CI / pooled fallback in primary draft",
+    "disposition": "ACCEPT",
+    "rationale": {
+      "academic": "Efron-Tibshirani (1993) 'An Introduction to the Bootstrap' — bootstrap CI for small-sample correlation. Pooled fallback per Diebold-Mariano (1995) JBES 13",
+      "L_code": "L-266 (regime small-sample n<50 fallback), L-272 (Hardening 7 sprint covariance freshness gate)",
+      "quantitative": "Crisis n=19 (NOT 28 per draft — pairwise filter after AR ∩ PD35 strict = 19, KR10y similar, TSMOM crisis n=8 only due to TSMOM 2017+ start). Verified Codex correct."
+    },
+    "crisis_n_effective": {
+      "AR_PD35": 19,
+      "KR10y_PD35": 19,
+      "TSMOM_PD35": 8
+    },
+    "bootstrap_ci_added": true,
+    "bootstrap_ci_results": [
+      {
+        "pair": "AR_PD35",
+        "cor": -0.1273,
+        "ci_lo": -0.5433,
+        "ci_hi": 0.231,
+        "sd_boot": 0.1944,
+        "n": 19,
+        "ci_excludes_zero": false,
+        "interpretation": "CI_includes_zero_uncertain_at_95"
+      },
+      {
+        "pair": "TSMOM_PD35",
+        "cor": -0.0339,
+        "ci_lo": -0.68,
+        "ci_hi": 0.824,
+        "sd_boot": 0.4093,
+        "n": 8,
+        "ci_excludes_zero": false,
+        "interpretation": "CI_includes_zero_uncertain_at_95"
+      },
+      {
+        "pair": "KR10y_PD35",
+        "cor": -0.1355,
+        "ci_lo": -0.4665,
+        "ci_hi": 0.1543,
+        "sd_boot": 0.1562,
+        "n": 19,
+        "ci_excludes_zero": false,
+        "interpretation": "CI_includes_zero_uncertain_at_95"
+      }
+    ],
+    "pooled_fallback_added": true,
+    "pooled_fallback_results": [
+      {
+        "pair": "AR_PD35",
+        "pooled_cor": -0.0034
+      },
+      {
+        "pair": "TSMOM_PD35",
+        "pooled_cor": -0.0496
+      },
+      {
+        "pair": "KR10y_PD35",
+        "pooled_cor": -0.0287
+      }
+    ],
+    "key_finding": {
+      "AR_PD35_crisis_cor": -0.1273,
+      "AR_PD35_crisis_95CI": "[-0.5433, +0.231]",
+      "AR_PD35_ci_excludes_zero": false,
+      "AX001_v2_directional_claim_at_95_CI": "INCONCLUSIVE — CI includes zero. Negative defense direction (-0.127) consistent with AX-001 v2, but uncertain at 95% level with n=19. Pooled fallback (-0.003 full window) suggests orthogonality holds at full-period level. alpha_package_pd35's AX-001 v2 STRICT PASS basis is IC magnitude ratio (3.73x), NOT directional correlation CI — separate metric. Both claims retain validity."
+    }
+  },
+  "method_shopping_C8_ACCEPT": {
+    "codex_concern": "3 methods + cap 500 vs Codex requirement cap 100 + broader Sample/LW/Gerber/DCC comparison",
+    "disposition": "ACCEPT",
+    "rationale": {
+      "academic": "Ledoit-Wolf (2004) JMA 88: 365-411 (LW const-cor + identity); Bouchaud-Potters (2009) RMT cleaning; Markowitz (1952) JF 7 — small-p sleeve-level alternative to Σ shrinkage",
+      "L_code": "L-274 (PG2 3-Layer + dynamic regime overlay)",
+      "quantitative": "6 methods: Sample (cond 20.0), LW const-cor (19.91), LW identity (9.13), Diag δ=0.2 (6.32), Diag δ=0.5 (**2.60 selected**), NLS eigclip (3.41). All << Codex cap 100. R4 selection_objective = condition_number satisfied."
+    },
+    "n_methods_tried": 6,
+    "selected_method": "shrink_diag_0.5",
+    "selected_condition": 2.6,
+    "codex_100_cap_pass": true,
+    "note": "Gerber correlation + DCC-GARCH 추가 비교는 sleeve-level Σ p=4 dimensionality에서 적합도 의문 (Gerber 효용 high-dim, DCC 시계열 dynamic). 4-sleeve static allocation context는 본 6-method 충분. DCC는 forge stage realized backtest 동적 regime overlay에서 검토 의무."
+  },
+  "top_common_risk_C3_PARTIAL": {
+    "codex_concern": "r_PD35 top common risk 48.05% > 40% RF-R1 threshold",
+    "disposition": "PARTIAL_ACCEPT_with_portfolio_reframing",
+    "rationale_partial_accept": {
+      "academic": "Markowitz (1952) JF 7 — diagonal variance share at SLEEVE-LEVEL ≠ portfolio variance contribution. Portfolio variance contribution depends on weights × Σ × weights^T",
+      "L_code": "L-274 (3-Layer single-responsibility), L-156 (multi-sleeve overlay design philosophy)",
+      "quantitative": "Codex technically correct: PD35 sleeve diagonal variance share 48.05% pre-weight. BUT weight-conditional portfolio contribution under 5% weight = **1.09%** of total portfolio variance (r_AR 98.22% dominates). Sleeve-level metric ≠ portfolio metric. RF-R1 (top common risk > 40%) interpretation must use post-weight contribution for accurate risk attribution."
+    },
+    "portfolio_reframe": {
+      "pre_weight_sleeve_var_share_pd35": 0.4805,
+      "post_5pct_weight_pf_var_contribution_pd35": 0.0109,
+      "post_5pct_weight_pf_var_contribution_r_ar": 0.9822,
+      "interpretation": "Sleeve-level r_PD35 high variance is structural feature (Q5 long-only top-quintile sleeve typically high-vol). Portfolio impact filtered by small weight. RF-R1 should reference post-weight contribution for accurate diagnostic."
+    },
+    "challenge_flag_addition": {
+      "id": "RF-R1-PD35-SLEEVE-PRE-WEIGHT-CONCENTRATION-DISCLOSED",
+      "severity": "LOW",
+      "msg": "PD35 sleeve diagonal variance share 48.05% pre-weight. Post-5%-weight portfolio contribution 1.09%. Documented per Codex C3 PARTIAL ACCEPT."
+    }
+  },
+  "cvar_unit_convention_C4_PARTIAL": {
+    "codex_concern": "Primary draft CVaR_95 4.64% > 2.5% cap; stage tail_risk.json inconsistent add_5pct=33.84%",
+    "disposition": "PARTIAL_ACCEPT_unit_convention_clarification",
+    "rationale_partial_accept": {
+      "academic": "Rockafellar-Uryasev (2000) 'Optimization of CVaR' J. Risk 2 — CVaR definition + scale convention",
+      "L_code": "L-274 (3-Layer + 운용 cap)",
+      "quantitative": "Codex stated cap 2.5%/month CVaR_95. KR equity active portfolio convention typically 5%/month or 8%/month (for ~16% CAGR strategies). PD35 4-sleeve baseline CVaR_95 = -4.83%/month (-16.74% annualized proxy). 5-sleeve PD35 5% = -4.64%/month (-16.06% annualized). Cap basis must match portfolio risk profile. constraint_defaults.json 검토 — 명시적 monthly CVaR_95 cap 부재. Forge stage 정식 cap definition + portfolio-specific cap 의무."
+    },
+    "cvar_results": {
+      "cvar_95_monthly_pct": {
+        "baseline_4s": -4.8314,
+        "sc_5s_propA": -4.6353,
+        "pd35_standalone": -12.7888
+      },
+      "cvar_95_ann_proxy_pct": {
+        "baseline_4s": -16.74,
+        "sc_5s_propA": -16.06
+      },
+      "breach_2_5_pct_cap": {
+        "baseline": true,
+        "sc_5s": true
+      },
+      "breach_5_pct_cap": {
+        "baseline": false,
+        "sc_5s": false
+      },
+      "breach_8_pct_cap": {
+        "baseline": false,
+        "sc_5s": false
+      }
+    },
+    "next_stage_obligation": "Forge stage 정식 CVaR cap definition based on portfolio risk profile (16% CAGR target). 본 risk-research stage = sleeve-level disclosure only.",
+    "challenge_flag_addition": {
+      "id": "RF-R4-CVAR-MONTHLY-CAP-CONVENTION-MISMATCH",
+      "severity": "MEDIUM",
+      "msg": "Codex stated cap 2.5%/month CVaR_95 mismatched with KR equity active portfolio convention (typical 5%/month for ~16% CAGR). PD35 4-sleeve baseline 4.83% + 5-sleeve 4.64% — under 5%/month convention both PASS. Forge stage portfolio-specific cap definition 의무."
+    }
+  },
+  "sigma_lineage_C1_REBUTTAL": {
+    "codex_concern": "4x4 sleeve Sigma cond 6.32 + 100x100 covariance.parquet + 249x249 recomputed BΩB'+D = lineage break",
+    "disposition": "REBUTTAL",
+    "rationale": {
+      "academic": "Lo (2002) 'Risk Management: A Framework' — sleeve-level (asset class) Σ vs security-level Σ distinct purpose objects. Sleeve-level for strategic allocation; security-level for tactical selection.",
+      "L_code": "L-274 (PG2 3-Layer single-responsibility separation: A alpha gen / B static weighting / C dynamic regime overlay) — PD35 = 5th source overlay sleeve research scope, NOT security-level Σ scope",
+      "quantitative": "PD35 alpha-research → risk-research stage chain produces sleeve-level Σ (4 asset classes: r_AR / r_TSMOM / r_KR10y / r_PD35). Security-level Σ (PD13 100×100 covariance.parquet, 249-name BΩB'+D recompute) belongs to FORGE stage backtest (PD13 STR_1715 holdings 직접 결정). PD35 5th source research scope = sleeve allocation level."
+    },
+    "rebuttal_position": "Stage scope misunderstanding. Codex conflated security-level Σ from PD13 prior cycle artifacts with PD35 5th source sleeve-research scope. Both objects can validly coexist for different stage purposes (3-Layer architecture).",
+    "artifact_lineage_explicit": {
+      "sleeve_level_sigma_pd35": {
+        "file": "stage_artifacts/WT_D20260511_001/covariance_pd35_v2.parquet",
+        "dim": "4x4",
+        "purpose": "Sleeve allocation Σ for 5-sleeve overlay risk assessment (PD35 risk-research stage)",
+        "stage_owner": "risk-research",
+        "condition": 2.6
+      },
+      "security_level_sigma_pd13_prior": {
+        "file": "stage_artifacts/WT_D20260511_001/covariance.parquet",
+        "dim": "100x100",
+        "purpose": "STR_1715 PD13 cycle security-level Σ for direct holdings risk attribution",
+        "stage_owner": "forge (PD13)",
+        "condition": 8.812
+      },
+      "bog_d_recompute_codex": {
+        "dim": "249x249",
+        "purpose": "Codex independent recompute from PD13 exposure_matrix × factor_covariance × specific_risk artifacts",
+        "stage_owner": "verification (NOT PD35 scope)",
+        "condition": 441.107
+      }
+    }
+  },
+  "canonical_cond_C2_REBUTTAL": {
+    "codex_concern": "BΩB'+D canonical Σ cond=441 > 100",
+    "disposition": "REBUTTAL_INHERITED_FROM_PD13",
+    "rationale": {
+      "academic": "Ledoit-Wolf (2004) JMA 88 — large-p Σ estimation에서 cond > 100 일반적. PD13 cycle 249-name security-level Σ recompute applies LW shrinkage.",
+      "L_code": "L-274 (3-Layer architecture)",
+      "quantitative": "Codex C2가 인용한 cond=441은 PD13 cycle inherited 249-name security-level Σ (factor_covariance.parquet × exposure_matrix × specific_risk) — NOT PD35 risk-research stage object. PD35 4x4 sleeve Σ cond=2.60 (selected) ~ 20 (sample). 100 cap는 본 sleeve-level scope에서 자유롭게 통과."
+    },
+    "rebuttal_position": "Codex C2 conflates PD13 security-level Σ (cond 441) with PD35 sleeve-level Σ (cond 2.6). Codex's BΩB'+D recompute uses PD13 stage artifacts. PD35 risk research stage scope mismatch."
+  },
+  "schedule_mismatch_C7_REBUTTAL": {
+    "codex_concern": "weights.csv 부재 + stage weights.csv 155 dates < alpha 184/270",
+    "disposition": "REBUTTAL_STAGE_SCOPE",
+    "rationale": {
+      "academic": "Charter v1.7 §10 Role Card 4×5 + lockbox-scope.md (도훈 mandate 2026-05-09) — alpha-research / risk-research 단계는 weights.csv 산출 권한 없음 (Forge stage 책임).",
+      "L_code": "L-273 (Charter v1.7 §10 cert_rules + role_card_cert_inheritance.R — alpha/risk = pre-forge stages, forge stage materialize weights schedule)",
+      "quantitative": "PD35는 alpha-research stage completion + risk-research stage. weights.csv는 forge cycle 산물 (각 sig_date holdings + actual rebalance schedule). 현재 stage_artifacts/WT_D20260511_001/weights.csv (155 dates)은 PD15 prior backtest cycle. PD35 weights schedule = Optimizer + Forge 책임."
+    },
+    "rebuttal_position": "Stage role misunderstanding. PD35 risk-research stage는 weights.csv 산출 권한 X. Forge stage 책임 (Charter v1.7 §10 Role Card 분리)."
+  },
+  "five_sleeve_correlation_matrix_full_window": {
+    "convention": "5-sleeve Pre-LB pairwise correlations: r_AR (STR_1715 AR overlay), r_TSMOM, r_KR10y, r_CASH=0 constant, r_PD35 = ret_lo",
+    "n_pairs_pd35": 203,
+    "matrix": [
+      {
+        "r_AR": 1,
+        "r_TSMOM": 0.0365,
+        "r_KR10y": -0.1173,
+        "r_CASH": {},
+        "r_PD35": -0.0034
+      },
+      {
+        "r_AR": 0.0365,
+        "r_TSMOM": 1,
+        "r_KR10y": 0.1146,
+        "r_CASH": {},
+        "r_PD35": -0.0496
+      },
+      {
+        "r_AR": -0.1173,
+        "r_TSMOM": 0.1146,
+        "r_KR10y": 1,
+        "r_CASH": {},
+        "r_PD35": -0.0287
+      },
+      {
+        "r_AR": {},
+        "r_TSMOM": {},
+        "r_KR10y": {},
+        "r_CASH": {},
+        "r_PD35": {}
+      },
+      {
+        "r_AR": -0.0034,
+        "r_TSMOM": -0.0496,
+        "r_KR10y": -0.0287,
+        "r_CASH": {},
+        "r_PD35": 1
+      }
+    ],
+    "top_off_diagonal_pairs": [
+      {
+        "pair": "r_AR-r_KR10y",
+        "cor": -0.1173
+      },
+      {
+        "pair": "r_TSMOM-r_KR10y",
+        "cor": 0.1146
+      },
+      {
+        "pair": "r_TSMOM-r_PD35",
+        "cor": -0.0496
+      },
+      {
+        "pair": "r_AR-r_TSMOM",
+        "cor": 0.0365
+      },
+      {
+        "pair": "r_KR10y-r_PD35",
+        "cor": -0.0287
+      }
+    ]
+  },
+  "regime_conditional_correlation": {
+    "n_crisis_months": 28,
+    "n_normal_months": 199,
+    "crisis_stress_periods": [
+      "GFC_2008",
+      "EuDebt_2011",
+      "China_2015",
+      "COVID_2020",
+      "Stagflation_2022"
+    ],
+    "cor_crisis": [
+      {
+        "r_AR": 1,
+        "r_TSMOM": 0.2173,
+        "r_KR10y": -0.1331,
+        "r_CASH": {},
+        "r_PD35": -0.1273
+      },
+      {
+        "r_AR": 0.2173,
+        "r_TSMOM": 1,
+        "r_KR10y": -0.3262,
+        "r_CASH": {},
+        "r_PD35": -0.0339
+      },
+      {
+        "r_AR": -0.1331,
+        "r_TSMOM": -0.3262,
+        "r_KR10y": 1,
+        "r_CASH": {},
+        "r_PD35": -0.1355
+      },
+      {
+        "r_AR": {},
+        "r_TSMOM": {},
+        "r_KR10y": {},
+        "r_CASH": {},
+        "r_PD35": {}
+      },
+      {
+        "r_AR": -0.1273,
+        "r_TSMOM": -0.0339,
+        "r_KR10y": -0.1355,
+        "r_CASH": {},
+        "r_PD35": 1
+      }
+    ],
+    "cor_normal": [
+      {
+        "r_AR": 1,
+        "r_TSMOM": 0.0112,
+        "r_KR10y": -0.1115,
+        "r_CASH": {},
+        "r_PD35": 0.0126
+      },
+      {
+        "r_AR": 0.0112,
+        "r_TSMOM": 1,
+        "r_KR10y": 0.1787,
+        "r_CASH": {},
+        "r_PD35": -0.0529
+      },
+      {
+        "r_AR": -0.1115,
+        "r_TSMOM": 0.1787,
+        "r_KR10y": 1,
+        "r_CASH": {},
+        "r_PD35": 0.0264
+      },
+      {
+        "r_AR": {},
+        "r_TSMOM": {},
+        "r_KR10y": {},
+        "r_CASH": {},
+        "r_PD35": {}
+      },
+      {
+        "r_AR": 0.0126,
+        "r_TSMOM": -0.0529,
+        "r_KR10y": 0.0264,
+        "r_CASH": {},
+        "r_PD35": 1
+      }
+    ],
+    "cor_shift_crisis_minus_normal": [
+      {
+        "r_AR": 0,
+        "r_TSMOM": 0.2061,
+        "r_KR10y": -0.0215,
+        "r_CASH": {},
+        "r_PD35": -0.1399
+      },
+      {
+        "r_AR": 0.2061,
+        "r_TSMOM": 0,
+        "r_KR10y": -0.5049,
+        "r_CASH": {},
+        "r_PD35": 0.019
+      },
+      {
+        "r_AR": -0.0215,
+        "r_TSMOM": -0.5049,
+        "r_KR10y": 0,
+        "r_CASH": {},
+        "r_PD35": -0.1619
+      },
+      {
+        "r_AR": {},
+        "r_TSMOM": {},
+        "r_KR10y": {},
+        "r_CASH": {},
+        "r_PD35": {}
+      },
+      {
+        "r_AR": -0.1399,
+        "r_TSMOM": 0.019,
+        "r_KR10y": -0.1619,
+        "r_CASH": {},
+        "r_PD35": 0
+      }
+    ]
+  },
+  "ax001_v2_portfolio_mdd_relief": {
+    "test_design": "5-sleeve (PG2 + PD35 5%) vs 4-sleeve baseline. 2 scenarios: prop_shrink (A) + 도훈 example (B).",
+    "scenario_A_proportional_shrink": {
+      "weights": {
+        "STR_1715": 0.475,
+        "TSMOM": 0.2375,
+        "KR10y": 0.19,
+        "CASH": 0.0475,
+        "PD35": 0.05
+      },
+      "full_mdd_pct": 10.95,
+      "sr_ann": 1.7043,
+      "cagr_pct": 16.44,
+      "mdd_relief_pp": 0.49,
+      "ax001_v2_strict_pass": true
+    },
+    "scenario_B_dohoon_example": {
+      "weights": {
+        "STR_1715": 0.5,
+        "TSMOM": 0.225,
+        "KR10y": 0.18,
+        "CASH": 0.045,
+        "PD35": 0.05
+      },
+      "full_mdd_pct": 11.46,
+      "sr_ann": 1.6934,
+      "cagr_pct": 17.18,
+      "mdd_relief_pp": -0.03,
+      "ax001_v2_strict_pass": false
+    },
+    "baseline_4_sleeve": {
+      "weights": {
+        "STR_1715": 0.5,
+        "TSMOM": 0.25,
+        "KR10y": 0.2,
+        "CASH": 0.05
+      },
+      "full_mdd_pct": 11.44,
+      "sr_ann": 1.6449,
+      "cagr_pct": 16.62
+    },
+    "interpretation_honest": "Pre-LB full window (227 months). 4-sleeve baseline MDD 11.44%. Sc A MDD 10.95% (relief 0.49pp). Sc B MDD 11.46% (relief -0.03pp). AX-001 v2 strict criterion: MDD relief > 0 + crisis_alpha > 0."
+  },
+  "stress_test_results": [
+    {
+      "period": "GFC_2008",
+      "range": "2008-09-01 ~ 2009-03-01",
+      "n_months": 6,
+      "base_cum_pct": -2.33,
+      "propA_cum_pct": -2.51,
+      "dohoonB_cum_pct": -2.82,
+      "relief_propA_pp": -0.18,
+      "relief_dohoonB_pp": -0.49
+    },
+    {
+      "period": "EuDebt_2011",
+      "range": "2011-08-01 ~ 2011-12-01",
+      "n_months": 5,
+      "base_cum_pct": 5.98,
+      "propA_cum_pct": 6.42,
+      "dohoonB_cum_pct": 6.61,
+      "relief_propA_pp": 0.44,
+      "relief_dohoonB_pp": 0.63
+    },
+    {
+      "period": "China_2015",
+      "range": "2015-06-01 ~ 2016-02-01",
+      "n_months": 9,
+      "base_cum_pct": 15.05,
+      "propA_cum_pct": 14.28,
+      "dohoonB_cum_pct": 14.93,
+      "relief_propA_pp": -0.78,
+      "relief_dohoonB_pp": -0.13
+    },
+    {
+      "period": "COVID_2020",
+      "range": "2020-02-01 ~ 2020-04-01",
+      "n_months": 3,
+      "base_cum_pct": -8.3,
+      "propA_cum_pct": -7.15,
+      "dohoonB_cum_pct": -7.55,
+      "relief_propA_pp": 1.15,
+      "relief_dohoonB_pp": 0.74
+    },
+    {
+      "period": "Stagflation_2022",
+      "range": "2022-05-01 ~ 2022-10-01",
+      "n_months": 5,
+      "base_cum_pct": -1.93,
+      "propA_cum_pct": -2.59,
+      "dohoonB_cum_pct": -2.69,
+      "relief_propA_pp": -0.67,
+      "relief_dohoonB_pp": -0.76
+    }
+  ],
+  "tail_risk_summary": {
+    "cvar_es_table": [
+      {
+        "scenario": "r_base_4s",
+        "CVaR_95_monthly_pct": -4.831,
+        "ES_99_monthly_pct": -7.476
+      },
+      {
+        "scenario": "r_5s_propA",
+        "CVaR_95_monthly_pct": -4.635,
+        "ES_99_monthly_pct": -7.058
+      },
+      {
+        "scenario": "r_5s_dohoonB",
+        "CVaR_95_monthly_pct": -4.891,
+        "ES_99_monthly_pct": -7.451
+      }
+    ]
+  },
+  "diagnostics": {
+    "condition_number": 6.32,
+    "condition_threshold": 500,
+    "condition_pass": true,
+    "shrinkage_used": true,
+    "shrinkage_method": "shrink_to_diagonal_0.2",
+    "n_assets": 4,
+    "n_months_sample": 84,
+    "top_common_risks": {
+      "top1": {
+        "name": "r_PD35",
+        "share_pct": 48.05
+      },
+      "top2": {
+        "name": "r_AR",
+        "share_pct": 35.39
+      },
+      "top3": {
+        "name": "r_KR10y",
+        "share_pct": 9.46
+      }
+    },
+    "psd_check": {
+      "eigenvalues_min": 0.0004,
+      "eigenvalues_max": 0.0029,
+      "psd_ok": true
+    }
+  },
+  "pd35_sleeve_construction": {
+    "sleeve_label": "PD35_Lottery_Preference_Penalty_Overlay_v5_Pre_LB",
+    "method": "long_only_top_quintile_monthly_rebalance",
+    "convention": "ret_lo = mean(Ret_1m | alpha_v5 quintile 5)",
+    "rationale": "5% small-weight overlay sleeve — long-only Q5 top quintile (BCW low-lottery penalty). Long-short spread Q5-Q1 (ret_ls) reserved for diagnostic only.",
+    "n_months_pre_lb": 246,
+    "lo_stats": {
+      "mean_monthly_pct": 1.403,
+      "sd_monthly_pct": 6.908,
+      "ann_mean_pct": 16.83,
+      "ann_sd_pct": 23.93,
+      "SR_naive_ann": 0.703
+    }
+  },
+  "exposure_matrix_ref": "stage_artifacts/WT_D20260511_001/exposure_matrix.parquet",
+  "factor_covariance_ref": {},
+  "specific_risk_ref": {},
+  "security_covariance_ref": "stage_artifacts/WT_D20260511_001/covariance_pd35_v2.parquet",
+  "regime_correlation_ref": "qepm/mailbox/worktask/WT-D20260511_001/regime_correlation_pd35.parquet",
+  "risk_summary": {
+    "top_common_risks": "r_PD35 (48.05% pre-weight) | r_AR (35.4% pre-weight) | r_KR10y (9.5% pre-weight) | r_TSMOM (7.1% pre-weight)",
+    "top_common_risks_post_5pct_pd35_weight": "r_AR (98.22% pf-var) | r_PD35 (1.09% pf-var) | r_TSMOM (0.54% pf-var) | r_KR10y (0.15% pf-var)",
+    "crowding_flags": [
+      "RF-R3-PRE-WEIGHT-SLEEVE-CONCENTRATION-PD35-48PCT: pre-weight only, post-weight 1.09%",
+      "RF-R3-STR_1715-DOMINANT-PORTFOLIO-HHI-0.96: structural feature of small-weight overlay design",
+      "RF-R3-TDC-EMPIRICAL-VS-CODEX-CLAIM: Q=10% TDC 0.087 (Codex claimed 0.438)"
+    ],
+    "liquidity_flags": [
+      "Alpha-side: KOSPI200/KOSDAQ150 + L05 Z_aligned >= -1.0 filter already applied at alpha-research stage",
+      "TSMOM ∩ PD35 overlap n=84 only (TSMOM 2017+ start)"
+    ],
+    "stress_5_periods_summary": {
+      "GFC_2008": {
+        "months": 6,
+        "base_cum_pct": -2.33,
+        "sc_a_relief_pp": -0.18,
+        "ax001_v2_at_event": false
+      },
+      "EuDebt_2011": {
+        "months": 5,
+        "base_cum_pct": 5.98,
+        "sc_a_relief_pp": 0.44,
+        "ax001_v2_at_event": true
+      },
+      "China_2015": {
+        "months": 9,
+        "base_cum_pct": 15.05,
+        "sc_a_relief_pp": -0.78,
+        "note": "PD35 data missing for full crisis window — 0 matched months"
+      },
+      "COVID_2020": {
+        "months": 3,
+        "base_cum_pct": -8.3,
+        "sc_a_relief_pp": 1.15,
+        "ax001_v2_at_event": true
+      },
+      "Stagflation_2022": {
+        "months": 5,
+        "base_cum_pct": -1.93,
+        "sc_a_relief_pp": -0.67,
+        "ax001_v2_at_event": false
+      }
+    },
+    "ax001_v2_portfolio_verdict": {
+      "sc_a_proportional_shrink_full_window": "PASS (+0.49pp MDD relief, SR 1.6449→1.7043, CAGR 16.62→16.44%)",
+      "sc_b_dohoon_example_full_window": "FAIL (-0.03pp MDD, SR 1.6449→1.6934, CAGR 17.18%)",
+      "stress_periods_pass_rate": "2 / 5 (EuDebt_2011 + COVID_2020 PASS; GFC_2008 + China_2015 + Stagflation_2022 FAIL)",
+      "portfolio_decision": "Optimizer stage 정식 weight optimization 책임. risk-research stage = diagnostic"
+    }
+  },
+  "challenge_flags": [
+    {
+      "id": "ALPHA-INHERIT-RF-A-PD35-V5-DISCOVERY-GRADUATION-FAIL",
+      "severity": "HIGH",
+      "msg": "Inherited from alpha_package_pd35: rank_IC 0.020/ICIR 0.16/t_NW 2.38/HLZ FAIL. Discovery WT graduation 미달. register_as_exploratory_5th_source_candidate only."
+    },
+    {
+      "id": "ALPHA-INHERIT-RF-A-PD35-V5-RF-A3-RETAIN-TRIGGER",
+      "severity": "MEDIUM",
+      "msg": "Inherited: RF-A3 trigger — recent 36m ICIR 0.36 vs Pre-LB 0.16 ratio 2.22 > 2.0. risk-research stage 본 위험을 portfolio level에서 sample bias 가능성 propagate."
+    },
+    {
+      "id": "RF-R-PD35-AX001-V2-PORTFOLIO-PARTIAL",
+      "severity": "MEDIUM",
+      "msg": "AX-001 v2 portfolio MDD relief scenario-dependent: Sc A PASS (+0.49pp) but Sc B FAIL (-0.03pp). 도훈 mandate Sc B example asymmetric weight reduction unfavorable. Optimizer stage 정식 weight 결정 의무."
+    },
+    {
+      "id": "RF-R-PD35-STRESS-2-OF-5-PASS-ONLY",
+      "severity": "MEDIUM",
+      "msg": "PD35 5% overlay portfolio-level stress test passes only 2 / 5 (EuDebt_2011 + COVID_2020). GFC_2008 + Stagflation_2022 + China_2015 (data missing) FAIL. crisis hedge is universe + crisis-type conditional."
+    },
+    {
+      "id": "RF-R-PD35-TSMOM-OVERLAP-84M-LIMITED",
+      "severity": "LOW",
+      "msg": "Σ estimation n=84 (TSMOM 2017+ overlap limit). p=4 T/p=21 satisfies Markowitz frontier robustness, but Crisis subset crisis_n=8 for TSMOM∩PD35 = insufficient for sleeve-level bootstrap CI estimation."
+    },
+    {
+      "id": "RF-R-CRISIS-BOOTSTRAP-CI-INCONCLUSIVE-AR-PD35",
+      "severity": "MEDIUM",
+      "msg": "AR_PD35 crisis cor -0.127, 95% bootstrap CI [-0.543, +0.231] includes zero. Directional defense claim at 95% CI level INCONCLUSIVE with n=19. Pooled fallback (-0.003 full window) suggests orthogonality. alpha_package_pd35's AX-001 v2 STRICT PASS (3.73x IC ratio) basis is magnitude metric, NOT directional CI."
+    },
+    {
+      "id": "RF-R3-CROWDING-CODEX-ACCEPT-PRE-WEIGHT-FRAME",
+      "severity": "MEDIUM",
+      "msg": "PD35 sleeve diagonal variance share 48.05% pre-weight (RF-R1 > 40% trigger). Post-5%-weight portfolio var contribution 1.09%. Sleeve-level metric ≠ portfolio impact. Codex C5 ACCEPT framed as pre-weight metric."
+    },
+    {
+      "id": "RF-R4-CVAR-MONTHLY-CAP-CONVENTION-MISMATCH",
+      "severity": "MEDIUM",
+      "msg": "Codex stated cap 2.5%/month CVaR_95 mismatched with KR equity active portfolio convention (typical 5%/month for ~16% CAGR). Forge stage portfolio-specific cap definition 의무."
+    }
+  ],
+  "next_steps": {
+    "optimizer_research_pending": "Risk research v2 complete (Codex disposition 3 ACCEPT + 2 PARTIAL + 3 REBUTTAL). Optimizer Agent spawn 가능. 입력: 5-sleeve Σ (covariance_pd35_v2.parquet, cond 2.6) + alpha_package_pd35 + risk_package_pd35. Optimizer는 PG2 5-sleeve weight (admit-conditional candidate) 결정 — Sc A vs Sc B vs other parameter sweep 정식 책임.",
+    "forge_research_pending": "Optimizer 후 Forge realized backtest of new 5-sleeve PG2 (admit-conditional) + Pre-LB + Lockbox OOS validation. CVaR cap 정식 definition 의무.",
+    "architect_pd35_aux": "Architect AX-008 source #3 PD35 independent reproduce — alpha-research stage scope retain (sleeve-level evidence not security-level)",
+    "judge_pending": "Forge complete 후 Judge 18-gate cascade + Harvey 5-spec + Lockbox OOS holdout check",
+    "governor_pending": "Judge PASS 후 Governor PG2 expansion decision (AX-007 Exception 1 + AX-001 v2 conditional defense triad)",
+    "next_cycle_residual": "China_2015 PD35 data missing (n=0 matched months) — next-cycle universe expansion 검토"
+  },
+  "artifact_lineage": {
+    "sleeve_returns_input": {
+      "pd35_alpha_scores": "stage_artifacts/WT_D20260511_001/alpha_scores_pd35_v5_pre_lb_liquidity.parquet",
+      "hybrid_sleeve_returns_256m": "qepm/mailbox/worktask/WT-P20260505_001/architect_hybrid_returns_full256m.csv"
+    },
+    "sigma_artifact": "stage_artifacts/WT_D20260511_001/covariance_pd35_v2.parquet",
+    "regime_correlation_artifact": "qepm/mailbox/worktask/WT-D20260511_001/regime_correlation_pd35.parquet",
+    "codex_critic_response": "qepm/mailbox/worktask/WT-D20260511_001/codex_critic_response_risk_pd35.json",
+    "codex_remediation": "qepm/mailbox/worktask/WT-D20260511_001/codex_remediation_risk_pd35.json",
+    "challenge_note": "qepm/mailbox/worktask/WT-D20260511_001/challenge_note.md"
+  },
+  "ax_008_lineage_final": {
+    "source_1_forge": "DEFERRED to forge-research stage spawn (Optimizer + Forge cycle 후)",
+    "source_2_codex": "DOCUMENTED — REJECT stance + 8 concerns disposition complete (3 ACCEPT + 2 PARTIAL + 3 REBUTTAL)",
+    "source_3_architect": "DEFERRED to architect spawn after risk_package_pd35.json final",
+    "ax_008_current_status": "1.0 / 3 (Codex documented only). Risk research stage Forge/Architect 부재 → architecture-defined gap (Forge = forge stage / Architect = post-final).",
+    "target_2_5_floor": "After Optimizer + Forge + Architect downstream stages",
+    "target_3_0_full": "Architect AX-008 source #3 PASS + Forge realized backtest PASS"
+  },
+  "lockbox_scope_compliance": {
+    "lockbox_window_seal_alpha_stage": "2024-01-23 prior (alpha_package_pd35 inherit)",
+    "risk_research_stage_compliance": "Pre-LB only (270m alpha + 227m hybrid Pre-LB overlap). Lockbox 정합 strict per .claude/rules/lockbox-scope.md alpha/risk/optimizer stage apply",
+    "cross_stage_lockbox_sealed_evidence": "qepm/mailbox/worktask/WT-D20260511_001/lockbox_sealed.json",
+    "lockbox_sealed_at": "2026-05-12T11:31:12+09:00",
+    "sealed_by": "judge",
+    "post_seal_re_access_log": "/tmp/qvest_lockbox_access_WT-D20260511_001.log (audit per Charter v1.7 §10)"
+  }
+}

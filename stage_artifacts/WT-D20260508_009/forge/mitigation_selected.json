@@ -1,0 +1,40 @@
+{
+  "forge_mitigation_selection": {
+    "optimizer_options_evaluated": ["M0_monthly_as_is", "M1_quarterly_rebalance", "M2_buffer_zone_keep15_entry25", "M3_3m_MA_smoothing"],
+    "selection_criteria": "TO ≤ 600 (Hurdle hard) + max SR_net within feasible",
+    "selected": "M3_3m_MA_smoothing",
+    "selected_stats": {
+      "mitigation": "M3_3m_MA_smoothing",
+      "n": 196,
+      "mean_monthly_pct": 0.9365,
+      "sd_monthly_pct": 7.983,
+      "SR_ann": 0.4064,
+      "CAGR_pct": 7.8273,
+      "MDD_pct": -46.0955,
+      "TO_round_trip_ann_pct": 493.3831,
+      "cost_ann_pct": 0.37,
+      "TO_breach_600": false
+    },
+    "all_stats": {
+      "mitigation": ["M0_monthly_as_is", "M1_quarterly_rebalance", "M2_buffer_zone_keep15_entry25", "M3_3m_MA_smoothing"],
+      "n": [196, 196, 196, 196],
+      "mean_monthly_pct": [1.1295, 0.9567, 1.0598, 0.9365],
+      "sd_monthly_pct": [8.1644, 8.1884, 8.1745, 7.983],
+      "SR_ann": [0.4792, 0.4047, 0.4491, 0.4064],
+      "CAGR_pct": [10.164, 7.8818, 9.2114, 7.8273],
+      "MDD_pct": [-51.0506, -45.6693, -54.1551, -46.0955],
+      "TO_round_trip_ann_pct": [1037.4321, 482.2372, 899.8765, 493.3831],
+      "cost_ann_pct": [0.7781, 0.3617, 0.6749, 0.37],
+      "TO_breach_600": [true, false, true, false]
+    },
+    "rationale": "Forge realized backtest reveals true mitigation effects. Optimizer's projection (SR 1.999) was based on sigma_str_assumed=20% proxy; realized Standalone WT_009 SR=0.479 — gap explained by lossy proxy + concentration tax not in proxy. Selected based on data-driven SR-feasibility frontier.",
+    "pure_function_compliance": "weights post-process within Optimizer infeasibility_report explicit options (a/b/c/d). NO alpha_vector or covariance modification.",
+    "optimizer_estimated_vs_realized": {
+      "optimizer_forward_sr_estimated": 1.9991,
+      "forge_realized_sr_M0": 0.4792,
+      "gap_explained": "sigma_assumed=20pct (Optimizer) vs realized sigma=28.3% (annualized of 8.16% monthly std) — risk under-estimated"
+    }
+  },
+  "computed_at": "2026-05-08T17:59:22+09:00",
+  "agent": "forge"
+}

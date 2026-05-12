@@ -1,0 +1,238 @@
+{
+  "task_id": "WT-D20260511_001",
+  "pd_phase": "PD32_5th_orthogonal_source_v2",
+  "generated_at": "2026-05-12T11:09:17+0900",
+  "candidates": [
+    {
+      "id": "D",
+      "name": "Crowding_Anti_Herding",
+      "family": "Crowding_Anti_Herding",
+      "factors": ["CR03_Herding_Dispersion", "CR11_Idiosyncratic_Return", "CR05_Short_Pressure_Proxy"],
+      "directions": [-1, 1, -1],
+      "rationale": "Lou-Polk 2022 RFS anti-crowded outperform + Stambaugh-Yu-Yuan 2015 JF low-herding alpha + Daniel-Moskowitz 2016 idio mom",
+      "references": ["Lou-Polk 2022 RFS 35: 4385-4434 'Comomentum: Inferring Arbitrage Activity from Return Correlations'", "Stambaugh-Yu-Yuan 2015 JF 70: 1903-1948 'Arbitrage Asymmetry and Idiosyncratic Volatility Puzzle'", "Daniel-Moskowitz 2016 JFE 122: 221-247 'Momentum Crashes'"],
+      "diagnostics": {
+        "mean_ic": -0.0323,
+        "sd_ic": 0.1156,
+        "icir": -0.2789,
+        "t_nw": -4.2302,
+        "n_months": 298,
+        "pos_share": 0.3792
+      },
+      "cor_vs_pd27": {
+        "cor_overall": 0.0514,
+        "cor_per_date_mean": 0.0471,
+        "cor_per_date_sd": 0.0992,
+        "cor_per_date_min": -0.1908,
+        "cor_per_date_max": 0.2872,
+        "n_dates": 298,
+        "pass_lt_0_30": true
+      },
+      "crisis_hedge": {
+        "crisis_ic": -0.061,
+        "normal_ic": -0.029,
+        "ratio": 2.1025,
+        "n_crisis_months": 30,
+        "n_normal_months": 268,
+        "ax001_v2_pass": false
+      },
+      "subperiod": {
+        "P1_2001_2008": {
+          "rank_ic": -0.0418,
+          "icir": -0.365,
+          "n_months": 86
+        },
+        "P2_2009_2017": {
+          "rank_ic": -0.0082,
+          "icir": -0.0652,
+          "n_months": 105
+        },
+        "P3_2018_2026": {
+          "rank_ic": -0.046,
+          "icir": -0.495,
+          "n_months": 100
+        },
+        "min_max_ratio": 5.5834,
+        "pass": true
+      },
+      "selection_score": {
+        "score": 25,
+        "reasons": ["cor=0.047<0.30", "subperiod PASS"]
+      }
+    },
+    {
+      "id": "B",
+      "name": "Investment_Frictions",
+      "family": "Investment_Frictions",
+      "factors": ["GR03_Asset_Growth", "IN01_CapEx_to_Assets", "IN05_Net_Debt_Issuance"],
+      "directions": [-1, -1, -1],
+      "rationale": "Cooper-Gulen-Schill 2008 JF Asset Growth Anomaly + Fama-French 2015 5F Investment factor + Daniel-Titman 2006 Equity Issuance",
+      "references": ["Cooper-Gulen-Schill 2008 JF 63: 1609-1651 'Asset Growth and the Cross-Section of Stock Returns'", "Fama-French 2015 JFE 116: 1-22 'A Five-Factor Asset Pricing Model'", "Daniel-Titman 2006 JF 61: 1605-1643 'Market Reactions to Tangible and Intangible Information'"],
+      "diagnostics": {
+        "mean_ic": 0.0035,
+        "sd_ic": 0.0827,
+        "icir": 0.0423,
+        "t_nw": 0.7603,
+        "n_months": 298,
+        "pos_share": 0.5302
+      },
+      "cor_vs_pd27": {
+        "cor_overall": 0.0031,
+        "cor_per_date_mean": 0.0076,
+        "cor_per_date_sd": 0.0858,
+        "cor_per_date_min": -0.2226,
+        "cor_per_date_max": 0.2099,
+        "n_dates": 298,
+        "pass_lt_0_30": true
+      },
+      "crisis_hedge": {
+        "crisis_ic": -0.0135,
+        "normal_ic": 0.0054,
+        "ratio": -2.4914,
+        "n_crisis_months": 30,
+        "n_normal_months": 268,
+        "ax001_v2_pass": false
+      },
+      "subperiod": {
+        "P1_2001_2008": {
+          "rank_ic": 0.0193,
+          "icir": 0.2413,
+          "n_months": 86
+        },
+        "P2_2009_2017": {
+          "rank_ic": 0.0004,
+          "icir": 0.0057,
+          "n_months": 105
+        },
+        "P3_2018_2026": {
+          "rank_ic": -0.0068,
+          "icir": -0.0682,
+          "n_months": 100
+        },
+        "min_max_ratio": -0.353,
+        "pass": false
+      },
+      "selection_score": {
+        "score": 15,
+        "reasons": "cor=0.008<0.30"
+      }
+    },
+    {
+      "id": "A",
+      "name": "Accrual_Reversal",
+      "family": "Accrual_Reversal",
+      "factors": ["AC01_Total_Accruals_CF", "AC11_Accruals_to_Assets", "AC22_Accrual_Volatility"],
+      "directions": [-1, -1, -1],
+      "rationale": "Sloan 1996 TAR Accrual Anomaly + Hirshleifer-Hou-Teoh-Zhang 2004 JFE Investor Underreaction + KR Kim 2010 PBFJ",
+      "references": ["Sloan 1996 TAR 71: 289-315 'Do Stock Prices Fully Reflect Information in Accruals and Cash Flows about Future Earnings?'", "Hirshleifer-Hou-Teoh-Zhang 2004 JFE 38: 297-331 'Do Investors Overvalue Firms with Bloated Balance Sheets?'", "Kim 2010 PBFJ 18: 271-292 (KR replication)"],
+      "diagnostics": {
+        "mean_ic": -0.01,
+        "sd_ic": 0.0746,
+        "icir": -0.1345,
+        "t_nw": -2.2092,
+        "n_months": 276,
+        "pos_share": 0.4239
+      },
+      "cor_vs_pd27": {
+        "cor_overall": -0.0334,
+        "cor_per_date_mean": -0.0303,
+        "cor_per_date_sd": 0.0755,
+        "cor_per_date_min": -0.1888,
+        "cor_per_date_max": 0.2379,
+        "n_dates": 276,
+        "pass_lt_0_30": true
+      },
+      "crisis_hedge": {
+        "crisis_ic": -0.0189,
+        "normal_ic": -0.0089,
+        "ratio": 2.112,
+        "n_crisis_months": 30,
+        "n_normal_months": 246,
+        "ax001_v2_pass": false
+      },
+      "subperiod": {
+        "P1_2001_2008": {
+          "rank_ic": -0.0171,
+          "icir": -0.2249,
+          "n_months": 64
+        },
+        "P2_2009_2017": {
+          "rank_ic": -0.0058,
+          "icir": -0.0814,
+          "n_months": 105
+        },
+        "P3_2018_2026": {
+          "rank_ic": -0.0072,
+          "icir": -0.0988,
+          "n_months": 100
+        },
+        "min_max_ratio": 2.9351,
+        "pass": true
+      },
+      "selection_score": {
+        "score": 25,
+        "reasons": ["cor=-0.030<0.30", "subperiod PASS"]
+      }
+    },
+    {
+      "id": "F",
+      "name": "Smart_Money_Flow",
+      "family": "Investor_Flow",
+      "factors": ["INV10_Smart_Money_Flow", "INV05_Foreign_Momentum", "INV09_Flow_Persistence"],
+      "directions": [1, 1, 1],
+      "rationale": "Choe-Kho-Stulz 2005 RFS Foreign Investor Smart Money + Kim-Lee-Park 2017 PBFJ KR flow + Bae-Yamada-Ito 2008 JBF",
+      "references": ["Choe-Kho-Stulz 2005 RFS 18: 795-829 'Do Domestic Investors Have an Edge? The Trading Experience of Foreign Investors in Korea'", "Kim-Lee-Park 2017 PBFJ 43: 88-99 (KR foreign smart money replication)", "Bae-Yamada-Ito 2008 JBF 32: 1862-1875 (KR/JP institutional flow)"],
+      "diagnostics": {
+        "mean_ic": -0.0287,
+        "sd_ic": 0.091,
+        "icir": -0.3156,
+        "t_nw": -6.026,
+        "n_months": 298,
+        "pos_share": 0.3826
+      },
+      "cor_vs_pd27": {
+        "cor_overall": 0.0613,
+        "cor_per_date_mean": 0.0525,
+        "cor_per_date_sd": 0.0882,
+        "cor_per_date_min": -0.2217,
+        "cor_per_date_max": 0.2826,
+        "n_dates": 298,
+        "pass_lt_0_30": true
+      },
+      "crisis_hedge": {
+        "crisis_ic": -0.0673,
+        "normal_ic": -0.0244,
+        "ratio": 2.759,
+        "n_crisis_months": 30,
+        "n_normal_months": 268,
+        "ax001_v2_pass": false
+      },
+      "subperiod": {
+        "P1_2001_2008": {
+          "rank_ic": -0.0291,
+          "icir": -0.2738,
+          "n_months": 86
+        },
+        "P2_2009_2017": {
+          "rank_ic": -0.027,
+          "icir": -0.3057,
+          "n_months": 105
+        },
+        "P3_2018_2026": {
+          "rank_ic": -0.025,
+          "icir": -0.3208,
+          "n_months": 100
+        },
+        "min_max_ratio": 1.1654,
+        "pass": true
+      },
+      "selection_score": {
+        "score": 25,
+        "reasons": ["cor=0.053<0.30", "subperiod PASS"]
+      }
+    }
+  ],
+  "selected_candidate": "D",
+  "output_parquet": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/stage_artifacts/WT_D20260511_001/alpha_scores_pd32_5th_source.parquet",
+  "diagnostic_csv": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/stage_artifacts/WT_D20260511_001/pd32_factor_diagnostic.csv"
+}

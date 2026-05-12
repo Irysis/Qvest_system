@@ -1,0 +1,193 @@
+{
+  "task_id": "WT-D20260511_002",
+  "as_of_date": "2026-05-11",
+  "method": "weights.csv_direct_NAV_reconstruction_PerformanceAnalytics_Return.portfolio_sleeve_aggregate",
+  "sr_realized_share_based": 1.83,
+  "sr_factor_engine_continuous": {},
+  "sr_lockbox_daily_harness": {},
+  "measurement_basis_primary": "forge_realized_share_based",
+  "weights_csv_unique_dates_count": 256,
+  "alpha_sig_dates_count": 256,
+  "schedule_density_ratio": 1,
+  "schedule_density_pass": true,
+  "pure_function_violation": false,
+  "divergence_factor_engine_vs_realized_pp": 0.0303,
+  "vs_factor_engine": {
+    "factor_engine_claimed_sr_is": 1.8603,
+    "forge_v3_realized_sr_is": 1.83,
+    "divergence_pp": 0.0303,
+    "diagnosis": "NEGLIGIBLE",
+    "note": "factor_engine_claimed = Optimizer expected_metrics_256m.SR_net (composite_ret_renorm + net 15bps × 2 round-trip turnover). forge_v3_realized = PerformanceAnalytics Return.portfolio with monthly rebalance, verbose=TRUE for turnover-based cost computation."
+  },
+  "backtest_summary": {
+    "full_period": {
+      "n_obs": 255,
+      "start": "2005-03",
+      "end": "2026-05",
+      "sr_net": 1.83,
+      "sr_gross": 1.8341,
+      "cagr": 0.1969,
+      "mdd": 0.1147,
+      "sortino": 4.0252,
+      "calmar": 1.7162,
+      "annvol": 0.1076,
+      "cvar_95": -0.0471,
+      "cvar_99": -0.0749,
+      "turnover_yr": 0.1503
+    },
+    "pre_lockbox": {},
+    "lockbox": {}
+  },
+  "factor_regression_5_specs": {},
+  "method_selected_results": {
+    "method": "01_static_baseline_retain",
+    "weights_static": {
+      "str1715": 0.5,
+      "kr10y": 0.2,
+      "tsmom": 0.25,
+      "cash": 0.05
+    },
+    "metrics_net": {
+      "SR": 1.83,
+      "CAGR": 0.1969,
+      "AnnVol": 0.1076,
+      "MDD": 0.1147,
+      "Sortino": 4.0252,
+      "Calmar": 1.7162,
+      "CVaR_95": -0.0471,
+      "CVaR_99": -0.0749
+    },
+    "metrics_gross": {
+      "SR": 1.8341,
+      "CAGR": 0.1974,
+      "AnnVol": 0.1077,
+      "MDD": 0.1144,
+      "Sortino": 4.0418,
+      "Calmar": 1.7258,
+      "CVaR_95": -0.047,
+      "CVaR_99": -0.0748
+    },
+    "turnover_yr": 0.1503
+  },
+  "method_2nd_results": {
+    "method": "09_regime_crisis_aggr",
+    "base": {
+      "str1715": 0.5,
+      "kr10y": 0.2,
+      "tsmom": 0.25,
+      "cash": 0.05
+    },
+    "crisis_shift": {
+      "str1715": -0.2,
+      "kr10y": 0.1,
+      "tsmom": 0.05,
+      "cash": 0.05
+    },
+    "metrics_net": {
+      "SR": 1.8436,
+      "CAGR": 0.1879,
+      "AnnVol": 0.1019,
+      "MDD": 0.1154,
+      "Sortino": 4.2365,
+      "Calmar": 1.6287,
+      "CVaR_95": -0.0443,
+      "CVaR_99": -0.0674
+    },
+    "metrics_gross": {
+      "SR": 1.8545,
+      "CAGR": 0.189,
+      "AnnVol": 0.1019,
+      "MDD": 0.1146,
+      "Sortino": 4.2755,
+      "Calmar": 1.6497,
+      "CVaR_95": -0.0441,
+      "CVaR_99": -0.0673
+    },
+    "turnover_yr": 0.3154,
+    "divergence_vs_opt_expected_pp": 0.0654,
+    "diagnosis_vs_opt_expected": "NEGLIGIBLE"
+  },
+  "dm_test_forge_2nd_vs_baseline": {
+    "sr_baseline_monthly": 0.501,
+    "sr_2nd_monthly": 0.5055,
+    "sr_baseline_annualized": 1.7354,
+    "sr_2nd_annualized": 1.7511,
+    "delta_sr_monthly": 0.0045,
+    "delta_sr_annualized": 0.0157,
+    "memmel_t_stat": 0.3481,
+    "memmel_p_value": 0.7278,
+    "rho": 0.9827,
+    "n_obs": 255,
+    "conclusion": "STATISTICALLY_INDISTINGUISHABLE"
+  },
+  "same_period_baseline_compare": {
+    "note": "Same period (256m monthly 2005-02 ~ 2026-05) + same cost basis (15bps one-way) + same DSR convention. Optimizer's expected_metrics_256m is composite_ret_renorm + net 15bps × 2 round-trip turnover.",
+    "optimizer_expected_sr_static": 1.8603,
+    "optimizer_expected_sr_2nd": 1.909,
+    "optimizer_expected_mdd": -0.1523,
+    "optimizer_expected_cagr": 0.2365,
+    "optimizer_expected_cvar_95": 0.0551,
+    "forge_realized_sr_selected": 1.83,
+    "forge_realized_sr_2nd": 1.8436,
+    "forge_realized_mdd_selected": 0.1147,
+    "forge_realized_cagr_selected": 0.1969,
+    "forge_realized_cvar_selected": -0.0471,
+    "delta_sr_selected_vs_optimizer": -0.0303,
+    "delta_mdd_selected_vs_optimizer": 0.267,
+    "delta_cvar_selected_vs_optimizer": -0.1022
+  },
+  "strict_improve_criterion_check": {
+    "selected_method": "01_static_baseline_retain",
+    "note": "Optimizer selected static. Forge confirms — 2nd dynamic (09_regime_crisis_aggr) statistically indistinguishable from static (Memmel 2003).",
+    "delta_sr_2nd_minus_baseline": 0.0136,
+    "memmel_t_stat": 0.3481,
+    "memmel_p_value": 0.7278,
+    "dm_t_gt_2": false,
+    "delta_sr_geq_0p30": false,
+    "mdd_static_better_or_within_2pp": true,
+    "turnover_le_30pct": false,
+    "cvar_2nd_improvement": 0.0029,
+    "overall_strict_improve_pass": false,
+    "rationale": "Memmel 2003 p_value = 0.7278 > 0.05 → 2nd dynamic NOT stat sig improve. ΔSR = 0.0136 < 0.30 threshold. Optimizer R12 No Silent Override정합 — static baseline retain. AX-008 Optimizer + Codex 2/3 (Architect verification deferred to subsequent cycle)."
+  },
+  "pure_function_audit": {
+    "pure_function_violation": false,
+    "start_hashes": {
+      "alpha_package": "0975ac13de1e124a155906c5b9b15104",
+      "risk_package": "1598b8c8f2562bc24ae8e7b57f0edaa3",
+      "optimization_package": "1f3db4c9fe494fcd3a74deff0af2bd4c",
+      "weights_csv": "54c86a992a84de252d4412aa810d2e01"
+    },
+    "end_hashes": {
+      "alpha_package": "0975ac13de1e124a155906c5b9b15104",
+      "risk_package": "1598b8c8f2562bc24ae8e7b57f0edaa3",
+      "optimization_package": "1f3db4c9fe494fcd3a74deff0af2bd4c",
+      "weights_csv": "54c86a992a84de252d4412aa810d2e01"
+    },
+    "hash_match": true,
+    "audit_notes": ["Forge consumed weights.csv as-is. No alpha_scores top-N rederivation.", "method labels (selected/2nd): 01_static_baseline_retain / 09_regime_crisis_aggr"]
+  },
+  "constraint_validation": {
+    "sum_weights_selected_pass": true,
+    "sum_weights_2nd_pass": true,
+    "long_only_selected": true,
+    "long_only_2nd": true,
+    "per_sleeve_bounds_selected": true,
+    "per_sleeve_bounds_2nd": true
+  },
+  "ax_axiom_compliance": {
+    "AX_000_no_limit": "documented — 2nd dynamic NOT stat sig vs static. Future research paths (Rglpk CVaR LP, HMM regime, PPO RL) noted in optimization_package.",
+    "AX_001_v2_conditional_defense": "documented — kr10y crisis_alpha PASS (Risk Agent). tsmom borderline. CRISIS shift (09_regime_crisis_aggr) provides mild MDD/CVaR improvement but not stat sig SR boost.",
+    "AX_002_no_lookahead": "PASS — weights.csv regime_lag is C9 t-1 compliant (build_weights_csv.R Phase 2). PerformanceAnalytics Return.portfolio monthly rebalance. PIT 정합.",
+    "AX_007_top20_mechanism": "N/A — sleeve-aggregate 4-sleeve composite (cross-asset). 1715 H1 internal sleeve is multi-sleeve composite (AX-007 4 exceptions retained).",
+    "AX_008_verification_triangulation": "Forge: 1 source. Optimizer: 1 source. Codex Optimizer: REJECT stance addressed in optimization_package_final + challenge_note.md. Architect verification: deferred to next cycle (sizing_only WT). 2/3 met (Optimizer + Codex Optimizer)."
+  },
+  "benchmark_status": {
+    "loaded": false,
+    "source": "UNAVAILABLE",
+    "metric_type": "unavailable"
+  },
+  "oos_charts_generated": ["output/equity_curve.png", "output/annual_returns.png", "output/oos_zoom_chart.png", "output/regime_decomposition.png"],
+  "generated_at": "2026-05-11T08:36:38+0900",
+  "generated_by": "Forge agent (Q-Lead spawned) — Pure Function 3-package integrator"
+}

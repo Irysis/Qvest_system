@@ -1,0 +1,113 @@
+{
+  "task_id": "WT-RES_20260512_STR_1715_AR_RAW_cover",
+  "manifest_version": "v2_admit_lineage",
+  "task_kind": "research_diagnostic",
+  "mandate_quote": "STR_1715 alpha는 Raw 커버되는 시점부터 백테스팅해야지. 왜 2004년부터 하는거야?",
+  "mandate_source": "도훈 직접 명령 2026-05-12 KST (correction of autonomous Forge cutoff)",
+  "parent_admit_wt": "WT-P20260504_001",
+  "strategy_id": "STR_1715_AR_threshold_overlay",
+  "raw_cover_start_hardcoded": "2004-01-01",
+  "raw_cover_rationale": "STR_1715 admit lineage alpha_scores.parquet (WT_D20260425_010) first valid sig_date = 2004-01-01. Decision at 2004-01 EOM → realized return 2004-02 first anchor. 268 sig_dates total.",
+  "panels": {
+    "RAW_admit_lineage": {
+      "label": "Raw cover admit lineage (decision 2004-01 ~ 2026-04, anchor 2004-02 ~ 2026-04)",
+      "n_months": 267,
+      "first_anchor_date": "2004-02-01",
+      "last_anchor_date": "2026-04-01"
+    },
+    "prior_Forge_267m": {
+      "label": "Prior autonomous Forge run (267m comparable)",
+      "n_months": 267,
+      "first_anchor_date": "2004-02-01",
+      "last_anchor_date": "2026-04-01"
+    },
+    "admit_baseline_256m": {
+      "label": "Admit baseline 256m comparable",
+      "n_months": 255,
+      "first_anchor_date": "2005-02-01",
+      "last_anchor_date": "2026-04-01"
+    }
+  },
+  "primary_metric": "Layer 4 (AR_on_M4_threshold_S1 = STR_1715_AR_threshold_overlay)",
+  "layer_4_results": {
+    "RAW": {
+      "panel": "RAW_admit_lineage",
+      "layer": "4_AR_on_M4_threshold_S1",
+      "CAGR": 0.2106,
+      "Vol": 0.2139,
+      "Sharpe": 0.985,
+      "MDD": -0.3036,
+      "Sortino": 0.57,
+      "Calmar": 0.6939,
+      "n_months": 267
+    },
+    "prior_267m": {
+      "CAGR": 0.377,
+      "Vol": 0.2223,
+      "Sharpe": 1.6957,
+      "MDD": -0.2481,
+      "Sortino": 0.9788,
+      "Calmar": 1.5197,
+      "n_months": 267
+    },
+    "current_run_256m": {
+      "panel": "256m_admit_baseline",
+      "layer": "4_AR_on_M4_threshold_S1",
+      "CAGR": 0.2044,
+      "Vol": 0.2123,
+      "Sharpe": 0.9629,
+      "MDD": -0.3036,
+      "Sortino": 0.5578,
+      "Calmar": 0.6735,
+      "n_months": 255
+    },
+    "admit_json_256m": {
+      "CAGR": 0.3834,
+      "Vol": 0.2159,
+      "Sharpe": 1.7758,
+      "MDD": -0.2515,
+      "Sortino": 1.051,
+      "Calmar": 1.5245,
+      "n_months": 256
+    }
+  },
+  "layer_4_delta": {
+    "RAW_vs_admit_JSON": {
+      "CAGR": -0.1728,
+      "Vol": -0.002,
+      "Sharpe": -0.7908,
+      "MDD": -0.0521,
+      "Sortino": -0.481,
+      "Calmar": -0.8306
+    },
+    "RAW_vs_prior_267m": {
+      "CAGR": -0.1664,
+      "Vol": -0.0084,
+      "Sharpe": -0.7107,
+      "MDD": -0.0555
+    }
+  },
+  "reproduction_drift_note": "Admit JSON Layer 4 SR=1.7758 vs current SR=0.985 divergence due to different base return composition: admit JSON used STR_1715 PR ret_net (production weights + cost baked in), current run uses alpha_scores top20 EW raw simulation. 본 task = raw cover measurement basis extension, not admit reproduction. Coverage 시작 mandate is the explicit goal.",
+  "cross_check_vs_pr": {
+    "overlap_rows": 267,
+    "correlation_alpha_top20_vs_pr_ret_net": 0.0335,
+    "note": "PR ret_net uses production weights (not pure EW); correlation ~0 indicates raw EW != production"
+  },
+  "pit_compliance": "C2 monthly t-1 lag + C9 weight_lag/cash_lag/β_lag + C11 bm_12m past-only",
+  "cost_model_version": "v2.3_kr_retail_15bps (AR turnover only)",
+  "perfanalytics_standard": true,
+  "audit_pass": true,
+  "files": {
+    "metrics_csv": "four_layer_comparison_raw_extended.csv",
+    "delta_vs_256m_csv": "four_layer_comparison_delta_vs_256m.csv",
+    "delta_vs_267m_csv": "four_layer_comparison_delta_vs_267m.csv",
+    "nav_csv": "nav_raw_extended.csv",
+    "returns_csv": "four_layer_comparison_raw_returns_path.csv",
+    "drawdowns_csv": "drawdowns_layer4_raw_extended.csv",
+    "metrics_layer4_csv": "metrics_layer4_raw_extended.csv",
+    "bt_result_rds": "bt_result_layer4_raw_extended.rds",
+    "audit_json": "audit.json",
+    "summary_in_response": "Forge subagent boundary: summary returned in agent response text, not as file (per harness rule)"
+  },
+  "created_at": "2026-05-12T13:00:08+09:00"
+}

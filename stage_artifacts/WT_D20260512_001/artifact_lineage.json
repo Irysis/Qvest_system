@@ -1,0 +1,110 @@
+{
+  "metadata": {
+    "wt_id": "WT-D20260512_001",
+    "role": "alpha-research",
+    "lineage_class": "overlay_integration_on_research_foundation_candidate",
+    "generated_at": "2026-05-12T12:12:00+0900"
+  },
+  "input_artifacts": {
+    "baseline_C_softmax": {
+      "origin_wt": "WT-D20260511_001",
+      "origin_phase": "PD30",
+      "files": [
+        "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd30/C_softmax/period_returns.csv",
+        "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd30/C_softmax/sleeve_kr_equity_returns.csv",
+        "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd30/C_softmax/holdings.csv",
+        "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd29/z_composite_per_sig_date.csv"
+      ],
+      "admit_status": "REGISTER_AS_RESEARCH_FOUNDATION_CANDIDATE_AX008_3OF3_PENDING (PD34, 2026-05-12)",
+      "lro_sha_frozen": "from prior cycle WT-P20260504_001 chain",
+      "pit_audit": "PD30 PIT C1-C15 audit retained from Judge PD33 verdict",
+      "metrics_inherited_296m": {
+        "SR": 1.0081,
+        "CAGR_pct": 16.89,
+        "MDD_pct": -22.94,
+        "rank_ic_baseline": 0.0489
+      }
+    },
+    "overlay_1_AR_threshold": {
+      "origin_wt": "WT-S20260504_007 → WT-P20260504_001",
+      "files": [
+        "stage_artifacts/WT_WT-S20260504_007/beta_t_mapping.csv",
+        "stage_artifacts/WT_WT-S20260504_007/absorption_ratio_diagnostics.json"
+      ],
+      "admit_status": "PG2_CORE_ALPHA admit (2026-05-04 on STR_1715 base)",
+      "params_inherit": {
+        "K_components": 5,
+        "W_lookback_days": 252,
+        "q70_threshold": 0.4172,
+        "q90_threshold": 0.4502,
+        "beta_levels": [1.0, 0.7, 0.4]
+      },
+      "academic_source": "Kritzman, Page, Turkington (2010, 2011 FAJ)"
+    },
+    "overlay_2_M4_regime": {
+      "origin_wt": "WT-D20260430_001",
+      "files": ["qepm/mailbox/worktask/WT-D20260430_001/judge_ready/weights.csv"],
+      "admit_status": "STR_1715 M4 schedule admit (2026-04-30)",
+      "params_inherit": {
+        "regime_window": "전전월말→당월말 close-to-close (L-274 fix)",
+        "NORMAL_weight": 1.0,
+        "CAUTION_partial_range": [0.43, 0.85],
+        "CRISIS_weight": 0.0
+      },
+      "academic_source": "Adams, MacKay (2007) BOCPD + Bayesian linear combination"
+    },
+    "rawdata_benchmark": {
+      "files": [
+        ".cache/RAWDATA.parquet",
+        ".cache/benchmark.parquet"
+      ],
+      "audit": "Q-Lead maintained, last build 2026-05-12"
+    }
+  },
+  "output_artifacts": {
+    "stage_artifacts/WT_D20260512_001/": {
+      "alpha_scores.parquet": {
+        "schema": "sig_date × Ticker × z_composite × Usable_Date",
+        "rows": 78412,
+        "sig_dates": 260,
+        "tickers": 824,
+        "window": "2004-09-01 ~ 2026-04-01",
+        "pit_lag": "Usable_Date = sig_date - 1 (PIT C14 compliant)"
+      },
+      "alpha_validation.json": "4-spec metrics + CAPM + DSR + cor + crisis defense",
+      "icir.json": "Full ICIR=0.9757 + sub_stability 3/3 + recent_3y vs full",
+      "harvey_5spec.json": "CAPM + FF2 + Carhart3 (KR cross-section proxies); FF5/FF6 deferred forge"
+    },
+    "qepm/mailbox/worktask/WT-D20260512_001/": {
+      "alpha_package_draft.json": "Initial draft pre-Codex (REJECT)",
+      "alpha_package.json": "Post-Codex final pending",
+      "challenge_note.md": "Codex C1-C7 disposition (ACCEPT/PARTIAL/REBUTTAL)",
+      "coupling_comparison.csv": "4-spec metrics table",
+      "alpha_overlay_returns.csv": "monthly returns × 4 specs + β + m4 + cost",
+      "ic_history.csv": "260m monthly cross-sectional IC (spearman + pearson)",
+      "alpha_research_overlay_integration.R": "pass 1 research code",
+      "alpha_research_pass2_harvey5spec_ic.R": "pass 2 code (Codex C1-C3 ACCEPT)"
+    }
+  },
+  "codex_critic_history": {
+    "round_1": {
+      "trigger_time": "2026-05-12T12:00:00+09:00",
+      "package_audited": "alpha_package_draft.json",
+      "stance": "REJECT",
+      "veto_flag": false,
+      "concerns_count": {"HIGH": 5, "MEDIUM": 2},
+      "rationalization_red_flags_count": 6,
+      "weakest_assumption": "Scalar overlay assumed to inherit C_softmax PIT compliance without ticker-level alpha vector + full 5-spec + weight schedule",
+      "response_file": "qepm/mailbox/worktask/WT-D20260512_001/codex_critic_response_alpha.json"
+    },
+    "disposition_summary": {
+      "C1_alpha_scores_missing": "ACCEPT_FULL → alpha_scores.parquet generated pass 2",
+      "C2_harvey_capm_only": "PARTIAL → CAPM + FF2 + Carhart3 added pass 2; FF5/FF6 deferred forge with full Factor DB",
+      "C3_2026_05_PIT": "ACCEPT → tail trim disclosed (2026-04 last valid baseline; 2026-05 NA)",
+      "C4_weights_csv_missing": "PARTIAL_REBUTTAL → weights.csv = optimizer agent role boundary; alpha role delivers alpha_scores.parquet + IC + Harvey + DSR. RF-A5 liquidity reconciled (request.json 5e7 vs hard_mandate 2e8; we use 2e8 effective floor)",
+      "C5_cor_redundancy_sr_loss": "ACCEPT_HONEST → already self-reported as discovery cert NEGATIVE; overlay marginal at best on 4-sleeve baseline (vs STR_1715 single-sleeve where AR+M4 strict-dominated)",
+      "C6_crisis_defense_weak": "PARTIAL → overlay NOT defense factor; AX-001 v2 boundary retained but with explicit caveat; outperf +0.24pp n=26 = directionally favorable but statistically thin",
+      "C7_no_challenge_note": "ACCEPT_FULL → this artifact_lineage.json + challenge_note.md disposition delivered"
+    }
+  }
+}

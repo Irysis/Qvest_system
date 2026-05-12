@@ -1,0 +1,95 @@
+{
+  "task_id": "WT-D20260511_001",
+  "pd_label": "PD25",
+  "package_kind": "backtest_summary_pd25_3_weighting_paths",
+  "design_label": "3 Within-Sleeve Weighting Paths (EW / Z-linear / Z-softmax) Comparison",
+  "as_of_date": "2026-05-12",
+  "agent_id": "forge-WT-D20260511_001-PD25",
+  "mandate": "도훈 mandate 2026-05-12: 동일가중/B/C, 프로즌없이 전기간 백테스트 비교",
+  "primary_results_methodology_A_iter5_ret_1m": {
+    "coverage": "2005-02-01 ~ 2026-04-01 (255m total: 184m active composite + 71m pre-2011 redistribute)",
+    "lockbox_policy": "폐기 (forge stage)",
+    "cost_model": "15bps × 2 round-trip × turnover × sleeve_outer_weight",
+    "full_window_255m": {
+      "Path_A_EW": {"SR": 1.1006, "CAGR": 0.1368, "MDD": -0.2164, "CVaR_95": -0.0626, "Sortino": 2.1723, "Calmar": 0.6320, "hit_rate": 0.6270, "vol_ann": 0.1243},
+      "Path_B_Zlinear": {"SR": 1.1100, "CAGR": 0.1385, "MDD": -0.2234, "CVaR_95": -0.0617, "Sortino": 2.1740, "Calmar": 0.6197, "hit_rate": 0.6314, "vol_ann": 0.1248},
+      "Path_C_Zsoftmax": {"SR": 1.1100, "CAGR": 0.1399, "MDD": -0.2228, "CVaR_95": -0.0624, "Sortino": 2.1686, "Calmar": 0.6280, "hit_rate": 0.6353, "vol_ann": 0.1260},
+      "S4_v2_baseline": {"SR": 1.8140, "CAGR": 0.1999, "MDD": -0.1263, "CVaR_95": -0.0502, "Sortino": 3.8627, "Calmar": 1.5832, "hit_rate": 0.7137, "vol_ann": 0.1102}
+    },
+    "active_184m": {
+      "Path_A_EW": {"SR": 0.8678, "CAGR": 0.1089, "MDD": -0.2164, "CVaR_95": -0.0618},
+      "Path_B_Zlinear": {"SR": 0.8811, "CAGR": 0.1112, "MDD": -0.2234, "CVaR_95": -0.0605},
+      "Path_C_Zsoftmax": {"SR": 0.8839, "CAGR": 0.1131, "MDD": -0.2228, "CVaR_95": -0.0615},
+      "S4_v2_baseline": {"SR": 1.8316, "CAGR": 0.1952, "MDD": -0.1263, "CVaR_95": -0.0461}
+    },
+    "4_axis_strict_improve_vs_S4_v2": {
+      "Path_A": {"axes_pass": 0, "verdict": "ALL_FAIL"},
+      "Path_B": {"axes_pass": 0, "verdict": "ALL_FAIL"},
+      "Path_C": {"axes_pass": 0, "verdict": "ALL_FAIL"}
+    },
+    "diebold_mariano_vs_S4_v2": {
+      "Path_A": {"t_NW": -2.2556, "p_value": 0.0241, "harvey_3_pass": false},
+      "Path_B": {"t_NW": -2.2196, "p_value": 0.0264, "harvey_3_pass": false},
+      "Path_C": {"t_NW": -2.1517, "p_value": 0.0314, "harvey_3_pass": false}
+    }
+  },
+  "xv_results_methodology_B_rawdata": {
+    "purpose": "Cross-validation under PD20-B Path 2 methodology",
+    "PIT_concern_flag": "C2/C9 same-day circular reference risk — first-trading-day anchoring",
+    "full_window_255m": {
+      "Path_A_EW": {"SR": 2.1220, "CAGR": 0.2653, "MDD": -0.1458, "CVaR_95": -0.0552},
+      "Path_B_Zlinear": {"SR": 2.2169, "CAGR": 0.2863, "MDD": -0.1314, "CVaR_95": -0.0544},
+      "Path_C_Zsoftmax": {"SR": 2.2448, "CAGR": 0.2949, "MDD": -0.1169, "CVaR_95": -0.0550},
+      "S4_v2_baseline": {"SR": 1.8140, "CAGR": 0.1999, "MDD": -0.1263, "CVaR_95": -0.0502}
+    },
+    "4_axis_strict_improve_vs_S4_v2_XV": {
+      "Path_A_XV": {"axes_pass": 2, "verdict": "SR_CAGR_PASS"},
+      "Path_B_XV": {"axes_pass": 2, "verdict": "SR_CAGR_PASS"},
+      "Path_C_XV": {"axes_pass": 3, "verdict": "SR_CAGR_MDD_PASS_CVaR_slight_drift"}
+    },
+    "diebold_mariano_vs_S4_v2_XV": {
+      "Path_A_XV": {"t_NW": 2.6739, "p_value": 0.0075, "harvey_3_pass": false},
+      "Path_B_XV": {"t_NW": 3.5439, "p_value": 0.0004, "harvey_3_pass": true},
+      "Path_C_XV": {"t_NW": 3.7983, "p_value": 0.0001, "harvey_3_pass": true}
+    }
+  },
+  "hurdle_audit_v23": {
+    "portfolio_RT_TO_annual_pct": {
+      "Path_A": 793.5,
+      "Path_B": 842.5,
+      "Path_C": 861.8
+    },
+    "v23_800_pct_pass": {
+      "Path_A": true,
+      "Path_B": false,
+      "Path_C": false
+    }
+  },
+  "verdict": {
+    "design_pd25_under_canonical_methodology_A": "REJECT — all 3 paths FAIL 4-axis vs S4 v2",
+    "design_pd25_under_xv_methodology_B": "PATH_C_DOMINATE_BUT_HURDLE_FAIL — Path C 3-axis dominate + Harvey 3.0 PASS but Hurdle v2.3 TO FAIL",
+    "recommendation_primary": "Retain current S4 v2 admit (no operational change). PD25 design does not justify upgrade.",
+    "recommendation_secondary": "Methodology divergence (1pp+ SR gap between A and B) requires separate WT for PIT C2/C9 formal investigation."
+  },
+  "judge_review_required": [
+    "Methodology A vs B PIT validation — which return computation anchor is canonical?",
+    "If Methodology B validated, does Path C (SR 2.24) deserve admit consideration despite Hurdle v2.3 TO FAIL?",
+    "TO mitigation options (bi-monthly rebal / buffer zone) viability under Path B/C",
+    "DSR Bailey-Lopez de Prado M=19 + Harvey 5-spec recompute under both methodologies"
+  ],
+  "honest_disclosure": {
+    "two_methodology_gap": "PD25 explicitly reports both Method A (canonical, all-fail) and Method B (XV, Path B/C win). No cherry-picking. Charter v1.7 §8 No Silent Override compliant.",
+    "1991_coverage_retreat": "User requested 1991 max coverage; Forge autonomously retreated to 2005-02 due to sleeve_returns_master.csv constraint. Coverage decision logged in forge_package.",
+    "PIT_concern_unresolved": "Methodology B's higher returns may include same-day circular reference (sig_date alpha + first-trading-day price anchor potentially correlated). Formal investigation pending."
+  },
+  "linked_artifacts": {
+    "forge_package": "qepm/mailbox/worktask/WT-D20260511_001/forge_package_pd25.json",
+    "forge_package_draft": "qepm/mailbox/worktask/WT-D20260511_001/forge_package_pd25_draft.json",
+    "challenge_note_pd25_section": "qepm/mailbox/worktask/WT-D20260511_001/challenge_note.md (lines 3037+)",
+    "backtest_result_dir": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd25/",
+    "run_all_primary": "qepm/mailbox/worktask/WT-D20260511_001/run_all_pd25.R",
+    "run_all_xv": "qepm/mailbox/worktask/WT-D20260511_001/run_all_pd25_xv_rawdata.R",
+    "charts_dir": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd25/charts/"
+  },
+  "timestamp_finalized": "2026-05-12T08:20:00+0900"
+}

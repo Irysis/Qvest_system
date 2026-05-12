@@ -1,0 +1,154 @@
+{
+  "wt_id": "WT-D20260511_001",
+  "phase": "PD30",
+  "agent": "forge",
+  "role": "297m_full_backtest_3_weighting_via_pd27_alpha_inherit",
+  "status": "DRAFT_pre_codex",
+  "generated_at": "2026-05-12T10:30:00+09:00",
+  "stance": "PD30_draft_297m_full_inherit_pd27_3_weighting_comparison_method_a_canonical",
+  "mandate_origin": "도훈 A안 + C 통합 mandate 2026-05-12 — '297m 정합 backtest + 3 weighting 통합 (EW / linear / softmax)'",
+
+  "executive_summary_placeholder": {
+    "note": "metrics will be populated post run_all_pd30.R execution. DRAFT placeholder for Codex Critic Round preview only.",
+    "design_targets": {
+      "n_months_target": 297,
+      "window_start": "2001-07-01",
+      "window_end": "2026-04-01",
+      "alpha_inherit": "PD27 burn0m (1715 H1) + PD24 (NEW Vol/Skew) merged via per-sig_date z-score then 0.818/0.182 weighted",
+      "etf_inherit": "PD28 synthetic_etf_returns_2001_2026.parquet (8-ETF universe)",
+      "weighting_variants": ["A_EW", "B_alpha_linear", "C_softmax_tau"],
+      "single_asset_cap": "[0.00, 0.20] strict enforce (B/C only)"
+    }
+  },
+
+  "boundary_compliance": {
+    "alpha_package_read_only": true,
+    "risk_package_read_only": true,
+    "optimization_package_read_only": true,
+    "admit_decision_changed": false,
+    "audit_only_scope": "backtest_only — no alpha or weight modification",
+    "pd27_alpha_inherit_read_only": "stage_artifacts/WT_D20260511_001/alpha_scores_pd27_burn0m.parquet inherited unchanged",
+    "pd28_etf_inherit_read_only": "stage_artifacts/WT_D20260511_001/pd28/synthetic_etf_returns_2001_2026.parquet inherited unchanged",
+    "pd24_alpha_inherit_read_only": "stage_artifacts/WT_D20260511_001/alpha_scores_pd24.parquet inherited unchanged"
+  },
+
+  "pure_function_audit": {
+    "md5_start": {
+      "alpha_pd27": "e6a71e4600c505bb8b179c7ac3bbc562",
+      "alpha_pd24": "5ffc8b10a194c7a79c5256da1f1a6afb",
+      "etf_pd28":   "99027ba4a52d605df5cd591646cb3258",
+      "alpha_package_pd27_json": "3d87d4e4bb9e6ff2abf6569e340716a1"
+    },
+    "md5_end_pending_execution": true,
+    "note": "Pure function audit will populate post-execution with md5 end + match status. Forge writes only to backtest_result_pd30/* and judge_ready/pd30/*."
+  },
+
+  "design_decisions_planned": {
+    "z_composite_construction": {
+      "formula": "z_composite(i, t) = 0.818 × z_1715_pd27(i, t) + 0.182 × z_NEW(i, t)",
+      "z_1715_source": "per-sig_date scale(score_eff) of alpha_scores_pd27_burn0m.parquet (PD27 burn0m FINAL)",
+      "z_NEW_source": "per-sig_date scale(alpha) of alpha_scores_pd24.parquet (NEW Vol/Skew alpha)",
+      "missing_handling": "If ticker present in only one alpha — its z is the actual z, the missing one is set 0 (no penalty / no bonus). Outer join.",
+      "pre_2001_07_handling": "Option X1 — STRICT 2001-07 start (PD27 alpha first sig_date). 1999-01~2001-06 z_NEW solo window NOT included (정합 단순)."
+    },
+    "top20_selection": "setorder(merged, -composite_z) per sig_date, head(., 20) after liquidity filter",
+    "liquidity_filter": {
+      "rule": "K200==1 OR KQ150==1 AND ADV_20d (t-1) >= 2e8 KRW",
+      "lag": "t-1 strict (PD20-b PIT-fix convention, PD26 verdict Method A)",
+      "frollmean": "align='right' rolling 20d daily vol_value (Close × Vol), then take ADV at d_lag = d_now - 1"
+    },
+    "weighting_variants": {
+      "A_EW": {
+        "formula": "w_i = 1/n_holdings (n_holdings = 20 typically)",
+        "single_asset_cap_redistribute": "not applicable (5% < 20% cap)",
+        "portfolio_share": "0.55 × 5% = 2.75% per stock"
+      },
+      "B_alpha_linear": {
+        "formula": "z_i_pos = max(z_composite_i, 0); w_i = z_i_pos / sum(z_j_pos)",
+        "fallback_if_all_zero": "EW fallback (no positive z's case)",
+        "single_asset_cap_redistribute": "iteratively cap at 0.20, redistribute excess proportionally to uncapped weights"
+      },
+      "C_softmax": {
+        "formula": "w_i = exp(z_i / tau) / sum(exp(z_j / tau))",
+        "tau_selection": "Adaptive: tau = median(|z_composite|) per sig_date (Boltzmann temperature analog) — typical value ~0.6-1.0",
+        "single_asset_cap_redistribute": "iteratively cap at 0.20, redistribute excess proportionally"
+      },
+      "common_constraints": {
+        "long_only": "w_i >= 0",
+        "sum_constraint": "sum(w_i) = 1 (sleeve internal)",
+        "single_asset_cap": "[0.00, 0.20] strict",
+        "portfolio_share_post_sleeve_55_pct": "w_portfolio_i = 0.55 × w_sleeve_i"
+      }
+    },
+    "sleeve_composition_4_sleeve": {
+      "KR_EQUITY_composite": 0.55,
+      "TSMOM_synthetic": 0.225,
+      "KR_10Y_synthetic": 0.18,
+      "CASH": 0.045,
+      "rationale": "Matches S4 v2 4-sleeve (50/25/20/5) with consolidation (STR_1715 0.45 + NEW 0.10 = 0.55 KR equity per pd20_path2_consolidation_lineage)"
+    },
+    "method_a_canonical_compliance": {
+      "trade_timing": "sig_date label t = forward 1m held period (t+1 month). Entry first trading day after sig_date EOM, exit first trading day after next sig_date EOM. PD26 verdict.",
+      "first_trading_day_anchor_forbidden": "Method B XV (entry_price = first trading day Close ≥ sig_date) NOT used per PD26 PIT_FAIL_HARD verdict.",
+      "return_aggregation": "RAWDATA Ret column → prod(1+Ret) per (Ticker, YearMonth) → Ret_1m. sig_date label t merges with held_period = sig_date %m+% months(1) for forward return.",
+      "performance_analytics_chain": "Return.portfolio(R = returns_xts, weights = sleeve_targets, geometric = TRUE, rebalance_on = 'months', verbose = TRUE)",
+      "self_synthesis_forbidden_pd26": "NO prod(1+r)-1 / cumprod / manual rebalance arithmetic for portfolio metrics. Backtest Contract v1.0 strict. (per-stock monthly aggregation via prod() of daily Ret is canonical Ret_1m construction, NOT portfolio-level synthesis.)"
+    },
+    "cost_model": "15bps one-way × turnover (sleeve rebalance + inner sleeve churn from holdings rotation per sig_date)"
+  },
+
+  "expected_outputs": [
+    "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd30/A_EW/{period_returns.csv, nav.csv, drawdowns.csv, metrics.csv, hurdle_result.csv, 4axis_strict_vs_s4_v2.csv, sub_period.csv, regime_sr.csv, output/equity_curve.png, output/annual_returns.png, output/oos_zoom_chart.png, output/regime_decomposition.png, metrics_summary.json}",
+    "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd30/B_alpha_linear/(same set)",
+    "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd30/C_softmax/(same set)",
+    "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd30/comparison_3_weighting.csv",
+    "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd30/dm_test_pairwise.csv",
+    "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd30/single_asset_cap_audit.csv",
+    "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd30/pure_function_audit.csv",
+    "qepm/mailbox/worktask/WT-D20260511_001/judge_ready/pd30/backtest_summary_pd30.json"
+  ],
+
+  "vs_pd28_design_diff": {
+    "pd28_kr_equity": "PRE-2011 z_NEW solo top20 + POST-2011 inherit PD20-b z_composite returns (two-phase)",
+    "pd30_kr_equity": "FULL 297m z_composite top20 (PD27 alpha back-extended to 2001-07 enables single-phase construction). NO PRE/POST-2011 split needed.",
+    "expected_improvement_drivers": [
+      "PRE-2011 SR 0.30 (PD28) → likely much higher with z_composite (true 1715 H1 alpha + Defense sleeve operational)",
+      "Full window MDD 37% (PD28, dominated by 2008 GFC + PRE-2011 weak alpha) → likely lower with stronger PRE-2011 alpha",
+      "Apples-to-apples 297m window vs S4 v2 baseline becomes meaningful (no z_NEW solo drag artifact)"
+    ],
+    "expected_pd30_metrics_range_disclosure": {
+      "SR_expected": "1.5 ~ 2.5 (vs PD28 1.25). Uncertain — depends on PRE-2011 z_composite empirical strength.",
+      "CAGR_expected": "18% ~ 28% (vs PD28 19.96%)",
+      "MDD_expected": "-15% ~ -30% (vs PD28 -37%)",
+      "honest_disclosure": "Forge does NOT pre-claim PD30 PASS. Run_all execution will reveal empirical truth. Mandate compliance: 297m full backtest + 3 weighting + Method A canonical + Pure Function + Backtest Contract v1.0."
+    }
+  },
+
+  "ax_compliance": {
+    "AX-002_pit_C2": "Method A canonical only — NO first-trading-day anchor",
+    "AX-007": "multi-sleeve (Core 0.65 + Defense 0.35 inside KR equity) — Exception #1",
+    "AX-008": "Forge PD30 = 1-source contribution. Architect / Codex Forge for AX-008 strict triangulation in follow-up cycle.",
+    "AX-005_PASS_WITH_NOTE": "Defense sleeve 3-axis EW retained per PD27 spec"
+  },
+
+  "schedule_fidelity_expected": {
+    "n_rebalance_periods_target": 296,
+    "density_target": ">= 0.95",
+    "production_schedule_n_m_label_avoided": "PerformanceAnalytics rebalance_on='months' standard. NO 'ProductionScheduleN[m]' fabrication."
+  },
+
+  "codex_round_status": {
+    "draft_written": true,
+    "draft_path": "qepm/mailbox/worktask/WT-D20260511_001/forge_package_pd30_draft.json",
+    "codex_critic_response_pending": "Wait for PostToolUse codex_round_auto_trigger.sh async spawn (~9-15min).",
+    "challenge_note_disclosure_planned": "## PD30 section to be appended to qepm/mailbox/worktask/WT-D20260511_001/challenge_note.md post-execution"
+  },
+
+  "next_actions": [
+    "Execute qepm/mailbox/worktask/WT-D20260511_001/run_all_pd30.R",
+    "Validate Pure Function audit md5 start/end identical",
+    "Populate metrics + comparison + DM + Harvey 5/5 + DSR",
+    "Append challenge_note.md PD30 section",
+    "Write forge_package_pd30.json (final)"
+  ]
+}

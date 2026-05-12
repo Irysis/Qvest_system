@@ -1,0 +1,26 @@
+{
+  "task_id": "WT-D20260508_012",
+  "task_type": "discovery",
+  "path_label": "G",
+  "goal": "Option-implied tail risk regime indicator — m4 regime engine 4번째 축 보강",
+  "academic_basis": [
+    "Almeida-Ardison-Garcia 2020 JF Pricing Time-Varying Predictable Equity Returns",
+    "Andersen-Fusari-Todorov 2017 JF The Pricing of Tail Risk and the Equity Premium",
+    "Du-Kapadia 2012 RFS Tail and Volatility Indices from Option Prices",
+    "Bollerslev-Tauchen-Zhou 2009 RFS Expected Stock Returns and Variance Risk Premiums"
+  ],
+  "input_data": {
+    "krx_option_chain": ".cache/krx_options/<YYYYMMDD>.parquet (4023 days, 6.18M rows)",
+    "vkospi_reconstruction": "stage_artifacts/WT_D20260508_011/vkospi_reconstruction.parquet",
+    "vrp_signals_daily": "stage_artifacts/WT_D20260508_011/vrp_signals_daily.parquet",
+    "rawdata": "DART + RAWDATA + ECOS",
+    "current_m4_regime": "02_Infrastructure/regime/m4_strategy.R (NORMAL/CAUTION/CRISIS 3-state)"
+  },
+  "deliverable": "regime_indicator (NOT cross-section alpha) — m4 enhancement (3-state → 4-state with tail-risk axis) OR independent regime overlay",
+  "constraints": {
+    "pit_strict": true,
+    "regime_axis_orthogonality": "vs current m4 axes (vol / trend / macro)",
+    "lookback_window": "expanding percentile (NOT full-sample)"
+  },
+  "ax_constraints": ["AX-002 PIT", "AX-008 triangulation 2/3 mandate"]
+}

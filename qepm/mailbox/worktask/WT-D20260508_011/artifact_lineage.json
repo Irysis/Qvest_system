@@ -1,0 +1,134 @@
+{
+  "task_id": "WT-D20260508_011",
+  "wt_type": "discovery",
+  "as_of_date": "2026-05-08",
+  "agent": "alpha-research",
+  "pipeline_stage": "alpha_discovery_terminate_post_codex_v4_revise",
+  "lineage": [
+    {
+      "step": 1,
+      "name": "request_received",
+      "path": "qepm/mailbox/worktask/WT-D20260508_011/request.json",
+      "timestamp": "2026-05-08T16:53Z",
+      "actor": "Q-Lead"
+    },
+    {
+      "step": 2,
+      "name": "vrp_signals_built",
+      "path": "stage_artifacts/WT_D20260508_011/vrp_signals_monthly.parquet",
+      "supporting": [
+        "stage_artifacts/WT_D20260508_011/option_chain_summary.parquet",
+        "stage_artifacts/WT_D20260508_011/vkospi_reconstruction.parquet"
+      ],
+      "script": "qepm/mailbox/worktask/WT-D20260508_011/build_vrp_signals.py",
+      "actor": "alpha-research",
+      "data_inputs": [
+        ".cache/krx_options/<YYYYMMDD>.parquet (4023 days, 6.18M rows)",
+        ".cache/ecos_bond_rates.parquet KR_CD91",
+        ".cache/rawdata.parquet BM_Ret"
+      ],
+      "outcome": "4 VRP variants computed (BKM 2003 + Carr-Wu 2009 + VKOSPI recon + BTZ 2009 baseline). 197 monthly sig_dates."
+    },
+    {
+      "step": 3,
+      "name": "cross_section_signals_v1",
+      "path": "stage_artifacts/WT_D20260508_011/cs_panel_monthly.parquet",
+      "supporting": [
+        "stage_artifacts/WT_D20260508_011/cs_ic_history.parquet",
+        "stage_artifacts/WT_D20260508_011/predictor_autocor_diagnosis.json"
+      ],
+      "script": "qepm/mailbox/worktask/WT-D20260508_011/build_cross_section_signals.py",
+      "actor": "alpha-research",
+      "outcome": "4 initial cross-section signals (s1 skew_diff / s2 vrp_beta / s3 vrp_vol / s4 vkospi_mom_reversal)."
+    },
+    {
+      "step": 4,
+      "name": "cross_section_signals_v2",
+      "path": "stage_artifacts/WT_D20260508_011/cs_panel_v2.parquet",
+      "supporting": ["stage_artifacts/WT_D20260508_011/cs_ic_v2.json"],
+      "script": "qepm/mailbox/worktask/WT-D20260508_011/build_cs_v2.py",
+      "actor": "alpha-research",
+      "outcome": "8 specs full search. Best single signal s3 IC=-0.037 ICIR=-0.209 t_NW=-3.02 sub_stab=1.00 ac1=-0.062."
+    },
+    {
+      "step": 5,
+      "name": "alpha_validation_v3",
+      "path": "stage_artifacts/WT_D20260508_011/alpha_validation.json",
+      "script": [
+        "qepm/mailbox/worktask/WT-D20260508_011/build_alpha_validate.py",
+        "qepm/mailbox/worktask/WT-D20260508_011/finalize_validation.py"
+      ],
+      "actor": "alpha-research",
+      "outcome": "ML XGBoost OOS IC 0.0255, ICIR 0.227, t_NW 2.77, LO Q5 net SR 0.825, t_NW 3.09. Relaxed pass narrative."
+    },
+    {
+      "step": 6,
+      "name": "alpha_package_draft",
+      "path": "qepm/mailbox/worktask/WT-D20260508_011/alpha_package_draft.json",
+      "actor": "alpha-research",
+      "timestamp": "2026-05-08T17:21Z",
+      "outcome": "First draft (relaxed graduation, single forward snapshot alpha_scores). Submitted for Codex Critic Round."
+    },
+    {
+      "step": 7,
+      "name": "codex_critic_round",
+      "path": "qepm/mailbox/worktask/WT-D20260508_011/codex_critic_response_alpha.json",
+      "actor": "codex_qepm_critic_gpt55_xhigh",
+      "timestamp": "2026-05-08T17:28Z",
+      "outcome": "Stance: REJECT. 8 concerns (5 HIGH + 3 MEDIUM). weakest_assumption: single-date Q5 snapshot alpha vector. Auto Q-Lead escalate triggered (HIGH ≥ 5)."
+    },
+    {
+      "step": 8,
+      "name": "alpha_validation_v4_revise",
+      "path": "stage_artifacts/WT_D20260508_011/alpha_validation_v4.json",
+      "supporting": ["stage_artifacts/WT_D20260508_011/alpha_scores.parquet (full Date×Ticker panel)"],
+      "script": "qepm/mailbox/worktask/WT-D20260508_011/build_v4_revise.py",
+      "actor": "alpha-research",
+      "outcome": "v4 PIT-strict t-1 lag + quarterly rebal + 2e8 KRW + full Date×Ticker panel + rationalization cleanup. Result: ML OOS IC 0.0037, t_NW 0.47, LO Q5 net SR 0.568, t_NW 1.94. Graduation strict 5/9 PASS, 4/9 FAIL. Honest empirical FAIL."
+    },
+    {
+      "step": 9,
+      "name": "challenge_note",
+      "path": "qepm/mailbox/worktask/WT-D20260508_011/challenge_note_alpha-research.md",
+      "actor": "alpha-research",
+      "timestamp": "2026-05-08T17:35Z",
+      "outcome": "8 Codex concerns disposition: 6 ACCEPT + 2 PARTIAL. Self-rationalization grep 7건 발견 후 v4 cleanup. AX-002/008 PASS. Q-Lead escalate triggered."
+    },
+    {
+      "step": 10,
+      "name": "alpha_package_final",
+      "path": "qepm/mailbox/worktask/WT-D20260508_011/alpha_package.json",
+      "script": "qepm/mailbox/worktask/WT-D20260508_011/build_final_package.py",
+      "actor": "alpha-research",
+      "outcome": "FINAL post-Codex v4 REVISE. DISCOVERY_FAIL_REJECTED_AGENT_AGREES_CODEX. graduation strict 5/9 FAIL. TERMINATE recommendation + pivot to alternative 4th orthogonal source."
+    }
+  ],
+  "scripts_inventory": [
+    "build_vrp_signals.py — 4 model VRP from KRX options",
+    "build_cross_section_signals.py — initial cs signals v1",
+    "build_cs_v2.py — 8 spec search v2",
+    "build_alpha_validate.py — alpha validation v3 baseline",
+    "finalize_validation.py — v3 finalize ML LS net + DSR + orthogonality",
+    "build_v4_revise.py — Codex REVISE 6 fixes",
+    "build_final_package.py — final alpha_package.json post-Codex"
+  ],
+  "data_inputs": {
+    "primary": [".cache/krx_options/<YYYYMMDD>.parquet — 4023 days option chain"],
+    "secondary": [".cache/rawdata.parquet — KR equity panel + KOSPI200 BM_Ret",
+                   ".cache/ecos_bond_rates.parquet — KR_CD91 risk-free rate",
+                   ".cache/benchmark.parquet — KOSPI BM_Close"]
+  },
+  "infrastructure_contributions_retained": {
+    "krx_options_cache": ".cache/krx_options/ 4023 daily parquet 2010-01 to 2026-05",
+    "vkospi_reconstruction": "stage_artifacts/WT_D20260508_011/vkospi_reconstruction.parquet — daily 4023 days",
+    "vrp_signals_monthly": "stage_artifacts/WT_D20260508_011/vrp_signals_monthly.parquet — 197 monthly",
+    "academic_implementation": "BKM 2003 + Carr-Wu 2009 + BTZ 2009 + VKOSPI CBOE methodology — production-ready code"
+  },
+  "verification_triangulation_ax_008": {
+    "codex_critique": "REJECT (5 HIGH + 3 MEDIUM)",
+    "agent_agreement": true,
+    "architect_followup": "not_required (discovery FAIL)",
+    "forge_followup": "not_required (discovery FAIL)",
+    "ax_008_status": "1/3 (Codex only) — sufficient for discovery TERMINATE"
+  }
+}

@@ -1,0 +1,375 @@
+{
+  "task_id": "WT-D20260511_001",
+  "wt_type": "discovery",
+  "package_kind": "forge_package",
+  "as_of_date": "2026-05-11",
+  "draft": true,
+  "finalized": false,
+  "agent": {
+    "agent_id": "forge-WT-D20260511_001",
+    "agent_type": "forge",
+    "agent_version": "v6.4-pure-function",
+    "model": "Opus_4_7_1M",
+    "revision": "draft pre-Codex"
+  },
+  "method": "weights.csv_direct_NAV_reconstruction_5sleeve_monthly_aggregate",
+  "scope_clarification": {
+    "wt_kind": "discovery_sleeve_only_admit_candidate",
+    "backtest_kind": "256m_walk_forward_plus_27m_OOS",
+    "primary_window": "2005-02-01 ~ 2026-04-01 (255 months)",
+    "sub_windows": {
+      "alpha_active_79m": "2011-02-01 ~ 2023-11-01 (Optimizer comparable, 154 months actual due to sleeve_master cadence)",
+      "oos_lockbox_post_27m": "2024-01-01 ~ 2026-04-01 (NEW sleeve 0% by lockbox respect — see scope note)"
+    },
+    "ticker_level_handoff": "5-sleeve sleeve-level static weights × pre-computed sleeve returns (precedent ground truth from WT-P20260509_001 sleeve_returns_master). NEW sleeve internal expansion from alpha_scores top20 EW phi=0.5 (per Optimizer C8 forge_handoff)."
+  },
+  "codex_round": {
+    "round": 1,
+    "stance_initial": "draft (pre-codex)",
+    "challenge_note_path": "qepm/mailbox/worktask/WT-D20260511_001/challenge_note.md",
+    "expected_codex_concerns": [
+      "NEW=0 outside alpha window vs redistribute_TRUE — which is admit primary? (force scope decision)",
+      "Strict variant (NEW=0) shows ΔCAGR FAIL -2.37pp 256m + -10.75pp OOS — does SR/MDD/CVaR improvement justify CAGR sacrifice?",
+      "DM t_NW=-2.90 negative monthly mean diff 256m strict — economically, hi20 underperforms baseline on raw mean. SR gain comes from vol drop. Is this admit-worthy?",
+      "OOS 27m strict: baseline strictly dominates ALL metrics (DM t_NW=-5.12, p<1e-6 baseline favor). NEW sleeve contribution=0 OOS — admit candidate may be redundant with baseline post-lockbox.",
+      "AX-008 contribution mechanics — Forge 1/3 PARTIAL_VALIDATED at best (CAGR FAIL strict variant)?",
+      "Backtest Contract v1.0 bt_result build error (date type) — fallback to raw metrics is contract violation?"
+    ],
+    "ax_008_triangulation": "1/3 (Forge alone). Architect parallel + Codex Round pending."
+  },
+  "selection_objective": "strict_improve_vs_S4v2_baseline_4_axis",
+  "selection_rationale": "Charter v1.5 hierarchy Validity > Implementability > Robustness > Performance > Novelty. Forge primary measurement = realized sleeve aggregate monthly returns (256m). Two variants reported for transparency: (A) NEW=0 outside alpha = strict no-data-extrapolation; (B) NEW=0 outside 시 baseline 4-sleeve proportional redistribute = fair comparison vs baseline. (A) PASS SR/MDD/CVaR FAIL CAGR. (B) PASS all 4 criteria. Decision deferred to Judge + Q-Lead.",
+  "inputs": {
+    "alpha_package_path": "qepm/mailbox/worktask/WT-D20260511_001/alpha_package.json",
+    "risk_package_path": "qepm/mailbox/worktask/WT-D20260511_001/risk_package.json",
+    "optimization_package_path": "qepm/mailbox/worktask/WT-D20260511_001/optimization_package.json",
+    "sleeve_returns_master_path": "qepm/mailbox/worktask/WT-P20260509_001/output/sleeve_returns_master.csv",
+    "sleeve_panel_5sleeve_path": "stage_artifacts/WT_D20260511_001/sleeve_panel_5sleeve.csv",
+    "weights_csv_path": "stage_artifacts/WT_D20260511_001/weights.csv"
+  },
+  "sleeve_definition_inherited": {
+    "AR_on_M4": "STR_1715 H1 alpha-updated × M4 regime × β threshold (PG2 admit 2026-05-04, L-276/277)",
+    "TSMOM_8ETF": "8-ETF basket post KODEX_KTB10Y removal (PG2 admit 2026-05-09 Hybrid Path C)",
+    "KR_10y": "A148070 KODEX 국고채10년 ETF (PG2 admit 2026-05-09 Hybrid Path C)",
+    "Cash": "0% return placeholder",
+    "NEW_VolSkew_3axis": "3-Axis Vol/Skew Composite D43+D41+D58 (alpha_package factor_specs)"
+  },
+  "sleeve_weights_inherited_from_optimizer": {
+    "candidate_selected_for_primary": "high_20pct",
+    "weights": {
+      "AR_on_M4": 0.40,
+      "TSMOM": 0.20,
+      "KR_10y": 0.16,
+      "Cash": 0.04,
+      "NEW_VolSkew_3axis": 0.20
+    },
+    "baseline_comparison": {
+      "candidate": "S4_v2",
+      "weights": {
+        "AR_on_M4": 0.50,
+        "TSMOM": 0.25,
+        "KR_10y": 0.20,
+        "Cash": 0.05,
+        "NEW_VolSkew_3axis": 0.00
+      }
+    }
+  },
+  "weights_csv_unique_dates_count": 155,
+  "alpha_sig_dates_count": 155,
+  "schedule_density_ratio": 1.0,
+  "schedule_density_pass": true,
+  "pure_function_violation": false,
+  "schedule_fidelity_audit": {
+    "method": "5_sleeve_static_monthly_full_panel",
+    "sleeve_level_static_weights": true,
+    "alpha_scores_used_for_holdings_selection": false,
+    "alpha_scores_used_for_NEW_internal_expansion_only": true,
+    "fabrication_label_present": false,
+    "note": "Sleeve-level static weights × pre-computed sleeve returns. alpha_scores used only for NEW sleeve internal top20 selection (Optimizer C8 handoff)."
+  },
+  "pure_function_audit": {
+    "alpha_package_md5_start": "5285d10f5968f1233b886c86dd024d14",
+    "alpha_package_md5_end": "5285d10f5968f1233b886c86dd024d14",
+    "alpha_package_match": true,
+    "risk_package_md5_start": "25a440e08232fcfb953ca912bffaa13a",
+    "risk_package_md5_end": "25a440e08232fcfb953ca912bffaa13a",
+    "risk_package_match": true,
+    "optimization_package_md5_start": "4f21fbc1b075a5b790da90acad4a68af",
+    "optimization_package_md5_end": "4f21fbc1b075a5b790da90acad4a68af",
+    "optimization_package_match": true,
+    "target_weights_reinterpreted": false,
+    "alpha_vector_modified": false,
+    "covariance_recomputed": false
+  },
+  "sr_realized_share_based": 2.0108,
+  "sr_realized_share_based_redistribute_variant": 1.9623,
+  "sr_factor_engine_continuous": null,
+  "sr_lockbox_daily_harness": null,
+  "measurement_basis_primary": "forge_realized_share_based",
+  "primary_metrics_256m_strict_NEW0_outside": {
+    "n_months": 255,
+    "period": "2005-02-01 ~ 2026-04-01",
+    "SR_ann_geometric": 2.0108,
+    "CAGR": 0.1783,
+    "MDD": -0.0924,
+    "Sortino_ann": 4.5297,
+    "Calmar": 1.9301,
+    "CVaR_95_monthly": -0.0386,
+    "CVaR_99_monthly": -0.0576,
+    "hit_rate": 0.7176,
+    "mean_ann": 0.1696,
+    "vol_ann": 0.0843
+  },
+  "primary_metrics_256m_redistribute": {
+    "n_months": 255,
+    "period": "2005-02-01 ~ 2026-04-01",
+    "SR_ann_geometric": 1.9623,
+    "CAGR": 0.2075,
+    "MDD": -0.1154,
+    "Sortino_ann": 4.3456,
+    "CVaR_95_monthly": -0.0466,
+    "hit_rate": 0.7176,
+    "note": "NEW=0 시기 baseline 4-sleeve proportional redistribute. Fair comparison vs S4 v2 baseline. PASS all 4 strict improve criteria."
+  },
+  "sub_metrics_79m_alpha_active": {
+    "n_months": 154,
+    "period": "2011-02-01 ~ 2023-11-01",
+    "SR_ann_geometric": 1.8619,
+    "CAGR": 0.1495,
+    "MDD": -0.0810,
+    "Sortino_ann": 3.9747,
+    "CVaR_95_monthly": -0.0367,
+    "hit_rate": 0.6883
+  },
+  "sub_metrics_oos_lockbox_post_27m": {
+    "n_months": 28,
+    "period": "2024-01-02 ~ 2026-04-01",
+    "SR_ann_geometric": 3.4877,
+    "CAGR": 0.3685,
+    "MDD": -0.0290,
+    "Sortino_ann": 14.3917,
+    "hit_rate": 0.8571,
+    "note": "NEW sleeve=0 OOS by alpha lockbox respect. Effective allocation = 4-sleeve baseline normalized to 80%."
+  },
+  "baseline_S4v2_realized_256m": {
+    "SR_ann_geometric": 1.8334,
+    "CAGR": 0.2020,
+    "MDD": -0.1252,
+    "CVaR_95_monthly": -0.0501,
+    "n_months": 255,
+    "note": "S4 v2 baseline (4-sleeve only) realized via Forge same methodology. Matches Optimizer baseline_S4 within numerical precision."
+  },
+  "baseline_S4v2_documented": {
+    "SR": 1.83,
+    "CAGR": 0.1969,
+    "MDD": -0.1147,
+    "CVaR_95": -0.0471,
+    "source": "WT-P20260509_001 admit PG2 documented (Charter v1.7 §10)",
+    "note": "Forge realized 1.8334 vs documented 1.83 = match within 0.02% (geometric vs arithmetic minor)."
+  },
+  "diebold_mariano_vs_S4v2_baseline": {
+    "full_256m_strict_NEW0": {
+      "n": 255,
+      "mean_diff_monthly": -0.001858,
+      "se_NW_lag6": 0.000642,
+      "t_NW": -2.8959,
+      "p": 0.0038,
+      "interpretation": "hi20 strict variant monthly mean RETURN is NEGATIVE vs baseline (significantly). SR gain comes from variance reduction, not return enhancement. Strict variant = vol-trade structure."
+    },
+    "full_256m_redistribute": {
+      "n": 255,
+      "mean_diff_monthly": 0.000343,
+      "se_NW_lag6": 0.000373,
+      "t_NW": 0.9212,
+      "p": 0.3570,
+      "interpretation": "Redistribute variant monthly mean diff NOT significantly different from baseline. Net SR gain via covariance structure."
+    },
+    "alpha_active_79m": {
+      "n": 154,
+      "mean_diff_monthly": -0.000230,
+      "se_NW_lag6": 0.000730,
+      "t_NW": -0.3146,
+      "p": 0.7531,
+      "interpretation": "Alpha-active sub-sample: ΔSR +0.32 statistically NOT distinguished from baseline. NEW sleeve adds vol-control but not significant mean return uplift."
+    },
+    "oos_27m": {
+      "n": 28,
+      "mean_diff_monthly": -0.006730,
+      "se_NW_lag6": 0.001316,
+      "t_NW": -5.1151,
+      "p": 3.13e-07,
+      "interpretation": "OOS 27m: baseline STRICTLY DOMINATES hi20 strict variant. NEW=0 OOS means hi20 = 4-sleeve at 80% scale → systematic underperformance vs S4 v2 at 100% scale. Admit primary recommendation = REDISTRIBUTE variant."
+    }
+  },
+  "strict_improve_evaluation_vs_S4v2_baseline_documented": {
+    "criteria": {
+      "SR_threshold": 1.83,
+      "MDD_threshold_pp": -0.1147,
+      "MDD_margin_pp": 2.0,
+      "CVaR_threshold_pp": -0.0471,
+      "CVaR_margin_pp": 0.5,
+      "CAGR_threshold": 0.1969
+    },
+    "256m_strict_NEW0_outside": {
+      "SR_pass": true,
+      "delta_SR": 0.1808,
+      "MDD_pass": true,
+      "delta_MDD_pp": 2.23,
+      "CVaR_pass": true,
+      "delta_CVaR_pp": 0.85,
+      "CAGR_pass": false,
+      "delta_CAGR_pp": -1.86,
+      "verdict_4_axis": "3_PASS_1_FAIL (CAGR fail by 1.86pp due to 20pct NEW=0 dead weight outside alpha period)"
+    },
+    "256m_redistribute": {
+      "SR_pass": true,
+      "delta_SR": 0.1323,
+      "MDD_pass": true,
+      "delta_MDD_pp": -0.07,
+      "CVaR_pass": true,
+      "delta_CVaR_pp": 0.05,
+      "CAGR_pass": true,
+      "delta_CAGR_pp": 1.06,
+      "verdict_4_axis": "4_PASS (recommended admit basis — fair vs baseline)"
+    },
+    "79m_alpha_active": {
+      "SR_pass": true,
+      "delta_SR": 0.0319,
+      "MDD_pass": true,
+      "delta_MDD_pp": 3.37,
+      "CVaR_pass": true,
+      "delta_CVaR_pp": 1.04,
+      "CAGR_pass": false,
+      "delta_CAGR_pp": -4.74,
+      "verdict_4_axis": "3_PASS_1_FAIL"
+    }
+  },
+  "realized_cvar_revalidation": {
+    "mandate_source": "Optimizer C3 ACCEPT (CVaR re-validation Forge realized scope)",
+    "realized_256m_hi20_CVaR_95": -0.0386,
+    "realized_79m_hi20_CVaR_95": -0.0367,
+    "realized_256m_S4_CVaR_95": -0.0501,
+    "optimizer_79m_proxy_CVaR_95_hi20": -0.0325,
+    "documented_baseline_S4v2_CVaR_95": -0.0471,
+    "risk_pkg_5sleeve_portfolio_proxy_CVaR_95": -0.2913,
+    "admit_criterion_pass": true,
+    "admit_criterion_note": "Forge realized 256m -3.86% within 0.5pp margin vs baseline documented -4.71%. PASS. Risk pkg proxy -29.13% confirmed INFLATED (Codex C4 right)."
+  },
+  "turnover_sleeve_level_static": 0.0,
+  "turnover_internal_estimate_optimizer": 2.78,
+  "turnover_hurdle_v22_pass": true,
+  "ax_008_contribution": {
+    "forge_verdict_256m_strict_NEW0_outside": "CONDITIONAL_PASS_VALIDATED (3 PASS 1 FAIL CAGR)",
+    "forge_verdict_256m_redistribute": "FULL_PASS_VALIDATED (4 PASS)",
+    "forge_verdict_79m_alpha_active": "CONDITIONAL_PASS_VALIDATED (3 PASS 1 FAIL CAGR)",
+    "forge_verdict_oos_27m_strict": "FAIL_BASELINE_DOMINATES (DM t=-5.12 negative)",
+    "ax_008_contribution_score": "1/3 PARTIAL (Forge alone; Architect + Codex pending)",
+    "ax_008_pass_floor_2_of_3_required": "PENDING — Forge contributes PARTIAL/CONDITIONAL; redistribute variant FULL; OOS strict FAIL. Architect verification critical for floor PASS."
+  },
+  "vs_factor_engine": {
+    "factor_engine_claimed_sr_is": 2.6427,
+    "factor_engine_source": "Optimizer high_20pct 79m proxy (sleeve_panel_5sleeve.csv direct aggregate)",
+    "forge_v3_realized_sr_is": 1.8619,
+    "divergence_pp": -0.7808,
+    "divergence_factor_engine_vs_realized_pp": -0.7808,
+    "diagnosis": "SIGNIFICANT_DRAG",
+    "diagnosis_threshold_table": {
+      "NEGLIGIBLE": "|div| < 0.2",
+      "MINOR_DRIFT": "0.2 <= |div| < 0.4",
+      "SIGNIFICANT_DRAG": "0.4 <= |div| < 0.6",
+      "FABRICATION_SUSPECTED": "0.6 <= |div|"
+    },
+    "diagnosis_explanation": "Optimizer 79m claim SR 2.64 reduces to 1.86 in Forge realized 79m (-0.78). Source: Optimizer used sleeve_panel_5sleeve.csv direct aggregate (no smoothing/cost). Forge applied same data but full sleeve aggregate, identical methodology. Discrepancy likely from Optimizer SR computation (arithmetic mean / vol mean) vs Forge SR_geometric (PerformanceAnalytics SharpeRatio.annualized geometric=TRUE per L-282). FABRICATION_SUSPECTED threshold breached (|div|=0.78 > 0.6).",
+    "fabrication_or_methodology_drift": "METHODOLOGY_DRIFT_SUSPECTED",
+    "action_required": "Q-Lead review SR convention. L-282 PerformanceAnalytics geometric standard MUST be used (도훈 mandate). Optimizer SR claim must be REVISED to L-282 convention before admit."
+  },
+  "schedule_fidelity_certificate_eligibility": {
+    "schedule_density_pass": true,
+    "fabrication_label_absent": true,
+    "alpha_scores_topN_holdings_selection_in_run_all": false,
+    "eligible": true
+  },
+  "forge_package_validated_certificate_eligibility": {
+    "mandatory_8_fields_present": true,
+    "method_pattern_match": true,
+    "measurement_basis_primary_enum_pass": true,
+    "pure_function_violation_false": true,
+    "schedule_density_pass": true,
+    "eligible": true
+  },
+  "sr_provenance_certificate_eligibility": {
+    "sr_realized_share_based_present": true,
+    "measurement_basis_primary_correct": true,
+    "no_production_schedule_fabrication_label": true,
+    "divergence_disclosed": true,
+    "eligible": true
+  },
+  "charts_generated": {
+    "equity_curve_png": "04_Research/strategies/WT_D20260511_001_5sleeve_high20pct/output/equity_curve.png",
+    "annual_returns_png": "04_Research/strategies/WT_D20260511_001_5sleeve_high20pct/output/annual_returns.png",
+    "oos_zoom_chart_png": "04_Research/strategies/WT_D20260511_001_5sleeve_high20pct/output/oos_zoom_chart.png",
+    "regime_decomposition_png": "04_Research/strategies/WT_D20260511_001_5sleeve_high20pct/output/regime_decomposition.png"
+  },
+  "backtest_contract_v1_audit": {
+    "bt_result_10_component_build_status": "BUILD_FAILED_date_type_mismatch",
+    "bt_result_save_status": "fallback_raw_metrics_only",
+    "audit_status": "PARTIAL_PASS (raw metrics PerformanceAnalytics-standard; bt_result wrap failed)",
+    "remediation": "build_bt_result() expects date column in sim_result$DAILY_NAV_DT as Date type; received logical from sleeve_master coerce. Fix in v2: explicit as.Date wrap before join."
+  },
+  "hard_constraints_compliance": {
+    "max_sleeve_count": "5 (within AX-007 Ex1 multi-sleeve)",
+    "max_per_security_weight": 0.16,
+    "max_per_security_weight_holder": "KR_10y A148070 at 16% (< 20% cap)",
+    "long_only": true,
+    "sum_w_eq_1": true,
+    "universe": "5_sleeve_composite (AR_on_M4 KOSPI200+KOSDAQ150 / TSMOM 8 ETF / KR_10y bond ETF / Cash / NEW Vol/Skew top20)",
+    "cost_model_version": "v2.3_kr_retail_15bps (sleeve_master already cost-deducted; metadata)",
+    "pit_compliance": "C1-C15 inherit",
+    "lockbox_scope_compliance": "alpha-research lockbox 2023-12-22 respected; forge OOS 2024-01~2026-04 = NEW=0 (strict) or NEW redistribute"
+  },
+  "axiom_compliance": {
+    "AX_000": "IMMUTABLE — 한계 없다 (admit candidate hi20 path)",
+    "AX_001_v2": "INCONCLUSIVE — inherited from alpha (IC ratio 1.21 < 1.50 threshold)",
+    "AX_002": "PIT-strict — forge backtest uses pre-computed PIT-strict sleeve returns; lockbox respected at alpha layer",
+    "AX_007": "Exception 1 multi-sleeve integration (5 sleeves, aggregate 50 names but sleeve-level static)",
+    "AX_008": "Forge 1/3 PARTIAL — Architect + Codex Round pending"
+  },
+  "red_flags_audit": {
+    "RF_F1_factor_engine_vs_realized_divergence": "FLAGGED — |0.78pp| > 0.6 FABRICATION_SUSPECTED threshold. Methodology drift suspected (geometric vs arithmetic SR convention).",
+    "RF_F2_oos_strict_baseline_dominate": "FLAGGED — OOS 27m DM t=-5.12 baseline favor. NEW sleeve outside alpha period = dead weight.",
+    "RF_F3_strict_variant_ΔCAGR_FAIL": "FLAGGED — 256m strict variant ΔCAGR -1.86pp FAIL. Redistribute variant fixes (ΔCAGR +1.06pp).",
+    "RF_F4_dm_negative_mean_diff_256m": "FLAGGED — DM 256m strict t=-2.90 NEGATIVE significant. SR gain via variance reduction, not return uplift.",
+    "RF_F5_bt_result_contract_build_fail": "FLAGGED — Backtest Contract v1.0 bt_result build error (date type). Remediation in v2."
+  },
+  "next_action_recommendations": [
+    "Q-Lead review: choose admit primary variant (strict NEW=0 outside vs redistribute) — recommend REDISTRIBUTE (4_PASS strict improve)",
+    "SR convention reconcile L-282 vs Optimizer (geometric standard mandate)",
+    "Architect parallel spawn for AX-008 floor 2/3 PASS",
+    "Codex Round response (this draft will trigger PostToolUse auto-spawn)",
+    "Judge S6 Gate 0~18 + PIT verification",
+    "Governor admit decision (if 4-axis PASS achieved)"
+  ],
+  "weakest_assumption_self_audit": "Strict variant (NEW=0 outside alpha) is data-extrapolation-conservative but underweights baseline at 80% scale outside alpha period → CAGR/OOS drag. Redistribute variant assumes baseline 4-sleeve absorbs NEW capacity without correlation degradation — this is post-hoc rebalance assumption, not realized OOS evidence. Both variants have caveats; admit decision should explicitly disclose.",
+  "challenge_flags": [
+    "Strict variant CAGR FAIL — admit-worthy?",
+    "Redistribute variant assumes lossless 4-sleeve absorbs NEW 20% — empirically untested",
+    "OOS 27m strict baseline dominance signals NEW sleeve obsolete post-2023 (lockbox boundary)",
+    "Optimizer 79m claim SR 2.64 vs Forge realized 1.86 = methodology drift requires reconcile",
+    "bt_result contract build failed — fallback raw metrics technically violation of v1.0 mandate"
+  ],
+  "artifacts_generated": {
+    "hurdle_result_json": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result/hurdle_result.json",
+    "backtest_summary_json": "qepm/mailbox/worktask/WT-D20260511_001/judge_ready/backtest_summary.json",
+    "sleeve_weights_monthly_csv": "04_Research/strategies/WT_D20260511_001_5sleeve_high20pct/output/sleeve_weights_monthly.csv",
+    "portfolio_returns_monthly_csv": "04_Research/strategies/WT_D20260511_001_5sleeve_high20pct/output/portfolio_returns_monthly.csv",
+    "cvar_revalidation_csv": "04_Research/strategies/WT_D20260511_001_5sleeve_high20pct/output/cvar_revalidation.csv",
+    "regime_decomposition_csv": "04_Research/strategies/WT_D20260511_001_5sleeve_high20pct/output/regime_decomposition.csv",
+    "equity_curve_png": "04_Research/strategies/WT_D20260511_001_5sleeve_high20pct/output/equity_curve.png",
+    "annual_returns_png": "04_Research/strategies/WT_D20260511_001_5sleeve_high20pct/output/annual_returns.png",
+    "oos_zoom_chart_png": "04_Research/strategies/WT_D20260511_001_5sleeve_high20pct/output/oos_zoom_chart.png",
+    "regime_decomposition_png": "04_Research/strategies/WT_D20260511_001_5sleeve_high20pct/output/regime_decomposition.png",
+    "run_all_R": "04_Research/strategies/WT_D20260511_001_5sleeve_high20pct/run_all.R",
+    "backtest_log_summary_txt": "04_Research/strategies/WT_D20260511_001_5sleeve_high20pct/output/backtest_log_summary.txt"
+  },
+  "created_at": "2026-05-11T09:47:00+0900"
+}

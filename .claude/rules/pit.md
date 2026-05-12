@@ -47,6 +47,25 @@
 - 예외: 전략 자체가 국면을 alpha source로 사용 시만 Regime 허용
 - **오버레이는 S5 Mutation 또는 v6.4 Optimizer/Forge에서만**
 
+## Lockbox / Frozen Alpha Scope (도훈 mandate 2026-05-09)
+
+**원칙**: Lockbox / Frozen alpha (SIGNAL_CUTOFF) 정책은 **정규 리서치 단계 (alpha-research / risk-research / optimizer-research)** 에만 적용.
+
+**운용·트래킹 단계 폐기**:
+- forge (전기간 백테)
+- monitoring (라이브 성과 트래킹)
+- execution (주문 schedule)
+- Q-Lead (집계 보고 / 도훈 mandate 응답)
+
+이 단계들은 **최신 sig_date까지 자동 갱신** 의무 (lockbox 무관).
+
+**상세 SOT**: `.claude/rules/lockbox-scope.md`
+
+**Hook 강제**: `02_Infrastructure/hooks/selection_contamination_detector.sh` v6.5
+- alpha / risk / optimizer / opt_ → block (정규 리서치 lockbox 차단)
+- judge / forge / monitoring / execution → allow + audit log
+- Q-Lead / unidentified → allow
+
 ## V6 Gap-Directed 가설
 
 - S0 가설에 `expected_role` + `why_now` 필수

@@ -1,0 +1,120 @@
+{
+  "gate1_ic_bad_positive": {
+    "risk_claim": "PASS",
+    "risk_basis": "ic_bad_ci_lo=0.0641 > 0"
+  },
+  "gate2_ratio_ci_positive": {
+    "risk_claim": "FAIL",
+    "risk_basis": "ratio_ci_95 = [-126, +151] unstable",
+    "forge_re_audit": "PIT-honest IC ratio re-measure not in scope (alpha layer)"
+  },
+  "gate3_low_cor": {
+    "forge_realized_cor_full": 0.145,
+    "forge_realized_cor_60m": 0.0546,
+    "criterion": "|cor| < 0.20",
+    "gate_pass_full": true,
+    "gate_pass_60m": true
+  },
+  "gate4_crisis_alpha_total": {
+    "sum_pp": -132.62,
+    "n_positive": 1,
+    "n_feasible": 6,
+    "sub_window_audit": {
+      "GFC_2008": {
+        "period": "GFC_2008",
+        "range": "2007-10 ~ 2009-03",
+        "feasible": true,
+        "n_months": 18,
+        "sleeve_cum_pct": -47.12,
+        "hyb_cum_pct": -10.48,
+        "ar_cum_pct": -14.92,
+        "sleeve_mdd_pct": 57.3,
+        "hyb_mdd_pct": 12.17,
+        "ar_mdd_pct": 16.83,
+        "crisis_alpha_vs_AR_core_pp": -32.2,
+        "crisis_alpha_vs_hyb_pp": -36.64
+      },
+      "EuDebt_2011": {
+        "period": "EuDebt_2011",
+        "range": "2011-07 ~ 2011-12",
+        "feasible": true,
+        "n_months": 6,
+        "sleeve_cum_pct": -11.11,
+        "hyb_cum_pct": 11.03,
+        "ar_cum_pct": 11.96,
+        "sleeve_mdd_pct": 23.09,
+        "hyb_mdd_pct": 8.5,
+        "ar_mdd_pct": 10.38,
+        "crisis_alpha_vs_AR_core_pp": -23.07,
+        "crisis_alpha_vs_hyb_pp": -22.14
+      },
+      "China_Shock_2015": {
+        "period": "China_Shock_2015",
+        "range": "2015-06 ~ 2016-02",
+        "feasible": true,
+        "n_months": 9,
+        "sleeve_cum_pct": -20.6,
+        "hyb_cum_pct": 20.48,
+        "ar_cum_pct": 28.23,
+        "sleeve_mdd_pct": 20.87,
+        "hyb_mdd_pct": 1.73,
+        "ar_mdd_pct": 2.86,
+        "crisis_alpha_vs_AR_core_pp": -48.83,
+        "crisis_alpha_vs_hyb_pp": -41.08
+      },
+      "VolShock_2018": {
+        "period": "VolShock_2018",
+        "range": "2018-02 ~ 2018-12",
+        "feasible": true,
+        "n_months": 11,
+        "sleeve_cum_pct": -38.39,
+        "hyb_cum_pct": -6.18,
+        "ar_cum_pct": -11.12,
+        "sleeve_mdd_pct": 38.39,
+        "hyb_mdd_pct": 14.81,
+        "ar_mdd_pct": 22.36,
+        "crisis_alpha_vs_AR_core_pp": -27.27,
+        "crisis_alpha_vs_hyb_pp": -32.21
+      },
+      "COVID_2020": {
+        "period": "COVID_2020",
+        "range": "2020-01 ~ 2020-06",
+        "feasible": true,
+        "n_months": 6,
+        "sleeve_cum_pct": 11.68,
+        "hyb_cum_pct": -0.56,
+        "ar_cum_pct": -1.93,
+        "sleeve_mdd_pct": 19.07,
+        "hyb_mdd_pct": 11.46,
+        "ar_mdd_pct": 16.12,
+        "crisis_alpha_vs_AR_core_pp": 13.61,
+        "crisis_alpha_vs_hyb_pp": 12.24
+      },
+      "Inflation_2022": {
+        "period": "Inflation_2022",
+        "range": "2022-01 ~ 2022-12",
+        "feasible": true,
+        "n_months": 12,
+        "sleeve_cum_pct": -18.73,
+        "hyb_cum_pct": -3.85,
+        "ar_cum_pct": -3.88,
+        "sleeve_mdd_pct": 20.19,
+        "hyb_mdd_pct": 10.93,
+        "ar_mdd_pct": 15.41,
+        "crisis_alpha_vs_AR_core_pp": -14.86,
+        "crisis_alpha_vs_hyb_pp": -14.88
+      }
+    }
+  },
+  "bad_normal_ratio_realized": {
+    "bad_mean": -0.0011,
+    "normal_mean": 0.0105,
+    "n_bad": 50,
+    "n_normal": 200,
+    "ratio_realized": -0.1059,
+    "diagnosis": "PRO_CYCLIC_bad_neg_normal_pos_INVERSE_DEFENSIVE",
+    "risk_claim_ratio_point": 17.8874,
+    "risk_claim_ci_unstable": true
+  },
+  "diagnosis": "AX-001 v2 strict: Gate 2 FAIL inherited (Risk Diversifier honest downgrade). Forge realized cor full=0.145 < 0.20 PASS Gate 3. Crisis sub-window (6 feasible periods): total crisis_alpha vs AR core = -132.62pp. NEGATIVE: crisis ALPHA does not exceed AR core. Verdict: DIVERSIFIER honest (NOT defense). Risk classification confirmed."
+}

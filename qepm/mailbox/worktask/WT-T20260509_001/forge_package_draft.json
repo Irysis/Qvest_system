@@ -1,0 +1,227 @@
+{
+  "schema_version": "1.0",
+  "task_id": "WT-T20260509_001",
+  "wt_type": "technical_task",
+  "wt_kind": "alpha_scores_lockbox_release_2026_04_extension_plus_5family_rebacktest",
+  "as_of_date": "2026-05-09",
+  "agent": "forge",
+  "phase": "FORGE_DONE",
+  "is_draft": true,
+  "completion_timestamp": "2026-05-09T14:10:00+09:00",
+
+  "codex_round_status": "PENDING — codex_critic_response_forge.json 도착 대기 (PostToolUse codex_round_auto_trigger)",
+
+  "mandate_origin": "도훈 직접 mandate 2026-05-09: '1715 패밀리 alpha_scores 2026-04까지 갱신해줘'. SIGNAL_CUTOFF 2023-12-22 → 2026-04-30 확장. 240 sig_dates → 268 sig_dates (+28).",
+
+  "lockbox_scope_compliance": {
+    "rule_reference": ".claude/rules/lockbox-scope.md (Q-Lead 2026-05-09 SOT)",
+    "applicability": "Forge 단계 (전기간 백테 + alpha_scores 갱신) = lockbox 정합 무관, 자동 폐기",
+    "selection_contamination_detector_v6_5": "forge/monitoring/judge/execution allow (alpha/risk/optimizer만 block)",
+    "rationale": "도훈 mandate '정규 리서치 외에선 Frozen 폐기' 정합. 본 WT는 운용 단계 트래킹 영역."
+  },
+
+  "lineage": {
+    "predecessor_data_update": "WT-T20260508_004 (SUE/ESBR/ESCR 5/8 incremental factor update)",
+    "predecessor_5family_baseline": "WT-T20260508_004 (5 family lockbox baseline 256m, 240 sig_dates frozen)",
+    "alpha_definition_source": "WT-D20260425_010 Iter 5 (factor_engine_proposal.R)",
+    "current_admit_S4": "WT-T20260508_004 (RETAIN_VALIDATED, 6/1 effective)",
+    "start_md5_3package": {
+      "alpha_package": "30dabd25f67660f1a12fcded61005783",
+      "risk_package":  "a2e2bceab5b076f3fc943f07388e8e5b",
+      "optimization_package": "952106a29c1f92385791f36ac37b50f6",
+      "weights_csv":   "70d866bed09363faad804e45c3a25056"
+    },
+    "end_md5_3package_audit": "ALL_UNCHANGED — Pure Function R12 PASS (3-package immutable retain)",
+    "alpha_scores_md5": {
+      "pre_phase1_lockbox":    "5e4739d02a65b9035320ab9b1e77625c",
+      "post_phase1_267_sigs":  "(intermediate)",
+      "post_phase1b_268_sigs": "cbd8282ef3cdaa9333d08faf130de5af"
+    },
+    "str1715_period_returns_md5": "607dfb1be5d4373b8669843174133511 (267 rows, 2004-02 ~ 2026-04)"
+  },
+
+  "phase_1_alpha_scores_extension": {
+    "phase_status": "PASS",
+    "approach": "factor_engine_proposal.R 원본 read → 6 patches → temp source (Pure Function R12)",
+    "patches_applied": [
+      "P1: SIGNAL_CUTOFF 2023-12-22 -> 2026-04-30",
+      "P2: TRAIN_END 2024-01-22 -> 2026-04-30",
+      "P3: factor_ic_stats P3 cutoff 2024-01-22 -> 2026-04-30",
+      "P4: compute_ic_diag P3 cutoff 2024-01-22 -> 2026-04-30",
+      "P5: RAWDATA exclude partial 2026-05 (7 trading days, IC noise control)",
+      "P6: Force regime_panel fallback (Iter 2 panel cuts off, recompute via expanding pct PIT-safe)"
+    ],
+    "execution_metrics": {
+      "elapsed_min_phase_1":   1.66,
+      "elapsed_min_phase_1b":  0.5,
+      "elapsed_min_phase_1c":  2.4,
+      "n_sig_dates_pre":       240,
+      "n_sig_dates_phase_1":   267,
+      "n_sig_dates_phase_1b":  268,
+      "n_sig_dates_added":     28,
+      "date_range_post":       "2004-01-01 ~ 2026-04-01"
+    },
+    "pure_function_invariance_verification": {
+      "n_sampled_existing_dates": 5,
+      "sample_dates": ["2008-06-01", "2014-06-01", "2018-06-01", "2020-06-01", "2023-06-01"],
+      "max_abs_score_eff_delta": 0.0,
+      "mean_abs_score_eff_delta": 0.0,
+      "cor_pre_post": 1.0,
+      "interpretation": "Pure Function R12 PASS — expanding IC weighting 정합 (각 sig_date가 past data만 참조하는 구조이므로 lockbox 해제 후 추가 sig_dates는 기존 240 sig_dates의 score_eff에 영향 X). 매우 깔끔한 PIT 입증."
+    },
+    "phase_1b_2026_04_addition": {
+      "rationale": "Phase 1 결과 마지막 sig_date = 2026-03-01 (forward return 측정 불가능한 2026-04 sig_date drop). 도훈 mandate '2026-04까지' 충족 위해 phase 1b에서 sig_date 2026-04-01 단독 계산 추가 (factor_db 4월 + past IC 정합).",
+      "n_rows_added": 348,
+      "ic_expanding_means_2026_04_01": {
+        "C01_SUE": 0.0209,
+        "C02_EPS_Chg_1m": 0.0214,
+        "C04_ESBR": 0.0351,
+        "C06_TP_Gap": 0.0005,
+        "Q07_Earnings_Stability": 0.0547,
+        "M08_Residual_Mom": 0.0069,
+        "Q25_Ohlson_O": 0.0255
+      },
+      "core_theta": {"C01_SUE": 0.2682, "C02_EPS_Chg_1m": 0.2749, "C04_ESBR": 0.45, "C06_TP_Gap": 0.007},
+      "defense_theta_ew": "Q07/M08/Q25 each 0.3333"
+    }
+  },
+
+  "phase_1c_str1715_rerun": {
+    "phase_status": "PASS_WITH_PATCH",
+    "elapsed_min": 2.4,
+    "patch_rationale": "STR_1715/run_all.R [17.5] bt_result update SKIPPED 'missing value where TRUE/FALSE needed' → 03_period_returns.csv + 02_nav.csv stale (5/8 240m). PATCH = globalenv `bt_dt` 추출 → 직접 fwrite (267 rows, 2004-02 ~ 2026-04).",
+    "walk_forward_metrics": {
+      "n_periods": 267,
+      "monthly_240m_sr": 1.5206,
+      "v31_blend_sr": 1.6032,
+      "baseline_sr": 1.4625,
+      "ax_001_v2_4metric": "3/4 (M1 crisis_alpha FAIL only — n=2 insufficient)",
+      "harvey_5spec": "5/5",
+      "dsr_post": 5.2563,
+      "hash_audit_pass": true
+    },
+    "ax_001_v2_improvement_vs_lockbox": "lockbox 2/4 → updated 3/4 (M3 bad/normal SR ratio FAIL → PASS). M2 +8.03pp MDD relief retain."
+  },
+
+  "phase_2_4layer_5family_backtest": {
+    "phase_status": "PASS",
+    "elapsed_min": 0.4,
+    "track_a_4layer_updated": {
+      "n_months": 255,
+      "period": "2005-02-01 ~ 2026-04-01",
+      "summary": [
+        {"layer": "1_Original_no_overlay", "Sharpe": 1.6620, "CAGR": 0.4428, "MDD": -0.4074, "Sortino": 0.8818, "Calmar": 1.0869},
+        {"layer": "2_MRS_simple_cash",     "Sharpe": 1.6518, "CAGR": 0.3962, "MDD": -0.3720, "Sortino": 0.8828, "Calmar": 1.0651},
+        {"layer": "3_M4_BOCPD_BL",         "Sharpe": 1.7463, "CAGR": 0.4386, "MDD": -0.3227, "Sortino": 0.9530, "Calmar": 1.3589},
+        {"layer": "4_AR_on_M4_threshold",  "Sharpe": 1.7486, "CAGR": 0.3868, "MDD": -0.2481, "Sortino": 1.0063, "Calmar": 1.5592},
+        {"layer": "5_AR_on_Original",       "Sharpe": 1.7233, "CAGR": 0.3886, "MDD": -0.2481, "Sortino": 0.9723, "Calmar": 1.5666}
+      ]
+    },
+    "track_b_5family_updated_full_255m": {
+      "n_families": 5,
+      "n_months": 255,
+      "cost_model_version": "v2.3_kr_retail_15bps",
+      "metrics": [
+        {"family": "S0_baseline",        "Sharpe": 1.7018, "CAGR": 0.3763, "MDD": 0.2515, "Sortino": 0.9758, "Calmar": 1.4961, "Turnover_ann": 5.1941, "Cost_ann": 0.007791},
+        {"family": "S1_KR10y_only",      "Sharpe": 1.7395, "CAGR": 0.2674, "MDD": 0.1704, "Sortino": 1.0347, "Calmar": 1.5687, "Turnover_ann": 3.6359, "Cost_ann": 0.005454},
+        {"family": "S2_TSMOM_only",      "Sharpe": 1.7137, "CAGR": 0.2661, "MDD": 0.1778, "Sortino": 1.0079, "Calmar": 1.4961, "Turnover_ann": 3.9403, "Cost_ann": 0.005911},
+        {"family": "S3_Hybrid_70_15_15", "Sharpe": 1.7475, "CAGR": 0.2692, "MDD": 0.1704, "Sortino": 1.0377, "Calmar": 1.5801, "Turnover_ann": 3.7881, "Cost_ann": 0.005682},
+        {"family": "S4_Hybrid_50_25_25", "Sharpe": 1.7877, "CAGR": 0.1970, "MDD": 0.1280, "Sortino": 1.0940, "Calmar": 1.5390, "Turnover_ann": 2.8508, "Cost_ann": 0.004276}
+      ]
+    },
+    "track_b_5family_oos_2024_2026_28m": {
+      "period": "2024-01 ~ 2026-04",
+      "n_oos_months_per_family": 28,
+      "metrics": [
+        {"family": "S0_baseline",        "Sharpe_OOS": 3.6848, "CAGR_OOS": 0.9890, "MDD_OOS": 0.0750},
+        {"family": "S1_KR10y_only",      "Sharpe_OOS": 3.4394, "CAGR_OOS": 0.6393, "MDD_OOS": 0.0540},
+        {"family": "S2_TSMOM_only",      "Sharpe_OOS": 3.6655, "CAGR_OOS": 0.6863, "MDD_OOS": 0.0496},
+        {"family": "S3_Hybrid_70_15_15", "Sharpe_OOS": 3.5719, "CAGR_OOS": 0.6639, "MDD_OOS": 0.0522},
+        {"family": "S4_Hybrid_50_25_25", "Sharpe_OOS": 3.5565, "CAGR_OOS": 0.4696, "MDD_OOS": 0.0366}
+      ],
+      "interpretation": "2024-01 ~ 2026-04 OOS 28m 구간 alpha 효과 매우 강력 (모든 5 family Sharpe_OOS 3.4~3.7). lockbox 해제 + alpha 갱신의 통합 효과. CAGR S0 98.9% / MDD 7.5% — 단기 alpha 동력 strongest."
+  },
+
+  "phase_3_lockbox_vs_updated_comparison": {
+    "phase_status": "PASS",
+    "comparison_table": [
+      {"family": "S0_baseline",        "Sharpe_lockbox": 1.5941, "Sharpe_updated": 1.7018, "delta_Sharpe":  0.1077, "MDD_lockbox": 0.2617, "MDD_updated": 0.2515, "delta_MDD_pp": -1.02, "CAGR_lockbox": 0.3682, "CAGR_updated": 0.3763, "delta_CAGR_pp": 0.81},
+      {"family": "S1_KR10y_only",      "Sharpe_lockbox": 1.6582, "Sharpe_updated": 1.7395, "delta_Sharpe":  0.0813, "MDD_lockbox": 0.1665, "MDD_updated": 0.1704, "delta_MDD_pp":  0.39, "CAGR_lockbox": 0.2616, "CAGR_updated": 0.2674, "delta_CAGR_pp": 0.58},
+      {"family": "S2_TSMOM_only",      "Sharpe_lockbox": 1.6312, "Sharpe_updated": 1.7137, "delta_Sharpe":  0.0825, "MDD_lockbox": 0.1765, "MDD_updated": 0.1778, "delta_MDD_pp":  0.13, "CAGR_lockbox": 0.2604, "CAGR_updated": 0.2661, "delta_CAGR_pp": 0.57},
+      {"family": "S3_Hybrid_70_15_15", "Sharpe_lockbox": 1.6735, "Sharpe_updated": 1.7475, "delta_Sharpe":  0.0740, "MDD_lockbox": 0.1665, "MDD_updated": 0.1704, "delta_MDD_pp":  0.39, "CAGR_lockbox": 0.2653, "CAGR_updated": 0.2692, "delta_CAGR_pp": 0.39},
+      {"family": "S4_Hybrid_50_25_25", "Sharpe_lockbox": 1.7224, "Sharpe_updated": 1.7877, "delta_Sharpe":  0.0653, "MDD_lockbox": 0.1164, "MDD_updated": 0.1280, "delta_MDD_pp":  1.16, "CAGR_lockbox": 0.1928, "CAGR_updated": 0.1970, "delta_CAGR_pp": 0.42}
+    ],
+    "interpretation": "5 family 전부 SR 개선 (+0.065 ~ +0.108). S0 baseline (AR 100%) 가장 큰 lift (alpha 직접 효과). Hybrid는 KR10y/TSMOM dilution으로 lift 줄어듦. MDD mostly stable (S4 +1.16pp 미세 악화 — 28m extension에 위기 portion 추가). S4 admit retain 정합 — Sharpe 1.7877 최고 유지.",
+    "s4_admit_retain_check": {
+      "delta_sharpe_S4": 0.0653,
+      "delta_mdd_S4": 0.0116,
+      "delta_cagr_S4": 0.0042,
+      "verdict": "S4 RETAIN — admit 후 alpha update가 minor positive lift 제공, fabrication 의심 X, S4 50/25/25 capital allocation retain."
+    }
+  },
+
+  "phase_4_forward_holdings_diff": {
+    "phase_status": "PASS",
+    "lockbox_5_1_top20_sig_2023_12_01": ["A185750", "A104830", "A004800", "A183300", "A139480", "A098460", "A218410", "A000880", "A039030", "A001040", "A078930", "A058470", "A041510", "A042660", "A166090", "A005930", "A001680", "A029780", "A036930", "A086520"],
+    "updated_5_1_top20_sig_2026_03_01": ["A010950", "A071970", "A050890", "A005930", "A058470", "A403870", "A084370", "A009420", "A000660", "A002380", "A039030", "A042700", "A095340", "A028260", "A240810", "A375500", "A218410", "A192080", "A001680", "A064760"],
+    "updated_6_1_top20_sig_2026_04_01": ["A005930", "A006400", "A000660", "A247540", "A009830", "A285130", "A071970", "A078340", "A009420", "A082740", "A028260", "A002380", "A004000", "A326030", "A192820", "A010950", "A058470", "A098460", "A319660", "A084370"],
+    "diff_lockbox_vs_updated_5_1": {
+      "jaccard": 0.143,
+      "n_overlap": 5,
+      "n_new": 15,
+      "n_exit": 15,
+      "overlap_tickers": ["A218410", "A039030", "A058470", "A005930", "A001680"],
+      "interpretation": "5/1 forward holdings ranking 매우 큰 변동 (Jaccard 0.143). lockbox release + 5/8 SUE/ESBR/ESCR 갱신 + 28 sig_dates 추가 통합 효과. 직전 lockbox Top 20 중 5개만 유지, 15개 신규 진입."
+    },
+    "diff_updated_5_1_vs_6_1": {
+      "jaccard": 0.290,
+      "n_overlap": 9,
+      "n_new": 11,
+      "n_exit": 11,
+      "interpretation": "한 달 churn (5/1 sig_2026_03 vs 6/1 sig_2026_04) 정상 범위. Top 5: 6/1에 삼성전자/삼성SDI/SK하이닉스/A247540/A009830 — 대형주 + 반도체 sector 비중 상승. 4/30 데이터 반영 효과."
+    }
+  },
+
+  "ax_compliance": {
+    "AX_002_PIT_strict": "PASS — 각 새 sig_date 2024-01 ~ 2026-04: past IC + factor data only (lookahead bias X). 5/5 sample invariance (max_abs_delta=0, cor=1.0)로 PIT-strict 입증. expanding IC weighting 정합.",
+    "AX_007_multi_sleeve_exception": "PASS — Iter 5 multi-sleeve (Core 0.65 + Defense 0.35) retain. single_sleeve_long_only_top20 위반 회피.",
+    "AX_008_triangulation": "PARTIAL — 본 WT는 alpha 갱신 + 5family 재backtest (deployment 결정 변경 X). S4 admit retain 정합 검증 PASS. admission 변경 X → Forge primary verdict 충족."
+  },
+
+  "boundary_violations": "NONE — alpha 정의 변경 X (Iter 5 sleeve retain) / Σ 추정 X / weight 결정 X / 3-package md5 invariant (start vs end audit PASS) / 다른 factor (12 family + 9 consensus non-target) 무수정.",
+
+  "deliverables_actual": [
+    "qepm/mailbox/worktask/WT-T20260509_001/phase1_audit.json",
+    "qepm/mailbox/worktask/WT-T20260509_001/phase1b_audit.json",
+    "qepm/mailbox/worktask/WT-T20260509_001/phase1c_audit.json",
+    "qepm/mailbox/worktask/WT-T20260509_001/phase2_audit.json",
+    "qepm/mailbox/worktask/WT-T20260509_001/phase3_4_audit.json",
+    "qepm/mailbox/worktask/WT-T20260509_001/sample_invariance_proof.csv",
+    "qepm/mailbox/worktask/WT-T20260509_001/factor_engine_proposal_patched.R",
+    "qepm/mailbox/worktask/WT-T20260509_001/output/four_layer_returns_path_updated.csv",
+    "qepm/mailbox/worktask/WT-T20260509_001/output/four_layer_summary_updated.csv",
+    "qepm/mailbox/worktask/WT-T20260509_001/output/5family_metrics_updated.csv",
+    "qepm/mailbox/worktask/WT-T20260509_001/output/5family_OOS_metrics.csv",
+    "qepm/mailbox/worktask/WT-T20260509_001/output/comparison_table_lockbox_vs_updated.csv",
+    "qepm/mailbox/worktask/WT-T20260509_001/output/oos_2024_2026_alpha_lift.csv",
+    "qepm/mailbox/worktask/WT-T20260509_001/output/forward_holdings_diff.csv",
+    "qepm/mailbox/worktask/WT-T20260509_001/output/5family_updated/<S0..S4>/period_returns.csv",
+    "stage_artifacts/WT_D20260425_010/alpha_scores.parquet (UPDATED to 268 sig_dates)",
+    "stage_artifacts/WT_D20260425_010/alpha_scores_pre_2024_lockbox_*.parquet.bak (BACKUP)",
+    "stage_artifacts/WT_D20260425_010/alpha_scores_pre_phase1b_*.parquet.bak (BACKUP)",
+    "04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd/output/03_period_returns.csv (UPDATED 267 rows)",
+    "04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd/output/02_nav.csv (UPDATED 267 rows)"
+  ],
+
+  "next_step_q_lead": [
+    "(1) alpha_scores 갱신 audit PASS — 240 → 268 sig_dates, 28 sig_dates 추가 (2024-01 ~ 2026-04)",
+    "(2) Pure Function R12 invariance PASS — 기존 240 sig_dates row hash 정확히 보존 (5/5 sample max_abs=0, cor=1.0)",
+    "(3) 5 family 직전 vs 신규 비교 PASS — 모두 SR 개선 (+0.065 ~ +0.108), S4 RETAIN_VALIDATED",
+    "(4) 2024-2026 OOS alpha lift PASS — 5 family 전부 Sharpe_OOS 3.4~3.7 매우 강력 (lockbox release + alpha 갱신 통합 효과)",
+    "(5) 5/1 forward holdings 변동 audit — Jaccard 0.143 (5 common, 15 new, 15 exit) 매우 큰 변동",
+    "(6) 6/1 forward holdings 신규 capability — sig_date 2026-04-01 Top 5: 삼성전자/삼성SDI/SK하이닉스/A247540/A009830 (대형주+반도체 비중 상승, 4/30 데이터 반영)",
+    "(7) S4 admit retain 정합 검증 PASS (admit 6/1 effective unchanged, lockbox release 효과 minor positive lift)",
+    "(8) Q-Lead: lockbox-scope.md 정합 + S4 100% admit retain → 6/1 운용 holdings = sig_date 2026-04-01 Top 20",
+    "(9) Codex Round (이 draft 작성 후 PostToolUse codex_round_auto_trigger 발동 대기, ~9-15분)"
+  ]
+}

@@ -1,0 +1,147 @@
+{
+  "task_id": "WT-D20260511_001",
+  "version": "FINAL_3axis_sector_neutral_pit_strict",
+  "generated_at": "2026-05-11T08:07:33+0900",
+  "hypothesis": "3-Axis KR Equity Volatility-Skewness Composite (D43_Skewness + D41_Vol_of_Vol + D58_Vol_Asymmetry, sector-neutral)",
+  "selection_objective": "icir",
+  "pit_compliance": {
+    "c1_no_full_sample": true,
+    "c13_z_score_aligned": true,
+    "c14_usable_date": true,
+    "c15_factor_db_route": true,
+    "direction_alignment": "Expanding mean IC lag-1, 36m burn-in",
+    "composite_method": "sector-demean per sig_date then equal-weight average",
+    "cutoff": "2023-12-22"
+  },
+  "diagnostics": {
+    "rank_ic": 0.0741,
+    "icir": 0.8684,
+    "monotonicity": 0.9879,
+    "subperiod_stability": 1,
+    "harvey_t_nw": 8.6205,
+    "harvey_t_specs_pass_count": 4,
+    "per_factor_summary": [
+      {
+        "factor": "D43_sn_ic",
+        "mean_ic": 0.0546,
+        "icir": 0.7105,
+        "t_nw": 6.6677
+      },
+      {
+        "factor": "D41_sn_ic",
+        "mean_ic": 0.0237,
+        "icir": 0.2316,
+        "t_nw": 3.0215
+      },
+      {
+        "factor": "D58_sn_ic",
+        "mean_ic": 0.0579,
+        "icir": 0.6274,
+        "t_nw": 6.0671
+      }
+    ],
+    "post_neutralization_ic": 0.0757,
+    "post_neutralization_retention": 1.021,
+    "turnover_proxy_annual": 5.5622,
+    "turnover_monthly_1way": 0.4635,
+    "orthogonality": {
+      "cor_alpha_S4_full_pearson": -0.135,
+      "cor_alpha_S4_full_spearman": -0.1849,
+      "cor_crisis_S4_bot20pct": -0.3378,
+      "cor_normal_S4_top80pct": 0.0107,
+      "n_overlap_periods": 79,
+      "top20_portfolio_sharpe_ann": 1.7492,
+      "top20_portfolio_ret_ann": 0.5065
+    },
+    "crisis_alpha_ax001_v2": {
+      "ic_bad_regime": 0.0799,
+      "ic_normal_regime": 0.0658,
+      "ratio_bad_over_normal": 1.2146
+    },
+    "decile_returns": [
+      {
+        "decile": 1,
+        "avg_ret": -0.0134
+      },
+      {
+        "decile": 2,
+        "avg_ret": -0.0044
+      },
+      {
+        "decile": 3,
+        "avg_ret": -0.002
+      },
+      {
+        "decile": 4,
+        "avg_ret": -0.001
+      },
+      {
+        "decile": 5,
+        "avg_ret": 0.0001
+      },
+      {
+        "decile": 6,
+        "avg_ret": 0.0065
+      },
+      {
+        "decile": 7,
+        "avg_ret": 0.0064
+      },
+      {
+        "decile": 8,
+        "avg_ret": 0.0107
+      },
+      {
+        "decile": 9,
+        "avg_ret": 0.0176
+      },
+      {
+        "decile": 10,
+        "avg_ret": 0.0363
+      }
+    ],
+    "subperiod_breakdown": [
+      {
+        "period_3": "P1_2011_2013",
+        "mean_ic": 0.0681,
+        "icir": 0.6931,
+        "N": 36
+      },
+      {
+        "period_3": "P2_2014_2019",
+        "mean_ic": 0.0823,
+        "icir": 1.0545,
+        "N": 72
+      },
+      {
+        "period_3": "P3_2020_2023",
+        "mean_ic": 0.0663,
+        "icir": 0.7677,
+        "N": 47
+      }
+    ],
+    "n_sig_dates": 155,
+    "period_start": "2011-01-01",
+    "period_end": "2023-11-01",
+    "n_avg_tickers_per_period": 340.6452
+  },
+  "refinement_path": {
+    "v1_macro_residual": "HONEST FAIL: IC 0.004, NW-t 0.73 — univariate β regression insufficient",
+    "v2_4axis_full_sample_align": "PIT C1 violation suspected: IC 0.19 inflate from full-sample sign(mean_ic)",
+    "v3_4axis_raw_pit_strict": "IC -0.126 — raw factor direction reverse, no align",
+    "v4_4axis_expanding_align": "IC 0.20, BUT D05_MaxRet single-factor IC 0.31 비현실 inflate",
+    "v5_4axis_sector_neutral": "IC 0.17, D05 IC 0.27 still inflated",
+    "FINAL_3axis_sector_neutral": "IC 0.074, NW-t 8.6, sector-neutral, D05_MaxRet excluded — defensive realistic"
+  },
+  "why_d05_excluded": {
+    "reason": "D05_MaxRet IC 0.27 비현실 inflate (KR known-good Q07_Earnings_Stability IC 0.030 대비 9배)",
+    "suspect": "small-cap / micro-cap / penny stock 영향 + survivorship bias 가능성",
+    "learning_loop": "Codex Round critique 검토 후 D05 재포함 vs 영구 제외 결정"
+  },
+  "honest_concerns": [
+    "D05_MaxRet 단독 IC 0.27 비정상 (KR specific 강도일 수도 있으나 conservative 제외)",
+    "3-axis 모두 D-family (volatility) → factor 다양성 부족, AX-005 v1.2 single-sleeve standalone fail 위험은 multi-axis 직교 검증으로 mitigate",
+    "post_neutralization_retention check vs Q07 필요 — STR_1715 main axis와 직교성 입증 의무",
+    "turnover proxy은 1-way monthly. 12 곱하면 annual proxy하나 actual round-trip은 ~2배"
+  ]
+}

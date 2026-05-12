@@ -1,0 +1,174 @@
+{
+  "metadata": {
+    "wt_id": "WT-D20260512_001",
+    "role": "alpha-research",
+    "pkg_kind": "alpha_validation_overlay_integration",
+    "schema_version": "v1.0_overlay_3spec_coupling",
+    "generated_at": "2026-05-12T11:59:43+0900",
+    "baseline": "C_softmax_z_composite_pd30_4_sleeve",
+    "overlay_1": "AR_threshold_K5_W252_q70_0.4172_q90_0.4502_beta_1.0_0.7_0.4",
+    "overlay_2": "M4_regime_NORMAL_CAUTION_CRISIS_partial_sizing",
+    "sleeve_weights": {
+      "kr": 0.55,
+      "tsmom": 0.225,
+      "kr10y": 0.18,
+      "cash": 0.045
+    },
+    "coupling_specs": {
+      "C1_multiplicative": "α_final = kr_ret × β_AR × m4_w (others untouched)",
+      "C2_min": "α_final = kr_ret × min(β_AR, m4_w) (conservative)",
+      "C3_linear": "α_final = kr_ret × (0.5·β_AR + 0.5·m4_w) (additive blend)"
+    },
+    "valid_window": {
+      "start": "2004-09-01",
+      "end": "2026-05-01",
+      "n_months": 261
+    },
+    "pit_compliance": {
+      "beta_lag": "shift(beta_threshold, 1) — 1m lag before merge",
+      "m4_lag": "shift(weight_str1715, 1) — 1m lag before merge",
+      "cost_model": "0.0015 × min(|Δβ| + |Δm4|, 1) round-trip",
+      "lockbox_scope": "alpha-research applied; sig_dates beyond 2024-01 marked oot in audit"
+    }
+  },
+  "metrics_4spec": [
+    {
+      "spec": "C0_baseline_softmax",
+      "CAGR": 0.1558,
+      "Vol": 0.1611,
+      "SR": 0.967,
+      "MDD": -0.2294,
+      "Sortino": 0.5364,
+      "Calmar": 0.6788
+    },
+    {
+      "spec": "C1_multiplicative",
+      "CAGR": 0.1266,
+      "Vol": 0.1392,
+      "SR": 0.9099,
+      "MDD": -0.1908,
+      "Sortino": 0.5034,
+      "Calmar": 0.6637
+    },
+    {
+      "spec": "C2_min",
+      "CAGR": 0.1305,
+      "Vol": 0.1406,
+      "SR": 0.9279,
+      "MDD": -0.1905,
+      "Sortino": 0.513,
+      "Calmar": 0.6852
+    },
+    {
+      "spec": "C3_linear",
+      "CAGR": 0.1393,
+      "Vol": 0.148,
+      "SR": 0.9414,
+      "MDD": -0.209,
+      "Sortino": 0.5197,
+      "Calmar": 0.6665
+    }
+  ],
+  "capm_results": {
+    "C0": {
+      "alpha": 0.0075,
+      "alpha_t": 4.2193,
+      "beta": 0.6516
+    },
+    "C1": {
+      "alpha": 0.0061,
+      "alpha_t": 3.536,
+      "beta": 0.5304
+    },
+    "C2": {
+      "alpha": 0.0063,
+      "alpha_t": 3.6925,
+      "beta": 0.5423
+    },
+    "C3": {
+      "alpha": 0.0067,
+      "alpha_t": 3.8944,
+      "beta": 0.5853
+    }
+  },
+  "dsr_results": {
+    "C0": {
+      "SR_monthly": 0.2837,
+      "SR_annual": 0.9827,
+      "T": 259,
+      "sk": 0.3833,
+      "ku": 1.5422,
+      "N_trials": 50,
+      "sr_zero": 0.1361,
+      "DSR": 2.4682,
+      "p_value": 0.0068
+    },
+    "C1": {
+      "SR_monthly": 0.2682,
+      "SR_annual": 0.929,
+      "T": 259,
+      "sk": 0.4226,
+      "ku": 2.0582,
+      "N_trials": 50,
+      "sr_zero": 0.1362,
+      "DSR": 2.2059,
+      "p_value": 0.0137
+    },
+    "C2": {
+      "SR_monthly": 0.2729,
+      "SR_annual": 0.9454,
+      "T": 259,
+      "sk": 0.3947,
+      "ku": 1.8926,
+      "N_trials": 50,
+      "sr_zero": 0.1365,
+      "DSR": 2.2753,
+      "p_value": 0.0114
+    },
+    "C3": {
+      "SR_monthly": 0.2767,
+      "SR_annual": 0.9584,
+      "T": 259,
+      "sk": 0.3919,
+      "ku": 1.8074,
+      "N_trials": 50,
+      "sr_zero": 0.1364,
+      "DSR": 2.3415,
+      "p_value": 0.0096
+    }
+  },
+  "cor_pearson_vs_C0": {
+    "C1_vs_C0": 0.9643,
+    "C2_vs_C0": 0.9721,
+    "C3_vs_C0": 0.9899
+  },
+  "cor_spearman_vs_C0": {
+    "C1_vs_C0_spearman": 0.9819,
+    "C2_vs_C0_spearman": 0.987,
+    "C3_vs_C0_spearman": 0.996
+  },
+  "defense_results": {
+    "C1": {
+      "crisis_avg_ret": -0.0145,
+      "crisis_n": 26,
+      "normal_avg_ret": 0.0136,
+      "normal_n": 233,
+      "crisis_outperf_pp": 0.0024
+    },
+    "C2": {
+      "crisis_avg_ret": -0.0145,
+      "crisis_n": 26,
+      "normal_avg_ret": 0.0139,
+      "normal_n": 233,
+      "crisis_outperf_pp": 0.0024
+    },
+    "C3": {
+      "crisis_avg_ret": -0.0158,
+      "crisis_n": 26,
+      "normal_avg_ret": 0.0149,
+      "normal_n": 233,
+      "crisis_outperf_pp": 0.0012
+    }
+  },
+  "crisis_threshold": -0.1222
+}

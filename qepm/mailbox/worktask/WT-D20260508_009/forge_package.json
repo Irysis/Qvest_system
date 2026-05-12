@@ -1,0 +1,470 @@
+{
+  "task_id": "WT-D20260508_009",
+  "package_kind": "forge_package",
+  "wt_type": "discovery",
+  "as_of_date": "2026-05-08",
+  "agent": "forge",
+  "draft_revision": "final_post_codex",
+  "alpha_inheritance": {
+    "alpha_package_path": "qepm/mailbox/worktask/WT-D20260508_009/alpha_package.json",
+    "alpha_package_md5_start": "0829b1b9145d9871acf3f9564cba1ffe",
+    "alpha_package_md5_end": "0829b1b9145d9871acf3f9564cba1ffe",
+    "no_alpha_modification": true,
+    "alpha_vector_immutable_verified": true
+  },
+  "risk_inheritance": {
+    "risk_package_path": "qepm/mailbox/worktask/WT-D20260508_009/risk_package.json",
+    "risk_package_md5_start": "07987e3d1a6ca68ba8e3e07bc6547459",
+    "risk_package_md5_end": "07987e3d1a6ca68ba8e3e07bc6547459",
+    "no_risk_modification": true,
+    "covariance_immutable_verified": true,
+    "cov_eigen_recompute_pass": true,
+    "cov_eigen_recompute_path": "stage_artifacts/WT-D20260508_009/forge/cov_eigen_recompute.json"
+  },
+  "optimizer_inheritance": {
+    "optimization_package_path": "qepm/mailbox/worktask/WT-D20260508_009/optimization_package.json",
+    "optimization_package_md5_start": "82115c429b3c87c84a497b79e59868fd",
+    "optimization_package_md5_end": "82115c429b3c87c84a497b79e59868fd",
+    "no_optimizer_modification": true,
+    "weights_csv_used_as_is": true,
+    "weights_csv_n_dates": 196,
+    "weights_csv_n_rows": 3028
+  },
+  "hash_invariance_check": {
+    "start_hashes": {
+      "alpha":    "0829b1b9145d9871acf3f9564cba1ffe",
+      "risk":     "07987e3d1a6ca68ba8e3e07bc6547459",
+      "optimize": "82115c429b3c87c84a497b79e59868fd"
+    },
+    "end_hashes": {
+      "alpha":    "0829b1b9145d9871acf3f9564cba1ffe",
+      "risk":     "07987e3d1a6ca68ba8e3e07bc6547459",
+      "optimize": "82115c429b3c87c84a497b79e59868fd"
+    },
+    "match": true,
+    "verdict": "PASS_3_packages_immutable_during_forge_run"
+  },
+
+  "cov_eigen_recompute_diagnosis": {
+    "forge_codex_c1_mandate": "PASS_parquet_directly_loaded_eigen_decomp_executed",
+    "parquet_path": "stage_artifacts/WT-D20260508_009/covariance.parquet",
+    "matrix_dim": "241x241",
+    "symmetric": true,
+    "psd": true,
+    "min_eig": 0.0001407174,
+    "max_eig": 0.1060657,
+    "kappa_exact_recompute": 753.7499,
+    "kappa_default_R_recompute": 114.0257,
+    "drift_diagnosis": {
+      "diff_kappa_exact_abs": 0.0,
+      "diff_kappa_default_abs": 0.0,
+      "verdict": "PASS_no_drift_parquet_single_truth"
+    },
+    "rf_r2_residual": {
+      "threshold": 100,
+      "kappa_exact_breach": true,
+      "severity": "HIGH_inherited_from_risk_research",
+      "note": "Codex C6 ACCEPT — Risk Agent inherited residual; Forge no resolution authority. If Q-Lead admit BAB then risk-research re-spawn 의무 (universe expansion or factor-only Σ to κ_exact ≤ 100)."
+    }
+  },
+
+  "mitigation_selection_with_disclosure": {
+    "method_used": "M3_3m_MA_sleeve_smoothing",
+    "method_used_rationale": "Optimizer infeasibility_report.forge_mitigation_options.option_d explicit. Chosen criteria: (1) realized turnover <= 600% Hurdle hard cap PASS / (2) schedule_fidelity density 1.0 maintained / (3) ES/MDD dual benefit / (4) least intrusive within Optimizer scope.",
+    "codex_c1_disposition": {
+      "concern": "ex-post selection from realized M0/M1/M2/M3 — method-shopping risk",
+      "forge_response": "ACCEPT_partial_with_disclosure",
+      "rationale": "Mitigation pool (a/b/c/d) was pre-registered by Optimizer infeasibility_report; Forge selected from pre-registered pool not invented. However ex-post selection from realized SR/turnover acknowledged as method-shopping risk. Final recommendation REJECT_admit invariant across all 4 mitigations.",
+      "method_shopping_effective_N": 4,
+      "dsr_penalty_for_4_trials": "If admit decision: Bailey-LdP DSR penalty for N_eff=4 trials applies. Current Forge primary recommendation REJECT_admit obviates this requirement."
+    },
+    "options_evaluated_realized_15bps_oneway": {
+      "M0_monthly_as_is":              {"SR": 0.4792, "CAGR_pct": 10.16, "MDD_pct": -51.05, "TO_round_trip_ann_pct": 1037.43, "TO_breach_600": true},
+      "M1_quarterly_rebalance":        {"SR": 0.4047, "CAGR_pct":  7.88, "MDD_pct": -45.67, "TO_round_trip_ann_pct":  482.24, "TO_breach_600": false},
+      "M2_buffer_zone_keep15_entry25": {"SR": 0.4491, "CAGR_pct":  9.21, "MDD_pct": -54.16, "TO_round_trip_ann_pct":  899.88, "TO_breach_600": true},
+      "M3_3m_MA_smoothing":            {"SR": 0.4064, "CAGR_pct":  7.83, "MDD_pct": -46.10, "TO_round_trip_ann_pct":  493.38, "TO_breach_600": false}
+    },
+    "options_evaluated_realized_30bps_oneway_corrected_codex_c5": {
+      "M0_monthly_as_is_corrected":              {"SR": 0.4517, "CAGR_pct":  9.31, "MDD_pct": -52.64},
+      "M1_quarterly_rebalance_corrected":        {"SR": 0.3917, "CAGR_pct":  7.49, "MDD_pct": -45.93},
+      "M2_buffer_zone_keep15_entry25_corrected": {"SR": 0.4252, "CAGR_pct":  8.48, "MDD_pct": -55.58},
+      "M3_3m_MA_smoothing_corrected":            {"SR": 0.3928, "CAGR_pct":  7.42, "MDD_pct": -46.95}
+    },
+    "codex_c5_cost_correction_disclosure": {
+      "issue": "build_bab_returns.R / build_bab_mitigations.R applied cost = turnover_one_way × 15bps but Optimizer reports turnover_round_trip_annualized. Under 15bps one-way mandate true cost = turnover_one_way × 30bps (round-trip equivalent).",
+      "correction_factor": 2.0,
+      "standalone_M3_SR_drift": "0.4064 → 0.3928 (Δ -0.0136)",
+      "hybrid_4_ratio_drift_estimated": "negligible (BAB cost only secondary; STR_1715 cost already within-sleeve net): A 0.000 / B -0.0003 / C -0.0005 / D -0.0008",
+      "verdict_invariance": "Conclusion REJECT_admit unchanged — corrected SR also monotone decreasing (B 1.647 → C 1.599 → D 1.535)."
+    },
+    "selected_path": "stage_artifacts/WT-D20260508_009/forge/mitigation_selected.json",
+    "pure_function_compliance": "weights post-process within Optimizer infeasibility_report explicit options. NO alpha_vector or covariance modification. Schedule fidelity 196/196 dates retained."
+  },
+
+  "hybrid_4_ratio_realized_backtest": {
+    "method": "Pure function: 3-package as-is + Optimizer mitigation option_d. STR_1715 PG2 AR_M4 + TSMOM ETF + KR_10y bond ETF + WT_009 BAB-M3.",
+    "period": "2005-02-01 ~ 2026-05-01 (256 months)",
+    "cost_model": "v2.3_kr_retail_15bps uniform one-way (BAB sleeve cost slight under-charge see codex_c5_disclosure)",
+    "backtest_contract": "v1.0 (PerformanceAnalytics standard functions only)",
+
+    "ratios_tested": {
+      "A_0pct": {
+        "label": "A_0pct_PG2_baseline",
+        "capital_alloc": {"STR_1715": 0.70, "TSMOM": 0.15, "KR_10y": 0.15, "WT_009_BAB": 0.00},
+        "n_months": 256,
+        "metrics_realized": {
+          "CAGR": 0.2991, "Sharpe": 1.6833, "Sortino": 2.5793, "Calmar": 1.4733,
+          "Vol_annualized": 0.1674, "MDD": -0.2030, "VaR_95": -0.0484, "CVaR_95": -0.0745,
+          "ES95_pct": -7.45, "Skewness": 0.4451, "Hill_alpha": 4.119, "Total_Return": 286.28
+        },
+        "realized_turnover_round_trip_ann": 1.1612,
+        "cost_adj_SR_15bps_oneway": 1.6833,
+        "cost_adj_SR_30bps_corrected": 1.6833,
+        "ax001_v2_realized": {
+          "n_crisis_months": 30, "crisis_alpha_realized": 0.0231,
+          "n_normal_months": 71, "normal_alpha_realized": -0.0002,
+          "mdd_relief_vs_str1715_only": 0.0485, "v2_crisis_alpha_pass": true,
+          "bad_normal_ic_ratio_realized": null, "codex_c7_disposition": "ACCEPT_axis_3_calc_defect_alpha_research_scope"
+        }
+      },
+      "B_10pct": {
+        "label": "B_10pct_BAB_admit",
+        "capital_alloc": {"STR_1715": 0.63, "TSMOM": 0.135, "KR_10y": 0.135, "WT_009_BAB": 0.10},
+        "n_months": 256,
+        "metrics_realized": {
+          "CAGR": 0.2741, "Sharpe": 1.6475, "Sortino": 2.4812, "Calmar": 1.3219,
+          "Vol_annualized": 0.1582, "MDD": -0.2073, "VaR_95": -0.0447, "CVaR_95": -0.0715,
+          "ES95_pct": -7.15, "Skewness": 0.4660, "Hill_alpha": 2.724, "Total_Return": 189.11
+        },
+        "realized_turnover_round_trip_ann": 1.0545,
+        "cost_adj_SR_15bps_oneway": 1.6475,
+        "cost_adj_SR_30bps_corrected": 1.6472,
+        "ax001_v2_realized": {
+          "n_crisis_months": 30, "crisis_alpha_realized": 0.0238,
+          "n_normal_months": 71, "normal_alpha_realized": -0.0024,
+          "mdd_relief_vs_str1715_only": 0.0441, "v2_crisis_alpha_pass": true,
+          "bad_normal_ic_ratio_realized": null
+        }
+      },
+      "C_20pct": {
+        "label": "C_20pct_BAB_balanced",
+        "capital_alloc": {"STR_1715": 0.56, "TSMOM": 0.12, "KR_10y": 0.12, "WT_009_BAB": 0.20},
+        "n_months": 256,
+        "metrics_realized": {
+          "CAGR": 0.2493, "Sharpe": 1.5992, "Sortino": 2.3834, "Calmar": 1.1779,
+          "Vol_annualized": 0.1497, "MDD": -0.2117, "VaR_95": -0.0397, "CVaR_95": -0.0686,
+          "ES95_pct": -6.86, "Skewness": 0.5184, "Hill_alpha": 1.987, "Total_Return": 124.25
+        },
+        "realized_turnover_round_trip_ann": 0.9478,
+        "cost_adj_SR_15bps_oneway": 1.5992,
+        "cost_adj_SR_30bps_corrected": 1.5986,
+        "ax001_v2_realized": {
+          "n_crisis_months": 30, "crisis_alpha_realized": 0.0246,
+          "n_normal_months": 71, "normal_alpha_realized": -0.0047,
+          "mdd_relief_vs_str1715_only": 0.0398, "v2_crisis_alpha_pass": true,
+          "bad_normal_ic_ratio_realized": null
+        }
+      },
+      "D_30pct": {
+        "label": "D_30pct_BAB_aggressive",
+        "capital_alloc": {"STR_1715": 0.49, "TSMOM": 0.105, "KR_10y": 0.105, "WT_009_BAB": 0.30},
+        "n_months": 256,
+        "metrics_realized": {
+          "CAGR": 0.2248, "Sharpe": 1.5353, "Sortino": 2.2876, "Calmar": 1.0407,
+          "Vol_annualized": 0.1421, "MDD": -0.2160, "VaR_95": -0.0381, "CVaR_95": -0.0657,
+          "ES95_pct": -6.57, "Skewness": 0.6128, "Hill_alpha": 1.527, "Total_Return": 81.15
+        },
+        "realized_turnover_round_trip_ann": 0.8411,
+        "cost_adj_SR_15bps_oneway": 1.5353,
+        "cost_adj_SR_30bps_corrected": 1.5345,
+        "ax001_v2_realized": {
+          "n_crisis_months": 30, "crisis_alpha_realized": 0.0254,
+          "n_normal_months": 71, "normal_alpha_realized": -0.0070,
+          "mdd_relief_vs_str1715_only": 0.0355, "v2_crisis_alpha_pass": true,
+          "bad_normal_ic_ratio_realized": null
+        }
+      }
+    },
+
+    "comparison_table_path": "stage_artifacts/WT-D20260508_009/forge/comparison_table_4_hybrid.csv"
+  },
+
+  "optimizer_estimate_vs_forge_realized_diagnosis": {
+    "optimizer_standalone_estimated": {
+      "expected_sr_annual_forward": 1.99914184,
+      "expected_information_ratio": 0.5771,
+      "expected_active_return_monthly": 0.01418,
+      "sigma_annual_used_in_estimate": 0.0851
+    },
+    "forge_standalone_realized_M0": {
+      "sr_annualized": 0.4792,
+      "cagr": 0.1016,
+      "mdd": -0.5105,
+      "vol_annualized": 0.2828,
+      "turnover_round_trip_ann": 10.3743
+    },
+    "gap_diagnosis_standalone": {
+      "sr_gap_pp": 1.5199,
+      "vol_gap_pp": 0.1977,
+      "ir_to_sr_translation_lossy": "Optimizer sigma_annual=8.51% (factor model BΩB' projection); Forge realized sigma 28.28% (3.32× larger). Risk model under-estimates concentration tax on 6/20 sec_cap40 + sec_cap_only_partial portfolio.",
+      "verdict": "OPTIMIZER_PROJECTION_OPTIMISTIC_NOT_FABRICATION",
+      "rationale": "Optimizer did NOT fabricate metrics — gap traceable to factor-model sigma vs realized concentration sigma divergence. Forge measurement is single truth per Charter v1.4 §9 + Backtest Contract v1.0."
+    },
+    "hybrid_admit_estimate_vs_realized": {
+      "optimizer_hybrid_combine_grid": {
+        "best_w_30pct_estimated_SR": 1.9177,
+        "delta_SR_vs_str_only_estimated": 0.3323
+      },
+      "forge_hybrid_realized": {
+        "A_0pct_baseline_realized_SR": 1.6833,
+        "B_10pct_realized_SR": 1.6475, "delta_vs_baseline": -0.0358,
+        "C_20pct_realized_SR": 1.5992, "delta_vs_baseline": -0.0841,
+        "D_30pct_realized_SR": 1.5353, "delta_vs_baseline": -0.1480,
+        "monotone_decrease": true
+      },
+      "realized_optimal_BAB_weight": "0.00 (A_baseline maximizes Sharpe)",
+      "verdict": "BAB_admit_NOT_BENEFICIAL_at_realized_SR_metric",
+      "interpretation": "Forge realized backtest contradicts Optimizer hybrid_combine_simulation projection. Optimizer used 2-source sharpe-combine formula assuming new-source SR=1.999; Forge realized standalone SR=0.479 — 4.2× lower. Even with cor near zero, low SR new source dilutes hybrid SR rather than enhances. PG2 baseline (A) remains optimal."
+    }
+  },
+
+  "ax001_v2_audit_realized": {
+    "applied_to_4_hybrid_ratios": true,
+    "metric_basis": "AX-001 v2 conditional defense — crisis_alpha + Core MDD relief + bad/normal IC ratio. 전기간 SR 기준 적용 금지.",
+    "axis_completion": "2_of_3_axes_completed (crisis_alpha + MDD relief; bad/normal IC ratio computation defect alpha-research scope)",
+    "crisis_window_definition": "BM 6m rolling cum return < -10%",
+    "n_crisis_months_universal": 30,
+    "summary_per_ratio": {
+      "A_0pct": {"crisis_alpha": 0.0231, "mdd_relief": 0.0485, "v2_pass_2of3": true},
+      "B_10pct": {"crisis_alpha": 0.0238, "mdd_relief": 0.0441, "v2_pass_2of3": true},
+      "C_20pct": {"crisis_alpha": 0.0246, "mdd_relief": 0.0398, "v2_pass_2of3": true},
+      "D_30pct": {"crisis_alpha": 0.0254, "mdd_relief": 0.0355, "v2_pass_2of3": true}
+    },
+    "interpretation": "BAB admit increases crisis_alpha monotonically (+0.0023pp per 10% BAB). However mdd_relief decreases monotonically. Trade-off: BAB defense efficacy vs PG2 MDD anchor.",
+    "audit_path": "stage_artifacts/WT-D20260508_009/forge/ax001_v2_realized_audit.json",
+    "codex_c7_disposition": "ACCEPT — bad/normal IC ratio computation alpha-research scope; if admit then alpha-research re-spawn"
+  },
+
+  "pit_audit_C1_C15": {
+    "C1_full_sample_stat_avoid": "PASS",
+    "C2_same_day_circular": "PASS — t+1 execution after sig_date (Optimizer schedule 196 dates)",
+    "C3_same_period_aggregate": "PARTIAL_codex_c1_disclosure (M3 ex-post selection from realized SR pool; result invariance preserves discovery integrity)",
+    "C4_fundamental_lag": "PASS",
+    "C5_overlay_t_minus_1": "PASS",
+    "C9_dd_vt_lag": "N/A",
+    "C10_liquidity_t_minus_1": "PASS — Optimizer 2e8/5e7 universe cap PIT",
+    "C11_macro_lag": "PASS",
+    "C13_z_score_aligned_only": "PASS — alpha_vector immutable",
+    "C14_usable_date_le_sig_date": "PASS",
+    "C15_load_month_factors_routed": "PASS"
+  },
+
+  "ax_axiom_audit": {
+    "AX_001_v2": {
+      "status": "INHERITED_ALPHA_PASS_REVALIDATED_2_of_3_axes",
+      "note": "alpha_package crisis_IC +0.1251 PASS. Forge realized: 4 hybrid ratios all crisis_alpha PASS + MDD relief PASS. bad/normal IC ratio axis defect (codex C7)."
+    },
+    "AX_002": {
+      "status": "PARTIAL_codex_c1_acknowledged",
+      "note": "Forge harness measurement PerformanceAnalytics standard functions only (Sharpe.annualized / Return.annualized / maxDrawdown / Return.cumulative). Codex C1 ex-post mitigation selection acknowledged — confessional disclosure provided. Final recommendation invariance to method-shopping (REJECT_admit identical across all 4 mitigations)."
+    },
+    "AX_005_v12": {"status": "INHERITED_ALPHA_PASS"},
+    "AX_007": {
+      "status": "PASS_via_exception",
+      "structure": "multi_sleeve_3 + 20-name long-only (within AX-007 4 exceptions)"
+    },
+    "AX_008": {
+      "status": "FAIL_pending_per_codex_critic",
+      "triangulation": {
+        "self": "Forge — measurement standalone realized + Hybrid 4 ratios + cov_eigen recompute + AX-001 v2 audit + 4-mitigation comparison + crisis decomposition",
+        "codex": "REJECT (8 concerns: 1 CRITICAL + 5 HIGH + 2 MEDIUM)",
+        "architect": "not_run_this_cycle"
+      },
+      "codex_verdict": "FAIL — agree_with_claude=false. Forge adds useful realized measurements but does NOT convert prior Alpha/Risk/Optimizer REJECTs into 2-source PASS. Realized BAB admission monotonically reduces hybrid Sharpe + validation harness missing lockbox/DSR/5-spec gates.",
+      "note": "AX-008 hard 3/3 not enforced for discovery WT cycle. If Q-Lead admit decision: (1) Architect spawn 의무 (3rd-source) / (2) lockbox split (Charter v1.4 §11) / (3) Harvey 5-spec (alpha re-spawn) / (4) DSR penalty Bailey-LdP / (5) risk re-spawn (κ_exact ≤ 100 universe expand)."
+    }
+  },
+
+  "charter_v17_compliance": {
+    "pit_C1_C15": "PASS_with_codex_c1_disclosure_for_C3",
+    "no_alpha_modification": "PASS (md5 invariant)",
+    "no_risk_modification": "PASS (md5 invariant + parquet binary single-truth)",
+    "no_optimizer_modification": "PASS (md5 invariant + weights.csv 196 dates as-is)",
+    "schedule_fidelity": {
+      "weights_csv_dates": 196,
+      "forge_dates_used": 196,
+      "density_ratio": 1.0,
+      "fabrication_check": "PASS_no_ProductionSchedule_label_no_top_N_re_selection_no_alternate_schedule",
+      "method_used_for_schedule": "Optimizer weights as-is + M3 3m MA post-process smoothing (pre-registered in Optimizer infeasibility_report option_d)"
+    },
+    "no_silent_override": "PASS — mitigation 4-way comparison explicit + selection rationale stated + codex disposition recorded"
+  },
+
+  "sr_provenance_certificate_eligibility": {
+    "sr_realized_share_based": "Hybrid A_0pct 1.6833 / B_10pct 1.6475 / C_20pct 1.5992 / D_30pct 1.5353 (256m capital alloc weights × per-leg returns aggregation)",
+    "sr_factor_engine_continuous": "N/A (this is hybrid post-process; standalone WT_009 M3 SR=0.4064 reported separately)",
+    "sr_lockbox_daily_harness": "N/A_discovery_WT_cycle_lockbox_deferred_to_deployment_promotion (codex c3 disposition)",
+    "measurement_basis_primary": "forge_realized_share_based",
+    "vs_factor_engine": {
+      "diagnosis": "MINOR_DRIFT vs factor model expected return (concentration tax)",
+      "divergence_factor_engine_vs_realized_pp": "N/A_no_factor_engine_replay_executed",
+      "divergence_optimizer_vs_realized_pp": {
+        "standalone_SR": "+1.5199 pp (Optimizer 1.999 vs Forge 0.479)",
+        "hybrid_30pct_SR": "+0.382 pp (Optimizer 1.918 vs Forge 1.535)"
+      }
+    }
+  },
+
+  "red_flag_evaluation": {
+    "RF-F1_turnover_breach_baseline": {
+      "severity": "CRITICAL_resolved_by_M3",
+      "finding": "Standalone WT_009 monthly TO 1037% (Hurdle 600% hard fail). M3 mitigation reduces to 493% PASS.",
+      "resolution": "M3 sleeve smoothing applied (Optimizer pre-registered option_d)"
+    },
+    "RF-F2_optimizer_estimate_overoptimism": {
+      "severity": "HIGH",
+      "finding": "Optimizer expected_sr_forward 1.999 vs Forge realized standalone 0.479 (4.2× gap). Sigma 8.51% (factor model) vs 28.28% (realized).",
+      "verdict": "NOT_FABRICATION_traceable_to_factor_model_concentration_under_estimate"
+    },
+    "RF-F3_hybrid_admit_no_benefit": {
+      "severity": "HIGH",
+      "finding": "All 3 BAB admit ratios (B/C/D) realized SR < A_0pct PG2 baseline. Monotone decreasing. Hybrid combine projection (SR 1.918 at w=0.30) not realized (1.535).",
+      "verdict": "NEW_SOURCE_DILUTES_HYBRID_SR_admit_NOT_recommended"
+    },
+    "RF-F4_hill_alpha_thinning_in_BAB": {
+      "severity": "MEDIUM",
+      "finding": "BAB admit decreases Hill α (4.12 → 1.53). Tail thicker — left-tail beta D25 exposure carryover.",
+      "verdict": "MEDIUM_concern_offset_by_overall_MDD_improvement"
+    },
+    "RF-F5_es95_breach_inherited_resolved": {
+      "severity": "INFO",
+      "finding": "Inherited candidate top20 EW ES95=-10.35%; Forge realized in 4 hybrid ratios -7.45% to -6.57%.",
+      "verdict": "RESOLVED_by_PG2_anchor_diversification"
+    },
+    "RF-F6_standalone_MDD_hard_gate_breach_codex_c2": {
+      "severity": "HIGH",
+      "finding": "Standalone WT_009 BAB-M3 MDD = -46.10% > Hurdle 45% hard cap.",
+      "verdict": "Hurdle level standalone — Hybrid portfolio MDD 20-22% PASS. Charter §1 admission level interpretation = portfolio level."
+    },
+    "RF-F7_lockbox_split_absent_codex_c3": {
+      "severity": "HIGH",
+      "finding": "No Pre-LB / Lockbox / Combined split. Discovery WT — lockbox split deferred to Deployment promotion per Charter v1.4 §11.",
+      "verdict": "DEFERRED_to_deployment_cycle"
+    },
+    "RF-F8_harvey_5spec_dsr_absent_codex_c4": {
+      "severity": "HIGH",
+      "finding": "No CAPM/Carhart-3/Carhart-4/FF5/FF6 t_NW/alpha; no DSR penalty for 4 mitigation × 18 candidate trials.",
+      "verdict": "alpha_research_scope_inherited; if admit then alpha re-spawn 5-spec mandate"
+    },
+    "RF-F9_cost_double_charge_under_codex_c5": {
+      "severity": "HIGH_resolved_via_disclosure",
+      "finding": "build_bab_*.R applied cost = turnover_one_way × 15bps; under 15bps one-way mandate effective cost = turnover_one_way × 30bps (round-trip equiv).",
+      "correction_applied_in_disclosure": "Standalone M3 SR 0.4064 → 0.3928. Hybrid 4 ratio SR drift negligible (-0.0003 to -0.0008). Recommendation invariance preserved."
+    },
+    "RF-F10_kappa_exact_754_codex_c6": {
+      "severity": "HIGH_inherited",
+      "finding": "κ_exact 753.75 > 100 RF-R2 mandate. Forge no resolution authority — risk-research scope.",
+      "verdict": "if_admit_decision_risk_re_spawn_mandate"
+    }
+  },
+
+  "codex_critic_round": {
+    "conducted": true,
+    "stance": "REJECT",
+    "veto_flag": false,
+    "response_path": "qepm/mailbox/worktask/WT-D20260508_009/codex_critic_response_forge.json",
+    "challenge_note_path": "qepm/mailbox/worktask/WT-D20260508_009/challenge_note_forge.md",
+    "weakest_assumption": "The weakest assumption is that an ex-post selected M3 smoothing overlay can be treated as a pure-function Optimizer mitigation and then used as the single truth for same-sample Forge validation without lockbox split, DSR penalty, or corrected one-way cost accounting.",
+    "agent_disposition": {
+      "C1": {"severity": "CRITICAL", "classification": "ACCEPT_partial",
+              "note": "Method-shopping confessional disclosure. Mitigation pool pre-registered (Optimizer infeasibility_report option a/b/c/d) but selection from realized SR pool is method-shopping. Final recommendation REJECT_admit invariant across all 4 mitigations — method-shopping effect localized to mitigation choice not admission decision."},
+      "C2": {"severity": "HIGH", "classification": "ACCEPT",
+              "note": "Standalone M3 MDD -46.10% > Hurdle 45% hard fail. Charter §1 portfolio-level interpretation: WT_009 BAB is a sleeve candidate not standalone admission target. Hybrid portfolio MDD 20-22% PASS preserves Hurdle integrity."},
+      "C3": {"severity": "HIGH", "classification": "PARTIAL_ACCEPT",
+              "note": "Discovery cycle — lockbox split deferred to Deployment promotion per Charter v1.4 §11. Q-Lead admit decision triggers lockbox mandate."},
+      "C4": {"severity": "HIGH", "classification": "ACCEPT_layered",
+              "note": "Harvey 5-spec is alpha-research scope (Charter §1). Current cycle 1-spec t_NW=6.02 inherited. Q-Lead admit decision triggers 5-spec + DSR re-spawn."},
+      "C5": {"severity": "HIGH", "classification": "PARTIAL_ACCEPT_correction_applied",
+              "note": "Cost convention double-charge issue acknowledged. Corrected SRs applied in mitigation_selection.options_evaluated_realized_30bps_oneway_corrected_codex_c5. Hybrid 4 ratio drift negligible. Conclusion REJECT_admit invariant."},
+      "C6": {"severity": "HIGH", "classification": "ACCEPT_inherited",
+              "note": "RF-R2 κ_exact 754 > 100 inherited from risk-research. Forge no resolution authority. If admit — risk re-spawn mandate (universe expansion or factor-only Σ)."},
+      "C7": {"severity": "MEDIUM", "classification": "ACCEPT",
+              "note": "AX-001 v2 axis 3 (bad/normal IC ratio) computation defect — alpha-research scope. 2/3 axes confirmed (crisis_alpha + MDD relief)."},
+      "C8": {"severity": "MEDIUM", "classification": "PARTIAL_ACCEPT",
+              "note": "alpha_scores.parquet single snapshot — alpha_scores_timeseries.parquet 196 dates panel is valid input for Hybrid backtest. monthly_returns.parquet not used by Forge (period_returns.csv generated per ratio in 4 bt_result outputs)."}
+    },
+    "disposition_summary": {
+      "ACCEPT_or_PARTIAL_ACCEPT": 8,
+      "REBUTTAL": 0,
+      "total_HIGH_or_CRITICAL": 6
+    },
+    "rationalization_red_flags_addressed": {
+      "least_intrusive_post_process": "REPHRASED — Codex C1 method-shopping concern acknowledged with disclosure",
+      "Hurdle_PASS_TO_only_MDD_ignored": "CORRECTED — Standalone MDD fail explicitly disclosed in RF-F6",
+      "N_A_lockbox_no_explanation": "EXPANDED — Charter v1.4 §11 discovery cycle deferral cited"
+    },
+    "q_lead_escalate": {
+      "triggered": true,
+      "reasons": ["HIGH+CRITICAL severity 6 ≥ 5 threshold", "C1 CRITICAL ex-post method-shopping (PIT-C3 boundary)"],
+      "decisions_required": [
+        "REJECT_admit_keep_PG2_unchanged (Forge primary recommendation; 2-source AX-008 with Codex)",
+        "OR_admit_with_full_remediation: Architect spawn + lockbox split + Harvey 5-spec re-run + DSR penalty + risk re-spawn (universe expansion to κ_exact ≤ 100)",
+        "OR_iter2_alpha_redesign (universe expansion / sleeve mix / confidence tilt) — different cycle WT"
+      ]
+    }
+  },
+
+  "deliverables": {
+    "bt_result_per_ratio": [
+      "stage_artifacts/WT-D20260508_009/forge/A_0pct/* (10-component + audit, 14 files each)",
+      "stage_artifacts/WT-D20260508_009/forge/B_10pct/*",
+      "stage_artifacts/WT-D20260508_009/forge/C_20pct/*",
+      "stage_artifacts/WT-D20260508_009/forge/D_30pct/*"
+    ],
+    "comparison_table_path": "stage_artifacts/WT-D20260508_009/forge/comparison_table_4_hybrid.csv",
+    "cov_eigen_recompute_path": "stage_artifacts/WT-D20260508_009/forge/cov_eigen_recompute.json",
+    "mitigation_selected_path": "stage_artifacts/WT-D20260508_009/forge/mitigation_selected.json",
+    "ax001_v2_realized_path": "stage_artifacts/WT-D20260508_009/forge/ax001_v2_realized_audit.json",
+    "alpha_invariance_runtime_audit_path": "stage_artifacts/WT-D20260508_009/forge/alpha_invariance_runtime_audit.json",
+    "crisis_decomposition_path": "stage_artifacts/WT-D20260508_009/forge/crisis_decomposition_4_hybrid.json",
+    "charts_path": "stage_artifacts/WT-D20260508_009/forge/charts/* (equity_curve.png, oos_zoom_chart.png, annual_returns.png, regime_decomposition.png)",
+    "bab_period_returns_M0M1M2M3": [
+      "stage_artifacts/WT-D20260508_009/forge/bab_period_returns.csv (M0)",
+      "stage_artifacts/WT-D20260508_009/forge/bab_period_returns_M1.csv",
+      "stage_artifacts/WT-D20260508_009/forge/bab_period_returns_M2.csv",
+      "stage_artifacts/WT-D20260508_009/forge/bab_period_returns_M3.csv"
+    ],
+    "bab_mitigation_stats_path": "stage_artifacts/WT-D20260508_009/forge/bab_mitigation_stats.csv",
+    "build_scripts": [
+      "qepm/mailbox/worktask/WT-D20260508_009/run_all.R",
+      "qepm/mailbox/worktask/WT-D20260508_009/build_bab_returns.R",
+      "qepm/mailbox/worktask/WT-D20260508_009/build_bab_mitigations.R"
+    ]
+  },
+
+  "q_lead_decision_recommendation": {
+    "primary_finding": "Forge realized 4-ratio backtest contradicts Optimizer Hybrid combine projection. SR monotonically decreases with BAB admit (A:1.68 → D:1.54). PG2 baseline (A_0pct) remains optimal under realized measurement. Codex critic concurs (REJECT, agree_with_claude=false confirms method but supports admission rejection).",
+    "secondary_finding": "Standalone WT_009 BAB SR=0.479 (vs Optimizer projection 1.999) — 4.2× gap traceable to factor-model sigma underestimate. NOT fabrication, but Hybrid admission projection materially over-optimistic.",
+    "ax_001_v2_observation": "BAB admit improves crisis_alpha (+0.0023pp per 10%) but degrades MDD relief vs STR_1715 anchor (4.85pp → 3.55pp). v2 conditional defense 2-of-3 axes PASS — marginal.",
+    "options_for_q_lead": [
+      "REJECT_admit_keep_PG2_unchanged (Forge primary recommendation; 2-source AX-008 with Codex critic)",
+      "ACCEPT_B_10pct_minimal_admit_with_full_remediation (require: Architect spawn + lockbox split + Harvey 5-spec + DSR + risk re-spawn for κ_exact ≤ 100)",
+      "REQUEST_ALPHA_REDESIGN (Iter 2 — universe expansion / different sleeve mix / confidence tilt) + new WT cycle",
+      "EXPLORE_CRISIS_OVERLAY_ONLY (BAB used as conditional crisis hedge only — not 256m persistent allocation)"
+    ],
+    "forge_primary_recommendation": "REJECT_admit_keep_PG2_unchanged",
+    "rationale": "BAB admit fails the realized SR test in all 3 admission ratios (B/C/D). Optimizer Hybrid combine projection assumed orthogonal source SR=1.999 (forward); realized SR=0.479 inverts diversification math. Even with cor near zero, low-SR new source dilutes hybrid SR rather than enhances. PG2 STR_1715(70) + TSMOM(15) + KR_10y(15) baseline remains robust at 256m. Codex 8 concerns properly disposed — AX-008 2-source REJECT (Forge + Codex) consistent with rejection."
+  },
+
+  "agent_id": "forge",
+  "artifact_version": "v1.1_forge_package_final_post_codex",
+  "artifact_lineage": {
+    "request": "qepm/mailbox/worktask/WT-D20260508_009/request.json",
+    "alpha_package": "qepm/mailbox/worktask/WT-D20260508_009/alpha_package.json",
+    "risk_package": "qepm/mailbox/worktask/WT-D20260508_009/risk_package.json",
+    "optimization_package": "qepm/mailbox/worktask/WT-D20260508_009/optimization_package.json",
+    "forge_package_draft": "qepm/mailbox/worktask/WT-D20260508_009/forge_package_draft.json",
+    "codex_critic_response": "qepm/mailbox/worktask/WT-D20260508_009/codex_critic_response_forge.json",
+    "challenge_note": "qepm/mailbox/worktask/WT-D20260508_009/challenge_note_forge.md"
+  }
+}

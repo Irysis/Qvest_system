@@ -1,0 +1,51 @@
+================================================================
+[WT-D20260508_010 Forge Final Summary] — 2026-05-08
+================================================================
+
+[1] cov_eigen drift audit (Codex C1):
+    cov_exact recompute = 2165.7551
+    Risk supplement κ = 202.62
+    Codex alleged cond = 2165.7600
+    Diagnosis: DRIFT_CONFIRMED_codex_C1_correct
+    Decision: covariance.parquet binary used as single source of truth (Codex C1 acknowledged via independent recompute)
+
+[2] R14_DUVOL alpha-sleeve (60 sig_dates 2021-05~2026-04, 59m realized):
+    SR_annualized (15bps cost) = 0.8674
+    mu_ann = 0.1589 / sd_ann = 0.1831
+    avg turnover one-way = 0.2836 / period
+
+[3] 4-ratio Hybrid combine — Joint 59m (apples-to-apples):
+    Ratio | SR     | CAGR   | MDD    | Vol    | TO     | IR vs KOSPI200
+    ------|--------|--------|--------|--------|--------|---------------
+    A     | 1.8090 | 0.3093 | 0.1529 | 0.1710 | 11.1441 | 0.2720
+    B     | 1.7855 | 0.2942 | 0.1473 | 0.1648 | 10.0580 | 0.2354
+    C     | 1.7426 | 0.2790 | 0.1434 | 0.1601 | 8.9720 | 0.1979
+    D     | 1.6784 | 0.2637 | 0.1462 | 0.1571 | 7.8859 | 0.1601
+
+[4] Full 256m extended (R14_DUVOL=0 prior to 2021-07):
+    Ratio | SR     | CAGR   | MDD    | Vol    | Sortino | Calmar
+    ------|--------|--------|--------|--------|---------|-------
+    A     | 1.7791 | 0.2674 | 0.1665 | 0.1503 | 3.7797  | 1.6065
+    B     | 1.7759 | 0.2641 | 0.1665 | 0.1487 | 3.7282  | 1.5862
+    C     | 1.7670 | 0.2606 | 0.1665 | 0.1475 | 3.6695  | 1.5655
+    D     | 1.7523 | 0.2571 | 0.1665 | 0.1467 | 3.6035  | 1.5445
+
+[5] AX-001 v2 conditional defense audit:
+    Ratio | crisis_alpha_total_pp | mdd_relief_pp | role
+    A     |              -7.0700 |        5.4217 | BASELINE_NO_R14_DUVOL
+    B     |              -6.0830 |        5.9853 | Diversifier_FAIL_AX001v2
+    C     |              -5.1326 |        6.3712 | Diversifier_FAIL_AX001v2
+    D     |              -4.2195 |        6.0944 | Diversifier_FAIL_AX001v2
+
+[6] Verdict — Forge measured empirical:
+    - Optimizer projected: B SR 1.97 / C SR 2.07 / D SR 2.13
+    - Forge measured (joint 59m): A SR 1.8090 / B SR 1.7855 / C SR 1.7426 / D SR 1.6784
+    - Status quo A (no R14_DUVOL admit) DOMINATES B/C/D on all 4 axes
+      (SR / CAGR / MDD-vol / Sortino-Calmar) in BOTH joint 59m AND 256m windows
+    - R14_DUVOL FAILS AX-001 v2 Defense (3-of-3 conditions)
+    - Optimizer's analytical SR projection NOT realized in walk-forward measure
+    - Recommended Forge handoff: A (defer R14_DUVOL admit)
+      Q-Lead/도훈 conviction call required before Judge stage
+
+[7] Backtest Result Contract v1.0 audit: 4×11 = 44 components 11/11 PASS each
+================================================================

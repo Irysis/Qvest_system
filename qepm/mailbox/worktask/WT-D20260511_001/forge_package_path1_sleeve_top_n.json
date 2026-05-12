@@ -1,0 +1,515 @@
+{
+  "task_id": "WT-D20260511_001",
+  "wt_type": "discovery",
+  "package_kind": "forge_package_path1_sleeve_top_n",
+  "as_of_date": "2026-05-11",
+  "draft": false,
+  "finalized": true,
+  "finalization_timestamp": "2026-05-11T16:35:00+0900",
+  "supersedes_concept": "forge_package_med_10pct_pd18.json (PD18 5-sleeve top20 sleeve internal, KR equity 종목수 40 aggregate / 20 cap 위반)",
+  "supersede_reason": "Production Constraints 종목수 max 20 정합화 (도훈 mandate 2026-05-11 KST PD20-A). PD18은 sleeve internal top20+top20 = aggregate level max 40 KR equity (20 cap 위반). Path 1 (sleeve-weighted top-N): 1715 sleeve top16 + NEW sleeve top4 = aggregate 20 cap PASS. ETF는 count 제외 (도훈 mandate).",
+  "agent": {
+    "agent_id": "forge-WT-D20260511_001-PD20A-PATH1",
+    "agent_type": "forge",
+    "agent_version": "v6.4-pure-function",
+    "model": "Opus_4_7_1M",
+    "revision": "PD20-A Path 1 sleeve-weighted top-N (1715 top16 + NEW top4) - DIAGNOSTIC ONLY post Codex Round 1 disposition"
+  },
+  "method": "5_sleeve_composite_monthly_rebal_sleeve_weighted_top_n_path1_1715_top16_NEW_top4_184_dates_alpha",
+  "scope_clarification": {
+    "wt_kind": "discovery_pd20a_path1_sleeve_weighted_top_n_DIAGNOSTIC_ONLY",
+    "backtest_kind": "256m_walk_forward_5_sleeve_composite_monthly_rebal_sleeve_internal_top_n_truncate",
+    "primary_window": "2005-02-01 ~ 2026-04-01 (255 months)",
+    "admission_candidate_status": "NOT_ADMIT_CANDIDATE_DIAGNOSTIC_REFERENCE_ONLY",
+    "admission_candidate_rationale": "Codex Round 1 C3 ACCEPT decisive: Δ MDD -16.53pp severe degradation (Path 1 -28.07% vs PD18 -11.54%). 4-axis vs S4 v2 = 2_PASS_2_FAIL. DM vs PD18 NS (statistically equivalent point estimate) but risk asymmetry (MDD/CVaR severe degradation). Production 20 cap fit ≠ admit candidate.",
+    "path_1_composition": {
+      "STR_1715_sleeve_weight": 0.45,
+      "STR_1715_sleeve_internal_top_n": 16,
+      "STR_1715_sleeve_internal_weighting": "EW (1/16 per name)",
+      "STR_1715_portfolio_weight_per_name": 0.028125,
+      "NEW_sleeve_weight": 0.10,
+      "NEW_sleeve_internal_top_n": 4,
+      "NEW_sleeve_internal_weighting": "EW (1/4 per name)",
+      "NEW_portfolio_weight_per_name": 0.025,
+      "TSMOM_sleeve_weight": 0.225,
+      "KR_10y_sleeve_weight": 0.18,
+      "Cash_sleeve_weight": 0.045,
+      "KR_equity_count_aggregate": 20,
+      "ETF_count_excluded_from_20_cap_per_dohoon_mandate_20260511": true,
+      "production_20_cap_pass": true
+    },
+    "ticker_level_count_validation": {
+      "STR_1715_top16_count": 16,
+      "NEW_top4_count": 4,
+      "TSMOM_8_ETF_count": 8,
+      "KR_10y_ETF_count": 1,
+      "Cash_KRW_count": 1,
+      "KR_equity_aggregate_count": 20,
+      "ETF_aggregate_count": 9,
+      "Cash_count": 1,
+      "production_constraint_max_20_validation": "20 == 20 ✓ PASS (ETF + Cash excluded per dohoon mandate)",
+      "overlap_assumption": "Zero overlap between 1715 top16 and NEW top4 (sleeve internal alpha factor 다름 → mostly orthogonal). 실측 overlap audit Judge re-spawn 의무."
+    }
+  },
+  "pd20a_context": {
+    "trigger": "도훈 mandate 2026-05-11 KST PD20-A — Production Constraints 종목수 max 20 정합화",
+    "rationale_production_cap_violation": "PD18 5-sleeve top20 sleeve internal: STR_1715 sleeve internal top20 (20 KR equity) + NEW sleeve internal top20 (20 KR equity) = aggregate level max 40 KR equity (20 cap 위반 worst case).",
+    "etf_exclusion_mandate": "도훈 mandate 2026-05-11 KST: ETF는 종목수 count 제외. KR equity only (1715 top16 + NEW top4) = 20 counts. TSMOM 8 ETF + KR_10y 1 ETF + Cash 1 = 10 excluded.",
+    "path_1_vs_path_2": "Path 1 = sleeve-weighted (1715 sleeve weight 45% retain × top16 / NEW sleeve weight 10% retain × top4). Path 2 = aggregate top-N (5-sleeve composite top20 by combined ranking) 별개 backtest follow-up.",
+    "pd18_baseline_reference": "PD18 primary 256m SR 2.241 / CAGR 23.55% / MDD -11.54% (top20 sleeve internal, cost-free). Path 1 (top16+4 truncation) 비교 mandate."
+  },
+  "codex_round": {
+    "round": 1,
+    "stance": "REJECT_ACCEPTED_AS_REVISE_DOWN_TO_DIAGNOSTIC",
+    "stance_rationale": "Codex Round 1 PD20-A Path 1 stance REJECT (6 HIGH + 1 MEDIUM) — 7 ACCEPT (5 defer to Judge, 2 substantive: C1 finalize + C3 decisive Path 1 risk profile 악화 disqualify admit). Charter §8 No Silent Override 정합 — Path 1 verdict downgrade from PROVISIONAL_PRIMARY_PENDING_JUDGE to DIAGNOSTIC_ONLY_NOT_ADMIT_CANDIDATE.",
+    "veto_flag": false,
+    "challenge_note_path": "qepm/mailbox/worktask/WT-D20260511_001/challenge_note.md (Part G PD20-A Codex disposition appended 2026-05-11T16:35)",
+    "n_critical_concerns": 7,
+    "n_critical_concerns_resolved_substantively": 2,
+    "n_critical_concerns_deferred_to_judge": 5,
+    "concerns_disposition": {
+      "C1_draft_state_with_TBD_fields": "ACCEPT — Final forge_package supersedes draft with all metrics populated + md5 audit values. C1 resolved on finalization.",
+      "C2_ticker_level_placeholder": "ACCEPT (defer) — Ticker-level expansion + canonical mailbox weights.csv + per-date holdings + turnover/cost_ret recompute = Judge re-spawn 의무 (PD18 inherit C6 ACCEPT precedent).",
+      "C3_severe_MDD_degradation_vs_PD18": "ACCEPT (decisive) — Δ MDD -16.53pp severe = ADMIT-BLOCKING. Path 1 verdict revise: NOT admit candidate, diagnostic_only.",
+      "C4_no_same_cost_same_DSR_Harvey_5spec": "ACCEPT (defer) — Same-cost / same-DSR / Harvey 5-spec / composite CAPM-Carhart3-Carhart4-FF5-FF6 = Judge re-spawn (PD18 inherit C4 ACCEPT precedent).",
+      "C5_operational_refresh_not_sealed_lockbox": "ACCEPT (defer) — Sealed lockbox separation + frozen buy-and-hold extension + lockbox marker = Judge re-spawn or Q-Lead Pre-LB/Lockbox/Combined segregation 결정.",
+      "C6_uniform_23bps_cost_assumption": "ACCEPT — 23.5bps/mo uniform cost = diagnostic only (cost-embedded variant SR drag -0.25 disclosed). Realized cost embedding Judge re-spawn 의무 (PerformanceAnalytics Return.portfolio with transaction_cost=0.0015).",
+      "C7_PIT_C13_C14_alpha_layer_inherit": "ACCEPT (inherit) — alpha-research timeline (PD18 inherit precedent C5 ACCEPT). Forge stage 권한 외."
+    },
+    "weakest_assumption_resolution": "Codex weakest_assumption: \"sleeve-weighted top-N truncation (1715 top16 + NEW top4) solves the production 20-name constraint without creating an admission-blocking risk and evidence-quality problem.\" Disposition: PARTIAL — production 20 cap PASS resolved (technical fix) BUT admission-blocking risk problem CONFIRMED (Δ MDD -16.53pp severe degradation). Path 1 reframed as DIAGNOSTIC ONLY, Path 2 needed for admit candidate.",
+    "rationalization_red_flags_audit": {
+      "Production_20_cap_PASS_OK_alone": "VIOLATING_DETECTED_AND_RESOLVED — Cap fit이 risk profile 악화 정당화 X. Final stance: NOT admit candidate.",
+      "Statistical_NS_means_PD18_equivalent": "VIOLATING_DETECTED — NS test point estimate equivalence but risk asymmetry (MDD/CVaR severe) NS test 잡지 못함. Final stance: Path 1 ≠ PD18 equivalent (despite NS).",
+      "TC_drag_negligible": "NOT_USED — cost drag -0.25 SR explicitly disclosed.",
+      "already_partially_embedded": "NOT_USED — C6 ACCEPT 명시.",
+      "forge_stage_lockbox_pyegi": "VALID_CITED — 도훈 mandate 2026-05-09 lockbox-scope.md cite, but C5 sealed vs operational labeling segregation 동반 의무.",
+      "conservative_middle_ground": "NOT_USED."
+    },
+    "ax_hard_fail_count": "1 strict (AX-008 Codex stance) + 1 partial (AX-002 PIT C13/C14 alpha-layer timeline inherit) + 1 effective (Δ MDD -16.53pp severe disqualify admit)",
+    "q_lead_escalate_flag": true,
+    "q_lead_escalate_items": [
+      "PD20-A Path 1 verdict DIAGNOSTIC_ONLY (NOT admit candidate) memory commit",
+      "Path 2 build mandate (aggregate top-N from 5-sleeve combined ranking) — 별개 backtest 후속",
+      "1715-NEW overlap empirical measure (ticker-level) Judge audit",
+      "NEW top4 alpha quality degradation 정량 (mean +60% / sd +62% / SR sleeve internal neutral 1.89 vs 1.93 → composite vol +28%)",
+      "Judge re-spawn mandates inherit: composite DSR + Harvey 5-spec + cost embedding + ticker-level audit (PD18 precedent)"
+    ],
+    "academic_citations": [
+      "Bailey-López de Prado (2014) JPM — sleeve-level top-N truncation DSR (M count inflation +1)",
+      "Harvey-Liu-Zhu (2016) RFS — multiple-testing threshold inherit PD18 NEW alpha 184 dates",
+      "Charter v1.7 §10 Role Card 4×5 — Forge own/inherit/exempt/optional cert matrix",
+      "Charter v1.5 §13 Incremental Approach — manual minimal bt_result PD18 precedent",
+      "L-119 — single-sleeve top-N truncation alpha dilution vs risk profile (cap fit ≠ admit)"
+    ],
+    "lcode_citations": [
+      "L-273 (lockbox-scope.md scope refinement)",
+      "L-274 (STR_1715 PG2 5월 운용 정합 — monthly rebal lockbox 폐기 정합)",
+      "L-276/277 (AR_on_M4 PG2 admit — multi-sleeve composite admit precedent)",
+      "L-282 (PerformanceAnalytics convention reconcile)",
+      "L-119 (single-sleeve top-N MDD asymmetric degradation)"
+    ]
+  },
+  "selection_objective": "PD20A_Path_1_sleeve_weighted_top_n_diagnostic_reference_production_20_cap_compliance_with_truncation_loss_quantification",
+  "selection_rationale": "Production Constraints 종목수 max 20 strict 정합 (도훈 mandate). Sleeve-weighted top-N: 1715 45% × top16 + NEW 10% × top4 = aggregate 20. ETF 9 + Cash 1 excluded. Final verdict: DIAGNOSTIC ONLY (NOT admit candidate post Codex Round 1 C3 decisive). Path 2 (aggregate top-N from 5-sleeve combined ranking) needed for admit candidate exploration.",
+  "inputs": {
+    "alpha_package_path": "qepm/mailbox/worktask/WT-D20260511_001/alpha_package.json",
+    "risk_package_path": "qepm/mailbox/worktask/WT-D20260511_001/risk_package.json",
+    "optimization_package_path": "qepm/mailbox/worktask/WT-D20260511_001/optimization_package.json",
+    "alpha_scores_parquet_NEW": "stage_artifacts/WT_D20260511_001/alpha_scores.parquet (184 sig_dates × 770 tickers × alpha)",
+    "str1715_actual_holdings_268m_path": "stage_artifacts/WT_WT-S20260504_005/_logs/str1715_actual_holdings_268m.csv (269 sig_dates × top20 weighted)",
+    "sleeve_returns_master_path": "qepm/mailbox/worktask/WT-P20260509_001/output/sleeve_returns_master.csv (4-sleeve 255m baseline retain)",
+    "str1715_top16_returns_pd20a_path": "stage_artifacts/WT_D20260511_001/str1715_sleeve_top16_returns_pd20a.csv (NEW build 269 dates)",
+    "new_top4_returns_184m_pd20a_path": "stage_artifacts/WT_D20260511_001/new_sleeve_top4_returns_184m_pd20a.csv (NEW build 184 dates)",
+    "rawdata_path": ".cache/rawdata.parquet (KR daily prices 1990-2026)",
+    "pd18_baseline_composite_returns": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_med_10pct_pd18/composite_returns_5sleeve_pd18.csv"
+  },
+  "sleeve_definition_inherited": {
+    "AR_top16_path1": "STR_1715 H1 alpha-updated × score_eff ranking top16 EW (Path 1 NEW build replacing PG2 weighted top20)",
+    "TSMOM_8ETF": "8-ETF basket post KODEX_KTB10Y removal (PG2 admit 2026-05-09 Hybrid Path C, inherit)",
+    "KR_10y": "A148070 KODEX 국고채10년 ETF (PG2 admit 2026-05-09 Hybrid Path C, inherit)",
+    "Cash": "0% return placeholder (inherit)",
+    "NEW_top4_VolSkew_3axis": "3-Axis Vol/Skew Composite D43+D41+D58 (alpha_package factor_specs) × top4 EW (Path 1 NEW build from 184 sig_dates)"
+  },
+  "sleeve_weights_path1_PRIMARY": {
+    "AR_on_M4_top16": 0.45,
+    "TSMOM": 0.225,
+    "KR_10y": 0.18,
+    "Cash": 0.045,
+    "NEW_VolSkew_3axis_top4": 0.10,
+    "sum_w": 1.0,
+    "single_asset_cap_compliance": "max 0.20 PASS (KR_10y A148070=0.18 < 0.20; per-name max 0.028125)"
+  },
+  "sleeve_weights_when_NEW_absent_redistribute_path1": {
+    "AR_on_M4_top16": 0.50,
+    "TSMOM": 0.25,
+    "KR_10y": 0.20,
+    "Cash": 0.05,
+    "NEW_VolSkew_3axis_top4": 0.00,
+    "rationale": "NEW=0 시기 (alpha pre-2011-01) 4-sleeve proportional redistribute (× 10/9 scale-up) = S4 v2 weights. Path 1 inherit PD18 redistribute logic."
+  },
+  "internal_topn_per_sleeve_path1": {
+    "STR_1715_sleeve_topN": 16,
+    "STR_1715_sleeve_total_universe_per_sig_date": 20,
+    "STR_1715_sleeve_topN_information_retain_pct": 80,
+    "STR_1715_top16_vs_top20_sleeve_internal_SR": {
+      "top16_mean_monthly": 0.032115,
+      "top16_sd_monthly": 0.073024,
+      "top16_SR_approx": 1.5235,
+      "top20_mean_monthly": 0.030355,
+      "top20_sd_monthly": 0.070766,
+      "top20_SR_approx": 1.4859,
+      "top16_truncation_effect_SR": "+0.04 (top alpha quality concentration, sleeve internal level)"
+    },
+    "NEW_sleeve_topN": 4,
+    "NEW_sleeve_total_universe_per_sig_date": 20,
+    "NEW_sleeve_topN_information_retain_pct": 20,
+    "NEW_top4_vs_top20_sleeve_internal_SR": {
+      "top4_mean_monthly": 0.075024,
+      "top4_sd_monthly": 0.137602,
+      "top4_SR_approx": 1.8887,
+      "top20_mean_monthly": 0.047216,
+      "top20_sd_monthly": 0.08496,
+      "top20_SR_approx": 1.9251,
+      "top4_truncation_effect_SR_sleeve_internal": "-0.04 (vol 폭증 with marginal mean gain, sleeve internal level)",
+      "mean_boost_pct": 58.9,
+      "sd_boost_pct": 62.0,
+      "sleeve_internal_truncation_neutral": true,
+      "composite_level_vol_amplification": 28
+    },
+    "note": "Path 1 sleeve-weighted top-N truncation: 1715 sleeve uses top16/20 (80% retain) + NEW sleeve uses top4/20 (20% retain). NEW sleeve information loss 80% (drastic concentration trade-off). Sleeve internal SR neutral but composite-level vol amplification +28% drives MDD -16.5pp degradation."
+  },
+  "weights_csv_unique_dates_count": 184,
+  "weights_csv_unique_dates_count_clarification": "NEW sleeve internal alpha selection 184 sig_dates. Composite-level sleeve weights는 static (45/22.5/18/4.5/10) + redistribute fallback (50/25/20/5/0). 1715 sleeve historical schedule = 269 sig_dates inherited from STR_1715 PG2 holdings master.",
+  "schedule_density_ratio": 1.0,
+  "schedule_density_pass": true,
+  "pure_function_violation": false,
+  "schedule_fidelity_audit": {
+    "method": "5_sleeve_composite_monthly_rebal_sleeve_weighted_top_n_path1_1715_top16_NEW_top4_184_dates",
+    "sleeve_level_static_weights": true,
+    "alpha_scores_used_for_holdings_selection": "NEW_sleeve_internal_top4_184_dates + STR_1715_sleeve_internal_top16_269_dates (sleeve internal selection only)",
+    "fabrication_label_present": false,
+    "note": "Sleeve-level static weights (with redistribute fallback) × 4-sleeve monthly returns + sleeve-internal top-N truncation. alpha_scores 사용 = sleeve internal selection only. Composite weights static, NO ProductionScheduleNm fabrication label. Production Constraints 종목수 max 20 정합 (도훈 mandate 2026-05-11)."
+  },
+  "pure_function_audit": {
+    "alpha_package_md5_start": "e0e1a525c84f33f228f00c061ac5d64d",
+    "alpha_package_md5_end": "e0e1a525c84f33f228f00c061ac5d64d",
+    "alpha_package_match": true,
+    "risk_package_md5_start": "25a440e08232fcfb953ca912bffaa13a",
+    "risk_package_md5_end": "25a440e08232fcfb953ca912bffaa13a",
+    "risk_package_match": true,
+    "optimization_package_md5_start": "a810ddbaf40f5a90b054c521e915e106",
+    "optimization_package_md5_end": "a810ddbaf40f5a90b054c521e915e106",
+    "optimization_package_match": true,
+    "target_weights_reinterpreted": false,
+    "alpha_vector_modified": false,
+    "covariance_recomputed": false
+  },
+  "sr_realized_share_based": 1.9928,
+  "sr_realized_share_based_with_cost_caveat": "1.9928 cost-free primary; 1.7424 with composite-level ~23.5bps/mo cost-embedded estimate (drag -0.25 SR). Composite-level realized turnover/cost not in bt_result period_returns (turnover=0, cost_ret=0 inherited from PD18 issue). Judge re-spawn PerformanceAnalytics Return.portfolio with proper rebalance_on monthly + transaction_cost=0.0015 embedding 의무.",
+  "sr_realized_share_based_variants": {
+    "primary_redistribute_path1_256m": 1.9928,
+    "primary_redistribute_path1_cost_embedded_15bps_estimate": 1.7424,
+    "diagnostic_strict_path1_256m": 2.0228,
+    "baseline_pd18_top20_256m_reference": 2.241,
+    "baseline_S4v2_realized_256m": 1.8334
+  },
+  "sr_factor_engine_continuous": null,
+  "sr_lockbox_daily_harness": null,
+  "measurement_basis_primary": "forge_realized_share_based",
+  "primary_metrics_path1_256m_PRIMARY": {
+    "n_months": 255,
+    "period": "2005-02-01 ~ 2026-04-01",
+    "SR_ann_geometric": 1.9928,
+    "CAGR": 0.2777,
+    "MDD": -0.2807,
+    "Sortino_ann": 3.9396,
+    "Calmar": 0.9895,
+    "CVaR_95_monthly": -0.067,
+    "CVaR_99_monthly": -0.0893,
+    "hit_rate": 0.749,
+    "mean_ann": 0.2647,
+    "vol_ann": 0.1394,
+    "note": "PD20-A Path 1 PRIMARY (도훈 mandate Production 20 cap fix). 5-sleeve composite monthly rebal: 1715 top16 EW (45%) + NEW top4 EW (10%) + TSMOM (22.5%) + KR_10y (18%) + Cash (4.5%). Redistribute when NEW=0 (pre-2011-01) to S4 v2 weights. PerformanceAnalytics geometric=TRUE convention. **DIAGNOSTIC ONLY** stance: NOT admit candidate due to Codex Round 1 C3 decisive (Δ MDD -16.53pp severe degradation).",
+    "stance": "DIAGNOSTIC_ONLY_NOT_ADMIT_CANDIDATE"
+  },
+  "primary_metrics_path1_cost_embedded_256m": {
+    "n_months": 255,
+    "SR_ann_geometric": 1.7424,
+    "CAGR": 0.2428,
+    "MDD": -0.3029,
+    "Sortino_ann": 3.3393,
+    "Calmar": 0.8016,
+    "CVaR_95_monthly": -0.0693,
+    "CVaR_99_monthly": -0.0917,
+    "vol_ann": 0.1389,
+    "note": "Cost-embedded variant (composite ~23.5bps/mo uniform estimate based on sleeve internal turnover × sleeve weight × 15bps × 2 round trip). SR drag -0.25 from primary. Diagnostic only; realized cost embedding Judge re-spawn 의무.",
+    "cost_assumption_details": {
+      "STR_1715_sleeve_45pct_monthly_turnover": "100% × 15bps × 2 × 0.45 = 13.5bps/mo",
+      "NEW_sleeve_10pct_monthly_turnover": "100% × 15bps × 2 × 0.10 = 3.0bps/mo",
+      "TSMOM_sleeve_22.5pct_monthly_turnover": "100% × 15bps × 2 × 0.225 = 6.75bps/mo (8-ETF rotation)",
+      "KR_10y_sleeve_18pct_monthly_turnover": "5% × 15bps × 2 × 0.18 = 0.27bps/mo (low turnover bond)",
+      "Cash_sleeve_4.5pct_monthly_turnover": "0bps/mo",
+      "total_composite_cost_monthly": "~23.5bps/mo (annualized ~2.82%)"
+    }
+  },
+  "primary_metrics_strict_diagnostic_path1_256m": {
+    "n_months": 255,
+    "SR_ann_geometric": 2.0228,
+    "CAGR": 0.2721,
+    "MDD": -0.2554,
+    "note": "Strict variant (NEW=0 outside, no redistribute) — 4-sleeve weights stay 45/22.5/18/4.5 = sum 0.90 (10% cash effective). Diagnostic only."
+  },
+  "sub_metrics_alpha_active_path1_184m": {
+    "n_months": 184,
+    "period": "2011-01-01 ~ 2026-04-01",
+    "SR_ann_geometric": 2.4502,
+    "CAGR": 0.315,
+    "MDD": -0.104,
+    "Sortino_ann": 5.62,
+    "Calmar": 3.03,
+    "CVaR_95_monthly": -0.049,
+    "hit_rate": 0.772,
+    "note": "alpha-active sub-period (NEW non-zero). Path 1 SR comparable to PD18 (2.4502 vs 2.4596), MDD comparable (-10.40% vs -10.27%). Truncation effect concentrates in NEW=0 pre-2011 period (redistribute fallback to 4-sleeve, MDD inflation)."
+  },
+  "sub_metrics_pd13_extension_path1_29m": {
+    "n_months": 28,
+    "period": "2024-01-01 ~ 2026-04-30",
+    "SR_ann_geometric": 4.3501,
+    "CAGR": 0.6007,
+    "MDD": -0.0348,
+    "note": "Operational alpha-refresh monitoring (NOT sealed lockbox OOS). C2 PARTIAL labeling segregation inherited from PD18. Use_for_admit_evidence: false.",
+    "labeling_status_codex_c5": "OPERATIONAL_REFRESH_MONITORING_NOT_SEALED_LOCKBOX_OOS",
+    "use_for_admit_evidence": false
+  },
+  "baseline_pd18_top20_256m_reference": {
+    "SR_ann_geometric": 2.241,
+    "CAGR": 0.2355,
+    "MDD": -0.1154,
+    "CVaR_95_monthly": -0.0442,
+    "n_months": 255,
+    "source": "forge_package_med_10pct_pd18.json (PD18 primary)",
+    "note": "PD18 baseline reference inherits sleeve internal top20+top20 = aggregate 40 KR equity (20 cap 위반). Path 1 truncation effect comparison anchor."
+  },
+  "baseline_S4v2_realized_256m": {
+    "SR_ann_geometric": 1.8334,
+    "CAGR": 0.202,
+    "MDD": -0.1252,
+    "CVaR_95_monthly": -0.0501,
+    "n_months": 255,
+    "Sortino_ann": 3.9158,
+    "note": "S4 v2 baseline (4-sleeve only, no NEW sleeve) realized via Forge same methodology. PD18 inherit."
+  },
+  "diebold_mariano_vs_S4v2_baseline_path1_PRIMARY": {
+    "n": 255,
+    "mean_diff_monthly": 0.005478,
+    "se_NW_lag6": 0.002127,
+    "t_NW": 2.5754,
+    "p": 0.01,
+    "interpretation": "Path 1 outperforms S4 v2 baseline SIGNIFICANTLY (+54.78bps/mo, t_NW 2.58, p=0.01). NEW top4 sleeve adds value vs no-NEW baseline despite truncation. Harvey-Liu-Zhu (2016) t > 3.0 threshold MISS (vs PD18 4.23 PASS) — truncation reduces statistical power."
+  },
+  "diebold_mariano_vs_PD18_truncation_effect": {
+    "n": 255,
+    "mean_diff_monthly": 0.003201,
+    "se_NW_lag6": 0.001798,
+    "t_NW": 1.7799,
+    "p": 0.0751,
+    "interpretation": "Path 1 vs PD18 statistically equivalent (NS, p=0.075 > 0.05). top16+4 truncation은 statistically distinguishable한 returns 차이 안 만들지만 risk profile severe degradation (MDD/CVaR). NS test point estimate equivalence only — risk asymmetry NS test 잡지 못함."
+  },
+  "delta_vs_pd18_baseline_summary": {
+    "delta_SR": -0.2483,
+    "delta_CAGR_pp": 4.226,
+    "delta_MDD_pp": -16.5268,
+    "delta_CVaR95_pp": -2.28,
+    "delta_Sortino": -1.2863,
+    "delta_Calmar": -1.0510,
+    "verdict": "ASYMMETRIC_RISK_DEGRADATION_DESPITE_NS_POINT_ESTIMATE — Path 1은 mean return profile equivalent (DM NS) but risk profile severe degradation (MDD/CVaR). top4 NEW concentration causes vol amplification (mean +60% but sd +62% sleeve internal, composite vol +28% → MDD -16.5pp)."
+  },
+  "strict_improve_evaluation_vs_S4v2_baseline_documented": {
+    "criteria": {
+      "SR_threshold": 1.8334,
+      "MDD_threshold_pp": -0.1252,
+      "CVaR_threshold_pp": -0.0501,
+      "CAGR_threshold": 0.202
+    },
+    "path1_primary": {
+      "SR_pass": true,
+      "delta_SR": 0.1594,
+      "CAGR_pass": true,
+      "delta_CAGR_pp": 7.5711,
+      "MDD_pass": false,
+      "delta_MDD_pp": -15.546,
+      "CVaR_pass": false,
+      "delta_CVaR_pp": -1.6861,
+      "n_pass": 2,
+      "verdict_4_axis": "2_PASS_2_FAIL",
+      "recommendation": "4-axis strict improve FAIL (SR + CAGR PASS, MDD + CVaR FAIL). Path 1 ≠ admit candidate. PD18 inherit 4_PASS_STRICT_IMPROVE vs Path 1 2_PASS_2_FAIL = truncation cost concentration."
+    }
+  },
+  "vs_factor_engine": {
+    "factor_engine_claimed_sr_is": null,
+    "factor_engine_source": "Path 1 monthly rebal direct measurement (no factor_engine 79m proxy)",
+    "forge_v3_realized_sr_is": 1.9928,
+    "divergence_pp": 0,
+    "divergence_factor_engine_vs_realized_pp": 0,
+    "diagnosis": "NEGLIGIBLE — Path 1 monthly rebal direct measurement, no proxy bias (factor_engine 79m proxy 사용 X).",
+    "diagnosis_threshold_table": {
+      "NEGLIGIBLE": "|div| < 0.2",
+      "MINOR_DRIFT": "0.2 <= |div| < 0.4",
+      "SIGNIFICANT_DRAG": "0.4 <= |div| < 0.6",
+      "FABRICATION_SUSPECTED": "0.6 <= |div|"
+    }
+  },
+  "schedule_fidelity_certificate_eligibility": {
+    "schedule_density_pass": true,
+    "fabrication_label_absent": true,
+    "alpha_scores_topN_holdings_selection_in_run_all": "sleeve_internal_legitimate_monthly_rebal_1715_top16_269_dates_NEW_top4_184_dates",
+    "eligible": true,
+    "note": "alpha_scores top selection per sleeve internal (1715 top16 from score_eff + NEW top4 from alpha) — composite-level sleeve weights static. Schedule density = 1.0 per sleeve internal. Production 20 cap fit (KR equity 1715 top16 + NEW top4 = 20 with ETF + Cash excluded per dohoon mandate)."
+  },
+  "forge_package_validated_certificate_eligibility": {
+    "mandatory_8_fields_present": true,
+    "method_pattern_match": true,
+    "measurement_basis_primary_enum_pass": true,
+    "pure_function_violation_false": true,
+    "schedule_density_pass": true,
+    "eligible": true,
+    "fields_8_checklist": {
+      "method": "5_sleeve_composite_monthly_rebal_sleeve_weighted_top_n_path1_1715_top16_NEW_top4_184_dates_alpha",
+      "sr_realized_share_based": 1.9928,
+      "measurement_basis_primary": "forge_realized_share_based",
+      "weights_csv_unique_dates_count": 184,
+      "schedule_density_ratio": 1.0,
+      "schedule_density_pass": true,
+      "pure_function_violation": false,
+      "fabrication_label_absent_in_method_field": true
+    }
+  },
+  "sr_provenance_certificate_eligibility": {
+    "sr_realized_share_based_present": true,
+    "measurement_basis_primary_correct": true,
+    "no_production_schedule_fabrication_label": true,
+    "divergence_disclosed": true,
+    "eligible": true
+  },
+  "cert_backfill_required": [
+    "forge_package_validated_certificate_pd20a_path1",
+    "sr_provenance_certificate_pd20a_path1",
+    "schedule_fidelity_certificate_pd20a_path1"
+  ],
+  "cert_backfill_path": "Layer 5 PostToolUse Hook 자동 발급 또는 Layer 2 manual backfill (Rscript 02_Infrastructure/ops/cert_backfill_audit.R --target=WT-D20260511_001 --manual)",
+  "charts_generated": {
+    "equity_curve_png": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20a_path1/charts/equity_curve.png",
+    "annual_returns_png": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20a_path1/charts/annual_returns.png",
+    "oos_zoom_chart_png": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20a_path1/charts/oos_zoom_chart.png",
+    "oos_zoom_chart_png_caption": "Operational alpha-refresh monitoring 2024-01 ~ 2026-04 (NOT sealed lockbox OOS, C5 deferred).",
+    "drawdown_comparison_png": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20a_path1/charts/drawdown_comparison.png"
+  },
+  "backtest_contract_v1_audit": {
+    "bt_result_10_component_build_status": "MANUAL_MINIMAL_FALLBACK_consistent_with_PD18_precedent",
+    "bt_result_save_status": "manual_minimal_10_component_rds_saved",
+    "audit_status": "PARTIAL_PASS",
+    "fabrication": false,
+    "performanceanalytics_standard": true,
+    "audit_table_row_severity": "medium",
+    "remediation": "Manual minimal 10-component bt_result.rds saved. All metrics PerformanceAnalytics-standard (SharpeRatio.annualized geometric=TRUE / Return.annualized / maxDrawdown / SortinoRatio / CVaR historical / table.Drawdowns). No fabrication. ticker-level holdings + composite-level rolling_metrics PLACEHOLDER (Judge re-spawn).",
+    "consistent_with_pd18_precedent": true
+  },
+  "realized_cost_audit": {
+    "period_returns_turnover": 0,
+    "period_returns_cost_ret": 0,
+    "nav_cum_cost": 0,
+    "build_path1_assertion": "15bps cost diagnostic estimate (23.5bps/mo composite-level) computed external to bt_result period_returns/nav",
+    "actual_audit": "build_pd20a_path1_sleeve_top_n_returns.R + run_all_pd20a_path1.R compute raw close-to-close top-N returns. Composite-level realized turnover/cost recompute absent. C6 ACCEPT.",
+    "potential_sr_drag_quantified": "-0.25 SR with 23.5bps/mo composite-level estimate (vs PD18 -0.05~-0.15 estimate). Higher drag due to NEW top4 concentration trade-off.",
+    "remediation": "Judge re-spawn PerformanceAnalytics Return.portfolio with rebalance_on monthly + transaction_cost=0.0015 + ticker-level holdings actual round-trip turnover 의무"
+  },
+  "composite_level_statistical_test_status": {
+    "harvey_5spec_status": "PENDING_JUDGE_RESPAWN — composite-level CAPM, Carhart-3, Carhart-4, FF5, FF6 NW t-stats deferred",
+    "dsr_status": "PENDING_JUDGE_RESPAWN — M=19 candidate count (PD18 M=18 + Path 1 additional forge variant)",
+    "remediation": "Judge re-spawn 의무: composite-level Harvey 5-spec + DSR M=19 + same-period same-cost same-DSR-penalty parity"
+  },
+  "hard_constraints_compliance": {
+    "max_sleeve_count": 5,
+    "max_per_security_weight_path1_per_name": 0.028125,
+    "max_per_security_weight_NEW_top4_per_name": 0.025,
+    "max_per_security_weight_sleeve_level": 0.18,
+    "max_per_security_weight_holder": "KR_10y A148070 at 18% (< 20% cap)",
+    "long_only": true,
+    "sum_w_eq_1": true,
+    "universe": "5_sleeve_composite_path1_sleeve_weighted_top_n",
+    "cost_model_version": "v2.3_kr_retail_15bps",
+    "max_names_20_aggregated_validation": "1715 top16 + NEW top4 = 20 ✓ PASS (ETF + Cash excluded per dohoon mandate 2026-05-11)",
+    "max_names_20_overlap_audit_status": "ASSUMED_ZERO_OVERLAP_pending_ticker_level_judge_audit (1715 score_eff vs NEW alpha factor 정의상 다름 → mostly orthogonal)",
+    "pit_compliance": "Inherited from PD18 (C1-C12+C15 clean; C13/C14 alpha-layer remediation pending)",
+    "lockbox_scope_compliance": "alpha-research lockbox respected at alpha layer; forge stage lockbox 폐기 per .claude/rules/lockbox-scope.md 2026-05-09 mandate"
+  },
+  "axiom_compliance": {
+    "AX_000": "IMMUTABLE",
+    "AX_001_v2": "INCONCLUSIVE (inherited from alpha, IC ratio 1.21)",
+    "AX_002": "PIT C1-C12+C15 strict; C13/C14 INHERITING alpha-layer remediation pending. Forge stage 권한 외. Path 1 monthly rebal per lockbox-scope.md mandate (운용 단계 lockbox 폐기) 정합. Codex C7 ACCEPT.",
+    "AX_007": "Exception 1 multi-sleeve integration (5 sleeves) per qlead_ax007_exception_1_waiver.json. Ticker-level audit PENDING_JUDGE_EXPANSION (C2 ACCEPT). Sleeve internal top16 + top4 (= 20 aggregate) satisfies Exception 1 multi-sleeve scope.",
+    "AX_008": "REVISED_DOWN_TO_DIAGNOSTIC_NOT_ADMIT_CANDIDATE_post_Codex_Round_1 — Forge self CONDITIONAL_PASS (artifacts production-grade) + Codex Round 1 REJECT (decisive C3 Δ MDD -16.53pp severe) + Architect PD16 reproduce inherits (Path 1 NOT independently verified) = 1.5/3 floor. Codex C3 decisive ACCEPT: Path 1 ≠ admit candidate. Path 2 build mandate for admit-candidate exploration."
+  },
+  "red_flags_audit": {
+    "RF_F1_factor_engine_vs_realized_divergence": "RESOLVED — Path 1 monthly rebal direct measurement, no proxy bias",
+    "RF_F2_oos_strict_baseline_dominate": "FAIL_AT_4_AXIS — 4-axis vs S4 v2 = 2_PASS_2_FAIL (SR + CAGR PASS, MDD + CVaR FAIL). Path 1 ≠ strict improve.",
+    "RF_F3_lockbox_separation_absent": "ACCEPT_DEFER — sealed vs operational labeling segregation Judge re-spawn (PD18 inherit C2 PARTIAL precedent).",
+    "RF_F4_baseline_fairness_same_period_only": "PARTIAL — same-period baseline recompute exists (PD18 + S4 v2 same 256m). Same-cost not yet, same-DSR-penalty not yet. C4 ACCEPT (defer).",
+    "RF_F5_dsr_penalty_inconsistency": "ACCEPT_DEFER — M=19 candidate count (PD18 18 + Path 1 1 additional). Judge re-spawn 의무.",
+    "RF_F6_harvey_5spec_shopping_risk": "ACCEPT_DEFER — composite-level CAPM-Carhart3-Carhart4-FF5-FF6 absent. Judge re-spawn (PD18 inherit precedent).",
+    "RF_F7_turnover_formula_audit": "VIOLATING — composite-level turnover/cost not realized in bt_result (period_returns turnover=0, cost_ret=0). C6 ACCEPT (cost-embedded variant -0.25 SR drag diagnostic disclosed).",
+    "RF_F8_sleeve_holdings_granularity": "VIOLATING — sleeve placeholder only; ticker-level expansion PENDING_JUDGE_EXPANSION (C2 ACCEPT). 20 KR equity + 9 ETF + 1 Cash = 30 instruments/rebal_date for AX-007 Exception 1 multi-sleeve audit.",
+    "RF_F9_composite_level_statistical_test": "PENDING — DSR M=19 + Harvey 5-spec at 5-sleeve composite level deferred to Judge re-spawn"
+  },
+  "next_action_recommendations": [
+    "Q-Lead memory commit: PD20-A Path 1 verdict DIAGNOSTIC_ONLY (NOT admit candidate) + Codex Round 1 disposition (7 ACCEPT: 2 substantive + 5 defer)",
+    "**Path 2 build mandate (CRITICAL)**: aggregate top-N from 5-sleeve combined ranking — 별개 backtest. Compare vs Path 1 (sleeve-weighted truncation) vs PD18 (no truncation, 20 cap 위반).",
+    "1715-NEW overlap empirical measure (ticker-level diagnostic) — Judge audit",
+    "Layer 5 Positive Certifier: sr_provenance + forge_package_validated + schedule_fidelity 3 certs auto-issue PostToolUse (or Layer 2 manual backfill)",
+    "Judge re-spawn mandates inherit (PD18 5 critical paths + Path 1 specific): (1) PerformanceAnalytics Return.portfolio cost embedding / (2) composite DSR M=19 + Harvey 5-spec / (3) ticker-level holdings expansion 30 instruments/rebal_date / (4) composite weights.csv materialize / (5) 4-axis strict improve confirm with cost recompute / (6) Path 1 vs Path 2 head-to-head comparison",
+    "Charter §8 No Silent Override compliance audit: Path 1 verdict revise from PROVISIONAL_PRIMARY_PENDING_JUDGE to DIAGNOSTIC_ONLY_NOT_ADMIT_CANDIDATE — memory commit explicit",
+    "Codex Round 2 PD20-A Path 1 re-evaluate (optional) — typically declined as Path 1 NOT admit candidate (proceed to Path 2 build directly)"
+  ],
+  "weakest_assumption_self_audit": "Codex weakest_assumption: \"sleeve-weighted top-N truncation (1715 top16 + NEW top4) solves the production 20-name constraint without creating an admission-blocking risk and evidence-quality problem.\" Disposition: PARTIAL — Production 20 cap technical fix WORKS (technical PASS) BUT admission-blocking risk problem CONFIRMED (Δ MDD -16.53pp severe degradation). Path 1 is DIAGNOSTIC ONLY (NOT admit candidate). Self-audit accepts Codex C3 decisive. Path 2 (aggregate top-N from 5-sleeve combined ranking) is needed for admit candidate exploration.",
+  "challenge_flags": [
+    "Path 1 verdict DIAGNOSTIC_ONLY (NOT admit candidate) post Codex Round 1 C3 decisive",
+    "Path 2 build mandate (별개 backtest, aggregate top-N from 5-sleeve combined ranking)",
+    "1715-NEW overlap audit assumed zero (sleeve internal alpha factor 정의상 다름) — empirical measure Judge re-spawn 의무",
+    "Codex Round 1 PD20-A Path 1 7 concerns (6 HIGH + 1 MEDIUM) — 7 ACCEPT (2 substantive C1+C3 + 5 defer C2/C4/C5/C6/C7)",
+    "Truncation effect informational: 1715 top16 vs top20 sleeve internal SR +0.04 / NEW top4 vs top20 sleeve internal SR -0.04 → composite-level vol amplification +28% / MDD degradation -16.5pp",
+    "Charter §8 No Silent Override: Path 1 verdict revise from PROVISIONAL_PRIMARY_PENDING_JUDGE to DIAGNOSTIC_ONLY_NOT_ADMIT_CANDIDATE 명시"
+  ],
+  "artifacts_generated": {
+    "bt_result_rds": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20a_path1/bt_result.rds",
+    "metrics_csv": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20a_path1/metrics.csv",
+    "manifest_csv": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20a_path1/manifest.csv",
+    "audit_csv": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20a_path1/audit.csv",
+    "strategy_spec_csv": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20a_path1/strategy_spec.csv",
+    "nav_csv": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20a_path1/nav.csv",
+    "period_returns_csv": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20a_path1/period_returns.csv",
+    "holdings_csv": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20a_path1/holdings.csv",
+    "benchmark_returns_csv": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20a_path1/benchmark_returns.csv",
+    "benchmark_compare_csv": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20a_path1/benchmark_compare.csv",
+    "rolling_metrics_csv": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20a_path1/rolling_metrics.csv",
+    "drawdowns_csv": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20a_path1/drawdowns.csv",
+    "composite_returns_5sleeve_csv": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20a_path1/composite_returns_5sleeve_pd20a_path1.csv",
+    "metrics_pd20a_path1_rds": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20a_path1/metrics_pd20a_path1.rds",
+    "pure_function_audit_rds": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20a_path1/pure_function_audit.rds",
+    "str1715_top16_returns_csv": "stage_artifacts/WT_D20260511_001/str1715_sleeve_top16_returns_pd20a.csv",
+    "str1715_top20_baseline_returns_csv": "stage_artifacts/WT_D20260511_001/str1715_sleeve_top20_baseline_returns_pd20a.csv",
+    "new_top4_returns_184m_csv": "stage_artifacts/WT_D20260511_001/new_sleeve_top4_returns_184m_pd20a.csv",
+    "equity_curve_png": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20a_path1/charts/equity_curve.png",
+    "annual_returns_png": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20a_path1/charts/annual_returns.png",
+    "oos_zoom_chart_png": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20a_path1/charts/oos_zoom_chart.png",
+    "drawdown_comparison_png": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20a_path1/charts/drawdown_comparison.png",
+    "build_pd20a_path1_sleeve_top_n_returns_R": "qepm/mailbox/worktask/WT-D20260511_001/build_pd20a_path1_sleeve_top_n_returns.R",
+    "build_pd20a_str1715_top20_baseline_R": "qepm/mailbox/worktask/WT-D20260511_001/build_pd20a_str1715_top20_baseline.R",
+    "run_all_pd20a_path1_R": "qepm/mailbox/worktask/WT-D20260511_001/run_all_pd20a_path1.R",
+    "build_bt_result_pd20a_path1_R": "qepm/mailbox/worktask/WT-D20260511_001/build_bt_result_pd20a_path1.R",
+    "build_oos_charts_pd20a_path1_R": "qepm/mailbox/worktask/WT-D20260511_001/build_oos_charts_pd20a_path1.R",
+    "challenge_note_md_part_G_appended": "qepm/mailbox/worktask/WT-D20260511_001/challenge_note.md (Part G PD20-A Path 1 Codex Round 1 disposition appended)",
+    "codex_critic_response_forge_pd20a_path1": "qepm/mailbox/worktask/WT-D20260511_001/codex_critic_response_forge_pd20a_path1.json"
+  },
+  "created_at": "2026-05-11T16:00:00+0900",
+  "finalized_at": "2026-05-11T16:35:00+0900"
+}

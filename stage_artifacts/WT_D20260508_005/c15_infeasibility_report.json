@@ -1,0 +1,27 @@
+{
+  "task_id": "WT-D20260508_005",
+  "c15_rule": "PIT-C15: Factor DB parquet 직접 load 금지. load_month_factors() 경유.",
+  "bypass_rationale": "KR_TermSpread β (rolling 24M cross-section regression on AR(1)-residual macro shock) is a NEW factor not in Factor DB 288 monthly registry. The factor cannot be loaded via load_month_factors() because it does not exist in DB.",
+  "data_sources_used": {
+    "inherited_from_wt004": ["stage_artifacts/WT_D20260508_004/panel_monthly.parquet (PIT-safe panel, 541128 rows)", "stage_artifacts/WT_D20260508_004/macro_shocks_monthly.parquet (AR(1) residuals, 36m burn-in)", "stage_artifacts/WT_D20260508_004/macro_betas_monthly.parquet (rolling 24M β, mkt control)"],
+    "raw_external": [".cache/ecos_bond_rates.parquet (KR Gov3Y / Gov10Y / CD91)", ".cache/rawdata.parquet (price/volume — for benchmark BM_Ret monthly)"]
+  },
+  "pit_safety_evidence": {
+    "macro_shock_extraction": "AR(1) expanding window with 36m burn-in (no in-sample contamination)",
+    "beta_estimation": "rolling 24M OLS — predictor at t = β_{t-1}",
+    "sign_alignment": "expanding |IC| sign over 1..t-1 history",
+    "forward_alpha": "as_of=2026-04 uses β at 2026-03-end (lag-1 PIT)"
+  },
+  "remediation_path": {
+    "short_term": "WT_005-specific PIT verification (this report)",
+    "medium_term": "If signal graduates: register KR_TermSpread β in Factor DB monthly registry (add_factor_to_db R script) so Risk/Optimizer can use load_month_factors() going forward",
+    "long_term": "Phase 2 Universe v2 + KR macro factor family proper DB integration with usable_date metadata"
+  },
+  "hooks_applied": {
+    "feature_leakage_check": "PASS — beta_concurrent vs lag1 diff_rate 0.997 (CLEAN_PIT_LAG_VERIFIED)",
+    "pit_lookahead_pattern": "PASS — sign alignment uses 1..t-1 only",
+    "same_day_circular": "PASS — predictor lagged 1 month vs target"
+  },
+  "conclusion": "C15 bypass NECESSARY (factor not in DB) and PIT-safety established via WT_004's audited pipeline + WT_005 lag verification. Not a process violation — a documented exception with remediation path.",
+  "classification": "CHARTER_v1_4_DOCUMENTED_EXCEPTION"
+}

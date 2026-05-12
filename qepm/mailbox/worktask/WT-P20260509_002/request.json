@@ -1,0 +1,53 @@
+{
+  "task_id": "WT-P20260509_002",
+  "task_type": "promotion",
+  "wt_kind": "PG2_upgrade_walk_forward_dynamic_weight_no_paradigm",
+  "as_of_date": "2026-05-09",
+  "mandate_source": "도훈 직접 mandate 2026-05-09 — 새 리서치 (A안 Walk-forward Dynamic Weight)",
+  "context": "WT-P20260509_001 19 method 비교 결과 도훈 framing 1순위 but Codex REJECT (static weight PIT walk-forward 가정 위반) + 도훈 60/40 paradigm 체리피킹 직관 retract",
+  "goal": "Static weight 폐기. 매 sig_date rolling 60m window 기반 walk-forward dynamic re-optimization. Codex GOV-C1 비평 정합 + AX-002 PIT strict + paradigm-free + 사후 정당화 회피.",
+  "input_data": {
+    "sleeve_returns_4": "STR_1715 alpha-updated (268m) + TSMOM 8-ETF basket (135m) + KR_10y bond (256m) + Cash (0%)",
+    "rolling_window_size": 60,
+    "burn_in_months": 60,
+    "rebalance_frequency": "monthly"
+  },
+  "method_mandate_walk_forward_only": [
+    "Walk-forward Risk Parity ERC (rolling 60m Σ)",
+    "Walk-forward Mean-Variance (rolling 60m μ + Σ, λ ∈ {2, 5, 10})",
+    "Walk-forward Hierarchical Risk Parity (rolling 60m correlation + tree)",
+    "Walk-forward Inverse Volatility (rolling 60m σ)",
+    "Walk-forward Maximum Diversification (Choueifaty 2008)",
+    "Walk-forward Bayesian shrinkage (Pástor-Stambaugh 2009 + Avramov 2002)",
+    "Walk-forward DRO Wasserstein (Esfahani-Kuhn 2018) — robustness 강화",
+    "Walk-forward Black-Litterman (rolling 60m + market prior, no fixed view)"
+  ],
+  "evaluation_metrics": [
+    "Out-of-sample 196m (post-burn-in 2010-01 ~ 2026-04) walk-forward SR / CAGR / MDD",
+    "각 sig_date weight evolution 시각화 (regime-aware drift 진단)",
+    "DSR Bailey-LdP 2014 (multi-trial haircut)",
+    "Harvey-Liu 2016 t > 3.0",
+    "AX-001 v2 conditional defense (각 method)",
+    "Turnover annualized (walk-forward 매 month re-opt → 회전율 ↑ 가능성 진단)"
+  ],
+  "constraints": {
+    "weight_bound": "[0, 0.50]",
+    "sum_weights": 1.0,
+    "long_only": true,
+    "rolling_window": 60,
+    "burn_in": 60,
+    "no_static_weight_admit": true,
+    "no_in_sample_optimization": true,
+    "no_paradigm_justification": true,
+    "single_asset_cap_0.20": "정합 의무 (특히 A148070 retain)"
+  },
+  "lockbox_scope_compliance": ".claude/rules/lockbox-scope.md (optimizer-research = 정규 리서치 단계, alpha_scores 268m read-only)",
+  "ax_constraints": [
+    "AX-001 v2 conditional defense",
+    "AX-002 PIT strict (각 sig_date past data only)",
+    "AX-007 multi-sleeve EXCEPTION",
+    "AX-008 triangulation 2/3"
+  ],
+  "deliverable": "Walk-forward dynamic weight schedule (시점별 weight) + best method 권고 + 도훈 conviction call",
+  "created_at": "2026-05-09T22:22:21+09:00"
+}

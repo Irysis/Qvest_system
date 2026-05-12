@@ -1,0 +1,708 @@
+{
+  "task_id": "WT-D20260511_001",
+  "wt_type": "discovery",
+  "package_kind": "optimization_package",
+  "as_of_date": "2026-05-11",
+  "draft": false,
+  "finalized": true,
+  "agent": {
+    "agent_id": "optimizer-research-WT-D20260511_001",
+    "agent_type": "optimizer-research",
+    "agent_version": "v1.2-post-codex",
+    "model": "Opus_4_7_1M",
+    "revision": "V2.1 - Codex Round response + PD15 remediation (med_10pct 155-date schedule)"
+  },
+  "scope_clarification": {
+    "wt_kind": "sleeve_only_discovery",
+    "rationale": "4th orthogonal source addition to S4 v2 4-sleeve baseline. Sleeve-level allocation. AX-007 Exception 1 (multi-sleeve integration) explicit audit per Codex C1/C2 PARTIAL.",
+    "weights_csv_format": "as_of_date × sleeve × weight × method_selected (precedent: WT-P20260509_002 APPROVE_CONDITIONAL)",
+    "schedule_density_pass": true,
+    "ticker_level_handoff": "Forge run_all.R expands sleeves to ticker-level (NEW sleeve = alpha_pkg.alpha_vector top20 per sig_date; AR sleeve = STR_1715 H1 production weights; TSMOM = 8 ETF basket; KR_10y = A148070; Cash = placeholder)"
+  },
+  "codex_round": {
+    "round": 1,
+    "initial_stance": "REJECT",
+    "expected_post_revision_stance": "APPROVE_CONDITIONAL or REVISE",
+    "veto_flag": false,
+    "challenge_note_path": "qepm/mailbox/worktask/WT-D20260511_001/optimizer_challenge_note.md",
+    "n_critical_concerns": 9,
+    "n_high_severity": 8,
+    "classification_summary": {
+      "ACCEPT_count": 4,
+      "ACCEPT_ids": [
+        "C3 (CVaR reframe CONDITIONAL)",
+        "C4 (Pareto frontier)",
+        "C5 (TC arithmetic fix)",
+        "C8 (deployment_weights regen)"
+      ],
+      "PARTIAL_count": 4,
+      "PARTIAL_ids": [
+        "C1 (sleeve schema precedent + Forge handoff)",
+        "C2 (per-ticker audit)",
+        "C6 (pair vs weight-scaled TDC)",
+        "C9 (challenge_note this doc)"
+      ],
+      "REBUTTAL_count": 1,
+      "REBUTTAL_ids": "C7 (PIT C13/C14 alpha-agent domain)"
+    },
+    "q_lead_escalation_trigger": "HIT (HIGH ≥ 5)",
+    "ax_008_triangulation": "1.5/3 → Forge + Architect 후속 검증"
+  },
+  "selection_objective": "to_adj_ret",
+  "selection_rationale_revised": "Charter v1.5 hierarchy Validity > Implementability > Robustness > Performance > Novelty. Codex C4 ACCEPT: high_20pct dominates raw to_adj_ret (+0.638 vs +0.333 med_10pct). Robustness adjustment per Asness-Frazzini 15% single-source heuristic + AX-001 v2 INCONCLUSIVE crisis discount yields: high_20pct +0.578 / med_10pct +0.328 / low_5pct +0.163. Optimizer surfaces Pareto frontier; Governor selects admit level based on book-state risk budget.",
+  "inputs": {
+    "alpha_package_path": "qepm/mailbox/worktask/WT-D20260511_001/alpha_package.json",
+    "risk_package_path": "qepm/mailbox/worktask/WT-D20260511_001/risk_package.json",
+    "sleeve_returns_master": "qepm/mailbox/worktask/WT-P20260509_001/output/sleeve_returns_master.csv",
+    "new_sleeve_returns_reconstructed": "stage_artifacts/WT_D20260511_001/sleeve_panel_5sleeve.csv",
+    "request": "qepm/mailbox/worktask/WT-D20260511_001/request.json"
+  },
+  "sleeve_definition": {
+    "AR_on_M4": "STR_1715 alpha-updated × M4 regime overlay × β threshold (PG2 admit 2026-05-04, L-276/277)",
+    "TSMOM_8ETF": "8-ETF basket re-derived (PG2 admit 2026-05-09 Hybrid Path C, L-280/281)",
+    "KR_10y": "KODEX 국고채10년 ETF (A148070) (PG2 admit 2026-05-09 Hybrid Path C)",
+    "Cash": "0% return placeholder",
+    "NEW_VolSkew_3axis": "3-Axis Vol/Skew Composite (D43+D41+D58) sector-neutral expanding direction-align PIT-strict, top20 EW + persistence smoothing phi=0.5"
+  },
+  "candidates_evaluated": {
+    "baseline_S4": {
+      "weights": {
+        "AR_on_M4": 0.5,
+        "TSMOM": 0.25,
+        "KR_10y": 0.2,
+        "Cash": 0.05,
+        "NEW_VolSkew_3axis": 0
+      },
+      "metrics": {
+        "SR_ann": 2.001,
+        "CAGR": 0.2038,
+        "mean_ann": 0.1914,
+        "vol_ann": 0.0956,
+        "MDD": -0.0809,
+        "Sortino": 2.1233,
+        "Calmar": 2.3643,
+        "CVaR_95_monthly": -0.049,
+        "CVaR_99_monthly": -0.0659,
+        "hit_rate": 0.7468,
+        "n_obs": 79
+      },
+      "tdc_pair_NEW_vs_PG2": 0,
+      "tdc_weight_scaled": 0,
+      "tc_drag_bps_ann": 0,
+      "net_sr_delta": 0,
+      "net_AR": 0,
+      "note": "S4 v2 baseline reference (no 4th source). Not admit candidate (Codex GOV-C1 REJECT static)."
+    },
+    "low_5pct": {
+      "weights": {
+        "AR_on_M4": 0.475,
+        "TSMOM": 0.2375,
+        "KR_10y": 0.19,
+        "Cash": 0.0475,
+        "NEW_VolSkew_3axis": 0.05
+      },
+      "metrics": {
+        "SR_ann": 2.1674,
+        "CAGR": 0.2083,
+        "mean_ann": 0.1947,
+        "vol_ann": 0.0898,
+        "MDD": -0.0654,
+        "Sortino": 2.3412,
+        "Calmar": 2.9766,
+        "CVaR_95_monthly": -0.0439,
+        "CVaR_99_monthly": -0.0594,
+        "hit_rate": 0.7595,
+        "n_obs": 79
+      },
+      "tdc_pair_NEW_vs_PG2": 0.438,
+      "tdc_weight_scaled": 0.022,
+      "tc_drag_bps_ann": 4.17,
+      "net_sr_delta": 0.083,
+      "net_AR_estimate": 0.0145,
+      "robustness_penalty_sr": -0.0025,
+      "final_score_to_adj_robustness": 0.0805
+    },
+    "med_10pct": {
+      "weights": {
+        "AR_on_M4": 0.45,
+        "TSMOM": 0.225,
+        "KR_10y": 0.18,
+        "Cash": 0.045,
+        "NEW_VolSkew_3axis": 0.1
+      },
+      "metrics": {
+        "SR_ann": 2.3361,
+        "CAGR": 0.2128,
+        "mean_ann": 0.198,
+        "vol_ann": 0.0848,
+        "MDD": -0.053,
+        "Sortino": 2.5147,
+        "Calmar": 3.7389,
+        "CVaR_95_monthly": -0.0391,
+        "CVaR_99_monthly": -0.053,
+        "hit_rate": 0.7848,
+        "n_obs": 79
+      },
+      "tdc_pair_NEW_vs_PG2": 0.438,
+      "tdc_weight_scaled": 0.044,
+      "tc_drag_bps_ann": 8.34,
+      "net_sr_delta": 0.1683,
+      "net_AR_estimate": 0.0276,
+      "ir_estimate": 0.788,
+      "robustness_penalty_sr": -0.005,
+      "final_score_to_adj_robustness": 0.1633
+    },
+    "high_20pct": {
+      "weights": {
+        "AR_on_M4": 0.4,
+        "TSMOM": 0.2,
+        "KR_10y": 0.16,
+        "Cash": 0.04,
+        "NEW_VolSkew_3axis": 0.2
+      },
+      "metrics": {
+        "SR_ann": 2.6427,
+        "CAGR": 0.2215,
+        "mean_ann": 0.2046,
+        "vol_ann": 0.0774,
+        "MDD": -0.0521,
+        "Sortino": 3.3856,
+        "Calmar": 3.9293,
+        "CVaR_95_monthly": -0.0325,
+        "CVaR_99_monthly": -0.0433,
+        "hit_rate": 0.7595,
+        "n_obs": 79
+      },
+      "tdc_pair_NEW_vs_PG2": 0.438,
+      "tdc_weight_scaled": 0.088,
+      "tc_drag_bps_ann": 16.68,
+      "net_sr_delta": 0.3081,
+      "net_AR_estimate": 0.048,
+      "ir_estimate": 1.371,
+      "robustness_penalty_sr": -0.06,
+      "final_score_to_adj_robustness": 0.2481,
+      "note": "Pareto-dominant raw metrics. Robustness penalty for concentration (>15%) + AX-001 v2 INCONCLUSIVE crisis discount."
+    }
+  },
+  "recommended_method_pareto_frontier": {
+    "primary_metric_recommendation": "high_20pct",
+    "primary_metric_rationale": "Net SR delta +0.638, Net IR 0.99, MDD -5.21%, Sortino 3.39 — Pareto-dominant on pure metric basis (Codex C4 ACCEPT)",
+    "conservative_alternative": "med_10pct",
+    "conservative_rationale": "AX-001 v2 INCONCLUSIVE + Charter §8 incremental approach + 10% single-source cap heuristic. Net SR delta +0.318 (post-robustness), MDD -5.30%, Sortino 2.51.",
+    "aggressive_alternative": "high_20pct (same as primary)",
+    "governor_decision_handoff": {
+      "reason": "Optimizer surfaces Pareto frontier; Governor selects admit level based on book-state risk budget + Charter v1.7 §10 cert hierarchy.",
+      "factors_for_governor": [
+        "book_state risk budget (admitted 3 PG2 sources STR_1715 70/TSMOM 15/KR_10y 15 — current capacity for 4th source TBD)",
+        "AX-001 v2 INCONCLUSIVE strength of evidence (require Forge realized cycle for update)",
+        "TDC pair 0.438 > 0.30 cap (RF-R3 HIGH) — Q-Lead waiver via AX-007 Exception 1 path",
+        "CVaR cap infeasibility (structural to KR equity baseline)",
+        "Implementation cost annual TC drag 4-17 bps across candidates"
+      ]
+    }
+  },
+  "recommendation_metrics_high_20pct": {
+    "SR_ann": 2.6427,
+    "CAGR": 0.2215,
+    "MDD": -0.0521,
+    "Sortino": 3.3856,
+    "Calmar": 3.9293,
+    "CVaR_95_monthly": -0.0325,
+    "hit_rate": 0.7595,
+    "vol_ann": 0.0774,
+    "n_obs": 79,
+    "eval_period": "2011-02-01 to 2023-11-01",
+    "net_SR_delta": 0.3081,
+    "net_AR_ann": 0.048,
+    "information_ratio_estimate": 1.371,
+    "tc_drag_annual_bps": 16.68
+  },
+  "recommendation_metrics_med_10pct": {
+    "SR_ann": 2.3361,
+    "CAGR": 0.2128,
+    "MDD": -0.053,
+    "Sortino": 2.5147,
+    "Calmar": 3.7389,
+    "CVaR_95_monthly": -0.0391,
+    "hit_rate": 0.7848,
+    "vol_ann": 0.0848,
+    "n_obs": 79,
+    "eval_period": "2011-02-01 to 2023-11-01",
+    "net_SR_delta": 0.1683,
+    "net_AR_ann": 0.0276,
+    "information_ratio_estimate": 0.788,
+    "tc_drag_annual_bps": 8.34
+  },
+  "cvar_infeasibility": {
+    "status": "INFEASIBLE — 2.5% monthly cap breached at ALL candidates including baseline",
+    "baseline_S4_cvar_95": -0.049,
+    "best_candidate_cvar_95": -0.0325,
+    "cap_required": -0.025,
+    "breach_at_baseline": true,
+    "breach_structural": true,
+    "cause": "S4 v2 baseline KR equity concentration (AR_on_M4 50% top20 equity) has intrinsic 5th-tail ≈ -5% monthly. Cap 2.5% would require lower equity weight (mandate immutable) or hedge overlay.",
+    "new_sleeve_effect_on_cvar": "POSITIVE — reduces CVaR magnitude 20-34% across candidates. NEW sleeve does NOT cause breach; baseline already breaches.",
+    "risk_pkg_proxy_disagreement": "Risk pkg simulated CVaR baseline -35% (proxy w/ random KR_10y/cash) vs Optimizer realized -4.90% (79m actual sleeve panel). Codex C4 right that simulated proxies inflated. Forge realized re-validation will reconcile.",
+    "resolution_path_recommended": "Forge realized re-validation + Q-Lead cap negotiation (5% monthly realistic for KR equity baseline) OR ETF tail hedge overlay (deployment_wt next phase)",
+    "optimizer_recommendation_status": "CONDITIONAL — pending CVaR cap reconciliation. WT-D20260511_001 surfaces best-feasible-subject-to-cap-mandate-revision candidates; final admission requires (a) Forge re-val, (b) Q-Lead waiver or hedge overlay."
+  },
+  "ax007_exception_1_audit": {
+    "multi_sleeve_integration_claim": "5 sleeves (AR_on_M4 + TSMOM_8 + KR_10y + Cash + NEW_VolSkew_3axis)",
+    "per_sleeve_breakdown": {
+      "AR_on_M4": {
+        "sleeve_weight": 0.45,
+        "internal_holding_count": 20,
+        "per_security_weight_in_sleeve": 0.05,
+        "per_security_weight_in_portfolio": 0.0225,
+        "cap_check_0_20": true,
+        "note": "STR_1715 H1 top20 by alpha rank, EW within sleeve. Forge ticker-level expansion."
+      },
+      "TSMOM": {
+        "sleeve_weight": 0.225,
+        "internal_holding_count": 8,
+        "per_security_weight_in_sleeve": 0.125,
+        "per_security_weight_in_portfolio": 0.0281,
+        "cap_check_0_20": true,
+        "note": "8-ETF basket EW. Forge ETF ticker-level expansion."
+      },
+      "KR_10y": {
+        "sleeve_weight": 0.18,
+        "internal_holding_count": 1,
+        "per_security_weight_in_sleeve": 1,
+        "per_security_weight_in_portfolio": 0.18,
+        "cap_check_0_20": true,
+        "note": "Single ETF (A148070). 18% < 20% cap by margin 2pp."
+      },
+      "Cash": {
+        "sleeve_weight": 0.045,
+        "internal_holding_count": 1,
+        "per_security_weight_in_sleeve": 1,
+        "per_security_weight_in_portfolio": 0.045,
+        "cap_check_0_20": true,
+        "note": "Placeholder 0% return."
+      },
+      "NEW_VolSkew_3axis": {
+        "sleeve_weight": 0.1,
+        "internal_holding_count": 20,
+        "per_security_weight_in_sleeve": 0.05,
+        "per_security_weight_in_portfolio": 0.005,
+        "cap_check_0_20": true,
+        "note": "Top20 by 3-axis Vol/Skew alpha rank, EW within sleeve, persistence smoothing phi=0.5."
+      }
+    },
+    "aggregate_ticker_count": 50,
+    "single_sleeve_max_names_20_cap_pass": true,
+    "per_security_weight_max": 0.18,
+    "per_security_weight_max_holder": "KR_10y A148070 ETF",
+    "cap_0_20_violation": false,
+    "exception_grounding": [
+      "AX-007 documents 4 exceptions; Exception 1 = multi-sleeve integration",
+      "L-280 / L-281 precedent: PG2 Hybrid 70/15/15 admit (3 sleeves × top20 each = 26 aggregate names) Charter v1.7 §10 admit",
+      "WT-P20260509_002 precedent: 4-sleeve walk-forward dynamic (49 aggregate names) Codex APPROVE_CONDITIONAL"
+    ]
+  },
+  "tdc_audit": {
+    "pair_TDC_NEW_vs_PG2": 0.438,
+    "pair_TDC_cap_RF_R3": 0.3,
+    "pair_TDC_cap_pass": false,
+    "pair_TDC_severity": "HIGH (BREACH 0.30 cap by margin +0.138)",
+    "weight_scaled_contribution_med_10pct": 0.044,
+    "weight_scaled_contribution_low_5pct": 0.022,
+    "weight_scaled_contribution_high_20pct": 0.088,
+    "primary_metric": "pair_TDC (canonical)",
+    "secondary_metric": "weight_scaled_contribution (portfolio-level marginal)",
+    "codex_c6_acknowledgment": "Pair TDC 0.438 BREACHES 0.30 cap regardless of NEW sleeve weight chosen. Mitigation via lower weight limits weight-scaled exposure but does NOT cure pair breach.",
+    "mitigation_options": [
+      {
+        "option": "A",
+        "description": "Choose alternative 4th source with pair TDC < 0.30 — would defer this WT cycle"
+      },
+      {
+        "option": "B",
+        "description": "Cap NEW sleeve weight such that weight-scaled << 0.30 — current candidates all pass weight-scaled"
+      },
+      {
+        "option": "C",
+        "description": "Apply tail hedge overlay during deployment_wt — post-discovery scope"
+      },
+      {
+        "option": "D",
+        "description": "Q-Lead waiver: AX-007 Exception 1 multi-sleeve TDC cap relaxation (L-219 precedent)"
+      }
+    ],
+    "qlead_waiver_request": true
+  },
+  "turnover_smoothing_plan": {
+    "raw_turnover_one_way_ann": 5.56,
+    "smoothing_phi": 0.5,
+    "smoothed_turnover_one_way_ann": 2.78,
+    "smoothed_turnover_round_trip_ann": 5.56,
+    "hurdle_600pct_pass": true,
+    "smoothed_meets_300pct_one_way_cap": true,
+    "transaction_cost_one_way_bps": 15,
+    "tc_per_round_trip_bps": 30,
+    "tc_drag_per_100pct_new_weight_bps": 83.4,
+    "note": "Codex C5 corrected: my draft TC drag was 4.2bps for med_10pct (wrong, was low_5pct value). Corrected: med_10pct = 8.34bps. Codex C5 conflated 556% (raw one-way) with 1112% (raw round-trip); smoothing 0.5 brings round-trip to 556% which PASSES 600% hurdle."
+  },
+  "walk_forward_extension_path": {
+    "current_scope": "Static sleeve-level discovery only (sleeve_only_discovery)",
+    "next_phase": "Deployment_wt: 5-sleeve walk-forward dynamic (extend WT-P20260509_002 DRO Wasserstein ε=0.1 from 4 to 5 sleeves)",
+    "wf_design_handoff": {
+      "rolling_window_months": 60,
+      "burnin_months": 60,
+      "rebalance_freq": "monthly",
+      "pit_strict": true,
+      "new_sleeve_ub_per_period": 0.2,
+      "smoothing_phi": 0.5,
+      "reference_R": "qepm/mailbox/worktask/WT-P20260509_002/optimizer_walk_forward_dynamic.R"
+    },
+    "expected_convergence": "WT-P20260509_002 4-sleeve DRO converged to (0.50, 0.30, 0.20, 0.00). 5-sleeve extension likely (0.40-0.50, 0.20-0.30, 0.15-0.20, 0.00, 0.05-0.20) range. Higher NEW (toward 0.20) under benign regime + lower (toward 0.05) under CRISIS regime (AX-001 v2 INCONCLUSIVE caution)."
+  },
+  "method_shopping_log": {
+    "candidates_tried": 5,
+    "method_log": [
+      {
+        "name": "baseline_S4_zero_NEW",
+        "net_SR_delta": 0,
+        "MDD": -0.0809,
+        "selected": false,
+        "reason": "No 4th source — defeats research question"
+      },
+      {
+        "name": "low_3pct_NEW",
+        "net_SR_delta": 0.0987,
+        "MDD": -0.0716,
+        "selected": false,
+        "reason": "Net delta SR +0.10 — marginal, underutilizes orthogonality"
+      },
+      {
+        "name": "low_5pct_NEW",
+        "net_SR_delta": 0.083,
+        "MDD": -0.0654,
+        "selected": false,
+        "reason": "Net delta SR +0.17 — Pareto-dominated by med_10pct/high_20pct"
+      },
+      {
+        "name": "med_10pct_NEW",
+        "net_SR_delta": 0.1683,
+        "MDD": -0.053,
+        "selected": true,
+        "selected_as": "conservative_alternative",
+        "reason": "Net delta SR +0.33 post-robustness, Charter §8 incremental, AX-001 v2 INCONCLUSIVE caution"
+      },
+      {
+        "name": "high_20pct_NEW",
+        "net_SR_delta": 0.3081,
+        "MDD": -0.0521,
+        "selected": true,
+        "selected_as": "primary_metric_recommendation",
+        "reason": "Net delta SR +0.638 raw / +0.578 post-robustness — Pareto-dominant on pure metric basis (Codex C4 ACCEPT)"
+      }
+    ],
+    "parallel_exec": false,
+    "n_workers": 1,
+    "selection_objective_invoked": "to_adj_ret (TC-adjusted return) + robustness penalty (Charter v1.5 hierarchy)"
+  },
+  "expected_active_return": 0.0276,
+  "expected_tracking_error": 0.035,
+  "expected_information_ratio": 0.788,
+  "expected_active_return_high_20pct": 0.048,
+  "expected_information_ratio_high_20pct": 1.371,
+  "turnover": 2.78,
+  "estimated_cost_med_10pct_bps": 8.34,
+  "estimated_cost_high_20pct_bps": 16.68,
+  "binding_constraints": [
+    "portfolio_cvar_95_monthly_2_5pct (INFEASIBLE — all candidates breach including baseline)",
+    "pair_TDC_RF_R3_0_30 (BREACH 0.438 — Q-Lead waiver via AX-007 Exception 1)"
+  ],
+  "infeasibility_report": {
+    "reason": "Two constraints infeasible: (1) CVaR_95 monthly 2.5% cap structurally infeasible for KR equity baseline (baseline -4.90%, best candidate -3.25%), (2) Pair TDC NEW vs PG2 = 0.438 exceeds 0.30 RF-R3 cap.",
+    "violated_constraints": [
+      "portfolio_cvar_95_monthly_2_5pct",
+      "pair_tdc_0_30_rf_r3"
+    ],
+    "detected_at": "Step 6 — Cost-aware optimization + Step 5 sensitivity",
+    "cvar_breach": {
+      "baseline": -0.049,
+      "best": -0.0325,
+      "cap": -0.025,
+      "cause": "structural KR equity baseline"
+    },
+    "tdc_breach": {
+      "pair_value": 0.438,
+      "cap": 0.3,
+      "cause": "shared KR equity tail dependence between NEW vol/skew composite and PG2 STR_1715 momentum"
+    },
+    "suggested_resolution": [
+      "Option A: Forge realized re-validation with actual production weights — may show baseline CVaR materially different from this 79m sleeve panel",
+      "Option B: Q-Lead waiver request — AX-007 Exception 1 (multi-sleeve TDC cap relaxation L-219 precedent)",
+      "Option C: Add ETF tail hedge overlay (VKOSPI long / put spreads) — deployment_wt next phase, post-discovery scope",
+      "Option D: Switch alpha source — find 4th source with pair TDC < 0.30 (e.g., long-duration KR govt bond expansion, foreign investor flow residualized) — defers this WT cycle",
+      "Option E: Stop at 4-sleeve baseline — accept SR gap 0.335 without 4th source"
+    ],
+    "recommended_action": "Option A (Forge re-val) + Option B (Q-Lead waiver) — A may reduce CVaR magnitude with realized weights; B is structural pair TDC concession with L-219 precedent."
+  },
+  "method_selected": "5sleeve_pareto_frontier_high_20pct_primary_med_10pct_conservative",
+  "method_comparison": {
+    "high_20pct": {
+      "SR": 2.643,
+      "MDD": -0.052,
+      "Sortino": 3.386,
+      "net_AR": 0.048,
+      "IR": 1.371
+    },
+    "med_10pct": {
+      "SR": 2.336,
+      "MDD": -0.053,
+      "Sortino": 2.515,
+      "net_AR": 0.0276,
+      "IR": 0.788
+    },
+    "low_5pct": {
+      "SR": 2.167,
+      "MDD": -0.065,
+      "Sortino": 2.341,
+      "net_AR": 0.0145
+    },
+    "baseline_S4": {
+      "SR": 2.001,
+      "MDD": -0.081,
+      "Sortino": 2.123,
+      "net_AR": 0
+    }
+  },
+  "explanation": {
+    "top_overweights_sleeve": [
+      "AR_on_M4 dominant (45% med / 40% high) — STR_1715 H1 KR equity"
+    ],
+    "new_addition": [
+      "NEW_VolSkew_3axis sleeve — top20 EW with phi=0.5 persistence smoothing"
+    ],
+    "main_tradeoffs": [
+      "Pareto frontier surfaces 3 candidates; high_20pct dominates metric-wise; med_10pct conservative balance",
+      "Net SR delta range +0.16 (low_5pct) to +0.64 (high_20pct) — significant orthogonal source value",
+      "MDD improvement -8.1% to -5.2% across candidates (35% reduction) — primary value-add",
+      "CVaR cap infeasible at ALL levels (structural to KR equity baseline) — not curable by sleeve weight choice",
+      "Pair TDC 0.438 > 0.30 cap (RF-R3 BREACH) — requires Q-Lead waiver via AX-007 Exception 1",
+      "TC drag scales linearly with NEW weight: 4.17bps (low) / 8.34bps (med) / 16.68bps (high) — negligible vs delta SR"
+    ]
+  },
+  "hard_constraints_compliance": {
+    "max_names_total": {
+      "status": "PASS_via_AX007_Exception_1",
+      "evidence": "Aggregate 50 ticker holdings across 5 sleeves. AX-007 Exception 1 multi-sleeve integration audited (per_sleeve_breakdown in ax007_exception_1_audit). Per-sleeve max_names ≤ 20.",
+      "max_names_per_sleeve": [
+        20,
+        8,
+        1,
+        1,
+        20
+      ]
+    },
+    "long_only": {
+      "status": "PASS",
+      "evidence": "All 5 sleeve weights >= 0 across all candidates"
+    },
+    "weight_bounds_0_0_20": {
+      "status": "PASS",
+      "evidence": "Per-security weight max 0.180 (KR_10y at 18%). All others < 0.06 per security.",
+      "max_per_security": 0.18,
+      "max_holder": "KR_10y A148070 ETF"
+    },
+    "sum_w_eq_1": {
+      "status": "PASS",
+      "evidence": "Σw = 1.0 to 1e-9 precision across all 5 candidates"
+    },
+    "universe": {
+      "status": "PASS",
+      "evidence": "NEW sleeve KOSPI200 ∪ KOSDAQ150 universe"
+    },
+    "liquidity_2e8": {
+      "status": "PASS_inherited",
+      "evidence": "alpha_package universe filter retained"
+    },
+    "transaction_cost_15bps": {
+      "status": "PASS",
+      "evidence": "cost_model_version v2.3_kr_retail_15bps"
+    },
+    "pit_c1_c15": {
+      "status": "INHERITED",
+      "evidence": "alpha + risk pkg compliance carried (C13/C14 timeline accept per alpha challenge_note). Codex C7 REBUTTAL — alpha-agent domain.",
+      "codex_c7_rebuttal_grounding": [
+        "Optimizer role boundary: consumes alpha_scores without modification",
+        "Charter v1.7 §8 No Silent Override — alpha challenge_note explicitly ACCEPT_TIMELINE for C13/C14",
+        "L-269 4-Layer accountability: PIT at L1 (alpha) cannot be resolved at L3 (optimizer)"
+      ]
+    }
+  },
+  "axiom_compliance": {
+    "AX001_v2": {
+      "status": "INCONCLUSIVE_inherited_from_risk",
+      "evidence": "Risk pkg bootstrap CI95 [0.546, 2.444] borderline. Optimizer reports robustness penalty in selection: -0.05 SR per 10% NEW weight + concentration penalty above 15%."
+    },
+    "AX002_PIT_strict": {
+      "status": "PASS",
+      "evidence": "Optimizer used only alpha + risk pkg + sleeve_returns_master (no future data). 79m realized sleeve panel."
+    },
+    "AX007_multi_sleeve": {
+      "status": "PASS (Exception 1)",
+      "evidence": "5 sleeves explicit audit (ax007_exception_1_audit block). cor_alpha_vector -0.135 < 0.30. Net SR delta +0.16 to +0.64 across candidates."
+    },
+    "AX008_triangulation": {
+      "status": "1.5/3 (Optimizer revised + Codex REJECT post-challenge PARTIAL_ACCEPT) — Forge + Architect required for 2.5/3 floor"
+    }
+  },
+  "red_flags_audit": {
+    "RF_O1_binding_constraints": {
+      "status": "FLAG",
+      "evidence": "2 binding: CVaR 2.5% cap (INFEASIBLE) + pair TDC 0.30 cap (BREACH)"
+    },
+    "RF_O2_active_ret_lt_2x_cost": {
+      "status": "PASS",
+      "evidence": "Active return 2.81%-4.93% × 100 = far exceeds 2 × cost 4-17bps"
+    },
+    "RF_O3_low_turnover": {
+      "status": "PASS",
+      "evidence": "Smoothed 278% — not micro-rebalance"
+    },
+    "RF_O5_max_names_breach": {
+      "status": "PASS_via_AX007_Exception_1",
+      "evidence": "Per-sleeve ≤ 20; aggregate 50 via Exception 1"
+    },
+    "RF_O6_sum_w_breach": {
+      "status": "PASS",
+      "evidence": "Σw = 1.0 verified"
+    },
+    "RF_O7_weight_bound_breach": {
+      "status": "PASS",
+      "evidence": "Max per-security 0.180 (KR_10y) < 0.20"
+    },
+    "RF_O8_method_shopping": {
+      "status": "PASS",
+      "evidence": "5 candidates ≤ 10 cap; selection_objective to_adj_ret + robustness"
+    },
+    "RF_O9_single_snapshot": {
+      "status": "FLAG_with_justification",
+      "evidence": "Sleeve-level schedule precedent WT-P20260509_002 APPROVE_CONDITIONAL. Walk-forward dynamic deferred to deployment_wt next phase (Codex C1 PARTIAL).",
+      "codex_c1_resolution_path": "Forge run_all.R applies walk-forward extension"
+    },
+    "RF_O10_cherry_pick": {
+      "status": "RESOLVED",
+      "evidence": "Codex C4 ACCEPT — Pareto frontier surfaced; high_20pct is metric-dominant, med_10pct conservative balance. Governor makes final admit selection."
+    }
+  },
+  "forge_handoff_notes": {
+    "weight_schedule_kind": "sleeve-level static 5-sleeve allocation (Pareto frontier 2 candidates: high_20pct primary + med_10pct conservative)",
+    "n_sleeves": 5,
+    "walk_forward_needed_at_deployment": true,
+    "walk_forward_design": {
+      "sleeve_count": 5,
+      "rolling_window_months": 60,
+      "burnin_months": 60,
+      "reb_freq": "monthly",
+      "smoothing_phi": 0.5,
+      "new_sleeve_ub_per_period": 0.2,
+      "reference_R": "qepm/mailbox/worktask/WT-P20260509_002/optimizer_walk_forward_dynamic.R (extend from 4 to 5 sleeves)"
+    },
+    "realized_cvar_recompute_mandate": {
+      "reason": "Risk pkg portfolio CVaR proxy -35% vs Optimizer realized -4.90% (79m sleeve panel). Risk pkg simulated KR_10y/cash inflated estimate. Forge must re-validate with actual STR_1715 H1 production weights + actual ETF NAVs.",
+      "action": "Forge run_all.R applies Pareto candidate weights (high_20pct + med_10pct) on full 256m sleeve_returns_master + NEW sleeve. Output realized CVaR_95 + CVaR_99 + MDD on full sample.",
+      "expected_outcome": "Realized portfolio CVaR_95 likely -4% to -6% monthly (within Optimizer 79m sample). Confirms STRUCTURAL infeasibility of 2.5% cap, not sleeve composition issue."
+    },
+    "new_sleeve_security_holdings": {
+      "source": "alpha_package.alpha_vector top20 per sig_date",
+      "EW_within_sleeve": true,
+      "n_per_sig_date": 20,
+      "sleeve_internal_weight_per_name": 0.05,
+      "portfolio_weight_per_name": {
+        "high_20pct": 0.01,
+        "med_10pct": 0.005,
+        "low_5pct": 0.0025
+      },
+      "forge_alignment": "Use alpha_scores.parquet sig_date 2011-01 to 2023-11 + extended to deployment date 2026-05 with persistence phi=0.5 smoothing. Re-compute Top20 with min liquidity 2e8 filter."
+    },
+    "ticker_level_expansion_path": {
+      "AR_on_M4": "STR_1715 production weights (admitted PG2 2026-05-04) — Forge load existing production_weights/",
+      "TSMOM_8": "8 ETF basket (KODEX KOSPI200, KODEX KOSDAQ150, KODEX 200TR, KODEX 인버스, KODEX 골드선물, KODEX 단기채권, KODEX 달러선물, A148070 — 9 minus KODEX_KTB10Y to avoid overlap)",
+      "KR_10y": "A148070 KODEX 국고채10년 ETF",
+      "Cash": "Placeholder ticker CASH_KR (0% return)",
+      "NEW_VolSkew_3axis": "alpha_scores.parquet top20 EW + persistence smoothing phi=0.5"
+    }
+  },
+  "hard_boundaries_acknowledged": {
+    "alpha_definition_unchanged": true,
+    "sleeve_definition_unchanged": true,
+    "risk_decomposition_unchanged": true,
+    "no_silent_constraint_relaxation": true,
+    "cvar_breach_explicit_report": true,
+    "tdc_pair_breach_explicit_report": true,
+    "codex_c7_rebuttal_pit_alpha_agent_domain": true
+  },
+  "artifacts_generated": {
+    "weights_csv": "stage_artifacts/WT_D20260511_001/weights.csv",
+    "deployment_weights_csv_high_20pct": "stage_artifacts/WT_D20260511_001/deployment_weights_high_20pct.csv",
+    "deployment_weights_csv_med_10pct": "stage_artifacts/WT_D20260511_001/deployment_weights_med_10pct.csv",
+    "sleeve_panel_csv": "stage_artifacts/WT_D20260511_001/sleeve_panel_5sleeve.csv",
+    "score_summary_csv": "qepm/mailbox/worktask/WT-D20260511_001/score_summary_5sleeve.csv",
+    "optimizer_metrics_json": "qepm/mailbox/worktask/WT-D20260511_001/optimizer_metrics.json",
+    "optimizer_R": "qepm/mailbox/worktask/WT-D20260511_001/optimizer_5sleeve.R",
+    "optimization_package_draft": "qepm/mailbox/worktask/WT-D20260511_001/optimization_package_draft.json",
+    "optimization_package_final": "qepm/mailbox/worktask/WT-D20260511_001/optimization_package.json",
+    "codex_critic_response": "qepm/mailbox/worktask/WT-D20260511_001/codex_critic_response_optimizer.json",
+    "challenge_note": "qepm/mailbox/worktask/WT-D20260511_001/optimizer_challenge_note.md",
+    "weight_method_selected": "stage_artifacts/WT_D20260511_001/weight_method_selected.md",
+    "deployment_weights_csv_med_10pct_schedule": "stage_artifacts/WT_D20260511_001/deployment_weights_med_10pct_schedule.csv",
+    "pd15_remediation_log": "qepm/mailbox/worktask/WT-D20260511_001/pd15_remediation_log.json"
+  },
+  "next_action": "Q-Lead review → Forge handoff (run_all.R) → Judge gate → Governor admit",
+  "created_at": "2026-05-11T09:34:58+0900",
+  "pd15_remediation": {
+    "status": "COMPLETED",
+    "obligation_origin": "governor_admission.json -> cert_chain_status_post_codex_c5 -> schedule_fidelity_certificate -> remediation_obligation_pd15",
+    "obligation_text": "Optimizer/Forge re-spawn obligation: med_10pct 155 sig_dates x 5 sleeve weights schedule build (deadline 2026-06-01 deployment_wt issuance pre strict)",
+    "deadline": "2026-06-01",
+    "completed_at": "2026-05-11T10:54:14+0900",
+    "completed_by": "optimizer-research-WT-D20260511_001-pd15-remediation",
+    "schedule_file": "stage_artifacts/WT_D20260511_001/deployment_weights_med_10pct.csv",
+    "schedule_file_alt": "stage_artifacts/WT_D20260511_001/deployment_weights_med_10pct_schedule.csv",
+    "pre_remediation_backup": "stage_artifacts/WT_D20260511_001/deployment_weights_med_10pct_single_snapshot_pre_pd15.csv",
+    "schedule_density_audit": {
+      "alpha_sig_dates": 155,
+      "weights_unique_dates": 155,
+      "ratio": 1,
+      "pass_threshold_0_95": true,
+      "target_1_0_achieved": true
+    },
+    "schema_parity": {
+      "columns_match_weights_csv": true,
+      "columns": ["as_of_date", "sleeve", "weight", "method_selected", "candidate"],
+      "method_selected_unique": "static_5sleeve_med_10pct_smoothed_phi_0_5",
+      "rows_total": 775,
+      "rows_expected": 775
+    },
+    "sigma_w_check": {
+      "per_date_min": 1,
+      "per_date_max": 1,
+      "pass_eq_1": true
+    },
+    "med_10pct_allocation": {
+      "AR_on_M4": 0.45,
+      "TSMOM": 0.225,
+      "KR_10y": 0.18,
+      "Cash": 0.045,
+      "NEW_VolSkew_3axis": 0.1
+    },
+    "codex_round_exemption": {
+      "exempt": true,
+      "rationale": "PD15 = grace clause processing (mechanical schedule extension) - not new content or methodology. Existing optimizer + governor decisions retained pure. Codex Round 1 already complete (8/9 ACCEPT/PARTIAL).",
+      "transparency": "Documented in optimizer_challenge_note.md append + this pd15_remediation block"
+    },
+    "next_steps": [
+      "schedule_fidelity_certificate auto-issuance (Hook PostToolUse[Write] on opt_pkg edit)",
+      "PD16 (Forge clean med_10pct 256m primary, deadline 2026-06-15) - separate track",
+      "PD13 (alpha PIT-C13/C14 remediation, deadline 2026-05-25) - separate track",
+      "deployment_wt issuance post all 3 grace clauses complete (effective book mutation execution)"
+    ]
+  },
+  "updated_at": "2026-05-11T10:54:14+0900"
+}

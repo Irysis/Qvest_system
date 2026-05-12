@@ -1,0 +1,63 @@
+{
+  "task_id": "WT-RES_20260512_STR_1715_AR_RAW_cover",
+  "audit_version": "v2_admit_lineage",
+  "audit_timestamp": "2026-05-12T13:00:08+09:00",
+  "checks": {
+    "nav_monotone_dates": {
+      "pass": true,
+      "note": "monotone increasing"
+    },
+    "returns_finite": {
+      "pass": true,
+      "note": "non-NA n=267"
+    },
+    "n_obs_sufficient": {
+      "pass": true,
+      "note": "n=267"
+    },
+    "cost_model_documented": {
+      "pass": true,
+      "note": "15bps round-trip on AR turnover only"
+    },
+    "pit_lag_applied": {
+      "pass": true,
+      "note": "alpha Ret_1m forward + M4/β_t t-1 lag + bm_12m past-only"
+    },
+    "perfanalytics_standard": {
+      "pass": true,
+      "note": "table.AnnualizedReturns + maxDrawdown + SortinoRatio + CalmarRatio"
+    },
+    "no_manual_synthesis": {
+      "pass": true,
+      "note": "ret_orig from EW top20 of admit alpha_scores; overlays via documented lag"
+    },
+    "benchmark_present": {
+      "pass": true,
+      "note": "monthly BM_Ret from raw daily"
+    },
+    "drawdowns_computed": {
+      "pass": true,
+      "note": "n_drawdowns=10"
+    },
+    "metric_type_labeled": {
+      "pass": true,
+      "note": "all metric_type = 'backtested'"
+    }
+  },
+  "reproducibility": {
+    "alpha_lineage": "stage_artifacts/WT_D20260425_010/alpha_scores.parquet (admit lineage, 268 sig_dates, 2004-01~2026-04)",
+    "M4_lineage": "qepm/mailbox/worktask/WT-D20260430_001/judge_ready/weights.csv",
+    "AR_lineage": "stage_artifacts/WT_WT-S20260504_007/beta_t_mapping.csv",
+    "BM_Ret_source": ".cache/rawdata.parquet",
+    "admit_baseline_lineage": "qepm/mailbox/worktask/WT-P20260504_001/four_layer_comparison.json (SR 1.7758 / MDD -25.15%)"
+  },
+  "reproduction_drift_note": "본 run RAW admit lineage Layer 4 vs admit JSON 256m: ΔSharpe = -0.7908. Difference likely due to: (a) admit JSON Layer 4 source = STR_1715 PR ret_net (production cycle with cost + cash mechanics already baked in), (b) 본 run = alpha_scores top20 EW raw simulation (no production weighting overlays, no cost in base). Admit JSON 'Original' uses ret_orig = ret_net / (1 - cash_weight) inversion → fundamentally different return composition. 본 task purpose = raw cover measurement extension, NOT admit reproduction.",
+  "caveats": [
+    "도훈 mandate 2026-05-12: 'STR_1715 alpha는 Raw 커버되는 시점부터' = admit lineage alpha_scores first sig_date hardcoded",
+    "alpha_scores admit lineage = WT_D20260425_010 (268 sig_dates 2004-01~2026-04)",
+    "alpha_scores_pd27_burn0m (5path exploration, WT_D20260511_001) NOT used — STR_1715 admit lineage 무관",
+    "Pre-2004 M4 + Pre-2004-07 AR β_t: alpha-research artifact 미생성 → 1.0 default fill (natural inactive)",
+    "5월 anchor trim: BM_Ret 5월 partial + alpha-research 5월 base 미산출 (alpha boundary)",
+    "Admit JSON Layer 4 (SR 1.7758) source = STR_1715 PR ret_net production cycle, NOT directly comparable to top20 EW raw simulation"
+  ]
+}

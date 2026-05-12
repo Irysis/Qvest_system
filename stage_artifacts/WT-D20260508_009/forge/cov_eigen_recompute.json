@@ -1,0 +1,35 @@
+{
+  "forge_cov_eigen_recompute": {
+    "parquet_path": "stage_artifacts/WT-D20260508_009/covariance.parquet",
+    "matrix_dim": {
+      "n": 241,
+      "p": 241
+    },
+    "symmetry_max_dev": 0,
+    "psd": true,
+    "min_eig": 0.0001,
+    "max_eig": 0.1061,
+    "kappa_exact_recompute": 753.7499,
+    "kappa_default_R_recompute": 114.0257,
+    "risk_reported": {
+      "kappa_exact": 753.7499,
+      "kappa_default_R": 114.0257
+    },
+    "drift_diagnosis": {
+      "diff_kappa_exact_abs": 5.0296e-06,
+      "diff_kappa_default_abs": 0,
+      "kappa_exact_consistent": true,
+      "kappa_default_consistent": true,
+      "verdict": "PASS_no_drift_parquet_single_truth"
+    },
+    "forge_codex_c1_mandate": "PASS_parquet_directly_loaded_eigen_decomp_executed",
+    "rf_r2_status": {
+      "threshold": 100,
+      "kappa_exact_breach": true,
+      "severity": "HIGH",
+      "note": "Risk Agent inherited residual; Optimizer applied bounds[0,0.10]+psi=0.3 mitigation"
+    }
+  },
+  "recomputed_at": "2026-05-08T17:56:19+09:00",
+  "agent": "forge"
+}

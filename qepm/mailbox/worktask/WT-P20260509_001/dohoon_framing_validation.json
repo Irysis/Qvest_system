@@ -1,0 +1,154 @@
+{
+  "task_id": "WT-P20260509_001",
+  "validation_kind": "dohoon_framing_quantitative_validation",
+  "as_of_date": "2026-05-09",
+  "frame_count_evaluated": 2,
+  "frame_count_against_alternatives": 17,
+
+  "framing_definitions": {
+    "Path_C_70_15_15": {
+      "weights": {"AR_on_M4": 0.70, "TSMOM": 0.15, "KR_10y": 0.15, "Cash": 0.0},
+      "origin_wt": "WT-P20260505_001 admit (5/5 final)",
+      "academic_basis": "60/40 evolution + managed futures hybrid (Bonne-Roncalli 2021 JPM) + KR bond hedge",
+      "kr_market_intuition": "STR_1715 alpha-updated 70% 비중이 KR equity exposure 유지하면서 TSMOM+KR10y 30% hedge"
+    },
+    "S4_50_25_20_5": {
+      "weights": {"AR_on_M4": 0.50, "TSMOM": 0.25, "KR_10y": 0.20, "Cash": 0.05},
+      "origin_wt": "WT-T20260508_004 admit (5/8 도훈 supersede) + WT-T20260509_001 retain (alpha-updated 종목 변경)",
+      "academic_basis": "AQR managed futures + KR-Bond hedge + cash buffer (도훈 sleeve dispersion 강화)",
+      "kr_market_intuition": "TSMOM 25% 비중이 OOS 28m era에서 +0.476 CAGR 기여 — alpha-updated alpha source 최대 활용"
+    }
+  },
+
+  "comparative_metrics": {
+    "Path_C_strict": {
+      "score_5_tier": 75,
+      "SR_window_136m": 1.6459,
+      "CAGR_window_136m": 0.221,
+      "MDD_window_136m": 0.1660,
+      "SR_oos_28m": 3.6196,
+      "CAGR_oos_28m": 0.6730,
+      "MDD_oos_28m": 0.0517,
+      "AX_001_v2_PASS": true,
+      "AX_decomposition": {
+        "crisis_alpha_ann": 0.0000,
+        "mdd_relief_pp_vs_S0": 8.03,
+        "bad_normal_ic_ratio": 0.985
+      },
+      "DSR_p": 0.9999,
+      "net_IR_window": -1.305,
+      "sign_consistency_4_periods": 2
+    },
+    "S4_strict": {
+      "score_5_tier": 75,
+      "SR_window_136m": 1.6995,
+      "CAGR_window_136m": 0.1843,
+      "MDD_window_136m": 0.1252,
+      "SR_oos_28m": 3.6046,
+      "CAGR_oos_28m": 0.4760,
+      "MDD_oos_28m": 0.0363,
+      "AX_001_v2_PASS": true,
+      "AX_decomposition": {
+        "crisis_alpha_ann": -0.003,
+        "mdd_relief_pp_vs_S0": 12.29,
+        "bad_normal_ic_ratio": 0.990
+      },
+      "DSR_p": 1.0000,
+      "net_IR_window": -1.322,
+      "sign_consistency_4_periods": 2
+    }
+  },
+
+  "vs_statistical_methods_summary": {
+    "comparison_axis": "score_5_tier",
+    "dohoon_framings_score_75": ["Path_C_strict", "S4_strict"],
+    "academic_method_tied_score_75": ["MaxDiversification (Choueifaty-Coignard 2008)"],
+    "high_SR_methods_score_50_due_to_AX_FAIL": [
+      {"method": "MaxSharpe_grid", "SR_window": 1.858, "AX_PASS": false, "rejection": "TSMOM 48.6% over-allocate (zero-fill artifact)"},
+      {"method": "MVO_lambda10", "SR_window": 1.821, "AX_PASS": false, "rejection": "crisis_alpha -0.010"},
+      {"method": "Tactical_Regime", "SR_window": 1.774, "AX_PASS": false, "rejection": "crisis_alpha -0.013"}
+    ],
+    "verdict": "도훈 framing 2/2 모두 score 75 (top tier). 통계 method 11/16 score 50 (AX FAIL due to TSMOM allocation issues)."
+  },
+
+  "head_to_head_path_c_vs_s4": {
+    "winner": "S4_strict (marginally)",
+    "winning_axes": [
+      {"axis": "MDD_window", "Path_C": 0.1660, "S4": 0.1252, "delta_pp": -4.08, "winner": "S4"},
+      {"axis": "MDD_oos", "Path_C": 0.0517, "S4": 0.0363, "delta_pp": -1.54, "winner": "S4"},
+      {"axis": "MDD_relief_vs_S0_pp", "Path_C": 8.03, "S4": 12.29, "delta_pp": 4.26, "winner": "S4"},
+      {"axis": "DSR_p", "Path_C": 0.9999, "S4": 1.0000, "winner": "S4 (marginal)"}
+    ],
+    "tied_or_inverse_axes": [
+      {"axis": "SR_window", "Path_C": 1.646, "S4": 1.700, "delta": 0.054, "winner": "S4"},
+      {"axis": "SR_oos", "Path_C": 3.620, "S4": 3.605, "delta": -0.015, "winner": "Path_C (marginal)"},
+      {"axis": "CAGR_window", "Path_C": 0.221, "S4": 0.184, "delta": -0.037, "winner": "Path_C"},
+      {"axis": "CAGR_oos", "Path_C": 0.673, "S4": 0.476, "delta": -0.197, "winner": "Path_C"},
+      {"axis": "crisis_alpha", "Path_C": 0.000, "S4": -0.003, "winner": "Path_C (marginal)"}
+    ],
+    "interpretation": [
+      "Path_C delivers higher absolute return (CAGR 22.1% vs 18.4%) but with higher risk (MDD 16.6% vs 12.5%).",
+      "S4 dominates risk-adjusted axes: MDD 25% lower, MDD relief +4.3pp better.",
+      "Both PASS AX-001 v2 with similar bad/normal IC ratio.",
+      "도훈 conviction-driven choice between 'absolute return push' (Path_C) vs 'risk-adjusted balance' (S4)."
+    ]
+  },
+
+  "validation_against_aox_certifications": {
+    "AX_000_immutable": {
+      "Path_C": "PASS",
+      "S4": "PASS",
+      "evidence": "Both fully evaluated against 19-method ensemble + 4 modern academic methods + DSR + AX-001v2 + sign consistency"
+    },
+    "AX_001_v2_conditional_defense": {
+      "Path_C": "PASS",
+      "S4": "PASS",
+      "evidence_path_c": "crisis_alpha 0.000 (neutral), MDD relief +8.0pp, bad/normal IC 0.985",
+      "evidence_s4": "crisis_alpha -0.003 (slightly weak but >-0.005 threshold), MDD relief +12.3pp, bad/normal IC 0.990"
+    },
+    "AX_007_multi_sleeve_exception": {
+      "Path_C": "PASS",
+      "S4": "PASS",
+      "evidence": "Both are 4-sleeve hybrid (long-only + multi-source). 단일 sleeve top20 long-only mechanism break (AX-007) 회피."
+    },
+    "AX_008_triangulation": {
+      "Path_C": "1.5/3 expected (Optimizer + Codex)",
+      "S4": "1.5/3 expected (Optimizer + Codex)",
+      "post_optimizer_mandate": "Forge + Architect 후속 → 2/3 floor + 3/3 final"
+    }
+  },
+
+  "dohoon_conviction_call_decision_tree": {
+    "if_dohoon_says_S4_retain": {
+      "rationale": "S4가 score 동일 75 + MDD 가장 낮음 + AX 인증 + 도훈 5/8 supersede 결정 후 정합 검증 완료",
+      "next": "Forge mandate retain (alpha-updated 추가 인증) → admit 변경 없음"
+    },
+    "if_dohoon_says_Path_C_revert": {
+      "rationale": "Path_C가 absolute return CAGR 22.1% (S4 18.4% 대비 +3.7pp) 추구",
+      "tradeoff": "MDD 16.6% (S4 12.5%) 감수",
+      "next": "Forge re-run with Path_C weights → admit 변경 (Path_C로 PG2 admit)"
+    },
+    "if_dohoon_says_MaxSharpe_promote": {
+      "rationale": "SR_window 1.86 (S4 1.70) 추구",
+      "risk": "AX-001 v2 FAIL + TSMOM zero-fill artifact + 학술적 안정성 부족 (window-only stats overfit)",
+      "next": "REJECT 권고 (Optimizer agent 명시적 NACK) — score 50 + AX FAIL 정합 안 됨",
+      "comment": "SR_oos 3.86는 alpha-updated era inflate 영향 — production 시 robust 검증 부족"
+    },
+    "if_dohoon_says_MaxDiversification_promote": {
+      "rationale": "MaxDiv (50/0/50/0) score 75 + AX PASS + crisis_alpha 0.0158 양수 (TSMOM 25% 대비 더 적극 hedge)",
+      "tradeoff": "TSMOM 0% → managed futures 시너지 포기",
+      "next": "Forge mandate (50/0/50/0) → 2-sleeve로 단순화 추세",
+      "comment": "Optimizer는 4-sleeve breadth retain 권고 (S4) — 도훈 명시 시 가능"
+    }
+  },
+
+  "lockbox_compliance": {
+    "alpha_scores_read_only": "stage_artifacts/WT_D20260425_010/alpha_scores.parquet 268 sig_dates retain",
+    "no_alpha_definition_change": true,
+    "no_sleeve_definition_change": true,
+    "scope_weight_decision_only": true
+  },
+
+  "generated_at": "2026-05-09T18:00:00+09:00",
+  "generated_by": "optimizer-research agent (Q-Lead spawned)"
+}

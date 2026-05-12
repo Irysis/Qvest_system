@@ -1,0 +1,168 @@
+{
+  "task_id": "WT-D20260511_001",
+  "pd_phase": "PD27_burn0m",
+  "generated_at": "2026-05-12T09:39:09+0900",
+  "mandate_source": "user_mandate_2026-05-12_A안",
+  "mandate_summary": "2001-07 ~ 2026-04 297m max 백테, 1715 H1 alpha 본질 변경 X, burn-in 0m Factor 가용 즉시 산출, Methodology Iter 5 identical, Lockbox 폐기 per 도훈 mandate 2026-05-09 lockbox-scope.md",
+  "composite_spec": {
+    "sleeve_core_factors": ["C01_SUE", "C02_EPS_Chg_1m", "C04_ESBR", "C06_TP_Gap"],
+    "sleeve_defense_factors": ["Q07_Earnings_Stability", "M08_Residual_Mom", "Q25_Ohlson_O"],
+    "w_core": 0.65,
+    "w_def": 0.35,
+    "method_core": "expanding IC-weighted (min_ic_months=12, burn-in 0m EW fallback)",
+    "method_defense": "EW (1/3 per factor)",
+    "blend_method": "z-norm per sig_date, score-level (L-484)"
+  },
+  "ext_window": {
+    "start": "2001-07-01",
+    "end": "2026-04-01",
+    "burn_in_months": 0
+  },
+  "output": {
+    "parquet": "stage_artifacts/WT_D20260511_001/alpha_scores_pd27_burn0m.parquet",
+    "n_rows": 84997,
+    "n_sig_dates": 298,
+    "n_unique_tickers": 899,
+    "date_range_start": "2001-07-01",
+    "date_range_end": "2026-04-01"
+  },
+  "factor_ic_stats": [
+    {
+      "factor": "C01_SUE",
+      "mean_IC": 0.0335,
+      "sd_IC": 0.0812,
+      "ICIR": 0.4124,
+      "Harvey_t": 7.1185,
+      "n_months": 298
+    },
+    {
+      "factor": "C02_EPS_Chg_1m",
+      "mean_IC": 0.028,
+      "sd_IC": 0.0838,
+      "ICIR": 0.3344,
+      "Harvey_t": 5.5949,
+      "n_months": 280
+    },
+    {
+      "factor": "C04_ESBR",
+      "mean_IC": 0.0421,
+      "sd_IC": 0.0879,
+      "ICIR": 0.4797,
+      "Harvey_t": 8.281,
+      "n_months": 298
+    },
+    {
+      "factor": "C06_TP_Gap",
+      "mean_IC": 0.0354,
+      "sd_IC": 0.1363,
+      "ICIR": 0.2594,
+      "Harvey_t": 4.4175,
+      "n_months": 290
+    },
+    {
+      "factor": "M08_Residual_Mom",
+      "mean_IC": 0.0271,
+      "sd_IC": 0.135,
+      "ICIR": 0.2005,
+      "Harvey_t": 3.4607,
+      "n_months": 298
+    },
+    {
+      "factor": "Q07_Earnings_Stability",
+      "mean_IC": 0.0312,
+      "sd_IC": 0.1135,
+      "ICIR": 0.2745,
+      "Harvey_t": 4.7382,
+      "n_months": 298
+    },
+    {
+      "factor": "Q25_Ohlson_O",
+      "mean_IC": 0.0141,
+      "sd_IC": 0.1102,
+      "ICIR": 0.128,
+      "Harvey_t": 2.2093,
+      "n_months": 298
+    }
+  ],
+  "ic_stability": {
+    "PRE_NEW_2001_07_2003_12": {
+      "label": "PRE_NEW_2001_07_2003_12",
+      "win_start": "2001-07-01",
+      "win_end": "2003-12-01",
+      "rank_ic": 0.0684,
+      "icir": 0.5966,
+      "harvey_t": 3.2679,
+      "n_months": 30,
+      "n_total_dates": 30,
+      "ic_positive_share": 0.7333
+    },
+    "OVERLAP_2004_01_2023_12": {
+      "label": "OVERLAP_2004_01_2023_12",
+      "win_start": "2004-01-01",
+      "win_end": "2023-12-01",
+      "rank_ic": 0.0424,
+      "icir": 0.3649,
+      "harvey_t": 5.6531,
+      "n_months": 240,
+      "n_total_dates": 240,
+      "ic_positive_share": 0.6958
+    },
+    "POST_2024_01_2026_04": {
+      "label": "POST_2024_01_2026_04",
+      "win_start": "2024-01-01",
+      "win_end": "2026-04-01",
+      "rank_ic": 0.0634,
+      "icir": 0.5998,
+      "harvey_t": 3.1741,
+      "n_months": 28,
+      "n_total_dates": 28,
+      "ic_positive_share": 0.7857
+    },
+    "FULL_2001_07_2026_04": {
+      "label": "FULL_2001_07_2026_04",
+      "win_start": "2001-07-01",
+      "win_end": "2026-04-01",
+      "rank_ic": 0.047,
+      "icir": 0.4082,
+      "harvey_t": 7.0464,
+      "n_months": 298,
+      "n_total_dates": 298,
+      "ic_positive_share": 0.7081
+    },
+    "burn0m_pass": true
+  },
+  "overlap_audit_vs_iter5": {
+    "iter5_available": true,
+    "n_rows_overlap": 54198,
+    "n_sig_dates_overlap": 240,
+    "cor_overall_spearman": 0.9992,
+    "cor_per_date_mean": 0.9986,
+    "cor_per_date_min": 0.9713,
+    "cor_per_date_max": 1,
+    "cor_per_date_below_0p95_count": 0
+  },
+  "pit_compliance": {
+    "C1": "PASS expanding IC weights",
+    "C2": "PASS sig_date -> fwd_date + 1M",
+    "C4": "PASS Factor DB Usable_Date 강제",
+    "C9": "PASS t-1 lag",
+    "C10": "PASS t-1 AvgTV20",
+    "C13": "PASS Z_Score_Aligned via align_factor_direction",
+    "C14": "PASS Factor DB Usable_Date <= sig_date",
+    "C15": "PARTIAL bulk parquet read (Iter 5 PD20-B dispute retain) + per-sig_date PIT align",
+    "lockbox": "폐기 per 도훈 mandate 2026-05-09 (운용 cycle 최신 sig_date까지)",
+    "burn_in": "0m (도훈 A안 mandate) — IC stability audit per window PRE_NEW/OVERLAP/POST"
+  },
+  "burn0m_decision": {
+    "pass": true,
+    "pre_new_rank_ic": 0.0684,
+    "pre_new_ic_positive_share": 0.7333,
+    "threshold_rank_ic_min": 0,
+    "threshold_ic_positive_min": 0.55,
+    "fallback_recommendation": "ACCEPT_BURN0M"
+  },
+  "next_steps": {
+    "primary": "Forge backtest input: alpha_scores_pd27_burn0m.parquet (297 sig_dates)",
+    "secondary_if_fail": "If burn0m_pass=FALSE, regenerate with burn_in_months=12 (start 2002-07)"
+  }
+}

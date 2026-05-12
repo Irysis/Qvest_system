@@ -1,0 +1,63 @@
+{
+  "task_id": "WT-D20260511_001",
+  "phase": "JUDGE_DONE",
+  "agent": "judge",
+  "agent_version": "v6.1-multi-gate-validator",
+  "model": "Opus_4_7_1M",
+  "completed_at": "2026-05-11T10:30:00+0900",
+  "artifacts": [
+    "judge_verdict.json",
+    "judge_verdict_draft.json",
+    "challenge_note.md (judge section appended)",
+    "codex_critic_response_judge.json",
+    "judge_validation.R",
+    "judge_audit_intermediate.json",
+    "stage_artifacts/WT_D20260511_001/judge_full_255m_returns.csv"
+  ],
+  "previous_phase": "FORGE_VALIDATION_DONE",
+  "previous_phase_completed_at": "2026-05-11T09:58:00+0900",
+  "codex_round": {
+    "stance": "REJECT",
+    "veto_flag": false,
+    "n_critical": 8,
+    "n_high": 6,
+    "n_medium": 2,
+    "q_lead_escalation": true,
+    "challenge_note_charter_8_compliant": true,
+    "disposition_summary": "2 ACCEPT_REMEDIATED (C1 med_10pct direct measurement / C5 DSR full window recompute) + 4 PARTIAL (C2 Gate 0 격하 / C3 Verdict 격하 / C6 sleeve scope / C8 DM disclosed) + 1 REBUTTAL (C4 AX-008 PARTIAL_WEIGHT) + 1 ACCEPT (C7 Architect inconsistency)",
+    "revision": "Verdict 격하 — med_10pct JUDGE_PASSED → JUDGE_CONDITIONAL_PASS_PENDING_GOVERNOR_WAIVER + high_20pct JUDGE_PASSED_CONDITIONAL → JUDGE_CONDITIONAL_PASS_DEFERRED_NEXT_ITER"
+  },
+  "judge_results": {
+    "recommend_candidate": "med_10pct (10% NEW 4th source)",
+    "recommend_grade": "JUDGE_CONDITIONAL_PASS_PENDING_GOVERNOR_WAIVER",
+    "defer_candidate": "high_20pct → Iter 32",
+    "med_10pct_primary_metrics_judge_measured_256m": {
+      "SR_ann_geometric": 1.9586,
+      "CAGR": 0.1945,
+      "MDD": -0.1039,
+      "CVaR_95_monthly": -0.0440,
+      "z_DSR_M18": 6.498,
+      "p_DSR_M18": 1.0,
+      "n_months": 255
+    },
+    "high_20pct_primary_metrics_forge_frozen_256m": {
+      "SR_ann": 2.0546,
+      "CAGR": 0.1867,
+      "MDD": -0.0924,
+      "CVaR_95_monthly": -0.0384,
+      "z_DSR_M18": 6.961,
+      "p_DSR_M18": 1.0,
+      "n_months": 255
+    },
+    "ax_audit": {
+      "AX_001_v2": "CONDITIONAL_PASS (triad 2/3)",
+      "AX_002": "PASS",
+      "AX_007": "Exception 1 — Governor waiver required",
+      "AX_008": "2.5/3 PASS (Forge + Architect + Codex PARTIAL_WEIGHT 0.5)"
+    },
+    "blockers_for_governor": 5,
+    "critical_blocker": "B1 — TDC pair 0.438 > 0.30 RF-R3 BREACH (Governor waiver required)"
+  },
+  "next_phase": "GOVERNOR_ADMIT_DECISION",
+  "next_action": "Governor: AX-007 Exception 1 waiver decision (TDC pair 0.438 > 0.30 RF-R3 BREACH) + admit med_10pct OR defer pending blocker resolution. If admit: med_10pct 10% NEW + S4 v2 baseline scaled 90% = effective 5-sleeve allocation. If defer: Iter 32 alternative 4th source (foreign investor flow / long-duration KR govt bond / etc) or lower exposure (5%)."
+}

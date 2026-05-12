@@ -1,0 +1,135 @@
+{
+  "run_id": "PD36_overlay_diagnostic_20260512_120522",
+  "wt_id": "WT-D20260511_001",
+  "phase": "PD36_overlay_diagnostic",
+  "agent": "forge",
+  "mode": "research_diagnostic_legacy_str_compat",
+  "run_datetime": "2026-05-12T12:05:22+09:00",
+  "mandate_origin": "도훈 직접 명령 2026-05-12 KST: 'PG2 강화 path PD30 raw + AR threshold + M4 overlay 결합 backtest 병렬 진행'",
+  "coupling_spec_primary": "MULT_AR_x_M4 (β_t = β_AR_t-1 × β_M4_t-1)",
+  "coupling_specs_secondary": ["MIN_AR_M4", "LIN_0.5_0.5"],
+  "scope_interpretation": "Pure overlay sleeve-level scaling (L-281 STR_1715_AR_threshold_overlay_PG2 패러다임). KR_EQUITY_alloc_t = 0.55 × β_t, CASH = 0.045 + 0.55 × (1-β_t), TSMOM/KR_10Y unchanged. Stock-level top20 softmax (z_composite) 그대로 보존.",
+  "inherit_sources": {
+    "alpha_pd27": {
+      "path": "stage_artifacts/WT_D20260511_001/alpha_scores_pd27_burn0m.parquet",
+      "md5": "e6a71e4600c505bb8b179c7ac3bbc562"
+    },
+    "alpha_pd24": {
+      "path": "stage_artifacts/WT_D20260511_001/alpha_scores_pd24.parquet",
+      "md5": "5ffc8b10a194c7a79c5256da1f1a6afb"
+    },
+    "etf_pd28": {
+      "path": "stage_artifacts/WT_D20260511_001/pd28/synthetic_etf_returns_2001_2026.parquet",
+      "md5": "99027ba4a52d605df5cd591646cb3258"
+    },
+    "m4_schedule": {
+      "path": "qepm/mailbox/worktask/WT-D20260430_001/stage_artifacts/alpha_scores.parquet",
+      "md5": "145d4a550eaad4401777ddfc040789fb"
+    },
+    "ar_threshold": {
+      "path": "stage_artifacts/WT_S20260504_007/ar_overlay_alpha_scores_threshold_step.parquet",
+      "md5": "d44a918829ba6b31d3265487077d0da6"
+    }
+  },
+  "cost_model": "15bps one-way × turnover (sleeve + inner churn proxy)",
+  "baseline_window": "2001-09-01 ~ 2026-03-01",
+  "n_months": 295,
+  "metrics_primary": {
+    "variant": "MULT_AR_x_M4",
+    "SR": 0.974,
+    "CAGR": 0.1457,
+    "MDD": 0.1923,
+    "CVaR_95": -0.0762,
+    "Sortino": 0.5471,
+    "Calmar": 0.7575,
+    "Hit": 0.6305,
+    "TO": 3.6356,
+    "Stdev": 0.1496,
+    "n_months": 295,
+    "period_start": "2001-09-01",
+    "period_end": "2026-03-01"
+  },
+  "metrics_secondary": {
+    "MIN_AR_M4": {
+      "variant": "MIN_AR_M4",
+      "SR": 0.9771,
+      "CAGR": 0.1472,
+      "MDD": 0.1969,
+      "CVaR_95": -0.0766,
+      "Sortino": 0.5468,
+      "Calmar": 0.7477,
+      "Hit": 0.6339,
+      "TO": 3.5619,
+      "Stdev": 0.1507,
+      "n_months": 295,
+      "period_start": "2001-09-01",
+      "period_end": "2026-03-01"
+    },
+    "LIN_0.5_0.5": {
+      "variant": "LIN_0.5_0.5",
+      "SR": 0.9971,
+      "CAGR": 0.1561,
+      "MDD": 0.2084,
+      "CVaR_95": -0.0802,
+      "Sortino": 0.5549,
+      "Calmar": 0.7491,
+      "Hit": 0.6305,
+      "TO": 3.5235,
+      "Stdev": 0.1566,
+      "n_months": 295,
+      "period_start": "2001-09-01",
+      "period_end": "2026-03-01"
+    }
+  },
+  "baseline_pd30_c_softmax": {
+    "SR": 1.0081,
+    "CAGR": 0.1689,
+    "MDD": -0.2294,
+    "CVaR_95": -0.0879,
+    "Sortino": 0.5554,
+    "Calmar": 0.7361,
+    "TO": 3.33,
+    "n": 296,
+    "provenance": "PD30 C_softmax 296m (2001-08~2026-03), forge_package_pd30.json"
+  },
+  "baseline_s4_v2": {
+    "SR": 1.7877,
+    "CAGR": 0.197,
+    "MDD": -0.128,
+    "CVaR_95": -0.0501,
+    "Sortino": null,
+    "Calmar": null,
+    "TO": null,
+    "n": 255,
+    "provenance": "S4 v2 255m (2005-02~2026-04), STR_1715_AR+M4 (already includes overlay)"
+  },
+  "pure_function_pass": true,
+  "audit_integrity": "PASS",
+  "output_dir": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd36_overlay_diagnostic",
+  "files": ["metrics.csv", "nav.csv", "drawdowns.csv", "period_returns.csv", "sleeve_allocation.csv", "bt_result.rds", "holdings.csv", "comparison_overlay_vs_baselines.csv", "comparison_unified.csv", "delta_vs_pd30_raw.csv", "delta_vs_pd30_raw_corrected.csv", "delta_vs_s4v2_corrected.csv", "dm_test_vs_pd30.csv", "sleeve_overlay_decomposition.csv", "pure_function_audit.csv", "audit.json", "manifest.json", "challenge_note.md"],
+  "delta_table_correction_note": "Original delta_vs_pd30_raw.csv had MDD sign convention bug — overlay variants stored MDD as positive magnitude (PerformanceAnalytics maxDrawdown convention) while PD30_C baseline stored as negative. Computed delta_MDD_pp showed -42pp (wrong). Corrected file: delta_vs_pd30_raw_corrected.csv uses unified positive-magnitude convention; true delta_MDD_pp = -3.71pp (improvement). See fix_delta_table_pd36.R.",
+  "overlay_activation_analysis": {
+    "n_pre_2004_passthrough": 31,
+    "n_post_2004_active": 267,
+    "post_2004_beta_MULT": {
+      "mean": 0.8398,
+      "median": 1.0,
+      "min": 0.1716,
+      "pct_full_risk_on": 60.30,
+      "pct_de_risk": 39.70
+    },
+    "stress_periods_beta_MULT_mean": {
+      "GFC_2008Q1_2009Q2": 0.3558,
+      "COVID_2020": 0.4727,
+      "inflation_2022": 0.7500,
+      "year_2023": 0.6183
+    }
+  },
+  "key_finding_summary": {
+    "headline_primary_MULT": "PD36 MULT overlay vs PD30 raw: SR -0.0341 (1.0081 -> 0.974), CAGR -2.32pp (16.89% -> 14.57%), MDD -3.71pp IMPROVEMENT (22.94% -> 19.23%), CVaR95 +1.17pp IMPROVEMENT (-8.79% -> -7.62%). TO +0.31 (cost increase from sleeve rebalance during de-risk periods).",
+    "tradeoff_interpretation": "Overlay enforces de-risk in 39.7% of post-2004 months (mean beta_MULT=0.84). Sacrifices upside in normal regimes (-2.32pp CAGR) for tail-risk reduction (-3.71pp MDD, +1.17pp CVaR95). Risk-adjusted return (SR) marginally worse (-0.034) because volatility reduction is less than mean reduction in 296m sample.",
+    "vs_s4_v2_gap": "MULT SR 0.974 vs S4 v2 SR 1.7877 = gap 0.81. S4 v2 uses STR_1715 Iter31 alpha (NOT z_composite) with same M4/AR overlay. Differences attributable to: (1) alpha source: STR_1715 Iter31 4F Consensus + 3-axis Defense top20 vs PD30 z_composite (0.818 pd27 + 0.182 pd24) — different stock selection, (2) S4 v2 window 255m vs PD36 295m — overlay effect attenuated by 31m pre-2004 passthrough segment, (3) sleeve composition: S4 v2 50/25/20/5 vs PD30 55/22.5/18/4.5 — marginal.",
+    "dm_test_significance": "All 3 variants statistically DIFFERENT from PD30 raw at 5% (p < 0.05). Negative mean diff (overlay underperforms PD30 raw on average) — overlay protects MDD/CVaR but costs SR in this 296m sample dominated by bull markets.",
+    "implication_for_admit_strict_cycle": "PD36 evidence suggests Overlay coupling does NOT improve SR vs PD30 raw in this measurement window. Tail-risk protection (MDD -3.71pp, CVaR95 +1.17pp) confirmed but at cost of -0.034 SR. Strict admit cycle (WT-D20260512_001) needs to evaluate: (a) MDD-priority weighting (도훈 잔여 P0 = MDD -7.05pp gap), (b) regime-conditional alpha selection (overlay activated only in identified stress periods, NOT continuous), (c) AR/M4 calibration revisit (current thresholds may be over-conservative)."
+  }
+}

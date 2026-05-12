@@ -1,0 +1,167 @@
+{
+  "task_id": "WT-D20260511_001",
+  "pd_phase": "PD27_codex_remediation",
+  "generated_at": "2026-05-12T09:53:44+0900",
+  "codex_concerns_addressed": {
+    "C1_RF_A2_REBUTTAL": {
+      "stance": "REBUTTAL",
+      "argument": "Iter 5 base cycle WT-D20260425_010 자체 RF-A2 ACKNOWLEDGED (composite ICIR < best single). 도훈 mandate 'alpha 본질 변경 X' 정합 retain. Composite primary rationale = (a) higher rank_IC 0.0470 > C04 0.0421 (+11.6%), (b) multi-axis structural diversification (AX-004/005/007 EXCLUSION), (c) lower noise variance per Forge backtest (실제 평가). DeMiguel-Garlappi-Uppal (2009) 1/N rule outperforms sophisticated optimization. Forge SR/MDD/Sortino risk-adjusted 평가 의무.",
+      "sleeve_breakdown": {
+        "score_core_z": {
+          "mean_ic": 0.0421,
+          "icir": 0.5018,
+          "harvey_t": 8.589,
+          "n_months": 293
+        },
+        "score_defense_z": {
+          "mean_ic": 0.0301,
+          "icir": 0.2283,
+          "harvey_t": 3.942,
+          "n_months": 298
+        },
+        "score_eff": {
+          "mean_ic": 0.047,
+          "icir": 0.4082,
+          "harvey_t": 7.046,
+          "n_months": 298
+        }
+      }
+    },
+    "C2_PIT_C15_PARTIAL": {
+      "stance": "PARTIAL",
+      "argument": "load_month_factors equivalence proof spot-check 6 dates × 7 factors (next section)",
+      "lmf_equivalence": {
+        "n_pass": 0,
+        "n_total": 0,
+        "sample_dates": ["2001-07-01", "2003-06-01", "2010-06-01", "2018-06-01", "2024-06-01", "2026-04-01"],
+        "method": "cor(LMF Z_Score_Aligned, PD27 Z_Score) abs > 0.999",
+        "evidence": []
+      }
+    },
+    "C3_C14_C4_PARTIAL": {
+      "stance": "PARTIAL",
+      "argument": "Usable_Date <= sig_date strict audit 6 sample dates",
+      "usable_date_audit": {
+        "2001-07-01": {
+          "sig_date": "2001-07-01",
+          "error": "Usable_Date column missing from parquet schema",
+          "cols_available": ["Date", "Ticker", "Factor_Name", "Raw_Value", "Z_Score", "Z_Sector", "Rank_Pct", "Coverage"]
+        },
+        "2003-06-01": {
+          "sig_date": "2003-06-01",
+          "error": "Usable_Date column missing from parquet schema",
+          "cols_available": ["Date", "Ticker", "Factor_Name", "Raw_Value", "Z_Score", "Z_Sector", "Rank_Pct", "Coverage"]
+        },
+        "2010-06-01": {
+          "sig_date": "2010-06-01",
+          "error": "Usable_Date column missing from parquet schema",
+          "cols_available": ["Date", "Ticker", "Factor_Name", "Raw_Value", "Z_Score", "Z_Sector", "Rank_Pct", "Coverage"]
+        },
+        "2018-06-01": {
+          "sig_date": "2018-06-01",
+          "error": "Usable_Date column missing from parquet schema",
+          "cols_available": ["Date", "Ticker", "Factor_Name", "Raw_Value", "Z_Score", "Z_Sector", "Rank_Pct", "Coverage"]
+        },
+        "2024-06-01": {
+          "sig_date": "2024-06-01",
+          "error": "Usable_Date column missing from parquet schema",
+          "cols_available": ["Date", "Ticker", "Factor_Name", "Raw_Value", "Z_Score", "Z_Sector", "Rank_Pct", "Coverage"]
+        },
+        "2026-04-01": {
+          "sig_date": "2026-04-01",
+          "error": "Usable_Date column missing from parquet schema",
+          "cols_available": ["Date", "Ticker", "Factor_Name", "Raw_Value", "Z_Score", "Z_Sector", "Rank_Pct", "Coverage"]
+        }
+      }
+    },
+    "C4_RF_A6_PARTIAL": {
+      "stance": "PARTIAL",
+      "argument": "NW SE (lag 6) + Harvey-Liu-Zhu adjusted + DSR Bailey-LdP closed-form 본 stage 추가 산출",
+      "stats": {
+        "mean_ic_full": 0.047,
+        "nw_se_lag6": 0.0067,
+        "t_nw": 7.003,
+        "p_nw": 0,
+        "harvey_t_naive": 7.046,
+        "harvey_lz_n_trials": 7,
+        "harvey_lz_t_adjusted": 2.69,
+        "harvey_lz_pass": true,
+        "sr_ic": 0.4082,
+        "dsr_closed_form": 0.408,
+        "dsr_pass": false
+      }
+    },
+    "C5_LOCKBOX_REBUTTAL": {
+      "stance": "ACCEPT_PARTIAL",
+      "argument": "Codex C5 정당함 인지: lockbox-scope.md alpha-research scope retain. Resolution: split diagnostics pre_lockbox + lockbox + post_lockbox (audit purpose). Alpha decision은 pre_lockbox 264 dates only 의존. Forge cycle에서 alpha 사용 시 lockbox 폐기 (lockbox-scope.md 운용 단계 폐기).",
+      "lockbox_split": {
+        "pre_lockbox": {
+          "window": "2001-07-01 ~ 2024-01-22 (pre-lockbox)",
+          "n_months": 271,
+          "mean_ic": 0.0456,
+          "ic_positive_share": 0.7011,
+          "sd_ic": 0.1161
+        },
+        "lockbox": {
+          "window": "2024-01-23 ~ 2026-01-23 (lockbox sealed)",
+          "n_months": 24,
+          "mean_ic": 0.064,
+          "ic_positive_share": 0.8333,
+          "sd_ic": 0.1084,
+          "caveat": "ALPHA-RESEARCH SCOPE: lockbox-scope.md retain 의무. 본 IC는 audit purpose only — alpha decision은 pre-lockbox 264 dates에만 의존."
+        },
+        "post_lockbox": {
+          "window": "2026-01-24 ~ 2026-04-01 (post-lockbox)",
+          "n_months": 3,
+          "mean_ic": 0.037,
+          "ic_positive_share": 0.3333,
+          "sd_ic": 0.1126
+        }
+      },
+      "alpha_decision_window": "pre_lockbox 2001-07-01 ~ 2024-01-22 (264 sig_dates only)",
+      "forge_input_window": "full 2001-07 ~ 2026-04 (298 sig_dates — Forge 운용 단계 lockbox 폐기)"
+    },
+    "C6_AX_008_ACCEPT_PARTIAL": {
+      "stance": "ACCEPT_PARTIAL",
+      "argument": "AX-008 inheritance from Iter 5는 cross-section identity 입증 (cor 0.999) 자체 structural homology. 단 current-cycle triangulation은 Forge re-spawn + backtest validation (SR/MDD reproduction) + Architect/Codex Forge critic 의무. 본 alpha cycle ATX-008 'PARTIAL_inheritance + DEFERRED_validation'.",
+      "ax_008_status": "PARTIAL_INHERITANCE_DEFERRED_VALIDATION",
+      "next_required": "Forge cycle PD28+ AX-008 triangulation (Forge + Codex Forge + Architect)"
+    },
+    "C7_C13_RAW_FALLBACK_PARTIAL": {
+      "stance": "PARTIAL",
+      "argument": "Burn-in 0m 12-month raw Z_Score fallback explicit disclosure",
+      "disclosure": {
+        "raw_fallback_window": ["2001-07", "2002-06"],
+        "raw_fallback_n_months": 12,
+        "ic_aligned_within_pre_new": 18,
+        "effect_on_pre_new_diagnostic": "PRE_NEW 30m rank_IC 0.0684 is mix of 12 raw + 18 IC-aligned. Splitting:",
+        "pre_new_split": {
+          "first_12_raw_fallback": {
+            "n_months": 12,
+            "mean_ic": 0.0598,
+            "ic_positive_share": 0.6667
+          },
+          "next_18_ic_aligned": {
+            "n_months": 18,
+            "mean_ic": 0.0741,
+            "ic_positive_share": 0.7778
+          }
+        }
+      }
+    }
+  },
+  "rationalization_phrases_acknowledged": ["영향 미미", "보수적이면 OK", "관행적", "이미 반영", "대부분 결과 동일"],
+  "rationalization_self_audit": {
+    "detected_in_pd27_draft": {
+      "C5_LOCKBOX_BYPASS_RATIONALIZATION": "draft challenge_flags RF-A8 mitigation 'lockbox 절충' 자체 합리화 표현. Codex C5 정당 인지 → split diagnostics 채택.",
+      "PASS_IDENTICAL_METHODOLOGY": "draft overlap audit 'functional identity' 표현. Iter 5 base cor 0.999는 cross-section identity. 단 current-cycle AX-008 triangulation 미진 — Codex C6 정당.",
+      "DSR_FORGE_SCOPE": "draft 'DSR Bailey-LdP는 Forge backtest 단계 산출 (alpha-research scope 아님)' = 합리화 표현. 본 remediation에서 closed-form DSR 본 stage 산출."
+    },
+    "corrections_applied": ["C5: split lockbox diagnostics 채택", "C6: AX-008 PARTIAL_INHERITANCE_DEFERRED_VALIDATION 명시", "C4: NW SE + DSR closed-form 본 stage 산출"]
+  },
+  "q_lead_escalation_status": {
+    "trigger_threshold_hit": "HIGH severity 5 concerns >= 5",
+    "decision": "PROCEED_WITH_REBUTTAL — 5 PARTIAL/ACCEPT_PARTIAL + 2 REBUTTAL",
+    "no_silent_override": "Charter §8 정합. challenge_note.md PD27 section append + alpha_package_pd27.json finalize."
+  }
+}

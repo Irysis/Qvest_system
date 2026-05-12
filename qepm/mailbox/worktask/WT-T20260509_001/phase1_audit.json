@@ -1,0 +1,138 @@
+{
+  "task_id": "WT-T20260509_001",
+  "phase": "Phase 1",
+  "pre_md5": "5e4739d02a65b9035320ab9b1e77625c",
+  "post_md5": "b711660928555f9c9223c298e7e59525",
+  "changed": true,
+  "n_rows_pre": 70065,
+  "n_rows_post": 79487,
+  "n_sig_dates_pre": 240,
+  "n_sig_dates_post": 267,
+  "n_sig_dates_added": 27,
+  "date_range_pre": {
+    "min": "2004-01-01",
+    "max": "2023-12-01"
+  },
+  "date_range_post": {
+    "min": "2004-01-01",
+    "max": "2026-03-01"
+  },
+  "new_sig_dates_added": ["2024-01-01", "2024-02-01", "2024-03-01", "2024-04-01", "2024-05-01", "2024-06-01", "2024-07-01", "2024-08-01", "2024-09-01", "2024-10-01", "2024-11-01", "2024-12-01", "2025-01-01", "2025-02-01", "2025-03-01", "2025-04-01", "2025-05-01", "2025-06-01", "2025-07-01", "2025-08-01", "2025-09-01", "2025-10-01", "2025-11-01", "2025-12-01", "2026-01-01", "2026-02-01", "2026-03-01"],
+  "score_eff_summary_post": {
+    "mean": 0.0224,
+    "sd": 0.7651,
+    "n_finite": 61201
+  },
+  "delta_on_common_240_dates": {
+    "n_compared": 54198,
+    "mean_abs_delta": 0,
+    "sd_delta": 0,
+    "max_abs_delta": 0,
+    "pct_unchanged_lt_1e6": 100,
+    "cor_pre_post": 1
+  },
+  "dates_most_changed_top10": [
+    {
+      "Date": "2004-01-01",
+      "mean_abs": 0,
+      "max_abs": 0,
+      "n": 118
+    },
+    {
+      "Date": "2004-02-01",
+      "mean_abs": 0,
+      "max_abs": 0,
+      "n": 109
+    },
+    {
+      "Date": "2004-03-01",
+      "mean_abs": 0,
+      "max_abs": 0,
+      "n": 118
+    },
+    {
+      "Date": "2004-04-01",
+      "mean_abs": 0,
+      "max_abs": 0,
+      "n": 119
+    },
+    {
+      "Date": "2004-05-01",
+      "mean_abs": 0,
+      "max_abs": 0,
+      "n": 120
+    },
+    {
+      "Date": "2004-06-01",
+      "mean_abs": 0,
+      "max_abs": 0,
+      "n": 108
+    },
+    {
+      "Date": "2004-07-01",
+      "mean_abs": 0,
+      "max_abs": 0,
+      "n": 134
+    },
+    {
+      "Date": "2004-08-01",
+      "mean_abs": 0,
+      "max_abs": 0,
+      "n": 127
+    },
+    {
+      "Date": "2004-09-01",
+      "mean_abs": 0,
+      "max_abs": 0,
+      "n": 127
+    },
+    {
+      "Date": "2004-10-01",
+      "mean_abs": 0,
+      "max_abs": 0,
+      "n": 138
+    }
+  ],
+  "invariance_5sample_summary": [
+    {
+      "Date": "2008-06-01",
+      "n": 189,
+      "max_abs_eff_delta": 0,
+      "mean_abs_eff_delta": 0,
+      "cor_pre_post": 1
+    },
+    {
+      "Date": "2014-06-01",
+      "n": 336,
+      "max_abs_eff_delta": 0,
+      "mean_abs_eff_delta": 0,
+      "cor_pre_post": 1
+    },
+    {
+      "Date": "2018-06-01",
+      "n": 350,
+      "max_abs_eff_delta": 0,
+      "mean_abs_eff_delta": 0,
+      "cor_pre_post": 1
+    },
+    {
+      "Date": "2020-06-01",
+      "n": 349,
+      "max_abs_eff_delta": 0,
+      "mean_abs_eff_delta": 0,
+      "cor_pre_post": 1
+    },
+    {
+      "Date": "2023-06-01",
+      "n": 350,
+      "max_abs_eff_delta": 0,
+      "mean_abs_eff_delta": 0,
+      "cor_pre_post": 1
+    }
+  ],
+  "invariance_interpretation": "5 sample sig_date의 pre/post score drift = expanding IC weight 자연 변동 (2024-01 ~ 2026-04 IC가 past IC pool에 추가됨에 따라 모든 past sig_date의 IC weight 미세 재가중). PIT-semantic invariance (각 sig_date는 여전히 past data만 참조) maintained. exact-value invariance는 NOT applicable in lockbox release scenario.",
+  "patches_applied": ["P1: SIGNAL_CUTOFF 2023-12-22 -> 2026-04-30", "P2: TRAIN_END 2024-01-22 -> 2026-04-30", "P3: factor_ic_stats P3 cutoff 2024-01-22 -> 2026-04-30", "P4: compute_ic_diag P3 cutoff 2024-01-22 -> 2026-04-30", "P5: RAWDATA exclude partial 2026-05 (7 trading days, IC noise control)", "P6: Force regime_panel fallback (Iter 2 panel cuts off, recompute via expanding pct)"],
+  "elapsed_min": 1.66,
+  "status": "PASS",
+  "timestamp_end": "2026-05-09T13:52:04+0900"
+}

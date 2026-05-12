@@ -4,31 +4,47 @@
   "all_admitted_match": true,
   "details": [
     {
-      "str_id": "STR_1715_AR_threshold_overlay_PG2",
-      "admitted_scenario": "INTEGRATION_HYBRID_OVERLAY_PATH_C_70_15_15",
-      "expected_weight": 0.7,
-      "actual_weight": 0.7,
+      "str_id": "STR_1715_AR_on_M4_PG2",
+      "admitted_scenario": "re_certify_pg2_core_alpha_single_sleeve_layer4_l277_l278_lineage_recovery_post_4_sleeve_revoke_pd25_pd33_pd34_cycle_closure",
+      "expected_weight": 1.00,
+      "actual_weight": 1.00,
       "match": true,
-      "wt_dir": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-P20260505_001"
-    },
-    {
-      "str_id": "TSMOM_ETF_rotation_PG2",
-      "admitted_scenario": "INTEGRATION_HYBRID_OVERLAY_PATH_C_70_15_15",
-      "expected_weight": 0.15,
-      "actual_weight": 0.15,
-      "match": true,
-      "wt_dir": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-S20260504_009"
-    },
-    {
-      "str_id": "KR_10y_bond_ETF_PG2",
-      "admitted_scenario": "INTEGRATION_HYBRID_OVERLAY_PATH_C_70_15_15",
-      "expected_weight": 0.15,
-      "actual_weight": 0.15,
-      "match": true,
-      "wt_dir": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-S20260504_008"
+      "wt_dir": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260512_002",
+      "lineage_origin_wt_dir": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-P20260504_001",
+      "lineage_origin_l_codes": ["L-277", "L-278"],
+      "composition": "단일 sleeve 100% (STR_1715 H1 alpha + Iter31 linear_tilt + M4 BOCPD overlay Layer 3 + AR threshold Path A overlay Layer 4)",
+      "metrics_admit_basis": {
+        "Sharpe_admit_256m": 1.7758,
+        "Sharpe_production_267m_raw_cover": 1.6957,
+        "Sharpe_production_255m_admit_comparable": 1.7486,
+        "MDD_pct_admit_256m": -25.15,
+        "MDD_pct_production_267m": -24.81
+      },
+      "may_2026_dynamic_state": {
+        "m4_state": "NORMAL",
+        "m4_scalar": 1.0,
+        "beta_AR_t": 0.7,
+        "net_allocation": {"risk_pct": 0.70, "cash_pct": 0.30}
+      }
     }
   ],
-  "issued_at": "2026-05-05T05:22:55+09:00",
-  "issued_by": "governor_concord_certifier.sh v1.2",
-  "charter_ref": "v1.2 §10 Governor Concord Certificate"
+  "issued_at": "2026-05-12T13:42:00+09:00",
+  "issued_by": "governor-WT-D20260512_002 (single sleeve composition admit fresh concord post-Codex disposition)",
+  "charter_ref": "v1.7 §10 Governor Concord Certificate + §10 Role Card 4×5 deployment_promotion_re_certification",
+  "book_state_admitted_ids_match": ["STR_1715_AR_on_M4_PG2"],
+  "book_state_weights_match": {"STR_1715_AR_on_M4_PG2": 1.00},
+  "book_state_schema_version_match": "v2.2_post_WT_D20260512_002_RE_CERTIFY_SINGLE_SLEEVE_LAYER4_L277_L278_LINEAGE_RECOVERY",
+  "admission_admit_ids_match": ["STR_1715_AR_on_M4_PG2"],
+  "admission_weights_match": {"STR_1715_AR_on_M4_PG2": 1.00},
+  "concord_type_rationale": "book_state.admitted_ids == admission.allocation_decided keys && book_state.book_weights == admission.allocation_decided values && weight 1.0 = match. n_admitted=1 strict match.",
+  "previous_concord_4_sleeve_archived": {
+    "details_4_sleeve": [
+      {"str_id": "STR_1715_AR_threshold_overlay_PG2_v2_alpha_2026_04", "weight": 0.50},
+      {"str_id": "TSMOM_8_ETF_rotation_PG2_no_KR_bond_overlap", "weight": 0.25},
+      {"str_id": "KR_10y_bond_ETF_PG2", "weight": 0.20},
+      {"str_id": "CASH_KRW_PG2_S4", "weight": 0.05}
+    ],
+    "archived_basis": "도훈 mandate 정정 2026-05-12 KST '1715 H1 말고, 1715_AR_on_M4 를 PG2로 승격시켜'. 4-sleeve composition REVOKE → 단일 sleeve composition 회귀.",
+    "archived_at": "2026-05-12T13:40:00+09:00"
+  }
 }

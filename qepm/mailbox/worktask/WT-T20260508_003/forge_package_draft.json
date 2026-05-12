@@ -1,0 +1,164 @@
+{
+  "schema_version": "1.0",
+  "task_id": "WT-T20260508_003",
+  "wt_type": "technical_task",
+  "wt_kind": "factor_db_full_period_rebuild_plus_str_1715_family_rebacktest",
+  "as_of_date": "2026-05-08",
+  "agent": "forge",
+  "phase": "KILLED_BY_DOOHOON_MANDATE_REVISION",
+  "is_draft": true,
+  "draft_invalidated_at": "2026-05-08T21:00:00+09:00",
+  "draft_invalidated_reason": "도훈 정정 mandate (post-_003): 'SUE/ESBR/ESCR만 다시 계산'. 본 draft의 Phase 1 force=TRUE 전기간 rebuild approach 미정합. WT-T20260508_004 successor가 incremental approach로 정확 처리. status.json lineage_transfer 참조.",
+
+  "mandate_origin": "도훈 직접 mandate 2026-05-08 19:50 KST. 'CONSENSUS.xlsx 파일에서 SUE, ESBR, ESCR 시트의 데이터만 Consensus Rawdata 캐시에 전기간 업데이트 한 이후에 Factor DB에서 해당 팩터들을 전기간 재계산해서 업데이트하고 이를 활용해서 1715 패밀리 전략들을 모두 다시 백테스팅하고 데이터 업데이트 해달라.' alpha 정의 변경 X. 5종 family (S0~S4) retain. 파이프라인: Consensus cache (선행) → Factor DB rebuild → alpha_scores regen → STR_1715 base rerun → Layer A regen → 5family backtest → 비교.",
+
+  "lineage": {
+    "predecessor_wt": "WT-T20260508_001",
+    "predecessor_md5": {
+      "run_all_5family_fresh.R": "0d4d1ba90688d73e64a852affb06b929",
+      "comparison_table.csv": "5ccbe98497129727673d44ec6e510af1"
+    },
+    "predecessor_pre_update_state": "Apr 30 자료 미반영 alpha_scores (md5 c4d30260133e89c4c4b777fcbc713473)",
+    "current_state": "Phase 1 Factor DB rebuild in progress (437 monthly cache regen)"
+  },
+
+  "phase_1_factor_db_rebuild": {
+    "objective": "전기간 monthly Factor DB cache (.cache/factor_db/factor_db_YYYYMM.parquet) force=TRUE rebuild",
+    "rationale": "Consensus cache (sue/esbr/escr.parquet)에 4월 30일 자료 추가. compute_consensus.R PIT join 후 cross-section z-score 재산출 의무. 전기간 (2000-01 ~ 2026-05, 437 month-end) 재빌드.",
+    "method": "build_factor_db_monthly(start='2000-01-01', end='2026-05-08', force=TRUE)",
+    "execution_script": "qepm/mailbox/worktask/WT-T20260508_003/phase1_factor_db_rebuild.R",
+    "execution_log": "qepm/mailbox/worktask/WT-T20260508_003/phase1_rebuild.log",
+    "audit_artifact": "qepm/mailbox/worktask/WT-T20260508_003/factor_db_rebuild_audit.json",
+    "consensus_cache_inputs_md5": {
+      "sue": "8a75a7dcbd1e752c11b13c4c061208cc",
+      "esbr": "a4faa605f53aca05ee5edcedf940512b",
+      "escr": "8b296843babbe024f006e24722984e6f"
+    },
+    "rawdata_cache_md5": "a0a00d9a1c32d1c42626c0a91d0f0419",
+    "n_month_ends_target": 317,
+    "estimated_elapsed_min": "60-100",
+    "phase_status": "IN_PROGRESS"
+  },
+
+  "phase_2a_alpha_scores_regen": {
+    "objective": "factor_engine_proposal.R (Iter5) 재source → alpha_scores.parquet 갱신",
+    "rationale": "Factor DB에서 score_eff (Iter 5 multi-sleeve composite) 재계산. C01/C02/C04/C06 (consensus) 자동 propagate. alpha 정의 변경 X.",
+    "execution_script": "qepm/mailbox/worktask/WT-T20260508_003/phase2a_alpha_scores_regen.R",
+    "audit_artifact": "qepm/mailbox/worktask/WT-T20260508_003/phase2a_alpha_scores_regen_audit.json",
+    "alpha_scores_pre_md5": "c4d30260133e89c4c4b777fcbc713473",
+    "phase_status": "PENDING"
+  },
+
+  "phase_2b_str_1715_base_rerun": {
+    "objective": "STR_1715/run_all.R 재실행 → 02_nav.csv / 03_period_returns.csv 갱신",
+    "rationale": "갱신된 alpha_scores.parquet으로 walk-forward 240+ monthly. λ=1.5 / TOphi=3 (Iter31 best params 변경 X).",
+    "execution_script": "qepm/mailbox/worktask/WT-T20260508_003/phase2b_str_1715_rerun.R",
+    "audit_artifact": "qepm/mailbox/worktask/WT-T20260508_003/phase2b_str_1715_rerun_audit.json",
+    "phase_status": "PENDING"
+  },
+
+  "phase_2c_layer_a_regen": {
+    "objective": "four_layer_comparison.R 재실행 → ret_AR_on_M4 (4-layer returns path) 갱신",
+    "rationale": "STR_1715 02_nav / 03_period_returns 갱신 후 M4 schedule + AR threshold overlay 적용. Layer 정의 변경 X.",
+    "execution_script": "qepm/mailbox/worktask/WT-T20260508_003/phase2c_layer_a_regen.R",
+    "audit_artifact": "qepm/mailbox/worktask/WT-T20260508_003/phase2c_layer_a_regen_audit.json",
+    "phase_status": "PENDING"
+  },
+
+  "phase_3_5family_backtest": {
+    "objective": "5종 family (S0~S4) 256m fresh re-backtest with regenerated inputs",
+    "method": "Pure Function R12: weights.csv (as-is, S3 admit weights from WT-P20260505_001) + 갱신 ret_AR_on_M4 + KR_10y + TSMOM → bt_result × 5",
+    "n_periods": 256,
+    "period": "2005-02-01 ~ 2026-05-01",
+    "cost_model_version": "v2.3_kr_retail_15bps",
+    "transaction_cost_bps": 15,
+    "leverage": 1,
+    "long_only": true,
+    "weight_bound_per_stock": 0.20,
+    "max_names_stock_sleeve": 20,
+    "sum_weights_per_period": 1.0,
+    "execution_script": "qepm/mailbox/worktask/WT-T20260508_003/phase3_run_5family_post_rebuild.R",
+    "output_base": "qepm/mailbox/worktask/WT-T20260508_003/output/5family_post_factor_db_rebuild",
+    "phase_status": "PENDING",
+    "family_definitions_retained": [
+      {"id": "S0_baseline", "cap_AR": 1.0, "cap_TSMOM": 0.0, "cap_KR10y": 0.0, "cap_CASH": 0.0},
+      {"id": "S1_KR10y_only", "cap_AR": 0.7, "cap_TSMOM": 0.0, "cap_KR10y": 0.2, "cap_CASH": 0.1},
+      {"id": "S2_TSMOM_only", "cap_AR": 0.7, "cap_TSMOM": 0.3, "cap_KR10y": 0.0, "cap_CASH": 0.0,
+       "pre_2015_fallback": "TSMOM 0 / CASH 0.30"},
+      {"id": "S3_Hybrid_70_15_15", "cap_AR": 0.7, "cap_TSMOM": 0.15, "cap_KR10y": 0.15, "cap_CASH": 0.0,
+       "is_admitted": true, "admit_record": "L-279~281, WT-P20260505_001 governor_admission, 6/1 effective"},
+      {"id": "S4_Hybrid_50_25_25", "cap_AR": 0.5, "cap_TSMOM": 0.25, "cap_KR10y": 0.2, "cap_CASH": 0.05}
+    ]
+  },
+
+  "phase_4_comparison_pre_post": {
+    "objective": "직전 cycle (WT-T20260508_001, Apr 30 자료 미반영) vs 신규 cycle (WT-T20260508_003, Factor DB rebuild 후 Apr 30 propagate) 정량 비교 — 4/30 lift 측정",
+    "execution_script": "qepm/mailbox/worktask/WT-T20260508_003/phase4_comparison_pre_post.R",
+    "deliverables": [
+      "comparison_table_pre_post.csv (5 family × 11 metric × pre/post/delta)",
+      "phase4_comparison_summary.json (lift 진단 + S3 admit retain check)",
+      "output/equity_curves_pre_post.png"
+    ],
+    "phase_status": "PENDING"
+  },
+
+  "boundary_compliance": {
+    "alpha_definition_change": "DENIED — Iter 5 sleeve (4F Consensus core 0.65 + 3-axis Defense 0.35) retain",
+    "consensus_cache_regen": "DENIED — May 8 19:34 cache as-is (선행 작업 retain)",
+    "rawdata_rebuild": "DENIED",
+    "family_definition_change": "DENIED — S0~S4 retain",
+    "weights_csv_change": "DENIED — WT-P20260505_001 weights.csv as-is",
+    "iter31_params_change": "DENIED — λ=1.5 / TOphi=3 retain",
+    "M4_regime_definition_change": "DENIED",
+    "transaction_cost_change": "DENIED — 15bps one-way uniform",
+    "regime_overlay_change": "DENIED — M4 outer schedule + AR threshold overlay (β∈[0.4,0.7,1.0]) retain"
+  },
+
+  "ax_compliance": {
+    "AX_002_PIT": "PASS — 4월 30일 자료는 5월 1일 sig_date 결정에 사용 가능 (t+1 lag). 과거 sig_date의 PIT result는 동일 (compute_consensus PIT cutoff 적용).",
+    "AX_007_multi_sleeve_exception": "PASS — Iter 5 multi-sleeve (Core 0.65 + Defense 0.35) 단일 sleeve top20 위반 회피 retain",
+    "AX_008_triangulation": "PARTIAL — 본 WT는 데이터 갱신 작업. admission 영향 산출 시 Forge + Codex + Architect 2/3 PASS mandate. S3 admit retain 영향 정합 검증 Phase 4."
+  },
+
+  "expected_lift_qualitative": {
+    "magnitude": "MINOR_to_MODERATE",
+    "rationale": "4월 30일 자료 추가 = 1 sig_date (2026-05-01)의 SUE/ESBR/ESCR rank 영향. 256 sig_date 중 1건 (~0.4%). 다른 255 sig_date는 PIT cutoff로 동일 결과 retain. 따라서 NAV 누적 효과는 final period 1건의 alpha-driven holdings change에 국한.",
+    "expected_delta_Sharpe_range": "[-0.02, +0.02]",
+    "expected_delta_CAGR_range": "[-0.005, +0.005]",
+    "expected_delta_MDD_range": "[-0.005, +0.005]",
+    "outlier_threshold": "|delta_Sharpe| > 0.05 OR |delta_MDD| > 0.02 → fabrication 또는 boundary 위반 의심 (codex/architect escalate)"
+  },
+
+  "verification_checklist": {
+    "phase_1_audit_must_show": [
+      "n_changed > 0 (force=TRUE 정상 작동)",
+      "n_files_post >= n_files_pre (cache loss X)",
+      "spot_check 2026-04 + 2026-05 SUE/ESBR/ESCR coverage > 0%"
+    ],
+    "phase_2a_audit_must_show": [
+      "alpha_scores.parquet md5 changed",
+      "score_eff post 분포 정상 (mean/sd 동등 범위)",
+      "cor(pre, post) > 0.99 (boundary 안 마이너 변화)"
+    ],
+    "phase_3_audit_must_show": [
+      "5 family bt_result × 10 components 모두 산출",
+      "alpha_invariance_runtime_audit Spearman ρ = 1.0 (5 family scalar scaling)",
+      "S3 admit retain check pass"
+    ]
+  },
+
+  "deliverables": [
+    "qepm/mailbox/worktask/WT-T20260508_003/factor_db_rebuild_audit.json",
+    "qepm/mailbox/worktask/WT-T20260508_003/phase2a_alpha_scores_regen_audit.json",
+    "qepm/mailbox/worktask/WT-T20260508_003/phase2b_str_1715_rerun_audit.json",
+    "qepm/mailbox/worktask/WT-T20260508_003/phase2c_layer_a_regen_audit.json",
+    "qepm/mailbox/worktask/WT-T20260508_003/comparison_table.csv (5 family 신규 결과)",
+    "qepm/mailbox/worktask/WT-T20260508_003/comparison_table_pre_post.csv (직전 vs 신규)",
+    "qepm/mailbox/worktask/WT-T20260508_003/phase4_comparison_summary.json",
+    "qepm/mailbox/worktask/WT-T20260508_003/output/5family_post_factor_db_rebuild/<S0..S4>/* (10 components × 5)",
+    "qepm/mailbox/worktask/WT-T20260508_003/output/5family_post_factor_db_rebuild/charts/*.png",
+    "qepm/mailbox/worktask/WT-T20260508_003/output/equity_curves_pre_post.png"
+  ],
+
+  "next_step_q_lead": "Q-Lead 인계: (1) Factor DB rebuild audit (2) 5family 직전 vs 신규 비교 (3) 4/30 lift 정량 (4) S3 admit retain 정합 검증 (5) PG2 운용 영향 — 도훈 종합 보고 mandate."
+}

@@ -1,0 +1,126 @@
+{
+  "task_id": "WT-D20260511_001",
+  "candidate": "med_10pct_pd18",
+  "supersedes": "backtest_summary_med_10pct.json (PD16 frozen alpha 155 dates base)",
+  "supersede_reason": "도훈 mandate 2026-05-11 옵션 A — NEW alpha 184 sig_dates (155 → 184, 29 new). PD18 redistribute primary monthly rebal supersedes PD16 frozen primary.",
+  "primary_mandate_source": "qlead_forge_primary_variant_override.json (redistribute primary)",
+  "lockbox_scope_compliance": "alpha-research stage lockbox cutoff 2023-12-22 retain; forge stage lockbox 폐기 per .claude/rules/lockbox-scope.md 2026-05-09 mandate",
+  "primary_metrics_redistribute_pd18": {
+    "SR_ann": 2.241,
+    "CAGR": 0.2355,
+    "MDD": -0.1154,
+    "Sortino_ann": 5.2259,
+    "Calmar": 2.0404,
+    "CVaR_95_monthly": -0.0442,
+    "CVaR_99_monthly": -0.0694,
+    "hit_rate": 0.7451,
+    "mean_ann": 0.2336,
+    "vol_ann": 0.1043,
+    "n_months": 255,
+    "period": "2005-02-01 ~ 2026-04-01",
+    "method": "5_sleeve_composite_monthly_rebal_redistribute_primary_184_dates_alpha_NEW_monthly_top20_EW",
+    "convention": "PerformanceAnalytics geometric=TRUE"
+  },
+  "strict_diagnostic_metrics_pd18": {
+    "SR_ann": 2.2542,
+    "CAGR": 0.2286,
+    "MDD": -0.1039,
+    "CVaR_95_monthly": -0.042,
+    "n_months": 255,
+    "note": "Diagnostic only — NEW=0 시기 redistribute X (4-sleeve weights 45/22.5/18/4.5 stays). Lower CAGR vs primary but lower MDD."
+  },
+  "sub_period_alpha_active_184m_pd18": {
+    "SR_ann": 2.4596,
+    "CAGR": 0.2436,
+    "MDD": -0.1027,
+    "n_months": 184,
+    "period": "2011-01-01 ~ 2026-04-01"
+  },
+  "sub_period_pd13_extension_29m_pd18": {
+    "SR_ann": 4.4353,
+    "CAGR": 0.5305,
+    "MDD": -0.021,
+    "n_months": 28,
+    "period": "2024-01-01 ~ 2026-04-30",
+    "note": "PD13 alpha extension period (alpha 29 new dates monthly rebal). Strong out-of-frozen-window performance."
+  },
+  "baseline_S4_metrics_realized_256m": {
+    "SR_ann": 1.8334,
+    "CAGR": 0.202,
+    "MDD": -0.1252,
+    "CVaR_95_monthly": -0.0501,
+    "n_months": 255,
+    "source": "WT-P20260509_001 PG2 admit (Charter v1.7 §10 documented)"
+  },
+  "diebold_mariano_pd18_primary_vs_baseline": {
+    "redistribute_pd18_primary_256m": {
+      "t_NW": 4.2287,
+      "p": 0,
+      "n": 255,
+      "mean_diff_monthly": 0.002277,
+      "se_NW_lag6": 0.000538,
+      "interpretation": "PD18 redistribute outperforms baseline SIGNIFICANTLY (+22.77bps/mo)"
+    }
+  },
+  "strict_improve_4_axis_pd18_primary": {
+    "criteria": {
+      "SR_threshold": 1.83,
+      "MDD_threshold_pp": -0.1147,
+      "MDD_margin_pp": 2.0,
+      "CVaR_threshold_pp": -0.0471,
+      "CVaR_margin_pp": 0.5,
+      "CAGR_threshold": 0.1969
+    },
+    "redistribute_pd18_primary": {
+      "SR_pass": true,
+      "delta_SR": 0.4076,
+      "MDD_pass": true,
+      "delta_MDD_pp": 0.9808,
+      "CVaR_pass": true,
+      "delta_CVaR_pp": 0.5939,
+      "CAGR_pass": true,
+      "delta_CAGR_pp": 3.3451,
+      "verdict_4_axis": "4_PASS_STRICT_IMPROVE"
+    }
+  },
+  "alpha_extension_pd16_vs_pd18_comparison": {
+    "pd16_redistribute_frozen_alpha_155_dates_SR": 1.9065,
+    "pd18_redistribute_alpha_184_dates_monthly_rebal_SR": 2.241,
+    "delta_SR": 0.3345,
+    "pd16_CAGR": 0.2048,
+    "pd18_CAGR": 0.2355,
+    "delta_CAGR_pp": 3.07,
+    "pd16_MDD": -0.1154,
+    "pd18_MDD": -0.1154,
+    "delta_MDD_pp": 0.0008,
+    "pd16_CVaR_95": -0.048,
+    "pd18_CVaR_95": -0.0442,
+    "delta_CVaR_pp": 0.38,
+    "interpretation": "alpha 갱신 효과 명확: SR +0.33 / CAGR +3.07pp / CVaR +0.38pp (모두 개선); MDD 무변동 (-11.54% 유지). 29 new dates monthly rebal NEW sleeve가 incremental value 추가. PD13 extension sub-period (29m) SR 4.44 / CAGR 53% 입증."
+  },
+  "cvar_admit_pass": true,
+  "ax_008_contribution": "Forge clean PD18 redistribute primary CONDITIONAL_PASS_VALIDATED + Architect PD16 PASS_PARTIAL retain = 2/3 floor; Codex Round 2 PD18 trigger pending for 3/3",
+  "alpha_extension_audit": {
+    "pre_extension_sig_dates": 155,
+    "post_extension_sig_dates": 184,
+    "new_sig_dates": 29,
+    "new_first_sig_date": "2023-12-01",
+    "new_last_sig_date": "2026-04-01",
+    "pit_overlap_max_abs_diff": 0,
+    "pit_safe_pass": true,
+    "icir_new_dates": 0.743,
+    "icir_threshold": 0.2,
+    "icir_pass": true,
+    "icir_x_threshold": 3.7,
+    "top20_2026_04_01_vs_2023_11_01_turnover": 0.9744
+  },
+  "reading_order_for_judge": [
+    "redistribute_pd18_primary_256m (PRIMARY admit basis, 도훈 mandate 2026-05-11 옵션 A)",
+    "strict_diagnostic_pd18_256m (NEW=0 outside redistribute X)",
+    "sub_period_alpha_active_184m (alpha-active period)",
+    "sub_period_pd13_extension_29m (alpha 29 new dates monthly rebal sub-period — strong evidence)",
+    "diebold_mariano vs S4 v2 baseline (t_NW 4.23 p≈0)",
+    "alpha_extension_pd16_vs_pd18_comparison (alpha 갱신 효과 정량)"
+  ],
+  "created_at": "2026-05-11T12:50:00+0900"
+}

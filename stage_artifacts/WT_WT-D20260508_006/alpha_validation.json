@@ -1,0 +1,244 @@
+{
+  "task_id": "WT-D20260508_006",
+  "algo": "IPCA_ALS",
+  "reference": "Kelly-Pruitt-Su 2019 JFE",
+  "config": {
+    "train_start": "2010-01-01",
+    "train_end": "2022-12-31",
+    "validation_start": "2023-01-01",
+    "validation_end": "2024-12-31",
+    "lockbox_start": "2025-01-01",
+    "forward_signal_date": "2026-04-30",
+    "liquidity_floor_won_20d": 200000000,
+    "universe_label": "KR_top342",
+    "K": 4,
+    "unrestricted": true,
+    "max_iter": 100,
+    "tol": 1e-06,
+    "characteristics": ["V01_BM", "M01_Mom_12_1", "Q01_GPA", "S01_Size", "L02_Turnover"],
+    "min_n_per_period": 30
+  },
+  "characteristics_used": ["V01_BM", "M01_Mom_12_1", "Q01_GPA", "S01_Size", "L02_Turnover"],
+  "L_dim": 6,
+  "K": 4,
+  "unrestricted": true,
+  "train_periods": 156,
+  "validation_periods": 24,
+  "iter_used": 37,
+  "converged": true,
+  "diagnostics": {
+    "train_R2": 0.2387,
+    "mean_IC": 0.0034,
+    "ICIR": 0.0223,
+    "Harvey_t_NW": 0.2258,
+    "NW_lag": 13,
+    "n_periods": 180,
+    "monotonicity": 0.0904,
+    "subperiod_stability": 0,
+    "subperiod_breakdown": {
+      "subperiod": ["2010_2014", "2015_2019", "2020_2024"],
+      "mean_ic": [0.0577, -0.008, -0.0394],
+      "n": [60, 60, 60]
+    },
+    "LS_spread_monthly_mean": 0.0082,
+    "LS_spread_monthly_sd": 0.0566,
+    "LS_annualized_SR": 0.5014,
+    "Bailey_LdP_DSR": 0.5594,
+    "n_trials": 5,
+    "validation_mean_IC": -0.0455,
+    "validation_ICIR": -0.4093,
+    "lockbox_mean_IC": -0.0271,
+    "lockbox_ICIR": -0.1941,
+    "lockbox_n_periods": 16,
+    "lockbox_LS_annualized_SR": 0.295,
+    "lockbox_monotonicity": -0.0144,
+    "predictor_autocor_lag1": {
+      "V01_BM": {
+        "median_ac1": 0.905,
+        "mean_ac1": 0.85,
+        "pct_high_ac": 0.1744
+      },
+      "M01_Mom_12_1": {
+        "median_ac1": 0.8715,
+        "mean_ac1": 0.8363,
+        "pct_high_ac": 0.038
+      },
+      "Q01_GPA": {
+        "median_ac1": 0.9106,
+        "mean_ac1": 0.8643,
+        "pct_high_ac": 0.2419
+      },
+      "S01_Size": {
+        "median_ac1": 0.9333,
+        "mean_ac1": 0.8735,
+        "pct_high_ac": 0.2897
+      },
+      "L02_Turnover": {
+        "median_ac1": 0.4731,
+        "mean_ac1": 0.4421,
+        "pct_high_ac": 0
+      }
+    }
+  },
+  "orthogonality_vs_hybrid": {
+    "hybrid": {
+      "status": "no_alpha_vector_inherit_only_or_etf_universe"
+    },
+    "wt_004": {
+      "status": "evaluated",
+      "n_overlap": 320,
+      "cor_pearson": 0.0325,
+      "cor_spearman": 0.0503,
+      "target_threshold": 0.25,
+      "passes_orthogonality": true
+    }
+  },
+  "forward_prediction": {
+    "sig_date": "2026-04-30",
+    "horizon": "1M",
+    "n_stocks": 324,
+    "alpha_mean": -7.9597e-06,
+    "alpha_sd": 0.003,
+    "alpha_top5": [
+      {
+        "Ticker": "A088350",
+        "alpha_ipca": 0.0124
+      },
+      {
+        "Ticker": "A098460",
+        "alpha_ipca": 0.009
+      },
+      {
+        "Ticker": "A222080",
+        "alpha_ipca": 0.0081
+      },
+      {
+        "Ticker": "A032500",
+        "alpha_ipca": 0.0076
+      },
+      {
+        "Ticker": "A417200",
+        "alpha_ipca": 0.0076
+      }
+    ]
+  },
+  "factor_specs_summary": [
+    {
+      "factor_family": "Value",
+      "proxy": "V01_BM",
+      "formula": "Z_Score_Aligned of V01_BM (Factor DB v2.0 PIT-safe)",
+      "lag_rule": "monthly t-1 sig_date (load_month_factors)",
+      "winsorization": "3std (Factor DB built-in)",
+      "neutralization": "cross-section z-score per period",
+      "economic_rationale": "KPS 2019 IPCA framework: characteristic acts as instrument for latent factor exposure (Γ_β row) AND mispricing (Γ_α row). Restricted-to-Unrestricted F-test discriminates risk-premium vs alpha.",
+      "weight_theta_alpha": 0.0013,
+      "weight_theta_beta_K1": 0.1687,
+      "weight_theta_beta_K2": -0.2129,
+      "weight_theta_beta_K3": 0.3221,
+      "weight_theta_beta_K4": 0.3859,
+      "references": ["Kelly-Pruitt-Su 2019 JFE", "Bryzgalova-Pelger-Zhu 2024 RFS"]
+    },
+    {
+      "factor_family": "Momentum",
+      "proxy": "M01_Mom_12_1",
+      "formula": "Z_Score_Aligned of M01_Mom_12_1 (Factor DB v2.0 PIT-safe)",
+      "lag_rule": "monthly t-1 sig_date (load_month_factors)",
+      "winsorization": "3std (Factor DB built-in)",
+      "neutralization": "cross-section z-score per period",
+      "economic_rationale": "KPS 2019 IPCA framework: characteristic acts as instrument for latent factor exposure (Γ_β row) AND mispricing (Γ_α row). Restricted-to-Unrestricted F-test discriminates risk-premium vs alpha.",
+      "weight_theta_alpha": 0.002,
+      "weight_theta_beta_K1": 0.0345,
+      "weight_theta_beta_K2": -0.6027,
+      "weight_theta_beta_K3": -0.5924,
+      "weight_theta_beta_K4": -0.4342,
+      "references": ["Kelly-Pruitt-Su 2019 JFE", "Bryzgalova-Pelger-Zhu 2024 RFS"]
+    },
+    {
+      "factor_family": "Quality",
+      "proxy": "Q01_GPA",
+      "formula": "Z_Score_Aligned of Q01_GPA (Factor DB v2.0 PIT-safe)",
+      "lag_rule": "monthly t-1 sig_date (load_month_factors)",
+      "winsorization": "3std (Factor DB built-in)",
+      "neutralization": "cross-section z-score per period",
+      "economic_rationale": "KPS 2019 IPCA framework: characteristic acts as instrument for latent factor exposure (Γ_β row) AND mispricing (Γ_α row). Restricted-to-Unrestricted F-test discriminates risk-premium vs alpha.",
+      "weight_theta_alpha": 0.0009,
+      "weight_theta_beta_K1": -0.0771,
+      "weight_theta_beta_K2": 0.2511,
+      "weight_theta_beta_K3": 0.0769,
+      "weight_theta_beta_K4": -0.5251,
+      "references": ["Kelly-Pruitt-Su 2019 JFE", "Bryzgalova-Pelger-Zhu 2024 RFS"]
+    },
+    {
+      "factor_family": "Size",
+      "proxy": "S01_Size",
+      "formula": "Z_Score_Aligned of S01_Size (Factor DB v2.0 PIT-safe)",
+      "lag_rule": "monthly t-1 sig_date (load_month_factors)",
+      "winsorization": "3std (Factor DB built-in)",
+      "neutralization": "cross-section z-score per period",
+      "economic_rationale": "KPS 2019 IPCA framework: characteristic acts as instrument for latent factor exposure (Γ_β row) AND mispricing (Γ_α row). Restricted-to-Unrestricted F-test discriminates risk-premium vs alpha.",
+      "weight_theta_alpha": -0.002,
+      "weight_theta_beta_K1": 0.16,
+      "weight_theta_beta_K2": -0.3085,
+      "weight_theta_beta_K3": -0.3453,
+      "weight_theta_beta_K4": 0.5495,
+      "references": ["Kelly-Pruitt-Su 2019 JFE", "Bryzgalova-Pelger-Zhu 2024 RFS"]
+    },
+    {
+      "factor_family": "Liquidity",
+      "proxy": "L02_Turnover",
+      "formula": "Z_Score_Aligned of L02_Turnover (Factor DB v2.0 PIT-safe)",
+      "lag_rule": "monthly t-1 sig_date (load_month_factors)",
+      "winsorization": "3std (Factor DB built-in)",
+      "neutralization": "cross-section z-score per period",
+      "economic_rationale": "KPS 2019 IPCA framework: characteristic acts as instrument for latent factor exposure (Γ_β row) AND mispricing (Γ_α row). Restricted-to-Unrestricted F-test discriminates risk-premium vs alpha.",
+      "weight_theta_alpha": -0.001,
+      "weight_theta_beta_K1": 0.3896,
+      "weight_theta_beta_K2": -0.5388,
+      "weight_theta_beta_K3": 0.6043,
+      "weight_theta_beta_K4": -0.2808,
+      "references": ["Kelly-Pruitt-Su 2019 JFE", "Bryzgalova-Pelger-Zhu 2024 RFS"]
+    }
+  ],
+  "method_shopping_log": {
+    "candidates_tried": 5,
+    "selected": ["V01_BM", "M01_Mom_12_1", "Q01_GPA", "S01_Size", "L02_Turnover"],
+    "method_log": [
+      {
+        "name": "V01_BM",
+        "in_panel": true,
+        "selected": true,
+        "rationale": "well-known KR cross-section anomaly + Factor DB coverage"
+      },
+      {
+        "name": "M01_Mom_12_1",
+        "in_panel": true,
+        "selected": true,
+        "rationale": "well-known KR cross-section anomaly + Factor DB coverage"
+      },
+      {
+        "name": "Q01_GPA",
+        "in_panel": true,
+        "selected": true,
+        "rationale": "well-known KR cross-section anomaly + Factor DB coverage"
+      },
+      {
+        "name": "S01_Size",
+        "in_panel": true,
+        "selected": true,
+        "rationale": "well-known KR cross-section anomaly + Factor DB coverage"
+      },
+      {
+        "name": "L02_Turnover",
+        "in_panel": true,
+        "selected": true,
+        "rationale": "well-known KR cross-section anomaly + Factor DB coverage"
+      }
+    ],
+    "parallel_exec": true,
+    "n_workers": 8,
+    "rolling_seconds": 0.4,
+    "rcpp_used": false,
+    "rcpp_rationale": "ALS for L=6, K=4, T=156 not bottleneck (< 1 min). DSR is parametric."
+  },
+  "saved_at": "2026-05-08T14:37:07+0900"
+}

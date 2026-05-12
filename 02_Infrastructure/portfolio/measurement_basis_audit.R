@@ -15,12 +15,28 @@
 # Tier:
 #   Healthy >= 90 / Warning 70-89 / Drifted < 70
 #
+# v1.8 (2026-05-11): sleeve_aliases + cash_role_exempt
+#   - 5/9 S4 v2 admit (TSMOM_8_ETF + CASH_KRW_PG2_S4) NO_WT 해소
+#   - sleeve naming evolution (e.g., PG2 → PG2_v2_alpha_2026_04 / _8_ETF / _no_KR_bond_overlap) lineage inherit
+#   - cash_allocation role (CASH_ prefix) audit 면제 (v55 정책)
+#
 # Reference: STR_1715 OVERRIDE_006 사후 — measurement_basis 미명시 산출물이 PG2 통과한 사고.
 #==============================================================================
 
 suppressPackageStartupMessages({
   library(jsonlite)
 })
+
+# v1.8: sleeve naming evolution alias map — admit 시 governor_admission.json
+# 신규 발급 없이 book_state.json만 mutate되는 case 대응. ga_str_id ↔ str_id 매칭용.
+# 신규 alias 추가 시 lineage source WT의 governor_admission.json str_id 명시.
+.SLEEVE_ALIASES <- list(
+  "STR_1715_AR_threshold_overlay_PG2_v2_alpha_2026_04" = "STR_1715_AR_threshold_overlay_PG2",
+  "TSMOM_8_ETF_rotation_PG2_no_KR_bond_overlap"        = "TSMOM_ETF_rotation_PG2"
+)
+
+# v1.8: cash_allocation role audit 면제 prefix (v55 lawbook + Charter §10 Role Card)
+.CASH_ROLE_PREFIXES <- c("CASH_")
 
 audit_book_measurement_coherence <- function(book_state_path,
                                              wt_root = "qepm/mailbox/worktask",
@@ -144,21 +160,53 @@ audit_book_measurement_coherence <- function(book_state_path,
   per_str <- list()
   total_score <- 0
   for (str_id in admitted_ids) {
-    wt_dir <- find_latest_wt(str_id, wt_root)
+    # v1.8: cash_allocation role 사전 exempt (v55 lawbook 정책 — forge_realized_share_based 면제)
+    is_cash <- any(vapply(.CASH_ROLE_PREFIXES,
+                          function(p) startsWith(str_id, p), logical(1)))
+    if (is_cash) {
+      per_str[[str_id]] <- list(
+        score = 100, tier = "EXEMPT_CASH_ROLE",
+        components = list(cash_allocation_role_exempt = 100),
+        wt_dir = NULL,
+        audit_metadata = list(
+          role = "cash_allocation",
+          exempt_reason = "v55 cash_allocation role — forge_realized_share_based 면제 (lawbook v55_consensus_addendum)",
+          exempt_basis = "v1.8 cash_role_prefixes match",
+          original_str_id = str_id
+        ),
+        note = "EXEMPT — cash sleeve audit 면제 (점수 100 EXEMPT_CASH_ROLE)"
+      )
+      total_score <- total_score + 100
+      next
+    }
+
+    # v1.8: sleeve naming evolution alias resolve (admit 시 신규 ga 미발급 case 대응)
+    resolved_id <- if (str_id %in% names(.SLEEVE_ALIASES)) {
+      .SLEEVE_ALIASES[[str_id]]
+    } else {
+      str_id
+    }
+
+    wt_dir <- find_latest_wt(resolved_id, wt_root)
     score <- 0
     components <- list()
     inherited_from <- list()
+    alias_applied <- if (str_id != resolved_id) {
+      list(book_str_id = str_id, resolved_to = resolved_id,
+           reason = "v1.8 sleeve_aliases map")
+    } else NULL
 
     if (is.null(wt_dir)) {
       per_str[[str_id]] <- list(
         score = 0, tier = "NO_WT", components = list(),
+        alias_applied = alias_applied,
         note = "governor_admission.json with this str_id not found"
       )
       next
     }
 
     # v1.7 lineage WT 후보 (본 WT 외) — 누락 cert/field inherit fallback
-    lineage_wts <- setdiff(find_lineage_wts(str_id, wt_root), wt_dir)
+    lineage_wts <- setdiff(find_lineage_wts(resolved_id, wt_root), wt_dir)
 
     # 1. sr_provenance_certificate (+30) — 본 WT 우선, 없으면 lineage WT inherit
     sr_cert_path <- file.path(wt_dir, "sr_provenance_certificate.json")
@@ -248,6 +296,7 @@ audit_book_measurement_coherence <- function(book_state_path,
     per_str[[str_id]] <- list(
       score = score, tier = tier,
       components = components, wt_dir = wt_dir,
+      alias_applied = alias_applied,
       lineage_inherited_from = if (length(inherited_from) > 0) inherited_from else NULL,
       lineage_wts_audited = if (length(lineage_wts) > 0) basename(lineage_wts) else NULL
     )

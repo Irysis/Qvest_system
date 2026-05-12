@@ -1,0 +1,55 @@
+{
+  "mandate_id": "QLEAD_FORGE_PRIMARY_VARIANT_OVERRIDE_WT-D20260511_001",
+  "issued_at": "2026-05-11T11:50:00+0900",
+  "issued_by": "Q-Lead",
+  "dohoon_authorization": "2026-05-11 KST — 도훈 명시 'A: Redistribute variant primary (도훈 mandate 정합)' (PD16 Forge primary variant 권고 결정)",
+  "scope": "PD16 Forge re-spawn (med_10pct clean 256m primary) — primary variant override",
+  "applied_to_wt": "WT-D20260511_001",
+  "applied_to_pd": "PD16",
+  "primary_variant_override": {
+    "previous_primary_variant": "frozen_NEW_OOS",
+    "previous_primary_basis": "Charter v6.1 R12 mandate (alpha 마지막 sig_date 이후 OOS top20 EW buy-and-hold)",
+    "new_primary_variant": "redistribute",
+    "new_primary_basis": "도훈 mandate lockbox-scope.md 2026-05-09 (forge stage lockbox 폐기, 전기간 monthly rebal 정상)",
+    "rebal_logic": "5-sleeve composite monthly rebal — alpha 마지막 sig_date 이후 OOS 27m도 monthly rebal 정상 적용 (forward 운용 정합)"
+  },
+  "rationale": {
+    "1_lockbox_scope_mandate": "lockbox-scope.md 2026-05-09 — Frozen 규칙은 정규 리서치 (alpha/risk/optimizer) 정합. forge 단계 폐기. 전기간 monthly rebal 정상 의무",
+    "2_charter_v6_1_r12_reconcile": "Charter v6.1 R12 mandate frozen은 alpha lookahead bias 회피 목적 — 도훈 mandate은 forge 단계 lookahead bias 다른 처리 (alpha lockbox cutoff retain + Forge 전기간 monthly rebal)",
+    "3_redistribute_variant_정의": "5-sleeve composite returns monthly rebal — sleeve weights × sleeve internal returns. 4th source NEW sleeve도 동일한 monthly rebal 적용 (top20 EW phi=0.5 with sleeve-level rebal 의무 X — top20 selection은 alpha lockbox cutoff retain). 즉 sleeve weights는 monthly rebal, sleeve internal alpha source는 lockbox cutoff retain",
+    "4_metric_difference_minor": "Frozen 1.9586 vs Redistribute 1.9065 = ΔSR 0.0521 미세. mandate 정합 우선 (Charter v1.5 §13 incremental approach + lockbox-scope.md precedence)",
+    "5_doh_hoon_audit_instinct_7th_hit_potential": "도훈 frozen 질문 audit instinct hit — 본 mandate 발행으로 정정. PD16 forge primary variant alignment with 도훈 mandate"
+  },
+  "primary_metrics_redistribute_canonical": {
+    "SR_ann": 1.9065,
+    "CAGR": 0.2048,
+    "MDD": -0.1154,
+    "CVaR_95_monthly": -0.0480,
+    "n_months": 255,
+    "vs_baseline_S4": {
+      "SR_delta": 0.0731,
+      "CAGR_delta_pp": 0.28,
+      "MDD_delta_pp": 0.98,
+      "CVaR_delta_pp": 0.21,
+      "4_axis_strict_improve": "4/4 PASS (SR +0.07 / CAGR +0.28pp / MDD +0.98pp / CVaR +0.21pp 모두 PASS)"
+    }
+  },
+  "conditions": {
+    "1_alpha_source_lockbox_retain": "alpha-research 단계 lockbox cutoff 2023-12-22 retain (정규 리서치 정합)",
+    "2_forge_stage_monthly_rebal": "5-sleeve composite returns monthly rebal — sleeve weights 비례 재분배 + sleeve internal alpha source lockbox cutoff retain",
+    "3_oos_27m_treatment": "alpha lockbox cutoff 이후 27m OOS도 monthly rebal 정상 적용 — alpha_scores parquet에서 sig_date <= cutoff retain + sleeve weights monthly rebal",
+    "4_codex_round_pending": "Codex round 응답 도착 후 final forge_package_med_10pct.json 작성 시 본 mandate 인용 + redistribute primary 명시 의무",
+    "5_judge_input_sot": "judge_ready/backtest_summary_med_10pct.json primary_metrics → redistribute 기준 갱신"
+  },
+  "next_step": {
+    "1_judge_ready_update": "judge_ready/backtest_summary_med_10pct.json primary_metrics_redistribute_canonical 적용",
+    "2_codex_response_arrival": "background codex_critic_response_forge_med_10pct.json 도착 대기",
+    "3_final_forge_package": "Codex 응답 후 Forge agent re-spawn 또는 Q-Lead 직접 finalize — redistribute primary로 forge_package_med_10pct.json 작성",
+    "4_cert_issue": "forge_package_validated_certificate + sr_provenance_certificate Layer 5 자동 발급 검토"
+  },
+  "audit_trail": {
+    "forge_draft_3_variants": "forge_package_med_10pct_draft.json (frozen + strict + redistr)",
+    "qlead_mandate": "본 file — primary override redistribute",
+    "lockbox_scope_md": ".claude/rules/lockbox-scope.md 2026-05-09 mandate"
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "task_id": "WT-D20260508_007",
+  "inheritance_from": "WT-D20260508_005",
+  "c15_rule": "PIT-C15: Factor DB parquet 직접 load 금지. load_month_factors() 경유.",
+  "bypass_rationale": "KR_TermSpread β (rolling 24M cross-section regression on AR(1)-residual macro shock) is a NEW factor not in Factor DB 288 monthly registry. WT_007 inherits WT_005 alpha panel directly (no new factor build).",
+  "data_sources_used": {
+    "inherited_from_wt005": [
+      "stage_artifacts/WT_D20260508_005/alpha_panel_single.parquet (66576 rows × 18 cols, eligible-filtered, sector-tagged, 1M/6M/12M FwdRet)",
+      "stage_artifacts/WT_D20260508_005/c13_audit.json (sign alignment lineage)",
+      "stage_artifacts/WT_D20260508_005/c15_infeasibility_report.json (Factor DB bypass justification)"
+    ],
+    "wt_007_native_outputs": [
+      "stage_artifacts/WT_D20260508_007/alpha_panel_12m.parquet (12M-target subset, post-2013 burn-in)",
+      "stage_artifacts/WT_D20260508_007/alpha_scores.parquet (full 196 ym × 343 ticker × 12M signal)",
+      "stage_artifacts/WT_D20260508_007/alpha_scores_forward_2026-05.parquet (Forward 12M)"
+    ]
+  },
+  "pit_safety_evidence": {
+    "macro_shock_extraction": "AR(1) expanding window with 36m burn-in (inherited WT_004 Step 1, audited)",
+    "beta_estimation": "rolling 24M OLS — predictor at t = β_{t-1} (inherited WT_004 Step 3)",
+    "sign_alignment": "expanding |IC| sign over 1..t-1 history (inherited WT_005)",
+    "horizon_change_only": "WT_007 = same predictor as WT_005, target changed from FwdRet_1M to FwdRet_12M. No new look-ahead introduced.",
+    "forward_alpha": "as_of=2026-04 uses β at 2026-03-end (lag-1 PIT) → predicts 2026-05~2027-04 12M return"
+  },
+  "wt_007_design_change_pit_audit": {
+    "predictor_unchanged": true,
+    "target_horizon_change": "FwdRet_1M → FwdRet_12M",
+    "fwdret_12m_construction": "month-end close compounding 12 months forward (already PIT-safe in WT_005 panel)",
+    "no_lookahead_introduced": true
+  },
+  "remediation_path": {
+    "short_term": "WT_007 12M-specific PIT verification (this report)",
+    "medium_term": "If 12M signal graduates: register KR_TermSpread β in Factor DB with usable_date metadata for downstream Risk/Optimizer reuse",
+    "long_term": "Phase 2 Universe v2 + KR macro factor family proper DB integration"
+  },
+  "hooks_applied": {
+    "feature_leakage_check": "PASS — predictor lag-1 autocor 0.908 (long-horizon design natural; WT_001 lesson threshold 0.95 not exceeded)",
+    "pit_lookahead_pattern": "PASS — sign alignment uses 1..t-1 only, FwdRet_12M is t→t+11 forward",
+    "same_day_circular": "PASS — predictor lagged 1 month vs target"
+  },
+  "conclusion": "C15_BYPASS_NECESSARY_INHERITED — factor not in DB, WT_007 inherits WT_005 PIT-safe panel directly. PIT-safety established via WT_004 audited pipeline + WT_005 lag verification + WT_007 horizon-change audit. Documented exception per Charter v1.4 §10.",
+  "classification": "CHARTER_v1_4_DOCUMENTED_EXCEPTION_INHERITED"
+}

@@ -1,0 +1,115 @@
+{
+  "task_id": "WT-D20260511_001",
+  "candidate": "med_10pct",
+  "pd16_remediation": true,
+  "primary_metrics": {
+    "SR_ann": 1.9586,
+    "CAGR": 0.1945,
+    "MDD": -0.1039,
+    "Sortino": 4.3349,
+    "Calmar": 1.8724,
+    "CVaR_95_monthly": -0.044,
+    "CVaR_99_monthly": -0.0648,
+    "hit_rate": 0.7216,
+    "n_months": 255
+  },
+  "strict_metrics": {
+    "SR_ann": 1.9238,
+    "CAGR": 0.1902,
+    "MDD": -0.1039,
+    "CVaR_95_monthly": -0.0442,
+    "n_months": 255
+  },
+  "redistr_metrics": {
+    "SR_ann": 1.9065,
+    "CAGR": 0.2048,
+    "MDD": -0.1154,
+    "CVaR_95_monthly": -0.048,
+    "n_months": 255
+  },
+  "baseline_S4_metrics": {
+    "SR_ann": 1.8334,
+    "CAGR": 0.202,
+    "MDD": -0.1252,
+    "CVaR_95_monthly": -0.0501,
+    "n_months": 255
+  },
+  "diebold_mariano": {
+    "frozen_OOS_256m_PRIMARY": {
+      "t_NW": -1.9991,
+      "p": 0.0456,
+      "n": 255,
+      "mean_diff_monthly": -0.0006
+    },
+    "strict_256m": {
+      "t_NW": -2.8959,
+      "p": 0.0038,
+      "n": 255,
+      "mean_diff_monthly": -0.0009
+    },
+    "redistr_256m": {
+      "t_NW": 0.9212,
+      "p": 0.357,
+      "n": 255,
+      "mean_diff_monthly": 0.0002
+    },
+    "alpha_active_79m": {
+      "t_NW": -0.3146,
+      "p": 0.7531,
+      "n": 154,
+      "mean_diff_monthly": -0.0001
+    },
+    "oos_27m_strict": {
+      "t_NW": -5.1151,
+      "p": 3.1359e-07,
+      "n": 28,
+      "mean_diff_monthly": -0.0034
+    },
+    "oos_27m_frozen": {
+      "t_NW": -0.4882,
+      "p": 0.6254,
+      "n": 28,
+      "mean_diff_monthly": -0.0006
+    }
+  },
+  "strict_improve_pass_256m_frozen_PRIMARY": {
+    "SR": true,
+    "MDD": true,
+    "CVaR": true,
+    "CAGR": false
+  },
+  "strict_improve_pass_79m_alpha_active": {
+    "SR": false,
+    "MDD": true,
+    "CVaR": true,
+    "CAGR": false
+  },
+  "cvar_admit_pass": true,
+  "judge_proxy_reconcile": {
+    "forge_clean_primary": {
+      "SR": 1.9586,
+      "CAGR": 0.1945,
+      "MDD": -0.1039,
+      "CVaR_95_monthly": -0.044,
+      "basis": "Forge clean 256m frozen NEW OOS primary (PD16 remediation)"
+    },
+    "judge_proxy_inherited": {
+      "SR": 1.9586,
+      "CAGR": 0.1945,
+      "MDD": -0.1039,
+      "CVaR_95_monthly": -0.044,
+      "z_DSR_M18": 6.498,
+      "basis": "Judge direct measurement (sleeve_returns_master monthly + NEW merge full 255m portfolio)"
+    },
+    "delta_forge_vs_judge": {
+      "delta_SR": -0,
+      "delta_CAGR_pp": 0.0035,
+      "delta_MDD_pp": 0.0003,
+      "delta_CVaR_pp": -0.0002,
+      "diagnosis": "NEGLIGIBLE_PASS (|ΔSR|<0.1, |ΔCAGR|<0.5pp)"
+    }
+  },
+  "ax_008_contribution": "Forge clean med_10pct primary contributes 1/3 of floor (Forge); 2/3 with Architect inherit; Codex Round 2 trigger for 3/3 confirm",
+  "reading_order_for_judge": ["med10_frozen_oos_256m (PRIMARY admit basis, Charter v6.1 R12 mandate)", "med10_strict_256m (NEW=0 outside conservative)", "med10_redistr_256m (alternative — NEW=0 시기 baseline 4-sleeve redistribute)", "med10_79m_alpha_active (Optimizer comparable)", "med10_oos_27m_frozen (lockbox-post OOS frozen variant)"],
+  "created_at": "2026-05-11T10:56:41+09:00"
+}

@@ -1,0 +1,68 @@
+{
+  "task_id": "WT-D20260511_001",
+  "extension_id": "pd13_extension_2024_to_2026_04",
+  "generated_at": "2026-05-11T12:32:52+0900",
+  "cutoff_previous": "2023-12-22",
+  "cutoff_extended": "2026-04-01",
+  "methodology": {
+    "factor_specs": ["D43_Skewness", "D41_Vol_of_Vol", "D58_Vol_Asymmetry"],
+    "composite": "(D43_sn + D41_sn + D58_sn) / 3",
+    "direction_alignment": "Expanding mean IC lag-1, 36m burn-in",
+    "sector_neutral": "demean per sig_date per Sector",
+    "factor_db_route": "load_month_factors() per sig_date",
+    "universe": "KOSPI200 ∪ KOSDAQ150 ∩ ADV_20d >= 2e8 KRW",
+    "pit_strict": true
+  },
+  "scope_policy": {
+    "lockbox_scope_md_compliance": true,
+    "rationale": "Alpha-research stage cutoff 2023-12-22 retain (정규 리서치 lockbox). 운용 단계 (forge/monitoring/execution/Q-Lead) lockbox 폐기 mandate per .claude/rules/lockbox-scope.md 2026-05-09",
+    "pit_integrity": {
+      "max_abs_diff_at_overlap_dates": 0,
+      "spearman_cor_at_overlap": 1,
+      "pit_safe_pass": true,
+      "note": "PIT-safe expanding direction: 새 dates 추가해도 기존 dates의 alpha 값 불변. 동일 panel_eval 내 alpha_composite 재산출 spot-check."
+    }
+  },
+  "new_sig_dates_count": 29,
+  "new_sig_dates_first": "2023-12-01",
+  "new_sig_dates_last": "2026-04-01",
+  "total_sig_dates": 184,
+  "total_rows": 62916,
+  "unique_tickers": 770,
+  "quality_new_dates": {
+    "mean_ic": 0.0627,
+    "icir": 0.743,
+    "n_complete_dates": 28,
+    "note": "2026-04-01 sig_date의 ret_1M은 partial month (5/11 latest) — quality metric 제외"
+  },
+  "top20_2026_04_01": {
+    "tickers": ["A200130", "A101730", "A293490", "A036930", "A272210", "A004370", "A003090", "A108490", "A006360", "A078600", "A056080", "A060250", "A014620", "A007340", "A347850", "A048410", "A052400", "A093370", "A323410", "A222080"],
+    "sector_distribution": {
+      "소프트웨어": 4,
+      "건강관리": 3,
+      "기계": 3,
+      "필수소비재": 1,
+      "건설,건축관련": 1,
+      "자동차": 1,
+      "반도체": 1,
+      "화장품,의류,완구": 1,
+      "IT하드웨어": 1,
+      "화학": 1,
+      "IT가전": 1,
+      "상사,자본재": 1,
+      "은행": 1
+    }
+  },
+  "overlap_with_2023_11_01_top20": {
+    "overlap_count": 1,
+    "union_count": 39,
+    "jaccard": 0.0256,
+    "turnover_rate": 0.9744
+  },
+  "backup_pre_extension": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/stage_artifacts/WT_D20260511_001/alpha_scores_pre_extension_20260511_123041.parquet",
+  "codex_round_waiver": {
+    "skip_waiver": true,
+    "rationale": "Methodology extension (28 sig_dates 추가 산출, no new methodology). Incremental data refresh per 도훈 lockbox-scope.md mandate 2026-05-11.",
+    "challenge_note_append": true
+  }
+}

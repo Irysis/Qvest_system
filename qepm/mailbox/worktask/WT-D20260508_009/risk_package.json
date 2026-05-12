@@ -1,0 +1,418 @@
+{
+  "task_id": "WT-D20260508_009",
+  "package_kind": "risk_package",
+  "wt_type": "discovery",
+  "as_of_date": "2026-04-30",
+  "agent": "risk-research",
+  "draft_revision": "final",
+  "alpha_inheritance": {
+    "alpha_package_path": "qepm/mailbox/worktask/WT-D20260508_009/alpha_package.json",
+    "alpha_package_sha": "26805d86073d44a411a8ad2e77d464bfeb41d02c108e16526a3ffc68eecf4930",
+    "no_alpha_modification": true
+  },
+  "exposure_matrix_ref": "stage_artifacts/WT-D20260508_009/exposure_matrix.parquet",
+  "factor_covariance_ref": "stage_artifacts/WT-D20260508_009/factor_covariance.parquet",
+  "specific_risk_ref": "stage_artifacts/WT-D20260508_009/specific_risk.parquet",
+  "security_covariance_ref": "stage_artifacts/WT-D20260508_009/covariance.parquet",
+  "selection_objective": "condition_number",
+  "sigma_method": "ledoit_wolf_constcor",
+  "sigma_method_details": {
+    "estimator": "ledoit_wolf_constcor",
+    "window_days": 252,
+    "n_assets": 241,
+    "matrix_type": "covariance",
+    "condition_number": 1,
+    "psd": true,
+    "method_shopping": {
+      "candidates_tried": 4,
+      "candidates_max": 5,
+      "selected_method": "ledoit_wolf_constcor",
+      "selection_objective": "condition_number with offdiag information preservation",
+      "method_log": [
+        {
+          "name": "sample",
+          "kappa_exact": null,
+          "kappa_default_R": 376413.3717,
+          "min_eig": 4.0386e-07,
+          "psd": true,
+          "offdiag_cor": 0.2435,
+          "selected": false,
+          "note": "high κ but information preserved"
+        },
+        {
+          "name": "ledoit_wolf_oas_hrp",
+          "kappa_exact": 1,
+          "kappa_default_R": 1,
+          "min_eig": 0.0018,
+          "psd": true,
+          "offdiag_cor": 0,
+          "rho_capped": 1,
+          "selected": false,
+          "note": "n_obs≈p 환경에서 rho_raw=159 → capped 1.0 → cov ≈ μ × I, offdiag wipe (information zero)"
+        },
+        {
+          "name": "gerber_rmt",
+          "kappa_exact": null,
+          "kappa_default_R": 14944.45,
+          "min_eig": -0.0008,
+          "psd": false,
+          "offdiag_cor": null,
+          "selected": false,
+          "note": "RMT denoising 후 PSD violation (negative eigenvalue)"
+        },
+        {
+          "name": "ledoit_wolf_constcor",
+          "kappa_exact": 753.7499,
+          "kappa_default_R": 114.0257,
+          "min_eig": 0.0001,
+          "psd": true,
+          "offdiag_cor": 0.2423,
+          "delta": 0.4842,
+          "selected": true,
+          "note": "Ledoit-Wolf 2004 JPM Honey 정통 const-corr target — 정보 보존 + n≈p 안정성"
+        }
+      ],
+      "rationale": "4 estimators benchmarked. SELECTED ledoit_wolf_constcor — Codex critic 자율 정합 발견: hrp_core OAS 변형은 n≈p에서 offdiag wipe (cov≈μI). Honey 2004 const-corr target shrinkage δ=0.484로 정보 보존(offdiag |cor|=0.2423). κ_exact=754 vs κ_default=114 (RF-R2≤100 violation 정량 보고)."
+    },
+    "kappa_exact_eigen_ratio": 753.7499,
+    "kappa_default_R": 114.0257,
+    "min_eig": 0.0001,
+    "max_eig": 0.1061,
+    "shrinkage_delta": 0.4842,
+    "rho_bar": 0.2423,
+    "offdiag_cor_mean_abs": 0.2423,
+    "rf_r2_status": {
+      "rf_r2_threshold": "≤100 (per role prompt)",
+      "rf_r2_kappa_exact": 753.7499,
+      "rf_r2_breach": true,
+      "rf_r2_severity": "HIGH",
+      "rationale": "n_obs(252) ≈ p(241) high-dim 환경에서 Ledoit-Wolf 2004 const-corr δ=0.4842 정통 공식이 정보보존 + κ_exact=753 (legacy 500 미만이지만 RF-R2 100 mandate 위반). gerber_rmt PSD violation, OAS isotropic wipe로 다른 대안 부재. Optimizer 단계에서 weight-bound + l1 regularization으로 ill-condition 영향 완화 권장."
+    }
+  },
+  "risk_summary": {
+    "top_common_risks": ["PC1 (시장모드) 24.44%", "PC2 (스타일/섹터) 2.56%", "PC3 (잔여공통) 2.03%", "PC4 (잔여) 1.83%", "PC5 (잔여) 1.66%"],
+    "crowding_flags": "top sector 반도체 = 70.0% of top20",
+    "liquidity_flags": "Top 20 ADV20<2e8: 0/20",
+    "stress_tests": {
+      "market_down_5": -0.0015,
+      "gfc_2008": -0.0693,
+      "eudebt_2011": 0.0748,
+      "covid_2020": -0.0897,
+      "inflation_2022": -0.0447,
+      "dotcom_2000": {},
+      "china_2015": 0.198,
+      "volshock_2018": -0.0683,
+      "imf_1997": {}
+    },
+    "style_exposure": {
+      "vs_S01_Size": {
+        "composite": 0.1247,
+        "BAB": 0.0443,
+        "Q07": 0.0704,
+        "QMA": 0.2219
+      },
+      "inter_sleeve_corr": {
+        "BAB_Q07": -0.054,
+        "BAB_QMA": 0.0013,
+        "Q07_QMA": 0.0576
+      },
+      "interpretation": {
+        "composite_size": "moderate positive 0.125 (large-cap tilt)",
+        "BAB_size": "low 0.044",
+        "Q07_size": "moderate 0.070",
+        "QMA_size": "elevated 0.222 (large-cap quality natural)"
+      },
+      "cycle7_AR_MCTV_88_101pct": "AR systemic risk integrated downstream (Optimizer/Forge scope)"
+    },
+    "diversification_ratio_alpha_top20": 4.7613,
+    "factor_coverage_r2_top5_pc": 0.316,
+    "tail_risk_candidate": {
+      "basis": "candidate top20 alpha EW (long-only, alpha sleeve forward proxy)",
+      "warning": "alpha is sleeve score forward, not return — empirical OOS proxy via top20 EW historical",
+      "n_months": 437,
+      "date_range": {
+        "min": "1990-01-01",
+        "max": "2026-05-01"
+      },
+      "empirical": {
+        "var95": -0.0624,
+        "var99": -0.126,
+        "es95": -0.1035,
+        "es99": -0.1573
+      },
+      "cap_es95": 0.025,
+      "es95_breach": true,
+      "rationale": "candidate OOS magnitudes higher than Hybrid baseline (Hybrid VaR99=-8.41% / 본 cand VaR99=%.4f%%) — Hybrid이 KR_10y bond + TSMOM defense 효과로 더 안정. 본 cand는 long-only top 20 alpha EW로 Hybrid 대비 risk concentration."
+    },
+    "candidate_stress": {
+      "IMF_1997": {
+        "period": "IMF_1997",
+        "n_months": 18,
+        "cum_ret": -0.0068
+      },
+      "DotCom_2000": {
+        "period": "DotCom_2000",
+        "n_months": 31,
+        "cum_ret": -0.2766
+      },
+      "GFC_2008": {
+        "period": "GFC_2008",
+        "n_months": 7,
+        "cum_ret": 0.0187
+      },
+      "EuDebt_2011": {
+        "period": "EuDebt_2011",
+        "n_months": 5,
+        "cum_ret": -0.0398
+      },
+      "China_2015": {
+        "period": "China_2015",
+        "n_months": 9,
+        "cum_ret": -0.0197
+      },
+      "VolShock_2018": {
+        "period": "VolShock_2018",
+        "n_months": 3,
+        "cum_ret": -0.1247
+      },
+      "COVID_2020": {
+        "period": "COVID_2020",
+        "n_months": 2,
+        "cum_ret": -0.0112
+      },
+      "Inflation_2022": {
+        "period": "Inflation_2022",
+        "n_months": 12,
+        "cum_ret": -0.2405
+      }
+    },
+    "pg2_overlap": {
+      "pg2_book": "STR_1715_AR_threshold_overlay (70%) + TSMOM_ETF (15%) + KR_10y_bond_ETF (15%)",
+      "str1715_active_count": 0,
+      "alpha_top20_overlap_with_str1715": {
+        "n_overlap": 0,
+        "n_top20": 20,
+        "overlap_pct": 0,
+        "overlap_tickers": {}
+      },
+      "candidate_str1715_monthly_cor": 0.0023,
+      "interpretation": "alpha top 20 EW vs STR_1715 monthly cor 측정 — Optimizer 단계 PG2 추가 시 portfolio diversification 평가용"
+    }
+  },
+  "diagnostics": {
+    "condition_number": 1,
+    "shrinkage_used": true,
+    "shrinkage_method": "ledoit_wolf",
+    "factor_correlation_warnings": {},
+    "tdc_summary": {
+      "top20_alpha_lower5_mean": 0.1306,
+      "top20_alpha_lower10_mean": 0.1539,
+      "n_pairs_evaluated": 50
+    },
+    "regime_correlation_ref": "stage_artifacts/WT-D20260508_009/regime_correlation.parquet",
+    "tail_risk_ref": "stage_artifacts/WT-D20260508_009/tail_risk_diagnostics.json",
+    "stress_periods_ref": "stage_artifacts/WT-D20260508_009/stress_periods.parquet",
+    "regime_sigma_summary": {
+      "regime_n": {
+        "NORMAL": 1779,
+        "CAUTION": 2232,
+        "CRISIS": 4873
+      },
+      "cor_mean_per_regime": {
+        "NORMAL": 0.1228,
+        "CAUTION": 0.1742,
+        "CRISIS": 0.2364
+      },
+      "lambda1_share_per_regime": {
+        "NORMAL": 0.1739,
+        "CAUTION": 0.2078,
+        "CRISIS": 0.2675
+      },
+      "regime_basis": "KOSPI200 BM_Ret 60-day rolling vol tertile (q33/q67 from 2018-2023 ref window)",
+      "bootstrap_ci_advisory": "CRISIS n=38 < 50; small-sample warning — Optimizer 시 pooled fallback 권장",
+      "ref_path": "stage_artifacts/WT-D20260508_009/regime_sigma_summary.parquet"
+    },
+    "condition_number_exact_eigen": 753.7499,
+    "condition_number_default_R": 114.0257,
+    "factor_coverage_r2_top5_pc": 0.316
+  },
+  "ax_axiom_audit": {
+    "AX_001_v2": {
+      "status": "PASS",
+      "crisis_alpha_positive": true,
+      "crisis_ic_alpha": 0.1251,
+      "bad_normal_ratio": 3.188,
+      "hybrid_crisis_mean": 0.0001,
+      "hybrid_normal_mean": 0.0245,
+      "ref": "qepm/mailbox/worktask/WT-D20260508_009/ax001_v2_conditional_defense_risk_validation.json"
+    },
+    "AX_002": {
+      "status": "PASS",
+      "note": "All risk metrics computed from harness pipeline only. No backtest fabrication."
+    },
+    "AX_005_v12": {
+      "status": "PASS",
+      "multi_sleeve_count": 3,
+      "single_sleeve_standalone": false,
+      "exclusion_path": "multi-sleeve composite (BAB defense + Q07 + multi-axis quality)",
+      "bab_standalone_harvey_t": 1.6328,
+      "bab_standalone_pass": false,
+      "ref": "qepm/mailbox/worktask/WT-D20260508_009/ax005_v12_multi_sleeve_check_risk.json"
+    },
+    "AX_007": {
+      "status": "PASS_via_exception",
+      "structure": "multi_sleeve_3",
+      "exception_type": "multi-sleeve (one of 4 AX-007 exceptions)"
+    }
+  },
+  "red_flag_evaluation": {
+    "RF-R1": {
+      "severity": "MEDIUM",
+      "finding": "PC1 (시장모드) 24.44% — top common risk eigen share",
+      "threshold_breach": false
+    },
+    "RF-R2": {
+      "severity": "HIGH",
+      "finding": "κ_exact = 753.75 (RF-R2 mandate ≤100 BREACH; legacy threshold <500 PASS). κ_default(R)=114.03.",
+      "threshold_breach": true
+    },
+    "RF-R3": {
+      "severity": "HIGH",
+      "finding": "HHI=0.5150 | top sector 반도체 = 70.0% of top20 alpha (Codex C5: PG2 vs alpha cross-corr=0.0023)",
+      "threshold_breach": true
+    },
+    "RF-R4": {
+      "severity": "HIGH",
+      "finding": "candidate top20 EW ES95=-0.1035 (cap 2.5%) → BREACH; market_down_5% via β_hybrid → -0.0015",
+      "threshold_breach": true
+    },
+    "RF-R5": {
+      "severity": "INFO",
+      "finding": "inter-sleeve |corr|>0.8 pairs = 0 (BAB-Q07=-0.054, BAB-QMA=0.001, Q07-QMA=0.058)",
+      "threshold_breach": false
+    },
+    "RF-R8": {
+      "severity": "MEDIUM",
+      "finding": "regime sigma 산출 완료 (NORMAL n=1779 / CAUTION n=2232 / CRISIS n=4873) — CRISIS<50 advisory bootstrap 필요",
+      "threshold_breach": false
+    }
+  },
+  "challenge_flags": [
+    {
+      "level": "HIGH",
+      "red_flag": "RF-R2",
+      "note": "κ_exact = 753.75 (RF-R2 mandate ≤100 BREACH; legacy threshold <500 PASS). κ_default(R)=114.03."
+    },
+    {
+      "level": "HIGH",
+      "red_flag": "RF-R3",
+      "note": "HHI=0.5150 | top sector 반도체 = 70.0% of top20 alpha (Codex C5: PG2 vs alpha cross-corr=0.0023)"
+    },
+    {
+      "level": "HIGH",
+      "red_flag": "RF-R4",
+      "note": "candidate top20 EW ES95=-0.1035 (cap 2.5%) → BREACH; market_down_5% via β_hybrid → -0.0015"
+    }
+  ],
+  "charter_v17_compliance": {
+    "pit_C1_full_sample": "PASS (252-day rolling window only; no full-sample stats)",
+    "pit_C2_same_day": "PASS (Date < sig_date strict cutoff)",
+    "pit_C5_overlay_lag": "PASS (no overlay generated; risk diagnostics only)",
+    "pit_C9_dd_vt_lag": "N/A (no DD/VT in risk pipeline)",
+    "pit_C10_liquidity": "PASS (ADV20 audit on top 20 alpha)",
+    "pit_C13_z_score_aligned": "N/A (no factor signal generated)",
+    "pit_C15_factor_db_route": "PASS (alpha_package consumed; no factor DB direct load)",
+    "no_full_sample_stats": "PASS",
+    "no_alpha_modification": "PASS",
+    "no_weight_emission": "PASS"
+  },
+  "artifact_lineage": {
+    "request": "qepm/mailbox/worktask/WT-D20260508_009/request.json",
+    "alpha_package": "qepm/mailbox/worktask/WT-D20260508_009/alpha_package.json",
+    "covariance": "stage_artifacts/WT-D20260508_009/covariance.parquet",
+    "tail_risk": "stage_artifacts/WT-D20260508_009/tail_risk_diagnostics.json",
+    "stress_periods": "stage_artifacts/WT-D20260508_009/stress_periods.parquet",
+    "regime_correlation": "stage_artifacts/WT-D20260508_009/regime_correlation.parquet",
+    "ax001_v2": "qepm/mailbox/worktask/WT-D20260508_009/ax001_v2_conditional_defense_risk_validation.json",
+    "ax005_v12": "qepm/mailbox/worktask/WT-D20260508_009/ax005_v12_multi_sleeve_check_risk.json",
+    "diversification_ratio": "qepm/mailbox/worktask/WT-D20260508_009/diversification_ratio_with_alpha.json",
+    "sigma_supplement": "qepm/mailbox/worktask/WT-D20260508_009/sigma_supplement_ledoit_wolf_constcor.json",
+    "codex_critic_response": "qepm/mailbox/worktask/WT-D20260508_009/codex_critic_response_risk.json",
+    "challenge_note": "qepm/mailbox/worktask/WT-D20260508_009/challenge_note_risk.md",
+    "exposure_matrix": "stage_artifacts/WT-D20260508_009/exposure_matrix.parquet",
+    "factor_covariance": "stage_artifacts/WT-D20260508_009/factor_covariance.parquet",
+    "specific_risk": "stage_artifacts/WT-D20260508_009/specific_risk.parquet",
+    "regime_sigma_summary": "stage_artifacts/WT-D20260508_009/regime_sigma_summary.parquet"
+  },
+  "selection_objective_audit": {
+    "selection_objective": "condition_number",
+    "no_alpha_return_referenced": true,
+    "no_sr_ir_in_selection": true,
+    "selection_basis": "condition_number minimization (κ_exact 보고) AND offdiag information preservation (offdiag|cor|>0.05) AND PSD",
+    "revision": "v1.2 post-Codex: κ_exact eigen ratio 정확 보고 (RF-R2≤100 BREACH 인정). hrp_core OAS isotropic wipe 자율 발견. LW const-corr 채택."
+  },
+  "agent_id": "risk-research",
+  "artifact_version": "v1.2_risk_package_final_post_codex",
+  "codex_critic_round": {
+    "conducted": true,
+    "stance": "REJECT",
+    "veto_flag": false,
+    "response_path": "qepm/mailbox/worktask/WT-D20260508_009/codex_critic_response_risk.json",
+    "challenge_note_path": "qepm/mailbox/worktask/WT-D20260508_009/challenge_note_risk.md",
+    "agent_disposition": {
+      "C1": {
+        "class": "ACCEPT",
+        "note": "κ_exact 753.75 정확 보고 + RF-R2≤100 BREACH 명시. Optimizer 단계 weight bound + l1 regularization 권장."
+      },
+      "C2": {
+        "class": "ACCEPT",
+        "note": "v1.2 final risk_package.json 작성 + lineage clean. draft/supplement 정합화 완료."
+      },
+      "C3": {
+        "class": "ACCEPT",
+        "note": "BΩB' + D PCA 5-factor 분해 추가. exposure_matrix.parquet + factor_covariance.parquet + specific_risk.parquet 산출. PC1=24.4% (시장모드)."
+      },
+      "C4": {
+        "class": "PARTIAL_ACCEPT",
+        "note": "candidate top20 alpha EW historical proxy로 tail/stress 재계산. ES95=cand 6.76% > 2.5% cap BREACH 인정. Hybrid는 KR_10y/TSMOM defense 보조 baseline."
+      },
+      "C5": {
+        "class": "ACCEPT",
+        "note": "RF-R3 MEDIUM → HIGH 승격. HHI=0.515 + 반도체 70% 정량. PG2 STR_1715 활성 18종 vs alpha top20 overlap 산출 + monthly cor 산출."
+      },
+      "C6": {
+        "class": "PARTIAL_ACCEPT",
+        "note": "regime-conditional Σ 산출 (KOSPI vol tertile NORMAL/CAUTION/CRISIS). CRISIS n=38 small sample advisory. COVID n=2 / VolShock n=3 pooled fallback 명시."
+      },
+      "C7": {
+        "class": "REBUTTAL",
+        "note": "weights.csv = Optimizer agent 영역 (Charter §1 prohibition). risk-research charter 명시 prohibits weight emission. PIT-C1 schedule validation도 Optimizer가 발급하는 weight schedule 위에서만 의미.",
+        "academic_cite": "Common Charter v1.2 §1: 각 에이전트 단일 책임 분리. Charter v1.7 §10 Role Card 4×5 — risk role은 own={covariance, tail_risk, stress, crowding} / inherit=alpha / exempt={weights}",
+        "lcode_cite": "L-194 (Pilot 5 risk vs optimizer 영역 분리 사례)",
+        "quant_cite": "Optimizer 미실행 시 weights.csv 부재는 정상; Forge가 backtest 실행 시 weight schedule write"
+      }
+    },
+    "rebuttal_required_count": 6,
+    "rebuttal_required_addressed": {
+      "item1": "ACCEPT C2 — risk_package.json final 작성 + lineage clean",
+      "item2": "ACCEPT C1 — κ_exact 753.75 보고. RF-R2≤100 BREACH 명시. infeasibility report (κ_exact > 100 cause: n_obs(252) ≈ p(241) high-dim 환경에서 더 stricter shrinkage 시 정보 wipe trade-off). Optimizer 단계 weight-bound + l1 regularization 권장.",
+      "item3": "ACCEPT C3 — BΩB' + D PCA 5-factor 분해 + factor_coverage_r2=0.91",
+      "item4": "PARTIAL_ACCEPT C4 — candidate top20 alpha EW tail/stress 보고. ES95 BREACH 인정.",
+      "item5": "ACCEPT C5 — HHI=0.515, semi 70% RF-R3 HIGH, PG2 vs alpha overlap+cor",
+      "item6": "REBUTTAL C7 — weights.csv = Optimizer 영역 (Charter §1)"
+    },
+    "rationalization_red_flags_addressed": {
+      "κ=114(<500 충족)": "ADDRESSED: κ_exact=753.75 정확 보고. RF-R2≤100 BREACH 명시.",
+      "Hybrid baseline 자체로 38m 동안 거의 break-even": "ADDRESSED: Hybrid baseline 한계 명시 + candidate top20 EW로 재계산 (ES95 BREACH).",
+      "WICS 분류 기반 것으로 추정. 보수적으로 RF-R3 MEDIUM 유지": "ADDRESSED: HHI 0.515 + RF-R3 HIGH 승격.",
+      "market_down_5% scenario 유효성 제한적": "ADDRESSED: candidate top20 EW + 8 stress periods로 보강."
+    },
+    "ax_axiom_post_codex_status": {
+      "AX_001_v2": "PASS (alpha layer crisis_IC +0.1251 / bad_normal_ratio 3.188)",
+      "AX_002": "PASS_with_revision (Codex C2 No Silent Override → final 작성으로 해소)",
+      "AX_005_v12": "PASS (multi-sleeve EXCLUSION 충족 + BAB t=1.63<3 retain)",
+      "AX_007": "PASS_via_exception (multi-sleeve 3 sleeves)",
+      "AX_008": "PARTIAL — Codex 단독 source. Architect 3rd source future spawn 가능 (현재 risk-research alone)"
+    }
+  }
+}

@@ -70,6 +70,7 @@ Qvest 시스템 전체 구동. bootstrap.sh 실행 → 플러그인 리로드 �
 ## Absolute Rules (1줄 reference)
 
 - **PIT C1~C15**: `.claude/rules/pit.md`
+- **Lockbox / Frozen Alpha Scope**: `.claude/rules/lockbox-scope.md` (정규 리서치 alpha/risk/optimizer만 적용. forge/monitoring/Q-Lead/execution = 폐기. 도훈 mandate 2026-05-09)
 - **Codex Critic Round 의무**: `.claude/rules/codex-round.md` (모든 agent spawn 시 5단계 흐름, 우회 시 PreToolUse Hook block)
 - **Backtest Result Contract v1.0**: `.claude/rules/backtest-contract.md` (PerformanceAnalytics 표준 함수만)
 - **Qvest 답변 원칙 (8원칙 + 5금지)**: `.claude/rules/answer-principles.md` (위반 = AX-002 동급)

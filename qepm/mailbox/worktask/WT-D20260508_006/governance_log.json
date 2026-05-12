@@ -1,0 +1,40 @@
+{
+  "task_id": "WT-D20260508_006",
+  "events": [
+    {
+      "timestamp": "2026-05-08T14:18:13+0900",
+      "agent": "q-lead",
+      "action": "WT_CREATED",
+      "summary": "Work Task 생성: IPCA conditional latent factor cross-section alpha | source=user_defined"
+    }
+  ],
+  "3": {
+    "timestamp": "2026-05-08T15:01:32+0900",
+    "agent": "alpha-research",
+    "event": "ALPHA_PACKAGE_FINALIZED_GRADUATION_FAIL",
+    "details": {
+      "decision": "GRADUATION_FAIL_HONEST_NEGATIVE_DEEP",
+      "method": "IPCA_ALS_K4_unrestricted_L6 (Kelly-Pruitt-Su 2019 JFE)",
+      "universe": "KR_top342 KOSPI200∪KOSDAQ150 + 2e8 KRW liq + PIT t-1",
+      "train_periods": 156,
+      "val_periods": 24,
+      "lockbox_periods": 16,
+      "fail_count": 12,
+      "fail_codes": ["GRAD_RANK_IC_FAIL", "GRAD_ICIR_FAIL", "GRAD_HARVEY_T_FAIL", "GRAD_SUBPERIOD_INSTABILITY", "VALIDATION_OOS_NEGATIVE", "LOCKBOX_OOS_NEGATIVE", "RF-A1", "RF-A2", "RF-A4", "RF-A6", "DSR_FAIL_n_eff_40", "MONOTONICITY_FAIL"],
+      "pass_count": 1,
+      "pass_codes": "ORTHOGONALITY_vs_WT_004",
+      "codex_round": {
+        "stance": "REVISE",
+        "veto_flag": false,
+        "n_critical_concerns": 8,
+        "n_rebuttal_required": 5,
+        "n_rationalization_red_flags": 5,
+        "all_disposition_complete": true
+      },
+      "extra_audits": ["alpha_scores_timeseries.parquet (64603 rows × 196 sig_dates)", "best_single_factor_comparison (V01_BM ICIR 0.210 vs IPCA 0.022 = -89%)", "sector_neutral_ICIR (-0.0025, retention -74%)", "DSR_n_trials_40 (0.217 vs n=5 0.559)", "5_spec_regression (1/5 lock_IC positive)"],
+      "downstream_action": "Risk_Optimizer_spawn_BLOCKED_Charter_§8_NoSilentOverride",
+      "telegram_sent": true,
+      "telegram_bytes": 2502
+    }
+  }
+}

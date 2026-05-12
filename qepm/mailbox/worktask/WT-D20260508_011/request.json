@@ -1,0 +1,68 @@
+{
+  "task_id": "WT-D20260508_011",
+  "wt_type": "discovery",
+  "pg1_eligibility": "certificate_required",
+  "discovery_of": null,
+  "graduation_criteria": {
+    "description": "Discovery → Deployment 전환 조건. Discovery WT 완료 시 자동 검증. discovery_graduation_gate.sh 강제.",
+    "min_rank_ic": 0.04,
+    "min_rank_ic_rationale": "KR top-universe benchmark. <0.04는 통계적 유의성 부족.",
+    "min_icir": 0.2,
+    "min_icir_rationale": "Alpha Lab Gate. <0.20은 IC 안정성 부족.",
+    "min_subperiod_stability": 0.5,
+    "min_subperiod_stability_rationale": "3개 subperiod (2008-14 / 2015-19 / 2020-26) 안정성 >=0.5",
+    "max_drawdown_days": 100,
+    "max_drawdown_days_rationale": "100일 이상 drawdown 지속 시 alpha decay 의심",
+    "min_harvey_t_stat": 3,
+    "min_harvey_t_stat_rationale": "Harvey-Liu-Zhu 다중검정 보정 t>3.0",
+    "min_deflated_sharpe_ratio": 0.5,
+    "min_deflated_sharpe_ratio_rationale": "Bailey-Lopez de Prado DSR — multi-testing 보정 SR"
+  },
+  "theme": "한국 옵션 chain 직접 변동성 위험 프리미엄 4모형 정밀 (미국 VIX 프록시 폐기)",
+  "hypothesis_title": "KOSPI200 option chain VRP precise cross-section alpha",
+  "hypothesis_description": "WT-D20260508_003 중단 본질 사유 (한국 옵션 chain 직접 데이터 부재) 해소.\n16년 KRX 옵션 chain 데이터 .cache/krx_options/ 4023일 / 6.18M rows 수집 완료.\n변동성 위험 프리미엄 4모형 학술 직접 적용 (미국 VIX 프록시 폐기):\n- Bakshi-Kapadia-Madan 2003 RFS — 옵션 가격 risk-neutral moments decompose\n- Carr-Wu 2009 RFS — Variance swap synthetic\n- Bollerslev-Tauchen-Zhou 2009 RFS — HAR-RV vs implied spread\n- VKOSPI 자체 재구축 (CBOE 1993/2003 methodology)\n\nWT_001 첫 시도 inheritance:\n- predictor lag-1 autocor 0.404 사전 진단 (사이클 1)\n- ML XGBoost feature leakage check\n- CRISIS regime cor(VRP, AR) +0.515 anti-hedge 본질 제약 인지\n\n8 시도 누적 패턴 인지:\n- composite framework 신호 희석 (WT_004/006)\n- 단일 source 우월 (WT_005 0.183 / WT_010 R14_DUVOL 0.569)\n- 12M long-horizon 일관 강세\n\n직교성 target vs Hybrid 70/15/15 cor < 0.25.\nGraduation: Harvey-NW t > 3.0 / DSR > 0.5 / ICIR > 0.20.",
+  "hypothesis_source": "user_defined",
+  "as_of_date": "2026-05-08",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KOSPI200_KOSDAQ150_intersection",
+    "liquidity_min_won_20d_avg": 50000000,
+    "max_names_total": 500
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d (재무제표 발표 지연)",
+    "fundamental_annual": "annual May (연간 재무제표 5월 리밸런싱)",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement (QuantiWise)",
+    "macro": "t-1 FRED (외부 매크로 lag)",
+    "ic_history": "Usable_Date <= sig_date (Factor DB 강제)"
+  },
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "current_portfolio": "STR_1631_80_STR_1656_20",
+  "hard_mandate": {
+    "pit_enforcement": "C1-C15 all enforced",
+    "liquidity_floor_won_20d_avg": 50000000,
+    "mandate_restrictions": {
+      "no_short_legal_kr": true,
+      "no_cross_market": true,
+      "kr_domestic_only": true
+    },
+    "long_only_mandate": "configurable"
+  },
+  "hard_constraints": {
+    "max_names": null,
+    "weight_bounds": [
+      0,
+      1
+    ],
+    "sector_active_weight_cap": null,
+    "liquidity_min_won_20d_avg": 50000000
+  },
+  "soft_penalties": [],
+  "capacity_limits": {
+    "adv_multiplier": 0.1,
+    "capacity_max_aum_won": 100000000000
+  }
+}

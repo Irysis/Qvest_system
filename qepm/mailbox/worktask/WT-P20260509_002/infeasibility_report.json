@@ -1,0 +1,64 @@
+{
+  "task_id": "WT-P20260509_002",
+  "agent_id": "optimizer-research",
+  "report_kind": "schedule_density_burn_in_skip",
+  "as_of_date": "2026-05-09",
+
+  "trigger": "Schedule density ratio (weights.csv unique_dates / alpha_package sig_dates) = 195 / 268 = 0.728 < 0.95 (Charter v6.3 §9 mandate)",
+
+  "skip_count": 73,
+  "skip_pattern": "Pre-burn-in: 첫 60 sig_dates (2005-02-01 ~ 2010-01-04) walk-forward 추정 불가 (rolling 60m window 미충족 상태). 추가 13건은 master sleeve panel 정렬 후 잔여 부분 (2005-02 ~ 2005-12 alpha만 단독, sleeve 4-asset cov 추정 불가).",
+
+  "rationale": [
+    "1. Walk-forward design은 본질적으로 burn-in window 필요. rolling 60m → 첫 60 sig_dates에서 cov 추정 불가능.",
+    "2. Alpha-only mode (S0)는 60m burn-in 동안 STR_1715 100% — Cash overlay nor sleeve allocation 둘 다 미정의.",
+    "3. Codex GOV-C1 비평 정합 (PIT walk-forward) 위해 burn-in 60m skip은 mandatory. silence 회피 위해 본 infeasibility_report 발동.",
+    "4. Pre-2010 burn-in 73 sig_dates는 admit 후보 weights 미산출 — Forge run_all.R에 위임 시 alpha-only baseline (AR_on_M4 100%) fallback 권장 또는 196m 평가만 사용."
+  ],
+
+  "alternative_approaches_considered": [
+    {
+      "option": "Shrinking expanding window (24m start, 12m grow)",
+      "verdict": "REJECT — sample size insufficient for stable cov estimation in early periods (n<24 → high bias)",
+      "reference": "Ledoit-Wolf 2004 — Shrinkage estimator only mitigates n<<p case, not solves degenerate covariance."
+    },
+    {
+      "option": "Lookahead full-sample cov (in-sample optimization)",
+      "verdict": "REJECT — Codex GOV-C1 REJECT 정합 (mandate no_in_sample_optimization=TRUE)",
+      "reference": "AX-002 PIT strict + request.json constraints.no_in_sample_optimization"
+    },
+    {
+      "option": "Static burn-in fallback weights (e.g., S4 50/25/20/5)",
+      "verdict": "REJECT — paradigm cherry-pick, mandate violation (no_paradigm_justification=TRUE)",
+      "reference": "도훈 mandate 2026-05-09 paradigm-free strict"
+    },
+    {
+      "option": "Burn-in 60m skip + post-burn-in 195m only",
+      "verdict": "ACCEPT — 본 cycle 채택. infeasibility_report 통한 명시적 skip 선언."
+    }
+  ],
+
+  "downstream_impact": {
+    "forge_handoff": "Forge가 weights.csv 195 dates 받아 195m post-burn-in backtest. Pre-burn-in 73 sig_dates는 alpha-only baseline (AR_on_M4 100%) fallback or excluded from evaluation.",
+    "harvey_dsr_validity": "Harvey-Liu / DSR Bailey-LdP 평가 모두 195m post-burn-in 기준 — n=195 충분.",
+    "ax008_triangulation": "Forge 후속 검증 시 동일 195m 평가 → 결과 비교 가능."
+  },
+
+  "schedule_density_audit": {
+    "alpha_sig_dates_count": 268,
+    "weights_unique_dates": 195,
+    "ratio": 0.7276,
+    "threshold": 0.95,
+    "violation": true,
+    "violation_kind": "burn_in_window_mandatory_skip",
+    "silent_override": false,
+    "explicit_declaration": true
+  },
+
+  "no_method_shopping_assertion": {
+    "method_evaluation_was_complete": "12 methods × 195 walk-forward sig_dates 모두 평가 — 결과 일부 cherry-pick 0건",
+    "tie_breaker_documented": "Charter v1.5 hierarchy + 7 method tied → turnover-based tie-break documented in optimization_package_draft.json::recommendation_rationale.tie_breaker_applied"
+  },
+
+  "created_at": "2026-05-09T22:42:00+09:00"
+}

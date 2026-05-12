@@ -1,0 +1,180 @@
+{
+  "task_id": "WT-D20260511_001",
+  "pd_phase": "PD24_path_A",
+  "package_kind": "alpha_extension_pd24",
+  "as_of_date": "2026-05-12",
+  "agent": {
+    "agent_id": "alpha-research-WT-D20260511_001-pd24",
+    "agent_type": "alpha-research",
+    "agent_version": "v1.2",
+    "model": "Opus_4_7_1M"
+  },
+  "mandate_context": {
+    "source": "user_mandate_2026-05-12",
+    "objective": "DM t_NW 2.7641 → ≥ 3.0 strict (Harvey-Liu-Zhu) — close residual P0",
+    "primary_path": "A (sample extension via back-extension to 1999-01)",
+    "constraint": "alpha 본질 변경 X (D43+D41+D58 retain), PIT C1~C15 strict"
+  },
+  "hypothesis": {
+    "title": "Path A — Sample Size Expansion via Back-Extension to 1999-01",
+    "description": "NEW Vol/Skew composite alpha (D43_Skewness + D41_Vol_of_Vol + D58_Vol_Asymmetry) sig_dates을 1999-01 ~ 2026-04 (314 dates, 1.71× expansion) 확장. Burn-in 1996-01-1998-12 (36m PIT retain). Methodology identical (no factor change, no direction logic change).",
+    "expected_effect": "t_NW = t_NW_184 × √(N_new/184) estimate. POST_NEW only t_NW (N=184, net) = 2.92. extended N=312 (non-trivial NEW alpha only) projection 2.92 × √(312/184) = 3.80.",
+    "constraint_check": "PIT-safe expanding IC (lag-1, 36m burn-in). 새 dates 추가해도 기존 dates alpha 불변 (spot check: spearman=1.0 at overlap, verified pre-extension 2026-05-11)."
+  },
+  "execution": {
+    "alpha_extension_script": "qepm/mailbox/worktask/WT-D20260511_001/alpha_extension_pd24_pathA.R",
+    "composite_returns_script": "qepm/mailbox/worktask/WT-D20260511_001/build_pd24_composite_returns.R",
+    "output_parquet": "stage_artifacts/WT_D20260511_001/alpha_scores_pd24.parquet",
+    "output_dm_csv": "stage_artifacts/WT_D20260511_001/pd24_path_A_diebold_mariano.csv",
+    "alpha_scores_pd24": {
+      "n_rows": 88107,
+      "n_sig_dates": 314,
+      "n_unique_tickers": 966,
+      "date_range_start": "1999-01-01",
+      "date_range_end": "2026-04-01",
+      "expansion_ratio_vs_pre": 1.707
+    }
+  },
+  "ic_diagnostics_extended": {
+    "mean_ic_skew": -0.0907,
+    "mean_ic_vov": -0.0055,
+    "mean_ic_asy": 0.1005,
+    "direction_alignment_at_2011-01": {
+      "skew": -1,
+      "vov": 1,
+      "asy": 1
+    },
+    "comment": "D43_Skewness IC -0.09 (lottery penalty 정합), D58_Vol_Asymmetry IC +0.10 (downside premium 정합), D41_Vol_of_Vol IC -0.006 (weak)."
+  },
+  "dm_recomputation_results": {
+    "pd20b_baseline": {
+      "N": 255,
+      "mean_diff_monthly": 0.004817,
+      "NW_lag6_SE": 0.001743,
+      "t_NW": 2.7641,
+      "p_value": 0.005708,
+      "harvey_liu_zhu_strict_pass": false
+    },
+    "path_A_naive_extend": {
+      "N": 437,
+      "mean_diff_monthly": 0.006080,
+      "NW_lag6_SE": 0.002183,
+      "t_NW": 2.7856,
+      "p_value": 0.005343,
+      "harvey_liu_zhu_strict_pass": false,
+      "delta_vs_pd20b": "+0.0215 (marginal, no practical improvement)",
+      "diagnosis": "Sample extension to 437 rows includes 1999-2005 period where 4-sleeve composite is undefined (no 1715, no TSMOM, no KR_10y). diff_v = (NEW solo top20 - S4 fallback baseline). NEW solo SR = 0.84 PRE_NEW vs 1.76 POST_NEW → quality dilution."
+    },
+    "path_A2_equity_substitute": {
+      "N": 255,
+      "mean_diff_monthly": 0.005320,
+      "t_NW": 2.3370,
+      "harvey_liu_zhu_strict_pass": false,
+      "diagnosis": "NEW top20 as equity sleeve replacement degrades SR (1.74 < 1.83 S4 baseline). 1715 alpha 효과 일부 상실."
+    }
+  },
+  "path_a_verdict": "FAIL — sample extension only insufficient. Effect size dominance limit reached.",
+  "diagnosis_root_cause": {
+    "headline": "Cost는 가장 큰 t_NW 절단 요인. POST_NEW only gross t_NW = 3.16 (Harvey-strict PASS). Net t_NW = 2.92 (15bps cost). 71 zero-diff dates 추가로 2.92 → 2.76 dilution.",
+    "components": {
+      "gross_to_net_cost_drag": "−0.40 t-points (15bps × ~25%/m turnover)",
+      "zero_dates_dilution": "−0.16 t-points (71 PRE_NEW dates contribute mean_diff = −0.00015 cost only)",
+      "effect_size_ceiling": "NEW alpha standalone POST_NEW SR 1.76 (good but not exceptional). 4-sleeve weight 10% → contribution 10% × 0.0033/m = 0.00033/m incremental, ~ matches observed delta."
+    }
+  },
+  "alternative_paths_quantitative_matrix": {
+    "path_A_naive": {
+      "t_NW_projection": 2.79,
+      "verdict": "FAIL_TESTED",
+      "delta_vs_pd20b": "+0.02"
+    },
+    "path_A2_equity_substitute": {
+      "t_NW_projection": 2.34,
+      "verdict": "WORSE_TESTED",
+      "diagnosis": "1715 quality loss when NEW solo used pre-2011"
+    },
+    "path_B_5th_orthogonal_source": {
+      "t_NW_projection_low": 3.05,
+      "t_NW_projection_high": 3.20,
+      "verdict": "PASS_estimated_BORDER_to_STRONG",
+      "scenarios": {
+        "B1_5pct_cash_to_defensive_SR1.0": {
+          "additional_mean_diff": 0.0005,
+          "estimated_t_NW": 3.05,
+          "candidate": "KOSPI200_defensive_subset / SK텔레콤 / KT&G (utilities)"
+        },
+        "B2_5pct_cash_to_defensive_SR1.5": {
+          "additional_mean_diff": 0.000625,
+          "estimated_t_NW": 3.12
+        },
+        "B3_5pct_cash_to_VKOSPI_long_ETF": {
+          "scenario": "crisis-concentrated hedge",
+          "estimated_t_NW_addition": 0.20,
+          "estimated_t_NW": 2.96,
+          "note": "Sample only ~10 crisis months, may not show in normal regime t_NW"
+        }
+      },
+      "primary_candidate": "B1 (defensive utility KR sleeve replacing 5% cash, AX-001 v2 conditional defense compliant)"
+    },
+    "path_C_composite_z_weight_grid": {
+      "t_NW_projection": "<0.1 t-points change",
+      "verdict": "MARGINAL",
+      "grid_tested": "0.700/0.300, 0.818/0.182 (current), 0.900/0.100",
+      "rationale": "Current weights 0.818/0.182 derived from individual IC ratios. Grid perturbations within ±0.1 t-points."
+    },
+    "path_D_4th_axis": {
+      "t_NW_projection_low": 3.04,
+      "t_NW_projection_high": 3.33,
+      "verdict": "PASS_estimated_BORDER_to_GOOD",
+      "candidates": ["D05_MaxRet", "D44_Coskewness", "D62_Tail_VaR_5"],
+      "rationale": "10-20% effect size lift if 4th axis is orthogonal to D43/D41/D58. D05 was previously excluded — re-examination warranted."
+    },
+    "path_E_lookback_24_or_60m": {
+      "t_NW_projection": "<0.05 t-points",
+      "verdict": "NEGLIGIBLE"
+    },
+    "path_F_cost_reduction_quarterly_rebal": {
+      "t_NW_projection": 3.03,
+      "verdict": "BORDER_PASS",
+      "constraint_check": "15bps mandate retain. quarterly rebalance reduces turnover ⇒ cost. monthly→quarterly 33%/m × 12 → 3-month-wait ⇒ ~110%/yr equivalent.",
+      "downside": "Tracking lag, opportunity cost during 2-month no-update periods. May affect SR negatively."
+    },
+    "combined_B1_plus_F2_quarterly": {
+      "t_NW_projection": 3.11,
+      "verdict": "PASS_estimated",
+      "rationale": "5% defensive sleeve + quarterly rebal compound effect"
+    }
+  },
+  "recommendation": {
+    "primary_path": "Path B — 5th orthogonal alpha source (defensive KR equity subsleeve)",
+    "rationale": [
+      "Path A naive 정량 입증 FAIL (delta +0.02, no effective improvement)",
+      "Path A2 정량 입증 WORSE (SR degradation due to 1715 quality loss)",
+      "Path B 정량 추정 PASS (3.05~3.20 range, AX-001 v2 conditional defense compliant)",
+      "Path B 정합성: S4 v2 admit retain + 4th source 도입 본 cycle WT mandate와 일치"
+    ],
+    "candidate_for_path_B": {
+      "primary": "5% Cash → 5% KR defensive utility composite (SK텔레콤 005930? KT&G 033780, 한국전력 015760, 한국가스공사 036460, etc.) or KODEX KOSPI200_Low_Volatility ETF",
+      "secondary": "5% Cash → 5% KR insurance/health/staples composite (defensive)",
+      "tertiary": "5% Cash → 5% VKOSPI long ETF (vol harvest, crisis hedge)"
+    },
+    "next_step": "별도 cycle WT-D20260512_xxx 'Path B 5th orthogonal source 발굴' 가설 spawn. 본 alpha_package_pd24 archive (Path A fail evidence)."
+  },
+  "p0_status": {
+    "before_pd24": "DM t_NW 2.7641 < 3.0 Harvey-strict (PARTIAL)",
+    "after_pd24_path_A": "DM t_NW 2.7856 < 3.0 (REMAIN — Path A fail)",
+    "estimated_after_path_B": "DM t_NW 3.05~3.20 (RESOLVED estimate, requires Path B alpha cycle)"
+  },
+  "codex_round": {
+    "round_1_pending": true,
+    "draft_file": "alpha_package_pd24_pathA_draft.json",
+    "expected_response_file": "codex_critic_response_alpha_pd24.json"
+  },
+  "artifact_lineage": {
+    "alpha_scores_pd24": "stage_artifacts/WT_D20260511_001/alpha_scores_pd24.parquet (88107 rows, 314 sig_dates, 966 tickers, generated 2026-05-12)",
+    "pd24_path_A_dm": "stage_artifacts/WT_D20260511_001/pd24_path_A_diebold_mariano.csv",
+    "pd24_path_A_metrics": "stage_artifacts/WT_D20260511_001/pd24_path_A_metrics.csv",
+    "pd24_path_A_sleeve_panel": "stage_artifacts/WT_D20260511_001/pd24_path_A_sleeve_panel.csv"
+  },
+  "generated_at": "2026-05-12T08:00:00+0900"
+}

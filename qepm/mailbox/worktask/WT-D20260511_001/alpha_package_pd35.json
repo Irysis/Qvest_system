@@ -1,0 +1,341 @@
+{
+  "task_id": "WT-D20260511_001",
+  "pd_phase": "PD35_5th_orthogonal_lottery_preference_composite_FINAL_post_codex_round_2",
+  "package_kind": "alpha_package_pd35",
+  "as_of_date": "2026-05-12",
+  "wt_type": "discovery",
+  "draft": false,
+  "finalized": true,
+  "finalized_at": "2026-05-12T12:10:00+0900",
+  "supersedes": "qepm/mailbox/worktask/WT-D20260511_001/alpha_package_pd35_draft.json",
+  "supersede_reason": "Codex Round 2 REJECT post-disposition. v3 full-window draft inherited Codex 10 concerns (6 HIGH + 4 MEDIUM). v5 Pre-LB + KOSPI200/KOSDAQ150 universe + L05 Dollar_Volume liquidity filter + L42 mismatch removal → final 3-factor composite (M22+D43+D58) Pre-LB-strict diagnostics.",
+
+  "agent": {
+    "agent_id": "alpha-research-WT-D20260511_001-pd35",
+    "agent_type": "alpha-research",
+    "agent_version": "v1.3",
+    "model": "Opus_4_7_1M",
+    "boundary_compliance": "no_weight_decision_no_covariance_no_risk_modification"
+  },
+
+  "codex_round_2_summary": {
+    "stance": "REJECT",
+    "veto_flag": false,
+    "n_critical_concerns": 10,
+    "n_high_severity": 6,
+    "challenge_note_section_appended": "PD35 section in qepm/mailbox/worktask/WT-D20260511_001/challenge_note.md (lines 4318+)",
+    "disposition_tally": "8 ACCEPT + 2 PARTIAL_ACCEPT (C5_validated, C10_deferred). 0 REBUTTAL",
+    "q_lead_escalate_trigger_hit": "HIT (HIGH 6 >= 5)",
+    "rationalization_phrases_detected_and_corrected": [
+      "Marginal — within Newey-West CI",
+      "strict ratio fails by 0.08, but crisis hedge magnitude-positive",
+      "sign consistency + magnitude dominance can compensate strict",
+      "not data-mining artifact",
+      "Discovery WT class에서는 ICIR ... admit_as_research_foundation_candidate",
+      "P3 lottery effect strengthening ... KR retail boom"
+    ],
+    "no_silent_override_charter_section_8_compliance": true
+  },
+
+  "mandate_context": {
+    "source": "user_mandate_2026-05-12 정규 alpha research — 도훈 mandate '팩터/ML/퀀트투자 학술 references 활용 PG2 강화 정규 리서치 + Cert 발급 필수 + Codex Round 발급 필수 + AX-008 3/3 필수'",
+    "objective": "C_softmax PG2 admit 후 raw alpha SR 1.008 → target SR 2.0 gap 0.99 해소. 5th orthogonal alpha source 발굴.",
+    "constraint": "cor<0.30 vs PD27 1715 H1 + AX-001 v2 conditional defense triad + KR availability + cost<50bps + PIT C1~C15 strict + Hurdle v2.2 TO 600% + KOSPI200 ∪ KOSDAQ150 universe + L05 Dollar_Volume liquidity filter + lockbox-scope alpha-research stage"
+  },
+
+  "hypothesis": {
+    "title": "PD35 — KR Lottery-Preference Penalty Composite (3-Factor) — 5th Exploratory Alpha Source",
+    "description": "한국 시장 retail-heavy 구조 + 글로벌 lottery preference penalty 메커니즘. 3-factor expanding-IC-aligned composite under KOSPI200/KOSDAQ150 universe + L05 liquidity filter (M22_Max_Return + D43_Skewness + D58_Vol_Asymmetry). L42 (Volume Skewness mismatch) Codex C6 ACCEPT 후 REMOVED. 학술: 투자자가 '복권성' 종목 (high MAX return, positive skew, downside vol asymmetry)에 ex-ante 과지불 → ex-post underperform → high-lottery 종목 매도, low-lottery 매수가 alpha 산출. KOSPI200/KOSDAQ150 대형주 한정 retail attention bias 영향 약화로 alpha 보수적 (~0.02 IC Pre-LB).",
+    "expected_role": "small_weight_crisis_hedge_candidate (Pre-LB validated AX-001 v2 strict ratio 3.73x crisis hedge) — admit_for_5th_overlay만 가능, single-sleeve standalone admit 부적격.",
+    "why_now": "도훈 mandate 2026-05-12 정규 리서치. PD27 1715 H1 (Consensus + Defense) + PD32 v3b (Behavioral Flow) + TSMOM + KR_10y 외 별도 axis. PD35 v5 Pre-LB 정직 결과: AX-001 v2 STRICT PASS (3.73x ratio) + cor=-0.03 직교성 + DSR 0.67 PASS — small-weight overlay candidate."
+  },
+
+  "selection_objective": "ax001_v2_crisis_hedge_priority_with_orthogonality",
+
+  "literature_review_rich": {
+    "axis_1_lottery_preference_max_effect": {
+      "primary_papers": [
+        {
+          "citation": "Bali, T. G., Cakici, N., & Whitelaw, R. F. (2011). 'Maxing out: Stocks as lotteries and the cross-section of expected returns.' Journal of Financial Economics, 99(2), 427-446.",
+          "mechanism": "Investors over-pay for stocks with high maximum daily returns (MAX) in past month → lottery preference penalty → ex-post underperform.",
+          "applied_in_pd35": "M22_Max_Return factor"
+        },
+        {
+          "citation": "Boyer, B., Mitton, T., & Vorkink, K. (2010). 'Expected idiosyncratic skewness.' Review of Financial Studies, 23(1), 169-202.",
+          "mechanism": "Ex-ante idio skewness — investors prefer positive-skew → high-skew stocks earn ~7% annual underperformance.",
+          "applied_in_pd35": "D43_Skewness factor"
+        },
+        {
+          "citation": "Kumar, A. (2009). 'Who gambles in the stock market?' Journal of Finance, 64(4), 1889-1933.",
+          "mechanism": "Retail-concentrated lottery preference. KR retail share ~50% (KOFIA 2023) → MAX effect amplified.",
+          "applied_in_pd35": "KR universe rationale (KOSPI200/KOSDAQ150)"
+        }
+      ]
+    },
+    "axis_2_downside_risk": {
+      "primary_papers": [
+        {
+          "citation": "Ang, A., Chen, J., & Xing, Y. (2006). 'Downside risk.' Review of Financial Studies, 19(4), 1191-1239.",
+          "mechanism": "Asymmetric vol → asymmetric loss aversion (Kahneman-Tversky 1979). Downside beta premium.",
+          "applied_in_pd35": "D58_Vol_Asymmetry factor"
+        }
+      ]
+    },
+    "axis_3_multi_testing_robustness": {
+      "primary_papers": [
+        {
+          "citation": "Harvey, C. R., Liu, Y., & Zhu, H. (2016). '… and the cross-section of expected returns.' RFS 29(1), 5-68.",
+          "applied_in_pd35": "N_TRIALS=20 (incl. v1/v2/v3/v4/v5 variants). HLZ threshold 2.998. v5 Pre-LB t_NW 2.38 < threshold = HLZ FAIL."
+        },
+        {
+          "citation": "Bailey, D. H., & López de Prado, M. (2014). 'The deflated Sharpe ratio.' JPM 40(5), 94-107.",
+          "applied_in_pd35": "DSR_z=0.67 (sigma_sr=0.060, ICIR=0.16) PASS at 0.5 threshold under Pre-LB"
+        }
+      ]
+    },
+    "axis_4_ml_consideration": {
+      "decision": "ML DEFERRED to next-cycle WT iteration",
+      "rationale": [
+        "Gu-Kelly-Xiu 2020 RFS 33: 2223-2273 finding: NN/RF gain ≈ nonlinear factor interactions. With 3 mechanism-grounded factors, EW composite captures dominant signal.",
+        "PIT-strict ML training cutoff complexity (training_cutoff <= sig_date - 1) adds Codex Round 2 disposition burden.",
+        "Next-cycle: LightGBM cross-sectional stacking of TOP-15 conditional_IC factors + SHAP attribution"
+      ]
+    }
+  },
+
+  "factor_specs_final_3_factor": [
+    {
+      "factor_family": "Risk_Lottery_Preference",
+      "sleeve": "PD35_Lottery_Composite_v5_Pre_LB",
+      "proxy": "M22_Max_Return",
+      "formula": "Maximum daily return over rolling 21-day window (Bali-Cakici-Whitelaw 2011 MAX implementation)",
+      "lag_rule": "daily t-1 (PIT C2)",
+      "winsorization": "Factor DB built-in 3std cross-sectional",
+      "neutralization": "expanding 36m IC-aligned (Z_Score_Aligned, PIT-strict per align_factor_direction v2.0)",
+      "economic_rationale": "Lottery preference penalty — Bali-Cakici-Whitelaw 2011 JFE 99",
+      "weight_in_axis": 0.333,
+      "references": ["Bali-Cakici-Whitelaw 2011 JFE 99: 427-446 'Maxing Out'", "Kumar 2009 JF 64: 1889-1933"]
+    },
+    {
+      "factor_family": "Risk_Lottery_Preference",
+      "sleeve": "PD35_Lottery_Composite_v5_Pre_LB",
+      "proxy": "D43_Skewness",
+      "formula": "Realized idiosyncratic skewness (21-day rolling 3rd moment standardized)",
+      "lag_rule": "daily t-1 (PIT C2)",
+      "winsorization": "Factor DB built-in 3std",
+      "neutralization": "expanding 36m IC-aligned",
+      "economic_rationale": "Ex-ante skewness lottery — Boyer-Mitton-Vorkink 2010 RFS 23",
+      "weight_in_axis": 0.333,
+      "references": ["Boyer-Mitton-Vorkink 2010 RFS 23: 169-202"]
+    },
+    {
+      "factor_family": "Risk_Downside",
+      "sleeve": "PD35_Lottery_Composite_v5_Pre_LB",
+      "proxy": "D58_Vol_Asymmetry",
+      "formula": "Downside / Upside vol asymmetry ratio (21-day rolling separated by sign)",
+      "lag_rule": "daily t-1 (PIT C2)",
+      "winsorization": "Factor DB built-in 3std",
+      "neutralization": "expanding 36m IC-aligned",
+      "economic_rationale": "Downside risk premium — Ang-Chen-Xing 2006 RFS 19",
+      "weight_in_axis": 0.333,
+      "references": ["Ang-Chen-Xing 2006 RFS 19: 1191-1239 'Downside Risk'", "Kahneman-Tversky 1979 Econometrica 47"]
+    }
+  ],
+
+  "factor_removed_codex_c6_acceptance": [
+    {
+      "factor_name": "L42_Vol_Skewness",
+      "codex_concern_id": "C6_PROXY_MECHANISM_MISMATCH",
+      "registry_definition": "Volume Skewness (트레이딩 거래량 분포 비대칭)",
+      "draft_pd35_claimed_definition": "Volatility distribution skewness",
+      "verdict": "MECHANISM MISMATCH — Volume Skewness은 트레이딩 패턴 metric, lottery-preference penalty 메커니즘과 직접 연결되지 않음. Codex C6 ACCEPT.",
+      "action": "REMOVED from final composite"
+    }
+  ],
+
+  "composite_specification_final": {
+    "method": "EW_3factor_PIT_strict_expanding_IC_aligned_Pre_LB_universe_filtered",
+    "sleeve_label": "PD35_Lottery_Preference_Penalty_Composite_v5_Pre_LB",
+    "formula": "alpha_pd35_v5 = z_x(mean(Z_M22, Z_D43, Z_D58)) per sig_date, under KOSPI200/KOSDAQ150 universe (top 350 by Size) + L05_Dollar_Volume z_aligned >= -1.0 liquidity filter",
+    "weight_method": "equal_weight_1_over_3",
+    "universe_filter": "top 350 tickers by Size factor per sig_date (KOSPI200+KOSDAQ150 proxy)",
+    "liquidity_filter": "L05_Dollar_Volume Z_Score_Aligned >= -1.0 (top 84% liquid, proxy for >= 2e8 KRW 20d avg)",
+    "selection_window": "Pre-Lockbox only — 2001-07-01 to 2023-12-01 (270 sig_dates) per .claude/rules/lockbox-scope.md alpha-research stage retain",
+    "lockbox_window_holdout": "2024-01-01 to 2026-04-01 (28 months) reserved for Judge OOS verification",
+    "pit_compliance": {
+      "C1_rolling_expanding_only": "PASS",
+      "C2_same_day_circular": "PASS — daily t-1 + monthly sig_date",
+      "C10_liquidity_filter_pit_lagged": "PASS — L05 Z_Score_Aligned t-1",
+      "C13_negate_factors_flip_sign": "PASS — Z_Score_Aligned only (align_factor_direction PIT-safe)",
+      "C14_ic_history_usable_date": "PASS — load_month_factors filters Usable_Date <= sig_date",
+      "C15_factor_db_connector_only": "PASS — load_month_factors() invoked per sig_date"
+    }
+  },
+
+  "execution_final_v5": {
+    "v5_script": "qepm/mailbox/worktask/WT-D20260511_001/pd35_v5_pre_lb_liquidity.R",
+    "v5_log": "qepm/mailbox/worktask/WT-D20260511_001/pd35_v5.log",
+    "output_parquet": "stage_artifacts/WT_D20260511_001/alpha_scores_pd35_v5_pre_lb_liquidity.parquet",
+    "v5_diagnostic_json": "qepm/mailbox/worktask/WT-D20260511_001/pd35_v5_pre_lb_liquidity_diagnostic.json",
+    "alpha_pd35_summary": {
+      "n_rows": 62625,
+      "n_sig_dates_pre_lb": 270,
+      "date_range_pre_lb_start": "2001-07-01",
+      "date_range_pre_lb_end": "2023-12-01",
+      "avg_universe_after_filter": 266,
+      "sleeve_label": "PD35_Lottery_Preference_Penalty_Composite_v5_Pre_LB"
+    }
+  },
+
+  "diagnostics_final_pre_lb_only": {
+    "selection_window": "Pre-Lockbox 270 months (2001-07 to 2023-12)",
+    "rank_ic": 0.0195,
+    "icir_naive": 0.1620,
+    "harvey_t_naive": 3.0,
+    "harvey_t_nw_lag6": 2.3792,
+    "n_months_pre_lb": 246,
+    "ic_positive_share": 0.6098,
+    "newey_west_corrected": {
+      "mean_ic": 0.0195,
+      "sd_ic": 0.1203,
+      "nw_se_lag6": "computed_internal",
+      "t_nw": 2.3792
+    },
+    "harvey_liu_zhu_multi_testing": {
+      "n_trials": 20,
+      "trial_basis": "Iter1+Iter2+Iter3+Iter4+Iter5+PD24+PD27 (7 base) + PD32 v2 4 + PD32 v3b 3 + PD35 v1/v2/v3/v4/v5 (5 variants) = 19, +1 reserve = 20",
+      "t_adjusted_threshold_approx": 2.9977,
+      "method": "sqrt(2*log(N_trials)) + 0.55 conservative HLZ adj approx",
+      "t_nw_observed": 2.3792,
+      "pass": false
+    },
+    "deflated_sharpe_bailey_ldp": {
+      "method": "closed_form_BLP_2014_IC_based_Pre_LB",
+      "sr_ic_proxy_monthly": 0.1620,
+      "sigma_sr_blp": 0.0597,
+      "E_SR_max_under_null_20_trials": 0.1234,
+      "dsr_z_multi_test": 0.6664,
+      "threshold_0_5_pass": true
+    },
+    "subperiod_stability_pre_lb": {
+      "P1_2001_2008": {"n_months": 90, "rank_ic": 0.0242},
+      "P2_2009_2017": {"n_months": 84, "rank_ic": -0.0014},
+      "P3_pre_LB_2018_2023": {"n_months": 72, "rank_ic": 0.0379},
+      "min_max_ratio_3_window": -0.0361,
+      "subperiod_gate_50_pass": false,
+      "sign_consistency_check": "FAIL — P2 negative (-0.0014). P1 + P3 positive."
+    },
+    "crisis_conditional_hedge_AX001_v2_pre_lb": {
+      "crisis_windows_pre_lb": ["2008-09~2009-03 GFC", "2011-08~2011-12 Euro", "2015-06~2016-02 China", "2020-02~2020-04 COVID", "2022-05~2022-10 Stagflation"],
+      "n_crisis_months_pre_lb": 21,
+      "n_normal_months_pre_lb": 225,
+      "crisis_IC_pre_lb": 0.0589,
+      "normal_IC_pre_lb": 0.0158,
+      "ratio_crisis_over_normal_pre_lb": 3.7281,
+      "ax001_v2_strict_pass": true,
+      "ax001_v2_strict_pass_basis": "Pre-LB + KOSPI200/KOSDAQ150 + liquidity filter universe로 crisis hedge **3.73x** ratio. Large-cap liquid stocks에서 lottery preference penalty가 crisis period에서 강력 발현 (retail panic + lottery aversion concentration in liquid stocks).",
+      "interpretation": "Codex C5 PARTIAL_ACCEPT_VALIDATED — v3 full-window ratio 0.92 FAIL → v5 Pre-LB+filter ratio 3.73 STRICT PASS. Codex 비판으로 alpha 약해졌으나 crisis hedge는 강화 (small-cap noise removal 효과)."
+    },
+    "cor_vs_pd27_1715_h1_pre_lb": {
+      "cor_overall_spearman": -0.0219,
+      "cor_per_date_mean": -0.0312,
+      "cor_per_date_sd": "computed_internal",
+      "n_dates": 270,
+      "constraint_lt_0_30_pass": true,
+      "margin_vs_threshold": "9.6x margin (|-0.031| vs 0.30 threshold)",
+      "interpretation": "Pre-LB universe 정합화 후에도 PD27 1715 H1과의 직교성 9.6x margin — Codex 비판 후 더 강력한 orthogonality 입증."
+    },
+    "rf_a3_recent_overfit_audit_pre_lb": {
+      "recent_36m_window": "2021-01-01 to 2023-12-01",
+      "recent_36m_ICIR": 0.3593,
+      "full_pre_lb_ICIR": 0.1620,
+      "ratio_recent_over_full": 2.2173,
+      "rf_a3_trigger_threshold": 2.0,
+      "rf_a3_status": "TRIGGER_RETAIN",
+      "honest_disclosure": "Pre-LB only로 정정 후에도 recent 36m vs full ratio 2.22 — RF-A3 trigger 유지. 도훈 hypothesis (KR retail-driven lottery 강화 2018-2023)는 Pre-LB만으로 확증 불가. structural amplification 또는 selection bias 양 가능성 retain — sample 누적 후 재평가 의무."
+    }
+  },
+
+  "graduation_status_honest_final": {
+    "rank_ic_strict_004":   {"value": 0.0195, "threshold": 0.04, "pass": false, "note": "Below by 0.020"},
+    "rank_ic_loose_002":    {"value": 0.0195, "threshold": 0.02, "pass": false, "note": "Below by 0.0005 — marginal under loose threshold"},
+    "icir_gate":            {"value": 0.1620, "threshold": 0.20, "pass": false, "note": "Below by 0.038"},
+    "harvey_t_nw":          {"value": 2.3792, "threshold": 3.00, "pass": false, "note": "Below by 0.62"},
+    "harvey_lz_gate":       {"value": 2.3792, "threshold": 2.9977, "pass": false, "n_trials": 20},
+    "dsr_gate":             {"value": 0.6664, "threshold": 0.5, "pass": true, "method": "BLP_closed_form_z N=20 Pre-LB"},
+    "subperiod_gate":       {"value": -0.0361, "threshold": 0.50, "pass": false, "note": "P2 negative — sign consistency FAIL"},
+    "cor_pd27_gate":        {"value": -0.0312, "threshold_abs": 0.30, "pass": true, "margin": "9.6x"},
+    "ax001_v2_strict":      {"value": "crisis_IC=+0.0589 normal_IC=+0.0158 ratio=3.73", "strict_pass": true},
+    "rf_a3_no_overfit":     {"value": 2.2173, "threshold": 2.0, "pass": false, "rf_a3_trigger": true},
+    "overall_pass_strict_discovery_graduation": false,
+    "gates_strict_passed": "3 / 10 (DSR + cor_pd27 + AX-001 v2 strict)",
+    "honest_disclosure_final": "PD35 v5 Pre-LB은 Discovery WT graduation_criteria 미충족 (3/10 strict gates pass). 단 **crisis hedge AX-001 v2 STRICT PASS (3.73x ratio)** + **cor_pd27 직교성 9.6x margin** + **DSR PASS** — small-weight overlay candidate로 정합. PD35 final stance: **register_as_exploratory_5th_source_candidate_NOT_for_standalone_admit**. Risk-research/Forge/Judge stage downstream에서 5% small-weight 결합 시 PG2 crisis 방어 axis 가치 평가 의무."
+  },
+
+  "alternatives_considered_full_list": [
+    {"id": "v1_3_axis_quality_tail_earnings", "IC": 0.0301, "verdict": "Profit quality pro-cyclical → crisis hedge net zero. AX-001 v2 FAIL."},
+    {"id": "v2_axis_diagnostic", "purpose": "Per-axis IC + 6 alt weights", "verdict": "Diagnostic-only run. M22 +0.063 crisis identified as crisis-positive."},
+    {"id": "v3_lottery_4_factor_full_window", "IC": 0.0338, "verdict": "REJECTED post-Codex Round 2 — LOCKBOX_LEAKAGE C1 ACCEPT, RF-A3 trigger C2 ACCEPT, universe 1466-3666 not filtered C3 ACCEPT, L42 mismatch C6 ACCEPT."},
+    {"id": "v4_lottery_70_earnings_30", "IC": 0.0321, "verdict": "Marginal cor improvement, lower IC. Not selected."},
+    {"id": "v5_lottery_3factor_pre_lb_filtered_FINAL", "IC": 0.0195, "ICIR": 0.162, "t_NW": 2.38, "DSR_z": 0.67, "cor": -0.031, "ax001_v2": "STRICT PASS ratio 3.73", "verdict": "FINAL SELECTED — Codex Round 2 disposition validated."}
+  ],
+
+  "challenge_flags_post_codex": [
+    {
+      "id": "RF-A-PD35-V5-DISCOVERY-GRADUATION-FAIL",
+      "severity": "HIGH",
+      "msg": "v5 Pre-LB strict 3/10 gates pass — rank_IC 0.020 / ICIR 0.16 / t_NW 2.38 / HLZ FAIL / subperiod sign FAIL / RF-A3 retain trigger. Discovery WT class graduation_criteria 정합 미달.",
+      "mitigation": "register_as_exploratory_5th_source_candidate (NOT admit_to_pg2). Risk/Forge/Judge downstream stage에서 5% small-weight overlay simulation 후 governor admit 결정 의무."
+    },
+    {
+      "id": "RF-A-PD35-V5-AX001-STRICT-PASS-RATIO-3-73",
+      "severity": "LOW",
+      "msg": "AX-001 v2 STRICT PASS — crisis_IC 0.0589, normal_IC 0.0158, ratio 3.73x. Codex C5 비판 후 alpha 약해졌으나 crisis hedge 강화 입증.",
+      "mitigation": "Risk-research stage portfolio-level MDD relief test 의무 (C5 PARTIAL_ACCEPT residual)."
+    },
+    {
+      "id": "RF-A-PD35-V5-ORTHOGONALITY-9-6X-MARGIN",
+      "severity": "LOW",
+      "msg": "cor_per_date_mean -0.031 — cor<0.30 threshold 9.6x margin. PD27 1715 H1 fundamental Consensus + Defense 와 강한 직교 axis 확보.",
+      "mitigation": "Risk-research stage 5-sleeve full correlation matrix 산출 의무."
+    },
+    {
+      "id": "RF-A-PD35-V5-RF-A3-RETAIN-TRIGGER",
+      "severity": "MEDIUM",
+      "msg": "Recent 36m ICIR 0.36 vs Pre-LB full 0.16 = ratio 2.22 (RF-A3 trigger > 2.0). KR retail-driven lottery amplification 2018-2023 가설 vs selection bias 양 가능성.",
+      "mitigation": "Next-cycle (2026+) sample 누적 시 재평가. 본 PD35 alpha admit 의사결정에서 recent_36m 편향 가능성 명시."
+    },
+    {
+      "id": "RF-A-PD35-V5-AX008-LINEAGE-DEFER-ARCHITECT",
+      "severity": "MEDIUM",
+      "msg": "AX-008 source #3 Architect independent reproduce 미수행. PD35 final alpha_package 후 architect_pd35_reproduce.R 의무.",
+      "mitigation": "Architect stage spawn 의무 — alpha_scores_pd35_v5_pre_lb_liquidity.parquet independent reproduce + IC/ICIR/DSR exact match 검증."
+    }
+  ],
+
+  "next_steps_proposal_final": {
+    "this_cycle_PD35_v5_FINAL": "alpha_package_pd35.json finalized 2026-05-12. challenge_note.md PD35 section appended. Codex Round 2 disposition complete (8 ACCEPT + 2 PARTIAL_ACCEPT).",
+    "next_stage_risk_research": "Risk-research stage: PD35 lottery composite tail risk Σ + 5-sleeve correlation matrix + portfolio-level AX-001 v2 MDD relief (C5 PARTIAL residual)",
+    "next_stage_optimizer": "Optimizer-research: PG2 5-sleeve weight allocation candidate examination (C_softmax 0.55 → 0.50 + PD35 lottery 0.05 small-weight)",
+    "next_stage_forge": "Forge-research: realized backtest of new 5-sleeve PG2 (C_softmax + PD35 lottery 5%) full Pre-LB + Lockbox OOS validation",
+    "next_stage_architect": "Architect AX-008 source #3 independent reproduce — PD35 alpha_scores parquet IC/ICIR/DSR exact match check",
+    "next_stage_judge": "Judge: 18-gate cascade + Harvey 5-spec + Lockbox OOS check (2024-26 holdout)",
+    "next_stage_governor": "Governor: PG2 expansion decision book_state.json update (5-sleeve admit with AX-007 Exception 1 + AX-001 v2 conditional defense triad)",
+    "future_cycle_ml_extension": "Next WT: LightGBM cross-sectional ML stacking + SHAP attribution + PIT training cutoff"
+  },
+
+  "ax_008_lineage_final": {
+    "source_1_forge": "DEFERRED to forge-research stage spawn",
+    "source_2_codex": "REJECT documented (10 concerns post-disposition 8 ACCEPT + 2 PARTIAL)",
+    "source_3_architect": "DEFERRED to architect spawn after alpha_package_pd35.json final",
+    "ax_008_current_status": "1.5/3 — Codex REJECT documented + Forge/Architect deferred",
+    "target_2_5_floor": "After Risk + Optimizer + Forge + Architect downstream stages",
+    "target_3_0_full": "Architect AX-008 source #3 PASS + Forge realized backtest PASS"
+  },
+
+  "lockbox_scope_compliance": {
+    "lockbox_window_seal": "2024-01-23 (per artifact_lineage.json prior PD27 lock)",
+    "alpha_research_stage_compliance": "Pre-LB only selection (270 months 2001-07 to 2023-12) per .claude/rules/lockbox-scope.md alpha-research stage retain",
+    "post_pd35_admit_lockbox_release": "Per Charter v1.7 §10 + lockbox-scope.md, lockbox release for forge/judge/governor stages effective at PG2 admit transition (도훈 mandate 2026-05-09)"
+  }
+}

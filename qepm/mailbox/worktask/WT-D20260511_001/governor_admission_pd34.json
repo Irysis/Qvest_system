@@ -1,0 +1,426 @@
+{
+  "task_id": "WT-D20260511_001",
+  "wt_type": "discovery",
+  "phase": "PD34",
+  "package_kind": "governor_admission",
+  "draft": false,
+  "finalized": true,
+  "as_of_date": "2026-05-12",
+  "supersedes": "governor_admission_pd34_draft.json (2026-05-12 12:55 KST, pre-Codex Round 2)",
+  "supersede_reason": "Codex governor PD34 critic stance=REVISE (5 concerns 3 HIGH + 2 MEDIUM) dispositioned per Charter §8 No Silent Override. 3 ACCEPT (C1 admission language格下 + C2 weights.csv blocking + C3 cert chain CONDITIONAL) + 2 PARTIAL_ACCEPT (C4 lockbox/baseline parity + C5 DSR M=18 research_foundation_only). admission verdict revised: ADMIT_AS_RESEARCH_FOUNDATION → REGISTER_AS_RESEARCH_FOUNDATION_CANDIDATE_AX008_3OF3_PENDING.",
+
+  "agent": {
+    "agent_id": "governor-WT-D20260511_001-PD34-FINAL-POST-CODEX-ROUND-2",
+    "agent_type": "governor",
+    "agent_version": "v6.1-pg0_pg3_book_admit-pd34-final-post-codex",
+    "model": "Opus_4_7_1M",
+    "boundary_compliance": "no_strategy_design_no_alpha_modification_no_weight_decision_book_level_admit_only"
+  },
+
+  "mandate_context": {
+    "user_directive_2026_05_12": "C안 PG2로 확정하고 성과 개선을 위한 정규 리서치 돌입. Cert 발급 필수, Codex Round 발급 필수, AX-008 3/3 필수",
+    "user_intent_interpretation_post_codex_c1": "'C안 PG2로 확정' = C_softmax candidate strategy 확정 via research_foundation registry (intent preserved). 'PG2' = production admission = AX-008 3/3 + grace clauses 충족 시점까지 deferred. Codex C1 ACCEPT 결과 admit language 격하.",
+    "judge_verdict_inherited": "JUDGE_PASSED_CONDITIONAL_WITH_BLOCKER_GRACE — ADMIT_AS_RESEARCH_FOUNDATION T+30 grace, S4 v2 admit retained until overlay cycle completes",
+    "charter_reference": "Charter v1.7 §10 6-agent lifecycle + AX-008 Verification Triangulation + Charter §8 No Silent Override",
+    "ax_008_status_post_codex_round_2_governor": "MARGINAL_PASS 2/3 (Forge_evidence + Architect concord, Codex critic REJECT/REVISE documented). 도훈 mandate 'AX-008 3/3 필수' floor 2/3에서 미충족 명시 — production admission readiness implication 제거."
+  },
+
+  "input_artifacts_inherited": {
+    "alpha_pd27_burn0m": {
+      "path": "qepm/mailbox/worktask/WT-D20260511_001/alpha_package_pd27.json",
+      "stage_md5": "e6a71e4600c505bb8b179c7ac3bbc562",
+      "n_sig_dates": 298,
+      "date_range": "2001-07-01 ~ 2026-04-01",
+      "cert_status": "alpha_discovery_certificate.json issued 2026-05-11 (Layer 2 backfill)"
+    },
+    "forge_pd30_package": {
+      "path": "qepm/mailbox/worktask/WT-D20260511_001/forge_package_pd30.json",
+      "status": "FINAL_method_a_canonical_pit_clean",
+      "primary_metrics_C_softmax": {"SR": 1.0081, "CAGR": 0.1689, "MDD": -0.22943, "CVaR_95": -0.08788, "Sortino": 0.5554, "Calmar": 0.7361, "TO_one_way": 3.33, "TO_round_trip_disclosure_pending": 6.66, "n_months": 296}
+    },
+    "architect_pd31_verification": {
+      "path": "qepm/mailbox/worktask/WT-D20260511_001/architect/architect_pd31_verification.json",
+      "status": "PASS_NEGLIGIBLE_5_PRIMARY_METRICS",
+      "ax_008_contribution": "source_3_of_3_with_codex_dissent_documented"
+    },
+    "judge_verdict_pd33": {
+      "path": "qepm/mailbox/worktask/WT-D20260511_001/judge_verdict_pd33.json",
+      "verdict": "JUDGE_PASSED_CONDITIONAL_WITH_BLOCKER_GRACE",
+      "gate_cascade": "0~18 PASS with 2 PARTIAL (PIT inherited architecture dispute + OOS_IS 0.57 structural drift)",
+      "harvey_5spec_pass": "5/5 STRICT t_NW 3.38~4.71 + 5/5 STRICT HLZ t > 2.99",
+      "dsr_M18_strict": 0.999388,
+      "q_lead_escalate_trigger_hit": "HIGH count 12 > threshold 5"
+    },
+    "codex_critic_response_forge_pd30": {
+      "path": "qepm/mailbox/worktask/WT-D20260511_001/codex_critic_response_forge_pd30.json",
+      "stance": "REJECT", "n_concerns": "7 (6 HIGH + 1 MEDIUM)",
+      "disposition_count": "5 ACCEPT + 2 PARTIAL_ACCEPT in Judge PD33 final"
+    },
+    "codex_critic_response_judge_pd33": {
+      "path": "qepm/mailbox/worktask/WT-D20260511_001/codex_critic_response_judge_pd33.json",
+      "stance": "REJECT", "n_concerns": "7 (6 HIGH + 1 MEDIUM)",
+      "echo_chamber_risk": "HIGH",
+      "disposition_count": "2 ACCEPT + 4 PARTIAL_ACCEPT + 1 REBUTTAL in Judge PD33 final"
+    },
+    "codex_critic_response_governor_pd34": {
+      "path": "qepm/mailbox/worktask/WT-D20260511_001/codex_critic_response_governor_pd34.json",
+      "stance": "REVISE", "n_concerns": "5 (3 HIGH + 2 MEDIUM)",
+      "weakest_assumption": "ADMIT_AS_RESEARCH_FOUNDATION can satisfy user's PG2 confirmation mandate while AX-008 is only 2/3, Codex remains REJECT, and canonical weights/cert artifacts are incomplete or stale",
+      "disposition_count": "3 ACCEPT + 2 PARTIAL_ACCEPT in THIS PD34 final"
+    }
+  },
+
+  "pg0_portfolio_gap_diagnosis": {
+    "current_book_state_pre_admit": {
+      "schema_version": "v2.0_post_PD25_revoke",
+      "admitted_ids": [
+        "STR_1715_AR_threshold_overlay_PG2_v2_alpha_2026_04",
+        "TSMOM_8_ETF_rotation_PG2_no_KR_bond_overlap",
+        "KR_10y_bond_ETF_PG2",
+        "CASH_KRW_PG2_S4"
+      ],
+      "book_weights": {"STR_1715": 0.50, "TSMOM": 0.25, "KR_10y": 0.20, "CASH": 0.05},
+      "deployment_suspended": true,
+      "suspension_reason": "PD25 PIT divergence revoke 2026-05-12 8:40 KST — 도훈 mandate '자동발표는 취소'"
+    },
+    "target_metrics_charter_v1_4_section_13": {"SR_target": 2.0, "CAGR_target_pct": 16.0, "MDD_target_pct": -25.0},
+    "current_gap_S4_v2_admit_baseline_255m": {
+      "metrics": {"SR": 1.81, "CAGR_pct": 19.70, "MDD_pct": -12.80},
+      "SR_gap": "1.81 vs 2.0 = 0.19 (under)",
+      "CAGR_overshoot_pp": "+3.70 (over)",
+      "MDD_outperform_pp": "12.20 (better than target)"
+    },
+    "C_softmax_raw_foundation_gap_296m": {
+      "metrics": {"SR": 1.0081, "CAGR_pct": 16.89, "MDD_pct": -22.94},
+      "SR_gap_vs_target_2_0": "1.0081 vs 2.0 = 0.99 (under)",
+      "CAGR_overshoot_pp": "+0.89 (over by margin)",
+      "MDD_outperform_pp": "2.06 (better than target)",
+      "apples_to_apples_post_2011_183mo": {
+        "S4_v2": 1.80, "C_softmax": 0.77, "delta_SR": -1.03,
+        "interpretation": "AR threshold + M4 regime overlay contribution ~1.03 SR"
+      }
+    },
+    "primary_residual_gap": "SR -0.19 deployment baseline (S4 v2 1.81) to -0.99 raw foundation (C_softmax 1.01). Path: (a) overlay cycle T+30 (PD30 + AR + M4 = 1.03 SR replication), (b) PD32 5th source admit (alpha diversification), (c) overlay layer enhancement.",
+    "5th_source_inprogress": "PD32 alpha 5th source research 진행 (alpha_package_pd32_draft.json mailbox present 2026-05-12 11:31 KST)"
+  },
+
+  "pg1_individual_admission_eligibility": {
+    "scope": "C_softmax (4-sleeve composite KR equity 0.55 + TSMOM 0.225 + KR_10y 0.18 + CASH 0.045) per Judge PD33 ADMIT_AS_RESEARCH_FOUNDATION recommendation, governor格下 → REGISTER_AS_RESEARCH_FOUNDATION_CANDIDATE per Codex C1 ACCEPT",
+    "cert_chain_audit_status_revised_per_codex_c3_accept": {
+      "overall_chain_eligibility": "CONDITIONAL (Codex C3 ACCEPT — eligibility 'PASS' overclaim downgraded)",
+      "alpha_discovery_certificate": {
+        "path": "qepm/mailbox/worktask/WT-D20260511_001/alpha_discovery_certificate.json",
+        "issued": true,
+        "issued_at": "2026-05-11T10:45:59+0900",
+        "issued_by": "cert_backfill_audit.R v1.0 Layer 2 backfill",
+        "metrics": "cor=0 mechanism_chars=559 factor_specs_new=3 harvey_t_specs_pass=4",
+        "eligibility_check": "PASS (4 AND conditions met)",
+        "lineage_basis": "PD27 alpha extension (1715 H1 burn-in 0m). Inherit via PD30 forge_package md5 e6a71e4600c505bb8b179c7ac3bbc562 Pure Function frozen.",
+        "current_validity_assessment": "VALID_CURRENT"
+      },
+      "sr_provenance_certificate": {
+        "path": "qepm/mailbox/worktask/WT-D20260511_001/sr_provenance_certificate.json",
+        "issued": true,
+        "issued_at": "2026-05-11T09:57:43+09:00",
+        "metrics_legacy": "sr_realized_share_based=2.0546 (v2.1 5-sleeve era pre-PD25 revoke)",
+        "metrics_current_pd30_C_softmax": 1.0081,
+        "eligibility_check_legacy": "PASS (legacy basis)",
+        "current_validity_assessment": "STALE_LEGACY_BASIS — refresh for PD30 C_softmax SR 1.0081 OBLIGATORY (Codex C3 ACCEPT, GC obligation added)",
+        "T_plus_14_grace_clause_added": "GC1b: sr_provenance_certificate refresh on PD30 C_softmax basis"
+      },
+      "schedule_fidelity_certificate": {
+        "path": "qepm/mailbox/worktask/WT-D20260511_001/schedule_fidelity_certificate.json",
+        "issued": true,
+        "issued_at": "2026-05-11T10:55:11+0900",
+        "metrics_legacy": "weights_csv_unique_dates_count=155 alpha_sig_dates_count=155 schedule_density_ratio=1.0",
+        "current_validity_assessment": "STALE_LEGACY_BASIS — PD20 Path 2 era 155-date. PD30 C_softmax requires 298-date 4-sleeve × 30-slot canonical weights.csv (Codex C2 + Judge C6/Forge F5 ACCEPT)",
+        "T_plus_30_grace_clause_GC6": "Mailbox canonical weights.csv ~23,840 rows materialization + schedule_fidelity_certificate refresh"
+      },
+      "forge_package_validated_certificate": {
+        "path_planned": "qepm/mailbox/worktask/WT-D20260511_001/forge_package_validated_certificate.json",
+        "issued_status": "PENDING_LAYER_2_BACKFILL",
+        "verification_basis": "PD30 forge_package 8-field schema: (1) wt_id (2) phase (3) status (4) primary_metrics (5) hurdle_v2_2 (6) ax_compliance (7) pure_function_audit (8) self_rationalization_audit — all PASS structurally",
+        "post_layer_2_eligibility": "PASS (8 fields validated)",
+        "issuance_path": "Layer 2 cert_backfill_audit.R --target=WT-D20260511_001 --manual (post-PD34 admit)"
+      },
+      "governor_concord_certificate": {
+        "current_path": "qepm/mailbox/governor/governor_concord_certificate.json (legacy 2026-05-05 Path C 70/15/15)",
+        "current_pre_pd34_status": "STALE_LEGACY (Hybrid 70/15/15 PG2 admit 2026-05-05)",
+        "new_issuance_planned_post_pd34": "PD34 admit cycle → refresh with concord_type=research_foundation_candidate_registry_add (book_state retain S4 v2 + C_softmax registry add)",
+        "issuance_responsibility": "PostToolUse Hook governor_concord_certifier.sh after book_state edit in this PD34 cycle"
+      }
+    },
+    "cert_chain_audit_summary_revised": {
+      "5_of_5_required": "1 valid_current (alpha_discovery) + 2 stale_legacy_basis (sr_provenance + schedule_fidelity) + 2 pending_post_admit (forge_package_validated + governor_concord)",
+      "eligibility_chain_status": "CONDITIONAL (NOT PASS) — Codex C3 ACCEPT",
+      "T_plus_14_obligation_added": ["GC1b sr_provenance refresh on PD30 basis"],
+      "T_plus_30_obligation": ["GC6 schedule_fidelity refresh + canonical weights.csv materialization"],
+      "post_admit_layer_2_backfill_obligation": ["forge_package_validated cert", "governor_concord cert"]
+    },
+    "ax_008_triangulation_status_per_judge_pd33_governor_pd34_revised": {
+      "source_1_forge_pd30_evidence": "PASS (Method A canonical + 8 metrics exact_match + Pure Function audit)",
+      "source_1_codex_forge_critic": "REJECT (7 concerns)",
+      "source_2_codex_critic_overall_3_stages": "REJECT (forge 7 + judge 7 + governor 5 = 19 concerns Charter §8 dispositioned)",
+      "source_3_architect_pd31_independent": "PASS_NEGLIGIBLE_5_OF_5",
+      "ax_008_numerical_threshold_2_of_3": "MET (Forge_evidence + Architect = 2/3)",
+      "ax_008_verdict_strict_3_of_3_dohoon_mandate_status": "NOT_MET — Codex critic REJECT documented at all 3 stages (forge_pd30 + judge_pd33 + governor_pd34)",
+      "L_159_basis": "Codex devil's advocate REJECT does NOT auto-fail AX-008 if 2-source concord exists. Numerical floor MET; 3/3 strict mandate per user 미충족.",
+      "remediation_path_to_3_of_3": "Overlay cycle T+30 (PD30 + AR + M4) 6-agent lifecycle 후 Codex re-critic. baseline parity (same-period same-cost same-DSR) PASS 시 Codex stance reversal 가능."
+    }
+  },
+
+  "pg2_book_level_rebalance_decision_revised_post_codex_c1": {
+    "decision_options_evaluated": {
+      "option_A_judge_strict_research_foundation_only": {"definition": "book_state retain S4 v2 + C_softmax registry candidate only", "selected": false},
+      "option_B_dohoon_strict_immediate_mutation": {"definition": "book_state mutate S4 v2 → C_softmax composite", "selected": false, "rationalization_risk": "HIGH"},
+      "option_C_charter_section_10_incremental_research_foundation_admit": {
+        "definition_pre_codex": "research_foundation admit + 8 grace clauses",
+        "definition_post_codex_c1_accept_revised": "REGISTER_AS_RESEARCH_FOUNDATION_CANDIDATE (NOT 'admit' language per Codex C1) + S4 v2 retain + 8 grace clauses T+14/T+30/T+60 + AX-008 3/3 pending + production promotion BLOCK",
+        "selected": true
+      }
+    },
+    "decision_selected": "OPTION_C_INCREMENTAL_RESEARCH_FOUNDATION_CANDIDATE_REGISTRY_ADD",
+    "decision_rationale_post_codex": "Charter §10 Role Card discovery_wt class 'research_foundation_candidate_registry' incremental path. Codex C1 ACCEPT — admission language 격하 ADMIT → REGISTER, AX-008 3/3 mandate explicit pending. Judge ADMIT_AS_RESEARCH_FOUNDATION 권고 + 도훈 'C안 PG2로 확정' intent partial preserve (C안 candidate strategy registry, PG2 production admit deferred AX-008 3/3 충족 시점). immediate replacement (Option B) = Charter §10 Role Card replacement_promotion_wt class same-period same-cost same-DSR baseline parity 미충족 (Forge F2 ACCEPT) + AX-002 우회 rationalization risk HIGH.",
+    "selected_action_atomic_revised": {
+      "book_state_mutation_decision": "RETAIN_S4_V2_4_SLEEVE_50_25_20_5_CASH_PLUS_C_SOFTMAX_RESEARCH_FOUNDATION_CANDIDATE_REGISTRY_ADD",
+      "schema_version_update": "v2.0_post_PD25_revoke → v2.1_post_PD34_research_foundation_candidate_add",
+      "admitted_ids_retain": [
+        "STR_1715_AR_threshold_overlay_PG2_v2_alpha_2026_04",
+        "TSMOM_8_ETF_rotation_PG2_no_KR_bond_overlap",
+        "KR_10y_bond_ETF_PG2",
+        "CASH_KRW_PG2_S4"
+      ],
+      "book_weights_retain": {"STR_1715": 0.50, "TSMOM": 0.25, "KR_10y": 0.20, "CASH": 0.05},
+      "research_foundation_candidate_registry_new_entry": {
+        "candidate_id": "C_SOFTMAX_KR_EQUITY_COMPOSITE_PG2_RESEARCH_FOUNDATION_CANDIDATE_PD30",
+        "candidate_type": "raw_alpha_layer_without_overlay",
+        "admission_level": "REGISTER_AS_RESEARCH_FOUNDATION_CANDIDATE (NOT production admit, NOT weight allocation)",
+        "ax_008_status": "MARGINAL_PASS_2_OF_3_CODEX_DISSENT_DOCUMENTED — dohoon 3/3 mandate pending",
+        "production_promotion_BLOCK": true,
+        "block_lift_conditions_AND_clauses": [
+          "AX-008 3/3 strict PASS (Codex critic stance reversal post overlay cycle re-critic)",
+          "Same-period same-cost same-DSR baseline parity vs S4 v2 PASS (Forge F2 ACCEPT GC5)",
+          "Canonical weights.csv 298-date materialization PASS (Codex C2 + Judge C6/Forge F5 ACCEPT GC6)",
+          "Lockbox period strategy NAV chart + Pre-LB/Lockbox/Combined decomposition PASS (Forge F4 GC7)",
+          "Factor DB rebuild Usable_Date + Z_Score_Aligned built-in (C4/C13/C14/C15 GC8 T+60)",
+          "Overlay cycle (PD30 + AR + M4) 6-agent lifecycle PASS (GC7 T+30)",
+          "DSR M=150 multiplicative basis recompute disclosure (GC2 T+14)",
+          "5-spec republish on baseline parity (GC4 T+14)"
+        ],
+        "metrics_basis_296m_pd30": {"SR": 1.0081, "CAGR_pct": 16.89, "MDD_pct": -22.94, "TO_one_way": 3.33, "TO_round_trip_disclosure": 6.66},
+        "sleeve_composition_pending_admit": {"KR_EQUITY_composite": 0.55, "TSMOM_synthetic": 0.225, "KR_10Y_synthetic": 0.18, "CASH": 0.045},
+        "grace_clauses_8_binding": {"T_plus_14": 4, "T_plus_30": 3, "T_plus_60": 1, "additional_T_plus_14_per_codex_c3": 1},
+        "wt_id_origin": "WT-D20260511_001"
+      },
+      "deployment_suspended_retain": true,
+      "deployment_resume_condition": "block_lift_conditions 8건 AND-gate + 도훈 mandate 시점"
+    },
+    "rationalization_red_flags_self_check_post_codex": [
+      {"phrase_avoided": "도훈 mandate면 모두 OK", "rationale": "AVOIDED — Codex C1 ACCEPT admission language 격하 REGISTER_AS_RESEARCH_FOUNDATION_CANDIDATE, AX-008 3/3 mandate explicit pending"},
+      {"phrase_avoided": "AX-008 MARGINAL이면 무시 가능", "rationale": "AVOIDED — Codex C5 ACCEPT_RESEARCH_FOUNDATION_ONLY, replacement-grade 부적격 명시 + GC2 binding"},
+      {"phrase_avoided": "STRUCTURALLY EXPECTED, NOT a defect", "rationale": "AVOIDED — Codex Forge F2 ACCEPT baseline parity 미충족, OOS_IS 0.57 material structural drift retain"},
+      {"phrase_avoided": "OOS 0.57 structural diagnosis enough", "rationale": "AVOIDED — overlay cycle GC7 T+30 binding obligation"},
+      {"phrase_avoided": "cert chain 5/5 issued", "rationale": "AVOIDED — Codex C3 ACCEPT eligibility downgrade CONDITIONAL, refresh obligation"},
+      {"phrase_avoided": "Replacement scenario 즉시 admit", "rationale": "AVOIDED — Charter §10 discovery_wt class incremental, replacement_promotion_wt 의무 미충족 명시"},
+      {"phrase_avoided": "research_foundation = production admit과 동급", "rationale": "AVOIDED — Charter §10 Role Card 4-class 명확 구분, REGISTER_AS_CANDIDATE 격하"},
+      {"phrase_avoided": "Codex REVISE면 minor revision OK", "rationale": "AVOIDED — 5 concerns Charter §8 ACCEPT/PARTIAL transparent disposition + admission language 실질 격하"}
+    ]
+  },
+
+  "pg3_live_drift_deployment_timing": {
+    "deployment_suspended_status_retain": true,
+    "suspension_lineage": [
+      "2026-05-12T08:40 KST PD25 PIT divergence revoke (도훈 '자동발표 취소')",
+      "2026-05-12T12:30 KST Judge PD33 JUDGE_PASSED_CONDITIONAL_WITH_BLOCKER_GRACE",
+      "2026-05-12T13:25 KST Governor PD34 REGISTER_AS_RESEARCH_FOUNDATION_CANDIDATE_AX008_3OF3_PENDING (deployment_suspended retain)"
+    ],
+    "deployment_resume_decision_authority": "도훈 mandate only — production promotion lift conditions 8건 AND-gate 충족 후",
+    "live_drift_monitoring_scope_current": {
+      "active_strategies_monitoring": [
+        "STR_1715_AR_threshold_overlay_PG2 (legacy admit, current dormant per PD25 suspension)",
+        "TSMOM_8_ETF_rotation_PG2 (legacy admit)",
+        "KR_10y_bond_ETF_PG2 (legacy admit)"
+      ],
+      "research_foundation_candidate_monitoring_new": [
+        "C_SOFTMAX_KR_EQUITY_COMPOSITE_PG2_RESEARCH_FOUNDATION_CANDIDATE_PD30 (PD34 register_as_candidate, NO live deployment, NO weight allocation, monitoring for grace clauses progress only)"
+      ]
+    },
+    "9_grace_clauses_handoff_binding_revised_per_codex_c3": {
+      "T_plus_14_strict_2026_05_26_KST": [
+        "GC1: Forge cycle TO_one_way + TO_round_trip explicit disclosure (Codex Forge F1 PARTIAL_ACCEPT)",
+        "GC1b: sr_provenance_certificate refresh on PD30 C_softmax SR 1.0081 basis (NEW per Codex Governor C3 ACCEPT)",
+        "GC2: Forge cycle DSR M=150 multiplicative basis conservative recompute (Codex Judge C3 + Governor C5 PARTIAL_ACCEPT)",
+        "GC3: Forge cycle Pure Function audit risk/opt md5 NOT_USED_IN_CYCLE 6-package disclosure (Codex Forge F6 PARTIAL_ACCEPT)",
+        "GC4: Forge cycle 5-spec republish on baseline (S4 v2) parity (Codex Forge F3 ACCEPT)"
+      ],
+      "T_plus_30_strict_2026_06_11_KST": [
+        "GC5: Same-period S4 v2 baseline same-cost same-DSR re-measure (Codex Forge F2 ACCEPT)",
+        "GC6: Mailbox canonical weights.csv materialization ~23,840 rows 4-sleeve × 298 dates × ~30 ticker-slot + schedule_fidelity refresh (Codex Judge C6 + Forge F5 + Governor C2 ACCEPT)",
+        "GC7: Overlay cycle (PD30 + AR threshold + M4 regime) Charter §10 6-agent lifecycle activation with Judge Lockbox harness invoke (Codex Judge C7 + Forge F4 + Governor C4 PARTIAL_ACCEPT)"
+      ],
+      "T_plus_60_strict_2026_07_11_KST": [
+        "GC8: Factor DB rebuild WT (Usable_Date schema + Z_Score_Aligned built-in) C4/C13/C14/C15 architecture remediation (Codex Judge C4 + Forge F7 PARTIAL_ACCEPT_INHERITED_ARCHITECTURE_DISPUTE)"
+      ]
+    },
+    "deployment_resume_path_post_grace_revised": "9 grace clauses AND-gate (T+14: 5 + T+30: 3 + T+60: 1) 완료 + Codex re-critic stance reversal (AX-008 3/3 PASS) + 도훈 mandate 시점에 promotion_wt 별도 spawn"
+  },
+
+  "ax_008_compliance_final_post_codex_round_2_governor": {
+    "verdict": "MARGINAL_PASS_2_OF_3_CODEX_DISSENT_DOCUMENTED_DOHOON_3_OF_3_MANDATE_PENDING",
+    "numerical_threshold_met": true,
+    "strict_3_of_3_mandate_met": false,
+    "sources_pass_status": {
+      "source_1_forge_evidence": "PASS",
+      "source_2_codex_critic_overall_3_stages": "REJECT (forge_pd30 + judge_pd33 + governor_pd34)",
+      "source_3_architect_independent": "PASS_NEGLIGIBLE_5_OF_5"
+    },
+    "L_159_basis": "Codex devil's advocate REJECT does NOT auto-fail AX-008 if 2-source concord exists. Numerical floor met; 3/3 strict mandate pending.",
+    "honest_disclosure_no_rationalization_post_codex_c1": "AX-008 numerical threshold met (Forge_evidence + Architect = 2/3). Codex critic 19 concerns (forge 7 + judge 7 + governor 5) Charter §8 No Silent Override compliant dispositioned. 도훈 mandate 'AX-008 3/3 필수' floor 2/3 미충족 명시 — production admission readiness implication 격하 (REGISTER_AS_CANDIDATE not ADMIT). Codex 3/3 path = overlay cycle T+30 6-agent lifecycle 후 re-critic.",
+    "next_cycle_strict_3_of_3_path": "Overlay cycle GC7 + baseline parity GC5 + canonical weights.csv GC6 (T+30) + DSR M=150 GC2 + 5-spec baseline GC4 (T+14) → re-run Codex critic 3-stage → 3-source PASS 가능 시 promotion_wt cycle 정식 spawn"
+  },
+
+  "verdict_matrix_pd34_final": {
+    "PG0_portfolio_gap_diagnosis": "DOCUMENTED_3_LAYER_GAP (raw_alpha_1.01 + overlay_1.03_pending + 5th_source_PD32_inprogress)",
+    "PG1_individual_admission_eligibility": "CONDITIONAL (1 valid_current + 2 stale_legacy + 2 pending_post_admit; Codex C3 ACCEPT)",
+    "PG2_book_level_rebalance": "OPTION_C_INCREMENTAL_REGISTER_AS_RESEARCH_FOUNDATION_CANDIDATE_S4_V2_RETAIN (Codex C1 ACCEPT language格下)",
+    "PG3_live_drift_deployment": "SUSPENDED_RETAIN_9_GRACE_CLAUSES_T14_T30_T60_PRODUCTION_PROMOTION_BLOCKED",
+    "AX_008_2_of_3_floor_met": true,
+    "AX_008_3_of_3_dohoon_mandate_met": false,
+    "Judge_verdict_inherit": "JUDGE_PASSED_CONDITIONAL_WITH_BLOCKER_GRACE_RESPECTED_AND_REVISED_PER_CODEX_GOVERNOR_C1",
+    "Charter_section_8_no_silent_override": "COMPLIANT_19_CONCERNS_3_STAGES_DISPOSITIONED (forge 7 + judge 7 + governor 5)",
+    "Charter_section_10_role_card_class": "DISCOVERY_WT_RESEARCH_FOUNDATION_CANDIDATE_REGISTRY_INCREMENTAL",
+    "user_mandate_dohoon_intent_preserved": "PARTIAL — C안 candidate strategy 확정 registry add, PG2 production admit AX-008 3/3 충족 pending (language 격하 per Codex C1 ACCEPT)",
+    "overall_admission_decision": "REGISTER_AS_RESEARCH_FOUNDATION_CANDIDATE_AX008_3OF3_PENDING_T_PLUS_30_GRACE_PRODUCTION_PROMOTION_BLOCKED"
+  },
+
+  "admission_decision_final": "REGISTER_AS_RESEARCH_FOUNDATION_CANDIDATE_AX008_3OF3_PENDING",
+
+  "admission_decision_rationale_concise": "C_softmax 4-슬리브 composite (KR_equity 0.55 + TSMOM 0.225 + KR_10y 0.18 + CASH 0.045) REGISTER_AS_RESEARCH_FOUNDATION_CANDIDATE T+30 grace 정합. PASS evidence (research_foundation candidate scope): Hurdle v2.2 Grade A SR 1.0081 / CAGR 16.89% / MDD -22.94% < 25% target + Method A canonical PIT clean strict + Harvey 5/5 STRICT t_NW 3.38~4.71 + DSR M=18 strict 0.9994 + single asset cap [0.00, 0.20] STRICT 0 violations / 298 sig_dates + HHI ≤ 0.15 STRICT max 0.1154 + AX-008 MARGINAL_PASS_2_OF_3 numerical floor (Forge_evidence + Architect concord, Codex critic REJECT 19 concerns 3 stages dispositioned per Charter §8) + AX-001 v2 REBUTTAL grounded (multi-sleeve EXCLUSION + L-121 Q07 crisis positive empirical) + AX-007 Exception #1 STRICT PASS. CANDIDATE_NOT_ADMIT 사유 (Codex Governor C1 ACCEPT): 도훈 'AX-008 3/3 필수' mandate floor 2/3 미충족. CONDITIONAL_WITH_BLOCKER_GRACE 사유: 19 Codex concerns dispositioned per Charter §8 + 9 grace clauses T+14/T+30/T+60 obligatory + Q-Lead escalate trigger HIT (HIGH count 12 Judge+Forge + 3 Governor = 15). book_state mutation 결정: RETAIN S4 v2 (50/25/20/5cash) + C_softmax research_foundation_candidate registry add (Option C incremental, Charter §10 discovery_wt class). 도훈 mandate 'C안 PG2로 확정' intent partial preserved — C안 candidate strategy 확정 registry add + PG2 production admit AX-008 3/3 충족 시점까지 deferred. PRODUCTION PROMOTION 8-condition AND-gate BLOCKED: (1) AX-008 3/3 strict + (2) baseline parity vs S4 v2 + (3) canonical weights.csv + (4) Lockbox NAV report + (5) Factor DB rebuild + (6) overlay cycle 6-agent + (7) DSR M=150 + (8) 5-spec baseline. 정식 promotion_wt cycle은 9 grace clauses 완료 후 별도 spawn.",
+
+  "book_state_mutation_planned_revised": {
+    "schema_version": "v2.0_post_PD25_revoke → v2.1_post_PD34_research_foundation_candidate_add",
+    "admitted_ids_retain": [
+      "STR_1715_AR_threshold_overlay_PG2_v2_alpha_2026_04",
+      "TSMOM_8_ETF_rotation_PG2_no_KR_bond_overlap",
+      "KR_10y_bond_ETF_PG2",
+      "CASH_KRW_PG2_S4"
+    ],
+    "book_weights_retain": {
+      "STR_1715_AR_threshold_overlay_PG2_v2_alpha_2026_04": 0.50,
+      "TSMOM_8_ETF_rotation_PG2_no_KR_bond_overlap": 0.25,
+      "KR_10y_bond_ETF_PG2": 0.20,
+      "CASH_KRW_PG2_S4": 0.05
+    },
+    "research_foundation_candidate_registry_add": {
+      "candidate_id": "C_SOFTMAX_KR_EQUITY_COMPOSITE_PG2_RESEARCH_FOUNDATION_CANDIDATE_PD30",
+      "admission_level": "REGISTER_AS_RESEARCH_FOUNDATION_CANDIDATE (NOT production admit)",
+      "ax_008_status": "MARGINAL_PASS_2_OF_3_CODEX_DISSENT_DOCUMENTED_DOHOON_3_OF_3_PENDING",
+      "judge_verdict_inherit": "JUDGE_PASSED_CONDITIONAL_WITH_BLOCKER_GRACE",
+      "metrics_296m_window_2001_08_2026_03": {"SR": 1.0081, "CAGR_pct": 16.89, "MDD_pct": -22.94, "CVaR_95_pct": -8.79, "Sortino_monthly": 0.5554, "Calmar": 0.7361, "TO_ann_one_way": 3.33, "TO_ann_round_trip_disclosure": 6.66},
+      "sleeve_composition_pending_admit": {"KR_EQUITY_composite": 0.55, "TSMOM_synthetic": 0.225, "KR_10Y_synthetic": 0.18, "CASH": 0.045},
+      "ax_001_v2_status": "PASS_VIA_REBUTTAL_MULTI_SLEEVE_EXCLUSION",
+      "harvey_5spec_strict": "5_OF_5_t_NW_3_38_to_4_71",
+      "dsr_M18_strict": 0.999388,
+      "dsr_M150_conservative_pending": "T+14 GC2 obligatory (E[max SR_150] 2.49 ann > obs 1.01 → research_foundation_only scope)",
+      "wt_id_origin": "WT-D20260511_001",
+      "phase_origin": "PD33 → PD34",
+      "grace_clauses_9_binding": {"T_plus_14": 5, "T_plus_30": 3, "T_plus_60": 1, "total": 9},
+      "deployment_suspended": true,
+      "production_promotion_BLOCK": true,
+      "production_promotion_lift_AND_gate_conditions": [
+        "AX-008 3/3 strict PASS (Codex critic stance reversal post overlay cycle re-critic)",
+        "Same-period same-cost same-DSR baseline parity vs S4 v2 PASS",
+        "Canonical weights.csv 298-date materialization PASS",
+        "Lockbox period strategy NAV report + Pre-LB/Lockbox/Combined decomposition PASS",
+        "Factor DB rebuild Usable_Date + Z_Score_Aligned built-in",
+        "Overlay cycle (PD30 + AR + M4) 6-agent lifecycle PASS",
+        "DSR M=150 multiplicative basis recompute disclosure PASS",
+        "5-spec republish on baseline parity PASS"
+      ],
+      "production_promotion_path_after_grace": "promotion_wt cycle spawn 별도 (Q-Lead orchestration + 도훈 mandate)"
+    }
+  },
+
+  "deployment_suspension_metadata_retain": {
+    "deployment_suspended": true,
+    "suspension_lineage": [
+      "2026-05-12T08:40 KST PD25 PIT divergence revoke (도훈 mandate '자동발표는 취소')",
+      "2026-05-12T12:30 KST Judge PD33 JUDGE_PASSED_CONDITIONAL_WITH_BLOCKER_GRACE",
+      "2026-05-12T13:25 KST Governor PD34 REGISTER_AS_RESEARCH_FOUNDATION_CANDIDATE_AX008_3OF3_PENDING (deployment_suspended retain)"
+    ],
+    "deployment_resume_authority": "도훈 mandate only — production promotion 8-condition AND-gate 충족 후"
+  },
+
+  "boundary_compliance": {
+    "alpha_package_modified": false,
+    "risk_package_modified": false,
+    "optimizer_package_modified": false,
+    "target_weights_decided": false,
+    "covariance_recomputed": false,
+    "forge_outputs_modified": false,
+    "strategy_design_modified": false,
+    "judge_verdict_modified": false,
+    "scope": "book_level_admit_only_PG0_PG3_no_strategy_design_no_alpha_modification"
+  },
+
+  "next_steps_post_pd34_final": {
+    "immediate_post_admit": [
+      "book_state.json mutation (v2.0 → v2.1 research_foundation_candidate registry add)",
+      "governance_log.json admission_log[4] append (ADMISSION_GOVERNOR_PG0_PG3_V4_0_PD34_RESEARCH_FOUNDATION_CANDIDATE_REGISTER_AX008_3OF3_PENDING)",
+      "governor_concord_certificate.json refresh (PD34 register_as_research_foundation_candidate, concord_type=research_foundation_candidate_registry_add)",
+      "Layer 2 cert_backfill_audit.R --target=WT-D20260511_001 --manual (forge_package_validated cert post-admit issuance)",
+      "Q-Lead Telegram brief 도훈 — REGISTER_AS_RESEARCH_FOUNDATION_CANDIDATE_AX008_3OF3_PENDING + Codex Round 2 governor 5 concerns disposition + 9 grace clauses"
+    ],
+    "T_plus_14_obligation_strict_2026_05_26": [
+      "Forge cycle GC1 (TO disclosure) + GC1b (sr_provenance refresh) + GC2 (DSR M=150) + GC3 (Pure Function 6-pkg) + GC4 (5-spec baseline parity) — 5 clauses"
+    ],
+    "T_plus_30_obligation_strict_2026_06_11": [
+      "Forge cycle GC5 (same-period S4 v2 baseline) + GC6 (canonical weights.csv materialization + schedule_fidelity refresh)",
+      "Overlay cycle WT spawn GC7 (PD30 + AR + M4 6-agent lifecycle activation with Judge Lockbox harness)"
+    ],
+    "T_plus_60_obligation_strict_2026_07_11": [
+      "Architecture WT spawn GC8 (Factor DB rebuild Usable_Date + Z_Score_Aligned built-in)"
+    ],
+    "parallel_research_cycle": [
+      "PD32 alpha 5th source research 진행 (alpha_package_pd32_draft.json mailbox present)",
+      "도훈 명시 후속 PG cycle priority 결정 (overlay vs 5th source admit)"
+    ],
+    "memory_commit_l_code_proposed": "L-307: 'C_softmax 4-슬리브 composite REGISTER_AS_RESEARCH_FOUNDATION_CANDIDATE PG2 incremental (Charter §10 discovery_wt class) — 도훈 mandate AX-008 3/3 mandate floor 2/3 미충족 사유 admission language 격하 per Codex Governor C1 ACCEPT. Codex Round 2 3-stage 19 concerns Charter §8 dispositioned (forge 7 + judge 7 + governor 5). 9 grace clauses T+14/T+30/T+60 binding + production promotion 8-AND-gate BLOCKED. AX-008 MARGINAL_PASS 2/3 numerical floor (Forge_evidence + Architect concord, Codex critic dissent documented per L-159). Option C incremental selection rationale: Option B immediate replacement = AX-002 우회 합리화 risk HIGH given baseline parity 미충족. Option A pure retain = 도훈 mandate intent 약화. Option C = candidate strategy registry add 통한 intent partial preserve + process integrity full preserve.'"
+  },
+
+  "telegram_brief_planned": {
+    "agent": "Governor",
+    "title": "WT-D20260511_001 PG2 REGISTER_AS_CANDIDATE / C_softmax AX-008 3/3 pending T+30",
+    "key_findings_4_section_planned": [
+      "PG0~PG3 cascade: gap raw 0.99 + overlay 1.03 pending + 5th PD32 inprogress / cert chain CONDITIONAL (1 valid + 2 stale + 2 pending) / OPTION_C register_as_candidate / deployment_suspended retain + production BLOCKED",
+      "Book state v2.0 → v2.1: admit retain 4-sleeve 50/25/20/5cash + C_softmax research_foundation_candidate registry add (Charter §10 discovery_wt class)",
+      "Codex Round 2 3-stage: 19 concerns dispositioned (forge 7 + judge 7 + governor 5) Charter §8 + AX-008 MARGINAL 2/3 floor met / 도훈 3/3 mandate pending / 9 grace clauses T+14/T+30/T+60",
+      "Next: T+14 5 GC (TO + sr_prov refresh + DSR M=150 + Pure Function 6-pkg + 5-spec baseline) / T+30 3 GC (baseline parity + weights.csv + overlay 6-agent) / T+60 1 GC (Factor DB rebuild) / PD32 5th source parallel / 도훈 priority mandate"
+    ]
+  },
+
+  "codex_round_2_status_pd34_final": {
+    "draft_path": "qepm/mailbox/worktask/WT-D20260511_001/governor_admission_pd34_draft.json",
+    "codex_critic_response_governor_pd34": "qepm/mailbox/worktask/WT-D20260511_001/codex_critic_response_governor_pd34.json (stance=REVISE, 5 concerns)",
+    "challenge_note_pd34_section_appended": "qepm/mailbox/worktask/WT-D20260511_001/challenge_note.md ## PD34 section",
+    "final_path": "qepm/mailbox/worktask/WT-D20260511_001/governor_admission_pd34.json (THIS FILE)",
+    "n_codex_concerns_governor": 5,
+    "disposition_governor_breakdown": {"ACCEPT": 3, "PARTIAL_ACCEPT": 2},
+    "charter_section_8_no_silent_override_compliance": true
+  },
+
+  "self_rationalization_audit_post_codex": {
+    "회피_표현_governor_self_check": [
+      {"phrase_avoided": "도훈 mandate면 모두 OK", "rationale": "AVOIDED — Codex C1 ACCEPT, admission language 격하 REGISTER_AS_CANDIDATE, AX-008 3/3 mandate explicit pending"},
+      {"phrase_avoided": "AX-008 MARGINAL이면 무시 가능", "rationale": "AVOIDED — Codex C5 ACCEPT_RESEARCH_FOUNDATION_ONLY, replacement-grade 부적격 명시"},
+      {"phrase_avoided": "Replacement 즉시 admit OK", "rationale": "AVOIDED — Charter §10 discovery_wt class incremental, replacement baseline parity 미충족 명시"},
+      {"phrase_avoided": "research_foundation = production admit과 동급", "rationale": "AVOIDED — Charter §10 Role Card 4-class 명확 구분 REGISTER vs ADMIT"},
+      {"phrase_avoided": "cert chain 5/5 issued PASS", "rationale": "AVOIDED — Codex C3 ACCEPT eligibility downgrade CONDITIONAL"},
+      {"phrase_avoided": "Codex REVISE면 minor", "rationale": "AVOIDED — 5 concerns 실질 disposition + admission language 격하"},
+      {"phrase_avoided": "OOS 0.57 structural diagnosis enough", "rationale": "AVOIDED — overlay GC7 T+30 binding"},
+      {"phrase_avoided": "STRUCTURALLY EXPECTED, NOT a defect", "rationale": "AVOIDED — Forge F2 ACCEPT baseline parity 미충족 명시"}
+    ]
+  },
+
+  "generated_at": "2026-05-12T13:25:00+09:00"
+}

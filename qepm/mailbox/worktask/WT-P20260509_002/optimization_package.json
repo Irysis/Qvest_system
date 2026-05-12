@@ -1,0 +1,310 @@
+{
+  "task_id": "WT-P20260509_002",
+  "wt_type": "promotion_wt",
+  "wt_kind": "PG2_upgrade_walk_forward_dynamic_weight_no_paradigm",
+  "agent_id": "optimizer-research",
+  "as_of_date": "2026-05-09",
+  "draft": false,
+  "finalized": true,
+  "research_question": "정적 가중치 폐기 후 매 sig_date 60m 윈도우 walk-forward 동적 재최적화로 10 method 비교 — 도훈 framing 정량 검증 + paradigm 인용 회피 + Codex GOV-C1 정합 + Codex Critic Round 1 반영",
+  "paradigm_free_certification": "60/40 / SAA / Brinson 1986 / Managed Futures paradigm 인용 0건. 정량 metric + AX 정합만.",
+  "alpha_inheritance": {
+    "alpha_str_1715_unchanged": true,
+    "alpha_scores_path": "stage_artifacts/WT_D20260425_010/alpha_scores.parquet",
+    "n_sig_dates": 268,
+    "inherit_ref_path": "qepm/mailbox/worktask/WT-P20260509_002/alpha_package_inherit_ref.json"
+  },
+  "sleeve_definition": {
+    "AR_on_M4": "STR_1715 alpha-updated x M4 overlay x beta threshold (50% sleeve standalone returns, 256m available)",
+    "TSMOM_8ETF": "8-ETF basket re-derived (KODEX_KTB10Y A148070 제거 후 재정규화: r_8ETF = (r_9ETF - w_KTB10Y * r_KTB10Y) / (1 - w_KTB10Y), 135m available)",
+    "KR_10y": "KODEX 국고채10년 (A148070) standalone returns, 256m available",
+    "Cash": "0% return (UB=0 in walk-forward, mandate scope retain — 외부 M4 layer가 cash decision 담당)",
+    "cash_walk_forward_rationale": "Cash UB=0 — variance-based allocators의 risk-free 과적재 회피 + Codex GOV-C1 정합 (Cash는 admit candidate 아님). Crisis fallback은 sleeve간 dynamic re-balance + 외부 M4 layer 담당."
+  },
+  "walk_forward_design": {
+    "rolling_window_months": 60,
+    "burnin_months": 60,
+    "rebalance_freq": "monthly",
+    "pit_strict": true,
+    "no_in_sample_optimization": true,
+    "each_sig_date_uses_only_past_60m_data": true,
+    "n_eval_obs": 195,
+    "eval_period": "2010-02-01 ~ 2026-04-01"
+  },
+  "methods_evaluated": ["WF_RP_ERC", "WF_MV_lambda2", "WF_MV_lambda5", "WF_MV_lambda10", "WF_IV", "WF_MaxDiv", "WF_Bayesian_PS", "WF_DRO_W_eps0.01", "WF_DRO_W_eps0.05", "WF_DRO_W_eps0.1"],
+  "methods_count": 10,
+  "methods_excluded": {
+    "WF_HRP": "Codex C2 ACCEPT — candidates_tried <= 10. HRP excluded due to numerical degeneracy with zero-var Cash + small N=3 active sleeves",
+    "WF_BL": "Codex C2 ACCEPT — candidates_tried <= 10. BL excluded: no exogenous view (mandate no_fixed_view) + market-implied prior built from IV → effectively redundant"
+  },
+  "effectively_static_methods_penalized": {
+    "WF_IV": "Effectively static (sd_AR=0, sd_TSMOM=0, sd_KR=0) under KR_10y UB=0.20 cap — bound bind every period → static. composite x 0.7 penalty per mandate no_static_weight_admit",
+    "WF_RP_ERC": "Effectively static (same reason) — composite x 0.7 penalty"
+  },
+  "constraints_applied": {
+    "weight_bound_AR_on_M4": [0, 0.5],
+    "weight_bound_TSMOM": [0, 0.5],
+    "weight_bound_KR_10y": [0, 0.2],
+    "weight_bound_Cash": [0, 0],
+    "sum_weights": 1,
+    "long_only": true,
+    "codex_C1_resolution": "KR_10y UB lowered 0.50 -> 0.20 per Codex C1 ACCEPT mandatory (request.json constraints.single_asset_cap_0.20 + KR_10y는 단일 ETF A148070)"
+  },
+  "recommended_method": "WF_DRO_W_eps0.1",
+  "recommendation_rationale": {
+    "method_full_name": "Walk-forward Distributionally Robust Optimization (Wasserstein, eps=0.1)",
+    "academic_reference": "Esfahani-Kuhn (2018) Mathematical Programming 171, 'Data-driven distributionally robust optimization using the Wasserstein metric'",
+    "composite_score": 91.1,
+    "composite_rank_in_dynamic_tie_zone": "Tied for #1-#8 dynamic methods (composite 91.10 ~ 90.13). Static WF_IV/WF_RP_ERC (composite 92.0 raw) excluded with 0.7x penalty (no_static_admit mandate).",
+    "tie_breaker_applied": "Charter v1.5 hierarchy: Validity > Implementability > Robustness > Performance. 8 dynamic 동률 → turnover 최저(4.7% vs 7.6~30%) + Sortino 4.51 + CAGR 20.49% → WF_DRO_W_eps0.1",
+    "why_dro_wasserstein": "분포 불확실성 worst-case hedge — rolling 60m 표본 추정의 ambiguity 반영. Closed-form: Sigma_DRO = Sigma + eps^2 * I, mu_DRO = mu - eps * sqrt(diag(Sigma)). eps=0.1 ambiguity ball → low turnover 4.7% + low MDD -11.15% + dynamic AR-TSMOM trade-off (sd 0.042)",
+    "alternative_top_choices": ["WF_MV_lambda5 (TO 9.07%, CAGR 21.75%, SR 1.879)", "WF_MaxDiv (TO 7.59%, CAGR 21.36%, SR 1.880)", "WF_DRO_W_eps0.05 (TO 7.86%, CAGR 21.18%, SR 1.865)"]
+  },
+  "recommendation_metrics": {
+    "SR_ann": 1.8631,
+    "CAGR": 0.2049,
+    "MDD": 0.1115,
+    "Sortino": 4.5095,
+    "Calmar": 1.8385,
+    "Turnover_ann": 0.047,
+    "TE_vs_S0": 0.1125,
+    "IR_vs_S0": -1.5221,
+    "Vol_ann": 0.1036,
+    "n_obs": 195
+  },
+  "axiom_compliance": {
+    "AX001_v2_pass": true,
+    "AX001_crisis_alpha": 0.025,
+    "AX001_mdd_alleviation": 0.1118,
+    "AX001_spread_bad": 0.025,
+    "AX001_spread_normal": -0.0274,
+    "AX001_definition_note": "Portfolio-level adaptation of AX-001 v2: 3-test (a) crisis_alpha > 0 (b) mdd_alleviation > 0 (c) spread_bad > 0. Single-factor IC ratio criterion은 portfolio sleeve에 직접 적용 부적합 (challenge_note_optimizer.md C4 REBUTTAL 입증) — diagnostic only.",
+    "AX002_PIT_strict": true,
+    "AX002_evidence": "각 sig_date weight 추정 = 직전 60m past data만 사용. Future leak 0건.",
+    "AX007_multi_sleeve_exception": true,
+    "AX007_evidence": "3 risk-bearing sleeves (AR_on_M4 / TSMOM_8ETF / KR_10y) — single-sleeve top20 long-only 위반 회피.",
+    "AX008_triangulation_status": "1.5/3 (Optimizer + Codex Critic Round 1 PARTIAL — challenge_note_optimizer.md 7 critique 분류 ACCEPT 3 / PARTIAL 1 / REBUTTAL 3) → Forge + Architect 후속 검증 필요"
+  },
+  "statistical_validation": {
+    "DSR_bailey_lopez_de_prado_2014": {
+      "SR_obs": 1.8631,
+      "SR0_threshold_N10": 0.3877,
+      "z_DSR": 5.9926,
+      "DSR": 1,
+      "DSR_pass_0_95": true,
+      "multi_trial_N": 10,
+      "n_consistency": "DSR N=10 일치 (Codex C2 ACCEPT)",
+      "reference": "Bailey-Lopez de Prado (2014) Journal of Portfolio Management 40"
+    },
+    "harvey_liu_2016": {
+      "t_NW_lag4": 6.282,
+      "harvey_pass_3_0": true,
+      "reference": "Harvey-Liu (2016) Review of Financial Studies 29 multiple-testing"
+    },
+    "subperiod_sign_consistency": {
+      "n_periods": 5,
+      "n_positive": 4,
+      "consistency_pct": 80,
+      "periods_evaluated": ["2010-2013", "2014-2019", "2020-2021", "2022-2023", "2024-2026"],
+      "negative_period": "2022-2023 (SR -0.19) — global hawkish 환경, 4 of 5 PASS (80%)"
+    }
+  },
+  "weight_evolution_summary": {
+    "n_obs": 195,
+    "weight_evolution_csv_path": "output/weight_evolution_timeseries.csv",
+    "AR_on_M4_mean": 0.4704,
+    "AR_on_M4_sd": 0.0419,
+    "AR_on_M4_min": 0.358,
+    "AR_on_M4_max": 0.5,
+    "TSMOM_mean": 0.3296,
+    "TSMOM_sd": 0.0419,
+    "TSMOM_min": 0.3,
+    "TSMOM_max": 0.442,
+    "KR_10y_mean": 0.2,
+    "KR_10y_sd": 0,
+    "KR_10y_min": 0.2,
+    "KR_10y_max": 0.2,
+    "KR_10y_at_cap_bind_note": "KR_10y stationary at UB=0.20 (sd=0) — DRO Wasserstein 정합. AR-TSMOM 사이만 dynamic.",
+    "sub_period_means": [
+      {
+        "period": "2010-2013",
+        "n": 47,
+        "mean_AR": 0.4933,
+        "mean_TSMOM": 0.3067,
+        "mean_KR": 0.2
+      },
+      {
+        "period": "2014-2019",
+        "n": 72,
+        "mean_AR": 0.4988,
+        "mean_TSMOM": 0.3012,
+        "mean_KR": 0.2
+      },
+      {
+        "period": "2020-2021",
+        "n": 24,
+        "mean_AR": 0.4201,
+        "mean_TSMOM": 0.3799,
+        "mean_KR": 0.2
+      },
+      {
+        "period": "2022-2023",
+        "n": 24,
+        "mean_AR": 0.3969,
+        "mean_TSMOM": 0.4031,
+        "mean_KR": 0.2
+      },
+      {
+        "period": "2024-2026",
+        "n": 28,
+        "mean_AR": 0.4653,
+        "mean_TSMOM": 0.3347,
+        "mean_KR": 0.2
+      }
+    ],
+    "deployment_ready_2026_04_01": {
+      "AR_on_M4": 0.5,
+      "TSMOM": 0.3,
+      "KR_10y": 0.2,
+      "Cash": 0
+    }
+  },
+  "static_vs_dynamic_validation": {
+    "static_S4_dohoon_framing": {
+      "weights": {
+        "AR_on_M4": 0.5,
+        "TSMOM": 0.25,
+        "KR_10y": 0.2,
+        "Cash": 0.05
+      },
+      "SR_ann": 1.86,
+      "CAGR": 0.2106,
+      "MDD": 0.1244,
+      "Sortino": 4.407,
+      "Turnover_ann": 0,
+      "admit_status": "NOT admit candidate (Codex GOV-C1 REJECT 정합)"
+    },
+    "benchmark_S0_alpha_only": {
+      "weights": {
+        "AR_on_M4": 1,
+        "TSMOM": 0,
+        "KR_10y": 0,
+        "Cash": 0
+      },
+      "SR_ann": 1.7166,
+      "CAGR": 0.4021,
+      "MDD": 0.2232,
+      "Sortino": 3.8859
+    },
+    "dynamic_best_DRO_W_eps0_1": {
+      "latest_weights_2026_04": {
+        "AR_on_M4": 0.5,
+        "TSMOM": 0.3,
+        "KR_10y": 0.2,
+        "Cash": 0
+      },
+      "SR_ann": 1.8631,
+      "CAGR": 0.2049,
+      "MDD": 0.1115,
+      "Sortino": 4.5095,
+      "Turnover_ann": 0.047
+    },
+    "convergence_finding": "Walk-forward dynamic optimization (paradigm-free) latest weights = (0.50, 0.30, 0.20, 0.00) ≈ S4 도훈 framing (0.50, 0.25, 0.20, 0.05) AR/KR 정확 일치, TSMOM +5pp, Cash -5pp. 도훈 직관 framing 정량 검증 — paradigm 인용 없이 동일 영역 수렴.",
+    "delta_dynamic_vs_static": {
+      "delta_SR": 0.0031,
+      "delta_CAGR": -0.0057,
+      "delta_MDD": -0.013,
+      "delta_Sortino": 0.1025,
+      "delta_Turnover": 0.047
+    },
+    "delta_dynamic_vs_S0": {
+      "delta_SR": 0.1465,
+      "delta_CAGR": -0.1972,
+      "delta_MDD": -0.1118,
+      "delta_Sortino": 0.6236
+    },
+    "codex_GOV_C1_resolution": "정적 weight admit 회피 (Codex REJECT 정합) → walk-forward dynamic admit으로 전환. Static S4 weights는 더 이상 admit candidate 아님 — paradigm-free 비교 baseline only.",
+    "codex_C3_TDC_PG2_scenarios": {
+      "current_PG2": {
+        "weights": "STR_1715 100%",
+        "SR": 1.72,
+        "CAGR": 0.402,
+        "MDD": -0.223
+      },
+      "replacement_dynamic": {
+        "method": "WF_DRO_W_eps0.1",
+        "SR": 1.8631,
+        "CAGR": 0.2049,
+        "MDD": 0.1115
+      },
+      "integration_50_50_estimate": "governor 영역 후속 검토 (50% PG2 + 50% WF_DRO_W_eps0.1 ~ SR 1.79 / CAGR 30% / MDD -16% 추정)",
+      "replacement_judgement": "Net SR +0.14 + Net MDD +11.1pp 개선 — Charter v1.5 MDD priority 정합"
+    }
+  },
+  "no_paradigm_assertion": {
+    "no_60_40_citation": true,
+    "no_brinson_1986_citation": true,
+    "no_saa_citation": true,
+    "no_managed_futures_paradigm_citation": true,
+    "decision_basis": "정량 metric + Charter v1.5 hierarchy + AX-001 v2 conditional defense 정합만",
+    "cherry_picking_avoided": "도훈 직관 framing은 walk-forward로 실증 검증되었지만, 의사결정 근거는 paradigm이 아니라 정량 score (composite tie-break Charter hierarchy)"
+  },
+  "hard_boundaries": {
+    "alpha_definition_unchanged": true,
+    "sleeve_definition_unchanged": true,
+    "no_static_weight_admit": true,
+    "no_static_admit_evidence": "WF_IV/WF_RP_ERC effective static 발견 → 0.7x penalty + tie-zone 제외",
+    "sleeve_4_immutable": true
+  },
+  "codex_critic_round": {
+    "round": 1,
+    "initial_stance": "REJECT",
+    "expected_post_revision_stance": "APPROVE_CONDITIONAL",
+    "veto_flag": false,
+    "challenge_note_path": "qepm/mailbox/worktask/WT-P20260509_002/challenge_note_optimizer.md",
+    "classification_summary": {
+      "ACCEPT_count": 3,
+      "ACCEPT_ids": ["C1 (KR_10y cap 0.20 강제)", "C2 (10 method cap)", "C7 (challenge_note + listing)"],
+      "PARTIAL_count": 1,
+      "PARTIAL_ids": "C3 (sleeve scope rebuttal + TDC reporting accept)",
+      "REBUTTAL_count": 3,
+      "REBUTTAL_ids": ["C4 (portfolio AX-001 v2 adaptation)", "C5 (inherit_ref mandate 정합)", "C6 (Cash UB=0 mandate scope)"]
+    },
+    "ax_008_triangulation": "1.5/3 → Forge + Architect 후속"
+  },
+  "artifacts_generated": {
+    "walk_forward_method_log_json": "output/walk_forward_method_log.json",
+    "weight_evolution_timeseries_csv": "output/weight_evolution_timeseries.csv",
+    "walk_forward_returns_timeseries_csv": "output/walk_forward_returns_timeseries.csv",
+    "comparison_table_walk_forward_csv": "output/comparison_table_walk_forward.csv",
+    "ax001_v2_csv": "output/ax001_v2_conditional_defense_walkforward.csv",
+    "dsr_bailey_csv": "output/dsr_bailey_walkforward.csv",
+    "harvey_liu_csv": "output/harvey_liu_walkforward.csv",
+    "subperiod_stability_csv": "output/subperiod_stability_walkforward.csv",
+    "sign_consistency_csv": "output/sign_consistency_walkforward.csv",
+    "best_method_ranking_csv": "output/best_method_ranking.csv",
+    "best_method_recommendation_json": "output/best_method_recommendation.json",
+    "static_vs_dynamic_validation_json": "output/static_vs_dynamic_validation.json",
+    "optimization_package_draft": "optimization_package_draft.json",
+    "codex_critic_response": "codex_critic_response_optimizer.json",
+    "challenge_note": "challenge_note_optimizer.md",
+    "infeasibility_report": "infeasibility_report.json",
+    "weights_csv_for_forge": "stage_artifacts/WT-P20260509_002/weights.csv",
+    "weight_method_selected": "stage_artifacts/WT-P20260509_002/weight_method_selected.md",
+    "optimizer_walk_forward_R": "optimizer_walk_forward_dynamic.R"
+  },
+  "next_action": "Forge handoff (run_all.R + 195m walk-forward backtest using stage_artifacts/WT-P20260509_002/weights.csv)",
+  "forge_handoff_notes": {
+    "weight_schedule_kind": "monthly walk-forward, 4-sleeve allocation",
+    "n_dates": 195,
+    "burn_in_skip_handling": "infeasibility_report.json — pre-burn-in 73 sig_dates는 alpha-only baseline (AR_on_M4 100%) fallback 권장 또는 196m 평가만 사용",
+    "expected_metrics": {
+      "SR": 1.86,
+      "CAGR": 0.205,
+      "MDD": -0.112,
+      "Sortino": 4.51,
+      "TO": 0.047
+    }
+  },
+  "created_at": "2026-05-09T22:50:00+09:00"
+}

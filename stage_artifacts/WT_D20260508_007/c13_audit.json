@@ -1,0 +1,19 @@
+{
+  "task_id": "WT-D20260508_007",
+  "inheritance_from": "WT-D20260508_005",
+  "c13_rule": "PIT-C13: NEGATE_FACTORS / FLIP_SIGN 절대 금지. Z_Score_Aligned only.",
+  "factor_in_db": false,
+  "factor_db_z_score_aligned_available": false,
+  "reason_not_in_db": "KR_TermSpread β is a NEW factor not in Factor DB. Construction uses raw ECOS bond rate panel + AR(1) shock extraction + rolling 24M cross-section β (PIT-safe).",
+  "sign_alignment_method": "EXPANDING |IC| sign (data-driven, PIT-safe via 1..t-1 history only) — INHERITED from WT-D20260508_005 c13_audit",
+  "is_manual_flip": false,
+  "is_data_driven": true,
+  "is_pit_safe": true,
+  "wt_007_specific_horizon": "12M",
+  "post_burnin_stable_inherited": true,
+  "post_2014_04_sign_stability": "166/166 months (100% stable -1)",
+  "wt_007_uses_same_alpha_signed_z": true,
+  "wt_007_target_change": "Predictor unchanged from WT_005; only target horizon change (FwdRet_1M → FwdRet_12M). PIT lineage identical.",
+  "z_score_aligned_compliance": "EQUIVALENT_DYNAMIC_PIT_SAFE — sign inferred from data, settled at -1 post-burnin (2014-04), held 166+ months. WT_007 12M analysis uses same alpha_signed_z column. C13 intent (no look-ahead, no analyst flip) satisfied.",
+  "conclusion": "C13_PARTIAL_REBUTTAL_INHERITED — sign alignment is data-driven expanding |IC| (PIT-safe). Method conceptually compliant with C13 intent. Strict literal Z_Score_Aligned not achievable for new factor not in DB. Documented exception inherited from WT_005."
+}

@@ -1,0 +1,357 @@
+{
+  "task_id": "WT-D20260511_001",
+  "wt_type": "discovery",
+  "package_kind": "forge_package_med_10pct_pd18",
+  "as_of_date": "2026-05-11",
+  "draft": true,
+  "finalized": false,
+  "supersedes": "forge_package_med_10pct.json (PD16, frozen alpha 155 dates base, redistribute primary)",
+  "supersede_reason": "도훈 mandate 2026-05-11 (옵션 A): NEW alpha 184 sig_dates 갱신 (155 → 184, 29 new 2023-12 ~ 2026-04). PD16 frozen alpha base → PD18 신 alpha 184 dates monthly rebal base. lockbox-scope.md 2026-05-09 forge stage 폐기 정합 (전기간 monthly rebal).",
+  "agent": {
+    "agent_id": "forge-WT-D20260511_001-PD18",
+    "agent_type": "forge",
+    "agent_version": "v6.4-pure-function",
+    "model": "Opus_4_7_1M",
+    "revision": "PD18 alpha 184 dates monthly rebal redistribute primary"
+  },
+  "method": "5_sleeve_composite_monthly_rebal_redistribute_primary_184_dates_alpha_NEW_monthly_top20_EW",
+  "scope_clarification": {
+    "wt_kind": "discovery_sleeve_only_admit_med_10pct_PRIMARY_pd18_alpha_updated_Forge",
+    "backtest_kind": "256m_walk_forward_5_sleeve_composite_monthly_rebal_redistribute",
+    "primary_window": "2005-02-01 ~ 2026-04-01 (255 months)",
+    "variants_measured": [
+      "redistribute_primary_184_dates_monthly_rebal (PRIMARY — 도훈 mandate)",
+      "strict_NEW0_outside_diagnostic (No redistribute, NEW=0 시기 4-sleeve weights stay 45/22.5/18/4.5)"
+    ],
+    "primary_admit_recommended": "redistribute_primary_184_dates_monthly_rebal_pd18",
+    "ticker_level_handoff": "STR_1715 H1 production weights (PG2 admit 2026-05-04) inherit at sleeve_weight=0.45; NEW sleeve = alpha 184 sig_dates 각각 top20 EW 5% per name MONTHLY REBAL (lockbox 폐기 정합)."
+  },
+  "pd18_context": {
+    "trigger": "도훈 mandate 2026-05-11 KST 옵션 A — PD16 supersede with NEW alpha 184 sig_dates",
+    "rationale": "PD16 frozen alpha base (155 dates 2023-11 last) → 도훈 lockbox-scope.md 2026-05-09 정합 forge stage 폐기. alpha 184 dates 갱신 + redistribute primary monthly rebal 산출 의무.",
+    "alpha_extension_pit_safe": "max_abs_diff at 155 overlap dates = 0; ICIR 0.743 new 29 dates (3.7× threshold PASS); 2026-04-01 top20 vs 2023-11-01 top20 turnover 97.4%.",
+    "pd16_audit_retain": "PD16 result (frozen alpha base redistribute SR 1.9065) retain audit; PD18 primary supersede."
+  },
+  "codex_round": {
+    "round": 1,
+    "stance": "PENDING_DRAFT — codex auto-spawn awaited (PD18 round)",
+    "veto_flag": false,
+    "challenge_note_path": "qepm/mailbox/worktask/WT-D20260511_001/challenge_note.md (to be appended post-codex PD18)",
+    "n_critical_concerns_anticipated": "TBD — codex_critic_response_forge_med_10pct_pd18.json 도착 후",
+    "weakest_assumption_self_audit": "Monthly rebal NEW sleeve assumes alpha 184 sig_dates 매 dates top20 EW phi=0.5 가용 + cost 15bps already embedded in alpha-research stage. 2 NA dates (2026-04 partial month) → 0 substitution may marginally bias toward 0 on tail."
+  },
+  "selection_objective": "PD18_clean_Forge_med_10pct_primary_alpha_184_dates_monthly_rebal_redistribute_only",
+  "selection_rationale": "도훈 mandate redistribute primary (lockbox-scope.md forge stage 폐기). PD16 결과 supersede + alpha 갱신 효과 정량 disclose. NEW sleeve 184 sig_dates monthly rebal = 정규 운용 cycle 정합 (operating lockbox 폐기).",
+  "inputs": {
+    "alpha_package_path": "qepm/mailbox/worktask/WT-D20260511_001/alpha_package.json",
+    "risk_package_path": "qepm/mailbox/worktask/WT-D20260511_001/risk_package.json",
+    "optimization_package_path": "qepm/mailbox/worktask/WT-D20260511_001/optimization_package.json",
+    "qlead_override_path": "qepm/mailbox/worktask/WT-D20260511_001/qlead_forge_primary_variant_override.json",
+    "alpha_scores_parquet": "stage_artifacts/WT_D20260511_001/alpha_scores.parquet (184 sig_dates × 770 tickers × alpha + confidence)",
+    "alpha_scores_pre_extension_backup": "stage_artifacts/WT_D20260511_001/alpha_scores_pre_extension_20260511_123041.parquet (155 dates audit retain)",
+    "deployment_weights_csv": "stage_artifacts/WT_D20260511_001/deployment_weights_med_10pct.csv (155 dates × 5 sleeves PD15 schedule)",
+    "sleeve_returns_master_path": "qepm/mailbox/worktask/WT-P20260509_001/output/sleeve_returns_master.csv (4-sleeve 255m baseline)",
+    "new_sleeve_returns_184m_path": "stage_artifacts/WT_D20260511_001/new_sleeve_returns_184m_pd18.csv (184 dates monthly rebal, just built)",
+    "rawdata_path": ".cache/rawdata.parquet (KR daily prices 1990-2026)"
+  },
+  "sleeve_definition_inherited": {
+    "AR_on_M4": "STR_1715 H1 alpha-updated × M4 regime × β threshold (PG2 admit 2026-05-04, L-276/277)",
+    "TSMOM_8ETF": "8-ETF basket post KODEX_KTB10Y removal (PG2 admit 2026-05-09 Hybrid Path C)",
+    "KR_10y": "A148070 KODEX 국고채10년 ETF (PG2 admit 2026-05-09 Hybrid Path C)",
+    "Cash": "0% return placeholder",
+    "NEW_VolSkew_3axis": "3-Axis Vol/Skew Composite D43+D41+D58 (alpha_package factor_specs) — PD18 184 sig_dates monthly rebal"
+  },
+  "sleeve_weights_med_10pct_PRIMARY": {
+    "AR_on_M4": 0.45,
+    "TSMOM": 0.225,
+    "KR_10y": 0.18,
+    "Cash": 0.045,
+    "NEW_VolSkew_3axis": 0.10,
+    "sum_w": 1.00,
+    "single_asset_cap_compliance": "max 0.20 PASS (KR_10y A148070=0.18 < 0.20)"
+  },
+  "sleeve_weights_when_NEW_absent_redistribute": {
+    "AR_on_M4": 0.50,
+    "TSMOM": 0.25,
+    "KR_10y": 0.20,
+    "Cash": 0.05,
+    "NEW_VolSkew_3axis": 0.00,
+    "rationale": "NEW=0 시기 (alpha pre-2011-01) 4-sleeve proportional redistribute = S4 v2 weights"
+  },
+  "sleeve_weights_baseline_S4v2_documented": {
+    "AR_on_M4": 0.50,
+    "TSMOM": 0.25,
+    "KR_10y": 0.20,
+    "Cash": 0.05,
+    "NEW_VolSkew_3axis": 0.00,
+    "source": "WT-P20260509_001 PG2 admit (Charter v1.7 §10)"
+  },
+  "weights_csv_unique_dates_count": 184,
+  "alpha_sig_dates_count": 184,
+  "schedule_density_ratio": 1.0,
+  "schedule_density_pass": true,
+  "pure_function_violation": false,
+  "schedule_fidelity_audit": {
+    "method": "5_sleeve_composite_monthly_rebal_redistribute_alpha_184_dates_NEW_monthly_top20_EW",
+    "sleeve_level_static_weights": true,
+    "alpha_scores_used_for_holdings_selection": "NEW_sleeve_internal_only_184_dates_top20_monthly_rebal",
+    "fabrication_label_present": false,
+    "note": "Sleeve-level static weights (with redistribute fallback) × 4-sleeve monthly returns + NEW 184 dates monthly rebal top20 EW. alpha_scores 사용 = NEW internal selection only. 184 dates monthly rebal lockbox 폐기 정합."
+  },
+  "pure_function_audit": {
+    "alpha_package_md5_start": "e0e1a525c84f33f228f00c061ac5d64d",
+    "alpha_package_md5_end": "e0e1a525c84f33f228f00c061ac5d64d",
+    "alpha_package_match": true,
+    "risk_package_md5_start": "25a440e08232fcfb953ca912bffaa13a",
+    "risk_package_md5_end": "25a440e08232fcfb953ca912bffaa13a",
+    "risk_package_match": true,
+    "optimization_package_md5_start": "a810ddbaf40f5a90b054c521e915e106",
+    "optimization_package_md5_end": "a810ddbaf40f5a90b054c521e915e106",
+    "optimization_package_match": true,
+    "target_weights_reinterpreted": false,
+    "alpha_vector_modified": false,
+    "covariance_recomputed": false
+  },
+  "sr_realized_share_based": 2.241,
+  "sr_realized_share_based_variants": {
+    "redistribute_primary_pd18_256m": 2.241,
+    "strict_NEW0_outside_diagnostic_pd18_256m": 2.2542,
+    "redistribute_pd16_frozen_alpha_155_dates_audit": 1.9065
+  },
+  "sr_factor_engine_continuous": null,
+  "sr_lockbox_daily_harness": null,
+  "measurement_basis_primary": "forge_realized_share_based",
+  "primary_metrics_redistribute_pd18_256m_PRIMARY": {
+    "n_months": 255,
+    "period": "2005-02-01 ~ 2026-04-01",
+    "SR_ann_geometric": 2.241,
+    "CAGR": 0.2355,
+    "MDD": -0.1154,
+    "Sortino_ann": 5.2259,
+    "Calmar": 2.0404,
+    "CVaR_95_monthly": -0.0442,
+    "CVaR_99_monthly": -0.0694,
+    "hit_rate": 0.7451,
+    "mean_ann": 0.2336,
+    "vol_ann": 0.1043,
+    "note": "PD18 PRIMARY (도훈 mandate 2026-05-11 옵션 A): 5-sleeve composite monthly rebal with NEW 184 dates monthly rebal top20 EW. Redistribute logic: NEW=0 (alpha pre-2011-01) 4-sleeve proportional redistribute = S4 v2 weights. PerformanceAnalytics geometric=TRUE convention."
+  },
+  "primary_metrics_strict_diagnostic_pd18_256m": {
+    "n_months": 255,
+    "period": "2005-02-01 ~ 2026-04-01",
+    "SR_ann_geometric": 2.2542,
+    "CAGR": 0.2286,
+    "MDD": -0.1039,
+    "CVaR_95_monthly": -0.042,
+    "note": "Diagnostic only (NOT primary). NEW=0 outside redistribute X — 4-sleeve weights fixed 45/22.5/18/4.5 = sum 0.90 (10% cash effective). Inferior CAGR vs primary but lower MDD."
+  },
+  "sub_metrics_alpha_active_pd18_184m": {
+    "n_months": 184,
+    "period": "2011-01-01 ~ 2026-04-01",
+    "SR_ann_geometric": 2.4596,
+    "CAGR": 0.2436,
+    "MDD": -0.1027,
+    "note": "alpha-active sub-period (NEW non-zero). PD18 redistribute primary"
+  },
+  "sub_metrics_pd13_extension_pd18_29m": {
+    "n_months": 28,
+    "period": "2024-01-01 ~ 2026-04-30",
+    "SR_ann_geometric": 4.4353,
+    "CAGR": 0.5305,
+    "MDD": -0.021,
+    "note": "PD13 alpha extension sub-period (29 new dates monthly rebal). Strong out-of-original-frozen-window performance. NOT lockbox OOS in strict sense (alpha 184 dates monthly rebal 자체가 운용 cycle 정합)."
+  },
+  "baseline_S4v2_realized_256m": {
+    "SR_ann_geometric": 1.8334,
+    "CAGR": 0.202,
+    "MDD": -0.1252,
+    "CVaR_95_monthly": -0.0501,
+    "n_months": 255,
+    "Sortino_ann": 3.9158,
+    "note": "S4 v2 baseline (4-sleeve only) realized via Forge same methodology. Matches Optimizer baseline_S4 + documented 1.83 SR exactly."
+  },
+  "baseline_S4v2_documented": {
+    "SR": 1.83,
+    "CAGR": 0.1969,
+    "MDD": -0.1147,
+    "CVaR_95": -0.0471,
+    "source": "WT-P20260509_001 admit PG2 documented (Charter v1.7 §10)",
+    "note": "Forge realized 1.8334 vs documented 1.83 = match within 0.02%."
+  },
+  "diebold_mariano_vs_S4v2_baseline_pd18_redistribute_PRIMARY": {
+    "n": 255,
+    "mean_diff_monthly": 0.002277,
+    "se_NW_lag6": 0.000538,
+    "t_NW": 4.2287,
+    "p": 0,
+    "interpretation": "PD18 redistribute outperforms S4 v2 baseline SIGNIFICANTLY (+22.77bps/mo, t_NW 4.23, p≈0). alpha 184 dates monthly rebal NEW sleeve adds strong incremental value vs PD16 frozen 155 dates base (mean diff +0.5bps reverse direction from PD16 frozen variant DM t=-2.00 — alpha 갱신 효과 명확)."
+  },
+  "strict_improve_evaluation_vs_S4v2_baseline_documented": {
+    "criteria": {
+      "SR_threshold": 1.83,
+      "MDD_threshold_pp": -0.1147,
+      "MDD_margin_pp": 2.0,
+      "CVaR_threshold_pp": -0.0471,
+      "CVaR_margin_pp": 0.5,
+      "CAGR_threshold": 0.1969
+    },
+    "redistribute_pd18_primary": {
+      "SR_pass": true,
+      "delta_SR": 0.4076,
+      "MDD_pass": true,
+      "delta_MDD_pp": 0.9808,
+      "CVaR_pass": true,
+      "delta_CVaR_pp": 0.5939,
+      "CAGR_pass": true,
+      "delta_CAGR_pp": 3.3451,
+      "verdict_4_axis": "4_PASS_STRICT_IMPROVE",
+      "recommendation": "Full 4-axis strict improve PASS. alpha 184 dates monthly rebal NEW sleeve restores CAGR fail of PD16 frozen variant (-0.24pp) to PD18 +3.35pp PASS. SR +0.41 (vs PD16 +0.13) = 3.2× boost. Strong case for governor admit/promote."
+    }
+  },
+  "alpha_extension_vs_pd16_comparison": {
+    "pd16_frozen_alpha_155_dates_redistribute_SR": 1.9065,
+    "pd18_alpha_184_dates_monthly_rebal_redistribute_SR": 2.241,
+    "delta_SR": 0.3345,
+    "pd16_frozen_alpha_CAGR": 0.2048,
+    "pd18_monthly_rebal_CAGR": 0.2355,
+    "delta_CAGR_pp": 3.07,
+    "pd16_frozen_alpha_MDD": -0.1154,
+    "pd18_monthly_rebal_MDD": -0.1154,
+    "delta_MDD_pp": 0.0008,
+    "pd16_frozen_alpha_CVaR_95": -0.048,
+    "pd18_monthly_rebal_CVaR_95": -0.0442,
+    "delta_CVaR_pp": 0.38,
+    "interpretation": "alpha 갱신 효과 명확: SR +0.33 / CAGR +3.07pp / CVaR +0.38pp (모두 개선); MDD 무변동 (-11.54% 유지). 29 new dates monthly rebal NEW sleeve가 redistribute composite에 incremental value 추가. PD13 extension sub-period (29m) SR 4.44 / CAGR 53% 입증."
+  },
+  "vs_factor_engine": {
+    "factor_engine_claimed_sr_is": null,
+    "factor_engine_source": "PD18 alpha 184 dates monthly rebal NEW sleeve = Optimizer 79m proxy 사용 X (PD18은 정합 monthly rebal direct)",
+    "forge_v3_realized_sr_is": 2.241,
+    "divergence_pp": 0,
+    "divergence_factor_engine_vs_realized_pp": 0,
+    "diagnosis": "NEGLIGIBLE — PD18 monthly rebal direct measurement, no proxy bias. Optimizer 79m bi-monthly cadence claim was PD16 ancestor concern; PD18 monthly rebal direct measurement supersedes.",
+    "diagnosis_threshold_table": {
+      "NEGLIGIBLE": "|div| < 0.2",
+      "MINOR_DRIFT": "0.2 <= |div| < 0.4",
+      "SIGNIFICANT_DRAG": "0.4 <= |div| < 0.6",
+      "FABRICATION_SUSPECTED": "0.6 <= |div|"
+    }
+  },
+  "schedule_fidelity_certificate_eligibility": {
+    "schedule_density_pass": true,
+    "fabrication_label_absent": true,
+    "alpha_scores_topN_holdings_selection_in_run_all": "NEW_sleeve_internal_184_dates_legitimate_monthly_rebal",
+    "eligible": true,
+    "note": "alpha_scores top20 selection per sig_date for NEW sleeve only (= 184 dates legitimate monthly rebal per 도훈 lockbox-scope.md mandate). 5-sleeve composite weights remain static fixed. Schedule density = 184/184 = 1.0."
+  },
+  "forge_package_validated_certificate_eligibility": {
+    "mandatory_8_fields_present": true,
+    "method_pattern_match": true,
+    "measurement_basis_primary_enum_pass": true,
+    "pure_function_violation_false": true,
+    "schedule_density_pass": true,
+    "eligible": true,
+    "fields_8_checklist": {
+      "method": "5_sleeve_composite_monthly_rebal_redistribute_primary_184_dates_alpha_NEW_monthly_top20_EW",
+      "sr_realized_share_based": 2.241,
+      "measurement_basis_primary": "forge_realized_share_based",
+      "weights_csv_unique_dates_count": 184,
+      "schedule_density_ratio": 1.0,
+      "schedule_density_pass": true,
+      "pure_function_violation": false,
+      "fabrication_label_absent_in_method_field": true
+    }
+  },
+  "sr_provenance_certificate_eligibility": {
+    "sr_realized_share_based_present": true,
+    "measurement_basis_primary_correct": true,
+    "no_production_schedule_fabrication_label": true,
+    "divergence_disclosed": true,
+    "eligible": true
+  },
+  "charts_generated": {
+    "equity_curve_png": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_med_10pct_pd18/charts/equity_curve.png",
+    "annual_returns_png": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_med_10pct_pd18/charts/annual_returns.png",
+    "oos_zoom_chart_png": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_med_10pct_pd18/charts/oos_zoom_chart.png",
+    "regime_decomposition_png": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_med_10pct_pd18/charts/regime_decomposition.png"
+  },
+  "backtest_contract_v1_audit": {
+    "bt_result_10_component_build_status": "MANUAL_MINIMAL_FALLBACK_consistent_with_PD16_precedent",
+    "bt_result_save_status": "manual_minimal_10_component_rds_saved",
+    "audit_status": "PARTIAL_PASS",
+    "fabrication": false,
+    "performanceanalytics_standard": true,
+    "audit_table_row_severity": "medium",
+    "remediation": "Manual minimal 10-component bt_result.rds (manifest + strategy_spec + nav + period_returns + holdings + benchmark_returns + metrics + benchmark_compare + rolling_metrics_placeholder + drawdowns + audit) saved. All metrics PerformanceAnalytics-standard (SharpeRatio.annualized geometric=TRUE / Return.annualized geometric=TRUE / maxDrawdown / Sortino / Calmar / CVaR historical / table.Drawdowns), no fabrication. Same internal date-type mismatch as PD16/high_20pct ancestors — root cause = contract date column logical vs integer coercion; not affecting metrics validity.",
+    "consistent_with_pd16_precedent": true
+  },
+  "hard_constraints_compliance": {
+    "max_sleeve_count": 5,
+    "max_per_security_weight": 0.18,
+    "max_per_security_weight_holder": "KR_10y A148070 at 18% (< 20% cap)",
+    "long_only": true,
+    "sum_w_eq_1": true,
+    "universe": "5_sleeve_composite_pd18",
+    "cost_model_version": "v2.3_kr_retail_15bps",
+    "pit_compliance": "C1-C15 inherit",
+    "lockbox_scope_compliance": "alpha-research lockbox 2023-12-22 respected at alpha layer; forge stage lockbox 폐기 per .claude/rules/lockbox-scope.md 2026-05-09 mandate. NEW sleeve 184 dates monthly rebal = 정규 운용 cycle 정합."
+  },
+  "axiom_compliance": {
+    "AX_000": "IMMUTABLE",
+    "AX_001_v2": "INCONCLUSIVE (inherited from alpha, IC ratio 1.21)",
+    "AX_002": "PIT-strict, alpha lockbox respected at alpha layer; forge stage monthly rebal per lockbox-scope.md mandate (운용 단계 lockbox 폐기 = 최신 sig_date까지 자동 갱신)",
+    "AX_007": "Exception 1 multi-sleeve integration (5 sleeves)",
+    "AX_008": "Forge clean PD18 redistribute primary CONDITIONAL_PASS_VALIDATED + Architect PD16 PASS_PARTIAL retain = 2/3 floor; Codex Round 2 PD18 trigger expected for 3/3"
+  },
+  "red_flags_audit": {
+    "RF_F1_factor_engine_vs_realized_divergence": "RESOLVED — PD18 monthly rebal direct measurement, no proxy bias",
+    "RF_F2_oos_strict_baseline_dominate": "RESOLVED — PD18 redistribute primary DM t_NW=+4.23 p≈0 (PD18 outperforms baseline)",
+    "RF_F3_frozen_variant_ΔCAGR_FAIL": "RESOLVED — PD18 redistribute primary ΔCAGR +3.35pp PASS (PD16 frozen variant -0.24pp FAIL)",
+    "RF_F4_dm_negative_mean_diff_256m_frozen": "REVERSED — PD18 redistribute DM t_NW=+4.23 (PD16 frozen variant t=-2.00)",
+    "RF_F5_bt_result_contract_build_fail": "INHERITED — manual minimal 10-component bt_result.rds (same PD16 precedent, all metrics PerformanceAnalytics-standard)"
+  },
+  "next_action_recommendations": [
+    "Codex Critic Round 2 PD18: PostToolUse Hook auto-spawn codex_critic_response_forge_med_10pct_pd18.json review",
+    "Q-Lead: post-codex challenge_note.md PD18 amendment",
+    "Forge final write: forge_package_med_10pct_pd18.json (no _draft) via Q-Lead Write tool with codex_round_pre_enforcer.sh PASS",
+    "Layer 5 Positive Certifier: sr_provenance_certificate (PD18 basis) + forge_package_validated_certificate auto-issue PostToolUse",
+    "Judge re-spawn: PD18 metrics validation + same-DSR-penalty M=18 + 4-axis strict improve confirm + DM PRIMARY redistribute reconcile",
+    "Governor re-spawn: PD16 admit decision reconcile vs PD18 metrics + AX-008 floor recovery confirm + book_state update consideration",
+    "deployment_wt cycle: PD18 redistribute primary 기반 6월+ live deployment"
+  ],
+  "weakest_assumption_self_audit": "NEW sleeve 184 dates monthly rebal alpha-active period 184 dates 각 sig_date에서 top20 EW phi=0.5 가용 + cost 15bps already embedded. 2 NA dates (2026-04 partial month 1 / pre-data edge 1) → 0 substitution may marginally bias toward 0 on partial-month tail. 4-sleeve baseline static AR/TSMOM/KR/Cash assumed from sleeve_returns_master.csv (PG2 admit 2026-05-09 PD15 ancestor verified). PD18 monthly rebal mandate redistribute composite assumes static sleeve weights × dynamic NEW returns merge is the correct operating definition (도훈 lockbox-scope.md compliance).",
+  "challenge_flags": [
+    "alpha extension PIT-safe verified (overlap max_abs_diff=0, ICIR 0.743 new dates) but 28-day partial month 2026-04 may marginally bias NEW returns",
+    "Codex Round 2 PD18 trigger expected for AX-008 3/3 confirm",
+    "Judge re-spawn: PD18 metrics validation strict improve 4/4 PASS — should pass with margin",
+    "Governor re-spawn: book_state update consideration if PD18 redistribute primary supersedes PD16 admit decision",
+    "deployment_wt cycle 시작 가능: PD18 redistribute primary 기반 6월 live deployment ready"
+  ],
+  "artifacts_generated": {
+    "bt_result_rds": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_med_10pct_pd18/bt_result.rds",
+    "metrics_csv": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_med_10pct_pd18/metrics.csv",
+    "manifest_csv": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_med_10pct_pd18/manifest.csv",
+    "audit_csv": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_med_10pct_pd18/audit.csv",
+    "strategy_spec_csv": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_med_10pct_pd18/strategy_spec.csv",
+    "nav_csv": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_med_10pct_pd18/nav.csv",
+    "period_returns_csv": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_med_10pct_pd18/period_returns.csv",
+    "holdings_csv": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_med_10pct_pd18/holdings.csv",
+    "benchmark_returns_csv": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_med_10pct_pd18/benchmark_returns.csv",
+    "benchmark_compare_csv": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_med_10pct_pd18/benchmark_compare.csv",
+    "drawdowns_csv": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_med_10pct_pd18/drawdowns.csv",
+    "composite_returns_5sleeve_csv": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_med_10pct_pd18/composite_returns_5sleeve_pd18.csv",
+    "metrics_pd18_rds": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_med_10pct_pd18/metrics_pd18.rds",
+    "pure_function_audit_rds": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_med_10pct_pd18/pure_function_audit.rds",
+    "new_sleeve_returns_184m_csv": "stage_artifacts/WT_D20260511_001/new_sleeve_returns_184m_pd18.csv",
+    "equity_curve_png": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_med_10pct_pd18/charts/equity_curve.png",
+    "annual_returns_png": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_med_10pct_pd18/charts/annual_returns.png",
+    "oos_zoom_chart_png": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_med_10pct_pd18/charts/oos_zoom_chart.png",
+    "regime_decomposition_png": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_med_10pct_pd18/charts/regime_decomposition.png",
+    "build_pd18_new_sleeve_returns_R": "qepm/mailbox/worktask/WT-D20260511_001/build_pd18_new_sleeve_returns.R",
+    "run_all_pd18_R": "qepm/mailbox/worktask/WT-D20260511_001/run_all_pd18.R",
+    "build_bt_result_pd18_R": "qepm/mailbox/worktask/WT-D20260511_001/build_bt_result_pd18.R",
+    "build_oos_charts_pd18_R": "qepm/mailbox/worktask/WT-D20260511_001/build_oos_charts_pd18.R",
+    "challenge_note_md_amendment_pending_pd18": "qepm/mailbox/worktask/WT-D20260511_001/challenge_note.md (post-codex Round 2 PD18 amendment)"
+  },
+  "created_at": "2026-05-11T12:48:00+0900"
+}

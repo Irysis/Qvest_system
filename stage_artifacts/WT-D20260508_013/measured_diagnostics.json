@@ -1,0 +1,127 @@
+{
+  "measurement_basis": "WALK_FORWARD_252M_2005_05_TO_2026_05",
+  "selected_factor": {
+    "left_tail": "R02_VaR_99",
+    "momentum": "M01_Mom_12_1"
+  },
+  "candidates": {
+    "c1_var": {
+      "name": "c1_var",
+      "ic_mean": 0.0288,
+      "ic_sd": 0.1826,
+      "icir": 0.1579,
+      "harvey_t_NW": 2.396,
+      "n_periods": 252
+    },
+    "c2_mom": {
+      "name": "c2_mom",
+      "ic_mean": 0.015,
+      "ic_sd": 0.177,
+      "icir": 0.085,
+      "harvey_t_NW": 1.389,
+      "n_periods": 252
+    },
+    "c3_mult": {
+      "name": "c3_mult",
+      "ic_mean": -0.0038,
+      "ic_sd": 0.1253,
+      "icir": -0.0302,
+      "harvey_t_NW": -0.456,
+      "n_periods": 252
+    },
+    "c4_rcomp": {
+      "name": "c4_rcomp",
+      "ic_mean": 0.0321,
+      "ic_sd": 0.1742,
+      "icir": 0.1844,
+      "harvey_t_NW": 2.861,
+      "n_periods": 252
+    },
+    "c5_corner": {
+      "name": "c5_corner",
+      "ic_mean": 0.0196,
+      "ic_sd": 0.1084,
+      "icir": 0.1805,
+      "harvey_t_NW": 2.717,
+      "n_periods": 252
+    }
+  },
+  "winner": "c4_rcomp",
+  "winner_diag": {
+    "rank_ic_mean": 0.0321,
+    "icir": 0.1844,
+    "harvey_t_NW": 2.861,
+    "n_periods": 252,
+    "decile_top_bot_spread_monthly": 0.0031,
+    "decile_monotonicity_rank_cor": 0.709,
+    "decile_monotonicity_pass": true,
+    "sector_neutral_ic_mean": 0.0195,
+    "sector_neutral_icir": 0.1423,
+    "sector_neutral_retention": 0.606,
+    "sector_neutral_pass": true,
+    "turnover_monthly": 0.2688,
+    "turnover_annual": 3.2259,
+    "turnover_pass": true,
+    "rf_a3_recent_icir": 0.4956,
+    "rf_a3_full_icir": 0.1844,
+    "rf_a3_ratio": 2.687,
+    "rf_a3_pass": false,
+    "subperiod_2008_13": 0.115,
+    "subperiod_2014_19": 0.169,
+    "subperiod_2020_25": 0.322,
+    "top_decile_adv_pass_2e8": 35,
+    "top_decile_adv_total": 35,
+    "top_decile_adv_min_won": 3169478446,
+    "top_decile_adv_med_won": 63540878236,
+    "atilgan_corner_HML_monthly": 0.0044,
+    "atilgan_corner_HML_annual": 0.0531
+  },
+  "orthogonality": {
+    "vs_WT010_R14_DUVOL": {
+      "pearson": -0.059,
+      "spearman": 0.026,
+      "n": 348
+    },
+    "vs_WT009_BAB": {
+      "pearson": 0.107,
+      "spearman": 0.084,
+      "n": 190
+    },
+    "vs_Hybrid_M04_M01": {
+      "pearson": 0.111,
+      "spearman": 0.161,
+      "n": 348,
+      "note": "Hybrid 70/15/15 production: STR_1715 (M04 dominant) + TSMOM (M01) + KR_10y bond. Bond ETF orthogonal by construction; equity component approximated by 0.824*M04 + 0.176*M01."
+    }
+  },
+  "ax001_v2_conditional_defense": {
+    "bm_threshold_bad_monthly": -0.03,
+    "n_bad": 63,
+    "n_normal": 189,
+    "ic_bad_mean": 0.11,
+    "ic_normal_mean": 0.0062,
+    "bad_normal_ratio": 17.887
+  },
+  "dsr_blp": {
+    "primary": "HML",
+    "hml_sr_annualized": 0.153,
+    "hml_psr_zero": 0.989,
+    "hml_dsr_N5": 0,
+    "hml_dsr_N100": 0,
+    "ic_sr_annualized": 0.639,
+    "ic_psr_zero": 1,
+    "ic_dsr_N5": 0,
+    "ic_dsr_N100": 0,
+    "n_periods_ic": 252,
+    "n_periods_hml": 252
+  },
+  "pit_compliance": {
+    "C1_no_full_sample": "PASS — load_month_factors per sig_date is PIT-rolling",
+    "C2_no_same_day_circular": "PASS — rawdata Date <= sig_date enforcement via connector",
+    "C9_dd_vt_lag": "N/A — alpha is point-in-time cross-section, no DD/VT/FM",
+    "C13_no_negate_pre": "PASS — load_month_factors -> align_factor_direction (L-168) PIT-safe IC sign auto",
+    "C14_ic_usable_date": "PASS — align_factor_direction line 187 ic_avail = ic_hist[Usable_Date <= sig_d]",
+    "C15_no_direct_parquet": "PASS — sig_date enumeration via rawdata month-ends only; load_month_factors connector exclusive for factor data; fixed 2026-05-08 after Codex critic round 1 C15 finding",
+    "C10_liquidity_t1_lag": "PASS — 20d ADV uses Date < sig_date (strict t-1 lag); fixed 2026-05-08 after Codex critic round 1 C10 finding"
+  }
+}

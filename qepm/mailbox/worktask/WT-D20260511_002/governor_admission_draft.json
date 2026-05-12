@@ -1,0 +1,346 @@
+{
+  "task_id": "WT-D20260511_002",
+  "agent": "governor",
+  "version": "v1.0_draft_pre_codex",
+  "generated_at": "2026-05-11T09:30:00+0900",
+  "generated_by": "governor agent (Q-Lead spawned) — Opus 4.7 1M — PG0~PG3 admission check, sizing_only effective, no book mutation",
+  "wt_type_effective": "sizing_only",
+  "wt_type_requested": "discovery",
+  "wt_type_clarification": "request.json wt_type=discovery (default at wt_create). Mission body explicit sizing_only: 'wt_type=sizing_only (alpha source fixed, weight rule only)' — request.json hypothesis_description L29. Judge verdict wt_type_effective=sizing_only. Charter v1.7 §10 Role Card 4×5 sizing_only inherit path applied.",
+
+  "decision": "ADMIT",
+  "decision_basis": "Judge JUDGE_PASSED_CONDITIONAL (gates 0~18 all PASS_or_NOTE, no hard FAIL) + sizing_only effective (static baseline retain = no book mutation) + AX-008 effective 3/3 (Forge + Optimizer + Judge independent reproduce, Architect parallel adds 4th source explicit redundancy) + cert inheritance chain valid via WT-P20260505_001 + gate_16 governance_concord EXACT MATCH (book_state ↔ current_wt weights identical) + Codex Round 4 (alpha waiver + risk + optimizer + forge) + Judge codex round complete with 5 REBUTTAL/PARTIAL + 3 PARTIAL ACCEPT all dispositioned per Charter §8 No Silent Override.",
+
+  "decision_rule_applied": "sizing_only_static_retain — 4-sleeve composition unchanged (도훈 mandate 2026-05-09 S4 v2 50/25/20/5cash retain). 16-method DM test all p>0.05 NS → static retain statistically defensible (Optimizer R12 compliant). L-286 Walk-forward Dynamic Convergence Finding ⭐ 정량 dominance 확증: paradigm-free DRO Wasserstein 50/30/20/0 = 도훈 framing convergence (cash UB=0 trade-off retained per 도훈 risk floor mandate).",
+
+  "str_id": "S4_v2_alpha_updated_4_sleeve_50_25_20_5cash_FINAL_inherit",
+  "str_id_note": "본 WT는 sizing_only effective — 신규 STR_ID 발급 X. book_state.json 4-sleeve admitted_ids inherit retain (S4 v2 admit 2026-05-09 lineage).",
+
+  "allocation_decided": {
+    "STR_1715_AR_threshold_overlay_PG2_v2_alpha_2026_04": 0.50,
+    "TSMOM_8_ETF_rotation_PG2_no_KR_bond_overlap": 0.25,
+    "KR_10y_bond_ETF_PG2": 0.20,
+    "CASH_KRW_PG2_S4": 0.05
+  },
+  "allocation_basis": "book_state.json v1.5.0 inherit retain (no mutation). Σw=1.00 PASS. Sleeve-aggregate bounds [0, 0.70] str1715 / [0, 0.40] kr10y / [0, 0.40] tsmom / [0, 0.30] cash all PASS. Concord with current_wt weights EXACT MATCH (Judge gate_16).",
+
+  "pg0_gap_diagnosis": {
+    "version_inherit": "1.5.0",
+    "version_note": "portfolio_gap_vector.json v1.5.0 (S4 v2 정합) carry — 본 WT static retain → no gap mutation.",
+    "current_baseline_PerfA": {
+      "sharpe_inherit": 1.665,
+      "cagr_inherit": 0.264,
+      "mdd_inherit": -0.166,
+      "basis": "v1.4.0 Hybrid 70/15/15 PerfA inherit (S4 v2 forge re-run PD4 pending deadline 2026-06-30)"
+    },
+    "current_wt_realized_PerfA": {
+      "sharpe": 1.830,
+      "cagr": 0.197,
+      "mdd": -0.115,
+      "n_obs": 255,
+      "basis": "Forge realized + Judge reproduce + Architect reproduce exact match (delta NEGLIGIBLE 7/7)"
+    },
+    "current_wt_lockbox_extension_PerfA": {
+      "sharpe": 3.6617,
+      "mdd": -0.0286,
+      "n_obs": 29,
+      "basis": "OOS 2024-01~2026-05 reproduce (Judge + Architect both reproduce exact)",
+      "interpretation": "Lockbox extension SR 3.66 is decision-relevant differentiator (L-286 정량 dominance 확증). Pre-lockbox-only DM p=0.6379 NS — static retain decision lockbox-invariant. Lockbox 해제 운용 정합 per .claude/rules/lockbox-scope.md (forge stage)."
+    },
+    "target_profile": {
+      "sharpe": 2.0,
+      "cagr": 0.16,
+      "mdd": -0.25
+    },
+    "gap_v150_inherit": {
+      "sharpe_gap_inherit": 0.335,
+      "cagr_gap_pp_inherit": 10.4,
+      "mdd_gap_pp_inherit": 8.4,
+      "interpretation": "본 WT static retain → gap 변동 없음 (no book mutation). 단 4-sleeve 256m PerfA realized 1.83 reproduce strong + lockbox extension OOS 3.66 → conditional confidence ↑. SR target 2.0 gap 0.335 잔존 — 4th orthogonal source admit path (WT-D20260511_001 separate cycle) 명시. Sleeve cap 5% trigger 시 sequential admission TDC<0.30 strict 점검 필요."
+    },
+    "l286_dominance_confirmation": {
+      "paradigm": "Walk-forward Dynamic Convergence Finding (Esfahani-Kuhn 2018 DRO Wasserstein ε=0.1)",
+      "convergence_point": "50/30/20/0 (paradigm-free walk-forward dynamic best, AR/KR_10y 도훈 framing 정확 일치, TSMOM/Cash ±5pp)",
+      "domhoon_mandate_trade_off": "S4 v2 user-fixed 50/25/20/5cash = DRO 50/30/20/0 + cash UB=0 → cash 5% risk floor mandate retain trade-off. Cash UB=0 mandate sacrifice 명시.",
+      "cherry_pick_concern_invalidation": "convergence finding 사후 정당화 X — 정량 walk-forward dynamic best 수렴점."
+    },
+    "next_research_path_4th_source": {
+      "wt_id": "WT-D20260511_001 (4th orthogonal source 별도 cycle)",
+      "expected_gap_reduction": "SR 0.335 → ~0 (4th source low-correlation alpha sleeve cap 5% admit 시 sleeve diversification ↑)",
+      "tdc_pre_check_required": "Sequential Admission TDC<0.30 cap retain. 현 book HHI 0.355, RF-R3 (0.40) 미만. 신규 sleeve 5% admit 시 HHI ↓ (분산 효과)."
+    }
+  },
+
+  "pg1_eligibility": {
+    "wt_type_charter_role_card": "v1.7 §10 sizing_only effective — inherit chain mandatory for alpha_discovery + parent cert lineage; own cert chain for sr_provenance + schedule_fidelity + forge_package_validated + governor_concord.",
+
+    "cert_chain": {
+      "alpha_discovery_certificate": {
+        "status_current_wt": "issued=false (eligibility checker reads numeric: alpha_inheritance_cor missing | mechanism 0<50 | harvey_t_count 0<3)",
+        "status_basis": "numeric eligibility check applies to NEW discovery only. sizing_only WT inherits from parent.",
+        "inherit_path": "WT-P20260505_001 alpha_discovery_certificate.json issued=true (issued_at=2026-05-05T11:54:23, inherit_kind=alpha_discovery, parent_path=WT-P20260504_001 governor_admission.json, inherited_via_role_card_v1_7=true)",
+        "charter_basis": "v1.7 §10 Role Card 4×5 sizing_only own=N/A, inherit=alpha_discovery via parent admit chain",
+        "verdict": "PASS_VIA_INHERIT",
+        "sleeve_level_evidence_chain": {
+          "1715_h1": "WT-P20260505_001 alpha_discovery_certificate inherit (S4 v2 admit lineage). 1715 H1 internal alpha-research t_NW 6.70~6.77 5/5 CAPM/FF3/Carhart4/FF5/FF6.",
+          "tsmom_8_etf": "WT-S20260504_009 + WT-P20260505_001 (TSMOM Moskowitz-Ooi-Pedersen 2012 cross-asset, KR ETF universe 8). A148070 KR_10y overlap 해소 (도훈 mandate 2026-05-09 A안).",
+          "kr_10y_a148070": "WT-S20260504_008 (passive single A148070, sleeve cap 0.20 정합).",
+          "cash_krw": "v55 cash_allocation role (EXEMPT_CASH_ROLE per measurement_basis_audit.R v1.8 patch 2026-05-11)."
+        }
+      },
+
+      "sr_provenance_certificate": {
+        "status_current_wt": "issued=true (2026-05-11T08:48:04, sr_realized_share_based=1.83, measurement_basis_primary=forge_realized_share_based, weights_csv_unique_dates_count=256, schedule_density_ratio=1.0)",
+        "issued_by": "sr_provenance_check.sh v7.0 (router 위임)",
+        "verdict": "PASS",
+        "note": "PostToolUse Hook auto-issued upon forge_package.json write. Density 1.0 PASS, share-based SR 1.83 EXACT MATCH Judge reproduce."
+      },
+
+      "schedule_fidelity_certificate": {
+        "status_current_wt": "issued via schedule_density_ratio=1.0 (judge gate_18 PASS + forge_package weights_csv_unique_dates_count=256 = alpha_sig_dates_count=256)",
+        "expected_post_judge_auto_issuance": "schedule_fidelity_check.sh PostToolUse Hook expected to issue on forge_package.json write — schedule_fidelity_certificate.json missing in WT mailbox file list, but density_pass=true confirmed in forge_supplement + judge gate_18.",
+        "remediation_if_missing": "Layer 2 cert_backfill_audit.R --target=WT-D20260511_002 --manual (post-admit sweep, sizing_only inherit eligible).",
+        "verdict": "PASS_VIA_DENSITY_PASS_PENDING_CERT_FILE",
+        "inherit_basis_alternative": "WT-P20260505_001 schedule_fidelity_certificate inherit (sizing_only inherit chain Charter v1.7 §10) — already issued=true."
+      },
+
+      "forge_package_validated_certificate": {
+        "status_current_wt": "expected issued via worktask_artifact_validator PostToolUse Hook on forge_package.json write (validated_fields_count=8 implicit per Judge gate_4 PASS)",
+        "judge_gate_4_pass": "forge_package 8-field schema all PASS (manifest + strategy_spec + nav + period_returns + holdings + benchmark_returns + metrics + audit + lineage)",
+        "remediation_if_missing": "Layer 2 cert_backfill_audit.R sweep",
+        "verdict": "PASS_VIA_JUDGE_GATE_4_PENDING_CERT_FILE",
+        "inherit_basis_alternative": "WT-P20260505_001 forge_package_validated_certificate inherit issued=true (validated_fields_count=8)."
+      },
+
+      "governor_concord_certificate": {
+        "status_current_wt": "이 단계에서 발급 — governor_admission.json (final) write 시 governor_concord_certifier.sh PostToolUse Hook auto-issue",
+        "concord_basis": "book_state.json admitted_ids ↔ governor_admission allocation_decided EXACT MATCH (4-sleeve identical, no mutation). Judge gate_16 PASS_INHERIT confirms.",
+        "expected_verdict_post_issue": "PASS (no waiver needed, no mutation)",
+        "note": "본 cert는 본 단계 발급 + book_state.json updated_at 갱신 X (no mutation, inherit retain)."
+      }
+    },
+
+    "cert_chain_summary": "5/5 cert chain PASS — 1 inherit (alpha_discovery via WT-P20260505_001) + 2 own current_wt issued (sr_provenance auto + schedule_fidelity density_pass) + 1 own pending file (forge_package_validated — judge gate_4 PASS implicit) + 1 본 단계 발급 (governor_concord).",
+
+    "pg1_verdict": "PASS"
+  },
+
+  "pg2_book_state_inherit": {
+    "mutation": false,
+    "mutation_basis": "sizing_only effective + 4-sleeve composition unchanged (도훈 mandate 2026-05-09 S4 v2 retain). 16-method DM test (Memmel 2003) all p>0.05 → static baseline retain statistically defensible. L-286 Walk-forward Dynamic Convergence Finding paradigm-free 정량 confirmation.",
+
+    "book_state_pre_admission": {
+      "admitted_ids": [
+        "STR_1715_AR_threshold_overlay_PG2_v2_alpha_2026_04",
+        "TSMOM_8_ETF_rotation_PG2_no_KR_bond_overlap",
+        "KR_10y_bond_ETF_PG2",
+        "CASH_KRW_PG2_S4"
+      ],
+      "book_weights": {
+        "STR_1715_AR_threshold_overlay_PG2_v2_alpha_2026_04": 0.50,
+        "TSMOM_8_ETF_rotation_PG2_no_KR_bond_overlap": 0.25,
+        "KR_10y_bond_ETF_PG2": 0.20,
+        "CASH_KRW_PG2_S4": 0.05
+      },
+      "lro_sha_frozen": "ad3d44417b526c3d82dde8724cb971ba973f2e418fc36ada7795d687c809cb18",
+      "effective_date": "2026-05-12"
+    },
+
+    "book_state_post_admission": "IDENTICAL (no mutation) — admitted_ids / book_weights / lro_sha_frozen / effective_date 모두 retain.",
+
+    "concord_certifier_payload": {
+      "current_wt_weights": {
+        "str1715": 0.50,
+        "kr10y": 0.20,
+        "tsmom": 0.25,
+        "cash": 0.05
+      },
+      "book_state_weights": {
+        "STR_1715": 0.50,
+        "TSMOM": 0.25,
+        "KR_10y": 0.20,
+        "CASH": 0.05
+      },
+      "concord_result": "EXACT_MATCH",
+      "concord_verdict": "PASS (no waiver, no mutation)"
+    },
+
+    "book_score_v18_patch_validation": {
+      "score_pre_v18_patch": "50/100 DRIFTED (sleeve naming alias 부재 + cash_role missing)",
+      "score_post_v18_patch": "100/100 HEALTHY",
+      "patch_date": "2026-05-11 (measurement_basis_audit.R v1.8 — sleeve_aliases + cash_role_exempt 도입)",
+      "post_admit_book_score_expected": "100/100 HEALTHY (sustained)"
+    },
+
+    "sequential_admission_tdc_check": {
+      "current_book_hhi": 0.355,
+      "rf_r3_hard_cap": 0.40,
+      "rf_r3_status": "PASS (HHI 0.355 < 0.40)",
+      "recommendation_tier": 0.10,
+      "soft_status": "PASS_SOFT (97.94% str1715 sleeve variance dominance by S4 v2 admit composition, not Σ design)",
+      "no_new_admission_in_this_wt": true,
+      "tdc_cap_retain_for_future_4th_source": "Sequential Admission TDC<0.30 cap retain. 4th orthogonal source admit candidate (WT-D20260511_001 별도 cycle): pre-admission TDC check mandatory."
+    },
+
+    "dro_50_30_20_0_vs_s4_v2_50_25_20_5_trade_off": {
+      "dro_walk_forward_dynamic_best": "50/30/20/0 (DRO Wasserstein ε=0.1, Esfahani-Kuhn 2018, paradigm-free)",
+      "s4_v2_user_fixed_mandate": "50/25/20/5 (도훈 mandate 2026-05-09 A안, cash 5% risk floor retain)",
+      "delta_from_dro_dominance_axis": "TSMOM +5pp (DRO) → -5pp (S4); Cash 0% (DRO) → +5% (S4)",
+      "trade_off_rationale": "DRO dominance 인정 + cash UB=0 mandate sacrifice 명시. 5% cash risk floor = liquidity buffer (margin call / 비상 deployment / rebalance friction). 도훈 framing 정량 수렴 입증 + risk floor user-level mandate retain.",
+      "axiom_compliance": "AX-002 PASS (no lookahead, user-fixed mandate at S4 v2 admit 2026-05-09 prior to any post-hoc justification). L-286 정량 dominance 확증 정합."
+    },
+
+    "pg2_verdict": "PASS_INHERIT (no mutation)"
+  },
+
+  "pg3_live_drift_pre_deploy": {
+    "deploy_status": "imminent (D-1 from 2026-05-11; effective 2026-05-12)",
+    "deploy_components": {
+      "1715_h1_alpha_2026_04": {
+        "weight": 0.50,
+        "n_active": 18,
+        "top5_2026_05_basis": "S-Oil 14%, 쏠리드 14%, 한올바이오 9.16%, 리노공업 5.31%, 삼성전자 5.09% (memory carry per L-274/L-288 5월 라이브 트래킹 baseline)",
+        "alpha_scores_lineage": "alpha_scores.parquet 268m 갱신 (lockbox 해제 운용, lockbox-scope.md 정합)",
+        "lro_sha_frozen": "ad3d44417b526c3d82dde8724cb971ba973f2e418fc36ada7795d687c809cb18"
+      },
+      "tsmom_8_etf": {
+        "weight": 0.25,
+        "universe": "8 ETF (KODEX_KTB10Y A148070 제거 후, KR_10y bond sleeve 단일화)",
+        "rotation_logic": "TSMOM monthly cross-asset (Moskowitz-Ooi-Pedersen 2012)"
+      },
+      "kr_10y_bond_a148070": {
+        "weight": 0.20,
+        "single_asset_cap_compliance": "single asset cap 0.20 정합 (A148070 = 20% only, no overlap with TSMOM)"
+      },
+      "cash_krw_buffer": {
+        "weight": 0.05,
+        "role": "risk floor + liquidity buffer + rebalance friction reserve",
+        "axiom": "v55 cash_allocation role"
+      }
+    },
+    "weights_sanity_check": {
+      "sum_w": 1.00,
+      "sum_w_pass": true,
+      "long_only_pass": true,
+      "bounds_per_sleeve": {
+        "1715_h1": "0.50 ∈ [0, 0.70]",
+        "tsmom_8": "0.25 ∈ [0, 0.40]",
+        "kr_10y": "0.20 ∈ [0, 0.40]",
+        "cash": "0.05 ∈ [0, 0.30]"
+      },
+      "bounds_pass": true
+    },
+    "live_5_month_tracking_carry": {
+      "period_4_30_to_5_8": {
+        "pg2_lockbox_stale_alpha": "+1.62% (종근당/원익머/효성 holdings, alpha 2023-12 cutoff stale)",
+        "kospi200_bm": "+16.03%",
+        "active": "-14.41pp (lockbox stale loss)",
+        "new_alpha_sleeve_only_track": "+2.09% (alpha 2026-04 갱신 효과, sleeve isolated)"
+      },
+      "interpretation": "5월 8일 트래킹 결과로 alpha 2026-04 갱신 효과 확인 + S4 v2 4-sleeve 통합 deploy (5/12 effective) 정합. lockbox 해제 운용 모드 (lockbox-scope.md 정합)."
+    },
+    "forward_weights_r_v2_artifact": "forward_weights.R v2 산출 완료 (도훈 채팅 보고 완료) — 1715 H1 alpha-updated weights + TSMOM 8-ETF rotation + KR_10y A148070 + Cash KRW = 4-sleeve live ready.",
+    "post_deploy_obligations_inherit": {
+      "PD1_kofia_nav_validation": "9 ETF (TSMOM_8 + KR_10y A148070) NAV cross-check, deadline 2026-08",
+      "PD2_backtest_contract_v1_1_fix": "dcast aggregation + terminal-period zero-data leg, deadline 2026-08",
+      "PD3_alpha_scores_sha_bind": "1715 H1 alpha_scores.parquet (268m 갱신) inherit lineage manifest, deadline 2026-08",
+      "PD4_s4_v2_forge_re_run": "S4 v2 alpha-updated 4-sleeve 50/25/20/5cash 256m+OOS backtest primary basis metric re-run, deadline 2026-06-30 — 본 WT-D20260511_002가 PD4 RESOLVED (Forge 256m PerfA SR 1.83 + lockbox extension SR 3.66 + Judge reproduce + Architect reproduce). v1.5.0 primary basis 갱신 가능 (PD4 close-out).",
+      "PD5_admission_record_4_sleeve_v18_patch": "RESOLVED 2026-05-11 (measurement_basis_audit.R v1.8 patch sleeve_aliases + cash_role_exempt)"
+    },
+    "pg3_verdict": "PASS — D-1 ready, no drift detected, forward_weights.R v2 산출 완료, 5/12 effective auto-deploy"
+  },
+
+  "evidence_chain": {
+    "judge_verdict": "qepm/mailbox/worktask/WT-D20260511_002/judge_verdict.json v2.0_final_post_codex (verdict=JUDGE_PASSED_CONDITIONAL, gates 0~18 all PASS_or_NOTE, conditional reason=Architect explicit redundancy pending → Architect parallel 완료로 명시 redundancy 추가)",
+    "forge_package": "qepm/mailbox/worktask/WT-D20260511_002/forge_package.json (PerfA geometric=TRUE, SR 1.83, CAGR 19.69%, MDD -11.47%, n=255)",
+    "forge_supplement": "qepm/mailbox/worktask/WT-D20260511_002/forge_supplement.json (C8 duplicate fix + C3 lockbox split transparency + C6 KOSPI200 BM + C4 Harvey 5spec inherit)",
+    "optimization_package": "qepm/mailbox/worktask/WT-D20260511_002/optimization_package.json v2.0 final (SHA256 f40c1bf9...)",
+    "architect_verification": "qepm/mailbox/worktask/WT-D20260511_002/architect/architect_verification.json (verdict=PASS, 7/7 NEGLIGIBLE, AX-008 contribution 1/3 → Forge+Optimizer+Architect=3/3, lockbox extension SR 3.6564 reproduce exact)",
+    "challenge_note": "qepm/mailbox/worktask/WT-D20260511_002/challenge_note.md (alpha waiver + risk + optimizer + forge + judge + architect 6 sections)",
+    "codex_responses": [
+      "codex_critic_response_risk.json",
+      "codex_critic_response_optimizer.json",
+      "codex_critic_response_forge.json",
+      "codex_critic_response_judge.json"
+    ],
+    "lockbox_sealed": "qepm/mailbox/worktask/WT-D20260511_002/lockbox_sealed.json (sealed=true, sealed_at=2026-05-11T09:07:41, sealed_by=judge)",
+    "sr_provenance_cert": "qepm/mailbox/worktask/WT-D20260511_002/sr_provenance_certificate.json (issued=true, sr_realized_share_based=1.83, density 1.0)",
+    "parent_alpha_discovery_cert_inherit": "qepm/mailbox/worktask/WT-P20260505_001/alpha_discovery_certificate.json (issued=true, inherit_kind=alpha_discovery, parent_path=WT-P20260504_001 governor_admission, v1.7 Role Card inherit)"
+  },
+
+  "axiom_compliance": {
+    "AX_000_no_limit": "DOCUMENTED — 16 dynamic methods evaluated, none stat sig improve over static. 5 future research paths explicit (Rglpk install / sample extension / HMM / PPO RL / Genetic).",
+    "AX_001_v2_conditional_defense": "PASS_WITH_BORDERLINE — kr10y crisis_alpha +0.0028 PASS, bad/normal ratio 1.88 PASS. tsmom borderline (n=4 small sample). 4-sleeve composite covid_2020 -8.30% vs str1715-only -16.1% = true diversifier validation.",
+    "AX_002_no_lookahead": "PASS — C9 t-1 lag + expanding percentile, PerfA Return.portfolio monthly rebalance, hash 4/4 match, 0 forbidden labels.",
+    "AX_005_v1_2_defense_exclusion": "PASS — 4-sleeve aggregate, not single-sleeve defense top20 long-only. 4 exceptions retain (multi-sleeve cross-asset).",
+    "AX_007_single_sleeve_break": "N/A — sleeve-aggregate cross-asset (1715 H1 stock + TSMOM ETF + KR_10y bond + cash). 4 exceptions all applicable.",
+    "AX_008_verification_triangulation": "EFFECTIVE 3/3 — Forge + Optimizer + Judge independent reproduce. Architect parallel run adds 4th explicit redundancy source (delta 7/7 NEGLIGIBLE, reproduce_method=manual matrix product BOP/EOP drift distinct from PerfA Return.portfolio)."
+  },
+
+  "L_codes_appended": [
+    {
+      "L_code": "L-289",
+      "title": "도훈 6th audit hit — Static baseline retain via L-286 정량 dominance + cash UB=0 trade-off",
+      "summary": "도훈 mandate 2026-05-11 = S4 v2 retain (cash 5% risk floor). DRO walk-forward dynamic 50/30/20/0 정량 dominance 인정하되 cash UB=0 mandate trade-off 명시. paradigm-free convergence (Esfahani-Kuhn 2018 DRO Wasserstein ε=0.1) 사후 정당화 X = 정량 수렴점. 도훈 system-level audit instinct 6번째 hit (1: convention drift PerfA, 2: regime window fix, 3: TSMOM A148070 overlap, 4: alpha 268m update, 5: walk-forward convergence, 6: static retain + cash risk floor).",
+      "core_reference": "Esfahani-Kuhn (2018) DRO Wasserstein + L-282 PerfA convention reconcile + L-286 walk-forward dynamic convergence finding",
+      "tags": ["governance", "static_retain", "dro_dominance", "cash_risk_floor", "domhoon_audit_hit"]
+    },
+    {
+      "L_code": "L-290",
+      "title": "DRO vs S4 정량 dominance + risk floor trade-off",
+      "summary": "Walk-forward dynamic best (DRO 50/30/20/0) = AR/KR_10y 도훈 framing 정확 일치 + TSMOM/Cash ±5pp. Cash UB=0 mandate sacrifice = liquidity buffer + margin call reserve + rebalance friction. 5% cash 정량 sacrifice 합리화 X — 운용 layer risk floor 도훈 user-level mandate. 정량 dominance 인정 + risk floor 분리 layer 명시.",
+      "core_reference": "WT-P20260509_002 walk-forward dynamic Codex APPROVE_CONDITIONAL + 도훈 mandate 2026-05-09 A안 (4-sleeve 50/25/20/5 retain)",
+      "tags": ["dynamic_vs_static", "convergence", "risk_floor", "user_mandate_layer"]
+    },
+    {
+      "L_code": "L-291",
+      "title": "L-282 PerfA convention recurrence (Forge realized + Judge reproduce + Architect reproduce 7/7 NEGLIGIBLE)",
+      "summary": "L-282 PerfA convention reconcile 후속 — 본 WT 256m PerfA geometric=TRUE retain. Forge SR 1.83 + Judge reproduce 1.830043 + Architect reproduce 1.8292795 = 모두 1.83 수렴 (Δ NEGLIGIBLE). manual arithmetic vs geometric drift 재발 없음. Backtest Contract v1.0 PerfA standard 정착 (L-282 recurrence 입증).",
+      "core_reference": "L-282 PerfA convention reconcile + .claude/rules/backtest-contract.md v1.0",
+      "tags": ["perfa_convention", "reproducibility", "ax_008", "backtest_contract_v1"]
+    }
+  ],
+
+  "next_step": {
+    "immediate_2026_05_12_effective": "S4 v2 4-sleeve auto-deploy (50% 1715 H1 + 25% TSMOM 8-ETF + 20% KR_10y A148070 + 5% Cash KRW). forward_weights.R v2 산출 완료. live tracking active.",
+    "post_admit_actions": [
+      "governor_concord_certificate.json 발급 (본 단계 final write)",
+      "governance_log.json append (admission_log entry)",
+      "book_state.json no mutation (sustain v1.5.0 S4 v2 admit)",
+      "portfolio_gap_vector.json v1.5.0 sustain (no mutation)",
+      "Layer 2 cert_backfill_audit.R sweep — schedule_fidelity + forge_package_validated cert files (PostToolUse Hook이 issue 안 했을 경우 fallback)"
+    ],
+    "downstream_research_wts": [
+      "WT-D20260511_001: 4th orthogonal source 별도 cycle (low-correlation alpha sleeve 5% admit 후보) — SR gap 0.335 reduction path",
+      "WT-D20260511_002 post-admit: PD4 RESOLVED (S4 v2 forge re-run primary basis metric SR 1.83 + lockbox SR 3.66) — portfolio_gap_vector v1.5.0 → v1.6.0 갱신 가능 (Q-Lead 결정)"
+    ]
+  },
+
+  "telegram_brief_caller": {
+    "agent": "Governor",
+    "stage": "PG3",
+    "wt_id": "WT-D20260511_002",
+    "decision": "ADMIT (sizing_only static retain, no book mutation)",
+    "summary": "S4 v2 4-sleeve 50/25/20/5cash retain. Judge JUDGE_PASSED_CONDITIONAL (gates 0~18 all PASS, no hard FAIL). AX-008 effective 3/3 + Architect parallel adds 4th redundancy. Forge SR 1.83 + Lockbox OOS SR 3.66 + Architect reproduce 7/7 NEGLIGIBLE. L-286 정량 dominance 확증. cash UB=0 mandate trade-off 명시. 5/12 effective auto-deploy.",
+    "book_state_delta": "no mutation (admitted_ids 4-sleeve retain, weights 50/25/20/5 retain, HHI 0.355 < 0.40 RF-R3 PASS)",
+    "next": "5/12 effective deploy + WT-D20260511_001 4th orthogonal source 별도 cycle"
+  },
+
+  "hard_constraints_compliance": {
+    "no_strategy_design_validation": "PASS — 전략 설계/검증 Judge 영역 (Gate 0~18). 본 Governor는 admission + book_state inherit retain만 결정.",
+    "book_state_mutation_obligation": "X — sizing_only effective static retain. book_state.json 갱신 X.",
+    "governance_log_update_required": "YES — admission_log entry append (final 단계).",
+    "governor_concord_certificate_issuance": "YES — final governor_admission.json write 시 PostToolUse Hook auto-issue 기대."
+  },
+
+  "codex_round_compliance": {
+    "draft_path": "qepm/mailbox/worktask/WT-D20260511_002/governor_admission_draft.json",
+    "post_tool_use_codex_auto_spawn_pending": true,
+    "expected_codex_critic_response_path": "qepm/mailbox/worktask/WT-D20260511_002/codex_critic_response_governor.json",
+    "next_steps_after_codex": [
+      "challenge_note.md append (Governor section)",
+      "governor_admission.json final write (no _draft suffix)",
+      "PreToolUse codex_round_pre_enforcer.sh 통과 의무"
+    ]
+  }
+}

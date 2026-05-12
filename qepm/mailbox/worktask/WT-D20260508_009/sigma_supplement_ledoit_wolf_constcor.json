@@ -1,0 +1,80 @@
+{
+  "task_id": "WT-D20260508_009",
+  "context": "Σ supplement: Codex critic 진단 정합 (LW OAS isotropic 결함 발견 → constant-correlation target 추가)",
+  "ledoit_wolf_oas_diagnostic": {
+    "rho_raw": 159.4723,
+    "rho_capped": 1,
+    "interpretation": "n_obs(252) ≈ p(241) high-dim → rho_raw=159, capped 1.0 → cov ≈ μ × I",
+    "offdiag_cor_mean_abs": 0,
+    "information_preserved": false
+  },
+  "ledoit_wolf_constcor": {
+    "rho_bar": 0.2423,
+    "delta_raw": 0.4842,
+    "delta_capped": 0.4842,
+    "pi_hat": 0.3962,
+    "rho_hat": 0.0701,
+    "gamma_hat": 0.0027,
+    "condition_number": 114.0257,
+    "min_eig": 0.0001,
+    "psd": true,
+    "offdiag_cor_mean_abs": 0.2423,
+    "interpretation": "LW2004 JPM Honey 정통 공식. n_obs≈p 에서 information 보존."
+  },
+  "eigfloor_sample": {
+    "eig_floor": 0,
+    "condition_number": 7528.316,
+    "min_eig": 0,
+    "psd": true,
+    "offdiag_cor_mean_abs": 0.2433
+  },
+  "sample": {
+    "condition_number": 376413.3717,
+    "min_eig": 4.0386e-07,
+    "psd": true,
+    "offdiag_cor_mean_abs": 0.2435
+  },
+  "comparison_table": [
+    {
+      "name": "sample",
+      "condition": 376413.3717,
+      "min_eig": 4.0386e-07,
+      "psd": true,
+      "offdiag_cor": 0.2435,
+      "interpretation": "high κ but information preserved (offdiag intact)"
+    },
+    {
+      "name": "ledoit_wolf_constcor",
+      "condition": 114.0257,
+      "min_eig": 0.0001,
+      "psd": true,
+      "offdiag_cor": 0.2423,
+      "interpretation": "LW2004 정통 const-corr target shrinkage δ=0.484",
+      "delta": 0.4842
+    },
+    {
+      "name": "eigfloor_sample",
+      "condition": 7528.316,
+      "min_eig": 0,
+      "psd": true,
+      "offdiag_cor": 0.2433,
+      "interpretation": "PSD-projected sample (eigenvalue floor at max × 1e-4)"
+    },
+    {
+      "name": "ledoit_wolf_oas_hrp",
+      "condition": 1,
+      "min_eig": 0.0018,
+      "psd": true,
+      "offdiag_cor": 0,
+      "interpretation": "hrp_core current OAS variant — n≈p에서 isotropic strong",
+      "rho_capped": 1
+    }
+  ],
+  "selection_revised": {
+    "selected_method": "ledoit_wolf_constcor",
+    "selection_objective": "condition_number with offdiag information preservation",
+    "rationale": "OAS 변형은 κ=1.00이지만 offdiag wipe (information 0). LW const-corr 또는 eigfloor sample이 정보 보존 시 우월.",
+    "selected_condition": 114.0257,
+    "selected_min_eig": 0.0001
+  }
+}

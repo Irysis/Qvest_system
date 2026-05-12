@@ -1,0 +1,104 @@
+{
+  "task_id": "WT-D20260508_010",
+  "validation_timestamp": "2026-05-08T15:24:11+0900",
+  "selected_factor": "R14_DUVOL_signflip",
+  "ic_history_window": "2005-01_to_2025-12 (252 months expanding)",
+  "graduation_criteria": {
+    "min_rank_ic": {
+      "threshold": 0.04,
+      "observed": 0.0435,
+      "pass": true
+    },
+    "min_icir": {
+      "threshold": 0.2,
+      "observed": 0.5694,
+      "pass": true
+    },
+    "min_harvey_t_NW_lag4": {
+      "threshold": 3,
+      "observed": 8.23,
+      "pass": true
+    },
+    "min_subperiod_stability": {
+      "threshold": 0.5,
+      "observed": 1,
+      "pass": true
+    },
+    "min_dsr_BLP_n100": {
+      "threshold": 0.5,
+      "observed": 1,
+      "pass": true
+    },
+    "overall": "GRADUATION_PASS"
+  },
+  "bootstrap_icir_95ci": {
+    "point": 0.5694,
+    "ci_lower": 0.4597,
+    "ci_upper": 0.6959
+  },
+  "dsr_strict_bailey_lopez_de_prado": {
+    "n_trials": 4,
+    "sharpe_ratio_per_month": 0.5694,
+    "sharpe_ratio_annualized": 1.9725,
+    "psr_n1": 1,
+    "psr_n4": 1,
+    "psr_n100": 1,
+    "dsr_n4_with_emax_penalty": 1,
+    "skewness_of_ic": 0.2874,
+    "kurtosis_of_ic": 0.3573,
+    "interpretation": "Strict DSR Bailey-LdP (1 - emax/sqrt(252)) penalty applied for 4 candidates tried. DSR ceiling at all n_trials due to overwhelming statistical strength."
+  },
+  "predictor_lag1_autocor": {
+    "method": "lag-1 autocorrelation of monthly IC series",
+    "observed": 0.0272,
+    "threshold": 0.1,
+    "pass": true,
+    "interpretation": "Low autocor confirms monthly cross-sectional alpha is fresh signal each month, not autocorrelated leakage."
+  },
+  "feature_leakage_check": {
+    "lag_0_ban_check": "PASS: factor_db builds at sig_date use only Date <= sig_date data, no contemporaneous return targets in feature construction",
+    "pit_rolling_check": "PASS: 252d rolling window market-model residuals, no full-sample fit",
+    "sig_date_ic_alignment": "PASS: ic_matrix_expanding.parquet entries indexed by sig_date with Usable_Date <= sig_date enforcement"
+  },
+  "regime_conditional_ic": {
+    "bad_regime_definition": "bottom-quintile IC months (proxy for stressed alpha periods)",
+    "bad_regime_ic_mean": -0.0577,
+    "bad_regime_n": 51,
+    "normal_regime_ic_mean": 0.0692,
+    "normal_regime_n": 201,
+    "bad_normal_ic_ratio": -0.834,
+    "note": "AX-001 v2 conditional defense audit requires Risk Agent regime split (bull/bear/crisis) plus Forge crisis_alpha measurement. Current proxy uses IC quantile only."
+  },
+  "orthogonality_vs_hybrid": {
+    "hybrid_proxy_definition": "M04_Mom_1 * 0.824 + M01_Mom_12_1 * 0.176 (bond sleeve excluded as no equity overlap)",
+    "pearson_cor": -0.418,
+    "rank_cor": -0.432,
+    "mandate_threshold": 0.25,
+    "pass": false,
+    "interpretation": "Negative correlation indicates anti-momentum behavior of skewness alpha. NOT a graduation rejection but mandates Risk/Optimizer combine logic. Negative cor often improves portfolio diversification more than orthogonal addition."
+  },
+  "universe_comparison": {
+    "primary_universe": "KOSPI200_KOSDAQ150_intersection_348",
+    "primary_universe_size": 348,
+    "v2_universe_mandated": false,
+    "v2_universe_rationale": "ICIR 0.5694 well above 0.15 threshold for L-227 v2 mandate trigger. Universe expansion not required.",
+    "cost_model_version": "v2.3_kr_retail_15bps"
+  },
+  "hard_constraint_compliance": {
+    "universe": "PASS",
+    "liquidity_2e8_KRW_20d_avg": "PASS",
+    "cost_model": "PASS",
+    "pit_C1_C15": "PASS"
+  },
+  "ax_compliance": {
+    "AX_000_immutable_no_limit": "respected",
+    "AX_001_v2_defense_conditional": "audit_pending_at_risk_agent",
+    "AX_002_no_process_bypass": "respected (full pipeline followed)",
+    "AX_003_kr_value_failure_pattern": "not_applicable (skewness != value)",
+    "AX_004_kr_quality_single_signal": "not_applicable (skewness != quality)",
+    "AX_005_v12_kr_defense_top20": "audit_pending_at_optimizer (single-signal long-only top20 risk - may invoke exception 4 multi-sleeve via Hybrid blend)",
+    "AX_007_single_sleeve_breakdown": "audit_pending (skewness alone = single sleeve - exception 1 multi-sleeve via Hybrid combine likely path)",
+    "AX_008_verification_triangulation": "alpha-side scope: Codex Critic Round mandatory + Architect optional + Forge S3 mandatory"
+  },
+  "status": "ALPHA_DRAFT_VALIDATED_AWAITING_CODEX_CRITIC"
+}

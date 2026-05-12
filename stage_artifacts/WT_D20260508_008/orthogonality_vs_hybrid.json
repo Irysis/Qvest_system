@@ -1,0 +1,16 @@
+{
+  "proxy_method": "Q5 sector top decile equal-weight return as sector momentum signal",
+  "hybrid_components_proxied": {
+    "STR_1715_proxy": "KOSPI200 BM_Ret (broad market - 70% weight closest)",
+    "TSMOM_proxy": "BM_Ret 12-1 sign (time-series trend)",
+    "KR_10y_proxy": "negative-correlation defensive (no direct ETF in RAWDATA)"
+  },
+  "cor_Q5_vs_BM": 0.1213,
+  "cor_Q5Q1_spread_vs_BM": -0.0023,
+  "Q5_beta_BM": 0.6853,
+  "Q5_alpha_intercept": 0.0102,
+  "Q5_alpha_residual_sd": 0.0879,
+  "n_obs": 422,
+  "interpretation": "Q5 highly correlated with BM (sector beta dominant). Cross-section spread Q5-Q1 may be more orthogonal but Harvey-t weak (1.21).",
+  "caveats": "Cannot directly test vs STR_1715 / TSMOM / KR_10y holdings (those are forward-looking deployments, not historical returns we have access to here). Used KOSPI200 BM as proxy for broad market exposure proxy."
+}

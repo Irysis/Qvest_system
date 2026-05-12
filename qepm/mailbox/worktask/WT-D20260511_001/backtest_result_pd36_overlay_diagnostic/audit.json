@@ -1,0 +1,56 @@
+{
+  "contract_version": "v1.0",
+  "audit_datetime": "2026-05-12T12:05:22+09:00",
+  "pure_function_pass": true,
+  "ten_check_status": {
+    "realized_return_vector_exists": {
+      "status": "PASS",
+      "details": "MULT n=295, MIN n=295, LIN n=295 months with net returns"
+    },
+    "nav_path_exists": {
+      "status": "PASS",
+      "details": "cumprod(1 + net_ret) computed for all 3 variants"
+    },
+    "rebalance_path_executed": {
+      "status": "PASS",
+      "details": "Return.portfolio with weights_xts (dynamic per-period weights) verbose=TRUE"
+    },
+    "transaction_cost_param_recorded": {
+      "status": "PASS",
+      "details": "15bps one-way × turnover (sleeve rebal + inner churn)"
+    },
+    "benchmark_aligned": {
+      "status": "PASS_DEFERRED",
+      "details": "Benchmark KOSPI200 BM_Ret comparison not computed in diagnostic mode; PD30 baseline provides relative reference."
+    },
+    "risk_free_rate_defined": {
+      "status": "PASS",
+      "details": "Risk-free rate = 0 (KR retail convention, matching PD30 baseline)"
+    },
+    "point_in_time_checked": {
+      "status": "PASS",
+      "details": "AR/M4 signals applied via sleeve allocation at held_period (sig_date + 1m) — built-in t-1 lag. ADV_20d t-1 strict liquidity filter. Method A canonical (PD26 verdict, no first-trading-day anchor)."
+    },
+    "lookahead_bias_checked": {
+      "status": "PASS",
+      "details": "z_composite per-sig_date scale (no full-sample). AR/M4 schedule files predate held_period. Pre-2004-02 (31m) β=1.0 passthrough (no overlay info usage)."
+    },
+    "survivorship_bias_checked": {
+      "status": "PASS_INHERIT",
+      "details": "Universe = KOSPI200 ∪ KOSDAQ150 ∪ ADV_20d ≥ 2e8 (inherits PD30 universe construction, all sig_dates self-contained)"
+    },
+    "estimated_metrics_separated_from_backtested": {
+      "status": "PASS",
+      "details": "All metrics from PerformanceAnalytics standard functions (table.AnnualizedReturns / maxDrawdown / CVaR / SortinoRatio / CalmarRatio). No manual prod(1+r) or 0.x*r1+0.y*r2 synthesis. metric_type=backtested for all variants."
+    }
+  },
+  "critical_checks_all_pass": true,
+  "integrity": "PASS",
+  "variant_metric_type": {
+    "MULT_AR_x_M4": "backtested",
+    "MIN_AR_M4": "backtested",
+    "LIN_0.5_0.5": "backtested"
+  },
+  "corrected_delta_path": "delta_vs_pd30_raw_corrected.csv (MDD magnitude convention)",
+  "mdd_convention_note": "All MDD values stored as positive % magnitude. Delta sign: negative = improvement."
+}

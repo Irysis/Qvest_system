@@ -1,0 +1,118 @@
+{
+  "pd_phase": "PD35_quality_tail_earnings_PIT_strict",
+  "generated_at": "2026-05-12T11:45:07+0900",
+  "factor_axes": {
+    "profit_quality": ["Q10_Gross_Margin", "Q01_GPA", "Q17_ROIC"],
+    "tail_risk": ["M22_Max_Return", "D44_Kurtosis"],
+    "earnings_quality": ["AC22_Accrual_Volatility", "Q33_Earnings_Persistence"]
+  },
+  "n_factors": 7,
+  "axis_weights": {
+    "profit_quality": 0.3333,
+    "tail_risk": 0.3333,
+    "earnings_quality": 0.3333
+  },
+  "n_rows": 725493,
+  "n_sig_dates": 298,
+  "date_range_start": "2001-07-01",
+  "date_range_end": "2026-04-01",
+  "diagnostics": {
+    "mean_IC": 0.0301,
+    "sd_IC": 0.1154,
+    "ICIR_naive": 0.261,
+    "t_naive": 4.5048,
+    "t_NW_lag6": 4.6605,
+    "n_months": 298,
+    "ic_positive_share": 0.6074
+  },
+  "subperiod": {
+    "P1_2001_2008": {
+      "rank_IC": 0.0349,
+      "n_months": 90
+    },
+    "P2_2009_2017": {
+      "rank_IC": 0.0224,
+      "n_months": 108
+    },
+    "P3_2018_2026": {
+      "rank_IC": 0.0341,
+      "n_months": 100
+    },
+    "min_max_ratio": 0.6423,
+    "sign_consistency": true,
+    "pass_subperiod_50": true
+  },
+  "ax001_v2_crisis": {
+    "crisis_IC": 0.0002,
+    "normal_IC": 0.0335,
+    "ratio_c_over_n": 0.0053,
+    "n_crisis": 30,
+    "n_normal": 268,
+    "ax001_v2_pass": false
+  },
+  "cor_vs_pd27": {
+    "cor_overall": 0.1079,
+    "cor_per_date_mean": "NaN",
+    "cor_per_date_sd": "NA",
+    "constraint_lt_0_30_pass": "NA"
+  },
+  "harvey_lz_multi_test": {
+    "n_trials": 15,
+    "t_threshold_approx": 2.8773,
+    "t_NW_observed": 4.6605,
+    "pass": true
+  },
+  "deflated_sharpe": {
+    "method": "BLP_2014_closed_form_IC_based",
+    "sr_ic_proxy": 0.261,
+    "sigma_sr": 0.0593,
+    "z_vs_zero": 4.3985,
+    "E_SR_max_null": 0.1051,
+    "DSR_z": 2.6278,
+    "DSR_pval": 0.0086,
+    "threshold_0_5_pass": true
+  },
+  "graduation_gates_8": {
+    "rank_IC_gate": {
+      "value": 0.0301,
+      "threshold": 0.02,
+      "pass": true
+    },
+    "ICIR_gate": {
+      "value": 0.261,
+      "threshold": 0.2,
+      "pass": true
+    },
+    "t_NW_gate": {
+      "value": 4.6605,
+      "threshold": 3,
+      "pass": true
+    },
+    "hlz_gate": {
+      "value": 4.6605,
+      "threshold": 2.8773,
+      "pass": true
+    },
+    "dsr_gate": {
+      "value": 2.6278,
+      "threshold": 0.5,
+      "pass": true
+    },
+    "subperiod_gate": {
+      "value": 0.6423,
+      "threshold": 0.5,
+      "pass": true
+    },
+    "cor_pd27_gate": {
+      "value": "NaN",
+      "threshold": 0.3,
+      "pass": "NA"
+    },
+    "ax001_v2_gate": {
+      "crisis_IC": 0.0002,
+      "normal_IC": 0.0335,
+      "ratio": 0.0053,
+      "pass": false
+    }
+  }
+}

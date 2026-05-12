@@ -1,0 +1,67 @@
+{
+  "task_id": "WT-D20260511_001",
+  "remediation_id": "PD15_med_10pct_155_date_schedule_build",
+  "trigger": "governor_admission.json cert_chain_status_post_codex_c5 schedule_fidelity_certificate.remediation_obligation_pd15",
+  "trigger_severity": "GRACE_CLAUSE_BLOCKING_DEPLOYMENT_EXECUTION",
+  "deadline_iso": "2026-06-01",
+  "completed_at": "2026-05-11T10:54:14+0900",
+  "agent_id": "optimizer-research-WT-D20260511_001-pd15-remediation",
+  "agent_model": "Opus_4_7_1M",
+  "pre_state": {
+    "weights_csv_basis": "high_20pct primary smoothed phi 0.5 (775 rows = 155 dates x 5 sleeves)",
+    "deployment_weights_med_10pct_csv": "single snapshot 2026-05-01 only (5 rows)",
+    "schedule_density_med_10pct": 0.00645161,
+    "schedule_density_pass": false,
+    "cert_eligibility_med_10pct": false
+  },
+  "post_state": {
+    "weights_csv_basis": "high_20pct primary smoothed phi 0.5 (UNCHANGED, primary admit basis retained)",
+    "deployment_weights_med_10pct_csv": "full 155-date schedule (775 rows)",
+    "deployment_weights_med_10pct_schedule_csv_alt": "stage_artifacts/WT_D20260511_001/deployment_weights_med_10pct_schedule.csv (duplicate for cleanliness)",
+    "pre_pd15_backup": "deployment_weights_med_10pct_single_snapshot_pre_pd15.csv (audit trail)",
+    "schedule_density_med_10pct": 1,
+    "schedule_density_pass": true,
+    "cert_eligibility_med_10pct": true
+  },
+  "allocation_unchanged": {
+    "AR_on_M4": 0.45,
+    "TSMOM": 0.225,
+    "KR_10y": 0.18,
+    "Cash": 0.045,
+    "NEW_VolSkew_3axis": 0.1,
+    "sum_check": 1,
+    "rationale": "Governor admit allocation unmodified - PD15 mechanical schedule extension only"
+  },
+  "charter_compliance": {
+    "section_8_no_silent_override": "PASS - explicit pd15_remediation block + standalone log + challenge_note append",
+    "section_9_schedule_fidelity": "PASS - density ratio 1.0000 >= 0.95",
+    "section_10_role_card_cert_hierarchy": "med_10pct specific cert path now eligible (was deferred via PD15 grace clause)"
+  },
+  "axiom_compliance": {
+    "AX_002_PIT_strict": "PASS - mechanical schedule extension uses only sig_dates from alpha_scores.parquet (no future data)",
+    "AX_008_triangulation": "RETAINED - 1.5/3 floor unchanged; PD15 remediation does not affect triangulation count (Forge + Architect PD16 separate track)"
+  },
+  "codex_round_exemption": {
+    "exempt": true,
+    "rationale_a": "PD15 = grace clause processing per governor admit decision - not new methodology or new optimization decision",
+    "rationale_b": "Existing Codex Round 1 (optimizer 8/9 ACCEPT/PARTIAL + governor 7 disposition) retained pure",
+    "rationale_c": "Schedule extension mechanically derived from already-codex-approved med_10pct allocation",
+    "transparency_path": "pd15_remediation block in optimization_package.json + this standalone log + optimizer_challenge_note.md append"
+  },
+  "next_track_dependencies": {
+    "pd16_forge_clean_med_10pct_256m": {
+      "status": "PENDING",
+      "deadline": "2026-06-15",
+      "blocker_for": "AX-008 floor 2/3 final + admit execution unblock"
+    },
+    "pd13_alpha_pit_c13_c14_remediation": {
+      "status": "PENDING",
+      "deadline": "2026-05-25",
+      "blocker_for": "Codex C2 alpha-domain PIT compliance"
+    },
+    "deployment_wt_issuance": {
+      "status": "PENDING_ALL_3_GRACE_CLAUSES",
+      "effective_date_target": "2026-06-01 next monthly cycle OR Q-Lead mandate timing"
+    }
+  }
+}

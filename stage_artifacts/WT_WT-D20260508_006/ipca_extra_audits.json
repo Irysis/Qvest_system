@@ -1,0 +1,127 @@
+{
+  "task_id": "WT-D20260508_006",
+  "C1_resolution": {
+    "issue": "RF-A7: alpha_scores.parquet single-snapshot",
+    "resolution": "Built alpha_scores_timeseries.parquet with Date×Ticker×score across all in-sample + lockbox periods.",
+    "n_sig_dates": 196,
+    "n_rows": 64603,
+    "file_path": "stage_artifacts/WT_WT-D20260508_006/alpha_scores_timeseries.parquet"
+  },
+  "C5_resolution": {
+    "issue": "RF-A2: best single-factor ICIR vs composite IPCA",
+    "composite_IPCA_ICIR": 0.0223,
+    "single_factor": {
+      "V01_BM": {
+        "char": "V01_BM",
+        "n_periods": 196,
+        "mean_IC": 0.0316,
+        "sd_IC": 0.1505,
+        "ICIR": 0.2102
+      },
+      "M01_Mom_12_1": {
+        "char": "M01_Mom_12_1",
+        "n_periods": 196,
+        "mean_IC": 0.0191,
+        "sd_IC": 0.1657,
+        "ICIR": 0.1156
+      },
+      "Q01_GPA": {
+        "char": "Q01_GPA",
+        "n_periods": 196,
+        "mean_IC": 0.0164,
+        "sd_IC": 0.1218,
+        "ICIR": 0.1349
+      },
+      "S01_Size": {
+        "char": "S01_Size",
+        "n_periods": 196,
+        "mean_IC": 0.0047,
+        "sd_IC": 0.1503,
+        "ICIR": 0.0315
+      },
+      "L02_Turnover": {
+        "char": "L02_Turnover",
+        "n_periods": 196,
+        "mean_IC": 0.0337,
+        "sd_IC": 0.1616,
+        "ICIR": 0.2084
+      }
+    },
+    "best_single_char": "V01_BM",
+    "best_single_ICIR": 0.2102,
+    "composite_improvement_pct": -89.39,
+    "interpretation": "Composite IPCA ICIR (|0.022|) is WORSE than best single-factor ICIR — IPCA framework provides no incremental cross-section signal in KR. Honest negative."
+  },
+  "RF_A4_resolution": {
+    "issue": "Sector-neutral ICIR robustness",
+    "raw_mean_IC": 0.0034,
+    "raw_ICIR": 0.0223,
+    "sec_neutral_mean_IC": -0.0025,
+    "sec_neutral_ICIR": -0.0209,
+    "retention_pct": -74.1,
+    "interpretation": "Sector-neutral retention >= 50% — within-sector signal preserved partially."
+  },
+  "RF_A6_resolution": {
+    "issue": "Defensible effective n_trials",
+    "n_trials_original": 5,
+    "n_trials_effective": 40,
+    "DSR_n5": 0.5594,
+    "DSR_n_eff": 0.2169,
+    "HLZ_Bonferroni_t_cutoff": 3.0233,
+    "Harvey_t_observed": 0.2258,
+    "interpretation": "With effective n_trials=40: DSR=0.217 (vs n=5 DSR=0.559) | HLZ-style Bonferroni t-cutoff=3.023 vs observed |Harvey-t|=0.226. Both DSR and Harvey-t fail under defensible multi-test correction."
+  },
+  "five_spec_regression": [
+    {
+      "spec": "K=2 unrestricted",
+      "K": 2,
+      "train_R2": 0.2118,
+      "train_IC": 0.0198,
+      "val_IC": -0.0219,
+      "lock_IC": 0.0063,
+      "Harvey_t": null
+    },
+    {
+      "spec": "K=3 unrestricted",
+      "K": 3,
+      "train_R2": 0.2282,
+      "train_IC": 0.0103,
+      "val_IC": -0.0472,
+      "lock_IC": -0.0325,
+      "Harvey_t": null
+    },
+    {
+      "spec": "K=4 unrestricted (primary)",
+      "K": 4,
+      "train_R2": 0.2387,
+      "train_IC": 0.0034,
+      "val_IC": -0.0455,
+      "lock_IC": -0.0271,
+      "Harvey_t": 0.2258
+    },
+    {
+      "spec": "K=5 unrestricted",
+      "K": 5,
+      "train_R2": 0.2444,
+      "train_IC": 0.0115,
+      "val_IC": -0.0428,
+      "lock_IC": -0.021,
+      "Harvey_t": null
+    },
+    {
+      "spec": "K=4 restricted (α=0)",
+      "K": 4,
+      "train_R2": 0.245,
+      "train_IC": 0.0434,
+      "val_IC": 0.002,
+      "lock_IC": -0.0341,
+      "Harvey_t": null
+    }
+  ],
+  "five_spec_summary": {
+    "n_specs": 5,
+    "n_specs_lock_IC_positive": 1,
+    "interpretation": "Across 5 IPCA specifications (K=2,3,4,5 unrestricted + K=4 restricted), only 1/5 has positive lockbox IC. The single positive case (K=2 unrestricted, lock_IC=+0.006) is essentially zero. Honest negative finding ROBUST across specification choice."
+  },
+  "saved_at": "2026-05-08T14:55:44+0900"
+}

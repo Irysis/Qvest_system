@@ -1,0 +1,134 @@
+{
+  "wt_id": "WT-D20260511_001",
+  "phase": "PD29",
+  "mandate_source": "도훈 mandate 2026-05-12 — 3 weighting (EW/LIN/SOFT) 통합 비교",
+  "package_role": "forge",
+  "draft": true,
+  "mission_summary": "PD27 (1715 H1 burn-in 0m alpha) + PD24 (NEW Vol/Skew alpha) + PD28 (synthetic ETF) 3-package inherit. z_composite = z_1715 × 0.818 + z_NEW × 0.182. Top20 select per sig_date. 3 weighting (A=EW 1/20, B=Alpha-tilt Linear, C=Softmax z-tilted with τ=median(|z|)). 4-sleeve composite (55% KR equity + 22.5% TSMOM + 18% KR_10Y + 4.5% Cash). 297m max backtest (2001-07~2026-04). vs S4 v2 baseline (SR 1.81 / CAGR 19.99% / MDD -12.63% / CVaR -5.01%) 4-axis strict.",
+  "design": {
+    "window": {
+      "start": "2001-07-01",
+      "end": "2026-04-01",
+      "n_months_target": 298
+    },
+    "alpha_composite": {
+      "formula": "z_composite = z_1715 × 0.818 + z_NEW × 0.182",
+      "weights_rationale": "PD27 1715 H1 sleeve weight = 0.818 (Sharpe-optimal blend per PD15 / PD20c, locked-in by Q-Lead mandate). NEW Vol/Skew sleeve weight = 0.182 (residual).",
+      "fallback": "t < 2001-07 → z_NEW solo (rare given window start). Missing ticker in either source → use available alpha only.",
+      "normalization": "per sig_date z-score (scale=1 sd, mean=0) for both z_1715 (from PD27 score_eff re-scaled) and z_NEW (from PD24 alpha re-scaled). Ensures 0.818/0.182 blend in comparable z-space."
+    },
+    "top_n": 20,
+    "weighting_schemes": {
+      "A_EW": {
+        "formula": "w_i = 1/20 = 0.05 sleeve-internal → portfolio weight = 0.55 × 0.05 = 0.0275 (2.75%) per stock",
+        "single_asset_cap_check": "0.0275 < 0.20 → auto-satisfied",
+        "robust": true
+      },
+      "B_LIN": {
+        "formula": "z_i^pos = max(z_composite_i, 0); w_i = z_i^pos / Σ z_j^pos sleeve-internal; portfolio = 0.55 × w_i",
+        "fallback_all_negative": "If all z_composite negative → fallback to EW (1/20)",
+        "single_asset_cap_enforce": "sleeve-internal cap = 0.20/0.55 = 0.3636 (after cap, redistribute excess to uncapped). Final portfolio weight max = 0.20.",
+        "rationale": "score-proportional weighting consistent with 1715 H1 sleeve internal (PD27)"
+      },
+      "C_SOFT": {
+        "formula": "w_i = exp(z_composite_i / τ) / Σ exp(z_composite_j / τ); τ = median(|z_composite|) per sig_date",
+        "tau_design": "auto-tuned median absolute z to balance winner-take-all (low τ) vs ~EW (high τ). Median is robust to z outliers.",
+        "single_asset_cap_enforce": "same as LIN (sleeve-internal 0.3636 cap + redistribute)",
+        "rationale": "smooth flattened tilting, robust to z noise"
+      }
+    },
+    "sleeve_composition": {
+      "KR_EQUITY": 0.55,
+      "TSMOM_8_ETF": 0.225,
+      "KR_10Y_BOND": 0.18,
+      "CASH": 0.045
+    },
+    "transaction_cost": {
+      "cost_bps_one_way": 0.0015,
+      "embed_pattern": "PD25 standard: total_turnover × 0.0015 deducted from gross_return per month",
+      "kr_inner_turnover_assumption": {
+        "EW": 0.30,
+        "LIN": 0.45,
+        "SOFT": 0.38,
+        "rationale": "EW baseline 30% (PD25). LIN concentrates → higher effective turnover (45% assumed). SOFT mid-flatten (38%)."
+      }
+    },
+    "rebalance": "monthly (PerformanceAnalytics::Return.portfolio rebalance_on='months')",
+    "method": "Method A canonical (PD26 verdict, first-trading-day anchor 미사용)"
+  },
+  "input_artifacts_inherit": {
+    "alpha_h1_pd27": "stage_artifacts/WT_D20260511_001/alpha_scores_pd27_burn0m.parquet",
+    "alpha_pd24": "stage_artifacts/WT_D20260511_001/alpha_scores_pd24.parquet",
+    "etf_pd28": "stage_artifacts/WT_D20260511_001/pd28/synthetic_etf_returns_2001_2026.parquet",
+    "read_only": true
+  },
+  "pure_function_audit_plan": "Start hashes (alpha_h1_pd27, alpha_pd24, etf_pd28) recorded. End hashes compared. All match → audit PASS.",
+  "comparison_axes": {
+    "vs_S4_v2_baseline": {
+      "SR": 1.81,
+      "CAGR": 0.1999,
+      "MDD": -0.1263,
+      "CVaR_95": -0.0501,
+      "TO_annualized": 0.30
+    },
+    "improve_criteria": "4-axis strict (SR↑ + CAGR↑ + MDD better + CVaR better)",
+    "DM_test_pairwise": ["EW vs LIN", "EW vs SOFT", "LIN vs SOFT"],
+    "hurdle_v22": "TO 600% hard fail + MDD 45% hard fail + Grade A criteria (CAGR≥16% + SR≥0.8 + score≥40)",
+    "harvey_5spec": "deferred (judge stage)",
+    "DSR": "deferred (judge stage)"
+  },
+  "output_artifacts_plan": {
+    "backtest_result_pd29/": [
+      "z_composite_per_sig_date.csv",
+      "top20_holdings_per_sig_date.csv",
+      "top20_holdings_3weighting.csv",
+      "kr_equity_sleeve_returns_3weighting.csv",
+      "metrics_3weighting.csv",
+      "4axis_strict_improve_3weighting.csv",
+      "dm_test_pairwise.csv",
+      "hurdle_result_3weighting.csv",
+      "regime_sr_3weighting.csv",
+      "nav_EW.csv / nav_LIN.csv / nav_SOFT.csv",
+      "period_returns_EW.csv / period_returns_LIN.csv / period_returns_SOFT.csv",
+      "drawdowns_EW.csv / drawdowns_LIN.csv / drawdowns_SOFT.csv",
+      "pure_function_audit.csv",
+      "output/equity_curve_3weighting.png",
+      "output/annual_returns_3weighting.png",
+      "output/oos_zoom_chart_3weighting.png",
+      "output/regime_decomposition_3weighting.png"
+    ],
+    "judge_ready/pd29/": [
+      "backtest_summary.json",
+      "metrics_3weighting.csv",
+      "4axis_strict_improve_3weighting.csv",
+      "dm_test_pairwise.csv",
+      "hurdle_result_3weighting.csv"
+    ]
+  },
+  "rules_compliance": {
+    "backtest_contract_v10": true,
+    "performanceanalytics_standard_only": true,
+    "method_a_canonical_pd26": true,
+    "no_first_trading_day_anchor": true,
+    "pure_function_3package_readonly": true,
+    "single_asset_cap_0p20_enforced_B_C": true,
+    "hurdle_v22_TO_600pct": true,
+    "schedule_fidelity_no_fabrication": true
+  },
+  "measurement_basis_primary": "forge_realized_share_based",
+  "sr_provenance_plan": {
+    "sr_realized_share_based": "PerformanceAnalytics::table.AnnualizedReturns geometric=TRUE (15bps embed)",
+    "sr_factor_engine_continuous": "N/A (alpha 3-package decoupled from forge backtest)",
+    "sr_lockbox_daily_harness": "N/A (monthly grid)",
+    "measurement_basis_primary": "forge_realized_share_based"
+  },
+  "open_concerns_for_codex_critic": [
+    "PD27 score_eff cross-sectional z 정규화 (mean=0, sd<1) — additional scale per sig_date to enforce sd=1 적용. 0.818/0.182 weighting 정합 가능한가?",
+    "kr_inner_turnover EW=0.30 / LIN=0.45 / SOFT=0.38 가정 — 실제 actual turnover 계산 (top20 churn rate × weight change) 비교 필요한가?",
+    "Softmax τ = median(|z_composite|) per sig_date — auto-tune이 grid search vs cross-validation 대비 정당화 가능한가?",
+    "Single asset cap 처리: sleeve-internal 0.3636 capping + redistribute → 결과 weight sum이 정확히 1.0 인지 verify.",
+    "S4 v2 baseline 동일 period (2001-07~2026-04, 297m)에서 측정인지 vs PD25 보고 period (다른 window) — fair comparison?"
+  ],
+  "draft_timestamp": "2026-05-12T18:00:00",
+  "next_step": "PostToolUse codex critic auto-spawn → review challenge_note.md (PD29 section) → final forge_package_pd29.json"
+}

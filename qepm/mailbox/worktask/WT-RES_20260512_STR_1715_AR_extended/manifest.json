@@ -1,0 +1,82 @@
+{
+  "task_id": "WT-RES_20260512_STR_1715_AR_extended",
+  "task_kind": "research_diagnostic",
+  "mandate_quote": "STR_1715_AR_threshold_overlay 전략을 테스트 기간 더 늘려서 백테 해봐줘",
+  "mandate_source": "도훈 직접 명령 2026-05-12 KST",
+  "parent_admit_wt": "WT-P20260504_001",
+  "strategy_id": "STR_1715_AR_threshold_overlay",
+  "panels": {
+    "baseline_256m": {
+      "label": "admit reproduction (post 13m warmup, 2005-02 ~ 2026-04)",
+      "n_months": 255,
+      "first_date": "2005-02-01",
+      "last_date": "2026-04-01"
+    },
+    "extended_267m": {
+      "label": "full PR (warmup natural inactive, 2004-02 ~ 2026-04)",
+      "n_months": 267,
+      "first_date": "2004-02-02",
+      "last_date": "2026-04-01",
+      "extension_pp": 12
+    }
+  },
+  "coverage_decision": {
+    "option": "B (full PR strict, 267m max with 5월 base alpha missing exclude)",
+    "rationale": "STR_1715 base alpha sig_date 마지막 = 2026-04, 5월 미산출. Forge boundary = alpha 생성 권한 없음. 도훈 mandate Option β 정합 (N/A exclude pre-alpha cover). Warmup 13m은 natural inactive (PIT 위반 아님) → 확장 +11m 가능.",
+    "excluded": "2026-05 1m (STR_1715 base alpha 미산출)"
+  },
+  "primary_metric": "Layer 4 (AR_on_M4_threshold_S1 = STR_1715_AR_threshold_overlay admit Path A)",
+  "layer_4_results": {
+    "baseline_256m": {
+      "panel": "256m_baseline_admit",
+      "layer": "4_AR_on_M4_threshold_S1",
+      "CAGR": 0.3868,
+      "Vol": 0.2212,
+      "Sharpe": 1.7486,
+      "MDD": -0.2481,
+      "Sortino": 1.0063,
+      "Calmar": 1.5592,
+      "n_months": 255
+    },
+    "extended_267m": {
+      "panel": "267m_extended_full",
+      "layer": "4_AR_on_M4_threshold_S1",
+      "CAGR": 0.377,
+      "Vol": 0.2223,
+      "Sharpe": 1.6957,
+      "MDD": -0.2481,
+      "Sortino": 0.9788,
+      "Calmar": 1.5197,
+      "n_months": 267
+    }
+  },
+  "vs_admit_jsonbaseline": {
+    "admit_baseline": {
+      "Layer": "4_AR_on_M4_threshold_S1_admit_baseline",
+      "CAGR": 0.3834,
+      "Vol": 0.2159,
+      "Sharpe": 1.7758,
+      "MDD": -0.2515,
+      "Sortino": 1.051,
+      "Calmar": 1.5245,
+      "n_months": 256
+    },
+    "reproduction_drift_explained": "Base PR 2026-05-09 update (run_id WT-T20260509_001) widespread anchor diff vs 5/8 pre-WT004 backup"
+  },
+  "pit_compliance": "C2 monthly t-1 lag + C9 weight_lag/cash_lag/β_lag + C11 bm_12m past-only",
+  "cost_model_version": "v2.3_kr_retail_15bps (AR turnover only)",
+  "perfanalytics_standard": true,
+  "audit_pass": true,
+  "files": {
+    "metrics_csv": "four_layer_comparison_extended.csv",
+    "delta_csv": "four_layer_comparison_delta_extended.csv",
+    "nav_csv": "nav_layer4_extended.csv",
+    "returns_csv": "four_layer_returns_path_extended.csv",
+    "drawdowns_csv": "drawdowns_layer4_extended.csv",
+    "metrics_layer4_csv": "metrics_layer4_extended.csv",
+    "bt_result_rds": "bt_result_layer4_extended.rds",
+    "audit_json": "audit.json",
+    "summary_md": "summary_report.md"
+  },
+  "created_at": "2026-05-12T12:46:01+09:00"
+}

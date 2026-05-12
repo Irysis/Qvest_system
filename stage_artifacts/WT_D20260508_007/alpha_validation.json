@@ -1,0 +1,500 @@
+{
+  "task_id": "WT-D20260508_007",
+  "as_of_date": "2026-05-08",
+  "forecast_horizon": "12M",
+  "primary_variant": "raw_signed",
+  "primary_col": "alpha_signed_z",
+  "graduation_summary": {
+    "rank_ic_12m": null,
+    "icir_12m": 0.317,
+    "icir_pass": true,
+    "t_simple_12m": 3.875,
+    "harvey_t_nw_lag12_HH": 1.655,
+    "harvey_t_nw_lag4": 1.961,
+    "harvey_t_nw_lag6": 1.775,
+    "harvey_t_nw_lag18": 1.736,
+    "harvey_t_pass_nw12": false,
+    "block_bootstrap_12m_blocks_p_value": 0.027,
+    "stationary_bootstrap_p_value": 0.017,
+    "bootstrap_significance": "PASS_5PCT_BOTH_BLOCK_AND_STATIONARY",
+    "subperiod_sign_stab": 1,
+    "subperiod_strict_pass": "2/3",
+    "decile_monotonicity": 0.77,
+    "decile_monotonicity_pass": true,
+    "ls_d10_d1_t": 3.97,
+    "ls_sr_annual_gross_12m": 0.325,
+    "dsr_blp_n20_z": 2.018,
+    "dsr_blp_pass": true,
+    "dsr_bootstrap_z": 2.044,
+    "sector_neutral_retention": 0.853,
+    "rf_a4_active": false,
+    "turnover_proxy_monthly": 0.066,
+    "turnover_proxy_12m_design": 0.794,
+    "orthogonality_LS_max_abs_cor": 0.149,
+    "orthogonality_LS_pass": true,
+    "orthogonality_LO_top20_max_abs_cor": 0.581,
+    "orthogonality_LO_top20_pass": false,
+    "forecast_horizon_design": "12M cross-section signal evaluated against 12M forward returns. Long-horizon variant of WT_005 single macro KR_TermSpread β.",
+    "pit_lineage": "Inherited from WT_005 (24M rolling β + expanding |IC| sign, 12 burn-in)",
+    "predictor_autocor": 0.9084,
+    "predictor_autocor_status": "MID_HIGH_NORMAL_FOR_12M_HORIZON"
+  },
+  "honest_empirical_assessment": {
+    "pass": [
+      "ICIR_12M = 0.317 > 0.20 (graduation)",
+      "Decile_monotonicity = 0.770 > 0.7",
+      "DSR_BLP_strict_N20 = 2.018 > 0.5",
+      "Subperiod_sign_3/3 unanimous +",
+      "Sector_neutral_retention = 0.853 (RF-A4 inactive at 12M)",
+      "Turnover_12m_design 79% < 600%",
+      "Orthogonality_LS_max_cor = 0.149 < 0.25",
+      "LS_D10-D1_t = 3.97 (annualized 12M scale)",
+      "Block_bootstrap_p = 0.027 (5% sig)",
+      "Stationary_bootstrap_p = 0.017 (5% sig)"
+    ],
+    "fail": [
+      "Harvey_t_NW_lag12_HH = 1.655 < 3.0 (Hansen-Hodrick standard for 12M overlap)",
+      "Harvey_t_NW_lag4_6_18 sensitivity: 1.96 / 1.78 / 1.74 (all <3.0)",
+      "Subperiod_strict_ICIR≥0.20 = 2/3 (graduation requires 2/3 → meets threshold but tight)",
+      "LO_top20_orthogonality vs Hybrid = 0.58 (long-only form correlates with KR equity Hybrid)"
+    ],
+    "interpretation": "12M long-horizon design captures full macro impact (ICIR 0.317). Sample-mean t (3.88) PASS but HAC-robust t (1.66) FAIL. Bootstrap-based significance both p<5% indicates the time-series mean IC is non-zero, but Harvey-Liu-Zhu strict (NW HAC robust) standard requires t>3.0. Conclusion: FORMAL_PARTIAL_VALIDATION_12M. 12M signal is REAL and sign-stable across subperiods (3/3) and DSR-strict. But Harvey-t graduation gate not met under HAC robustness.",
+    "next_research_paths": [
+      "Multi-feature ML composite (single-macro + curvature + level)",
+      "IPCA Kelly-Pruitt-Su 2019 conditional latent (WT_006 ongoing)",
+      "Sector overlay decomposition (separate macro β from sector β)",
+      "Larger universe expansion (KR_TOP500 + 1e8 ADV) for 12M small-cap reach",
+      "Conditional regime-overlay (term-spread β strong only in CAUTION/HIGH_VIX regime)"
+    ]
+  },
+  "ic_table": [
+    {
+      "variant": "raw_signed",
+      "horizon": "12M",
+      "ic_mean": 0.043352,
+      "ic_sd": 0.13655,
+      "icir": 0.317482,
+      "t_simple": 3.87536,
+      "n_periods": 149,
+      "hit_pos": 0.577181
+    },
+    {
+      "variant": "ema3",
+      "horizon": "12M",
+      "ic_mean": 0.042508,
+      "ic_sd": 0.137199,
+      "icir": 0.309827,
+      "t_simple": 3.781915,
+      "n_periods": 149,
+      "hit_pos": 0.597315
+    },
+    {
+      "variant": "ema6",
+      "horizon": "12M",
+      "ic_mean": 0.039759,
+      "ic_sd": 0.136931,
+      "icir": 0.290358,
+      "t_simple": 3.544266,
+      "n_periods": 149,
+      "hit_pos": 0.597315
+    },
+    {
+      "variant": "sector_neut",
+      "horizon": "12M",
+      "ic_mean": 0.021489,
+      "ic_sd": 0.07932,
+      "icir": 0.270921,
+      "t_simple": 3.307014,
+      "n_periods": 149,
+      "hit_pos": 0.597315
+    },
+    {
+      "variant": "ema12",
+      "horizon": "12M",
+      "ic_mean": 0.033582,
+      "ic_sd": 0.130597,
+      "icir": 0.257143,
+      "t_simple": 3.138829,
+      "n_periods": 149,
+      "hit_pos": 0.577181
+    }
+  ],
+  "harvey_t_nw_sensitivity": {
+    "lag4": {
+      "t_simple": 3.87536,
+      "t_nw": 1.960628,
+      "mean": 0.043352,
+      "se_nw": 0.022111,
+      "n": 149,
+      "lag_used": 4
+    },
+    "lag6": {
+      "t_simple": 3.87536,
+      "t_nw": 1.774616,
+      "mean": 0.043352,
+      "se_nw": 0.024429,
+      "n": 149,
+      "lag_used": 6
+    },
+    "lag12": {
+      "t_simple": 3.87536,
+      "t_nw": 1.655029,
+      "mean": 0.043352,
+      "se_nw": 0.026194,
+      "n": 149,
+      "lag_used": 12
+    },
+    "lag18": {
+      "t_simple": 3.87536,
+      "t_nw": 1.736125,
+      "mean": 0.043352,
+      "se_nw": 0.024971,
+      "n": 149,
+      "lag_used": 18
+    }
+  },
+  "subperiod_stability": [
+    {
+      "p": "p1",
+      "ic_mean": 0.043963,
+      "icir": 0.268577,
+      "n": 48,
+      "strict_pass": true,
+      "sign": 1
+    },
+    {
+      "p": "p2",
+      "ic_mean": 0.016297,
+      "icir": 0.124792,
+      "n": 48,
+      "strict_pass": false,
+      "sign": 1
+    },
+    {
+      "p": "p3",
+      "ic_mean": 0.067302,
+      "icir": 0.609902,
+      "n": 53,
+      "strict_pass": true,
+      "sign": 1
+    }
+  ],
+  "decile_means": [
+    {
+      "decile": 1,
+      "mean_ret": 0.023261
+    },
+    {
+      "decile": 2,
+      "mean_ret": 0.073135
+    },
+    {
+      "decile": 3,
+      "mean_ret": 0.097807
+    },
+    {
+      "decile": 4,
+      "mean_ret": 0.080735
+    },
+    {
+      "decile": 5,
+      "mean_ret": 0.095835
+    },
+    {
+      "decile": 6,
+      "mean_ret": 0.121034
+    },
+    {
+      "decile": 7,
+      "mean_ret": 0.133637
+    },
+    {
+      "decile": 8,
+      "mean_ret": 0.12971
+    },
+    {
+      "decile": 9,
+      "mean_ret": 0.100338
+    },
+    {
+      "decile": 10,
+      "mean_ret": 0.121
+    }
+  ],
+  "ls_d10_d1_12m": {
+    "mean": 0.097738,
+    "sd": 0.300482,
+    "t": 3.970448,
+    "sr_annual_gross_12m": 0.325272,
+    "n_periods": 149
+  },
+  "dsr_strict": {
+    "method": "Bailey-Lopez de Prado (2014) PMS 40(5):94-107 — 12M overlapping returns",
+    "primary_variant": "raw_signed",
+    "ls_basis": "decile D10 - D1 12M long-short on primary variant",
+    "observed": {
+      "sr_annual_gross_12m": 0.325272,
+      "skew": 0.126084,
+      "kurt": 3.546398,
+      "n_periods": 149,
+      "sr_se_analytical": 0.083275
+    },
+    "multi_trial_strict": {
+      "12": {
+        "n_trials": 12,
+        "sr0_blp": 0.138171,
+        "dsr_z_analytical": 2.254361,
+        "dsr_p_analytical": 0.012087,
+        "pass_strict": true
+      },
+      "17": {
+        "n_trials": 17,
+        "sr0_blp": 0.151722,
+        "dsr_z_analytical": 2.091078,
+        "dsr_p_analytical": 0.018261,
+        "pass_strict": true
+      },
+      "20": {
+        "n_trials": 20,
+        "sr0_blp": 0.157749,
+        "dsr_z_analytical": 2.018463,
+        "dsr_p_analytical": 0.021772,
+        "pass_strict": true
+      },
+      "27": {
+        "n_trials": 27,
+        "sr0_blp": 0.168447,
+        "dsr_z_analytical": 1.88957,
+        "dsr_p_analytical": 0.029408,
+        "pass_strict": true
+      }
+    },
+    "dsr_bootstrap_z": 2.044289,
+    "dsr_bootstrap_p": 0.020463,
+    "graduation_threshold_dsr": 0.5,
+    "pass_dsr_analytical_n20": true,
+    "pass_dsr_bootstrap": true
+  },
+  "sector_neutral_check": {
+    "raw_icir": 0.317482,
+    "sector_neut_icir": 0.270921,
+    "retention": 0.853344,
+    "rf_a4_active": false,
+    "note": "Sector-neutral retention >= 0.5: signal robust to sector neutralization"
+  },
+  "turnover_proxy": {
+    "monthly_rank_change": 0.066149,
+    "twelve_month_design": 0.793782,
+    "interpretation": "12M long-horizon design: predictor = 24M rolling β. Monthly cross-section rank change is naturally low. Annual turnover for 12M rebalance < 200%."
+  },
+  "orthogonality_12m": {
+    "cor_table": [
+      {
+        "port": "r_LS_12m",
+        "target": "r_AR_12m",
+        "pearson": 0.007431,
+        "spearman": 0.105424,
+        "n": 148
+      },
+      {
+        "port": "r_LS_12m",
+        "target": "r_KR10y_12m",
+        "pearson": -0.149026,
+        "spearman": -0.230202,
+        "n": 148
+      },
+      {
+        "port": "r_LS_12m",
+        "target": "r_TSMOM_12m",
+        "pearson": -0.052413,
+        "spearman": 0.05855,
+        "n": 125
+      },
+      {
+        "port": "r_LS_12m",
+        "target": "r_H_renorm_12m",
+        "pearson": -0.024628,
+        "spearman": 0.076332,
+        "n": 148
+      },
+      {
+        "port": "r_LS_12m",
+        "target": "r_H_naive_12m",
+        "pearson": 0.013517,
+        "spearman": 0.093912,
+        "n": 148
+      },
+      {
+        "port": "r_LO_top20pct_12m",
+        "target": "r_AR_12m",
+        "pearson": 0.603423,
+        "spearman": 0.579217,
+        "n": 148
+      },
+      {
+        "port": "r_LO_top20pct_12m",
+        "target": "r_KR10y_12m",
+        "pearson": -0.072898,
+        "spearman": -0.164565,
+        "n": 148
+      },
+      {
+        "port": "r_LO_top20pct_12m",
+        "target": "r_TSMOM_12m",
+        "pearson": 0.520134,
+        "spearman": 0.424166,
+        "n": 125
+      },
+      {
+        "port": "r_LO_top20pct_12m",
+        "target": "r_H_renorm_12m",
+        "pearson": 0.580179,
+        "spearman": 0.563251,
+        "n": 148
+      },
+      {
+        "port": "r_LO_top20pct_12m",
+        "target": "r_H_naive_12m",
+        "pearson": 0.601436,
+        "spearman": 0.571854,
+        "n": 148
+      },
+      {
+        "port": "r_LO_top20_12m",
+        "target": "r_AR_12m",
+        "pearson": 0.577529,
+        "spearman": 0.597401,
+        "n": 148
+      },
+      {
+        "port": "r_LO_top20_12m",
+        "target": "r_KR10y_12m",
+        "pearson": -0.058577,
+        "spearman": -0.156428,
+        "n": 148
+      },
+      {
+        "port": "r_LO_top20_12m",
+        "target": "r_TSMOM_12m",
+        "pearson": 0.487235,
+        "spearman": 0.41855,
+        "n": 125
+      },
+      {
+        "port": "r_LO_top20_12m",
+        "target": "r_H_renorm_12m",
+        "pearson": 0.54876,
+        "spearman": 0.578177,
+        "n": 148
+      },
+      {
+        "port": "r_LO_top20_12m",
+        "target": "r_H_naive_12m",
+        "pearson": 0.581382,
+        "spearman": 0.589431,
+        "n": 148
+      }
+    ],
+    "max_abs_cor_per_port": [
+      {
+        "port": "r_LS_12m",
+        "max_abs_pearson": 0.149026,
+        "max_abs_spearman": 0.230202
+      },
+      {
+        "port": "r_LO_top20pct_12m",
+        "max_abs_pearson": 0.603423,
+        "max_abs_spearman": 0.579217
+      },
+      {
+        "port": "r_LO_top20_12m",
+        "max_abs_pearson": 0.581382,
+        "max_abs_spearman": 0.597401
+      }
+    ],
+    "vs_r_H_renorm_12m": [
+      {
+        "port": "r_LS_12m",
+        "target": "r_H_renorm_12m",
+        "pearson": -0.024628,
+        "spearman": 0.076332,
+        "n": 148
+      },
+      {
+        "port": "r_LO_top20pct_12m",
+        "target": "r_H_renorm_12m",
+        "pearson": 0.580179,
+        "spearman": 0.563251,
+        "n": 148
+      },
+      {
+        "port": "r_LO_top20_12m",
+        "target": "r_H_renorm_12m",
+        "pearson": 0.54876,
+        "spearman": 0.578177,
+        "n": 148
+      }
+    ],
+    "conclusion": "ORTHOGONALITY_REVIEW_12M"
+  },
+  "universe_comparison": {
+    "default_v1_top342": {
+      "icir_12m": 0.317337,
+      "ic_mean_12m": 0.043328,
+      "n_periods": 149
+    },
+    "v2_top500_freefloat_proxy": {
+      "icir_12m": 0.317482,
+      "ic_mean_12m": 0.043352,
+      "n_periods": 149,
+      "construction": "Approximated by top-500 by ADV20_lag1 (free-float liquidity proxy)"
+    },
+    "delta_icir": 0.000145,
+    "conclusion": "V2_MARGINAL_POSITIVE"
+  },
+  "method_shopping": {
+    "candidates_tried": 5,
+    "rationale": "5 smoothing variants × 1 macro factor (KR_TermSpread β) tested at 12M horizon. WT_005 inheritance.",
+    "method_log": [
+      {
+        "name": "raw_signed_12M",
+        "icir_12m": 0.317,
+        "t_simple": 3.875,
+        "t_nw_lag12": 1.655,
+        "selected": true
+      },
+      {
+        "name": "ema3_12M",
+        "icir_12m": 0.31,
+        "t_simple": 3.782,
+        "t_nw_lag12": 1.622,
+        "selected": false
+      },
+      {
+        "name": "ema6_12M",
+        "icir_12m": 0.29,
+        "t_simple": 3.544,
+        "t_nw_lag12": 1.522,
+        "selected": false
+      },
+      {
+        "name": "ema12_12M",
+        "icir_12m": 0.257,
+        "t_simple": 3.139,
+        "t_nw_lag12": 1.302,
+        "selected": false
+      },
+      {
+        "name": "sector_neut_12M",
+        "icir_12m": 0.271,
+        "t_simple": 3.307,
+        "t_nw_lag12": null,
+        "selected": false
+      }
+    ],
+    "selection_objective": "icir",
+    "parallel_exec": false,
+    "rcpp_used": true,
+    "rcpp_funcs": "bootstrap_dsr_fast"
+  }
+}

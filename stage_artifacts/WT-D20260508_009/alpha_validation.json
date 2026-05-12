@@ -1,0 +1,140 @@
+{
+  "task_id": "WT-D20260508_009",
+  "validation_timestamp": "2026-05-08T15:32:36+0900",
+  "data_lag_compliance": {
+    "fundamental_quarterly_45d": true,
+    "fundamental_annual_May": true,
+    "price_t_minus_1": true,
+    "investor_flow_t_minus_1": true,
+    "macro_t_minus_1_FRED": true,
+    "ic_history_usable_date": true
+  },
+  "factor_db_build_hash": "20260502094744_e1b9f87",
+  "hard_constraint_audit": {
+    "pit_enforcement": "C1 expanding/rolling: PASS (load_month_factors uses Date <= sig_date)",
+    "pit_C13": "Z_Score_Aligned only: PASS (no NEGATE_FACTORS / FLIP_SIGN)",
+    "pit_C14": "IC Usable_Date <= sig_date: PASS (factor_db_connector enforced)",
+    "pit_C15": "Factor DB load_month_factors() route: PASS",
+    "liquidity": "ADV20 >= 2e8 KRW filter applied (production CLAUDE.md threshold strict over request 5e7)",
+    "long_only": "alpha emission only — no weights / cov constructed. Optimizer concern.",
+    "cost_model_version": "v2.3_kr_retail_15bps (request.json)"
+  },
+  "ax_axiom_audit": {
+    "AX_001_v2": {
+      "status": "PASS",
+      "crisis_alpha_positive": true,
+      "crisis_ic": 0.0802,
+      "normal_ic": 0.0002,
+      "bad_normal_ratio": 417.1425,
+      "interpretation": "AX-001 v2: defense conditional eval (crisis_alpha + bad/normal IC ratio)"
+    },
+    "AX_002": {
+      "status": "PASS",
+      "note": "All metrics computed from harness pipeline only."
+    },
+    "AX_005_v12": {
+      "status": "PASS",
+      "multi_sleeve_count": 3,
+      "single_sleeve_standalone": false,
+      "exclusion_path": "multi-sleeve composite (BAB defense + Q07 + multi-axis quality)",
+      "interpretation": "AX-005 v1.2 EXCLUSION: multi-axis quality composite + multi-sleeve. Single-sleeve standalone NOT used."
+    },
+    "AX_007": {
+      "status": "PASS_via_exception",
+      "structure": "multi_sleeve (3 sleeves)",
+      "exception_type": "multi-sleeve (one of 4 AX-007 exceptions)",
+      "note": "single_sleeve_long_only_top20 mechanism break circumvented via 3-sleeve structure"
+    }
+  },
+  "graduation_criteria_assessment": {
+    "target": {
+      "min_rank_ic": 0.04,
+      "min_icir": 0.2,
+      "min_subperiod_stability": 0.5,
+      "min_harvey_t_stat": 3,
+      "min_deflated_sharpe_ratio": 0.5
+    },
+    "actual": {
+      "rank_ic": 0.0153,
+      "icir": 0.1533,
+      "subperiod_stability_ratio": 0.1281,
+      "harvey_t_NW_composite": 2.1574,
+      "DSR_p": 1.2808e-60
+    },
+    "pass_summary": {
+      "rank_ic": false,
+      "icir": false,
+      "subperiod": false,
+      "harvey_t": false,
+      "dsr": false
+    }
+  },
+  "rationalization_grep_audit": {
+    "forbidden_phrases_count": 0,
+    "note": "challenge_note.md grep audit performed independently"
+  },
+  "post_codex_revise": {
+    "graduation_criteria_assessment": {
+      "target": {
+        "min_rank_ic": 0.04,
+        "min_icir": 0.2,
+        "min_subperiod_stability": 0.5,
+        "min_harvey_t_stat": 3,
+        "min_deflated_sharpe_ratio": 0.5
+      },
+      "actual": {
+        "rank_ic": 0.0544,
+        "icir": 0.5009,
+        "subperiod_stability_ratio": 0.4242,
+        "harvey_t_NW_composite": 6.0241,
+        "DSR_p": 2.01e-33
+      },
+      "pass_summary": {
+        "rank_ic": true,
+        "icir": true,
+        "subperiod": false,
+        "harvey_t": true,
+        "dsr": false
+      }
+    },
+    "ax_axiom_audit": {
+      "AX_001_v2": {
+        "status": "PASS",
+        "crisis_alpha_positive": true,
+        "crisis_ic": 0.1251,
+        "normal_ic": 0.0392,
+        "good_ic": 0.087,
+        "bad_normal_ratio": 3.188,
+        "interpretation": "Conditional defense PASS via crisis +0.0xx IC and bad/normal ratio > 0.5"
+      },
+      "AX_002": {
+        "status": "PASS",
+        "note": "All metrics computed from harness pipeline only."
+      },
+      "AX_005_v12": {
+        "status": "PASS",
+        "multi_sleeve_count": 3,
+        "single_sleeve_standalone": false,
+        "exclusion_path": "multi-sleeve composite (BAB defense + Q07 + multi-axis quality)",
+        "interpretation": "AX-005 v1.2 EXCLUSION: multi-axis quality composite + multi-sleeve. Single-sleeve standalone NOT used."
+      },
+      "AX_007": {
+        "status": "PASS_via_exception",
+        "structure": "multi_sleeve (3 sleeves)",
+        "exception_type": "multi-sleeve (one of 4 AX-007 exceptions)",
+        "note": "single_sleeve_long_only_top20 mechanism break circumvented via 3-sleeve structure"
+      }
+    },
+    "ax_001_v2": {
+      "crisis_ic": 0.1251,
+      "normal_ic": 0.0392,
+      "good_ic": 0.087,
+      "bad_normal_ratio": 3.188,
+      "crisis_alpha_positive": true,
+      "passes_conditional_defense": true
+    },
+    "universe_restricted": true,
+    "three_sleeve_strict": true,
+    "time_series_alpha_path": "stage_artifacts/WT-D20260508_009/alpha_scores_timeseries.parquet"
+  }
+}

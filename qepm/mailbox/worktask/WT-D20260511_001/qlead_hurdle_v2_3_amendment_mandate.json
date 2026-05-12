@@ -1,0 +1,91 @@
+{
+  "mandate_id": "QLEAD_HURDLE_V2_3_AMENDMENT_WT-D20260511_001",
+  "issued_at": "2026-05-11T17:30:00+0900",
+  "issued_by": "Q-Lead",
+  "dohoon_authorization": "2026-05-11 KST — 도훈 명시 '턴오버 허들 800%로 상향하고 path 2 확정' (PD20 3 path 비교 후 결정)",
+  "scope": "Production Hurdle Gate v2.2 → v2.3 amendment (turnover hard fail threshold 변경)",
+  "applied_to_wt": "WT-D20260511_001",
+  "applied_to_path": "PD20-B Path 2 (Z-Score Composite top20, 4-sleeve consolidation)",
+  "amendment_summary": {
+    "previous_hurdle_v2_2": {
+      "turnover_hard_fail": "> 600%",
+      "mdd_hard_fail": "> 45%",
+      "source": ".claude_shared/rules/hurdle-rules.md (도훈 global rule)"
+    },
+    "new_hurdle_v2_3": {
+      "turnover_hard_fail": "> 800%",
+      "mdd_hard_fail": "> 45% retain",
+      "rationale": "Multi-sleeve aggregate top20 strategy에서 monthly rebal composite alpha의 자연 turnover (97.4% NEW + composite churn) 정합화. NEW Vol/Skew alpha의 high-volatility cross-section rank churn은 production-cost embedded 후 SR drag minimal (Path 2 cost embed -0.05~-0.10) — 600% cap은 보수적이며 alpha quality dominant 시 800%까지 허용 가능. Charter §10 amendment candidate."
+    }
+  },
+  "path_2_admit_decision": {
+    "decision": "ADMIT under Hurdle v2.3",
+    "metrics_256m_cost_embedded_15bps": {
+      "SR": 2.1574,
+      "CAGR": 0.2701,
+      "MDD": -0.1458,
+      "Sortino": 4.67,
+      "Calmar": 1.85,
+      "CVaR_95": -0.0553,
+      "Hit_rate": 0.749,
+      "Turnover_RT_pct": 685.1,
+      "n_months": 255
+    },
+    "vs_s4_v2_baseline": {
+      "SR_delta": 0.324,
+      "CAGR_delta_pp": 6.81,
+      "MDD_delta_pp": -2.06,
+      "CVaR_delta_pp": -0.52,
+      "TO_RT_delta_pp": "655 (over baseline 30%)",
+      "strict_improve_4_axis": "3/4 PASS (SR/CAGR/CVaR ✓ / MDD FAIL -2.06pp marginal)",
+      "DM_t_NW_vs_baseline": 2.76
+    },
+    "vs_hurdle_v2_3": {
+      "turnover_RT_685_vs_800_cap": "PASS (+114pp buffer)",
+      "mdd_14_58_vs_45_cap": "PASS (+30.42pp buffer)"
+    },
+    "vs_target_dohoon": {
+      "SR_2_0_target": "PASS overshoot +0.16",
+      "CAGR_16_target": "PASS overshoot +11.01pp",
+      "MDD_25_target": "PASS buffer +10.42pp"
+    }
+  },
+  "composition": {
+    "structure": "4-sleeve consolidation (1715 H1 + NEW → composite KR equity sleeve)",
+    "Composite_KR_equity": 0.55,
+    "TSMOM_8_ETF": 0.225,
+    "KR_10y_bond_ETF": 0.18,
+    "Cash_KRW": 0.045,
+    "sum": 1.0,
+    "kr_equity_top_n": "top20 z-composite",
+    "z_composite_internal": "z_1715 × 0.818 + z_NEW × 0.182 (sleeve weight 0.45/0.10 ratio)",
+    "monthly_rebal": true,
+    "etf_count_exempt": "ETF는 production 종목수 cap 제외 (도훈 mandate 2026-05-11)"
+  },
+  "conditions": {
+    "1_hurdle_v2_3_scope": "본 amendment는 multi-sleeve aggregate top-N strategy 정합 한정 — single-sleeve top20 long-only는 v2.2 600% retain",
+    "2_charter_section_10_amendment_recommend": "Charter v1.8 amendment candidate (B7 신규 blocker handoff 정합)",
+    "3_4_axis_strict_improve_3_of_4": "MDD -2.06pp marginal FAIL 도훈 수용 (도훈 target -25% buffer +10.42pp retain)",
+    "4_oos_monitoring_obligation": "Q-Lead live drift monitor — turnover live 800% cap audit + MDD live -25% target audit",
+    "5_path_1_3_archive": "Path 1 (16+4) + Path 3 (composite 0.45 + buffer) audit retain, admit candidate 아님"
+  },
+  "blockers_resolved": {
+    "B5_CVaR_cap_structural": "RESOLVED (Hurdle v2.3 정합 + CVaR -5.53% target retain)",
+    "B6_Forge_bt_result_turnover_cost_recompute": "RESOLVED (Path 2 cost embed 15bps measurement 정합)",
+    "B7_Charter_section_10_amendment": "ACTIVE (Hurdle v2.3 amendment 의무)"
+  },
+  "next_step": {
+    "1_governor_re_spawn": "Path 2 admit decision update via Hurdle v2.3 mandate (4-sleeve consolidation supersede 5-sleeve admit)",
+    "2_book_state_mutation": "5-sleeve (45/22.5/18/4.5/10) → 4-sleeve (55/22.5/18/4.5) composite consolidation",
+    "3_memory_commit": "L-302 (audit miss 7th hit) + L-303 (Hurdle v2.3 mandate amendment)",
+    "4_portfolio_gap_vector_v153": "Path 2 confirmed metrics + 4-sleeve composition",
+    "5_telegram_brief": "Hurdle v2.3 amendment + Path 2 final admit notice",
+    "6_deployment_wt": "WT-P20260511_001 cycle (alpha~governor inherit Path 2 design)"
+  },
+  "audit_trail": {
+    "pd20_a_path_1_diagnostic_only": "1715:16 + NEW:4 sleeve-weighted top-N — MDD -28.07% admit-block",
+    "pd20_b_path_2_admit_via_hurdle_v2_3": "composite 0.55 top20 monthly rebal — Hurdle v2.2 fail → v2.3 PASS",
+    "pd20_c_path_3_abandoned": "composite 0.45 + buffer keep25/entry20 + Cash 14.5 — TO 613% v2.2 fail + MDD 0.85pp worse",
+    "dohoon_decision": "Hurdle 800% 상향 + Path 2 확정 (2026-05-11 17:30 KST)"
+  }
+}

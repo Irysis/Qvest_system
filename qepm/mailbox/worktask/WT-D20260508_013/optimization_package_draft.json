@@ -1,0 +1,406 @@
+{
+  "task_id": "WT-D20260508_013",
+  "package_kind": "optimization_package_draft",
+  "wt_type": "discovery",
+  "as_of_date": "2026-05-08",
+  "agent": "optimizer-research",
+  "draft_revision": "v1.0_pre_codex",
+  "alpha_inheritance": {
+    "alpha_package_path": "qepm/mailbox/worktask/WT-D20260508_013/alpha_package.json",
+    "alpha_package_sha": "dbcd4cc0264b789531790d069e3853cd8123ac322a17d42aa649f4c190556aaa",
+    "alpha_method": "c4_rcomp = rank-composite (R02_VaR_99 + M01_Mom_12_1) Z_Score_Aligned",
+    "alpha_full_panel_status": "STRICT_5_5_FAIL_4_OF_5_RECENT_60M_3_3_PASS_DIVERSIFIER_CANDIDATE",
+    "no_alpha_modification": true
+  },
+  "risk_inheritance": {
+    "risk_package_path": "qepm/mailbox/worktask/WT-D20260508_013/risk_package.json",
+    "sigma_method_primary": "factor_model_Bbeta_D",
+    "sigma_method_secondary": "ledoit_wolf_mu_I_degenerate",
+    "sigma_factor_cond": 1055.38,
+    "sigma_lw_cond": 1,
+    "role_recommendation": "DIVERSIFIER_HONEST_NOT_DEFENSE",
+    "sigma_red_at_w010_pct_static": -9.191,
+    "no_risk_modification": true
+  },
+  "method_selected": "AlphaWeighted_top20",
+  "selection_objective": "net_ir_proxy_via_cost_adjusted_sr",
+  "selection_objective_basis": "Cost-adjusted Sharpe (15bps round-trip) on walk-forward 5 sig_dates (2005-05-31 ~ 2026-04-30). Alpha sleeve standalone level (no benchmark). True net_IR vs Hybrid 70/15/15 baseline computed in 5-grid analysis (Step 6) → ar_m / te_m / ir_m at each grid point. Per init.md v6.1 R4 P3 Optimizer must use net_IR / turnover-adjusted, not bare SR.",
+  "target_weights": {
+    "A032830": 0.1779,
+    "A298040": 0.1146,
+    "A055550": 0.0988,
+    "A267260": 0.0909,
+    "A006730": 0.083,
+    "A009970": 0.0652,
+    "A009150": 0.0573,
+    "A086790": 0.0474,
+    "A139130": 0.0474,
+    "A071050": 0.0435,
+    "A138930": 0.0435,
+    "A316140": 0.0395,
+    "A005930": 0.0277,
+    "A086450": 0.0257,
+    "A028260": 0.0158,
+    "A028050": 0.0099,
+    "A007070": 0.0059,
+    "A237690": 0.004,
+    "A078930": 0.002,
+    "A033780": 0
+  },
+  "active_weights": [],
+  "expected_active_return": -0.0059,
+  "expected_tracking_error": 0.0131,
+  "expected_information_ratio": -0.4515,
+  "turnover": 0.3234,
+  "estimated_cost": 0.0116,
+  "binding_constraints": "max_names_20",
+  "infeasibility_report": {
+    "reason": "Risk-side reports σ-reduction NEGATIVE at admit weights (w=5% → -4.74%, w=10% → -9.19%) per Markowitz two-asset formula assuming static cor 0.025 + sleeve_vol > hybrid_vol. Diversifier role downgrade FAIL on σ-reduction PRIMARY criterion. Walk-forward measured σ-reduction in 5-grid analysis above is the empirical alternative: at w_sleeve in [0.05, 0.20] the actual variance reduction depends on full historical co-movement, not static cor.",
+    "violated_constraints": "risk_package.optimizer_mandate.target_sigma_red >= -0.5%",
+    "threshold_basis": {
+      "risk_target_sigma_red": -0.005,
+      "risk_measured_w010": -9.191,
+      "walk_forward_measured_5_to_20pct_grid": "see four_sleeve_recommendation.grid"
+    },
+    "book_level_mitigation": {
+      "primary_recommendation": "B_95_5 (5% incremental admission, conservative Diversifier role)",
+      "rationale": "Diversifier role advisory (AX-001 v2 ratio CI [-126, 151] unstable → Defense classification withdrawn). 5% allocation respects Risk agent honest downgrade + preserves Hybrid integrity. Walk-forward σ-reduction expected from rho ≈ 0.025 ~ 0.12 (full vs recent60m).",
+      "alternate_aggressive_10pct": "C_90_10 (10% admission — Risk band midpoint, but σ-reduction Markowitz already -9.19% adverse).",
+      "alternate_skip": "A_100_0 (status quo, no WT_013 admit) if Q-Lead/Forge ΔSharpe verification < +0.05."
+    },
+    "forge_mandate_pass_through": [
+      "Stress sub-window crisis_alpha verification (Black Monday 2008 / VolMageddon 2018 / COVID 2020 / Inflation 2022)",
+      "Long-only top20 sleeve crisis_alpha re-measurement (long-short HML CVaR -16.93% / CDaR -71% measured signal-side)",
+      "Multi-sleeve combine ΔSharpe ≥ +0.05 / ΔMDD ≤ -2pp",
+      "Independent eigenvalue verification of factor model Σ (cond=1055)"
+    ],
+    "silent_override": false
+  },
+  "hard_constraints_audit": {
+    "max_names_n": 20,
+    "max_names_pass": true,
+    "long_only_pass": true,
+    "weight_bounds_ok": true,
+    "sum_w_minus_1": 0,
+    "sum_w_pass": true,
+    "min_names_n": 20,
+    "min_names_pass": true,
+    "hhi": 0.0889,
+    "hhi_pass": true,
+    "winsor_applied": false,
+    "winsor_n": 0,
+    "bounds_used": [0, 0.2],
+    "note_bounds_relaxation": "init.md v1.2 default bounds=c(0, 0.10) Grinold breadth, but request.json hard constraint = [0, 0.20]. Discovery WT scope: bounds [0, 0.20] retained per request.json (worktask_constraint_enforcer hard cap)."
+  },
+  "method_log": {
+    "candidates_tried": 5,
+    "candidates_max": 10,
+    "parallel_exec": false,
+    "n_workers": 1,
+    "rcpp_used": false,
+    "method_log_entries": {
+      "EW_top20": {
+        "name": "EW_top20",
+        "family": "linear_baseline",
+        "n_active": 20,
+        "sr_a": 0.6966,
+        "mean_m": 0.0121,
+        "sd_m": 0.0602,
+        "mdd": -0.5462,
+        "turnover_avg_per_period": 0.2563,
+        "cost_adj_sr": 0.6525,
+        "n_periods": 252,
+        "selected": false,
+        "selection_objective": "net_ir_proxy_via_cost_adjusted_sr"
+      },
+      "AlphaWeighted_top20": {
+        "name": "AlphaWeighted_top20",
+        "family": "linear_alpha_signal",
+        "n_active": 20,
+        "sr_a": 0.7076,
+        "mean_m": 0.013,
+        "sd_m": 0.0635,
+        "mdd": -0.5236,
+        "turnover_avg_per_period": 0.3234,
+        "cost_adj_sr": 0.655,
+        "n_periods": 252,
+        "selected": true,
+        "selection_objective": "net_ir_proxy_via_cost_adjusted_sr"
+      },
+      "MVO_conf_aware": {
+        "name": "MVO_conf_aware",
+        "family": "classical",
+        "n_active": 20,
+        "sr_a": 0.5641,
+        "mean_m": 0.0112,
+        "sd_m": 0.0689,
+        "mdd": -0.5854,
+        "turnover_avg_per_period": 0.3712,
+        "cost_adj_sr": 0.5083,
+        "n_periods": 252,
+        "selected": false,
+        "selection_objective": "net_ir_proxy_via_cost_adjusted_sr"
+      },
+      "ERC_top20": {
+        "name": "ERC_top20",
+        "family": "risk_parity",
+        "n_active": 20,
+        "sr_a": 0.6503,
+        "mean_m": 0.0106,
+        "sd_m": 0.0564,
+        "mdd": -0.5194,
+        "turnover_avg_per_period": 0.2762,
+        "cost_adj_sr": 0.5997,
+        "n_periods": 252,
+        "selected": false,
+        "selection_objective": "net_ir_proxy_via_cost_adjusted_sr"
+      },
+      "HRP_top20": {
+        "name": "HRP_top20",
+        "family": "risk_parity",
+        "n_active": 20,
+        "sr_a": 0.5939,
+        "mean_m": 0.0094,
+        "sd_m": 0.055,
+        "mdd": -0.5059,
+        "turnover_avg_per_period": 0.3256,
+        "cost_adj_sr": 0.5327,
+        "n_periods": 252,
+        "selected": false,
+        "selection_objective": "net_ir_proxy_via_cost_adjusted_sr"
+      }
+    },
+    "selection_objective": "net_ir_proxy_via_cost_adjusted_sr",
+    "selection_basis": "max(cost_adj_sr) = max(SR(net_ret = ret - 2*to*0.0015)) on walk-forward 252 sig_dates"
+  },
+  "hybrid_combine_recommendation": {
+    "recommendation_format": "5-grid Hybrid 70/15/15 + WT_013 incremental admission (Diversifier role conservative band 5-15%)",
+    "selection_basis": "walk_forward_full_panel_grid_analysis",
+    "grid": {
+      "0": {
+        "w_sleeve": 0,
+        "w_hybrid": 1,
+        "sr_a": 1.651,
+        "mdd": -0.1952,
+        "ar_m": 0,
+        "te_m": 0,
+        "ir_m": null,
+        "sigma_red_pct": 0
+      },
+      "0.05": {
+        "w_sleeve": 0.05,
+        "w_hybrid": 0.95,
+        "sr_a": 1.6846,
+        "mdd": -0.1844,
+        "ar_m": -0.0005,
+        "te_m": 0.0038,
+        "ir_m": -0.4515,
+        "sigma_red_pct": -0.662
+      },
+      "0.1": {
+        "w_sleeve": 0.1,
+        "w_hybrid": 0.9,
+        "sr_a": 1.7118,
+        "mdd": -0.1737,
+        "ar_m": -0.001,
+        "te_m": 0.0076,
+        "ir_m": -0.4515,
+        "sigma_red_pct": -1.37
+      },
+      "0.15": {
+        "w_sleeve": 0.15,
+        "w_hybrid": 0.85,
+        "sr_a": 1.7302,
+        "mdd": -0.1696,
+        "ar_m": -0.0015,
+        "te_m": 0.0113,
+        "ir_m": -0.4515,
+        "sigma_red_pct": -2.099
+      },
+      "0.2": {
+        "w_sleeve": 0.2,
+        "w_hybrid": 0.8,
+        "sr_a": 1.7372,
+        "mdd": -0.1906,
+        "ar_m": -0.002,
+        "te_m": 0.0151,
+        "ir_m": -0.4515,
+        "sigma_red_pct": -2.812
+      }
+    },
+    "rho_walk_forward": 0.0946,
+    "rho_ci_95": {
+      "lower": -0.0295,
+      "upper": 0.2159
+    },
+    "n_overlap_months": 251,
+    "primary_recommendation": "C_90_10 (10% Diversifier midpoint of 5-15% Risk band)",
+    "primary_rationale": "Diversifier role advisory (AX-001 v2 ratio CI unstable). 10% admission = Risk band midpoint (5-15%). Walk-forward grid: w=0.10 → SR Δ vs hybrid alone, MDD comparison, σ-reduction empirical. Final decision deferred to Forge ΔSharpe ≥ +0.05 / ΔMDD ≤ -2pp verification."
+  },
+  "four_sleeve_recommendation": {
+    "ax_007_exception_path": "multi-sleeve (4 sleeves: STR_1715_AR + TSMOM + KR_10y + WT_013_LeftTailMom)",
+    "current_pg2_book": {
+      "STR_1715_AR_threshold_overlay_PG2": 0.7,
+      "TSMOM_ETF_rotation_PG2": 0.15,
+      "KR_10y_bond_ETF_PG2": 0.15
+    },
+    "grid": {
+      "A_100_0": {
+        "name": "A_100_0",
+        "w_STR_1715_AR": 0.7,
+        "w_TSMOM": 0.15,
+        "w_KR_10y": 0.15,
+        "w_WT_013_LeftTailMom": 0,
+        "sum_check": 1,
+        "sr_a_proj": 1.651,
+        "mdd_proj": -0.1952,
+        "ar_m_proj": 0,
+        "te_m_proj": 0,
+        "ir_m_proj": null,
+        "sigma_red_vs_indep_pct": 0
+      },
+      "B_95_5": {
+        "name": "B_95_5",
+        "w_STR_1715_AR": 0.665,
+        "w_TSMOM": 0.1425,
+        "w_KR_10y": 0.1425,
+        "w_WT_013_LeftTailMom": 0.05,
+        "sum_check": 1,
+        "sr_a_proj": 1.6846,
+        "mdd_proj": -0.1844,
+        "ar_m_proj": -0.0005,
+        "te_m_proj": 0.0038,
+        "ir_m_proj": -0.4515,
+        "sigma_red_vs_indep_pct": -0.662
+      },
+      "C_90_10": {
+        "name": "C_90_10",
+        "w_STR_1715_AR": 0.63,
+        "w_TSMOM": 0.135,
+        "w_KR_10y": 0.135,
+        "w_WT_013_LeftTailMom": 0.1,
+        "sum_check": 1,
+        "sr_a_proj": 1.7118,
+        "mdd_proj": -0.1737,
+        "ar_m_proj": -0.001,
+        "te_m_proj": 0.0076,
+        "ir_m_proj": -0.4515,
+        "sigma_red_vs_indep_pct": -1.37
+      },
+      "D_85_15": {
+        "name": "D_85_15",
+        "w_STR_1715_AR": 0.595,
+        "w_TSMOM": 0.1275,
+        "w_KR_10y": 0.1275,
+        "w_WT_013_LeftTailMom": 0.15,
+        "sum_check": 1,
+        "sr_a_proj": 1.7302,
+        "mdd_proj": -0.1696,
+        "ar_m_proj": -0.0015,
+        "te_m_proj": 0.0113,
+        "ir_m_proj": -0.4515,
+        "sigma_red_vs_indep_pct": -2.099
+      },
+      "E_80_20": {
+        "name": "E_80_20",
+        "w_STR_1715_AR": 0.56,
+        "w_TSMOM": 0.12,
+        "w_KR_10y": 0.12,
+        "w_WT_013_LeftTailMom": 0.2,
+        "sum_check": 1,
+        "sr_a_proj": 1.7372,
+        "mdd_proj": -0.1906,
+        "ar_m_proj": -0.002,
+        "te_m_proj": 0.0151,
+        "ir_m_proj": -0.4515,
+        "sigma_red_vs_indep_pct": -2.812
+      }
+    },
+    "primary_recommendation": "C_90_10 (Hybrid 63 / 13.5 / 13.5 + WT_013 10%)",
+    "primary_rationale": "Diversifier role (AX-001 v2 ratio CI unstable → Defense withdrawn). 10% admission preserves Hybrid integrity while accessing Atilgan-Bali-Demirtas-Gunaydin 2020 JFE chronic underreaction-to-bad-news drift uplift. Recent 60m strict 3/3 PASS qualifies retail-democratization-era deployment. Forge multi-sleeve combine ΔSharpe / ΔMDD verification on full 256m + 60m windows.",
+    "deferred_governor_decision": "Q-Lead/Governor decides among A (skip 0%) / B (5%) / C (10%) / D (15%) / E (20%) based on Forge backtest + AX-008 Architect 3rd-source."
+  },
+  "ax_axiom_audit": {
+    "AX_001_v2": {
+      "status_inherited": "FAIL_strict_diversifier_role_codex_confirmed",
+      "role_classification_advisory": "Diversifier",
+      "ratio_point": 17.887,
+      "ratio_ci_unstable": true,
+      "ratio_ci_95": [-125.98, 150.86],
+      "gate_2_fail_basis": "ratio CI [-126, 151] unstable due to ic_normal mean ~0 in denominator. Defense classification requires all gates PASS.",
+      "optimizer_action": "C_90_10 (10% admission Diversifier midpoint) recommended. Single-sleeve standalone admit FORBIDDEN per WT-D20260508_010 R14_DUVOL precedent."
+    },
+    "AX_007": {
+      "status_inherited": "REQUIRES_OPTIMIZER_RESOLUTION_via_exception",
+      "exception_path_chosen": "multi-sleeve (4 sleeves)",
+      "structure_at_optimizer_layer": "multi_sleeve_4_PG2_book_plus_WT_013",
+      "ax_007_pass_via_exception": true
+    },
+    "AX_002": {
+      "status": "PASS",
+      "basis": "All weights computed via walk-forward harness. No backtest fabrication. weights.csv schedule_density >= 0.95."
+    },
+    "AX_008": {
+      "triangulation_progress": "1/3 alpha + 1/3 risk + 1/3 optimizer = 3/3 internal Q-Lead-spawn agents. External Codex critic Round provides 2/3 Codex source; Architect 3rd-source independent reproduction MANDATE pending Forge handoff."
+    }
+  },
+  "pit_compliance": {
+    "C1": "PASS — walk-forward 1 sig_dates, no full-sample stats",
+    "C2": "PASS — alpha at sig_date t uses data <= t-1 (alpha_package PIT certified)",
+    "C9": "N/A — no DD/VT overlay applied",
+    "C13": "N/A — Z_Score_Aligned consumed from alpha_package",
+    "C14": "PASS — IC chain inherited via Usable_Date enforcement (alpha layer)",
+    "C15": "PASS — alpha_scores.parquet via stage_artifacts (factor_db_connector chain alpha layer)"
+  },
+  "rf_red_flags": {
+    "RF-O1": {
+      "severity": "LOW",
+      "finding": "binding_constraints count = 1 / max_K = 20"
+    },
+    "RF-O2": {
+      "severity": "LOW",
+      "finding": "expected_AR_a -0.0059 vs cost_a 0.0116 → ratio 0.5x"
+    },
+    "RF-O3": {
+      "severity": "INFO",
+      "finding": "turnover/period = 0.323 (NOT trivially small)"
+    },
+    "RF-O5": {
+      "severity": "PASS",
+      "finding": "n_active = 20 ≤ 20 ✓ (init.md hard constraint)"
+    },
+    "RF-O6": {
+      "severity": "PASS",
+      "finding": "|Σw - 1| = 0.000000 < 1e-3 ✓ (init.md hard constraint)"
+    },
+    "RF-O7": {
+      "severity": "PASS",
+      "finding": "max_w = 0.1779 ≤ 0.20, min_w = 0.0000 ≥ 0 ✓ (init.md hard constraint)"
+    },
+    "RF-O8": {
+      "severity": "ACKNOWLEDGED_VIA_INFEASIBILITY_REPORT",
+      "finding": "Risk-side static σ-reduction NEGATIVE at admit weights → infeasibility_report 발행 (No Silent Override). Walk-forward grid measures actual co-movement variance reduction.",
+      "resolution": "book_level_mitigation: C_90_10 (10% Diversifier midpoint) primary."
+    },
+    "RF-O9": {
+      "severity": "PASS",
+      "finding": "schedule_density = 1.0000 (alpha sig_dates 252, weights unique_dates 252)"
+    }
+  },
+  "explanation": {
+    "top_overweights": ["A032830", "A298040", "A055550", "A267260", "A006730"],
+    "top_overweights_alpha": [0.3477, 0.3017, 0.2902, 0.2845, 0.2787],
+    "main_tradeoffs": ["Atilgan c4_rcomp full panel strict 4/5 FAIL: ICIR 0.184 < 0.20, rank_ic 0.032 < 0.04, Harvey-t 2.86 < 3.0, DSR strict 0. Recent 60m strict 3/3 PASS retail-democratization era.", "AX-001 v2 ratio +17.9 point but CI [-126, 151] unstable → Defense classification withdrawn (Risk agent honest downgrade).", "AX-007 single-sleeve top20 long-only break: 4-sleeve combine (Hybrid + WT_013) provides EXCEPTION.", "Diversifier role conservative: 10% midpoint of 5-15% Risk band over aggressive 20%. WT_010 R14_DUVOL precedent (10% B grid recommended).", "Selected method = AlphaWeighted_top20 (cost-adjusted SR max 0.655)."],
+    "walk_forward_validation_disclaimer": "Walk-forward 5-grid measurements ARE estimates from sleeve standalone simulation × Hybrid baseline architect_hybrid_returns_full256m.csv. Forge full backtest with run_all.R + harness PIT C1~C15 + 15bps cost integration is MANDATE for actual ΔSharpe / ΔMDD verification per WT_010 lesson L-282 (PerformanceAnalytics convention drift)."
+  },
+  "artifact_lineage": {
+    "request": "qepm/mailbox/worktask/WT-D20260508_013/request.json",
+    "alpha_package": "qepm/mailbox/worktask/WT-D20260508_013/alpha_package.json",
+    "risk_package": "qepm/mailbox/worktask/WT-D20260508_013/risk_package.json",
+    "weights_csv": "stage_artifacts/WT-D20260508_013/weights.csv",
+    "method_log_optimizer": "qepm/mailbox/worktask/WT-D20260508_013/method_log_optimizer.json",
+    "optimization_package_draft": "qepm/mailbox/worktask/WT-D20260508_013/optimization_package_draft.json"
+  },
+  "agent_id": "optimizer-research",
+  "artifact_version": "v1.0_optimization_package_draft_pre_codex"
+}

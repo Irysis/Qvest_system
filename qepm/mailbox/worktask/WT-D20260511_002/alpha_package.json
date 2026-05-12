@@ -1,0 +1,117 @@
+{
+  "task_id": "WT-D20260511_002",
+  "package_type": "alpha_package_inherit_reference",
+  "wt_type_effective": "sizing_only",
+  "wt_type_declared": "discovery",
+  "wt_type_remark": "wt_create default discovery; mission is sizing_only (dynamic weight rule research). codex_critic_skip_waiver applied via challenge_note.md",
+  "alpha_source_inheritance": {
+    "parent_basis": "S4_v2_4_sleeve_admit_2026_05_09",
+    "book_state_path": "qepm/mailbox/governor/book_state.json",
+    "admitted_alpha_lineage": [
+      {
+        "sleeve": "STR_1715_AR_threshold_overlay_PG2_v2_alpha_2026_04",
+        "official_name": "1715 H1",
+        "source_wt": "WT-P20260505_001",
+        "alpha_origin": "STR_1715 Iter 5 multi-sleeve composite (4F Consensus 0.65 + 3-axis Defense 0.35) + AR threshold overlay (Kritzman-Page-Turkington 2011 FAJ)",
+        "harvey_t_inherited": "6.70~6.77 t_NW (5/5 spec)",
+        "dsr_inherited": "z=6.0973 strict (Bailey-Lopez de Prado 2014)",
+        "icir_inherited": "0.51 (sleeve 256m)",
+        "cert_path": "alpha_discovery_certificate inherit via WT-P20260505_001"
+      },
+      {
+        "sleeve": "TSMOM_8_ETF_rotation_PG2_no_KR_bond_overlap",
+        "source_wt": "WT-S20260504_009 + WT-P20260505_001 (Hybrid admit)",
+        "alpha_origin": "Cross-Asset Time-Series Momentum (Moskowitz-Ooi-Pedersen 2012). 8-ETF universe (KODEX_KTB10Y A148070 제거, 2026-05-09 도훈 mandate A안)",
+        "etfs": ["KODEX_GOLD_H", "KODEX_UST10Y_H", "TIGER_SHORT_TERM", "KODEX_KR_REIT", "KODEX_200_UST", "KODEX_200_LV", "KODEX_200", "TIGER_SP500_H"],
+        "cert_path": "alpha_discovery_certificate inherit via WT-P20260505_001"
+      },
+      {
+        "sleeve": "KR_10y_bond_ETF_PG2",
+        "source_wt": "WT-S20260504_008",
+        "alpha_origin": "KR 10y term premium passive bond (Naik-Yadav 2003 + Campbell-Ammer 1993 decomposition)",
+        "etf": "A148070 KODEX 국채10년 (single asset cap 0.20 정합)",
+        "cert_path": "sr_provenance + forge_package_validated + schedule_fidelity inherit"
+      },
+      {
+        "sleeve": "CASH_KRW_PG2_S4",
+        "source_wt": "N/A",
+        "alpha_origin": "Cash allocation buffer (v55 cash_allocation role)",
+        "role": "buffer / opportunity_cost_minimization",
+        "cert_path": "EXEMPT_CASH_ROLE (forge_realized_share_based 면제)"
+      }
+    ],
+    "no_new_alpha_discovery": true,
+    "alpha_source_modification_forbidden": "본 WT는 alpha source 변경 절대 금지. 4-sleeve admitted retain. weight rule research only.",
+    "measurement_basis_book_score": "100/100 HEALTHY (v1.8 measurement_basis_audit, 2026-05-11)"
+  },
+  "factor_specs": [
+    {
+      "name": "S4_v2_4_sleeve_composite_returns",
+      "type": "inherited_composite",
+      "source": "1715 H1 (50%) + TSMOM_8 (25%) + KR_10y (20%) + Cash (5%) static baseline",
+      "lockbox_policy": "정규 리서치 alpha-side는 lockbox 적용. 본 WT inherit reference이므로 sig_date <= max(parent sig_dates) 정합."
+    }
+  ],
+  "harvey_t_pass_count": 5,
+  "harvey_t_inherited_basis": "1715 H1 sleeve CAPM/FF3/FF5/Carhart4/FF6 t_NW 6.70~6.77 inherit",
+  "icir_5y_check": "PASS (inherit 1715 H1 ICIR 0.51)",
+  "max_correlation_with_existing": 1.0,
+  "max_correlation_note": "정의상 S4 v2 admitted 그대로 — cor=1.0 (inherit reference, not new alpha). alpha_discovery_certificate eligibility 평가 목적상 inherit reference 매커니즘 적용: 본 WT는 sizing_only effective이며 alpha source 변경 없음. max_correlation 평가 대상은 'new alpha vs existing'이나 본 WT new alpha = 0건이므로 N/A 정합 (Charter §10 sizing_only Role Card).",
+  "mechanism": "S4 v2 4-sleeve inherit composite for sizing_only weight rule research. (1) STR_1715 H1 sleeve = Iter 5 multi-sleeve composite (4F Consensus 0.65 + 3-axis Defense 0.35) + AR threshold overlay (Kritzman-Page-Turkington 2011 FAJ correlation surprise). (2) TSMOM_8_ETF = Cross-Asset time-series momentum (Moskowitz-Ooi-Pedersen 2012) 12-1m return signal, 8 ETF universe after A148070 overlap removal. (3) KR_10y_bond = passive term premium (Naik-Yadav 2003 + Campbell-Ammer 1993 decomposition) single ETF A148070. (4) CASH_KRW = V55 cash_allocation role buffer (opportunity cost minimization, regime-conditional). 본 WT mission은 weight rule discovery only (no alpha modification, Hook 강제). Risk Agent + Optimizer Agent의 dynamic Σ + dynamic weight rule research input.",
+  "mechanism_text_length": 786,
+  "factor_specs_count_inherit": 4,
+  "factor_specs_count_new": 0,
+  "factor_specs_total_inheritance_chain": 4,
+  "alpha_discovery_cert_eligibility_basis": "sizing_only_inherit_reference — Charter §10 Role Card sizing_only. inherit cert chain via WT-P20260505_001 alpha_discovery_certificate (issued=true, alpha_invariance_audit PASS).",
+  "constraints": {
+    "max_names": 20,
+    "weight_bounds": [0, 0.20],
+    "long_only": true,
+    "sum_weights": 1.0,
+    "universe": "KOSPI200_KOSDAQ150_intersection + KR ETF (TSMOM_8 + KR_10y)",
+    "liquidity_min_won_20d_avg": 200000000,
+    "transaction_cost_bps_one_way": 15,
+    "cost_model_version": "v2.3_kr_retail_15bps",
+    "lockbox": "alpha source frozen — no new discovery"
+  },
+  "expected_role": "sizing_only_weight_rule_discovery_on_S4_v2_alpha",
+  "why_now": "도훈 mandate 2026-05-11 KST 'regime/risk-based 동적 비중 조절 방법론 리서치'. Walk-forward dynamic DRO Wasserstein convergence finding (Esfahani-Kuhn 2018, 50/30/20/0 ≈ S4 framing 정확 수렴) 입증된 static를 paradigm-free dynamic으로 진화 탐색. M4_BOCPD_DECAY_BL은 1715 H1 sleeve 내부 overlay만, 4-sleeve aggregate는 static. 본 WT는 4-sleeve aggregate dynamic rule research.",
+  "lesson_check": [
+    "L-280 Path C single direct hybrid (cross-Asset orthogonal source 결합 시너지)",
+    "L-281 Cross-Asset TSMOM Moskowitz-Ooi-Pedersen 2012 KR empirical 입증 (cor 0.077 cross-section vs time-series 정의상 직교)",
+    "L-282 PerformanceAnalytics convention reconcile (manual arithmetic vs geometric drift +0.19 SR points)",
+    "L-285 S4 v2 alpha-updated admit + 1715 H1 정식 명명",
+    "L-286 Walk-forward Dynamic Convergence Finding (DRO Wasserstein ε=0.1 → 50/30/20/0 도훈 framing 정확 수렴, 사후 정당화 X 정량 수렴점)",
+    "L-287 60/40 paradigm retract → orthogonal 4-sleeve 진화",
+    "L-288 TSMOM A148070 overlap 해소 single asset cap 0.20 정합"
+  ],
+  "core_reference": [
+    "Black-Litterman 1990 + He-Litterman 1999 — dynamic posterior view update",
+    "López de Prado 2016 — Hierarchical Risk Parity (HRP)",
+    "Esfahani-Kuhn 2018 — DRO Wasserstein walk-forward dynamic",
+    "Ang-Bekaert 2002 — Markov-Regime-Switching MVO",
+    "Moskowitz-Ooi-Pedersen 2012 — TSMOM vol scaling",
+    "Rockafellar-Uryasev 2000 — CVaR LP",
+    "Chekhlov-Uryasev-Zabarankin 2005 — CDaR",
+    "Kritzman-Page-Turkington 2011 FAJ — AR threshold (이미 1715 H1 sleeve 내부 적용)",
+    "Hamilton 1989 — HMM regime",
+    "Engle 2002 — DCC-GARCH",
+    "Adams-MacKay 2007 — Bayesian Online Changepoint Detection (이미 M4 적용)"
+  ],
+  "codex_critic_round_waiver": {
+    "applied": true,
+    "scope": "alpha_package.json only",
+    "basis": "challenge_note.md::codex_critic_skip_waiver",
+    "reason": "sizing_only effective WT — alpha source inheritance from S4 v2 admit. no new alpha discovery. 4-sleeve admitted retain. weight rule research only.",
+    "dohoon_override": "2026-05-11 KST 'regime/risk-based 동적 비중 조절 방법론 리서치' mandate",
+    "remaining_codex_round_obligations": [
+      "risk_package.json — codex critic round 의무 강제 (risk-research agent)",
+      "optimization_package.json — codex critic round 의무 강제 (optimizer-research agent)",
+      "forge_package.json (있다면) — codex critic round 의무 강제",
+      "judge + governor — codex round 의무"
+    ]
+  },
+  "status": "ALPHA_INHERITED — sizing_only research, no alpha modification",
+  "generated_at": "2026-05-11T07:25:00+0900",
+  "generated_by": "Q-Lead (도훈 mandate 2026-05-11 KST)"
+}

@@ -1,0 +1,278 @@
+{
+  "task_id": "WT-D20260511_001",
+  "timestamp": "2026-05-11T15:10:06+0900",
+  "description": "Harvey 5-spec composite regression on PD18 cost-embedded 15bps + S4v2 baseline",
+  "factor_data_source": ".cache/kr_factor_returns_v2.parquet (FF5 v2 backfill 2002-07 ~ 2026-03)",
+  "alignment": "ym-level (PD18 1st-of-month + FF end-of-month)",
+  "n_months_overlap": 254,
+  "pd18_5spec": {
+    "CAPM": {
+      "spec": "CAPM",
+      "formula": "r_excess_pd18 ~ MKT_RF",
+      "n": 254,
+      "alpha_monthly": 0.0174,
+      "alpha_ann": 0.2087,
+      "se_NW_alpha": 0.0024,
+      "t_NW_alpha": 7.2984,
+      "R2": 0.017,
+      "adj_R2": 0.0131,
+      "coefficients": {
+        "(Intercept)": 0.0174,
+        "MKT_RF": 0.0653
+      },
+      "nw_se": {
+        "(Intercept)": 0.0024,
+        "MKT_RF": 0.0296
+      },
+      "harvey_pass": true
+    },
+    "FF3": {
+      "spec": "FF3 (Fama-French 1993)",
+      "formula": "r_excess_pd18 ~ MKT_RF + SMB + HML",
+      "n": 254,
+      "alpha_monthly": 0.0173,
+      "alpha_ann": 0.2078,
+      "se_NW_alpha": 0.0023,
+      "t_NW_alpha": 7.4271,
+      "R2": 0.0173,
+      "adj_R2": 0.0055,
+      "coefficients": {
+        "(Intercept)": 0.0173,
+        "MKT_RF": 0.0659,
+        "SMB": 0.0085,
+        "HML": 0.0403
+      },
+      "nw_se": {
+        "(Intercept)": 0.0023,
+        "MKT_RF": 0.0288,
+        "SMB": 0.0559,
+        "HML": 0.2936
+      },
+      "harvey_pass": true
+    },
+    "Carhart4": {
+      "spec": "Carhart-4 (Carhart 1997)",
+      "formula": "r_excess_pd18 ~ MKT_RF + SMB + HML + WML",
+      "n": 254,
+      "alpha_monthly": 0.0163,
+      "alpha_ann": 0.196,
+      "se_NW_alpha": 0.0021,
+      "t_NW_alpha": 7.6249,
+      "R2": 0.0609,
+      "adj_R2": 0.0458,
+      "coefficients": {
+        "(Intercept)": 0.0163,
+        "MKT_RF": 0.0686,
+        "SMB": 0.0702,
+        "HML": 0.0125,
+        "WML": 0.1431
+      },
+      "nw_se": {
+        "(Intercept)": 0.0021,
+        "MKT_RF": 0.0246,
+        "SMB": 0.0618,
+        "HML": 0.2839,
+        "WML": 0.0411
+      },
+      "harvey_pass": true
+    },
+    "FF5": {
+      "spec": "FF5 (Fama-French 2015)",
+      "formula": "r_excess_pd18 ~ MKT_RF + SMB + HML + RMW + CMA",
+      "n": 254,
+      "alpha_monthly": 0.0171,
+      "alpha_ann": 0.2057,
+      "se_NW_alpha": 0.0023,
+      "t_NW_alpha": 7.547,
+      "R2": 0.0248,
+      "adj_R2": 0.0051,
+      "coefficients": {
+        "(Intercept)": 0.0171,
+        "MKT_RF": 0.0685,
+        "SMB": 0.0126,
+        "HML": -0.0053,
+        "RMW": 0.2837,
+        "CMA": 0.3106
+      },
+      "nw_se": {
+        "(Intercept)": 0.0023,
+        "MKT_RF": 0.0297,
+        "SMB": 0.0563,
+        "HML": 0.2928,
+        "RMW": 0.3099,
+        "CMA": 0.2618
+      },
+      "harvey_pass": true
+    },
+    "FF6": {
+      "spec": "FF6 (FF5 + WML)",
+      "formula": "r_excess_pd18 ~ MKT_RF + SMB + HML + RMW + CMA + WML",
+      "n": 254,
+      "alpha_monthly": 0.0162,
+      "alpha_ann": 0.1941,
+      "se_NW_alpha": 0.0021,
+      "t_NW_alpha": 7.6858,
+      "R2": 0.0681,
+      "adj_R2": 0.0454,
+      "coefficients": {
+        "(Intercept)": 0.0162,
+        "MKT_RF": 0.0709,
+        "SMB": 0.074,
+        "HML": -0.0313,
+        "RMW": 0.2836,
+        "CMA": 0.3,
+        "WML": 0.1426
+      },
+      "nw_se": {
+        "(Intercept)": 0.0021,
+        "MKT_RF": 0.0251,
+        "SMB": 0.0629,
+        "HML": 0.2822,
+        "RMW": 0.3205,
+        "CMA": 0.2577,
+        "WML": 0.0405
+      },
+      "harvey_pass": true
+    }
+  },
+  "baseline_S4v2_5spec": {
+    "CAPM": {
+      "spec": "CAPM (baseline S4v2)",
+      "formula": "r_excess_baseline ~ MKT_RF",
+      "n": 254,
+      "alpha_monthly": 0.0158,
+      "alpha_ann": 0.1894,
+      "se_NW_alpha": 0.0024,
+      "t_NW_alpha": 6.5527,
+      "R2": 0.0003,
+      "adj_R2": -0.0037,
+      "coefficients": {
+        "(Intercept)": 0.0158,
+        "MKT_RF": 0.0089
+      },
+      "nw_se": {
+        "(Intercept)": 0.0024,
+        "MKT_RF": 0.0295
+      },
+      "harvey_pass": true
+    },
+    "FF3": {
+      "spec": "FF3 (baseline S4v2)",
+      "formula": "r_excess_baseline ~ MKT_RF + SMB + HML",
+      "n": 254,
+      "alpha_monthly": 0.0158,
+      "alpha_ann": 0.1895,
+      "se_NW_alpha": 0.0024,
+      "t_NW_alpha": 6.6694,
+      "R2": 0.0013,
+      "adj_R2": -0.0107,
+      "coefficients": {
+        "(Intercept)": 0.0158,
+        "MKT_RF": 0.0063,
+        "SMB": -0.0245,
+        "HML": 0.0678
+      },
+      "nw_se": {
+        "(Intercept)": 0.0024,
+        "MKT_RF": 0.0286,
+        "SMB": 0.0542,
+        "HML": 0.3172
+      },
+      "harvey_pass": true
+    },
+    "Carhart4": {
+      "spec": "Carhart-4 (baseline S4v2)",
+      "formula": "r_excess_baseline ~ MKT_RF + SMB + HML + WML",
+      "n": 254,
+      "alpha_monthly": 0.0148,
+      "alpha_ann": 0.1778,
+      "se_NW_alpha": 0.0022,
+      "t_NW_alpha": 6.6822,
+      "R2": 0.0405,
+      "adj_R2": 0.0251,
+      "coefficients": {
+        "(Intercept)": 0.0148,
+        "MKT_RF": 0.009,
+        "SMB": 0.0368,
+        "HML": 0.0402,
+        "WML": 0.1422
+      },
+      "nw_se": {
+        "(Intercept)": 0.0022,
+        "MKT_RF": 0.026,
+        "SMB": 0.0601,
+        "HML": 0.3081,
+        "WML": 0.0393
+      },
+      "harvey_pass": true
+    },
+    "FF5": {
+      "spec": "FF5 (baseline S4v2)",
+      "formula": "r_excess_baseline ~ MKT_RF + SMB + HML + RMW + CMA",
+      "n": 254,
+      "alpha_monthly": 0.0156,
+      "alpha_ann": 0.1877,
+      "se_NW_alpha": 0.0023,
+      "t_NW_alpha": 6.8529,
+      "R2": 0.0077,
+      "adj_R2": -0.0123,
+      "coefficients": {
+        "(Intercept)": 0.0156,
+        "MKT_RF": 0.0083,
+        "SMB": -0.021,
+        "HML": 0.0266,
+        "RMW": 0.2936,
+        "CMA": 0.2847
+      },
+      "nw_se": {
+        "(Intercept)": 0.0023,
+        "MKT_RF": 0.0293,
+        "SMB": 0.0542,
+        "HML": 0.3198,
+        "RMW": 0.3504,
+        "CMA": 0.3021
+      },
+      "harvey_pass": true
+    },
+    "FF6": {
+      "spec": "FF6 (baseline S4v2)",
+      "formula": "r_excess_baseline ~ MKT_RF + SMB + HML + RMW + CMA + WML",
+      "n": 254,
+      "alpha_monthly": 0.0147,
+      "alpha_ann": 0.1762,
+      "se_NW_alpha": 0.0022,
+      "t_NW_alpha": 6.8208,
+      "R2": 0.0467,
+      "adj_R2": 0.0235,
+      "coefficients": {
+        "(Intercept)": 0.0147,
+        "MKT_RF": 0.0107,
+        "SMB": 0.04,
+        "HML": 0.0007,
+        "RMW": 0.2936,
+        "CMA": 0.2741,
+        "WML": 0.1418
+      },
+      "nw_se": {
+        "(Intercept)": 0.0022,
+        "MKT_RF": 0.0261,
+        "SMB": 0.0607,
+        "HML": 0.3101,
+        "RMW": 0.3621,
+        "CMA": 0.2987,
+        "WML": 0.0388
+      },
+      "harvey_pass": true
+    }
+  },
+  "harvey_pass_count_pd18": 5,
+  "harvey_pass_count_baseline": 5,
+  "harvey_threshold": 3,
+  "harvey_verdict": {
+    "pd18_5_specs_pass_count": 5,
+    "pd18_strict_5_of_5": true,
+    "pd18_majority_3_of_5": true,
+    "baseline_5_specs_pass_count": 5,
+    "baseline_strict_5_of_5": true
+  }
+}

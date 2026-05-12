@@ -1,0 +1,49 @@
+{
+  "task_id": "WT-P20260509_001",
+  "task_type": "promotion",
+  "wt_kind": "PG2_upgrade_weight_research_4sleeve_statistical_methods",
+  "as_of_date": "2026-05-09",
+  "mandate_source": "도훈 직접 mandate 2026-05-09 — 정식 리서치 + 통계적 방법론 + PG2 업그레이드",
+  "goal": "현 admit S4 v2 (50/25/20/5cash, 도훈 user-fixed allocation) 외 통계적 방법론으로 4-sleeve 비율 자율 검증 + Optimizer 자율 method shopping (risk_parity / inverse_vol / MVO / HRP / CVaR-LP / Black-Litterman 등) + 도훈 framing (Path C 70/15/15 + S4 50/25/20/5) 정량 비교 + S4 v3 candidate 권고",
+  "input_data": {
+    "sleeve_returns": {
+      "STR_1715_alpha_updated": "stage_artifacts/WT_D20260425_010/alpha_scores.parquet (268 sig_dates, last 2026-04-01)",
+      "TSMOM_9_ETF_basket": "stage_artifacts/.../tsmom_returns.csv (135m available 2015-01 ~ 2026-04)",
+      "KR_10y_bond_ETF": "stage_artifacts/.../kr10y_returns.csv",
+      "CASH_KRW": "0% return retain"
+    },
+    "current_admit_S4_v2": "qepm/mailbox/governor/book_state.json (S4 v2 alpha-updated, 50/25/20/5cash, effective 2026-05-12)",
+    "previous_admit_S3": "70/15/15 도훈 Path C strict (5/5 admit)",
+    "covariance_matrix": "정규 리서치 단계 산출 의무 (LW const-corr Honey 또는 factor model)",
+    "lockbox_scope": ".claude/rules/lockbox-scope.md — optimizer-research는 정규 리서치 단계 → lockbox sealing 적용 (alpha_scores 갱신 자료 read-only 사용)"
+  },
+  "method_mandate": [
+    "Equal Weight grid (70/15/15, 60/20/15/5, 50/25/20/5, 40/30/20/10 등 ~10 비율)",
+    "Inverse Volatility (1/σ_i normalize)",
+    "Risk Parity (Σ risk contribution equal)",
+    "Mean-Variance Optimization (MVO with constraints: weight bound [0, 0.5], Σw=1)",
+    "Hierarchical Risk Parity (HRP — López de Prado 2016)",
+    "CVaR-LP (tail risk minimization)",
+    "Black-Litterman (도훈 Path C view + market-implied prior shrinkage)",
+    "도훈 framing 비교 retain — Path C 70/15/15 + S4 50/25/20/5"
+  ],
+  "evaluation_metrics": [
+    "256m full-sample SR / CAGR / MDD / Sortino / Calmar / TE / Turnover",
+    "OOS 28m (2024-01 ~ 2026-04) SR / MDD / CAGR — alpha 갱신 효과",
+    "DSR Bailey-Lopez de Prado 2014 (multi-trial haircut)",
+    "Harvey-Liu 2016 multiple testing t > 3.0",
+    "Sub-period stability (2008/2014/2020 sign consistency)",
+    "AX-001 v2 conditional defense (crisis_alpha + bad/normal IC ratio + Core 대비 MDD 완화)"
+  ],
+  "constraints": {
+    "weight_bound": "[0, 0.50]",
+    "sum_weights": 1.0,
+    "long_only": true,
+    "n_sleeve": 4,
+    "transaction_cost_bps": 15,
+    "production_constraints": ".claude/rules/pit.md (종목수 max 20, ADV 2e8 KRW, KOSPI200 ∪ KOSDAQ150)",
+    "sleeve_definition_immutable": "S4 v2 sleeve 4종 (STR_1715 alpha-updated / TSMOM 9-ETF / KR10y bond / Cash)는 그대로. 비율만 검증."
+  },
+  "ax_constraints": ["AX-001 v2 conditional defense", "AX-002 PIT", "AX-007 multi-sleeve EXCEPTION 정합", "AX-008 triangulation 2/3 mandate"],
+  "deliverable": "S4 v3 candidate 권고 (혹은 Path C 또는 S4 retain 정당화) + 정량 정합 + Forge 실측 mandate (후속 cycle)"
+}

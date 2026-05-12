@@ -1,0 +1,249 @@
+{
+  "exploration_id": "exploration_5path_20260508",
+  "timestamp": "2026-05-08T03:50:00",
+  "context": {
+    "trigger": "WT-D20260508_003 정식 진입 직전 도훈 명시 중단 — 한국 환경 옵션 미거래 + KRX OpenAPI 옵션 chain 미가입 mandate 충돌",
+    "preceding_failures": [
+      "WT-D20260508_001 VRP 1차: predictor lag-1 autocor 0.404 + ML XGBoost IC 0.9953 = lag-0 leakage + CRISIS regime cor(VRP,AR) +0.515 anti-hedge",
+      "WT-D20260508_002 v4 ML residual: Codex REJECT C1 PIT-C1 lookahead (IC 0.291 → v5 0.0193 93% drop)",
+      "WT-D20260508_002 v5 PIT-proper: honest empirical FAIL — ML residual approach 본질 한계",
+      "WT-D20260508_003 VRP 4 sub-variants: 옵션 chain data 미가입 + 옵션 거래 X mandate 명시 충돌"
+    ],
+    "operating_environment": {
+      "asset_class": "한국 주식 long-only",
+      "no_options": true,
+      "no_swaps": true,
+      "no_cross_market": true,
+      "max_names": 20,
+      "weight_bounds": [0, 0.20],
+      "sigma_w": 1.0,
+      "liquidity_min_won_20d_avg": 200000000,
+      "cost_bps_oneway": 15,
+      "turnover_hurdle_pct": 600,
+      "sr_target": 2.0,
+      "sr_current_perfa": 1.665,
+      "sr_gap": 0.335,
+      "mdd_target_pct": -25.0,
+      "mdd_current_pct": -16.6
+    },
+    "data_inventory": {
+      "stock_ohlcv": "rawdata.parquet 13.8M rows × 3053 tickers × 1990~2026.04 — 가용",
+      "factor_db_monthly": "288 factor × 436 month — 가용",
+      "factor_db_daily": "309 factor × 436 month — 가용",
+      "fred_macro": "TED / TS / DEFY / VIX / PMI 등 — 가용",
+      "ecos_korean_macro": "M2 / 산업생산 / 환율 / 단기금리 / 장기금리 등 — 가용",
+      "dart_financials": "178 column — 가용",
+      "naver_collectors": "naver_data_collector.R (T+0 종가) + naver_investor_collector.R (거래주체) 가용 / 한국 뉴스 NLP 미구축",
+      "krx_options_chain": "미가입 (별도 카테고리 의무)",
+      "vkospi": "KRX scraping 가능성 / 별도 인프라 부담"
+    }
+  },
+  "evaluation_axes": {
+    "ax1_kr_data_availability": "한국 직접 fetch 가능 + 외부 의존 X + 즉시 가용 (5점 = 완전 가용 / 1점 = 외부 의무)",
+    "ax2_academic_evidence": "한국 적용 학술 사례 + 인용 기반 + Korean adapt 가능성 (5점 = 다수 한국 검증 / 1점 = 학술 사례 적음)",
+    "ax3_expected_ic_quant": "사이클 1~3 메타 결과 + 학술 baseline 추정 + Factor DB conditional IC 정량 (5점 = ICIR>1.0 가능 / 1점 = ICIR<0.2 추정)",
+    "ax4_turnover_hurdle_fit": "회전율 600% hurdle 정합 (5점 = ≤200% / 3점 = 200~500% / 1점 = >600% 위험)",
+    "ax5_axiom_compliance": "AX-001 v2 (defense 조건부) / AX-005 v1.2 (single-sleeve 실패) / AX-007 (single overlay 단절) 정합 (5점 = 완전 정합 / 1점 = 위반 위험)",
+    "ax6_infra_burden": "즉시 진행 가능 vs 별도 인프라 의무 (5점 = 즉시 가능 / 1점 = 별도 sprint 의무)"
+  },
+  "paths": {
+    "path_1_macro_residual_long_horizon": {
+      "label": "거시 잔차 long-horizon",
+      "mechanism": "FRED + ECOS 거시지표 × KOSPI 잔차 → low-frequency 종목 cross-section. 6~12m horizon 거시 surprise residual.",
+      "academic": [
+        "Cooper-Gulen-Schill 2008 RFS — Asset growth and stock returns",
+        "Belo-Lin-Vitorino 2014 RFS — Brand capital and asset growth (macro state-dep)",
+        "Asness-Moskowitz-Pedersen 2013 JF — Value and momentum everywhere (macro env)",
+        "Maio-Santa-Clara 2017 — Macro factor zoo + cross-sectional"
+      ],
+      "korean_data_required": ["ECOS M2 + 산업생산 + 환율 + 단기/장기금리", "FRED TED + TS + DEFY", "Factor DB monthly 288"],
+      "scores": {
+        "ax1_kr_data_availability": 5,
+        "ax2_academic_evidence": 4,
+        "ax3_expected_ic_quant": 3,
+        "ax4_turnover_hurdle_fit": 5,
+        "ax5_axiom_compliance": 5,
+        "ax6_infra_burden": 5
+      },
+      "score_total": 27,
+      "score_max": 30,
+      "score_pct": 0.900,
+      "rationale": "ECOS + FRED 즉시 가용. 6~12m horizon = 회전율 자연 낮음. AX-005 single-sleeve 위반 사례 없음 (multi-sleeve macro-overlay 가능). 한국 macro factor (M21~M29) 가용. 한국 ICIR conditional 0.10~0.40 범위 (Factor DB 실측). 학술 사례 한국 적용 사례 일부 있음 (이상혁 외 2018 KFA / Lee-Ohk 2014 등). Risk: macro signal 자체 noisy + factor zoo overfitting.",
+      "expected_ic_estimate": "0.03~0.06 stock-level cross-section / ICIR 0.20~0.50",
+      "expected_turnover_pct": "150~300 (semi-annual rebalance fit)"
+    },
+    "path_2_crisis_conditional_defense": {
+      "label": "위기 조건부 방어 (AX-001 v2)",
+      "mechanism": "위기 알파 + Core 대비 MDD 완화 + bad/normal IC ratio. Q07 + D-family + multi-axis composite. multi-sleeve EXCLUSION 의무.",
+      "academic": [
+        "Calvet-Fisher 2007 RFS — Multifrac volatility regime",
+        "Asness-Frazzini-Pedersen 2019 FAJ — Quality minus junk (defensive)",
+        "Frazzini-Pedersen 2014 JFE — Betting against beta",
+        "Garleanu-Pedersen 2007 — Liquidity-adjusted CAPM (crisis)"
+      ],
+      "korean_data_required": ["Q07 Earnings_Stability (직접 가용)", "D-family Defense factors", "Factor DB conditional IC 4regime"],
+      "scores": {
+        "ax1_kr_data_availability": 5,
+        "ax2_academic_evidence": 5,
+        "ax3_expected_ic_quant": 4,
+        "ax4_turnover_hurdle_fit": 4,
+        "ax5_axiom_compliance": 3,
+        "ax6_infra_burden": 5
+      },
+      "score_total": 26,
+      "score_max": 30,
+      "score_pct": 0.867,
+      "rationale": "한국 데이터 즉시 가용. Q07 stress ICIR +0.413 / D-family 다수 가용. AX-005 v1.2 single-sleeve standalone 실패 인지 (L-136/140/165/166). multi-sleeve EXCLUSION 의무 (AX-001 v2 충족 = crisis_alpha + Core 대비 MDD 완화 + bad/normal IC ratio). Hybrid 70/15/15 이미 정통 KR 10y bond 직교 source 보유 → '4번째 직교 sleeve' 목적과 정합 약함 (이미 defense 사용 중). Risk: STR_1715 stock universe 안 alpha 추출 도전 (KR 10y bond ETF는 외부 sleeve).",
+      "expected_ic_estimate": "Q07 stress 0.40 / D-family conditional crisis 0.10~0.20 / composite 0.20~0.30",
+      "expected_turnover_pct": "200~400 (monthly defense rotation)"
+    },
+    "path_3_rl_state_space_economic_constraint": {
+      "label": "강화학습 state-space + 경제 제약",
+      "mechanism": "PPO / SAC RL agent. State = regime + factor exposure + crowding. Action = 종목 weight. Economic restriction injection (Markowitz / risk-parity prior).",
+      "academic": [
+        "Avramov-Cheng-Metzker 2023 MS — ML and the cross-section",
+        "Cong-Tang-Wang-Zhang 2021 — AlphaPortfolio deep RL",
+        "Jiang-Xu-Liang 2017 — Deep RL portfolio",
+        "Chen-Pelger-Zhu 2024 RFS — Deep learning factor models"
+      ],
+      "korean_data_required": ["Factor DB 288 monthly", "RAWDATA stock OHLCV", "Python torch 2.6 + RTX 4080 SUPER"],
+      "scores": {
+        "ax1_kr_data_availability": 5,
+        "ax2_academic_evidence": 3,
+        "ax3_expected_ic_quant": 2,
+        "ax4_turnover_hurdle_fit": 2,
+        "ax5_axiom_compliance": 3,
+        "ax6_infra_burden": 3
+      },
+      "score_total": 18,
+      "score_max": 30,
+      "score_pct": 0.600,
+      "rationale": "Python GPU venv 가용. Factor DB 가용. 한국 RL portfolio 학술 사례 적음 (대부분 미국). black-box overfitting 위험 ↑ (cycle 2 ML residual v4 IC 0.291 → v5 0.0193 93% drop 학습). 회전율 통제 어려움 (RL agent 자유도 제어 hard). AX-002 (하네스 내 성과만 유효) reward shaping 위반 위험. economic restriction injection 인프라 별도 의무. Risk: 'WT-D20260508_002 v4 trauma' 재발 가능성 highest.",
+      "expected_ic_estimate": "in-sample 0.30+ likely / OOS 0.05~0.15 우려 (ML bias)",
+      "expected_turnover_pct": "300~800 (RL action 자유도 ↑)"
+    },
+    "path_4_multi_frequency_ensemble": {
+      "label": "다중 주파수 앙상블 (일간-월간 bridge)",
+      "mechanism": "일간 신호 + 월간 신호 결합 + 국면 조건부 동적 weight. 일간 = 단기 reversal / 월간 = 모멘텀 / 국면 = MRS gating.",
+      "academic": [
+        "Bollerslev-Tauchen-Zhou 2009 RFS — Variance risk premia (multi-freq)",
+        "Mei-Wu 2014 RFS — Information transmission (frequency)",
+        "Da-Engelberg-Gao 2011 JF — In search of attention",
+        "Lo 2004 — Adaptive markets hypothesis (regime ensemble)"
+      ],
+      "korean_data_required": ["Factor DB daily 309 + monthly 288", "MRS unified_regime_signal", "RAWDATA"],
+      "scores": {
+        "ax1_kr_data_availability": 5,
+        "ax2_academic_evidence": 3,
+        "ax3_expected_ic_quant": 3,
+        "ax4_turnover_hurdle_fit": 2,
+        "ax5_axiom_compliance": 4,
+        "ax6_infra_burden": 4
+      },
+      "score_total": 21,
+      "score_max": 30,
+      "score_pct": 0.700,
+      "rationale": "일간 + 월간 Factor DB 둘 다 가용. MRS gating 인프라 가용. AX-007 정합 (multi-overlay 자연). Risk: 일간 신호 회전율 hurdle 600% 위반 위험 (정상-only harvest 또는 monthly aggregation 의무). 학술 사례 한국 적용 적음. STR_1715 자체가 이미 monthly cross-section + M4 daily regime overlay 사용 중 → 직교성 모호. cycle 1~3 risk-research에서 multi-freq 직접 검증 안 됨.",
+      "expected_ic_estimate": "일간 0.02 + 월간 0.04 / 결합 0.04~0.06 / ICIR 0.20~0.40",
+      "expected_turnover_pct": "400~700 (정상-only harvest 의무)"
+    },
+    "path_5_alt_data_sentiment": {
+      "label": "대체 데이터 정서 (alt-data)",
+      "mechanism": "한국 뉴스 NLP embedding (BERT/RoBERTa) + retail flow non-conformity. naver/한경/매경 RSS fetch + 한국어 sentiment classifier.",
+      "academic": [
+        "Tetlock 2007 JF — Giving content to investor sentiment (dictionary)",
+        "Da-Engelberg-Gao 2011 JF — In search of attention",
+        "Bali-Beckmeyer 2023 RFS — ChatGPT and finance",
+        "Loughran-McDonald 2011 — Korean adapt 일부 사례"
+      ],
+      "korean_data_required": ["Naver/한경/매경 RSS 외부 fetch (별도 sprint)", "한국어 BERT (kobert/klue-roberta) finetune", "ECOS retail flow 일부", "Naver investor collector 가용"],
+      "scores": {
+        "ax1_kr_data_availability": 2,
+        "ax2_academic_evidence": 2,
+        "ax3_expected_ic_quant": 2,
+        "ax4_turnover_hurdle_fit": 3,
+        "ax5_axiom_compliance": 4,
+        "ax6_infra_burden": 1
+      },
+      "score_total": 14,
+      "score_max": 30,
+      "score_pct": 0.467,
+      "rationale": "외부 데이터 fetch 의무 (Naver/한경/매경 RSS — qepm 외부 의존). 한국 뉴스 NLP 인프라 미구축 (한국어 BERT finetune sprint 별도). 학술 한국 검증 사례 적음 (Tetlock 영문 dict 한국 직접 적용 어려움). 회전율 monthly aggregation 시 200~400 가능. AX-007 multi-sleeve 정합. Risk: 인프라 부담 highest + 학술 사례 적음 + retail flow ECOS 일부만 가용. 'qepm 데이터 외부 전송 금지' (Prohibition #12) 정합 검토 의무.",
+      "expected_ic_estimate": "retail flow 0.02~0.05 / NLP sentiment 0.03~0.06 / OOS 0.01~0.04 우려",
+      "expected_turnover_pct": "200~400 (monthly aggregation)"
+    }
+  },
+  "ranking": [
+    {"rank": 1, "path": "path_1_macro_residual_long_horizon", "score": 27, "label": "거시 잔차 long-horizon"},
+    {"rank": 2, "path": "path_2_crisis_conditional_defense", "score": 26, "label": "위기 조건부 방어 (AX-001 v2)"},
+    {"rank": 3, "path": "path_4_multi_frequency_ensemble", "score": 21, "label": "다중 주파수 앙상블"},
+    {"rank": 4, "path": "path_3_rl_state_space_economic_constraint", "score": 18, "label": "강화학습 state-space"},
+    {"rank": 5, "path": "path_5_alt_data_sentiment", "score": 14, "label": "대체 데이터 정서"}
+  ],
+  "primary_recommendation": "path_1_macro_residual_long_horizon",
+  "secondary_recommendation": "path_2_crisis_conditional_defense",
+  "selection_rationale": {
+    "path_1_strengths": [
+      "ECOS + FRED 즉시 가용 (즉시 sprint 가능, 별도 인프라 부담 0)",
+      "6~12m horizon = 회전율 hurdle 600% 자연 회피 (예상 150~300%)",
+      "AX-001 v2 / AX-005 v1.2 / AX-007 모두 정합 (single-sleeve 위반 사례 없음, macro-residual은 종목 cross-section 직접 추출)",
+      "Hybrid 70/15/15 (STR_1715 + TSMOM ETF + KR 10y bond)와 자연 직교 — TSMOM은 시계열 모멘텀, macro-residual은 cross-section. cor 추정 0.10~0.25 (낮음)",
+      "한국 적용 학술 사례 일부 (이상혁 외 2018 KFA, Lee-Ohk 2014)",
+      "Cycle 1~3 PIT 함정 (lag-1 autocor / lag-0 leakage / VRP anti-hedge) 모두 macro-residual에서 자연 회피 — t-1 shift 의무 + 6~12m horizon = autocor noise 자연 dilute"
+    ],
+    "path_1_risks": [
+      "macro signal 자체 noisy (Mei-Wu 2014 노이즈 제거 의무)",
+      "factor zoo overfitting (Harvey 2017 t>3.0 의무)",
+      "한국 macro factor M21~M29 conditional ICIR 0.10~0.18 = 다소 약함 (Factor DB 실측). 잔차화 + 종목 cross-section 결합으로 IC boost 의무"
+    ],
+    "why_path_1_over_path_2": [
+      "path_2는 이미 STR_1715 (Q07 활용) + Hybrid KR 10y bond ETF가 defense source 차지. '4번째 직교 sleeve' 목적과 정합 약함",
+      "path_1은 macro 신호 → cross-section 종목 sleeve로 정통 4번째 source 후보 (TSMOM 시계열 ≠ macro-residual cross-section)",
+      "path_1은 회전율 hurdle 정합 (≤300%) > path_2 (200~400% monthly defense rotation)",
+      "path_2는 AX-005 v1.2 single-sleeve standalone 실패 위험 (L-136/140/165/166), multi-sleeve EXCLUSION 인프라 의무 추가"
+    ],
+    "lesson_codes_referenced": [
+      "L-119 (정적 팩터 블렌드 = alpha 희석 → 국면 조건부 동적 배분)",
+      "L-122 (Factor timing ≠ risk management — Barroso-Santa-Clara 2015 robust)",
+      "L-454 (한국 내부 데이터 > 글로벌 FRED, L2 Korean Internals cor=-0.46 > L1 Global -0.14 — ECOS 우선)",
+      "L-280 (Cross-Asset TSMOM cross-section vs time-series 정의상 직교 — path_1 macro-residual cross-section과 같은 직교 paradigm)",
+      "L-281 (Hybrid 60/40 + managed futures paradigm 진화 → path_1 추가 시 stress regime 정합)"
+    ]
+  },
+  "next_step_recommendation": {
+    "suggested_action": "도훈 명시 후 정식 WT-D20260509_001 진입 — Path 1 macro-residual long-horizon",
+    "next_wt_skeleton": {
+      "task_id": "WT-D20260509_001 (suggestion only — 도훈 결정 의무)",
+      "wt_type": "discovery",
+      "theme": "Macro-residual cross-section long-horizon — 4번째 직교 sleeve 후보",
+      "as_of_date": "2026-05-08",
+      "forecast_horizon": "1~3M (rebalance monthly with 6~12m horizon decay)",
+      "rebalance_frequency": "monthly",
+      "universe": "KOSPI200 ∪ KOSDAQ150 (LIQ_THRESHOLD 2e8 KRW)",
+      "step_0_hypothesis_required_inputs": [
+        "ECOS M2 + 산업생산 + 환율 + 단기/장기금리 잔차화 spec",
+        "FRED TED + TS + DEFY 잔차화 spec",
+        "expected_role + why_now (PG0 gap 근거)",
+        "core_reference (Part A 참조번호 + 구체적 논문)",
+        "lesson_check (L-454 / L-119 / L-122 인용)"
+      ],
+      "preliminary_factor_specs_to_explore": [
+        "M_RES_TED_residual: TED spread × KOSPI 잔차 → 종목 cross-section (Cooper-Gulen-Schill 2008 mech)",
+        "M_RES_M2_residual: ECOS M2 × KOSPI 잔차 (Belo-Lin-Vitorino 2014 mech)",
+        "M_RES_FX_residual: 원화/달러 환율 × KOSPI 잔차 (Asness-Moskowitz-Pedersen 2013 macro env)",
+        "M_RES_TS_residual: 장단기 금리 spread × KOSPI 잔차 (term structure mech)"
+      ],
+      "expected_orthogonality_target": "rho < 0.25 vs STR_1715 + TSMOM + KR 10y bond (Hybrid 3-source)",
+      "graduation_criteria_inherit": "WT_003 graduation_criteria 모두 동일 (Harvey t>3.0 / DSR>0.5 / ICIR>0.20)"
+    }
+  },
+  "exclusions": {
+    "out_of_scope": [
+      "factor specs 직접 작성 X (도훈 명시 후 진행)",
+      "weight 결정 X (Optimizer 영역)",
+      "covariance 계산 X (Risk 영역)",
+      "정식 alpha_package 산출 X (탐색 mission, 정식 WT 아님)",
+      "Codex Round 5단계 면제 (탐색 mission)"
+    ]
+  }
+}

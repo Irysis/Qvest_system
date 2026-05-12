@@ -1,0 +1,308 @@
+{
+  "task_id": "WT-D20260511_001",
+  "schema_version": "v1.0",
+  "entries": [
+    {
+      "task_id": "WT-D20260511_001",
+      "package_type": "alpha_package_draft",
+      "created_at": "2026-05-11T08:16:14+0900",
+      "git_commit": "cc1bb3edf0c303d5a4d341dcef973324e5ca5b23",
+      "git_dirty": true,
+      "r_version": "4.5.2",
+      "r_packages": {
+        "data.table": "1.18.2.1",
+        "jsonlite": "2.0.0",
+        "arrow": "23.0.1.1",
+        "quadprog": "1.5.8",
+        "digest": "0.6.39",
+        "PerformanceAnalytics": "2.0.8",
+        "xts": "0.14.1"
+      },
+      "random_seed": 20260424,
+      "input_hashes": {
+        ".cache/rawdata.parquet": "2519782a5d962e90b664c1da87b57326dc811fdb90b1c7521713d6e934ec6fc9",
+        ".cache/factor_db/factor_db_YYYYMM.parquet (load_month_factors connector)": null,
+        "qepm/mailbox/worktask/WT-P20260509_002/output/walk_forward_returns_timeseries.csv (S4 v2 baseline cor)": null
+      },
+      "method_selected": "3-axis vol/skew composite (D43+D41+D58) sector-neutral PIT-strict 36m burn-in",
+      "method_shopping_log_ref": null,
+      "windows": null,
+      "reproduction_command": "Rscript -e 'set.seed(20260424); source(\"qepm/mailbox/worktask/WT-D20260511_001/run_all.R\")'",
+      "file_path": "qepm/mailbox/worktask/WT-D20260511_001/alpha_package_draft.json",
+      "file_hash_sha256": "b6423d4492115ed6863f2efc25224da67b81ed5ba72bc65b4f1844097739f055"
+    },
+    {
+      "task_id": "WT-D20260511_001",
+      "package_type": "alpha_package",
+      "created_at": "2026-05-11T08:26:32+0900",
+      "git_commit": "cc1bb3edf0c303d5a4d341dcef973324e5ca5b23",
+      "git_dirty": true,
+      "r_version": "4.5.2",
+      "r_packages": {
+        "data.table": "1.18.2.1",
+        "jsonlite": "2.0.0",
+        "arrow": "23.0.1.1",
+        "quadprog": "1.5.8",
+        "digest": "0.6.39",
+        "PerformanceAnalytics": "2.0.8",
+        "xts": "0.14.1"
+      },
+      "random_seed": 20260424,
+      "input_hashes": {
+        ".cache/rawdata.parquet": "2519782a5d962e90b664c1da87b57326dc811fdb90b1c7521713d6e934ec6fc9",
+        ".cache/factor_db/factor_db_YYYYMM.parquet (load_month_factors)": null,
+        "qepm/mailbox/worktask/WT-P20260509_002/output/walk_forward_returns_timeseries.csv": "d4930050805880dbe26530539aecdf3a403478c97e250baa4a12b05c7f732e13",
+        "qepm/mailbox/worktask/WT-D20260511_001/alpha_package_draft.json": "b6423d4492115ed6863f2efc25224da67b81ed5ba72bc65b4f1844097739f055",
+        "qepm/mailbox/worktask/WT-D20260511_001/codex_critic_response_alpha.json": "0cf960fb5d8d22275287929574b8a03060442cf1e9ffc4e45fc4e73e4e33d850",
+        "qepm/mailbox/worktask/WT-D20260511_001/challenge_note.md": "0ff422e8d2a9ec1dbeb9113ed797701003addc3bf9db2ce220770f494024ed5d"
+      },
+      "method_selected": "3-axis vol/skew composite (D43+D41+D58) sector-neutral PIT-strict 36m burn-in, post-Codex Round REJECT challenge_note disposition",
+      "method_shopping_log_ref": null,
+      "windows": null,
+      "reproduction_command": "Rscript -e 'set.seed(20260424); source(\"qepm/mailbox/worktask/WT-D20260511_001/run_all.R\")'",
+      "file_path": "qepm/mailbox/worktask/WT-D20260511_001/alpha_package.json",
+      "file_hash_sha256": "9fedcf9e05d1dc7c465343fef065984f03c187253e4ceb7ad2d25ca23a897827"
+    },
+    {
+      "task_id": "WT-D20260511_001",
+      "package_type": "risk_package_draft",
+      "created_at": "2026-05-11T08:50:36+0900",
+      "git_commit": "cc1bb3edf0c303d5a4d341dcef973324e5ca5b23",
+      "git_dirty": true,
+      "r_version": "4.5.2",
+      "r_packages": {
+        "data.table": "1.18.2.1",
+        "jsonlite": "2.0.0",
+        "arrow": "23.0.1.1",
+        "quadprog": "1.5.8",
+        "digest": "0.6.39",
+        "PerformanceAnalytics": "2.0.8",
+        "xts": "0.14.1"
+      },
+      "random_seed": 20260424,
+      "input_hashes": {
+        "qepm/mailbox/worktask/WT-D20260511_001/alpha_package.json": "9fedcf9e05d1dc7c465343fef065984f03c187253e4ceb7ad2d25ca23a897827",
+        "stage_artifacts/WT_D20260511_001/alpha_scores.parquet": "f72811e8895af83c3e994aa90da35333685811908e04703929571bae091170e1"
+      },
+      "method_selected": "ledoit_wolf",
+      "method_shopping_log_ref": null,
+      "windows": [
+        {
+          "name": "lockbox_window",
+          "start": "2011-01-01",
+          "end": "2023-12-22"
+        }
+      ],
+      "reproduction_command": "Rscript -e 'set.seed(20260424); source(\"qepm/mailbox/worktask/WT-D20260511_001/run_all.R\")'",
+      "file_path": "qepm/mailbox/worktask/WT-D20260511_001/risk_package_draft.json",
+      "file_hash_sha256": "bae56f6a2c241894269455bede16abd0e343e366fd48cf61dd531915b825a026"
+    },
+    {
+      "task_id": "WT-D20260511_001",
+      "package_type": "risk_package_draft",
+      "created_at": "2026-05-11T08:52:55+0900",
+      "git_commit": "cc1bb3edf0c303d5a4d341dcef973324e5ca5b23",
+      "git_dirty": true,
+      "r_version": "4.5.2",
+      "r_packages": {
+        "data.table": "1.18.2.1",
+        "jsonlite": "2.0.0",
+        "arrow": "23.0.1.1",
+        "quadprog": "1.5.8",
+        "digest": "0.6.39",
+        "PerformanceAnalytics": "2.0.8",
+        "xts": "0.14.1"
+      },
+      "random_seed": 20260424,
+      "input_hashes": {
+        "qepm/mailbox/worktask/WT-D20260511_001/alpha_package.json": "9fedcf9e05d1dc7c465343fef065984f03c187253e4ceb7ad2d25ca23a897827",
+        "stage_artifacts/WT_D20260511_001/alpha_scores.parquet": "f72811e8895af83c3e994aa90da35333685811908e04703929571bae091170e1"
+      },
+      "method_selected": "ledoit_wolf",
+      "method_shopping_log_ref": null,
+      "windows": [
+        {
+          "name": "lockbox_window",
+          "start": "2011-01-01",
+          "end": "2023-12-22"
+        }
+      ],
+      "reproduction_command": "Rscript -e 'set.seed(20260424); source(\"qepm/mailbox/worktask/WT-D20260511_001/run_all.R\")'",
+      "file_path": "qepm/mailbox/worktask/WT-D20260511_001/risk_package_draft.json",
+      "file_hash_sha256": "29472884e1eb3a6676a46d09eeeb6e7dff506d83093c5aaa8a3a051a182df83c"
+    },
+    {
+      "task_id": "WT-D20260511_001",
+      "package_type": "risk_package_draft",
+      "created_at": "2026-05-11T09:05:03+0900",
+      "git_commit": "cc1bb3edf0c303d5a4d341dcef973324e5ca5b23",
+      "git_dirty": true,
+      "r_version": "4.5.2",
+      "r_packages": {
+        "data.table": "1.18.2.1",
+        "jsonlite": "2.0.0",
+        "arrow": "23.0.1.1",
+        "quadprog": "1.5.8",
+        "digest": "0.6.39",
+        "PerformanceAnalytics": "2.0.8",
+        "xts": "0.14.1"
+      },
+      "random_seed": 20260424,
+      "input_hashes": {
+        "qepm/mailbox/worktask/WT-D20260511_001/alpha_package.json": "9fedcf9e05d1dc7c465343fef065984f03c187253e4ceb7ad2d25ca23a897827",
+        "qepm/mailbox/worktask/WT-D20260511_001/codex_critic_response_risk.json": "3b4f7936c96d8c115920111fa3cb3c838251ebaf5fdfd70768c589d74ef1170b",
+        "stage_artifacts/WT_D20260511_001/alpha_scores.parquet": "f72811e8895af83c3e994aa90da35333685811908e04703929571bae091170e1"
+      },
+      "method_selected": "nls_diagonal",
+      "method_shopping_log_ref": null,
+      "windows": [
+        {
+          "name": "lockbox_window",
+          "start": "2011-01-01",
+          "end": "2023-12-22"
+        },
+        {
+          "name": "sigma_window",
+          "start": "2018-01-01",
+          "end": "2023-12-01"
+        }
+      ],
+      "reproduction_command": "Rscript -e 'set.seed(20260424); source(\"qepm/mailbox/worktask/WT-D20260511_001/run_all.R\")'",
+      "revision": "V2 Codex Round response",
+      "codex_round_response_file": "codex_critic_response_risk.json",
+      "file_path": "qepm/mailbox/worktask/WT-D20260511_001/risk_package_draft.json",
+      "file_hash_sha256": "9e3479ec167ef4af321c8fbe5c562657faafe0532b4a3325a57a4128296cce41"
+    },
+    {
+      "task_id": "WT-D20260511_001",
+      "package_type": "optimization_package",
+      "created_at": "2026-05-11T09:22:10+0900",
+      "git_commit": "cc1bb3edf0c303d5a4d341dcef973324e5ca5b23",
+      "git_dirty": true,
+      "r_version": "4.5.2",
+      "r_packages": {
+        "data.table": "1.18.2.1",
+        "jsonlite": "2.0.0",
+        "arrow": "23.0.1.1",
+        "quadprog": "1.5.8",
+        "digest": "0.6.39",
+        "PerformanceAnalytics": "2.0.8",
+        "xts": "0.14.1"
+      },
+      "random_seed": 20260424,
+      "input_hashes": {
+        "qepm/mailbox/worktask/WT-D20260511_001/alpha_package.json": "9fedcf9e05d1dc7c465343fef065984f03c187253e4ceb7ad2d25ca23a897827",
+        "qepm/mailbox/worktask/WT-D20260511_001/risk_package.json": "8b4bc60385c5cffc34cb8485fc445049ff6aedeb14480a8fa5d3358d9142625f",
+        "qepm/mailbox/worktask/WT-D20260511_001/request.json": "44734b1be007ceef12e5f3dfd7c36a77666d4df280eb4a19ef4adab1f7080f13"
+      },
+      "method_selected": "static_5sleeve_med_10pct_smoothed_phi_0_5",
+      "method_shopping_log_ref": null,
+      "windows": null,
+      "reproduction_command": "Rscript -e 'set.seed(20260424); source(\"qepm/mailbox/worktask/WT-D20260511_001/run_all.R\")'"
+    },
+    {
+      "task_id": "WT-D20260511_001",
+      "package_type": "optimization_package_final",
+      "created_at": "2026-05-11T09:35:01+0900",
+      "git_commit": "cc1bb3edf0c303d5a4d341dcef973324e5ca5b23",
+      "git_dirty": true,
+      "r_version": "4.5.2",
+      "r_packages": {
+        "data.table": "1.18.2.1",
+        "jsonlite": "2.0.0",
+        "arrow": "23.0.1.1",
+        "quadprog": "1.5.8",
+        "digest": "0.6.39",
+        "PerformanceAnalytics": "2.0.8",
+        "xts": "0.14.1"
+      },
+      "random_seed": 20260424,
+      "input_hashes": {
+        "qepm/mailbox/worktask/WT-D20260511_001/alpha_package.json": "9fedcf9e05d1dc7c465343fef065984f03c187253e4ceb7ad2d25ca23a897827",
+        "qepm/mailbox/worktask/WT-D20260511_001/risk_package.json": "8b4bc60385c5cffc34cb8485fc445049ff6aedeb14480a8fa5d3358d9142625f",
+        "qepm/mailbox/worktask/WT-D20260511_001/codex_critic_response_optimizer.json": "88e04b0606a617d6f78681201b3b912fa9d3687298732e15df3ffd7ff15cbf89",
+        "qepm/mailbox/worktask/WT-D20260511_001/optimizer_challenge_note.md": "29ff2cc8a16e41efe5c378546fc42e4caddf6e5ca830d9b22ee3563e15e3c99c"
+      },
+      "method_selected": "5sleeve_pareto_frontier_high_20pct_primary_med_10pct_conservative",
+      "method_shopping_log_ref": null,
+      "windows": null,
+      "reproduction_command": "Rscript -e 'set.seed(20260424); source(\"qepm/mailbox/worktask/WT-D20260511_001/run_all.R\")'"
+    },
+    {
+      "task_id": "WT-D20260511_001",
+      "package_type": "risk_package_pd35_draft",
+      "created_at": "2026-05-12T12:16:49+0900",
+      "git_commit": "cc1bb3edf0c303d5a4d341dcef973324e5ca5b23",
+      "git_dirty": true,
+      "r_version": "4.5.2",
+      "r_packages": {
+        "data.table": "1.18.2.1",
+        "jsonlite": "2.0.0",
+        "arrow": "23.0.1.1",
+        "quadprog": "1.5.8",
+        "digest": "0.6.39",
+        "PerformanceAnalytics": "2.0.8",
+        "xts": "0.14.1"
+      },
+      "random_seed": 20260424,
+      "input_hashes": {
+        "qepm/mailbox/worktask/WT-D20260511_001/alpha_package_pd35.json": "c3bb091e63a543a10905f58453b49b569b891dda8a6578f129572d011253ccee",
+        "stage_artifacts/WT_D20260511_001/alpha_scores_pd35_v5_pre_lb_liquidity.parquet": "98314ecd4cbe9aa3d496a9452ecf2c06dc41287ed244560666d8cf6c15c426ea",
+        "qepm/mailbox/worktask/WT-P20260505_001/architect_hybrid_returns_full256m.csv": "71babab03f9eb0739a657e4c46bd9467333606eed466a59f80459787b3de3359"
+      },
+      "method_selected": "shrink_to_diagonal_0.2",
+      "method_shopping_log_ref": null,
+      "windows": [
+        {
+          "start": "2001-07-01",
+          "end": "2023-12-01",
+          "label": "Pre-LB",
+          "n_months": 270
+        }
+      ],
+      "reproduction_command": "Rscript -e 'set.seed(20260424); source(\"qepm/mailbox/worktask/WT-D20260511_001/run_all.R\")'",
+      "file_path": "qepm/mailbox/worktask/WT-D20260511_001/risk_package_pd35_draft.json",
+      "file_hash_sha256": "1d789a343683d82636df5e545cfb8cc4d677977cf0231ee2c9e4a5a2a4751f61"
+    },
+    {
+      "task_id": "WT-D20260511_001",
+      "package_type": "risk_package_pd35",
+      "created_at": "2026-05-12T12:30:37+0900",
+      "git_commit": "cc1bb3edf0c303d5a4d341dcef973324e5ca5b23",
+      "git_dirty": true,
+      "r_version": "4.5.2",
+      "r_packages": {
+        "data.table": "1.18.2.1",
+        "jsonlite": "2.0.0",
+        "arrow": "23.0.1.1",
+        "quadprog": "1.5.8",
+        "digest": "0.6.39",
+        "PerformanceAnalytics": "2.0.8",
+        "xts": "0.14.1"
+      },
+      "random_seed": 20260424,
+      "input_hashes": {
+        "qepm/mailbox/worktask/WT-D20260511_001/alpha_package_pd35.json": "c3bb091e63a543a10905f58453b49b569b891dda8a6578f129572d011253ccee",
+        "qepm/mailbox/worktask/WT-D20260511_001/risk_package_pd35_draft.json": "1d789a343683d82636df5e545cfb8cc4d677977cf0231ee2c9e4a5a2a4751f61",
+        "qepm/mailbox/worktask/WT-D20260511_001/codex_critic_response_risk_pd35.json": "5de53f97284f67fc48ebff6d6843a7cf5a348a7ae0e713d5f97724c904e46947",
+        "qepm/mailbox/worktask/WT-D20260511_001/codex_remediation_risk_pd35.json": "07885865bf32d054dd3987188cf6020d13afbe21588736c8c03291d98f4d4bc3",
+        "stage_artifacts/WT_D20260511_001/alpha_scores_pd35_v5_pre_lb_liquidity.parquet": "98314ecd4cbe9aa3d496a9452ecf2c06dc41287ed244560666d8cf6c15c426ea",
+        "qepm/mailbox/worktask/WT-P20260505_001/architect_hybrid_returns_full256m.csv": "71babab03f9eb0739a657e4c46bd9467333606eed466a59f80459787b3de3359"
+      },
+      "method_selected": "shrink_diag_0.5_post_codex_v2",
+      "method_shopping_log_ref": null,
+      "windows": [
+        {
+          "start": "2001-07-01",
+          "end": "2023-12-01",
+          "label": "Pre-LB",
+          "n_months": 270
+        }
+      ],
+      "reproduction_command": "Rscript -e 'set.seed(20260424); source(\"qepm/mailbox/worktask/WT-D20260511_001/run_all.R\")'",
+      "file_path": "qepm/mailbox/worktask/WT-D20260511_001/risk_package_pd35.json",
+      "file_hash_sha256": "72305e4a5de6718927e16a4e05681201c90176430ad48611ca1e8cd9b95820d8"
+    }
+  ],
+  "last_updated": "2026-05-12T12:30:37+0900"
+}

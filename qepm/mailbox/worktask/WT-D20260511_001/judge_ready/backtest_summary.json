@@ -1,0 +1,231 @@
+{
+  "task_id": "WT-D20260511_001",
+  "primary_metrics": {
+    "SR_ann": 2.0108,
+    "CAGR": 0.1783,
+    "MDD": -0.0924,
+    "Sortino": 4.5297,
+    "Calmar": 1.9301,
+    "CVaR_95_monthly": -0.0386,
+    "CVaR_99_monthly": -0.0576,
+    "hit_rate": 0.7176,
+    "n_months": 255
+  },
+  "baseline_S4_metrics": {
+    "SR_ann": 1.8334,
+    "CAGR": 0.202,
+    "MDD": -0.1252,
+    "CVaR_95_monthly": -0.0501,
+    "n_months": 255
+  },
+  "diebold_mariano": {
+    "full_256m": {
+      "t_NW": -2.8959,
+      "p": 0.0038,
+      "n": 255,
+      "mean_diff_monthly": -0.0019
+    },
+    "alpha_active_79m": {
+      "t_NW": -0.3146,
+      "p": 0.7531,
+      "n": 154,
+      "mean_diff_monthly": -0.0002
+    },
+    "oos_27m": {
+      "t_NW": -5.1151,
+      "p": 3.1359e-07,
+      "n": 28,
+      "mean_diff_monthly": -0.0067
+    },
+    "oos_27m_frozen_variant": {
+      "t_NW": -0.4882,
+      "p": 0.6254,
+      "n": 28,
+      "mean_diff_monthly": -0.0011
+    },
+    "full_256m_frozen_variant": {
+      "t_NW": -1.9991,
+      "p": 0.0456,
+      "n": 255,
+      "mean_diff_monthly": -0.0012
+    }
+  },
+  "strict_improve_pass_256m_NEW0": {
+    "SR": true,
+    "MDD": true,
+    "CVaR": true,
+    "CAGR": false
+  },
+  "strict_improve_pass_79m_alpha_active": {
+    "SR": true,
+    "MDD": true,
+    "CVaR": true,
+    "CAGR": false
+  },
+  "cvar_admit_pass": true,
+  "ax_008_contribution": "Forge frozen variant CONDITIONAL_PASS_VALIDATED + Architect PASS_PARTIAL = 2/3 floor PASS achievable",
+  "reading_order_for_judge": ["hi20_frozen_NEW_OOS_256m (PRIMARY admit basis — Charter v6.1 R12 mandate)", "hi20_strict_NEW0_outside_256m (Conservative diagnostic — NEW=0 no extrapolation)", "hi20_redistr_256m (Alternative — assumption-based 4-sleeve absorb)", "hi20_79m_alpha_active_strict (Optimizer comparable sub-window)", "hi20_oos_27m_frozen_NEW (Charter v6.1 R12 OOS evidence, DM t=-0.49 p=0.625 NS)", "hi20_oos_27m_strict (NEW=0 strict OOS, baseline strict dominates)"],
+  "created_at": "2026-05-11T09:50:36+09:00",
+  "primary_metrics_recommended_frozen_NEW_OOS_256m": {
+    "SR_ann": 2.0546,
+    "CAGR": 0.1867,
+    "MDD": -0.0924,
+    "Sortino": 4.7852,
+    "Calmar": 2.0205,
+    "CVaR_95_monthly": -0.0384,
+    "n_months": 255
+  },
+  "strict_improve_pass_256m_frozen_NEW_OOS_RECOMMENDED": {
+    "SR": true,
+    "MDD": true,
+    "CVaR": true,
+    "CAGR": false,
+    "CAGR_FAIL_margin_pp": -1.02
+  },
+  "codex_round_post_revision": "5/7 ACCEPT_FIXED + 2 PARTIAL via frozen NEW OOS remediation",
+  "pd20c_path3": {
+    "task_id": "WT-D20260511_001",
+    "variants": {
+      "PD20C_Path3": {
+        "label": "PD20-C Path 3 (composite 0.45 + buffer keep25/entry20 + Cash 14.5)",
+        "n_months": 255,
+        "period": "2005-02-01 ~ 2026-04-01",
+        "composite_active_period": "2011-01 ~ 2026-04 (184 sig_dates)",
+        "sleeve_weights": {
+          "Composite_KR_equity": 0.45,
+          "TSMOM_8_ETF": 0.225,
+          "KR_10y": 0.18,
+          "Cash": 0.145
+        },
+        "composite_internal": {
+          "w_1715": 0.8182,
+          "w_NEW": 0.1818
+        },
+        "buffer_zone": {
+          "keep_n": 25,
+          "entry_n": 20,
+          "n_target": 20
+        },
+        "metrics": {
+          "SR_ann_geometric": 2.0826,
+          "CAGR": 0.2263,
+          "MDD_magnitude": 0.1337,
+          "Sortino": 4.5115,
+          "Calmar": 1.6924,
+          "CVaR_95_monthly": -0.0472,
+          "CVaR_99_monthly": -0.074,
+          "hit_rate": 0.7451,
+          "vol_ann": 0.1087,
+          "sleeve_internal_RT_TO_annual_pct": 1068.9,
+          "portfolio_weighted_RT_TO_annual_pct": 613,
+          "cost_drag_annual_bps": 70.78
+        },
+        "strict_improve": {
+          "criteria": {
+            "SR_threshold": 1.8334,
+            "MDD_threshold_pp": 0.1252,
+            "CVaR_threshold": -0.0501,
+            "CAGR_threshold": 0.202
+          },
+          "path3": {
+            "SR_pass": true,
+            "delta_SR": 0.2492,
+            "MDD_pass": false,
+            "delta_MDD_pp": 0.85,
+            "CVaR_pass": true,
+            "delta_CVaR_pp": 0.28,
+            "CAGR_pass": true,
+            "delta_CAGR_pp": 2.43,
+            "n_pass": 3,
+            "verdict_4_axis": "3/4_PASS",
+            "turnover_hurdle_pass": false,
+            "verdict_final": "3/4_PASS_TO_HARD_FAIL"
+          }
+        },
+        "hurdle_check": {
+          "TO_RT_annual_pct": 613,
+          "hurdle_threshold": 600,
+          "hurdle_status": "HARD_FAIL",
+          "delta_pp": 13
+        },
+        "diebold_mariano_vs_S4_v2": {
+          "t_NW": 1.1541,
+          "p": 0.2485,
+          "N": 255,
+          "harvey_liu_zhu_strict_pass": false
+        },
+        "verdict_summary": "3/4_strict_improve_PASS (MDD regress vs S4) + TO 613% HARD FAIL hurdle 600%. Path 3 insufficient. Recommend (B) keep30/entry20 iteration or (E) abandon NEW alpha source."
+      },
+      "PD20B_Path2": {
+        "label": "PD20-B Path 2 (composite 0.55 + no buffer)",
+        "metrics": {
+          "SR_ann_geometric": 2.1574,
+          "CAGR": 0.2701,
+          "MDD_magnitude": 0.1458,
+          "CVaR_95_monthly": -0.0553,
+          "portfolio_weighted_RT_TO_annual_pct": 685.1
+        },
+        "verdict": "4/4_strict_improve_PASS + TO 685% HARD FAIL hurdle 600%. Codex C5 mitigation needed (-> Path 3 attempted, also FAIL)."
+      },
+      "S4_v2_baseline": {
+        "label": "S4 v2 baseline (50/25/20/5)",
+        "metrics": {
+          "SR_ann_geometric": 1.8334,
+          "CAGR": 0.202,
+          "MDD_magnitude": 0.1252,
+          "CVaR_95_monthly": -0.0501
+        },
+        "verdict": "Baseline reference. Safe but lacks NEW alpha source contribution."
+      }
+    },
+    "comparison_table": {
+      "columns": ["strategy", "SR", "CAGR", "MDD_mag", "CVaR_95", "TO_RT_pct", "stance"],
+      "rows": [
+        ["PD20C_Path3", "2.0826", "0.2263", "0.1337", "-0.0472", "613", "3/4_PASS_TO_FAIL_613"],
+        ["PD20B_Path2", "2.1574", "0.2701", "0.1458", "-0.0553", "685.1", "4/4_PASS_TO_FAIL_685"],
+        ["S4_v2_baseline", "1.8334", "0.202", "0.1252", "-0.0501", "~30", "BASELINE"]
+      ]
+    },
+    "judge_directive": {
+      "primary_question": "Path 3 design FAILED to mitigate C5. Choose: (B) iterate to keep30/entry20 / (E) abandon NEW alpha / (other Q-Lead decision).",
+      "risk_audit": "MDD +0.85pp regress vs S4 — Composite augmented by NEW Vol/Skew alpha may add tail-event sensitive names. Cash 14.5% increase did not offset.",
+      "cert_eligibility": {
+        "schedule_fidelity": "eligible — 184/184 sig_dates density 1.0",
+        "sr_provenance": "eligible — measurement_basis_primary set, 4-field consistent",
+        "forge_package_validated": "eligible_after_finalization",
+        "alpha_discovery": "deferred to alpha agent (NEW alpha source originated from alpha_package WT_D20260511)",
+        "governor_concord": "pending — admission decision required"
+      },
+      "pure_function": {
+        "md5_alpha": "e0e1a525c84f33f228f00c061ac5d64d",
+        "md5_risk": "25a440e08232fcfb953ca912bffaa13a",
+        "md5_opt": "a810ddbaf40f5a90b054c521e915e106",
+        "all_match": true,
+        "audit": "PASS"
+      }
+    },
+    "carry_forward": {
+      "PD20A_Path1": {
+        "SR": 1.9928,
+        "CAGR": 0.2777,
+        "MDD": -0.2807,
+        "label": "16+4 split, MDD admit-block"
+      },
+      "PD18_5sleeve": {
+        "SR": 2.241,
+        "CAGR": 0.2355,
+        "MDD": -0.1154,
+        "label": "49 holdings (production cap violation)"
+      }
+    },
+    "forge_provenance": {
+      "forge_package_pd20c_path3_draft": "qepm/mailbox/worktask/WT-D20260511_001/forge_package_pd20c_path3_draft.json",
+      "forge_package_pd20c_path3_final_pending_codex": true,
+      "codex_round_response": "qepm/mailbox/worktask/WT-D20260511_001/codex_critic_response_forge_pd20c_path3.json (pending background)",
+      "build_script": "qepm/mailbox/worktask/WT-D20260511_001/build_pd20c_path3_composite_buffer.R"
+    },
+    "created_at": "2026-05-11 17:19:30",
+    "updated_at": "2026-05-11 17:19:30"
+  },
+  "last_update_timestamp": "2026-05-11 17:19:30.081496"
+}

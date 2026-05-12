@@ -1,0 +1,89 @@
+{
+  "task_id": "WT-D20260511_001",
+  "package_kind": "backtest_summary_pd20b_path2_zscore_composite",
+  "status": "BLOCKED_BY_C5_TURNOVER_HARD_FAIL_PENDING_JUDGE",
+  "codex_round_1_completed": true,
+  "codex_round_1_stance": "REJECT (8 concerns disposed: ACCEPT 2 + PARTIAL 5 + REBUTTAL 1)",
+  "codex_round_1_response_file": "codex_critic_response_forge_pd20b.json",
+  "challenge_note_disposition_path": "challenge_note.md Part H",
+  "hard_fail_trigger": "C5 turnover 623% one-way / 685% portfolio round-trip > 600% hurdle (.claude/rules/hurdle-rules.md Hurdle Gate v2.2)",
+  "supersedes": "judge_ready/backtest_summary_med_10pct_pd18.json (5-sleeve Production 20-cap violation)",
+  "supersede_reason": "Production Constraints max 20 stocks fix. Path 2 Z-Score Composite top20 (joint w_1715=0.818, w_NEW=0.182).",
+  "method": "4_sleeve_zscore_composite_top20_monthly_rebal_redistribute",
+  "primary_window": "2005-02-01 ~ 2026-04-01 (255 months)",
+  "composite_active_period": "2011-01-01 ~ 2026-04-01 (184 sig_dates)",
+  "metrics_primary_15bps_embedded": {
+    "SR_ann": 2.1574,
+    "CAGR": 0.2701,
+    "MDD": -0.1458,
+    "Sortino": 4.6721,
+    "Calmar": 1.8530,
+    "CVaR_95_monthly": -0.0553,
+    "hit_rate": 0.7490,
+    "vol_ann": 0.1252,
+    "n_months": 255,
+    "mean_turnover_oneway": 0.5190,
+    "mean_cost_drag_annual_bps": 90.06
+  },
+  "metrics_cost_free_for_pd18_comparison": {
+    "SR_ann": 2.2458,
+    "CAGR": 0.2814,
+    "MDD": -0.1406
+  },
+  "reference_pd18_5sleeve_raw_no_cost": {
+    "SR_ann": 2.241,
+    "CAGR": 0.2355,
+    "MDD": -0.1154
+  },
+  "reference_s4_baseline_256m": {
+    "SR_ann": 1.8334,
+    "CAGR": 0.2020,
+    "MDD": -0.1252
+  },
+  "diebold_mariano_vs_s4_baseline": {
+    "t_NW_lag6": 2.7641,
+    "p": 0.0057,
+    "mean_diff_monthly": 0.004817,
+    "harvey_strict_pass_t_gt_3": false,
+    "interpretation": "Marginally significant at conventional p=0.05 but FAILS Harvey-Liu-Zhu (2016) strict t > 3.0 threshold (vs PD18 t=4.23 PASS). PD20-B Path 2 consolidation trades DM strength for Production 20-cap compliance."
+  },
+  "production_constraints_compliance": {
+    "production_20_cap_pass": true,
+    "kr_equity_count": 20,
+    "etf_count_exempt": 9,
+    "single_asset_cap_pass": true,
+    "long_only_pass": true,
+    "sum_w_eq_1_pass": true,
+    "liquidity_ADV_filter_pass": true,
+    "transaction_cost_embedded_15bps": true
+  },
+  "cross_cancellation_diagnostic": {
+    "cor_z_1715_z_NEW_in_top20": -0.3469,
+    "mean_z_1715_in_top20": 1.6704,
+    "mean_z_NEW_in_top20": 0.4217,
+    "cor_vs_pd18_NEW_monthly_returns": 0.7001,
+    "interpretation": "Modest cross-cancellation. z_1715 dominant (w=0.818), z_NEW additive (w=0.182, contributes mean +0.42 in top20). cor(z_1715, z_NEW)=-0.347 within top20 = mild offset, not dominant. NEW alpha signal partially preserved but diluted vs PD18 10% independent allocation."
+  },
+  "judge_re_spawn_critical_items": [
+    "Composite-level DSR M=19 same-period same-cost same-penalty",
+    "Harvey 5-spec (CAPM/C3/C4/FF5/FF6) at composite level",
+    "PD18 cost recompute with same 15bps × turnover methodology for fair comparison",
+    "Cross-cancellation deep audit: does z_NEW add signal beyond noise above z_1715 baseline?",
+    "Regime decomposition (Bull/Bear/Sideways) validation",
+    "Path 1 (sleeve-internal top20 selection at PD18 5-sleeve level) backtest comparison",
+    "Sensitivity test: w_1715/w_NEW = 0.5/0.5 vs 0.818/0.182 robustness check"
+  ],
+  "challenge_flags_for_judge": [
+    "DM t_NW = 2.76 FAILS Harvey strict bar (PD18 PASSED at 4.23) — disclosure obligation",
+    "MDD -14.58% (cost embedded) > PD18 -11.54% (cost-free) by ~3pp deterioration — concentration risk increases 40→20",
+    "Cost drag 90bps annual significant (vs PD18 raw 0bps) — fair comparison uses cost-free metrics",
+    "Path 2 weights (0.818/0.182) pre-specified from PD18 sleeve ratio — inheritance, NOT free fitting, but PD18 itself was alpha-search prior",
+    "Pre-2011 redistribute = 4-sleeve S4 baseline (composite KR equity sleeve unavailable) — regime split 2005-2010 vs 2011-2026 heterogeneous"
+  ],
+  "deployment_admit_decision_logic": {
+    "if_codex_PASS_judge_PASS_path2_dominance": "Path 2 admit primary deployment (20-cap PASS + cost-free SR essentially equal to PD18 + CAGR +4.59pp better)",
+    "if_codex_REJECT_path2_dm_insufficient": "Re-evaluate Path 1 (sleeve-internal top20 selection) — alternate 20-cap compliance approach",
+    "fallback": "Defer 6월 deployment cycle to PD18 baseline 5-sleeve with explicit Production 20-cap waiver request (도훈 mandate clarification 의무)"
+  },
+  "created_at": "2026-05-11T16:25:00+0900"
+}

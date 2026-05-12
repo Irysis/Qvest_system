@@ -1,0 +1,20 @@
+{
+  "run_id": "WT-D20260508_009_D_30pct_20260508_180256",
+  "strategy_id": "D_30pct_BAB_aggressive",
+  "strategy_name": "WT-D20260508_009 Hybrid D_30pct_BAB_aggressive",
+  "strategy_family": "hybrid_4_source_BAB_admission",
+  "signal_description": "STR_1715 PG2 AR_M4 (0.49) + TSMOM ETF (0.105) + KR_10y bond ETF (0.105) + WT_009 BAB-M3 (0.3)",
+  "universe_rule": "STR_1715 sleeve top20 + 9 TSMOM ETF basket + KODEX KTB10Y + WT_009 BAB top20 multi-sleeve",
+  "rebalance_frequency": "monthly",
+  "signal_date_rule": "month_end",
+  "execution_date_rule": "next_trading_day_open",
+  "weighting_method": "static_capital_str0.49_tsm0.105_kr0.105_bab0.3",
+  "max_position_weight": 0.2,
+  "max_leverage": 1,
+  "cash_rule": "redirect_to_str1715_when_BAB_pre2010_or_TSMOM_pre2015",
+  "cost_model": "v2.3_kr_retail_15bps",
+  "missing_data_rule": "redirect_to_anchor_str1715",
+  "risk_controls": "BAB sleeve smoothed 3m MA (M3 mitigation, TO 1037%→493%)",
+  "lookahead_prevention": "C1-C15 strict; PIT signals; t+1 execution; alpha+risk+cov immutable",
+  "survivorship_bias_control": "Optimizer top20 weights as-is + WT_009 alpha PIT-safe (Date<=sig_date)"
+}

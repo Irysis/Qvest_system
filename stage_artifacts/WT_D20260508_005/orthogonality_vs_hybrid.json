@@ -1,0 +1,166 @@
+{
+  "mandate_threshold": 0.25,
+  "hybrid_components": {
+    "AR": "STR_1715_AR_threshold_overlay (70%)",
+    "KR10y": "KODEX 국고채10년 A148070 (15%)",
+    "TSMOM": "Cross-Asset TSMOM ETF rotation (15%)"
+  },
+  "port_constructions": {
+    "M1_LS": "D10 - D1 EW long-short (alpha-ranked deciles)",
+    "M2_LO_top20pct": "Top-quintile (D9+D10) EW long-only",
+    "M3_LO_top20": "Top-N=20 EW long-only (PG2 breadth equivalent)"
+  },
+  "cor_table": [
+    {
+      "port": "r_LS",
+      "target": "r_AR",
+      "pearson": -0.037324,
+      "spearman": -0.017106,
+      "n": 183
+    },
+    {
+      "port": "r_LS",
+      "target": "r_KR10y",
+      "pearson": -0.094097,
+      "spearman": -0.093299,
+      "n": 183
+    },
+    {
+      "port": "r_LS",
+      "target": "r_TSMOM",
+      "pearson": -0.129172,
+      "spearman": -0.06771,
+      "n": 135
+    },
+    {
+      "port": "r_LS",
+      "target": "r_H_renorm",
+      "pearson": -0.04328,
+      "spearman": -0.030427,
+      "n": 183
+    },
+    {
+      "port": "r_LS",
+      "target": "r_H_naive",
+      "pearson": -0.04674,
+      "spearman": -0.029096,
+      "n": 183
+    },
+    {
+      "port": "r_LO_top20pct",
+      "target": "r_AR",
+      "pearson": -0.081799,
+      "spearman": -0.084209,
+      "n": 183
+    },
+    {
+      "port": "r_LO_top20pct",
+      "target": "r_KR10y",
+      "pearson": -0.088311,
+      "spearman": -0.134606,
+      "n": 183
+    },
+    {
+      "port": "r_LO_top20pct",
+      "target": "r_TSMOM",
+      "pearson": -0.126271,
+      "spearman": 0.016413,
+      "n": 135
+    },
+    {
+      "port": "r_LO_top20pct",
+      "target": "r_H_renorm",
+      "pearson": -0.093215,
+      "spearman": -0.078335,
+      "n": 183
+    },
+    {
+      "port": "r_LO_top20pct",
+      "target": "r_H_naive",
+      "pearson": -0.091328,
+      "spearman": -0.082942,
+      "n": 183
+    },
+    {
+      "port": "r_LO_top20",
+      "target": "r_AR",
+      "pearson": -0.083607,
+      "spearman": -0.100628,
+      "n": 183
+    },
+    {
+      "port": "r_LO_top20",
+      "target": "r_KR10y",
+      "pearson": -0.074119,
+      "spearman": -0.114842,
+      "n": 183
+    },
+    {
+      "port": "r_LO_top20",
+      "target": "r_TSMOM",
+      "pearson": -0.136509,
+      "spearman": -0.00337,
+      "n": 135
+    },
+    {
+      "port": "r_LO_top20",
+      "target": "r_H_renorm",
+      "pearson": -0.091823,
+      "spearman": -0.092633,
+      "n": 183
+    },
+    {
+      "port": "r_LO_top20",
+      "target": "r_H_naive",
+      "pearson": -0.092723,
+      "spearman": -0.097519,
+      "n": 183
+    }
+  ],
+  "max_abs_cor_per_port": [
+    {
+      "port": "r_LS",
+      "max_abs_pearson": 0.129172,
+      "max_abs_spearman": 0.093299
+    },
+    {
+      "port": "r_LO_top20pct",
+      "max_abs_pearson": 0.126271,
+      "max_abs_spearman": 0.134606
+    },
+    {
+      "port": "r_LO_top20",
+      "max_abs_pearson": 0.136509,
+      "max_abs_spearman": 0.114842
+    }
+  ],
+  "overall_max_abs_pearson": 0.136509,
+  "overall_pass_threshold_025": true,
+  "joint_n_periods": 183,
+  "joint_ym_range": ["2011-01", "2026-03"],
+  "vs_r_H_renorm": [
+    {
+      "port": "r_LS",
+      "target": "r_H_renorm",
+      "pearson": -0.04328,
+      "spearman": -0.030427,
+      "n": 183
+    },
+    {
+      "port": "r_LO_top20pct",
+      "target": "r_H_renorm",
+      "pearson": -0.093215,
+      "spearman": -0.078335,
+      "n": 183
+    },
+    {
+      "port": "r_LO_top20",
+      "target": "r_H_renorm",
+      "pearson": -0.091823,
+      "spearman": -0.092633,
+      "n": 183
+    }
+  ],
+  "conclusion": "ORTHOGONALITY_PASS",
+  "notes": "Cross-section single-factor alpha is naturally orthogonal to time-series Hybrid (different signal axes). LS construction tests pure cross-section signal; LO_top20 tests the implementable production form."
+}

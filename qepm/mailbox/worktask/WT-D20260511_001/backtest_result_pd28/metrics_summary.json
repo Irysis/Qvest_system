@@ -1,0 +1,101 @@
+{
+  "wt_id": "WT-D20260511_001",
+  "phase": "PD28_v2",
+  "window": {
+    "start": "2001-08-01",
+    "end": "2026-03-01",
+    "n_months": 294
+  },
+  "metrics": {
+    "sharpe_ratio": 1.2517,
+    "cagr": 0.1996,
+    "annualized_stdev": 0.1594,
+    "mdd": -0.3714,
+    "cvar_95": -0.0874,
+    "sortino": 0.6339,
+    "calmar": 0.5373,
+    "annualized_turnover": 3.33
+  },
+  "sub_period": {
+    "pre_2011_z_NEW_solo": {
+      "n_months": 113,
+      "SR": 0.3044,
+      "CAGR": 0.0615,
+      "MDD": 0.3714
+    },
+    "post_2011_inherit_pd20b": {
+      "n_months": 181,
+      "SR": 2.4192,
+      "CAGR": 0.2947,
+      "MDD": 0.1308
+    }
+  },
+  "vs_s4_v2_baseline": {
+    "s4_v2_metrics": {
+      "SR": 1.81,
+      "CAGR": 0.1999,
+      "MDD": -0.1263,
+      "CVaR_95": -0.0501
+    },
+    "improvement_count": 0,
+    "strict_pass": false,
+    "detail": {
+      "SR": false,
+      "CAGR": false,
+      "MDD": false,
+      "CVaR_95": false
+    }
+  },
+  "hurdle": {
+    "hard_fail": false,
+    "score": 65,
+    "grade": "A"
+  },
+  "pure_function_audit": {
+    "all_match": true,
+    "detail": [
+      {
+        "package": "alpha_h1",
+        "md5_start": "1fd3a9f1da92f48acfe2c1c019be7620",
+        "md5_end": "1fd3a9f1da92f48acfe2c1c019be7620",
+        "match": true
+      },
+      {
+        "package": "alpha_pd24",
+        "md5_start": "5ffc8b10a194c7a79c5256da1f1a6afb",
+        "md5_end": "5ffc8b10a194c7a79c5256da1f1a6afb",
+        "match": true
+      },
+      {
+        "package": "pd20b_returns",
+        "md5_start": "b3720f8195355280ad21415921039108",
+        "md5_end": "b3720f8195355280ad21415921039108",
+        "match": true
+      },
+      {
+        "package": "risk",
+        "md5_start": "25a440e08232fcfb953ca912bffaa13a",
+        "md5_end": "25a440e08232fcfb953ca912bffaa13a",
+        "match": true
+      },
+      {
+        "package": "opt",
+        "md5_start": "a810ddbaf40f5a90b054c521e915e106",
+        "md5_end": "a810ddbaf40f5a90b054c521e915e106",
+        "match": true
+      }
+    ]
+  },
+  "charts": {
+    "equity_curve": "output/equity_curve.png",
+    "annual_returns": "output/annual_returns.png",
+    "oos_zoom": "output/oos_zoom_chart.png",
+    "regime_decomposition": "output/regime_decomposition.png"
+  },
+  "data_caveats": {
+    "pre_2011_KR_equity": "z_NEW solo top20 (PD24 NEW alpha 2001-07~2010-12, 114 months). 1715 H1 alpha absent pre-2011.",
+    "post_2011_KR_equity": "INHERIT PD20-b composite_top20_returns_pd20b_pit_fix.csv (z_composite 0.818*z_1715 + 0.182*z_NEW). PIT-fixed Method A canonical.",
+    "etf_proxy": "Gold/SP500/KOSPI200_LV/REIT use KOSPI 200 proxy (no native pre-launch data). KOSDAQ150 falls back to KOSPI200 pre-2015 (KQ150 flag absent).",
+    "method_a_canonical": "PD26 verdict applied — Method A only (PerformanceAnalytics::Return.portfolio + 월말 anchor). Method B XV (first-trading-day anchor) NOT used."
+  }
+}

@@ -1,0 +1,245 @@
+{
+  "task_id": "WT-D20260511_002",
+  "as_of_date": "2026-05-11",
+  "agent": "optimizer_research",
+  "version": "v1.0_draft",
+  "wt_type_effective": "sizing_only",
+  "selection_objective": "net_ir_strict_improve_DM_test_p_lt_0p05",
+  "alpha_package_ref": "qepm/mailbox/worktask/WT-D20260511_002/alpha_package.json",
+  "risk_package_ref": "qepm/mailbox/worktask/WT-D20260511_002/risk_package.json",
+  "weights_csv_ref": "stage_artifacts/WT_D20260511_002/weights.csv",
+  "method_shopping_log_ref": "stage_artifacts/WT_D20260511_002/optimizer_method_shopping_log.json",
+
+  "method_selected": "01_static_baseline_retain",
+  "method_selected_rationale": "16 candidate (14 dynamic + 2 fallback) 비교 후 Diebold-Mariano SR diff test (Memmel 2003 closed form) ALL p > 0.05. ΔSR DM t > 2 + Δ MDD <= 2pp + Turnover_yr <= 30% strict improve 기준 미달. R12 No Silent Override 정합 — 조용한 dynamic adoption 거부. Static admit (50/25/20/5) retain. 본 결과는 도훈 mandate '레짐이나 해당시점 리스크기반 동적비중조절 방법론' 정직 답변: 현 sample (256m str1715 backbone + 135m joint TSMOM) 에서 paradigm-free static convergence가 statistically dominant.",
+  "method_2nd_candidate": "09_regime_crisis_aggr",
+  "method_2nd_rationale": "CRISIS regime aggressive shift (str1715 -20pp / kr10y +10pp / tsmom +5pp / cash +5pp). 256m SR_net 1.9090 vs baseline 1.8603 (ΔSR +0.0487 NS p=0.51 t=0.654). MDD -14.51% vs -15.23% (-0.72pp 개선). CVaR_95 5.07% vs 5.51% (-0.44pp). GFC 2008 sub-period cumulative +10.50% vs +6.95% (+3.55pp 명확 우월). DM test NS but risk-mgmt 측면 strong. Future research: sample 확장 시 sig 도달 여부 재평가.",
+  "method_3rd_candidate": "07_regime_crisis_mild",
+  "method_3rd_rationale": "CRISIS shift str1715 -10pp / kr10y +5pp / tsmom +5pp. 256m SR_net 1.8924 (ΔSR +0.032 NS p=0.37). Turnover 9.4% vs 18.8% (09_aggr). 보수적 dynamic 변형.",
+
+  "target_weights": {
+    "as_of_date": "2026-05-11",
+    "comment": "Sleeve-aggregate weights (S4 v2 4-sleeve admit). Security-level weights inherit STR_1715 H1 internal alpha-research + TSMOM 8-ETF + KR_10y A148070.",
+    "str1715": 0.50,
+    "kr10y": 0.20,
+    "tsmom": 0.25,
+    "cash": 0.05,
+    "sum_check": 1.0,
+    "long_only_check": true,
+    "weight_bound_per_sleeve_max": 0.50,
+    "deployment_effective_date": "2026-05-12 (도훈 mandate S4 v2 admit)"
+  },
+  "active_weights": {
+    "comment": "본 WT는 absolute weights (sleeve-aggregate). Active weights vs KOSPI200 benchmark는 forge backtest 단계에서 산출. Optimizer는 absolute weight 결정만."
+  },
+
+  "expected_metrics": {
+    "256m_basis": {
+      "SR_net": 1.8603,
+      "CAGR": 0.2365,
+      "MDD": -0.1523,
+      "Sortino": 3.2589,
+      "Calmar": 1.5533,
+      "AnnVol": 0.1271,
+      "CVaR_95_monthly": 0.0551
+    },
+    "135m_joint_basis_TSMOM_available": {
+      "SR_net": 1.6276,
+      "CAGR": 0.1738,
+      "MDD": -0.1129,
+      "Turnover_yr": 0.0
+    },
+    "bootstrap_SR_CI_block6m_B1000": {
+      "lo_95": 1.2574,
+      "hi_95": 2.1539,
+      "se": 0.2371
+    }
+  },
+
+  "vs_baseline_static_50_25_20_5_diebold_mariano": {
+    "comment": "선택된 method = baseline 자체. DM test는 dynamic candidate vs baseline 결과.",
+    "best_dynamic_candidate_09_regime_crisis_aggr": {
+      "ΔSR_256m": 0.0487,
+      "DM_t_stat": 0.654,
+      "DM_p_value": 0.5132,
+      "rho_with_baseline": 0.989,
+      "ΔMDD_256m": -0.0072,
+      "ΔCVaR_95_monthly": -0.0044,
+      "conclusion": "statistically_indistinguishable (p > 0.05)"
+    }
+  },
+
+  "turnover": 0.0,
+  "turnover_rationale": "Static baseline retain → 0 turnover (sleeve-level). 단, sleeve 내부 monthly rebalance (1715 H1 monthly schedule + TSMOM monthly rotation + KR_10y passive)는 sleeve-internal turnover로 별도 산입.",
+  "estimated_cost": 0.0,
+  "estimated_cost_basis": "15bps one-way × 2 (round-trip) × turnover_yr (sleeve-level). Static = 0. Sleeve-internal turnover는 alpha source (STR_1715 H1 + TSMOM) 내부 schedule.",
+
+  "binding_constraints": [
+    "max_names_aggregate_<=20 (4-sleeve aggregate within sleeve 20 max — 1715 H1 sleeve top 20 KR stocks; 4-sleeve composite 분류는 cross-asset)",
+    "long_only (weights >= 0 ALL)",
+    "weight_bound_per_sleeve [0, 0.70] str1715 / [0, 0.40] kr10y / [0, 0.40] tsmom / [0, 0.30] cash",
+    "Σw = 1 absolute",
+    "cost_model_version v2.3_kr_retail_15bps"
+  ],
+
+  "infeasibility_report": null,
+  "infeasibility_report_rationale": "해는 feasible. Static (50/25/20/5)는 도훈 mandate user-fixed allocation으로 walk-forward DRO Wasserstein convergence point (L-286). Dynamic strict improve 실패는 'optimal 미발견'이지 'feasibility 위반'이 아님.",
+
+  "method_comparison_summary_top5_256m": {
+    "01_static_baseline": {"SR_net": 1.8603, "MDD": -0.1523, "Turnover_yr": 0.0, "DM_p": "baseline", "selected": true},
+    "02_static_ew4": {"SR_net": 1.9333, "MDD": -0.0670, "Turnover_yr": 0.0, "DM_p": 0.1773, "selected": false, "reject": "alpha thesis 침범"},
+    "09_regime_crisis_aggr": {"SR_net": 1.9090, "MDD": -0.1451, "Turnover_yr": 0.1882, "DM_p": 0.5132, "selected": false, "as_2nd": true},
+    "07_regime_crisis_mild": {"SR_net": 1.8924, "MDD": -0.1491, "Turnover_yr": 0.0941, "DM_p": 0.3669, "selected": false, "as_3rd": true},
+    "18_regime_crisis_tsmom_down": {"SR_net": 1.8895, "MDD": -0.1463, "Turnover_yr": 0.1882, "DM_p": 0.5798, "selected": false}
+  },
+
+  "explanation": {
+    "top_overweights": ["STR_1715_AR_threshold_overlay_PG2_v2_alpha_2026_04 (50% — Cross-section equity alpha, 1715 H1)"],
+    "top_underweights": [],
+    "main_tradeoffs": [
+      "Risk Agent finding ⭐ (CRISIS state str1715-tsmom +0.234 sig)이 walk-forward dynamic SR-improving rule로 변환 안 됨. Risk-management 측면 (MDD/CVaR)에서는 mild improvement (09_regime_crisis_aggr).",
+      "Static convergence finding (Esfahani-Kuhn 2018 DRO Wasserstein → 50/30/20/0 ≈ 도훈 framing) 정량 확증 — 256m + 135m 양 window에서 dynamic 우회로보다 통계적 우월하지 않음.",
+      "TDC_lower=0 (str1715-kr10y/tsmom) — 4-sleeve true diversifier in lower tail. Crisis sub-period에서 sleeve-aggregate 보호 우수 (covid_2020 -8.3% cum vs str1715 단독 -16.1%).",
+      "도훈 C2 결정 (regularized 4-sleeve covariance cash eps=1e-8) 사용 — PD recovery + zero-vol cash 정합.",
+      "도훈 C3 결정 (CVaR cap waiver) 인정 — 5.51% baseline CVaR_95는 S4 v2 admit precedent. 09_regime_crisis_aggr이 5.07%로 mild improve 가능하나 DM stat sig 미달.",
+      "도훈 C7 결정 (alpha cert inherit path) — Charter v1.7 §10 Role Card 4×5 sizing_only own cert: risk_package_validated + optimizer_package_validated + alpha inherit via WT-P20260505_001 alpha_discovery_certificate."
+    ],
+    "alpha_invariance_audit": "STR_1715 H1 internal alpha (Iter 5 multi-sleeve 4F Consensus 0.65 + 3-axis Defense 0.35 + AR threshold overlay) — Optimizer 영역 외. NO MODIFICATION. Hook 강제 (agent_role_guard, axiom AX_007/008)."
+  },
+
+  "risk_input_inheritance": {
+    "primary_sigma_used": "stage_artifacts/WT_D20260511_002/covariance.parquet (3-sleeve sample) + regularized 4-sleeve (cash eps=1e-8) for MVO/HRP solvers",
+    "regime_label_source": "MRS_Expanding_Percentile_4_State (Risk Agent selected, str1715 backbone 12m rolling sum expanding percentile, t-1 lag C9 compliant)",
+    "tail_risk_inheritance": "monthly_cvar_95=0.0458 (Risk Agent 측정) — Optimizer 측정 0.0551 (15bps net + composite_ret_renorm basis 차이). Risk Agent 측정이 reference truth.",
+    "key_finding_used": "CRISIS state str1715-tsmom = +0.234 [+0.028, +0.433] sig (Risk Agent bootstrap 1000-resample 95% CI). 09_regime_crisis_aggr 후보 핵심 기반 — 이 finding의 dynamic translation은 stat sig SR improvement 못 산출 (DM p=0.51).",
+    "risk_agent_finding_9_guidance_followed": "'Dynamic improvement must overcome regime classification noise' (Risk Agent finding_9) — 정확 예측 입증. Static convergence robust."
+  },
+
+  "ax_axiom_compliance": {
+    "AX_000_no_limit": "documented — dynamic improvement 미발견은 sample/method limitation. Future research paths 5건 명시.",
+    "AX_001_v2_conditional_defense": "static baseline 인정 — kr10y crisis_alpha +0.0028 PASS / tsmom BORDERLINE. 09_2nd 후보가 CRISIS regime upweight kr10y +10pp → defense 강화하지만 stat sig 미달.",
+    "AX_002_no_lookahead": "PASS — C9 t-1 lag regime 적용. Expanding percentile no full-sample. PIT 정합.",
+    "AX_007_top20_mechanism": "N/A — sleeve_aggregate 4-sleeve composite는 single_sleeve_long_only_top20 아님 (cross-asset). 1715 H1 sleeve 내부는 top20 + Iter 5 multi-sleeve composite exception (AX-007 4종 예외).",
+    "AX_008_verification_triangulation": "Optimizer: single-source. Codex critic round: PENDING (PostToolUse spawn). Architect verification 미실행 (sizing_only WT). AX-008 1/3 → Codex spawn 후 2/3 가능. Forge backtest 단계에서 추가 verification 확보."
+  },
+
+  "constraints_received": {
+    "n_hard_aggregate": 20,
+    "weight_bounds_per_sleeve": "[0, 0.70] str1715 / [0, 0.40] kr10y / [0, 0.40] tsmom / [0, 0.30] cash (sleeve aggregate)",
+    "weight_bounds_per_security_within_sleeve": "[0, 0.20] (1715 H1 internal)",
+    "sum_weights": 1.0,
+    "long_only": true,
+    "universe": "S4_v2_4_sleeve_aggregate (1715 H1 KOSPI200 ∪ KOSDAQ150 + TSMOM 8-ETF + KR_10y A148070 + KRW)",
+    "liquidity_min_won_20d_avg": 50000000,
+    "transaction_cost_bps_one_way": 15,
+    "cost_model_version": "v2.3_kr_retail_15bps",
+    "lockbox_scope": "정규 리서치 (alpha/risk/optimizer)에만 적용. forge/monitoring/Q-Lead 단계 폐기 (도훈 mandate 2026-05-09)"
+  },
+
+  "challenge_review": {
+    "from_agent": "optimizer",
+    "objection_to_alpha": false,
+    "objection_to_risk": false,
+    "targets_reviewed": [
+      "alpha_vector_inherit (S4 v2 4-sleeve, no modification)",
+      "risk_sigma (3-sleeve sample cond=21.7 + regularized 4-sleeve cash eps=1e-8)",
+      "bound_feasibility (sleeve bounds [0.70/0.40/0.40/0.30] + Σw=1 long-only PASS)",
+      "regime_label_pit_lag (C9 t-1 OK)"
+    ],
+    "review_notes": "Alpha + Risk inputs 모두 sufficient. Risk Agent finding_9 'Dynamic improvement must overcome regime classification noise' 정확 예측 입증 — challenge 없음. dynamic rule이 stat sig SR improvement 못 산출하는 것은 method/sample limitation, not alpha/risk Agent error.",
+    "round": 1
+  },
+
+  "challenge_flags": [
+    {
+      "id": "RF-O-DYNAMIC-NO-STAT-SIG",
+      "severity": "MEDIUM",
+      "msg": "16 candidate dynamic method 모두 DM SR diff test p > 0.05. Strict improve criterion 미달. R12 No Silent Override 정합으로 static retain 결정. 본 결과는 paradigm-free static convergence finding (L-286)의 256m 정량 확증."
+    },
+    {
+      "id": "RF-O-CVAR-CAP-INHERIT",
+      "severity": "MEDIUM",
+      "msg": "Risk Agent RF-R-CVAR-CAP-BREACH HIGH 인정. 도훈 C3 결정 waiver 적용 (S4 v2 admit precedent). 09_regime_crisis_aggr이 CVaR_95 0.051 vs baseline 0.055 mild improvement 가능하나 DM stat sig 미달 → static retain."
+    },
+    {
+      "id": "RF-O-ALPHA-CERT-INHERIT",
+      "severity": "INFO",
+      "msg": "Risk Agent RF-R-ALPHA-CERT-UNISSUED 인지. 도훈 C7 결정 (sizing_only inherit path) 적용 — Charter v1.7 §10 Role Card 4×5: risk_package_validated + optimizer_package_validated own cert chain + alpha_discovery_certificate inherit via WT-P20260505_001 (issued=true, alpha_invariance_audit PASS)."
+    },
+    {
+      "id": "RF-O-RGLPK-UNAVAILABLE",
+      "severity": "LOW",
+      "msg": "11_cvar_lp_min (CVaR LP Rockafellar-Uryasev 2000) Rglpk package unavailable → eval 미실행. Future research path: install Rglpk + 정식 CVaR LP comparison."
+    }
+  ],
+
+  "future_research_paths": [
+    {
+      "path": "extended_sample_DM_power",
+      "description": "256m + future months 누적 시 DM test power 증가 — 09_regime_crisis_aggr stat sig 도달 여부 재평가. (도훈 mandate 본 결과 거부 시 revisit.)"
+    },
+    {
+      "path": "alternative_regime_classifiers",
+      "description": "HMM_VolDecile (Hamilton 1989), BOCPD (Adams-MacKay 2007), Joint Ret-Vol Markov RS (Ang-Bekaert 2002) — Risk Agent 영역, 다음 cycle 검토."
+    },
+    {
+      "path": "rglpk_install_cvar_lp",
+      "description": "Rglpk package install → 11_cvar_lp_min 정식 평가. Tail-aware LP 미평가 영역."
+    },
+    {
+      "path": "ppo_rl_dynamic_allocation",
+      "description": "Jiang-Xu-Liang 2017 PPO RL portfolio allocation — sample 확장 + ML 기반 + 별도 환경."
+    },
+    {
+      "path": "genetic_pareto_frontier",
+      "description": "DEoptim / GA multi-objective Pareto frontier — SR/MDD/Turnover 3-axis 동시 최적화."
+    }
+  ],
+
+  "codex_critic_round_pending": {
+    "status": "PENDING (PostToolUse auto-spawn after draft write)",
+    "expected_path": "qepm/mailbox/worktask/WT-D20260511_002/codex_critic_response_optimizer.json",
+    "5_step_obligation": [
+      "1. Draft 작성 (_draft suffix) — 본 file",
+      "2. PostToolUse codex_round_auto_trigger.sh background spawn (~9-15min)",
+      "3. Codex response 검토: stance / critical_concerns / weakest_assumption",
+      "4. challenge_note.md에 optimizer section append (ACCEPT/PARTIAL/REBUTTAL 분류)",
+      "5. Final optimization_package.json (no _draft suffix) — codex_round_pre_enforcer.sh check"
+    ]
+  },
+
+  "lineage": {
+    "input_files": [
+      "qepm/mailbox/worktask/WT-D20260511_002/alpha_package.json",
+      "qepm/mailbox/worktask/WT-D20260511_002/risk_package.json",
+      "qepm/mailbox/worktask/WT-D20260511_002/request.json",
+      "stage_artifacts/WT_D20260511_002/covariance.parquet",
+      "stage_artifacts/WT_D20260511_002/covariance_4sleeve_regularized.parquet",
+      "stage_artifacts/WT_D20260511_002/regime_correlation.parquet",
+      "stage_artifacts/WT_D20260511_002/tail_risk.json",
+      "stage_artifacts/WT_D20260511_002/tdc_summary.json",
+      "stage_artifacts/WT_P20260505_001/merged_returns_3source.csv"
+    ],
+    "output_files": [
+      "stage_artifacts/WT_D20260511_002/weights.csv (256 rows, sleeve-level)",
+      "stage_artifacts/WT_D20260511_002/method_comparison_v2.csv",
+      "stage_artifacts/WT_D20260511_002/method_comparison_v3_256m.csv",
+      "stage_artifacts/WT_D20260511_002/dm_test_v2.csv",
+      "stage_artifacts/WT_D20260511_002/dm_test_v3_256m.csv",
+      "stage_artifacts/WT_D20260511_002/sensitivity_bootstrap.csv",
+      "stage_artifacts/WT_D20260511_002/crisis_subperiods.csv",
+      "stage_artifacts/WT_D20260511_002/optimizer_method_shopping_log.json",
+      "qepm/mailbox/worktask/WT-D20260511_002/optimization_package_draft.json"
+    ],
+    "scripts": [
+      "stage_artifacts/WT_D20260511_002/dynamic_method_comparison.R (v1)",
+      "stage_artifacts/WT_D20260511_002/dynamic_method_comparison_v2.R (v2 fixes)",
+      "stage_artifacts/WT_D20260511_002/dynamic_method_comparison_v3_256m.R (256m extension)",
+      "stage_artifacts/WT_D20260511_002/sensitivity_bootstrap.R (B=1000 block 6m)",
+      "stage_artifacts/WT_D20260511_002/build_weights_csv.R (weights export)"
+    ]
+  },
+
+  "generated_at": "2026-05-11T08:30:00+0900",
+  "generated_by": "optimizer-research agent (Q-Lead spawned)"
+}

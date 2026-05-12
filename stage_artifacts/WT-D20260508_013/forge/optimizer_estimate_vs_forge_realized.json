@@ -1,0 +1,71 @@
+{
+  "sleeve_standalone": {
+    "optimizer_sr": 0.7076,
+    "optimizer_cost_adj_sr": 0.655,
+    "optimizer_mdd": -0.5236,
+    "forge_sr": 0.3658,
+    "forge_mdd": 0.573,
+    "forge_cagr": 0.0855,
+    "delta_sr": -0.3418,
+    "delta_mdd": 1.0966,
+    "diagnosis": "Forge sleeve standalone SR=0.3658 vs Optimizer estimate SR=0.7076 → Δ -0.3418. Estimation gap moderate."
+  },
+  "hybrid_combine_5_ratios": [
+    {
+      "pct": 0,
+      "optimizer_sr_est": 1.651,
+      "forge_sr_realized": 1.811,
+      "delta_sr": 0.16,
+      "optimizer_mdd_est": -0.1952,
+      "forge_mdd_realized": -0.1952,
+      "delta_mdd": 0.3904
+    },
+    {
+      "pct": 5,
+      "optimizer_sr_est": 1.6846,
+      "forge_sr_realized": 1.8176,
+      "delta_sr": 0.133,
+      "optimizer_mdd_est": -0.1844,
+      "forge_mdd_realized": -0.1891,
+      "delta_mdd": 0.3735
+    },
+    {
+      "pct": 10,
+      "optimizer_sr_est": 1.7118,
+      "forge_sr_realized": 1.8129,
+      "delta_sr": 0.1011,
+      "optimizer_mdd_est": -0.1737,
+      "forge_mdd_realized": -0.183,
+      "delta_mdd": 0.3567
+    },
+    {
+      "pct": 15,
+      "optimizer_sr_est": 1.7302,
+      "forge_sr_realized": 1.7949,
+      "delta_sr": 0.0647,
+      "optimizer_mdd_est": -0.1696,
+      "forge_mdd_realized": -0.1915,
+      "delta_mdd": 0.3611
+    },
+    {
+      "pct": 20,
+      "optimizer_sr_est": 1.7372,
+      "forge_sr_realized": 1.7617,
+      "delta_sr": 0.0245,
+      "optimizer_mdd_est": -0.1906,
+      "forge_mdd_realized": -0.2167,
+      "delta_mdd": 0.4073
+    }
+  ],
+  "systematic_pattern": {
+    "sr_pattern": "Forge realized SR > Optimizer estimate by 0.02 ~ 0.16 across 5 ratios — Optimizer UNDERESTIMATED hybrid SR.",
+    "mdd_pattern": "Forge realized MDD MORE NEGATIVE than Optimizer estimate by 0.36 ~ 0.41 absolute — Optimizer UNDERESTIMATED MDD risk.",
+    "interpretation": "Optimizer used architect_hybrid_returns_full256m.csv as Hybrid baseline but seems to have used a different SR convention (perhaps after-cost arithmetic) while Forge uses PerformanceAnalytics geometric annualized. Sign + magnitude consistent with WT_010 L-282 PerfA convention drift but inverse direction (Optimizer too pessimistic on SR, too optimistic on MDD).",
+    "decision_implication": "Optimizer recommended C_90_10 (10%) primary. Forge realized: 5% provides best ΔSR (+0.0065) with -0.62pp MDD improvement; 10% provides better MDD (-1.22pp) but ΔSR ~ 0; 20% provides MDD WORSE (+2.15pp). Forge primary recommendation: 5% (Diversifier conservative)."
+  },
+  "wt009_wt010_precedent_compliance": {
+    "wt009_pattern": "WT_009 standalone est 1.999 → realized 0.479 (4.2x deflate). Hybrid 30% est 1.918 → realized 1.535.",
+    "wt010_pattern": "WT_010 5%/10%/20%/30% estimate vs realized monotone deflate 19~45pp.",
+    "wt013_pattern": "WT_013 standalone est 0.7076 → realized 0.3658 (deflate 48.3%). Hybrid combine: realized > estimate by +0.02~+0.16 SR (Optimizer under). Mixed direction: standalone deflates as WT_009/010 expected, but Hybrid combine inflates. Diagnosis: alpha sleeve degrades on PIT/cost (mild deflate ~50%), but the DIVERSIFICATION benefit at small weights (5-15%) overshoots Optimizer's conservative Markowitz assumption."
+  }
+}

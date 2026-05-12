@@ -1,0 +1,205 @@
+{
+  "task_id": "WT-D20260508_009",
+  "package_kind": "risk_package",
+  "wt_type": "discovery",
+  "as_of_date": "2026-04-30",
+  "agent": "risk-research",
+  "draft_revision": "draft",
+  "alpha_inheritance": {
+    "alpha_package_path": "qepm/mailbox/worktask/WT-D20260508_009/alpha_package.json",
+    "alpha_package_sha": "26805d86073d44a411a8ad2e77d464bfeb41d02c108e16526a3ffc68eecf4930",
+    "no_alpha_modification": true
+  },
+  "exposure_matrix_ref": {},
+  "factor_covariance_ref": {},
+  "specific_risk_ref": {},
+  "security_covariance_ref": "stage_artifacts/WT-D20260508_009/covariance.parquet",
+  "selection_objective": "condition_number",
+  "sigma_method": "ledoit_wolf",
+  "sigma_method_details": {
+    "estimator": "ledoit_wolf",
+    "window_days": 252,
+    "n_assets": 241,
+    "matrix_type": "covariance",
+    "condition_number": 1,
+    "psd": true,
+    "method_shopping": {
+      "candidates_tried": 3,
+      "candidates_max": 5,
+      "selected_method": "ledoit_wolf",
+      "selection_objective": "condition_number",
+      "method_log": [
+        {
+          "name": "sample",
+          "condition": 376413.3717,
+          "min_eig": 4.0386e-07,
+          "psd": true,
+          "time_sec": 0.0352,
+          "selected": false
+        },
+        {
+          "name": "ledoit_wolf",
+          "condition": 1,
+          "min_eig": 0.0018,
+          "psd": true,
+          "time_sec": 0.0447,
+          "selected": true
+        },
+        {
+          "name": "gerber_rmt",
+          "condition": 14944.4491,
+          "min_eig": -0.0008,
+          "psd": false,
+          "time_sec": 0.5515,
+          "selected": false
+        }
+      ],
+      "rationale": "3 estimators benchmarked. SELECTED ledoit_wolf — minimum κ among PSD candidates with κ<500. Risk agent estimation_quality only."
+    }
+  },
+  "risk_summary": {
+    "top_common_risks": ["PC1 (Market) 0.4%", "PC2 (Style?) 0.4%", "PC3 (Sector?) 0.4%"],
+    "crowding_flags": "top sector 반도체 = 70.0% of top20",
+    "liquidity_flags": "Top 20 ADV20<2e8: 0/20",
+    "stress_tests": {
+      "market_down_5": -0.0015,
+      "gfc_2008": -0.0693,
+      "eudebt_2011": 0.0748,
+      "covid_2020": -0.0897,
+      "inflation_2022": -0.0447,
+      "dotcom_2000": null,
+      "china_2015": 0.198,
+      "volshock_2018": -0.0683,
+      "imf_1997": null
+    },
+    "style_exposure": {
+      "vs_S01_Size": {
+        "composite": 0.1247,
+        "BAB": 0.0443,
+        "Q07": 0.0704,
+        "QMA": 0.2219
+      },
+      "inter_sleeve_corr": {
+        "BAB_Q07": -0.054,
+        "BAB_QMA": 0.0013,
+        "Q07_QMA": 0.0576
+      },
+      "interpretation": {
+        "composite_size": "moderate positive 0.125 (large-cap tilt)",
+        "BAB_size": "low 0.044",
+        "Q07_size": "moderate 0.070",
+        "QMA_size": "elevated 0.222 (large-cap quality natural)"
+      },
+      "cycle7_AR_MCTV_88_101pct": "AR systemic risk integrated downstream (Optimizer/Forge scope)"
+    },
+    "diversification_ratio_alpha_top20": 4.7613
+  },
+  "diagnostics": {
+    "condition_number": 1,
+    "shrinkage_used": true,
+    "shrinkage_method": "ledoit_wolf",
+    "factor_correlation_warnings": {},
+    "tdc_summary": {
+      "top20_alpha_lower5_mean": 0.1306,
+      "top20_alpha_lower10_mean": 0.1539,
+      "n_pairs_evaluated": 50
+    },
+    "regime_correlation_ref": "stage_artifacts/WT-D20260508_009/regime_correlation.parquet",
+    "tail_risk_ref": "stage_artifacts/WT-D20260508_009/tail_risk_diagnostics.json",
+    "stress_periods_ref": "stage_artifacts/WT-D20260508_009/stress_periods.parquet"
+  },
+  "ax_axiom_audit": {
+    "AX_001_v2": {
+      "status": "PASS",
+      "crisis_alpha_positive": true,
+      "crisis_ic_alpha": 0.1251,
+      "bad_normal_ratio": 3.188,
+      "hybrid_crisis_mean": 0.0001,
+      "hybrid_normal_mean": 0.0245,
+      "ref": "qepm/mailbox/worktask/WT-D20260508_009/ax001_v2_conditional_defense_risk_validation.json"
+    },
+    "AX_002": {
+      "status": "PASS",
+      "note": "All risk metrics computed from harness pipeline only. No backtest fabrication."
+    },
+    "AX_005_v12": {
+      "status": "PASS",
+      "multi_sleeve_count": 3,
+      "single_sleeve_standalone": false,
+      "exclusion_path": "multi-sleeve composite (BAB defense + Q07 + multi-axis quality)",
+      "bab_standalone_harvey_t": 1.6328,
+      "bab_standalone_pass": false,
+      "ref": "qepm/mailbox/worktask/WT-D20260508_009/ax005_v12_multi_sleeve_check_risk.json"
+    },
+    "AX_007": {
+      "status": "PASS_via_exception",
+      "structure": "multi_sleeve_3",
+      "exception_type": "multi-sleeve (one of 4 AX-007 exceptions)"
+    }
+  },
+  "red_flag_evaluation": {
+    "RF-R1": {
+      "severity": "INFO",
+      "finding": "λ_1 dominance 0.41% (top common risk approx)",
+      "threshold_breach": false
+    },
+    "RF-R2": {
+      "severity": "INFO",
+      "finding": "κ(Σ) = 1.00 (selected method = ledoit_wolf)",
+      "threshold_breach": false
+    },
+    "RF-R3": {
+      "severity": "MEDIUM",
+      "finding": "top sector 반도체 = 70.0% of top20",
+      "threshold_breach": true
+    },
+    "RF-R4": {
+      "severity": "INFO",
+      "finding": "market_down_5pct scenario via β=0.029 → -0.0015 loss",
+      "threshold_breach": false
+    },
+    "RF-R5": {
+      "severity": "INFO",
+      "finding": "inter-sleeve |corr|>0.8 pairs = 0 (BAB-Q07=-0.054, BAB-QMA=0.001, Q07-QMA=0.058)",
+      "threshold_breach": false
+    }
+  },
+  "challenge_flags": [
+    {
+      "level": "MEDIUM",
+      "red_flag": "RF-R3",
+      "note": "top sector 반도체 = 70.0% of top20"
+    }
+  ],
+  "charter_v17_compliance": {
+    "pit_C1_full_sample": "PASS (252-day rolling window only; no full-sample stats)",
+    "pit_C2_same_day": "PASS (Date < sig_date strict cutoff)",
+    "pit_C5_overlay_lag": "PASS (no overlay generated; risk diagnostics only)",
+    "pit_C9_dd_vt_lag": "N/A (no DD/VT in risk pipeline)",
+    "pit_C10_liquidity": "PASS (ADV20 audit on top 20 alpha)",
+    "pit_C13_z_score_aligned": "N/A (no factor signal generated)",
+    "pit_C15_factor_db_route": "PASS (alpha_package consumed; no factor DB direct load)",
+    "no_full_sample_stats": "PASS",
+    "no_alpha_modification": "PASS",
+    "no_weight_emission": "PASS"
+  },
+  "artifact_lineage": {
+    "request": "qepm/mailbox/worktask/WT-D20260508_009/request.json",
+    "alpha_package": "qepm/mailbox/worktask/WT-D20260508_009/alpha_package.json",
+    "covariance": "stage_artifacts/WT-D20260508_009/covariance.parquet",
+    "tail_risk": "stage_artifacts/WT-D20260508_009/tail_risk_diagnostics.json",
+    "stress_periods": "stage_artifacts/WT-D20260508_009/stress_periods.parquet",
+    "regime_correlation": "stage_artifacts/WT-D20260508_009/regime_correlation.parquet",
+    "ax001_v2": "qepm/mailbox/worktask/WT-D20260508_009/ax001_v2_conditional_defense_risk_validation.json",
+    "ax005_v12": "qepm/mailbox/worktask/WT-D20260508_009/ax005_v12_multi_sleeve_check_risk.json",
+    "diversification_ratio": "qepm/mailbox/worktask/WT-D20260508_009/diversification_ratio_with_alpha.json"
+  },
+  "selection_objective_audit": {
+    "selection_objective": "condition_number",
+    "no_alpha_return_referenced": true,
+    "no_sr_ir_in_selection": true,
+    "selection_basis": "condition_number minimization among PSD candidates with κ<500"
+  },
+  "agent_id": "risk-research",
+  "artifact_version": "v1.0_risk_package_draft"
+}

@@ -1,0 +1,61 @@
+[1/10] Loading raw price data + universe filter...
+  RAWDATA filtered: 10288137 rows / 3424 tickers
+  Eligible obs: 1595919 
+[2/10] Loading ECOS macro signal series...
+  Macro series merged. Sample macro:
+         date dlta_slope_lag1 dlta_cred_AA_lag1 dlta_call_lag1
+       <Date>           <num>             <num>          <num>
+1: 2005-01-05            0.07             -0.07           0.00
+2: 2005-01-06            0.04             -0.02           0.01
+3: 2005-01-07            0.10             -0.10          -0.07
+[3/10] Generating monthly sig_dates (1st of month-end basis)...
+  N sig_dates: 220 
+  Range: 2008-01-02 to 2026-04-01 
+[4/10] Rolling 252d β computation (parallel)...
+  Eligible tickers (any date): 824 
+  Rolling β computed: 220 periods in 4.5 sec (workers: 8 )
+  Beta panel rows: 139936 
+[5/10] Cross-section z-score + composite alpha signal...
+[6/10] Forward 1M return computation...
+  Forward returns computed for 443033 ticker-sig_date pairs
+  Panel for IC computation: 139005 
+[7/10] Single-factor IC + direction alignment...
+  IC slope: mean=-0.0020, ICIR=-0.0274
+  IC cred:  mean=0.0022, ICIR=0.0299
+  IC call:  mean=0.0010, ICIR=0.0117
+[8/10] Composite alpha + IC + ICIR + Harvey t...
+  Composite IC: 0.0038 / ICIR: 0.0512 / NW-t: 0.7315
+  Subperiod stability: 0.67 (2/3)
+  Monotonicity: 0.176
+  Decile avg returns:
+    decile    avg_ret
+     <int>      <num>
+ 1:      1 0.01299318
+ 2:      2 0.01323619
+ 3:      3 0.01141752
+ 4:      4 0.01181373
+ 5:      5 0.01168359
+ 6:      6 0.01014503
+ 7:      7 0.01441920
+ 8:      8 0.01247811
+ 9:      9 0.01542051
+10:     10 0.01190804
+[9/10] Orthogonality test vs S4 v2 baseline returns...
+  Overlap N: 194 periods
+  IC bad regime: -0.0022 / IC normal: 0.0126 / ratio: -0.177
+  cor(alpha_top20, S4_v2) full: pearson=-0.0954 / spearman=-0.1315
+  cor crisis (S4 bottom 20pct): -0.0537
+  cor normal (S4 top 20pct):    0.1663
+[10/10] Save alpha_scores.parquet + alpha_validation.json + diagnostics...
+  alpha_scores.parquet saved ( 139005 rows)
+  alpha_validation.json saved
+
+=== SUMMARY ===
+Hypothesis: Macro Residual Cross-section Alpha
+Periods: 2008-01-02 to 2026-03-03 (219 sig_dates)
+Composite IC: 0.0038 / ICIR: 0.0512 / NW-t: 0.7315
+Monotonicity: 0.176 / Subperiod stab: 0.67
+cor(alpha_top20, S4_v2): pearson=-0.095 / spearman=-0.132
+AX-001 v2 IC bad/normal ratio: -0.177
+
+Done. Stage artifacts at: /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/stage_artifacts/WT_D20260511_001 

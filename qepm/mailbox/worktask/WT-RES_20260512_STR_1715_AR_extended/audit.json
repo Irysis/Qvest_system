@@ -1,0 +1,59 @@
+{
+  "task_id": "WT-RES_20260512_STR_1715_AR_extended",
+  "audit_timestamp": "2026-05-12T12:46:01+09:00",
+  "checks": {
+    "nav_monotone_dates": {
+      "pass": true,
+      "note": "monotone increasing"
+    },
+    "returns_finite": {
+      "pass": true,
+      "note": "non-NA n=267"
+    },
+    "n_obs_sufficient": {
+      "pass": true,
+      "note": "n=267 (>= 60m minimum)"
+    },
+    "cost_model_documented": {
+      "pass": true,
+      "note": "15bps round-trip AR turnover only"
+    },
+    "pit_lag_applied": {
+      "pass": true,
+      "note": "weight_lag + mrs_cash_lag + beta_threshold_lag all shifted t-1"
+    },
+    "perfanalytics_standard": {
+      "pass": true,
+      "note": "table.AnnualizedReturns, maxDrawdown, SortinoRatio, CalmarRatio only"
+    },
+    "no_manual_synthesis": {
+      "pass": true,
+      "note": "ret_orig from PR; M4/AR via documented lag formulas"
+    },
+    "benchmark_present": {
+      "pass": true,
+      "note": "monthly BM_Ret aggregated from raw daily"
+    },
+    "drawdowns_computed": {
+      "pass": true,
+      "note": "n_drawdowns=10"
+    },
+    "metric_type_labeled": {
+      "pass": true,
+      "note": "all metric_type = 'backtested'"
+    }
+  },
+  "reproducibility": {
+    "base_PR_run_id": "STR_1715_WT016_Iter31_WT-T20260509_001_20260509_140205",
+    "base_alpha_lineage": "stage_artifacts/WT_D20260425_010/alpha_scores.parquet",
+    "M4_lineage": "qepm/mailbox/worktask/WT-D20260430_001/judge_ready/weights.csv",
+    "AR_lineage": "stage_artifacts/WT_WT-S20260504_007/beta_t_mapping.csv",
+    "admit_baseline_lineage": "qepm/mailbox/worktask/WT-P20260504_001/four_layer_comparison.json"
+  },
+  "caveats": [
+    "256m baseline에서 admit JSON Layer 4 SR=1.7758 vs current run SR=1.7486 — base PR가 2026-05-09 cycle update로 5월 1m drop + widespread anchor diff (5월 stale BM-synth 의심 1m 제거 + 4/25일 매월 close-to-close 재정렬).",
+    "Extended panel 267m: warmup 12m (bm_12m=NA → MRS=Original) + 1m β fill (β_lag=1.0 default). PIT 자연 비활성, lookahead 아님.",
+    "Layer 4 = STR_1715_AR_threshold_overlay (admit Path A). Out-of-sample 의미는 256m 자체가 admit 시 walk-forward 누적 — 본 task는 measurement basis 확장.",
+    "5월 anchor 부재: STR_1715 base alpha 5월 sig_date 미산출 (alpha-research 영역, forge boundary). Option β (도훈 task) 정합 — 5월 1m N/A exclude."
+  ]
+}

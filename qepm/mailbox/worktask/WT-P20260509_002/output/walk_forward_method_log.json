@@ -1,0 +1,33 @@
+{
+  "task_id": "WT-P20260509_002",
+  "evaluation_window": {
+    "start": "2010-02-01",
+    "end": "2026-04-01",
+    "n_obs": 195
+  },
+  "rolling_window_months": 60,
+  "burnin_months": 60,
+  "rebalance_freq": "monthly",
+  "sleeve_definition": {
+    "AR_on_M4": "STR_1715 alpha-updated × M4 overlay × β threshold (50% sleeve standalone)",
+    "TSMOM": "8-ETF basket re-derived (KODEX_KTB10Y A148070 제거, 나머지 8 ETF renormalized)",
+    "KR_10y": "KODEX 국고채10년 (A148070) standalone returns",
+    "Cash": "0% return retain"
+  },
+  "methods_evaluated": ["WF_RP_ERC", "WF_MV_lambda2", "WF_MV_lambda5", "WF_MV_lambda10", "WF_IV", "WF_MaxDiv", "WF_Bayesian_PS", "WF_DRO_W_eps0.01", "WF_DRO_W_eps0.05", "WF_DRO_W_eps0.1"],
+  "constraints": {
+    "weight_bound": [0, 0.5],
+    "sum_weights": 1,
+    "long_only": true,
+    "rolling_window": 60,
+    "burnin": 60,
+    "no_in_sample_optimization": true,
+    "pit_strict": true
+  },
+  "paradigm_free_certification": "60/40 / SAA / Brinson 1986 등 paradigm 인용 0건. 정량 metric 비교만.",
+  "pit_compliance": "각 sig_date 추정은 (t-WINDOW ~ t-1) past data만 사용. 모든 weight = walk-forward",
+  "benchmarks_paradigm_free": {
+    "BENCH_S0_alpha_only": "STR_1715 alpha-only 100% (정합 baseline, NOT paradigm)",
+    "BENCH_S4_static_dohoon": "S4 50/25/20/5 도훈 framing (정량 비교용 only, NOT admit candidate)"
+  }
+}

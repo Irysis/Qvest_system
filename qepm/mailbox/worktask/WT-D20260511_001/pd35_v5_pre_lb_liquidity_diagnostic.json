@@ -1,0 +1,55 @@
+{
+  "pd_phase": "PD35_v5_Pre_LB_KOSPI_KOSDAQ_universe_liquidity_filtered",
+  "rationale_codex_round_2_disposition": "v5 addresses Codex REJECT C1 LOCKBOX_LEAKAGE, C2 RF-A3 recent-overfit, C3 RF-A5 LIQUIDITY/UNIVERSE, C6 L42 PROXY_MISMATCH",
+  "changes_from_v3": ["C1 Pre-LB only sig_dates (270 months, 2001-07 to 2023-12)", "C3 KOSPI200 ∪ KOSDAQ150 proxy (top 350 by Size factor) + L05 Dollar_Volume >= -1 z (proxy 2e8 KRW)", "C6 L42_Vol_Skewness REMOVED (Volume Skewness mismatch); 3-factor: M22+D43+D58", "N_TRIALS bumped 16 → 20 for v1/v2/v4/v5 variants", "Recent 36m ICIR audit RF-A3 included"],
+  "factors_3": ["M22_Max_Return", "D43_Skewness", "D58_Vol_Asymmetry"],
+  "n_rows": 62625,
+  "n_dates_pre_lb": 270,
+  "signal_cutoff": "2023-12-22",
+  "avg_universe_size_after_filter": 265.762,
+  "liquidity_threshold": "L05_Dollar_Volume Z_Aligned >= -1.0 (top 84% liquid proxy >= 2e8 KRW)",
+  "diagnostics_pre_lb": {
+    "mean_IC": 0.0195,
+    "sd_IC": 0.1202,
+    "ICIR": 0.162,
+    "t_naive": 2.5412,
+    "t_NW_lag6": 2.3792,
+    "n_months": 246
+  },
+  "subperiod_pre_lb": {
+    "P1": 0.0242,
+    "P2": -0.0014,
+    "P3_pre_LB": 0.0379,
+    "min_max_ratio": -0.0361,
+    "sign_consistency": false
+  },
+  "ax001_v2_pre_lb": {
+    "crisis_IC": 0.0589,
+    "normal_IC": 0.0158,
+    "ratio": 3.7281,
+    "n_crisis": 21,
+    "n_normal": 225,
+    "strict_pass": true
+  },
+  "rf_a3_recent_36m": {
+    "recent_ICIR": 0.3593,
+    "full_ICIR": 0.162,
+    "ratio": 2.2173,
+    "rf_a3_trigger": true
+  },
+  "cor_vs_pd27_pre_lb": {
+    "cor_overall": -0.0219,
+    "cor_per_date_mean": -0.0312,
+    "pass_lt_0_30": true
+  },
+  "dsr_pre_lb": {
+    "method": "BLP_2014_IC_based_pre_LB",
+    "DSR_z": 0.6664,
+    "sigma_sr": 0.0631,
+    "E_max_null": 0.12,
+    "N_TRIALS": 20,
+    "t_hlz_threshold": 2.9977,
+    "pass": true
+  },
+  "gates_8_pre_lb_strict": [false, false, false, false, false, true, false, true, true, false]
+}

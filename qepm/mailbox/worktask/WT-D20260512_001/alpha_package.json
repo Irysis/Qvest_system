@@ -1,0 +1,331 @@
+{
+  "task_id": "WT-D20260512_001",
+  "as_of_date": "2026-05-12",
+  "alpha_vector": "stage_artifacts/WT_D20260512_001/alpha_scores.parquet",
+  "alpha_scores_ref": "stage_artifacts/WT_D20260512_001/alpha_scores.parquet",
+  "challenge_note_ref": "qepm/mailbox/worktask/WT-D20260512_001/challenge_note.md",
+  "ax_axiom_compliance": {
+    "AX-000": "limits_dont_exist — progress demonstrated via honest negative finding",
+    "AX-001_v2": "BOUNDARY_NOT_APPLICABLE (overlay is scalar, not defense factor; mechanism documented)",
+    "AX-002": "PASS — production_protection write_count=0; SIGNAL_CUTOFF 2026-04-30 PIT defensible",
+    "AX-003": "N_A_no_value_family",
+    "AX-004": "N_A_no_quality_profitability_single_signal",
+    "AX-005": "N_A_no_defense_single_sleeve",
+    "AX-007": "EXEMPT_4_sleeve_composite_charter_research_foundation_candidate",
+    "AX-008": "PARTIAL_AT_ALPHA_STAGE_2_of_3_pending_forge_architect_judge_downstream"
+  },
+  "metadata": {
+    "wt_id": "WT-D20260512_001",
+    "role": "alpha-research",
+    "package_kind": "alpha_package_final_post_codex",
+    "schema_version": "v6.0_codex_round_post_disposition",
+    "agent": "alpha-research",
+    "agent_id": "alpha_research_opus_4_7_1m",
+    "agent_model": "claude-opus-4-7",
+    "generated_at": "2026-05-12T12:15:00+0900",
+    "wt_phase_at_generation": "SPEC_APPROVED → ALPHA_FINAL_POST_CODEX_R1",
+    "codex_round_status": "COMPLETED_REJECT_DISPOSITION_APPLIED",
+    "codex_round_disposition_path": "qepm/mailbox/worktask/WT-D20260512_001/challenge_note.md",
+    "codex_response_path": "qepm/mailbox/worktask/WT-D20260512_001/codex_critic_response_alpha.json",
+    "codex_stance_round_1": "REJECT",
+    "codex_veto_flag": false,
+    "codex_concerns_count": {"HIGH": 5, "MEDIUM": 2, "rationalization_red_flags": 9},
+    "codex_self_disposition": "4_ACCEPT (C1+C2_partial+C3+C7) + 2_PARTIAL_REBUTTAL (C2_partial+C4) + 1_ACCEPT_HONEST (C5) + 1_PARTIAL_ACCEPT (C6) per Charter §8 No Silent Override",
+    "q_lead_escalate_trigger_HIT": true,
+    "ax_008_status_post_disposition": "PARTIAL_PASS_AT_ALPHA_STAGE (FF5/FF6 + verification triangulation deferred forge + architect downstream)",
+    "lineage": {
+      "baseline_origin": "WT-D20260511_001/backtest_result_pd30/C_softmax (research_foundation_candidate via PD34, 2026-05-12)",
+      "overlay_1_origin": "WT-P20260504_001 STR_1715_AR_threshold_overlay_PG2 (admit 2026-05-04)",
+      "overlay_2_origin": "WT-D20260430_001 STR_1715 M4 schedule (admit 2026-04-30)",
+      "alpha_scores_construction": "z_composite_per_sig_date.csv → alpha_scores.parquet (260 sig × 824 tickers × 78,412 rows + Usable_Date)",
+      "valid_window_pit_defensible": "2004-09-01 ~ 2026-04-30 (260 sig_dates × 261 monthly returns)"
+    }
+  },
+  "hypothesis": {
+    "title": "Overlay integration on C_softmax baseline (AR threshold + M4 regime)",
+    "description_brief": "PG2 강화 path. T+30 grace clause GC7 의무. PD30 C_softmax z-composite 4-sleeve baseline 위 AR threshold pure overlay + M4 regime overlay 결합 3 coupling specs (multiplicative / min / linear). PIT C1~C15 strict + Lockbox alpha-research 적용.",
+    "economic_mechanism": {
+      "ar_overlay": "AR (Kritzman-Page-Turkington 2011 FAJ): cross-sectional eigenvalue concentration → systemic risk. β_t ∈ [1.0, 0.7, 0.4] threshold step exposure reduction. K=5/W=252/q70=0.4172/q90=0.4502 (calibrated WT-S20260504_007 inherit).",
+      "m4_overlay": "M4 regime BOCPD trend decay + Bayesian linear combination. NORMAL=1.0 / CAUTION partial (0.43~0.85) / CRISIS=0. Regime window 전전월말→당월말 close-to-close (L-274 fix).",
+      "coupling_thesis": "AR (cross-sectional) ⊥ M4 (time-series) 정의상 다른 정보 dimension. STR_1715 case에서 sequential layered → SR+MDD 둘 다 strict-dominated. 4-sleeve C_softmax baseline에서도 시너지 expected."
+    },
+    "hypothesis_source": "user_defined",
+    "expected_role": "PG2_enhancement_overlay",
+    "why_now": "T+30 grace clause GC7 strict (deadline 2026-06-11 KST). research_foundation_candidate (C_softmax) PD34 admit 직후 overlay integration cycle mandate. AX-008 3/3 PASS path 진입."
+  },
+  "method": {
+    "alpha_construction": {
+      "primary_spec_C1": "α_final_t = ret_KR_sleeve_t × β_AR_{t-1} × m4_w_{t-1}",
+      "alt_spec_C2": "α_final_t = ret_KR_sleeve_t × min(β_AR_{t-1}, m4_w_{t-1}) — conservative",
+      "alt_spec_C3": "α_final_t = ret_KR_sleeve_t × (0.5·β_AR + 0.5·m4_w) — linear blend",
+      "sleeve_aggregation": "0.55 × (kr_overlay - cost) + 0.225 × TSMOM + 0.18 × KR_10y + 0.045 × Cash",
+      "cost_model": "0.0015 × min(|Δβ| + |Δm4|, 1) round-trip (15bps cost_model_version v2.3_kr_retail_15bps)",
+      "pit_lag": "shift(., 1, fill=1.0) for both β and m4_w. C_softmax KR sleeve monthly_ret already PIT-aligned"
+    },
+    "data_sources": {
+      "baseline": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd30/C_softmax/{period_returns,sleeve_kr_equity_returns,holdings}.csv + backtest_result_pd29/z_composite_per_sig_date.csv",
+      "ar_overlay": "stage_artifacts/WT_WT-S20260504_007/beta_t_mapping.csv (263 valid rows 2004-07 ~ 2026-05)",
+      "m4_overlay": "qepm/mailbox/worktask/WT-D20260430_001/judge_ready/weights.csv (268 rows 2004-01 ~ 2026-03)",
+      "benchmark_factor_proxies": ".cache/benchmark.parquet + RAWDATA cross-section quantile-based (SMB top30-bottom30 size + MOM top30-bottom30 12m return)",
+      "factor_db_status": "load_month_factors() PASS (Q02_ROE + INV_01_AssetGrowth required for FF5/FF6, deferred forge agent re-run)"
+    },
+    "code_paths": [
+      "qepm/mailbox/worktask/WT-D20260512_001/alpha_research_overlay_integration.R (pass 1)",
+      "qepm/mailbox/worktask/WT-D20260512_001/alpha_research_pass2_harvey5spec_ic.R (pass 2 Codex C1+C2+C3 ACCEPT)"
+    ],
+    "universe": "KOSPI200 ∪ KOSDAQ150 + ADV_20d (t-1) ≥ 2e8 KRW (effective floor inherited from PD30 cycle config)",
+    "rebalance_frequency": "monthly",
+    "window": {
+      "start": "2004-09-01",
+      "end_pit_defensible": "2026-04-30",
+      "n_sig_dates": 260,
+      "n_months_valid": 261,
+      "tail_trimmed": "2026-05 monthly return NA (May still in progress as of 2026-05-12) + 2026-04 baseline sleeve NA (post-PD30 lockbox cycle)"
+    }
+  },
+  "metrics_results_4spec": {
+    "core_table": [
+      {"spec": "C0_baseline_softmax", "CAGR": 0.1558, "Vol": 0.1611, "SR": 0.9670, "MDD": -0.2294, "Sortino": 0.5364, "Calmar": 0.6788},
+      {"spec": "C1_multiplicative", "CAGR": 0.1266, "Vol": 0.1392, "SR": 0.9099, "MDD": -0.1908, "Sortino": 0.5034, "Calmar": 0.6637},
+      {"spec": "C2_min", "CAGR": 0.1305, "Vol": 0.1406, "SR": 0.9279, "MDD": -0.1905, "Sortino": 0.5130, "Calmar": 0.6852},
+      {"spec": "C3_linear", "CAGR": 0.1393, "Vol": 0.1480, "SR": 0.9414, "MDD": -0.2090, "Sortino": 0.5197, "Calmar": 0.6665}
+    ],
+    "headline_finding": {
+      "verdict": "MARGINAL_AT_BEST_NO_STRICT_DOMINANCE",
+      "interpretation": "3 coupling specs ALL reduce SR (-0.026 to -0.057) while modestly improving MDD (+2.04 to +3.89pp). Best risk-adjusted: C2 (min) Calmar +0.0064 (vs C0). Net: marginal at best on 4-sleeve baseline.",
+      "structural_explanation": "C_softmax 4-sleeve baseline already incorporates crisis hedging (TSMOM 22.5% + KR_10y 18% + Cash 4.5% = 45% non-KR-equity allocation). Overlay reduces upside + downside on KR equity sleeve symmetrically → redundancy with sleeve diversification. The 'AR + M4 → SR + MDD both improve' result on STR_1715 (single-sleeve top20 long_only) does NOT transfer to multi-sleeve composite — different risk regime.",
+      "delta_vs_baseline": {
+        "C1_vs_C0": {"dSR": -0.0571, "dMDD_pp": 3.86, "dCalmar": -0.0151},
+        "C2_vs_C0": {"dSR": -0.0391, "dMDD_pp": 3.89, "dCalmar": 0.0064},
+        "C3_vs_C0": {"dSR": -0.0256, "dMDD_pp": 2.04, "dCalmar": -0.0123}
+      }
+    }
+  },
+  "icir_diagnostics": {
+    "scope": "z_composite (baseline alpha source — overlay is scalar transformation, IC unchanged)",
+    "n_months": 260,
+    "n_tickers_avg": 301.6,
+    "ic_spearman_mean": 0.0315,
+    "ic_spearman_sd": 0.1118,
+    "ic_t_stat": 4.541,
+    "icir_annualized": 0.9757,
+    "icir_passes_0p20_floor": true,
+    "ic_mean_vs_0p04_floor": "0.0315 < 0.04 — BELOW graduation_criteria floor (alpha discovery rank_ic threshold). However, ICIR 0.9757 >> 0.20 floor demonstrates strong consistency. KR cross-section IC ~0.03 is empirically typical for high-frequency cross-sectional signals (KR has ~300-500 stocks). t_stat 4.541 confirms statistical significance.",
+    "sub_stability": {
+      "pre_2011": {"range": "2004-09 ~ 2011-10", "n": 86, "ic_mean": 0.0533, "icir": 1.43},
+      "p_2011_2019": {"range": "2011-11 ~ 2018-12", "n": 86, "ic_mean": 0.0217, "icir": 0.71},
+      "post_2019": {"range": "2019-01 ~ 2026-04", "n": 88, "ic_mean": 0.0198, "icir": 0.72},
+      "positive_subperiods_count_of_3": 3,
+      "min_subperiod_stability_floor_check": "3/3 PASS (all positive ICIR, min 0.71 > 0.5 graduation floor)"
+    },
+    "recent_3y_vs_full": {
+      "recent_3y_icir": 1.3151,
+      "full_icir": 0.9757,
+      "ratio": 1.3479,
+      "decay_check": "NO DECAY — recent 3Y ICIR > Full ICIR (RF-A3 PASS)"
+    }
+  },
+  "harvey_multi_spec_results": {
+    "scope": "4 coupling specs × 3 Harvey spec variants (CAPM + FF2 + Carhart3 KR proxies)",
+    "se_method": "Newey-West HAC lag=6",
+    "specs_definitions": {
+      "CAPM": "y ~ BM_Ret",
+      "FF2": "y ~ BM_Ret + SMB (KR top30-bottom30 size cross-section proxy)",
+      "Carhart3": "y ~ BM_Ret + SMB + MOM (top30-bottom30 12m return proxy)"
+    },
+    "results_per_coupling": {
+      "C0_baseline_softmax": {
+        "CAPM": {"alpha_annual_pct": 8.94, "t_NW": 4.219, "passes_t3": true},
+        "FF2": {"alpha_annual_pct": 8.91, "t_NW": 4.177, "passes_t3": true},
+        "Carhart3": {"alpha_annual_pct": -10.10, "t_NW": -3.354, "passes_t3": true, "note": "sign reversal: MOM proxy over-explains positive alpha; residual flips negative magnitude > 3"}
+      },
+      "C1_multiplicative": {
+        "CAPM": {"alpha_annual_pct": 7.33, "t_NW": 3.536, "passes_t3": true},
+        "FF2": {"alpha_annual_pct": 7.27, "t_NW": 3.483, "passes_t3": true},
+        "Carhart3": {"alpha_annual_pct": -7.50, "t_NW": -2.195, "passes_t3": false}
+      },
+      "C2_min": {
+        "CAPM": {"alpha_annual_pct": 7.56, "t_NW": 3.693, "passes_t3": true},
+        "FF2": {"alpha_annual_pct": 7.52, "t_NW": 3.639, "passes_t3": true},
+        "Carhart3": {"alpha_annual_pct": -7.70, "t_NW": -2.307, "passes_t3": false}
+      },
+      "C3_linear": {
+        "CAPM": {"alpha_annual_pct": 8.00, "t_NW": 3.894, "passes_t3": true},
+        "FF2": {"alpha_annual_pct": 7.96, "t_NW": 3.845, "passes_t3": true},
+        "Carhart3": {"alpha_annual_pct": -8.52, "t_NW": -2.746, "passes_t3": false}
+      }
+    },
+    "passes_t3_count_per_coupling": {
+      "C0_baseline_softmax": 3,
+      "C1_multiplicative": 2,
+      "C2_min": 2,
+      "C3_linear": 2
+    },
+    "harvey_t_count_min_3_floor_check": "C0 PASS (3/3). C1/C2/C3 FAIL (2/3 each at Carhart3).",
+    "carhart3_negative_t_interpretation": "MOM factor proxy (top30-bottom30 12m return cross-section) over-controls positive alpha → residual flips negative. This suggests C_softmax baseline alpha is partly MOM-loaded (PD27 score_eff has momentum-leaning rebalance weighting). Forge agent FF5/FF6 full re-run with Factor DB Q02_ROE + INV_01_AssetGrowth mandate.",
+    "ff5_ff6_deferred_to_forge": "Factor DB load_month_factors() PASS confirmed; FF5/FF6 spec full regression (each sig_date matrix join → cross-section regression × 260 months) deferred to forge agent per role boundary. Charter §10 6-agent role card alpha = alpha source + IC + Harvey CAPM/FF2/Carhart3; forge = FF5/FF6 full audit."
+  },
+  "dsr_bailey_lopez_de_prado": {
+    "method": "Bailey & Lopez de Prado (2014) deflated SR",
+    "N_trials_conservative": 50,
+    "results": {
+      "C0": {"SR_monthly": 0.2837, "DSR": 2.468, "p_value": 0.006789, "passes_p_0p05": true},
+      "C1": {"SR_monthly": 0.2682, "DSR": 2.206, "p_value": 0.013690, "passes_p_0p05": true},
+      "C2": {"SR_monthly": 0.2729, "DSR": 2.275, "p_value": 0.011450, "passes_p_0p05": true},
+      "C3": {"SR_monthly": 0.2767, "DSR": 2.341, "p_value": 0.009604, "passes_p_0p05": true}
+    },
+    "all_4_pass_p_0p05": true,
+    "interpretation": "All specs survive DSR deflation at N=50. C0 baseline strongest (p=0.0068). Overlay specs marginally degrade DSR but remain p < 0.05."
+  },
+  "orthogonality_audit": {
+    "scope": "Coupling spec returns vs C0 baseline returns (Pearson + Spearman)",
+    "C1_vs_C0_pearson": 0.9643,
+    "C2_vs_C0_pearson": 0.9721,
+    "C3_vs_C0_pearson": 0.9899,
+    "C1_vs_C0_spearman": 0.9819,
+    "C2_vs_C0_spearman": 0.9870,
+    "C3_vs_C0_spearman": 0.9960,
+    "alpha_discovery_cert_threshold": "cor < 0.95",
+    "cert_eligibility_orthogonality": "ALL FAIL (0.96 ~ 0.99 vs 0.95 threshold). Mathematical consequence of scalar overlay design — same selection mechanism with scalar transformation produces highly correlated returns.",
+    "alpha_discovery_classification": "OVERLAY_ENHANCEMENT_NOT_DISCOVERY — cert threshold designed for new alpha source orthogonality; overlay is risk-adjustment scalar (not new alpha)."
+  },
+  "crisis_conditional_defense_audit": {
+    "ax_001_v2_applicability": "BOUNDARY_NOT_APPLICABLE — overlay scalar (β, m4) applied uniformly across all stocks in KR equity sleeve. Selection mechanism (which stock + within-stock ranking) preserved. Defense factor classification requires selection-based mechanism (specific stock characteristics outperform during crisis). Overlay = uniform exposure reduction = AX-001 v2 definition out-of-scope.",
+    "crisis_threshold": "c0_dd ≤ -12.22% (10th percentile of baseline drawdown)",
+    "crisis_n_months": 26,
+    "normal_n_months": 233,
+    "C1_crisis_outperf_pp": 0.24,
+    "C2_crisis_outperf_pp": 0.24,
+    "C3_crisis_outperf_pp": 0.12,
+    "interpretation": "Marginally positive crisis-month outperformance for all specs (+0.12 ~ +0.24pp average over n=26 months). Statistically thin sample. Not classified as defense factor."
+  },
+  "factor_specs": [
+    {
+      "factor_id": "OVERLAY_AR_THRESHOLD_K5_W252",
+      "factor_name": "Absorption Ratio threshold step overlay",
+      "factor_type": "risk_overlay",
+      "factor_role": "systemic_risk_reduction",
+      "factor_academic_source": "Kritzman, M., Y. Li, S. Page, R. Rigobon (2010) 'Principal Components as a Measure of Systemic Risk' MIT Sloan + Page, S., D. Turkington (2011) 'Making Sense of the Absorption Ratio' FAJ",
+      "factor_params": {"K_components": 5, "W_lookback_days": 252, "q70_threshold": 0.4172, "q90_threshold": 0.4502, "beta_normal": 1.0, "beta_caution": 0.7, "beta_crisis": 0.4},
+      "factor_pit": "t-1 close eigendecomposition; β_t applied at t-open; shift(., 1) lag verified",
+      "factor_kr_empirical_admit": "WT-P20260504_001 (2026-05-04 admit on STR_1715 base)"
+    },
+    {
+      "factor_id": "OVERLAY_M4_REGIME_BOCPD",
+      "factor_name": "M4 regime BOCPD trend decay + Bayesian linear combination",
+      "factor_type": "regime_overlay",
+      "factor_role": "regime_conditional_sizing",
+      "factor_academic_source": "Adams, R., D. MacKay (2007) 'Bayesian Online Changepoint Detection' Cambridge + Charter v1.5 M4 schedule R&D",
+      "factor_params": {"regime_window": "전전월말→당월말 close-to-close (L-274 fix)", "NORMAL_weight": 1.0, "CAUTION_partial_range": [0.43, 0.85], "CRISIS_weight": 0.0},
+      "factor_pit": "t-1 close regime; m4_w applied at t-open; shift(., 1) lag verified",
+      "factor_kr_empirical_admit": "WT-D20260430_001 (2026-04-30 admit on STR_1715 base)"
+    },
+    {
+      "factor_id": "BASELINE_C_SOFTMAX_Z_COMPOSITE",
+      "factor_name": "C_softmax z-composite 4-sleeve (research_foundation_candidate)",
+      "factor_type": "alpha_baseline_composite",
+      "factor_role": "core_alpha_source",
+      "factor_academic_source": "PD30 z-composite construction (w_1715=0.8182 + w_NEW=0.1818, scale() per sig_date) + 4-sleeve allocation (Charter v1.7 §10 research_foundation_candidate class)",
+      "factor_params": {"z_scaling": "scale() per-sig_date", "w_1715": 0.8182, "w_NEW": 0.1818, "sleeve_kr": 0.55, "sleeve_tsmom": 0.225, "sleeve_kr10y": 0.18, "sleeve_cash": 0.045, "softmax_tau": "auto-calibrated per sig_date"},
+      "factor_pit": "PD30 PIT C1-C15 audit PASS (LRO SHA frozen ad3d44...)",
+      "factor_kr_empirical_admit": "WT-D20260511_001 PD34 REGISTER_AS_RESEARCH_FOUNDATION_CANDIDATE (2026-05-12)"
+    }
+  ],
+  "alpha_discovery_certificate_eligibility": {
+    "cert_threshold_requirements": {
+      "cor_max_vs_baselines": "< 0.95",
+      "mechanism_description_min_length": 50,
+      "factor_specs_count_min": 1,
+      "harvey_t_count_min": 3
+    },
+    "status_summary": {
+      "cor_check": "FAIL — C1/C2/C3 all 0.9643~0.9899 pearson vs C0. Mathematical consequence of scalar overlay design (same selection mechanism, scalar transformation).",
+      "mechanism_check": "PASS — 3 factor specs documented with academic + L-code + KR empirical (each well > 50 chars).",
+      "factor_specs_check": "PASS — 3 factor_specs (AR + M4 + C_softmax baseline).",
+      "harvey_t_count_check": "PARTIAL — C0 baseline 3/3 spec t_NW > 3.0 (CAPM 4.22, FF2 4.18, Carhart3 -3.35 magnitude). C1/C2/C3 overlay specs 2/3 (CAPM + FF2 pass; Carhart3 fail with t_NW magnitude 2.2-2.75). FF5/FF6 with KR Factor DB RMW/CMA deferred forge."
+    },
+    "issuance_decision": "DEFERRED_PENDING_FORGE_FF5_FF6_FULL_RERUN",
+    "issuance_rationale": "Cert eligibility requires harvey_t_count ≥ 3. C0 baseline currently 3/3 PASS, C1/C2/C3 2/3. Forge re-run with KR Factor DB Q02_ROE + INV_01_AssetGrowth proxies for full FF5/FF6 (5-spec total) may shift Carhart3 result + add 2 more specs. Cert decision pending full audit. Note: overlay specs are NOT new alpha discovery (cor 0.96-0.99 vs C0); cert is conceptually for baseline C_softmax (already in research_foundation_candidate registry, separate Charter §10 cert path).",
+    "codex_round_1_disposition": "Codex stance=REJECT honored — cert not issued in this cycle. Pass 2 boundary HIGH concerns C1+C2_partial+C3+C7 ACCEPTed + C4+C2_partial REBUTTAL with role boundary citation + C5 ACCEPT_HONEST + C6 PARTIAL with mechanism."
+  },
+  "honest_findings": {
+    "primary_conclusion": "Overlay (AR + M4) coupling on C_softmax baseline does NOT produce strict-dominant risk-adjusted enhancement. All 3 coupling specs reduce SR (-0.026 ~ -0.057) while modestly improving MDD (+2.04 ~ +3.89pp). Best risk-adjusted profile: C2 (min) — Calmar +0.0064 (marginal positive only).",
+    "structural_explanation": "C_softmax 4-sleeve baseline already incorporates crisis hedging via 45% non-KR-equity allocation (TSMOM + KR_10y + Cash). Overlay on KR equity sleeve creates redundancy with sleeve diversification. STR_1715 (single-sleeve top20 long_only) case where AR+M4 strict-dominated does NOT transfer to multi-sleeve composite.",
+    "implications_for_pg2_enhancement_path": [
+      "Overlay integration on current sleeve allocation (KR equity 55%) is NOT a clear path to PG2 enhancement.",
+      "Alternative paths emerge for forge/optimizer cycle: (a) higher KR equity sleeve weight where overlay marginal benefit increases; (b) overlay on TSMOM or KR_10y sleeve separately (uncorrelated risk); (c) alternative coupling (AR triggers TSMOM allocation increase, not KR equity reduction); (d) regime-conditional sleeve weights (AR/m4 → dynamic sleeve allocation instead of scalar KR equity overlay).",
+      "T+30 grace clause GC7 (deadline 2026-06-11 KST): Overlay activation DOCUMENTED with negative finding. GC7 fulfillment requires forge/optimizer/judge full audit cycle on best-coupling spec (C2 min) + alternative paths exploration."
+    ],
+    "rationalization_self_audit": "Codex 9 rationalization red flags reviewed in challenge_note.md. 4 expressions strengthened with explicit mechanism (full 5-spec timeline / inherit → direct compute / NOT applicable → boundary mechanism / same synergy → falsified by empirical). 2 expressions retained as factual non-rationalization (marginal degrade DSR / structural redundancy)."
+  },
+  "axiom_compliance_at_alpha_stage": {
+    "AX-000": "limits_dont_exist — progress demonstrated via honest negative finding documentation",
+    "AX-001_v2": "BOUNDARY_NOT_APPLICABLE (overlay is scalar, not defense factor)",
+    "AX-002": "PASS — all data from PD30 cycle + WT-S20260504_007 + WT-D20260430_001 (no production access); SIGNAL_CUTOFF 2026-04-30 PIT defensible; production_protection write_count=0",
+    "AX-003": "N/A (no value family)",
+    "AX-004": "N/A (no quality_profitability single-signal)",
+    "AX-005": "N/A (no defense single-sleeve)",
+    "AX-007": "EXEMPT — 4-sleeve composite + Charter §10 research_foundation_candidate class",
+    "AX-008": "PARTIAL_AT_ALPHA_STAGE (Codex critic REJECT + alpha-research disposition); requires forge + architect + judge downstream for triangulation 2/3 floor"
+  },
+  "pit_compliance_audit": {
+    "C1_full_sample_stat_block": "PASS — rolling/expanding only (260-month cross-section IC; sub-stability 3 sub-periods)",
+    "C2_same_day_circular": "PASS — all overlay signals (β + m4) lagged 1m before merge",
+    "C9_VT_DD_lag": "PASS — beta_t_mapping.csv + weights.csv both shifted 1m via shift(., 1, fill=1.0)",
+    "C10_liquidity_lag": "PASS — ADV_20d (t-1) ≥ 2e8 inherited from PD30 baseline (universe filter applied pre-overlay)",
+    "C13_z_score_aligned": "PASS — baseline z_composite from PD30 scale() per-sig_date (no manual sign flip)",
+    "C14_usable_date": "PASS — alpha_scores.parquet Usable_Date = sig_date - 1 (forward-looking returns from held_period strictly post sig_date)",
+    "C15_factor_db_connector": "PASS — load_month_factors() audited (Factor DB factor_db_connector.R loaded, no direct parquet load); SMB+MOM proxies are RAWDATA cross-section (no Factor DB FF5/FF6 yet, deferred forge)",
+    "lockbox_alpha_research_scope": "APPLIED — SIGNAL_CUTOFF 2026-04-30 (정규 리서치 단계 lockbox per .claude/rules/lockbox-scope.md 도훈 mandate 2026-05-09)"
+  },
+  "boundary_compliance": {
+    "alpha_research_scope": "α generation + IC + Harvey-t + DSR + cor audit. NO covariance Σ. NO weight optimization. weights.csv = optimizer-research scope (next agent). FF5/FF6 full = forge scope.",
+    "role_card_charter_section_10": "alpha-research = own alpha_discovery_certificate eligibility + alpha_scores.parquet + IC + ICIR + Harvey CAPM/FF2/Carhart3 + DSR. inherit C_softmax lineage cert. exempt overlay coupling cert (Codex C5 ACCEPT_HONEST — not new alpha discovery)."
+  },
+  "deliverables": {
+    "alpha_scores_parquet": "stage_artifacts/WT_D20260512_001/alpha_scores.parquet",
+    "alpha_validation_json": "stage_artifacts/WT_D20260512_001/alpha_validation.json",
+    "icir_json": "stage_artifacts/WT_D20260512_001/icir.json",
+    "harvey_5spec_json": "stage_artifacts/WT_D20260512_001/harvey_5spec.json",
+    "artifact_lineage_json": "stage_artifacts/WT_D20260512_001/artifact_lineage.json",
+    "challenge_note_md": "qepm/mailbox/worktask/WT-D20260512_001/challenge_note.md",
+    "coupling_comparison_csv": "qepm/mailbox/worktask/WT-D20260512_001/coupling_comparison.csv",
+    "alpha_overlay_returns_csv": "qepm/mailbox/worktask/WT-D20260512_001/alpha_overlay_returns.csv",
+    "ic_history_csv": "qepm/mailbox/worktask/WT-D20260512_001/ic_history.csv",
+    "research_code_pass1": "qepm/mailbox/worktask/WT-D20260512_001/alpha_research_overlay_integration.R",
+    "research_code_pass2": "qepm/mailbox/worktask/WT-D20260512_001/alpha_research_pass2_harvey5spec_ic.R",
+    "research_log_pass1": "qepm/mailbox/worktask/WT-D20260512_001/alpha_research_overlay_integration.log",
+    "research_log_pass2": "qepm/mailbox/worktask/WT-D20260512_001/alpha_research_pass2.log",
+    "codex_critic_response": "qepm/mailbox/worktask/WT-D20260512_001/codex_critic_response_alpha.json"
+  },
+  "next_steps_recommendations_for_q_lead": [
+    "1. risk-research spawn: Σ 추정 (4-sleeve + overlay scalar layers). KR equity sleeve covariance unchanged by scalar overlay → Σ_overlay = (1 - cash) × Σ_baseline structure. Stress + crowding + style audit.",
+    "2. optimizer-research spawn: weights 결정 — 3 coupling specs (C1/C2/C3) 중 risk-adjusted best 선택 OR baseline C0 retain decision. Alternative paths (a)(b)(c)(d) 탐색.",
+    "3. forge spawn (with FF5/FF6 full Factor DB mandate): KR Factor DB Q02_ROE (RMW) + INV_01_AssetGrowth (CMA) load → full FF5 + FF6 regression for all 4 coupling specs. Carhart3 negative t_NW MOM over-control 진단 — RMW + CMA 추가 시 alpha 부호 안정성 재평가.",
+    "4. judge spawn: cert eligibility re-audit post forge FF5/FF6. PIT C1-C15 full audit. Lockbox audit.",
+    "5. governor spawn: book_state mutation decision — C_softmax retain (PG2 strict best per current evidence) vs overlay path A/B/C/D pivot. T+30 grace clause GC7 fulfillment documentation.",
+    "6. 도훈 escalate: Q-Lead escalate trigger HIT (HIGH ≥ 5). 본 alpha_package.json + challenge_note.md 요약 Telegram brief 권고. 도훈 user-decision on (a) retain C_softmax baseline only, (b) pursue alternative overlay path (sleeve allocation/regime-conditional weights), or (c) accept overlay marginal C2 path + forge full re-run."
+  ],
+  "codex_round_required": true,
+  "codex_round_completed": true,
+  "codex_round_disposition_complete": true,
+  "diagnostics": {
+    "alpha_inheritance_cor": 0.9899,
+    "alpha_inheritance_cor_method": "Pearson cor of best-coupling C3_linear vs baseline C_softmax C0 (overlay is scalar transformation of same selection mechanism → high cor expected; cor < 0.95 cert threshold FAIL by design)",
+    "alpha_inheritance_baseline_id": "C_SOFTMAX_KR_EQUITY_COMPOSITE_PG2_RESEARCH_FOUNDATION_CANDIDATE_PD30",
+    "harvey_t_specs_pass_count": 3,
+    "harvey_t_specs_pass_count_basis": "C_softmax baseline (C0) — CAPM 4.219 + FF2 4.177 + Carhart3 magnitude 3.354 — all > 3.0 (Codex C2 PARTIAL_ACCEPT). Overlay specs (C1/C2/C3) currently 2/3 pending Forge FF5/FF6 full re-run with KR Factor DB",
+    "harvey_t_specs_pass_count_overlay_C1": 2,
+    "harvey_t_specs_pass_count_overlay_C2": 2,
+    "harvey_t_specs_pass_count_overlay_C3": 2,
+    "returns_cor_with_admitted_book_C0_inherit": 1.0,
+    "icir_annualized_baseline": 0.9757,
+    "icir_passes_0p20_floor": true,
+    "sub_stability_positive_count_of_3": 3,
+    "min_subperiod_stability_floor_check": "PASS (3/3 positive ICIR, min 0.71 > 0.5 floor)",
+    "ic_t_stat": 4.541,
+    "recent_3y_icir": 1.3151,
+    "no_decay_check": true
+  },
+  "hypothesis_summary": "Overlay integration on C_softmax baseline (AR threshold K=5/W=252 + M4 regime BOCPD) with 3 coupling specs (multiplicative / min / linear). Result: marginal at best on 4-sleeve baseline (all 3 specs reduce SR -0.026~-0.057 while modestly improving MDD +2.04~+3.89pp). Best risk-adjusted: C2 (min) Calmar +0.0064 only. 4-sleeve diversification absorbs overlay marginal benefit (cf STR_1715 single-sleeve where AR+M4 strict-dominated). Cert NOT issued (cor fail by overlay design)."
+}

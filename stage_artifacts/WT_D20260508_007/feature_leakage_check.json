@@ -1,0 +1,22 @@
+{
+  "task_id": "WT-D20260508_007",
+  "forecast_horizon": "12M",
+  "pit_lag_rule": "predictor at month t = β_KR_TermSpread_d_{i, t-1}",
+  "target": "FwdRet_12M[t] = stock i return from t to t+11 (12-month forward, end-of-month compounded)",
+  "inherited_from": "WT-D20260508_005 alpha_panel_single.parquet (PIT-clean)",
+  "predictor_lag1_autocor_raw_signed": 0.908,
+  "predictor_lag1_autocor_status": "MID_HIGH_NORMAL_FOR_12M_HORIZON",
+  "threshold_warn": 0.95,
+  "leak_status": "CLEAN_PIT_LAG_VERIFIED",
+  "c2_same_day_circular": "PASS — predictor lagged 1 month vs target",
+  "c7_lookahead_pattern": "PASS — expanding |IC| sign uses 1..t-1 history only",
+  "c14_factor_db_usable_date": "N/A — new factor not in Factor DB",
+  "c15_factor_db_loader": "BYPASSED with c15_infeasibility_report.json",
+  "ml_feature_leakage": "N/A — single-factor linear (no ML)",
+  "wt_001_lesson_lag0_ban": "N/A — no ML predictor used; pure cross-section z-score on lag-1 β",
+  "wt_007_horizon_specific": {
+    "fwdret_12m_construction": "Month t value = compounded total return from t to t+11 (end-of-month closes, already in WT_005 panel)",
+    "no_target_overlap_within_predictor": true,
+    "comment": "Predictor (β at t-1) is ESTIMATED on returns prior to t (24M rolling window ending t-1). Target (FwdRet_12M) starts at t and uses returns t..t+11. Zero overlap between predictor estimation window and target window."
+  }
+}

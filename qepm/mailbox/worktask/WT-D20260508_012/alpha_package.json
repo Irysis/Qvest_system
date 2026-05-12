@@ -1,0 +1,260 @@
+{
+  "task_id": "WT-D20260508_012",
+  "task_type": "discovery",
+  "deliverable_kind": "regime_indicator",
+  "wt_type_clarification": "discovery WT — regime_indicator deliverable per request.json L19. alpha_vector intentionally empty. Diagnostics use AFT 2017 § 4 regime-detection methodology (recall/FP/lead-time + state-conditional return distribution), NOT cross-section IC.",
+  "as_of_date": "2026-04-23",
+  "forecast_horizon": "daily_state",
+  "selection_objective": "rank_ic",
+  "selection_objective_actual": "regime_indicator_validation_recall_FP_orthogonality",
+  "alpha_vector": {},
+  "confidence_vector": {},
+  "signal_matrix_ref": "feature_store://stage_artifacts/WT_D20260508_012/regime_indicator_timeseries.parquet",
+  "factor_specs": [
+    {
+      "factor_family": "Implied_Tail_Risk",
+      "proxy": "RIX_proxy",
+      "formula": "-bkm_skew_30d (sign aligned: high score = high stress)",
+      "lag_rule": "t-1 (option close → t+1 decision)",
+      "winsorization": "none",
+      "neutralization": "expanding percentile rank (1y burn-in)",
+      "sign_alignment_exemption": "C13 exempt — not Factor DB lookup; sign convention per BKM 2003 RFS Eq.(7)",
+      "economic_rationale": "left-tail premium — BKM 2003 risk-neutral skewness measures pricing of left-jump probability",
+      "weight_theta": 0.25,
+      "references": [
+        "Bakshi-Kapadia-Madan 2003 RFS Eq.(7) p.105",
+        "Du-Kapadia 2012 RFS Eq.(2-4) p.1325"
+      ]
+    },
+    {
+      "factor_family": "Implied_Tail_Risk",
+      "proxy": "LJV_proxy",
+      "formula": "bkm_var_30d * pmax(-bkm_skew_30d, 0)",
+      "lag_rule": "t-1",
+      "winsorization": "none",
+      "neutralization": "expanding percentile rank",
+      "sign_alignment_exemption": "C13 exempt — not Factor DB lookup; LJV approximation per AFT 2017 Eq.(8)",
+      "economic_rationale": "left jump variation (Andersen-Fusari-Todorov 2017 JF Eq.(8) approximation)",
+      "weight_theta": 0.25,
+      "references": [
+        "Andersen-Fusari-Todorov 2017 JF Eq.(8) p.2076"
+      ]
+    },
+    {
+      "factor_family": "Implied_Vol_Level",
+      "proxy": "vkospi",
+      "formula": "30d implied vol (CBOE 1993/2003 methodology, KR adaptation per WT_011)",
+      "lag_rule": "t-1",
+      "winsorization": "none",
+      "neutralization": "expanding percentile rank",
+      "economic_rationale": "broad market implied volatility level (top-decile = high anxiety, top-decile threshold per AFT 2017 § 5)",
+      "weight_theta": 0.25,
+      "references": [
+        "Du-Kapadia 2012 RFS Eq.(11-13) p.1330",
+        "Whaley 2000 JD"
+      ]
+    },
+    {
+      "factor_family": "Implied_Term_Structure",
+      "proxy": "ts_slope_neg",
+      "formula": "-(T2_iv_atm - T1_iv_atm) — backwardation indicator (sign aligned)",
+      "lag_rule": "t-1",
+      "winsorization": "none",
+      "neutralization": "expanding percentile rank",
+      "sign_alignment_exemption": "C13 exempt — option term-structure backwardation convention",
+      "economic_rationale": "term-structure inversion = near-term stress (Bollerslev-Tauchen-Zhou 2009 RFS § 3.2)",
+      "weight_theta": 0.25,
+      "references": [
+        "Bollerslev-Tauchen-Zhou 2009 RFS § 3.2 p.4467"
+      ]
+    }
+  ],
+  "diagnostics": {
+    "type": "regime_indicator_diagnostics",
+    "recall": 0.8333,
+    "recall_pass": true,
+    "false_positive_rate": 0.0971,
+    "false_positive_pass": true,
+    "lead_time_mean": -4.6,
+    "lead_time_median": -14,
+    "lead_time_top_half_mean": 4,
+    "lead_time_strict_pass": false,
+    "overall_strict_5gate_pass": false,
+    "overall_3gate_pass": true,
+    "cor_with_m4_combined_regime": 0.5361,
+    "cor_with_m4_weight_cash": 0.1737,
+    "orthogonality_assessment": "moderately orthogonal — cor 0.17 with m4 actionable output (weight_cash) indicates substantial new actionable information; cor 0.54 with combined_regime reflects shared vol component (AFT 2017 § 5.2: implied-tail and realized-vol share level component but differ in left-skew dimension).",
+    "state_distribution": {
+      "PEACE": 2137,
+      "WARNING": 884,
+      "TAIL_STRESS": 465
+    },
+    "state_distribution_pct": {
+      "PEACE": 61.3,
+      "WARNING": 25.4,
+      "TAIL_STRESS": 13.3
+    },
+    "regime_conditional_kospi_returns": {
+      "note": "AFT 2017 JF Eq.(29) 'high-LJV days' methodology — regime_state-conditional KOSPI t-day returns",
+      "PEACE": {
+        "n_days": 2137,
+        "mean_daily": 5.7493e-06,
+        "std_daily": 0.0087,
+        "q05": -0.0142,
+        "q95": 0.0131,
+        "ann_sharpe": 0.0104,
+        "hit_neg_2pct": 0.0126
+      },
+      "WARNING": {
+        "n_days": 884,
+        "mean_daily": 0.0005,
+        "std_daily": 0.0126,
+        "q05": -0.017,
+        "q95": 0.017,
+        "ann_sharpe": 0.6262,
+        "hit_neg_2pct": 0.0373
+      },
+      "TAIL_STRESS": {
+        "n_days": 464,
+        "mean_daily": 0.0019,
+        "std_daily": 0.0174,
+        "q05": -0.0278,
+        "q95": 0.0256,
+        "ann_sharpe": 1.7738,
+        "hit_neg_2pct": 0.0927
+      },
+      "diff_TAIL_STRESS_vs_PEACE_welch_t": 2.3371,
+      "diff_TAIL_STRESS_vs_PEACE_p_value": 0.0198,
+      "diff_TAIL_STRESS_vs_PEACE_conclusion": "SIGNIFICANT",
+      "interpretation": "TAIL_STRESS days show ELEVATED q05 worst-case (-2.78% vs PEACE -1.42%) AND elevated vol (1.74% vs 0.87%). Mean return is HIGHER, not lower (post-stress rebound effect). hit_neg_2pct 9.27% vs PEACE 1.26% = 7.4× higher tail event frequency. Signal correctly identifies high-tail-risk regime (the academic intent of option-implied tail indicators per AFT 2017 § 4) without claiming next-day directional bet."
+    }
+  },
+  "challenge_flags": [
+    {
+      "flag": "lead_time_strict_FAIL_relaxed_PASS",
+      "severity": "MEDIUM",
+      "desc": "Strict 5-gate FAIL (mean lead -4.6d < 5d). Relaxed 3-gate PASS (recall 5/6 + FP 9.7% + min_duration 3d). Lead time mixed: slow-burn +6~+22d / fast-crash -14~-21d. BTZ 2009 RFS Table 5 expected pattern (1-day forward FAIL, 1-month forward PASS). Codex C4 ACCEPT — no silent gate override; both gates reported.",
+      "mitigation": "Use as concurrent regime confirmation (not 1-day prediction). Layer D design only — deployment requires Risk/Optimizer/Forge backtest + AX-008 triangulation 2/3 minimum."
+    },
+    {
+      "flag": "burnin_eudebt_drop",
+      "severity": "LOW",
+      "desc": "EuDebt_II_2011 partly within 252-day burn-in. Recall counts as in-window FAIL (5/6=0.83). Within-validity-only would be 5/5=1.0. Burn-in 252d is academic standard for expanding percentile (cannot reduce).",
+      "mitigation": "Honest reporting: in-window denominator 6 used for recall."
+    },
+    {
+      "flag": "deliverable_kind_regime_indicator",
+      "severity": "INFO",
+      "desc": "alpha_package.json transports regime_state daily timeseries (NOT cross-section alpha_vector). alpha_vector field intentionally empty per request.json L19 mandate.",
+      "mitigation": "deliverable_kind=regime_indicator. Risk/Optimizer/Forge consume regime_state via Layer D overlay (design_only_NOT_admitted)."
+    },
+    {
+      "flag": "C13_manual_sign_exemption_documented",
+      "severity": "MEDIUM",
+      "desc": "RIX_proxy = -bkm_skew_30d / ts_slope_neg = -(T2-T1) use sign convention from Bakshi-Kapadia-Madan 2003 RFS Eq.(7) academic standard, NOT Factor DB lookup (no factor_db_connector::load_month_factors() call). C13 hard rule applies to Factor DB factor lookup; option-derived regime computation operates outside Factor DB scope.",
+      "mitigation": "ax_compliance.AX_002_PIT.C13_exemption_rationale documented. governance_log entry recommended. Codex C3 REBUTTAL with 3-axis citation (학술 BKM 2003 Eq.7 / L-454 KR internal data 우선 / 정량 0 Factor DB calls)."
+    },
+    {
+      "flag": "AX_008_triangulation_1_of_3",
+      "severity": "HIGH",
+      "desc": "Alpha PASS only (1/3). Forge / Architect verification pending. Per AX-008 mandate, deployment requires 2/3 minimum.",
+      "mitigation": "regime_indicator_summary.integration_with_m4.deployment_status='design_only_NOT_admitted'. PG2/PG3 admission 비대상. Discovery WT termination — separate deployment WT spawn required."
+    },
+    {
+      "flag": "tail_signal_concurrent_not_predictive",
+      "severity": "MEDIUM",
+      "desc": "regime_state-conditional KOSPI t-day mean return: PEACE=0.0000 / WARNING=0.0005 / TAIL_STRESS=0.0019. TAIL_STRESS days show HIGHER realized return (post-stress rebound). However q05 worsens substantially (PEACE -1.42% vs TAIL_STRESS -2.78%). Welch t = 2.34 (p=0.020). Honest read: signal identifies concurrent high-tail-risk regime, not next-day direction.",
+      "mitigation": "Layer D design = position cap (defensive trim), not directional bet. Aligns with concurrent risk-mitigation use case. AFT 2017 § 6 deployment-as-risk-cap convention."
+    }
+  ],
+  "regime_indicator_summary": {
+    "states": ["PEACE", "WARNING", "TAIL_STRESS"],
+    "composite_method": "two-stage expanding percentile (per-pillar → mean → 2nd-stage expanding percentile) for uniform-distribution composite, AFT 2017 § 5 top-decile convention compatibility",
+    "burnin_days": 252,
+    "threshold_warn": 0.7,
+    "threshold_stress": 0.9,
+    "min_duration": 3,
+    "proposal_kind": "B (independent regime overlay)",
+    "integration_with_m4": {
+      "kind": "Layer D multiplicative cap",
+      "design_doc": "qepm/mailbox/worktask/WT-D20260508_012/option_tail_regime_overlay_design.md",
+      "beta_tail_set": {
+        "PEACE": 1,
+        "WARNING": 0.85,
+        "TAIL_STRESS": 0.7
+      },
+      "beta_tail_rationale": "1σ tail risk premium ≈ 15% drawdown reduction (BTZ 2009 RFS Table 4 magnitude); 2σ ≈ 30% (Almeida-Ardison-Garcia 2020 JF Eq.(12)). KR-specific β_tail calibration requires backtest after Risk/Optimizer/Forge spawn.",
+      "backward_compat": "m4 schedule unmodified, STR_1715 PG2 backtest unaffected if Layer D not activated. Hybrid 70/15/15 (TSMOM, KR_10y bond) unaffected.",
+      "deployment_status": "design_only_NOT_admitted",
+      "deployment_status_rationale": "AX-008 triangulation 1/3 (alpha PASS only, Forge + Architect pending). PG2/PG3 admission 비대상. Discovery WT termination."
+    }
+  },
+  "method_shopping_log": {
+    "candidates_tried": 1,
+    "parallel_exec": false,
+    "rcpp_used": false,
+    "method_log": [
+      {
+        "name": "TwoStage_4Pillar_ExpPct_Composite",
+        "recall": 0.8333,
+        "false_positive": 0.0971,
+        "selected": true,
+        "note": "Single spec, no grid sweep. Pillars derived from AFT 2017 § 5 + Du-Kapadia 2012 § 2 + BTZ 2009 § 3 + BKM 2003 Eq.(7). Threshold 0.90 = AFT 2017 top-decile convention. Threshold 0.70 = top-30% warning band (single spec choice)."
+      }
+    ]
+  },
+  "ax_compliance": {
+    "AX_002_PIT": {
+      "pass": true,
+      "C1_C5_C9_evidence": "expanding percentile only, t-1 lag, regime_state from O_t_lag1 = shift(O_t, 1)",
+      "burnin_evidence": "252-day burn-in; first valid regime_state = 2012-01-09",
+      "C13_exemption_rationale": "RIX_proxy / LJV_proxy / ts_slope_neg use academic sign conventions per BKM 2003 RFS Eq.(7), AFT 2017 Eq.(8), BTZ 2009 § 3.2. C13 hard rule applies to Factor DB factor lookup (load_month_factors() requires Z_Score_Aligned). Option-derived regime computation operates outside Factor DB — 0 calls to factor_db_connector. Sign alignment satisfies C13 spirit (high score = high stress = expected risk-off action).",
+      "C14_C15_status": "N/A — no Factor DB factor used. Source data: option chain raw + KOSPI BM_Ret. PIT controlled at source (option close → t+1 decision)."
+    },
+    "AX_007": {
+      "applicable": false,
+      "reason": "regime_indicator output (NOT single-sleeve top20 long-only structure)"
+    },
+    "AX_008": {
+      "triangulation_status": "1/3",
+      "forge_status": "pending — discovery WT termination, deployment WT separate",
+      "architect_status": "pending — recommended for Layer D pre-deployment review",
+      "alpha_status": "PASS",
+      "gate_satisfied": false,
+      "consequence": "deployment_status=design_only_NOT_admitted; PG2/PG3 admission requires separate deployment WT with 2/3 minimum"
+    }
+  },
+  "codex_critic_round": {
+    "round": 1,
+    "stance": "REVISE",
+    "veto_flag": false,
+    "handling": "ACCEPT 6 + PARTIAL 2 + REBUTTAL 1",
+    "rebuttals": {
+      "C3_C13_manual_sign": "AX_002_PIT.C13_exemption_rationale (BKM 2003 Eq.(7) academic standard, 0 Factor DB calls)",
+      "C9_orthogonality_overstated": "표현 변경: 'genuinely new information' → 'moderately orthogonal' + cor weight_cash 0.17 정량 강조"
+    },
+    "spec_revisions_applied": [
+      "deliverable_kind regime_indicator 강화",
+      "validation overall_strict_5gate / overall_3gate 분리",
+      "deployment_status design_only_NOT_admitted",
+      "regime_state_summary.parquet 신규",
+      "regime_conditional_diagnostic.json 신규",
+      "factor_specs page-level 인용 (BKM 2003 Eq.7 / AFT 2017 Eq.8 / BTZ 2009 § 3.2)",
+      "C13_exemption_rationale 명시",
+      "run_all.R 신규 (lineage reproducibility)",
+      "challenge_note.md 작성 (codex 9 concerns 처리)"
+    ],
+    "q_lead_escalate_recommended": true,
+    "q_lead_escalate_trigger": "HIGH severity ≥ 5 (C1~C5)"
+  },
+  "output_files": {
+    "regime_indicator_timeseries": "stage_artifacts/WT_D20260508_012/regime_indicator_timeseries.parquet",
+    "regime_state_summary": "stage_artifacts/WT_D20260508_012/regime_state_summary.parquet",
+    "validation": "stage_artifacts/WT_D20260508_012/validation_8_stress_periods.json",
+    "regime_conditional_diagnostic": "stage_artifacts/WT_D20260508_012/regime_conditional_diagnostic.json",
+    "design_doc": "qepm/mailbox/worktask/WT-D20260508_012/option_tail_regime_overlay_design.md",
+    "challenge_note": "qepm/mailbox/worktask/WT-D20260508_012/challenge_note.md",
+    "codex_critic_response": "qepm/mailbox/worktask/WT-D20260508_012/codex_critic_response_alpha.json",
+    "run_all": "qepm/mailbox/worktask/WT-D20260508_012/run_all.R"
+  }
+}

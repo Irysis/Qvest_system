@@ -1,0 +1,53 @@
+{
+  "task_id": "WT-P20260509_001",
+  "recommendation_kind": "S4_v3_candidate_corrected",
+  "primary_sample": "TSMOM_window_136m_2015_01_to_2026_04",
+  "primary_sample_rationale": "TSMOM unavailable pre-2015 → zero-fill artifact distorts full-sample stats. Window primary = honest measurement.",
+  "recommended_method": "S4_strict",
+  "recommended_weights": {
+    "AR_on_M4": 0.5,
+    "TSMOM_9_ETF": 0.25,
+    "KR_10y_bond": 0.2,
+    "Cash": 0.05
+  },
+  "metrics_window_136m": {
+    "SR": 1.6995,
+    "CAGR": 0.1838,
+    "MDD": 0.1252
+  },
+  "metrics_oos_28m": {
+    "SR": 3.6046,
+    "MDD": 0.0363
+  },
+  "metrics_full_256m_with_zerofill": {
+    "SR": 1.8334,
+    "MDD": 0.1252,
+    "caveat": "Pre-2015 TSMOM=0 zero-fill → SR overstated"
+  },
+  "vs_dohoon_framing": {
+    "Path_C": {
+      "delta_SR_window": 0.0536,
+      "delta_MDD_window_pp": 4.08
+    },
+    "S4": {
+      "delta_SR_window": 0,
+      "delta_MDD_window_pp": 0
+    }
+  },
+  "ax_certifications": {
+    "AX_001_v2_PASS": true,
+    "DSR_pass_95": true,
+    "sign_consistency_3of4": false,
+    "AX_002_PIT_compliant": true,
+    "AX_007_multi_sleeve_exception": true
+  },
+  "caveats": [
+    "TSMOM-window primary (136m, 2015-01+) = honest measurement plane",
+    "Full-sample 256m metrics have zero-fill artifact (TSMOM pre-2015 = 0%)",
+    "OOS 28m (alpha-updated era) validates choice",
+    "Static-weight backtest, annual rebalance assumed (cost_drag ~3bps)",
+    "Forge 실측 mandate — run_all.R + 15bps + KOSPI BM",
+    "도훈 conviction call mandate — Optimizer는 권고만"
+  ],
+  "generated_at": "2026-05-09T17:59:52+09:00"
+}

@@ -1,0 +1,42 @@
+{
+  "alpha_id": "R14_DUVOL_skewness",
+  "measurement_basis": "Walk-forward sig-date IC partition by stress regime",
+  "ic_normal": {
+    "n_months": 47,
+    "mean": 0.0578,
+    "median_ci": 0.0584,
+    "ci_95_lower": 0.0188,
+    "ci_95_upper": 0.0988
+  },
+  "ic_crisis": {
+    "n_months": 12,
+    "mean": 0.0196,
+    "median_ci": 0.0189,
+    "ci_95_lower": -0.0151,
+    "ci_95_upper": 0.0555,
+    "note": "n_crisis only 12 in 2008-13/2014-19/2020-25 panel — wide CI expected"
+  },
+  "bad_normal_ratio": {
+    "point": 0.3386,
+    "median_ci": 0.3223,
+    "ci_95_lower": -0.306,
+    "ci_95_upper": 1.5288
+  },
+  "mdd_comparison": {
+    "hybrid_alone": -0.1748,
+    "combo_70_30": -0.1801,
+    "mdd_delta": -0.0052,
+    "relief": false
+  },
+  "status_options": {
+    "point_estimate_lenient": "PARTIAL_crisis_positive_but_ratio_low",
+    "codex_strict_full_PASS": "FAIL_codex_strict_PARTIAL_legacy"
+  },
+  "status_final": "FAIL_codex_strict_PARTIAL_legacy",
+  "bootstrap": {
+    "B": 5000,
+    "ci_method": "BCa naive percentile"
+  },
+  "interpretation": "Crisis IC 0.0196 (CI [-0.0151, 0.0555] n=12). Normal IC 0.0578. Ratio 0.3857 (CI [-0.3060, 1.5288]) — point estimate < 1.0 (crisis weaker than normal) and CI includes 1.0+ but also <1.0. MDD relief -0.0052 (NOT improved at 70/30). AX-001 v2 FAIL by codex strict — alpha is weak diversifier role, not defense.",
+  "role_classification_advisory": "Diversifier"
+}

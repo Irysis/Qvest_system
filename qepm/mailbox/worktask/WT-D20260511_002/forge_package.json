@@ -1,0 +1,339 @@
+{
+  "task_id": "WT-D20260511_002",
+  "as_of_date": "2026-05-11",
+  "agent": "forge",
+  "version": "v2.0_final_post_codex",
+  "wt_type_effective": "sizing_only",
+  "method": "weights.csv_direct_NAV_reconstruction_PerformanceAnalytics_Return.portfolio_sleeve_aggregate",
+  "method_description": "Pure Function 3-package integration. Optimizer weights.csv (256 rows × 4 sleeve cols × monthly schedule) as-is consumed. PerformanceAnalytics::Return.portfolio (rebalance_on='months', verbose=TRUE, geometric=TRUE) → BOP/EOP turnover → 15bps one-way × 2 round-trip cost → net return.",
+
+  "sr_realized_share_based": 1.8300,
+  "sr_factor_engine_continuous": null,
+  "sr_lockbox_daily_harness": null,
+  "measurement_basis_primary": "forge_realized_share_based",
+
+  "weights_csv_unique_dates_count": 256,
+  "alpha_sig_dates_count": 256,
+  "schedule_density_ratio": 1.0000,
+  "schedule_density_pass": true,
+  "pure_function_violation": false,
+
+  "divergence_factor_engine_vs_realized_pp": 0.0303,
+  "vs_factor_engine": {
+    "factor_engine_claimed_sr_is": 1.8603,
+    "forge_v3_realized_sr_is": 1.8300,
+    "divergence_pp": 0.0303,
+    "diagnosis": "NEGLIGIBLE",
+    "diagnosis_rule": "|divergence_pp| 0.0303 < 0.1 threshold per schema.json::vs_factor_engine.diagnosis enum auto-rule (NEGLIGIBLE / MINOR_DRIFT / SIGNIFICANT_DRAG / FABRICATION_SUSPECTED)",
+    "note": "factor_engine_claimed = Optimizer expected_metrics_256m.SR_net (composite_ret_renorm + net 15bps × 2 round-trip turnover, TSMOM missing 121m re-normalized basis). forge_v3_realized = PerformanceAnalytics::Return.portfolio with monthly rebalance, BOP/EOP turnover-based cost. Difference from re-norm basis ≈ 0.03 — NEGLIGIBLE."
+  },
+
+  "backtest_summary": {
+    "full_period": {
+      "n_obs": 255,
+      "start": "2005-03",
+      "end": "2026-05",
+      "sr_net": 1.8300,
+      "sr_gross": 1.8341,
+      "cagr": 0.1969,
+      "mdd": -0.1147,
+      "sortino": 4.0252,
+      "calmar": 1.7162,
+      "annvol": 0.1076,
+      "cvar_95": -0.0471,
+      "cvar_99": -0.0749,
+      "turnover_yr": 0.1503
+    },
+    "pre_lockbox": {
+      "cutoff": "2023-12-31",
+      "n_obs": 226,
+      "start": "2005-03",
+      "end": "2023-12",
+      "sr_net": 1.6206,
+      "cagr": 0.1627,
+      "annvol": 0.1004,
+      "mdd": -0.1147,
+      "cvar_95": -0.0484
+    },
+    "lockbox": {
+      "cutoff": "2023-12-31",
+      "n_obs": 29,
+      "start": "2024-01",
+      "end": "2026-05",
+      "sr_net": 3.6617,
+      "cagr": 0.5006,
+      "annvol": 0.1367,
+      "mdd": -0.0286,
+      "cvar_95": -0.0232,
+      "note": "Recent OOS extension 28m. forge stage lockbox scope retired per 도훈 mandate 2026-05-09 (.claude/rules/lockbox-scope.md) — split here for evidence transparency, NOT decision filtering."
+    }
+  },
+
+  "factor_regression_5_specs": {
+    "note": "KR FF3/Carhart4/FF5/FF6 monthly factor parquet not in standard Forge infra. CAPM realized attempted (best-effort) — KOSPI200 benchmark fallback load failed (rawdata BM_Ret alignment insufficient). Inherit basis from alpha_package.json.",
+    "capm_realized": null,
+    "ff3_realized": null,
+    "carhart4_realized": null,
+    "ff5_realized": null,
+    "ff6_realized": null,
+    "harvey_inherit_basis": {
+      "source": "alpha_package.json::harvey_t_inherited_basis",
+      "basis": "1715 H1 sleeve CAPM/FF3/FF5/Carhart4/FF6 t_NW 6.70~6.77 (S4 v2 admit lineage WT-P20260505_001)",
+      "applies_to": "Sleeve-internal alpha (str1715). Forge sleeve-aggregate composite re-regression on KR factor universe not standardly available — future research path: KR FF factor parquet add."
+    }
+  },
+
+  "method_selected_results": {
+    "method": "01_static_baseline_retain",
+    "weights_static": {"str1715": 0.50, "kr10y": 0.20, "tsmom": 0.25, "cash": 0.05},
+    "metrics_net": {
+      "SR": 1.8300,
+      "CAGR": 0.1969,
+      "AnnVol": 0.1076,
+      "MDD": -0.1147,
+      "Sortino": 4.0252,
+      "Calmar": 1.7162,
+      "CVaR_95": -0.0471,
+      "CVaR_99": -0.0749
+    },
+    "metrics_gross": {
+      "SR": 1.8341,
+      "CAGR": 0.1974,
+      "AnnVol": 0.1077,
+      "MDD": -0.1144,
+      "Sortino": 4.0418,
+      "Calmar": 1.7258,
+      "CVaR_95": -0.0470,
+      "CVaR_99": -0.0748
+    },
+    "turnover_yr": 0.1503
+  },
+
+  "method_2nd_results": {
+    "method": "09_regime_crisis_aggr",
+    "base": {"str1715": 0.50, "kr10y": 0.20, "tsmom": 0.25, "cash": 0.05},
+    "crisis_shift": {"str1715": -0.20, "kr10y": 0.10, "tsmom": 0.05, "cash": 0.05},
+    "metrics_net": {
+      "SR": 1.8436,
+      "CAGR": 0.1879,
+      "AnnVol": 0.1019,
+      "MDD": -0.1154,
+      "Sortino": 4.2365,
+      "Calmar": 1.6287,
+      "CVaR_95": -0.0443,
+      "CVaR_99": -0.0674
+    },
+    "metrics_gross": {
+      "SR": 1.8545,
+      "CAGR": 0.1890,
+      "AnnVol": 0.1019,
+      "MDD": -0.1146,
+      "Sortino": 4.2755,
+      "Calmar": 1.6497,
+      "CVaR_95": -0.0441,
+      "CVaR_99": -0.0673
+    },
+    "turnover_yr": 0.3154,
+    "divergence_vs_opt_expected_pp": 0.0654,
+    "diagnosis_vs_opt_expected": "NEGLIGIBLE"
+  },
+
+  "dm_test_forge_2nd_vs_baseline": {
+    "test_basis": "Memmel 2003 closed-form SR-diff variance: v = (1/n) * [2*(1 - rho) + 0.5*(sr1^2 + sr2^2 - 2*sr1*sr2*rho^2)]",
+    "sr_baseline_monthly": 0.5010,
+    "sr_2nd_monthly": 0.5055,
+    "sr_baseline_annualized": 1.7354,
+    "sr_2nd_annualized": 1.7511,
+    "delta_sr_monthly": 0.0045,
+    "delta_sr_annualized": 0.0157,
+    "memmel_t_stat": 0.3481,
+    "memmel_p_value": 0.7278,
+    "rho": 0.9827,
+    "n_obs": 255,
+    "conclusion": "STATISTICALLY_INDISTINGUISHABLE",
+    "note": "DM power ≈ 0.20 at effect size ΔSR=0.0045 monthly + n=255 (insufficient power). NS conclusion valid (p=0.73 명백 NS) but cannot reject H0:ΔSR=0. Future sample extension or alternative regime classifier may reveal stat sig. Acknowledged: 'N=256 power 충분' phrasing was inaccurate (corrected per Optimizer challenge_note + Forge Codex C9)."
+  },
+
+  "same_period_baseline_compare": {
+    "note": "Same period (255 monthly obs 2005-03 ~ 2026-05) + same cost basis (15bps one-way × 2 round-trip turnover) + same DSR convention. Optimizer's expected_metrics_256m basis: composite_ret_renorm + net 15bps × 2 (TSMOM missing 121m → 3-sleeve re-normalized). Forge realized basis: tsmom NA→0 (zero-contribution for missing 121m as actual zero). Difference NEGLIGIBLE.",
+    "optimizer_expected_sr_static": 1.8603,
+    "optimizer_expected_sr_2nd": 1.9090,
+    "optimizer_expected_mdd": -0.1523,
+    "optimizer_expected_cagr": 0.2365,
+    "optimizer_expected_cvar_95_monthly": 0.0551,
+    "forge_realized_sr_selected": 1.8300,
+    "forge_realized_sr_2nd": 1.8436,
+    "forge_realized_mdd_selected": -0.1147,
+    "forge_realized_cagr_selected": 0.1969,
+    "forge_realized_cvar_selected": -0.0471,
+    "delta_sr_selected_vs_optimizer": -0.0303,
+    "delta_mdd_selected_vs_optimizer_pp": 3.76,
+    "delta_mdd_selected_vs_optimizer_note": "Forge MDD -11.47% vs Optimizer expected -15.23% → 3.76pp 개선 (Forge MDD가 더 얕음). Optimizer expected used different MDD basis (composite_ret_renorm includes drag from missing TSMOM 121m).",
+    "delta_cvar_selected_vs_optimizer_pp_basis_note": "Optimizer expected_cvar 0.0551 was positive-sign convention (magnitude). Forge realized CVaR_95 -0.0471 (signed convention via PerformanceAnalytics::ETL). Magnitude comparison: 4.71% vs 5.51% → 0.80pp 개선",
+    "benchmark_kospi200": {
+      "loaded": false,
+      "source": "UNAVAILABLE — rawdata BM_Ret alignment insufficient. Future research path: external KOSPI200 monthly TR parquet add (best-effort attempted, deferred to Architect verification cycle).",
+      "metric_type": "unavailable"
+    },
+    "production_baseline_inherit": {
+      "note": "STR_1715 단독 sleeve 256m SR 1.6743 / MDD -38.04% / CAGR — but this is single equity sleeve, not 4-sleeve composite. Direct comparison invalid (different universe basis). 4-sleeve composite (1715 H1 50% + KR_10y 20% + TSMOM 25% + Cash 5%) baseline is THIS Forge measurement = SR 1.8300 / MDD -11.47% / CAGR 19.69%.",
+      "parent_wt": "WT-P20260505_001 Hybrid 70/15/15 PG2 admit",
+      "parent_3sleeve_basis": "70 STR_1715 + 15 TSMOM + 15 KR_10y (joint 135m only, SR 1.665, MDD -16.6%, CAGR 26.4%)",
+      "comparability": "joint window 2015-01 ~ 2026-03 (135m) overlapping. 본 WT는 256m 전기간 + cash 5% sleeve + sleeve weights 다르므로 direct comparison invalid. 도훈 framing 50/25/20/5 = walk-forward DRO Wasserstein convergence finding (L-286) 동일."
+    }
+  },
+
+  "strict_improve_criterion_check": {
+    "selected_method": "01_static_baseline_retain",
+    "note": "Optimizer selected static (DM test 모두 p>0.05). Forge confirms — 2nd dynamic (09_regime_crisis_aggr CRISIS shift) statistically indistinguishable from static (Memmel 2003 t=0.3481 p=0.7278).",
+    "delta_sr_2nd_minus_baseline": 0.0136,
+    "memmel_t_stat": 0.3481,
+    "memmel_p_value": 0.7278,
+    "dm_t_gt_2": false,
+    "delta_sr_geq_0p30": false,
+    "mdd_static_better_or_within_2pp": true,
+    "mdd_static_diff_pp": -0.07,
+    "mdd_2nd_diff_pp_vs_static": -0.07,
+    "turnover_le_30pct": false,
+    "turnover_2nd_yr": 0.3154,
+    "turnover_2nd_breach_pp": 1.54,
+    "cvar_2nd_improvement_pp": 0.28,
+    "cvar_2nd_improvement_note": "2nd dynamic CVaR_95 -4.43% vs baseline -4.71% → 0.28pp 개선 (실측). 단 stat sig not validated.",
+    "overall_strict_improve_pass": false,
+    "rationale": "Memmel 2003 p_value = 0.7278 > 0.05 → 2nd dynamic NOT stat sig SR improve. ΔSR_ann = 0.0157 << 0.30 threshold. Turnover 2nd 31.54% > 30% cap. R12 No Silent Override 정합 → static baseline retain. Optimizer R12 + Forge R12 consistent."
+  },
+
+  "pure_function_audit": {
+    "pure_function_violation": false,
+    "start_hashes": {
+      "alpha_package": "0975ac13de1e124a155906c5b9b15104",
+      "risk_package": "1598b8c8f2562bc24ae8e7b57f0edaa3",
+      "optimization_package": "1f3db4c9fe494fcd3a74deff0af2bd4c",
+      "weights_csv": "54c86a992a84de252d4412aa810d2e01"
+    },
+    "end_hashes": {
+      "alpha_package": "0975ac13de1e124a155906c5b9b15104",
+      "risk_package": "1598b8c8f2562bc24ae8e7b57f0edaa3",
+      "optimization_package": "1f3db4c9fe494fcd3a74deff0af2bd4c",
+      "weights_csv": "54c86a992a84de252d4412aa810d2e01"
+    },
+    "hash_match_count": 4,
+    "hash_match_total": 4,
+    "audit_notes": [
+      "Forge consumed weights.csv as-is. No alpha_scores top-N rederivation. No re-sort. No re-selection.",
+      "method labels (selected/2nd): 01_static_baseline_retain / 09_regime_crisis_aggr — no fabrication labels (Charter §9 compliant).",
+      "Schedule density 1.0000 (256 unique dates / 256 alpha sig dates) PASS.",
+      "optimization_package.json contains invalid JSON literal at L204 ('1.6873_joint_135m_only'). Forge in-memory parser patch replaces this textually with a quoted string AT READ TIME only — source file untouched (md5 hash preserved end-of-run). Patched field is method_comparison_summary_top10_256m.06_erc_rolling.SR_net (text display only). Semantic fields consumed by Forge (method_selected, method_2nd_candidate, expected_metrics_256m, target_weights_sleeve_aggregate) are not in the patched region. Pure Function principle satisfied at both binary (file unchanged) and semantic (consumed fields unchanged) levels. This is disclosed for AX-002 process honesty (Codex C7 REBUTTAL)."
+    ]
+  },
+
+  "constraint_validation": {
+    "sum_weights_selected_pass": true,
+    "sum_weights_selected_max_dev": 0.000000,
+    "sum_weights_2nd_pass": true,
+    "sum_weights_2nd_max_dev": 0.000000,
+    "long_only_selected": true,
+    "long_only_2nd": true,
+    "per_sleeve_bounds_selected": true,
+    "per_sleeve_bounds_2nd": true,
+    "convention_layer": "sleeve_aggregate (4 sleeves × 256m). Security-level constraints (max 20 stocks per sleeve, max_w 0.20 per security, liquidity 2e8 KRW) are sleeve-internal alpha-research responsibility (1715 H1 internal). Forge sleeve-aggregate constraint enforcement: [0.70/0.40/0.40/0.30] per sleeve + Σw=1 + long-only validated. Hook worktask_constraint_enforcer.sh v53 strict design for ticker-level holdings — sleeve-aggregate WT inherits constraint validation via Optimizer convention layer."
+  },
+
+  "ax_axiom_compliance": {
+    "AX_000_no_limit": "documented — 2nd dynamic NOT stat sig vs static at current sample (n=255). Future research paths in optimization_package: Rglpk CVaR LP install + HMM regime classifier + PPO RL + sample extension.",
+    "AX_001_v2_conditional_defense": "documented — kr10y crisis_alpha PASS (Risk Agent finding). tsmom borderline. 09_regime_crisis_aggr CRISIS shift provides mild risk improvement (MDD parity ~ -0.07pp, CVaR_95 -0.28pp) but not stat sig SR boost. Defense conditional evaluation (crisis_alpha + Core MDD relief + bad/normal IC ratio) satisfied for kr10y sleeve.",
+    "AX_002_no_lookahead": "PASS — weights.csv regime_lag is C9 t-1 compliant (build_weights_csv.R Phase 2 lag-1 PIT). PerformanceAnalytics Return.portfolio monthly rebalance schedule density 1.0000. forbidden labels (Charter §9) scan: 0 hits in weights.csv method columns. Pure Function audit hash 4/4 match (file binary identity) + semantic consumption integrity (in-memory JSON patch disclosed in audit_notes). Codex Forge C7 REBUTTAL accepted via explicit disclosure.",
+    "AX_007_top20_mechanism": "N/A — sleeve-aggregate 4-sleeve composite is cross-asset, not single_sleeve_long_only_top20. 1715 H1 internal sleeve is multi-sleeve composite (Iter 5 4F Consensus 0.65 + 3-axis Defense 0.35 + AR threshold overlay) — AX-007 4 exceptions (multi-sleeve / long-short / 50+ / ML sizing) retained.",
+    "AX_008_verification_triangulation": "Forge: 1 source (Return.portfolio sleeve-aggregate backtest). Optimizer: 1 source (16 candidate DM test). Codex Forge: REJECT stance (devil's advocate, not verification source) — 9 concerns dispositioned in challenge_note.md (4 REBUTTAL + 3 PARTIAL ACCEPT + 1 ACCEPT + 1 PARTIAL ACCEPT). Architect verification: deferred to subsequent cycle (sizing_only WT, AX-008 currently 2/3 = Forge + Optimizer)."
+  },
+
+  "benchmark_status": {
+    "loaded": false,
+    "source": "UNAVAILABLE",
+    "metric_type": "unavailable",
+    "fallback_attempted": "rawdata_with_factors.parquet BM_Ret apply.monthly Return.cumulative aggregation — alignment insufficient (BM_Ret monthly index vs strategy ym index mismatch in standard Forge infra)",
+    "future_research_path": "External KOSPI200 monthly TR parquet add to 02_Infrastructure/data/raw/ for Architect verification cycle."
+  },
+
+  "oos_charts_generated": [
+    "output/equity_curve.png",
+    "output/annual_returns.png",
+    "output/oos_zoom_chart.png",
+    "output/regime_decomposition.png"
+  ],
+  "oos_chart_mandate_v6p1": "PASS — 4 of 4 mandatory charts generated. equity_curve (full period selected vs 2nd) + annual_returns (bar) + oos_zoom_chart (2021-01 ~ 2026-05 zoom rebased) + regime_decomposition (regime-conditional annualized SR bar chart).",
+
+  "codex_critic_round_complete": {
+    "status": "COMPLETE",
+    "response_file": "qepm/mailbox/worktask/WT-D20260511_002/codex_critic_response_forge.json",
+    "stance": "REJECT",
+    "veto_flag": false,
+    "weakest_assumption_recognized": "That a static sleeve-level 50/20/25/5 reconstruction from inherited parent returns can stand in for ticker-level PIT walk-forward Forge evidence with alpha_scores, expanded weights, lockbox split, 5-spec Harvey/DSR, and same-period baseline proof.",
+    "concerns_addressed": {
+      "C1_ticker_level_artifacts_high": "REBUTTAL — sleeve_aggregate convention (sizing_only effective WT). L-280/286/287 academic basis. Optimizer constraint_convention_layer + forge_handoff already specifies ticker_expansion_path.",
+      "C2_max_names_liquidity_high": "REBUTTAL — security-level constraints sleeve-internal alpha-research domain. Sleeve-aggregate [0.70/0.40/0.40/0.30] bounds + Σw=1 + long-only validated.",
+      "C3_lockbox_evidence_high": "PARTIAL ACCEPT — lockbox split produced (forge_supplement.json::C3_lockbox_split). Pre-lockbox SR 1.6206 / MDD -11.47% + Lockbox extension SR 3.6617 / MDD -2.86%.",
+      "C4_harvey_5spec_high": "PARTIAL ACCEPT — sleeve-aggregate KR FF3/Carhart4/FF5/FF6 monthly parquet not in standard infra. CAPM attempted (KOSPI200 fallback failed). Harvey inherit basis 명시 (1715 H1 sleeve t_NW 6.70~6.77 lineage).",
+      "C5_dsr_penalty_high": "REBUTTAL — DSR penalty is alpha-discovery layer (z=6.0973 inherit). Forge backtest validation domain.",
+      "C6_baseline_fairness_high": "PARTIAL ACCEPT — KOSPI200 benchmark load attempted (forge_supplement.json::C6). production baseline inherit basis 명시.",
+      "C7_in_memory_patch_high": "REBUTTAL — md5 file binary identity preserved (hash 4/4 match end-of-run). In-memory patch affects method_comparison_summary_top10_256m.06_erc_rolling.SR_net text display only. Semantic consumption fields (method_selected, expected_metrics_256m) unaffected. Disclosed in pure_function_audit.audit_notes for AX-002 transparency.",
+      "C8_period_returns_duplicate_medium": "ACCEPT — period_returns_clean.csv generated (255 unique dates after dedup).",
+      "C9_rationalization_language_medium": "PARTIAL ACCEPT — NEGLIGIBLE / UNAVAILABLE are schema enum quantitative labels (not rationalization). '미미' phrasing scanned grep 0 hits in forge_package.json + run_all.R + forge_supplement.json. Codex grep false positive for '미미' in legacy artifacts retained."
+    },
+    "rationalization_red_flags_acknowledged": [
+      "DM power inadequate (~0.20) at effect size 0.0045 monthly + n=255. NS conclusion valid (p=0.73 obvious NS) but cannot reject H0. 'N=256 power 충분' phrasing was inaccurate (Optimizer corrected, Forge inherits correction).",
+      "Architect verification deferred — AX-008 currently 2/3. Judge stage will assess whether sizing_only WT qualifies for AX-008 2/3 or requires 3/3 Architect addition."
+    ],
+    "5_step_obligation_met": [
+      "1. Draft 작성 (_draft suffix) ✅ forge_package_draft.json",
+      "2. PostToolUse codex_round_auto_trigger.sh manual spawn (background) — Codex forge critic completed 08:42 KST ✅",
+      "3. Codex response 검토: stance=REJECT, 9 concerns 분석 ✅",
+      "4. challenge_note.md forge section append (ACCEPT/PARTIAL/REBUTTAL 분류 + 학술/L-code/정량 3축) ✅",
+      "5. Final forge_package.json (no _draft) — 본 file. codex_round_pre_enforcer.sh draft + critic_response 둘 다 존재 검증 통과"
+    ]
+  },
+
+  "judge_handoff": {
+    "package_location": "qepm/mailbox/worktask/WT-D20260511_002/forge_package.json",
+    "supplement_location": "qepm/mailbox/worktask/WT-D20260511_002/forge_supplement.json",
+    "backtest_artifacts": "qepm/mailbox/worktask/WT-D20260511_002/backtest_result/ (metrics.csv, nav.csv, period_returns.csv + period_returns_clean.csv, drawdowns_*.csv, annual_returns.csv, dm_test_forge.csv, bt_result_lite.rds, hurdle_result.json)",
+    "judge_ready": "qepm/mailbox/worktask/WT-D20260511_002/judge_ready/backtest_summary.json",
+    "charts": "qepm/mailbox/worktask/WT-D20260511_002/output/ (4 PNG)",
+    "next_stage": "Judge agent Gate 0~18 + PIT 검증 + Architect verification (AX-008 3/3 완성 시도)",
+    "key_evidence_for_judge": [
+      "Forge realized SR 1.8300 net (256m, sleeve-aggregate composite, PerformanceAnalytics standard)",
+      "DM test confirms NS (p=0.7278) → static baseline retain decision consistent with Optimizer R12",
+      "Lockbox extension recent OOS 28m SR 3.6617 (도훈 mandate effective 2026-05-12 admit validation)",
+      "Hurdle Grade A (SR ≥ 0.8 + CAGR 19.69% ≥ 16% + MDD -11.47% > -45% hard fail + Turnover 15.03% < 600% hard fail)",
+      "Pure Function audit hash 4/4 match + Schedule density 1.0000 + 4 mandatory OOS charts generated",
+      "Codex Forge REJECT (9 concerns) dispositioned in challenge_note.md (4 REBUTTAL + 4 PARTIAL ACCEPT + 1 ACCEPT)"
+    ]
+  },
+
+  "lineage": {
+    "input_files": [
+      "qepm/mailbox/worktask/WT-D20260511_002/alpha_package.json (md5 0975ac13de1e124a155906c5b9b15104)",
+      "qepm/mailbox/worktask/WT-D20260511_002/risk_package.json (md5 1598b8c8f2562bc24ae8e7b57f0edaa3)",
+      "qepm/mailbox/worktask/WT-D20260511_002/optimization_package.json (md5 1f3db4c9fe494fcd3a74deff0af2bd4c)",
+      "stage_artifacts/WT_D20260511_002/weights.csv (md5 54c86a992a84de252d4412aa810d2e01)",
+      "stage_artifacts/WT_P20260505_001/merged_returns_3source.csv (3-sleeve 256m monthly returns)"
+    ],
+    "output_files": [
+      "qepm/mailbox/worktask/WT-D20260511_002/forge_package_draft.json (v1.0_draft)",
+      "qepm/mailbox/worktask/WT-D20260511_002/forge_package.json (v2.0_final_post_codex, 본 file)",
+      "qepm/mailbox/worktask/WT-D20260511_002/forge_supplement.json (lockbox split + benchmark + Harvey CAPM attempt)",
+      "qepm/mailbox/worktask/WT-D20260511_002/codex_critic_response_forge.json",
+      "qepm/mailbox/worktask/WT-D20260511_002/challenge_note.md (forge section appended)",
+      "qepm/mailbox/worktask/WT-D20260511_002/backtest_result/* (metrics, nav, period_returns, drawdowns, annual_returns, bt_result_lite, hurdle_result)",
+      "qepm/mailbox/worktask/WT-D20260511_002/judge_ready/backtest_summary.json",
+      "qepm/mailbox/worktask/WT-D20260511_002/output/*.png (4 charts)"
+    ],
+    "scripts": [
+      "qepm/mailbox/worktask/WT-D20260511_002/run_all.R (Pure Function 3-package integrator)",
+      "qepm/mailbox/worktask/WT-D20260511_002/forge_supplement_analysis.R (lockbox + benchmark + Harvey CAPM)"
+    ]
+  },
+
+  "generated_at": "2026-05-11T08:50:00+0900",
+  "generated_by": "forge agent (Q-Lead spawned) — post-Codex finalize (Charter v1.7 Pure Function 3-package integrator)"
+}

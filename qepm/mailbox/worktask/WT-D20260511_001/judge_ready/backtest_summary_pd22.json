@@ -1,0 +1,110 @@
+{
+  "task_id": "WT-D20260511_001",
+  "pd_label": "PD22",
+  "design_label": "5-sleeve Cross-Universe Z-Composite Top20",
+  "mandate_source": "도훈 mandate 2026-05-12 (~18:00 KST)",
+  "mandate_quote": "5슬리브를 z스코어로 컴포짓해서 탑20 뽑는 전략으로 프로즌없이 전 기간 백테해서 현재 pg2랑 성과 비교해봐",
+  "backtest_run_id": "PD22_v1_20260512",
+  "n_periods": 184,
+  "period": "2011-01-01 ~ 2026-04-01",
+  "lockbox_policy": "폐기 (forge 단계 정합)",
+  "cost_model": "v2.3_kr_retail_15bps",
+  "universe": "5-sleeve cross-universe (770 KR equity + 1 TSMOM_basket + 1 KR_10y_bond + 1 Cash = 773 candidates)",
+  "selection_method": "Top20 EW 5% each by composite_z (cross-universe rank)",
+  "metrics_cost_embedded": {
+    "SR_ann_geometric": 0.7426,
+    "CAGR": 0.1670,
+    "MDD": -0.336,
+    "Sortino": 1.5109,
+    "Calmar": 0.4971,
+    "CVaR_95_monthly": -0.1116,
+    "hit_rate": 0.587,
+    "vol_ann": 0.2249,
+    "turnover_annualized_pct": 629,
+    "cost_drag_annual_bps": 188.61
+  },
+  "metrics_cost_free": {
+    "SR_gross": 0.8412,
+    "CAGR_gross": 0.1890,
+    "MDD_gross": -0.3058
+  },
+  "comparison_baselines": {
+    "s4_v2_admit_pg2": {
+      "SR": 1.8258,
+      "CAGR": 0.1951,
+      "MDD": -0.1263,
+      "CVaR_95": -0.0461,
+      "Sortino": 3.9977,
+      "label": "S4 v2 4-sleeve hybrid 50/25/20/5cash (5/12 effective)"
+    },
+    "pd20b_path2_aligned": {
+      "SR": 2.3063,
+      "CAGR": 0.2932,
+      "MDD": -0.1458,
+      "label": "PD20-B Path 2 4-sleeve consolidation z-composite top20 KR equity sleeve"
+    },
+    "pd18_5sleeve_full": {
+      "SR": 2.2410,
+      "CAGR": 0.2355,
+      "MDD": -0.1154,
+      "label": "PD18 5-sleeve 49 holdings (cap violation baseline)"
+    }
+  },
+  "delta_pd22_vs_s4_v2": {
+    "delta_SR": -1.0832,
+    "delta_CAGR_pp": -2.81,
+    "delta_MDD_pp": 20.97,
+    "delta_CVaR_95_pp": -6.55,
+    "verdict_4_axis_strict": "ALL_FAIL"
+  },
+  "delta_pd22_vs_pd20b_aligned": {
+    "delta_SR": -1.5636,
+    "delta_CAGR_pp": -12.62,
+    "delta_MDD_pp": 19.02,
+    "verdict_3_axis_strict": "ALL_FAIL"
+  },
+  "delta_pd22_vs_pd18": {
+    "delta_SR": -1.4984,
+    "delta_CAGR_pp": -6.85,
+    "delta_MDD_pp": 22.06,
+    "verdict_3_axis_strict": "ALL_FAIL"
+  },
+  "diebold_mariano_vs_s4_v2": {
+    "N": 183,
+    "mean_diff": -0.000365,
+    "NW_lag6_SE": 0.004028,
+    "t_NW": -0.0907,
+    "p_value": 0.9278,
+    "harvey_t_pass_3.0": false,
+    "interpretation": "PD22 underperforms S4 v2 but NOT statistically significantly. Mean returns essentially same, but PD22 has much higher variance + MDD."
+  },
+  "cross_universe_diagnostic": {
+    "mean_kr_stock_in_top20": 19.71,
+    "tsmom_in_top20_sig_dates_pct": 16.3,
+    "kr_10y_in_top20_sig_dates_pct": 13.0,
+    "cash_in_top20_sig_dates_pct": 0,
+    "interpretation": "KR equity dominance 98.5% — ETF/Bond effectively excluded. Universe size disparity (770 vs 9) makes cross-universe ranking collapse to KR-only stock-picking."
+  },
+  "pure_function_audit": {
+    "alpha_md5_match": true,
+    "risk_md5_match": true,
+    "opt_md5_match": true,
+    "verdict": "PASS"
+  },
+  "forge_verdict": "REJECT",
+  "forge_recommendation": "Retain current PG2 admit (S4 v2 4-sleeve hybrid). Consider upgrade to PD20-B Path 2 if admit approved by PD21 Judge re-spawn.",
+  "key_learning": "Cross-universe ranking ≠ sleeve hedging. Universe size dominance (770 KR vs 9 non-KR) makes ETF/Bond effectively excluded → multi-asset diversification 효과 100% 상실. 5-sleeve z-composite의 본질은 sleeve weighting 자체를 z-composite로 정의해야 (PD20-B Path 2 instantiation).",
+  "outputs": [
+    "backtest_result_pd22/period_returns.csv",
+    "backtest_result_pd22/nav.csv",
+    "backtest_result_pd22/metrics.csv",
+    "backtest_result_pd22/holdings.csv",
+    "backtest_result_pd22/benchmark_compare.csv",
+    "backtest_result_pd22/4axis_strict_improve.csv",
+    "backtest_result_pd22/diebold_mariano.csv",
+    "backtest_result_pd22/cross_universe_diagnostic.csv",
+    "backtest_result_pd22/pure_function_audit.csv",
+    "backtest_result_pd22/metrics_pd22.rds"
+  ],
+  "timestamp": "2026-05-12 06:58:00 KST"
+}

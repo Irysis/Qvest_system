@@ -1,0 +1,47 @@
+{
+  "task_id": "WT-D20260511_001",
+  "cadence_audit": {
+    "n_obs": 79,
+    "median_diff_days": 61,
+    "is_monthly": false,
+    "optimizer_sr_claim_inflated": true
+  },
+  "high_20pct": {
+    "grade": "JUDGE_FAILED",
+    "reasons": ["4-axis: 3 PASS / 1 FAIL", "CAGR FAIL margin -1.53pp (within 1pp)", "AX-001 v2 triad: 2/3 PASS → CONDITIONAL_PASS upgrade", "DSR M=18 z=8.26 p=1.0000 (PASS p>0.95)", "TDC 0.438 > 0.30 RF-R3 BREACH — AX-007 Exception 1 waiver required", "OOS DM t=-0.49 p=0.625 NS (statistically equivalent baseline)"],
+    "primary_metrics": {
+      "n_months": 255,
+      "period": "2005-02-01 ~ 2026-04-01",
+      "SR_ann_geometric": 2.0546,
+      "CAGR": 0.1867,
+      "MDD": -0.0924,
+      "Sortino_ann": 4.7852,
+      "Calmar": 2.0205,
+      "CVaR_95_monthly": -0.0384,
+      "hit_rate": 0.7176,
+      "note": "PRIMARY admit basis. NEW sleeve = alpha-active 2011-02~2023-11 panel + OOS 2024-01~2026-04 frozen 2023-11 top20 EW buy-and-hold. Charter v6.1 R12 mandate compliant."
+    },
+    "ax001_v2_verdict": "CONDITIONAL_PASS (triad 2/3)",
+    "ax007_status": "Exception 1 waiver required (TDC pair breach)",
+    "ax008_status": "2/3 floor PASS (Forge + Architect)",
+    "cadence_reconcile_mandate": true,
+    "governor_recommend": true
+  },
+  "med_10pct": {
+    "grade": "JUDGE_PASSED",
+    "reasons": ["Incremental approach per Architect advisory (Charter §8 + L-280/281 Path C)", "TDC mitigation: weight_scaled 0.044 < 0.088 (half of high_20pct)", "AX-001 v2 small_N 완충: lower exposure to unverified defense characteristic", "Pareto: med dominates baseline 4-axis (SR +0.30, MDD +2.8pp, CAGR neutral)"],
+    "ax001_v2_verdict": "CONDITIONAL_PASS (triad 2/3, lower risk per smaller exposure)",
+    "ax007_status": "Exception 1 waiver required (TDC pair structural)",
+    "ax008_status": "2/3 floor PASS",
+    "recommendation": "INCREMENTAL_FIRST_CYCLE per Architect"
+  },
+  "dsr_M18": {
+    "M": 18,
+    "z_candidate": 8.2556,
+    "p_candidate": 1,
+    "z_baseline": 7.1665,
+    "p_baseline": 1
+  },
+  "recommendation_to_governor": "med_10pct first-cycle incremental admit (Architect precedent L-280/281). high_20pct CONDITIONAL deferred to next iter pending TDC mitigation evidence.",
+  "audit_complete_at": "2026-05-11T10:07:53+0900"
+}

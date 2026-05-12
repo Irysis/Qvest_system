@@ -1,0 +1,171 @@
+{
+  "task_id": "WT-D20260511_002",
+  "agent": "architect",
+  "version": "v1.0_independent_reproduce",
+  "verification_at": "2026-05-11T08:59:38+0900",
+  "reproduce_method": "independent_manual_matrix_product_BOP_EOP_drift_turnover",
+  "reproduce_method_description": "Manual matrix product R_p[t] = w[t] %*% r[t]. BOP/EOP drift: w_eop[t] = w[t]*(1+r[t])/(1+R_p[t]). Turnover: TO[t] = sum(|w[t] - w_eop[t-1]|). Cost: 15bps one-way × 2 round-trip = 0.0030 per unit TO (Forge convention). Manual SR/CAGR/MDD/Sortino/Calmar/CVaR_95 (no PerformanceAnalytics package). Distinct code path from Forge::Return.portfolio (verbose=TRUE, geometric=TRUE).",
+  "input_hashes": {
+    "alpha_md5": "0975ac13de1e124a155906c5b9b15104",
+    "risk_md5": "1598b8c8f2562bc24ae8e7b57f0edaa3",
+    "opt_md5": "1f3db4c9fe494fcd3a74deff0af2bd4c",
+    "opt_sha256": "f40c1bf99d1e16c56c3d0c29fc489c49e640fab01e4729149677e6b721f3220a",
+    "weights_md5": "54c86a992a84de252d4412aa810d2e01",
+    "parent_returns_md5": "8f72dbc52cb3264c353508d696059dd2"
+  },
+  "hash_match_with_forge": [true, true, true, true],
+  "reproduce_metrics_full": {
+    "SR_net": 1.8292795557,
+    "SR_net_arith": 1.7347358317,
+    "CAGR": 0.19690651498,
+    "AnnVol": 0.10764156543,
+    "MDD": -0.11474444014,
+    "Sortino": 4.0277112142,
+    "Calmar": 1.7160440605,
+    "CVaR_95": -0.047078488883,
+    "Turnover_yr": 0.15186198744,
+    "Turnover_yr_full": 0.30372397488,
+    "n_obs": 255
+  },
+  "reproduce_metrics_pre_lockbox": {
+    "n_obs": 226,
+    "SR_net": 1.6202873139,
+    "CAGR": 0.16268121004,
+    "AnnVol": 0.10040269317,
+    "MDD": -0.11474444014,
+    "CVaR_95": -0.048352439704
+  },
+  "reproduce_metrics_lockbox_extension": {
+    "n_obs": 29,
+    "SR_net": 3.6564039364,
+    "CAGR": 0.50054850273,
+    "AnnVol": 0.13689639095,
+    "MDD": -0.028616114199,
+    "CVaR_95": -0.023243976567
+  },
+  "reproduce_metrics_2nd": {
+    "SR_net": 1.8894941915,
+    "CAGR": 0.19444133657,
+    "AnnVol": 0.10290655427,
+    "MDD": -0.1088864975,
+    "Sortino": 4.5177911517,
+    "Calmar": 1.7857249617,
+    "CVaR_95": -0.041995574637,
+    "Turnover_yr": 0.3187345239,
+    "n_obs": 255
+  },
+  "forge_metrics_inherit_full": {
+    "SR_net": 1.83,
+    "CAGR": 0.1969,
+    "AnnVol": 0.1076,
+    "MDD": -0.1147,
+    "Sortino": 4.0252,
+    "Calmar": 1.7162,
+    "CVaR_95": -0.0471,
+    "Turnover_yr": 0.1503,
+    "n_obs": 255
+  },
+  "forge_metrics_inherit_pre": {
+    "SR_net": 1.6206,
+    "CAGR": 0.1627,
+    "AnnVol": 0.1004,
+    "MDD": -0.1147,
+    "CVaR_95": -0.0484,
+    "n_obs": 226
+  },
+  "forge_metrics_inherit_lockbox": {
+    "SR_net": 3.6617,
+    "CAGR": 0.5006,
+    "AnnVol": 0.1367,
+    "MDD": -0.0286,
+    "CVaR_95": -0.0232,
+    "n_obs": 29
+  },
+  "forge_metrics_inherit_2nd": {
+    "SR_net": 1.8436,
+    "MDD": -0.1154
+  },
+  "delta_analysis_full": {
+    "SR_net": {
+      "forge": 1.83,
+      "architect": 1.8292795557,
+      "delta": -0.00072044434487,
+      "classification": "NEGLIGIBLE"
+    },
+    "CAGR": {
+      "forge": 0.1969,
+      "architect": 0.19690651498,
+      "delta_pp": 0.00065149784928,
+      "classification": "NEGLIGIBLE"
+    },
+    "MDD": {
+      "forge": -0.1147,
+      "architect": -0.11474444014,
+      "delta_pp": -0.0044440137547,
+      "classification": "NEGLIGIBLE"
+    },
+    "AnnVol": {
+      "forge": 0.1076,
+      "architect": 0.10764156543,
+      "delta_pp": 0.0041565429278
+    },
+    "Sortino": {
+      "forge": 4.0252,
+      "architect": 4.0277112142,
+      "delta": 0.0025112142331
+    },
+    "Calmar": {
+      "forge": 1.7162,
+      "architect": 1.7160440605,
+      "delta": -0.00015593945593
+    },
+    "Turnover_yr": {
+      "forge": 0.1503,
+      "architect": 0.15186198744,
+      "delta_pp": 0.15619874415
+    }
+  },
+  "delta_analysis_pre_lockbox": {
+    "SR_net": {
+      "forge": 1.6206,
+      "architect": 1.6202873139,
+      "delta": -0.00031268605206,
+      "classification": "NEGLIGIBLE"
+    },
+    "MDD": {
+      "forge": -0.1147,
+      "architect": -0.11474444014,
+      "delta_pp": -0.0044440137547,
+      "classification": "NEGLIGIBLE"
+    }
+  },
+  "delta_analysis_lockbox_extension": {
+    "SR_net": {
+      "forge": 3.6617,
+      "architect": 3.6564039364,
+      "delta": -0.005296063646,
+      "classification": "NEGLIGIBLE"
+    },
+    "MDD": {
+      "forge": -0.0286,
+      "architect": -0.028616114199,
+      "delta_pp": -0.0016114199379,
+      "classification": "NEGLIGIBLE"
+    }
+  },
+  "classification_summary": {
+    "negligible_count": 7,
+    "minor_count": 0,
+    "drift_count": 0
+  },
+  "verdict": "PASS",
+  "ax008_contribution": "1/3 source — Forge + Optimizer + Architect = 3/3 achievable (AX-008 satisfied)",
+  "lockbox_extension_sr_reproduce_finding": "Forge SR 3.6617 lockbox extension (29m, 2024-01~2026-05). Architect SR 3.6564. Δ -0.0053 → NEGLIGIBLE. This is the most decision-relevant differentiator of this backtest.",
+  "concerns": [],
+  "next_step": "Judge spawn (Gate 0~18 + PIT) + Governor admission consideration",
+  "lineage": {
+    "inputs_read_only": ["/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260511_002/alpha_package.json", "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260511_002/risk_package.json", "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260511_002/optimization_package.json", "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/stage_artifacts/WT_D20260511_002/weights.csv", "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/stage_artifacts/WT_P20260505_001/merged_returns_3source.csv"],
+    "outputs_written": ["/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260511_002/architect/architect_verification.json", "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260511_002/architect/architect_reproduce_metrics.csv"],
+    "script": "qepm/mailbox/worktask/WT-D20260511_002/architect/architect_independent_reproduce.R"
+  }
+}

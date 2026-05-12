@@ -1,0 +1,533 @@
+{
+  "task_id": "WT-D20260511_002",
+  "as_of_date": "2026-05-11",
+  "agent": "risk_research",
+  "version": "v1.1",
+  "wt_type_effective": "sizing_only",
+  "selection_objective": "condition_number",
+  "alpha_inheritance_basis": "S4_v2_4_sleeve_admit_2026_05_09",
+  "no_alpha_modification": true,
+  "no_weight_proposal": true,
+  "bsigma_d_decomposition_note": "sleeve_aggregate_simplification: B=I (each sleeve = own factor), Omega=Sigma_sleeve, D=0. exposure_matrix/factor_covariance/specific_risk not separately generated — they would duplicate the 3x3 sample Σ. Security-level decomposition delegated to 1715 H1 internal alpha-research.",
+  "security_covariance_ref": "stage_artifacts/WT_D20260511_002/covariance.parquet",
+  "security_covariance_4sleeve_singular_ref": "stage_artifacts/WT_D20260511_002/covariance_4sleeve_singular.parquet",
+  "security_covariance_4sleeve_regularized_ref": "stage_artifacts/WT_D20260511_002/covariance_4sleeve_regularized.parquet",
+  "security_covariance_4sleeve_legacy_ref": "stage_artifacts/WT_D20260511_002/covariance_4sleeve.parquet",
+  "regime_correlation_ref": "stage_artifacts/WT_D20260511_002/regime_correlation.parquet",
+  "regime_bootstrap_ci_ref": "stage_artifacts/WT_D20260511_002/regime_bootstrap_ci.json",
+  "tail_risk_ref": "stage_artifacts/WT_D20260511_002/tail_risk.json",
+  "tdc_summary_ref": "stage_artifacts/WT_D20260511_002/tdc_summary.json",
+  "risk_summary": {
+    "top_common_risks": ["Equity_Core_1715 (97.9%)", "CrossAsset_TSMOM (2.1%)", "KR_Term_Premium (-0.0%)"],
+    "risk_contributions_pct": {
+      "str1715": 97.94,
+      "tsmom": 2.06,
+      "kr10y": -0,
+      "cash": 0
+    },
+    "avg_annual_vol_composite_pct": 10.68,
+    "annual_vol_per_sleeve_pct": {
+      "str1715": 21.59,
+      "kr10y": 6.29,
+      "tsmom": 4.56
+    },
+    "crowding_flags": [
+      {
+        "sleeve": "str1715",
+        "severity": "MEDIUM",
+        "msg": "1715 H1 universe 20 KR stocks, top 반도체 9 (~45% sector concentration). 외인/기관 매수 reversal risk 주의."
+      },
+      {
+        "sleeve": "tsmom",
+        "severity": "LOW",
+        "msg": "8-ETF universe (cross-asset), individual ETF crowding low. 단, KODEX_GOLD_H/KODEX_KR_REIT cor with global commodity flow 모니터링."
+      },
+      {
+        "sleeve": "kr10y",
+        "severity": "LOW",
+        "msg": "Single bond ETF A148070, KR 국채 시장 깊이 충분. 외환 reversal 시 일시적 spike 가능."
+      }
+    ],
+    "liquidity_flags": [
+      {
+        "sleeve": "str1715",
+        "msg": "1715 H1 20 stocks pass liquidity floor 5e7 KRW (20d avg)"
+      },
+      {
+        "sleeve": "tsmom",
+        "msg": "8 ETFs all have sufficient ADV (KODEX_200/KODEX_KTB10Y 제외 후 retain)"
+      },
+      {
+        "sleeve": "kr10y",
+        "msg": "A148070 KODEX 국채10년 ADV >5억 KRW"
+      }
+    ],
+    "tail_risk": {
+      "monthly_cvar_95": 0.0458,
+      "monthly_cvar_99": 0.0613,
+      "monthly_cdar_95": -0.1012,
+      "monthly_max_dd": -0.1129,
+      "hill_alpha": 2.503,
+      "composite_basis": "4-sleeve static admit (50/25/20/5cash)"
+    },
+    "stress_tests_composite": {
+      "gfc_2008_cum": null,
+      "eu_debt_2011_cum": null,
+      "covid_2020_cum": -0.083,
+      "inflation_2022_cum": -0.0529,
+      "market_down_5_estimated": -0.0233,
+      "beta_composite_kospi": 0.465
+    }
+  },
+  "factor_exposures": {
+    "n_sleeves": 4,
+    "sleeve_names": ["str1715", "kr10y", "tsmom", "cash"],
+    "sleeve_styles": {
+      "str1715": {
+        "role": "Core Cross-Section Multi-Sleeve Equity Alpha",
+        "style": ["4F_Consensus_0.65", "3-axis_Defense_0.35", "AR_Threshold_Overlay"],
+        "expected_beta_kospi": 1,
+        "crisis_alpha_expected": "+0.15 (S3 256m AR-on-M4 empirical)"
+      },
+      "kr10y": {
+        "role": "KR_Term_Premium_Passive_Bond",
+        "style": ["Duration_8.5y", "Credit_AAA_Sovereign"],
+        "expected_beta_kospi": -0.3,
+        "flight_to_quality": "STRONG (cor with str1715 in stagflation = -0.48)"
+      },
+      "tsmom": {
+        "role": "Cross_Asset_TimeSeries_Momentum",
+        "style": ["8_ETF_universe", "12m_vol_target_inverse"],
+        "expected_beta_kospi": 0.1,
+        "diversification": "STRONG (cor with str1715 = 0.08, kr10y = 0.12)"
+      },
+      "cash": {
+        "role": "Buffer_Opportunity_Cost_Minimization",
+        "style": "KRW_zero_duration",
+        "expected_beta_kospi": 0,
+        "role_exempt": "EXEMPT_CASH_ROLE (v55)"
+      }
+    },
+    "full_period_correlation": {
+      "str1715_kr10y": -0.1371,
+      "str1715_tsmom": 0.0766,
+      "kr10y_tsmom": 0.1187
+    }
+  },
+  "diagnostics": {
+    "condition_number": 21.7,
+    "shrinkage_used": false,
+    "shrinkage_method": "sample",
+    "psd_verified": true,
+    "min_eigenvalue": 0.00017615,
+    "max_correlation": 0.12230325,
+    "avg_correlation": 0.02382628,
+    "crowding_hhi_static": 0.355,
+    "factor_correlation_warnings": [],
+    "regime_method_selected": "MRS_Expanding_Percentile_4_State",
+    "regime_correlation_summary": {
+      "BULL": {
+        "str1715_tsmom_cor": 0.04933599,
+        "str1715_kr10y_cor": -0.21239893,
+        "kr10y_tsmom_cor": 0.0713587,
+        "avg_vol": 0.03467003,
+        "n": 23,
+        "bootstrap_ci_95": {
+          "str1715_kr10y_lo": -0.60964513,
+          "str1715_kr10y_hi": 0.31710953,
+          "str1715_tsmom_lo": -0.51916964,
+          "str1715_tsmom_hi": 0.57782209,
+          "kr10y_tsmom_lo": -0.42756348,
+          "kr10y_tsmom_hi": 0.53165131
+        },
+        "stat_sig_str1715_tsmom": false,
+        "stat_sig_str1715_kr10y": false
+      },
+      "NORMAL": {
+        "str1715_tsmom_cor": 0.01857496,
+        "str1715_kr10y_cor": 0.17347074,
+        "kr10y_tsmom_cor": 0.21888737,
+        "avg_vol": 0.02757116,
+        "n": 36,
+        "bootstrap_ci_95": {
+          "str1715_kr10y_lo": -0.13870972,
+          "str1715_kr10y_hi": 0.4416611,
+          "str1715_tsmom_lo": -0.2611082,
+          "str1715_tsmom_hi": 0.32502087,
+          "kr10y_tsmom_lo": -0.14986473,
+          "kr10y_tsmom_hi": 0.50917473
+        },
+        "stat_sig_str1715_tsmom": false,
+        "stat_sig_str1715_kr10y": false
+      },
+      "CAUTION": {
+        "str1715_tsmom_cor": 0.13654174,
+        "str1715_kr10y_cor": 0.01378085,
+        "kr10y_tsmom_cor": 0.37014561,
+        "avg_vol": 0.02664368,
+        "n": 26,
+        "bootstrap_ci_95": {
+          "str1715_kr10y_lo": -0.31954273,
+          "str1715_kr10y_hi": 0.36539028,
+          "str1715_tsmom_lo": -0.07905892,
+          "str1715_tsmom_hi": 0.48113222,
+          "kr10y_tsmom_lo": -0.09065848,
+          "kr10y_tsmom_hi": 0.73100642
+        },
+        "stat_sig_str1715_tsmom": false,
+        "stat_sig_str1715_kr10y": false
+      },
+      "CRISIS": {
+        "str1715_tsmom_cor": 0.23427638,
+        "str1715_kr10y_cor": -0.20287764,
+        "kr10y_tsmom_cor": -0.11472258,
+        "avg_vol": 0.02893037,
+        "n": 50,
+        "bootstrap_ci_95": {
+          "str1715_kr10y_lo": -0.38297412,
+          "str1715_kr10y_hi": 0.00986513,
+          "str1715_tsmom_lo": 0.02849713,
+          "str1715_tsmom_hi": 0.43338176,
+          "kr10y_tsmom_lo": -0.41342254,
+          "kr10y_tsmom_hi": 0.2159057
+        },
+        "stat_sig_str1715_tsmom": true,
+        "stat_sig_str1715_kr10y": false
+      }
+    },
+    "bootstrap_ci_method": "1000 resamples per regime, 95% CI bias-corrected. Pfaff (2016) Ch.4 procedure.",
+    "tdc_summary": {
+      "method": "Joe-Clayton empirical lower tail (q=0.05, q=0.10)",
+      "str1715_kr10y_q05": 0,
+      "str1715_kr10y_q10": 0,
+      "str1715_tsmom_q05": 0,
+      "str1715_tsmom_q10": 0,
+      "kr10y_tsmom_q05": 0.148,
+      "kr10y_tsmom_q10": 0.37,
+      "composite_vs_str1715_q10": 0.815,
+      "finding": "str1715-kr10y + str1715-tsmom: TDC_lower=0 — NO lower tail dependence (true diversifiers). kr10y-tsmom: TDC=0.15~0.37 — moderate macro-shock co-movement. composite vs str1715 TDC=0.82 — 4-sleeve lower tail dominated by str1715 (RF-R1 정량 강화)."
+    },
+    "train_window": {
+      "start": "2005-02-01",
+      "end": "2026-04-01",
+      "n_obs": 135,
+      "n_assets": 3
+    }
+  },
+  "method_shopping_log": {
+    "risk_agent": {
+      "sigma_estimator": {
+        "candidates_tried": 5,
+        "selection_objective": "condition_number",
+        "method_log": [
+          {
+            "name": "sample",
+            "condition": 21.69851126,
+            "min_eig": 0.00016391,
+            "psd": true,
+            "selected": true
+          },
+          {
+            "name": "ledoit_wolf_analytical",
+            "condition": 17.53325598,
+            "min_eig": 0.00017615,
+            "psd": true,
+            "lambda_correlation_off_diag": 0.80123055,
+            "lambda_variance_diag": 0.04118016,
+            "shrinkage_intensity_note": "lambda_corr is dominant shrinkage parameter. lambda=0 means raw sample cor, lambda=1 means identity target (no off-diag correlation).",
+            "selected": false
+          },
+          {
+            "name": "gerber_rmt",
+            "condition": 35.03742176,
+            "min_eig": 0.00011824,
+            "psd": true,
+            "selected": false
+          },
+          {
+            "name": "ewma_riskmetrics_094",
+            "condition": 49.59007771,
+            "min_eig": 0.0002364,
+            "psd": true,
+            "selected": false
+          },
+          {
+            "name": "constant_correlation_shrunk_03",
+            "condition": 20.58544808,
+            "min_eig": 0.00016745,
+            "psd": true,
+            "selected": false
+          }
+        ],
+        "selected_method": "sample",
+        "selection_rationale": "Sample Σ cond=21.70 well below 100. n=135 above LW threshold (~60). Preserve raw correlation structure for regime-conditional analysis. LW lambda_corr=0.80 would shrink raw cor (-0.12, +0.08, +0.12) → (-0.02, +0.01, +0.02) losing regime signal."
+      },
+      "regime_detection": {
+        "candidates_tried": 4,
+        "selection_objective": "sigma_separation_with_min_n_constraint",
+        "method_log": [
+          {
+            "name": "MRS_Expanding_Percentile_4_State",
+            "vol_ratio": 1.41577566,
+            "n_min": 23,
+            "n_max": 50,
+            "description": "1715 H1 backbone, KOSPI200 BM_Ret 12m rolling sum expanding percentile",
+            "pit_lag": "t-1 (C9 compliant)",
+            "selected": true
+          },
+          {
+            "name": "HMM_VolDecile_3_State",
+            "vol_ratio": 1.55236419,
+            "n_min": 19,
+            "n_max": 61,
+            "description": "Hamilton 1989 simplified — trailing 12m vol decile",
+            "pit_lag": "t-1 (C9 compliant)",
+            "selected": false
+          },
+          {
+            "name": "DCC_Dynamic_Correlation_3_State",
+            "vol_ratio": null,
+            "n_min": 0,
+            "n_max": 134,
+            "description": "Engle 2002, str1715-bm_ret 12m rolling cor (COUPLED/MIXED/DECOUPLED)",
+            "pit_lag": "t-1 (C9 compliant)",
+            "selected": false
+          },
+          {
+            "name": "Markov_RS_Joint_Ret_Vol",
+            "vol_ratio": 1.21994912,
+            "n_min": 22,
+            "n_max": 59,
+            "description": "Ang-Bekaert 2002 proxy — joint return decile + vol median",
+            "pit_lag": "t-1 (C9 compliant)",
+            "selected": false
+          }
+        ],
+        "selected_method": "MRS_Expanding_Percentile_4_State",
+        "selection_rationale": "MRS 4-state (n_min=23, vol_ratio=1.416) selected if n_min>=20. Else HMM_VolDecile 3-state fallback. 1715 H1 backbone 정합 + per-regime n>=20 통계적 신뢰성 우선."
+      },
+      "parallel_exec": false,
+      "n_workers": 1,
+      "total_methods_tried": 9
+    }
+  },
+  "dynamic_weight_research_findings": {
+    "objective": "Provide regime-conditional Σ + tail risk to Optimizer for dynamic weight rule research",
+    "regime_definition_for_optimizer": {
+      "primary_method": "MRS_Expanding_Percentile_4_State",
+      "regime_states": ["BULL", "NORMAL", "CAUTION", "CRISIS"],
+      "n_per_regime": [23, 36, 26, 50],
+      "regime_correlation_findings": {
+        "BULL": {
+          "str1715_tsmom_cor": 0.04933599,
+          "str1715_kr10y_cor": -0.21239893,
+          "kr10y_tsmom_cor": 0.0713587,
+          "avg_vol": 0.03467003,
+          "n": 23,
+          "bootstrap_ci_95": {
+            "str1715_kr10y_lo": -0.60964513,
+            "str1715_kr10y_hi": 0.31710953,
+            "str1715_tsmom_lo": -0.51916964,
+            "str1715_tsmom_hi": 0.57782209,
+            "kr10y_tsmom_lo": -0.42756348,
+            "kr10y_tsmom_hi": 0.53165131
+          },
+          "stat_sig_str1715_tsmom": false,
+          "stat_sig_str1715_kr10y": false
+        },
+        "NORMAL": {
+          "str1715_tsmom_cor": 0.01857496,
+          "str1715_kr10y_cor": 0.17347074,
+          "kr10y_tsmom_cor": 0.21888737,
+          "avg_vol": 0.02757116,
+          "n": 36,
+          "bootstrap_ci_95": {
+            "str1715_kr10y_lo": -0.13870972,
+            "str1715_kr10y_hi": 0.4416611,
+            "str1715_tsmom_lo": -0.2611082,
+            "str1715_tsmom_hi": 0.32502087,
+            "kr10y_tsmom_lo": -0.14986473,
+            "kr10y_tsmom_hi": 0.50917473
+          },
+          "stat_sig_str1715_tsmom": false,
+          "stat_sig_str1715_kr10y": false
+        },
+        "CAUTION": {
+          "str1715_tsmom_cor": 0.13654174,
+          "str1715_kr10y_cor": 0.01378085,
+          "kr10y_tsmom_cor": 0.37014561,
+          "avg_vol": 0.02664368,
+          "n": 26,
+          "bootstrap_ci_95": {
+            "str1715_kr10y_lo": -0.31954273,
+            "str1715_kr10y_hi": 0.36539028,
+            "str1715_tsmom_lo": -0.07905892,
+            "str1715_tsmom_hi": 0.48113222,
+            "kr10y_tsmom_lo": -0.09065848,
+            "kr10y_tsmom_hi": 0.73100642
+          },
+          "stat_sig_str1715_tsmom": false,
+          "stat_sig_str1715_kr10y": false
+        },
+        "CRISIS": {
+          "str1715_tsmom_cor": 0.23427638,
+          "str1715_kr10y_cor": -0.20287764,
+          "kr10y_tsmom_cor": -0.11472258,
+          "avg_vol": 0.02893037,
+          "n": 50,
+          "bootstrap_ci_95": {
+            "str1715_kr10y_lo": -0.38297412,
+            "str1715_kr10y_hi": 0.00986513,
+            "str1715_tsmom_lo": 0.02849713,
+            "str1715_tsmom_hi": 0.43338176,
+            "kr10y_tsmom_lo": -0.41342254,
+            "kr10y_tsmom_hi": 0.2159057
+          },
+          "stat_sig_str1715_tsmom": true,
+          "stat_sig_str1715_kr10y": false
+        }
+      }
+    },
+    "key_dynamic_findings": {
+      "finding_1_regime_volatility_shift": "Per-regime composite vol ratio max/min = 1.42. Indicates meaningful regime-conditional risk variation worth dynamic weighting.",
+      "finding_2_str1715_tsmom_crisis_coupling": "WT-P20260505_001 16-window analysis: str1715-tsmom CRISIS_COVID cor = 0.752 (vs FULL 0.075, 10x spike). Optimizer should consider tsmom downweight in COVID-like coupling regimes.",
+      "finding_3_kr10y_flight_to_quality": "str1715-kr10y stagflation cor = -0.483. KR_10y is strong flight-to-quality hedge for str1715 equity drawdown. Optimizer may consider KR_10y upweight in CRISIS regime.",
+      "finding_4_cash_role": "Cash 5% provides opportunity_cost_minimization role. In CRISIS regime, dynamic rule may temporarily upweight cash (e.g., 5%->15%) — Optimizer decision.",
+      "finding_5_static_vs_dynamic_gap": "Static admit (50/25/20/5cash) is paradigm-free walk-forward DRO Wasserstein convergence point. Dynamic rule must STRICTLY OUTPERFORM static on walk-forward 256m+OOS basis (SR/CAGR/MDD). Optimizer responsibility.",
+      "finding_6_ax001_v2_defense_confirmation": "kr10y crisis_alpha = 0.0028 (CRISIS vs full mean diff). tsmom crisis_alpha = -0.0005. kr10y exhibits stronger defense characteristic. AX-001 v2 conditional defense PASS for kr10y, MIXED for tsmom.",
+      "finding_7_bootstrap_significance_test": "Bootstrap 1000-resample 95% CI per regime: ONLY CRISIS str1715-tsmom = +0.234 [+0.028, +0.433] is statistically significant. All other regime correlations CI include zero (NS). BULL/NORMAL/CAUTION str1715-kr10y point estimates direction-mixed not statistically distinguishable.",
+      "finding_8_tdc_diversification": "TDC_lower (q=0.05/0.10): str1715-kr10y=0.000, str1715-tsmom=0.000 — NO lower tail dependence. True diversifier validation in lower tail. composite-vs-str1715 TDC=0.82 — 4-sleeve LOWER TAIL dominated by str1715, RF-R1 (97.6%) variance contribution 정량 강화. Optimizer dynamic rule should consider CRISIS regime str1715 downweight for tail risk reduction.",
+      "finding_9_static_dynamic_decision_guidance": "Dynamic weight rule research design guidance to Optimizer: (a) CRISIS regime confirmed only state with statistically significant cor shift (str1715-tsmom +0.23 sig). (b) Other regime cors NS — small sample issue with MRS 4-state subdivision. (c) Consider 2-state simplification (NORMAL vs CRISIS via vol-aware classifier) if walk-forward dynamic rule has insufficient regime-conditional Σ samples. (d) TDC_lower=0 for str1715-kr10y/tsmom = lower tail diversification preserved → static admit (50/25/20/5) is paradigm-free defensible baseline. Dynamic improvement must overcome regime classification noise."
+    },
+    "optimizer_handoff_inputs": {
+      "primary_sigma": "stage_artifacts/WT_D20260511_002/covariance.parquet",
+      "sigma_4sleeve": "stage_artifacts/WT_D20260511_002/covariance_4sleeve.parquet",
+      "regime_correlation": "stage_artifacts/WT_D20260511_002/regime_correlation.parquet",
+      "tail_risk": "stage_artifacts/WT_D20260511_002/tail_risk.json",
+      "pit_lag_required": "t-1 (C9). Regime label must be lagged by 1 month for live trading.",
+      "dynamic_rule_must_PIT_compliant": "Optimizer dynamic weight rule must use t-1 regime label, expanding percentile, no full-sample percentile."
+    }
+  },
+  "challenge_review": {
+    "from_agent": "risk",
+    "targets_reviewed": ["alpha_package_inherit_reference", "S4_v2_admit_basis", "factor_specs_composite"],
+    "objection": false,
+    "review_notes": {
+      "alpha_inheritance_ok": true,
+      "sizing_only_scope_compliance": true,
+      "no_alpha_modification": true,
+      "sleeve_composite_definition_ok": "4-sleeve aggregate Σ (str1715/kr10y/tsmom risk-bearing + cash zero-vol EXEMPT). Charter §10 Role Card 4×5 compliant.",
+      "pit_compliance": "C9 (t-1 lag) + C11 (KOSPI200 BM_Ret t-1) + Expanding percentile (no full-sample)"
+    },
+    "round": 1
+  },
+  "challenge_flags": [
+    {
+      "id": "RF-R1",
+      "severity": "HIGH",
+      "msg": "Top common risk = 97.9% (>40%) — Equity_Core_1715 dominates portfolio variance. Optimizer reconsider weight cap."
+    },
+    {
+      "id": "RF-R-CVAR-CAP-BREACH",
+      "severity": "HIGH",
+      "msg": "CVaR_95=0.0458 >default cap 0.025 (monthly). Infeasibility report: 4-sleeve composite historical tail risk inherent to S4 v2 admit. Cap waiver basis: WT-D is sizing_only research, alpha source frozen by admit. CVaR cap binding decision is OPTIMIZER's responsibility — dynamic rule design must consider CVaR-constrained variants if cap is hard."
+    },
+    {
+      "id": "RF-R-CASH-SINGULAR",
+      "severity": "HIGH",
+      "msg": "covariance_4sleeve_singular.parquet has cash zero-vol row/col → min_eig=0, cond=Inf, PD violation by design. Optimizer MUST choose: (a) use covariance.parquet (3-sleeve risk-bearing only) with cash treated as residual buffer, OR (b) use covariance_4sleeve_regularized.parquet (cash eps=1e-8, PD recovered). Singular variant retained for explicit transparency."
+    },
+    {
+      "id": "RF-R-ALPHA-CERT-UNISSUED",
+      "severity": "HIGH",
+      "msg": "alpha_discovery_certificate.json: issued=false (non_issuance_reason: alpha_inheritance_cor missing | mechanism 0 < 50 | harvey_t_count 0 < 3). 이는 Codex C7 정확 지적. Risk Agent는 alpha cert 발급 권한 없음 — Q-Lead 영역. Possible resolutions: (a) Q-Lead가 alpha_package.json에 inherit_cor + mechanism + harvey_t 명시 후 re-cert eligibility 충족 → cert_backfill_audit.R --auto 호출, (b) 본 WT는 sizing_only effective + codex_critic_skip_waiver 적용된 inheritance reference 이므로 alpha cert inherit path는 source WT-P20260505_001의 alpha_discovery_certificate (issued=true)에 의존. Charter v1.7 §10 Role Card 4×5 sizing_only own cert는 risk_package_validated_certificate + optimizer_package_validated_certificate."
+    },
+    {
+      "id": "RF-R8",
+      "severity": "MEDIUM",
+      "msg": "Small sample regimes: BULL (n=23), CAUTION (n=26) — pooled Σ fallback applied. Optimizer should monitor live regime classification."
+    }
+  ],
+  "constraints_received": {
+    "n_hard_aggregate": 20,
+    "weight_bounds_per_sleeve": [0, 0.2],
+    "sum_weights": 1,
+    "long_only": true,
+    "universe": "S4_v2_4_sleeve_aggregate",
+    "liquidity_min_won_20d_avg": 50000000,
+    "transaction_cost_bps_one_way": 15,
+    "cost_model_version": "v2.3_kr_retail_15bps",
+    "lockbox_scope": "정규 리서치 단계 (alpha/risk/optimizer)에만 적용. forge/monitoring/Q-Lead 폐기."
+  },
+  "ax_axiom_compliance": {
+    "AX_000_no_limit": "documented",
+    "AX_001_v2_conditional_defense": "PASS for kr10y (crisis_alpha=+0.0028, bad_normal_ratio=1.88). BORDERLINE for tsmom (crisis_alpha=-0.0005, n=4 small sample). 4-sleeve aggregate conditional defense overall: ACCEPTABLE.",
+    "AX_002_no_lookahead": "PASS (C9 t-1 lag + expanding percentile). Source: merged_returns_3source.csv inherited from WT-P20260505_001 admit.",
+    "AX_007_top20_mechanism": "N/A (sizing_only on inherited alpha). 4-sleeve aggregate is not single_sleeve_long_only_top20 — composite cross-asset.",
+    "AX_008_verification_triangulation": "Risk: single-source. Codex critic round: REVISE stance received (response file present). Architect verification not run for sizing_only research at this stage. AX-008 2/3 will be satisfied when Optimizer + Codex Optimizer-Critic complete next stage."
+  },
+  "codex_critic_response_analysis": {
+    "stance_received": "REVISE",
+    "response_file": "qepm/mailbox/worktask/WT-D20260511_002/codex_critic_response_risk.json",
+    "weakest_assumption_acknowledged": "That a 3-sleeve static-return covariance with D=0, thin regime samples, and a singular cash-inclusive extension is sufficient for a PIT dynamic 4-sleeve optimizer handoff.",
+    "concern_disposition": {
+      "C1_sigma_method_mismatch": {
+        "status": "PARTIAL — Codex read outdated draft (LW selected)",
+        "action": "Current final draft has selected_method=sample with cond=21.7 matching covariance.parquet. Selection rationale explicit (preserve raw cor for regime analysis).",
+        "codex_outdated_reason": "Codex spawn at draft v1 (LW selected). Risk Agent revised selection to Sample (multi-criteria: preserve raw cor info > minor cond improvement)."
+      },
+      "C2_4sleeve_singular": {
+        "status": "ACCEPT",
+        "action": "Generated 3 covariance_4sleeve variants: singular (cash zero-vol, explicit PD violation transparency) + regularized (cash eps=1e-8 for PD) + legacy (= singular). Optimizer chooses based on formulation. covariance.parquet (3-sleeve only) is primary handoff."
+      },
+      "C3_cvar_cap_breach": {
+        "status": "ACCEPT_WITH_RATIONALE",
+        "action": "RF-R-CVAR-CAP-BREACH flag added. CVaR_95=0.046 monthly > default 0.025 cap. Cap binding decision delegated to Optimizer (sizing_only WT, alpha frozen). Possible Optimizer responses: (a) hard cap enforcement → CVaR-constrained MVO/HRP, (b) cap waiver via S4 v2 admit precedent (Walk-forward DRO Wasserstein convergence finding), (c) cap re-set higher for cross-asset 4-sleeve composite."
+      },
+      "C4_regime_small_sample_no_bootstrap": {
+        "status": "REBUTTAL — outdated finding",
+        "action": "Bootstrap CI 95% (1000 resamples) computed for all regimes. Stored in regime_correlation_summary.bootstrap_ci_95 + stage_artifacts/.../regime_bootstrap_ci.json. Codex read pre-bootstrap draft. Current finding: ONLY CRISIS str1715-tsmom (+0.234) is stat sig — all others NS due to small samples. This finding STRENGTHENS Codex's concern (most regime correlations are NS) but transparency is now explicit."
+      },
+      "C5_str1715_dominates": {
+        "status": "ACCEPT — already RF-R1 HIGH flagged",
+        "action": "RF-R1 = 97.6% explicit. TDC_lower=0.82 composite-vs-str1715 strengthens. This is information for Optimizer dynamic rule design — RF-R1 is not a fix, it's a measurement passing forward."
+      },
+      "C6_missing_artifacts": {
+        "status": "PARTIAL — sleeve-level simplification",
+        "action": "Removed exposure_matrix_ref / factor_covariance_ref / specific_risk_ref. Added bsigma_d_decomposition_note explicit: sleeve_aggregate B=I, Ω=Σ_sleeve, D=0. Security-level decomposition delegated to 1715 H1 internal alpha-research."
+      },
+      "C7_alpha_cert_unissued": {
+        "status": "ACCEPT — escalate to Q-Lead",
+        "action": "Risk Agent has no alpha cert authority. Q-Lead escalation: alpha_discovery_certificate.json shows issued=false (non_issuance_reason: alpha_inheritance_cor missing | mechanism 0 < 50 | harvey_t_count 0 < 3). Resolution path: (a) Q-Lead enriches alpha_package.json with cor + mechanism + harvey_t inherit detail → cert_backfill_audit.R --auto re-cert, OR (b) Charter v1.7 §10 Role Card 4×5 sizing_only own cert chain (risk_package + optimizer_package validated certificates) — alpha_discovery inherit via WT-P20260505_001 source WT (cert issued=true confirmed at admit).",
+        "critical_note": "본 issue는 PG2 admit 자체에 영향 없음 (S4 v2 admit lockbox-sealed 2026-05-09). 본 WT는 sizing_only research, alpha source frozen. cert inheritance path는 source WT cert chain에 의존."
+      },
+      "C8_tdc_crowding_missing": {
+        "status": "PARTIAL — TDC clarification + HHI 권고 gap 명시",
+        "action": "TDC vs PG2 active book = 1.0 by inheritance definition (본 WT alpha source = S4 v2 admit retain). 4-sleeve composite-vs-str1715 TDC=0.82 added (sleeve-return based, lower tail q=0.10). HHI=0.355 < RF-R3 hard 0.40 but > recommendation 0.10 — explicit note added. Family saturation: cross-asset 4-sleeve is NOT a factor family (different asset classes), so saturation check N/A."
+      }
+    },
+    "rationalization_red_flags_acknowledged": [
+      "per-regime n>=20 통계적 신뢰성 우선 — Codex correctly flagged. Bootstrap CI now shows most regime correlations NS at 95% CI.",
+      "Cond 17.53 — RF-R2 threshold 100 well-cleared — Replaced with Sample Σ cond=21.7 and explicit selection rationale.",
+      "exposure_matrix / factor_covariance / specific_risk 별도 산출 불요 — Replaced with explicit bsigma_d_decomposition_note (B=I + D=0 simplification).",
+      "risk_package_draft.json은 위 6 자가 검증 모두 PASS — Replaced with Codex-validated concern disposition. Self-validation rationalization acknowledged."
+    ],
+    "rebuttal_summary": [
+      "C4 bootstrap CI: REBUTTAL (already present in final draft, Codex read outdated)",
+      "C1 sigma method: PARTIAL (Sample selected, cond=21.7 matches parquet)",
+      "C2 4-sleeve singular: ACCEPT (3 variants generated)",
+      "C3 CVaR cap: ACCEPT_WITH_RATIONALE (delegated to Optimizer)",
+      "C5 str1715 dominance: ACCEPT (RF-R1 HIGH already)",
+      "C6 missing artifacts: PARTIAL (sleeve-level simplification explicit)",
+      "C7 alpha cert: ACCEPT (escalate to Q-Lead — sizing_only inherit path)",
+      "C8 TDC/HHI: PARTIAL (clarification added)"
+    ],
+    "q_lead_escalation_required": {
+      "escalate_count": 3,
+      "reasons": ["C2 (4-sleeve singular): Optimizer must explicitly choose covariance variant", "C3 (CVaR cap): Optimizer dynamic rule design must address cap binding decision", "C7 (alpha cert unissued): Q-Lead must resolve cert inheritance path before final risk_package.json finalize"],
+      "severity_high_count": 5,
+      "ax_hard_fail_count": 0,
+      "hook_block_risk": "MEDIUM — codex stance REVISE requires explicit response in challenge_note. PreToolUse hook codex_round_pre_enforcer.sh will check final risk_package.json has all 8 concerns addressed before allowing final write."
+    }
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "wt_id": "WT-D20260508_012",
+  "task_type": "discovery",
+  "path_label": "G",
+  "current_phase": "ALPHA_DONE",
+  "created_at": "2026-05-08T18:08:00+0900",
+  "updated_at": "2026-05-08T18:36:00+0900",
+  "description": "G안 옵션-implied tail risk regime indicator. Two-stage 4-pillar expanding percentile composite (RIX/LJV/VKOSPI/term-slope). m4 4번째 직교 축으로 Layer D design (B안). PG2/PG3 admission 비대상 — discovery WT termination, deployment 별도.",
+  "alpha_summary": {
+    "deliverable_kind": "regime_indicator",
+    "states": ["PEACE", "WARNING", "TAIL_STRESS"],
+    "burnin_days": 252,
+    "threshold_warn": 0.70,
+    "threshold_stress": 0.90,
+    "min_duration_days": 3,
+    "n_dates_total": 3990,
+    "n_dates_valid_state": 3486,
+    "state_dist_pct": {"PEACE": 61.3, "WARNING": 25.4, "TAIL_STRESS": 13.3},
+    "validation": {
+      "recall_in_window": "5/6 = 0.833 (gate ≥ 0.70 PASS)",
+      "false_positive_rate": "0.097 (gate ≤ 0.20 PASS)",
+      "lead_time_mean_days": -4.6,
+      "lead_time_top_half_mean_days": 4.0,
+      "lead_time_strict_5gate": "FAIL",
+      "overall_strict_5gate_pass": false,
+      "overall_3gate_pass": true,
+      "missed_episode": "EuDebt_II_2011 (within burn-in)"
+    },
+    "orthogonality": {
+      "cor_with_m4_combined_regime": 0.536,
+      "cor_with_m4_weight_cash": 0.174,
+      "assessment": "moderately orthogonal — substantial new actionable info"
+    },
+    "regime_conditional_kospi": {
+      "PEACE_q05": -0.0142,
+      "TAIL_STRESS_q05": -0.0278,
+      "tail_event_freq_ratio": "7.4x (PEACE 1.26% → TAIL_STRESS 9.27% hit_neg_2pct)",
+      "interpretation": "concurrent confirmation, not next-day prediction"
+    }
+  },
+  "codex_critic_round": {
+    "round": 1,
+    "stance": "REVISE",
+    "veto_flag": false,
+    "concerns_handled": "ACCEPT 6 / PARTIAL 2 / REBUTTAL 1",
+    "rebuttal_C3_C13_exemption": "BKM 2003 RFS Eq.(7) academic standard, 0 Factor DB calls",
+    "spec_revisions": 11,
+    "q_lead_escalate_recommended": true,
+    "q_lead_escalate_trigger": "HIGH severity ≥ 5"
+  },
+  "ax_compliance": {
+    "AX_002_PIT": "PASS (C13 exemption documented)",
+    "AX_007": "N/A (regime indicator, not single-sleeve top20)",
+    "AX_008": "1/3 (alpha PASS only, deployment requires 2/3 — design_only)"
+  },
+  "next_agent": "Risk Agent (선택) 또는 도훈 PR 직접 통합 (m4 4축 conviction 시)",
+  "deployment_status": "design_only_NOT_admitted",
+  "outputs": {
+    "alpha_package": "qepm/mailbox/worktask/WT-D20260508_012/alpha_package.json",
+    "regime_indicator_timeseries": "stage_artifacts/WT_D20260508_012/regime_indicator_timeseries.parquet",
+    "regime_state_summary": "stage_artifacts/WT_D20260508_012/regime_state_summary.parquet",
+    "validation": "stage_artifacts/WT_D20260508_012/validation_8_stress_periods.json",
+    "regime_conditional_diagnostic": "stage_artifacts/WT_D20260508_012/regime_conditional_diagnostic.json",
+    "design_doc": "qepm/mailbox/worktask/WT-D20260508_012/option_tail_regime_overlay_design.md",
+    "challenge_note": "qepm/mailbox/worktask/WT-D20260508_012/challenge_note.md",
+    "codex_critic_response": "qepm/mailbox/worktask/WT-D20260508_012/codex_critic_response_alpha.json"
+  }
+}

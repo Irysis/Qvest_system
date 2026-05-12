@@ -1,0 +1,100 @@
+================ PD36 — Overlay Diagnostic Backtest ================
+Run start: 2026-05-12 12:04:11 KST 
+
+[Pure Function] Start hashes:
+  alpha_pd27: e6a71e4600c505bb8b179c7ac3bbc562
+  alpha_pd24: 5ffc8b10a194c7a79c5256da1f1a6afb
+  etf_pd28: 99027ba4a52d605df5cd591646cb3258
+  m4_schedule: 145d4a550eaad4401777ddfc040789fb
+  ar_threshold: d44a918829ba6b31d3265487077d0da6
+
+[Step 1] Load alphas + build z_composite ...
+  PD27: 84997 rows, 298 sig_dates (2001-07-01 ~ 2026-04-01)
+  PD24: 84972 rows, 298 sig_dates
+
+[Step 2] RAWDATA load + Ret_1m + ADV_20d ...
+  RAWDATA: 11715848 rows, 3592 tickers
+
+[Step 3] Top20 per sig_date + softmax weighting ...
+  [  1/298] 2001-07-01 -> 2001-08-01: kr_ret=0.0302
+  [ 50/298] 2005-08-01 -> 2005-09-01: kr_ret=0.2200
+  [100/298] 2009-10-01 -> 2009-11-01: kr_ret=-0.0225
+  [150/298] 2013-12-01 -> 2014-01-01: kr_ret=-0.0189
+  [200/298] 2018-02-01 -> 2018-03-01: kr_ret=0.0120
+  [250/298] 2022-04-01 -> 2022-05-01: kr_ret=-0.0080
+  [298/298] 2026-04-01 -> 2026-05-01: kr_ret=0.0595
+  KR equity sleeve: 298 months
+
+[Step 4] ETF sleeves (TSMOM + KR_10Y + CASH) ...
+
+[Step 5] Load AR + M4 overlay signals ...
+  M4 schedule: 268 obs, 2004-02-02 ~ 2026-05-01, distribution: 227 normal(1.0) + 41 partial + 0 crisis(0)
+  AR threshold: 268 obs, 2004-02-02 ~ 2026-05-01, distribution: 171 (1.0) + 67 (0.7) + 30 (0.4)
+
+[Step 6] Build 3 overlay variants ...
+  Coupling distribution:
+    MULT: mean=0.8564, median=1.0000, min=0.1716, q25=0.7000, q75=1.0000
+    MIN:  mean=0.8689, median=1.0000, min=0.4000
+    LIN:  mean=0.9223, median=1.0000, min=0.4145
+
+[Step 7] Backtest 3 variants ...
+
+[Step 8] Metrics per variant ...
+  [MULT_AR_x_M4] SR=0.9740 CAGR=0.1457 MDD=0.1923 CVaR=-0.0762 Sortino=0.5471 Calmar=0.7575 Hit=0.6305 TO=3.64 N=295
+  [MIN_AR_M4] SR=0.9771 CAGR=0.1472 MDD=0.1969 CVaR=-0.0766 Sortino=0.5468 Calmar=0.7477 Hit=0.6339 TO=3.56 N=295
+  [LIN_0.5_0.5] SR=0.9971 CAGR=0.1561 MDD=0.2084 CVaR=-0.0802 Sortino=0.5549 Calmar=0.7491 Hit=0.6305 TO=3.52 N=295
+
+[Step 9] Comparison vs baselines ...
+                           variant     SR   CAGR        MDD     CVaR_95
+                            <char>  <num>  <num>      <num>       <num>
+1:                    MULT_AR_x_M4 0.9740 0.1457  0.1923324 -0.07617759
+2:                       MIN_AR_M4 0.9771 0.1472  0.1968928 -0.07660039
+3:                     LIN_0.5_0.5 0.9971 0.1561  0.2084026 -0.08023678
+4:       PD30_C_softmax (baseline) 1.0081 0.1689 -0.2294000 -0.08790000
+5: S4_v2 (reference, full overlay) 1.7877 0.1970 -0.1280000 -0.05010000
+     Sortino    Calmar       Hit       TO n_months
+       <num>     <num>     <num>    <num>    <num>
+1: 0.5470802 0.7575033 0.6305085 3.635606      295
+2: 0.5467978 0.7476680 0.6338983 3.561926      295
+3: 0.5548887 0.7490556 0.6305085 3.523503      295
+4: 0.5554000 0.7361000        NA 3.330000      296
+5:        NA        NA        NA       NA      255
+
+=== Delta vs PD30 C_softmax raw ===
+        variant delta_SR delta_CAGR delta_MDD_pp delta_CVaR_pp
+         <char>    <num>      <num>        <num>         <num>
+1: MULT_AR_x_M4  -0.0341    -0.0232    -42.17324     1.1722407
+2:    MIN_AR_M4  -0.0310    -0.0217    -42.62928     1.1299605
+3:  LIN_0.5_0.5  -0.0110    -0.0128    -43.78026     0.7663221
+
+[Step 10] DM test (NW HAC lag 6) vs PD30 raw ...
+                   pair     n    mean_diff   dm_stat    p_value       decision
+                 <char> <int>        <num>     <num>      <num>         <char>
+1: MULT_AR_x_M4 vs PD30   295 -0.001887588 -2.130317 0.03314548 DIFFERENT_5pct
+2:    MIN_AR_M4 vs PD30   295 -0.001762497 -2.215559 0.02672175 DIFFERENT_5pct
+3:  LIN_0.5_0.5 vs PD30   295 -0.001036414 -2.052259 0.04014450 DIFFERENT_5pct
+
+[Step 11] Save bt_result for MULT (primary) + audit ...
+  [MULT_AR_x_M4] saved: qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd36_overlay_diagnostic/MULT_AR_x_M4
+  [MIN_AR_M4] saved: qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd36_overlay_diagnostic/MIN_AR_M4
+  [LIN_0.5_0.5] saved: qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd36_overlay_diagnostic/LIN_0.5_0.5
+
+[Step 12] Pure Function audit ...
+  Pure Function pass: TRUE
+
+[Step 13] Backtest Contract v1.0 audit ...
+  Audit integrity: PASS
+
+[Step 14] Manifest ...
+
+[Step 15] Save sleeve overlay decomposition ...
+
+================ PD36 OVERLAY DIAGNOSTIC COMPLETE ================
+Run end: 2026-05-12 12:05:22 KST
+Output dir: qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd36_overlay_diagnostic
+
+=== Primary result (MULT_AR_x_M4 multiplicative) ===
+  SR=0.9740  CAGR=0.1457  MDD=0.1923  CVaR95=-0.0762  Sortino=0.5471  Calmar=0.7575  Hit=0.6305  TO=3.64  N=295
+  vs PD30 C_softmax raw  : ΔSR=-0.0341  ΔCAGR=-0.0232  ΔMDD=-42.17pp  ΔCVaR=+1.17pp
+  vs S4 v2 4-sleeve     : ΔSR=-0.8137  ΔCAGR=-0.0513  ΔMDD=-32.03pp
+  DM test vs PD30: dm=-2.1303  p=0.0331  -> DIFFERENT_5pct

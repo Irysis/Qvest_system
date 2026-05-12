@@ -1,0 +1,217 @@
+{
+  "task_id": "WT-D20260511_001",
+  "package_kind": "forge_package_pd22_5sleeve_universe_composite",
+  "status": "FINAL_REJECT_VERDICT",
+  "pd_label": "PD22",
+  "design_label": "5-sleeve Cross-Universe Z-Composite Top20",
+  "draft_reference": "forge_package_pd22_5sleeve_universe_composite_draft.json",
+  "codex_critic_response_reference": "codex_critic_response_forge_pd22.json (pending background spawn complete)",
+  "challenge_note_reference": "challenge_note.md (PD22 section appended)",
+  "as_of_date": "2026-05-12",
+  "agent": {
+    "agent_id": "forge-WT-D20260511_001-PD22",
+    "agent_type": "forge",
+    "agent_version": "v1.0",
+    "model": "Opus_4_7_1M"
+  },
+  "mandate": {
+    "source": "도훈 mandate 2026-05-12",
+    "quote": "5슬리브를 z스코어로 컴포짓해서 탑20 뽑는 전략으로 프로즌없이 전 기간 백테해서 현재 pg2랑 성과 비교해봐"
+  },
+  "design": {
+    "universe_size": 773,
+    "kr_equity_stocks_per_sig_date": 770,
+    "tsmom_basket": 1,
+    "kr_10y_bond": 1,
+    "cash": 1,
+    "z_composite_kr_stock": "0.818 × z_1715 + 0.182 × z_NEW (PD20-B weight retain)",
+    "z_score_kr": "Per sig_date cross-section z (Iter5 1715 score_eff + NEW alpha)",
+    "z_score_tsmom": "Rolling 36m z-score on monthly return (PIT lag 1m)",
+    "z_score_kr_10y": "Rolling 36m z-score on monthly return (PIT lag 1m)",
+    "z_score_cash": -10,
+    "top20_selection": "Cross-universe rank by composite_z descending → top 20 EW 5% each",
+    "etf_count_inclusion": true,
+    "rebalance_frequency": "monthly sig_date M01"
+  },
+  "backtest_results": {
+    "period": "2011-01-01 ~ 2026-04-01 (184 sig_dates)",
+    "lockbox_policy": "폐기 (forge 단계 정합, lockbox-scope.md)",
+    "cost_model": "v2.3_kr_retail_15bps (one-way × 2 round-trip per rebalance)",
+    "metrics_cost_embedded": {
+      "SR_ann_geometric": 0.7426,
+      "CAGR": 0.1670,
+      "MDD": -0.336,
+      "Sortino": 1.5109,
+      "Calmar": 0.4971,
+      "CVaR_95_monthly": -0.1116,
+      "CVaR_99_monthly": null,
+      "hit_rate": 0.587,
+      "vol_ann": 0.2249,
+      "mean_turnover_oneway_pct": 52.39,
+      "turnover_annualized_pct": 629,
+      "mean_cost_drag_annual_bps": 188.61
+    },
+    "metrics_cost_free": {
+      "SR_gross": 0.8412,
+      "CAGR_gross": 0.1890,
+      "MDD_gross": -0.3058
+    },
+    "cross_universe_inclusion": {
+      "mean_kr_stock_in_top20": 19.71,
+      "min_kr_stock_in_top20": 18,
+      "max_kr_stock_in_top20": 20,
+      "tsmom_in_top20_pct_sig_dates": 16.3,
+      "kr_10y_in_top20_pct_sig_dates": 13.0,
+      "cash_in_top20_pct_sig_dates": 0
+    }
+  },
+  "comparison_table_4axis": {
+    "header": "PD22 vs 3 PG2-related baselines (same-period where possible)",
+    "rows": [
+      {
+        "strategy": "PD22 (new design)",
+        "SR": 0.7426,
+        "CAGR": 0.1670,
+        "MDD": -0.336,
+        "CVaR_95": -0.1116,
+        "period": "184m_2011_2026"
+      },
+      {
+        "strategy": "S4 v2 admit PG2 (4-sleeve hybrid 50/25/20/5cash)",
+        "SR": 1.8258,
+        "CAGR": 0.1951,
+        "MDD": -0.1263,
+        "CVaR_95": -0.0461,
+        "period": "184m_same",
+        "verdict_vs_pd22": "DOMINATE"
+      },
+      {
+        "strategy": "PD20-B Path 2 aligned (4-sleeve consolidation z-composite KR equity)",
+        "SR": 2.3063,
+        "CAGR": 0.2932,
+        "MDD": -0.1458,
+        "CVaR_95": null,
+        "period": "184m_aligned",
+        "verdict_vs_pd22": "STRICT_DOMINATE"
+      },
+      {
+        "strategy": "PD18 5-sleeve full (49 holdings, cap violation)",
+        "SR": 2.2410,
+        "CAGR": 0.2355,
+        "MDD": -0.1154,
+        "CVaR_95": null,
+        "period": "256m_full",
+        "verdict_vs_pd22": "STRICT_DOMINATE"
+      }
+    ]
+  },
+  "delta_pd22_vs_s4_v2_strict_improve_test": {
+    "delta_SR": -1.0832,
+    "delta_CAGR_pp": -2.81,
+    "delta_MDD_pp": 20.97,
+    "delta_CVaR_95_pp": -6.55,
+    "axes_passing": 0,
+    "axes_failing": 4,
+    "verdict": "ALL_4_AXIS_FAIL"
+  },
+  "diebold_mariano_vs_s4_v2": {
+    "N": 183,
+    "mean_diff_monthly": -0.000365,
+    "NW_lag6_SE": 0.004028,
+    "t_NW": -0.0907,
+    "p_value": 0.9278,
+    "harvey_liu_zhu_t_3.0_pass": false,
+    "interpretation": "PD22 underperforms S4 v2 but NOT statistically significantly (t=-0.09). Mean monthly returns are essentially same, but PD22 has much higher variance (vol_ann 22.5% vs S4 v2 ~10%) + MDD."
+  },
+  "structural_reasons_for_failure": [
+    {
+      "reason": "KR equity dominance overwhelming",
+      "evidence": "Mean 19.71/20 slots = 98.5% KR stocks. Universe size disparity (770 vs 9 non-KR candidates) makes ETF/Bond effectively excluded from cross-universe ranking.",
+      "impact": "Sleeve hedging diversification 효과 0 — PD22 effectively becomes KR-only stock-picking 18-20 stocks EW 5% each."
+    },
+    {
+      "reason": "Sleeve weighting structure 상실",
+      "evidence": "Cross-universe top20 selection ignores sleeve weight ratios (50/25/20/5). Effective post-selection weights are EW 5% × top20.",
+      "impact": "S4 v2's multi-asset hedging (KR bond + TSMOM strategy basket) cannot moderate KR equity exposure during crises."
+    },
+    {
+      "reason": "MDD 폭주 in crisis periods",
+      "evidence": "PD22 MDD -33.60% vs S4 v2 MDD -12.63%. Difference 20.97pp.",
+      "impact": "Without sleeve hedging structure, 위기 시 100% KR equity exposure → stagflation 2022 / COVID 2020 등에서 휘말림."
+    },
+    {
+      "reason": "Turnover 폭주",
+      "evidence": "Cross-universe ranking churn 629% annualized vs S4 v2 ~60%. Cost drag 188 bps/yr vs S4 v2 ~18 bps/yr.",
+      "impact": "Cost drag alone consumes 1.88pp of CAGR annually. PD22's SR_gross 0.84 vs SR_net 0.74 = 0.10 cost drag drag points."
+    },
+    {
+      "reason": "Concentration 상실",
+      "evidence": "PD22 EW 5% each → STR_1715 anchor stock (e.g., 삼성전자) weighted 5% instead of 6.83% (STR_1715 PG2 weighting).",
+      "impact": "Top 1715 alpha stocks의 z-weighted concentration gain 상실. Diluted to flat 5%."
+    }
+  ],
+  "design_critique_dohoon_framing": {
+    "interpretation_A_pd20b_path2": {
+      "instantiation": "5-sleeve weighting을 z-composite로 활용 — sleeve weighting 자체가 composite. KR equity sleeve = composite top20 z_1715+z_NEW; TSMOM/KR_10y/Cash sleeve weights inherit (22.5/18/4.5).",
+      "result": "PD20-B Path 2 SR 2.31 MDD -14.58% — sleeve hedging 보존",
+      "verdict": "도훈 framing 더 합리적 instantiation"
+    },
+    "interpretation_B_pd22_cross_universe": {
+      "instantiation": "5-sleeve 모든 자산을 cross-universe ranking → top20 select",
+      "result": "PD22 SR 0.74 MDD -33.60% — sleeve hedging 상실",
+      "verdict": "Universe size dominance 문제로 multi-asset 다양화 효과 100% 상실"
+    },
+    "conclusion": "도훈 framing의 정확한 정량 instantiation은 interpretation A (PD20-B Path 2). interpretation B (PD22)는 단어 그대로 해석 가능하나 결과적으로 sleeve weighting 무용지물."
+  },
+  "pure_function_audit": {
+    "alpha_package_md5_start": "e0e1a525c84f33f228f00c061ac5d64d",
+    "alpha_package_md5_end": "e0e1a525c84f33f228f00c061ac5d64d",
+    "risk_package_md5_start": "25a440e08232fcfb953ca912bffaa13a",
+    "risk_package_md5_end": "25a440e08232fcfb953ca912bffaa13a",
+    "optimization_package_md5_start": "a810ddbaf40f5a90b054c521e915e106",
+    "optimization_package_md5_end": "a810ddbaf40f5a90b054c521e915e106",
+    "match": true,
+    "verdict": "PASS — alpha/risk/optimizer 3-package READ-ONLY 정합"
+  },
+  "outputs_generated": {
+    "directory": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd22/",
+    "files": [
+      "period_returns.csv (184m gross+net+turnover)",
+      "nav.csv (184m cumulative NAV)",
+      "metrics.csv (cost-embedded + cost-free)",
+      "holdings.csv (3680 rows × 184 sig_dates)",
+      "benchmark_compare.csv (PD22 vs 3 baselines)",
+      "4axis_strict_improve.csv (ALL FAIL)",
+      "diebold_mariano.csv (t_NW -0.09 p 0.93)",
+      "cross_universe_diagnostic.csv (per sig_date inclusion counts)",
+      "pure_function_audit.csv (md5 PASS)",
+      "metrics_pd22.rds (full result object)"
+    ],
+    "judge_ready_files": [
+      "judge_ready/backtest_summary_pd22.json"
+    ]
+  },
+  "forge_verdict": {
+    "design_pd22": "REJECT",
+    "rationale": "4-axis strict improve test ALL FAIL vs S4 v2 baseline + ALL 3-axis FAIL vs PD20-B Path 2 + ALL 3-axis FAIL vs PD18 5-sleeve. Diebold-Mariano t_NW -0.09 (Harvey 3.0 FAIL). Cross-universe ranking mechanism collapses to KR-only stock-picking due to universe size dominance (770 vs 9). Multi-asset hedging diversification 효과 100% 상실. MDD -33.60% (vs -12.63% S4 v2) → 4-axis strict floor 위반.",
+    "recommendation_primary": "Retain current PG2 admit (S4 v2 4-sleeve hybrid 50/25/20/5cash from WT-P20260509_001, 5/12 effective). No change to operational portfolio.",
+    "recommendation_secondary": "Pending PD21 Judge re-spawn (composite-level DSR/Harvey/4-axis validation), consider upgrade to PD20-B Path 2 (4-sleeve consolidation) — SR 2.31, MDD -14.58%, currently 'CONDITIONAL_ADMIT' status from PD20 governor cycle."
+  },
+  "key_learning_l_code_candidate": {
+    "id": "L-289_candidate",
+    "title": "Cross-universe ranking ≠ sleeve hedging (universe size dominance penalty)",
+    "context": "WT-D20260511_001 PD22 — 5-sleeve cross-universe z-composite top20 design 백테스트",
+    "finding": "Universe size disparity (770 KR vs 9 non-KR) makes cross-universe ranking collapse to KR-only stock-picking. 5-sleeve weighting structure가 사라지면 multi-asset diversification 효과 100% 상실. Sleeve hedging 본질은 weighting itself.",
+    "evidence": "PD22 SR 0.74 MDD -33.60% vs S4 v2 SR 1.83 MDD -12.63%. 4-axis ALL FAIL. PD20-B Path 2 (sleeve weighting 보존) SR 2.31 dominate.",
+    "policy_implication": "Multi-asset 5-sleeve strategy의 z-composite는 sleeve weighting을 composite로 활용 (PD20-B Path 2 instantiation) — sleeve 자체를 ranking universe로 합치는 cross-universe 방식 부적격.",
+    "tag": ["RoleBias_Core", "Diversifier", "Aggregation_Mechanism", "Universe_Size_Dominance"]
+  },
+  "next_steps": {
+    "1": "도훈 mandate response: PD22 design REJECT 결과 보고 + 비교 표 + L-289 학습 적립 권고",
+    "2": "PG2 admit retain (S4 v2 4-sleeve hybrid) — no operational change",
+    "3": "PD20-B Path 2 admit decision은 PD21 Judge re-spawn 결과 후 governor cycle",
+    "4": "Codex critic response 도착 후 challenge_note.md PD22 section 추가 검토",
+    "5": "Memory commit L-289 (도훈 confirm 후)"
+  },
+  "timestamp_finalized": "2026-05-12 06:58:30 KST"
+}

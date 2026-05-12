@@ -1,0 +1,183 @@
+{
+  "task_id": "WT-RES_20260512_STR_1715_AR_PRODUCTION",
+  "manifest_version": "v1_production_weighting_strict",
+  "task_kind": "research_diagnostic",
+  "mandate_quote": "STR_1715_AR_threshold_overlay 이 전략은 EW 아니지?",
+  "mandate_source": "도훈 직접 명령 2026-05-12 KST (correction of prior Forge v2 EW measurement basis violation)",
+  "parent_admit_wt": "WT-P20260504_001",
+  "prior_forge_run_corrected": "WT-RES_20260512_STR_1715_AR_RAW_cover (v2 admit lineage EW reconstruction)",
+  "strategy_id": "STR_1715_AR_threshold_overlay",
+  "weighting_basis": {
+    "production_layer_a": "Iter5 alpha multi-axis (theta_core + theta_defense, score_eff)",
+    "production_layer_b": "Iter31 linear_tilt_to_penalty_qd(lambda=1.5, phi=3, ub=0.20) [strict production weighting]",
+    "ew_disallow_rationale": "도훈 mandate 2026-05-12: alpha_top20 1/20 EW reconstruction is measurement basis violation. Iter31 linear_tilt is the admit production weighting (admit JSON SR 1.7758 baseline source).",
+    "base_source": "04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd/output/03_period_returns.csv",
+    "base_source_md5": "607dfb1be5d4373b8669843174133511",
+    "base_metrics_baked": ["production weighting (Iter31 linear_tilt)", "15bps cost on base Iter31 turnover (cost_ret column)"],
+    "base_cash_weight_all_zero_confirmed": true,
+    "ret_orig_definition": "ret_net direct (cash_weight=0 all rows, no inverse needed)"
+  },
+  "raw_cover_decision": {
+    "start_decision_date": "2004-01-01",
+    "start_realized_date": "2004-02-01",
+    "rationale_hardcoded": "STR_1715 admit alpha lineage (WT_D20260425_010/alpha_scores.parquet) first valid sig_date 2004-01-01. Decision 2004-01-EOM => realized 2004-02 first PR row. Coverage extension beyond admit JSON 256m (2005-02~) by 11m back-fill 2004-02~2005-01 (warmup period for MRS/AR).",
+    "no_autonomous_cutoff": "Forge boundary respected: 2004-01 = alpha-research lineage decision, not Forge autonomous"
+  },
+  "panels": {
+    "267m_full_admit_lineage": {
+      "label": "267m full PR coverage (production weighting, 2004-02~2026-04)",
+      "n_months": 267,
+      "first_anchor_date": "2004-02-02",
+      "last_anchor_date": "2026-04-01",
+      "interpretation": "Raw cover extension. M4/β_t/MRS NA → 1.0/0.0 passthrough fill in 2004-02~2005-01 warmup region."
+    },
+    "254m_warmup_drop": {
+      "label": "254m post-warmup (drop 13m: 12m MRS regime + 1m β lag)",
+      "n_months": 254,
+      "first_anchor_date": "2005-03-02",
+      "last_anchor_date": "2026-04-01",
+      "interpretation": "Clean overlay period — MRS regime + β fully active."
+    },
+    "255m_admit_baseline_comparable": {
+      "label": "255m admit JSON 256m comparable (2005-02~2026-04)",
+      "n_months": 255,
+      "first_anchor_date": "2005-02-01",
+      "last_anchor_date": "2026-04-01",
+      "interpretation": "1m off vs admit JSON 256m (admit JSON includes 2026-05 partial, current PR file ends 2026-04). Direct reproduction comparable."
+    }
+  },
+  "five_layers": {
+    "Layer_1": "Original (production Iter31, no overlay) = ret_net direct",
+    "Layer_2": "MRS simple cash (4-state 0/10/20/40 by trailing 12m BM_Ret)",
+    "Layer_3": "M4 only (BOCPD+decay+BL multiplier on production base)",
+    "Layer_4": "AR on M4 (admit Path A, beta_t threshold step on top of M4)",
+    "Layer_5": "AR on Original (M4 replaced by AR alone)"
+  },
+  "primary_metric": "Layer 4 (AR_on_M4_threshold_S1 = STR_1715_AR_threshold_overlay admit)",
+  "layer_4_results": {
+    "production_267m_full_admit_lineage": {
+      "CAGR": 0.3770,
+      "Vol": 0.2223,
+      "Sharpe": 1.6957,
+      "MDD": -0.2481,
+      "Sortino": 0.9788,
+      "Calmar": 1.5197,
+      "n_months": 267
+    },
+    "production_254m_warmup": {
+      "CAGR": 0.3828,
+      "Vol": 0.2212,
+      "Sharpe": 1.7307,
+      "MDD": -0.2481,
+      "n_months": 254
+    },
+    "production_255m_admit_comparable": {
+      "CAGR": 0.3868,
+      "Vol": 0.2212,
+      "Sharpe": 1.7486,
+      "MDD": -0.2481,
+      "Sortino": 1.0063,
+      "Calmar": 1.5592,
+      "n_months": 255
+    },
+    "admit_json_256m_baseline": {
+      "CAGR": 0.3834,
+      "Vol": 0.2159,
+      "Sharpe": 1.7758,
+      "MDD": -0.2515,
+      "Sortino": 1.0510,
+      "Calmar": 1.5245,
+      "n_months": 256
+    },
+    "prior_ew_267m_corrected": {
+      "CAGR": 0.2106,
+      "Vol": 0.2139,
+      "Sharpe": 0.985,
+      "MDD": -0.3036,
+      "Sortino": 0.57,
+      "Calmar": 0.6939,
+      "n_months": 267
+    }
+  },
+  "layer_4_drift": {
+    "production_255m_vs_admit_256m_json": {
+      "delta_Sharpe": -0.0272,
+      "delta_CAGR_pp": 0.34,
+      "delta_Vol_pp": 0.53,
+      "delta_MDD_pp": 0.34,
+      "delta_Sortino": -0.0447,
+      "delta_Calmar": 0.0347,
+      "interpretation": "Near-identical (within 1m PR file off + anchor convention). Production weighting reproduction PASS."
+    },
+    "production_267m_vs_prior_ew_267m": {
+      "delta_Sharpe": 0.7107,
+      "delta_CAGR_pp": 16.64,
+      "delta_MDD_pp": 5.55,
+      "delta_Sortino": 0.4088,
+      "delta_Calmar": 0.8258,
+      "interpretation": "EW measurement basis violation quantified. Iter31 linear_tilt production weighting recovers SR +0.71 / CAGR +16.64pp / MDD +5.55pp improvement vs uniform 1/20 EW."
+    },
+    "production_267m_vs_admit_256m_json": {
+      "delta_Sharpe": -0.0801,
+      "delta_CAGR_pp": -0.64,
+      "delta_MDD_pp": 0.34,
+      "delta_Sortino": -0.0722,
+      "delta_Calmar": -0.0048,
+      "interpretation": "Coverage extension cost: 11m 2004-02~2005-01 back-fill includes 2004 early drawdown (worst dd 2006-02~2007-05 stable, but early period vol drag). Acceptable since coverage is the explicit goal per mandate."
+    }
+  },
+  "layer_1_sanity_vs_admit": {
+    "production_255m_L1": {"CAGR": 0.4428, "Vol": 0.2664, "Sharpe": 1.6620, "MDD": -0.4074},
+    "admit_256m_L1_json": {"CAGR": 0.4464, "Vol": 0.2649, "Sharpe": 1.6854, "MDD": -0.4169},
+    "delta_Sharpe": -0.0234,
+    "interpretation": "L1 same base, 1m off — drift |delta|<0.05 expected, sanity PASS."
+  },
+  "ew_vs_production_correlation_note": {
+    "ew_alpha_top20_vs_pr_ret_net_correlation": 0.0335,
+    "interpretation": "Spurious. EW reconstruction != Iter31 linear_tilt production. Confirmed by direct PR ret_net baseline reproduction (current run Layer 1 SR=1.66, matches admit L1 SR=1.69 within 1m anchor off)."
+  },
+  "pit_compliance": {
+    "C2_lag": "M4 weight t-1 + beta_threshold t-1 lag applied",
+    "C9_lag": "shift(_, 1, fill=1.0) on M4/AR weights",
+    "C11_pit": "bm_12m frollsum(shift(lret_bm, 1), 12, align='right') past-only",
+    "C13_no_negate": "score_eff Z_Score_Aligned (alpha-research stage)",
+    "C14_usable_date": "PR file production weights respect Usable_Date <= sig_date"
+  },
+  "cost_model": {
+    "version": "v2.3_kr_retail_15bps",
+    "base_iter31_turnover_cost": "Embedded in PR ret_net (cost_ret column, mean 0.001289)",
+    "ar_overlay_turnover_cost": "Δβ × 0.0015 additional (line 197 of script)",
+    "average_base_turnover": 0.4295,
+    "average_ar_turnover_annualized": "see metrics_layer4_production.csv TO_beta_annualized"
+  },
+  "perfanalytics_standard_used": [
+    "table.AnnualizedReturns(scale=12, Rf=0)",
+    "maxDrawdown",
+    "SortinoRatio(MAR=0)",
+    "CalmarRatio",
+    "table.Drawdowns(top=10)"
+  ],
+  "self_synthesis_avoided": "cumprod(1+r) only used for NAV cumulative path (not metric computation). All Sharpe/CAGR/MDD/Sortino/Calmar via PerformanceAnalytics functions.",
+  "audit_pass": true,
+  "input_sources_md5": {
+    "pr_ret_net_csv": "607dfb1be5d4373b8669843174133511",
+    "beta_t_mapping_csv": "257f6586f709455246985ce186d4e489",
+    "m4_weights_csv": "2f7c8f034103d6c01a663216bcc154bf"
+  },
+  "files": {
+    "manifest_json": "manifest.json",
+    "run_script": "run_4layer_production.R",
+    "five_layer_csv": "four_layer_comparison_production.csv",
+    "delta_vs_admit_256m_csv": "four_layer_comparison_delta_vs_admit_256m.csv",
+    "delta_vs_ew_267m_csv": "four_layer_comparison_delta_vs_ew_267m.csv",
+    "layer1_sanity_csv": "layer1_sanity_vs_admit.csv",
+    "nav_csv": "nav_layer4_production.csv",
+    "returns_path_csv": "four_layer_returns_path_production.csv",
+    "drawdowns_csv": "drawdowns_layer4_production.csv",
+    "metrics_extra_csv": "metrics_layer4_production.csv",
+    "bt_result_rds": "bt_result_layer4_production.rds",
+    "audit_json": "audit.json"
+  },
+  "boundary": "Forge subagent pure function. No alpha/risk/optimizer modification. Lockbox forge=폐기 per 도훈 mandate 2026-05-09 (run uses full PR coverage through 2026-04).",
+  "created_at": "2026-05-12T13:15:00+09:00"
+}

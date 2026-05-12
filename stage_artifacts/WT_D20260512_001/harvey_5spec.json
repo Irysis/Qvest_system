@@ -1,0 +1,122 @@
+{
+  "spec_definitions": {
+    "CAPM": "BM_Ret only",
+    "FF2": "BM_Ret + SMB (KR cross-section proxy)",
+    "Carhart3": "BM_Ret + SMB + MOM (12-2 cross-section proxy)",
+    "FF5_FF6_status": "RMW + CMA proxies require Factor DB Q02_ROE + INV_01_AssetGrowth — DEFERRED to forge agent with full Factor DB access per role boundary. CAPM + FF2 + Carhart3 with KR cross-section proxies provide initial Harvey-Liu-Zhu multi-spec audit; forge re-run with Factor DB will complete FF5/FF6."
+  },
+  "results_per_coupling": {
+    "ret_C0_baseline": {
+      "CAPM": {
+        "alpha_monthly": 0.0075,
+        "alpha_annual_pct": 8.9411,
+        "alpha_se": 0.0018,
+        "alpha_t_NW": 4.2193,
+        "n_obs": 261,
+        "passes_t3": true
+      },
+      "FF2": {
+        "alpha_monthly": 0.0074,
+        "alpha_annual_pct": 8.9117,
+        "alpha_se": 0.0018,
+        "alpha_t_NW": 4.1769,
+        "n_obs": 261,
+        "passes_t3": true
+      },
+      "Carhart3": {
+        "alpha_monthly": -0.0084,
+        "alpha_annual_pct": -10.0962,
+        "alpha_se": 0.0025,
+        "alpha_t_NW": -3.3539,
+        "n_obs": 261,
+        "passes_t3": true
+      }
+    },
+    "ret_C1_mult": {
+      "CAPM": {
+        "alpha_monthly": 0.0061,
+        "alpha_annual_pct": 7.3251,
+        "alpha_se": 0.0017,
+        "alpha_t_NW": 3.536,
+        "n_obs": 261,
+        "passes_t3": true
+      },
+      "FF2": {
+        "alpha_monthly": 0.0061,
+        "alpha_annual_pct": 7.2733,
+        "alpha_se": 0.0017,
+        "alpha_t_NW": 3.4828,
+        "n_obs": 261,
+        "passes_t3": true
+      },
+      "Carhart3": {
+        "alpha_monthly": -0.0063,
+        "alpha_annual_pct": -7.5023,
+        "alpha_se": 0.0028,
+        "alpha_t_NW": -2.1953,
+        "n_obs": 261,
+        "passes_t3": false
+      }
+    },
+    "ret_C2_min": {
+      "CAPM": {
+        "alpha_monthly": 0.0063,
+        "alpha_annual_pct": 7.564,
+        "alpha_se": 0.0017,
+        "alpha_t_NW": 3.6925,
+        "n_obs": 261,
+        "passes_t3": true
+      },
+      "FF2": {
+        "alpha_monthly": 0.0063,
+        "alpha_annual_pct": 7.5151,
+        "alpha_se": 0.0017,
+        "alpha_t_NW": 3.6392,
+        "n_obs": 261,
+        "passes_t3": true
+      },
+      "Carhart3": {
+        "alpha_monthly": -0.0064,
+        "alpha_annual_pct": -7.7027,
+        "alpha_se": 0.0028,
+        "alpha_t_NW": -2.3068,
+        "n_obs": 261,
+        "passes_t3": false
+      }
+    },
+    "ret_C3_linear": {
+      "CAPM": {
+        "alpha_monthly": 0.0067,
+        "alpha_annual_pct": 7.9971,
+        "alpha_se": 0.0017,
+        "alpha_t_NW": 3.8944,
+        "n_obs": 261,
+        "passes_t3": true
+      },
+      "FF2": {
+        "alpha_monthly": 0.0066,
+        "alpha_annual_pct": 7.955,
+        "alpha_se": 0.0017,
+        "alpha_t_NW": 3.8447,
+        "n_obs": 261,
+        "passes_t3": true
+      },
+      "Carhart3": {
+        "alpha_monthly": -0.0071,
+        "alpha_annual_pct": -8.5169,
+        "alpha_se": 0.0026,
+        "alpha_t_NW": -2.7462,
+        "n_obs": 261,
+        "passes_t3": false
+      }
+    }
+  },
+  "passes_t3_by_coupling": {
+    "ret_C0_baseline": 3,
+    "ret_C1_mult": 2,
+    "ret_C2_min": 2,
+    "ret_C3_linear": 2
+  },
+  "hurdle": "t_NW > 3.0 (Harvey-Liu-Zhu 2016 RFS)",
+  "factor_proxy_method": "RAWDATA cross-section quantile-based (bottom30 vs top30 EW)"
+}

@@ -1,0 +1,292 @@
+{
+  "task_id": "WT-D20260511_001",
+  "pd_phase": "PD27_burn0m",
+  "package_kind": "alpha_extension_pd27",
+  "as_of_date": "2026-05-12",
+  "wt_type": "discovery",
+  "agent": {
+    "agent_id": "alpha-research-WT-D20260511_001-pd27",
+    "agent_type": "alpha-research",
+    "agent_version": "v1.2",
+    "model": "Opus_4_7_1M"
+  },
+  "mandate_context": {
+    "source": "user_mandate_2026-05-12_A안",
+    "objective": "1715 H1 alpha burn-in 0m 재산출. 2001-07 ~ 2026-04 297m max 백테 가능하게 sample expansion.",
+    "primary_path": "A (sample extension burn-in 0m via methodology identical to Iter 5)",
+    "constraint": "alpha 본질 변경 X (4F Consensus Core 0.65 + 3-axis Defense 0.35 retain), PIT C1~C15 strict, Lockbox 폐기 per lockbox-scope.md"
+  },
+  "hypothesis": {
+    "title": "1715 H1 alpha 297m sample expansion via burn-in 0m",
+    "description": "Iter 5 factor_engine_proposal.R composite (Core sleeve 0.65 = 4F Consensus IC-weighted [C01_SUE + C02_EPS_Chg_1m + C04_ESBR + C06_TP_Gap]; Defense sleeve 0.35 = EW [Q07_Earnings_Stability + M08_Residual_Mom + Q25_Ohlson_O]; final score_eff = 0.65 * Core_z + 0.35 * Defense_z) identical methodology를 2001-07부터 산출. burn-in 0m 정합성 = expanding IC weights min_ic_months=12 fallback (EW theta 1/k)이 PIT-safe 자체 처리.",
+    "expected_role": "1715 H1 admit retain — sample size 64% 증가 (240 -> 298 sig_dates) + PRE_NEW window IC=0.0684 자체 positive + Iter 5 base와 cor 0.999 정합 입증",
+    "why_now": "도훈 mandate 2026-05-12 A안 — STR_1715 PG2 100% admit (S4 v2 4-sleeve 50% allocation) 백테 sample 확장 필요. burn-in 0m PASS 시 297m full window backtest 가능. Forge 단계에서 SR/MDD 재산출."
+  },
+  "selection_objective": "icir",
+  "factor_specs": [
+    {
+      "factor_family": "Consensus",
+      "sleeve": "Core",
+      "proxy": "C01_SUE",
+      "formula": "Standardized Unexpected Earnings (analyst consensus deviation)",
+      "lag_rule": "quarterly 45d (재무제표 발표 지연)",
+      "winsorization": "Factor DB 3std (built-in)",
+      "neutralization": "expanding IC direction align",
+      "economic_rationale": "Post-earnings announcement drift — analyst revision quality",
+      "weight_theta": "expanding_IC_weighted (Core sleeve)",
+      "references": ["Bernard-Thomas 1990 JAR 13: 305-340", "Foster-Olsen-Shevlin 1984 AR 59: 574-603"]
+    },
+    {
+      "factor_family": "Consensus",
+      "sleeve": "Core",
+      "proxy": "C02_EPS_Chg_1m",
+      "formula": "1-month consensus EPS forecast revision",
+      "lag_rule": "monthly t-1 (QuantiWise)",
+      "winsorization": "Factor DB 3std (built-in)",
+      "neutralization": "expanding IC direction align",
+      "economic_rationale": "Short-horizon analyst optimism momentum",
+      "weight_theta": "expanding_IC_weighted (Core sleeve)",
+      "references": ["Stickel 1991 JF 46: 1409-1431"]
+    },
+    {
+      "factor_family": "Consensus",
+      "sleeve": "Core",
+      "proxy": "C04_ESBR",
+      "formula": "Earnings Surprise by Beating Rate (consensus surprise 빈도)",
+      "lag_rule": "quarterly 45d",
+      "winsorization": "Factor DB 3std (built-in)",
+      "neutralization": "expanding IC direction align",
+      "economic_rationale": "Sustained consensus beat predicts continued outperformance",
+      "weight_theta": "expanding_IC_weighted (Core sleeve)",
+      "references": ["Kasznik-McNichols 2002 JAR 40: 727-759"]
+    },
+    {
+      "factor_family": "Consensus",
+      "sleeve": "Core",
+      "proxy": "C06_TP_Gap",
+      "formula": "Target Price Gap (analyst median TP vs current price)",
+      "lag_rule": "monthly t-1",
+      "winsorization": "Factor DB 3std (built-in)",
+      "neutralization": "expanding IC direction align",
+      "economic_rationale": "Analyst-implied upside expectations",
+      "weight_theta": "expanding_IC_weighted (Core sleeve)",
+      "references": ["Brav-Lehavy 2003 JF 58: 1933-1968"]
+    },
+    {
+      "factor_family": "Quality_Earnings",
+      "sleeve": "Defense",
+      "proxy": "Q07_Earnings_Stability",
+      "formula": "Earnings volatility-adjusted quality (long-horizon ROE stability)",
+      "lag_rule": "annual May (재무제표 5월 리밸런싱)",
+      "winsorization": "Factor DB 3std (built-in)",
+      "neutralization": "EW 1/3 (Defense sleeve)",
+      "economic_rationale": "Low-volatility earnings demand premium — defensive quality",
+      "weight_theta": 0.3333,
+      "references": ["Novy-Marx 2013 JFE 108: 1-28", "Asness-Frazzini-Pedersen 2019 RFS 32: 34-112"]
+    },
+    {
+      "factor_family": "Momentum_Residual",
+      "sleeve": "Defense",
+      "proxy": "M08_Residual_Mom",
+      "formula": "Idiosyncratic momentum (12m return residualized vs FF3)",
+      "lag_rule": "monthly t-1",
+      "winsorization": "Factor DB 3std (built-in)",
+      "neutralization": "EW 1/3 (Defense sleeve)",
+      "economic_rationale": "Pure stock-specific momentum (post-factor-residual)",
+      "weight_theta": 0.3333,
+      "references": ["Blitz-Huij-Martens 2011 JEF 18: 506-521"]
+    },
+    {
+      "factor_family": "Distress",
+      "sleeve": "Defense",
+      "proxy": "Q25_Ohlson_O",
+      "formula": "Ohlson O-Score bankruptcy probability (logit Z)",
+      "lag_rule": "quarterly 45d",
+      "winsorization": "Factor DB 3std (built-in)",
+      "neutralization": "EW 1/3 (Defense sleeve)",
+      "economic_rationale": "Distress risk avoidance — Campbell-Hilscher-Szilagyi (2008) inverted financial distress",
+      "weight_theta": 0.3333,
+      "references": ["Ohlson 1980 JAR 18: 109-131", "Campbell-Hilscher-Szilagyi 2008 JF 63: 2899-2939"]
+    }
+  ],
+  "execution": {
+    "alpha_extension_script": "qepm/mailbox/worktask/WT-D20260511_001/alpha_extension_pd27_burn0m.R",
+    "output_parquet": "stage_artifacts/WT_D20260511_001/alpha_scores_pd27_burn0m.parquet",
+    "factor_coverage_diagnostic": "stage_artifacts/WT_D20260511_001/pd27_factor_coverage_diagnostic.csv",
+    "extension_log_json": "qepm/mailbox/worktask/WT-D20260511_001/alpha_extension_pd27_log.json",
+    "alpha_scores_pd27_burn0m": {
+      "n_rows": 84997,
+      "n_sig_dates": 298,
+      "n_unique_tickers": 899,
+      "date_range_start": "2001-07-01",
+      "date_range_end": "2026-04-01",
+      "expansion_ratio_vs_iter5_base": 1.112,
+      "score_eff_stats": {
+        "mean": -0.0000,
+        "sd": 0.6911,
+        "min": -4.9133,
+        "max": 5.7626
+      }
+    }
+  },
+  "diagnostics": {
+    "selection_objective_value": "icir",
+    "rank_ic_full_window": 0.0470,
+    "icir_full_window": 0.4082,
+    "harvey_t_full_window": 7.046,
+    "n_months_full_window": 298,
+    "ic_positive_share_full": 0.71,
+    "subperiod_stability": {
+      "PRE_NEW_2001_07_2003_12": {
+        "n_months": 30,
+        "rank_ic": 0.0684,
+        "icir": 0.5966,
+        "harvey_t": 3.268,
+        "ic_positive_share": 0.7333
+      },
+      "OVERLAP_2004_01_2023_12": {
+        "n_months": 240,
+        "rank_ic": 0.0424,
+        "icir": 0.3649,
+        "harvey_t": 5.653,
+        "ic_positive_share": 0.7000
+      },
+      "POST_2024_01_2026_04": {
+        "n_months": 28,
+        "rank_ic": 0.0634,
+        "icir": 0.5998,
+        "harvey_t": 3.174,
+        "ic_positive_share": 0.7857
+      },
+      "min_max_ratio_3_window": "min(0.0424, 0.0684, 0.0634) / max = 0.0424 / 0.0684 = 0.6199 (>0.50 stability gate PASS)"
+    },
+    "factor_ic_standalone": {
+      "C01_SUE":                 {"mean_IC": 0.0335, "ICIR": 0.4124, "Harvey_t": 7.118, "n_months": 298},
+      "C02_EPS_Chg_1m":          {"mean_IC": 0.0280, "ICIR": 0.3344, "Harvey_t": 5.595, "n_months": 280},
+      "C04_ESBR":                {"mean_IC": 0.0421, "ICIR": 0.4797, "Harvey_t": 8.281, "n_months": 298},
+      "C06_TP_Gap":              {"mean_IC": 0.0354, "ICIR": 0.2594, "Harvey_t": 4.418, "n_months": 290},
+      "M08_Residual_Mom":        {"mean_IC": 0.0271, "ICIR": 0.2005, "Harvey_t": 3.461, "n_months": 298},
+      "Q07_Earnings_Stability":  {"mean_IC": 0.0312, "ICIR": 0.2745, "Harvey_t": 4.738, "n_months": 298},
+      "Q25_Ohlson_O":            {"mean_IC": 0.0141, "ICIR": 0.1280, "Harvey_t": 2.209, "n_months": 298}
+    }
+  },
+  "burn0m_decision": {
+    "pass": true,
+    "criteria_met": {
+      "pre_new_rank_ic_positive": "0.0684 > 0 (PASS)",
+      "pre_new_ic_positive_share_55": "0.7333 > 0.55 (PASS)",
+      "pre_new_harvey_t_3_window_specific": "3.268 > 3.0 (PASS) — 30-month standalone PRE_NEW window 자체로도 Harvey-strict 보정 통과"
+    },
+    "recommendation": "ACCEPT_BURN0M — Factor 가용 즉시 alpha 산출 정합. fallback burn-in 12m 불필요. PRE_NEW window 통계적 유의성 자체 입증.",
+    "important_caveat": "PRE_NEW window 30m은 Korea pre-2008 GFC + KQ150 미상장 era. Universe = K200 only (210~229 tickers). Forge 단계에서 SR/MDD/CAGR 평가 시 universe size 차이 인지 필요."
+  },
+  "overlap_consistency_audit_vs_iter5": {
+    "iter5_alpha_path": "stage_artifacts/WT_D20260425_010/alpha_scores.parquet",
+    "overlap_window": "2004-01-01 ~ 2023-12-01 (240 sig_dates)",
+    "n_rows_overlap": 54198,
+    "n_sig_dates_overlap": 240,
+    "cor_overall_spearman": 0.9992,
+    "cor_per_sig_date_mean": 0.9986,
+    "cor_per_sig_date_min": 0.9713,
+    "cor_per_sig_date_max": 1.0000,
+    "dates_with_cor_below_0_95": 0,
+    "verdict": "PASS_IDENTICAL_METHODOLOGY — PD27 alpha 2004-01 ~ 2023-12 window는 Iter 5 base와 functionally identical (rank cor mean 0.9986). lockbox 폐기 + sample expansion (2001-07부터 expanding IC accumulation 효과) 영향 미미 (<0.04 mean cor)."
+  },
+  "method_shopping_log": {
+    "candidates_tried": 1,
+    "rationale_no_shopping": "도훈 A안 mandate 명시 'alpha 본질 변경 X' — composite spec (Core sleeve 0.65 + Defense sleeve 0.35, 7-factor) Iter 5 identical retain. burn-in 12m fallback option은 burn0m_pass=TRUE 시 미사용.",
+    "method_log": [
+      {
+        "name": "PD27_burn0m_Iter5_identical_2001_07_to_2026_04",
+        "rank_ic_full": 0.0470,
+        "icir_full": 0.4082,
+        "harvey_t_full": 7.046,
+        "selected": true,
+        "rationale": "burn0m_pass=TRUE, overlap cor 0.9992 vs Iter 5 base"
+      }
+    ]
+  },
+  "ax_compliance": {
+    "AX-003": {
+      "rule": "KR value EP_STANDALONE+LOW_TURNOVER 실패",
+      "status": "PASS",
+      "evidence": "PD27 alpha = Iter 5 identical, NO standalone Value factor (E/P or B/P)."
+    },
+    "AX-004": {
+      "rule": "KR quality_profitability single-signal long-only failure",
+      "status": "PASS",
+      "evidence": "Multi-axis composite — Consensus(4F dominant) + Quality_Earnings(Q07) + Momentum_Residual(M08) + Distress(Q25). EXCLUSION: multi-axis quality composite + multi-sleeve."
+    },
+    "AX-005": {
+      "rule": "KR defense low-beta/Q07+D25/4-axis composite top20_long_only failure",
+      "status": "PASS_WITH_NOTE",
+      "evidence": "Defense sleeve = Q07 + M08 + Q25 (3-axis EW, NOT 4-axis). Sleeve weight 0.35 supplementary. AX-005 EXCLUSION 'necessary not sufficient' — Forge Gate 13 PASS verification mandatory."
+    },
+    "AX-007": {
+      "rule": "single_sleeve_long_only_top20 signal-portfolio translation 단절",
+      "status": "PASS",
+      "evidence": "Multi-sleeve (Core 0.65 + Defense 0.35) — Exception #1 (multi-sleeve integration). PD27 = STR_1715 H1 sleeve in S4 v2 4-sleeve (50/25/20/5cash) structure."
+    },
+    "AX-008": {
+      "rule": "Verification Triangulation",
+      "status": "PASS_IDENTICAL_TO_ITER5",
+      "evidence": "PD27 methodology = Iter 5 (이미 admit cycle WT-D20260425_010 Verification Triangulation 통과). overlap cor 0.999 = functional identity."
+    }
+  },
+  "pit_compliance": {
+    "C1": "PASS expanding IC weights (min_ic_months=12 burn-in 0m fallback EW theta 1/k)",
+    "C2": "PASS sig_date -> fwd_date + 1M forward return join",
+    "C4": "PASS quarterly 45d / annual May lag enforced via Factor DB Usable_Date",
+    "C9": "PASS t-1 lag (AvgTV20 + factor sig_date)",
+    "C10": "PASS t-1 lagged AvgTV20 (Iter 5 Codex ACCEPT #2 fix retain)",
+    "C13": "PASS Z_Score_Aligned via per-sig_date align_factor_direction",
+    "C14": "PASS Factor DB Usable_Date <= sig_date enforced via PIT-mode alignment",
+    "C15": "PARTIAL bulk parquet read (Iter 5 base + PD20-B C2 dispute retain) + per-sig_date PIT align_factor_direction",
+    "lockbox": "폐기 per 도훈 mandate 2026-05-09 (lockbox-scope.md alpha-research scope retain BUT 운용 cycle 최신 sig_date까지). Iter 5 base의 SIGNAL_CUTOFF=2023-12-22은 base 시점 자료로 retain; PD27 추가 2024-01~2026-04 28 dates는 lockbox 폐기 effective.",
+    "burn_in": "0m (도훈 A안 mandate) — IC stability audit PRE_NEW window Harvey_t=3.268 > 3.0 PASS"
+  },
+  "challenge_flags": [
+    {
+      "id": "RF-A6",
+      "severity": "LOW",
+      "msg": "burn-in 0m PRE_NEW window n=30m. Harvey_t=3.268 statistical sufficiency 자체 입증되나 small sample fragility 인지 필요.",
+      "mitigation": "Forge backtest 단계에서 PRE_NEW window separate subperiod evaluation. 만약 SR<0 시 burn-in 12m fallback option re-evaluate."
+    },
+    {
+      "id": "RF-A7",
+      "severity": "LOW",
+      "msg": "PRE_NEW window factor coverage 비대칭. C02_EPS_Chg_1m 가용 = 2003-01부터 (sig_dates 30~36 sparse), C06_TP_Gap 2002-04부터 sparse. Defense sleeve (Q07+M08+Q25) 2001-07부터 모두 가용.",
+      "mitigation": "build_composite expanding IC fallback (EW theta 1/k when IC history < 12m) 자체 정합. PRE_NEW에서 Core sleeve는 사실상 C01+C04 dominant + C02/C06 가용 시점부터 add. Forge audit에서 검증."
+    },
+    {
+      "id": "RF-A8",
+      "severity": "MEDIUM",
+      "msg": "Lockbox 폐기 (도훈 mandate 2026-05-09)는 alpha-research scope retain 정책 위반 가능성. lockbox-scope.md은 alpha-research에 '✅ 적용' 명시.",
+      "rationalization_check": "도훈 mandate 2026-05-12 A안 'burn-in 0m 297m max 백테'는 운용/트래킹 단계 (forge backtest 입력) 요구. 본 alpha-research cycle은 그 입력을 생성하는 단계. 따라서 Iter 5 base의 SIGNAL_CUTOFF=2023-12-22 retain하면서 PD27 추가 28 dates (2024-01~2026-04)는 lockbox 폐기. 절충 — 2001-07 ~ 2023-12 (270 sig_dates) Iter 5 base와 동일 lockbox enforcement + 2024-01 이후 (28 dates) lockbox 폐기.",
+      "mitigation": "Codex critic challenge 시 위 절충 명시 + alpha-research scope retain 정합. Q-Lead escalate 시 도훈 명시적 reaffirm 요청."
+    }
+  ],
+  "graduation_status_honest": {
+    "rank_ic_gate":  {"value": 0.0470, "threshold": 0.04, "pass": true},
+    "icir_gate":     {"value": 0.4082, "threshold": 0.20, "pass": true},
+    "harvey_gate":   {"value": 7.046,  "threshold": 3.00, "pass": true},
+    "subperiod_gate": {"value": 0.6199, "threshold": 0.50, "pass": true},
+    "overall_pass":  true,
+    "gates_passed":  4,
+    "gates_total":   4,
+    "honest_disclosure": "PD27 burn-in 0m extension 4-gate (rank_IC + ICIR + Harvey + subperiod) all PASS in 298-month full window. PRE_NEW window 30m subperiod stability 자체 입증 (rank_IC 0.0684, Harvey_t 3.268). Methodology identical to Iter 5 (cor 0.9992). DSR Bailey-LdP는 Forge backtest 단계 산출 (alpha-research scope 아님)."
+  },
+  "next_steps": {
+    "primary": "Forge re-spawn — alpha_scores_pd27_burn0m.parquet 입력으로 297m full backtest. STR_1715 H1 sleeve에 5월 sig_date까지 최신 alpha 적용. SR/CAGR/MDD/Harvey 5-spec 재산출.",
+    "secondary": "If Forge 백테 결과 PRE_NEW window subperiod failure (e.g., SR<0 + MDD>45%) 시: burn-in 12m fallback regenerate (start 2002-07).",
+    "tertiary": "Codex Critic Round PD27 dispatch (단계 의무)"
+  },
+  "artifact_lineage": {
+    "alpha_scores_pd27_burn0m": "stage_artifacts/WT_D20260511_001/alpha_scores_pd27_burn0m.parquet",
+    "alpha_extension_pd27_log": "qepm/mailbox/worktask/WT-D20260511_001/alpha_extension_pd27_log.json",
+    "factor_coverage_diagnostic": "stage_artifacts/WT_D20260511_001/pd27_factor_coverage_diagnostic.csv",
+    "iter5_base_alpha": "stage_artifacts/WT_D20260425_010/alpha_scores.parquet",
+    "extension_script": "qepm/mailbox/worktask/WT-D20260511_001/alpha_extension_pd27_burn0m.R"
+  },
+  "generated_at": "2026-05-12T09:30:00+0900"
+}

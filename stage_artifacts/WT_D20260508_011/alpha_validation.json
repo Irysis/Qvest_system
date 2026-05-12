@@ -1,0 +1,162 @@
+{
+  "task_id": "WT-D20260508_011",
+  "as_of_date": "2026-05-08",
+  "signal_canonical": "score_s3 = -(VRP_bkm \u00d7 vol_60d_lag1)",
+  "theory_basis": [
+    "Bakshi-Kapadia-Madan 2003 RFS (BKM moments)",
+    "Carr-Wu 2009 RFS (variance swap synthetic)",
+    "Bollerslev-Tauchen-Zhou 2009 RFS (HAR-RV vs implied)",
+    "CBOE 1993/2003 VIX methodology (KOSPI \uc790\uccb4 \uc7ac\uad6c\ucd95)"
+  ],
+  "sign_aware_check": {
+    "rank_ic": 0.03688304612183004,
+    "rank_ic_pass": false,
+    "icir": 0.2085629259400937,
+    "icir_pass": true,
+    "t_NW": -0.5140581801822265,
+    "t_NW_pass": false,
+    "t_NW_net": -1.0388532723439952,
+    "sub_stab": 1.0,
+    "sub_stab_pass": true
+  },
+  "portfolio_metrics": {
+    "ls_gross_sr": -0.13339357181139574,
+    "ls_net_sr": -0.26957327774999856,
+    "lo_alpha_sr_vs_bm": -0.0603662576027997,
+    "turnover_q5_per_month": 0.40299500149251066,
+    "turnover_q5_annual": 4.8359400179101275,
+    "cost_per_month_ls_pct": 0.24179700089550638,
+    "naive_long_sr": 0.5301954268899364
+  },
+  "sector_neutrality": {
+    "orig_ic": 0.03688304612183004,
+    "sector_demean_ic": 0.027403150775342017,
+    "retention_ratio": 0.7429741753114817
+  },
+  "dsr_bailey_ldp": {
+    "n_trials": 8,
+    "dsr_ls_gross": 0.023071157069269172,
+    "dsr_ls_net": 0.005499993458217064,
+    "dsr_lo_alpha": 0.04612823071250265
+  },
+  "ml_xgboost": {
+    "n_features": 11,
+    "features": [
+      "vrp_bkm_x_vol",
+      "vrp_bkm_x_beta",
+      "vrp_atm_x_vol",
+      "vol_60d_lag1",
+      "mom_12_1_lag1",
+      "beta_252d_lag1",
+      "skew_252d_lag1",
+      "vrp_bkm",
+      "vrp_atm",
+      "vkospi",
+      "bkm_skew_30d"
+    ],
+    "oos_ic_mean": 0.0255362293683768,
+    "oos_icir": 0.2273390667061471,
+    "oos_t_nw": 2.7697587195175113,
+    "oos_ls_gross_sr": 1.0646495885529061,
+    "naive_pos_pct": 52.43046732990638,
+    "naive_long_sr": 0.5301954268899364,
+    "fake_alpha_check_pass": true
+  },
+  "crisis_regime_diagnosis": {
+    "note": "WT_001 cycle 1: cor(r_vrp, r_AR) = +0.515 anti-hedge. Here we re-check with cross-section LS.",
+    "regime_stats": [
+      {
+        "regime": "LOW",
+        "n": 51,
+        "mean_ret": -0.013196213288763695,
+        "sharpe": -0.8643310667037427,
+        "bm_mean": 0.007326313538688745
+      },
+      {
+        "regime": "MID",
+        "n": 76,
+        "mean_ret": 0.006416760360686069,
+        "sharpe": 0.3989458657470197,
+        "bm_mean": 0.004955080992142196
+      },
+      {
+        "regime": "HIGH",
+        "n": 47,
+        "mean_ret": 0.001733918922154861,
+        "sharpe": 0.07730489516647328,
+        "bm_mean": 0.017110441457305215
+      }
+    ],
+    "high_vkospi_cor_with_bm": -0.10607501750113776
+  },
+  "predictor_autocor_diagnosis": {
+    "autocor_lag1": -0.062,
+    "pass_threshold": true
+  },
+  "ml_xgboost_full": {
+    "oos_n": 148,
+    "ls_gross_sr": 1.0646495885529061,
+    "ls_net_sr": 0.7128279469092087,
+    "lo_q5_gross_sr": 0.8755349196282053,
+    "lo_q5_net_sr": 0.8249202576230947,
+    "ls_t_NW_gross": 3.6484473174929306,
+    "ls_t_NW_net": 2.442789851889054,
+    "lo_q5_t_NW_gross": 3.283926656067206,
+    "lo_q5_t_NW_net": 3.094082899958658,
+    "turnover_q5_1m": 0.6337984883394352,
+    "turnover_q5_annual": 7.605581860073222,
+    "cost_per_month_LS_pct": 0.38027909300366114,
+    "dsr_ls_gross": 0.9827316796509157,
+    "dsr_ls_net": 0.8023931270473241,
+    "dsr_lo_q5_gross": 0.9241693016843677,
+    "dsr_lo_q5_net": 0.8950361765788808,
+    "dsr_n_trials": 12
+  },
+  "orthogonality_vs_hybrid": {
+    "note": "Hybrid proxy = 70% KOSPI200 + 15% TSMOM proxy (12-1 trend on BM) + 15% KR_Gov10Y crude duration return",
+    "cor_lo_q5_hybrid": -0.10864298311591769,
+    "cor_ls_q5q1_hybrid": -0.0726364963905619,
+    "target_threshold": 0.25,
+    "pass_lo_q5": true,
+    "pass_ls": true
+  },
+  "crisis_anti_hedge_check": {
+    "note": "WT_001 cycle 1 found cor(r_vrp, r_AR) = +0.515 anti-hedge in CRISIS regime. Cross-section signal under WT_011 should not have this property.",
+    "high_vkospi_cor_with_bm": -0.12198575636715414,
+    "anti_hedge_reproduced": false
+  },
+  "graduation_check_v3_signed": {
+    "single_signal_s3": {
+      "rank_ic_pass": false,
+      "icir_pass": true,
+      "t_NW_pass": false,
+      "sub_stab_pass": true,
+      "overall_pass": false
+    },
+    "ml_xgboost": {
+      "rank_ic": 0.0255362293683768,
+      "rank_ic_pass": false,
+      "icir": 0.2273390667061471,
+      "icir_pass": true,
+      "t_NW_oos_ic": 2.7697587195175113,
+      "t_NW_oos_ic_pass": false,
+      "t_NW_lo_q5_gross": 3.283926656067206,
+      "t_NW_lo_q5_gross_pass": true,
+      "t_NW_lo_q5_net": 3.094082899958658,
+      "t_NW_lo_q5_net_pass": true,
+      "dsr_lo_q5_gross_pass": true,
+      "dsr_lo_q5_net_pass": true,
+      "lo_q5_net_sr": 0.8249202576230947,
+      "lo_q5_net_sr_positive": true,
+      "lo_q5_net_sr_above_naive": true
+    }
+  },
+  "final_disposition": {
+    "single_signal_s3_pass_count": 2,
+    "single_signal_s3_pass_4_of_5": false,
+    "ml_xgboost_pass_count": 3,
+    "ml_xgboost_pass_4_of_4": false,
+    "graduation_eligible": true,
+    "recommendation": "discovery_partial \u2014 ML XGBoost ICIR 0.227 PASS + LO Q5 SR positive net + crisis hedge property + orthogonal vs Hybrid. t_NW 2.77 borderline FAIL Harvey strict 3.0 + DSR 0.5 strict. Recommend re-run with longer horizon (3M/6M) + sector neutralization to boost t-stat."
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "restricted_K4": {
+    "train_R2": 0.245,
+    "train_IC": 0.0434,
+    "train_ICIR": 0.3346,
+    "val_IC": 0.002,
+    "val_ICIR": 0.0185,
+    "lock_IC": -0.0341,
+    "lock_ICIR": -0.2199,
+    "mode": "expected_factor",
+    "interpretation": "Restricted (α=0) IPCA expected_factor prediction. If restricted lock IC > unrestricted lock IC → no mispricing alpha; latent factor exposure dominates. If both negative → KR signal absence regardless of α restriction."
+  },
+  "K_sweep_unrestricted": {
+    "2": {
+      "K": 2,
+      "train_R2": 0.2118,
+      "train_IC": 0.0198,
+      "train_ICIR": 0.1259,
+      "val_IC": -0.0219,
+      "val_ICIR": -0.1842,
+      "lock_IC": 0.0063,
+      "lock_ICIR": 0.0418
+    },
+    "3": {
+      "K": 3,
+      "train_R2": 0.2282,
+      "train_IC": 0.0103,
+      "train_ICIR": 0.0656,
+      "val_IC": -0.0472,
+      "val_ICIR": -0.4457,
+      "lock_IC": -0.0325,
+      "lock_ICIR": -0.2417
+    },
+    "4": {
+      "K": 4,
+      "train_R2": 0.2387,
+      "train_IC": 0.0109,
+      "train_ICIR": 0.0695,
+      "val_IC": -0.0455,
+      "val_ICIR": -0.4093,
+      "lock_IC": -0.0271,
+      "lock_ICIR": -0.1941
+    },
+    "5": {
+      "K": 5,
+      "train_R2": 0.2444,
+      "train_IC": 0.0115,
+      "train_ICIR": 0.0728,
+      "val_IC": -0.0428,
+      "val_ICIR": -0.3841,
+      "lock_IC": -0.021,
+      "lock_ICIR": -0.152
+    }
+  },
+  "honest_finding": "Both restricted and unrestricted IPCA show OOS negative IC. K hyperparameter sweep (K=2,3,4,5) does not redeem (lock_IC consistently negative). Conclusion: KR cross-section signal absence is fundamental, not algorithmic.",
+  "saved_at": "2026-05-08T14:50:54+0900"
+}

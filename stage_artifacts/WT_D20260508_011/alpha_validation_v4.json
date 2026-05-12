@@ -1,0 +1,70 @@
+{
+  "task_id": "WT-D20260508_011",
+  "as_of_date": "2026-05-08",
+  "pipeline_version": "v4_revise_post_codex",
+  "fixes_applied": [
+    "C1 \u2014 alpha_scores.parquet now full Date \u00d7 Ticker \u00d7 score panel (185 sig_dates \u00d7 ~350 tickers)",
+    "C4 \u2014 VRP/VKOSPI signals lagged t-1 (PIT C9 conservative)",
+    "C5 \u2014 Quarterly rebalance + turnover hard mandate <600%/yr",
+    "C6 \u2014 Strict 2e8 KRW liquidity floor (production constraint)",
+    "C2 \u2014 IC strict gate honest disposition, no relaxed pass narrative",
+    "rationalization grep cleanup (no rationalization phrases in package)"
+  ],
+  "pit_c9_lag_applied": true,
+  "liquidity_filter": "20d TV >= 2e8 KRW (production hard)",
+  "rebalance_freq": "quarterly (every 3rd month)",
+  "panel_size": 62434,
+  "oos_panel_size": 49578,
+  "oos_n_dates": 144,
+  "ml_oos_metrics": {
+    "rank_ic_oos_mean": 0.0036682932502602166,
+    "rank_ic_oos_std": 0.11074908726338503,
+    "icir_oos": 0.03312255966079639,
+    "t_NW_oos_ic": 0.4659439212256514,
+    "n_dates": 144
+  },
+  "lo_q5_quarterly_rebal_metrics": {
+    "gross_sr_annual": 0.5872185461007354,
+    "net_sr_annual": 0.5676422184667945,
+    "t_NW_gross": 2.010549541846286,
+    "t_NW_net": 1.943523088378822,
+    "turnover_per_quarter": 0.685530186679823,
+    "turnover_annual_one_side": 2.742120746719292,
+    "turnover_annual_round_trip": 5.484241493438584,
+    "turnover_pass_600pct": true,
+    "cost_per_month_pct": 0.03427650933399116,
+    "subperiod_stability": 1.0,
+    "subperiod_srs": [
+      "2010-2014=+3.515",
+      "2015-2019=+0.043",
+      "2020-2026=+0.684"
+    ]
+  },
+  "dsr": {
+    "n_trials": 12,
+    "lo_q5_gross": 0.6406945983681624,
+    "lo_q5_net": 0.6153701724824195
+  },
+  "orthogonality": {
+    "cor_lo_q5_hybrid_proxy": 0.040598398536281326,
+    "pass_lt_25": true
+  },
+  "crisis_anti_hedge_check": {
+    "high_vkospi_cor_with_bm": 0.12045380354183984,
+    "anti_hedge_resolved": true
+  },
+  "graduation_strict_v4": {
+    "rank_ic_oos_pass": false,
+    "icir_oos_pass": false,
+    "t_NW_oos_pass": false,
+    "sub_stab_pass": true,
+    "lo_q5_net_t_NW_pass": false,
+    "dsr_lo_q5_net_pass": true,
+    "turnover_pass": true,
+    "orthogonality_pass": true,
+    "crisis_hedge_pass": true
+  },
+  "graduation_pass_count": 5,
+  "graduation_total": 9,
+  "graduation_overall_strict": false
+}

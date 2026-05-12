@@ -1,0 +1,421 @@
+{
+  "task_id": "WT-D20260511_001",
+  "wt_type": "discovery",
+  "package_kind": "forge_package_pd20b_zscore_composite",
+  "as_of_date": "2026-05-11",
+  "draft": false,
+  "finalized": true,
+  "finalization_timestamp": "2026-05-11T16:50:00+0900",
+  "supersedes_audit": "forge_package_med_10pct_pd18.json (PD18 5-sleeve, NEW = independent 10% top20 → KR equity 40 names violating Production 종목수 max 20)",
+  "supersede_reason": "Production Constraints 'max 20 stocks' (v53 hook 강제) violation in PD18 5-sleeve design. PD20-B Path 2 Z-Score Composite (joint top20 from STR_1715 score_eff + NEW Vol/Skew alpha at composite_z = 0.818*z_1715 + 0.182*z_NEW). 4-sleeve consolidation: Composite KR equity 0.55 + TSMOM 0.225 + KR_10y 0.18 + Cash 0.045.",
+  "agent": {
+    "agent_id": "forge-WT-D20260511_001-PD20B",
+    "agent_type": "forge",
+    "agent_version": "v6.4-pure-function",
+    "model": "Opus_4_7_1M",
+    "revision": "PD20-B Path 2 finalized with Codex Round 1 disposition (8 concerns: ACCEPT 2 + PARTIAL 5 + REBUTTAL 1; C5 HARD FAIL turnover hurdle)"
+  },
+  "method": "4_sleeve_zscore_composite_top20_monthly_rebal_redistribute_w1715_0p818_wnew_0p182",
+  "scope_clarification": {
+    "wt_kind": "discovery_sleeve_only_admit_pd20b_path2_zscore_composite_with_hard_fail_disclosure",
+    "backtest_kind": "256m_walk_forward_4_sleeve_composite_monthly_rebal_redistribute",
+    "primary_window": "2005-02-01 ~ 2026-04-01 (255 months)",
+    "composite_active_period": "2011-01-01 ~ 2026-04-01 (184 sig_dates)",
+    "primary_admit_recommended": "BLOCKED_BY_C5_HARD_FAIL — turnover 623% annual one-way > 600% hurdle. Mitigation required: (1) composite weight 0.55→0.45, OR (2) buffer zone keep25/entry20, OR (3) bi-monthly rebal.",
+    "ticker_level_kr_equity_count": 20,
+    "etf_count_exempt": 9,
+    "production_20_cap_compliance": true
+  },
+  "codex_round": {
+    "round": 1,
+    "round_1_response_file": "codex_critic_response_forge_pd20b.json",
+    "stance": "REJECT_RESPONDED_WITH_DISPOSITION",
+    "stance_rationale": "Codex Round 1 PD20-B stance REJECT + AX-008 FAIL (8 concerns: 6 HIGH + 2 MEDIUM). Q-Lead disposition: 2 ACCEPT + 5 PARTIAL + 1 REBUTTAL_BOUNDARY. C5 turnover hurdle HARD FAIL acknowledged — mitigation 의무.",
+    "veto_flag": false,
+    "challenge_note_path": "qepm/mailbox/worktask/WT-D20260511_001/challenge_note.md (Part H PD20-B disposition appended)",
+    "n_critical_concerns": 8,
+    "n_high_severity": 6,
+    "n_medium_severity": 2,
+    "concerns_disposition": {
+      "C1_weights_csv_missing": "ACCEPT — Materialize qepm/mailbox/worktask/WT-D20260511_001/weights_pd20b.csv (Judge re-spawn 의무).",
+      "C2_pit_c10_same_day": "ACCEPT_VERIFIED_NULL_IMPACT — Empirical re-run with strict t-1 lag: 100% top20 overlap (mean 20.00/20), 0 SR change, 0 return delta. Technical pattern, no material impact.",
+      "C3_composite_dsr_5spec_absent": "PARTIAL — Forge boundary (DM-only). Judge re-spawn 의무 (DSR M=19 + Harvey 5-spec CAPM/C3/C4/FF5/FF6).",
+      "C4_baseline_fairness_same_cost": "PARTIAL — Forge produces same-period. Judge re-spawn 의무 (PD18 cost-recompute with same 15bps × turnover methodology).",
+      "C5_turnover_hard_fail_623_pct": "ACCEPT_HARD_FAIL — Composite sleeve internal one-way turnover 622.8% > 600% hurdle. Round-trip 1,245.7% FAIL. Portfolio-weighted round-trip 685% still FAIL. Mitigation 의무: composite weight 0.55→0.45 OR buffer zone OR bi-monthly rebal.",
+      "C6_pit_c13_c14_inherited": "REBUTTAL_BOUNDARY — Forge has no authority to fix alpha-layer C13/C14. alpha-research challenge_note Part A timeline accepted. Q-Lead orchestration: alpha-research re-spawn before PD20-B admit.",
+      "C7_composite_weight_0p818_0p182_not_alpha_signal_optimal": "PARTIAL — Pre-specified from PD18 sleeve allocation (NOT free fitting but inherits PD18 deployment choice). Sensitivity table (0.5/0.5, 0.7/0.3, 0.9/0.1, z-weighted) deferred to Judge re-spawn.",
+      "C8_silent_override_disclosure_not_resolution": "PARTIAL_VALID — Charter v1.7 §8 No Silent Override compliance: ALL 8 concerns disposed in challenge_note Part H. ACCEPT 2 + PARTIAL 5 + REBUTTAL 1 = 8/8 disposed. 0 silent override."
+    },
+    "weakest_assumption_resolution": "Codex weakest_assumption: '0.818/0.182 composite weight mechanically reused as alpha-signal mixing rule produces robust 20-stock replacement without selection bias / NEW alpha dilution'. Q-Lead concession: this is partially valid pre-specification (NOT free fitting) but inherits PD18 deployment choice. Sensitivity table required (Judge re-spawn).",
+    "ax_hard_fail_count": "1 strict (AX-008 Codex stance REJECT) + 1 empirical (C5 turnover hurdle HARD FAIL)",
+    "q_lead_escalate_flag": true,
+    "q_lead_escalate_items": [
+      "PD20-B C5 HARD FAIL trigger — mitigation decision required (도훈 mandate options): (a) composite weight 0.55→0.45 / (b) buffer zone keep25/entry20 / (c) bi-monthly rebal / (d) Path 2 abandonment",
+      "alpha-research re-spawn for C13/C14 remediation (C6 boundary, alpha-layer responsibility)",
+      "Judge re-spawn 5 critical items: weights.csv materialize + DSR M=19 + Harvey 5-spec + PD18 cost recompute + sensitivity table",
+      "Path 1 (PD20-A sleeve-weighted top-N) vs Path 2 (PD20-B Z-Score Composite top20) dominance judgment after both mitigations applied",
+      "Codex Round 2 PD20-B optional after C5 mitigation + remediation (재호출 의무)"
+    ],
+    "academic_citations": [
+      "Bailey-Lopez de Prado (2014) JPM — DSR + DSR penalty M=19",
+      "Harvey-Liu-Zhu (2016) RFS — t > 3.0 strict bar (PD20-B DM 2.76 FAIL)",
+      "Charter v1.7 §10 Role Card 4×5 — Forge / Judge / alpha boundaries",
+      "Grinold-Kahn (1999) Active Portfolio Management Ch.6 — IR-based weighting",
+      "Black-Litterman (1992) — original blending framework",
+      "Barroso-Santa-Clara (2015) — Risk-managed turnover constraint (Hurdle Gate v2.2 rationale)"
+    ],
+    "lcode_citations": [
+      "L-273 (lockbox-scope.md monthly rebal lockbox 폐기 forge)",
+      "L-274 (STR_1715 PG2 monthly rebal turnover audit)",
+      "L-282 (PerformanceAnalytics geometric convention)",
+      "L-285 (4th orthogonal alpha source NEW Vol/Skew exploration)",
+      "L-484 (수익률 블렌드 vs score 블렌드 distinction)",
+      "L-122 (Factor timing ≠ risk management, turnover constraint rationale)"
+    ]
+  },
+  "selection_objective": "PD20B_Path2_Zscore_Composite_top20_monthly_rebal_4_sleeve_Production_20_cap_PASS_with_Codex_disposition",
+  "selection_rationale": "Production deployment v53 hook hard 20 cap requires PD18 5-sleeve (KR equity 40) consolidation to PD20-B 4-sleeve (KR equity 20). Path 2 Z-Score Composite preserves both alpha sources via joint top20 selection. Codex Round 1: 8 concerns disposed. C5 hard fail (turnover hurdle) requires mitigation before admit. Other concerns ACCEPT/PARTIAL/REBUTTAL with empirical evidence + boundary clarification.",
+  "inputs": {
+    "alpha_package_path": "qepm/mailbox/worktask/WT-D20260511_001/alpha_package.json",
+    "risk_package_path": "qepm/mailbox/worktask/WT-D20260511_001/risk_package.json",
+    "optimization_package_path": "qepm/mailbox/worktask/WT-D20260511_001/optimization_package.json",
+    "str_1715_iter5_alpha_scores": "stage_artifacts/WT_D20260425_010/alpha_scores.parquet (score_eff column, 268 dates × 846 tickers)",
+    "new_alpha_scores": "stage_artifacts/WT_D20260511_001/alpha_scores.parquet (alpha column, 184 sig_dates × 770 tickers)",
+    "sleeve_returns_master_path": "qepm/mailbox/worktask/WT-P20260509_001/output/sleeve_returns_master.csv",
+    "rawdata_path": ".cache/rawdata.parquet"
+  },
+  "sleeve_weights_pd20b_path2_PRIMARY": {
+    "Composite_KR_equity_top20": 0.55,
+    "TSMOM": 0.225,
+    "KR_10y": 0.18,
+    "Cash": 0.045,
+    "sum_w": 1.00,
+    "production_20_cap_compliance": true,
+    "per_ticker_weight_in_portfolio": 0.0275
+  },
+  "sleeve_weights_pre_2011_redistribute": {
+    "AR_on_M4": 0.50,
+    "TSMOM": 0.25,
+    "KR_10y": 0.20,
+    "Cash": 0.05,
+    "Composite_KR_equity": 0.00,
+    "rationale": "Pre-2011 NEW alpha absent → 4-sleeve S4 v2 baseline"
+  },
+  "composite_construction_details": {
+    "z_1715_definition": "scale(score_eff) per sig_date",
+    "z_NEW_definition": "scale(alpha) per sig_date",
+    "composite_z_formula": "0.818 * z_1715 + 0.182 * z_NEW",
+    "top20_selection": "rank composite_z descending → top 20, universe KOSPI200 ∪ KOSDAQ150 ∩ ADV_20d (PIT t-1) >= 2e8 KRW",
+    "ew_weighting_in_sleeve": "5% per name, 2.75% per portfolio",
+    "monthly_return_computation": "Entry @ sig_date, Exit @ next sig_date, geometric compound EW",
+    "sig_date_alignment": "184 NEW sig_dates intersection with STR_1715 268 dates",
+    "lockbox_compliance": "alpha layer respect 2023-12-22; forge stage lockbox 폐기 per .claude/rules/lockbox-scope.md 2026-05-09",
+    "pit_c10_strict_t_minus_1_verification": "Re-ran with d_lag = d_now - 1 strict — 100% top20 overlap vs original, 0 SR change. Technical pattern only."
+  },
+  "weights_csv_unique_dates_count": 184,
+  "alpha_sig_dates_count": 184,
+  "schedule_density_ratio": 1.0,
+  "schedule_density_pass": true,
+  "pure_function_violation": false,
+  "schedule_fidelity_audit": {
+    "method": "4_sleeve_composite_monthly_rebal_redistribute_zscore_composite_top20_184_dates",
+    "sleeve_level_static_weights": true,
+    "alpha_scores_used_for_holdings_selection": "joint_zscore_composite_top20_per_sig_date_184_dates",
+    "fabrication_label_present": false,
+    "note": "Joint z-score composite top20 per sig_date for KR equity sleeve. 4-sleeve weights static fixed. 184 sig_dates monthly rebal lockbox 폐기 정합. Production 20 cap PASS."
+  },
+  "pure_function_audit": {
+    "alpha_package_md5_start": "e0e1a525c84f33f228f00c061ac5d64d",
+    "alpha_package_md5_end": "e0e1a525c84f33f228f00c061ac5d64d",
+    "alpha_package_match": true,
+    "risk_package_md5_start": "25a440e08232fcfb953ca912bffaa13a",
+    "risk_package_md5_end": "25a440e08232fcfb953ca912bffaa13a",
+    "risk_package_match": true,
+    "optimization_package_md5_start": "a810ddbaf40f5a90b054c521e915e106",
+    "optimization_package_md5_end": "a810ddbaf40f5a90b054c521e915e106",
+    "optimization_package_match": true,
+    "target_weights_reinterpreted": false,
+    "alpha_vector_modified": false,
+    "covariance_recomputed": false
+  },
+  "sr_realized_share_based": 2.1574,
+  "sr_realized_share_based_cost_caveat": "2.1574 with 15bps × turnover × composite weight embedded (90bps annual cost drag). Cost-free SR = 2.2458. Cost drag = 0.09 SR points.",
+  "sr_realized_share_based_variants": {
+    "pd20b_path2_15bps_embedded_256m": 2.1574,
+    "pd20b_path2_cost_free_256m": 2.2458,
+    "pd18_5sleeve_cost_free_256m": 2.241,
+    "s4_v2_baseline_realized_256m": 1.8334
+  },
+  "sr_factor_engine_continuous": null,
+  "sr_lockbox_daily_harness": null,
+  "measurement_basis_primary": "forge_realized_share_based",
+  "primary_metrics_pd20b_path2_256m_PRIMARY": {
+    "n_months": 255,
+    "period": "2005-02-01 ~ 2026-04-01",
+    "SR_ann_geometric": 2.1574,
+    "CAGR": 0.2701,
+    "MDD": -0.1458,
+    "Sortino_ann": 4.6721,
+    "Calmar": 1.8530,
+    "CVaR_95_monthly": -0.0553,
+    "CVaR_99_monthly": -0.0791,
+    "hit_rate": 0.7490,
+    "mean_ann": 0.2487,
+    "vol_ann": 0.1252,
+    "mean_turnover_oneway_monthly": 0.5190,
+    "mean_turnover_oneway_annual_pct": 622.8,
+    "mean_turnover_round_trip_annual_pct": 1245.7,
+    "portfolio_weighted_one_way_annual_pct": 342.6,
+    "portfolio_weighted_round_trip_annual_pct": 685.1,
+    "mean_cost_drag_annual_bps": 90.06,
+    "stance": "BLOCKED_BY_C5_TURNOVER_HARD_FAIL"
+  },
+  "primary_metrics_cost_free_variant_256m": {
+    "SR_ann_geometric": 2.2458,
+    "CAGR": 0.2814,
+    "MDD": -0.1406,
+    "note": "Cost-free comparable to PD18 raw SR 2.241 (PD18 had no embedded cost). Cost-free vs cost-free: SR Δ+0.005 (essentially flat)."
+  },
+  "baseline_S4v2_realized_256m": {
+    "SR_ann_geometric": 1.8334,
+    "CAGR": 0.2020,
+    "MDD": -0.1252,
+    "CVaR_95_monthly": -0.0501,
+    "n_months": 255
+  },
+  "diebold_mariano_vs_S4v2_baseline_pd20b_PRIMARY": {
+    "n": 255,
+    "mean_diff_monthly": 0.004817,
+    "se_NW_lag6": 0.001743,
+    "t_NW": 2.7641,
+    "p": 0.0057,
+    "harvey_liu_zhu_strict_pass": false,
+    "interpretation": "Marginally significant at conventional p=0.006 but FAILS Harvey-Liu-Zhu (2016) strict t > 3.0 threshold. PD18 DM was 4.23 PASS — PD20-B 2.76 weaker.",
+    "concerns_disposition_reference": "challenge_note Part H C3 PARTIAL — DSR + Harvey 5-spec deferred to Judge re-spawn"
+  },
+  "diebold_mariano_cost_free_pd20b_vs_pd18_raw_256m": {
+    "t_NW": 2.3139,
+    "p": 0.0207,
+    "mean_diff_monthly": 0.003290,
+    "interpretation": "Cost-free PD20-B vs PD18 raw: marginally significant outperformance (t_NW=2.31 < 3.0). Statistically weaker dominance than PD20-B vs S4 baseline."
+  },
+  "strict_improve_evaluation_vs_S4v2_baseline_documented": {
+    "criteria": {
+      "SR_threshold": 1.83,
+      "MDD_threshold_pp": -0.1147,
+      "MDD_margin_pp": 2.0,
+      "CVaR_threshold_pp": -0.0471,
+      "CAGR_threshold": 0.1969
+    },
+    "pd20b_path2_primary_15bps": {
+      "SR_pass": true,
+      "delta_SR": 0.3240,
+      "MDD_pass": true,
+      "delta_MDD_pp": -3.06,
+      "CVaR_pass": true,
+      "delta_CVaR_pp": -0.82,
+      "CAGR_pass": true,
+      "delta_CAGR_pp": 7.32,
+      "verdict_4_axis": "4_PASS_STRICT_IMPROVE_BUT_TURNOVER_HARD_FAIL",
+      "recommendation": "All 4 axes (SR/MDD/CVaR/CAGR) PASS strict improve vs S4 v2 baseline. BUT turnover 623% > 600% hard hurdle FAIL. Admit BLOCKED until C5 mitigation."
+    }
+  },
+  "vs_pd18_5sleeve_comparison": {
+    "pd18_5sleeve_redistribute_SR_raw": 2.241,
+    "pd18_5sleeve_redistribute_CAGR_raw": 0.2355,
+    "pd18_5sleeve_redistribute_MDD_raw": -0.1154,
+    "pd20b_path2_SR_cost_free": 2.2458,
+    "pd20b_path2_CAGR_cost_free": 0.2814,
+    "pd20b_path2_MDD_cost_free": -0.1406,
+    "delta_SR_cost_free": 0.0048,
+    "delta_CAGR_cost_free_pp": 4.59,
+    "delta_MDD_cost_free_pp": -2.52,
+    "interpretation": "PD20-B Path 2 cost-free SR essentially equal to PD18 (Δ+0.005), CAGR +4.59pp BETTER, MDD -2.52pp WORSE. Production 20-cap compliance trades MDD profile."
+  },
+  "cross_cancellation_diagnostic": {
+    "cor_z_1715_z_NEW_in_top20": -0.3469,
+    "mean_z_1715_in_top20": 1.6704,
+    "mean_z_NEW_in_top20": 0.4217,
+    "cor_vs_pd18_NEW_returns_monthly": 0.7001,
+    "interpretation": "Modest cross-cancellation. z_1715 dominant (w=0.818, mean +1.67 in top20). z_NEW additive (w=0.182, mean +0.42 in top20 vs universe 0). cor(z_1715,z_NEW)=-0.347 within top20 = mild offset not dominant.",
+    "concern": "z_NEW signal contribution reduced vs PD18 100% sleeve isolation. C7 PARTIAL — sensitivity test deferred."
+  },
+  "schedule_fidelity_certificate_eligibility": {
+    "schedule_density_pass": true,
+    "fabrication_label_absent": true,
+    "alpha_scores_topN_holdings_selection_in_run_all": "joint_zscore_composite_184_dates_legitimate_monthly_rebal",
+    "eligible": true
+  },
+  "forge_package_validated_certificate_eligibility": {
+    "mandatory_8_fields_present": true,
+    "method_pattern_match": true,
+    "measurement_basis_primary_enum_pass": true,
+    "pure_function_violation_false": true,
+    "schedule_density_pass": true,
+    "eligible": true,
+    "fields_8_checklist": {
+      "method": "4_sleeve_zscore_composite_top20_monthly_rebal_redistribute_w1715_0p818_wnew_0p182",
+      "sr_realized_share_based": 2.1574,
+      "measurement_basis_primary": "forge_realized_share_based",
+      "weights_csv_unique_dates_count": 184,
+      "schedule_density_ratio": 1.0,
+      "schedule_density_pass": true,
+      "pure_function_violation": false,
+      "fabrication_label_absent_in_method_field": true
+    }
+  },
+  "sr_provenance_certificate_eligibility": {
+    "sr_realized_share_based_present": true,
+    "measurement_basis_primary_correct": true,
+    "no_production_schedule_fabrication_label": true,
+    "divergence_disclosed": true,
+    "eligible": true
+  },
+  "cert_backfill_required": [
+    "forge_package_validated_certificate_pd20b",
+    "sr_provenance_certificate_pd20b",
+    "schedule_fidelity_certificate_pd20b"
+  ],
+  "cert_backfill_path": "Layer 5 PostToolUse Hook 자동 발급 또는 Layer 2 manual backfill (Rscript 02_Infrastructure/ops/cert_backfill_audit.R --target=WT-D20260511_001 --manual)",
+  "vs_factor_engine": {
+    "factor_engine_claimed_sr_is": null,
+    "factor_engine_source": "PD20-B monthly rebal direct measurement",
+    "forge_realized_sr_is": 2.1574,
+    "divergence_pp": 0,
+    "divergence_factor_engine_vs_realized_pp": 0,
+    "diagnosis": "NEGLIGIBLE — direct measurement, no factor_engine proxy",
+    "diagnosis_threshold_table": {
+      "NEGLIGIBLE": "|div| < 0.2",
+      "MINOR_DRIFT": "0.2 <= |div| < 0.4",
+      "SIGNIFICANT_DRAG": "0.4 <= |div| < 0.6",
+      "FABRICATION_SUSPECTED": "0.6 <= |div|"
+    }
+  },
+  "charts_generated": {
+    "equity_curve_png": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20b/charts/equity_curve.png",
+    "annual_returns_png": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20b/charts/annual_returns.png",
+    "oos_zoom_chart_png": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20b/charts/oos_zoom_chart.png",
+    "regime_decomposition_png": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20b/charts/regime_decomposition.png"
+  },
+  "backtest_contract_v1_audit": {
+    "bt_result_10_component_build_status": "FULL_11_COMPONENT_RDS",
+    "bt_result_save_status": "saved (manifest + strategy_spec + nav + period_returns + holdings + benchmark_returns + metrics + benchmark_compare + rolling_metrics + drawdowns + audit)",
+    "audit_status": "PASS",
+    "fabrication": false,
+    "performanceanalytics_standard": true,
+    "remediation": "11-component bt_result.rds full. All metrics PerformanceAnalytics-standard (SharpeRatio.annualized geometric=TRUE / Return.annualized / maxDrawdown / SortinoRatio / CalmarRatio / ES historical), no fabrication."
+  },
+  "realized_cost_audit": {
+    "period_returns_turnover_oneway_per_month": 0.519,
+    "period_returns_cost_drag_per_month_avg": 0.0075,
+    "annual_cost_drag_bps": 90.06,
+    "cost_methodology": "15bps × round-trip turnover × composite weight (0.55 composite sleeve, 0.10 mix pre-2011)",
+    "potential_sr_drag_pp": "0.09 SR points (2.2458 cost-free → 2.1574 net)"
+  },
+  "turnover_hurdle_audit": {
+    "hurdle_threshold_annual": 600,
+    "hurdle_threshold_source": ".claude/rules/hurdle-rules.md — Hurdle Gate v2.2 Hard fail: Turnover > 600%",
+    "sleeve_internal_one_way_annual": 622.8,
+    "sleeve_internal_round_trip_annual": 1245.7,
+    "portfolio_weighted_one_way_annual": 342.6,
+    "portfolio_weighted_round_trip_annual": 685.1,
+    "hard_fail_status": "ACCEPT_HARD_FAIL (round-trip 685.1% > 600% hurdle)",
+    "mitigation_options": [
+      "Composite weight 0.55 → 0.45 (portfolio-weighted round-trip = 12 × 2 × 0.45 × 0.519 = 560.5% PASS)",
+      "Buffer zone keep25/entry20 (reduces sleeve oneway ~30% → portfolio round-trip ~480%)",
+      "Bi-monthly rebal (reduces turnover ~50% → ~340% round-trip)",
+      "Quarterly rebal (reduces turnover ~67% → ~226% round-trip)"
+    ],
+    "decision_required": "도훈 mandate option choice or Path 2 abandonment"
+  },
+  "hard_constraints_compliance": {
+    "max_sleeve_count": 4,
+    "max_per_security_weight_sleeve_level": 0.18,
+    "max_per_security_weight_holder": "KR_10y A148070 at 18% (< 20% cap)",
+    "long_only": true,
+    "sum_w_eq_1": true,
+    "universe": "4_sleeve_composite_pd20b",
+    "cost_model_version": "v2.3_kr_retail_15bps",
+    "pit_compliance": "C1-C12+C15 inherited clean; C13/C14 INHERITED WITH ALPHA-LAYER REMEDIATION TIMELINE PENDING (C6 Codex REBUTTAL_BOUNDARY)",
+    "production_20_cap_compliance": true,
+    "production_20_cap_audit": "KR equity = 20 (composite top20). ETF count = 9 (TSMOM 8 + KR_10y 1) exempt. Per-ticker portfolio weight = 0.55 × 0.05 = 0.0275 < 0.20 cap.",
+    "ticker_level_holdings_granularity": "DIRECT — composite_top20_holdings_pd20b.csv contains 184 sig_dates × 20 tickers = 3680 rows",
+    "liquidity_filter": "ADV_20d (PIT t-1 verified strict) >= 2e8 KRW",
+    "turnover_hurdle_compliance": "HARD_FAIL — round-trip 685.1% > 600% hurdle. Mitigation 의무.",
+    "lockbox_scope_compliance": "alpha-research lockbox 2023-12-22 respected; forge stage lockbox 폐기 per .claude/rules/lockbox-scope.md 2026-05-09"
+  },
+  "axiom_compliance": {
+    "AX_000": "IMMUTABLE",
+    "AX_001_v2": "INCONCLUSIVE (inherited from alpha)",
+    "AX_002": "PIT C1-C12+C15 strict; C13/C14 INHERITING alpha-layer pending (C6 REBUTTAL_BOUNDARY). Forge boundary 외.",
+    "AX_007": "Exception 1 multi-sleeve integration (4 sleeves) reused. Ticker-level audit DIRECT.",
+    "AX_008": "REJECT_RESPONDED_WITH_DISPOSITION_BLOCKED_BY_C5_HARD_FAIL — Forge self CONDITIONAL with known limitations + Codex Round 1 REJECT (8 concerns: 2 ACCEPT + 5 PARTIAL + 1 REBUTTAL) + C5 turnover hurdle HARD FAIL. Codex Round 2 required after C5 mitigation."
+  },
+  "red_flags_audit": {
+    "RF_F1_factor_engine_vs_realized_divergence": "RESOLVED — direct measurement",
+    "RF_F2_oos_strict_baseline_dominate": "PARTIAL — DM t_NW=2.76 FAILS Harvey strict; C3 PARTIAL deferred Judge",
+    "RF_F3_frozen_variant_ΔCAGR_FAIL": "RESOLVED — PD20-B CAGR +7.32pp PASS vs S4 baseline",
+    "RF_F4_dm_negative_mean_diff": "RESOLVED — DM positive",
+    "RF_F5_bt_result_contract_build_fail": "RESOLVED — full 11-component bt_result.rds saved",
+    "RF_F7_turnover_formula_audit": "HARD_FAIL_DISCLOSED — turnover 623%/685% > 600% hurdle. C5 mitigation 의무.",
+    "RF_F8_sleeve_holdings_granularity": "RESOLVED — composite_top20_holdings_pd20b.csv 3680 rows ticker-level",
+    "RF_F9_composite_level_statistical_test": "PENDING — DSR M=19 + Harvey 5-spec Judge re-spawn (C3 PARTIAL)",
+    "RF_F10_pit_c10_same_day": "RESOLVED_VERIFIED_NULL_IMPACT — C2 ACCEPT empirical 100% top20 overlap"
+  },
+  "next_action_recommendations": [
+    "도훈 mandate C5 mitigation decision: (a) composite weight 0.55→0.45 / (b) buffer zone / (c) bi-monthly rebal / (d) Path 2 abandonment",
+    "alpha-research re-spawn for PIT-C13/C14 remediation (C6 REBUTTAL_BOUNDARY) — Q-Lead orchestration",
+    "Judge re-spawn 5 critical items: weights_pd20b.csv materialize (920 rows) + DSR M=19 + Harvey 5-spec (CAPM/C3/C4/FF5/FF6) + PD18 cost-recompute fair comparison + sensitivity table (5 weight variants)",
+    "Path 1 (PD20-A) vs Path 2 (PD20-B) dominance judgment after both Path mitigations applied",
+    "Codex Round 2 PD20-B re-evaluate after C5 mitigation + remediation",
+    "Layer 5 Positive Certifier 3 cert auto-issue (forge_package_validated + sr_provenance + schedule_fidelity)",
+    "Q-Lead memory commit + telegram brief PD20-B Codex disposition + book_state mutation consideration (BLOCKED until C5 mitigation)"
+  ],
+  "weakest_assumption_self_audit": "PD20-B Path 2 weakest assumption: 0.818/0.182 composite_z weights are pre-specified from PD18 sleeve allocation ratio (0.45/0.10), NOT optimized from ex-ante alpha-signal optimal weighting rule. Codex C7 PARTIAL: pre-specification ≠ free fitting but inherits PD18 deployment choice. Sensitivity table (5 weight variants) deferred Judge re-spawn.",
+  "challenge_flags": [
+    "Codex Round 1 REJECT (AX-008 FAIL Codex perspective) — 8 concerns disposed (ACCEPT 2 + PARTIAL 5 + REBUTTAL 1)",
+    "C5 turnover hurdle HARD FAIL — round-trip 685.1% > 600% hurdle. Mitigation 의무 before admit.",
+    "DM t_NW=2.76 < 3.0 Harvey strict bar FAIL (vs PD18 t=4.23 PASS) — weaker statistical evidence",
+    "Composite weights inherit PD18 sleeve allocation (C7 PARTIAL) — sensitivity table required",
+    "Pre-2011 redistribute = 4-sleeve S4 baseline (composite KR equity absent) — regime split heterogeneous",
+    "Path 1 vs Path 2 dominance judgment deferred (both require mitigation cycles)",
+    "Codex Round 2 mandatory after C5 mitigation cycle"
+  ],
+  "artifacts_generated": {
+    "bt_result_rds": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20b/bt_result.rds",
+    "metrics_pd20b_rds": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20b/metrics_pd20b.rds",
+    "metrics_csv": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20b/metrics.csv",
+    "manifest_csv": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20b/manifest.csv",
+    "strategy_spec_csv": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20b/strategy_spec.csv",
+    "nav_csv": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20b/nav.csv",
+    "period_returns_csv": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20b/period_returns.csv",
+    "holdings_csv": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20b/holdings.csv",
+    "benchmark_returns_csv": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20b/benchmark_returns.csv",
+    "benchmark_compare_csv": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20b/benchmark_compare.csv",
+    "rolling_metrics_csv": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20b/rolling_metrics.csv",
+    "drawdowns_csv": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20b/drawdowns.csv",
+    "audit_csv": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20b/audit.csv",
+    "diebold_mariano_csv": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20b/diebold_mariano.csv",
+    "hurdle_result_json": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20b/hurdle_result.json",
+    "sleeve_panel_csv": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20b/sleeve_panel_pd20b.csv",
+    "composite_returns_4sleeve_csv": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20b/composite_returns_4sleeve_pd20b.csv",
+    "composite_top20_returns_csv": "stage_artifacts/WT_D20260511_001/composite_top20_returns_pd20b.csv",
+    "composite_top20_holdings_csv": "stage_artifacts/WT_D20260511_001/composite_top20_holdings_pd20b.csv",
+    "composite_top20_returns_pit_fix_csv": "stage_artifacts/WT_D20260511_001/composite_top20_returns_pd20b_pit_fix.csv",
+    "composite_top20_holdings_pit_fix_csv": "stage_artifacts/WT_D20260511_001/composite_top20_holdings_pd20b_pit_fix.csv",
+    "pure_function_audit_csv": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20b/pure_function_audit.csv",
+    "equity_curve_png": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20b/charts/equity_curve.png",
+    "annual_returns_png": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20b/charts/annual_returns.png",
+    "oos_zoom_chart_png": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20b/charts/oos_zoom_chart.png",
+    "regime_decomposition_png": "qepm/mailbox/worktask/WT-D20260511_001/backtest_result_pd20b/charts/regime_decomposition.png",
+    "build_pd20b_zscore_composite_returns_R": "qepm/mailbox/worktask/WT-D20260511_001/build_pd20b_zscore_composite_returns.R",
+    "build_pd20b_zscore_composite_returns_pit_fix_R": "qepm/mailbox/worktask/WT-D20260511_001/build_pd20b_zscore_composite_returns_pit_fix.R",
+    "run_all_pd20b_R": "qepm/mailbox/worktask/WT-D20260511_001/run_all_pd20b.R",
+    "build_bt_result_pd20b_R": "qepm/mailbox/worktask/WT-D20260511_001/build_bt_result_pd20b.R",
+    "build_oos_charts_pd20b_R": "qepm/mailbox/worktask/WT-D20260511_001/build_oos_charts_pd20b.R",
+    "challenge_note_md_part_H_appended": "qepm/mailbox/worktask/WT-D20260511_001/challenge_note.md (Part H PD20-B Codex Round 1 disposition 8 concerns)",
+    "judge_ready_backtest_summary_pd20b_json": "qepm/mailbox/worktask/WT-D20260511_001/judge_ready/backtest_summary_pd20b.json"
+  },
+  "created_at": "2026-05-11T16:05:00+0900",
+  "finalized_at": "2026-05-11T16:50:00+0900"
+}

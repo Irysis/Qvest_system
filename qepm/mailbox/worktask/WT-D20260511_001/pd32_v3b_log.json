@@ -1,0 +1,159 @@
+{
+  "task_id": "WT-D20260511_001",
+  "pd_phase": "PD32_v3b_empirical_sign_composite",
+  "generated_at": "2026-05-12T11:19:28+0900",
+  "candidates": [
+    {
+      "id": "T",
+      "name": "KR_Behavioral_Flow_Sentiment",
+      "family": "Investor_Behavior",
+      "factors_signs": {
+        "CR11_Idiosyncratic_Return": -1,
+        "INV10_Smart_Money_Flow": -1,
+        "INV09_Flow_Persistence": -1
+      },
+      "rationale": "KR retail-heavy + foreign-driven contrarian: idiosyncratic mom + smart-money-flow + flow-persistence 모두 reversal/contrarian (한국 empirical sign). Choe-Kho-Stulz 2005 RFS foreign trading evidence + KR Kim-Lee-Park 2017 PBFJ.",
+      "references": ["Choe-Kho-Stulz 2005 RFS 18: 795-829 (KR foreign trading)", "Daniel-Moskowitz 2016 JFE 122: 221-247 (Momentum Crashes — short-term reversal)", "Stambaugh-Yu-Yuan 2015 JF 70: 1903-1948 (arbitrage asymmetry KR retail)"],
+      "diagnostics": {
+        "mean_IC": 0.0412,
+        "sd_IC": 0.1126,
+        "ICIR": 0.3659,
+        "t_NW_lag6": 6.1594,
+        "n_months": 298,
+        "pos_share": 0.6409
+      },
+      "cor_vs_pd27": {
+        "cor_overall": -0.1078,
+        "cor_per_date_mean": -0.0944,
+        "cor_per_date_sd": 0.1018,
+        "n_dates": 298,
+        "pass_lt_0_30": true
+      },
+      "crisis_hedge": {
+        "crisis_IC": 0.0884,
+        "normal_IC": 0.0359,
+        "ratio_c_over_n": 2.4607,
+        "n_crisis_months": 30,
+        "n_normal_months": 268,
+        "ax001_v2_pass": true
+      },
+      "subperiod": {
+        "P1_2001_2008": {
+          "rank_ic": 0.0483
+        },
+        "P2_2009_2017": {
+          "rank_ic": 0.0261
+        },
+        "P3_2018_2026": {
+          "rank_ic": 0.0446
+        },
+        "min_max_ratio": 0.5398,
+        "pass": true
+      },
+      "selection_score": 100,
+      "selection_reasons": ["IC=0.0412>0.02", "ICIR=0.366>0.20", "t_NW=6.16>3", "cor=-0.094<0.30", "AX-001 v2 PASS", "subperiod PASS"]
+    },
+    {
+      "id": "U",
+      "name": "Earnings_Noise_x_Flow_Sentiment",
+      "family": "Investor_Behavior_Quality",
+      "factors_signs": {
+        "AC22_Accrual_Volatility": 1,
+        "CR11_Idiosyncratic_Return": -1,
+        "INV10_Smart_Money_Flow": -1
+      },
+      "rationale": "Accrual volatility (회계 불확실성) + idiosyncratic contrarian + foreign-flow reversal. KR retail attention bias + earnings uncertainty premium.",
+      "references": ["Bali-Cakici-Whitelaw 2011 JFE 99: 427-446 (idio vol + lottery preference)", "Choe-Kho-Stulz 2005 RFS", "Hirshleifer-Hou-Teoh-Zhang 2004 JFE (accrual investor underreaction)"],
+      "diagnostics": {
+        "mean_IC": 0.0477,
+        "sd_IC": 0.118,
+        "ICIR": 0.4047,
+        "t_NW_lag6": 6.0832,
+        "n_months": 298,
+        "pos_share": 0.6779
+      },
+      "cor_vs_pd27": {
+        "cor_overall": -0.0429,
+        "cor_per_date_mean": -0.0357,
+        "cor_per_date_sd": 0.0963,
+        "n_dates": 298,
+        "pass_lt_0_30": true
+      },
+      "crisis_hedge": {
+        "crisis_IC": 0.0888,
+        "normal_IC": 0.0431,
+        "ratio_c_over_n": 2.0577,
+        "n_crisis_months": 30,
+        "n_normal_months": 268,
+        "ax001_v2_pass": true
+      },
+      "subperiod": {
+        "P1_2001_2008": {
+          "rank_ic": 0.052
+        },
+        "P2_2009_2017": {
+          "rank_ic": 0.0282
+        },
+        "P3_2018_2026": {
+          "rank_ic": 0.06
+        },
+        "min_max_ratio": 0.4695,
+        "pass": false
+      },
+      "selection_score": 95,
+      "selection_reasons": ["IC=0.0477>0.02", "ICIR=0.405>0.20", "t_NW=6.08>3", "cor=-0.036<0.30", "AX-001 v2 PASS"]
+    },
+    {
+      "id": "V",
+      "name": "Foreign_Flow_Pure",
+      "family": "Investor_Flow",
+      "factors_signs": {
+        "INV10_Smart_Money_Flow": -1,
+        "INV09_Flow_Persistence": -1,
+        "INV05_Foreign_Momentum": -1
+      },
+      "rationale": "한국 foreign flow short-term reversal — INV10/INV09/INV05 모두 contrarian. Kim-Lee-Park 2017 PBFJ replication.",
+      "references": ["Kim-Lee-Park 2017 PBFJ 43: 88-99 (KR foreign reversal)", "Bae-Yamada-Ito 2008 JBF 32: 1862-1875"],
+      "diagnostics": {
+        "mean_IC": 0.0287,
+        "sd_IC": 0.091,
+        "ICIR": 0.3156,
+        "t_NW_lag6": 6.026,
+        "n_months": 298,
+        "pos_share": 0.6174
+      },
+      "cor_vs_pd27": {
+        "cor_overall": -0.0613,
+        "cor_per_date_mean": -0.0525,
+        "cor_per_date_sd": 0.0882,
+        "n_dates": 298,
+        "pass_lt_0_30": true
+      },
+      "crisis_hedge": {
+        "crisis_IC": 0.0673,
+        "normal_IC": 0.0244,
+        "ratio_c_over_n": 2.759,
+        "n_crisis_months": 30,
+        "n_normal_months": 268,
+        "ax001_v2_pass": true
+      },
+      "subperiod": {
+        "P1_2001_2008": {
+          "rank_ic": 0.0291
+        },
+        "P2_2009_2017": {
+          "rank_ic": 0.027
+        },
+        "P3_2018_2026": {
+          "rank_ic": 0.025
+        },
+        "min_max_ratio": 0.8581,
+        "pass": true
+      },
+      "selection_score": 100,
+      "selection_reasons": ["IC=0.0287>0.02", "ICIR=0.316>0.20", "t_NW=6.03>3", "cor=-0.053<0.30", "AX-001 v2 PASS", "subperiod PASS"]
+    }
+  ],
+  "selected": "T",
+  "best_parquet": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/stage_artifacts/WT_D20260511_001/alpha_scores_pd32_v3b_best.parquet"
+}

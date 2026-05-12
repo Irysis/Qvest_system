@@ -1,0 +1,191 @@
+{
+  "task_id": "WT-D20260511_001",
+  "candidate": "med_10pct",
+  "pd16_remediation": true,
+  "measurement_basis_primary": "forge_realized_share_based",
+  "primary_variant": "frozen_NEW_OOS_256m",
+  "scope": "256m full backtest (2005-02 ~ 2026-04) + 79m alpha-active sub + OOS lockbox 27m, primary = frozen NEW OOS variant per Charter v6.1 R12 mandate",
+  "med10_frozen_oos_256m": {
+    "SR_ann": 1.9586,
+    "CAGR": 0.1945,
+    "MDD": -0.1039,
+    "Sortino": 4.3349,
+    "Calmar": 1.8724,
+    "CVaR_95_monthly": -0.044,
+    "CVaR_99_monthly": -0.0648,
+    "hit_rate": 0.7216,
+    "n_months": 255
+  },
+  "med10_strict_256m": {
+    "SR_ann": 1.9238,
+    "CAGR": 0.1902,
+    "MDD": -0.1039,
+    "CVaR_95_monthly": -0.0442,
+    "n_months": 255
+  },
+  "med10_redistr_256m": {
+    "SR_ann": 1.9065,
+    "CAGR": 0.2048,
+    "MDD": -0.1154,
+    "CVaR_95_monthly": -0.048,
+    "n_months": 255
+  },
+  "med10_79m_alpha_active": {
+    "SR_ann": 1.7039,
+    "CAGR": 0.1503,
+    "MDD": -0.1005,
+    "CVaR_95_monthly": -0.0424,
+    "n_months": 154
+  },
+  "med10_oos_27m_strict": {
+    "SR_ann": 3.5457,
+    "CAGR": 0.4214,
+    "MDD": -0.0326,
+    "n_months": 28
+  },
+  "med10_oos_27m_frozen": {
+    "SR_ann": 3.9922,
+    "CAGR": 0.4687,
+    "MDD": -0.0226,
+    "n_months": 28
+  },
+  "s4_baseline_256m": {
+    "SR_ann": 1.8334,
+    "CAGR": 0.202,
+    "MDD": -0.1252,
+    "CVaR_95_monthly": -0.0501,
+    "n_months": 255
+  },
+  "diebold_mariano": {
+    "frozen_OOS_256m_PRIMARY": {
+      "t_NW": -1.9991,
+      "p": 0.0456,
+      "n": 255,
+      "mean_diff_monthly": -0.0006
+    },
+    "strict_256m": {
+      "t_NW": -2.8959,
+      "p": 0.0038,
+      "n": 255,
+      "mean_diff_monthly": -0.0009
+    },
+    "redistr_256m": {
+      "t_NW": 0.9212,
+      "p": 0.357,
+      "n": 255,
+      "mean_diff_monthly": 0.0002
+    },
+    "alpha_active_79m": {
+      "t_NW": -0.3146,
+      "p": 0.7531,
+      "n": 154,
+      "mean_diff_monthly": -0.0001
+    },
+    "oos_27m_strict": {
+      "t_NW": -5.1151,
+      "p": 3.1359e-07,
+      "n": 28,
+      "mean_diff_monthly": -0.0034
+    },
+    "oos_27m_frozen": {
+      "t_NW": -0.4882,
+      "p": 0.6254,
+      "n": 28,
+      "mean_diff_monthly": -0.0006
+    }
+  },
+  "strict_improve_eval_256m_frozen_PRIMARY": {
+    "label": "256m frozen_NEW_OOS PRIMARY",
+    "SR_pass": true,
+    "delta_SR": 0.1286,
+    "MDD_pass": true,
+    "delta_MDD_pp": 1.0803,
+    "CVaR_pass": true,
+    "delta_CVaR_pp": 0.3098,
+    "CAGR_pass": false,
+    "delta_CAGR_pp": -0.2365
+  },
+  "strict_improve_eval_256m_strict": {
+    "label": "256m (NEW=0 outside strict)",
+    "SR_pass": true,
+    "delta_SR": 0.0938,
+    "MDD_pass": true,
+    "delta_MDD_pp": 1.0803,
+    "CVaR_pass": true,
+    "delta_CVaR_pp": 0.2856,
+    "CAGR_pass": false,
+    "delta_CAGR_pp": -0.6651
+  },
+  "strict_improve_eval_256m_redistribute": {
+    "label": "256m (redistribute_TRUE)",
+    "SR_pass": true,
+    "delta_SR": 0.0765,
+    "MDD_pass": true,
+    "delta_MDD_pp": -0.0692,
+    "CVaR_pass": true,
+    "delta_CVaR_pp": -0.0911,
+    "CAGR_pass": true,
+    "delta_CAGR_pp": 0.7929
+  },
+  "strict_improve_eval_79m_alpha_active": {
+    "label": "79m alpha-active",
+    "SR_pass": false,
+    "delta_SR": -0.1261,
+    "MDD_pass": true,
+    "delta_MDD_pp": 1.4248,
+    "CVaR_pass": true,
+    "delta_CVaR_pp": 0.4715,
+    "CAGR_pass": false,
+    "delta_CAGR_pp": -4.6606
+  },
+  "cvar_revalidation": {
+    "realized_256m_med10_frozen": -0.044,
+    "realized_256m_med10_strict": -0.0442,
+    "realized_79m_med10": -0.0424,
+    "realized_256m_s4": -0.0501,
+    "optimizer_79m_med10": -0.0391,
+    "documented_baseline_S4_v2": -0.0471,
+    "admit_criterion_pass": true
+  },
+  "judge_proxy_reconcile": {
+    "forge_clean_primary": {
+      "SR": 1.9586,
+      "CAGR": 0.1945,
+      "MDD": -0.1039,
+      "CVaR_95_monthly": -0.044,
+      "basis": "Forge clean 256m frozen NEW OOS primary (PD16 remediation)"
+    },
+    "judge_proxy_inherited": {
+      "SR": 1.9586,
+      "CAGR": 0.1945,
+      "MDD": -0.1039,
+      "CVaR_95_monthly": -0.044,
+      "z_DSR_M18": 6.498,
+      "basis": "Judge direct measurement (sleeve_returns_master monthly + NEW merge full 255m portfolio)"
+    },
+    "delta_forge_vs_judge": {
+      "delta_SR": -0,
+      "delta_CAGR_pp": 0.0035,
+      "delta_MDD_pp": 0.0003,
+      "delta_CVaR_pp": -0.0002,
+      "diagnosis": "NEGLIGIBLE_PASS (|ΔSR|<0.1, |ΔCAGR|<0.5pp)"
+    }
+  },
+  "ax_008_contribution": "Forge clean med_10pct 256m primary PASS_VALIDATED (PD16 remediation) — 2.5/3 floor recovery (Forge + Architect; Codex Round 2 trigger)",
+  "schedule_fidelity": {
+    "weights_csv_n_dates": 255,
+    "method": "5_sleeve_static_monthly_full_panel_plus_OOS_frozen_extension",
+    "fabrication_label": false,
+    "note": "Sleeve-level static weights × pre-computed sleeve returns + OOS frozen NEW buy-and-hold per Charter v6.1 R12 mandate."
+  },
+  "pure_function_audit": {
+    "alpha_package_modified": false,
+    "risk_package_modified": false,
+    "opt_package_modified": false,
+    "target_weights_reinterpreted": false,
+    "covariance_recomputed": false,
+    "alpha_vector_modified": false
+  },
+  "bt_contract_build_status": "MANUAL_FALLBACK",
+  "created_at": "2026-05-11T10:56:41+09:00"
+}

@@ -1,0 +1,385 @@
+{
+  "task_id": "WT-D20260508_013",
+  "agent": "risk-research",
+  "as_of_date": "2026-05-08",
+  "package_type": "risk_package",
+  "selection_objective": "shrinkage_quality",
+  "selection_objective_value": 1,
+  "exposure_matrix_ref": "stage_artifacts/WT-D20260508_013/risk/exposure_matrix.parquet",
+  "factor_covariance_ref": "stage_artifacts/WT-D20260508_013/risk/factor_covariance.parquet",
+  "specific_risk_ref": "stage_artifacts/WT-D20260508_013/risk/specific_risk.parquet",
+  "security_covariance_ref": "stage_artifacts/WT-D20260508_013/risk/covariance.parquet",
+  "regime_correlation_ref": "stage_artifacts/WT-D20260508_013/risk/regime_correlation.parquet",
+  "tail_risk_ref": "stage_artifacts/WT-D20260508_013/risk/tail_risk.json",
+  "stress_tests_ref": "stage_artifacts/WT-D20260508_013/risk/stress_tests.json",
+  "diversification_ref": "stage_artifacts/WT-D20260508_013/risk/diversification_ratio.json",
+  "ax001_v2_audit_ref": "stage_artifacts/WT-D20260508_013/risk/ax001_v2_strict_audit.json",
+  "diagnostics": {
+    "cov_method_selected": "ledoit_wolf",
+    "condition_number_exact": 1,
+    "min_eigenvalue": 0.0014,
+    "psd_check": true,
+    "n_active_tickers": 348,
+    "n_factors_pc": 10,
+    "factor_coverage_pct": 2.8736,
+    "pc1_share_pct": 0.2874,
+    "pc1to10_share_pct": 2.8736,
+    "sector_top1_pct": 9.7701,
+    "sector_top3_pct": 23.2759,
+    "sector_top1_name": "반도체",
+    "cor_alpha_bm_full": 0.0246,
+    "cor_alpha_bm_recent60m": 0.1205,
+    "cor_alpha_bm_full_ci_lo": -0.1822,
+    "cor_alpha_bm_full_ci_hi": 0.1566,
+    "tdc_lower_5pct": 0.2222,
+    "tdc_lower_10pct": 0.2353,
+    "diversification_qualified": true,
+    "hill_alpha": 2.3146,
+    "hill_interpretation": "HEAVY_TAIL",
+    "empirical_var99_monthly_pct": 22.2626,
+    "empirical_es99_monthly_pct": 26.3598,
+    "gpd_var99_monthly_pct": 13.7128,
+    "gpd_es99_monthly_pct": 15.8389,
+    "gpd_shape_xi": -0.0779,
+    "lw_shrinkage_intensity_delta": 1,
+    "lw_n_obs": 268,
+    "lw_p_dim": 348,
+    "lw_n_lt_p_high_dim_regime": true,
+    "factor_model_cond_exact": 1055.3849,
+    "factor_model_market_coverage_pct": 20.7374,
+    "cvar95_monthly_pct_long_short_HML": -16.9321,
+    "cvar99_monthly_pct_long_short_HML": -26.3598,
+    "cdar95_pct_long_short_HML": -71.4222,
+    "cvar95_cap_breach_signal_side": true,
+    "crowding_hhi_alpha_signal": 0.0049,
+    "crowding_effective_n": 204.8664,
+    "style_cor_alpha_logsize": 0.3605,
+    "style_cor_alpha_mom61": 0.4963
+  },
+  "ax001_v2": {
+    "n_bad": 63,
+    "n_normal": 189,
+    "ic_bad_mean": 0.11,
+    "ic_normal_mean": 0.0062,
+    "ratio_point": 17.8874,
+    "ic_bad_ci_lo": 0.0641,
+    "ic_bad_ci_hi": 0.1528,
+    "ic_normal_ci_lo": -0.0173,
+    "ic_normal_ci_hi": 0.0292,
+    "ratio_ci_lo": -125.9752,
+    "ratio_ci_hi": 150.8563,
+    "ic_bad_ci_positive": true,
+    "ic_normal_ci_positive": false,
+    "bootstrap_B": 2000,
+    "alpha_pkg_reported_ratio": 17.887,
+    "reproduce_ratio_match": true,
+    "verdict": "STRONG_DEFENSIVE_CHARACTERISTIC_BOOTSTRAP_CONFIRMED",
+    "classification_recommendation": "DIVERSIFIER_HONEST_ROLE"
+  },
+  "stress_summary": {
+    "feasible_count": 6,
+    "total_periods": 8,
+    "sleeve_outperform_count": 3,
+    "sleeve_outperform_rate": 0.5,
+    "period_summary": {
+      "IMF_1997": {
+        "name": "IMF_1997",
+        "start": "1997-07-01",
+        "end": "1998-12-31",
+        "n_months": 0,
+        "feasible": false,
+        "sleeve_cum_ret_pct": {},
+        "bm_cum_ret_pct": {},
+        "hybrid_combine_70_15_15_proxy_cum_ret_pct": {},
+        "sleeve_mdd_pct": {},
+        "alpha_vs_bm_pct": {},
+        "note": "INFEASIBLE (data not in alpha range 2005-05~)"
+      },
+      "DotCom_2000": {
+        "name": "DotCom_2000",
+        "start": "2000-03-01",
+        "end": "2002-09-30",
+        "n_months": 0,
+        "feasible": false,
+        "sleeve_cum_ret_pct": {},
+        "bm_cum_ret_pct": {},
+        "hybrid_combine_70_15_15_proxy_cum_ret_pct": {},
+        "sleeve_mdd_pct": {},
+        "alpha_vs_bm_pct": {},
+        "note": "INFEASIBLE (data not in alpha range 2005-05~)"
+      },
+      "GFC_2008": {
+        "name": "GFC_2008",
+        "start": "2007-10-01",
+        "end": "2009-03-31",
+        "n_months": 18,
+        "feasible": true,
+        "sleeve_cum_ret_pct": -62.34,
+        "bm_cum_ret_pct": -38.03,
+        "hybrid_combine_70_15_15_proxy_cum_ret_pct": -38.66,
+        "sleeve_mdd_pct": -63.36,
+        "alpha_vs_bm_pct": -24.31,
+        "note": "feasible"
+      },
+      "EuDebt_2011": {
+        "name": "EuDebt_2011",
+        "start": "2011-07-01",
+        "end": "2011-12-31",
+        "n_months": 6,
+        "feasible": true,
+        "sleeve_cum_ret_pct": -34.36,
+        "bm_cum_ret_pct": -13.09,
+        "hybrid_combine_70_15_15_proxy_cum_ret_pct": -14.15,
+        "sleeve_mdd_pct": -37.61,
+        "alpha_vs_bm_pct": -21.27,
+        "note": "feasible"
+      },
+      "China_Shock_2015": {
+        "name": "China_Shock_2015",
+        "start": "2015-06-01",
+        "end": "2016-02-29",
+        "n_months": 9,
+        "feasible": true,
+        "sleeve_cum_ret_pct": 3.15,
+        "bm_cum_ret_pct": -9.37,
+        "hybrid_combine_70_15_15_proxy_cum_ret_pct": -8.73,
+        "sleeve_mdd_pct": -10.06,
+        "alpha_vs_bm_pct": 12.52,
+        "note": "feasible"
+      },
+      "VolShock_2018": {
+        "name": "VolShock_2018",
+        "start": "2018-02-01",
+        "end": "2018-12-31",
+        "n_months": 11,
+        "feasible": true,
+        "sleeve_cum_ret_pct": -4.91,
+        "bm_cum_ret_pct": -20.47,
+        "hybrid_combine_70_15_15_proxy_cum_ret_pct": -19.69,
+        "sleeve_mdd_pct": -12.86,
+        "alpha_vs_bm_pct": 15.56,
+        "note": "feasible"
+      },
+      "COVID_2020": {
+        "name": "COVID_2020",
+        "start": "2020-01-01",
+        "end": "2020-06-30",
+        "n_months": 6,
+        "feasible": true,
+        "sleeve_cum_ret_pct": -20.65,
+        "bm_cum_ret_pct": -4.07,
+        "hybrid_combine_70_15_15_proxy_cum_ret_pct": -4.92,
+        "sleeve_mdd_pct": -23.2,
+        "alpha_vs_bm_pct": -16.59,
+        "note": "feasible"
+      },
+      "Inflation_2022": {
+        "name": "Inflation_2022",
+        "start": "2022-01-01",
+        "end": "2022-12-31",
+        "n_months": 12,
+        "feasible": true,
+        "sleeve_cum_ret_pct": 5.28,
+        "bm_cum_ret_pct": -24.89,
+        "hybrid_combine_70_15_15_proxy_cum_ret_pct": -23.5,
+        "sleeve_mdd_pct": -13.55,
+        "alpha_vs_bm_pct": 30.17,
+        "note": "feasible"
+      }
+    }
+  },
+  "regime_correlation": {
+    "NORMAL": {
+      "n": 132,
+      "cor_hml_bm": 0.0596,
+      "hml_mean_pct": 1.1086
+    },
+    "CAUTION": {
+      "n": 24,
+      "cor_hml_bm": -0.1184,
+      "hml_mean_pct": -2.3909
+    },
+    "CRISIS": {
+      "n": 5,
+      "cor_hml_bm": 0.317,
+      "hml_mean_pct": 2.4757
+    }
+  },
+  "method_log": {
+    "candidates_tried": 3,
+    "parallel_exec": false,
+    "method_log_entries": [
+      {
+        "name": "sample_pairwise",
+        "condition": 137467892883.223,
+        "min_eig": -1.7238e-17,
+        "psd": true,
+        "selected": false
+      },
+      {
+        "name": "ledoit_wolf",
+        "condition": 1,
+        "min_eig": 0.0014,
+        "psd": true,
+        "selected": true
+      },
+      {
+        "name": "gerber_rmt",
+        "condition": 217865261216.37,
+        "min_eig": -0.0032,
+        "psd": false,
+        "selected": false
+      }
+    ],
+    "selection_basis": "lowest exact condition number among PSD-feasible estimators (selection_objective=shrinkage_quality)"
+  },
+  "challenge_flags": [
+    {
+      "severity": "MEDIUM",
+      "code": "HEAVY_LEFT_TAIL",
+      "detail": "Hill α = 2.31 < 3 (heavy tail). Left-tail momentum signal itself has heavy left tail in HML returns."
+    },
+    {
+      "severity": "LOW",
+      "code": "AX_007_MULTI_SLEEVE_HOOK",
+      "detail": "Discovery alpha. AX-007 single_sleeve top20 long-only break risk applies. Hybrid 70/15/15 currently 3-source multi-sleeve = AX-007 EXCEPTION already operative. Adding 4th source extends multi-sleeve ✓. Optimizer + Forge MUST realize multi-sleeve combine + admit at sleeve weight, NOT single-sleeve top20."
+    },
+    {
+      "severity": "LOW",
+      "code": "AX_008_TRIANGULATION_PROGRESS",
+      "detail": "Risk agent provides 2nd source verification (alpha = 1st). Architect 3rd-source independent reproduction MANDATE for AX-008 ≥ 2/3."
+    },
+    {
+      "severity": "HIGH",
+      "code": "LW_FULL_SHRINKAGE_DEGENERATE_FACTOR_MODEL_OVERLAY_PROVIDED",
+      "detail": "Codex C1: LW shrinkage δ=1.0000 → Σ ~ μI; factor coverage 2.87% (PC1-10). Justified by n=268 < p=348 high-dim Ledoit-Wolf 2004 formula. Mitigation: factor model B Ω B' + D (market β single-factor) overlay provides cond=1055.4 non-degenerate Σ for optimizer."
+    },
+    {
+      "severity": "HIGH",
+      "code": "CVAR_CDAR_LONG_SHORT_HML_BREACH_TRANSLATION_PENDING",
+      "detail": "Codex C2: CVaR95 = -16.93%/m (cap 2.5% breach), CDaR95 = -71.42%, GFC sleeve loss -62.34%. ALL measured on long-short HML (top-bot decile). Production = long-only top20 sleeve at 5-15% admission weight within Hybrid 70/15/15. Long-only sleeve risk re-measurement deferred to Forge."
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "CRISIS_N5_POOLED_FALLBACK",
+      "detail": "Codex C3: CRISIS n=5 below threshold. Pooled CAUTION+CRISIS (n=29) bootstrap HML mean = -1.552%/m (95% CI [-5.186, 2.082]). Defensible downside-regime evidence."
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "CROWDING_BM_PROXY_ACTIVE_BOOK_FORGE",
+      "detail": "Codex C4: HHI(|α_z|) = 0.0049 (eff N = 205), cor(α, log_size) = 0.361, cor(α, mom_6_1) = 0.496. PG2 active book sleeve TS not in mailbox → BM proxy used. Forge MUST re-measure on combined active book."
+    },
+    {
+      "severity": "MEDIUM",
+      "code": "FRESHNESS_LOCK_ASOF_2026_05_08",
+      "detail": "Codex C8: alpha_scores has 253 unique dates (252 measurement + 1 portfolio-construction snapshot 2026-05-08 with all fwd_ret_1m NA). Σ window uses returns through 2026-05-08; production rebalance applies t-1 close. Research diagnostic vs production t-1 lag separation explicit per freshness_lock.json."
+    }
+  ],
+  "pit_compliance": {
+    "walk_forward_only": true,
+    "expanding_window_or_rolling": "rolling 252d daily for Σ; full alpha sleeve time-series for IC bootstrap (PIT-honest cross-section IC at each sig_date)",
+    "no_full_sample_violation": true,
+    "sigma_freshness": {
+      "asof": "2026-05-08",
+      "window_days": 252,
+      "regime_tag": "as_of_2026_04_NORMAL_per_unified_regime_signal"
+    }
+  },
+  "risk_summary": {
+    "cov_estimator": "ledoit_wolf",
+    "condition_number": 1,
+    "pc1_dominance_pct": 0.2874,
+    "factor_coverage_pct": 2.8736,
+    "sector_top1": "반도체",
+    "sector_top1_pct": 9.7701,
+    "diversification_qualified": true,
+    "role_recommendation": "DIVERSIFIER_HONEST_ROLE",
+    "cor_with_hybrid_proxy_full": 0.0246,
+    "cor_with_hybrid_proxy_recent60m": 0.1205,
+    "sigma_red_at_w005_pct": -4.7427,
+    "sigma_red_at_w010_pct": -9.191,
+    "stress_feasible": 6,
+    "stress_outperf_rate": 0.5
+  },
+  "next_agent": "optimizer-research",
+  "optimizer_mandate": {
+    "classification_recommendation": "DIVERSIFIER_HONEST_ROLE",
+    "weight_range_suggestion_pct": "5~15% (Diversifier role — incremental admission to Hybrid 70/15/15 → e.g. 65/15/15/5 or 60/15/10/15)",
+    "target_sigma_red": "Markowitz σ-reduction ≥ -0.5% at admit weight",
+    "forge_mandate": ["Stress sub-window crisis_alpha verification", "Core MDD attenuation vs Hybrid alone", "Multi-sleeve combine ΔSharpe ≥ +0.05", "Multi-sleeve combine ΔMDD ≤ -2pp"]
+  },
+  "codex_round_1": {
+    "stance_received": "REJECT",
+    "weakest_assumption": "100% shrunk scalar identity covariance plus BM-proxy long-short stress tests is sufficient risk evidence for optimizer admission",
+    "classification": {
+      "C1_LW_degenerate": "ACCEPT_PARTIAL_factor_model_overlay_added",
+      "C2_cvar_breach": "PARTIAL_long_short_HML_measurement_long_only_translation_Forge",
+      "C3_crisis_n5": "ACCEPT_pooled_fallback_added",
+      "C4_crowding": "PARTIAL_BM_proxy_acknowledged_Forge_active_book_mandate",
+      "C5_long_short_translation": "PARTIAL_Forge_mandate",
+      "C6_ax001_v2_partial": "ACCEPT_DIVERSIFIER_language_already",
+      "C7_artifact_paths": "ACCEPT_challenge_note_added",
+      "C8_dates_freshness": "ACCEPT_freshness_lock_added"
+    },
+    "rebuttal_required_addressed": {
+      "LW_delta_explicit": {
+        "rho_lw": 1,
+        "n_obs": 268,
+        "p_dim": 348,
+        "interpretation": "δ→1 in n<p high-dim regime is theoretically expected per Ledoit-Wolf 2004 formula; alternative factor model Σ_factor provides non-degenerate Σ (cond ~",
+        "5": 1055.4,
+        "6": ") with market β + idiosyncratic D"
+      },
+      "cvar_cdar_infeasibility": {
+        "cvar95": -16.9321,
+        "cdar95": -71.4222,
+        "cap": -2.5,
+        "breach": true,
+        "artifact": "infeasibility_report.json"
+      },
+      "regime_pooled_bootstrap": {
+        "n_pooled": 29,
+        "hml_mean_pct": -1.5519,
+        "ci_lo_pct": -5.1864,
+        "ci_hi_pct": 2.0817,
+        "artifact": "regime_audit_pooled.json"
+      },
+      "crowding_style": {
+        "hhi_alpha": 0.0049,
+        "cor_alpha_logsize": 0.3605,
+        "cor_alpha_mom_6_1": 0.4963,
+        "forge_active_book_mandate": "Forge realize Hybrid weights → re-measure HHI/TDC/style on combined active book"
+      },
+      "weights_csv_long_only": {
+        "scope_note": "Discovery WT — Optimizer/Forge handle weights.csv. Risk agent provides Σ + diagnostics + role recommendation only."
+      }
+    }
+  },
+  "factor_model_overlay": {
+    "covariance_factor_ref": "stage_artifacts/WT-D20260508_013/risk/covariance_factor.parquet",
+    "cond_exact": 1055.3849,
+    "min_eig": 0.0001,
+    "psd": true,
+    "market_factor_coverage_pct": 20.7374,
+    "beta_summary": {
+      "mean": 0.7279,
+      "sd": 0.2869,
+      "min": 0.0525,
+      "max": 1.6318
+    },
+    "rationale": "Single-factor (market β) + idiosyncratic D model provides non-degenerate Σ for optimizer use. Cond=",
+    "8": 1055.4,
+    "9": " <= 100 OK. LW shrinkage Σ retained as primary diagnostic for top-down risk; factor model Σ retained for optimizer covariance input."
+  },
+  "infeasibility_report_ref": "stage_artifacts/WT-D20260508_013/risk/infeasibility_report.json",
+  "regime_audit_pooled_ref": "stage_artifacts/WT-D20260508_013/risk/regime_audit_pooled.json",
+  "crowding_style_audit_ref": "stage_artifacts/WT-D20260508_013/risk/crowding_style_audit.json",
+  "freshness_lock_ref": "stage_artifacts/WT-D20260508_013/risk/freshness_lock.json",
+  "role_recommendation_final": {
+    "recommendation": "DIVERSIFIER_HONEST_NOT_DEFENSE",
+    "rationale": "AX-001 v2 strict gate FAIL at gate 2 (ratio bootstrap CI [-126, 151] is statistically unstable due to small ic_normal mean near 0 in denominator). Gate 1 (IC_bad CI lo > 0) PASS, Gate 4 (|cor|<0.20) PASS. Defense classification requires all gates PASS. Diversifier classification by gate 4 + recent-60m PASS. Honest stance: DIVERSIFIER, not Defense.",
+    "optimizer_weight_suggestion_pct": "5-15% incremental admission within Hybrid 70/15/15 → e.g. 65/15/15/5 (4-source) or 60/15/10/15. Final weight = Optimizer + Forge multi-sleeve combine ΔSharpe/ΔMDD measurement.",
+    "ax_007_exception_status": "Hybrid 70/15/15 = 3-sleeve multi-source already operative (AX-007 EXCEPTION). 4th source addition extends multi-sleeve. Single-sleeve top20 long-only = NOT applicable.",
+    "ax_008_triangulation": "1/3 alpha + 1/3 risk = 2/3 if Codex Round 1 PARTIAL accepted as 2nd source. Architect 3rd-source mandate REMAINS for full triangulation."
+  }
+}

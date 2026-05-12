@@ -650,9 +650,12 @@ tg_emoji_verdict <- function(verdicts) {
   list(pattern = "\\bESBR\\b",              ko = "이익 변경률"),
   list(pattern = "\\bADV\\b",               ko = "평균 거래대금"),
   list(pattern = "\\bFF[35]\\b",            ko = "Fama-French 팩터"),
-  list(pattern = "\\bBAB\\b",               ko = "베타 차익거래"),
+  list(pattern = "\\bBAB\\b",               ko = "저베타"),
   list(pattern = "\\bBM_Ret\\b",            ko = "벤치마크 수익률"),
-  list(pattern = "\\bOOS\\b",               ko = "표본 외 검증")
+  list(pattern = "\\bOOS\\b",               ko = "표본 외 검증"),
+  list(pattern = "Σ",                       ko = "공분산"),
+  list(pattern = "\\bcovariance\\b",         ko = "공분산")
+  # VaR / ES / CVaR / IVOL / TE / PnL / NAV 등 한국 통용 영문 약어는 retain (decode X)
 )
 
 # tg_decode_jargon: SKILL.md §5 정책 — 약어 첫 등장 1회 한글 풀이 (default)
@@ -917,13 +920,40 @@ tg_agent_brief <- function(agent,
           stop(sprintf("[tg_agent_brief] 'bullet' section heading='%s' requires items >= %d (got %d). 1개면 'summary' / 'text' 사용.",
                         heading, .TG_CONFIG$BULLET_MIN, length(items)))
         }
+        item_chars <- as.character(items)
         # v6.1 SOT — BULLET_ITEM_MAX 강제 (모바일 한 줄)
-        too_long <- which(nchar(as.character(items)) > .TG_CONFIG$BULLET_ITEM_MAX)
+        too_long <- which(nchar(item_chars) > .TG_CONFIG$BULLET_ITEM_MAX)
         if (length(too_long) > 0) {
           stop(sprintf("[tg_agent_brief] 'bullet' section heading='%s' items %s > %d 자 max. 분할 또는 축약 의무.",
                         heading, paste(too_long, collapse=","), .TG_CONFIG$BULLET_ITEM_MAX))
         }
-        paste0("  • ", tg_html_escape(items), collapse = "\n")
+        # v6.3 SOT — bullet 안 영어 약어 라벨 금지 (예: AX-007, RF-A3, STR_055, C13)
+        # v6.4 (2026-05-08) — 도훈 명시: 논문 영어 원문 인용 OK
+        #   면제: WT 식별자 / agent name / 학술 저자-연도 / 저널 약어
+        abbrev_pattern <- "\\b[A-Z]{2,5}[-_]?[A-Z0-9]{1,5}\\b"
+        # 면제 패턴 (조합):
+        #   1) WT 식별자 (WT-D20260508_011 / WT_009)
+        #   2) agent name (Q-Lead / Alpha / Risk / ...)
+        #   3) 학술 저자-연도 (Bakshi 2003 / Frazzini-Pedersen 2014 / Asness-Frazzini-Pedersen 2019)
+        #   4) 저널 약어 (JF / JFE / RFS / JPM / FAJ / QJE / AER / JBF / RAS / JFQA)
+        exempt_pattern <- paste0(
+          "WT[-_][DPSH]?[0-9_]{4,15}|WT_[0-9]+",
+          "|Q[-_]Lead|Alpha|Risk|Optimizer|Forge|Judge|Governor|Scout|Execution|Monitoring|Architect",
+          "|[A-Z][a-z]{2,}(?:[- ][A-Z][a-z]+)*\\s+(?:19|20)[0-9]{2}",
+          "|\\b(?:JF|JFE|JFQA|RFS|JPM|FAJ|RAS|QJE|AER|JBF|RAJ|JFM|JoF|RFS)\\b"
+        )
+        bad_idx <- which(vapply(item_chars, function(it) {
+          # 1) 면제 패턴 먼저 마스킹
+          masked <- gsub(exempt_pattern, "_EXEMPT_", it, perl = TRUE)
+          # 2) 잔여에서 약어 검사
+          matches <- regmatches(masked, gregexpr(abbrev_pattern, masked))[[1]]
+          length(matches) >= 2
+        }, logical(1)))
+        if (length(bad_idx) > 0) {
+          stop(sprintf("[tg_agent_brief] 'bullet' section heading='%s' items %s 영어 약어 ≥2건 (예: AX-/RF-/STR_/C13). v6.3 SOT: 한글 풀어 쓰기 의무. 학술 인용/WT 식별자/agent name 면제.",
+                        heading, paste(bad_idx, collapse=",")))
+        }
+        paste0("  • ", tg_html_escape(item_chars), collapse = "\n")
       },
       "kv" = {
         kv <- s$kv
@@ -941,6 +971,23 @@ tg_agent_brief <- function(agent,
         if (length(too_long) > 0) {
           stop(sprintf("[tg_agent_brief] 'kv' section heading='%s' values %s > %d 자 max. 축약 의무.",
                         heading, paste(names(kv)[too_long], collapse=","), .TG_CONFIG$KV_VALUE_MAX))
+        }
+        # v6.3 SOT (2026-05-08) — kv key 한글 비율 강제 (영어 약어 라벨 금지)
+        # v6.4 (2026-05-08) — 학술 인용 (Asness 2013 / Frazzini-Pedersen 2014) 면제
+        # 한글 (가-힣) + 한자 + 숫자/공백/특수기호 cnt vs ASCII 영문 cnt
+        kv_keys <- names(kv)
+        academic_cite_pattern <- "[A-Z][a-z]{2,}(?:[- ][A-Z][a-z]+)*\\s+(?:19|20)[0-9]{2}"
+        ascii_heavy <- vapply(kv_keys, function(k) {
+          # 학술 인용 패턴 매칭 시 면제
+          if (grepl(academic_cite_pattern, k, perl = TRUE)) return(FALSE)
+          n_total <- nchar(k)
+          n_ascii_alpha <- length(regmatches(k, gregexpr("[A-Za-z]", k))[[1]])
+          if (n_total == 0) return(FALSE)
+          (n_ascii_alpha / n_total) > 0.4  # 40% 이상 영문 = 위반
+        }, logical(1))
+        if (any(ascii_heavy)) {
+          stop(sprintf("[tg_agent_brief] 'kv' section heading='%s' keys %s 영어 비율 > 40%%. v6.3 SOT: 한글 정통 용어 의무 (예: '샤프지수' / '정보계수' / '회전율'). 학술 인용 (Asness 2013 / Frazzini-Pedersen 2014)은 면제.",
+                        heading, paste(kv_keys[ascii_heavy], collapse=" / ")))
         }
         kv_lines <- vapply(seq_along(kv), function(i) {
           sprintf("  • <b>%s</b>: %s",
