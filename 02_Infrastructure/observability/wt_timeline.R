@@ -161,9 +161,11 @@ build_wt_timeline <- function(wt_id) {
   }
 
   # 5. retry_count — count REVISE events
-  retry_count <- sum(sapply(events, function(e) {
-    grepl("REVISE|REVISION", e$action %||% "")
-  }))
+  retry_count <- if (length(events) == 0) 0L else {
+    sum(vapply(events, function(e) {
+      isTRUE(grepl("REVISE|REVISION", as.character(e$action %||% "")))
+    }, logical(1)))
+  }
 
   # 6. artifact_lineage — alpha → risk → opt → forge → judge → governor
   lineage <- list()

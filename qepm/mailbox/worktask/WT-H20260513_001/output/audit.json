@@ -1,0 +1,164 @@
+{
+  "task_id": "WT-H20260513_001",
+  "audit_version": "v1_layer5_R05_overlay_strict",
+  "audit_timestamp": "2026-05-13T06:38:46+09:00",
+  "parent_admit_wt": "WT-P20260504_001",
+  "parent_production_wt": "WT-RES_20260512_STR_1715_AR_PRODUCTION",
+  "checks": {
+    "nav_monotone_dates": {
+      "pass": true,
+      "note": "monotone increasing"
+    },
+    "returns_finite": {
+      "pass": true,
+      "note": "L4 finite n=255, L5_V5 finite n=255"
+    },
+    "n_obs_sufficient": {
+      "pass": true,
+      "note": "n=255 months"
+    },
+    "cost_model_documented": {
+      "pass": true,
+      "note": "v2.3_kr_retail_15bps; base PR ret_net + AR Δβ × 15bps + β_R05 Δβ × 15bps"
+    },
+    "pit_lag_applied": {
+      "pass": true,
+      "note": "M4/β_AR/β_R05 all t-1 lag (shift(1)); V4 expanding past-only quantile"
+    },
+    "perfanalytics_standard": {
+      "pass": true,
+      "note": "table.AnnualizedReturns + maxDrawdown + SortinoRatio + CalmarRatio"
+    },
+    "weighting_basis": {
+      "pass": true,
+      "note": "Iter31 linear_tilt baked in PR ret_net + sequential overlay only (no holding change)"
+    },
+    "raw_cover_start_hardcoded": {
+      "pass": true,
+      "note": "decision 2004-01-01 | realized 2004-02-01"
+    },
+    "layer_count": {
+      "pass": true,
+      "note": "L4 baseline + L5 variants V1~V5 (5 variants total)"
+    },
+    "sanity_l4_vs_production_audit": {
+      "pass": true,
+      "note": "L4 SR delta vs production audit 255m baseline 1.7486: +0.0000 (expect <0.05)"
+    }
+  },
+  "baseline_L4_255m": {
+    "CAGR": 0.3868,
+    "Vol": 0.2212,
+    "Sharpe": 1.7486,
+    "MDD": -0.2481,
+    "Sortino": 1.0063,
+    "Calmar": 1.5592,
+    "n_months": 255
+  },
+  "variants_summary": {
+    "L5_V2_aggressive_regime": {
+      "Sharpe": 1.9536,
+      "MDD": -0.2481,
+      "CAGR": 0.415,
+      "Sortino": 1.2204,
+      "Calmar": 1.673,
+      "score": 1.8296,
+      "delta_SR_vs_baseline": 0.205,
+      "delta_MDD_pp": 0,
+      "delta_CAGR_pp": 2.82,
+      "AX001v2_pass": false,
+      "gate_SR_gt_baseline": true,
+      "gate_MDD_better": false
+    },
+    "L5_V3_medium_regime": {
+      "Sharpe": 1.9159,
+      "MDD": -0.2481,
+      "CAGR": 0.4097,
+      "Sortino": 1.1817,
+      "Calmar": 1.6516,
+      "score": 1.7918,
+      "delta_SR_vs_baseline": 0.1673,
+      "delta_MDD_pp": 0,
+      "delta_CAGR_pp": 2.29,
+      "AX001v2_pass": false,
+      "gate_SR_gt_baseline": true,
+      "gate_MDD_better": false
+    },
+    "L5_V5_regime_x_R05_interaction": {
+      "Sharpe": 1.8938,
+      "MDD": -0.2329,
+      "CAGR": 0.3916,
+      "Sortino": 1.1728,
+      "Calmar": 1.6811,
+      "score": 1.7774,
+      "delta_SR_vs_baseline": 0.1452,
+      "delta_MDD_pp": 1.52,
+      "delta_CAGR_pp": 0.48,
+      "AX001v2_pass": false,
+      "gate_SR_gt_baseline": true,
+      "gate_MDD_better": true
+    },
+    "L5_V1_mild_regime": {
+      "Sharpe": 1.8774,
+      "MDD": -0.2481,
+      "CAGR": 0.4043,
+      "Sortino": 1.1408,
+      "Calmar": 1.6301,
+      "score": 1.7534,
+      "delta_SR_vs_baseline": 0.1288,
+      "delta_MDD_pp": 0,
+      "delta_CAGR_pp": 1.75,
+      "AX001v2_pass": false,
+      "gate_SR_gt_baseline": true,
+      "gate_MDD_better": false
+    },
+    "L5_V4_R05_adaptive": {
+      "Sharpe": 1.7266,
+      "MDD": -0.1699,
+      "CAGR": 0.3096,
+      "Sortino": 1.1851,
+      "Calmar": 1.8218,
+      "score": 1.6416,
+      "delta_SR_vs_baseline": -0.022,
+      "delta_MDD_pp": 7.82,
+      "delta_CAGR_pp": -7.72,
+      "AX001v2_pass": false,
+      "gate_SR_gt_baseline": false,
+      "gate_MDD_better": true
+    },
+    "L4_baseline_admit_precedent": {
+      "Sharpe": 1.7486,
+      "MDD": -0.2481,
+      "CAGR": 0.3868,
+      "Sortino": 1.0063,
+      "Calmar": 1.5592,
+      "score": 1.6245,
+      "delta_SR_vs_baseline": 0,
+      "delta_MDD_pp": 0,
+      "delta_CAGR_pp": 0,
+      "AX001v2_pass": false,
+      "gate_SR_gt_baseline": false,
+      "gate_MDD_better": false
+    }
+  },
+  "best_eligible_variant": null,
+  "per_regime_summary": {
+    "panel": ["255m_admit_baseline", "255m_admit_baseline", "255m_admit_baseline", "255m_admit_baseline"],
+    "variant": ["ret_L5_V5", "ret_L5_V5", "ret_L5_V5", "ret_L5_V5"],
+    "regime": ["BULL", "NORMAL", "CAUTION", "CRISIS"],
+    "n_months": [87, 150, 15, 3],
+    "mean_ret": [0.0473, 0.0263, -0.0313, -0.0148],
+    "sd_ret": [0.0521, 0.0615, 0.0351, 0.0094],
+    "SR_ann": [3.1449, 1.483, -3.0848, -5.4652],
+    "hit_rate": [0.8621, 0.7, 0.2667, 0]
+  },
+  "incremental_turnover_annualized": {
+    "V1": 0.4282,
+    "V2": 0.6824,
+    "V3": 0.5553,
+    "V4": 2.1929,
+    "V5": 0.9365
+  },
+  "integrity": "PASS",
+  "metric_type": "backtested"
+}

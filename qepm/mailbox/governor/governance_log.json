@@ -515,6 +515,45 @@
           }
         }
       }
+    },
+    {
+      "timestamp": "2026-05-12T14:46:38+0900",
+      "action": "RETROACTIVE_CERT_ISSUANCE",
+      "triggered_by": "cert_backfill_audit.R Layer 2",
+      "charter_ref": "v1.2 §10 (backfilled by cert_backfill_audit.R)",
+      "summary": {
+        "mode": "auto",
+        "target_wt": "all_admitted_lineage",
+        "n_wts_processed": 1,
+        "per_wt": {
+          "WT-D20260512_002": {
+            "wt_id": "WT-D20260512_002",
+            "wt_type": "deployment_promotion_re_certification",
+            "results": {
+              "alpha_discovery": {
+                "action": "skip_auto_no_hint",
+                "issued": null
+              },
+              "sr_provenance": {
+                "action": "skip_auto_no_hint",
+                "issued": null
+              },
+              "schedule_fidelity": {
+                "action": "skip_auto_no_hint",
+                "issued": null
+              },
+              "forge_package_validated": {
+                "action": "skip_auto_no_hint",
+                "issued": null
+              },
+              "governor_concord": {
+                "action": "skip_existing_global",
+                "issued": true
+              }
+            }
+          }
+        }
+      }
     }
   ],
   "admission_log": [
@@ -1101,7 +1140,7 @@
           "CASH_KRW_PG2_S4": 0.05
         },
         "to_single_sleeve_100": {
-          "STR_1715_AR_on_M4_PG2": 1.0
+          "STR_1715_AR_on_M4_PG2": 1
         }
       },
       "metrics_admit_basis": {
@@ -1163,7 +1202,7 @@
       "deployment_suspended_unblock": true,
       "may_2026_dynamic_state": {
         "m4_state": "NORMAL",
-        "m4_scalar": 1.0,
+        "m4_scalar": 1,
         "beta_AR_t": 0.7,
         "net_allocation_risk": 0.7,
         "net_allocation_cash": 0.3
@@ -1171,5 +1210,64 @@
       "l_code_candidate": "L-307 (re-certification class single sleeve lineage recovery + Codex REBUTTAL_PRIMARY framework + Replacement vs Sequential Admission v6.1 SOT)",
       "governor_admission_path": "qepm/mailbox/worktask/WT-D20260512_002/governor_admission.json"
     }
-  ]
+  ],
+  "event_WT_H20260513_001_layer5_r05_admit": {
+    "event": "LAYER_5_R05_OVERLAY_ADMIT_REPLACEMENT_SCENARIO",
+    "event_type": "governor_admission_admit",
+    "wt_id": "WT-H20260513_001",
+    "wt_type": "hyperparameter_sweep",
+    "wt_class": "overlay_layer_5_promotion (hyperparameter_sweep_admission_class)",
+    "agent": "governor",
+    "agent_id": "governor_opus_4_7_1m",
+    "timestamp": "2026-05-13T08:06:39.731588+09:00",
+    "verdict": "ADMIT_LAYER_5_R05_OVERLAY_REPLACEMENT_SCENARIO_DEPLOYMENT_READY",
+    "str_id": "STR_1715_AR_on_M4_R05_overlay_PG2",
+    "weight_admitted": 1.0,
+    "effective_date": "2026-05-13",
+    "replaced_strategy": "STR_1715_AR_on_M4_PG2 (Layer 4 baseline, L-307 lineage)",
+    "admission_classification_rule": "replacement_scenario_v6_1_SOT_codex_confirmed",
+    "codex_round_status": "COMPLETED_REVISE_DISPOSITION_APPLIED_CHARTER_SEC_8",
+    "codex_stance": "REVISE",
+    "codex_veto_flag": false,
+    "codex_concerns_disposition": "2 ACCEPT (C1+C6) + 2 PARTIAL_ACCEPT (C2+C3) + 2 PARTIAL_REBUTTAL (C4+C5)",
+    "ax_008_strict_count": "2/3 PASS (Forge fresh + Architect; Codex REVISE not counted)",
+    "metrics_admit_basis": {
+      "SR_admit_255m": 1.9536,
+      "SR_production_267m": 1.8861,
+      "MDD_pct_255m": -24.81,
+      "CAGR_pct_255m": 41.5,
+      "harvey_t_NW": 6.767,
+      "DSR_N5_Z_ex_ante": 1.448
+    },
+    "gap_closure": {
+      "sharpe_pre_admit_gap": 0.2242,
+      "sharpe_post_admit_gap_residual": 0.0464,
+      "gap_closure_pct": 97.9
+    },
+    "cert_chain_status": {
+      "sr_provenance_certificate": "ISSUED 2026-05-13T08:00:44 KST (post Codex C6 remediation)",
+      "governor_concord_certificate": "ISSUED 2026-05-13 (concord_type=match, all_admitted_match=true)",
+      "forge_package_validated_certificate": "INHERITED audit 10/10 PASS",
+      "alpha_discovery_certificate": "INHERITED WT-P20260504_001 lineage",
+      "schedule_fidelity_certificate": "INHERITED density 1.0"
+    },
+    "q_lead_t_plus_14_binding": {
+      "binding_active": true,
+      "deadline": "2026-05-27",
+      "subject": "weight_bounds Q-Lead/도훈 confirmation [0,0.20] vs [0,0.15] (Codex C1 ACCEPT)"
+    },
+    "lineage_chain": [
+      "WT-D20260427_016",
+      "WT-P20260429_002",
+      "WT-D20260430_001",
+      "WT-P20260504_001 (L-277/278)",
+      "WT-D20260512_002 (L-307)",
+      "WT-H20260513_001 (L-308 candidate)"
+    ],
+    "l_codes_recommended": [
+      "L-308",
+      "L-309",
+      "L-310"
+    ]
+  }
 }

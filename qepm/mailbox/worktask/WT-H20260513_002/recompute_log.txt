@@ -1,0 +1,175 @@
+============================================================
+WT-H20260513_002 V2_admit ub=0.20 RECOMPUTE in SAME HARNESS
+Codex C2 ACCEPT — baseline fairness mandate
+============================================================
+
+[1] Build Iter31 weighting functions (ub=0.20 V2 admit precedent)
+  linear_tilt_to_penalty_qd: lambda=1.5 phi=3 ub=0.20 (V2 admit)
+
+[2] Load alpha_scores + RAWDATA
+  alpha_scores: 268 sig_dates
+
+[3] Walk-forward weights (Iter31 spec, ub=0.20)
+  Progress: 50 / 267
+  Progress: 100 / 267
+  Progress: 150 / 267
+  Progress: 200 / 267
+  Progress: 250 / 267
+  Loop elapsed: 117.1 sec
+  bt_dt: 267 months | max_w=0.2000 mean_w=0.0500
+
+[4] Load M4 + AR (identical to strict015 harness)
+
+[5] Build panel (ub=0.20 base + sequential overlays)
+
+[6] R05 portfolio-level signal
+
+[7] Build return paths
+
+[8] Measurement panels (255m + 267m)
+  267m_full: n=267 | 255m_admit: n=255
+
+  Metrics 255m (V2_admit_ub020 SAME HARNESS):
+                            panel                        variant   CAGR    Vol
+                           <char>                         <char>  <num>  <num>
+1: 255m_admit_baseline_comparable    admit_ub020_base_no_overlay 0.4428 0.2664
+2: 255m_admit_baseline_comparable           L4_admit_ub020_M4_AR 0.3868 0.2212
+3: 255m_admit_baseline_comparable L5_V2_admit_ub020_full_overlay 0.4150 0.2124
+   Sharpe     MDD Sortino Calmar n_months
+    <num>   <num>   <num>  <num>    <int>
+1: 1.6620 -0.4074  0.8818 1.0869      255
+2: 1.7486 -0.2481  1.0063 1.5592      255
+3: 1.9536 -0.2481  1.2204 1.6730      255
+
+  Metrics 267m (V2_admit_ub020 SAME HARNESS):
+                 panel                        variant   CAGR    Vol Sharpe
+                <char>                         <char>  <num>  <num>  <num>
+1: 267m_full_raw_cover    admit_ub020_base_no_overlay 0.4351 0.2667 1.6315
+2: 267m_full_raw_cover           L4_admit_ub020_M4_AR 0.3770 0.2223 1.6957
+3: 267m_full_raw_cover L5_V2_admit_ub020_full_overlay 0.4037 0.2141 1.8861
+       MDD Sortino Calmar n_months
+     <num>   <num>  <num>    <int>
+1: -0.4074  0.8738 1.0682      267
+2: -0.2481  0.9788 1.5197      267
+3: -0.2481  1.1741 1.6276      267
+
+[11] DSR Bailey-LdP (same convention as strict015)
+  V2 admit recompute L5 (255m): SR=1.7592 / DSR_Z (N=5)=2.6576
+  L4 admit recompute (255m):    SR=1.6049 / DSR_Z (N=5)=1.8800
+
+[12] Harvey 5-spec NW (V2_admit ub=0.20) — with alpha_monthly + per-spec DSR
+  Harvey 5-spec NW (V2_admit ub=0.20 same harness):
+                     spec alpha_annual alpha_monthly   t_NW  p_NW     R2     n
+                   <char>        <num>         <num>  <num> <num>  <num> <int>
+1: CAPM_KR_L5_admit_ub020     0.376291      0.031358 7.0125     0 0.0001   254
+2:   Carhart3_KR_L5_admit     0.373844      0.031154 7.0208     0 0.0010   254
+3:   Carhart4_KR_L5_admit     0.352397      0.029366 7.0848     0 0.0365   254
+4:        FF5_KR_L5_admit     0.369492      0.030791 7.1407     0 0.0092   254
+5:    FF6_WML_KR_L5_admit     0.348345      0.029029 7.1352     0 0.0444   254
+     lag per_spec_DSR
+   <int>        <num>
+1:     4       2.6946
+2:     4       2.6407
+3:     4       2.2766
+4:     4       2.5641
+5:     4       2.2084
+
+[13] Direct compare V2_strict_015 vs V2_admit_ub020 (SAME HARNESS)
+
+=== Same-Harness Comparison Matrix ===
+             metric V2_admit_ub020_recompute V2_strict_ub015
+             <char>                    <num>           <num>
+ 1:      SR_255m_L5                   1.9536          1.9655
+ 2:      SR_267m_L5                   1.8861          1.8946
+ 3:     MDD_255m_L5                  -0.2481         -0.2485
+ 4:    CAGR_255m_L5                   0.4150          0.4126
+ 5: Sortino_255m_L5                   1.2204          1.2276
+ 6:  Calmar_255m_L5                   1.6730          1.6606
+ 7:     Vol_255m_L5                   0.2124          0.2099
+ 8:      SR_255m_L4                   1.7486          1.7584
+ 9:     MDD_255m_L4                  -0.2481         -0.2485
+10:    CAGR_255m_L4                   0.3868          0.3846
+11:    SR_255m_base                   1.6620          1.6679
+12:   MDD_255m_base                  -0.4074         -0.4118
+13:   Vol_255m_base                   0.2664          0.2641
+14:     DSR_Z_L5_N5                   2.6576          2.6972
+    delta_strict_minus_admit               decision
+                       <num>                 <char>
+ 1:                   0.0119 MARGINAL_TIE_도훈_결정
+ 2:                   0.0085                       
+ 3:                  -0.0004       ADMIT_better_MDD
+ 4:                  -0.0024                       
+ 5:                   0.0072                       
+ 6:                  -0.0124                       
+ 7:                  -0.0025                       
+ 8:                   0.0098                       
+ 9:                  -0.0004                       
+10:                  -0.0022                       
+11:                   0.0059                       
+12:                  -0.0044                       
+13:                  -0.0023                       
+14:                   0.0396                       
+  Saved: /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-H20260513_002/output/audit_v2_admit_recompute_vs_strict_015.csv
+
+=== V2_admit Hardcoded (from WT-H001) vs SAME-HARNESS Recompute ===
+            metric hardcoded_from_WT_H001 recompute_same_harness
+            <char>                  <num>                  <num>
+1:      SR_255m_L5                 1.9536                 1.9536
+2:      SR_267m_L5                 1.8861                 1.8861
+3:     MDD_255m_L5                -0.2481                -0.2481
+4:    CAGR_255m_L5                 0.4150                 0.4150
+5: Sortino_255m_L5                 1.2204                 1.2204
+6:  Calmar_255m_L5                 1.6730                 1.6730
+7:     Vol_255m_L5                 0.2212                 0.2124
+8:      SR_255m_L4                 1.7486                 1.7486
+   delta_recompute_minus_hardcoded
+                             <num>
+1:                          0.0000
+2:                          0.0000
+3:                          0.0000
+4:                          0.0000
+5:                          0.0000
+6:                          0.0000
+7:                         -0.0088
+8:                          0.0000
+
+  Summary saved: /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-H20260513_002/output/audit_v2_admit_recompute.json
+
+[14] END hash audit (Pure Function R12)
+  Pure Function R12: all_unchanged = TRUE
+
+[15] Save NAV + regime + drawdowns
+  V2_admit weight stats:
+                       variant max_weight mean_weight median_weight q90_weight
+                        <char>      <num>       <num>         <num>      <num>
+1: V2_admit_ub020_same_harness        0.2  0.05003748    0.04122483  0.1156626
+   q95_weight n_positions_max20pct n_positions_total binding_pct
+        <num>                <int>             <int>       <num>
+1:  0.1416227                   18              5336        0.34
+
+============================================================
+FINAL: V2_admit_ub020 RECOMPUTE in SAME HARNESS
+============================================================
+
+V2 admit (ub=0.20) — SAME HARNESS recompute:
+  255m: SR=1.9536 / MDD=-0.2481 / CAGR=0.4150 / DSR_Z=2.6576
+  267m: SR=1.8861 / MDD=-0.2481 / CAGR=0.4037
+
+V2 strict variant (ub=0.15):
+  255m: SR=1.9655 / MDD=-0.2485 / CAGR=0.4126 / DSR_Z=2.6972
+  267m: SR=1.8946 / MDD=-0.2485 / CAGR=0.4014
+
+Δ V2_strict vs V2_admit_recompute (SAME HARNESS, 255m):
+  ΔSR    = +0.0119
+  ΔMDD   = -0.04pp
+  ΔCAGR  = -0.24pp
+
+Decision rule (same-harness fair compare): MARGINAL_TIE (도훈 결정 필요)
+
+Hardcoded inheritance from WT-H001 vs SAME-HARNESS recompute drift:
+  ΔSR_255m (recompute - 1.9536) = +0.0000
+  ΔMDD_255m_pp (recompute - (-24.81)) = +0.00pp
+  ΔCAGR_255m_pp = +0.00pp
+  ΔDSR_Z_N5 = +1.2096
+
+Done. Outputs in: /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-H20260513_002/output 

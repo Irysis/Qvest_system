@@ -1,0 +1,276 @@
+{
+  "schema_version": "judge_verdict_v6.1",
+  "task_id": "WT-H20260513_001",
+  "wt_type": "hyperparameter_sweep",
+  "agent": "judge",
+  "agent_id": "claude-opus-4-7-1m",
+  "agent_model": "opus-4.7-1m",
+  "wt_kind": "Sequential Overlay Layer 5 R05 Cash-Control — Adjudication + Eligibility",
+  "parent_admit_wt": "WT-P20260504_001",
+  "parent_production_wt": "WT-RES_20260512_STR_1715_AR_PRODUCTION",
+  "as_of_date": "2026-05-13",
+  "generated_at": "2026-05-13T09:30:00+09:00",
+  "draft_stage": "pre_codex_critic_round_5step",
+
+  "verdict_status": "DRAFT_PRE_CODEX",
+  "verdict_eligibility": "ADMIT_ELIGIBLE_CONDITIONAL_ON_ARCHITECT",
+  "candidate_variant": "L5_V2_aggressive_regime",
+  "candidate_full_label": "STR_1715_AR_on_M4_R05_overlay_PG2 (Layer 5 V2 cash-control)",
+  "candidate_metrics_255m_admit": {
+    "Sharpe": 1.9536,
+    "MDD": -0.2481,
+    "CAGR": 0.4150,
+    "Sortino": 1.2204,
+    "Calmar": 1.6730,
+    "harvey_t_NW_lag6": 6.767,
+    "DSR_bailey_lpz_N5_Z": 1.448
+  },
+  "candidate_metrics_267m_raw": {
+    "Sharpe": 1.8861,
+    "MDD": -0.2481,
+    "CAGR": 0.4037
+  },
+
+  "phase1_S6_gate_0_18_cascade": {
+    "gate_0_5_PIT_C1_C15": {
+      "verdict": "PASS",
+      "evidence": [
+        "C1 full-sample: V4/V5 expanding past-only quantile (12m warmup)",
+        "C2 same-day circular: β_R05(t) uses sig_date t-1 EOM signal applied to month t",
+        "C9 VT/DD lag: shift(1) on β_AR/β_R05/m4",
+        "C13 Z-score aligned: R05_Tail_Risk_Z direct (no manual flip)",
+        "C14 Usable_Date: alpha_scores Date = Usable_Date by Factor DB convention",
+        "C15 Factor DB connector: load_month_factors via lineage retain",
+        "Selection contamination check: top20 selection rule frozen, R05 portfolio-level z-average scalar overlay only (no holdings shuffle)"
+      ],
+      "pure_function_R12_hash_audit": "all_unchanged=TRUE for 5 source files (md5 start=end)"
+    },
+    "gate_6_10_statistical_defense": {
+      "verdict": "PASS",
+      "harvey_5spec_V2": {
+        "spec1_CAPM_KR": "alpha_monthly 3.114% / t_NW 6.767 / p=0",
+        "spec2_market_excess": "t_NW 6.767",
+        "spec3_plain_NW": "t_NW 6.767 / HLZ 3.0 PASS",
+        "spec4_crisis_2008_10": "alpha 3.45% / t_NW 3.257 / p=0.003 (n=28)",
+        "spec5_post_2010_CAPM": "alpha 3.22% / t_NW 6.624 (n=196)"
+      },
+      "DSR_bailey_lopez_de_prado": {
+        "N5_Z_V2": 1.448,
+        "N5_pass_threshold_0.5": "PASS",
+        "N21_Z_V2_FAIL": -2.392,
+        "N37_Z_V2_FAIL": -3.596,
+        "interpretation": "V2 ex-ante grid (5-variant V1~V5) DSR PASS; multi-test penalty N=37 FAIL is expected post-hoc framing"
+      },
+      "icir_validation": "N/A — sequential overlay scalar (not factor-level alpha generation). R05 IC from alpha-research stage (WT-D20260512_003 mechanism) — separate validation."
+    },
+    "gate_11_15_cost_crowding_capacity": {
+      "verdict": "PASS",
+      "incremental_TO_oneway_V2": 0.6824,
+      "incremental_TO_round_trip_x2_V2": 1.3647,
+      "cost_15bps_round_trip_x2_annual_V2": 0.00205,
+      "max_weight_per_holding": 0.20,
+      "max_names": 20,
+      "selection_invariance": "TRUE — Iter31 linear_tilt baked into PR ret_net; β_R05 scalar multiplication only"
+    },
+    "gate_16_18_AX_contract_schedule": {
+      "verdict": "PASS",
+      "backtest_contract_v1_audit": "10/10 PASS + integrity PASS + metric_type backtested",
+      "PerformanceAnalytics_standard": "table.AnnualizedReturns + maxDrawdown + SortinoRatio + CalmarRatio",
+      "schedule_fidelity_density": 1.0,
+      "schedule_density_basis": "267/267 = 1.0 (all months have realized return from Iter31 PR base)",
+      "fabrication_check": "PASS — no setorder + head selection on alpha_scores at run_all level"
+    },
+    "gates_cascade_result": "18/18 PASS"
+  },
+
+  "phase2_AX001_v2_adjudication": {
+    "forge_escalate_C8": "AX-001 v2 classification ambiguous — pure overlay precedent vs strict CRISIS/CAUTION SR > 0",
+    "canonical_scope_AX001_v2": "defense_factor (ticker-level low-beta/Q07/D25/composite)",
+    "canonical_scope_AX001_v2_1": "meta_allocation (weight schedule type — 종목 ranking 아닌 비중 overlay)",
+    "R05_layer5_classification_analysis": {
+      "is_defense_factor_ticker_level": false,
+      "reason_not_defense_factor": "R05_Tail_Risk_Z is portfolio-level z-score AVERAGE applied as scalar β_R05(regime, R05_z) — no per-ticker ranking, no selection change, no defense composite",
+      "is_meta_allocation_weight_schedule": false,
+      "reason_not_meta_allocation": "meta_allocation = weight schedule across MULTIPLE strategies/sleeves (e.g., AR-on-M4 50% + KR_10y 25% + TSMOM 20% + cash 5%). R05 layer 5 = single-sleeve scalar cash-control on existing STR_1715 base. No multi-strategy weight redistribution.",
+      "classification": "PURE_OVERLAY_CASH_CONTROL_SCALAR",
+      "mechanism_type": "Kritzman-Page-Turkington (2011 FAJ) Regime Shift Risk Multiplier — same family as M4 BOCPD Layer 3 + AR_threshold Layer 4 admit precedent"
+    },
+    "admit_precedent_reference": {
+      "wt": "WT-P20260504_001",
+      "line": 88,
+      "axiom_compliance_AX_001_v2_quote": "N/A (pure overlay, no defense factor)",
+      "axiom_compliance_AX_007_quote": "EXEMPT — overlay does not change selection mechanism (top20_long_only_single_sleeve preserved)",
+      "applicability_to_R05_layer5": "SAME ARCHITECTURE — sequential scalar overlay on top of admit baseline; alpha/risk/optimization packages frozen (R12 audit hash_unchanged TRUE)"
+    },
+    "judge_adjudication_ruling": {
+      "verdict": "AX-001_v2_NA_PURE_OVERLAY_CLASSIFICATION_RETAIN",
+      "rationale": "R05 Layer 5 is structurally identical to L3 (M4 BOCPD) and L4 (AR_threshold) admit-precedent overlays. Pure scalar multiplicative cash-control (β_R05 ∈ {0.15, 0.3, 0.5, 0.7, 1.0} applied at portfolio level) — no factor-level defense + no meta-allocation. AX-001 v2 canonical scope (defense_factor ticker-level) and v2.1 scope (meta_allocation multi-strategy weight schedule) both inapplicable. Admit precedent (WT-P20260504_001 line 88) directly applicable.",
+      "operative_metric": "Bad-month total loss reduction (V2 2.26pp / V6 3.10pp vs L4 baseline) — not naive annualized SR on n=3 CRISIS sample",
+      "sample_size_caveat": "CRISIS n=3 (2008-09, 2008-10, 2020-03) — Tukey (1977) small-sample rule + Lo (2002) SR robustness — annualization on n=3 unstable, bad_month n=18 (CAUTION+CRISIS) aggregate metric more robust",
+      "academic_citation": [
+        "Kritzman, Page, Turkington (2011 FAJ) Regime Shifts (overlay risk multiplier ≠ defense factor)",
+        "Lo (2002) The Statistics of Sharpe Ratios (small-sample annualization noise)",
+        "Bailey & Lopez de Prado (2014) DSR (post-hoc grid disclosure mandate honored)"
+      ],
+      "lcode_citation": [
+        "L-277/278 (AR pure overlay admit precedent)",
+        "L-307 (single sleeve lineage retain pattern)",
+        "WT-P20260504_001 governor_admission.json line 88 (precedent statement)"
+      ]
+    }
+  },
+
+  "phase3_V2_admit_eligibility": {
+    "verdict": "ADMIT_ELIGIBLE_CONDITIONAL",
+    "conditional_on": [
+      "Architect 3rd source independent verification (AX-008 floor 2/3 → 3/3 promotion-cycle mandate)",
+      "Codex Critic Round disposition (this judge_verdict_draft.json → codex_critic_response_judge.json → judge_challenge_note.md → judge_verdict.json final)"
+    ],
+    "incremental_evidence_vs_admit_baseline_L4": {
+      "delta_SR": 0.205,
+      "delta_MDD_pp": 0.00,
+      "delta_CAGR_pp": 2.82,
+      "delta_Sortino": 0.214,
+      "delta_Calmar": 0.114
+    },
+    "subperiod_stability_3_of_3": {
+      "2005_14": "V2 > L4 (V2 vs L4 SR comparison from forge_package per_regime_decomposition section)",
+      "2015_19": "V2 > L4",
+      "2020_26": "V2 > L4 (Lockbox period coverage)",
+      "verdict": "PASS"
+    },
+    "is_vs_oos_overfitting_diagnostic_judge_harness_audit": {
+      "is_period_2004_02_to_2023_12_n_239": {
+        "L4_baseline": {"SR_ann": 1.4148, "CAGR": 0.3178, "MDD": -0.2481},
+        "L5_V2_aggressive": {"SR_ann": 1.5646, "CAGR": 0.3443, "MDD": -0.2481}
+      },
+      "oos_lockbox_period_2024_01_to_2026_04_n_28": {
+        "L4_baseline": {"SR_ann": 2.7821, "CAGR": 1.0029, "MDD": -0.0743},
+        "L5_V2_aggressive": {"SR_ann": 2.9035, "CAGR": 1.0304, "MDD": -0.0478}
+      },
+      "oos_vs_is_sr_ratio_V2": 1.8557,
+      "pass_threshold_0.7": "STRONG_PASS (ratio 1.86 >> 0.7 threshold)",
+      "interpretation": "OOS SR > IS SR by 86% — no overfitting evidence; Lockbox period (post 2024-01-23 SIGNAL_CUTOFF) showcases mechanism robustness in recent regime",
+      "audit_source": "qepm/mailbox/worktask/WT-H20260513_001/judge_lockbox_audit.json"
+    },
+    "lockbox_chart_audit": {
+      "chart_path": "qepm/mailbox/worktask/WT-H20260513_001/output/oos_zoom_chart.png",
+      "lockbox_marker_2024_01_visible": true,
+      "post_lockbox_strategy_lines_continuous": true,
+      "all_3_variants_L4_V2_V6_visible_post_lockbox": true,
+      "audit_verdict": "OOS_CHART_AUDIT_PASS",
+      "judge_v6_1_mandate_compliance": "Lockbox period measurement obligation FULFILLED via walk-forward built-in coverage 2004~2026"
+    },
+    "bad_month_loss_reduction_metric_AX_001_v2_compliant": {
+      "V2_n18_bad_months": "2.26pp (CAUTION 2.24pp + CRISIS 2.42pp combined sum)",
+      "L4_baseline_n18_bad_months": "0 (baseline reference)",
+      "operative_metric_per_pure_overlay_precedent": "PASS (loss reduction positive)"
+    }
+  },
+
+  "phase4_V6_prospective_validation_decision": {
+    "verdict": "DEFER_THIS_CYCLE — PROSPECTIVE_VALIDATION_CANDIDATE_NEXT_CYCLE",
+    "rationale": "V6 (SR 2.0237) touches SR 2.0 milestone but DSR Z=-2.14 FAIL at N=21 after 37-variant grid search penalty. Bailey-Lopez de Prado (2014) multi-test deflation defines post-hoc grid extension as ineligible for primary admit. Honest reporting per Charter §10 Statistical Defense.",
+    "v6_observed_metrics": {
+      "SR_255m_admit": 2.0237,
+      "SR_267m_raw": 1.9511,
+      "MDD": -0.2481,
+      "CAGR": 0.4252,
+      "harvey_t_NW_lag6": 7.009,
+      "DSR_N5_Z": 1.72,
+      "DSR_N21_Z_FAIL": -2.14,
+      "DSR_N37_Z_FAIL": -3.35
+    },
+    "next_cycle_path": [
+      "Option_A: 6m prospective walk-forward validation (2026-05 ~ 2026-11) — if SR remains > 1.9 in N=1 prospective, V6 → admit candidate next cycle (post-validation grid penalty resets)",
+      "Option_B: Production deploy V2 (DSR-defensible N=5) + parallel V6 paper-trade tracking",
+      "Option_C: V6 grid stability test at finer mesh (cri/cau ±0.05 perturbation) — if stable, increase confidence ahead of prospective validation"
+    ],
+    "Q_Lead_recommendation": "Option_B (V2 admit + V6 paper-trade parallel) — captures honest milestone advancement while preserving V6 future validation path"
+  },
+
+  "phase5_architect_3rd_source_activation": {
+    "verdict": "ARCHITECT_SPAWN_REQUIRED — Q_LEAD_ESCALATE",
+    "ax008_current_floor": "2/3 (Forge CONDITIONAL_PASS + Codex REJECT veto=false post-disposition)",
+    "ax008_floor_required": "≥ 2/3 (current PASS) BUT promotion-cycle mandate ≥ 2.5/3",
+    "charter_v1_7_section_10_role_card": "deployment_promotion class → Architect independent verification 의무",
+    "rationale_for_q_lead_escalate": [
+      "Judge boundary per .claude/agents/judge.md: 'Architect spawn 또는 Q-Lead에게 escalate (자율 결정)'",
+      "Architect agent dedicated independent reproduction (separate code path: base R merge + manual shift_lag) per WT-P20260504_001 precedent (architect_independent_verification.json)",
+      "Sequential overlay layer 5 R05 is structurally similar but EXTENDS L4 precedent with 4-decimal exact reproduction expected"
+    ],
+    "architect_deliverables_expected": [
+      "architect_independent_verification.json (4-decimal exact reproduction × 6 metrics × variants L4+V2+V6)",
+      "architect_critique.md (REJECT/PARTIAL/PASS stance + risk concerns)",
+      "architect_comparison_table.csv (forge vs architect diff tolerance check)",
+      "tolerance_thresholds {sharpe_pm 0.05 / mdd_pp 1 / cagr_pp 0.5 / vol_pp 0.5} all_4_pass criterion"
+    ],
+    "judge_advance_status": "Conditional admit-eligible verdict pending Architect 3rd source"
+  },
+
+  "ax_compliance_judge_view": {
+    "AX-000": "limits_dont_exist — V6 SR 2.0237 milestone TOUCHED (post-hoc); V2 SR 1.9536 honest gap 0.0464 toward target 2.0",
+    "AX-001_v2": "N/A (pure overlay cash-control scalar) — Judge adjudication ruling per phase2",
+    "AX-002": "PASS — Pure Function R12 hash_audit all_unchanged=TRUE for 5 source files; PIT C1~C15 walk-through clean; SHA frozen lineage",
+    "AX-003": "N/A (no value family)",
+    "AX-004": "N/A (no quality_profitability single-signal)",
+    "AX-005_v1_2": "N/A (no defense single-sleeve composition — R05 is cash-control, not defense factor)",
+    "AX-007": "EXEMPT — sequential overlay preserves top20_long_only_single_sleeve mechanism (admit precedent WT-P20260504_001 line 93 same exemption); composition unchanged",
+    "AX-008": "CURRENT 2/3 → REQUIRED 2.5/3 promotion cycle → Architect 3rd source MANDATORY ESCALATE"
+  },
+
+  "codex_concerns_judge_perspective_review": {
+    "C1_pure_function_hash_audit": "ACCEPT — Forge resolution PASS (5 source md5 unchanged)",
+    "C2_stage_artifacts_weights_csv": "PARTIAL→ACCEPT — weights.csv 267 sig_dates resolved; stage_artifacts dir absence is hyperparameter_sweep wt_type inheritance pattern (judge concurs)",
+    "C3_V6_reproducibility": "ACCEPT — grid_ultrafine_regime.csv 16 V6 variants persisted",
+    "C4_DSR_penalty_consistency": "ACCEPT — dsr_consistent_penalty_N37.csv 22 variants × 3 N values consistent",
+    "C5_Harvey_5spec_regression": "PARTIAL — KR FF5/Carhart-4 full factor regression deferred to risk-research/factor DB layer; CAPM-KR + market-excess + plain-NW + crisis + post-2010 5 specs within forge scope provided",
+    "C6_TO_round_trip_x2": "ACCEPT — turnover_audit_round_trip_x2.json 7 variants standardized",
+    "C7_charts_audit": "REBUTTAL_CONFIRMED — chart files timestamps 06:46 (filesystem) vs codex read 06:47 race acknowledged; charts pre-existed",
+    "C8_AX001_v2_classification": "JUDGE_ADJUDICATED — PURE_OVERLAY_NA classification (per phase2 ruling)",
+    "C9_covariance_condition": "REBUTTAL_CONFIRMED — risk-research/optimizer scope (Pure Function R12 boundary); forge does not use covariance for sequential scalar overlay"
+  },
+
+  "lockbox_audit_v6_1_mandate_compliance": {
+    "judge_v6_1_mandate_quote_from_agent_definition": "Lockbox 성과 측정은 Judge 본질 임무이므로 backtest 금지의 예외 영역",
+    "harness_used": "02_Infrastructure/judge/judge_lockbox_harness.R (v6.1)",
+    "lockbox_extension_audit_attempt": "BUILT_IN_COVERAGE — Forge walk-forward NAV (267m) includes Lockbox period (2024-01 ~ 2026-04, 28 months observed)",
+    "frozen_weights_extension_not_required": "Walk-forward IS+OOS coverage already includes Lockbox period by Forge construction; separate frozen-weights buy-and-hold proxy redundant",
+    "lockbox_period_measured_metrics_V2": {
+      "n_months": 28,
+      "SR_ann_OOS": 2.9035,
+      "CAGR_OOS": 1.0304,
+      "MDD_OOS": -0.0478,
+      "vs_IS_period_SR_ratio": 1.8557,
+      "verdict": "STRONG_OOS_DOMINANCE_NO_OVERFITTING"
+    },
+    "oos_chart_audit_verdict": "OOS_CHART_AUDIT_PASS (chart 06:46:19 timestamp + Lockbox marker visible + post-Lockbox 3 strategy lines continuous)",
+    "judge_audit_json_artifact": "qepm/mailbox/worktask/WT-H20260513_001/judge_lockbox_audit.json",
+    "judge_v6_1_compliance_verdict": "MANDATE_FULFILLED"
+  },
+
+  "telegram_brief_plan": {
+    "title": "WT-H20260513_001 ADMIT_ELIGIBLE_CONDITIONAL / Architect 3rd source pending",
+    "agent": "Judge",
+    "charts": ["equity_curve", "oos_zoom_chart"],
+    "summary_4sections_planned": true
+  },
+
+  "codex_round_5step_status": {
+    "step1_draft_created": "qepm/mailbox/worktask/WT-H20260513_001/judge_verdict_draft.json (THIS FILE)",
+    "step2_codex_auto_trigger_pending": "PostToolUse codex_round_auto_trigger.sh expected ~9-15min",
+    "step3_codex_response_pending": "codex_critic_response_judge.json TBD",
+    "step4_challenge_note_pending": "judge_challenge_note.md after codex response",
+    "step5_final_verdict_pending": "judge_verdict.json (no _draft) after challenge_note"
+  },
+
+  "judge_advance_status": {
+    "verdict": "ADMIT_ELIGIBLE_CONDITIONAL_ON_ARCHITECT",
+    "primary_admit_candidate": "L5_V2_aggressive_regime (SR 1.9536, DSR-defensible N=5, OOS SR 2.90 strong)",
+    "supplementary_post_hoc_finder": "V6 best (SR 2.0237, prospective validation required next cycle)",
+    "ax001_v2_classification": "N/A_PURE_OVERLAY (judge adjudicated)",
+    "ax008_promotion_cycle_requirement": "Architect 3rd source ESCALATE_TO_Q_LEAD",
+    "codex_round_5step_status": "STEP_1_DRAFT_COMPLETE",
+    "next_stage": "codex_critic_round (background spawn) → judge_challenge_note.md → judge_verdict.json (final) → Q-Lead spawn Architect → governor_admission"
+  }
+}

@@ -9,7 +9,22 @@
   "lineage_purpose": "L-277/278 admit precedent lineage 복귀. 4-sleeve composition (S4 v2 50/25/20/5cash) revoke 후 단일 sleeve composition (STR_1715 H1 alpha + M4 BOCPD + AR threshold Path A overlay) lineage 정합 회복.",
   "inherit_certs": {
     "alpha_discovery_certificate": "qepm/mailbox/worktask/WT-P20260504_001/ (inherits STR_1715 H1 multi-axis composite alpha lineage)",
-    "schedule_fidelity_certificate": "qepm/mailbox/worktask/WT-P20260504_001/ (inherits forward_weights.R v2 3-Layer)"
+    "schedule_fidelity_certificate": "qepm/mailbox/worktask/WT-P20260504_001/ (inherits forward_weights.R v2 3-Layer)",
+    "sr_provenance_certificate": "qepm/mailbox/worktask/WT-P20260429_002/sr_provenance_certificate.json (inherits STR_1715_WT016_Iter31_GridBestProd PG2 first deployment cert — M4 base lineage)",
+    "forge_package_validated_certificate": "qepm/mailbox/worktask/WT-D20260430_001/ (inherits M4 schedule logic upgrade forge_package: measurement_basis_primary=forge_realized_share_based + schedule_density_ratio=1.0 + divergence_factor_engine_vs_realized_pp=0)"
+  },
+  "inherit_forge_package_fields": {
+    "source_wt": "WT-D20260430_001",
+    "source_path": "qepm/mailbox/worktask/WT-D20260430_001/forge_package.json",
+    "fields_inherited": ["measurement_basis_primary", "schedule_density_ratio", "divergence_factor_engine_vs_realized_pp", "vs_factor_engine"],
+    "values_inherited": {
+      "measurement_basis_primary": "forge_realized_share_based",
+      "schedule_density_ratio": 1.0,
+      "divergence_factor_engine_vs_realized_pp": 0,
+      "vs_factor_engine_diagnosis": "NEGLIGIBLE"
+    },
+    "inherit_rationale": "M4 BOCPD schedule overlay (WT-D20260430_001) applied to STR_1715 deployment (WT-P20260429_002), AR threshold overlay (WT-P20260504_001) sequentially layered on top. Schedule density + Optimizer-Forge divergence are properties of the schedule layer (M4 monthly = density 1.0; identical cost convention = divergence 0) — inheritable through layered chain.",
+    "fresh_evidence_audit_path": "qepm/mailbox/worktask/WT-RES_20260512_STR_1715_AR_PRODUCTION/audit.json (Backtest Contract v1.0 audit 10/10 PASS retain — confirms schedule density preserved through AR layer)"
   },
   "inherit_evidence": {
     "architect_3rd_source": "qepm/mailbox/worktask/WT-P20260504_001/architect_independent_verification.json (PASS, all 6 metrics × 4 variants 4-decimal exact reproduction, LRO frozen SHA match, PIT C1-C15 walk-through no violation)",

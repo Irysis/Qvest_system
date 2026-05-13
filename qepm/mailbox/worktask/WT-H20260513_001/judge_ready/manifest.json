@@ -1,0 +1,82 @@
+{
+  "task_id": "WT-H20260513_001",
+  "wt_type": "hyperparameter_sweep",
+  "wt_kind": "Sequential Overlay Layer 5 R05 Cash-Control",
+  "as_of_date": "2026-05-13",
+  "forge_verdict": "CONDITIONAL_PASS_DSR_DEFENSIBLE_N5",
+  "primary_recommendation": {
+    "variant": "L5_V2_aggressive_regime",
+    "rule": "BULL/NORMAL=1.0, CAUTION=0.5, CRISIS=0.3",
+    "metrics_255m_admit": {
+      "Sharpe": 1.9536,
+      "MDD": -0.2481,
+      "CAGR": 0.4150,
+      "Sortino": 1.2204,
+      "Calmar": 1.6730,
+      "t_NW_lag6": 6.767,
+      "DSR_Z_N5": 1.45
+    },
+    "delta_vs_admit_baseline": {
+      "delta_SR": 0.2050,
+      "delta_MDD_pp": 0.00,
+      "delta_CAGR_pp": 2.82
+    }
+  },
+  "supplementary_finder": {
+    "variant": "V6_best_cri0.15_cau0.30",
+    "metrics_255m_admit": {
+      "Sharpe": 2.0237,
+      "MDD": -0.2481,
+      "CAGR": 0.4252,
+      "t_NW_lag6": 7.009,
+      "DSR_Z_N5": 1.72,
+      "DSR_Z_N21_FAIL": -2.14,
+      "DSR_Z_N37_FAIL": -3.35
+    },
+    "post_hoc_caveat": "37-variant grid search; not DSR-defensible at N>=21. Next-cycle prospective validation required."
+  },
+  "judge_decision_required": [
+    "Adjudicate AX-001 v2 classification (pure overlay N/A precedent retain vs strict CRISIS/CAUTION SR > 0)",
+    "Decide V2 admit eligibility under DSR-defensible advancement (ΔSR +0.20)",
+    "Decide V6 prospective validation cycle (6m walk-forward) or hold as supplementary",
+    "Verify Backtest Contract v1.0 audit (10/10 PASS per output/audit.json)"
+  ],
+  "artifacts_inventory": {
+    "forge_package_json": "../forge_package.json",
+    "weights_csv": "../weights.csv",
+    "challenge_note": "../forge_challenge_note.md",
+    "codex_response": "../codex_critic_response_forge.json",
+    "run_layer5_R05_script": "../run_layer5_R05_overlay.R",
+    "run_codex_resolution_script": "../run_codex_resolution.R",
+    "metrics_layer5_variants": "../output/metrics_layer5_variants.csv",
+    "selection_table": "../output/selection_table_255m_admit.csv",
+    "grid_ultrafine": "../output/grid_ultrafine_regime.csv",
+    "dsr_consistent_penalty": "../output/dsr_consistent_penalty_N37.csv",
+    "harvey_5spec_regression": "../output/harvey_factor_regression_5spec.json",
+    "turnover_round_trip_x2": "../output/turnover_audit_round_trip_x2.json",
+    "hash_audit": "../output/pure_function_hash_audit_start_vs_end.json",
+    "audit_backtest_contract": "../output/audit.json",
+    "bt_result_rds": "../output/bt_result_layer5_R05.rds",
+    "charts": [
+      "../output/equity_curve.png",
+      "../output/annual_returns.png",
+      "../output/oos_zoom_chart.png",
+      "../output/regime_decomposition.png"
+    ]
+  },
+  "axiom_compliance_summary": {
+    "AX-000": "limits_dont_exist — ΔSR +0.20 (V2 honest) / +0.27 (V6 post-hoc) advancement",
+    "AX-001_v2": "PENDING_JUDGE — pure overlay precedent retain vs strict conditional check ambiguous",
+    "AX-002": "PASS — alpha lineage frozen, β_R05 SHA-bound, PIT C1-C14 strict, hash audit start=end",
+    "AX-007": "EXEMPT — sequential overlay preserves top20_long_only_single_sleeve (admit precedent same exemption)",
+    "AX-008": "CURRENT_FLOOR_2_OF_3 (Forge + Codex post-resolution); Architect 3rd source pending promotion cycle"
+  },
+  "production_constraints_compliance": {
+    "max_names_20": "PASS — Iter31 base 19-20 holdings (admit retain)",
+    "weight_bounds_0_to_0.20": "PASS — Iter31 linear_tilt λ=1.5 phi=3 ub=0.20 (baked)",
+    "sum_w_eq_1": "PASS — base + cash overlay sums to 1 (1 - combined_overlay = cash_share)",
+    "long_only": "PASS — Iter31 long-only retain",
+    "transaction_cost_15bps": "PASS — base PR ret_net + AR Δβ × 0.0015 + β_R05 Δβ × 0.0015 incremental",
+    "liquidity_floor": "PASS — admit lineage retain"
+  }
+}

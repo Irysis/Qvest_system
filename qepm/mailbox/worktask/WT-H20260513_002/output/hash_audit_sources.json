@@ -1,0 +1,58 @@
+{
+  "wt_id": "WT-H20260513_002",
+  "audit_type": "source_files_md5_start_state",
+  "audit_timestamp": "2026-05-13T08:49:00+09:00",
+  "purpose": "Pure Function R12 boundary — Forge does NOT modify alpha/risk/optimizer outputs",
+  "sources": {
+    "PR_ret_net_RETAIN_NOT_USED": {
+      "path": "04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd/output/03_period_returns.csv",
+      "md5": "607dfb1be5d4373b8669843174133511",
+      "consumed_by_run": false,
+      "note": "STR_1715 Iter31 production PR — NOT consumed in strict015 (re-runs walk-forward directly with ub=0.15)"
+    },
+    "alpha_admit_lineage": {
+      "path": "stage_artifacts/WT_D20260425_010/alpha_scores.parquet",
+      "md5": "cbd8282ef3cdaa9333d08faf130de5af",
+      "consumed_by_run": true,
+      "note": "Read-only top20 selection by score_eff + regime_state PIT mapping"
+    },
+    "r05_signal": {
+      "path": "stage_artifacts/WT_D20260512_003/alpha_scores_new.parquet",
+      "md5": "dd0ac2933410522134aa6c5314757327",
+      "consumed_by_run": true,
+      "note": "R05_Tail_Risk_Z column for β_R05_V2 regime mapping (BULL/NORMAL/CAUTION/CRISIS portfolio z-avg)"
+    },
+    "m4_schedule": {
+      "path": "qepm/mailbox/worktask/WT-D20260430_001/judge_ready/weights.csv",
+      "md5": "2f7c8f034103d6c01a663216bcc154bf",
+      "consumed_by_run": true,
+      "note": "M4 BOCPD overlay scalar (NORMAL=1.0 / CAUTION partial / CRISIS=0.43)"
+    },
+    "ar_threshold": {
+      "path": "stage_artifacts/WT_WT-S20260504_007/beta_t_mapping.csv",
+      "md5": "257f6586f709455246985ce186d4e489",
+      "consumed_by_run": true,
+      "note": "AR threshold β_t step (K=5/W=252, β∈{0.4,0.7,1.0})"
+    },
+    "rawdata": {
+      "path": ".cache/rawdata.parquet",
+      "md5": "ae158107a159ac14be4992b38b850b04",
+      "consumed_by_run": true,
+      "note": "OHLCV + Ret for Iter31 walk-forward re-weighting and daily NAV reconstruction"
+    }
+  },
+  "key_observation_strict_variant": {
+    "core_principle": "도훈 mandate '전략 스트럭처 유지' — ALL strategic components retain, ONLY weight_bounds ub parameter changed (0.20 → 0.15)",
+    "what_changed": "Iter31 linear_tilt_to_penalty_qd ub parameter 0.20 → 0.15 strict",
+    "what_did_NOT_change": [
+      "alpha lineage (score_eff selection top20)",
+      "M4 BOCPD overlay (admit precedent retain)",
+      "AR threshold overlay (admit precedent retain)",
+      "β_R05_V2 grid (BULL/NORMAL=1.0, CAUTION=0.5, CRISIS=0.3)",
+      "Cost model (15bps each side, v2.3_kr_retail_15bps)",
+      "N_active 20 strict (max_names hard)",
+      "PIT lag (t-1 shift on all overlays)"
+    ],
+    "boundary_compliance": "Forge agent role — Iter31 weight generation is part of Forge integration scope (not alpha/risk/optimizer agent output modification). Weights generated from frozen alpha lineage are Forge artifact."
+  }
+}

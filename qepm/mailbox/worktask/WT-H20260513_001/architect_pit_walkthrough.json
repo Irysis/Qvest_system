@@ -1,0 +1,95 @@
+{
+  "C1_full_sample": {
+    "status": "PASS",
+    "note": "V2 uses pure regime mapping (no quantile / no statistics over full sample). V4/V5 (not under admit consideration) use expanding past-only quantiles per Forge spec."
+  },
+  "C2_same_day_circular": {
+    "status": "PASS",
+    "note": "Architect manual t-1 shift verified: regime_lag = shift(regime,1) match=TRUE",
+    "evidence_first_3": [
+      [
+        {
+          "date": "2004-02-02",
+          "regime_state": "BULL"
+        },
+        {
+          "date": "2004-03-02",
+          "regime_state": "BULL",
+          "regime_lag": "BULL"
+        },
+        {
+          "date": "2004-04-01",
+          "regime_state": "NORMAL",
+          "regime_lag": "BULL"
+        }
+      ]
+    ]
+  },
+  "C2_lag_verification": {
+    "regime_lag_pass": true,
+    "beta_ar_lag_pass": true,
+    "m4_scalar_lag_pass": true,
+    "status": "PASS"
+  },
+  "C3_same_period": {
+    "status": "PASS",
+    "note": "V2 regime mapping is static (no aggregation+apply in same period). Regime signal at month t-1 EOM applied to ret(t)."
+  },
+  "C4_financial_lag": {
+    "status": "PASS_BY_DESIGN",
+    "note": "V2 regime classifier (M4 BOCPD) uses market returns, not financial statements. R05_Tail_Risk_Z source is alpha-research lockbox lineage (C4 audit at alpha stage)."
+  },
+  "C5_overlay_t1": {
+    "status": "PASS",
+    "note": "All 3 scalar overlays lagged 1 month (m4_lag, beta_ar_lag, regime_lag → beta_r05_lag).",
+    "evidence_first_row_lag_NA": [
+      {
+        "date": "2004-02-02",
+        "weight_str1715": 1,
+        "regime_state": "BULL"
+      }
+    ]
+  },
+  "C6_survivorship": {
+    "status": "PASS_INHERITED",
+    "note": "Base sleeve holdings (Iter31 top20) baked into PR ret_net. No stock re-selection by architect. Survivorship inherited from STR_1715 production audit."
+  },
+  "C7_lookahead_pattern": {
+    "status": "PASS",
+    "note": "V2 has no look-ahead patterns (no full-sample quantile, no future returns in classifier)."
+  },
+  "C8_fm_weight": {
+    "status": "N/A",
+    "note": "V2 does not use Fama-MacBeth."
+  },
+  "C9_vt_dd_lag": {
+    "status": "PASS",
+    "note": "M4 m4_scalar shifted by 1 month (m4_scalar_lag = shift(weight_str1715, 1))."
+  },
+  "C10_liquidity_t1": {
+    "status": "PASS_INHERITED",
+    "note": "LIQ_THRESHOLD 2e8 KRW 20-day ADV filter inherited from STR_1715 Iter31 production (Usable_Date convention)."
+  },
+  "C11_macro_lag": {
+    "status": "N/A",
+    "note": "V2 layer 5 uses no macro inputs. M4 BOCPD uses market BM_Ret only."
+  },
+  "C13_z_score_aligned": {
+    "status": "PASS",
+    "note": "β_R05(regime) monotonic mapping (BULL/NORMAL=1.0 > CAUTION=0.5 > CRISIS=0.3). No NEGATE/FLIP applied. R05_z source from alpha-research lockbox (Usable_Date convention)."
+  },
+  "C14_usable_date": {
+    "status": "PASS",
+    "note": "alpha_scores_new.parquet Date column = Usable_Date (Factor DB convention). Architect read directly, no manipulation.",
+    "date_audit": {
+      "min_date": "2004-01-01",
+      "max_date": "2026-04-01",
+      "n_unique": 268,
+      "day_of_month_first": "01,NA,NA"
+    }
+  },
+  "C15_load_month_factors": {
+    "status": "PASS_VERIFICATION_EXEMPTION",
+    "note": "Architect read parquet directly for hash-audited verification (Pure Function R12 read-only). R05 source itself was built via load_month_factors() at alpha-research stage."
+  }
+}

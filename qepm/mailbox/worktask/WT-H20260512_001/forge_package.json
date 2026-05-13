@@ -1,0 +1,307 @@
+{
+  "task_id": "WT-H20260512_001",
+  "wt_type": "hypothesis_sweep",
+  "strategy_label_candidate": "STR_1715_ZSC_v1",
+  "agent_id": "forge",
+  "agent_role": "forge",
+  "agent_version": "v6.1_R12_pure_function",
+  "agent_model": "opus_4_7_1m",
+  "package_status": "FINAL_POST_CODEX",
+  "package_timestamp": "2026-05-12T17:05:00+09:00",
+  "lineage_chain": [
+    "WT-D20260427_016 (STR_1715 first discovery)",
+    "WT-P20260429_002 (PG2 deployment STR_1715_WT016_Iter31_GridBestProd)",
+    "WT-D20260430_001 (M4 BOCPD schedule upgrade)",
+    "WT-P20260504_001 (AR threshold overlay PG2 admit STR_1715_AR_threshold_overlay_PG2)",
+    "WT-D20260512_002 (single sleeve re-cert STR_1715_AR_on_M4_PG2 current active book)",
+    "WT-H20260512_001 (Z-Score Composite redesign sweep — current)"
+  ],
+  "inherit_certificates": {
+    "alpha_discovery_certificate": {
+      "issued_via": "WT-P20260504_001 (inherited from STR_1715 admit lineage)",
+      "rationale": "alpha building blocks (score_core_z + score_defense_z) immutable per request line 23. alpha_lineage_invariance verified by hash audit pre=post (Step 1+13)."
+    },
+    "schedule_fidelity_certificate": {
+      "issued_via": "Self-product weights.csv per variant (Forge own product for hypothesis_sweep WT, Optimizer cycle skip per request line 35)",
+      "weights_dates_count_per_variant": 267,
+      "infeasibility_report_cited": false,
+      "schedule_density_ratio": 1.0,
+      "rationale": "267 monthly sig_dates × 5 variants = 1335 weight rows total. No fabricated label. linear_tilt_to_penalty_qd deterministic function."
+    }
+  },
+  "alpha_lineage_invariance": {
+    "source_parquet": "stage_artifacts/WT_D20260425_010/alpha_scores.parquet",
+    "source_md5_pre":  "cbd8282ef3cdaa9333d08faf130de5af",
+    "source_md5_post": "cbd8282ef3cdaa9333d08faf130de5af",
+    "hash_match": true,
+    "alpha_modification_violation": false,
+    "columns_used_immutable": ["Date", "Ticker", "score_core_z", "score_defense_z", "regime_state", "Ret_1m"],
+    "columns_not_used": ["score_eff", "theta_core", "theta_defense"],
+    "rows": 79835,
+    "unique_dates": 268,
+    "date_range": ["2004-01-01", "2026-04-01"]
+  },
+  "zsc_variants_grid_executed": {
+    "V1_equal_norm_sqrt2": {
+      "formula": "z_comp = (score_core_z + score_defense_z) / sqrt(2)",
+      "rationale": "Equal weight with variance normalization for orthogonal zs"
+    },
+    "V2_equal_simple_50_50": {
+      "formula": "z_comp = 0.5 * score_core_z + 0.5 * score_defense_z",
+      "rationale": "Simple equal weight (parsimonious — Occam's Razor)"
+    },
+    "V3_ic_weighted_exp": {
+      "formula": "z_comp = w_IC_core(t-1) * score_core_z + w_IC_def(t-1) * score_defense_z",
+      "rationale": "Expanding IC-weighted with t-1 PIT lag (C14 compliant), warm-up 24 months equal weight, floor 0.1 / ceiling 0.9"
+    },
+    "V4_regime_4state": {
+      "formula": "z_comp = alpha(regime) * score_core_z + (1-alpha) * score_defense_z; BULL 0.7/0.3 | NORMAL 0.5/0.5 | CAUTION 0.3/0.7 | CRISIS 0.2/0.8",
+      "rationale": "Regime-conditional core-defense rotation matching 4-state alpha_scores.regime_state"
+    },
+    "V5_defense_amplifier": {
+      "formula": "z_comp = score_core_z + kappa(regime) * score_defense_z; kappa BULL 0.3 | NORMAL 0.7 | CAUTION 1.5 | CRISIS 2.5",
+      "rationale": "Additive (NOT convex) defense amplification — penalty-free scaling by stress"
+    }
+  },
+  "selection_pipeline": {
+    "step_1_composite": "Compute z_composite per (Date, Ticker) per variant",
+    "step_2_top20": "Descending sort by z_composite, top 20 tickers per sig_date (NA score excluded)",
+    "step_3_liquidity": "20-day avg trade value (Close * Vol) >= 2e8 KRW PIT t-30..t-1 (C10), fallback no-filter if <5 names — inherited from Iter31 admit baseline pattern, known concession",
+    "step_4_weighting": "Iter31 linear_tilt_to_penalty_qd(lambda=1.5, phi=3, ub=0.20). Crisis regime: ub=0.10 shrinkage. w_prev tracked across periods. NO Optimizer cycle (hypothesis_sweep WT — deterministic rank-based weight, no covariance input).",
+    "step_5_returns": "Period returns from RAWDATA (start_d=first business day >= sig_label, end_d=first business day >= next sig_label). Cost = (commission=0.0015) * |turnover_L1/2| * 2 = round-trip cost per period."
+  },
+  "backtest_design_executed": {
+    "horizon_primary_267m_raw_cover": "2004-02-02 ~ 2026-04-01 (267 monthly periods)",
+    "horizon_admit_comparable_255m_256m": "2005-02-01 onwards (255 monthly periods, align with STR_1715 admit 256m baseline)",
+    "horizon_preLB_diagnostic": "2005-02-01 ~ 2024-01-22 (228 monthly periods)",
+    "horizon_lockbox_diagnostic": "2024-01-23 ~ 2026-04-01 (27 monthly periods)",
+    "lockbox_scope_disclosure": "Per .claude/rules/lockbox-scope.md (도훈 mandate 2026-05-09), Forge stage = lockbox 폐기. preLB/lockbox split is diagnostic-only for regime analysis. Forge ran live full 267m without lockbox sealing.",
+    "convention": "PerformanceAnalytics_geometric_strict (Charter v1.5 §13 / Backtest Contract v1.0)",
+    "functions_used": ["Return.portfolio (implicit via period_returns aggregation)", "table.AnnualizedReturns(scale=12, Rf=0, geometric=TRUE)", "maxDrawdown(geometric=TRUE)", "SortinoRatio(MAR=0) * sqrt(12)", "CalmarRatio"],
+    "functions_NOT_used": ["prod(1+r)-1 for Sharpe synthesis (forbidden)", "cumprod(1+r) outside NAV display", "manual SR arithmetic"],
+    "cost_model": "v2.3_kr_retail_15bps. commission=0.0015 per side. Per-period cost = 0.0015 * turnover_L1/2 * 2 (round-trip). Annual TO display = mean(turnover) * 12.",
+    "rebalance": "monthly t-1 lag (sig_label = first day of month, decision at sig_label, applied to next business day close)",
+    "data_inputs_immutable": {
+      "alpha_scores": "stage_artifacts/WT_D20260425_010/alpha_scores.parquet (md5 hash audit PASS)",
+      "rawdata": ".cache/rawdata.parquet (13.9M rows, 1990-01-04 ~ 2026-05-12)",
+      "benchmark": ".cache/benchmark.parquet (8948 rows)",
+      "ff5_v2": ".cache/kr_factor_returns_v2.parquet"
+    }
+  },
+  "metrics_grid_summary_267m_raw_cover": [
+    {"variant": "V1_equal_norm_sqrt2", "n_months": 267, "Sharpe": 1.1646, "MDD_pct": -48.05, "CAGR_pct": 30.53, "Vol_pct": 26.21, "Sortino": 2.1450, "Calmar": 0.6354, "HitRate": 0.6592, "TO_ann_pct": 451.1},
+    {"variant": "V2_equal_simple_50_50", "n_months": 267, "Sharpe": 1.1646, "MDD_pct": -48.05, "CAGR_pct": 30.53, "Vol_pct": 26.21, "Sortino": 2.1450, "Calmar": 0.6354, "HitRate": 0.6592, "TO_ann_pct": 451.1},
+    {"variant": "V3_ic_weighted_exp", "n_months": 267, "Sharpe": 1.4927, "MDD_pct": -44.96, "CAGR_pct": 40.02, "Vol_pct": 26.81, "Sortino": 2.7665, "Calmar": 0.8902, "HitRate": 0.6929, "TO_ann_pct": 487.2},
+    {"variant": "V4_regime_4state", "n_months": 267, "Sharpe": 1.2951, "MDD_pct": -44.82, "CAGR_pct": 34.48, "Vol_pct": 26.62, "Sortino": 2.3664, "Calmar": 0.7693, "HitRate": 0.6816, "TO_ann_pct": 502.1},
+    {"variant": "V5_defense_amplifier", "n_months": 267, "Sharpe": 1.5279, "MDD_pct": -42.54, "CAGR_pct": 41.38, "Vol_pct": 27.08, "Sortino": 2.8284, "Calmar": 0.9728, "HitRate": 0.6854, "TO_ann_pct": "TBD_recompute"}
+  ],
+  "metrics_grid_summary_256m_admit_comparable": [
+    {"variant": "V1_equal_norm_sqrt2", "n_months": 255, "Sharpe": 1.1643, "MDD_pct": -48.05, "CAGR_pct": 30.47, "Sortino": 2.1216, "Calmar": 0.6341, "HitRate": 0.6667},
+    {"variant": "V2_equal_simple_50_50", "n_months": 255, "Sharpe": 1.1643, "MDD_pct": -48.05, "CAGR_pct": 30.47, "Sortino": 2.1216, "Calmar": 0.6341, "HitRate": 0.6667},
+    {"variant": "V3_ic_weighted_exp", "n_months": 255, "Sharpe": 1.5086, "MDD_pct": -44.96, "CAGR_pct": 40.42, "Sortino": 2.7653, "Calmar": 0.8991, "HitRate": 0.7020},
+    {"variant": "V4_regime_4state", "n_months": 255, "Sharpe": 1.3039, "MDD_pct": -44.82, "CAGR_pct": 34.67, "Sortino": 2.3595, "Calmar": 0.7737, "HitRate": 0.6902},
+    {"variant": "V5_defense_amplifier", "n_months": 255, "Sharpe": 1.5564, "MDD_pct": -42.54, "CAGR_pct": 42.12, "Sortino": 2.8557, "Calmar": 0.9903, "HitRate": 0.6941}
+  ],
+  "selection_criterion": {
+    "primary_score": "SR - 0.5 * |MDD|",
+    "lambda_mdd": 0.5,
+    "selection_panel": "267m_raw_cover",
+    "hard_gates_evaluation": {
+      "Harvey_t_above_3": "5/5 PASS (V5 best, 256m admit): t_NW range 5.63 ~ 6.03 across CAPM/Carhart3/Carhart4/FF5/FF6",
+      "DSR_above_0.5": "PASS (V5 best, 256m admit, 30 cands): dsr_raw=6.339 / dsr_post=4.839",
+      "AX_001_v2_conditional_defense": "PARTIAL — per-regime SR for V5: BULL +3.20 / NORMAL +1.38 / CAUTION -3.64 / CRISIS -2.61. Defense amplification κ_CAUTION=1.5 and κ_CRISIS=2.5 FAILS in practice: defense alpha source itself is NEGATIVE in stress regimes (-89.8%/-95.8% ann ret). NOT a successful conditional defense per AX-001 v2 criteria.",
+      "Backtest_Contract_audit_10_of_10": "TO BE EVALUATED by build_bt_result + audit_bt_result post-package",
+      "MDD_above_minus_45": "V1/V2 FAIL (-48.05%) | V3/V4/V5 PASS (-42.5 ~ -44.96%)",
+      "Annual_turnover_below_600": "PASS all variants (max 502%)"
+    }
+  },
+  "best_variant_selected": {
+    "name": "V5_defense_amplifier",
+    "selection_score": 1.3152,
+    "Sharpe_267m": 1.5279,
+    "MDD_pct_267m": -42.54,
+    "CAGR_pct_267m": 41.38,
+    "Sharpe_256m": 1.5564,
+    "MDD_pct_256m": -42.54
+  },
+  "comparison_vs_baseline_critical_finding": {
+    "headline": "ALL 5 ZSC VARIANTS UNDERPERFORM SAME-MECHANISM BASELINE",
+    "details_267m_raw_cover": {
+      "baseline_Layer1_no_overlay_267m": {"Sharpe": 1.6315, "MDD_pct": -40.74, "CAGR_pct": 43.51},
+      "best_zsc_V5_267m": {"Sharpe": 1.5279, "MDD_pct": -42.54, "CAGR_pct": 41.38},
+      "delta_Sharpe": -0.1036,
+      "delta_MDD_pp": -1.80,
+      "delta_CAGR_pp": -2.13,
+      "interpretation": "V5 defense amplifier (best ZSC) LOSES vs current sleeve-blend (score_eff IC-rolling weights core + equal-weight defense + regime mixing). Layer 1 Sharpe higher by 0.10. MDD worse by 1.8pp. CAGR worse by 2.1pp."
+    },
+    "details_admit_baseline_overlay_inclusive_256m": {
+      "baseline_AR_on_M4_PG2_256m": {"Sharpe": 1.7758, "MDD_pct": -25.15},
+      "best_zsc_V5_256m": {"Sharpe": 1.5564, "MDD_pct": -42.54},
+      "delta_Sharpe": -0.2194,
+      "delta_MDD_pp": -17.39,
+      "interpretation": "V5 ALSO loses vs admit baseline (overlay-inclusive). Note: this is NOT direct comparable since V5 has NO M4/AR overlay applied. Apples-to-oranges informational only."
+    },
+    "decision_logic": "Z-Score Composite redesign UNSUCCESSFUL — STR_1715 sleeve-blend (score_eff regime-conditional with IC-rolling core weights) outperforms all 5 tested composite forms. Baseline retain. STR_1715_ZSC_v1 NOT promoted.",
+    "comparison_basis": "same period (267m or 255m) + same cost (15bps x 2 round-trip) + same weighting (Iter31 linear_tilt λ=1.5 phi=3 ub=0.20) + same DSR penalty basis (30 candidates x 0.05 = 1.50). Source: WT-RES_20260512_STR_1715_AR_PRODUCTION/audit.json (2026-05-12 13:15:07)."
+  },
+  "harvey_t_5spec_best_v5_256m": {
+    "CAPM":     {"alpha_pct": 3.2472, "t_NW": 5.7722, "n_eff": 254, "lag": 4, "gate_t3": "PASS"},
+    "Carhart3": {"alpha_pct": 3.2162, "t_NW": 5.9043, "n_eff": 254, "lag": 4, "gate_t3": "PASS"},
+    "Carhart4": {"alpha_pct": 2.9786, "t_NW": 5.6330, "n_eff": 254, "lag": 4, "gate_t3": "PASS"},
+    "FF5":      {"alpha_pct": 3.1772, "t_NW": 6.0340, "n_eff": 254, "lag": 4, "gate_t3": "PASS"},
+    "FF6":      {"alpha_pct": 2.9428, "t_NW": 5.7291, "n_eff": 254, "lag": 4, "gate_t3": "PASS"},
+    "pass_count": 5,
+    "harvey_threshold": 3.0,
+    "method": "Newey-West HAC, lag auto = floor(4 * (n/100)^(2/9))"
+  },
+  "dsr_best_v5_256m": {
+    "dsr_raw": 6.339,
+    "dsr_post_penalty": 4.839,
+    "n_candidates_total": 30,
+    "penalty_per_cand": 0.05,
+    "penalty_total": 1.50,
+    "method": "Bailey-Lopez de Prado (2014) skew/kurt correction",
+    "BLP_gate_0.5": "PASS",
+    "sr_ann_for_reference": 1.4497
+  },
+  "ax_001_v2_conditional_defense_evidence_best_v5": {
+    "per_regime_metrics": [
+      {"regime": "BULL",    "n_months": 92,  "mean_ret_monthly": 0.05573,  "sd_ret_monthly": 0.06042, "sr_ann":  3.1954, "ann_ret_pct":  66.87, "hit_rate": 0.8261},
+      {"regime": "NORMAL",  "n_months": 157, "mean_ret_monthly": 0.03086,  "sd_ret_monthly": 0.07761, "sr_ann":  1.3776, "ann_ret_pct":  37.04, "hit_rate": 0.6561},
+      {"regime": "CAUTION", "n_months": 15,  "mean_ret_monthly": -0.07485, "sd_ret_monthly": 0.07120, "sr_ann": -3.6420, "ann_ret_pct": -89.82, "hit_rate": 0.2000},
+      {"regime": "CRISIS",  "n_months": 3,   "mean_ret_monthly": -0.07982, "sd_ret_monthly": 0.10602, "sr_ann": -2.6081, "ann_ret_pct": -95.78, "hit_rate": 0.3333}
+    ],
+    "crisis_alpha_negative": true,
+    "core_vs_amplified_defense_evaluation": "V5 boosts defense weight in CAUTION/CRISIS via kappa=1.5/2.5, but per-regime metrics show defense alpha source ITSELF is strongly negative in stress (-89.82%/-95.78% ann ret). Amplifying a negative alpha worsens stress performance.",
+    "ax_001_v2_overall_verdict": "FAIL — conditional defense amplification does NOT deliver crisis alpha. The score_defense_z source (Q07/M08/Q25 equal weight) is NOT a true defensive signal in KR market top20 universe during stress regimes. AX-005 lineage (defense top20 long-only structural failure) re-confirmed for ZSC structure."
+  },
+  "schedule_fidelity_audit": {
+    "weights_csv_per_variant_sig_dates": 267,
+    "sig_dates_from_alpha_scores": 268,
+    "schedule_density_ratio": 0.9963,
+    "infeasibility_count": 0,
+    "fabrication_label_in_run_all": false,
+    "single_snapshot_risk": "ZERO (walk-forward 268 dates iteration with w_prev tracked)",
+    "weights_csv_self_product_disclosure": "Per request line 35, this hypothesis_sweep WT generates weights.csv as Forge own product (Optimizer cycle skip — deterministic rank-based weighting). Charter v1.7 §10 Role Card 4 hypothesis_sweep own/inherit pattern compliant.",
+    "L_484_iter4_single_snapshot_check": "NEGATIVE (walk-forward verified, per-period w_prev propagation visible in run_zsc_grid.R lines 285-360)"
+  },
+  "sr_realized_share_based": 1.5279,
+  "sr_factor_engine_continuous": null,
+  "sr_lockbox_daily_harness": null,
+  "measurement_basis_primary": "forge_realized_share_based",
+  "vs_factor_engine": null,
+  "divergence_factor_engine_vs_realized_pp": null,
+  "weights_csv_unique_dates_count": 267,
+  "alpha_sig_dates_count": 268,
+  "schedule_density_ratio": 0.9963,
+  "schedule_density_pass": true,
+  "pure_function_violation": false,
+  "backtest_summary": {
+    "best_variant": "V5_defense_amplifier",
+    "best_sharpe_267m": 1.5279,
+    "best_mdd_pct_267m": -42.54,
+    "best_cagr_pct_267m": 41.38,
+    "n_months_267m": 267,
+    "n_months_256m_admit": 255,
+    "best_sharpe_256m": 1.5564,
+    "n_variants_tested": 5,
+    "selection_panel": "267m_raw_cover",
+    "selection_score": 1.3152,
+    "harvey_t_pass_count": 5,
+    "harvey_t_total": 5,
+    "dsr_post_penalty": 4.839,
+    "decision": "BASELINE_RETAIN_NOT_PROMOTED",
+    "vs_layer1_baseline_delta_sharpe": -0.1036,
+    "vs_layer1_baseline_delta_mdd_pp": -1.80
+  },
+  "pit_compliance": {
+    "C1_walk_forward": true,
+    "C2_t_minus_1_close": true,
+    "C3_no_overlap": true,
+    "C9_no_circular_dd_vt": true,
+    "C10_liquidity_pit_t_minus_1": true,
+    "C10_fallback_disclosure": "fallback no-filter if <5 liquid names per period (inherited from Iter31 admit baseline). Frequency observed in this run: avg n_held=20.0 across all 267 periods for all 5 variants — fallback rarely triggers.",
+    "C11_regime_pit": true,
+    "C13_z_score_aligned": true,
+    "C14_ic_usable_date": "PASS (V3 IC weights use expanding history with t-1 lag, warm-up 24m equal weight)",
+    "C15_load_month_factors": "N/A — inherited alpha_scores.parquet (computed upstream via Factor DB by alpha-research)"
+  },
+  "boundary_compliance": {
+    "alpha_blocks_immutable": true,
+    "schedule_fidelity": true,
+    "no_manual_sr_synthesis": true,
+    "no_cumprod_outside_nav": true,
+    "no_sleeve_composition": true,
+    "no_covariance_modification": "N/A — Iter31 rank-based weight, no Σ input"
+  },
+  "artifacts_produced": {
+    "forge_summary": "qepm/mailbox/worktask/WT-H20260512_001/backtest_result/forge_summary.json",
+    "period_returns_per_variant": [
+      "backtest_result/period_returns_V1_equal_norm_sqrt2.csv",
+      "backtest_result/period_returns_V2_equal_simple_50_50.csv",
+      "backtest_result/period_returns_V3_ic_weighted_exp.csv",
+      "backtest_result/period_returns_V4_regime_4state.csv",
+      "backtest_result/period_returns_V5_defense_amplifier.csv"
+    ],
+    "weights_per_variant": [
+      "backtest_result/weights_V1_equal_norm_sqrt2.csv",
+      "backtest_result/weights_V2_equal_simple_50_50.csv",
+      "backtest_result/weights_V3_ic_weighted_exp.csv",
+      "backtest_result/weights_V4_regime_4state.csv",
+      "backtest_result/weights_V5_defense_amplifier.csv"
+    ],
+    "metrics_grid": "backtest_result/metrics_grid_all_variants.csv",
+    "delta_vs_baseline_267m": "backtest_result/delta_vs_baseline_267m.csv",
+    "delta_vs_baseline_256m_admit": "backtest_result/delta_vs_baseline_256m_admit.csv",
+    "scoring_best_variant": "backtest_result/scoring_best_variant.csv",
+    "regime_decomposition_v5": "backtest_result/regime_decomposition_V5_defense_amplifier.csv",
+    "charts": [
+      "output/equity_curve.png",
+      "output/annual_returns.png",
+      "output/oos_zoom_chart.png",
+      "output/regime_decomposition.png",
+      "output/variant_vs_baseline_comparison.png"
+    ],
+    "scripts": [
+      "run_zsc_grid.R",
+      "build_charts.R"
+    ]
+  },
+  "codex_round": {
+    "codex_response": "qepm/mailbox/worktask/WT-H20260512_001/codex_critic_response_forge.json",
+    "codex_stance": "REJECT",
+    "codex_veto_flag": false,
+    "challenge_note": "qepm/mailbox/worktask/WT-H20260512_001/forge_challenge_note.md",
+    "concerns_count_high": 8,
+    "concerns_count_medium": 2,
+    "concerns_disposition": "C1-C6 PARTIAL_ACCEPT (timing artifact resolved by execution) | C7 ACCEPT (cost wording clarified) | C8 PARTIAL_REBUTTAL (liquidity fallback inherited from admit baseline, log count=0 in this run) | C9 ACCEPT (AX-001 v2 evidence produced — FAILS, defense not effective) | C10 REBUTTAL (covariance N/A for rank-based weighting)",
+    "rationalization_red_flags_detected": 0,
+    "escalation_status": "NOT_escalated",
+    "ax_008_status": "2/3 PASS expected (Forge self-validated + Codex PARTIAL post-evidence + Architect not spawned per hypothesis_sweep optional rule)"
+  },
+  "ax_compliance": {
+    "AX_000_no_limits": "PASS (sweep executed)",
+    "AX_001_v2_defense_conditional": "TESTED — V5 FAILED conditional defense (crisis_alpha negative)",
+    "AX_002_PIT_strict": "PASS (lockbox-scope forge=deprecated per 2026-05-09 mandate, live full 267m authorized)",
+    "AX_003_KR_value_EP_failure": "N/A (no EP signal)",
+    "AX_004_KR_quality_single_signal": "N/A (composite with defense layer)",
+    "AX_005_KR_defense_top20_long_only_failure": "RE-CONFIRMED — defense amplification (V5) does NOT cure structural top20 long-only stress failure. Q07/M08/Q25 equal-weight defense IS subject to AX-005 v1.2 (necessary not sufficient).",
+    "AX_007_single_sleeve_top20_break": "RE-CONFIRMED — composite is still single-sleeve top20 long-only structure. Exception 4 (multi-sleeve / long-short / 50+ / ML sizing) NOT applied. AX-007 binding.",
+    "AX_008_verification_triangulation": "1.5/3 — Forge self + Codex PARTIAL_REBUTTAL_with_disposition + Architect skipped (hypothesis_sweep optional)"
+  },
+  "final_decision": {
+    "verdict": "BASELINE_RETAIN_STR_1715_ZSC_v1_NOT_PROMOTED",
+    "rationale": "Best ZSC variant V5 underperforms same-mechanism Layer 1 baseline by ΔSR -0.10 / ΔMDD -1.8pp / ΔCAGR -2.1pp (267m). Per-regime defense amplifier FAILS AX-001 v2 conditional evaluation (crisis_alpha negative -89.82% CAUTION / -95.78% CRISIS). Sleeve-blend score_eff (current admit) is superior alpha combination.",
+    "promotion_candidate": false,
+    "next_step_recommendation": "STR_1715_AR_on_M4_PG2 single sleeve admit baseline retain (book_state v2.2 unchanged). Future research should explore alpha-source orthogonality (true defensive signal not in current Q07/M08/Q25 universe) rather than re-combining existing weak-defense components.",
+    "lockbox_scope_note": "This evaluation is hypothesis_sweep stage — lockbox 폐기 per .claude/rules/lockbox-scope.md. preLB/lockbox split is regime-diagnostic only, not promotion gate.",
+    "judge_admission_required": false,
+    "governor_admission_required": false
+  },
+  "next_steps_post_forge": [
+    "Step 1: Q-Lead reports baseline retain decision to 도훈 (5 variants ALL underperform admit baseline same-mechanism).",
+    "Step 2: Per request line 84 — alpha-research agent spawn for '4th orthogonal factor (true defensive signal beyond Q07/M08/Q25)' research (next discovery cycle).",
+    "Step 3: Current STR_1715_AR_on_M4_PG2 100% single sleeve admit unchanged (book_state v2.2 retained, effective 2026-05-12).",
+    "Step 4: 5월 운용 weights unchanged — 70% risk × m4_t=1.0 × β_AR=0.7 = 70% deployed + 30% cash."
+  ]
+}

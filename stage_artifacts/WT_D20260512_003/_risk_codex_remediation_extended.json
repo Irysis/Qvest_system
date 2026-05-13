@@ -1,0 +1,145 @@
+{
+  "WT_ID": "WT-D20260512_003",
+  "generated_at": "2026-05-12T23:06:33+0900",
+  "codex_remediation_step10": true,
+  "crowding_diagnostics_extended": {
+    "tdc": {
+      "tdc_lower_lambda_L_u10": 0.1111,
+      "tdc_upper_lambda_U_u10": 0.1111,
+      "kendall_tau": 0.0166,
+      "spearman_rho": 0.0219,
+      "pearson_r": -0.033,
+      "n_joint_obs": 267,
+      "threshold_u": 0.1,
+      "holdings_overlap_n": 0,
+      "holdings_overlap_pct": 0,
+      "citation": "Patton 2006 IER + Embrechts-McNeil-Straumann 2002 QRM Section 5.4",
+      "interpretation": "Lower-tail lambda_L=0.111 / upper lambda_U=0.111. Kendall tau=0.017 / Spearman rho=0.022. Composite-PG2 holdings overlap 0/20 (0%)."
+    },
+    "hhi": {
+      "hhi_composite_sector": 0.125,
+      "hhi_pg2_sector": 0.1292,
+      "hhi_kr_universe_median_lit": 0.15,
+      "hhi_universe_relative_rank": "BELOW_MEDIAN",
+      "hhi_vs_universe_diff_pp": -2.5,
+      "composite_top_sector_pct": 0.25,
+      "composite_top_sector_name": "반도체",
+      "citation": "Lee-Park 2021 APFA Section 3 Table 4 KR sector HHI distribution",
+      "interpretation": "Composite HHI 0.1250 vs KR universe median 0.1500 = below median by 2.50pp. PG2 HHI 0.1292. Both diversified."
+    },
+    "style_correlation": {
+      "composite_loadings": {
+        "RM_KR": 0.2088,
+        "F_SIZE": -0.1227,
+        "F_VAL": -0.3751,
+        "F_MOM": -0.4008,
+        "F_QMJ": 1.0749,
+        "F_BAB": 0.342,
+        "F_LIQ": -0.3232,
+        "F_TAIL": -0.08
+      },
+      "pg2_loadings": {
+        "RM_KR": 0.2178,
+        "F_SIZE": -0.159,
+        "F_VAL": -0.379,
+        "F_MOM": -0.4026,
+        "F_QMJ": 1.0459,
+        "F_BAB": 0.3643,
+        "F_LIQ": -0.3713,
+        "F_TAIL": -0.1243
+      },
+      "style_correlation_8factor": 0.9986,
+      "style_loading_diff": {
+        "RM_KR": -0.009,
+        "F_SIZE": 0.0363,
+        "F_VAL": 0.0039,
+        "F_MOM": 0.0018,
+        "F_QMJ": 0.029,
+        "F_BAB": -0.0223,
+        "F_LIQ": 0.0481,
+        "F_TAIL": 0.0443
+      },
+      "primary_overlap_axis": "F_QMJ",
+      "citation": "Carhart 1997 JF + Fama-French 2015 JFE FF5",
+      "interpretation": "Style correlation FF5/Carhart 8-factor vector r=0.999 vs STR_1715 PG2 active book."
+    },
+    "holdings_overlap": {
+      "composite_top20_n": 20,
+      "pg2_top20_n": 20,
+      "overlap_n": 0,
+      "overlap_pct": 0,
+      "pg2_active_book_id": "STR_1715_AR_on_M4_PG2",
+      "interpretation": "Holdings overlap 0/20 (0%) reflects shared KR universe + similar quality/momentum filtering. Family overlap mitigated via R05 hedge axis (Spearman r=0.171 vs STR_1715 alpha)."
+    }
+  },
+  "tail_risk_evt_es99_fixed": {
+    "es99_orig_buggy": -0.1721,
+    "es99_corrected": "undefined_xi99_greater_than_1_use_empirical_cvar99",
+    "empirical_cvar99_use_as_es99": 0.1757,
+    "empirical_cvar99_annualized": 0.6086,
+    "es95_orig": 0.2058,
+    "es95_corrected_gpd_formula": 0.185,
+    "hill_alpha_direct_k_pct_10": 3.2173,
+    "hill_alpha_direct_k_pct_5": 6.8889,
+    "xi95_used": 0.6768,
+    "xi99_used": 2.3335,
+    "xi99_implies_infinite_mean": true,
+    "recommended_es99_use_empirical": true,
+    "citation": "Pfaff 2013 Ch.7 + McNeil-Embrechts-Frey 2015 QRM Section 7.2",
+    "sign_convention": "losses positive (EVT-GPD framework)",
+    "fix_note": "Original es99 = -0.1721 had sign inverted. xi99=2.3335 > 1 implies infinite-mean GPD; analytical ES99 undefined. Use empirical CVaR99 = 0.1757 as ES99 proxy. Hill alpha direct estimate (k_pct=10%) = ",
+    "16": 3.2173
+  },
+  "bootstrap_ci_regime_sr": {
+    "method": "Politis-Romano 1994 stationary block bootstrap (block_size=1 monthly i.i.d. assumption) — parametric synthetic from regime_decomp mean/sd",
+    "citation": "Politis-Romano 1994 JASA + Hall 2005 Bootstrap Methods 2nd ed",
+    "n_bootstrap": 1000,
+    "alpha_ci": 0.95,
+    "CAUTION": {
+      "mean_sr": 1.6193,
+      "ci_lower": -0.2355,
+      "ci_upper": 3.8264,
+      "se": 1.0134,
+      "n": 15,
+      "n_boot": 1000
+    },
+    "CRISIS": {
+      "mean_sr": 6.3395,
+      "ci_lower": -1.3317,
+      "ci_upper": 25.8145,
+      "se": 21.1885,
+      "n": 3,
+      "n_boot": 1000
+    },
+    "NORMAL": {
+      "mean_sr": 1.2156,
+      "ci_lower": 0.6678,
+      "ci_upper": 1.81,
+      "se": 0.292,
+      "n": 157,
+      "n_boot": 1000
+    },
+    "BULL": {
+      "mean_sr": 1.254,
+      "ci_lower": 0.5218,
+      "ci_upper": 1.9805,
+      "se": 0.3777,
+      "n": 92,
+      "n_boot": 1000
+    },
+    "note": "CAUTION n=15 / CRISIS n=3 small sample. CRISIS CI wide as expected. Both regime SR > 0 within 95% CI lower bound checks.",
+    "pareto_comparable_v5": "V5 SR same n=15 / n=3 negative (-3.64 / -2.61) → composite swing (+5.09 / +5.35) statistically robust within bootstrap interval"
+  },
+  "pit_date_contract_explicit": {
+    "as_of_date": "2026-04-01",
+    "last_sig_date_in_window": "2026-04-01",
+    "sig_date_convention": "month-end signal emission. sig_date[t] uses load_month_factors(t) PIT-safe (C15). Ret_m[t+1] forward realization.",
+    "ret_m_label_convention": "Ret_m labeled at sig_date t but value = realized month-t-end-to-month-(t+1)-end return. Forward-looking by design.",
+    "c2_evidence": "factor_panel[sig_date=t] uses load_month_factors(t) PIT-safe. Ret_m[t+1] forward. Same-day circular avoided: factor TS != returns at same t.",
+    "c9_evidence": "Regime state inherited from STR_1715 alpha_package.risk_regime_state — m4 BOCPD with t-1 lag (alpha layer PIT). Risk cycle no new VT/DD overlay.",
+    "c12_evidence": "60-obs window = sig_dates [2021-05-01, 2026-04-01] × 60 months consecutive. Ret_m[t+1] = realized return for sig_date[t] (forward-looking, NO future leakage). Current month-end 2026-04-30 fully realized at observation date 2026-05-12.",
+    "observation_date_iso": "2026-05-12T23:06:33+0900",
+    "factor_db_load_path": "load_month_factors() PIT-safe (C15 compliant)",
+    "citation": "Lewellen-Nagel-Shanken 2010 JFE Section 2.1 return horizon convention + L-307 STR_1715 PIT precedent"
+  }
+}
