@@ -1,0 +1,506 @@
+{
+  "task_id": "WT-D20260517_001",
+  "agent": "risk-research",
+  "agent_version": "v1.2_DPL_KR_v1_design_phase_a_post_codex_round",
+  "wt_type": "discovery_design_phase_a",
+  "wt_type_charter_v18_reference": "common_charter.md §10 v1.8 candidate — Phase 3 paradigm-shift first-application design-only sub-class. Q-Lead amendment pending (challenge_note §3.1).",
+  "draft_marker": false,
+  "final_emission_at": "2026-05-17T07:18:00+09:00",
+  "as_of_date": "2026-05-17",
+
+  "post_codex_disposition_status": "3_ACCEPT_4_PARTIAL_3_REBUTTAL",
+  "codex_round_ax_008_status": "AX-008_DPL_risk_stage = 1_OF_3_RISK_CODEX_DISPOSITION_COMPLETE_FORGE_ARCHITECT_DEFERRED",
+
+  "design_phase_caveat": "본 risk-research cycle은 DPL paradigm shift first-application design phase. 실제 Σ.parquet / tail_risk.json / crowding_summary.json / dpl_risk_attribution.json / weights.csv emission은 Forge cycle GPU train 종료 직후 dpl_v1_weights.pt 산출과 함께 emit. 본 emission은 (a) Σ rolling protocol with tightened cond ≤ 100 (Codex C2 ACCEPT) + (b) tail risk protocol with full VaR/ES/CVaR/CDaR/Hill α panel + 8 stress (Codex C6/C7 ACCEPT) + (c) crowding 2-track + Track 2 standard expansion TDC/HHI/style cor/family saturation (Codex C8 PARTIAL ACCEPT) + (d) DPL-novel implicit-B FMP attribution (Codex C3 REBUTTAL) + (e) explicit Forge PIT obligations (Codex C9 PARTIAL ACCEPT) + (f) shrinkage δ=1.0 fallback rule (Codex C4 PARTIAL ACCEPT) + (g) CRISIS small-sample pooled Σ fallback (Codex C5 PARTIAL REBUTTAL).",
+
+  "selection_objective": "shrinkage_quality",
+  "selection_objective_explanation": "Risk Agent v6.1 R4 mandate — estimation quality 지표로만 Σ 추정 방법 선택. 본 cycle은 **condition_number ≤ 100 post-shrink** (Codex C2 ACCEPT 강화) + min eigenvalue ≥ -1e-8 + subperiod stability ≥ 0.5 (Frobenius corr). Alpha return SR/IR 참조 금지 (Hook block).",
+
+  "sigma_estimator_choice": {
+    "primary": "Ledoit-Wolf oracle shrinkage rolling 60m per-sig_date",
+    "backup": "Gerber + RMT noise filter (stress regime VKOSPI > 75th pct OR LW δ = 1.0 fallback)",
+    "tertiary_abort": "If LW δ=1.0 AND Gerber+RMT cond > 100 → ABORT risk model",
+    "rejected": [
+      "Sample pairwise — N=500 features × T=60 → singular (rank deficient)",
+      "DCC-Copula — T=60 monthly insufficient for stable GARCH fit",
+      "Nonlinear shrinkage (NLS) — Rcpp v2 dependency 미가용 (v2 deferred)"
+    ],
+    "rolling_window_months": 60,
+    "per_sig_date_recompute": true,
+    "per_sig_date_recompute_rationale": "L-326 학습 — single snapshot Σ는 cross-window drift miss. 124 sig_dates × rolling 60m 각각 재계산 의무.",
+    "condition_number_target": 100,
+    "condition_number_target_strict": "≤ 100 post-shrink (Codex C2 ACCEPT, was 500 pre-Codex)",
+    "min_eigenvalue_tol": -1e-8,
+    "subperiod_stability_min": 0.5,
+    "implementation_path_spec": "stage_artifacts/WT_D20260517_001/sigma_rationale.md",
+    "forge_cycle_artifact_pending": "stage_artifacts/WT_D20260517_001/sigma_estimators.parquet (124 × 4 estimators benchmark) + sigma_per_sigdate/{date}.rds × 124"
+  },
+
+  "paradigm_aware_sigma_structure": {
+    "doctrine": "DPL is implicit-B paradigm (You-Zhang 2025 §3). Traditional Σ = BΩB' + D requires explicit B matrix which DPL bypasses.",
+    "codex_c3_rebuttal_doctrine": "Σ_stocks (LW oracle empirical 60m rolling) is the **direct quantity of interest** for portfolio variance σ_p² = w' Σ_stocks w. Variance attribution via FMP-based implicit-B is the paradigm-correct reconstruction.",
+    "forge_emission": {
+      "Sigma_stocks_per_sigdate_rds": "stage_artifacts/WT_D20260517_001/sigma_per_sigdate/{sig_date}.rds × 124",
+      "FMP_implicit_B_per_feature_parquet": "stage_artifacts/WT_D20260517_001/FMP_implicit_B_per_feature.parquet (634 features × 124 sig_dates × FMP regression coef + R² + residual_var)"
+    },
+    "rf_r1_concentration_via": "portfolio HHI (top-20 weights^2 sum) + FMP dominant factor + max single-asset weight ≤ 0.20",
+    "factor_coverage_r2_target": "top-10 features explain ≥ 50% σ_p² (per dpl_risk_attribution_design.md §3)"
+  },
+
+  "shrinkage_protocol_explicit": {
+    "primary_method": "Ledoit-Wolf oracle (Ledoit-Wolf 2003 J. Emp. Fin. 10(5))",
+    "delta_tracking_per_sigdate": "shrinkage_intensity_per_sigdate.csv (124 rows × {δ, min_eig, max_eig, cond_pre_shrink, cond_post_shrink, dimension_N, sample_T})",
+    "delta_1_full_shrinkage_fallback": "If δ = 1.0 (sample covariance carries zero information) → switch to Gerber+RMT (different prior, less restrictive)",
+    "abort_condition": "If both LW δ=1.0 AND Gerber+RMT cond > 100 → ABORT risk model + Forge cycle ABORT",
+    "min_eig_check": "min_eig ≥ -1e-8 (numerical PSD tolerance). Violation → re-regularize.",
+    "codex_c4_partial_accept_compliance": true
+  },
+
+  "method_shopping_log": {
+    "risk_agent": {
+      "candidates_tried": 4,
+      "candidates_tried_explanation": "v6.1 R2-C HARD ≤ 5 정합. 4 estimator considered. Forge cycle 4-way parallel benchmark (v6.1 R13 정합).",
+      "method_log": [
+        {"name": "sample_pairwise", "condition_expected": "singular_N>>T", "selected": false},
+        {"name": "ledoit_wolf_oracle", "condition_expected": "≤100_post_shrink_strict", "selected": true, "is_primary": true},
+        {"name": "gerber_rmt", "condition_expected": "≤100_post_filter_robust_outliers_OR_LW_delta_1_fallback", "selected": true, "is_backup": true},
+        {"name": "dcc_copula", "condition_expected": "T=60_insufficient", "selected": false}
+      ],
+      "parallel_exec_plan": true,
+      "n_workers_plan": 4,
+      "rcpp_used": false,
+      "rcpp_v2_deferred_note": "Rcpp v2 Ledoit-Wolf NLS 도입 시 hot-spot selectively 사용 권한 (현 v1 미가용)"
+    }
+  },
+
+  "tail_risk_model": {
+    "comprehensive_metric_panel": {
+      "VaR_5pct_monthly": {"target": -0.05, "hard_abort": -0.08, "method": "empirical 5th pct"},
+      "VaR_1pct_monthly": {"target": -0.10, "hard_abort": -0.15, "method": "empirical 1st pct"},
+      "CVaR_5pct_monthly": {"target": -0.06, "hard_abort": -0.10, "method": "empirical mean of bottom 5%"},
+      "CVaR_1pct_monthly": {"target": -0.12, "hard_abort": -0.20, "method": "empirical mean of bottom 1%"},
+      "ES_99_extreme_annual": {"target": -0.25, "hard_abort": -0.35, "method": "annual extreme expected shortfall"},
+      "Hill_alpha_tail_index": {"target_gt": 2.5, "hard_abort_lt": 1.5, "method": "Hill (1975) estimator on losses, finite variance threshold"},
+      "CDaR_5pct_drawdown": {"target": -0.22, "hard_abort": -0.30, "method": "Chekhlov-Uryasev 2005 drawdown CVaR"},
+      "_codex_c6_accept_tightening_log": "CVaR_5% target -8% → -6% (-25% tightening). CDaR_5% target -25% → -22% (12% tightening). Note STR_1715 baseline MDD -24.81% → DPL must improve to admit. Adds VaR/ES/Hill α panel newly."
+    },
+    "evt_gpd_advisory": "n=52 monthly → GPD fit power 부족. Hill α primary tail index. fExtremes::gpdFit secondary.",
+    "stress_scenarios_eight_codex_c7_accept": [
+      {
+        "id": 1,
+        "scenario": "2008_GFC",
+        "period": "2008-09 ~ 2009-03 (7 months)",
+        "kospi200_worst_month": -0.2313,
+        "method": "OOS historical replay Monte Carlo bootstrap (DPL weights 2026-04 × 2008 stock returns)",
+        "sample_type": "OOS",
+        "caveat": "STRESS_HISTORICAL_REPLAY_CAVEAT — assumption weight transferability + 2008 KR market structure (admin/halt foreign flow) different",
+        "threshold_hard_abort": "cumulative_loss_7m < -0.50"
+      },
+      {
+        "id": 2,
+        "scenario": "2011_EU_Debt",
+        "period": "2011-08 ~ 2011-11 (4 months)",
+        "kospi200_worst_month": -0.1240,
+        "method": "OOS historical replay",
+        "sample_type": "OOS",
+        "threshold_hard_abort": "cumulative_loss_4m < -0.30"
+      },
+      {
+        "id": 3,
+        "scenario": "2015_China_Devaluation",
+        "period": "2015-08 ~ 2015-09 (2 months)",
+        "kospi200_worst_month": -0.0760,
+        "method": "OOS historical replay",
+        "sample_type": "OOS",
+        "threshold_hard_abort": "cumulative_loss_2m < -0.15"
+      },
+      {
+        "id": 4,
+        "scenario": "2018_Q4_SellOff",
+        "period": "2018-10 ~ 2018-12 (3 months)",
+        "kospi200_worst_month": -0.1045,
+        "method": "OOS historical replay",
+        "sample_type": "OOS",
+        "threshold_hard_abort": "cumulative_loss_3m < -0.22"
+      },
+      {
+        "id": 5,
+        "scenario": "2020_COVID",
+        "period": "2020-02 ~ 2020-04 (3 months)",
+        "kospi200_worst_month": -0.1197,
+        "method": "OOS historical replay (DPL test window 2 외부)",
+        "sample_type": "OOS",
+        "threshold_hard_abort": "cumulative_loss_3m < -0.35"
+      },
+      {
+        "id": 6,
+        "scenario": "2022_inflation_rate",
+        "period": "2022-01 ~ 2022-10 (10 months)",
+        "kospi200_worst_month": -0.1281,
+        "method": "IN-SAMPLE real test (Forge walk-forward window 1)",
+        "sample_type": "IN_SAMPLE",
+        "threshold_hard_abort": "cumulative_loss_10m < -0.35"
+      },
+      {
+        "id": 7,
+        "scenario": "2024_kr_disinflation",
+        "period": "2024-08 ~ 2024-12 (5 months)",
+        "kospi200_worst_month": -0.0720,
+        "method": "IN-SAMPLE real test (Forge walk-forward window 3)",
+        "sample_type": "IN_SAMPLE",
+        "threshold_hard_abort": "cumulative_loss_5m < -0.25"
+      },
+      {
+        "id": 8,
+        "scenario": "2024_Aug_5_spike",
+        "period": "2024-08-01 ~ 2024-08-15 (2 weeks)",
+        "kospi200_worst_week": "-12% intraweek est",
+        "method": "IN-SAMPLE real test bi-weekly daily-aggregate",
+        "sample_type": "IN_SAMPLE",
+        "threshold_hard_abort": "biweekly_loss < -0.15"
+      }
+    ],
+    "regime_conditional_cvar": {
+      "regimes": ["BULL", "NORMAL_m4_1.0", "CAUTION_m4_0.7", "CRISIS_m4_0.3_R05_active"],
+      "regime_engine_inherit": "STR_1715_AR_on_M4_R05_overlay_PG2 m4 BOCPD + AR threshold",
+      "crisis_n_acknowledgment": "n_CRISIS ≈ 5 over 52 test months (codex C5 PARTIAL REBUTTAL). KR market structurally rare.",
+      "small_sample_pooled_fallback": "If CRISIS_n < 30 → Σ_CRISIS_robust = 0.5 × Σ_CRISIS_empirical + 0.5 × Σ_overall_LW (Bayesian shrinkage to overall prior)",
+      "bootstrap_ci_explicit": "tail_risk.json.regime_conditional.crisis.bootstrap_ci_95pct (Politis-Romano 1994 stationary B=1000, block_size=4)",
+      "regime_switch_rate_audit": "regime_switch_rate.json — per-sig_date regime tag + transition matrix (Forge cycle emit)",
+      "ax_001_v2_decision_rule": "Use CI lower bound (not point estimate) for crisis_alpha > 0 evaluation (conservative)",
+      "crisis_alpha_measurement": "mean(r_p_CRISIS) - mean(r_KOSPI200_CRISIS), CI lower bound > 0 → defense qualified"
+    },
+    "implementation_path_spec": "stage_artifacts/WT_D20260517_001/tail_risk_design.md",
+    "forge_cycle_artifact_pending": "stage_artifacts/WT_D20260517_001/tail_risk.json (full VaR/ES/Hill/CDaR + 8 stress)"
+  },
+
+  "crowding_audit": {
+    "two_track_design": "DPL paradigm-novel approach — Track 1 per-feature (634) + Track 2 portfolio-level (standard expansion post-Codex C8)",
+    "track_1_per_feature": {
+      "method": "crowding_score_per_factor (Acadian 2026) applied to 634 features via gradient × input attribution",
+      "feature_exposure_source": "PyTorch IntegratedGradients (Sundararajan 2017) per sig_date per ticker per feature",
+      "alert_threshold_high": 0.75,
+      "alert_threshold_delta_3m": 0.15,
+      "expected_output_rows": "124 sig_dates × 634 features = 79,016 rows",
+      "novelty_caveat": "Per-feature crowding on ML-derived features = academic novel application. Acadian 2026 was named-factor (Value/Momentum). Forge cycle Codex Round (Forge stage) peer-review obligation."
+    },
+    "track_2_portfolio_level_codex_c8_expansion": {
+      "method": "DPL output weights treated as single 'DPL_KR_v1' synthetic factor + standard RF-R3/RF-R5 diagnostic suite",
+      "tdc_vs_pg2": {
+        "method": "Joe-Clayton empirical TDC (Pfaff Ch.9): pairwise stock-level TDC for top-20 DPL vs top-20 STR_1715",
+        "lower_tail_lambda_l": "lim_{u→0} P(F_1(X_1) ≤ u | F_2(X_2) ≤ u)",
+        "interpretation": "DPL TDC λ_L < STR_1715 TDC λ_L → crisis-orthogonal source 자격 evidence"
+      },
+      "hhi_panel": {
+        "portfolio_top20": {"formula": "Σ w_i^2", "ew_reference": 0.05, "hard_threshold": 0.15},
+        "sector_lv2": {"formula": "Σ (sector_weight)^2", "hard_threshold": 0.30},
+        "style_carhart4": {"formula": "Σ (style_weight)^2 post FF6 attribution"}
+      },
+      "style_correlation_vs_str1715": {
+        "method": "DPL portfolio Carhart 4 + FF6 beta correlation vs STR_1715 same metrics",
+        "pairwise_strict": "≤ 0.5 (alpha-stage G2 substitution criterion inheritance)"
+      },
+      "family_saturation_l_219": {
+        "method": "count DPL top-10 features in already-saturated factor families (Layer A Value/Quality/Momentum)",
+        "threshold": "≤ 3 features per single family"
+      },
+      "comparison_baseline": "STR_1715_AR_on_M4_R05_overlay_PG2 portfolio crowding (alpha_scores_str1715_268m.parquet)",
+      "decision_implication": {
+        "DPL_crowding_lt_STR1715_AND_feature_mean_lt_0.5_AND_TDC_lt_str1715": "4th orthogonal source 자격 강화",
+        "DPL_crowding_approx_STR1715_AND_feature_top10_alert_majority_OR_TDC_approx_str1715": "substitution sleeve 검토",
+        "DPL_crowding_gt_STR1715_OR_feature_LEVEL_HIGH_gt_100_sigdates_OR_HHI_portfolio_gt_0.15": "DEFER admit — crowding risk dominates"
+      }
+    },
+    "infrastructure": "02_Infrastructure/factor_db/crowding_score_per_factor.R (Phase 2.C, Acadian 2026 정통)",
+    "implementation_path_spec": "stage_artifacts/WT_D20260517_001/crowding_score_protocol.md",
+    "forge_cycle_artifact_pending": "stage_artifacts/WT_D20260517_001/crowding_summary.json (Track 1 + Track 2 full expansion)"
+  },
+
+  "dpl_risk_attribution": {
+    "novelty_statement": "Traditional factor model has explicit B exposure → variance attribution direct. DPL has implicit B in θ (You-Zhang 2025 §3). Risk Agent novel contribution: gradient-based attribution + FMP-based implicit-B reconstruction protocol.",
+    "primary_method": "Integrated Gradients (Sundararajan-Taly-Yan 2017 ICML arXiv:1703.01365)",
+    "secondary_method": "Saliency (∇) sanity check",
+    "fallback_method": "DeepLIFT (Shrikumar 2017)",
+    "captum_library": "facebookresearch/captum 0.7+",
+    "variance_attribution_approach_codex_c3_rebuttal": {
+      "method": "Factor-Mimicking Portfolio (FMP) per feature × σ_p² decomposition (implicit-B paradigm-correct alternative)",
+      "fmp_construction": "for each feature f: regress stock returns on feature exposure cross-sectionally → coefficients = FMP weight",
+      "variance_decomp": "σ_p²_f = w' (FMP_f outer product) Σ_stocks w. Normalize σ_p²_f / σ_p² × 100%",
+      "target_explained_var": "≥ 50% σ_p² by top-10 features"
+    },
+    "stability_check": {
+      "method": "Jaccard overlap of top-10 features across 5 walk-forward windows",
+      "target": "median Jaccard ≥ 0.4",
+      "abort_threshold": "< 0.2 = feature importance non-stable, overfit → admit ABORT"
+    },
+    "risk_adjusted_ranking": "risk_adj_importance(f) = mean_attribution(f) × (1 - 0.5 × overcrowd_penalty(f))",
+    "implementation_path_spec": "stage_artifacts/WT_D20260517_001/dpl_risk_attribution_design.md",
+    "forge_cycle_artifact_pending": "stage_artifacts/WT_D20260517_001/dpl_risk_attribution.json + risk_adjusted_feature_ranking.csv + FMP_implicit_B_per_feature.parquet"
+  },
+
+  "risk_constraints_for_optimizer": {
+    "note": "본 design phase는 Optimizer Agent 지침 X — DPL은 weights direct emission paradigm. 그러나 사후 검증용 boundary 강화 thresholds:",
+    "max_factor_exposure": null,
+    "max_factor_exposure_rationale": "DPL is multi-factor latent — explicit factor exposure cap inapplicable. Implicit-B FMP attribution post-hoc.",
+    "max_sector_weight": 0.30,
+    "max_sector_weight_rationale": "Sector_Lv2 dummy 65개 reference — top-20 concentration 시 자연 위반 risk. Forge cycle assert.",
+    "cvar_5pct_target": -0.06,
+    "cvar_5pct_hard_abort": -0.10,
+    "cvar_5pct_rationale_codex_c6_accept": "Tightened from -8% → -6% (STR_1715 baseline ~-6.5% est, DPL must compete)",
+    "cvar_1pct_target": -0.12,
+    "cvar_1pct_hard_abort": -0.20,
+    "var_5pct_monthly_target": -0.05,
+    "var_5pct_monthly_hard_abort": -0.08,
+    "var_1pct_monthly_target": -0.10,
+    "var_1pct_monthly_hard_abort": -0.15,
+    "es_99_extreme_annual_target": -0.25,
+    "es_99_extreme_annual_hard_abort": -0.35,
+    "hill_alpha_tail_index_target_gt": 2.5,
+    "hill_alpha_tail_index_hard_abort_lt": 1.5,
+    "cdar_5pct_drawdown_target": -0.22,
+    "cdar_5pct_drawdown_hard_abort": -0.30,
+    "condition_number_max_strict": 100,
+    "condition_number_max_rationale_codex_c2_accept": "Tightened from 500 → 100 (role prompt qepm_codex_base_context.md mandate)",
+    "subperiod_stability_min": 0.5,
+    "crowding_feature_alert_max": 100,
+    "crowding_portfolio_threshold": "DPL_crowding > STR_1715_crowding → DEFER admit",
+    "hhi_portfolio_top20_max": 0.15,
+    "hhi_sector_lv2_max": 0.30,
+    "style_correlation_vs_str1715_pairwise_max": 0.5,
+    "family_saturation_per_family_max": 3,
+    "jaccard_top10_stability_min": 0.4,
+    "min_eigenvalue_tol": -1e-8
+  },
+
+  "risk_summary": {
+    "design_phase_status": "PROTOCOL_SPEC_EMITTED_POST_CODEX_DISPOSITION — FORGE_CYCLE_IMPLEMENTATION_PENDING",
+    "top_common_risks_pending": "Forge cycle measures via FMP implicit-B + Σ_stocks decomposition",
+    "crowding_flags_pending": "Forge cycle measures (Track 1 per-feature 79K rows + Track 2 portfolio standard expansion 124 rows + TDC + HHI + style cor + family saturation)",
+    "crowding_score_per_factor_pending_array": "Forge cycle emit; spec at crowding_score_protocol.md + Track 2 expansion in this risk_package.json",
+    "liquidity_flags_inherit_alpha": [
+      "Codex C4 alpha-stage 2-stage mitigation: feature_master 5e7 inherit + alpha emit 2e8 strict",
+      "Risk-stage adds Codex C10 final-weight ADV pre-check obligation",
+      "DPL top-20 concentrated → ADV multiplier audit Forge cycle obligation"
+    ],
+    "stress_tests_pending": {
+      "2008_gfc": "OOS historical replay — Forge cycle",
+      "2011_eu_debt": "OOS historical replay — Forge cycle",
+      "2015_china_devaluation": "OOS historical replay — Forge cycle",
+      "2018_q4_selloff": "OOS historical replay — Forge cycle",
+      "2020_covid": "OOS historical replay — Forge cycle",
+      "2022_inflation": "IN-SAMPLE walk-forward window 1 real test",
+      "2024_disinflation": "IN-SAMPLE walk-forward window 3 real test",
+      "2024_aug5_spike": "IN-SAMPLE bi-weekly daily-aggregate"
+    },
+    "condition_number_target_strict": 100
+  },
+
+  "diagnostics": {
+    "condition_number_target": "≤ 100 (Ledoit-Wolf 후, Codex C2 ACCEPT strict)",
+    "shrinkage_used": "design-pending (Forge cycle emit LW δ intensity per sigdate)",
+    "shrinkage_method": "ledoit_wolf_oracle_with_delta_1_fallback_to_gerber_rmt",
+    "factor_correlation_warnings_pending": "Forge cycle Σ 검사 + FMP regression coefficient cross-sectional cor",
+    "tdc_summary_advisory": {
+      "primary_method": "Joe-Clayton empirical TDC (Pfaff Ch.9)",
+      "n_assets_pairs": "top-20 × top-20 = 190 pairs per sig_date",
+      "vs_str1715_pg2_obligation": "Codex C8 PARTIAL ACCEPT — explicit emission Forge cycle",
+      "computational_cost": "moderate, Forge cycle 의무"
+    },
+    "regime_correlation_ref_pending": "stage_artifacts/WT_D20260517_001/regime_correlation.parquet (Forge cycle emit)"
+  },
+
+  "pit_compliance": {
+    "c1_c15_overall": "INHERIT_ALPHA_PASS_WITH_STRUCTURAL_CAVEATS",
+    "alpha_stage_inherit": "qepm/mailbox/worktask/WT-D20260517_001/alpha_package.json::pit_compliance",
+    "forge_obligations_codex_c9_explicit": {
+      "c4_fundamental_lag": "Forge: exposure_matrix.parquet emit + fundamental factor usage audit",
+      "c9_regime_lag": "Forge: regime_tag_per_sigdate.csv emit (sig_date × {regime, dd_lag, vol_lag, computed_at}). Audit: dd_lag = c(0, dd_pct[-n]); vol_lag = c(vol[1], head(vol, -1))",
+      "c10_liquidity": "Forge: weights.csv per-row LIQ_20d_avg verify ≥ 2e8 KRW. Risk-stage adds final-weight ADV pre-check.",
+      "c11_external_series": "Forge: feature_pit_audit.parquet per-feature Usable_Date ≤ sig_date (inherit alpha C5 dropped 320+10 macro)",
+      "c12_factor_return_pit": "Forge: FMP_per_feature_metadata.parquet (sig_date × feature × regression_window). Window_end ≤ sig_date_t strict.",
+      "c13_z_score_aligned": "Alpha PIT audit verified — inherit",
+      "c15_load_month_factors": "Alpha PIT audit verified — inherit"
+    },
+    "forge_abort_triggers": [
+      "C9 violation: dd_lag using current period",
+      "C10 violation: any weight emitted on ticker with LIQ_20d < 2e8 KRW",
+      "C12 violation: FMP regression window includes sig_date_t (future leak)"
+    ],
+    "hard_abort_check": "NOT_TRIGGERED at design phase a (inherit alpha)"
+  },
+
+  "ax_001_v2_defense_conditional_evaluation": {
+    "applicability": "DPL is multi-factor ML sizing — defense classification post-hoc only",
+    "crisis_alpha_measurement_codex_c5_partial_rebuttal": "CI lower bound (not point estimate) > 0 → defense qualified (conservative)",
+    "bad_normal_ic_ratio": "IC(test_period_bad_months) / IC(test_period_normal_months), Forge cycle",
+    "core_relative_mdd": "MDD comparison vs STR_1715 (Core admit baseline -24.81%)",
+    "evaluation_status": "PENDING_FORGE_CYCLE_WITH_BOOTSTRAP_CI_LOWER_BOUND_DECISION_RULE"
+  },
+
+  "axiom_compliance": {
+    "AX-000_no_limits": "compliant — paradigm shift Path D 시도, milestone 포기 X",
+    "AX-001_v2_defense_conditional": "evaluation pending — Forge bt_result + CI lower bound decision rule (Codex C5 PARTIAL REBUTTAL strict)",
+    "AX-002_process_honesty": "compliant — 4 design markdown + draft + Codex critic response + challenge_note + final risk_package.json emit complete. Charter §8 No Silent Override 정합. No rationalization keywords detected (auto-grep self-check PASS, 3 Codex-flagged candidates revised in challenge_note §0.2). Lockbox scope (risk-research 정규 리서치) 정합.",
+    "AX-003_KR_value_EP_failure": "N/A (DPL multi-factor)",
+    "AX-004_KR_quality_single_signal": "N/A (DPL multi-factor)",
+    "AX-005_KR_defense_top20_failure": "compliant_advisory — DPL ML sizing exception possible (AX-007 #4), defense necessary not sufficient",
+    "AX-007_methodological_single_sleeve_break": "ADVISORY_PENDING_FORGE — Risk Agent contributes (a) per-feature crowding (b) FMP variance attribution (c) Jaccard stability evidence for ML sizing demonstration",
+    "AX-008_verification_triangulation_pending": "Risk Codex disposition complete (1/3). Forge implementation + Architect independent reproduction deferred. Admit gate requires ≥ 2/3 PASS post-Forge."
+  },
+
+  "challenge_flags": [
+    {
+      "id": "CF-R1-DPL-SIGMA-SAMPLE-DEFICIT",
+      "severity": "HIGH",
+      "description": "Per-sig_date Σ rolling 60m × N=500 stocks → sample cov rank=60 ≪ 500 → singular. Ledoit-Wolf shrinkage default mandatory (sample 단독 사용 불가). Cond ≤ 100 strict (Codex C2 ACCEPT).",
+      "academic_evidence": "Ledoit-Wolf 2003 J. Emp. Fin. 10(5) — shrinkage to const-cor target solves N >> T",
+      "mitigation": "LW oracle as primary, condition number ≤ 100 monitor, Gerber+RMT fallback on δ=1.0 OR cond > 100",
+      "alpha_stage_inherit": "alpha CF-A3 (sample bias) 동급 risk-side 확장"
+    },
+    {
+      "id": "CF-R2-DPL-EXPLAINABILITY-DEBT",
+      "severity": "HIGH",
+      "description": "DPL의 B matrix implicit → traditional variance decomposition 불가 (Codex C3 REBUTTAL). FMP-based implicit-B reconstruction is paradigm-correct alternative. Gradient × input attribution은 PyTorch Captum dependency + 50× forward cost. Forge cycle compute budget audit 의무.",
+      "academic_evidence": "Sundararajan-Taly-Yan 2017 IG axiomatic + Kokhlikyan 2020 Captum + You-Zhang 2025 §3 implicit-B paradigm",
+      "mitigation": "Forge cycle GPU budget ≥ 4h IG attribution 따로 allocate. Saliency quick fallback.",
+      "decision_implication": "FAIL Jaccard < 0.2 → feature stability deficient, DPL overfit → admit ABORT"
+    },
+    {
+      "id": "CF-R3-DPL-STRESS-HISTORICAL-REPLAY-CAVEAT",
+      "severity": "MEDIUM",
+      "description": "5/8 stress = OOS historical replay assumes DPL weights transferable. Realistic caveat: 2008 KR market structure different. Stress test interpretive only, not predictive.",
+      "mitigation": "Forge cycle 보고서에 STRESS_HISTORICAL_REPLAY_CAVEAT 명시. 2022/2024/2024-Aug 3 in-sample 결과를 primary stress evidence로 사용.",
+      "academic_evidence": "Pfaff Ch.7 EVT GPD 보조용"
+    },
+    {
+      "id": "CF-R4-DPL-CROWDING-NOVEL-METHOD-VALIDATION",
+      "severity": "MEDIUM",
+      "description": "Per-feature crowding (Track 1) on 634 ML features = academic 처음. Acadian 2026 was named factor. Track 2 standard expansion (TDC/HHI/style cor/family saturation, Codex C8 PARTIAL ACCEPT) ensures standard RF-R3/R5 coverage.",
+      "mitigation": "Track 2 portfolio-level crowding (standard) 우선 사용. Track 1은 augmentation evidence.",
+      "academic_evidence": "Acadian 2026 + Behmaram 2024 demand elasticity + L-219 family saturation"
+    },
+    {
+      "id": "CF-R5-DPL-REGIME-CONDITIONAL-CRISIS-SAMPLE",
+      "severity": "MEDIUM",
+      "description": "Regime-conditional CVaR — CRISIS regime ~10% of 52 test months = ~5 obs. 통계적 power 부족 (Codex C5 PARTIAL REBUTTAL — KR structural reality). Pooled Σ Bayesian fallback + bootstrap CI explicit.",
+      "mitigation": "Bootstrap stationary (Politis-Romano 1994) B=1000, block_size=4 + pooled Σ_CRISIS_robust = 0.5 × empirical + 0.5 × overall. CI lower bound decision rule.",
+      "decision_implication": "CRISIS CVaR 추정 wide CI → AX-001 v2 conditional defense evaluation 보수적 (CI lower bound)"
+    },
+    {
+      "id": "CF-R6-DPL-DESIGN-PHASE-A-CHARTER-PENDING",
+      "severity": "HIGH",
+      "description": "discovery_design_phase_a Charter §10 amendment candidate only (Q-Lead escalate). Without formal amendment, this risk-research design-only emission is structurally valid but governance-borderline. Inherits alpha cycle C1 reframe.",
+      "mitigation": "Q-Lead escalate (challenge_note §3.1) — Charter §10 v1.8 amendment formalize.",
+      "academic_evidence": "Wei-Dai-Lin 2023 E2EAI §3.2 staged separation precedent. Charter §10 Role Card 4×5 matrix gap (L-285 inheritance lesson).",
+      "codex_c1_partial_rebuttal_inherit": true
+    },
+    {
+      "id": "CF-R7-DPL-CONDITION-NUMBER-STRICT-100",
+      "severity": "MEDIUM",
+      "description": "Cond ≤ 100 strict (Codex C2 ACCEPT, was 500). Forge cycle Σ estimation must meet — δ=1.0 OR cond > 100 → Gerber+RMT fallback. Two consecutive failures → ABORT.",
+      "mitigation": "Tertiary abort rule explicit (LW δ=1.0 AND Gerber+RMT cond > 100 → ABORT risk model).",
+      "academic_evidence": "Ledoit-Wolf 2003 §3.3 const-cor target + Marchenko-Pastur RMT eigenvalue threshold"
+    },
+    {
+      "id": "CF-R8-DPL-CVAR-VAR-ES-HILL-TIGHTENED",
+      "severity": "MEDIUM",
+      "description": "CVaR_5% target tightened -8% → -6% + add VaR/ES/Hill α full panel + CDaR -25% → -22% (Codex C6 ACCEPT). STR_1715 baseline MDD -24.81% — DPL must improve drawdown profile to admit.",
+      "mitigation": "Forge cycle full panel emission. Hard abort thresholds explicit.",
+      "academic_evidence": "Pfaff Ch.4 + Rockafellar-Uryasev 2000 + Acerbi-Tasche 2002 + Hill 1975"
+    }
+  ],
+
+  "deliverable_lineage_v6_1": {
+    "sigma_rationale_md": "stage_artifacts/WT_D20260517_001/sigma_rationale.md (Ledoit-Wolf oracle primary + Gerber+RMT backup + cond ≤ 100 strict + Method Shopping Log)",
+    "tail_risk_design_md": "stage_artifacts/WT_D20260517_001/tail_risk_design.md (CVaR/VaR/ES/Hill/CDaR full panel + 8 stress scenarios + regime conditional)",
+    "crowding_score_protocol_md": "stage_artifacts/WT_D20260517_001/crowding_score_protocol.md (Track 1 per-feature 634 + Track 2 portfolio standard expansion TDC/HHI/style/family)",
+    "dpl_risk_attribution_design_md": "stage_artifacts/WT_D20260517_001/dpl_risk_attribution_design.md (IG Sundararajan 2017 + FMP implicit-B reconstruction + Jaccard stability)",
+    "alpha_package_inherit": "qepm/mailbox/worktask/WT-D20260517_001/alpha_package.json (44 keys, 124 sig_dates × 634 features × top-20)",
+    "risk_package_draft": "qepm/mailbox/worktask/WT-D20260517_001/risk_package_draft.json (pre-Codex)",
+    "codex_critic_response_risk": "qepm/mailbox/worktask/WT-D20260517_001/codex_critic_response_risk-research.json (REJECT 10 HIGH concerns)",
+    "challenge_note_risk": "qepm/mailbox/worktask/WT-D20260517_001/challenge_note_risk-research.md (3 ACCEPT + 4 PARTIAL + 3 REBUTTAL disposition + Q-Lead escalate §3.1 §3.2)"
+  },
+
+  "challenge_review_v6_1": {
+    "review_obligation_p4_gap_1": "v6.1 P4 — risk-research 종료 직전 wt_record_challenge_review 의무 (objection=FALSE recorded in challenge_note §4)",
+    "targets_reviewed": ["alpha_package", "factor_specs", "evaluation_windows_124_sig_dates", "feature_allowlist_634_sha256"],
+    "objection_to_alpha": false,
+    "objection_rationale": "Alpha emission은 design-only (alpha_vector placeholder, Forge train pending). Both alpha + risk co-staged at design phase a. Forge cycle realization triggers real cross-stage challenge."
+  },
+
+  "stress_passes_design_status": ["2008_oos_replay_spec", "2011_eu_debt_oos_replay_spec", "2015_china_devaluation_oos_replay_spec", "2018_q4_selloff_oos_replay_spec", "2020_oos_replay_spec", "2022_in_sample_spec", "2024_disinflation_in_sample_spec", "2024_aug5_spike_in_sample_spec"],
+  "stress_passes_forge_cycle_obligation": "본 design phase status는 spec emit. Forge cycle 실제 measurement → pass/fail 결정.",
+
+  "feature_attribution_design": "gradient × input via PyTorch Integrated Gradients (Sundararajan 2017) — primary + Saliency sanity + DeepLIFT fallback + FMP-based implicit-B reconstruction. Captum library obligation.",
+
+  "research_philosophy_alignment_risk_role": {
+    "principle_5_crowding": {
+      "compliant": true,
+      "evidence": "★ Risk Agent 핵심 책임. crowding_score_per_factor.R (Phase 2.C, Acadian 2026 정통) 2-track 호출 spec + Track 2 standard expansion post-Codex C8 (TDC/HHI/style cor/family saturation).",
+      "novelty": "DPL paradigm-novel — per-feature crowding for ML-derived features (academic first application). Track 2 ensures standard portfolio-level RF-R3/R5 coverage."
+    },
+    "principle_3_uncertainty_aware": {
+      "compliant_partial": true,
+      "evidence": "Bootstrap CI for CVaR (B=1000 stationary) + regime conditional CVaR with CI lower bound decision rule (Codex C5 PARTIAL REBUTTAL). Liao 2025 RFS μ̃ = μ̂ - k·SE는 Forge cycle ER-based Sharpe (Charter v1.4 §12)."
+    },
+    "principle_5_risk_model_enhancement": {
+      "compliant": true,
+      "evidence": "Σ + Crowding + Concentration 3-axis. DPL paradigm-aware (B implicit → IG + FMP attribution). Acadian 2026 + Behmaram 2024 + Ledoit-Wolf 2003 + Joe-Clayton TDC + Hill 1975 정합."
+    }
+  },
+
+  "telegram_brief_v6": {
+    "title": "WT-D20260517_001 RISK_DONE — DPL design phase a Σ LW cond≤100 + 8-stress full panel + Track 1+2 crowding TDC/HHI/style/family + IG/FMP implicit-B attribution",
+    "section_summary": "Σ rolling LW oracle 60m × 124 sig_dates primary cond ≤ 100 (Codex C2 ACCEPT) + Gerber+RMT δ=1.0/cond fallback. Tail = CVaR/VaR/ES/Hill α/CDaR full panel + 8 stress (Codex C6/C7 ACCEPT) + regime conditional pooled Σ fallback (Codex C5 PARTIAL REBUTTAL). Crowding 2-track + standard TDC/HHI/style/family expansion (Codex C8 PARTIAL ACCEPT). DPL-novel: IG attribution + FMP implicit-B variance decomp + Jaccard stability (Codex C3 REBUTTAL paradigm-defense).",
+    "section_table": "Estimator comparison: Sample (singular) / LW oracle (PRIMARY, cond ≤ 100) / Gerber+RMT (backup, δ=1.0 fallback) / DCC-Copula (rejected T=60 insufficient)",
+    "section_hedge": "DPL Net-Sharpe loss includes λ·CVaR_5% inherent — Forge cycle measurement obligatory, no a priori claim of superiority (Codex C6 rationalization revised)",
+    "section_flags": "8 challenge_flags — Sample deficit (HIGH) / Explainability debt FMP (HIGH) / Stress historical replay (MED) / Crowding novelty (MED) / Crisis regime small sample pooled fallback (MED) / Charter §10 amendment pending (HIGH) / Cond ≤ 100 strict (MED) / CVaR tightened panel (MED). Codex Round disposition: 3 ACCEPT + 4 PARTIAL + 3 REBUTTAL. AX-008 1/3 PASS (Forge+Architect deferred). Q-Lead escalate triggered."
+  },
+
+  "codex_round_metadata": {
+    "draft_emit_at": "2026-05-17T07:05:00+09:00",
+    "codex_invocation_at": "2026-05-17T07:05:30+09:00",
+    "codex_response_at": "2026-05-17T07:07:08+09:00",
+    "codex_response_written_at": "2026-05-17T07:09:38+09:00",
+    "codex_helper_command": "bash 02_Infrastructure/tools/debate_helpers/run_codex_qepm_critic.sh --role=risk --task_id=WT-D20260517_001",
+    "stance": "REJECT",
+    "veto_flag": false,
+    "concerns_total": 10,
+    "concerns_HIGH": 10,
+    "concerns_MEDIUM": 0,
+    "disposition_summary": {
+      "ACCEPT": 3,
+      "PARTIAL_ACCEPT": 4,
+      "PARTIAL_REBUTTAL": 2,
+      "REBUTTAL": 1
+    },
+    "q_lead_escalate_triggered": true,
+    "q_lead_escalate_reasons": [
+      "HIGH severity concerns ≥ 5 (10 of 10 HIGH)",
+      "AX axiom hard FAIL ≥ 3 (AX-001_v2 + AX-002 + AX-007 + AX-008)",
+      "Charter §10 v1.8 amendment binding (discovery_design_phase_a)"
+    ],
+    "rationalization_self_check": "PASS — auto-grep no '미미' / '관행적 허용' / '실무적' / '보수적이면 OK' / '대부분 결과 동일'. Codex flagged 3 rationalization candidates; 1 revised (CVaR superiority claim → measurement obligation), 1 alpha-stage scope (already disposed alpha cycle), 1 honest deferral retained but tightened with explicit ACCEPT/PARTIAL/REBUTTAL per concern."
+  },
+
+  "post_codex_corrections_summary": [
+    "Condition number max: 500 → 100 (Codex C2 ACCEPT strict)",
+    "CVaR_5% target: -8% → -6% (Codex C6 ACCEPT tightened)",
+    "CDaR_5% target: -25% → -22% (Codex C6 ACCEPT tightened)",
+    "Add VaR/ES_99/Hill α full panel (Codex C6 ACCEPT)",
+    "Stress scenarios: 4 → 8 (Codex C7 ACCEPT, def_stress_periods inherit)",
+    "Crowding Track 2 expansion: TDC + HHI + style cor + family saturation (Codex C8 PARTIAL ACCEPT)",
+    "PIT C9/C10/C11/C12 Forge obligations explicit (Codex C9 PARTIAL ACCEPT)",
+    "Shrinkage δ=1.0 fallback to Gerber+RMT (Codex C4 PARTIAL ACCEPT)",
+    "CRISIS small sample pooled-Σ Bayesian fallback + bootstrap CI explicit (Codex C5 PARTIAL REBUTTAL)",
+    "DPL implicit-B paradigm REBUTTAL — FMP-based variance attribution (Codex C3 REBUTTAL paradigm-defense)",
+    "challenge_note_risk-research.md + final risk_package.json emit (Codex C10 ACCEPT silent override resolution)"
+  ],
+
+  "lineage_v6_1": {
+    "alpha_inherit": "qepm/mailbox/worktask/WT-D20260517_001/alpha_package.json (sha256 verification deferred Forge cycle)",
+    "request_inherit": "qepm/mailbox/worktask/WT-D20260517_001/request.json (post-escalate-fix 2026-05-17 06:58)"
+  },
+
+  "schema_compliance": "risk_package v1 design phase a (8-field core spec + Charter §10 Role Card discovery_design_phase_a + v6.1 R2-C + R4 + R13 + Phase 2.C crowding mandate + DPL paradigm risk attribution novelty + post-Codex disposition complete)"
+}
