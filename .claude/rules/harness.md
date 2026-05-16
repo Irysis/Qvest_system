@@ -28,9 +28,9 @@
 |---|---|
 | worktask_constraint_enforcer | 20종 + bounds [0, 0.20] + Σw=1 + long-only |
 | worktask_spec_validator | request.json schema (task_id format / universe / cost_model_version) |
-| forge_code_guard | OPT-1~11 + S1 overlay 금지 |
+| ~~forge_code_guard~~ | ❌ **DEPRECATED 2026-05-16** (`_archive_v55/` 삭제 — Tier 1 cleanup. OPT-1~11 강제는 axiom_enforcement_hook + worktask_spec_validator로 대체) |
 | backtest_contract_audit | Backtest Result Contract v1.0 audit |
-| milestone_commit | 마일스톤 auto-commit + secret scan |
+| ~~milestone_commit~~ | ⚠️ **FS retain / settings 미등록 2026-05-16** — auto_commit_on_stop으로 대체. 활성화 필요 시 settings.json PreToolUse 추가 |
 
 ## Tier 4 (Post artifact validation)
 
@@ -39,11 +39,16 @@
 | worktask_artifact_validator | forge_package 8-field schema + PIT 패턴 |
 | red_flag_detector | RF-A / RF-R / RF-O 자동 감지 |
 | pipeline_trigger | DONE → TODO 라우팅 |
-| cash_sleeve_validator | (legacy v55) cash_allocation role 검증 |
-| trail_consistency_checker | 3-trail 일관성 |
-| circuit_breaker | 3회 연속 실패 warn |
-| risk_gate | tail_risk 검증 |
+| cash_sleeve_validator | (legacy v55) cash_allocation role 검증 — FS retain / settings 미등록 |
+| ~~trail_consistency_checker~~ | ⚠️ **FS retain / settings 미등록 2026-05-16** — 3-trail 일관성은 worktask_artifact_validator로 cover |
+| ~~circuit_breaker~~ | ⚠️ **FS retain / settings 미등록 2026-05-16** — 3회 실패 warn은 events.jsonl 통한 후속 분석 가능 |
+| ~~risk_gate~~ | ❌ **DEPRECATED 2026-05-16** (`_archive_v55/` 삭제 — Tier 1 cleanup. tail_risk 검증은 risk_crowding_score_check + risk-research agent 영역) |
 | answer_principles_grep | 회피 표현 + 검증 증거 카운트 (Level 2 soft alert) |
+| feature_registry_economic_rationale_check | Phase 1.A — 신규 factor economic_rationale 의무 |
+| ml_cost_aware_audit | Phase 1.A — Net-of-Cost ML loss 의무 |
+| ml_uncertainty_audit | Phase 1.A — μ̃ = μ̂ - k·SE(μ̂) 의무 |
+| risk_crowding_score_check | Phase 2.C — crowding_score_per_factor 의무 |
+| attribution_quarterly_trigger | Phase 2.D advisory — Brinson + Carhart 4 분기별 (FS retain / settings 미등록 의도적 advisory) |
 
 ## Tier 5 (Positive Certifier)
 
@@ -95,7 +100,14 @@
 
 ## 참조
 
-- `02_Infrastructure/hooks/*.sh` (현재 18개)
-- `02_Infrastructure/hooks/_archive_v55/` (legacy 폐기 hook 6건)
-- `.claude/settings.json` Hook 등록
+- `02_Infrastructure/hooks/*.sh` (현재 55개 — Phase 1/2 hooks 신규 5건 포함)
+- ~~`02_Infrastructure/hooks/_archive_v55/`~~ (Tier 1 cleanup 2026-05-16 삭제 — legacy v55 hooks 6건 영구 폐기)
+- `.claude/settings.json` Hook 등록 (45 distinct .sh)
 - `02_Infrastructure/docs/qvest_v6_4_sot.md` Section 5 (Hook + Cert + Codex Round Matrix)
+
+## Hook 정합 audit (2026-05-16)
+
+- **FS only / 미등록 (5건)**: cash_sleeve_validator (legacy v55) / circuit_breaker / milestone_commit / trail_consistency_checker / attribution_quarterly_trigger (advisory)
+- **Deprecated 2026-05-16 (2건)**: forge_code_guard / risk_gate (`_archive_v55/` Tier 1 cleanup 삭제)
+- **Phase 1/2 신규 등록 (4건)**: feature_registry_economic_rationale_check / ml_cost_aware_audit / ml_uncertainty_audit / risk_crowding_score_check
+- **Active loaded**: 45 distinct .sh (settings.json registered)
