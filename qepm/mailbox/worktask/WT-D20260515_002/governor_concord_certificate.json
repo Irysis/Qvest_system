@@ -1,0 +1,41 @@
+{
+  "certificate_kind": "governor_concord_certificate",
+  "task_id": "WT-D20260515_002",
+  "issued": false,
+  "issued_status": "N/A_REJECT_LIFECYCLE_TERMINATED_WITH_RATIONALE",
+  "issued_at": "2026-05-15T18:30:00+09:00",
+  "issued_by": "governor_opus_4_7_1m (manual N/A_REJECT branch — PostToolUse governor_concord_certifier.sh did not auto-issue)",
+  "policy_ref": "Charter v1.7 §10 — governor_concord_certificate issued when book_state ↔ admission_decision match for ADMIT decisions; for REJECT decisions concord is trivially preserved by no-mutation and certificate is issued=false_with_rationale or N/A",
+  "verdict": "REJECT",
+  "book_state_action": "NONE",
+  "concord_status": "MATCH_VIA_NO_MUTATION",
+  "concord_match_evidence": {
+    "book_state_path": "qepm/mailbox/governor/book_state.json",
+    "book_state_schema_version_at_check": "v2.3_post_WT_H20260513_001_R05_LAYER5_OVERLAY_ADMIT",
+    "book_state_admitted_ids_at_check": ["STR_1715_AR_on_M4_R05_overlay_PG2"],
+    "book_state_admitted_ids_count": 1,
+    "book_state_weights_at_check": {"STR_1715_AR_on_M4_R05_overlay_PG2": 1.0},
+    "governor_admission_decision": "REJECT",
+    "governor_book_state_mutation_action": "NONE",
+    "governor_retained_admitted_ids": ["STR_1715_AR_on_M4_R05_overlay_PG2"],
+    "match_check_result": "EXACT_MATCH — admission_decision REJECT + book_state_mutation NONE = current book_state v2.3 RETAIN unchanged. Concord trivially preserved.",
+    "all_admitted_match": true
+  },
+  "rationale_for_issued_false_with_rationale": "REJECT verdict does not require positive concord certificate issuance per Charter v1.7 §10 Role Card 4×5 (governor_concord_certificate is admit-decision artifact, not reject-decision artifact). For REJECT decisions, no-mutation preserves prior book_state concord trivially. Certificate file authored with issued=false flag + explicit concord_status=MATCH_VIA_NO_MUTATION + full match evidence to provide audit trail without false admit signal.",
+  "concord_type": "match_via_no_mutation_reject_lifecycle_terminated",
+  "lifecycle_status": "TERMINATED_REJECT_NO_MUTATION_BOOK_STATE_V2_3_RETAIN",
+  "governor_admission_json_ref": "qepm/mailbox/worktask/WT-D20260515_002/governor_admission.json",
+  "judge_verdict_inherit_ref": "qepm/mailbox/worktask/WT-D20260515_002/judge_verdict.json",
+  "lockbox_sealed_ref": "qepm/mailbox/worktask/WT-D20260515_002/lockbox_sealed.json (sealed_at 2026-05-15T17:58:27+09:00, sealed_by=judge)",
+  "ax_compliance_summary": {
+    "AX_002_process_honesty": "Certificate issued=false honesty (not falsely claiming positive cert), full match evidence trail for audit",
+    "AX_008_n_a_for_reject_gate": "Charter §10 — admit-gate triangulation N/A for reject; certificate semantically expresses concord via no-mutation"
+  },
+  "cert_chain_status_at_governor_finalize": {
+    "alpha_discovery_certificate": "ISSUED_FRESH 2026-05-15 12:52",
+    "sr_provenance_certificate": "ISSUED_LEGACY 2026-05-15 17:35 issued=false post-Forge v2 (RR3 lifecycle terminated)",
+    "schedule_fidelity_certificate": "N/A_REJECT",
+    "forge_package_validated_certificate": "N/A_REJECT",
+    "governor_concord_certificate": "issued=false_with_rationale_N_A_REJECT_LIFECYCLE_TERMINATED (this file)"
+  }
+}

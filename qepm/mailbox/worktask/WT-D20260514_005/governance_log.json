@@ -1,0 +1,71 @@
+{
+  "task_id": "WT-D20260514_005",
+  "events": [
+    {
+      "timestamp": "2026-05-14T09:29:58+0900",
+      "agent": "q-lead",
+      "action": "WT_CREATED",
+      "summary": "Work Task 생성: ML-Enhanced Multi-Factor Feature Engineering — Academic Literature Integration (XGBoost/RandomForest/Ridge Ensemble + Gu-Kelly-Xiu 2020 Cross-Section + RegimeFolio 2025 + Idio-Vol ML Enhancement) | source=user_defined"
+    },
+    {
+      "timestamp": "2026-05-14T09:36:56+0900",
+      "agent": "alpha-research",
+      "action": "PIPELINE_START_V1",
+      "summary": "ML Alpha Research v1 pipeline initiated. 5 ex-ante candidates (M1 XGBoost / M2 RandomForest / M3 ElasticNet / M4 Regime-conditional XGBoost / M5 XGBoost+Interaction). Walk-forward 60-month training. PIT C1-C15 strict. Universe inherit WT-D20260514_003 expansion."
+    },
+    {
+      "timestamp": "2026-05-14T10:06:00+0900",
+      "agent": "alpha-research",
+      "action": "PIPELINE_V1_ABORT_OPTIMIZATION",
+      "summary": "v1 pipeline halted at Step 6 (~30min elapsed, ranger 207 sig × 5 models too slow). Restart with v2 optimized: 6mo refit + 12 features + 100-tree ranger + 60 xgboost rounds. Compute cost ~6x reduction while maintaining PIT-clean walk-forward."
+    },
+    {
+      "timestamp": "2026-05-14T10:10:08+0900",
+      "agent": "alpha-research",
+      "action": "PIPELINE_V2_START",
+      "summary": "v2 optimized pipeline started. 12 features (down from 17, dropped Q07/Q25/Q35 high-NA + D26/D43/D44 lower-importance). 6mo refit period (Gu-Kelly-Xiu 2020 sec 4.2 standard). 35 refit anchors × 5 models parallel training."
+    },
+    {
+      "timestamp": "2026-05-14T10:17:43+0900",
+      "agent": "alpha-research",
+      "action": "PIPELINE_V2_DONE",
+      "summary": "v2 pipeline complete in 7.67 min. 5 candidates evaluated ex-ante grid. Best=M4_xgb_deep. Diagnostics: rank_IC=0.0288 FAIL <0.04 / ICIR=0.371 PASS / t_NW=4.83 PASS / DSR=12.84 PASS / Harvey 5-spec=4/5 PASS / Mono=1.000 PASS (PERFECT) / Subperiod stability=1.0 / cor_p vs STR_1715 admit=-0.1342 PASS (orthogonal). selection_status=NON_GRADUATING_ML_ORTHO_PASS_GATE_PARTIAL."
+    },
+    {
+      "timestamp": "2026-05-14T10:17:50+0900",
+      "agent": "alpha-research",
+      "action": "ALPHA_DRAFT_SAVED",
+      "summary": "alpha_package_draft.json saved (38KB). 1931 ticker alpha_vector + confidence_vector + factor_specs (1 spec ML) + diagnostics + ortho + ml_metadata + str1715_overlap_verification."
+    },
+    {
+      "timestamp": "2026-05-14T10:18:00+0900",
+      "agent": "alpha-research",
+      "action": "CODEX_ROUND_1_SPAWN",
+      "summary": "Codex Critic Round 1 spawned. model=gpt-5.5, reasoning.effort=xhigh, timeout=1200s. role=alpha. Devil's advocate critique per Charter §8."
+    },
+    {
+      "timestamp": "2026-05-14T10:21:29+0900",
+      "agent": "codex-critic",
+      "action": "CODEX_ROUND_1_RESPONSE",
+      "summary": "Codex stance=REJECT, veto_flag=FALSE. 7 concerns (4 HIGH + 3 MEDIUM). Weakest: 'orthogonal ML alpha with rank_IC 0.0288 can be treated as useful enough for approval'. Concerns: C1 AX-002 (rank_IC 0.0288 < 0.04 FAIL), C2 AX-002/RF-A6 (feature lineage 17 vs 12 inconsistency), C3 PIT-C6 (KRX latest snapshot), C4 AX-002/PIT-C1 (Lockbox 3-way 부재), C5 RF-A6 (DSR N=5 + 5-spec semantic), C6 RF-A2/A4 (univariate benchmark + sector-neutral test 부재), C7 AX-008/RF-A7 (downstream artifacts 부재 - normal NON_GRADUATING)."
+    },
+    {
+      "timestamp": "2026-05-14T10:30:00+0900",
+      "agent": "alpha-research",
+      "action": "CHALLENGE_NOTE_DISPOSITION",
+      "summary": "alpha_challenge_note.md written. 7 concerns disposition: C1 ACCEPT_HONEST_FAILURE (NON_GRADUATING 명시, L-318 등록 후보), C2 ACCEPT_DOCUMENTED (factor_specs.formula 12 features hard-correct), C3 PARTIAL_ACCEPT_PRE_DISCLOSED_INHERIT_WT_003 (3축 rationale), C4 PARTIAL_ACCEPT_DOCUMENTED (walk-forward PIT-clean + NON_GRADUATING moot), C5 PARTIAL_ACCEPT_DOCUMENTED (renaming + cumulative N=25 conservative DSR≈11.5 still PASS), C6 PARTIAL_ACCEPT_DOCUMENTED (future cycle), C7 PARTIAL_ACCEPT_DOCUMENTED (challenge_note + lineage 작성, downstream scope). Rationalization grep auto-check 0 hits. Q-Lead escalate trigger NO."
+    },
+    {
+      "timestamp": "2026-05-14T10:31:00+0900",
+      "agent": "alpha-research",
+      "action": "ALPHA_PACKAGE_FINAL",
+      "summary": "alpha_package.json final saved (54KB). codex_round_status=ROUND_1_REJECT_DISPOSITIONED. AX-008 Triangulation 2/3 with caveats (Forge_PARTIAL + Architect_inherit_PASS + Codex_REJECT_DISPOSITIONED). Lineage recorded. Mirror saved. Schema-aligned variant saved."
+    },
+    {
+      "timestamp": "2026-05-14T10:31:30+0900",
+      "agent": "alpha-research",
+      "action": "ALPHA_DONE_NON_GRADUATING",
+      "summary": "Phase transition: SPEC_APPROVED → ALPHA_DONE_NON_GRADUATING. ML methodology negative result honestly disclosed. rank_IC 0.0288 < 0.04 KR alpha gate threshold = graduation 자격 박탈 (정상 동작 NON_GRADUATING). Downstream Risk-research / Optimizer-research spawn 불요. L-318 후보 등록 (KR market ML single-model + 12-feature simple walk-forward underperforms 0.04 rank_IC gate). Q-Lead notification: ML 인프라 검증된 negative result + 향후 ML 가설 baseline (RegimeFolio sector-specific / autoencoder / temporal Transformer 등) 시도 시 활용 가능."
+    }
+  ]
+}

@@ -1,0 +1,263 @@
+{
+  "ml_out_dir": "stage_artifacts/WT_D20260514_014_phase1_full",
+  "manifest": {
+    "phase1_uncertainty_enabled": true,
+    "phase1_cost_aware_enabled": true,
+    "bootstraps": 20,
+    "k_discount": 1.0,
+    "uncertainty_base": "M1_Ridge",
+    "gamma": 0.001,
+    "cost_bps_oneway": 15.0,
+    "top_n": 30,
+    "features_master": "stage_artifacts/WT_D20260514_008/features_master.parquet",
+    "returns_panel": "stage_artifacts/WT_D20260514_007/returns_monthly_panel.parquet",
+    "n_features": 1044,
+    "n_folds_total": 5,
+    "lockbox_folds": 2,
+    "candidates": [
+      "M1_Ridge",
+      "M2_LASSO",
+      "M3_EN",
+      "M4_XGB_GPU",
+      "M5_LGB",
+      "M6_Ensemble",
+      "M7_XGB_CostAware"
+    ]
+  },
+  "comparisons": {
+    "cost_aware": {
+      "M4_XGB_GPU_is": {
+        "TO_yr": 10.322222222222223,
+        "gross_sr": 0.43419110696712815,
+        "net_sr": 0.3162301510862175,
+        "cost_drag_pp": 3.0966666666666662
+      },
+      "M4_XGB_GPU_lockbox": {
+        "TO_yr": 10.133333333333333,
+        "gross_sr": 0.88029642779174,
+        "net_sr": 0.7420277552690171,
+        "cost_drag_pp": 3.0400000000000005
+      },
+      "M4_XGB_GPU_all": {
+        "TO_yr": 10.44,
+        "gross_sr": 0.597468354495664,
+        "net_sr": 0.4699724614792596,
+        "cost_drag_pp": 3.132
+      },
+      "M7_XGB_CostAware_is": {
+        "TO_yr": 9.811111111111112,
+        "gross_sr": 0.34230249819844744,
+        "net_sr": 0.22226351375948464,
+        "cost_drag_pp": 2.9433333333333334
+      },
+      "M7_XGB_CostAware_lockbox": {
+        "TO_yr": 10.3,
+        "gross_sr": 1.865682263870453,
+        "net_sr": 1.726343287246365,
+        "cost_drag_pp": 3.0900000000000003
+      },
+      "M7_XGB_CostAware_all": {
+        "TO_yr": 10.2,
+        "gross_sr": 0.9084433676133554,
+        "net_sr": 0.7806164182680582,
+        "cost_drag_pp": 3.0600000000000014
+      }
+    },
+    "uncertainty": {
+      "ConfidentHighLow_M1_Ridge_is": {
+        "naive_port_ret_mean_monthly": 0.011231269917585393,
+        "naive_sr_annualized": 0.5147190085220599,
+        "confident_port_ret_mean_monthly": 0.011054022762549319,
+        "confident_sr_annualized": 0.4493150775895569,
+        "sr_improvement": -0.06540393093250296,
+        "n_naive_months": 36,
+        "n_confident_months": 36,
+        "confidence_quantile_used": 0.5
+      },
+      "ConfidentHighLow_M1_Ridge_lockbox": {
+        "naive_port_ret_mean_monthly": 0.030683708010158007,
+        "naive_sr_annualized": 1.6895913942214698,
+        "confident_port_ret_mean_monthly": 0.026646709921824885,
+        "confident_sr_annualized": 1.5232849370912032,
+        "sr_improvement": -0.1663064571302666,
+        "n_naive_months": 24,
+        "n_confident_months": 24,
+        "confidence_quantile_used": 0.5
+      },
+      "ConfidentHighLow_M1_Ridge_all": {
+        "naive_port_ret_mean_monthly": 0.019012245154614436,
+        "naive_sr_annualized": 0.9291333714360147,
+        "confident_port_ret_mean_monthly": 0.017291097626259546,
+        "confident_sr_annualized": 0.7865409791590622,
+        "sr_improvement": -0.14259239227695253,
+        "n_naive_months": 60,
+        "n_confident_months": 60,
+        "confidence_quantile_used": 0.5
+      }
+    },
+    "pareto_blend": {
+      "M5_LGB_monthly_w30": {
+        "ml_to_yr": 9.833333333333332,
+        "eff_to_yr": 4.35,
+        "pearson": -0.1547893181787646,
+        "blend_sr": 2.0104515155348865,
+        "blend_cagr": 0.42476566237193114,
+        "blend_mdd": -0.1839457774133812,
+        "n_overlap": 60
+      },
+      "M5_LGB_monthly_w40": {
+        "ml_to_yr": 9.833333333333332,
+        "eff_to_yr": 5.133333333333333,
+        "pearson": -0.1547893181787646,
+        "blend_sr": 2.0358624745635203,
+        "blend_cagr": 0.40166564395796844,
+        "blend_mdd": -0.17535874990323574,
+        "n_overlap": 60
+      },
+      "M5_LGB_monthly_w50": {
+        "ml_to_yr": 9.833333333333332,
+        "eff_to_yr": 5.916666666666666,
+        "pearson": -0.1547893181787646,
+        "blend_sr": 1.9585438726267328,
+        "blend_cagr": 0.37681408718787157,
+        "blend_mdd": -0.1677873917319816,
+        "n_overlap": 60
+      },
+      "M5_LGB_bi-monthly_w30": {
+        "ml_to_yr": 5.093333333333333,
+        "eff_to_yr": 2.928,
+        "pearson": -0.20612373068976728,
+        "blend_sr": 2.0514055872903167,
+        "blend_cagr": 0.4227901083989709,
+        "blend_mdd": -0.15580531315790141,
+        "n_overlap": 60
+      },
+      "M5_LGB_bi-monthly_w40": {
+        "ml_to_yr": 5.093333333333333,
+        "eff_to_yr": 3.237333333333333,
+        "pearson": -0.20612373068976728,
+        "blend_sr": 2.1003058752015757,
+        "blend_cagr": 0.39904212539203554,
+        "blend_mdd": -0.14221540163681073,
+        "n_overlap": 60
+      },
+      "M5_LGB_bi-monthly_w50": {
+        "ml_to_yr": 5.093333333333333,
+        "eff_to_yr": 3.5466666666666664,
+        "pearson": -0.20612373068976728,
+        "blend_sr": 2.0379229780857857,
+        "blend_cagr": 0.3735617993251621,
+        "blend_mdd": -0.14697344442768565,
+        "n_overlap": 60
+      },
+      "M6_Ensemble_monthly_w30": {
+        "ml_to_yr": 9.886666666666665,
+        "eff_to_yr": 4.366,
+        "pearson": -0.21928454100841885,
+        "blend_sr": 1.9700326678723972,
+        "blend_cagr": 0.3972435831010328,
+        "blend_mdd": -0.16839152033627217,
+        "n_overlap": 60
+      },
+      "M6_Ensemble_monthly_w40": {
+        "ml_to_yr": 9.886666666666665,
+        "eff_to_yr": 5.1546666666666665,
+        "pearson": -0.21928454100841885,
+        "blend_sr": 2.00086599846901,
+        "blend_cagr": 0.36584241906796966,
+        "blend_mdd": -0.1461241019283716,
+        "n_overlap": 60
+      },
+      "M6_Ensemble_monthly_w50": {
+        "ml_to_yr": 9.886666666666665,
+        "eff_to_yr": 5.9433333333333325,
+        "pearson": -0.21928454100841885,
+        "blend_sr": 1.928424993317725,
+        "blend_cagr": 0.3331755469296187,
+        "blend_mdd": -0.13794992309395115,
+        "n_overlap": 60
+      },
+      "M6_Ensemble_bi-monthly_w30": {
+        "ml_to_yr": 5.233333333333334,
+        "eff_to_yr": 2.97,
+        "pearson": -0.20260159268304234,
+        "blend_sr": 2.1745547592835086,
+        "blend_cagr": 0.45692350051270125,
+        "blend_mdd": -0.1622776171249091,
+        "n_overlap": 60
+      },
+      "M6_Ensemble_bi-monthly_w40": {
+        "ml_to_yr": 5.233333333333334,
+        "eff_to_yr": 3.293333333333334,
+        "pearson": -0.20260159268304234,
+        "blend_sr": 2.267336870832489,
+        "blend_cagr": 0.44387378008983647,
+        "blend_mdd": -0.14625675859825063,
+        "n_overlap": 60
+      },
+      "M6_Ensemble_bi-monthly_w50": {
+        "ml_to_yr": 5.233333333333334,
+        "eff_to_yr": 3.616666666666667,
+        "pearson": -0.20260159268304234,
+        "blend_sr": 2.2410590037498967,
+        "blend_cagr": 0.42870265422976384,
+        "blend_mdd": -0.13115840930093578,
+        "n_overlap": 60
+      },
+      "M7_XGB_CostAware_monthly_w30": {
+        "ml_to_yr": 10.2,
+        "eff_to_yr": 4.459999999999999,
+        "pearson": -0.08145977111395915,
+        "blend_sr": 1.8930846151715297,
+        "blend_cagr": 0.40108541678576515,
+        "blend_mdd": -0.176916851412334,
+        "n_overlap": 60
+      },
+      "M7_XGB_CostAware_monthly_w40": {
+        "ml_to_yr": 10.2,
+        "eff_to_yr": 5.28,
+        "pearson": -0.08145977111395915,
+        "blend_sr": 1.899974272647857,
+        "blend_cagr": 0.37134253139059537,
+        "blend_mdd": -0.16859435519425175,
+        "n_overlap": 60
+      },
+      "M7_XGB_CostAware_monthly_w50": {
+        "ml_to_yr": 10.2,
+        "eff_to_yr": 6.1,
+        "pearson": -0.08145977111395915,
+        "blend_sr": 1.8286291397424013,
+        "blend_cagr": 0.34046537643481933,
+        "blend_mdd": -0.16565456107801615,
+        "n_overlap": 60
+      },
+      "M7_XGB_CostAware_bi-monthly_w30": {
+        "ml_to_yr": 5.306666666666667,
+        "eff_to_yr": 2.992,
+        "pearson": -0.05144534664448416,
+        "blend_sr": 1.79915461992443,
+        "blend_cagr": 0.38162918861265105,
+        "blend_mdd": -0.18304972510926526,
+        "n_overlap": 60
+      },
+      "M7_XGB_CostAware_bi-monthly_w40": {
+        "ml_to_yr": 5.306666666666667,
+        "eff_to_yr": 3.3226666666666667,
+        "pearson": -0.05144534664448416,
+        "blend_sr": 1.7670246848358275,
+        "blend_cagr": 0.3460620329825712,
+        "blend_mdd": -0.1766810254855583,
+        "n_overlap": 60
+      },
+      "M7_XGB_CostAware_bi-monthly_w50": {
+        "ml_to_yr": 5.306666666666667,
+        "eff_to_yr": 3.6533333333333333,
+        "pearson": -0.05144534664448416,
+        "blend_sr": 1.6615198000203681,
+        "blend_cagr": 0.3097087340059519,
+        "blend_mdd": -0.17558761107139137,
+        "n_overlap": 60
+      }
+    }
+  }
+}

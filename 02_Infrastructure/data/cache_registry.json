@@ -1,0 +1,235 @@
+{
+  "_meta": {
+    "version": "1.0.0",
+    "created": "2026-05-15",
+    "mandate": "도훈 — 데이터 최신화 silent gap 영구 차단",
+    "schema": {
+      "path": "cache file path relative to project root",
+      "producer": "R script that builds this cache (path relative to project root)",
+      "entry_fn": "function name to call (or '(source)' if top-level script)",
+      "schedule": "daily | weekly | monthly | on_demand",
+      "date_col": "column name for max(Date) freshness check (null if not applicable)",
+      "max_lag_days": "stale alert threshold (days). null if not applicable",
+      "depends_on": "list of upstream cache files (topological order)",
+      "args": "optional R named-list args passed to entry_fn",
+      "tier": "1=critical (regime/MSM/strategy), 2=important (factor/macro), 3=research"
+    }
+  },
+  "caches": [
+    {
+      "path": ".cache/RAWDATA.parquet",
+      "producer": "02_Infrastructure/data/krx_data_collector.R",
+      "entry_fn": "(orchestrated_via_daily_refresh_steps_0_to_3)",
+      "schedule": "daily",
+      "date_col": "Date",
+      "max_lag_days": 1,
+      "depends_on": [],
+      "tier": 1
+    },
+    {
+      "path": ".cache/benchmark.parquet",
+      "producer": "02_Infrastructure/data/krx_data_collector.R",
+      "entry_fn": "(orchestrated)",
+      "schedule": "daily",
+      "date_col": "Date",
+      "max_lag_days": 1,
+      "depends_on": [],
+      "tier": 1
+    },
+    {
+      "path": ".cache/universe.parquet",
+      "producer": "02_Infrastructure/data/krx_update_universe.R",
+      "entry_fn": "(source)",
+      "schedule": "daily",
+      "date_col": null,
+      "max_lag_days": 7,
+      "depends_on": [".cache/RAWDATA.parquet"],
+      "tier": 1
+    },
+    {
+      "path": ".cache/trading_calendar.parquet",
+      "producer": "02_Infrastructure/data/krx_data_collector.R",
+      "entry_fn": "(orchestrated)",
+      "schedule": "monthly",
+      "date_col": "Date",
+      "max_lag_days": 35,
+      "depends_on": [],
+      "tier": 2
+    },
+    {
+      "path": ".cache/ktri_indices.parquet",
+      "producer": "02_Infrastructure/data/ktri_index_collector.R",
+      "entry_fn": "ktri_update_indices",
+      "schedule": "daily",
+      "date_col": "Date",
+      "max_lag_days": 3,
+      "depends_on": [".cache/RAWDATA.parquet"],
+      "tier": 1
+    },
+    {
+      "path": ".cache/fred_macro.parquet",
+      "producer": "02_Infrastructure/data/data_collector_fred.R",
+      "entry_fn": "fred_fetch_all",
+      "schedule": "daily",
+      "date_col": "Date",
+      "max_lag_days": 4,
+      "depends_on": [],
+      "tier": 1
+    },
+    {
+      "path": ".cache/fred_macro_wide.parquet",
+      "producer": "02_Infrastructure/data/data_collector_fred.R",
+      "entry_fn": "fred_fetch_all",
+      "schedule": "daily",
+      "date_col": "Date",
+      "max_lag_days": 4,
+      "depends_on": [],
+      "tier": 1
+    },
+    {
+      "path": ".cache/macro_regime.parquet",
+      "producer": "02_Infrastructure/data/data_collector_fred.R",
+      "entry_fn": "fred_compute_regime",
+      "schedule": "daily",
+      "date_col": "Date",
+      "max_lag_days": 4,
+      "depends_on": [".cache/fred_macro.parquet"],
+      "tier": 1
+    },
+    {
+      "path": ".cache/ecos_krw_usd.parquet",
+      "producer": "02_Infrastructure/data/data_collector_ecos.R",
+      "entry_fn": "ecos_fetch_krw",
+      "schedule": "daily",
+      "date_col": "Date",
+      "max_lag_days": 4,
+      "depends_on": [],
+      "tier": 2,
+      "_note": "도훈 2026-05-15 audit — daily_refresh 호출 누락 발견. tier 2"
+    },
+    {
+      "path": ".cache/msm_daily_latest.parquet",
+      "producer": "04_Research/regime_comparison/msm_update.R",
+      "entry_fn": "(source)",
+      "schedule": "daily",
+      "date_col": "Date",
+      "max_lag_days": 1,
+      "depends_on": [".cache/benchmark.parquet"],
+      "tier": 1
+    },
+    {
+      "path": ".cache/msm_hybrid_latest.parquet",
+      "producer": "04_Research/regime_comparison/msm_update.R",
+      "entry_fn": "(source)",
+      "schedule": "daily",
+      "date_col": "Date",
+      "max_lag_days": 1,
+      "depends_on": [".cache/benchmark.parquet"],
+      "tier": 1
+    },
+    {
+      "path": ".cache/unified_regime_signal.parquet",
+      "producer": "02_Infrastructure/regime/regime_signal.R",
+      "entry_fn": "build_regime_signal_table",
+      "schedule": "daily",
+      "date_col": "Date",
+      "max_lag_days": 35,
+      "depends_on": [".cache/msm_hybrid_latest.parquet", ".cache/macro_regime.parquet", ".cache/ktri_indices.parquet"],
+      "tier": 1
+    },
+    {
+      "path": ".cache/unified_regime_signal_daily.parquet",
+      "producer": "02_Infrastructure/regime/regime_signal.R",
+      "entry_fn": "build_regime_signal_table",
+      "args": {"daily": true},
+      "schedule": "daily",
+      "date_col": "Date",
+      "max_lag_days": 3,
+      "depends_on": [".cache/msm_daily_latest.parquet", ".cache/fred_macro_wide.parquet", ".cache/ktri_indices.parquet"],
+      "tier": 1
+    },
+    {
+      "path": ".cache/dart/dart_raw_financials.parquet",
+      "producer": "02_Infrastructure/data/data_collector_dart.R",
+      "entry_fn": "dart_run_pipeline",
+      "schedule": "monthly",
+      "date_col": null,
+      "max_lag_days": 35,
+      "depends_on": [],
+      "tier": 2
+    },
+    {
+      "path": ".cache/dart/dart_raw_quarterly.parquet",
+      "producer": "02_Infrastructure/data/dart_daily_incremental.R",
+      "entry_fn": "dart_daily_incremental",
+      "schedule": "daily",
+      "date_col": null,
+      "max_lag_days": 3,
+      "depends_on": [".cache/dart/corpcode_map.parquet"],
+      "tier": 2
+    },
+    {
+      "path": ".cache/dart/insider_trades.parquet",
+      "producer": "02_Infrastructure/data/dart_daily_incremental.R",
+      "entry_fn": "dart_daily_incremental",
+      "schedule": "daily",
+      "date_col": "Date",
+      "max_lag_days": 4,
+      "depends_on": [".cache/dart/corpcode_map.parquet"],
+      "tier": 2
+    },
+    {
+      "path": ".cache/fundamental_dart.parquet",
+      "producer": "02_Infrastructure/data/data_collector_dart.R",
+      "entry_fn": "dart_compute_factors",
+      "schedule": "monthly",
+      "date_col": null,
+      "max_lag_days": 35,
+      "depends_on": [".cache/dart/dart_raw_financials.parquet"],
+      "tier": 2
+    },
+    {
+      "path": ".cache/fundamental_merged.parquet",
+      "producer": "02_Infrastructure/data/build_fundamental_derived.R",
+      "entry_fn": "(source)",
+      "schedule": "monthly",
+      "date_col": null,
+      "max_lag_days": 35,
+      "depends_on": [".cache/fundamental_dart.parquet", ".cache/fundamental_xlsx.parquet"],
+      "tier": 2,
+      "_note": "도훈 audit — incremental drift 우려. 월간 full rebuild"
+    },
+    {
+      "path": ".cache/ic_matrix_expanding.parquet",
+      "producer": "04_Research/strategies/meta_learning/build_ic_matrix.R",
+      "entry_fn": "(source)",
+      "schedule": "monthly",
+      "date_col": "Date",
+      "max_lag_days": 35,
+      "depends_on": [".cache/RAWDATA.parquet"],
+      "tier": 3,
+      "_note": "도훈 audit — 수동 의존. 월간 schedule 등록"
+    },
+    {
+      "path": ".cache/kr_factor_returns.parquet",
+      "producer": "02_Infrastructure/factor_db/factor_db_builder.R",
+      "entry_fn": "(orchestrated)",
+      "schedule": "monthly",
+      "date_col": "Date",
+      "max_lag_days": 35,
+      "depends_on": [".cache/RAWDATA.parquet", ".cache/fundamental_merged.parquet"],
+      "tier": 3
+    },
+    {
+      "path": ".cache/flow_features_daily.parquet",
+      "producer": "04_Research/flow_concentration_ml/build_flow_features.R",
+      "entry_fn": "(source)",
+      "schedule": "weekly",
+      "date_col": "Date",
+      "max_lag_days": 14,
+      "depends_on": [".cache/investor/"],
+      "tier": 3,
+      "_note": "도훈 audit — research output, weekly catch-up"
+    }
+  ]
+}

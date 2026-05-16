@@ -1,0 +1,152 @@
+{
+  "task_id": "WT-D20260514_001",
+  "lineage_recorded_at": "2026-05-14T08:00:00+09:00",
+  "stage": "alpha-research",
+  "wt_type": "discovery",
+
+  "inputs": {
+    "request_json": "qepm/mailbox/worktask/WT-D20260514_001/request.json (도훈 mandate Session 81 B-path)",
+    "factor_db_cache": ".cache/factor_db/factor_db_YYYYMM.parquet (192 months 2008-01 ~ 2023-12)",
+    "investor_disclosure_raw": ".cache/investor_stock/investor_wide.parquet (KRX 외국인/기관/개인/기타 net buy)",
+    "universe_support": ".cache/universe_support/{us_k200,us_kq150}.parquet",
+    "str_1715_h1_reference": [
+      "qepm/mailbox/worktask/WT-D20260427_016/alpha_package.json (STR_1715 Iter 31 admit lineage)",
+      "qepm/mailbox/worktask/WT-D20260426_004/alpha_package.json (Iter 11 STR_1701 active)",
+      "qepm/mailbox/worktask/WT-D20260425_010/alpha_package.json (Iter 5 STR_1701 base)",
+      "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/02_holdings_universe/alpha_scores_str1715_268m.parquet"
+    ]
+  },
+
+  "outputs": {
+    "alpha_scores": {
+      "path": "stage_artifacts/WT_D20260514_001/alpha_scores.parquet",
+      "rows": 61332,
+      "schema": ["sig_date", "Ticker", "score_eff (CANONICAL_CONTRARIAN_ALIGNED)", "score_raw_F4_z", "direction", "regime_state"],
+      "sig_dates": 192,
+      "date_range": ["2008-01-01", "2023-12-01"],
+      "alignment": "score_eff = -1 * raw_F4_z (CONTRARIAN_ALIGNED post Codex C1 fix)",
+      "creation": "factor_engine_proposal.R initial run + post-Codex C1 regenerate 2026-05-14"
+    },
+    "ic_history": {
+      "path": "stage_artifacts/WT_D20260514_001/ic_history.parquet",
+      "rows": 960,
+      "schema": ["sig_date", "IC", "N", "factor"],
+      "factors_tracked": 5,
+      "creation": "factor_engine_proposal.R Step 6"
+    },
+    "alpha_validation": {
+      "path": "stage_artifacts/WT_D20260514_001/alpha_validation.json",
+      "creation": "factor_engine_proposal.R Step 10"
+    },
+    "m08_overlap_verification": {
+      "path": "stage_artifacts/WT_D20260514_001/m08_overlap_verification.json",
+      "purpose": "M08 family vs INV family information source orthogonal verification (mandate 의무)",
+      "verdict": "ZERO_OVERLAP_INFORMATION_SOURCE_ORTHOGONAL_ALPHA_VECTOR_LEVEL",
+      "creation": "factor_engine_proposal.R Step 10"
+    },
+    "orthogonality_two_level": {
+      "path": "stage_artifacts/WT_D20260514_001/orthogonality_two_level.json",
+      "purpose": "L-316 mandate inherit — alpha-vector + portfolio realized 양 단계 직교성 측정",
+      "alpha_vector_verdict": "PASS (max |cor| < 0.073 vs STR_1715 H1 components)",
+      "portfolio_realized_verdict": "FAIL (Pearson 0.7713 production-level >> 0.40 threshold, L-316 100% reproduce)",
+      "creation": "factor_engine_proposal.R Step 11 + post-Codex production validation 2026-05-14"
+    },
+    "alpha_package": {
+      "draft_path": "qepm/mailbox/worktask/WT-D20260514_001/alpha_package_draft.json",
+      "final_path": "qepm/mailbox/worktask/WT-D20260514_001/alpha_package.json",
+      "version": "v1_initial_draft + post_codex_R1_disposition",
+      "schema_compliance": "8-field mandate: factor_specs + mechanism + harvey_t + ICIR + monotonicity + subperiod_stability + lockbox_IS_OOS_split + orthogonality"
+    },
+    "codex_critic_response": {
+      "path": "qepm/mailbox/worktask/WT-D20260514_001/codex_critic_response_alpha.json",
+      "stance": "REJECT (veto_flag=false)",
+      "concerns": 7,
+      "ax_008_status": "FAIL → post_disposition_PARTIAL"
+    },
+    "alpha_challenge_note": {
+      "path": "qepm/mailbox/worktask/WT-D20260514_001/alpha_challenge_note.md",
+      "compliance": "Charter §8 No Silent Override — all 7 concerns explicit ACCEPT/PARTIAL/REBUTTAL classification with 학술 + L-code + 정량 data 3축 citation"
+    }
+  },
+
+  "code_artifacts": {
+    "factor_engine_proposal_R": {
+      "path": "qepm/mailbox/worktask/WT-D20260514_001/factor_engine_proposal.R",
+      "lines_of_code": "~470",
+      "purpose": "5 sophistication factors (F1~F5) + selection + 양 단계 직교성 측정",
+      "log_path": "qepm/mailbox/worktask/WT-D20260514_001/factor_engine_proposal_run2.log (final run post F3 fix)"
+    }
+  },
+
+  "codex_round_disposition_log": {
+    "round": 1,
+    "stance": "REJECT (veto_flag=false)",
+    "claude_overrides": {
+      "C1_artifact_sign_mismatch": "ACCEPT_FULL — alpha_scores.parquet REGENERATED with canonical contrarian-aligned score_eff + audit trail",
+      "C2_C15_C14_violation": "REBUTTAL with quantitative equivalence proof (cor(LMF Z_Score_Aligned vs bulk Z_Score for INV at 2018-06-01) = 1.000000)",
+      "C3_multi_gate_fail": "ACCEPT_FULL — selection_status NON_GRADUATING_MULTI_MANDATE_FAIL_5_OF_6_GATES (rank_IC -0.029 + signed neg + DSR/5-spec deferred + mono 0.556 < 0.70)",
+      "C4_L316_portfolio_cor_fail_plus_AX_007_not_implemented": "ACCEPT_FULL alpha NON_GRADUATING + REBUTTAL on AX-007 EXEMPT misunderstanding (portfolio-level only, not alpha-level)",
+      "C5_weights_covariance_absent": "REBUTTAL out-of-scope (Charter §8 Alpha agent boundary)",
+      "C6_challenge_note_artifact_lineage_absent": "ACCEPT_FULL — alpha_challenge_note.md + artifact_lineage.json CREATED",
+      "C7_ref_page_anchors_kr_mechanism_evidence": "PARTIAL_ACCEPT (page anchor 부재 인정) + REBUTTAL with paper titles + KR-specific Choe-Kho-Stulz 2005 direct evidence + 60.9% directional consistency"
+    },
+    "rationalization_phrases_self_audit_grep": [
+      "PIT-clean equivalent → PARTIAL acknowledged + quantitative equivalence proof",
+      "bulk parquet read equivalent to per-month load_month_factors → ACCEPT + cor=1.000000 quantitative proof",
+      "RF impact limited → PARTIAL acknowledged",
+      "KR equity-only universe single asset class 한계 본질 → REBUTTAL: L-316 inheritance fact statement, NOT rationalization",
+      "EXEMPT (multi-sleeve composition with STR_1715 admit lineage) → ACCEPT C4 + status clarification (portfolio-level only)"
+    ]
+  },
+
+  "ax_axiom_compliance_audit": {
+    "AX-000_invariant": "PRESERVED",
+    "AX-001_v2": "N/A (information-arbitrage factor, NOT defense)",
+    "AX-002_ex_ante_grid_n5": "PASS (N=5 strict, no post-hoc search)",
+    "AX-003_kr_value_ep_failure": "PASS (no value factor)",
+    "AX-004_kr_quality_single_signal_failure": "PASS (no quality factor)",
+    "AX-005_v1_2": "EXEMPT_eligible_at_portfolio_level_only (clarification per Codex C4)",
+    "AX-007": "EXEMPT_eligible_at_portfolio_level_only (clarification per Codex C4)",
+    "AX-008_verification_triangulation": "CODEX_REJECT_R1_post_disposition_PARTIAL (forge + architect pending)"
+  },
+
+  "pit_compliance_audit": {
+    "C1": "PASS (sig_date < 2023-12-22 lockbox-safe)",
+    "C2": "PASS (compute_investor.R Date < sig_d strict)",
+    "C9": "N/A",
+    "C10": "PASS (20d avg TV >= 2e8 KRW with t-1 lag)",
+    "C13": "REVISED_PARTIAL (CONTRARIAN alignment via academic mechanism inheritance, NOT future return; alpha_scores.parquet REGENERATED with canonical sign + audit trail)",
+    "C14": "PARTIAL_PASS (load_month_factors internal align_factor_direction enforces, output API does not expose Usable_Date; bulk read uses same align_factor_direction codepath)",
+    "C15": "PARTIAL_PASS (bulk read equivalence to load_month_factors verified cor=1.000000 for INV at 2018-06-01)",
+    "lockbox_strict": "PASS (SIGNAL_CUTOFF=2023-12-22)"
+  },
+
+  "downstream_handoff": {
+    "selection_status": "NON_GRADUATING_MULTI_MANDATE_FAIL_5_OF_6_GATES_INFORMATION_SOURCE_PARTIAL_ORTHOGONAL",
+    "recommended_disposition_options_neutral": [
+      "Option A: Archive (도훈 reasonable call autonomous abort precedent inheritance)",
+      "Option B: Retain research insight L-code only (no admit)",
+      "Option C: Pivot to universe expansion (KR 10y bond / TSMOM / VKOSPI / multi-asset class architectural change)"
+    ],
+    "decision_authority": "Q-Lead / 도훈"
+  },
+
+  "references": {
+    "lessons_inherited": ["L-247", "L-269", "L-281", "L-284", "L-285", "L-316"],
+    "axioms_invoked": ["AX-000", "AX-002", "AX-005_v1.2 EXEMPT", "AX-007 EXEMPT", "AX-008"],
+    "academic_papers_cited": [
+      "Boehmer-Wu (2013) RFS — Short Selling and Price Discovery",
+      "Da-Engelberg-Gao (2011) JF — In Search of Attention",
+      "Choe-Kho-Stulz (2005) RFS — Do Domestic Investors Have an Edge?",
+      "Gompers-Metrick (2001) QJE — Institutional Investors and Equity Prices",
+      "Yan-Zhang (2009) — Institutional Trade Persistence",
+      "Barber-Odean (2000) JF — Trading Is Hazardous to Your Wealth",
+      "Easley-Lopez de Prado-O'Hara (2024) — PIN-Volume update",
+      "Corsi (2009) JFE — Simple HAR Model",
+      "Harvey-Liu-Zhu (2016) JF — multi-testing t>3.0",
+      "Bailey-Lopez de Prado (2014) — Deflated Sharpe Ratio",
+      "Carhart (1997) JF — Persistence in Mutual Fund Performance (M08 verification reference only)",
+      "Blitz-Huij-Martens (2011) — Residual Momentum (M08 KR analog)"
+    ]
+  }
+}

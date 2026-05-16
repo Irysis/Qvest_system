@@ -1,0 +1,40 @@
+{
+  "task_id": "WT-D20260514_013",
+  "status": "ABORTED",
+  "abort_decision": "Q-Lead",
+  "abort_authorized_by": "도훈 mandate 2026-05-15 09:30 KST",
+  "abort_reason": "Sequential Admission 시기상조 — 60m subsample bias + Codex critique 8 concerns (HIGH 3 + MEDIUM 5) + AX-002/AX-008 FAIL + PIT C1/C9/C12 FAIL 누적. SR 2.0+ 마일스톤 욕심으로 우월성 과신 회피 (AX-002 process honesty 정합).",
+  "lifecycle_completed_steps": ["alpha-research (Step 1, alpha_discovery_certificate ISSUED)", "risk-research (Step 2 partial, Codex Round 5단계 흐름 4/5 — REJECT)"],
+  "lifecycle_remaining_skipped": ["risk-research final (Step 3 risk_package.json)", "optimizer-research (Step 4)", "forge (Step 5)", "judge (Step 6)", "governor (Step 7)"],
+  "codex_round_audit": {
+    "alpha_codex_response": "stance=REJECT, veto_flag=false, 7 concerns (3 HIGH + 4 MEDIUM) → challenge_note 5 ACCEPT + 2 REBUTTAL (학술 + L-code + 정량) → final risk_package issued",
+    "risk_codex_response": "stance=REJECT, veto_flag=false, 8 concerns (3 HIGH + 5 MEDIUM) → REJECT 누적 + AX-002/AX-008 FAIL + Q-Lead escalate"
+  },
+  "fundamental_caveats_unresolvable": [
+    "60m subsample bias (2021-03 ~ 2026-02): PG2 캐논 255m PerfA SR 1.95 vs subsample 1.67 — 부분표본 우월성 transfer 불확실",
+    "Sigma single latest-date snapshot (2026-01-30) only — 60 sig_dates 정합 X (Iter 4 single-snapshot failure mode 재현)",
+    "CRISIS regime n=15 (bootstrap CI 부재, full-window bottom-quartile split = PIT C1/C9 위반)",
+    "CVaR_95 -13.61%/월 vs cap 2.5% (5.4× breach)",
+    "Phase 1.A Liao 2025 RFS Confident-High-Low FAIL Δ -0.166 lockbox (KR 부정합)",
+    "Phase 1.B M7 cost-aware turnover 효과 marginal (γ=0.001)",
+    "ML side TO 10.09/yr — Production Constraint 6.0/yr 1.67× 명백 위반 (격월 top-30 mitigation 시 한도 충족)"
+  ],
+  "preserved_artifacts": [
+    "alpha_package.json (24KB final, alpha_discovery_certificate ISSUED)",
+    "alpha_lockbox_pit_clean_mandate.parquet (8,359 rows × 24 lockbox months PIT-clean)",
+    "alpha_overlap_vs_str1715.parquet (Pareto cor input)",
+    "pareto_cor_per_sig_date.parquet (60m per-period)",
+    "covariance.parquet (414×414 single snapshot, retain for next cycle reference)",
+    "exposure_matrix + factor_covariance + specific_risk + regime_correlation (risk artifacts retain)",
+    "challenge_note.md (alpha cycle disposition)",
+    "codex_critic_response_alpha.json + codex_critic_response_risk.json"
+  ],
+  "next_cycle_recommendations": [
+    "Option 1: Longer history ML cycle (2010~2025 features 확보 후 재spawn) — sample bias 근본 해소",
+    "Option 2: V6 prospective walk-forward 6m parallel tracking (2026-05 ~ 2026-11) → admit re-시도 2026-11+",
+    "Option 3: ML cycle γ=0.01 cost-aware 강화 + bootstrap B=50 + Sigma rolling per-sig_date rebuild → fundamental fixes 후 재spawn",
+    "Option 4 (가장 conservative): 현 PG2 (STR_1715 100%) 유지 + 4th orthogonal alpha source 다음 cycle 별도 탐색"
+  ],
+  "lcode_to_record": "L-325 적립 mandate",
+  "timestamp": "2026-05-15T09:30:00+09:00"
+}

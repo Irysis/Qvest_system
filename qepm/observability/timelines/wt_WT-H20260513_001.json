@@ -1,0 +1,131 @@
+{
+  "wt_id": "WT-H20260513_001",
+  "timeline_built_at": "2026-05-13T14:49:24+0900",
+  "current_phase": "FORGE_COMPLETE",
+  "events": [
+    {
+      "source": "governance_log",
+      "timestamp": "2026-05-13T06:33:54+0900",
+      "agent": "q-lead",
+      "action": "WT_CREATED",
+      "summary": "Work Task 생성: STR_1715_AR_on_M4 PG2 + R05_Tail_Risk Sequential Overlay (Layer 5 cash-control variant) | source=user_defined"
+    },
+    {
+      "source": "governance_log",
+      "timestamp": "2026-05-13T06:41:00+0900",
+      "agent": "forge",
+      "action": "FORGE_DRAFT_CREATED",
+      "summary": "forge_package_draft.json 생성. 5 variants (V1-V5) ex-ante grid backtest 완료. V2 aggressive_regime SR 1.9536 (ΔSR +0.205 vs L4 admit baseline 1.7486). V5 regime_x_R05_interaction MDD -23.29% (1.52pp better)."
+    },
+    {
+      "source": "governance_log",
+      "timestamp": "2026-05-13T06:41:30+0900",
+      "agent": "codex-critic",
+      "action": "CODEX_AUTO_TRIGGER_SPAWN",
+      "summary": "PostToolUse codex_round_auto_trigger.sh background spawn (timeout 1200s gpt-5.5 xhigh reasoning effort)"
+    },
+    {
+      "source": "governance_log",
+      "timestamp": "2026-05-13T06:47:37+0900",
+      "agent": "codex-critic",
+      "action": "CODEX_RESPONSE_RECEIVED",
+      "summary": "Codex REJECT (veto=false) — 9 concerns: C1-C9. HIGH: C1 hash_audit / C2 weights.csv+stage_dirs / C3 V6 reproducibility / C4 DSR consistency / C5 Harvey 5-spec / C7 charts. MEDIUM: C6 TO round-trip / C8 AX-001 v2 / C9 cov condition."
+    },
+    {
+      "source": "governance_log",
+      "timestamp": "2026-05-13T06:51:00+0900",
+      "agent": "forge",
+      "action": "CODEX_RESOLUTION_EXECUTED",
+      "summary": "run_codex_resolution.R 실행. 8 신규 artifacts 산출: hash_audit (start=end unchanged), weights.csv (267 dates), grid_ultrafine_regime.csv (V6 reproducibility 16 variants), dsr_consistent_penalty_N37.csv (22 variants DSR), harvey_factor_regression_5spec.json (CAPM-KR 5 specs), turnover_audit_round_trip_x2.json (RF-F7), covariance_condition_audit.json (out-of-scope), 4 PNG charts (verify timestamps 06:46)."
+    },
+    {
+      "source": "governance_log",
+      "timestamp": "2026-05-13T06:52:00+0900",
+      "agent": "forge",
+      "action": "CHALLENGE_NOTE_CREATED",
+      "summary": "forge_challenge_note.md 작성. 9 concerns 분류: ACCEPT 4 (C1/C3/C4/C6) + PARTIAL 2 (C2/C5) + REBUTTAL 2 (C7 chart race / C9 cov out-of-scope) + ESCALATE 1 (C8 AX-001 v2 → judge). Charter §8 No Silent Override 정합. Self-rationalization grep 5 flags 검토."
+    },
+    {
+      "source": "governance_log",
+      "timestamp": "2026-05-13T06:54:00+0900",
+      "agent": "forge",
+      "action": "FORGE_PACKAGE_FINAL",
+      "summary": "forge_package.json (no _draft) 작성 완료. v6.0 Codex Critic Round 5-step ALL COMPLETE. forge_advance_status=CONDITIONAL_PASS_DSR_DEFENSIBLE_N5. Primary recommendation V2 SR 1.9536 (DSR Z=1.45 PASS N=5). Supplementary V6 SR 2.0237 (DSR FAIL N>=21, prospective validation candidate). AX-008 floor 2/3 (Forge + Codex post-resolution)."
+    }
+  ],
+  "phases": [],
+  "certs": {
+    "alpha_discovery": {
+      "status": "ABSENT",
+      "issued_at": "",
+      "reason": ""
+    },
+    "sr_provenance": {
+      "status": "ISSUED",
+      "issued_at": "2026-05-13T08:00:44+09:00",
+      "reason": "all_pass"
+    },
+    "schedule_fidelity": {
+      "status": "ABSENT",
+      "issued_at": "",
+      "reason": ""
+    },
+    "forge_package_validated": {
+      "status": "ABSENT",
+      "issued_at": "",
+      "reason": ""
+    },
+    "governor_concord": {
+      "status": "ABSENT",
+      "issued_at": "",
+      "reason": ""
+    }
+  },
+  "failures": [
+    {
+      "source": "codex_critic_response_forge.json",
+      "agent_role": "",
+      "stance": "REJECT",
+      "critical_concerns_count": 9,
+      "high_count": 6,
+      "weakest_assumption": "The weakest assumption is that V2 remains statistically defensible under an N=5 DSR penalty after the same forge process admits 37 searched variants and includes a non-reproducible V6 post-hoc SR 2.0237 claim."
+    },
+    {
+      "source": "codex_critic_response_governor.json",
+      "agent_role": "",
+      "stance": "REVISE",
+      "critical_concerns_count": 6,
+      "high_count": 3,
+      "weakest_assumption": "The weakest assumption is that Governor can mark deployment ready while treating the request-local [0,0.15] bound and N37 DSR failure as already resolved by precedent/inheritance rather than by explicit Q-Lead or prospective-validation approval."
+    },
+    {
+      "source": "codex_critic_response_judge.json",
+      "agent_role": "",
+      "stance": "REJECT",
+      "critical_concerns_count": 7,
+      "high_count": 5,
+      "weakest_assumption": "The weakest assumption is that V2 is admit-eligible because the N=5 ex-ante DSR and pure-overlay AX-001 exemption remain valid despite a 37-variant search, strict AX-001 failures, missing target artifacts, and no independent post-remediation Codex/Architect PASS."
+    }
+  ],
+  "retry_count": 0,
+  "artifact_lineage": [
+    {
+      "role": "forge",
+      "artifact_path": "qepm/mailbox/worktask/WT-H20260513_001/forge_package.json",
+      "generated_at": "2026-05-13T06:55:18+0900",
+      "size_bytes": 27939
+    },
+    {
+      "role": "judge",
+      "artifact_path": "qepm/mailbox/worktask/WT-H20260513_001/judge_verdict.json",
+      "generated_at": "2026-05-13T07:17:03+0900",
+      "size_bytes": 21930
+    },
+    {
+      "role": "governor",
+      "artifact_path": "qepm/mailbox/worktask/WT-H20260513_001/governor_admission.json",
+      "generated_at": "2026-05-13T08:04:48+0900",
+      "size_bytes": 27563
+    }
+  ]
+}

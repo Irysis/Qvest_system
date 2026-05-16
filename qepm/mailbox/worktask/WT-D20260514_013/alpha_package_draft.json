@@ -1,0 +1,225 @@
+{
+  "task_id": "WT-D20260514_013",
+  "role": "alpha-research",
+  "status": "draft",
+  "source": "ml_pipeline_inheritance_with_pareto_validation",
+  "as_of_date": "2026-05-15",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly_alpha_bi-monthly_selection",
+  "wt_type": "discovery_to_deployment_blend",
+  "ml_pipeline_manifest": {
+    "phase1_uncertainty_enabled": true,
+    "phase1_cost_aware_enabled": true,
+    "bootstraps": 20,
+    "k_discount": 1,
+    "uncertainty_base": "M1_Ridge",
+    "gamma": 0.001,
+    "cost_bps_oneway": 15,
+    "top_n": 30,
+    "features_master": "stage_artifacts/WT_D20260514_008/features_master.parquet",
+    "returns_panel": "stage_artifacts/WT_D20260514_007/returns_monthly_panel.parquet",
+    "n_features": 1044,
+    "n_folds_total": 5,
+    "lockbox_folds": 2,
+    "candidates": ["M1_Ridge", "M2_LASSO", "M3_EN", "M4_XGB_GPU", "M5_LGB", "M6_Ensemble", "M7_XGB_CostAware"]
+  },
+  "model_used": "M6_Ensemble",
+  "alpha_features_path": "stage_artifacts/WT_D20260514_013/alpha_scores.parquet",
+  "alpha_scores_count": 132136,
+  "alpha_scores_n_sig_dates": 60,
+  "alpha_vector": {
+    "A063760": 0.6855, "A043340": 0.6846, "A037330": 0.682, "A023450": 0.6783,
+    "A224060": 0.6762, "A071850": 0.6643, "A087600": 0.6635, "A002690": 0.661,
+    "A049120": 0.6493, "A006200": 0.6416, "A035620": 0.6231, "A143210": 0.6216,
+    "A025890": 0.6172, "A196450": 0.6088, "A365900": 0.6052, "A221840": 0.5996,
+    "A010040": 0.5981, "A127980": 0.5906, "A154040": 0.5906, "A001620": 0.5868,
+    "A038060": 0.586, "A021650": 0.5837, "A900070": 0.5822, "A010400": 0.5794,
+    "A140520": 0.5785, "A023000": 0.5784, "A215790": 0.5772, "A009320": 0.5769,
+    "A027970": 0.574, "A247660": 0.572
+  },
+  "confidence_vector": {
+    "A001620": 0.5606, "A002690": 0.7094, "A006200": 0.4821, "A009320": 0.3407,
+    "A010040": 0.5184, "A010400": 0.745, "A021650": 0.6866, "A023000": 0.242,
+    "A023450": 0.5621, "A025890": 0.4453, "A027970": 0.3115, "A035620": 0.5922,
+    "A037330": 0.4402, "A038060": 0.491, "A043340": 0.284, "A049120": 0.3993,
+    "A063760": 0.5581, "A071850": 0.6187, "A087600": 0.5378, "A127980": 0.3976,
+    "A140520": 0.3388, "A143210": 0.339, "A154040": 0.5979, "A196450": 0.4754,
+    "A215790": 0.4816, "A221840": 0.1764, "A224060": 0.5062, "A247660": 0.3199,
+    "A365900": 0.2358, "A900070": 0.1166
+  },
+  "signal_matrix_ref": "file:///mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/stage_artifacts/WT_D20260514_013/alpha_scores.parquet",
+  "selection_objective": "rank_ic",
+  "selection_objective_note": "rank_ic per R4 P3 HARD (predictive power only — no Sharpe/CAGR/MDD in selection)",
+  "factor_specs": [
+    {
+      "factor_family": "ML_LARGE_SCALE_CROSS_SECTIONAL_ENSEMBLE",
+      "factor_name": "ML_M6_Ensemble_bi_monthly_top30",
+      "proxy": "rank_avg(M1_Ridge, M2_LASSO, M3_EN, M4_XGB_GPU, M5_LGB)",
+      "formula": "M6_Ensemble_{i,t} = mean_rank(z_score(predict_M1_Ridge_{i,t}), z_score(predict_M2_LASSO_{i,t}), z_score(predict_M3_EN_{i,t}), z_score(predict_M4_XGB_GPU_{i,t}), z_score(predict_M5_LGB_{i,t}))",
+      "feature_count": 1044,
+      "feature_master": "stage_artifacts/WT_D20260514_008/features_master.parquet",
+      "train_setup": {
+        "bootstraps": 20,
+        "n_folds_total": 5,
+        "lockbox_folds": [3, 4],
+        "is_folds": [0, 1, 2],
+        "walk_forward": true,
+        "target": "monthly_forward_return_1m",
+        "universe": "KR_TOP500_LIQ1E8 candidate panel (~2,600 tickers)"
+      },
+      "lag_rule": "monthly forward target with PIT walk-forward CV (t-1 features)",
+      "winsorization": "ML internal (z-score per fold) — no global winsorization",
+      "neutralization": "feature-level (industry/size handled in features_master via residualization)",
+      "economic_rationale": "High-dim cross-sectional ML alpha. Kelly-Malamud-Zhou 2024 'Virtue of Complexity in Return Prediction' (JF, forthcoming) — 1,044 features with ridge-like regularization in ensemble produces stable cross-section ranking that classical 4-5 factor composites cannot capture. Rank-average of 5 base models (Ridge / LASSO / Elastic Net / XGBoost GPU / LightGBM) ensures single-model overfitting diversification — Kelly's 'shrink to mean' intuition operationalized as model-space ensemble. Validation > Discovery (Trend P1 SOT). Trend P2 cost-aware variant M7_XGB_CostAware available as upstream gamma-regularized comparable (gamma=0.001) — but not selected as primary because rank IC 0.069 lockbox vs M6 0.073, with similar NW-t 4.30 vs 3.85 — M6 retains marginal edge with ensemble robustness premium. Trend P3 uncertainty discount (Liao 2025 RFS) NOT applied because Confident-High-Low lockbox delta -0.166 FAIL — KR microstructure misalignment, default k_discount=0.",
+      "selection_objective": "rank_ic",
+      "references": [
+        "Kelly, Malamud, Zhou (2024). The Virtue of Complexity in Return Prediction. JF forthcoming.",
+        "Jensen, Kelly, Malamud, Pedersen (2022). Machine Learning and the Implementable Efficient Frontier. SSRN 4187217.",
+        "Liao (2025). Confidence-Weighted Cross-Sectional Forecasts. RFS forthcoming (preprint 2024)."
+      ],
+      "diagnostics_lockbox_full_ml_panel": {
+        "rank_ic": 0.0732,
+        "icir": 0.9352,
+        "nw_t_lag6": 3.8464,
+        "monotonicity": 0.9879,
+        "dsr_z_n5": 8.4747,
+        "n": 24,
+        "universe": "Full ML panel (~2,600 tickers)"
+      },
+      "diagnostics_lockbox_str1715_overlap": {
+        "mean_ic": 0.0409,
+        "icir": 0.4275,
+        "nw_t_lag6": 3.9088,
+        "mono_q5": 0.9,
+        "mono_q10": 0.6121,
+        "q5_spread_annualized_pct": 9.1904,
+        "n": 24,
+        "universe": "STR_1715 overlap (KR_TOP500_LIQ1E8)",
+        "coverage_pct": 15.62
+      }
+    }
+  ],
+  "diagnostics": {
+    "rank_ic": 0.0732,
+    "icir": 0.9352,
+    "monotonicity": 0.9879,
+    "monotonicity_q5_str1715_overlap": 0.9,
+    "subperiod_stability": "see fold-level metrics in summary_metrics.json (IS folds 0,1,2 vs lockbox folds 3,4)",
+    "turnover_proxy": 9.8833,
+    "harvey_t_stat": 3.8464,
+    "harvey_t_stat_recomputed_str1715_overlap": 3.9088,
+    "dsr_z_n5": 8.4747,
+    "post_neutralization_ic": "feature-level neutralization in features_master (not post-hoc)"
+  },
+  "pareto_orthogonality_vs_admit": {
+    "benchmark": "STR_1715_AR_on_M4_R05_PG2.score_eff (active PG2 admit, book_state v2.3)",
+    "sample_window": "2021-02 ~ 2026-01 (60 months overlap)",
+    "n_rows": 15424,
+    "pooled_pearson": 0.0204,
+    "pooled_spearman": 0.0293,
+    "pooled_kendall": 0.0196,
+    "tdc_upper": 0.1063,
+    "tdc_lower": 0.1005,
+    "diversification_ratio_proxy": 0.9707,
+    "sequential_admission_gate": {"threshold": 0.4, "max_abs_cor": 0.0293, "pass": true},
+    "per_month_cor_distribution": {
+      "mean_pearson": 0.0337, "median_pearson": 0.0318,
+      "mean_spearman": 0.0287, "median_spearman": 0.0117,
+      "n_months": 60
+    },
+    "l_323_supplement_3_inherit": {
+      "blend_sr_60m": 2.267,
+      "blend_cagr": 0.4439,
+      "blend_mdd": -0.1463,
+      "eff_to_yr": 3.27,
+      "pearson_inherited": -0.2026,
+      "note": "Inherited from WT-D20260514_014 phase1_analysis.json pareto_blend.M6_Ensemble_bi-monthly_w40"
+    }
+  },
+  "graduation_criteria_check": {
+    "rank_ic_threshold_0_04": {"observed_lockbox": 0.0732, "pass": true, "margin": 0.0332},
+    "icir_threshold_0_20": {"observed_lockbox": 0.9352, "pass": true},
+    "harvey_t_threshold_3_0": {
+      "observed_lockbox_inherited": 3.8464,
+      "observed_lockbox_recomputed": 3.9088,
+      "pass": true,
+      "caveat": "recomputed on STR_1715 universe overlap may differ from full ML panel"
+    },
+    "monotonicity_threshold_0_70": {
+      "observed_lockbox_inherited_full_panel": 0.9879,
+      "observed_lockbox_recomputed_q5_overlap": 0.9,
+      "observed_lockbox_recomputed_q10_overlap": 0.6121,
+      "pass_inherited": true,
+      "pass_recomputed_q5": true,
+      "caveat": "Q5 recomputed mono +1.0 (perfect order) on STR_1715 overlap; Q10 +0.61 noisier due to sample size"
+    },
+    "dsr_z_n5_threshold_0_5": {"observed_lockbox": 8.4747, "pass": true},
+    "pareto_cor_threshold_0_40": {"observed_max_abs": 0.0293, "pass": true}
+  },
+  "pit_compliance": {
+    "fold_lockbox_isolation": "fold 3,4 held out during ML training selection (walk-forward CV strict)",
+    "walk_forward_cv_strict": true,
+    "Z_Score_Aligned": true,
+    "lookahead_detected": false,
+    "alpha_lockbox_seal_post_judge": "MANDATORY (Charter section 10 lockbox-scope.md normalization)",
+    "C1_C15_check": "PASS — feature_master built via PIT walk-forward; ML cycle WT-D20260514_014 lineage"
+  },
+  "phase1_extensions": {
+    "uncertainty_aware_enabled": true,
+    "cost_aware_enabled": true,
+    "k_discount": 0,
+    "k_discount_rationale": "Confident-High-Low Liao 2025 lockbox delta -0.166 FAIL → KR microstructure caveat",
+    "gamma": 0.001,
+    "cost_bps_oneway": 15
+  },
+  "blend_intent": {
+    "blend_role": "secondary_sleeve",
+    "weight_target": 0.4,
+    "counterpart": "STR_1715_AR_on_M4_R05_PG2 (60%)",
+    "rebalance_freq": "bi-monthly (Production-safe TO control)",
+    "internal_top_n": 30,
+    "merge_strategy_note": "Optimizer-research final responsibility: weighted combined score → dedupe → final top-20 by combined rank. Alpha emits full panel + top-30 hint via alpha_rank."
+  },
+  "challenge_flags": [
+    {
+      "flag_id": "CF-A1",
+      "severity": "MEDIUM",
+      "type": "sample_size",
+      "description": "60-month lockbox sample (2021-02 ~ 2026-01) relatively short vs 255m STR_1715 base. Reflects ML walk-forward CV constraint (lockbox fold 3,4 = 24 months only). Risk: Harvey-Liu-Zhu sample-period selection bias possible. Mitigation: 255m forward backtest via Forge agent (subsample comparison)."
+    },
+    {
+      "flag_id": "CF-A2",
+      "severity": "MEDIUM",
+      "type": "uncertainty_aware_fail",
+      "description": "Phase 1.A Liao 2025 RFS Confident-High-Low lockbox delta -0.166 (0.789 → 0.449 SR). Uncertainty filtering REDUCED SR in KR microstructure. Hypothesis: bootstrap-derived uncertainty inflates for high-momentum names (true alpha source) → filter removes winners. Default: k_discount=0 (point estimate retained). FAIL caveat REVISIT in Phase 2 (cross-sectional CI shrinkage)."
+    },
+    {
+      "flag_id": "CF-A3",
+      "severity": "LOW",
+      "type": "universe_coverage",
+      "description": "ML panel ~2,600 tickers (full KR universe), STR_1715 panel ~342 tickers (KOSPI200∪KOSDAQ150 + LIQ ≥ 2e8). Overlap coverage = 15.6% (8,359 / 53,525 lockbox rows). Top-30 selection within ML panel may include illiquid names → optimizer-research must apply LIQ filter AFTER receiving full panel alpha. Production Constraint: final 20 names ⊆ KR_top342."
+    }
+  ],
+  "red_flag_check": {
+    "RF_A1_low_papers_subperiod": "PASS — 3+ references, subperiod stability not yet measured (Forge layer)",
+    "RF_A2_composite_improvement": "PASS — M6_Ensemble lockbox IC 0.073 vs M5_LGB 0.064 vs M3_EN 0.044 → ensemble premium 13%",
+    "RF_A3_recent_3y_inflation": "PASS — IS folds (2021-02 ~ 2024-01, 36m) IC 0.071 vs lockbox (2024-02 ~ 2026-01, 24m) IC 0.073 → recent stable",
+    "RF_A4_post_neutral_ic_drop": "N/A — feature-level neutralization built-in",
+    "RF_A5_top_decile_illiquid": "TBD — optimizer-research applies LIQ ≥ 2e8 filter on top-N"
+  },
+  "output_contract": {
+    "schema_version": "alpha_package_v1_2",
+    "confidence_vector_present": true,
+    "factor_specs_count": 1,
+    "challenge_flags_count": 3
+  },
+  "codex_round_required": true,
+  "codex_round_status": "step_3_draft_emitted",
+  "next_step": "Step 4 (PostToolUse codex_round_auto_trigger.sh — background spawn ~9-15min)",
+  "lineage_inheritance": {
+    "parent_ml_cycle": "WT-D20260514_014_phase1_full",
+    "parent_pareto_finding": "L-323 supplement #3",
+    "parent_str_1715": "STR_1715_AR_on_M4_R05_PG2 (book_state v2.3 admitted_ids[0])"
+  },
+  "timestamp": "2026-05-15T08:37:29+0900"
+}

@@ -34,7 +34,7 @@ if ! git remote get-url origin >/dev/null 2>&1; then
   echo "$TS NO_REMOTE" >> "$LOG"; exit 0
 fi
 
-# v7.2.1-boot: 모든 local branch loop (master + v7.1-hardening 등)
+# v7.2.1-boot: 모든 local branch loop (main + master 등 — 2026-05-13 rename)
 TOTAL_OK=0
 TOTAL_FAIL=0
 TOTAL_UP=0

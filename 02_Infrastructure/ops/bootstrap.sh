@@ -142,11 +142,23 @@ fi
 #     memory_health check은 cached memory_health_latest.json read
 QV8_CLI="$PROJECT/02_Infrastructure/tools/qvest_v8_ready"
 if [ -f "$QV8_CLI" ]; then
-  V8_JSON=$(bash "$QV8_CLI" --no-write --json 2>/dev/null || echo "{}")
-  V8_OVERALL=$(echo "$V8_JSON" | python3 -c "import sys,json; d=json.load(sys.stdin) if sys.stdin.readable() else {}; print(d.get('overall','?'))" 2>/dev/null || echo "?")
-  V8_PASS=$(echo "$V8_JSON" | python3 -c "import sys,json; d=json.load(sys.stdin) if sys.stdin.readable() else {}; print(d.get('summary',{}).get('pass','?'))" 2>/dev/null || echo "?")
-  V8_FAIL=$(echo "$V8_JSON" | python3 -c "import sys,json; d=json.load(sys.stdin) if sys.stdin.readable() else {}; print(d.get('summary',{}).get('fail','?'))" 2>/dev/null || echo "?")
-  V8_SKIP=$(echo "$V8_JSON" | python3 -c "import sys,json; d=json.load(sys.stdin) if sys.stdin.readable() else {}; print(d.get('summary',{}).get('skip','?'))" 2>/dev/null || echo "?")
+  # L-314 follow-up: temp file 경유로 stdin pipe parse 문제 회피 + 1회 parse로 4값 동시 추출
+  V8_TMP=$(mktemp)
+  # qvest_v8_ready CLI exit code 0=PASS / 1=FAIL / 2=WARN — 모두 정상 JSON 반환. 'true'로 exit code 무시.
+  bash "$QV8_CLI" --no-write --json > "$V8_TMP" 2>/dev/null || true
+  [ -s "$V8_TMP" ] || echo "{}" > "$V8_TMP"
+  V8_PARSED=$(python3 -c "
+import json
+try:
+    with open('$V8_TMP') as fp:
+        d = json.load(fp)
+    s = d.get('summary', {})
+    print(f\"{d.get('overall','?')}|{s.get('pass','?')}|{s.get('fail','?')}|{s.get('skip','?')}\")
+except Exception:
+    print('?|?|?|?')
+" 2>/dev/null || echo "?|?|?|?")
+  rm -f "$V8_TMP"
+  IFS='|' read -r V8_OVERALL V8_PASS V8_FAIL V8_SKIP <<< "$V8_PARSED"
   echo "[boot] v8 readiness (--no-write, 15 check): $V8_OVERALL — pass=$V8_PASS fail=$V8_FAIL skip=$V8_SKIP (e2e+timeline SKIP 정상, memory_health cached)"
   if [ "${V8_FAIL:-99}" != "0" ] && [ "${V8_FAIL:-99}" != "?" ]; then
     echo "[boot] WARN: v8_readiness FAIL — bash 02_Infrastructure/tools/qvest_v8_ready --strict 직접 실행 권장"
@@ -190,8 +202,68 @@ if [ -f "$AX_CACHE_PATH" ]; then
   fi
 fi
 
+# PG2 status (L-314 follow-up: 현 PG2 동적 표시 — book_state.json 자동 읽기)
+PG2_INFO=""
+if [ -f "$BS_PATH" ]; then
+  PG2_INFO=$(BS_PATH="$BS_PATH" python3 <<'PYEOF' 2>/dev/null
+import json, os
+bs_path = os.environ.get('BS_PATH', '')
+try:
+    with open(bs_path) as f:
+        d = json.load(f)
+    admitted = d.get('admitted_ids') or []
+    weights = d.get('book_weights') or {}
+    updated = (d.get('updated_at') or '')[:10]
+    # Layer detection
+    layers = ['Iter31']
+    sched = d.get('schedule_logic_version') or ''
+    if 'M4' in sched:
+        layers.append('M4 BOCPD')
+    if (d.get('ar_overlay_active') or {}).get('active') is True:
+        layers.append('AR')
+    # R05 admit log: search any r05_layer5_admit_log_* key
+    r05_log = {}
+    for k, v in d.items():
+        if k.startswith('r05_layer5_admit_log_') and isinstance(v, dict):
+            r05_log = v
+            break
+    r05_state = r05_log.get('r05_layer5_active') or {}
+    if r05_state.get('active') is True:
+        layers.append('R05 Tail-Risk')
+    n_layer = len(layers) + 1  # +1 for STR_1715 alpha base
+    # Beta values (admit baseline: NORMAL regime, middle β_AR rule q70~q90)
+    beta_ar = 0.7
+    beta_r05 = float((r05_state.get('beta_r05_params') or {}).get('NORMAL', 1.0))
+    risk_pct = round(1.0 * beta_ar * beta_r05 * 100)
+    cash_pct = 100 - risk_pct
+    # Admit metrics
+    m = r05_log.get('admit_basis_metrics') or {}
+    sr = m.get('SR_admit_255m')
+    mdd = m.get('MDD_pct_255m')
+    cagr = m.get('CAGR_pct_255m')
+    lines = []
+    if admitted:
+        aid = admitted[0]
+        w_pct = round(float(weights.get(aid, 0)) * 100)
+        lines.append(f'PG2 admit:  {aid} ({w_pct}%, {updated}~)')
+        lines.append(f'PG2 layer:  {n_layer}-Layer ({" + ".join(layers)})')
+        if sr is not None and mdd is not None and cagr is not None:
+            lines.append(f'PG2 regime: m4=NORMAL × β_AR={beta_ar:.2f} × β_R05={beta_r05:.2f} = {risk_pct}% risk + {cash_pct}% cash (admit baseline)')
+            lines.append(f'PG2 admit:  SR {sr:.4f} / MDD {mdd:.2f}% / CAGR {cagr:.2f}% (255m PerfA)')
+    else:
+        lines.append('PG2 admit:  NONE (book_state.admitted_ids empty)')
+    print('\n'.join(lines))
+except Exception as e:
+    print(f'PG2:        parse_failed ({type(e).__name__})')
+PYEOF
+)
+fi
+
 echo ""
 echo "━━━ 부트스트랩 완료 (v6 QEPM 3-Agent) ━━━"
+if [ -n "$PG2_INFO" ]; then
+  echo "$PG2_INFO"
+fi
 echo "Skills:     $(ls "$PROJECT"/.claude/skills/*/SKILL.md 2>/dev/null | wc -l)개 (worktask/alpha/risk/optimizer 포함)"
 echo "Hooks:      settings.json 등록 (harness_health 결과 위 참조)"
 echo "WT Active:  $WT_ACTIVE건"

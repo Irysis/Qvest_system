@@ -1,0 +1,383 @@
+{
+  "task_id": "WT-D20260515_002",
+  "package_kind": "forge_package",
+  "package_status": "FINALIZED_POST_CODEX_REJECT_WITH_REVISIONS",
+  "wt_type": "discovery_to_deployment_blend",
+  "finalize_timestamp": "2026-05-15T17:55:00+09:00",
+  "draft_predecessor": "qepm/mailbox/worktask/WT-D20260515_002/forge_package_draft.json",
+  "codex_critic_response": "qepm/mailbox/worktask/WT-D20260515_002/codex_critic_response_forge.json",
+  "challenge_note": "qepm/mailbox/worktask/WT-D20260515_002/challenge_note_forge.md",
+  "codex_round_status": "FINALIZED_POST_CODEX_REJECT_WITH_REVISIONS — 9 concerns disposition (ACCEPT_FIX 4 + ACCEPT_PARTIAL 2 + ACCEPT_DOC 1 + DEFER_DOWNSTREAM 1 + ACCEPT_DOWNGRADE 1 + REBUTTAL 0). Q-Lead escalate triggered (HIGH = 6 ≥ 5).",
+  "agent_lineage": "WT-D20260515_002 forge independent spawn (post-alpha-finalize 12:50 + post-risk-finalize 14:55 + post-optimizer-finalize 17:45). Pure function v6.1 R12.",
+  "as_of_date": "2026-05-15",
+  "boundary_attestation": "Pure function v6.1 R12 — 3-package consumed read-only. alpha_vector / target_weights / covariance unmodified. weights.csv used as-is (schedule fidelity v6.3 HARD compliance). No alpha_scores top-N re-selection. No ProductionSchedule[N]m fabrication label.",
+
+  "inheritance": {
+    "alpha_package_path": "qepm/mailbox/worktask/WT-D20260515_002/alpha_package.json",
+    "risk_package_path": "qepm/mailbox/worktask/WT-D20260515_002/risk_package.json",
+    "optimization_package_path": "qepm/mailbox/worktask/WT-D20260515_002/optimization_package.json",
+    "weights_csv_path": "stage_artifacts/WT_D20260515_002/weights.csv",
+    "weights_schema_path": "stage_artifacts/WT_D20260515_002/weights_schema.json",
+    "package_md5_at_consume": {
+      "alpha_package": "05d0e76899b82d1b5f1c81074732eefb",
+      "risk_package": "b538f4a42bb68b1c97a28e9434fb35d7",
+      "optimization_package": "253d748a5ae5070291cc11fd7d746b3c",
+      "weights_csv": "c37c00a609d782ab12ba1ebb44b9e5d6"
+    },
+    "package_md5_at_finalize_verification": "RE_HASH_PENDING — Forge has NOT modified any of the 3 packages or weights.csv. Hash should remain identical at finalize. Q-Lead audit step.",
+    "str_1715_canon_inherit": {
+      "source": "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/04_backtest_results/benchmark_comparison_metrics.json",
+      "admit_precedent": "L-307 STR_1715 PG2 admit (effective 2026-05-13)",
+      "period_returns_layer5_path": "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/04_backtest_results/period_returns_layer5.csv",
+      "5spec_inherit_path": "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/04_backtest_results/harvey_factor_regression_5spec.json"
+    },
+    "returns_panel_path": "stage_artifacts/WT_D20260514_007/returns_monthly_panel.parquet"
+  },
+
+  "execution": {
+    "run_id": "WT-D20260515_002_forge_v2",
+    "strategy_id": "WT-D20260515_002_blend_60_40",
+    "strategy_version": "v2.0_forge_post_codex_revision",
+    "frequency": "monthly",
+    "annualization_factor": 12,
+    "cost_model_version": "v2.3_kr_retail_15bps",
+    "commission_one_way_bps": 15,
+    "commission_convention_resolved": "Cost = security-only Σ|Δw| (round-trip) × 15bps. Round-trip aggregates sell+buy legs in one Σ|Δw|. Identical to STR_1715 PG2 production audit.json convention (L-274 + L-282). Matches optimizer 13.07/yr reading exactly.",
+    "rebalance_rule": "month_end_signal_t_plus_1_open_execution",
+    "missing_data_rule": "Ret_1m_fwd NA → 0 (delisted at boundary)",
+    "n_sig_dates": 84,
+    "schedule_density_certification": {
+      "n_weights_sig_dates": 84,
+      "n_alpha_sig_dates": 84,
+      "ratio": 1.0,
+      "charter_9_threshold": 0.95,
+      "pass": true
+    }
+  },
+
+  "sr_realized_share_based": 0.5579,
+  "sr_factor_engine_continuous": null,
+  "sr_lockbox_daily_harness": null,
+  "measurement_basis_primary": "forge_realized_share_based",
+  "weights_csv_unique_dates_count": 84,
+  "schedule_density_ratio": 1.0,
+  "measurement_basis_audit": {
+    "method": "Monthly share-based portfolio reconstruction. weights[sig_date] applied to Ret_1m_fwd[sig_ym] over each forward month, summed weighted, cost subtracted via security-only Σ|Δw| × 15bps round-trip.",
+    "perfa_functions_only": true,
+    "perfa_functions_used": ["SharpeRatio.annualized", "Return.annualized", "StdDev.annualized", "maxDrawdown", "SortinoRatio", "CalmarRatio", "ES historical 95%"],
+    "manual_synthesis_forbidden_compliance": "No manual prod(1+r)-1 / cumprod(1+r) / 0.8*r1+0.2*r2 used for any metric. cumprod used ONLY for NAV path visualization in charts (not metrics).",
+    "schedule_fidelity_v6_3": "weights.csv (1,729 rows × 84 sig_dates) consumed verbatim. NO alpha_scores re-selection. NO ProductionSchedule[N]m fabrication. Schedule density 1.0.",
+    "turnover_three_conventions_reconciled": {
+      "security_only_round_trip_annual": 13.0709,
+      "one_way_contract_default_annual": 7.3272,
+      "cash_inclusive_round_trip_annual": 14.6543,
+      "primary_adopted": "security_only_round_trip",
+      "rationale": "matches optimizer 13.07/yr exactly + STR_1715 PG2 production audit.json convention (L-274/L-282)"
+    }
+  },
+
+  "vs_factor_engine": {
+    "diagnosis": "N/A_FACTOR_ENGINE_NOT_RUN",
+    "rationale": "WT-D20260515_002 is blend lifecycle, not factor_engine cycle. Forge realized share-based is the primary measurement basis. No continuous-return aggregation comparator needed at this stage."
+  },
+
+  "axis_A_same_84m_sample_comparison": {
+    "sample_window": ["2019-02-28", "2026-01-30"],
+    "n_months": 84,
+    "blend_60_40": {
+      "label": "M6 Ensemble + STR_1715 PG2 blend (12A + 8B, allocation-proportional, STR_1715 overlay applied)",
+      "sharpe_net_perfa": 0.5579,
+      "sharpe_gross_perfa": 0.6849,
+      "cagr_net_perfa_pct": 9.54,
+      "vol_net_perfa": 0.1709,
+      "mdd_net_perfa_pct": 27.21,
+      "sortino_net": 0.9111,
+      "calmar_net": 0.3506,
+      "cvar95_monthly_net": -0.1121,
+      "turnover_security_round_trip_annual": 13.0709,
+      "turnover_one_way_annual": 7.3272,
+      "turnover_cash_inclusive_annual": 14.6543,
+      "cost_annual_avg": 0.01961,
+      "avg_cash_share": 0.2725,
+      "avg_n_active": 20
+    },
+    "str1715_only_84m": {
+      "label": "STR_1715 PG2 production ret_L5_V2 (admitted variant) subsampled to identical 84m",
+      "source": "05_Production/.../period_returns_layer5.csv ret_L5_V2",
+      "sharpe_net_perfa": 2.0054,
+      "cagr_net_perfa_pct": 36.86,
+      "vol_net_perfa": 0.1838,
+      "mdd_net_perfa_pct": 14.35,
+      "sortino_net": 5.0700,
+      "calmar_net": 2.5690,
+      "n_months": 84,
+      "same_cost_attestation": "Production STR_1715 PG2 audit.json uses identical 15bps cost convention (L-274 + L-282) — same-cost parity confirmed via shared cost_model_version v2.3_kr_retail_15bps"
+    },
+    "m6_only_84m": {
+      "label": "M6 Ensemble sleeve B EW top-8 renormalized (sleeve-B-only baseline)",
+      "sharpe_net_perfa": 0.9388,
+      "cagr_net_perfa_pct": 31.36,
+      "vol_net_perfa": 0.3325,
+      "mdd_net_perfa_pct": 28.68,
+      "n_months": 84
+    },
+    "blend_vs_str1715_84m_delta": {
+      "delta_sharpe_perfa": -1.4475,
+      "delta_cagr_pp": -27.32,
+      "delta_mdd_pp": -12.86,
+      "delta_sortino": -4.16,
+      "diagnosis": "BLEND_DESTRUCTIVE_VS_STR1715_84M — blend SR 0.5579 falls 1.45 SR points below STR_1715-only on identical sample with identical cost convention. Lower CAGR (9.54% vs 36.86%) and worse MDD (-27.2% vs -14.4%). Allocation-proportional 12A+8B with M6 sleeve B introduces 13.07/yr turnover (vs STR_1715 alone ~1.5/yr), 27% cash drag from STR_1715 overlay, and M6 sleeve underperformance — Pareto-dominated across all four graduation dimensions (SR, CAGR, MDD, TO)."
+    },
+    "blend_vs_m6_84m_delta": {
+      "delta_sharpe_perfa": -0.3809,
+      "diagnosis": "BLEND_ALSO_UNDERPERFORMS_M6_ALONE — M6-only renormalized SR 0.94 > blend SR 0.56 → STR_1715 sleeve A constructed under merge_rule actually drags M6 down when combined. Rules out 'blend smooths volatility' hypothesis."
+    }
+  },
+
+  "axis_B_canon_inherit": {
+    "str1715_canon_256m": {
+      "source": "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/04_backtest_results/benchmark_comparison_metrics.json",
+      "sharpe_net_perfa": 1.9536,
+      "cagr_net_perfa_pct": 41.50,
+      "vol_net_perfa": 0.2124,
+      "mdd_net_perfa_pct": 24.81,
+      "n_months_canon": 255,
+      "admit_precedent": "L-307 STR_1715 PG2 admit (Session 80 R05 Layer 5)",
+      "ir_vs_kospi200": 1.0505,
+      "active_cagr_vs_kospi200_pp": 23.54
+    },
+    "subsample_degradation_audit": {
+      "canon_256m_sharpe": 1.9536,
+      "subsample_84m_sharpe": 2.0054,
+      "delta_sharpe": -0.0518,
+      "delta_sharpe_pct": -2.65,
+      "diagnosis": "NEGLIGIBLE_SAMPLE_BIAS — STR_1715 84m subsample SR (2.0054) marginally EXCEEDS canon 256m SR (1.9536) by 0.052. Production ret_L5_V2 on the 84m window is in fact slightly stronger than the 256m unconditional. This invalidates the request.json sample-bias-correction premise.",
+      "implication_for_optimizer_claim": "Optimizer's `STR_1715 alone 84m gross SR 0.74` (optimization_package.json::infeasibility_report) was computed from optimizer's own sleeve A reconstruction (12 names × SignalTilt weighting at allocation 1.0), not from production STR_1715 PG2 ret_L5_V2 inheritance path. Forge confirms the production inheritance path (the AX-002 admit-precedent reference) yields SR 2.00 on the same 84m sample.",
+      "ax_002_measurement_basis_implication": "When comparing a candidate strategy against an admit-precedent baseline, the baseline MUST be inherited from production benchmark records, not reconstructed from sleeve-level alpha. Reconstruction induces methodological drift (e.g., weight normalization at sleeve-vs-full-book level) that artificially understates the precedent."
+    }
+  },
+
+  "graduation_criteria_evaluation_84m_blend": {
+    "min_sharpe_ratio_2_0": {"target": 2.0, "actual": 0.5579, "gap": 1.4421, "pass": false},
+    "max_drawdown_pct_neg_25": {"target": -25.0, "actual_pct": -27.21, "gap_pp": -2.21, "pass": false},
+    "min_cagr_pct_16": {"target": 16.0, "actual_pct": 9.54, "gap_pp": -6.46, "pass": false},
+    "max_turnover_yr_6": {"target": 6.0, "actual_security_round_trip": 13.0709, "actual_one_way": 7.3272, "gap_round_trip": 7.0709, "pass": false},
+    "min_harvey_t_3_0": {"target": 3.0, "actual_inherit_alpha": 5.0028, "pass": true},
+    "min_dsr_z_n5_0_5": {"target": 0.5, "actual_inherit_alpha": 11.1249, "pass": true},
+    "max_pareto_cor_0_4_pointwise": {"target": 0.4, "actual_inherit_alpha": 0.13304, "pass": true},
+    "ax_008_min_sources_2": {"target": 2, "current_count": "Forge fresh PASS_v2 + Optimizer concurring + Codex direction-concur (with revisions) = 3 sources direction-concur; Architect pending", "pass_pending_architect": true}
+  },
+
+  "dsr_apples_to_apples_audit": {
+    "method": "Bailey-Lopez de Prado (2014) JPM Deflated Sharpe Ratio with N-trial multiple-testing penalty",
+    "N_alpha_candidates": 5,
+    "N_optimizer_candidates": 6,
+    "N_forge_candidates": 1,
+    "N_total_candidates_blend": 12,
+    "N_str1715_baseline_actual": 31,
+    "blend_dsr_N12": {
+      "z_observed": 1.3725,
+      "sr_threshold_N": 0.1954,
+      "z_dsr_penalty_N": -0.2923,
+      "verdict": "FAIL (below penalty threshold)"
+    },
+    "str1715_dsr_N31_actual": {
+      "z_observed": 5.0991,
+      "sr_threshold_N": 0.2369,
+      "z_dsr_penalty_N": 3.0122,
+      "verdict": "STRONG PASS"
+    },
+    "str1715_dsr_N12_apples_to_apples": {
+      "z_observed": 5.0991,
+      "z_dsr_penalty_N": 3.4343,
+      "verdict": "STRONG PASS (same N as blend)"
+    },
+    "diagnosis": "At identical multiple-testing penalty N=12, blend z_DSR=-0.29 (FAIL) vs STR_1715 z_DSR=+3.43 (STRONG PASS) — STR_1715 dominates DSR-adjusted with massive margin. Even at N=1 (no penalty), z_observed STR_1715=5.10 > blend=1.37. Dominance robust to penalty choice."
+  },
+
+  "regression_pack_inheritance": {
+    "CAPM": {
+      "status": "ATTEMPTED_DEFERRED",
+      "note": "KOSPI200 monthly proxy via RAWDATA_long.parquet not located in WT scope. Judge stage Gate 0 will inherit STR_1715 PG2 production benchmark_comparison_metrics.json: IR vs KOSPI200 = 1.0505, active CAGR +23.54pp."
+    },
+    "Carhart_3": "DEFERRED — KR Carhart factors not in WT artifact scope. Inherit from production harvey_factor_regression_5spec.json (STR_1715 baseline)",
+    "Carhart_4": "DEFERRED — same",
+    "FF5": "DEFERRED — same",
+    "FF6": "DEFERRED — same",
+    "audit_note": "Codex C2 HIGH acknowledged (ACCEPT_PARTIAL): 5-spec full regression requires KR FF/Carhart factor panel; Forge contributes verdict using sample-corrected fair comparison + DSR penalty + sample-bias audit + 3-way turnover reconciliation. 5-spec inheritance from STR_1715 admit precedent."
+  },
+
+  "cost_drag_audit": {
+    "gross_sharpe_84m": 0.6849,
+    "net_sharpe_84m": 0.5579,
+    "cost_drag_in_sharpe_pts": 0.1270,
+    "turnover_annual_security_round_trip": 13.0709,
+    "cost_annual_pp": 1.961,
+    "cost_components_attribution": {
+      "M6_sleeve_B_TO_annual_signal_level": 9.75,
+      "M6_share_in_blend": 0.40,
+      "M6_contribution_to_TO": "9.75 × 0.40 ≈ 3.90 (signal-level), realization larger due to allocation rebalance",
+      "STR_1715_sleeve_A_in_blend_TO_signal": 1.5,
+      "STR_1715_share_in_blend": 0.60,
+      "STR_1715_contribution_to_TO": "1.5 × 0.60 ≈ 0.9 (signal-level)",
+      "overlay_regime_switch_TO": "1.48/yr floor (STR_1715 R05 cash share churns 0 ↔ 0.5 ↔ 0.7)",
+      "allocation_proportional_dedupe_merge_overhead": "~7/yr (Σ|Δw| explodes when 12A+8B name set churns vs prior month, even at fixed sleeve allocation)",
+      "verdict": "TO 13.07/yr is structural — no in-sleeve weighting method (EW/SigTilt/MVO/HRP/ERC) tested in optimizer reduced it. Reducing TO requires bi-monthly cadence (~halves M6 contribution) or fixed-book sleeve A (zeros sleeve A churn) — both Q-Lead request.json amendments."
+    }
+  },
+
+  "regime_decomposition_84m": {
+    "method": "regime field inherited from STR_1715 R05 panel (BOCPD m4 × AR thresholds → BULL/NORMAL/CAUTION/CRISIS)",
+    "regime_summary": [
+      {"regime": "BULL",    "n_months": 10, "mean_ret_blend_monthly": 0.01148,  "sr_blend": 1.326,  "mean_ret_str1715_monthly": 0.03398,  "sr_str1715": 5.999, "winner": "STR_1715 +4.67 SR"},
+      {"regime": "NORMAL",  "n_months": 63, "mean_ret_blend_monthly": 0.00929,  "sr_blend": 0.663,  "mean_ret_str1715_monthly": 0.03544,  "sr_str1715": 2.199, "winner": "STR_1715 +1.54 SR"},
+      {"regime": "CAUTION", "n_months": 10, "mean_ret_blend_monthly": 0.00295,  "sr_blend": 0.141,  "mean_ret_str1715_monthly": -0.02233, "sr_str1715": -2.992, "winner": "Blend +3.13 SR (marginal — STR_1715 negative)"},
+      {"regime": "CRISIS",  "n_months": 1,  "mean_ret_blend_monthly": -0.00308, "sr_blend": null,   "mean_ret_str1715_monthly": -0.01301, "sr_str1715": null, "winner": "n=1 inconclusive"}
+    ],
+    "interpretation": "STR_1715 PG2 dominates blend in BULL (+4.67 SR) and NORMAL (+1.54 SR). Blend has marginal CAUTION advantage (+3.13 SR vs STR_1715 negative). 73 of 84 months (87%) are BULL/NORMAL where STR_1715 strictly dominates. The CAUTION/CRISIS marginal blend advantage cannot recover the BULL/NORMAL structural gap.",
+    "ax_001_v2_defense_evaluation": "Blend's marginal CAUTION advantage does NOT satisfy AX-001 v2 conditional defense criteria: (a) blend underperforms in NORMAL regime; (b) blend MDD -27.2% > STR_1715 MDD -14.4%; (c) blend Sortino 0.91 < STR_1715 Sortino 5.07; (d) STR_1715 R05 layer already provides defense (β_R05 dynamic). Blend adds no incremental defense over status quo."
+  },
+
+  "honest_admit_recommendation": {
+    "verdict": "FAIL_REJECT_BLEND_RETAIN_STR1715_100PCT",
+    "verdict_robustness": "Robust across (a) PerfA standard metrics, (b) 3 turnover conventions, (c) DSR same-N apples-to-apples, (d) regime decomposition, (e) sample-bias audit, (f) STR_1715 production same-cost attestation.",
+    "primary_finding": "84m sample-corrected fair comparison: blend SR 0.5579 vs STR_1715-only SR 2.0054 → blend is Pareto-dominated by status quo (STR_1715 PG2 100%). Blend fails 4 of 6 graduation criteria (SR / CAGR / MDD / TO) on the same sample where STR_1715 standalone PASSES all four (256m canon SR 1.95 / MDD -24.8% / CAGR 41.5%).",
+    "secondary_finding": "The original sample-bias-correction premise of WT-D20260515_002 (post WT_013 60m bias ABORT) is invalidated. STR_1715 84m SR 2.00 vs canon 256m SR 1.95 = -2.7% drift (NEGLIGIBLE within Charter v1.4 §9 measurement coherence band). The 84m window is not biased downward for STR_1715-class; it is biased downward against the ML+overlay blend architecture (excessive turnover + cash drag + ML sample bias in 2019-2025 horizon).",
+    "tertiary_finding": "Optimizer's reported `STR_1715 alone 84m SR 0.74` (optimization_package.json::infeasibility_report::violated_criteria_vs_request_json_graduation[0]::primary_drivers) was measured via optimizer's reconstructed sleeve A (12 names × SignalTilt at sleeve allocation 1.0), not via production STR_1715 PG2 ret_L5_V2 inheritance. Forge corrects this via production inheritance path → SR 2.00 (Codex C4 ACCEPT_PARTIAL).",
+    "quaternary_finding": "Turnover convention reconciliation strengthens REJECT verdict. Three conventions all exceed 6.0/yr cap by 1.2× to 2.4×. Optimizer's 13.07/yr (security-only round-trip) matches Forge primary exactly. Convention choice is not a remediation path.",
+    "implication_for_q_lead": "Recommend Q-Lead REJECT WT-D20260515_002 and retain STR_1715 PG2 100% book_state. The 60/40 blend with current alpha/risk/optimizer choices is dominated across 6 dimensions (SR, CAGR, MDD, TO, regime, DSR).",
+    "alternative_paths_if_q_lead_wishes_to_pursue": [
+      "Path A — Re-cut on 196m walk-forward (returns_monthly_panel 2010-2026.04). Likely SR ceiling closer to canon 1.95 but architectural inefficiency (TO+overlay+M6-drag) remains.",
+      "Path B — Reduce M6 cadence to bi-monthly. Cuts ~2/yr from TO, but signal-level SR ceiling unclear.",
+      "Path C — Fix STR_1715 sleeve A to 2026-04 production top-20 throughout. Eliminates 0.9-1.5/yr STR_1715 churn but defeats sleeve-A AR overlay benefit.",
+      "Path D — Replace M6 sleeve with truly defensive 3rd source (KR_10y bond / TSMOM 2026 cycle / Stagflation hedge) per L-281 Cross-Asset TSMOM precedent."
+    ],
+    "ax_002_compliance": "Honest measurement, no inflation, no method-shop bias, no schedule fabrication, no defensive rationalization. Optimizer's REJECT-with-revisions stance is corroborated and strengthened by Forge fresh + Codex critic.",
+    "ax_007_compliance": "EXEMPT confirmed — multi-sleeve A 60% + B 40% + overlap 0/84 sig_dates. Exemption does not change REJECT verdict (dominance test fails).",
+    "ax_008_status": "Forge fresh PASS_v2 + Optimizer concurring REJECT + Codex critic direction-concur = 3 sources direction-concur. Architect = pending 3rd-PASS source (not required for REJECT but recommended)."
+  },
+
+  "integrity_audit": {
+    "audit_module": "02_Infrastructure/contracts/audit_bt_result.R",
+    "audit_summary": "16 checks (10 standard + 6 v6.3 extensions) — PASS 14 / FAIL 0 / WARN 2",
+    "audit_integrity": "WARNING",
+    "audit_warnings": [
+      "table.Drawdowns: only 8 drawdown episodes available in 84m (PerformanceAnalytics top=100 over-request; cosmetic)",
+      "cor(strategy, benchmark): standard deviation is zero (placeholder bm_xts=0 — KOSPI200 monthly inheritance deferred to judge Gate 0 per Codex C2 PARTIAL)"
+    ],
+    "l249_freq_mislabel_check": false,
+    "perfa_only_compliance": true,
+    "schedule_fidelity_v6_3_compliance": true,
+    "pure_function_violation": false
+  },
+
+  "artifacts": {
+    "bt_result_rds": "stage_artifacts/WT_D20260515_002/bt_result.rds",
+    "bt_result_components_v2_reconciled": ["manifest", "strategy_spec", "nav (84 rows)", "period_returns (84 rows with ret_gross_recon + cash_weight + 3-convention turnover)", "holdings (1,729 rows)", "benchmark_returns (placeholder bm=0)", "metrics (10 PerfA-standard rows)", "benchmark_compare (placeholder)", "rolling_metrics", "drawdowns (8 episodes)", "audit (16 checks)"],
+    "forge_2axis_comparison_json": "stage_artifacts/WT_D20260515_002/forge_2axis_comparison.json",
+    "subsample_degradation_audit_json": "stage_artifacts/WT_D20260515_002/subsample_degradation_audit.json",
+    "forge_v2_codex_revisions_json": "stage_artifacts/WT_D20260515_002/forge_v2_codex_revisions.json",
+    "forge_port_monthly_csv": "stage_artifacts/WT_D20260515_002/forge_port_monthly.csv",
+    "forge_regime_decomposition_csv": "stage_artifacts/WT_D20260515_002/forge_regime_decomposition.csv",
+    "oos_charts": {
+      "equity_curve_png": "qepm/mailbox/worktask/WT-D20260515_002/output/equity_curve.png (with lockbox marker 2024-01-23)",
+      "annual_returns_png": "qepm/mailbox/worktask/WT-D20260515_002/output/annual_returns.png",
+      "oos_zoom_chart_png": "qepm/mailbox/worktask/WT-D20260515_002/output/oos_zoom_chart.png",
+      "regime_decomposition_png": "qepm/mailbox/worktask/WT-D20260515_002/output/regime_decomposition.png"
+    },
+    "run_scripts": [
+      "qepm/mailbox/worktask/WT-D20260515_002/run_forge_backtest.R (v1)",
+      "qepm/mailbox/worktask/WT-D20260515_002/run_forge_revision_v2.R (v2 post-Codex)",
+      "qepm/mailbox/worktask/WT-D20260515_002/generate_oos_charts.R"
+    ]
+  },
+
+  "ax_compliance": {
+    "AX_000": "honest measurement preserved — REJECT verdict does not negate AX-000 (limit-free). Different architecture / sample / 3rd-source pursuit needed via separate WT cycle.",
+    "AX_001_v2": "blend's marginal CAUTION SR advantage does NOT satisfy conditional defense criteria — STR_1715 R05 already provides defense.",
+    "AX_002": "PIT C1-C15 strict. PerfA standard only. weights.csv as-is. No method-shop bias. No schedule fabrication. Self-rationalization absent (10 expressions audited in challenge_note).",
+    "AX_007": "EXEMPT proven (multi-sleeve A 60% / B 40% / overlap 0/84).",
+    "AX_008": "Forge fresh PASS_v2 = source 2 of 3 (Optimizer concurring REJECT direction = source 1; Codex direction-concur with revisions = critic source; Architect = source 3 pending). For REJECT verdict, AX-008 ≥ 2/3 PASS quorum not strictly required (AX-008 is admit-gate, not reject-gate)."
+  },
+
+  "challenge_flags": [
+    {
+      "id": "RF-F1_BLEND_PARETO_DOMINATED",
+      "severity": "CRITICAL",
+      "description": "Forge v2 backtest 84m: blend SR 0.5579 dominated by STR_1715-only 84m SR 2.0054 (ΔSR=-1.45). Pareto-dominated on SR/CAGR/MDD/TO simultaneously. REJECT verdict per AX-002 honest measurement."
+    },
+    {
+      "id": "RF-F2_OPTIMIZER_STR1715_84M_MEASUREMENT_MISMATCH",
+      "severity": "HIGH",
+      "description": "Optimizer reported STR_1715 84m alone SR 0.74 but Forge inherits production ret_L5_V2 → SR 2.00 on same window. Codex C4 ACCEPT_PARTIAL. measurement_basis honesty mandate (Charter v1.4 §13) requires production inheritance for admit-precedent comparison."
+    },
+    {
+      "id": "RF-F3_TURNOVER_13_07_STRUCTURAL_NOT_REMEDIABLE_IN_SLEEVE",
+      "severity": "CRITICAL",
+      "description": "TO 13.07/yr (security-only round-trip) cannot be reduced by any in-sleeve weighting method. Requires Q-Lead amend to bi-monthly M6 / fixed-book sleeve A, or REJECT WT."
+    },
+    {
+      "id": "RF-F4_SAMPLE_BIAS_PREMISE_INVALIDATED",
+      "severity": "INFORMATIONAL",
+      "description": "WT-D20260515_002 was launched on premise that 60m WT_013 had sample bias. Forge confirms STR_1715 84m SR 2.00 ≈ canon 256m SR 1.95 (-2.7% drift, NEGLIGIBLE). The 84m sample is not biased for STR_1715-class; it is biased against the proposed blend architecture."
+    },
+    {
+      "id": "RF-F5_M6_ALONE_UNDERPERFORMS_STR1715_ALONE",
+      "severity": "HIGH",
+      "description": "M6-only 84m SR 0.94 vs STR_1715-only 84m SR 2.00. M6 ensemble does not survive head-to-head on 84m. M6 as 3rd-source candidate fails orthogonality value test (TDC 0.25 + crowding LOW are not sufficient if M6 contributes no incremental SR)."
+    },
+    {
+      "id": "RF-F6_BENCHMARK_BM_XTS_PLACEHOLDER",
+      "severity": "INFORMATIONAL",
+      "description": "Forge bt_result benchmark_compare uses bm_xts=0 placeholder. KOSPI200 monthly returns inheritance deferred to judge stage Gate 0 (STR_1715 production benchmark_comparison_summary.csv inheritance). Not admit-blocking — Axis A/B comparisons already provided + Axis B inherits STR_1715 IR 1.05 vs KOSPI200."
+    },
+    {
+      "id": "RF-F7_TURNOVER_CONVENTION_RECONCILED",
+      "severity": "RESOLVED",
+      "codex_concern": "C6 ACCEPT_FIX",
+      "description": "Three turnover conventions explicitly reported: security round-trip 13.07/yr (Forge primary, matches optimizer), one-way 7.33/yr (contract default), cash-inclusive 14.65/yr (v1 path). Cost = security round-trip × 15bps."
+    },
+    {
+      "id": "RF-F8_DSR_SAME_N_APPLES_TO_APPLES",
+      "severity": "RESOLVED",
+      "codex_concern": "C3 ACCEPT_FIX",
+      "description": "DSR penalty applied to both blend and STR_1715 baseline at same N=12. Blend z_DSR=-0.29 (FAIL) vs STR_1715 z_DSR=+3.43 (STRONG PASS). Dominance robust to penalty choice."
+    }
+  ],
+
+  "research_philosophy_v1_compliance": {
+    "P1_factor_zoo_reduction": "INHERIT_ALPHA — M6 1,047-feature compression is alpha-stage discipline.",
+    "P2_cost_aware_alpha": "MEASURED — net SR 0.5579 vs gross 0.6849 (cost drag 0.13 SR points). Net-of-cost honesty integral to verdict.",
+    "P3_uncertainty_aware": "DEFERRED — Phase 1.A Δ=0 caveat retained; DSR Bailey-LdP applied as uncertainty proxy.",
+    "P4_direct_portfolio_learning": "N/A — Phase 3 roadmap.",
+    "P5_risk_model_advanced": "PARTIAL — Σ-universe coverage mismatch acknowledged (optimizer C6 inherit). Forge is pure simulator (no Σ invocation).",
+    "P6_implementation_discipline": "PASS_BOUNDS — max_names ≤ 20 ✓, long-only ✓, weights [0, 0.20] ✓, Σw=1 ✓. FAIL_TO_6.0 ✗ (13.07 documented across 3 conventions).",
+    "P7_attribution_feedback": "PROVIDED — axis A/B + regime decomposition + cost component attribution + sample-bias audit + DSR penalty + 3-way TO reconciliation. 5-spec spanning regression inherits to judge stage (KR FF/Carhart absent in WT scope)."
+  },
+
+  "pit_compliance": {
+    "C1_rolling_only_no_full_sample": true,
+    "C2_no_same_day_circular": true,
+    "C5_overlay_t_minus_1": "INHERIT_OPTIMIZER",
+    "C9_overlay_lag_inherit": true,
+    "C13_z_score_aligned_no_flip": true,
+    "C14_usable_date_le_sig_date": true,
+    "C15_factor_db_loader_only": "FORGE_OWN_PASS — only stage_artifacts + 05_Production read-only inheritance.",
+    "schedule_fidelity_v6_3": "weights.csv (1,729 rows × 84 sig_dates) consumed as-is. NO alpha_scores re-selection. NO ProductionSchedule[N]m fabrication."
+  },
+
+  "telegram_brief_summary": "Forge 84m post-Codex 9-concerns v2 finalize: 60/40 blend SR_net 0.5579 Pareto-dominated by STR_1715-only 84m SR 2.0054 (ΔSR=-1.45) on identical sample with identical 15bps cost convention. Codex 9 concerns ACCEPT_FIX 4 + ACCEPT_PARTIAL 2 + ACCEPT_DOC 1 + DEFER_DOWNSTREAM 1 + ACCEPT_DOWNGRADE 1 + REBUTTAL 0. Sample-bias premise invalidated: STR_1715 84m SR 2.00 ≈ canon 256m SR 1.95 (-2.7%). DSR same-N apples: blend z=-0.29 FAIL vs STR_1715 z=+3.43 STRONG PASS. TO 3-conventions all >6/yr cap (13.07 / 7.33 / 14.65). 4 of 6 graduation FAIL. Recommend REJECT WT, retain STR_1715 PG2 100%. AX-002 honest measurement strict. Schedule density 84/84=1.0. Lockbox marker 2024-01-23 in equity_curve. Q-Lead escalate triggered (HIGH=6 ≥ 5).",
+
+  "codex_round_5_step_audit": {
+    "step_1_draft": "forge_package_draft.json (Write 2026-05-15 16:43)",
+    "step_2_codex_auto_trigger": "PostToolUse codex_round_auto_trigger.sh fired; codex_qepm_critic background spawn (~9 min)",
+    "step_3_codex_response": "codex_critic_response_forge.json (stance=REJECT, veto_flag=false, 9 critical_concerns, RF-F1+RF-F3+RF-F4+RF-F5+RF-F6+RF-F7 + 3 MEDIUM)",
+    "step_4_challenge_note": "challenge_note_forge.md (9 concerns disposition + self-rationalization grep + AX-008 status correction)",
+    "step_5_final_package": "forge_package.json (this file, FINALIZED_POST_CODEX_REJECT_WITH_REVISIONS)",
+    "stance": "REJECT (revision-finalize path) → FINALIZED_WITH_REVISIONS",
+    "q_lead_escalate_triggered": true,
+    "q_lead_escalate_reason": "HIGH severity = 6 ≥ 5 per Charter §8 No Silent Override",
+    "veto_flag": false,
+    "round_counter": "1 of 1 (single-round policy v6.0)"
+  }
+}

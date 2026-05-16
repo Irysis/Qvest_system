@@ -1,0 +1,47 @@
+{
+  "task_id": "WT-D20260515_002",
+  "as_of_date": "2026-05-15",
+  "n_sig_dates": 84,
+  "sig_date_range": ["2019-01-31", "2025-12-30"],
+  "rolling_window_months": 60,
+  "pit_t_minus_1": true,
+  "cond_per_sig_date": {
+    "median": 53.1354,
+    "max": 98.1484,
+    "min": 14.8812,
+    "breach_count_gt_100": 0,
+    "all_pass_100": true
+  },
+  "pd_verified": true,
+  "min_eigenvalue_across_sigdates": 0.001,
+  "shrinkage_method": "ledoit_wolf_constcor (Ledoit-Wolf 2003) + iterative-bump-to-cond-100",
+  "shrinkage_delta_distribution": {
+    "median": 0.6721,
+    "max": 0.9719
+  },
+  "factor_coverage_r2_median": 0.2314,
+  "factor_coverage_r2_q90": 0.3161,
+  "pc1_contribution_security_sigma": {
+    "median": 0.2398,
+    "max": 0.5667,
+    "breach_count_gt_0.40": 2,
+    "rf_r1_status": "RF_R1_NOT_TRIGGERED_MEDIAN_PC1_LE_0.40"
+  },
+  "crowding_score_per_factor_path": "stage_artifacts/WT_D20260515_002/crowding_score_per_factor.json",
+  "crowding_flags": [],
+  "M6_STR1715_overlap_pct": 0,
+  "selection_objective": "condition_number",
+  "estimators_tried": [
+    {
+      "name": "sample",
+      "selected": false,
+      "rationale": "high cond when N close to T"
+    },
+    {
+      "name": "ledoit_wolf_constcor",
+      "selected": true,
+      "rationale": "best cond ≤ 100 across 84 sig_dates with iterative bump"
+    }
+  ],
+  "alpha_inheritance_note": "alpha_package.json downstream binding mandates: Σ rolling per-sig_date rebuild (DONE 84/84) + crowding_score_per_factor (DONE) + CRISIS bootstrap CI (DONE n=N see regime_correlation_bootstrap.json)"
+}

@@ -1,0 +1,79 @@
+{
+  "task_id": "WT-D20260514_003",
+  "parent_task_id": "WT-D20260513_002",
+  "universe_change_only": true,
+  "alpha_spec_change": "none (C variant 4-axis inherited verbatim)",
+  "parent_universe": "KOSPI200 ∪ KOSDAQ150 intersection + LIQ 2e8 (~348 at 2026-04-30)",
+  "this_cycle_universe": "KOSPI 본주 + KOSDAQ 보통주 + LIQ 2e8 (~2030 at 2026-04-30)",
+  "mean_intersection_size": 297.6,
+  "mean_full_size": 1218.7,
+  "mean_expansion_ratio": 4.01,
+  "latest_intersection": 348,
+  "latest_full": 1954,
+  "parent_diagnostics_C2": {
+    "rank_ic": 0.0491,
+    "icir": 0.4277,
+    "t_nw": 7.002,
+    "dsr": 14.348,
+    "harvey_5spec_pass": 5,
+    "monotonicity": 0.5,
+    "subperiod_stab": 1,
+    "portfolio_realized_cor_p_vs_str1715": 0.0038,
+    "portfolio_realized_cor_p_vs_admit_target": "0.7713 (FAIL, from Risk research stage realized cor against STR_1715_AR_on_M4_R05_overlay_PG2)"
+  },
+  "this_cycle_diagnostics_C2": {
+    "candidate": "C2",
+    "n_months": 267,
+    "mean_rank_ic": 0.0982,
+    "sd_rank_ic": 0.1134,
+    "icir": 0.8657,
+    "icir_recent_3y": 1.1985,
+    "rf_a3_ratio": 1.384,
+    "t_stat_raw": 14.146,
+    "t_nw_lag6": 16.293,
+    "harvey_t_pass": true,
+    "harvey_5spec_tnw": {
+      "base": 16.293,
+      "trim_top5": 13.213,
+      "trim_bot5": 17.248,
+      "p_2004_2013": 9.501,
+      "p_2014_2026": 10.485
+    },
+    "harvey_5spec_pass_count": 5,
+    "dsr": 20.646,
+    "dsr_pnorm": 1,
+    "dsr_pass": true,
+    "monotonicity_q1_q5_concord": 0.75,
+    "monotonicity_pass": true,
+    "subperiod_stability": 1,
+    "subperiod_means": [
+      0.1037,
+      0.0712,
+      0.1153
+    ],
+    "avg_n_stocks": 1174.8,
+    "q1_q5_means": [
+      -0.0021,
+      0.0083,
+      0.0109,
+      0.0114,
+      0.01
+    ]
+  },
+  "this_cycle_orthogonality_C2": {
+    "candidate": "C2",
+    "n_overlap_months": 266,
+    "returns_cor_pearson": 0.0292,
+    "returns_cor_spearman": -0.0589,
+    "returns_cor_kendall": -0.0396,
+    "orthogonality_rank_pass": true,
+    "orthogonality_return_pass": true,
+    "target_admit": "STR_1715_AR_on_M4_R05_overlay_PG2 L5_V2_aggressive_regime",
+    "measurement_method": "year_month_aligned_merge_universe_isolation_v1"
+  },
+  "isolation_decision_rule": {
+    "if_cor_lt_0_40": "universe-driven attenuation, L-317 (a) hypothesis confirmed",
+    "if_cor_0_40_to_0_70": "partial universe effect, L-317 mixed",
+    "if_cor_ge_0_70": "alpha family essence, L-317 (b) hypothesis confirmed (architectural pivot required)"
+  }
+}

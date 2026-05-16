@@ -1,0 +1,68 @@
+{
+  "task_id": "WT-D20260514_001",
+  "wt_type": "discovery",
+  "pg1_eligibility": "certificate_required",
+  "discovery_of": null,
+  "graduation_criteria": {
+    "description": "Discovery → Deployment 전환 조건. Discovery WT 완료 시 자동 검증. discovery_graduation_gate.sh 강제.",
+    "min_rank_ic": 0.04,
+    "min_rank_ic_rationale": "KR top-universe benchmark. <0.04는 통계적 유의성 부족.",
+    "min_icir": 0.2,
+    "min_icir_rationale": "Alpha Lab Gate. <0.20은 IC 안정성 부족.",
+    "min_subperiod_stability": 0.5,
+    "min_subperiod_stability_rationale": "3개 subperiod (2008-14 / 2015-19 / 2020-26) 안정성 >=0.5",
+    "max_drawdown_days": 100,
+    "max_drawdown_days_rationale": "100일 이상 drawdown 지속 시 alpha decay 의심",
+    "min_harvey_t_stat": 3,
+    "min_harvey_t_stat_rationale": "Harvey-Liu-Zhu 다중검정 보정 t>3.0",
+    "min_deflated_sharpe_ratio": 0.5,
+    "min_deflated_sharpe_ratio_rationale": "Bailey-Lopez de Prado DSR — multi-testing 보정 SR"
+  },
+  "theme": "investor_flow_imbalance_sophisticated_orthogonal_b_path",
+  "hypothesis_title": "KRX Investor Flow Imbalance Sophisticated Alpha — 4th Orthogonal Source via Multi-Source Information",
+  "hypothesis_description": "도훈 mandate Session 81 B안 — WT-D20260513_001/002 low-vol family path-dead-end (L-316: alpha-vector cor ≠ portfolio realized cor, KR equity-only universe 한계) 인지 후 새 information source 진입. 본 cycle 핵심: KRX 외국인/기관/개인 매매 disclosure (일별 free) 기반 sophisticated investor flow imbalance alpha. Sophistication axes (자율 탐색): (1) Net Buying Ratio (NBR) by investor type (외국인 / 기관 / 개인 / 연기금 / 금융투자), (2) Foreign ownership change rate (FOR), (3) Institutional flow concentration HHI, (4) Cross-investor disagreement (외국인 vs 개인 net opposite signal), (5) Flow persistence (autocorrelation Hurst exponent), (6) Flow-vs-price-impact decoupling (signed PIN-like, Easley et al. 2024), (7) Time-decay weighted flow (HAR-Flow analog Corsi 2009), (8) Macro-conditional flow (regime BULL/NORMAL/CAUTION/CRISIS interaction). **L-316 mandate 정합 핵심**: alpha-vector cor (score 횡단면) + portfolio realized return cor (시간축 monthly Pearson + Spearman + Kendall + lower-tail TDC + daily cross-corr + diversification ratio 6축) **양 단계 직교성 의무**. 단순 alpha-vector cor 직교만으로 정합 판단 금지. **STR_1715 H1 alpha M08 family 중복 검증 의무**: STR_1715 H1 alpha (4F Consensus + Q07 + M08 + Q25)에 M08 family (flow 관련 추정) 일부 사용 가능성. 본 cycle alpha-research가 STR_1715 alpha lineage 확인 후 M08 사용 여부 + 사용 영역 + 본 cycle 변형이 중복인지 직교인지 명시 검증 의무 (qepm/mailbox/worktask/WT-D20260427_016 STR_1715 H1 alpha lineage 또는 04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd/ 참조). **Information source 다름 본질**: STR_1715 H1 (가격 + 재무) vs 본 cycle (가격이 아닌 flow imbalance — disclosure 정보) → portfolio realized return cor 자연 직교 가능성 가설. 검증 의무. **KR 시장 data source**: KRX 일별 매매 동향 (외국인/기관/개인/금융투자/연기금/보험/기타 disclosure), QuantiWise 또는 KRX data API. **AX 정합**: AX-002 ex-ante grid N≤5 strict (V6 cycle DSR N=37 post-hoc FAIL 사례 학습 inherit). AX-001 v2 conditional defense 4-axis 의무 (단 본 alpha는 defense factor가 아닌 information-arbitrage factor 분류 가능 — alpha-research 자율 분류). AX-005/007 EXEMPT (multi-sleeve composition 정합 — STR_1715 admit + 본 sleeve 4-sleeve). AX-008 Codex Critic Round 의무. **Process honesty**: WT-D20260513_001 v1 → v2 PIT-fix 사례 + WT-D20260513_002 risk Pareto FAIL 사례 inherit. 처음부터 PIT-C2 t+1 lag strict + alpha + portfolio realized cor 양 측정.",
+  "hypothesis_source": "user_defined",
+  "as_of_date": "2026-05-14",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KOSPI200_KOSDAQ150_intersection",
+    "liquidity_min_won_20d_avg": 50000000,
+    "max_names_total": 500
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d (재무제표 발표 지연)",
+    "fundamental_annual": "annual May (연간 재무제표 5월 리밸런싱)",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement (QuantiWise)",
+    "macro": "t-1 FRED (외부 매크로 lag)",
+    "ic_history": "Usable_Date <= sig_date (Factor DB 강제)"
+  },
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "current_portfolio": "STR_1631_80_STR_1656_20",
+  "hard_mandate": {
+    "pit_enforcement": "C1-C15 all enforced",
+    "liquidity_floor_won_20d_avg": 50000000,
+    "mandate_restrictions": {
+      "no_short_legal_kr": true,
+      "no_cross_market": true,
+      "kr_domestic_only": true
+    },
+    "long_only_mandate": "configurable"
+  },
+  "hard_constraints": {
+    "max_names": null,
+    "weight_bounds": [
+      0,
+      1
+    ],
+    "sector_active_weight_cap": null,
+    "liquidity_min_won_20d_avg": 50000000
+  },
+  "soft_penalties": [],
+  "capacity_limits": {
+    "adv_multiplier": 0.1,
+    "capacity_max_aum_won": 100000000000
+  }
+}

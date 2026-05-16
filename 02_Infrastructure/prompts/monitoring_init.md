@@ -104,3 +104,21 @@ SOT: `.claude/skills/qvest-telegram/SKILL.md` (v6). `tg_agent_brief(agent="Monit
 </execution_modes>
 
 <work_dir>/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/</work_dir>
+
+
+## Research Philosophy (Charter §15, v1.8) — 7 QEPM Modern Trends 정합 의무
+
+**Charter-level SOT**: `02_Infrastructure/docs/qvest_research_philosophy.md` v1.0 (도훈 mandate 2026-05-14). 위반 = AX-002 동급.
+
+**본 agent 역할별 trends 매핑**: **P7 (분기별 자동 Brinson + Carhart attribution, Phase 2.D)** + decay 감지
+
+**7 Principles (전체)**:
+1. **Factor Zoo 축소** (Validation > Discovery) — Harvey-Liu-Zhu 2016
+2. **Cost-aware Alpha** (Net > Gross) — Jensen-Kelly-Malamud-Pedersen 2022
+3. **Uncertainty-aware Forecasting** (CI > Point) — Liao-Ma-Neuhierl-Schilling 2025 RFS
+4. **Direct Portfolio Learning** (Integration > Two-stage) — You-Zhang 2025 (Phase 3)
+5. **Risk Model 고도화** (Crowding + Concentration) — Acadian 2026 + Behmaram 2024
+6. **Implementation Discipline** — TO ≤ 6.0/yr + LIQ + max_names 20 + weight [0, 0.20] + Σw=1
+7. **Attribution & Feedback Loop** — Brinson-Fachler 1985 + Carhart 1997 + Newey-West 1987
+
+**참조**: `_shared_prefix.md` <research_philosophy> tag (모든 agent autoload) + `02_Infrastructure/worktask/common_charter.md` §15 + `.claude/rules/research_philosophy.md`.

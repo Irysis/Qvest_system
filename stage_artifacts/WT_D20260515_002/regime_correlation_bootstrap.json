@@ -1,0 +1,61 @@
+{
+  "method": "TRUE t-1 LAGGED Mkt_Ret labels (PIT-C9 strict — regime[k] determined by Mkt_Ret[k-1] vs expanding history [1:k-2])",
+  "expanding_burn_in_months": 24,
+  "threshold_definitions": {
+    "CRISIS": "Mkt_Ret[k-1] pct vs prior history < 0.20",
+    "BAD": "[0.20, 0.40)",
+    "NORMAL": "[0.40, 0.80)",
+    "GOOD": ">= 0.80"
+  },
+  "regime_table": {
+    "regime": ["BAD", "CRISIS", "GOOD", "NORMAL"],
+    "n": [18, 16, 16, 34],
+    "mean_ret": [-0.0044, 0.0538, 0.0388, 0.0265],
+    "sd_ret": [0.0841, 0.0778, 0.0633, 0.069],
+    "sharpe_unann": [-0.0524, 0.6918, 0.6129, 0.3844],
+    "min_ret": [-0.1682, -0.0746, -0.0635, -0.0995],
+    "max_ret": [0.1451, 0.2815, 0.1491, 0.1604]
+  },
+  "bootstrap_per_regime": {
+    "CRISIS": {
+      "n_obs": 16,
+      "status": "BOOTSTRAP_WITH_POOLED_FALLBACK (n<30)",
+      "observed_sd": 0.0778,
+      "observed_mean": 0.0538,
+      "boot_sd_mean": 0.0739,
+      "boot_sd_q025": 0.0417,
+      "boot_sd_q975": 0.1031
+    },
+    "BAD": {
+      "n_obs": 18,
+      "status": "BOOTSTRAP_WITH_POOLED_FALLBACK (n<30)",
+      "observed_sd": 0.0841,
+      "observed_mean": -0.0044,
+      "boot_sd_mean": 0.0812,
+      "boot_sd_q025": 0.06,
+      "boot_sd_q975": 0.0999
+    },
+    "NORMAL": {
+      "n_obs": 34,
+      "status": "BOOTSTRAP_STANDARD (n>=30)",
+      "observed_sd": 0.069,
+      "observed_mean": 0.0265,
+      "boot_sd_mean": 0.0676,
+      "boot_sd_q025": 0.0532,
+      "boot_sd_q975": 0.081
+    },
+    "GOOD": {
+      "n_obs": 16,
+      "status": "BOOTSTRAP_WITH_POOLED_FALLBACK (n<30)",
+      "observed_sd": 0.0633,
+      "observed_mean": 0.0388,
+      "boot_sd_mean": 0.0608,
+      "boot_sd_q025": 0.0498,
+      "boot_sd_q975": 0.0717
+    }
+  },
+  "regime_switch_rate_realized": 0.6988,
+  "crisis_n_obs": 16,
+  "crisis_n_passes_30": false,
+  "comment_pit_fix": "Codex C4 ACCEPT_FIX: regime label[k] now uses Mkt_Ret[k-1] (truly lagged), not same-month return. If extending to 196m sample (2010-2026.04), CRISIS n can be re-checked next cycle for n ≥ 30."
+}

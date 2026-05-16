@@ -203,6 +203,36 @@
             "command": "DIR=$(ls -d /mnt/c/Users/*/OneDrive/바탕\\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo \"$PWD\"); bash \"$DIR/02_Infrastructure/hooks/telegram_direct_call_guard.sh\""
           }
         ]
+      },
+      {
+        "_doc_7trends_p1": "7 QEPM Modern Trends Principle 1 — Factor Zoo 축소. feature_registry.json economic_rationale field 부재 시 advisory.",
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "DIR=$(ls -d /mnt/c/Users/*/OneDrive/바탕\\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo \"$PWD\"); bash \"$DIR/02_Infrastructure/hooks/feature_registry_economic_rationale_check.sh\" 2>>/tmp/feature_rationale.log || true"
+          }
+        ]
+      },
+      {
+        "_doc_7trends_p5": "7 QEPM Modern Trends Principle 5 — Risk Crowding Score per Factor. risk_package.json 검증 advisory.",
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "DIR=$(ls -d /mnt/c/Users/*/OneDrive/바탕\\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo \"$PWD\"); bash \"$DIR/02_Infrastructure/hooks/risk_crowding_score_check.sh\" 2>>/tmp/risk_crowding.log || true"
+          }
+        ]
+      },
+      {
+        "_doc_cache_registry": "D안 L4 — 데이터 최신화 영구 보호망. 신규 .cache write_parquet 시 registry entry 강제 advisory. 도훈 mandate 2026-05-15.",
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "DIR=$(ls -d /mnt/c/Users/*/OneDrive/바탕\\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo \"$PWD\"); bash \"$DIR/02_Infrastructure/hooks/cache_registry_enforce.sh\" 2>>/tmp/cache_registry_enforce.log || true"
+          }
+        ]
       }
     ],
     "PostToolUse": [
@@ -349,9 +379,42 @@
             "command": "DIR=$(ls -d /mnt/c/Users/*/OneDrive/바탕\\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo \"$PWD\"); bash \"$DIR/02_Infrastructure/hooks/governor_concord_certifier.sh\" 2>>/tmp/governor_concord_certifier.log || true"
           }
         ]
+      },
+      {
+        "_doc_7trends_p3": "7 QEPM Modern Trends Principle 3 — Uncertainty-aware Forecasting. predictions.parquet 안 CI extension 부재 시 advisory.",
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "DIR=$(ls -d /mnt/c/Users/*/OneDrive/바탕\\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo \"$PWD\"); bash \"$DIR/02_Infrastructure/hooks/ml_uncertainty_audit.sh\" 2>>/tmp/ml_uncertainty_audit.log || true"
+          }
+        ]
+      },
+      {
+        "_doc_7trends_p2": "7 QEPM Modern Trends Principle 2 — Cost-aware Alpha. summary_metrics.json net_port_sr 필드 부재 시 advisory.",
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "DIR=$(ls -d /mnt/c/Users/*/OneDrive/바탕\\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo \"$PWD\"); bash \"$DIR/02_Infrastructure/hooks/ml_cost_aware_audit.sh\" 2>>/tmp/ml_cost_aware_audit.log || true"
+          }
+        ]
       }
     ],
-    "Stop": [],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "DIR=$(ls -d /mnt/c/Users/*/OneDrive/바탕\\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo \"$PWD\"); bash \"$DIR/02_Infrastructure/hooks/auto_commit_on_stop.sh\" 2>>/tmp/auto_commit_on_stop.log || true"
+          },
+          {
+            "type": "command",
+            "command": "DIR=$(ls -d /mnt/c/Users/*/OneDrive/바탕\\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo \"$PWD\"); bash \"$DIR/02_Infrastructure/hooks/auto_push_on_stop.sh\" 2>>/tmp/auto_push_on_stop.log || true"
+          }
+        ]
+      }
+    ],
     "TeammateIdle": [
       {
         "hooks": [

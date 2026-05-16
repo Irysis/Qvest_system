@@ -1,0 +1,68 @@
+{
+  "task_id": "WT-D20260514_003",
+  "wt_type": "discovery",
+  "pg1_eligibility": "certificate_required",
+  "discovery_of": "WT-D20260513_002 C variant (sector-residualized CAPM-residual idio_vol, 6/7 STRONG PASS + monotonicity FAIL + portfolio realized cor 0.7713 FAIL on intersection universe ~350)",
+  "graduation_criteria": {
+    "description": "Discovery → Deployment 전환 조건. Discovery WT 완료 시 자동 검증. discovery_graduation_gate.sh 강제.",
+    "min_rank_ic": 0.04,
+    "min_rank_ic_rationale": "KR top-universe benchmark. <0.04는 통계적 유의성 부족.",
+    "min_icir": 0.2,
+    "min_icir_rationale": "Alpha Lab Gate. <0.20은 IC 안정성 부족.",
+    "min_subperiod_stability": 0.5,
+    "min_subperiod_stability_rationale": "3개 subperiod (2008-14 / 2015-19 / 2020-26) 안정성 >=0.5",
+    "max_drawdown_days": 100,
+    "max_drawdown_days_rationale": "100일 이상 drawdown 지속 시 alpha decay 의심",
+    "min_harvey_t_stat": 3,
+    "min_harvey_t_stat_rationale": "Harvey-Liu-Zhu 다중검정 보정 t>3.0",
+    "min_deflated_sharpe_ratio": 0.5,
+    "min_deflated_sharpe_ratio_rationale": "Bailey-Lopez de Prado DSR — multi-testing 보정 SR"
+  },
+  "theme": "low_vol_c_variant_full_universe_retest_architectural_pivot",
+  "hypothesis_title": "Low-Vol C Variant Re-test on Full Universe — L-317 Pivot Isolation (Universe Size vs Alpha Family)",
+  "hypothesis_description": "도훈 mandate Session 81 — 저변동성 family universe 확장 재검증. WT-D20260513_002 C variant (sector-residualized FF-residual low-vol)을 동일 spec retain 단 universe만 KOSPI200 ∪ KOSDAQ150 intersection (~350) → KOSPI 본주 + KOSDAQ 전종목 (~2,657 cover) 확장. **가설 차별 (WT-D20260514_002 vs 본 cycle)**: WT-D20260514_002 = full universe + general 7 axes 자율 탐색 (small/mid-cap general dispersion 가설), WT-D20260514_003 (본 cycle) = full universe + **specifically low-vol family C variant 동일 spec** (alpha family 동일, universe만 확대) → **universe size 영향 isolate 진단**. **검증 question**: 이전 portfolio realized cor 0.7713 FAIL의 원인이 (a) universe 협소 (KOSPI200 ∪ KOSDAQ150 intersection 350) 때문인가 → 본 cycle full universe에서 cor 0.5 이하 완화 기대, (b) 또는 alpha family 본질 (low-vol family L-316 mechanism) 때문인가 → 본 cycle cor 0.7+ retain. **C variant 4축 mandate inherit** (WT-D20260513_002 학습): (1) PIT-C2 strict t+1 lag, (2) Sector-neutralize FICS Lv1 26 sectors, (3) CAPM 252d rolling residual idio_vol (Ang-Hodrick-Xing-Zhang 2006), (4) Monotonicity ≥ 0.70 hard mandate (이전 0.50 FAIL 회복 의무). **Universe 변화**: KOSPI200 ∪ KOSDAQ150 intersection → KOSPI 본주 + KOSDAQ 전종목 (Factor DB load_month_factors() 경유, LIQ_THRESHOLD 2e8 자동 필터링). **L-316/L-317 mandate retain**: alpha 단계 Pareto 6축 portfolio realized cor 선제 측정 (vs STR_1715_AR_on_M4_R05_overlay_PG2 admit). target < 0.40. **AX 정합**: AX-002 ex-ante grid N=1 strict (C variant 동일 spec inherit, post-hoc grid 금지) + AX-005 v1.2 EXEMPT (multi-sleeve composite path) + AX-007 EXEMPT (multi-sleeve composition). **Codex Round 5단계 흐름 의무**. **병렬 cycle**: WT-D20260514_002 (general 7 axes) + WT-D20260514_003 (본 cycle, C variant universe expansion isolation) 동시 진행. 두 결과 비교 시 universe size vs alpha family 본질 dominant 영향 진단.",
+  "hypothesis_source": "user_defined",
+  "as_of_date": "2026-05-14",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KR_EQUITY_FULL_KOSPI_KOSDAQ_ALL_LIQ_2E8_FILTERED",
+    "liquidity_min_won_20d_avg": 50000000,
+    "max_names_total": 500
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d (재무제표 발표 지연)",
+    "fundamental_annual": "annual May (연간 재무제표 5월 리밸런싱)",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement (QuantiWise)",
+    "macro": "t-1 FRED (외부 매크로 lag)",
+    "ic_history": "Usable_Date <= sig_date (Factor DB 강제)"
+  },
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "current_portfolio": "STR_1631_80_STR_1656_20",
+  "hard_mandate": {
+    "pit_enforcement": "C1-C15 all enforced",
+    "liquidity_floor_won_20d_avg": 50000000,
+    "mandate_restrictions": {
+      "no_short_legal_kr": true,
+      "no_cross_market": true,
+      "kr_domestic_only": true
+    },
+    "long_only_mandate": "configurable"
+  },
+  "hard_constraints": {
+    "max_names": null,
+    "weight_bounds": [
+      0,
+      1
+    ],
+    "sector_active_weight_cap": null,
+    "liquidity_min_won_20d_avg": 50000000
+  },
+  "soft_penalties": [],
+  "capacity_limits": {
+    "adv_multiplier": 0.1,
+    "capacity_max_aum_won": 100000000000
+  }
+}

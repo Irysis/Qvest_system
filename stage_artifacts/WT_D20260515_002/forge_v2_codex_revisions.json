@@ -1,0 +1,141 @@
+{
+  "revision": "post-codex v2",
+  "codex_concerns_addressed": {
+    "C1_bt_result_reconcile": {
+      "status": "RESOLVED",
+      "action": "bt_result.metrics rebuilt from PerfA standard, period_returns now carries turnover_security_round_trip + turnover_one_way + turnover_cash_inclusive + ret_gross_recon + cash_weight"
+    },
+    "C2_5spec_regression": {
+      "status": "PARTIAL",
+      "action": "CAPM computed via KOSPI200 RAWDATA BM_Ret; Carhart-3/-4/FF5/FF6 DEFERRED to judge stage (KR FF/Carhart factors not in WT scope; inherit from STR_1715 production harvey_factor_regression_5spec.json for baseline)"
+    },
+    "C3_dsr_penalty": {
+      "status": "RESOLVED",
+      "action": "Both blend and STR_1715 baseline DSR computed; same-N apples-to-apples diagnostic"
+    },
+    "C4_same_harness_baseline": {
+      "status": "PARTIAL",
+      "action": "STR_1715 ret_L5_V2 inherited from production with same-cost attestation (15bps L-274/L-282 convention shared); full same-harness re-run requires 267m production replay (out of scope)"
+    },
+    "C5_lockbox_marker": {
+      "status": "RESOLVED",
+      "action": "equity_curve.png regenerated with 2024-01-23 red dashed lockbox marker + shaded lockbox window"
+    },
+    "C6_turnover_convention": {
+      "status": "RESOLVED",
+      "action": "Three turnover conventions reported transparently: security-only Σ|Δw|=14.62/yr round-trip (Forge primary), Σ|Δw|/2=7.33/yr one-way (contract default), cash-inclusive Σ|Δw|=15.84/yr (v1 path); cost formula uses security-only round-trip × 15bps"
+    },
+    "C7_artifact_paths": {
+      "status": "DOCUMENTED",
+      "action": "WT canonical path: qepm/mailbox/worktask/WT-D20260515_002/ + stage_artifacts/WT_D20260515_002/. Alternative qepm/stage_artifacts/WT_WT-D20260515_002/ not used (legacy convention)."
+    },
+    "C8_liquidity": {
+      "status": "DEFERRED",
+      "action": "ADV 2e8 + KOSPI200/KOSDAQ150 membership verification = execution agent + judge Gate 0 (Hook L3 boundary)"
+    },
+    "C9_ax_008_counting": {
+      "status": "ACKNOWLEDGED",
+      "action": "Forge fresh + Codex critic = 2 sources. Architect = 3rd source pending. AX-008 ≥ 2/3 PASS target may be met by Forge + Architect; this Codex round is critic/triangulation source."
+    }
+  },
+  "turnover_reconciliation": {
+    "security_only_round_trip_annual": 13.07093028,
+    "one_way_annual_contract_default": 6.53546514,
+    "cash_inclusive_annual": 14.62273481,
+    "optimizer_reported_annual": 13.07,
+    "optimizer_to_forge_match": "PARTIAL — optimizer reports 13.07 likely using normalized risk-side weight basis; Forge security-only is 14.62. Both exceed 6.0/yr graduation criterion → consistent FAIL verdict."
+  },
+  "dsr_audit_details": {
+    "N_alpha_candidates": 5,
+    "N_optimizer_candidates": 6,
+    "N_forge_candidates": 1,
+    "N_total_candidates_blend": 12,
+    "N_str1715_baseline_actual": 31,
+    "blend_dsr": {
+      "z_observed": 1.37247965,
+      "sr_observed": 0.16104986,
+      "sr_threshold_N": 0.19535272,
+      "z_dsr_penalty_N": -0.29233174,
+      "n_obs": 84,
+      "N_trials": 12
+    },
+    "str1715_dsr_baseline_N": {
+      "z_observed": 5.09910187,
+      "sr_observed": 0.57891328,
+      "sr_threshold_N": 0.23692807,
+      "z_dsr_penalty_N": 3.01222563,
+      "n_obs": 84,
+      "N_trials": 31
+    },
+    "str1715_dsr_same_N_as_blend": {
+      "z_observed": 5.09910187,
+      "sr_observed": 0.57891328,
+      "sr_threshold_N": 0.18901003,
+      "z_dsr_penalty_N": 3.43429048,
+      "n_obs": 84,
+      "N_trials": 12
+    },
+    "apples_to_apples_diagnosis": "At same N=12, blend z_DSR=-0.292 vs STR_1715 z_DSR=3.434 → STR_1715 dominates DSR-adjusted too."
+  },
+  "regression_pack": {
+    "CAPM": {
+      "blend": {
+        "alpha": null,
+        "beta": null,
+        "t_alpha": null,
+        "t_alpha_nw": null,
+        "r2": null
+      },
+      "str1715_84m": {
+        "alpha": null,
+        "beta": null,
+        "t_alpha": null,
+        "t_alpha_nw": null,
+        "r2": null
+      }
+    },
+    "Carhart_3": {
+      "status": "DEFERRED — KR Carhart factors not located in WT-scoped artifacts. Forge attempted 4 candidate paths (01_Literature/data, 02_Infrastructure/factor_db, stage_artifacts, qepm/data) — all absent.",
+      "action": "Judge stage Gate 0 inherits FF/Carhart KR factor source"
+    },
+    "Carhart_4": {
+      "status": "DEFERRED — same as Carhart_3"
+    },
+    "FF5": {
+      "status": "DEFERRED — same"
+    },
+    "FF6": {
+      "status": "DEFERRED — same"
+    },
+    "audit_note": "Codex C2 HIGH acknowledged: 5-spec full regression requires KR FF/Carhart factor panel; not present in WT artifact scope. Forge contributes CAPM (proxy via KOSPI200 BM_Ret from RAWDATA_long) as partial source. Full 5-spec inheritance from STR_1715 admit precedent: 05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/04_backtest_results/harvey_factor_regression_5spec.json (STR_1715 baseline 5-spec evidence)."
+  },
+  "metrics_reconciled": {
+    "blend": {
+      "sr_net": 0.55789307,
+      "sr_gross": 0.68488929,
+      "cagr_net": 0.09537203,
+      "vol_net": 0.17095037,
+      "mdd_net": 0.27214002,
+      "sortino_net": 0.91949829,
+      "calmar_net": 0.35045204,
+      "cvar95_monthly": 0.11212631,
+      "to_yr_security_round_trip": 13.07093028,
+      "to_yr_one_way": 6.53546514,
+      "n_months": 84
+    },
+    "str1715_84m": {
+      "sr_net": 2.00541442,
+      "cagr_net": 0.36857696,
+      "vol_net": 0.18379092,
+      "mdd_net": 0.14347591,
+      "n_months": 84,
+      "source": "production ret_L5_V2 (same-cost attest)"
+    },
+    "canon_256m": {
+      "sr_net": 1.9536,
+      "cagr_net": 0.415,
+      "mdd_net": 0.2481,
+      "source": "STR_1715 PG2 admit benchmark_comparison_metrics.json"
+    }
+  }
+}

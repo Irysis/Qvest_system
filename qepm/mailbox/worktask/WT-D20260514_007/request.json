@@ -1,0 +1,68 @@
+{
+  "task_id": "WT-D20260514_007",
+  "wt_type": "discovery",
+  "pg1_eligibility": "certificate_required",
+  "discovery_of": "WT-D20260514_005/006 ML cycles + Factor DB 327 base (L-319 baseline). 본 cycle은 인프라 외부 alt data 신규 alpha 발굴.",
+  "graduation_criteria": {
+    "description": "Discovery → Deployment 전환 조건. Discovery WT 완료 시 자동 검증. discovery_graduation_gate.sh 강제.",
+    "min_rank_ic": 0.04,
+    "min_rank_ic_rationale": "KR top-universe benchmark. <0.04는 통계적 유의성 부족.",
+    "min_icir": 0.2,
+    "min_icir_rationale": "Alpha Lab Gate. <0.20은 IC 안정성 부족.",
+    "min_subperiod_stability": 0.5,
+    "min_subperiod_stability_rationale": "3개 subperiod (2008-14 / 2015-19 / 2020-26) 안정성 >=0.5",
+    "max_drawdown_days": 100,
+    "max_drawdown_days_rationale": "100일 이상 drawdown 지속 시 alpha decay 의심",
+    "min_harvey_t_stat": 3,
+    "min_harvey_t_stat_rationale": "Harvey-Liu-Zhu 다중검정 보정 t>3.0",
+    "min_deflated_sharpe_ratio": 0.5,
+    "min_deflated_sharpe_ratio_rationale": "Bailey-Lopez de Prado DSR — multi-testing 보정 SR"
+  },
+  "theme": "alt_data_mcp_api_external_feature_engineering_orthogonal_alpha",
+  "hypothesis_title": "Alt-Data Feature Engineering via MCP/API Infrastructure — Factor DB 327 외 새 Alpha Sources (DART NLP / News Sentiment / Macro / Global Cross-Market / Academic Discovery)",
+  "hypothesis_description": "도훈 mandate Session 81 — MCP + API 인프라 활용해 Factor DB 327 외부 alt data 신규 alpha 발굴. Kelly Virtue 2024 200+ feature mandate를 외부 데이터까지 확장. **Qvest MCP + API 인프라 (system context 보유)**: (1) **jina** — web search / read URL / arxiv search / ssrn search / pdf extract / Google Trends 검색 / parallel read / image search, (2) **arxiv** — search papers / read / download, (3) **fred** — FRED API series / category, (4) **yfinance** — global market price history / ticker info / sector data / industry / financials / options / holders, (5) **rss-reader** — fetch feed entries / article content (KR 경제 뉴스), (6) **S&P Global** (claude_ai_S_P_Global) — ESG / credit ratings / global comparable, (7) **Google Drive / Gmail / Calendar** (claude_ai 인증 가능), (8) **API 인프라**: DART 한국 전자공시 / QuantiWise / KRX / ECOS 한국은행. **Factor DB 외 신규 alpha source 탐색 영역 (ex-ante grid N≤5 strict, AX-002 정합)**: (1) **DART NLP sentiment** — 한국어 사업보고서 (10-K 한국 등가) 자동 분석. 경영진 어조 / 위험 keyword 빈도 / 전년 대비 변화율. KR LLM (jina classify 또는 KoBERT level). Cohen-Malloy-Nguyen 2020 JoF 정통. (2) **KR 뉴스 sentiment** — rss-reader 한국 경제 뉴스 (한경/조경/매경) fetch + sentiment 추출. Bybee-Kelly-Manela-Xiu 2024 정통. (3) **Global macro factor** — FRED MCP US yield curve / VIX / commodity index / USD index / Fed funds rate (PIT 시차 lag 정합). KR equity와 cross-market predictability (Asness et al. 정통). (4) **Google Trends attention** — jina search 또는 jina classify로 KR ticker 검색량. Da-Engelberg-Gao 2011 SVI 정통 한국 적용. (5) **S&P Global ESG / Credit** — MCP S&P Global 데이터로 KR 기업 ESG score / credit rating. ESG arbitrage (Pastor-Stambaugh-Taylor 2022 정통). (6) **글로벌 sector ETF flow** — yfinance MCP로 미국 sector ETF (XLF/XLK/XLE 등) flow + KR sector mapping. Cross-market predictor. (7) **학술 paper neural discovery** — arxiv/ssrn MCP로 최신 학술 factor 검색 + KR 적용 시도 (2025 publications). **Universe**: KOSPI 본주 + KOSDAQ 전종목 + LIQ 2e8 filter (WT-D20260514_003 universe expansion 학습 inherit). **자율 탐색 mandate**: 5 ex-ante candidates 자율 선택 (8 영역 중 best mix). 단 **alt data PIT 정합 mandate** 의무 — disclosure timestamp 정확 추적 (예: DART 공시 시점 t+1 lag, 뉴스 publication time t+1 lag, 글로벌 macro PIT 시차 lag). **L-316/L-317/L-318/L-319 mandate retain**: Pareto 6축 alpha 단계 portfolio realized cor 선제 측정. target cor < 0.40 vs STR_1715 admit. **STR_1715 H1 alpha 중복 검증**: STR_1715는 Factor DB 가격+재무 기반. 본 cycle alt data (DART NLP / 뉴스 / macro / Google Trends / ESG / 글로벌 sector / 학술) → information source 본질 다름 → cor 자연 직교 가설 강함. **PIT C1~C15 strict**: alt data 각 source disclosure timestamp 명시 + t+1 lag + Usable_Date 정합. **Codex Round 5단계 의무**. **AX 정합**: AX-002 ex-ante grid N≤5 strict + AX-001 v2 4-axis + AX-005/007 EXEMPT + AX-008 Codex Round 의무. **병렬 cycle**: WT-D20260514_003 optimizer cascade 진행 중 + WT-D20260514_006 ML high-dim 진행 중. 본 cycle은 third path (alt data) — 세 path 모두 PASS 시 multi-sleeve composition 검토.",
+  "hypothesis_source": "user_defined",
+  "as_of_date": "2026-05-14",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KR_EQUITY_FULL_KOSPI_KOSDAQ_ALL_LIQ_2E8_FILTERED",
+    "liquidity_min_won_20d_avg": 50000000,
+    "max_names_total": 500
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d (재무제표 발표 지연)",
+    "fundamental_annual": "annual May (연간 재무제표 5월 리밸런싱)",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement (QuantiWise)",
+    "macro": "t-1 FRED (외부 매크로 lag)",
+    "ic_history": "Usable_Date <= sig_date (Factor DB 강제)"
+  },
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "current_portfolio": "STR_1631_80_STR_1656_20",
+  "hard_mandate": {
+    "pit_enforcement": "C1-C15 all enforced",
+    "liquidity_floor_won_20d_avg": 50000000,
+    "mandate_restrictions": {
+      "no_short_legal_kr": true,
+      "no_cross_market": true,
+      "kr_domestic_only": true
+    },
+    "long_only_mandate": "configurable"
+  },
+  "hard_constraints": {
+    "max_names": null,
+    "weight_bounds": [
+      0,
+      1
+    ],
+    "sector_active_weight_cap": null,
+    "liquidity_min_won_20d_avg": 50000000
+  },
+  "soft_penalties": [],
+  "capacity_limits": {
+    "adv_multiplier": 0.1,
+    "capacity_max_aum_won": 100000000000
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "measurement": "alpha-stage portfolio realized correlation (L-316/L-317 mandate)",
+  "vs_strategy": "STR_1715_AR_on_M4_R05_overlay_PG2 (admit lineage frozen)",
+  "vs_strategy_universe": "KOSPI200 ∪ KOSDAQ150 intersection top 350 (large-cap)",
+  "this_sleeve_universe": "KOSPI 본주 + KOSDAQ 전종목 small/mid-cap (~excluded top 350 by Size)",
+  "align_time_series_rows": 267,
+  "align_time_series_date_min": "2004-01-30",
+  "align_time_series_date_max": "2026-03-31",
+  "cor_6_axis": {
+    "axis_1_monthly_pearson": 0.6957,
+    "axis_2_monthly_spearman": 0.6942,
+    "axis_3_monthly_kendall": 0.5118,
+    "axis_4_lower_tail_TDC_q10": 0.4815,
+    "axis_5_monthly_cross_cor_proxy_for_daily": 0.6957,
+    "axis_6_diversification_ratio_50_50_inverse": 0.9208
+  },
+  "pareto_pass_per_axis": {
+    "axis_1_monthly_pearson": false,
+    "axis_2_monthly_spearman": false,
+    "axis_3_monthly_kendall": false,
+    "axis_4_lower_tail_TDC_q10": false,
+    "axis_5_monthly_cross_cor_proxy_for_daily": false,
+    "axis_6_diversification_ratio_50_50_inverse": true
+  },
+  "pareto_all_pass": false,
+  "pareto_axes_passed_count": 1,
+  "pareto_target_mandate": "< 0.40 for monthly Pearson/Spearman/Kendall + <0.40 for lower-tail TDC + <0.40 for daily proxy + DR_inverse <1.0",
+  "best_spec_selected": "F4_Small_LowVol_Defense",
+  "best_spec_alpha_stage_diagnostics": {
+    "rank_ic_mean": 0.123,
+    "rank_ic_abs": 0.123,
+    "icir": 1.0883,
+    "icir_abs": 1.0883,
+    "harvey_t_nw_lag3": 19.277,
+    "monotonicity": 0.75,
+    "sub_stability": 1,
+    "selection_direction": "POSITIVE (direct)"
+  },
+  "alternative_specs_pareto_6_axis": {
+    "F2_Amihud_Illiq_Premium": {
+      "cor_6_axis": {
+        "axis_1_monthly_pearson": 0.5023,
+        "axis_2_monthly_spearman": 0.4276,
+        "axis_3_monthly_kendall": 0.2981,
+        "axis_4_lower_tail_TDC_q10": 0.4074,
+        "axis_5_monthly_cross_cor_proxy": 0.5023,
+        "axis_6_diversification_ratio_inv": 0.8745
+      },
+      "pareto_pass": {
+        "axis_1_monthly_pearson": false,
+        "axis_2_monthly_spearman": false,
+        "axis_3_monthly_kendall": true,
+        "axis_4_lower_tail_TDC_q10": false,
+        "axis_5_monthly_cross_cor_proxy": false,
+        "axis_6_diversification_ratio_inv": true
+      },
+      "pareto_all_pass": false,
+      "pareto_n_pass": 2,
+      "n_aligned_periods": 267
+    },
+    "F5_Small_LiquidityConstraint_Composite": {
+      "cor_6_axis": {
+        "axis_1_monthly_pearson": 0.5318,
+        "axis_2_monthly_spearman": 0.4436,
+        "axis_3_monthly_kendall": 0.3137,
+        "axis_4_lower_tail_TDC_q10": 0.3704,
+        "axis_5_monthly_cross_cor_proxy": 0.5318,
+        "axis_6_diversification_ratio_inv": 0.8861
+      },
+      "pareto_pass": {
+        "axis_1_monthly_pearson": false,
+        "axis_2_monthly_spearman": false,
+        "axis_3_monthly_kendall": true,
+        "axis_4_lower_tail_TDC_q10": true,
+        "axis_5_monthly_cross_cor_proxy": false,
+        "axis_6_diversification_ratio_inv": true
+      },
+      "pareto_all_pass": false,
+      "pareto_n_pass": 3,
+      "n_aligned_periods": 267
+    }
+  },
+  "best_alternative_spec_summary": {
+    "F2_pareto_n_pass": 2,
+    "F5_pareto_n_pass": 3,
+    "F4_pareto_n_pass": 1,
+    "best_orthogonality_spec": 3
+  }
+}

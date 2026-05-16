@@ -1,0 +1,47 @@
+{
+  "task_id": "WT-D20260513_001",
+  "events": [
+    {
+      "timestamp": "2026-05-13T17:14:10+0900",
+      "agent": "q-lead",
+      "action": "WT_CREATED",
+      "summary": "Work Task 생성: Statistically Sophisticated Low-Volatility 4th Orthogonal Alpha Sleeve | source=user_defined"
+    },
+    {
+      "timestamp": "2026-05-13T17:22:00+0900",
+      "agent": "alpha-research",
+      "action": "ALPHA_V1_EMITTED",
+      "summary": "v1 alpha_package_draft.json emitted. Best=C4_D57_Down_Vol_LOW. rank_ic=0.0481 ICIR=0.252 t_NW=4.73. Date-exact orthogonality merge bug (138m overlap, later patched to YM-aligned 265m)."
+    },
+    {
+      "timestamp": "2026-05-13T17:37:30+0900",
+      "agent": "codex-critic-alpha-r1",
+      "action": "CODEX_R1_REJECT",
+      "summary": "Codex Round 1 REJECT. Weakest: SIG_DATES first-of-month → 138/267 factor_date > sig_date future leakage. 8 concerns (4 HIGH PIT/AX/monotonicity/AX-005, 4 MEDIUM). Q-Lead escalation trigger HIGH≥4 marginal."
+    },
+    {
+      "timestamp": "2026-05-13T17:44:00+0900",
+      "agent": "alpha-research",
+      "action": "V2_PIT_FIX_REMEDIATION",
+      "summary": "run_alpha_research_v2.R: SIG_DATES → strict month-end. 0/268 leak audit. Re-measured PIT-clean: rank_ic 0.038 (-0.010), ICIR 0.211 (-0.041), t_NW 3.87 (-0.86), DSR 8.86 STRONG, monotonicity 0.25 (-0.25). orthogonality 0.054/-0.009 STRICT PASS."
+    },
+    {
+      "timestamp": "2026-05-13T17:56:00+0900",
+      "agent": "codex-critic-alpha-r2",
+      "action": "CODEX_R2_REJECT",
+      "summary": "Codex Round 2 REJECT. Weakest: PIT-C2 same-day circular for D57 same-month-end factor + close-to-close return. 5 HIGH concerns (silent fallback rank_ic gate, PIT-C2, monotonicity rationalization, 5-spec FF mismatch, AX-005 promise) + 3 MEDIUM. RF auto-detected 4 self-rationalization phrases."
+    },
+    {
+      "timestamp": "2026-05-13T18:01:00+0900",
+      "agent": "alpha-research",
+      "action": "ALPHA_FINALIZED_MARGINAL_FAIL",
+      "summary": "alpha_package.json FINAL. graduation_status = MARGINAL_FAIL_NON_GRADUATING_EXPLORATORY. 4/5 gates PASS (ICIR/Harvey-t/DSR/SubStability) + 2 FAIL (rank_ic 0.0385 < 0.04 / mono 0.25 < 0.7) + PIT-C2 SUSPECTED. challenge_flags 7건 정직 populated. Q-Lead escalation triggered. Codex 2 round 모두 REJECT 인정."
+    },
+    {
+      "timestamp": "2026-05-13T18:02:00+0900",
+      "agent": "alpha-research",
+      "action": "QLEAD_DECISION_PENDING",
+      "summary": "Options A (abandon low-vol), B (exploratory retain for multi-sleeve composite), C (other low-vol variant) presented in alpha_challenge_note.md. Recommendation: B. Risk-research spawn before Q-Lead confirms decision blocked."
+    }
+  ]
+}

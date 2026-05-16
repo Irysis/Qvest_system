@@ -1,0 +1,169 @@
+{
+  "task_id": "WT-D20260514_004",
+  "wt_type": "discovery",
+  "generated_at": "2026-05-14T09:35:00+0900",
+  "lineage_purpose": "Charter v1.4 §8 No Silent Override + Codex C7 disposition. Full traceability of derived artifacts vs parent inheritance vs new computation.",
+  "parent_chain": {
+    "direct_parent": "WT-D20260514_001",
+    "lineage_depth": 1,
+    "lineage_path": [
+      "WT-D20260513_001 (low-vol family path-dead-end finding)",
+      "WT-D20260513_002 (cell 1: low-vol + intersection FAIL)",
+      "WT-D20260514_001 (cell 2: investor flow + intersection FAIL, F4 parent)",
+      "WT-D20260514_002 (cell 3: general 7 axes + full FAIL)",
+      "WT-D20260514_003 (cell 4: low-vol + full PASS, parallel cycle)",
+      "WT-D20260514_004 (cell 5: investor flow + full, 본 cycle)"
+    ]
+  },
+  "spec_inheritance": {
+    "factor_specs": {
+      "source": "WT-D20260514_001 alpha_package.json line 68-89",
+      "inheritance_scope": "verbatim",
+      "5_sophistication_axes": [
+        "F1_HAR_Flow_Macro_Conditional (Corsi 2009 + regime)",
+        "F2_Cross_Investor_Disagreement_Persistent (Easley 2024 + Yan-Zhang 2009)",
+        "F3_Foreign_Resid_CrossSection (Choe-Kho-Stulz 2005)",
+        "F4_Smart_Money_Concentration_Decoupled (Boehmer-Wu 2013 + Gompers-Metrick 2001) — selected",
+        "F5_Flow_Momentum_Differential (Jegadeesh-Titman 1993)"
+      ],
+      "modification": "universe filter only (K200 ∪ KQ150 intersection → full KOSPI + KOSDAQ)"
+    },
+    "alignment_direction": {
+      "source": "WT-D20260514_001 student-of-empirical-mechanism",
+      "rationale": "CONTRARIAN via academic mechanism inheritance (Boehmer-Wu 2013 + Da-Engelberg-Gao 2011 + Choe-Kho-Stulz 2005), NOT learned from future return"
+    },
+    "regime_panel": {
+      "source": "fallback BM_DT 252d trailing return expanding percentile",
+      "limitation_codex_c4": "C9 within-month future overlay in fallback path (regime[which.max(Date)] for first-of-month sig_date)",
+      "f4_impact": "NONE (F4 selected factor does not use regime_scalar)",
+      "grid_impact": "F1 grid evaluation includes regime-conditioned diagnostics; F1 anyway FAIL all gates"
+    }
+  },
+  "new_computation": {
+    "universe_full_kospi_kosdaq": {
+      "filter": "KOSPI 본주 + KOSDAQ 전종목 + LIQ 2e8 KRW (20d avg trading value, t-1 lag)",
+      "mean_size_full": 1463.3,
+      "mean_size_intersection_comparison": 319.5,
+      "expansion_ratio": 4.61
+    },
+    "universe_isolation_audit": {
+      "artifact": "stage_artifacts/WT_D20260514_004/universe_isolation_audit.json",
+      "new_quantitative_evidence": "L-317 4x2 matrix cell 5 (investor flow + full universe = portfolio realized cor 0.6987 PARTIAL FAIL)"
+    },
+    "augmented_diagnostics_codex_c5": {
+      "artifact": "stage_artifacts/WT_D20260514_004/augmented_diagnostics_codex_c5.json",
+      "scope": "INV10/INV11 standalone IC + recent 3Y ICIR + F4 recent 3Y ICIR (vs Codex deferred concern partial mitigation)"
+    }
+  },
+  "artifacts_emitted": {
+    "primary_outputs": [
+      {
+        "path": "qepm/mailbox/worktask/WT-D20260514_004/alpha_package.json",
+        "purpose": "final alpha package (8-field schema + L-317 finding)",
+        "status": "non_graduating_archive_only"
+      },
+      {
+        "path": "stage_artifacts/WT_D20260514_004/alpha_scores.parquet",
+        "purpose": "monthly alpha scores 279,484 rows × 192 sig_dates",
+        "schema": "sig_date, Ticker, score_raw, regime_state, direction_metadata, alignment_rationale",
+        "codex_c2_fix": "score_eff (-1 * raw) column removed (C13 grep hit). Direction expressed via metadata."
+      },
+      {
+        "path": "stage_artifacts/WT_D20260514_004/ic_history.parquet",
+        "purpose": "per-factor per-month IC time series (5 factors × 192 months = 960 rows)"
+      },
+      {
+        "path": "stage_artifacts/WT_D20260514_004/universe_isolation_audit.json",
+        "purpose": "L-317 4x2 matrix cell 5 quantitative finding + decision rule trigger"
+      },
+      {
+        "path": "stage_artifacts/WT_D20260514_004/orthogonality_two_level.json",
+        "purpose": "alpha-vector level (5x5 + 35 STR_1715 pairs) + portfolio realized level (vs proxy + production)"
+      },
+      {
+        "path": "stage_artifacts/WT_D20260514_004/m08_overlap_verification.json",
+        "purpose": "M08 information source orthogonality verification (inherit parent zero overlap)"
+      },
+      {
+        "path": "stage_artifacts/WT_D20260514_004/alpha_validation.json",
+        "purpose": "diagnostic snapshot + universe isolation decision + PIT compliance audit"
+      },
+      {
+        "path": "stage_artifacts/WT_D20260514_004/augmented_diagnostics_codex_c5.json",
+        "purpose": "Codex C5 partial fix — INV10/INV11 standalone IC + recent 3Y ICIR"
+      },
+      {
+        "path": "qepm/mailbox/worktask/WT-D20260514_004/alpha_challenge_note.md",
+        "purpose": "Charter §8 No Silent Override + 8 Codex concerns disposition + Q-Lead escalate trigger"
+      },
+      {
+        "path": "qepm/mailbox/worktask/WT-D20260514_004/codex_critic_response_alpha.json",
+        "purpose": "Codex Round 1 stance + critical_concerns + weakest_assumption"
+      },
+      {
+        "path": "qepm/mailbox/worktask/WT-D20260514_004/alpha_package_draft.json",
+        "purpose": "pre-Codex draft (retained for audit)"
+      }
+    ]
+  },
+  "pit_audit_trace": {
+    "lockbox_cutoff": "2023-12-22 (SIGNAL_CUTOFF)",
+    "lockbox_window": "2024-01-23 ~ 2026-04-27 (out of cycle)",
+    "data_used_strict": "sig_date <= 2023-12-22 only",
+    "future_data_used": "NONE",
+    "C1_lookahead": "PASS",
+    "C2_same_day_circular": "PASS (compute_investor.R Date < sig_d strict)",
+    "C9_VT_DD_lag": "N/A (no VT/DD overlay) + C9 regime fallback partial issue (Codex C4) limited to F1 grid",
+    "C10_liquidity": "PASS",
+    "C13_Z_Score_Aligned": "PARTIAL_PASS (INV registry-level fallback raw; CONTRARIAN via mechanism inheritance; alpha_scores parquet score_eff column removed post-Codex)",
+    "C14_Usable_Date": "PASS (align_factor_direction enforces IC history Usable_Date <= sig_date)",
+    "C15_load_month_factors": "PARTIAL_PASS (bulk parquet read with verified equivalence cor=1.000000 in parent WT-D20260514_001 at sig_date=2018-06-01; performance optimization 1m vs 30m+)"
+  },
+  "codex_round_1_disposition_summary": {
+    "stance": "REJECT (veto_flag=false)",
+    "total_concerns": 8,
+    "disposition_distribution": {
+      "ACCEPT_FULL": 4,
+      "ACCEPT_PARTIAL": 3,
+      "REBUTTAL_OUT_OF_SCOPE": 1
+    },
+    "by_concern": {
+      "C1_all_gates_fail": "ACCEPT_FULL (NON_GRADUATING archive_only)",
+      "C2_C13_manual_negation": "ACCEPT_PARTIAL (alpha_scores score_eff column removed)",
+      "C3_C15_direct_parquet": "ACCEPT_PARTIAL (parent equivalence cor=1.0 retain, format change deferred)",
+      "C4_C9_regime_fallback": "ACCEPT_FULL (F4 not impacted; F1 limited)",
+      "C5_5spec_DSR_deferred": "ACCEPT_PARTIAL (INV10/INV11 standalone + recent 3Y ICIR added in-cycle)",
+      "C6_portfolio_cor_above_threshold": "ACCEPT_FULL (NON_GRADUATING)",
+      "C7_challenge_note_missing": "ACCEPT_FULL (challenge_note.md + artifact_lineage.json written)",
+      "C8_weights_covariance_missing": "REBUTTAL_OUT_OF_SCOPE (Alpha Agent boundary §8)"
+    },
+    "ax_008_post_disposition": "PARTIAL (Codex agree=false on PIT PASS/inheritance but agree on NON_GRADUATING archive direction)"
+  },
+  "q_lead_escalate_trigger": {
+    "triggered": true,
+    "criteria_met": [
+      "HIGH severity concerns >= 5 (C1, C2, C3, C5, C6 = 5건)",
+      "AX axiom hard FAIL >= 3 (Codex flagged C13, C15, C9)"
+    ],
+    "criteria_not_met": [
+      "Codex REJECT + ALL rebuttal (not all - C1/C4/C6/C7 ACCEPT)",
+      "PIT C1 violation (sig_date < lockbox PASS)"
+    ],
+    "decision_options_neutral_presentation": {
+      "A": "Archive 본 cycle per Codex (4x2 matrix evidence retain only)",
+      "B": "L-318 candidate L-code 적립 (family-specific universe effect finding)",
+      "C": "Pivot to WT-D20260514_003 C2 (low-vol + full PASS) admit path"
+    }
+  },
+  "references": [
+    "Charter v1.4 §8 No Silent Override",
+    "Charter v1.7 §10 Role Card System",
+    "L-269 (v6.0 Codex Critic Round 3중 장치)",
+    "L-316 (alpha-vector cor != portfolio realized cor)",
+    "L-317 candidate (universe scope family-specific effect)",
+    "L-318 candidate (signal consistency vs universe scope tradeoff)",
+    "L-269 (v6.0 Codex Critic Round Charter §10)",
+    ".claude/rules/codex-round.md (5-stage flow enforcement)",
+    "qepm_codex_base_context.md (Codex critic persona)"
+  ]
+}

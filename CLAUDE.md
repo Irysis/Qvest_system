@@ -5,7 +5,7 @@
 **Qvest v7.2.1 — Memory Knowledge Hardening**
 
 **계보**: v6.4.0 → v7.0.0 → v7.0.1 → v7.1.0-lite → v7.2.0 → **v7.2.1** (현재 active)
-**Branch**: `v7.1-hardening` (lite 패치 발행 branch, master 동기화 daily_push)
+**Branch**: `main` (Qvest active — GitHub default. 이전: v7.1-hardening, 2026-05-13 rename L-314)
 
 **★ Active SOT (단일 진실)**: `02_Infrastructure/docs/qvest_v7_2_1_sot.md`
 **전임 SOT (흡수됨)**: `02_Infrastructure/docs/qvest_v6_4_sot.md` (v6.4 base 흡수, read-only retain)
@@ -79,6 +79,7 @@ Qvest 시스템 전체 구동. bootstrap.sh 실행 → 플러그인 리로드 �
 - **Harness Engineering (Hooks Tier 1~6)**: `.claude/rules/harness.md`
 - **Factor DB + Forge 자원**: `.claude/rules/factor-db.md` (C13~C15 + load_month_factors 경유)
 - **Axioms (AX-000~008)**: `.claude/rules/axioms.md`
+- **Research Philosophy (7 QEPM Modern Trends)**: `.claude/rules/research_philosophy.md` ⭐ (Charter-level SOT `02_Infrastructure/docs/qvest_research_philosophy.md` v1.0 2026-05-14. Factor Zoo 축소 / Cost-aware / Uncertainty-aware / Direct Portfolio / Crowding / Implementation / Attribution. 분기별 review + trigger-based 보강. 위반 = AX-002 동급)
 
 ---
 

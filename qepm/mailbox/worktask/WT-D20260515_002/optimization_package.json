@@ -1,0 +1,411 @@
+{
+  "task_id": "WT-D20260515_002",
+  "package_kind": "optimization_package",
+  "package_status": "FINALIZED_POST_CODEX_REJECT_WITH_REVISIONS",
+  "wt_type": "discovery_to_deployment_blend",
+  "finalize_timestamp": "2026-05-15T17:45:00+09:00",
+  "draft_predecessor": "qepm/mailbox/worktask/WT-D20260515_002/optimizer_package_draft.json",
+  "codex_critic_response": "qepm/mailbox/worktask/WT-D20260515_002/codex_critic_response_optimizer.json",
+  "challenge_note": "qepm/mailbox/worktask/WT-D20260515_002/challenge_note_optimizer.md",
+  "codex_round_status": "FINALIZED_POST_CODEX_REJECT_WITH_REVISIONS — 7 concerns disposition (ACCEPT_FIX 3 + ACCEPT_DOWNGRADE 1 + PARTIAL 2 + REBUTTAL 1). Q-Lead escalate triggered (HIGH+CRITICAL = 6 ≥ 5). veto_flag=false.",
+  "agent_lineage": "WT-D20260515_002 optimizer-research independent spawn (post-alpha-finalize 12:50 + post-risk-finalize 14:55)",
+  "as_of_date": "2026-05-15",
+  "selection_objective": "to_adj_ret",
+
+  "inheritance": {
+    "alpha_package_path": "qepm/mailbox/worktask/WT-D20260515_002/alpha_package.json",
+    "risk_package_path": "qepm/mailbox/worktask/WT-D20260515_002/risk_package.json",
+    "alpha_top30_parquet": "stage_artifacts/WT_D20260515_002/alpha_top30_by_sig_date.parquet",
+    "covariance_rolling_parquet": "stage_artifacts/WT_D20260515_002/covariance_rolling.parquet",
+    "covariance_per_sig_date_dir": "stage_artifacts/WT_D20260515_002/covariance_per_sig_date/",
+    "str_1715_alpha_parquet": "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/02_holdings_universe/alpha_scores_str1715_268m.parquet",
+    "str_1715_overlay_ts_csv": "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/02_holdings_universe/weights_267m_timeseries.csv",
+    "returns_panel_parquet": "stage_artifacts/WT_D20260514_007/returns_monthly_panel.parquet",
+    "stage_3_role_card": "Charter v1.7 §10 Role Card 4×5 — optimizer-research own: weights. NOT modifying alpha. NOT modifying Σ. produce final 20-name targets + sleeve contribution + AX-007 proof + infeasibility_report."
+  },
+
+  "target_weights_ref": "stage_artifacts/WT_D20260515_002/weights.csv",
+  "target_weights_schema_ref": "stage_artifacts/WT_D20260515_002/weights_schema.json",
+  "sleeve_contribution_ref": "stage_artifacts/WT_D20260515_002/sleeve_contribution.json",
+  "method_shopping_log_ref": "stage_artifacts/WT_D20260515_002/method_shopping_log.csv",
+  "selected_backtest_returns_ref": "stage_artifacts/WT_D20260515_002/selected_backtest_returns.csv",
+  "optimizer_diagnostics_ref": "stage_artifacts/WT_D20260515_002/optimizer_diagnostics.json",
+  "workflow_script_ref": "stage_artifacts/WT_D20260515_002/optimizer_workflow.R",
+  "weights_finalize_script_ref": "stage_artifacts/WT_D20260515_002/weights_finalize.R",
+
+  "method_selected": "Sleeve_blend_A_SignalTilt_B_EW_alloc_12_8",
+  "method_selected_explicit_scope": {
+    "sleeve_A_method": "SignalLinearTilt (production STR_1715 precedent, a=0.018 + b=0.021*score_eff, normalize)",
+    "sleeve_B_method": "EW (Equal Weight)",
+    "sigma_optimization_scope": "Sleeve B only (Σ covers M6 top-30 universe; sleeve A names absent from Σ per Codex C6 acknowledged)",
+    "overlay_layer": "STR_1715 combined_overlay_V2 (m4 × β_AR × β_R05) inherited unchanged",
+    "selection_basis_objective_enum": "to_adj_ret (v6.1 R4 P3 HARD compliant — NOT sharpe_only)"
+  },
+
+  "construction_design": {
+    "blend_paradigm": "Allocation-proportional dual-sleeve dedupe-merge with sleeve-aware in-sleeve weighting + STR_1715 overlay applied to combined book.",
+    "rationale": "request.json blend_spec.merge_rule reads 'weighted combined score → dedupe → final top-20 by combined rank'. Empirical overlap between STR_1715 top-20 and M6 top-30 = 0 / 84 sig_dates (mid-cap defense vs ML cross-section). Two natural realizations: (1) z-score combined ranking → 7A + 13B (M6 z-spread artifact); (2) allocation-proportional 12A + 8B = round(0.60 × 20) + round(0.40 × 20). Optimizer selected (2) for AX-007 clarity, request.json sleeve weight fidelity, predictable attribution.",
+    "n_from_sleeve_A": 12,
+    "n_from_sleeve_B": 8,
+    "sleeve_A_source": "STR_1715_AR_on_M4_R05_PG2 alpha_scores_str1715_268m.parquet score_eff per sig_ym (PIT month-start aligned).",
+    "sleeve_A_in_sleeve_weighting": "Signal-linear tilt: w_i = (a + b × score_eff) / sum (a=0.018, b=0.021, production fit). Max ≈ 0.068, min ≈ 0.040.",
+    "sleeve_B_source": "M6 Ensemble alpha_top30_by_sig_date.parquet alpha_score (top-8 by rank).",
+    "sleeve_B_in_sleeve_weighting": "Method shopping selected EW. 6 candidates tested.",
+    "overlay_applied": "STR_1715_AR_M4_R05 combined_overlay_V2 scalar per sig_ym → w_eff = w_name × overlay_gate. Cash residual = 1 − overlay_gate explicit as CASH_KRW row in weights.csv (Codex C2 fix).",
+    "universe_filter_applied": "returns_monthly_panel coverage per sig_date (PIT-clean Production listing universe proxy). 1,680 / 1,680 selected (Ticker, sig_date) pairs PASS in_returns_panel = TRUE.",
+    "rebalance_frequency": "monthly (request.json mandate)",
+    "cost_model_version": "v2.3_kr_retail_15bps (commission = 15bps each side, applied to turnover Σ|Δw| once — L-274 / backtest_harness.R convention)"
+  },
+
+  "method_shopping": {
+    "selection_objective_enum": "to_adj_ret",
+    "objective_formula": "selection_score = sharpe_net − 0.25 × max(0, eff_TO_yr − 6.0) / 6.0",
+    "rationale_for_objective": "Charter v1.8 §15 Trend P2 (Cost-aware Alpha). Sleeve-B in-sleeve methods differ marginally because M6 top-30 alpha_scores are nearly uniform (range 0.985~1.000) → Σ-driven differentiation small (cond median 53). EW emerged as winner with sharpe_net 0.5579 (tied with SigTilt + HRP).",
+    "n_candidates_tried": 6,
+    "candidates_tried_within_charter_max_10": true,
+    "candidates": [
+      {"name": "EW",             "sharpe_gross": 0.6849, "sharpe_net": 0.5579, "eff_to_yr": 13.0709, "cvar95_monthly": -0.1121, "mdd_net_pct": 27.21, "cagr_net_pct": 9.54, "vol_net_pct": 17.10, "qualified_TO_6": false, "selection_score": 0.2633, "selected": true},
+      {"name": "SigTilt",        "sharpe_gross": 0.6849, "sharpe_net": 0.5579, "eff_to_yr": 13.0709, "cvar95_monthly": -0.1121, "mdd_net_pct": 27.22, "cagr_net_pct": 9.54, "vol_net_pct": 17.09, "qualified_TO_6": false, "selection_score": 0.2633, "selected": false},
+      {"name": "HRP",            "sharpe_gross": 0.6849, "sharpe_net": 0.5579, "eff_to_yr": 13.0709, "cvar95_monthly": -0.1121, "mdd_net_pct": 27.21, "cagr_net_pct": 9.54, "vol_net_pct": 17.10, "qualified_TO_6": false, "selection_score": 0.2633, "selected": false},
+      {"name": "MVO_TO_phi0.5",  "sharpe_gross": 0.6813, "sharpe_net": 0.5546, "eff_to_yr": 13.0594, "cvar95_monthly": -0.1125, "mdd_net_pct": 27.53, "cagr_net_pct": 9.50, "vol_net_pct": 17.13, "qualified_TO_6": false, "selection_score": 0.2605, "selected": false},
+      {"name": "MVO_lam2",       "sharpe_gross": 0.6770, "sharpe_net": 0.5518, "eff_to_yr": 13.1255, "cvar95_monthly": -0.1137, "mdd_net_pct": 29.05, "cagr_net_pct": 9.61, "vol_net_pct": 17.41, "qualified_TO_6": false, "selection_score": 0.2549, "selected": false},
+      {"name": "ERC",            "sharpe_gross": 0.6562, "sharpe_net": 0.5297, "eff_to_yr": 13.0960, "cvar95_monthly": -0.1131, "mdd_net_pct": 27.62, "cagr_net_pct": 9.07, "vol_net_pct": 17.12, "qualified_TO_6": false, "selection_score": 0.2340, "selected": false}
+    ],
+    "tie_breaker_used": "alphabetical-first (EW) among 3-way tie (EW = SigTilt = HRP at 0.5579 / 0.2633). No heavy-tail tie-breaker applied (would not be admit-relevant since all qualified=false anyway).",
+    "method_shopping_audit_codex_response": "Codex C7 cherry_pick_risk MEDIUM acknowledged. Mitigation: all 6 methods reported with full metrics; selection_score formula deterministic + reproducible; HRP would yield identical Sharpe_net 0.5579 (Codex can verify EW = HRP tie indicates selection is metric-driven, not method-driven)."
+  },
+
+  "selected_metrics_84m_sample": {
+    "sharpe_gross": 0.6849,
+    "sharpe_net": 0.5579,
+    "cagr_net_pct": 9.54,
+    "vol_net_pct": 17.10,
+    "mdd_net_pct": 27.21,
+    "cvar95_monthly": -0.1121,
+    "eff_to_yr": 13.0709,
+    "estimated_annual_cost": 0.01961,
+    "estimated_annual_cost_formula": "mean(turn_monthly) × commission_15bps × 12 = (1.0892 × 0.0015) × 12 = 0.01961",
+    "n_months": 84,
+    "avg_n_names": 20,
+    "avg_n_A_selected": 12,
+    "avg_n_B_selected": 8,
+    "avg_cash_share": 0.2725,
+    "active_return_annualized_vs_EW_kr_bench": 0.0095,
+    "tracking_error_annualized": 0.1341,
+    "information_ratio": 0.0705,
+    "capm_alpha_annualized": 0.0449,
+    "capm_beta": 0.6334,
+    "capm_beta_ci95": [0.5147, 0.7522],
+    "capm_r_squared": 0.5786,
+    "expected_active_return": 0.0095,
+    "expected_tracking_error": 0.1341,
+    "expected_information_ratio": 0.0705,
+    "turnover": 1.0892,
+    "estimated_cost": 0.01961
+  },
+
+  "ax_007_exemption_proof": {
+    "exemption_type": "multi_sleeve_blend",
+    "multi_sleeve_count": 2,
+    "sleeve_A_target_min_share": 0.50,
+    "sleeve_A_actual_share_mean": 0.60,
+    "sleeve_A_actual_share_median": 0.60,
+    "sleeve_B_target_min_share": 0.30,
+    "sleeve_B_actual_share_mean": 0.40,
+    "sleeve_B_actual_share_median": 0.40,
+    "mean_n_from_A": 12,
+    "mean_n_from_B": 8,
+    "mean_n_overlap_AB": 0,
+    "n_sig_dates_evaluated": 84,
+    "pass": true,
+    "evidence_artifact": "stage_artifacts/WT_D20260515_002/sleeve_contribution.json (84 per-sig_date rows + summary)"
+  },
+
+  "hard_constraints_compliance": {
+    "max_names_20_per_sig": {"actual_max": 20, "actual_mean": 20, "actual_min": 20, "pass": true},
+    "long_only": {"min_weight": 0.0088, "pass": true},
+    "weight_bounds_0_to_0_20": {"max_weight_observed": 0.0850, "pass": true},
+    "sum_weights_1": {
+      "sum_per_sig_incl_explicit_cash_row": 1.0,
+      "max_abs_deviation_from_1": "5.55e-16 (machine epsilon)",
+      "schema_compliance": "Explicit CASH_KRW rows added (Codex C2 ACCEPT_FIX) — 49 of 84 sig_dates have CASH_KRW row where overlay_gate < 1.0.",
+      "pass": true
+    },
+    "universe_KOSPI200_KOSDAQ150_LIQ_2e8_PARTIAL": {
+      "applied_via": "returns_monthly_panel coverage (PIT-clean Production listing universe proxy, L-274 inherit)",
+      "per_row_flag": "weights.csv column liquidity_verification",
+      "non_cash_rows_PIT_LISTING_OK_count": 1680,
+      "non_cash_rows_FAIL_count": 0,
+      "ADV_2e8_verification_status": "DEFERRED_EXECUTION_AGENT (Charter §10 execution agent obligation — daily volume data not in optimizer scope)",
+      "KOSPI200_KOSDAQ150_membership_status": "DEFERRED_FORGE (Forge Gate 0 universe audit)",
+      "pass_with_caveat_codex_C3_PARTIAL": true
+    }
+  },
+
+  "infeasibility_report": {
+    "status": "INFEASIBLE_AT_CURRENT_REQUEST_SPEC — 5 of 8 graduation criteria fail on 84m walk-forward; this WT cannot graduate without request.json amendment OR additional 196m re-cut",
+    "honest_position": "Risk-side reported CVaR cap 0.025 INFEASIBLE for all 3 sleeves (Codex C2 inherited). Optimizer reports SR / CAGR / MDD / CVaR / eff_TO failing graduation. Per Charter §8 (No Silent Override), NOT relaxing constraints in package — explicit infeasibility surface to Q-Lead. Codex Round revealed self-rationalization risk in 'DEFER_TO_GOVERNOR' framing — revised to explicit infeasibility + actionable remediation paths.",
+    "violated_criteria_vs_request_json_graduation": [
+      {
+        "criterion": "min_sharpe_ratio_2.0",
+        "actual_84m": 0.5579,
+        "gap": 1.4421,
+        "ax_002_compliance": "honest measurement, no inflation",
+        "primary_drivers": [
+          "84m walk-forward sample (2019-01 to 2025-12) is short and includes COVID 2020 + 2022 stagflation + 2024-25 rally. STR_1715 admit precedent SR 1.95 averaged over 255m. Empirical subsample SR ceiling ≈ 1.07 net (M6 alone, no overlay).",
+          "STR_1715 production overlay (combined_overlay_V2) mean = 0.7275 → 27.25% cash drag. Without overlay: SR_net = 1.07 (47% relative degradation).",
+          "M6 vs STR_1715 empirically orthogonal: overlap 0 / 84 sig_dates, but combined SR is sum-of-parts not multiplicative."
+        ],
+        "remediation_paths_q_lead_amendment_required": [
+          "Re-cut on 196m sample (returns_monthly_panel covers 2010-2026.04) — projects SR closer to STR_1715 admit 1.95 / M6 84m 1.28 weighted",
+          "Override STR_1715 overlay (Charter §8 violation if silent — Q-Lead explicit waiver required)"
+        ]
+      },
+      {
+        "criterion": "max_drawdown_pct_minus_25",
+        "actual_84m": -27.21,
+        "gap_pp": -2.21,
+        "primary_drivers": ["M6 sleeve mid-cap exposure during 2020Q1 COVID + 2022 stagflation.", "Overlay regime-switch lag."]
+      },
+      {
+        "criterion": "min_cagr_pct_16.0",
+        "actual_84m": 9.54,
+        "gap_pp": -6.46,
+        "primary_drivers": ["Overlay cash drag 27.25%.", "Excessive 13.07/yr turnover × 15bps = 196bps annual cost (~2pp CAGR drag).", "84m sample includes 2022 KOSPI -23%."]
+      },
+      {
+        "criterion": "max_turnover_yr_6.0",
+        "actual_84m": 13.0709,
+        "gap": 7.0709,
+        "ax_002_honesty": "Codex C1 CRITICAL acknowledged. Not deferrable — admit-blocking under current spec.",
+        "primary_drivers": [
+          "M6 cross-section monthly rerank: signal-level TO 9.75/yr documented in alpha_package; sleeve B 0.40 allocation → 3.9/yr contribution.",
+          "STR_1715 score_eff monthly rerank of top-12 names: ~7/yr × 0.60 = 4.2/yr contribution.",
+          "STR_1715 overlay regime switches (m4×β_AR×β_R05): 1.48/yr floor."
+        ],
+        "structural_limit": "No in-sleeve weighting method (EW/SigTilt/MVO/MVO_TO/HRP/ERC) reduces TO; 6 methods cluster within 0.07/yr range. TO driver is name-set churn, not per-name weight choice.",
+        "remediation_paths_q_lead_amendment_required": [
+          "bi-monthly rebalance for sleeve B (M6): reduces M6 contribution 3.9 → ~2/yr (cuts ~2/yr)",
+          "Fixed-book STR_1715 sleeve A (use 2026-04 production top-20 throughout): cuts STR_1715 churn ~7 → <2/yr",
+          "No-trade hysteresis region (rank delta < 3 → name retained): cuts ~30% off both sides",
+          "Combined (1)+(3): TO ≈ 6-7/yr; Combined (2)+(3): TO ≈ 3-4/yr"
+        ]
+      },
+      {
+        "criterion": "cvar_95_monthly_inherit_precedent_minus_0.0707",
+        "actual_84m": -0.1121,
+        "gap": -0.0414,
+        "compositional_non_linearity": "Risk-side hypothetical static 60-40 blend = -0.064. Actual walk-forward 12A+8B = -0.1121 worse due to sleeve-internal name selection vs static EW averaging.",
+        "infeasibility_report_inherited": "risk_package.json::tail_risk_audit::cvar_cap_assessment (Codex C2 PARTIAL_ACCEPT). Cap 0.025 already declared infeasible by risk-side."
+      }
+    ],
+    "passed_criteria": [
+      {"criterion": "min_harvey_t_3.0", "inherit_alpha": 5.0028, "pass": true},
+      {"criterion": "min_dsr_z_n5_0.5", "inherit_alpha": 11.1249, "pass": true},
+      {"criterion": "ax_007_multi_sleeve_exempt", "actual": "PROVEN_60_40_share", "pass": true},
+      {"criterion": "ax_008_min_sources_2", "current_count": "1 of 3 (this optimizer round complete, Forge+Architect pending)", "pass_pending_forge": "TBD"}
+    ],
+    "suggested_resolution_authorities": [
+      "Q-Lead binding: amend request.json blend_spec or amend 84m walk-forward → 196m re-cut, OR declare WT infeasible (preserve STR_1715 PG2 100%)",
+      "governor PG2 admit cycle has authority on graduation criteria for the resulting recipe (post-amendment)"
+    ]
+  },
+
+  "sequential_admission_scenario": {
+    "scenario_type": "partial_replacement_of_str_1715_100pct_with_60_40_blend",
+    "pre_blend_book_state": {
+      "admitted_ids": ["STR_1715_AR_on_M4_R05_overlay_PG2"],
+      "weights": [1.00]
+    },
+    "post_blend_book_state_if_admitted": {
+      "admitted_ids": ["STR_1715_AR_on_M4_R05_overlay_PG2", "M6_Ensemble_alloc_8_top_per_sig_date"],
+      "weights": [0.60, 0.40]
+    },
+    "replacement_or_integration": "PARTIAL_REPLACEMENT — STR_1715 100% → STR_1715 60% + M6 40%. Defaults to integration if governor accepts blend; defaults to replacement-rejection if governor declines.",
+    "tdc_M6_vs_STR_1715_R05_inherit_risk_package": 0.25,
+    "crowding_overlap_zero_evidence": "0 / 84 sig_dates ticker overlap empirically observed."
+  },
+
+  "binding_constraints_observed": [
+    "STR_1715 overlay schedule (m4 × β_AR × β_R05): inherited per Charter §10 from STR_1715 PG2 — not modified by optimizer. Mean overlay 0.7275, range 0.21 ~ 1.0.",
+    "weight_bounds [0, 0.20]: not binding (max observed 0.085).",
+    "max_names = 20 per sig_date: binding (20 / 20 always).",
+    "sum_weights = 1 including explicit CASH_KRW row: binding (Σ machine epsilon precision).",
+    "Σ-universe coverage mismatch (Codex C6 ACCEPT_DOWNGRADE): Risk-side Σ built on M6 top-30 only. STR_1715 sleeve A 20 names absent from Σ. Optimizer used signal-linear tilt (production STR_1715 precedent) for sleeve A — NO Σ-driven optimization for sleeve A. Risk-aware optimizer claim DOWNGRADED in selected_method label (now Sleeve_blend_A_SignalTilt_B_EW_alloc_12_8).",
+    "request.json blend_spec.merge_rule: implemented as allocation-proportional 12A+8B (sleeve weights 0.60/0.40 → 12/8) NOT pure z-combined ranking (which gave 7A+13B due to M6 z-spread artifact)."
+  ],
+
+  "explanation": {
+    "top_overweights_2025_12_30_sleeve_A": "A053030, A131970, A263750, A010950, A005930, A403870, A278280, A058470, A084370, A000660, A000100, A218410 (STR_1715 score_eff top-12 at 2025-12).",
+    "top_overweights_2025_12_30_sleeve_B": "(M6 alpha_score top-8 at 2025-12-30 — see weights.csv).",
+    "top_underweights": "EW within each sleeve — no explicit underweights versus benchmark (long-only book).",
+    "main_tradeoffs": [
+      "Σ-universe coverage mismatch (Codex C6 fix): chose signal-linear tilt for sleeve A — no MVO benefit for STR_1715 names. Forge can re-evaluate after risk-side Σ rebuild over combined universe.",
+      "Method shopping convergence (Codex C7 mitigation): 6 candidates within 0.03 selection_score range. TO is the binding constraint; in-sleeve method differences are 2nd-order.",
+      "Overlay retention (Charter §8 No Silent Override): retained STR_1715 production overlay despite 27% cash drag → SR 0.56 (vs no-overlay SR 1.07). Override requires Q-Lead waiver."
+    ]
+  },
+
+  "cost_model_audit_codex_C5_rebuttal": {
+    "codex_proposal": "turnover × 15bps × 2",
+    "my_position": "REBUTTAL — turnover × 15bps × 1 (one-way commission applied once to Σ|Δw| which already aggregates both legs)",
+    "academic_evidence": "Asness-Frazzini 2013 JFI standard: Σ|Δw_sell| + Σ|Δw_buy| = Σ|Δw|. cost_drag = T × c_one_way represents both legs without double-counting.",
+    "production_precedent_L_274": "STR_1715 PG2 production cost_model = 'commission=0.0015 (15bps each side) + turnover-based'. backtest_harness.R applies commission separately per leg via (1-commission) sell and (1+commission) buy. T × 0.0015 = total cost without doubling.",
+    "L_282_PerfA_convention_reconcile": "STR_1715 PG2 SR 1.95 (256m) used identical formula. Doubling would degrade SR to 1.39 — contradicting admit precedent.",
+    "codex_C5_disposition": "REBUTTAL — retained cost_drag = turn × 0.0015 per L-274 + L-282 production-grade convention."
+  },
+
+  "selection_objective_v6_1_compliance": {
+    "v6_1_R4_P3_enum_used": "to_adj_ret",
+    "compliant_with_v6_1_R4_p3_HARD": true,
+    "non_compliant_methods_excluded": "Sharpe-only single maximization — not used (Hook block compliant)."
+  },
+
+  "confidence_aware_mvo": {
+    "v6_1_R4_A_required": false,
+    "rationale": "Alpha-side did not produce confidence_vector (M6 ensemble = rank-average; Phase 1.A Liao 2025 RFS Δ=0 caveat retained per alpha_package). MVO used uniform-confidence (c_i = 1, reduces to standard MVO). Sleeve A used signal-linear tilt (no MVO). Next cycle: re-enable when Phase 1.A CPU bootstrap fix lands."
+  },
+
+  "grinold_breadth_constraints_task_26": {
+    "min_names_15_actual": 20,
+    "min_names_15_pass": true,
+    "hhi_max_actual": 0.0480,
+    "hhi_cap_0_10_pass": true,
+    "alpha_winsor_applied": "N/A — selection by sleeve allocation, not by raw alpha winsor.",
+    "lambda_used": 2.0,
+    "task_26_compliance_summary": "Breadth PASS / HHI PASS / bounds [0, 0.20] (production STR_1715 precedent, not v6.1 default 0.10)"
+  },
+
+  "method_comparison_parallel_used": false,
+  "method_comparison_parallel_rationale": "6 sequential method shop ~10s — Rcpp/parallel overhead exceeds savings. Charter §R13 'optional' threshold not crossed.",
+
+  "rcpp_hotspots_optional_used": false,
+
+  "challenge_flags": [
+    {
+      "id": "RF-O1_BINDING_CONSTRAINTS",
+      "severity": "MEDIUM",
+      "description": "Multiple constraints binding: max_names=20 always, Σ-universe coverage of sleeve A absent. Optimizer reverted to non-MVO weighting for sleeve A."
+    },
+    {
+      "id": "RF-O3_TURNOVER_BREACH_CRITICAL",
+      "severity": "CRITICAL",
+      "codex_concern": "C1",
+      "description": "eff_TO 13.07/yr exceeds 6.0 hard cap by 2.2× — admit-blocking under current request.json. Structural: M6 monthly cross-section rerank (signal TO 9.75 × 0.40 = 3.9) + STR_1715 score_eff churn (~7 × 0.60 = 4.2) + overlay regime switches (1.48 floor). Q-Lead amendment required.",
+      "remediation_paths_documented_in_infeasibility_report": true
+    },
+    {
+      "id": "RF-O7_SUM_WEIGHTS_SCHEMA_CLEANED",
+      "severity": "RESOLVED",
+      "codex_concern": "C2 ACCEPT_FIX",
+      "description": "weights.csv updated with explicit CASH_KRW rows. Σw including CASH = 1.0 (max abs deviation < 1e-15)."
+    },
+    {
+      "id": "RF-O8_CVAR_BREACH_INHERITED",
+      "severity": "HIGH",
+      "codex_concern": "C4",
+      "description": "Monthly CVaR_95 = -0.1121 breaches STR_1715 inherit precedent -0.0707 by 4.14pp. Risk-side already INFEASIBLE. Optimizer cannot reduce tail without changing alpha source.",
+      "infeasibility_report_inherit": "risk_package.json::tail_risk_audit::cvar_cap_assessment"
+    },
+    {
+      "id": "RF-O9_SCHEDULE_DENSITY_PASS",
+      "severity": "INFORMATIONAL",
+      "description": "weights.csv = 84 sig_dates (incl 49 with CASH rows) × variable name count = 1,729 total rows. Schedule density 84/84 = 1.00 ≥ 0.95 Charter §9 PASS."
+    },
+    {
+      "id": "RF-O_SR_GAP_VS_MILESTONE",
+      "severity": "HIGH",
+      "description": "Net SR 0.5579 vs request.json min 2.0 → gap 1.44. 84m subsample period-specific; M6 alone gross SR 1.28 / STR_1715 alone gross SR 0.74 on 84m. Weighted blend SR ceiling without overlay ~1.07.",
+      "remediation": "196m re-cut available (returns_monthly_panel 2010-2026.04 covers full sample)."
+    },
+    {
+      "id": "RF-O_SIGMA_UNIVERSE_COVERAGE_DOWNGRADED",
+      "severity": "MEDIUM",
+      "codex_concern": "C6 ACCEPT_DOWNGRADE",
+      "description": "Risk-side Σ rolling per-sig_date covers M6 top-30 only. STR_1715 sleeve A 20 names absent from Σ. Optimizer used signal-linear tilt for sleeve A (no MVO benefit). MVO claim removed from method_selected label. Next cycle: Risk should build Σ over combined 12A∪8B union ~50 ticker universe."
+    },
+    {
+      "id": "RF-O_LIQ_VERIFICATION_PARTIAL",
+      "severity": "MEDIUM",
+      "codex_concern": "C3 PARTIAL",
+      "description": "Listing universe verified via returns_monthly_panel coverage (1,680 / 1,680 PASS). 20d ADV verification + KOSPI200/KOSDAQ150 membership DEFERRED to execution agent + Forge Gate 0 (Hook L3 boundary)."
+    },
+    {
+      "id": "RF-O_COST_CONVENTION_REBUTTAL",
+      "severity": "INFORMATIONAL",
+      "codex_concern": "C5 REBUTTAL",
+      "description": "Codex C5 proposed turn × 15bps × 2; optimizer retained turn × 15bps per L-274 STR_1715 PG2 production convention. Doubling would double-count both legs (Σ|Δw| already aggregates sell + buy)."
+    }
+  ],
+
+  "research_philosophy_v1_compliance": {
+    "P1_factor_zoo_reduction": "INHERIT_ALPHA (M6 1,047 features compressed).",
+    "P2_cost_aware_alpha": "PASS — selection_objective 'to_adj_ret' includes TO penalty. Selected method (EW) chose by TO-adjusted Sharpe. Honest infeasibility surfaced on TO breach.",
+    "P3_uncertainty_aware": "DEFER — alpha confidence_vector absent (Phase 1.A Δ=0). MVO used uniform confidence.",
+    "P4_direct_portfolio_learning": "N/A — Phase 3 roadmap.",
+    "P5_risk_model_advanced": "INHERIT_RISK — crowding LOW both sleeves (M6 0.142 / STR_1715 0.148). No crowding-penalty.",
+    "P6_implementation_discipline": "PASS_CONSTRAINTS — max_names ≤ 20 ✓, long_only ✓, weight ∈ [0, 0.20] ✓, Σw=1 (incl CASH) ✓. FAIL_TO_6.0 ✗ (13.07 — explicit infeasibility). LIQ_2e8 partial (listing OK, ADV deferred execution).",
+    "P7_attribution_feedback": "PROVIDED_DIAGNOSTICS — optimizer_diagnostics.json includes CAPM α 4.49%/β 0.633/R² 0.58. Brinson-Fachler + Carhart 4 spanning regression = forge mandate."
+  },
+
+  "pit_compliance": {
+    "C1_rolling_only_no_full_sample": true,
+    "C2_no_same_day_circular": true,
+    "C5_overlay_t_minus_1": true,
+    "C9_overlay_lag": "PASS — overlay applied at sig_date (end-of-month close-of-day). Trade execution sig_date+1 open.",
+    "C13_z_score_aligned_no_flip": true,
+    "C14_usable_date_le_sig_date": true,
+    "C15_factor_db_loader_only": "OPTIMIZER_OWN_PASS — only stage_artifacts + STR_1715 production parquet used.",
+    "alpha_inheritance_pit_clean": "Inherit alpha_package C1-C15 PIT certification."
+  },
+
+  "ax_compliance": {
+    "AX_000": "SR 2.0+ 달성 가능 — REFRAMED. 84m walk-forward subsample 0.56 below target due to short-window + overlay drag. 196m re-cut expected closer to STR_1715 admit 1.95 precedent. Optimizer cannot achieve target alone under current spec.",
+    "AX_001_v2": "DEFENSE_LAYER_PRESERVED — STR_1715 R05 overlay (β_R05 CAUTION 0.5 / CRISIS 0.3) intact. crisis_alpha + bad/normal IC ratio inherit.",
+    "AX_002": "PIT C1-C15 strict + Codex Round 5단계 흐름 complete. Honest measurement (no inflation), explicit infeasibility, schema-clean weights.csv, no method-shop bias (6 reported), production-grade PerformanceAnalytics functions. Self-rationalization patterns acknowledged in challenge_note. Honest measurement IS AX-002 compliance.",
+    "AX_007": "EXEMPT_PROVEN — multi-sleeve blend evidence: sleeve A 60% mean, sleeve B 40% mean, 0 overlap. multi_sleeve_count=2 ≥ target 2.",
+    "AX_008": "DEFER_FORGE_JUDGE_GOVERNOR — optimizer 1 of 3 sources. Forge + Architect = subsequent. Required ≥ 2/3 PASS for admit. Forge handoff includes weights.csv schema-clean + 84m bt_result reconstruct request."
+  },
+
+  "decision_rules_milestone_5axis_inherit_request_json": {
+    "harvey_t_min_3.0":            {"inherit_alpha": 5.0028, "pass": true},
+    "dsr_z_n5_min_0.5":            {"inherit_alpha": 11.1249, "pass": true},
+    "max_drawdown_pct_minus_25":   {"actual_84m": -27.21, "gap_pp": -2.21, "pass": false},
+    "min_cagr_pct_16.0":           {"actual_84m": 9.54,   "gap_pp": -6.46, "pass": false},
+    "min_sharpe_ratio_2.0":        {"actual_84m": 0.5579, "gap": 1.4421,  "pass": false},
+    "max_turnover_yr_6.0":         {"actual_84m": 13.07,  "gap": 7.07,    "pass": false},
+    "max_pareto_cor_0.40":         {"inherit_alpha_pointwise_max": 0.13304, "inherit_alpha_rolling12m_max": 0.61207, "pass_pointwise": true, "pass_rolling": false, "escalate_to": "judge_governor"},
+    "ax_008_min_sources_2":        {"current_count": "1 (optimizer this round) of 3", "pass_pending_forge": "TBD"}
+  },
+
+  "session_handoff_to_forge": {
+    "package_consumed_by": "forge (next agent spawn) — pending Q-Lead decision on infeasibility path",
+    "expected_forge_obligations": [
+      "Walk-forward 84m bt_result reconstruct using weights.csv (Backtest Contract v1.0 10-component build_bt_result).",
+      "PerformanceAnalytics standard functions only (no manual SR / cumprod). Charter v1.4 §13.",
+      "60m subsample sanity check (e.g., 2021-01 to 2025-12) for sample-corrected SR.",
+      "196m full sample re-cut (2010-2026.04) for SR / CAGR / MDD comparison against 84m walk-forward (Q-Lead amendment path 1).",
+      "Spanning regression pack: CAPM / Carhart-3 / FF5 / FF6 (Codex C4 alpha inherit + risk inherit).",
+      "Audit eff_TO breach + CVaR breach + MDD breach + SR shortfall — honest provenance metric_basis.",
+      "AX-008 triangulation contribution: Forge fresh execution provides source 2 of 3 (Architect = 3 of 3)."
+    ],
+    "weights_csv_handoff": "stage_artifacts/WT_D20260515_002/weights.csv (1,729 rows: 1,680 names + 49 CASH; columns: sig_date, Ticker, weight, sleeve_A_in, sleeve_B_in, combined_score, score_A, score_B, cash_residual, in_returns_panel, method_selected, as_of_date, cost_model_version, weight_source, liquidity_verification).",
+    "schedule_density_certification": "84 unique sig_dates / 84 alpha n_sig_dates = 1.00 PASS Charter §9.",
+    "lifecycle_continuation_requires_q_lead_decision": "INFEASIBLE_AT_CURRENT_REQUEST_SPEC — Q-Lead binding decision needed before Forge run, OR Forge runs as triangulation source 2 with infeasibility acknowledged."
+  },
+
+  "codex_round_5_step_audit": {
+    "step_1_draft": "optimizer_package_draft.json (Write 2026-05-15 16:30, 24KB)",
+    "step_2_codex_auto_trigger": "Manual codex critic invocation (bash run_codex_qepm_critic.sh --role=optimizer)",
+    "step_3_codex_response": "codex_critic_response_optimizer.json (stance=REJECT, veto_flag=false, 7 critical_concerns)",
+    "step_4_challenge_note": "challenge_note_optimizer.md (7 concerns ACCEPT_FIX 3 + ACCEPT_DOWNGRADE 1 + PARTIAL 2 + REBUTTAL 1 + self-rationalization grep + Q-Lead escalate)",
+    "step_5_final_package": "optimization_package.json (this file, FINALIZED_POST_CODEX_REJECT_WITH_REVISIONS)",
+    "stance": "REJECT (revision-finalize path) → FINALIZED_WITH_REVISIONS",
+    "q_lead_escalate_triggered": true,
+    "q_lead_escalate_reason": "HIGH+CRITICAL severity ≥ 5 (C1+C2 CRITICAL + C3+C4+C5+C6 HIGH = 6 total) per Charter §8 No Silent Override",
+    "veto_flag": false,
+    "round_counter": "1 of 1 (single-round policy v6.0)"
+  },
+
+  "telegram_brief_summary": "Optimizer-research FINALIZED post-Codex REJECT 7 concerns: Selected Sleeve_blend_A_SignalTilt_B_EW_alloc_12_8 (84m walk-forward). HONEST INFEASIBLE_AT_CURRENT_REQUEST_SPEC: 5/8 graduation criteria fail (SR_net 0.56 / eff_TO 13.07 / CVaR -0.112 / MDD -27.2 / CAGR 9.54). PASS: max_names 20 / long-only / weight ≤ 0.085 / Σw=1 (incl explicit CASH) / Harvey-t inherit 5.00 / DSR inherit 11.12 / AX-007 EXEMPT (A=60% B=40%) / Schedule density 84/84=1.00. Codex 7 concerns disposition: ACCEPT_FIX 3 (C2 weights schema + C7 schema cols + C1 framing reframe) + ACCEPT_DOWNGRADE 1 (C6 Σ universe MVO claim removed) + PARTIAL 2 (C3 LIQ verify partial + C4 CVaR inherit) + REBUTTAL 1 (C5 cost convention per L-274). Q-Lead escalate triggered (HIGH+CRITICAL = 6 ≥ 5). Forge handoff: weights.csv 1,729 rows schema-clean + bt_result reconstruct + 196m re-cut request. Q-Lead binding decision required: amend request.json (bi-monthly OR fixed-book OR 196m re-cut) OR reject WT (preserve STR_1715 PG2 100%)."
+}

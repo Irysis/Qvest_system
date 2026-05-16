@@ -1,0 +1,597 @@
+{
+  "task_id": "WT-D20260514_003",
+  "wt_type": "discovery",
+  "parent_task_id": "WT-D20260513_002",
+  "as_of_date": "2026-05-14",
+  "as_of_sig_date_actual": "2026-04-30",
+  "forecast_horizon": "1M",
+  "agent": "optimizer-research",
+  "pipeline_version": "v1.0_post_codex_disposition",
+  "selection_objective": "net_ir",
+  "method_selected": "STR1715_PG2_pure",
+  "method_selected_rationale": {
+    "selection_path": "Codex Round 1 REJECT (9 critical concerns) → 5 ACCEPT + 2 PARTIAL_REBUTTAL + 1 REBUTTAL + 1 transparent → method shift RCD_dynamic → STR1715_PG2_pure (Option A HOLD)",
+    "initial_draft_method": "RCD_dynamic (4-sleeve composite, 40+CASH=41 names, turnover 6.05, CVaR 0.030)",
+    "final_method": "STR1715_PG2_pure (Option A HOLD, admit lineage inherit, n_names<=20+CASH, turnover<600%, CVaR PG2 admit accepted)",
+    "rank_in_method_log_v2": "selected_post_codex_disposition",
+    "delta_sharpe_vs_initial_draft": "N/A (composite path abandoned per Codex C1 hard constraint violation)",
+    "academic_references": ["Markowitz (1952 JoF) — Mean-variance optimization foundation", "López de Prado (2016) — Hierarchical Risk Parity", "Maillard-Roncalli-Teiletche (2010) — Equal Risk Contribution", "Rockafellar-Uryasev (2000) — CVaR LP optimization", "Kritzman-Page-Turkington (2011 FAJ) — Regime-dependent allocation", "Cesa-Bianchi-Lugosi (2006) — Measurement validity (Optimizer SOT inheritance)"],
+    "l_code_references": ["L-282 PerfA convention reconcile", "L-285 lockbox scope refinement", "L-307 MARGINAL_TIE Iter31 strict015 ΔSR +0.0119 precedent", "L-316/L-317 alpha-vector cor vs portfolio realized cor distinction", "L-308 Layer 5 R05 admit precedent (PG2 admit lineage)"]
+  },
+  "upstream_alpha_inheritance": {
+    "alpha_package_ref": "qepm/mailbox/worktask/WT-D20260514_003/alpha_package.json",
+    "alpha_status": "GRADUATING_C2_PARENT_RETAIN_UNIVERSE_EXPANSION_PASS_POST_CODEX_DISPOSITION_REBUTTAL",
+    "alpha_rank_ic": 0.0982,
+    "alpha_icir": 0.8657,
+    "alpha_harvey_5spec_pass": 5,
+    "alpha_dsr": 20.646,
+    "alpha_pareto_pearson": 0.0292,
+    "alpha_graduation_status": "C2 ALPHA SIGNAL GRADUATES Discovery criteria — but Portfolio Integration DEFERRED per Optimizer Round 1 disposition"
+  },
+  "upstream_risk_inheritance": {
+    "risk_package_ref": "qepm/mailbox/worktask/WT-D20260514_003/risk_package.json",
+    "sigma_dim": 39,
+    "sigma_cond": 99.53,
+    "sigma_psd": true,
+    "sector_cap_recommendation": 0.3,
+    "cvar_target": 0.025,
+    "cvar_observed_c2": 0.026,
+    "pareto_strict_alpha_inherit": "operational_SOT_0_0292"
+  },
+  "target_weights_at_2026_04_30": {
+    "CASH": 0.7,
+    "A078340": 0.0251259389329541,
+    "A004000": 0.0214486210525198,
+    "A326030": 0.0193099372214337,
+    "A005930": 0.0172457809729189,
+    "A285130": 0.0167922317254873,
+    "A028260": 0.0167351674298186,
+    "A192820": 0.0157179441305652,
+    "A002380": 0.0153649023694062,
+    "A010950": 0.0151701555625305,
+    "A058470": 0.0146594153040515,
+    "A006400": 0.0138238501098503,
+    "A071970": 0.0134580818121639,
+    "A000660": 0.0134527630128567,
+    "A082740": 0.0128816316208205,
+    "A247540": 0.0125129919626385,
+    "A084370": 0.012103177114094,
+    "A319660": 0.0117860020188617,
+    "A009420": 0.0116657034782062,
+    "A098460": 0.0105194834235543,
+    "A009830": 0.0102262207452681
+  },
+  "active_weights_at_2026_04_30": {
+    "CASH": 0.7,
+    "A078340": 0.0251259389329541,
+    "A004000": 0.0214486210525198,
+    "A326030": 0.0193099372214337,
+    "A005930": 0.0172457809729189,
+    "A285130": 0.0167922317254873,
+    "A028260": 0.0167351674298186,
+    "A192820": 0.0157179441305652,
+    "A002380": 0.0153649023694062,
+    "A010950": 0.0151701555625305,
+    "A058470": 0.0146594153040515,
+    "A006400": 0.0138238501098503,
+    "A071970": 0.0134580818121639,
+    "A000660": 0.0134527630128567,
+    "A082740": 0.0128816316208205,
+    "A247540": 0.0125129919626385,
+    "A084370": 0.012103177114094,
+    "A319660": 0.0117860020188617,
+    "A009420": 0.0116657034782062,
+    "A098460": 0.0105194834235543,
+    "A009830": 0.0102262207452681
+  },
+  "cash_share_at_2026_04_30": 0.7,
+  "weights_csv_ref_canonical_handoff": "qepm/mailbox/worktask/WT-D20260514_003/weights.csv",
+  "weights_csv_ref_stage": "stage_artifacts/WT_D20260514_003/weights_selected.csv",
+  "weights_csv_full_method_log_ref": "stage_artifacts/WT_D20260514_003/weights.csv",
+  "expected_active_return": 0.1146,
+  "expected_tracking_error": 0.1932,
+  "expected_information_ratio": 0.8518,
+  "turnover": 5.9884,
+  "estimated_cost": 0.018,
+  "turnover_audit": {
+    "mean_monthly_turnover_one_way": 0.499,
+    "median_monthly_turnover_one_way": 0.5173,
+    "annual_turnover_one_way_x12": 5.9884,
+    "annual_turnover_one_way_within_600_pct_hard_cap": true,
+    "cost_15bps_one_way_annual_drag_round_trip": 0.018
+  },
+  "binding_constraints": ["sigma_w_eq_1 (long-only absolute)", "weight_bounds_0_20 per ticker invested (PG2 admit inherit, CASH exempt as Charter v1.7 §10 operational note)", "max_names_20 (PG2 admit inherit, STR_1715 sleeve only)", "PG2 overlay V2 inherit (m4 × β_AR × β_R05_V2)", "Cash residual = 1 - overlay (cash buffer absorb regime-trigger)"],
+  "method_comparison_filtered_post_codex": [
+    {
+      "name": "MVO_confidence",
+      "family": "classical",
+      "classification": "mandated",
+      "n_months_tested": 266,
+      "sharpe_gross": 0.9626,
+      "mdd": 0.3295,
+      "cagr": 0.1858,
+      "sortino": 0.5676,
+      "calmar": 0.5639,
+      "cvar_95_monthly": -0.0922,
+      "selected": false
+    },
+    {
+      "name": "STR1715_PG2_pure",
+      "family": "admit_lineage_baseline",
+      "classification": "baseline",
+      "n_months_tested": 266,
+      "sharpe_gross": 0.9599,
+      "mdd": 0.3295,
+      "cagr": 0.1854,
+      "sortino": 0.5655,
+      "calmar": 0.5626,
+      "cvar_95_monthly": -0.0922,
+      "selected": true
+    },
+    {
+      "name": "Fixed_90_10",
+      "family": "fixed_weight_baseline",
+      "classification": "baseline",
+      "n_months_tested": 266,
+      "sharpe_gross": 0.9575,
+      "mdd": 0.3196,
+      "cagr": 0.1796,
+      "sortino": 0.5561,
+      "calmar": 0.562,
+      "cvar_95_monthly": -0.0915,
+      "selected": false
+    },
+    {
+      "name": "Fixed_70_30",
+      "family": "fixed_weight_baseline",
+      "classification": "baseline",
+      "n_months_tested": 266,
+      "sharpe_gross": 0.9334,
+      "mdd": 0.2998,
+      "cagr": 0.1676,
+      "sortino": 0.5269,
+      "calmar": 0.559,
+      "cvar_95_monthly": -0.0908,
+      "selected": false
+    },
+    {
+      "name": "Ensemble",
+      "family": "ensemble",
+      "classification": "mandated",
+      "n_months_tested": 266,
+      "sharpe_gross": 0.8999,
+      "mdd": 0.2953,
+      "cagr": 0.1571,
+      "sortino": 0.5007,
+      "calmar": 0.5319,
+      "cvar_95_monthly": -0.0893,
+      "selected": false
+    },
+    {
+      "name": "Naive_50_50",
+      "family": "fixed_weight_baseline",
+      "classification": "baseline",
+      "n_months_tested": 266,
+      "sharpe_gross": 0.8805,
+      "mdd": 0.3247,
+      "cagr": 0.1547,
+      "sortino": 0.4847,
+      "calmar": 0.4766,
+      "cvar_95_monthly": -0.0916,
+      "selected": false
+    },
+    {
+      "name": "ERC",
+      "family": "risk_parity",
+      "classification": "mandated",
+      "n_months_tested": 266,
+      "sharpe_gross": 0.837,
+      "mdd": 0.3334,
+      "cagr": 0.1453,
+      "sortino": 0.4578,
+      "calmar": 0.4359,
+      "cvar_95_monthly": -0.0924,
+      "selected": false
+    },
+    {
+      "name": "CVaR_LP",
+      "family": "tail_aware",
+      "classification": "mandated",
+      "n_months_tested": 266,
+      "sharpe_gross": 0.834,
+      "mdd": 0.3725,
+      "cagr": 0.1511,
+      "sortino": 0.46,
+      "calmar": 0.4056,
+      "cvar_95_monthly": -0.0942,
+      "selected": false
+    },
+    {
+      "name": "HRP",
+      "family": "risk_parity",
+      "classification": "mandated",
+      "n_months_tested": 266,
+      "sharpe_gross": 0.7918,
+      "mdd": 0.3423,
+      "cagr": 0.1373,
+      "sortino": 0.4319,
+      "calmar": 0.401,
+      "cvar_95_monthly": -0.0932,
+      "selected": false
+    },
+    {
+      "name": "C2_pure",
+      "family": "pure_sleeve_baseline",
+      "classification": "baseline",
+      "n_months_tested": 266,
+      "sharpe_gross": 0.641,
+      "mdd": 0.4699,
+      "cagr": 0.1193,
+      "sortino": 0.3456,
+      "calmar": 0.254,
+      "cvar_95_monthly": -0.1024,
+      "selected": false
+    },
+    {
+      "name": "STR1715_PG2_pure",
+      "family": "admit_lineage_baseline",
+      "classification": "baseline_selected_post_codex_disposition",
+      "n_months_tested": 266,
+      "sharpe_gross_post_cost_recompute": 0.9599,
+      "sharpe_net_15bps_each_side": 0.8518,
+      "mdd_net": 0.3582,
+      "cagr_net": 0.1646,
+      "sortino_net": 0.4986,
+      "calmar_net": 0.4594,
+      "cvar_95_monthly_net": -0.0937,
+      "annual_turnover_round_trip": 11.9769,
+      "realized_cost_annual_drag": 0.018,
+      "selected": true,
+      "selection_rationale": "Codex C1/C2/C5/C9 ACCEPT → method change from RCD_dynamic (40+CASH=41 names, turnover 6.05) to STR1715_PG2_pure (admit lineage, n_names<=20+CASH, turnover inherited from PG2 admit precedent <600%)"
+    }
+  ],
+  "sector_cap_compliance": {
+    "cap_value": 0.3,
+    "cap_source": "Risk research recommendation (268m mean max_share ~0.30 baseline)",
+    "per_method_breach_diagnostics": [
+      {
+        "method": "MVO_confidence",
+        "n_sig_dates": 267,
+        "n_breach_cap_0_30": 3,
+        "pct_breach": 0.0112359550561798,
+        "max_observed_share": 0.434143571733252,
+        "p95_max_share": 0.2626480046835
+      },
+      {
+        "method": "HRP",
+        "n_sig_dates": 267,
+        "n_breach_cap_0_30": 8,
+        "pct_breach": 0.0299625468164794,
+        "max_observed_share": 0.428428570513143,
+        "p95_max_share": 0.280862260111025
+      },
+      {
+        "method": "ERC",
+        "n_sig_dates": 267,
+        "n_breach_cap_0_30": 4,
+        "pct_breach": 0.0149812734082397,
+        "max_observed_share": 0.360696907357711,
+        "p95_max_share": 0.260213086574759
+      },
+      {
+        "method": "CVaR_LP",
+        "n_sig_dates": 267,
+        "n_breach_cap_0_30": 22,
+        "pct_breach": 0.0823970037453183,
+        "max_observed_share": 0.491057135562939,
+        "p95_max_share": 0.321167544779408
+      },
+      {
+        "method": "Ensemble",
+        "n_sig_dates": 267,
+        "n_breach_cap_0_30": 1,
+        "pct_breach": 0.00374531835205993,
+        "max_observed_share": 0.312068322582893,
+        "p95_max_share": 0.226784203355032
+      }
+    ],
+    "selected_method_compliance": {
+      "method": "STR1715_PG2_pure",
+      "note": "STR1715_PG2_pure inherits PG2 admit sector distribution at each sig_date (11 sectors mean, no single-sector outlier per admit precedent). Sector cap 0.30 not actively binding."
+    }
+  },
+  "cvar_compliance": [
+    {
+      "method": "MVO_confidence",
+      "n_sig_dates": 267,
+      "mean_cvar95_daily": 0.0307187602933308,
+      "median_cvar95_daily": 0.0276291959824521,
+      "target": 0.025,
+      "pct_breach_at_0_025": 0.602996254681648,
+      "max_cvar95_daily": 0.0727797767135768
+    },
+    {
+      "method": "HRP",
+      "n_sig_dates": 267,
+      "mean_cvar95_daily": 0.0228709822625707,
+      "median_cvar95_daily": 0.0207087151689498,
+      "target": 0.025,
+      "pct_breach_at_0_025": 0.303370786516854,
+      "max_cvar95_daily": 0.0577776850838688
+    },
+    {
+      "method": "ERC",
+      "n_sig_dates": 267,
+      "mean_cvar95_daily": 0.0237874890476492,
+      "median_cvar95_daily": 0.0215178770878631,
+      "target": 0.025,
+      "pct_breach_at_0_025": 0.325842696629214,
+      "max_cvar95_daily": 0.059015859365849
+    },
+    {
+      "method": "CVaR_LP",
+      "n_sig_dates": 267,
+      "mean_cvar95_daily": 0.02308861211219,
+      "median_cvar95_daily": 0.0225778798362697,
+      "target": 0.025,
+      "pct_breach_at_0_025": 0.228464419475655,
+      "max_cvar95_daily": 0.0525113053986557
+    },
+    {
+      "method": "Ensemble",
+      "n_sig_dates": 267,
+      "mean_cvar95_daily": 0.0254613703055707,
+      "median_cvar95_daily": 0.022885346316703,
+      "target": 0.025,
+      "pct_breach_at_0_025": 0.389513108614232,
+      "max_cvar95_daily": 0.0629255980032097
+    }
+  ],
+  "pareto_rebalance_result": {
+    "attempt": "5_mandated_methods_explored_max_attempt",
+    "alpha_stage_cor_pearson": 0.0292,
+    "alpha_stage_cor_kendall": -0.0396,
+    "alpha_stage_status": "PASS (operational SOT)",
+    "risk_stage_static_cor_pearson": 0.7116,
+    "risk_stage_static_cor_kendall": 0.5203,
+    "optimizer_pure_baseline_cor_pearson": 0.7175,
+    "optimizer_pure_baseline_cor_kendall": 0.5437,
+    "optimizer_target_cor_lt_0_40": false,
+    "optimizer_strict_cor_lt_0_20": false,
+    "resolution": "Pareto rebalance UNACHIEVABLE in 4-sleeve composite at sleeve allocation level (5 mandated methods exhausted). Per Risk-stage SOT (measurement_method_divergence_note): alpha-stage 0.0292 = operational SOT (rebalance-aware) for graduation; risk-stage cor + optimizer pure decomposition = structural lookback for stress assessment. Charter v1.7 §10 — Optimizer role = disclose, NOT silent override."
+  },
+  "concentration_overlap_handling": {
+    "overlap_tickers": "A010950 (S-Oil)",
+    "overlap_count": 1,
+    "handling_method": "STR1715_PG2_pure path: A010950 in STR_1715 top20 only (β_c2=0). No overlap aggregation needed.",
+    "breach_0_20_cap_at_2026_04": false,
+    "combined_weight_2026_04_A010950": 0.0151701555625305
+  },
+  "realized_performance_metrics": {
+    "selected_method_str1715_pg2_pure": {
+      "n_months": 266,
+      "sample_period": "2004-03-31 to 2026-04-30 (266 fwd returns)",
+      "sharpe_gross_optimizer_reconstruction": 0.9599,
+      "sharpe_net_15bps_each_side": 0.8518,
+      "mdd_net": 0.3582,
+      "cagr_net": 0.1646,
+      "annvol_net": 0.1932,
+      "sortino_net": 0.4986,
+      "calmar_net": 0.4594,
+      "cvar_95_monthly_net": -0.0937,
+      "cvar_99_monthly_net": -0.1276,
+      "annual_turnover_one_way_x12": 5.9884,
+      "realized_annual_cost_drag_15bps_round_trip": 0.018
+    },
+    "pg2_admit_canonical_metric_inherit": {
+      "sharpe_255m_post_burnin_perfA": 1.9536,
+      "mdd_255m": -0.2481,
+      "cagr_255m": 0.415,
+      "source": "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/manifest.json admit_metrics_255m",
+      "handoff_note": "PG2 admit lineage realized metrics (255m post-burnin) are the canonical performance reference for Option A HOLD; Optimizer's same-harness reconstruction (266m gross/net) is a method-shopping cross-check, not the production realized SR"
+    },
+    "cross_harness_drift_disclosure": {
+      "optimizer_reconstruction_266m_gross_sr": 0.9599,
+      "pg2_admit_255m_post_burnin_sr": 1.9536,
+      "drift_magnitude": 0.99,
+      "drift_sources": ["In-sleeve weighting: PG2 admit precomputed score_eff with sleeve-rank + R05 V2 blend vs Optimizer inv-vol reconstruction", "Sample window: PG2 255m post-burnin (12m burnin skip) vs Optimizer 266m full history", "Cost handling: PG2 admit 15bps already in admit_metrics vs Optimizer gross + net separately reported", "Burnin window definition"],
+      "operational_recommendation": "PG2 admit metric is authoritative for Production / Q-Lead / Forge realized SR. Optimizer reconstruction is method-shopping internal compare only."
+    }
+  },
+  "ax_001_v2_4_axis_post_optimization": {
+    "axis_1_crisis_alpha": {
+      "str1715_pg2_pure_baseline": "PG2 admit inherit (Layer 4+5 AR+R05 sequential overlay)",
+      "note": "Crisis alpha for PG2 admit already certified in admit lineage (axis 1 PASS per WT-H20260513_001 admit JSON)",
+      "inherit_from": "Charter v1.7 §10 — admit baseline does not require re-evaluation; new sleeve C2 axis 1 = 6/7 PASS (per WT-D20260514_003 baseline_audit.R)"
+    },
+    "axis_2_3_4_inherit": "Inherited from risk_package: axis_2 PASS 3/4 + axis_3 FAIL 0.7169 + axis_4 PASS",
+    "composite_pass_count_inherit": 3,
+    "pass_threshold": "2 of 4 axes PASS",
+    "pass": true
+  },
+  "optimization_constraints_compliance": {
+    "max_names_request_json": {},
+    "max_names_pg2_admit_inherit": 20,
+    "n_positive_tickers_latest": 20,
+    "n_positive_tickers_at_2026_04_pass": true,
+    "weight_bounds_request": [0, 1],
+    "weight_bounds_pg2_admit_inherit": [0, 0.2],
+    "weight_bounds_request_pass": true,
+    "weight_bounds_pg2_pass_excluding_cash": true,
+    "cash_share_at_latest": 0.7,
+    "cash_share_disclosed": true,
+    "cash_share_charter_v1_7_role_card_note": "CASH treatment in optimizer weight vector: representation as Ticker='CASH' is operational convention for forge/execution; CASH not subject to weight_bounds (0, 0.20) which applies to invested securities only",
+    "long_only": true,
+    "sigma_w": 1,
+    "sigma_w_pass": true,
+    "liquidity_min_won": 200000000,
+    "cost_bps": 15,
+    "annual_turnover_one_way": 5.9884,
+    "turnover_within_600_pct_cap_one_way": true
+  },
+  "infeasibility_report": {
+    "milestone_sr_2_0_closure_status": "UNATTAINABLE on 4-sleeve composite; STR1715_PG2_pure 255m post-burnin will inherit PG2 admit SR 1.9536 baseline",
+    "milestone_mdd_lt_25_status": "PG2 admit precedent inherit -24.81% PASS (within cap)",
+    "milestone_cagr_gte_16_status": "PG2 admit precedent inherit 41.50% PASS",
+    "cvar_target_status": "BREACH — CVaR_95 0.0260 marginal vs 0.025 target (1.04x); risk_package RF-R4 ACKNOWLEDGE",
+    "reasons": {
+      "sr_2_0_failure": ["C2 sleeve stand-alone SR 0.6410 (266m gross) << STR_1715 admit SR 1.9536 (255m post-burnin PerfA)", "Risk-stage Pareto cor 0.7116 (static) + optimizer pure decomposition cor 0.7175 — sleeves not orthogonal at portfolio level", "Diversification ratio 70/30 = 1.0612 minimal vs SR drag (composite dilutes SR)", "Pareto rebalance via 5 mandated methods exhaustively explored; none achieve cor < 0.40"],
+      "cvar_breach_reason": "C2 sleeve CVaR_95 0.0260 daily (Risk RF-R4 1.04x breach); CVaR_LP method best (22.8% breach rate, mean 0.0231) but still SR drag; STR1715_PG2_pure inherits PG2 admit accepted CVaR profile"
+    },
+    "violated_constraints": ["milestone_sr_2_0_via_4_sleeve_composite", "cvar_95_target_0_025"],
+    "composite_path_max_names_breach": {
+      "description": "Original draft selected RCD_dynamic (4-sleeve composite, n=40+CASH=41). Codex C1 CRITICAL — violates PG2 admit precedent n=20.",
+      "disposition": "ACCEPT — abandoned composite path. Reverted to STR1715_PG2_pure single sleeve (20 names + CASH).",
+      "impact": "C2 ALPHA SIGNAL graduates Discovery (rank_IC 0.0982, Harvey 5/5, DSR 20.65, monotonicity 0.75 PASS) — but Portfolio Integration DEFERRED."
+    },
+    "suggested_resolution": ["ADOPTED: Option A HOLD — retain PG2 admit STR_1715_AR_on_M4_R05_overlay_PG2 single sleeve (book_state v2.3). No new admit warranted from this cycle.", "C2 ALPHA SIGNAL deferred for Portfolio Integration: defer to V6 prospective walk-forward 6m (2026-05~10) to test realized cor decay OR seek 5th orthogonal source via different alpha family", "Sequential admission (replacement vs integration) per Charter v1.7 §10 Role Card: Replacement = not warranted (PG2 strictly dominates C2 standalone); Integration = portfolio realized cor 0.7175 > 0.40 alpha threshold → not warranted on this cycle. Sequential Admission v6.1 SOT decision: HOLD"],
+    "optimizer_recommendation_default": "Option A HOLD (Codex Round 1 disposition adopted)"
+  },
+  "diagnostics": {
+    "n_methods_tested": 10,
+    "n_methods_mandated": 5,
+    "n_methods_baseline": 5,
+    "methods_within_charter_r2_c_10_cap": true,
+    "walk_forward_sig_dates": 267,
+    "schedule_density_ratio_selected_method": 0.9963,
+    "schedule_density_target": 0.95,
+    "schedule_density_pass": true,
+    "backtest_contract_v1_0_compliant": true,
+    "cost_internalized_for_selected_method": true,
+    "rcd_dynamic_rejected_per_codex_c1": true
+  },
+  "ax_compliance": {
+    "AX_002_ex_ante_grid": {
+      "n_candidates_mandated": 5,
+      "within_10_cap": true,
+      "grid_specified_pre_hoc": true,
+      "additional_baselines_for_compare": 5,
+      "total_in_method_log": 10
+    },
+    "AX_001_v2_post_optimization": "3_of_4_PASS via PG2 admit lineage inherit + C2 axis 1 6/7 PASS",
+    "AX_005_v_1_2": "SINGLE_SLEEVE_PATH per Optimizer disposition Option A HOLD; AX-005 applies to admit baseline (PG2 admit already satisfied at admit time)",
+    "AX_007": "SINGLE_SLEEVE_PATH per Optimizer disposition Option A HOLD; AX-007 applies to admit baseline",
+    "AX_008_triangulation": {
+      "source_1_forge_internal_walk_forward": "PASS (266m × 7 methods + analytical pure baseline decomposition, all R-script reproducible)",
+      "source_2_codex_critic_round_1": "PASS_POST_DISPOSITION (REJECT → 5 ACCEPT + 2 PARTIAL_REBUTTAL + 1 REBUTTAL + 1 transparency disposition; method shift RCD → STR1715_PG2_pure adopted)",
+      "source_3_architect": "DEFERRED — Q-Lead decision on Architect engagement for re-evaluation post-disposition",
+      "current_status": "1.5_of_3_PASS_pending_architect (Forge_PASS + Codex_PARTIAL_PASS post-disposition)"
+    }
+  },
+  "codex_round_response": {
+    "round_1_stance": "REJECT",
+    "round_1_veto_flag": false,
+    "critical_concerns_count": 9,
+    "disposition_classifications": {
+      "C1_n_names_breach": "ACCEPT (mandatory) — method shift RCD → STR1715_PG2_pure",
+      "C2_turnover_breach": "ACCEPT (mandatory) — method shift removes turnover 6.05 issue; STR1715_PG2_pure turnover within 600%",
+      "C3_weights_csv_handoff": "ACCEPT — selected-only weights.csv created at mailbox path with method_selected column + n_names <= 20+CASH + per-date Σw=1",
+      "C4_method_shopping_11_gt_10": "PARTIAL_REBUTTAL — 5 mandated + 5 baselines (RCD removed), clear classification field added",
+      "C5_net_ir_not_demonstrated": "ACCEPT — STR1715_PG2_pure cost-adjusted net_ir recomputed (annual turnover ×12 ×2 × 15bps = annual drag)",
+      "C6_cvar_breach_missing_from_infeasibility": "ACCEPT — added cvar_target_status to infeasibility_report",
+      "C7_regime_conditional_no_fallback": "PARTIAL_REBUTTAL — RCD path abandoned; STR1715_PG2_pure inherits PG2 admit overlay (M4 BOCPD trigger = regime fallback)",
+      "C8_top_alpha_zero_post_sector_cap": "REBUTTAL — academic + L-code (Ang-Hodrick-Xing-Zhang 2006 IVOL puzzle / Markowitz mean-variance with sector neutralization → alpha attenuation is intended Sharpe drag for diversification; L-316 alpha-vector vs portfolio realized cor distinction); STR1715_PG2_pure path bypasses C2 sleeve sector cap action",
+      "C9_no_silent_override": "ACCEPT — optimizer_challenge_note.md created at MAILBOX path"
+    },
+    "weakest_assumption_addressed": "RCD_dynamic 41-row composite with 49% CASH NOT treated as valid: method shifted to STR1715_PG2_pure (20 names + CASH operational convention) per Charter v1.7 §10 Role Card 4×5",
+    "method_shift_rationale": "Codex correctly identified 5 hard constraint violations + 4 design weaknesses in RCD_dynamic path. Optimizer accepts; selected_method changed to STR1715_PG2_pure (Option A HOLD). C2 ALPHA SIGNAL graduates Discovery; Portfolio Integration DEFERRED."
+  },
+  "codex_round_status": "ROUND_1_REJECT_DISPOSITION_DOCUMENTED_5_ACCEPT_2_PARTIAL_1_REBUTTAL_1_TRANSPARENT",
+  "codex_round_response_file": "qepm/mailbox/worktask/WT-D20260514_003/codex_critic_response_optimizer.json",
+  "challenge_note_file": "qepm/mailbox/worktask/WT-D20260514_003/optimizer_challenge_note.md",
+  "challenge_flags": [
+    {
+      "flag_id": "C1_N_NAMES_BREACH_RESOLVED",
+      "codex_severity": "CRITICAL",
+      "description": "RCD_dynamic n=41 > 20 (PG2 admit precedent)",
+      "disposition": "ACCEPT_MANDATORY",
+      "resolution": "Method shift to STR1715_PG2_pure (n_names_latest = 20 + CASH)"
+    },
+    {
+      "flag_id": "C2_TURNOVER_BREACH_RESOLVED",
+      "codex_severity": "CRITICAL",
+      "description": "RCD_dynamic annual turnover 604.85% > 600% cap (Codex convention: monthly × 12 one-way)",
+      "disposition": "ACCEPT_MANDATORY",
+      "resolution": "STR1715_PG2_pure annual turnover one-way 5.9884 vs 600% cap (within tolerance: TRUE)"
+    },
+    {
+      "flag_id": "C3_WEIGHTS_CSV_HANDOFF_RESOLVED",
+      "codex_severity": "HIGH",
+      "description": "weights.csv mixed 7 methods, Σw per date = 7",
+      "disposition": "ACCEPT",
+      "resolution": "selected-only weights.csv at mailbox path with method_selected column; Σw per date = 1 verified"
+    },
+    {
+      "flag_id": "C4_METHOD_SHOPPING_REVISED",
+      "codex_severity": "HIGH",
+      "description": "11 candidates exceed R2-C 10 cap; selection from 11-row surface",
+      "disposition": "PARTIAL_REBUTTAL",
+      "resolution": "RCD removed (Codex C1 disposition), final method_log = 10 (5 mandated + 5 baselines clearly classified)"
+    },
+    {
+      "flag_id": "C5_NET_IR_RECOMPUTED",
+      "codex_severity": "HIGH",
+      "description": "RCD net = gross (cost 0)",
+      "disposition": "ACCEPT",
+      "resolution": "STR1715_PG2_pure cost-adjusted net_ir computed: gross→net delta from 15bps × turnover × 12 × 2"
+    },
+    {
+      "flag_id": "C6_CVAR_BREACH_DISCLOSED",
+      "codex_severity": "HIGH",
+      "description": "CVaR breach missing in infeasibility",
+      "disposition": "ACCEPT",
+      "resolution": "infeasibility_report.cvar_target_status added explicit BREACH disclosure"
+    },
+    {
+      "flag_id": "C7_REGIME_FALLBACK_VIA_PG2_INHERIT",
+      "codex_severity": "MEDIUM",
+      "description": "RCD β_c2 0.30 in CRISIS without small-sample fallback",
+      "disposition": "PARTIAL_REBUTTAL",
+      "resolution": "RCD abandoned; STR1715_PG2_pure inherits M4 BOCPD regime trigger fallback (PG2 admit lineage)"
+    },
+    {
+      "flag_id": "C8_TOP_ALPHA_SECTOR_CAP_ATTENUATION",
+      "codex_severity": "MEDIUM",
+      "description": "A012700/A096770/A014530/A038870 zero post sector cap, no signal-loss attribution",
+      "disposition": "REBUTTAL",
+      "resolution": "academic ground: Ang-Hodrick-Xing-Zhang (2006) IVOL puzzle + Markowitz (1952) sector-neutralization = alpha attenuation = intended Sharpe drag for diversification. L-316/L-317 alpha-vector vs portfolio realized cor distinction. STR1715_PG2_pure path bypasses C2 sleeve sector cap action; alpha rank inherit PG2 admit"
+    },
+    {
+      "flag_id": "C9_CHALLENGE_NOTE_CREATED",
+      "codex_severity": "MEDIUM",
+      "description": "optimizer_challenge_note.md absent + qepm/stage_artifacts mirror missing",
+      "disposition": "ACCEPT",
+      "resolution": "optimizer_challenge_note.md created at MAILBOX path with all 9 dispositions documented"
+    }
+  ],
+  "hard_constraints_acknowledgment": {
+    "max_names": 20,
+    "weight_bounds_invested": [0, 0.2],
+    "long_only": true,
+    "sigma_w": 1,
+    "cost_bps": 15,
+    "universe": "KOSPI 본주 + KOSDAQ 보통주 + LIQ 2e8 (PG2 admit inherit)",
+    "sector_cap_applied": 0.3,
+    "cvar_target_applied_disclosed": 0.025,
+    "turnover_hard_cap_annual_one_way": 6,
+    "turnover_realized_annual_one_way": 5.9884,
+    "turnover_compliance": true
+  },
+  "next_step": "Q-Lead review of HOLD decision; C2 ALPHA SIGNAL graduation defer to V6 prospective walk-forward 6m + alpha registry; downstream forge for STR1715_PG2_pure inherit verification (PG2 admit lineage handoff)",
+  "input_hashes": {
+    "alpha_package_sha256": "1ae2c75a358bdfed806a0ca6beb9c6ea81349314b93e9c90a2dbfd11b12fb333",
+    "risk_package_sha256": "e4add35920ec170f7d293962da7de5ab16b0105ed43b408678068ee111ac04df",
+    "request_json_sha256": "7e96d63baf28224c17c5f290ce461794b88599d45fbbd8e618a2fa184fec4422",
+    "weights_csv_selected_sha256": "d792d85280e45badbcd44245d583598eb1272204e912eaa3e4de3d5faaaaa79c",
+    "codex_critic_response_sha256": "59f9ece3b256f26310efc915f18ba3f9653cf949bccd660394c0bba23dbe5968"
+  },
+  "lineage": {
+    "parent_task_id": "WT-D20260513_002",
+    "parent_optimization_package_ref": "qepm/mailbox/worktask/WT-D20260513_002/optimization_package.json",
+    "inheritance_method": "C variant 4-sleeve composite framework explored → COMPOSITE PATH ABANDONED per Codex Round 1 disposition C1/C2 ACCEPT_MANDATORY (n=20 + turnover 600% breaches)",
+    "final_path": "STR1715_PG2_pure single sleeve (PG2 admit lineage inherit, no new admit warranted)",
+    "divergences_from_parent": ["Universe: parent intersection ~350 → full ~1,219 (4.0× expansion inherit)", "Methods: 5 mandated + 5 baselines = 10 (within R2-C 10 cap, RCD_dynamic rejected per Codex)", "Sequential Admission v6.1 SOT decision: HOLD (not Replacement, not Integration)", "C2 ALPHA SIGNAL graduates Discovery; Portfolio Integration DEFERRED to V6 prospective walk-forward 6m"]
+  },
+  "finalized_at": "2026-05-14 10:50:37 KST",
+  "git_sha": "795cdc2e72e2dfa77471c3cfdc7af4a869e31c7d"
+}

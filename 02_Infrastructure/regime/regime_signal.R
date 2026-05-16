@@ -272,10 +272,20 @@ vea_score  <- fifelse(is.na(vea_score),  50, vea_score)   # neutral default
 # 5. classify_regime_category() — Score → Category
 #==============================================================================
 
-classify_regime_category <- function(score) {
-  fifelse(score >= 70, "RISK_OFF",
-          fifelse(score >= 45, "CAUTION",
-                  fifelse(score >= 25, "NEUTRAL", "RISK_ON")))
+classify_regime_category <- function(score, msm_prob = NULL) {
+  # 기본 score-based 분류
+  base <- fifelse(score >= 70, "RISK_OFF",
+                  fifelse(score >= 45, "CAUTION",
+                          fifelse(score >= 25, "NEUTRAL", "RISK_ON")))
+  # MSM crisis short-circuit (도훈 mandate 2026-05-15):
+  #   MSM ≥ 0.9 → CRISIS (display-level escalation)
+  #   MSM ≥ 0.7 → 최소 CAUTION (NEUTRAL/RISK_ON 일 때만 elevation)
+  #   Category는 display-only. production decision은 Score/Cash_Pct (변경 없음).
+  if (is.null(msm_prob)) return(base)
+  base <- fifelse(!is.na(msm_prob) & msm_prob >= 0.9, "CRISIS",
+                  fifelse(!is.na(msm_prob) & msm_prob >= 0.7 & base %in% c("NEUTRAL", "RISK_ON"),
+                          "CAUTION", base))
+  base
 }
 
 
@@ -404,7 +414,7 @@ build_regime_signal_table <- function(save_path = NULL, daily = FALSE, ...) {
   )]
 
   # ── Category ──
-  base[, Category := classify_regime_category(Regime_Score)]
+  base[, Category := classify_regime_category(Regime_Score, MSM_Crisis_Prob)]
 
   # ── Cash allocation ──
   base[, Cash_Pct := get_cash_allocation(Regime_Score)]
@@ -811,7 +821,7 @@ build_regime_signal_table_daily <- function(save_path = NULL,
                                                halflife = halflife)]
 
   # ── Category / Cash_Pct (reuse existing classifiers) ─────────
-  base[, Category := classify_regime_category(Regime_Score)]
+  base[, Category := classify_regime_category(Regime_Score, MSM_Crisis_Prob)]
   base[, Cash_Pct := get_cash_allocation(Regime_Score)]
 
   # ── Month-end flag ──────────────────────────────────────────

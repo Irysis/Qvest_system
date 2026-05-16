@@ -18,6 +18,39 @@
 계층: AX-code(Lv0 공리) > PIT C1-C15(Lv1) > L-code(Lv2 교훈) > Signals(Lv3 가변). 위반 = 즉시 중단.
 </axioms>
 
+<research_philosophy level="0" version="v1.0" effective="2026-05-14" sot="02_Infrastructure/docs/qvest_research_philosophy.md">
+**Charter-level SOT** — 모든 cycle reference (도훈 mandate 2026-05-14). 위반 = AX-002 동급.
+
+**7 QEPM Modern Trends** (최신 학술 정통):
+1. **Factor Zoo 축소** (Validation > Discovery) — Harvey-Liu-Zhu 2016 multiple testing. `economic_rationale` + `redundancy_cluster_id` 필수 (feature_registry / factor_registry)
+2. **Cost-aware Alpha** (Net > Gross) — Jensen-Kelly-Malamud-Pedersen 2022 SSRN 4187217. ML loss `-E[ret] + γ·|Δw|`. Optimizer 목적함수 `max w^T μ̃ - λw^T Σ w - γC(Δw) - ηTE(w,b)`. Optimizer / Forge / Judge: net SR + cost_drag 의무
+3. **Uncertainty-aware Forecasting** (CI > Point) — Liao-Ma-Neuhierl-Schilling 2025 RFS. `μ̃ = μ̂ - k·SE(μ̂)` + Confident-High-Low. ML pipeline `predictions_with_ci.parquet` mandate
+4. **Direct Portfolio Learning** (Integration > Two-stage) — You-Zhang 2025 SSRN. features → constrained NN weights (sigmoid + L1). Phase 3 도입 (Phase 1/2 후)
+5. **Risk Model 고도화** (Crowding + Concentration) — Acadian 2026 systematic crowding + Behmaram 2024 demand elasticity. **`crowding_score_per_factor` 필수** in risk_package.json (Phase 2.C, `02_Infrastructure/factor_db/crowding_score_per_factor.R`)
+6. **Implementation Discipline** (이미 정합) — TO ≤ 6.0/yr + LIQ ≥ 2e8 + max_names 20 + weight [0, 0.20] + Σw=1. Hook hard-enforced. Governor admit 결정 기준
+7. **Attribution & Feedback Loop** (Decay 감시) — Brinson-Fachler 1985 + Carhart 1997 JoF + Newey-West 1987. **분기별 자동** factor + selection + sector + cost + residual 분해 (Phase 2.D, `02_Infrastructure/attribution/{brinson_decomp.R, carhart_4factor.R}`). Monitoring agent integration
+
+**Agent 역할별 trends 매핑** (각 agent init / definition은 본 mandate inherit):
+- **alpha-research**: P1 (economic_rationale) + P3 (uncertainty-discounted alpha if available)
+- **risk-research**: **P5 (crowding_score_per_factor 의무)** + base Σ + tail
+- **optimizer-research**: **P2 (cost-aware objective)** + P5 (crowding penalty) + (Phase 3 후) P4 Direct Policy
+- **forge**: P2 (net-of-cost backtest, gross vs net 양쪽 산출)
+- **judge**: P1 (Factor Zoo gates) + P2 (net SR + cost_drag verify) + P5 (crowding audit) + Implementation Discipline (P6)
+- **governor**: P6 (Implementation Discipline 최종 admit 결정) + AX-001 v2 conditional defense
+- **monitoring**: **P7 (분기별 자동 Brinson + Carhart attribution)** + decay 감지
+
+**Update mechanism**: 분기별 review (arxiv MCP + jina MCP 학술 검색) + trigger-based 보강 (paradigm shift / Codex 외부 발견 / 도훈 직접 mandate) + 5-step amendment 절차.
+
+**Hook 정합 (advisory level)**:
+- `feature_registry_economic_rationale_check.sh` (P1)
+- `ml_cost_aware_audit.sh` (P2)
+- `ml_uncertainty_audit.sh` (P3)
+- `risk_crowding_score_check.sh` (P5)
+- `attribution_quarterly_trigger.sh` (P7)
+
+상세: `02_Infrastructure/docs/qvest_research_philosophy.md` (Charter-level SOT 본문) + `.claude/rules/research_philosophy.md` (Q-Lead autoload). L-321 ~ L-323 적립.
+</research_philosophy>
+
 <answer_principles level="0" version="v1.0" enforce="HOOK+L_CODE+AX_002" effective="2026-04-29">
 모든 에이전트의 모든 비단순 작업에 적용. 위반 = AX-002 동급 (프로세스 우회 = 미래참조).
 
@@ -145,7 +178,7 @@ V6.0 순서: S0(Scout) → S1(Forge) → S2(Forge) → S3(Scout) → S4(auto) �
 - 세부: @.claude/skills/s0-debate/SKILL.md, @02_Infrastructure/hooks/s0_verdict_router.sh
 </s0_debate_consensus>
 
-<telegram_protocol version="v6 SOT" updated="2026-05-07">
+<telegram_protocol version="v6.5 SOT" updated="2026-05-15">
 **SOT (단일 규칙)**: `.claude/skills/qvest-telegram/SKILL.md` Read 필수. 양식·약어 풀이·예시 6종 모두 그곳.
 
 - **`tg_agent_brief()` 만** 호출. 직접 `tg_send*()` / `tg_format_table()` 호출 시 PreToolUse[Bash] Hook deny + R stop() (`02_Infrastructure/hooks/telegram_direct_call_guard.sh`).
@@ -154,6 +187,17 @@ V6.0 순서: S0(Scout) → S1(Forge) → S2(Forge) → S3(Scout) → S4(auto) �
 - Section type 6종: `summary`(1줄 헤드라인) / `text`(≥30자) / `bullet`(≥2) / `kv`(≥2 named) / `table`(nrow≥2, ncol≤3, width≤32) / `code`(≥20자).
 - 표준 4섹션 권장: 📌 summary → 📊 metrics(kv/table) → 🚩 risks(bullet) → ➡️ next(bullet).
 - Agent 1 spawn = 단일 호출. 차트는 `charts=c(...)` 인자만. 중간 발송 금지.
+
+**v6.5 용어 규칙 (도훈 mandate 2026-05-15) — 모든 agent 텔레그램 의무 정합**:
+- **통상 영어 표기 retain** (자의적 한글 풀이 절대 금지):
+  - ML 모델: `LightGBM` / `XGBoost` / `Ridge` / `LASSO` / `ElasticNet` / `Ensemble`
+  - 알고리즘: `Pareto` / `Sharpe` / `Newey-West` / `HRP` / `MVO` / `CVaR` / `ERC` / `GARCH` / `HMM`
+  - 메트릭: `TDC` / `MDD` / `IC` / `ICIR` / `DSR` / `TE` / `VaR` / `CAGR` / `FF3` / `FF5` / `MRS`
+  - Agent 이름: `Forge` / `Codex` / `Architect` / `Q-Lead` (자의적 한글 변형 금지)
+- **구어체 줄임말 금지**: 리밸→리밸런싱 / 벡테→백테스팅 / 옵티→옵티마이저 / 디플로이→배포
+- **자의적 한글 변형 금지** (사례): 라이트지비엠 / 다각화비 / 앙상블풀이 / 포지·코덱스·아키텍트 → 영어 원어 retain
+- **이미 정통 한글인 용어 retain**: 공분산 / 왜도 / 첨도 / 정보계수 / 샤프지수 / 최대낙폭 / 연복리수익률 / 회전율
+- 함수 레벨 enforcement: `telegram_notify.R` v6.5 exempt_pattern 자동 면제. 자의적 한글 풀이 시 함수 통과하지만 도훈 시각 거부.
 </telegram_protocol>
 
 <spawn_prompt_guidelines version="v1.0" updated="2026-04-24">

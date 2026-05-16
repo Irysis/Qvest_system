@@ -1,0 +1,250 @@
+{
+  "selection_objective": "icir",
+  "best_spec": "F4_Small_LowVol_Defense",
+  "selection_status": "BEST_SELECTED",
+  "all_5_specs": {
+    "spec": [
+      "F1_Pure_SMB_Size",
+      "F2_Amihud_Illiq_Premium",
+      "F3_Small_12_1_Momentum",
+      "F4_Small_LowVol_Defense",
+      "F5_Small_LiquidityConstraint_Composite"
+    ],
+    "rank_ic_mean": [
+      -0.0023,
+      0.0581,
+      0.0199,
+      0.123,
+      0.0214
+    ],
+    "rank_ic_sd": [
+      0.1068,
+      0.0946,
+      0.1018,
+      0.113,
+      0.0515
+    ],
+    "icir": [
+      -0.0211,
+      0.6142,
+      0.1955,
+      1.0883,
+      0.4154
+    ],
+    "n_periods": [
+      267,
+      267,
+      267,
+      267,
+      267
+    ],
+    "harvey_t_nw_lag3": [
+      -0.2844,
+      8.9589,
+      2.8138,
+      19.277,
+      6.2573
+    ],
+    "harvey_t_abs": [
+      0.2844,
+      8.9589,
+      2.8138,
+      19.277,
+      6.2573
+    ],
+    "pass_harvey_3": [
+      false,
+      true,
+      false,
+      true,
+      true
+    ],
+    "monotonicity_pairs": [
+      0.25,
+      1,
+      0.75,
+      0.75,
+      0.75
+    ],
+    "sub_stability": [
+      0.3333,
+      1,
+      0.3333,
+      1,
+      1
+    ],
+    "selection_direction": [
+      "CONTRARIAN (negate)",
+      "POSITIVE (direct)",
+      "POSITIVE (direct)",
+      "POSITIVE (direct)",
+      "POSITIVE (direct)"
+    ],
+    "rank_ic_abs": [
+      0.0023,
+      0.0581,
+      0.0199,
+      0.123,
+      0.0214
+    ],
+    "icir_abs": [
+      0.0211,
+      0.6142,
+      0.1955,
+      1.0883,
+      0.4154
+    ]
+  },
+  "best_z_col": "z_neg_vol_60d",
+  "signal_direction": "POSITIVE_direct",
+  "ic_panel_summary": {
+    "n_periods": 268,
+    "sig_date_min": "2004-01-30",
+    "sig_date_max": "2026-04-30"
+  },
+  "subperiod_F4": {
+    "cut": [
+      "2004-14",
+      "2015-19",
+      "2020-26"
+    ],
+    "mean_IC": [
+      0.129,
+      0.0903,
+      0.1385
+    ],
+    "sd_IC": [
+      0.1155,
+      0.1028,
+      0.1125
+    ],
+    "ICIR": [
+      1.1166,
+      0.8778,
+      1.2312
+    ],
+    "n": [
+      132,
+      60,
+      75
+    ]
+  },
+  "per_year_F4": {
+    "year": [
+      2004,
+      2005,
+      2006,
+      2007,
+      2008,
+      2009,
+      2010,
+      2011,
+      2012,
+      2013,
+      2014,
+      2015,
+      2016,
+      2017,
+      2018,
+      2019,
+      2020,
+      2021,
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "mean_IC": [
+      0.1542,
+      0.1067,
+      0.1194,
+      0.1577,
+      0.1571,
+      0.1458,
+      0.139,
+      0.1118,
+      0.118,
+      0.131,
+      0.0782,
+      0.0591,
+      0.0776,
+      0.0896,
+      0.1111,
+      0.114,
+      0.0838,
+      0.1455,
+      0.1352,
+      0.1689,
+      0.161,
+      0.138,
+      0.1328
+    ],
+    "ICIR": [
+      1.1286,
+      0.6255,
+      1.1359,
+      2.1433,
+      1.0984,
+      1.5174,
+      1.2955,
+      1.0472,
+      0.8295,
+      1.3865,
+      0.9969,
+      0.7013,
+      0.8817,
+      0.6675,
+      0.8515,
+      1.6939,
+      0.8263,
+      1.8338,
+      1.2022,
+      1.4497,
+      1.7694,
+      1.0103,
+      0.5527
+    ],
+    "n_months": [
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      3
+    ]
+  },
+  "bootstrap_ICIR_CI_F4": {
+    "B": 1000,
+    "ICIR_mean": 1.092,
+    "ci_2_5": 0.9426,
+    "ci_97_5": 1.2411
+  },
+  "alpha_vector_level_cor_vs_STR_1715": {
+    "method": "outer join on Ticker, NA-as-0 imputation, Spearman cor on aligned vector per sig_date",
+    "common_tickers_in_two_sleeves": 651,
+    "vec_cor_mean": -0.0142,
+    "vec_cor_sd": 0.0156,
+    "vec_cor_min": -0.059,
+    "vec_cor_max": 0.0248,
+    "n_sig_dates": 268,
+    "finding_essence": "Sleeves are construction-disjoint (large-cap top 350 vs small/mid not-top-350). NA-as-0 imputation makes alpha-vector cor ≈ 0 by construction. THIS IS THE L-316 DISTINCTION — vector-level cor near 0 BUT portfolio realized cor (monthly Pearson) ≈ 0.70. Vector-level orthogonality ≠ portfolio-level orthogonality."
+  }
+}

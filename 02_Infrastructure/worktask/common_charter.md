@@ -236,6 +236,57 @@ Common Charter는 **AX-000 ~ AX-008** 공리 하위에 위치:
 
 ---
 
+## §15 Research Philosophy (v1.8, 2026-05-14 도훈 mandate)
+
+**Charter-level SOT** (영구 리서치 헌법) — 모든 cycle reference. 위반 = AX-002 동급.
+
+**7 QEPM Modern Trends** — 최신 학술 정통 통합:
+
+| # | Principle | 학술 정통 | Qvest 적용 영역 |
+|---|---|---|---|
+| **P1** | **Factor Zoo 축소** (Validation > Discovery) | Harvey-Liu-Zhu 2016 multiple testing | alpha-research / feature_registry / judge gates: `economic_rationale` + `redundancy_cluster_id` 필수 |
+| **P2** | **Cost-aware Alpha** (Net > Gross) | Jensen-Kelly-Malamud-Pedersen 2022 SSRN 4187217 | optimizer / forge / judge: ML loss `-E[ret] + γ·|Δw|`, net SR + cost_drag 양쪽 산출 |
+| **P3** | **Uncertainty-aware Forecasting** (CI > Point) | Liao-Ma-Neuhierl-Schilling 2025 RFS | ML pipeline: bootstrap CI / `μ̃ = μ̂ - k·SE(μ̂)` / Confident-High-Low strategy |
+| **P4** | **Direct Portfolio Learning** (Integration > Two-stage) | You-Zhang 2025 SSRN | (Phase 3) optimizer: features → constrained NN weights (sigmoid + L1) |
+| **P5** | **Risk Model 고도화** (Crowding + Concentration) | Acadian 2026 systematic crowding + Behmaram 2024 demand elasticity | risk-research 의무: **`crowding_score_per_factor` 필수** in risk_package.json (Phase 2.C) |
+| **P6** | **Implementation Discipline** (이미 정합) | KR retail constraints | Hook hard-enforced: TO ≤ 6.0/yr + LIQ ≥ 2e8 + max_names 20 + weight [0, 0.20] + Σw=1. Governor admit 기준 |
+| **P7** | **Attribution & Feedback Loop** (Decay 감시) | Brinson-Fachler 1985 + Carhart 1997 JoF + Newey-West 1987 | monitoring agent: 분기별 자동 factor + selection + sector + cost + residual 분해 (Phase 2.D) |
+
+### Update Mechanism (영구 진화 구조)
+
+- **분기별 review** (3개월) — arxiv MCP + jina MCP 학술 검색 + 도훈 amend approval
+- **Trigger-based 보강** — paradigm shift / Codex 외부 발견 / 도훈 직접 mandate
+- **Amendment 절차 5-step**:
+  1. SOT 본문 (`02_Infrastructure/docs/qvest_research_philosophy.md`) 수정
+  2. CLAUDE.md Level 0 reference 갱신
+  3. `.claude/rules/research_philosophy.md` reference 갱신
+  4. `_shared_prefix.md` <research_philosophy> tag 갱신
+  5. `methodology_active.md` L-code 적립 (amendment 사유 + 학술 인용 + 도훈 mandate)
+
+### Hook 정합 (advisory level, Phase 1/2 도입 완료)
+
+| Hook | Principle | 검증 대상 |
+|---|---|---|
+| `feature_registry_economic_rationale_check.sh` | P1 | feature_registry.json economic_rationale field |
+| `ml_cost_aware_audit.sh` | P2 | summary_metrics.json net_port_sr column |
+| `ml_uncertainty_audit.sh` | P3 | predictions_with_ci.parquet CI extension |
+| `risk_crowding_score_check.sh` | P5 | risk_package.json crowding_score_per_factor field |
+| `attribution_quarterly_trigger.sh` | P7 | quarterly Brinson + Carhart 자동 호출 |
+
+### Agent 역할별 trends 매핑
+
+- **alpha-research**: P1 (economic_rationale 의무) + P3 (predictions_with_ci 활용 가능)
+- **risk-research**: **P5 (crowding_score_per_factor 의무)** + base Σ + tail + stress
+- **optimizer-research**: **P2 (cost-aware objective)** + P5 (crowding penalty) + (Phase 3) P4 Direct Policy
+- **forge**: P2 (net-of-cost backtest mandatory, gross vs net 양쪽)
+- **judge**: P1 (Factor Zoo gates) + P2 (net SR + cost_drag verify) + P5 (crowding audit) + P6 (Implementation Discipline)
+- **governor**: P6 (최종 admit 결정) + AX-001 v2 conditional defense
+- **monitoring**: **P7 (분기별 자동 Brinson + Carhart attribution)** + decay 감지
+
+상세: `02_Infrastructure/docs/qvest_research_philosophy.md` (Charter-level SOT 본문, v1.0 2026-05-14) + `.claude/rules/research_philosophy.md` (Q-Lead autoload reference) + L-321 ~ L-323 누적.
+
+---
+
 ### 12. Sharpe Ratio 표준 (v1.4, 도훈 채택 2026-04-29)
 
 **근거**: STR_1631_SYN_06 fabrication 의심 검증 중 본 코드 `Sharpe = CAGR / vol` hybrid 정의 발견. 도훈 reference (2026-04-29) 학술 표준 채택.
@@ -441,5 +492,6 @@ alpha_type:
 - **v1.4** — 2026-04-29 — Sharpe Ratio 표준 §12 명문화. `Sharpe = CAGR / vol` hybrid 폐기, 학술 표준 `Sharpe = mean(ER) / sd(ER) × √N` 채택 (도훈 reference Lo 2002 / Bailey-LdP 2014). `sharpe_standard.R` single source of truth. summarise_perf() patch + 모든 strategy 재산출.
 - **v1.5** — 2026-04-29 — Backtest Result Contract §13 명문화. 10-component bt_result list 표준 (trades + costs 제외). PerformanceAnalytics 자체 합성 금지. metric_type 분류 (backtested/estimated/proxy/unavailable) + L3 hard block (audit FAIL 시 official metrics 차단). `02_Infrastructure/contracts/` 5 R modules + Hook + Master Registry + Lawbook v1.0.
 - **v1.6** — 2026-04-30 — §14 Alpha Type Branching 명문화 (PD_014 motion). WT-D20260430_001 첫 meta-allocation alpha admission cycle 발견 후 AX-001 v2.1 META-ALLOCATION-EXEMPT amendment (L-256) Charter 본문 정식 통합. 3 alpha type (defense_factor / meta_allocation / cross_family) × 각 axiom + evaluation axes + structure constraint. alpha_discovery_certificate 정의 분기 (meta_allocation 별도). 다음 alpha discovery cycle (Phase 4 cross-family) 정합 정의.
+- **v1.8** — 2026-05-15 — §15 Research Philosophy 본문 통합 (7 QEPM Modern Trends Charter-level SOT). 도훈 mandate 2026-05-14 "리서치 영구 근간 + 업데이트 가능 구조" 정합. 5축 ingest: SOT 본문 + CLAUDE.md + .claude/rules/research_philosophy.md + _shared_prefix.md <research_philosophy> + common_charter.md §15. Phase 1.A/1.B (Uncertainty + Cost-aware) implementation 완료, Phase 2.C/2.D (Crowding + Attribution) 인프라 구축, 5 advisory hooks 등록 (P1/P2/P3/P5/P7). L-321 (Full ML cycle GRADUATING) + L-322 (Phase 1 implementation) + L-323 (Pareto blend finding 3 supplements) 적립.
 - **v1.7** — 2026-04-30 Session 73 Day 3 — §10 Role Card 4종 확장 (자체 발급 cert + parent inherit + backfill 룰). STR_1715 PG2 admit 후 5 cert 부재 (DRIFTED 0/100) 사고 사후 — Charter §10 transition timing(v1.2) + deployment WT lifecycle mismatch + str_id matching gap + Hook silent fail + R script 시야 밖 5중 구조적 원인 진단. **Layer 2 추가**: `02_Infrastructure/ops/cert_backfill_audit.R` (sweep + auto-issue + lineage 추적 + governance_log RETROACTIVE_CERT_ISSUANCE 기록) + `bootstrap.sh` integration (DRIFTED/WARNING 감지 시 --auto 자동 호출). **deployment role card 명문화**: alpha_discovery는 discovery WT inherit, sr_provenance + schedule_fidelity + forge_package_validated + governor_concord 자체 발급 의무. governor_admission.pg1_admission_check.\*.issuance_status="ELIGIBLE_FOR_ISSUANCE" 명시 시 backfill auto 발동. **sizing_only / hyperparameter_sweep도 명시적 cert inheritance 룰 정의**. Hook silent fail hardening 5건 동반 (HOOK_ERR_TRAP 명시 로깅 + Python isinstance() 가드).
 - 변경 시 major bump + L-code 발행 필수

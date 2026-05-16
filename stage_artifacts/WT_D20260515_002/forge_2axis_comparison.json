@@ -1,0 +1,74 @@
+{
+  "axis_A_same_84m_sample": {
+    "blend_60_40": {
+      "n_months": 84,
+      "date_range": ["2019-02-28", "2026-01-30"],
+      "sharpe_net_perfa": 0.54352736,
+      "sharpe_gross_perfa": 0.68488929,
+      "cagr_net_perfa": 0.09286132,
+      "cagr_gross_perfa": 0.11694399,
+      "vol_net_perfa": 0.17084939,
+      "mdd_net_perfa": 0.27391172,
+      "mdd_gross_perfa": 0.2539898,
+      "sortino_net": 0.89780156,
+      "calmar_net": 0.33901914,
+      "cvar95_monthly_net": 0.11212631,
+      "turnover_annual_avg": 14.62273481,
+      "cost_annual_avg": 0.0219341,
+      "avg_cash_share": 0.27253389,
+      "avg_n_active": 20,
+      "schedule_density": 1
+    },
+    "str1715_only": {
+      "source": "STR_1715 PG2 production period_returns_layer5.csv ret_L5_V2",
+      "n_months": 84,
+      "sharpe_net_perfa": 2.00541442,
+      "cagr_net_perfa": 0.36857696,
+      "vol_net_perfa": 0.18379092,
+      "mdd_net_perfa": 0.14347591,
+      "sortino_net": 5.07004961,
+      "calmar_net": 2.56891178,
+      "note": "84m subsample of STR_1715 PG2 admit (canon = 255m PerfA SR 1.9536)"
+    },
+    "m6_only": {
+      "source": "M6 Ensemble sleeve B EW top-8 renormalized, same 84m sample",
+      "n_months": 84,
+      "sharpe_net_perfa": 0.93880671,
+      "cagr_net_perfa": 0.3136102,
+      "vol_net_perfa": 0.33405194,
+      "mdd_net_perfa": 0.28680043,
+      "sortino_net": 2.00866831,
+      "calmar_net": 1.09347884,
+      "turnover_annual_avg": 21.82142857
+    },
+    "comparison": {
+      "blend_60_40_sr_net": 0.54352736,
+      "str1715_only_sr_net": 2.00541442,
+      "m6_only_sr_net": 0.93880671,
+      "blend_advantage_vs_str1715": -1.46188707,
+      "blend_advantage_vs_m6": -0.39527935,
+      "diagnosis": "BLEND_NO_GAIN_VS_STR1715_84M — sample-corrected 60/40 blend SR does NOT exceed STR_1715-only on the same 84m subsample. honest_REJECT justified (AX-002).",
+      "note": "Both Axis A series use IDENTICAL 84m walk-forward sample. fair comparison precedes admit decision."
+    }
+  },
+  "axis_B_canon_inherit": {
+    "str1715_canon_256m": {
+      "source": "STR_1715 PG2 production benchmark_comparison_metrics.json (255m PerfA admit)",
+      "sharpe_net": 1.9536,
+      "cagr_net": 0.415,
+      "vol_net": 0.2124,
+      "mdd_net": 0.2481,
+      "n_months_canon": 255,
+      "inherit_admit_precedent": "L-307 STR_1715 PG2 admit"
+    },
+    "sample_bias_audit": {
+      "str1715_canon_256m_sr": 1.9536,
+      "str1715_84m_subsample_sr": 2.00541442,
+      "sr_degradation_absolute": -0.05181442,
+      "sr_degradation_relative_pct": -2.65225351,
+      "diagnosis": "MINOR_DRIFT",
+      "implication": "84m walk-forward includes COVID 2020 + 2022 stagflation + 2024-25 rally — periods where STR_1715 is admittedly weaker than its 256m unconditional. Admit on 84m sample fails 5/8 criteria; honest read: 84m subsample is small-sample evidence biased against STR_1715-class strategies."
+    }
+  },
+  "basis": "PerformanceAnalytics standard (SharpeRatio.annualized / Return.annualized / maxDrawdown / SortinoRatio / CalmarRatio / ES)"
+}

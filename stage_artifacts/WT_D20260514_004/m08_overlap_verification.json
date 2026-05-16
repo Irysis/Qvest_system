@@ -1,0 +1,26 @@
+{
+  "task_id": "WT-D20260514_004",
+  "parent_task_id": "WT-D20260514_001",
+  "verification_date": "2026-05-14",
+  "inherit_rationale": "Parent WT-D20260514_001 m08_overlap_verification.json content valid — universe change does not affect information source orthogonality (price+financial vs disclosure-flow).",
+  "str1715_h1_alpha_factors": {
+    "Core_4F_Consensus": ["C01_SUE", "C02_EPS_Chg_1m", "C04_ESBR", "C06_TP_Gap"],
+    "Core_Defense_Q07": "Q07_Earnings_Stability",
+    "Defense_M08": "M08_Residual_Mom",
+    "Defense_Q25": "Q25_Ohlson_O"
+  },
+  "m08_family_definition": {
+    "full_name": "M08_Residual_Mom",
+    "factor_family": "Momentum_Residual",
+    "information_source": "PRICE",
+    "formula": "12-1M momentum CAPM/FF residualized",
+    "references": ["Carhart 1997", "Blitz-Huij-Martens 2011", "Daniel-Moskowitz 2016"],
+    "uses_investor_flow_information": false,
+    "uses_disclosure_data": false
+  },
+  "this_cycle_information_source": "KRX investor flow disclosure (외국인 / 기관 / 개인 / 연기금 net buy KRW)",
+  "overlap_factor_count": 0,
+  "information_source_orthogonal_alpha_stage": true,
+  "verdict": "ZERO_OVERLAP_INFORMATION_SOURCE_ORTHOGONAL_AT_ALPHA_VECTOR_LEVEL_INHERIT_PARENT",
+  "rationale": "STR_1715 H1 alpha (Iter 5 -> 31 admit). 7 factors: PRICE + FINANCIAL + ANALYST CONSENSUS. This cycle: KRX investor flow disclosure factors (INV01-INV12). Universe change does NOT affect information source level orthogonality (alpha-vector cor verified in WT-D20260514_001 max |0.072|)."
+}

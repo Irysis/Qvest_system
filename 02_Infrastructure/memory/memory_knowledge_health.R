@@ -348,6 +348,34 @@ if (file.exists(cache_path)) {
   }
 }
 
+# WARN_7: Stop hook script ↔ settings.json 등록 정합 (L-314 follow-up — L-275 silent fail 재발 방지)
+cat("[W7] Stop hook script ↔ settings.json registration consistency\n")
+stop_hook_dir <- file.path(PROJ_ROOT, "02_Infrastructure/hooks")
+stop_hook_scripts <- list.files(
+  stop_hook_dir,
+  pattern = "^auto_(commit|push)_on_stop\\.sh$",
+  full.names = FALSE
+)
+settings_path <- file.path(PROJ_ROOT, ".claude/settings.json")
+if (length(stop_hook_scripts) > 0 && file.exists(settings_path)) {
+  settings_content <- paste(readLines(settings_path, warn = FALSE),
+                            collapse = "\n")
+  unregistered <- character()
+  for (script in stop_hook_scripts) {
+    if (!grepl(script, settings_content, fixed = TRUE)) {
+      unregistered <- c(unregistered, script)
+    }
+  }
+  if (length(unregistered) > 0) {
+    add_warn("WARN_7_stop_hook_unregistered",
+             sprintf("Stop hook script(s) exist but not registered in settings.json: %s — L-275 silent fail pattern",
+                     paste(unregistered, collapse = ", ")))
+  } else {
+    cat(sprintf("  %d Stop hook script(s) registered in settings.json: OK\n",
+                length(stop_hook_scripts)))
+  }
+}
+
 # ─── Summary ─────────────────────────────────────────────────────
 cat("\n=== SUMMARY ===\n")
 cat(sprintf("Hard fails: %d\n", length(hard_fails)))

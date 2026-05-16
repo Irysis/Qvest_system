@@ -195,6 +195,31 @@ R `02_Infrastructure/telegram/telegram_notify.R::.TG_CONFIG` list와 1:1 동기�
 
 논문 영어 원문 인용 (`Bakshi 2003` / `Frazzini-Pedersen 2014` / `Asness-Frazzini-Pedersen 2019`)은 변환 없이 그대로 사용 OK. v6.4 함수 레벨 면제 적용 (`telegram_notify.R` exempt_pattern 학술 인용 + 저널 약어 추가).
 
+**v6.5 통상 영어 표기 허용 (도훈 mandate 2026-05-15)**:
+
+다음 통상 영어 표기는 **변환 없이 그대로 사용** (자의적 한글 풀이 금지):
+
+| 분류 | 허용 영어 표기 (예시) |
+|---|---|
+| **ML 모델** | LightGBM / XGBoost / Ridge / LASSO / ElasticNet / Ensemble |
+| **알고리즘/통계** | Pareto / Sharpe / Newey-West / HRP / MVO / CVaR / ERC / GARCH / HMM / EWMA / EM |
+| **메트릭** | TDC / MDD / IC / ICIR / DSR / TE / VaR / CAGR / SUE / ESBR / ADV / FF3 / FF5 / MRS |
+| **시스템 용어** | PIT / OOS / GPU / ML / NN / RL / EW / JSON / API |
+| **Agent 이름** | Q-Lead / Alpha / Risk / Optimizer / **Forge** / Judge / Governor / Scout / Execution / Monitoring / **Architect** / **Codex** |
+
+❌ **자의적 한글 변형 금지** (라이트지비엠 / 다각화비 / 포지/코덱스/아키텍트 등 X — 영어 원어 retain)
+
+**구어체 줄임말 금지 (도훈 mandate 2026-05-15)**:
+
+| ❌ 줄임말 (금지) | ✅ 정식 표기 (사용) |
+|---|---|
+| 리밸 | **리밸런싱** |
+| 벡테 / 백테 | **백테스팅** |
+| 옵티 | **옵티마이저** |
+| 어드미 | **admit** (또는 운용 등재) |
+
+함수 레벨 enforcement: `telegram_notify.R` v6.5 exempt_pattern 통상 영어 quant 용어 + agent name 자동 면제.
+
 ### Mode
 
 - `"inline_first"` (default) — 본문 첫 등장에 `약어 (한글)` 부착

@@ -102,6 +102,11 @@ Point-in-time / Research Process / Factor vs Proxy / 논문 출발점 / Data Min
 ### Step 5: Stress Tests + Crowding + Liquidity + Emission
 - Stress scenarios: Market -5% / Value crash / Momentum reversal / GFC 2008 / EuDebt 2011 / COVID 2020 / Rate 2022
 - Crowding 진단 (공모기관 집중 / ETF 유입)
+  - **Phase 2.C (2026-05-14 도입, 7 Trends Principle 5)**: `crowding_score_per_factor()` 호출 의무 (Acadian 2026)
+  - source: `02_Infrastructure/factor_db/crowding_score_per_factor.R`
+  - 산출: factor_name × {crowding_score [0~1], hhi_top, vol_concentration, passive_overlap_proxy, demand_elasticity_proxy}
+  - threshold: crowding_score ≥ 0.75 → risk_summary.crowding_flags 자동 등재
+  - 3m delta ≥ 0.15 → "RAPID_INCREASE" alert (decay/crowding emergence 사전 감지)
 - Liquidity 진단 (capacity pressure)
 - Regime correlation 측정 (각 regime에서 종목 간 상관 shift)
 - `risk_package.json` 저장 + Q-Lead 알림
@@ -121,6 +126,11 @@ Point-in-time / Research Process / Factor vs Proxy / 논문 출발점 / Data Min
   "risk_summary": {
     "top_common_risks": ["Market (35%)", "Sector_IT (18%)", "Size (12%)"],
     "crowding_flags": ["LG에너지솔루션 공모기관 30%+"],
+    "crowding_score_per_factor": [
+      {"factor_name": "ML_M6_Ensemble", "crowding_score": 0.42, "hhi_top": 0.31,
+       "vol_concentration": 0.55, "passive_overlap_proxy": 0.40, "demand_elasticity_proxy": 0.22},
+      {"factor_name": "STR_1715_AR_R05", "crowding_score": 0.68, "alert": "LEVEL_HIGH"}
+    ],
     "liquidity_flags": [],
     "stress_tests": {
       "market_down_5": -0.0612,
@@ -404,3 +414,21 @@ bootstrap_ic_fast(alpha, ret, B = 1000L)                  # factor check 시
 
 **위반 차단**: `tg_send*()` 직접 호출 = PreToolUse[Bash] Hook deny + R stop().
 </telegram_protocol_v6>
+
+
+## Research Philosophy (Charter §15, v1.8) — 7 QEPM Modern Trends 정합 의무
+
+**Charter-level SOT**: `02_Infrastructure/docs/qvest_research_philosophy.md` v1.0 (도훈 mandate 2026-05-14). 위반 = AX-002 동급.
+
+**본 agent 역할별 trends 매핑**: **P5 (crowding_score_per_factor 의무, Acadian 2026)** + base Σ + tail + stress
+
+**7 Principles (전체)**:
+1. **Factor Zoo 축소** (Validation > Discovery) — Harvey-Liu-Zhu 2016
+2. **Cost-aware Alpha** (Net > Gross) — Jensen-Kelly-Malamud-Pedersen 2022
+3. **Uncertainty-aware Forecasting** (CI > Point) — Liao-Ma-Neuhierl-Schilling 2025 RFS
+4. **Direct Portfolio Learning** (Integration > Two-stage) — You-Zhang 2025 (Phase 3)
+5. **Risk Model 고도화** (Crowding + Concentration) — Acadian 2026 + Behmaram 2024
+6. **Implementation Discipline** — TO ≤ 6.0/yr + LIQ + max_names 20 + weight [0, 0.20] + Σw=1
+7. **Attribution & Feedback Loop** — Brinson-Fachler 1985 + Carhart 1997 + Newey-West 1987
+
+**참조**: `_shared_prefix.md` <research_philosophy> tag (모든 agent autoload) + `02_Infrastructure/worktask/common_charter.md` §15 + `.claude/rules/research_philosophy.md`.

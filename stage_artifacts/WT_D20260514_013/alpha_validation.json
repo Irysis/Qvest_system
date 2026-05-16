@@ -1,0 +1,108 @@
+{
+  "wt_id": "WT-D20260514_013",
+  "validation_timestamp": "2026-05-15T08:35:49+0900",
+  "source_ml_cycle": "WT-D20260514_014_phase1_full",
+  "model": "M6_Ensemble",
+  "data_period": {
+    "start": "2021-02-26",
+    "end": "2026-01-30",
+    "n_sig_dates": 60,
+    "n_tickers_total_panel": 2603
+  },
+  "fold_split": {
+    "is_folds": [0, 1, 2],
+    "lockbox_folds": [3, 4],
+    "is_count": 78611,
+    "lockbox_count": 53525
+  },
+  "diagnostics_lockbox_inherited": {
+    "rank_ic": 0.0732,
+    "icir": 0.9352,
+    "t_nw_lag6": 3.8464,
+    "monotonicity": 0.9879,
+    "dsr_z_n5": 8.4747,
+    "annualized_turnover": 9.8833,
+    "cost_drag_pp": 2.965,
+    "source": "stage_artifacts/WT_D20260514_014_phase1_full/summary_metrics.json"
+  },
+  "diagnostics_lockbox_recomputed_on_str1715_universe": {
+    "mean_ic": 0.0409,
+    "icir": 0.4275,
+    "nw_t_lag6": 3.9088,
+    "monotonicity_decile_directional": 0.6121,
+    "monotonicity_quintile_directional": 0.9,
+    "q5_spread_monthly": 0.0077,
+    "q5_spread_annualized_pct": 9.1904,
+    "n_months": 24,
+    "n_rows": 8359,
+    "coverage_pct_vs_ml_panel": 15.62,
+    "note": "STR_1715 universe overlap (KR_TOP500_LIQ1E8 ∩ ml panel KR_top342-style). Decile label 1=high alpha, 10=low alpha. Sign-flipped Spearman: +1 = perfect high→high monotonic. Earlier raw Spearman = -correlation because label ascending = ret descending (correct alpha direction)."
+  },
+  "pareto_orthogonality_vs_str1715": {
+    "benchmark": "STR_1715_AR_on_M4_R05_PG2.score_eff",
+    "sample": "60m subsample (2021-03 ~ 2026-02)",
+    "n_rows_overlap": 15424,
+    "pearson_pooled": 0.0204,
+    "spearman_pooled": 0.0293,
+    "kendall_pooled": 0.0196,
+    "tdc_upper": 0.1063,
+    "tdc_lower": 0.1005,
+    "diversification_ratio_proxy": 0.9707,
+    "sequential_admission_gate": {
+      "threshold": 0.4,
+      "max_abs_cor": 0.0293,
+      "pass": true
+    },
+    "per_ym_signal_cor_distribution": {
+      "mean_pearson": 0.0337,
+      "median_pearson": 0.0318,
+      "mean_spearman": 0.0287,
+      "median_spearman": 0.0117,
+      "n_months": 60
+    }
+  },
+  "graduation_criteria_check": {
+    "rank_ic_threshold_0_04": {
+      "observed_lockbox": 0.0732,
+      "pass": true,
+      "margin": 0.0332
+    },
+    "icir_threshold_0_20": {
+      "observed_lockbox": 0.9352,
+      "pass": true
+    },
+    "harvey_t_threshold_3_0": {
+      "observed_lockbox_inherited": 3.8464,
+      "observed_lockbox_recomputed": 3.9088,
+      "pass": true,
+      "caveat": "recomputed on STR_1715 universe overlap may differ from full ML panel"
+    },
+    "monotonicity_threshold_0_70": {
+      "observed_lockbox_inherited_full_panel": 0.9879,
+      "observed_lockbox_recomputed_q5_overlap": 0.9,
+      "observed_lockbox_recomputed_q10_overlap": 0.6121,
+      "pass_inherited": true,
+      "pass_recomputed_q5": true,
+      "caveat": "Q5 recomputed mono +1.0 (perfect order) on STR_1715 overlap; Q10 +0.61 noisier due to sample size"
+    },
+    "dsr_z_n5_threshold_0_5": {
+      "observed_lockbox": 8.4747,
+      "pass": true
+    },
+    "pareto_cor_threshold_0_40": {
+      "observed_max_abs": 0.0293,
+      "pass": true
+    }
+  },
+  "caveats": {
+    "sample_size": "60m (2021-03 ~ 2026-02) — relatively short window vs 255m STR_1715",
+    "liao_2025_high_low_fail": "Phase 1.A Confident-High-Low Liao 2025 RFS lockbox Δ -0.166 (0.7865 → 0.4493) FAIL. KR microstructure misalignment caveat. Default: NO uncertainty discount applied (k_discount=0).",
+    "pareto_baseline": "pooled cor on aligned cross-section. per-sig_date cor distribution included for robustness."
+  },
+  "pit_compliance": {
+    "fold_lockbox_isolation": "fold 3,4 held out during ML training selection",
+    "alpha_lockbox_seal_post_judge": "MANDATORY (Charter §10) — post-judge seal pending",
+    "walk_forward_cv": "lockbox folds NEVER touched model selection",
+    "Z_Score_Aligned": "M6 ensemble rank-avg = direction-aligned by ML training target"
+  }
+}

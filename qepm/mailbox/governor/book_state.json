@@ -19,6 +19,7 @@
   },
   "schema_version": "v2.3_post_WT_H20260513_001_R05_LAYER5_OVERLAY_ADMIT",
   "schema_version_prior": "v2.2_post_WT_D20260512_002_RE_CERTIFY_SINGLE_SLEEVE_LAYER4_L277_L278_LINEAGE_RECOVERY",
+  "schema_version_unchanged_post_WT_D20260515_002": "v2.3_RETAIN — WT-D20260515_002 REJECT verdict + no_mutation. See event_WT_D20260515_002_blend_reject_no_mutation block for audit trail.",
   "n_admitted": 1,
   "admitted_ids": [
     "STR_1715_AR_on_M4_R05_overlay_PG2"
@@ -1477,5 +1478,111 @@
     "doh_hoon_audit_instinct_validated": "cross-cycle DSR convention drift (+1.25 hardcoded vs +0.04 same-harness) detected via Codex C2 ACCEPT direct trigger"
   },
   "updated_at_post_deploy_resolution": "2026-05-13T09:50:00+0900",
-  "updated_by_post_deploy_resolution": "Q-Lead Session 80 — POST_DEPLOY_GOVERNOR_C1 T+14 binding RESOLVED via WT-H20260513_002 strict variant test (도훈 mandate Option A)"
+  "updated_by_post_deploy_resolution": "Q-Lead Session 80 — POST_DEPLOY_GOVERNOR_C1 T+14 binding RESOLVED via WT-H20260513_002 strict variant test (도훈 mandate Option A)",
+
+  "event_WT_D20260515_002_blend_reject_no_mutation": {
+    "event": "REJECT_BLEND_RETAIN_STATUS_QUO_PG2_LIFECYCLE_TERMINATED",
+    "event_type": "governor_admission_reject_no_mutation",
+    "wt_id": "WT-D20260515_002",
+    "wt_type": "discovery_to_deployment_blend",
+    "agent": "governor",
+    "agent_id": "governor_opus_4_7_1m",
+    "timestamp": "2026-05-15T18:30:00+09:00",
+    "verdict": "REJECT",
+    "verdict_class": "REJECT_BLEND_RETAIN_STATUS_QUO_PG2_LIFECYCLE_TERMINATED",
+    "judge_verdict_inherit_match": true,
+    "judge_verdict": "REJECT_BLEND_RETAIN_STATUS_QUO_PG2_WITH_DOWNGRADES",
+    "scenario_classification_corrected_per_codex_g_c1": "partial_replacement_scenario_v6_1_SOT",
+    "scenario_classification_correction_log": "Draft labelled Sequential Admission (outcome-based); Codex G-C1 HIGH flagged misclassification (proposed action governs scenario); final corrected to partial Replacement (proposed 100% STR_1715 → 60/40 blend = partial displacement) with Sequential Admission Pareto 4/8 audit as secondary corroboration",
+    "book_state_action": "NONE",
+    "schema_version_unchanged": "v2.3",
+    "admitted_ids_unchanged": ["STR_1715_AR_on_M4_R05_overlay_PG2"],
+    "book_weights_unchanged": {"STR_1715_AR_on_M4_R05_overlay_PG2": 1.0},
+    "effective_date_unchanged": "2026-05-13",
+    "may_2026_operational_state_unchanged": {
+      "m4_state": "NORMAL",
+      "m4_scalar": 1.0,
+      "beta_AR_t": 0.7,
+      "beta_R05_regime": 1.0,
+      "net_allocation_risk": 0.7,
+      "net_allocation_cash": 0.3
+    },
+    "primary_rule_applied": "direct_baseline_comparison_partial_replacement",
+    "primary_rule_evidence": {
+      "delta_sr_84m": -1.4475,
+      "delta_dsr_strategy_n12_apples_to_apples": -3.7266,
+      "delta_mdd_pp": -12.81,
+      "delta_sortino": -4.16,
+      "delta_calmar": -2.218,
+      "turnover_blend_round_trip_yr": 13.07,
+      "turnover_cap_yr": 6.0,
+      "binding_axes_fail_count": 6,
+      "binding_axes_total": 8
+    },
+    "secondary_corroboration_sequential_admission_pareto_4_of_8": "6/8 binding fail exceeds 4/8 threshold",
+    "codex_round_status": "FINALIZED_POST_CODEX_REVISE_WITH_FIXES",
+    "codex_stance": "REVISE",
+    "codex_veto_flag": false,
+    "codex_concerns_disposition_governor_stage": "6 concerns: 5 ACCEPT_FIX (G-C1/C2/C4/C5/C6) + 1 ACCEPT_PARTIAL (G-C3) + 0 REBUTTAL",
+    "cumulative_codex_concerns_5_stage": 44,
+    "cumulative_high_severity": 27,
+    "cumulative_rebuttal_count": 2,
+    "direction_concur_unanimity_sources": 5,
+    "direction_concur_sources_list": ["Forge fresh v2 REJECT", "Optimizer FINALIZED_POST_CODEX_REJECT_WITH_REVISIONS", "Codex forge-round REJECT direction-concur", "Codex judge-round REVISE direction-concur", "Codex governor-round REVISE direction-concur"],
+    "ax_compliance": {
+      "AX_000_preserved": true,
+      "AX_001_v2_correctly_applied": true,
+      "AX_002_process_honesty_preserved": true,
+      "AX_007_exempt_proven_blend_rejected": true,
+      "AX_008_not_quorum_clean_n_a_for_reject_gate": true,
+      "AX_008_formal_own_pass_count": 1,
+      "AX_008_quorum_threshold": 2,
+      "AX_008_quorum_met": false,
+      "axiom_completeness_for_reject_verdict": "4 satisfied + 1 not-invoked (Charter §10 admit-gate vs reject-gate distinction)"
+    },
+    "sample_bias_empirical_observation_per_codex_g_c6": {
+      "str1715_84m_sr": 2.0054,
+      "str1715_256m_canon_sr": 1.9536,
+      "drift_pct": -2.65,
+      "drift_threshold_charter_9": 5.0,
+      "drift_within_band": true,
+      "blend_84m_sr": 0.5579,
+      "empirical_finding": "baseline_non_degraded_on_84m + blend_strategy_level_fail_on_84m",
+      "causal_attribution_downgrade_log": "draft causal phrasing replaced with empirical observation per Codex G-C6 ACCEPT_FIX"
+    },
+    "cert_chain_status_at_finalize": {
+      "alpha_discovery_certificate": "ISSUED_FRESH 2026-05-15 12:52",
+      "sr_provenance_certificate": "ISSUED_LEGACY 2026-05-15 17:35 issued=false post-Forge v2 (RR3 lifecycle terminated)",
+      "schedule_fidelity_certificate": "N/A_REJECT",
+      "forge_package_validated_certificate": "N/A_REJECT",
+      "governor_concord_certificate": "issued=false_with_rationale_N_A_REJECT_LIFECYCLE_TERMINATED (qepm/mailbox/worktask/WT-D20260515_002/governor_concord_certificate.json)"
+    },
+    "lockbox_seal_status": {
+      "sealed": true,
+      "sealed_at": "2026-05-15T17:58:27+09:00",
+      "sealed_by": "judge"
+    },
+    "production_promotion_action": "NO_PROMOTION — STR_1715_AR_on_M4_R05_overlay_PG2 retain 05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/ canonical",
+    "next_cycle_path_d_recommended": {
+      "path_name": "Defensive 3rd source substitution (KR_10y bond / TSMOM / Stagflation replacement of M6 ML sleeve)",
+      "judge_admit_probability": 0.45,
+      "mandatory_obligations_count": 10
+    },
+    "milestone_status": {
+      "sr_target": 2.0,
+      "sr_admit_canon": 1.9536,
+      "sr_gap": 0.0464,
+      "closure_pct": 97.9
+    },
+    "associated_paths": {
+      "governor_admission_path": "qepm/mailbox/worktask/WT-D20260515_002/governor_admission.json",
+      "judge_verdict_path": "qepm/mailbox/worktask/WT-D20260515_002/judge_verdict.json",
+      "lockbox_sealed_path": "qepm/mailbox/worktask/WT-D20260515_002/lockbox_sealed.json",
+      "codex_critic_response_governor_path": "qepm/mailbox/worktask/WT-D20260515_002/codex_critic_response_governor.json",
+      "challenge_note_governor_path": "qepm/mailbox/worktask/WT-D20260515_002/challenge_note_governor.md",
+      "governor_concord_certificate_path": "qepm/mailbox/worktask/WT-D20260515_002/governor_concord_certificate.json",
+      "request_path": "qepm/mailbox/worktask/WT-D20260515_002/request.json"
+    },
+    "l_code_candidate": "L-CANDIDATE WT-D20260515_002 Sequential Admission REJECT lifecycle FINAL — (i) sample-bias empirical observation precedent; (ii) partial Replacement scenario v6.1 SOT clarification (Iter 5 precedent applied); (iii) AX-008 not-quorum-clean N/A_FOR_REJECT_GATE Charter §10 retain; (iv) direction-concur unanimity 5 sources strongest verdict support; (v) governor-stage Codex 6 concerns 5 ACCEPT_FIX + 1 ACCEPT_PARTIAL + 0 REBUTTAL Charter §8 compliance"
+  }
 }

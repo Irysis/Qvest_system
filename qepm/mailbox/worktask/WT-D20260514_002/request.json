@@ -1,0 +1,68 @@
+{
+  "task_id": "WT-D20260514_002",
+  "wt_type": "discovery",
+  "pg1_eligibility": "certificate_required",
+  "discovery_of": null,
+  "graduation_criteria": {
+    "description": "Discovery → Deployment 전환 조건. Discovery WT 완료 시 자동 검증. discovery_graduation_gate.sh 강제.",
+    "min_rank_ic": 0.04,
+    "min_rank_ic_rationale": "KR top-universe benchmark. <0.04는 통계적 유의성 부족.",
+    "min_icir": 0.2,
+    "min_icir_rationale": "Alpha Lab Gate. <0.20은 IC 안정성 부족.",
+    "min_subperiod_stability": 0.5,
+    "min_subperiod_stability_rationale": "3개 subperiod (2008-14 / 2015-19 / 2020-26) 안정성 >=0.5",
+    "max_drawdown_days": 100,
+    "max_drawdown_days_rationale": "100일 이상 drawdown 지속 시 alpha decay 의심",
+    "min_harvey_t_stat": 3,
+    "min_harvey_t_stat_rationale": "Harvey-Liu-Zhu 다중검정 보정 t>3.0",
+    "min_deflated_sharpe_ratio": 0.5,
+    "min_deflated_sharpe_ratio_rationale": "Bailey-Lopez de Prado DSR — multi-testing 보정 SR"
+  },
+  "theme": "small_mid_cap_full_universe_orthogonal_4th_source",
+  "hypothesis_title": "Small/Mid-Cap KR Equity Full Universe 4th Orthogonal Alpha — L-317 Architectural Pivot via Universe Expansion",
+  "hypothesis_description": "도훈 mandate Session 81 — L-317 architectural pivot 결정. Universe 확장 path. 이전 4th orthogonal source 발굴 3 cycle (저변동성 v2 / C variant / 투자자 매매 동향) 모두 KR equity KOSPI200 ∪ KOSDAQ150 intersection (~350 종목) 안에서 portfolio realized cor 0.71~0.77 본질 한계 입증. 본 cycle은 universe 확장 — KOSPI 본주 + KOSDAQ 전종목 (~2,500-3,000 종목, LIQ_THRESHOLD 2e8 자동 필터링 후 actual ~2,657 cover 4/30 기준). STR_1715 admit large-cap intersection sleeve retain + **본 4th sleeve only universe 확대** (multi-sleeve composition). **가설**: small/mid-cap dispersion + size effect로 portfolio realized cor 일부 완화 가능 + small-cap alpha source 추가 (Fama-French 1993 SMB 정통). **자율 탐색 후보 axes (ex-ante grid N≤5 strict, AX-002)**: (1) Pure SMB (small-cap excess return, Fama-French 1993), (2) Liquidity-adjusted size factor (Amihud 2002), (3) Small-cap momentum (Jegadeesh-Titman 1993 + Hong-Lim-Stein 2000 analyst gap), (4) Small-cap idiosyncratic vol (Ang-Hodrick-Xing-Zhang 2006 small-cap specific), (5) Small-cap value (BM/EP 분위 KR-specific anomaly), (6) Small-cap retail attention (Da-Engelberg-Gao 2011), (7) Small-cap quality (Asness-Frazzini-Pedersen 2018 QMJ small-cap). **L-316/L-317 mandate retain 강화**: alpha 단계부터 portfolio realized cor 6축 (monthly Pearson + Spearman + Kendall + lower-tail TDC + daily cross-corr + diversification ratio) 선제 측정. target < 0.40 vs STR_1715_AR_on_M4_R05_overlay_PG2 admit lineage frozen. **AX 정합**: AX-002 ex-ante grid N≤5 strict + AX-001 v2 conditional defense 4-axis (small-cap이 crisis 시 underperform 가능성 인지) + AX-005 v1.2 EXEMPT (small-cap은 defense single-sleeve fail family 아님) + AX-007 EXEMPT (multi-sleeve composition: STR_1715 large + 본 sleeve small). **Codex Round 5단계 의무** (draft → codex → challenge_note → final). **Process honesty**: WT-D20260513_001/002 + WT-D20260514_001 3 cycle 학습 inherit (PIT-C2 strict + portfolio realized cor 선제 + monotonicity ≥0.70). **Universe 변경 정책**: CLAUDE.md ## Production Constraints Universe row는 현 STR_1715 sleeve 기준 retain. 본 4th sleeve는 별도 universe scope (각 sleeve universe 차별 multi-sleeve composition). admit 후 정책 amend 검토.",
+  "hypothesis_source": "user_defined",
+  "as_of_date": "2026-05-14",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KR_EQUITY_FULL_KOSPI_KOSDAQ_ALL_LIQ_2E8_FILTERED",
+    "liquidity_min_won_20d_avg": 50000000,
+    "max_names_total": 500
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d (재무제표 발표 지연)",
+    "fundamental_annual": "annual May (연간 재무제표 5월 리밸런싱)",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement (QuantiWise)",
+    "macro": "t-1 FRED (외부 매크로 lag)",
+    "ic_history": "Usable_Date <= sig_date (Factor DB 강제)"
+  },
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "current_portfolio": "STR_1631_80_STR_1656_20",
+  "hard_mandate": {
+    "pit_enforcement": "C1-C15 all enforced",
+    "liquidity_floor_won_20d_avg": 50000000,
+    "mandate_restrictions": {
+      "no_short_legal_kr": true,
+      "no_cross_market": true,
+      "kr_domestic_only": true
+    },
+    "long_only_mandate": "configurable"
+  },
+  "hard_constraints": {
+    "max_names": null,
+    "weight_bounds": [
+      0,
+      1
+    ],
+    "sector_active_weight_cap": null,
+    "liquidity_min_won_20d_avg": 50000000
+  },
+  "soft_penalties": [],
+  "capacity_limits": {
+    "adv_multiplier": 0.1,
+    "capacity_max_aum_won": 100000000000
+  }
+}

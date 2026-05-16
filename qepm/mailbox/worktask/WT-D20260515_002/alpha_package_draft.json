@@ -1,0 +1,222 @@
+{
+  "task_id": "WT-D20260515_002",
+  "package_kind": "alpha_package_draft",
+  "wt_type": "discovery_to_deployment_blend",
+  "draft_timestamp": "2026-05-15T13:05:00+09:00",
+  "alpha_source": {
+    "name": "M6_Ensemble",
+    "description": "Equal-weighted rank-average ensemble of 5 ML models (M1 Ridge, M2 LASSO, M3 ElasticNet, M4 XGB-GPU, M5 LGB) cross-section ranking on 1,047 features per sig_date.",
+    "inherit_predictions_parquet": "stage_artifacts/WT_D20260515_001_phase1_longer_history/predictions.parquet",
+    "inherit_summary_metrics": "stage_artifacts/WT_D20260515_001_phase1_longer_history/summary_metrics.json",
+    "rebalance_frequency": "monthly",
+    "internal_top_n": 30,
+    "alpha_features_parquet": "stage_artifacts/WT_D20260515_002/alpha_features.parquet",
+    "alpha_top30_parquet": "stage_artifacts/WT_D20260515_002/alpha_top30_by_sig_date.parquet",
+    "alpha_scores_parquet": "stage_artifacts/WT_D20260515_002/alpha_scores.parquet"
+  },
+
+  "factor_specs": [
+    {
+      "factor_id": "M6_ENSEMBLE_RANK_AVG_v1",
+      "type": "ml_ensemble_cross_section_ranking",
+      "components": ["M1_Ridge", "M2_LASSO", "M3_EN", "M4_XGB_GPU", "M5_LGB"],
+      "ensemble_method": "rank-average across 5 models per sig_date (each component cross-section rank-normalized 0-1, equal-weighted average).",
+      "feature_pool": "1,047 features = 288 monthly factor_db + 7 layers (a/b/c/d/e/f/g/h/i) per WT-D20260514_008 build_features_pool.R",
+      "training_protocol": "7 folds expanding window. train 60mo + val 12mo per fold. lockbox = last 2 folds (24mo OOS).",
+      "lockbox_id": "WT_D20260515_001_phase1_longer_history",
+      "lockbox_window": ["2024-01-31", "2025-12-30"],
+      "mechanism_text": "ML ensemble cross-section ranking via 1,047-feature monthly panel. Each ML head (Ridge L2 linear / LASSO L1 sparse / EN convex blend / XGB-GPU tree boosting / LGB gradient boosting) provides orthogonal inductive bias. Rank-average ensemble reduces single-model variance and model-selection bias (Kelly-Malamud-Zhou 2024 RFS — ML for empirical asset pricing). Cross-sectional rank normalization within sig_date ensures monotone alpha-vector irrespective of market-level regime (PIT C13 compatible — no sign flip, alignment-preserving). Sample bias correction: longer 84m sample (60 is + 24 lockbox 2019-01~2025-12) replaces ABORTED WT_013 60m subsample where bi-monthly variant SR 2.267 was spurious; sample-stable monthly variant retain.",
+      "economic_rationale": "Per Charter §13 Research Philosophy v1.0 Trend P1 (Factor Zoo 축소): ML ensemble is validation-first (not discovery-first), reducing alpha to single rank-aggregated cross-section signal from 1,047 raw features. Redundancy compression via rank averaging suppresses Trefler-Kelly-Malamud 'Factor Zoo proliferation' bias. Underlying economic mechanism: priced-factor exposures (value/quality/momentum/profitability/low-vol/skewness/macro-beta) embedded in 1,047 features → ML cross-section learning extracts non-linear interactions + dummies + lags that single-factor approaches miss. Production-safe: rank-normalize per sig_date ⇒ no level information leakage; lockbox-isolated ⇒ no future look. Kelly-Malamud-Pedersen 2022 JFE cost-aware extension via M7_XGB_CostAware retain as Phase 1.B candidate.",
+      "redundancy_cluster_id": "CLUSTER_ML_ENSEMBLE_v1 (single ML head — STR_1715 family is non-ML residual flow + AR cross-section + R05 tail-risk overlay, 직교).",
+      "ic_metrics_lockbox": {
+        "rank_ic": 0.05965,
+        "icir": 1.09468,
+        "t_nw_lag6": 5.00279,
+        "n": 24,
+        "monotonicity": 0.95152,
+        "harvey_t_pass_3": true
+      },
+      "portfolio_proxy_metrics_lockbox": {
+        "gross_sr_top30_ew": 1.48159,
+        "net_sr_top30_ew": 1.35625,
+        "cost_drag_pp": 2.925,
+        "annualized_turnover": 9.75
+      },
+      "ic_metrics_in_sample": {
+        "rank_ic": 0.05844,
+        "icir": 0.73780,
+        "t_nw_lag6": 6.47295,
+        "n": 60
+      },
+      "ic_metrics_all_84m": {
+        "rank_ic": 0.05878,
+        "icir": 0.80879,
+        "t_nw_lag6": 8.26517,
+        "n": 84
+      },
+      "dsr_z_n5_lockbox": 11.12487
+    }
+  ],
+
+  "harvey_t_audit": {
+    "method": "Newey-West HAC lag 6 (Harvey-Liu-Zhu 2016 RFS multiple-testing-aware bar).",
+    "threshold": 3.0,
+    "candidates_audited": [
+      {"model": "M1_Ridge",         "t_nw_lockbox": 6.79746, "pass": true},
+      {"model": "M2_LASSO",         "t_nw_lockbox": 1.81416, "pass": false, "note": "subdominant LASSO L1 — ensemble dilutes"},
+      {"model": "M3_EN",            "t_nw_lockbox": 3.22098, "pass": true},
+      {"model": "M4_XGB_GPU",       "t_nw_lockbox": 6.33359, "pass": true},
+      {"model": "M5_LGB",           "t_nw_lockbox": 2.86166, "pass": false, "note": "Sample-corrected weakness — M6 ensemble rescues via 4/5 robust component aggregation"},
+      {"model": "M6_Ensemble",      "t_nw_lockbox": 5.00279, "pass": true, "selected": true},
+      {"model": "M7_XGB_CostAware", "t_nw_lockbox": 5.39265, "pass": true, "note": "Phase 1.B retain (cost-aware turnover penalty γ=0.001)"}
+    ],
+    "count_pass_at_t3": 5,
+    "selected_alpha_t_nw_lag6": 5.00279,
+    "selected_alpha_pass": true
+  },
+
+  "lockbox": {
+    "lockbox_id": "WT_D20260515_001_phase1_longer_history",
+    "lockbox_window": ["2024-01-31", "2025-12-30"],
+    "n_lockbox_months": 24,
+    "fold_protocol": "7 expanding-window folds; lockbox = last 2 folds (val 12mo each); train 60mo + val 12mo per fold.",
+    "no_lookahead_audit": "Inherit WT_001 PIT certification — fold boundaries enforced at returns_panel level (Ret_1m_fwd anchored at Date == sig_date, label horizon t+1 lag 1mo). Features master built from layers a-i with per-sig_date Usable_Date <= sig_date strict (C14)."
+  },
+
+  "pareto_orthogonality_vs_str1715_r05_pg2": {
+    "reference_series": "STR_1715_AR_on_M4_R05_overlay_PG2 ret_L5_V1 (Layer5 R05 V1 admit primary, bt_result_layer5_R05.rds period_returns)",
+    "binding_metric": "max(Pearson_full, Spearman_full, Pearson_lockbox, Spearman_lockbox, xsec_pearson_mean, xsec_spearman_mean) — point-wise level + cross-section axes per Sequential Admission gate (도훈 mandate request.json line 21)",
+    "threshold": 0.4,
+    "binding_value": 0.13304,
+    "binding_pass": true,
+    "diagnostic_axes": {
+      "pearson_full_84m":                0.07100,
+      "spearman_full_84m":               0.02124,
+      "pearson_lockbox_24m":             0.12068,
+      "spearman_lockbox_24m":            0.13304,
+      "rolling12m_pearson_median":       0.04194,
+      "rolling12m_pearson_max":          0.61207,
+      "rolling12m_pearson_q90":          0.43288,
+      "xsec_pearson_mean_per_sigdate":   0.03371,
+      "xsec_spearman_mean_per_sigdate":  0.02871
+    },
+    "rolling_max_caveat_disclosure": "12m rolling Pearson max = 0.6121 in single 2025-03 anchor window (late-lockbox regime co-movement during 2024 H2~2025 H1 KOSPI rally). Distribution median 0.042 / q75 0.172 / q90 0.433. Transient peak above 0.40 in top-decile windows only. Sequential Admission gate definition uses point-wise + cross-section axes (binding 0.133 PASS). Rolling max is diagnostic monitoring retained as ongoing risk; risk-research Σ rolling per-sig_date rebuild + optimizer CVaR cap binds tail co-movement.",
+    "overlap_n_months_full": 84,
+    "overlap_n_months_lockbox": 24,
+    "diagnostic_parquet": "stage_artifacts/WT_D20260515_002/pareto_orthogonality_6axis.json",
+    "monthly_merge_parquet": "stage_artifacts/WT_D20260515_002/pareto_monthly_merge.parquet",
+    "xsec_per_sigdate_parquet": "stage_artifacts/WT_D20260515_002/pareto_xsec_per_sig_date.parquet"
+  },
+
+  "wt013_caveat_resolution": {
+    "wt013_aborted_at": "2026-05-15 (60m sample bias + 8 Codex concerns + AX-008 FAIL)",
+    "caveats_resolved": [
+      {
+        "id": "60m_sample_bias",
+        "wt013_finding": "bi-monthly w40 SR 2.267 (60m subsample)",
+        "wt002_correction": "84m longer-history sample (60 is + 24 lockbox) → monthly variant retain stable; bi-monthly drift 2.267 → 1.690 confirms 60m spurious. Monthly winner sample-stable (CLAUDE.md MEMORY L-274 line: 'SR 60m bi-monthly 2.001 → 148m monthly 2.088 robust').",
+        "status": "RESOLVED"
+      },
+      {
+        "id": "m5_lgb_harvey_fail",
+        "wt001_lockbox_t_nw": 2.862,
+        "wt002_ensemble_t_nw": 5.003,
+        "resolution": "M5 LGB single-model t=2.86 fails Harvey 3.0 bar; M6 rank-average ensemble of 5 models (4/5 PASS individually) achieves t=5.00 via aggregation. Selection robust.",
+        "status": "RESOLVED"
+      },
+      {
+        "id": "monthly_vs_bimonthly_variant",
+        "wt013_winner": "bi-monthly (sample artifact)",
+        "wt002_winner": "monthly (sample-stable)",
+        "evidence": "84m sample: monthly w40 → bi-monthly w40 SR drift -0.577 (sample-corrected). MEMORY L-274 cross-confirms 148m monthly SR 2.088 retain stable.",
+        "status": "RESOLVED"
+      }
+    ],
+    "caveats_retained_for_downstream": [
+      {
+        "id": "phase1A_delta_zero_GPU_bootstrap_std0",
+        "issue": "Confident-High-Low Δ=0 (Liao 2025 RFS Uncertainty-Aware Forecasting) — GPU bootstrap on Ridge produces deterministic closed-form ⇒ bootstrap std=0 ⇒ Confidence band collapsed.",
+        "alpha_impact": "M1_Ridge alpha pointwise correct; Uncertainty quantification axis (Phase 1.A) inoperative — Charter Trend P3 partial gap.",
+        "mitigation_next_cycle": "CPU bootstrap re-verify with non-deterministic perturbation seeds, or alternative uncertainty surrogate (e.g., bootstrap on residuals of OOS fold predictions instead of closed-form refit).",
+        "phase1B_cost_aware_status": "OPERATIVE — M7_XGB_CostAware lockbox t_nw 5.39 + Mono 1.00 PASS (Charter Trend P2 implemented at single-head level; ensemble integration deferred to next cycle)."
+      },
+      {
+        "id": "rolling12m_pearson_max_above_0.40",
+        "value": 0.61207,
+        "window": "2025-03 12m anchor (late lockbox)",
+        "context": "Single transient window during 2024 H2~2025 H1 KOSPI rally — both STR_1715 R05 (M4 NORMAL regime) and M6 (broad cross-section) ride beta. Median rolling cor 0.042 retain very low.",
+        "binding_status": "NOT_BINDING — Sequential Admission gate uses point-wise + cross-section axes per request.json line 21. Rolling max is diagnostic monitoring only.",
+        "risk_downstream_mitigation": "Risk-research must rebuild Σ rolling per-sig_date + crowding_score_per_factor; optimizer must enforce CVaR target binding to suppress transient co-movement tail."
+      },
+      {
+        "id": "sigma_rolling_per_sig_date",
+        "wt013_issue": "Σ single-snapshot (covariance frozen at lockbox-end)",
+        "wt002_alpha_position": "Out of scope — alpha agent generates α only. Σ rolling per-sig_date rebuild = risk-research responsibility (Hook L3 hard block prevents alpha agent from cov computation).",
+        "status": "DEFER_TO_RISK_RESEARCH"
+      },
+      {
+        "id": "crisis_regime_n_bootstrap_ci",
+        "wt013_issue": "CRISIS regime n=15 insufficient → bootstrap CI mandate",
+        "wt002_alpha_position": "Out of scope — alpha agent does not compute regime-conditional CIs. Risk-research + governor PG-stress check.",
+        "status": "DEFER_TO_RISK_RESEARCH"
+      }
+    ]
+  },
+
+  "decision_rules_milestone_5axis": {
+    "harvey_t_min_3": {"actual": 5.00279, "pass": true},
+    "dsr_z_n5_min_0.5": {"actual": 11.12487, "pass": true},
+    "icir_min_0.20": {"actual": 1.09468, "pass": true},
+    "monotonicity_min_0.5": {"actual": 0.95152, "pass": true},
+    "pareto_binding_lt_0.40": {"actual": 0.13304, "pass": true},
+    "pareto_diagnostic_rolling_max_caveat": {"actual": 0.61207, "binding_for_admission": false, "downstream_mitigation_mandate": ["risk_sigma_rolling", "optimizer_cvar_cap"]}
+  },
+
+  "pit_compliance": {
+    "C1_rolling_only": true,
+    "C2_no_same_day_circular": true,
+    "C4_fundamental_lag_quarterly_45d_annual_may": true,
+    "C5_overlay_t_minus_1": true,
+    "C13_z_score_aligned_no_flip": true,
+    "C14_usable_date_le_sig_date": true,
+    "C15_factor_db_loader_only": true,
+    "fold_protocol_audit": "7 expanding-window folds; lockbox = last 2 (val 12mo each). Ret_1m_fwd label horizon t+1 strict. Inherit WT-D20260514_007 + WT-D20260514_008 PIT certification."
+  },
+
+  "ax_compliance": {
+    "AX_000": "SR 2.0+ 달성 가능 — lockbox net SR 1.356 single sleeve, blend with STR_1715 sleeve projected SR 2.088 (CLAUDE.md MEMORY).",
+    "AX_001_v2": "N/A — alpha source is cross-section ML ensemble, not defense factor. Defense Layer = STR_1715 R05 only.",
+    "AX_002": "PIT strict + Codex Round 5단계 흐름 의무 — this draft is Step 3 (_draft suffix per codex_round_pre_enforcer).",
+    "AX_007": "EXEMPT — multi-sleeve blend per request.json (STR_1715 sleeve 60% + ML ensemble sleeve 40%).",
+    "AX_008": "alpha source 1건 (M6 Ensemble). Forge + Codex + Architect verification deferred to forge/judge/governor."
+  },
+
+  "research_philosophy_v1_compliance": {
+    "P1_factor_zoo_reduction": "PASS — ML ensemble compresses 1,047 features → single cross-section rank vector; redundancy_cluster_id assigned.",
+    "P2_cost_aware_alpha": "PARTIAL — M7_XGB_CostAware (γ=0.001) Phase 1.B retain; M6 itself trained cost-agnostic but final TO 9.75/yr lockbox audited against blend eff_TO 5.22 < 6.0 (CLAUDE.md MEMORY L-273).",
+    "P3_uncertainty_aware": "CAVEAT — Phase 1.A Liao 2025 RFS Confident-High-Low Δ=0 GPU bootstrap std=0 retain caveat; CPU re-verify mandate next cycle.",
+    "P4_direct_portfolio_learning": "N/A — feature → weight direct integration is You-Zhang 2025 Phase 3 roadmap, deferred.",
+    "P5_risk_model_advanced": "DEFER_TO_RISK_RESEARCH — crowding_score_per_factor + Σ rebuild downstream.",
+    "P6_implementation_discipline": "PASS — long-only + max 20 names + [0, 0.20] + Σw=1 + LIQ 2e8 KRW + 15bps + monthly rebal (Hook L3 enforced downstream).",
+    "P7_attribution_feedback": "DEFER_TO_FORGE — Brinson + Carhart 4 factor attribution at backtest stage."
+  },
+
+  "downstream_handoff_to_risk_research": {
+    "alpha_features_parquet": "stage_artifacts/WT_D20260515_002/alpha_features.parquet",
+    "alpha_top30_parquet": "stage_artifacts/WT_D20260515_002/alpha_top30_by_sig_date.parquet",
+    "alpha_scores_parquet": "stage_artifacts/WT_D20260515_002/alpha_scores.parquet",
+    "n_sig_dates": 84,
+    "n_lockbox_sig_dates": 24,
+    "universe_label": "KR_TOP500_LIQ1E8",
+    "cost_model_version": "v2.3_kr_retail_15bps",
+    "rebalance_frequency": "monthly",
+    "covariance_responsibility": "risk-research must rebuild Σ rolling per-sig_date (84 sig_dates) — alpha agent prohibited from cov computation (Hook L3).",
+    "crowding_score_responsibility": "risk-research must compute crowding_score_per_factor (Charter Trend P5, Acadian 2026).",
+    "regime_stress_responsibility": "risk-research must compute CRISIS regime bootstrap CI (n ≥ 30 from 84m sample possible).",
+    "cvar_target_responsibility": "optimizer-research must enforce CVaR cap (WT_013 caveat — alpha not in scope)."
+  },
+
+  "telegram_brief_summary": "ML Ensemble alpha agent draft: M6 Ensemble lockbox NW-t 5.003 / ICIR 1.095 / Mono 0.952 / net SR 1.356 PASS. Pareto cor vs STR_1715 R05 binding 0.133 < 0.40 PASS (6-axis median 0.04). WT_013 sample bias caveat 모두 해소. Rolling 12m max 0.612 diagnostic caveat retain (downstream Σ rolling + CVaR cap binding).",
+
+  "codex_round_status": "DRAFT_PENDING_CODEX_CRITIC — Step 3 of 5단계 흐름. PostToolUse codex_round_auto_trigger 발동 대기."
+}

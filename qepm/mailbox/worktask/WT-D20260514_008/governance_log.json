@@ -1,0 +1,48 @@
+{
+  "task_id": "WT-D20260514_008",
+  "events": [
+    {
+      "timestamp": "2026-05-14T12:43:22+0900",
+      "agent": "q-lead",
+      "action": "WT_CREATED",
+      "summary": "Work Task 생성: ML Features Pool 보완 구축 — 800~1150 features (Daily Aggregate + Macro 확장 + Interaction/Lag/Rolling + 학술 신규) | source=user_defined"
+    },
+    {
+      "timestamp": "2026-05-14T13:10:00+0900",
+      "agent": "alpha-research",
+      "action": "FEATURE_POOL_BUILT",
+      "summary": "사전 리서치 자원 구축 완료. 1,044 features 산출 (Layer A 284 Factor DB monthly + B 20 WT_007 inherit + C 29 Factor DB daily gap + D 15 daily aggregate + E 60 macro + F 146 interactions + G 200 lags + H 225 rolling + I 65 dummies). Target 800-1150 충족. Quality audit KEEP 946 / VARIANT 65 / DROP_zv 7 / DROP_missing 26. Cluster heads top200 cor<0.99 = 172/200. PIT C2/C11 spot-verified (VIX t-1 lag, factor lag1m semantics 정확).",
+      "artifacts": {
+        "features_master": "stage_artifacts/WT_D20260514_008/features_master.parquet",
+        "feature_registry": "stage_artifacts/WT_D20260514_008/feature_registry.json",
+        "feature_quality_audit": "stage_artifacts/WT_D20260514_008/feature_quality_audit.json",
+        "universe_panel": "stage_artifacts/WT_D20260514_008/universe_panel.parquet",
+        "layer_a_factor_db_monthly": "stage_artifacts/WT_D20260514_008/layer_a_factor_db_monthly.parquet",
+        "layer_b_wt007_inherit": "stage_artifacts/WT_D20260514_008/layer_b_wt007_inherit.parquet",
+        "layer_c_factor_db_daily_gap": "stage_artifacts/WT_D20260514_008/layer_c_factor_db_daily_gap.parquet",
+        "layer_d_daily_aggregate": "stage_artifacts/WT_D20260514_008/layer_d_daily_aggregate.parquet",
+        "layer_e_macro": "stage_artifacts/WT_D20260514_008/layer_e_macro.parquet",
+        "layer_f_interactions": "stage_artifacts/WT_D20260514_008/layer_f_interactions.parquet",
+        "layer_g_lags": "stage_artifacts/WT_D20260514_008/layer_g_lags.parquet",
+        "layer_h_rolling": "stage_artifacts/WT_D20260514_008/layer_h_rolling.parquet",
+        "layer_i_dummies": "stage_artifacts/WT_D20260514_008/layer_i_dummies.parquet",
+        "build_script": "stage_artifacts/WT_D20260514_008/build_features_pool.R"
+      },
+      "panel_shape": {
+        "n_rows": 252482,
+        "n_features": 1044,
+        "n_sig_dates": 123,
+        "sig_date_range": "2016-02-29 ~ 2026-04-30",
+        "n_tickers_unique": 2782,
+        "mean_cover_per_month": 2053
+      },
+      "inherit_path_for_ml_cycle": "stage_artifacts/WT_D20260514_008/features_master.parquet + feature_registry.json + universe_panel.parquet"
+    },
+    {
+      "timestamp": "2026-05-14T13:10:00+0900",
+      "agent": "alpha-research",
+      "action": "PHASE_TRANSITION",
+      "summary": "current_phase SPEC_APPROVED → FEATURE_POOL_READY. alpha_package.json 미작성 (mandate 정합). Codex Round N/A (graduation gate 없음). 본 cycle은 ML 정식 리서치 cycle 직전 features pool 자원 구축 단계."
+    }
+  ]
+}

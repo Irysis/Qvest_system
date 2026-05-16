@@ -928,19 +928,19 @@ tg_agent_brief <- function(agent,
                         heading, paste(too_long, collapse=","), .TG_CONFIG$BULLET_ITEM_MAX))
         }
         # v6.3 SOT — bullet 안 영어 약어 라벨 금지 (예: AX-007, RF-A3, STR_055, C13)
-        # v6.4 (2026-05-08) — 도훈 명시: 논문 영어 원문 인용 OK
-        #   면제: WT 식별자 / agent name / 학술 저자-연도 / 저널 약어
+        # v6.5 (2026-05-15) — 도훈 명시: 통상 영어 표기 약어 OK (LightGBM/Ensemble/Pareto 등)
+        #   면제: WT 식별자 / agent name / 학술 저자-연도 / 저널 약어 / 통상 영어 표기
         abbrev_pattern <- "\\b[A-Z]{2,5}[-_]?[A-Z0-9]{1,5}\\b"
-        # 면제 패턴 (조합):
-        #   1) WT 식별자 (WT-D20260508_011 / WT_009)
-        #   2) agent name (Q-Lead / Alpha / Risk / ...)
-        #   3) 학술 저자-연도 (Bakshi 2003 / Frazzini-Pedersen 2014 / Asness-Frazzini-Pedersen 2019)
-        #   4) 저널 약어 (JF / JFE / RFS / JPM / FAJ / QJE / AER / JBF / RAS / JFQA)
         exempt_pattern <- paste0(
           "WT[-_][DPSH]?[0-9_]{4,15}|WT_[0-9]+",
-          "|Q[-_]Lead|Alpha|Risk|Optimizer|Forge|Judge|Governor|Scout|Execution|Monitoring|Architect",
+          # agent names (도훈 명시 2026-05-15)
+          "|Q[-_]Lead|Alpha|Risk|Optimizer|Forge|Judge|Governor|Scout|Execution|Monitoring|Architect|Codex",
+          # 학술 저자-연도
           "|[A-Z][a-z]{2,}(?:[- ][A-Z][a-z]+)*\\s+(?:19|20)[0-9]{2}",
-          "|\\b(?:JF|JFE|JFQA|RFS|JPM|FAJ|RAS|QJE|AER|JBF|RAJ|JFM|JoF|RFS)\\b"
+          # 저널 약어
+          "|\\b(?:JF|JFE|JFQA|RFS|JPM|FAJ|RAS|QJE|AER|JBF|RAJ|JFM|JoF)\\b",
+          # 통상 영어 표기 quant 용어 (도훈 mandate 2026-05-15)
+          "|\\b(?:LightGBM|XGBoost|Ridge|LASSO|ElasticNet|Ensemble|Pareto|Sharpe|Newey-West|HRP|CVaR|MVO|ERC|TWAP|VWAP|TDC|MDD|IC|ICIR|DSR|TE|VaR|FF3|FF5|CAGR|MRS|ESBR|SUE|ADV|EWMA|GARCH|HMM|EM|PIT|OOS|GPU|CPU|ML|NN|RL|EW|JSON|YAML|CSV|API)\\b"
         )
         bad_idx <- which(vapply(item_chars, function(it) {
           # 1) 면제 패턴 먼저 마스킹
@@ -974,16 +974,18 @@ tg_agent_brief <- function(agent,
         }
         # v6.3 SOT (2026-05-08) — kv key 한글 비율 강제 (영어 약어 라벨 금지)
         # v6.4 (2026-05-08) — 학술 인용 (Asness 2013 / Frazzini-Pedersen 2014) 면제
-        # 한글 (가-힣) + 한자 + 숫자/공백/특수기호 cnt vs ASCII 영문 cnt
+        # v6.5 (2026-05-15) — 도훈 mandate: 통상 영어 quant 용어 / agent name 면제 후 비율 측정
         kv_keys <- names(kv)
         academic_cite_pattern <- "[A-Z][a-z]{2,}(?:[- ][A-Z][a-z]+)*\\s+(?:19|20)[0-9]{2}"
+        common_terms_pattern <- "\\b(?:LightGBM|XGBoost|Ridge|LASSO|ElasticNet|Ensemble|Pareto|Sharpe|Newey-West|HRP|CVaR|MVO|ERC|TWAP|VWAP|TDC|MDD|IC|ICIR|DSR|TE|VaR|FF3|FF5|CAGR|MRS|ESBR|SUE|ADV|EWMA|GARCH|HMM|EM|PIT|OOS|GPU|CPU|ML|NN|RL|EW|JSON|YAML|CSV|API|Q[-_]Lead|Alpha|Risk|Optimizer|Forge|Judge|Governor|Scout|Execution|Monitoring|Architect|Codex)\\b"
         ascii_heavy <- vapply(kv_keys, function(k) {
-          # 학술 인용 패턴 매칭 시 면제
-          if (grepl(academic_cite_pattern, k, perl = TRUE)) return(FALSE)
-          n_total <- nchar(k)
-          n_ascii_alpha <- length(regmatches(k, gregexpr("[A-Za-z]", k))[[1]])
+          # 학술 인용 / 통상 quant 용어 / agent name 매칭 시 마스킹 후 비율 측정
+          masked <- gsub(academic_cite_pattern, "", k, perl = TRUE)
+          masked <- gsub(common_terms_pattern, "", masked, perl = TRUE)
+          n_total <- nchar(masked)
+          n_ascii_alpha <- length(regmatches(masked, gregexpr("[A-Za-z]", masked))[[1]])
           if (n_total == 0) return(FALSE)
-          (n_ascii_alpha / n_total) > 0.4  # 40% 이상 영문 = 위반
+          (n_ascii_alpha / n_total) > 0.4
         }, logical(1))
         if (any(ascii_heavy)) {
           stop(sprintf("[tg_agent_brief] 'kv' section heading='%s' keys %s 영어 비율 > 40%%. v6.3 SOT: 한글 정통 용어 의무 (예: '샤프지수' / '정보계수' / '회전율'). 학술 인용 (Asness 2013 / Frazzini-Pedersen 2014)은 면제.",

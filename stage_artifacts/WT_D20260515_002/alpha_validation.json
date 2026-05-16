@@ -1,0 +1,120 @@
+{
+  "task_id": "WT-D20260515_002",
+  "alpha_source": "M6_Ensemble (5-ML rank-average ensemble)",
+  "inherit_from": "WT-D20260515_001_phase1_longer_history",
+  "sample_metadata": {
+    "is_n_months": 60,
+    "lockbox_n_months": 24,
+    "all_n_months": 84,
+    "is_range": ["2019-01-31", "2023-12-28"],
+    "lockbox_range": ["2024-01-31", "2025-12-30"],
+    "rebalance": "monthly",
+    "universe_label": "KR_TOP500_LIQ1E8",
+    "cost_model": "v2.3_kr_retail_15bps",
+    "features_n": 1047
+  },
+  "lockbox_metrics": {
+    "rank_ic": 0.05965168,
+    "icir": 1.09468304,
+    "t_nw_lag6": 5.00279384,
+    "n": 24,
+    "monotonicity": 0.95151515,
+    "sr_proxy": 3.79209329,
+    "dsr_z_n5": 11.12487403,
+    "gross_port_sr": 1.48158614,
+    "net_port_sr": 1.35625032,
+    "cost_drag_pp": 2.925,
+    "annualized_turnover": 9.75
+  },
+  "is_metrics": {
+    "rank_ic": 0.05843585,
+    "icir": 0.73779518,
+    "t_nw_lag6": 6.47294719,
+    "n": 60,
+    "net_port_sr": 1.08964699
+  },
+  "all_metrics": {
+    "rank_ic": 0.05878323,
+    "icir": 0.80879435,
+    "t_nw_lag6": 8.26516973,
+    "n": 84,
+    "net_port_sr": 1.15982975
+  },
+  "decision_rules": {
+    "harvey_t_min": 3,
+    "harvey_t_actual": 5.00279384,
+    "harvey_t_pass": true,
+    "dsr_min": 0.5,
+    "dsr_actual": 11.12487403,
+    "dsr_pass": true,
+    "icir_min": 0.2,
+    "icir_actual": 1.09468304,
+    "icir_pass": true,
+    "monotonicity_min": 0.5,
+    "monotonicity_actual": 0.95151515,
+    "monotonicity_pass": true,
+    "pareto_max_abs_cor_diagnostic_all_axes": 0.61207399,
+    "pareto_binding_metric_definition": "max(Pearson_full, Spearman_full, Pearson_lockbox, Spearman_lockbox, xsec_pearson_mean, xsec_spearman_mean) per Sequential Admission gate (도훈 mandate). Rolling 12m max retained as diagnostic monitoring only.",
+    "pareto_binding_value": 0.13304348,
+    "pareto_threshold": 0.4,
+    "pareto_pass_binding": true,
+    "pareto_diagnostic_rolling12m_max_caveat_retain": "0.6121 at 2025-03 12m window (late-lockbox regime co-movement). Median 0.042; q90 0.433. Transient max above 0.40 in only top-decile windows; risk-research Σ rolling rebuild + optimizer CVaR cap to bind."
+  },
+  "wt013_caveat_resolution": {
+    "60m_sample_bias": {
+      "pre_correct": "WT_013 60m bi-monthly w40 SR 2.267",
+      "post_correct": "WT_001 84m monthly w40 net_port_sr 1.356; lockbox 24m N=24 (n_total 84m = is 60 + lockbox 24)",
+      "status": "RESOLVED (longer sample retain monthly variant winner; bi-monthly spurious)"
+    },
+    "m5_lgb_harvey_fail": {
+      "m5_lockbox_t_nw": 2.862,
+      "m6_ensemble_t_nw": 5.003,
+      "status": "M5 LGB t=2.86 FAIL but M6 Ensemble t=5.00 PASS — robust ensemble selection"
+    },
+    "confident_high_low_delta_zero": {
+      "status": "CAVEAT_RETAIN",
+      "reason": "GPU bootstrap std=0 (Ridge closed-form deterministic) → Δ=0; CPU bootstrap re-verify next cycle"
+    },
+    "monthly_vs_bimonthly": {
+      "monthly_winner": "M6 Ensemble monthly variant (sample-stable)",
+      "reason": "Longer 84m sample → bi-monthly SR drift 2.267 → 1.690 (sample-bias spurious); monthly stable"
+    }
+  },
+  "pareto_orthogonality": {
+    "axes": {
+      "pearson_full": 0.07099674,
+      "spearman_full": 0.02124127,
+      "pearson_lockbox": 0.12068338,
+      "spearman_lockbox": 0.13304348,
+      "rolling12m_pearson_median": 0.04193594,
+      "rolling12m_pearson_max": 0.61207399,
+      "xsec_pearson_mean": 0.03370993,
+      "xsec_spearman_mean": 0.02870841
+    },
+    "max_abs_cor_diagnostic": 0.61207399,
+    "max_abs_cor_binding": 0.13304348,
+    "binding_axis_definition": "max(Pearson_full, Spearman_full, Pearson_lockbox, Spearman_lockbox, xsec_pearson_mean, xsec_spearman_mean) — point-wise level + cross-section axes per Sequential Admission gate. Rolling 12m max is diagnostic only.",
+    "threshold": 0.4,
+    "pareto_status_binding": "PASS",
+    "pareto_status_diagnostic_rolling_max": "ABOVE_0.40_TRANSIENT_TOP_DECILE_ONLY",
+    "n_full_overlap": 84,
+    "n_lockbox_overlap": 24,
+    "notes": "STR_1715 series = ret_L5_V1 (Layer5 R05 V1 admit primary). Anchor align via realized_ym ↔ ym_signal. Cross-section axis inherits WT_013 alpha_overlap (60m sample, monthly variant retain)."
+  },
+  "pit_compliance": {
+    "C1_rolling_only": true,
+    "C2_no_same_day": true,
+    "C4_fundamental_lag": true,
+    "C5_overlay_t_minus_1": true,
+    "C13_zsa_only": true,
+    "C14_usable_date_le_sigdate": true,
+    "C15_factor_db_loader": true,
+    "folds": "7 expanding-window, val 12mo lockbox isolation",
+    "lockbox_id": "WT_D20260515_001_phase1_longer_history"
+  },
+  "caveat": {
+    "phase1A_delta_zero": "Confident-High-Low Δ=0 GPU bootstrap std=0 — Uncertainty band collapse, CPU re-run next cycle (Liao 2025 RFS)",
+    "is_lockbox_drift": "is t_NW 6.47 vs lockbox t_NW 5.00 retain (no leakage; in-sample tighter fit normal)",
+    "n_84m_vs_148m": "ML predictions n=84 OOS months (60 is + 24 lockbox). 148m label = training span (train 60 + val 12 per fold × 7 folds expanding)."
+  }
+}

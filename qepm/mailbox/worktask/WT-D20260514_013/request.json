@@ -1,0 +1,105 @@
+{
+  "task_id": "WT-D20260514_013",
+  "wt_type": "discovery_to_deployment_blend",
+  "pg1_eligibility": "certificate_required",
+  "discovery_of": null,
+  "parent_inheritance": {
+    "ml_cycle": "WT-D20260514_014",
+    "ml_predictions_path": "stage_artifacts/WT_D20260514_014_phase1_full/predictions.parquet",
+    "ml_features_master": "stage_artifacts/WT_D20260514_008/features_master.parquet (1,044 features)",
+    "pareto_blend_finding": "L-323 #1/#2/#3 (M6 Ensemble bi-monthly w_ML=40% SR 2.267 60m sample)",
+    "philosophy_sot": "02_Infrastructure/docs/qvest_research_philosophy.md v1.0 (7 QEPM Modern Trends)"
+  },
+  "graduation_criteria": {
+    "description": "Sequential Admission FINAL admit. 5 prereq + 5축 동시 안전 margin + 최종 20종목.",
+    "min_sharpe_ratio": 2.0,
+    "min_sharpe_rationale": "Charter v1.7 마일스톤 SR 2.0+.",
+    "max_drawdown_pct": -25.0,
+    "max_drawdown_rationale": "Production Constraints MDD < -25%.",
+    "min_cagr_pct": 16.0,
+    "min_cagr_rationale": "Charter v1.7 마일스톤 CAGR 16%+.",
+    "max_pareto_cor": 0.40,
+    "max_pareto_cor_rationale": "Sequential Admission gate (Charter §10).",
+    "max_turnover_yr": 6.0,
+    "max_turnover_rationale": "Production TO 한도.",
+    "min_harvey_t_stat": 3.0,
+    "min_harvey_t_stat_rationale": "Harvey-Liu-Zhu 2016.",
+    "min_dsr_z_n5": 0.5,
+    "min_dsr_z_n5_rationale": "Bailey-Lopez de Prado 2014.",
+    "ax_008_min_sources": 2,
+    "ax_008_min_sources_rationale": "AX-008 Forge+Codex+Architect 최소 2/3."
+  },
+  "theme": "ml_ensemble_blend_sequential_admission_first_sr_2_0_milestone",
+  "hypothesis_title": "M6 Ensemble + STR_1715 PG2 blend — First Qvest SR 2.0+ milestone (final top-20 dedupe-merge)",
+  "hypothesis_description": "도훈 mandate 2026-05-15 — L-323 supplement #3 Pareto-orthogonal blend. **최종 portfolio = 20종목** (Production Constraint hard cap). **구조**: ML side internal top-30 pre-selection (Kelly Virtue 2024) + STR_1715 PG2 top-20 → dedupe-merge → 최종 top-20 by combined weight (60% STR_1715 + 40% M6 Ensemble 비중 합). **본질 통찰**: high-dim ML (1,044 features) × multi-factor regime overlay (STR_1715 AR+M4+R05) = negative correlation -0.203 diversifier. 60m subsample: SR 2.267 / MDD -14.63% / eff_TO 3.27. **잔존 caveat**: 60m bias, Phase 1.A Liao 2025 FAIL, Phase 1.B M7 marginal. **Codex Round 5단계 mandate** 6 agent 전체. **AX-008** Forge+Codex+Architect 최소 2/3 PASS. **PIT C1~C15 strict**: ML walk-forward lockbox 격리, alpha lockbox seal post-judge.",
+  "hypothesis_source": "user_defined",
+  "as_of_date": "2026-05-15",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KR_TOP500_LIQ1E8",
+    "liquidity_min_won_20d_avg": 200000000,
+    "max_names_total": 20
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d",
+    "fundamental_annual": "annual May",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement",
+    "macro": "t-1 FRED + ECOS",
+    "ic_history": "Usable_Date <= sig_date"
+  },
+  "hard_constraints": {
+    "long_only": true,
+    "max_names": 20,
+    "weight_bounds": [0, 0.20],
+    "sum_weights": 1.0
+  },
+  "blend_spec": {
+    "_doc": "Final 20 names = dedupe-merge of 2 sleeves by combined weight",
+    "sleeve_str_1715": {
+      "alpha_source": "STR_1715_AR_on_M4_R05_PG2 (existing PG2)",
+      "weight": 0.60,
+      "internal_top_n": 20,
+      "internal_rebalance": "monthly",
+      "regime_overlay": "M4 NORMAL × β_AR=0.7 × β_R05 dynamic"
+    },
+    "sleeve_ml_ensemble": {
+      "alpha_source": "M6 Ensemble (5 ML rank-avg, 1,044 features)",
+      "ml_predictions": "stage_artifacts/WT_D20260514_014_phase1_full/predictions.parquet",
+      "weight": 0.40,
+      "internal_top_n": 30,
+      "internal_rebalance": "bi-monthly",
+      "rationale": "Kelly Virtue 2024 + bi-monthly TO control"
+    },
+    "merge_rule": "weighted combined score → dedupe → final top-20 by combined rank"
+  },
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "agent_lineage": {
+    "alpha_research": "WT-D20260514_014 Phase 1 v2 inherit + Codex Round 5단계",
+    "risk_research": "독립 spawn — Σ + crowding_score_per_factor (Phase 2.C) + Codex Round",
+    "optimizer_research": "독립 spawn — blend weight 0.60/0.40 + final top-20 dedupe + Codex Round",
+    "forge": "독립 spawn — 60m + 255m subsample comparison + Codex Round",
+    "judge": "독립 spawn — Gate 0~5 + AX-008",
+    "governor": "독립 spawn — PG2 admit + book_state v2.4 mutation"
+  },
+  "ax_compliance": {
+    "AX_000": "SR 2.0+ 달성 가능",
+    "AX_001_v2": "Defense 조건부 평가 STR_1715 R05 layer만",
+    "AX_002": "PIT strict + Codex Round + harness 외 무효",
+    "AX_007": "EXEMPT — multi-sleeve blend (not single_sleeve_top20)",
+    "AX_008": "Forge+Codex+Architect 최소 2/3 PASS"
+  },
+  "deliverables": {
+    "alpha_package": "M6 Ensemble alpha_features + Codex Round",
+    "risk_package": "Σ + crowding + stress + Codex Round",
+    "optimization_package": "final 20-name weights + Codex Round",
+    "forge_package": "bt_result 10-component + 60m/255m comparison + Codex Round",
+    "judgment": "Gate 0~5 + AX-008 + lockbox seal",
+    "governance": "PG2 admit + book_state v2.4"
+  },
+  "telegram_brief_required": true,
+  "codex_round_required": true,
+  "timestamp": "2026-05-15T08:30:00+09:00"
+}

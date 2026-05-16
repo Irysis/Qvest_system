@@ -103,6 +103,69 @@ Rscript --no-save -e '
 # 07:10 갱신 → 07:30 송신 20분 buffer 로 차트 최신화 보장.
 echo "[4/5] Regime briefing — skipped (mrs_daily_briefing.sh 07:30 SOT)"
 
+# 4.5. Self-healing refit — daily_refresh fail 대비 (도훈 mandate 2026-05-15)
+# 캐시 stale 감지 시 자동 refit으로 사용자 개입 없이 정상화
+# 구조: daily_refresh.sh 03:00 primary → morning_briefing.sh 07:10 self-heal layer
+echo "[4.5/5] Self-healing refit (stale detection + auto-refit)..."
+cd "$BASE"
+Rscript --no-save -e '
+  setwd("'"$BASE"'")
+  source("02_Infrastructure/config.R")
+  suppressPackageStartupMessages({library(data.table); library(arrow)})
+  today <- Sys.Date()
+
+  is_stale <- function(path, col, max_lag) {
+    if (!file.exists(path)) return(TRUE)
+    dt <- tryCatch(as.data.table(read_parquet(path)), error = function(e) NULL)
+    if (is.null(dt) || !col %in% names(dt)) return(TRUE)
+    last_d <- max(as.Date(dt[[col]]), na.rm = TRUE)
+    as.integer(today - last_d) > max_lag
+  }
+
+  # MSM (hybrid + daily 양쪽 stale 시 msm_update.R 단일 호출로 동시 갱신)
+  msm_daily_stale <- is_stale(".cache/msm_daily_latest.parquet", "Date", 1L)
+  msm_hybrid_stale <- is_stale(".cache/msm_hybrid_latest.parquet", "Date", 1L)
+  unified_stale <- is_stale(".cache/unified_regime_signal.parquet", "Date", 1L)
+  msm_refit_succeeded <- FALSE
+  if (msm_daily_stale || msm_hybrid_stale) {
+    cat(sprintf("  MSM STALE (daily=%s, hybrid=%s) → auto-refit via msm_update.R\n",
+                msm_daily_stale, msm_hybrid_stale))
+    tryCatch({
+      source("02_Infrastructure/backtest_harness.R")
+      source("04_Research/regime_comparison/msm_update.R")
+      cat("  MSM REFIT PASS (hybrid + daily 양쪽 갱신)\n")
+      msm_refit_succeeded <- TRUE
+    }, error = function(e) {
+      cat(sprintf("  MSM msm_update.R FAIL: %s — fallback msm_daily_refit\n", e$message))
+      tryCatch({
+        source("02_Infrastructure/regime/msm_daily_refit.R")
+        compute_hmm_daily_signal()
+        cat("  MSM fallback REFIT PASS (daily only)\n")
+        msm_refit_succeeded <<- TRUE
+      }, error = function(e2) {
+        cat(sprintf("  MSM fallback FAIL: %s\n", e2$message))
+      })
+    })
+  } else {
+    cat("  MSM FRESH (daily + hybrid 모두, auto-refit skipped)\n")
+  }
+
+  # build_regime_signal_table — MSM refit 후 또는 unified stale 시 monthly + daily 양쪽 재build
+  # (tg_regime_briefing 차트 = unified_regime_signal (monthly) + _daily 양쪽 읽음)
+  unified_daily_stale <- is_stale(".cache/unified_regime_signal_daily.parquet", "Date", 1L)
+  if (msm_refit_succeeded || unified_stale || unified_daily_stale) {
+    cat("  → build_regime_signal_table() 재실행 (monthly + daily 양쪽)\n")
+    tryCatch({
+      source("02_Infrastructure/regime/regime_signal.R")
+      build_regime_signal_table()
+      build_regime_signal_table(daily = TRUE)
+      cat("  unified_regime_signal REBUILD PASS (monthly + daily)\n")
+    }, error = function(e) {
+      cat(sprintf("  unified_regime_signal REBUILD FAIL: %s\n", e$message))
+    })
+  }
+'
+
 # 5. Freshness audit — 모든 source 최신 거래일 검증 + stale 시 Telegram alert
 # 2026-05-13 도훈 mandate: 구조적 자동 검증 (silent fail 방지)
 echo "[5/5] Freshness audit..."

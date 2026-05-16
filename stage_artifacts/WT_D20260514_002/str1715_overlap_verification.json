@@ -1,0 +1,14 @@
+{
+  "str1715_h1_factor_codes": ["C01_SUE", "C02_EPS_Chg_1m", "C04_ESBR", "C06_TP_Gap", "Q07_Earnings_Stability", "M08_Residual_Mom", "Q25_Ohlson_O"],
+  "this_sleeve_5_candidate_specs": ["F1_Pure_SMB_Size (Size family)", "F2_Amihud_Illiq_Premium (Liquidity family)", "F3_Small_12_1_Momentum (Momentum family)", "F4_Small_LowVol_Defense (Volatility family)", "F5_Small_LiquidityConstraint_Composite (Size×Liquidity composite)"],
+  "shared_factor_codes_direct": [],
+  "factor_family_overlap_count_direct": 0,
+  "factor_family_overlap_partial_assessment": {
+    "F3_Small_12_1_Momentum_uses_Momentum_family": "STR_1715 M08_Residual_Mom uses Momentum residual family — but our F3 is RAW 12-1 mom on small-cap sleeve, residual approach differs (sleeve scope + no FF residualization).",
+    "Otherwise zero overlap": "Size / Liquidity / Volatility families not present in STR_1715 H1."
+  },
+  "verdict_orthogonal_at_factor_level": true,
+  "orthogonality_test_method": "factor code direct comparison + family classification",
+  "sleeve_scope_distinction": "STR_1715 intersection top 350 (KOSPI200 ∪ KOSDAQ150) vs THIS small/mid-cap (excluded top 350)",
+  "even_M08_F3_overlap_assessment": "M08_Residual_Mom uses FF3-residualized momentum on LARGE-CAP intersection universe; F3_Small_12_1_Momentum uses RAW 12-1 momentum on SMALL/MID-CAP excluded sleeve. Different universe + different residual treatment = effectively orthogonal."
+}

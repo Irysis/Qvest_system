@@ -1,0 +1,27 @@
+{
+  "sig_date": "2025-12-30",
+  "Sigma_BDB_factor_model": {
+    "method": "B Ω B' + diag(D) where B = [Sector dummies (one-hot) | Market beta | Vol12m_z], Ω = cov(factor returns), D = idiosyncratic var",
+    "n_tickers": 30,
+    "cond": 600.3016,
+    "psd": true,
+    "min_eig": 0.0013,
+    "pc1_contrib": 0.6084,
+    "n_factors": 18
+  },
+  "Sigma_direct_LW": {
+    "method": "Direct return covariance + Ledoit-Wolf constcor shrinkage + iterative bump (Step 2 primary)",
+    "n_tickers": 29,
+    "cond": 51.8972,
+    "psd": true,
+    "pc1_contrib": 0.2866
+  },
+  "comparison": {
+    "relative_frobenius_distance": 3.1254,
+    "diag_correlation": 0.9103,
+    "off_diag_correlation": 0.7678,
+    "n_common_tickers": 29
+  },
+  "primary_recommendation": "Direct LW Σ (covariance_rolling.parquet) is the PRIMARY optimizer-consumed matrix — cond ≤ 100 PASS 100% rolling. Assembled BΩB'+D (this comparison) is the AUDITABLE decomposition supporting risk attribution + crowding diagnostics. Optimizer should consume direct LW Σ. Forge attribution (Brinson + Carhart 4) will use B exposure decomposition.",
+  "why_dual_layer": "Codex C1 highlights that BΩB'+D is named in textbook but direct LW is consumed. Industry practice (Barra/Axioma) sometimes consumes hybrid — BΩB'+D for factor risk attribution, but direct shrinkage for portfolio optimization when sample size permits. At 84m × 30 names, direct LW is more reliable (Ω cond 6,307 from sector EW vs assembled Σ cond 51 — factor model amplifies sector co-movement, direct LW absorbs more residual)."
+}

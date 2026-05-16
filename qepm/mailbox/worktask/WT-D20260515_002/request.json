@@ -1,0 +1,109 @@
+{
+  "task_id": "WT-D20260515_002",
+  "wt_type": "discovery_to_deployment_blend",
+  "pg1_eligibility": "certificate_required",
+  "discovery_of": "WT-D20260514_013_ABORTED (60m sample bias 해소 후 재시도)",
+  "parent_inheritance": {
+    "ml_cycle": "WT-D20260515_001 (Longer history 148m, 7 folds)",
+    "ml_predictions_path": "stage_artifacts/WT_D20260515_001_phase1_longer_history/predictions.parquet",
+    "ml_features_master": "stage_artifacts/WT_D20260514_008/features_master.parquet (1,047 features × 195 sig_dates, 2010-02~2026-04 expanded)",
+    "ml_returns_panel": "stage_artifacts/WT_D20260514_007/returns_monthly_panel.parquet (2010~2026 expanded)",
+    "philosophy_sot": "02_Infrastructure/docs/qvest_research_philosophy.md v1.0",
+    "predecessor_aborted_wt": "WT-D20260514_013 (ABORTED 2026-05-15 — 60m subsample bias + Codex critique 8 concerns)",
+    "sample_bias_correction": "WT_013 60m sample SR 2.267 (bi-monthly w40) → longer 148m SR 1.690 (sample-corrected). Best monthly w40 SR 2.088 retain ⭐"
+  },
+  "graduation_criteria": {
+    "description": "Sequential Admission FINAL admit. 5 prereq + 5축 동시 안전 margin. WT_013 ABORT 사유 모두 해소 mandate.",
+    "min_sharpe_ratio": 2.0,
+    "min_sharpe_rationale": "Charter v1.7 마일스톤 SR 2.0+. WT_013 sample bias 해소 후 148m sample-corrected SR 2.088 retain.",
+    "max_drawdown_pct": -25.0,
+    "min_cagr_pct": 16.0,
+    "max_pareto_cor": 0.40,
+    "max_turnover_yr": 6.0,
+    "min_harvey_t_stat": 3.0,
+    "min_dsr_z_n5": 0.5,
+    "ax_008_min_sources": 2,
+    "wt013_caveat_resolution_mandate": [
+      "60m sample bias: 148m longer history sample 사용 (해소)",
+      "Sigma single-snapshot: 148 sig_dates 정합 rolling per-sig_date covariance rebuild",
+      "CRISIS regime n=15: 148m sample에서 CRISIS n ≥ 30 가능, bootstrap CI mandate",
+      "CVaR breach: optimizer 단계 CVaR target 정합 mandate",
+      "Phase 1.A Liao 2025 RFS Δ=0 GPU bootstrap caveat: Confident-High-Low FAIL 명시 retain",
+      "ML side TO 9.75/yr → blend eff_TO 5.22 < 6.0 정합",
+      "Codex Round 5단계 흐름 6 agent 전체 의무"
+    ]
+  },
+  "theme": "ml_ensemble_blend_sequential_admission_first_sr_2_0_milestone_corrected",
+  "hypothesis_title": "M6 Ensemble + STR_1715 PG2 blend — Sample-corrected first SR 2.0+ milestone (148m longer history)",
+  "hypothesis_description": "도훈 mandate 2026-05-15 — WT-D20260514_013 ABORT 후 60m sample bias 근본 해소. Longer history ML cycle (sig_dates 2014-01~2026-04 148개월, train 60mo + val 12mo + 7 folds, GPU bootstrap 178× speedup) 결과 검증: bi-monthly variant 우월성은 60m 부분표본 특수성 (sample-corrected SR 2.267 → 1.690), monthly variant retain (SR 2.088). **마일스톤 5축 동시 안전 margin** (148m longer sample, net 15bps): SR 2.088 / CAGR 40.33% / MDD -18.24% / Pareto cor -0.171 / eff_TO 5.22. **WT_013 caveat 모두 해소**: 60m → 148m sample bias 해소 + Sigma rolling per-sig_date rebuild mandate + CRISIS regime n=30+ bootstrap CI 가능 + CVaR cap 정합 + Phase 1.B M7 cost-aware monthly variant retain. **잔존 caveat (lifecycle 동안 명시)**: Phase 1.A Confident-High-Low GPU bootstrap std=0 (Ridge closed-form deterministic) → Δ=0 FAIL retain (CPU bootstrap 검증 필요). **Codex Round 5단계 흐름 mandate** 6 agent 전체. **AX-008**: Forge + Codex + Architect 최소 2/3 PASS.",
+  "hypothesis_source": "user_defined",
+  "as_of_date": "2026-05-15",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KR_TOP500_LIQ1E8",
+    "liquidity_min_won_20d_avg": 200000000,
+    "max_names_total": 20
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d",
+    "fundamental_annual": "annual May",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement",
+    "macro": "t-1 FRED + ECOS",
+    "ic_history": "Usable_Date <= sig_date"
+  },
+  "hard_constraints": {
+    "long_only": true,
+    "max_names": 20,
+    "weight_bounds": [0, 0.20],
+    "sum_weights": 1.0
+  },
+  "blend_spec": {
+    "_doc": "Final 20 names = dedupe-merge of 2 sleeves by combined weight",
+    "sleeve_str_1715": {
+      "alpha_source": "STR_1715_AR_on_M4_R05_PG2 (existing PG2)",
+      "weight": 0.60,
+      "internal_top_n": 20,
+      "internal_rebalance": "monthly",
+      "regime_overlay": "M4 NORMAL × β_AR=0.7 × β_R05 dynamic"
+    },
+    "sleeve_ml_ensemble": {
+      "alpha_source": "M6 Ensemble (5 ML rank-avg, 1,047 features × 148m longer history)",
+      "ml_predictions": "stage_artifacts/WT_D20260515_001_phase1_longer_history/predictions.parquet",
+      "weight": 0.40,
+      "internal_top_n": 30,
+      "internal_rebalance": "monthly",
+      "rationale": "Kelly Virtue 2024 + monthly variant longer history에서 우월"
+    },
+    "merge_rule": "weighted combined score → dedupe → final top-20 by combined rank"
+  },
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "agent_lineage": {
+    "alpha_research": "WT-D20260515_001 longer history inherit + Codex Round 5단계",
+    "risk_research": "독립 spawn — Σ rolling per-sig_date 의무 + crowding_score_per_factor + Codex Round",
+    "optimizer_research": "독립 spawn — top-20 dedupe + CVaR target 정합 + Codex Round",
+    "forge": "독립 spawn — 148m PerfA + 60m sub-sample comparison + Codex Round",
+    "judge": "독립 spawn — Gate 0~5 + AX-008 + lockbox audit",
+    "governor": "독립 spawn — PG2 admit + book_state v2.4 mutation"
+  },
+  "ax_compliance": {
+    "AX_000": "SR 2.0+ 달성 가능",
+    "AX_001_v2": "Defense 조건부 평가 STR_1715 R05 layer만",
+    "AX_002": "PIT strict + Codex Round + harness 외 무효",
+    "AX_007": "EXEMPT — multi-sleeve blend",
+    "AX_008": "Forge+Codex+Architect 최소 2/3 PASS"
+  },
+  "deliverables": {
+    "alpha_package": "M6 Ensemble alpha_features (longer history) + Codex Round",
+    "risk_package": "Σ rolling per-sig_date + crowding + stress + CVaR target + Codex Round",
+    "optimization_package": "final 20-name weights + Codex Round",
+    "forge_package": "bt_result 10-component + 148m PerfA + 60m subsample sanity check + Codex Round",
+    "judgment": "Gate 0~5 + AX-008 + lockbox seal",
+    "governance": "PG2 admit + book_state v2.4"
+  },
+  "telegram_brief_required": true,
+  "codex_round_required": true,
+  "timestamp": "2026-05-15T11:55:00+09:00"
+}

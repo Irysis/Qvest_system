@@ -103,14 +103,17 @@ Rscript --no-save -e '
     error = function(e) cat(sprintf("Arrow skipped: %s\n", e$message)))
 '
 
-# FRED (regime compute 비활성화 — v7.1 사용 중)
+# FRED — fetch + compute regime (도훈 mandate 2026-05-15)
+# fred_fetch_all → fred_macro.parquet (raw 시리즈)
+# fred_compute_regime → macro_regime.parquet (Macro_Risk_Score 월별 — monthly path 핵심)
+# 이전에 compute 누락으로 macro_regime.parquet 2개월 stale 발생 → 둘 다 호출
 cd "$INFRA"
 if [ -f "data/data_collector_fred.R" ]; then
   Rscript --no-save -e '
     source("config.R")
     source("data/data_collector_fred.R")
-    tryCatch(fred_fetch_all(),
-      error = function(e) cat(sprintf("FRED skipped: %s\n", e$message)))
+    tryCatch(fred_run_pipeline(),
+      error = function(e) cat(sprintf("FRED pipeline skipped: %s\n", e$message)))
   '
 fi
 
@@ -128,30 +131,90 @@ Rscript --no-save -e '
   tryCatch(source("04_Regime_Engine/KTRI_v3_reinforced.R"),
     error = function(e) cat(sprintf("KTRI v3.1 skipped: %s\n", e$message)))
 '
+# MSM Daily + Hybrid Refit (도훈 mandate 2026-05-15)
+# Primary: 04_Research/regime_comparison/msm_update.R (Production-aligned, hybrid + daily 양쪽 write)
+# Fallback: 02_Infrastructure/regime/msm_daily_refit.R (lightweight, daily only)
+# 순서 critical: MSM 먼저 → build_regime_signal_table() 그 후 (unified_regime_signal stale 방지)
+cd "$BASE"
+Rscript --no-save -e '
+  setwd("'"$BASE"'")
+  tryCatch({
+    source("02_Infrastructure/config.R")
+    source("02_Infrastructure/backtest_harness.R")
+    source("04_Research/regime_comparison/msm_update.R")
+    cat("[daily_refresh] MSM update.R PASS — hybrid + daily 양쪽 갱신\n")
+  }, error = function(e) {
+    cat(sprintf("[daily_refresh] msm_update.R FAIL: %s — fallback to msm_daily_refit\n", e$message))
+    tryCatch({
+      source("02_Infrastructure/regime/msm_daily_refit.R")
+      compute_hmm_daily_signal()
+      cat("[daily_refresh] msm_daily_refit fallback PASS\n")
+    }, error = function(e2) cat(sprintf("[daily_refresh] MSM fallback FAIL: %s\n", e2$message)))
+  })
+'
+
+# build_regime_signal_table — MSM 갱신 후 호출 (monthly + daily 양쪽 rebuild)
+# 차트 (tg_regime_briefing)가 unified_regime_signal + _daily 양쪽 읽으므로 둘 다 재build
 cd "$INFRA"
 Rscript --no-save -e '
   source("config.R")
   source("regime/regime_signal.R")
-  tryCatch(build_regime_signal_table(),
-    error = function(e) cat(sprintf("Regime signal skipped: %s\n", e$message)))
+  tryCatch(build_regime_signal_table(),               # monthly
+    error = function(e) cat(sprintf("Regime signal (monthly) skipped: %s\n", e$message)))
+  tryCatch(build_regime_signal_table(daily = TRUE),   # daily
+    error = function(e) cat(sprintf("Regime signal (daily) skipped: %s\n", e$message)))
+'
+
+# ─── ECOS KRW/USD (도훈 audit 2026-05-15 — daily_refresh 호출 누락 fix) ──────
+cd "$INFRA"
+Rscript --no-save -e '
+  source("config.R")
+  source("data/data_collector_ecos.R")
+  tryCatch(ecos_fetch_krw(),
+    error = function(e) cat(sprintf("ECOS KRW skipped: %s\n", e$message)))
+'
+
+# ─── Cache Freshness Audit (도훈 mandate 2026-05-15 영구 보호망 L3) ─────────
+# Registry 기반 stale + orphan 양방향 감지, Telegram alert
+cd "$BASE"
+Rscript --no-save -e '
+  setwd("'"$BASE"'")
+  source("02_Infrastructure/data/cache_freshness_audit.R")
+  tryCatch(cache_freshness_audit(telegram_alert = TRUE),
+    error = function(e) cat(sprintf("Cache freshness audit skipped: %s\n", e$message)))
 '
 
 # ──────────────────────────────────────────────────────────────────────────────
-# [5] DART 재무제표 (매월 1일만)
+# [5] DART 재무제표 + Quarterly + Insider
+#     (a) Annual 재무제표: 매월 1일만 (45일 lag 분기 발표 후)
+#     (b) Quarterly 재무제표: 매일 (resume=TRUE incremental, 공시되는대로 즉시 반영)
+#     (c) Insider 거래: 매일 (merge wrapper로 history 보존)
 # ──────────────────────────────────────────────────────────────────────────────
 DAY_OF_MONTH=$(date +%d)
+
+# (a) Annual financials — monthly (1st only)
 if [ "$DAY_OF_MONTH" = "01" ]; then
-  echo "[5/7] DART Fundamentals (monthly)..."
+  echo "[5a/7] DART Annual Financials (monthly)..."
   cd "$INFRA"
   Rscript --no-save -e '
     source("config.R")
     source("data/data_collector_dart.R")
     tryCatch(dart_run_pipeline(years = as.integer(format(Sys.Date(), "%Y"))),
-      error = function(e) cat(sprintf("DART skipped: %s\n", e$message)))
+      error = function(e) cat(sprintf("DART Annual skipped: %s\n", e$message)))
   '
 else
-  echo "[5/7] DART skipped (monthly: 1st only, today=$(date +%d))"
+  echo "[5a/7] DART Annual skipped (monthly 1st only, today=$DAY_OF_MONTH)"
 fi
+
+# (b) + (c) Quarterly + Insider — daily incremental (도훈 mandate 2026-05-15)
+echo "[5b/7] DART Quarterly + Insider Daily Incremental..."
+cd "$INFRA"
+Rscript --no-save -e '
+  source("config.R")
+  source("data/dart_daily_incremental.R")
+  tryCatch(dart_daily_incremental(),
+    error = function(e) cat(sprintf("DART daily incremental skipped: %s\n", e$message)))
+'
 
 # ──────────────────────────────────────────────────────────────────────────────
 # [6] Factor DB 갱신 (월말 또는 데이터 변경 시)

@@ -1,0 +1,222 @@
+{
+  "task_id": "WT-D20260514_013",
+  "role": "risk-research",
+  "status": "draft",
+  "schema_version": "v6.1",
+  "agent": "risk",
+  "model": "claude-opus-4-7",
+  "as_of_date": "2026-05-15",
+  "sig_date_risk": "2026-01-30",
+  "created_at": "2026-05-15T09:09:33+0900",
+  "seed": 20260515,
+  "pilot_label": "WT-D20260514_013 Sequential Admission RISK — Σ for M6 Ensemble × STR_1715 blend",
+  "selection_objective": "condition_number",
+  "selection_objective_note": "condition_number per R4 P3 HARD — estimation quality only, no SR/IR in selection",
+  "exposure_matrix_ref": "stage_artifacts/WT_D20260514_013/exposure_matrix.parquet",
+  "factor_covariance_ref": "stage_artifacts/WT_D20260514_013/factor_covariance.parquet",
+  "specific_risk_ref": "stage_artifacts/WT_D20260514_013/specific_risk.parquet",
+  "security_covariance_ref": "stage_artifacts/WT_D20260514_013/covariance.parquet",
+  "tail_risk_ref": "stage_artifacts/WT_D20260514_013/tail_risk.json",
+  "regime_correlation_ref": "stage_artifacts/WT_D20260514_013/regime_correlation.parquet",
+  "covariance_method_selected": "sample",
+  "covariance_structure": {
+    "formula": "Sigma = B*Omega*B' + D",
+    "n_factors_pca": 6,
+    "factor_names": ["PC1", "PC2", "PC3", "PC4", "PC5", "PC6"],
+    "factor_var_share_pct": [41.53, 17.14, 14.99, 9.99, 8.55, 7.8],
+    "n_tickers_cov": 414,
+    "T_obs": 59,
+    "q_ratio": 0.1425,
+    "train_window": {
+      "start": "2021-01-30",
+      "end": "2026-01-30",
+      "months": 60
+    },
+    "cov_method_rationale": "q_ratio=0.14 (T/N). N=414. PCA K=6 (MP-significant=6, K@60%=13, cap 10). Estimator selected=sample (objective=condition_number from PSD-OK set)."
+  },
+  "estimator_log": [
+    {
+      "name": "sample",
+      "condition_number": 5.3272,
+      "min_eigenvalue": 0.3793,
+      "psd_ok": true,
+      "shrinkage_used": false,
+      "shrinkage_intensity": 0,
+      "selected": true
+    },
+    {
+      "name": "ledoit_wolf_constcor",
+      "condition_number": 5.3272,
+      "min_eigenvalue": 0.3793,
+      "psd_ok": true,
+      "shrinkage_used": true,
+      "shrinkage_intensity": 0.0957,
+      "selected": false
+    },
+    {
+      "name": "gerber",
+      "condition_number": 69.5614,
+      "min_eigenvalue": 0.0344,
+      "psd_ok": true,
+      "shrinkage_used": false,
+      "shrinkage_intensity": 0,
+      "selected": false
+    }
+  ],
+  "method_shopping_count": 3,
+  "factor_coverage_pct": 43.11,
+  "diagnostics": {
+    "condition_number_factor_cov": 5.3272,
+    "condition_number_sigma": 397.7064,
+    "min_eigenvalue_sigma": 0.0051,
+    "psd_floor_applied": true,
+    "psd_floor_value": 1e-08,
+    "psd_ok_sigma": true,
+    "shrinkage_used": false,
+    "shrinkage_method_factor_cov": "sample_no_shrink+specific_var_grand_mean_shrink_rho_0.3",
+    "shrinkage_intensity_factor_cov": 0.0957,
+    "shrinkage_intensity_specific_var": 0.3,
+    "shrinkage_iterations": 0,
+    "factor_correlation_warnings": [],
+    "tdc_summary": [],
+    "regime_correlation_ref": "stage_artifacts/WT_D20260514_013/regime_correlation.parquet",
+    "ir_estimate_monthly_unconstrained": 1.9131,
+    "ir_estimate_annualized_unconstrained": 6.6271,
+    "ir_estimate_eval_criteria_threshold": 0.5,
+    "ir_estimate_pass": true,
+    "ir_above_3_warning": true,
+    "ir_methodology": "Unconstrained Treynor-Black sqrt(α' Σ⁻¹ α). α scaled to monthly return units via empirical Q5 top-quintile monthly spread (1.10%/m = alpha_score_sd × 0.011 mapping). Production has 20-name cap + [0,0.20] bounds + long-only + Σw=1 → implementable IR will be lower. Optimizer agent reports constrained IR."
+  },
+  "risk_summary": {
+    "n_tickers_cov": 414,
+    "n_obs_T": 59,
+    "q_ratio": 0.1425,
+    "top_common_risks": ["PC1 (41.5% of systematic var)", "PC2 (17.1% of systematic var)", "PC3 (15.0% of systematic var)", "PC4 (10.0% of systematic var)", "PC5 (8.5% of systematic var)"],
+    "sector_concentration_top30": "반도체 = 6/30 (20.0%)",
+    "crowding_flags": [],
+    "crowding_score_per_factor": [
+      {
+        "factor_name": "ML_M6_Ensemble",
+        "crowding_score": 0.4679,
+        "hhi_top": 0.7256,
+        "vol_concentration": 0.0009,
+        "passive_overlap_proxy": 1,
+        "demand_elasticity_proxy": 0,
+        "n_universe": 3665,
+        "n_top": 20,
+        "alert": "OK"
+      },
+      {
+        "factor_name": "STR_1715_AR_M4_R05",
+        "crowding_score": 0.3326,
+        "hhi_top": 0.274,
+        "vol_concentration": 0.0016,
+        "passive_overlap_proxy": 1,
+        "demand_elasticity_proxy": 0,
+        "n_universe": 3665,
+        "n_top": 20,
+        "alert": "OK"
+      }
+    ],
+    "crowding_methodology_reference": "Acadian 2026 — 4-component composite (HHI cap-weighted top20 + Vol concentration + Passive overlap + Demand elasticity proxy)",
+    "liquidity_flags": "Capacity pressure: 2/30 ops30 tickers ADV20*0.5% < 2.5e7 KRW",
+    "stress_tests": {
+      "market_down_5": -0.069,
+      "value_crash": 0.1292,
+      "momentum_reversal": -0.0811,
+      "gfc_2008": -0.1371,
+      "eu_debt_2011": -0.1369,
+      "covid_2020": -0.1357,
+      "rate_2022": -0.2225
+    }
+  },
+  "regime_correlation": {
+    "normal": {
+      "n_months": 44,
+      "avg_factor_offdiag_cor": 0.0168
+    },
+    "crisis": {
+      "n_months": 15,
+      "avg_factor_offdiag_cor": -0.1062
+    },
+    "methodology": "Bottom-quartile BM_Ret = CRISIS regime split. PC1..K factor avg off-diagonal correlation reported per regime."
+  },
+  "hedge_overlay_note": "Risk agent does NOT emit weights. Optimizer-research handles overlay/blend. Risk Σ + crowding diagnostics inform optimizer downstream.",
+  "parent_inheritance": {
+    "alpha_package": "qepm/mailbox/worktask/WT-D20260514_013/alpha_package.json",
+    "alpha_operative_parquet": "stage_artifacts/WT_D20260514_013/alpha_lockbox_pit_clean_mandate.parquet",
+    "alpha_ic_lockbox": 0.0409,
+    "alpha_icir_lockbox": 0.4275,
+    "str_1715_pareto_cor_from_alpha": 0.0293
+  },
+  "pit_compliance": {
+    "sig_date_strict": true,
+    "raw_data_filter": "Date <= sig_date_risk (2026-01-30)",
+    "adv20_t_minus_1": true,
+    "no_future_returns_in_cov": true,
+    "factor_db_path_via_load_month_factors": "deferred — risk module uses PCA on raw returns; no factor_db direct read",
+    "Z_Score_Aligned": "N/A_risk_agent (alpha agent's responsibility)",
+    "C1_C15_overall": "PASS"
+  },
+  "ax_compliance": {
+    "AX_000_no_limits": "Σ + crowding diagnostics produced",
+    "AX_001_v2_defense_conditional": "N/A_RISK_AGENT — STR_1715 R05 layer handles defense",
+    "AX_002_PIT_strict": "PASS — all data <= sig_date 2026-01-30",
+    "AX_007_multi_sleeve_exempt": "EXEMPT — risk agent does not produce weights",
+    "AX_008_triangulation": "PARTIAL — Alpha + Risk done; Codex + Architect pending"
+  },
+  "selection_objective_audit": {
+    "objective": "condition_number",
+    "enum_valid": true,
+    "no_return_based_selection": true,
+    "no_sr_ir_in_selection": true,
+    "note": "Estimator chosen by condition_number among PSD-OK candidates. No alpha/return metric consulted in selection."
+  },
+  "challenge_flags": [],
+  "red_flag_check": {
+    "RF_R1_top_common_risk_over_40": {
+      "threshold": 0.4,
+      "observed": 0.4153,
+      "pass": false
+    },
+    "RF_R2_condition_over_500": {
+      "threshold": 500,
+      "observed": 397.71,
+      "pass": true
+    },
+    "RF_R3_crowding_present": {
+      "observed": false,
+      "pass": true
+    },
+    "RF_R4_market_down_5_breach": {
+      "threshold": -0.08,
+      "observed": -0.069,
+      "pass": true
+    },
+    "RF_R5_factor_corr_high_pairs": {
+      "threshold": 0.8,
+      "observed_high_pairs": 0,
+      "pass": true
+    }
+  },
+  "output_contract": {
+    "schema_version": "risk_package_v1_1",
+    "exposure_matrix_present": true,
+    "factor_covariance_present": true,
+    "specific_risk_present": true,
+    "security_covariance_present": true,
+    "risk_summary_present": true,
+    "crowding_score_per_factor_present": true,
+    "selection_objective_enum": "condition_number",
+    "challenge_flags_count": 0
+  },
+  "codex_round_required": true,
+  "codex_round_completed": false,
+  "codex_round_artifacts": {
+    "step_3_draft_path": "qepm/mailbox/worktask/WT-D20260514_013/risk_package_draft.json",
+    "step_4_codex_response_path": "qepm/mailbox/worktask/WT-D20260514_013/codex_critic_response_risk.json",
+    "step_5_challenge_note_path": "qepm/mailbox/worktask/WT-D20260514_013/challenge_note_risk.md"
+  },
+  "next_step": "Q-Lead awaits Codex Critic Round on risk_package_draft.json; thereafter optimizer-research agent spawn.",
+  "timestamp": "2026-05-15T09:09:33+0900"
+}

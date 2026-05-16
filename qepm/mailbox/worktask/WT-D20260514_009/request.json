@@ -1,0 +1,68 @@
+{
+  "task_id": "WT-D20260514_009",
+  "wt_type": "discovery",
+  "pg1_eligibility": "certificate_required",
+  "discovery_of": "WT-D20260514_008 features pool 1044 산출 완료 — 본 cycle은 정식 ML graduation cycle",
+  "graduation_criteria": {
+    "description": "Discovery → Deployment 전환 조건. Discovery WT 완료 시 자동 검증. discovery_graduation_gate.sh 강제.",
+    "min_rank_ic": 0.04,
+    "min_rank_ic_rationale": "KR top-universe benchmark. <0.04는 통계적 유의성 부족.",
+    "min_icir": 0.2,
+    "min_icir_rationale": "Alpha Lab Gate. <0.20은 IC 안정성 부족.",
+    "min_subperiod_stability": 0.5,
+    "min_subperiod_stability_rationale": "3개 subperiod (2008-14 / 2015-19 / 2020-26) 안정성 >=0.5",
+    "max_drawdown_days": 100,
+    "max_drawdown_days_rationale": "100일 이상 drawdown 지속 시 alpha decay 의심",
+    "min_harvey_t_stat": 3,
+    "min_harvey_t_stat_rationale": "Harvey-Liu-Zhu 다중검정 보정 t>3.0",
+    "min_deflated_sharpe_ratio": 0.5,
+    "min_deflated_sharpe_ratio_rationale": "Bailey-Lopez de Prado DSR — multi-testing 보정 SR"
+  },
+  "theme": "ml_alpha_graduation_cycle_features_pool_1044_kelly_virtue_overshoot",
+  "hypothesis_title": "ML Alpha Cycle — Features Pool 1044 Inherit (Kelly Virtue 2024 + Gu-Kelly-Xiu 2020 정통 정식 ML 리서치)",
+  "hypothesis_description": "도훈 mandate Session 81 — features pool 1,044개 활용 ML 정식 리서치 cycle. Kelly-Malamud-Zhou 2024 JoF 200+ mandate × 5.22 overshoot. Gu-Kelly-Xiu 2020 RFS 102 baseline × 10.2 overshoot. **Features Pool Inherit**: `stage_artifacts/WT_D20260514_008/features_master.parquet` (1,044 features × 252,482 rows × 123 sig_dates 2016-02~2026-04). **Layer breakdown inherit**: A Factor DB monthly 284 + B WT_007 20 + C Factor DB Daily 29 + D Daily-aggregate 15 + E Macro 60 + F Interactions 146 + G Lag 200 + H Rolling 225 + I Dummies 65. **Quality screening inherit**: KEEP 946 primary + VARIANT_check_pit 65 (보조) + DROP 33 (zero variance + high missing). **도훈 confirmed (가) Daily-source features**: Layer C 29 + Layer D 15 = 44 daily-derived features 정합 (Andersen 2003 / Amihud 2002 정통 monthly snapshot). Raw daily panel X. **ML Model 자율 탐색 (ex-ante grid N≤5 strict, AX-002 + V6 N=37 post-hoc DSR FAIL 학습 inherit)**: (1) **Ridge / LASSO / ElasticNet** (Kelly Virtue 2024 정통 regularization, glmnet, high-dim 1044 정합), (2) **XGBoost** (high-dim tree boosting, xgboost pkg), (3) **Random Forest** (ranger 고속 implementation), (4) **PCA + Ridge hybrid** (autoencoder 대용, torch CPU only로 deep autoencoder 제한, PCA 1044 → 100 dim → Ridge), (5) **Ensemble blend** (3 above weighted, rank-average 또는 stacking). **Target**: monthly forward returns (1m primary, 3m optional). **Universe**: KOSPI 본주 + KOSDAQ 전종목 + LIQ 2e8 filter (WT-D20260514_003 universe expansion + WT-D20260514_008 inherit). **L-316/L-317/L-318/L-319/L-320 학습 inherit**: - L-316: alpha-vector cor ≠ portfolio realized cor — Pareto 6축 alpha 단계 선제 측정 의무 (vs STR_1715_AR_on_M4_R05_overlay_PG2 admit lineage frozen), - L-317/L-318: family-specific universe effect — 본 ML은 multi-family composite로 alpha-level 직교 + portfolio level 직교 둘 다 추구, - L-319: 12 features baseline rank_IC 0.0288 FAIL → 1,044 features high-dim regularization 필수 (Ridge/LASSO/ElasticNet은 정합, XGBoost regularization), - L-320: Sequential Admission HOLD — Optimizer 단계 portfolio integration cor 0.7175 본질 한계. 본 cycle alpha 단계 cor < 0.30 strict 의무. **Graduation Gates (HARD MANDATE)**: (1) rank_IC ≥ 0.04 (Alpha Lab Gate), (2) ICIR ≥ 0.20, (3) Harvey 5-spec ≥ 3/5 (NW t lag6), (4) DSR Bailey-LdP ≥ 0.5 strict (V6 N=37 post-hoc 회피, ex-ante grid N≤5), (5) Monotonicity ≥ 0.70 (decile Q1-Q10), (6) Pareto 6축 portfolio realized cor < 0.40 vs STR_1715 admit, (7) Sub-period stability ≥ 0.5, (8) AX-001 v2 4-axis ≥ 3/4 PASS. **PIT C1~C15 strict (ML 핵심)**: - C1 rolling/expanding window training only (full-sample 금지, sleep-walk lookahead 회피), - C2 t-1 lag (features_master inherit, 본 cycle 추가 처리 X), - C13 Z_Score_Aligned only, - C14 Usable_Date ≤ sig_date, - Walk-forward hyperparameter tuning (no peek-ahead), - OOS lockbox 명시 (마지막 12-24 sig_dates 또는 별도 holdout). **STR_1715 H1 alpha 중복 검증**: features pool 1,044 안 STR_1715 H1 component (C01/C02/C04/C06/Q07/M08/Q25) 7 factors는 minority (~0.67%). ML output portfolio cor < 0.40 mandate strict. **Codex Round 5단계 흐름 의무** (alpha_package.json final 작성 시). **AX 정합**: AX-002 ex-ante + ML PIT strict + AX-001 v2 4-axis + AX-005/007 EXEMPT (multi-axis composite + multi-sleeve) + AX-008 Codex Round 의무.",
+  "hypothesis_source": "user_defined",
+  "as_of_date": "2026-05-14",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KR_EQUITY_FULL_KOSPI_KOSDAQ_ALL_LIQ_2E8_FILTERED",
+    "liquidity_min_won_20d_avg": 50000000,
+    "max_names_total": 500
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d (재무제표 발표 지연)",
+    "fundamental_annual": "annual May (연간 재무제표 5월 리밸런싱)",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement (QuantiWise)",
+    "macro": "t-1 FRED (외부 매크로 lag)",
+    "ic_history": "Usable_Date <= sig_date (Factor DB 강제)"
+  },
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "current_portfolio": "STR_1631_80_STR_1656_20",
+  "hard_mandate": {
+    "pit_enforcement": "C1-C15 all enforced",
+    "liquidity_floor_won_20d_avg": 50000000,
+    "mandate_restrictions": {
+      "no_short_legal_kr": true,
+      "no_cross_market": true,
+      "kr_domestic_only": true
+    },
+    "long_only_mandate": "configurable"
+  },
+  "hard_constraints": {
+    "max_names": null,
+    "weight_bounds": [
+      0,
+      1
+    ],
+    "sector_active_weight_cap": null,
+    "liquidity_min_won_20d_avg": 50000000
+  },
+  "soft_penalties": [],
+  "capacity_limits": {
+    "adv_multiplier": 0.1,
+    "capacity_max_aum_won": 100000000000
+  }
+}

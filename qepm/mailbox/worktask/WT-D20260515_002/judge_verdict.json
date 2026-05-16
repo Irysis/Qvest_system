@@ -1,0 +1,303 @@
+{
+  "task_id": "WT-D20260515_002",
+  "package_kind": "judge_verdict",
+  "package_status": "FINALIZED_POST_CODEX_REVISE_WITH_DOWNGRADES",
+  "wt_type": "discovery_to_deployment_blend",
+  "judge_role_card": "Charter v1.7 §10 Role Card 4×5 — judge own: Gate 0~5 + AX-008 verification + lockbox audit + seal. NOT designing alpha. NOT producing weights. NOT modifying Σ.",
+  "finalize_timestamp": "2026-05-15T18:40:00+09:00",
+  "draft_predecessor": "qepm/mailbox/worktask/WT-D20260515_002/judge_verdict_draft.json",
+  "codex_critic_response": "qepm/mailbox/worktask/WT-D20260515_002/codex_critic_response_judge.json",
+  "challenge_note": "qepm/mailbox/worktask/WT-D20260515_002/challenge_note_judge.md",
+  "codex_round_status": "FINALIZED_POST_CODEX_REVISE_WITH_DOWNGRADES — 6 concerns disposition (ACCEPT_FIX 4 + ACCEPT_FIX_CAVEAT 1 + ACCEPT_PARTIAL 1 + REBUTTAL 0). Q-Lead escalate triggered (HIGH=3 judge-stage + cumulative across 5 stages = 22 HIGH per draft summary + 3 judge = effective unique stage-specific HIGH count). veto_flag=false.",
+  "agent_lineage": "WT-D20260515_002 judge independent spawn (post-forge-finalize 2026-05-15 17:55). Reviewed 4 upstream packages + 4 challenge notes + 4 Codex critic responses + own Codex critic round.",
+
+  "verdict": "REJECT",
+  "verdict_class": "REJECT_BLEND_RETAIN_STATUS_QUO_PG2_WITH_DOWNGRADES",
+  "verdict_robustness": "ROBUST DIRECTION + DOWNGRADED COMPLETENESS — verdict direction (REJECT) invariant across (a) Forge fresh REJECT, (b) Optimizer infeasibility concurring REJECT, (c) Codex critic 9-concern REJECT direction-concur (forge stage), (d) Codex critic 6-concern REVISE-direction-concur (judge stage), (e) sample-bias premise invalidation, (f) DSR same-N apples-to-apples Z=-0.29 vs +3.43, (g) 3-convention turnover all >6/yr cap, (h) regime decomposition 73/84 months STR_1715-dominated, (i) AX-001 v2 conditional defense FAIL, (j) Pareto dominance on 4 of 6 graduation dimensions simultaneously. Verification completeness DOWNGRADED post-Codex per C1 (Gate 0 PARTIAL), C2 (AX-008 N/A_FOR_REJECT), C3 (Role Honesty residual-risk preserved).",
+
+  "rationale_text": "WT-D20260515_002 60/40 blend (M6 Ensemble sleeve B 40% + STR_1715 PG2 sleeve A 60%) FAILS 5 of 8 graduation criteria on the 84m sample-corrected window (2019-02 ~ 2026-01): SR 0.5579 < 2.0 target (gap -1.44), CAGR 9.54% < 16% target (gap -6.46pp), MDD -27.21% > -25% cap (gap -2.21pp), Turnover 13.07/yr > 6.0/yr cap (gap +7.07/yr), CVaR95 monthly -11.21% breach. The premise that launched this WT (WT-D20260514_013 60m sample bias correction → expect SR 2.088 monthly variant retained at 148m) is INVALIDATED by Forge's production-inheritance subsample audit: STR_1715 ret_L5_V2 on identical 84m window yields SR 2.0054 ≈ canon 256m SR 1.9536 (drift -2.65% — within Charter v1.4 §9 measurement coherence band). The 84m window is NOT biased against STR_1715-class strategies; it is biased against the proposed BLEND ARCHITECTURE (cash drag from STR_1715 R05 27% avg cash + ML sleeve 9.75/yr signal-level TO + allocation-proportional dedupe-merge overhead ~7/yr from M6 churn). DSR Bailey-LdP same-N apples-to-apples at N=12: blend z_DSR -0.29 (FAIL below penalty threshold) vs STR_1715 z_DSR +3.43 (STRONG PASS). Regime decomposition: STR_1715 dominates blend in BULL (+4.67 SR) and NORMAL (+1.54 SR) = 73/84 months (87%); blend's marginal CAUTION advantage (+3.13 SR vs STR_1715 negative) cannot recover the BULL/NORMAL structural gap. AX-001 v2 defense conditional evaluation: blend MDD -27.2% > STR_1715 MDD -14.4%, Sortino 0.91 < 5.07; blend adds zero incremental defense to STR_1715 R05 layer. Recommend Q-Lead REJECT WT and retain STR_1715_AR_on_M4_R05_overlay_PG2 100% book_state v2.3 (L-307/L-313). Verification gaps explicitly preserved per Codex REVISE: Gate 0 C10 PARTIAL (ADV/universe execution-agent-deferred), AX-008 N/A_FOR_REJECT (admit-gate not invoked), 5-spec regression for blend deferred (KR FF/Carhart panel absent in WT scope), Architect NOT spawned (mandatory for next-cycle admit WT).",
+
+  "gate_results": {
+    "gate_0_pit_c1_c15": {
+      "status": "PARTIAL_PASS",
+      "codex_c1_disposition": "ACCEPT_FIX_DOWNGRADE",
+      "sub_results": {
+        "C1_rolling_only": "PASS — risk Σ rolling 60m × 84 sig_dates t-1 strict",
+        "C2_no_same_day_circular": "PASS — alpha sig_date close → sig_date+1 open execution",
+        "C5_overlay_t_minus_1": "PASS_INHERIT — STR_1715 combined_overlay_V2 production-inherited",
+        "C9_VT_DD_lag": "PASS_INHERIT — STR_1715 R05 production-validated L-307",
+        "C10_universe_ADV": "PARTIAL_INSUFFICIENT_EVIDENCE — final holdings flagged `PIT_LISTING_OK_ADV_DEFERRED_EXECUTION_AGENT`. Hook L3 boundary justifies deferral but does not constitute PASS evidence. Mandatory verification by execution agent before any admit (next-cycle WT mandate)",
+        "C13_z_score_aligned": "PASS — M6 ensemble rank-average preserves monotone alignment",
+        "C14_usable_date_le_sig_date": "PASS — WT-D20260514_007 build_kr_features.R PIT-clean",
+        "C15_load_month_factors": "PASS — Layer A 288 features via factor_db registered loader"
+      },
+      "downgrade_rationale": "Codex C1 HIGH: final holdings still carry `PIT_LISTING_OK_ADV_DEFERRED_EXECUTION_AGENT` flag, not full ADV ≥ 2e8 + KOSPI200/KOSDAQ150 membership proof. Path naming clarified — actual artifacts at `stage_artifacts/WT_D20260515_002/`, not `qepm/stage_artifacts/WT_WT-D20260515_002/`. Gate 0 PASS for REJECT verdict purposes; PARTIAL for any future admit path."
+    },
+    "gate_1_selection_test_isolation": {
+      "status": "PASS",
+      "evidence": [
+        "lockbox window 2024-01-31 ~ 2025-12-30 (24 OOS months) sealed from training",
+        "Pure Function R12 boundary attestation: all 4 input MD5 hashes UNCHANGED at judge time",
+        "lockbox_access_count_non_judge = 0"
+      ],
+      "md5_verification_judge_time": {
+        "alpha_package_md5": "05d0e76899b82d1b5f1c81074732eefb",
+        "alpha_md5_match_forge_consume": true,
+        "risk_package_md5": "b538f4a42bb68b1c97a28e9434fb35d7",
+        "risk_md5_match_forge_consume": true,
+        "optimization_package_md5": "253d748a5ae5070291cc11fd7d746b3c",
+        "optimization_md5_match_forge_consume": true,
+        "weights_csv_md5": "c37c00a609d782ab12ba1ebb44b9e5d6",
+        "weights_csv_md5_match_forge_consume": true
+      }
+    },
+    "gate_2_net_alpha_gt_cost": {
+      "status": "FAIL",
+      "fail_severity": "CRITICAL_PARETO_DOMINATED",
+      "evidence": [
+        "blend net SR 0.5579 vs STR_1715-only same-84m SR 2.0054 → ΔSR = -1.4475",
+        "alpha gain by adding M6 sleeve to STR_1715 is structurally NEGATIVE on the 84m window",
+        "M6-only EW top-30 84m SR 0.94 < STR_1715-only 84m SR 2.00",
+        "cost drag 0.127 SR points (gross 0.6849 - net 0.5579)"
+      ],
+      "diagnosis": "Net alpha test FAIL by -1.45 SR margin. Convention-robust across 3 turnover conventions + N=1 to N=31 DSR penalties."
+    },
+    "gate_3_crowding": {
+      "status": "PASS",
+      "evidence": [
+        "M6 crowding 0.142 LOW + STR_1715 crowding 0.148 LOW",
+        "Acadian 2026 threshold 0.30 — both well below"
+      ],
+      "note": "Necessary-not-sufficient hygiene (AX-005 v1.2 EXCLUSION pattern). Does not rescue dominance test failure."
+    },
+    "gate_4_concentration": {
+      "status": "PASS",
+      "evidence": [
+        "non-cash max weight 0.0850 < 0.20 cap",
+        "long-only ✓, Σw = 1.0 including CASH_KRW within machine precision",
+        "AX-007 EXEMPT proven: multi-sleeve A 60% / B 40% with 0/84 sig_date overlap"
+      ]
+    },
+    "gate_5_drift_tolerance": {
+      "status": "FAIL",
+      "fail_severity": "STRUCTURAL_INSTABILITY_VS_BASELINE",
+      "evidence": [
+        "84m subsample blend SR 0.5579 vs in-sample 60m SR 2.267 (sample-dependent, large drift)",
+        "STR_1715 canon 256m SR 1.9536 → 84m subsample SR 2.0054 (drift -2.65% NEGLIGIBLE within Charter §9 band)",
+        "oos_is_ratio for blend: 0.5579 / 2.267 = 0.246 << 0.7 threshold FAIL",
+        "oos_is_ratio for STR_1715 84m: 2.0054 / 1.9536 = 1.026 PASS"
+      ],
+      "diagnosis": "Blend drift FAIL while STR_1715 retains stability — blend architectural failure, not regime-period artifact."
+    }
+  },
+
+  "multi_objective_8_indicator_audit": {
+    "method": "Charter §13 + v6.1 8-axis simultaneous evaluation + 5 graduation hard caps",
+    "results": {
+      "sharpe_ratio_target_2_0": {"actual_strategy_blend": 0.5579, "target": 2.0, "gap": -1.4421, "pass": false, "label": "STRATEGY_LEVEL_BINDING"},
+      "cagr_target_16pct": {"actual_strategy_pct": 9.54, "target_pct": 16.0, "gap_pp": -6.46, "pass": false, "label": "STRATEGY_LEVEL_BINDING"},
+      "mdd_target_neg_25pct": {"actual_strategy_pct": -27.21, "target_pct": -25.0, "gap_pp": -2.21, "pass": false, "label": "STRATEGY_LEVEL_BINDING"},
+      "sortino_strategy_level": {"actual": 0.9111, "str1715_baseline": 5.0700, "delta": -4.16, "pass": false, "label": "STRATEGY_LEVEL_BINDING"},
+      "calmar_strategy_level": {"actual": 0.3506, "str1715_baseline": 2.5690, "delta": -2.218, "pass": false, "label": "STRATEGY_LEVEL_BINDING"},
+      "information_ratio_vs_kospi200": {"actual": "DEFERRED_GATE_0_C10_NOT_BLOCKING_REJECT", "str1715_baseline": 1.0505},
+      "harvey_t_alpha_level": {"actual_alpha": 5.0028, "target": 3.0, "pass_alpha_level": true, "strategy_level_meaning": "NOT_GRADUATION_INDICATOR_FOR_BLEND_ADMISSION", "label": "ALPHA_LEVEL_NOT_STRATEGY_GRADUATION_per_codex_c4"},
+      "dsr_z_alpha_level_n5": {"actual_alpha_n5": 11.1249, "target": 0.5, "pass_alpha_level": true, "strategy_level_meaning": "BLEND_z_DSR_n12_strategy_level=-0.29 FAIL — alpha-level DSR does NOT translate to strategy-level admission", "label": "ALPHA_LEVEL_NOT_STRATEGY_GRADUATION_per_codex_c4"},
+      "dsr_z_strategy_level_n12_apples_to_apples": {
+        "blend_z_dsr_n12": -0.2923,
+        "str1715_z_dsr_n12_same_penalty": 3.4343,
+        "delta_z": -3.7266,
+        "binding_metric_for_admission": true,
+        "label": "STRATEGY_LEVEL_BINDING_FAIL"
+      },
+      "turnover_target_6_0_yr": {"actual_security_round_trip": 13.07, "actual_one_way": 7.33, "actual_cash_inclusive": 14.65, "target_yr": 6.0, "pass": false, "all_3_conventions_fail": true, "label": "STRATEGY_LEVEL_BINDING"},
+      "cvar95_monthly": {"actual": -0.1121, "target_cap": -0.10, "pass": false, "label": "STRATEGY_LEVEL_BINDING"}
+    },
+    "graduation_summary": {
+      "strategy_level_binding_pass": 0,
+      "strategy_level_binding_fail": 6,
+      "alpha_level_pass_not_counted_for_blend_admission": 2,
+      "structural_compliance_pass": 1,
+      "fail_indicators": ["sharpe_strategy", "cagr_strategy", "mdd_strategy", "sortino_calmar_strategy", "turnover_3_conventions", "cvar95_monthly", "dsr_strategy_n12"],
+      "method_shopping_dsr_penalty": "candidates_tried × 0.05 DSR penalty: alpha 5 + optimizer 6 + forge 1 = 12 total. Penalty applied uniformly to blend (N=12) and STR_1715 baseline (N=12 apples-to-apples)."
+    }
+  },
+
+  "ax_008_verification_triangulation_corrected_per_codex_c2": {
+    "policy_ref": "AX-008 — Forge + Codex + Architect 3-source minimum 2-source PASS — admit-gate, NOT reject-gate (Charter v1.7 §10 + L-307 precedent)",
+    "formal_status_for_this_verdict": "N/A_FOR_REJECT_GATE",
+    "formal_own_pass_count": 1,
+    "formal_quorum_threshold": 2,
+    "formal_quorum_met": false,
+    "ax_008_pass_required_for_verdict": false,
+    "rationale_for_n_a": "REJECT verdict does not require AX-008 ≥2/3 PASS quorum. Axiom is admit-gate per Charter §10. Forge fresh = 1 own-PASS. Codex critic direction-concur ≠ own-PASS (Codex's own attestation). Architect NOT spawned. Quorum formally MISSED but verdict direction = REJECT, so quorum miss does not block decision.",
+    "source_breakdown": {
+      "forge_fresh_v2": {
+        "stance": "REJECT_v2_POST_CODEX",
+        "own_pass_count_as": 1,
+        "note": "9-concern disposition ACCEPT_FIX 4 + ACCEPT_PARTIAL 2 + ACCEPT_DOC 1 + DEFER_DOWNSTREAM 1 + ACCEPT_DOWNGRADE 1"
+      },
+      "codex_critic_forge_round": {
+        "stance": "REJECT_DIRECTION_CONCUR",
+        "own_pass_count_as": 0,
+        "note": "Codex statement: 'I agree with the broad reject direction for the blend, but not with Forge's claim that the package is AX-002/AX-008 complete'"
+      },
+      "codex_critic_judge_round": {
+        "stance": "REVISE_DIRECTION_CONCUR",
+        "own_pass_count_as": 0,
+        "note": "Codex agree_with_claude=false on completeness; REJECT direction concur; 3 HIGH + 3 MEDIUM concerns flagged ACCEPT_FIX"
+      },
+      "architect": {
+        "stance": "NOT_SPAWNED",
+        "own_pass_count_as": 0,
+        "note": "MANDATORY for any next-cycle admit WT (Path A/B/C/D). OPTIONAL for this REJECT verdict per Charter §10."
+      },
+      "optimizer_concurring_reject": {
+        "stance": "FINALIZED_POST_CODEX_REJECT_WITH_REVISIONS",
+        "own_pass_count_as": "N/A_NOT_FORMAL_TRIANGULATION_SLOT",
+        "note": "Concurring stage-source — corroborating but not in formal AX-008 (Forge|Codex|Architect) triple"
+      }
+    },
+    "direction_concur_unanimity": "4 sources (Forge + Optimizer + 2 Codex rounds) all direction-concur REJECT — strongest possible verdict direction support short of formal quorum.",
+    "next_cycle_mandate_if_path_a_b_c_d_pursued": "Architect spawn MANDATORY for AX-008 ≥2/3 admit-gate quorum + ADV ≥ 2e8 + KOSPI200/KOSDAQ150 membership verification + full 5-spec regression for both candidate and baseline."
+  },
+
+  "role_honesty_audit_charter_8_with_residual_risks_per_codex_c3": {
+    "policy_ref": "Charter §8 No Silent Override — every concern explicitly disposed, no defensive rationalization, residual risks preserved transparently",
+    "alpha_challenge_note": {"concerns_total": 8, "accept": 1, "partial": 7, "rebuttal": 0, "silent_override": false, "high_severity": 5, "q_lead_escalate": true},
+    "risk_challenge_note": {"concerns_total": 8, "accept_fix": 4, "partial": 3, "rebuttal_partial": 1, "silent_override": false, "high_severity": 5, "q_lead_escalate": true},
+    "optimizer_challenge_note": {"concerns_total": 7, "accept_fix": 3, "accept_downgrade": 1, "partial": 2, "rebuttal": 1, "silent_override": false, "high_severity": 6, "q_lead_escalate": true},
+    "forge_challenge_note": {"concerns_total": 9, "accept_fix": 4, "accept_partial": 2, "accept_doc": 1, "defer_downstream": 1, "accept_downgrade": 1, "rebuttal": 0, "silent_override": false, "high_severity": 6, "q_lead_escalate": true},
+    "judge_challenge_note": {"concerns_total": 6, "accept_fix": 4, "accept_fix_caveat": 1, "accept_partial": 1, "rebuttal": 0, "silent_override": false, "high_severity": 3, "q_lead_escalate": true},
+    "cumulative_codex_concerns_across_5_stages": 38,
+    "cumulative_high_severity": 25,
+    "residual_risks_preserved_per_codex_c3": [
+      {
+        "risk_id": "RR1_5_SPEC_REGRESSION_BLEND_DEFERRED",
+        "severity": "MEDIUM",
+        "description": "Blend-level CAPM/Carhart-3/Carhart-4/FF5/FF6 regression DEFERRED — KR FF/Carhart factor panel absent in WT scope. STR_1715 baseline 5/5 inherits from production. Risk for REJECT verdict: LOW (verdict carried by SR/CAGR/MDD/TO/DSR dominance). Risk for future admit path: MEDIUM (mandatory completion per Charter)."
+      },
+      {
+        "risk_id": "RR2_ADV_UNIVERSE_VERIFICATION_DEFERRED",
+        "severity": "LOW_FOR_REJECT_MEDIUM_FOR_NEXT_CYCLE",
+        "description": "ADV ≥ 2e8 + KOSPI200/KOSDAQ150 membership for final 20 names DEFERRED to execution agent (Hook L3 boundary). Optimizer weights.csv carries `PIT_LISTING_OK_ADV_DEFERRED_EXECUTION_AGENT` flag. Risk for REJECT: LOW (strategy rejected before deployment). Mandatory for next-cycle admit WT."
+      },
+      {
+        "risk_id": "RR3_SR_PROVENANCE_CERT_ISSUED_FALSE",
+        "severity": "INFORMATIONAL",
+        "description": "sr_provenance_certificate.json `issued=false` post Forge v2 regeneration not invoked. Cert state lag, not blocker for REJECT verdict. Future admit WT requires cert regeneration after Forge final."
+      },
+      {
+        "risk_id": "RR4_ARCHITECT_3RD_SOURCE_NOT_SPAWNED",
+        "severity": "LOW_FOR_REJECT_HIGH_FOR_NEXT_CYCLE",
+        "description": "Architect 3rd-source verification NOT invoked. AX-008 admit-gate quorum (≥2/3) formally NOT MET. OPTIONAL for this REJECT verdict; MANDATORY for any next-cycle Path A/B/C/D admit WT."
+      },
+      {
+        "risk_id": "RR5_LOCKBOX_MARKER_BY_ATTESTATION",
+        "severity": "INFORMATIONAL",
+        "description": "Forge v2 attestation claims 2024-01-23 lockbox marker regenerated; Codex C6 flagged generate_oos_charts.R original 2024-01-01. 22-day calendar artifact, not data integrity issue. Chart mtime 2026-05-15 17:32 post-v2 supports attestation."
+      },
+      {
+        "risk_id": "RR6_ECHO_CHAMBER_FLAG_HIGH",
+        "severity": "MEDIUM",
+        "description": "Codex judge-stage flagged echo_chamber_risk=HIGH (alpha/risk/optimizer rebuttals not externally validated). Judge stage addresses this via Codex REVISE acceptance + verdict completeness downgrade. Direction-concur unanimity across 4 sources sufficient for REJECT verdict despite echo flag."
+      }
+    ],
+    "self_rationalization_grep_results": {
+      "phrases_audited_judge_draft": 9,
+      "phrases_kept_after_codex_review_with_explicit_threshold_cite": ["NEGLIGIBLE (Charter §9 measurement coherence band <5%)", "PIT_LISTING_OK_ADV_DEFERRED_EXECUTION_AGENT (Hook L3 boundary annotation)"],
+      "phrases_replaced_per_codex": [
+        {"old": "DEFERRED_GATE_0_NOT_REQUIRED_FOR_REJECT", "new": "GATE_0_C10_UNIVERSE_ADV_DEFERRED_EXECUTION_AGENT_HOOK_L3_BOUNDARY"},
+        {"old": "not strictly required (re AX-008)", "new": "N/A_FOR_REJECT_GATE per Charter v1.7 §10"},
+        {"old": "not blocking (re Architect)", "new": "OPTIONAL_FOR_REJECT_MANDATORY_FOR_NEXT_CYCLE_ADMIT"},
+        {"old": "not data integrity issue (re lockbox marker)", "new": "CALENDAR_OFFSET_22_DAYS_ATTESTATION_ONLY_DOWNGRADE_TO_PASS_WITH_CAVEAT"},
+        {"old": "remaining_phrases_judged_legitimate", "new": "phrase_by_phrase_honesty_notes_with_explicit_cites"},
+        {"old": "still strict PASS (alpha-level Harvey/DSR)", "new": "ALPHA_LEVEL_NOT_STRATEGY_GRADUATION per Codex C4"}
+      ],
+      "judge_finding": "Post-Codex review: 6 phrases replaced or qualified; 2 retained with explicit threshold cites. No remaining rhetorical evasion."
+    },
+    "q_lead_escalate_status": "TRIGGERED_QUINTUPLE — cumulative 38 Codex concerns across 5 stages, 25 HIGH severity. All ACCEPT-disposed or downgraded (REBUTTAL count = 2 total: optimizer 1 + risk 1, both academically cited)."
+  },
+
+  "sample_bias_premise_invalidated": {
+    "original_premise": "WT-D20260514_013 60m bi-monthly variant SR 2.267 = sample bias artifact → longer 148m sample retains monthly variant SR 2.088, expected to admit blend at SR 2.0+ milestone",
+    "invalidation_finding": "Forge production-inheritance subsample audit: STR_1715 ret_L5_V2 on identical 84m window = SR 2.0054 ≈ canon 256m SR 1.9536 (drift -2.65%). 84m sample NOT biased downward for STR_1715-class.",
+    "evidence_path": "stage_artifacts/WT_D20260515_002/subsample_degradation_audit.json + forge_package.axis_B_canon_inherit",
+    "implication": "The 84m sample is biased AGAINST the proposed BLEND ARCHITECTURE (cash drag + ML 9.75/yr signal TO + dedupe-merge overhead ~7/yr). Longer-history correction premise does NOT translate into deployable blend SR.",
+    "ax_002_implication": "Honest measurement — the longer-history sample correction PREMISE is INVALIDATED by production-inheritance baseline data. Blend architecture itself is the failure mode."
+  },
+
+  "lockbox_extension_audit": {
+    "lockbox_window": ["2024-01-31", "2025-12-30"],
+    "n_lockbox_months": 24,
+    "lockbox_strategy_nav_measurement_method": "Dynamic walk-forward (ML side sealed train+val + 24m OOS apply) + STR_1715 dynamic regime overlay (production admit precedent L-307)",
+    "frozen_extension_assessment": "N/A — lockbox NAV directly observable for both sleeves at 24m. Pre-LB walk-forward SR vs Lockbox SR ratio computable (deferred to next-cycle architect if Path A-D pursued).",
+    "equity_curve_chart_audit_per_codex_c6": {
+      "equity_curve_png_path": "qepm/mailbox/worktask/WT-D20260515_002/output/equity_curve.png",
+      "lockbox_marker_present_per_forge_v2_attestation": true,
+      "codex_c6_caveat": "Forge v2 attestation 2024-01-23 marker post-regen (mtime 2026-05-15 17:32:04). Codex flagged generate_oos_charts.R original 2024-01-01 (22-day calendar offset). Downgraded from PASS to PASS_BY_FORGE_ATTESTATION_WITH_CAVEAT.",
+      "lockbox_marker_status": "PASS_BY_FORGE_ATTESTATION_WITH_CAVEAT_22_DAY_OFFSET",
+      "oos_zoom_chart_present": true,
+      "oos_chart_incomplete_flag": false
+    },
+    "lockbox_audit_overall": "PASS_WITH_CAVEAT"
+  },
+
+  "alternative_remediation_paths_inherit_from_forge": [
+    {"path_id": "A", "name": "196m walk-forward re-cut", "estimated_admit_probability": 0.15, "judge_assessment": "MODERATE — eliminates 84m concern but architectural inefficiency remains"},
+    {"path_id": "B", "name": "M6 cadence bi-monthly", "estimated_admit_probability": 0.05, "judge_assessment": "LOW — revisits WT_013 bias source, not recommended"},
+    {"path_id": "C", "name": "Fixed-book sleeve A", "estimated_admit_probability": 0.02, "judge_assessment": "VERY LOW — defeats canonical L-307 AR overlay regime mechanism"},
+    {"path_id": "D", "name": "Replace M6 with defensive 3rd source (KR_10y bond / TSMOM / Stagflation)", "estimated_admit_probability": 0.45, "judge_assessment": "HIGHEST — addresses M6 underperformance directly. L-281 TSMOM + L-280 KR_10y precedent. Recommended next-cycle."}
+  ],
+
+  "honest_verdict_recommendation_to_governor": {
+    "primary_recommendation": "REJECT_WT_RETAIN_STR1715_PG2_100PCT",
+    "book_state_action": "NO_MUTATION — book_state v2.3 (single sleeve STR_1715_AR_on_M4_R05_overlay_PG2 100% effective 2026-05-13) RETAIN unchanged",
+    "production_action": "NO_PROMOTION — STR_1715 remains 05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/ canonical",
+    "operational_implication": "5월 운용 weights effective 2026-05-13 (m4=NORMAL × β_AR=0.7 × β_R05=1.0 = 70% risk + 30% cash) UNCHANGED. Top10 alpha-updated 삼성전자 4.78% / 삼성SDI 4.65% / SK하이닉스 4.37% retain (MEMORY.md L-308~L-313).",
+    "next_cycle_recommendation": "Pursue Path D (defensive 3rd source replacement) as separate WT cycle with mandatory: (i) Architect spawn for AX-008 ≥2/3 admit-gate, (ii) ADV ≥ 2e8 + KOSPI200/KOSDAQ150 membership pre-backtest verification, (iii) full 5-spec regression for candidate + baseline (KR FF/Carhart panel construction or KR factor proxy retrofit), (iv) sr_provenance_certificate regenerated post Forge final.",
+    "milestone_status": "STR_1715 PG2 admit milestone L-307~L-313 (255m SR 1.9536 / MDD -24.81% / CAGR 41.50%) retain. SR 2.0 target gap 0.0464 = remediation via Path D next-cycle or 4th orthogonal source discovery."
+  },
+
+  "codex_round_5_step_audit_judge_stage": {
+    "step_1_draft_path": "qepm/mailbox/worktask/WT-D20260515_002/judge_verdict_draft.json (Write 2026-05-15 18:25)",
+    "step_2_codex_auto_trigger": "PostToolUse codex_round_auto_trigger.sh fired + manual run_codex_qepm_critic.sh both spawned concurrently (atomic write merged)",
+    "step_3_codex_response_path": "qepm/mailbox/worktask/WT-D20260515_002/codex_critic_response_judge.json (stance=REVISE, veto_flag=false, 6 critical_concerns HIGH 3 + MEDIUM 3, echo_chamber_risk=HIGH)",
+    "step_4_challenge_note_path": "qepm/mailbox/worktask/WT-D20260515_002/challenge_note_judge.md (6 concerns disposition ACCEPT_FIX 4 + ACCEPT_FIX_CAVEAT 1 + ACCEPT_PARTIAL 1 + REBUTTAL 0)",
+    "step_5_final_package_path": "qepm/mailbox/worktask/WT-D20260515_002/judge_verdict.json (this file, FINALIZED_POST_CODEX_REVISE_WITH_DOWNGRADES)",
+    "stance": "REJECT_WITH_DOWNGRADED_VERIFICATION_COMPLETENESS",
+    "q_lead_escalate_triggered": true,
+    "q_lead_escalate_reason": "Charter §8 — judge-stage HIGH=3 + cumulative across 5 stages = 25 HIGH; all disposed via ACCEPT chain",
+    "veto_flag": false,
+    "round_counter": "1 of 1 (single-round policy v6.0)"
+  },
+
+  "ax_compliance": {
+    "AX_000": "honest measurement preserved — REJECT does not negate AX-000 limit-free axiom. Path D pursuit via separate WT cycle.",
+    "AX_001_v2": "Defense conditional evaluation FAIL for blend (blend MDD -27.2% > STR_1715 -14.4%; Sortino 0.91 < 5.07; STR_1715 R05 layer already provides defense). Correctly applied.",
+    "AX_002": "PIT C1-C9/C13/C14/C15 strict PASS. C10 PARTIAL (universe/ADV execution-agent-deferred). PerfA standard functions only. No method-shop bias. No schedule fabrication. 9 self-rationalization phrases audited — 6 replaced per Codex, 2 retained with explicit threshold cites.",
+    "AX_007": "EXEMPT proven (multi-sleeve A 60% / B 40% with 0/84 sig_date overlap).",
+    "AX_008": "N/A_FOR_REJECT_GATE — admit-gate not invoked for reject verdicts (Charter §10 + L-307). Formal own-PASS count = 1/3 (Forge only). Quorum miss does not block REJECT verdict. Direction-concur unanimity across 4 sources supports verdict.",
+    "research_philosophy_v1": {
+      "P1_factor_zoo_reduction": "M6 84m SR 0.94 < STR_1715 SR 2.00 fails Validation > Discovery test.",
+      "P2_cost_aware_alpha": "Net SR < Gross SR cost drag honest measurement.",
+      "P3_uncertainty_aware": "DSR Bailey-LdP uniform N=12 apples-to-apples.",
+      "P4_direct_portfolio_learning": "N/A Phase 3 roadmap.",
+      "P5_risk_model_advanced": "Σ rolling 84/84 + crowding LOW per Acadian 2026.",
+      "P6_implementation_discipline": "FAIL on TO 6.0 across 3 conventions.",
+      "P7_attribution_feedback": "Blend 5-spec DEFERRED (KR panel absent); STR_1715 baseline 5/5 PASS inheritance."
+    }
+  },
+
+  "lockbox_seal_action": {
+    "sealed": true,
+    "sealed_at": "2026-05-15T17:48:17+09:00",
+    "sealed_by": "judge_via_lockbox_post_judge_seal_hook",
+    "seal_flag_file_path": "qepm/mailbox/worktask/WT-D20260515_002/lockbox_sealed.json",
+    "judge_attestation_extended_block_present": true,
+    "post_hoc_selection_bias_prevention": "ENFORCED — re-access permitted only via Q-Lead explicit audit reason logged in /tmp/qvest_lockbox_access_WT-D20260515_002.log"
+  },
+
+  "telegram_brief_summary": "Judge WT-D20260515_002 FINAL: REJECT_WITH_DOWNGRADES. Gate 2 + Gate 5 FAIL CRITICAL; Gate 0 PARTIAL (universe/ADV deferred); Gates 1/3/4 PASS. Blend SR 0.5579 Pareto-dominated by STR_1715-only 84m SR 2.0054 (ΔSR -1.45). 5/8 graduation FAIL strategy-level. Strategy-level DSR same-N z=-0.29 (blend) vs +3.43 (STR_1715). Sample-bias premise INVALIDATED (STR_1715 84m SR 2.00 ≈ canon 256m SR 1.95). AX-001 v2 defense FAIL. AX-008 N/A_FOR_REJECT (admit-gate, formal own-PASS 1/3, Architect absent). 38 Codex concerns 5 stages all direction-concur. Q-Lead escalate cumulative HIGH=25 all disposed. Lockbox sealed 2024-01-23~2025-12-30 (Forge attestation, 22-day offset caveat). Recommend Q-Lead REJECT WT, retain STR_1715 PG2 100% book_state v2.3. Path D defensive 3rd source replace M6 next-cycle highest probability (0.45). Charter §8 No Silent Override compliance — 6 judge Codex concerns disposed ACCEPT_FIX 4 + ACCEPT_FIX_CAVEAT 1 + ACCEPT_PARTIAL 1 + REBUTTAL 0.",
+
+  "judge_role_card_attestation": "Charter v1.7 §10 Role Card 4×5 — judge OWN: Gate 0~5 + AX-008 verification + lockbox audit + seal. Did NOT design alpha, NOT produce weights, NOT modify Σ, NOT execute backtest. Read all 4 upstream packages + 4 challenge notes + 4 Codex critic responses + own Codex critic round, applied 5 gates + AX-008 + lockbox audit, wrote verdict with honest downgrades per Codex REVISE."
+}

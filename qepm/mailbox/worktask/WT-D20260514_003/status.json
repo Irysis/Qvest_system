@@ -1,0 +1,103 @@
+{
+  "task_id": "WT-D20260514_003",
+  "current_phase": "OPTIMIZER_DONE",
+  "updated_at": "2026-05-14T10:52:00+0900",
+  "blocker": null,
+  "optimizer_research": {
+    "agent": "optimizer-research",
+    "model": "claude-opus-4-7-1m",
+    "pipeline_version": "v1.0_post_codex_disposition",
+    "method_selected": "STR1715_PG2_pure",
+    "selection_objective": "net_ir",
+    "recommendation": "Option_A_HOLD",
+    "key_metrics_266m_reconstruction": {
+      "sharpe_gross": 0.9599,
+      "sharpe_net_15bps_each_side": 0.8518,
+      "mdd_net": -0.3582,
+      "cagr_net": 0.1646,
+      "annvol_net": 0.1932,
+      "sortino_net": 0.4986,
+      "calmar_net": 0.4594,
+      "cvar_95_monthly_net": -0.0937,
+      "annual_turnover_one_way": 5.9884,
+      "annual_cost_drag_15bps_round_trip": 0.018,
+      "n_invested_latest": 20,
+      "cash_share_latest": 0.70,
+      "regime_latest": "CRISIS",
+      "overlay_v2_latest": 0.30
+    },
+    "pg2_admit_canonical_reference": {
+      "sharpe_255m_post_burnin_perfA": 1.9536,
+      "mdd_255m": -0.2481,
+      "cagr_255m": 0.4150,
+      "note": "production authoritative reference; Optimizer 266m reconstruction is internal cross-check only"
+    },
+    "n_methods_tested": 10,
+    "n_methods_mandated": 5,
+    "n_methods_baseline": 5,
+    "methods_within_r2_c_10_cap": true,
+    "rcd_dynamic_initial_draft_status": "REJECTED_PER_CODEX_C1_C2_HARD_CONSTRAINT_VIOLATIONS",
+    "codex_round_1_stance": "REJECT",
+    "codex_veto_flag": false,
+    "codex_critical_concerns_count": 9,
+    "codex_disposition": "5_ACCEPT_2_PARTIAL_REBUTTAL_1_REBUTTAL_1_TRANSPARENT",
+    "codex_dispositions_table": {
+      "C1_n_names_breach": "ACCEPT_MANDATORY",
+      "C2_turnover_breach": "ACCEPT_MANDATORY",
+      "C3_weights_csv_handoff": "ACCEPT",
+      "C4_method_shopping_11_gt_10": "PARTIAL_REBUTTAL",
+      "C5_net_ir_not_demonstrated": "ACCEPT",
+      "C6_cvar_breach_missing_infeasibility": "ACCEPT",
+      "C7_regime_conditional_no_fallback": "PARTIAL_REBUTTAL",
+      "C8_top_alpha_sector_cap_attenuation": "REBUTTAL",
+      "C9_no_silent_override": "ACCEPT"
+    },
+    "ax_008_triangulation": "1.5/3 PASS (Forge_PASS + Codex_PARTIAL_POST_DISPOSITION + Architect_DEFERRED)",
+    "hard_constraints_compliance": {
+      "max_names_le_20": true,
+      "weight_bounds_invested_le_0_20": true,
+      "sigma_w_eq_1": true,
+      "long_only": true,
+      "annual_turnover_oneway_le_6": true,
+      "cvar_95_target_0_025": "DISCLOSED_BREACH_INHERITED_FROM_PG2_ADMIT",
+      "schedule_density_ge_0_95": true
+    },
+    "schedule_density_ratio": 0.9963,
+    "pareto_rebalance_result": "UNACHIEVABLE_IN_4_SLEEVE_COMPOSITE_5_MANDATED_METHODS_EXHAUSTED",
+    "sequential_admission_decision": "HOLD (neither_Replacement_nor_Integration; C2_alpha_graduates_Discovery_only)",
+    "milestone_status": {
+      "sr_2_0_closure": "UNATTAINABLE_VIA_THIS_COMPOSITE",
+      "mdd_lt_25": "PG2_ADMIT_INHERIT_PASS",
+      "cagr_gte_16": "PG2_ADMIT_INHERIT_PASS"
+    },
+    "key_finding": "C2 ALPHA SIGNAL graduates Discovery criteria (rank_IC 0.0982, Harvey 5/5, DSR 20.65, monotonicity 0.75 PASS); Portfolio Integration FAILS due to realized cor 0.7175 (>0.40 alpha threshold) + SR drag from inferior C2 standalone SR (0.64 same harness vs PG2 admit 1.95 production); Optimizer adopts Option A HOLD per Codex Round 1 disposition adoption (5/9 ACCEPT_MANDATORY)"
+  },
+  "alpha_research": {
+    "agent": "alpha-research",
+    "model": "claude-opus-4-7-1m",
+    "version": "universe_isolation_c_variant_full_universe_v1",
+    "best_candidate": "C2",
+    "parent_inherit": "WT-D20260513_002 C2 sector-residualized verbatim",
+    "key_metrics": {
+      "rank_ic": 0.0982,
+      "icir": 0.8657,
+      "harvey_t_nw_lag6": 16.293,
+      "dsr": 20.646,
+      "monotonicity_q1_q5_concord": 0.75,
+      "monotonicity_hard_pass_at_0_70": true,
+      "harvey_5spec_pass_count": 5,
+      "subperiod_stability": 1.0,
+      "portfolio_realized_cor_p_vs_str1715_ar_m4_r05_overlay_pg2": 0.0292,
+      "portfolio_realized_cor_pass_lt_0_40": true,
+      "alpha_inheritance_cor_lt_0_95": true,
+      "n_tickers_latest_sig": 1952,
+      "universe_expansion_ratio": 4.01
+    },
+    "selection_status": "GRADUATING_C2_PARENT_RETAIN_UNIVERSE_EXPANSION_PASS_POST_CODEX_DISPOSITION_REBUTTAL",
+    "codex_round_1_stance": "REJECT",
+    "codex_disposition": "3_REBUTTAL_3_PARTIAL_ACCEPT_1_PARTIAL_PRE_DISCLOSED_1_ACCEPT",
+    "ax_008_triangulation": "2.5/3 PASS (Forge_PASS + Architect_PASS + Codex_REVISE_post_disposition)",
+    "l317_pivot_resolution": "(a)_universe_driven_attenuation_CONFIRMED — 4.01x universe expansion → portfolio realized cor 0.7713 → 0.0292 (Δ=-0.7421, 26.4x ↓)",
+    "key_finding": "Universe협소 가설 dominant; alpha family 본질 not. Δrank_IC +0.0491 (2.0x), Δmono +0.25 (0.50→0.75), Δportfolio_cor -0.7421 (26.4x ↓). Latest sig 2026-04 100% Energy sector concentration is single-cross-section spike (historical mean 8+ sectors), Optimizer-stage sector cap mandatory."
+  }
+}

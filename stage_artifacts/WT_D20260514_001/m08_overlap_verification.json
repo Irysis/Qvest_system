@@ -1,0 +1,37 @@
+{
+  "task_id": "WT-D20260514_001",
+  "verification_date": "2026-05-14",
+  "str1715_h1_alpha_factors": {
+    "Core_4F_Consensus": ["C01_SUE", "C02_EPS_Chg_1m", "C04_ESBR", "C06_TP_Gap"],
+    "Core_Defense_Q07": "Q07_Earnings_Stability",
+    "Defense_M08": "M08_Residual_Mom",
+    "Defense_Q25": "Q25_Ohlson_O"
+  },
+  "m08_family_definition": {
+    "full_name": "M08_Residual_Mom",
+    "factor_family": "Momentum_Residual",
+    "information_source": "PRICE",
+    "formula": "12-1M momentum CAPM/FF residualized",
+    "references": ["Carhart 1997", "Blitz-Huij-Martens 2011", "Daniel-Moskowitz 2016"],
+    "uses_investor_flow_information": false,
+    "uses_disclosure_data": false,
+    "rationale": "Cross-family diversifier (Iter 3 swap target, Q07-M08 panel cor=0.0099). Carhart momentum 가격 기반 12개월-1개월 lag, residualized vs CAPM/FF. No flow/disclosure information."
+  },
+  "this_cycle_factors": {
+    "F1_HAR_Flow_Macro_Conditional": "INV01+INV02+INV03+INV04 HAR analog × regime_scalar (KRX disclosure flow)",
+    "F2_Cross_Investor_Disagreement_Persistent": "INV08 negative × INV09 (KRX disclosure flow)",
+    "F3_Foreign_Resid_CrossSection": "Cross-section OLS per sig_date: z(INV01) - beta * z(-INV07). Choe-Kho-Stulz 2005 RFS analog (KRX disclosure flow)",
+    "F4_Smart_Money_Concentration_Decoupled": "INV10 × INV11 (KRX disclosure flow)",
+    "F5_Flow_Momentum_Differential": "INV05-INV06 (KRX disclosure flow)"
+  },
+  "overlap_verification": {
+    "str1715_h1_uses_investor_flow": false,
+    "str1715_h1_information_source": "price + financial statements + analyst consensus",
+    "this_cycle_information_source": "KRX investor flow disclosure (외국인 / 기관 / 개인 / 연기금 net buy KRW)",
+    "overlap_factor_count": 0,
+    "information_source_orthogonal": true,
+    "verdict": "ZERO_OVERLAP_INFORMATION_SOURCE_ORTHOGONAL",
+    "rationale": "STR_1715 H1 alpha lineage = STR_1701 inheritance (Iter 5 → Iter 11 → Iter 18 → Iter 31). All 7 H1 factors are PRICE + FINANCIAL + ANALYST CONSENSUS based. M08 = Carhart residual momentum (가격 기반 12-1M lag). This cycle = KRX investor flow disclosure-based factors (INV family). Information source level orthogonal — zero overlap."
+  },
+  "references_checked": ["qepm/mailbox/worktask/WT-D20260425_010/alpha_package.json (Iter 5 source)", "qepm/mailbox/worktask/WT-D20260427_016/alpha_package.json (STR_1715 H1 main)", "02_Infrastructure/factor_db/compute_investor.R (INV factor definition)", "Carhart 1997 / Blitz-Huij-Martens 2011 (M08 residual momentum source)"]
+}

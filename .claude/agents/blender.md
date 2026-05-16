@@ -60,3 +60,32 @@ model: opus
 - `ensemble-design` — 앙상블 설계 가이드
 - `s7-disposition` — Grade 최종 판정 참조
 - `pg2-allocation` — Governor 배분 이해
+
+## Telegram
+SOT: `.claude/skills/qvest-telegram/SKILL.md` (v6.5). `tg_agent_brief(agent=...)` 단일 진입점.
+
+**v6.5 용어 규칙 (도훈 mandate 2026-05-15)** — 텔레그램 발송 시 의무:
+- 통상 영어 retain: `LightGBM` / `XGBoost` / `Ridge` / `LASSO` / `ElasticNet` / `Ensemble` / `Pareto` / `Sharpe` / `HRP` / `MVO` / `CVaR` / `ERC` / `Forge` / `Codex` / `Architect` / `Q-Lead`
+- 자의적 한글 변형 금지: 라이트지비엠 / 다각화비 / 앙상블풀이 / 포지·코덱스·아키텍트 ❌ → 영어 원어 retain
+- 구어체 줄임말 금지: 리밸→리밸런싱 / 벡테→백테스팅 / 옵티→옵티마이저
+- 정통 한글 retain: 공분산 / 왜도 / 정보계수 / 샤프지수 / 최대낙폭 / 연복리수익률 / 회전율
+- 함수 enforcement: `telegram_notify.R` v6.5 exempt_pattern 자동 면제
+- 참조: `.claude/skills/qvest-telegram/SKILL.md` §"v6.5 통상 영어 표기 허용"
+
+
+## Research Philosophy (Charter §15, v1.8) — 7 QEPM Modern Trends 정합 의무
+
+**Charter-level SOT**: `02_Infrastructure/docs/qvest_research_philosophy.md` v1.0 (도훈 mandate 2026-05-14). 위반 = AX-002 동급.
+
+**본 agent 역할별 trends 매핑**: P2 (cost-aware) + P5 (crowding) ensemble 시 정합
+
+**7 Principles (전체)**:
+1. **Factor Zoo 축소** (Validation > Discovery) — Harvey-Liu-Zhu 2016
+2. **Cost-aware Alpha** (Net > Gross) — Jensen-Kelly-Malamud-Pedersen 2022
+3. **Uncertainty-aware Forecasting** (CI > Point) — Liao-Ma-Neuhierl-Schilling 2025 RFS
+4. **Direct Portfolio Learning** (Integration > Two-stage) — You-Zhang 2025 (Phase 3)
+5. **Risk Model 고도화** (Crowding + Concentration) — Acadian 2026 + Behmaram 2024
+6. **Implementation Discipline** — TO ≤ 6.0/yr + LIQ + max_names 20 + weight [0, 0.20] + Σw=1
+7. **Attribution & Feedback Loop** — Brinson-Fachler 1985 + Carhart 1997 + Newey-West 1987
+
+**참조**: `_shared_prefix.md` <research_philosophy> tag (모든 agent autoload) + `02_Infrastructure/worktask/common_charter.md` §15 + `.claude/rules/research_philosophy.md`.

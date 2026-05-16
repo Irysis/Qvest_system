@@ -1,0 +1,36 @@
+{
+  "file": "stage_artifacts/WT_D20260515_002/weights.csv",
+  "n_rows": 1729,
+  "n_sig_dates": 84,
+  "cash_row_count": 49,
+  "columns": {
+    "sig_date": "Date — sig_date (month-end close-of-day, T-1 signal)",
+    "Ticker": "Character — KR ticker (Annnnnn format) or 'CASH_KRW'",
+    "weight": "Numeric [0, 0.20] — target portfolio weight (after STR_1715 overlay applied)",
+    "sleeve_A_in": "Logical — TRUE if name selected from STR_1715 sleeve",
+    "sleeve_B_in": "Logical — TRUE if name selected from M6 Ensemble sleeve",
+    "combined_score": "Numeric — sleeve-z combined score (diagnostic, NA for CASH)",
+    "score_A": "Numeric — STR_1715 score_eff (NA for B-only and CASH)",
+    "score_B": "Numeric — M6 alpha_score (NA for A-only and CASH)",
+    "cash_residual": "Numeric — STR_1715 overlay cash share at sig_date (consistent for all rows of that date)",
+    "in_returns_panel": "Logical — Ticker present in returns_monthly_panel at sig_date (PIT listing universe proxy)",
+    "method_selected": "Character — optimizer method label",
+    "as_of_date": "Date — duplicate of sig_date for Backtest Contract schema parity",
+    "cost_model_version": "Character — 'v2.3_kr_retail_15bps' (one-way 15bps each leg)",
+    "weight_source": "Character enum — sleeve_A_STR_1715_SignalTilt / sleeve_B_M6_EW / cash_overlay_residual",
+    "liquidity_verification": "Character enum — PIT_LISTING_OK_ADV_DEFERRED_EXECUTION_AGENT / CASH_NA / FAIL_NOT_IN_RETURNS_PANEL"
+  },
+  "sum_weight_per_sig_date_with_cash": {
+    "min": 1,
+    "max": 1,
+    "mean": 1,
+    "max_abs_deviation_from_1": 0
+  },
+  "schedule_density_certification": {
+    "n_sig_dates_alpha": 84,
+    "n_unique_sig_dates_weights": 84,
+    "ratio": 1,
+    "charter_9_threshold": 0.95,
+    "pass": true
+  }
+}
