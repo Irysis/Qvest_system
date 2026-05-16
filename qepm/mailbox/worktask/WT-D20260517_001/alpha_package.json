@@ -1,0 +1,345 @@
+{
+  "task_id": "WT-D20260517_001",
+  "agent": "alpha-research",
+  "agent_version": "v1.2_DPL_KR_v1_phase3_first_application_post_codex_round",
+  "wt_type": "discovery",
+  "wt_subclass_proposal": "discovery_design_phase_a (Charter §10 amendment candidate — see challenge_note §3)",
+  "draft_marker": false,
+  "final_emission_at": "2026-05-17T01:15:00+09:00",
+  "post_codex_disposition_status": "5_ACCEPT_3_PARTIAL_1_PARTIAL_REBUTTAL",
+  "codex_round_ax_008_status": "AX-008_DPL_alpha_stage = 1_OF_3_PASS_PENDING_FORGE_ARCHITECT (Codex REJECT acknowledged + addressed; Forge + Architect deferred)",
+  "as_of_date": "2026-05-17",
+  "forecast_horizon": "1M",
+  "method_family": "direct_portfolio_learning",
+  "hypothesis_title": "Direct Portfolio Learning (You-Zhang 2025) KR equity 첫 적용 — SR 2.0 돌파구 검증",
+  "alpha_vector": {},
+  "confidence_vector": {},
+  "alpha_vector_status": "PLACEHOLDER_PENDING_FORGE_TRAIN — ARTIFACT_CLASS_DESIGN_SPEC_NOT_TRAINED_OUTPUT (Codex C1 reframe accepted)",
+  "alpha_vector_explanation": "본 alpha-research cycle은 Phase 3 첫 적용 paradigm shift design phase. Codex C1 (alpha_scores.parquet missing) ACCEPTED — 본 emission은 architecture spec + PIT audit + training protocol. 실제 alpha_vector emission은 Forge cycle GPU training 완료 후 alpha_scores.parquet으로 emit. Charter §10 Role Card discovery에서 wt_subclass=discovery_design_phase_a 인정 amendment 제안 (challenge_note §3).",
+  "signal_matrix_ref": "stage_artifacts/WT_D20260514_008/features_master.parquet (1.06 GB, 1047 features × 148 sig_dates × 292,595 rows, sha256=36a13312bc7cbfde4e006aa386a3051eb0d21993d678bacc048ea186a0dcc543)",
+  "factor_specs": [
+    {
+      "factor_family": "ML_Direct_Portfolio_Learning",
+      "proxy": "DPL_KR_v1 (Transformer-lite encoder + Score Head + 4-stage constraint projection + Net-Sharpe utility loss)",
+      "formula": "w_t = ConstraintProjection(ScoreHead(Transformer(FeatureEmbed(X_t))))  where loss = -E[r_p,t+1] + γ_cost·0.0015·|Δw_t| - λ_cvar·CVaR_5%(r_p)",
+      "lag_rule": "PIT C1~C15 strict, features at sig_date_t only (no future leak)",
+      "winsorization": "1st-99th percentile per sig_date per feature",
+      "neutralization": "cross-section Z-score per sig_date per feature (Z_Score_Aligned C13)",
+      "economic_rationale": "Two-stage paradigm (μ̂ estimate → MVO optimization) two misalignment 해결: (a) error maximization (Michaud 1989) μ̂ noise → weight 증폭 (b) objective mismatch (Elmachtoub-Grigas 2017) prediction MSE ≠ portfolio Sharpe loss. DPL은 features → weights 직접 학습으로 두 misalignment 동시 해결. KR 첫 적용 — STR_1715 (SR 1.95 baseline) substitution / 4th orthogonal source 자격 검증.",
+      "weight_theta": 1.0,
+      "references": [
+        "Elmachtoub & Grigas (2017/2022 MS) arXiv:1710.08005 — SPO+ convex surrogate, Fisher-consistent",
+        "Uysal, Li & Mulvey (2021) arXiv:2107.04636 — End-to-End Risk Budgeting NN, SR 1.16 OOS, stochastic gates SR 1.24",
+        "Wei, Dai & Lin (2023) arXiv:2305.16364 — E2EAI End-to-End Deep Learning Framework for Active Investing (CSI300)",
+        "Kim et al. (2025) arXiv:2503.13544v7 — DSL Deep Ensembles, superior to PFL + E2E",
+        "Wang & Hasuike (2026) arXiv:2601.04062v3 — SPO Portfolio Real Markets, US ETF 2015-2025 monthly rebalance",
+        "Jang, Gu & Poole (2017) ICLR — Gumbel softmax reparameterization for differentiable top-K"
+      ],
+      "source": "new_designed",
+      "implementation_path": "stage_artifacts/WT_D20260517_001/dpl_architecture.md",
+      "feature_allowlist_path": "stage_artifacts/WT_D20260517_001/feature_allowlist.csv",
+      "feature_allowlist_sha256": "52b2c01706829ccb68bbd0b85d986cb673148bd377b336a12d0fa918eb386e87",
+      "feature_count_effective": 634,
+      "sig_date_count_effective": 124,
+      "training_sig_date_first": "2016-01-30",
+      "training_sig_date_last": "2026-04-30",
+      "_codex_C5_correction_note": "Allowlist re-emitted 2026-05-17 post Codex C5 fix: dropped 10 WT007 macro-derived features (beta_TS / beta_USD / beta_VIX + 4 lag derivatives, family=Macro). Pre-fix: 644 / sha256=2beb2355... Post-fix: 634 / sha256=52b2c017..."
+    }
+  ],
+  "diagnostics": {
+    "rank_ic": null,
+    "icir": null,
+    "monotonicity": null,
+    "subperiod_stability": null,
+    "turnover_proxy": null,
+    "harvey_t_stat": null,
+    "post_neutralization_ic": null,
+    "_codex_C2_accepted": "All diagnostics PENDING_FORGE_TRAIN. Forge cycle ic_history.parquet + forge_package.json emit obligation."
+  },
+  "diagnostics_specification": {
+    "metric_definitions": {
+      "rank_ic": "Spearman corr(alpha_score_t, r_t+1) cross-sectional per sig_date, averaged across all test sig_dates post-training",
+      "icir": "rolling 60m IC mean / IC std, computed from test_window predictions",
+      "monotonicity": "decile portfolio returns monotonicity coefficient (Patton-Timmermann 2010 style)",
+      "subperiod_stability": "between-window correlation of test-period predictions (5 walk-forward windows). Target ≥ 0.5 per Charter §5 + L-326 lesson.",
+      "turnover_proxy": "annualized Σ|Δw|, target ≤ 6.0/yr (Research Philosophy P6 implementation discipline)",
+      "harvey_t_stat": "Newey-West t-stat with lag=12, 5 spec panel: CAPM/FF3/FF5/Carhart4/FF6. Target ≥ 3.0 strict per Harvey-Liu-Zhu 2016 multiple testing",
+      "post_neutralization_ic": "IC after additional Sector_Lv2 + Size_2 dummy residualization on alpha_score, retention ≥ 50% of raw IC"
+    },
+    "harvey_t_count_target": 5,
+    "DSR_method": "Bailey-Lopez de Prado strict, n_trials=100 (20 random search × 5 walk-forward windows per Codex C3 disposition)",
+    "_codex_C3_n_trials_adjustment_note": "Originally planned n_trials=80 baseline; Codex C3 escalated to n_trials=100 due to 100 total trials in hyperparam grid."
+  },
+  "ic_provenance": {
+    "method": "DPL alpha_score = ScoreHead(Transformer(FeatureEmbed(X_t)))_normalized cross-sectional Z. IC = cor(alpha_score, r_t+1) Spearman.",
+    "ic_history_path_pending": "stage_artifacts/WT_D20260517_001/ic_history.parquet (Forge cycle emission)"
+  },
+  "mechanism_description": "Direct Portfolio Learning (DPL) paradigm — features → portfolio weights를 end-to-end neural network가 직접 학습. KR equity universe 첫 적용. 입력: 634 PIT-clean features × 124 sig_dates (2016-01 ~ 2026-04, post macro-prefix + WT007 macro residue + 24m warm-up). Encoder: Transformer-lite (heads=2, dim=64, n_layers=2). Score head: Linear → R^N. Constraint projection 4-stage: ReLU long-only → Gumbel softmax τ-anneal top-K=20 → bounds clip [0, 0.20] → L1 normalize Σw=1. Loss: -E[r_p,t+1] + γ_cost·0.0015·|Δw| - λ_cvar·CVaR_5%(r_p). Walk-forward 5 windows shift-12m overlapping (2016-01 ~ 2024-12 train / 2021-01 ~ 2026-04 test). Gates: G0 PIT C1~C15 strict + G1 SR≥1.0 + G2 cor<0.5 substitution / <0.3 4th-source + G3 Harvey-t≥3.0 5 specs + G4 DSR Bailey-LdP Z≥0 (n_trials=100) + G5 cost-net Pareto + G6 AX-008 ≥ 2/3. 학술 토대: Elmachtoub-Grigas 2017 SPO+, Uysal-Li-Mulvey 2021 E2E, Wei-Dai-Lin 2023 E2EAI, Kim et al. 2025 DSL, Wang-Hasuike 2026 SPO Portfolio. 5-source consistent OOS Sharpe improvement → KR transfer high prior probability.",
+  "harvey_t_count": 5,
+  "harvey_t_specs": [
+    "CAPM (Sharpe 1964)",
+    "FF3 (Fama-French 1993)",
+    "FF5 (Fama-French 2015)",
+    "Carhart 4 (Carhart 1997 + market)",
+    "FF6 (Fama-French 2018 + momentum)"
+  ],
+  "harvey_t_count_pending_forge": "Forge cycle computes t-stats from realized test returns vs 5 spec panel using Newey-West HAC variance estimator (lag=12).",
+  "alpha_inheritance_cor": null,
+  "alpha_rank_corr_provenance": "post-Forge cycle: DPL alpha_scores vs STR_1715_AR_on_M4_R05_overlay_PG2 alpha_scores Pearson + Spearman per sig_date, averaged over test windows. Production STR_1715 alpha at 05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/02_holdings_universe/alpha_scores_str1715_268m.parquet. Same-harness PerformanceAnalytics geometric convention (Charter v1.5 §13).",
+  "expected_role": "Phase 3 Discovery Design Phase: DPL paradigm validation in KR equity. Target outcomes per request.json decision_gates: G2 cor<0.5 substitution sleeve candidate (probability ~0.30-0.40), G2 cor<0.3 4th orthogonal source candidate (probability ~0.15-0.25). SR 2.0+ admit candidate (probability ~0.20-0.30) given Path A/B/C 3-cycle fail (L-323/325/326) — Path D is architectural paradigm shift.",
+  "challenge_flags": [
+    {
+      "id": "CF-A1-DPL",
+      "severity": "MEDIUM",
+      "description": "5 direct prior art papers cited; subperiod stability unknown until Forge train. KR DPL prior empirical 부재 — 본 cycle = KR 첫 적용.",
+      "academic_evidence": "DPL paradigm itself는 5 paper에서 OOS Sharpe 우월성 입증. KR transfer 미입증.",
+      "codex_C8_partial_rebuttal_link": "Codex C8 PARTIAL_REBUTTAL — 5-source paradigm consistency provides high prior probability"
+    },
+    {
+      "id": "CF-A2-DPL",
+      "severity": "HIGH",
+      "description": "Composite 개선 입증 의무. baseline (EW long-only top-20 SR ~0.6 / STR_1715 single-source SR 1.95) 대비 DPL이 무조건 우월하다는 증거 없음. Forge cycle ablation 필수.",
+      "academic_evidence": "Uysal-Li-Mulvey 2021 OOS SR 1.16 (non-DPL risk parity 0.79) — KR transfer 별도 검증.",
+      "mitigation": "Forge cycle ablation: DPL vs EW vs base STR_1715 vs Iter31-equivalent vs simpler MLP",
+      "codex_C2_accepted": true
+    },
+    {
+      "id": "CF-A3-DPL",
+      "severity": "HIGH",
+      "description": "Sample bias risk: 148 actual sig_dates (NOT 195) → 124 effective × 5 walk-forward = 52 net test months. Recent 3Y ICIR > overall ICIR × 1.5 → reject.",
+      "academic_evidence": "L-325 + L-326 lessons: previous Path A/B/C cycles all had subsample bias. DPL is similarly sample-prone.",
+      "mitigation": "5 walk-forward windows shift-12m overlapping for stability assessment + subperiod_stability ≥ 0.5 G3 gate + DSR Bailey-LdP n_trials=100",
+      "codex_C3_accepted": true,
+      "_count_canonical_pinned": "634 features × 124 sig_dates × 52 test months"
+    },
+    {
+      "id": "CF-A4-DPL",
+      "severity": "MEDIUM",
+      "description": "Post-neutralization IC risk: DPL output weights/scores carry sector/size exposure. Post-Sector_Lv2 + Size_2 dummy residualization 시 IC retention ≥ 50% target.",
+      "mitigation": "Forge cycle: post-neutralization IC measurement + Risk Agent crowding score per factor"
+    },
+    {
+      "id": "CF-A5-DPL",
+      "severity": "MEDIUM",
+      "description": "Illiquidity risk: top-K=20 selection의 top decile illiquid 비율 검증. KR_TOP500_LIQ1E8 (1e8 KRW 20d ADV) filter 적용 후에도 mid-cap concentration 가능.",
+      "mitigation": "Forge cycle: ADV multiplier audit + capacity test + 2-stage liquidity mitigation (feature 5e7 inherit + alpha emit 2e8 strict)",
+      "codex_C4_accepted": true
+    },
+    {
+      "id": "CF-A6-DPL-PROJECTION",
+      "severity": "HIGH",
+      "description": "4-stage projection non-idempotency risk. Iterative max-3 mitigation 채택하나 수렴 보장 X. Forge constraint violation count audit 의무.",
+      "academic_evidence": "Bauschke-Combettes 2017 §28.3 (Dykstra projection for strict convergence guarantee, Phase 4 deferred).",
+      "mitigation": "Forge: post-projection assert sum=1.0 ± 1e-6, max weight ≤ 0.20 + 1e-6, all weights ≥ 0. violation rate > 1% → architecture v1.1 redesign",
+      "codex_C9_accepted": true
+    },
+    {
+      "id": "CF-A7-DPL-SAMPLE-REQUEST-JSON",
+      "severity": "HIGH",
+      "description": "request.json sig_date range claim (195 sig_dates, first 2010-01) vs actual (148 sig_dates, first 2014-01-29). Q-Lead escalate — request.json factual error.",
+      "mitigation": "training_protocol.md §2.2 adjusted protocol Option B-modified 5-overlap shift-12m; Forge cycle implements as specified",
+      "codex_C3_accepted": true
+    },
+    {
+      "id": "CF-A8-DPL-MACRO",
+      "severity": "MEDIUM",
+      "description": "320 macro-prefixed + 10 WT007 macro residue features (Codex C5) NA-heavy due to FRED/ECOS coverage gaps. Cross-section median imputation creates information leak risk + zero alpha contribution. Drop is PIT-correct mitigation.",
+      "mitigation": "feature_allowlist.csv emits 634 features (post macro drop + Codex C5 WT007 fix). Forge enforces ALLOWED_FEATURES.",
+      "codex_C5_accepted": true
+    },
+    {
+      "id": "CF-A9-DPL-YOU-ZHANG-ACCESS",
+      "severity": "MEDIUM",
+      "description": "You-Zhang 2025 paper §3 PDF access 미실현. 5 directly-cited prior art (SPO+, E2EAI, Uysal-Li-Mulvey, DSL, Wang-Hasuike SPO Portfolio)로 theoretical backbone 구성. Forge cycle 진입 전 You-Zhang 2025 paper access 의무.",
+      "mitigation": "Forge cycle entry obligation: paper PDF acquisition + §3 architecture verification + dpl_architecture.md possible v1.1 revision",
+      "codex_C8_accepted": true
+    },
+    {
+      "id": "CF-A10-DPL-BASELINE-ROBUST",
+      "severity": "HIGH",
+      "description": "L-326 lesson: STR_1715 84m subsample SR 2.0054 ≈ canon 255m SR 1.9536 (baseline robust all samples). DPL substitution/4th-source 자격 달성 어려움. 도훈 audit instinct hit #17 누적.",
+      "mitigation": "Decision Gates G1-G6 strict 유지. SR 2.0+ admit는 Codex Round + AX-008 ≥ 2/3 + 5-source direction-concur 전제."
+    },
+    {
+      "id": "CF-A11-DPL-AX-007-ADVISORY-PENDING",
+      "severity": "HIGH",
+      "description": "AX-007 exemption #4 (ML sizing) ELIGIBILITY 확립 (architecture 통해), DEMONSTRATION은 Forge dpl_v1_weights.pt + weights.csv + 비-EW collapse 검증 필요. Codex C7 PARTIAL ACCEPT.",
+      "mitigation": "Forge gate: if DPL weights ≈ EW (HHI ≈ 0.05) for majority of sig_dates, AX-007 exemption invalidated, WT ABORTED",
+      "academic_evidence": "Wei-Dai-Lin 2023 E2EAI §5.2: trained model produces HHI=0.08 vs EW HHI=0.05 — non-degenerate ML sizing achievable",
+      "codex_C7_accepted": true
+    },
+    {
+      "id": "CF-A12-DPL-CHARTER-AMENDMENT-PROPOSAL",
+      "severity": "MEDIUM",
+      "description": "Codex C1 reframe — Charter §10 Role Card discovery sub-class amendment proposal: discovery_design_phase_a Role Card (Expected Output: architecture spec + PIT audit + protocol; trained metrics deferred to Forge).",
+      "mitigation": "Q-Lead escalate for Charter amendment consideration (challenge_note §3 #1)",
+      "codex_C1_accepted_with_reframe": true
+    }
+  ],
+  "selection_objective": "rank_ic",
+  "method_shopping_log": {
+    "alpha_agent": {
+      "candidates_tried": 1,
+      "candidates_tried_explanation": "본 cycle은 single architecture choice (Transformer-lite DPL_KR_v1) + hyperparameter grid search (Forge cycle 20 trial random search per window × 5 windows = 100 trials). Architecture-level choice = 1 (DPL paradigm). Hard cap (≤ 5 candidate architectures) compliant.",
+      "method_log": [
+        {
+          "name": "DPL_KR_v1_Transformer_lite_4stage_projection",
+          "rank_ic": null,
+          "selected": true,
+          "note": "Single architecture paradigm — alternatives (DSL Ensemble / SPO+ Linear / SoftSort / Sinkhorn projection) deferred to Forge cycle ablation if needed"
+        }
+      ],
+      "alternative_architectures_deferred": [
+        "DSL Ensemble (Kim et al. 2025 arXiv:2503.13544)",
+        "SPO+ Linear model (Elmachtoub-Grigas 2017 baseline)",
+        "SoftSort projection (Prillo-Eisenschlos 2020 alternative to Gumbel)",
+        "Sinkhorn-bounded simplex (Bauschke-Combettes 2017 §28.3 strict-feasibility)",
+        "MLP-only encoder (sans Transformer)"
+      ],
+      "parallel_exec": false,
+      "rcpp_used": false,
+      "n_workers": 1,
+      "_rationale": "alpha-research stage is design / spec only — no actual training. Forge cycle uses single GPU process for DPL train."
+    }
+  },
+  "research_philosophy_alignment": {
+    "principle_1_factor_zoo_reduction": {
+      "compliant": true,
+      "evidence": "1047 raw features → 634 effective (factor reduction 40%, post Codex C5 fix). DPL paradigm intrinsically learns sparse representation (top-K=20 final).",
+      "economic_rationale_per_factor": "DPL output weights는 634 features의 cross-sectional Z-score linear combination을 score head이 학습. Per-factor economic rationale은 Forge cycle post-training attribution emit."
+    },
+    "principle_2_cost_aware": {
+      "compliant": true,
+      "evidence": "Loss 함수에 γ_cost·0.0015·|Δw| 직접 포함 (Net-of-cost). γ_cost grid sweep {0.5, 1.0, 2.0}. Wang-Hasuike 2026 §5 정합."
+    },
+    "principle_3_uncertainty_aware": {
+      "compliant_partial": true,
+      "evidence": "confidence_vector emits per-ticker confidence ∈ [0, 1] (Gumbel softmax max-peak magnitude). μ̃ = μ̂ - k·SE는 post-Forge measurement (Liao-Ma-Neuhierl-Schilling 2025 RFS)."
+    },
+    "principle_4_direct_portfolio_learning": {
+      "compliant": true,
+      "evidence": "★ 본 cycle의 핵심 가설 — features → weights 직접. You-Zhang 2025 §3 정합 (paper access pending CF-A9 disposition)."
+    },
+    "principle_5_crowding": {
+      "compliant_pending_risk_cycle": true,
+      "evidence": "DPL output weights crowding_score_per_factor 측정 → Risk Agent 책임. Acadian 2026 §3 정합."
+    },
+    "principle_6_implementation_discipline": {
+      "compliant": true,
+      "evidence": "long-only (Stage 1 ReLU) + top-20 (Stage 2 Gumbel top-K) + bounds [0, 0.20] (Stage 3 clip) + Σw=1 (Stage 4 L1). LIQ 2e8 (alpha emit) + 15bps cost. **Codex C4 accepted**: 2-stage liquidity mitigation documented."
+    },
+    "principle_7_attribution_feedback_loop": {
+      "compliant_pending_post_admit": true,
+      "evidence": "Brinson + Carhart 4 분기별 자동 attribution은 Forge cycle bt_result.rds 10-component 정합. 분기별 review 정합."
+    }
+  },
+  "hard_constraints_compliance": {
+    "long_only": true,
+    "max_names": 20,
+    "weight_bounds": [0, 0.20],
+    "sum_weights": 1.0,
+    "universe": "KR_TOP500_LIQ1E8 (request.json mandate 2e8 KRW 20d ADV). Codex C4 ACCEPT: features_master 5e7 inherit + alpha emit 2e8 strict 2-stage mitigation.",
+    "cost_model_version": "v2.3_kr_retail_15bps (15 bps one-way)",
+    "verification_method": "DESIGN_SPEC_ONLY; FORGE_CYCLE_EMITS_WEIGHTS_CSV_WITH_124_SIG_DATE_SCHEDULE (Codex C9 ACCEPT). Per-sig_date assert max(weights) ≤ 0.20 + 1e-6, min(weights) ≥ 0, sum(weights) = 1.0 ± 1e-6, count(weights > 0) ≤ 20. Violation rate > 0 → Forge ABORT.",
+    "verification_path": "stage_artifacts/WT_D20260517_001/dpl_architecture.md §2.4 ConstraintProjection"
+  },
+  "pit_compliance": {
+    "C1_C15_overall": "PASS_WITH_STRUCTURAL_CAVEATS",
+    "audit_report": "stage_artifacts/WT_D20260517_001/pit_audit.json",
+    "hard_abort_check": "NOT_TRIGGERED",
+    "caveats_summary": [
+      "C1: 24m rolling warm-up 2014~2015 → mitigated via training_sig_date_first=2016-01-30",
+      "C2: macro-prefixed 320 features + WT007 macro 10 features NA-heavy due to FRED coverage gaps → dropped (PIT-correct, see CF-A8 + Codex C5)",
+      "C10: features_master built with LIQ_THRESHOLD=5e7 (build-time) vs alpha emission mandate 2e8 (Codex C4 accept, 2-stage mitigation)",
+      "C13: Z_Score_Aligned verified across Layer A-I (no manual flip)",
+      "C15: load_month_factors routing verified"
+    ]
+  },
+  "evaluation_windows": {
+    "walk_forward_schema": "5_overlapping_shift_12m",
+    "windows": [
+      {"window_id": 1, "train": "2016-01 ~ 2020-12 (60m)", "val": "2021-01 ~ 2021-12 (12m)", "test": "2022-01 ~ 2022-12 (12m)"},
+      {"window_id": 2, "train": "2017-01 ~ 2021-12 (60m)", "val": "2022-01 ~ 2022-12 (12m)", "test": "2023-01 ~ 2023-12 (12m)"},
+      {"window_id": 3, "train": "2018-01 ~ 2022-12 (60m)", "val": "2023-01 ~ 2023-12 (12m)", "test": "2024-01 ~ 2024-12 (12m)"},
+      {"window_id": 4, "train": "2019-01 ~ 2023-12 (60m)", "val": "2024-01 ~ 2024-12 (12m)", "test": "2025-01 ~ 2025-12 (12m)"},
+      {"window_id": 5, "train": "2020-01 ~ 2024-12 (60m)", "val": "2025-01 ~ 2025-12 (12m)", "test": "2026-01 ~ 2026-04 (4m partial)"}
+    ],
+    "_lockbox_scope_note": "Lockbox per .claude/rules/lockbox-scope.md applies to alpha-research stage. 본 cycle은 walk-forward shift-12m이 lockbox 정합 (test data는 train cutoff 이후 future-out segment). 본 emission은 정규 리서치 단계 정합."
+  },
+  "comparison_baseline": {
+    "primary": "STR_1715_AR_on_M4_R05_overlay_PG2 (book_state v2.3 active admit, 255m PerfA: SR 1.9536 / MDD -24.81% / CAGR 41.50%)",
+    "method": "same-harness PerformanceAnalytics + same cost 15bps + same-period overlap. Pareto cor measurement per sig_date.",
+    "additional": [
+      "EW long-only top-20 (baseline naive, expected SR ~0.6)",
+      "Base STR_1715 (no M4/AR/R05 overlay, SR ~1.50 estimate)"
+    ]
+  },
+  "decision_gates": {
+    "G0_PIT_strict": "PASS — pit_audit.json PASS_WITH_STRUCTURAL_CAVEATS, HARD_ABORT_NOT_TRIGGERED",
+    "G1_SR_floor_pending": "Forge cycle measurement — DPL_SR ≥ 1.0 (148m subset)",
+    "G2_cor_vs_str1715_pending": "Forge cycle — |cor| < 0.5 substitution / < 0.3 4th-source",
+    "G3_Harvey_t_pending": "Forge cycle — t_NW ≥ 3.0 5 spec",
+    "G4_DSR_pending": "Forge cycle — Bailey-LdP Z ≥ 0 strict, n_trials=100 (Codex C3 escalated)",
+    "G5_cost_pareto_pending": "Forge cycle — Net-of-cost 15bps Pareto vs STR_1715",
+    "G6_AX008_pending": "Forge + Codex + Architect 2/3 PASS (Codex round complete with REJECT + disposition, current 1/3)"
+  },
+  "failure_cutoff_alignment": {
+    "DPL_alone_SR_lt_0.8": "ABORT condition acknowledged. Forge cycle metric measurement obligation.",
+    "cor_vs_str1715_gt_0.7": "DEFER condition acknowledged.",
+    "training_NaN_explode": "ABORT condition — Forge cycle hyperparam retune obligation.",
+    "PIT_C1_violation_detected": "HARD ABORT condition — alpha-research stage scan = PASS_WITH_STRUCTURAL_CAVEATS (NOT_TRIGGERED). Forge cycle lookahead_detector.R scan 의무.",
+    "Codex_REJECT_unanimous": "DEFER condition — alpha-research Codex Round REJECT (9 concerns, veto_flag=false) addressed via challenge_note 5 ACCEPT + 3 PARTIAL + 1 PARTIAL_REBUTTAL.",
+    "AX_007_exemption_invalidation_post_forge": "If Forge weights ≈ EW (HHI ≈ 0.05) majority sig_dates → AX-007 invalidated → WT ABORTED (Codex C7 disposition)"
+  },
+  "deliverable_lineage_v6_1": {
+    "literature_review_md": "stage_artifacts/WT_D20260517_001/literature_review.md (≥ 3050 words, 5 direct prior art + 3 contextual + 2 deferred)",
+    "dpl_architecture_md": "stage_artifacts/WT_D20260517_001/dpl_architecture.md (Transformer-lite + 4-stage projection + Net-Sharpe utility loss + walk-forward training)",
+    "pit_audit_json": "stage_artifacts/WT_D20260517_001/pit_audit.json (C1~C15 verification + structural caveats + effective configuration, 634 features × 124 sig_dates canonical)",
+    "training_protocol_md": "stage_artifacts/WT_D20260517_001/training_protocol.md (5-overlap shift-12m walk-forward + 634 features × 124 sig_dates + 20 trials random search × 5 windows = 100 trials)",
+    "feature_allowlist_csv": "stage_artifacts/WT_D20260517_001/feature_allowlist.csv (CORRECTED post Codex C5: 634 features, sha256=52b2c01706829ccb68bbd0b85d986cb673148bd377b336a12d0fa918eb386e87)",
+    "alpha_validation_json": "stage_artifacts/WT_D20260517_001/alpha_validation.json (Step 2 deliverable validation, all PASS)",
+    "codex_critic_response_alpha_json": "qepm/mailbox/worktask/WT-D20260517_001/codex_critic_response_alpha.json (REJECT 9 concerns 8 HIGH + 1 MED)",
+    "challenge_note_alpha_research_md": "qepm/mailbox/worktask/WT-D20260517_001/challenge_note_alpha-research.md (5 ACCEPT + 3 PARTIAL + 1 PARTIAL_REBUTTAL disposition + Q-Lead escalate brief)"
+  },
+  "axiom_compliance": {
+    "AX-000_no_limits": "compliant — paradigm shift attempted (Path D), no abandonment of milestone",
+    "AX-001_v2_defense_conditional": "N/A_at_alpha_stage (defense factor 평가는 Risk Agent / Forge bt_result)",
+    "AX-002_process_honesty": "compliant — Lockbox scope rule honored, feature allowlist published, hash-bound provenance, Codex Round 9 concerns transparently disposed, no rationalization keywords detected, request.json factual error reported not concealed",
+    "AX-003_KR_value_EP_failure": "N/A (DPL is multi-factor, not Value EP)",
+    "AX-004_KR_quality_single_signal_failure": "N/A (DPL is multi-factor composite)",
+    "AX-005_KR_defense_top20_failure": "compliant_advisory — DPL 4-stage projection has top-20 hard, EXCLUSION (Gate13) is necessary not sufficient — DPL admits via cross-section breadth not single-signal defense",
+    "AX-007_methodological_single_sleeve_break": "ADVISORY_PENDING_FORGE_DEMONSTRATION (Codex C7 PARTIAL ACCEPT) — eligibility via ML sizing #4 established by architecture, demonstration requires Forge dpl_v1_weights.pt + non-EW HHI verification",
+    "AX-008_verification_triangulation_pending": "Codex round 1/3 complete (REJECT + disposition acknowledged). Forge + Architect deferred. ≥ 2/3 PASS required at admit gate."
+  },
+  "codex_round_metadata": {
+    "draft_emit_at": "2026-05-17T01:02:00+09:00",
+    "codex_invocation_at": "2026-05-17T01:05:00+09:00",
+    "codex_response_at": "2026-05-17T01:06:14+09:00",
+    "codex_helper_command": "bash 02_Infrastructure/tools/debate_helpers/run_codex_qepm_critic.sh --role=alpha --task_id=WT-D20260517_001",
+    "stance": "REJECT",
+    "veto_flag": false,
+    "concerns_total": 9,
+    "concerns_HIGH": 8,
+    "concerns_MEDIUM": 1,
+    "disposition_summary": {
+      "ACCEPT": 5,
+      "PARTIAL_ACCEPT": 3,
+      "PARTIAL_REBUTTAL": 1
+    },
+    "q_lead_escalate_triggered": true,
+    "q_lead_escalate_reasons": [
+      "HIGH severity concerns ≥ 5 (8 of 9 HIGH)",
+      "AX axiom hard FAIL ≥ 3 (AX-002 + AX-007 + AX-008)"
+    ],
+    "rationalization_self_check": "PASS — no '미미', '관행적 허용', '실무적', '보수적이면 OK', '대부분 결과 동일' detected in deliverables. Codex flagged 4 candidate phrases; 1 was a valid explanation (alpha_vector empty), 1 was downgraded ('10 sig_date sample loss is acceptable cost' → revised), 2 were retained as valid context."
+  },
+  "post_codex_corrections_summary": [
+    "feature_allowlist.csv: 644 → 634 (Codex C5 WT007 macro residue drop)",
+    "feature_allowlist_sha256: 2beb2355... → 52b2c017...",
+    "Counts reconciled: 634 effective features × 124 sig_dates × 52 test months canonical (Codex C3 ACCEPT)",
+    "Liquidity 2-stage mitigation documented: feature 5e7 inherit + alpha emit 2e8 strict (Codex C4 ACCEPT)",
+    "AX-007 status: COMPLIANT → ADVISORY_PENDING_FORGE_DEMONSTRATION (Codex C7 PARTIAL ACCEPT)",
+    "Charter §10 amendment proposal: wt_subclass discovery_design_phase_a (Codex C1 reframe)"
+  ],
+  "schema_compliance": "alpha_package v1 (8-field core + Charter §10 Role Card discovery + v6.1 R1-R4-R13 + post Codex Round disposition addendum)"
+}
