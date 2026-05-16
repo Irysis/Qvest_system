@@ -1,0 +1,122 @@
+{
+  "task_id": "WT-D20260517_001",
+  "spawn_at": "2026-05-17T00:00:00+09:00",
+  "spawned_by": "Q-Lead 도훈 mandate Path D Direct Portfolio Learning",
+  "wt_type": "discovery",
+  "phase_origin": "PD43_Phase3_Direct_Portfolio_Learning_DPL",
+  "theme": "direct_portfolio_learning_features_to_weights_kr_first_application",
+  "hypothesis_title": "Direct Portfolio Learning (You-Zhang 2025) KR equity 첫 적용 — SR 2.0 돌파구 검증",
+  "hypothesis_description": "Direct Portfolio Learning (You & Zhang 2025): features → portfolio weights 직접 학습 (Two-stage μ̂→optimizer 우회). KR equity universe 첫 적용. 1044 PIT-clean features × NN 가중 학습 + utility loss (Net-Sharpe with cost) + differentiable constraint projection (long-only + top-20 + bounds + Σw=1). 가설: DPL alpha가 STR_1715_AR_on_M4_R05_overlay_PG2 (현 admit SR 1.9536) 대비 cor<0.5 (substitution sleeve) 또는 cor<0.3 (4th orthogonal source) 산출 시 SR 2.0+ 돌파구. 리서치 철학 원칙 4 (Direct Portfolio Learning) 정합. Path A (4th source 발굴) 3회 fail (L-323/325/326) 학습 반영 — blend 대신 substitution / orthogonal 직접 시도.",
+  "hypothesis_source": "user_defined",
+  "as_of_date": "2026-05-17",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KR_TOP500_LIQ1E8",
+    "liquidity_min_won_20d_avg": 200000000,
+    "max_names_total": 20
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d",
+    "fundamental_annual": "annual May",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement",
+    "macro": "t-1 FRED + ECOS",
+    "ic_history": "Usable_Date <= sig_date"
+  },
+  "hard_constraints": {
+    "long_only": true,
+    "max_names": 20,
+    "weight_bounds": [0, 0.20],
+    "sum_weights": 1.0
+  },
+  "research_philosophy_alignment": {
+    "principle_2_cost_aware": "loss = -E[ret] + γ·|Δw|·c (Net-of-cost 15bps 의무)",
+    "principle_3_uncertainty": "μ̃ = E[w·r] - k·SE(post-hoc 측정)",
+    "principle_4_direct_portfolio": "★ 핵심 가설 — You-Zhang 2025 §3 정합",
+    "principle_5_crowding": "DPL output weights crowding_score per factor 측정",
+    "principle_7_attribution": "Brinson + Carhart 4 분기별 의무"
+  },
+  "data": {
+    "features_source": "stage_artifacts/WT_D20260514_008/features_master.parquet",
+    "n_features": 1044,
+    "n_rows_panel": 292595,
+    "n_tickers": 2824,
+    "feature_layers": ["A_factor_db_monthly", "B_wt007_inherit", "C_factor_db_daily_gap", "D_daily_aggregate", "E_macro", "F_interactions", "G_lags", "H_rolling", "I_dummies"],
+    "history_period": "2010-01 ~ 2026-04 (≈195 sig_dates / 184m + 4m holdout)",
+    "pit_compliance": "C1~C15 strict, Usable_Date <= sig_date 의무, t-1 lag features"
+  },
+  "model": {
+    "architecture": "DPL_KR_v1",
+    "encoder": "Transformer-lite (heads=2, dim=64, n_layers=2, max_seq=300)",
+    "score_head": "Linear → R^N (per-stock raw score per sig_date)",
+    "constraint_projection": {
+      "long_only": "ReLU",
+      "top_k_selection": "Gumbel softmax + STE (k=20, τ=anneal 1.0→0.1)",
+      "bounds_clip": "[0.0, 0.20]",
+      "normalize": "L1 Σw=1"
+    },
+    "loss": "-E[r_p,t+1] + γ·|w_t - w_t-1|·0.0015 + λ·CVaR_5%",
+    "hyperparams_initial": {
+      "lr": 1e-4,
+      "batch_size_months": 12,
+      "epochs": 50,
+      "early_stop_patience": 5,
+      "dropout": 0.3,
+      "l2_reg": 1e-4,
+      "gamma_cost": 1.0,
+      "lambda_cvar": 0.5
+    },
+    "framework": "PyTorch 2.x CUDA (RTX 4080 SUPER 16GB)"
+  },
+  "training_protocol": {
+    "scheme": "walk_forward",
+    "train_window_months": 60,
+    "validation_window_months": 12,
+    "test_window_months": 12,
+    "n_windows": 5,
+    "first_train_start": "2010-01",
+    "last_test_end": "2026-04",
+    "pit_lag": "t-1 features → t weights, t+1 returns"
+  },
+  "decision_gates": {
+    "G0_PIT": "Usable_Date <= sig_date 모든 feature × t-1 lag enforced",
+    "G1_SR_floor": "DPL_SR >= 1.0 (baseline EW=0.6+ 대비)",
+    "G2_cor_vs_str1715": "abs(cor) < 0.5 substitution 자격, < 0.3 4th orthogonal source 자격",
+    "G3_Harvey_t": "t_NW >= 3.0 (5 spec: CAPM/FF3/FF5/Carhart4/FF6)",
+    "G4_DSR": "Bailey-LdP Z >= 0 strict",
+    "G5_cost_pareto": "Net-of-cost 15bps Pareto vs STR_1715 단독 or comparable",
+    "G6_AX008": "Forge + Codex + Architect 2/3 PASS"
+  },
+  "failure_cutoffs": {
+    "DPL_alone_SR_lt_0.8": "ABORT — Phase 3 infra retain, Path B feature engineering pivot",
+    "cor_vs_str1715_gt_0.7": "DEFER — high overlap, 4th source 자격 X",
+    "training_NaN_explode": "ABORT — hyperparam re-tune required",
+    "PIT_C1_violation_detected": "HARD ABORT — re-design features pipeline",
+    "Codex_REJECT_unanimous": "DEFER — disposition cycle"
+  },
+  "comparison_baseline": {
+    "primary": "STR_1715_AR_on_M4_R05_overlay_PG2 SR 1.9536 / MDD -24.81% / CAGR 41.50% (255m PerfA)",
+    "method": "same-harness PerformanceAnalytics + same cost 15bps + same-period overlap",
+    "additional": "EW long-only top20 + base STR_1715 (no M4/AR/R05)"
+  },
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "agent_lineage": {
+    "alpha_research": "Step 2 — DPL architecture deep design + You-Zhang 2025 literature review + Codex Round 5단계",
+    "risk_research": "Step 5 — Σ rolling per-sig_date + crowding_score_per_factor + stress + Codex Round",
+    "optimizer_research": "Step 4 — constraint projection design audit + top-20 selection differentiable + Codex Round",
+    "forge": "Step 6 — train + walk-forward backtest 184m + PerfA + Harvey 5 + DSR + Codex Round",
+    "judge": "Gate 0~6 + AX-008 + lockbox audit",
+    "governor": "Step 7 — admit decision + book_state mutation 검토"
+  },
+  "codex_round_mandate": true,
+  "estimated_time_total": "8h (alpha 1h + features 30m + GPU train 2-3h + risk 1h + forge 1h + judge 1h + governor 30m)",
+  "lessons_referenced": [
+    "L-323 (Pareto cor measurement Phase 1.A baseline)",
+    "L-325 (WT_013 ABORT — sample bias misdiagnosis, real cause = blend architecture flaw)",
+    "L-326 (WT_015_002 REJECT 5-source direction-concur — blend Pareto-dominated)",
+    "L-327 (cleanup + helper script 영구 정착)"
+  ],
+  "production_promotion_eligibility": "G2 cor < 0.3 + G5 cost Pareto PASS 시 4th sleeve admit / G2 cor < 0.5 + G5 single-replacement Pareto PASS 시 substitution sleeve admit"
+}
