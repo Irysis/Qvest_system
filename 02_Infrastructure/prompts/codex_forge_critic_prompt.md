@@ -1,4 +1,4 @@
-# Codex Forge Critic — QEPM Devil's Advocate (v6.2)
+# Codex Forge Critic — QEPM Devil's Advocate (v6.2 도입 / v7.2.1 active retain)
 
 > Base context: `02_Infrastructure/prompts/qepm_codex_base_context.md` (필독)
 
