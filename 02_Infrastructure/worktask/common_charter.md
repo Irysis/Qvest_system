@@ -175,6 +175,9 @@ factor_engine 측정과 forge_realized 측정 동시 존재 시:
 | `deployment` | 검증된 alpha 직접 편성 + governor admission only (Forge re-run 면제) | sr_provenance + schedule_fidelity + forge_package_validated + governor_concord | alpha_discovery (discovery WT inherit) | governor_admission.pg1_admission_check.\*.issuance_status="ELIGIBLE_FOR_ISSUANCE" 명시 시 cert_backfill_audit.R --auto 자동 backfill 발동 (forge_package.json deployment-specific 작성 → Hook trigger 또는 R script 직접 발급) |
 | `sizing_only` | parent inheritance audit + sizing rationale (alpha 0건이 정상) | governor_concord | sr_provenance + schedule_fidelity (parent strategy inherit) | parent WT cert 인헤리트 룰 적용. 자체 alpha_discovery는 미발급 (정상) |
 | `hyperparameter_sweep` | parent alpha 동일 + grid sweep 결과만 | sr_provenance (자체 forge run 시) + forge_package_validated | alpha_discovery + schedule_fidelity (parent inherit) | grid 산출 후 cert_backfill_audit.R --auto OR Q-Lead 명시 호출 |
+| `discovery_design_phase_a` ⭐ v1.8 신규 | **Phase 3 paradigm-shift first-application** — architecture spec + literature review + PIT audit + training_protocol만. 실제 alpha_scores.parquet / IC diagnostics / weights.csv는 별도 Forge cycle. | (없음 — design-only) | — | 후속 Forge cycle (`wt_type=discovery`) 통해 정식 alpha_discovery 발급. design-only WT는 cert 없는 ALPHA_DONE 정상. |
+
+**`discovery_design_phase_a` 도입 사유 (v1.8 2026-05-17)**: WT-D20260517_001 Path D Direct Portfolio Learning (You-Zhang 2025) 첫 KR 적용 cycle. paradigm-shift architecture는 단일 alpha-research cycle에서 학습+검증 모두 불가능 (24~48h GPU + walk-forward 5 windows). Phase 3 first-application은 design-only 산출 + 후속 Forge cycle 분리 정식화. AX-002 정합 (자기합리화 X, 명시적 design-phase 분리).
 
 **Cert backfill 자동화 (Layer 2 v1.7)**: `02_Infrastructure/ops/cert_backfill_audit.R` — book_state.json admitted_ids 순회 + WT lineage 추적 + 누락 cert 발급 조건 verify + 발급 가능 cert 자동 발급 (manual mode) 또는 ELIGIBLE 명시 cert만 (auto mode). bootstrap.sh DRIFTED 감지 시 자동 호출. governance_log RETROACTIVE_CERT_ISSUANCE 기록.
 
