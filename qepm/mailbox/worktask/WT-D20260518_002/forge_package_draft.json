@@ -1,0 +1,330 @@
+{
+  "task_id": "WT-D20260518_002",
+  "agent": "forge",
+  "agent_id": "forge_opus_4_7_1m",
+  "agent_model": "claude-opus-4-7",
+  "as_of_date": "2026-05-18",
+  "generated_at": "2026-05-18T02:09:33+0900",
+  "draft_status": "STEP_1_DRAFT_PRE_CODEX_ROUND",
+  "wt_type": "discovery",
+  "wt_kind": "hybrid_70_15_15_pivot_l_279_precedent_re_cycle",
+  "package_kind": "forge_l279_precedent_re_validate",
+  "pure_function_hash_audit": {
+    "start_hashes": {
+      "alpha_package_md5": "40fa5958d383cee50398e67ff4b83720",
+      "risk_package_md5": "aa5ab5a318e2dfab3889225355fe2bbf",
+      "optimization_md5": "bb96d8888f21ec4808c5a6322ccc0af3",
+      "weights_csv_md5": "8f2c6437b2e491b107047a14d3017aad"
+    },
+    "end_hashes": {
+      "alpha_package_md5": "40fa5958d383cee50398e67ff4b83720",
+      "risk_package_md5": "aa5ab5a318e2dfab3889225355fe2bbf",
+      "optimization_md5": "bb96d8888f21ec4808c5a6322ccc0af3",
+      "weights_csv_md5": "8f2c6437b2e491b107047a14d3017aad"
+    },
+    "identical": true,
+    "interpretation": "PASS_3_packages_read_only"
+  },
+  "sr_realized_share_based": 1.6744,
+  "sr_factor_engine_continuous": 1.8015,
+  "sr_lockbox_daily_harness": null,
+  "measurement_basis_primary": "forge_realized_share_based",
+  "divergence_factor_engine_vs_realized_pp": 0.1271,
+  "vs_factor_engine": {
+    "diagnosis": "MINOR_DRIFT",
+    "interpretation": "SR_charter_v14_section12 vs SR_PerformanceAnalytics annualized — convention divergence expected ~ 0 for monthly net returns"
+  },
+  "schedule_density_pct": 1,
+  "pure_function_violation": false,
+  "l279_admit_reproduce": {
+    "baseline": {
+      "SR_charter_v14": 1.6649,
+      "MDD_pct": 0.1665,
+      "CAGR": 0.2635,
+      "Sortino": 3.7797,
+      "Calmar": 1.5829,
+      "Vol_ann": 0.1503,
+      "n_obs": 256
+    },
+    "reproduced": {
+      "SR_charter_v14": 1.6744,
+      "SR_PerfA": 1.8015,
+      "CAGR": 0.2962,
+      "MDD": 0.1952,
+      "Sortino": 3.8163,
+      "Calmar": 1.5171,
+      "Vol_ann": 0.1644,
+      "n_obs": 254
+    },
+    "delta_SR_charter": 0.0095,
+    "delta_MDD_abs": 0.0287,
+    "delta_CAGR_abs": 0.0327,
+    "tolerance_pp": 0.1,
+    "PASS": true
+  },
+  "harvey_5spec": {
+    "n_obs": 254,
+    "lag3_admit_retain": {
+      "summary": [
+        {
+          "spec": "CAPM",
+          "lag": "lag3",
+          "n": 254,
+          "alpha_monthly": 0.0228,
+          "alpha_annualized": 0.311,
+          "alpha_t_OLS": 7.5654,
+          "alpha_t_NW": 6.7399,
+          "R2": 0.0003,
+          "pass_t_gt_3": true
+        },
+        {
+          "spec": "Carhart3_FF3",
+          "lag": "lag3",
+          "n": 254,
+          "alpha_monthly": 0.0226,
+          "alpha_annualized": 0.3073,
+          "alpha_t_OLS": 7.3846,
+          "alpha_t_NW": 6.7848,
+          "R2": 0.0018,
+          "pass_t_gt_3": true
+        },
+        {
+          "spec": "Carhart4",
+          "lag": "lag3",
+          "n": 254,
+          "alpha_monthly": 0.0213,
+          "alpha_annualized": 0.2876,
+          "alpha_t_OLS": 6.9796,
+          "alpha_t_NW": 6.789,
+          "R2": 0.0327,
+          "pass_t_gt_3": true
+        },
+        {
+          "spec": "FF5",
+          "lag": "lag3",
+          "n": 254,
+          "alpha_monthly": 0.0224,
+          "alpha_annualized": 0.3041,
+          "alpha_t_OLS": 7.2628,
+          "alpha_t_NW": 6.8567,
+          "R2": 0.0049,
+          "pass_t_gt_3": true
+        },
+        {
+          "spec": "FF6",
+          "lag": "lag3",
+          "n": 254,
+          "alpha_monthly": 0.0211,
+          "alpha_annualized": 0.2848,
+          "alpha_t_OLS": 6.8681,
+          "alpha_t_NW": 6.8043,
+          "R2": 0.0356,
+          "pass_t_gt_3": true
+        }
+      ],
+      "all_5_pass": true,
+      "pass_count": 5,
+      "t_NW_min": 6.7399,
+      "t_NW_max": 6.8567
+    },
+    "lag12_mandate": {
+      "summary": [
+        {
+          "spec": "CAPM",
+          "lag": "lag12",
+          "n": 254,
+          "alpha_monthly": 0.0228,
+          "alpha_annualized": 0.311,
+          "alpha_t_OLS": 7.5654,
+          "alpha_t_NW": 5.6229,
+          "R2": 0.0003,
+          "pass_t_gt_3": true
+        },
+        {
+          "spec": "Carhart3_FF3",
+          "lag": "lag12",
+          "n": 254,
+          "alpha_monthly": 0.0226,
+          "alpha_annualized": 0.3073,
+          "alpha_t_OLS": 7.3846,
+          "alpha_t_NW": 5.7579,
+          "R2": 0.0018,
+          "pass_t_gt_3": true
+        },
+        {
+          "spec": "Carhart4",
+          "lag": "lag12",
+          "n": 254,
+          "alpha_monthly": 0.0213,
+          "alpha_annualized": 0.2876,
+          "alpha_t_OLS": 6.9796,
+          "alpha_t_NW": 5.8757,
+          "R2": 0.0327,
+          "pass_t_gt_3": true
+        },
+        {
+          "spec": "FF5",
+          "lag": "lag12",
+          "n": 254,
+          "alpha_monthly": 0.0224,
+          "alpha_annualized": 0.3041,
+          "alpha_t_OLS": 7.2628,
+          "alpha_t_NW": 5.8631,
+          "R2": 0.0049,
+          "pass_t_gt_3": true
+        },
+        {
+          "spec": "FF6",
+          "lag": "lag12",
+          "n": 254,
+          "alpha_monthly": 0.0211,
+          "alpha_annualized": 0.2848,
+          "alpha_t_OLS": 6.8681,
+          "alpha_t_NW": 5.9556,
+          "R2": 0.0356,
+          "pass_t_gt_3": true
+        }
+      ],
+      "all_5_pass": true,
+      "pass_count": 5,
+      "t_NW_min": 5.6229,
+      "t_NW_max": 5.9556
+    },
+    "floor": 3
+  },
+  "dsr_bailey_ldp": {
+    "T_obs": 254,
+    "SR_monthly": 0.4834,
+    "SR_ann": 1.6744,
+    "skew": 0.4579,
+    "kurt_raw": 7.7139,
+    "scan": {
+      "N20": {
+        "N_trials": 20,
+        "SR_emax_monthly": 0.1193,
+        "z_DSR": 5.3522,
+        "p_DSR": 1,
+        "DSR_pass_at_z_ge_1_5": true
+      },
+      "N30": {
+        "N_trials": 30,
+        "SR_emax_monthly": 0.1301,
+        "z_DSR": 5.1929,
+        "p_DSR": 1,
+        "DSR_pass_at_z_ge_1_5": true
+      },
+      "N50": {
+        "N_trials": 50,
+        "SR_emax_monthly": 0.1428,
+        "z_DSR": 5.0057,
+        "p_DSR": 1,
+        "DSR_pass_at_z_ge_1_5": true
+      },
+      "N100": {
+        "N_trials": 100,
+        "SR_emax_monthly": 0.1588,
+        "z_DSR": 4.7712,
+        "p_DSR": 1,
+        "DSR_pass_at_z_ge_1_5": true
+      },
+      "N200": {
+        "N_trials": 200,
+        "SR_emax_monthly": 0.1735,
+        "z_DSR": 4.5545,
+        "p_DSR": 1,
+        "DSR_pass_at_z_ge_1_5": true
+      }
+    },
+    "M30_strict": {
+      "N_trials": 30,
+      "SR_emax_monthly": 0.1301,
+      "z_DSR": 5.1929,
+      "p_DSR": 1,
+      "DSR_pass_at_z_ge_1_5": true
+    },
+    "PASS_z_ge_1_5_at_M30": true
+  },
+  "ax_001_v2_conditional_defense": {
+    "S3_hybrid_crisis_active": [
+      {
+        "regime": "CRISIS",
+        "n": 51,
+        "mean_S3_ret": 0.023,
+        "mean_bm_ret": -0.0713,
+        "active_S3_minus_bm": 0.0944,
+        "sd_S3": 0.0446,
+        "sd_bm": 0.0406,
+        "hit_rate_vs_bm": 1
+      }
+    ],
+    "S1_standalone_crisis_active": [
+      {
+        "regime": "CRISIS",
+        "n": 51,
+        "mean_S1": 0.0316,
+        "mean_bm": -0.0713,
+        "active_S1_minus_bm": 0.1029
+      }
+    ],
+    "crisis_alpha_S3_positive": true,
+    "L279_sign_flip_reproduced": false
+  },
+  "backtest_contract": {
+    "version": "v1.0",
+    "PerformanceAnalytics_only": true,
+    "no_self_synthesis": true,
+    "bt_result_rds_sha256": "32d6f1b6092a8855e9d4858fc696610465ff3355d230066066f049d6260a4631",
+    "panel_md5": "49ffb93b87742f5cd1d79bdc3a760db9",
+    "panel_sha256": "71babab03f9eb0739a657e4c46bd9467333606eed466a59f80459787b3de3359"
+  },
+  "metrics_summary": {
+    "SR_charter_v14": 1.6744,
+    "SR_PerfA": 1.8015,
+    "CAGR": 0.2962,
+    "MDD": 0.1952,
+    "Sortino": 3.8163,
+    "Calmar": 1.5171,
+    "Vol_ann": 0.1644,
+    "n_obs": 254
+  },
+  "benchmark_compare": {
+    "benchmark": "KOSPI200_total_return (KR FF MKT proxy)",
+    "n_overlap": 254,
+    "active_return_annualized": 0.1662,
+    "TE_annualized": 0.2645,
+    "IR": 0.6284,
+    "beta_market": 0.0127,
+    "hit_rate_vs_bm": 0.6024
+  },
+  "inheritance": {
+    "alpha_md5": "40fa5958d383cee50398e67ff4b83720",
+    "risk_md5": "aa5ab5a318e2dfab3889225355fe2bbf",
+    "opt_md5": "bb96d8888f21ec4808c5a6322ccc0af3",
+    "weights_md5": "8f2c6437b2e491b107047a14d3017aad",
+    "panel_source": "qepm/mailbox/worktask/WT-P20260505_001/architect_hybrid_returns_full256m.csv",
+    "lro_sha_frozen_s1": "ad3d44417b526c3d82dde8724cb971ba973f2e418fc36ada7795d687c809cb18"
+  },
+  "ax_008_status": {
+    "forge_fresh": "EMITTED_PENDING_CODEX_AND_ARCHITECT",
+    "codex_post_resolution": "PENDING_STEP_2_AUTO_SPAWN",
+    "architect_concurrent": "PENDING_SPAWN_POST_DRAFT"
+  },
+  "gate_disposition_pre_codex": {
+    "G0_PIT": "PASS — panel SHA bound + factor_db_connector_inherit via lro_sha_frozen",
+    "G1_l279_reproduce": "PASS",
+    "G2_cor_orthogonal": "INHERIT_FROM_RISK_PACKAGE",
+    "G3_overall_SR": "PASS_AT_OR_ABOVE_L279_BASELINE",
+    "G4_mdd": "PASS",
+    "G5_harvey_lag3": "PASS_5_OF_5",
+    "G5b_harvey_lag12": "PASS_5_OF_5",
+    "G6_dsr_z_ge_1_5": "PASS_AT_M30",
+    "G7_to_per_sleeve": "INHERIT_FROM_OPTIMIZATION_PACKAGE_INFEASIBILITY_REPORT",
+    "G8_ax001_v2": "PASS_CRISIS_ALPHA_POSITIVE",
+    "G9_ax008": "PENDING_CODEX_AND_ARCHITECT_POST_DRAFT"
+  },
+  "rationalization_check": {
+    "flagged_phrases": {},
+    "self_critique": "Forge stage limits: (1) L-279 admit precedent panel inherited 그대로 — Forge stage 추가 cross-validation은 lro_sha frozen + panel sha256 bind. (2) TSMOM Sleeve 2 pre-2015 has_ts=FALSE constitutes 105/256 missing obs ≈ 41% — r_H_renorm method handles by redistributing 70/85 + 15/85 to S1+S3 (admit precedent inheritance). (3) KR FF6 factor data only post 2001-04 (RF=0 KR convention)."
+  },
+  "next_stage_message": "Forge draft emitted. Awaiting Codex Round 5단계 auto spawn (PostToolUse Hook). Architect concurrent spawn parallel from Q-Lead."
+}

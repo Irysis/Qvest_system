@@ -1,0 +1,61 @@
+{
+  "scope": "Same-period baseline fairness recompute (Codex C1 ACCEPT)",
+  "period": {
+    "start": "2005-02-01",
+    "end": "2026-03-03",
+    "n_obs_full": 254
+  },
+  "cost_assumption": "Hybrid: 15bps × 2 round-trip embedded via r_H_renorm panel architect netting | STR_1715: production R05_V5 already netted | KOSPI200: no cost (market index) | 60/40: market index + KR10y net",
+  "dsr_penalty_basis": "Bailey-LdP M=30 lifecycle penalty applied uniformly to all 4 baselines via candidates_tried=30 strict scan (deferred to Step C2)",
+  "baselines": {
+    "Hybrid_70_15_15_recycle": {
+      "label": "Hybrid_70_15_15_recycle",
+      "SR_charter": 1.6744,
+      "SR_perfa": 1.8015,
+      "CAGR": 0.2962,
+      "MDD": 0.1952,
+      "Sortino": 3.8163,
+      "Calmar": 1.5171,
+      "Vol": 0.1644,
+      "n": 254
+    },
+    "STR_1715_standalone": {
+      "label": "STR_1715_standalone",
+      "SR_charter": 1.6063,
+      "SR_perfa": 1.748,
+      "CAGR": 0.3775,
+      "MDD": 0.2515,
+      "Sortino": 3.5814,
+      "Calmar": 1.5011,
+      "Vol": 0.216,
+      "n": 254
+    },
+    "KOSPI200_benchmark": {
+      "label": "KOSPI200_benchmark",
+      "SR_charter": 0.5197,
+      "SR_perfa": 0.4331,
+      "CAGR": 0.0909,
+      "MDD": 0.4705,
+      "Sortino": 0.839,
+      "Calmar": 0.1932,
+      "Vol": 0.2099,
+      "n": 254
+    },
+    "Baseline_60_40": {
+      "label": "Baseline_60_40_KOSPI_KR10y",
+      "SR_charter": 0.6237,
+      "SR_perfa": 0.5786,
+      "CAGR": 0.0751,
+      "MDD": 0.2928,
+      "Sortino": 1.0327,
+      "Calmar": 0.2565,
+      "Vol": 0.1298,
+      "n": 254
+    }
+  },
+  "pairwise_delta_SR": {
+    "Hybrid_minus_STR1715": 0.0681,
+    "Hybrid_minus_KOSPI200": 1.1547,
+    "Hybrid_minus_60_40": 1.0507
+  }
+}
