@@ -33,18 +33,8 @@
       "n_candidates": 16,
       "n_stages": 4,
       "n_a_max": 4,
-      "stages": [
-        "S1_linear_ppp",
-        "S2_elastic_net",
-        "S3_lightgbm",
-        "S4_dpl_rc_neural"
-      ],
-      "a_max_grid": [
-        0.05,
-        0.1,
-        0.15,
-        0.2
-      ],
+      "stages": ["S1_linear_ppp", "S2_elastic_net", "S3_lightgbm", "S4_dpl_rc_neural"],
+      "a_max_grid": [0.05, 0.10, 0.15, 0.20],
       "stages_source": "complement_scorer_4_stage.md §1-§4 inherit",
       "a_max_rationale": "5-20% range = academic standard conditional injection scale (Frazzini-Pedersen 2014 BAB / Asness-Frazzini-Pedersen 2014 QMJ)",
       "incremental_admission_caveat": "Stage N+1은 Stage N 대비 incremental gain 입증 시 진행 (complement_scorer §5.1) — worst case 16 candidates, best case 4 candidates (S1 only)"
@@ -53,7 +43,7 @@
       "axis_A1_overall_SR_target": 1.97,
       "axis_A2_overall_MDD_target": -0.2481,
       "axis_A3_good_state_drag_SR_target": 0.05,
-      "axis_A4_bad_state_improvement_SR_target": 0.3,
+      "axis_A4_bad_state_improvement_SR_target": 0.30,
       "axis_A5_turnover_annualized_target": 6.0,
       "axis_A6_cor_vs_1715_target": 0.3,
       "axis_A7_p_bad_OOS_AUC_target": 0.55,
@@ -63,17 +53,8 @@
       "cost_aware_rationale": "Research Philosophy P2 + cost_model_version v2.3_kr_retail_15bps + Backtest Contract v1.0 정합"
     },
     "pareto_frontier_protocol": {
-      "multi_objective_axes": [
-        "A1_overall_SR",
-        "A4_bad_state_improvement",
-        "minus_A5_turnover"
-      ],
-      "hard_constraint_filter_axes": [
-        "A2_MDD",
-        "A3_drag",
-        "A6_cor",
-        "A7_p_bad_AUC"
-      ],
+      "multi_objective_axes": ["A1_overall_SR", "A4_bad_state_improvement", "minus_A5_turnover"],
+      "hard_constraint_filter_axes": ["A2_MDD", "A3_drag", "A6_cor", "A7_p_bad_AUC"],
       "filter_step_1": "hard constraints + G1 PASS + Hook L3 (max_names per-sleeve / Σw=1 / bounds [0, 0.20] / long-only)",
       "filter_step_2": "Pareto dominance on (A1, A4, -A5)",
       "complexity": "O(16²) = 256 comparisons trivial",
@@ -107,29 +88,9 @@
       "fail_action": "Codex Round critic mandate 강화 + admission re-evaluation"
     },
     "to_control_3_layer": {
-      "layer_1_loss_term": {
-        "name": "λ_to · turnover",
-        "default_lambda_to": 0.5,
-        "grid": [
-          0.1,
-          0.5,
-          1.0
-        ]
-      },
-      "layer_2_partial_adjustment": {
-        "name": "α retention",
-        "default_alpha": 0.5,
-        "grid": [
-          0.3,
-          0.5,
-          0.7,
-          1.0
-        ]
-      },
-      "layer_3_admission_gate": {
-        "name": "A5 ≤ 6.0",
-        "type": "hard_cap"
-      },
+      "layer_1_loss_term": {"name": "λ_to · turnover", "default_lambda_to": 0.5, "grid": [0.1, 0.5, 1.0]},
+      "layer_2_partial_adjustment": {"name": "α retention", "default_alpha": 0.5, "grid": [0.3, 0.5, 0.7, 1.0]},
+      "layer_3_admission_gate": {"name": "A5 ≤ 6.0", "type": "hard_cap"},
       "annualization_formula_explicit": "TO_blend_annualized = sum_{t=1..12 over rolling year} TO_blend_monthly_t × 2 (round-trip × 2, NOT × 12 — Iter 3 violation 사례 차단)"
     }
   },
@@ -168,91 +129,26 @@
       "necessary_not_sufficient_clarification": "EXCLUSION는 necessary not sufficient (AX-005 v1.2 본문), Gate13 PASS 동시 필수 = admission 7-axis A4 + A2 + A7 동시 PASS mandate"
     },
     "infeasibility_report_scenarios_5": [
-      {
-        "scenario": "G1_p_bad_fail",
-        "reason": "AUC<0.55 OR Brier>0.24 OR recall<0.60",
-        "resolution": "DPL-RC paradigm inviable, abandon framework, alternative orthogonal source"
-      },
-      {
-        "scenario": "Pareto_front_empty",
-        "reason": "0 candidates pass hard constraints",
-        "resolution": "DEFER cycle, relax Pareto multi-objective"
-      },
-      {
-        "scenario": "TO_blend_above_6",
-        "reason": "All candidates A5 > 6.0",
-        "resolution": "Retry α=0.3 + λ_to=1.0"
-      },
-      {
-        "scenario": "Union_support_above_20",
-        "reason": "Hook L3 portfolio-level interpretation strict",
-        "resolution": "Option C multi-sleeve execution clarify, sleeve-level check mandate"
-      },
-      {
-        "scenario": "Active_neutral_violation",
-        "reason": "Σ(w_final - b) ≠ 0",
-        "resolution": "Post-hoc active-weight neutral projection"
-      }
+      {"scenario": "G1_p_bad_fail", "reason": "AUC<0.55 OR Brier>0.24 OR recall<0.60", "resolution": "DPL-RC paradigm inviable, abandon framework, alternative orthogonal source"},
+      {"scenario": "Pareto_front_empty", "reason": "0 candidates pass hard constraints", "resolution": "DEFER cycle, relax Pareto multi-objective"},
+      {"scenario": "TO_blend_above_6", "reason": "All candidates A5 > 6.0", "resolution": "Retry α=0.3 + λ_to=1.0"},
+      {"scenario": "Union_support_above_20", "reason": "Hook L3 portfolio-level interpretation strict", "resolution": "Option C multi-sleeve execution clarify, sleeve-level check mandate"},
+      {"scenario": "Active_neutral_violation", "reason": "Σ(w_final - b) ≠ 0", "resolution": "Post-hoc active-weight neutral projection"}
     ]
   },
   "alternative_optimizer_comparison": {
     "framework_inherit": "v2 champion_challenger_comparison_framework.md (도훈 mandate G 8-model)",
     "n_methods": 9,
     "methods": [
-      {
-        "id": "M1",
-        "name": "naive_baseline_no_complement",
-        "type": "baseline",
-        "spec": "w_final = w_1715 (a_t = 0)"
-      },
-      {
-        "id": "M2",
-        "name": "linear_factor_composite",
-        "type": "linear scorer",
-        "spec": "unweighted average of 80 features + top-K + softmax + clip"
-      },
-      {
-        "id": "M3",
-        "name": "brandt_santa_clara_valkanov_2009_ppp",
-        "type": "classical linear policy",
-        "spec": "w = (1/N)·θ' x, unconditional, no λ_good/λ_corr"
-      },
-      {
-        "id": "M4",
-        "name": "elastic_net_plus_classical_MVO",
-        "type": "two-stage",
-        "spec": "EN forecast μ̂ + LW Σ + quadprog MVO"
-      },
-      {
-        "id": "M5",
-        "name": "lightgbm_plus_classical_MVO",
-        "type": "two-stage",
-        "spec": "LightGBM forecast μ̂ + LW Σ + quadprog MVO"
-      },
-      {
-        "id": "M6",
-        "name": "dpl_rc_stage_1_linear_ppp",
-        "type": "DPL paradigm",
-        "spec": "bad-state conditional + Linear PPP + 5-term composite loss"
-      },
-      {
-        "id": "M7",
-        "name": "dpl_rc_stage_2_elastic_net",
-        "type": "DPL paradigm",
-        "spec": "bad-state conditional + EN + 5-term composite loss"
-      },
-      {
-        "id": "M8",
-        "name": "dpl_rc_stage_3_lightgbm",
-        "type": "DPL paradigm",
-        "spec": "bad-state conditional + LightGBM + 5-term composite loss"
-      },
-      {
-        "id": "M9",
-        "name": "dpl_rc_stage_4_neural",
-        "type": "DPL paradigm",
-        "spec": "bad-state conditional + Set-Sequence + 5-term composite loss (GPU 의무)"
-      }
+      {"id": "M1", "name": "naive_baseline_no_complement", "type": "baseline", "spec": "w_final = w_1715 (a_t = 0)"},
+      {"id": "M2", "name": "linear_factor_composite", "type": "linear scorer", "spec": "unweighted average of 80 features + top-K + softmax + clip"},
+      {"id": "M3", "name": "brandt_santa_clara_valkanov_2009_ppp", "type": "classical linear policy", "spec": "w = (1/N)·θ' x, unconditional, no λ_good/λ_corr"},
+      {"id": "M4", "name": "elastic_net_plus_classical_MVO", "type": "two-stage", "spec": "EN forecast μ̂ + LW Σ + quadprog MVO"},
+      {"id": "M5", "name": "lightgbm_plus_classical_MVO", "type": "two-stage", "spec": "LightGBM forecast μ̂ + LW Σ + quadprog MVO"},
+      {"id": "M6", "name": "dpl_rc_stage_1_linear_ppp", "type": "DPL paradigm", "spec": "bad-state conditional + Linear PPP + 5-term composite loss"},
+      {"id": "M7", "name": "dpl_rc_stage_2_elastic_net", "type": "DPL paradigm", "spec": "bad-state conditional + EN + 5-term composite loss"},
+      {"id": "M8", "name": "dpl_rc_stage_3_lightgbm", "type": "DPL paradigm", "spec": "bad-state conditional + LightGBM + 5-term composite loss"},
+      {"id": "M9", "name": "dpl_rc_stage_4_neural", "type": "DPL paradigm", "spec": "bad-state conditional + Set-Sequence + 5-term composite loss (GPU 의무)"}
     ],
     "method_shopping_cap_v6_1_R2C": 10,
     "candidates_tried_count": 9,
@@ -287,24 +183,9 @@
   "method_shopping_log": {
     "candidates_tried": 3,
     "method_log": [
-      {
-        "name": "injection_grid_pareto_admission",
-        "design_objective": "16 candidates 7-axis Pareto frontier + crowding tiebreaker",
-        "selected": true,
-        "selected_rationale": "DPL-RC paradigm 정합, alpha cycle inherit, design objective primary"
-      },
-      {
-        "name": "single_a_max_optimal_grid",
-        "design_objective": "a_max ∈ {0.05, ..., 0.20} grid search at S1 only",
-        "selected": false,
-        "rejection_rationale": "Stage incremental opportunity 손실 (S2-S4 가능성 0)"
-      },
-      {
-        "name": "bo_bayesian_optim_a_max",
-        "design_objective": "Bayesian opt a_max continuous [0, 0.25]",
-        "selected": false,
-        "rejection_rationale": "T=124 sample insufficient for Bayesian opt + production interpretability ↓ + Pareto inherent multi-objective"
-      }
+      {"name": "injection_grid_pareto_admission", "design_objective": "16 candidates 7-axis Pareto frontier + crowding tiebreaker", "selected": true, "selected_rationale": "DPL-RC paradigm 정합, alpha cycle inherit, design objective primary"},
+      {"name": "single_a_max_optimal_grid", "design_objective": "a_max ∈ {0.05, ..., 0.20} grid search at S1 only", "selected": false, "rejection_rationale": "Stage incremental opportunity 손실 (S2-S4 가능성 0)"},
+      {"name": "bo_bayesian_optim_a_max", "design_objective": "Bayesian opt a_max continuous [0, 0.25]", "selected": false, "rejection_rationale": "T=124 sample insufficient for Bayesian opt + production interpretability ↓ + Pareto inherent multi-objective"}
     ],
     "primary_method": "injection_grid_pareto_admission",
     "selection_criterion": "DPL-RC paradigm 정합 + crowding_adj_ret tiebreaker",
@@ -312,10 +193,7 @@
     "parallel_exec": "Forge cycle 의무 — n_workers=4 future_lapply per-candidate measurement (16 candidates parallelizable)",
     "design_forecast_not_measured": "각 candidate Pareto position은 Forge cycle 측정 mandate, 학술 prior NOT measured 라벨"
   },
-  "weight_bounds": [
-    0,
-    0.2
-  ],
+  "weight_bounds": [0, 0.20],
   "long_only": true,
   "sum_weights_target": 1.0,
   "max_names_per_sleeve": 20,
@@ -452,8 +330,8 @@
   "challenge_review_objection": false,
   "challenge_review_objection_rationale": "alpha_package + risk_package 모두 optimizer design과 정합. 5-term conditional loss + 7-axis admission + sigma LW primary + cross_cov pooled OOS + crowding extended + 32 stress cells = optimizer cycle Pareto admission + 9-method comparison + ranking audit + constraint validation 정합. v6.1 R3 challenge_authority P4 obligation 정합 — objection 없음, alpha + risk packages strict inherit + optimizer specific design (injection grid + ranking audit + alternative comparison + constraint projection).",
   "codex_round_mandate": true,
-  "codex_round_completed": true,
-  "codex_round_completed_note": "Codex Round 1 완료 2026-05-17T17:09 KST. REJECT veto=false. 8 concerns 학술/L-code/정량 3축 disposition 완료 — challenge_note_optimizer-research.md authored.",
+  "codex_round_completed": false,
+  "codex_round_pending": "Step 4.5 — _draft 작성 후 PostToolUse Hook auto-spawn (codex_round_auto_trigger.sh)",
   "agent_lineage": {
     "alpha_research_completed": "WT-D20260517_003 alpha_package.json (DPL-RC paradigm design + 5 core papers + bad-state label 3 비교 + p_bad classifier + complement scorer 4-stage + conditional loss 7-axis admission + Codex Round REVISE veto=false 9 concerns dispositioned)",
     "risk_research_completed": "WT-D20260517_003 risk_package.json (LW Oracle + cross-cov pooled OOS + conditional risk AX-001 v2 + EVaR + Acadian crowding + 8 stress 32 cells + Codex Round REVISE veto=false 9 concerns dispositioned)",
@@ -524,39 +402,5 @@
     "challenge_flags_count": 0,
     "codex_round_pending": true,
     "next_agent": "codex critic (PostToolUse auto-spawn) then Q-Lead routing to Forge cycle confirm"
-  },
-  "final_at": "2026-05-17T17:18:00+09:00",
-  "final_emitted_by": "Q-Lead (optimizer agent exit 후 5단계 마무리)",
-  "draft_marker": null,
-  "post_codex_disposition_status": "POST_CODEX_REJECT_DISPOSITION_2_ACCEPT_2_PARTIAL_4_REBUTTAL",
-  "codex_round_disposition_summary": {
-    "stance_received": "REJECT",
-    "veto_flag": false,
-    "n_concerns_total": 8,
-    "n_critical": 2,
-    "n_high": 4,
-    "n_medium": 2,
-    "n_accept": 2,
-    "n_partial_accept": 2,
-    "n_rebuttal_primary": 4,
-    "critical_findings": [
-      "C2 max_names per-sleeve 재해석 → portfolio union 25-40 위반 위험 — Forge cycle 진입 전 architectural fix mandate (dedupe + union ≤ 20 strict)"
-    ],
-    "challenge_note_ref": "qepm/mailbox/worktask/WT-D20260517_003/challenge_note_optimizer-research.md",
-    "q_lead_escalate_triggered": true,
-    "q_lead_escalate_reason": "HIGH severity ≥ 5 (4 HIGH + 2 CRITICAL = 6) + AX hard FAIL ≥ 3 (AX-001 v2 + AX-002 + AX-007)"
-  },
-  "c2_architectural_fix_mandate": {
-    "issue": "design forecasts 25-35 names total OR 40-name union — max_names=20 portfolio-level hard 위반",
-    "codex_severity": "CRITICAL",
-    "fix_options_for_dohoon_decision": {
-      "option_A_preferred": "comp top-K 선택 시 1715 universe 안에서만 → 자동 overlap 100% → union 20 strict (production lineage 보존)",
-      "option_B": "comp는 1715 외부 종목, single budget a_max ≤ 5% 강제 → max 20 + a_max 비례 추가",
-      "option_C": "top-N 합 union 사후 truncate (rank-merge 후 top-20)"
-    },
-    "forge_cycle_validation_mandate": "each sig_date 152회 per-row check nrow(weights) = 20 strict",
-    "q_lead_escalate_resolution": "Forge cycle 진입 전 도훈 명시 Option A/B/C 선택 의무"
-  },
-  "codex_round_ax_008_status": "FORGE_FRESH_DESIGN_LEVEL_CODEX_REJECT_PARTIAL_1_OF_3",
-  "codex_round_mandate_status": "FINAL_POST_CODEX_5_STEP_COMPLETE"
+  }
 }
