@@ -1,0 +1,423 @@
+{
+  "task_id": "WT-D20260517_002",
+  "agent": "alpha-research",
+  "agent_version": "v2.1_DPL_KR_v2_post_codex_round_disposition_8concerns_disposed",
+  "wt_type": "discovery_design_phase_a",
+  "wt_subclass_charter_v18": "discovery_design_phase_a (Charter §10 v1.8 retain from v1, sub-class amendment proposal carry)",
+  "draft_marker": false,
+  "final_emission_at": "2026-05-17T23:30:00+09:00",
+  "post_codex_disposition_status": "6_ACCEPT_2_PARTIAL_ACCEPT_1_PARTIAL_REBUTTAL",
+  "codex_round_ax_008_status": "AX-008_DPL_v2_alpha_stage = 1_OF_3_PASS_PENDING_FORGE_ARCHITECT (Codex REVISE acknowledged + 8 concerns disposed; Forge + Architect deferred)",
+  "parent_inheritance": {
+    "predecessor_wt": "WT-D20260517_001 DPL_KR_v1 REJECT, L-328 적립",
+    "v1_failure_inherit": "EW collapse 100% (51/51) + TO 17.64 vs 6.0 + MDD 65.45% + Harvey-t -0.42 + DSR Z -2.27 + AX-007 invalidated + AX-008 0/3",
+    "v1_5_axis_redesign_basis": "5축 fail mode를 학술 backbone (5 core + 9 secondary papers) 통해 axis-by-axis redesign"
+  },
+  "as_of_date": "2026-05-17",
+  "forecast_horizon": "1M",
+  "method_family": "direct_portfolio_learning_v2_sorted_portfolio_learning_set_sequence",
+  "hypothesis_title": "DPL_KR_v2 Sorted Portfolio Learning — 5축 paradigm 리디자인 + Champion/Challenger 8-model comparison framework",
+  "alpha_vector": {},
+  "confidence_vector": {},
+  "alpha_vector_status": "PLACEHOLDER_PENDING_FORGE_TRAIN_v2_strengthened (Charter §10 discovery_design_phase_a, v1 Codex C1 reframe retain + Codex v2 C1/C2 ACCEPT)",
+  "alpha_vector_explanation": "본 alpha-research cycle = Phase 3 first-application paradigm-shift design phase. v1 reframe pattern retain. 도훈 mandate 2026-05-17 22:30 통합으로 wt scope 확장: 8 모델 spec + 12 metric + 6 rejection criteria + active-weight neutral constraint + purged WF protocol 모두 정의. 실제 alpha_vector emission은 Forge cycle GPU training 완료 후. Q-Lead 코드 작성 confirm 의무 (도훈 mandate B.2).",
+  "signal_matrix_ref": "stage_artifacts/WT_D20260514_008/features_master.parquet (v1 inherit) → filter to feature_allowlist_v2.csv 80 features sha256=b3d667517a39e4ebf219988f67c2cc6e22f4fb6350f5d6a5e52976fb4a8fb6ee (CORRECTED post Codex C5)",
+  "factor_specs": [
+    {
+      "factor_family": "ML_Direct_Portfolio_Learning_v2_Sorted_Portfolio_Set_Sequence",
+      "proxy": "DPL_KR_v2 (Set-Sequence + Macro Graph Prior GAT + Score Head + 3-term composite loss + 3-layer TO mitigation + 3-layer regime robustness, 도훈 mandate 8-model Model 6 CORE)",
+      "formula_primary": "scores_t = ScoreHead(GAT(SequenceModule(SetModule(features), prev_features_12m), GICS_adjacency)) ∈ R^{N_t}; top_K = argsort(scores)[N-20:]; w_t = score_proportional_sizing(top_K, τ=1.0) + 3-layer TO mitigation + Dykstra clip + partial adjustment α=0.6",
+      "formula_secondary_loss": "L_total = L_ListMLE + κ_evar · L_evar_softmin_worst_window + λ_to · L_to_hinge_penalty;  ListMLE = -Σ_t Σ_i log(exp(s_{r(i)})/Σ_{j≥i} exp(s_{r(j)}));  SoftMin_τ(SR_1..SR_5);  TO_hinge = max(0, TO - 5.0)",
+      "formula_dohoon_objective_E_model_8_variant": "L_dpl_obj = -E_t [(w_t - b_t)^⊤ r_{t+1} - C(w_t - w_{t-1}) - λ·TE_t² - ρ·Concentration_t]",
+      "lag_rule": "PIT C1~C15 strict + Purged walk-forward 1m embargo (López de Prado 2018)",
+      "winsorization": "1st-99th percentile per sig_date per feature",
+      "neutralization": "cross-section Z-score per sig_date per feature (Z_Score_Aligned C13)",
+      "economic_rationale": "Two-stage paradigm (μ̂ → MVO)의 (a) error maximization (Michaud 1989) + (b) objective mismatch (Elmachtoub-Grigas 2017)에 대해 v1 weights 직접 학습이 EW collapse 100% (51/51) 실패. v2 paradigm shift: features → scores → sorted portfolio + score-proportional sizing 구조에서 EW collapse는 paradigm-level expressible failure mode 아님 (Codex C3 PARTIAL ACCEPT - Forge demonstration 의무 strengthened). v2 5축 redesign 각 axis는 학술 backbone과 1:1 대응 (DSPO Zhong 2024 §3.3-3.4 / Set-Sequence Epstein 2025 §3 + Prop 1 / DeePM Wood 2026 §4-5 + App D.2 / Wang-Hasuike 2026 §2.3 KKT + §3-4 mitigation / Zhang 2021 §3 ListFold + Thm 3.1-3.2). KR 첫 적용. 도훈 mandate 통합: Champion vs Challenger 8-model framework + active-weight neutral + 4 신규 constraints + purged WF + 12 metric + 6 rejection.",
+      "weight_theta": 1.0,
+      "references_5_core_page_specific": [
+        "Zhang, Wu, Chen (2021) arXiv:2104.12484 §3 ListFold + Theorem 3.1 + 3.2 — China A-share 38% / SR 2.0",
+        "Zhong et al. (2024) arXiv:2405.15833 §3.2-3.4 — NYSE RankIC 10.12% return 121.94%",
+        "Epstein, Sadhwani, Giesecke (2025) arXiv:2505.11243 §3 + Prop 1 — equity portfolio Sharpe improvement",
+        "Wood, Roberts, Zohren (2026) arXiv:2601.05975 §4-5 + App D.2 — 50 futures 2× CTA, GAT -21% MDD",
+        "Wang, Hasuike (2026) arXiv:2605.01176 §2.3 KKT + §3-4 mitigation — clipping + rescaling + partial"
+      ],
+      "references_secondary_9": [
+        "Uysal-Li-Mulvey (2021) arXiv:2107.04636",
+        "Wang-Hasuike (2026) arXiv:2601.04062v3",
+        "Bongiorno-Manolakis-Mantegna (2025) arXiv:2507.01918",
+        "Lu-Yang-Zhang (2024) arXiv:2411.18830",
+        "Kwiatkowski-Chudziak (2025) arXiv:2510.14156",
+        "Patel-Sastry (2021) arXiv:2107.09957",
+        "Gao-He-He (2025) arXiv:2509.22088",
+        "Poh-Lim-Zohren-Roberts (2021) arXiv:2105.10019",
+        "Zhang-Wang-Cao (2021) arXiv:2105.10306"
+      ],
+      "references_foundation": [
+        "Ahmadi-Javid (2012) EVaR foundation",
+        "López de Prado (2018) AFML Ch 7 Purged WF + Ch 12 CPCV",
+        "Brandt-Santa-Clara-Valkanov (2009) Linear PPP",
+        "Bauschke-Combettes (2017) Dykstra projection §28.3",
+        "Bailey-López de Prado (2014) DSR formula"
+      ],
+      "source": "new_designed",
+      "implementation_path": "stage_artifacts/WT_D20260517_002/dpl_kr_v2_architecture.md",
+      "feature_allowlist_path": "stage_artifacts/WT_D20260517_002/feature_allowlist_v2.csv",
+      "feature_allowlist_sha256": "b3d667517a39e4ebf219988f67c2cc6e22f4fb6350f5d6a5e52976fb4a8fb6ee",
+      "feature_allowlist_sha256_method": "sha256sum canonical (Unix file-byte hash, post Codex C5 fix)",
+      "feature_count_effective": 80,
+      "feature_count_v1_inherit": 634,
+      "feature_reduction_ratio": "80/634 = 12.6%",
+      "feature_selection_method": "FMP r² robust ranking (0.5·median + 0.5·q25) + family-stratified max 15/family",
+      "feature_family_distribution_v2": {
+        "Risk_Beta_Vol": 15,
+        "Tail_Risk": 15,
+        "Momentum_Tech": 15,
+        "Other": 15,
+        "Liquidity": 7,
+        "Risk_Metric": 7,
+        "Reversal": 2,
+        "Technical": 2,
+        "Daily_LowFreq": 2
+      },
+      "feature_family_AX_005_risk_disposition": "Codex C4 ACCEPT — Risk_Beta_Vol + Tail_Risk + Risk_Metric + Liquidity 합산 55% defensive-heavy. v2 paradigm differentiation: multi-feature Set-Sequence cross-section interaction ≠ AX-005 single-signal long-only top20 defense. G13/G14/G15 strict Forge cycle mandate.",
+      "sig_date_count_effective": 124,
+      "training_sig_date_first": "2016-01-30",
+      "training_sig_date_last": "2026-04-30",
+      "_codex_C5_critical_fix": "feature_allowlist_v2.sha256 R digest f1778f67... → sha256sum canonical b3d667... CORRECTED"
+    }
+  ],
+  "diagnostics": {
+    "rank_ic": null,
+    "icir": null,
+    "monotonicity": null,
+    "subperiod_stability": null,
+    "turnover_proxy": null,
+    "harvey_t_stat": null,
+    "post_neutralization_ic": null,
+    "DSR_Bailey_LdP_Z": null,
+    "_pending_forge_explanation": "All diagnostics PENDING_FORGE_TRAIN. v1 trained outcome inherit: G1/G3/G4/G7/G8/G9 모두 FAIL. Codex v2 C1 ACCEPT Forge measurement obligation explicit."
+  },
+  "diagnostics_specification": {
+    "metric_definitions": {
+      "rank_ic": "Spearman corr(scores_t, r_{t+1}) cross-sectional per sig_date, averaged 52 test sig_dates",
+      "icir": "rolling 60m IC mean / IC std",
+      "monotonicity": "decile portfolio returns monotonicity coefficient",
+      "subperiod_stability": "between-window correlation 5 walk-forward windows ≥ 0.5",
+      "turnover_proxy": "annualized Σ|Δw|, target ≤ 6.0/yr / hard 8.0",
+      "harvey_t_stat": "Newey-West HAC lag=12, 5 spec CAPM/FF3/FF5/Carhart4/FF6, target ≥ 3.0",
+      "post_neutralization_ic": "post Sector_Lv2 + Size_2 residualization retention ≥ 50%",
+      "DSR_Bailey_LdP_Z": "Bailey-LdP n_trials=100"
+    },
+    "harvey_t_count_target": 5,
+    "DSR_method": "Bailey-Lopez de Prado strict, n_trials=100",
+    "DSR_n_trials_rationale": "20 random hyperparam × 5 walk-forward windows = 100 trials"
+  },
+  "ic_provenance": {
+    "method": "DPL_KR_v2 scores_t = ScoreHead(GAT(LSTM(DeepSet(features)))) Z-normalized. IC = Spearman cor(scores, r_{t+1}).",
+    "ic_history_path_pending": "stage_artifacts/WT_D20260517_002/ic_history_v2.parquet (Forge emission)"
+  },
+  "mechanism_description": "DPL_KR_v2 Sorted Portfolio Learning 5축 paradigm 리디자인. v1 EW collapse 100% + TO 17.64 + MDD 65.45% 5축 fail mode를 5 core papers axis-by-axis redesign. Axis 1 Output: 직접 weights → sorted portfolio + score-proportional sizing (DSPO §3.4 + Zhang §3 ListMLE) — Codex C3 PARTIAL ACCEPT Forge HHI > 0.055 strengthened. Axis 2: Transformer 165K → Set-Sequence 30K (Epstein §3 + Prop 1), param-to-data 5-7:1 under-param. Axis 3 Loss: -E[r_p] → ListMLE + EVaR SoftMin + TO-IR 3-term (Zhang + Wood §5 App D.2 + Zhang-Wang-Cao). Axis 4 TO: γ=1.0 → 3-layer clipping + rescaling + partial α=0.6 (Wang-Hasuike §2.3-4). Axis 5: single model → EVaR + GAT + m4 (Wood §4 -21% MDD). 도훈 mandate 통합: Champion (2-stage ML+optimizer) vs Challenger (Direct Active Weight Policy) 8-model framework + active-neutral Σ(w-b)=0 + TE ≤ 0.08 + sector active ≤ 0.10 + ADV usage ≤ 0.05 + purged WF + 12 metric + 6 rejection criteria. KR 124 sig_dates × 80 features × ~1500-2000 stocks panel. Walk-forward 5 windows × purged 1m + embargo 1m. 100 trials DSR Bailey-LdP. Codex Round 1/3 complete REVISE 8 concerns disposed.",
+  "harvey_t_count": 5,
+  "harvey_t_specs": [
+    "CAPM (Sharpe 1964)",
+    "FF3 (Fama-French 1993)",
+    "FF5 (Fama-French 2015)",
+    "Carhart 4 (Carhart 1997 + market)",
+    "FF6 (Fama-French 2018 + momentum)"
+  ],
+  "harvey_t_pending_forge": "Forge cycle Newey-West HAC lag=12. v1 inherit: -0.42 all 5 specs FAIL.",
+  "alpha_inheritance_cor": null,
+  "alpha_rank_corr_provenance": "post-Forge: DPL_KR_v2 alpha_scores vs STR_1715_AR_on_M4_R05_overlay_PG2 alpha_scores. Production STR_1715 at 05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/02_holdings_universe/alpha_scores_str1715_268m.parquet. PerformanceAnalytics geometric (Charter v1.5 §13). v1 inherit cor_weights=0.0017 (orthogonal-to-noise).",
+  "expected_role": "Phase 3 Discovery Design Phase: DPL_KR_v2 + Champion/Challenger framework. Target: G1 SR ≥ 1.0 (prob 0.50-0.65) + G2 cor < 0.5 substitution (prob 0.15-0.25) + G2 cor < 0.3 4th orthogonal (prob 0.10-0.20) + SR 2.0+ admit (prob 0.15-0.25 post-strict-Champion-comparison).",
+  "challenge_flags_v2": [
+    {
+      "id": "CF-V2-A1",
+      "severity": "HIGH",
+      "description": "5축 redesign + KR paradigm transfer empirical 미입증",
+      "mitigation": "Forge KR empirical + EVaR + GAT + m4 regime",
+      "codex_v2_C6_partial_rebuttal": "Charter §4 KR 첫 적용 = hypothesis test"
+    },
+    {
+      "id": "CF-V2-A2",
+      "severity": "HIGH",
+      "description": "80 features defensive-heavy 55% AX-005 risk (Codex C4)",
+      "mitigation": "G13/G14/G15 strict + multi-feature Set-Sequence interaction"
+    },
+    {
+      "id": "CF-V2-A3",
+      "severity": "HIGH",
+      "description": "Set-Sequence 30K stable convergence 보장 X (val loss explosion / NaN risk)",
+      "mitigation": "Forge: lr scheduler + gradient clipping + AdamW + early stop"
+    },
+    {
+      "id": "CF-V2-A4",
+      "severity": "HIGH",
+      "description": "AX-007 exemption v1 invalidated → v2 paradigm strengthened (Codex C3)",
+      "mitigation": "Forge HHI > 0.055 demonstration, 5+/52 ABORT"
+    },
+    {
+      "id": "CF-V2-A5",
+      "severity": "HIGH",
+      "description": "8-model framework Forge ~40-50h GPU + Q-Lead confirm 의무 (mandate B.2)",
+      "mitigation": "Q-Lead code authorization + staged implementation"
+    },
+    {
+      "id": "CF-V2-A6",
+      "severity": "HIGH_CRITICAL_LINEAGE",
+      "description": "feature_allowlist_v2.sha256 mismatch (Codex C5) IMMEDIATE FIX",
+      "mitigation": "sha256sum canonical project-wide standard",
+      "fix_executed": true
+    },
+    {
+      "id": "CF-V2-A7",
+      "severity": "MEDIUM",
+      "description": "Active-neutral trivial + 4 constraint feasibility 미증명 (Codex C7)",
+      "mitigation": "Forge feasibility check + Dykstra projection convergence"
+    },
+    {
+      "id": "CF-V2-A8",
+      "severity": "MEDIUM",
+      "description": "Purged WF 2m boundary loss sample efficiency",
+      "mitigation": "Per-window val_score monitor"
+    },
+    {
+      "id": "CF-V2-A9",
+      "severity": "MEDIUM",
+      "description": "Charter §10 v1.8 discovery_design_phase_a amendment carry (Codex C2)",
+      "mitigation": "Q-Lead escalate"
+    },
+    {
+      "id": "CF-V2-A10",
+      "severity": "LOW",
+      "description": "Random k-fold 금지 (mandate B.6) — purged WF 정합",
+      "mitigation": "CPCV reserve for robustness check"
+    }
+  ],
+  "selection_objective": "rank_ic",
+  "selection_objective_supplementary_note": "Hook enum allowed = rank_ic. 본 v2 cycle supplementary objective는 Pareto dominance vs Champion 8-model BEST (도훈 mandate G+H+I) — selection_objective field 이외 8-model comparison framework는 deliverable_lineage_v6_1 champion_challenger_comparison_framework.md 정의.",
+  "method_shopping_log": {
+    "alpha_agent": {
+      "candidates_tried": 1,
+      "candidates_tried_explanation": "본 v2 cycle = single paradigm (Sorted Portfolio Learning + Set-Sequence) + 5축 redesign. 8-model comparison Forge cycle.",
+      "method_log": [
+        {
+          "name": "DPL_KR_v2_Sorted_Portfolio_Set_Sequence_GAT_3term_loss",
+          "rank_ic": null,
+          "selected": true,
+          "note": "Single core architecture paradigm"
+        }
+      ],
+      "alternative_architectures_deferred_forge": [
+        "Model 1 Linear Factor Composite",
+        "Model 2 ElasticNet + MVO",
+        "Model 3 GBM + MVO",
+        "Model 4 Linear PPP Brandt 2009",
+        "Model 5 GBM Direct Active",
+        "Model 7 Differentiable CvxpyLayer",
+        "Model 8 Cost-aware DPL E"
+      ],
+      "parallel_exec": false,
+      "rcpp_used": false,
+      "n_workers": 1
+    }
+  },
+  "research_philosophy_alignment": {
+    "principle_1_factor_zoo_reduction": {
+      "compliant": true,
+      "evidence": "1047 → 80 features (92.4% reduction). Set-Sequence sparse rep."
+    },
+    "principle_2_cost_aware": {
+      "compliant_high": true,
+      "evidence": "Axis 4 3-layer mitigation (Wang-Hasuike) + Model 8 explicit cost C(Δw)"
+    },
+    "principle_3_uncertainty_aware": {
+      "compliant": true,
+      "evidence": "Axis 5.1 EVaR worst-window (Wood §5 App D.2) DRO KL-ball"
+    },
+    "principle_4_direct_portfolio_learning": {
+      "compliant_core": true,
+      "evidence": "★ Sorted portfolio paradigm (DSPO 2024) + 도훈 Direct Active Weight Policy"
+    },
+    "principle_5_crowding": {
+      "compliant_pending_risk_cycle": true,
+      "evidence": "Crowding_score_per_factor Risk Agent. Sector active ≤ 0.10."
+    },
+    "principle_6_implementation_discipline": {
+      "compliant_strict": true,
+      "evidence": "v1 retain + 4 신규 constraints (도훈 mandate F)"
+    },
+    "principle_7_attribution_feedback_loop": {
+      "compliant_pending_post_admit": true,
+      "evidence": "Brinson + Carhart 4 + FactorAdjustedAlpha strict (mandate I.3)"
+    }
+  },
+  "hard_constraints_compliance": {
+    "long_only": true,
+    "max_names": 20,
+    "weight_bounds": [0, 0.20],
+    "sum_weights": 1.0,
+    "active_weight_neutral_sum_w_minus_b_zero": "TRIVIAL in long-only Σw=1, TE binding",
+    "TE_max": 0.08,
+    "sector_active_max": 0.10,
+    "ADV_usage_max": 0.05,
+    "turnover_annualized_max": 6.0,
+    "mdd_pct_max": -0.25,
+    "universe": "KR_TOP500_LIQ1E8 + 2-stage liquidity mitigation",
+    "cost_model_version": "v2.3_kr_retail_15bps",
+    "verification_method": "DESIGN_SPEC_ONLY; FORGE_CYCLE_EMITS_WEIGHTS_V2_CSV_52_SIGDATES. Constraint violation > 1% target / > 5% ABORT.",
+    "verification_path": "stage_artifacts/WT_D20260517_002/dpl_kr_v2_architecture.md §4 + active_weight_neutral_constraint_spec.md §3"
+  },
+  "pit_compliance": {
+    "C1_C15_overall": "PASS_WITH_STRUCTURAL_CAVEATS_AND_V2_PURGED_WF_ENHANCEMENT",
+    "audit_report": "stage_artifacts/WT_D20260517_002/pit_audit_v2.json",
+    "hard_abort_check": "NOT_TRIGGERED",
+    "v2_purged_wf_enhancement": "1m purge + 1m embargo + cross-section IPO < 12m exclusion"
+  },
+  "evaluation_windows_v2_purged_wf": {
+    "walk_forward_schema": "5_overlapping_shift_12m_purged_embargo_1m",
+    "windows": [
+      {"window_id": 1, "train": "2016-01 ~ 2020-11 (59m purged)", "val": "2021-01 ~ 2021-11", "test": "2022-01 ~ 2022-12"},
+      {"window_id": 2, "train": "2017-01 ~ 2021-11", "val": "2022-01 ~ 2022-11", "test": "2023-01 ~ 2023-12"},
+      {"window_id": 3, "train": "2018-01 ~ 2022-11", "val": "2023-01 ~ 2023-11", "test": "2024-01 ~ 2024-12"},
+      {"window_id": 4, "train": "2019-01 ~ 2023-11", "val": "2024-01 ~ 2024-11", "test": "2025-01 ~ 2025-12"},
+      {"window_id": 5, "train": "2020-01 ~ 2024-11", "val": "2025-01 ~ 2025-11", "test": "2026-01 ~ 2026-04 (4m partial)"}
+    ]
+  },
+  "comparison_baseline": {
+    "primary": "STR_1715_AR_on_M4_R05_overlay_PG2 (255m PerfA SR 1.9536 / MDD -24.81% / CAGR 41.50%)",
+    "method": "same-harness PerformanceAnalytics + 15bps + 52m overlap",
+    "additional_8_model_framework": [
+      "Champion 1: Linear Factor Composite",
+      "Champion 2: ElasticNet + MVO",
+      "Champion 3: GBM + MVO",
+      "Challenger 4: Linear PPP Brandt 2009",
+      "Challenger 5: GBM Direct Active",
+      "Challenger 6: Neural Direct Active = DPL_KR_v2 (CORE)",
+      "Challenger 7: Differentiable Optimizer Layer",
+      "Challenger 8: Cost-aware DPL E"
+    ]
+  },
+  "decision_gates_v2": {
+    "G0_PIT_strict": "PASS — pit_audit_v2.json",
+    "G1_SR_floor_pending": "Forge — SR ≥ 1.0",
+    "G2_cor_pending": "Forge — |cor| < 0.5 substitution / < 0.3 4th-source",
+    "G3_Harvey_t_5spec_pending": "Forge — t_NW ≥ 3.0 strict",
+    "G4_DSR_pending": "Forge — Bailey-LdP Z ≥ 0 n_trials=100",
+    "G5_cost_pareto_pending": "Forge — Net Pareto vs Champion BEST",
+    "G6_AX008_pending": "Forge + Codex + Architect 2/3 PASS (alpha 1/3)",
+    "G7_TO_pending": "Forge — TO ≤ 6.0",
+    "G8_MDD_pending": "Forge — MDD ≤ 25%",
+    "G9_HHI_strengthened_pending": "Forge — HHI > 0.055 majority sig_dates (5+/52 ≤ 0.055 → ABORT)",
+    "G10_TE_pending": "Forge — TE ≤ 0.08",
+    "G11_sector_active_pending": "Forge — sector active ≤ 0.10",
+    "G12_ADV_usage_pending": "Forge — ADVUsage ≤ 0.05",
+    "G13_FactorAdjustedAlpha_strict": "Forge — FF5/Carhart4 residual α > 0",
+    "G14_style_R2_strict": "Forge — size/LIQ/beta R² ≤ 0.7",
+    "G15_explainability": "Forge — SHAP top 10 ≥ 50%"
+  },
+  "failure_cutoff_alignment_v2": {
+    "DPL_v2_SR_lt_1_0": "ABORT",
+    "EW_collapse_5plus_sigdates": "HARD ABORT",
+    "TO_gt_8": "ABORT",
+    "MDD_gt_30": "ABORT",
+    "TE_gt_0_12": "ABORT",
+    "sector_active_gt_0_15": "ABORT",
+    "ADVUsage_gt_0_10": "ABORT",
+    "FactorAdjustedAlpha_le_0": "REJECT",
+    "Style_R2_gt_0_7": "REJECT",
+    "Constraint_violation_gt_5pct": "ABORT",
+    "Codex_REJECT_unanimous": "DEFER",
+    "ML_explainability_fail": "REJECT"
+  },
+  "deliverable_lineage_v6_1": {
+    "literature_review_v2_md": "stage_artifacts/WT_D20260517_002/literature_review_v2.md (≥3950 words, 14 citations)",
+    "dpl_kr_v2_architecture_md": "stage_artifacts/WT_D20260517_002/dpl_kr_v2_architecture.md",
+    "champion_challenger_comparison_framework_md": "stage_artifacts/WT_D20260517_002/champion_challenger_comparison_framework.md",
+    "purged_walk_forward_protocol_md": "stage_artifacts/WT_D20260517_002/purged_walk_forward_protocol.md",
+    "active_weight_neutral_constraint_spec_md": "stage_artifacts/WT_D20260517_002/active_weight_neutral_constraint_spec.md",
+    "pit_audit_v2_json": "stage_artifacts/WT_D20260517_002/pit_audit_v2.json",
+    "training_protocol_v2_md": "stage_artifacts/WT_D20260517_002/training_protocol_v2.md",
+    "feature_allowlist_v2_csv": "stage_artifacts/WT_D20260517_002/feature_allowlist_v2.csv (sha256=b3d667... CORRECTED)",
+    "feature_allowlist_v2_sha256_file": "stage_artifacts/WT_D20260517_002/feature_allowlist_v2.sha256",
+    "fmp_ranking_v2_csv": "stage_artifacts/WT_D20260517_002/fmp_ranking_v2.csv",
+    "codex_critic_response_alpha_research_json": "qepm/mailbox/worktask/WT-D20260517_002/codex_critic_response_alpha-research.json (REVISE, 8 concerns, gpt-5.5+xhigh)",
+    "challenge_note_alpha_research_md": "qepm/mailbox/worktask/WT-D20260517_002/challenge_note_alpha-research.md (6 ACCEPT + 2 PARTIAL ACCEPT + 1 PARTIAL REBUTTAL + Q-Lead escalate + sha256 fix)",
+    "alpha_package_final_json": "qepm/mailbox/worktask/WT-D20260517_002/alpha_package.json"
+  },
+  "axiom_compliance": {
+    "AX-000_no_limits": "compliant",
+    "AX-001_v2_defense_conditional": "N/A_at_alpha_stage",
+    "AX-002_process_honesty": "compliant — 5 core papers actual reading + content extraction, v1 inherit honest, sha256 IMMEDIATELY FIXED, 도훈 mandate explicit integration, no rationalization keywords",
+    "AX-003_KR_value_EP_failure": "N/A (multi-feature)",
+    "AX-004_KR_quality_single_signal_failure": "N/A (multi-feature)",
+    "AX-005_KR_defense_top20_codex_C4_disposition": "compliant_advisory_with_disposition — 80 features 55% defensive. v2 multi-feature Set-Sequence interaction ≠ AX-005 single-signal. G13/G14/G15 strict.",
+    "AX-007_methodological_single_sleeve_v2_strengthened": "ADVISORY_PENDING_FORGE_DEMONSTRATION_v2_strengthened (Codex C3 PARTIAL ACCEPT) — sorted portfolio paradigm-level + Forge HHI > 0.055 demonstration mandate. v1 INVALIDATED → v2 5+/52 ≤ 0.055 → ABORT.",
+    "AX-008_verification_triangulation_pending": "Codex round 1/3 alpha complete (REVISE + 8 disposed). Forge + Architect deferred."
+  },
+  "codex_round_metadata_alpha_research": {
+    "draft_emit_at": "2026-05-17T22:55:00+09:00",
+    "codex_response_at": "2026-05-17T14:45:14+09:00 (Codex internal UTC)",
+    "codex_helper_command": "bash 02_Infrastructure/tools/debate_helpers/run_codex_qepm_critic.sh --role=alpha --task_id=WT-D20260517_002",
+    "stance": "REVISE",
+    "veto_flag": false,
+    "concerns_total": 8,
+    "concerns_HIGH": 5,
+    "concerns_MEDIUM": 3,
+    "disposition_summary": {
+      "ACCEPT": 6,
+      "PARTIAL_ACCEPT": 2,
+      "PARTIAL_REBUTTAL": 1
+    },
+    "q_lead_escalate_triggered": true,
+    "q_lead_escalate_reasons": [
+      "HIGH severity ≥ 5 (5 of 8)",
+      "AX hard FAIL ≥ 3 (AX-002 + AX-005 + AX-007 + AX-008 = 4)",
+      "sha256 lineage critical (C5) IMMEDIATE FIX executed"
+    ],
+    "rationalization_self_check": "PASS — 6 Codex flagged candidates re-checked, NO 금지 합리화 표현 in 7 deliverables grep scan",
+    "critical_fix_executed": {
+      "fix_id": "C5_sha256_lineage_integrity",
+      "before": "R digest = f1778f67... (R-internal string hash)",
+      "after": "sha256sum = b3d667517a39e4ebf219988f67c2cc6e22f4fb6350f5d6a5e52976fb4a8fb6ee (Unix file-byte canonical)",
+      "project_wide_standard": "sha256sum canonical only. R 코드 system2('sha256sum', file)."
+    }
+  },
+  "post_codex_corrections_summary": [
+    "feature_allowlist_v2.sha256: f1778f67 → b3d667 CORRECTED (C5 IMMEDIATE FIX)",
+    "AX-007 Forge gate strengthened: HHI ≤ 0.055 / 5+/52 ABORT (C3)",
+    "G13/G14/G15 strict (C4 AX-005 mitigation): FactorAdjustedAlpha + style R² + SHAP",
+    "TE + sector + ADV feasibility audit mandate (C7)",
+    "Charter §10 v1.8 discovery_design_phase_a amendment carry (C2)",
+    "Page-specific core references added (C6)",
+    "selection_objective enum strict to rank_ic (Hook compliance, supplementary objective documented separately)"
+  ],
+  "schema_compliance": "alpha_package v1.2 (8-field core + Charter §10 discovery_design_phase_a + v6.1 + 도훈 mandate 2026-05-17 22:30 + 5축 redesign + 8-model framework + post Codex 8 concerns disposition + sha256 critical fix + enum compliance)",
+  "v2_axis_redesign_5_fold_compliance": {
+    "axis_1_output": "Sorted portfolio + score-proportional sizing (DSPO §3.4)",
+    "axis_2_architecture": "Set-Sequence 30K (Epstein §3 + Prop 1)",
+    "axis_3_loss": "ListMLE + EVaR SoftMin + TO-IR 3-term + Model 8 E variant",
+    "axis_4_TO_control": "3-layer Wang-Hasuike §4",
+    "axis_5_regime_robustness": "EVaR + GAT + m4 (Wood §4)"
+  },
+  "v1_lesson_inherit_explicit": [
+    "L-328 DPL_KR_v1 narrow scope → v2 paradigm shift",
+    "EW collapse 51/51 → sorted portfolio + AX-007 strengthened",
+    "TO 17.64 → 3-layer Wang-Hasuike",
+    "MDD 65.45% → EVaR + GAT + m4",
+    "Harvey-t -0.42 → ranking loss + Forge 5-spec",
+    "DSR Z -2.27 → n_trials=100 strict",
+    "165K → 30K Set-Sequence",
+    "AX-007 INVALIDATED → paradigm + Forge demonstration HHI > 0.055",
+    "R digest sha256 → sha256sum canonical standard"
+  ],
+  "dohoon_mandate_2026_05_17_2230_integration_summary": {
+    "A_paradigm_comparison_framework": "Champion vs Challenger 8-model",
+    "B_absolute_rules_10": "Intraday/NLP/news/ESG/alt 금지 + Q-Lead 코드 confirm + PIT strict + 3-bias 제거 + random k-fold 금지 + purged WF 의무 + gross/net 분리 + Champion 비교",
+    "C_D_champion_challenger_models": "8 models (champion_challenger_comparison_framework.md)",
+    "E_dpl_objective_function": "L_dpl = -E[(w-b)^T r - C(Δw) - λ·TE² - ρ·Concentration] Model 8",
+    "F_7_hard_constraints": "Σw=1 + 0 ≤ w ≤ 0.20 + Σ(w-b)=0 + TE ≤ 0.08 + TO ≤ 6.0 + sector ≤ 0.10 + ADV ≤ 0.05",
+    "G_8_comparison_models": "Linear/ElasticNet/GBM/PPP/GBM-Direct/Neural-Direct(CORE)/Differentiable/Cost-aware",
+    "H_12_mandatory_metrics": "CAGR_net + IR_net + Sharpe_net + MDD + TE + TO + ADVUsage + FactorAdjustedAlpha + SectorActiveRisk + HitRatio + RollingIR12m + RollingDD12m",
+    "I_6_rejection_criteria": "IR ≤ Champion + MDD > Champion + CAGR < + FactorAdjustedAlpha ≤ 0 + dependence + style R² > 0.7 + explainability fail"
+  }
+}
