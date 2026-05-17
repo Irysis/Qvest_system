@@ -1,0 +1,202 @@
+{
+  "task_id": "WT-D20260517_003",
+  "spawn_at": "2026-05-17T23:10:00+09:00",
+  "spawned_by": "Q-Lead 도훈 mandate 2026-05-17 — DPL-RC paradigm redirect (코덱스 100% ACCEPT)",
+  "wt_type": "discovery_design_phase_a",
+  "wt_type_charter_v18_reference": "common_charter §10 v1.8 — Phase 3 paradigm-shift first-application design-only",
+  "phase_origin": "PD45_DPL_RC_Direct_Portfolio_Learning_for_1715_Residual_Complement",
+  "design_name": "DPL-RC v1.0 (Direct Portfolio Learning for 1715 Residual Complement)",
+  "parent_inheritance": {
+    "v1_predecessor_wt": "WT-D20260517_001 (DPL_KR_v1 REJECT, L-328 적립)",
+    "v2_predecessor_wt": "WT-D20260517_002 (substitution paradigm DEFERRED — Path A)",
+    "paradigm_shift_explicit": "v1 (DPL replace STR_1715) + v2 (DPL substitution candidate) → v3 (DPL-RC 1715 residual complement)",
+    "v2_artifacts_inherited": [
+      "literature_review_v2.md (5축 + 14 citations, DPL-RC 5 core 추가 inject)",
+      "champion_challenger_framework.md (8-model → incremental scorer mapping)",
+      "purged_walk_forward_protocol.md (동일 protocol)",
+      "active_weight_neutral_constraint_spec_md (Σ(w-b)=0 그대로 적용)",
+      "feature_allowlist_v2.csv 80 features (defensive 55% → 1715 stress signal context 재해석 자연 fit)",
+      "fmp_ranking_v2.csv (FMP r² ranking 재사용)",
+      "dpl_kr_v2_architecture.md (Set-Sequence + 3-term loss → DPL-RC Neural scorer 단계 inherit)",
+      "training_protocol_v2.md (Walk-forward 5-window 정합)",
+      "pit_audit_v2.json (PIT inherit)"
+    ],
+    "philosophy_sot": "02_Infrastructure/docs/qvest_research_philosophy.md v1.0 (원칙 4 Direct Portfolio Learning + 원칙 5 Crowding-aware 통합)"
+  },
+  "theme": "dpl_rc_direct_portfolio_learning_for_1715_residual_complement",
+  "hypothesis_title": "DPL-RC v1.0 — 1715 약세 상태에서만 기대수익/방어력이 올라가는 conditional complement sleeve를 학습 (1715 대체 X, 보완)",
+  "hypothesis_description": "STR_1715_AR_on_M4_R05_overlay_PG2 (admit SR 1.9536, gap 0.0464 = 97.9% milestone closure) production lineage 보존 + DPL-RC complement sleeve 학습 + small injection (a_max 5~20%) overlay. 핵심 paradigm: (1) **bad month subset 학습 X — full sample (124 sig_dates) + bad-state conditional loss weighting** (statistical learning 본질 정합, 코덱스 핵심 수정). (2) p_bad_1715(t+1) classifier 사전 OOS validation gate (AUC≥0.55 + Brier<0.24 + recall≥0.60) 통과 의무 — fail 시 ABORT (사후 regime fitting 차단). (3) Complement scorer incremental (linear → elastic-net → LightGBM → DPL-RC Neural) — 4단계 mini-forge feasibility 정합. (4) Injection grid 5/10/15/20% Pareto admission curve. (5) 1715 alpha core retain — w_final(t) = (1-a_t)·w_1715(t) + a_t·w_comp(t), a_t = clip(a_max · p_bad_1715(t), 0, a_max). 학술 backbone: Ferson-Schadt 1996 (Conditional Alpha) + Asness-Frazzini-Pedersen 2014 (BAB crisis hedge) + Brandt-Santa-Clara-Valkanov 2009 (Parametric Portfolio Policy linear baseline) + Wood-Roberts-Zohren 2026 (DeePM regime-conditional EVaR) + Avramov-Cheng-Metzker 2023 RFS (ML conditional return prediction with regime states). 도훈 mandate '1715 보완 방향' + 코덱스 의견 100% ACCEPT.",
+  "hypothesis_source": "user_defined_post_v2_defer_codex_review",
+  "as_of_date": "2026-05-17",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KR_TOP500_LIQ1E8",
+    "liquidity_min_won_20d_avg": 200000000,
+    "max_names_total": 20
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d",
+    "fundamental_annual": "annual May",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement",
+    "macro": "t-1 FRED + ECOS",
+    "ic_history": "Usable_Date <= sig_date"
+  },
+  "hard_constraints": {
+    "long_only": true,
+    "max_names": 20,
+    "weight_bounds": [0, 0.20],
+    "sum_weights": 1.0,
+    "active_weight_neutral": "Σ_i(w_i,t - b_i,t) = 0 (KOSPI200 benchmark)",
+    "tracking_error_max_annualized": 0.08,
+    "sector_active_weight_max_abs": 0.10,
+    "adv_usage_max_per_stock": 0.05,
+    "turnover_annualized_max": 6.0,
+    "mdd_pct_max": -0.2481,
+    "mdd_pct_max_rationale": "1715 MDD -24.81% retain — 악화 금지 (코덱스 보수적 admission, '개선 의무' 아닌 'no worse' baseline)",
+    "data_constraints": "정형 데이터만 — intraday / NLP / news / ESG / alt-data 절대 금지"
+  },
+  "dpl_rc_core_paradigm": {
+    "core_question": "1715 약세 상태에서만 기대수익/방어력이 올라가는 conditional complement sleeve를 학습할 수 있는가?",
+    "production_lineage": "STR_1715_AR_on_M4_R05_overlay_PG2 alpha core retain (replacement X) — w_final = (1-a_t)·w_1715 + a_t·w_comp",
+    "injection_formula": "a_t = clip(a_max · p_bad_1715(t), 0, a_max), a_max ∈ {0.05, 0.10, 0.15, 0.20}",
+    "bad_state_definition_3_compare": [
+      "definition_1: 1715 active return < -x% (x ∈ {2, 3, 5}, KOSPI200 대비 underperform threshold)",
+      "definition_2: 1715 rolling 6m drawdown 악화 (DD ≤ -10% in past 6m)",
+      "definition_3: 1715 < benchmark by y% (y ∈ {0.5, 1.0, 1.5})"
+    ],
+    "bad_state_label_selection": "3 정의 OOS comparison + label stability + bad-state recall trade-off → 최적 정의 선택",
+    "p_bad_classifier_oos_gate_mandate": {
+      "AUC_min": 0.55,
+      "Brier_max": 0.24,
+      "bad_recall_min": 0.60,
+      "fail_action": "HARD ABORT — 사후 regime fitting 차단"
+    },
+    "complement_scorer_4_stage_incremental": [
+      "stage_1: Linear factor composite (interpretable baseline)",
+      "stage_2: Elastic Net (regularized, robust to over-fitting)",
+      "stage_3: LightGBM (non-linear, feature interaction)",
+      "stage_4: DPL-RC Neural (Set-Sequence ~30K params, v2 inherit)"
+    ],
+    "incremental_admission": "각 단계마다 baseline 대비 SR/MDD/cor 비교 → DPL paradigm 우월성 입증 필요 (도훈 mandate G 8-model 비교 framework 정합)",
+    "loss_function_conditional_weighting": "L = -E[a_t · r_comp_t | bad_1715] + λ_good·max(0, drag_good) + λ_corr·corr(r_comp, r_1715) + λ_to·turnover + λ_tail·CVaR",
+    "loss_function_rationale": "statistical learning 정합 — bad month subset learning X (under-determined N=25), full sample (N=124) + bad-state conditional weighting 정합 (stratified-like, full N retain)",
+    "training_sample": "full 124 sig_dates × 80 features (v2 inherit) — bad month label은 conditional loss weighting에만 사용"
+  },
+  "research_philosophy_alignment": {
+    "principle_2_cost_aware": "loss λ_to·turnover term + injection grid TO ≤ 6",
+    "principle_3_uncertainty": "p_bad classifier OOS validation + Brier score uncertainty calibration",
+    "principle_4_direct_portfolio": "★ 핵심 — DPL paradigm retain in conditional complement form",
+    "principle_5_crowding": "complement sleeve 자체가 anti-crowding (1715와 cor < 0.3)",
+    "principle_7_attribution": "sleeve 분리 → bad/good month 기여/손상 명확 measurable"
+  },
+  "decision_gates": {
+    "G0_PIT": "Usable_Date <= sig_date 모든 feature × t-1 lag enforced + p_bad_1715(t+1) classifier에 t feature만 사용",
+    "G1_p_bad_classifier_oos": "AUC ≥ 0.55 + Brier < 0.24 + recall ≥ 0.60 (사전 ABORT gate)",
+    "G2_cor_vs_str1715": "abs(cor) ≤ 0.3 (4th sleeve 자격, complement 본질 정합)",
+    "G3_overall_sr": "(1-a)·1715 + a·comp blend SR ≥ 1.97 (gap 0.0464 → 0.03 margin)",
+    "G4_mdd_no_worse": "blend MDD ≥ -24.81% (1715 retain, 악화 금지 — 코덱스 보수적)",
+    "G5_good_state_drag": "good_month subset SR ≥ (1715 good_month SR - 0.05) — drag minimize strict",
+    "G6_bad_state_improvement": "bad_month subset SR ≥ (1715 bad_month SR + 0.30) — clear improvement",
+    "G7_turnover_hurdle": "blend annualized TO ≤ 6.0",
+    "G8_p_bad_state_predictability": "OOS sub-period AUC stable (3/3 PASS) — not single-window artifact",
+    "G9_AX008": "Forge + Codex + Architect 2/3 PASS"
+  },
+  "failure_cutoffs": {
+    "p_bad_classifier_fail_gate_G1": "HARD ABORT — 사후 regime fitting 차단, DPL-RC paradigm 자체 inviable",
+    "G2_cor_gt_0_3": "DEFER — complement 자격 X (4th sleeve 부적격)",
+    "G5_good_state_drag_exceeded": "ABORT — 1715 good month 손해, complement 부가가치 X",
+    "blend_SR_lt_1_95": "ABORT — 1715 baseline 보다 못함",
+    "blend_MDD_worse_than_1715": "HARD ABORT — 코덱스 보수적 admission rule violation"
+  },
+  "v2_artifacts_inherit": {
+    "literature_review_v2": "stage_artifacts/WT_D20260517_002/literature_review_v2.md (5축 + 14 citations) — DPL-RC 5 core + Brandt 2009 PPP 추가",
+    "champion_challenger_framework": "stage_artifacts/WT_D20260517_002/champion_challenger_comparison_framework.md — incremental scorer mapping",
+    "purged_walk_forward_protocol": "stage_artifacts/WT_D20260517_002/purged_walk_forward_protocol.md",
+    "feature_allowlist_v2_80": "stage_artifacts/WT_D20260517_002/feature_allowlist_v2.csv (sha256 b3d66751..., bad-state context fit)",
+    "fmp_ranking_v2_full": "stage_artifacts/WT_D20260517_002/fmp_ranking_v2.csv (1044 features full)",
+    "training_protocol_v2": "stage_artifacts/WT_D20260517_002/training_protocol_v2.md",
+    "pit_audit_v2": "stage_artifacts/WT_D20260517_002/pit_audit_v2.json"
+  },
+  "data": {
+    "features_source": "stage_artifacts/WT_D20260514_008/features_master.parquet (v1/v2 inherit retain)",
+    "n_features_v2_inherit": 80,
+    "feature_allowlist_path": "stage_artifacts/WT_D20260517_002/feature_allowlist_v2.csv (sha256 b3d667517a39e4ebf219988f67c2cc6e22f4fb6350f5d6a5e52976fb4a8fb6ee canonical sha256sum)",
+    "feature_family_balance": "defensive heavy 55% (Tail_Risk + Risk_Beta_Vol + Risk_Metric + Liquidity) — DPL-RC bad-state context에서 자연 fit",
+    "n_sig_dates_canonical": 124,
+    "history_period": "2014-01 ~ 2026-04 canonical (124 sig_dates, walk-forward 5 windows, 52m net test)",
+    "liquidity_threshold_features_build": 50000000,
+    "liquidity_threshold_production_mandate": 200000000,
+    "pit_compliance": "C1~C15 strict + p_bad classifier에 t-feature only (lookahead 차단)"
+  },
+  "model": {
+    "architecture": "DPL_RC_v1_0_Direct_Portfolio_Learning_for_1715_Residual_Complement",
+    "stage_1_linear_baseline": "Linear factor composite (Brandt-Santa-Clara-Valkanov 2009 PPP) — w_comp = β^T X",
+    "stage_2_elastic_net": "sklearn ElasticNet (L1+L2 regularized linear)",
+    "stage_3_lightgbm": "LightGBM (gradient boosting, feature interaction)",
+    "stage_4_dpl_rc_neural": "Set-Sequence permutation-invariant ~30K params (v2 architecture inherit)",
+    "p_bad_classifier_design": "LightGBM binary classifier (interpretable + non-linear) — features X_t → p_bad_1715(t+1) ∈ [0, 1]",
+    "loss_function_explicit": "L = -E[a_t · r_comp_t | bad_1715] + λ_good · max(0, drag_good) + λ_corr · corr(r_comp, r_1715) + λ_to · turnover + λ_tail · CVaR",
+    "lambda_initial": {
+      "lambda_good": 2.0,
+      "lambda_corr": 1.0,
+      "lambda_to": 0.5,
+      "lambda_tail": 0.3
+    },
+    "injection_grid_a_max": [0.05, 0.10, 0.15, 0.20],
+    "framework": "PyTorch 2.x CUDA (Neural stage) + sklearn (linear/EN) + LightGBM (LightGBM stage), v1/v2 인프라 retain"
+  },
+  "training_protocol": {
+    "scheme": "walk_forward_purged",
+    "purged_embargo_months": 1,
+    "train_window_months": 60,
+    "validation_window_months": 12,
+    "test_window_months": 12,
+    "n_windows": 5,
+    "first_train_start": "2014-01",
+    "last_test_end": "2026-04",
+    "pit_lag": "t-1 features → t weights + p_bad → t+1 returns",
+    "hyperparam_ablation": "10 random search × 5 windows × 4 stages × 4 a_max grid = 800 runs (full Pareto admission curve)"
+  },
+  "admission_criteria_7_axis": {
+    "1_overall_SR": "≥ 1.97 (+0.02 from 1715 1.9536)",
+    "2_overall_MDD": "≥ -24.81% (1715 retain, 악화 금지 — 코덱스 보수적)",
+    "3_good_state_drag_SR": "≤ 0.05 (1715 good month SR retain margin)",
+    "4_bad_state_improvement": "bad month SR ≥ 1715 bad month + 0.30 (clear improvement)",
+    "5_turnover": "≤ 6 (annualized one-way)",
+    "6_cor_vs_1715": "≤ 0.3 (4th sleeve 자격, complement 본질)",
+    "7_p_bad_OOS_AUC": "≥ 0.55 (state predictability 입증)"
+  },
+  "comparison_baseline": {
+    "primary": "STR_1715_AR_on_M4_R05_overlay_PG2 SR 1.9536 / MDD -24.81% / CAGR 41.50% (255m PerfA)",
+    "method": "same-harness PerformanceAnalytics + same cost 15bps + same-period overlap (v1/v2 Codex C5 학습 정합)",
+    "comparison_design": "1715 standalone vs 1715 + complement_stage_1~4 × a_max grid 4 = 1 + 16 = 17 candidates"
+  },
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "agent_lineage": {
+    "alpha_research": "Step 2 — DPL-RC paradigm design + 5 core papers (Ferson 1996 / AFP 2014 / Brandt 2009 / Wood 2026 / Avramov 2023) literature + bad-state label 3 정의 design + p_bad classifier protocol + Codex Round 5단계",
+    "risk_research": "Step 5 — Σ rolling per-sig_date + 1715 vs comp crowding + EVaR conditional",
+    "optimizer_research": "Step 4 — injection grid Pareto admission curve + decision-induced ranking audit",
+    "forge": "Step 6 — feasibility mini-forge 4단계 incremental (linear → EN → GBM → Neural) + p_bad OOS gate first + Codex Round",
+    "judge": "Gate 0~9 + AX-008 + admission 7-axis check",
+    "governor": "Step 7 — admit decision (1715 (1-a) + complement a × admit a_max) or DEFER/REJECT"
+  },
+  "codex_round_mandate": true,
+  "estimated_time_total": "12~18h (alpha 3~4h literature + design / risk 1~1.5h / optimizer 1~1.5h / forge feasibility 6~10h GPU + 2h artifacts / judge 1h / governor 30m)",
+  "lessons_referenced": [
+    "L-326 (WT_015_002 REJECT 5-source blend Pareto-dominated cost drag) — small injection 5~20% 정합",
+    "L-328 (DPL_KR_v1 EW collapse + over-param) — narrower problem + incremental scorer 정합",
+    "v2 산출물 (literature + framework + 80 features) inherit retain"
+  ],
+  "academic_references_5_core_dpl_rc": {
+    "FERSON_SCHADT_1996_conditional_alpha": "Conditional alpha framework — state-contingent alpha 분리 본 paradigm 원형",
+    "ASNESS_FRAZZINI_PEDERSEN_2014_BAB_crisis_hedge": "Low-beta as conditional crisis hedge — defensive complement 정합",
+    "BRANDT_SANTA_CLARA_VALKANOV_2009_PPP": "Parametric Portfolio Policy — w = β^T X linear baseline (stage 1)",
+    "WOOD_ROBERTS_ZOHREN_2026_DEEPM_REGIME_EVAR": "regime-conditional EVaR utility (arxiv:2601.05975, v2 inherit retain)",
+    "AVRAMOV_CHENG_METZKER_2023_RFS_ML_CONDITIONAL": "ML conditional return prediction with regime states — DPL-RC ML scorer 정합"
+  },
+  "academic_references_secondary_inherit_v2": "v2 14 citations 정합 inherit (Zhang 2021 China SR 2.0 / DSPO Zhong 2024 / Epstein 2025 / Wang-Hasuike 2026 등)",
+  "production_promotion_eligibility": "7-axis admission criteria 동시 충족 + AX-008 ≥ 2/3 PASS 시 admit candidate. 1715 (1-a_t) + complement a_t book_state mutation 검토. a_max ∈ {5, 10, 15, 20}% Pareto curve 중 도훈 명시 선택."
+}
