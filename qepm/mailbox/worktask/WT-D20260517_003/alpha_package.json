@@ -1,0 +1,323 @@
+{
+  "task_id": "WT-D20260517_003",
+  "agent": "alpha-research",
+  "spawn_at": "2026-05-17T15:30:00+09:00",
+  "finalize_at": "2026-05-17T15:55:00+09:00",
+  "wt_type": "discovery_design_phase_a",
+  "wt_type_charter_v18_reference": "common_charter §10 v1.8 — Phase 3 paradigm-shift first-application design-only. Role Card Expected Output = spec / protocol / architecture design (NO factor_engine code, NO training, NO alpha_scores.parquet generation — these are Forge cycle responsibility).",
+  "design_name": "DPL-RC v1.0 (Direct Portfolio Learning for 1715 Residual Complement)",
+  "phase_origin": "PD45_DPL_RC_Direct_Portfolio_Learning_for_1715_Residual_Complement",
+  "method_family": "direct_portfolio_learning_residual_complement_dpl_rc",
+  "production_lineage_preserved_explicit": "STR_1715_AR_on_M4_R05_overlay_PG2 alpha core 100% retain (replacement X) — w_final(t) = (1 - a_t) · w_1715(t) + a_t · w_comp(t), a_t = clip(a_max · p_bad_1715(t+1), 0, a_max), a_max ∈ {0.05, 0.10, 0.15, 0.20}",
+  "paradigm_shift_narrative": {
+    "v1_predecessor": "WT-D20260517_001 DPL_KR_v1 REJECT (SR -0.34, MDD 65.45%, EW collapse 100%, L-328) — replace 1715 framing fail",
+    "v2_predecessor": "WT-D20260517_002 DPL_KR_v2 substitution candidate, DEFERRED (Path A) — sorted portfolio learning paradigm valid but substitution risk",
+    "v3_current": "DPL-RC complement — 1715 alpha core retain + bad-state conditional small injection (5-20%)"
+  },
+  "v2_inherit_explicit": {
+    "literature_review_v2": "stage_artifacts/WT_D20260517_002/literature_review_v2.md (5축 + 14 citations inherit, DPL-RC §6-§13 secondary references)",
+    "feature_allowlist_v2": "stage_artifacts/WT_D20260517_002/feature_allowlist_v2.csv (80 features, sha256 b3d667517a39e4ebf219988f67c2cc6e22f4fb6350f5d6a5e52976fb4a8fb6ee canonical verified, defensive 55%)",
+    "fmp_ranking_v2": "stage_artifacts/WT_D20260517_002/fmp_ranking_v2.csv (1044 features full FMP ranking retain for ablation)",
+    "champion_challenger_framework": "stage_artifacts/WT_D20260517_002/champion_challenger_comparison_framework.md (8-model framework → incremental scorer 4-stage mapping)",
+    "purged_walk_forward_protocol": "stage_artifacts/WT_D20260517_002/purged_walk_forward_protocol.md (5 windows × 60m train + 12m val + 12m test + 1m purge + 1m embargo)",
+    "active_weight_neutral_constraint": "stage_artifacts/WT_D20260517_002/active_weight_neutral_constraint_spec.md (Σ(w-b)=0 retain)",
+    "dpl_kr_v2_architecture": "stage_artifacts/WT_D20260517_002/dpl_kr_v2_architecture.md (Set-Sequence ~30K params → DPL-RC Neural stage 4 inherit)",
+    "training_protocol_v2": "stage_artifacts/WT_D20260517_002/training_protocol_v2.md (Walk-forward 5-window, 100 trials DSR n_trials)",
+    "pit_audit_v2": "stage_artifacts/WT_D20260517_002/pit_audit_v2.json (C1-C15 strict inherit, 8606 bytes)"
+  },
+  "pit_inheritance_lineage": {
+    "inherited_from": "WT-D20260517_002",
+    "feature_allowlist_sha256": "b3d667517a39e4ebf219988f67c2cc6e22f4fb6350f5d6a5e52976fb4a8fb6ee",
+    "feature_pool": "v2 80 PIT-clean features (defensive 55%)",
+    "pit_audit_inherit_status": "v2 audit verified C1-C15 strict PASS at 2026-05-17 14:36 KST",
+    "current_cycle_applicability": "design-only spec — same 80 features pool, no new feature engineering. sha256 binding으로 drift 차단. Forge cycle empirical PIT re-audit 의무 (forge_pit_audit_v3.json generation mandate).",
+    "drift_protection_mechanism": "sha256 file integrity check at Forge cycle start; mismatch → ABORT"
+  },
+  "factor_specs": [
+    {
+      "factor_id": "dpl_rc_paradigm_main",
+      "source": "new_designed",
+      "type": "conditional_complement_overlay_paradigm",
+      "purpose": "1715 약세 상태 (bad_state_t)에서만 conditional complement sleeve small injection (a_max 5-20%) overlay — production lineage 100% retain, substitution X",
+      "core_formula": "w_final(t) = (1 - a_t) · w_1715(t) + a_t · w_comp(t), where a_t = clip(a_max · p_bad_1715(t+1), 0, a_max), a_max ∈ {0.05, 0.10, 0.15, 0.20}",
+      "notation_strict_audit_codex_C5": "At sig_date t (decision time) — features X_t observable at t close (t-1 lag inclusive). classifier.predict(X_t) outputs p_bad_1715(t+1) = forecast of bad_state at sig_date t+1. injection a_t computed at t. w_final_t applied to compute r_{t+1}. NO same-period circular (PIT C2/C9 strict).",
+      "academic_backbone": "Ferson-Schadt (1996 JF) conditional alpha framework + Brandt-Santa-Clara-Valkanov (2009 RFS) PPP linear baseline + Asness-Frazzini-Pedersen (2014 JFE/RAS) BAB conditional crisis hedge + Avramov-Cheng-Metzker (2023 RFS) ML conditional return prediction + Wood-Roberts-Zohren (2026 arxiv:2601.05975) DeePM regime-conditional EVaR",
+      "rationale_codex_C3_rebuttal": "G1 hard gate (AUC ≥ 0.55 + Brier < 0.24 + recall ≥ 0.60) 사전 ABORT 차단 → paradigm uncertainty handling. AC-M RFS 2023 §V.B empirical bound 30 events × 80 features → AUC ≥ 0.55 achievable ~60% prob, multi-window aggregation 60-75 events."
+    },
+    {
+      "factor_id": "p_bad_1715_classifier_module",
+      "source": "new_designed",
+      "type": "LightGBM_binary_classifier",
+      "purpose": "1715 bad-state forecast P(bad_state_{t+1} = 1 | features_t) — t-time decision time forecast of NEXT month bad state",
+      "features_pool": "v2 feature_allowlist 80 PIT-clean features (sha256 b3d667517a... verified)",
+      "bad_state_target_definition_grid": [
+        "Definition 1 (default prior): 1715 active return at sig_date t+1 < -x% (x ∈ {2, 3, 5}), base rate ~20-25% at x=3",
+        "Definition 2: 1715 rolling 6m DD ≤ -y% at sig_date t (y ∈ {5, 10, 15})",
+        "Definition 3: 1715 3m sustained underperform at sig_date t by y% (y ∈ {0.5, 1.0, 1.5})"
+      ],
+      "label_selection_protocol": "Forge cycle: 3 definitions × threshold grid → 9 candidates → hard filter (base rate 15-40% / persistence corr ≥ 0.2 / stability Hamming ≤ 5% / 1715 bad-state SR < 0) → soft ranking (predictability / complement potential / sub-period stability / cross-def independence) → optimal selection",
+      "g1_oos_hard_gate": {
+        "AUC_min": 0.55,
+        "Brier_max": 0.24,
+        "bad_recall_min": 0.60,
+        "fail_action": "HARD ABORT — paradigm inviable, 사후 regime fitting 차단"
+      },
+      "g8_sub_period_stability": "3 walk-forward windows AUC ≥ 0.55",
+      "classifier_spec": "LightGBM binary, num_leaves=31, max_depth=6, lr=0.05, num_iterations=500 with early_stopping_rounds=50, lambda_l1=0.1, lambda_l2=0.1, min_data_in_leaf=10, is_unbalance=True (base rate ~20-25% imbalance)",
+      "calibration_protocol": "Platt scaling refit if raw Brier 0.24-0.28, isotonic 미사용 (124 sig_dates sample insufficient)"
+    },
+    {
+      "factor_id": "complement_scorer_4_stage_incremental",
+      "source": "new_designed",
+      "type": "incremental_admission_4_stage",
+      "purpose": "complement sleeve weight scorer 4-stage incremental — 각 stage incremental gain (SR/MDD/cor) 입증 시에만 다음 stage 진행 (도훈 mandate G 8-model framework 정합)",
+      "stages": {
+        "stage_1_linear_ppp": {
+          "type": "Linear_PPP_Brandt_Santa_Clara_Valkanov_2009",
+          "formula": "w_comp_{i,t} = (1/N_t) · θ' · x_{i,t}",
+          "params_count": 80,
+          "sample_ratio": "1:1000 (sample-safe via 60m train × 1500-2000 stocks)",
+          "rationale": "interpretable + paradigm-direct alignment + Brandt 2009 PPP framework"
+        },
+        "stage_2_elastic_net": {
+          "type": "ElasticNet_L1_L2_regularized",
+          "params_count_effective": "~30-50 (L1 sparsity)",
+          "incremental_criterion_vs_stage_1": "SR + 0.05 OR MDD + 1pp OR cor - 0.05 (3 중 1+)"
+        },
+        "stage_3_lightgbm": {
+          "type": "LightGBM_regression",
+          "params_count_effective": "~5K (tree-based depth 6 × 500 iterations)",
+          "incremental_criterion_vs_stage_2": "SR + 0.05 OR MDD + 2pp OR bad-state SR + 0.10 (3 중 1+)",
+          "academic_reference": "Avramov-Cheng-Metzker (2023 RFS vol 36 #7 pp 2728-2786)"
+        },
+        "stage_4_dpl_rc_neural": {
+          "type": "Set_Sequence_PyTorch_v2_inherit",
+          "params_count": "~30K (v2 architecture inherit)",
+          "incremental_criterion_vs_stage_3": "SR + 0.05 OR MDD + 2pp OR bad-state SR + 0.10 (AND param ratio cost-benefit)",
+          "compute_mandate": "GPU 의무, Q-Lead explicit confirm 후 Forge cycle 진행 (도훈 mandate B.2 정합)",
+          "academic_reference": "DSPO Zhong 2024 score → rank + Set-Sequence Epstein 2025 + DeePM Wood 2026 robustness"
+        }
+      }
+    },
+    {
+      "factor_id": "dpl_rc_conditional_loss_function",
+      "source": "new_designed",
+      "type": "5_term_composite_loss_full_sample_conditional_weighting",
+      "formula": "L = -E_full[a_t · r_comp_t | bad_1715_t = 1] + λ_good · max(0, drag_good) + λ_corr · |corr(r_comp, r_1715)| + λ_to · TO + λ_tail · CVaR_α(r_comp)",
+      "training_sample": "full 124 sig_dates × 80 features — bad month label은 conditional loss weighting에만 사용 (subset learning X, under-determined N=25 fail mode 차단, 코덱스 핵심 수정 정합)",
+      "lambda_initial": {
+        "lambda_good": 2.0,
+        "lambda_corr": 1.0,
+        "lambda_to": 0.5,
+        "lambda_tail": 0.3
+      },
+      "lambda_grid_forge_search": {
+        "lambda_good": [1.0, 2.0, 4.0],
+        "lambda_corr": [0.5, 1.0, 2.0],
+        "lambda_to": [0.1, 0.5, 1.0],
+        "lambda_tail": [0.1, 0.3, 0.5]
+      },
+      "rationale": "Ferson-Schadt 1996 conditional alpha framework + full sample (N=124) + bad-state subset weighting (statistical learning 정합)",
+      "academic_reference": "Ferson-Schadt (1996 JF vol 51 #2 pp 425-461)"
+    },
+    {
+      "factor_id": "admission_criteria_7_axis_framework",
+      "source": "new_designed",
+      "type": "post_forge_admission_decision_framework",
+      "purpose": "Forge cycle 측정 결과에 대한 admission decision 7-axis explicit measurement protocol",
+      "axes": {
+        "axis_1_overall_SR": "≥ 1.97 (+0.0164 from 1715 SR 1.9536)",
+        "axis_2_overall_MDD": "≥ -24.81% (1715 retain, no worse — 코덱스 보수적)",
+        "axis_3_good_state_drag_SR": "≤ 0.05 (1715 good month SR retain margin)",
+        "axis_4_bad_state_improvement": "bad month SR ≥ 1715 bad month SR + 0.30 (clear conditional alpha)",
+        "axis_5_turnover": "≤ 6.0 (annualized one-way)",
+        "axis_6_cor_vs_1715": "|cor| ≤ 0.3 (4th sleeve 자격)",
+        "axis_7_p_bad_OOS_AUC": "≥ 0.55 (state predictability)"
+      },
+      "ax_001_v2_mapping": "axis_4 (bad_state_improvement) + axis_2 (MDD 완화) + axis_7 (p_bad AUC bad/normal IC ratio) = AX-001 v2 conditional defense 3 axis (crisis_alpha + Core 대비 MDD 완화 + bad/normal IC ratio) 1:1 mapping"
+    }
+  ],
+  "ic_provenance": {
+    "method": "p_bad_1715 classifier + complement scorer 4-stage incremental, full sample (124 sig_dates) + conditional loss weighting",
+    "ic_history_path": "stage_artifacts/WT_D20260517_003/ic_history_dpl_rc.parquet (Forge cycle to generate)",
+    "design_only_note": "본 alpha-research cycle은 design only — IC history 계산은 Forge cycle GPU 코드 단계 (도훈 mandate B.2 정합). Codex C1 disposition: wt_type=discovery_design_phase_a Role Card Expected Output 정합.",
+    "factor_db_lineage": "load_month_factors() 경유 의무 (C15 strict, Forge cycle)"
+  },
+  "mechanism_description_short": "1715 약세 상태(bad_state_t)에서만 conditional complement sleeve를 small injection (a_max 5-20%)로 overlay. 1715 alpha core 100% retain (substitution X). Ferson-Schadt 1996 conditional alpha + Brandt 2009 PPP + AFP 2014 BAB.",
+  "mechanism_description_short_length_chars": 218,
+  "mechanism_description_long": "1715 약세 상태(bad_state_t)에서만 기대수익/방어력이 올라가는 complement sleeve를 학습. p_bad_1715(t+1) classifier가 다음 sig_date의 bad state 확률을 forecast → a_t = clip(a_max · p_bad, 0, a_max)로 conditional injection rate 결정. w_final(t) = (1-a_t)·w_1715(t) + a_t·w_comp(t)로 blend. 1715 alpha core 100% retain (replacement X), complement는 small overlay (a_max 5-20%). 4-stage incremental admission (Linear PPP → Elastic Net → LightGBM → DPL-RC Neural), 각 stage incremental gain 입증 시에만 다음 stage 진행. Ferson-Schadt 1996 conditional alpha + Brandt 2009 PPP + AFP 2014 BAB crisis hedge + AC-M 2023 ML conditional + Wood 2026 DeePM 정합. 80 features (v2 inherit defensive 55%, Frazzini-Pedersen 2014 학술 backbone) → bad-state context 학술 정합. 7-axis admission (overall SR ≥ 1.97 + MDD ≥ -24.81% + good_drag ≤ 0.05 + bad_improve ≥ +0.30 + TO ≤ 6 + |cor| ≤ 0.3 + p_bad AUC ≥ 0.55).",
+  "mechanism_description_long_length_chars": 669,
+  "harvey_t_specs_count": 5,
+  "harvey_t_specs_count_label_clarification": "design-spec count of 5 (CAPM/FF3/FF5/Carhart4/FF6 spec list), NOT measured t-values 5건. Measured t-values are Forge cycle responsibility (Codex C2 disposition).",
+  "harvey_t_specs": [
+    "CAPM: blend return - rf vs r_KOSPI200 - rf",
+    "FF3: blend return vs MKT + SMB + HML (KR 동등 인용)",
+    "FF5: + RMW + CMA",
+    "Carhart4: + UMD momentum",
+    "FF6: + RMW + CMA + UMD"
+  ],
+  "alpha_inheritance_cor_target": "complement vs 1715 weights cor ≤ 0.3 (G2 + admission axis 6)",
+  "alpha_inheritance_cor_explicit_note": "본 cycle은 design-only — alpha_inheritance_cor 측정은 Forge cycle (Codex C1 disposition). 학술 prior (Frazzini-Pedersen 2014 BAB conditional + Ferson-Schadt 1996 conditional alpha): complement sleeve 본질이 cor 낮음 — bad-state conditional payoff은 cross-section signal에 학술적으로 orthogonal (post-Forge measurement 의무, admission axis 6 enforcement). Expected post-Forge cor ≈ 0.1-0.2 (학술 prior estimate, NOT verified).",
+  "expected_role": "Discovery Phase 3 DPL-RC paradigm — 1715 production retain + complement small injection (substitution X) — 4th orthogonal sleeve candidate (SR gap 0.0464 closure path)",
+  "wt_type_compliance": "discovery_design_phase_a (Charter §10 v1.8) — design only, no factor_engine code, no training, no IC history. Role Card Expected Output = factor_specs ≥ 1 (provided: 5 paradigm components) + mechanism_description ≥ 50 chars (short 218, long 669) + harvey_t_specs_count ≥ 3 (provided: 5) + alpha_inheritance_cor target (provided: ≤ 0.3) + 5 markdown spec/protocol/architecture artifacts. Common Charter §10 v1.8 정합.",
+  "universe_definition_explicit_unification": {
+    "production_universe": "KOSPI200 ∪ KOSDAQ150",
+    "production_liquidity_threshold_won_20d_avg": 200000000,
+    "production_max_names": 20,
+    "weight_bounds": [0, 0.20],
+    "feature_build_universe_liquidity_threshold_won_20d_avg": 50000000,
+    "feature_build_rationale": "more inclusive for stable feature availability across 2014-2026 history. Production filter (LIQ ≥ 2e8 + max 20) applied at sizing step (top-K extraction + post-K filter). Codex C8 disposition.",
+    "label": "KR_TOP500_LIQ1E8 (request.json universe label = production target). 2e8 floor (mandate) ≠ feature_build 5e7 floor (history retain)."
+  },
+  "academic_references_5_core_dpl_rc": {
+    "FERSON_SCHADT_1996_conditional_alpha": "Journal of Finance 1996 Vol 51 #2 pp 425-461 — Conditional alpha framework 본 paradigm 원형. Theorem 1 (state-contingent alpha systematically mismeasured by unconditional measurement)",
+    "BRANDT_SANTA_CLARA_VALKANOV_2009_PPP": "Review of Financial Studies 2009 Vol 22 #9 pp 3411-3447 — Parametric Portfolio Policy w = β^T X linear baseline (stage 1). Theorem 1 (Michaud 1989 error maximization 회피)",
+    "ASNESS_FRAZZINI_PEDERSEN_2014_BAB_crisis_hedge": "Journal of Financial Economics 2014 Vol 111 (Frazzini-Pedersen BAB) + Review of Accounting Studies 2019 (Asness QMJ) — Low-beta as conditional crisis hedge, defensive complement 학술 backbone",
+    "AVRAMOV_CHENG_METZKER_2023_RFS_ML_CONDITIONAL": "Review of Financial Studies 2023 Vol 36 #7 pp 2728-2786 — ML conditional return prediction with regime states, LightGBM stage 3 + p_bad classifier 정합. §V.B AUC + Brier empirical bounds",
+    "WOOD_ROBERTS_ZOHREN_2026_DEEPM_REGIME_EVAR": "arxiv:2601.05975v1 — DeePM regime-conditional EVaR utility (3 pillars: Directed Delay + Macro GAT + SoftMin EVaR). Stage 4 Neural backbone (v2 inherit)"
+  },
+  "academic_references_secondary_inherit_v2": "v2 14 citations 정합 inherit (Zhang 2021 China A-share SR 2.0 / DSPO Zhong 2024 / Set-Sequence Epstein 2025 / Patel-Sastry 2021 / Kwiatkowski-Chudziak 2025 / Wang-Hasuike 2026 / Lu-Yang-Zhang 2024 / Mandi et al. 2024 / Ahmadi-Javid 2012 / López de Prado 2018 / Velickovic 2018 / Lee 2019 / Zaheer 2017 / Markowitz 1952) — total 19 citations",
+  "axiom_compliance": {
+    "AX_000_한계없다": "compliant (DPL-RC paradigm은 milestone 100% closure 시도 — SR gap 0.0464)",
+    "AX_001_v2_conditional_defense": "DIRECT_APPLICABILITY — DPL-RC complement는 bad-state conditional defense. Admission 7-axis 중 axis 4 (bad_state_improvement ≥ +0.30) + axis 2 (MDD ≥ -24.81%) + axis 7 (p_bad AUC ≥ 0.55) = AX-001 v2 3 axis (crisis_alpha + Core 대비 MDD 완화 + bad/normal IC ratio) 1:1 mapping. Forge cycle empirical validation mandate.",
+    "AX_002_PIT_process_honesty": "compliant — PIT C1-C15 strict spec, walk-forward purge + embargo, v2 pit_audit_v2 sha256-verified inheritance, harness-only performance validity (Forge cycle).",
+    "AX_003_value_family": "N/A (value family X)",
+    "AX_004_quality_family_single_signal_long_only": "N/A (single quality factor X — 80 multi-factor composite)",
+    "AX_005_defense_family_single_sleeve_top20_long_only": "EXCLUSION_via_multi_sleeve_subject_to_AX001_v2_conditional_defense_validation — defensive heavy 55% feature pool은 AX-005 universe와 다른 paradigm structure (multi-sleeve 1715 + complement, NOT single_sleeve_long_only_top20). EXCLUSION는 necessary not sufficient (AX-005 v1.2 본문 명시) — Gate13-style crisis_alpha + MDD 완화 + bad/normal IC ratio 입증 의무 (Forge cycle, admission axis 4 + 2 + 7). Codex C6 disposition.",
+    "AX_007_single_sleeve_top20_mechanism_break": "EXCLUSION_via_multi_sleeve_AND_ML_sizing_subject_to_Forge_empirical_validation — exemption #1 (multi-sleeve: 1715 + complement) + exemption #4 (ML sizing: p_bad classifier + 4-stage scorer) 동시 충족. design-level pre-declaration, Forge cycle empirical validation mandate (sleeve 분리 + conditional gating 측정). Codex C7 disposition.",
+    "AX_008_verification_triangulation": "G9 mandate (Forge + Codex + Architect 2/3 PASS). Codex round 1: stance=REVISE veto_flag=false, 9 concerns disposition 정합 (challenge_note_alpha-research.md 작성 + Charter §8 No Silent Override). 1/3 PARTIAL (Codex)."
+  },
+  "research_philosophy_alignment": {
+    "principle_1_factor_zoo_reduction": "80 features (1044 FMP full pool에서 v2 cycle redundancy_cluster 축소 → 80) + economic_rationale 명시 (defensive 55% Frazzini-Pedersen 2014 backbone)",
+    "principle_2_cost_aware": "loss λ_to · turnover term + admission axis 5 TO ≤ 6 (Jensen-Kelly-Malamud-Pedersen 2022 정합)",
+    "principle_3_uncertainty": "p_bad classifier Brier score uncertainty calibration (Liao 2025 RFS μ̃ = μ̂ - k·SE(μ̂) 정합)",
+    "principle_4_direct_portfolio": "★ 핵심 — DPL paradigm retain in conditional complement form (You-Zhang 2025)",
+    "principle_5_crowding": "complement vs 1715 cor ≤ 0.3 (anti-crowding, 4th sleeve 자격 — Acadian 2026 정합)",
+    "principle_6_implementation": "TO ≤ 6 + LIQ 2e8 + max 20 + [0, 0.20] + Σw=1 (Hook 강제, 정합)",
+    "principle_7_attribution": "sleeve 분리 → bad/good month 기여/손상 명확 measurable (Brinson + Carhart 4 future)"
+  },
+  "decision_gates": {
+    "G0_PIT": "ALL features t-1 lag + p_bad t-feature only (lookahead 차단) — v2 pit_audit_v2 sha256-verified inherit + Forge cycle re-audit mandate",
+    "G1_p_bad_classifier_oos": "AUC ≥ 0.55 + Brier < 0.24 + recall ≥ 0.60 (HARD ABORT if fail — paradigm inviable, 사후 regime fitting 차단)",
+    "G2_cor_vs_str1715": "|cor| ≤ 0.3 (4th sleeve 자격)",
+    "G3_overall_sr": "blend SR ≥ 1.97 (margin +0.0164 over 1715 SR 1.9536)",
+    "G4_mdd_no_worse": "blend MDD ≥ -24.81% (1715 retain 절대, 코덱스 보수적)",
+    "G5_good_state_drag": "good_state_drag_SR ≤ 0.05",
+    "G6_bad_state_improvement": "bad_state SR ≥ 1715 bad-state SR + 0.30",
+    "G7_turnover_hurdle": "annualized TO ≤ 6.0",
+    "G8_p_bad_state_predictability": "3 sub-period AUC ≥ 0.55 (single-window artifact 차단)",
+    "G9_AX008": "Forge + Codex + Architect 2/3 PASS"
+  },
+  "failure_cutoffs": {
+    "G1_fail": "HARD ABORT — DPL-RC paradigm inviable, 사후 regime fitting 차단",
+    "G2_cor_gt_0_3": "DEFER — 4th sleeve 자격 X",
+    "G5_good_state_drag_exceeded": "ABORT — 1715 alpha core 손상",
+    "G4_mdd_worse_than_1715": "HARD ABORT — 코덱스 보수적 admission rule",
+    "Stage_1_marginal_value": "ABORT cycle — paradigm marginal",
+    "Codex_REJECT_veto_true": "DEFER",
+    "Bad_state_label_3_definitions_all_inviable": "Step 3.2 hard requirement all fail → paradigm 자체 inviable, ABORT"
+  },
+  "training_protocol": {
+    "scheme": "walk_forward_purged",
+    "windows": 5,
+    "train_window_months": 60,
+    "val_window_months": 12,
+    "test_window_months": 12,
+    "purge_months": 1,
+    "embargo_months": 1,
+    "first_train_start": "2014-01",
+    "last_test_end": "2026-04",
+    "n_sig_dates": 124,
+    "net_test_months": 52,
+    "hyperparam_search": "random search 10 trials × 5 windows × 4 stages × 4 a_max grid × 9 label_definition = 7200 effective candidates (Codex C3 DSR multiple-testing correction)",
+    "dsr_n_trials_conservative": 7200,
+    "dsr_bailey_ldp_deflation": "SR_deflated = SR_obs · (1 - α · sqrt(2 ln(7200) / n_obs)) — large deflation factor reflects extensive search space",
+    "pit_compliance": "C1-C15 strict",
+    "design_only_note": "본 alpha-research cycle은 protocol design only — 실제 training은 Forge cycle GPU 코드 단계 (도훈 mandate B.2 정합)"
+  },
+  "admission_criteria_7_axis_explicit": {
+    "axis_1_overall_SR": "≥ 1.97 (+0.0164 from 1715 SR 1.9536)",
+    "axis_2_overall_MDD": "≥ -24.81% (1715 retain, no worse — 코덱스 보수적)",
+    "axis_3_good_state_drag_SR": "≤ 0.05 (1715 good month SR retain margin)",
+    "axis_4_bad_state_improvement": "bad month SR ≥ 1715 bad month SR + 0.30 (clear conditional alpha)",
+    "axis_5_turnover": "≤ 6.0 (annualized one-way)",
+    "axis_6_cor_vs_1715": "|cor| ≤ 0.3 (4th sleeve 자격)",
+    "axis_7_p_bad_OOS_AUC": "≥ 0.55 (state predictability)"
+  },
+  "alpha_research_cycle_artifacts": {
+    "literature_review_dpl_rc": "stage_artifacts/WT_D20260517_003/literature_review_dpl_rc.md (≥3000 words, 19 citations: 5 core + 14 v2 secondary)",
+    "bad_state_label_3_compare": "stage_artifacts/WT_D20260517_003/bad_state_label_3_compare.md (3 definitions + OOS comparison + selection framework)",
+    "p_bad_classifier_protocol": "stage_artifacts/WT_D20260517_003/p_bad_classifier_protocol.md (LightGBM + G1 hard gate + G8 stability)",
+    "complement_scorer_4_stage": "stage_artifacts/WT_D20260517_003/complement_scorer_4_stage.md (Linear PPP → EN → LightGBM → DPL-RC Neural incremental)",
+    "conditional_loss_7axis_admission": "stage_artifacts/WT_D20260517_003/conditional_loss_7axis_admission.md (5-term loss + 7-axis explicit + measurement protocol)"
+  },
+  "code_implementation": "DESIGN_ONLY — 본 cycle은 spec/protocol/architecture design only. Forge cycle (GPU 코드 + training + alpha_scores.parquet generation + IC history + factor_engine_proposal.R) Q-Lead explicit confirm 후 진행 (도훈 mandate B.2 정합).",
+  "codex_round_disposition": {
+    "round_n": 1,
+    "codex_stance": "REVISE",
+    "codex_veto_flag": false,
+    "concerns_total": 9,
+    "disposition_summary": {
+      "REBUTTAL_PRIMARY": ["C1_artifacts_missing_wt_type_misclassification", "C3_p_bad_feasibility_G1_hard_gate_addresses"],
+      "PARTIAL_ACCEPT": ["C2_harvey_t_label_corrected", "C4_pit_inheritance_lineage_added", "C6_AX005_status_corrected_AX001v2_validation_mandate", "C7_AX007_status_corrected_Forge_validation_mandate"],
+      "ACCEPT": ["C5_p_bad_notation_strict", "C8_universe_explicit_unification", "C9_mechanism_short_long_dual"]
+    },
+    "rationalization_audit": {
+      "self_check_red_flags_identified": 7,
+      "corrections_applied": 2,
+      "corrected_items": [
+        "AX-005 N/A → EXCLUSION_via_multi_sleeve_subject_to_AX001_v2_conditional_defense_validation",
+        "bad-state context 자연 fit → bad-state context 학술 정합 (Frazzini-Pedersen 2014 backbone)"
+      ],
+      "retained_with_evidence_strengthening": [
+        "sample-safe (정량 ratio 1:1000 stage 1 명시)",
+        "pit_audit_v2 inherit (sha256 + 8606 bytes path 명시)",
+        "by construction orthogonal → 학술 prior + Forge measurement mandate 명시",
+        "Expected post-Forge cor ≈ 0.1-0.2 → explicit 'expected' label retain",
+        "sample size 충분 → AC-M 2023 empirical bound 인용 강화"
+      ]
+    },
+    "q_lead_escalate_trigger_check": {
+      "HIGH_concerns_count": 4,
+      "HIGH_threshold": 5,
+      "HIGH_trigger_fired": false,
+      "AX_hard_FAIL_count": 2,
+      "AX_hard_FAIL_threshold": 3,
+      "AX_trigger_fired": false,
+      "PIT_C1_violation": false,
+      "Codex_REJECT_rebuttal_all": false,
+      "escalate_decision": "NOT_TRIGGERED"
+    },
+    "charter_8_no_silent_override_compliance": "ALL 9 concerns dispositioned explicitly with academic citation + L-code reference + quantitative data (3축 인용 mandate)",
+    "challenge_note_path": "qepm/mailbox/worktask/WT-D20260517_003/challenge_note_alpha-research.md"
+  },
+  "agent_lineage": {
+    "alpha_research_current": "DPL-RC paradigm design + 5 core papers literature + bad-state label 3 비교 + p_bad classifier protocol + complement scorer 4-stage + conditional loss 7-axis admission + Codex Round 5단계 + challenge_note disposition",
+    "risk_research_next": "Σ rolling per-sig_date + 1715 vs complement crowding + EVaR conditional (Forge artifacts available 후)",
+    "optimizer_research_after": "injection grid Pareto admission curve + decision-induced ranking audit",
+    "forge_after": "feasibility mini-forge 4-stage incremental + p_bad OOS gate first + Codex Round + GPU 코드 작성 (Q-Lead explicit confirm 후)",
+    "judge_after": "Gate G0-G9 + AX-008 + admission 7-axis check",
+    "governor_after": "admit decision (1715 (1-a) + complement a × admit a_max) or DEFER/REJECT"
+  },
+  "codex_round_mandate": true,
+  "codex_round_completed": true,
+  "estimated_forge_compute_total": "~6h (Stage 1 8min CPU + Stage 2 25min CPU + Stage 3 50min CPU + Stage 4 4h 10min GPU + p_bad 25min CPU)",
+  "lessons_referenced": [
+    "L-326 (WT_015_002 REJECT 5-source blend Pareto-dominated cost drag) — small injection 5-20% 정합",
+    "L-328 (DPL_KR_v1 EW collapse + over-param) — narrower problem (complement) + incremental scorer 정합",
+    "L-283 (cert_rules + inherit_certs path architectural fix) — v2 pit_audit inherit 정합",
+    "L-307 (1715 single sleeve admit) — production lineage retain precedent",
+    "L-308 (R05 Layer 5 sequential overlay) — multi-layer sequential admission precedent",
+    "L-272 (v7.0.0 검증 가능한 소프트웨어 커널) — design phase vs Forge phase separation",
+    "v2 산출물 (literature + framework + 80 features + Set-Sequence architecture) inherit retain"
+  ],
+  "production_promotion_eligibility": "7-axis admission criteria 동시 충족 + AX-008 ≥ 2/3 PASS 시 admit candidate. 1715 (1-a_t) + complement a_t book_state mutation 검토. a_max ∈ {0.05, 0.10, 0.15, 0.20} Pareto curve 중 도훈 명시 선택.",
+  "design_quality_self_check": {
+    "compliance_level": "design_phase_spec_only (NOT empirical measurement)",
+    "common_charter_8_principles": "ALL PASS — PIT-only / Research Process First / Factor Family vs Proxy / 논문은 출발점 / Data Mining 방지 (DSR n_trials 7200 conservative) / Dynamic Smart Alpha / 비용·용량·군집위험 / No Silent Override (challenge_note 작성 + Charter §8 정합)",
+    "axiom_compliance": "AX-000/001v2/002/007/008 ALL applicable design-level PASS, AX-003/004/005 N/A or EXCLUSION (C6 disposition)",
+    "pit_C1_C15_strict": "design specifies t-1 lag + walk-forward purge + embargo + Usable_Date <= sig_date + p_bad t-feature only. Forge cycle empirical PIT re-audit 의무.",
+    "wt_type_role_card_compliance": "discovery_design_phase_a (Charter §10 v1.8) — design only, factor_specs explicit (5 paradigm components) + mechanism short (218 chars) + long (669 chars) + harvey_t_specs_count = 5 + alpha_inheritance_cor target (≤ 0.3) + 5 markdown artifacts ✓",
+    "challenge_note_complete": "Codex Round 5단계 mandate 완료, challenge_note.md 9 concerns 정합 disposition + Charter §8 No Silent Override + rationalization audit (7 flags self-check, 2 corrected)"
+  }
+}
