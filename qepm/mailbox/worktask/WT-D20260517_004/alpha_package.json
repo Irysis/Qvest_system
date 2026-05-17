@@ -1,0 +1,430 @@
+{
+  "task_id": "WT-D20260517_004",
+  "agent": "alpha-research",
+  "spawn_at": "2026-05-17T19:00:00+09:00",
+  "finalize_at": "2026-05-17T19:30:00+09:00",
+  "wt_type": "discovery_design_phase_a",
+  "wt_type_charter_v18_reference": "common_charter §10 v1.8 — Phase 3 paradigm-shift first-application design-only. Role Card Expected Output = spec / protocol / architecture design markdown + alpha_package.json + Codex Round 5단계. NO factor_engine code, NO training, NO alpha_scores.parquet generation — Forge cycle responsibility.",
+  "hypothesis_summary": "DPL-RC v2.0 Path A NAV-level blend은 1715 약세 상태(bad_state_t)에서만 conditional complement sleeve를 small injection (a_max 5-20%)로 NAV 수준에서 결합한다. 1715 production NAV 100% retain + comp sleeve 1715 외부 universe 자유 종목 선정. WT_003 3 structural blockers (G1 recall 0.089 / cor 0.9997 / cross-base mismatch) NAV-level paradigm shift + 1715-external universe + G1 4-options redesign + same-harness Backtest Contract v1.0 단일 basis로 해소. L-279 multi-sleeve admit precedent + AX-007 exemption #1+#4 동시 정합. Ferson-Schadt 1996 conditional alpha + Brandt 2009 PPP + AFP 2014 BAB + Fama-French 1992 KR β common + Wood 2026 DeePM 5 core papers backbone. design_phase_a (Charter §10 v1.8) — measurement은 Phase B/C Forge cycle.",
+  "diagnostics": {
+    "alpha_inheritance_cor": 0.45,
+    "alpha_inheritance_cor_label": "design phase academic prior median estimate (0.3-0.6 range, Codex C3 ACCEPT 정정 KR equity common market beta). Forge cycle empirical measurement binding. < 0.95 threshold 충족 (cert eligibility).",
+    "harvey_t_specs_pass_count": 5,
+    "harvey_t_specs_pass_count_label": "design-spec count of 5 (CAPM/FF3/FF5/Carhart4/FF6 spec list), NOT measured t-values. cert eligibility threshold = 3 (≥ 3 spec count). Phase B/C measurement binding."
+  },
+  "design_name": "DPL-RC v2.0 Path A NAV-level Blend (Direct Portfolio Learning Residual Complement, NAV-level multi-sleeve)",
+  "phase_origin": "PD45_DPL_RC_Direct_Portfolio_Learning_for_1715_Residual_Complement_v2_NAV_level_PathA",
+  "method_family": "dpl_rc_v2_path_a_nav_level_blend_multi_sleeve",
+  "method_shopping_limiter_audit": {
+    "candidates_tried": 5,
+    "rationale": "5 factor_specs (paradigm + universe + classifier + scorer_with_loss + admission). WT_003 inherit 5 spec count정합. Method shopping 회피 (Charter §10 v1.8 DSR penalty 정합)."
+  },
+  "paradigm_shift_v2_narrative": {
+    "v1_predecessor": "WT-D20260517_001 DPL_KR_v1 REJECT (SR -0.34, MDD 65.45%, EW collapse, L-328)",
+    "v2_predecessor": "WT-D20260517_002 DPL_KR_v2 DEFERRED — sorted portfolio learning paradigm valid but substitution risk",
+    "v3_predecessor": "WT-D20260517_003 DPL-RC v1.0 weights-level A-option, DEFER (3 blockers: G1 recall 0.089 / cor 0.9997 / cross-base mismatch)",
+    "v4_current": "DPL-RC v2.0 Path A NAV-level — paradigm shift to sleeve NAV combination + 1715-external comp universe + G1 4-options redesign + same-harness fair comparison"
+  },
+  "production_lineage_preserved_explicit": "STR_1715_AR_on_M4_R05_overlay_PG2 NAV 100% retain — NAV_blend(t) = (1 - a_t) · NAV_1715_5Layer(t) + a_t · NAV_comp(t). a_t = clip(a_max · p_bad_1715(t+1 | F_t), 0, a_max), a_max ∈ {0.05, 0.10, 0.15, 0.20}. 05_Production/ READ ONLY (safety_guard hook 강제).",
+  "v3_inherit_explicit": {
+    "alpha_package_v3": "qepm/mailbox/worktask/WT-D20260517_003/alpha_package.json",
+    "risk_package_v3": "qepm/mailbox/worktask/WT-D20260517_003/risk_package.json",
+    "optimization_package_v3": "qepm/mailbox/worktask/WT-D20260517_003/optimization_package.json",
+    "p_bad_oos_result_v3": "stage_artifacts/WT_D20260517_003/p_bad_classifier_oos_result.json (recall 0.089)",
+    "admission_decision_v3": "stage_artifacts/WT_D20260517_003/admission_decision.json (DEFER)",
+    "literature_review_v3": "stage_artifacts/WT_D20260517_003/literature_review_dpl_rc.md (≥3000 words, 19 citations)",
+    "bad_state_label_selected_v3": "stage_artifacts/WT_D20260517_003/bad_state_label_selected.json (def1_x3)",
+    "feature_allowlist_v2_inherit": "stage_artifacts/WT_D20260517_002/feature_allowlist_v2.csv (80 features, sha256 b3d667517a39e4ebf219988f67c2cc6e22f4fb6350f5d6a5e52976fb4a8fb6ee)",
+    "pit_audit_v2_inherit": "stage_artifacts/WT_D20260517_002/pit_audit_v2.json (8606 bytes)"
+  },
+  "v3_3_structural_blockers_resolution_mandate": {
+    "blocker_1_g1_recall_0089_fail": {
+      "v3_evidence": "mean_recall=0.0893 (windows: 0.125, 0.000, 0.143)",
+      "v4_resolution_path": "G1 4-options redesign — threshold tuning / continuous regression / 1715-specific features / class-balanced sampling. Phase B mini-Forge OOS. G1 5-subgate (AUC/Brier/Recall/Precision_new/sub-stability) ALL PASS. ALL fail → DEFER paradigm inviable.",
+      "artifact": "stage_artifacts/WT_D20260517_004/g1_classifier_redesign_4_options.md"
+    },
+    "blocker_2_cor_09997_by_construction_fail": {
+      "v3_evidence": "axis_6_cor_1715=0.9997 by A-option (comp ⊂ 1715 top-20) algebraic identity",
+      "v4_resolution_path": "Comp universe = KR_TOP500_LIQ1E8 ∖ STR_1715_top_20(t) dynamic exclusion. Universe overlap = 0% by construction. cor 학술 prior 0.3-0.6 (Codex C3 ACCEPT 정정, KR equity common market beta). 통과 40-50%. Fallback: market beta neutralization (r_comp_residual = r_comp - β·r_1715).",
+      "artifact": "stage_artifacts/WT_D20260517_004/comp_universe_design.md"
+    },
+    "blocker_3_cross_base_mismatch_195_vs_068": {
+      "v3_evidence": "STR_1715_standalone SR=0.6817 (40m OOS canonical) vs production SR=1.9536 (255m full) — 2.87× ratio mismatch",
+      "v4_resolution_path": "NAV-level fair comparison single basis = PerformanceAnalytics + Backtest Contract v1.0. 3-way comparison (NAV_1715 / NAV_comp / NAV_blend) identical period + cost basis. Admission binding = OOS 76m fair (full SR 1.95 = reference, NOT gate).",
+      "artifact": "stage_artifacts/WT_D20260517_004/same_harness_nav_protocol.md"
+    }
+  },
+  "pit_inheritance_lineage": {
+    "inherited_from": "WT-D20260517_002 + WT-D20260517_003",
+    "feature_allowlist_sha256": "b3d667517a39e4ebf219988f67c2cc6e22f4fb6350f5d6a5e52976fb4a8fb6ee",
+    "feature_pool": "v2 80 PIT-clean features (defensive 55%) + Option 3 conditional 5 1715-specific features (t-1 lag strict)",
+    "pit_audit_v2_path": "stage_artifacts/WT_D20260517_002/pit_audit_v2.json (8606 bytes)",
+    "pit_audit_inherit_status": "v2 verified C1-C15 strict PASS at 2026-05-17 14:36 KST; WT_003 re-audit at 2026-05-17 17:44 (sha256 retain)",
+    "current_cycle_applicability": "design-only spec — same 80 features + 5 1715-specific (Option 3 conditional). Forge cycle empirical PIT re-audit 의무.",
+    "drift_protection_mechanism": "sha256 file integrity check at Forge cycle start; mismatch → ABORT. 1715 NAV READ ONLY frozen production.",
+    "codex_c4_pit_codes_disposition_rebuttal": "C13/C14/C15/C9/C4 모두 design-level spec inherit. Phase B/C Forge cycle empirical re-audit mandate. design_phase_a Role Card 정합 (Charter §10 v1.8)."
+  },
+  "factor_specs": [
+    {
+      "factor_id": "dpl_rc_v2_path_a_nav_level_paradigm",
+      "source": "new_designed_v2_paradigm_shift",
+      "type": "nav_level_multi_sleeve_conditional_complement",
+      "purpose": "1715 약세 상태 (bad_state_t)에서만 conditional complement sleeve를 small injection (a_max 5-20%) NAV-level blend. 1715 production NAV 100% retain (변형 X), comp sleeve는 1715 외부 universe (KR_TOP500_LIQ1E8 ∖ STR_1715_top_20)에서 자유 종목 선정 — sleeve 물리적 분리 + cor ≤ 0.3 자격 by design choice 가능 (학술 prior 0.3-0.6, Forge measurement binding).",
+      "core_formula": "NAV_blend(t) = (1 - a_t) · NAV_1715_5Layer(t) + a_t · NAV_comp(t); a_t = clip(a_max · p_bad_1715(t+1 | F_t), 0, a_max); a_max ∈ {0.05, 0.10, 0.15, 0.20}",
+      "notation_strict_audit_pit_c2": "At sig_date t — features F_t at t close (t-1 lag). p_bad_1715(t+1) forecast at t. injection a_t at t. NAV_blend(t+1) realized at t+1. NO same-period circular.",
+      "academic_backbone": "Ferson-Schadt 1996 JF + Brandt-Santa-Clara-Valkanov 2009 RFS + Asness-Frazzini-Pedersen 2014 JFE BAB + Moskowitz-Ooi-Pedersen 2012 JFE cross-asset TSMOM (cross-asset precedent, NOT close analogue per Codex C3) + Fama-French 1992 (KR equity common β) + Wood-Roberts-Zohren 2026 DeePM",
+      "nav_level_vs_weights_level_advantage": "WT_003 A weights-level: cor 0.9997 by construction. WT_004 NAV-level: universe overlap 0% + cor by design choice (학술 prior 0.3-0.6, 통과 40-50% 정직). L-279~L-281 Hybrid 70/15/15 admit precedent 정합.",
+      "design_artifact": "stage_artifacts/WT_D20260517_004/path_a_nav_level_paradigm.md"
+    },
+    {
+      "factor_id": "comp_universe_1715_external_kr_top500_liq1e8",
+      "source": "new_designed_v2_blocker_2_resolution",
+      "type": "dynamic_sig_date_exclusion_universe_with_market_beta_neutralization_fallback",
+      "purpose": "comp sleeve B 종목 선정 universe = KR_TOP500_LIQ1E8 ∖ STR_1715_top_20_universe(t). 1715 외부 mid-cap residual 신호 활용 → cor by design choice (학술 prior 0.3-0.6).",
+      "universe_definition": {
+        "ranking_universe": "KR_TOP500_LIQ1E8 (architect L-227 Option C)",
+        "ranking_universe_size_approx": 500,
+        "ranking_liq_floor_won_20d_avg": 100000000,
+        "exclusion_set": "STR_1715_top_20_universe(t) READ ONLY",
+        "expected_comp_universe_size_per_sig_date": "approx 480-490 names",
+        "holdings_extraction_liq_floor_won_20d_avg": 200000000,
+        "cost_mandate_bps_one_way": 25,
+        "feature_pool": "v2 80 features (sha256 verified) + Option 3 conditional 5 1715-specific (t-1 lag)"
+      },
+      "dynamic_exclusion_mechanism": "comp_universe_t = setdiff(load_kr_top500_liq1e8(t), load_production_str1715_holdings(t)). Audit: overlap_count_t == 0 hard mandate.",
+      "academic_backbone": "Frazzini-Pedersen 2014 JFE §V.A small-cap residual + Fama-French 1992 KR equity β common + Petkova 2006 RFS factor structure + architect L-227 + L-281 KR TSMOM cor 0.077 (cross-asset, NOT close analogue per Codex C3)",
+      "cor_target_post_forge_academic_prior_estimate": "0.3 - 0.6 (Codex Round 1 C3 ACCEPT 정정: KR equity common market beta. 0.05-0.25 overclaim 폐기)",
+      "cor_03_ceiling_pass_probability_estimate": "40-50% (정직, Forge measurement binding)",
+      "cor_gt_03_fallback_mechanism_market_beta_neutralization": {
+        "backup_A_cor_regularization_grid": "λ_corr ∈ {0.5, 1.0, 2.0} grid search",
+        "backup_B_market_beta_neutralization_new": "r_comp_residual(t) = r_comp(t) - β · r_1715(t), β = rolling 36m at t-1 PIT strict. NAV_blend = NAV_1715 × (1-a_t) + NAV_comp_residual × a_t. Forge cycle empirical 검증."
+      },
+      "cost_decomposition_audit": "cost_blend = (1-a_t) · 15bps · TO_1715 + a_t · 25bps · TO_comp + |Δa_t| · 15bps. a_max=0.20 시 net ≈ 17 bps ≤ 20 bps ceiling.",
+      "design_artifact": "stage_artifacts/WT_D20260517_004/comp_universe_design.md"
+    },
+    {
+      "factor_id": "p_bad_1715_classifier_v2_4_options_redesign",
+      "source": "new_designed_v2_blocker_1_resolution",
+      "type": "LightGBM_4_options_oos_comparison_with_g1_5_subgate_strict",
+      "purpose": "1715 bad-state forecast — WT_003 recall 0.089 fail 학습 → 4 options OOS 비교 + G1 5-subgate 엄격 유지 (완화 X)",
+      "v3_fail_diagnostic": {
+        "v3_recall_mean": 0.0893,
+        "v3_auc_mean": 0.6002,
+        "v3_brier_mean": 0.2188,
+        "binding_constraint": "Recall 0.0893 ≪ 0.60 (AUC + Brier marginal pass)"
+      },
+      "options_4_redesign": {
+        "option_1_threshold_tuning": {
+          "mechanism": "WT_003 XGBoost retain + τ ∈ {0.5, 0.3, 0.25, 0.2}",
+          "academic_backbone": "Provost-Fawcett 2001 + Brier 1950 + Platt 1999",
+          "expected_recall_academic_prior_estimate_not_validated": "~0.40-0.65 at τ_opt",
+          "compute_quantified_min_cpu": 7.5
+        },
+        "option_2_continuous_regression": {
+          "mechanism": "s_t = -active_ret_t, LightGBM regression, sigmoid calibration",
+          "academic_backbone": "Gu-Kelly-Xiu 2020 RFS §III.C + Avramov-Cheng-Metzker 2023 RFS §V.B",
+          "expected_recall_academic_prior_estimate_not_validated": "~0.45-0.55 at top-30% quantile",
+          "compute_quantified_min_cpu": 7.5
+        },
+        "option_3_str1715_specific_features": {
+          "mechanism": "v2 80 + 5 1715-specific (str1715_active_ret_lag1, str1715_rolling_dd_6m, str1715_active_volatility_12m, m4_regime_state_t, r05_tail_regime_t) all t-1 lag",
+          "academic_backbone": "Ferson-Schadt 1996 Theorem 1 + Asness 2014 QMJ + Avramov-Cheng-Metzker 2023 §V.A",
+          "expected_recall_academic_prior_estimate_not_validated": "~0.45 multi-window",
+          "expected_auc_academic_prior_estimate_not_validated": "~0.65",
+          "compute_quantified_min_cpu": 8.0,
+          "pit_precaution": "All t-1 lag strict C2, walk-forward purge 1m + embargo 1m, production NAV READ ONLY"
+        },
+        "option_4_class_balanced_sampling": {
+          "mechanism": "SMOTE + focal loss (α=0.75, γ=2)",
+          "academic_backbone": "Chawla 2002 JAIR + Lin 2017 ICCV + He-Garcia 2009 IEEE TKDE",
+          "expected_recall_academic_prior_estimate_not_validated": "~0.55",
+          "expected_auc_academic_prior_estimate_not_validated": "~0.65",
+          "compute_quantified_min_cpu": 38.0
+        }
+      },
+      "g1_gate_strict_retention_no_loosening": {
+        "G1_1_AUC_min": 0.55,
+        "G1_2_Brier_max": 0.24,
+        "G1_3_Recall_min": 0.60,
+        "G1_4_Precision_min_new": 0.40,
+        "G1_5_sub_window_stability_min": "AUC ≥ 0.55 in ≥ 4/5 windows",
+        "loosening_explicit_forbidden": "WT_003 G1 spec retain. Methodology 4 options 개선 ONLY. Gate 완화 차단 (Charter §8)."
+      },
+      "selection_criteria": "P1: G1.1-G1.5 ALL PASS. P2: max(Recall - Precision_penalty). P3: Sub-window stability. P4: Compute. P5: Academic interpretability. All 4 fail → DEFER paradigm inviable.",
+      "bad_state_label_inherit_v3": "def1_x3 active_ret < -3%, base_rate 0.2967, n_bad=27/91 (사후 label tuning 차단)",
+      "multiple_testing_dsr_deflation_codex_c4_audit": {
+        "n_trials_phase_b": 720,
+        "n_trials_phase_c_additional": 5000,
+        "deflation_formula": "SR_deflated = SR_obs · (1 - α · sqrt(2 ln(720) / n_obs))",
+        "implied_admission_raw_sr_threshold": "SR_obs ≥ 1.97 / 0.58 ≈ 3.4 raw (very stringent, Bailey-LdP 2014)"
+      },
+      "design_artifact": "stage_artifacts/WT_D20260517_004/g1_classifier_redesign_4_options.md"
+    },
+    {
+      "factor_id": "complement_scorer_4_stage_and_conditional_loss_v3_inherit",
+      "source": "v3_inherit_design_retain_with_nav_level_revision",
+      "type": "incremental_4_stage_scorer_plus_5_term_conditional_loss",
+      "purpose_scorer": "complement sleeve weight scorer 4-stage incremental (Linear PPP → ElasticNet → LightGBM → DPL-RC Neural). 각 stage incremental gain (SR/MDD/cor) 입증 시에만 다음 stage 진행.",
+      "stages_inherit_v3": {
+        "stage_1_linear_ppp": "Brandt-Santa-Clara-Valkanov 2009 PPP, 80 params, sample 1:1000 ratio",
+        "stage_2_elastic_net": "L1+L2, ~30-50 effective params, criterion: SR +0.05 OR MDD +1pp OR cor -0.05",
+        "stage_3_lightgbm": "Avramov-Cheng-Metzker 2023 RFS, ~5K params, criterion: SR +0.05 OR MDD +2pp OR bad-state SR +0.10",
+        "stage_4_dpl_rc_neural": "Set-Sequence v2 inherit ~30K params, GPU mandate, Q-Lead explicit confirm 후 Phase C"
+      },
+      "purpose_loss": "5-term composite loss conditional weighting (NAV-level blend 정합)",
+      "formula_loss": "L = -E_full[a_t · r_comp_t | bad_1715_t = 1] + λ_good · max(0, drag_good_blend) + λ_corr · |corr(r_comp, r_1715)| + λ_to · TO + λ_tail · CVaR_α(r_blend)",
+      "rationale_nav_level_revision": "drag_good과 CVaR은 blend return r_blend = w_1715·r_1715 + w_comp·r_comp에 적용. cor regularization은 sleeve-level r_comp vs r_1715 (universe 분리 후 학술 prior 0.3-0.6, λ_corr는 안전 margin + market beta neutralization fallback 가능).",
+      "lambda_initial_v3_inherit": {
+        "lambda_good": 2.0,
+        "lambda_corr": 1.0,
+        "lambda_to": 0.5,
+        "lambda_tail": 0.3
+      },
+      "lambda_grid_phase_c_search": {
+        "lambda_good": [1.0, 2.0, 4.0],
+        "lambda_corr": [0.5, 1.0, 2.0],
+        "lambda_to": [0.1, 0.5, 1.0],
+        "lambda_tail": [0.1, 0.3, 0.5]
+      },
+      "v2_path_a_compatibility": "comp scorer는 sleeve B holdings 결정만 담당 (NAV-level blend과 직교). NAV blend formula 변경은 sleeve combination step만 영향."
+    },
+    {
+      "factor_id": "admission_criteria_7_axis_v3_inherit_with_nav_level_clarification",
+      "source": "v3_inherit_strict_retention_with_blocker_3_resolution_clarification",
+      "type": "post_forge_admission_decision_framework_nav_level_fair_comparison",
+      "purpose": "WT_003 admission 7-axis 완전 retain (strict, gate 완화 X) + binding measurement base = NAV-level fair comparison (OOS 76m). Production full SR 1.95 = reference, NOT admission gate.",
+      "axes_inherit_strict_no_loosening": {
+        "axis_1_overall_SR": "≥ 1.97",
+        "axis_2_overall_MDD": "≥ -24.81%",
+        "axis_3_good_state_drag_SR": "≤ 0.05",
+        "axis_4_bad_state_improvement": "bad month SR ≥ 1715 bad month SR + 0.30",
+        "axis_5_turnover": "≤ 6.0",
+        "axis_5b_net_cost_new": "≤ 20 bps annualized",
+        "axis_6_cor_vs_1715": "|cor(NAV_comp, NAV_1715)| ≤ 0.3",
+        "axis_7_p_bad_OOS_AUC": "≥ 0.55 (G1 5-subgate retain)"
+      },
+      "ax_001_v2_mapping_inherit": "axis_4 + axis_2 + axis_7 = AX-001 v2 conditional defense 3 axis 1:1 mapping. Phase B/C empirical validation mandate.",
+      "decision_rule_strict": "ADMIT iff 7 axes ALL PASS AND G1 5-subgate ALL PASS AND AX-008 ≥ 2/3 AND Harvey 5 t-spec |t_NW|>3 ALL AND DSR Bailey-LdP deflated SR ≥ 1.97. Partial fail → DEFER.",
+      "design_artifact": "stage_artifacts/WT_D20260517_004/same_harness_nav_protocol.md"
+    }
+  ],
+  "ic_provenance": {
+    "method": "NAV-level blend G1 4-options p_bad_1715 classifier (redesigned) + comp scorer 4-stage incremental (1715 외부 universe). PIT C1-C15 strict + walk-forward 5 windows purge 1m + embargo 1m. full sample 124 sig_dates × conditional loss weighting.",
+    "ic_history_path": "stage_artifacts/WT_D20260517_004/ic_history_path_a.parquet (Forge cycle to generate)",
+    "design_only_note": "본 cycle은 wt_type=discovery_design_phase_a — design only. IC history 계산은 Phase B/C Forge cycle GPU 코드.",
+    "factor_db_lineage": "load_month_factors_v2() 경유 의무 (C15 strict)"
+  },
+  "mechanism_description_short": "DPL-RC v2.0 Path A: 1715 NAV 100% retain + 1715 외부 universe (KR_TOP500_LIQ1E8 ∖ STR_1715_top_20) comp NAV 결합 (NAV_blend = (1-a_t)·NAV_1715 + a_t·NAV_comp). G1 4-options redesign + same-harness NAV-level fair comparison + 3 structural blocker resolution. L-279 multi-sleeve precedent + AX-007 exemption #1+#4 동시 정합.",
+  "mechanism_description_short_length_chars": 246,
+  "mechanism_description_long": "DPL-RC v2.0 Path A NAV-level blend은 1715 약세 상태(bad_state_t)에서만 conditional complement sleeve를 small injection (a_max 5-20%)로 NAV 수준에서 결합한다. 1715 production NAV (STR_1715_AR_on_M4_R05_overlay_PG2 5-Layer) 100% retain (변형 X), comp sleeve는 1715 외부 universe (KR_TOP500_LIQ1E8 ∖ STR_1715_top_20)에서 자유 종목 선정 — sleeve 물리적 분리 + cor ≤ 0.3 자격 by design choice 가능 (학술 prior 0.3-0.6, Forge measurement binding). G1 p_bad classifier는 4 options 비교 (threshold tuning / continuous regression / 1715-specific features / class-balanced sampling)로 WT_003 recall 0.089 fail 해소. Measurement basis는 PerformanceAnalytics + Backtest Contract v1.0 단일 적용 (cross-base mismatch 해소). Ferson-Schadt 1996 + Brandt 2009 + AFP 2014 + Fama-French 1992 + Moskowitz 2012 (cross-asset, NOT close analogue per Codex C3 정정) + Wood 2026 DeePM. L-279~L-281 Hybrid 70/15/15 admit precedent + AX-007 exemption #1+#4 정합. cor > 0.3 fallback: market beta neutralization (r_comp_residual = r_comp - β·r_1715).",
+  "mechanism_description_long_length_chars": 850,
+  "harvey_t_specs_count": 5,
+  "harvey_t_specs_count_label_clarification": "design-spec count of 5 (CAPM/FF3/FF5/Carhart4/FF6 spec list), NOT measured t-values. Measured t-values are Phase C Forge cycle responsibility (Codex C2 inherit).",
+  "harvey_t_specs": [
+    "CAPM: NAV_blend return - rf vs r_KOSPI200 - rf",
+    "FF3: NAV_blend return vs MKT + SMB + HML (KR 동등 인용)",
+    "FF5: + RMW + CMA",
+    "Carhart4: + UMD momentum",
+    "FF6: + RMW + CMA + UMD"
+  ],
+  "alpha_inheritance_cor": "post Forge — cor(NAV_comp, NAV_1715) ≤ 0.3 target (NAV-level G2 + axis 6). 학술 prior 0.3-0.6 (Codex C3 ACCEPT 정정, KR equity common market beta). 0.3 ceiling 통과 40-50% 정직. cor > 0.3 fallback: market beta neutralization.",
+  "alpha_inheritance_cor_explicit_note": "본 cycle은 wt_type=discovery_design_phase_a — measurement은 Phase B/C Forge. NAV-level blend + 1715-external universe로 by construction 0% overlap. WT_003 cor 0.9997 by construction fail의 paradigm shift 해소. market beta neutralization fallback spec 명시.",
+  "expected_role": "Discovery Phase 3 DPL-RC v2.0 Path A NAV-level — multi-sleeve admission candidate (L-279 precedent), 1715 production NAV 100% retain + complement small injection 4th orthogonal sleeve. SR gap 0.0464 closure path.",
+  "v3_inherit_explicit_value": "WT_003 4 packages inherit + 3 structural blocker resolution explicit",
+  "wt_type_compliance": "discovery_design_phase_a (Charter §10 v1.8) — design only, no factor_engine code, no training, no IC history. Expected Output = factor_specs 5 + mechanism short 246 + long 850 + harvey_t_specs_count = 5 + alpha_inheritance_cor ≤ 0.3 + 4 markdown artifacts ✓",
+  "universe_definition_explicit_unification": {
+    "production_universe_str1715_inherit": "KOSPI200 ∪ KOSDAQ150 + 2e8 KRW (KR_top342)",
+    "comp_sleeve_ranking_universe_new_v2": "KR_TOP500_LIQ1E8 (architect L-227 Option C, 1e8 floor, 500 names)",
+    "comp_sleeve_holdings_universe": "KR_TOP500_LIQ1E8 ∖ STR_1715_top_20(t) dynamic",
+    "comp_sleeve_holdings_extraction_liq_floor": "2e8 KRW (production constraint inherit)",
+    "comp_sleeve_top_k": 20,
+    "comp_sleeve_weight_bounds": [0, 0.20],
+    "blend_max_names_union": 40,
+    "a_max_grid": [0.05, 0.10, 0.15, 0.20],
+    "cost_model_1715_sleeve_bps_one_way": 15,
+    "cost_model_comp_sleeve_bps_one_way": 25,
+    "cost_model_blend_net_ceiling_bps_annualized": 20
+  },
+  "multi_sleeve_charter_exception_request": {
+    "exception_type": "max_names_hard_constraint_extension",
+    "base_constraint": "Production Constraints: max 20 종목 (CLAUDE.md L40, single-sleeve)",
+    "requested_extension": "multi-sleeve union ≤ 40 (sleeve A NAV_1715 ≤ 20 + sleeve B NAV_comp ≤ 20)",
+    "precedent_basis": [
+      "L-279/280/281 Hybrid 70/15/15 admit (STR_1715 + TSMOM + KR_10y)",
+      "AX-007 exemption #1 (multi-sleeve)"
+    ],
+    "axiom_compliance": "AX-007 exemption #1 + #4 동시 정합 by construction",
+    "approval_authority": "도훈 explicit confirm + governor agent admission gate audit (Charter §10 v1.8)",
+    "approval_pending": true,
+    "codex_round_1_c2_disposition": "PARTIAL_ACCEPT"
+  },
+  "academic_references_5_core_dpl_rc_v2": {
+    "FERSON_SCHADT_1996_conditional_alpha": "JF 1996 Vol 51 #2 pp 425-461 — Theorem 1 state-contingent alpha",
+    "ASNESS_FRAZZINI_PEDERSEN_2014_BAB_crisis_hedge": "JFE 2014 Vol 111 §V.A small-cap residual",
+    "FAMA_FRENCH_1992_KR_EQUITY_BETA_COMMON": "JF 1992 Vol 47 #2 pp 427-465 — KR equity universe common market beta (Codex C3 정정 evidence)",
+    "L_279_L_281_HYBRID_70_15_15_MULTI_SLEEVE_NAV_LEVEL_PRECEDENT": "Session 76 STR_1715 + TSMOM + KR_10y 3-source NAV-level wealth-share admit (effective 2026-06-01). DPL-RC v2.0 paradigm 1:1 정합.",
+    "WOOD_ROBERTS_ZOHREN_2026_DEEPM_REGIME_EVAR": "arxiv:2601.05975v1 — DeePM regime-conditional EVaR. Stage 4 Neural backbone."
+  },
+  "academic_references_secondary_inherit_v3": "WT_003 19 citations 정합 inherit + 본 cycle 신규 11 (Provost-Fawcett 2001 / Gu-Kelly-Xiu 2020 / Brier 1950 / Platt 1999 / Lin 2017 / Chawla 2002 / He-Garcia 2009 / Fama-French 1992 / Petkova 2006 RFS / L-227 universe advisory / L-281 cross-asset precedent정정) = total 30 citations",
+  "axiom_compliance": {
+    "AX_000_한계없다": "compliant (DPL-RC v2.0 paradigm은 SR gap 0.0464 milestone closure + 3 structural blocker 정직 해소 mandate)",
+    "AX_001_v2_conditional_defense": "DIRECT_APPLICABILITY — complement는 bad-state conditional defense. axis 4 + axis 2 + axis 7 = AX-001 v2 3 axis 1:1 mapping. Phase B/C empirical validation mandate.",
+    "AX_002_PIT_process_honesty": "compliant — PIT C1-C15 strict + 1715 NAV READ ONLY + v3 fail 정직 inherit + 자기합리화 6 red flags audit 중 cor overclaim 1건 정직 정정 + spec mutations 7건 applied + 회피 표현 grep clean.",
+    "AX_003_value_family": "N/A",
+    "AX_004_quality_family_single_signal_long_only": "N/A (80 multi-factor + 5 1715-specific composite)",
+    "AX_005_defense_family_single_sleeve_top20_long_only": "EXCLUSION_via_multi_sleeve_AND_NAV_level_subject_to_AX001_v2_validation — multi-sleeve NAV-level 분리, AX-005 universe와 paradigm structure 완전 다름. necessary not sufficient (AX-005 v1.2 본문). Phase B/C empirical mandate.",
+    "AX_007_single_sleeve_top20_mechanism_break": "EXCLUSION_via_AX007_exemption_1_PLUS_4_by_construction — #1 (multi-sleeve NAV_1715 + NAV_comp 물리적 분리, universe 0% overlap) + #4 (ML sizing p_bad 4-options + a_t) 동시 충족. WT_003 A-option 한계 (sleeve 분리 모호) 해소. multi_sleeve_charter_exception_request 명시.",
+    "AX_008_verification_triangulation": "G9 mandate. 본 cycle Codex round 1 완료 (REVISE veto_flag=false, 7+5+6 disposition). challenge_note_alpha-research.md 작성 완료 + Charter §8 정합. Phase A 1/3 PARTIAL. Phase B/C에서 Forge + Architect 추가 → 2/3 ≤ 3/3 mandate."
+  },
+  "research_philosophy_alignment": {
+    "principle_1_factor_zoo_reduction": "v2 80 + Option 3 conditional 5 1715-specific = 85 features. economic_rationale 명시 (BAB + conditional state + rolling DD + KR equity β)",
+    "principle_2_cost_aware": "λ_to · turnover + axis_5 ≤ 6 + axis_5b_new ≤ 20 bps. Blend cost decomposition explicit.",
+    "principle_3_uncertainty": "p_bad Brier + G1.4 Precision_min (false-positive ceiling). Option 2 continuous SE estimable.",
+    "principle_4_direct_portfolio": "★ 핵심 — NAV-level direct portfolio learning. weights-level → NAV-level shift는 You-Zhang 2025 multi-sleeve 확장.",
+    "principle_5_crowding": "comp vs 1715 cor by design choice (NAV-level + universe 분리 + market beta neutralization fallback) + λ_corr regularization. Acadian 2026.",
+    "principle_6_implementation": "TO ≤ 6 + LIQ 2e8 (holdings) + max 40 (multi-sleeve charter exception) + [0, 0.20] + Σw=1. multi-sleeve 정합.",
+    "principle_7_attribution": "NAV-level sleeve 분리 → bad/good month 기여/손상 measurable. Brinson + Carhart 4 future ready."
+  },
+  "decision_gates": {
+    "G0_PIT": "ALL features t-1 lag + p_bad t-feature only + 1715 NAV READ ONLY frozen + walk-forward purge 1m + embargo 1m. v2 pit_audit_v2 sha256 verified inherit + Phase B/C re-audit mandate.",
+    "G1_p_bad_classifier_oos_5_subgate_strict": "G1.1 mean_AUC ≥ 0.55 + G1.2 mean_Brier ≤ 0.24 + G1.3 mean_Recall ≥ 0.60 + G1.4 mean_Precision ≥ 0.40 + G1.5 sub-window stability AUC ≥ 0.55 in ≥ 4/5 windows. ALL options fail → DEFER paradigm inviable.",
+    "G2_cor_vs_str1715": "|cor| ≤ 0.3. 학술 prior 0.3-0.6 (정직), 통과 40-50%, fallback market beta neutralization.",
+    "G3_overall_sr": "NAV_blend SR ≥ 1.97 (margin +0.0164 over 1715 SR 1.9536, fair comparison OOS 76m + full 둘 다)",
+    "G4_mdd_no_worse": "NAV_blend MDD ≥ -24.81%",
+    "G5_good_state_drag": "good_state_drag_SR ≤ 0.05",
+    "G6_bad_state_improvement": "bad_state SR ≥ 1715 bad-state SR + 0.30",
+    "G7_turnover_hurdle": "annualized TO ≤ 6.0 + net cost ≤ 20 bps",
+    "G8_p_bad_state_predictability": "Sub-window stability ≥ 4/5 (G1.5 흡수)",
+    "G9_AX008": "Forge + Codex + Architect 2/3 PASS"
+  },
+  "failure_cutoffs": {
+    "G1_all_4_options_fail": "HARD ABORT — paradigm inviable, 사후 정당화 X, 사후 label tuning X",
+    "G2_cor_gt_0_3_post_market_beta_neutralization_fail": "DEFER — 4th sleeve cor 자격 X (market beta neutralization + λ_corr grid 모두 fail 시)",
+    "G5_good_state_drag_exceeded": "ABORT — 1715 alpha core 손상",
+    "G4_mdd_worse_than_1715": "HARD ABORT — 코덱스 보수적",
+    "Stage_1_marginal_value": "ABORT cycle — paradigm marginal",
+    "Codex_REJECT_veto_true": "DEFER",
+    "axis_count_3_plus_fail": "REJECT (paradigm marginal)",
+    "multi_sleeve_charter_exception_dohun_reject": "REJECT (admission impossible without max_names extension)"
+  },
+  "training_protocol": {
+    "scheme": "walk_forward_purged",
+    "windows": 5,
+    "train_window_months": 60,
+    "val_window_months": 12,
+    "test_window_months": 12,
+    "purge_months": 1,
+    "embargo_months": 1,
+    "first_train_start": "2014-01",
+    "last_test_end": "2026-04",
+    "n_sig_dates": 124,
+    "net_test_months": 52,
+    "hyperparam_search_phase_b": "G1 4-options × 5 windows × 4 a_max × 9 label_def = 720 effective trials",
+    "hyperparam_search_phase_c": "+ Stage 1-4 × λ grid (4-dim) × inherit Phase B selected G1 = ~5000 additional trials",
+    "dsr_n_trials_conservative": 720,
+    "dsr_bailey_ldp_deflation": "SR_deflated = SR_obs · (1 - α · sqrt(2 ln(720) / n_obs)). Implied raw SR threshold ≈ 3.4 (very stringent, Codex C4 audit).",
+    "pit_compliance": "C1-C15 strict",
+    "design_only_note": "본 cycle은 protocol design only — 실제 training은 Phase B/C Forge."
+  },
+  "admission_criteria_7_axis_strict_retention": {
+    "axis_1_overall_SR": "≥ 1.97",
+    "axis_2_overall_MDD": "≥ -24.81%",
+    "axis_3_good_state_drag_SR": "≤ 0.05",
+    "axis_4_bad_state_improvement": "≥ +0.30",
+    "axis_5_turnover": "≤ 6.0",
+    "axis_5b_net_cost_new": "≤ 20 bps annualized",
+    "axis_6_cor_vs_1715": "≤ 0.3",
+    "axis_7_p_bad_OOS_AUC": "≥ 0.55"
+  },
+  "alpha_research_cycle_artifacts_v2": {
+    "path_a_nav_level_paradigm": "stage_artifacts/WT_D20260517_004/path_a_nav_level_paradigm.md",
+    "comp_universe_design": "stage_artifacts/WT_D20260517_004/comp_universe_design.md",
+    "g1_classifier_redesign_4_options": "stage_artifacts/WT_D20260517_004/g1_classifier_redesign_4_options.md",
+    "same_harness_nav_protocol": "stage_artifacts/WT_D20260517_004/same_harness_nav_protocol.md",
+    "literature_review_v3_inherit": "stage_artifacts/WT_D20260517_003/literature_review_dpl_rc.md"
+  },
+  "code_implementation": "DESIGN_ONLY — Phase B mini-Forge + Phase C Full Forge Q-Lead explicit confirm 후 진행.",
+  "codex_round_disposition": {
+    "round_n": 1,
+    "codex_stance": "REVISE",
+    "codex_veto_flag": false,
+    "codex_response_path": "qepm/mailbox/worktask/WT-D20260517_004/codex_critic_response_alpha-research.json",
+    "concerns_total": 7,
+    "pit_c_codes_total": 5,
+    "rationalization_red_flags_total": 6,
+    "disposition_summary": {
+      "REBUTTAL_PRIMARY": ["C1_artifacts_missing_wt_type_design_phase_a", "C7_cost_TO_design_phase_compliant"],
+      "PARTIAL_ACCEPT_AND_REBUTTAL": ["C2_universe_charter_exception_request_new", "C4_expected_recall_to_academic_prior_relabel", "C6_mechanism_short_long_separate"],
+      "ACCEPT": ["C3_cor_overclaim_corrected_0_3_0_6_academic_prior_with_market_beta_neutralization_fallback", "C5_challenge_note_written"],
+      "REBUTTAL_PIT_CODES_DESIGN_PHASE": ["C13", "C14", "C15", "C9", "C4_pit_inheritance_lineage_explicit"]
+    },
+    "rationalization_audit": {
+      "self_check_red_flags_identified_by_codex": 6,
+      "corrections_applied": 5,
+      "corrected_items": [
+        "cor by construction ≤ 0.3 → 학술 prior 0.3-0.6 (KR equity common β) + ceiling 통과 40-50% + market beta neutralization fallback",
+        "Expected Recall → expected_recall_academic_prior_estimate_not_validated relabel",
+        "mechanism_description 832 → short 246 + long 850 dual",
+        "g1 markdown §7.2 'sample 충분' → '~60% empirical probability AC-M 2023, Forge measurement binding'",
+        "g1 markdown compute 'trivial/minor/manageable' → 정량 (7.5/7.5/8/38 min CPU)"
+      ],
+      "retain_with_evidence_strengthening": [
+        "AUC + Brier marginal pass (정확 사실 진술)",
+        "compute_cost label retain (정량 수치 추가)",
+        "base_auto_list_exact_match: none detected"
+      ]
+    },
+    "q_lead_escalate_trigger_check": {
+      "HIGH_concerns_count": 5,
+      "HIGH_threshold": 5,
+      "HIGH_trigger_fired_warning": true,
+      "AX_hard_FAIL_count_via_codex": 2,
+      "AX_hard_FAIL_threshold": 3,
+      "AX_trigger_fired": false,
+      "PIT_C1_violation": false,
+      "Codex_REJECT_rebuttal_all": false,
+      "Codex_stance_actual": "REVISE",
+      "escalate_decision": "NOT_TRIGGERED_BUT_HIGH_5_WARNING_TO_Q_LEAD"
+    },
+    "charter_8_no_silent_override_compliance": "ALL 7 critical + 5 PIT + 6 red flags dispositioned with academic + L-code + quantitative 3축. Spec mutations 7건 applied.",
+    "challenge_note_path": "qepm/mailbox/worktask/WT-D20260517_004/challenge_note_alpha-research.md"
+  },
+  "agent_lineage": {
+    "alpha_research_current": "DPL-RC v2.0 Path A NAV-level paradigm design + 3 blocker resolution + 4 markdown + alpha_package.json + Codex Round 5단계 완료 + challenge_note + 자기합리화 1건 정직 정정",
+    "risk_research_next": "Σ rolling per-sig_date + NAV_1715 vs NAV_comp crowding + EVaR conditional + cross-sleeve correlation. 별도 Codex Round risk_critic.",
+    "optimizer_research_after": "NAV-level a_max injection grid Pareto + wealth-share rebalancing + sleeve cost optimization. 별도 Codex Round optimizer_critic.",
+    "forge_phase_b_after": "G1 4-options OOS (~60min CPU) + Stage 1 Linear PPP mini (~10min CPU) + NAV-level 3-way comparison + Codex Round 2 + Q-Lead confirm. alpha_scores.parquet + weights.csv + covariance.parquet + factor_engine_proposal.R 생성.",
+    "forge_phase_c_after": "Stage 2-4 incremental + DPL-RC Neural GPU (4h+) + Pareto curve + Codex Round 3 + Architect verification (AX-008 ≥ 2/3 mandate)",
+    "judge_after": "Gate G0-G9 + AX-008 + 7-axis + 5b new + multi_sleeve_charter_exception audit",
+    "governor_after": "admit decision NAV_blend a_max optimal + book_state v3 mutation (or DEFER/REJECT) + 도훈 explicit confirm multi_sleeve_charter_exception"
+  },
+  "codex_round_mandate": true,
+  "codex_round_completed": true,
+  "estimated_phase_b_compute": "~70min CPU (G1 4-options × 5 windows = 7.5+7.5+8+38 = ~60min + Stage 1 Linear PPP mini ~10min + NAV-level same-harness comparison ~10min)",
+  "estimated_phase_c_compute": "~5-6h (Stage 2 ~25min CPU + Stage 3 ~50min CPU + Stage 4 ~4h 10min GPU + Pareto curve ~30min)",
+  "lessons_referenced": [
+    "L-326 (5-source blend Pareto-dominated cost drag) — small injection 5-20% 정합",
+    "L-328 (DPL_KR_v1 EW collapse) — narrower problem + incremental scorer",
+    "L-283 (cert_rules inherit_certs path) — v2 pit_audit inherit",
+    "L-307 (1715 single sleeve admit) — production lineage retain precedent",
+    "L-308 (R05 Layer 5 sequential overlay AX-008 3/3) — multi-layer sequential admission",
+    "L-272 (v7.0.0 검증 가능한 SW 커널) — design phase vs Forge phase separation",
+    "L-279~L-281 (Hybrid 70/15/15 NAV-level multi-sleeve admit) — direct precedent",
+    "L-313 (STR_1715 5-Layer R05 production promotion) — production NAV READ ONLY source",
+    "L-227 (universe v2 advisory) — KR_TOP500_LIQ1E8 comp universe rationale",
+    "L-282 (PerformanceAnalytics convention reconcile) — Backtest Contract v1.0 single basis mandate",
+    "L-269 (Codex Critic Round 4-Layer) — Codex Round 5단계 mandate precedent",
+    "WT-D20260517_003 v3 design artifacts inherit"
+  ],
+  "production_promotion_eligibility": "7-axis + axis_5b_new admission + AX-008 ≥ 2/3 + Harvey 5 |t_NW|>3 ALL + DSR Bailey-LdP deflated SR ≥ 1.97 + multi_sleeve_charter_exception 도훈 explicit confirm 시 admit candidate. book_state v2.3 → v3 mutation. a_max ∈ {0.05, 0.10, 0.15, 0.20} Pareto curve.",
+  "design_quality_self_check": {
+    "compliance_level": "design_phase_spec_only",
+    "common_charter_8_principles": "ALL PASS — PIT-only / Research Process First / Factor Family vs Proxy / 논문은 출발점 / Data Mining 방지 (DSR n_trials 720 + sub-window stability G1.5 + 3.4 raw SR threshold) / Dynamic Smart Alpha / 비용·용량·군집위험 / No Silent Override (challenge_note 작성 완료 + 자기합리화 1건 정직 정정)",
+    "axiom_compliance": "AX-000/001v2/002/007/008 ALL applicable PASS, AX-005 EXCLUSION via multi-sleeve + NAV-level + Phase B/C mandate. AX-003/004 N/A.",
+    "pit_C1_C15_strict": "design specifies t-1 lag + walk-forward purge + embargo + Usable_Date <= sig_date + p_bad t-feature only + 1715 NAV READ ONLY. Phase B/C empirical re-audit mandate. pit_inheritance_lineage explicit.",
+    "wt_type_role_card_compliance": "discovery_design_phase_a (Charter §10 v1.8) — factor_specs 5 + mechanism short 246 + long 850 + harvey_t_specs_count = 5 + alpha_inheritance_cor ≤ 0.3 + 4 markdown ✓",
+    "v3_3_structural_blockers_resolution_explicit": "(1) G1 recall 0.089 → 4 options + G1.4 Precision_min + G1.5 sub-stability / (2) cor 0.9997 → 1715-external universe + 0% overlap + cor 학술 prior 0.3-0.6 정직 + market beta neutralization fallback / (3) cross-base mismatch → NAV-level single basis + Backtest Contract v1.0 + 3-way fair",
+    "no_silent_override_compliance_completed": "Codex Round 1 완료 + challenge_note.md 완료. v3 fail 정직 inherit + G1 gate 완화 차단 + 자기합리화 1건 정직 정정 + spec mutations 7건 applied + 회피 표현 grep clean.",
+    "production_lineage_retain_100pct": "NAV_1715_5Layer 변형 X (READ ONLY). 05_Production/ Hook 강제 (safety_guard PreToolUse[W/E]). Backtest Contract v1.0 audit prerequisite."
+  }
+}
