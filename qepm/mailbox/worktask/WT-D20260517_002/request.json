@@ -44,7 +44,54 @@
     "weight_bounds": [0, 0.20],
     "sum_weights": 1.0,
     "turnover_annualized_max": 6.0,
-    "mdd_pct_max": -0.25
+    "mdd_pct_max": -0.25,
+    "active_weight_neutral": "Σ_i(w_i,t - b_i,t) = 0 (active weight sum 0 vs KOSPI200 benchmark)",
+    "tracking_error_max_annualized": 0.08,
+    "sector_active_weight_max_abs": 0.10,
+    "adv_usage_max_per_stock": 0.05,
+    "data_constraints": "정형 데이터만 — intraday / NLP / news / ESG / alt-data 절대 금지 (도훈 mandate 2026-05-17)"
+  },
+  "dohoon_mandate_explicit_2026_05_17": {
+    "core_research_question": "ML return prediction + optimizer (Champion) vs Direct Portfolio Learning (Challenger) — KR 주식시장 비용 차감 후 net IR + lower drawdown 우월성 검증",
+    "champion_model": "X_{i,t} → μ̂_{i,t} → Optimizer → w_{i,t} → R^net_{p,t+1} (기존 two-stage 구조)",
+    "challenger_model": "X_{i,t} → Δw_{i,t} → w_{i,t} = b_{i,t} + Δw_{i,t} → R^net_{p,t+1} (Direct Active Weight Policy)",
+    "dpl_objective_explicit": "max_θ Σ_t [(w_t(θ) - b_t)^⊤ r_{t+1} - C(w_t(θ) - w_{t-1}(θ)) - λ·TE_t² - ρ·Concentration_t]",
+    "validation_protocol_strict": "random k-fold CV 금지, purged walk-forward validation 의무 (López de Prado 2018)",
+    "gross_net_separate_report": "모든 결과 gross + net 분리 보고 의무",
+    "compare_8_models_explicit": [
+      "1. Linear factor composite",
+      "2. Elastic Net prediction + optimizer",
+      "3. GBM prediction + optimizer (LightGBM)",
+      "4. Linear Parametric Portfolio Policy (Brandt-Santa-Clara-Valkanov 2009)",
+      "5. GBM Direct Active Weight Policy",
+      "6. Neural Direct Active Weight Policy",
+      "7. Differentiable optimizer layer (가능 시, CvxpyLayer/qpth)",
+      "8. Cost-aware Direct Portfolio Learning"
+    ],
+    "evaluation_metrics_12_mandatory": [
+      "CAGR_net",
+      "IR_net",
+      "Sharpe_net",
+      "MDD",
+      "TE (Tracking Error annualized)",
+      "Turnover (annualized one-way)",
+      "ADVUsage (per-stock capacity)",
+      "FactorAdjustedAlpha (FF5/Carhart4 residual)",
+      "SectorActiveRisk",
+      "HitRatio (monthly active return > 0)",
+      "RollingIR (12m rolling)",
+      "RollingDrawdown (12m rolling)"
+    ],
+    "rejection_criteria_6_explicit": [
+      "1. IR_net_DPL ≤ IR_net_Champion",
+      "2. MDD_DPL > MDD_Champion AND CAGR_DPL improvement insufficient",
+      "3. FactorAdjustedAlpha_DPL ≤ 0 (FF5/Carhart4 residual)",
+      "4. DPL 성과가 특정 기간 / 특정 유니버스 / 특정 섹터에만 의존",
+      "5. DPL 성과가 size / liquidity / beta exposure로 대부분 설명",
+      "6. DPL 모델의 비중 결정 논리 설명 불가 (explainability mandate)"
+    ],
+    "code_writing_protocol": "코드 작성 전 연구원에게 코드 작성 여부 질문 의무 (Q-Lead confirm)",
+    "bias_removal_mandate": "survivorship + look-ahead + restatement bias 3종 제거 strict"
   },
   "research_philosophy_alignment": {
     "principle_2_cost_aware": "loss 합성 항 — Turnover-Adjusted IR 명시 + decision-induced ranking clipping (v1 γ=1.0 weak 학습 반영)",
