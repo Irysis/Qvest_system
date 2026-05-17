@@ -1,0 +1,127 @@
+{
+  "task_id": "WT-D20260517_005",
+  "spawn_at": "2026-05-18T01:30:00+09:00",
+  "spawned_by": "Q-Lead 도훈 mandate 2026-05-17 — Priority 1 re-experiment (WT_004 EXPERIMENT_FAIL reframe 정합)",
+  "wt_type": "discovery_design_phase_a",
+  "phase_origin": "PD45_DPL_RC_v2_Path_A_NAV_Level_REAL_PIT_REWORK",
+  "design_name": "DPL-RC v2.0 Path A NAV-Level — Real PIT Rework (Forge-focused + Architect AX-008 3rd source)",
+  "parent_inheritance": {
+    "v4_predecessor_wt": "WT-D20260517_004 (DEFER_PENDING_REAL_PIT_DATA_REWORK, L-329 적립)",
+    "v4_design_inherit_packages": {
+      "alpha_package": "qepm/mailbox/worktask/WT-D20260517_004/alpha_package.json (38.5KB, REVISE, alpha_discovery_certificate ISSUED)",
+      "risk_package": "qepm/mailbox/worktask/WT-D20260517_004/risk_package.json (55.4KB, REVISE, 17 mutations)",
+      "optimization_package": "qepm/mailbox/worktask/WT-D20260517_004/optimization_package.json (45KB, REJECT 8 → 3+4+1)"
+    },
+    "v4_judge_governor_inherit": "judge_verdict.json + governor_admission.json (DEFER_PENDING_REAL_PIT_DATA_REWORK + 4 cycle differentiation)",
+    "v4_failure_mode_inherit": "EXPERIMENT_FAIL (NOT paradigm fail) — Forge synthetic ret_comp + G1 4 옵션 monthly fail + 12 gates 0 PASS",
+    "philosophy_sot": "02_Infrastructure/docs/qvest_research_philosophy.md v1.0"
+  },
+  "theme": "dpl_rc_v2_path_a_nav_level_real_pit_rework_forge_focused_plus_architect",
+  "hypothesis_title": "Path A NAV-level real PIT data rework — Forge-focused re-experiment + Architect AX-008 3rd source",
+  "hypothesis_description": "WT-D20260517_004 cycle EXPERIMENT_FAIL (synthetic ret_comp + G1 design 부실) 정직 reframe 정합. 본 cycle: alpha + risk + optimizer design은 WT_004 inherit (재spawn X), **Forge cycle만 real PIT data strict로 re-spawn**. Architect agent concurrent spawn (AX-008 3rd source mandate). 핵심 mandate: (1) `factor_db_connector::load_month_factors()` 경유 comp universe real PIT next-period returns strict (synthetic 절대 차단, hash binding bt_result.rds), (2) G1 p_bad classifier 재설계 (≥60 sig_dates + 4-direction 중 최소 2 attempt: threshold tuning / continuous regression / 1715-specific features / class-balanced sampling), (3) Harvey 5-spec + DSR penalty 정식 measurement (CAPM/FF3/FF5/Carhart4/FF6), (4) weights.csv blend-level strict assert (`(1-a_t)·sleeve_a + a_t·sleeve_b` × max(w) ≤ 0.20 per-row), (5) **Architect agent spawn — AX-008 2/3 PASS target** (Forge fresh + Codex post-Codex + Architect verification). 도훈 mandate '아 똑바로 리서치 안하나' 직접 reframe — 본 cycle = real experiment.",
+  "hypothesis_source": "user_defined_post_wt_004_experiment_fail_reframe",
+  "as_of_date": "2026-05-18",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KR_TOP500_LIQ1E8",
+    "liquidity_min_won_20d_avg": 200000000,
+    "max_names_total": 20
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d",
+    "fundamental_annual": "annual May",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement",
+    "macro": "t-1 FRED + ECOS",
+    "ic_history": "Usable_Date <= sig_date"
+  },
+  "hard_constraints": {
+    "long_only": true,
+    "max_names": 20,
+    "weight_bounds": [0, 0.20],
+    "sum_weights": 1.0,
+    "turnover_annualized_max_per_sleeve": 6.0,
+    "mdd_pct_max": -0.2481,
+    "data_constraints": "정형 데이터만",
+    "multi_sleeve_basis": "L-279 Hybrid precedent, sleeve 각 ≤ 20 per-sleeve strict"
+  },
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "forge_real_pit_strict_mandate": {
+    "comp_universe_returns_source": "factor_db_connector::load_month_factors() 경유 KR_TOP500_LIQ1E8 ∖ STR_1715_top_20(t) dynamic exclusion + next-period real PIT returns",
+    "synthetic_absolute_prohibition": "N(0, σ) residual + signal tilt + regime boost 등 어떤 형태 합성도 절대 차단",
+    "self_synthesis_used_label_audit": "bt_result.rds SHA256 hash binding (Forge agent 직접 산출 시 hash 자동 emit, synthetic 시 detection 가능)",
+    "v4_c1_codex_finding_inherit_explicit": "Codex 1st-cycle synthetic detection vindication — 본 cycle 정직 측정 의무",
+    "comp_cost_strict": "15bps one-way (NOT 25bps) — v4 optimizer C6 ACCEPT inherit",
+    "turnover_proven_lt_6": "round-trip ×2 (NO ×12 fabrication, Iter 3 학습)"
+  },
+  "g1_p_bad_classifier_redesign_mandate": {
+    "sample_size_min": 60,
+    "4_directions_min_2_attempt": [
+      "threshold_tuning_0.3_or_0.2",
+      "continuous_regression",
+      "1715_specific_features_active_return_DD_regime",
+      "class_balanced_sampling_SMOTE_weighted_loss"
+    ],
+    "5_subgate_strict": {
+      "AUC_min": 0.55,
+      "Brier_max": 0.24,
+      "Recall_min": 0.60,
+      "Precision_min": 0.40,
+      "sub_window_stability_min": "4/5 windows"
+    },
+    "fail_action_all_directions": "G1 paradigm-level inviable confirm — DPL-RC paradigm retire 검토"
+  },
+  "decision_gates": {
+    "G0_PIT": "Usable_Date ≤ sig_date + factor_db_connector real PIT strict",
+    "G1_p_bad_redesigned": "5-subgate ALL PASS (≥60 sig_dates + 4-direction 중 최소 2 attempt)",
+    "G2_cor_NAV": "abs(cor(NAV_comp, NAV_1715)) ≤ 0.3 (universe 분리 + real PIT measurement)",
+    "G3_blend_SR": "blend NAV SR ≥ 1.97 (+0.02 vs 1715 1.9536)",
+    "G4_mdd_no_worse": "blend MDD ≥ -24.81% (1715 retain)",
+    "G5_good_drag": "good_month subset SR drag ≤ 0.05",
+    "G6_bad_improvement": "bad_month SR ≥ 1715 bad + 0.30",
+    "G7_turnover_per_sleeve": "comp TO ≤ 6 annualized (round-trip ×2)",
+    "G8_harvey_t": "5-spec t > 3.0 정식 regression (NOT placeholder)",
+    "G9_AX008": "Forge + Codex + Architect ≥ 2/3 PASS (Architect concurrent spawn 필수)"
+  },
+  "failure_cutoffs": {
+    "synthetic_detection_codex": "HARD ABORT (v4 학습 directly applied)",
+    "g1_5_subgate_all_directions_fail": "HARD ABORT (paradigm-level inviable confirm)",
+    "weights_csv_malformed": "HARD ABORT (blend-level strict assert)",
+    "blend_sr_lt_1_95": "ABORT (1715 baseline 못 이김)",
+    "mdd_worse_than_1715": "HARD ABORT"
+  },
+  "academic_references_5_core_inherit_v4": {
+    "FERSON_SCHADT_1996": "Conditional alpha (v4 inherit)",
+    "ASNESS_FRAZZINI_PEDERSEN_2014_BAB": "Crisis hedge (v4 inherit)",
+    "MOSKOWITZ_OOI_PEDERSEN_2012_TSMOM": "Cross-asset 0.077 KR empirical (L-281)",
+    "L_279_L_280_L_281_HYBRID_70_15_15": "Multi-sleeve admit precedent",
+    "WOOD_ROBERTS_ZOHREN_2026_DEEPM": "Regime EVaR (v4 inherit)"
+  },
+  "v4_artifacts_inherit_paths": {
+    "alpha_package_v4": "qepm/mailbox/worktask/WT-D20260517_004/alpha_package.json",
+    "risk_package_v4": "qepm/mailbox/worktask/WT-D20260517_004/risk_package.json",
+    "optimization_package_v4": "qepm/mailbox/worktask/WT-D20260517_004/optimization_package.json",
+    "v4_judge_verdict": "qepm/mailbox/worktask/WT-D20260517_004/judge_verdict.json",
+    "v4_governor_admission": "qepm/mailbox/worktask/WT-D20260517_004/governor_admission.json"
+  },
+  "agent_lineage_focused": {
+    "alpha_research_skip": "WT_004 inherit (재spawn X — design 정합 retain)",
+    "risk_research_skip": "WT_004 inherit",
+    "optimizer_research_skip": "WT_004 inherit",
+    "forge": "★ 핵심 — real PIT data factor_db_connector strict + G1 재설계 + Harvey 5-spec + weights.csv blend strict + Codex Round 5단계",
+    "architect_concurrent": "AX-008 3rd source mandate — Forge cycle 결과 independent verification (architect agent spawn)",
+    "judge": "Gate 0~9 + AX-008 ≥ 2/3 target (Forge + Codex + Architect)",
+    "governor": "admit decision — STR_1715 retain or multi-sleeve admit L-279"
+  },
+  "codex_round_mandate": true,
+  "estimated_time_total": "8~10h (Forge 5~6h real PIT + Architect 2h concurrent + Codex Round 1.5h + judge 1h + governor 30m)",
+  "lessons_referenced": [
+    "L-329 (WT_004 EXPERIMENT_FAIL + Codex 1st-cycle synthetic detection + 4 cycle differentiation + 도훈 reframe vindication)",
+    "L-326 (blend Pareto-dominated cost drag)",
+    "L-328 (v1 EW collapse paradigm fail)",
+    "L-279~L-281 (Hybrid multi-sleeve admit precedent)"
+  ],
+  "production_promotion_eligibility": "9 gates ALL PASS + AX-008 ≥ 2/3 (Architect mandate) + L-279 multi-sleeve precedent 정합 시 admit candidate"
+}
