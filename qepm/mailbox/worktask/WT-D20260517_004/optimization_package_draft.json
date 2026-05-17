@@ -1,0 +1,438 @@
+{
+  "task_id": "WT-D20260517_004",
+  "agent": "optimizer-research",
+  "spawn_at": "2026-05-17T21:30:00+09:00",
+  "draft_at": "2026-05-17T22:00:00+09:00",
+  "wt_type": "discovery_design_phase_a",
+  "wt_type_charter_v18_reference": "§10 v1.8 — design phase A protocol + decision framework only, measurement Forge cycle binding",
+  "design_name": "DPL-RC v2.0 Path A NAV-Level Blend — Injection Grid Pareto Admission Curve",
+  "phase_origin": "PD45_DPL_RC_v2_Path_A_NAV_Level_Blend",
+  "method_family": "nav_level_multi_sleeve_conditional_complement_injection_grid_pareto",
+  "production_lineage_preserved_explicit": {
+    "str_1715_pg2_5_layer_retain_explicit": true,
+    "str_1715_path": "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/",
+    "read_only_safety_guard": true,
+    "weight_modification_prohibited": "본 cycle은 1715 production NAV 100% retain. comp sleeve NEW injection ONLY."
+  },
+  "alpha_risk_package_inherit": {
+    "alpha_package_path": "qepm/mailbox/worktask/WT-D20260517_004/alpha_package.json",
+    "alpha_finalize_at": "2026-05-17 19:30 KST",
+    "alpha_design_name": "DPL-RC v2.0 Path A NAV-level (REVISE 7+5+6 cor honest 0.3-0.6)",
+    "alpha_factor_specs_count": 5,
+    "alpha_harvey_t_specs_count": 5,
+    "alpha_alpha_inheritance_cor_label": "0.3-0.6 학술 prior (Codex C3 정직 정정, Forge cycle empirical binding)",
+    "risk_package_path": "qepm/mailbox/worktask/WT-D20260517_004/risk_package.json",
+    "risk_finalize_at": "2026-05-17 21:18 KST",
+    "risk_selection_objective": "condition_number",
+    "risk_sigma_primary": "ledoit_wolf_oracle",
+    "risk_sigma_backup": "gerber_rmt",
+    "risk_lambda_corr_grid_primary_c7": [0.5, 1.0, 2.0, 5.0],
+    "risk_beta_neutralization_deferred_c7": "post governor + execution agent long-only compliance audit",
+    "risk_challenge_flags_pending": "RISK_CHALLENGE_C6_HARD_CONSTRAINT_OVERRIDE_PENDING (multi_sleeve_charter_exception_request)"
+  },
+  "v3_optimizer_inherit_explicit": {
+    "v3_optimization_package_path": "qepm/mailbox/worktask/WT-D20260517_003/optimization_package.json",
+    "v3_method_selected": "DESIGN_ONLY_NO_SELECTION",
+    "v3_paradigm_carried_forward": [
+      "16 candidate (4 stage × 4 a_max) Pareto frontier",
+      "decision_induced_ranking_clipping_audit (Wang-Hasuike 2026 KKT)",
+      "alternative_optimizer_comparison 8-model framework",
+      "selection_objective crowding_adj_ret R4 P3 compliance",
+      "method_shopping_log cap 10"
+    ],
+    "v3_paradigm_v4_adaptation_explicit": [
+      "weights-level → NAV-level (cor 0.9997 by construction → 0.3-0.6 by design choice)",
+      "comp universe 1715 외부 분리 (universe overlap 0%)",
+      "β_a smoothing layer 추가 (NAV-level wealth share TO control)",
+      "M9-M10 NAV-specific baselines 추가 (constant + BAB binary)",
+      "λ_corr grid primary (risk C7 path A) + universe pre-filter secondary (path B)"
+    ]
+  },
+  "injection_grid_pareto_design": {
+    "method": "16 candidates (4 stage × 4 a_max) Pareto frontier with decision-induced ranking audit",
+    "candidate_space": {
+      "n_candidates": 16,
+      "n_stages": 4,
+      "n_a_max": 4,
+      "stages": ["S1_linear_ppp", "S2_elastic_net", "S3_lightgbm", "S4_dpl_rc_neural"],
+      "stages_source": "alpha_package complement_scorer_4_stage §1-§4 inherit",
+      "a_max_grid": [0.05, 0.10, 0.15, 0.20],
+      "a_max_rationale": "AFP 2014 QMJ + Frazzini-Pedersen 2014 BAB 5-20% conditional injection range academic standard",
+      "incremental_admission_caveat": "Stage N+1 → +0.10 net_IR + +0.05 crowding_adj_ret 입증 시 진행 (Occam + L-326)"
+    },
+    "metric_measurement_protocol": {
+      "axis_A1_overall_SR_target": 1.97,
+      "axis_A2_overall_MDD_target": -0.2481,
+      "axis_A3_good_state_drag_SR_target": 0.05,
+      "axis_A4_bad_state_improvement_SR_target": 0.30,
+      "axis_A5_turnover_annualized_target": 6.0,
+      "axis_A6_cor_vs_1715_target": 0.30,
+      "axis_A7_p_bad_OOS_AUC_target": 0.55,
+      "scope": "walk-forward OOS aggregation (5 windows × 12m test = 52m net) — C1 strict",
+      "bootstrap_ci_mandate": "Politis-Romano 1994 stationary, B=1000, 95% CI all axes",
+      "cost_aware_net_returns": true,
+      "cost_aware_rationale": "Charter §15 P2 (Jensen-Kelly-Malamud-Pedersen 2022) + cost v2.3_kr_retail_15bps + comp 25bps + blend ceiling 20bps"
+    },
+    "pareto_frontier_protocol": {
+      "multi_objective_axes": ["A1_overall_SR", "A4_bad_state_improvement", "minus_A5_turnover"],
+      "hard_constraint_filter_axes": ["A2_MDD", "A3_drag", "A6_cor", "A7_p_bad_AUC"],
+      "filter_step_1_hard_constraints": [
+        "max_names per-sleeve ≤ 20 (Hook L3)",
+        "long-only weights ≥ 0 (Hook L3)",
+        "weight_bounds [0, 0.20] (Hook L3)",
+        "Σw = 1 per-sleeve (Hook L3)",
+        "G1 AUC ≥ 0.55",
+        "A2 MDD ≥ -0.2481",
+        "A3 drag ≤ 0.05",
+        "A6 cor ≤ 0.30",
+        "A7 p_bad AUC ≥ 0.55"
+      ],
+      "filter_step_2_pareto_dominance": "O(16²) = 256 pairwise dominance",
+      "tiebreaker": "crowding_adj_ret = A1 - 0.10 · crowding_score_c",
+      "expected_pareto_front_size": "2-5 candidates (학술 prior, NOT measured)"
+    },
+    "lambda_corr_grid_primary_c7_path_a": {
+      "grid": [0.5, 1.0, 2.0, 5.0],
+      "rationale": "risk C7 PARTIAL_ACCEPT primary path — training-side cor anchor via L_total loss term",
+      "loss_term": "L_total = -E[r_blend] + γ_to · |Δw| + λ_corr · cor²(NAV_comp, NAV_1715)"
+    },
+    "universe_filter_secondary_c7_path_b": {
+      "rule": "|cor_pre(stock_i, NAV_1715)| ≤ 0.4 individual-stock pre-filter",
+      "rationale": "primary path G2 FAIL 시 trigger. universe-stage cor anchoring."
+    },
+    "beta_neutralization_deferred_c7_path_c": {
+      "status": "DEFERRED — governor + execution agent long-only compliance audit pending",
+      "long_only_compliance_risk": "blend NAV implicit -a·β·r_1715 hedge exposure (return-level)"
+    },
+    "design_only_note": "Pareto frontier 알고리즘 + 도훈 explicit a_max 선택 = Forge cycle 의무"
+  },
+  "decision_induced_ranking_clipping_audit": {
+    "framework": "Wang-Hasuike 2026 KKT parametric ranking + DSPO Zhong 2024 + Epstein 2025 Set-Sequence",
+    "nav_level_specifics": "score → softmax → comp_sleeve weights (20 names) → comp_NAV → blend NAV. 1715 retain 변형 X. a_t scalar (wealth share) 별도 layer.",
+    "kkt_optimization_formulation": "max Σw_i·s_i s.t. Σw=1, 0≤w≤0.20, |support|≤20 (active set: binding upper / interior / binding lower)",
+    "risk_R1_prediction_inflation": {
+      "mechanism": "softmax(s/τ) low τ + outlier → one weight ≈ 100%",
+      "mitigation": "softmax τ grid {0.5, 1.0, 2.0} + HHI(w_raw) > 0.30 monitoring + max(w_raw) > 0.30 + n_active < 10 alarm",
+      "default_tau": 1.0
+    },
+    "risk_R2_smooth_transition": {
+      "mechanism": "monthly ranking 큰 변동 → TO 급증",
+      "mitigation_alpha_retention": "partial portfolio adjustment α grid {0.3, 0.5, 0.7, 1.0}",
+      "default_alpha": 0.5,
+      "implementation": "w_t = α · w_t^new + (1-α) · w_{t-1}",
+      "mitigation_nav_wealth_share_smoothing_NEW": "a_t_smooth = β_a · a_t^new + (1-β_a) · a_{t-1}, default β_a 0.50, grid {0.3, 0.5, 0.7, 1.0}"
+    },
+    "risk_R3_min_max_bias": {
+      "mechanism": "stage score scale 변동 → softmax behavior inconsistent",
+      "mitigation": "Z-score per-sig_date + Min-max top-K rescale",
+      "inflation_protection": "max(w_raw) ≤ 12.5% < 0.20 by construction (τ=1.0)"
+    },
+    "risk_R4_ranking_degenerate": {
+      "mechanism": "Stage N+1 score ≈ Stage N rank",
+      "mitigation": "Spearman + Jaccard per pair",
+      "alarm_threshold": "spearman_mean > 0.95 AND jaccard_mean > 0.80",
+      "fail_action": "Stage N+1 REJECT (Occam + L-326)"
+    },
+    "to_control_4_layer_nav_blend": {
+      "layer_1_loss_term_lambda_to": {"grid": [0.1, 0.5, 1.0], "default": 0.5},
+      "layer_2_partial_adjustment_alpha": {"grid": [0.3, 0.5, 0.7, 1.0], "default": 0.5},
+      "layer_3_admission_gate_A5": "hard cap ≤ 6.0/year",
+      "layer_4_nav_smoothing_beta_a_NEW": {"grid": [0.3, 0.5, 0.7, 1.0], "default": 0.5},
+      "annualization_formula_explicit": "TO_blend_annualized = Σ_{t=1..12 over rolling year} TO_blend_monthly_t × 2 (round-trip ×2, NOT ×12)",
+      "decomposition": "TO_blend = (1-a)·TO_1715 + a·TO_comp + |a-a_{-1}|·(NAV_comp - NAV_1715)/NAV_blend (cross-sleeve rebalance)"
+    },
+    "long_only_compliance_audit_c7": {
+      "portfolio_holdings": "comp_sleeve weights ≥ 0 long-only retain ✓",
+      "blend_NAV_no_subtraction": "NAV_blend = (1-a)·NAV_1715 + a·NAV_comp NO subtraction at NAV ✓",
+      "beta_neutralization_implicit_short_exposure_risk": "r_comp_residual = r_comp - β·r_1715 → implicit -β·r_1715 short at return-level — DEFERRED governor+execution audit",
+      "primary_path_lambda_corr_training_side_compliant": "long-only holdings + training-side cor anchor only"
+    },
+    "design_only_note": "16 candidate KKT diagnostic + λ_corr grid sweep + R4 degenerate diagnostic = Forge cycle 의무"
+  },
+  "multi_sleeve_constraint_validation": {
+    "ax_007_exemption_double_invocation": {
+      "exemption_1_multi_sleeve_by_construction": "sleeve_A 1715 + sleeve_B comp_sleeve 분리",
+      "exemption_4_ml_sizing_by_construction": "comp_sleeve weights from S1/S2/S3/S4 scorer + a_t continuous from p_bad"
+    },
+    "sleeve_a_str_1715_retain": {
+      "max_names": 20,
+      "weight_bounds": [0, 0.20],
+      "sum_weights": 1.0,
+      "long_only": true,
+      "structure": "w_str1715 × m4 × β_AR × β_R05 (5-Layer)",
+      "lockbox_scope_forge_freeze": "도훈 mandate 2026-05-09 — forge cycle 폐기 (정규 리서치만 lockbox 적용)"
+    },
+    "sleeve_b_comp_new": {
+      "max_names": 20,
+      "weight_bounds": [0, 0.20],
+      "sum_weights": 1.0,
+      "long_only": true,
+      "universe": "KR_TOP500_LIQ1E8 ∖ STR_1715_top_20",
+      "liquidity_min_won_20d_avg": 200000000,
+      "sector_active_weight_cap": 0.30,
+      "turnover_annualized_per_sleeve": 6.0,
+      "cost_one_way_bps": 25
+    },
+    "blend_level_synthetic_constraints": {
+      "a_t_injection_range_a_max_grid": [0.05, 0.10, 0.15, 0.20],
+      "a_t_smoothing_beta_a_default": 0.50,
+      "cor_NAV_comp_NAV_1715_max": 0.30,
+      "mdd_blend_floor": -0.2481,
+      "sr_blend_target": 1.97,
+      "to_blend_annualized_max": 6.0,
+      "blend_cost_ceiling_bps_annualized": 20
+    },
+    "max_names_union_charter_exception_pending": {
+      "sleeve_a_plus_b_max": 40,
+      "charter_base_rule": "§10 v1.8 max_names_total ≤ 20",
+      "exception_request_status": "도훈 explicit confirm + governor admission gate audit pending",
+      "academic_precedent": "L-279 Hybrid 70/15/15 admit (3-sleeve, union theoretical 60) + AX-007 exemption #1 + AX-001 v2",
+      "resolution_path_3_step": "Forge measurement → Q-Lead report → 도훈 confirm/reject → governor admission gate"
+    },
+    "ax_001_v2_strict_application": {
+      "comp_role": "bad_state-conditional complement = defensive factor 조건부 평가",
+      "three_axis_threshold": {
+        "crisis_alpha_bad_state_improvement_sr": 0.30,
+        "mdd_alleviation_no_worse_than_str_1715": -0.2481,
+        "bad_normal_ic_ratio_min": 2.0
+      },
+      "all_three_axes_pass_mandate": true,
+      "any_axis_fail_action": "HARD ABORT",
+      "str_1715_pg2_precedent_l307": "N/A_PURE_OVERLAY (Kritzman 2011 FAJ inherit). 본 cycle은 conditional injection mechanism → AX-001 v2 strict 적용"
+    },
+    "design_only_note": "sleeve-level constraint adherence per cell + governance decision = Forge cycle 의무"
+  },
+  "alternative_optimizer_comparison": {
+    "method_shopping_cap_v6_1": 10,
+    "candidates_designed": 10,
+    "method_list": [
+      {"id": "M1", "name": "MVO_lam2_psi03", "library": "quadprog::solve.QP", "scope": "comp_sleeve weights"},
+      {"id": "M2", "name": "HRP", "library": "02_Infrastructure/portfolio/hrp_core.R", "scope": "comp_sleeve hierarchical"},
+      {"id": "M3", "name": "ERC", "library": "direct R", "scope": "comp_sleeve equal risk contribution"},
+      {"id": "M4", "name": "CVaR_LP_alpha05", "library": "Rglpk", "scope": "comp_sleeve tail-aware"},
+      {"id": "M5", "name": "BL_pbad_view", "library": "direct R", "scope": "Bayesian view"},
+      {"id": "M6", "name": "PPP_linear_baseline", "library": "lm()", "scope": "S1 scorer baseline"},
+      {"id": "M7", "name": "LightGBM_ranker", "library": "lightgbm::lgb.train", "scope": "S3 scorer non-linear"},
+      {"id": "M8", "name": "DPL_RC_Neural", "library": "torch R bridge", "scope": "S4 end-to-end"},
+      {"id": "M9", "name": "constant_a10_baseline", "library": "direct R", "scope": "NAV-level constant wealth share"},
+      {"id": "M10", "name": "BAB_binary_state_conditional", "library": "direct R", "scope": "a_t ∈ {0, a_max} state-conditional"}
+    ],
+    "parallel_execution_r13": {
+      "n_workers": "min(5, detectCores()-1)",
+      "library": "future::multisession",
+      "rationale": "method-wise independent compute, Σ/α main 1회 계산 자동 worker 공유"
+    },
+    "value_add_3_components_priors_NOT_measured": {
+      "component_1_non_linear_interaction": "Δ net_IR M8 vs M6 expected +0.05~0.15 (학술 prior, KR sample-thin caveat)",
+      "component_2_end_to_end": "Δ crowding_adj_ret M8 vs M1 expected +0.03~0.08 (Phase 3 emerging area)",
+      "component_3_state_conditional_injection": "Δ A4 bad_improvement M8 vs M9 expected +0.10~0.30 (conditional injection 핵심)"
+    },
+    "incremental_admission_decision_rule": "Stage N+1 admit IF Δ net_IR > 0.10 AND Δ crowding_adj_ret > 0.05 AND NOT R4 degenerate",
+    "design_only_note": "10 method × hyperparam grid (~200 sub-cells) 측정 + best selection = Forge cycle 의무. Compute estimate ~6-10h GPU."
+  },
+  "selection_objective": "crowding_adj_ret",
+  "selection_objective_v6_1_R4_P3_compliance": true,
+  "selection_objective_rationale": "comp_sleeve = 1715 외부 universe, crowding 측정 의무 (Acadian 80 features). 1715 production crowding retain (L-307 validated). comp 신규 crowding penalty 적용해야 4th orthogonal source 의의. crowding_adj_ret = A1 - 0.10·crowding_score_c.",
+  "weight_bounds": [0, 0.20],
+  "long_only": true,
+  "sum_weights_target": 1.0,
+  "max_names_per_sleeve": 20,
+  "max_names_union_design_forecast_label": "40 (exception_pending — 도훈 + governor approval binding)",
+  "deploy_cutoff": "open-ended_design_phase_a",
+  "deploy_cutoff_rationale": "본 cycle은 design phase a (Charter §10 v1.8). deploy_cutoff = open-ended pending Forge cycle measurement + 도훈 explicit a_max + stage 선택 + governor admission.",
+  "baseline_fairness": {
+    "same_harness_backtest_contract_v1_0": "PerformanceAnalytics standard functions only — Return.portfolio / Return.cumulative / apply.monthly / table.AnnualizedReturns / maxDrawdown",
+    "cross_base_mismatch_resolution_b3": "1715-recomputed canonical basis (NOT 1715-frozen). cross-base mismatch B3 해소.",
+    "lockbox_scope_clarification": "정규 리서치 lockbox 적용 (alpha/risk/optimizer). forge/monitoring/execution = 폐기 (도훈 mandate 2026-05-09)."
+  },
+  "infeasibility_report": null,
+  "binding_constraints": [
+    "max_names_per_sleeve_20",
+    "weight_bounds_0_0_20",
+    "sum_weights_1_0_per_sleeve",
+    "long_only",
+    "A6_cor_nav_comp_nav_1715_0_30",
+    "A2_mdd_blend_floor_-0_2481",
+    "A5_to_blend_annualized_6_0",
+    "blend_cost_ceiling_20bps",
+    "ax_007_exemption_1_4_double",
+    "ax_001_v2_conditional_three_axis_pass",
+    "multi_sleeve_charter_exception_request_pending"
+  ],
+  "method_selected": "DESIGN_ONLY_NO_SELECTION — Forge cycle 측정 후 도훈 explicit a_max + stage 선택. 본 cycle은 protocol design (Pareto frontier identification + admission decision flow + alternative comparison framework + KKT clipping audit + multi-sleeve constraint validation).",
+  "method_comparison_design_only": {
+    "candidate_count": 10,
+    "candidates_metadata_designed": true,
+    "selection_objective": "crowding_adj_ret",
+    "measurement_responsibility": "forge_agent_phase_b_c",
+    "winner_decision_rule": "Pareto frontier (A1, A4, -A5) + crowding_adj_ret tiebreaker",
+    "incremental_admission_caveat": "Stage N+1 → +0.10 net_IR + +0.05 crowding_adj_ret threshold",
+    "hyperparameter_grid_total_sub_cells_approx": 200
+  },
+  "explanation": {
+    "design_summary": "NAV-level wealth share blend NAV_blend = (1-a_t)·NAV_1715 + a_t·NAV_comp. a_t = clip(a_max · p_bad_1715(t+1|t), 0, a_max), a_max grid 4 × scorer stage 4 = 16 candidates Pareto admission. comp universe 1715-external (overlap 0%) → cor design choice 학술 prior 0.3-0.6 (Codex C3 정직). λ_corr training-side primary (risk C7 PARTIAL_ACCEPT) + universe pre-filter secondary + β neutralization tertiary DEFERRED.",
+    "v3_three_blockers_resolution": {
+      "B1_g1_recall_0_089": "G1 4-options redesign (alpha-research) — threshold tuning / continuous regression / 1715-specific features / class-balanced sampling",
+      "B2_cor_0_9997_construction": "NAV-level + universe physical separation → overlap 0% → cor design choice 자율 (학술 prior 0.3-0.6)",
+      "B3_cross_base_mismatch": "same-harness Backtest Contract v1.0 PerformanceAnalytics standard + 1715-recomputed canonical basis"
+    },
+    "production_lineage_safety": "STR_1715 PG2 5-Layer 100% retain. comp sleeve injection 1715 변형 X. 05_Production/ READ ONLY safety_guard hook.",
+    "long_only_compliance_primary_path": "λ_corr training-side grid 우선. β neutralization deferred (governor + execution audit pending).",
+    "multi_sleeve_governance_pending": "max_names union 40 exception 도훈 explicit confirm + governor admission gate audit pending."
+  },
+  "v6_1_compliance": {
+    "R2_C_method_shopping_log_cap_10": true,
+    "R4_P3_selection_objective_non_sharpe": true,
+    "R4_A_confidence_aware_mvo": "alpha_package.confidence_vector 필수 전달 (M1 MVO 호출 시)",
+    "R3_challenge_authority_p4_obligation": "wt_record_challenge_review pending (no objection target review)",
+    "R11_lineage_obligation": "record_package_lineage pending Forge cycle",
+    "R12_no_silent_override_infeasibility": "infeasibility_report = null (currently feasible design)",
+    "R13_parallel_method_comparison": "future::multisession workers ≤ 5",
+    "R14_rcpp_hotspots": "optional bootstrap_ic_fast / bootstrap_dsr_fast (post-selection diagnostic)"
+  },
+  "axiom_compliance": {
+    "AX_000_immutable": true,
+    "AX_001_v2_conditional_defense_three_axis": "comp_sleeve bad-state conditional → strict 적용. 3 axes PASS mandate (crisis_alpha SR ≥ 0.30 + MDD ≥ -0.2481 + bad/normal IC ≥ 2.0).",
+    "AX_002_process_no_bypass": "design phase a 정합 (measurement Forge cycle binding)",
+    "AX_003_kr_value_ep_standalone_fail": "N/A (comp universe not EP_STANDALONE)",
+    "AX_004_kr_quality_single_signal_fail": "N/A (comp universe multi-feature 80 ML scorer)",
+    "AX_005_kr_defense_top20_long_only_fail": "EXCLUSION via comp_sleeve multi-axis design (Gate13 binding Forge cycle)",
+    "AX_007_exemption_1_multi_sleeve_by_construction": true,
+    "AX_007_exemption_4_ml_sizing_by_construction": true,
+    "AX_008_verification_triangulation_2_of_3": "Forge + Codex + Architect 2/3 PASS binding Forge cycle"
+  },
+  "research_philosophy_alignment_charter_v18_p15": {
+    "P1_factor_zoo_validation_over_discovery": "incremental admission rule (Stage N+1 +0.10 net_IR threshold)",
+    "P2_cost_aware_alpha": "blend_cost_ceiling 20bps + 25bps comp + 15bps 1715 retain — net basis all metrics",
+    "P3_uncertainty_aware": "stationary bootstrap CI all axes (B=1000, 95%) + ci_width > 1.5 DEFER trigger",
+    "P4_direct_portfolio_learning": "DPL-RC Neural M8 method 적용 (Phase 3 emerging area)",
+    "P5_crowding_concentration": "crowding_adj_ret selection_objective + Acadian 80 features comp crowding",
+    "P6_implementation_discipline": "TO ≤ 6.0 + LIQ 2e8 + max_names 20 per-sleeve + bounds [0, 0.20] + Σw=1",
+    "P7_attribution_feedback_loop": "Pareto admission per cell → Brinson-Fachler factor/selection/cost/residual 분해 Forge cycle binding"
+  },
+  "decision_gates_optimizer_role": {
+    "G0_PIT_C1_C15": "Usable_Date ≤ sig_date strict + t-feature only p_bad + NAV cross-cov walk-forward OOS only",
+    "G1_p_bad_redesigned_alpha_research_owned": "AUC ≥ 0.55, Brier < 0.24, recall ≥ 0.60 (v3 0.089 학습 fix)",
+    "G2_cor_NAV_optimizer_owned_via_universe_lambda_corr": "abs(cor(NAV_comp, NAV_1715)) ≤ 0.30 walk-forward OOS pooled (52m)",
+    "G3_blend_SR_optimizer_owned": "blend NAV SR ≥ 1.97",
+    "G4_mdd_no_worse_optimizer_owned": "blend MDD ≥ -0.2481",
+    "G5_good_drag_optimizer_owned": "good_month subset SR drag ≤ 0.05",
+    "G6_bad_improvement_optimizer_owned": "bad_month SR ≥ 1715 bad + 0.30",
+    "G7_turnover_per_sleeve_optimizer_owned": "comp TO ≤ 6.0 + 1715 retain",
+    "G8_harvey_t_alpha_research_owned": "5-spec t > 3.0",
+    "G9_AX008_2_of_3_judge_owned": "Forge + Codex + Architect 2/3 PASS"
+  },
+  "diagnostics": {
+    "rf_o1_binding_constraints_count_alarm_k_half": "11 binding currently (K=20 per-sleeve → 11 > K/2 = 10) — borderline alarm. design-phase-a normal, Forge cycle re-evaluation.",
+    "rf_o2_active_return_vs_cost_2x": "expected_AR_blend vs 25bps cost — design-only, Forge cycle measurement",
+    "rf_o3_turnover_micro": "TO target ≤ 6.0 (NOT < 0.02 micro)",
+    "rf_o4_dual_blow_up": "design-only, Forge cycle measurement",
+    "rf_o5_max_names_block": "20 per-sleeve strict (Hook L3 enforce). union 40 = governance exception path.",
+    "rf_o6_sum_weights_block": "Σw = 1 per-sleeve strict (Hook L3 enforce). blend a + (1-a) = 1 by construction.",
+    "rf_o7_weight_bounds_block": "0 ≤ w ≤ 0.20 strict (Hook L3 enforce).",
+    "rf_o9_walk_forward_multi_snapshot": "52m × 5 windows walk-forward (NOT single snapshot). c_only_full_sample_pooled = diagnostic NOT admission."
+  },
+  "forge_cycle_mandates_consolidated": {
+    "16_candidate_metric_measurement_7_axis": "S1~S4 × a_max ∈ {5/10/15/20} = 16 cells × 7 axes",
+    "pareto_frontier_extraction_3_axes": "(A1, A4, -A5) dominance + crowding_adj_ret tiebreaker",
+    "lambda_corr_grid_4_values_sweep": "{0.5, 1.0, 2.0, 5.0} training-side cor anchor",
+    "universe_pre_filter_secondary_c7": "|cor_pre| ≤ 0.4 if λ_corr grid FAIL",
+    "beta_neutralization_tertiary_deferred_c7": "governor + execution agent audit",
+    "10_method_alternative_comparison_parallel": "future::multisession workers ≤ 5",
+    "hyperparameter_grid_per_method_approx_200_sub_cells": "MVO 9 + CVaR 4 + LGBM 18 + DPL 108 + others",
+    "kkt_diagnostic_per_cell": "λ dual + binding constraint count per sig_date",
+    "bootstrap_ci_per_cell_all_axes": "Politis-Romano 1994, B=1000, 95%",
+    "r4_degenerate_diagnostic_per_pair": "Spearman + Jaccard, alarm > 0.95 AND > 0.80",
+    "incremental_admission_decision_per_stage": "Δ net_IR + Δ crowding_adj_ret threshold",
+    "multi_sleeve_constraint_test_per_cell": "8 HC × 16 cells sleeve-level adherence",
+    "ax_001_v2_three_axis_test_per_cell": "crisis_alpha SR + MDD + bad/normal IC ratio",
+    "governance_exception_decision_after_도훈_confirm": "max_names union 40 approval path"
+  },
+  "challenge_flags": [],
+  "challenge_review_completed": true,
+  "challenge_review_targets": ["alpha_vector", "risk_sigma", "bound_feasibility", "nav_blend_formula", "cor_design_choice_universe_separation", "multi_sleeve_exception_path"],
+  "challenge_review_objection": false,
+  "challenge_review_objection_rationale": "alpha cycle 7+5+6 REVISE 완수 (cor target 0.3-0.6 honest 정정) + risk cycle 8+9+7 REVISE 완수 (selection_objective condition_number + lambda_corr grid C7) + design-only scope 명확 (measurement responsibility forge cycle binding). v3 3 structural blockers (G1 recall + cor construction + cross-base mismatch) NAV-level paradigm shift + universe physical separation + same-harness Backtest Contract v1.0 단일 basis로 정상 해소. multi_sleeve charter exception 도훈 confirm pending (alpha+risk+optimizer 모두 동일 flag retain — 정합). 본 cycle 본질적 추가 objection 없음.",
+  "codex_round_mandate": true,
+  "codex_round_completed": "pending_critic_response",
+  "agent_lineage": {
+    "alpha_research": "Step 2 — REVISE 7+5+6 finalize 2026-05-17 19:30 — alpha_package.json (factor_specs 5 + harvey_t 5 + cor 0.3-0.6 honest)",
+    "risk_research": "Step 5 — REVISE 8+9+7 finalize 2026-05-17 21:18 — risk_package.json (sigma LW Oracle + lambda_corr grid + crowding extended + challenge_flag C6 pending)",
+    "optimizer_research_cycle_current": "Step 4 — DRAFT 2026-05-17 22:00 — optimization_package_draft.json (4 stage artifacts + Codex Round pending)",
+    "forge": "Step 6 — pending — NAV-level blend 16 candidate measurement + 9 artifacts",
+    "judge": "Gate 0~9 + AX-008",
+    "governor": "Multi-sleeve admission L-279 precedent + max_names union 40 exception path"
+  },
+  "lessons_referenced": [
+    "L-279~L-281 — Hybrid 70/15/15 multi-sleeve admit precedent (3-sleeve, union 60 theoretical)",
+    "L-307 — STR_1715 PG2 single-sleeve admit (5-Layer architecture, N/A_PURE_OVERLAY precedent)",
+    "L-308~L-313 — Layer 5 R05 admit + ZSC FAIL + composite infeasibility + cross-cycle DSR drift + Production 승격",
+    "L-326 — over-param fail (Stage N+1 admission threshold rationale)",
+    "L-328 — over-param fail (incremental decision rule rationale)",
+    "WT-D20260517_003 — v3 weights-level DEFER 3 structural blockers (G1 recall + cor construction + cross-base mismatch)",
+    "Iter 3 — TO annualization ×12 fabrication 차단 (round-trip ×2 mandate)"
+  ],
+  "academic_references_optimizer_5_core": {
+    "WANG_HASUIKE_2026": "KKT parametric ranking selection (clipping audit framework)",
+    "ZHONG_2024_DSPO": "score → rank → portfolio (decision-induced ranking)",
+    "EPSTEIN_2025": "Set-Sequence permutation",
+    "POLITIS_ROMANO_1994": "stationary bootstrap CI",
+    "LOPEZ_DE_PRADO_2018_AFML_S7": "walk-forward OOS pooled"
+  },
+  "academic_references_secondary_inherit": {
+    "FERSON_SCHADT_1996": "conditional alpha (alpha-research inherit)",
+    "BRANDT_SANTA_CLARA_VALKANOV_2009_RFS": "PPP linear scorer",
+    "ASNESS_FRAZZINI_PEDERSEN_2014_QMJ_BAB": "conditional injection 5-20% range",
+    "FRAZZINI_PEDERSEN_2014_BAB_JFE": "small injection precedent",
+    "JENSEN_KELLY_MALAMUD_PEDERSEN_2022": "cost-aware alpha framework",
+    "BLACK_LITTERMAN_1992": "Bayesian view incorporation (M5 method)",
+    "MARKOWITZ_1952": "MVO foundation",
+    "MAILLARD_RONCALLI_TEILETCHE_2010": "ERC",
+    "LOPEZ_DE_PRADO_2016": "HRP",
+    "ROCKAFELLAR_URYASEV_2000": "CVaR LP",
+    "KE_ET_AL_2017_NEURIPS": "LightGBM",
+    "KRITZMAN_2011_FAJ": "pure overlay precedent (L-307 N/A_PURE_OVERLAY)",
+    "YOU_ZHANG_2025": "Direct Portfolio Learning (DPL)",
+    "WOOD_ROBERTS_ZOHREN_2026_DEEPM": "neural portfolio learning",
+    "MOSKOWITZ_OOI_PEDERSEN_2012_TSMOM": "cross-asset cor 0.077 precedent (L-281)",
+    "FAMA_FRENCH_1992": "KR equity common market beta",
+    "PETKOVA_2006_RFS": "cross-section common factor cor 0.3-0.6 prior"
+  },
+  "production_promotion_eligibility": "9 gates (G0~G9) PASS + AX-008 ≥ 2/3 + L-279 multi-sleeve precedent 정합 + max_names union 40 exception 도훈 + governor approval",
+  "design_quality_self_check": {
+    "design_phase_a_scope_strict": "measurement binding Forge cycle, no candidate metric in optimizer cycle ✓",
+    "method_shopping_cap_10_strict": "10 methods designed (M1~M10) ✓",
+    "selection_objective_non_sharpe": "crowding_adj_ret ✓ (Hook R4 P3 정합)",
+    "v3_3_blockers_resolution_explicit": "B1 G1 / B2 cor / B3 cross-base 명시 ✓",
+    "production_lineage_safety": "1715 PG2 100% retain, comp sleeve 분리 ✓",
+    "long_only_compliance_audit": "λ_corr primary + universe filter secondary + β neutralization deferred ✓",
+    "multi_sleeve_exception_pending": "도훈 explicit confirm + governor audit binding ✓",
+    "ax_007_double_invocation_explicit": "#1 multi-sleeve + #4 ML sizing ✓",
+    "ax_001_v2_three_axis_strict": "PURE_OVERLAY (L-307) → conditional injection 적용 ✓",
+    "codex_round_5_step_flow_pending": "_draft.json 작성 → codex_critic_response 대기 → challenge_note → final"
+  },
+  "code_implementation": {
+    "stage_artifacts_4_md": [
+      "stage_artifacts/WT_D20260517_004/injection_grid_nav_pareto.md",
+      "stage_artifacts/WT_D20260517_004/clipping_audit_nav.md",
+      "stage_artifacts/WT_D20260517_004/multi_sleeve_constraint.md",
+      "stage_artifacts/WT_D20260517_004/alternative_optimizer_nav.md"
+    ],
+    "weights_csv_path_design_only_pending": "stage_artifacts/WT_D20260517_004/weights.csv (Forge cycle 의무 — 16 candidate × sig_dates × tickers)",
+    "weights_schedule_density_mandate": "alpha_package sig_dates 124 × 0.95 ≥ 118 unique_dates per candidate (Hook schedule_fidelity_check)",
+    "forge_cycle_compute_estimate": "~6-10h GPU (DPL Neural 108 sub-cells dominant)"
+  },
+  "submission_summary": {
+    "phase": "discovery_design_phase_a",
+    "wt_type_alignment": "§10 v1.8 design phase A",
+    "stage_artifacts_count": 4,
+    "method_designed_count": 10,
+    "candidate_cells_design_count": 16,
+    "hyperparameter_subcells_estimate": 200,
+    "selection_objective": "crowding_adj_ret",
+    "measurement_responsibility": "forge_agent_phase_b_c",
+    "next_step": "codex_critic_round (Step N+1 mandate, 5단계 flow)"
+  },
+  "draft_marker": true,
+  "draft_explicit_note": "이 파일은 Codex Round 5단계 flow Step 1 (Draft). 작성 후 PostToolUse codex_round_auto_trigger.sh 발동 대기 (~9-15min) → codex_critic_response_optimizer-research.json 검토 → challenge_note_optimizer-research.md 작성 → final optimization_package.json (no _draft suffix)."
+}
