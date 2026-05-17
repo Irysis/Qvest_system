@@ -1,0 +1,107 @@
+{
+  "task_id": "WT-D20260517_004",
+  "spawn_at": "2026-05-17T18:00:00+09:00",
+  "spawned_by": "Q-Lead 도훈 mandate 2026-05-17 — Path A NAV-level blend redirect (WT_003 A안 DEFER 학습)",
+  "wt_type": "discovery_design_phase_a",
+  "phase_origin": "PD45_DPL_RC_v2_Path_A_NAV_Level_Blend",
+  "design_name": "DPL-RC v2.0 Path A NAV-Level Blend",
+  "parent_inheritance": {
+    "v3_predecessor_wt": "WT-D20260517_003 (DPL-RC v1.0 weights-level DEFER)",
+    "v3_3_blockers_learning": "G1 recall 0.089 + A안 cor 1.000 + cross-base mismatch — 본 cycle 해소 mandate"
+  },
+  "theme": "dpl_rc_v2_path_a_nav_level_blend",
+  "hypothesis_title": "Path A NAV-level blend — 1715 5-Layer NAV + comp sleeve NAV (weights-level 한계 해소)",
+  "hypothesis_description": "WT_003 weights-level A안 DEFER 학습 후 NAV-level paradigm shift. NAV_blend = (1-a_t)·NAV_1715_5_Layer + a_t·NAV_comp. comp universe = 1715 외부 자유 (cor ≤ 0.3 자격 가능). production 100% retain. multi-sleeve admission (L-279~L-281 정합). G1 classifier 재설계 4 옵션. baseline cross-base mismatch NAV-level fair comparison 해소. 도훈 mandate Path A decisive.",
+  "hypothesis_source": "user_defined_post_wt_003_defer",
+  "as_of_date": "2026-05-17",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KR_TOP500_LIQ1E8",
+    "liquidity_min_won_20d_avg": 200000000,
+    "max_names_total": 20
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d",
+    "fundamental_annual": "annual May",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement",
+    "macro": "t-1 FRED + ECOS",
+    "ic_history": "Usable_Date <= sig_date"
+  },
+  "hard_constraints": {
+    "long_only": true,
+    "max_names": 20,
+    "weight_bounds": [0, 0.20],
+    "sum_weights": 1.0,
+    "turnover_annualized_max_per_sleeve": 6.0,
+    "mdd_pct_max": -0.2481,
+    "multi_sleeve_admission_basis": "L-279 Hybrid precedent — sleeve 각 max_names ≤ 20, governor admission decide multi-sleeve composition"
+  },
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "nav_level_blend_core_paradigm": {
+    "blend_formula": "NAV_blend(t) = (1 - a_t) · NAV_1715_5_Layer(t) + a_t · NAV_comp(t)",
+    "injection_rule": "a_t = clip(a_max · p_bad_1715(t+1|t), 0, a_max), a_max ∈ {0.05, 0.10, 0.15, 0.20}",
+    "production_lineage_explicit": "STR_1715_AR_on_M4_R05_overlay_PG2 5-Layer 100% retain",
+    "comp_universe": "KR_TOP500_LIQ1E8 ∖ STR_1715_top_20 (1715 외부 자유)",
+    "orthogonality_target": "cor(NAV_comp, NAV_1715) ≤ 0.3",
+    "ax_007_exemption_1_multi_sleeve_auto": true
+  },
+  "g1_p_bad_classifier_redesign_4_options": [
+    "threshold_tuning_0.3_or_0.2",
+    "continuous_regression",
+    "1715_specific_features_active_return_DD_regime",
+    "class_balanced_sampling_SMOTE_weighted_loss"
+  ],
+  "decision_gates": {
+    "G0_PIT": "Usable_Date ≤ sig_date strict + t-feature only p_bad",
+    "G1_p_bad_redesigned": "AUC ≥ 0.55 + Brier < 0.24 + recall ≥ 0.60 (v3 0.089 학습 fix)",
+    "G2_cor_NAV": "abs(cor(NAV_comp, NAV_1715)) ≤ 0.3",
+    "G3_blend_SR": "blend NAV SR ≥ 1.97",
+    "G4_mdd_no_worse": "blend MDD ≥ -24.81%",
+    "G5_good_drag": "good_month subset SR drag ≤ 0.05",
+    "G6_bad_improvement": "bad_month SR ≥ 1715 bad + 0.30",
+    "G7_turnover_per_sleeve": "comp TO ≤ 6 (1715 retain)",
+    "G8_harvey_t": "5-spec t > 3.0",
+    "G9_AX008": "Forge + Codex + Architect 2/3"
+  },
+  "v3_artifacts_inherit": {
+    "alpha_package_v3": "qepm/mailbox/worktask/WT-D20260517_003/alpha_package.json",
+    "risk_package_v3": "qepm/mailbox/worktask/WT-D20260517_003/risk_package.json",
+    "optimization_package_v3": "qepm/mailbox/worktask/WT-D20260517_003/optimization_package.json",
+    "v3_p_bad_failure_log": "stage_artifacts/WT_D20260517_003/p_bad_classifier_oos_result.json",
+    "v3_admission_decision": "stage_artifacts/WT_D20260517_003/admission_decision.json",
+    "v2_features_80": "stage_artifacts/WT_D20260517_002/feature_allowlist_v2.csv"
+  },
+  "academic_references_5_core": {
+    "FERSON_SCHADT_1996": "Conditional alpha (v3 inherit)",
+    "ASNESS_FRAZZINI_PEDERSEN_2014_BAB": "Crisis hedge (v3 inherit)",
+    "MOSKOWITZ_OOI_PEDERSEN_2012_TSMOM": "Cross-asset cor 0.077 KR empirical (L-281)",
+    "L_279_L_280_L_281_HYBRID_70_15_15": "Multi-sleeve NAV-level admit precedent 직접 정합",
+    "WOOD_ROBERTS_ZOHREN_2026_DEEPM": "Regime EVaR (v3 inherit)"
+  },
+  "agent_lineage": {
+    "alpha_research": "Step 2 — Path A NAV-level paradigm + comp universe + G1 재설계 4 옵션",
+    "risk_research": "Step 5 — sleeve-level Σ + NAV cross-cov",
+    "optimizer_research": "Step 4 — injection grid NAV-level",
+    "forge": "Step 6 — NAV-level blend backtest + 9 artifacts",
+    "judge": "Gate 0~9 + AX-008",
+    "governor": "Multi-sleeve admission (L-279 precedent)"
+  },
+  "codex_round_mandate": true,
+  "estimated_time_total": "10~14h",
+  "lessons_referenced": [
+    "L-279~L-281 Hybrid multi-sleeve precedent",
+    "L-326 weights-level fail",
+    "L-328 over-param fail",
+    "WT-D20260517_003 DEFER 3 blockers"
+  ],
+  "failure_cutoffs": {
+    "g1_redesign_fail": "HARD ABORT",
+    "cor_gt_0_3_still": "DEFER",
+    "blend_sr_lt_1_95": "ABORT",
+    "mdd_worse": "HARD ABORT"
+  },
+  "production_promotion_eligibility": "9 gates + AX-008 ≥ 2/3 + L-279 multi-sleeve precedent 정합"
+}
