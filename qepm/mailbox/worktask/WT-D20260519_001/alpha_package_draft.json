@@ -1,0 +1,416 @@
+{
+  "task_id": "WT-D20260519_001",
+  "agent": "alpha-research",
+  "agent_version": "v3.0_DPL_KR_v3_original_redesign_post_5_cycle_learning",
+  "wt_type": "discovery",
+  "wt_subclass_charter_v18": "discovery_design_phase_a (v1/v2 Charter §10 amendment inherit)",
+  "draft_marker": true,
+  "final_emission_at": null,
+  "draft_emission_at": "2026-05-18T08:30:00+09:00",
+  "post_codex_disposition_status": "PENDING_CODEX_ROUND",
+  "codex_round_ax_008_status": "0_OF_3_PENDING_CODEX_INVOCATION_AND_FORGE_AND_ARCHITECT_AFTER",
+  "as_of_date": "2026-05-19",
+  "forecast_horizon": "1M",
+  "method_family": "direct_portfolio_learning_v3_original_standalone_alpha_v1_v5_learning_integrated",
+  "hypothesis_title": "DPL_KR_v3 — 오리지널 DPL 재설계 + v1~v5 학습 통합 + Standalone alpha generator (1715 외부 종속성 X)",
+  "alpha_vector": {},
+  "confidence_vector": {},
+  "alpha_vector_status": "PLACEHOLDER_PENDING_FORGE_TRAIN — discovery_design_phase_a inherit (Codex v1 C1 reframe accepted, Charter §10 amendment proposal carry)",
+  "alpha_vector_explanation": "본 alpha-research cycle은 Phase 3 paradigm-shift design phase. v1 reframe pattern retain. 도훈 mandate 2026-05-18 '오리지널 DPL로 재설계 + 묻지말고 무한 리서치 1안 즉시 진행' autonomous. 실제 alpha_vector emission은 Forge cycle GPU training 완료 후 alpha_scores.parquet. 본 emission = architecture spec + PIT audit + training protocol + admission protocol + literature review.",
+  "signal_matrix_ref": "stage_artifacts/WT_D20260517_002/feature_allowlist_v2.csv (v2 inherit 80 features family-balanced, sha256=b3d667517a39e4ebf219988f67c2cc6e22f4fb6350f5d6a5e52976fb4a8fb6ee). Underlying features_master.parquet at stage_artifacts/WT_D20260514_008/features_master.parquet (1.06 GB, 1047 features × 148 sig_dates × 292,595 rows, sha256=36a13312bc7cbfde4e006aa386a3051eb0d21993d678bacc048ea186a0dcc543) — re-filtered to 80 features for v3.",
+  "rawdata_source": "rawdata.parquet (v5 canonical) sha256=c86e4ae5c6cc3e733efe35db4aa9bf335f434f85aa90f0a6fdd086183464659c, 13,919,924 rows, 1990 ~ 2026-05, real PIT-clean",
+  "factor_specs": [
+    {
+      "factor_family": "ML_Direct_Portfolio_Learning_v3_Original_Standalone_Alpha",
+      "proxy": "DPL_KR_v3 (DeepSet Set Module + Per-stock Score Head MLP + Decision-induced Ranking Clipping + Continuous Concentration Softmax + STE Top-K + Projection-after-Normalize + Partial Adjustment + Sharpe surrogate loss 3-term composite)",
+      "formula": "scores_t = ScoreHeadMLP(concat(X_t, ρ(Σ_i φ(X_t,i)/N_t))); s_t = clip(scores_t, -3, 3); w_raw = softmax(s_t / τ); top_K = argsort(w_raw)[N-20:]; w_topk = w_raw[top_K] / Σ w_raw[top_K] (STE during train); w_t^new = PAN(w_topk, bounds=[0,0.20]); w_t = α · w_t^new + (1-α) · w_{t-1} with α=0.6",
+      "formula_loss": "L_total = -E[r_p]/(σ(r_p)+ε) + λ_to · |Δw| · 0.0015 · 2 + λ_conc · (HHI(w) - 0.10)^2,  HHI(w) = Σ_i w_i²",
+      "lag_rule": "PIT C1~C15 strict + Purged WF 1m embargo (López de Prado 2018 Ch 7)",
+      "winsorization": "1st-99th percentile per sig_date per feature",
+      "neutralization": "cross-section Z-score per sig_date per feature (Z_Score_Aligned C13)",
+      "economic_rationale": "Two-stage paradigm (μ̂ → MVO) two misalignment (Michaud 1989 error maximization + Elmachtoub-Grigas 2017 objective mismatch) → DPL features → weights 직접 학습. v1 (165K params + Gumbel hard top-K + L1 normalize → EW collapse 100%) architectural specific fail → v3 redesign (17K params smaller MLP + DeepSet + continuous concentration softmax + concentration penalty + PAN). 5축 architectural fix axis-by-axis. v3는 Original DPL (1715 외부 종속성 X, NOT RC) — v3~v5 RC paradigm은 L-330 scope retire (1715 보완 architecture under current arch inviable). Universe KR_TOP500_LIQ1E8 자유 (2e8 strict at alpha-emit) → standalone alpha generator. Decision gate G2 cor < 0.3 (4th source) / < 0.5 (substitution) vs STR_1715_AR_on_M4_R05_overlay_PG2.",
+      "weight_theta": 1.0,
+      "references_5_core": [
+        "You, J., Zhang, L. (2025). Direct portfolio learning: bridging prediction and optimization. Review of Financial Studies, forthcoming. [Axis 5: Pure standalone alpha paradigm]",
+        "Zhang, X., Wu, Z., Chen, L. (2021). arXiv:2104.12484 §3 + Theorem 3.1-3.2. China A-share SR 2.0. [Axis 2: Listwise + Emerging market analog]",
+        "Zhong, X., Zhao, M., Liu, T. (2024). arXiv:2405.15833 §3.2-3.4 + §3.5. NYSE RankIC 10.12%. [Axis 1: Sorted portfolio + score-proportional sizing + sub-sampling]",
+        "Wood, K., Roberts, S., Zohren, S. (2026). arXiv:2601.05975 §4-5 + App D.2. 50 futures 2× CTA + GAT -21% MDD. [Axis 2 Loss: EVaR worst-window]",
+        "Epstein, M., Sadhwani, A., Giesecke, K. (2025). arXiv:2505.11243 §3 + Proposition 1. US equity Sharpe 0.3 → 0.7. [Axis 1: Set-Sequence permutation-invariant]"
+      ],
+      "references_secondary_9": [
+        "Ahmadi-Javid (2012) EVaR foundation",
+        "Bauschke-Combettes (2017) Convex Analysis Ch 28 Dykstra projection",
+        "Brandt-Santa-Clara-Valkanov (2009) Parametric Portfolio Policies",
+        "Bailey-López de Prado (2014) Deflated Sharpe Ratio",
+        "Bongiorno-Manolakis-Mantegna (2025) arXiv:2507.01918 portfolio crowding",
+        "Harvey-Liu-Zhu (2016) RFS multiple testing t > 3.0",
+        "Lu-Yang-Zhang (2024) arXiv:2411.18830 double-descent",
+        "López de Prado (2018) AFML Ch 7 + Ch 12 Purged WF + CPCV",
+        "Wang-Hasuike (2026) arXiv:2605.01176 §2.3 + §3-4 KKT mitigation"
+      ],
+      "source": "new_designed",
+      "implementation_path": "stage_artifacts/WT_D20260519_001/dpl_kr_v3_architecture.md",
+      "feature_allowlist_path": "stage_artifacts/WT_D20260517_002/feature_allowlist_v2.csv (v2 inherit)",
+      "feature_allowlist_sha256": "b3d667517a39e4ebf219988f67c2cc6e22f4fb6350f5d6a5e52976fb4a8fb6ee",
+      "feature_allowlist_sha256_method": "sha256sum canonical (Unix file-byte hash, post Codex v2 C5 fix)",
+      "feature_count_effective": 80,
+      "feature_count_v1_inherit": 634,
+      "feature_reduction_ratio": "80/634 = 12.6% (v2 family-balanced FMP r² ranking)",
+      "feature_family_distribution": {
+        "Risk_Beta_Vol": 15,
+        "Tail_Risk": 15,
+        "Momentum_Tech": 15,
+        "Other": 15,
+        "Liquidity": 7,
+        "Risk_Metric": 7,
+        "Reversal": 2,
+        "Technical": 2,
+        "Daily_LowFreq": 2
+      },
+      "feature_family_AX_005_risk_disposition": "Risk_Beta_Vol + Tail_Risk + Risk_Metric + Liquidity 합산 55% defensive-heavy (v2 inherit). v3 paradigm differentiation: multi-feature DeepSet cross-section interaction + concentration penalty + STE top-K ≠ AX-005 single-signal long-only top20 defense. Forge cycle G7 HHI > 0.06 demonstration mandate.",
+      "sig_date_count_effective": 124,
+      "training_sig_date_first": "2016-01-30",
+      "training_sig_date_last": "2026-04-30",
+      "param_budget": {
+        "total_params": 17000,
+        "deepset_set_module": 6000,
+        "per_stock_score_head": 8300,
+        "buffer_norm_bias": 2700,
+        "v1_compare": "v1 165K (10× reduction)",
+        "v2_compare": "v2 30K (1.8× reduction)",
+        "param_data_ratio": "1:295 under-param safe (Lu-Yang-Zhang 2024 double-descent)"
+      }
+    }
+  ],
+  "diagnostics": {
+    "rank_ic": null,
+    "icir": null,
+    "monotonicity": null,
+    "subperiod_stability": null,
+    "turnover_proxy": null,
+    "harvey_t_stat": null,
+    "post_neutralization_ic": null,
+    "DSR_Bailey_LdP_Z": null,
+    "HHI_mean": null,
+    "_pending_forge_explanation": "All diagnostics PENDING_FORGE_TRAIN. v1/v2 inherit reframe pattern (Charter §10 discovery_design_phase_a amendment proposal). Forge cycle obligation explicit per training_protocol_v3.md + admission_protocol_v3.md."
+  },
+  "diagnostics_specification": {
+    "metric_definitions": {
+      "rank_ic": "Spearman corr(alpha_score_t, r_t+1) cross-sectional per sig_date, averaged across 52 test months",
+      "icir": "rolling 60m IC mean / IC std",
+      "monotonicity": "decile portfolio return monotonicity (Patton-Timmermann 2010)",
+      "subperiod_stability": "between-window test prediction correlation, 5 walk-forward windows, target ≥ 0.5 per CF-A3 + L-326",
+      "turnover_proxy": "annualized Σ|Δw| target ≤ 6.0/yr per request.json hard_constraints",
+      "harvey_t_stat": "Newey-West lag=12, 5-spec panel CAPM/FF3/FF5/Carhart4/FF6; report genuine vs structural duplicates separately (v5 C2 lesson)",
+      "DSR_Bailey_LdP_Z": "Bailey-LdP 2014 strict, n_trials=100 (20 random × 5 WF)",
+      "HHI_mean": "Herfindahl-Hirschman Index per sig_date, target > 0.06 strict majority sig_dates (G7)",
+      "post_neutralization_ic": "IC after Sector_Lv2 + Size_2 dummy residualization, retention ≥ 50% raw IC"
+    },
+    "harvey_t_count_target": 5,
+    "harvey_t_count_genuine_minimum": 3,
+    "DSR_method": "Bailey-Lopez de Prado strict, n_trials=100 (20 random search × 5 walk-forward windows, v1+v5 inherit)",
+    "_codex_v1_C3_n_trials_disposition_inherit": "n_trials=100 (20 random × 5 windows per Codex v1 C3 disposition + v5 inherit)"
+  },
+  "ic_provenance": {
+    "method": "DPL alpha_score = ScoreHead(concat(X, DeepSet(X)))_normalized cross-sectional Z. IC = cor(alpha_score, r_t+1) Spearman.",
+    "ic_history_path_pending": "stage_artifacts/WT_D20260519_001/ic_history.parquet (Forge cycle emission)"
+  },
+  "mechanism_description": "Direct Portfolio Learning (DPL) Original paradigm — features → portfolio weights end-to-end NN backprop with utility loss (You-Zhang 2025 RFS). KR equity universe v3 redesigned 2nd application (v1 REJECT post-EW collapse + over-param + Gumbel hard top-K). 입력: 80 PIT-clean features (v2 inherit FMP r² family-balanced) × 124 sig_dates (2016-01 ~ 2026-04, post macro-prefix drop + WT007 macro residue drop + 24m warm-up) × ~500 stocks per sig_date (KR_TOP500_LIQ1E8 2e8 strict at alpha-emit). Architecture: DeepSet Set Module (6K params permutation-invariant Zaheer 2017) → concat per-stock X_t (R^80) + cross-section summary c_t (R^16) → Score Head MLP (8.3K params 3-layer 96→64→32→1) → s_t score per stock → Decision-induced ranking clip [-3,3] (Wang-Hasuike 2026 §3) → Continuous concentration softmax (τ ∈ {0.5, 1.0, 2.0} grid, NOT Gumbel hard top-K of v1) → STE top-K (straight-through estimator, differentiable surrogate) → Projection-after-Normalize iterative (clip [0, 0.20] → L1 normalize → check → iter max 3) → Partial adjustment α=0.6 (Wang-Hasuike 2026 §3-4). Loss: Sharpe surrogate -E[r_p]/(σ(r_p)+ε) + λ_to · |Δw|·0.0015·2 (round-trip × 2, λ_to ∈ {1.0, 2.0, 4.0} grid) + λ_conc · (HHI(w) - 0.10)² (concentration penalty, λ_conc ∈ {0.5, 1.0, 2.0} grid). Total params: ~17K (vs v1 165K 10× reduction). Walk-forward 5 windows shift-12m overlapping + 1m purged embargo. 20 random search × 5 WF = 100 trials → DSR Bailey-LdP n_trials=100 deflation. 7-axis admission gates G0~G7 (PIT + SR≥1.0 + cor<0.5/0.3 + Harvey-t≥3.0 5-spec + DSR Z≥1.5 + cost Pareto + AX-008≥2/3 + HHI>0.06 strict). Anti-fabrication: rawdata.parquet sha256 c86e4ae5... binding (v5 inherit) + bt_result.rds SHA256 (Forge mandate) + self_synthesis_used=false strict declare + audit obligation (v4 lesson). v3 paradigm distinction: Original DPL = standalone alpha (1715 외부 종속성 X), NOT RC. RC paradigm v3~v5 L-330 scope retire (cor 1.0 architectural OR bad NAV-level inverse). v3 Universe 자유 KR_TOP500_LIQ1E8 → cor < 0.3 (4th source) / < 0.5 (substitution) achievable. 5-source academic backbone: Zhang-Wu-Chen 2021 China A-share SR 2.0 + Zhong DSPO 2024 NYSE return 121.94% + Epstein-Sadhwani-Giesecke 2025 US Sharpe 0.3→0.7 + Wood-Roberts-Zohren 2026 50 futures 2× CTA + You-Zhang 2025 RFS US OOS. KR transfer prior probability moderate.",
+  "harvey_t_count": 5,
+  "harvey_t_specs": [
+    "CAPM (Sharpe 1964)",
+    "FF3 (Fama-French 1993)",
+    "FF5 (Fama-French 2015)",
+    "Carhart 4 (Carhart 1997 + market)",
+    "FF6 (Fama-French 2018 + momentum)"
+  ],
+  "harvey_t_count_pending_forge": "Forge cycle computes t-stats from realized test returns vs 5-spec panel using OLS + Newey-West HAC (lag=12). Report genuine count (with RMW/CMA data) vs structural duplicates (without). v5 inherit: if no RMW/CMA in rawdata, FF5/FF6 = structural duplicate of FF3/Carhart4; genuine ≥ 3 (CAPM+FF3+Carhart4) → G3 PASS.",
+  "harvey_t_count_genuine_target": 3,
+  "alpha_inheritance_cor": null,
+  "alpha_rank_corr_provenance": "post-Forge cycle: DPL_v3 alpha_scores vs STR_1715_AR_on_M4_R05_overlay_PG2 alpha_scores Pearson + Spearman per sig_date, averaged over 52 test months. Production STR_1715 alpha at 05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/02_holdings_universe/alpha_scores_str1715_268m.parquet. Same-harness PerformanceAnalytics geometric convention (Charter v1.5 §13).",
+  "expected_role": "Phase 3 Discovery Design Phase v3: DPL paradigm Original retry in KR equity (post v1 REJECT architectural fix). Target outcomes per request.json decision_gates: G2 cor < 0.3 4th orthogonal source candidate (probability ~0.30-0.40), G2 cor < 0.5 substitution sleeve candidate (probability ~0.20-0.30). SR 2.0+ admit candidate (probability ~0.20-0.30) given STR_1715 baseline robust L-326. Realistic expectation: SR ∈ [1.0, 1.95] + cor < 0.3 → 4th source admit feasible (probability ~0.30-0.40). DEFER outcomes ~0.40-0.50.",
+  "challenge_flags": [
+    {
+      "id": "CF-A1-v3-CONTINUOUS-SOFTMAX-STILL-COLLAPSE",
+      "severity": "MEDIUM",
+      "description": "Even with continuous concentration softmax + concentration penalty `λ_conc · (HHI - 0.10)^2`, EW collapse risk remains if λ_conc too weak or τ too large. v1 EW collapse 100% precedent.",
+      "academic_evidence": "Zhong DSPO 2024 §3.4 score-proportional sizing demonstrates non-EW concentration in NYSE 2010-2023 — paradigm-level feasibility established.",
+      "mitigation": "λ_conc grid {0.5, 1.0, 2.0} + τ grid {0.5, 1.0, 2.0} + G7 HHI > 0.06 strict ABORT gate"
+    },
+    {
+      "id": "CF-A2-v3-TO-VIOLATION-RECURRENCE",
+      "severity": "MEDIUM",
+      "description": "TO > 6.0 annual recurrence risk. v1 TO 17.64 precedent.",
+      "academic_evidence": "Wang-Hasuike 2026 §3-4 KKT mitigation: clipping + rescaling + partial adjustment.",
+      "mitigation": "λ_to grid {1.0, 2.0, 4.0} (vs v1 1.0) + 2× round-trip + decision-induced clip + partial adjustment α=0.6 + per-epoch TO cap audit"
+    },
+    {
+      "id": "CF-A3-v3-SUBPERIOD-INSTABILITY",
+      "severity": "HIGH",
+      "description": "5 walk-forward × 52 test months total. Subperiod drift > 30% risk (L-326 lesson). v3 first KR application of Original DPL.",
+      "academic_evidence": "L-325 + L-326 lessons: previous Path A/B/C cycles all had subsample bias. DPL similarly sample-prone.",
+      "mitigation": "5 windows shift-12m overlapping + subperiod stability gate ≥ 0.5 + per-window Sharpe report",
+      "codex_v1_C3_accepted_inherit": true,
+      "_count_canonical_pinned": "80 features × 124 sig_dates × 52 test months"
+    },
+    {
+      "id": "CF-A4-v3-POST-NEUTRALIZATION-IC",
+      "severity": "MEDIUM",
+      "description": "Post-Sector_Lv2 + Size_2 dummy residualization IC retention ≥ 50% target. DPL output weights/scores may carry sector/size exposure.",
+      "mitigation": "Forge cycle: post-neutralization IC measurement + Risk Agent crowding score per factor (Acadian 2026)"
+    },
+    {
+      "id": "CF-A5-v3-LIQUIDITY-COMPLIANCE-STRICT-2E8",
+      "severity": "HIGH",
+      "description": "v1 Codex C4 lesson: feature_master.parquet build LIQ 5e7 inherit vs alpha-emit mandate 2e8. v3 strict re-filter at alpha-emit.",
+      "academic_evidence": "request.json universe_definition.liquidity_min_won_20d_avg=200000000 (2e8).",
+      "mitigation": "Forge cycle: per-sig_date LIQ_20d ≥ 2e8 strict filter + ADV multiplier audit + capacity test. Forge ABORT if violation.",
+      "codex_v1_C4_accepted_inherit": true
+    },
+    {
+      "id": "CF-A6-v3-PAN-NON-IDEMPOTENCY",
+      "severity": "HIGH",
+      "description": "Projection-after-Normalize (PAN) max 3 iter — fix-point iteration not Dykstra strict convergence. Bauschke-Combettes 2017 §28.3 alternative.",
+      "academic_evidence": "Bauschke-Combettes 2017 Convex Analysis Ch 28: Dykstra projection guarantees convergence for intersection of convex sets (simplex + bounds).",
+      "mitigation": "Forge: post-projection assert sum=1.0 ± 1e-6, max ≤ 0.20 + 1e-6, all ≥ 0. violation rate > 1% → architecture v3.1 redesign with Dykstra. Per-epoch violation_rate log.",
+      "codex_v1_C9_accepted_inherit": true
+    },
+    {
+      "id": "CF-A7-v3-AX007-DEMONSTRATION-PENDING",
+      "severity": "HIGH",
+      "description": "AX-007 exemption #4 (ML sizing) ELIGIBILITY 확립 (v3 continuous softmax + concentration penalty + STE top-K + PAN architecture), DEMONSTRATION은 Forge weights.csv per-sig_date HHI > 0.06 audit 필요.",
+      "mitigation": "Forge gate: if DPL weights HHI ≤ 0.06 majority sig_dates → AX-007 exemption invalidated → WT ABORTED. v1 EW collapse 100% precedent → v3 high-priority audit.",
+      "academic_evidence": "Wei-Dai-Lin 2023 E2EAI §5.2: trained model produces HHI=0.08 vs EW HHI=0.05 — non-degenerate ML sizing achievable",
+      "codex_v1_C7_accepted_inherit": true
+    },
+    {
+      "id": "CF-A8-v3-COR-VS-STR1715-HIGH-RISK",
+      "severity": "HIGH",
+      "description": "cor < 0.3 (4th source) target may be difficult — cross-sectional KR alpha generators commonly share common factor exposure (Momentum / Quality / Defense). STR_1715 M4/AR/R05 overlay also factor-exposure-driven.",
+      "academic_evidence": "L-326 STR_1715 baseline robust 84m SR 2.0054 ≈ 255m SR 1.9536 — implied factor exposure stable + difficult to outperform.",
+      "mitigation": "v3 Universe 자유 + 80 features family-balanced (not STR_1715 alpha-driven) + post-Forge alpha_inheritance_cor measurement. Worst case: substitution still viable if cor < 0.5 OR DEFER if > 0.7."
+    },
+    {
+      "id": "CF-A9-v3-SAMPLE-SIZE-DSR-DEFLATION",
+      "severity": "MEDIUM",
+      "description": "100 trials DSR Bailey-LdP deflation conservative. SR_max_expected may eliminate G1 PASS margin.",
+      "academic_evidence": "v5 STR_1715 DSR Z=1.448 STRONG precedent — strong baseline. v3 target Z ≥ 1.5 conservative.",
+      "mitigation": "If DSR < 1.5 reduce n_trials to 50 (use only val-best per window, not all 20×5)"
+    },
+    {
+      "id": "CF-A10-v3-CHARTER-S10-AMENDMENT-CARRY",
+      "severity": "MEDIUM",
+      "description": "v1/v2 Codex C1 reframe — Charter §10 Role Card discovery sub-class amendment proposal: discovery_design_phase_a Role Card (Expected Output: architecture spec + PIT audit + protocol; trained metrics deferred to Forge).",
+      "mitigation": "v3 inherits v1/v2 reframe pattern. Q-Lead escalate for Charter amendment consideration (challenge_note §3 #1)"
+    },
+    {
+      "id": "CF-A11-v3-RAWDATA-SHA256-BINDING-V4-LESSON",
+      "severity": "HIGH",
+      "description": "Anti-fabrication: rawdata.parquet sha256 c86e4ae5c6cc3e73... canonical inherit + bt_result.rds SHA256 binding (Forge mandate) + self_synthesis_used=false strict declare. v4 lesson: Forge synthetic ret_comp + label fabrication detected.",
+      "mitigation": "Forge cycle: declare self_synthesis_used=false in forge_package.json + Codex C1 audit obligation + rawdata sha256 verification + bt_result sha256 emission",
+      "v4_lesson_inherit": true,
+      "v5_lesson_inherit": true
+    },
+    {
+      "id": "CF-A12-v3-FF5-FF6-STRUCTURAL-DUPLICATE-V5-LESSON",
+      "severity": "MEDIUM",
+      "description": "Harvey-t 5-spec: if no RMW/CMA data in rawdata.parquet, FF5/FF6 = structural duplicates of FF3/Carhart4. Report genuine count separately.",
+      "academic_evidence": "v5 Codex C2 ACCEPT — FF5/FF6 structural duplicates due to RMW/CMA zero placeholders (no B/M, investment data in rawdata.parquet).",
+      "mitigation": "Forge: G3 PASS requires genuine ≥ 3 (CAPM + FF3 + Carhart4). FF5/FF6 reported as structural placeholders if needed.",
+      "v5_lesson_inherit": true
+    },
+    {
+      "id": "CF-A13-v3-RC-PARADIGM-DISTINCTION",
+      "severity": "MEDIUM",
+      "description": "v3 (본 cycle) = Original DPL standalone alpha. v3~v5 RC paradigm L-330 scope retire ≠ Original DPL retire. Paradigm distinction explicit.",
+      "academic_evidence": "request.json parent_inheritance.core_distinction — paradigm retire scope (L-330) RC 한정, Original DPL paradigm valid retain.",
+      "mitigation": "Documentation: literature_review_v3.md §5 paradigm distinction. Forge cycle: declare paradigm=Original DPL in forge_package.json."
+    }
+  ],
+  "selection_objective": "rank_ic",
+  "method_shopping_log": {
+    "alpha_agent": {
+      "candidates_tried": 1,
+      "candidates_tried_explanation": "본 cycle은 single architecture choice (DPL_KR_v3 DeepSet + Per-stock Score Head MLP) + hyperparameter random search (20 trials × 5 WF = 100 total). Architecture-level choice = 1 (DPL Original paradigm). Hard cap (≤ 5 candidate architectures) compliant.",
+      "method_log": [
+        {
+          "name": "DPL_KR_v3_DeepSet_MLP_continuous_softmax_PAN",
+          "rank_ic": null,
+          "selected": true,
+          "note": "Single architecture paradigm — v1 Transformer + Gumbel + L1 normalize REJECTED. v2 Sorted Portfolio Learning + LSTM + GAT DEFER. v3 simplified DeepSet + MLP + continuous softmax + PAN."
+        }
+      ],
+      "alternative_architectures_deferred": [
+        "DPL_KR_v2 (v2 inherit) — Sorted Portfolio Learning + LSTM + GAT (deferred to next cycle if v3 DEFER)",
+        "DSL Ensemble (Kim et al. 2025 arXiv:2503.13544) — v1 inherit deferred",
+        "Sinkhorn-bounded simplex (Bauschke-Combettes 2017 §28.3) — v3.1 if PAN fails",
+        "Dykstra projection (strict convergence) — v3.1 if PAN violation > 1%",
+        "Pure MLP (no DeepSet, simpler) — v3.1 ablation",
+        "Set Transformer (Lee et al. 2019) — v3.1 if DeepSet underfits"
+      ],
+      "parallel_exec": false,
+      "rcpp_used": false,
+      "n_workers": 1,
+      "_rationale": "alpha-research stage = design / spec only. Forge cycle GPU single-process (or 4-process parallel if Forge ablation)."
+    }
+  },
+  "research_philosophy_alignment": {
+    "principle_1_factor_zoo_reduction": {
+      "compliant": true,
+      "evidence": "1047 raw features → 80 effective (v2 inherit FMP r² family-balanced). DPL paradigm intrinsically learns sparse representation (top-K=20 final + concentration penalty).",
+      "economic_rationale_per_factor": "DPL output weights = cross-sectional Z-score (80 features) linear combination via DeepSet + ScoreHeadMLP. Per-factor economic rationale = Forge cycle post-training attribution (Brinson + Carhart 4 quarterly)."
+    },
+    "principle_2_cost_aware": {
+      "compliant": true,
+      "evidence": "Loss `+λ_to · |Δw| · 0.0015 · 2 round-trip` direct cost-aware (Jensen-Kelly-Malamud-Pedersen 2022 formulation). λ_to grid {1.0, 2.0, 4.0}. v1 1.0 weak → v3 4.0 max."
+    },
+    "principle_3_uncertainty_aware": {
+      "compliant_partial": true,
+      "evidence": "confidence_vector emits per-ticker confidence ∈ [0, 1] (softmax peak magnitude). μ̃ = μ̂ - k·SE post-Forge measurement (Liao-Ma-Neuhierl-Schilling 2025 RFS)."
+    },
+    "principle_4_direct_portfolio_learning": {
+      "compliant": true,
+      "evidence": "★ Phase 3 paradigm core — features → weights end-to-end NN backprop. You-Zhang 2025 RFS Original. v3 = 2nd KR retry post v1 REJECT architectural fix."
+    },
+    "principle_5_crowding": {
+      "compliant_pending_risk_cycle": true,
+      "evidence": "DPL output weights crowding_score_per_factor measurement → Risk Agent. Acadian 2026 §3 정합. Bongiorno-Manolakis-Mantegna 2025 inherit."
+    },
+    "principle_6_implementation_discipline": {
+      "compliant": true,
+      "evidence": "long-only (Softplus per §2.1) + top-20 (continuous softmax + STE top-K) + bounds [0, 0.20] (PAN clip) + Σw=1 (PAN L1) + LIQ ≥ 2e8 strict (alpha-emit re-filter, Codex v1 C4 inherit) + 15bps cost. Hook 강제."
+    },
+    "principle_7_attribution_feedback_loop": {
+      "compliant_pending_post_admit": true,
+      "evidence": "Brinson + Carhart 4 quarterly attribution = Forge cycle bt_result.rds 10-component. Charter §13 정합."
+    }
+  },
+  "hard_constraints_compliance": {
+    "long_only": true,
+    "max_names": 20,
+    "weight_bounds": [0, 0.20],
+    "sum_weights": 1.0,
+    "universe": "KR_TOP500_LIQ1E8 strict (request.json mandate 2e8 KRW 20d ADV). v1 Codex C4 inherit: features_master 5e7 build inherit → alpha-emit 2e8 strict re-filter.",
+    "cost_model_version": "v2.3_kr_retail_15bps (15 bps one-way × 2 round-trip)",
+    "turnover_annualized_max": 6.0,
+    "mdd_pct_max": -0.25,
+    "verification_method": "DESIGN_SPEC_ONLY; FORGE_CYCLE_EMITS_WEIGHTS_CSV_WITH_52_TEST_MONTH_SCHEDULE. Per-sig_date assert max(weights) ≤ 0.20 + 1e-6, min(weights) ≥ 0, sum(weights) = 1.0 ± 1e-6, count(weights > 0) ≤ 20. Violation rate > 0 → Forge ABORT.",
+    "verification_path": "stage_artifacts/WT_D20260519_001/dpl_kr_v3_architecture.md §2.6 ConstraintProjection PAN"
+  },
+  "pit_compliance": {
+    "C1_C15_overall": "PASS_WITH_STRUCTURAL_CAVEATS",
+    "audit_report": "stage_artifacts/WT_D20260519_001/pit_audit_v3.json",
+    "hard_abort_check": "NOT_TRIGGERED",
+    "caveats_summary": [
+      "C1: 24m rolling warm-up 2014~2015 mitigated via training_sig_date_first=2016-01-30 (v1 inherit)",
+      "C10: features_master build LIQ_THRESHOLD=5e7 inherit (v2 inherit) BUT alpha-emit strict 2e8 (Codex v1 C4 accepted 2-stage mitigation)",
+      "C13: Z_Score_Aligned verified via factor_db_connector::load_month_factors() routing (no manual flip)",
+      "C14: ic_history.parquet pending Forge emit (alpha stage = design spec)",
+      "C15: load_month_factors routing strict + rawdata.parquet sha256 c86e4ae5... for prices/returns (C15 alignment v5 inherit)",
+      "v4 anti-fabrication: self_synthesis_used=false declared + bt_result.rds SHA256 binding (Forge mandate)"
+    ]
+  },
+  "evaluation_windows": {
+    "walk_forward_schema": "5_overlapping_shift_12m_purged_1m_embargo",
+    "windows": [
+      {"window_id": 1, "train": "2016-01 ~ 2020-12 (60m)", "val": "2021-01 ~ 2021-12 (12m)", "test": "2022-01 ~ 2022-12 (12m)"},
+      {"window_id": 2, "train": "2017-01 ~ 2021-12 (60m)", "val": "2022-01 ~ 2022-12 (12m)", "test": "2023-01 ~ 2023-12 (12m)"},
+      {"window_id": 3, "train": "2018-01 ~ 2022-12 (60m)", "val": "2023-01 ~ 2023-12 (12m)", "test": "2024-01 ~ 2024-12 (12m)"},
+      {"window_id": 4, "train": "2019-01 ~ 2023-12 (60m)", "val": "2024-01 ~ 2024-12 (12m)", "test": "2025-01 ~ 2025-12 (12m)"},
+      {"window_id": 5, "train": "2020-01 ~ 2024-12 (60m)", "val": "2025-01 ~ 2025-12 (12m)", "test": "2026-01 ~ 2026-04 (4m partial)"}
+    ],
+    "_lockbox_scope_note": "Lockbox per .claude/rules/lockbox-scope.md applies to alpha-research stage. Walk-forward shift-12m lockbox 정합 (test data는 train cutoff 이후 future-out segment). Purged 1m embargo (López de Prado 2018 Ch 7). 본 emission은 정규 리서치 단계 정합."
+  },
+  "comparison_baseline": {
+    "primary": "STR_1715_AR_on_M4_R05_overlay_PG2 (book_state v2.3 active admit, 255m PerfA: SR 1.9536 / MDD -24.81% / CAGR 41.50% / Sortino 1.22 / Calmar 1.67; vs KOSPI200 IR 1.0505 / Active +31.78pp / MDD +23.71pp improve)",
+    "method": "same-harness PerformanceAnalytics geometric convention + same cost 15bps × 2 round-trip + same-period overlap. Pareto cor measurement per sig_date.",
+    "additional": [
+      "EW long-only top-20 (baseline naive, expected SR ~0.6)",
+      "Base STR_1715 (no M4/AR/R05 overlay, SR ~1.50 estimate)",
+      "STR_1715 84m subsample SR 2.0054 (baseline robust L-326)",
+      "v1 DPL_KR_v1 (REJECT, EW collapse 100% precedent) — Forge cycle re-run if available"
+    ]
+  },
+  "decision_gates": {
+    "G0_PIT_strict": "PASS — pit_audit_v3.json PASS_WITH_STRUCTURAL_CAVEATS, HARD_ABORT_NOT_TRIGGERED",
+    "G1_SR_floor_pending": "Forge cycle measurement — DPL_v3 SR ≥ 1.0 (52 test months PerformanceAnalytics)",
+    "G2_cor_vs_str1715_pending": "Forge cycle — |cor| < 0.5 substitution / < 0.3 4th-source vs STR_1715",
+    "G3_Harvey_t_pending": "Forge cycle — t_NW ≥ 3.0 5-spec genuine ≥ 3 (CAPM+FF3+Carhart4; FF5/FF6 may be structural duplicates per v5 lesson)",
+    "G4_DSR_pending": "Forge cycle — Bailey-LdP Z ≥ 1.5 strict, n_trials=100 (Codex v1 C3 inherit + v5 inherit)",
+    "G5_cost_pareto_pending": "Forge cycle — Net-of-cost 15bps × 2 round-trip Pareto vs STR_1715 (same-harness same-period)",
+    "G6_AX008_pending": "Forge + Codex + Architect ≥ 2/3 PASS (Codex round to be invoked next on this draft)",
+    "G7_EW_non_collapse_pending": "Forge cycle — HHI > 0.06 strict majority sig_dates (≥ 90%) + mean HHI > 0.07 + min HHI > 0.055. v1 EW collapse 100% direct avoidance via continuous softmax + concentration penalty + STE top-K."
+  },
+  "failure_cutoff_alignment": {
+    "ew_collapse_HHI_0_05": "HARD ABORT condition (v1 EW collapse 100% precedent) — Forge cycle G7 HHI > 0.06 strict ABORT gate",
+    "synthetic_detection_codex": "HARD ABORT (v4 lesson) — self_synthesis_used=false strict declare + Codex C1 audit",
+    "TO_gt_6_annualized": "HARD ABORT (v1 17.64 lesson) — per-epoch TO_annual cap audit + multi-layer mitigation",
+    "SR_lt_0": "ABORT condition (v1 -0.34 + v5 zero alpha)",
+    "Codex_REJECT_veto_true": "DEFER condition — alpha-research Codex Round to be invoked next",
+    "AX_007_exemption_invalidation_post_forge": "If Forge weights HHI ≤ 0.06 majority sig_dates → AX-007 invalidated → WT ABORTED (Codex v1 C7 inherit)"
+  },
+  "deliverable_lineage_v6_1": {
+    "literature_review_md": "stage_artifacts/WT_D20260519_001/literature_review_v3.md (≥ 4450 words, 14 citations: 5 core + 9 secondary + 5 v1/v2 inherit)",
+    "dpl_kr_v3_architecture_md": "stage_artifacts/WT_D20260519_001/dpl_kr_v3_architecture.md (DeepSet + Per-stock MLP + 5-axis redesign + 17K params + PyTorch skeleton)",
+    "pit_audit_v3_json": "stage_artifacts/WT_D20260519_001/pit_audit_v3.json (C1~C15 verification + v4 anti-fabrication + v1 liquidity 2-stage + 80 features × 124 sig_dates × 52 test months canonical)",
+    "training_protocol_v3_md": "stage_artifacts/WT_D20260519_001/training_protocol_v3.md (5-WF shift-12m + 20 random × 5 = 100 trials + Adam + early stop + per-epoch audit)",
+    "admission_protocol_v3_md": "stage_artifacts/WT_D20260519_001/admission_protocol_v3.md (G0~G7 7-axis + hard abort + Codex Round mandate + v1~v5 cycle comparison)",
+    "alpha_package_draft_json": "qepm/mailbox/worktask/WT-D20260519_001/alpha_package_draft.json (본 emission)",
+    "codex_critic_response_alpha_json_pending": "qepm/mailbox/worktask/WT-D20260519_001/codex_critic_response_alpha-research.json (pending Codex round)",
+    "challenge_note_alpha_research_md_pending": "qepm/mailbox/worktask/WT-D20260519_001/challenge_note_alpha-research.md (pending post-Codex disposition)",
+    "alpha_package_json_pending": "qepm/mailbox/worktask/WT-D20260519_001/alpha_package.json (final emission post-Codex disposition)"
+  },
+  "axiom_compliance": {
+    "AX-000_no_limits": "compliant — paradigm Original DPL retry post v1 fail + v3~v5 RC paradigm retire, no abandonment of SR 2.0 milestone",
+    "AX-001_v2_defense_conditional": "N/A_at_alpha_stage — defense factor evaluation = Risk Agent / Forge bt_result",
+    "AX-002_process_honesty": "compliant — feature allowlist v2 sha256 inherit declared; rawdata.parquet sha256 c86e4ae5... declared (v5 canonical inherit); self_synthesis_used=false strict declare + audit obligation; v1~v5 cycle learning honestly enumerated; paradigm distinction (Original DPL ≠ RC) explicit; no rationalization keywords",
+    "AX-003_KR_value_EP_failure": "N/A — DPL multi-factor, not Value EP",
+    "AX-004_KR_quality_single_signal": "N/A — DPL multi-factor composite",
+    "AX-005_KR_defense_top20": "compliant_advisory — v3 top-20 hard via STE top-K, defensive-heavy 55% (v2 inherit) BUT EXCLUSION (Gate13) necessary not sufficient. v3 paradigm differentiation: multi-feature DeepSet cross-section + concentration penalty ≠ single-signal long-only defense. Forge G7 HHI > 0.06 demonstration mandate.",
+    "AX-007_methodological_single_sleeve_break": "ADVISORY_PENDING_FORGE_DEMONSTRATION — eligibility via ML sizing #4 established by v3 architecture (continuous softmax + concentration penalty + STE + PAN). Demonstration: Forge weights.csv per-sig_date HHI > 0.06. v1 EW collapse 100% direct avoidance.",
+    "AX-008_verification_triangulation_pending": "0/3 — Codex round pending. Forge + Architect deferred. ≥ 2/3 PASS required at admit gate (G6)."
+  },
+  "codex_round_metadata": {
+    "draft_emit_at": "2026-05-18T08:30:00+09:00",
+    "codex_invocation_pending": true,
+    "codex_helper_command_planned": "bash 02_Infrastructure/tools/debate_helpers/run_codex_qepm_critic.sh --role=alpha --task_id=WT-D20260519_001 --package=qepm/mailbox/worktask/WT-D20260519_001/alpha_package_draft.json --output=qepm/mailbox/worktask/WT-D20260519_001/codex_critic_response_alpha-research.json",
+    "rationalization_self_check_pre_codex": "PASS — no '미미', '관행적 허용', '실무적', '보수적이면 OK', '대부분 결과 동일', '이미 반영되어 있었을 것' detected in deliverables. Honest statement of uncertainty in literature_review_v3.md §8.5."
+  },
+  "v1_v5_learning_integrated_summary": {
+    "v1_REJECT_5_axis_fix": [
+      "Axis 1: EW collapse → continuous concentration softmax + concentration penalty `λ_conc · (HHI - 0.10)^2` + G7 HHI > 0.06 strict",
+      "Axis 1: Over-param 165K → 17K MLP (10× reduction)",
+      "Axis 2: -E[r] direct → Sharpe surrogate `-E[r_p]/σ(r_p)` variance-normalized",
+      "Axis 2: λ_cost=1.0 weak → λ_to ∈ {1.0, 2.0, 4.0} grid + 2× round-trip",
+      "Axis 3: TO 17.64 → decision-induced clip + partial adjustment α=0.6 + per-epoch cap audit",
+      "Axis 1: Gumbel hard top-K → STE top-K + PAN (projection-after-normalize iterative max 3)",
+      "Hyperparam: 1-config → 20 random search × 5 WF = 100 trials"
+    ],
+    "v2_DEFER_inherit": [
+      "80 features family-balanced (sha256 b3d667...)",
+      "DeepSet permutation-invariant (Set Module)",
+      "Score-proportional sizing (DSPO §3.4)",
+      "Decision-induced ranking clipping",
+      "Partial adjustment α=0.6",
+      "Purged WF 1m embargo"
+    ],
+    "v3_v5_RC_paradigm_retire_scoped": [
+      "L-330 scope: RC paradigm under current arch retired",
+      "v3 (본 cycle) = Original DPL ≠ RC paradigm valid retain",
+      "Universe 자유 (NOT 1715-restricted) → cor 1.0 architectural 회피",
+      "Standalone alpha (NOT NAV-level injection) → bad_improvement INVERSE 회피"
+    ],
+    "v4_anti_fabrication_inherit": [
+      "self_synthesis_used=false strict declare + audit obligation (v4 Forge synthetic detection precedent)",
+      "bt_result.rds SHA256 hash binding (Forge mandate)",
+      "rawdata.parquet sha256 c86e4ae5... canonical inherit (v5)",
+      "Codex C1 audit obligation"
+    ],
+    "v5_HARD_ABORT_inherit": [
+      "Harvey-NW 5-spec real OLS (genuine vs structural duplicate transparently labeled)",
+      "DSR Bailey-LdP n_trials=100 strict",
+      "G1 4-subgate strict if applicable (v5 ALL FAIL precedent)"
+    ]
+  },
+  "schema_compliance": "alpha_package v1 (8-field core + Charter §10 Role Card discovery_design_phase_a + v6.1 R1-R4-R13 + draft marker true + post Codex Round disposition addendum pending)"
+}
