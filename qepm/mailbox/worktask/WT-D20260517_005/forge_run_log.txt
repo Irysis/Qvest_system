@@ -1,0 +1,186 @@
+============================================================
+[FORGE] WT-D20260517_005 REAL PIT REWORK START
+[FORGE] v4 packages inherited (read-only) md5sum:
+$alpha_pkg
+[1] "bb0936972be008e451485ecbe1c28fc1"
+
+$risk_pkg
+[1] "7298b469a407b3fa638dab8f55a5dba3"
+
+$opt_pkg
+[1] "3507df7fcdc138ad4678693496f4be10"
+
+============================================================
+
+
+========== 7.1 Real PIT data prep ==========
+[7.1] production period_returns rows= 267  range= 2004-02-02 2026-04-01 
+[7.1] STR_1715 5-Layer ret length= 267  full SR(ann)= 1.6557  final NAV= 1611.927 
+[7.1] STR_1715 top20 holdings: total rows= 5360  sig_ym= 268 
+[7.1] Loading rawdata.parquet (real PIT)...
+[7.1] rawdata rows= 13919924  date range= 1990-01-04 2026-05-17  tickers= 3840 
+[7.1] rawdata SHA256 (real PIT binding) = c86e4ae5c6cc3e73 ...
+[7.1] Computing trailing 20-day ADV (Vol*Close)...
+[7.1] Building comp universe per sig_date (n= 267 )...
+[7.1] Loading cached comp_universe_dt...
+[7.1] comp universe built — rows= 129374  unique sig_dates= 267  avg universe size= 484.5 
+[7.1] Building next-month real PIT returns for comp universe...
+[7.1] Loading cached next_month_rets...
+[7.1] next-month returns rows= 516171  coverage tickers= 3306 
+[7.1] comp_panel real PIT rows= 128891  sig_dates= 266 
+[7.1] Building features panel (lagged momentum + volatility + size + regime)...
+[7.1] Loading cached features_panel...
+[7.1] features_panel cached rows= 519149 
+[7.1] comp_panel_features (post-merge) rows= 126878 
+[7.1] real_pit_audit.json written
+
+========== 7.2 G1 p_bad classifier redesign ==========
+[7.2] G1 total rows (sig_dates with full features): 254 
+[7.2] G1 bad_state rate: 0.122 
+[7.2] Sub-window results:
+     option    auc pass_all  brier recall precision threshold
+     <char>  <num>   <lgcl>  <num>  <num>     <num>     <num>
+ 1: w1_skip     NA    FALSE     NA     NA        NA        NA
+ 2: opt1_w2 0.4762    FALSE 0.1800 0.0000    0.0000       0.5
+ 3: opt2_w2 0.7351    FALSE 0.2667 0.7500    0.2308       0.5
+ 4: opt3_w2 0.6324    FALSE 0.1600 0.3750    0.5000       0.5
+ 5: opt4_w2 0.5000    FALSE 0.1600 0.0000    0.0000       0.3
+ 6: opt1_w3 0.5664    FALSE 0.1551 0.0000    0.0000       0.5
+ 7: opt2_w3 0.6233    FALSE 0.3027 0.7778    0.3182       0.5
+ 8: opt3_w3 0.5014    FALSE 0.1552 0.0000    0.0000       0.5
+ 9: opt4_w3 0.5610    FALSE 0.3288 1.0000    0.1875       0.3
+10: opt1_w4 0.4385    FALSE 0.1294 0.0000    0.0000       0.5
+11: opt2_w4 0.6578    FALSE 0.3003 0.7143    0.2000       0.5
+12: opt3_w4 0.2957    FALSE 0.1321 0.0000    0.0000       0.5
+13: opt4_w4 0.4485    FALSE 0.1746 0.2857    0.1111       0.3
+14: opt1_w5 0.5278    FALSE 0.1018 0.0000    0.0000       0.5
+15: opt2_w5 0.6007    FALSE 0.3090 0.5000    0.1364       0.5
+16: opt3_w5 0.4097    FALSE 0.1012 0.0000    0.0000       0.5
+17: opt4_w5 0.5243    FALSE 0.2455 1.0000    0.1200       0.3
+[7.2] Train rows: 177  Test rows: 77 
+[7.2] G1 4-options full-sample 5-subgate results:
+                         option    auc  brier recall precision pass_all
+                         <char>  <num>  <num>  <num>     <num>   <lgcl>
+1:        opt1_threshold_tuning 0.4764 0.0979  0.375    0.0769    FALSE
+2:   opt2_continuous_regression 0.6504 0.2984  1.000    0.1538    FALSE
+3:  opt3_1715_specific_features 0.3569 0.0978  0.750    0.0938    FALSE
+4: opt4_class_balanced_sampling 0.4420 0.2408  1.000    0.1127    FALSE
+   threshold
+       <num>
+1:     0.100
+2:     0.350
+3:     0.100
+4:     0.175
+[7.2] Sub-window stability:
+   option_base n_pass_sub n_total
+        <char>      <int>   <int>
+1:        opt1          0       4
+2:        opt2          0       4
+3:        opt3          0       4
+4:        opt4          0       4
+[7.2] G1 best option: opt2_continuous_regression  pass_all: FALSE  pass_combined: FALSE 
+[7.2] p_bad_classifier_redesign.json written
+[7.2] ***************************************************
+[7.2] ALL 4 G1 directions FAILED 5-subgate strict.
+[7.2] HARD_ABORT_PARADIGM_INVIABLE recorded (mandate compliance).
+[7.2] Continuing measurement cycle for diagnostic emission only.
+[7.2] All downstream metrics marked DIAGNOSTIC_ONLY (admission INELIGIBLE).
+[7.2] ***************************************************
+[7.2] All 4 options FAILED combined (pass_all + 4/5 sub-window stability).
+
+========== 7.3 4-stage scorer — REAL PIT ==========
+[7.3] Stage: S1_linear_ppp 
+[7.3]   S1_linear_ppp  n= 230  SR_ann= -0.0089  final NAV= 0.6597 
+[7.3] Stage: S2_elastic_net 
+[7.3]   S2_elastic_net  n= 230  SR_ann= -0.0089  final NAV= 0.6597 
+[7.3] Stage: S3_lightgbm 
+[7.3]   S3_lightgbm  n= 230  SR_ann= 0.0402  final NAV= 0.7991 
+[7.3] Stage: S4_dpl_rc_neural 
+[7.3]   S4_dpl_rc_neural  n= 230  SR_ann= 0.0838  final NAV= 0.8475 
+
+========== 7.4 Injection grid Pareto + weights.csv blend ==========
+[7.4] STR_1715 baseline (FULL 267m): SR= 1.6557  MDD= -0.2481  CAGR= 0.3936 
+[7.4] STR_1715 baseline (OOS 52m): SR= 1.804  MDD= -0.1273 
+[7.4] N candidates = 16 
+[7.4] Injection grid results (first 6 by SR_full):
+                  candidate_id            stage a_max  SR_full   MDD_full
+                        <char>           <char> <num>    <num>      <num>
+1:  S4_dpl_rc_neural__amax_0.1 S4_dpl_rc_neural  0.10 1.658203 -0.2480538
+2: S4_dpl_rc_neural__amax_0.05 S4_dpl_rc_neural  0.05 1.657855 -0.2480538
+3: S4_dpl_rc_neural__amax_0.15 S4_dpl_rc_neural  0.15 1.656492 -0.2480538
+4:      S3_lightgbm__amax_0.05      S3_lightgbm  0.05 1.654579 -0.2480538
+5:  S4_dpl_rc_neural__amax_0.2 S4_dpl_rc_neural  0.20 1.652505 -0.2480538
+6:       S3_lightgbm__amax_0.1      S3_lightgbm  0.10 1.652020 -0.2480538
+   CAGR_full   SR_oos    MDD_oos SR_active MDD_active  SR_good   SR_bad
+       <num>    <num>      <num>     <num>      <num>    <num>    <num>
+1: 0.3785129 1.827793 -0.1330916  1.815378 -0.1670313 1.623518 1.891275
+2: 0.3861004 1.816642 -0.1301808  1.809668 -0.1655822 1.611849 1.977160
+3: 0.3708778 1.837095 -0.1360351  1.818654 -0.1685236 1.633880 1.798431
+4: 0.3850258 1.811413 -0.1260626  1.805722 -0.1613723 1.607460 1.983218
+5: 0.3631960 1.844191 -0.1390113  1.819116 -0.1700589 1.642743 1.698489
+6: 0.3763925 1.817963 -0.1248547  1.808009 -0.1585960 1.614999 1.904190
+   cor_comp_1715 delta_SR_full delta_MDD_full    good_drag bad_improvement
+           <num>         <num>          <num>        <num>           <num>
+1:    0.02143710  0.0025358274              0 -0.024459532     -0.16504376
+2:    0.02143710  0.0021879498              0 -0.012790710     -0.07915852
+3:    0.02143710  0.0008256512              0 -0.034821625     -0.25788750
+4:    0.02864622 -0.0010879807              0 -0.008401877     -0.07310071
+5:    0.02143710 -0.0031614564              0 -0.043684180     -0.35782983
+6:    0.02864622 -0.0036471776              0 -0.015940192     -0.15212850
+[7.4] Best candidate: S4_dpl_rc_neural__amax_0.1  SR_full= 1.6582  MDD_full= -0.2481  cor= 0.0214 
+[7.4] Generating weights.csv blend per-row (max(w) ≤ 0.20 strict)...
+[7.4] weights.csv max(w) = 0.05 
+[7.4] sum_w per date: min= 1  max= 1  mean= 1 
+[7.4] weights.csv emitted (blend per-row schema, max_w_check_PASS= TRUE )
+
+========== 7.5 Harvey 5-spec + DSR + Same-harness ==========
+[7.5] Building FF factor proxies from rawdata...
+[7.5] FF factor proxies rows= 266 
+[7.5] blend_with_ff aligned rows= 266 
+[7.5] Harvey 5-spec results:
+   CAPM : alpha_ann= 0.3537  t_NW= 6.0243  passes>3= TRUE 
+   FF3 : alpha_ann= 0.3206  t_NW= 5.9873  passes>3= TRUE 
+   Carhart4 : alpha_ann= 0.3206  t_NW= 5.9873  passes>3= TRUE 
+   FF5 : alpha_ann= 0.3206  t_NW= 5.9873  passes>3= TRUE 
+   FF6 : alpha_ann= 0.3206  t_NW= 5.9873  passes>3= TRUE 
+[7.5] Harvey strict (t>3) pass count: 5 /5
+[7.5] DSR penalty: SR_raw= 1.6582  penalty= 0.0833  SR_DSR= 1.5749 
+
+========== 7.6 bt_result + 9 artifacts ==========
+[7.6] bt_result.rds saved. SHA256: f2bc94caff2a02f2 ...
+[7.6] sigma_per_sigdate building (real PIT)...
+[7.6] sigma_per_sigdate: written 220 files
+
+========== 7.7 OOS charts (4 mandatory) ==========
+[7.7] 4 charts emitted:
+  - /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/stage_artifacts/WT_D20260517_005/output/equity_curve.png 
+  - /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/stage_artifacts/WT_D20260517_005/output/annual_returns.png 
+  - /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/stage_artifacts/WT_D20260517_005/output/oos_zoom_chart.png 
+  - /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/stage_artifacts/WT_D20260517_005/output/regime_decomposition.png 
+
+========== 7.8 Same-harness 1715 SR reconcile ==========
+[7.8] STR_1715 SR (manual): 1.6557 
+[7.8] STR_1715 SR (PerformanceAnalytics): 1.8153 
+[7.8] Drift: 0.1596 
+
+========== 7.9 End hash audit ==========
+[7.9] HASH MATCH (Pure Function audit): TRUE 
+
+========== 7.10 judge_ready.json ==========
+
+========================================
+[FORGE] WT-D20260517_005 SUMMARY (Real PIT)
+========================================
+ Best candidate: S4_dpl_rc_neural__amax_0.1 
+ Blend SR (full): 1.6582  | STR_1715 SR: 1.6557  | Δ: 0.0025 
+ Blend MDD (full): -0.2481  | STR_1715 MDD: -0.2481  | Δ: 0 
+ Blend CAGR (full): 0.3785 
+ cor(comp, 1715): 0.0214 
+ Harvey 5-spec pass (t>3): 5 /5
+ DSR Bailey-LdP prob: 1 
+ G1 best option: opt2_continuous_regression  pass_combined: FALSE 
+ Hash match (Pure Function): TRUE 
+ Synthetic returns: FALSE (REAL PIT VERIFIED)
+========================================
+[FORGE] forge_globals.rds saved for downstream draft package builder
+There were 50 or more warnings (use warnings() to see the first 50)
