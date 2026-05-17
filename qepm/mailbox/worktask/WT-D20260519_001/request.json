@@ -1,0 +1,118 @@
+{
+  "task_id": "WT-D20260519_001",
+  "spawn_at": "2026-05-19T00:00:00+09:00",
+  "spawned_by": "Q-Lead 도훈 mandate 묻지말고 무한 리서치 + 1안 즉시 spawn — 오리지널 DPL 재설계 (v1~v5 학습 통합)",
+  "wt_type": "discovery",
+  "phase_origin": "PD47_DPL_KR_V3_ORIGINAL_REDESIGN_POST_5_CYCLE_LEARNING",
+  "design_name": "DPL_KR_v3 — Original Direct Portfolio Learning Redesign (Standalone Alpha, v1~v5 Learning Integrated)",
+  "parent_inheritance": {
+    "v1_predecessor": "WT-D20260517_001 (DPL_KR_v1 REJECT — EW collapse 100% + over-param 165K + TO 17.64)",
+    "v2_predecessor": "WT-D20260517_002 (Sorted Portfolio Learning 5축 design retain, paradigm shift DEFER)",
+    "v3_predecessor": "WT-D20260517_003 (DPL-RC weights-level DEFER — A안 cor 1.0 architectural)",
+    "v4_predecessor": "WT-D20260517_004 (DPL-RC NAV-level DEFER_PENDING_REWORK — synthetic AX-002 violation)",
+    "v5_predecessor": "WT-D20260517_005 (HARD_ABORT_PARADIGM_INVIABLE_SCOPED — RC paradigm under current arch retire)",
+    "core_distinction": "v3~v5는 RC (Residual Complement, 1715 보완). 본 v3 cycle은 ORIGINAL DPL (standalone alpha, 1715 외부 종속성 X). Paradigm retire scope (L-330)는 RC 한정, 오리지널 DPL은 paradigm valid retain."
+  },
+  "theme": "dpl_kr_v3_original_redesign_standalone_alpha_v1_v5_learning_integrated",
+  "hypothesis_title": "DPL_KR_v3 — 오리지널 DPL 재설계 + v1~v5 학습 통합 + Standalone alpha generator (1715 외부 종속성 X)",
+  "hypothesis_description": "v1~v5 5-cycle 학습 직접 반영 오리지널 DPL 재시도. 핵심 변경: (1) v1 EW collapse → continuous concentration softmax + concentration penalty (Gumbel hard top-K 폐기), (2) v1 over-param 165K → smaller MLP 30~50K params (sample efficient), (3) v1 -E[r] direct → Sharpe surrogate (high-variance gradient 회피), (4) v1 17.64 TO → λ_to round-trip ×2 strict + projection-after-normalize, (5) v4 synthetic → factor_db_connector real PIT strict + SHA256 hash binding, (6) v3 cor 1.0 → universe 자유 (Pure standalone alpha NOT RC), (7) v1 1-config → 20 random search hyperparam ablation, (8) v3~v5 EVaR worst-window + Wood 2026 DeePM 정합. Admit scope: substitution candidate (cor<0.5) or 4th source candidate (cor<0.3) — current admit STR_1715_AR_on_M4_R05_overlay_PG2 (Session 80 SR 1.9536) 대비. 도훈 mandate '오리지널 DPL로 재설계' + '묻지말고 무한 리서치' autonomous + v1~v5 학습 strict 적용.",
+  "hypothesis_source": "user_defined_post_5_cycle_learning_original_redesign",
+  "as_of_date": "2026-05-19",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KR_TOP500_LIQ1E8",
+    "liquidity_min_won_20d_avg": 200000000,
+    "max_names_total": 20
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d",
+    "fundamental_annual": "annual May",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement",
+    "macro": "t-1 FRED + ECOS",
+    "ic_history": "Usable_Date <= sig_date"
+  },
+  "hard_constraints": {
+    "long_only": true,
+    "max_names": 20,
+    "weight_bounds": [0, 0.20],
+    "sum_weights": 1.0,
+    "turnover_annualized_max": 6.0,
+    "mdd_pct_max": -0.25,
+    "data_constraints": "정형 데이터만"
+  },
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "v1_v5_learning_integrated_5_axis_redesign": {
+    "axis_1_architecture_v1_collapse_fix": {
+      "v1_fail": "Transformer-lite 165K params + Gumbel hard top-K + L1 normalize → EW collapse 100% (51/51 sig_dates × 20 × 0.05 uniform)",
+      "v3_redesign": "Smaller MLP 30~50K params + Continuous concentration softmax (no hard top-K) + concentration penalty `λ·Σw² - λ·k/N²` + projection-after-normalize"
+    },
+    "axis_2_loss_v1_instability_fix": {
+      "v1_fail": "-E[r_p] direct high-variance gradient + explore-exploit imbalance",
+      "v3_redesign": "Sharpe surrogate `E[r]/σ(r)` + cost-aware + concentration penalty 3-term composition"
+    },
+    "axis_3_turnover_v1_violation_fix": {
+      "v1_fail": "TO 17.64 vs 6.0 hard cap (294% violation) — λ_cost=1.0 weak",
+      "v3_redesign": "λ_to · |Δw| · 0.0015 × 2 (round-trip) + decision-induced ranking clipping + partial portfolio adjustment α"
+    },
+    "axis_4_real_pit_v4_synthetic_fix": {
+      "v4_fail": "Forge agent synthetic ret_comp + `self_synthesis_used=false` 거짓 표시",
+      "v3_strict": "factor_db_connector::load_month_factors() 경유 strict + bt_result.rds SHA256 hash binding + self_synthesis_used label audit"
+    },
+    "axis_5_scope_v3_RC_cor1_fix": {
+      "v3_v5_RC_fail": "DPL-RC (Residual Complement) paradigm — comp ⊂ 1715 → cor 1.0 architectural OR comp 외부 NAV-level → bad_improvement INVERSE",
+      "v3_redesign_original": "Original DPL — Pure standalone alpha generator (1715 외부 종속성 X) — Universe = KR_TOP500_LIQ1E8 자유 + cor < 0.3 또는 < 0.5 vs 1715 (substitution or 4th source candidate)"
+    }
+  },
+  "decision_gates_7_axis_v3_v5_learning": {
+    "G0_PIT": "Usable_Date <= sig_date strict + factor_db_connector mandate",
+    "G1_SR_floor": "DPL_v3_SR >= 1.0 (v1 -0.34 fail 직접 회피)",
+    "G2_cor_vs_str1715": "abs(cor) < 0.5 substitution / < 0.3 4th orthogonal source",
+    "G3_Harvey_t": "t_NW >= 3.0 5-spec 정식 regression (placeholder X, v5 학습)",
+    "G4_DSR": "Bailey-LdP Z >= 1.5 strict (v5 학습 5.63 precedent)",
+    "G5_cost_pareto": "Net-of-cost 15bps × 2 round-trip Pareto vs STR_1715 same-period",
+    "G6_AX008": "Forge + Codex + Architect 2/3 PASS (v5 학습)",
+    "G7_EW_non_collapse_strict": "HHI > 0.06 strict (v1 0.05 EW collapse 차단)"
+  },
+  "failure_cutoffs_v1_v5_strict": {
+    "ew_collapse_HHI_0_05": "HARD ABORT (v1 학습 — HHI uniform detection)",
+    "synthetic_detection_codex": "HARD ABORT (v4 학습)",
+    "TO_gt_6_annualized": "HARD ABORT (v1 17.64 학습)",
+    "SR_lt_0": "ABORT (v1, v5 zero alpha)",
+    "Codex_REJECT_veto_true": "DEFER"
+  },
+  "academic_references_5_core_v3_redesign": {
+    "YOU_ZHANG_2025_RFS_DPL_ORIGINAL": "Direct Portfolio Learning original paradigm — features → weights NN backprop with utility loss",
+    "ZHANG_WU_CHEN_2021_CHINA_SR_2_0": "Listwise Learn-to-Rank China A-share SR 2.0 — KR과 가장 유사 emerging market",
+    "DSPO_ZHONG_2024_SORTED_PORTFOLIO": "Direct Sorted Portfolio Optimization NYSE — sorted portfolio paradigm",
+    "WOOD_ROBERTS_ZOHREN_2026_DEEPM": "Regime-conditional EVaR + Macro Graph Prior (v3 inherit)",
+    "EPSTEIN_SADHWANI_GIESECKE_2025_SET_SEQUENCE": "Permutation-invariant Set-Sequence (v2 architecture reference)"
+  },
+  "v1_v5_inherit_artifacts_reusable": {
+    "v1_features_master": "stage_artifacts/WT_D20260514_008/features_master.parquet (1044 features)",
+    "v1_feature_allowlist": "stage_artifacts/WT_D20260517_001/feature_allowlist.csv (634 features sha256 frozen, Codex C5 fix)",
+    "v2_v3_80_features": "stage_artifacts/WT_D20260517_002/feature_allowlist_v2.csv (80 features family-balanced, FMP r² ranking)",
+    "v5_rawdata_hash": "rawdata.parquet SHA256 c86e4ae5c6cc3e73... (real PIT 13.9M rows 1990~2026.05)",
+    "Phase_1_2_pipeline": "02_Infrastructure/ml_pipeline/ (PyTorch CUDA + feature_loader + ml_models GPU)"
+  },
+  "agent_lineage": {
+    "alpha_research": "Step 2 — DPL_KR_v3 architecture finalize (5-axis redesign) + literature review + PIT audit + training protocol + Codex Round 5단계",
+    "risk_research": "Step 5 — Σ rolling per-sig_date + crowding (Acadian) + EVaR + 8 stress (v5 학습)",
+    "optimizer_research": "Step 4 — constraint projection audit (continuous softmax) + alternative comparison + decision-induced ranking",
+    "forge": "Step 6 — real PIT train (factor_db_connector strict) + 4-stage incremental scorer + 9 artifacts + Backtest Contract v1.0 + Architect concurrent",
+    "judge": "Gate 0~7 + AX-008 + 7-axis admission",
+    "governor": "admit decision — substitution sleeve / 4th orthogonal source / DEFER"
+  },
+  "codex_round_mandate": true,
+  "estimated_time_total": "10~14h (alpha 3~4h + risk 2h + optimizer 1.5h + Forge 3~4h + Architect 2h concurrent + judge 1h + governor 30m + Codex Round × 6)",
+  "lessons_referenced_critical": [
+    "L-328 (v1 DPL_KR_v1 EW collapse + over-param)",
+    "L-330 (v5 RC paradigm retire scoped under current architecture)",
+    "L-331 (Hybrid 70/15/15 admit precedent retain)",
+    "L-279~L-281 (Multi-sleeve admit precedent)",
+    "L-307 (STR_1715 Session 80 R05 Layer 5 admit precedent)"
+  ],
+  "production_promotion_eligibility": "G1~G7 7-axis admission ALL PASS + AX-008 ≥ 2/3 시 admit candidate — substitution sleeve (cor < 0.5) or 4th source (cor < 0.3)"
+}
