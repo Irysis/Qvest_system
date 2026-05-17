@@ -8,7 +8,7 @@
   "design_name": "DPL-RC v1.0 Optimizer Framework (Injection Grid Pareto Admission Curve + Decision-Induced Ranking Clipping Audit + Constraint Projection + Alternative Optimizer Comparison)",
   "phase_origin": "PD45_DPL_RC_Direct_Portfolio_Learning_for_1715_Residual_Complement",
   "method_family": "dpl_rc_injection_grid_pareto_admission_with_str_1715_preservation",
-  "production_lineage_preserved_explicit": "STR_1715_AR_on_M4_R05_overlay_PG2 alpha core 100% retain (replacement X) — w_final(t) = (1 - a_t) · w_1715(t) + a_t · w_comp(t), a_t = clip(a_max · p_bad_1715(t+1), 0, a_max), a_max ∈ {0.05, 0.10, 0.15, 0.20}. Sleeve-level execution (Option C, multi-sleeve interpretation, AX-007 exemption #1).",
+  "production_lineage_preserved_explicit": "STR_1715_AR_on_M4_R05_overlay_PG2 alpha core 100% retain (replacement X) — w_final(t) = (1 - a_t) · w_1715(t) + a_t · w_comp(t), a_t = clip(a_max · p_bad_1715(t+1|t), 0, a_max), a_max ∈ {0.05, 0.10, 0.15, 0.20}. POST-Codex-C2 disposition: portfolio-level union ≤ 20 strict enforce (도훈 Option A/B/C selection mandate before Forge cycle). p_bad_1715(t+1|t) strict notation (Codex C7 ACCEPT): classifier.predict at t outputs forecast of (t+1)-time bad state, applied to t-time injection (NO same-period circular, PIT C2/C9 strict). AX-007 exemption #1 multi-sleeve qualifies for mechanism break, BUT does NOT override user mandate max_names=20 portfolio-level hard.",
   "alpha_risk_package_inherit": {
     "alpha_package_path": "qepm/mailbox/worktask/WT-D20260517_003/alpha_package.json",
     "alpha_package_size_bytes": 29229,
@@ -136,7 +136,7 @@
   "constraint_projection_validation": {
     "hard_constraints_10": {
       "HC1_long_only": "PASS by convex combination of non-negative w_1715 + w_comp",
-      "HC2_max_names_20": "per-sleeve PASS (sleeve_1715 20 + sleeve_complement 20), union ≤ 40 학술 prior, AX-007 exemption #1 multi-sleeve interpretation (Option C)",
+      "HC2_max_names_20_post_codex_C2_disposition": "POST-Codex-C2 ACCEPT_PARTIAL: portfolio-level union ≤ 20 strict (NOT per-sleeve 20 each, 도훈 user mandate override 불가). Pre-disposition draft sleeve-level (union 25-40) DEPRECATED. Forge cycle 의무: empirical overlap measurement (학술 prior 5-15 with 1715 top-20) → K_complement dynamic adjustment (default Option D-3 = 20 - overlap). Q-Lead escalate items: 도훈 명시 Option A (compress to 1715 universe) / Option B (1715 외부 + a_max ≤ 5% 강제) / Option C (rank-merge truncate) / Option D-3 default (sleeve isolation + K_complement reduced) / Option D-4 (user mandate amendment per-sleeve formalization) 선택.",
       "HC3_weight_bounds_0_to_0_20": "PASS by convex combination of [0, 0.20] each",
       "HC4_sum_weights_1": "per-sleeve Σw=1, blend Σ(w_final) = (1-a_t)·1 + a_t·1 = 1 PASS by algebra",
       "HC5_active_neutral": "Forge cycle measurement mandate, post-hoc orthogonal projection if violation",
@@ -284,7 +284,18 @@
   "selection_objective": "crowding_adj_ret",
   "selection_objective_v6_1_R4_P3_compliance": "enum ∈ {net_ir, to_adj_ret, uncertainty_penalty, crowding_adj_ret}. 본 cycle 'crowding_adj_ret' 채택 — Pareto multiple candidates 잔존 시 tiebreaker. SR 단독 최대화 차단 (Hook block 정합).",
   "selection_objective_rationale": "Pareto frontier multi-objective (A1 SR + A4 bad_imp + A5 TO) 후 tiebreaker는 crowding penalty. 1순위 A1 SR (production target gap 0.0464 closure), 2순위 crowding (Acadian 2026 + role checklist L-219 family saturation)",
-  "method_shopping_log": {
+  "method_shopping_log_post_codex_C3_disposition": {
+    "candidates_tried_meta_design": 3,
+    "effective_search_space_codex_C3_ACCEPT_PARTIAL": {
+      "stage_a_max_grid_count": 16,
+      "alternative_methods_count": 9,
+      "lambda_grid_count": 81,
+      "bad_state_label_grid_count": 9,
+      "total_effective_search": 115,
+      "dsr_n_trials_conservative_inherit": 7200,
+      "dsr_deflation_formula": "SR_deflated = SR_obs · (1 - α·sqrt(2·ln(7200)/n_obs))",
+      "audit_disclosure": "Codex C3 ACCEPT_PARTIAL — effective search 115 explicit, DSR Bailey-LdP deflation strict 적용 (alpha cycle inherit 7200 conservative)"
+    },
     "candidates_tried": 3,
     "method_log": [
       {
@@ -323,7 +334,14 @@
   "deploy_cutoff": "2026-04 canonical",
   "deploy_cutoff_rationale": "alpha cycle PIT cutoff inherit (24-04 sig_dates frozen for design phase, Forge cycle frozen retain). Lockbox policy: alpha/risk/optimizer-research 3-stage lockbox applies, forge cycle 자동 frozen 후 PG2 deploy. Tier3 mandate v6.2 정합.",
   "baseline_fairness": "same-harness PerformanceAnalytics (Charter §13 + Backtest Contract v1.0) + same cost 15bps + 1715 same-period overlap (walk-forward OOS 52m subset of 255m admit) + same universe (KR_TOP500_LIQ1E8) + same training protocol (purged_walk_forward 5 windows v2 inherit) + same feature pool (v2 sha256 b3d667517a... 80 features) + same DSR n_trials (7200 conservative). v1/v2 Codex C5 fairness learning inherit. cross-cycle DSR convention drift L-309 (Session 80) 재발 차단.",
-  "infeasibility_report": null,
+  "infeasibility_report": {
+    "concern": "Codex C2 CRITICAL — max_names hard constraint user mandate at portfolio level. Pre-disposition draft per-sleeve interpretation infeasible (union 25-40 > 20).",
+    "violated_constraints_pre_disposition": ["RF-O5_max_names_portfolio_level", "user_mandate_max_names_20"],
+    "resolution_post_disposition": "도훈 explicit confirm pending — Option A/B/C/D-3/D-4 selection mandate. Default (본 agent): Option D-3 (sleeve isolation + reduced K_complement = 20 - overlap) + Forge cycle empirical measurement first. Q-Lead challenge_note 권고: 도훈 Option A/B/C 선택 의무 (Forge cycle 진입 전).",
+    "forge_cycle_mandate": "empirical overlap measurement first → K_complement dynamic adjustment → portfolio union ≤ 20 strict enforce per sig_date 124회 check nrow(weights_final) ≤ 20 strict",
+    "user_mandate_amendment_d_4_status": "도훈 explicit confirm pending",
+    "academic_backbone_d_3": "Kritzman-Page-Turkington (2011 FAJ) Sequential overlay precedent (L-307~313 R05 Layer 5 admit inherit) + Asness-Frazzini-Pedersen (2014) BAB defensive cross-section overlap expectation ~10-20%"
+  },
   "binding_constraints": [
     "HC1_long_only (per-sleeve, by convex combination)",
     "HC2_max_names_per_sleeve_20 (sleeve-level, AX-007 exemption #1)",
@@ -360,7 +378,7 @@
       "selection_objective = crowding_adj_ret (v6.1 R4 P3 + tiebreaker)"
     ],
     "main_tradeoffs": [
-      "max_names per-sleeve interpretation vs portfolio-level union (Hook L3 sleeve-level precedent retain)",
+      "POST-Codex-C2: portfolio-level union ≤ 20 strict (도훈 Option A/B/C/D-3/D-4 selection mandate) → K_complement reduced (학술 prior 5-15) → A4 bad-state improvement potential 영향 측정 Forge cycle mandate",
       "a_max scale: 0.05 (conservative) vs 0.20 (aggressive A4 gain + A2/A5 risk)",
       "Stage complexity: S3 LightGBM (expected dominant) vs S4 Neural (Avramov 2023 marginal expected)",
       "Bounds [0, 0.20] retain vs Task #26 [0, 0.10] (1715 admit precedent retain, request.json explicit)"
@@ -472,7 +490,8 @@
     "L-282 (PerfA convention reconcile, manual vs PerfA +0.19 SR drift) — Backtest Contract v1.0 PerformanceAnalytics standard mandate",
     "L-272 (v7.0.0 검증 가능한 소프트웨어 커널) — design phase vs Forge phase separation",
     "v1/v2 산출물 (literature + framework + 80 features + Set-Sequence architecture) inherit retain",
-    "v2 Codex C5 (same-harness fairness) inherit"
+    "v2 Codex C5 (same-harness fairness) inherit",
+    "L-484 (max_names hard constraint v53 enforcement) — Codex C2 portfolio-level strict mandate precedent"
   ],
   "academic_references_optimizer_5_core": {
     "WANG_HASUIKE_2026_KKT_RANKING": "Wang-Hasuike 2026 Mathematical Programming (working paper) — Decision-induced ranking selection via parametric KKT projection. Section 4 ranking residual analysis backbone (decision_induced_ranking_clipping_audit §1.1)",
@@ -490,7 +509,9 @@
     "POLITIS_ROMANO_1994_BOOTSTRAP": "Stationary bootstrap — bootstrap CI mandate for thin sample metrics",
     "BAILEY_LOPEZ_DE_PRADO_2014_OVERFITTING": "Backtest overfitting framework + DSR deflation n_trials=7200 conservative",
     "LEDOIT_WOLF_2003_2004_SHRINKAGE": "Ledoit-Wolf Oracle covariance shrinkage — risk_package primary inherit",
-    "MARKOWITZ_1952_MVO": "Mean-Variance Optimization — M4/M5 baseline classical theoretical backbone"
+    "MARKOWITZ_1952_MVO": "Mean-Variance Optimization — M4/M5 baseline classical theoretical backbone",
+    "KRITZMAN_PAGE_TURKINGTON_2011_FAJ_REGIME_OVERLAY": "Financial Analysts Journal 2011 — Sequential overlay precedent (L-307~313 R05 Layer 5 admit inherit, Option D-3 sleeve isolation backbone)",
+    "ASNESS_FRAZZINI_PEDERSEN_2014_BAB_DEFENSIVE": "BAB / QMJ defensive cross-section overlap expectation ~10-20% (Codex C2 Option D-3 학술 backbone)"
   },
   "production_promotion_eligibility": "design_quality compliance + Forge cycle empirical 9-method comparison + Pareto extraction + AX-008 ≥ 2/3 PASS + decision rule 5/5 → admit candidate (sleeve-level book_state mutation: STR_1715 (1-a_t) + DPL-RC complement stage_X (a_t) × admit a_max Y)",
   "design_quality_self_check": {
