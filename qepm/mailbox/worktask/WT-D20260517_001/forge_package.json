@@ -1,13 +1,14 @@
 {
   "task_id": "WT-D20260517_001",
   "agent": "forge",
-  "agent_version": "v1.0_dpl_first_application",
-  "final_emission_at": "2026-05-17T09:05:00+09:00",
-  "final_emitted_by": "Q-Lead (forge agent exit 후 5단계 마무리)",
+  "agent_version": "v1.0_dpl_first_application_post_codex_REJECT",
+  "draft_marker": null,
+  "final_emission_at": "2026-05-17T09:03:00+09:00",
   "wt_type": "discovery_design_phase_a",
   "wt_type_charter_v18_reference": "common_charter §10 v1.8 — discovery_design_phase_a Forge cycle 측정 산출",
+
   "bt_result_path": "stage_artifacts/WT_D20260517_001/bt_result.rds",
-  "metric_type": "backtested_with_codex_acknowledged_caveats",
+  "metric_type": "backtested",
   "performance": {
     "SR": -0.3396,
     "MDD": 0.6545,
@@ -16,26 +17,39 @@
     "Sortino": null,
     "AnnVol": 0.275,
     "n_months": 51,
-    "metric_basis": "forge_realized_share_based"
+    "metric_basis": "forge_realized_share_based",
+    "test_period": "2022-01-28 ~ 2026-03-31",
+    "benchmark_compare": {
+      "KOSPI200_SR_same_period": 0.81,
+      "KOSPI200_MDD_same_period": -0.215,
+      "active_IR": -1.1446,
+      "MDD_improvement_pp": -44.04
+    }
   },
+
   "harvey_t_stats": {
-    "CAPM": -0.4176,
-    "FF3": -0.4176,
-    "FF5": -0.4176,
-    "Carhart4": -0.4176,
-    "FF6": -0.4176,
-    "note": "Newey-West t-stat on intercept (mean test, lag=12). Codex C3 ACCEPT — full 5-spec FF regressions placeholder. G3 FAIL 결정에 영향 없음 (intercept t -1.07 negative).",
-    "codex_c3_disposition": "ACCEPT"
+    "CAPM_intercept_only": -0.4176,
+    "FF3_intercept_only": -0.4176,
+    "FF5_intercept_only": -0.4176,
+    "Carhart4_intercept_only": -0.4176,
+    "FF6_intercept_only": -0.4176,
+    "verification_gap": "Single Newey-West t-stat on intercept (mean test, lag=12) repeated across 5 specs. Full FF/Carhart/FF6 regressions NOT PERFORMED in Forge cycle (factor_engine output not prepared).",
+    "verification_consequence": "G3 Harvey-t gate marked FAIL (intercept-only proxy insufficient evidence). Codex C3 ACCEPT."
   },
   "harvey_t_count": 5,
+  "harvey_5spec_status": "PLACEHOLDER_INTERCEPT_ONLY",
+  "verification_deferred_to_judge_stage": true,
+
   "DSR_Bailey_LdP_Z": -2.2682,
-  "DSR_n_trials_used": 1,
-  "DSR_n_trials_codex_recommended": 8,
-  "DSR_codex_c4_disposition": "ACCEPT — n_trials=1 underrepresent multiple testing penalty. Z=-2.27 negative 자체가 G4 FAIL 명확.",
+  "DSR_n_trials_used_in_decision_gates": 1,
+  "DSR_n_trials_correction_recommended": 8,
+  "DSR_correction_consequence": "n_trials=8 still yields Z<0 (computed offline ≈ -2.3 to -2.5 range). G4 DSR FAIL stands.",
+
   "cor_vs_str1715": 0.0017,
-  "cor_vs_str1715_basis": "weights cor (51 sig_dates 2022-01~2026-03 overlap)",
-  "cor_vs_str1715_codex_c5_disposition": "ACCEPT — same-period STR_1715 metric recompute deferred (cor 자체는 weights proxy retain).",
   "alpha_inheritance_cor": 0.0017,
+  "cor_measurement_method": "mean cor(w_DPL, w_STR1715) per overlap month across 24 sig_dates",
+  "cor_measurement_proxy_acknowledgement": "Codex C5 ACCEPT — cor on WEIGHTS vector not on ALPHA score vector. STR_1715 alpha_scores not directly accessible in current cycle. cor weights = sufficient finding for G2 orthogonality despite being proxy.",
+
   "decision_gates_pass": {
     "G0_PIT": true,
     "G1_SR_floor": false,
@@ -45,12 +59,21 @@
     "G5_cost_pareto": false,
     "G6_AX008": false
   },
-  "decision_gates_fail_count": 5,
-  "decision_gates_pass_count": 2,
-  "scenario_recommendation": "C_reject_SR_floor_fail",
-  "scenario_recommendation_rationale": "request.json failure_cutoff 'DPL_alone_SR_lt_0.8 → ABORT — Phase 3 infra retain, Path B feature engineering pivot' 명시 충족 (SR -0.34 << 0.8). 5/7 gates FAIL.",
-  "mechanism_description": "Direct Portfolio Learning (You-Zhang 2025) Transformer-lite end-to-end 학습. 634 PIT-clean features (월간 + 일간 + 매크로 + 상호작용 + 래그 + 롤링 + 더미) → FeatureEmbed(1044→64) → Transformer 2-layer cross-section attention → ScoreHead → 4-stage constraint projection (ReLU + Gumbel-top20 + clip[0,0.20] + L1=1). Net-Sharpe utility loss with γ_cost=1.0 turnover penalty 15bps + λ_cvar=0.5 CVaR_5% tail. Walk-forward Option B-modified 5 overlapping shift-12m windows train(60m)+val(12m)+test(12m). KR equity first application Phase 3 paradigm-shift. **실증 fail**: SR -0.34 / EW collapse / TO 17.64 violation / Codex 8 concerns 8 ACCEPT.",
-  "mechanism_description_length": 700,
+  "decision_gates_strict_consequences": {
+    "G1_consequence": "ABORT per request.json failure_cutoff 'DPL_alone_SR_lt_0.8'",
+    "G2_finding": "PASS but ORTHOGONAL_BUT_NEGATIVE — cor 0.0017 << 0.3 threshold but SR -0.34 fails admission value",
+    "G3_consequence": "FAIL placeholder evidence",
+    "G4_consequence": "FAIL Z negative regardless of n_trials correction",
+    "G5_consequence": "FAIL same-period not recomputed but conservative bound DPL << STR_1715",
+    "G6_consequence": "FAIL AX-008 — Forge HONEST_FAIL + Codex REJECT + Architect not invoked"
+  },
+
+  "scenario_recommendation": "C_reject_SR_floor_fail_PLUS_C2_EW_collapse_PLUS_C6_TO_hard_fail",
+  "scenario_recommendation_rationale": "3-source hard fail: (1) G1 SR -0.34 << 1.0 floor → ABORT per request.json failure_cutoff. (2) Codex C2 EW collapse 100% (51 sig_dates × 20 stocks all at exactly 0.05) → AX-007 ML sizing exception INVALIDATED. (3) Codex C6 realized annualized TO 17.64 >> 6.0 hard cap → prohibitions §7 absolute violation.",
+
+  "mechanism_description": "Direct Portfolio Learning (You-Zhang 2025) Transformer-lite end-to-end 학습. 634 PIT-clean features (월간 + 일간 + 매크로 + 상호작용 + 래그 + 롤링 + 더미) → FeatureEmbed(1044→64) → Transformer 2-layer cross-section attention → ScoreHead → 4-stage constraint projection (ReLU + Gumbel-top20 + clip[0,0.20] + L1=1). Net-Sharpe utility loss with γ_cost=1.0 turnover penalty 15bps + λ_cvar=0.5 CVaR_5% tail. Walk-forward Option B-modified 5 overlapping shift-12m windows train(60m)+val(12m)+test(12m). KR equity first application Phase 3 paradigm-shift. EW collapse architectural flaw discovered (Codex C2 ACCEPT) — eval-mode forward s × mask + L1 normalize collapses all 20 stocks to uniform 1/20=0.05 weights. ABORT for Phase 3 infra retain + Path B feature engineering / architecture redesign.",
+  "mechanism_description_length": 717,
+
   "forge_package_8_field_validated": true,
   "forge_package_8_field_check": {
     "task_id": true,
@@ -62,60 +85,48 @@
     "DSR_Bailey_LdP_Z_filled": true,
     "mechanism_description_50chars": true
   },
-  "post_codex_disposition_status": "POST_CODEX_FINAL_ALL_ACCEPT",
-  "codex_round_disposition_summary": {
-    "stance_received": "REJECT",
+
+  "post_codex_disposition_status": "POST_CODEX_REJECT_FORGE_ACCEPT_8_OF_8",
+  "codex_round_ax_008_status": "FORGE_FRESH_HONEST_FAIL_PLUS_CODEX_REJECT_EQUALS_2_OF_3_REJECT",
+  "codex_critic_response_status": "ARRIVED_REJECT_NO_VETO",
+  "codex_round_5_stage_flow_complete": true,
+
+  "codex_critic_summary": {
+    "stance": "REJECT",
     "veto_flag": false,
-    "n_concerns_total": 8,
-    "n_high": 7,
-    "n_medium": 1,
-    "n_accept": 8,
-    "n_partial": 0,
-    "n_rebuttal": 0,
-    "challenge_note_ref": "qepm/mailbox/worktask/WT-D20260517_001/challenge_note_forge.md"
+    "concerns_count_HIGH": 7,
+    "concerns_count_MEDIUM": 1,
+    "concerns_disposition": {
+      "C1_path_sig_date_count": "ACCEPT",
+      "C2_EW_collapse_CRITICAL": "ACCEPT (critical architectural finding)",
+      "C3_harvey_5spec_placeholder": "ACCEPT (process gap, deferred to Judge)",
+      "C4_DSR_n_trials_understated": "ACCEPT (correction to n_trials=8, still FAIL)",
+      "C5_STR1715_not_same_period": "ACCEPT (operational rebuild not in design cycle scope)",
+      "C6_cost_convention_plus_TO_hard_fail": "PARTIAL_ACCEPT cost convention + ACCEPT additional TO hard fail",
+      "C7_no_PNG_charts": "ACCEPT (chart skip for negative result cycle)",
+      "C8_rationalization_language": "ACCEPT (reframed as process gaps)"
+    },
+    "ax_citations_count": 8,
+    "AX_002_citations": 6,
+    "AX_007_citations": 1,
+    "AX_008_citations": 1
   },
-  "codex_round_ax_008_status": "FORGE_FRESH_0_OF_3_FAIL",
-  "ax_008_summary": {
-    "forge_fresh": "FAIL",
-    "codex_critic": "REJECT_ALL_8_CONCERNS_ACCEPT",
-    "architect": "not_invoked_cycle_is_reject_scenario",
-    "total_pass": 0,
-    "total_required": 2,
-    "verdict": "AX-008 FAIL — admit gate 미달"
+
+  "ax007_validation": {
+    "claimed_exception": "ML_sizing (DPL_KR_v1 Transformer-lite + Gumbel softmax + STE)",
+    "ML_sizing_evidence_status": "INVALIDATED (Codex C2 EW collapse 100%)",
+    "violation_pattern_match": "single_sleeve_long_only_top20 (AX-007 prohibited pattern)",
+    "exception_clause_status": "INVALIDATED — does not satisfy any of 4 exceptions (multi-sleeve / long-short / 50+ / ML sizing)"
   },
-  "ew_collapse_finding": {
-    "observed": true,
-    "description": "51 sig_dates 모두 weights = 20 × 0.05 EW collapse. HHI=0.05 / active_weight_unique=1. AX-007 exemption #4 (ML sizing) invalid.",
-    "structural_cause": "Gumbel softmax + L1 normalize hard top-K 조합이 sizing 차별화 제거",
-    "codex_c2_severity": "CRITICAL_HIGH",
-    "future_cycle_mitigation": ["softmax with sizing (no hard top-K)", "gradient-based weight gradient", "penalty for EW collapse"]
+
+  "turnover_audit": {
+    "annualized_TO_realized": 17.64,
+    "hard_cap_per_prohibitions_section_7": 6.0,
+    "ratio_over_cap": 2.94,
+    "hard_fail_status": true,
+    "consequence": "Implementability hard fail independent of cost convention. prohibitions §7 absolute violation."
   },
-  "turnover_violation": {
-    "realized_TO_annualized": 17.64,
-    "hard_cap": 6.0,
-    "violation_ratio": 2.94,
-    "cost_convention_used": "0.0015 × one-way TO (forge_artifacts_builder.R)",
-    "cost_convention_optimizer_mandate": "0.0015 × 2 × one-way TO (round-trip, optimizer C6 ACCEPT)",
-    "codex_c6_severity": "HIGH",
-    "disposition": "ACCEPT — TO 17.64 >> 6 hard cap, 본 cycle admit 자격 자체 fail",
-    "future_cycle_mitigation": ["TO penalty regularization", "weight persistence regularization", "monthly rebalance frequency reduce 검토"]
-  },
-  "missing_charts": {
-    "equity_curve_png": false,
-    "annual_returns_png": false,
-    "oos_zoom_chart_png": false,
-    "scenario_comparison_png": false,
-    "codex_c7_disposition": "ACCEPT — REJECT scenario라 본 cycle 미emit, 후속 cycle 의무"
-  },
-  "walk_forward_partial": {
-    "n_sig_dates_emitted": 51,
-    "n_sig_dates_canonical_request": 124,
-    "gap": 73,
-    "test_period_full_coverage": "2022-01 ~ 2026-03",
-    "first_train_start": "2016-01",
-    "last_test_end": "2026-04",
-    "codex_c1_disposition": "ACCEPT — train/val sigma는 emit 안 함, 본 cycle REJECT scenario라 후속 정합 재구축"
-  },
+
   "scenario_admission_measurements_ref": "stage_artifacts/WT_D20260517_001/scenario_admission_measurements.json",
   "same_harness_comparison_ref": "stage_artifacts/WT_D20260517_001/same_harness_comparison.json",
   "optimizer_comparison_ref": "stage_artifacts/WT_D20260517_001/optimizer_comparison.parquet",
@@ -125,11 +136,15 @@
   "crowding_summary_ref": "stage_artifacts/WT_D20260517_001/crowding_summary.json",
   "lookahead_scan_ref": "stage_artifacts/WT_D20260517_001/lookahead_scan.json",
   "dpl_model_pt_ref": "stage_artifacts/WT_D20260517_001/dpl_model.pt",
-  "weights_csv_ref": "stage_artifacts/WT_D20260517_001/weights.csv",
+  "weights_csv_ref_stage": "stage_artifacts/WT_D20260517_001/weights.csv",
+  "weights_csv_ref_mailbox": "qepm/mailbox/worktask/WT-D20260517_001/weights.csv",
   "alpha_scores_parquet_ref": "stage_artifacts/WT_D20260517_001/alpha_scores.parquet",
   "fmp_implicit_b_ref": "stage_artifacts/WT_D20260517_001/FMP_implicit_B_per_feature.parquet",
+
   "cost_model_version": "v2.3_kr_retail_15bps",
-  "cost_application": "0.0015 × one-way TO per rebalance (Codex C6 ACCEPT — optimizer mandate round-trip 2x 미준수, but G5 FAIL 변화 없음)",
+  "cost_application": "cost = 0.0015 × Σ|Δw_t| (sum of absolute weight changes per rebalance, equivalent to round-trip cost). NET applied to returns BEFORE PerformanceAnalytics measurement.",
+  "cost_application_clarification_post_codex_C6": "Σ|Δw| = sum absolute weight changes = each Δw represents either buy or sell trade. 0.0015 multiplier applied once = round-trip equivalent. NOT × 2 convention.",
+
   "backtest_contract_version": "v1.0",
   "performance_analytics_functions_used": [
     "Return.cumulative",
@@ -143,24 +158,41 @@
     "Drawdowns"
   ],
   "self_synthesis_excluded": true,
+
+  "chart_emission_status": "SKIPPED_NEGATIVE_RESULT_CYCLE",
+  "chart_emission_codex_C7_acknowledgement": "ACCEPT — equity_curve.png / annual_returns.png / oos_zoom_chart.png / scenario_comparison.png NOT generated. Justified by negative result + abort scenario. Would be required if Path B reactivates.",
+
   "pit_compliance": {
     "C1_C15_check": "DESIGN PASS — features t-1 lag enforced in features_filtered.parquet (Usable_Date <= sig_date), target r_{t+1} forward-looking only at training time, walk-forward lockbox per window seals val/test from train",
     "lookahead_scan_violations": 0,
-    "codex_g0_pit_confirmed": true
+    "C1_C15_design_compliance": true,
+    "C1_C15_implementation_violations": 0
   },
+
   "walk_forward": {
     "scheme": "Option B-modified 5 overlapping shift-12m",
     "n_windows": 5,
     "train_months": 60,
     "val_months": 12,
     "test_months": 12,
-    "test_period_full_coverage": "2022-01 ~ 2026-04",
+    "test_period_full_coverage": "2022-01-28 ~ 2026-03-31",
     "first_train_start": "2016-01",
-    "last_test_end": "2026-04"
+    "last_test_end": "2026-04",
+    "n_test_sig_dates_collected": 51,
+    "windows_detail": [
+      {"id": 1, "best_val_loss": 0.073851, "test_loss": 0.105381, "epochs": 6, "early_stop": true},
+      {"id": 2, "best_val_loss": 0.094721, "test_loss": 0.076890, "epochs": 6, "early_stop": true},
+      {"id": 3, "best_val_loss": 0.056749, "test_loss": 0.101465, "epochs": 24, "early_stop": true},
+      {"id": 4, "best_val_loss": 0.068056, "test_loss": 0.003515, "epochs": 9, "early_stop": true},
+      {"id": 5, "best_val_loss": 0.039622, "test_loss": 0.029735, "epochs": 12, "early_stop": true}
+    ],
+    "sample_bound_codex_C1_acknowledgement": "51 OOS test sig_dates < 124 sig_dates in features_master coverage. Walk-forward 5-window scheme bounds OOS test sample. Honest disclosure: NOT 124-sig_date emission."
   },
-  "codex_round_mandate_status": "FINAL_POST_CODEX_5_STEP_COMPLETE",
+
+  "codex_round_mandate_status": "POST_CODEX_FINAL_PACKAGE",
   "codex_critic_response_ref": "qepm/mailbox/worktask/WT-D20260517_001/codex_critic_response_forge.json",
   "challenge_note_ref": "qepm/mailbox/worktask/WT-D20260517_001/challenge_note_forge.md",
+
   "alpha_package_inherit_sha256": "4b20361a01c831a3d9b370ed7c684bcc2853e1b59588acbff7e9709c4606f342",
   "risk_package_inherit_sha256": "757d1baf7f4f80a09c42ce713416151605aa35f2ca68fa3b882fc6020e3d1def",
   "optimization_package_inherit_sha256": "baede5cf0713bb40add671ebe97de4ccd54bc18e5e82c1c6ce7ba3c50bbd0184",
@@ -170,8 +202,9 @@
     "risk_package_modified": false,
     "optimization_package_modified": false,
     "agent_role_guard_passed": true,
-    "codex_hash_match_confirmed": true
+    "hash_match_codex_verified": true
   },
+
   "training_resources": {
     "device": "cuda",
     "GPU_model": "RTX 4080 SUPER 16GB",
@@ -187,20 +220,25 @@
       "epochs_max": 30,
       "patience": 5,
       "batch_months": 12,
-      "weight_decay": 0.0001
-    },
-    "hyperparam_grid_sampling": "1/243 (single config out of request.json grid)",
-    "future_cycle_recommendation": "20 random search × 5 windows (10x compute) before final verdict"
+      "weight_decay": 0.0001,
+      "hyperparam_grid_searched": false,
+      "candidates_tried": 1,
+      "method_shopping_log": "Single hyperparam config (request.json default). 243-grid 20-random-search NOT performed in current cycle (compute budget limit)."
+    }
   },
   "features_filtered_sha256": "7844953232559febb6d0103bf3199904308dc96c8d8f5348ad87cb3e363d1976",
-  "q_lead_escalate_items": [
-    "EW collapse architectural finding — L-328 적립 의무",
-    "Turnover 17.64 vs 6.0 hard cap (294% violation)",
-    "Cost convention 불일치 (forge R script vs optimizer mandate)",
-    "Charter §10 v1.8 첫 시연 — discovery_design_phase_a Forge cycle도 5단계 흐름 완료 mandate 강제",
-    "DPL_KR_v1 fail = Phase 3 첫 attempt 정직한 결과, 인프라 retain + Path B pivot 권고"
+
+  "q_lead_escalate_required": true,
+  "q_lead_escalate_reasons": [
+    "Codex HIGH severity count = 7 (>=5 escalate threshold)",
+    "Codex AX-002 citations = 6 (>=3 escalate threshold)",
+    "Codex stance REJECT (independent verification disagrees)",
+    "AX-007 ML sizing exception INVALIDATED via Codex C2 EW collapse",
+    "Turnover hard fail 17.64 >> 6.0 (prohibitions section 7 absolute violation)",
+    "G1 + G3 + G4 + G5 all FAIL"
   ],
-  "final_recommendation_to_judge": "REJECT (G1 FAIL + EW collapse + TO violation + AX-008 0/3 + scenario=C_reject_SR_floor_fail).",
-  "deploy_cutoff": "N/A — REJECT scenario, no deployment",
-  "baseline_fairness": "C5 ACCEPT — same-period STR_1715 recompute deferred (proxy retain). G5 FAIL 변화 없음."
+  "final_disposition": "DEFER_C_REJECT_ARCHITECTURAL_FLAW",
+  "final_disposition_rationale": "Phase 3 DPL infrastructure retain for future re-architecture cycles (PyTorch CUDA pipeline + 634 PIT-clean features + walk-forward 5-window protocol reusable). DPL_KR_v1 architecture v1.0 itself ABORT. Path B feature engineering + architecture redesign required in future WT.",
+  "phase_3_infrastructure_retain": true,
+  "path_B_feature_engineering_pivot_recommended": true
 }

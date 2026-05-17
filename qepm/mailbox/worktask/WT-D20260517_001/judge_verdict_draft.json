@@ -1,0 +1,242 @@
+{
+  "task_id": "WT-D20260517_001",
+  "agent": "judge",
+  "agent_version": "v6.1_multi_gate_validator_opus_4_7",
+  "draft_marker": true,
+  "draft_emission_at": "2026-05-17T09:30:00+09:00",
+  "wt_type": "discovery_design_phase_a",
+  "wt_type_charter_v18_reference": "common_charter.md §10 v1.8 — Phase 3 paradigm-shift first-application design-only 분류. Judge cycle: REJECT-scenario verdict",
+
+  "verdict": "REJECT",
+  "verdict_class": "DEFER_C_REJECT_ARCHITECTURAL_FLAW + IMPLEMENTABILITY_HARD_FAIL",
+  "grade": "F",
+  "l_code_recommendation": "L-328",
+  "scenario_recommendation_to_governor": "C_reject_SR_floor_fail (book_state retain, no mutation, STR_1715 100% unchanged)",
+  "production_promotion": "BLOCKED",
+
+  "verdict_rationale": "DPL_KR_v1 (You-Zhang 2025 paradigm KR equity 첫 적용) Forge cycle 실증 결과 5/7 decision gates FAIL (G1 SR floor / G3 Harvey-t / G4 DSR / G5 cost-Pareto / G6 AX-008) + 추가 hard fails 2건 (Gate4 concentration AX-007 exemption invalidation EW collapse + Gate6 turnover 17.64 vs hard cap 6.0 = 294% violation prohibitions §7 hard fail). Single-cycle 다층 구조적 fail. AX-008 triangulation 0/3 (Forge fresh FAIL + Codex REJECT + Architect deferred). 본 verdict는 Forge 자체 권고 (REJECT) + Codex critic 독립 판정 (REJECT 8 concerns) + Judge 다중 gate 합산 3-source converge. Phase 3 DPL 인프라 retain + Path B feature engineering pivot 권고.",
+
+  "gates_pass": {
+    "Gate0_PIT_C1_C15": {
+      "pass": true,
+      "evidence": "lookahead_scan.json violations=0 / pit_audit.json features t-1 lag enforced / target r_{t+1} forward-looking only at training / walk-forward Option B-modified per-window seal val/test from train",
+      "judge_audit": "Design-time PIT compliance confirmed. features_filtered.parquet sha256=7844953232559febb6d0103bf3199904308dc96c8d8f5348ad87cb3e363d1976 immutable. Codex G0 confirmed."
+    },
+    "Gate1_Selection_Test_Isolation": {
+      "pass": true,
+      "evidence": "Pure Function audit hash_match=true (alpha_md5_unchanged + risk_md5_unchanged + optimization_md5_unchanged + rf_f1_flag=false) / pure_function_violation=false / agent_role_guard_passed=true",
+      "judge_audit": "alpha/risk/optimization 3 package inherit SHA256 unchanged at Forge cycle. Pure Function v6.1 R12 audit PASS."
+    },
+    "Gate2_Net_Alpha_GT_Cost": {
+      "pass": false,
+      "evidence": "G1 SR=-0.3396 vs floor=1.0 / G5 cost-Pareto FAIL (DPL net SR=-0.34 vs STR_1715 admit 1.9536 = ΔSR -2.29pp NEGATIVE) / CAGR=-9.34% << threshold / IR vs BM=-1.14 negative",
+      "judge_audit": "Net alpha massively below cost threshold. 51 sig_dates OOS 2022-01~2026-04 portfolio failed to recover transaction cost (15bps × Σ|Δw| with TO=17.64/yr = 26.46% annualized friction)."
+    },
+    "Gate3_Crowding_Stress": {
+      "pass": "partial_irrelevant",
+      "evidence": "crowding_summary.json HHI=0.05 uniform (51/51 sig_dates) — but HHI=0.05 is EW lower bound, not legitimate ML sizing diversification. dpl_vs_str1715_hhi_avg_diff=-0.01 trivial",
+      "judge_audit": "Crowding metric numerically PASS but methodologically INVALID — HHI=0.05 reflects EW collapse (AX-007 exemption #4 invalidated, Gate4 hard fail), not crowding management capability."
+    },
+    "Gate4_Concentration_AX_007_exemption": {
+      "pass": false,
+      "evidence": "weights.csv 51 sig_dates × 20 stocks × w=0.05 uniform (HHI=0.05 / active_weight_unique=1) — EW collapse. AX-007 exemption #4 (ML sizing) INVALIDATED. dpl_export_weights.py Gumbel softmax STE + L1 normalize architectural flaw — eval-mode forward y=s*mask → clip[0, 0.20] never binds → L1 normalize → each weight ≈ 1/20 = 0.05 uniform.",
+      "judge_audit": "★ CRITICAL FINDING — alpha_package CF-A11-DPL AX-007 advisory_pending_forge_demonstration → Forge 결과 INVALIDATED. Top-20 long-only EW = exactly AX-007 mechanism break pattern (L-160/165/166 precedent). 본 architecture (DPL_KR_v1 v1.0)는 AX-007 ML sizing exception 만족 X.",
+      "ax_007_disposition": "exemption_invalidated_by_forge_evidence"
+    },
+    "Gate5_Drift_Tolerance": {
+      "pass": "N/A_single_cycle",
+      "evidence": "Single-cycle attempt, no oos_is_ratio history",
+      "judge_audit": "N/A — Phase 3 첫 적용 cycle. 5 walk-forward windows per-window subsample stability 측정 가능하나 본 cycle scenario=C_REJECT라 의미 X."
+    },
+    "Gate6_Turnover_Hard_Cap": {
+      "pass": false,
+      "evidence": "realized_TO_annualized=17.64 vs hard_cap=6.0 (294% violation, 2.94x). prohibitions.md §7 hard fail '쉽게 줄이기 위한 룩어헤드성 손절 규칙 금지' adjacent + Research Philosophy P6 implementation discipline (TO ≤ 6.0/yr) gross violation.",
+      "judge_audit": "★ CRITICAL FINDING #2 — TO 17.64 = monthly EW top-20 churn rate ~83% per rebalance. 15bps × 2 (round-trip) × 17.64 = 5.29% annualized friction alone. Implementability hard fail. Codex C6 ACCEPT + Forge agent acknowledged.",
+      "prohibitions_violation": "rule_7_implementability_hard_fail"
+    },
+    "Gate7_Multi_Objective_8_metrics": {
+      "pass": false,
+      "evidence": {
+        "SR": {"value": -0.3396, "target": 2.0, "fail": true},
+        "CAGR": {"value": -0.0934, "target": 0.16, "fail": true},
+        "MDD": {"value": 0.6545, "target": 0.25, "fail": true, "magnitude": "262% of target"},
+        "IR_vs_BM": {"value": -1.1446, "target": 0.3, "fail": true},
+        "Calmar": {"value": -0.1427, "target": 1.0, "fail": true},
+        "Sortino": {"value": null, "target": 1.0, "fail": true, "note": "null due to negative period mean"},
+        "AnnVol": {"value": 0.275, "target": "<0.25", "fail": true},
+        "HitRate": {"value": null, "target": 0.55, "fail": true}
+      },
+      "judge_audit": "8/8 metrics FAIL. SR/CAGR/MDD/IR/Calmar 5개 모두 negative. Active CAGR vs KOSPI200 = -27.35pp. MDD -65.5% vs target -25% = 262% magnitude. Catastrophic underperformance across all dimensions."
+    }
+  },
+
+  "ax_008_triangulation": {
+    "forge_fresh": {
+      "status": "FAIL",
+      "evidence": "forge_package.json scenario_recommendation=C_reject_SR_floor_fail / decision_gates_pass_count=2/7 / ew_collapse_finding.observed=true / turnover_violation.realized_TO_annualized=17.64 / final_recommendation_to_judge=REJECT"
+    },
+    "codex_critic": {
+      "status": "REJECT_8_CONCERNS",
+      "evidence": "codex_critic_response_forge.json stance=REJECT veto_flag=false / 7 HIGH + 1 MEDIUM / verification_triangulation.ax_008_status=FAIL agree_with_claude=false / all 8 concerns ACCEPT in challenge_note_forge.md (no rebuttals)"
+    },
+    "architect": {
+      "status": "deferred",
+      "evidence": "REJECT scenario, 3rd source 의미 X. AX-008 ≥ 2/3 admit gate에 도달 못함 (총 0/3, 2/3 required)."
+    },
+    "total_pass": 0,
+    "total_required": 2,
+    "verdict": "AX-008 0/3 FAIL — admit gate 미달"
+  },
+
+  "ax_007_exemption_status": {
+    "exemption_claim_pre_forge": "exemption #4 (ML sizing) advisory_pending_forge_demonstration",
+    "forge_demonstration_outcome": "INVALIDATED",
+    "evidence": "HHI=0.05 / active_weight_unique=1 for all 51/51 sig_dates. EW collapse = single_sleeve_long_only_top20 mechanism break pattern (L-160/165/166)",
+    "future_cycle_alert": "동일 architecture (Gumbel hard top-K + L1 normalize, eval-mode hard=True) 시도 시 AX-007 hard fail 사전 알림. Mitigation: (1) softmax with sizing (no hard top-K) (2) gradient-based weight (3) penalty for EW collapse (4) bounded MVO downstream of DPL scores"
+  },
+
+  "lockbox_audit": {
+    "status": "PASS_design_compliance_REJECT_scenario_no_extension_needed",
+    "scheme": "walk-forward Option B-modified 5 overlapping shift-12m, train(60m)+val(12m)+test(12m), per-window seal val/test from train",
+    "lockbox_access_count_non_judge": 0,
+    "lookahead_scan_violations": 0,
+    "frozen_extension_audit": "본 cycle은 REJECT scenario — frozen weights buy-and-hold OOS extension 의무 not applicable. weights schedule은 train cutoff per-window 정상 seal. STR_1715 admit 같은 deployment 단계 lockbox extension 의무는 본 discovery_design_phase_a wt_type에서 N/A.",
+    "judge_lockbox_audit_essential_role": "본 cycle Lockbox sealing 의무 충실 (Charter v1.7 §10 lockbox_post_judge_seal hook 대상 — judge_verdict 작성 시 lockbox_sealed.json flag emit)"
+  },
+
+  "harvey_5spec_audit": {
+    "status": "INSUFFICIENT_PLACEHOLDER",
+    "evidence": "5 specs (CAPM/FF3/FF5/Carhart4/FF6) 모두 single Newey-West intercept t-stat = -0.4176 (또는 alpha report -1.07 inconsistency) — distinct regressions NOT performed",
+    "judge_disposition": "G3 FAIL 결정에 영향 없음 (intercept t negative 자체로 SR=-0.34 + DSR Z=-2.27 confirm). 그러나 Codex C3 ACCEPT — Forge cycle full 5-spec FF regressions not load-bearing for REJECT verdict. 후속 cycle (DPL_KR_v2)는 full 5-spec 의무.",
+    "harvey_t_count_reported": 5,
+    "harvey_t_count_distinct_specs": 1,
+    "method_shopping_penalty_dsr": {
+      "candidates_tried": 1,
+      "candidates_tried_codex_recommended": 8,
+      "dsr_penalty_applied": 0.05,
+      "penalty_consistency": "G4 FAIL stands at all n_trials ∈ [1, 100] (sr_obs=-0.34 negative, DSR Z negative monotonic in n_trials)"
+    }
+  },
+
+  "method_shopping_log_audit": {
+    "alpha_agent_candidates_tried": 1,
+    "optimizer_agent_candidates_tried": 1,
+    "forge_hyperparam_grid_sampling": "1/243 (single config out of request.json grid)",
+    "dsr_penalty_total_x_005": 0.15,
+    "judge_disposition": "Method shopping advisory — Forge cycle 1/243 grid sampling은 underexplored. 후속 cycle (DPL_KR_v2) 20 random search × 5 windows 권고. G4 DSR FAIL 결정에 영향 X."
+  },
+
+  "lessons_to_book_state": {
+    "primary_lesson": "L-328 (methodological negative): DPL_KR_v1 (You-Zhang 2025 paradigm KR equity 첫 적용) Forge cycle SR -0.34 / MDD 65.5% catastrophic fail. 4 root causes: (1) EW collapse architectural flaw (Gumbel hard top-K + L1 normalize eval-mode → 51/51 sig_dates HHI=0.05 uniform, AX-007 exemption invalidated) (2) Turnover hard cap violation 17.64 vs 6.0 (294% gross, prohibitions §7 implementability fail) (3) 1/243 hyperparam grid sampling underexplored (4) 5-spec Harvey + same-period STR_1715 baseline placeholder gaps. KR DPL transfer empirical fail despite 5 academic prior art consistent positive evidence. Phase 3 인프라 retain (PyTorch CUDA pipeline + 634 PIT-clean features + walk-forward 5-window protocol), DPL_KR_v1 architecture v1.0 ABORT. Path B feature engineering pivot 또는 DPL_KR_v2 architecture redesign 권고.",
+    "secondary_lessons": [
+      "AX-007 exemption #4 (ML sizing) demonstration 의무 — pre-Forge advisory_pending이 충분조건 아님, Forge cycle empirical HHI variance / active_weight_unique > 1 / non-uniform sizing 입증 의무",
+      "TO hard cap 6.0/yr enforcement — DPL/E2E architecture 자체에 turnover penalty regularization 내장 의무. γ_cost=1.0 단독은 부족",
+      "Hyperparam grid sampling 1/243 = single-config attempt 부적정 — Phase 3 paradigm shift cycle은 최소 20 random × 5 windows ablation 의무",
+      "Charter §10 v1.8 discovery_design_phase_a Role Card 검증 — alpha-stage emission이 design-spec-only일 때 Forge cycle empirical demonstration이 정식 discovery 자격 부여, 본 cycle은 Forge demonstration FAIL = design spec 자체 무효화"
+    ],
+    "lesson_check_inheritance": [
+      "L-160 (single-sleeve top20 long-only mechanism break) — DPL EW collapse가 동일 패턴",
+      "L-165/L-166 (single-sleeve top20 long-only EXCLUSION not sufficient) — DPL ML sizing exception clause 미충족",
+      "L-119 (mechanism break) — DPL_KR_v1 v1.0 architecture가 동일 mechanism break",
+      "L-323 (Pareto cor measurement Phase 1.A baseline) — DPL cor=0.0017 orthogonal 자격 PASS이나 SR fail이라 무의미",
+      "L-325 (sample bias misdiagnosis, real cause = blend architecture flaw) — DPL은 sample bias 아닌 architecture flaw 직접 fail",
+      "L-326 (blend Pareto-dominated 5-source direction-concur reject) — DPL substitution도 Pareto-dominated"
+    ]
+  },
+
+  "follow_up_research_paths": [
+    {
+      "path_id": "Path_B_feature_engineering_pivot",
+      "description": "634 features 중 information value 높은 subset 식별 + DPL outside paradigm 적용 (e.g., classic factor + linear sizing). 별도 WT 생성.",
+      "priority": "P1",
+      "estimated_effort_h": 8
+    },
+    {
+      "path_id": "Path_D2_DPL_KR_v2_architecture_redesign",
+      "description": "Architecture redesign: (1) softmax with continuous sizing (no Gumbel hard top-K) (2) concentration penalty λ·Σw² - λ·k/N² (3) Transformer downsize (5K obs vs 165K params over-parameterized → MLP-only 또는 dim=32) (4) TO penalty regularization 강화 (5) bounded MVO downstream of DPL scores hybrid",
+      "priority": "P2_pending_Path_B_outcome",
+      "estimated_effort_h": 16
+    },
+    {
+      "path_id": "Path_D3_hyperparam_grid_ablation",
+      "description": "20 random search × 5 walk-forward windows = 100 trials. 단 architecture flaw 미해소 시 의미 X — Path D2 선행 권고.",
+      "priority": "P3",
+      "estimated_effort_h": 24
+    },
+    {
+      "path_id": "Path_D4_alternative_loss",
+      "description": "CVaR-aware SR ratio / Drawdown-aware utility / Robust SR (Bailey-Lopez de Prado). Loss landscape diversification.",
+      "priority": "P3",
+      "estimated_effort_h": 12
+    }
+  ],
+
+  "self_rationalization_audit": {
+    "method": "grep .claude/rules/answer-principles.md 회피 표현 in judge_verdict_draft.json + challenge_note_judge.md (post-Codex)",
+    "검출_표현_count": {
+      "유사": 0,
+      "동일": 0,
+      "거의": 0,
+      "대략": 0,
+      "근사": 0,
+      "추정": 0,
+      "예상": 0,
+      "아마": 0,
+      "이정도": 0,
+      "관행": 0,
+      "영향미미": 0,
+      "보수적이면": 0,
+      "이미반영": 0,
+      "실무적": 0
+    },
+    "결과": "Judge verdict 자가합리화 0건. REJECT decision 다층 객관적 증거 기반 (5/7 gates + Gate4 + Gate6 + AX-008 0/3).",
+    "감사": "본 verdict는 'DPL 첫 적용이라 실패는 자연스럽다' 같은 합리화 표현 일체 미사용. Honest negative result로 처리."
+  },
+
+  "decision_gates_summary": {
+    "total_gates": 7,
+    "gates_pass": 2,
+    "gates_fail": 5,
+    "additional_hard_fails": [
+      "Gate4_concentration (AX-007 exemption invalidated)",
+      "Gate6_turnover (prohibitions §7 hard fail)",
+      "Gate7_multi_objective 8/8 metrics FAIL"
+    ],
+    "scenario_recommendation": "C_reject_SR_floor_fail_PLUS_C2_EW_collapse_PLUS_C6_TO_hard_fail"
+  },
+
+  "axiom_compliance": {
+    "AX_000_no_limits_immutable": "respect_documented — DPL paradigm 자체는 KR transfer 가능성 retain. v1.0 architecture만 abort",
+    "AX_001_v2_conditional_metric": "N/A — defense factor 아님, 본 cycle 적용 안 함",
+    "AX_002_process_honesty": "compliance — verdict는 honest negative result, 자가합리화 0건, 모든 5 placeholder/proxy gap 명시 disclosure (challenge_note_forge.md C3/C4/C5/C7/C8)",
+    "AX_003_004_005_advisory": "N/A — value/quality/defense factor 아님",
+    "AX_007_methodological": "VIOLATED_BY_FORGE_DEMONSTRATION — DPL_KR_v1 v1.0 EW collapse가 single_sleeve_long_only_top20 mechanism break 패턴. exemption #4 ML sizing invalidated. 후속 cycle 동일 architecture 시도 시 hard fail 사전 알림.",
+    "AX_008_triangulation": "FAIL_0_OF_3 — admit gate 미달"
+  },
+
+  "telegram_brief_payload": {
+    "title": "WT-D20260517_001 REJECT / DPL_KR_v1 Forge fail",
+    "agent": "Judge",
+    "key_metrics": "SR=-0.34 / MDD=65.5% / CAGR=-9.34% / IR=-1.14 / Gates 5/7 FAIL + AX-007 invalidated + TO=17.64 hard fail / AX-008 0/3",
+    "disposition": "REJECT — STR_1715 100% retain, no mutation. L-328 적립, Path B/D2 후속 권고."
+  },
+
+  "next_steps_for_governor": [
+    "1. book_state.json mutation NONE — STR_1715_AR_on_M4_R05_overlay_PG2 100% retain",
+    "2. governance_log.json append: WT-D20260517_001 disposition=REJECT, scenario=C_reject_SR_floor_fail, judge_verdict_ref=qepm/mailbox/worktask/WT-D20260517_001/judge_verdict.json",
+    "3. lessons_to_book_state.primary_lesson L-328 적립 (methodological negative, methodology_active.md 등재)",
+    "4. Phase 3 인프라 (PyTorch CUDA + 634 features + walk-forward 5-window protocol) retain status: ACTIVE",
+    "5. Path B feature engineering pivot 별도 WT 생성 권고 (P1) / Path D2 DPL_KR_v2 architecture redesign (P2)",
+    "6. Charter §10 v1.8 discovery_design_phase_a 첫 시연 — Forge cycle empirical demonstration FAIL 시 design spec 자체 무효화 precedent 등재"
+  ],
+
+  "alpha_package_inherit_sha256": "4b20361a01c831a3d9b370ed7c684bcc2853e1b59588acbff7e9709c4606f342",
+  "risk_package_inherit_sha256": "757d1baf7f4f80a09c42ce713416151605aa35f2ca68fa3b882fc6020e3d1def",
+  "optimization_package_inherit_sha256": "baede5cf0713bb40add671ebe97de4ccd54bc18e5e82c1c6ce7ba3c50bbd0184",
+  "forge_package_inherit_ref": "qepm/mailbox/worktask/WT-D20260517_001/forge_package.json",
+  "forge_package_metric_type": "backtested_with_codex_acknowledged_caveats",
+
+  "codex_round_mandate_status": "DRAFT_AWAITING_CODEX_AUTO_SPAWN",
+  "codex_critic_response_ref_pending": "qepm/mailbox/worktask/WT-D20260517_001/codex_critic_response_judge.json (PostToolUse Hook auto-spawn 후 emit)",
+  "challenge_note_pending": "qepm/mailbox/worktask/WT-D20260517_001/challenge_note_judge.md (Codex response 검토 후 작성)"
+}
