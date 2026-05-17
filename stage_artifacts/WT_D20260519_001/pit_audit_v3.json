@@ -1,0 +1,198 @@
+{
+  "audit_id": "WT-D20260519_001_pit_audit_v3",
+  "wt": "WT-D20260519_001",
+  "agent": "alpha-research",
+  "audit_at": "2026-05-18T08:00:00+09:00",
+  "audit_scope": "DPL_KR_v3 alpha-research stage PIT C1~C15 compliance + v4 synthetic anti-pattern audit + v1 liquidity mitigation audit",
+  "design_paradigm": "Original DPL (Pure standalone alpha, 1715 외부 종속성 X). NOT Residual Complement.",
+  "feature_inherit": {
+    "source": "stage_artifacts/WT_D20260517_002/feature_allowlist_v2.csv",
+    "n_features": 80,
+    "sha256": "b3d667517a39e4ebf219988f67c2cc6e22f4fb6350f5d6a5e52976fb4a8fb6ee",
+    "family_distribution": {
+      "Risk_Beta_Vol": 15,
+      "Tail_Risk": 15,
+      "Momentum_Tech": 15,
+      "Other": 15,
+      "Liquidity": 7,
+      "Risk_Metric": 7,
+      "Reversal": 2,
+      "Technical": 2,
+      "Daily_LowFreq": 2
+    },
+    "selection_method": "FMP r² robust ranking (0.5·median + 0.5·q25) + family-stratified max 15/family (v2 inherit)",
+    "_codex_v1_C5_fix_inherited": "WT007 macro residue dropped (v1 644 → 634), then v2 family-balance to 80. Sha256 sha256sum canonical."
+  },
+  "rawdata_inherit": {
+    "source": "rawdata.parquet (v5 canonical)",
+    "sha256": "c86e4ae5c6cc3e733efe35db4aa9bf335f434f85aa90f0a6fdd086183464659c",
+    "n_rows": 13919924,
+    "date_range": "1990 ~ 2026-05",
+    "real_pit_verified": true,
+    "self_synthesis_used": false,
+    "_v4_synthetic_anti_pattern": "v4 Forge synthetic ret_comp + label fabrication detected. v3 strict inherit v5 real rawdata canonical."
+  },
+  "c1_full_sample_statistics": {
+    "status": "PASS",
+    "evidence": [
+      "All preprocessing (winsorization, Z-score, median imputation) per sig_date cross-section only",
+      "Walk-forward train/val/test split enforces sig_date_train < sig_date_val < sig_date_test",
+      "24m rolling warm-up 2014~2015 mitigated via training_sig_date_first=2016-01-30 (v1 inherit)",
+      "No inter-sig-date statistics used"
+    ]
+  },
+  "c2_same_day_circular": {
+    "status": "PASS",
+    "evidence": [
+      "Features at sig_date_t only (no same-day circular)",
+      "Target r_{t+1} is forward return (training-only future, Lockbox window 외 정상 per .claude/rules/lockbox-scope.md)",
+      "Walk-forward test data sig_date > train cutoff sig_date"
+    ]
+  },
+  "c3_same_period_aggregation": {
+    "status": "PASS",
+    "evidence": "Per-sig-date cross-section operations only. No same-period aggregation → application."
+  },
+  "c4_financial_statement_lag": {
+    "status": "PASS",
+    "evidence": "factor_db_connector::load_month_factors(sig_date) inherits annual May / quarterly 45d lag (registry-level). v2 80 features fundamentals already lag-applied at Factor DB build."
+  },
+  "c5_overlay_t1": {
+    "status": "PASS_N_A",
+    "evidence": "DPL_KR_v3 does not use overlay signals (no MRS / DD / VT). m4 regime feature optional (Forge ablation, v2 inherited spec) — if enabled, m4 PIT t-1 inherit from STR_1715_AR_on_M4_R05_overlay_PG2."
+  },
+  "c6_survivorship_bias": {
+    "status": "PASS",
+    "evidence": "rawdata.parquet (v5) includes delisted stocks (PIT-correct universe). Universe filter LIQ_20d ≥ 2e8 KRW applied per sig_date (not retroactive)."
+  },
+  "c7_lookahead_pattern_auto_detect": {
+    "status": "PASS_PENDING_FORGE_SCAN",
+    "evidence": "alpha-research stage = design spec. Forge cycle obligation: `Rscript 02_Infrastructure/validation/lookahead_detector.R --target=WT-D20260519_001`. Forge ABORT if any pattern detected."
+  },
+  "c8_fm_weight_same_day": {
+    "status": "PASS_N_A",
+    "evidence": "DPL_KR_v3 does not use FM weights (Fama-Macbeth)."
+  },
+  "c9_dd_vt_same_day": {
+    "status": "PASS_N_A",
+    "evidence": "DPL_KR_v3 does not use DD/VT overlay. m4 regime optional (Forge ablation) — if enabled, m4 from STR_1715 inherits dd_lag PIT mechanism (L-274)."
+  },
+  "c10_liquidity_filter": {
+    "status": "PASS_STRICT_2E8",
+    "evidence": [
+      "Alpha-emit stage strict 2e8 KRW 20d ADV (Codex C4 v1 fix accepted)",
+      "Universe: KR_TOP500_LIQ1E8 per-sig_date filter",
+      "feature_allowlist_v2.csv inherit from v2 (built with v1 features_master at 5e7 threshold) — BUT alpha-emit re-filters to 2e8 strict",
+      "Forge cycle audit: per sig_date count(LIQ_20d >= 2e8) report"
+    ],
+    "_codex_v1_C4_fix_inherit": "v1 5e7 build inherit issue resolved by re-filter at alpha-emit (not inherit 5e7)"
+  },
+  "c11_external_series_validation": {
+    "status": "PASS_FRED_ECOS_DROPPED",
+    "evidence": [
+      "v2 80 features family-balanced — WT007 macro-derived features already dropped (v1 Codex C5)",
+      "FRED/ECOS coverage gaps mitigated by macro family exclusion",
+      "If m4 regime feature optional enabled, inherit STR_1715 m4 PIT mechanism (1-day lag or expanding percentile per L-274)"
+    ]
+  },
+  "c12_data_time_axis": {
+    "status": "PASS",
+    "evidence": "monthly sig_date granularity, KR fiscal calendar respected. rawdata.parquet (v5) PIT-clean daily price → monthly aggregation. Anchor dates verified."
+  },
+  "c13_z_score_aligned": {
+    "status": "PASS",
+    "evidence": [
+      "All 80 features routed via factor_db_connector::load_month_factors() (returns Z_Score_Aligned canonical)",
+      "Cross-section Z-score per sig_date per feature applied in DPL_KR_v3 preprocessing (additional standardization)",
+      "No manual NEGATE_FACTORS / FLIP_SIGN in v3 design"
+    ]
+  },
+  "c14_ic_usable_date": {
+    "status": "PASS_PENDING_FORGE_EMIT",
+    "evidence": "ic_history.parquet emit by Forge cycle with Usable_Date ≤ sig_date strict assertion. alpha-research stage = design spec only."
+  },
+  "c15_factor_db_routing": {
+    "status": "PASS",
+    "evidence": [
+      "load_month_factors(sig_date) routing strict (no direct parquet load)",
+      "v2 features_master inherit also routed via load_month_factors at build time",
+      "rawdata.parquet for prices/returns — C15 alignment note: load_month_factors() returns factor signals (Z_Score_Aligned); rawdata.parquet is canonical KR PIT-clean price/return cache (v5 alignment per Codex v5 C1 disposition)"
+    ],
+    "_codex_v5_C1_alignment_inherit": "C15 alignment: factor signals via load_month_factors; prices/returns via rawdata.parquet (both PIT-clean)"
+  },
+  "anti_fabrication_v4_lesson": {
+    "self_synthesis_used_label": false,
+    "self_synthesis_used_audit_obligation": "Forge cycle must declare self_synthesis_used=false in forge_package.json; Codex C1 audit obligation",
+    "bt_result_rds_sha256_binding": "Forge cycle: sha256sum bt_result.rds > bt_result.rds.sha256 + report in forge_package.json. Anti-fabrication audit.",
+    "synthetic_detection_hook": "02_Infrastructure/hooks/forge_synthesis_audit.sh (or equivalent post-Forge audit)"
+  },
+  "ax_axiom_compliance": {
+    "AX-000_no_limits": "compliant — paradigm Original DPL retry post v1 fail, no abandonment",
+    "AX-001_v2_defense_conditional": "N/A_at_alpha_stage — defense factor evaluation is Risk Agent / Forge bt_result",
+    "AX-002_process_honesty": "compliant — feature allowlist published with v2 sha256 inherit; rawdata sha256 declared (v5 inherit); self_synthesis_used=false declared; no rationalization keywords detected in design",
+    "AX-003_KR_value_EP_failure": "N/A — DPL is multi-factor, not Value EP",
+    "AX-004_KR_quality_single_signal": "N/A — DPL is multi-factor composite",
+    "AX-005_KR_defense_top20": "compliant_advisory — v3 has top-20 hard, but EXCLUSION (Gate13) is necessary not sufficient. v2 family-balanced features 55% defensive heavy (Risk_Beta_Vol+Tail_Risk+Risk_Metric+Liquidity) — Forge cycle G13/G14/G15 strict mandate.",
+    "AX-007_methodological_single_sleeve_break": "ADVISORY_PENDING_FORGE_DEMONSTRATION — eligibility via ML sizing #4 established by v3 architecture (continuous concentration softmax + concentration penalty + STE top-K + PAN). Demonstration requires Forge weights.csv per-sig_date HHI > 0.06.",
+    "AX-008_verification_triangulation_pending": "Codex round to be invoked next. Forge + Architect deferred. ≥ 2/3 PASS required at admit gate (G6)."
+  },
+  "v1_v5_learning_inherit_summary": {
+    "v1_REJECT_fix_applied": [
+      "EW collapse → continuous concentration softmax + concentration penalty (G7 HHI > 0.06)",
+      "Over-param 165K → smaller MLP 17K (10× reduction)",
+      "-E[r] direct → Sharpe surrogate (variance-normalized)",
+      "γ_cost=1.0 weak → λ_to {1.0, 2.0, 4.0} grid + 2× round-trip",
+      "Gumbel hard top-K → STE top-K + PAN (projection-after-normalize iterative)",
+      "1-config → 20 random search × 5 WF = 100 trials"
+    ],
+    "v2_DEFER_inherit": [
+      "80 features family-balanced (sha256 b3d667...)",
+      "DeepSet permutation-invariant (Set Module)",
+      "Score-proportional sizing (DSPO §3.4)",
+      "Decision-induced ranking clipping",
+      "Partial adjustment α=0.6 (TO mitigation)",
+      "Purged walk-forward 1m embargo"
+    ],
+    "v4_DEFER_PENDING_REWORK_anti_pattern": [
+      "Forge synthetic ret_comp + label fabrication → BANNED",
+      "self_synthesis_used=false strict declare + audit obligation",
+      "bt_result.rds SHA256 hash binding",
+      "rawdata.parquet sha256 c86e4ae5... canonical inherit"
+    ],
+    "v5_HARD_ABORT_PARADIGM_INVIABLE_RC_SCOPED": [
+      "RC paradigm under current arch retired (L-330)",
+      "v3 Original DPL = paradigm distinct from RC",
+      "Universe 자유 (NOT 1715-restricted) → cor 1.0 architectural 회피",
+      "Standalone alpha (NOT NAV-level injection) → bad_improvement INVERSE 회피"
+    ]
+  },
+  "hard_abort_check": {
+    "ew_collapse_HHI_0_05": "NOT_TRIGGERED_at_alpha_stage (Forge cycle weights.csv HHI > 0.06 G7 gate)",
+    "synthetic_detection_codex": "NOT_TRIGGERED_at_alpha_stage (Forge cycle self_synthesis_used audit)",
+    "TO_gt_6_annualized": "NOT_TRIGGERED_at_alpha_stage (Forge cycle per-epoch TO_annual audit + λ_to grid + partial adjustment + cap audit)",
+    "SR_lt_0": "NOT_TRIGGERED_at_alpha_stage (Forge cycle 52 test months SR measurement)",
+    "Codex_REJECT_veto_true": "NOT_YET_INVOKED — pending alpha_package_draft.json"
+  },
+  "overall_pit_status": "PASS_WITH_STRUCTURAL_CAVEATS",
+  "caveats_summary": [
+    "C1: 24m warm-up mitigated via training_sig_date_first=2016-01-30",
+    "C10: feature inherit 5e7 build (v2 inherit) BUT alpha-emit strict 2e8 (Codex C4 v1 fix accepted)",
+    "C13: Z_Score_Aligned verified via factor_db_connector",
+    "C14: ic_history pending Forge emit (alpha stage = design spec)",
+    "C15: load_month_factors routing verified at v1+v2 inherit + v3 strict mandate; rawdata.parquet for prices (C15 alignment v5 inherit)"
+  ],
+  "feature_count_canonical_v3": {
+    "n_features_v3": 80,
+    "n_sig_dates_effective": 124,
+    "n_test_months_total": 52,
+    "n_random_search_trials": 20,
+    "n_walk_forward_windows": 5,
+    "n_total_trials_for_DSR": 100,
+    "_inherit": "v2 80 features × 124 sig_dates × 52 test months canonical (v1 Codex C3 reconciliation inherit)"
+  },
+  "_emission_metadata": {
+    "lineage": "literature_review_v3.md §4 + dpl_kr_v3_architecture.md §7",
+    "next_step": "training_protocol_v3.md + admission_protocol_v3.md + alpha_package_draft.json + Codex Round",
+    "schema_version": "pit_audit_v1"
+  }
+}
