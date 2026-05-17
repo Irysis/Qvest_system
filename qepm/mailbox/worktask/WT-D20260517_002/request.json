@@ -1,0 +1,209 @@
+{
+  "task_id": "WT-D20260517_002",
+  "spawn_at": "2026-05-17T22:00:00+09:00",
+  "spawned_by": "Q-Lead 도훈 mandate Path D v2 — DPL_KR_v2 Sorted Portfolio Learning 학술 문헌 deep review 후 5축 리디자인",
+  "wt_type": "discovery_design_phase_a",
+  "wt_type_charter_v18_reference": "common_charter §10 v1.8 — Phase 3 paradigm-shift first-application design-only (alpha cycle)",
+  "phase_origin": "PD44_Phase3_DPL_KR_v2_Sorted_Portfolio_Learning_v1_post_mortem_5_axis_redesign",
+  "parent_inheritance": {
+    "predecessor_wt": "WT-D20260517_001 (DPL_KR_v1 REJECT, L-328 적립)",
+    "v1_failure_mode_inherit": "EW collapse 100% (51/51 sig_dates) + TO 17.64 vs 6.0 hard cap + MDD 65.45% + AX-007 exemption invalidated + AX-008 0/3",
+    "v1_artifacts_reusable": [
+      "stage_artifacts/WT_D20260514_008/features_master.parquet (1044 features × 2824 tickers × 292595 rows)",
+      "stage_artifacts/WT_D20260517_001/feature_allowlist.csv (634 features sha256 frozen)",
+      "stage_artifacts/WT_D20260517_001/FMP_implicit_B_per_feature.parquet (634 features × 51 sig_dates FMP r² ranking)",
+      "Phase 3 infra: PyTorch CUDA + walk-forward 5-window protocol + LW Σ rolling per-sig_date"
+    ],
+    "v1_lcode": "L-328 (DPL_KR_v1 v1.0 architecture single-config single-cycle scope narrow)",
+    "philosophy_sot": "02_Infrastructure/docs/qvest_research_philosophy.md v1.0 (원칙 4 Direct Portfolio Learning 정합)"
+  },
+  "theme": "dpl_kr_v2_sorted_portfolio_learning_5_axis_paradigm_redesign",
+  "hypothesis_title": "DPL_KR_v2 Sorted Portfolio Learning — 5축 paradigm 리디자인으로 SR 2.0 돌파 검증",
+  "hypothesis_description": "v1 (WT-D20260517_001) 실패 원인 5건 (EW collapse / TO violation / MDD breach / over-parameterized / loss instability)을 학술 문헌 deep review (Zhang-Wu-Chen 2021 China SR 2.0 / Zhong et al. 2024 DSPO / Wood-Roberts-Zohren 2026 DeePM / Uysal-Li-Mulvey 2021 End-to-End Risk Budgeting / Wang-Hasuike 2026 SPO inflation) 통해 5축 paradigm 리디자인. v2 핵심 변경: (1) Output = weights 직접 → **sorted portfolio ranked list → top-K** (DSPO Zhong 2024, EW collapse 본질 회피), (2) Architecture = Transformer 165K → **Set-Sequence permutation-invariant 30K params** (Epstein-Sadhwani-Giesecke 2025), (3) Loss = -E[r] → **Listwise Plackett-Luce + EVaR worst-window robust + Turnover-Adjusted IR 합성** (Zhang 2021 + Wood 2026 + Wang-Hasuike 2026), (4) Turnover control = γ=1.0 weak → **decision-induced ranking clipping + min-max rescaling + partial portfolio adjustment** (Wang-Hasuike 2026 SPO inflation mitigation), (5) Regime robustness = single model → **DeePM worst-window EVaR + Macro Graph Prior + m4 regime inherit** (Wood 2026). 핵심 학술 근거: Zhang-Wu-Chen 2021 China A-share market 68 factors 2006-2019 → annual 38% / **SR 2.0** (KR과 가장 유사 emerging market 실증). 도훈 mandate '실험설계를 다시 바꿔서 해보자' + '이게 SR 2.0 돌파의 답' decisive confidence 정합.",
+  "hypothesis_source": "user_defined_post_v1_failure_5_axis_redesign",
+  "as_of_date": "2026-05-17",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KR_TOP500_LIQ1E8",
+    "liquidity_min_won_20d_avg": 200000000,
+    "max_names_total": 20
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d",
+    "fundamental_annual": "annual May",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement",
+    "macro": "t-1 FRED + ECOS",
+    "ic_history": "Usable_Date <= sig_date"
+  },
+  "hard_constraints": {
+    "long_only": true,
+    "max_names": 20,
+    "weight_bounds": [0, 0.20],
+    "sum_weights": 1.0,
+    "turnover_annualized_max": 6.0,
+    "mdd_pct_max": -0.25
+  },
+  "research_philosophy_alignment": {
+    "principle_2_cost_aware": "loss 합성 항 — Turnover-Adjusted IR 명시 + decision-induced ranking clipping (v1 γ=1.0 weak 학습 반영)",
+    "principle_3_uncertainty": "EVaR worst-window robust utility (Wood 2026 DeePM 정합)",
+    "principle_4_direct_portfolio": "★ 핵심 — Sorted Portfolio Learning paradigm (Zhang 2021 / Zhong 2024 / Wood 2026)",
+    "principle_5_crowding": "Set-Sequence permutation-invariant은 본질적으로 crowding-aware (per-unit dynamics + cross-section summary)",
+    "principle_7_attribution": "DSPO Monotonical Logistic Regression — ranked list 해석 가능"
+  },
+  "v2_axis_redesign_5_fold": {
+    "axis_1_output": {
+      "v1": "직접 weights NN forward pass + Gumbel hard top-K + L1 normalize",
+      "v2": "Sorted portfolio ranked list → top-K natural extraction (DSPO Zhong 2024)",
+      "rationale": "EW collapse 본질 회피 — ranked list는 자연스럽게 non-uniform sizing"
+    },
+    "axis_2_architecture": {
+      "v1": "Transformer-lite 2-layer / 2 heads / 64 dim ≈ 165K params",
+      "v2": "Set-Sequence (permutation-invariant Set module + Sequence per-unit dynamics) ~30K params",
+      "rationale": "Over-parameterized 165K × ~5K effective obs/window 학습 불안정 (L-328 학습) → permutation-invariance로 effective dim 축소"
+    },
+    "axis_3_loss": {
+      "v1": "-E[r_p,t+1] + γ_cost·|Δw|·0.0015 + λ_cvar·CVaR_5%",
+      "v2": "Listwise Plackett-Luce ranking loss + EVaR worst-window robust utility + Turnover-Adjusted IR penalty 3-term 합성",
+      "rationale": "direct -E[r_p] high-variance gradient (Patel-Sastry 2021 symmetric loss > squared error) — listwise ranking + utility surrogate 우월"
+    },
+    "axis_4_turnover_control": {
+      "v1": "γ_cost = 1.0 (loss 항 약함) → TO 17.64 vs 6.0 hard cap (294% violation)",
+      "v2": "Decision-induced ranking clipping + min-max rescaling + partial portfolio adjustment (Wang-Hasuike 2026 SPO inflation mitigation)",
+      "rationale": "SPO/DFL은 본질적으로 prediction inflation + excessive turnover 경향 — KKT analysis 기반 명시 mitigation 필요"
+    },
+    "axis_5_regime_robustness": {
+      "v1": "Single model walk-forward 5 windows",
+      "v2": "DeePM-style EVaR worst-window robust utility + Macro Graph Prior + m4 regime inherit (NORMAL/CAUTION/CRISIS)",
+      "rationale": "2022~2026 KR universe 자체 어려움 (모든 baseline negative SR, L-328) — 최악 시기 견디기 명시 mandate"
+    }
+  },
+  "data": {
+    "features_source": "stage_artifacts/WT_D20260514_008/features_master.parquet (v1 inherit retain)",
+    "n_features_v1_inherit_634": "stage_artifacts/WT_D20260517_001/feature_allowlist.csv sha256 frozen",
+    "n_features_v2_post_fmp_rank_target": "50~100 (FMP r² ranking via v1 FMP_implicit_B_per_feature.parquet — top features 추출)",
+    "n_features_v2_fmp_rank_rationale": "v1 over-parameterization 직접 해소 — 634 → 50~100 reduce + Set-Sequence params 30K + effective obs 5K/window 정합",
+    "n_rows_panel": 292595,
+    "n_tickers": 2824,
+    "n_sig_dates_canonical": 124,
+    "n_test_months_canonical": 52,
+    "history_period": "2014-01 ~ 2026-04 canonical (124 sig_dates, walk-forward 5 windows, 52m net test)",
+    "liquidity_threshold_features_build": 50000000,
+    "liquidity_threshold_production_mandate": 200000000,
+    "liquidity_2stage_mitigation": "features 5e7 inherit + alpha emit 2e8 strict (v1 Codex C4 ACCEPT canonical pattern retain)",
+    "pit_compliance": "C1~C15 strict, Usable_Date <= sig_date 의무, t-1 lag features"
+  },
+  "model": {
+    "architecture": "DPL_KR_v2_Sorted_Portfolio_Learning",
+    "primary_paradigm": "Sorted portfolio ranked list → top-K natural extraction (DSPO Zhong 2024 정합)",
+    "encoder_set_module": "Permutation-invariant Set module (Epstein-Sadhwani-Giesecke 2025) — cross-sectional summary, deep set or attention pooling",
+    "decoder_sequence_module": "Per-unit dynamics conditioned on Set summary + unit features",
+    "ranking_head": "Linear → R^N ranking scores (대상 정렬 가능 score)",
+    "top_k_extraction": "Natural top-K from ranked list (no Gumbel/STE/hard masking — v1 EW collapse 본질 회피)",
+    "loss_3_term_compose": {
+      "listwise_ranking": "Plackett-Luce likelihood maximization (Zhang-Wu-Chen 2021)",
+      "evar_utility": "EVaR worst-window robust (smooth approximation via softplus + window log-sum-exp, Wood-Roberts-Zohren 2026 DeePM)",
+      "turnover_adjusted_ir": "min(IR_gross - λ_TO·|TO - TO_target|) explicit (Zhang-Wang-Cao 2021)"
+    },
+    "turnover_mitigation_3_layer": {
+      "decision_induced_ranking_clipping": "ranked scores clip to bound TO contribution (Wang-Hasuike 2026)",
+      "min_max_rescaling": "stabilize prediction inflation (Wang-Hasuike 2026)",
+      "partial_portfolio_adjustment": "α·w_new + (1-α)·w_prev blend, α ∈ (0, 1] learned or fixed (Wang-Hasuike 2026)"
+    },
+    "regime_robustness_3_layer": {
+      "evar_worst_window": "loss = E[L] + κ·EVaR_α(L) for α ∈ (0.1, 0.2), explicit worst-window penalty",
+      "macro_graph_prior": "Cross-asset/cross-sector economic-first-principles regularization (DeePM Wood 2026)",
+      "m4_regime_inherit": "Auxiliary regime feature (NORMAL/CAUTION/CRISIS) injected to Set module — m4 (M4 BOCPD) 정합"
+    },
+    "params_target": "~30,000 (v1 165K × 1/5 축소)",
+    "hyperparams_initial": {
+      "lr": 1e-4,
+      "batch_size_months": 12,
+      "epochs": 50,
+      "early_stop_patience": 5,
+      "dropout": 0.2,
+      "l2_reg": 1e-4,
+      "listwise_weight": 1.0,
+      "evar_weight": 0.3,
+      "to_penalty_weight": 0.5,
+      "evar_alpha": 0.15,
+      "partial_adjustment_alpha": 0.6
+    },
+    "framework": "PyTorch 2.x CUDA (RTX 4080 SUPER 16GB, v1 인프라 retain)"
+  },
+  "training_protocol": {
+    "scheme": "walk_forward",
+    "train_window_months": 60,
+    "validation_window_months": 12,
+    "test_window_months": 12,
+    "n_windows": 5,
+    "first_train_start": "2014-01",
+    "last_test_end": "2026-04",
+    "pit_lag": "t-1 features → t ranking → top-K → t+1 returns",
+    "hyperparam_ablation": "20 random search × 5 windows (v1 1-config 1/243 sampling 부족 학습 반영)"
+  },
+  "decision_gates": {
+    "G0_PIT": "Usable_Date <= sig_date 모든 feature × t-1 lag enforced",
+    "G1_SR_floor": "DPL_v2_SR >= 1.0 (v1 -0.34 대비 충분히 floor 통과 의무)",
+    "G2_cor_vs_str1715": "abs(cor) < 0.5 substitution / < 0.3 4th orthogonal source",
+    "G3_Harvey_t": "t_NW >= 3.0 5-spec (CAPM/FF3/FF5/Carhart4/FF6) 정식 regression 의무 (v1 placeholder fail 학습)",
+    "G4_DSR": "Bailey-LdP Z >= 0 strict, n_trials ≥ 20 multiple testing penalty 정합",
+    "G5_cost_pareto": "Net-of-cost 15bps Pareto vs STR_1715 same-period (v1 baseline_fairness fail 학습 — 정합 mandate)",
+    "G6_AX008": "Forge + Codex + Architect 2/3 PASS",
+    "G7_turnover_hurdle": "Realized annualized TO <= 6.0 hard cap (v1 17.64 violation 학습 — strict mandate)",
+    "G8_mdd_hurdle": "Realized MDD <= 25% (v1 65.45% breach 학습 — strict mandate)",
+    "G9_concentration_ax007": "HHI > 0.05 strict (uniform EW collapse 차단, v1 51/51 EW 학습 — DSPO sorted natural 자동 정합)"
+  },
+  "failure_cutoffs": {
+    "DPL_v2_SR_lt_1_0": "ABORT — paradigm 보존 retain, hyperparam 또는 architecture re-tune 별도 cycle",
+    "EW_collapse_detected": "HARD ABORT — DSPO sorted paradigm 자체 실패 (v1보다 더 깊은 실패) → Path B/C pivot 정식 권고",
+    "TO_gt_8_after_mitigation": "ABORT — 3-layer mitigation 효과 X, paradigm 한계",
+    "MDD_gt_30_pct": "ABORT — EVaR worst-window 효과 X, regime robustness 한계",
+    "Codex_REJECT_unanimous_post_v1_repetition": "DEFER — disposition cycle"
+  },
+  "expected_breakthrough_probability": "0.35~0.45 (v1 0.20~0.30 대비 +0.10~0.15, 5축 redesign + 학술 backing 강화 반영)",
+  "comparison_baseline": {
+    "primary": "STR_1715_AR_on_M4_R05_overlay_PG2 SR 1.9536 / MDD -24.81% / CAGR 41.50% (255m PerfA)",
+    "method": "same-harness PerformanceAnalytics + same cost 15bps + same-period overlap (v1 Codex C5 ACCEPT 학습)",
+    "additional": "EW long-only top20 + base STR_1715 (no M4/AR/R05) + v1 DPL_KR_v1 (SR -0.34)"
+  },
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "agent_lineage": {
+    "alpha_research": "Step 2 — DPL_KR_v2 architecture deep design + 5축 학술 deep review + Codex Round 5단계",
+    "risk_research": "Step 5 — Σ rolling per-sig_date + Macro Graph Prior + crowding + EVaR auxiliary stress",
+    "optimizer_research": "Step 4 — Sorted portfolio constraint validation + decision-induced ranking clipping audit + Codex Round",
+    "forge": "Step 6 — train + walk-forward backtest + PerfA + Harvey 5 정식 + DSR + 9 artifact emission + Codex Round",
+    "judge": "Gate 0~9 + AX-008 + lockbox audit",
+    "governor": "Step 7 — admit decision + book_state mutation 검토 (G2 cor PASS 시 substitution candidate)"
+  },
+  "codex_round_mandate": true,
+  "estimated_time_total": "8~12h (alpha 4~5h literature + architecture + protocol / risk 2h / optimizer 2h / forge 4~6h GPU + 2h artifacts / judge 1h / governor 30m)",
+  "lessons_referenced": [
+    "L-323 (Pareto cor measurement Phase 1.A baseline)",
+    "L-325 (WT_013 ABORT sample bias misdiagnosed)",
+    "L-326 (WT_015_002 REJECT 5-source blend architecture flaw vindicated)",
+    "L-327 (cleanup 233 items)",
+    "L-328 (DPL_KR_v1 v1.0 architecture fail scope narrow)"
+  ],
+  "academic_references_5_core": {
+    "ZHANG_2021_china_a_share_SR_2_0": "Zhang-Wu-Chen 2021 Listwise Learn-to-Rank 68 factors 2006-2019 annual 38% / SR 2.0 (arxiv:2104.12484, KR과 가장 유사 emerging market 실증, ★ 핵심)",
+    "DSPO_ZHONG_2024_sorted_portfolio": "Zhong-Xu-Wang-Wen-Guo-Xu 2024 DSPO end-to-end sorted portfolio NYSE RankIC 10.12% return 121.94% (arxiv:2405.15833, sorted portfolio paradigm 첫 fully end-to-end)",
+    "DEEPM_WOOD_2026_regime_robust_evar": "Wood-Roberts-Zohren 2026 DeePM EVaR worst-window robust + Macro Graph Prior 50 futures 2010-2025 2× CTA returns (arxiv:2601.05975, regime robustness 핵심)",
+    "UYSAL_2021_end_to_end_risk_budgeting": "Uysal-Li-Mulvey 2021 End-to-End Risk Budgeting implicit opt + stochastic gates SR 1.16 vs 0.79 (arxiv:2107.04636, model-based End-to-End)",
+    "WANG_HASUIKE_2026_spo_inflation_mitigation": "Wang-Hasuike 2026 SPO-based DFL prediction inflation + excessive turnover KKT analysis + clipping/rescaling/partial adjustment (arxiv:2605.01176, v1 TO 17.64 본질 mitigation 직접 근거)"
+  },
+  "academic_references_secondary": [
+    "Epstein-Sadhwani-Giesecke 2025 Set-Sequence permutation-invariant cross-sectional (arxiv:2505.11243)",
+    "Bongiorno-Manolakis-Mantegna 2025 End-to-End Large Portfolio rotation-invariant 1000 stocks (arxiv:2507.01918)",
+    "Lu-Yang-Zhang 2024 Double Descent in Portfolio (arxiv:2411.18830) — over-parameterization 학습",
+    "Kwiatkowski-Chudziak 2025 Loss Functions for Stock Ranking Transformer S&P 500 (arxiv:2510.14156)",
+    "Patel-Sastry 2021 Symmetric Loss Memorization Resistance (arxiv:2107.09957)",
+    "Gao-He-He 2025 Factor-Based Conditional Diffusion China A-share (arxiv:2509.22088)",
+    "Poh-Lim-Zohren-Roberts 2021 Context-Aware Learning-to-Rank currency Transformer Sharpe +30% (arxiv:2105.10019)",
+    "Li-Cheng-Liu 2026 WaveLSFormer wavelet long-short Sharpe 2.157 (arxiv:2601.13435)",
+    "Zhang-Wang-Cao 2021 Turnover-Adjusted IR (arxiv:2105.10306) — v1 TO violation 학습 직접 정합"
+  ],
+  "production_promotion_eligibility": "G2 cor < 0.3 + G5 cost Pareto PASS 시 4th source admit / G2 cor < 0.5 + G5 single-replacement Pareto PASS + G7 TO + G8 MDD + G9 concentration ALL PASS 시 substitution sleeve admit"
+}
