@@ -1,0 +1,157 @@
+{
+  "task_id": "WT-D20260519_002",
+  "spawn_at": "2026-05-19T01:00:00+09:00",
+  "spawned_by": "Q-Lead 도훈 mandate 약세 예측 엔진 병렬 고도화 + Qvest 인프라 자율 활용",
+  "wt_type": "discovery",
+  "phase_origin": "PD48_BEAR_REGIME_PREDICTION_ENGINE_HIGHLY_GRANULAR_REDESIGN_V5_LEARNING",
+  "design_name": "Bear Regime Prediction Engine v1.0 — Dedicated Features + Multi-Source Data + Multi-Model Ensemble",
+  "parent_inheritance": {
+    "v5_failure_inherit": "WT-D20260517_005 G1 p_bad classifier 4 옵션 ALL FAIL (Recall 0.089 / Precision 0.08~0.15 / sub-window 0/4) — paradigm-level inviable scoped",
+    "v5_root_cause_diagnosis": "(1) 80 features는 일반 alpha features (Tail_Risk 19% + Risk_Beta_Vol 19% + Momentum 19% + Other 19% + Liquidity 9% + Risk_Metric 9%) — 약세 예측 전용 feature pool 부재 (2) Sample 부족 (124 monthly × ~25-30 bad months positive class) (3) Single model (LightGBM only) (4) 학술 prior 미명시 (5) Sub-window stability 0/4",
+    "v5_improvement_axes_5": "axis 1 dedicated features + axis 2 multi-source data + axis 3 multi-model ensemble + axis 4 daily-frequency + axis 5 학술 prior backbone",
+    "philosophy_sot": "02_Infrastructure/docs/qvest_research_philosophy.md v1.0 (Research Philosophy 5 trends inherit)"
+  },
+  "parallel_to": "WT-D20260519_001 DPL_KR_v3 (Original DPL Redesign) — 병렬 진행, integration test 후순위",
+  "theme": "bear_regime_prediction_engine_dedicated_features_multi_source_multi_model_v5_paradigm_revival",
+  "hypothesis_title": "약세 예측 엔진 v1.0 — Dedicated features (학술 backbone) + Qvest infra multi-source + 5-model ensemble + Daily-frequency",
+  "hypothesis_description": "v5 cycle G1 paradigm-inviable scoped 후 — 약세 예측 자체 fail은 paradigm 한계가 아닌 **실험 설계 부실**에서 비롯됨 (도훈 reframe 정합). 핵심 변경 5축: (1) **Dedicated features 신규 구축** — Estrella-Hardouvelis 1991 yield curve + Stock-Watson 2003 leading indicators + Ang-Chen 2002 asymmetric cor + Engle-Mistry 2014 vol regime + Adrian-Brunnermeier 2016 CoVaR + Frazzini-Pedersen 2014 BAB bear market 학술 backbone. (2) **Qvest 인프라 + 직접 수집** — Factor DB 일간 309 + FRED yield curve + ECOS KR macro + SEIBro ETF flow (Phase A 완료) + KRX foreign flow + VKOSPI + Credit spread. (3) **Multi-model ensemble** — LightGBM + LSTM (sequential) + Markov Switching (regime probability) + Logistic (interpretable baseline) + Random Forest (robustness). (4) **Daily-frequency** — monthly 124 → daily ~3000 obs (25x 증가). (5) **G1 5-subgate strict + Codex + Architect external verification**. 도훈 mandate '자율성 발휘' 정합 — 직접 데이터 수집 protocol design + 학술 backbone features 자율 구축. 병렬 WT_019_001 DPL_KR_v3 alpha와 별도 lifecycle.",
+  "hypothesis_source": "user_defined_2026_05_19_bear_regime_engine_high_granular",
+  "as_of_date": "2026-05-19",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KR_TOP500_LIQ1E8",
+    "liquidity_min_won_20d_avg": 200000000,
+    "max_names_total": 20
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d",
+    "fundamental_annual": "annual May",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement",
+    "macro": "t-1 FRED + ECOS",
+    "ic_history": "Usable_Date <= sig_date",
+    "yield_curve": "t-1 FRED treasury daily",
+    "vkospi": "t-1 KRX",
+    "etf_flow_seibro": "t+1 strict (SEFRS WT-D20260518_001 Phase A inherit)"
+  },
+  "hard_constraints": {
+    "long_only": true,
+    "max_names": 20,
+    "weight_bounds": [0, 0.20],
+    "sum_weights": 1.0,
+    "data_constraints": "정형 데이터만 — intraday / NLP / news / ESG / alt-data 절대 금지"
+  },
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "5_axis_redesign_high_granular": {
+    "axis_1_dedicated_features_academic_backbone": {
+      "current_v5_fail": "80 general alpha features (defensive 55%, FMP r² ranking)",
+      "v1_redesign_15_30_dedicated": "약세 예측 전용 features 신규 구축 — 5+ 학술 backbone",
+      "feature_categories": [
+        "Yield_Curve_Inversion (Estrella-Hardouvelis 1991): 10y-2y spread + 10y-3m spread + slope dynamics",
+        "Leading_Indicators (Stock-Watson 2003): PMI Manufacturing + Consumer Confidence + Housing Permits + Capital Goods Orders",
+        "Volatility_Regime (Engle-Mistry 2014): VKOSPI level + term structure 1m/3m + skewness + kurtosis",
+        "Asymmetric_Correlation (Ang-Chen 2002): KOSPI-USD correlation in down vs up market + tail dependence Joe-Clayton 1997",
+        "Systemic_Risk (Adrian-Brunnermeier 2016): CoVaR + Marginal Expected Shortfall + SRISK",
+        "Credit_Spread (Gilchrist-Zakrajsek 2012 EBP): KR investment grade vs high yield spread + credit deterioration",
+        "ETF_Flow_Crowding (SEFRS WT-D20260518_001 inherit): notional bear flow imbalance + extreme crowding dummy + unwind dummy",
+        "Capital_Flow (KRX foreign net flow): foreign selling intensity + foreign reversal signal",
+        "Real_Exchange_Rate (KRW/USD): pressure indicator + risk-off proxy",
+        "Defensive_Sector_Rotation: utility/healthcare/staples vs cyclical sector spread"
+      ]
+    },
+    "axis_2_multi_source_qvest_infra_direct_collection": {
+      "qvest_infra_active_utilization": [
+        "Factor_DB_daily: .cache/factor_db_daily/ (309 daily factors × 436개월) — 일간 빈도 활용",
+        "FRED: 02_Infrastructure/data/fred_*.R + mcp__fred 직접 fetch — yield curve / VIX / TED spread",
+        "ECOS: KR macro (PMI / consumer confidence / housing) — 한국은행 API",
+        "DART: quarterly + insider (cache retain)",
+        "SEIBro (Phase A 완료): WT-D20260518_001 ETF flow regime sensor protocol — 직접 수집 path A/B/C 명시",
+        "MSM regime engine: 02_Infrastructure/regime/ — KR market regime probability",
+        "M4 BOCPD: Session 80 admit inherit — STR_1715 5-Layer regime overlay",
+        "R05 Tail-Risk: Session 80 admit inherit — sequential overlay risk control"
+      ],
+      "direct_collection_autonomy": [
+        "VKOSPI daily — KRX 정보데이터시스템 (수동 download 또는 API)",
+        "Credit spread KR — Bloomberg/Refinitiv 우회 시 KIS Credit + KEDB IG/HY spread",
+        "PMI KR Manufacturing — ECOS API + Markit/HSBC PMI",
+        "Consumer confidence KR — ECOS (한국은행) + 통계청",
+        "Foreign flow KRX — KRX 정보데이터시스템 일간 외국인 순매매",
+        "Yield curve KR — ECOS 국고채 yield curve daily",
+        "Yield curve US — FRED DGS10/DGS2/DGS3MO"
+      ]
+    },
+    "axis_3_multi_model_ensemble": {
+      "models": [
+        "Logistic_Regression: interpretable baseline + L1 regularization for feature selection",
+        "LightGBM: gradient boosting (v5 inherit, 비교 baseline)",
+        "Random_Forest: ensemble robustness + feature importance stability",
+        "LSTM_or_GRU: sequential temporal pattern (volatility cluster + autocorrelation)",
+        "Markov_Switching_Model: regime probability (Hamilton 1989) — bull/bear/transition states",
+        "Bayesian_Network: causal regime structure (optional Phase B)"
+      ],
+      "ensemble_strategy": "average + stacking + voting comparison",
+      "confidence_calibration": "Platt scaling + isotonic regression"
+    },
+    "axis_4_daily_frequency_sample_expansion": {
+      "v5_monthly": "124 sig_dates × ~25-30 bad months = positive class 부족",
+      "v1_daily_target": "~3000 daily obs × ~600-700 bad days (bad month 30% × 20 trading days) = sample 25x expansion",
+      "label_aggregation": "daily prediction → monthly aggregation (max p / mean p / streak detection)",
+      "purged_walk_forward": "daily granular + 1 month embargo"
+    },
+    "axis_5_external_verification_strict": {
+      "g1_5_subgate_strict": {
+        "AUC": "≥ 0.60 (v5 0.60 marginal pass — tighten)",
+        "Brier": "< 0.20 (v5 0.22 → tighter)",
+        "Recall_at_bad_state": "≥ 0.60 (v5 0.089 catastrophic — primary fix target)",
+        "Precision_min": "≥ 0.40 (v5 0.08~0.15 catastrophic — primary fix target)",
+        "sub_window_stability": "4/5 windows (v5 0/4 fail — primary fix target)"
+      },
+      "codex_external_verification_mandate": true,
+      "architect_concurrent_spawn_mandate": "AX-008 3rd source verification (v5 학습 strict)"
+    }
+  },
+  "decision_gates_5_axis_v5_learning": {
+    "G0_PIT": "Usable_Date <= sig_date strict + 모든 macro / yield curve / ETF flow t-1 또는 t+1 lag",
+    "G1_classifier_5_subgate_strict": "AUC ≥ 0.60 + Brier < 0.20 + Recall ≥ 0.60 + Precision ≥ 0.40 + sub-window 4/5",
+    "G2_economic_significance": "약세월 OOS 평균 active return prediction skill > random baseline (Diebold-Mariano test)",
+    "G3_feature_stability": "feature importance Gini concentration < 0.5 + sub-period top-10 overlap ≥ 0.6",
+    "G4_DSR": "Bailey-LdP Z ≥ 1.5 (multi-model ensemble inherit)",
+    "G5_dpl_integration_or_standalone": "v3 DPL_KR_v3 (WT_019_001) p_bad feature inject AUC uplift ≥ 0.05 OR standalone regime sensor",
+    "G6_AX008": "Forge + Codex + Architect ≥ 2/3 PASS"
+  },
+  "failure_cutoffs": {
+    "g1_5_subgate_all_models_fail": "HARD ABORT (v5 paradigm-inviable confirm even with dedicated features + multi-source data)",
+    "synthetic_detection_codex": "HARD ABORT (v4 학습)",
+    "feature_pool_invalid_pit": "HARD ABORT",
+    "Codex_REJECT_veto_true": "DEFER"
+  },
+  "academic_references_8_core": {
+    "ESTRELLA_HARDOUVELIS_1991_JF": "Yield curve slope predicts recession",
+    "STOCK_WATSON_2003_JEL": "Leading indicators for recession prediction",
+    "ANG_CHEN_2002_JFE": "Asymmetric correlations bear vs bull market",
+    "ENGLE_MISTRY_2014_JFE": "Volatility regime switching",
+    "ADRIAN_BRUNNERMEIER_2016_AER": "CoVaR systemic risk measure",
+    "GILCHRIST_ZAKRAJSEK_2012_AER": "Excess Bond Premium (EBP) recession indicator",
+    "FRAZZINI_PEDERSEN_2014_JFE": "BAB low-beta bear market hedge",
+    "HAMILTON_1989_ECTA": "Markov Switching regime model"
+  },
+  "agent_lineage": {
+    "alpha_research": "Step 2 — dedicated features 학술 backbone + multi-source data sourcing protocol + multi-model ensemble design + daily-frequency protocol + Codex Round 5단계",
+    "risk_research": "Step 5 — feature stability + sub-period consistency + crowding (regime sensor overlap with STR_1715)",
+    "optimizer_research": "Step 4 — model ensemble weight + threshold tuning + calibration",
+    "forge": "Step 6 — real PIT (Qvest infra direct collection) + 5 model train + ensemble + 5-subgate measurement + Architect concurrent",
+    "judge": "Gate 0~6 + AX-008",
+    "governor": "admit decision — DPL_KR_v3 integration or standalone regime sensor admit"
+  },
+  "codex_round_mandate": true,
+  "estimated_time_total": "12~18h (alpha 4~5h dedicated features + multi-source design + multi-model + daily protocol / risk 2h / optimizer 1.5h / Forge 4~5h GPU + 2h architect / judge + governor 1.5h)",
+  "lessons_referenced_critical": [
+    "L-330 (v5 RC paradigm retire scoped — bear prediction 본질 paradigm fail이 아닌 실험 부실 한계)",
+    "L-326 (blend Pareto-dominated)",
+    "L-328 (v1 DPL EW collapse)",
+    "WT-D20260518_001 SEFRS (Phase A complete — ETF flow regime sensor inherit)"
+  ],
+  "production_promotion_eligibility": "G1 5-subgate ALL PASS + AX-008 ≥ 2/3 + DPL_KR_v3 integration AUC uplift ≥ 0.05 OR standalone regime sensor admit (m4/R05 layer 추가 정합)"
+}
