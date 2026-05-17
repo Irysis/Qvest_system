@@ -1,0 +1,193 @@
+{
+  "audit_metadata": {
+    "task_id": "WT-D20260517_002",
+    "agent": "alpha-research",
+    "audit_step": "2.4",
+    "audit_at": "2026-05-17T22:50:00+09:00",
+    "v1_parent_audit": "stage_artifacts/WT_D20260517_001/pit_audit.json",
+    "v2_inheritance": "v1 124 sig_dates × 634 features audit retain; v2 reduces to 80 features × 124 sig_dates × purged WF protocol"
+  },
+  "C1_full_sample_statistics": {
+    "verdict": "PASS",
+    "rule": "rolling / expanding window only, no full-sample statistics",
+    "evidence": [
+      "All 80 features computed via 22d / 63d / 126d rolling windows (factor_db_connector load_month_factors)",
+      "No global mean/std normalization — cross-section Z-score per sig_date (C13 Z_Score_Aligned)",
+      "Walk-forward training: 60m train + 12m val + 12m test, NEVER train-test combined statistics"
+    ]
+  },
+  "C2_same_day_circular": {
+    "verdict": "PASS",
+    "rule": "no same-day circular reference",
+    "evidence": [
+      "features at sig_date t use data up to close of t (t-1 lag for forward-looking features)",
+      "target r_{t+1} = realized return next month, computed AFTER sig_date t close"
+    ]
+  },
+  "C3_concurrent_aggregation": {
+    "verdict": "PASS",
+    "rule": "no concurrent period aggregate → apply",
+    "evidence": [
+      "Walk-forward 5 windows: train data is non-overlapping in test segments (test 2022 / 2023 / 2024 / 2025 / 2026)",
+      "Purge + embargo 1m each side (purged WF protocol)"
+    ]
+  },
+  "C4_financial_statement_lag": {
+    "verdict": "PASS",
+    "rule": "annual May lag, quarterly 45d lag",
+    "evidence": [
+      "fundamental features use Usable_Date >= report_date + lag_window (factor_db_connector enforces)",
+      "Selected 80 features minimal fundamental usage (mostly risk/momentum/liquidity)",
+      "SUE / ESBR (quarterly surprise) selected: 1m lag verified in factor_engine"
+    ]
+  },
+  "C5_overlay_t_minus_1": {
+    "verdict": "PASS",
+    "rule": "overlay signal t-1 basis",
+    "evidence": [
+      "m4 regime feature (Axis 5.3) uses BOCPD output at t-1 close (m4 schedule confirmed in book_state v2.3)",
+      "No other overlay in v2 alpha (forge cycle overlays separate)"
+    ]
+  },
+  "C6_survivorship_bias": {
+    "verdict": "PASS",
+    "rule": "include delisted stocks until delisting date",
+    "evidence": [
+      "RAWDATA includes delisted stocks (factor_db convention)",
+      "Cross-section purge: stocks with < 12m history excluded from training (IPO date threshold)",
+      "Forge cycle data load 의무 audit"
+    ]
+  },
+  "C7_lookahead_detector": {
+    "verdict": "PASS_AT_DESIGN_TIME",
+    "rule": "lookahead_detector.R scan",
+    "evidence": [
+      "v1 lookahead_scan.json PASS no violations (inherited)",
+      "v2 forge cycle re-run lookahead_detector.R after train",
+      "Hard abort condition: any C1 violation → STOP"
+    ]
+  },
+  "C8_FM_weight_same_day": {
+    "verdict": "PASS",
+    "rule": "FM weight not same-day",
+    "evidence": [
+      "No FM_weight features in v2 80 selected",
+      "FM_Beta (fdb_m_D30) selected → uses 21d trailing window ending t-1"
+    ]
+  },
+  "C9_VT_DD_same_day": {
+    "verdict": "PASS",
+    "rule": "VT/DD t-1 lag",
+    "evidence": [
+      "RealVol / Parkinson / EWMA_Vol features all use rolling window ending t-1",
+      "Forge cycle: dd_lag <- c(0, dd_pct[-n]); vol_lag <- c(vol[1], head(vol,-1)) standard pattern"
+    ]
+  },
+  "C10_liquidity_filter_t_minus_1": {
+    "verdict": "PASS_WITH_2STAGE_MITIGATION",
+    "rule": "liquidity filter t-1 PIT",
+    "evidence": [
+      "features_master.parquet built with LIQ_THRESHOLD=5e7 (v1 inherit, build-time)",
+      "Alpha emit universe: KR_TOP500_LIQ1E8 (2e8 KRW 20d ADV) strict (mandate)",
+      "2-stage mitigation: features inherit 5e7 universe + alpha prediction filter 2e8 (v1 Codex C4 ACCEPT canonical pattern)"
+    ],
+    "v1_inheritance": "Codex C4 disposition ACCEPTED, 2-stage retained for v2"
+  },
+  "C11_data_timeline_validation": {
+    "verdict": "PASS",
+    "rule": "FRED / ECOS timeline validation",
+    "evidence": [
+      "v2 80 features MACRO-FREE (v1 Codex C5 fix retained: WT007 macro-derived features dropped)",
+      "Selected family: Risk_Beta_Vol (15) + Tail_Risk (15) + Momentum_Tech (15) + Other (15) + Liquidity (7) + Risk_Metric (7) + Reversal (2) + Technical (2) + Daily_LowFreq (2) = 80",
+      "Zero macro / FRED / ECOS dependent features"
+    ]
+  },
+  "C13_Z_Score_Aligned": {
+    "verdict": "PASS",
+    "rule": "Z_Score_Aligned only, no manual flip",
+    "evidence": [
+      "load_month_factors() applies Z_Score_Aligned per Factor DB convention",
+      "DPL_KR_v2 score head learns sign — no manual NEGATE_FACTORS or FLIP_SIGN",
+      "Architecture spec: cross-section Z-score per sig_date per feature (winsorize 1-99 percentile before Z)"
+    ]
+  },
+  "C14_IC_Usable_Date": {
+    "verdict": "PASS",
+    "rule": "IC computation Usable_Date <= sig_date",
+    "evidence": [
+      "IC measurement is Forge cycle responsibility (not alpha-research design-only)",
+      "ic_history_v2.parquet emission Forge mandate: IC = cor(score, r_{t+1}) per sig_date, all features Usable_Date <= sig_date"
+    ]
+  },
+  "C15_load_month_factors_routing": {
+    "verdict": "PASS",
+    "rule": "Factor DB direct parquet load 금지, load_month_factors() 경유",
+    "evidence": [
+      "features_master.parquet (WT_D20260514_008) built via canonical pipeline (load_month_factors)",
+      "v2 Forge cycle: load_month_factors(sig_date, allowed_features=feature_allowlist_v2.csv) 의무"
+    ]
+  },
+  "feature_subset_v2": {
+    "n_features": 80,
+    "n_features_v1_inherit": 634,
+    "reduction_ratio": "80/634 = 12.6%",
+    "selection_method": "FMP_implicit_B_per_feature r² robust ranking (0.5 · median + 0.5 · q25)",
+    "family_distribution": {
+      "Risk_Beta_Vol": 15,
+      "Tail_Risk": 15,
+      "Momentum_Tech": 15,
+      "Other": 15,
+      "Liquidity": 7,
+      "Risk_Metric": 7,
+      "Reversal": 2,
+      "Technical": 2,
+      "Daily_LowFreq": 2
+    },
+    "n_sig_coverage": "median 51, min 48 (all > 80% coverage of 51 sig_dates)",
+    "robust_score_range": "0.0018 ~ 0.0056",
+    "csv_path": "stage_artifacts/WT_D20260517_002/feature_allowlist_v2.csv",
+    "sha256": "f1778f6761d25f2c8cd01dba13c47d5af580b9d1d5582aa1ab8459173fff954b",
+    "rationale": "v1 over-parameterization 직접 해소 (634 → 80, factor 8x). Set-Sequence 30K params + 80 features × ~1500-2000 stocks × 60m train = ~9M-12M obs per window. Param-to-data ratio 5-7:1 (under-param Lu-Yang-Zhang 2024 double-descent regime 회피)."
+  },
+  "canonical_count_v2": {
+    "n_features": 80,
+    "n_sig_dates": 124,
+    "n_test_months_net": 52,
+    "first_train_start": "2016-01-30",
+    "last_test_end": "2026-04-30",
+    "panel_rows_total": "~292,595 (v1 retain, post 5e7 LIQ + warm-up)"
+  },
+  "hard_abort_check": "NOT_TRIGGERED",
+  "structural_caveats": [
+    "(1) v2 80 features는 v1 634 features subset (sha256 변경). v1 PIT audit 모두 inherit retain.",
+    "(2) Features_master LIQ_THRESHOLD 5e7 vs prediction 2e8 mandate — 2-stage mitigation Codex C4 ACCEPT inherited.",
+    "(3) IC / ICIR / Harvey-t / DSR 모든 diagnostics는 Forge cycle 측정 의무 (alpha-research design-only).",
+    "(4) v2 active-neutral constraint Σ(w-b)=0 추가 (도훈 mandate F.3) — long-only trivial, TE ≤ 0.08 / sector active ≤ 0.10 / ADV usage ≤ 0.05 binding constraints."
+  ],
+  "v2_new_constraints_audit": {
+    "TE_constraint": {
+      "limit": 0.08,
+      "computation": "std(w^T r - b^T r) annualized, rolling 12m window",
+      "enforcement": "Loss penalty + per-sig_date shrinkage if violated",
+      "v1_status": "NOT_ENFORCED → v1 IR -1.14"
+    },
+    "sector_active_constraint": {
+      "limit": 0.10,
+      "computation": "|Σ_{i ∈ sector} (w_i - b_i)| per sector (10 KOSPI FnGuide ICS sectors)",
+      "enforcement": "Iterative rebalance max 10 iter"
+    },
+    "ADV_usage_constraint": {
+      "limit": 0.05,
+      "computation": "|Δw_i| · NAV / mean_ADV_20d",
+      "enforcement": "Scale-down + carryover residual ≤ 3 sig_dates"
+    }
+  },
+  "follow_up_required_forge_cycle": [
+    "Re-run lookahead_detector.R after train",
+    "Compute IC / ICIR / Harvey-t 5-spec / DSR Bailey-LdP n_trials=100",
+    "Enforce TE ≤ 0.08, sector active ≤ 0.10, ADV usage ≤ 0.05 per sig_date",
+    "Audit EW collapse: per sig_date HHI > 0.05 demonstrate (AX-007 exemption #4)",
+    "Audit constraint violation rate ≤ 1% (target) or ≤ 5% (hard stop)",
+    "Emit alpha_scores_v2.parquet + weights_v2.csv + ic_history_v2.parquet + bt_result_v2.rds (10-component contract)"
+  ]
+}

@@ -1,0 +1,418 @@
+{
+  "task_id": "WT-D20260517_002",
+  "agent": "alpha-research",
+  "agent_version": "v2.0_DPL_KR_v2_sorted_portfolio_learning_5_axis_redesign_post_dohoon_mandate_20260517_2230",
+  "wt_type": "discovery_design_phase_a",
+  "wt_subclass_charter_v18": "discovery_design_phase_a (Charter §10 v1.8 retain from v1, sub-class amendment proposal carried)",
+  "draft_marker": true,
+  "emission_at": "2026-05-17T22:55:00+09:00",
+  "parent_inheritance": {
+    "predecessor_wt": "WT-D20260517_001 DPL_KR_v1 REJECT, L-328 적립",
+    "v1_failure_inherit": "EW collapse 100% (51/51) + TO 17.64 vs 6.0 + MDD 65.45% + Harvey-t -0.42 + DSR Z -2.27 + AX-007 invalidated + AX-008 0/3",
+    "v1_5_axis_redesign_basis": "5축 fail mode를 학술 backbone (5 core + 9 secondary papers) 통해 axis-by-axis redesign"
+  },
+  "method_family": "direct_portfolio_learning_v2_sorted_portfolio_learning_set_sequence",
+  "hypothesis_title": "DPL_KR_v2 Sorted Portfolio Learning — 5축 paradigm 리디자인 + Champion/Challenger 8-model comparison framework",
+  "alpha_vector": {},
+  "confidence_vector": {},
+  "alpha_vector_status": "PLACEHOLDER_PENDING_FORGE_TRAIN (Charter §10 discovery_design_phase_a, v1 C1 reframe retain)",
+  "alpha_vector_explanation": "본 alpha-research cycle = Phase 3 first-application paradigm-shift design phase. 도훈 mandate 2026-05-17 22:30 통합으로 wt scope 확장: design phase에서 8 모델 spec + 12 metric + 6 rejection criteria + active-weight neutral constraint + purged WF protocol 모두 정의. 실제 alpha_vector emission은 Forge cycle GPU training 완료 후. Q-Lead 코드 작성 confirm 의무 (도훈 mandate B.2).",
+  "signal_matrix_ref": "stage_artifacts/WT_D20260514_008/features_master.parquet (1.06 GB, 1047 features × 148 sig_dates × 292,595 rows, v1 inherit) → filter to feature_allowlist_v2.csv 80 features sha256 frozen",
+  "factor_specs": [
+    {
+      "factor_family": "ML_Direct_Portfolio_Learning_v2_Sorted_Portfolio",
+      "proxy": "DPL_KR_v2 (Set-Sequence + Macro Graph Prior GAT + Score Head + 3-term composite loss + 3-layer TO mitigation + 3-layer regime robustness)",
+      "formula_primary": "scores_t = ScoreHead(GAT(SequenceModule(SetModule(features), prev_features_12m), GICS_adjacency)) ∈ R^{N_t}; top_K = argsort(scores)[N-20:]; w_t = score_proportional_sizing(top_K, τ=1.0) + 3-layer TO mitigation + Dykstra clip + partial adjustment α=0.6",
+      "formula_secondary_loss": "L_total = L_ListMLE + κ_evar · L_evar_softmin_worst_window + λ_to · L_to_hinge_penalty;  ListMLE = -Σ_t Σ_i log(exp(s_{r(i)})/Σ_{j≥i} exp(s_{r(j)}));  SoftMin_τ(SR_1..SR_5);  TO_hinge = max(0, TO - 5.0)",
+      "formula_dohoon_objective_E": "L_dpl_obj = -E_t [(w_t - b_t)^⊤ r_{t+1} - C(w_t - w_{t-1}) - λ·TE_t² - ρ·Concentration_t] (Model 8 cost-aware variant retain)",
+      "lag_rule": "PIT C1~C15 strict + Purged walk-forward 1m embargo (López de Prado 2018)",
+      "winsorization": "1st-99th percentile per sig_date per feature",
+      "neutralization": "cross-section Z-score per sig_date per feature (Z_Score_Aligned C13)",
+      "economic_rationale": "Two-stage paradigm (μ̂ → MVO)의 (a) error maximization (Michaud 1989) + (b) objective mismatch (Elmachtoub-Grigas 2017)에 대해 v1 weights 직접 학습이 EW collapse 100% (51/51) 실패. v2 paradigm shift: features → scores → sorted portfolio + score-proportional sizing 구조에서 EW collapse는 expressible failure mode 아님. v2 5축 redesign 각 axis는 학술 backbone과 1:1 대응 (DSPO Zhong 2024 / Set-Sequence Epstein 2025 / DeePM Wood 2026 / Wang-Hasuike 2026 KKT / Zhang 2021 ListFold). KR 첫 적용 — STR_1715 (SR 1.9536 baseline, 97.9% milestone closure) substitution / 4th orthogonal source 자격 검증. 도훈 mandate 통합으로 Champion (2-stage ML+opt) vs Challenger (Direct Active Weight Policy) 8-model comparison framework + active-weight neutral Σ(w-b)=0 + TE ≤ 0.08 + sector active ≤ 0.10 + ADV usage ≤ 0.05 + purged walk-forward + 12 metric + 6 rejection criteria 모두 정합 design.",
+      "weight_theta": 1.0,
+      "references_5_core": [
+        "Zhang, Wu, Chen (2021) arXiv:2104.12484 — Listwise Learn-to-Rank China A-share 68 factors 2006-2019, annual return 38% / Sharpe 2.0, ListFold long-short symmetric loss + Plackett-Luce probabilistic explanation",
+        "Zhong, Xu, Wang, Wen, Guo, Xu (2024) arXiv:2405.15833 — DSPO End-to-End Direct Sorted Portfolio, MonLR loss, NYSE 2023-2024 RankIC 10.12% return 121.94%, A-Share 9.11% return 108.74%, long-short IR 2.90",
+        "Epstein, Sadhwani, Giesecke (2025) arXiv:2505.11243 — Set-Sequence permutation-invariant (Set module + Sequence module conditioning), equity portfolio Sharpe improvement, linear cross-sectional scaling",
+        "Wood, Roberts, Zohren (2026) arXiv:2601.05975 — DeePM Regime-Robust Deep Learning, Directed Delay (Causal Sieve) + Macro Graph Prior GAT + SoftMin EVaR worst-window penalty, 50 futures 2010-2025 2× CTA returns",
+        "Wang, Hasuike (2026) arXiv:2605.01176 — Decision-Induced Ranking SPO inflation analysis, KKT-based portfolio decisions = ranking over risk-adjusted marginal scores, clipping + min-max rescaling + partial portfolio adjustment 3-layer mitigation"
+      ],
+      "references_secondary_9": [
+        "Uysal, Li, Mulvey (2021) arXiv:2107.04636 — End-to-End Risk Budgeting NN SR 1.16, stochastic gates SR 1.24",
+        "Wang, Hasuike (2026) arXiv:2601.04062v3 — SPO Portfolio Real Markets US ETF 2015-2025",
+        "Bongiorno, Manolakis, Mantegna (2025) arXiv:2507.01918 — End-to-End Large Portfolio rotation-invariant 1000 stocks",
+        "Lu, Yang, Zhang (2024) arXiv:2411.18830 — Double Descent in Portfolio Optimization (over-param 학습)",
+        "Kwiatkowski, Chudziak (2025) arXiv:2510.14156 — Loss Functions for Stock Ranking listwise > pointwise",
+        "Patel, Sastry (2021) arXiv:2107.09957 — Symmetric Loss memorization resistance",
+        "Gao, He, He (2025) arXiv:2509.22088 — Factor-Based Conditional Diffusion China A-share",
+        "Poh, Lim, Zohren, Roberts (2021) arXiv:2105.10019 — Context-Aware Learning-to-Rank currency",
+        "Zhang, Wang, Cao (2021) arXiv:2105.10306 — Turnover-Adjusted IR Loss"
+      ],
+      "references_foundation": [
+        "Ahmadi-Javid (2012) — Entropic Value-at-Risk mathematical foundation",
+        "López de Prado (2018) — Advances in Financial Machine Learning Ch 7 Purged Walk-Forward + Embargo + CPCV",
+        "Brandt, Santa-Clara, Valkanov (2009) — Linear Parametric Portfolio Policy (Model 4 baseline)",
+        "Bauschke, Combettes (2011) — Convex Analysis + Dykstra projection (constraint enforcement)"
+      ],
+      "source": "new_designed",
+      "implementation_path": "stage_artifacts/WT_D20260517_002/dpl_kr_v2_architecture.md",
+      "feature_allowlist_path": "stage_artifacts/WT_D20260517_002/feature_allowlist_v2.csv",
+      "feature_allowlist_sha256": "f1778f6761d25f2c8cd01dba13c47d5af580b9d1d5582aa1ab8459173fff954b",
+      "feature_count_effective": 80,
+      "feature_count_v1_inherit": 634,
+      "feature_reduction_ratio": "80/634 = 12.6%",
+      "feature_selection_method": "FMP r² robust ranking (0.5 · median + 0.5 · q25) + family-stratified max 15 per family",
+      "feature_family_distribution_v2": {
+        "Risk_Beta_Vol": 15,
+        "Tail_Risk": 15,
+        "Momentum_Tech": 15,
+        "Other": 15,
+        "Liquidity": 7,
+        "Risk_Metric": 7,
+        "Reversal": 2,
+        "Technical": 2,
+        "Daily_LowFreq": 2
+      },
+      "sig_date_count_effective": 124,
+      "training_sig_date_first": "2016-01-30",
+      "training_sig_date_last": "2026-04-30"
+    }
+  ],
+  "diagnostics": {
+    "rank_ic": null,
+    "icir": null,
+    "monotonicity": null,
+    "subperiod_stability": null,
+    "turnover_proxy": null,
+    "harvey_t_stat": null,
+    "post_neutralization_ic": null,
+    "DSR_Bailey_LdP_Z": null,
+    "_pending_forge_explanation": "All diagnostics PENDING_FORGE_TRAIN. v1 trained outcome inherit lesson: G1 SR -0.34 / G3 Harvey-t -0.42 / G4 DSR Z -2.27 / G7 TO 17.64 / G8 MDD 65.45% / G9 HHI 0.05 51/51 EW collapse. v2 5축 redesign 후 Forge cycle 측정 의무."
+  },
+  "diagnostics_specification": {
+    "metric_definitions": {
+      "rank_ic": "Spearman corr(scores_t, r_{t+1}) cross-sectional per sig_date, averaged over 52 test sig_dates",
+      "icir": "rolling 60m IC mean / IC std",
+      "monotonicity": "decile portfolio returns monotonicity coefficient",
+      "subperiod_stability": "between-window correlation of test predictions (5 walk-forward windows), target ≥ 0.5",
+      "turnover_proxy": "annualized Σ|Δw|, target ≤ 6.0/yr (G7) / hard 8.0 cap (failure cutoff)",
+      "harvey_t_stat": "Newey-West HAC t-stat lag=12, 5 spec: CAPM/FF3/FF5/Carhart4/FF6. Target ≥ 3.0 strict",
+      "post_neutralization_ic": "IC after Sector_Lv2 + Size_2 residualization, retention ≥ 50% raw IC",
+      "DSR_Bailey_LdP_Z": "Bailey-Lopez de Prado (2014), n_trials = 100 (20 random × 5 windows)"
+    },
+    "harvey_t_count_target": 5,
+    "DSR_method": "Bailey-Lopez de Prado strict, n_trials=100",
+    "DSR_n_trials_rationale": "20 random search hyperparam × 5 walk-forward windows = 100 trials (v1 Codex C3 학습 retain)"
+  },
+  "ic_provenance": {
+    "method": "DPL_KR_v2 scores_t = ScoreHead(...)_normalized cross-sectional Z. IC = Spearman cor(scores, r_{t+1}).",
+    "ic_history_path_pending": "stage_artifacts/WT_D20260517_002/ic_history_v2.parquet (Forge cycle emission)"
+  },
+  "mechanism_description": "DPL_KR_v2 Sorted Portfolio Learning 5축 paradigm 리디자인. v1 EW collapse 100% (51/51 sig_dates) + TO 17.64 + MDD 65.45% 5축 fail mode를 학술 backbone (5 core papers) 통해 axis-by-axis redesign. Axis 1 Output: 직접 weights → sorted portfolio ranked list + score-proportional sizing (DSPO Zhong 2024 + Zhang 2021 ListMLE) - EW collapse는 paradigm 내에서 expressible failure mode 아님. Axis 2 Architecture: Transformer 165K → Set-Sequence (DeepSet + LSTM + GAT + Score Head) ~30K params (Epstein 2025 permutation-invariant), param-to-data 33:1 → 5-7:1 under-param regime. Axis 3 Loss: -E[r_p] → ListMLE + EVaR SoftMin worst-window + TO-adjusted IR penalty 3-term 합성 (Zhang 2021 + Wood 2026 + Zhang-Wang-Cao 2021). Axis 4 Turnover Control: γ_cost=1.0 weak → 3-layer mitigation = decision-induced ranking clipping + min-max rescaling + partial portfolio adjustment α=0.6 (Wang-Hasuike 2026 KKT). Axis 5 Regime Robustness: single model → EVaR worst-window + Macro Graph Prior GAT (KOSPI 10-sector GICS adjacency) + m4 regime auxiliary feature inherit (Wood 2026 DeePM). 도훈 mandate 2026-05-17 22:30 통합: Champion (2-stage ML+optimizer) vs Challenger (Direct Active Weight Policy) 8-model comparison framework + active-weight neutral Σ(w-b)=0 + TE ≤ 0.08 + sector active ≤ 0.10 + ADV usage ≤ 0.05 + purged walk-forward (López de Prado 2018) + 12 mandatory metric + 6 rejection criteria (FactorAdjustedAlpha > 0 strict / Style exposure R² ≤ 0.7 / Explainability mandate). KR 124 sig_dates × 80 features (FMP family-balanced) × ~1500-2000 stocks panel. Walk-forward 5 windows × purged 1m embargo. Hyperparam 20 random × 5 windows = 100 trials → DSR n_trials=100. Codex Round 5단계 의무. Forge cycle implementation은 Q-Lead confirm 후 진행 (도훈 mandate B.2).",
+  "harvey_t_count": 5,
+  "harvey_t_specs": [
+    "CAPM (Sharpe 1964)",
+    "FF3 (Fama-French 1993)",
+    "FF5 (Fama-French 2015)",
+    "Carhart 4 (Carhart 1997 + market)",
+    "FF6 (Fama-French 2018 + momentum)"
+  ],
+  "harvey_t_pending_forge": "Forge cycle computes t-stats from realized test returns vs 5 spec panel using Newey-West HAC variance estimator (lag=12). v1 trained outcome inherit: -0.42 all 5 specs (FAIL) - v2 5축 redesign 후 측정 의무.",
+  "alpha_inheritance_cor": null,
+  "alpha_rank_corr_provenance": "post-Forge: DPL_KR_v2 alpha_scores vs STR_1715_AR_on_M4_R05_overlay_PG2 alpha_scores Pearson + Spearman per sig_date, averaged. Production STR_1715 alpha at 05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/02_holdings_universe/alpha_scores_str1715_268m.parquet. Same-harness PerformanceAnalytics geometric convention (Charter v1.5 §13). v1 inherit cor_weights = 0.0017 (orthogonal-to-noise, not orthogonal-to-signal — score head 학습 부재 → v2 paradigm shift 의미).",
+  "expected_role": "Phase 3 Discovery Design Phase: DPL_KR_v2 Sorted Portfolio Learning paradigm validation in KR equity + Champion/Challenger 8-model comparison framework. Target outcomes per decision_gates: G1 SR ≥ 1.0 floor (prob 0.50-0.65) + G2 cor < 0.5 substitution sleeve (prob 0.15-0.25 strict, post Champion comparison) + G2 cor < 0.3 4th orthogonal source (prob 0.10-0.20) + SR 2.0+ admit (prob 0.20-0.30 post-redesign learning). 도훈 mandate 통합 후 strict Champion comparison → admit prob revised down 0.10-0.15. Path A/B/C 3-cycle fail + v1 fail = Path D 5축 redesign + 8-model framework strict comparison framework.",
+  "challenge_flags_v2": [
+    {
+      "id": "CF-V2-A1",
+      "severity": "HIGH",
+      "description": "v1 5축 fail mode 5건 모두 v2 5축 redesign으로 1:1 대응되었으나, **paradigm transfer empirical** 미입증. Zhang 2021 China + Zhong 2024 NYSE + Wood 2026 50 futures + Wang-Hasuike US ETF 모두 KR equity와 다른 universe. KR 첫 적용은 paradigm transfer 검증 자체",
+      "academic_evidence": "5 core papers 모두 다른 universe / regime / sample. KR 2022~2026 'lost three years' regime은 모든 paper의 sample period (US 2010-2025 / China 2006-2019)와 정합 X.",
+      "mitigation": "Forge cycle KR empirical 측정 의무 + EVaR worst-window + GAT regime + m4 inheritance 3-layer regime robustness 적용"
+    },
+    {
+      "id": "CF-V2-A2",
+      "severity": "HIGH",
+      "description": "도훈 mandate I.3 FactorAdjustedAlpha > 0 strict + I.5 style exposure R² ≤ 0.7 strict — DPL_KR_v2가 size / liquidity / beta로 설명 안 되는 residual alpha 입증 의무. v1 trained outcome inherit (FAIL all 5 spec Harvey-t -0.42) → v2 5축 redesign은 paradigm 차원의 변화이나 KR universe 내 unique signal 추출은 별도 검증",
+      "mitigation": "Forge: FF5 + Carhart4 정식 regression Newey-West HAC lag=12 + size/LIQ/beta multi-regression R² < 0.7 audit"
+    },
+    {
+      "id": "CF-V2-A3",
+      "severity": "HIGH",
+      "description": "Set-Sequence 30K params + 80 features × 12-15M obs panel = under-param (Lu-Yang-Zhang 2024 double-descent regime 회피). 단 v1 165K → 30K (1/5)는 architecture-level 변화이며, 실제 학습이 stable convergence 보장 X. validation loss exploding / NaN risk 잔존",
+      "mitigation": "Forge: lr scheduler + gradient clipping + AdamW weight_decay + early stop patience 5 + per-epoch validation loss monitor + NaN abort condition",
+      "v1_inheritance": "v1 inherit failure case 입증 (architecture issue 충분히 mitigate 안 됨), v2 모니터링 강화"
+    },
+    {
+      "id": "CF-V2-A4",
+      "severity": "HIGH",
+      "description": "AX-007 exemption #4 (ML sizing): v1 advisory_pending_forge_demonstration → v1 Forge HHI ≈ 0.05 51/51 → exemption INVALIDATED. v2 sorted portfolio paradigm은 EW collapse가 expressible failure mode 아님 (score → rank → top-K 구조). 단 demonstration은 Forge cycle weights_v2.csv에서 HHI > 0.05 majority sig_dates 입증 의무",
+      "mitigation": "Forge: per-sig_date HHI computation. 5+/51 sig_dates HHI ≤ 0.05 + 0.001 tolerance → AX-007 INVALIDATED + WT ABORT (v1 학습)",
+      "academic_evidence": "DSPO Zhong 2024 §3.4 score-proportional sizing은 본질적으로 non-uniform. EW collapse는 score head 학습 부재일 때만 발생 (numerical zero), FP32 noise > 1e-7으로 practical impossibility."
+    },
+    {
+      "id": "CF-V2-A5",
+      "severity": "HIGH",
+      "description": "도훈 mandate G 8-model comparison framework: 본 alpha-research cycle = design only (8 모델 spec + protocol). Forge cycle 진입 의무는 ~40-50h GPU time. Q-Lead confirm + Forge resource allocation 필요. 8 모델 동시 implementation 우선순위 + Codex Round 5단계 × 6 agents (alpha/risk/optimizer/forge/judge/governor) total time 의무 식별",
+      "mitigation": "Q-Lead 코드 작성 confirm + Forge resource allocation + 단계별 (Model 1-5 baseline first, Model 6 + 8 strict 100 trials, Model 7 advanced last) 순차 implementation"
+    },
+    {
+      "id": "CF-V2-A6",
+      "severity": "MEDIUM",
+      "description": "Purged walk-forward 1m purge + 1m embargo → 학습 sample -8m / window × 5 windows = -40m total. v1 60m train → v2 52m train per window. Sample efficiency 우려. CPCV alternative deferred.",
+      "mitigation": "Forge cycle: per-window val_score monitoring + Codex 권고 시 conservative 2m purge / 2m embargo",
+      "academic_evidence": "López de Prado (2018) Ch 7: 1m purge for 1m label horizon 정합. 2m extra conservative but reduces sample further."
+    },
+    {
+      "id": "CF-V2-A7",
+      "severity": "MEDIUM",
+      "description": "TE ≤ 0.08 constraint (도훈 mandate F.4): 8% annualized는 KR equity active strategy modest. Sector active ≤ 0.10 + ADV usage ≤ 0.05 enforce iteratively → constraint set tight. Solver convergence + violation rate 측정 의무",
+      "mitigation": "Forge: per-sig_date constraint audit, violation rate ≤ 1% target / ≤ 5% hard stop. Iterative rebalance max 10 iter, Dykstra projection convergence audit"
+    },
+    {
+      "id": "CF-V2-A8",
+      "severity": "MEDIUM",
+      "description": "8-model comparison framework + 12 metric + 6 rejection criteria는 본 alpha cycle scope 확장. Charter §10 v1.8 discovery_design_phase_a Role Card 적용 가능 여부 Q-Lead escalate. Codex Round disposition 의무.",
+      "mitigation": "Charter §10 amendment proposal v1 retain + 도훈 mandate explicit 통합으로 정합화"
+    },
+    {
+      "id": "CF-V2-A9",
+      "severity": "MEDIUM",
+      "description": "v2 80 features는 v1 634 features subset (FMP r² robust ranking + family-stratified). RiskVol/Beta family 47/100 편중 학습 → diversity max 15/family로 mitigated. 단 Quality / Value / Size / Investor_Flow family는 FMP r² 낮음 → fundamental signal 학습 제한",
+      "mitigation": "v2 80 features는 v1 baseline 정합 + Set-Sequence cross-section attention이 feature interaction 학습. Forge 후 SHAP attribution audit → fundamental family contribution 측정"
+    },
+    {
+      "id": "CF-V2-A10",
+      "severity": "LOW",
+      "description": "도훈 mandate B.6 random k-fold CV 절대 금지 + purged WF 의무 — v2 protocol 정합. 추가 CPCV (López de Prado Ch 12) deferred. Codex 권고 시 admit cycle robustness check 적용",
+      "mitigation": "Purged WF baseline retain, CPCV는 final admission cycle reserve"
+    },
+    {
+      "id": "CF-V2-A11",
+      "severity": "MEDIUM",
+      "description": "도훈 mandate B.2 Q-Lead 코드 작성 confirm 의무. 본 alpha cycle = design phase only, code 작성 X. Forge cycle entry 전 Q-Lead explicit confirm 필요",
+      "mitigation": "alpha_package.json deliverable_lineage_v6_1 명시 + Forge cycle entry condition: Q-Lead code authorization"
+    }
+  ],
+  "selection_objective": "rank_ic_with_Pareto_dominance_vs_Champion_best",
+  "method_shopping_log": {
+    "alpha_agent": {
+      "candidates_tried": 1,
+      "candidates_tried_explanation": "본 v2 cycle = single paradigm choice (Sorted Portfolio Learning + Set-Sequence) + 5축 redesign + 도훈 mandate 8-model comparison framework. Architecture-level choice = 1 (sorted portfolio paradigm). Comparison via 8 models in Forge cycle. Hard cap (≤ 5 candidate architectures per alpha cycle) compliant.",
+      "method_log": [
+        {
+          "name": "DPL_KR_v2_Sorted_Portfolio_Set_Sequence_GAT_3term_loss",
+          "rank_ic": null,
+          "selected": true,
+          "note": "Single core architecture paradigm. 8-model comparison Forge cycle deferred."
+        }
+      ],
+      "alternative_architectures_deferred_forge": [
+        "Model 1 Linear Factor Composite (Champion baseline)",
+        "Model 2 ElasticNet + MVO (Champion)",
+        "Model 3 GBM + MVO (Champion)",
+        "Model 4 Linear PPP Brandt-Santa-Clara-Valkanov 2009 (Challenger baseline)",
+        "Model 5 GBM Direct Active Weight (Challenger)",
+        "Model 7 Differentiable Optimizer Layer CvxpyLayer (Challenger advanced)",
+        "Model 8 Cost-aware DPL objective E 4-term (Challenger + explicit cost)"
+      ],
+      "parallel_exec": false,
+      "rcpp_used": false,
+      "n_workers": 1,
+      "_rationale": "alpha-research stage = design / spec only. No training. Forge cycle 8-model implementation total ~40-50h GPU."
+    }
+  },
+  "research_philosophy_alignment": {
+    "principle_1_factor_zoo_reduction": {
+      "compliant": true,
+      "evidence": "v1 1047 features → v2 80 features (factor reduction 92.4%). FMP r² robust ranking + family-stratified (max 15/family) diversity. Set-Sequence permutation-invariant 30K params intrinsically learns sparse representation (top-K=20 final)."
+    },
+    "principle_2_cost_aware": {
+      "compliant_high": true,
+      "evidence": "Axis 4 turnover control 3-layer mitigation (Wang-Hasuike 2026 KKT) — clipping + rescaling + partial adjustment. Model 8 도훈 objective E 4-term explicit cost C(Δw). Cost-aware Net-of-cost 15bps in loss explicit."
+    },
+    "principle_3_uncertainty_aware": {
+      "compliant": true,
+      "evidence": "Axis 5.1 EVaR worst-window penalty (Wood 2026 SoftMin DRO) — explicit adversarial reweighting over training windows. Sanderink 2026 DEUP epistemic uncertainty alternative (Forge cycle deferred)."
+    },
+    "principle_4_direct_portfolio_learning": {
+      "compliant_core": true,
+      "evidence": "★ 본 cycle 핵심 paradigm. v1 weights 직접 → v2 sorted portfolio ranked list → top-K natural extraction (DSPO Zhong 2024 정합). 도훈 mandate Direct Active Weight Policy 통합."
+    },
+    "principle_5_crowding": {
+      "compliant_pending_risk_cycle": true,
+      "evidence": "DPL_KR_v2 weights crowding_score_per_factor 측정 → Risk Agent 책임. Acadian 2026 §3 정합. Sector active ≤ 0.10 constraint binding."
+    },
+    "principle_6_implementation_discipline": {
+      "compliant_strict": true,
+      "evidence": "long-only + max 20 + bounds [0, 0.20] + Σw=1 (v1 retain) + 도훈 mandate F 신규 4 constraints: Σ(w-b)=0 trivial + TE ≤ 0.08 + sector active ≤ 0.10 + ADV usage ≤ 0.05. LIQ 2e8 strict (2-stage mitigation Codex C4 ACCEPT inherit) + cost 15bps."
+    },
+    "principle_7_attribution_feedback_loop": {
+      "compliant_pending_post_admit": true,
+      "evidence": "Brinson + Carhart 4 분기별 자동 attribution Forge cycle bt_result.rds 10-component 정합. FactorAdjustedAlpha (FF5/Carhart4 residual) 도훈 mandate I.3 strict mandate (12 metric #8)."
+    }
+  },
+  "hard_constraints_compliance": {
+    "long_only": true,
+    "max_names": 20,
+    "weight_bounds": [0, 0.20],
+    "sum_weights": 1.0,
+    "active_weight_neutral_sum_w_minus_b_zero": "TRIVIAL in long-only Σw=1, enforce via TE constraint binding",
+    "TE_max": 0.08,
+    "sector_active_max": 0.10,
+    "ADV_usage_max": 0.05,
+    "turnover_annualized_max": 6.0,
+    "mdd_pct_max": -0.25,
+    "universe": "KR_TOP500_LIQ1E8 (request.json mandate 2e8 KRW 20d ADV) + 2-stage liquidity mitigation Codex C4 ACCEPT inherit",
+    "cost_model_version": "v2.3_kr_retail_15bps (15 bps one-way)",
+    "verification_method": "DESIGN_SPEC_ONLY; FORGE_CYCLE_EMITS_WEIGHTS_V2_CSV_WITH_52_TEST_SIG_DATE_SCHEDULE. Per-sig_date assert all 11 hard constraints. Violation rate > 1% target, > 5% hard ABORT.",
+    "verification_path": "stage_artifacts/WT_D20260517_002/dpl_kr_v2_architecture.md §4 Constraint Projection + active_weight_neutral_constraint_spec.md §3"
+  },
+  "pit_compliance": {
+    "C1_C15_overall": "PASS_WITH_STRUCTURAL_CAVEATS_AND_V2_PURGED_WF_ENHANCEMENT",
+    "audit_report": "stage_artifacts/WT_D20260517_002/pit_audit_v2.json",
+    "hard_abort_check": "NOT_TRIGGERED",
+    "v2_purged_wf_enhancement": "1m purge + 1m embargo per train/val/test boundary + cross-section purge IPO < 12m history exclusion (López de Prado 2018 strict)",
+    "caveats_summary_v1_inherit": [
+      "v1 C1~C15 audit retain (124 sig_dates × 634 features post macro drop + WT007 Codex C5 fix)",
+      "v2 reduces to 80 features (sha256 frozen)",
+      "C10 2-stage liquidity mitigation Codex C4 ACCEPT inherit",
+      "v2 4 new constraints (TE / sector active / ADV usage / active-neutral) audit Forge cycle 의무"
+    ]
+  },
+  "evaluation_windows_v2_purged_wf": {
+    "walk_forward_schema": "5_overlapping_shift_12m_purged_embargo_1m",
+    "windows": [
+      {"window_id": 1, "train": "2016-01 ~ 2020-11 (59m purged)", "embargo_train_val": "2020-12", "val": "2021-01 ~ 2021-11 (11m purged)", "embargo_val_test": "2021-12", "test": "2022-01 ~ 2022-12 (12m)"},
+      {"window_id": 2, "train": "2017-01 ~ 2021-11", "val": "2022-01 ~ 2022-11", "test": "2023-01 ~ 2023-12"},
+      {"window_id": 3, "train": "2018-01 ~ 2022-11", "val": "2023-01 ~ 2023-11", "test": "2024-01 ~ 2024-12"},
+      {"window_id": 4, "train": "2019-01 ~ 2023-11", "val": "2024-01 ~ 2024-11", "test": "2025-01 ~ 2025-12"},
+      {"window_id": 5, "train": "2020-01 ~ 2024-11", "val": "2025-01 ~ 2025-11", "test": "2026-01 ~ 2026-04 (4m partial)"}
+    ],
+    "_lockbox_scope_note": "Lockbox per .claude/rules/lockbox-scope.md applies to alpha-research v2 stage. Purged WF + embargo are test data post train cutoff future-out segment — lockbox 정합."
+  },
+  "comparison_baseline": {
+    "primary": "STR_1715_AR_on_M4_R05_overlay_PG2 (book_state v2.3 active admit, 255m PerfA: SR 1.9536 / MDD -24.81% / CAGR 41.50%)",
+    "method": "same-harness PerformanceAnalytics + same cost 15bps + same-period 52m overlap (2022-01 ~ 2026-04) per Pareto cor measurement",
+    "additional_8_model_comparison_framework": [
+      "Champion Model 1: Linear Factor Composite (STR_1715 H1 base derived)",
+      "Champion Model 2: ElasticNet + MVO",
+      "Champion Model 3: GBM + MVO",
+      "Champion Model 4: Linear PPP Brandt-Santa-Clara-Valkanov 2009 (Challenger baseline)",
+      "Challenger Model 5: GBM Direct Active",
+      "Challenger Model 6: Neural Direct Active = DPL_KR_v2 (CORE)",
+      "Challenger Model 7: Differentiable Optimizer Layer CvxpyLayer",
+      "Challenger Model 8: Cost-aware DPL objective E 4-term"
+    ],
+    "additional_v1_inherit": "v1 DPL_KR_v1 (SR -0.34 / MDD 65.45% / TO 17.64) ← lesson baseline + EW long-only top-20 baseline"
+  },
+  "decision_gates_v2": {
+    "G0_PIT_strict_purged_WF": "PASS — pit_audit_v2.json PASS_WITH_STRUCTURAL_CAVEATS_AND_V2_PURGED_WF_ENHANCEMENT",
+    "G1_SR_floor_pending": "Forge cycle — DPL_KR_v2 SR ≥ 1.0 (52m test)",
+    "G2_cor_vs_str1715_pending": "Forge cycle — |cor| < 0.5 substitution / < 0.3 4th-source",
+    "G3_Harvey_t_5spec_pending": "Forge cycle — t_NW ≥ 3.0 strict 5 spec (v1 -0.42 학습)",
+    "G4_DSR_pending": "Forge cycle — Bailey-LdP Z ≥ 0 strict, n_trials=100",
+    "G5_cost_pareto_pending": "Forge cycle — Net-of-cost 15bps Pareto vs Champion Model 1-5 BEST (not just STR_1715, 도훈 mandate)",
+    "G6_AX008_pending": "Forge + Codex + Architect 2/3 PASS (Codex round complete with disposition, current 1/3)",
+    "G7_turnover_hurdle_pending": "Forge cycle — Realized annualized TO ≤ 6.0 (v1 17.64 학습, 3-layer mitigation 의무)",
+    "G8_mdd_hurdle_pending": "Forge cycle — Realized MDD ≤ 25% (v1 65.45% 학습, EVaR worst-window + GAT regime + m4 inherit)",
+    "G9_concentration_ax007_pending": "Forge cycle — HHI > 0.05 strict majority sig_dates (v1 51/51 EW collapse 학습)",
+    "G10_NEW_TE_constraint_pending": "Forge cycle — TE_annualized ≤ 0.08 (도훈 mandate F.4)",
+    "G11_NEW_sector_active_pending": "Forge cycle — |Σ_{i ∈ sector} (w_i - b_i)| ≤ 0.10 per sector (도훈 mandate F.6)",
+    "G12_NEW_ADV_usage_pending": "Forge cycle — ADVUsage ≤ 0.05 per stock per rebalance (도훈 mandate F.7)",
+    "G13_NEW_factor_adjusted_alpha_pending": "Forge cycle — FF5/Carhart4 residual α > 0 strict (도훈 mandate I.3, 12 metric #8)",
+    "G14_NEW_style_exposure_pending": "Forge cycle — DPL_KR_v2 active return regression on (Size / LIQ / Beta) R² ≤ 0.7 (도훈 mandate I.5)",
+    "G15_NEW_explainability_pending": "Forge cycle — SHAP attribution top 10 features ≥ 50% weight variance explain (도훈 mandate I.6)"
+  },
+  "failure_cutoff_alignment_v2": {
+    "DPL_v2_SR_lt_1_0": "ABORT — paradigm 보존 retain, hyperparam 또는 architecture re-tune 별도 cycle",
+    "EW_collapse_detected_HHI_le_0_05_majority": "HARD ABORT — sorted portfolio paradigm 자체 KR 실패 (v1보다 더 깊은 실패) → Path B/C pivot 정식 권고",
+    "TO_gt_8_after_mitigation": "ABORT — 3-layer mitigation 효과 X, paradigm 한계",
+    "MDD_gt_30_pct": "ABORT — EVaR worst-window + GAT + m4 효과 X, regime robustness 한계",
+    "TE_gt_0_12": "ABORT — constraint G10 hard cap, active-risk excessive",
+    "sector_active_gt_0_15_majority": "ABORT — constraint G11 hard cap",
+    "ADVUsage_gt_0_10_majority": "ABORT — constraint G12 hard cap",
+    "FactorAdjustedAlpha_le_0_strict": "REJECT — Pareto vs Champion BEST 조건 (도훈 mandate I.3)",
+    "Style_exposure_R2_gt_0_7": "REJECT — DPL 성과 size/LIQ/beta로 대부분 설명 (도훈 mandate I.5)",
+    "Constraint_violation_rate_gt_5pct": "ABORT — implementation infeasible",
+    "Codex_REJECT_unanimous": "DEFER — disposition cycle",
+    "AX_007_exemption_invalidation_post_forge": "If Forge weights ≈ EW (HHI ≤ 0.05 majority sig_dates) → AX-007 invalidated → WT ABORTED",
+    "ML_explainability_failure": "REJECT — SHAP attribution 부재 (도훈 mandate I.6)"
+  },
+  "deliverable_lineage_v6_1": {
+    "literature_review_md": "stage_artifacts/WT_D20260517_002/literature_review_v2.md (≥3950 words, 14 citations, 5 core + 9 secondary)",
+    "dpl_kr_v2_architecture_md": "stage_artifacts/WT_D20260517_002/dpl_kr_v2_architecture.md (Set-Sequence 30K params + 3-term loss + 3-layer TO mitigation + 3-layer regime + AX-007 strategy)",
+    "champion_challenger_comparison_framework_md": "stage_artifacts/WT_D20260517_002/champion_challenger_comparison_framework.md (8 models spec + 12 metric + 6 rejection criteria, 도훈 mandate G+H+I)",
+    "purged_walk_forward_protocol_md": "stage_artifacts/WT_D20260517_002/purged_walk_forward_protocol.md (López de Prado 2018 Ch 7 + 1m purge + 1m embargo + cross-section purge, 도훈 mandate B.6)",
+    "active_weight_neutral_constraint_spec_md": "stage_artifacts/WT_D20260517_002/active_weight_neutral_constraint_spec.md (Σ(w-b)=0 + TE + sector active + ADV usage, 도훈 mandate F)",
+    "pit_audit_v2_json": "stage_artifacts/WT_D20260517_002/pit_audit_v2.json (C1~C15 verification + v2 4 new constraints audit)",
+    "training_protocol_v2_md": "stage_artifacts/WT_D20260517_002/training_protocol_v2.md (Purged WF + 80 features × 5 windows × 20 trials = 100 trials DSR + 8-model comparison)",
+    "feature_allowlist_v2_csv": "stage_artifacts/WT_D20260517_002/feature_allowlist_v2.csv (80 features family-balanced FMP r² robust ranking, sha256=f1778f67...)",
+    "feature_allowlist_v2_sha256": "stage_artifacts/WT_D20260517_002/feature_allowlist_v2.sha256",
+    "fmp_ranking_v2_csv": "stage_artifacts/WT_D20260517_002/fmp_ranking_v2.csv (full FMP r² ranking 1044 features)",
+    "v2_top80_balanced_csv": "stage_artifacts/WT_D20260517_002/v2_top80_balanced.csv (selection intermediate result)",
+    "codex_critic_response_alpha_research_pending": "qepm/mailbox/worktask/WT-D20260517_002/codex_critic_response_alpha-research.json (auto-trigger post draft)",
+    "challenge_note_alpha_research_pending": "qepm/mailbox/worktask/WT-D20260517_002/challenge_note_alpha-research.md (post Codex response)",
+    "alpha_package_final_pending": "qepm/mailbox/worktask/WT-D20260517_002/alpha_package.json (post challenge_note)"
+  },
+  "axiom_compliance": {
+    "AX-000_no_limits": "compliant — Path D v2 5축 redesign + 도훈 mandate framework expansion, no milestone abandonment",
+    "AX-001_v2_defense_conditional": "N/A_at_alpha_stage (defense factor evaluation = Risk Agent / Forge bt_result)",
+    "AX-002_process_honesty": "compliant — 5 core papers actual reading (Zhang 2021 / Zhong 2024 / Epstein 2025 / Wood 2026 / Wang-Hasuike 2026 KKT all fetched + content extracted), v1 trained outcome inherit honest acknowledgment (G1/G3/G4/G7/G8/G9 all FAIL), no rationalization keywords detected, 도훈 mandate explicit integration not concealed",
+    "AX-003_KR_value_EP_failure": "N/A (DPL_KR_v2 multi-feature, not Value EP)",
+    "AX-004_KR_quality_single_signal_failure": "N/A (DPL_KR_v2 multi-feature composite)",
+    "AX-005_KR_defense_top20_failure_compliant_advisory": "compliant_advisory — v2 architecture top-20 hard, EXCLUSION (Gate13) is necessary not sufficient. DPL_KR_v2 admits via cross-section breadth + sorted portfolio paradigm + Set-Sequence permutation-invariant, not single-signal defense.",
+    "AX-007_methodological_single_sleeve_break": "ADVISORY_PENDING_FORGE_DEMONSTRATION_v2_strengthened — eligibility via ML sizing exception #4 (architectural via sorted portfolio paradigm + score-proportional sizing). v2 demonstration: Forge cycle weights_v2.csv HHI > 0.05 majority sig_dates 입증 의무. v1 INVALIDATED → v2 paradigm-level redesign로 expressible failure mode 회피.",
+    "AX-008_verification_triangulation_pending": "Codex round 1/3 (alpha research) initiating. Forge + Architect deferred. ≥ 2/3 PASS required at admit gate."
+  },
+  "codex_round_metadata_alpha_research": {
+    "draft_emit_at": "2026-05-17T22:55:00+09:00",
+    "codex_invocation_planned_at": "2026-05-17T22:56:00+09:00 (post draft)",
+    "codex_response_expected_at": "2026-05-17T23:05:00 ~ 23:11:00 (9-15min background)",
+    "codex_helper_command": "bash 02_Infrastructure/tools/debate_helpers/run_codex_qepm_critic.sh --role=alpha --task_id=WT-D20260517_002 --package=qepm/mailbox/worktask/WT-D20260517_002/alpha_package_draft.json --output=qepm/mailbox/worktask/WT-D20260517_002/codex_critic_response_alpha-research.json",
+    "expected_concerns_categories": [
+      "Paradigm transfer empirical (5 core papers all non-KR universe)",
+      "Set-Sequence 30K params + 80 features sample efficiency",
+      "Active-weight neutral trivial in long-only (mandate F.3 binding via TE)",
+      "8-model comparison framework alpha cycle scope vs Forge cycle implementation",
+      "Q-Lead code authorization mandate B.2 explicit",
+      "Charter §10 v1.8 discovery_design_phase_a sub-class amendment carry from v1",
+      "AX-007 exemption #4 v2 strengthening vs v1 INVALIDATED inherit",
+      "Decision gates G10-G15 신규 (TE + sector + ADV + FactorAdjustedAlpha + style exposure + explainability)"
+    ]
+  },
+  "post_codex_corrections_summary_planned": [
+    "feature_allowlist_v2.csv 80 features (FMP r² robust ranking + family-stratified) sha256=f1778f67...",
+    "5 core + 9 secondary papers actual fetch + content extraction (DSPO + Set-Sequence + DeePM + SPO inflation + Zhang 2021)",
+    "8-model comparison framework + 12 metric + 6 rejection criteria + active-neutral constraint 도훈 mandate 통합",
+    "Purged walk-forward 1m purge + 1m embargo + cross-section purge",
+    "Q-Lead code authorization mandate B.2 explicit + design-only phase 정합"
+  ],
+  "schema_compliance": "alpha_package v1.2 (8-field core + Charter §10 Role Card discovery_design_phase_a + v6.1 R1-R4-R13 + 도훈 mandate 2026-05-17 22:30 integration + 5축 axis_redesign + 8-model comparison framework addendum)",
+  "v2_axis_redesign_5_fold_compliance": {
+    "axis_1_output_compliant": "Sorted portfolio ranked list → top-K natural extraction + score-proportional sizing (DSPO Zhong 2024 §3.4)",
+    "axis_2_architecture_compliant": "Set-Sequence ~30K params (Epstein 2025), param-to-data 5-7:1 under-param Lu-Yang-Zhang 2024 double-descent regime 회피",
+    "axis_3_loss_compliant": "ListMLE + EVaR SoftMin + TO-adjusted IR 3-term composite (Zhang 2021 + Wood 2026 + Zhang-Wang-Cao 2021) + 도훈 mandate Model 8 objective E 4-term variant retain",
+    "axis_4_turnover_control_compliant": "3-layer mitigation = clipping + min-max rescaling + partial portfolio adjustment α=0.6 (Wang-Hasuike 2026 KKT)",
+    "axis_5_regime_robustness_compliant": "EVaR worst-window + Macro Graph Prior GAT (KOSPI GICS 10-sector) + m4 regime auxiliary feature (Wood 2026 DeePM)"
+  },
+  "v1_lesson_inherit_explicit": [
+    "L-328 (DPL_KR_v1 v1.0 architecture single-config single-cycle scope narrow) — v2 inherit + paradigm shift",
+    "v1 EW collapse 51/51 → v2 sorted portfolio paradigm 회피 (axis 1)",
+    "v1 TO 17.64 → v2 3-layer Wang-Hasuike 2026 mitigation (axis 4)",
+    "v1 MDD 65.45% → v2 EVaR + GAT + m4 (axis 5)",
+    "v1 Harvey-t -0.42 5 spec all → v2 ranking loss + 80 features family-balanced (axis 3 + feature subset)",
+    "v1 DSR Z -2.27 → v2 n_trials=100 strict Bailey-LdP",
+    "v1 over-param 165K → v2 30K Set-Sequence (axis 2 Lu-Yang-Zhang 2024 정합)",
+    "v1 AX-007 INVALIDATED → v2 paradigm-level redesign + Forge demonstration mandate"
+  ],
+  "dohoon_mandate_2026_05_17_2230_integration_summary": {
+    "A_paradigm_comparison_framework": "Champion (2-stage ML+optimizer) vs Challenger (Direct Active Weight Policy) — 8-model comparison",
+    "B_absolute_rules_10": "Intraday/NLP/news/ESG/alt-data 금지 + Q-Lead 코드 confirm + PIT strict + 3-bias 제거 + random k-fold 금지 + purged WF 의무 + gross/net 분리 + Champion 비교 의무",
+    "C_D_champion_challenger_models": "8 models specified (champion_challenger_comparison_framework.md)",
+    "E_dpl_objective_function": "L_dpl = -E[(w-b)^T r - C(Δw) - λ·TE² - ρ·Concentration] retain as Model 8, v2 3-term loss Model 6 primary",
+    "F_7_hard_constraints": "Σw=1 + 0 ≤ w ≤ 0.20 + Σ(w-b)=0 + TE ≤ 0.08 + TO ≤ 6.0 + sector active ≤ 0.10 + ADV usage ≤ 0.05",
+    "G_8_comparison_models": "Linear / ElasticNet / GBM / Linear PPP / GBM Direct / Neural Direct (CORE) / Differentiable Opt / Cost-aware DPL",
+    "H_12_mandatory_metrics": "CAGR_net + IR_net + Sharpe_net + MDD + TE + Turnover + ADVUsage + FactorAdjustedAlpha + SectorActiveRisk + HitRatio + RollingIR12m + RollingDD12m",
+    "I_6_rejection_criteria": "IR ≤ Champion + MDD > Champion + CAGR insufficient + FactorAdjustedAlpha ≤ 0 + period/universe/sector dependence + style R² > 0.7 + explainability failure"
+  }
+}
