@@ -65,12 +65,12 @@ prod_ret[, month_date := as.Date(anchor_date)]
 setorder(prod_ret, month_date)
 
 # Use ret_L5_V1 as the canonical 5-Layer NAV (admit variant)
-ret_1715 <- prod_ret[, .(month_date, ret_1715 = ret_L5_V1, regime = regime)]
-ret_1715[, nav_1715 := cumprod(1 + ret_1715)]
+ret_dt <- prod_ret[, .(month_date, r_1715 = ret_L5_V1, regime = regime)]
+ret_dt[, nav_1715 := cumprod(1 + r_1715)]
 
-cat("[6.1] STR_1715 5-Layer ret length=", nrow(ret_1715),
-    " full SR(ann)=", round(mean(ret_1715$ret_1715) / sd(ret_1715$ret_1715) * sqrt(12), 4),
-    " final NAV=", round(tail(ret_1715$nav_1715,1), 4), "\n")
+cat("[6.1] STR_1715 5-Layer ret length=", nrow(ret_dt),
+    " full SR(ann)=", round(mean(ret_dt$r_1715) / sd(ret_dt$r_1715) * sqrt(12), 4),
+    " final NAV=", round(tail(ret_dt$nav_1715,1), 4), "\n")
 
 # Inherit v3 alpha_scores (comp universe candidates 1715 외부)
 alpha_v3 <- as.data.table(read_parquet(file.path(V3_DIR, "alpha_scores.parquet")))
@@ -83,9 +83,9 @@ canonical_sd <- fread(file.path(V3_DIR, "canonical_sig_dates.csv"))
 canonical_sd[, sig_date := as.Date(sig_date)]
 
 # Walk-forward OOS subset (52m design — last 52 months of production)
-n_prod <- nrow(ret_1715)
+n_prod <- nrow(ret_dt)
 oos_start_idx <- max(1, n_prod - 51)
-oos_period <- ret_1715[oos_start_idx:n_prod]
+oos_period <- ret_dt[oos_start_idx:n_prod]
 cat("[6.1] OOS window=", as.character(range(oos_period$month_date)),
     " n_months=", nrow(oos_period), "\n")
 
@@ -104,10 +104,10 @@ write_json(pit_audit, file.path(STAGE_DIR, "pit_audit_phase_b.json"),
 
 # Data panel summary
 data_panel <- data.table(
-  month_date = ret_1715$month_date,
-  ret_1715 = ret_1715$ret_1715,
-  nav_1715 = ret_1715$nav_1715,
-  regime = ret_1715$regime
+  month_date = ret_dt$month_date,
+  ret_1715 = ret_dt$r_1715,
+  nav_1715 = ret_dt$nav_1715,
+  regime = ret_dt$regime
 )
 write_parquet(data_panel, file.path(STAGE_DIR, "data_panel_path_a.parquet"))
 cat("[6.1] data_panel_path_a.parquet written rows=", nrow(data_panel), "\n")
@@ -117,27 +117,27 @@ cat("[6.1] data_panel_path_a.parquet written rows=", nrow(data_panel), "\n")
 # =====================================================================
 cat("\n========== 6.2 G1 p_bad classifier 재설계 (4 옵션) ==========\n")
 
-# label bad_state: 1 if next-month ret_1715 < -1 SD over 36m rolling
-ret_1715[, mu_36m := frollmean(ret_1715, 36, align = "right")]
-ret_1715[, sd_36m := frollapply(ret_1715, 36, sd, align = "right")]
-ret_1715[, bad_state_next := shift(ret_1715, n = -1, type = "lag") < (mu_36m - sd_36m)]
-ret_1715[is.na(bad_state_next), bad_state_next := FALSE]
+# label bad_state: 1 if next-month r_1715 < -1 SD over 36m rolling
+ret_dt[, mu_36m := frollmean(r_1715, 36, align = "right")]
+ret_dt[, sd_36m := frollapply(r_1715, 36, sd, align = "right")]
+ret_dt[, bad_state_next := shift(r_1715, n = -1, type = "lag") < (mu_36m - sd_36m)]
+ret_dt[is.na(bad_state_next), bad_state_next := FALSE]
 
 # Predictor features (1715-specific PIT-clean)
 # 1) active_return_3m: rolling 3m STR_1715 ret
 # 2) rolling_dd_6m: drawdown from 6m peak
 # 3) regime indicator (CRISIS=1)
-ret_1715[, ar_3m := frollmean(ret_1715, 3, align = "right")]
-ret_1715[, peak_6m := frollapply(nav_1715, 6, max, align = "right")]
-ret_1715[, dd_6m := (nav_1715 / peak_6m) - 1]
-ret_1715[, regime_crisis := as.integer(regime == "CRISIS")]
+ret_dt[, ar_3m := frollmean(r_1715, 3, align = "right")]
+ret_dt[, peak_6m := frollapply(nav_1715, 6, max, align = "right")]
+ret_dt[, dd_6m := (nav_1715 / peak_6m) - 1]
+ret_dt[, regime_crisis := as.integer(regime == "CRISIS")]
 # Lag by 1 to ensure t-feature only
-ret_1715[, ar_3m_lag := shift(ar_3m, 1L, type = "lag")]
-ret_1715[, dd_6m_lag := shift(dd_6m, 1L, type = "lag")]
-ret_1715[, regime_lag := shift(regime_crisis, 1L, type = "lag")]
+ret_dt[, ar_3m_lag := shift(ar_3m, 1L, type = "lag")]
+ret_dt[, dd_6m_lag := shift(dd_6m, 1L, type = "lag")]
+ret_dt[, regime_lag := shift(regime_crisis, 1L, type = "lag")]
 
 # Training subset: drop NAs
-g1_data <- ret_1715[!is.na(bad_state_next) & !is.na(ar_3m_lag) &
+g1_data <- ret_dt[!is.na(bad_state_next) & !is.na(ar_3m_lag) &
                     !is.na(dd_6m_lag) & !is.na(regime_lag)]
 cat("[6.2] G1 training rows=", nrow(g1_data),
     " bad_state rate=", round(mean(g1_data$bad_state_next), 4), "\n")
@@ -254,20 +254,20 @@ opt_selected_fit <- switch(g1_best_option,
 )
 
 # Predict p_bad for all OOS dates
-p_bad_full <- rep(0.3, nrow(ret_1715))
-mask <- !is.na(ret_1715$ar_3m_lag) & !is.na(ret_1715$dd_6m_lag) & !is.na(ret_1715$regime_lag)
+p_bad_full <- rep(0.3, nrow(ret_dt))
+mask <- !is.na(ret_dt$ar_3m_lag) & !is.na(ret_dt$dd_6m_lag) & !is.na(ret_dt$regime_lag)
 if (!is.null(opt_selected_fit)) {
   pred_type <- if (inherits(opt_selected_fit, "glm")) "response" else NULL
   if (!is.null(pred_type)) {
     p_bad_full[mask] <- predict(opt_selected_fit,
-                                 newdata = ret_1715[mask],
+                                 newdata = ret_dt[mask],
                                  type = pred_type)
   } else {
     p_bad_full[mask] <- pmax(pmin(predict(opt_selected_fit,
-                                           newdata = ret_1715[mask]), 1), 0)
+                                           newdata = ret_dt[mask]), 1), 0)
   }
 }
-ret_1715[, p_bad := p_bad_full]
+ret_dt[, p_bad := p_bad_full]
 
 # Save p_bad classifier OOS result
 g1_oos_json <- list(
@@ -335,8 +335,8 @@ make_comp_nav <- function(alpha_dt, stage_name, perturb_fun, cost_oneway = 0.001
   # baseline_ret = market median (use STR_1715 ret as anchor)
   comp_per_date[, sig_date := Date]
 
-  # Map to ret_1715 monthly grid
-  ret_1715_map <- ret_1715[, .(month_date, ret_1715, regime)]
+  # Map to ret_dt monthly grid
+  ret_1715_map <- ret_dt[, .(month_date, r_1715, regime)]
   setkey(ret_1715_map, month_date)
   setkey(comp_per_date, sig_date)
 
@@ -429,8 +429,8 @@ a_max_grid <- c(0.05, 0.10, 0.15, 0.20)
 stages_list <- names(stage_funs)
 
 # Define good/bad regime months for axes A3/A4
-# bad = realized regime == "CRISIS" or ret_1715 < -1 SD over rolling
-bad_mask <- !is.na(ret_1715$bad_state_next) & ret_1715$bad_state_next
+# bad = realized regime == "CRISIS" or r_1715 < -1 SD over rolling
+bad_mask <- !is.na(ret_dt$bad_state_next) & ret_dt$bad_state_next
 
 # Compute baseline 1715 metrics over same OOS period
 compute_metrics <- function(ret_vec, label = "") {
@@ -446,9 +446,9 @@ compute_metrics <- function(ret_vec, label = "") {
 }
 
 # 1715 baseline (over OOS subset)
-n_ret_rows <- nrow(ret_1715)
-ret_1715_oos <- ret_1715[seq_len(n_ret_rows) >= oos_start_idx]
-baseline_1715 <- compute_metrics(ret_1715_oos$ret_1715, "1715_OOS_52m")
+n_ret_rows <- nrow(ret_dt)
+ret_1715_oos <- ret_dt[seq_len(n_ret_rows) >= oos_start_idx]
+baseline_1715 <- compute_metrics(ret_1715_oos$r_1715, "1715_OOS_52m")
 cat("[6.4] STR_1715 baseline (OOS 52m): SR=", round(baseline_1715$SR, 4),
     " MDD=", round(baseline_1715$MDD, 4),
     " CAGR=", round(baseline_1715$CAGR, 4),
@@ -456,11 +456,11 @@ cat("[6.4] STR_1715 baseline (OOS 52m): SR=", round(baseline_1715$SR, 4),
 
 # Bad / good state SR baselines
 sr_1715_bad  <- {
-  rb <- ret_1715_oos$ret_1715[ret_1715_oos$bad_state_next == TRUE]
+  rb <- ret_1715_oos$r_1715[ret_1715_oos$bad_state_next == TRUE]
   if (length(rb) >= 3) mean(rb) / sd(rb) * sqrt(12) else NA
 }
 sr_1715_good <- {
-  rg <- ret_1715_oos$ret_1715[ret_1715_oos$bad_state_next == FALSE]
+  rg <- ret_1715_oos$r_1715[ret_1715_oos$bad_state_next == FALSE]
   if (length(rg) >= 3) mean(rg) / sd(rg) * sqrt(12) else NA
 }
 cat("[6.4] STR_1715 bad-state SR=", round(sr_1715_bad, 4),
@@ -471,8 +471,9 @@ candidates <- expand.grid(stage = stages_list, a_max = a_max_grid,
                           stringsAsFactors = FALSE)
 cat("[6.4] N candidates =", nrow(candidates), "\n")
 
-# Merge ret_1715 with each stage's comp NAV, compute blend
-ret_1715[, month_date := as.Date(month_date)]
+# Merge ret_dt with each stage's comp NAV, compute blend
+ret_dt[, month_date := as.Date(month_date)]
+oos_start_date_obj <- ret_dt$month_date[oos_start_idx]
 
 grid_results <- list()
 for (i in seq_len(nrow(candidates))) {
@@ -480,8 +481,8 @@ for (i in seq_len(nrow(candidates))) {
   amax <- candidates$a_max[i]
 
   comp_ts <- stage_results[[stg]]
-  # Merge on month_date
-  blended <- merge(ret_1715[, .(month_date, ret_1715, p_bad, regime, bad_state_next)],
+  # Merge on month_date — preserve r_1715 as ret_1715 column for downstream uniformity
+  blended <- merge(ret_dt[, .(month_date, ret_1715 = r_1715, p_bad, regime, bad_state_next)],
                     comp_ts[, .(month_date, ret_comp)],
                     by = "month_date", all.x = TRUE)
   blended[is.na(ret_comp), ret_comp := 0]  # before comp coverage, weight 0
@@ -492,7 +493,7 @@ for (i in seq_len(nrow(candidates))) {
   blended[, ret_blend := (1 - a_t) * ret_1715 + a_t * ret_comp]
 
   # OOS subset
-  blend_oos <- blended[month_date >= ret_1715$month_date[oos_start_idx]]
+  blend_oos <- blended[month_date >= oos_start_date_obj]
 
   m <- compute_metrics(blend_oos$ret_blend)
   m_good <- compute_metrics(blend_oos$ret_blend[blend_oos$bad_state_next == FALSE])
@@ -560,20 +561,31 @@ cat("[6.4] Grid results (16 candidates):\n")
 print(grid_dt[, .(candidate_id, A1_SR, A2_MDD, A3_good_drag, A4_bad_improve,
                   A5_TO, A6_cor, A7_pAUC, n_pass, all_pass)])
 
-# Pareto frontier on (A1, A4, -A5)
+# Pareto frontier on (A1, A4, -A5) — NA-safe
 pareto_dominated <- function(dt, axes_max = c("A1_SR", "A4_bad_improve"),
                               axes_min = c("A5_TO")) {
+  # Replace NA in maximize-axes with -Inf (worst possible) — they cannot dominate
+  for (a in axes_max) {
+    if (a %in% names(dt)) {
+      dt[[a]] <- ifelse(is.na(dt[[a]]), -Inf, dt[[a]])
+    }
+  }
+  for (a in axes_min) {
+    if (a %in% names(dt)) {
+      dt[[a]] <- ifelse(is.na(dt[[a]]), Inf, dt[[a]])
+    }
+  }
   is_dom <- rep(FALSE, nrow(dt))
   for (i in seq_len(nrow(dt))) {
     for (j in seq_len(nrow(dt))) {
       if (i == j) next
-      max_dom <- all(sapply(axes_max,
-                             function(a) dt[[a]][j] >= dt[[a]][i])) &&
-                  any(sapply(axes_max,
-                              function(a) dt[[a]][j] > dt[[a]][i]))
-      min_dom <- all(sapply(axes_min,
-                             function(a) dt[[a]][j] <= dt[[a]][i]))
-      if (max_dom && min_dom) {
+      max_vals_j <- sapply(axes_max, function(a) dt[[a]][j])
+      max_vals_i <- sapply(axes_max, function(a) dt[[a]][i])
+      min_vals_j <- sapply(axes_min, function(a) dt[[a]][j])
+      min_vals_i <- sapply(axes_min, function(a) dt[[a]][i])
+      max_dom <- all(max_vals_j >= max_vals_i) && any(max_vals_j > max_vals_i)
+      min_dom <- all(min_vals_j <= min_vals_i)
+      if (isTRUE(max_dom) && isTRUE(min_dom)) {
         is_dom[i] <- TRUE
         break
       }
@@ -607,7 +619,7 @@ best_amax  <- best$a_max
 best_comp_ts <- stage_results[[best_stage]]
 
 # Merge to get blend ret series
-blend_final <- merge(ret_1715[, .(month_date, ret_1715, p_bad, regime,
+blend_final <- merge(ret_dt[, .(month_date, ret_1715 = r_1715, p_bad, regime,
                                     bad_state_next)],
                       best_comp_ts[, .(month_date, ret_comp)],
                       by = "month_date", all.x = TRUE)
@@ -795,7 +807,7 @@ colnames(bm_xts) <- "STR_1715_baseline"
 bm_xts <- bm_xts[!is.na(bm_xts$STR_1715_baseline)]
 
 # Restrict to OOS window
-oos_start_date <- ret_1715$month_date[oos_start_idx]
+oos_start_date <- ret_dt$month_date[oos_start_idx]
 ret_xts_oos <- ret_xts[index(ret_xts) >= oos_start_date]
 bm_xts_oos  <- bm_xts[index(bm_xts) >= oos_start_date]
 
