@@ -1,0 +1,571 @@
+{
+  "task_id": "WT-D20260517_004",
+  "agent": "risk-research",
+  "spawn_at": "2026-05-17T19:35:00+09:00",
+  "draft_at": "2026-05-17T20:15:00+09:00",
+  "wt_type": "discovery_design_phase_a",
+  "wt_type_charter_v18_reference": "common_charter §10 v1.8 — Phase 3 paradigm-shift first-application design-only. Role Card Expected Output = sleeve sigma estimator selection / NAV cross-covariance design / conditional risk attribution / EVaR worst-window protocol / crowding score protocol / 8 stress scenarios design + 5 markdown design artifacts + risk_package.json final. NO covariance.parquet generation, NO sigma_t.parquet per-sig_date computation — Forge cycle responsibility. v3 risk_package paradigm 100% inherit + Path A NAV-level adaptation.",
+  "design_name": "DPL-RC v2.0 Path A NAV-level Risk Framework (sleeve-level Σ_comp + NAV cross-cov + conditional attribution + EVaR + crowding + 8 stress scenarios)",
+  "phase_origin": "PD45_DPL_RC_v2_Path_A_NAV_Level_Blend",
+  "method_family": "nav_level_blend_multi_sleeve_risk_str_1715_5_layer_retain",
+  "production_lineage_preserved_explicit": "STR_1715_AR_on_M4_R05_overlay_PG2 5-Layer NAV 100% retain (production READ ONLY, safety_guard hook PreToolUse[W/E] 강제). DPL-RC v2.0 NAV-level risk model = (a) comp sleeve B stock-level Σ_comp (LW Oracle rolling 60m + Gerber+RMT backup) + (b) NAV-level Cov(r_1715, r_comp) cross-sleeve (walk-forward OOS pooled primary + DCC bivariate secondary) + (c) production 1715 NAV time-series risk (rolling 60m sd, re-estimation X).",
+  "production_1715_5_layer_retain_explicit": true,
+  "alpha_package_inherit": {
+    "alpha_package_path": "qepm/mailbox/worktask/WT-D20260517_004/alpha_package.json",
+    "alpha_package_size_bytes": 38535,
+    "alpha_package_codex_round_completed": true,
+    "alpha_package_codex_stance": "REVISE_veto_false_7_5_6_dispositioned",
+    "alpha_discovery_certificate_issued": true,
+    "factor_specs_inherit_5": "dpl_rc_v2_path_a_nav_level_paradigm + comp_universe_1715_external_kr_top500_liq1e8 + p_bad_1715_classifier_v2_4_options_redesign + complement_scorer_4_stage_and_conditional_loss_v3_inherit + admission_criteria_7_axis_v3_inherit_with_nav_level_clarification",
+    "decision_gates_inherit": "G0-G9 inherit (G2 cor NAV / G3 blend SR / G4 mdd / G5 good_drag / G6 bad_improve mapped to risk axes)",
+    "v3_artifacts_inherited": [
+      "qepm/mailbox/worktask/WT-D20260517_003/risk_package.json (45KB v3 Codex Round 9 concerns dispositioned)",
+      "qepm/mailbox/worktask/WT-D20260517_003/alpha_package.json",
+      "qepm/mailbox/worktask/WT-D20260517_003/optimization_package.json",
+      "stage_artifacts/WT_D20260517_002/feature_allowlist_v2.csv (sha256 b3d667517a39e4ebf219988f67c2cc6e22f4fb6350f5d6a5e52976fb4a8fb6ee)",
+      "stage_artifacts/WT_D20260517_002/pit_audit_v2.json (8606 bytes)"
+    ]
+  },
+  "v3_paradigm_inherit_explicit": "v3 risk_package paradigm 100% inherit (Codex Round 1 완료 REVISE veto=false 9 concerns dispositioned). Path A NAV-level adaptation: (a) comp sleeve B universe = 1715 외부 (KR_TOP500_LIQ1E8 ∖ STR_1715_top_20) by construction, (b) cross-cov는 NAV-level Cov(r_1715, r_comp) wealth-weighted 결합, (c) σ_1715는 production NAV time-series risk (rolling 60m sd, re-estimation X), (d) stress test는 production 1715 NAV stress retain + comp sleeve stress 별도 측정 + NAV_blend wealth-weighted 결합 손익. v3 sleeve-level Σ_comp framework 그대로 재사용 가능 (paradigm 정합).",
+  "selection_objective": "condition_number",
+  "selection_objective_rationale": "v6.1 R4 P3 Role-specific Objective — Risk Agent estimation quality 지표로만 Σ method 선택. condition_number minimization within PSD-passed set (≤ 100 strict). NOT alpha-side return-based selection. v3 inherit retain.",
+  "sigma_design_boundary": {
+    "scope_explicit": "two-stage Σ scope — (a) comp sleeve B stock-level Σ_comp ∈ R^{N×N} (N≤20, LW Oracle rolling 60m) + (b) production 1715 NAV time-series scalar variance σ²_1715,t (rolling 60m sd of monthly NAV returns, re-estimation X) + (c) NAV-level Cov(r_1715, r_comp) cross-cov scalar (walk-forward OOS pooled)",
+    "rationale": "Path A NAV-level paradigm — production 1715 NAV는 already-portfolioed 5-Layer overlay 결과 scalar return series. 추가 stock-level Σ 재구축 = safety_guard hook 위반 + double-counting. comp sleeve B는 fresh stock-level Σ_comp 필요. cross-cov는 sleeve-level scalar Cov.",
+    "factor_coverage_r2_forge_mandate": {
+      "target": 0.30,
+      "measurement_protocol": "regress Σ_comp returns on 80 features → 1 - var(resid)/var(total)",
+      "role": "supplementary_check_NOT_admission_gate",
+      "v3_codex_c3_inherit": "stock-level LW = practical + interpretable (factor BΩB'+D 불채택, comp scorer 80 features composite weight, N=20 small rank deficiency risk)"
+    },
+    "sigma_artifact_path": "stage_artifacts/WT_D20260517_004/sleeve_sigma_design.md"
+  },
+  "sigma_estimator_choice": {
+    "primary_estimator": "ledoit_wolf_oracle",
+    "primary_rationale": "v3 inherit retain — Closed-form α (Ledoit-Wolf 2003 JEF §3 Theorem 2), KR T=60 N=20 LW Oracle median condition 학술 prior 30-80 (Ledoit-Wolf 2003 Table 3 S&P 100 empirical), PSD by construction (theoretical, NOT empirical measured)",
+    "backup_estimator": "gerber_rmt",
+    "backup_rationale": "Outlier robust (Gerber 2015 JPM count-based) + RMT eigenvalue clipping (Laloux 2000) for adverse outlier months. Trigger: LW condition > 100 OR min_eig < 1e-8 OR NA.",
+    "rejected_estimators": [
+      {
+        "name": "sample_pairwise",
+        "rationale": "T=60 N=20 MP eigenvalue ratio ~12.3 theoretical, empirical condition 200-800 → G2 (cond ≤ 100) consistent FAIL"
+      },
+      {
+        "name": "dcc_copula_stock_level",
+        "rationale": "T=60 insufficient for stock-level N=20 DCC(1,1) parameters. Primary use case = sleeve-level Step 5.3 secondary (T=124, K=2 bivariate, 5 params, Engle 2002 JBES sufficient), NOT per-sig_date primary stock-level"
+      },
+      {
+        "name": "nonlinear_shrinkage_NLS",
+        "rationale": "v3 Forge cycle 명시 — KR equity small N 이점 작음, LW Oracle 우선"
+      }
+    ],
+    "candidates_tried_count": 4,
+    "method_shopping_cap": 5,
+    "selection_window": "T=60 months rolling (KR equity 124 sig_dates balance, MP q=0.333 manageable, regime adaptiveness 5y)",
+    "rolling_per_sig_date": true,
+    "rolling_per_sig_date_rationale": "L-326 mandate (single snapshot 금지). 124 sig_dates × per-sig_date estimation × method shopping log = 496 estimator computations + 124 selections. Forge cycle 의무.",
+    "n_sig_dates_total": 124,
+    "condition_number_strict_target": 100,
+    "condition_number_strict_target_rationale": "v2/v3 inherit strict",
+    "psd_property": "guaranteed by LW shrinkage theory (Ledoit-Wolf 2003 §3 Theorem 2). Empirical per-sig_date verification = Forge cycle mandate.",
+    "expected_median_cond_label": "55 (학술 prior estimate Ledoit-Wolf 2003 KR-analogous S&P 100 empirical, NOT measured)",
+    "production_1715_sigma": {
+      "source": "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/04_backtest_results/bt_result_layer5_R05.rds$period_returns",
+      "computation": "rolling 60m sd of monthly NAV returns × √12 (annualized)",
+      "re_estimation_forbidden": true,
+      "safety_guard_hook_protection": "PreToolUse[W/E] 05_Production/ 보호",
+      "prior_estimate_label": "σ_1715 ≈ 21.2% annualized (implied from production SR 1.9536 / CAGR 41.50%, NOT measured rolling)"
+    },
+    "forge_cycle_measurement_mandate": {
+      "covariance_t_parquet": "stage_artifacts/WT_D20260517_004/covariance.parquet (124 sig_dates × Σ_comp persist)",
+      "per_sig_date_metrics": ["estimator_selected", "shrinkage_intensity_alpha", "min_eigenvalue", "condition_number", "psd_flag", "selected_count_by_estimator"],
+      "method_shopping_log_actual_counts": "Forge cycle empirical fill",
+      "sigma_1715_nav_rolling": "rolling 60m sd of bt_1715$period_returns"
+    }
+  },
+  "method_shopping_log": {
+    "candidates_tried": 4,
+    "method_log": [
+      {"name": "sample_pairwise", "design_forecast_median_cond": 350, "design_forecast_selected_count": 0, "selected": false, "rationale": "condition > 100 consistent fail at T=60 N=20"},
+      {"name": "ledoit_wolf_oracle", "design_forecast_median_cond": 55, "design_forecast_selected_count": 110, "selected": true, "rationale": "PSD + closed-form α + v3 inherit retain"},
+      {"name": "gerber_rmt", "design_forecast_median_cond": 70, "design_forecast_selected_count": 14, "selected_role": "backup", "rationale": "outlier robust LW fail-mode fallback"},
+      {"name": "dcc_copula_stock_level", "design_forecast_median_cond": 180, "design_forecast_selected_count": 0, "selected": false, "rationale": "T=60 DCC convergence insufficient at stock-level N=20; tertiary use in Step 5.3 sleeve-level Cov(r_1715, r_comp) bivariate only"}
+    ],
+    "primary_estimator": "ledoit_wolf_oracle",
+    "backup_estimator": "gerber_rmt",
+    "selection_criterion": "condition_number minimization within PSD-passed set (≤ 100 strict)",
+    "not_measured_explicit_label": "design_forecast counts are 학술 prior 추정 (NOT Forge measured), Forge cycle empirical replacement mandate"
+  },
+  "nav_cross_cov_design": {
+    "purpose": "NAV-level Cov(r_1715, r_comp) for G2 (cor ≤ 0.3) admission axis 6 + λ_corr loss term backbone validation + blend variance decomposition σ²_blend = (1-a)²σ²_1715 + a²σ²_comp + 2a(1-a)ρσ_1715σ_comp",
+    "primary_method": "walk_forward_oos_pooled_correlation",
+    "primary_rationale": "v3 Codex C4 ACCEPT inherit — G2 admission = walk-forward OOS pooled (52m net test 5 windows aggregation, NOT full 124 sig_dates pooled). C1 정합 explicit. Path A NAV-level은 universe 0% overlap by construction이라서 cor ≤ 0.3 자격 by design choice 가능.",
+    "g2_admission_target": {
+      "metric": "|cor(r_1715, r_comp)| over walk-forward OOS test sig_dates only",
+      "sample_size": "52 sig_dates (5 windows × ~10 OOS each)",
+      "threshold": 0.3,
+      "NOT_full_sample_pooled": true,
+      "C1_compliance": "OOS-only admission, full-sample pooled = diagnostic only",
+      "academic_backbone": "López de Prado 2018 AFML §7 + Bailey-LdP 2014 backtest overfitting"
+    },
+    "academic_prior_cor_label": "0.3-0.6 (alpha cycle Codex C3 ACCEPT 정정, KR equity common market beta Fama-French 1992 + Petkova 2006 RFS + L-281 cross-asset cor 0.077 NOT close analogue). Pass probability 40-50% honest. Forge cycle empirical binding.",
+    "market_beta_neutralization_fallback": {
+      "trigger": "cor_oos_pooled > 0.3",
+      "method": "r_comp_residual(t) = r_comp(t) - β · r_1715(t)",
+      "beta_estimation": "rolling 36m at t-1 PIT strict (C2)",
+      "fallback_admission_flow": "First cor measure → if > 0.3 → β neutralize → re-measure → if cor_residual ≤ 0.3 → ADMIT_NEUTRALIZED (G2 PARTIAL_PASS, log) → else λ_corr regularization grid {0.5, 1.0, 2.0} attempt → grid fail → DEFER",
+      "pit_compliance": "β rolling 36m end ≤ t-1 lag strict, residual return r_comp_residual_t는 사전 known β로만 계산, NO same-period circular, full-sample fit forbidden",
+      "alpha_cycle_codex_c3_accept_정합": "KR equity common β prior 정직, market beta neutralization fallback explicit"
+    },
+    "secondary_methods": [
+      {"name": "rolling_correlation_w24", "use_case": "drift monitoring diagnostic, NOT admission"},
+      {"name": "dcc_bivariate_copula", "use_case": "Step 5.3 regime-conditional sleeve-level (T=124 sufficient for K=2 bivariate, 5 params total, Engle 2002 JBES)"},
+      {"name": "full_sample_pooled_124", "use_case": "diagnostic_only_NOT_admission"}
+    ],
+    "lambda_corr_initial": 1.0,
+    "lambda_corr_grid": [0.5, 1.0, 2.0],
+    "lambda_corr_role_validation": "moderate enforce — cor 0.3 contribution 0.3 (admission ↔ training balanced)",
+    "blend_variance_decomposition": {
+      "formula": "σ²_blend,t = (1-a_t)² · σ²_1715,t + a_t² · σ²_comp,t + 2·a_t·(1-a_t)·ρ·σ_1715,t·σ_comp,t",
+      "sensitivity_at_a_010_priors": {
+        "rho_neg_03": "σ_p ≈ 18.6% (vs σ_1715 21.2%, -2.6pp) — 학술 prior",
+        "rho_zero": "σ_p ≈ 19.2% (vs σ_1715 21.2%, -2.0pp) — 학술 prior",
+        "rho_pos_03": "σ_p ≈ 19.8% (vs σ_1715 21.2%, -1.4pp) — 학술 prior",
+        "rho_pos_06_academic_prior_median": "σ_p ≈ 20.4% (vs σ_1715 21.2%, -0.8pp) — 학술 prior"
+      },
+      "insight": "ρ ±0.3 variation → σ_p ±0.6pp at a=10%, paradigm essence (anti-crowding 4th sleeve qualification + conditional defense bad-state improvement) > pure variance reduction marginal 1.4pp",
+      "not_measured_explicit_label": "sensitivity values are design priors (NOT measured), Forge cycle empirical re-compute mandate"
+    },
+    "cost_aware_net_returns": true,
+    "cost_aware_rationale": "Research Philosophy P2 정합 — Net > Gross, admission decision based on cost-adjusted sleeve returns (production 1715 15bps embedded + comp sleeve 25bps mandate + blend ceiling 17bps at a_max=0.20)",
+    "design_artifact": "stage_artifacts/WT_D20260517_004/nav_cross_covariance.md"
+  },
+  "conditional_risk_attribution": {
+    "ax_001_v2_mapping": "DIRECT_APPLICABILITY — AX-001 v2 3-axis (crisis_alpha + Core 대비 MDD 완화 + bad/normal IC ratio) ↔ admission 7-axis (axis 4 + axis 2 + axis 7) 1:1 mapping (v3 inherit retain)",
+    "bad_state_definition_default_inherit": "Definition 1 (def1_x3, 1715 active return < -3%, base rate 0.2967, n_bad ≈ 27/91 prior) — alpha cycle bad_state_label_selected.json default. 사후 label tuning 차단.",
+    "expected_bad_sig_dates_count_label": "27 of 91 OOS (학술 prior def1_x3 base_rate 0.2967, NOT measured)",
+    "expected_good_sig_dates_count_label": "64 of 91 OOS (학술 prior, NOT measured)",
+    "bad_state_subset_sigma_role": "diagnostic_only_NOT_admission_variable",
+    "bad_state_subset_sigma_rationale": "T=27 N=20 under-determined → LW shrinkage heavy, noise inflation. v3 Codex C5 정합 (subset learning 차단). Admission Σ = full 124 LW Oracle.",
+    "sample_thin_handling": {
+      "crisis_regime_n_estimated_label": "≤ 10 sig_dates (학술 prior, NOT measured)",
+      "bad_state_subset_n_estimated_label": "27-30 sig_dates (학술 prior, NOT measured)",
+      "bootstrap_ci_mandate": {
+        "method": "stationary_bootstrap_politis_romano_1994_jasa",
+        "B": 1000,
+        "ci_level": 0.95,
+        "applied_to": ["sigma_by_state", "cvar_by_state", "evar_by_state", "cor_by_state", "cor_oos_pooled"]
+      },
+      "ci_width_defer_trigger": "if CI width > 1.5x point estimate → DEFER (sample-size insufficient for admission)",
+      "diagnostic_only_explicit_label": "subset Σ + CVaR + EVaR at thin sample = diagnostic only NOT admission, bootstrap CI mandatory for any reported value"
+    },
+    "rf_r8_regime_monitoring": {
+      "regime_n_by_state_mandate": "Forge cycle: BULL n? / NORMAL n? / CAUTION n? / CRISIS n? + bootstrap CI per state",
+      "regime_switch_rate_mandate": "transition matrix estimation + persistence diagnostic (Hamilton 1989 Econometrica regime-switching framework)",
+      "fail_action": "if any state n < 5 → regime-specific risk diagnostic UNAVAILABLE flag",
+      "design_only_note": "본 cycle design — Forge cycle 의무 measurement"
+    },
+    "conditional_metrics_protocol": {
+      "sigma_by_state": ["σ_1715,bad / σ_1715,good / σ_comp,bad / σ_comp,good / σ_blend,bad / σ_blend,good"],
+      "var_by_state": ["VaR_5_{sleeve, state}"],
+      "cvar_by_state": ["CVaR_5_{sleeve, state}", "CVaR_95_{sleeve, state}"],
+      "cor_by_state": ["cor_bad / cor_good / cor_pooled / cor_bad_minus_good"],
+      "asymmetry_index": "log(trace(Σ_comp_bad) / trace(Σ_comp_good))"
+    },
+    "ax_001_v2_three_axis_explicit": {
+      "axis_1_crisis_alpha": "admission axis 4 (bad_state_improvement ≥ +0.30 SR) ↔ AX-001 v2 axis 1",
+      "axis_2_mdd_alleviation": "admission axis 2 (MDD ≥ -24.81%) ↔ AX-001 v2 axis 2",
+      "axis_3_bad_normal_ic_ratio": "Forge cycle 의무: scorer IC by state, expected bad_normal_IC_ratio ≥ 2.0 (KR L-308 standard ratio 6.79 정합) ↔ AX-001 v2 axis 3"
+    },
+    "m4_regime_correlation": {
+      "decomposition": "cor(r_1715, r_comp) by m4 ∈ {BULL, NORMAL, CAUTION, CRISIS}",
+      "rationale": "1715 production lineage uses M4 BOCPD regime engine — 4-regime cor decomposition 정밀 진단",
+      "sample_size_caveat": "CRISIS regime ≤ 10 sig_dates typical, diagnostic only NOT admission"
+    },
+    "design_artifact": "stage_artifacts/WT_D20260517_004/conditional_risk_nav.md"
+  },
+  "evar_worst_window_alpha": [0.10, 0.20],
+  "evar_worst_window_protocol": {
+    "framework": "EVaR (Ahmadi-Javid 2012) + SoftMin variant (Wood-Roberts-Zohren 2026 arxiv:2601.05975 DeePM Pillar 3)",
+    "evar_window_penalty_weight": 0.15,
+    "evar_window_penalty_weight_rationale": "λ_tail (EVaR) = 0.15 = ~0.5x λ_tail (CVaR) = 0.3 (alpha cycle initial) because EVaR ~1.5-2.5x CVaR magnitude (Ahmadi-Javid 2012 §3 entropic upper bound). v3 inherit.",
+    "evar_alpha_range": [0.10, 0.20],
+    "evar_alpha_rationale": "124 × 0.10 = 12.4 obs (robust), 124 × 0.20 = 25 obs (conservative). α=0.05 (CVaR default) → 1.2 obs single-window noise unstable for EVaR worst-window.",
+    "evar_window_size_grid": [1, 3, 6],
+    "evar_window_size_rationale": "k=1 single-period, k=3 quarterly sustained, k=6 semi-annual drawdown-aware",
+    "evar_beta_smoothing_grid": [10, 50, 100],
+    "evar_beta_smoothing_role": "SoftMin smoothness for NN backprop (Stage 4 DPL-RC Neural)",
+    "evar_estimators": [
+      {"name": "empirical_evar", "compute": "sample-based, inf z>0 of (1/z)log(E[exp(z·L)]/α)"},
+      {"name": "gpd_evar", "compute": "Pfaff Ch 7 FRM POT 80% threshold, GPD MLE fit"},
+      {"name": "softmin_evar_neural", "compute": "PyTorch differentiable, Stage 4 Neural only"}
+    ],
+    "evar_admission_role": "loss_term_internal_NOT_admission_gate",
+    "evar_indirect_admission_axes": ["axis_2_mdd (worst-window penalty → drawdown control)", "axis_4_bad_improvement (tail-aware bad-state hedge)"],
+    "stage_grid_explicit": {
+      "stage_1_linear_ppp": "CVaR α=0.05 only (alpha cycle inherit)",
+      "stage_2_elastic_net": "CVaR α=0.05 only",
+      "stage_3_lightgbm": "CVaR α=0.05 only",
+      "stage_4_dpl_rc_neural": "SoftMin EVaR α=0.10 k=3 β=50 (additional variant)"
+    },
+    "design_artifact": "stage_artifacts/WT_D20260517_004/evar_crowding_nav.md"
+  },
+  "tail_risk_audit_extended": {
+    "rationale": "v3 Codex C6 PARTIAL_ACCEPT inherit — role checklist standard tail risk metrics 통합",
+    "cvar_95_monthly_cap": -0.025,
+    "cvar_95_monthly_cap_source": "role checklist standard (RF-R6)",
+    "cvar_95_forge_measurement_mandate": "blend CVaR_95 < -0.025 → RF-R6 alert",
+    "cdar_95_mandate": "drawdown-based, Pfaff Ch 4 FRM",
+    "hill_alpha_mandate": "tail decay index, expected KR equity 0.2-0.4 (Hill 1975 Ann Stat)",
+    "var_99_mandate": "1% quantile, Embrechts-Klüppelberg-Mikosch 1997",
+    "es_99_mandate": "mean of bottom 1%",
+    "evt_gpd_mandate": "POT 80% / 90% / 95% threshold + ξ tail index + σ_u scale (Pfaff Ch 7)",
+    "evar_worst_window_relationship": "EVaR (entropic upper bound) ≥ CVaR (always tighter, Ahmadi-Javid 2012 §3)",
+    "tail_metric_complementarity": {
+      "cvar_5_alpha_cycle_inherit": "loss term internal (training)",
+      "cvar_95_role_checklist": "admission alarm (RF-R6)",
+      "cdar_95": "drawdown-aware version of CVaR",
+      "hill_alpha": "tail thickness diagnostic",
+      "evar_worst_window": "Stage 4 Neural training loss + paradigm tail awareness"
+    },
+    "blend_cvar_5_target": -0.05,
+    "blend_cvar_5_target_rationale": "alpha cycle loss term target retain (training-time, separate from CVaR_95 admission cap)",
+    "design_only_note": "Forge cycle 의무 — tail_risk.json fresh generation"
+  },
+  "crowding_audit": {
+    "framework": "crowding_score_per_factor.R 80 features (Acadian 2026, Phase 2.C 도훈 mandate 2026-05-14)",
+    "rationale": "v3 Codex C7 PARTIAL_ACCEPT inherit + Path A 1715-external universe adaptation",
+    "n_features": 80,
+    "feature_allowlist_inherit_path": "stage_artifacts/WT_D20260517_002/feature_allowlist_v2.csv",
+    "feature_allowlist_sha256": "b3d667517a39e4ebf219988f67c2cc6e22f4fb6350f5d6a5e52976fb4a8fb6ee",
+    "per_sig_date_measurement": true,
+    "computation_estimate": "80 features × 124 sig_dates = 9,920 crowding_score evaluations, ~2.75h CPU (parallel future_lapply 권고)",
+    "universe_for_crowding_measurement": {
+      "comp_sleeve": "comp_universe_t = setdiff(KR_TOP500_LIQ1E8(t), STR_1715_top_20(t)) — Path A 1715-external 적용",
+      "production_1715": "STR_1715_top_20(t) production retain (already L-307~313 admit)",
+      "diff_diagnostic": "crowding_comp - crowding_1715 per sig_date"
+    },
+    "sub_components": [
+      {"name": "hhi_top", "weight": 0.30, "description": "Top-N portfolio weight HHI"},
+      {"name": "vol_concentration", "weight": 0.25, "description": "Top-N volume / market volume"},
+      {"name": "passive_overlap_proxy", "weight": 0.25, "description": "Benchmark overlap"},
+      {"name": "demand_elasticity_proxy", "weight": 0.20, "description": "Behmaram 2024 size-weighted rank reversal cost"}
+    ],
+    "static_threshold_high": 0.75,
+    "static_threshold_high_action": "crowding_flags 자동 등재 LEVEL_HIGH alert",
+    "dynamic_threshold_3m_delta": 0.15,
+    "dynamic_threshold_action": "RAPID_INCREASE alert (decay/crowding emergence 사전 감지)",
+    "role_checklist_audit_added_v3_inherit": {
+      "tdc_vs_pg2_active_book": {
+        "metric": "Tail Dependence Coefficient (TDC) of r_comp vs PG2 admit book returns",
+        "computation": "Joe-Clayton 1997 empirical TDC (lower-tail) or t-Copula parametric (regime_garch.R inherit)",
+        "threshold_alarm": "TDC ≥ 0.4 (crowded common tail)",
+        "design_only_note": "Forge cycle measurement"
+      },
+      "hhi_complement_sleeve": {
+        "metric": "Herfindahl-Hirschman Index of complement top-K weights",
+        "threshold_alarm": "HHI ≥ 0.20 (overly concentrated)",
+        "design_only_note": "Forge cycle measurement"
+      },
+      "style_correlation_with_pg2": {
+        "metric": "correlation of complement style exposures (Size/Value/Mom/Quality/Vol) with PG2 styles",
+        "threshold_alarm": "any single style |cor| ≥ 0.7",
+        "design_only_note": "Forge cycle measurement"
+      },
+      "family_saturation_l219": {
+        "metric": "complement features family distribution (defensive 55% inherit)",
+        "threshold_alarm": "L-219 saturation: family_A ≥ 51 admit → -20pp penalty, 21-50 → -12pp, 6-20 → -8pp",
+        "design_only_note": "Forge cycle measurement"
+      }
+    },
+    "dpl_rc_specific_threshold": {
+      "sleeve_overlap_1715_comp_warn": 0.70,
+      "sleeve_overlap_action": "COMPLEMENT_DEGENERATE warn",
+      "path_a_natural_decongestion_explicit": "1715 외부 universe by construction → sleeve overlap 자연 0% → DEGENERATE warn 자동 회피",
+      "differentiation_min": 0.05,
+      "differentiation_action": "NO_DIFFERENTIATION warn if abs(crowding_comp - crowding_1715) ≤ 0.05"
+    },
+    "1715_vs_comp_diff_expected": "crowding_comp - crowding_1715 expected negative (comp mid-cap diversifies, 1715 large-cap concentration 반도체 9 names L-274). Forge cycle empirical mandate.",
+    "expected_low_crowding_label": "expected LOW comp + diff negative (학술 prior, NOT measured) — Forge cycle empirical 의무"
+  },
+  "multi_sleeve_stress_8x4": {
+    "design_protocol_only": true,
+    "stress_scenarios_8_inherit_도훈_mandate": [
+      {"name": "GFC_2008", "start": "2007-10-01", "end": "2009-03-31", "in_sample": false, "proxy_type": "global_credit_shock", "proxy_caveat": "1715 architecture pre-sample + universe drift caveat — qualitative pattern only NOT quantitative admission"},
+      {"name": "Euro_Debt", "start": "2011-07-01", "end": "2011-12-31", "in_sample": false, "proxy_type": "regional_sovereign", "proxy_caveat": "same caveat as GFC"},
+      {"name": "China_Shock", "start": "2015-06-01", "end": "2016-02-29", "in_sample": true, "proxy_type": "EM_external"},
+      {"name": "US_China_Trade", "start": "2018-03-01", "end": "2018-12-31", "in_sample": true, "proxy_type": "trade_policy"},
+      {"name": "COVID_2020", "start": "2020-01-01", "end": "2020-06-30", "in_sample": true, "proxy_type": "pandemic_demand"},
+      {"name": "Rate_Hike_2022", "start": "2022-01-01", "end": "2022-12-31", "in_sample": true, "proxy_type": "monetary_policy"},
+      {"name": "KR_Disinflation_2024", "start": "2024-01-01", "end": "2024-09-30", "in_sample": true, "proxy_type": "domestic_policy"},
+      {"name": "Iran_War_2026", "start": "2026-02-01", "end": "2026-04-30", "in_sample": true, "proxy_type": "geopolitical"}
+    ],
+    "forge_cycle_measurement_mandate": "32 cells (8 scenarios × 4 a_max ∈ {0.05, 0.10, 0.15, 0.20}) full measurement",
+    "pre_2014_proxy_explicit_caveat": {
+      "GFC_2008": "1715 architecture pre-sample, universe drift caveat noted",
+      "Euro_Debt": "same caveat",
+      "proxy_analysis_limited": "qualitative pattern only, NOT quantitative admission",
+      "in_sample_6_scenarios_primary": ["China_Shock", "US_China_Trade", "COVID_2020", "Rate_Hike_2022", "KR_Disinflation_2024", "Iran_War_2026"]
+    },
+    "production_1715_stress_retain": "bt_result_layer5_R05.rds READ ONLY, stress 기간 production NAV retain (safety_guard hook)",
+    "comp_sleeve_stress_measurement": "Forge cycle comp scorer + 25bps cost + monthly rebalance, 8 scenarios separate",
+    "nav_level_blend_stress_integration": "NAV_blend = (1-a_max)·NAV_1715 + a_max·NAV_comp per stress cell",
+    "single_period_loss_test": {
+      "threshold": -0.25,
+      "metric": "worst single-month loss in any stress period at any a_max",
+      "fail_action": "RF-R4 alert (market_down_5 < -8% equivalent)"
+    },
+    "metrics_per_cell": ["cum_return_1715", "cum_return_blend", "mdd_1715", "mdd_blend", "sr_1715", "sr_blend", "var_5_blend", "stress_alpha_blend_vs_1715"],
+    "hard_abort_criteria": [
+      "ANY cell: cum_r_blend - cum_r_1715 < -5pp at any a_max → ABORT",
+      "ALL in-sample 5 scenarios: cum_r_blend - cum_r_1715 < 0 → DEFER (complement provides no stress hedge)"
+    ],
+    "soft_criteria": [
+      "Avg stress alpha (blend - 1715) > 0 across 5 in-sample scenarios",
+      "Stress SR_blend > Stress SR_1715 majority scenarios",
+      "Worst-stress cum_r_blend > -25%"
+    ],
+    "worst_case_pareto": "a_max ∈ {0.05, 0.10, 0.15, 0.20} vs (worst stress alpha, avg stress alpha) Pareto frontier construction",
+    "v3_codex_c7_c9_accept_inherit": "8 scenarios retain (도훈 mandate) + pre-2014 proxy caveat 명시",
+    "ax_007_exemption_1_4_compliance": "AX-007 exemption #1 (multi-sleeve NAV_1715 + NAV_comp 물리적 분리, universe 0% overlap) + #4 (ML sizing p_bad classifier + a_t = clip(a_max·p_bad, 0, a_max)) 동시 정합",
+    "l_279_multi_sleeve_admit_precedent": "Hybrid 70/15/15 (STR_1715 + TSMOM + KR_10y) 3-source NAV-level wealth-share admit (effective 2026-06-01). Path A 2-sleeve 변형 direct 정합.",
+    "max_names_charter_exception_request": {
+      "exception_type": "max_names_hard_constraint_extension",
+      "base_constraint": "Production Constraints: max 20 종목 (CLAUDE.md L40, single-sleeve)",
+      "requested_extension": "multi-sleeve union ≤ 40 (sleeve A NAV_1715 ≤ 20 + sleeve B NAV_comp ≤ 20)",
+      "precedent_basis": ["L-279/280/281 Hybrid 70/15/15 admit", "AX-007 exemption #1"],
+      "axiom_compliance": "AX-007 exemption #1 + #4 동시 정합 by construction",
+      "approval_authority": "도훈 explicit confirm + governor agent admission gate audit (Charter §10 v1.8)",
+      "approval_pending": true,
+      "alpha_cycle_codex_round_1_c2_disposition": "PARTIAL_ACCEPT"
+    },
+    "design_artifact": "stage_artifacts/WT_D20260517_004/multi_sleeve_stress_nav.md"
+  },
+  "risk_constraints_for_dpl_rc_v2_forge": {
+    "condition_number_max": 100,
+    "condition_number_strict_per_sig_date": true,
+    "max_sector_weight": 0.30,
+    "max_sector_weight_rationale": "alpha_package universe_definition hard_constraints inherit",
+    "cvar_5_target_blend": -0.05,
+    "cvar_5_target_blend_rationale": "blend CVaR_5 monthly (loss term training-time target, alpha cycle inherit)",
+    "cvar_95_monthly_cap_admission": -0.025,
+    "cvar_95_monthly_cap_rationale": "role checklist standard admission alarm RF-R6",
+    "evar_window_penalty_weight": 0.15,
+    "evar_alpha_default": 0.10,
+    "evar_window_size_default": 3,
+    "crowding_score_alarm_threshold": 0.75,
+    "crowding_3m_delta_alarm": 0.15,
+    "complement_overlap_with_1715_warn": 0.70,
+    "tdc_vs_pg2_alarm": 0.40,
+    "hhi_complement_alarm": 0.20,
+    "style_correlation_alarm": 0.70,
+    "factor_coverage_r2_supplementary_target": 0.30,
+    "ax_001_v2_three_axis_pass_threshold": {
+      "crisis_alpha_bad_state_improvement_sr": 0.30,
+      "mdd_alleviation_no_worse_than_str_1715": -0.2481,
+      "bad_normal_ic_ratio_min": 2.0
+    },
+    "stress_alpha_abort_threshold_pp": -5.0,
+    "stress_alpha_defer_threshold_all_negative_in_sample": true,
+    "single_period_loss_alarm": -0.25,
+    "bootstrap_ci_method": "stationary_bootstrap_politis_romano_1994",
+    "bootstrap_ci_B": 1000,
+    "bootstrap_ci_level": 0.95,
+    "bootstrap_ci_width_defer_trigger": 1.5,
+    "blend_cost_ceiling_bps_annualized": 20,
+    "max_names_per_sleeve": 20,
+    "max_names_blend_union": 40
+  },
+  "risk_summary": {
+    "top_common_risks_design_only_note": "Forge cycle 의무 measurement — 본 cycle은 design-only protocol",
+    "expected_top_common_risks_priors_label": "Market (~25-35%) / Sector_IT (~15-20%) / Size (~10-15%) / Liquidity (~5-10%) — 학술 prior 1715 + comp blend 추정, NOT measured",
+    "crowding_flags_design_only_note": "Forge cycle 의무 measurement based on crowding_score_per_factor.R + extended role checklist",
+    "expected_crowding_flags_priors_label": "1715 production lineage already validated (admit 2026-05-13 L-307~313) + comp 1715-external universe → expected diff_score negative (comp diversifies), LOW priors (학술 prior, NOT measured)",
+    "liquidity_flags_inheritance": "alpha_package universe LIQ ≥ 2e8 KRW 20d ADV + max 20 names per sleeve (production filter)",
+    "stress_tests_design_only_note": "Forge cycle 의무 measurement 32 cells (8 scenarios × 4 a_max)",
+    "crowding_score_per_factor": [
+      {"factor_name": "STR_1715_AR_R05_PG2_lineage", "design_label_score": "validated_admit_retain_L307_L313", "design_only": true},
+      {"factor_name": "comp_sleeve_B_dpl_rc_v2", "design_label_score": "expected_LOW_priors_NOT_measured", "design_only": true, "diff_vs_1715_expected_negative": true}
+    ]
+  },
+  "diagnostics": {
+    "condition_number_strict_target": 100,
+    "shrinkage_used": true,
+    "shrinkage_method": "ledoit_wolf_oracle (primary) + gerber_rmt (backup)",
+    "factor_correlation_warnings_design_only": "Forge cycle 의무",
+    "tdc_summary_design_only": "Forge cycle 의무 (DCC-Copula Step 5.3 bivariate + TDC vs PG2 Joe-Clayton 1997)",
+    "regime_correlation_ref_design_only": "stage_artifacts/WT_D20260517_004/regime_correlation.parquet (Forge cycle to generate, M4 4-regime + bad/good state)",
+    "covariance_freshness_sla": "30 days (R6 R7 covariance_freshness_gate.sh)",
+    "regime_tag_required": true,
+    "bootstrap_ci_diagnostics_mandate": "Forge cycle: sigma / cvar / evar / cor by state with 95% stationary bootstrap CI (Politis-Romano 1994 JASA)"
+  },
+  "risk_research_cycle_artifacts_v4_5_files": {
+    "sleeve_sigma_design": "stage_artifacts/WT_D20260517_004/sleeve_sigma_design.md (two-stage scope + LW Oracle primary + Gerber+RMT backup + production 1715 NAV retain)",
+    "nav_cross_covariance": "stage_artifacts/WT_D20260517_004/nav_cross_covariance.md (walk-forward OOS pooled + market beta neutralization fallback + λ_corr grid + blend variance decomposition)",
+    "conditional_risk_nav": "stage_artifacts/WT_D20260517_004/conditional_risk_nav.md (AX-001 v2 3-axis mapping + bad/good state Σ + M4 4-regime + thin-sample bootstrap CI)",
+    "evar_crowding_nav": "stage_artifacts/WT_D20260517_004/evar_crowding_nav.md (EVaR Wood 2026 + extended tail + crowding Acadian 2026 + role checklist 4-metric)",
+    "multi_sleeve_stress_nav": "stage_artifacts/WT_D20260517_004/multi_sleeve_stress_nav.md (32 cell stress matrix + AX-007 exemption #1+#4 + L-279 precedent + max_names extension request)"
+  },
+  "axiom_compliance": {
+    "AX_000_한계없다": "compliant (DPL-RC v2.0 Path A NAV-level paradigm — SR gap 0.0464 milestone 100% closure path)",
+    "AX_001_v2_conditional_defense": "DIRECT_APPLICABILITY — risk model 측면에서 AX-001 v2 3-axis (crisis_alpha + Core 대비 MDD 완화 + bad/normal IC ratio) ↔ admission 7-axis (axis 4 + axis 2 + axis 7) 1:1 mapping 설계. Forge cycle empirical validation 의무. v3 Codex C5 PARTIAL_ACCEPT bootstrap CI mandate 정합 inherit.",
+    "AX_002_PIT_process_honesty": "compliant — sigma estimation per-sig_date rolling (C1 정합) + cross-cov OOS portion only (C1 정합) + crowding_score Date <= sig_date strict (C10 정합) + β rolling 36m t-1 lag (C2) + production 1715 NAV READ ONLY frozen. v3 design-only 본질 정합. Forge cycle empirical re-audit mandate.",
+    "AX_003_value_family": "N/A (value family X)",
+    "AX_004_quality_family_single_signal_long_only": "N/A (single quality factor X — 80 multi-factor + 5 1715-specific risk diagnostic)",
+    "AX_005_defense_family_single_sleeve_top20_long_only": "EXCLUSION_via_multi_sleeve_AND_NAV_level_subject_to_AX001_v2_conditional_defense_validation — risk model 측면에서 bad-state subset risk asymmetry measurement = AX-001 v2 conditional defense framework 정합. Forge cycle empirical validation.",
+    "AX_007_single_sleeve_top20_mechanism_break": "EXCLUSION_via_AX007_exemption_1_PLUS_4_by_construction — #1 (multi-sleeve NAV_1715 + NAV_comp 물리적 분리, universe 0% overlap) + #4 (ML sizing p_bad 4-options + a_t) 동시 충족. multi_sleeve_charter_exception_request 명시 + L-279 precedent direct 정합.",
+    "AX_008_verification_triangulation": "G9 mandate. 본 cycle Codex round 1 진행 예정 (draft → spawn → response → challenge_note → final). Current AX-008 = TBD post-Codex (alpha cycle Codex Round 1 완료 분담 1/3 PARTIAL). Forge + Architect post-Forge cycle. ≥ 2/3 PASS condition = Forge cycle 완료 후 (design-only cycle acceptable level)."
+  },
+  "research_philosophy_alignment": {
+    "principle_1_factor_zoo_reduction": "80 features inherit (v2 fmp_ranking redundancy_cluster reduced from 1044 → 80) + Option 3 conditional 5 1715-specific (t-1 lag strict) + crowding-side per-factor measurement",
+    "principle_2_cost_aware": "blend net returns 사용 의무 (cost-aware cross-cov) + cost_model_version v2.3_kr_retail_15bps inherit + 25bps comp sleeve + 17bps blend ceiling at a_max=0.20",
+    "principle_3_uncertainty": "Σ estimation method shopping log + bootstrap CI for tail risk (Pfaff Ch 7 FRM inherit) + v3 Codex C5 stationary bootstrap mandate inherit",
+    "principle_4_direct_portfolio": "★ Path A NAV-level paradigm = DPL direct portfolio learning at NAV-level. Risk model 측면에서 sleeve-level decomposition + complement scorer risk diagnostic 정합. You-Zhang 2025 multi-sleeve 확장.",
+    "principle_5_crowding": "★ 핵심 — Acadian 2026 crowding_score_per_factor + role checklist TDC/HHI/style/family saturation 통합 + 1715 vs comp diff diagnostic + Path A 1715-external universe by construction natural decongestion",
+    "principle_6_implementation": "TO ≤ 6/sleeve + LIQ 2e8 + max 20/sleeve + union 40 multi-sleeve + [0, 0.20] + Σw=1 inherit (multi-sleeve charter exception request approval pending)",
+    "principle_7_attribution": "sleeve 분리 → bad/good state Σ asymmetry + M4 4-regime cor decomposition + Path A NAV-level wealth-weighted attribution 정합 (Brinson + Carhart 4 future framework)"
+  },
+  "challenge_flags": [],
+  "challenge_review_completed": true,
+  "challenge_review_targets": [
+    "alpha_package factor_specs (5 components, v4 cycle)",
+    "alpha_package decision_gates (G0-G9, v4 cycle)",
+    "alpha_package admission_criteria_7_axis_strict_retention",
+    "alpha_package codex_round_disposition (REVISE veto=false 7+5+6 dispositioned, alpha_discovery_certificate ISSUED)",
+    "alpha_package mechanism_description (short 246 + long 850 chars)",
+    "alpha_package v3 inherit + 3 structural blockers resolution"
+  ],
+  "challenge_review_objection": false,
+  "challenge_review_objection_rationale": "alpha cycle factor_specs + decision_gates + admission_criteria 7-axis + Path A NAV-level paradigm 모두 risk model 설계와 정합. AX-001 v2 conditional defense framework 명확 매핑 (3-axis ↔ 7-axis). λ_corr / λ_tail loss term backbone risk-side 적정. NAV-level cor 학술 prior 0.3-0.6 정직 정정 + market beta neutralization fallback explicit. universe 1715-external dynamic exclusion design choice + sleeve overlap 0% by construction natural decongestion 정합. 본 risk cycle의 design은 alpha cycle paradigm strict inherit + DPL-RC v2 NAV-level adaptation (production 1715 NAV retain + comp stock-level Σ + NAV cross-cov scalar). challenge 없음 — P4 obligation 정합.",
+  "alpha_cycle_codex_round_1_review_risk_side": {
+    "alpha_c1_codex_artifacts_acceptance": "risk-side 정합 — design-only wt_type 본질 정합",
+    "alpha_c2_max_names_charter_exception_PARTIAL_ACCEPT": "risk-side 의무 정합 — max_names per-sleeve 20 + union 40 multi-sleeve risk model 정합 (max_names_charter_exception_request inherit)",
+    "alpha_c3_cor_overclaim_ACCEPT": "risk-side critical mapping — cor 학술 prior 0.3-0.6 정직 inherit + market beta neutralization fallback design 의무 (alpha cycle ACCEPT 정합)",
+    "alpha_c4_expected_recall_relabel_PARTIAL_ACCEPT": "risk-side 직접 영향 없음 (p_bad classifier alpha 영역) — NA",
+    "alpha_c5_challenge_note_ACCEPT": "risk-side 동일 P4 obligation challenge_note_risk-research.md 의무 작성 진행",
+    "alpha_c6_mechanism_dual_PARTIAL_ACCEPT": "risk-side 동일 mechanism short + long dual 적용 (본 risk_package summary 정합)",
+    "alpha_c7_cost_TO_design_REBUTTAL_PRIMARY": "risk-side 정합 — design phase compliant",
+    "alpha_pit_codes_REBUTTAL": "risk-side 동일 design-only Phase B/C empirical re-audit mandate inherit",
+    "rationalization_red_flags_alpha_6_corrected_5": "risk-side rationalization audit 동일 protocol (self-check 적용)"
+  },
+  "selection_objective_compliance": "condition_number minimization within PSD-passed set (≤ 100 strict). NOT alpha-side return-based selection. R4 P3 정합.",
+  "codex_round_mandate": true,
+  "codex_round_completed": false,
+  "codex_round_pending": "draft → codex spawn → response → challenge_note → final",
+  "code_implementation": "DESIGN_ONLY — 본 cycle은 protocol design only (sleeve sigma estimator selection + NAV cross-cov + conditional attribution + EVaR + crowding + 8 stress scenarios). Forge cycle (Σ_comp per-sig_date computation, crowding measurement, stress matrix, regime correlation parquet generation, tail_risk.json fresh, bootstrap CI all metrics) Q-Lead explicit confirm 후 진행 (도훈 mandate B.2). v3 design-only 본질 정합 100% inherit.",
+  "wt_type_compliance": "discovery_design_phase_a (Charter §10 v1.8) — risk model design only, no Σ computation, no stress measurement, no crowding scores generation. 5 markdown protocol artifacts + 1 challenge_note + 1 final package. v3 7 artifacts + 1 challenge + 1 final pattern 정합 inherit (v4 sleeve_sigma + nav_cross_cov + conditional + evar_crowding + multi_sleeve_stress = 5 files consolidated, comp 7 v3 paradigm 그대로).",
+  "design_quality_self_check": {
+    "compliance_level": "design_phase_spec_only_NOT_empirical_measurement",
+    "common_charter_8_principles": "ALL PASS (design-level) — PIT-only / Research Process / Factor vs Proxy / 논문 출발점 / Data Mining 방지 (method_shopping_log cap=5) / Dynamic Smart Alpha / 비용·용량·군집위험 / No Silent Override (challenge_note_risk-research.md 작성 mandate + Charter §8 정합). Forge cycle empirical re-audit 의무.",
+    "axiom_compliance": "AX-000/001v2/002/007/008 design-level PASS, AX-003/004/005 N/A or EXCLUSION_via_multi_sleeve. v3 Codex C1/C2 REBUTTAL_PRIMARY + C3-C9 PARTIAL/ACCEPT disposition 정합 inherit.",
+    "pit_C1_C15_strict": "design specifies per-sig_date rolling Σ_comp (C1) + OOS pooled cross-cov (C1) + Date <= sig_date crowding (C10) + load_month_factors mandate (C15) + bootstrap CI thin-sample (v3 Codex C5) + β rolling 36m t-1 lag (C2) + production 1715 NAV READ ONLY frozen. Forge cycle empirical re-audit.",
+    "wt_type_role_card_compliance": "discovery_design_phase_a — sleeve_sigma_design + nav_cross_covariance + conditional_risk + evar_crowding + multi_sleeve_stress = 5 markdown design artifacts + 1 challenge_note + 1 final package ✓",
+    "challenge_review_complete": "P4 GAP-1 정합 — alpha_package targets reviewed + objection=false rationale explicit + alpha cycle Codex Round 1 disposition risk-side review",
+    "rationalization_audit_self_check": "v3 Codex 7 flags inherit + self-check applied (label strengthening 'design-only', 'NOT measured', '학술 prior', 'theoretical' 명시 retain + Forge cycle empirical re-audit mandate 명시)",
+    "production_lineage_retain_100pct": "NAV_1715_5Layer 변형 X (READ ONLY). 05_Production/ Hook 강제 (safety_guard PreToolUse[W/E]). Backtest Contract v1.0 audit prerequisite. σ_1715는 production NAV rolling 60m sd only.",
+    "v3_paradigm_inherit_100pct": "v3 risk_package paradigm 100% inherit + Path A NAV-level adaptation (universe 1715-external + cross-cov NAV-level + production NAV retain). v3 9 concerns dispositioned 정합 inherit."
+  },
+  "red_flag_check": {
+    "RF_R1_top_common_risks_gt_40_pct": "design-stage forecast — Forge cycle 의무 monitoring",
+    "RF_R2_condition_number_gt_500": "강제 차단 — sigma_estimator_choice condition_number_max=100 strict (v3 inherit retain, Codex C2 PARTIAL_ACCEPT Forge cycle measurement mandate)",
+    "RF_R3_crowding_flags_present": "Forge cycle 의무 monitoring — crowding_score_alarm_threshold=0.75 + extended TDC/HHI/style/family saturation + 1715-external natural decongestion expected",
+    "RF_R4_market_down_5_lt_8_pct": "Forge cycle 의무 monitoring — stress matrix abort threshold -5pp Δ + single-period -25% alarm",
+    "RF_R5_factor_pair_cor_gt_08": "Forge cycle 의무 monitoring — Σ_comp pair correlation diagnostic",
+    "RF_R6_tail_risk_cvar_95_breach": "Forge cycle 의무 — blend CVaR_95 < -0.025 alert + role checklist standard",
+    "RF_R8_regime_n_insufficient": "Forge cycle 의무 — regime_n by state + bootstrap CI per state (v3 Codex C5 PARTIAL_ACCEPT)",
+    "RF_R9_psd_violation": "강제 차단 — LW shrinkage theoretical PSD + Forge cycle per-sig_date empirical PSD verification (v3 Codex C2 PARTIAL_ACCEPT)"
+  },
+  "forge_cycle_mandates_consolidated": {
+    "sigma_comp_per_sig_date": "124 sig_dates × LW Oracle primary + Gerber+RMT backup + method shopping log",
+    "sigma_comp_condition_number": "per-sig_date ≤ 100 strict (eigenvalue + min_eig + selected_count by estimator report)",
+    "sigma_comp_shrinkage_intensity": "per-sig_date Ledoit-Wolf α report",
+    "sigma_comp_factor_coverage_r2": "regress on 80 features → 1 - var(resid)/var(total), target ≥ 30% (supplementary)",
+    "sigma_1715_nav_rolling": "rolling 60m sd of bt_1715$period_returns annualized × √12",
+    "nav_cross_cov_g2_admission": "walk-forward OOS pooled cor only (52m, NOT full 124) + 95% bootstrap CI",
+    "market_beta_neutralization_fallback": "β rolling 36m t-1 PIT + r_comp_residual = r_comp - β·r_1715 + re-measure cor",
+    "conditional_risk_subset": "bad/good state Σ + stationary bootstrap CI (Politis-Romano 1994 B=1000)",
+    "ax_001_v2_axis_3_ic_ratio": "scorer IC by state (bad/normal IC ratio ≥ 2.0, target KR L-308 reference 6.79)",
+    "regime_n_by_state": "BULL/NORMAL/CAUTION/CRISIS n + bootstrap CI per state + Hamilton 1989 transition matrix",
+    "evar_estimators": "empirical + GPD + SoftMin Neural 3-way × 4 a_max × 3 windows = 12-cell matrix",
+    "tail_risk_extended": "CVaR_95 vs -0.025 cap + CDaR_95 + Hill α + VaR_99 + ES_99 + EVT-GPD",
+    "crowding_extended": "Acadian 80 features + TDC vs PG2 + HHI + style cor + family saturation L-219 + 1715 vs comp diff",
+    "stress_matrix": "32 cells (8 scenarios × 4 a_max) + production 1715 NAV retain + comp sleeve stress separate + NAV_blend wealth-weighted integration",
+    "walk_forward_oos": "C1 정합 — 모든 admission decision OOS only",
+    "production_lineage_safety_guard": "05_Production/ READ ONLY + safety_guard hook PreToolUse[W/E] 강제"
+  },
+  "agent_lineage": {
+    "alpha_research_completed": "WT-D20260517_004 alpha_package.json (5 factor_specs + 4 markdown design artifacts) + Codex Round 1 REVISE veto=false 7+5+6 dispositioned + alpha_discovery_certificate ISSUED + 자기합리화 1건 정정",
+    "risk_research_current": "Step 5.1 sleeve_sigma + 5.2 nav_cross_cov + 5.3 conditional_risk + 5.4 evar_crowding + 5.5 multi_sleeve_stress + 5.6 Codex Round (pending) + 5.7 risk_package.json final + challenge_note_risk-research.md (pending)",
+    "optimizer_research_next": "Step 4 — injection grid Pareto admission curve (4 a_max values) using risk model + alpha sleeve outputs + NAV-level wealth-share rebalancing",
+    "forge_after": "Step 6 — feasibility mini-forge 4-stage incremental + Σ_comp per-sig_date computation + crowding measurement + stress matrix + regime correlation parquet generation + tail_risk.json fresh + bootstrap CI all metrics (Q-Lead explicit confirm 후)",
+    "judge_after": "Gate G0-G9 + AX-008 + admission 7-axis + 5b net cost check + multi_sleeve_charter_exception audit",
+    "governor_after": "admit decision based on alpha + risk + optimizer + forge integrated package + book_state v2.3 → v3 mutation (도훈 explicit confirm multi_sleeve_charter_exception)"
+  },
+  "estimated_forge_compute_total": "~4.5h CPU + ~2.5h GPU (Σ_comp per-sig_date 1.5h × 4 estimators competition + crowding extended 2.75h CPU + stress matrix 1h + regime correlation 0.5h + tail risk extended diagnostics 1.5h + bootstrap CI all metrics 1h CPU + production 1715 NAV stress retain trivial + comp sleeve stress measurement 1h)",
+  "lessons_referenced": [
+    "L-326 (per-sig_date single snapshot 금지) — 124 sig_dates rolling estimation 정합",
+    "L-307 (1715 single sleeve admit) — production lineage retain precedent",
+    "L-308~313 (R05 Layer 5 sequential overlay) — multi-layer admission precedent + AX-001 v2 reference + bad/normal IC ratio 6.79 정합",
+    "L-272 (v7.0.0 검증 가능한 소프트웨어 커널) — design phase vs Forge phase separation",
+    "L-219 (family saturation -20pp / -12pp / -8pp 51+ / 21-50 / 6-20)",
+    "L-274 (STR_1715 PG2 production live 반도체 9 names concentration)",
+    "L-279 ~ L-281 (Hybrid 70/15/15 NAV-level multi-sleeve admit) — direct precedent Path A 2-sleeve 변형",
+    "L-282 (PerformanceAnalytics convention reconcile) — Backtest Contract v1.0 single basis mandate",
+    "L-283 (cert_rules inherit_certs path) — v2/v3 pit_audit inherit",
+    "L-285 (lockbox-scope) — 정규 리서치 단계 lockbox 적용 (risk-research 포함)",
+    "L-313 (STR_1715 5-Layer R05 production promotion) — production NAV READ ONLY source",
+    "L-227 (universe v2 advisory) — KR_TOP500_LIQ1E8 comp universe rationale",
+    "L-326 (5-source blend Pareto-dominated cost drag) — small injection 5-20% 정합",
+    "WT-D20260517_002 v2 design artifacts inherit",
+    "WT-D20260517_003 v3 risk_package paradigm 100% inherit (Codex Round 1 완료 9 concerns dispositioned)",
+    "WT-D20260517_004 alpha cycle inherit (Codex Round 1 완료 REVISE veto=false 7+5+6 dispositioned + alpha_discovery_certificate ISSUED)"
+  ],
+  "academic_references_risk": {
+    "LEDOIT_WOLF_2003_JEF_shrinkage": "Honey, I shrunk the sample covariance matrix — Journal of Empirical Finance 2003. LW Oracle primary backbone. §3 Theorem 2 closed-form α.",
+    "LEDOIT_WOLF_2004_JPM_oracle": "Improved estimation of the covariance matrix of stock returns. Journal of Portfolio Management. Oracle target specification.",
+    "BICKEL_LEVINA_2008_ANN_STAT": "Covariance regularization by thresholding. Annals of Statistics. Finite-sample condition empirical bound.",
+    "GERBER_2015_JPM_robust": "Markowitz Reimagined — Robust Markowitz portfolio via Gerber statistic. Journal of Portfolio Management. Outlier-robust backup.",
+    "LALOUX_2000_IJTAF_rmt": "Random Matrix Theory and financial correlations. International Journal of Theoretical and Applied Finance. RMT eigenvalue clipping.",
+    "ENGLE_2002_JBES_dcc": "Dynamic Conditional Correlation. Journal of Business and Economic Statistics. DCC framework (Step 5.3 secondary).",
+    "AHMADI_JAVID_2012_EVAR": "Entropic Value-at-Risk: A new coherent risk measure. JOTA. EVaR definition.",
+    "WOOD_ROBERTS_ZOHREN_2026_DEEPM": "arxiv:2601.05975 DeePM regime-conditional EVaR (3 pillars). SoftMin EVaR Stage 4 Neural backbone.",
+    "ROCKAFELLAR_URYASEV_2002_CVAR": "Conditional Value-at-Risk for general loss distributions. Journal of Banking and Finance. CVaR Stage 1-3 backbone.",
+    "ACADIAN_2026_CROWDING": "Systematic Crowding Monitoring. Acadian 2026 working paper. crowding_score_per_factor backbone.",
+    "BEHMARAM_2024_DEMAND_ELASTICITY": "Demand Elasticity in Equity Markets. 2024 working paper. crowding demand_elasticity_proxy backbone.",
+    "JOE_CLAYTON_1997_BIVARIATE_COPULA": "Multivariate copula models. Tail Dependence Coefficient (TDC) framework.",
+    "LOU_POLK_2013_DTC": "Comomentum: Inferring Arbitrage Activity from Return Correlations. DTC factor.",
+    "FERSON_SCHADT_1996_CONDITIONAL_ALPHA": "Journal of Finance 1996 Vol 51 #2 — conditional alpha framework (alpha cycle inherit, risk-side bad/good state asymmetry 정합)",
+    "FAMA_FRENCH_1992_KR_EQUITY_BETA": "JF 1992 Vol 47 #2 pp 427-465 — KR equity universe common market beta (alpha cycle Codex C3 정정 evidence)",
+    "PETKOVA_2006_RFS_FACTOR_STRUCTURE": "Review of Financial Studies — KR analogous factor structure prior 0.2-0.5",
+    "HAMILTON_1989_ECONOMETRICA_REGIME": "Regime-switching state Markov framework — Forge cycle regime_n by state.",
+    "POLITIS_ROMANO_1994_JASA_BOOTSTRAP": "Stationary bootstrap. Bootstrap CI for thin-sample regime/state metrics.",
+    "LOPEZ_DE_PRADO_2018_AFML": "Advances in Financial Machine Learning. §7 walk-forward purged + embargo (C1 OOS-only admission).",
+    "BAILEY_LOPEZ_DE_PRADO_2014_OVERFITTING": "Backtest overfitting framework.",
+    "EMBRECHTS_KLUPPELBERG_MIKOSCH_1997_EVT": "Modelling Extremal Events. EVT framework.",
+    "HILL_1975_ANN_STAT_TAIL_INDEX": "Hill tail index estimator.",
+    "PFAFF_2016_FRM": "Financial Risk Modeling. 2nd ed 2016. Chapter 4 (VaR/ES) + Chapter 7 (EVT GPD) + Chapter 8 (GARCH) + Chapter 9 (Copula). Risk infrastructure backbone.",
+    "MOSKOWITZ_OOI_PEDERSEN_2012_TSMOM": "JFE 2012 cross-asset TSMOM cor 0.077 (alpha cycle inherit cross-asset precedent, NOT close analogue per alpha cycle Codex C3)",
+    "ARTZNER_DELBAEN_EBER_HEATH_1999_COHERENT": "Coherent measures of risk — EVaR coherence properties"
+  },
+  "production_promotion_eligibility": "risk_package design completion + Forge cycle empirical validation (Σ_comp per-sig_date + 7-axis 측정 + 32 stress cell + bootstrap CI all metrics + multi_sleeve_charter_exception 도훈 explicit confirm) + AX-008 ≥ 2/3 PASS → admit candidate. book_state v2.3 → v3 mutation.",
+  "submission_summary_pending_codex_round": {
+    "draft_at": "2026-05-17 20:15 KST",
+    "by_agent": "risk-research",
+    "wt_type": "discovery_design_phase_a",
+    "deliverables_count": 6,
+    "deliverables": [
+      "sleeve_sigma_design.md (two-stage scope + LW Oracle + Gerber+RMT backup)",
+      "nav_cross_covariance.md (walk-forward OOS pooled + market beta neutralization fallback + λ_corr grid + blend variance decomposition)",
+      "conditional_risk_nav.md (AX-001 v2 3-axis mapping + bad/good state + M4 4-regime + bootstrap CI)",
+      "evar_crowding_nav.md (EVaR Wood 2026 + extended tail + Acadian 2026 + role checklist 4-metric)",
+      "multi_sleeve_stress_nav.md (32 cell stress matrix + AX-007 exemption #1+#4 + L-279 precedent + max_names extension)",
+      "risk_package_draft.json (본 file, Codex Round pending)"
+    ],
+    "factor_specs_modifications_to_alpha_package": "NONE (Hook L3 alpha_vector 수정 금지)",
+    "weight_proposals": "NONE (Hook L3 optimizer 영역)",
+    "challenge_flags_count": 0,
+    "codex_round_completed": false,
+    "codex_round_pending_steps": ["draft (DONE)", "codex spawn (NEXT)", "response", "challenge_note", "final"],
+    "next_agent_after_finalize": "optimizer-research"
+  }
+}
