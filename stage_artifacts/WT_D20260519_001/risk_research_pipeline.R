@@ -79,6 +79,8 @@ monthly_dt <- RAWDATA[is_month_end == TRUE, .(Ticker, Date, Close, Vol, Size)]
 setorder(monthly_dt, Ticker, Date)
 monthly_dt[, MonthRet := Close / shift(Close, 1L) - 1, by = Ticker]
 monthly_dt <- monthly_dt[!is.na(MonthRet)]
+# Filter zombie data: single-month return > 100% or < -50% likely data error / IPO / delisting
+monthly_dt <- monthly_dt[MonthRet > -0.50 & MonthRet < 1.00]
 cat(sprintf("  monthly_dt: %d rows | %s ~ %s | %d tickers\n",
             nrow(monthly_dt), min(monthly_dt$Date), max(monthly_dt$Date),
             uniqueN(monthly_dt$Ticker)))
@@ -389,20 +391,67 @@ cat(sprintf("  Common sig_dates for residual estimation: %d months\n", length(co
 stock_ret_aligned <- stock_ret_mat[common_ym, , drop = FALSE]
 factor_ret_aligned <- factor_ret_mat[common_ym, , drop = FALSE]
 
-# Fitted: F %*% B^T (T × N), use OLS per ticker
-# r_i = B_i %*% f → fitted_i = sum over factors B_i,k × f_k,t
-fitted_ret <- factor_ret_aligned %*% t(B_mat)
-residual_ret <- stock_ret_aligned - fitted_ret
+# Proper time-series OLS per ticker: r_i,t = α + Σ_k β_i,k × f_k,t + e_i,t
+# Use fitted ridge (lambda small) to handle collinearity. Then compute residual variance + R²
+# B_mat (N×K) is Z-score exposures at LAST sig_date. Use time-series fit for D estimation.
 
-# Idio variance per ticker
-idio_var <- apply(residual_ret, 2, var, na.rm = TRUE)
+# Approach: For each ticker, fit OLS regression r_i ~ factor_ret_mat
+# Since K=58 and T=60, near-singular → use Ridge
+fit_idio_var <- function(r_i, F_t, lambda = 0.05) {
+  valid <- !is.na(r_i)
+  if (sum(valid) < 20) return(list(idio_var = var(r_i, na.rm = TRUE), r2 = 0))
+  r_v <- r_i[valid]
+  F_v <- F_t[valid, , drop = FALSE]
+  Ft_F <- crossprod(F_v) + lambda * diag(ncol(F_v))
+  Ft_r <- crossprod(F_v, r_v)
+  beta_hat <- tryCatch(solve(Ft_F, Ft_r), error = function(e) NULL)
+  if (is.null(beta_hat)) return(list(idio_var = var(r_v, na.rm = TRUE), r2 = 0))
+  fitted_v <- as.numeric(F_v %*% beta_hat)
+  resid_v <- r_v - fitted_v
+  tot_var <- var(r_v)
+  res_var <- var(resid_v)
+  r2 <- 1 - res_var / max(tot_var, 1e-12)
+  list(idio_var = max(res_var, 1e-8), r2 = max(0, min(1, r2)))
+}
+
+cat("  Fitting ridge OLS per ticker for idio variance + R² + betas (T=", nrow(factor_ret_aligned),
+    ", K=", ncol(factor_ret_aligned), ")...\n", sep = "")
+
+# Updated fit: also return betas
+fit_idio_full <- function(r_i, F_t, lambda = 0.05) {
+  valid <- !is.na(r_i)
+  K <- ncol(F_t)
+  if (sum(valid) < 20) return(list(idio_var = var(r_i, na.rm = TRUE), r2 = 0, betas = rep(0, K)))
+  r_v <- r_i[valid]
+  F_v <- F_t[valid, , drop = FALSE]
+  Ft_F <- crossprod(F_v) + lambda * diag(K)
+  Ft_r <- crossprod(F_v, r_v)
+  beta_hat <- tryCatch(as.numeric(solve(Ft_F, Ft_r)), error = function(e) rep(0, K))
+  fitted_v <- as.numeric(F_v %*% beta_hat)
+  resid_v <- r_v - fitted_v
+  tot_var <- var(r_v)
+  res_var <- var(resid_v)
+  r2 <- 1 - res_var / max(tot_var, 1e-12)
+  list(idio_var = max(res_var, 1e-8), r2 = max(0, min(1, r2)), betas = beta_hat)
+}
+
+idio_results <- lapply(seq_len(ncol(stock_ret_aligned)), function(i) {
+  fit_idio_full(stock_ret_aligned[, i], factor_ret_aligned, lambda = 0.05)
+})
+idio_var <- sapply(idio_results, `[[`, "idio_var")
+names(idio_var) <- colnames(stock_ret_aligned)
+r2_per_ticker <- sapply(idio_results, `[[`, "r2")
+names(r2_per_ticker) <- colnames(stock_ret_aligned)
+
+# Time-series beta estimates → replace B for Σ assembly
+B_ridge <- do.call(rbind, lapply(idio_results, `[[`, "betas"))
+rownames(B_ridge) <- colnames(stock_ret_aligned)
+colnames(B_ridge) <- factors_for_omega
+cat(sprintf("  B_ridge: %d × %d (time-series ridge betas)\n", nrow(B_ridge), ncol(B_ridge)))
+
+# Sanitize
 idio_var[is.na(idio_var) | idio_var <= 0] <- median(idio_var, na.rm = TRUE)
-
-# R² check: factor coverage
-r2_per_ticker <- 1 - apply(residual_ret, 2, var, na.rm = TRUE) /
-                       apply(stock_ret_aligned, 2, var, na.rm = TRUE)
-r2_per_ticker[is.na(r2_per_ticker)] <- 0
-cat(sprintf("  Factor explanation R²: mean=%.3f median=%.3f (target > 0.20)\n",
+cat(sprintf("  Factor explanation R² (ridge OLS λ=0.05): mean=%.3f median=%.3f (target > 0.20)\n",
             mean(r2_per_ticker, na.rm = TRUE),
             median(r2_per_ticker, na.rm = TRUE)))
 factor_coverage_pct <- mean(r2_per_ticker, na.rm = TRUE) * 100
@@ -413,14 +462,21 @@ D_dt <- data.table(Ticker = universe_final, idio_var = idio_var,
 write_parquet(D_dt, file.path(ARTIFACTS_DIR, "specific_risk.parquet"))
 cat(sprintf("  Saved: specific_risk.parquet (%d tickers)\n", nrow(D_dt)))
 
+# Save B_ridge for Σ reproducibility
+B_ridge_dt <- as.data.table(B_ridge, keep.rownames = "Ticker")
+write_parquet(B_ridge_dt, file.path(ARTIFACTS_DIR, "exposure_betas_ridge.parquet"))
+cat(sprintf("  Saved: exposure_betas_ridge.parquet (%d × %d)\n", nrow(B_ridge_dt), ncol(B_ridge_dt)))
+
 #==============================================================================
 # Step 4: Security Covariance Σ = BΩB' + D
 #==============================================================================
 cat("\n[Step 4] Security Covariance Σ = BΩB' + D\n")
 
 D_mat <- diag(idio_var)
-Sigma <- B_mat %*% Omega %*% t(B_mat) + D_mat
-rownames(Sigma) <- colnames(Sigma) <- universe_final
+# Use B_ridge (time-series betas) for proper Σ = BΩB' + D
+# B_mat (Z_Score cross-section exposures) kept for crowding diagnostics
+Sigma <- B_ridge %*% Omega %*% t(B_ridge) + D_mat
+rownames(Sigma) <- colnames(Sigma) <- rownames(B_ridge)
 Sigma <- (Sigma + t(Sigma)) / 2  # symmetrize
 
 cond_sigma <- kappa(Sigma)
@@ -429,20 +485,25 @@ cat(sprintf("  Σ: %d × %d | condition=%.1f | min_eig=%.2e | PSD=%s\n",
             nrow(Sigma), ncol(Sigma), cond_sigma, min_eig_sigma,
             ifelse(min_eig_sigma > 0, "TRUE", "FALSE")))
 
-# If condition > 500, apply additional shrinkage
+# Iterative shrinkage toward diagonal until condition <= 500 (or 5 attempts)
 shrinkage_extra_applied <- FALSE
-if (cond_sigma > 500) {
-  cat("  WARNING: condition > 500 — applying extra shrinkage to diagonal\n")
-  shrinkage_lambda <- 0.10
-  Sigma_orig <- Sigma
-  # Shrink toward diagonal
+shrinkage_total_lambda <- 0
+shrinkage_iter <- 0
+while (cond_sigma > 500 && shrinkage_iter < 5) {
+  shrinkage_iter <- shrinkage_iter + 1
+  shrinkage_lambda <- 0.20  # 20% per iteration
   diag_target <- diag(diag(Sigma))
   Sigma <- (1 - shrinkage_lambda) * Sigma + shrinkage_lambda * diag_target
   Sigma <- (Sigma + t(Sigma)) / 2
-  cond_sigma <- kappa(Sigma)
-  min_eig_sigma <- min(eigen(Sigma, only.values = TRUE, symmetric = TRUE)$values)
+  cond_sigma <- safe_kappa(Sigma)
+  min_eig_sigma <- safe_min_eig(Sigma)
+  shrinkage_total_lambda <- 1 - (1 - shrinkage_total_lambda) * (1 - shrinkage_lambda)
+  cat(sprintf("  Shrinkage iter %d (λ=%.2f, cumulative=%.2f): condition=%.1f | min_eig=%.2e\n",
+              shrinkage_iter, shrinkage_lambda, shrinkage_total_lambda, cond_sigma, min_eig_sigma))
   shrinkage_extra_applied <- TRUE
-  cat(sprintf("  After shrinkage: condition=%.1f | min_eig=%.2e\n", cond_sigma, min_eig_sigma))
+}
+if (cond_sigma > 500) {
+  cat(sprintf("  WARNING: condition still > 500 after %d iters (%.1f)\n", shrinkage_iter, cond_sigma))
 }
 
 # Save covariance
@@ -452,7 +513,7 @@ cat(sprintf("  Saved: covariance.parquet (%d × %d)\n", nrow(Sigma_dt), ncol(Sig
 
 # Risk decomposition: factor risk vs idio
 total_var <- diag(Sigma)
-factor_var <- diag(B_mat %*% Omega %*% t(B_mat))
+factor_var <- diag(B_ridge %*% Omega %*% t(B_ridge))
 idio_var_actual <- diag(D_mat)
 factor_share_avg <- mean(factor_var / total_var, na.rm = TRUE)
 cat(sprintf("  Factor risk share: %.1f%% (target > 50%%, < 80%%)\n", factor_share_avg * 100))
@@ -471,7 +532,7 @@ port_var_total <- as.numeric(t(w_ew) %*% Sigma %*% w_ew)
 factor_contributions <- numeric(length(factors_for_omega))
 names(factor_contributions) <- factors_for_omega
 for (k in seq_along(factors_for_omega)) {
-  e_k <- B_mat[, k] * sqrt(Omega[k, k])
+  e_k <- B_ridge[, k] * sqrt(Omega[k, k])
   factor_contributions[k] <- (t(w_ew) %*% (e_k %o% e_k) %*% w_ew)[1, 1]
 }
 factor_contrib_pct <- factor_contributions / port_var_total * 100
@@ -519,13 +580,42 @@ for (sname in names(stress_periods)) {
                                      n_months = nrow(ew_returns))
 }
 
-cat("  Stress test results:\n")
+# Fix stress: aggregate at monthly EW level (not stock-level rows)
+# Issue: monthly_in_period contains many tickers per month → cumret prod over stock rows
+# Solution: avg by Date first → monthly EW returns → cumprod
+stress_results <- list()
+for (sname in names(stress_periods)) {
+  sp <- stress_periods[[sname]]
+  monthly_in_period <- monthly_dt[Date >= as.Date(sp$start) & Date <= as.Date(sp$end)]
+  if (nrow(monthly_in_period) == 0L) {
+    stress_results[[sname]] <- list(period = paste(sp$start, sp$end),
+                                       ew_return_cum = NA_real_,
+                                       worst_month = NA_real_,
+                                       best_month = NA_real_,
+                                       n_months = 0L)
+    next
+  }
+  # Cross-section EW per Date (month)
+  ew_monthly <- monthly_in_period[, .(ew_ret = mean(MonthRet, na.rm = TRUE)), by = Date][order(Date)]
+  ew_monthly <- ew_monthly[!is.na(ew_ret)]
+  cumret <- if (nrow(ew_monthly) > 0) prod(1 + ew_monthly$ew_ret) - 1 else NA_real_
+  stress_results[[sname]] <- list(
+    period = paste(sp$start, sp$end),
+    ew_return_cum = cumret,
+    worst_month = if (nrow(ew_monthly) > 0) min(ew_monthly$ew_ret) else NA_real_,
+    best_month = if (nrow(ew_monthly) > 0) max(ew_monthly$ew_ret) else NA_real_,
+    n_months = nrow(ew_monthly)
+  )
+}
+
+cat("  Stress test results (EW cross-section per month):\n")
 for (sname in names(stress_results)) {
   r <- stress_results[[sname]]
-  cat(sprintf("    %s [%s]: cumret=%.2f%% worst_month=%.2f%% n=%d\n",
+  cat(sprintf("    %s [%s]: cumret=%.2f%% worst=%.2f%% best=%.2f%% n=%d\n",
               sname, r$period,
-              ifelse(is.na(r$ew_return), NA_real_, r$ew_return * 100),
+              ifelse(is.na(r$ew_return_cum), NA_real_, r$ew_return_cum * 100),
               ifelse(is.na(r$worst_month), NA_real_, r$worst_month * 100),
+              ifelse(is.na(r$best_month), NA_real_, r$best_month * 100),
               r$n_months))
 }
 
@@ -763,7 +853,8 @@ risk_diagnostics <- list(
     n_tickers = nrow(B_mat),
     n_factors = ncol(B_mat),
     factors_kept = factors_for_omega,
-    factors_dropped_low_coverage_count = length(factors_drop)
+    factors_dropped_low_coverage_count = length(factors_drop),
+    note = "B_mat (Z_Score exposures cross-section) used for crowding/exposure dashboard. B_ridge (time-series ridge betas) used for Σ assembly per Step 3-4."
   ),
 
   factor_covariance = list(
