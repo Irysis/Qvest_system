@@ -3,11 +3,11 @@
   "wt_type": "discovery",
   "wt_subclass_charter_v18": "discovery_design_phase_a",
   "design_name": "DPL_KR_v3 — Original Direct Portfolio Learning Redesign (Standalone Alpha, v1~v5 Learning Integrated + 도훈 mandate 2026-05-19 Historical Coverage Extension 1990~2026)",
-  "phase": "ALPHA_DONE",
+  "phase": "RISK_DONE",
   "phase_origin": "PD47_DPL_KR_V3_ORIGINAL_REDESIGN_POST_5_CYCLE_LEARNING",
-  "current_stage": "alpha-research",
-  "next_stage": "risk-research",
-  "last_updated": "2026-05-18T09:30:00+09:00",
+  "current_stage": "risk-research",
+  "next_stage": "optimizer-research",
+  "last_updated": "2026-05-18T11:03:08+0900",
   "stage_history": [
     {
       "stage": "alpha-research",
@@ -36,26 +36,127 @@
         "AX axiom hard FAIL ≥ 3 (AX-002 + AX-005 + AX-007 + AX-008)",
         "Codex stance=REJECT (veto_flag=false, but escalate per protocol)"
       ]
+    },
+    {
+      "stage": "risk-research",
+      "started_at": "2026-05-18T10:30:00+09:00",
+      "completed_at": "2026-05-18T11:03:08+0900",
+      "outcome": "RISK_DONE — risk_package.json V2 final emit post-Codex Round REJECT (veto_flag=false, 8 concerns disposed: 3 ACCEPT + 4 PARTIAL_ACCEPT + 1 PARTIAL_REBUTTAL). Σ 259×259 kappa=52.4 eig_ratio=84.7 (≤100 target) PSD. R² 0.40. CVaR_95 -35.3% (universe baseline). PG2 TDC 0.32 + style cor 0.965. Crowding 0 HIGH. AX-008 1.5/3 PASS at risk-research.",
+      "deliverables": [
+        "stage_artifacts/WT_D20260519_001/risk_research_pipeline_v2.R (V2 executable, 29 KB)",
+        "stage_artifacts/WT_D20260519_001/build_risk_package_v2.R (17 KB)",
+        "stage_artifacts/WT_D20260519_001/exposure_matrix.parquet (2542×59 Z_Score_Aligned cross-section dashboard)",
+        "stage_artifacts/WT_D20260519_001/exposure_betas_ridge.parquet (259×22 canonical B for Σ)",
+        "stage_artifacts/WT_D20260519_001/factor_covariance.parquet (Ω 22×22 LW identity δ=0.23)",
+        "stage_artifacts/WT_D20260519_001/specific_risk.parquet (D 259 tickers + R²)",
+        "stage_artifacts/WT_D20260519_001/covariance.parquet (Σ 259×259, kappa 52.4, eig_ratio 84.7)",
+        "stage_artifacts/WT_D20260519_001/tail_risk.json (CVaR + EVT + Hill α + CDaR)",
+        "stage_artifacts/WT_D20260519_001/tail_stress_protocol.json (8 scenarios + methodologies + infeasibility_report)",
+        "stage_artifacts/WT_D20260519_001/regime_correlation.parquet (3 regimes × cor pairs)",
+        "stage_artifacts/WT_D20260519_001/crowding_score_audit.parquet (Acadian 2026 4-component)",
+        "stage_artifacts/WT_D20260519_001/risk_estimator_diagnostics.json (consolidated V2)",
+        "qepm/mailbox/worktask/WT-D20260519_001/risk_package_draft_v1.json (V1 draft, pre-Codex)",
+        "qepm/mailbox/worktask/WT-D20260519_001/risk_package_draft.json (V2 draft, post-Codex)",
+        "qepm/mailbox/worktask/WT-D20260519_001/codex_critic_response_risk.json (REJECT veto=false 8 concerns 7 HIGH + 1 MEDIUM)",
+        "qepm/mailbox/worktask/WT-D20260519_001/challenge_note_risk-research.md (8 concerns disposition + AX compliance + Q-Lead escalate-light decision)",
+        "qepm/mailbox/worktask/WT-D20260519_001/risk_package.json (V2 final, 24.8 KB)"
+      ],
+      "codex_round_status": "COMPLETE_REJECT_veto_false_8_concerns_disposed_PROCEED",
+      "codex_disposition_summary": {
+        "ACCEPT": 3,
+        "PARTIAL_ACCEPT": 4,
+        "PARTIAL_REBUTTAL": 1
+      },
+      "ax_008_status_at_risk_completion": "1.5_of_3 (Codex round complete; Architect pending Forge cycle)",
+      "q_lead_escalate_decision": "escalate_light_proceed",
+      "q_lead_escalate_reasons": [
+        "HIGH severity concerns 7 of 8 (above threshold 5)",
+        "Codex stance=REJECT (veto_flag=false)",
+        "AX-002 hard-FAIL→PASS_V2 after disposition (RF-R1 RESOLVED, RF-R2~R8 honest acknowledgment)",
+        "Σ PSD + cond ≤100 ✓ (no production block)"
+      ],
+      "key_metrics": {
+        "Sigma_dim": "259 × 259",
+        "Sigma_cond_kappa": 52.43,
+        "Sigma_cond_eig_ratio": 84.74,
+        "Sigma_PSD": true,
+        "Sigma_shrinkage_total": 0.8658,
+        "factor_count_post_collinearity": 22,
+        "factor_count_pre_collinearity": 58,
+        "factor_R2_mean": 0.399,
+        "factor_risk_share": 0.044,
+        "CVaR_95": -0.3533,
+        "CVaR_99": -0.4575,
+        "EVT_xi": 2.274,
+        "Hill_alpha": 2.958,
+        "PG2_TDC_lower10pct": 0.321,
+        "PG2_return_cor": 0.196,
+        "PG2_style_cor": 0.965,
+        "crowding_HIGH": 0,
+        "crowding_ELEVATED": 14,
+        "universe_size": 259,
+        "liquidity_pct_above_2e8": 99.2
+      }
     }
   ],
   "constraints_summary": {
     "long_only": true,
     "max_names": 20,
-    "weight_bounds": [0, 0.20],
-    "sum_weights": 1.0,
+    "weight_bounds": [
+      0,
+      0.2
+    ],
+    "sum_weights": 1,
     "universe": "KR_TOP500_LIQ1E8 (2e8 KRW 20d ADV strict at alpha-emit)",
     "cost_model_version": "v2.3_kr_retail_15bps",
-    "turnover_annualized_max": 6.0,
+    "turnover_annualized_max": 6,
     "mdd_pct_max": -0.25
   },
-  "decision_gates_full_list": ["G0_PIT", "G1_SR", "G2_cor_vs_str1715", "G3_sub_period_stability_NEW", "G3_prime_crisis_conditional_NEW", "G_Harvey_t_renamed", "G4_DSR", "G5_cost_pareto", "G6_AX008", "G7_HHI"],
+  "decision_gates_full_list": [
+    "G0_PIT",
+    "G1_SR",
+    "G2_cor_vs_str1715",
+    "G3_sub_period_stability_NEW",
+    "G3_prime_crisis_conditional_NEW",
+    "G_Harvey_t_renamed",
+    "G4_DSR",
+    "G5_cost_pareto",
+    "G6_AX008",
+    "G7_HHI"
+  ],
   "evaluation_windows_count": 13,
   "test_months_total": 304,
-  "crisis_windows_explicit": [1, 4, 6, 8, 9, 10, 11],
+  "crisis_windows_explicit": [
+    1,
+    4,
+    6,
+    8,
+    9,
+    10,
+    11
+  ],
   "sub_period_mapping": {
-    "P1_emerging_1990_2005": [1, 2, 3],
-    "P2_mid_cycle_2005_2015": [3, 4, 5, 6, 7, 8],
-    "P3_modern_2015_2026": [8, 9, 10, 11, 12, 13]
+    "P1_emerging_1990_2005": [
+      1,
+      2,
+      3
+    ],
+    "P2_mid_cycle_2005_2015": [
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "P3_modern_2015_2026": [
+      8,
+      9,
+      10,
+      11,
+      12,
+      13
+    ]
   },
   "extension_mandate_dohoon_20260519": {
     "applied_at": "2026-05-18T09:30:00+09:00",

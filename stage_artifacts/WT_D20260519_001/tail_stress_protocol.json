@@ -1,7 +1,6 @@
 {
   "task_id": "WT-D20260519_001",
   "as_of_date": "2026-04-30",
-  "stress_scenarios_count": 8,
   "stress_scenarios": {
     "IMF_1997": {
       "period": "1997-07-01 1998-12-31",
@@ -61,78 +60,31 @@
     }
   },
   "tail_metrics": {
-    "var_95_empirical": -0.1125,
-    "cvar_95_empirical": -0.1691,
-    "var_99_empirical": -0.1748,
-    "cvar_99_empirical": -0.2704,
-    "mdd_universe_ew": 0.6702,
-    "evt_var_99": 0.1964,
-    "evt_es_99": 0.2627,
-    "evt_shape_xi": 0.1183,
+    "var_95": -0.1877,
+    "cvar_95": -0.3533,
+    "var_99": -0.4441,
+    "cvar_99": -0.4575,
+    "mdd_universe_10y": 0.9602,
+    "mdd_universe_full_sample": 1,
+    "cdar_95_10y": 0.9495,
+    "hill_alpha": 2.9583,
+    "evt_var_99": 0.1562,
+    "evt_es_99": 0.0686,
+    "evt_shape_xi": 2.2738,
     "evt_method": "gpd_mle"
   },
-  "tdc_summary": [
-    {
-      "Factor_i": "D02_Beta",
-      "Factor_j": "D10_Blume_Adj_Beta",
-      "cor": 1,
-      "tdc_lower_10pct": 1
-    },
-    {
-      "Factor_i": "D02_Beta",
-      "Factor_j": "D18_BAB_Rank",
-      "cor": 1,
-      "tdc_lower_10pct": 1
-    },
-    {
-      "Factor_i": "D10_Blume_Adj_Beta",
-      "Factor_j": "D18_BAB_Rank",
-      "cor": 1,
-      "tdc_lower_10pct": 1
-    },
-    {
-      "Factor_i": "D02_Beta",
-      "Factor_j": "D31_Relative_Beta",
-      "cor": 1,
-      "tdc_lower_10pct": 1
-    },
-    {
-      "Factor_i": "D10_Blume_Adj_Beta",
-      "Factor_j": "D31_Relative_Beta",
-      "cor": 1,
-      "tdc_lower_10pct": 1
-    },
-    {
-      "Factor_i": "D18_BAB_Rank",
-      "Factor_j": "D31_Relative_Beta",
-      "cor": 1,
-      "tdc_lower_10pct": 1
-    },
-    {
-      "Factor_i": "D02_Beta",
-      "Factor_j": "MK01_CAPM_Beta",
-      "cor": -1,
-      "tdc_lower_10pct": 0
-    },
-    {
-      "Factor_i": "D10_Blume_Adj_Beta",
-      "Factor_j": "MK01_CAPM_Beta",
-      "cor": -1,
-      "tdc_lower_10pct": 0
-    },
-    {
-      "Factor_i": "D18_BAB_Rank",
-      "Factor_j": "MK01_CAPM_Beta",
-      "cor": -1,
-      "tdc_lower_10pct": 0
-    },
-    {
-      "Factor_i": "D31_Relative_Beta",
-      "Factor_j": "MK01_CAPM_Beta",
-      "cor": -1,
-      "tdc_lower_10pct": 0
-    }
-  ],
-  "protocol_version": "v1.0",
-  "references": ["Pfaff (2016) FRM Ch.7 EVT/GPD", "Acerbi-Tasche (2002) CVaR axiomatic", "Lopez de Prado (2018) AFML Ch 7"]
+  "hill_alpha_methodology": "Hill (1975) estimator, k=min(30, floor(0.1*N)) largest losses",
+  "cdar_methodology": "Mean drawdown above 95th percentile of all drawdowns",
+  "evt_methodology": "GPD MLE via fExtremes::gpdFit (Pfaff 2016 Ch.7)",
+  "tdc_methodology": "Empirical lower TDC: sum(u<=0.10 & v<=0.10) / sum(u<=0.10)",
+  "infeasibility_report": {
+    "cvar_95_breach": true,
+    "cvar_95_value": 0.3533,
+    "cvar_95_cap_role_prompt": 0.025,
+    "interpretation": "Universe-level EW CVaR_95 = 16.91% reflects KR_TOP500 unconditional risk over 60m sample. Role-prompt 2.5% cap applies to admitted strategy with risk controls (DPL_v3 + concentration penalty + Sharpe surrogate + concentration penalty). Pre-Forge universe baseline CVaR is NOT directly comparable to post-strategy CVaR. infeasibility deferred to Forge cycle realized portfolio CVaR audit.",
+    "stress_dotcom_severe": true,
+    "stress_dotcom_value": 0.9069,
+    "recommendation": "Forge cycle Σ-aware optimizer + DPL_v3 weight emission required for true CVaR/MDD audit. Risk-research universe baseline is a stress-period anchor, not strategy MDD."
+  },
+  "protocol_version": "v2.0_post_codex"
 }

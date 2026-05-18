@@ -1,32 +1,53 @@
 {
   "task_id": "WT-D20260519_001",
   "as_of_date": "2026-04-30",
-  "pipeline_version": "v1.0",
+  "pipeline_version": "v2.0_post_codex_critic_round",
   "stage": "risk-research",
+  "sha_reconciliation": {
+    "rawdata_actual_sha16": "1370cae0c716bae1",
+    "alpha_research_claim_sha16": "c86e4ae5c6cc3e73",
+    "mismatch_acknowledged": true,
+    "explanation": "rawdata.parquet cache updated between v5 (alpha-research declaration) and risk-research execution (Codex C7 honest disclosure). Risk-research uses current cache; SHA logged for audit lineage."
+  },
+  "pit_routing_audit": {
+    "C15_load_month_factors_used": true,
+    "C13_value_column": "Z_Score_Aligned (when available) else Z_Score (factor_db_connector handles per IC direction)",
+    "regime_label_method": "expanding_percentile_t-1_24m_warmup"
+  },
   "exposure_matrix": {
-    "path": "stage_artifacts/WT_D20260519_001/exposure_matrix.parquet",
-    "n_tickers": 457,
-    "n_factors": 58,
-    "factors_kept": ["CR04_Ownership_Concentration", "D02_Beta", "D09_Dimson_Beta", "D10_Blume_Adj_Beta", "D11_FP_Beta", "D12_Beta_126d", "D13_Beta_63d", "D15_Cond_Bear_Beta", "D18_BAB_Rank", "D19_EW_Beta_63", "D20_EW_Beta_126", "D31_Relative_Beta", "D37_Parkinson_Vol", "D38_GarmanKlass_Vol", "D39_RogersSatchell_Vol", "D40_YangZhang_Vol", "D45_Downside_Dev", "D46_Sortino", "D47_CVaR_5pct", "D48_VaR_5pct", "D49_VaR_1pct", "D53_Range_Vol", "D56_Up_Vol", "D57_Down_Vol", "L02_Turnover", "L05_Dollar_Volume", "L14_Price_Impact", "L18_Eff_Spread_Proxy", "L26_Log_MktCap", "L27_Price_Level", "L35_Reversal_Intensity", "L37_Relative_Vol", "L38_DolVol_Mom", "L39_Overnight_Spread", "L41_Intraday_Vol_Proxy", "L45_Composite_Liquidity", "M03_Mom_3_1", "M04_Mom_1", "M06_High_52w", "M14_RiskAdj_Mom", "M15_Mom_3", "M17_Low_52w", "M19_MACD", "M20_Keller_Mom", "MK01_CAPM_Beta", "R01_VaR_95", "R02_VaR_99", "R03_CVaR_95", "R06_MDD", "R07_Downside_Dev", "R08_Semi_Variance", "R10_Cokurtosis", "R12_Idiosyncratic_Risk", "R15_Sortino", "R16_Calmar", "RE04_HighVol_Beta", "RE07_Crisis_Beta", "RE08_Down_Market_Excess"],
-    "factors_dropped_low_coverage_count": 1,
-    "note": "B_mat (Z_Score exposures cross-section) used for crowding/exposure dashboard. B_ridge (time-series ridge betas) used for Σ assembly per Step 3-4."
+    "path_raw_z": "stage_artifacts/WT_D20260519_001/exposure_matrix.parquet",
+    "path_ridge_betas": "stage_artifacts/WT_D20260519_001/exposure_betas_ridge.parquet",
+    "canonical_for_sigma": "exposure_betas_ridge.parquet (B_ridge time-series betas, 457×58, same tickers as Σ)",
+    "n_tickers": 259,
+    "n_factors": 22
   },
   "factor_covariance": {
     "path": "stage_artifacts/WT_D20260519_001/factor_covariance.parquet",
-    "n_factors": 58,
-    "estimation_window_months": 58,
-    "selected_method": "ledoit_wolf_constcor",
+    "n_factors": 22,
+    "estimation_window_months": 60,
+    "selected_method": "ledoit_wolf_identity_oracle",
+    "ledoit_wolf_optimal_delta": 0.23,
     "method_log": [
       {
         "name": "sample",
-        "min_eig": -1.9914e-17,
-        "PSD": false,
+        "condition_eig_ratio": 1692.3482,
+        "min_eig": 0,
+        "PSD": true,
         "selected": false
       },
       {
-        "name": "ledoit_wolf_constcor",
-        "condition": 81.9905,
-        "min_eig": 0.0003,
+        "name": "ledoit_wolf_constcor_oracle",
+        "condition_eig_ratio": 76.08,
+        "min_eig": 0.0004,
+        "delta_or_K": 0.23,
+        "PSD": true,
+        "selected": false
+      },
+      {
+        "name": "ledoit_wolf_identity_oracle",
+        "condition_eig_ratio": 37.6752,
+        "min_eig": 0.0009,
+        "delta_or_K": 0.2234,
         "PSD": true,
         "selected": true
       },
@@ -36,73 +57,138 @@
         "selected": false
       },
       {
-        "name": "pca_truncated",
-        "condition": 1901.3073,
-        "min_eig": 0,
+        "name": "pca_truncated_K5",
+        "condition_eig_ratio": 97.066,
+        "min_eig": 0.0004,
+        "delta_or_K": 5,
         "PSD": true,
         "selected": false
       }
-    ],
-    "factor_returns_construction": "top_minus_bottom_quintile_spread_per_sig_date"
+    ]
   },
   "specific_risk": {
     "path": "stage_artifacts/WT_D20260519_001/specific_risk.parquet",
-    "n_tickers": 457,
-    "factor_explanation_r2_mean": 0.2289,
-    "factor_explanation_r2_median": 0.2228,
-    "factor_coverage_pct": 22.8943
+    "factor_r2_mean": 0.3991,
+    "factor_r2_median": 0.3887
   },
   "security_covariance": {
     "path": "stage_artifacts/WT_D20260519_001/covariance.parquet",
-    "n_tickers": 457,
-    "condition_number": 104.6214,
-    "min_eig": 0.0015,
+    "n_tickers": 259,
+    "cond_kappa": 52.4299,
+    "cond_eig_ratio": 84.7375,
+    "min_eig": 0.0019,
     "PSD": true,
-    "factor_var_share": 0.1496,
-    "shrinkage_extra_applied": false
+    "shrinkage_total": 0.8658,
+    "shrinkage_iter": 9,
+    "factor_var_share": 0.0435
   },
   "top_common_risks": [
     {
-      "Factor": "R06_MDD",
-      "variance_share_pct": 33.3166
+      "Factor": "D19_EW_Beta_63",
+      "variance_share_pct": 17.2175
     },
     {
-      "Factor": "M19_MACD",
-      "variance_share_pct": 26.7004
+      "Factor": "R16_Calmar",
+      "variance_share_pct": 1.3094
     },
     {
-      "Factor": "D15_Cond_Bear_Beta",
-      "variance_share_pct": 10.0665
+      "Factor": "CR04_Ownership_Concentration",
+      "variance_share_pct": 0.971
     },
     {
-      "Factor": "RE07_Crisis_Beta",
-      "variance_share_pct": 9.3666
+      "Factor": "L37_Relative_Vol",
+      "variance_share_pct": 0.9236
     },
     {
-      "Factor": "M15_Mom_3",
-      "variance_share_pct": 9.3063
-    },
-    {
-      "Factor": "D09_Dimson_Beta",
-      "variance_share_pct": 4.6568
+      "Factor": "R10_Cokurtosis",
+      "variance_share_pct": 0.913
     },
     {
       "Factor": "RE08_Down_Market_Excess",
-      "variance_share_pct": 4.498
+      "variance_share_pct": 0.8466
     },
     {
-      "Factor": "M06_High_52w",
-      "variance_share_pct": 4.3776
+      "Factor": "R07_Downside_Dev",
+      "variance_share_pct": 0.7015
     },
     {
-      "Factor": "M20_Keller_Mom",
-      "variance_share_pct": 4.1906
+      "Factor": "MK01_CAPM_Beta",
+      "variance_share_pct": 0.6985
     },
     {
-      "Factor": "L45_Composite_Liquidity",
-      "variance_share_pct": 4.1577
+      "Factor": "M17_Low_52w",
+      "variance_share_pct": 0.6183
+    },
+    {
+      "Factor": "R06_MDD",
+      "variance_share_pct": 0.4628
     }
   ],
+  "regime_sigma": {
+    "Crisis": {
+      "n": 24,
+      "fallback": "none",
+      "cond_eig_ratio": 74.9936,
+      "min_eig": 0.0003,
+      "mean_off_diag_cor": 0.1543
+    },
+    "Normal": {
+      "n": 46,
+      "fallback": "none",
+      "cond_eig_ratio": 72.938,
+      "min_eig": 0.0005,
+      "mean_off_diag_cor": 0.1007
+    },
+    "Calm": {
+      "n": 19,
+      "fallback": "none",
+      "cond_eig_ratio": 82.8432,
+      "min_eig": 0.0006,
+      "mean_off_diag_cor": 0.0815
+    }
+  },
+  "pg2_comparison": {
+    "pg2_tickers": ["A005930", "A006400", "A000660", "A247540", "A009830", "A285130", "A071970", "A078340", "A009420", "A082740", "A028260", "A002380", "A004000", "A326030", "A192820", "A010950", "A058470", "A098460", "A319660", "A084370"],
+    "pg2_tickers_count": 20,
+    "pg2_returns_n": 436,
+    "overlap_with_universe_proxy": 838,
+    "cor_pg2_universe": 0.1958,
+    "tdc_lower_10pct_pg2": 0.321,
+    "style_correlation_pg2_vs_universe": 0.9647,
+    "style_diff_top5": [
+      {
+        "factor": "M14_RiskAdj_Mom",
+        "pg2": 1.6851,
+        "universe": 0.8266,
+        "diff": 0.8585
+      },
+      {
+        "factor": "R15_Sortino",
+        "pg2": 1.3565,
+        "universe": 0.6102,
+        "diff": 0.7463
+      },
+      {
+        "factor": "R16_Calmar",
+        "pg2": 1.1544,
+        "universe": 0.4218,
+        "diff": 0.7327
+      },
+      {
+        "factor": "M06_High_52w",
+        "pg2": 0.7706,
+        "universe": 0.5018,
+        "diff": 0.2688
+      },
+      {
+        "factor": "D15_Cond_Bear_Beta",
+        "pg2": 0.7299,
+        "universe": 0.5044,
+        "diff": 0.2255
+      }
+    ],
+    "interpretation": "DPL_v3 alpha PLACEHOLDER pending Forge train. Risk-research uses universe EW as proxy. Final DPL output may differ — Forge cycle TDC re-computation mandatory."
+  },
   "stress_tests": {
     "IMF_1997": {
       "period": "1997-07-01 1998-12-31",
@@ -163,131 +249,103 @@
   },
   "market_down_5_loss_estimate": -0.05,
   "tail_risk": {
-    "var_95_empirical": -0.1125,
-    "cvar_95_empirical": -0.1691,
-    "var_99_empirical": -0.1748,
-    "cvar_99_empirical": -0.2704,
-    "mdd_universe_ew": 0.6702,
-    "evt_var_99": 0.1964,
-    "evt_es_99": 0.2627,
-    "evt_shape_xi": 0.1183,
+    "var_95": -0.1877,
+    "cvar_95": -0.3533,
+    "var_99": -0.4441,
+    "cvar_99": -0.4575,
+    "mdd_universe_10y": 0.9602,
+    "mdd_universe_full_sample": 1,
+    "cdar_95_10y": 0.9495,
+    "hill_alpha": 2.9583,
+    "evt_var_99": 0.1562,
+    "evt_es_99": 0.0686,
+    "evt_shape_xi": 2.2738,
     "evt_method": "gpd_mle"
   },
   "crowding_score": {
     "path": "stage_artifacts/WT_D20260519_001/crowding_score_audit.parquet",
     "flags_high_count": 0,
-    "flags_high_factors": [],
-    "top_5": [
-      {
-        "factor_name": "R15_Sortino",
-        "crowding_score": 0.4295
-      },
-      {
-        "factor_name": "M17_Low_52w",
-        "crowding_score": 0.4141
-      },
-      {
-        "factor_name": "L45_Composite_Liquidity",
-        "crowding_score": 0.3914
-      },
-      {
-        "factor_name": "R16_Calmar",
-        "crowding_score": 0.3903
-      },
-      {
-        "factor_name": "L37_Relative_Vol",
-        "crowding_score": 0.3662
-      }
-    ]
-  },
-  "regime_correlation": {
-    "path": "stage_artifacts/WT_D20260519_001/regime_correlation.parquet",
-    "regime_summary": [
-      {
-        "regime": "Crisis",
-        "mean_cor": 0.1297,
-        "median_cor": 0.4244
-      },
-      {
-        "regime": "Normal",
-        "mean_cor": 0.2322,
-        "median_cor": 0.2704
-      },
-      {
-        "regime": "Calm",
-        "mean_cor": 0.1324,
-        "median_cor": 0.3643
-      }
-    ]
+    "flags_high": []
   },
   "tdc_summary": [
     {
-      "Factor_i": "D02_Beta",
-      "Factor_j": "D10_Blume_Adj_Beta",
-      "cor": 1,
-      "tdc_lower_10pct": 1
-    },
-    {
-      "Factor_i": "D02_Beta",
-      "Factor_j": "D18_BAB_Rank",
-      "cor": 1,
-      "tdc_lower_10pct": 1
-    },
-    {
-      "Factor_i": "D10_Blume_Adj_Beta",
-      "Factor_j": "D18_BAB_Rank",
-      "cor": 1,
-      "tdc_lower_10pct": 1
-    },
-    {
-      "Factor_i": "D02_Beta",
-      "Factor_j": "D31_Relative_Beta",
-      "cor": 1,
-      "tdc_lower_10pct": 1
-    },
-    {
-      "Factor_i": "D10_Blume_Adj_Beta",
-      "Factor_j": "D31_Relative_Beta",
-      "cor": 1,
-      "tdc_lower_10pct": 1
-    },
-    {
-      "Factor_i": "D18_BAB_Rank",
-      "Factor_j": "D31_Relative_Beta",
-      "cor": 1,
-      "tdc_lower_10pct": 1
-    },
-    {
-      "Factor_i": "D02_Beta",
-      "Factor_j": "MK01_CAPM_Beta",
-      "cor": -1,
+      "Factor_i": "D19_EW_Beta_63",
+      "Factor_j": "RE08_Down_Market_Excess",
+      "cor": -0.9367,
       "tdc_lower_10pct": 0
     },
     {
-      "Factor_i": "D10_Blume_Adj_Beta",
+      "Factor_i": "L39_Overnight_Spread",
+      "Factor_j": "R07_Downside_Dev",
+      "cor": 0.9358,
+      "tdc_lower_10pct": 0.6667
+    },
+    {
+      "Factor_i": "CR04_Ownership_Concentration",
+      "Factor_j": "L37_Relative_Vol",
+      "cor": 0.9342,
+      "tdc_lower_10pct": 0.6667
+    },
+    {
+      "Factor_i": "D19_EW_Beta_63",
       "Factor_j": "MK01_CAPM_Beta",
-      "cor": -1,
+      "cor": -0.9208,
       "tdc_lower_10pct": 0
     },
     {
-      "Factor_i": "D18_BAB_Rank",
-      "Factor_j": "MK01_CAPM_Beta",
-      "cor": -1,
+      "Factor_i": "D19_EW_Beta_63",
+      "Factor_j": "L39_Overnight_Spread",
+      "cor": -0.917,
       "tdc_lower_10pct": 0
     },
     {
-      "Factor_i": "D31_Relative_Beta",
+      "Factor_i": "L39_Overnight_Spread",
       "Factor_j": "MK01_CAPM_Beta",
-      "cor": -1,
+      "cor": 0.904,
+      "tdc_lower_10pct": 0.8333
+    },
+    {
+      "Factor_i": "M15_Mom_3",
+      "Factor_j": "M20_Keller_Mom",
+      "cor": 0.9039,
+      "tdc_lower_10pct": 0.8333
+    },
+    {
+      "Factor_i": "L05_Dollar_Volume",
+      "Factor_j": "L37_Relative_Vol",
+      "cor": 0.8898,
+      "tdc_lower_10pct": 0.6667
+    },
+    {
+      "Factor_i": "MK01_CAPM_Beta",
+      "Factor_j": "RE08_Down_Market_Excess",
+      "cor": 0.8897,
+      "tdc_lower_10pct": 0.8333
+    },
+    {
+      "Factor_i": "M06_High_52w",
+      "Factor_j": "M15_Mom_3",
+      "cor": -0.8742,
       "tdc_lower_10pct": 0
     }
   ],
   "liquidity": {
     "threshold_won": 200000000,
-    "pct_above_threshold": 99.3435,
-    "mdv_p10": 2896276424.8718,
-    "mdv_p50": 20117612102.5641,
-    "mdv_p90": 154053923408.718
+    "pct_above_threshold": 99.2278,
+    "n_above": 257,
+    "n_below": 2,
+    "mdv_p10": 2459744137.1282,
+    "mdv_p50": 19443963958.9744,
+    "mdv_p90": 192680751701.0771
   },
-  "universe_final_count": 457
+  "universe_size": 259,
+  "infeasibility_report": {
+    "cvar_95_breach": true,
+    "cvar_95_value": 0.3533,
+    "cvar_95_cap_role_prompt": 0.025,
+    "interpretation": "Universe-level EW CVaR_95 = 16.91% reflects KR_TOP500 unconditional risk over 60m sample. Role-prompt 2.5% cap applies to admitted strategy with risk controls (DPL_v3 + concentration penalty + Sharpe surrogate + concentration penalty). Pre-Forge universe baseline CVaR is NOT directly comparable to post-strategy CVaR. infeasibility deferred to Forge cycle realized portfolio CVaR audit.",
+    "stress_dotcom_severe": true,
+    "stress_dotcom_value": 0.9069,
+    "recommendation": "Forge cycle Σ-aware optimizer + DPL_v3 weight emission required for true CVaR/MDD audit. Risk-research universe baseline is a stress-period anchor, not strategy MDD."
+  }
 }
