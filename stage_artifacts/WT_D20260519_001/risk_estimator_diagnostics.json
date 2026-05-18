@@ -8,24 +8,25 @@
     "n_tickers": 457,
     "n_factors": 58,
     "factors_kept": ["CR04_Ownership_Concentration", "D02_Beta", "D09_Dimson_Beta", "D10_Blume_Adj_Beta", "D11_FP_Beta", "D12_Beta_126d", "D13_Beta_63d", "D15_Cond_Bear_Beta", "D18_BAB_Rank", "D19_EW_Beta_63", "D20_EW_Beta_126", "D31_Relative_Beta", "D37_Parkinson_Vol", "D38_GarmanKlass_Vol", "D39_RogersSatchell_Vol", "D40_YangZhang_Vol", "D45_Downside_Dev", "D46_Sortino", "D47_CVaR_5pct", "D48_VaR_5pct", "D49_VaR_1pct", "D53_Range_Vol", "D56_Up_Vol", "D57_Down_Vol", "L02_Turnover", "L05_Dollar_Volume", "L14_Price_Impact", "L18_Eff_Spread_Proxy", "L26_Log_MktCap", "L27_Price_Level", "L35_Reversal_Intensity", "L37_Relative_Vol", "L38_DolVol_Mom", "L39_Overnight_Spread", "L41_Intraday_Vol_Proxy", "L45_Composite_Liquidity", "M03_Mom_3_1", "M04_Mom_1", "M06_High_52w", "M14_RiskAdj_Mom", "M15_Mom_3", "M17_Low_52w", "M19_MACD", "M20_Keller_Mom", "MK01_CAPM_Beta", "R01_VaR_95", "R02_VaR_99", "R03_CVaR_95", "R06_MDD", "R07_Downside_Dev", "R08_Semi_Variance", "R10_Cokurtosis", "R12_Idiosyncratic_Risk", "R15_Sortino", "R16_Calmar", "RE04_HighVol_Beta", "RE07_Crisis_Beta", "RE08_Down_Market_Excess"],
-    "factors_dropped_low_coverage_count": 1
+    "factors_dropped_low_coverage_count": 1,
+    "note": "B_mat (Z_Score exposures cross-section) used for crowding/exposure dashboard. B_ridge (time-series ridge betas) used for Σ assembly per Step 3-4."
   },
   "factor_covariance": {
     "path": "stage_artifacts/WT_D20260519_001/factor_covariance.parquet",
     "n_factors": 58,
-    "estimation_window_months": 60,
+    "estimation_window_months": 58,
     "selected_method": "ledoit_wolf_constcor",
     "method_log": [
       {
         "name": "sample",
-        "min_eig": -1.3846e-16,
+        "min_eig": -1.9914e-17,
         "PSD": false,
         "selected": false
       },
       {
         "name": "ledoit_wolf_constcor",
-        "condition": 170.3857,
-        "min_eig": 0.0005,
+        "condition": 81.9905,
+        "min_eig": 0.0003,
         "PSD": true,
         "selected": true
       },
@@ -36,7 +37,7 @@
       },
       {
         "name": "pca_truncated",
-        "condition": 6756.738,
+        "condition": 1901.3073,
         "min_eig": 0,
         "PSD": true,
         "selected": false
@@ -47,121 +48,129 @@
   "specific_risk": {
     "path": "stage_artifacts/WT_D20260519_001/specific_risk.parquet",
     "n_tickers": 457,
-    "factor_explanation_r2_mean": -325.2326,
-    "factor_explanation_r2_median": -176.2889,
-    "factor_coverage_pct": -32523.2634
+    "factor_explanation_r2_mean": 0.2289,
+    "factor_explanation_r2_median": 0.2228,
+    "factor_coverage_pct": 22.8943
   },
   "security_covariance": {
     "path": "stage_artifacts/WT_D20260519_001/covariance.parquet",
     "n_tickers": 457,
-    "condition_number": 1387.4101,
-    "min_eig": 0.0846,
+    "condition_number": 104.6214,
+    "min_eig": 0.0015,
     "PSD": true,
-    "factor_var_share": 0.4294,
-    "shrinkage_extra_applied": true
+    "factor_var_share": 0.1496,
+    "shrinkage_extra_applied": false
   },
   "top_common_risks": [
     {
-      "Factor": "L45_Composite_Liquidity",
-      "variance_share_pct": 1.6742
+      "Factor": "R06_MDD",
+      "variance_share_pct": 33.3166
     },
     {
-      "Factor": "D18_BAB_Rank",
-      "variance_share_pct": 1.3354
-    },
-    {
-      "Factor": "M14_RiskAdj_Mom",
-      "variance_share_pct": 1.2621
+      "Factor": "M19_MACD",
+      "variance_share_pct": 26.7004
     },
     {
       "Factor": "D15_Cond_Bear_Beta",
-      "variance_share_pct": 0.7273
+      "variance_share_pct": 10.0665
     },
     {
-      "Factor": "L26_Log_MktCap",
-      "variance_share_pct": 0.4891
+      "Factor": "RE07_Crisis_Beta",
+      "variance_share_pct": 9.3666
+    },
+    {
+      "Factor": "M15_Mom_3",
+      "variance_share_pct": 9.3063
     },
     {
       "Factor": "D09_Dimson_Beta",
-      "variance_share_pct": 0.4715
+      "variance_share_pct": 4.6568
     },
     {
-      "Factor": "L39_Overnight_Spread",
-      "variance_share_pct": 0.4482
+      "Factor": "RE08_Down_Market_Excess",
+      "variance_share_pct": 4.498
     },
     {
-      "Factor": "L05_Dollar_Volume",
-      "variance_share_pct": 0.4137
+      "Factor": "M06_High_52w",
+      "variance_share_pct": 4.3776
     },
     {
-      "Factor": "M17_Low_52w",
-      "variance_share_pct": 0.4051
+      "Factor": "M20_Keller_Mom",
+      "variance_share_pct": 4.1906
     },
     {
-      "Factor": "R16_Calmar",
-      "variance_share_pct": 0.3938
+      "Factor": "L45_Composite_Liquidity",
+      "variance_share_pct": 4.1577
     }
   ],
   "stress_tests": {
     "IMF_1997": {
       "period": "1997-07-01 1998-12-31",
-      "ew_return": -0.9981,
-      "worst_month": -0.8333,
-      "n_months": 48
+      "ew_return_cum": -0.354,
+      "worst_month": -0.2308,
+      "best_month": 0.5,
+      "n_months": 44
     },
     "Dotcom_2000": {
       "period": "2000-03-01 2002-12-31",
-      "ew_return": -1,
-      "worst_month": -0.9922,
-      "n_months": 111
+      "ew_return_cum": -0.9069,
+      "worst_month": -0.4556,
+      "best_month": 0.4409,
+      "n_months": 82
     },
     "GFC_2008": {
       "period": "2008-09-01 2009-03-31",
-      "ew_return": -1,
-      "worst_month": -0.9775,
-      "n_months": 11
+      "ew_return_cum": -0.1297,
+      "worst_month": -0.2846,
+      "best_month": 0.1225,
+      "n_months": 8
     },
     "EU_2011": {
       "period": "2011-08-01 2012-06-30",
-      "ew_return": -1,
-      "worst_month": -0.9916,
-      "n_months": 42
+      "ew_return_cum": -0.6947,
+      "worst_month": -0.4524,
+      "best_month": 0.1004,
+      "n_months": 26
     },
     "China_2015": {
       "period": "2015-06-01 2016-02-29",
-      "ew_return": -1,
-      "worst_month": -0.9858,
-      "n_months": 22
+      "ew_return_cum": -0.229,
+      "worst_month": -0.2118,
+      "best_month": 0.0331,
+      "n_months": 16
     },
     "VolMageddon_2018": {
       "period": "2018-02-01 2018-03-31",
-      "ew_return": -0.9936,
-      "worst_month": -0.9801,
-      "n_months": 5
+      "ew_return_cum": -0.0215,
+      "worst_month": -0.0361,
+      "best_month": 0.0152,
+      "n_months": 3
     },
     "COVID_2020": {
       "period": "2020-02-01 2020-04-30",
-      "ew_return": -0.9984,
-      "worst_month": -0.9615,
-      "n_months": 8
+      "ew_return_cum": -0.0398,
+      "worst_month": -0.137,
+      "best_month": 0.1944,
+      "n_months": 6
     },
     "Inflation_2022": {
       "period": "2022-01-01 2022-12-31",
-      "ew_return": -1,
-      "worst_month": -0.9906,
-      "n_months": 36
+      "ew_return_cum": -0.6006,
+      "worst_month": -0.4435,
+      "best_month": 0.0781,
+      "n_months": 23
     }
   },
   "market_down_5_loss_estimate": -0.05,
   "tail_risk": {
-    "var_95_empirical": -0.1184,
-    "cvar_95_empirical": -0.1706,
-    "var_99_empirical": -0.1783,
-    "cvar_99_empirical": -0.275,
-    "mdd_universe_ew": 0.6286,
-    "evt_var_99": 0.1783,
-    "evt_es_99": 0.2329,
-    "evt_shape_xi": 0.1062,
+    "var_95_empirical": -0.1125,
+    "cvar_95_empirical": -0.1691,
+    "var_99_empirical": -0.1748,
+    "cvar_99_empirical": -0.2704,
+    "mdd_universe_ew": 0.6702,
+    "evt_var_99": 0.1964,
+    "evt_es_99": 0.2627,
+    "evt_shape_xi": 0.1183,
     "evt_method": "gpd_mle"
   },
   "crowding_score": {
@@ -196,18 +205,18 @@
     "regime_summary": [
       {
         "regime": "Crisis",
-        "mean_cor": 0.0836,
-        "median_cor": 0.1261
+        "mean_cor": 0.1297,
+        "median_cor": 0.4244
       },
       {
         "regime": "Normal",
-        "mean_cor": 0.2083,
-        "median_cor": 0.2442
+        "mean_cor": 0.2322,
+        "median_cor": 0.2704
       },
       {
         "regime": "Calm",
-        "mean_cor": 0.0273,
-        "median_cor": 0.0708
+        "mean_cor": 0.1324,
+        "median_cor": 0.3643
       }
     ]
   },
