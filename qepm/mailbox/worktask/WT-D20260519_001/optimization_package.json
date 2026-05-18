@@ -1,0 +1,631 @@
+{
+  "task_id": "WT-D20260519_001",
+  "agent": "optimizer-research",
+  "agent_version": "v1.3_DPL_KR_v3_FINAL_post_codex_critic_round_disposed_2_ACCEPT_4_PARTIAL_ACCEPT_1_REBUTTAL_1_PARTIAL_HYBRID",
+  "wt_type": "discovery_design_phase_a",
+  "wt_type_charter_v18_reference": "common_charter.md §10 v1.8 candidate — Phase 3 paradigm-shift design phase a sub-class. Q-Lead amendment-pending inherit (alpha CF-A10 + risk RF-R6/RF-R7 + v1 optimizer CF-O6 + 본 v3 CF-O6 lineage = 4 inheritance points).",
+  "draft_marker": false,
+  "final_emission_at": "2026-05-18T11:40:00+09:00",
+  "draft_emission_at": "2026-05-18T11:13:00+09:00",
+  "as_of_date": "2026-05-19",
+
+  "post_codex_disposition_status": "2_ACCEPT_4_PARTIAL_ACCEPT_1_REBUTTAL_1_PARTIAL_ACCEPT_PARTIAL_REBUTTAL_HYBRID",
+  "codex_round_ax_008_status": "1_OF_3_OPTIMIZER_CODEX_DISPOSITION_COMPLETE_FORGE_ARCHITECT_DEFERRED (Forge + Architect pending Forge cycle GPU train; Codex Round complete with REJECT veto=false + 8 concerns disposed)",
+
+  "design_phase_caveat": "본 optimizer-research cycle은 DPL paradigm v3 Original Redesign design phase a. DPL은 features → weights end-to-end NN backprop paradigm — 본 cycle은 (a) Continuous-softmax + STE top-K + PAN + Partial Adjustment 4-stage projection audit (v1 4-stage Gumbel-hard lineage with v3 architectural mitigations) + Codex C3 ACCEPT (52→304 spec reconcile) + Codex C4 ACCEPT (post-PA re-projection mandate) (b) 7-baseline (B1-B7) post-hoc comparison protocol, B7 added vs v1 (DPL→MVO refinement) (c) cost convention strict explicit (Codex v1 C6 ACCEPT inherit, NO ×12 in loss) (d) turnover 3-source decomposition + 5-layer mitigation stack (e) risk inherit integration (Σ LW identity oracle 259×259 cond 84.7 + tail/EVT/Hill α/CDaR + 8 stress + crowding Acadian 14 ELEVATED) + Codex C5 PARTIAL ACCEPT (CVaR contingency Branch A/B explicit) (f) PG2 design-phase prior RF-R6 (style cor 0.965) + Codex C7 PARTIAL ACCEPT + PARTIAL REBUTTAL (measurement-basis distinction) (g) universe explicit disposition + Codex C8 PARTIAL ACCEPT (KR_TOP500_LIQ1E8 per request.json mandate + operational equivalence KOSPI200∪KOSDAQ150 post LIQ filter + Charter §8 No Silent Override compliance) (h) Charter §10 v1.8 amendment-pending inherit (Codex C1 PARTIAL ACCEPT) (i) Codex C2 PARTIAL ACCEPT (alpha_scores Forge mandate + stage_artifacts path B canonical) (j) Codex C6 REBUTTAL (paradigm-shift baseline doctrine, You-Zhang §5 + L-272 + v1 precedent retain). 실제 weights.csv (304 sig_dates × top-20 × Ticker × method_selected) emission은 Forge cycle GPU train + 4-stage projection forward pass + Dykstra fallback + post-PA re-projection 의무. SR/MDD/CAGR/Harvey-t/DSR/cor_vs_1715 측정 = Forge cycle obligation.",
+
+  "method_family": "direct_portfolio_learning_v3_continuous_softmax_STE_topK_PAN_partial_adjustment_with_postPA_reprojection_v3_FINAL",
+
+  "constraint_projection_audit_verdict": "PASS_WITH_CAVEATS",
+  "constraint_caveats": [
+    "Stage C PAN non-idempotency: clip → L1 normalize fix-point not strict (Bauschke-Combettes 2017 §28.3). Same family as v1. Dykstra v1.0 fallback mandate inherited (Codex v1 C3 ACCEPT). Forge per-row violation_rate = 0 strict.",
+    "Stage D Partial Adjustment can produce count(w > 0) > 20 if active universe differs between t-1 and t. Mitigation: post-Partial-Adjust re-projection (CF-O3-v3 NEW + Codex C4 ACCEPT). Forge implementation mandate explicit + alpha-research v3.1 architecture skeleton patch obligation (Q-Lead escalate).",
+    "Stage B STE top-K train/inference 일관성: train mode = w_raw · top_K_mask STE; inference mode = argsort + Σ-renormalize. Forge per-epoch audit obligation.",
+    "STE top-K mass logging (Σ w_raw[top_k_indices] distribution): Forge per-epoch median ≥ 0.5 expected; if < 0.3 consistently → τ too large OR score head fails to differentiate → architecture revision flag.",
+    "Initial cold start (t_0 first sig_date): w_{-1} undefined. Default = EW top-20 (HHI 0.05 floor). Forge declare initialization protocol in forge_package.json.",
+    "Continuous softmax can still degenerate if τ too large + λ_conc too weak → G7 HHI > 0.06 strict ABORT gate enforced (request.json failure_cutoffs_v1_v5_strict.ew_collapse_HHI_0_05).",
+    "Codex C3 ACCEPT: Walk-forward 13 windows × 24m test = 304 test months canonical (도훈 mandate 2026-05-19 binding). alpha-research v3.1 reconcile obligation for architecture §4.1 + protocol §4.1 + skeleton §6.1 (Q-Lead escalate)."
+  ],
+
+  "stage_by_stage_audit": {
+    "stage_a_continuous_concentration_softmax": {
+      "verdict": "PASS",
+      "spec": "w_raw^i = softmax(s^i / τ), τ ∈ {0.5, 1.0, 2.0} grid",
+      "long_only": "PASS (softmax > 0 by definition)",
+      "sum_to_one": "PASS (softmax simplex by definition)",
+      "ew_collapse_risk": "LOW (vs v1 HIGH) — concentration penalty λ_conc · (HHI - 0.10)² ∈ {0.5, 1.0, 2.0} grid enforces non-uniform",
+      "tau_grid_sweep": "{0.5, 1.0, 2.0}",
+      "lambda_conc_grid_sweep": "{0.5, 1.0, 2.0}",
+      "differentiable": "PASS (softmax C∞)",
+      "no_stochasticity_at_inference": "PASS (vs v1 Gumbel τ=0.1 sampling)",
+      "v3_distinction_from_v1": "v1 Gumbel hard top-K immediately after ReLU → EW collapse 100%. v3 keeps softmax over all N, applies concentration penalty + STE top-K mask after."
+    },
+    "stage_b_ste_topk_soft_selection": {
+      "verdict": "PASS_WITH_TRAIN_INFERENCE_CONSISTENCY_AUDIT",
+      "spec_train": "top_k_indices = torch.topk(w_raw, 20).indices; mask = scatter_(0, top_k_indices, 1.0); w_soft = w_raw * mask (STE: forward hard, backward soft pass-through)",
+      "spec_inference": "top_k_indices = torch.topk(w_raw, 20).indices; w_soft = scatter_(0, top_k_indices, w_raw[top_k_indices]); w_soft = w_soft / w_soft.sum() (deterministic)",
+      "max_names_20_hard": "PASS by construction (top-K=20 hard)",
+      "sum_to_one_post_stage": "TRAIN: NO (w_soft = w_raw · mask, Σ < 1, PAN normalizes). INFERENCE: YES (renormalized)",
+      "differentiable_backward": "PASS (STE pass-through; Bengio-Léonard-Courville 2013)",
+      "ste_mass_audit_mandate": "Forge per-epoch log Σ w_raw[top_k_indices] distribution. Expected median ≥ 0.5. Alert if < 0.3 consistently → τ adjustment OR architecture revision.",
+      "no_stochastic_sampling": "PASS (no Gumbel noise) — vs v1 Gumbel hard top-K stochastic"
+    },
+    "stage_c_pan_iterative": {
+      "verdict": "PASS_WITH_DYKSTRA_FALLBACK_MANDATE",
+      "spec": "project_simplex_bounds(w, bound_max=0.20, max_iter=3, eps=1e-6) — iterative clip + L1 normalize + convergence check",
+      "non_idempotency_warning": "clip then L1 multiplies all by > 1 when Σ_clip < 1 → cap re-violation possible. Same family as v1 CF-O1.",
+      "mitigation_pan_iterative_max_3": "Bauschke-Combettes 2017 §28.3 — alternating projection converges *under best conditions*",
+      "mitigation_dykstra_v1_0_fallback": "Boyle-Dykstra 1986 — guarantees convergence via corrector terms. Inherited from v1 Codex C3 ACCEPT.",
+      "forge_violation_rate_strict": "0 per row per 304 sig_dates. Single violation triggers Dykstra v1.0 fallback automatically.",
+      "pan_fallback_rate_alert_thresholds": "< 5% target, ≥ 10% alert, ≥ 30% architecture revision flag",
+      "numerical_floor": "w_clip.sum() + eps with eps=1e-6"
+    },
+    "stage_d_partial_adjustment": {
+      "verdict": "PASS_WITH_POSTPA_REPROJECTION_MANDATE_v3_CODEX_C4_ACCEPT",
+      "spec": "w_t = α · w_t^new + (1-α) · w_{t-1}, α=0.6 (grid {0.4, 0.6, 0.8} Forge ablation)",
+      "rationale": "Wang-Hasuike 2026 §3-4 partial adjustment principle. α=0.6 ⇒ 60% new + 40% previous → expected TO ≈ 0.6 × TO_raw reduction.",
+      "sum_to_one_post_adjust": "PASS (convex combo preserves Σ=1 if w_old and w_new both Σ=1)",
+      "weight_bounds_post_adjust": "PASS (convex combo preserves [0, 0.20] bounds)",
+      "max_names_post_adjust_caveat_cf_o3_v3_codex_c4_accept": "If w_new top-20 ≠ w_old top-20 (different active universes), union may exceed 20 → CF-O3-v3 risk. Codex C4 ACCEPT: post-PA re-projection mandatory.",
+      "postpa_reprojection_mandate_codex_c4_accept": "After partial_adjust: (1) torch.topk(w_t_pre, 20) → top_k_indices; (2) w_t_renorm = scatter_(0, top_k_indices, w_t_pre[top_k_indices]); (3) w_t = project_simplex_bounds(w_t_renorm / w_t_renorm.sum()). Guarantees count(w > 0) ≤ 20 AND Σw=1 AND [0, 0.20].",
+      "alpha_research_v3_1_skeleton_patch_obligation": "dpl_kr_v3_architecture.md §6.1 PyTorch skeleton currently returns partial_adjust without post-PA top-K + PAN. Q-Lead escalate for alpha-research v3.1 cycle skeleton patch.",
+      "initial_cold_start_default": "EW top-20 by w_raw at t_0 (uniform 1/20=0.05 each on top-20). Forge declare in forge_package.json.",
+      "alpha_grid_ablation": "{0.4, 0.6, 0.8} Forge cycle"
+    }
+  },
+
+  "alternative_optimizers_comparison_protocol": "stage_artifacts/WT_D20260519_001/alternative_weight_comparison_protocol_v3.md — 7-baseline framework (B1-B7) post-hoc validation. B7 NEW (DPL_v3 → MVO refinement, paradigm depth probe). Walk-forward 13 windows × 24m test = 304 test months (도훈 mandate 2026-05-19 + Codex C3 ACCEPT canonical). Same-harness PerformanceAnalytics + same Σ + same cost. Codex v1 C4 + v3 C6 REBUTTAL paradigm-shift baseline doctrine retain — production = DPL only.",
+
+  "method_shopping_log": {
+    "optimizer_agent": {
+      "candidates_tried": 8,
+      "method_log": [
+        {"name": "DPL_v3_DeepSet_MLP_continuous_softmax_STE_PAN_PartialAdjust_postPA_reprojection", "selected": true, "is_primary": true, "note": "Original DPL paradigm v3 redesign (v1 5-axis fix + v3 Codex C4 post-PA re-projection mandate)"},
+        {"name": "B1_MVO_with_DPL_scores", "selected": false, "is_baseline_comparison": true, "purpose": "Two-stage paradigm baseline — DPL paradigm value-add proof (v3 Codex C6 REBUTTAL retain)"},
+        {"name": "B2_HRP", "selected": false, "is_baseline_comparison": true, "purpose": "TO + diversification baseline"},
+        {"name": "B3_ERC", "selected": false, "is_baseline_comparison": true, "purpose": "risk-parity baseline"},
+        {"name": "B4_CVaR_LP", "selected": false, "is_baseline_comparison": true, "purpose": "tail-aware baseline"},
+        {"name": "B5_MaxDiv", "selected": false, "is_baseline_comparison": true, "purpose": "diversification-max baseline"},
+        {"name": "B6_EW_top20", "selected": false, "is_baseline_comparison": true, "purpose": "AX-007 #4 ML sizing exemption reference (HHI 0.05 floor)"},
+        {"name": "B7_DPL_v3_MVO_post_hoc_refinement", "selected": false, "is_baseline_comparison": true, "purpose": "paradigm depth probe (NEW vs v1) — tests if MVO refinement on DPL output adds value"}
+      ],
+      "candidates_tried_under_cap_10": true,
+      "differentiable_topk_alternatives_evaluated": [
+        {"name": "Continuous softmax + STE top-K", "verdict": "RETAIN (v3 DEFAULT)"},
+        {"name": "Gumbel softmax + STE (v1 method)", "verdict": "REJECT (v1 EW collapse precedent)"},
+        {"name": "Sinkhorn balanced", "verdict": "REJECT (O(N²) compute prohibitive for N=500)"},
+        {"name": "Hungarian relaxation", "verdict": "REJECT (combinatorial O(N³))"},
+        {"name": "Sparsemax / α-entmax", "verdict": "PARTIAL (v3.1 ablation if HHI degenerate)"},
+        {"name": "Smoothed projection (Beck-Teboulle 2009)", "verdict": "NEAR-EQUIVALENT (architecture-equivalent to PAN)"},
+        {"name": "Gumbel-Rao top-K relaxation", "verdict": "REJECT (v3 STE alternative to avoid v1 EW collapse)"}
+      ],
+      "parallel_exec_plan": true,
+      "n_workers_plan": 7,
+      "rcpp_used": false,
+      "_rationale": "8 candidates ≤ cap 10. Forge cycle Pareto sweep λ_to grid + 7-baseline parallel via future_lapply (Forge cycle target ≤ 2h total for 304 sig_dates × 7 baselines)."
+    }
+  },
+
+  "topk_method_chosen": "Continuous_concentration_softmax_plus_STE_topK_tau_grid_{0.5,1.0,2.0}",
+  "topk_method_chosen_rationale_v3": "v1 Gumbel hard top-K → EW collapse 100% (all 51 sig_dates × 20 × 0.05 uniform). v3 architectural fix: continuous softmax over all N + concentration penalty λ_conc · (HHI - 0.10)² + STE top-K mask (deterministic at inference). Compute O(N log K). Deterministic inference. Differentiable backward via STE pass-through. Direct concentration penalty support. Sharpness 정량 evidence는 Forge cycle measurement obligation (Codex v1 C10 ACCEPT inherit).",
+
+  "risk_inherit_integration": {
+    "sigma_stocks_lw_identity_oracle_259_259_inherit": "risk_package §covariance_ref — covariance.parquet 259×259, kappa 52.4, eig_ratio 84.7 (≤100 target), PSD ✓ (Codex C8 supporting_arguments confirmed PSD min_eig=0.001875 eig_ratio=84.74), shrinkage_total 0.8658, δ_identity=0.2234 oracle",
+    "factor_betas_ridge_259_22_canonical": "risk_package §exposure_betas_canonical_ref — exposure_betas_ridge.parquet 259×22 post-collinearity reduction (58 → 22 retained, 36 dropped |cor| > 0.95). Canonical B for Σ = B Ω B' + D.",
+    "specific_risk_259_inherit": "risk_package §specific_risk_ref — specific_risk.parquet R² mean 0.399",
+    "factor_covariance_22_22_inherit": "risk_package §factor_covariance_ref — Ω 22×22 LW identity δ=0.23",
+    "tail_risk_cvar_evt_inherit_universe_baseline": "risk_package §tail_risk — CVaR_95=-35.3%, CVaR_99=-45.8%, EVT shape ξ=2.27 (heavy tail), Hill α=2.96 (finite variance, infinite kurtosis 4th moment), CDaR_95_10y=0.95. UNIVERSE-LEVEL OBSERVATION (NOT DPL_v3 strategy).",
+    "tail_risk_baseline_disclaimer_codex_c5_partial_accept": "Universe baseline (EW) heavy-tailed is an OBSERVATION, not an optimizer-stage strategy claim. DPL_v3 strategy CVaR will be measured at Forge cycle realized portfolio backtest. Two contingency branches: Branch A (DPL CVaR also breaches universe baseline OR -2.5% threshold) → Forge infeasibility_report populate + WT consideration. Branch B (DPL CVaR mitigated via concentration + Sharpe surrogate + top-20 + Partial Adjust) → risk mitigation demonstration.",
+    "stress_8_windows_inherit_universe_baseline": "risk_package §stress_tests + tail_stress_protocol.json — 3 windows > 50% drawdown (Dotcom -90.7%, EU 2011 -69.5%, Inflation 2022 -60.1%). Universe baseline observation. Crisis-explicit 7 of 13 walk-forward windows aligned with alpha-research crisis_sample_inclusion_v3.md.",
+    "regime_correlation_3_regimes_inherit": "risk_package §regime_correlation_ref — Crisis 24 / Normal 46 / Calm 19. LW oracle within regime + pooled fallback rule (n<12). Bootstrap CI deferred risk v3.1.",
+    "crowding_score_per_factor_acadian_2026_inherit": "risk_package §crowding_score_per_factor — 0 HIGH, 14 ELEVATED (top: D19_EW_Beta_63 0.46, R15_Sortino 0.46, R10_Cokurtosis 0.46, R16_Calmar 0.46, M14_RiskAdj_Mom 0.43). DPL_v3 80-feature defensive-heavy allocation does NOT trigger crowding hard-block at universe level. AX-007 #4 demonstration deferred Forge.",
+    "pg2_comparison_inherit_design_phase_prior_codex_c7_partial_accept_partial_rebuttal": "risk_package §pg2_comparison — TDC lower 10% = 0.321 (STR_1715 PG2 vs KR_TOP500 EW), return cor = 0.196 (low OK, universe-level), style cor = 0.965 (HIGH RF-R6, universe-level style exposure overlap). MEASUREMENT-BASIS: universe baseline (KR_TOP500 EW) vs STR_1715 PG2, NOT DPL_v3 emitted weights. DPL_v3 strategy alpha-inheritance cor vs STR_1715 = Forge cycle measurement obligation. G2 decision gate based on REALIZED strategy alpha cor, not design-phase universe priors.",
+    "infeasibility_cvar_breach_inherit_baseline_codex_c5_revision": "risk_package §infeasibility_report explanation acknowledged: Pre-Forge universe baseline CVaR is observation. Forge realized DPL CVaR measurement is THE evidence. Pre-Forge optimizer-stage infeasibility_report = null because no weights emitted yet (design phase a), NOT due to baseline≠strategy reasoning alone. Branch A/B contingency explicit.",
+    "condition_number_kappa_52_eig_ratio_84_inherit": "risk_package §Sigma_cond — kappa 52.4, eig_ratio 84.7. Codex risk C1 PARTIAL ACCEPT inherit. Codex C8 supporting_arguments confirmed PSD."
+  },
+
+  "selection_objective": "net_ir",
+  "selection_objective_explanation": "v6.1 R4 P3 mandate — net_ir / to_adj_ret / uncertainty_penalty / crowding_adj_ret allowed. v3 cycle uses net_ir primary (cost-aware Net Sharpe + Turnover penalty 정합). Forge cycle measurement: net_ir = (net_portfolio_return - benchmark_return) / tracking_error_realized, where net_portfolio_return is 0.0015 × 2 × turnover deducted. Selection across DPL_v3 hyperparam grid (20 random search × 13 walk-forward windows = 260 trials, pre-registered DSR n_trials=100 strict).",
+
+  "weight_bounds": [0.0, 0.20],
+  "long_only": true,
+  "sum_weights_target": 1.0,
+  "max_names": 20,
+
+  "min_names": null,
+  "min_names_rationale": "DPL top-K=20 hard architecture (STE top-K Stage B + post-PA re-projection Codex C4 ACCEPT); min_names floor 부적합 (Task #26 MVO context). AX-007 exemption #4 ML sizing 정합. v3 architecture mandates exactly 20 active names (count(w > 0) = 20 at inference deterministic, guaranteed by Stage B + Stage D re-projection).",
+
+  "hhi_cap": 0.15,
+  "hhi_cap_source": "risk_package §risk_constraints_for_optimizer.hhi_portfolio_top20_max (v1 Codex C8 PARTIAL ACCEPT inherit)",
+  "hhi_floor_target": 0.06,
+  "hhi_floor_target_source": "request.json failure_cutoffs_v1_v5_strict.ew_collapse_HHI_0_05 + G7 gate strict (HHI > 0.06 majority sig_dates ABORT if fail). NECESSARY precondition + AX-007 #4 eligibility re-establishment, NOT sufficient proof (Codex C-self_check_2 revision).",
+  "sector_hhi_cap": 0.30,
+  "sector_hhi_cap_source": "risk_package §risk_constraints_for_optimizer.hhi_sector_lv2_max (v1 inherit)",
+  "alpha_winsor": null,
+  "alpha_winsor_rationale": "Stage A continuous softmax + decision-induced ranking clip [-3, 3] + cross-section Z-score (per alpha-research §1.2) sufficient. Score head output already winsor-equivalent via clip(-3, 3).",
+
+  "cost_convention_codex_v1_c6_explicit_inherit": {
+    "one_way_cost_bps": 15,
+    "to_metric_definition": "one_way_TO_t = Σ_i |w_i,t - w_i,t-1| per rebalance step (L1 distance)",
+    "cost_formula": "cost_t = 0.0015 × 2 × one_way_TO_t = 0.003 × one_way_TO_t (per rebalance, round-trip buy+sell)",
+    "annualization_policy": "NOT applied during loss (per-rebalance accumulation only). Annual cost = Σ_{t=1..n_rebal_per_year} cost_t per fiscal year, NOT TO × 12.",
+    "iter_3_violation_avoidance": "TO ×12 annualization in loss 금지 (Iter 3 precedent inherit, Codex v1 C6 ACCEPT). Loss term per rebal only.",
+    "loss_function_realized_cost_term": "λ_to × 0.003 × one_way_TO_t per training batch (1 sig_date = 1 batch).",
+    "forge_validation": "Forge cycle realized: turnover_annual = Σ_{t=1..n_rebal_per_year} one_way_TO_t per fiscal year. realized_cost_annual = 0.003 × turnover_annual_per_year. bt_result$audit$cost_realized matches within 1e-6.",
+    "to_decomposition_md": "stage_artifacts/WT_D20260519_001/turnover_decomposition_v3.md — 3-source decomposition (signal change + membership change + Partial Adjust smoothing) + 5-layer mitigation stack (decision-induced clip + concentration penalty + continuous softmax + Partial Adjust + λ_to grid) + Pareto frontier λ_to vs net_SR + Forge audit mandates"
+  },
+
+  "deploy_cutoff": "2026-04 canonical (alpha_package §evaluation_windows extended 13 windows × 24m. Window 13 test = 2025-01 ~ 2026-04 partial 16m. Codex C3 ACCEPT canonical: 304 test months not 52).",
+  "deploy_cutoff_extension_rule": "design phase a — weights.csv emission X (Forge cycle 의무). Forge cycle weights.csv schedule = 304 test months × top-20 × Ticker. PIT compliance: as_of_date_t ≤ canonical max sig_date (2026-04-30). 도훈 mandate 2026-05-19 historical coverage extension 1990~2026 binding: train windows go back to 1995-01 (W1) for full crisis sample coverage.",
+
+  "weights_csv_schema_codex_c3_explicit": {
+    "columns": ["Date (sig_date / as_of_date)", "Ticker", "weight", "method_selected", "confidence"],
+    "n_columns": 5,
+    "n_rows_total_expected": "304 sig_dates × ≤20 active = ≤6080 rows (≈6000 typical)",
+    "per_row_strict_asserts": [
+      "0 ≤ weight ≤ 0.20 + 1e-6 (Stage C PAN clip + Dykstra fallback)",
+      "Σ_Ticker weight per sig_date = 1 ± 1e-6 (Stage C PAN L1 normalize)",
+      "count(weight > 0) per sig_date ≤ 20 (Stage B STE top-K + Stage D post-PA re-projection)",
+      "weight ≥ 0 (long-only, Stage A softmax + Stage C clip 0)",
+      "LIQ_20d ≥ 2e8 KRW per Ticker per sig_date (alpha-research universe filter + Forge ADV audit)",
+      "Usable_Date ≤ sig_date (PIT C14 strict)",
+      "method_selected ∈ {DPL_v3} (production paradigm doctrine retain Codex v3 C6 REBUTTAL)"
+    ],
+    "violation_rate_strict": "0 per row per 304 sig_dates. Single violation triggers Dykstra v1.0 fallback automatically (Codex v1 C3 ACCEPT inherit).",
+    "iter_4_rf_a7_avoidance": "Time-series 304-month schedule is explicit countermeasure vs Iter 4 RF-A7 single-snapshot mode."
+  },
+
+  "baseline_fairness": {
+    "primary_comparison": "STR_1715_AR_on_M4_R05_overlay_PG2 (book_state v2.3 active admit, 255m PerfA: SR 1.9536 / MDD -24.81% / CAGR 41.50% / Sortino 1.22 / Calmar 1.67; vs KOSPI200 IR 1.0505 / Active +31.78pp / MDD +23.71pp improve)",
+    "method": "same-harness PerformanceAnalytics geometric convention (Charter v1.5 §13) + same cost 15bps × 2 round-trip + same-period overlap. 13 walk-forward windows × 24m test = 304 net test months (Codex C3 ACCEPT canonical).",
+    "additional_baselines": [
+      "EW top-20 long-only by DPL alpha rank (HHI 0.05 reference, AX-007 #4 ML sizing exemption validity proof)",
+      "Base STR_1715 (no M4/AR/R05 overlay, SR ~1.50 estimate)",
+      "B1_MVO with DPL scores (Two-stage paradigm baseline) — DPL paradigm value-add proof (Codex v1 C4 + v3 C6 REBUTTAL doctrine retain)",
+      "B7_DPL_v3 → MVO post-hoc refinement (NEW vs v1) — paradigm depth probe"
+    ]
+  },
+
+  "sequential_admission_integration_scenarios_codex_v1_c8_v3_c7_explicit": {
+    "scenario_a_4th_orthogonal_source": {
+      "trigger": "G2 |cor(DPL_v3 realized alpha_scores, STR_1715 alpha_scores)| < 0.3 AND G5 cost-Pareto PASS AND DPL_v3 net_SR ≥ 1.0 AND realized DPL CVaR Branch B (mitigated, Codex C5)",
+      "book_mutation": "1-sleeve {STR_1715 100%} → 2-sleeve {STR_1715 75% + DPL_v3 25%} blend (Q-Lead Blender review for optimal ratio if multi-candidate)",
+      "weight_breakdown": "0.75 × w_STR_1715_t + 0.25 × w_DPL_v3_t per Ticker",
+      "forge_measurement_pending": "blended SR / MDD / IR / turnover / Net cost / CVaR_5% / Hill α / realized_style_cor_DPL_v3_vs_STR_1715 (Codex C7 measurement-basis)"
+    },
+    "scenario_b_substitution": {
+      "trigger": "G2 0.3 ≤ |cor(realized)| < 0.5 AND G5 single-replacement cost-Pareto PASS AND DPL_v3 net_SR > STR_1715 baseline AND realized DPL CVaR Branch B",
+      "book_mutation": "1-sleeve {STR_1715 100%} → 1-sleeve {DPL_v3 100%}",
+      "weight_breakdown": "w_DPL_v3_t direct emission per sig_date",
+      "forge_measurement_pending": "DPL_v3 alone SR / MDD / IR / turnover / Net cost / CVaR_5% / Hill α / realized_style_cor"
+    },
+    "scenario_c_reject": {
+      "trigger": "G2 |cor(realized)| ≥ 0.5 OR G5 cost-Pareto FAIL OR DPL_v3_SR < STR_1715 baseline OR G7 HHI ≤ 0.06 EW collapse OR G3 TO_annual > 6.0 OR realized DPL CVaR Branch A (breaches universe baseline OR -2.5% threshold consistently)",
+      "book_mutation": "1-sleeve {STR_1715 100%} retain (no admission)",
+      "wt_status": "WT cycle reject; DPL paradigm v3 hypothesis falsified; baseline production X (Codex v1 C4 + v3 C6 REBUTTAL doctrine retain — production = DPL only, no baseline substitution)"
+    },
+    "tdc_vs_pg2_measurement_basis_codex_c7_clarify": "risk_package §pg2_comparison: TDC lower 10% = 0.321 (STR_1715 PG2 vs KR_TOP500 EW), return cor = 0.196 (universe-level), style cor = 0.965 (universe-level). MEASUREMENT-BASIS: universe baseline (KR_TOP500 EW) vs STR_1715 PG2, NOT DPL_v3 strategy. Forge measurement obligation: realized DPL_v3 vs STR_1715 strategy alpha cor + return cor + style cor + TDC per sig_date.",
+    "rf_r6_pg2_style_cor_acknowledgement_codex_c7_revision": "RF-R6 HIGH (style cor 0.965 universe baseline) is design-phase prior on universe-level style exposure (RiskAdjMom +0.86, Sortino +0.75, Calmar +0.73). NOT a constraint on DPL_v3 weights. DPL_v3 architecture features family-balanced 80 features (NOT STR_1715 alpha-driven) → style separation via DeepSet + ScoreHead non-linear interaction. NEGATIVE PRIOR acknowledged (KR equity style overlap by definition for top-20 universe filter). Forge measurement is decision-binding evidence.",
+    "forge_emission_obligation": "scenario_admission_measurements.json — 3 scenarios × {blended_sr, blended_mdd, blended_ir, blended_turnover, blended_cost, blended_cvar5, blended_hill_alpha, blended_tdc_realized, blended_style_cor_realized, blended_return_cor_realized}"
+  },
+
+  "universe_disposition_codex_c8_v3_explicit": {
+    "universe_label_used": "KR_TOP500_LIQ1E8",
+    "source_authority": "request.json::universe_definition.label + liquidity_min_won_20d_avg=200000000 (2e8 KRW 20d ADV) — EXPLICITLY DECLARED IN REQUEST.JSON",
+    "claude_md_production_constraint_base": "KOSPI200 ∪ KOSDAQ150 (CLAUDE.md Production Constraints)",
+    "relationship": "KR_TOP500_LIQ1E8 (KR top-500 stocks filtered by 20d avg trading value ≥ 2e8 KRW) is OPERATIONALLY EQUIVALENT to KOSPI200 ∪ KOSDAQ150 after 2e8 LIQ filter applied. risk_package §diagnostics.universe_size = 259 (post-LIQ filter, 99.2% above 2e8) confirms broad alignment with baseline ~350 KR equity liquid coverage.",
+    "alpha_research_scope_v3": "Original DPL standalone alpha generator (1715-independent) per request.json axis_5_scope_v3_RC_cor1_fix.v3_redesign_original mandate. Universe 자유 KR_TOP500_LIQ1E8 is alpha-research scope inheritance.",
+    "charter_8_no_silent_override_compliance": "EXPLICIT DISPOSITION via this challenge_note + final optimization_package §universe_disposition_codex_c8_v3_explicit field. NOT silent override.",
+    "forge_audit_obligation": "Per-row Ticker × sig_date LIQ_20d_avg ≥ 2e8 KRW verify. Violation → row remove + Stage C re-normalize OR infeasibility_report."
+  },
+
+  "infeasibility_report": null,
+  "infeasibility_report_status": "NOT_TRIGGERED_AT_DESIGN_PHASE_A_FORGE_CYCLE_OBLIGATION_per_v1_codex_c9_ACCEPT_inherit_v3_codex_c5_branch_AB_contingency",
+  "infeasibility_report_status_explanation_codex_c5_revision": "design phase a — no weight emission, no actual constraint violation possible. Forge cycle weights.csv emission 시 actual violation 발생 시 infeasibility_report field populate + WT ABORT 의무. CVaR contingency Branch A/B (Codex C5 PARTIAL ACCEPT): Branch A (DPL strategy CVaR breaches universe baseline OR -2.5% threshold consistently across 13 windows) → infeasibility populate + Scenario C reject; Branch B (DPL strategy CVaR mitigated via concentration + Sharpe surrogate + top-20 + Partial Adjust) → risk mitigation demonstration + admit eligibility. Pre-Forge optimizer-stage infeasibility null = no weights emitted (design phase a constraint), NOT due to 'baseline ≠ strategy' reasoning alone.",
+
+  "cvar_breach_evidence_contingency_codex_c5_branch_AB": {
+    "branch_A_strategy_breach": {
+      "trigger": "Forge realized DPL_v3 strategy CVaR_95 worse than universe baseline -35.3% OR -2.5% threshold consistently across all 13 walk-forward windows OR ≥ 3 of 7 crisis-explicit windows",
+      "action": "Forge stage infeasibility_report populate + WT consideration. Scenario C reject (STR_1715 retain).",
+      "documentation": "Forge cycle bt_result.rds 10-component + infeasibility_report.json"
+    },
+    "branch_B_strategy_mitigation": {
+      "trigger": "Forge realized DPL_v3 strategy CVaR_95 better than universe baseline AND meets -2.5% threshold in normal regimes AND ≤ 2/7 crisis breaches with AX-001 v2 conditional defense PASS",
+      "action": "Risk mitigation demonstrated. AX-001 v2 conditional evaluation PASS. Eligible for Scenario A/B admission (subject to G2/G5 gates).",
+      "documentation": "Forge cycle crisis_alpha_conditional_evaluation.json + cvar_strategy_vs_baseline_audit.json"
+    },
+    "decision_binding": "Realized DPL strategy CVaR measurement is THE evidence. Pre-Forge optimizer-stage rationale 'baseline ≠ strategy' is reasoning, NOT evidence."
+  },
+
+  "feasibility_check_design_phase": {
+    "max_names_20_x_max_weight_0_20": 4.0,
+    "sum_weights_target": 1.0,
+    "feasibility_ratio": 4.0,
+    "verdict": "FEASIBLE (multiple solutions exist; boundary case K=5 all-max-cap; typical case K=20 average 0.05 each)"
+  },
+
+  "method_comparison_pending_forge": {
+    "design_status": "PROTOCOL_SPEC_EMITTED_POST_CODEX_DISPOSITION — FORGE_CYCLE_IMPLEMENTATION_PENDING",
+    "expected_table_schema": "method × window × {net_sr, gross_sr, net_ir, mdd, cagr, turnover_annual, cost_realized, hhi_mean, hhi_sector_mean, cor_vs_str1715, cor_vs_dpl_v3, jaccard_top10_stability}",
+    "expected_outputs": [
+      "stage_artifacts/WT_D20260519_001/optimizer_comparison.parquet (304 sig_dates × 8 methods × 12 metrics)",
+      "stage_artifacts/WT_D20260519_001/optimizer_comparison_summary.json (aggregate decision + selection_objective net_ir)",
+      "stage_artifacts/WT_D20260519_001/weight_comparison_per_sigdate.parquet (audit trail per-sig_date weights for all 8 methods)",
+      "stage_artifacts/WT_D20260519_001/paradigm_value_add_audit.json (DPL_v3 vs B1_MVO_with_DPL_scores SR/MDD direct comparison)"
+    ]
+  },
+
+  "binding_constraints_design_phase": [
+    "max_names = 20 (Stage B STE top-K hard + Stage D post-PA re-projection Codex C4 ACCEPT)",
+    "weight_bounds [0, 0.20] (Stage C PAN clip + Dykstra fallback)",
+    "long_only (Stage A softmax > 0 + Stage C clip 0)",
+    "Σw = 1 (Stage C PAN L1 normalize, tol 1e-6)",
+    "universe KR_TOP500_LIQ1E8 (2e8 KRW 20d ADV strict at alpha-emit; v1 Codex C4 ACCEPT 2-stage mitigation inherit + v3 Codex C8 PARTIAL ACCEPT universe explicit disposition)",
+    "cost 15bps one-way × 2 round-trip per rebal (loss λ_to · 0.003 · |Δw|_1, Codex v1 C6 ACCEPT inherit, NO ×12)",
+    "sector HHI ≤ 0.30 (risk_package C8 inherit)",
+    "portfolio HHI ≤ 0.15 (risk_package C8 inherit) + HHI > 0.06 floor (G7 gate ABORT, necessary precondition not sufficient proof Codex self-check_2 revision)",
+    "TO_annual ≤ 6.0 (request.json hard_constraints) — per-window Forge audit",
+    "MDD ≥ -0.25 (request.json hard_constraints) — strategy-level post-Forge backtest audit"
+  ],
+
+  "binding_constraints_forge_cycle_pending": "Forge cycle 실측 후 emit — Stage C cap 0.20 binding analysis (often binding for top-3 stocks) + Stage B top-K=20 hard always binding + sector HHI / portfolio HHI / TO_annual / MDD 의무 측정. RF-O1 dual-saturation check (binding count ≥ K/2 = 5/10 threshold) at design phase = 4 always + 1 often = 5 → at threshold, Forge re-evaluate.",
+
+  "explanation": {
+    "design_phase_role": "본 cycle은 (a) 4-stage projection design audit (continuous softmax + STE top-K + PAN + Partial Adjustment + post-PA re-projection Codex C4 ACCEPT) (b) 7-baseline (B1-B7, B7 NEW) optimizer comparison protocol + Codex v1 C4 + v3 C6 REBUTTAL paradigm-shift baseline doctrine retain (c) Continuous softmax + STE top-K differentiable top-K alternatives evaluation (7 candidates, Continuous + STE selected as default v3 to fix v1 EW collapse) (d) risk inherit integration + Codex C5 PARTIAL ACCEPT CVaR Branch A/B explicit + REBUTTAL inherit (CRISIS boundary shrink — 도훈 mandate static cap retain) (e) PG2 design-phase prior Codex C7 PARTIAL ACCEPT + PARTIAL REBUTTAL (measurement-basis distinction: universe baseline ≠ DPL strategy + Forge realized binding) (f) universe explicit disposition Codex C8 PARTIAL ACCEPT (KR_TOP500_LIQ1E8 per request.json + operational equivalence) (g) Charter §10 v1.8 amendment-pending Codex C1 PARTIAL ACCEPT inherit. 실제 weights.csv + 백테스트 metrics는 Forge cycle GPU train + 304 test months 4-stage projection forward + Dykstra fallback + post-PA re-projection 의무.",
+    "key_design_decisions": [
+      "Stage A continuous concentration softmax + concentration penalty λ_conc · (HHI - 0.10)² ∈ {0.5, 1.0, 2.0} grid (vs v1 Gumbel hard top-K → EW collapse 100%)",
+      "Stage B STE top-K (train: w_raw·mask STE; inference: argsort + Σ-renormalize) (vs v1 Gumbel τ-anneal stochastic)",
+      "Stage C PAN iterative max_iter=3 + Dykstra v1.0 fallback strict (Codex v1 C3 ACCEPT inherit) + violation_rate = 0 per row Forge mandate",
+      "Stage D Partial Adjustment α ∈ {0.4, 0.6, 0.8} grid (default 0.6, v3 NEW vs v1 absent) + post-Partial-Adjust re-projection (Codex C4 ACCEPT, alpha-research v3.1 skeleton patch escalate)",
+      "Loss 3-term Sharpe surrogate: -E[r_p]/σ(r_p) + λ_to · 0.003 · |Δw|_1 + λ_conc · (HHI - 0.10)² with grid {1.0, 2.0, 4.0}/{0.5, 1.0, 2.0}",
+      "Cost convention explicit: 0.0015 × 2 × one_way_TO per rebal (NO ×12 in loss, Iter 3 avoidance, Codex v1 C6 ACCEPT inherit)",
+      "DPL paradigm value-add 의무: SR(DPL_v3) > SR(B1_MVO_with_DPL_scores) AND MDD(DPL_v3) ≤ MDD(B1). FAIL → WT reject (Codex v1 C4 + v3 C6 REBUTTAL doctrine retain)",
+      "B7 NEW (DPL_v3 → MVO post-hoc refinement) paradigm depth probe",
+      "13 walk-forward × 24m test = 304 test months (도훈 mandate 2026-05-19 + Codex C3 ACCEPT canonical; alpha-research v3.1 reconcile escalate for architecture/protocol markdown)",
+      "Crisis-explicit 7 windows G3' gate alignment with alpha-research crisis_sample_inclusion_v3.md",
+      "PG2 style cor 0.965 (RF-R6) acknowledged as design-phase prior on universe baseline; Forge realized DPL strategy measurement is decision-binding (Codex C7 PARTIAL_ACCEPT_PARTIAL_REBUTTAL measurement-basis distinction)",
+      "Sequential admission scenarios A/B/C explicit (Codex v1 C8 + v3 C7 PARTIAL ACCEPT inherit)",
+      "Universe explicit disposition KR_TOP500_LIQ1E8 (Codex C8 PARTIAL ACCEPT, operational equivalence to KOSPI200∪KOSDAQ150)",
+      "CVaR contingency Branch A/B explicit (Codex C5 PARTIAL ACCEPT)",
+      "weights.csv schema explicit: Date × Ticker × weight × method_selected × confidence (5 cols, Codex C3 ACCEPT)"
+    ],
+    "top_overweights_forge_measurement_obligation": "DPL_v3 ScoreHead top-20 (각 sig_date 동적). Forge cycle alpha_scores.parquet emit 후 ranking. Expected family-balanced (80 features: Risk_Beta_Vol 15 + Tail_Risk 15 + Momentum_Tech 15 + Other 15 + Liquidity 7 + Risk_Metric 7 + Reversal 2 + Technical 2 + Daily_LowFreq 2).",
+    "top_underweights_forge_measurement_obligation": "Bottom ~480 stocks (long-only, top-K=20 hard, others = 0 by STE top-K mask + post-PA re-projection)",
+    "main_tradeoffs": [
+      "Stage C non-idempotency: simple iterative + Dykstra fallback (Codex v1 C3 ACCEPT inherit) — strict 0 violation guarantee, dual algorithm",
+      "Continuous softmax vs Gumbel hard top-K: v3 chooses continuous to enable concentration penalty differentiable gradient + deterministic inference (vs v1 stochastic Gumbel τ=0.1)",
+      "Differentiable top-K alternatives: Continuous softmax + STE O(N log K) vs Sinkhorn O(N²) — chosen for compute",
+      "λ_to grid scaling vs Partial Adjustment α: dual cost-aware mitigation. v3 vs v1 (which only used λ_to=1.0). v3 adds α=0.6 Partial Adjust + raises λ_to grid to {1.0, 2.0, 4.0}.",
+      "Concentration penalty target HHI=0.10 (5× EW floor) — too low → EW collapse risk; too high → over-concentration RF-O1 binding. 0.10 as middle ground.",
+      "Universe baseline RF-R6 style cor 0.965: design-phase prior on universe baseline; Forge realized DPL strategy measurement is decision-binding evidence (Codex C7 measurement-basis distinction)"
+    ]
+  },
+
+  "expected_active_return_pending_forge": "Forge measurement obligation — DPL_v3 net portfolio return - KOSPI200 over 304 test months",
+  "expected_tracking_error_pending_forge": "Forge measurement — annualized stdev of (DPL_v3 - KOSPI200) returns over 304 test months",
+  "expected_information_ratio_pending_forge": "Forge measurement — selection_objective net_ir",
+  "turnover_pending_forge": "Forge measurement — target ≤ 6.0/yr (request.json hard cap). Cost convention: 0.003 × Σ|Δw|_1 per rebal. Decomposition spec: stage_artifacts/WT_D20260519_001/turnover_decomposition_v3.md.",
+  "estimated_cost_pending_forge": "Forge measurement — 0.003 × realized_turnover_annual per fiscal year. Backtest Contract v1.0 audit obligation.",
+
+  "n_names_design_phase_target": 20,
+  "n_names_design_phase_exactness": "exactly 20 (STE top-K hard at inference + post-PA re-projection Codex C4 ACCEPT, count(w > 0) = 20 guaranteed by architecture)",
+  "hhi_design_phase_forge_measurement_obligation": "FORGE_MEASUREMENT_OBLIGATION (bounds: floor 0.05 EW degenerate, ceiling 0.20² × 5 + 0.0667 = 0.267 if 5 max-cap stocks; design target HHI ~ 0.10 via concentration penalty target; G7 strict > 0.06 majority sig_dates as NECESSARY precondition + AX-007 #4 ELIGIBILITY re-establishment, NOT sufficient proof — Codex self-check_2 revision). Codex v1 C10 ACCEPT assumption-언어 정정 inherit.",
+  "min_names_enforced": false,
+  "min_names_enforced_note": "DPL top-K=20 hard architecture (not floor); min_names floor 부적합 (Task #26 MVO context). AX-007 exemption #4 ML sizing 정합.",
+  "hhi_enforced": "POST_FORGE_GATE — G7 HHI > 0.06 strict majority sig_dates ABORT gate (necessary precondition + AX-007 #4 eligibility re-establishment, not sufficient proof Codex self-check_2 revision), concentration penalty λ_conc · (HHI - 0.10)² ∈ {0.5, 1.0, 2.0} grid in loss",
+  "winsor_applied": false,
+  "winsor_applied_note": "Stage A continuous softmax + decision-induced ranking clip [-3, 3] + cross-section Z-score per alpha-research §1.2 sufficient. Score head output already winsor-equivalent via clip(-3, 3).",
+  "lambda_retries_design_phase": null,
+  "lambda_used_design_phase": "λ_to ∈ {1.0, 2.0, 4.0} grid + λ_conc ∈ {0.5, 1.0, 2.0} grid + τ ∈ {0.5, 1.0, 2.0} grid (27 combinations, sample 20 random per alpha-research training_protocol_v3.md §4.2) + α ∈ {0.4, 0.6, 0.8} grid",
+
+  "constraint_projection_audit_path": "stage_artifacts/WT_D20260519_001/constraint_projection_audit_v3.md",
+  "alternative_weight_comparison_protocol_path": "stage_artifacts/WT_D20260519_001/alternative_weight_comparison_protocol_v3.md",
+  "turnover_decomposition_path": "stage_artifacts/WT_D20260519_001/turnover_decomposition_v3.md",
+
+  "forge_cycle_artifacts_mandate_codex_v1_c2_v3_c2_inherit": {
+    "weights_csv_forge_emission": "qepm/mailbox/worktask/WT-D20260519_001/weights.csv — 304 sig_dates × top-20 × Ticker × method_selected × confidence (5 cols). Per-row strict assert: n_names ≤ 20, 0 ≤ w ≤ 0.20 + 1e-6, |Σw - 1| ≤ 1e-6, long-only, LIQ_20d ≥ 2e8 KRW. Violation_rate = 0 strict per row (Codex v1 C3 ACCEPT). 단 1행 violation → Dykstra v1.0 fallback automatic. Schema canonical: Date × Ticker × weight × method_selected × confidence (Codex C3 ACCEPT explicit).",
+    "alpha_scores_parquet_forge_emission": "stage_artifacts/WT_D20260519_001/alpha_scores.parquet — sig_date × Ticker × alpha_score × confidence × w_dpl_v3, 304 sig_dates × ~500 stocks ≈ 152K rows (Codex C2 PARTIAL ACCEPT path B canonical)",
+    "covariance_parquet_forge_inherit": "stage_artifacts/WT_D20260519_001/covariance.parquet — 259×259 LW identity oracle (risk_package canonical, no modification by optimizer, Codex C8 supporting_arguments confirmed PSD)",
+    "sigma_per_sigdate_forge_optional": "stage_artifacts/WT_D20260519_001/sigma_per_sigdate/{sig_date}.rds × 304 — per-sig_date Σ for B1-B5 baseline inputs (optional, computed if needed)",
+    "tail_risk_json_forge_inherit": "stage_artifacts/WT_D20260519_001/tail_risk.json — risk_package canonical",
+    "ic_history_parquet_forge_emission": "stage_artifacts/WT_D20260519_001/ic_history.parquet — per sig_date IC + ICIR (304 rows with Usable_Date ≤ sig_date strict, C14)",
+    "crowding_summary_json_forge_emission": "stage_artifacts/WT_D20260519_001/crowding_summary.json — risk_package crowding_score_per_factor expanded with DPL_v3 weight × crowding_score per-Ticker (Acadian 2026 §3)",
+    "dpl_v3_risk_attribution_json_forge_emission": "stage_artifacts/WT_D20260519_001/dpl_v3_risk_attribution.json — Integrated Gradients (Sundararajan 2017) feature attribution + factor variance decomp + Jaccard stability",
+    "scenario_admission_measurements_json_forge_emission": "stage_artifacts/WT_D20260519_001/scenario_admission_measurements.json — Scenario A/B/C blended metrics + realized DPL_v3 strategy alpha cor + return cor + style cor + TDC (Codex C7 measurement-basis)",
+    "optimizer_comparison_parquet_forge_emission": "stage_artifacts/WT_D20260519_001/optimizer_comparison.parquet — 304 sig_dates × 8 methods × 12 metrics",
+    "paradigm_value_add_audit_json_forge_emission": "stage_artifacts/WT_D20260519_001/paradigm_value_add_audit.json — DPL_v3 vs B1_MVO_with_DPL_scores SR/MDD direct comparison (Codex v3 C6 REBUTTAL doctrine evidence)",
+    "bt_result_rds_forge_emission": "stage_artifacts/WT_D20260519_001/bt_result.rds — Backtest Contract v1.0 10-component PerformanceAnalytics standard",
+    "bt_result_sha256_emission": "stage_artifacts/WT_D20260519_001/bt_result.rds.sha256 — anti-fabrication binding (v5 lesson inherit)",
+    "self_synthesis_used_audit_label": "forge_package.json self_synthesis_used = false strict, audit-verified (v4 lesson inherit)",
+    "dpl_v3_pytorch_skeleton_postpa_reprojection_codex_c4_mandate": "forge_package.json::dpl_v3_pytorch_skeleton MUST include after partial_adjust: (1) torch.topk(w_t_pre, 20).indices; (2) scatter_ + project_simplex_bounds re-projection. Per-row count(w_t > 0) ≤ 20 strict assertion."
+  },
+
+  "alpha_research_v3_1_reconciliation_obligation_codex_c3_c4_escalate": {
+    "trigger": "Codex C3 ACCEPT + C4 ACCEPT — schedule spec inconsistency (52 vs 304) + architecture skeleton missing post-PA re-projection",
+    "artifacts_to_patch": [
+      "stage_artifacts/WT_D20260519_001/dpl_kr_v3_architecture.md §4.1 Walk-Forward Table: 5 windows × 52 test months → 13 windows × 24m test = 304 test months",
+      "stage_artifacts/WT_D20260519_001/dpl_kr_v3_architecture.md §6.1 PyTorch Skeleton: add post-PA re-projection block after partial_adjust function",
+      "stage_artifacts/WT_D20260519_001/training_protocol_v3.md §4.1 Walk-Forward: align with architecture §4.1 update"
+    ],
+    "responsible_agent": "alpha-research (v3.1 reconciliation cycle)",
+    "escalate_destination": "Q-Lead — Charter §10 v1.8 + alpha-research v3.1 cycle spawn",
+    "binding": "도훈 mandate 2026-05-19 historical coverage extension + Codex C3 + C4 ACCEPT"
+  },
+
+  "pit_compliance": {
+    "c1_c15_overall": "INHERIT_ALPHA_RISK_PASS_WITH_STRUCTURAL_CAVEATS",
+    "alpha_stage_inherit": "qepm/mailbox/worktask/WT-D20260519_001/alpha_package.json::pit_compliance",
+    "risk_stage_inherit": "qepm/mailbox/worktask/WT-D20260519_001/risk_package.json::pit_compliance",
+    "optimizer_specific_obligations": [
+      "Stage B STE top-K selection per sig_date uses ScoreHead s_t (cross-section Z-scored at sig_date) only — no inter-sig-date statistics",
+      "Stage C PAN L1 normalize per-sig_date (no inter-sig-date statistics)",
+      "Stage D Partial Adjustment uses w_{t-1} from previous sig_date (legitimate, sig_date_t-1 < sig_date_t, no future leakage)",
+      "Stage D post-PA re-projection per sig_date (Codex C4 ACCEPT)",
+      "Forge cycle weights.csv emission: per-row sig_date with Σw=1 ± 1e-6, max ≤ 0.20 + 1e-6 (Codex v1 C3 strict 0 violation) + count(w > 0) ≤ 20 (Codex v3 C4 post-PA re-projection)",
+      "Baseline B1-B5 input: Σ_t = LW identity oracle 60m rolling ending t-1 (risk_package canonical, NO modification)",
+      "Baseline B4_CVaR_LP: return history T=60m ending t-1 (no t inclusion)",
+      "Forge cycle weights.csv per-row LIQ_20d_avg ≥ 2e8 KRW verify (Codex v1 C7 + v3 C8 PARTIAL ACCEPT inherit)",
+      "ADV audit: per-row Ticker × sig_date LIQ check. Violation → row remove + Stage C re-normalize OR infeasibility_report"
+    ],
+    "hard_abort_check": "NOT_TRIGGERED at design phase a",
+    "rawdata_sha_inheritance_note": "alpha-research claims rawdata sha c86e4ae5...; risk-research actual cache 1370cae0... (RF-R7 HONEST disclosed). Optimizer design phase a does NOT read rawdata directly — protocol declares Forge cycle obligation to verify rawdata sha at training start (forge_package.json sha audit). Q-Lead reconcile escalate (RF-R7 inherit)."
+  },
+
+  "axiom_compliance": {
+    "AX-000_no_limits": "compliant — paradigm Original DPL v3 retry post v1 fail + v3~v5 RC paradigm retire (L-330 scope), milestone SR 2.0 retained.",
+    "AX-001_v2_defense_conditional": "PENDING_FORGE — Codex flagged FAIL at design stage because no strategy weights yet. AX-001 v2 evaluation requires crisis_alpha + Core MDD + bad/normal IC ratio measurement = Forge scope. Risk inherit acknowledged tail risk EVT ξ=2.27 + 3 stress windows > 50% drawdown as universe baseline observation (Codex C5 PARTIAL ACCEPT measurement-basis).",
+    "AX-002_process_honesty": "compliant — 3 design markdown emitted (constraint_projection_audit_v3 + alternative_weight_comparison_protocol_v3 + turnover_decomposition_v3) + draft → Codex critic round REJECT 8 concerns → challenge_note disposition (2 ACCEPT + 4 PARTIAL_ACCEPT + 1 REBUTTAL + 1 hybrid) → final emit. Charter §8 No Silent Override 정합. Lockbox scope 정합. No rationalization keywords self-check PASS (Codex 3 flagged → 1 false_positive RETAIN + 2 PARTIAL_ACCEPT revision applied). RF-R6 PG2 style cor 0.965 measurement-basis distinction (universe baseline ≠ DPL strategy, Codex C7). RF-R7 rawdata SHA mismatch honest inherit (deferred Q-Lead reconciliation). Universe explicit disposition Codex C8 PARTIAL ACCEPT.",
+    "AX-003_KR_value_EP_failure": "N/A (DPL multi-factor ML sizing 80 features family-balanced, not Value EP)",
+    "AX-004_KR_quality_single_signal": "N/A (DPL multi-factor composite, not quality single-signal)",
+    "AX-005_KR_defense_top20_failure": "compliant_advisory — v3 top-20 hard via STE top-K + post-PA re-projection; defensive-heavy 55% (v2 inherit family distribution Risk_Beta_Vol+Tail_Risk+Risk_Metric+Liquidity = 44/80) BUT EXCLUSION (Gate13) necessary not sufficient. v3 paradigm differentiation: multi-feature DeepSet cross-section + concentration penalty ≠ single-signal long-only defense. Forge G7 HHI > 0.06 demonstration mandate (necessary + AX-007 #4 eligibility, NOT sufficient proof).",
+    "AX-007_methodological_single_sleeve_break": "ADVISORY_PENDING_FORGE_DEMONSTRATION — eligibility via ML sizing #4 RE-ESTABLISHED by v3 architecture (continuous concentration softmax + concentration penalty + STE top-K + PAN + post-PA re-projection, NOT v1 Gumbel hard which produced EW collapse 100% invalidating exemption). Demonstration: Forge weights.csv per-sig_date HHI > 0.06 (necessary precondition) + SR(DPL_v3) > SR(B6_EW) (paradigm value-add proof, Codex self-check_2 revision). v1 EW collapse 100% direct avoidance.",
+    "AX-008_verification_triangulation_pending": "1/3 at optimizer_completion — Codex round complete (REJECT veto=false + 8 concerns disposed: 2 ACCEPT + 4 PARTIAL_ACCEPT + 1 REBUTTAL + 1 PARTIAL_ACCEPT_PARTIAL_REBUTTAL hybrid). Forge + Architect deferred to Forge cycle GPU train. ≥ 2/3 PASS required at admit gate (G6)."
+  },
+
+  "research_philosophy_alignment": {
+    "principle_2_cost_aware": {
+      "compliant": true,
+      "evidence": "Loss λ_to · 0.003 · |Δw|_1 direct cost-aware (Jensen-Kelly-Malamud-Pedersen 2022 formulation, Codex v1 C6 explicit inherit) + λ_to grid {1.0, 2.0, 4.0} + Partial Adjustment α=0.6 + 5-layer mitigation stack (decision-induced clip + concentration penalty + continuous softmax + Partial Adjust + λ_to). selection_objective = net_ir."
+    },
+    "principle_5_crowding": {
+      "compliant_pending_forge": true,
+      "evidence": "Optimizer contributes via 4-stage projection design + risk_package §crowding_score_per_factor (Acadian 2026) inherit. 14 ELEVATED factors flagged for Forge post-train per-DPL-weight × crowding_score audit. AX-007 #4 demonstration deferred Forge G7 HHI > 0.06."
+    },
+    "principle_6_implementation_discipline": {
+      "compliant": true,
+      "evidence": "max_names=20 + bounds [0, 0.20] + Σw=1 + long-only Stages A-D architecturally enforced + post-PA re-projection (Codex C4). Universe KR_TOP500_LIQ1E8 (2e8 KRW 20d ADV) + Forge final-weight ADV audit (Codex v1 C7 + v3 C8 PARTIAL ACCEPT inherit). Cost 0.0015 × 2 × |Δw|_1 per rebal (Codex v1 C6 inherit, NO ×12). TO target ≤ 6.0/yr Forge gate. 3-source TO decomposition + Pareto frontier sweep. weights.csv schema explicit (Codex C3 ACCEPT)."
+    }
+  },
+
+  "hard_constraints_compliance": {
+    "long_only": true,
+    "max_names": 20,
+    "weight_bounds": [0.0, 0.20],
+    "sum_weights": 1.0,
+    "universe": "KR_TOP500_LIQ1E8 (alpha-stage inherit Codex v1 C4 ACCEPT 2-stage mitigation + v3 Codex C8 PARTIAL ACCEPT universe explicit disposition + Forge final-weight ADV audit C7 ACCEPT)",
+    "cost_model_version": "v2.3_kr_retail_15bps (one-way 15bps × 2 round-trip per rebalance, Codex v1 C6 ACCEPT inherit explicit)",
+    "turnover_annualized_max": 6.0,
+    "mdd_pct_max": -0.25,
+    "verification_method": "DESIGN_SPEC_ONLY at design phase a. FORGE_CYCLE_EMITS_WEIGHTS_CSV (304 sig_dates × Ticker × weight × method_selected × confidence) WITH PER_ROW_STRICT_ASSERT (Stage C tol 1e-6, max 0.20 + 1e-6, n_active ≤ 20 via Stage B + Stage D post-PA re-projection, min ≥ -1e-6, LIQ ≥ 2e8). Violation_rate = 0 strict per row (Codex v1 C3 ACCEPT). 단 1행 violation → Dykstra v1.0 fallback automatic.",
+    "verification_path": "stage_artifacts/WT_D20260519_001/constraint_projection_audit_v3.md §2 (Hard Constraints Compliance Matrix)"
+  },
+
+  "deliverable_lineage_v6_1": {
+    "constraint_projection_audit_md": "stage_artifacts/WT_D20260519_001/constraint_projection_audit_v3.md",
+    "alternative_weight_comparison_protocol_md": "stage_artifacts/WT_D20260519_001/alternative_weight_comparison_protocol_v3.md",
+    "turnover_decomposition_md": "stage_artifacts/WT_D20260519_001/turnover_decomposition_v3.md",
+    "alpha_package_inherit": "qepm/mailbox/worktask/WT-D20260519_001/alpha_package.json",
+    "risk_package_inherit": "qepm/mailbox/worktask/WT-D20260519_001/risk_package.json",
+    "dpl_v3_architecture_inherit": "stage_artifacts/WT_D20260519_001/dpl_kr_v3_architecture.md (v3.1 reconcile escalate per Codex C3 + C4)",
+    "v1_optimizer_lineage_inherit": "qepm/mailbox/worktask/WT-D20260517_001/optimization_package.json (Codex Round REJECT 10 concerns disposed: 4 ACCEPT + 5 PARTIAL_ACCEPT + 1 REBUTTAL + 1 PARTIAL_REBUTTAL)",
+    "optimization_package_draft": "qepm/mailbox/worktask/WT-D20260519_001/optimization_package_draft.json",
+    "optimizer_package_draft_hook_alias": "qepm/mailbox/worktask/WT-D20260519_001/optimizer_package_draft.json (hook regex 정합 alias for codex_round_pre_enforcer.sh)",
+    "codex_critic_response_optimizer": "qepm/mailbox/worktask/WT-D20260519_001/codex_critic_response_optimizer.json (Codex REJECT veto=false 8 concerns)",
+    "challenge_note_optimizer_research_md": "qepm/mailbox/worktask/WT-D20260519_001/challenge_note_optimizer-research.md (8 concerns disposition + Q-Lead escalate brief + Codex C3/C4 alpha v3.1 reconcile mandate)",
+    "optimization_package_final": "qepm/mailbox/worktask/WT-D20260519_001/optimization_package.json (본 emission, post-Codex disposition + revisions applied)"
+  },
+
+  "challenge_flags": [
+    {
+      "id": "CF-O1-v3-PAN-PROJECTION-NON-IDEMPOTENT",
+      "severity": "HIGH",
+      "description": "Stage C PAN (bounds clip + L1 normalize) non-idempotent. v3 inherits v1 family. v1 Codex C3 ACCEPT mandate retain: PAN iterative max_iter=3 + Dykstra v1.0 fallback strict. Forge violation_rate = 0 per row.",
+      "academic_evidence": "Bauschke-Combettes 2017 Convex Analysis Ch 28 §28.3. Boyle-Dykstra 1986 §3.2.",
+      "mitigation": "Forge per-epoch post-projection assert; violation_rate = 0 strict. 위반 시 즉시 Dykstra v1.0 fallback. PAN fallback rate logging (target < 5%, alert ≥ 10%).",
+      "codex_v1_c3_accepted_inherit": true
+    },
+    {
+      "id": "CF-O2-v3-STE-TOPK-TRAIN-INFERENCE-CONSISTENCY",
+      "severity": "MEDIUM",
+      "description": "STE top-K train mode: w_soft = w_raw · top_K_mask STE (Σ < 1 before PAN). Inference: argsort + Σ-renormalize (Σ = 1). Train/Inference 일관성 audit + STE top-K mass distribution log mandate.",
+      "academic_evidence": "Bengio-Léonard-Courville 2013 §3 (STE foundation). Jang-Gu-Poole 2017 §3.2 (alternative differentiable top-K).",
+      "mitigation": "Forge cycle codebase: `if self.training: STE mask else: argsort` explicit flag. Per-epoch log `Σ w_raw[top_k_indices]` distribution. Expected median ≥ 0.5, alert if < 0.3 consistently."
+    },
+    {
+      "id": "CF-O3-v3-PARTIAL-ADJUST-POSTPA-REPROJECTION-CODEX-C4-ACCEPT",
+      "severity": "HIGH",
+      "description": "v3 NEW (vs v1 absent): Partial Adjustment α=0.6 can produce count(w > 0) > 20 if active top-20 universe differs between t-1 and t. Mitigation: post-Partial-Adjust re-projection (apply STE top-K + PAN again). Codex C4 ACCEPT + alpha-research v3.1 architecture skeleton patch escalate.",
+      "academic_evidence": "Wang-Hasuike 2026 §3-4 partial adjustment principle. v3 NEW caveat (architecture §2.7 amendment + skeleton §6.1 patch).",
+      "mitigation": "Forge implement post-Partial-Adjust re-projection: `w_t_pre = α·w_new + (1-α)·w_old; top_k = argsort(w_t_pre, K=20); w_t = PAN(w_t_pre[top_k])`. Per-row count(w > 0) ≤ 20 assertion. Q-Lead escalate for alpha-research v3.1 cycle skeleton patch.",
+      "codex_v3_c4_accepted": true
+    },
+    {
+      "id": "CF-O4-v3-DPL-PARADIGM-VALUE-ADD",
+      "severity": "HIGH",
+      "description": "Production weights = DPL_v3 only (4-stage projection direct emission). Baseline B1-B7는 사후 검증 only. DPL paradigm value-add 입증 의무: SR(DPL_v3) > SR(B1_MVO with DPL scores) AND MDD(DPL_v3) ≤ MDD(B1). FAIL → WT reject (Scenario C, Codex v1 C4 + v3 C6 REBUTTAL doctrine retain).",
+      "academic_evidence": "You-Zhang 2025 RFS §5 (DPL paradigm doctrine). Uysal-Li-Mulvey 2021 §4. L-272 paradigm doctrine. v1 Codex C4 REBUTTAL precedent.",
+      "mitigation": "Forge cycle optimizer_comparison.parquet emit + paradigm_value_add_audit.json. FAIL 시 WT reject. baseline production X.",
+      "codex_v1_c4_v3_c6_rebuttal_inherit": true
+    },
+    {
+      "id": "CF-O5-v3-CVAR-CONTINGENCY-BRANCH-AB-CODEX-C5-PARTIAL-ACCEPT",
+      "severity": "HIGH",
+      "description": "risk_package §infeasibility_report: universe-level EW CVaR_95 = -35.3% is OBSERVATION (NOT optimizer-stage strategy claim). DPL_v3 strategy CVaR will be measured at Forge cycle realized portfolio backtest. Codex C5 PARTIAL ACCEPT — measurement language tightening + contingency Branch A/B explicit.",
+      "academic_evidence": "Rockafellar-Uryasev 2000 §3 CVaR LP. risk_package §infeasibility_report explanation: 'Pre-Forge universe baseline CVaR is NOT directly comparable to post-strategy CVaR.'",
+      "mitigation": "Forge cycle realized DPL CVaR re-measurement. Branch A (strategy CVaR also breaches) → Forge infeasibility populate + Scenario C reject. Branch B (strategy CVaR mitigated) → risk mitigation demonstration + admit eligibility.",
+      "codex_v3_c5_partial_accept": true
+    },
+    {
+      "id": "CF-O6-v3-CHARTER-AMENDMENT-INHERIT-CODEX-C1-PARTIAL-ACCEPT",
+      "severity": "HIGH",
+      "description": "discovery_design_phase_a Charter §10 amendment-pending (alpha CF-A10 + risk RF-R6/RF-R7 + v1 optimizer CF-O6 + 본 v3 optimizer CF-O6 inherit = 4 inheritance points + v1 precedent). Q-Lead escalate.",
+      "mitigation": "Q-Lead Charter §10 v1.8 amendment formalize obligation. Continues from v1 cycle.",
+      "codex_v1_c1_v3_c1_partial_accept_inherit": true
+    },
+    {
+      "id": "CF-O7-v3-RF-R6-PG2-STYLE-COR-MEASUREMENT-BASIS-CODEX-C7-PARTIAL-ACCEPT-REBUTTAL",
+      "severity": "HIGH",
+      "description": "risk_package RF-R6 HIGH: PG2 STR_1715 vs Universe EW style exposure cor = 0.965 (RiskAdjMom +0.86, Sortino +0.75, Calmar +0.73). MEASUREMENT-BASIS: universe baseline (KR_TOP500 EW) vs STR_1715 PG2, NOT DPL_v3 emitted weights. Codex C7 PARTIAL ACCEPT (Forge realized measurement obligation) + PARTIAL REBUTTAL (universe-level prior ≠ DPL_v3 strategy constraint).",
+      "academic_evidence": "risk_package RF-R6 explicit. Joe-Clayton TDC (Pfaff Ch.9) definition. L-219 sequential admission framework — realized strategy correlation basis.",
+      "mitigation": "Forge cycle G2 measurement (DPL_v3 vs STR_1715 alpha_inheritance_cor) is critical decision gate. Forge report: (a) DPL_v3 weight × ticker overlap with STR_1715 PG2, (b) DPL_v3 alpha-score correlation per sig_date averaged, (c) per-stock attribution analyzed. Scenario A trigger requires realized cor < 0.3; Scenario B 0.3 ≤ cor < 0.5; Scenario C cor ≥ 0.5. NEGATIVE PRIOR acknowledged (KR equity style overlap by definition for top-20 universe filter).",
+      "codex_v3_c7_partial_accept_partial_rebuttal": true
+    },
+    {
+      "id": "CF-O8-v3-UNIVERSE-EXPLICIT-DISPOSITION-CODEX-C8-PARTIAL-ACCEPT",
+      "severity": "HIGH",
+      "description": "Codex C8 PARTIAL ACCEPT — universe KR_TOP500_LIQ1E8 per request.json mandate (alpha-research v3 standalone alpha generator scope). Operationally equivalent to CLAUDE.md base KOSPI200 ∪ KOSDAQ150 post 2e8 LIQ filter (universe_size 259, 99.2% above 2e8). Charter §8 No Silent Override compliance via explicit disposition.",
+      "academic_evidence": "request.json::universe_definition.label = 'KR_TOP500_LIQ1E8' + liquidity_min_won_20d_avg=200000000. risk_package §diagnostics.universe_size=259 confirmed.",
+      "mitigation": "optimization_package §universe_disposition_codex_c8_v3_explicit field declaration + Forge cycle ADV audit per-row LIQ ≥ 2e8.",
+      "codex_v3_c8_partial_accept": true
+    },
+    {
+      "id": "CF-O9-v3-DPL-PHASE-3-LOSS-COMPOSITION",
+      "severity": "MEDIUM",
+      "description": "v3 loss = -E[r_p]/σ(r_p) + λ_to · 0.003 · |Δw|_1 + λ_conc · (HHI - 0.10)². Sharpe surrogate (vs v1 -E[r] direct) + cost-aware + concentration penalty. EVaR worst-window optional (Forge ablation, Wood-Roberts-Zohren 2026 §4).",
+      "mitigation": "Forge cycle post-train: ablation `L_evar = -τ_evar · log(Σ_w exp(-SR_w / τ_evar))` to test crisis-conditional benefit. Optional addition only if standard 3-term loss G3' crisis gate fails.",
+      "academic_evidence": "Sharpe surrogate variance-normalized vs v1 -E[r] (high-variance gradient). Wood-Roberts-Zohren 2026 §4 EVaR worst-window for crisis robustness."
+    },
+    {
+      "id": "CF-O10-v3-SEQUENTIAL-ADMISSION-SCENARIOS",
+      "severity": "MEDIUM",
+      "description": "Codex v1 C8 + v3 C7 PARTIAL ACCEPT inherit — Sequential admission scenarios A/B/C explicit. Trigger criteria based on realized G2 cor + G5 cost-Pareto + DPL_v3 SR vs STR_1715 + realized CVaR Branch A/B.",
+      "mitigation": "optimization_package §sequential_admission_integration_scenarios_codex_v1_c8_v3_c7_explicit field. Forge measurement obligation.",
+      "academic_evidence": "Joe-Clayton empirical TDC (Pfaff Ch.9) + L-219 sequential admission framework + L-307 STR_1715 single-sleeve admit precedent.",
+      "codex_v1_c8_v3_c7_partial_accepted_inherit": true
+    },
+    {
+      "id": "CF-O11-v3-COST-CONVENTION-EXPLICIT-INHERIT",
+      "severity": "MEDIUM",
+      "description": "Codex v1 C6 ACCEPT inherit — cost convention explicit. 0.0015 × 2 × one_way_TO per rebalance (NO ×12 annualization in loss). Iter 3 violation avoidance.",
+      "mitigation": "optimization_package §cost_convention_codex_v1_c6_explicit_inherit field + turnover_decomposition_v3.md §5 Iter 3 avoidance section. Forge loss term per-batch (1 sig_date) only.",
+      "academic_evidence": "Iter 3 violation precedent inherit + Wang-Hasuike 2026 §5 + Jensen-Kelly-Malamud-Pedersen 2022.",
+      "codex_v1_c6_accepted_inherit": true
+    },
+    {
+      "id": "CF-O12-v3-13-WALK-FORWARD-CODEX-C3-ACCEPT",
+      "severity": "MEDIUM",
+      "description": "도훈 mandate 2026-05-19 extension + Codex C3 ACCEPT: 5 walk-forward × 52m → 13 × 24m = 304 test months (5.85× sample increase). alpha-research v3.1 reconcile obligation for architecture §4.1 + protocol §4.1 + skeleton §6.1 markdown.",
+      "mitigation": "alternative_weight_comparison_protocol_v3.md §0.3 — 13-window schedule + Crisis-explicit 7 (W1/W4/W6/W8/W9/W10/W11) alignment with alpha-research G3'. Forge parallel exec mandate. Q-Lead escalate for alpha-research v3.1.",
+      "academic_evidence": "L-326 STR_1715 84m ≈ 255m baseline robust precedent. Lopez de Prado 2018 Ch 7 + Ch 12 purged WF strengthens statistical power.",
+      "codex_v3_c3_accepted": true
+    },
+    {
+      "id": "CF-O13-v3-B7-PARADIGM-DEPTH-PROBE-NEW",
+      "severity": "LOW",
+      "description": "v3 NEW vs v1: B7 DPL_v3 → MVO post-hoc refinement baseline. Tests if MVO refinement on DPL output adds value. If yes → suggests DPL underweights risk-aware optimization (room for hybrid v3.1). If no → DPL paradigm self-sufficient.",
+      "mitigation": "alternative_weight_comparison_protocol_v3.md §1 B7 spec. Forge implement local MVO refinement: top-20 names fixed, perturbation bounded ||w_new - w_DPL||_2 < 0.05.",
+      "academic_evidence": "Ben-Tal-El Ghaoui-Nemirovski 2009 Robust Optimization §5 (warm-start refinement)."
+    },
+    {
+      "id": "CF-O14-v3-CRISIS-BOUNDARY-SHRINK-REBUTTAL-INHERIT",
+      "severity": "HIGH",
+      "description": "Codex v1 C5 PARTIAL REBUTTAL inherit — CRISIS boundary shrink. 도훈 mandate `weight_bounds [0, 0.20]` static cap strict. Dynamic regime-conditional cap은 STR_1715 M4×AR×R05 overlay 영역 (Layer 5 R05), NOT DPL_v3 alpha generator scope.",
+      "mitigation": "v3 design phase a static cap [0, 0.20] retain. Post-admit if Scenario A/B triggers: Layer 5 R05 overlay영역 적용 가능 (현 cycle scope 외).",
+      "academic_evidence": "STR_1715 L-308~L-313 (Layer 5 R05 sequential overlay precedent). Optimizer scope: alpha-generator weights, NOT post-overlay regime-conditional sizing.",
+      "codex_v1_c5_partial_rebuttal_inherit": true
+    }
+  ],
+
+  "codex_round_metadata": {
+    "draft_emit_at": "2026-05-18T11:13:00+09:00",
+    "codex_invocation_at": "2026-05-18T11:22:00+09:00",
+    "codex_response_at": "2026-05-18T11:27:47+09:00",
+    "codex_helper_command": "bash 02_Infrastructure/tools/debate_helpers/run_codex_qepm_critic.sh --role=optimizer --task_id=WT-D20260519_001 --package=qepm/mailbox/worktask/WT-D20260519_001/optimization_package_draft.json --output=qepm/mailbox/worktask/WT-D20260519_001/codex_critic_response_optimizer.json",
+    "codex_model": "gpt-5.5 + xhigh",
+    "stance": "REJECT",
+    "veto_flag": false,
+    "concerns_total": 8,
+    "concerns_CRITICAL": 1,
+    "concerns_HIGH": 7,
+    "concerns_MEDIUM": 0,
+    "disposition_summary": {
+      "ACCEPT": 2,
+      "PARTIAL_ACCEPT": 4,
+      "REBUTTAL": 1,
+      "PARTIAL_ACCEPT_PARTIAL_REBUTTAL_HYBRID": 1
+    },
+    "disposition_per_concern": {
+      "C1_weights_csv_absent_CRITICAL": "PARTIAL_ACCEPT (Charter §10 v1.8 amendment-pending + Forge weights.csv schema explicit 5 cols × 304 sig_dates)",
+      "C2_alpha_scores_artifact_HIGH": "PARTIAL_ACCEPT (Forge artifacts mandate + stage_artifacts path B canonical correction)",
+      "C3_walk_forward_spec_inconsistency_HIGH": "ACCEPT (304 canonical + alpha-research v3.1 reconcile escalate)",
+      "C4_partial_adjust_max_names_HIGH": "ACCEPT (post-PA re-projection mandate + Forge skeleton patch obligation)",
+      "C5_cvar_breach_infeasibility_null_HIGH": "PARTIAL_ACCEPT (CF-O5-v3 description tighten + Branch A/B contingency explicit)",
+      "C6_method_selection_pre_selected_HIGH": "REBUTTAL (paradigm-shift baseline doctrine, You-Zhang §5 + Uysal-Li-Mulvey 2021 §4 + L-272 + v1 Codex C4 precedent)",
+      "C7_pg2_style_cor_above_threshold_HIGH": "PARTIAL_ACCEPT + PARTIAL_REBUTTAL (measurement-basis distinction + Forge realized binding)",
+      "C8_universe_override_KOSPI_KOSDAQ_HIGH": "PARTIAL_ACCEPT (universe explicit disposition + operational equivalence + Charter §8 compliance)"
+    },
+    "weakest_assumption_codex": "The weakest assumption is that architectural constraints plus future Forge mandates can substitute for an emitted PIT weights.csv schedule when judging optimizer validity.",
+    "weakest_assumption_disposition": "ACCEPT — discovery_design_phase_a inherit + Forge weights.csv schedule explicit mandate (304 sig_dates × 5-col schema) + alpha/risk 선행 cycle precedent + v1 cycle pattern inherit + Codex C1 PARTIAL ACCEPT applied. Charter §10 v1.8 formalization escalate.",
+    "q_lead_escalate_triggered": true,
+    "q_lead_escalate_reasons": [
+      "HIGH severity concerns ≥ 5 (Codex 7 HIGH + 1 CRITICAL)",
+      "AX axiom hard FAIL ≥ 3 (AX-001 v2 FAIL pending + AX-002 FAIL pre-finalization + AX-008 FAIL 1/3)",
+      "Codex stance=REJECT (veto_flag=false)",
+      "Charter §10 v1.8 amendment-binding (discovery_design_phase_a 4 inheritance points)",
+      "RF-O5/6/7/9/13 (Hook block constraint) — weights.csv design phase emission X → governance dispute (C1)",
+      "C3 + C4 spec/skeleton inconsistency → alpha-research v3.1 reconcile cycle escalate"
+    ],
+    "rationalization_self_check": "PASS — auto-grep no '미미' / '관행적' / '실무적' / '보수적이면 OK' / '대부분 결과 동일' / '이미 반영' / '백테스트 기간이 충분히 길어서 상쇄' (Codex 3 flagged → 1 false_positive RETAIN [self-check audit list] + 2 PARTIAL_ACCEPT revision applied [HHI necessary not sufficient + CVaR baseline observation not claim]).",
+    "supporting_arguments_codex_confirmed": [
+      "covariance.parquet 259×259 PSD min_eig=0.001875 eig_ratio=84.74 confirmed by Codex direct access — risk handoff cond ≤ 100 target met",
+      "cost convention 15bps × 2 round-trip explicit documented",
+      "method_shopping_log 8 candidates ≤ cap 10",
+      "Sequential admission scenarios A/B/C described"
+    ]
+  },
+
+  "post_codex_corrections_summary": [
+    "Codex C3 ACCEPT: 304 sig_dates canonical retain in optimization_package + alpha-research v3.1 reconcile escalate (architecture §4.1 + protocol §4.1)",
+    "Codex C4 ACCEPT: CF-O3-v3 post-PA re-projection mandate explicit + Forge PyTorch skeleton patch obligation + alpha-research v3.1 architecture §6.1 escalate",
+    "Codex C1 PARTIAL ACCEPT: weights.csv schema explicit (Date × Ticker × weight × method_selected × confidence, 5 cols × 304 sig_dates) + per-row strict asserts + violation_rate = 0 strict (v1 C3 inherit)",
+    "Codex C2 PARTIAL ACCEPT: Forge artifacts mandate (alpha_scores.parquet + weights.csv + bt_result.rds + sha256 binding) + stage_artifacts path B canonical correction",
+    "Codex C5 PARTIAL ACCEPT: CF-O5-v3 description language tighten + CVaR contingency Branch A/B explicit + infeasibility_report rationale dual cause (no weights + Forge measurement is the binding evidence)",
+    "Codex C6 REBUTTAL: paradigm-shift baseline doctrine retain (You-Zhang §5 + Uysal-Li-Mulvey 2021 §4 + L-272 + v1 Codex C4 precedent) + Forge paradigm_value_add_audit explicit",
+    "Codex C7 PARTIAL ACCEPT + PARTIAL REBUTTAL: measurement-basis distinction (universe baseline ≠ DPL strategy) + Forge realized cor measurement obligation + scenario A/B/C branching explicit + NEGATIVE PRIOR acknowledged",
+    "Codex C8 PARTIAL ACCEPT: universe disposition explicit (KR_TOP500_LIQ1E8 per request.json mandate + operational equivalence to KOSPI200 ∪ KOSDAQ150 post LIQ filter + Charter §8 No Silent Override compliance)",
+    "challenge_note_optimizer-research.md emit (Charter §8 No Silent Override compliant)",
+    "Q-Lead escalate triggered: HIGH ≥ 5 + AX axiom hard FAIL ≥ 3 + Codex REJECT + Charter §10 v1.8 amendment-binding + alpha-research v3.1 reconcile",
+    "rationalization self-check revisions: 2 PARTIAL_ACCEPT applied (HHI necessary not sufficient + CVaR baseline observation), 1 RETAIN (self-check audit list false_positive)"
+  ],
+
+  "v1_v5_v3_learning_integrated_summary": {
+    "v1_optimizer_REJECT_inherit": [
+      "Stage 3-4 violation_rate = 0 strict + Dykstra v1.0 fallback (Codex v1 C3 ACCEPT)",
+      "Cost convention explicit: 0.0015 × 2 × one_way_TO per rebal, NO ×12 in loss (Codex v1 C6 ACCEPT)",
+      "Paradigm-shift baseline doctrine retain: production = DPL only, baselines post-hoc (Codex v1 C4 + v3 C6 REBUTTAL)",
+      "Sequential admission scenarios A/B/C explicit (Codex v1 C8 + v3 C7 PARTIAL ACCEPT)",
+      "Forge cycle weights.csv mandate explicit + per-row strict assert + violation_rate = 0 (Codex v1 C2 PARTIAL ACCEPT)",
+      "ADV audit Forge cycle obligation (Codex v1 C7 + v3 C8 PARTIAL ACCEPT)",
+      "Assumption 언어 정정: expected → Forge measurement obligation (Codex v1 C10 ACCEPT)",
+      "infeasibility_report re-label: NOT_TRIGGERED_AT_DESIGN_PHASE_A_FORGE_CYCLE_OBLIGATION (Codex v1 C9 ACCEPT)"
+    ],
+    "v3_NEW_design_phase_a_elements_post_codex_disposition": [
+      "Continuous concentration softmax + STE top-K (vs v1 Gumbel hard → EW collapse 100%)",
+      "Partial Adjustment α=0.6 + post-PA re-projection (Codex v3 C4 ACCEPT) + alpha-research v3.1 skeleton patch escalate",
+      "13 walk-forward × 24m test = 304 test months (도훈 mandate 2026-05-19 + Codex v3 C3 ACCEPT canonical) + alpha-research v3.1 reconcile escalate",
+      "B7 NEW: DPL_v3 → MVO post-hoc refinement baseline (paradigm depth probe)",
+      "RF-R6 PG2 style cor 0.965 measurement-basis distinction (Codex v3 C7 PARTIAL_ACCEPT_PARTIAL_REBUTTAL)",
+      "CVaR contingency Branch A/B explicit (Codex v3 C5 PARTIAL ACCEPT)",
+      "Universe explicit disposition (Codex v3 C8 PARTIAL ACCEPT)",
+      "weights.csv schema 5-col explicit (Codex v3 C3 ACCEPT)",
+      "Sharpe surrogate loss 3-term composite (vs v1 -E[r] direct + CVaR LP)",
+      "λ_to grid {1.0, 2.0, 4.0} (vs v1 fixed 1.0 weak)",
+      "α grid {0.4, 0.6, 0.8} Partial Adjustment Forge ablation",
+      "5-layer TO mitigation stack (vs v1 single λ_cost=1.0)",
+      "Crisis-explicit 7 windows G3' gate alignment (vs v1 absent)",
+      "HHI > 0.06 G7 gate: necessary precondition + AX-007 #4 eligibility (NOT sufficient proof, Codex self-check_2 revision)"
+    ]
+  },
+
+  "schema_compliance": "optimization_package v1 design phase a (8-field core spec + Charter §10 Role Card discovery_design_phase_a + v6.1 R2-C method shopping ≤ 10 + R4 selection_objective net_ir + R4-A confidence-aware MVO baseline + R13 parallel exec plan + Tier3 mandate deploy_cutoff + baseline_fairness 명시 + v1 optimizer Codex disposition pattern inherit + v3 Codex Round disposition complete 8 concerns: 2 ACCEPT + 4 PARTIAL_ACCEPT + 1 REBUTTAL + 1 PARTIAL_ACCEPT_PARTIAL_REBUTTAL_HYBRID + post-Codex revisions applied)"
+}
