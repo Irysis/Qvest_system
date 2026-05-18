@@ -1,0 +1,278 @@
+{
+  "task_id": "WT-D20260519_002",
+  "agent": "risk-research",
+  "agent_version": "v1.0_bear_prediction_engine_regime_sensor_scope_draft",
+  "wt_type": "discovery",
+  "wt_subclass_charter_v18": "discovery_design_phase_a_regime_sensor_risk_diagnostic",
+  "draft_marker": true,
+  "draft_emission_at": "2026-05-18T20:30:00+09:00",
+  "as_of_date": "2026-05-18",
+  "scope": "regime_sensor",
+  "scope_explanation": "본 cycle은 portfolio cross-section alpha sleeve NOT cross-section Σ = BΩB' + D 표준 추정. Bear regime sensor (1-dim time-series p_bad output)에 대한 risk diagnostic scope. 표준 5-step pipeline (B/Ω/D/Σ/stress)는 Forge cycle binding to be assessed downstream. Risk Agent 본 cycle 책무: (1) feature stability priors (2) sub-period consistency (3) crowding overlap with admit M4/AR/R05 signals (4) 8 crisis windows recall priors (5) threshold sensitivity priors.",
+
+  "alpha_package_received": {
+    "alpha_package_path": "qepm/mailbox/worktask/WT-D20260519_002/alpha_package.json",
+    "alpha_agent_version": "v1.0_bear_prediction_engine_dedicated_features_multi_source_multi_model_max_history_36yr_post_codex_disposition",
+    "alpha_factor_specs_id": "BEAR_PREDICTION_REGIME_FEATURE_FAMILY_V1_UNIFIED",
+    "alpha_features_count": 32,
+    "alpha_models_ensemble": 5,
+    "alpha_backbones_academic": 8,
+    "alpha_post_codex_status": "POST_CODEX_REVISE_7_DISPOSITION_2_ACCEPT_3_PARTIAL_ACCEPT_2_REBUTTAL_0_REJECT_VETO_FALSE",
+    "alpha_max_history": "437 monthly 1990-01~2026-05 + ~9000 daily option",
+    "alpha_modifications_applied": "no_silent_override_alpha_features_intact (risk-research scope=regime_sensor diagnostic only)"
+  },
+
+  "selection_objective": "stress_robust",
+  "selection_objective_rationale": "role_objective_guard enum compliance (condition_number / stress_robust / crowding / shrinkage_quality). stress_robust 선택 사유: 본 cycle은 portfolio Σ 추정 NOT 발생 (sensor scope) → condition_number / shrinkage_quality enum 부적합. crowding은 부수 audit (Section crowding_overlap_with_M4_AR_R05). 본 cycle의 primary risk objective = bear sensor의 8 crisis epoch stress test에서 robust한 stability prior emission. Forge cycle G1 5-subgate 4/5 stability mandate + per-crisis Recall stability = stress_robust 정합.",
+
+  "exposure_matrix_ref": "n/a — regime_sensor scope (NOT cross-section portfolio)",
+  "factor_covariance_ref": "n/a — regime_sensor scope (Σ assessment deferred to Forge cycle if Path A integration)",
+  "specific_risk_ref": "n/a — regime_sensor scope",
+  "security_covariance_ref": "n/a — regime_sensor scope",
+
+  "stage_artifacts_emitted_3": [
+    "stage_artifacts/WT_D20260519_002/feature_stability_audit.md",
+    "stage_artifacts/WT_D20260519_002/crisis_window_recall_audit.md",
+    "stage_artifacts/WT_D20260519_002/crowding_overlap_with_M4_AR_R05.md"
+  ],
+
+  "risk_summary": {
+    "scope_disclaimer": "regime_sensor scope diagnostic — NOT portfolio Σ 표준 risk_summary",
+    "top_common_risks_sensor": [
+      "S1_era_membership_risk (1990~2000 only 3 features active, 30% of sample) — Strategy A admit fragility (Codex C5 mandatory Strategy B benchmark)",
+      "VIX_Yield_Curve_crowding_cluster (F01~F05 + F11~F14 = 28% of features, consensus signal) — alpha edge limited",
+      "p_bad_vs_m4_BOCPD_overlap_prior_0.55~0.75 — redundancy risk (Forge cycle ρ < 0.85 hard mandate)"
+    ],
+    "crowding_flags": [
+      "VIX_crowding_cluster_F11~F14_score_0.90 — global vol indicator consensus",
+      "YieldCurve_crowding_cluster_F01~F05_score_0.85 — institutional FED-watching consensus",
+      "CreditSpread_crowding_F23~F25_score_0.75 — mainstream institutional indicator"
+    ],
+    "crowding_score_per_factor": [
+      {"factor_name": "F01_F05_YieldCurve_Estrella1991", "crowding_score": 0.85, "hhi_top": null, "vol_concentration": null, "passive_overlap_proxy": null, "demand_elasticity_proxy": null, "alert": "LEVEL_HIGH", "note": "design-phase prior — Forge cycle empirical measurement binding"},
+      {"factor_name": "F06_F10_LEI_StockWatson2003", "crowding_score": 0.55, "alert": null},
+      {"factor_name": "F11_F14_VIX_EngleMistry2014", "crowding_score": 0.90, "alert": "LEVEL_HIGH", "note": "highest-crowding cluster"},
+      {"factor_name": "F17_AsymmetricCor_AngChen2002", "crowding_score": 0.30, "alert": null, "note": "lowest crowding, niche academic"},
+      {"factor_name": "F20_F22_NFCI_AdrianBrunnermeier2016", "crowding_score": 0.50, "alert": null},
+      {"factor_name": "F23_F25_CreditSpread_GilchristZakrajsek2012", "crowding_score": 0.75, "alert": "LEVEL_HIGH"},
+      {"factor_name": "F26_F28_SEFRS_inherit_WTD20260518_001", "crowding_score": 0.65, "alert": null, "note": "inherited from SEFRS Phase A"},
+      {"factor_name": "F29_F30_ForeignFlow_KRX", "crowding_score": 0.55, "alert": null},
+      {"factor_name": "F31_F32_DefensiveRotation_FrazziniPedersen2014", "crowding_score": 0.45, "alert": null}
+    ],
+    "liquidity_flags": [
+      "n/a — regime_sensor scope (no portfolio holdings). Path B downstream integration 시 STR_1715 PG2 LIQ 2e8 KRW 20d avg inherit constraint."
+    ],
+    "stress_tests_sensor_scope": {
+      "scope_note": "본 stress test는 portfolio NAV impact NOT 측정 (Forge cycle binding). 본 audit는 8 crisis epoch별 sensor Recall + Precision prior + lead-time + FP cost diagnostic.",
+      "crisis_4_2008_GFC": {"expected_recall_tau_0_5": "0.80~1.00", "expected_precision": "0.60+", "fp_cost_estimate_bps": 9, "verdict": "LOW_RISK_best_case"},
+      "crisis_2_1997_IMF": {"expected_recall_strategy_A": "0.30~0.50", "expected_recall_strategy_B": "held_out", "verdict": "HIGH_RISK_Strategy_A_primary_failure_mode"},
+      "crisis_8_2020_COVID": {"expected_recall_tau_0_5": "0.50~0.80", "fp_cost_estimate_bps": 3, "verdict": "MEDIUM_RISK_speed_challenge"},
+      "crisis_9_2022_inflation": {"expected_recall_tau_0_5": "0.70~0.90", "fp_cost_estimate_bps": 4, "verdict": "LOW_RISK_backbone_optimal"},
+      "crisis_7_2018_vol": {"expected_recall_tau_0_5": "0.30~0.60", "fp_cost_estimate_bps": 15, "verdict": "HIGH_RISK_generalization_weak"},
+      "crisis_5_2011_EU": {"expected_recall_tau_0_5": "0.40~0.60", "verdict": "MEDIUM_RISK"},
+      "crisis_6_2015_CN": {"expected_recall_tau_0_5": "0.40~0.60", "verdict": "MEDIUM_RISK"},
+      "crisis_10_2026_03_recent": {"expected_recall_tau_0_5": "unknown_OOS", "verdict": "PURE_OOS_VALUABLE"}
+    },
+    "threshold_sensitivity_analysis": {
+      "tau_0_3_lenient": {"expected_recall": "0.75~0.90", "expected_precision": "0.30~0.50", "fp_per_year": "~6", "use_case": "aggressive_defensive_scaling_expensive"},
+      "tau_0_5_default_alpha_spec": {"expected_recall": "0.55~0.75", "expected_precision": "0.45~0.65", "fp_per_year": "~3", "use_case": "balanced"},
+      "tau_0_7_conservative": {"expected_recall": "0.30~0.55", "expected_precision": "0.65~0.85", "fp_per_year": "~1", "use_case": "highest_conviction_only"},
+      "precision_break_even_for_path_b_layer_6": "≥ 0.50 break-even SR drag — alpha G1 ≥ 0.40 spec is BELOW break-even (risk advisory flag, NOT veto, alpha 영역)"
+    },
+    "lead_time_diagnostics_per_backbone": {
+      "yield_curve_F01_F05": "6~18 months (Estrella-Hardouvelis 1991 JF prior)",
+      "LEI_F06_F10": "3~9 months (Stock-Watson 2003 JEL)",
+      "VIX_F11_F14": "0~3 months coincident (Engle-Mistry 2014 JFE)",
+      "asymmetric_cor_F17": "0~1 months coincident (Ang-Chen 2002 JFE)",
+      "NFCI_F20_F22": "3~6 months (Adrian-Brunnermeier 2016 AER)",
+      "credit_F23_F25": "3~9 months (Gilchrist-Zakrajsek 2012 AER)",
+      "SEFRS_F26_F28": "5~30 days intraday (WT-D20260518_001 Phase A inherit)",
+      "foreign_flow_F29_F30": "0~2 weeks (KR empirical)",
+      "msm_hamilton_1989": "0 months state-conditional"
+    },
+    "stratum_imbalance_diagnostic": {
+      "S1_1990_2000": {"n_months": 132, "share": 0.302, "n_features_active": 3, "risk": "era_membership_leakage_HIGH_Codex_C5_mandate_Strategy_B_benchmark"},
+      "S2_2001_2002": {"n_months": 24, "share": 0.055, "n_features_active": 27, "risk": "too_sparse_for_standalone_validation"},
+      "S3_2003_2016": {"n_months": 161, "share": 0.369, "n_features_active": 29, "risk": "VKOSPI_conditional_fetch_dependency"},
+      "S4_2016_09_2026": {"n_months": 117, "share": 0.268, "n_features_active": 32, "risk": "LOWEST_full_features_active"}
+    },
+    "subwindow_class_imbalance_priors": [
+      {"window": "W1_1990_1997_09", "n_obs": 93, "n_bad_minus5pct": 5, "imbalance_ratio": 0.054, "feature_coverage": "S1_3_features_only", "risk": "Recall_measurement_noise_dominant_n_bad_5_Wilson_CI_wide"},
+      {"window": "W2_1997_10_2003_12", "n_obs": 75, "n_bad_minus5pct": 14, "imbalance_ratio": 0.187, "feature_coverage": "S1_to_S2_transition", "risk": "most_balanced_generalization_stress"},
+      {"window": "W3_2004_2010_12", "n_obs": 84, "n_bad_minus5pct": 7, "imbalance_ratio": 0.083, "feature_coverage": "S3_29_features", "risk": "GFC_single_crisis_priorly_easy"},
+      {"window": "W4_2011_2017_12", "n_obs": 84, "n_bad_minus5pct": 5, "imbalance_ratio": 0.060, "feature_coverage": "S3_29_features", "risk": "Eurozone_China_2015_subset_backbone"},
+      {"window": "W5_2018_2026_05", "n_obs": 101, "n_bad_minus5pct": 6, "imbalance_ratio": 0.059, "feature_coverage": "S4_32_features_full", "risk": "modern_era_3_crisis_diverse"}
+    ],
+    "crowding_overlap_with_admit_signals": {
+      "p_bad_vs_m4_scalar": {"expected_correlation_S4_117m": "0.55~0.75", "verdict": "MEDIUM_HIGH_overlap_Forge_cycle_binding_rho_lt_0.85_mandate", "redundancy_risk": "Path_B_Layer_6_admit_conditional_on_empirical_rho"},
+      "p_bad_vs_beta_AR": {"expected_correlation_S4_117m": "0.20~0.40", "verdict": "LOW_orthogonal_distinct_axis_K=5_eigenvalue_vs_macro_bear"},
+      "p_bad_vs_beta_R05": {"expected_correlation_S4_117m": "0.40~0.60", "verdict": "MEDIUM_acceptable_overlap"},
+      "m4_vs_beta_AR_proven_L_281": 0.077,
+      "m4_vs_beta_R05_unknown": "Forge_cycle_advisory_check"
+    },
+    "tail_event_concentration": {
+      "crisis_8_windows_share_of_time": 0.146,
+      "crisis_8_windows_share_of_bad_months": 0.370,
+      "outside_crisis_bad_months": 51,
+      "outside_crisis_share_of_bad": 0.630,
+      "risk_implication": "Recall_crisis_period vs Recall_outside_crisis 분리 평가 권고 — 학술 backbone의 진정한 value는 Crisis Recall에 집중"
+    }
+  },
+
+  "diagnostics": {
+    "condition_number": "n/a — sensor scope (no Σ)",
+    "shrinkage_used": false,
+    "shrinkage_method": "n/a",
+    "factor_correlation_warnings": [
+      {"pair": "F01_F02_US_yield_curve_10y_2y_vs_10y_3m", "expected_rho": "0.85+", "risk": "high_redundancy_LightGBM_gain_dispersed"},
+      {"pair": "F11_F12_VIX_level_vs_zscore", "expected_rho": "0.90+", "risk": "very_high_one_should_drop"},
+      {"pair": "F23_F25_KR_credit_spread_vs_3m_change", "expected_rho": "~0.50", "risk": "medium_derivative"},
+      {"pair": "F26_F27_F28_SEFRS_family", "expected_rho": "0.65~0.80", "risk": "high_inherited_SEFRS_Phase_A"},
+      {"pair": "F29_F30_foreign_netsell_vs_reversal", "expected_rho": "0.40~0.60", "risk": "medium_derivative"}
+    ],
+    "tdc_summary": {
+      "scope_note": "Tail Dependence Coefficient 측정 미수행 (regime_sensor scope, NOT cross-section Σ). Forge cycle Path A DPL_KR_v3 integration 시 80-feature + p_bad correlation matrix 추가 binding."
+    },
+    "regime_correlation_ref": "n/a — sensor scope. Existing STR_1715 PG2 regime decomposition 267m: BULL=92 NORMAL=157 CAUTION=15 CRISIS=3 (file: 05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/04_backtest_results/regime_decomposition_255m_267m.csv)",
+    "primary_overlap_concern_prior": "p_bad ~ m4_scalar 0.55~0.75 → Forge cycle ρ < 0.85 hard mandate (Path B precondition)",
+    "primary_orthogonality_confirm_prior": "p_bad ⊥ β_AR 0.20~0.40 → distinct axis macro_bear vs cross_section_concentration"
+  },
+
+  "method_shopping_log": {
+    "candidates_tried": 1,
+    "candidates_tried_note": "본 cycle은 regime_sensor scope risk diagnostic — covariance estimator (Sample/LW/Gerber/RMT) selection 미발생. 1 candidate = unified sensor diagnostic framework (학술 prior + Forge cycle binding 분리). R2-C Method Shopping Log hard mandate 정합 (Σ estimator 미선택 → 5 trial 상한 미적용).",
+    "method_log": [
+      {
+        "name": "regime_sensor_risk_diagnostic_unified_framework",
+        "selected": true,
+        "rationale": "단일 unified diagnostic — feature stability priors (학술 backbone 정합) + sub-window class imbalance + crowding overlap with admit signals + crisis recall priors + threshold sensitivity. 5 dimension audit single coherent framework. SEFRS Phase A precedent inherit (similar phase_a_design_only_evaluation paradigm). Codex C5 mandate Strategy B parallel benchmark 정합."
+      }
+    ],
+    "parallel_exec": false,
+    "parallel_exec_note": "Phase A design phase — no Σ estimator parallel comparison. Forge cycle Stage 3~4 시 future.apply parallel if Path A 80+1 feature correlation matrix (R13 정합).",
+    "rcpp_used": false,
+    "rcpp_used_note": "Phase A design only. Forge cycle Stage 4 시 bootstrap_dsr_fast / bootstrap_ic_fast 활용 가능 (R14 정합)."
+  },
+
+  "v61_compliance": {
+    "R4_selection_objective_role_specific_HARD": "stress_robust — sensor scope retains enum compliance, alpha return / SR / IR 미참조",
+    "R3_challenge_authority_review": {
+      "objection": false,
+      "targets_reviewed": ["alpha_package", "factor_specs", "stratum_handling", "feature_usable_date_table", "downstream_integration_constraints"],
+      "review_summary": "alpha-research Codex Round 7 disposition (2 ACCEPT + 3 PARTIAL + 2 REBUTTAL) reviewed. 본 risk agent objection NONE — risk diagnostic은 sensor stability + crowding priors emission scope. Path B Layer 6 admit conditional on Forge cycle CO1~CO6 empirical binding (risk recommendation, alpha admission decision aspect NOT veto). p_bad ~ m4 overlap prior 0.55~0.75 flagged → Forge cycle empirical < 0.85 hard mandate (risk advisory NOT alpha vector modification)."
+    },
+    "R6_covariance_freshness": "n/a — sensor scope, no covariance cache",
+    "R2C_method_shopping_log_HARD": "1 candidate / 5 상한 미적용 (Σ estimator 미선택)",
+    "R13_parallel_covariance_comparison": "n/a — sensor scope",
+    "R14_rcpp_hotspots": "n/a — Phase A design only",
+    "R11_lineage_obligation": "post-final-write lineage_utils::record_package_lineage call binding"
+  },
+
+  "challenge_flags": [
+    {
+      "id": "RISK_FLAG_S1_ERA_MEMBERSHIP_RISK",
+      "severity": "HIGH",
+      "type": "stratified_handling_disposition_compatible",
+      "concern": "S1 stratum (1990~2000, 132 monthly, 30% of total sample) 3 features only active (F14 + F31 + F32). Strategy A (full history) 시 LightGBM stratum_id_S1 indicator dominant 가능성 → model learning era-membership NOT bear mechanism (Stock-Watson 2003 cross-decade stability violated).",
+      "resolution_path": "Codex C5 disposition MANDATORY Strategy B (2001+) parallel benchmark inherit. Forge cycle Stage 4 per-stratum feature importance audit: stratum_id_S1 in top-5 importance → Strategy A INVALIDATED + Strategy B primary admit candidate. 본 risk agent는 Codex C5 disposition retain + reinforce.",
+      "academic_grounding": "Lopez de Prado 2018 AFML Ch 5 (feature engineering structural breaks) + Stock-Watson 2003 (leading indicators cross-decade stable expected)."
+    },
+    {
+      "id": "RISK_FLAG_CROWDING_CLUSTER_VIX_YIELDCURVE",
+      "severity": "MEDIUM",
+      "type": "factor_crowding_consensus_signal",
+      "concern": "F01~F05 yield curve cluster (crowding score 0.85) + F11~F14 VIX cluster (crowding score 0.90) = 9/32 features (28%) 모두 institutional FED-watching consensus signals. 작동 시 = market consensus timing, alpha edge limited. Acadian 2026 P5 Research Philosophy crowding risk flagged.",
+      "resolution_path": "본 cycle Phase A admit retain (학술 backbone academic prior 정합). Counter-argument: bear sensor의 use case = defensive scaling (NOT offensive alpha) → consensus timing acceptable. Codex C7 disposition Path B β_bear schedule = defensive use 정합. Forge cycle Stage 4 crowding-weighted ensemble (1 - crowding_score) × LightGBM gain importance = effective uniqueness score binding.",
+      "academic_grounding": "Acadian 2026 Research Philosophy P5 (Charter §15) + Estrella-Hardouvelis 1991 + Engle-Mistry 2014 학술 standard consensus indicator."
+    },
+    {
+      "id": "RISK_FLAG_P_BAD_M4_OVERLAP_PRIOR",
+      "severity": "MEDIUM",
+      "type": "signal_redundancy_path_b_admit_conditional",
+      "concern": "p_bad_monthly ~ m4_scalar_monthly correlation prior 0.55~0.75 (S4 period 117m). 둘 다 regime shift detection → redundancy risk (Path B Layer 6 admit 위협). Forge cycle empirical ρ ≥ 0.85 시 Layer 6 admit 재검토 mandate.",
+      "resolution_path": "Forge cycle Stage 4 empirical ρ(p_bad, m4_scalar) S4 117m measurement MANDATORY (CO1 binding). ρ < 0.85 hard / ρ < 0.70 preferred. ρ ∈ [0.70, 0.85] marginal — Optimizer cycle sequential overlay justification 의무. ρ ≥ 0.85 → Path B reject, Path A (DPL_KR_v3 integration) fallback.",
+      "academic_grounding": "L-281 (Cross-Asset TSMOM orthogonality empirical 0.077 ρ — comparison baseline) + Kritzman-Page-Turkington 2011 FAJ (sequential overlay academic precedent inherit)."
+    },
+    {
+      "id": "RISK_FLAG_2018_VOL_GENERALIZATION_WEAK",
+      "severity": "MEDIUM",
+      "type": "per_crisis_recall_variance_high",
+      "concern": "Crisis 7 (2018 vol spike, 단일 month 2018-10) backbone coverage 가장 약함 (VIX strong only, yield curve / LEI / credit weak). Expected Recall 0.30~0.60 + FP cost ~15bps/yr (VIX spike + foreign flow → many FP signals in 2018-Q4). Per-crisis Recall variance 큼 (best GFC vs worst 2018).",
+      "resolution_path": "Forge cycle Stage 4 per-crisis Recall + Precision report MANDATORY (Stress Set A inherit). 단일 crisis catastrophic Recall (e.g., 0.0) 일지라도 다른 7 crisis 평균 ≥ 0.6 이면 admit candidate. 본 risk agent recommendation NOT veto.",
+      "academic_grounding": "Lopez de Prado 2018 AFML Ch 7 (Backtest paranoia per-crisis stratified evaluation)."
+    },
+    {
+      "id": "RISK_FLAG_PRECISION_BREAK_EVEN_BELOW_ALPHA_G1_SPEC",
+      "severity": "LOW",
+      "type": "downstream_sr_drag_advisory",
+      "concern": "본 risk audit Section 4 (threshold sensitivity): Precision break-even SR drag = 0.50 @ τ=0.5. Alpha G1 spec Precision ≥ 0.40 — 본 spec은 break-even 아래. Standalone Path B Layer 6 sensor 시 단기 SR drag 가능 (FP × 30bps × per-year FP count).",
+      "resolution_path": "Risk advisory FLAG only — alpha 영역 (G1 spec) 침범 금지. 본 sensor의 진정한 value = lead-time + defensive scaling (NOT short-term SR uplift). Forge cycle Stage 6 G5 (Path A DPL_KR_v3 integration ΔAUC ≥ 0.05) OR Path B (standalone admit STR_1715 PG2 Layer 6 + DSR Z ≥ 1.5 downstream NAV) → 둘 중 하나만 통과해도 admit OK. Risk agent NO veto.",
+      "academic_grounding": "Kritzman-Page-Turkington 2011 FAJ AR overlay precedent — defensive scaling value 학술 인정."
+    }
+  ],
+
+  "wt_type_role_card_scope_explicit_charter_v18": {
+    "own_deliverables": [
+      "stage_artifacts/WT_D20260519_002/feature_stability_audit.md",
+      "stage_artifacts/WT_D20260519_002/crisis_window_recall_audit.md",
+      "stage_artifacts/WT_D20260519_002/crowding_overlap_with_M4_AR_R05.md",
+      "qepm/mailbox/worktask/WT-D20260519_002/risk_package_draft.json",
+      "qepm/mailbox/worktask/WT-D20260519_002/codex_critic_response_risk-research.json (Stage 3)",
+      "qepm/mailbox/worktask/WT-D20260519_002/challenge_note_risk-research.md (Stage 4)",
+      "qepm/mailbox/worktask/WT-D20260519_002/risk_package.json (Stage 5 final)"
+    ],
+    "exempt_deliverables": [
+      "exposure_matrix.parquet (n/a — sensor scope, NOT cross-section portfolio)",
+      "factor_covariance.parquet (n/a — sensor scope, Σ assessment deferred Forge cycle Path A)",
+      "specific_risk.parquet (n/a — sensor scope)",
+      "covariance.parquet (n/a — sensor scope)",
+      "regime_correlation.parquet (n/a — sensor scope, existing STR_1715 PG2 regime decomposition inherit)",
+      "tail_risk.json (n/a — sensor scope, tail measurement deferred to Forge cycle if Path A 80+1 feature integration)"
+    ],
+    "inherited_from": [
+      "alpha_package.json (32 features × 8 학술 backbone × 5 model ensemble + Codex 7 disposition)",
+      "STR_1715_AR_on_M4_R05_overlay_PG2 manifest.json (4-layer regime overlay system v2.3 admit 2026-05-13)",
+      "WT-D20260518_001 SEFRS Phase A (F26~F28 crowding inheritance)",
+      "L-281 (Cross-Asset TSMOM orthogonality 0.077 ρ baseline)",
+      "regime_decomposition_255m_267m.csv (BULL=92 NORMAL=157 CAUTION=15 CRISIS=3 production empirical)"
+    ],
+    "deferred_to_forge_cycle": [
+      "CO1: ρ(p_bad_monthly, m4_scalar_monthly) S4 117m < 0.85 hard mandate empirical measurement",
+      "CO2: ρ(p_bad_monthly, β_AR_monthly) S4 117m < 0.40 orthogonality check",
+      "CO3: ρ(p_bad_monthly, β_R05_monthly) S4 117m < 0.70 acceptable overlap check",
+      "CO4: TO_total estimate post-Layer 6 ≤ 6.0/yr strict (Hard Constraint inherit, Optimizer cycle binding)",
+      "CO5: crowding_score_per_factor for 8 backbones empirical (current report = design-phase prior)",
+      "CO6: per-crisis joint signal timing diagnostic (m4 + p_bad both trigger)",
+      "Stress Set A: per-crisis Recall + Precision @ τ ∈ {0.3, 0.5, 0.7} report mandatory",
+      "Stress Set B: held-out crisis 5-fold (IMF / Dotcom / GFC / COVID / Inflation) per-fold OOS Recall ≥ 0.50",
+      "Stress Set D: false-positive streak distribution (anti-flicker) < 3 consecutive months @ τ=0.5"
+    ]
+  },
+
+  "ax_008_status_risk_research_stage": "0_OF_3_PENDING_FORGE_AND_ARCHITECT_AFTER (risk-research Codex Round 1/1 inflight)",
+  "ax_008_target": "≥ 2/3 (Forge empirical + Codex external + Architect concurrent — downstream binding)",
+
+  "research_philosophy_compliance_charter_v18_section_15_p5_focused": {
+    "P1_factor_zoo_validation": "compliant — alpha 8 학술 backbone retain, risk agent NOT add features",
+    "P2_cost_aware_alpha": "compliant — TO_total post-Layer 6 ≤ 6.0/yr Hard Constraint binding (CO4)",
+    "P3_uncertainty_aware_forecasting": "compliant — threshold sensitivity tau ∈ {0.3, 0.5, 0.7} prior emission, alpha Platt scaling inherit",
+    "P4_direct_portfolio_learning": "compliant_indirect — bear sensor Path A injection into DPL_KR_v3 supports principle",
+    "P5_risk_model_advancement": "PRIMARY ALIGNMENT — crowding_score_per_factor 9-backbone audit emission (Acadian 2026 P5 정합), crowding cluster identification (VIX + yield curve 28%), regime overlap prior (p_bad ~ m4 0.55~0.75)",
+    "P6_implementation_discipline": "compliant — TO ≤ 6.0/yr / LIQ 2e8 KRW / max_names 20 / weights [0, 0.20] / Σw=1 inherit from STR_1715 PG2",
+    "P7_attribution_feedback_loop": "Forge cycle Stage 5~6 binding — per-crisis Recall + Precision + sub-window stability quarterly review post-admit"
+  },
+
+  "schema_version": "risk_package_v1",
+  "lineage_record_pending": "lineage_utils::record_package_lineage post this risk_package_draft.json final write — Stage 5 final binding",
+
+  "telegram_brief_pending": "tg_agent_brief(agent='Risk', title='WT-D20260519_002 RISK_DRAFT — Bear sensor priors + crowding overlap 0.55~0.75 prior + Codex Round mandate', sections=[summary, table, bullet, flags])",
+
+  "codex_round_status": {
+    "stage_1_draft_emit": "this file — 2026-05-18T20:30:00+09:00",
+    "stage_2_codex_invocation_pending": "run_codex_qepm_critic.sh --role=risk --task_id=WT-D20260519_002 (gpt-5.5 xhigh, ~9-15min wait, PostToolUse auto-spawn)",
+    "stage_3_codex_response_expected": "codex_critic_response_risk-research.json — stance ∈ {APPROVE / APPROVE_CONDITIONAL / REVISE / REJECT}",
+    "stage_4_challenge_note_expected": "challenge_note_risk-research.md — ACCEPT / PARTIAL / REBUTTAL classification per concern, 학술 + L-code + 정량 3축 rebuttal",
+    "stage_5_final_emit_expected": "risk_package.json (no _draft suffix) — final Stage 5 binding",
+    "self_rationalization_audit_preempt": "본 draft grep: 미미 / 관행적 / 보수적이면 / 대부분 결과 동일 / 이미 반영 / 백테스트 충분히 길어서 상쇄 / 실무적 / 영향미미 = 0회 occurrence. 명시적 prior expectation + Forge cycle empirical binding 분리 정합."
+  }
+}
