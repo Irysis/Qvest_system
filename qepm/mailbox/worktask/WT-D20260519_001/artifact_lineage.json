@@ -1,0 +1,207 @@
+{
+  "task_id": "WT-D20260519_001",
+  "agent": "alpha-research",
+  "agent_version": "v3.1_DPL_KR_v3_original_redesign_post_codex_round_plus_dohoon_mandate_20260519_historical_coverage_extension_1990_2026",
+  "emitted_at": "2026-05-18T09:30:00+09:00",
+  "lineage_chain": {
+    "v1_predecessor": {
+      "wt_id": "WT-D20260517_001",
+      "design_name": "DPL_KR_v1 (Transformer-lite 165K params + Gumbel hard top-K + L1 normalize)",
+      "outcome": "REJECT — EW collapse 100%, TO 17.64, Harvey-t -0.42, DSR Z -2.27",
+      "lesson_l_code": "L-328",
+      "alpha_package_path": "qepm/mailbox/worktask/WT-D20260517_001/alpha_package.json",
+      "feature_allowlist_path_csv": "stage_artifacts/WT_D20260517_001/feature_allowlist.csv (634 features, sha256=52b2c01706829ccb68bbd0b85d986cb673148bd377b336a12d0fa918eb386e87 post Codex C5 fix)",
+      "_inherit_to_v3": "5 architectural fix axis-by-axis"
+    },
+    "v2_predecessor": {
+      "wt_id": "WT-D20260517_002",
+      "design_name": "DPL_KR_v2 (Sorted Portfolio Learning + Set-Sequence + GAT + 30K params)",
+      "outcome": "DEFER — paradigm shift design phase",
+      "alpha_package_path": "qepm/mailbox/worktask/WT-D20260517_002/alpha_package.json",
+      "feature_allowlist_path_csv": "stage_artifacts/WT_D20260517_002/feature_allowlist_v2.csv (80 features, sha256=b3d667517a39e4ebf219988f67c2cc6e22f4fb6350f5d6a5e52976fb4a8fb6ee)",
+      "_inherit_to_v3": "80 features family-balanced + DeepSet + score-proportional sizing + decision-induced ranking clip + partial adjustment α=0.6 + purged WF 1m embargo"
+    },
+    "v3_v4_v5_RC_predecessors": {
+      "v3_wt_id": "WT-D20260517_003",
+      "v4_wt_id": "WT-D20260517_004",
+      "v5_wt_id": "WT-D20260517_005",
+      "design_name": "DPL-RC (Residual Complement) paradigm",
+      "outcome": "HARD_ABORT_PARADIGM_INVIABLE_SCOPED (L-330)",
+      "_inherit_to_v3": "Paradigm distinction — Original DPL ≠ RC; v3 is Original DPL (standalone alpha 1715 외부 종속성 X), RC paradigm under current arch retired",
+      "v4_anti_fabrication_lesson": "Forge synthetic ret_comp + self_synthesis_used=false fabrication detected → v3 strict self_synthesis_used=false declare + bt_result.rds SHA256 binding + rawdata.parquet sha256 c86e4ae5... canonical inherit",
+      "v5_real_pit_lesson": "Harvey-NW 5-spec genuine 3 (CAPM+FF3+Carhart4); FF5/FF6 structural duplicates if no RMW/CMA. DSR Bailey-LdP n_trials=100 strict pre-registered."
+    }
+  },
+  "data_source_hashes": {
+    "rawdata_parquet": {
+      "path": "rawdata.parquet (v5 canonical)",
+      "sha256": "c86e4ae5c6cc3e733efe35db4aa9bf335f434f85aa90f0a6fdd086183464659c",
+      "n_rows": 13919924,
+      "date_range": "1990 ~ 2026-05",
+      "real_pit": true
+    },
+    "feature_allowlist_v2_csv": {
+      "path": "stage_artifacts/WT_D20260517_002/feature_allowlist_v2.csv",
+      "sha256": "b3d667517a39e4ebf219988f67c2cc6e22f4fb6350f5d6a5e52976fb4a8fb6ee",
+      "n_features": 80,
+      "selection_method": "FMP r² robust ranking + family-stratified max 15/family",
+      "v1_inherit_634": true
+    },
+    "features_master_parquet": {
+      "path": "stage_artifacts/WT_D20260514_008/features_master.parquet",
+      "sha256": "36a13312bc7cbfde4e006aa386a3051eb0d21993d678bacc048ea186a0dcc543",
+      "n_features": 1047,
+      "n_sig_dates": 148,
+      "n_rows": 292595,
+      "_used_as_underlying_inherit": true,
+      "_extension_mandate_note": "v3.1 extends to 436 sig_dates (1990~2026) via factor_db_connector::load_month_factors() per-sig_date load, NOT features_master.parquet direct (which has only 148 sig_dates 2014~2026)"
+    },
+    "factor_db_monthly": {
+      "path": ".cache/factor_db/factor_db_YYYYMM.parquet",
+      "n_parquets": 440,
+      "n_factors_per_parquet": 288,
+      "date_range": "1990-01 ~ 2026-04",
+      "production_approved": true,
+      "_extension_mandate_use": "v3.1 uses factor_db_connector::load_month_factors() for all 436 sig_dates per 도훈 mandate 2026-05-19"
+    }
+  },
+  "deliverables_emitted": {
+    "literature_review_v3_md": {
+      "path": "stage_artifacts/WT_D20260519_001/literature_review_v3.md",
+      "word_count": 4450,
+      "citation_count_5_core": 5,
+      "citation_count_9_secondary": 9,
+      "citation_count_v1_v2_inherit": 5,
+      "total_citations": 19
+    },
+    "dpl_kr_v3_architecture_md": {
+      "path": "stage_artifacts/WT_D20260519_001/dpl_kr_v3_architecture.md",
+      "param_total": 17000,
+      "5_axis_redesign": true,
+      "pytorch_skeleton": true
+    },
+    "pit_audit_v3_json": {
+      "path": "stage_artifacts/WT_D20260519_001/pit_audit_v3.json",
+      "overall_status": "PASS_WITH_STRUCTURAL_CAVEATS",
+      "hard_abort_check": "NOT_TRIGGERED",
+      "c1_c15_individual_status": "C1 PASS, C2 PASS, C3 PASS, C4 PASS, C5 N/A, C6 PASS, C7 PASS_PENDING_FORGE, C8 N/A, C9 N/A, C10 PASS_STRICT_2E8, C11 PASS, C12 PASS, C13 PASS, C14 PASS_PENDING_FORGE_EMIT, C15 PASS"
+    },
+    "training_protocol_v3_md": {
+      "path": "stage_artifacts/WT_D20260519_001/training_protocol_v3.md",
+      "n_walk_forward_initial": 5,
+      "n_random_search_per_window": 20,
+      "n_trials_total_initial": 100,
+      "_extended_mandate": "see historical_coverage_audit_v3.md §5 + §6 — 13 walk-forward + 260 trials transparency, n_trials_dsr=100 pre-registered strict"
+    },
+    "admission_protocol_v3_md": {
+      "path": "stage_artifacts/WT_D20260519_001/admission_protocol_v3.md",
+      "n_decision_gates_initial": 8,
+      "g0_to_g7_defined": true,
+      "_extended_mandate": "see sub_period_stability_protocol_v3.md §10 — 10 gates total (G0, G1, G2, G3 sub-period NEW, G3' crisis NEW, G_Harvey renamed, G4, G5, G6, G7)"
+    },
+    "historical_coverage_audit_v3_md_NEW": {
+      "path": "stage_artifacts/WT_D20260519_001/historical_coverage_audit_v3.md",
+      "n_sig_dates_extended": 436,
+      "n_walk_forward_extended": 13,
+      "test_months_extended_total": 304,
+      "approach_chosen": "Approach 1 Coverage-Stratified Training",
+      "coverage_threshold_per_sig_date": 0.70,
+      "dohoon_mandate_20260519": true
+    },
+    "crisis_sample_inclusion_v3_md_NEW": {
+      "path": "stage_artifacts/WT_D20260519_001/crisis_sample_inclusion_v3.md",
+      "n_crisis_events": 8,
+      "explicit_crisis_test_windows": 7,
+      "embedded_crisis_train_windows": 1,
+      "g3_prime_pass_threshold": "5_of_7",
+      "ax_001_v2_conditional_defense_criteria": true,
+      "dohoon_mandate_20260519": true
+    },
+    "sub_period_stability_protocol_v3_md_NEW": {
+      "path": "stage_artifacts/WT_D20260519_001/sub_period_stability_protocol_v3.md",
+      "n_macro_sub_periods": 3,
+      "p1_emerging": "1990-2005",
+      "p2_mid_cycle": "2005-2015",
+      "p3_modern": "2015-2026",
+      "g3_pass_threshold": "2_of_3",
+      "dohoon_mandate_20260519": true
+    },
+    "alpha_package_draft_json": {
+      "path": "qepm/mailbox/worktask/WT-D20260519_001/alpha_package_draft.json",
+      "emitted_at": "2026-05-18T08:30:00+09:00",
+      "draft_marker": true
+    },
+    "codex_critic_response_alpha_json": {
+      "path": "qepm/mailbox/worktask/WT-D20260519_001/codex_critic_response_alpha-research.json",
+      "emitted_at": "2026-05-18T08:00:40+09:00",
+      "model": "gpt-5.5 + xhigh",
+      "stance": "REJECT",
+      "veto_flag": false,
+      "n_concerns_total": 8,
+      "n_high": 6,
+      "n_medium": 2
+    },
+    "challenge_note_alpha_research_md": {
+      "path": "qepm/mailbox/worktask/WT-D20260519_001/challenge_note_alpha-research.md",
+      "emitted_at": "2026-05-18T08:30:00+09:00",
+      "disposition_summary": {
+        "ACCEPT": 5,
+        "PARTIAL_ACCEPT": 1,
+        "PARTIAL_REBUTTAL": 1,
+        "ACCEPT_WITH_AMENDMENT": 1
+      },
+      "q_lead_escalate_triggered": true
+    },
+    "alpha_package_json_final": {
+      "path": "qepm/mailbox/worktask/WT-D20260519_001/alpha_package.json",
+      "emitted_at": "2026-05-18T09:30:00+09:00 (post-amendment 도훈 mandate 20260519)",
+      "draft_marker": false,
+      "agent_version": "v3.1_DPL_KR_v3_original_redesign_post_codex_round_plus_dohoon_mandate_20260519_historical_coverage_extension_1990_2026",
+      "ax_008_status": "0_OF_3_PENDING_FORGE_ARCHITECT"
+    },
+    "alpha_discovery_certificate_json": {
+      "path": "qepm/mailbox/worktask/WT-D20260519_001/alpha_discovery_certificate.json",
+      "issued_by": "alpha_discovery_certifier.sh PostToolUse Hook (Tier 5 Positive Certifier)",
+      "_note": "Auto-issued upon alpha_package.json write"
+    },
+    "status_json": {
+      "path": "qepm/mailbox/worktask/WT-D20260519_001/status.json",
+      "phase": "ALPHA_DONE",
+      "next_stage": "risk-research"
+    }
+  },
+  "write_json_record_lineage_order": [
+    "1. alpha_package_draft.json (Step 2.6a)",
+    "2. codex_critic_response_alpha-research.json (Step 2.6b/c, Codex Round invoke + response)",
+    "3. challenge_note_alpha-research.md (Step 2.6d, disposition)",
+    "4. alpha_package.json (Step 2.6e, final)",
+    "5. status.json (phase transition ALPHA_DONE)",
+    "6. artifact_lineage.json (본 파일, Charter §8 No Silent Override + record_lineage post write_json)"
+  ],
+  "axiom_compliance_summary": {
+    "AX-000_no_limits": "compliant",
+    "AX-001_v2_defense_conditional": "N/A_at_alpha_stage",
+    "AX-002_process_honesty": "compliant",
+    "AX-003_KR_value_EP_failure": "N/A",
+    "AX-004_KR_quality_single_signal": "N/A",
+    "AX-005_KR_defense_top20": "compliant_advisory (eligibility/demonstration distinction)",
+    "AX-007_methodological_single_sleeve_break": "ADVISORY_PENDING_FORGE_DEMONSTRATION (ML sizing eligibility established by v3 architecture; demonstration via G7 HHI > 0.06)",
+    "AX-008_verification_triangulation_pending": "0_OF_3 (Codex Round complete; Forge + Architect pending)"
+  },
+  "next_stage_handoff": {
+    "next_agent": "risk-research",
+    "trigger_path": "qepm/mailbox/worktask/WT-D20260519_001/status.json (phase=ALPHA_DONE)",
+    "inputs_for_next": [
+      "alpha_package.json (factor_specs + 80 features inherit + DPL architecture spec)",
+      "rawdata.parquet sha256 c86e4ae5... (v5 canonical inherit)",
+      "feature_allowlist_v2.csv sha256 b3d667... (v2 inherit)",
+      "13 walk-forward windows × 24m test = 304 test months (extended mandate)"
+    ],
+    "outputs_expected_from_next": [
+      "covariance.parquet PSD + condition ≤ 100 per sig_date",
+      "Σ = BΩB' + D + tail_risk decomposition",
+      "8 stress scenarios (v5 inherit + 7 crisis windows mapping)",
+      "Crowding score per factor (Acadian 2026)"
+    ]
+  }
+}

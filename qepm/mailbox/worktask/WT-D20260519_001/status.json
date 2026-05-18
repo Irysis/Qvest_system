@@ -1,0 +1,65 @@
+{
+  "task_id": "WT-D20260519_001",
+  "wt_type": "discovery",
+  "wt_subclass_charter_v18": "discovery_design_phase_a",
+  "design_name": "DPL_KR_v3 — Original Direct Portfolio Learning Redesign (Standalone Alpha, v1~v5 Learning Integrated + 도훈 mandate 2026-05-19 Historical Coverage Extension 1990~2026)",
+  "phase": "ALPHA_DONE",
+  "phase_origin": "PD47_DPL_KR_V3_ORIGINAL_REDESIGN_POST_5_CYCLE_LEARNING",
+  "current_stage": "alpha-research",
+  "next_stage": "risk-research",
+  "last_updated": "2026-05-18T09:30:00+09:00",
+  "stage_history": [
+    {
+      "stage": "alpha-research",
+      "started_at": "2026-05-18T07:42:00+09:00",
+      "completed_at": "2026-05-18T09:30:00+09:00",
+      "outcome": "ALPHA_DONE — alpha_package.json final emit post-Codex Round REJECT (veto_flag=false, 8 concerns: 5 ACCEPT + 1 PARTIAL_ACCEPT + 1 PARTIAL_REBUTTAL + 1 ACCEPT_WITH_AMENDMENT) + 도훈 mandate 2026-05-19 historical coverage extension 1990~2026 applied (124 → 436 sig_dates, 5 → 13 walk-forward, +3 macro sub-periods, +7 explicit crisis test windows, +G3/G3' new gates)",
+      "deliverables": [
+        "stage_artifacts/WT_D20260519_001/literature_review_v3.md (~4450 words, 14 citations + 5 v1/v2 inherit)",
+        "stage_artifacts/WT_D20260519_001/dpl_kr_v3_architecture.md (17K params smaller MLP + DeepSet + continuous concentration softmax + STE top-K + PAN + partial adjustment + Sharpe surrogate 3-term composite + PyTorch skeleton)",
+        "stage_artifacts/WT_D20260519_001/pit_audit_v3.json (C1~C15 PASS_WITH_STRUCTURAL_CAVEATS + v4 anti-fabrication + v1 liquidity 2-stage + 80 features × 124/436 sig_dates × 52/304 test months)",
+        "stage_artifacts/WT_D20260519_001/training_protocol_v3.md (5/13 walk-forward + 20 random × 5 = 100 trials + Adam + early stop + per-epoch audit)",
+        "stage_artifacts/WT_D20260519_001/admission_protocol_v3.md (G0~G7 7-axis + hard abort + Codex Round mandate)",
+        "stage_artifacts/WT_D20260519_001/historical_coverage_audit_v3.md (NEW per 도훈 mandate — 436 sig_dates verification + 13 walk-forward windows + coverage-stratified Approach 1)",
+        "stage_artifacts/WT_D20260519_001/crisis_sample_inclusion_v3.md (NEW per 도훈 mandate — 8 crisis events + 7 explicit test windows + G3' new gate)",
+        "stage_artifacts/WT_D20260519_001/sub_period_stability_protocol_v3.md (NEW per 도훈 mandate — 3 macro sub-periods P1/P2/P3 + G3 new gate)",
+        "qepm/mailbox/worktask/WT-D20260519_001/alpha_package_draft.json (Step 2.6a)",
+        "qepm/mailbox/worktask/WT-D20260519_001/codex_critic_response_alpha-research.json (Codex GPT-5.5 + xhigh, REJECT veto=false 8 concerns)",
+        "qepm/mailbox/worktask/WT-D20260519_001/challenge_note_alpha-research.md (5 ACCEPT + 1 PARTIAL_ACCEPT + 1 PARTIAL_REBUTTAL + 1 ACCEPT_WITH_AMENDMENT disposition)",
+        "qepm/mailbox/worktask/WT-D20260519_001/alpha_package.json (final post-Codex + 도훈 mandate 2026-05-19 extension)"
+      ],
+      "codex_round_status": "COMPLETE_REJECT_veto_false_8_concerns_disposed",
+      "ax_008_status_at_alpha_completion": "0_of_3 (Forge + Architect pending; Codex Round complete with disposition)",
+      "q_lead_escalate_triggered": true,
+      "q_lead_escalate_reasons": [
+        "HIGH severity concerns ≥ 5 (6 of 8 HIGH)",
+        "AX axiom hard FAIL ≥ 3 (AX-002 + AX-005 + AX-007 + AX-008)",
+        "Codex stance=REJECT (veto_flag=false, but escalate per protocol)"
+      ]
+    }
+  ],
+  "constraints_summary": {
+    "long_only": true,
+    "max_names": 20,
+    "weight_bounds": [0, 0.20],
+    "sum_weights": 1.0,
+    "universe": "KR_TOP500_LIQ1E8 (2e8 KRW 20d ADV strict at alpha-emit)",
+    "cost_model_version": "v2.3_kr_retail_15bps",
+    "turnover_annualized_max": 6.0,
+    "mdd_pct_max": -0.25
+  },
+  "decision_gates_full_list": ["G0_PIT", "G1_SR", "G2_cor_vs_str1715", "G3_sub_period_stability_NEW", "G3_prime_crisis_conditional_NEW", "G_Harvey_t_renamed", "G4_DSR", "G5_cost_pareto", "G6_AX008", "G7_HHI"],
+  "evaluation_windows_count": 13,
+  "test_months_total": 304,
+  "crisis_windows_explicit": [1, 4, 6, 8, 9, 10, 11],
+  "sub_period_mapping": {
+    "P1_emerging_1990_2005": [1, 2, 3],
+    "P2_mid_cycle_2005_2015": [3, 4, 5, 6, 7, 8],
+    "P3_modern_2015_2026": [8, 9, 10, 11, 12, 13]
+  },
+  "extension_mandate_dohoon_20260519": {
+    "applied_at": "2026-05-18T09:30:00+09:00",
+    "summary": "Maximum history activation 1990~2026 (Factor DB 436 sig_dates) + 3 macro sub-periods + 8 crisis events + 13 walk-forward windows",
+    "sample_increase_factor": 3.5
+  }
+}

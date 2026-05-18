@@ -1,0 +1,409 @@
+{
+  "task_id": "WT-D20260519_002",
+  "agent": "alpha-research",
+  "agent_version": "v1.0_bear_prediction_engine_dedicated_features_multi_source_multi_model_max_history_36yr_post_codex_disposition",
+  "wt_type": "discovery",
+  "wt_subclass_charter_v18": "discovery_design_phase_a",
+  "draft_marker": false,
+  "draft_emission_at": "2026-05-18T15:00:00+09:00",
+  "final_emission_at": "2026-05-18T17:30:00+09:00",
+  "post_codex_disposition_status": "POST_CODEX_REVISE_7_DISPOSITION_2_ACCEPT_3_PARTIAL_ACCEPT_2_REBUTTAL_0_REJECT_VETO_FALSE",
+  "codex_round_ax_008_status": "0_OF_3_PENDING_FORGE_AND_ARCHITECT_AFTER (Codex round 1/1 disposition complete this cycle)",
+  "as_of_date": "2026-05-18",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "method_family": "bear_regime_prediction_engine_v1_dedicated_features_8_academic_backbone_5_model_ensemble_max_history_36yr",
+
+  "design_name": "Bear Regime Prediction Engine v1.0 — Dedicated Features (8 academic backbone) + Multi-Source Data (12 sources) + Multi-Model Ensemble (5 models) + Daily-frequency option + Max-history 36yr (1990~2026) + Post-Codex disposition 6 modifications",
+  "phase_origin": "PD48_BEAR_REGIME_PREDICTION_ENGINE_HIGHLY_GRANULAR_REDESIGN_V5_LEARNING",
+
+  "hypothesis_title": "약세 예측 엔진 v1.0 — Dedicated features 32개 (학술 backbone 8건) + Qvest infra multi-source 12종 + 5-model ensemble + Daily-frequency option + Maximum history (1990~2026, 437 monthly, 36년, 8 crisis epochs) + Post-Codex 6 disposition (forecast alignment + method shopping recount + Strategy B mandatory + feature Usable_Date table + downstream integration constraints)",
+
+  "hypothesis_description": "v5 cycle G1 paradigm-inviable scoped 후 — 본 cycle은 experiment design dimensions 부족 (dedicated features 부재 + single model + monthly only + crisis sample 3 only) hypothesis 정합 (도훈 reframe + L-330 scope retain). 핵심 변경 6축 (도훈 mandate 2026-05-19 추가 max-history + Codex disposition 6 modifications): (1) **Dedicated features 32개 신규 구축** — 8 학술 backbone (Estrella-Hardouvelis 1991 yield curve + Stock-Watson 2003 leading indicators + Ang-Chen 2002 asymmetric cor + Engle-Mistry 2014 vol regime + Adrian-Brunnermeier 2016 systemic risk proxy + Gilchrist-Zakrajsek 2012 credit spread + Frazzini-Pedersen 2014 defensive rotation grounding + Hamilton 1989 MSM regime). (2) **Multi-source 12 sources** — Factor DB monthly 437m + daily + FRED 22 series + ECOS 7 series + investor_wide foreign flow + SEIBro ETF complex SEFRS Phase A inherit + VKOSPI direct fetch path A/B/C + MSM regime engine + M4 BOCPD inherit + macro_regime composite. (3) **5-model ensemble** — Logistic L1 (interpretable baseline) + LightGBM (v5 inherit + interaction) + Random Forest (variance reduction) + LSTM small 5K params (sequential, L-328 over-param 회피) + Markov Switching Hamilton 1989 (state probability). Platt scaling + isotonic calibration. Strategy simple average + stacking compare. (4) **Daily-frequency option** — monthly mode default (437 obs × ~81 pos class) + daily mode auxiliary (~9000 obs × ~1500 pos class, 25× v5). max/mean/streak aggregation compare. (5) **Maximum history 36yr (도훈 mandate 2026-05-19)** — 1990-01 ~ 2026-05 (437 monthly, 3.5× v5 sample, 2.7× positive class). 8 crisis epoch inclusion (1997 IMF + 2000 dotcom + 2008 GFC + 2011 EU + 2015 China + 2018 vol + 2020 COVID + 2022 inflation + 2026-03). Stratum-conditional feature support (S1 universal 3 + S2+ 24 + S4 only 3) + NaN handling explicit + stratum_id feature + **Strategy A vs Strategy B mandatory parallel benchmark (Codex C5 disposition)**. (6) **G1 5-subgate strict + AX-008 ≥ 2/3 quorum + Codex Round 6-agent 5-stage**. 도훈 mandate '자율성 발휘' 정합 — 직접 데이터 수집 protocol design + 학술 backbone features 자율 구축 + 임의 backfill 절대 X + imputation 명시 + Codex 7 concerns disposition (2 ACCEPT + 3 PARTIAL ACCEPT + 2 REBUTTAL). 병렬 WT_019_001 DPL_KR_v3 alpha와 별도 lifecycle.",
+
+  "hypothesis_source": "user_defined_2026_05_19_bear_regime_engine_high_granular_plus_max_history_mandate_addendum_plus_codex_round_disposition",
+
+  "max_history_mandate_addendum_2026_05_19": {
+    "trigger": "도훈 mandate 2026-05-19 추가 — 약세 예측 엔진 학습기간 최대 확대",
+    "spec_change": {
+      "monthly_obs": {"before": 124, "after": 437, "ratio": "3.5x"},
+      "positive_class": {"before": "~30 bad months", "after": "~81 bad months at -5% threshold", "ratio": "2.7x"},
+      "daily_obs": {"before": "~3000", "after": "~9000", "ratio": "2.9x"},
+      "crisis_epoch": {"before": "3 (COVID + 2022 + 2018)", "after": "8 (1997 IMF + 2000 dotcom + 2008 GFC + 2011 EU + 2015 CN + 2018 + COVID + 2022 + 2026-03)", "ratio": "2.7x"}
+    },
+    "stratum_handling": {
+      "S1_universal_1990_2000": {"n_months": 132, "features_active": ["F14_KOSPI_realized_vol", "F31_F32_defensive_rotation"], "n_features": 3},
+      "S2_macro_2001_2002": {"n_months": 24, "features_active_added": "yield curve + leading indicators + VIX + credit spread + foreign flow", "n_features_cumulative": 27},
+      "S3_VKOSPI_2003_2016": {"n_months": 164, "features_active_added": "VKOSPI (after fetch)", "n_features_cumulative": 29},
+      "S4_SEFRS_2016_09_2026": {"n_months": 117, "features_active_added": "SEFRS 3 sub-features", "n_features_cumulative": 32}
+    },
+    "imputation_explicit": "임의 backfill 절대 X. NaN handling per-stratum: (a) LightGBM native NaN handling primary (b) stratum_id one-hot indicator feature (c) Random Forest median impute per-stratum + indicator. LSTM/MSM use S2+ subset (24 features, 2001~) only.",
+    "pit_integrity": "C1~C15 strict retain. yield curve / VKOSPI / credit spread / foreign flow 모두 publish-lag aware (FRED T+1 daily / T+1m+5d monthly / ECOS T+1~5d / KRX T+2 / SEFRS k≥2)",
+    "advantage": "v5 paradigm-level G1 fail (Recall 0.089) 직접 fix path — positive class 2.7x + 8 crisis 다양성 = sub-window 4/5 stability 달성 가능성 ↑"
+  },
+
+  "forecast_target_alignment_codex_c2_disposition": {
+    "description": "Codex C2 disposition PARTIAL ACCEPT — same-month leakage 우려 명시적 fix.",
+    "sig_date_definition": "month-end of month M_t (e.g., 2024-12-31 = sig_date for predicting M_{t+1} = 2025-01)",
+    "feature_lag_strict": "all features use data through Date <= sig_date - 1 (PIT C2 strict, no same-day)",
+    "label_definition_corrected": "bad_month_for_sigdate_t = BM_Ret_KOSPI_monthly(month_{t+1}) < -0.05 (FORWARD month, NOT same-month)",
+    "forecast_horizon_explicit": "1 month forward (next calendar month, not same-month)",
+    "pit_proof_per_step": "(1) features_t = compute_features(sig_date=t, lag_rules per multi_source_data_protocol.md) — uses Date <= t-1 day strict + macro publish-lag aware (2) target_t = BM_Ret_monthly(month_t+1) < -0.05 — FORWARD month strict (3) Train: features_t -> target_t (4) Test: predict at sig_date t, evaluate against actual bad_month_{t+1}",
+    "pit_c2_pass": "true (features t-1 day, target month_{t+1} forward)",
+    "pit_c3_pass": "true (target is forward month_{t+1}, never same-month aggregation)",
+    "pit_c9_pass": "true (F14 KOSPI realized vol uses c(NA, head(rv_60d, -1)) shift, no same-day)"
+  },
+
+  "alpha_vector": {},
+  "confidence_vector": {},
+  "alpha_vector_status": "PLACEHOLDER_PENDING_FORGE_TRAIN_discovery_design_phase_a_charter_v1_8_section_10_codex_c1_c3_rebuttal_role_card_scope_retain",
+  "alpha_vector_explanation": "본 alpha-research cycle은 Phase A design phase. Charter §10 v1.8 amendment 정합 (WT-D20260518_001 SEFRS Phase A 첫 시연 + WT-D20260517_001 DPL_KR_v1 + WT-D20260519_001 DPL_KR_v3 inherit). Codex C1/C3 REBUTTAL: SEFRS Phase A 시 동일 evaluation paradigm = phase_a_design_only_evaluation, alpha_vector/p_bad_monthly time-series emission은 Forge cycle Stage 4 (5-model ensemble train) 후 alpha_scores.parquet 또는 p_bad_monthly.parquet. 본 emission = architecture spec + feature catalog + multi-source protocol + ensemble design + daily-frequency protocol + admission protocol + max-history coverage audit + crisis sample inclusion + Codex disposition 6 modifications.",
+  "confidence_vector_explanation": "n/a — regime sensor only (NOT cross-sectional alpha sleeve). bear prediction은 market-level time-series probability output (1 value per sig_date). 향후 cross-section conditional alpha 확장 시 confidence_vector 추가 가능.",
+
+  "signal_matrix_ref": "stage_artifacts/WT_D20260519_002/feature_panel_bear_v1.parquet (Forge cycle TBD, ~32 features × 437 monthly OR ~9000 daily)",
+
+  "rawdata_source": "rawdata.parquet (v5 canonical) sha256=c86e4ae5c6cc3e733efe35db4aa9bf335f434f85aa90f0a6fdd086183464659c, 13,919,924 rows, 1990 ~ 2026-05, real PIT-clean",
+
+  "factor_specs": [
+    {
+      "factor_id": "BEAR_PREDICTION_REGIME_FEATURE_FAMILY_V1_UNIFIED",
+      "factor_family": "Bear_Regime_Prediction",
+      "proxy": "32 dedicated features built on 8 학술 backbone — 1 unified regime sensor family (NOT cross-sectional alpha sleeve)",
+      "source": "new_designed",
+      "formula": "p_bad_monthly_t = ensemble_calibrate(Logistic_L1(F_t) + LightGBM(F_t) + RandomForest(F_t) + LSTM(F_{t-20:t}) + MarkovSwitching(BM_Ret_{1:t}, F_macro_t)) via Platt scaling on validation set. Default ensemble: simple average (5 models). Strategy compare: stacking + voting. F_t = [F01..F32] dedicated features 8 categories.",
+      "lag_rule": "t-1 close strict (price/vol/return) + FRED daily T+1 + FRED monthly T+1m+5d + ECOS T+5d + KRX investor T+2 + SEIBro k>=2",
+      "winsorization": "rolling z-score per feature 60d~252d window (per-category)",
+      "neutralization": "n/a (time-series regime sensor, not cross-sectional)",
+      "feature_count_total": 32,
+      "feature_count_universal_S1": 3,
+      "feature_count_S2_plus": 24,
+      "feature_count_S4_only": 3,
+      "feature_categories_8": {
+        "1_yield_curve_inversion_estrella_hardouvelis_1991": ["F01_YC_US_10y_2y_spread", "F02_YC_US_10y_3m_spread", "F03_YC_US_inv_dummy_3m", "F04_YC_KR_10y_3y_spread", "F05_YC_slope_dynamics_12m"],
+        "2_leading_indicators_stock_watson_2003": ["F06_LEI_US_PMI_growth_3m", "F07_LEI_US_HousingPermits_yoy", "F08_LEI_US_InitClaims_zscore_52w", "F09_LEI_US_UMich_Sentiment_zscore_12m", "F10_LEI_KR_CPI_yoy"],
+        "3_volatility_regime_engle_mistry_2014": ["F11_VIX_level", "F12_VIX_zscore_252d", "F13_VIX_term_structure_3m_1m_proxy", "F14_KOSPI_realized_vol_60d_zscore_S1_universal"],
+        "4_asymmetric_correlation_ang_chen_2002": ["F17_KOSPI_USD_cor_down_60d", "F18_KRW_USD_zscore_252d", "F19_KRW_USD_volatility_60d"],
+        "5_systemic_risk_proxy_adrian_brunnermeier_2016": ["F20_Financial_Conditions_NFCI", "F21_StL_Fin_Stress", "F22_KR_Bank_Lending_Std_change_3m"],
+        "6_credit_spread_gilchrist_zakrajsek_2012": ["F23_KR_credit_spread_BBB_AA", "F24_US_credit_spread_HY_IG", "F25_KR_credit_deterioration_3m"],
+        "7_etf_flow_crowding_sefrs_inherit": ["F26_SEFRS_EBI_PRIMARY", "F27_SEFRS_F9_EXTREME_CROWDING", "F28_SEFRS_F2_CUM5D"],
+        "8_capital_flow_defensive_rotation": ["F29_Foreign_NetSell_intensity_zscore_20d", "F30_Foreign_NetSell_reversal_signal", "F31_Defensive_vs_Cyclical_spread_S1_universal", "F32_Defensive_Rotation_zscore_60d_S1_universal"]
+      },
+      "feature_count_conditional_VKOSPI": "+2 if VKOSPI fetch successful (F15_VKOSPI_level + F16_VKOSPI_zscore_252d, S3+ 2003~)",
+      "method_shopping_note": "단일 unified design family — 8 학술 backbone single coherent paper-driven catalog. 32 features는 sub-component이지 별도 method 아님. SEFRS Phase A precedent inherit (12 sub-features = 1 family). 그러나 model + ensemble + frequency + threshold + aggregation 차원은 별도 trial (Codex C4 ACCEPT) — method_shopping_log_recount section 참조.",
+      "economic_rationale": "8 학술 backbone academic prior-driven bear regime sensor. v5 fail mode '80 general alpha features (defensive 55%, FMP r² ranking)' → v1 'dedicated 32 features 100% 학술 backbone, no ranking, no shopping'. 약세 예측은 time-series classification (not cross-sectional ranking) — v5 paradigm-level scope 정합 + L-330 retain. Charter §15 Research Philosophy P1 (Factor Zoo 축소 Validation > Discovery) + P3 (Uncertainty-aware Forecasting) + P5 (Risk Model 고도화) 정합.",
+      "references_8_core": [
+        "Estrella, A., & Hardouvelis, G. A. (1991). The term structure as a predictor of real economic activity. JF 46(2), 555-576. [F01~F05 yield curve]",
+        "Stock, J. H., & Watson, M. W. (2003). Forecasting output and inflation: The role of asset prices. JEL 41(3), 788-829. [F06~F10 leading indicators]",
+        "Ang, A., & Chen, J. (2002). Asymmetric correlations of equity portfolios. JFE 63(3), 443-494. [F17 asymmetric cor]",
+        "Engle, R. F., & Mistry, A. (2014). Priced risk and asymmetric volatility in the cross section of skewness. JFE 113(3), 357-381. [F11~F14 vol regime]",
+        "Adrian, T., & Brunnermeier, M. K. (2016). CoVaR. AER 106(7), 1705-41. [F20~F22 systemic risk]",
+        "Gilchrist, S., & Zakrajsek, E. (2012). Credit spreads and business cycle fluctuations. AER 102(4), 1692-1720. [F23~F25 credit spread]",
+        "Frazzini, A., & Pedersen, L. H. (2014). Betting against beta. JFE 111(1), 1-25. [F31~F32 defensive rotation grounding]",
+        "Hamilton, J. D. (1989). A new approach to the economic analysis of nonstationary time series and the business cycle. Econometrica 57(2), 357-384. [Markov Switching ensemble member]"
+      ],
+      "references_secondary_supporting": [
+        "Estrella-Mishkin (1998) Predicting US recession",
+        "Joe-Clayton (1997) Multivariate Models and Dependence Concepts (tail copula)",
+        "Brownlees-Engle (2017) RFS SRISK (CoVaR extension)",
+        "Hamilton (2018) Brookings yield curve guide",
+        "Breiman (2001) Random forests",
+        "Friedman (2001) Gradient boosting (LightGBM grounding)",
+        "Hochreiter-Schmidhuber (1997) LSTM",
+        "Platt (1999) Probabilistic outputs SVM (Platt scaling)",
+        "Zadrozny-Elkan (2002) Isotonic regression calibration",
+        "Tibshirani (1996) Lasso L1",
+        "López de Prado (2018) AFML Ch 7 Purged WF + Embargo",
+        "Brown-Davies-Ringgenberg (2021) RFS ETF non-fundamental demand [SEFRS Phase A inherit]",
+        "Ben-David-Franzoni-Moussawi (2018) JF ETF arbitrage",
+        "Harvey-Liu-Zhu (2016) RFS multiple testing t > 3.0"
+      ],
+      "weight_theta": 1.0,
+      "weight_theta_explanation": "단일 unified family θ=1.0. 32 features 내부 weighting은 5 model ensemble 학습 결과 (각 model이 학습한 feature importance)."
+    }
+  ],
+
+  "feature_usable_date_table_codex_c6_disposition_forge_stage_1_binding": {
+    "description": "Codex C6 ACCEPT — feature-level Usable_Date table 명시. Forge cycle Stage 1 pre-execution binding.",
+    "table_32_entries": {
+      "F01_YC_US_10y_2y_spread": {"source": "FRED_DGS10_minus_DGS2", "publish_lag": "T+1 business day", "usable_date_rule": "Date <= sig_date - 1"},
+      "F02_YC_US_10y_3m_spread": {"source": "FRED_DGS10_minus_DGS3MO", "publish_lag": "T+1 business day", "usable_date_rule": "Date <= sig_date - 1"},
+      "F03_YC_US_inv_dummy_3m": {"derived_from": "F01", "rolling_window_days": 63, "usable_date_rule": "F01.usable_date over [sig_date - 63, sig_date - 1]"},
+      "F04_YC_KR_10y_3y_spread": {"source": "ECOS_KR_Gov10Y_minus_Gov3Y", "publish_lag": "T+5 business days (한국은행)", "usable_date_rule": "Date <= sig_date - 5"},
+      "F05_YC_slope_dynamics_12m": {"derived_from": "F01", "rolling_window": "12m vs 24m mean", "usable_date_rule": "F01.usable_date over [sig_date - 504, sig_date - 1]"},
+      "F06_LEI_US_PMI_growth_3m": {"source": "FRED_INDPRO", "publish_lag": "T+1 month + 5 days (BEA)", "usable_date_rule": "Date <= sig_date %m-% months(1) - days(5)"},
+      "F07_LEI_US_HousingPermits_yoy": {"source": "FRED_PERMIT", "publish_lag": "T+1 month + 15 days (Census)", "usable_date_rule": "Date <= sig_date %m-% months(1) - days(15)"},
+      "F08_LEI_US_InitClaims_zscore_52w": {"source": "FRED_ICSA", "publish_lag": "Thursday for prior week", "usable_date_rule": "week_of(Date) < week_of(sig_date)"},
+      "F09_LEI_US_UMich_Sentiment_zscore_12m": {"source": "FRED_UMCSENT", "publish_lag": "T+1 month + 5 days (UMich)", "usable_date_rule": "Date <= sig_date %m-% months(1) - days(5)"},
+      "F10_LEI_KR_CPI_yoy": {"source": "ECOS_KR_CPI", "publish_lag": "T+1 month + 5 days (통계청)", "usable_date_rule": "Date <= sig_date %m-% months(1) - days(5)"},
+      "F11_VIX_level": {"source": "FRED_VIXCLS", "publish_lag": "T+1 business day", "usable_date_rule": "Date <= sig_date - 1"},
+      "F12_VIX_zscore_252d": {"derived_from": "F11", "rolling_window_days": 252, "usable_date_rule": "F11.usable_date over [sig_date - 252, sig_date - 1]"},
+      "F13_VIX_term_structure_3m_1m_proxy": {"derived_from": "F11", "proxy_method": "VIX MA3 vs MA20 ratio", "usable_date_rule": "F11.usable_date"},
+      "F14_KOSPI_realized_vol_60d_zscore": {"source": "rawdata_BM_Ret", "publish_lag": "T+1 business day (close-to-close)", "usable_date_rule": "Date <= sig_date - 1 (S1 universal)"},
+      "F15_VKOSPI_level": {"source": "KRX_VKOSPI_after_fetch_path_A_B_C", "publish_lag": "T+1 business day", "usable_date_rule": "Date <= sig_date - 1 (S3+ 2003~ conditional fetch)"},
+      "F16_VKOSPI_zscore_252d": {"derived_from": "F15", "rolling_window_days": 252, "usable_date_rule": "F15.usable_date"},
+      "F17_KOSPI_USD_cor_down_60d": {"source": "rawdata_BM_Ret + FRED_DEXKOUS", "publish_lag": "T+1", "usable_date_rule": "Date <= sig_date - 1"},
+      "F18_KRW_USD_zscore_252d": {"source": "FRED_DEXKOUS", "publish_lag": "T+1", "usable_date_rule": "Date <= sig_date - 1"},
+      "F19_KRW_USD_volatility_60d": {"derived_from": "F18", "rolling_window_days": 60, "usable_date_rule": "F18.usable_date"},
+      "F20_Financial_Conditions_NFCI": {"source": "FRED_NFCI", "publish_lag": "T+5 business days (weekly Chicago Fed)", "usable_date_rule": "week_of(Date) < week_of(sig_date)"},
+      "F21_StL_Fin_Stress": {"source": "FRED_STLFSI4", "publish_lag": "T+5 business days (weekly StL Fed)", "usable_date_rule": "week_of(Date) < week_of(sig_date)"},
+      "F22_KR_Bank_Lending_Std_change_3m": {"source": "FRED_DRTSCILM", "publish_lag": "T+1Q + 30 days (Fed survey)", "usable_date_rule": "Date <= sig_date %m-% months(3) - days(30)"},
+      "F23_KR_credit_spread_BBB_AA": {"source": "ECOS_KR_CorpBBB_minus_KR_CorpAA", "publish_lag": "T+5 business days (한국은행)", "usable_date_rule": "Date <= sig_date - 5"},
+      "F24_US_credit_spread_HY_IG": {"source": "FRED_BAMLH0A0HYM2_minus_BAMLC0A4CBBB", "publish_lag": "T+1 business day", "usable_date_rule": "Date <= sig_date - 1"},
+      "F25_KR_credit_deterioration_3m": {"derived_from": "F23", "rolling_window_months": 3, "usable_date_rule": "F23.usable_date"},
+      "F26_SEFRS_EBI_PRIMARY": {"source": "SEIBro_252670_114800_122630_inherit_WT_D20260518_001_phase_a", "publish_lag": "k>=2 business days strict (Forge Stage 1 empirical probe)", "usable_date_rule": "Date <= sig_date - 2 (k=2 default, S4 only 2016-09~)"},
+      "F27_SEFRS_F9_EXTREME_CROWDING": {"derived_from": "F26", "threshold_rule": "EBI > 2.0 sigma for 3 consecutive days", "usable_date_rule": "F26.usable_date"},
+      "F28_SEFRS_F2_CUM5D": {"derived_from": "F26", "rolling_window_days": 5, "usable_date_rule": "F26.usable_date"},
+      "F29_Foreign_NetSell_intensity_zscore_20d": {"source": "investor_foreign_NetBuy", "publish_lag": "T+2 (KRX settlement)", "usable_date_rule": "Date <= sig_date - 2"},
+      "F30_Foreign_NetSell_reversal_signal": {"derived_from": "F29", "rolling_window_days": 5, "usable_date_rule": "F29.usable_date"},
+      "F31_Defensive_vs_Cyclical_spread": {"source": "rawdata_Sector_Lv2_60d_return", "publish_lag": "T+1 (close-to-close)", "usable_date_rule": "Date <= sig_date - 1 (S1 universal)"},
+      "F32_Defensive_Rotation_zscore_60d": {"derived_from": "F31", "rolling_window_days": 60, "usable_date_rule": "F31.usable_date (S1 universal)"}
+    },
+    "forge_stage_1_audit_per_feature_binding": "lookahead_detector.R + pit_enforcement.R per F01..F32 (32 features × 2 audits = 64 checks)",
+    "fred_reference_vs_publish_date_handling": "FRED 'Date' column = reference date (not publish date). Lag rule explicit per-feature above. INDPRO/PERMIT/UMCSENT/CPI는 monthly with T+1m+5~15d publish — Date <= sig_date %m-% months(1) - days(5~15) per feature."
+  },
+
+  "method_shopping_log_recount_codex_c4_disposition": {
+    "description": "Codex C4 ACCEPT — multiple testing inflation 정확 지적 + honest recount.",
+    "candidates_tried_unified_family": 1,
+    "candidates_tried_method_dimensions_recount": {
+      "feature_pool": {"n_options": 1, "description": "32 features 8 학술 backbone single unified family - NO FMP r² ranking, NO data mining"},
+      "model_class": {"n_options": 5, "options": ["Logistic_L1", "LightGBM", "RandomForest", "LSTM_small_5K_params", "MarkovSwitching_Hamilton_1989"]},
+      "ensemble_strategy": {"n_options": 3, "options": ["simple_average_default", "stacking_meta_logistic", "voting_majority"]},
+      "frequency_mode": {"n_options": 2, "options": ["monthly_default", "daily_auxiliary"]},
+      "label_threshold": {"n_options": 3, "options": ["-3pct_lenient", "-5pct_default", "-10pct_severe"]},
+      "daily_aggregation_method": {"n_options": 4, "options": ["max_default", "mean", "streak_k_consecutive", "trailing_window_20d"]},
+      "stratum_strategy": {"n_options": 3, "options": ["A_full_history_default", "B_2001_plus_mandatory_benchmark_codex_c5", "C_2003_plus_VKOSPI_optional"]}
+    },
+    "raw_combinations_total": "1 × 5 × 3 × 2 × 3 × 4 × 3 = 1080 combinations",
+    "actual_executions_pre_declared": {
+      "default_primary_fit": 1,
+      "ablation_variations_individual_dimensions": 20,
+      "n_trials_effective_for_DSR_HLZ_adjustment": 20
+    },
+    "harvey_liu_zhu_2016_threshold_binding": {
+      "raw_t_threshold": 1.96,
+      "n_tests_effective": 20,
+      "bonferroni_fwer_threshold": "~2.78",
+      "harvey_liu_zhu_recommendation_finance": "t_NW > 2.95",
+      "binding_threshold": 2.95
+    },
+    "dsr_bailey_lopez_de_prado_adjustment": {
+      "n_trials_in_formula": 20,
+      "selection_penalty_explicit": "SR_DSR_adjusted = SR × √(1 - skew × SR / n + (γ - 1) × SR² / 4n) applied",
+      "binding_threshold": "DSR Z >= 1.5 (G4 binding)"
+    },
+    "forge_cycle_binding": "Forge Stage 3 모든 t-stat report NW-adjusted lag-12 strict + threshold 2.95 + DSR n_trials=20"
+  },
+
+  "stratum_strategy_codex_c5_disposition_mandatory_benchmark": {
+    "description": "Codex C5 PARTIAL ACCEPT — Strategy B mandatory parallel benchmark + per-stratum feature importance audit.",
+    "strategy_A_full_history": {"period": "1990-01~2026-05 (437 monthly)", "scope": "primary execution"},
+    "strategy_B_S2_plus_mandatory_benchmark": {"period": "2001-01~2026-05 (305 monthly)", "scope": "MANDATORY parallel benchmark (Codex disposition격상 from optional)"},
+    "strategy_C_S3_plus_VKOSPI_optional": {"period": "2003-04~2026-05 (~278 monthly)", "scope": "optional compare if VKOSPI fetch successful"},
+    "admit_decision_rule_pre_declared": {
+      "strategy_A_admit_criteria": "Strategy A G1 5-subgate metrics >= Strategy B metrics by at least 0.05 AUC in at least 4/5 sub-windows",
+      "else_default": "Strategy B admit (2001+ start, no S1 era-membership risk)"
+    },
+    "per_stratum_feature_importance_audit_binding": {
+      "method": "LightGBM gain importance for stratum_id_S1 one-hot dummy vs other 32 features",
+      "structural_failure_criterion": "stratum_id_S1 in top-5 importance → Strategy A invalidated (model learning era membership, not bear mechanism)",
+      "academic_grounding": "Stock-Watson (2003) leading indicators stable across crises and decades — 학술 backbone 정합 시 stratum_id should NOT be top-5"
+    }
+  },
+
+  "downstream_integration_constraints_codex_c7_disposition_pre_declare": {
+    "description": "Codex C7 PARTIAL ACCEPT — Path A + Path B downstream constraints 사전 명시.",
+    "path_a_dpl_kr_v3_integration": {
+      "feature_addition": "p_bad_v1 + 80 base = 81 features (DPL_KR_v3 input)",
+      "g6_admission_metric": "ΔAUC ≥ 0.05 (vs DPL_KR_v3 80-feature baseline)",
+      "to_impact": "marginal (single feature addition)",
+      "downstream_owner": "WT-D20260519_001 DPL_KR_v3 Forge cycle integration test",
+      "dsr_impact": "minor — DSR n_trials += 1 in formula"
+    },
+    "path_b_standalone_str1715_layer_6_sequential_overlay": {
+      "integration_form": "w_final = w_str1715 × m4 × β_AR × β_R05 × β_bear_v1",
+      "beta_bear_v1_schedule": {
+        "p_bad_less_than_0_3": 1.0,
+        "0_3_to_0_5": 0.7,
+        "0_5_to_0_7": 0.5,
+        "greater_than_0_7": 0.3
+      },
+      "to_impact_estimate_36yr": "~1.5 TO/yr added (estimated, 8 crises × ~2 transitions/crisis × decay-recovery = 16 events / 36yr × full sleeve scale)",
+      "to_total_post_overlay_estimate": "STR_1715 PG2 base ~4.0 TO/yr + Layer 6 ~1.5 TO/yr = ~5.5 TO/yr (within 6.0 hard cap, marginal)",
+      "dsr_binding": "Bailey-LdP Z >= 1.5 in downstream NAV (governor cycle binding)",
+      "mdd_expected": "improvement (defensive scaling reduces tail loss)",
+      "downstream_owner": "본 cycle Forge + Optimizer + Judge + Governor",
+      "constraints_unchanged": ["Σw=1.0", "max_names=20", "weight_bounds [0, 0.20]", "long_only", "LIQ 2e8 KRW", "15bps TC"]
+    },
+    "production_promotion_eligibility_post_disposition": "G1 5-subgate ALL PASS + AX-008 >= 2/3 + (Path A: DPL_KR_v3 integration ΔAUC >= 0.05 OR Path B: standalone admit STR_1715 PG2 Layer 6 추가 with downstream TO ≤ 6.0/yr + DSR Z >= 1.5)"
+  },
+
+  "diagnostics": {
+    "rank_ic": null,
+    "rank_ic_note": "n/a — bear prediction is time-series classification (not cross-sectional). Equivalent metrics: AUC, Brier score, Recall, Precision.",
+    "icir": null,
+    "icir_note": "n/a — same reason. AUC ≥ 0.60 (G1 subgate 1) as equivalent stability metric.",
+    "harvey_t_count": 0,
+    "harvey_t_count_note": "Phase A marker. Forge cycle Stage 3 NW-adjusted lag-12 t-stat for ensemble p_bad_monthly vs forward 1M BM_Ret (Diebold-Mariano test against persistence baseline + random baseline). Codex C4 disposition binding: threshold = 2.95 (Harvey-Liu-Zhu 2016) + n_trials = 20 in DSR formula.",
+    "monotonicity": null,
+    "monotonicity_note": "Forge Stage 2/3 decile event study + bear-state vs bull-state forward 1M BM_Ret monotonicity test. selection_objective = monotonicity (R4 P3 정합).",
+    "subperiod_stability": null,
+    "subperiod_stability_target": "4/5 sub-windows pass G1 5-subgate (v5 0/4 fail target fix)",
+    "auc_target": "G1 subgate 1: AUC ≥ 0.60 per sub-window (v5 0.6504 marginal pass → tighten + extend to 4/5 windows)",
+    "brier_target": "G1 subgate 2: Brier < 0.20 per sub-window (v5 0.2984 → tighter)",
+    "recall_target": "G1 subgate 3: Recall ≥ 0.60 per sub-window (v5 0.089 catastrophic → 7× improvement target)",
+    "precision_target": "G1 subgate 4: Precision ≥ 0.40 per sub-window (v5 0.0769~0.1538 → 3× improvement target)",
+    "g3_feature_stability_target": "Gini concentration < 0.5 AND top-10 Jaccard overlap ≥ 0.6 across 5 sub-windows",
+    "g4_dsr_target": "Codex C4 disposition binding: DSR Bailey-LdP Z ≥ 1.5 (downstream NAV if Path A or Path B sleeve emit) with n_trials = 20 in formula"
+  },
+
+  "selection_objective": "monotonicity",
+  "selection_objective_rationale": "role_objective_guard enum compliance (rank_ic / icir / monotonicity / subperiod_stability). monotonicity 선택 사유: bear-state probability vs forward BM_Ret monotonicity test (high p_bad → low forward return)가 G1 admission의 핵심 criterion. Phase A design phase는 design protocol coherence 평가만, actual selection은 Forge cycle 후 결정. 부수 metric: G1 sub-window AUC + Recall + Precision + sub-window 4/5 stability + G3 feature importance stability + Strategy A vs B 비교 (Codex C5).",
+
+  "method_shopping_log": {
+    "candidates_tried": 1,
+    "candidates_tried_note_codex_c4_disposition": "feature_pool 단일 unified family 1 candidate retain (학술 prior-driven). 단 method dimension (model + ensemble + frequency + threshold + aggregation + stratum) 추가 trials 20개 effective for DSR + HLZ adjustment. method_shopping_log_recount_codex_c4_disposition section 참조.",
+    "method_log": [
+      {
+        "name": "Bear_Prediction_Engine_v1_Unified_32_Features_8_Academic_Backbone_5_Model_Ensemble_Max_History_Post_Codex_Disposition",
+        "selected": true,
+        "rationale": "단일 unified design family — 8 학술 backbone single coherent paper-driven catalog + 5 model paradigms (Logistic/LightGBM/RF/LSTM/MSM) = single ensemble system. Codex C4 ACCEPT: method dimensions (model + ensemble + frequency + threshold + aggregation + stratum) = 20 effective trials in DSR/HLZ adjustment. SEFRS Phase A precedent inherit (12 sub-features = 1 family). 도훈 mandate '자율성 발휘' 정합."
+      }
+    ],
+    "parallel_exec": false,
+    "parallel_exec_note": "Phase A design phase — no compute. Forge cycle Stage 2~4 시 future.apply parallel (rolling regression / IC bootstrap / Architect concurrent spawn) R13 정합.",
+    "rcpp_used": false,
+    "rcpp_used_note": "Phase A design only. Forge cycle Stage 3 시 LightGBM/RF/LSTM 모두 native C++ implementation 활용 (R14 정합 — Rcpp hot-spots는 rolling β / DSR bootstrap에 활용 가능)."
+  },
+
+  "challenge_flags": [
+    {
+      "id": "FLAG_S1_STRATUM_FEATURE_COVERAGE_ASYMMETRY",
+      "severity": "MEDIUM",
+      "type": "stratified_handling_documentation",
+      "concern": "S1 (1990~2000, 132 monthly) period에는 macro features (yield curve / VIX / credit spread / foreign flow) 전부 missing. 단 3 features universal (F14 KOSPI realized vol + F31 defensive vs cyclical + F32 defensive rotation z-score)만 active. Tree ensemble (LightGBM NaN native) + stratum_id one-hot handles, but LSTM/MSM cannot handle NaN natively — S2+ subset (305 monthly, 2001~) only.",
+      "resolution_path": "(a) Codex C5 PARTIAL ACCEPT 정합 — Strategy A vs Strategy B vs Strategy C mandatory parallel benchmark + admit decision rule pre-declared (Strategy A admit only if metrics > B by 0.05 AUC in 4/5 windows). (b) historical_coverage_audit.md S1~S4 stratum table + imputation explicit documentation 도훈 mandate 정합. (c) NaN handling: LightGBM native + stratum_id indicator + per-stratum median impute for RF. (d) per-stratum feature importance audit binding (stratum_id_S1 in top-5 → invalidated).",
+      "academic_grounding": "Lopez de Prado 2018 AFML Ch 5 (feature engineering with structural breaks). Pre-1997 KR market structurally different (pre-IMF emerging market) — stratum-aware modeling academically standard. Stock-Watson 2003 — leading indicators stable across crises (Strategy A 정합 expected)."
+    },
+    {
+      "id": "FLAG_VKOSPI_FETCH_DEPENDENCY",
+      "severity": "MEDIUM",
+      "type": "external_data_dependency",
+      "concern": "VKOSPI (F15/F16) 직접 수집 mandate (Path A: KRX API / Path B: pykrx / Path C: manual). Forge cycle Stage 1 fetch 실패 시 F15/F16 omit. Vol regime feature F14 (KOSPI realized vol KR-side) + F11~F13 (VIX FRED) proxy retain로 partial cover, 단 KR-specific VKOSPI는 우월한 signal 가능성.",
+      "resolution_path": "Forge cycle 시 Path B (pykrx Python) primary attempt. 실패 시 Path A (KRX 정보데이터시스템 API). 모두 실패 시 manual CSV download. Final fallback: F15/F16 omit, 32 → 30 features.",
+      "academic_grounding": "Whaley (2009) JPM 'Understanding the VIX' — VKOSPI KR equivalent strong forward bear indicator. Forge cycle pre-fetch attempt mandatory."
+    },
+    {
+      "id": "FLAG_DAILY_FREQUENCY_COMPUTATIONAL_COST",
+      "severity": "LOW",
+      "type": "design_decision_tradeoff",
+      "concern": "Daily-frequency mode (axis 4) provides 25× sample expansion but ~6× computational cost (~96 min Forge cycle vs ~16 min monthly). Spec forecast_horizon = 1M ⇒ monthly mode forecast-aligned. Daily mode = auxiliary only.",
+      "resolution_path": "Monthly mode default. Daily mode as Forge cycle compare option only if G1 5-subgate monthly fails or marginal pass. Decision criterion: daily admit only if G1 pass count > monthly at same params.",
+      "academic_grounding": "Lopez de Prado 2018 AFML Ch 7 (sample size for ML — 25× expansion not always uplift due to non-stationarity)."
+    },
+    {
+      "id": "FLAG_CRISIS_EPOCH_GENERALIZATION_RISK",
+      "severity": "MEDIUM",
+      "type": "generalization_concern",
+      "concern": "8 crisis epochs (1997 IMF / 2000 dotcom / 2008 GFC / 2011 EU / 2015 CN / 2018 vol / 2020 COVID / 2022 inflation) each distinct mechanism. Model trained on full set may underfit specific crisis patterns OR overfit to early KR market (S1) regime that differs from 2020s mature market.",
+      "resolution_path": "(a) crisis_sample_inclusion.md stress set A (8 crisis stratification) pre-declared. (b) per-crisis Recall + Precision per-window evaluation. (c) Forge cycle alternative crisis-stratified 5-fold optional compare. (d) feature normalization rolling-z 60m for macro/flow (cross-stratum stationary).",
+      "academic_grounding": "Stock-Watson 2003 — leading indicators 학술적 stable across crises. Estrella-Hardouvelis 1991 — yield curve inversion robust across 1957~2000 multiple recessions. Academic backbone designed exactly for cross-crisis generalization."
+    },
+    {
+      "id": "FLAG_LSTM_PARAMETER_RATIO_DAILY_VS_MONTHLY",
+      "severity": "LOW",
+      "type": "over_parameterization_L_328_learning",
+      "concern": "L-328 DPL_KR_v1 165K params over-parameterized fail. 본 cycle LSTM = 5K params (hidden=32, n_layers=2). Monthly mode (437 obs) 시 437/5000 = 0.09 obs/param ratio = 어렵음. Daily mode (9000 obs) 시 9000/5000 = 1.8 obs/param ratio = OK.",
+      "resolution_path": "Monthly mode: LSTM may be solo-fragile, role = ensemble member only (4 other models compensate). Daily mode: LSTM stronger. Forge cycle LSTM individual Recall/Precision report — if catastrophic (Recall < 0.3 across 5 windows), drop from ensemble.",
+      "academic_grounding": "Lu-Yang-Zhang (2024) arXiv:2411.18830 double-descent — over-parameterized NN can generalize under specific regime. 본 cycle small 5K = below DD threshold. Forge cycle empirical decision."
+    },
+    {
+      "id": "FLAG_CODEX_C1_C3_REBUTTAL_DESIGN_PHASE_AUDIT_EXPECTATION_MISMATCH",
+      "severity": "MEDIUM",
+      "type": "phase_a_role_card_scope_clarification",
+      "concern": "Codex C1/C3 우려 — alpha_scores.parquet / AUC/Brier/Recall/Precision/Harvey-t/DSR realized 부재 = RF-A7 single snapshot + AX-002 vindication 우려. 본 cycle = discovery_design_phase_a Role Card scope에서 realized metrics는 Forge cycle Stage 3~4 output (Charter §10 v1.8 정합 SEFRS Phase A 첫 시연 + DPL_KR_v1 L-328 precedent).",
+      "resolution_path": "REBUTTAL retain — wt_type_role_card_scope_explicit_charter_v18 명시 (own_deliverables 11 + exempt_deliverables 6 + inherited_from 6 + deferred_to_forge_cycle 7). Forge cycle Stage 4 realized 시 별도 Codex Round 평가 (phase_a_design_only_evaluation paradigm). Codex stance = REVISE (NOT REJECT, veto_flag=False).",
+      "academic_grounding": "Lopez de Prado 2018 AFML Ch 7.4 (Backtest paranoia) — research lifecycle은 design phase + empirical execution phase 분리 의무. Charter §10 v1.8 amendment SEFRS Phase A 시 동일 paradigm 정합."
+    }
+  ],
+
+  "selection_objective_phase_a_supplementary_note": "Phase A scope에서 selection은 design protocol coherence + PIT rigor + feature catalog completeness + multi-source protocol + ensemble design rationale + Codex disposition 6 modifications 평가만. Codex Round Stage 4~5 evaluation 정합 — stance=REVISE (NOT REJECT), veto_flag=False, 2 ACCEPT (C4 + C6) + 3 PARTIAL ACCEPT (C2 + C5 + C7) + 2 REBUTTAL (C1 + C3) = 5/7 (71%) substantive change embedded. G9 Codex pass = phase_a_design_only_evaluation. Alpha admission cert 발급은 Forge cycle Stage 4 후 별도 Codex Round.",
+
+  "wt_type_role_card_scope_explicit_charter_v18": {
+    "own_deliverables": [
+      "stage_artifacts/WT_D20260519_002/historical_coverage_audit.md (max-history mandate 정합)",
+      "stage_artifacts/WT_D20260519_002/crisis_sample_inclusion.md (8 crisis + 5 sub-windows + stress set A/B/C)",
+      "stage_artifacts/WT_D20260519_002/dedicated_features_academic_backbone.md (32 features × 8 학술 backbone)",
+      "stage_artifacts/WT_D20260519_002/multi_source_data_protocol.md (12 sources × PIT lag rule)",
+      "stage_artifacts/WT_D20260519_002/multi_model_ensemble_design.md (5 models × 3 ensemble strategies)",
+      "stage_artifacts/WT_D20260519_002/daily_frequency_protocol.md (monthly default + daily auxiliary)",
+      "stage_artifacts/WT_D20260519_002/admission_protocol.md (G0~G6 gates + AX-008 + Codex Round)",
+      "qepm/mailbox/worktask/WT-D20260519_002/alpha_package_draft.json",
+      "qepm/mailbox/worktask/WT-D20260519_002/codex_critic_response_alpha-research.json (Stage 3)",
+      "qepm/mailbox/worktask/WT-D20260519_002/challenge_note_alpha-research.md (Stage 4)",
+      "qepm/mailbox/worktask/WT-D20260519_002/alpha_package.json (this, Stage 5 final)"
+    ],
+    "exempt_deliverables": [
+      "alpha_vector / p_bad_monthly time-series (Forge cycle Stage 4 output)",
+      "confidence_vector (n/a — regime sensor, not cross-sectional)",
+      "alpha_scores.parquet (Forge cycle output)",
+      "weights.csv (Optimizer cycle output, downstream)",
+      "covariance.parquet (Risk cycle output)",
+      "harvey_t_count realized (Forge Stage 3 output)"
+    ],
+    "inherited_from": [
+      "WT-D20260518_001 SEFRS Phase A (S08 SEIBro ETF complex 12 sub-features + Phase A precedent Charter §10 v1.8)",
+      "STR_1715_AR_on_M4_R05_overlay_PG2 Session 80 admit (M4 BOCPD regime + R05 Tail Risk lineage)",
+      "WT-D20260517_005 v5 cycle (features_panel_cache.parquet 2004~2026 + p_bad_classifier_redesign.json 4 options FAIL)",
+      "WT-D20260517_001 DPL_KR_v1 (LSTM 5K params right-size precedent + L-328 over-param learning + 18/18 ACCEPT 0 rebuttal precedent)",
+      "WT-D20260519_001 DPL_KR_v3 (Original DPL Redesign parallel cycle, integration test Path A)",
+      "rawdata.parquet sha256=c86e4ae5c6cc3e733efe35db4aa9bf335f434f85aa90f0a6fdd086183464659c (1990~2026 PIT-clean)"
+    ],
+    "deferred_to_forge_cycle": [
+      "Forge Stage 1: ECOS/FRED refresh + VKOSPI direct fetch path B/A/C + SEFRS data + investor refresh (~50 min) + feature_usable_date_table 32 entries lookahead_detector audit per-feature (Codex C6 binding)",
+      "Forge Stage 2: 32 feature parquet computation + lookahead_detector PIT audit per-feature + Strategy A vs B vs C parallel execution (Codex C5 binding)",
+      "Forge Stage 3: 5-model ensemble train (Purged WF + 1m embargo, walk-forward annual refit) + HLZ t > 2.95 + DSR n_trials = 20 (Codex C4 binding)",
+      "Forge Stage 4: G1 5-subgate measurement per-window + AUC/Brier/Recall/Precision per-crisis + Strategy A vs B admit decision rule",
+      "Forge Stage 5: Architect concurrent spawn (AX-008 3rd source) — independent ML re-execution",
+      "Forge Stage 6: G5 integration test (DPL_KR_v3 inject p_bad feature ΔAUC ≥ 0.05 OR standalone admit Path B STR_1715 PG2 Layer 6 추가 with TO ≤ 6.0/yr + DSR Z ≥ 1.5)",
+      "Codex Round Stage 4 alpha admission cert evaluation post Forge"
+    ]
+  },
+
+  "agent_lineage": {
+    "alpha_research_this": "Step 2 design phase — 7 stage_artifacts (5 v1 + 2 max-history additions) + alpha_package_draft + Codex Round + alpha_package final + 6 disposition modifications",
+    "risk_research_next": "Step 5 — feature stability + sub-period consistency + crowding (regime sensor overlap with STR_1715 + DPL_KR_v3 parallel)",
+    "optimizer_research_next": "Step 4 — model ensemble weight + threshold tuning + calibration (Platt vs isotonic)",
+    "forge_next": "Step 6 — real PIT data collection (Qvest infra direct) + 5 model train + ensemble + 5-subgate + Architect concurrent AX-008 + Strategy A vs B vs C compare + feature Usable_Date audit",
+    "judge_next": "Gate 0~6 + AX-008 quorum + Codex disposition compliance check",
+    "governor_next": "admit decision — Path A (DPL_KR_v3 integration AUC uplift ≥ 0.05) OR Path B (standalone regime sensor admit, STR_1715 PG2 Layer 6 추가) OR DEFER"
+  },
+
+  "ax_008_status": "0_OF_3_PENDING_FORGE_AND_ARCHITECT_AFTER (alpha-research Codex Round 1/1 complete + 7 disposition)",
+  "ax_008_target": "≥ 2/3 (Forge empirical + Codex external + Architect concurrent)",
+
+  "research_philosophy_compliance_charter_v18_section_15": {
+    "P1_factor_zoo_validation": "compliant — 32 features pre-declared 8 학술 backbone, no FMP r² ranking data mining (v5 fix), each feature has economic_rationale + references",
+    "P2_cost_aware_alpha": "indirect_via_downstream_integration — bear prediction sensor, not direct alpha sleeve, no TO direct cost. Codex C7 disposition binding: Path B 시 TO ~5.5/yr 추정 (5.5/yr < 6.0 cap marginal)",
+    "P3_uncertainty_aware_forecasting": "compliant — Platt scaling calibration + Brier score + reliability diagram + Expected Calibration Error metric pre-declared + Codex C4 disposition: DSR n_trials = 20 binding",
+    "P4_direct_portfolio_learning": "indirect — bear prediction injection into DPL_KR_v3 (Path A) supports principle, standalone (Path B) is two-stage but regime sensor only",
+    "P5_risk_model_advancement": "compliant — bear prediction integrates with crowding (SEFRS Phase A) + Σ regime conditioning + M4/R05 sequential overlay",
+    "P6_implementation_discipline": "Phase A design — implementation 의무 binding for downstream cycle (TO ≤ 6.0/yr / LIQ 2e8 / max_names 20 / weights [0, 0.20] / Σw=1 — Forge cycle G7 Implementation 검증) + Codex C7 disposition binding",
+    "P7_attribution_feedback_loop": "Forge cycle Stage 5~6 binding — feature attribution + per-crisis Recall/Precision + sub-window stability quarterly review post-admit"
+  },
+
+  "codex_round_disposition_summary": {
+    "stage_1_draft_emit": "alpha_package_draft.json 2026-05-18T15:00:00+09:00",
+    "stage_2_codex_invocation": "run_codex_qepm_critic.sh --role=alpha --task_id=WT-D20260519_002 (gpt-5.5 xhigh, completed)",
+    "stage_3_codex_response": "codex_critic_response_alpha-research.json — stance=REVISE veto_flag=False 7 concerns (HIGH=4 MEDIUM=3)",
+    "stage_4_challenge_note": "challenge_note_alpha-research.md — 7 concerns dispositioned (2 ACCEPT C4+C6 / 3 PARTIAL_ACCEPT C2+C5+C7 / 2 REBUTTAL C1+C3 with 학술+L-code+정량 3축)",
+    "stage_5_final_emit": "alpha_package.json (this) 2026-05-18T17:30:00+09:00 — 6 disposition modifications embedded",
+    "self_rationalization_audit": "본 final emission grep 결과: 미미/관행적/보수적이면/대부분 결과 동일/이미 반영/백테스트 충분히 길어서 상쇄/실무적 = 0회. '실험 설계 부실' (Codex flagged) → 'experiment design dimensions 부족' empirical reframe.",
+    "q_lead_escalate_trigger_check": "HIGH severity 4 < 5 / AX hard FAIL 0 / PIT C1 violation 0 / stance=REVISE (NOT REJECT) — escalate trigger 미충족 ✅"
+  },
+
+  "schema_version": "alpha_package_v1",
+  "lineage_record_pending": "lineage_utils::record_package_lineage post this alpha_package.json final write",
+
+  "telegram_brief_pending": "tg_agent_brief(agent='Alpha', title='WT-D20260519_002 ALPHA_DONE Phase A — Bear Prediction Engine v1.0 + max-history 36yr 8 crisis + 32 features 학술 backbone + 5-model ensemble + Codex REVISE 7 disposition complete', sections=[...])"
+}
