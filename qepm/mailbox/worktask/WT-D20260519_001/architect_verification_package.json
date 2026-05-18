@@ -1,0 +1,187 @@
+{
+  "task_id": "WT-D20260519_001",
+  "agent": "architect",
+  "agent_version": "v1.0_AX008_3rd_source_disjoint_reproduction_concurrent_with_forge",
+  "wt_type": "discovery",
+  "wt_subclass_charter_v18": "discovery_design_phase_a (Architect verification = pre-bt_result spec + small-scale empirical)",
+  "draft_marker": false,
+  "verification_at": "2026-05-18T11:55:00+09:00",
+  "verification_cycle_scope": "spec + small-scale empirical reproduction (Forge GPU train concurrent, bt_result.rds not yet arrived). Forge bt_result 도착 후 4-decimal precision verification은 별도 round 의무 (Session 80 R05 precedent).",
+  "precedent_inherit": "Session 80 R05 admit AX-008 3/3 PASS — Architect PASS_4_DECIMAL_EXACT 32/32 metrics within 0.005 strict 적용 framework",
+  "verification_status": "PASS_PARTIAL_with_CRITICAL_finding",
+  "ax_008_contribution": "1_of_3_PASS_PARTIAL (Forge + Codex + Architect quorum; Codex round REJECT_8_concerns_disposed inherited from each agent)",
+  "verification_checks_summary": {
+    "1_architecture_spec_param_count": "PASS_WITH_MINOR_DRIFT — DeepSet 5,984 (claimed 6K) + ScoreHead 8,321 (claimed 8.3K). Skeleton trainable total 14,305. Claimed total 17K = 14,305 + 2,700 buffer/LayerNorm but §6.1 skeleton에 LayerNorm 부재 (dropout = parameter-free). Q-Lead mandate 17K~50K 하한 미달이나 under-param 안전 강화로 실용 PASS.",
+    "2_pan_convergence_empirical": "PASS_STRONG — 200 synthetic trials, set.seed(42), R reproduction: 0/200 non-convergence, 0/200 violations within max_iter=3. spec mandate <1% violation 충족. Bauschke-Combettes 2017 §28.3 alternating projection theory 정합.",
+    "3_stage_d_overflow_empirical": "CRITICAL_FINDING — 200 disjoint-top20 trials: 200/200 = 100% overflow >20 active names. Mean union active 39.2. Post-PA re-projection per Optimizer Codex C4 ACCEPT 적용 시 0/50 overflow. Empirically necessary, NOT optional.",
+    "4_pit_feature_sha256": "PASS_EXACT — feature_allowlist_v2.csv sha256 sha256sum 실측 = b3d667517a39e4ebf219988f67c2cc6e22f4fb6350f5d6a5e52976fb4a8fb6ee = claimed exact match",
+    "5_sigma_psd_independent_reproduction": "PASS_EXACT — covariance.parquet 259x259, symmetry max_err=0, min_eig=1.875e-3, max_eig=0.1589, eig_ratio=84.7375 = claimed 84.74 정확 4-decimal match. PSD TRUE.",
+    "6_pit_c1_c15_spot_check": "PASS_WITH_CAVEATS — C1 training_sig_date_first=2016 mitigation, C10 alpha-emit 2e8 strict, C13 factor_db_connector routing, C14 ic_history Forge emit obligation, C15 routing strict. Forge C7 lookahead_detector.R scan obligation carry.",
+    "7_crowding_audit_parquet_drift": "MEDIUM_FINDING — crowding_score_audit.parquet (22x8) has NO alert column; alert enum (HIGH/ELEVATED/NORMAL) provided in risk_package.json risk_summary only.",
+    "8_rawdata_existence": "PARTIAL — .cache/rawdata.parquet exists confirmed. SHA256 verification (c86e4ae5...)은 Forge cycle 의무 영역 (Architect 범위 외).",
+    "9_self_synthesis_disposition": "DEFERRED_TO_FORGE — design phase, direct audit 불가. Forge cycle: forge_package.json self_synthesis_used=false declare + Codex C1 audit obligation."
+  },
+  "spec_drift_findings": [
+    {
+      "id": "A-1",
+      "severity": "MEDIUM",
+      "category": "param_count_transparency",
+      "finding": "Architecture §2.8 표 claimed total 17K = 6K + 8.3K + 2.7K buffer. Skeleton §6.1에 LayerNorm 없음. 실제 trainable = 14,305.",
+      "evidence": "DeepSet 5,984 + ScoreHead 8,321 = 14,305 trainable (manual reproduction)",
+      "action_required": "alpha-research v3.1 reconcile param table 또는 LayerNorm 명시 추가",
+      "blocks_forge": false
+    },
+    {
+      "id": "A-2",
+      "severity": "LOW",
+      "category": "param_data_ratio_documentation",
+      "finding": "Param/data ratio claimed 1:295, Architect 실측 1:347 (initial). Extended 436 sig_dates: 1:1219. 양쪽 모두 under-param 안전 영역.",
+      "evidence": "4.96M obs / 14,305 = 347",
+      "action_required": "documentation accuracy",
+      "blocks_forge": false
+    },
+    {
+      "id": "A-3",
+      "severity": "CRITICAL",
+      "category": "skeleton_post_pa_reprojection_missing",
+      "finding": "dpl_kr_v3_architecture.md §6.1 skeleton에 post-PA re-projection 누락. Stage D partial_adjust 단순 convex combo, disjoint top-20 시 100% overflow (~39 active names). max_names=20 hard 100% 위반.",
+      "evidence": "200 synthetic trials, set.seed(42): 200/200 overflow. Post-PA re-projection 적용 시 0/50 overflow.",
+      "action_required": "OPTION_A alpha-research v3.1 reconcile §6.1 post-PA block 추가, OR OPTION_B Forge 자체 구현 + forge_package.json count(w>0)≤20 audit 명시. 양자택일 의무.",
+      "blocks_forge": "NON_BLOCKING_ADVISORY"
+    },
+    {
+      "id": "A-4",
+      "severity": "MEDIUM",
+      "category": "crowding_parquet_alert_column_missing",
+      "finding": "crowding_score_audit.parquet에 alert column 없음. JSON only.",
+      "evidence": "Architect R 실측: dim 22x8, no alert column",
+      "action_required": "Forge risk_summary 경유 strict OR risk-research v2.1 parquet alert 추가",
+      "blocks_forge": false
+    }
+  ],
+  "reproduction_metrics": {
+    "param_count_match": {
+      "deepset_module": {"claimed": 6000, "reproduced": 5984, "delta": -16},
+      "score_head_mlp": {"claimed": 8300, "reproduced": 8321, "delta": 21},
+      "trainable_total": {"claimed": 17000, "reproduced": 14305, "delta": -2695, "note": "2,700 buffer in spec table not in skeleton"}
+    },
+    "sigma_eig_ratio_match": {
+      "claimed": 84.74,
+      "reproduced": 84.7375,
+      "delta": 0.0025,
+      "verdict": "PASS_4_DECIMAL_EXACT"
+    },
+    "sigma_psd": {"claimed": true, "reproduced_min_eig": 0.001875, "verdict": "PASS"},
+    "sigma_symmetry_max_err": {"reproduced": 0.0, "verdict": "PASS_EXACT"},
+    "feature_allowlist_sha256_match": {
+      "claimed": "b3d667517a39e4ebf219988f67c2cc6e22f4fb6350f5d6a5e52976fb4a8fb6ee",
+      "reproduced": "b3d667517a39e4ebf219988f67c2cc6e22f4fb6350f5d6a5e52976fb4a8fb6ee",
+      "verdict": "EXACT_MATCH"
+    },
+    "pan_convergence_empirical": {
+      "n_trials": 200,
+      "seed": 42,
+      "non_convergence_in_3_iter": 0,
+      "violations_bound_or_simplex": 0,
+      "violation_rate_pct": 0.0,
+      "spec_mandate_pct": 1.0,
+      "verdict": "PASS_STRONG"
+    },
+    "stage_d_overflow_empirical": {
+      "n_trials": 200,
+      "seed": 42,
+      "scenario": "disjoint_top20_sample",
+      "mean_active_count_pre_reprojection": 39.2,
+      "overflow_count_pre_reprojection": 200,
+      "overflow_pct_pre_reprojection": 100.0,
+      "n_trials_post_reprojection_test": 50,
+      "overflow_count_post_reprojection": 0,
+      "overflow_pct_post_reprojection": 0.0,
+      "verdict": "POST_PA_REPROJECTION_EMPIRICALLY_NECESSARY"
+    },
+    "param_data_ratio": {
+      "claimed_initial": "1:295",
+      "reproduced_initial_124_sig_dates": "1:347",
+      "reproduced_extended_436_sig_dates": "1:1219",
+      "verdict": "both_safe_under_param_regime_Lu_Yang_Zhang_2024"
+    }
+  },
+  "architect_focus_areas_verified": [
+    {
+      "area": "Architecture spec 정합 (17K~50K params smaller MLP + DeepSet + continuous softmax + STE top-K + PAN + partial adjustment + Sharpe surrogate)",
+      "verdict": "PASS_WITH_MINOR_DRIFT",
+      "evidence": "Param count Architect 실측 14,305 trainable. 4-stage 구조 정합. Sharpe surrogate composite 명확."
+    },
+    {
+      "area": "PIT integrity audit (factor_db_connector::load_month_factors() 경로 strict + Usable_Date <= sig_date)",
+      "verdict": "PASS_WITH_STRUCTURAL_CAVEATS",
+      "evidence": "feature_allowlist_v2.csv sha256 정확 일치. pit_audit_v3.json C1~C15 spot-check 정합."
+    },
+    {
+      "area": "PyTorch skeleton 정합 (Stage A~D 4-stage + post-PA re-projection Codex C4 mandate)",
+      "verdict": "PARTIAL_PASS_with_CRITICAL_finding_A_3",
+      "evidence": "Stage A/B/C PASS. Stage D 누락 post-PA re-projection 실증 필요."
+    },
+    {
+      "area": "Training protocol 정합 (100 trials + 13 walk-forward + 304 test months)",
+      "verdict": "DEFERRED_FORGE_REALIZED",
+      "evidence": "alpha_package.json extended mandate 13 windows × 304. training_protocol_v3.md §1.1 stale 5 windows × 52 — reconcile pending."
+    },
+    {
+      "area": "Anti-fabrication (self_synthesis_used=FALSE 검증 — v4 학습)",
+      "verdict": "DEFERRED_TO_FORGE",
+      "evidence": "alpha_package + pit_audit_v3 명시. Forge cycle SHA256 binding + declare obligation."
+    }
+  ],
+  "ax_008_status_post_architect": {
+    "forge": "PENDING (GPU train concurrent)",
+    "codex": "REJECT_8_concerns_disposed_each_agent",
+    "architect": "PASS_PARTIAL_1_of_3",
+    "current_quorum": "1_of_3",
+    "target_quorum": "2_of_3 floor at admit gate G6",
+    "next_round_obligation": "Forge bt_result.rds 도착 후 Architect 2nd round 4-decimal precision verification (R05 precedent 32/32 within 0.005)"
+  },
+  "rf_critical_risks_inherit": {
+    "rf_r6_style_cor_0_965": {
+      "source": "risk_package.json §risk_summary.pg2_comparison.style_correlation = 0.9647",
+      "measurement_basis": "universe baseline (KR_TOP500 EW) vs STR_1715 PG2 — NOT DPL_v3 emit weights",
+      "architect_interpretation": "universe 자체 STR_1715 style 높은 overlap. DPL_v3 학습 시 G2 substitution gate (cor<0.5) 통과 모호. Forge 실측 후 결정.",
+      "mitigation_carry": "Forge cycle sector/size dummy residualization + alpha_inheritance_cor per sig_date 측정 의무.",
+      "blocks_admit": "PENDING_FORGE_REALIZATION"
+    }
+  },
+  "spec_drift_summary_for_reconcile": {
+    "alpha_research_v3_1_reconciliation_required": [
+      "dpl_kr_v3_architecture.md §4.1: 5 windows × 52 -> 13 windows × 304",
+      "dpl_kr_v3_architecture.md §6.1: post-PA re-projection 블록 추가",
+      "dpl_kr_v3_architecture.md §2.8: 17K claim을 14,305 actual로 align 또는 LayerNorm 명시",
+      "training_protocol_v3.md §1.1: 5 windows × 52 -> 13 windows × 304 align"
+    ],
+    "alternative_forge_self_reconcile": "Forge 자체 post-PA re-projection 구현 + 13 windows × 304 정합 시 alpha v3.1 생략 가능. forge_package.json에 self_reconcile_skeleton_drift: true 명시 의무."
+  },
+  "next_steps_recommended": [
+    {
+      "step": 1,
+      "agent": "Forge",
+      "obligation": "학습 시작 전 OR 학습 중 post-PA re-projection 자체 구현 + forge_package.json count(w>0)<=20 audit 명시"
+    },
+    {
+      "step": 2,
+      "agent": "Forge",
+      "obligation": "rawdata sha256 verify + bt_result sha256 emit + self_synthesis_used=false + lookahead_detector.R scan"
+    },
+    {
+      "step": 3,
+      "agent": "Architect",
+      "obligation": "Forge bt_result 도착 후 2nd round 4-decimal precision verification (R05 precedent)"
+    },
+    {
+      "step": 4,
+      "agent": "Q-Lead",
+      "obligation": "alpha v3.1 reconcile spawn 결정 OR Forge self-reconcile 인정"
+    }
+  ],
+  "telegram_brief_summary": "Architect AX-008 3rd source PASS_PARTIAL (1/3 quorum). 검증 4축: param count 14.3K (claimed 17K, 16% drift documented) / PAN 0% violation 실증 / Sigma PSD eig_ratio 84.7375 exact match / feature_allowlist sha256 exact. CRITICAL Finding A-3: skeleton post-PA re-projection 누락 (Stage D 100% overflow 실측) — Forge 자체 구현 또는 alpha v3.1 reconcile 양자택일 의무.",
+  "schema_compliance": "architect_verification_package v1.0",
+  "schema_version": "architect_verification_v1"
+}

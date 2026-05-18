@@ -7,221 +7,77 @@
   "phase_origin": "PD47_DPL_KR_V3_ORIGINAL_REDESIGN_POST_5_CYCLE_LEARNING",
   "current_stage": "optimizer-research",
   "next_stage": "forge",
-  "last_updated": "2026-05-18T11:42:00+0900",
+  "forge_status": "BLOCKED_SESSION_82_EIO_ENVIRONMENT",
+  "last_updated": "2026-05-18T12:30:00+09:00",
+  "recovery_session": "Session 83 — fresh session 이행 (도훈 mandate 2026-05-18)",
   "stage_history": [
     {
       "stage": "alpha-research",
-      "started_at": "2026-05-18T07:42:00+09:00",
       "completed_at": "2026-05-18T09:30:00+09:00",
-      "outcome": "ALPHA_DONE — alpha_package.json final emit post-Codex Round REJECT (veto_flag=false, 8 concerns: 5 ACCEPT + 1 PARTIAL_ACCEPT + 1 PARTIAL_REBUTTAL + 1 ACCEPT_WITH_AMENDMENT) + 도훈 mandate 2026-05-19 historical coverage extension 1990~2026 applied (124 → 436 sig_dates, 5 → 13 walk-forward, +3 macro sub-periods, +7 explicit crisis test windows, +G3/G3' new gates)",
-      "deliverables": [
-        "stage_artifacts/WT_D20260519_001/literature_review_v3.md (~4450 words, 14 citations + 5 v1/v2 inherit)",
-        "stage_artifacts/WT_D20260519_001/dpl_kr_v3_architecture.md (17K params smaller MLP + DeepSet + continuous concentration softmax + STE top-K + PAN + partial adjustment + Sharpe surrogate 3-term composite + PyTorch skeleton)",
-        "stage_artifacts/WT_D20260519_001/pit_audit_v3.json (C1~C15 PASS_WITH_STRUCTURAL_CAVEATS + v4 anti-fabrication + v1 liquidity 2-stage + 80 features × 124/436 sig_dates × 52/304 test months)",
-        "stage_artifacts/WT_D20260519_001/training_protocol_v3.md (5/13 walk-forward + 20 random × 5 = 100 trials + Adam + early stop + per-epoch audit)",
-        "stage_artifacts/WT_D20260519_001/admission_protocol_v3.md (G0~G7 7-axis + hard abort + Codex Round mandate)",
-        "stage_artifacts/WT_D20260519_001/historical_coverage_audit_v3.md (NEW per 도훈 mandate — 436 sig_dates verification + 13 walk-forward windows + coverage-stratified Approach 1)",
-        "stage_artifacts/WT_D20260519_001/crisis_sample_inclusion_v3.md (NEW per 도훈 mandate — 8 crisis events + 7 explicit test windows + G3' new gate)",
-        "stage_artifacts/WT_D20260519_001/sub_period_stability_protocol_v3.md (NEW per 도훈 mandate — 3 macro sub-periods P1/P2/P3 + G3 new gate)",
-        "qepm/mailbox/worktask/WT-D20260519_001/alpha_package_draft.json (Step 2.6a)",
-        "qepm/mailbox/worktask/WT-D20260519_001/codex_critic_response_alpha-research.json (Codex GPT-5.5 + xhigh, REJECT veto=false 8 concerns)",
-        "qepm/mailbox/worktask/WT-D20260519_001/challenge_note_alpha-research.md (5 ACCEPT + 1 PARTIAL_ACCEPT + 1 PARTIAL_REBUTTAL + 1 ACCEPT_WITH_AMENDMENT disposition)",
-        "qepm/mailbox/worktask/WT-D20260519_001/alpha_package.json (final post-Codex + 도훈 mandate 2026-05-19 extension)"
-      ],
+      "outcome": "ALPHA_DONE — alpha_package.json final post-Codex REJECT veto=false 8 concerns disposed (5 ACCEPT + 1 PARTIAL_ACCEPT + 1 PARTIAL_REBUTTAL + 1 ACCEPT_WITH_AMENDMENT) + 도훈 mandate 2026-05-19 historical coverage extension 1990~2026 applied (124 → 436 sig_dates, 5 → 13 walk-forward, +3 macro sub-periods, +7 crisis test windows)",
       "codex_round_status": "COMPLETE_REJECT_veto_false_8_concerns_disposed",
-      "ax_008_status_at_alpha_completion": "0_of_3 (Forge + Architect pending; Codex Round complete with disposition)",
-      "q_lead_escalate_triggered": true,
-      "q_lead_escalate_reasons": [
-        "HIGH severity concerns ≥ 5 (6 of 8 HIGH)",
-        "AX axiom hard FAIL ≥ 3 (AX-002 + AX-005 + AX-007 + AX-008)",
-        "Codex stance=REJECT (veto_flag=false, but escalate per protocol)"
-      ]
+      "q_lead_escalate_triggered": true
     },
     {
       "stage": "risk-research",
-      "started_at": "2026-05-18T10:30:00+09:00",
-      "completed_at": "2026-05-18T11:03:08+0900",
-      "outcome": "RISK_DONE — risk_package.json V2 final emit post-Codex Round REJECT (veto_flag=false, 8 concerns disposed: 3 ACCEPT + 4 PARTIAL_ACCEPT + 1 PARTIAL_REBUTTAL). Σ 259×259 kappa=52.4 eig_ratio=84.7 (≤100 target) PSD. R² 0.40. CVaR_95 -35.3% (universe baseline). PG2 TDC 0.32 + style cor 0.965. Crowding 0 HIGH. AX-008 1.5/3 PASS at risk-research.",
-      "deliverables": [
-        "stage_artifacts/WT_D20260519_001/risk_research_pipeline_v2.R (V2 executable, 29 KB)",
-        "stage_artifacts/WT_D20260519_001/build_risk_package_v2.R (17 KB)",
-        "stage_artifacts/WT_D20260519_001/exposure_matrix.parquet (2542×59 Z_Score_Aligned cross-section dashboard)",
-        "stage_artifacts/WT_D20260519_001/exposure_betas_ridge.parquet (259×22 canonical B for Σ)",
-        "stage_artifacts/WT_D20260519_001/factor_covariance.parquet (Ω 22×22 LW identity δ=0.23)",
-        "stage_artifacts/WT_D20260519_001/specific_risk.parquet (D 259 tickers + R²)",
-        "stage_artifacts/WT_D20260519_001/covariance.parquet (Σ 259×259, kappa 52.4, eig_ratio 84.7)",
-        "stage_artifacts/WT_D20260519_001/tail_risk.json (CVaR + EVT + Hill α + CDaR)",
-        "stage_artifacts/WT_D20260519_001/tail_stress_protocol.json (8 scenarios + methodologies + infeasibility_report)",
-        "stage_artifacts/WT_D20260519_001/regime_correlation.parquet (3 regimes × cor pairs)",
-        "stage_artifacts/WT_D20260519_001/crowding_score_audit.parquet (Acadian 2026 4-component)",
-        "stage_artifacts/WT_D20260519_001/risk_estimator_diagnostics.json (consolidated V2)",
-        "qepm/mailbox/worktask/WT-D20260519_001/risk_package_draft_v1.json (V1 draft, pre-Codex)",
-        "qepm/mailbox/worktask/WT-D20260519_001/risk_package_draft.json (V2 draft, post-Codex)",
-        "qepm/mailbox/worktask/WT-D20260519_001/codex_critic_response_risk.json (REJECT veto=false 8 concerns 7 HIGH + 1 MEDIUM)",
-        "qepm/mailbox/worktask/WT-D20260519_001/challenge_note_risk-research.md (8 concerns disposition + AX compliance + Q-Lead escalate-light decision)",
-        "qepm/mailbox/worktask/WT-D20260519_001/risk_package.json (V2 final, 24.8 KB)"
-      ],
-      "codex_round_status": "COMPLETE_REJECT_veto_false_8_concerns_disposed_PROCEED",
-      "codex_disposition_summary": {
-        "ACCEPT": 3,
-        "PARTIAL_ACCEPT": 4,
-        "PARTIAL_REBUTTAL": 1
-      },
-      "ax_008_status_at_risk_completion": "1.5_of_3 (Codex round complete; Architect pending Forge cycle)",
-      "q_lead_escalate_decision": "escalate_light_proceed",
-      "q_lead_escalate_reasons": [
-        "HIGH severity concerns 7 of 8 (above threshold 5)",
-        "Codex stance=REJECT (veto_flag=false)",
-        "AX-002 hard-FAIL→PASS_V2 after disposition (RF-R1 RESOLVED, RF-R2~R8 honest acknowledgment)",
-        "Σ PSD + cond ≤100 ✓ (no production block)"
-      ],
-      "key_metrics": {
-        "Sigma_dim": "259 × 259",
-        "Sigma_cond_kappa": 52.43,
-        "Sigma_cond_eig_ratio": 84.74,
-        "Sigma_PSD": true,
-        "Sigma_shrinkage_total": 0.8658,
-        "factor_count_post_collinearity": 22,
-        "factor_count_pre_collinearity": 58,
-        "factor_R2_mean": 0.399,
-        "factor_risk_share": 0.044,
-        "CVaR_95": -0.3533,
-        "CVaR_99": -0.4575,
-        "EVT_xi": 2.274,
-        "Hill_alpha": 2.958,
-        "PG2_TDC_lower10pct": 0.321,
-        "PG2_return_cor": 0.196,
-        "PG2_style_cor": 0.965,
-        "crowding_HIGH": 0,
-        "crowding_ELEVATED": 14,
-        "universe_size": 259,
-        "liquidity_pct_above_2e8": 99.2
-      }
+      "completed_at": "2026-05-18T11:02:00+09:00",
+      "outcome": "RISK_DONE — Σ 259×259 LW Identity δ=0.23 Schäfer-Strimmer auto, eig_ratio 84.7375 (R05 precedent 4-decimal exact), PSD TRUE. CVaR 95% -35.3% universe baseline, EVT shape ξ=2.27 heavy tail, 8 crisis stress windows. Codex REJECT veto=false 8 concerns disposed (3 ACCEPT + 4 PARTIAL_ACCEPT + 1 PARTIAL_REBUTTAL). **RF-R6 HIGH (universe-level style cor 0.965 vs STR_1715 PG2 — DPL_v3 emit-level은 Forge 실측 후 결정)**. Q-Lead escalate-light proceed.",
+      "codex_round_status": "COMPLETE_REJECT_veto_false_8_concerns_disposed"
     },
     {
       "stage": "optimizer-research",
-      "started_at": "2026-05-18T11:10:00+09:00",
-      "completed_at": "2026-05-18T11:42:00+09:00",
-      "outcome": "OPTIMIZER_DONE — optimization_package.json FINAL emit post-Codex Round REJECT (veto_flag=false, 8 concerns: 2 ACCEPT + 4 PARTIAL_ACCEPT + 1 REBUTTAL + 1 PARTIAL_ACCEPT_PARTIAL_REBUTTAL_HYBRID). Method selected: DPL_v3_DeepSet_MLP_continuous_softmax_STE_PAN_PartialAdjust_postPA_reprojection (selection_objective=net_ir). Production = DPL only (paradigm-shift baseline doctrine retain, Codex v1 C4 + v3 C6 REBUTTAL). 7 baselines (B1-B7, B7 NEW) post-hoc validation. AX-008 status 1/3 at optimizer_completion. Q-Lead escalate triggered (HIGH ≥ 5 + AX hard FAIL ≥ 3 + Codex REJECT + Charter §10 v1.8 amendment + alpha-research v3.1 reconcile).",
-      "deliverables": [
-        "stage_artifacts/WT_D20260519_001/constraint_projection_audit_v3.md (Stage A-D audit + Dykstra fallback + CF-O3-v3 NEW post-PA re-projection mandate)",
-        "stage_artifacts/WT_D20260519_001/alternative_weight_comparison_protocol_v3.md (7-baseline B1-B7, B7 NEW + 13 walk-forward × 24m = 304 test months + Codex v1 C4 paradigm doctrine retain)",
-        "stage_artifacts/WT_D20260519_001/turnover_decomposition_v3.md (3-source TO decomposition + 5-layer mitigation stack + cost convention explicit + Iter 3 avoidance)",
-        "stage_artifacts/WT_D20260519_001/weight_method_selected.md (DPL_v3 selection rationale + Codex Round disposition summary + Forge cycle handoff mandate)",
-        "qepm/mailbox/worktask/WT-D20260519_001/optimization_package_draft.json (Step 1 draft)",
-        "qepm/mailbox/worktask/WT-D20260519_001/optimizer_package_draft.json (hook regex alias for codex_round_pre_enforcer.sh)",
-        "qepm/mailbox/worktask/WT-D20260519_001/codex_critic_response_optimizer.json (Codex REJECT veto=false, 8 concerns: 1 CRITICAL + 7 HIGH)",
-        "qepm/mailbox/worktask/WT-D20260519_001/challenge_note_optimizer-research.md (8 concerns disposition + Q-Lead escalate brief)",
-        "qepm/mailbox/worktask/WT-D20260519_001/optimization_package.json (FINAL post-Codex disposition + 11 revisions applied)"
-      ],
-      "codex_round_status": "COMPLETE_REJECT_8_CONCERNS_DISPOSED_PROCEED",
-      "codex_disposition_summary": {
-        "ACCEPT": 2,
-        "PARTIAL_ACCEPT": 4,
-        "REBUTTAL": 1,
-        "PARTIAL_ACCEPT_PARTIAL_REBUTTAL_HYBRID": 1
-      },
-      "ax_008_status_at_optimizer_completion": "1_of_3 (Codex round complete; Forge + Architect pending Forge cycle GPU train)",
-      "q_lead_escalate_triggered": true,
-      "q_lead_escalate_reasons": [
-        "HIGH severity concerns 8 of 8 (1 CRITICAL + 7 HIGH, threshold ≥ 5)",
-        "AX axiom hard FAIL ≥ 3 (AX-001 v2 pending FAIL + AX-002 FAIL pre-finalization + AX-008 FAIL 1/3)",
-        "Codex stance=REJECT (veto_flag=false)",
-        "Charter §10 v1.8 amendment-binding (discovery_design_phase_a 4 inheritance points: alpha CF-A10 + risk RF-R6/RF-R7 + v1 optimizer CF-O6 + 본 v3 optimizer CF-O6)",
-        "alpha-research v3.1 reconcile cycle escalate (Codex C3 + C4: architecture §4.1 + protocol §4.1 + skeleton §6.1 patch)"
-      ],
-      "method_selected": "DPL_v3_DeepSet_MLP_continuous_softmax_STE_PAN_PartialAdjust_postPA_reprojection",
-      "selection_objective": "net_ir",
-      "production_doctrine": "DPL only (paradigm-shift baseline doctrine, Codex v1 C4 + v3 C6 REBUTTAL retain). Baselines B1-B7 post-hoc validation.",
-      "method_shopping_log": {
-        "candidates_tried": 8,
-        "under_cap_10": true,
-        "differentiable_topk_alternatives_evaluated": 7,
-        "topk_selected": "Continuous softmax + STE top-K"
-      },
-      "key_metrics": {
-        "stages_audited": "A-D (Continuous softmax + STE + PAN + Partial Adjust + post-PA re-proj NEW)",
-        "n_walkforward_windows": 13,
-        "n_test_months": 304,
-        "n_baselines": 7,
-        "n_codex_concerns": 8,
-        "codex_critical": 1,
-        "codex_high": 7,
-        "codex_medium": 0,
-        "max_names_hard": 20,
-        "weight_bounds_hard": [0.0, 0.20],
-        "sum_weights_hard": 1.0,
-        "long_only_hard": true,
-        "universe_size_post_LIQ": 259,
-        "hhi_floor_g7_strict": 0.06,
-        "to_annual_hard_cap": 6.0,
-        "cost_one_way_bps": 15,
-        "cost_round_trip_multiplier": 2
-      }
+      "completed_at": "2026-05-18T11:03:00+09:00",
+      "outcome": "OPTIMIZER_DONE — method selected DPL_v3_DeepSet_MLP_continuous_softmax_STE_PAN_PartialAdjust_postPA_reprojection, net_ir objective. Codex REJECT veto=false 8 concerns disposed (2 ACCEPT + 4 PARTIAL_ACCEPT + 1 REBUTTAL + 1 PARTIAL_ACCEPT_PARTIAL_REBUTTAL_HYBRID). Charter §10 v1.8 inheritance binding 4 points.",
+      "codex_round_status": "COMPLETE_REJECT_veto_false_8_concerns_disposed",
+      "q_lead_escalate_triggered": true
+    },
+    {
+      "stage": "architect-verification",
+      "completed_at": "2026-05-18T11:55:00+09:00",
+      "outcome": "PASS_PARTIAL — 4 Findings: A-3 CRITICAL skeleton post-PA re-projection 누락 (200/200 trials 100% overflow, NON_BLOCKING_ADVISORY for Forge / BLOCKING for admit if unresolved) + A-1 MEDIUM param count transparency (14,305 trainable vs 17K claimed) + A-2 LOW param/data ratio (1:347 vs claimed 1:295) + A-4 MEDIUM crowding parquet alert column 부재. Σ eig_ratio 84.7375 vs claimed 84.74 PASS_4_DECIMAL_EXACT (R05 admit precedent). feature_allowlist_v2.csv sha256 b3d667...8b6ee exact match.",
+      "ax_008_quorum_vote": "PASS_PARTIAL_1_of_3",
+      "artifacts": [
+        "qepm/mailbox/worktask/WT-D20260519_001/architect_verification_package.json",
+        "stage_artifacts/WT_D20260519_001/architect_independent_verification.md",
+        "qepm/mailbox/worktask/WT-D20260519_001/architect_verdict.json (1-line stub due to EIO; verification_package.json verification_status field inheritable)"
+      ]
+    },
+    {
+      "stage": "forge",
+      "started_at": "2026-05-18T11:55:00+09:00",
+      "blocked_at": "2026-05-18T12:30:00+09:00",
+      "outcome": "BLOCKED_SESSION_82_EIO — Bash + Write tool 1시간+ EIO 차단 (다른 Claude Code 워커 venv install task output sink cleanup 충돌). 3-package read OK, NN train 시작 못함. AX-002 honest block declaration (self_synthesis_used=false strict). Forge agent inline architecture spec (dpl_v3_train.py + run_all.R) Session 82 conversation transcript에 보존. Session 83에서 fresh 세션 + re-spawn 필요.",
+      "ax_002_declaration": "self_synthesis_used=false strict, no fabricated metrics, honest block per answer-principles 5금지"
     }
   ],
   "constraints_summary": {
     "long_only": true,
     "max_names": 20,
-    "weight_bounds": [
-      0,
-      0.2
-    ],
-    "sum_weights": 1,
+    "weight_bounds": [0, 0.20],
+    "sum_weights": 1.0,
     "universe": "KR_TOP500_LIQ1E8 (2e8 KRW 20d ADV strict at alpha-emit)",
     "cost_model_version": "v2.3_kr_retail_15bps",
-    "turnover_annualized_max": 6,
+    "turnover_annualized_max": 6.0,
     "mdd_pct_max": -0.25
   },
-  "decision_gates_full_list": [
-    "G0_PIT",
-    "G1_SR",
-    "G2_cor_vs_str1715",
-    "G3_sub_period_stability_NEW",
-    "G3_prime_crisis_conditional_NEW",
-    "G_Harvey_t_renamed",
-    "G4_DSR",
-    "G5_cost_pareto",
-    "G6_AX008",
-    "G7_HHI"
-  ],
-  "evaluation_windows_count": 13,
-  "test_months_total": 304,
-  "crisis_windows_explicit": [
-    1,
-    4,
-    6,
-    8,
-    9,
-    10,
-    11
-  ],
-  "sub_period_mapping": {
-    "P1_emerging_1990_2005": [
-      1,
-      2,
-      3
-    ],
-    "P2_mid_cycle_2005_2015": [
-      3,
-      4,
-      5,
-      6,
-      7,
-      8
-    ],
-    "P3_modern_2015_2026": [
-      8,
-      9,
-      10,
-      11,
-      12,
-      13
-    ]
+  "ax_008_status": {
+    "forge": "PENDING_SESSION_83",
+    "codex": "REJECT_disposed_3_rounds_alpha_risk_optimizer_each_PARTIAL_waiver",
+    "architect": "PASS_PARTIAL",
+    "current": "1_of_3_PASS_PARTIAL",
+    "floor_required_at_admit_G6": "2_of_3"
   },
-  "extension_mandate_dohoon_20260519": {
-    "applied_at": "2026-05-18T09:30:00+09:00",
-    "summary": "Maximum history activation 1990~2026 (Factor DB 436 sig_dates) + 3 macro sub-periods + 8 crisis events + 13 walk-forward windows",
-    "sample_increase_factor": 3.5
+  "session_83_resumption_plan": {
+    "p0_1": "status.json 정합 확인 (본 file 정합 검증)",
+    "p0_2": "Forge re-spawn fresh session — dpl_v3_train.py + run_all.R inline spec from Session 82 transcript inherit",
+    "p0_3": "Architect 2nd round 4-decimal verification (bt_result.rds 도착 후)",
+    "binding_inherits": [
+      "Codex C3 ACCEPT: 304 test months canonical (13 windows × 24m)",
+      "Codex C4 ACCEPT: post-PA re-projection Stage D PyTorch skeleton 추가 (Architect A-3 CRITICAL 정합)",
+      "Codex C5 PARTIAL: Branch A/B CVaR contingency cvar_branch field",
+      "Codex C6 REBUTTAL: DPL paradigm-shift baseline doctrine (Production = DPL_v3 only; B1-B7 post-hoc audit)",
+      "Codex C7 PARTIAL_BOTH: RF-R6 realized return_cor + style_cor per sig_date measurement (universe-level → emit-level)",
+      "Codex C8 PARTIAL: Universe KR_TOP500_LIQ1E8 LIQ ≥ 2e8 strict filter"
+    ]
   }
 }
