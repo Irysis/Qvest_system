@@ -44,7 +44,7 @@ Qvest 시스템 전체 구동. bootstrap.sh 실행 → 플러그인 리로드 �
 
 ## Core Rules
 
-- R only (tidyverse + data.table). Python은 hook router (Phase 4) 외 strategies 금지
+- **R + Python 공히 1급 허용** (v8.0, 2026-05-29 도훈 mandate — 기존 "R only" 폐지). 언어 선택은 도구적: R(tidyverse + data.table) / Python(venv `qvest_ml`). **PIT C1~C15 / Backtest Contract v1.0 / Production Constraints / lockbox-scope는 언어 무관 동일 적용.** Python backtest는 검증된 표준함수만(자체합성 금지) + 10-component `bt_result`는 R `build_bt_result` bridge 경유. 상세: `.claude/rules/python-policy.md`
 - **NEVER modify** `05_Production/`, `01_Literature/`
 - All output to `04_Research/` and `06_Registry/`
 - Korean semi-formal tone (존댓말). User = Dohoon Kim (도훈), calls me "Q"
