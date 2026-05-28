@@ -43,8 +43,14 @@ cd "$INFRA"
 Rscript --no-save -e '
   source("config.R")
   source("data/naver_data_collector.R")
+  suppressPackageStartupMessages({library(data.table); library(arrow)})
+  before <- tryCatch(max(as.Date(as.data.table(read_parquet(RAWDATA_CACHE))$Date), na.rm=TRUE), error=function(e) NA)
   tryCatch(naver_run_pipeline(),
     error = function(e) cat(sprintf("Naver pipeline failed: %s\n", e$message)))
+  # [v8.0 fix] 병합 실패 silent swallow 방지 — RAWDATA 미전진 시 명시 WARNING (07:10 self-heal 전 조기 감지)
+  after <- tryCatch(max(as.Date(as.data.table(read_parquet(RAWDATA_CACHE))$Date), na.rm=TRUE), error=function(e) NA)
+  if (is.na(after) || (!is.na(before) && after <= before && as.integer(Sys.Date() - after) > 1))
+    cat(sprintf("[WARN] Naver RAWDATA NOT advanced (before=%s after=%s) — KRX fallback/self-heal 의존\n", before, after))
 '
 
 # ──────────────────────────────────────────────────────────────────────────────

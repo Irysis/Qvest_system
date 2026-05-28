@@ -321,7 +321,9 @@ naver_merge_rawdata <- function(snapshot = NULL) {
       new_rows <- merge(new_rows, bm[, .(Date, BM_Ret)], by = "Date", all.x = TRUE)
 
       # Update benchmark cache
-      old_bm_ext <- rbind(old_bm, bm[!is.na(BM_Ret)], fill = TRUE)
+      # parquet round-trip Date↔IDate class 불일치 방지 (data.table 1.15+ rbind class-attr check)
+      old_bm[, Date := as.Date(Date)]; bm[, Date := as.Date(Date)]
+      old_bm_ext <- rbind(old_bm, bm[!is.na(BM_Ret)], fill = TRUE, ignore.attr = TRUE)
       old_bm_ext <- unique(old_bm_ext, by = "Date")
       setorder(old_bm_ext, Date)
       write_parquet(old_bm_ext, BM_CACHE)
@@ -344,7 +346,9 @@ naver_merge_rawdata <- function(snapshot = NULL) {
   new_rows <- new_rows[, ..rawdata_cols]
 
   # Append
-  combined <- rbind(old_raw, new_rows, fill = TRUE)
+  # parquet round-trip Date↔IDate class 불일치 방지 (data.table 1.15+ rbind class-attr check)
+  old_raw[, Date := as.Date(Date)]; new_rows[, Date := as.Date(Date)]
+  combined <- rbind(old_raw, new_rows, fill = TRUE, ignore.attr = TRUE)
   combined <- unique(combined, by = c("Date", "Ticker"))
   setorder(combined, Date, Ticker)
   write_parquet(combined, RAWDATA_CACHE)

@@ -66,6 +66,13 @@ Rscript --no-save -e '
     out_path <- build_ktri_v3_safe()
     cat(sprintf("KTRI v3 signals regenerated: %s\n", out_path))
   }, error = function(e) cat(sprintf("KTRI v3 build FAILED: %s\n", e$message)))
+  # ktri_indices.parquet 자동 update (도훈 mandate 2026-05-28: KRX API 07:10 시점 가용)
+  # daily_refresh 03:00 시점 KRX 5/d 미가용 fallback
+  source("02_Infrastructure/data/ktri_index_collector.R")
+  tryCatch({
+    ktri_update_indices()
+    cat("ktri_indices.parquet updated\n")
+  }, error = function(e) cat(sprintf("ktri_update_indices FAILED: %s\n", e$message)))
 '
 
 # 3. FRED + Regime Signal 업데이트 (monthly + daily 모두 build)
@@ -120,6 +127,22 @@ Rscript --no-save -e '
     if (is.null(dt) || !col %in% names(dt)) return(TRUE)
     last_d <- max(as.Date(dt[[col]]), na.rm = TRUE)
     as.integer(today - last_d) > max_lag
+  }
+
+  # [v8.0 fix 2026-05-29] RAWDATA(입력) freshness 선검증 — stale면 Naver refresh 먼저.
+  # (기존 결함: downstream MSM refit이 stale RAWDATA로 돌아 stale 브리핑 산출 + 최종 audit 거짓 FRESH)
+  rawdata_stale <- is_stale(RAWDATA_CACHE, "Date", 1L)
+  if (rawdata_stale) {
+    cat("  RAWDATA STALE → Naver refresh 선행 (downstream refit이 stale 입력으로 도는 것 방지)\n")
+    tryCatch({
+      source("02_Infrastructure/data/naver_data_collector.R")
+      naver_run_pipeline()
+      cat(sprintf("  RAWDATA Naver refresh PASS (max=%s)\n",
+                  max(as.Date(as.data.table(read_parquet(RAWDATA_CACHE))$Date), na.rm = TRUE)))
+    }, error = function(e)
+      cat(sprintf("  [ALERT] RAWDATA refresh FAIL: %s — refit이 stale 입력으로 진행됨\n", e$message)))
+  } else {
+    cat("  RAWDATA FRESH (refit 입력 정상)\n")
   }
 
   # MSM (hybrid + daily 양쪽 stale 시 msm_update.R 단일 호출로 동시 갱신)
@@ -199,6 +222,7 @@ Rscript --no-save -e '
   audits$ktri_indices    <- check_freshness("ktri_indices",    ".cache/ktri_indices.parquet",            "Date", 3)
   audits$ktri_v3_signals <- check_freshness("ktri_v3_signals", "04_Research/regime_comparison/output/ktri_v3_signals.csv", "DATE", 3)
   audits$regime_daily    <- check_freshness("regime_daily",    ".cache/unified_regime_signal_daily.parquet", "Date", 3)
+  audits$benchmark       <- check_freshness("benchmark",       ".cache/benchmark.parquet",               "Date", 2)  # KOSPI200 종가 (도훈 mandate 2026-05-28)
   cat("=== Freshness Audit ===\n")
   stale_items <- c()
   for (a in audits) {
@@ -221,10 +245,11 @@ Rscript --no-save -e '
     cat(sprintf("\n⚠️ STALE detected (%d items): %s\n", length(stale_items),
         paste(stale_items, collapse=", ")))
     source("02_Infrastructure/telegram/telegram_notify.R")
-    msg <- sprintf("🚨 *Morning Freshness Audit* — %d stale\n\n%s\n\nbrief 07:30 송신 전 점검 필요",
+    # plain text (Markdown 파싱 오류 회피, 도훈 mandate 2026-05-28)
+    msg <- sprintf("🚨 Morning Freshness Audit — %d stale\n\n%s\n\nbrief 07:30 송신 전 점검 필요",
                     length(stale_items),
                     paste(sprintf("- %s", stale_items), collapse="\n"))
-    tryCatch(tg_send(msg, parse_mode = "Markdown"), error = function(e)
+    tryCatch(tg_send(msg), error = function(e)
       cat(sprintf("Telegram alert failed: %s\n", e$message)))
   } else {
     cat("\n✅ All sources FRESH — brief 07:30 발송 OK\n")
@@ -236,3 +261,92 @@ echo "=== Morning Briefing Done @ $(date) ==="
 # Step 3: Production strategy daily NAV report
 # NOTE: sleeve_save_helper.R 제거됨. daily_portfolio_nav.R만으로 동작.
 Rscript -e 'source("02_Infrastructure/config.R"); source("02_Infrastructure/backtest_harness.R"); source("02_Infrastructure/portfolio/daily_portfolio_nav.R"); tryCatch(daily_nav_report("STR_905"), error=function(e) cat("[NAV] Skip:", e$message, "\n"))' >> /tmp/qm_morning.log 2>&1
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Step 6: P3 (v3-fast Hansen, hparam-tuned) bearish forecast — daily inference + brief + 텔레그램 발송
+# 도훈 mandate 2026-05-26: KOSPI 200 1일 분포 forecast (mu, sigma, nu, lam) + VaR/ES/P(폭락)
+# P3 spec: α=6.68e-4, taus=11, train_min=3024 (~12y lookback) — Optuna trial 19
+# ──────────────────────────────────────────────────────────────────────────────
+echo "[6/6] P2 bearish forecast brief..."
+P2_BF_DIR="$BASE/04_Research/decision_framework/bearish_forecast_v3"
+P2_PY="$BASE/.venv_dpl/bin/python"
+if [[ -x "$P2_PY" && -d "$P2_BF_DIR" ]]; then
+  # 6_pre. Naver benchmark patch (KOSPI200 종가 자동 최신화, 도훈 mandate 2026-05-28)
+  cd "$BASE"
+  "$P2_PY" 02_Infrastructure/data/naver_benchmark_update.py --start_date $(date -d "7 days ago" +%Y-%m-%d) 2>&1 | tail -5 || true
+  cd "$P2_BF_DIR"
+  # 6a. daily inference (오늘 forecast 추가) — default P3
+  "$P2_PY" scripts/601_daily_inference.py --model P3 2>&1 | tail -5
+  # 6a'. y_actual backfill (이전 forecast row의 realized 1d return 채움, 도훈 mandate 2026-05-28)
+  "$P2_PY" -c "
+import pandas as pd, numpy as np, sys, os
+sys.path.insert(0, '$P2_BF_DIR/03_models')
+import p1_hansen_skewt as HSK
+p3_path = '$P2_BF_DIR/03_models/daily_predictions/P3_daily.parquet'
+p3 = pd.read_parquet(p3_path); p3['Date'] = pd.to_datetime(p3['Date']); p3 = p3.sort_values('Date').reset_index(drop=True)
+bm = pd.read_parquet('$BASE/.cache/benchmark.parquet'); bm['Date'] = pd.to_datetime(bm['Date']); bm = bm.sort_values('Date').reset_index(drop=True)
+bm['log_ret'] = np.log(bm['BM_Close']).diff() * 100
+fwd_map = bm.assign(ret_fwd=bm.log_ret.shift(-1)).set_index('Date')['ret_fwd'].to_dict()
+n_filled = 0
+for i, row in p3.iterrows():
+    if pd.isna(row['y_actual']) and row['Date'] in fwd_map:
+        fwd = fwd_map[row['Date']]
+        if pd.notna(fwd):
+            p3.loc[i, 'y_actual'] = fwd
+            try:
+                pit = HSK.pit_per_obs(np.array([fwd]), np.array([row['mu']]), np.array([row['sigma']]), np.array([row['nu']]), np.array([row['lam']]))[0]
+                p3.loc[i, 'pit'] = pit
+            except Exception: pass
+            n_filled += 1
+p3.to_parquet(p3_path)
+print(f'[y_actual backfill] {n_filled} rows filled')
+" 2>&1 | tail -2
+  # 6b. brief 생성 (markdown + dist.png + trend.png)
+  "$P2_PY" scripts/600_morning_brief.py 2>&1 | grep -v "Glyph\|UserWarning" | tail -3
+  # 6b'. Risk Pro 9-Quadrant 강화 대시보드 (도훈 mandate 2026-05-27)
+  cd "$BASE"
+  Rscript "$BASE/04_Research/decision_framework/bearish_forecast_v3/scripts/613_p3_9quad_riskpro.R" 2>&1 | tail -2 || true
+  # 6c. 텔레그램 발송 (latest brief)
+  cd "$BASE"
+  Rscript --no-save -e '
+    setwd("'"$BASE"'")
+    source("02_Infrastructure/telegram/telegram_notify.R")
+    brief_root <- "04_Research/decision_framework/bearish_forecast_v3/03_models/morning_brief"
+    sub_dirs <- list.dirs(brief_root, recursive = FALSE)
+    if (length(sub_dirs) == 0) {
+      cat("[P2 brief] no brief dir found\n")
+    } else {
+      latest <- sort(sub_dirs, decreasing = TRUE)[1]
+      cat(sprintf("[P2 brief] sending from %s\n", latest))
+      brief_md <- file.path(latest, "brief.md")
+      dist_png <- file.path(latest, "dist.png")
+      trend_png <- file.path(latest, "trend.png")
+      if (file.exists(brief_md)) {
+        body <- paste(readLines(brief_md, encoding="UTF-8"), collapse="\n")
+        # Telegram message limit 4096 chars — truncate if needed
+        if (nchar(body) > 3900) body <- paste0(substr(body, 1, 3900), "\n...(truncated)")
+        tryCatch(tg_send(body, parse_mode = "Markdown"),
+                 error = function(e) cat(sprintf("[P2 brief] tg_send fail: %s\n", e$message)))
+      }
+      if (file.exists(dist_png)) {
+        tryCatch(tg_send_photo(dist_png, caption = "P2 - 오늘 분포 forecast"),
+                 error = function(e) cat(sprintf("[P2 brief] tg_send_photo dist fail: %s\n", e$message)))
+      }
+      if (file.exists(trend_png)) {
+        tryCatch(tg_send_photo(trend_png, caption = "P2 - 22일 추세"),
+                 error = function(e) cat(sprintf("[P2 brief] tg_send_photo trend fail: %s\n", e$message)))
+      }
+      riskpro_png <- file.path(latest, "p3_9quad_riskpro.png")
+      if (file.exists(riskpro_png)) {
+        tryCatch(tg_send_photo(riskpro_png, caption = "P3 Risk Manager Pro Dashboard"),
+                 error = function(e) cat(sprintf("[P2 brief] tg_send_photo riskpro fail: %s\n", e$message)))
+      }
+      cat("[P2 brief] done\n")
+    }
+  ' >> /tmp/qm_morning.log 2>&1
+else
+  echo "[6/6] SKIP — venv or v3 dir missing"
+fi
+
+echo "=== Morning Briefing Full Done @ $(date) ==="
+
