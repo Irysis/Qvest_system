@@ -35,7 +35,7 @@ suppressPackageStartupMessages({
 
 # ─── Module Constants ────────────────────────────────────────────────────────
 .PG_VERSION         <- "1.0.0"
-.PG_DEFAULT_TARGET  <- list(cagr = 0.16, sharpe = 2.0, mdd = 0.25)
+.PG_DEFAULT_TARGET  <- list(cagr = 0.16, sharpe = 2.5, mdd = 0.25)  # SR 2.0→2.5 (2026-05-29 도훈 mandate)
 .PG_DRIFT_THRESH    <- 0.05
 .PG_MAX_TURNOVER    <- 0.30
 .PG_FAMILY_CAP      <- 0.35

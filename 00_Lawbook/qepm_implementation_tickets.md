@@ -167,7 +167,7 @@ kpi:
   sharpe_secondary: "sharpe0_d_ann"
   tail_secondary: "es99_d"
   target_cagr: 0.16
-  target_sharpe: 2.0
+  target_sharpe: 2.5
   target_mdd: -0.25
 
 briefing:

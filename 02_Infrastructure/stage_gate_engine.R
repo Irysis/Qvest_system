@@ -818,7 +818,7 @@ sg_compute_gap_vector <- function(base_strategy_id = "STR_1375_5sleeve_cons_heav
   pf <- data.table::fread(pf_path)
   strat <- pf[1]  # 첫 행 = 전략 행
 
-  target <- list(cagr = 0.16, sharpe = 2.0, mdd = 0.25)
+  target <- list(cagr = 0.16, sharpe = 2.5, mdd = 0.25)  # SR 2.0→2.5 (2026-05-29 도훈 mandate)
   current <- list(
     cagr = as.numeric(strat$CAGR) / 100,
     sharpe = as.numeric(strat$Sharpe),

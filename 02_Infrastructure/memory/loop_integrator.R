@@ -205,7 +205,7 @@ loop_session_brief <- function() {
       c
     }), na.rm = TRUE)
 
-    sharpe_gap <- 2.0 - best_sharpe
+    sharpe_gap <- 2.5 - best_sharpe  # SR target 2.0→2.5 (2026-05-29)
     mdd_gap    <- best_mdd - 0.25
     cagr_gap   <- 0.16 - best_cagr
 
@@ -498,7 +498,7 @@ loop_generate_hypotheses <- function(n = 5) {
     }), na.rm = TRUE)
   }
 
-  sharpe_gap <- 2.0 - best_sharpe
+  sharpe_gap <- 2.5 - best_sharpe  # SR target 2.0→2.5 (2026-05-29)
   mdd_gap <- best_mdd - 0.25
   cagr_gap <- 0.16 - best_cagr
 

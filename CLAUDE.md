@@ -87,7 +87,7 @@ Qvest 시스템 전체 구동. bootstrap.sh 실행 → 플러그인 리로드 �
 
 ### 제1목표: 미래참조 없는 전략 설계 (PIT 완전 준수) — 성과보다 우선
 
-### 제2목표: SR 2.0+ / CAGR 16%+ / MDD <25%
+### 제2목표: SR 2.5+ / CAGR 16%+ / MDD <25% (SR 2.0→2.5 상향, 2026-05-29 도훈 mandate — KR 구조적 상승 반영)
 
 ### 제약 (방침)
 
@@ -158,7 +158,7 @@ Qvest 시스템 전체 구동. bootstrap.sh 실행 → 플러그인 리로드 �
 계층: AX-code (Lv0) > PIT C1-C15 (Lv1) > L-code (Lv2) > Signals (Lv3)
 ```
 
-- **AX-000** [IMMUTABLE]: 한계란 없다. 모든 목표 달성 가능
+- **AX-000** [IMMUTABLE]: 한계는 법칙 아닌 방법의 한계 — 엄밀함·창의성·반복으로 추구하되, 입증된 한계는 부정 말고 정직히 보고 (실증·PIT·정직성 종속, v8.0 reframe)
 - **AX-001 v2** [IMMUTABLE]: 방어형 팩터 조건부 평가 (crisis_alpha + Core 대비 MDD + bad/normal IC ratio)
 - **AX-002** [IMMUTABLE]: 하네스 내 성과만 유효. 프로세스 우회 = 미래참조
 - **AX-003** [empirical]: KR value EP_STANDALONE 실패. L-132/135

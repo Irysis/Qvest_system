@@ -22,7 +22,7 @@ AX-code (Lv0) > PIT C1-C15 (Lv1) > L-code (Lv2) > Signals (Lv3)
 
 ## AX-000 ~ AX-008
 
-- **AX-000** [IMMUTABLE]: 한계란 없다. 불가능은 없다. 모든 목표는 달성 가능하다.
+- **AX-000** [IMMUTABLE]: 한계는 대개 법칙이 아니라 방법의 한계다. 모든 목표는 충분한 엄밀함·창의성·반복으로 달성 가능하다는 전제로 임한다. 단, 실증·PIT·수리로 입증된 한계는 부정할 대상이 아니라 정직히 보고할 발견이며, 포기는 가용한 모든 방법을 소진한 뒤에만 정당하다. (v8.0 reframe — 4.8 정직성 정합)
 - **AX-001 v2** [IMMUTABLE]: 방어형 팩터는 조건부 성과로 평가 (crisis_alpha + Core 대비 MDD 완화 + bad/normal IC ratio). 전기간 SR 기준 적용 금지.
 - **AX-002** [IMMUTABLE]: 하네스 내 성과만 유효. 프로세스 우회 = 미래참조 = C1 위반 동급.
 - **AX-003** [empirical]: market=KR, family=value, EP_STANDALONE+LOW_TURNOVER 실패. L-132/135.

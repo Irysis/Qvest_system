@@ -27,4 +27,4 @@ gap <- pg0_gap_review("V7_ALLWEATHER_001")
 ```
 
 ### 목표
-CAGR 16%, SR 2.0, MDD < 25%
+CAGR 16%, SR 2.5, MDD < 25%
