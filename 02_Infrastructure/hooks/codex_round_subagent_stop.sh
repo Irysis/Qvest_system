@@ -17,7 +17,7 @@
 
 set -euo pipefail
 LOG="/tmp/codex_round_subagent_stop.log"
-trap 'echo "[$(date -Iseconds)] HOOK_ERR_TRAP" >> "$LOG"; echo "{\"decision\":\"allow\"}"; exit 0' ERR
+trap 'echo "[$(date -Iseconds)] HOOK_ERR_TRAP" >> "$LOG"; echo "{}"; exit 0' ERR
 
 INPUT=$(cat 2>/dev/null || echo "{}")
 
@@ -39,7 +39,7 @@ except Exception:
 
 if [[ -z "$AGENT_ROLE" ]] || [[ ! "$AGENT_ROLE" =~ ^(alpha|risk|optimizer|forge|judge|governor)$ ]]; then
   # 6 active role 외에는 skip (architect / blender / monitoring / execution 등)
-  echo '{"decision":"allow","note":"role_not_in_v6.4_active_six"}'
+  echo '{}'
   exit 0
 fi
 
@@ -47,7 +47,7 @@ fi
 LATEST_WT=$(ls -t "$PROJ_DIR/qepm/mailbox/worktask/" 2>/dev/null | grep -E "^WT-[DPSH][0-9]{8}_[0-9]{3}$" | head -1 || echo "")
 
 if [[ -z "$LATEST_WT" ]]; then
-  echo '{"decision":"allow","note":"no_active_wt"}'
+  echo '{}'
   exit 0
 fi
 
@@ -59,7 +59,7 @@ if [[ -f "$ROUTER" ]]; then
 
   if [[ "$COMPLETE" == "True" ]]; then
     echo "[$(date -Iseconds)] PASS wt=$LATEST_WT role=$AGENT_ROLE | $REASON" >> "$LOG"
-    echo '{"decision":"allow"}'
+    echo '{}'
     exit 0
   else
     echo "[$(date -Iseconds)] WARN wt=$LATEST_WT role=$AGENT_ROLE | $REASON" >> "$LOG"
@@ -83,11 +83,11 @@ try:
         json.dump(log, f, indent=2, ensure_ascii=False)
 PYEOF
     fi
-    echo "{\"decision\":\"allow\",\"warning\":\"⚠ SubagentStop $AGENT_ROLE codex round incomplete: $REASON\"}"
+    echo "{}"
     exit 0
   fi
 fi
 
 # Router 부재 시 default allow
-echo '{"decision":"allow","note":"router_unavailable"}'
+echo '{}'
 exit 0

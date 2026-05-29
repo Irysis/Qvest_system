@@ -9,13 +9,13 @@
 #   3. Timeout — codex 호출 1200s cap
 
 set -euo pipefail
-trap 'echo "{\"decision\":\"allow\"}"; exit 0' ERR
+trap 'echo "{}"; exit 0' ERR
 
 INPUT=$(cat)
 TOOL=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_name",""))' 2>/dev/null || echo "")
 FILE_PATH=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
 
-if [[ "$TOOL" != "Write" && "$TOOL" != "Edit" ]]; then echo '{"decision":"allow"}'; exit 0; fi
+if [[ "$TOOL" != "Write" && "$TOOL" != "Edit" ]]; then echo '{}'; exit 0; fi
 
 # Strict regex: only *_package_draft.json (NOT codex_critic_response, NOT bak/tmp/backup)
 ROLE=""
@@ -26,31 +26,31 @@ elif [[ "$FILE_PATH" =~ /forge_package_draft\.json$ ]]; then ROLE="forge"
 elif [[ "$FILE_PATH" =~ /judge_verdict_draft\.json$ ]]; then ROLE="judge"
 elif [[ "$FILE_PATH" =~ /governor_admission_draft\.json$ ]]; then ROLE="governor"
 else
-  echo '{"decision":"allow"}'; exit 0
+  echo '{}'; exit 0
 fi
 
 # Exclude result files (infinite loop prevention)
 if [[ "$FILE_PATH" =~ codex_critic_response ]]; then
-  echo '{"decision":"allow"}'; exit 0
+  echo '{}'; exit 0
 fi
 if [[ "$FILE_PATH" =~ \.(bak|backup|tmp)$ ]]; then
-  echo '{"decision":"allow"}'; exit 0
+  echo '{}'; exit 0
 fi
 
 PROJECT_ROOT="/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
 HELPER="$PROJECT_ROOT/02_Infrastructure/tools/debate_helpers/run_codex_qepm_critic.sh"
-[[ ! -x "$HELPER" ]] && { echo '{"decision":"allow"}'; exit 0; }
+[[ ! -x "$HELPER" ]] && { echo '{}'; exit 0; }
 
 # Extract WT_id from file path
 WT_ID=$(echo "$FILE_PATH" | grep -oE 'WT-[DP][0-9]{8}_[0-9]{3}' | head -1)
-[[ -z "$WT_ID" ]] && { echo '{"decision":"allow"}'; exit 0; }
+[[ -z "$WT_ID" ]] && { echo '{}'; exit 0; }
 
 # PID file — prevent concurrent spawn for same (WT_id, role)
 PIDFILE="/tmp/codex_round_pid_${WT_ID}_${ROLE}.pid"
 if [[ -f "$PIDFILE" ]]; then
   EXISTING_PID=$(cat "$PIDFILE" 2>/dev/null || echo "0")
   if kill -0 "$EXISTING_PID" 2>/dev/null; then
-    echo "{\"decision\":\"allow\",\"warning\":\"CODEX_ROUND_ALREADY_RUNNING wt=$WT_ID role=$ROLE pid=$EXISTING_PID\"}"
+    echo "{}"
     exit 0
   fi
 fi
@@ -72,4 +72,4 @@ nohup bash -c "
 SPAWN_PID=$!
 echo "$SPAWN_PID" > "$PIDFILE"
 
-echo "{\"decision\":\"allow\",\"warning\":\"CODEX_ROUND_AUTO_SPAWNED wt=$WT_ID role=$ROLE pid=$SPAWN_PID output=$OUTPUT\"}"
+echo "{}"

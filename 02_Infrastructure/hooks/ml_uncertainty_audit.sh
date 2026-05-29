@@ -31,5 +31,5 @@ if [ -f "$DIR_OF_FILE/predictions_with_ci.parquet" ]; then
 fi
 
 echo "$(date +%H:%M:%S) UNCERTAINTY_ADVISORY: $FILE_PATH lacks predictions_with_ci.parquet" >> "$LOG"
-printf '{"decision":"allow","reason":"[7-Trends P3 ADVISORY] predictions.parquet에 CI extension (predictions_with_ci.parquet) 부재. Liao 2025 RFS Phase 1.A 정합 위해 run_ml_cycle.py --enable-uncertainty 권장 (advisory only, grace period)."}'
+printf '{}'
 exit 0

@@ -12,7 +12,7 @@
 # 의도: selection pressure 3-agent 공유 방지 (SR 중심 수렴 차단)
 
 set -euo pipefail
-trap 'echo "{\"decision\":\"allow\"}"; exit 0' ERR
+trap 'echo "{}"; exit 0' ERR
 
 INPUT=$(cat)
 FILE_PATH=$(echo "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
@@ -32,7 +32,7 @@ case "$FILE_PATH" in
     allowed_objectives="net_ir,to_adj_ret,uncertainty_penalty,crowding_adj_ret"
     ;;
   *)
-    echo '{"decision":"allow"}'
+    echo '{}'
     exit 0
     ;;
 esac
@@ -47,16 +47,13 @@ content = '''$CONTENT'''
 try:
     pkg = json.loads(content)
 except Exception:
-    print(json.dumps({"decision":"allow","reason":"content_not_parseable"}))
+    print(json.dumps({}))
     sys.exit(0)
 
 so = pkg.get("selection_objective")
 if so is None:
     # Selection objective 미지정 — v6.0 backward compat allow + warn
-    print(json.dumps({
-      "decision": "allow",
-      "reason": f"{pkg_type}_selection_objective_missing_warn (R4 준수 권장)"
-    }))
+    print(json.dumps({}))
     sys.exit(0)
 
 if so not in allowed:
@@ -65,8 +62,5 @@ if so not in allowed:
       "reason": f"role_objective_guard ({pkg_type}): selection_objective='{so}' 금지. 허용: {sorted(allowed)}. P3 selection pressure 공유 방지."
     }))
 else:
-    print(json.dumps({
-      "decision": "allow",
-      "reason": f"{pkg_type}_selection_objective='{so}' 허용"
-    }))
+    print(json.dumps({}))
 PYEOF

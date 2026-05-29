@@ -23,7 +23,7 @@
 #==============================================================================
 
 set -euo pipefail
-trap 'echo "{\"decision\":\"allow\"}"; exit 0' ERR
+trap 'echo "{}"; exit 0' ERR
 
 INPUT=$(cat)
 
@@ -32,7 +32,7 @@ COMMAND=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.st
 
 # Only Bash tool
 if [ "$TOOL" != "Bash" ]; then
-  echo '{"decision":"allow"}'
+  echo '{}'
   exit 0
 fi
 
@@ -51,7 +51,7 @@ payloads.extend(pattern_dq.findall(cmd))
 payloads.extend(pattern_sq.findall(cmd))
 
 if not payloads:
-    print(json.dumps({"decision": "allow", "reason": "no_rscript_e_payload"}))
+    print(json.dumps({}))
     sys.exit(0)
 
 combined = "\n".join(payloads)
@@ -89,8 +89,8 @@ if direct_calls and not has_brief:
         }
     }))
 else:
-    print(json.dumps({"decision": "allow"}))
+    print(json.dumps({}))
 PYEOF
-) || DECISION='{"decision":"allow"}'
+) || DECISION='{}'
 
 echo "$DECISION"

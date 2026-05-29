@@ -14,7 +14,7 @@
 #    "tool_input":{"subagent_type":"...", "prompt":"..."}}
 
 set -euo pipefail
-trap 'echo "{\"decision\":\"allow\"}"; exit 0' ERR
+trap 'echo "{}"; exit 0' ERR
 
 INPUT=$(cat)
 
@@ -38,13 +38,13 @@ if [[ "$SUBAGENT_TYPE" == "monitoring" ]]; then
     echo "{\"decision\":\"block\",\"reason\":\"R9 Monitoring: admitted_ids 비어있음. 감시할 WT 없음.\"}"
     exit 0
   fi
-  echo '{"decision":"allow"}'
+  echo '{}'
   exit 0
 fi
 
 # WT ID 없으면 legacy mode → allow (monitoring 제외)
 if [[ -z "$WT_ID" ]]; then
-  echo '{"decision":"allow","reason":"no_wt_id_legacy_mode"}'
+  echo '{}'
   exit 0
 fi
 
@@ -62,13 +62,13 @@ case "$SUBAGENT_TYPE" in
   risk-research|risk-manager)
     # Risk Agent는 alpha_package 필수
     check_prerequisite "alpha_package.json" "Alpha Agent 산출물"
-    echo '{"decision":"allow"}'
+    echo '{}'
     ;;
   optimizer-research)
     # Optimizer는 alpha + risk 필수
     check_prerequisite "alpha_package.json" "Alpha Agent 산출물"
     check_prerequisite "risk_package.json" "Risk Agent 산출물"
-    echo '{"decision":"allow"}'
+    echo '{}'
     ;;
   forge)
     # Forge WT 모드는 3 package 모두 필요
@@ -77,7 +77,7 @@ case "$SUBAGENT_TYPE" in
       check_prerequisite "risk_package.json" "Risk Agent 산출물"
       check_prerequisite "optimization_package.json" "Optimizer Agent 산출물"
     fi
-    echo '{"decision":"allow"}'
+    echo '{}'
     ;;
   execution)
     # v6.1 R8: Execution Agent는 Deployment WT의 optimization_package 필수
@@ -99,9 +99,9 @@ case "$SUBAGENT_TYPE" in
       echo "{\"decision\":\"block\",\"reason\":\"R8 Execution: phase=$PHASE. GOVERNOR_ADMITTED 이후만 execution 허용.\"}"
       exit 0
     fi
-    echo '{"decision":"allow"}'
+    echo '{}'
     ;;
   *)
-    echo '{"decision":"allow"}'
+    echo '{}'
     ;;
 esac

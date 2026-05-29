@@ -11,7 +11,7 @@
 # method_shopping_log.json에 전수 기록 의무. Judge가 DSR penalty 적용용.
 
 set -euo pipefail
-trap 'echo "{\"decision\":\"allow\"}"; exit 0' ERR
+trap 'echo "{}"; exit 0' ERR
 
 INPUT=$(cat)
 FILE_PATH=$(echo "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
@@ -25,7 +25,7 @@ case "$FILE_PATH" in
   */optimization_package.json)
     pkg_type="optimizer"; limit=10 ;;
   *)
-    echo '{"decision":"allow"}'
+    echo '{}'
     exit 0
     ;;
 esac
@@ -40,7 +40,7 @@ content = '''$CONTENT'''
 try:
     pkg = json.loads(content)
 except Exception:
-    print(json.dumps({"decision":"allow","reason":"content_not_parseable"}))
+    print(json.dumps({}))
     sys.exit(0)
 
 # method_shopping 카운트 추출 (agent별 다름)
@@ -61,8 +61,5 @@ if count > limit:
       "reason": f"method_shopping_limiter ({pkg_type}): candidates_tried {count} > {limit} — 탐색 공간 과다. Judge DSR penalty 우회 방지."
     }))
 else:
-    print(json.dumps({
-      "decision": "allow",
-      "reason": f"{pkg_type}_candidates {count}/{limit}"
-    }))
+    print(json.dumps({}))
 PYEOF

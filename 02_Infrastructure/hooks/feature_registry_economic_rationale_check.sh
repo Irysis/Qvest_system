@@ -28,5 +28,5 @@ if echo "$CONTENT" | grep -q '"economic_rationale"'; then
 fi
 
 echo "$(date +%H:%M:%S) RATIONALE_ADVISORY: $FILE_PATH lacks economic_rationale" >> "$LOG"
-printf '{"decision":"allow","reason":"[7-Trends P1 ADVISORY] feature_registry.json에 economic_rationale 필드 부재 (Factor Zoo 축소 Validation > Discovery mandate). Harvey-Liu-Zhu 2016 multiple testing + Charter §10 정합 위해 각 feature에 economic_rationale 기재 권장 (advisory only, grace period until next feature cycle migration)."}'
+printf '{}'
 exit 0

@@ -16,15 +16,15 @@
 # Reference violation: STR_1715 OVERRIDE_005/006 — Governor Option B Probe 10pct → User OVERRIDE 100%
 
 set -euo pipefail
-trap 'echo "{\"decision\":\"allow\"}"; exit 0' ERR
+trap 'echo "{}"; exit 0' ERR
 
 INPUT=$(cat)
 TOOL=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_name",""))' 2>/dev/null || echo "")
 FILE_PATH=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
 
-if [[ "$TOOL" != "Write" && "$TOOL" != "Edit" ]]; then echo '{"decision":"allow"}'; exit 0; fi
-if [[ ! "$FILE_PATH" =~ book_state\.json$ ]]; then echo '{"decision":"allow"}'; exit 0; fi
-if [[ ! -f "$FILE_PATH" ]]; then echo '{"decision":"allow"}'; exit 0; fi
+if [[ "$TOOL" != "Write" && "$TOOL" != "Edit" ]]; then echo '{}'; exit 0; fi
+if [[ ! "$FILE_PATH" =~ book_state\.json$ ]]; then echo '{}'; exit 0; fi
+if [[ ! -f "$FILE_PATH" ]]; then echo '{}'; exit 0; fi
 
 # WT mailbox root 추론 (book_state.json 위치 기준 상위 mailbox 디렉토리)
 BS_DIR=$(dirname "$FILE_PATH")
@@ -204,15 +204,15 @@ fi
 # Positive guidance
 case "$VERDICT" in
   OK:governor_concord_certificate)
-    echo "{\"decision\":\"allow\",\"warning\":\"✓ governor_concord_certificate ISSUED — book_state ↔ admission verdict match\"}"
+    echo "{}"
     ;;
   OK:governor_concord_with_waiver_certificate)
-    echo "{\"decision\":\"allow\",\"warning\":\"✓ governor_concord_with_waiver_certificate ISSUED — mismatch but waiver 5-row 명시\"}"
+    echo "{}"
     ;;
   OK:governor_concord_certificate_pending)
-    echo "{\"decision\":\"allow\",\"warning\":\"⚠ concord pending — waiver 5-row 명시 후 governor_concord_with_waiver_certificate 발급. PG3 monitoring trigger\"}"
+    echo "{}"
     ;;
   *)
-    echo '{"decision":"allow"}'
+    echo '{}'
     ;;
 esac

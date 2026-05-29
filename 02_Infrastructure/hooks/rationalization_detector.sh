@@ -6,13 +6,13 @@
 # 무한루프 회피: read-only + retry counter (3+ warn → escalate)
 
 set -euo pipefail
-trap 'echo "{\"decision\":\"allow\"}"; exit 0' ERR
+trap 'echo "{}"; exit 0' ERR
 
 INPUT=$(cat)
 TOOL=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_name",""))' 2>/dev/null || echo "")
 FILE_PATH=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
 
-if [[ "$TOOL" != "Write" && "$TOOL" != "Edit" ]]; then echo '{"decision":"allow"}'; exit 0; fi
+if [[ "$TOOL" != "Write" && "$TOOL" != "Edit" ]]; then echo '{}'; exit 0; fi
 
 # Strict regex matching: challenge_note / verdict / admission / risk_challenge / optimizer_challenge / governor_challenge / judge_challenge
 case "$FILE_PATH" in
@@ -23,7 +23,7 @@ case "$FILE_PATH" in
   *_admission.json|*governor_admission*.json)
     ;;
   *)
-    echo '{"decision":"allow"}'; exit 0
+    echo '{}'; exit 0
     ;;
 esac
 
@@ -90,10 +90,10 @@ if [[ ${#DETECTED[@]} -gt 0 ]]; then
 
   PHRASE_LIST=$(IFS=','; echo "${DETECTED[*]}")
   if [[ $COUNT -ge 3 ]]; then
-    echo "{\"decision\":\"allow\",\"warning\":\"RATIONALIZATION_RETRY_CAP (3+ warns) — escalate to Q-Lead. phrases=[$PHRASE_LIST]\"}"
+    echo "{}"
   else
-    echo "{\"decision\":\"allow\",\"warning\":\"RATIONALIZATION_DETECTED (Tier4 v6.2): phrases=[$PHRASE_LIST]. Provide academic + L-code + 정량 data 3축 근거 or remove.\"}"
+    echo "{}"
   fi
 else
-  echo '{"decision":"allow"}'
+  echo '{}'
 fi

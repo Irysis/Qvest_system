@@ -13,7 +13,7 @@
 #   - discovery_of 참조된 Discovery WT의 alpha_package가 graduation_criteria 미충족
 
 set -euo pipefail
-trap 'echo "{\"decision\":\"allow\"}"; exit 0' ERR
+trap 'echo "{}"; exit 0' ERR
 
 INPUT=$(cat)
 FILE_PATH=$(echo "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
@@ -28,20 +28,17 @@ import json, os, sys
 try:
     req = json.loads('''$CONTENT''')
 except Exception as e:
-    print(json.dumps({"decision":"allow","reason":f"parse_fail: {e}"}))
+    print(json.dumps({}))
     sys.exit(0)
 
 if req.get("wt_type") != "deployment":
-    print(json.dumps({"decision":"allow","reason":"not_deployment"}))
+    print(json.dumps({}))
     sys.exit(0)
 
 discovery_of = req.get("discovery_of")
 if discovery_of is None:
     # 직접 Deployment (Discovery 없이) — warn only (새 전략 직접 편성 허용)
-    print(json.dumps({
-      "decision": "allow",
-      "reason": "direct_deployment_warn: discovery_of 없이 Deployment WT 생성. 검증 완료된 alpha로 직접 편성하는 것이 맞는지 확인 권장."
-    }))
+    print(json.dumps({}))
     sys.exit(0)
 
 # Discovery WT 참조 존재 확인
@@ -89,13 +86,10 @@ if fails:
       "reason": f"graduation 미충족 ({discovery_of}): " + " | ".join(fail_detail)
     }))
 else:
-    print(json.dumps({
-      "decision": "allow",
-      "reason": f"graduation 통과 ({discovery_of}): all {len(checks)} criteria met"
-    }))
+    print(json.dumps({}))
 PYEOF
     ;;
   *)
-    echo '{"decision":"allow"}'
+    echo '{}'
     ;;
 esac

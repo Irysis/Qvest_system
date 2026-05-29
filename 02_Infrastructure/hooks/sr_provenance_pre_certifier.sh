@@ -6,14 +6,14 @@
 # 동작: 차단 없음. 8 mandatory field 누락 시 positive guidance 메시지로 안내.
 
 set -euo pipefail
-trap 'echo "{\"decision\":\"allow\"}"; exit 0' ERR
+trap 'echo "{}"; exit 0' ERR
 
 INPUT=$(cat)
 TOOL=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_name",""))' 2>/dev/null || echo "")
 FILE_PATH=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
 
-if [[ "$TOOL" != "Write" && "$TOOL" != "Edit" ]]; then echo '{"decision":"allow"}'; exit 0; fi
-if [[ ! "$FILE_PATH" =~ forge_package(_phase[0-9]+)?\.json$ ]]; then echo '{"decision":"allow"}'; exit 0; fi
+if [[ "$TOOL" != "Write" && "$TOOL" != "Edit" ]]; then echo '{}'; exit 0; fi
+if [[ ! "$FILE_PATH" =~ forge_package(_phase[0-9]+)?\.json$ ]]; then echo '{}'; exit 0; fi
 
 CONTENT=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("content","") or d.get("tool_input",{}).get("new_string",""))' 2>/dev/null || echo "")
 
@@ -38,7 +38,7 @@ done
 
 if [[ ${#MISSING[@]} -gt 0 ]]; then
   GUIDE_MSG="📋 sr_provenance_certificate 발급 안내: 다음 field 추가 시 자동 발급 (Charter §9/§10): $(IFS=, ; echo "${MISSING[*]}")"
-  echo "{\"decision\":\"allow\",\"warning\":\"$GUIDE_MSG\"}"
+  echo "{}"
 else
-  echo "{\"decision\":\"allow\",\"warning\":\"✓ forge_package 8-field 모두 명시됨 — sr_provenance_certificate 자동 발급 예정\"}"
+  echo "{}"
 fi

@@ -14,7 +14,7 @@
 # Discovery WT: SOFT 제약 SKIP, HARD mandate (PIT + liquidity floor 50M)만.
 
 set -euo pipefail
-trap 'echo "{\"decision\":\"allow\"}"; exit 0' ERR
+trap 'echo "{}"; exit 0' ERR
 
 INPUT=$(cat)
 FILE_PATH=$(echo "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
@@ -31,7 +31,7 @@ fp = '''$FILE_PATH'''
 try:
     pkg = json.loads(content)
 except Exception:
-    print(json.dumps({"decision":"allow","reason":"content_not_parseable"}))
+    print(json.dumps({}))
     sys.exit(0)
 
 # WT_id 추출 (파일 경로 WT-D{...} or WT-P{...})
@@ -61,7 +61,7 @@ if os.path.exists(request_path):
 
 tw = pkg.get("target_weights", {})
 if not isinstance(tw, dict) or len(tw) == 0:
-    print(json.dumps({"decision":"allow","reason":"no_target_weights"}))
+    print(json.dumps({}))
     sys.exit(0)
 
 errs = []
@@ -101,10 +101,10 @@ if errs:
       "reason": f"worktask_constraint_enforcer ({wt_type}): " + " | ".join(errs)
     }))
 else:
-    print(json.dumps({"decision":"allow","reason":f"{wt_type}_constraints_passed"}))
+    print(json.dumps({}))
 PYEOF
     ;;
   *)
-    echo '{"decision":"allow"}'
+    echo '{}'
     ;;
 esac

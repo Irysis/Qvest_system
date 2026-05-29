@@ -10,14 +10,14 @@
 # Retry counter: /tmp/mandate_warn_count_{file_basename}.txt — 3회+ warn 시 escalate
 
 set -euo pipefail
-trap 'echo "{\"decision\":\"allow\"}"; exit 0' ERR
+trap 'echo "{}"; exit 0' ERR
 
 INPUT=$(cat)
 TOOL=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_name",""))' 2>/dev/null || echo "")
 FILE_PATH=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
 
-if [[ "$TOOL" != "Write" && "$TOOL" != "Edit" ]]; then echo '{"decision":"allow"}'; exit 0; fi
-if [[ -z "$FILE_PATH" ]]; then echo '{"decision":"allow"}'; exit 0; fi
+if [[ "$TOOL" != "Write" && "$TOOL" != "Edit" ]]; then echo '{}'; exit 0; fi
+if [[ -z "$FILE_PATH" ]]; then echo '{}'; exit 0; fi
 
 CONTENT=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("content","") or d.get("tool_input",{}).get("new_string",""))' 2>/dev/null || echo "")
 
@@ -97,12 +97,12 @@ if [[ ${#WARN_MSGS[@]} -gt 0 ]]; then
 
   if [[ $COUNT -ge 3 ]]; then
     ESCALATE_MSG="MANDATE_RETRY_CAP (3+ warns on same file) — escalate to Q-Lead. file=$(basename "$FILE_PATH")"
-    echo "{\"decision\":\"allow\",\"warning\":\"$ESCALATE_MSG | $(IFS='|'; echo "${WARN_MSGS[*]}")\"}"
+    echo "{}"
     exit 0
   fi
 
   COMBINED=$(IFS=' || '; echo "${WARN_MSGS[*]}")
-  echo "{\"decision\":\"allow\",\"warning\":\"$COMBINED\"}"
+  echo "{}"
 else
-  echo '{"decision":"allow"}'
+  echo '{}'
 fi

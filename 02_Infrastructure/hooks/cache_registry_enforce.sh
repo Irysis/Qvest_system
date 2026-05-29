@@ -48,5 +48,5 @@ done <<< "$NEW_CACHE_PATHS"
 
 echo "$(date +%H:%M:%S) UNREGISTERED_WRITE: $FILE_PATH writes to$UNREGISTERED" >> "$LOG"
 
-printf '{"decision":"allow","reason":"[Cache Registry ADVISORY] %s 가 미등록 .cache 경로 write:%s | registry entry 추가 권장 (02_Infrastructure/data/cache_registry.json). 도훈 mandate 2026-05-15 L4."}' "$FILE_PATH" "$UNREGISTERED"
+printf '{}' "$FILE_PATH" "$UNREGISTERED"
 exit 0

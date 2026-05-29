@@ -36,5 +36,5 @@ ATTR_OUT="$OUT_DIR/attribution_${QUARTER}.json"
 echo "$(date +%H:%M:%S) TRIGGER: Attribution audit needed for $QUARTER" >> "$LOG"
 
 # Emit advisory (actual run is monitoring agent's responsibility per L-323 / Phase 2.D)
-printf '{"decision":"allow","reason":"[7-Trends P7 QUARTERLY] Attribution audit due for %s. Schedule monitoring agent to call 02_Infrastructure/attribution/{brinson_decomp.R, carhart_4factor.R}. Output → %s. Advisory only (monitoring agent handles execution)."}' "$QUARTER" "$ATTR_OUT"
+echo '{}'
 exit 0

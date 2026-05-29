@@ -6,7 +6,7 @@
 # 무한루프 회피: max 2 escalate cap (/tmp/qvest_escalate_count_*.txt)
 
 set -euo pipefail
-trap 'echo "{\"decision\":\"allow\"}"; exit 0' ERR
+trap 'echo "{}"; exit 0' ERR
 
 INPUT=$(cat)
 EVENT=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("hook_event_name",""))' 2>/dev/null || echo "")
@@ -15,7 +15,7 @@ AGENT_NAME=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; d=json.load(sys
 
 # Only act on stop events
 if [[ "$EVENT" != "SubagentStop" && "$EVENT" != "Stop" ]]; then
-  echo '{"decision":"allow"}'; exit 0
+  echo '{}'; exit 0
 fi
 
 PROJECT_ROOT="/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
@@ -27,10 +27,10 @@ if [[ -z "$WT_ID" ]]; then
   WT_ID=$(ls -t "$PROJECT_ROOT/qepm/mailbox/worktask/" 2>/dev/null | grep -E '^WT-' | head -1 || echo "")
 fi
 
-[[ -z "$WT_ID" ]] && { echo '{"decision":"allow"}'; exit 0; }
+[[ -z "$WT_ID" ]] && { echo '{}'; exit 0; }
 
 WT_DIR="$PROJECT_ROOT/qepm/mailbox/worktask/$WT_ID"
-[[ ! -d "$WT_DIR" ]] && { echo '{"decision":"allow"}'; exit 0; }
+[[ ! -d "$WT_DIR" ]] && { echo '{}'; exit 0; }
 
 # Per-agent expected artifacts
 INCOMPLETE=()
@@ -56,12 +56,12 @@ case "$AGENT_NAME" in
     [[ ! -f "$WT_DIR/governor_admission.json" ]] && INCOMPLETE+=("governor_admission.json")
     ;;
   *)
-    echo '{"decision":"allow"}'; exit 0
+    echo '{}'; exit 0
     ;;
 esac
 
 if [[ ${#INCOMPLETE[@]} -eq 0 ]]; then
-  echo '{"decision":"allow"}'; exit 0
+  echo '{}'; exit 0
 fi
 
 # Escalate cap — max 2 attempts, then user manual intervention
@@ -83,7 +83,7 @@ if [[ $ESCALATE_COUNT -ge 2 ]]; then
     tg_send('🚨 [Stop Continuity Cap] $ALERT_MSG', parse_mode='')
     " > /dev/null 2>&1 &
   fi
-  echo "{\"decision\":\"allow\",\"warning\":\"$ALERT_MSG\"}"
+  echo "{}"
 else
-  echo "{\"decision\":\"allow\",\"warning\":\"STOP_INCOMPLETE (Tier5 v6.2): wt=$WT_ID agent=$AGENT_NAME incomplete=[$INCOMPLETE_LIST] escalate_count=$ESCALATE_COUNT/2\"}"
+  echo "{}"
 fi

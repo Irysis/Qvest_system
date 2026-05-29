@@ -9,14 +9,14 @@
 
 set -euo pipefail
 LOG="/tmp/legacy_write_block.log"
-trap 'echo "[$(date -Iseconds)] HOOK_ERR_TRAP" >> "$LOG"; echo "{\"decision\":\"allow\"}"; exit 0' ERR
+trap 'echo "[$(date -Iseconds)] HOOK_ERR_TRAP" >> "$LOG"; echo "{}"; exit 0' ERR
 
 INPUT=$(cat)
 TOOL=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_name",""))' 2>/dev/null || echo "")
 FILE_PATH=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
 
 if [[ "$TOOL" != "Write" && "$TOOL" != "Edit" ]]; then
-  echo '{"decision":"allow"}'
+  echo '{}'
   exit 0
 fi
 
@@ -36,4 +36,4 @@ for pattern in "${LEGACY_PATTERNS[@]}"; do
   fi
 done
 
-echo '{"decision":"allow"}'
+echo '{}'

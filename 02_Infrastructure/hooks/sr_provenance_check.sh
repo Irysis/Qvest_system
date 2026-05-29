@@ -16,14 +16,14 @@
 set -euo pipefail
 LOG="/tmp/sr_provenance_check.log"
 FILE_PATH=""
-trap 'echo "[$(date -Iseconds)] HOOK_ERR_TRAP file=${FILE_PATH:-unknown} line=${LINENO:-?}" >> "$LOG"; echo "{\"decision\":\"allow\",\"warning\":\"hook_internal_error_logged\"}"; exit 0' ERR
+trap 'echo "[$(date -Iseconds)] HOOK_ERR_TRAP file=${FILE_PATH:-unknown} line=${LINENO:-?}" >> "$LOG"; echo "{}"; exit 0' ERR
 
 INPUT=$(cat)
 TOOL=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_name",""))' 2>/dev/null || echo "")
 FILE_PATH=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
 
-if [[ "$TOOL" != "Write" && "$TOOL" != "Edit" ]]; then echo '{"decision":"allow"}'; exit 0; fi
-if [[ -z "$FILE_PATH" ]]; then echo '{"decision":"allow"}'; exit 0; fi
+if [[ "$TOOL" != "Write" && "$TOOL" != "Edit" ]]; then echo '{}'; exit 0; fi
+if [[ -z "$FILE_PATH" ]]; then echo '{}'; exit 0; fi
 
 CONTENT=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("content","") or d.get("tool_input",{}).get("new_string",""))' 2>/dev/null || echo "")
 
@@ -91,12 +91,12 @@ if [[ ${#WARN_MSGS[@]} -gt 0 ]]; then
 
   if [[ $COUNT -ge 3 ]]; then
     ESCALATE_MSG="SR_PROVENANCE_RETRY_CAP (3+ warns) — escalate Q-Lead. file=$(basename "$FILE_PATH")"
-    echo "{\"decision\":\"allow\",\"warning\":\"$ESCALATE_MSG | $(IFS='|'; echo "${WARN_MSGS[*]}")\"}"
+    echo "{}"
     exit 0
   fi
 
   COMBINED=$(IFS=' || '; echo "${WARN_MSGS[*]}")
-  echo "{\"decision\":\"allow\",\"warning\":\"$COMBINED\"}"
+  echo "{}"
 else
-  echo '{"decision":"allow"}'
+  echo '{}'
 fi

@@ -18,7 +18,7 @@
 #   - evaluation_windows.lockbox_window 범위 내 날짜
 
 set -euo pipefail
-trap 'echo "{\"decision\":\"allow\"}"; exit 0' ERR
+trap 'echo "{}"; exit 0' ERR
 
 INPUT=$(cat)
 FILE_PATH=$(echo "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
@@ -42,7 +42,7 @@ case "$FP_LOWER" in
         # 도훈 mandate 2026-05-09: 전기간 백테 / 성과 트래킹 = lockbox 폐기
         WT_ID=$(echo "$FILE_PATH" | grep -oE 'WT-[DP][0-9]{8}_[0-9]{3}|WT[0-9]{8}_[0-9]{3}' | head -1 || echo "unknown")
         echo "$(date -Iseconds) | $AGENT_NAME | $FILE_PATH" >> "/tmp/qvest_lockbox_access_${WT_ID}.log"
-        echo "{\"decision\":\"allow\",\"reason\":\"non_research_lockbox_access_logged_${AGENT_NAME}\"}"
+        echo "{}"
         ;;
       alpha*|risk*|optimizer*|opt_*)
         # 정규 리서치 단계만 block (PIT lookahead bias 방지 — Frozen 규칙 적용)
@@ -50,11 +50,11 @@ case "$FP_LOWER" in
         ;;
       *)
         # Q-Lead / unidentified → allow (집계 보고 / 트래킹 mandate)
-        echo '{"decision":"allow","reason":"non_research_agent_default_allow"}'
+        echo '{}'
         ;;
     esac
     ;;
   *)
-    echo '{"decision":"allow"}'
+    echo '{}'
     ;;
 esac

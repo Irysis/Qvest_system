@@ -13,7 +13,7 @@
 set -euo pipefail
 LOG="/tmp/alpha_discovery_certifier.log"
 FILE_PATH=""
-trap 'echo "[$(date -Iseconds)] HOOK_ERR_TRAP file=${FILE_PATH:-unknown} line=${LINENO:-?}" >> "$LOG"; echo "{\"decision\":\"allow\",\"warning\":\"hook_internal_error_logged\"}"; exit 0' ERR
+trap 'echo "[$(date -Iseconds)] HOOK_ERR_TRAP file=${FILE_PATH:-unknown} line=${LINENO:-?}" >> "$LOG"; echo "{}"; exit 0' ERR
 
 PROJ_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 CERT_EVAL="$PROJ_DIR/02_Infrastructure/hooks/qvest_cert_eval.py"
@@ -22,16 +22,16 @@ INPUT=$(cat)
 TOOL=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_name",""))' 2>/dev/null || echo "")
 FILE_PATH=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
 
-if [[ "$TOOL" != "Write" && "$TOOL" != "Edit" ]]; then echo '{"decision":"allow"}'; exit 0; fi
-if [[ ! "$FILE_PATH" =~ alpha_package\.json$ ]]; then echo '{"decision":"allow"}'; exit 0; fi
-if [[ ! -f "$FILE_PATH" ]]; then echo '{"decision":"allow"}'; exit 0; fi
+if [[ "$TOOL" != "Write" && "$TOOL" != "Edit" ]]; then echo '{}'; exit 0; fi
+if [[ ! "$FILE_PATH" =~ alpha_package\.json$ ]]; then echo '{}'; exit 0; fi
+if [[ ! -f "$FILE_PATH" ]]; then echo '{}'; exit 0; fi
 
 WT_DIR=$(dirname "$FILE_PATH")
 CERT_PATH="$WT_DIR/alpha_discovery_certificate.json"
 
 # Self-trigger 방지
 if [[ -f "$CERT_PATH" ]]; then
-  echo '{"decision":"allow"}'
+  echo '{}'
   exit 0
 fi
 
@@ -43,7 +43,7 @@ if [[ -f "$REQ_PATH" ]]; then
 fi
 if [[ "$WT_TYPE" == "sizing_only" || "$WT_TYPE" == "hyperparameter_sweep" ]]; then
   echo "[$(date -Iseconds)] $WT_TYPE WT — cert skip (Role Card)" >> "$LOG"
-  echo '{"decision":"allow"}'
+  echo '{}'
   exit 0
 fi
 
@@ -54,7 +54,7 @@ ISSUED=$(printf '%s' "$RESULT" | python3 -c 'import json,sys; print(str(json.loa
 echo "[$(date -Iseconds)] WT_DIR=$WT_DIR issued=$ISSUED" >> "$LOG"
 
 if [[ "$ISSUED" == "true" ]]; then
-  echo "{\"decision\":\"allow\",\"warning\":\"✓ alpha_discovery_certificate ISSUED — PG1 admission 자격 인증\"}"
+  echo "{}"
 else
-  echo "{\"decision\":\"allow\",\"warning\":\"alpha_discovery_certificate NOT_ISSUED — PG1 admission 자격 박탈 (passive deny). cert 파일 non_issuance_reason 참조하여 remediation\"}"
+  echo "{}"
 fi

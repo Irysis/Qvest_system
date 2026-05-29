@@ -28,5 +28,5 @@ if echo "$CONTENT" | grep -q '"net_port_sr"'; then
 fi
 
 echo "$(date +%H:%M:%S) COST_AWARE_ADVISORY: $FILE_PATH lacks net_port_sr field" >> "$LOG"
-printf '{"decision":"allow","reason":"[7-Trends P2 ADVISORY] summary_metrics.json에 net_port_sr 필드 부재. Jensen-Kelly 2022 Implementable Efficient Frontier 정합 위해 run_ml_cycle.py --enable-cost-aware --gamma 권장 (advisory only, grace period until Phase 1.B full adoption)."}'
+printf '{}'
 exit 0

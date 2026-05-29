@@ -22,13 +22,13 @@
 
 set -euo pipefail
 LOG="/tmp/codex_round_pre_enforcer.log"
-trap 'echo "[$(date -Iseconds)] HOOK_ERR_TRAP" >> "$LOG"; echo "{\"decision\":\"allow\",\"warning\":\"hook_internal_error_logged\"}"; exit 0' ERR
+trap 'echo "[$(date -Iseconds)] HOOK_ERR_TRAP" >> "$LOG"; echo "{}"; exit 0' ERR
 
 INPUT=$(cat)
 TOOL=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_name",""))' 2>/dev/null || echo "")
 FILE_PATH=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
 
-if [[ "$TOOL" != "Write" && "$TOOL" != "Edit" ]]; then echo '{"decision":"allow"}'; exit 0; fi
+if [[ "$TOOL" != "Write" && "$TOOL" != "Edit" ]]; then echo '{}'; exit 0; fi
 
 # Strict regex: only final *_package.json / *_verdict.json / *_admission.json (NOT _draft, NOT codex_critic_response, NOT bak)
 ROLE=""
@@ -39,12 +39,12 @@ elif [[ "$FILE_PATH" =~ /forge_package\.json$ ]]; then ROLE="forge"
 elif [[ "$FILE_PATH" =~ /judge_verdict\.json$ ]]; then ROLE="judge"
 elif [[ "$FILE_PATH" =~ /governor_admission\.json$ ]]; then ROLE="governor"
 else
-  echo '{"decision":"allow"}'; exit 0
+  echo '{}'; exit 0
 fi
 
 # Exclude _draft / codex_critic_response / backup paths (false positive 방지)
 if [[ "$FILE_PATH" =~ _draft\.json$|codex_critic_response|\.(bak|backup|tmp)$ ]]; then
-  echo '{"decision":"allow"}'; exit 0
+  echo '{}'; exit 0
 fi
 
 WT_DIR=$(dirname "$FILE_PATH")
@@ -58,7 +58,7 @@ CHALLENGE_NOTE="$WT_DIR/challenge_note.md"
 # Waiver 검증 (challenge_note.md에 codex_critic_skip_waiver 명시 시 통과)
 if [[ -f "$CHALLENGE_NOTE" ]] && grep -q "codex_critic_skip_waiver" "$CHALLENGE_NOTE" 2>/dev/null; then
   echo "[$(date -Iseconds)] WAIVER_GRANTED file=$FILE_PATH challenge_note=$CHALLENGE_NOTE" >> "$LOG"
-  echo '{"decision":"allow","warning":"⚠ codex_critic_skip_waiver applied — challenge_note.md cite required"}'
+  echo '{}'
   exit 0
 fi
 
@@ -70,7 +70,7 @@ CRITIC_EXISTS="missing"
 
 if [[ "$DRAFT_EXISTS" == "present" && "$CRITIC_EXISTS" == "present" ]]; then
   echo "[$(date -Iseconds)] PASS file=$FILE_PATH role=$ROLE draft=present critic=present" >> "$LOG"
-  echo '{"decision":"allow","warning":"✓ codex critic round complete — finalize allowed"}'
+  echo '{}'
   exit 0
 fi
 

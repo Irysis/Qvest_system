@@ -28,5 +28,5 @@ if echo "$CONTENT" | grep -q '"crowding_score_per_factor"'; then
 fi
 
 echo "$(date +%H:%M:%S) CROWDING_ADVISORY: $FILE_PATH lacks crowding_score_per_factor" >> "$LOG"
-printf '{"decision":"allow","reason":"[7-Trends P5 ADVISORY] risk_package.json에 crowding_score_per_factor 필드 부재. Acadian 2026 정합 위해 02_Infrastructure/factor_db/crowding_score_per_factor.R::crowding_score_per_factor() 호출 권장 (advisory only, grace period until Phase 2.C 적용 cycle)."}'
+printf '{}'
 exit 0

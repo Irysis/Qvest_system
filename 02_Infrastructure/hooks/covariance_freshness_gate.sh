@@ -9,7 +9,7 @@
 # Meta sidecar file (*.meta.json)의 covariance_asof + regime_tag로 판정.
 
 set -euo pipefail
-trap 'echo "{\"decision\":\"allow\"}"; exit 0' ERR
+trap 'echo "{}"; exit 0' ERR
 
 INPUT=$(cat)
 FILE_PATH=$(echo "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
@@ -19,7 +19,7 @@ case "$FILE_PATH" in
     META="${FILE_PATH%.parquet}.meta.json"
     if [[ ! -f "$META" ]]; then
       # 메타 없음 → 구식 캐시 → warn
-      echo '{"decision":"allow","reason":"covariance_meta_missing (pre-v6.1 legacy cache)"}'
+      echo '{}'
       exit 0
     fi
 
@@ -33,7 +33,7 @@ try:
     with open(meta_path, 'r') as f:
         meta = json.load(f)
 except Exception as e:
-    print(json.dumps({"decision":"allow","reason":f"meta_unreadable: {e}"}))
+    print(json.dumps({}))
     exit(0)
 
 asof = meta.get('covariance_asof', '')
@@ -43,7 +43,7 @@ regime_cached = meta.get('regime_tag', 'unknown')
 try:
     asof_date = datetime.strptime(asof, "%Y-%m-%d").date()
 except Exception:
-    print(json.dumps({"decision":"allow","reason":"asof_unparseable"}))
+    print(json.dumps({}))
     exit(0)
 
 age = (date.today() - asof_date).days
@@ -67,15 +67,12 @@ if warnings:
     # Write warn log
     with open('/tmp/qvest_cov_freshness.log', 'a') as f:
         f.write(f"{datetime.now().isoformat()} | {meta_path} | {'; '.join(warnings)}\n")
-    print(json.dumps({
-        "decision": "allow",
-        "reason": f"COV_STALE_WARN: {'; '.join(warnings)} — Optimizer 재추정 권장"
-    }))
+    print(json.dumps({}))
 else:
-    print(json.dumps({"decision":"allow","reason":"cov_fresh"}))
+    print(json.dumps({}))
 PYEOF
     ;;
   *)
-    echo '{"decision":"allow"}'
+    echo '{}'
     ;;
 esac

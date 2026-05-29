@@ -86,7 +86,9 @@
 
 ## ERR trap 필수
 
-모든 command Hook에 `trap 'echo "{\"decision\":\"allow\"}"; exit 0' ERR`.
+모든 command Hook에 `trap 'echo "{}"; exit 0' ERR`.
+
+**중요 (v8.0 2026-05-29 정정)**: allow/no-op 출력은 **`{}`** (빈 객체 = 통과). 구 패턴 `{"decision":"allow"}`는 **무효** — 현 Claude Code hook 스키마에서 `decision` 유효값은 `approve`/`block`뿐이라 `"allow"`는 "Invalid input at (root)" 검증오류(회색 노이즈) 유발. 차단은 `{"decision":"block","reason":...}` 또는 `{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":...}}`. 전 hook 147건 일괄 정정 완료.
 
 ## v6.4 진화 (Sprint 2 Phase 4)
 

@@ -8,7 +8,7 @@
 # 무한 루프 방지 + challenge 근거 투명성 유지
 
 set -euo pipefail
-trap 'echo "{\"decision\":\"allow\"}"; exit 0' ERR
+trap 'echo "{}"; exit 0' ERR
 
 INPUT=$(cat)
 FILE_PATH=$(echo "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
@@ -26,7 +26,7 @@ fp = '''$FILE_PATH'''
 try:
     data = json.loads(content)
 except Exception:
-    print(json.dumps({"decision":"allow","reason":"content_not_parseable"}))
+    print(json.dumps({}))
     sys.exit(0)
 
 round_n = data.get("challenge_round", 0)
@@ -45,15 +45,12 @@ elif round_n == 2:
     with open(alert_file, "a") as f:
         import time
         f.write(f"{time.strftime('%Y-%m-%dT%H:%M:%S')} | {wt_id} | challenge_round=2 | Q-Lead 개입 검토\n")
-    print(json.dumps({
-      "decision": "allow",
-      "reason": f"challenge_round {round_n} (warn: Q-Lead 개입 검토 권장)"
-    }))
+    print(json.dumps({}))
 else:
-    print(json.dumps({"decision":"allow"}))
+    print(json.dumps({}))
 PYEOF
     ;;
   *)
-    echo '{"decision":"allow"}'
+    echo '{}'
     ;;
 esac

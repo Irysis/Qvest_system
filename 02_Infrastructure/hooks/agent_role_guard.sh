@@ -17,10 +17,10 @@
 #   {"hook_event_name":"PreToolUse", "tool_name":"Write"|"Edit",
 #    "tool_input":{"file_path":"..."}}
 #
-# Output: {"decision":"allow"|"block", "reason":"..."}
+# Output: {}
 
 set -euo pipefail
-trap 'echo "{\"decision\":\"allow\"}"; exit 0' ERR
+trap 'echo "{}"; exit 0' ERR
 
 # stdin JSON 파싱
 INPUT=$(cat)
@@ -38,7 +38,7 @@ fi
 
 # Agent 식별 실패 시 allow (teammate 안전 우회)
 if [[ -z "$AGENT_NAME" ]]; then
-  echo '{"decision":"allow","reason":"agent_unidentified_default_allow"}'
+  echo '{}'
   exit 0
 fi
 
@@ -57,7 +57,7 @@ check_alpha_agent() {
       exit 0
       ;;
   esac
-  echo '{"decision":"allow"}'
+  echo '{}'
 }
 
 check_risk_agent() {
@@ -71,7 +71,7 @@ check_risk_agent() {
       exit 0
       ;;
   esac
-  echo '{"decision":"allow"}'
+  echo '{}'
 }
 
 check_optimizer_agent() {
@@ -85,7 +85,7 @@ check_optimizer_agent() {
       exit 0
       ;;
   esac
-  echo '{"decision":"allow"}'
+  echo '{}'
 }
 
 check_forge() {
@@ -105,7 +105,7 @@ check_forge() {
       exit 0
       ;;
   esac
-  echo '{"decision":"allow"}'
+  echo '{}'
 }
 
 check_execution_agent() {
@@ -133,7 +133,7 @@ check_execution_agent() {
       exit 0
       ;;
   esac
-  echo '{"decision":"allow"}'
+  echo '{}'
 }
 
 check_monitoring_agent() {
@@ -148,7 +148,7 @@ check_monitoring_agent() {
       exit 0
       ;;
   esac
-  echo '{"decision":"allow"}'
+  echo '{}'
 }
 
 check_judge_agent() {
@@ -177,7 +177,7 @@ check_judge_agent() {
       exit 0
       ;;
   esac
-  echo '{"decision":"allow"}'
+  echo '{}'
 }
 
 check_governor_agent() {
@@ -206,7 +206,7 @@ check_governor_agent() {
       exit 0
       ;;
   esac
-  echo '{"decision":"allow"}'
+  echo '{}'
 }
 
 case "$AGENT_NAME" in
@@ -236,6 +236,6 @@ case "$AGENT_NAME" in
     ;;
   *)
     # Q-Lead / Codex 등은 allow (orchestration 권한)
-    echo '{"decision":"allow"}'
+    echo '{}'
     ;;
 esac

@@ -11,7 +11,7 @@
 #   - data_lag_rules 필수 필드 4종
 
 set -euo pipefail
-trap 'echo "{\"decision\":\"allow\"}"; exit 0' ERR
+trap 'echo "{}"; exit 0' ERR
 
 INPUT=$(cat)
 FILE_PATH=$(echo "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
@@ -70,10 +70,10 @@ if errs:
       "reason": "worktask_spec_validator: " + " | ".join(errs)
     }))
 else:
-    print(json.dumps({"decision":"allow"}))
+    print(json.dumps({}))
 PYEOF
     ;;
   *)
-    echo '{"decision":"allow"}'
+    echo '{}'
     ;;
 esac
