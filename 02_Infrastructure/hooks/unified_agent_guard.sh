@@ -268,11 +268,13 @@ for f in sorted(glob.glob(os.path.join('$ACTIVE_DIR', 'AX-*.json'))):
     try:
         ax = json.load(open(f))
         ax_id = ax.get('axiom_id') or ax.get('id') or os.path.basename(f).replace('.json','')
-        stmt = (ax.get('statement') or ax.get('text') or ax.get('name') or '')[:200]
+        stmt = (ax.get('statement') or ax.get('text') or ax.get('name') or '')[:75]
         tag_type = ax.get('type') or ax.get('grade') or 'IMMUTABLE'
         tag_pol = ax.get('polarity') or ('axiom' if ax.get('grade')=='IMMUTABLE' else '?')
         lines.append(f'  - {ax_id} [{tag_type}/{tag_pol}]: {stmt}')
     except Exception: pass
+# [v8.0 WS5-4] 경량화: statement 75자 요약 + 전문 pointer (매 spawn ~600→~180 tok). 전문은 agent가 필요시 Read.
+lines.append('  → 전문: .claude/rules/axioms.md / qepm/memory/axioms/active/AX-*.json (active 8)')
 open('$CACHE_BODY', 'w').write(chr(10).join(lines))
 " 2>/dev/null
   fi
