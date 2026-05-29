@@ -102,6 +102,15 @@
 근거 L-code: L-247 (Q-Lead 3회 연속 회피 — SYN_06 proxy / daily-monthly 혼동 / PerformanceAnalytics 우회)
 </answer_principles>
 
+<opus48_execution_style level="0" version="v8.0" effective="2026-05-29">
+Opus 4.8 정합 실행 규율 (best-practices 기반):
+- **리터럴**: 지시는 글자대로 해석된다. 적용 범위를 명시하라 ("모든 sig_date, 첫 항목만 아님"). 한 항목→전체 일반화는 명시 시에만.
+- **검증 우선 (hallucination 차단)**: 코드/데이터/수치 주장 전 반드시 해당 파일 Read·실행으로 확인. 미확인은 "검증 안 됨(가정)" 명시 라벨 의무. 열지 않은 코드 추측 금지.
+- **subagent spawn**: 병렬·독립·context 격리 작업만 spawn. 단순·순차·단일파일·context 유지 필요 작업은 직접 처리.
+- **overengineering 금지**: 요청·필요한 변경만. 불필요한 추상화/방어코드/문서/유연성 추가 금지. 최소 복잡도.
+- **effort**: 작업 복잡도에 맞춰 (Judge/Governor 판정 = xhigh / 리서치 = high / 기계적 검증 = low~medium). frontmatter 설정 존중.
+</opus48_execution_style>
+
 <backtest_contract level="0" version="v1.0" enforce="HOOK_L3_HARD_BLOCK" effective="2026-04-29">
 모든 전략 백테스트는 동일한 10-component bt_result list 표준 산출. 추정 vs 백테스트 분리. 위반 = AX-002 동급.
 
