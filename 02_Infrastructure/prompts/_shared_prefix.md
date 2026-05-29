@@ -150,6 +150,12 @@ realized_return_vector_exists / nav_path_exists / rebalance_path_executed / tran
 
 세부: @00_Lawbook/Multi_Agent/backtest_result_contract.md
 모듈: 02_Infrastructure/contracts/{backtest_result_contract,save_bt_result,audit_bt_result,excel_report_writer,registry_writer}.R
+
+**★ v8.x WS1 — Real-Computation 의무 (alpha/risk/optimizer 공통)**:
+- 성능 수치(portfolio-alpha t / SR / IR / active 등)를 **proxy 손계산 금지**(top-quintile EW + turnover×bps 인라인 근사 등). 반드시 **`02_Infrastructure/contracts/canonical_screen_bt.R::canonical_screen_bt()`**(canonical top-N EW long-only, contract `build_benchmark_compare` 경유) 또는 forge `build_bt_result` 경유.
+- **모든 의사결정 수치에 `metric_type` 라벨 의무**: `canonical_screen`(alpha/risk 스크리닝 실측) / `backtested`(forge 최적화 weights, authoritative) / `estimated` / `proxy`. 라벨 없는 "backtested" 주장 금지.
+- **portfolio-alpha t**는 forge-authoritative(`forge_package.portfolio_alpha_t_nw_lag3`, NW lag-3). **rank-IC t와 구분**(후자는 advisory). graduation Gate C = portfolio-alpha t ≥ 2.95(Harvey-Liu-Zhu).
+- alpha 단계 portfolio-alpha t는 `canonical_screen`(top-N EW, 최적화 weights 아님) — admission binding 아님. binding은 forge.
 </backtest_contract>
 
 <pit_core level="0">

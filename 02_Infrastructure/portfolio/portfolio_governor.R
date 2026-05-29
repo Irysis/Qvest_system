@@ -549,6 +549,174 @@ pg1_admission <- function(portfolio_id, candidate_id, validated_role, pg0_artifa
 }
 
 
+#' Compute book-level information ratio for a set of admitted WT ids.
+#'
+#' Wraps book_optimizer.R's read-only path (load_admitted_packages → book_optimize)
+#' WITHOUT mutating book_state.json (does NOT call book_update / update_book_state).
+#' Used by pg1_admission_with_book_context to measure marginal IR contribution.
+#'
+#' @param wt_ids Character vector: WT/strategy ids to combine into a book.
+#' @return List with: book_ir (numeric, NA if uncomputable), n_loaded (int),
+#'   infeasible (logical), reason (character or NA), error (character or NA).
+.pg_book_ir <- function(wt_ids) {
+  wt_ids <- unique(as.character(wt_ids))
+  wt_ids <- wt_ids[!is.na(wt_ids) & nzchar(wt_ids)]
+  if (length(wt_ids) == 0) {
+    return(list(book_ir = NA_real_, n_loaded = 0L, infeasible = TRUE,
+                reason = "no_wt_ids", error = NA_character_))
+  }
+
+  tryCatch({
+    bo_path <- file.path(.pg_root, "book_optimizer.R")
+    if (!file.exists(bo_path)) stop("book_optimizer.R not found")
+
+    if (!exists("book_optimize", envir = .GlobalEnv) ||
+        !exists("load_admitted_packages", envir = .GlobalEnv)) {
+      source(bo_path, local = FALSE)
+    }
+
+    pkgs <- load_admitted_packages(wt_ids)
+    n_loaded <- length(pkgs)
+    if (n_loaded == 0) {
+      return(list(book_ir = NA_real_, n_loaded = 0L, infeasible = TRUE,
+                  reason = "no_packages_loaded", error = NA_character_))
+    }
+
+    res <- book_optimize(pkgs)   # read-only: no book_state.json write
+    list(
+      book_ir    = as.numeric(res$book_information_ratio %||% NA_real_),
+      n_loaded   = n_loaded,
+      infeasible = isTRUE(res$infeasible),
+      reason     = res$reason %||% NA_character_,
+      error      = NA_character_
+    )
+  }, error = function(e) {
+    warning("[pg1_book] book IR computation failed: ", e$message)
+    list(book_ir = NA_real_, n_loaded = 0L, infeasible = TRUE,
+         reason = "book_optimize_error", error = e$message)
+  })
+}
+
+
+#' PG1 (book-aware): Evaluate a candidate against the *incumbent book*.
+#'
+#' Wraps pg1_admission (hostile to modification — left intact for back-compat)
+#' and enforces the constraint_defaults.json governor_admission_rule:
+#'   "judge_pass AND book-level IR improvement >= 0.05 (marginal contribution)".
+#'
+#' Flow:
+#'   1. Run standalone pg1_admission(...). If REJECT → return as-is (book context
+#'      irrelevant; a rejected sleeve cannot improve the book).
+#'   2. If standalone ADMIT/DEFER → compute incumbent book IR and the candidate-
+#'      augmented book IR (incumbent_ids ∪ candidate_id).
+#'   3. delta_ir = new_book_ir - incumbent_book_ir.
+#'        delta_ir >= 0.05  → keep ADMIT
+#'        delta_ir <  0.05  → DEFER (book-marginal shortfall recorded in rationale).
+#'   4. Append book_delta_ir / new_book_ir / incumbent_book_ir to the artifact.
+#'
+#' This function NEVER writes book_state.json and NEVER admits — it only computes
+#' a recommended decision artifact. Real admission stays manual (Q-Lead + 도훈).
+#'
+#' @param portfolio_id Character: portfolio identifier.
+#' @param candidate_id Character: strategy/WT id under evaluation.
+#' @param validated_role Character: role from S4.
+#' @param pg0_artifact List: output of pg0_gap_review().
+#' @param incumbent_book_state List: parsed book_state.json. Must carry
+#'   admitted_ids (or incumbent_admitted_ids); incumbent_book_ir is read if
+#'   present, else recomputed from the incumbent ids.
+#' @param marginal_ir_threshold Numeric: required book-marginal IR gain (default 0.05).
+#' @return List: pg1_admission artifact + book-context fields.
+pg1_admission_with_book_context <- function(portfolio_id, candidate_id,
+                                            validated_role, pg0_artifact,
+                                            incumbent_book_state,
+                                            marginal_ir_threshold = 0.05) {
+
+  # ── Step 1: standalone admission (do NOT modify pg1_admission) ──────────────
+  artifact <- pg1_admission(portfolio_id, candidate_id, validated_role, pg0_artifact)
+
+  # REJECT short-circuits: book context cannot rescue a rejected sleeve.
+  if (identical(artifact$decision, "REJECT")) {
+    artifact$book_delta_ir     <- NA_real_
+    artifact$new_book_ir       <- NA_real_
+    artifact$incumbent_book_ir <- NA_real_
+    artifact$book_context_note <- "standalone REJECT — book-marginal check skipped"
+    return(artifact)
+  }
+
+  # ── Step 2: incumbent + augmented book IR ───────────────────────────────────
+  incumbent_ids <- incumbent_book_state$incumbent_admitted_ids %||%
+                   incumbent_book_state$admitted_ids %||% character(0)
+  incumbent_ids <- unlist(incumbent_ids, use.names = FALSE)
+
+  # incumbent_book_ir: prefer the stored baseline; recompute only if absent.
+  incumbent_book_ir <- suppressWarnings(
+    as.numeric(incumbent_book_state$incumbent_book_ir %||% NA_real_)
+  )
+  if (length(incumbent_book_ir) != 1 || is.na(incumbent_book_ir)) {
+    inc <- .pg_book_ir(incumbent_ids)
+    incumbent_book_ir <- inc$book_ir
+  }
+
+  new_book <- .pg_book_ir(c(incumbent_ids, candidate_id))
+  new_book_ir <- new_book$book_ir
+
+  # ── Step 3: book-marginal decision ──────────────────────────────────────────
+  delta_ir <- NA_real_
+  if (!is.na(new_book_ir) && !is.na(incumbent_book_ir)) {
+    delta_ir <- new_book_ir - incumbent_book_ir
+  }
+
+  if (is.na(delta_ir)) {
+    # IR uncomputable (missing packages / infeasible QP) → cannot certify gain.
+    if (artifact$decision == "ADMIT") artifact$decision <- "DEFER"
+    artifact$rationale <- c(
+      if (identical(artifact$rationale, "All checks passed")) character(0) else artifact$rationale,
+      sprintf("book-marginal IR uncomputable (new=%s, incumbent=%s) — DEFER pending book packages",
+              ifelse(is.na(new_book_ir), "NA", sprintf("%.3f", new_book_ir)),
+              ifelse(is.na(incumbent_book_ir), "NA", sprintf("%.3f", incumbent_book_ir)))
+    )
+  } else if (artifact$decision == "ADMIT" && delta_ir < marginal_ir_threshold) {
+    artifact$decision  <- "DEFER"
+    artifact$rationale <- c(
+      if (identical(artifact$rationale, "All checks passed")) character(0) else artifact$rationale,
+      sprintf("book-marginal IR gain %.3f < %.2f", delta_ir, marginal_ir_threshold)
+    )
+  } else if (artifact$decision == "ADMIT") {
+    artifact$rationale <- c(
+      if (identical(artifact$rationale, "All checks passed")) "All checks passed" else artifact$rationale,
+      sprintf("book-marginal IR gain %.3f >= %.2f", delta_ir, marginal_ir_threshold)
+    )
+  }
+  # If standalone already DEFER, keep DEFER; book gain is informational only.
+
+  if (length(artifact$rationale) == 0) artifact$rationale <- "All checks passed"
+
+  # ── Step 4: append book-context fields ──────────────────────────────────────
+  artifact$book_delta_ir          <- delta_ir
+  artifact$new_book_ir            <- new_book_ir
+  artifact$incumbent_book_ir      <- incumbent_book_ir
+  artifact$marginal_ir_threshold  <- marginal_ir_threshold
+  artifact$book_context_note      <- sprintf(
+    "incumbent_ids=[%s] + candidate=%s | n_loaded_new=%d infeasible_new=%s",
+    paste(incumbent_ids, collapse = ", "), candidate_id,
+    new_book$n_loaded, isTRUE(new_book$infeasible)
+  )
+
+  # Re-persist the augmented artifact (overwrites the standalone pg1 artifact).
+  sdir <- file.path(.pg_strategy_dir(candidate_id), "stage_artifacts")
+  .pg_write_json(artifact, file.path(sdir, sprintf("pg1_admission_%s.json", portfolio_id)))
+  pdir <- file.path(.pg_portfolio_dir(portfolio_id), "stage_artifacts")
+  .pg_write_json(artifact, file.path(pdir, sprintf("pg1_admission_%s_%s.json", portfolio_id, candidate_id)))
+
+  cat(sprintf("[pg1_book] Decision: %s | book_delta_ir=%s | %s\n",
+              artifact$decision,
+              ifelse(is.na(delta_ir), "NA", sprintf("%.3f", delta_ir)),
+              paste(artifact$rationale, collapse = "; ")))
+
+  artifact
+}
+
+
 #==============================================================================
 # 3. PG2 — Sleeve Assembly & Allocation
 #==============================================================================

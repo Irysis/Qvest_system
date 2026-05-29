@@ -482,6 +482,23 @@ build_metrics <- function(nav_tbl, period_returns_tbl, holdings_tbl,
 
 ## ─── benchmark_compare builder ──────────────────────────────────────────────
 
+# Newey-West t-stat of the MEAN of a series (autocorr-robust). lag=3 default.
+# WS1 (v8.x): forge-authoritative portfolio-alpha t. NOT IC t (rank-IC t와 구분).
+# 패턴 출처: qmj_alpha_build.R::nw_t (동일 공식, contract-grade로 승격).
+.nw_t_mean <- function(x, lag = 3L) {
+  x <- x[!is.na(x)]; n <- length(x)
+  if (n < (lag + 2L)) return(NA_real_)
+  mu <- mean(x); e <- x - mu
+  g0 <- sum(e^2) / n; s <- g0
+  for (l in 1:lag) {
+    w <- 1 - l / (lag + 1)
+    g <- sum(e[(l + 1):n] * e[1:(n - l)]) / n
+    s <- s + 2 * w * g
+  }
+  if (s <= 0) return(NA_real_)
+  mu / sqrt(s / n)
+}
+
 build_benchmark_compare <- function(period_returns_tbl, benchmark_returns_tbl,
                                      run_id, strategy_id,
                                      annualization_factor = 252) {
@@ -511,6 +528,11 @@ build_benchmark_compare <- function(period_returns_tbl, benchmark_returns_tbl,
   cum_s <- prod(1 + cmp$ret_net) - 1
   cum_b <- prod(1 + cmp$benchmark_ret) - 1
 
+  # WS1 (v8.x): forge-authoritative portfolio-alpha t-stat (NW lag-3 on net active series).
+  # Harvey-Liu-Zhu 2016 hurdle(t>=2.95)을 실현 portfolio alpha에 적용 — graduation Gate C 권위 지표.
+  pa_t_v <- .nw_t_mean(cmp$active, lag = 3L)
+  pa_p_v <- if (is.na(pa_t_v)) NA_real_ else 2 * (1 - pnorm(abs(pa_t_v)))
+
   rows <- list(
     list("Excess_Total_Return", cum_s, cum_b, cum_s - cum_b, "ratio"),
     list("Active_Return_Mean", mean(cmp$ret_net), mean(cmp$benchmark_ret), mean(cmp$active), "ratio"),
@@ -518,6 +540,8 @@ build_benchmark_compare <- function(period_returns_tbl, benchmark_returns_tbl,
     list("Information_Ratio", NA, NA, ir_v, "ratio"),
     list("Beta_to_Benchmark", beta_v, 1, beta_v - 1, "ratio"),
     list("Alpha_Annualized", alpha_v, 0, alpha_v, "ratio"),
+    list("Portfolio_Alpha_t_NW_lag3", pa_t_v, 0, pa_t_v, "t_stat"),
+    list("Portfolio_Alpha_t_pvalue", pa_p_v, NA, pa_p_v, "pvalue"),
     list("Correlation", cor_v, 1, cor_v - 1, "ratio"),
     list("Up_Capture", up_cap, 1, up_cap - 1, "ratio"),
     list("Down_Capture", dn_cap, 1, dn_cap - 1, "ratio"),

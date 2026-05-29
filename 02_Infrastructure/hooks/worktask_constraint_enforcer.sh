@@ -6,7 +6,7 @@
 # 목적: optimization_package.json 쓰기 시 wt_type 따라 제약 검증
 #
 # 검증 항목 (Deployment WT만):
-#   1. max_names ≤ 20 (hard cap)
+#   1. max_names ≤ 25 (hard cap, 도훈 mandate 2026-05-29 20→25)
 #   2. long-only: all weights ≥ 0
 #   3. weight_bounds: weights ≤ 0.20
 #   4. Σw = 1 (absolute, tolerance 0.001)
@@ -83,8 +83,8 @@ if wt_type == "discovery":
 
 else:
     # Deployment WT: 전체 제약 강제
-    if len(tw) > 20:
-        errs.append(f"max_names {len(tw)} > 20 (deployment hard cap)")
+    if len(tw) > 25:
+        errs.append(f"max_names {len(tw)} > 25 (deployment hard cap, 도훈 mandate 2026-05-29 20→25)")
     neg = [k for k,v in tw.items() if v < 0]
     if neg:
         errs.append(f"long-only 위반: {neg[:3]}")

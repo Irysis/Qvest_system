@@ -48,7 +48,7 @@ allowed-tools: Bash(Rscript*) Read Grep Glob Write
 ## Work Task 모드: Gate A~F
 - A: PIT (C1~C15 + detect_lookahead)
 - B: Selection/Test Isolation (lockbox_access_count_non_judge = 0)
-- C: Net alpha > cost (net_IR > 0.3 dep / 0.2 disc)
+- C: **portfolio-alpha t ≥ 2.95** (forge-authoritative NW lag-3 = `forge_package.portfolio_alpha_t_nw_lag3`, Harvey-Liu-Zhu 2016 hurdle) AND net alpha > cost (net_IR > 0.3 dep / 0.2 disc). ★권위지표 = forge 실현 portfolio-alpha t, rank-IC t 아님(v8.x WS2). rank-IC/ICIR/harvey-rankIC는 advisory(screening).
 - D: Crowding stress (survival ≥ 3/4)
 - E: Concentration (max_w ≤ 0.20, HHI ≤ 0.15)
 - F: Drift tolerance (oos_is_ratio ≥ 0.7)

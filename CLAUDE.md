@@ -109,7 +109,7 @@ Qvest 시스템 전체 구동. bootstrap.sh 실행 → 플러그인 리로드 �
 
 | 제약 | 값 |
 |---|---|
-| 종목수 | max 20 (v53 hook 강제) |
+| 종목수 | max 25 (hook 강제, 도훈 mandate 2026-05-29 20→25) |
 | 유동성 | 20일 평균 거래대금 ≥ 2e8 KRW (LIQ_THRESHOLD) |
 | Long-only | weights ≥ 0 |
 | Weight bounds | [0, 0.20] |

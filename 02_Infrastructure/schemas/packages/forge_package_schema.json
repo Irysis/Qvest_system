@@ -7,6 +7,7 @@
   "required": [
     "task_id", "backtest_summary",
     "sr_realized_share_based",
+    "portfolio_alpha_t_nw_lag3",
     "measurement_basis_primary",
     "weights_csv_unique_dates_count",
     "alpha_sig_dates_count",
@@ -18,6 +19,8 @@
     "task_id": { "type": "string", "pattern": "^WT-[DPSH][0-9]{8}_[0-9]{3}$" },
     "backtest_summary": { "type": "object" },
     "sr_realized_share_based": { "type": "number" },
+    "portfolio_alpha_t_nw_lag3": { "type": ["number", "null"], "description": "WS1 v8.x: forge-authoritative portfolio-alpha t-stat (NW lag-3 on net active series, build_benchmark_compare). graduation Gate C 권위지표. rank-IC t와 구분." },
+    "portfolio_alpha_t_pvalue": { "type": ["number", "null"], "description": "two-sided p-value of portfolio_alpha_t_nw_lag3." },
     "measurement_basis_primary": {
       "type": "string",
       "enum": ["forge_realized_share_based"]

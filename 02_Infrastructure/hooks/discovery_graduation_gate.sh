@@ -64,28 +64,53 @@ with open(alpha_path) as f:
 diag = alpha_pkg.get("diagnostics", {})
 criteria = req.get("graduation_criteria", {})
 
-checks = {}
-if "min_rank_ic" in criteria:
-    actual = diag.get("rank_ic", 0)
-    checks["rank_ic"] = {"actual": actual, "threshold": criteria["min_rank_ic"], "pass": actual >= criteria["min_rank_ic"]}
-if "min_icir" in criteria:
-    actual = diag.get("icir", 0)
-    checks["icir"] = {"actual": actual, "threshold": criteria["min_icir"], "pass": actual >= criteria["min_icir"]}
-if "min_subperiod_stability" in criteria:
-    actual = diag.get("subperiod_stability", 0)
-    checks["subperiod_stability"] = {"actual": actual, "threshold": criteria["min_subperiod_stability"], "pass": actual >= criteria["min_subperiod_stability"]}
-if "min_harvey_t_stat" in criteria:
-    actual = diag.get("harvey_t_stat", 0)
-    checks["harvey_t_stat"] = {"actual": actual, "threshold": criteria["min_harvey_t_stat"], "pass": actual >= criteria["min_harvey_t_stat"]}
+# v8.x WS2 재설계: HARD = forge-authoritative portfolio_alpha_t_nw + DSR.
+# rank-IC 계열(rank_ic/icir/subperiod/harvey_t)은 ADVISORY(warn only, block 안 함) —
+# long-only 실현 alpha와 어긋나 거짓통과/거짓탈락 유발(16후보 calibration 실증).
+# portfolio_alpha_t는 alpha-stage proxy 금지 → forge_package(authoritative)에서만 읽음.
+forge_path = os.path.join(disc_dir, "forge_package.json")
+forge_pkg = {}
+if os.path.exists(forge_path):
+    try:
+        with open(forge_path) as f: forge_pkg = json.load(f)
+    except Exception:
+        forge_pkg = {}
 
-fails = [k for k,v in checks.items() if not v["pass"]]
-if fails:
-    fail_detail = [f"{k}={checks[k]['actual']:.4f}<{checks[k]['threshold']:.4f}" for k in fails]
-    print(json.dumps({
-      "decision": "block",
-      "reason": f"graduation 미충족 ({discovery_of}): " + " | ".join(fail_detail)
-    }))
+def num(v, d=None):
+    return v if isinstance(v, (int, float)) else d
+
+thr_pa  = criteria.get("min_portfolio_alpha_t_nw", 2.95)
+thr_dsr = criteria.get("min_deflated_sharpe_ratio", criteria.get("min_dsr", 0.5))
+
+hard_fail, advisory_fail = [], []
+
+# HARD 1 — portfolio-alpha t (forge-authoritative NW lag-3). forge 미완 시 block(검증 불가).
+pa_t = num(forge_pkg.get("portfolio_alpha_t_nw_lag3"))
+if pa_t is None:
+    hard_fail.append(f"forge_package.portfolio_alpha_t_nw_lag3 미산출 — forge 백테 미완(authoritative 미검증)")
+elif pa_t < thr_pa:
+    hard_fail.append(f"portfolio_alpha_t_nw {pa_t:.2f}<{thr_pa:.2f} (forge-authoritative)")
+
+# HARD 2 — DSR (forge 우선, 없으면 alpha diag fallback)
+dsr = num(forge_pkg.get("deflated_sharpe_ratio"), num(diag.get("dsr"), num(diag.get("deflated_sharpe_ratio"))))
+if dsr is not None and dsr < thr_dsr:
+    hard_fail.append(f"DSR {dsr:.3f}<{thr_dsr:.2f}")
+
+# ADVISORY — rank-IC 계열 (block 안 함, warn 기록)
+for ckey, dkey in [("min_rank_ic","rank_ic"),("min_icir","icir"),
+                   ("min_subperiod_stability","subperiod_stability"),("min_harvey_t_stat","harvey_t_stat")]:
+    if ckey in criteria:
+        act = num(diag.get(dkey), 0.0)
+        if act < criteria[ckey]:
+            advisory_fail.append(f"{dkey}={act:.4f}<{criteria[ckey]:.4f}")
+
+if hard_fail:
+    reason = f"graduation HARD 미충족 ({discovery_of}): " + " | ".join(hard_fail)
+    if advisory_fail:
+        reason += " || advisory(non-block): " + " | ".join(advisory_fail)
+    print(json.dumps({"decision": "block", "reason": reason}))
 else:
+    # 통과(advisory fail은 차단 안 함). v8.x: rank-IC 약해도 forge PORT_t/DSR 충족이면 graduation.
     print(json.dumps({}))
 PYEOF
     ;;

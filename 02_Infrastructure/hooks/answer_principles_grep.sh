@@ -65,7 +65,7 @@ fi
 EVASION_PATTERNS='(유사하므로|동일하므로|거의 같다|대략|근사|추정한다|예상된다|아마|보통.*것|TBD|추후 검증|나중에|이 정도면|충분하다 판단|관행적|관례상|영향 미미|보수적이면|이미 반영|상쇄|similar to|approximately|roughly|essentially|estimated|likely|probably|expected|to be verified|good enough|conventional|negligible|conservative enough|already accounted)'
 
 # 검증 증거 패턴 (파일 경로 + line + PerformanceAnalytics 표준 + 측정 출처)
-EVIDENCE_PATTERNS='(\.R:[0-9]+|\.json::|\.csv::|\.parquet::|line [0-9]+|forge_realized_share_based|Return\.portfolio|apply\.monthly|Return\.cumulative|table\.AnnualizedReturns|maxDrawdown|verbose=TRUE|02_Infrastructure/|04_Research/|qepm/mailbox/|stage_artifacts/|sr_provenance_certificate|measurement_basis_primary)'
+EVIDENCE_PATTERNS='(\.R:[0-9]+|\.json::|\.csv::|\.parquet::|line [0-9]+|forge_realized_share_based|Return\.portfolio|apply\.monthly|Return\.cumulative|table\.AnnualizedReturns|maxDrawdown|verbose=TRUE|02_Infrastructure/|04_Research/|qepm/mailbox/|stage_artifacts/|sr_provenance_certificate|measurement_basis_primary|canonical_screen_bt|portfolio_alpha_t_nw_lag3|metric_type)'
 
 # 명시 라벨 (회피 카운트에서 제외)
 HONEST_LABELS='(검증 안 됨|미실행|honest 표시|task #[0-9]+ 처리 예정|task #[0-9]+ 후속)'

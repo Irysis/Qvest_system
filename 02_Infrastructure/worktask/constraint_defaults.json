@@ -53,8 +53,8 @@
 
   "tier_soft_deployment": {
     "description": "Deployment WT 전용 제약. Discovery WT는 면제 (breadth 허용). R1+R13 구현.",
-    "max_names": 20,
-    "max_names_rationale": "사용자 실전 운용 확정 (v2.2, 2026-04-24) — 최종 포트폴리오 20종 hard. 슬리브당이 아님. Deployment 전용.",
+    "max_names": 25,
+    "max_names_rationale": "사용자 실전 운용 확정 (v2.2 20종 → 도훈 mandate 2026-05-29 25종 완화) — 최종 포트폴리오 25종 hard. 슬리브당이 아님(합산 ≤25). Deployment 전용. multi-sleeve blend 여유 확보 목적.",
 
     "min_names": 20,
     "min_names_rationale": "사용자 실전 운용 확정 (v2.2, 2026-04-24) — n=20 hard. min=max=20으로 정확히 20종목 편입 강제. Pilot 4 forced fill 이슈는 max_w 상향(0.10→0.15)으로 완화.",
@@ -103,7 +103,8 @@
     "sector_active_weight_cap_rationale": "단일 섹터 활성 비중 10% 이하 (분산 유지)",
 
     "turnover_cap_annual": 3.0,
-    "turnover_cap_rationale": "연 300% 초과 시 penalty. 600% 이상은 hard fail.",
+    "turnover_cap_rationale": "연 300% 초과 시 penalty. 1100%(11.0/yr round-trip) 이상은 hard fail (도훈 mandate 2026-05-29 — 기존 600%에서 완화. KR alpha turnover-intensive 반영. research_philosophy Trend 6 amend). 비용은 cost_model v2.3 15bps로 계속 차감 — 고회전 시 net alpha > cost 입증 의무.",
+    "turnover_hard_fail_annual": 11.0,
 
     "cost_model_version": "v2.3_kr_retail_15bps",
     "transaction_cost_bps_one_way": 15,
@@ -113,24 +114,37 @@
   },
 
   "tier_graduation": {
-    "description": "Discovery → Deployment 전환 조건. Discovery WT 완료 시 자동 검증. discovery_graduation_gate.sh 강제.",
+    "description": "Discovery → Deployment 전환 조건. discovery_graduation_gate.sh 강제. v8.x WS2 재설계(2026-05-29): rank-IC 계열은 long-only 실현 alpha와 어긋나(16후보 calibration 실측: rank_ic가 FLOW 거짓탈락+NN/TECH 거짓통과) advisory로 강등, portfolio-alpha t(forge NW lag-3)+DSR을 hard로. hard 기준은 forge-authoritative 값(alpha-stage proxy 아님)에 적용.",
     "min_rank_ic": 0.04,
-    "min_rank_ic_rationale": "KR top-universe benchmark. <0.04는 통계적 유의성 부족.",
+    "min_rank_ic_rationale": "KR top-universe benchmark. <0.04는 IC 약함. (v8.x severity=advisory — long-only 실현 alpha 미전이)",
 
     "min_icir": 0.20,
-    "min_icir_rationale": "Alpha Lab Gate. <0.20은 IC 안정성 부족.",
+    "min_icir_rationale": "Alpha Lab Gate. (v8.x severity=advisory)",
 
     "min_subperiod_stability": 0.50,
-    "min_subperiod_stability_rationale": "3개 subperiod (2008-14 / 2015-19 / 2020-26) 안정성 >=0.5",
+    "min_subperiod_stability_rationale": "3개 subperiod 안정성. (v8.x severity=advisory)",
 
     "max_drawdown_days": 100,
-    "max_drawdown_days_rationale": "100일 이상 drawdown 지속 시 alpha decay 의심",
+    "max_drawdown_days_rationale": "100일 이상 drawdown 지속 시 alpha decay 의심. (severity=advisory)",
 
     "min_harvey_t_stat": 3.0,
-    "min_harvey_t_stat_rationale": "Harvey-Liu-Zhu 다중검정 보정 t>3.0",
+    "min_harvey_t_stat_rationale": "rank-IC Harvey-t. (v8.x severity=advisory — rank-IC t는 portfolio-alpha t와 구분, 후자가 권위)",
 
     "min_deflated_sharpe_ratio": 0.5,
-    "min_deflated_sharpe_ratio_rationale": "Bailey-Lopez de Prado DSR — multi-testing 보정 SR"
+    "min_deflated_sharpe_ratio_rationale": "Bailey-Lopez de Prado DSR — multi-testing 보정 SR. (v8.x severity=HARD)",
+
+    "min_portfolio_alpha_t_nw": 2.95,
+    "min_portfolio_alpha_t_nw_rationale": "★v8.x 신규 HARD. forge-authoritative 실현 portfolio-alpha t (NW lag-3, forge_package.portfolio_alpha_t_nw_lag3). Harvey-Liu-Zhu 2016 hurdle. rank-IC t 아님. 게이트 핵심 판별(16후보 중 FLOW만 통과=정확).",
+
+    "severity": {
+      "rank_ic": "advisory",
+      "icir": "advisory",
+      "subperiod_stability": "advisory",
+      "harvey_t_stat": "advisory",
+      "deflated_sharpe_ratio": "hard",
+      "portfolio_alpha_t_nw": "hard"
+    },
+    "severity_rationale": "hard = block(우회불가), advisory = warn(screening). hard 2종(DSR/portfolio_alpha_t_nw)은 forge-authoritative 값에만 적용 — alpha-stage proxy로 graduation 선언 금지(v8.x WS1 정합)."
   },
 
   "discovery_defaults": {
@@ -186,7 +200,7 @@
       "expected_active_return": {"direction": "max", "weight": 0.20, "threshold_deployment": 0.03, "threshold_discovery": 0.02},
       "expected_tracking_error": {"direction": "min", "weight": 0.10, "threshold_deployment": 0.10, "threshold_discovery": 0.15},
       "net_information_ratio": {"direction": "max", "weight": 0.25, "threshold_deployment": 0.30, "threshold_discovery": 0.20},
-      "turnover_annual": {"direction": "min", "weight": 0.10, "threshold_deployment": 3.00, "threshold_discovery": 6.00},
+      "turnover_annual": {"direction": "min", "weight": 0.10, "threshold_deployment": 3.00, "threshold_discovery": 11.00},
       "crowding_adjusted_return": {"direction": "max", "weight": 0.10, "threshold_deployment": 0.02, "threshold_discovery": 0.01},
       "capacity_adjusted_return": {"direction": "max", "weight": 0.05, "threshold_deployment": 0.02, "threshold_discovery": 0.01},
       "regime_robustness_score": {"direction": "max", "weight": 0.15, "threshold_deployment": 0.60, "threshold_discovery": 0.50},

@@ -20,7 +20,7 @@ Portfolio Gap 진단 + Role Admission + Book Rebalance.
 - 신규 WT admission → `book_update(admitted_wt_ids)` 호출
 - `book_optimizer.R` — cross-WT cov + crowding + redundancy QP
 - `qepm/mailbox/governor/book_state.json` 갱신
-- admission 기준: judge_pass + book-level IR improvement ≥ 0.05
+- admission 기준: **judge_pass AND book-marginal IR improvement ≥ 0.05** (incumbent book 대비 candidate 추가 시 ΔIR = new_book_ir − incumbent_book_ir ≥ 0.05). 강제: `portfolio_governor.R::pg1_admission_with_book_context()` (standalone pg1_admission 통과 후 book-marginal gate 적용; 미달 → DEFER). incumbent baseline은 `book_state.json::incumbent_book_ir`.
 
 ## Multi-objective 8지표 (R10)
 expected_active_return / TE / net_IR / turnover / crowding_adj / capacity_adj / regime_robustness / interpretability.

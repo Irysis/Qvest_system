@@ -16,7 +16,7 @@ REGISTRY_COLS <- c(
   "start_date", "end_date", "frequency",
   "universe_id", "benchmark_primary", "return_type",
   "cagr", "vol", "sharpe", "mdd", "calmar",
-  "information_ratio", "hit_ratio_vs_bm", "turnover",
+  "information_ratio", "portfolio_alpha_t", "hit_ratio_vs_bm", "turnover",
   "cvar_99", "integrity_status", "created_at"
 )
 
@@ -82,6 +82,7 @@ register_bt_result <- function(bt_result, path = REGISTRY_PATH,
     mdd = get_metric("MDD"),
     calmar = get_metric("Calmar"),
     information_ratio = get_bm_metric("Information_Ratio"),
+    portfolio_alpha_t = get_bm_metric("Portfolio_Alpha_t_NW_lag3"),
     hit_ratio_vs_bm = get_bm_metric("Hit_Ratio_vs_BM"),
     turnover = get_metric("Average_Turnover"),
     cvar_99 = get_metric("CVaR_99"),

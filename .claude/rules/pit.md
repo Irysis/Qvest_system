@@ -36,9 +36,9 @@
 
 ## 종목수 + 유동성 (실투용)
 
-- 종목수 max 20 (v53 hook 강제)
+- 종목수 max 25 (hook 강제, 도훈 mandate 2026-05-29 20→25)
 - 유동성: 20일 평균 거래대금 ≥ 2e8 KRW (`LIQ_THRESHOLD = 2e8`)
-- 슬리브 조합 시에도 최종 portfolio 20명 이하 (e.g., 2-sleeve N_def + N_ind = 20)
+- 슬리브 조합 시에도 최종 portfolio 25명 이하 (e.g., 2-sleeve N_def + N_ind ≤ 25)
 
 ## S0/S1 오버레이 금지
 
