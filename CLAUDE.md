@@ -2,12 +2,20 @@
 
 ## Active Version
 
-**Qvest v7.2.1 — Memory Knowledge Hardening**
+**Qvest v8.0.0 — Opus 4.8-Native · Polyglot · Workflow-Orchestrated** (2026-05-29)
 
-**계보**: v6.4.0 → v7.0.0 → v7.0.1 → v7.1.0-lite → v7.2.0 → **v7.2.1** (현재 active)
-**Branch**: `main` (Qvest active — GitHub default. 이전: v7.1-hardening, 2026-05-13 rename L-314)
+**계보**: v6.4.0 → v7.0.0 → v7.0.1 → v7.1.0-lite → v7.2.0 → v7.2.1 → **v8.0.0** (현재 active)
+**Branch**: `main` (Qvest active — GitHub default)
 
-**★ Active SOT (단일 진실)**: `02_Infrastructure/docs/qvest_v7_2_1_sot.md`
+**v8.0 핵심** (Opus 4.8 정합 + Qvest 성능 극대화, 도훈 mandate 2026-05-29):
+- **헌법**: R-only 폐지 → R+Python 1급 동등 (PIT/Contract 언어무관) · SR 목표 2.0→2.5 · AX-000 reframe(정직성 정합)
+- **Opus 4.8 정합**: agent effort frontmatter(judge/gov xhigh) · _shared_prefix 실행가드 · axiom 주입 경량화 · init 압축
+- **에이전트 skill**: research_philosophy 7-trend → 역할별 qvest-*-style skill 4종
+- **하네스 위생**: hook allow-noise 147 fix · unified_agent_guard(v52) 폐기 → axiom_context_inject 분리 · Codex Round는 이미 6-critical scoped(재계층화 불요)
+- **신규**: 추론성능 측정 루프(eval/harness_perf_eval) · Dynamic Workflow(/qvest-multi-track, pilot 대기) · artifact-naming 정책
+- **미완(후속)**: WS4 workflow 실 pilot 검증 / qvest_v8_0_sot.md 정식 발행 / WT_WT-* bulk cleanup
+
+**★ Active SOT (단일 진실)**: `02_Infrastructure/docs/qvest_v8_0_upgrade_plan.md` (v8.0 설계 SOT) + `qvest_v7_2_1_sot.md` (v7.2.1 base 흡수, retain)
 **전임 SOT (흡수됨)**: `02_Infrastructure/docs/qvest_v6_4_sot.md` (v6.4 base 흡수, read-only retain)
 **Legacy boundary**: `02_Infrastructure/docs/qvest_legacy_boundary.md` (v55 / S0~S7 격리)
 
