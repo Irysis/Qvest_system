@@ -24,8 +24,8 @@ REQUIRED_HOOKS=(
   "safety_guard.sh"
   "axiom_enforcement_hook.sh"
 
-  # Tier 2 Agent 경계 (v7.0 — role_taxonomy_admission_gate v55 legacy 제거)
-  "unified_agent_guard.sh"
+  # Tier 2 Agent (v8.0 WS5-3 — axiom_context_inject가 unified_agent_guard[v52] 대체. AX 공리 주입)
+  "axiom_context_inject.sh"
   "agent_role_guard.sh"
 
   # v6.1 Work Task 순서 + 제약
@@ -111,7 +111,7 @@ else
 fi
 
 # ERR trap 확인 (v6.1 신규 Hook에 필수)
-for HOOK in "unified_agent_guard.sh" "circuit_breaker.sh" "safety_guard.sh" \
+for HOOK in "axiom_context_inject.sh" "circuit_breaker.sh" "safety_guard.sh" \
             "selection_contamination_detector.sh" "method_shopping_limiter.sh" \
             "role_objective_guard.sh" "challenge_loop_limiter.sh" \
             "covariance_freshness_gate.sh" "agent_role_guard.sh"; do

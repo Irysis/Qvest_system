@@ -14,7 +14,7 @@
 source "$(dirname "${BASH_SOURCE[0]:-$0}")/resolve_project.sh"
 cd "$PROJECT"
 
-echo "━━━ Qvest v53 부트스트랩 ━━━"
+echo "━━━ Qvest v8.0 부트스트랩 (Opus 4.8 Native) ━━━"
 
 # 1. 원격 제어 (텔레그램 listener 등 상시 데몬)
 RC_SCRIPT="$PROJECT/02_Infrastructure/ops/persistent_remote_control.sh"
@@ -82,6 +82,28 @@ LCR_R="$PROJECT/02_Infrastructure/memory/lcode_corpus_rebuild.R"
 if [ -f "$LCR_R" ]; then
   (cd "$PROJECT" && Rscript "$LCR_R" >/tmp/lcode_corpus_boot.log 2>&1) &
   echo "[boot] lcode_corpus_rebuild 백그라운드 (log=/tmp/lcode_corpus_boot.log)"
+fi
+
+# 4d. Bear date audit (Cycle 51 — forward label semantics regression detector)
+#     data.table::shift(-H, lead) backward bug 회귀 방지. 4 known bear dates
+#     (Lehman / Euro / COVID / Stagflation) forward label match + backward mismatch 검증.
+#     Hard fail (status=1) 시 bearish forecast model 영역 차단 (V10 / V1aV3 monitor).
+#     bear_date_audit_latest.json은 qepm/observability/sanity_checks/ 저장.
+BEAR_AUDIT_R="$PROJECT/02_Infrastructure/sanity_checks/bear_date_audit.R"
+TARGET_PARQUET="$PROJECT/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/02_targets/targets_full.parquet"
+if [ -f "$BEAR_AUDIT_R" ] && [ -f "$TARGET_PARQUET" ]; then
+  BEAR_OUT=$(cd "$PROJECT" && Rscript "$BEAR_AUDIT_R" 2>&1)
+  BEAR_SUMMARY=$(echo "$BEAR_OUT" | grep -E "Audit Summary:" | head -1)
+  echo "[boot] $BEAR_SUMMARY"
+  if echo "$BEAR_OUT" | grep -q "ALL PASS"; then
+    echo "[boot] bear_date_audit: ALL PASS (forward label semantics CLEAN)"
+  else
+    echo "[boot] WARN: bear_date_audit FAIL — backward label bug suspected"
+    echo "[boot] Refer to: 04_Research/decision_framework/bearish_forecast_v2_alt_data/STATUS_BUGGY_ERA.md"
+    echo "$BEAR_OUT" | grep -E "FAIL$" | head -5
+  fi
+else
+  echo "[boot] bear_date_audit: SKIP (script or target parquet 미존재)"
 fi
 
 # 5. 데이터 리프레시 (백그라운드 — xlsx 증분 + KRX/FRED/ECOS)
@@ -260,11 +282,12 @@ PYEOF
 fi
 
 echo ""
-echo "━━━ 부트스트랩 완료 (v6 QEPM 3-Agent) ━━━"
+echo "━━━ 부트스트랩 완료 (Qvest v8.0 — Opus 4.8 Native · Polyglot · Workflow) ━━━"
 if [ -n "$PG2_INFO" ]; then
   echo "$PG2_INFO"
 fi
-echo "Skills:     $(ls "$PROJECT"/.claude/skills/*/SKILL.md 2>/dev/null | wc -l)개 (worktask/alpha/risk/optimizer 포함)"
+echo "v8.0:       R+Python 1급 / SR목표 2.5 / agent effort(judge·gov xhigh) / axiom_context_inject(unified_agent_guard 폐기) / qvest-*-style skill"
+echo "Skills:     $(ls "$PROJECT"/.claude/skills/*/SKILL.md 2>/dev/null | wc -l)개 (worktask/alpha/risk/optimizer + qvest-*-style 4종)"
 echo "Hooks:      settings.json 등록 (harness_health 결과 위 참조)"
 echo "WT Active:  $WT_ACTIVE건"
 echo "Inbox:      alpha=$ALPHA_T risk=$RISK_T optimizer=$OPT_T forge=$FORGE_T judge=$JUDGE_T governor=$GOV_T"

@@ -53,7 +53,7 @@ bash 02_Infrastructure/ops/bootstrap.sh
 
 **Hooks 5-Tier 방어선 (v6.31 Charter v1.2 Positive Hook 패러다임)**:
 - Tier 1 (전역 hard block — system integrity 위협 영역만): `safety_guard`, `axiom_enforcement_hook`, `sr_provenance_check` (`ProductionSchedule[N]m` fabrication label hard block), `schedule_fidelity_check` (run_all.R fabrication hard block), `governor_concord_certifier` (admission graduation 우회 hard block)
-- Tier 2 (Agent): `agent_role_guard` (Alpha/Risk/Opt 경계), `worktask_sequence_enforcer` (WT 순서), `unified_agent_guard`
+- Tier 2 (Agent): `agent_role_guard` (Alpha/Risk/Opt 경계), `worktask_sequence_enforcer` (WT 순서), `axiom_context_inject` (AX 공리 주입 — v8.0 WS5-3, unified_agent_guard[v52] 폐기 대체)
 - Tier 3 (Write/Edit hard mandate): `worktask_constraint_enforcer` (20종/bounds/Σw=1), `worktask_spec_validator`, `milestone_commit`
 - Tier 4 (Post artifact validation): `worktask_artifact_validator`, `red_flag_detector`, `pipeline_trigger`, `auto_commit_on_stop`
 - **Tier 5 (Positive Certifier — v6.31 신규)**: `alpha_discovery_certifier` (cor<0.95 + mechanism + factor_specs + harvey_t pass), `sr_provenance_check` (forge_package 4-field), `schedule_fidelity_check` (density≥0.95 또는 infeasibility), `worktask_artifact_validator` (forge_package 8-field), `governor_concord_certifier` (book_state↔admission match 또는 waiver 5-row), `sr_provenance_pre_certifier` (PreToolUse 안내)
@@ -219,7 +219,14 @@ PG2 active (STR_1631_SYN_05_2002 + STR_1656_MLRA_M05) **그대로 유지**.
 
 ---
 
-## 부팅 직후 체크리스트 (v7.2.1 갱신 — 9 → 13건)
+## 부팅 직후 체크리스트 (v8.0 갱신 — 13 + v8.0 5건)
+
+### v8.0 신규 확인 (5건)
+14. ✅ 완료 배너 `Qvest v8.0 — Opus 4.8 Native` + `v8.0:` 상태 라인 출력 확인
+15. ✅ PreToolUse[Agent] = `axiom_context_inject` + `worktask_sequence_enforcer` (unified_agent_guard 등록 해제 — `grep -c unified_agent_guard .claude/settings.json` = 0)
+16. ✅ agent effort frontmatter (judge/governor xhigh, alpha/risk/optimizer/forge high) — `grep -l 'effort:' .claude/agents/*.md`
+17. ✅ qvest-*-style skill 4종 + `skills:` frontmatter 부착 (alpha/risk/opt/judge/gov)
+18. ✅ 헌법 R+Python 1급 (`.claude/rules/python-policy.md`) + SR목표 2.5 + AX-000 reframe / 신규 rule `artifact-naming.md` / 측정 `02_Infrastructure/eval/harness_perf_eval.R`
 
 ### v6.x 베이스 (9건)
 
