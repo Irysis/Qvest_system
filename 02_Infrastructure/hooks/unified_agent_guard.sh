@@ -1,4 +1,5 @@
 #!/bin/bash
+# DEPRECATED 2026-05-29 v8.0 WS5-3 — settings.json 등록 해제. axiom 주입은 axiom_context_inject.sh로 이전. legacy Stage Guard(S0~S5/STR_XXX)는 v6.4 WT no-op. 파일 retain(legacy compat).
 
 trap 'echo "{}"; exit 0' ERR  # Phase C3 전수 강제
 #==============================================================================
