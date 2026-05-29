@@ -718,6 +718,35 @@ check_memory_health <- function(project_root, no_write = FALSE) {
 }
 
 # ─────────────────────────────────────────────────────────────────
+# v8.0 architecture 정합 (effort/skills/python-policy/axiom_inject/SR2.5/naming/perf)
+# ─────────────────────────────────────────────────────────────────
+check_v8_architecture <- function(project_root, no_write = FALSE) {
+  rl <- function(p) tryCatch(readLines(file.path(project_root, p), warn = FALSE),
+                             error = function(e) character())
+  has_fm <- function(agent, key) any(grepl(paste0("^", key, ":"),
+                    rl(file.path(".claude/agents", paste0(agent, ".md")))))
+  ok <- character(); bad <- character()
+  core <- c("alpha-research", "risk-research", "optimizer-research", "forge", "judge", "governor")
+  skl  <- c("alpha-research", "risk-research", "optimizer-research", "judge", "governor")
+  if (all(vapply(core, has_fm, logical(1), key = "effort"))) ok <- c(ok, "effort") else bad <- c(bad, "effort_frontmatter")
+  if (all(vapply(skl,  has_fm, logical(1), key = "skills"))) ok <- c(ok, "skills") else bad <- c(bad, "skills_frontmatter")
+  if (length(rl(".claude/rules/python-policy.md"))   > 0) ok <- c(ok, "python-policy") else bad <- c(bad, "python-policy.md")
+  if (length(rl(".claude/rules/artifact-naming.md")) > 0) ok <- c(ok, "artifact-naming") else bad <- c(bad, "artifact-naming.md")
+  if (length(rl("02_Infrastructure/eval/harness_perf_eval.R")) > 0) ok <- c(ok, "perf-eval") else bad <- c(bad, "harness_perf_eval.R")
+  sj <- paste(rl(".claude/settings.json"), collapse = "\n")
+  if (grepl("axiom_context_inject", sj)) ok <- c(ok, "axiom_inject_registered") else bad <- c(bad, "axiom_context_inject_unregistered")
+  if (!grepl("unified_agent_guard", sj)) ok <- c(ok, "unified_retired") else bad <- c(bad, "unified_agent_guard_still_registered")
+  cm <- paste(rl("CLAUDE.md"), collapse = "\n")
+  if (grepl("SR 2\\.5", cm)) ok <- c(ok, "SR2.5") else bad <- c(bad, "SR_target_2.5")
+  status <- if (length(bad) == 0) "PASS" else "FAIL"
+  mk_check("v8_architecture",
+           "v8.0 구조 정합 (effort/skills/python-policy/axiom_inject/SR2.5/naming/perf)",
+           status,
+           sprintf("ok=%d [%s]%s", length(ok), paste(ok, collapse = ","),
+                   if (length(bad)) sprintf(" | FAIL=%d [%s]", length(bad), paste(bad, collapse = ",")) else ""))
+}
+
+# ─────────────────────────────────────────────────────────────────
 # Main
 # ─────────────────────────────────────────────────────────────────
 
@@ -746,7 +775,8 @@ run_v8_readiness_gate <- function(project_root = ".",
     check_registry_integrity(project_root, no_write),
     check_release_metadata(project_root, no_write, strict),
     check_soak_record(project_root, no_write, next_actions_env),
-    check_memory_health(project_root, no_write)
+    check_memory_health(project_root, no_write),
+    check_v8_architecture(project_root, no_write)
   )
 
   statuses <- sapply(checks, function(c) c$status)

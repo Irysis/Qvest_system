@@ -16,22 +16,8 @@ cd "$PROJECT"
 
 echo "━━━ Qvest v8.0 부트스트랩 (Opus 4.8 Native) ━━━"
 
-# 1. 원격 제어 (텔레그램 listener 등 상시 데몬)
-RC_SCRIPT="$PROJECT/02_Infrastructure/ops/persistent_remote_control.sh"
-if [ ! -f "$RC_SCRIPT" ]; then
-  RC_SCRIPT="$PROJECT/02_Infrastructure/persistent_remote_control.sh"
-fi
-if [ -f "$RC_SCRIPT" ]; then
-  tmux has-session -t rc 2>/dev/null || \
-    tmux new-session -d -s rc "bash '$RC_SCRIPT'"
-  if tmux has-session -t rc 2>/dev/null; then
-    echo "[boot] 원격 제어 ✓ (tmux rc)"
-  else
-    echo "[boot] 원격 제어 WARN: rc 세션 즉시 종료 — $RC_SCRIPT 내용 확인"
-  fi
-else
-  echo "[boot] 원격 제어 SKIP: persistent_remote_control.sh 없음"
-fi
+# 1. (제거됨 v8.0 2026-05-29) tmux rc telegram inbound listener — outbound tg_agent_brief()는
+#    영향 없음. inbound 명령 listener 불필요 판단(도훈). 필요 시 persistent_remote_control.sh 수동 기동.
 
 # 2. Legacy tmux 세션 정리 (v50/v52 잔재 — research/supervisor)
 #    삭제는 QVEST_KEEP_LEGACY_TMUX=1 환경변수로 억제 가능
@@ -181,7 +167,7 @@ except Exception:
 " 2>/dev/null || echo "?|?|?|?")
   rm -f "$V8_TMP"
   IFS='|' read -r V8_OVERALL V8_PASS V8_FAIL V8_SKIP <<< "$V8_PARSED"
-  echo "[boot] v8 readiness (--no-write, 15 check): $V8_OVERALL — pass=$V8_PASS fail=$V8_FAIL skip=$V8_SKIP (e2e+timeline SKIP 정상, memory_health cached)"
+  echo "[boot] v8 readiness (--no-write, 16 check incl v8_architecture): $V8_OVERALL — pass=$V8_PASS fail=$V8_FAIL skip=$V8_SKIP (e2e+timeline SKIP 정상, memory_health cached)"
   if [ "${V8_FAIL:-99}" != "0" ] && [ "${V8_FAIL:-99}" != "?" ]; then
     echo "[boot] WARN: v8_readiness FAIL — bash 02_Infrastructure/tools/qvest_v8_ready --strict 직접 실행 권장"
   fi
@@ -294,7 +280,7 @@ echo "Inbox:      alpha=$ALPHA_T risk=$RISK_T optimizer=$OPT_T forge=$FORGE_T ju
 echo "Axioms:     active=$AX_ACTIVE candidates=$AX_CAND (sot_map documented=$AX_DOC_ACTIVE: documented=$AX_DOCUMENTED_MODE / block=$AX_BLOCK_MODE / advisory=$AX_ADVISORY_MODE)"
 echo "Cache_core: $AX_CACHE_STATUS"
 free -m | awk '/Mem:/ {printf "RAM:        %.0f%%\n", $3/$2*100}'
-echo "Remote:     tmux rc 세션 가동 (persistent_remote_control)"
+# (Remote tmux rc 라인 제거 v8.0 — inbound listener 폐지)
 echo ""
 echo "다음: /qvest 5-B 절차 따라 Work Task 생성 + 3-agent 순차 spawn"
 echo "  wt_create('{hypothesis}') → alpha-research → risk-research → optimizer-research"
