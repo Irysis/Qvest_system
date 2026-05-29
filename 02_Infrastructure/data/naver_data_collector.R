@@ -310,24 +310,14 @@ naver_merge_rawdata <- function(snapshot = NULL) {
   new_rows[Date == first_day,
            Ret := first_match[match(new_rows[Date == first_day, Ticker], Ticker), Ret]]
 
-  # BM_Ret from KOSPI 200
-  bm <- naver_kospi200_close()
-  if (!is.null(bm) && nrow(bm) > 0) {
-    old_bm <- as.data.table(read_parquet(BM_CACHE))
-    last_bm_close <- old_bm[Date == max(Date)]$BM_Close[1]
-
-    if (!is.na(last_bm_close) && last_bm_close > 0) {
-      bm[, BM_Ret := BM_Close / last_bm_close - 1]
-      new_rows <- merge(new_rows, bm[, .(Date, BM_Ret)], by = "Date", all.x = TRUE)
-
-      # Update benchmark cache
-      # parquet round-trip Date↔IDate class 불일치 방지 (data.table 1.15+ rbind class-attr check)
-      old_bm[, Date := as.Date(Date)]; bm[, Date := as.Date(Date)]
-      old_bm_ext <- rbind(old_bm, bm[!is.na(BM_Ret)], fill = TRUE, ignore.attr = TRUE)
-      old_bm_ext <- unique(old_bm_ext, by = "Date")
-      setorder(old_bm_ext, Date)
-      write_parquet(old_bm_ext, BM_CACHE)
-    }
+  # [v8.0 fix (c) 2026-05-29] benchmark SOT = naver_benchmark_update.py (chart-API, 실제 종가+날짜).
+  # naver_kospi200_close()는 live 현재가 + Sys.Date() → 장중 실행 시 phantom(오늘날짜에 intraday값) 생성.
+  # 여기서 benchmark cache WRITE 제거 (phantom 근원 차단). new_rows BM_Ret은 cache(실제 종가)에서 date-lookup만.
+  # 신규 거래일이 cache에 아직 없으면 BM_Ret=NA → naver_benchmark_update.py 갱신 후 채워짐 (daily_refresh [1pre]).
+  bm_cache <- tryCatch(as.data.table(read_parquet(BM_CACHE)), error = function(e) NULL)
+  if (!is.null(bm_cache) && "BM_Ret" %in% names(bm_cache)) {
+    bm_cache[, Date := as.Date(Date)]
+    new_rows <- merge(new_rows, bm_cache[, .(Date, BM_Ret)], by = "Date", all.x = TRUE)
   }
   if (!"BM_Ret" %in% names(new_rows)) new_rows[, BM_Ret := NA_real_]
 

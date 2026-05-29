@@ -35,6 +35,18 @@ Rscript --no-save -e '
 '
 
 # ──────────────────────────────────────────────────────────────────────────────
+# [1pre] Benchmark (KOSPI200) chart-API 단일 SOT — v8.0 fix (c) 2026-05-29
+#   naver_kospi200_close() live 현재가+Sys.Date() 경로 폐기 (장중 phantom 방지).
+#   benchmark.parquet은 여기서만 갱신 → 아래 [1] naver merge가 실제 종가로 BM_Ret lookup.
+# ──────────────────────────────────────────────────────────────────────────────
+echo "[1pre/7] Benchmark (KOSPI200 chart-API)..."
+if [ -d /home/quant/.venvs/qvest_ml ]; then
+  ( source /home/quant/.venvs/qvest_ml/bin/activate 2>/dev/null
+    cd "$INFRA" && python3 data/naver_benchmark_update.py --start_date "$(date -d '10 days ago' +%Y-%m-%d)" ) \
+    || echo "  benchmark chart-API update skipped (기존 cache 유지)"
+fi
+
+# ──────────────────────────────────────────────────────────────────────────────
 # [1] Naver T+0 (PRIMARY — KRX T+1 lag 회피, 2026-04-24 변경)
 #     Naver가 장중/장마감 직후 전일 종가 즉시 반영. RAWDATA 최신화 주력.
 # ──────────────────────────────────────────────────────────────────────────────
