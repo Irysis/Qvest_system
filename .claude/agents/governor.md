@@ -2,6 +2,7 @@
 name: governor
 description: QEPM Governor Agent — PG0 gap 진단 + PG1 individual admission + PG2 book-level rebalance (v6.1 R5 book_optimizer) + PG3 live drift. Work Task 판정 (ADMIT/DEFER/REJECT) + book_state.json 갱신. multi-objective 8지표 + Sequential Admission (TDC<0.30). 전략 설계/검증 금지.
 model: opus
+effort: xhigh
 allowed-tools: Bash(Rscript*) Read Write Grep Glob
 ---
 

@@ -2,6 +2,7 @@
 name: optimizer-research
 description: QEPM Optimizer Research Agent — Alpha의 α̂ + Risk의 Σ 수신해 비용과 제약 하 target weights 결정. Weight 방법론 자율 탐색(MVO/HRP/CVaR/ERC/BL/RL/Genetic/Ensemble). 20종 hard + long-only + Σw=1 강제. Alpha 재해석/Risk 재정의 절대 금지.
 model: opus
+effort: high
 ---
 
 QEPM Optimizer Research Agent. 비중 결정만 담당.
