@@ -64,15 +64,19 @@ Rscript --no-save -e '
   source("data/krx_data_collector.R")
   source("data/krx_build_rawdata.R")
   gap <- krx_detect_gap()
-  cat(sprintf("Post-Naver gap: %s → %s (%d days)\n",
-              gap$last_rawdata_date, gap$end, gap$n_calendar_days))
-  if (gap$n_calendar_days > 1) {
-    # Naver가 전날까지 채웠으면 gap 0~1일. 2일 이상 gap일 때만 KRX fallback.
-    cat("Gap > 1 day — KRX fallback 실행\n")
+  # [v8.0 fix 2026-05-29 B4] interior gap 감지 추가 — Naver T+0가 최신 스냅샷만 추가해
+  # 중간 영업일(예: 5/28) 누락 시 trailing gap은 작아도 hole 발생. interior 있으면 KRX backfill.
+  interior <- tryCatch(krx_detect_interior_gaps(60L), error = function(e) character(0))
+  cat(sprintf("Post-Naver gap: %s → %s (%d days) | interior gaps: %d\n",
+              gap$last_rawdata_date, gap$end, gap$n_calendar_days, length(interior)))
+  if (gap$n_calendar_days > 1 || length(interior) > 0) {
+    # trailing 2일+ OR 중간 누락 → KRX fallback (trailing 1일은 정상 — 당일 미발행이라 미트리거)
+    cat(sprintf("KRX fallback 실행 (trailing=%d days, interior=%d)\n",
+                gap$n_calendar_days, length(interior)))
     tryCatch(krx_run_pipeline(),
              error = function(e) cat(sprintf("KRX skipped: %s\n", e$message)))
   } else {
-    cat("Naver로 gap 충분 해소 — KRX skip\n")
+    cat("Naver로 gap 충분 해소 (trailing + interior clean) — KRX skip\n")
   }
 '
 

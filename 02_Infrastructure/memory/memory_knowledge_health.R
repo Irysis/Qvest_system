@@ -320,13 +320,19 @@ if (length(unverified) > 0) {
 cat("[W6/6] regime_validation + cache_core sync\n")
 rv_path <- file.path(PROJ_ROOT, "qepm/memory/regime_validation/soft_mrs.json")
 if (file.exists(rv_path)) {
-  d <- tryCatch(fromJSON(rv_path, simplifyVector = FALSE),
-                error = function(e) conditionMessage(e))
-  if (is.character(d)) {
-    add_warn("WARN_6_regime_validation_parse",
-             sprintf("soft_mrs.json parse fail: %s", d))
+  if (file.info(rv_path)$size == 0) {
+    # [v8.0 fix 2026-05-29 B5] 0-byte orphan (writer 부재 2026-04-08~, regime_signal.R 미참조 → fallback 작동).
+    # parse-fail WARN 오탐 제거. disposition(삭제/feature 복구)는 별도. 구 run_all.R 참조 위해 파일 retain.
+    cat("  soft_mrs.json 0-byte orphan (writer 부재, regime fallback 작동) — N/A skip\n")
   } else {
-    cat("  soft_mrs.json parse OK\n")
+    d <- tryCatch(fromJSON(rv_path, simplifyVector = FALSE),
+                  error = function(e) conditionMessage(e))
+    if (is.character(d)) {
+      add_warn("WARN_6_regime_validation_parse",
+               sprintf("soft_mrs.json parse fail: %s", d))
+    } else {
+      cat("  soft_mrs.json parse OK\n")
+    }
   }
 }
 cache_path <- file.path(PROJ_ROOT, ".cache/axiom_core.json")

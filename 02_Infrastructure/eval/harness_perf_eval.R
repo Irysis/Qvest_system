@@ -88,8 +88,9 @@ extract_wt_quality <- function(wt_id) {
     pkgs <- pkgs[!grepl("_draft", pkgs)]
     if (!length(pkgs)) next
     pkg <- if (any(grepl("_PROD", pkgs))) grep("_PROD", pkgs, value = TRUE)[1] else pkgs[1]
+    crole <- if (role == "optimization") "optimizer" else role  # role↔codex 파일명 alias (audit_pipeline #2)
     codex <- list.files(wt_dir,
-      pattern = sprintf("codex_critic_response_%s.*\\.json$", role), full.names = TRUE)
+      pattern = sprintf("codex_critic_response_%s.*\\.json$", crole), full.names = TRUE)
     codex <- if (length(codex)) {
       if (any(grepl("_PROD", codex))) grep("_PROD", codex, value = TRUE)[1] else codex[1]
     } else NA
