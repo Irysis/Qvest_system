@@ -314,11 +314,13 @@ check_schema_active_wt <- function(project_root, no_write = FALSE) {
     wt_dir <- dirname(sf)
     wt_id <- basename(wt_dir)
     if (grepl("^WT-D9999", wt_id)) next  # synthetic skip
-    # L-314 follow-up: ARCHIVED/REJECT lifecycle WT는 schema 검증 무의미 (이미 처분 완료)
+    # L-314 + v8.0: terminal(처분완료) WT는 schema 검증 무의미 — active WT만 검증.
+    # ARCHIVED/REJECT + JUDGE_FAILED/PASSED/COMPLETED/GRADUATION_FAIL/GOVERNOR 종결 포함.
     status_data <- tryCatch(jsonlite::fromJSON(sf, simplifyVector = FALSE),
                             error = function(e) NULL)
     if (!is.null(status_data) && !is.null(status_data$current_phase)) {
-      if (grepl("^ARCHIVED_|^REJECT_|_REJECT_|^REJECTED", status_data$current_phase)) next
+      if (grepl("^ARCHIVED_|^REJECT_|_REJECT_|^REJECTED|JUDGE_FAILED|JUDGE_PASSED|GRADUATION_FAIL|^COMPLETED|GOVERNOR_REJECTED|GOVERNOR_ADMITTED",
+                status_data$current_phase)) next
     }
     # Try alpha_package validation if present
     alpha_pkg_abs <- file.path(wt_dir, "alpha_package.json")
