@@ -621,7 +621,12 @@ build_drawdowns <- function(period_returns_tbl, benchmark_returns_tbl,
 
   if (!is.null(bm_drawdown_xts)) {
     dd_dt[, benchmark_drawdown_depth := sapply(seq_len(.N), function(i) {
-      sub <- bm_drawdown_xts[paste0(peak_date[i], "/", recovery_date[i])]
+      # NA recovery_date = unrecovered (open) drawdown → use series end as range bound
+      # (avoids xts ISO8601 parse failure on "<peak>/NA"; common at backtest series end)
+      end_bound <- if (is.na(recovery_date[i])) as.Date(end(bm_drawdown_xts)) else recovery_date[i]
+      if (is.na(peak_date[i])) return(NA_real_)
+      sub <- tryCatch(bm_drawdown_xts[paste0(peak_date[i], "/", end_bound)],
+                      error = function(e) bm_drawdown_xts[NULL])
       if (length(sub) == 0) return(NA_real_)
       tryCatch(as.numeric(maxDrawdown(sub)), error = function(e) NA_real_)
     })]
