@@ -14,9 +14,10 @@
 
 ## §3 Graduation 게이트 severity (문턱 완화 X, 게이트 선택 수정)
 `constraint_defaults.json::tier_graduation.severity` + `discovery_graduation_gate.sh`:
-- **HARD (block)**: `portfolio_alpha_t_nw` ≥ 2.95 (Harvey-Liu-Zhu) + `deflated_sharpe_ratio` ≥ 0.5. **forge-authoritative 값에만** 적용(alpha proxy로 graduation 선언 금지).
+- **HARD (block)**: `portfolio_alpha_t_nw` ≥ 2.95 (Harvey-Liu-Zhu, 문헌-레벨 다중검정 이미 반영) + **`oos_retention` ≥ 0.7** (활성 Sharpe OOS/IS — 과적합 게이트) + **`calmar` ≥ 0.64** (=16%/25%, CAGR16·MDD25서 도출, 위험조정). **forge-authoritative 값에만** 적용(alpha proxy로 graduation 선언 금지).
+- **DSR 조건부 (2026-05-31 도훈 mandate)**: `deflated_sharpe_ratio` ≥ 0.5는 **다중검정 스타일(n_trials>1: ML 스윕/optimizer 서치/앙상블 스윕)에서만 HARD 게이트.** 1논문/1알파 검증(n_trials≈1)엔 **부적용** — PORT_t 2.95가 이미 문헌 다중검정 보정이라 중복이고, n_trials가 무의미. (구 규칙 "DSR 무조건 HARD" 폐기.) 명시적 스윕에서만 적용. 단일전략 과적합은 DSR 아닌 oos_retention이 담당.
 - **ADVISORY (warn only)**: rank_ic / icir / harvey_t_stat(rank-IC) / subperiod_stability. long-only 실현 alpha와 어긋나 거짓통과·거짓탈락 유발(16후보 calibration 실증: rank_ic≥0.04가 FLOW 거짓탈락 + NN/TECH 거짓통과, PORT_t는 FLOW 1건만 정확 통과).
-- judge Gate C = portfolio-alpha t ≥ 2.95 AND net_IR > 0.2.
+- judge Gate C = portfolio-alpha t ≥ 2.95 AND net_IR > 0.2. **Grade 산정 권위 = `02_Infrastructure/contracts/essence_score.R`** (hurdle_gate 18-component은 proxy 진단용 강등).
 
 ## §4 Admission = book-marginal (standalone 졸업 아님)
 - `portfolio_governor.R::pg1_admission_with_book_context()`: standalone ADMIT 후 **ΔIR = new_book_ir − incumbent_book_ir ≥ 0.05** 충족 시에만 ADMIT(미달 DEFER). `book_optimizer.R` book_information_ratio/book_update 재사용. baseline = `book_state.json::incumbent_book_ir`.
@@ -36,4 +37,5 @@
 - SOT: `02_Infrastructure/docs/qvest_v8_0_upgrade_plan.md`
 
 ## Change log
+- 2026-05-31 (도훈 mandate): §3 게이트 재설계. DSR≥0.5 "무조건 HARD" 폐기 → **다중검정 스타일(n_trials>1)에서만 HARD**(DSR은 multiple-testing 개념, 1논문/1알파엔 부적용·PORT_t 2.95와 중복). 단일전략 과적합 게이트 = **oos_retention≥0.7**(DSR 대체) + 위험조정 게이트 **calmar≥0.64**(=16%/25%). Grade 권위 = `essence_score.R`(hurdle_gate 18-component proxy 강등). Dual-Mode SOT §3.5 정합.
 - 2026-05-29 v8.x: 신규. WS1 real-computation + WS2 graduation severity 재설계 + WS3 book-marginal admission. E2E(FLOW forge 2.35) 입증.

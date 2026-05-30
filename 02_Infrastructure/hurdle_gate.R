@@ -6,6 +6,12 @@
 # Hard FAIL → immediate rejection (Standalone).
 # Soft Score → 0-100 composite quality score.
 # 3-Tier Grade: A (Standalone) / B (Component) / C (Ensemble) / F (Fail)
+#
+# ⚠️ DEMOTED 2026-05-31 (Dual-Mode SOT §3.5, 도훈 mandate): 본 18-component
+#    composite score/grade는 prod(1+r)·수동 Sharpe·full-sample β 기반 = proxy.
+#    **DIAGNOSTIC ONLY — 권위 등급 아님.** 권위 등급 = essence_score()
+#    (02_Infrastructure/contracts/essence_score.R, 계약 bt_result PORT_t/DSR 기반).
+#    반환값에 authoritative=FALSE, grade_basis="proxy_diagnostic_18component" 부착.
 # 5-Axis Profile: Return, Risk, Robustness, Implementability, Diversification
 # Role Label: core / defensive / diversifier
 #
@@ -1715,5 +1721,7 @@ run_hurdle_gate <- function(sim_result,
   }
 
   list(pass = pass, score = total_score, grade = grade, role = role,
-       axes = axes, verdict = verdict, verification = verification)
+       axes = axes, verdict = verdict, verification = verification,
+       # ⚠️ 강등 (Dual-Mode SOT §3.5): 본 grade/score는 proxy 진단용. 권위 등급은 essence_score().
+       authoritative = FALSE, grade_basis = "proxy_diagnostic_18component")
 }

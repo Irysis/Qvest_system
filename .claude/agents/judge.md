@@ -53,6 +53,8 @@ allowed-tools: Bash(Rscript*) Read Grep Glob Write
 - E: Concentration (max_w ≤ 0.20, HHI ≤ 0.15)
 - F: Drift tolerance (oos_is_ratio ≥ 0.7)
 
+**Grade 산정 (권위, v8.x 2026-05-31)**: 최종 A/B/C/F는 `02_Infrastructure/contracts/essence_score.R::essence_score(bt_result, n_trials_cumulative, oos_is_ratio_override)` 결과를 **권위**로 사용. A 기준 = PORT_t(NW lag-3)≥2.95 + **OOS retention≥0.7**(과적합) + Sharpe≥0.8 + CAGR≥16% + **Calmar≥0.64**(위험조정). **DSR≥0.5는 다중검정 스윕(n_trials>1)에서만 추가 게이트** — 1논문/1알파엔 부적용. method_shopping 시 `n_trials_cumulative` 전달, lockbox 실 OOS는 `oos_is_ratio_override` 주입. Gate A(PIT)/E(concentration) FAIL은 `hard_fail=TRUE`. `hurdle_gate.R` 18-component은 **진단 참고만**(`authoritative=FALSE`). PORT_t/net_IR 미산출(계약 미경유) 시 = `uncertain` — 추정 A/B 금지([[feedback-verified-numbers-only]]).
+
 Multi-objective 8지표 + `method_shopping_log` candidates_tried × 0.05 DSR penalty.
 
 ## Legacy STR 모드
