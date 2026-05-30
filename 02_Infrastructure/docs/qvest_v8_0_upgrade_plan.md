@@ -189,3 +189,16 @@
 - [Orchestrate subagents at scale with dynamic workflows](https://code.claude.com/docs/en/workflows)
 - [Create custom subagents](https://code.claude.com/docs/en/sub-agents) · [Model configuration](https://code.claude.com/docs/en/model-config)
 - [anthropics/claude-code (공식 prompt-snippet 플러그인 패턴)](https://github.com/anthropics/claude-code)
+
+---
+
+## v8.x 측정 무결성 + Graduation 재설계 (구현완료 2026-05-29, 도훈 mandate)
+
+**배경**: 16-cycle 리서치(WT-D20260529_001~004)가 "alpha/risk/optimizer가 proxy 손계산 수치로 graduation PASS 선언"하는 구조결함 노출. 도훈: "한 번 재설계하고 가자." SOT rule: `.claude/rules/measurement-graduation.md`.
+
+- **WS1 Real-Computation**: `backtest_result_contract.R::build_benchmark_compare()`에 `Portfolio_Alpha_t_NW_lag3`(+pvalue) row + `.nw_t_mean` 헬퍼(forge-authoritative portfolio-alpha t, 기존 미산출 갭). 신규 `canonical_screen_bt.R`(alpha/risk proxy 손계산 대체, top-N EW long-only contract 경유). `forge_package_schema`(required) + `registry_writer`(컬럼) + `_shared_prefix.md` mandate + `answer_principles_grep` EVIDENCE.
+- **WS2 Graduation severity**: `constraint_defaults.json::tier_graduation.severity` — rank_ic/icir/harvey-rankIC → advisory, DSR + 신규 `min_portfolio_alpha_t_nw`(2.95) → hard. `discovery_graduation_gate.sh` hard만 block + forge-authoritative 참조. `judge.md` Gate C 재정의.
+- **WS3 Book-marginal admission**: `portfolio_governor.R::pg1_admission_with_book_context()` ΔIR≥0.05(book_optimizer 재사용) + `book_state.json` incumbent_book_ir baseline + `governor.md`.
+- **도훈 mandate(병행)**: 회전율 6→11/yr, 종목 20→25, long-only no-short 재확인.
+- **E2E 입증**: FLOW proxy portfolio-α t 3.55 → forge 실측 2.35<2.95 (Cycle 2 D 4.31→2.31 재현) → FLOW 단독 admission 부적격 확정. **proxy 무비판 통과 차단 = WS1+WS2 작동.** 검증 R parse/bash -n/JSON/memory_health HARD 0 PASS. commit `02c8a04`.
+- **후속**: DPL pilot(b, 진행 — `dpl_portfolio.py` + weight_method_registry "DPL", features=실패 standalone 알파) / overlay 고도화(부록 진입점). 확립 진실: KR long-only 수익률직교 구조적 불가(eigenmode), SR 2.5 레버 = overlay+DPL+uncertainty.

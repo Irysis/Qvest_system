@@ -123,6 +123,16 @@ WEIGHT_METHOD_REGISTRY <- list(
     requires = c("method_list"),
     description = "Meta-weight SR 최대화",
     hyperparams = c("method_list", "meta_lambda")
+  ),
+  # v8.x 부록 — Direct Portfolio Learning (You-Zhang 2025). feasibility pilot 단계.
+  # 실제 weight 산출은 Python(02_Infrastructure/ml_pipeline/dpl_portfolio.py) cvxpylayers
+  # differentiable QP layer가 담당 — R fn은 venv subprocess bridge(미구현 시 infeasible 반환).
+  "DPL" = list(
+    fn = "dpl_weights_cvxpylayers",
+    family = "deep_learning",
+    requires = c("alpha", "cov", "returns"),
+    description = "Direct Portfolio Learning — features→μ̂→differentiable convex QP layer→weights, realized net Sharpe end-to-end (cvxpylayers, Python venv qvest_ml). long-only/Σw=1/[0,0.20]/≤25 active.",
+    hyperparams = c("lambda_risk", "gamma_turnover", "lr", "n_epochs", "lookback")
   )
 )
 
