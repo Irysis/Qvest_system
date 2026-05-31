@@ -106,6 +106,8 @@ audit_bt_result <- function(bt_result) {
   # Check 7: point_in_time_checked
   spec <- bt_result$strategy_spec
   lp <- spec$lookahead_prevention
+  # 컬럼 부재(NULL)/length-0 시 length-1 NA로 정규화 (downstream grepl이 logical(0) → if(NA) crash 방지)
+  if (is.null(lp) || length(lp) == 0) lp <- NA_character_ else lp <- lp[1]
   if (is.null(lp) || is.na(lp) || lp == "") {
     add_check("PIT", "point_in_time_checked", "FAIL",
               "strategy_spec$lookahead_prevention 부재 (PIT 검증 방식 명시 필요)",
@@ -118,7 +120,7 @@ audit_bt_result <- function(bt_result) {
   # Check 8: lookahead_bias_checked (PIT C1~C15 명시 또는 기본 통과)
   lp_str <- as.character(lp)
   c_ref_pattern <- grepl("C\\d+", lp_str)
-  if (!is.na(c_ref_pattern) && c_ref_pattern) {
+  if (isTRUE(c_ref_pattern)) {
     add_check("PIT", "lookahead_bias_checked", "PASS",
               "C1-C15 reference 명시", "", "low")
   } else {

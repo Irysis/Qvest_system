@@ -533,6 +533,10 @@ build_benchmark_compare <- function(period_returns_tbl, benchmark_returns_tbl,
   pa_t_v <- .nw_t_mean(cmp$active, lag = 3L)
   pa_p_v <- if (is.na(pa_t_v)) NA_real_ else 2 * (1 - pnorm(abs(pa_t_v)))
 
+  # NOTE(2026-05-31): 진단지표(Beta/Correlation/Hit/Up·Down_Capture)의 *raw 값*은 strategy_value에 있음.
+  #   active_value는 규약상 "strategy_value − benchmark 기준"(beta−1 / cor−1 / hit−0.5 / cap−1)이라
+  #   active_value만 읽으면 음수로 오해됨(예: cor 0.71 → active −0.29). 진단지표는 strategy_value를 읽을 것.
+  #   PORT_t/IR/TE/Alpha는 본질적 active 지표라 active_value가 곧 값(벤치 기준 0). essence_score는 후자만 사용.
   rows <- list(
     list("Excess_Total_Return", cum_s, cum_b, cum_s - cum_b, "ratio"),
     list("Active_Return_Mean", mean(cmp$ret_net), mean(cmp$benchmark_ret), mean(cmp$active), "ratio"),
