@@ -1,11 +1,21 @@
 ---
 name: optimized-backtest
-description: "최적화된 백테스팅 코드 작성 스킬. data.table + arrow + 병렬처리 + 메모리 최적화 적용. Forge 전용."
+description: "최적화 백테스팅 코드 작성 스킬 (v8.x 계약 정합). 성능: Rcpp + data.table + arrow + 병렬/메모리. 측정: build_bt_result() 계약 + essence_score() 등급 의무 (summarise_perf/hurdle_gate은 진단용). Forge / lean-forge 전용."
 ---
 
 ## 최적화 백테스팅 코드 작성 가이드
 
 연구용 백테스트 R 코드 작성 시 반드시 아래 최적화를 적용한다.
+
+### ⭐ 측정 권위 (Level 0 — v8.x 계약, 2026-05-31)
+
+**성능 최적화(아래 원칙 0~6)와 측정 무결성을 분리하라.** 성과·등급 산출은 **반드시 계약 경유**:
+- 성과 = **`02_Infrastructure/contracts/build_bt_result()`** (10-component, NW lag-3 PORT_t, audit). `summarise_perf()` 등 legacy 손계산 = proxy → **권위 아님**.
+- 등급 = **`02_Infrastructure/contracts/essence_score()`** (PORT_t/OOS retention/Sharpe/CAGR/Calmar). `run_hurdle_gate()` 18-component = **진단용(authoritative=FALSE)**, 등급 권위 아님.
+- **포트폴리오 수익률 *구성* = `Return.portfolio()`** (PerformanceAnalytics, 도훈 mandate 2026-05-31 안 A). weight drift·rebalance를 검증함수가 처리. **수동 Σ(wᵢrᵢ)/일별 cumprod 합성 금지 — 언어무관.** Python도 동일: **비중(weights)만 산출 → R 브릿지 → `Return.portfolio`** (Python-native lib 미도입, python-policy §4). lean-forge: (holdings 비중, asset 일별수익) → Return.portfolio → ret_net → build_bt_result.
+- 자체합성 금지(`prod(1+r)`/`cumprod`/수동 Sharpe — answer-principles). 위반 = AX-002 동급.
+- 표준 템플릿(맨 아래)이 정본 흐름. **성능 패턴은 살리되 측정은 계약으로.**
+  - ⚠️ legacy `backtest_harness.R::run_monthly_simulation`은 NAV 수동 구성(→ proxy 원인). lean-forge는 Return.portfolio 경유 의무. 기존 sim 마이그레이션은 별도(178 전략 영향).
 
 ### 원칙 0: Rcpp 필수 (Level 0 — 최상위 규칙)
 
@@ -239,7 +249,7 @@ cat(sprintf("[OPT] FDB_ALL: %.1f MB\n", object.size(FDB_ALL) / 1e6))
 rm(FACTORS_v); gc(verbose = FALSE)
 ```
 
-### 원칙 7: 백테스트 코드 표준 템플릿
+### 표준 템플릿 (정본 흐름 — 성능 최적화 + 계약 측정)
 
 ```r
 cat("=== TEST-KR-XXX: [테스트명] ===\n")
@@ -309,25 +319,47 @@ setorder(FACTORS, Date, -Score)
 RAWDATA[, c("YM", "TV") := NULL]  # cleanup
 gc(verbose = FALSE)
 
-# ── 6. 백테스트 ──────────────────────────────────────────────────
+# ── 6. 백테스트 (max 25 종목 — 도훈 mandate 2026-05-29) ──────────
 sim <- run_monthly_simulation(
   RAWDATA = RAWDATA, BM_DT = BM_DT, FACTORS = FACTORS,
-  n_holdings = 20L, weight_method = "equal",
+  n_holdings = 25L, weight_method = "equal",
   commission = 0.0015,
-  buffer_zone = list(keep_n = 50L, entry_n = 25L)
+  buffer_zone = list(keep_n = 35L, entry_n = 25L)
 )
 
-# ── 7. 성과 + 허들 ──────────────────────────────────────────────
+# ── 7. PIT 검증 #1 (결과 수용 전 의무 — 언어무관) ────────────────
+source("02_Infrastructure/validation/pit_enforcement.R")
+source("02_Infrastructure/sanity_checks/bear_date_audit.R")
+# forward label 생성 시: validate_label_direction() + audit_bear_dates(target, bm) PASS 후 진행.
+# (Cycle 50 shift-convention lookahead 재발 방지 — .claude/rules/data_table_shift_convention.md)
+
+# ── 8. 계약 빌드 = 권위 측정 (summarise_perf 아님) ───────────────
+source("02_Infrastructure/contracts/backtest_result_contract.R")
+source("02_Infrastructure/contracts/audit_bt_result.R")
+strategy_spec <- list(strategy_id = "TEST_NAME", universe = "KOSPI200_KOSDAQ150",
+                      n_holdings = 25L, weight_method = "equal",
+                      cost_model_version = "v2.3_kr_retail_15bps")
+bt <- build_bt_result(sim, strategy_spec,
+                      run_id = "TEST_NAME_001", strategy_id = "TEST_NAME",
+                      frequency = "monthly", annualization_factor = 12,
+                      transaction_cost_bps = 15)
+bt <- audit_bt_result(bt)   # Component 11 audit 채움 (Critical FAIL → metric_type=unavailable)
+
+# ── 9. 등급 = essence_score (권위; hurdle_gate은 진단용) ──────────
+source("02_Infrastructure/contracts/essence_score.R")
+# 1논문/1알파 → n_trials_cumulative=NULL (DSR 부적용). 명시적 스윕이면 시행수 전달.
+g <- essence_score(bt, n_trials_cumulative = NULL)
 out_dir <- "04_Research/korea_research/XXX_output"
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
-perf <- summarise_perf(sim$strategy_xts, "TEST_NAME")
-generate_charts(sim, output_dir = out_dir, strategy_name = "TEST_NAME")
-source("02_Infrastructure/hurdle_gate.R")
-hurdle <- run_hurdle_gate(sim_result = sim, FACTORS = FACTORS,
-                          strategy_name = "TEST_NAME", output_dir = out_dir)
-jsonlite::write_json(hurdle, file.path(out_dir, "hurdle_result.json"),
-                     auto_unbox = TRUE, pretty = TRUE)
-cat(sprintf("Grade: %s | Score: %.1f\n", hurdle$grade, hurdle$score))
+saveRDS(bt, file.path(out_dir, "bt_result.rds"))
+jsonlite::write_json(g, file.path(out_dir, "essence_grade.json"), auto_unbox = TRUE, pretty = TRUE)
+cat(sprintf("GRADE=%s | PORT_t=%s OOS_ret=%s Sharpe=%s CAGR=%s Calmar=%s | %s\n",
+            g$grade, g$essence$portfolio_alpha_t_nw_lag3, g$essence$oos_retention,
+            g$essence$net_sharpe, g$essence$cagr, g$essence$calmar, g$reasons[1]))
+
+# (선택) 진단용 — 등급 권위 아님:
+# generate_charts(sim, output_dir = out_dir, strategy_name = "TEST_NAME")
+# hd <- run_hurdle_gate(sim, FACTORS, "TEST_NAME", out_dir)  # authoritative=FALSE (18-component proxy)
 ```
 
 ### 원칙 8: Shared-Factor 백테스트 러너 (비중 비교 시 필수)

@@ -29,6 +29,7 @@
 - Python backtest도 **검증된 표준함수만**. R의 PerformanceAnalytics 동등:
   - 금지: `np.prod(1+r)-1` / `(1+r).cumprod()` / `0.8*r1+0.2*r2` 등 자체 합성 (answer-principles 정합).
   - 허용: 10-component `bt_result`는 **R `02_Infrastructure/contracts/build_bt_result()` bridge 경유** 생성 (Python은 sim_result/returns만 산출 → R이 계약 빌드·audit·registry append). 독립 Python 계약 구현은 단기 미도입.
+- **포트폴리오 수익률 *구성* 도 R 경유 (도훈 mandate 2026-05-31, 안 A)**: 포트 수익률은 R `Return.portfolio()`(PerformanceAnalytics, weight drift·rebalance 정확)로 구성. **Python은 비중(weights) + asset 수익까지만 산출해 R 브릿지로 넘기고, 사전 구성된 포트 수익률 시계열을 손계산(`(w*r).sum()` 등)으로 만들지 말 것.** Python-native portfolio lib(vectorbt/bt 등) 미도입 — R 브릿지 단일 경로 유지(도입 시 R Return.portfolio와 known-case parity 검증 의무).
 - `bt_result` audit (`audit_bt_result`) + registry (`register_bt_result`)는 R 경유 단일 경로 유지 → metric_type 라벨·audit_status 일관성 보장.
 
 ## 5. Hook 강제 (Phase 3에서 .py 확장 예정)
