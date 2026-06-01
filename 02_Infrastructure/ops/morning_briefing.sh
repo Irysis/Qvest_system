@@ -198,6 +198,9 @@ Rscript --no-save -e '
   source("02_Infrastructure/config.R")
   suppressPackageStartupMessages({library(data.table); library(arrow); library(jsonlite)})
   today <- Sys.Date()
+  # as_of = 직전 거래일 (benchmark KOSPI200 max). calendar today 대신 이걸 기준으로 lag 계산 → 월요일/연휴 오탐 제거 (도훈 2026-06-01 ①)
+  as_of <- tryCatch(max(as.Date(as.data.table(read_parquet(".cache/benchmark.parquet"))$Date), na.rm = TRUE), error = function(e) today)
+  if (length(as_of) != 1 || is.na(as_of) || as_of > today) as_of <- today
   # 평일 거래일 lag tolerance (KR market):
   #   MSM/KTRI v3/Regime signal daily: <=1 trading day
   #   FRED: <=2 trading day
@@ -212,7 +215,7 @@ Rscript --no-save -e '
     }
     if (is.null(dt) || !col %in% names(dt)) return(list(name=name, status="PARSE_FAIL", path=path))
     last_d <- max(as.Date(dt[[col]]), na.rm = TRUE)
-    lag_d <- as.integer(today - last_d)
+    lag_d <- as.integer(as_of - last_d)
     status <- if (lag_d <= max_lag_days) "FRESH" else "STALE"
     list(name=name, status=status, last_date=as.character(last_d), lag_days=lag_d, max_lag=max_lag_days)
   }
@@ -223,6 +226,7 @@ Rscript --no-save -e '
   audits$ktri_v3_signals <- check_freshness("ktri_v3_signals", "04_Research/regime_comparison/output/ktri_v3_signals.csv", "DATE", 3)
   audits$regime_daily    <- check_freshness("regime_daily",    ".cache/unified_regime_signal_daily.parquet", "Date", 3)
   audits$benchmark       <- check_freshness("benchmark",       ".cache/benchmark.parquet",               "Date", 2)  # KOSPI200 종가 (도훈 mandate 2026-05-28)
+  audits$p3_forecast     <- check_freshness("p3_forecast",     "04_Research/decision_framework/bearish_forecast_v3/03_models/daily_predictions/P3_daily.parquet", "Date", 3)  # P3 forecast (도훈 mandate 2026-06-01, 601 stale 감지)
   cat("=== Freshness Audit ===\n")
   stale_items <- c()
   for (a in audits) {
@@ -235,6 +239,7 @@ Rscript --no-save -e '
   audit_path <- "qepm/observability/morning_freshness_latest.json"
   dir.create(dirname(audit_path), recursive = TRUE, showWarnings = FALSE)
   write_json(list(ran_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
+                   as_of = as.character(as_of),
                    audits = audits,
                    stale_count = length(stale_items),
                    stale_items = if (length(stale_items) > 0) I(as.character(stale_items)) else list()),
@@ -275,8 +280,17 @@ if [[ -x "$P2_PY" && -d "$P2_BF_DIR" ]]; then
   cd "$BASE"
   "$P2_PY" 02_Infrastructure/data/naver_benchmark_update.py --start_date $(date -d "7 days ago" +%Y-%m-%d) 2>&1 | tail -5 || true
   cd "$P2_BF_DIR"
-  # 6a. daily inference (오늘 forecast 추가) — default P3
-  "$P2_PY" scripts/601_daily_inference.py --model P3 2>&1 | tail -5
+  # 6a. daily inference (오늘 forecast 추가) — P3.
+  # [2026-06-01 fix] 601 default(no --asof)는 ret_fwd-dropna로 마지막 행이 잘려 benchmark_max-1(1일 stale)을
+  #   forecast → brief가 매일 1일 정체. benchmark 최신 종가일을 --asof로 명시(검증된 forecast-only 경로)해 재발 방지.
+  ASOF_BM=$("$P2_PY" -c "import pandas as pd; print(pd.to_datetime(pd.read_parquet('$BASE/.cache/benchmark.parquet', columns=['Date'])['Date']).max().date())" 2>/dev/null)
+  if [[ -n "$ASOF_BM" ]]; then
+    echo "[6a] 601 inference --asof $ASOF_BM (benchmark 최신 종가일)"
+    "$P2_PY" scripts/601_daily_inference.py --model P3 --asof "$ASOF_BM" 2>&1 | tail -5
+  else
+    echo "[6a] ASOF_BM 추출 실패 — default 경로 fallback"
+    "$P2_PY" scripts/601_daily_inference.py --model P3 2>&1 | tail -5
+  fi
   # 6a'. y_actual backfill (이전 forecast row의 realized 1d return 채움, 도훈 mandate 2026-05-28)
   "$P2_PY" -c "
 import pandas as pd, numpy as np, sys, os
@@ -317,7 +331,20 @@ print(f'[y_actual backfill] {n_filled} rows filled')
       cat("[P2 brief] no brief dir found\n")
     } else {
       latest <- sort(sub_dirs, decreasing = TRUE)[1]
-      cat(sprintf("[P2 brief] sending from %s\n", latest))
+      # [B-gate 2026-06-01 도훈 mandate] freshness: 최신 brief dir 날짜가 직전 거래일(benchmark max Date)보다
+      #   과거면 stale → stale brief 송출 보류 + 알림으로 대체 (조용한 stale 송출 차단).
+      brief_date <- suppressWarnings(as.Date(basename(latest)))
+      bm_max <- tryCatch(as.Date(max(as.data.frame(arrow::read_parquet(".cache/benchmark.parquet", col_select = "Date"))$Date, na.rm = TRUE)),
+                         error = function(e) as.Date(NA))
+      is_stale <- is.na(brief_date) || (!is.na(bm_max) && brief_date < bm_max)
+    }
+    if (length(sub_dirs) > 0 && is_stale) {
+      msg <- sprintf("⚠️ 모닝브리핑 정체 — 최신 brief %s 가 직전 거래일 %s 보다 과거. P3 inference/brief 생성 정체 의심. stale brief 송출 보류 (601_daily_inference 점검 요).",
+                     as.character(brief_date), as.character(bm_max))
+      cat(sprintf("[P2 brief] STALE-GATE BLOCK: %s\n", msg))
+      tryCatch(tg_send(msg), error = function(e) cat(sprintf("[P2 brief] stale alert fail: %s\n", e$message)))
+    } else if (length(sub_dirs) > 0) {
+      cat(sprintf("[P2 brief] sending from %s (fresh: brief %s >= bm %s)\n", latest, as.character(brief_date), as.character(bm_max)))
       brief_md <- file.path(latest, "brief.md")
       dist_png <- file.path(latest, "dist.png")
       trend_png <- file.path(latest, "trend.png")

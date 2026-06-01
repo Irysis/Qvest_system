@@ -41,7 +41,30 @@ Rscript -e '
   setwd(PROJECT_ROOT)
   source("02_Infrastructure/config.R")
   source("02_Infrastructure/telegram/telegram_notify.R")
-  tryCatch({
+  # [④ freshness 게이트 2026-06-01 도훈] morning_briefing이 쓴 manifest 기준 — 레짐 컴포넌트 stale이면
+  #   발송 보류 + 알림 (P3와 동일 원칙: partial-stale 송출 차단).
+  .gate_ok <- TRUE; .stale <- character(0); .asof <- "?"
+  .mpath <- "qepm/observability/morning_freshness_latest.json"
+  if (file.exists(.mpath)) {
+    .m <- tryCatch(jsonlite::fromJSON(.mpath, simplifyVector = FALSE), error = function(e) NULL)
+    if (!is.null(.m)) {
+      if (!is.null(.m$as_of)) .asof <- as.character(.m$as_of)
+      if (!is.null(.m$audits)) {
+        .rc <- c("regime_daily", "msm_daily", "ktri_v3_signals")
+        for (.a in .m$audits) {
+          if (!is.null(.a$name) && .a$name %in% .rc && isTRUE(.a$status %in% c("STALE", "MISSING"))) {
+            .gate_ok <- FALSE; .stale <- c(.stale, sprintf("%s(%s)", .a$name, .a$status))
+          }
+        }
+      }
+    }
+  }
+  if (!.gate_ok) {
+    .msg <- sprintf("⚠️ 레짐 브리핑 보류 — 컴포넌트 stale: %s (as_of=%s). regime 데이터 점검 요.",
+                    paste(.stale, collapse = ", "), .asof)
+    cat(sprintf("[mrs_daily] STALE-GATE BLOCK: %s\n", .msg))
+    tryCatch(tg_send(.msg), error = function(e) cat("[mrs_daily] stale alert fail\n"))
+  } else tryCatch({
     tg_regime_briefing()
     cat("[mrs_daily] briefing sent OK\n")
   }, error = function(e) {
