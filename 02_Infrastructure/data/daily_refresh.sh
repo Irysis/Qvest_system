@@ -40,9 +40,12 @@ Rscript --no-save -e '
 #   benchmark.parquet은 여기서만 갱신 → 아래 [1] naver merge가 실제 종가로 BM_Ret lookup.
 # ──────────────────────────────────────────────────────────────────────────────
 echo "[1pre/7] Benchmark (KOSPI200 chart-API)..."
-if [ -d /home/quant/.venvs/qvest_ml ]; then
-  ( source /home/quant/.venvs/qvest_ml/bin/activate 2>/dev/null
-    cd "$INFRA" && python3 data/naver_benchmark_update.py --start_date "$(date -d '10 days ago' +%Y-%m-%d)" ) \
+QVENV_PY=""
+for _c in "$BASE/.venv_qvest_ml/Scripts/python.exe" "$BASE/.venv_qvest_ml/bin/python" "/home/quant/.venvs/qvest_ml/bin/python"; do
+  [ -x "$_c" ] && QVENV_PY="$_c" && break
+done
+if [ -n "$QVENV_PY" ]; then
+  ( cd "$INFRA" && "$QVENV_PY" data/naver_benchmark_update.py --start_date "$(date -d '10 days ago' +%Y-%m-%d)" ) \
     || echo "  benchmark chart-API update skipped (기존 cache 유지)"
 fi
 

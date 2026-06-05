@@ -1,0 +1,162 @@
+{
+  "device": "cuda",
+  "lockbox": "2023-12-22",
+  "scope": "findings-only — admission/book_state 변경 없음. canonical alpha_package handoff 없음. weight-space ENS run과 동일 posture. DPL 한계/된다 verdict 없음.",
+  "hypothesis": "pre-projection score(μ̂) seed간 평균 + single projection → weight-space 평균이 파괴한 conviction 보존. EPI_DW: μ̃=mean−k·SE(μ̂)로 seed 불일치 종목만 down-weight.",
+  "dpl_c_cfg": {
+    "lam": 0.0,
+    "gamma": 1.5,
+    "lookback": 72,
+    "depth": 3,
+    "width": 32,
+    "l2": 0.001,
+    "dropout": 0.1,
+    "temp": 1.0,
+    "lr": 0.005,
+    "epochs": 40,
+    "min_train": 60,
+    "buffer": true
+  },
+  "keep_n": 32,
+  "entry_n": 25,
+  "seeds_K16": [
+    7,
+    17,
+    23,
+    42,
+    101,
+    202,
+    303,
+    404,
+    505,
+    606,
+    707,
+    808,
+    909,
+    111,
+    222,
+    333
+  ],
+  "k_values": [
+    0.5,
+    1.0,
+    1.5
+  ],
+  "score_space_note": "직전 ENS run은 per-seed projected WEIGHT 평균. 본 run은 projection 이전 per-name μ̂(network output, full month universe, row-aligned c['tk']) 를 seed간 결합 후 단일 hysteresis_select+weights_from_scores projection.",
+  "baseline_dpl_c_contract": {
+    "portfolio_alpha_t_nw_lag3": 2.906,
+    "p": 0.0037,
+    "IR": 0.703,
+    "net_active_SR": 0.703,
+    "TE": 0.355,
+    "TO_yr": 14.35,
+    "DSR_corrected": 0.508,
+    "subperiod_active_SR": [
+      1.482,
+      -0.346,
+      0.763
+    ],
+    "subperiod_min": -0.346,
+    "n_trials_cumulative": 123,
+    "metric_type": "backtested (cbe_eval_contract.json)"
+  },
+  "prior_weightspace_ens_K16": {
+    "portfolio_alpha_t_nw_lag3": 2.387,
+    "IR": 0.521,
+    "TE": 0.304,
+    "TO_yr": 11.96,
+    "DSR_corrected": 0.242,
+    "subperiod_min": -0.122,
+    "note": "weight-space K16 — conviction 희석으로 α-t 하락."
+  },
+  "variants": {
+    "SCORE_AVG": {
+      "tag": "SCORE_AVG",
+      "mode": "score_avg",
+      "k": 0.0,
+      "K": 2,
+      "seeds": [
+        7,
+        17
+      ],
+      "config": "DPL_C_fixed_scorespace",
+      "net_active_sr_python": 0.006275184606947271,
+      "turnover_ann": 14.949062292944783,
+      "n_oos_months": 168,
+      "sub_period_srs_python": [
+        0.857,
+        -0.587,
+        -0.185
+      ],
+      "sr_min_subperiod_python": -0.5873540852658129,
+      "n_names_mean": 25.0,
+      "n_names_max": 25,
+      "insample_active_sr_python": 0.36950856944256644,
+      "insample_turnover_ann": 11.243588954765558,
+      "active_skew": 0.4565074103214318,
+      "active_kurt": 3.474832828976002,
+      "metric_type": "python_screen_preview",
+      "n_trials_cumulative": 126,
+      "DSR_cumulative_python": 0.004819312511958001
+    },
+    "EPI_DW_k05": {
+      "tag": "EPI_DW_k05",
+      "mode": "epi_dw",
+      "k": 0.5,
+      "K": 2,
+      "seeds": [
+        7,
+        17
+      ],
+      "config": "DPL_C_fixed_scorespace",
+      "net_active_sr_python": 0.09060831999531328,
+      "turnover_ann": 15.408091680459494,
+      "n_oos_months": 168,
+      "sub_period_srs_python": [
+        0.882,
+        -0.428,
+        -0.097
+      ],
+      "sr_min_subperiod_python": -0.42845084937516537,
+      "n_names_mean": 25.0,
+      "n_names_max": 25,
+      "insample_active_sr_python": 0.247382661624007,
+      "insample_turnover_ann": 12.15807242530682,
+      "active_skew": 0.372963594236134,
+      "active_kurt": 3.6527652311030896,
+      "metric_type": "python_screen_preview",
+      "n_trials_cumulative": 127,
+      "DSR_cumulative_python": 0.011120539709444715
+    },
+    "CONSENSUS": {
+      "tag": "CONSENSUS",
+      "mode": "consensus",
+      "k": 0.0,
+      "K": 2,
+      "seeds": [
+        7,
+        17
+      ],
+      "config": "DPL_C_fixed_scorespace",
+      "net_active_sr_python": 0.025741107535255176,
+      "turnover_ann": 15.097807010350802,
+      "n_oos_months": 168,
+      "sub_period_srs_python": [
+        0.879,
+        -0.502,
+        -0.209
+      ],
+      "sr_min_subperiod_python": -0.5023327898917354,
+      "n_names_mean": 25.0,
+      "n_names_max": 25,
+      "insample_active_sr_python": 0.37642162017327074,
+      "insample_turnover_ann": 11.449772100382894,
+      "active_skew": 0.4500168538405891,
+      "active_kurt": 3.4919963678632344,
+      "metric_type": "python_screen_preview",
+      "n_trials_cumulative": 128,
+      "DSR_cumulative_python": 0.005794434401421071
+    }
+  },
+  "n_trials_cumulative_final": 128
+}

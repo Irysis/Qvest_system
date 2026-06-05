@@ -16,7 +16,7 @@ suppressPackageStartupMessages({
 })
 
 # ── 1. 경로 ──────────────────────────────────────────────────────────────────
-PROJECT_ROOT  <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+PROJECT_ROOT  <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 CACHE_DIR     <- file.path(PROJECT_ROOT, ".cache")
 DAILY_FDB_DIR <- file.path(CACHE_DIR, "factor_db_daily")   # OPT-7/MC-P2
 FDB_DIR       <- file.path(CACHE_DIR, "factor_db")          # 월간 (C19)

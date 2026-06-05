@@ -1,0 +1,25 @@
+# v3 macro features ablation
+
+training:
+  sequence_length: 3
+  batch_size: 64
+  optimizer: adam
+  learning_rate: 0.003
+  clipnorm: 1.0
+  epochs: 300
+  early_stopping_patience: 5
+
+walk_forward:
+  train_min: 2008
+  test_window: 504
+
+data:
+  benchmark: kospi
+  bm_path: ".cache/benchmark.parquet"
+  alt_features_path: "04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/01_data/feature_panel_v1_alt.parquet"
+  fred_path: ".cache/fred_macro_wide.parquet"
+  krw_usd_path: ".cache/ecos_krw_usd.parquet"
+  date_start: "2001-04-06"
+  date_end: "2020-11-30"
+  horizons: [1, 21]
+  percent_scale: true

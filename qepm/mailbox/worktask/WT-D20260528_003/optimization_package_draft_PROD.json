@@ -1,0 +1,274 @@
+{
+  "task_id": "WT-D20260528_003",
+  "as_of_date": "2023-11-30",
+  "signal_cutoff": "2023-12-22",
+  "schema_version": "optimization_package_v1",
+  "alpha_handle": "D_PROD",
+  "wt_type": "discovery",
+  "alpha_package_ref": "qepm/mailbox/worktask/WT-D20260528_003/alpha_package_PROD.json",
+  "risk_package_ref": "qepm/mailbox/worktask/WT-D20260528_003/risk_package_PROD.json",
+  "benchmark": "KOSPI200_total_return",
+  "selection_objective": "net_ir",
+  "method_selected": "Schedule_EWbase",
+  "method_selected_desc": "Alpha-agent bandbuffer (keep50/entry20/cooldown3m) softmax-cap[0,0.20] weights, verbatim. Optimizer re-sized via 8-method walk-forward comparison; EW-family (Schedule/EW) maximize net_ir under turnover<=6.0. MVO/HRP/ERC/CVaR concentration HURTS net_ir for this 20-name broad microstructure alpha (DeMiguel-Garlappi-Uppal 2009 1/N dominance under estimation error + Grinold breadth).",
+  "target_weights": {
+    "A033290": 0.05565696,
+    "A278280": 0.05535894,
+    "A006400": 0.05305395,
+    "A336260": 0.05197195,
+    "A192820": 0.05081295,
+    "A131290": 0.05008195,
+    "A183300": 0.04994395,
+    "A137400": 0.04976395,
+    "A035760": 0.04973695,
+    "A073240": 0.04973395,
+    "A003230": 0.04943495,
+    "A365340": 0.04920395,
+    "A185750": 0.04897095,
+    "A003100": 0.04874695,
+    "A241560": 0.04859295,
+    "A112610": 0.04832695,
+    "A137310": 0.04813195,
+    "A393890": 0.04797195,
+    "A032500": 0.04730695,
+    "A101490": 0.04719695
+  },
+  "n_names": 20,
+  "max_weight": 0.05565696,
+  "min_weight": 0.04719695,
+  "sum_weights": 1.0,
+  "effective_n": 19.96,
+  "hhi": 0.050106,
+  "long_only": true,
+  "expected_active_return": 0.17708,
+  "expected_tracking_error": 0.18075,
+  "expected_information_ratio": 0.9797,
+  "net_sharpe_annual": 0.7414,
+  "net_sharpe_ew_baseline": 0.7368,
+  "net_ir_ew_baseline": 0.9704,
+  "sizing_vs_ew_dSR": 0.0046,
+  "sizing_vs_ew_dIR": 0.0093,
+  "turnover_yr": 5.282,
+  "turnover_pass_6": true,
+  "turnover_convention": "annual round-trip = mean_monthly_oneway * 2 (round-trip) * 12 (months). NO x12-only inflation.",
+  "estimated_cost_annual": 0.00792,
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "walk_forward": {
+    "n_rebalances": 115,
+    "unique_as_of_dates": 116,
+    "alpha_sig_dates": 116,
+    "schedule_density_ratio": 1,
+    "density_mandate_pass": true,
+    "method": "walk_forward_simulation_115periods_plus_asof_target",
+    "cov_basis": "risk_snapshot at as_of; rolling Ledoit-Wolf 252d (PIT Date<d0) other dates"
+  },
+  "rf_r1_mkt_exposure": {
+    "flagged_by": "risk_package RF-R1 (HIGH): MKT 64.8% > 40%, beta 1.09 at as_of",
+    "asof_beta_before": 1.0916,
+    "asof_beta_after_cap1.00": 1,
+    "asof_betacap_incr_oneway_turnover": 0.0745,
+    "walk_forward_mean_beta_uncapped": 0.934,
+    "walk_forward_mean_beta_cap1.00": 0.895,
+    "walk_forward_netIR_uncapped": 0.9797,
+    "walk_forward_netIR_cap1.00": 0.9496,
+    "walk_forward_netSR_uncapped": 0.7414,
+    "walk_forward_netSR_cap1.00": 0.7223,
+    "exposures_before": {
+      "MKT": 1.0916,
+      "SMB": 0.1925,
+      "DEF": -0.3126,
+      "WML": -0.0971,
+      "STR": -0.1015
+    },
+    "exposures_after_cap1.00": {
+      "MKT": 1,
+      "SMB": 0.137,
+      "DEF": -0.3573,
+      "WML": -0.1408,
+      "STR": -0.0648
+    },
+    "decision": "NOT_APPLIED — explicit tradeoff (no silent override). WF mean beta already 0.934<1.0; the 1.09/64.8% is an as_of single-cross-section artifact. Hard beta-cap1.00 cuts netIR 0.980->0.950 and netSR 0.741->0.722 for marginal MDD gain (0.342->0.335). Long-only 20-name fully-invested = structural beta floor ~1.0 (cannot reduce MKT without short/cash, both prohibited). Mitigation available + quantified; Forge/Judge may elect cap variant.",
+    "structural_note": "AX-007 multi-sleeve exemption not invoked; single-sleeve top20. MKT exposure floor is inherent to long-only fully-invested mandate, not an optimizer defect."
+  },
+  "binding_constraints": [
+    "MKT_beta_structural_floor_long_only"
+  ],
+  "infeasibility_report": null,
+  "method_comparison": {
+    "Schedule_EWbase": {
+      "net_ir": 0.9797,
+      "net_sr": 0.7414,
+      "te": 0.1807,
+      "mdd": 0.3421,
+      "turnover_yr": 5.282,
+      "turnover_pass_6": true
+    },
+    "EW": {
+      "net_ir": 0.9704,
+      "net_sr": 0.7368,
+      "te": 0.1811,
+      "mdd": 0.342,
+      "turnover_yr": 4.979,
+      "turnover_pass_6": true
+    },
+    "AlphaSoftmax": {
+      "net_ir": 1.0171,
+      "net_sr": 0.7777,
+      "te": 0.2135,
+      "mdd": 0.4319,
+      "turnover_yr": 12.533,
+      "turnover_pass_6": false
+    },
+    "MVO_conf": {
+      "net_ir": 0.54,
+      "net_sr": 0.3929,
+      "te": 0.2094,
+      "mdd": 0.4166,
+      "turnover_yr": 12.997,
+      "turnover_pass_6": false
+    },
+    "ERC": {
+      "net_ir": 0.8568,
+      "net_sr": 0.6339,
+      "te": 0.17,
+      "mdd": 0.3426,
+      "turnover_yr": 5.575,
+      "turnover_pass_6": true
+    },
+    "HRP": {
+      "net_ir": 0.7888,
+      "net_sr": 0.5787,
+      "te": 0.1667,
+      "mdd": 0.3365,
+      "turnover_yr": 6.852,
+      "turnover_pass_6": false
+    },
+    "CVaR_LP": {
+      "net_ir": 0.8568,
+      "net_sr": 0.6339,
+      "te": 0.17,
+      "mdd": 0.3426,
+      "turnover_yr": 5.575,
+      "turnover_pass_6": true
+    },
+    "MVO_betaneutral": {
+      "net_ir": 0.5546,
+      "net_sr": 0.4045,
+      "te": 0.2003,
+      "mdd": 0.4962,
+      "turnover_yr": 12.809,
+      "turnover_pass_6": false
+    }
+  },
+  "method_shopping_log": {
+    "candidates_tried": 8,
+    "parallel_exec": false,
+    "selection_rule": "max net_ir s.t. turnover_yr<=6.0 (HARD). AlphaSoftmax netIR 1.017 DISQUALIFIED (TO 12.5>6.0). HRP/MVO* also TO-infeasible or netIR<EW.",
+    "method_log": [
+      {
+        "name": "Schedule_EWbase",
+        "net_ir": 0.9797,
+        "net_sr": 0.7414,
+        "turnover_yr": 5.282,
+        "turnover_feasible": true,
+        "selected": true
+      },
+      {
+        "name": "EW",
+        "net_ir": 0.9704,
+        "net_sr": 0.7368,
+        "turnover_yr": 4.979,
+        "turnover_feasible": true,
+        "selected": false
+      },
+      {
+        "name": "AlphaSoftmax",
+        "net_ir": 1.0171,
+        "net_sr": 0.7777,
+        "turnover_yr": 12.533,
+        "turnover_feasible": false,
+        "selected": false
+      },
+      {
+        "name": "MVO_conf",
+        "net_ir": 0.54,
+        "net_sr": 0.3929,
+        "turnover_yr": 12.997,
+        "turnover_feasible": false,
+        "selected": false
+      },
+      {
+        "name": "ERC",
+        "net_ir": 0.8568,
+        "net_sr": 0.6339,
+        "turnover_yr": 5.575,
+        "turnover_feasible": true,
+        "selected": false
+      },
+      {
+        "name": "HRP",
+        "net_ir": 0.7888,
+        "net_sr": 0.5787,
+        "turnover_yr": 6.852,
+        "turnover_feasible": false,
+        "selected": false
+      },
+      {
+        "name": "CVaR_LP",
+        "net_ir": 0.8568,
+        "net_sr": 0.6339,
+        "turnover_yr": 5.575,
+        "turnover_feasible": true,
+        "selected": false
+      },
+      {
+        "name": "MVO_betaneutral",
+        "net_ir": 0.5546,
+        "net_sr": 0.4045,
+        "turnover_yr": 12.809,
+        "turnover_feasible": false,
+        "selected": false
+      }
+    ]
+  },
+  "explanation": {
+    "top_overweights": [
+      "A033290",
+      "A278280",
+      "A006400"
+    ],
+    "main_tradeoffs": [
+      "Sizing (MVO/HRP/ERC/CVaR) does NOT beat EW net_ir for 20-name microstructure alpha — concentration adds turnover+estimation error, kills breadth.",
+      "AlphaSoftmax higher netIR (1.017) but turnover 12.5/yr violates 6.0 hard cap — disqualified.",
+      "RF-R1 MKT beta cap reduces exposure but cuts netIR — not applied (explicit tradeoff)."
+    ]
+  },
+  "dsr_inheritance": {
+    "inherited_from": "alpha_package_PROD",
+    "graduated": false,
+    "dsr_proper": 3.05e-15,
+    "dsr_z": -7.8,
+    "dsr_pass_05": false,
+    "note": "Alpha DSR binding gate FAIL inherited. Sizing cannot fix DSR (it is an alpha-signal multi-testing property, not a weighting artifact). Net SR 0.741 (optimized) > alpha-reported 0.306 because alpha SR was on full 349-universe IC-translated proxy; this is the 20-name executable-book walk-forward net SR. Forge/Judge inherit DSR FAIL."
+  },
+  "deploy_cutoff": "frozen_at_train_cutoff_2023-11-30 (discovery WT; not deployment). Forge measures OOS post-2023-11-30 if extended.",
+  "pit_assertions": {
+    "lockbox": "weights derived from alpha sig_dates <= 2023-12-22 lockbox; rolling cov Date < sig_date (C9 t-1).",
+    "no_alpha_mod": "alpha_vector/pred read-only; optimizer re-sized only.",
+    "no_risk_mod": "Sigma/B_loadings read-only; rolling LW cov is optimizer-internal for non-asof dates (risk snapshot only valid at as_of)."
+  },
+  "hard_constraints_check": {
+    "max_names_le_20": true,
+    "long_only": true,
+    "weight_bounds_0_0.20": true,
+    "sum_weights_eq_1": true,
+    "turnover_le_6": true
+  },
+  "build_meta": {
+    "agent": "optimizer-research",
+    "Rscript_path": "qepm/mailbox/worktask/WT-D20260528_003/scripts/optimizer_PROD_pipeline.R",
+    "finalize_path": "qepm/mailbox/worktask/WT-D20260528_003/scripts/optimizer_PROD_finalize.R",
+    "built_at": "2026-05-29T08:55:02"
+  },
+  "weights_csv_ref": "stage_artifacts/WT_D20260528_003/weights.csv"
+}

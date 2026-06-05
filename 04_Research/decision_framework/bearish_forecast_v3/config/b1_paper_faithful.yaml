@@ -1,0 +1,33 @@
+# B1 Paper-Faithful Reproduce — Michańków 2025 GitHub notebook exact spec
+training:
+  sequence_length: 3
+  batch_size: 64
+  optimizer: adam
+  learning_rate: 0.003
+  clipnorm: 1.0
+  epochs: 300
+  early_stopping_patience: 5
+  early_stopping_monitor: val_loss
+  val_split: 0.3333
+
+walk_forward:
+  train_min: 2008
+  test_window: 504
+
+data:
+  benchmark: kospi
+  use_paper_data: true
+  bm_path: ".cache/benchmark.parquet"
+  date_start: "2000-01-03"
+  date_end: "2020-11-30"
+  percent_scale: true
+
+reproduce_pass_criteria:
+  paper_kospi_cnn_sstd_crps: 0.5302
+  paper_kospi_lstm_sstd_crps: 0.5165
+  loose_tolerance: 0.05
+  ordering_check: true
+
+output:
+  models_dir: "03_models/b1_paper_faithful"
+  metrics_path: "04_evaluation/b1_paper_faithful_metrics.json"

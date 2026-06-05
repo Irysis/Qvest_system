@@ -14,7 +14,7 @@ suppressPackageStartupMessages({
 })
 
 # ─── Paths ───────────────────────────────────────────────────────────────────
-PROJECT_ROOT <- "/mnt/c/Users/User/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot"
+PROJECT_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 CACHE_DIR    <- file.path(PROJECT_ROOT, ".cache")
 STAGE_ART    <- file.path(PROJECT_ROOT, "stage_artifacts")
 

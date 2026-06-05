@@ -9,7 +9,7 @@ suppressPackageStartupMessages({
 })
 
 # ── 0. 경로 설정 ────────────────────────────────────────────────────────────
-ROOT_DIR <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+ROOT_DIR <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 CONFIG_R  <- file.path(ROOT_DIR, "02_Infrastructure/config.R")
 source(CONFIG_R)  # FACTOR_DB_DIR, CACHE_DIR, INFRA_DIR, DATA_DIR 등 설정
 

@@ -1,0 +1,89 @@
+
+========== Step 4: 5-way merge (XGB+Cat+RF + LSTM_upgraded + TFT_upgraded) ==========
+
+----- 5-way merge: y_tail_q15 -----
+[merge] OOS N=2531 / events=530 (20.94%)
+[v3c upgraded individual OOS PR-AUC] XGB=0.5503 / CAT=0.5636 / RF=0.5272 / LSTM=0.3957 / TFT=0.3772
+[v3c upgraded individual OOS IC   ] XGB=0.3873 / CAT=0.4253 / RF=0.3627 / LSTM=0.2459 / TFT=0.2291
+[v3c] EW5=0.5522 / WEW=0.5641
+
+----- 5-way merge: y_onset -----
+[merge] OOS N=2531 / events=254 (10.04%)
+[v3c upgraded individual OOS PR-AUC] XGB=0.1027 / CAT=0.1040 / RF=0.0958 / LSTM=0.0992 / TFT=0.1389
+[v3c upgraded individual OOS IC   ] XGB=0.0532 / CAT=0.0674 / RF=-0.0031 / LSTM=0.0132 / TFT=0.1527
+[v3c] EW5=0.1435 / WEW=0.1507
+
+========== Step 5: Dynamic 5-method ensemble synthesis ==========
+
+----- Dynamic 5-method: y_tail_q15 -----
+[Static WEW] PR-AUC=0.5641
+[M1 Rolling]  PR-AUC=0.5919 ★
+[M2 Regime]   PR-AUC=0.6003 ★
+[M3 Hedge]    PR-AUC=0.5499 
+[M4 Bayes]    PR-AUC=0.5532 
+[M5 Bandit]   PR-AUC=0.5567 
+
+----- Dynamic 5-method: y_onset -----
+[Static WEW] PR-AUC=0.1507
+[M1 Rolling]  PR-AUC=0.1479 
+[M2 Regime]   PR-AUC=0.1452 
+[M3 Hedge]    PR-AUC=0.1191 
+[M4 Bayes]    PR-AUC=0.1388 
+[M5 Bandit]   PR-AUC=0.1457 
+
+[Step 5 Dynamic SUMMARY]
+        target     method     PRAUC
+        <char>     <char>     <num>
+ 1: y_tail_q15 Static_WEW 0.5641431
+ 2: y_tail_q15 M1_Rolling 0.5918691
+ 3: y_tail_q15  M2_Regime 0.6002702
+ 4: y_tail_q15   M3_Hedge 0.5499094
+ 5: y_tail_q15   M4_Bayes 0.5532342
+ 6: y_tail_q15  M5_Bandit 0.5566966
+ 7:    y_onset Static_WEW 0.1507234
+ 8:    y_onset M1_Rolling 0.1479496
+ 9:    y_onset  M2_Regime 0.1451887
+10:    y_onset   M3_Hedge 0.1190804
+11:    y_onset   M4_Bayes 0.1387702
+12:    y_onset  M5_Bandit 0.1457386
+
+========== Step 6: Compare vs V1.3 baseline 0.6078 ==========
+
+[V1.3 baseline (69 features)]
+        target     method     PRAUC
+        <char>     <char>     <num>
+ 1: y_tail_q15 Static_WEW 0.5814020
+ 2: y_tail_q15 M1_Rolling 0.6062722
+ 3: y_tail_q15  M2_Regime 0.6077786
+ 4: y_tail_q15   M3_Hedge 0.5509715
+ 5: y_tail_q15   M4_Bayes 0.5525285
+ 6: y_tail_q15  M5_Bandit 0.5798092
+ 7:    y_onset Static_WEW 0.1327539
+ 8:    y_onset M1_Rolling 0.1292491
+ 9:    y_onset  M2_Regime 0.1369264
+10:    y_onset   M3_Hedge 0.1103762
+11:    y_onset   M4_Bayes 0.1105948
+12:    y_onset  M5_Bandit 0.1221203
+
+[Δ vs V1.3 baseline on y_tail_q15]
+  Static WEW:  V1.3=0.5814 → v3c_arch=0.5641  (Δ -0.0173)
+  M1 Rolling:  V1.3=0.6063 → v3c_arch=0.5919  (Δ -0.0144)
+  M2 Regime:   V1.3=0.6078 → v3c_arch=0.6003  (Δ -0.0075) ★
+
+[Verdict (5-way M2 Regime)] REGRESSION_ARCH_UPGRADE_FAILED
+
+[Ablation: Individual LSTM/TFT vs Cycle 43 v2_2feat baseline]
+  LSTM: 0.3799 → 0.3957  (Δ +0.0158) BELOW_TARGET
+  TFT : 0.4052 → 0.3772  (Δ -0.0280) BELOW_TARGET
+
+[Ablation diagnosis] INDIVIDUAL_NOT_IMPROVED — Architecture upgrade itself ineffective (overfitting / training instability)
+
+========== Step 7: Save outputs ==========
+[JSON] /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/04_evaluation/5way_retrain_v3c_arch_upgrade.json
+[Chart] /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/06_reports/charts/83_pr_curve_v3c_arch_upgrade.png
+
+========== Cycle 45C DONE ==========
+Verdict: REGRESSION_ARCH_UPGRADE_FAILED
+Ablation: INDIVIDUAL_NOT_IMPROVED — Architecture upgrade itself ineffective (overfitting / training instability)
+Δ Static: -0.0173  /  Δ M1 Rolling: -0.0144  /  Δ M2 Regime: -0.0075
+Individual LSTM: 0.3957 (Δ +0.0158)  /  TFT: 0.3772 (Δ -0.0280)

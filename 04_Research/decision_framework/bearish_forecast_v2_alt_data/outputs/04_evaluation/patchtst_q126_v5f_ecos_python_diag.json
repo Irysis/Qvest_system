@@ -1,0 +1,64 @@
+{
+  "cycle": "53I_patchtst_q126_v5f_ecos",
+  "panel": "feature_panel_v5f_ecos_kr.parquet",
+  "targets_source": "targets_long_horizon.parquet (Cycle 48A 103_compute_long_horizon_targets.R)",
+  "n_features": 79,
+  "v5e_base_features": 74,
+  "ecos_kr_macro_features": [
+    "ecos_m2_yoy_lag1",
+    "ecos_krw_usd_change_5d_lag1",
+    "ecos_base_rate_lag1",
+    "ecos_industrial_production_yoy_lag1",
+    "ecos_cpi_yoy_lag1"
+  ],
+  "forward_labels": true,
+  "validation_strategy": "walk_forward_expanding_5_fold_CV",
+  "horizons_evaluated": [
+    "y_tail_q15",
+    "y_tail_q126"
+  ],
+  "patchtst_hparams": {
+    "patch_size": 4,
+    "patch_stride": 2,
+    "d_model": 64,
+    "nhead": 4,
+    "n_layers": 3,
+    "ff_dim": 256,
+    "dropout": 0.3,
+    "attn_dropout": 0.15,
+    "weight_decay": 0.005,
+    "lr": 0.001,
+    "seed": 42
+  },
+  "training_common": {
+    "batch_size": 96,
+    "max_epochs": 80,
+    "early_stop_patience": 15,
+    "early_stop_min_delta": 0.0005,
+    "grad_clip_norm": 1.0,
+    "warmup_steps": 500,
+    "mixed_precision_amp": true,
+    "gpu_mem_fraction": 0.3
+  },
+  "patchtst_y_tail_q15": {
+    "oos_pr": 0.1832,
+    "oos_ic": 0.0562,
+    "avg_best_epoch": 7,
+    "n_params": 157441,
+    "elapsed_sec": 163.2
+  },
+  "patchtst_y_tail_q126": {
+    "oos_pr": 0.1998,
+    "oos_ic": -0.1394,
+    "avg_best_epoch": 2,
+    "n_params": 157441,
+    "elapsed_sec": 92.1
+  },
+  "baselines": {
+    "cycle_53h_q126_v5e_with_us_macro": 0.4012,
+    "cycle_53b_q126_v4a_no_us_macro": 0.3456
+  },
+  "delta_q126_vs_53h": -0.2014,
+  "delta_q126_vs_53b": -0.1458,
+  "per_fold_diagnostics_path": "/mnt/c/Users/User/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/03_models/v5f_patchtst_q126_ecos/per_fold_diagnostics.json"
+}

@@ -1,0 +1,354 @@
+{
+  "cycle": "57A_FRED_publication_lag_FIXED_q15",
+  "target": "y_tail_q15",
+  "target_horizon_days": 21,
+  "generated_at": "2026-05-21T15:00:01+0900",
+  "n_cycles": 5,
+  "seeds": [42, 123, 456, 789, 1024],
+  "pit_fixes": {
+    "bug_1_purged_kfold_cv": "np.busday_offset(dates, 21, roll='forward') < valid_start (55A inherit)",
+    "bug_2_y_valid_mask": "ret_q15.notna() (55A inherit)",
+    "M6_phantom0_guard": "targets_long_horizon_observable.parquet (54D inherit)",
+    "M7_direct_us_pub_lag_FIXED": "FRED CFNAI +55d (MM-START dating, release ~25d post month-END) / ICSA +5d (Sat-dated to Thu release) — applied to direct us_* FRED features (57A Phase 1)",
+    "M7_indirect_bbva_dep_NOT_addressed": {
+      "scope": "out_of_cycle_57A_scope",
+      "issue": "v1.3/v4a base panels inherit BBVA macro features (bbva_market_z etc.) from A6_bbva_macro_builder.R using fred_macro_wide.parquet Init_Claims (~5d ICSA lag bug). Affects all 5 cycles including retained 53B/54A.",
+      "mitigation_estimate": "Codex 55B Q2 estimate < 0.01 PR-AUC impact at q15 (Init_Claims used in BBVA composite z-score = diluted signal).",
+      "followup": "Cycle 57A_followup: rebuild fred_macro_wide via 95-style pub-lag fix + rebuild A6 BBVA + rebuild v1.3/v4a + retrain ALL 5 cycles. Deferred per Forge agent autonomous mandate scope."
+    }
+  },
+  "approach": "DIRECT US FRED LAG FIX ONLY. Substitute 53H_v5e + 53I_v5f with FRED publication-lag fixed retrain (direct us_* features). Retain 53B/54A (no direct us_* FRED) but disclose indirect BBVA-derived ICSA contamination remains.",
+  "codex_review_concerns_addressed": {
+    "Q1_publication_lag": "PASS (no fix needed)",
+    "Q2_pit_integrity": "PASS_WITH_NIT (sanity check still print-only; future: add stopifnot)",
+    "Q3a_retain_classification": "FIXED: relabeled as 'no_direct_us_FRED' with explicit indirect_bbva_init_claims_dep=TRUE flag",
+    "Q3b_v4a_inheritance": "DISCLOSED: v4a still carries BBVA Init_Claims contamination — out of 57A scope",
+    "Q3c_baseline_misattribution": "FIXED: 0.1581 (45B v3b_inst M3_Hedge) → 0.1643 (v1.3 C50 6-method dynamic mean)"
+  },
+  "leaderboard": [
+    {
+      "cycle": "53I_v5f_FIXED",
+      "n_feat": 79,
+      "hparams": "patch=4 d=64 nhead=4 nlayer=3",
+      "status": "FRED_direct_us_lag_FIXED_57A_but_BBVA_indirect_remains",
+      "direct_us_fred_dep": true,
+      "indirect_bbva_init_claims_dep": true,
+      "per_seed_pr_mean": 0.2231,
+      "per_seed_pr_std": 0.0368,
+      "per_seed_pr_min": 0.1636,
+      "per_seed_pr_max": 0.2596,
+      "mean5_pr_auc": 0.2382,
+      "mean5_ic": 0.1241,
+      "bootstrap_lo": 0.2057,
+      "bootstrap_hi": 0.2732,
+      "euroafter_lift": 1.28,
+      "covid_lift": 1.44,
+      "recent_lift": 1.58,
+      "lift_3of3": 3
+    },
+    {
+      "cycle": "53H_v5e_FIXED",
+      "n_feat": 74,
+      "hparams": "patch=4 d=64 nhead=4 nlayer=3",
+      "status": "FRED_direct_us_lag_FIXED_57A_but_BBVA_indirect_remains",
+      "direct_us_fred_dep": true,
+      "indirect_bbva_init_claims_dep": true,
+      "per_seed_pr_mean": 0.2222,
+      "per_seed_pr_std": 0.0342,
+      "per_seed_pr_min": 0.1836,
+      "per_seed_pr_max": 0.2546,
+      "mean5_pr_auc": 0.2337,
+      "mean5_ic": 0.1024,
+      "bootstrap_lo": 0.2012,
+      "bootstrap_hi": 0.2725,
+      "euroafter_lift": 1.17,
+      "covid_lift": 1.58,
+      "recent_lift": 1.39,
+      "lift_3of3": 3
+    },
+    {
+      "cycle": "53B_v5b",
+      "n_feat": 70,
+      "hparams": "patch=4 d=64 nhead=4 nlayer=3",
+      "status": "retain_56A_no_direct_us_FRED_BUT_bbva_init_claims_indirect_contamination_remains",
+      "direct_us_fred_dep": false,
+      "indirect_bbva_init_claims_dep": true,
+      "per_seed_pr_mean": 0.2233,
+      "per_seed_pr_std": 0.0302,
+      "per_seed_pr_min": 0.1783,
+      "per_seed_pr_max": 0.255,
+      "mean5_pr_auc": 0.2295,
+      "mean5_ic": 0.1145,
+      "bootstrap_lo": 0.1972,
+      "bootstrap_hi": 0.2604,
+      "euroafter_lift": 1.18,
+      "covid_lift": 1.65,
+      "recent_lift": 1.35,
+      "lift_3of3": 3
+    },
+    {
+      "cycle": "54A_v3_patch7",
+      "n_feat": 70,
+      "hparams": "patch=7 d=64 nhead=4 nlayer=3 stride=2",
+      "status": "retain_56A_no_direct_us_FRED_BUT_bbva_init_claims_indirect_contamination_remains",
+      "direct_us_fred_dep": false,
+      "indirect_bbva_init_claims_dep": true,
+      "per_seed_pr_mean": 0.2104,
+      "per_seed_pr_std": 0.0338,
+      "per_seed_pr_min": 0.1591,
+      "per_seed_pr_max": 0.247,
+      "mean5_pr_auc": 0.1924,
+      "mean5_ic": 0.0363,
+      "bootstrap_lo": 0.1679,
+      "bootstrap_hi": 0.2216,
+      "euroafter_lift": 0.88,
+      "covid_lift": 1.85,
+      "recent_lift": 1.08,
+      "lift_3of3": 2
+    },
+    {
+      "cycle": "54A_v4_dm32",
+      "n_feat": 70,
+      "hparams": "patch=4 d=32 nhead=4 nlayer=3 stride=2",
+      "status": "retain_56A_no_direct_us_FRED_BUT_bbva_init_claims_indirect_contamination_remains",
+      "direct_us_fred_dep": false,
+      "indirect_bbva_init_claims_dep": true,
+      "per_seed_pr_mean": 0.2012,
+      "per_seed_pr_std": 0.0498,
+      "per_seed_pr_min": 0.1648,
+      "per_seed_pr_max": 0.2847,
+      "mean5_pr_auc": 0.1882,
+      "mean5_ic": 0.044,
+      "bootstrap_lo": 0.1651,
+      "bootstrap_hi": 0.2126,
+      "euroafter_lift": 1.3,
+      "covid_lift": 0.98,
+      "recent_lift": 1.28,
+      "lift_3of3": 2
+    }
+  ],
+  "divergence_diagnosis": [
+    {
+      "pair_name": "53H_v5e_BUGGY vs 53H_v5e_FIXED",
+      "buggy_mean5_pr": 0.248,
+      "fixed_mean5_pr": 0.2337,
+      "diff_pr": -0.0142,
+      "diff_sign": "fixed < buggy (fix removed inflated signal, true OOS reveal)"
+    },
+    {
+      "pair_name": "53I_v5f_BUGGY vs 53I_v5f_FIXED",
+      "buggy_mean5_pr": 0.2356,
+      "fixed_mean5_pr": 0.2382,
+      "diff_pr": 0.0026,
+      "diff_sign": "fixed > buggy (good news — lookahead was suppressing model)"
+    }
+  ],
+  "reference_baselines": [
+    {
+      "cycle": "v1.3_C50_6method_dyn_mean",
+      "n_feat": 69,
+      "mean5_pr_auc": 0.1643,
+      "status": "historical_reference_q15"
+    },
+    {
+      "cycle": "v2_2feat_C43_best_forward",
+      "n_feat": 71,
+      "mean5_pr_auc": 0.2129,
+      "status": "historical_reference_q15"
+    },
+    {
+      "cycle": "v4a_C52_mean5",
+      "n_feat": 70,
+      "mean5_pr_auc": 0.2463,
+      "status": "historical_reference_q15"
+    }
+  ],
+  "headline": "Cycle 57A FIXED q15 forward best: 53I_v5f_FIXED (mean5 PR-AUC=0.2382, n_feat=79, status=FRED_direct_us_lag_FIXED_57A_but_BBVA_indirect_remains)",
+  "per_cycle_detail": [
+    {
+      "cycle": "53B_v5b",
+      "n_feat": 70,
+      "status": "retain_56A_no_direct_us_FRED_BUT_bbva_init_claims_indirect_contamination_remains",
+      "mean5_pr_auc": 0.2295,
+      "mean5_ic": 0.1145,
+      "bootstrap_95ci": [0.2292, 0.1972, 0.2604],
+      "per_seed_pr_mean": 0.2233,
+      "per_seed_pr_std": 0.0302,
+      "period_balanced": {
+        "per1": {
+          "period": "EuroAfter_2018_2019",
+          "n": 490,
+          "n_bear": 133,
+          "pr_auc": 0.3204,
+          "base_rate": 0.2714,
+          "lift_vs_base": 1.1806
+        },
+        "per2": {
+          "period": "Covid_2020_2021",
+          "n": 496,
+          "n_bear": 77,
+          "pr_auc": 0.2565,
+          "base_rate": 0.1552,
+          "lift_vs_base": 1.6525
+        },
+        "per3": {
+          "period": "Recent_2022_2026",
+          "n": 1053,
+          "n_bear": 155,
+          "pr_auc": 0.1986,
+          "base_rate": 0.1472,
+          "lift_vs_base": 1.3491
+        },
+        "lift_3of3": 3
+      }
+    },
+    {
+      "cycle": "53H_v5e_FIXED",
+      "n_feat": 74,
+      "status": "FRED_direct_us_lag_FIXED_57A_but_BBVA_indirect_remains",
+      "mean5_pr_auc": 0.2337,
+      "mean5_ic": 0.1024,
+      "bootstrap_95ci": [0.2342, 0.2012, 0.2725],
+      "per_seed_pr_mean": 0.2222,
+      "per_seed_pr_std": 0.0342,
+      "period_balanced": {
+        "per1": {
+          "period": "EuroAfter_2018_2019",
+          "n": 490,
+          "n_bear": 133,
+          "pr_auc": 0.3188,
+          "base_rate": 0.2714,
+          "lift_vs_base": 1.1746
+        },
+        "per2": {
+          "period": "Covid_2020_2021",
+          "n": 496,
+          "n_bear": 77,
+          "pr_auc": 0.2458,
+          "base_rate": 0.1552,
+          "lift_vs_base": 1.5834
+        },
+        "per3": {
+          "period": "Recent_2022_2026",
+          "n": 1053,
+          "n_bear": 155,
+          "pr_auc": 0.2044,
+          "base_rate": 0.1472,
+          "lift_vs_base": 1.3888
+        },
+        "lift_3of3": 3
+      }
+    },
+    {
+      "cycle": "53I_v5f_FIXED",
+      "n_feat": 79,
+      "status": "FRED_direct_us_lag_FIXED_57A_but_BBVA_indirect_remains",
+      "mean5_pr_auc": 0.2382,
+      "mean5_ic": 0.1241,
+      "bootstrap_95ci": [0.2385, 0.2057, 0.2732],
+      "per_seed_pr_mean": 0.2231,
+      "per_seed_pr_std": 0.0368,
+      "period_balanced": {
+        "per1": {
+          "period": "EuroAfter_2018_2019",
+          "n": 490,
+          "n_bear": 133,
+          "pr_auc": 0.3475,
+          "base_rate": 0.2714,
+          "lift_vs_base": 1.2801
+        },
+        "per2": {
+          "period": "Covid_2020_2021",
+          "n": 496,
+          "n_bear": 77,
+          "pr_auc": 0.2232,
+          "base_rate": 0.1552,
+          "lift_vs_base": 1.4376
+        },
+        "per3": {
+          "period": "Recent_2022_2026",
+          "n": 1053,
+          "n_bear": 155,
+          "pr_auc": 0.233,
+          "base_rate": 0.1472,
+          "lift_vs_base": 1.5831
+        },
+        "lift_3of3": 3
+      }
+    },
+    {
+      "cycle": "54A_v3_patch7",
+      "n_feat": 70,
+      "status": "retain_56A_no_direct_us_FRED_BUT_bbva_init_claims_indirect_contamination_remains",
+      "mean5_pr_auc": 0.1924,
+      "mean5_ic": 0.0363,
+      "bootstrap_95ci": [0.193, 0.1679, 0.2216],
+      "per_seed_pr_mean": 0.2104,
+      "per_seed_pr_std": 0.0338,
+      "period_balanced": {
+        "per1": {
+          "period": "EuroAfter_2018_2019",
+          "n": 490,
+          "n_bear": 133,
+          "pr_auc": 0.2387,
+          "base_rate": 0.2714,
+          "lift_vs_base": 0.8795
+        },
+        "per2": {
+          "period": "Covid_2020_2021",
+          "n": 496,
+          "n_bear": 77,
+          "pr_auc": 0.2865,
+          "base_rate": 0.1552,
+          "lift_vs_base": 1.8456
+        },
+        "per3": {
+          "period": "Recent_2022_2026",
+          "n": 1053,
+          "n_bear": 155,
+          "pr_auc": 0.1583,
+          "base_rate": 0.1472,
+          "lift_vs_base": 1.0754
+        },
+        "lift_3of3": 2
+      }
+    },
+    {
+      "cycle": "54A_v4_dm32",
+      "n_feat": 70,
+      "status": "retain_56A_no_direct_us_FRED_BUT_bbva_init_claims_indirect_contamination_remains",
+      "mean5_pr_auc": 0.1882,
+      "mean5_ic": 0.044,
+      "bootstrap_95ci": [0.1889, 0.1651, 0.2126],
+      "per_seed_pr_mean": 0.2012,
+      "per_seed_pr_std": 0.0498,
+      "period_balanced": {
+        "per1": {
+          "period": "EuroAfter_2018_2019",
+          "n": 490,
+          "n_bear": 133,
+          "pr_auc": 0.3521,
+          "base_rate": 0.2714,
+          "lift_vs_base": 1.2971
+        },
+        "per2": {
+          "period": "Covid_2020_2021",
+          "n": 496,
+          "n_bear": 77,
+          "pr_auc": 0.1519,
+          "base_rate": 0.1552,
+          "lift_vs_base": 0.9783
+        },
+        "per3": {
+          "period": "Recent_2022_2026",
+          "n": 1053,
+          "n_bear": 155,
+          "pr_auc": 0.189,
+          "base_rate": 0.1472,
+          "lift_vs_base": 1.2842
+        },
+        "lift_3of3": 2
+      }
+    }
+  ]
+}

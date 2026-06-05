@@ -1,0 +1,84 @@
+{
+  "study": "DPL Dev-CBE — 손실정렬 + hysteresis buffer + β-overlay cash node 합성 + 피처 pruning (research/feasibility only)",
+  "scope": "findings-only. admission/book_state 변경 없음. DPL 한계 verdict 없음 — 측정값만.",
+  "lockbox": "2023-12-22 strict",
+  "oos_window": "2010-01..2023-12 (168m, walk-forward refit/12m)",
+  "device": "cuda RTX 4080 SUPER",
+
+  "variant_specs": {
+    "C": {
+      "loss_alignment": "net Sharpe → ACTIVE-alpha Sharpe (net - benchmark_monthly) 교체. 게이트 portfolio-α t와 목적함수 정합.",
+      "buffer": "hysteresis: 직전보유 keep_n=32위까지 유지, 신규 entry_n=25 진입. inference 시 hard-encode.",
+      "buffer_applied": true,
+      "to_target_met": false,
+      "note": "buffer 적용 확인됨. 그러나 TO 15.83→14.35 (keep_n=27로 더 조여도 14.72) — TO≤11 미달."
+    },
+    "B": {
+      "overlay": "month-end regime_score(252d benchmark trend, expanding q30/q10 분위, PIT t-1 lag) → cash node w_cash=1-Σw_risky, cash ret=0. exposure = regime_score prior (BULL 1.0 / NORMAL 0.85 / CAUTION 0.55 / CRISIS 0.25).",
+      "cash_node_pit": "PASS — regime_score는 직전 월말 EOM 252d trend의 expanding 분위. corr(score, NEXT-month BM)=0.065(거의 0, no lookahead), corr(score, PREV-month BM)=0.264(reactive/backward). COVID: 2020-02 NORMAL→2020-03 CAUTION→2020-04 CRISIS (크래시 관측 후 방어 = 비예지).",
+      "regime_bucket_dist": {"NORMAL": 126, "CAUTION": 80, "BULL": 42, "CRISIS": 32},
+      "to_target_met": true,
+      "note": "cash node가 TO≤11 달성의 유일한 mechanism (risky exposure 축소). 그러나 α-t 하락."
+    },
+    "E": {
+      "pruning": "permutation importance>0.05 → 90f→31f subset.",
+      "applied": true,
+      "note": "OOS 성능 파괴적 (α-t 2.19→0.99). importance>0.05 cutoff가 OOS 정보 손실."
+    }
+  },
+
+  "results_contract_grade_NW_lag3_OOS": {
+    "_comment": "build_benchmark_compare 단일경로, metric_type=backtested, 동일 168m OOS·동일 KOSPI200 benchmark.",
+    "DPL_90f_baseline": {"alpha_t": 2.766, "p": 0.0057, "net_active_SR": 0.594, "TO_yr": 15.83, "TE": 0.328},
+    "DPL_C":   {"alpha_t": 2.906, "p": 0.0037, "net_active_SR": 0.703, "TO_yr": 14.35, "TE": 0.355},
+    "DPL_CB":  {"alpha_t": 2.193, "p": 0.0283, "net_active_SR": 0.475, "TO_yr": 10.11, "TE": 0.269},
+    "DPL_CBE": {"alpha_t": 0.986, "p": 0.3240, "net_active_SR": 0.216, "TO_yr":  8.78, "TE": 0.244},
+    "EW_top20": {"alpha_t": 0.835, "net_active_SR": 0.179, "TO_yr": 11.11},
+    "MVO_2stage": {"alpha_t": 0.108, "net_active_SR": 0.025, "TO_yr": 13.20},
+    "STR_1715_incumbent": {"alpha_t": 5.344, "net_active_SR": 1.071, "TO_yr": "NA"}
+  },
+
+  "results_in_sample_SEPARATE": {
+    "_comment": "전체구간 1회 fit·동일구간 eval = 과적합 상한. OOS와 엄격 분리(SECTOR_REL cherry-pick 교훈).",
+    "DPL_C_IS":   {"alpha_t": 6.139, "net_active_SR": 1.206, "TO_yr": 10.24},
+    "DPL_CB_IS":  {"alpha_t": 5.122, "net_active_SR": 0.985, "TO_yr":  7.31},
+    "DPL_CBE_IS": {"alpha_t": 3.897, "net_active_SR": 0.627, "TO_yr":  6.71},
+    "is_oos_gap": "IS≈2배 OOS (C: 1.21 vs 0.70; CB: 0.99 vs 0.48; CBE: 0.63 vs 0.22). 과적합 gap 지속."
+  },
+
+  "dsr_honest": {
+    "n_trials_cumulative": 108,
+    "_comment": "기존 GPU sweep 96 + CBE 12 (C4+CB4+CBE4) 누적.",
+    "DSR_cumulative": {"DPL_C": 0.545, "DPL_CB": 0.204, "DPL_CBE": 0.037},
+    "note": "누적 trial 보정 시 DPL_C도 DSR 0.545(<0.5 신뢰 임계 부근), CB/CBE는 낮음."
+  },
+
+  "oos_stability": {
+    "subperiod_active_SR": {
+      "DPL_C": [1.495, -0.349, 0.770],
+      "DPL_CB": [1.229, -0.459, 0.433],
+      "DPL_CBE": [0.604, 0.159, -0.142]
+    },
+    "note": "전 variant 중간 sub-period 음수(또는 약). baseline OOS 불안정성([1.14,0.09,0.50]) 미해소."
+  },
+
+  "key_diagnosis": {
+    "turnover_root_cause": "DPL 회전은 NAME churn(종목 진입/이탈)이 아니라 WEIGHT churn(softmax+projection이 보유종목 간 비중 재배분)이 지배. 그래서 hysteresis buffer(종목 유지)는 TO를 15.83→14.35로만 줄임(keep_n=27 더 조여도 14.72). 월간 mean traded ≈1.2(>100% one-way) = 보유종목 weight 대폭 이동.",
+    "to_le_11_mechanism": "TO≤11은 cash node(B)만 달성 — caution/crisis 월 risky exposure 축소가 traded를 0.84로 절감. buffer 단독 불가.",
+    "beta_overlay_effect": "β-overlay는 2.77을 끌어올리지 못함 — 오히려 끌어내림(C 2.906 → CB 2.193). OOS(2010~2023)는 대체로 강세장이라 cash-parking이 alpha를 희생. overlay는 reactive(예지 아님)라 크래시 직전 방어 못 하고 회복 초입 cash로 underexposed."
+  },
+
+  "answers": {
+    "q1_variant_specs_applied": "C: active-alpha loss + buffer 적용 확인(buffer로 TO≤11 미달성, 14.35). B: cash node PIT 정합 PASS(regime t-1, no lookahead). E: 31f pruning 적용(OOS 파괴적). overlay cash node PIT 정합=YES.",
+    "q2_result_table": "OOS α-t: 90f 2.766 → C 2.906 → CB 2.193 → CBE 0.986. net SR: 0.594→0.703→0.475→0.216. TO: 15.83→14.35→10.11→8.78. (IS 별도: C 6.14/CB 5.12/CBE 3.90).",
+    "q3_overlay_pushes_277": "NO. β-overlay 합성은 2.77을 못 올림(2.906→2.193로 하락). 5.34 근접 전혀 못 함(최대 OOS 2.906도 2.95 hurdle 미달).",
+    "q4_honest_limits": "(a) TO≤11 + α-t>2.766 동시충족 구성 없음(트레이드오프). (b) 어떤 OOS variant도 2.95 hurdle 미달(C 2.906이 최선). (c) incumbent 5.34 근접 못 함. (d) OOS 중간기 음수 SR 지속 + DSR_cum<0.55 = 과적합 미해소."
+  },
+
+  "next": [
+    "exposure를 고정 prior 대신 학습형(regime_score를 MLP scalar 입력 + cash node end-to-end)으로 — overlay가 OOS 강세장에서 cash-drag 안 하도록 학습.",
+    "turnover 직접 제어: weight-churn penalty(|Δw| L1을 loss에 강하게) 또는 weight smoothing(직전 weight EMA blend)로 NAME-keep이 아닌 WEIGHT-keep 강제 → buffer로 TO≤11 가능성.",
+    "E pruning 재설계: importance>0.05 cutoff 대신 redundancy_cluster 기반 또는 OOS-validated subset (현 cutoff는 OOS 정보 손실).",
+    "incumbent 5.34 격차: DPL 단독으로는 미달 — STR_1715(R05 overlay+DCC risk model)와의 구조적 차이(검증된 production overlay) 반영 필요."
+  ]
+}

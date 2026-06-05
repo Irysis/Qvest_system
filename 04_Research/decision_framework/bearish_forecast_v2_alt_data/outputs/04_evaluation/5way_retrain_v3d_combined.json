@@ -1,0 +1,251 @@
+{
+  "cycle": "46A",
+  "approach": "COMBINED_MULTI_AXIS_FOREIGN_PLUS_INST",
+  "description": "Synthesis check: foreign breadth (Cycle 43, 1 feature) + institutional flow (Cycle 45B, 4 features) = 5 NEW features. Test additivity hypothesis on independent investor type axes (inst-foreign cor 0.038).",
+  "baseline_v1_3": {
+    "n_features": 69,
+    "static_wew_y_tail_q15": 0.5814,
+    "m1_rolling_y_tail_q15": 0.6063,
+    "m2_regime_y_tail_q15": 0.6078
+  },
+  "cycle_43_v2_2feat": {
+    "n_features": 71,
+    "description": "1 foreign breadth feature",
+    "static_wew_y_tail_q15": 0.5827,
+    "m1_rolling_y_tail_q15": 0.6459,
+    "m2_regime_y_tail_q15": 0.639
+  },
+  "cycle_45B_v3b_inst_suite": {
+    "n_features": 73,
+    "description": "4 institutional flow features (BEST SINGLE-AXIS)",
+    "static_wew_y_tail_q15": 0.5779,
+    "m1_rolling_y_tail_q15": 0.6382,
+    "m2_regime_y_tail_q15": 0.6417
+  },
+  "v3d_combined": {
+    "n_features": 74,
+    "new_features": ["foreign_breadth_ad_ratio_5d_avg_lag1", "inst_ad_ratio_5d_avg_lag1", "inst_ad_ratio_20d_avg_lag1", "inst_hhi_buy_lag1", "inst_vs_foreign_divergence_5d_lag1"],
+    "individual_OOS_PRAUC_y_tail_q15": {
+      "xgb": 0.6098,
+      "cat": 0.5375,
+      "rf": 0.578,
+      "lstm": 0.3888,
+      "tft": 0.4704
+    },
+    "individual_OOS_PRAUC_y_onset": {
+      "xgb": 0.1055,
+      "cat": 0.1062,
+      "rf": 0.1009,
+      "lstm": 0.1003,
+      "tft": 0.1321
+    },
+    "static_ew5_y_tail_q15": 0.5696,
+    "static_wew_y_tail_q15": 0.6064,
+    "dynamic_PRAUC_y_tail_q15": [0.6064, 0.5535, 0.5258, 0.5129, 0.563, 0.5718],
+    "dynamic_PRAUC_y_onset": [0.1128, 0.1337, 0.143, 0.1269, 0.1385, 0.1283],
+    "feature_importance": {
+      "xgb": 0.6098,
+      "cat": 0.5375,
+      "rf": 0.578,
+      "ew3": 0.6067,
+      "imp_new_xgb": [
+        {
+          "feature": "foreign_breadth_ad_ratio_5d_avg_lag1",
+          "gain": 0.044,
+          "rank": 4,
+          "total": 48
+        },
+        {
+          "feature": "inst_ad_ratio_20d_avg_lag1",
+          "gain": 0.0309,
+          "rank": 10,
+          "total": 48
+        },
+        {
+          "feature": "inst_vs_foreign_divergence_5d_lag1",
+          "gain": 0.0196,
+          "rank": 18,
+          "total": 48
+        },
+        {
+          "feature": "inst_ad_ratio_5d_avg_lag1",
+          "gain": 0.0102,
+          "rank": 27,
+          "total": 48
+        },
+        {
+          "feature": "inst_hhi_buy_lag1",
+          "gain": 0.01,
+          "rank": 28,
+          "total": 48
+        }
+      ],
+      "imp_new_cat": [
+        {
+          "feature": "inst_vs_foreign_divergence_5d_lag1",
+          "gain": 2.1172,
+          "rank": 14,
+          "total": 74
+        },
+        {
+          "feature": "inst_ad_ratio_5d_avg_lag1",
+          "gain": 0.7965,
+          "rank": 21,
+          "total": 74
+        },
+        {
+          "feature": "foreign_breadth_ad_ratio_5d_avg_lag1",
+          "gain": 0,
+          "rank": 72,
+          "total": 74
+        },
+        {
+          "feature": "inst_ad_ratio_20d_avg_lag1",
+          "gain": 0,
+          "rank": 73,
+          "total": 74
+        },
+        {
+          "feature": "inst_hhi_buy_lag1",
+          "gain": 0,
+          "rank": 74,
+          "total": 74
+        }
+      ],
+      "imp_new_rf": [
+        {
+          "feature": "foreign_breadth_ad_ratio_5d_avg_lag1",
+          "gain": 34.6236,
+          "rank": 7,
+          "total": 74
+        },
+        {
+          "feature": "inst_ad_ratio_20d_avg_lag1",
+          "gain": 32.2238,
+          "rank": 10,
+          "total": 74
+        },
+        {
+          "feature": "inst_vs_foreign_divergence_5d_lag1",
+          "gain": 31.3551,
+          "rank": 12,
+          "total": 74
+        },
+        {
+          "feature": "inst_ad_ratio_5d_avg_lag1",
+          "gain": 25.1941,
+          "rank": 20,
+          "total": 74
+        },
+        {
+          "feature": "inst_hhi_buy_lag1",
+          "gain": 18.3012,
+          "rank": 29,
+          "total": 74
+        }
+      ],
+      "top10_xgb": [
+        {
+          "feature": "us_sector_avg_z",
+          "gain": 0.1598,
+          "rank": 1
+        },
+        {
+          "feature": "us_sector_avg_z_lag1",
+          "gain": 0.1088,
+          "rank": 2
+        },
+        {
+          "feature": "us_sector_dispersion_z_rm63",
+          "gain": 0.0791,
+          "rank": 3
+        },
+        {
+          "feature": "foreign_breadth_ad_ratio_5d_avg_lag1",
+          "gain": 0.044,
+          "rank": 4
+        },
+        {
+          "feature": "us_sector_avg_z_rsd63",
+          "gain": 0.0433,
+          "rank": 5
+        },
+        {
+          "feature": "bbva_macro_composite_rsd21",
+          "gain": 0.0393,
+          "rank": 6
+        },
+        {
+          "feature": "bbva_transmission_z_rm63",
+          "gain": 0.0362,
+          "rank": 7
+        },
+        {
+          "feature": "us_sector_dispersion_z_rm21",
+          "gain": 0.0357,
+          "rank": 8
+        },
+        {
+          "feature": "us_sector_dispersion_z_rsd63",
+          "gain": 0.034,
+          "rank": 9
+        },
+        {
+          "feature": "inst_ad_ratio_20d_avg_lag1",
+          "gain": 0.0309,
+          "rank": 10
+        }
+      ]
+    }
+  },
+  "delta_vs_baselines": {
+    "delta_static_wew_vs_v13": 0.025,
+    "delta_m1_rolling_vs_v13": -0.0528,
+    "delta_m2_regime_vs_v13": -0.0819,
+    "delta_m2_regime_vs_cycle43": -0.1132,
+    "delta_m2_regime_vs_cycle45B": -0.1159
+  },
+  "per_model_compare_vs_cycle_45B": {
+    "XGB": {
+      "c46A": 0.6098,
+      "c45B": 0.5307,
+      "delta": 0.0791
+    },
+    "CAT": {
+      "c46A": 0.5375,
+      "c45B": 0.6156,
+      "delta": -0.0781
+    },
+    "RF": {
+      "c46A": 0.578,
+      "c45B": 0.5693,
+      "delta": 0.0087
+    },
+    "LSTM": {
+      "c46A": 0.3888,
+      "c45B": 0.239,
+      "delta": 0.1498
+    },
+    "TFT": {
+      "c46A": 0.4704,
+      "c45B": 0.444,
+      "delta": 0.0264
+    }
+  },
+  "verdict": "DILUTION",
+  "decision_rule": {
+    "ADDITIVE_STRONG": "Δ vs Cycle 45B > +0.015 (axes 진정 additive, 46B 결과 통합 권고)",
+    "ADDITIVE_WEAK": "0 ~ +0.015 (foreign feature가 inst features에 partial capture)",
+    "SATURATED": "-0.005 ~ 0 (drop foreign, inst-only retain 권고)",
+    "DILUTION": "< -0.005 (axis 1개 drop 후 다른 family — 개인/기타법인 또는 macro)"
+  },
+  "axes_correlation_check_foreign_vs_inst": {
+    "note": "Cycle 45B preset: inst-foreign correlation 0.038 (완전 직교). Step 1 outputs/01_data/feature_panel_v3d_combined.parquet build log 참조.",
+    "decision": "직교성 verified — additivity test rationale OK"
+  },
+  "outputs": {
+    "panel": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/01_data/feature_panel_v3d_combined.parquet",
+    "v3d_dir": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/03_models/v3d_combined",
+    "chart": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/06_reports/charts/86_pr_curve_v3d_combined.png"
+  }
+}

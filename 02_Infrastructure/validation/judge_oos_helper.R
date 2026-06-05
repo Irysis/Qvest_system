@@ -44,7 +44,7 @@ suppressPackageStartupMessages({
 .joh_detect_root <- function() {
   cand <- c(
     Sys.getenv("QVEST_PROJECT_ROOT", ""),
-    "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot",
+    Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")),
     getwd()
   )
   cand <- cand[nzchar(cand)]

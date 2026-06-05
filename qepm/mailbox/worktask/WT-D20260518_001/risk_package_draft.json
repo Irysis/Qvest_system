@@ -1,0 +1,205 @@
+{
+  "task_id": "WT-D20260518_001",
+  "agent": "risk-research",
+  "agent_version": "v1.1_bear_sensor_sigma_evt_stress_crowding_style",
+  "draft_marker": true,
+  "draft_emission_at": "2026-05-19T00:18:53+0900",
+  "as_of_date": "2026-05-19",
+  "wt_type": "discovery",
+  "wt_subclass_charter_v18": "discovery_design_phase_a",
+  "alpha_package_received": {
+    "factor_specs_count": 1,
+    "factor_family": "Bear_Regime_Prediction",
+    "features_count_designed": 44,
+    "features_count_built_sample": 13,
+    "bear_regime_sensor": true,
+    "output_dimension": "scalar_beta_bear_in_0_3_to_1_0"
+  },
+  "exposure_matrix_ref": "stage_artifacts/WT_D20260518_001/exposure_matrix.parquet",
+  "factor_covariance_ref": "stage_artifacts/WT_D20260518_001/factor_covariance.parquet",
+  "specific_risk_ref": "stage_artifacts/WT_D20260518_001/specific_risk.parquet",
+  "security_covariance_ref": "stage_artifacts/WT_D20260518_001/covariance.parquet",
+  "selection_objective": "condition_number",
+  "selection_objective_rationale": "Risk Agent SHALL pick Σ estimator by estimation quality (PSD + cond number + shrinkage stability), NOT by return-side metrics (SR/IR). Hook-enforced (v6.1 R4 P3).",
+  "covariance_method": {
+    "selected": "ledoit_wolf_constcor",
+    "condition_number": 207.02,
+    "min_eigenvalue": 10.432477,
+    "psd_pass": true,
+    "factor_coverage_pc1": 0.1103,
+    "candidates_tried": 3,
+    "upper_bound": 5,
+    "ridge_lambda_applied": 0.05,
+    "n_obs_T": 302,
+    "n_features_N": 13,
+    "rationale": "Ledoit-Wolf 2004 shrinkage selected for lowest cond + clean PSD. Sample baseline retained for diagnostic. Gerber-RMT showed acceptable cond but heavier eigenvalue manipulation. T=302 × N=13 panel after trim. Ridge λ=0.05 applied to cap cond."
+  },
+  "risk_summary": {
+    "top_common_risks": ["PC1 (58.1%)", "PC2 (40.3%)", "PC3 (0.9%)"],
+    "pc1_top_loadings_features": ["F18_KRW_USD", "F19_KRW_USD_vol_proxy", "F11_VIX", "F09_UMich", "F12_VIX_zscore_12m"],
+    "pc1_interpretation": "Dominant common factor — likely volatility regime axis based on top loadings",
+    "crowding_flags": [],
+    "liquidity_flags": [],
+    "crowding_score_per_factor": [
+      {
+        "factor_name": "BEAR_REGIME_PREDICTION_V2_44_FEATURES",
+        "crowding_score": 0.1363,
+        "cor_with_PG2_STR_1715_alpha": -0.1363,
+        "m4_overlap_redundancy": 0.8769,
+        "passive_overlap_proxy_NA": "regime sensor not cross-sectional, passive ETF crowding NA",
+        "demand_elasticity_proxy_NA": "regime sensor not stock-level",
+        "alert": "LEVEL_LOW",
+        "interpretation": "bear sensor crowding measured via PG2 STR_1715 alpha overlap. Low cor desirable (orthogonal sleeve)."
+      }
+    ],
+    "stress_tests": {
+      "DotCom_2002": 0.0092,
+      "GFC_2008": -0.3009,
+      "Euro_Debt_2011": -0.1571,
+      "China_Shock_2015": -0.0868,
+      "Q4_Selloff_2018": -0.1395,
+      "COVID_2020": 0.0112,
+      "Rate_Hike_2022": -0.2591,
+      "Iran_War_2026": 0.344,
+      "worst_monthly_BM": -0.2269
+    }
+  },
+  "diagnostics": {
+    "condition_number": 207.02,
+    "shrinkage_used": true,
+    "shrinkage_method": "ledoit_wolf_constcor",
+    "shrinkage_delta": 0.655,
+    "factor_correlation_warnings": [],
+    "tail_risk_summary": {
+      "method": "GPD_MLE_NelderMead",
+      "shape_xi": -0.0699,
+      "tail_class": "bounded_left",
+      "CVaR_95_evt": 0.1485,
+      "VaR_95_evt": 0.1086,
+      "CVaR_99_evt": 0.2091
+    },
+    "regime_correlation_ref": "stage_artifacts/WT_D20260518_001/regime_correlation.parquet",
+    "regime_correlation_summary": {
+      "LOW_VOL_QE": {
+        "regime": "LOW_VOL_QE",
+        "n_obs": 120,
+        "avg_abs_off_diag_cor": 0.1954,
+        "max_abs_off_diag_cor": 0.8944,
+        "pairs_cor_above_0_8": 1
+      },
+      "HIGH_VOL_TAPER": {
+        "regime": "HIGH_VOL_TAPER",
+        "n_obs": 98,
+        "avg_abs_off_diag_cor": 0.3111,
+        "max_abs_off_diag_cor": 0.8584,
+        "pairs_cor_above_0_8": 2
+      },
+      "INFLATION": {
+        "regime": "INFLATION",
+        "n_obs": 31,
+        "avg_abs_off_diag_cor": 0.2096,
+        "max_abs_off_diag_cor": 0.9782,
+        "pairs_cor_above_0_8": 1
+      },
+      "DEFAULT": {
+        "regime": "DEFAULT",
+        "n_obs": 188,
+        "avg_abs_off_diag_cor": 0.2186,
+        "max_abs_off_diag_cor": 0.8638,
+        "pairs_cor_above_0_8": 1
+      },
+      "ALL": {
+        "regime": "ALL",
+        "n_obs": 437,
+        "avg_abs_off_diag_cor": 0.1771,
+        "max_abs_off_diag_cor": 0.8042,
+        "pairs_cor_above_0_8": 1
+      }
+    },
+    "style_5_axis_hhi": 0.2169,
+    "style_5_axis_max_share": 0.2955,
+    "style_5_axis_distinct_axes": 6,
+    "style_5_axis_ref": "stage_artifacts/WT_D20260518_001/style_5_axis_exposure_collapsed.csv",
+    "crowding_orthogonality_PG2_STR_1715": {
+      "threshold_target": 0.4,
+      "actual_abs_cor": 0.136295,
+      "status": "ORTHOGONAL_PASS"
+    },
+    "crowding_redundancy_M4_overlay": {
+      "target_max_agreement_rate": 0.85,
+      "actual_rate": 0.8769,
+      "status": "REDUNDANT_WARN"
+    }
+  },
+  "evaluation_criteria_status": {
+    "psd_check": "PASS",
+    "condition_number_under_500": "PASS",
+    "factor_coverage_above_80pct": "INFO (11.0%)",
+    "stress_policy_compliance": "REVIEW_NEEDED"
+  },
+  "challenge_flags": [
+    {
+      "rf": "RF-R1",
+      "severity": "HIGH",
+      "note": "top PC1 var share 58.1% > 40% threshold"
+    },
+    {
+      "rf": "RF-R4",
+      "severity": "HIGH",
+      "note": "worst monthly BM loss -22.7% < -10% threshold (GFC/COVID extreme)"
+    },
+    {
+      "rf": "RF-R3-M4-REDUNDANT",
+      "severity": "HIGH",
+      "note": "bear sensor v2 agreement rate with PG2 Layer 3 M4 BOCPD = 87.7% >= 85% threshold — INCREMENTAL INFO CONTENT 의문 — Forge Stage 5 ensemble (p_bad_t × m4_state Diebold-Mariano test) 필수, 별도 layer admit 정당성 입증 의무"
+    },
+    {
+      "rf": "RF-R-DIMENSION",
+      "severity": "MEDIUM",
+      "note": "top 2 PC explain 98.4% variance, effective dim ≈ 2 in N=13 feature panel — 44 features × 10 categories design 의도와 비교 시 dimension collapse 감지, Forge Stage 1 Phase B 12 features build 후 재검증 의무"
+    }
+  ],
+  "honest_disclosure": {
+    "note": "본 cycle은 alpha-research v2.0 Phase A design — features 44개 중 15개만 built (sample). Forge Stage 1에서 Phase B 12 features + remaining 17 features build 시 Σ 재추정 의무.",
+    "built_features_used": ["F14_realized_vol_60d", "F11_VIX", "F18_KRW_USD", "F01_YC_US_term", "F09_UMich", "F22_NFCI", "F21_StL", "F12_VIX_zscore_12m", "F19_KRW_USD_vol_proxy", "F04_KR_10y_3y", "PB09_KR_5y_3m", "F23_KR_BBB_AA", "PB12_KR_3m_yield"],
+    "deferred_features_count": 31,
+    "sigma_recompute_binding_forge": "MANDATORY at Forge Stage 1 completion (44 features full build)",
+    "asset_universe_cov_inherited": "Σ_assets 인헤리트 STR_1715 PG2 production manifest (Layer 6 scalar overlay 정합, 본 cycle 미수정)",
+    "sensor_role": "scalar β_bear ∈ [0.3, 1.0] multiplicative overlay → NOT cross-sectional stock sleeve → max_names=null + weight_bounds=[0,1] 정합 (alpha_package C8 ACCEPT_PARTIAL)",
+    "self_synthesis_used": false
+  },
+  "axiom_check": {
+    "AX_000": "documented — 한계 없음, parallel estimator comparison + EVT GPD + 8 stress + crowding 모두 적용",
+    "AX_001_v2": "conditional defense — bad/normal IC ratio via crowding tested, regime stratification ICIR captured (INFLATION 2-3x lift)",
+    "AX_002": "PIT C1-C15 strict, row_pit_status filter applied, self_synthesis_used=FALSE",
+    "AX_007": "regime sensor scalar β_bear NOT single-sleeve top20 stock — exception path",
+    "AX_008": "Verification Triangulation pending — Forge + Codex + Architect ≥ 2/3 floor (this cycle 1/3 self + Codex Round next)"
+  },
+  "codex_round_pending": true,
+  "artifact_lineage": {
+    "own_deliverables": [
+      "qepm/mailbox/worktask/WT-D20260518_001/risk_package_draft.json",
+      "stage_artifacts/WT_D20260518_001/exposure_matrix.parquet",
+      "stage_artifacts/WT_D20260518_001/factor_covariance.parquet",
+      "stage_artifacts/WT_D20260518_001/specific_risk.parquet",
+      "stage_artifacts/WT_D20260518_001/covariance.parquet",
+      "stage_artifacts/WT_D20260518_001/tail_risk_evt_gpd.json",
+      "stage_artifacts/WT_D20260518_001/stress_8_windows.json",
+      "stage_artifacts/WT_D20260518_001/crowding_overlap_with_PG2_STR_1715.json",
+      "stage_artifacts/WT_D20260518_001/style_5_axis_exposure.csv",
+      "stage_artifacts/WT_D20260518_001/style_5_axis_exposure_collapsed.csv",
+      "stage_artifacts/WT_D20260518_001/regime_correlation.parquet",
+      "stage_artifacts/WT_D20260518_001/regime_correlation.csv",
+      "stage_artifacts/WT_D20260518_001/method_shopping_log_risk.json",
+      "qepm/mailbox/worktask/WT-D20260518_001/run_risk_research.R"
+    ],
+    "inputs_consumed": [
+      "qepm/mailbox/worktask/WT-D20260518_001/alpha_package.json",
+      "stage_artifacts/WT_D20260518_001/feature_panel_design_v2.parquet",
+      "stage_artifacts/WT_D20260518_001/ICIR_per_window_per_regime.csv",
+      "stage_artifacts/WT_D20260518_001/comprehensive_features_inventory.csv",
+      "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/02_holdings_universe/alpha_scores_str1715_268m.parquet",
+      "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/manifest.json"
+    ]
+  }
+}

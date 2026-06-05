@@ -26,7 +26,7 @@ suppressPackageStartupMessages({
   library(arrow)
 })
 
-PROJECT_ROOT <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+PROJECT_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 setwd(PROJECT_ROOT)
 
 cat("\n=== Step 0: KR FF5 Backfill 시작 ===\n")

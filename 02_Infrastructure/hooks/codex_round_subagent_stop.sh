@@ -21,7 +21,7 @@ trap 'echo "[$(date -Iseconds)] HOOK_ERR_TRAP" >> "$LOG"; echo "{}"; exit 0' ERR
 
 INPUT=$(cat 2>/dev/null || echo "{}")
 
-PROJ_DIR="${CLAUDE_PROJECT_DIR:-$(ls -d /mnt/c/Users/*/OneDrive/바탕*화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo "$PWD")}"
+PROJ_DIR="${CLAUDE_PROJECT_DIR:-$(ls -d /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot /mnt/c/Users/*/OneDrive/바탕*화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo "$PWD")}"
 ROUTER="$PROJ_DIR/02_Infrastructure/hooks/qvest_hook_router.py"
 
 # Agent role 추출 (JSON input에서)

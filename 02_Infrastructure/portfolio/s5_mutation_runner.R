@@ -20,7 +20,7 @@ IVOL_WEIGHT    <- MUTATION_CONFIG$ivol_weight %||% FALSE
 N_HOLDINGS     <- MUTATION_CONFIG$n_holdings %||% 30L
 COMMISSION     <- MUTATION_CONFIG$commission %||% 0.0015
 
-PROJECT_ROOT <- "/mnt/c/Users/User/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot"
+PROJECT_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 INFRA_DIR    <- file.path(PROJECT_ROOT, "02_Infrastructure")
 source(file.path(INFRA_DIR, "config.R"))
 source(file.path(INFRA_DIR, "backtest_harness.R"))

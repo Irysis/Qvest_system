@@ -60,7 +60,7 @@ suppressPackageStartupMessages({
 })
 
 # ── Paths ────────────────────────────────────────────────────────────────
-BASE_DIR  <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+BASE_DIR  <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 WT_ID     <- "WT-D20260511_001"
 WT_DIR    <- file.path(BASE_DIR, "qepm/mailbox/worktask", WT_ID)
 STAGE_DIR <- file.path(BASE_DIR, "stage_artifacts", "WT_D20260511_001")

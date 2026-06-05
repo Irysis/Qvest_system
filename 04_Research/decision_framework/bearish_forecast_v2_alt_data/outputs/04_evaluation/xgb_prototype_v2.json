@@ -1,0 +1,79 @@
+{
+  "prototype_name": "67_xgb_prototype_v2",
+  "cycle": 42,
+  "run_timestamp": "2026-05-20 10:18:55.147692",
+  "train_window": {
+    "start": "2020-01-01",
+    "end": "2023-12-31",
+    "n_rows": 987,
+    "n_positives": 214,
+    "pos_rate": 0.2168
+  },
+  "test_window": {
+    "start": "2024-01-01",
+    "end": "2026-04-30",
+    "n_rows": 565,
+    "n_positives": 157,
+    "pos_rate": 0.2779
+  },
+  "xgb_params": {
+    "max_depth": 4,
+    "eta": 0.05,
+    "ntrees_cap": 500,
+    "early_stopping": 50,
+    "pos_weight_cap": 8
+  },
+  "baseline_69": {
+    "n_features": 69,
+    "best_iter": {},
+    "prauc_oos": 0.385,
+    "prauc_oos_es": 0.3303
+  },
+  "extended_73": {
+    "n_features": 73,
+    "best_iter": {},
+    "prauc_oos": 0.4142,
+    "prauc_oos_es": 0.3772,
+    "new_features": ["vix_close_lag1", "foreign_cum_5d_lag1", "ad_ratio_5d_avg_lag1", "vkospi_lag1"]
+  },
+  "delta": 0.0291,
+  "verdict": "MARGINAL_PARTIAL_FEATURES",
+  "decision_rule": {
+    "full_5way": "ΔPR-AUC ≥ +0.03",
+    "marginal": "0 ~ +0.03",
+    "reject": "< 0"
+  },
+  "new_features_importance": [
+    {
+      "feature": "ad_ratio_5d_avg_lag1",
+      "gain": 0.0144,
+      "rank": 14,
+      "total": 60
+    },
+    {
+      "feature": "foreign_cum_5d_lag1",
+      "gain": 0.0106,
+      "rank": 20,
+      "total": 60
+    },
+    {
+      "feature": "vix_close_lag1",
+      "gain": 0.0012,
+      "rank": 43,
+      "total": 60
+    },
+    {
+      "feature": "vkospi_lag1",
+      "gain": 0.0011,
+      "rank": 47,
+      "total": 60
+    }
+  ],
+  "new_features_unused": [],
+  "outputs": {
+    "vix_csv": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/01_data/vix_daily_fred.csv",
+    "foreign_csv": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/01_data/foreign_cum_5d.csv",
+    "panel_parquet": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/01_data/feature_panel_v2_extended.parquet",
+    "pr_curve_chart": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/06_reports/charts/67_pr_curve_v2_comparison.png"
+  }
+}

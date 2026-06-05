@@ -19,7 +19,7 @@ case "$FP_LOWER" in
     WT_ID=$(echo "$FILE_PATH" | grep -oE 'WT-[DP][0-9]{8}_[0-9]{3}|WT[0-9]{8}_[0-9]{3}' | head -1 || echo "")
     [[ -z "$WT_ID" ]] && exit 0
 
-    DIR=$(ls -d /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo "$PWD")
+    DIR=$(ls -d /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo "$PWD")
     WT_DIR="$DIR/qepm/mailbox/worktask/$WT_ID"
     [[ ! -d "$WT_DIR" ]] && exit 0
 

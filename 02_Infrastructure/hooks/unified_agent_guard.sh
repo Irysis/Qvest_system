@@ -13,7 +13,7 @@ trap 'echo "{}"; exit 0' ERR  # Phase C3 전수 강제
 INPUT=$(cat)
 source "$(dirname "${BASH_SOURCE[0]:-$0}")/_shared_parse.sh"
 
-DIR=$(ls -d /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1)
+DIR=$(ls -d /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1)
 if [ -z "$DIR" ]; then echo '{}'; exit 0; fi
 
 ARTS="$DIR/stage_artifacts"

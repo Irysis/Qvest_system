@@ -1,0 +1,86 @@
+
+
+===================================================
+###### VARIANT: lasso_min ######
+===================================================
+[merge] OOS N=2531 / events=530 (20.94%)
+[lasso_min individual OOS PR-AUC] XGB=0.5673 / CAT=0.5730 / RF=0.5284 / LSTM=0.4641 / TFT=0.5852
+[lasso_min] EW5=0.5527 / WEW=0.5636
+
+----- Dynamic 5-method ensemble (lasso_min) -----
+[Static WEW] PR-AUC=0.5636
+[M1 Rolling]  PR-AUC=0.5539 
+[M2 Regime]   PR-AUC=0.5576 
+[M3 Hedge]    PR-AUC=0.5263 
+[M4 Bayes]    PR-AUC=0.5265 
+[M5 Bandit]   PR-AUC=0.5548 
+
+
+===================================================
+###### VARIANT: lasso_1se ######
+===================================================
+[merge] OOS N=2531 / events=530 (20.94%)
+[lasso_1se individual OOS PR-AUC] XGB=0.5710 / CAT=0.5762 / RF=0.4724 / LSTM=0.4634 / TFT=0.5314
+[lasso_1se] EW5=0.5469 / WEW=0.5518
+
+----- Dynamic 5-method ensemble (lasso_1se) -----
+[Static WEW] PR-AUC=0.5518
+[M1 Rolling]  PR-AUC=0.5585 ★
+[M2 Regime]   PR-AUC=0.5597 ★
+[M3 Hedge]    PR-AUC=0.4713 
+[M4 Bayes]    PR-AUC=0.4979 
+[M5 Bandit]   PR-AUC=0.5463 
+
+
+===================================================
+###### VARIANT: gbdt_top30 ######
+===================================================
+[merge] OOS N=2531 / events=530 (20.94%)
+[gbdt_top30 individual OOS PR-AUC] XGB=0.4725 / CAT=0.5882 / RF=0.5492 / LSTM=0.5165 / TFT=0.5757
+[gbdt_top30] EW5=0.6024 / WEW=0.6142
+
+----- Dynamic 5-method ensemble (gbdt_top30) -----
+[Static WEW] PR-AUC=0.6142
+[M1 Rolling]  PR-AUC=0.6141 
+[M2 Regime]   PR-AUC=0.6209 ★
+[M3 Hedge]    PR-AUC=0.5230 
+[M4 Bayes]    PR-AUC=0.5640 
+[M5 Bandit]   PR-AUC=0.6056 
+
+========== Step 6: Compare vs baselines ==========
+
+[Baselines]
+  v3b_inst (73): Static=0.5779 / M1=0.6382 / M2=0.6417
+  v1.3      (69): Static=0.5814 / M1=0.6063 / M2=0.6078
+
+[lasso_min] (n_features=6):
+  Static=0.5636 / M1=0.5539 / M2=0.5576
+  Δ M2 vs v3b_inst (0.6417): -0.0841
+  Δ M2 vs v1.3 (0.6078):     -0.0502
+  Verdict: FAIL
+
+[lasso_1se] (n_features=4):
+  Static=0.5518 / M1=0.5585 / M2=0.5597
+  Δ M2 vs v3b_inst (0.6417): -0.0820
+  Δ M2 vs v1.3 (0.6078):     -0.0481
+  Verdict: FAIL
+
+[gbdt_top30] (n_features=31):
+  Static=0.6142 / M1=0.6141 / M2=0.6209
+  Δ M2 vs v3b_inst (0.6417): -0.0208
+  Δ M2 vs v1.3 (0.6078):     +0.0131
+  Verdict: FAIL
+
+[Best variant on M2 Regime]: gbdt_top30 (M2=0.6209, Δ vs v3b_inst: -0.0208)
+[Overall Cycle 48B Verdict]: FAIL
+
+========== Step 7: Save outputs ==========
+[JSON] /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/04_evaluation/5way_retrain_v3h_pruned.json
+[Chart] /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/06_reports/charts/110_pr_curve_v3h_pruned.png
+
+========== Cycle 48B DONE ==========
+Best variant: gbdt_top30 (n_features=31)
+Overall verdict: FAIL
+  lasso_min: M2=0.5576 / Δ vs v3b_inst -0.0841 / verdict=FAIL
+  lasso_1se: M2=0.5597 / Δ vs v3b_inst -0.0820 / verdict=FAIL
+  gbdt_top30: M2=0.6209 / Δ vs v3b_inst -0.0208 / verdict=FAIL

@@ -1,0 +1,73 @@
+{
+  "cycle": "risk-research Codex Round disposition",
+  "codex_stance": "REJECT",
+  "veto_flag": false,
+  "n_concerns": 8,
+  "disposition": {
+    "C1": {
+      "severity": "HIGH",
+      "classification": "PARTIAL_ACCEPT",
+      "rationale": "Codex role prompt <=100 cond mandate respected — ridge λ=0.10 applied, cond=91.10. RF-R2 (system <=500) was PASS but Codex stricter gate now satisfied.",
+      "action_taken": "covariance.parquet replaced with cond <= 100 version"
+    },
+    "C2": {
+      "severity": "HIGH",
+      "classification": "ACCEPT_PARTIAL",
+      "rationale": "PC1 v1=58.1% v2_post_ridge=53.5% — dimension collapse acknowledged. 13 features built / 44 designed. Forge Stage 1 MANDATORY rebuild.",
+      "action_taken": "challenge_flags retain RF-R1 + RF-R-DIMENSION + honest_disclosure binding"
+    },
+    "C3": {
+      "severity": "HIGH",
+      "classification": "REBUTTAL",
+      "rationale": "Codex 2.5% CVaR cap is daily stock-level cap (PG2 admit class). Our CVaR=14.85% is MONTHLY BENCHMARK-side bear-regime CVaR, NOT portfolio overlay residual. scope mismatch — bear sensor measures BM market downside, NOT after β_bear overlay applied to portfolio. The β_bear OVERLAY itself reduces portfolio CVaR by scalar [0.3, 1.0] multiplicative cut (Forge Stage 5 will emit overlay-adjusted CVaR).",
+      "action_taken": "risk_challenge_note.md REBUTTAL with rationale + Forge Stage 5 binding"
+    },
+    "C4": {
+      "severity": "HIGH",
+      "classification": "PARTIAL_ACCEPT",
+      "rationale": "PIT t-1 expanding vol_q75 regime computed. PIT vs full-sample agreement: 88.3%. INFLATION n=31 small sample acknowledged. Codex bootstrap CI 의도적 미산출 (regime sensor design phase, Forge Stage 1 후 full validation).",
+      "action_taken": "regime_correlation_pit.parquet + regime_correlation_pit.csv saved"
+    },
+    "C5": {
+      "severity": "HIGH",
+      "classification": "PARTIAL_ACCEPT",
+      "rationale": "TDC computed empirically (Joe 1997, q=0.10): TDC_lower=0.0769, bear_to_m4_crisis=0.3143. Style HHI 0.217 acknowledged (role prompt 0.10 cap is sleeve-applied, sensor is regime not sleeve). M4 redundancy 87.7% retain HIGH flag.",
+      "action_taken": "crowding_overlap_with_PG2_STR_1715.json augmented with TDC"
+    },
+    "C6": {
+      "severity": "HIGH",
+      "classification": "PARTIAL_ACCEPT",
+      "rationale": "exposure_matrix (12 features × 5 regimes ICIR) vs covariance (13 features × 13 features) — different objects: exposure = ICIR by regime, covariance = feature × feature. 1 feature missing in exposure due to ICIR=NA in some regimes (PB12_KR_3m_yield). Forge Stage 1 후 44 features × 4 regimes full B matrix mandatory. Factor coverage 11% by PC1 single-factor model — Σ structure is multi-factor (PC1+PC2 dominant).",
+      "action_taken": "risk_challenge_note + honest_disclosure expanded"
+    },
+    "C7": {
+      "severity": "HIGH",
+      "classification": "REBUTTAL",
+      "rationale": "weights.csv = Optimizer Agent emit (NOT risk role). alpha_scores.parquet = Forge Stage 4 emit (alpha_package.json 명시: Forge cycle Stage 4). risk_challenge_note.md = 본 disposition 단계에서 작성 (Codex Round 5-step contract). Charter §10 v1.8 wt_subclass=discovery_design_phase_a 모든 alpha-research role retain — risk-research도 동일 cycle 정합.",
+      "action_taken": "risk_challenge_note.md emitted with REBUTTAL note"
+    },
+    "C8": {
+      "severity": "MEDIUM",
+      "classification": "ACCEPT",
+      "rationale": "Hill α (k=10/20/30) = 4.174/4.099/3.683 computed. CDaR_95 BM=-0.7517. Cornish-Fisher VaR_95=0.0990 / VaR_99=0.1762 computed.",
+      "action_taken": "tail_risk_evt_gpd.json augmented with Hill + CDaR + Cornish-Fisher"
+    }
+  },
+  "final_cov_state": {
+    "selected_method": "ledoit_wolf_constcor_ridge_lambda_0.10",
+    "condition_number": 91.1,
+    "min_eigenvalue": 20.863324,
+    "psd": true,
+    "n_obs": 302,
+    "n_features": 13,
+    "pc1_var_share": 0.5348,
+    "pc1_plus_pc2": 0.9085
+  },
+  "added_metrics": {
+    "hill_alpha_k20": 4.099,
+    "cdar_95_BM": -0.7517,
+    "TDC_lower_bear_alpha": 0.0769,
+    "bear_to_m4_crisis_conditional_prob": 0.3143,
+    "pit_full_regime_agreement": 0.8833
+  }
+}

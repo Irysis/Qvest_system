@@ -291,7 +291,7 @@ generate_forward_weights_str1715 <- function(
   STRAT_DIR <- tryCatch(dirname(sys.frame(1)$ofile), error = function(e) getwd())
   if (!dir.exists(STRAT_DIR)) STRAT_DIR <- getwd()
   if (basename(STRAT_DIR) != "STR_1715_WT016_Iter31_GridBestProd") {
-    cand <- file.path("/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot",
+    cand <- file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")),
                       "04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd")
     if (dir.exists(cand)) STRAT_DIR <- cand
   }
@@ -299,7 +299,7 @@ generate_forward_weights_str1715 <- function(
   PROJECT_ROOT <- if (dir.exists(PROJECT_ROOT)) {
     file.path(PROJECT_ROOT)
   } else {
-    "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+    Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
   }
 
   if (is.null(output_root)) {

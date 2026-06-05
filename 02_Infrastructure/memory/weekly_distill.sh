@@ -32,11 +32,20 @@ if (file.exists(reg_path)) {
       n_recent, sum(grades=="A"), sum(grades=="B"), sum(grades=="C"), sum(grades=="F")))
 }
 
-# 3. Axiom candidate scan
+# 3. Axiom candidate scan (v8.0 fix: 부재 qepm/R/memory/r7_axiom.R → 실제 promote.R dry-scan.
+#    구 블록은 source 실패로 매주 "Scan skipped" silent no-op였음 — 자동화 사멸 엣지 복구.)
 tryCatch({
-  source(file.path(PROJECT_ROOT, "qepm/R/memory/r7_axiom.R"))
-  candidates <- scan_axiom_candidates()
-  cat(sprintf("Axiom candidates: %d\n", length(candidates)))
+  source(file.path(PROJECT_ROOT, "02_Infrastructure/axiom/promote.R"))
+  cand_dir <- file.path(PROJECT_ROOT, "qepm/memory/axioms/candidates")
+  cands <- list.files(cand_dir, pattern="^CAND_.*\\.json$", full.names=TRUE)
+  cat(sprintf("Axiom candidates: %d\n", length(cands)))
+  for (cp in cands) {
+    r <- tryCatch(promote_to_axiom(cp, threshold=0.80, auto_inject=FALSE),
+                  error=function(e) NULL)
+    if (!is.null(r)) cat(sprintf("  %s weighted=%.3f (thr 0.80) %s\n",
+        r$candidate_id, r$weighted_score,
+        if (isTRUE(r$passed)) "PROMOTE-READY" else "below"))
+  }
 }, error = function(e) cat("[axiom] Scan skipped:", conditionMessage(e), "\n"))
 
 # 4. MEMORY.md 통계 갱신

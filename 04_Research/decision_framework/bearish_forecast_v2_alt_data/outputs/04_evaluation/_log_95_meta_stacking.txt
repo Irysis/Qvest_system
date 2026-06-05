@@ -1,0 +1,87 @@
+[95-1] Loading base predictions...
+  5way: N=2531 cols=Date,p_xgb,p_cat,p_rf,y,p_lstm,p_tft,p_ew5,p_wew
+  dyn : N=2531 cols=Date,y,regime,p_static,p_M1_rolling,p_M2_regime,p_M3_hedge,p_M4_bayes,p_M5_bandit
+  Merged: N=2531 (full coverage)
+[95-2] Train: 1721 (2016-01-04..2022-12-29) / Test: 810 (2023-01-02..2026-04-30)
+  Train events: 346 (20.10%) / Test events: 184 (22.72%)
+
+[95-3] Training meta models...
+  Ranger RF meta (LightGBM fallback): trained.
+  Logistic L2 meta: trained. lambda.min=0.02291
+
+[95-4] Test-period PR-AUC / ROC-AUC...
+  Test-period results:
+    p_meta_xgb      PR=0.4488  ROC=0.7468
+    p_meta_lgb      PR=0.4803  ROC=0.7694
+    p_meta_logit    PR=0.4820  ROC=0.7639
+    p_xgb           PR=0.3993  ROC=0.6939
+    p_cat           PR=0.4780  ROC=0.7727
+    p_rf            PR=0.4469  ROC=0.7073
+    p_lstm          PR=0.3533  ROC=0.6820
+    p_tft           PR=0.5371  ROC=0.8110
+    p_ew5           PR=0.5685  ROC=0.8465
+    p_wew           PR=0.5549  ROC=0.8376
+    p_M2_regime     PR=0.6910  ROC=0.8829
+    p_M4_bayes      PR=0.5123  ROC=0.7831
+
+[95-5] Diagnostic: interaction features (5 raw + 10 pairwise)...
+  Interaction feature dim: 15 (raw 5 + pairwise 10)
+  XGB meta + interactions: PR=0.4694  ROC=0.7710 (vs XGB meta raw PR=0.4488)
+
+[95-6] Diagnostic: blocked 5-fold time-series CV (XGB meta, full 2016-2026)...
+    Fold 2  train[2016-01-04..2018-01-24] N=506  test[2018-01-25..2020-02-19] N=506 events=95  PR=0.2410
+    Fold 3  train[2016-01-04..2020-02-19] N=1012  test[2020-02-20..2022-03-08] N=506 events=140  PR=0.6271
+    Fold 4  train[2016-01-04..2022-03-08] N=1518  test[2022-03-10..2024-03-26] N=506 events=73  PR=0.6337
+    Fold 5  train[2016-01-04..2024-03-26] N=2024  test[2024-03-27..2026-04-30] N=507 events=147  PR=0.4567
+  CV PR-AUC: mean=0.4896 sd=0.1849
+
+[95-7] Diagnostic: per-period (2016-2018 / 2019-2021 / 2022-2024 / 2025-2026)...
+    Period 2016-2018: insufficient (pre=0  period=733  events=89)
+    2019-2021 N=742 ev=221  XGB=0.6515  LOGIT=0.7723  CAT=0.8179  M2=0.7613  WEW=0.7288
+    2022-2024 N=735 ev=77  XGB=0.4972  LOGIT=0.5951  CAT=0.5338  M2=0.5146  WEW=0.6195
+    2025-2026 N=321 ev=143  XGB=0.5996  LOGIT=0.6283  CAT=0.6294  M2=0.7737  WEW=0.7482
+
+[95-8] Meta feature importance (XGB meta, base 5)...
+   Feature       Gain     Cover Frequency
+    <char>      <num>     <num>     <num>
+1:   p_cat 0.45230668 0.2475555 0.2031802
+2:    p_rf 0.21522947 0.2249162 0.2061249
+3:  p_lstm 0.15498296 0.2228237 0.2473498
+4:   p_tft 0.11135511 0.1772019 0.1931684
+5:   p_xgb 0.06612578 0.1275028 0.1501767
+
+  Logistic L2 coefficients (lambda.min):
+      feature        coef
+1 (Intercept) -4.95142063
+2       p_xgb  1.36824807
+3       p_cat  5.24620047
+4        p_rf  5.68058151
+5      p_lstm -0.05148184
+6       p_tft  0.13024068
+
+[95-9] Saving outputs...
+  Saved: /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/04_evaluation/meta_stacking_v3b_inst.json
+  Saved: /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/04_evaluation/meta_stacking_v3b_inst_importance.json
+
+[95-10] Plotting PR curves...
+  Saved chart: /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/06_reports/charts/95_meta_stacking_pr_curve.png
+
+=========================================================
+[95-FINAL] Cycle 45F Meta-Stacking Summary
+=========================================================
+  Verdict: STACKING_FAIL
+  Best meta PR-AUC (test 2023-2026): 0.4694
+  XGB meta:        PR=0.4488  ROC=0.7468
+  LGB/RF meta:     PR=0.4803  ROC=0.7694 (RF fallback)
+  Logistic L2:     PR=0.4820  ROC=0.7639
+  XGB meta + int:  PR=0.4694  ROC=0.7710
+  --- Test-window baselines ---
+  CatBoost base:   PR=0.4780
+  Dynamic M2:      PR=0.6910 (test 2023-2026 only — NOT full 2016-2026)
+  Static WEW:      PR=0.5549
+  --- Full-OOS Cycle 45B benchmarks ---
+  Dynamic M2 (2016-2026 full): 0.6417
+  Static WEW (2016-2026 full): 0.5779
+  CV 5-fold mean PR-AUC:       0.4896 (sd 0.1849)
+=========================================================
+DONE.

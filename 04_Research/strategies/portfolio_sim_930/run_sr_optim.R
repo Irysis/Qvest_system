@@ -13,7 +13,7 @@ suppressPackageStartupMessages({
 # =============================================================
 # 1. 데이터 로드 및 정합
 # =============================================================
-BASE <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+BASE <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 
 # 1-a. 4슬리브 월별 수익률 (VDplus, Q07_proxy, STR_930)
 rets_raw <- fread(file.path(BASE, "04_Research/strategies/portfolio_sim_930/portfolio_4sleeve_monthly_rets.csv"))
@@ -348,7 +348,7 @@ cat("=================================================================\n\n")
 # =============================================================
 # 7. 결과 저장
 # =============================================================
-OUT_DIR <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/strategies/portfolio_sim_930"
+OUT_DIR <- file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")), "04_Research/strategies/portfolio_sim_930")
 
 # OOS 수익률 시계열 저장
 oos_result <- data.table(

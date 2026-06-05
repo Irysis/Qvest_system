@@ -1,0 +1,69 @@
+{
+  "idea": "order_param_critical_slowing",
+  "generated": "2026-05-30 09:59:08.526252",
+  "screen_only": true,
+  "tradeable": false,
+  "data": {
+    "bm_days": 8947,
+    "op_days": 4200,
+    "op_range": [
+      "2007-01-02",
+      "2023-12-28"
+    ],
+    "ols_sample_n": 4073,
+    "lockbox": "2023-12-22"
+  },
+  "event_study": {
+    "Lehman_2008": {
+      "found": true,
+      "bear_date": "2008-09-12",
+      "ews_pctl_at_bear": 0.933,
+      "ews_combo_at_bear": 7.369,
+      "lead_days_pctl80": 30,
+      "led_before": true
+    },
+    "Euro_2011": {
+      "found": true,
+      "bear_date": "2011-08-08",
+      "ews_pctl_at_bear": 0.262,
+      "ews_combo_at_bear": -0.844,
+      "lead_days_pctl80": "NA",
+      "led_before": false
+    },
+    "COVID_2020": {
+      "found": true,
+      "bear_date": "2020-02-19",
+      "ews_pctl_at_bear": 0.024,
+      "ews_combo_at_bear": -3.309,
+      "lead_days_pctl80": "NA",
+      "led_before": false
+    },
+    "Stagflation_2022": {
+      "found": true,
+      "bear_date": "2022-09-26",
+      "ews_pctl_at_bear": 0.663,
+      "ews_combo_at_bear": 2.408,
+      "lead_days_pctl80": 30,
+      "led_before": true
+    }
+  },
+  "ols": {
+    "ews_combo_t_over_MRS": -2.767,
+    "ews_combo_est_over_MRS": -0.00094,
+    "ews_combo_t_full_with_eigen": -6.015,
+    "ews_combo_hac_t_NW21": -0.75,
+    "eigen_lambda1_t": 4.658,
+    "eigen_incumbent_bar": 1.74,
+    "expected_sign": "negative (pre-transition EWS elevated => lower forward return)"
+  },
+  "go_criterion": {
+    "n_bears_led": 2,
+    "incremental_t_used": -0.75,
+    "beats_eigen_174": false,
+    "correct_sign": true,
+    "GO": false
+  },
+  "verdict": "NO_GO",
+  "verdict_reason": "(1) Event-study: only 2/4 KR bears led (Lehman, Stagflation); COVID-2020 EWS at 2nd pctile (anti-signal) and Euro-2011 at 26th pctile -> not majority-leading. (2) RE_MRS-incremental: naive OLS |t|=2.77 with correct (negative) sign, but Newey-West HAC(lag=21) |t|=0.75 once 21d overlapping-label autocorrelation is corrected -> below |t|>=2 bar AND below the EIGEN-ENTRY 1.74 bar. (3) Same line as EIGEN-ENTRY (lambda1-share t=1.74 fail): dispersion+critical-slowing construction crosses the SAME line. The naive in-sample t looks strong but is an overlapping-label artifact; corrected incremental power over RE_MRS is absent.",
+  "honesty_note": "Naive OLS t=-2.77 NOT reported as the screen metric; HAC-NW21 t=-0.75 is the load-bearing number (21d overlapping forward labels mandate HAC). Reporting naive t would overstate. RE_HY_z control dropped (all-NA in daily Factor DB) -> 3-factor MRS control (mrs+vix+ts)."
+}

@@ -21,7 +21,7 @@ suppressPackageStartupMessages({
 })
 
 # ─── Project root ────────────────────────────────────────────────────────────
-PROJECT_ROOT <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+PROJECT_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 TEMPLATES_DIR <- file.path(PROJECT_ROOT, "02_Infrastructure/ops/templates")
 LOCK_FILE <- "/tmp/qvest_research_philosophy_update.lock"
 LOG_FILE <- file.path(PROJECT_ROOT, "qepm/observability/research_philosophy_update_log.jsonl")

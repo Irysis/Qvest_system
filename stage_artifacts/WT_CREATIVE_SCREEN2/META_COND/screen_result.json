@@ -1,0 +1,47 @@
+{
+  "status": "computed",
+  "test_type": "regime-conditional-spread (family conditional IC)",
+  "scope": "cheap_screen_advisory_only",
+  "pit": {
+    "regime": "regime_v7 apply_month (PIT-applied, lagged)",
+    "lockbox": "2023-12-22",
+    "ic_source": "factor_ic_monthly (C14 Usable_Date>=Date, sign-aligned IC)",
+    "load": "cache parquet (C15)"
+  },
+  "regime_states": [
+    "Crisis",
+    "Normal",
+    "Transition_LR"
+  ],
+  "n_months_overlap": 227,
+  "month_range": [
+    "200501",
+    "202311"
+  ],
+  "n_families_evaluated": 12,
+  "families_evaluated": [
+    "accrual",
+    "consensus",
+    "crowding",
+    "defense",
+    "growth",
+    "liquidity",
+    "momentum",
+    "quality",
+    "regime",
+    "risk",
+    "size",
+    "value"
+  ],
+  "n_sign_divergent": 0,
+  "families_sign_divergent": [],
+  "families_cross_zero_ge1pct": [],
+  "go_threshold": ">=3 sign-divergent families (|t|>=1.5, n>=12)",
+  "decision": "NO-GO (advisory)",
+  "caveat": "screen/advisory only, NOT tradeable (Cycle2). IC sign-flip across regimes is the selector premise; magnitude-only variation is already captured by regime-beta overlays and does not qualify. If GO, canonical step must re-test under long-only top20 production constraints.",
+  "data_sufficiency_caveat": {
+    "issue": "Crisis state collapsed to n=1 month after IC overlap (regime_v7 Crisis months mostly predate 2005 IC coverage or fall in months without IC). Effective test is 2-state: Normal(201) vs Transition_LR(25).",
+    "implication": "The most selector-relevant regime (Crisis) is underpowered. NO-GO rests on no sign-flip between Normal and Transition_LR. A canonical follow-up wanting to rescue the idea would need a Crisis-rich IC window (pre-2005 IC unavailable) or a finer regime with more crisis mass.",
+    "secondary_finding": "2 families (risk, crowding) show significantly NEGATIVE conditional IC in at least one state (their raw signals invert), and 7 families significantly positive; but NO family is both +sig and -sig, so 0 sign-divergent."
+  }
+}

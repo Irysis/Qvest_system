@@ -7,7 +7,7 @@ suppressPackageStartupMessages({
   library(data.table)
 })
 
-PROJECT_ROOT <- "/mnt/c/Users/User/OneDrive/\xeb\xb0\x94\xed\x83\x95 \xed\x99\x94\xeb\xa9\xb4/Quant_Module_Moltbot"
+PROJECT_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 FUNC_PATH    <- file.path(PROJECT_ROOT, "02_Infrastructure")
 STRAT_DIR    <- file.path(PROJECT_ROOT, "04_Research/strategies/STR_1698_WT008_M08_Swap")
 OUT_DIR      <- file.path(STRAT_DIR, "backtest_result")

@@ -1,0 +1,186 @@
+{
+  "cycle": "45B",
+  "approach": "INSTITUTIONAL_FLOW_SUITE",
+  "description": "Mirror Cycle 43 (foreign breadth) on institutional flow axis. 4 NEW features (inst_ad_ratio 5d/20d + hhi + vs_foreign_divergence) all lag1 PIT-safe.",
+  "baseline_v1_3": {
+    "n_features": 69,
+    "static_wew_y_tail_q15": 0.5814,
+    "m1_rolling_y_tail_q15": 0.6063,
+    "m2_regime_y_tail_q15": 0.6078
+  },
+  "v3b_inst_suite": {
+    "n_features": 73,
+    "new_features": ["inst_ad_ratio_5d_avg_lag1", "inst_ad_ratio_20d_avg_lag1", "inst_hhi_buy_lag1", "inst_vs_foreign_divergence_5d_lag1"],
+    "inst_sheet_name_verified": "기관",
+    "individual_OOS_PRAUC_y_tail_q15": {
+      "xgb": 0.5307,
+      "cat": 0.6156,
+      "rf": 0.5693,
+      "lstm": 0.239,
+      "tft": 0.444
+    },
+    "individual_OOS_PRAUC_y_onset": {
+      "xgb": 0.1123,
+      "cat": 0.0983,
+      "rf": 0.1003,
+      "lstm": 0.108,
+      "tft": 0.1072
+    },
+    "static_ew5_y_tail_q15": 0.5218,
+    "static_wew_y_tail_q15": 0.5779,
+    "dynamic_PRAUC_y_tail_q15": [0.5779, 0.6382, 0.6417, 0.5789, 0.6018, 0.5438],
+    "dynamic_PRAUC_y_onset": [0.1789, 0.1128, 0.1284, 0.1514, 0.1477, 0.1642],
+    "feature_importance": {
+      "xgb": 0.5307,
+      "cat": 0.6156,
+      "rf": 0.5693,
+      "ew3": 0.6035,
+      "imp_new_xgb": [
+        {
+          "feature": "inst_ad_ratio_20d_avg_lag1",
+          "gain": 0.029,
+          "rank": 11,
+          "total": 47
+        },
+        {
+          "feature": "inst_vs_foreign_divergence_5d_lag1",
+          "gain": 0.0248,
+          "rank": 16,
+          "total": 47
+        },
+        {
+          "feature": "inst_ad_ratio_5d_avg_lag1",
+          "gain": 0.018,
+          "rank": 21,
+          "total": 47
+        },
+        {
+          "feature": "inst_hhi_buy_lag1",
+          "gain": 0.0153,
+          "rank": 22,
+          "total": 47
+        }
+      ],
+      "imp_new_cat": [
+        {
+          "feature": "inst_ad_ratio_20d_avg_lag1",
+          "gain": 3.3808,
+          "rank": 10,
+          "total": 73
+        },
+        {
+          "feature": "inst_vs_foreign_divergence_5d_lag1",
+          "gain": 2.1693,
+          "rank": 14,
+          "total": 73
+        },
+        {
+          "feature": "inst_ad_ratio_5d_avg_lag1",
+          "gain": 2.0857,
+          "rank": 16,
+          "total": 73
+        },
+        {
+          "feature": "inst_hhi_buy_lag1",
+          "gain": 0.2971,
+          "rank": 34,
+          "total": 73
+        }
+      ],
+      "imp_new_rf": [
+        {
+          "feature": "inst_ad_ratio_20d_avg_lag1",
+          "gain": 35.6054,
+          "rank": 7,
+          "total": 73
+        },
+        {
+          "feature": "inst_vs_foreign_divergence_5d_lag1",
+          "gain": 34.5034,
+          "rank": 8,
+          "total": 73
+        },
+        {
+          "feature": "inst_ad_ratio_5d_avg_lag1",
+          "gain": 29.4457,
+          "rank": 13,
+          "total": 73
+        },
+        {
+          "feature": "inst_hhi_buy_lag1",
+          "gain": 20.9778,
+          "rank": 26,
+          "total": 73
+        }
+      ],
+      "top10_xgb": [
+        {
+          "feature": "us_sector_avg_z",
+          "gain": 0.1626,
+          "rank": 1
+        },
+        {
+          "feature": "us_sector_avg_z_lag1",
+          "gain": 0.1055,
+          "rank": 2
+        },
+        {
+          "feature": "us_sector_dispersion_z_rm63",
+          "gain": 0.0865,
+          "rank": 3
+        },
+        {
+          "feature": "us_sector_avg_z_rsd63",
+          "gain": 0.0466,
+          "rank": 4
+        },
+        {
+          "feature": "bbva_transmission_z_rm63",
+          "gain": 0.0397,
+          "rank": 5
+        },
+        {
+          "feature": "us_sector_avg_z_lag5",
+          "gain": 0.0393,
+          "rank": 6
+        },
+        {
+          "feature": "us_sector_avg_z_rm63",
+          "gain": 0.0374,
+          "rank": 7
+        },
+        {
+          "feature": "us_sector_dispersion_z_rm21",
+          "gain": 0.0339,
+          "rank": 8
+        },
+        {
+          "feature": "us_sector_avg_z_lag21",
+          "gain": 0.0299,
+          "rank": 9
+        },
+        {
+          "feature": "bbva_macro_composite_rsd63",
+          "gain": 0.0296,
+          "rank": 10
+        }
+      ]
+    }
+  },
+  "delta_vs_baseline": {
+    "delta_static_wew": -0.0035,
+    "delta_m1_rolling": 0.0319,
+    "delta_m2_regime": 0.0339
+  },
+  "verdict": "CONTINUE",
+  "decision_rule": {
+    "continue": "Δ M2 Regime ≥ +0.01",
+    "marginal": "0 ~ +0.01",
+    "regression": "< 0"
+  },
+  "outputs": {
+    "panel": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/01_data/feature_panel_v3b_inst_suite.parquet",
+    "v3b_dir": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/03_models/v3b_inst_suite",
+    "chart": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/06_reports/charts/80_pr_curve_v3b_inst_suite.png"
+  }
+}

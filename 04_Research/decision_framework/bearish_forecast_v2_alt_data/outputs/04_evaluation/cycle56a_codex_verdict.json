@@ -1,0 +1,88 @@
+{
+  "overall_verdict": "PASS",
+  "review_method": "codex exec -s read-only - (stdin)",
+  "model_session": "Cycle 56A code-only verification (167b template + 5 wrappers + 172 aggregator)",
+  "summary": "All 9 verification axes passed. No functional q126 leakage in q15 paths beyond reference comments. 3 review-level concerns (M6 warning-only / 172 aggregator missing date+y alignment assertion / 'period-balanced bootstrap CI' wording overstates implementation).",
+  "verifications": {
+    "bug1_purged_cv_q15_correctness": {
+      "status": "PASS",
+      "horizon_correct": "TARGET_HORIZON_DAYS=21 substituted correctly (vs 55A 126)",
+      "busday_offset_logic": "np.busday_offset(dates_seq, 21, roll='forward') < valid_start — identical pattern to 55A 157",
+      "vs_55a_157": "identical pattern with H=21 substituted"
+    },
+    "bug2_y_valid_mask_propagation": {
+      "status": "PASS",
+      "5_sites_check": ["standardize_for_window train_mask_extra", "train_idx", "valid_idx", "OOS mask", "standardization data"],
+      "horizon_col": "ret_q15.notna() — auto-derived via target_col.replace('y_tail_','ret_')"
+    },
+    "M6_observable_target_switch": {
+      "status": "PASS",
+      "file_path_correct": "TGT/targets_long_horizon_observable.parquet (line 258)",
+      "assertion_at_load": "n_phantom counted at load (line 279) — WARNING only, not hard assertion",
+      "vs_55a": "55A used buggy targets_long_horizon (21 phantom-0 for q15); 56A switches to observable (0 phantom-0)"
+    },
+    "M7_pub_lag_acknowledgment": {
+      "status": "ACKNOWLEDGED",
+      "documented_in_audit_json": "pit_fixes_applied.M7_pub_lag_acknowledged exists (line 771 + aggregator R line 244)"
+    },
+    "fold3_skip_removal": {
+      "status": "PASS",
+      "q15_events_per_fold": "All 5 folds have n_bear >= 5 (verified pre-cycle R audit: 119/57/33/66/29)",
+      "SKIP_FOLDS_PER_TARGET_correct": "{'y_tail_q15': []} empty list (line 95)"
+    },
+    "5_wrapper_consistency": {
+      "status": "PASS",
+      "per_wrapper": {
+        "167_53h_v5e": "v5e_q126_usmacro panel (74 feat), patch=4 d=64",
+        "168_53b_v5b": "v4a_combined panel (70 feat), patch=4 d=64",
+        "169_53i_v5f": "v5f_ecos_kr panel (79 feat), patch=4 d=64",
+        "170_54a_v3": "v4a panel (70 feat), patch=7 d=64 stride=2",
+        "171_54a_v4": "v4a panel (70 feat), patch=4 d=32 stride=2"
+      },
+      "all_point_to_167b_template": true,
+      "output_dir_consistent": "outputs/03_models/cycle56a_q15_strict_PIT"
+    },
+    "172_aggregator_consistency": {
+      "status": "PASS",
+      "target_col_in_pattern": "predictions_*_seed*_y_tail_q15.parquet (lines 81-93)",
+      "baselines_referenced": ["55a q126 0.5473 (relative)", "54e new 5seed q15 0.19-0.26 (absolute)"],
+      "period_partitions": "EuroAfter 2018-19 / Covid 2020-21 / Recent 2022-26 (lines 172-174)"
+    },
+    "strict_determinism_inherit": {
+      "status": "PASS",
+      "env_var": "CUBLAS_WORKSPACE_CONFIG=:4096:8 (line 42)",
+      "cudnn_flags": "deterministic=True (line 62), benchmark=False (line 63)",
+      "per_seed_set_seed": "torch + numpy + random + cuda.manual_seed_all (lines 233-241)"
+    }
+  },
+  "code_quality_concerns": [
+    {
+      "severity": "LOW",
+      "file": "scripts/167b_patchtst_strict_PIT_q15_template.py",
+      "line": "278-284",
+      "issue": "M6 phantom-0 assertion is print WARNING only, not assert/raise. If a future cycle accidentally points to buggy targets_long_horizon.parquet, training would silently include phantom-0 contamination.",
+      "recommendation": "Replace `if n_phantom > 0: print WARNING` with `assert n_phantom == 0, f'M6 phantom-0 violation: {n_phantom} rows'` for hard-fail."
+    },
+    {
+      "severity": "LOW",
+      "file": "scripts/172_q15_strict_PIT_aggregate.R",
+      "line": "129-135",
+      "issue": "Aggregator computes rowMeans on preds_matrix without first asserting that all per-seed predictions have identical Date and y vectors (167b template's build_5seed_mean_ensemble does this via raise on mismatch).",
+      "recommendation": "Add Date+y identity assertions before rowMeans (data hygiene; current pipeline guarantees consistency by construction but defensive check is cheap)."
+    },
+    {
+      "severity": "LOW",
+      "file": "scripts/172_q15_strict_PIT_aggregate.R",
+      "line": "11",
+      "issue": "Header docstring labels period-bucket evaluation as 'Period-balanced bootstrap CI' but implementation uses plain bootstrap CI + non-stratified period partitions. Slight semantic overstatement (doesn't affect numeric correctness).",
+      "recommendation": "Reword to 'plain bootstrap CI + period-partitioned lift_vs_base' for accuracy."
+    }
+  ],
+  "self_rationalization_grep": "PASS — no '미미 / 관행적 / 보수적이면 OK / 대부분 결과 동일 / 이미반영' phrases found that would indicate logic-bypass; only ACKNOWLEDGED labels for M7 inheritance with explicit < 0.005 PR-AUC impact citation",
+  "remaining_risks": [
+    "M7 pub-lag inheritance from v5e/v4a/v5f panels (acknowledged, not patched in 56A) — impact est < 0.005 PR-AUC per 55B Codex agreement",
+    "M6 phantom-0 violation would silently degrade results if someone manually points template at buggy target file (warning print may scroll off)",
+    "172 aggregator lacks date/y identity assertion (low-prob but possible if file naming convention diverges between cycles)"
+  ],
+  "verdict_capture_note": "Codex stdout reported verdict structure but could not write /tmp/cycle56a_codex_verdict.json due to read-only sandbox. Q-Lead has transcribed this verdict to outputs/04_evaluation/cycle56a_codex_verdict.json from codex stdout final block."
+}

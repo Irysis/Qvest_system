@@ -3,13 +3,13 @@
   "wt_type": "discovery",
   "wt_subclass_charter_v18": "discovery_design_phase_a",
   "design_name": "DPL_KR_v3 — Original Direct Portfolio Learning Redesign (Standalone Alpha, v1~v5 Learning Integrated + 도훈 mandate 2026-05-19 Historical Coverage Extension 1990~2026)",
-  "phase": "OPTIMIZER_DONE",
+  "phase": "FORGE_DRAFT_EMITTED_PENDING_CODEX_ROUND",
   "phase_origin": "PD47_DPL_KR_V3_ORIGINAL_REDESIGN_POST_5_CYCLE_LEARNING",
-  "current_stage": "optimizer-research",
-  "next_stage": "forge",
-  "forge_status": "BLOCKED_SESSION_82_EIO_ENVIRONMENT",
-  "last_updated": "2026-05-18T12:30:00+09:00",
-  "recovery_session": "Session 83 — fresh session 이행 (도훈 mandate 2026-05-18)",
+  "current_stage": "forge",
+  "next_stage": "codex_round_then_architect_2nd_round",
+  "forge_status": "FORGE_DRAFT_DONE_SESSION_83_RECOVERED_FROM_SESSION_82_EIO",
+  "last_updated": "2026-05-18T22:59:30+09:00",
+  "recovery_session": "Session 83 — fresh session 이행 (도훈 mandate 2026-05-18). Successful recovery from Session 82 EIO blocker.",
   "stage_history": [
     {
       "stage": "alpha-research",
@@ -48,6 +48,14 @@
       "blocked_at": "2026-05-18T12:30:00+09:00",
       "outcome": "BLOCKED_SESSION_82_EIO — Bash + Write tool 1시간+ EIO 차단 (다른 Claude Code 워커 venv install task output sink cleanup 충돌). 3-package read OK, NN train 시작 못함. AX-002 honest block declaration (self_synthesis_used=false strict). Forge agent inline architecture spec (dpl_v3_train.py + run_all.R) Session 82 conversation transcript에 보존. Session 83에서 fresh 세션 + re-spawn 필요.",
       "ax_002_declaration": "self_synthesis_used=false strict, no fabricated metrics, honest block per answer-principles 5금지"
+    },
+    {
+      "stage": "forge",
+      "session_id": "Session 83 — fresh recovery",
+      "completed_at": "2026-05-18T22:59:30+09:00",
+      "outcome": "FORGE_DRAFT_DONE — DPL_KR_v3 full backtest 24.31y (2001-07~2026-04) complete. Architect A-3 CRITICAL post-PA re-projection self-reconcile IMPLEMENTED + verified. Trainable params 14,305 (alpha v2 17K claim drift documented). Features 61/80 fdb_m_ honest scope (19 deferred). Realized: SR 0.4251 (vs KOSPI 0.5287 -0.10 underperform), MDD -53.38% (vs KOSPI -54.54% +1.16pp), CAGR 11.12%, Cum 1196%, Sortino 0.0474, Calmar 0.2082. Constraint: n=20 strict 0 violations, sum_w 0 violations, max_w 8/298 marginal breach +0.5% (PAN max_iter=3 limit). AX-002 strict: self_synthesis_used=false, rawdata SHA mismatch honest (RF-R7 inherit), trial budget 39/100 honest (Codex C7 AMENDMENT compliant). G1 SR floor 1.0 FAIL → hypothesis falsified. Scenario C reject (STR_1715 100% retain). bt_result.rds SHA256 aebbc370... emit + lookahead_scan PASS all 13 windows.",
+      "ax_002_declaration": "self_synthesis_used=false strict verified, rawdata + bt_result SHA256 binding emit, 8 challenge flags honest disclosed, 4 ACCEPT_HONEST findings (G1 FAIL + feature scope + max_w breach + SHA mismatch)",
+      "codex_round_status": "AUTO_SPAWN_PENDING (PostToolUse hook codex_round_auto_trigger.sh on forge_package_draft.json)"
     }
   ],
   "constraints_summary": {
@@ -61,12 +69,13 @@
     "mdd_pct_max": -0.25
   },
   "ax_008_status": {
-    "forge": "PENDING_SESSION_83",
-    "codex": "REJECT_disposed_3_rounds_alpha_risk_optimizer_each_PARTIAL_waiver",
-    "architect": "PASS_PARTIAL",
-    "current": "1_of_3_PASS_PARTIAL",
-    "floor_required_at_admit_G6": "2_of_3"
+    "forge": "PASS_PARTIAL_WITH_G1_FAIL — honest report PASS (no fabrication), but performance gate G1 SR floor 1.0 FAIL → hypothesis falsified",
+    "codex": "AUTO_SPAWN_PENDING_FORGE_DRAFT_TRIGGER",
+    "architect": "1ST_ROUND_PASS_PARTIAL_inherit_2nd_round_PENDING_for_bt_result_rds_verification",
+    "current": "1_of_3_PASS_PARTIAL_pre_codex",
+    "floor_required_at_admit_G6": "2_of_3 — but admission already determined REJECT due to G1 FAIL, AX-008 quorum is for honest_report endorsement not admission"
   },
+  "final_verdict_pending": "REJECT_HYPOTHESIS_FALSIFIED (G1 SR 0.4251 < 1.0 mandate). Scenario C reject (STR_1715 100% retain). Book state unchanged.",
   "session_83_resumption_plan": {
     "p0_1": "status.json 정합 확인 (본 file 정합 검증)",
     "p0_2": "Forge re-spawn fresh session — dpl_v3_train.py + run_all.R inline spec from Session 82 transcript inherit",

@@ -8,7 +8,7 @@ suppressPackageStartupMessages({
   library(xts)
 })
 
-source("/mnt/c/Users/User/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot/02_Infrastructure/config.R")
+source(file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")), "02_Infrastructure/config.R"))
 source(file.path(FACTOR_DB_DIR, "factor_db_connector.R"))
 
 STRAT_BASE <- file.path(PROJECT_ROOT, "research_output", "strategies")

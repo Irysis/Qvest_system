@@ -1,0 +1,102 @@
+{
+  "task_id": "WT-D20260518_001",
+  "agent": "alpha-research",
+  "cycle_date": "2026-05-18",
+  "mcp_servers_used": {
+    "arxiv": {
+      "tool": "mcp__arxiv__search_papers",
+      "n_searches": 8,
+      "keywords": ["bear market prediction probability calibration", "regime switching equity prediction macroeconomic ensemble", "imbalanced classification cost sensitive financial", "VIX implied volatility forecasting term structure equity", "crash prediction stock market crisis tail risk early warning", "Korea KOSPI machine learning prediction emerging market", "isotonic regression probability calibration Platt scaling", "Deflated Sharpe Ratio Bailey Lopez de Prado"],
+      "n_papers_returned": 65,
+      "n_papers_relevant": 18,
+      "key_findings": "Fonseca-Lopes 2017 (isotonic time-series), Bie-Diebold 2024 (tree regime switching), Karasan 2025 (ML crash risk), Neela 2025 (multi-layer graph crash warning), Berta 2023 (ROC-reg isotonic)",
+      "contribution": "v2.0 4-axis mandate 학술 grounding 확보. 18 new arxiv references."
+    },
+    "jina_arxiv": {
+      "tool": "mcp__jina__parallel_search_arxiv",
+      "n_searches_attempted": 10,
+      "status": "BLOCKED Payment Required → fallback to mcp__arxiv__search_papers",
+      "contribution": "0 (fallback used)"
+    },
+    "jina_web": {
+      "tool": "mcp__jina__search_web",
+      "n_searches": 0,
+      "note": "Same Payment Required block expected, skip"
+    },
+    "fred": {
+      "tool": "mcp__fred__get_series (planned for Phase B FRED feature extraction)",
+      "n_features_using_FRED": 26,
+      "series_used": ["DGS10", "DGS3MO", "DGS2", "T10Y2Y", "VIXCLS", "BAMLH0A0HYM2", "BAMLC0A4CBBB", "DTWEXBGS", "DEXKOUS", "DCOILWTICO", "SP500", "UMCSENT", "INDPRO", "CPIAUCSL", "FEDFUNDS", "NFCI", "STLFSI4", "DRTSCILM", "PERMIT", "ICSA", "M2SL"],
+      "cache_status": ".cache/fred_macro_wide.parquet exists with 22 series 2000-2026 (8166 obs)",
+      "contribution": "F01-F02,F06-F09,F11-F13,F18-F22,F24 = 21 features. Phase B PB08 GARCH proxy."
+    },
+    "yfinance": {
+      "tool": "mcp__yfinance__download (planned for cross-validation)",
+      "n_features_using_yfinance": 0,
+      "planned_use": "Cross-asset KOSPI200 ^KS200 / S&P ^GSPC / Nikkei ^N225 / EWY for global correlation verification",
+      "contribution": "Forge cycle (deferred — alpha-research uses existing parquet caches)"
+    },
+    "rss_reader": {
+      "tool": "mcp__rss-reader__fetch_feed_entries",
+      "n_features_using_rss": 0,
+      "planned_use": "Bloomberg/Reuters/FT news sentiment count (deferred Forge cycle)",
+      "contribution": "n/a alpha-research cycle (architectural design phase)"
+    }
+  },
+  "internal_data_sources": {
+    "factor_db": {
+      "path": ".cache/factor_db/factor_db_YYYYMM.parquet (288 monthly + 309 daily)",
+      "n_features_used": 4,
+      "features": ["F14_KOSPI_realized_vol", "F31_Defensive_vs_Cyclical_spread", "F32_Defensive_Rotation_zscore", "F26_F28_SEFRS_inherit"],
+      "load_method": "load_month_factors() via C13~C15 PIT-safe",
+      "contribution": "S1 universal features (1990~) + SEFRS Phase A inherit"
+    },
+    "benchmark": {
+      "path": ".cache/benchmark.parquet",
+      "coverage": "1990-01-04 ~ 2026-05-18, 8954 daily obs",
+      "n_obs_monthly": 437,
+      "contribution": "BM_Ret KOSPI200 (target label + F14 realized vol source)"
+    },
+    "investor_wide": {
+      "path": ".cache/investor_stock/investor_wide.parquet",
+      "coverage": "2000-01-03 ~ 2026-03-26, 10.2M rows",
+      "contribution": "F29_F30 foreign net sell + PB06 KRX foreign equity flow"
+    },
+    "fred_macro": {
+      "path": ".cache/fred_macro_wide.parquet",
+      "coverage": "2000-01-01 ~ 2026-05-15, 8166 obs, 22 series",
+      "contribution": "F01-F02 yield curve, F06-F09 US LEI, F11-F13 VIX, F18-F19 FX, F20-F22 financial conditions, F24 credit"
+    },
+    "ecos_bond_rates": {
+      "path": ".cache/ecos_bond_rates.parquet",
+      "coverage": "2001-01-01 ~ 2026-03-17, 37835 rows, 7 series",
+      "series": ["KR_Gov3Y", "KR_Gov10Y", "KR_CorpAA", "KR_CorpBBB", "KR_CD91", "KR_Call1D", "KR_CPI"],
+      "contribution": "F04 KR yield curve + F23/F25 KR credit + PB04/PB09 Phase B"
+    },
+    "consensus": {
+      "path": ".cache/consensus/",
+      "coverage": "eps_chg_3m.parquet + esbr.parquet etc",
+      "contribution": "PB11 EPS revision breadth + future PB07 forward P/E"
+    }
+  },
+  "contribution_summary": {
+    "features_total": 44,
+    "features_built_v1_0": 24,
+    "features_phase_b_new": 12,
+    "features_inherited_from_v1_0_schema": 8,
+    "academic_references_total": 27,
+    "academic_references_inherited": 8,
+    "academic_references_new_v2_0": 19,
+    "mcp_servers_actually_used": 1,
+    "mcp_servers_planned_deferred": 4,
+    "internal_caches_used": 6
+  },
+  "honest_disclosure": {
+    "jina_arxiv_blocked": true,
+    "yfinance_deferred_reason": "alpha-research cycle is architectural design phase. Cross-asset price verification deferred to Forge cycle.",
+    "rss_reader_deferred_reason": "News sentiment lexicon-based features deferred to Forge cycle (PB07/PB11 EPS revision proxy used).",
+    "self_synthesis_used": false,
+    "empirical_base_rate_computed_from_data": "0.186 at -5% threshold, NOT v1.0 plan 0.13",
+    "self_synthesis_prohibited_per_AX_002": "if Phase B fetch fails Path A+B+C, DROP feature (no synthesis)"
+  }
+}

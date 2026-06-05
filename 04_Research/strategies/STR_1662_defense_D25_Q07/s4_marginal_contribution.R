@@ -14,7 +14,7 @@ suppressPackageStartupMessages({
 cat("[1] 데이터 로드\n")
 
 ## STR_1631 — daily_nav.csv에서 월말 수익률 추출 (overlay 컬럼 사용)
-nav1631_raw <- fread("/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/strategies/STR_1631/output/daily_nav.csv")
+nav1631_raw <- fread(file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")), "04_Research/strategies/STR_1631/output/daily_nav.csv"))
 colnames(nav1631_raw)
 cat("  STR_1631 daily_nav rows:", nrow(nav1631_raw), "\n")
 
@@ -35,7 +35,7 @@ cat("  STR_1631 monthly rows:", nrow(nav1631_monthly), "\n")
 cat("  STR_1631 기간:", format(min(nav1631_monthly$Date), "%Y-%m"), "~", format(max(nav1631_monthly$Date), "%Y-%m"), "\n")
 
 ## STR_1656 — nav_S1_B.csv (최우수 변종)
-nav1656_raw <- fread("/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/strategies/STR_1656_MLRA/output/nav_S1_B.csv")
+nav1656_raw <- fread(file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")), "04_Research/strategies/STR_1656_MLRA/output/nav_S1_B.csv"))
 cat("  STR_1656 nav cols:", paste(colnames(nav1656_raw), collapse=", "), "\n")
 cat("  STR_1656 rows:", nrow(nav1656_raw), "\n")
 
@@ -54,7 +54,7 @@ cat("  STR_1656 monthly rows:", nrow(nav1656_monthly), "\n")
 cat("  STR_1656 기간:", format(min(nav1656_monthly$Date), "%Y-%m"), "~", format(max(nav1656_monthly$Date), "%Y-%m"), "\n")
 
 ## STR_1662a — performance CSV (port_ret 컬럼)
-nav1662_raw <- fread("/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/strategies/STR_1662_defense_D25_Q07/output/performance_STR_1662a.csv")
+nav1662_raw <- fread(file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")), "04_Research/strategies/STR_1662_defense_D25_Q07/output/performance_STR_1662a.csv"))
 cat("  STR_1662a cols:", paste(colnames(nav1662_raw), collapse=", "), "\n")
 cat("  STR_1662a rows:", nrow(nav1662_raw), "\n")
 
@@ -286,6 +286,6 @@ s4_result <- list(
   )
 )
 
-saveRDS(s4_result, "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/strategies/STR_1662_defense_D25_Q07/output/s4_result.rds")
+saveRDS(s4_result, file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")), "04_Research/strategies/STR_1662_defense_D25_Q07/output/s4_result.rds"))
 cat("  s4_result.rds 저장 완료\n")
 cat("\n=== S4 한계기여 검증 완료 ===\n")

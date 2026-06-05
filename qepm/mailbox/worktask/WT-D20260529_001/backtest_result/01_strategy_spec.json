@@ -1,0 +1,20 @@
+{
+  "run_id": "WT-D20260529_001_FLOW_forge_20260529165922",
+  "strategy_id": "WT_D20260529_001_FLOW",
+  "strategy_name": "FLOW investor-flow contrarian sleeve (EW hysteresis buffer en50)",
+  "strategy_family": "investor_flow_contrarian",
+  "signal_description": "Contrarian composite INV02/04/09/11/07; quarterly rebal; 20 names EW buffered",
+  "universe_rule": "KOSPI200 U KOSDAQ150, LIQ>=2e8",
+  "rebalance_frequency": "quarterly_carry_daily_nav",
+  "signal_date_rule": "quarter_end_as_of",
+  "execution_date_rule": "signal_t_plus_1",
+  "weighting_method": "EW_hysteresis_buffer_en50",
+  "max_position_weight": 0.05,
+  "max_leverage": 1,
+  "cash_rule": "fully_invested",
+  "cost_model": "v2.3_kr_retail_15bps",
+  "missing_data_rule": "zero_return_forward",
+  "risk_controls": "max_names 20, long_only, Sigma w=1",
+  "lookahead_prevention": "as_of T+1 exec; forge lockbox dropped (latest sig_date)",
+  "survivorship_bias_control": "full RAWDATA universe with delisting returns"
+}

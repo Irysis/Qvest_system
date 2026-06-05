@@ -1,0 +1,55 @@
+{
+  "idea": "CGO-Drift (Grinblatt-Han 2005 capital-gains-overhang): CGO=(P_t-RP_t)/P_t from turnover-reconstructed reference price; (+)CGO winner-underreaction drift, residualized vs momentum/52w controls.",
+  "scope": "SCREEN only (read-only). NO backtest / portfolio / admission. rank-IC is advisory SCREEN metric, NOT tradeable alpha.",
+  "data_feasible": true,
+  "universe": "KOSPI200 U KOSDAQ150 (both legs present 2010+)",
+  "window": "2010-01-31 .. 2023-12-22 (lockbox-strict regular research)",
+  "pit": {
+    "features": "t-1 backward (daily history strictly <= sig_date)",
+    "label": "forward 1m return only",
+    "lockbox": "2023-12-22 strict",
+    "C14": "control Z_Score at same sig_date, Usable_Date<=sig_date via factor_db",
+    "shift_convention": "forward label = next month-end / sig month-end - 1 (explicit forward, no neg-lead)"
+  },
+  "controls": ["M01_Mom_12_1", "M06_High_52w", "M08_Residual_Mom", "M17_Low_52w"],
+  "n_obs": 168,
+  "avg_names_per_month": 344,
+  "raw": {
+    "rank_ic": -0.00198,
+    "rank_ic_sd": 0.17563,
+    "icir_monthly": -0.0113,
+    "icir_annualized": -0.039,
+    "harvey_t_nw": -0.1505,
+    "hit_rate": 0.4464
+  },
+  "orthogonal": {
+    "residual_ic": 0.00115,
+    "icir_res": 0.012,
+    "t_nw_res": 0.1615,
+    "partial_ic": 0.00121,
+    "t_nw_partial": 0.1631
+  },
+  "subperiod": [
+    {
+      "period": "P1",
+      "n": 56,
+      "mean_rank_ic": 0.03902,
+      "mean_res_ic": 0.01001
+    },
+    {
+      "period": "P2",
+      "n": 56,
+      "mean_rank_ic": -0.03838,
+      "mean_res_ic": -0.00904
+    },
+    {
+      "period": "P3",
+      "n": 56,
+      "mean_rank_ic": -0.00658,
+      "mean_res_ic": 0.00247
+    }
+  ],
+  "subperiod_sign_stability": 0.667,
+  "caveat": "Cycle2 lesson: rank-IC t >> portfolio-alpha t. SCREEN advisory only.",
+  "timestamp": "2026-05-30T08:05:36+0900"
+}

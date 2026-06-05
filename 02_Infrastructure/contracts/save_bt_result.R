@@ -64,7 +64,7 @@ save_bt_result <- function(bt_result, output_dir, save_xlsx = TRUE) {
         contracts_dir <- if (exists("PROJECT_ROOT")) {
           file.path(PROJECT_ROOT, "02_Infrastructure/contracts")
         } else {
-          "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/02_Infrastructure/contracts"
+          file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")), "02_Infrastructure/contracts")
         }
         source(file.path(contracts_dir, "excel_report_writer.R"))
       }

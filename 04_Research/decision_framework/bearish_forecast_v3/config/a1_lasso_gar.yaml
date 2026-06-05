@@ -1,0 +1,16 @@
+# Phase 5c LASSO Quantile GaR — Adrian-Boyarchenko-Giannone 2019 AER style
+
+data:
+  benchmark: kospi200
+  bm_path: ".cache/benchmark.parquet"
+  alt_features_path: "04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/01_data/feature_panel_v1_alt.parquet"
+  date_start: "2000-01-03"
+  date_end: "2021-12-31"
+  horizon: paper                    # 1-day forward (paper) — switch '21d' for v3 monthly use
+  percent_scale: true
+
+walk_forward:
+  n_splits: 5
+  train_min: 1008
+  test_window: 504
+  embargo: 21

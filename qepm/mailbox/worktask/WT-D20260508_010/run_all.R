@@ -18,7 +18,7 @@ suppressPackageStartupMessages({
   library(arrow); library(data.table); library(jsonlite)
 })
 
-setwd("/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot")
+setwd(Sys.getenv("QM_ROOT", unset = "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"))
 source("02_Infrastructure/factor_db/factor_db_connector.R")
 
 WT_ID <- "WT-D20260508_010"

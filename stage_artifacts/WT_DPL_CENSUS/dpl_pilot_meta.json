@@ -1,0 +1,43 @@
+{
+  "feature_cols": [
+    "IN03_RD_to_Market",
+    "M05_Trended_Mom",
+    "Q03_ROA",
+    "Q13_Fin_Leverage",
+    "Q22_Earnings_Growth",
+    "Q24_Altman_Z",
+    "R05_Tail_Risk",
+    "V01_BM",
+    "V02_EP",
+    "V07_EV_EBITDA",
+    "V14_EBIT_EV",
+    "V20_SP",
+    "XF_LL05_WorkingCapital"
+  ],
+  "n_oos_months": 144,
+  "oos_range": [
+    "2012-01",
+    "2023-12"
+  ],
+  "lockbox": "2023-12-22",
+  "constraints": {
+    "long_only": true,
+    "cap": 0.2,
+    "active_max": 25,
+    "sum_w": 1.0,
+    "cost_bps_oneway": 15.0,
+    "liq_min": 200000000.0,
+    "top_n_ew": 20
+  },
+  "hyperparams": {
+    "lambda_risk": 5.0,
+    "gamma_turnover": 1.0,
+    "lr": 0.008,
+    "epochs": 25,
+    "min_train": 60,
+    "refit_every": 24,
+    "hist_cov": 36
+  },
+  "self_synth_note": "월별 net return series만 산출. portfolio_alpha_t_nw_lag3 등 contract-grade 수치는 R build_benchmark_compare() 단일 경로.",
+  "out_net_returns": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/stage_artifacts/WT_DPL_CENSUS/dpl_pilot_net_returns.parquet"
+}

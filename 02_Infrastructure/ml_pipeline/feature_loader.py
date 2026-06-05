@@ -6,11 +6,12 @@ Quality screening per feature_quality_audit.json:
   - cor cluster > 0.99 deduplication (head only)
 """
 import json
+import os
 from pathlib import Path
 import pandas as pd
 import pyarrow.parquet as pq
 
-PROJECT_ROOT = Path("/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot")
+PROJECT_ROOT = Path(os.environ.get('CLAUDE_PROJECT_DIR') or os.environ.get('QM_ROOT') or Path(__file__).resolve().parents[2])
 FEATURES_MASTER = PROJECT_ROOT / "stage_artifacts/WT_D20260514_008/features_master.parquet"
 FEATURE_REGISTRY = PROJECT_ROOT / "stage_artifacts/WT_D20260514_008/feature_registry.json"
 QUALITY_AUDIT = PROJECT_ROOT / "stage_artifacts/WT_D20260514_008/feature_quality_audit.json"

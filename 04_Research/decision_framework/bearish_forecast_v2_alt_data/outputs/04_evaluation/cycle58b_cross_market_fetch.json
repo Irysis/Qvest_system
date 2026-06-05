@@ -1,0 +1,102 @@
+{
+  "cycle": "58B_phase1_cross_market_fetch",
+  "script": "186_cross_market_fetch.py",
+  "generated_at": "2026-05-21T16:00:25",
+  "start_date": "1990-01-01",
+  "end_date": "2026-05-21",
+  "sources": {
+    "vix": {
+      "source": ".cache/fred_macro_wide.parquet",
+      "col": "VIX",
+      "n_obs": 6665
+    },
+    "krw_usd": {
+      "source": ".cache/fred_macro_wide.parquet",
+      "col": "KRW_USD",
+      "n_obs": 6615
+    },
+    "nikkei225": {
+      "source": "yfinance:^N225",
+      "n_obs": 8926,
+      "range": [
+        "1990-01-04",
+        "2026-05-21"
+      ],
+      "status": "OK"
+    },
+    "sp500": {
+      "source": "yfinance:^GSPC",
+      "n_obs": 9163,
+      "range": [
+        "1990-01-02",
+        "2026-05-20"
+      ],
+      "status": "OK"
+    },
+    "dxy": {
+      "source": "yfinance:DX-Y.NYB",
+      "n_obs": 9273,
+      "range": [
+        "1990-01-01",
+        "2026-05-21"
+      ],
+      "status": "OK"
+    },
+    "hangseng": {
+      "source": "yfinance:^HSI",
+      "n_obs": 8978,
+      "range": [
+        "1990-01-02",
+        "2026-05-21"
+      ],
+      "status": "OK"
+    },
+    "wti": {
+      "source": "yfinance:CL=F",
+      "n_obs": 6464,
+      "range": [
+        "2000-08-23",
+        "2026-05-21"
+      ],
+      "status": "OK"
+    }
+  },
+  "features": [
+    {
+      "name": "nikkei225_return_lag1",
+      "formula": "(close[t-1]/close[t-2]) - 1",
+      "n_valid": 8955
+    },
+    {
+      "name": "sp500_overnight_return_lag1",
+      "formula": "(spx_close[t-1]/spx_close[t-2]) - 1",
+      "n_valid": 8955
+    },
+    {
+      "name": "dxy_change_5d_lag1",
+      "formula": "(dxy[t-1]/dxy[t-6]) - 1",
+      "n_valid": 8951
+    },
+    {
+      "name": "usdkrw_change_5d_lag1",
+      "formula": "(krw_usd[t-1]/krw_usd[t-6]) - 1, KRW/USD direct",
+      "n_valid": 6502
+    },
+    {
+      "name": "hangseng_return_lag1",
+      "formula": "(hsi_close[t-1]/hsi_close[t-2]) - 1",
+      "n_valid": 8955
+    },
+    {
+      "name": "wti_change_5d_lag1",
+      "formula": "(wti_close[t-1]/wti_close[t-6]) - 1",
+      "n_valid": 6346
+    },
+    {
+      "name": "vix_change_5d_lag1",
+      "formula": "(vix[t-1]/vix[t-6]) - 1",
+      "n_valid": 6502
+    }
+  ],
+  "correlation_vix_vs_us_stlfsi": -0.013519142663890014
+}

@@ -1,0 +1,40 @@
+{
+  "review_scope": "code_only",
+  "cycle": "54E",
+  "files_reviewed": [
+    "scripts/155_patchtst_v5e_q126_10seed_strict.py",
+    "scripts/156_10seed_strict_observable_aggregate.R"
+  ],
+  "verdict_overall": "FAIL",
+  "verdict_per_section": {
+    "A_strict_determinism": "PASS",
+    "B_per_seed_reproducibility": "PASS",
+    "C_10seed_mean_calculation": "PASS",
+    "D_observable_mask": "PASS",
+    "E_period_balanced": "PASS",
+    "F_std_reduction": "PASS",
+    "G_headline_verdict": "FAIL",
+    "H_reuse_strategy": "PASS",
+    "I_pit_walkforward": "PASS",
+    "J_schema_compat": "PASS"
+  },
+  "critical_bugs": [
+    {
+      "file": "scripts/156_10seed_strict_observable_aggregate.R",
+      "line_range": "424-429, 482-490",
+      "severity": "HIGH",
+      "issue": "Period robustness is documented as a 3/3 segment check, but q126_mean10_seg filters out NA lift rows before counting. If any configured segment is skipped by the n_obs/n_events threshold, period_robust_q126_mean10 can still be TRUE on 1/1 or 2/2 valid segments, allowing HEADLINE_STRONG_VALIDATED without all three periods being robust.",
+      "fix_suggestion": "Require full segment coverage in the robustness predicate, e.g. period_robust_q126_mean10 <- n_seg_total_q126_mean10 == length(SEGMENTS) && n_seg_lift_gt1_q126_mean10 == length(SEGMENTS). Otherwise route high-PR cases to HEADLINE_PARTIAL."
+    }
+  ],
+  "minor_concerns": [
+    {
+      "file": "scripts/156_10seed_strict_observable_aggregate.R",
+      "line_range": "477-488",
+      "issue": "The HEADLINE_UNAVAILABLE branch is not safely reachable if the mean10 q126 row is absent: headline_q126_obs becomes length 0, so if (!is.na(headline_q126_obs)) can error.",
+      "note": "Use a scalar guard such as length(headline_q126_obs) == 1 && !is.na(headline_q126_obs), or fail fast on required mean10 file absence."
+    }
+  ],
+  "recommendation": "Fix critical bugs before run",
+  "summary_one_line": "Python strict-det, seed reset, source reuse, 10-seed probability mean, observable masking, and std logic pass; R headline period-robust logic can over-validate when any segment is skipped."
+}

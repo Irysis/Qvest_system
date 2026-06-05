@@ -1,0 +1,97 @@
+[Cycle 48B Python — LASSO Pruning] Device: cuda
+[Cycle 48B] CUDA memory fraction set to 0.3 (parallel cycle protection)
+============================================================
+[Cycle 48B Python — LSTM + TFT on 3 LASSO-pruned variants]
+============================================================
+
+############################################################
+# VARIANT: lasso_min (feature_panel_v3h_pruned_lasso_min.parquet)
+############################################################
+
+========== LSTM target: y_tail_q15 / variant: lasso_min ==========
+  Panel: 8937 rows / 6 features
+  Train=3695 / Valid=1487 / OOS=2531
+  pos_weight: 6.13
+  Ep 01 | tr_loss=1.1090 | valid PR-AUC=0.1709
+  Ep 05 | tr_loss=0.9171 | valid PR-AUC=0.2204
+  Ep 10 | tr_loss=0.8838 | valid PR-AUC=0.2166
+  Ep 15 | tr_loss=0.8321 | valid PR-AUC=0.1678
+  Early stop @ ep 17
+
+[LSTM / lasso_min] best valid PR-AUC: 0.2636 | OOS PR-AUC: 0.4641
+  Saved: /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/03_models/v3h_pruned/predictions_lstm_lasso_min_y_tail_q15.parquet
+
+========== TFT target: y_tail_q15 / variant: lasso_min ==========
+  Panel: 8937 rows / 6 features
+  Train=3695 / Valid=1487 / OOS=2531
+  pos_weight: 6.13
+  Ep 01 | tr_loss=1.0910 | valid PR-AUC=0.2570
+  Ep 05 | tr_loss=0.8937 | valid PR-AUC=0.1980
+  Early stop @ ep 9
+
+[TFT / lasso_min] best valid PR-AUC: 0.2570 | OOS PR-AUC: 0.5852
+  Saved: /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/03_models/v3h_pruned/predictions_tft_lasso_min_y_tail_q15.parquet
+
+############################################################
+# VARIANT: lasso_1se (feature_panel_v3h_pruned_lasso_1se.parquet)
+############################################################
+
+========== LSTM target: y_tail_q15 / variant: lasso_1se ==========
+  Panel: 8937 rows / 4 features
+  Train=3695 / Valid=1487 / OOS=2531
+  pos_weight: 6.13
+  Ep 01 | tr_loss=1.1251 | valid PR-AUC=0.1477
+  Ep 05 | tr_loss=0.9716 | valid PR-AUC=0.2356
+  Ep 10 | tr_loss=0.9134 | valid PR-AUC=0.2658
+  Ep 15 | tr_loss=0.8833 | valid PR-AUC=0.1444
+  Early stop @ ep 18
+
+[LSTM / lasso_1se] best valid PR-AUC: 0.2658 | OOS PR-AUC: 0.4634
+  Saved: /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/03_models/v3h_pruned/predictions_lstm_lasso_1se_y_tail_q15.parquet
+
+========== TFT target: y_tail_q15 / variant: lasso_1se ==========
+  Panel: 8937 rows / 4 features
+  Train=3695 / Valid=1487 / OOS=2531
+  pos_weight: 6.13
+  Ep 01 | tr_loss=1.1169 | valid PR-AUC=0.1634
+  Ep 05 | tr_loss=0.9670 | valid PR-AUC=0.2507
+  Ep 10 | tr_loss=0.8996 | valid PR-AUC=0.2433
+  Early stop @ ep 12
+
+[TFT / lasso_1se] best valid PR-AUC: 0.2541 | OOS PR-AUC: 0.5314
+  Saved: /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/03_models/v3h_pruned/predictions_tft_lasso_1se_y_tail_q15.parquet
+
+############################################################
+# VARIANT: gbdt_top30 (feature_panel_v3h_pruned_gbdt_top30.parquet)
+############################################################
+
+========== LSTM target: y_tail_q15 / variant: gbdt_top30 ==========
+  Panel: 8937 rows / 31 features
+  Train=3695 / Valid=1487 / OOS=2531
+  pos_weight: 6.13
+  Ep 01 | tr_loss=1.0890 | valid PR-AUC=0.2537
+  Ep 05 | tr_loss=0.7535 | valid PR-AUC=0.1161
+  Early stop @ ep 9
+
+[LSTM / gbdt_top30] best valid PR-AUC: 0.2537 | OOS PR-AUC: 0.5165
+  Saved: /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/03_models/v3h_pruned/predictions_lstm_gbdt_top30_y_tail_q15.parquet
+
+========== TFT target: y_tail_q15 / variant: gbdt_top30 ==========
+  Panel: 8937 rows / 31 features
+  Train=3695 / Valid=1487 / OOS=2531
+  pos_weight: 6.13
+  Ep 01 | tr_loss=1.0954 | valid PR-AUC=0.1199
+  Ep 05 | tr_loss=0.8066 | valid PR-AUC=0.2310
+  Ep 10 | tr_loss=0.6986 | valid PR-AUC=0.2229
+  Ep 15 | tr_loss=0.6982 | valid PR-AUC=0.1260
+  Early stop @ ep 17
+
+[TFT / gbdt_top30] best valid PR-AUC: 0.2502 | OOS PR-AUC: 0.5757
+  Saved: /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/03_models/v3h_pruned/predictions_tft_gbdt_top30_y_tail_q15.parquet
+
+============================================================
+[Python Cycle 48B SUMMARY] LSTM + TFT on 3 pruned variants
+  lasso_min       LSTM: 0.4641  /  TFT: 0.5852
+  lasso_1se       LSTM: 0.4634  /  TFT: 0.5314
+  gbdt_top30      LSTM: 0.5165  /  TFT: 0.5757
+============================================================

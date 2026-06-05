@@ -3,7 +3,7 @@ cat("=== STR_1621_M4: def_min 상향 — core_w = max(0.35, 1-rsc/100) ===\n")
 set.seed(1621); options(scipen=999); Sys.setenv(TZ="Asia/Seoul")
 STRATEGY_NAME <- "STR_1621_M4_DefMin35"; STRATEGY_ID <- "STR_1621_M4"
 
-PROJ_ROOT <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+PROJ_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 INFRA_DIR <- file.path(PROJ_ROOT, "02_Infrastructure")
 CACHE_DIR <- file.path(PROJ_ROOT, ".cache")
 STR_DIR   <- file.path(PROJ_ROOT, "04_Research/strategies/STR_1621_regime_conditional_allweather")

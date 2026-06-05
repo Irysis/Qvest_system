@@ -1,0 +1,175 @@
+{
+  "step": "step2_3way_gbdt_retrain_v3d_combined",
+  "panel": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/01_data/feature_panel_v3d_combined.parquet",
+  "n_features": 74,
+  "new_features": ["foreign_breadth_ad_ratio_5d_avg_lag1", "inst_ad_ratio_5d_avg_lag1", "inst_ad_ratio_20d_avg_lag1", "inst_hhi_buy_lag1", "inst_vs_foreign_divergence_5d_lag1"],
+  "axis_composition": {
+    "foreign_axis": "foreign_breadth_ad_ratio_5d_avg_lag1 (1, Cycle 43 admitted)",
+    "inst_axis": "inst_ad_ratio_5d/20d + hhi + vs_foreign_divergence (4, Cycle 45B admitted)"
+  },
+  "baseline_compare": {
+    "v1_3_baseline_M2_Regime": 0.6078,
+    "cycle_43_v2_2feat_M2_Regime": 0.639,
+    "cycle_45B_v3b_inst_suite_M2_Regime": 0.6417
+  },
+  "y_tail_q15": {
+    "xgb": 0.6098,
+    "cat": 0.5375,
+    "rf": 0.578,
+    "ew3": 0.6067,
+    "imp_new_xgb": [
+      {
+        "feature": "foreign_breadth_ad_ratio_5d_avg_lag1",
+        "gain": 0.044,
+        "rank": 4,
+        "total": 48
+      },
+      {
+        "feature": "inst_ad_ratio_20d_avg_lag1",
+        "gain": 0.0309,
+        "rank": 10,
+        "total": 48
+      },
+      {
+        "feature": "inst_vs_foreign_divergence_5d_lag1",
+        "gain": 0.0196,
+        "rank": 18,
+        "total": 48
+      },
+      {
+        "feature": "inst_ad_ratio_5d_avg_lag1",
+        "gain": 0.0102,
+        "rank": 27,
+        "total": 48
+      },
+      {
+        "feature": "inst_hhi_buy_lag1",
+        "gain": 0.01,
+        "rank": 28,
+        "total": 48
+      }
+    ],
+    "imp_new_cat": [
+      {
+        "feature": "inst_vs_foreign_divergence_5d_lag1",
+        "gain": 2.1172,
+        "rank": 14,
+        "total": 74
+      },
+      {
+        "feature": "inst_ad_ratio_5d_avg_lag1",
+        "gain": 0.7965,
+        "rank": 21,
+        "total": 74
+      },
+      {
+        "feature": "foreign_breadth_ad_ratio_5d_avg_lag1",
+        "gain": 0,
+        "rank": 72,
+        "total": 74
+      },
+      {
+        "feature": "inst_ad_ratio_20d_avg_lag1",
+        "gain": 0,
+        "rank": 73,
+        "total": 74
+      },
+      {
+        "feature": "inst_hhi_buy_lag1",
+        "gain": 0,
+        "rank": 74,
+        "total": 74
+      }
+    ],
+    "imp_new_rf": [
+      {
+        "feature": "foreign_breadth_ad_ratio_5d_avg_lag1",
+        "gain": 34.6236,
+        "rank": 7,
+        "total": 74
+      },
+      {
+        "feature": "inst_ad_ratio_20d_avg_lag1",
+        "gain": 32.2238,
+        "rank": 10,
+        "total": 74
+      },
+      {
+        "feature": "inst_vs_foreign_divergence_5d_lag1",
+        "gain": 31.3551,
+        "rank": 12,
+        "total": 74
+      },
+      {
+        "feature": "inst_ad_ratio_5d_avg_lag1",
+        "gain": 25.1941,
+        "rank": 20,
+        "total": 74
+      },
+      {
+        "feature": "inst_hhi_buy_lag1",
+        "gain": 18.3012,
+        "rank": 29,
+        "total": 74
+      }
+    ],
+    "top10_xgb": [
+      {
+        "feature": "us_sector_avg_z",
+        "gain": 0.1598,
+        "rank": 1
+      },
+      {
+        "feature": "us_sector_avg_z_lag1",
+        "gain": 0.1088,
+        "rank": 2
+      },
+      {
+        "feature": "us_sector_dispersion_z_rm63",
+        "gain": 0.0791,
+        "rank": 3
+      },
+      {
+        "feature": "foreign_breadth_ad_ratio_5d_avg_lag1",
+        "gain": 0.044,
+        "rank": 4
+      },
+      {
+        "feature": "us_sector_avg_z_rsd63",
+        "gain": 0.0433,
+        "rank": 5
+      },
+      {
+        "feature": "bbva_macro_composite_rsd21",
+        "gain": 0.0393,
+        "rank": 6
+      },
+      {
+        "feature": "bbva_transmission_z_rm63",
+        "gain": 0.0362,
+        "rank": 7
+      },
+      {
+        "feature": "us_sector_dispersion_z_rm21",
+        "gain": 0.0357,
+        "rank": 8
+      },
+      {
+        "feature": "us_sector_dispersion_z_rsd63",
+        "gain": 0.034,
+        "rank": 9
+      },
+      {
+        "feature": "inst_ad_ratio_20d_avg_lag1",
+        "gain": 0.0309,
+        "rank": 10
+      }
+    ]
+  },
+  "y_onset": {
+    "xgb": 0.1055,
+    "cat": 0.1062,
+    "rf": 0.1009,
+    "ew3": 0.1203
+  }
+}

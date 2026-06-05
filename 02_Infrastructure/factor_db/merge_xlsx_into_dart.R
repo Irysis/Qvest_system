@@ -39,7 +39,7 @@ merge_xlsx_into_dart <- function(cache_dir = NULL, dry_run = FALSE, verbose = TR
 
   # ── Path resolution ──────────────────────────────────────────────────────────
   if (is.null(cache_dir)) {
-    proj_root <- "/mnt/c/Users/User/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot"
+    proj_root <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
     cache_dir <- file.path(proj_root, ".cache", "factor_db")
   }
 
@@ -199,7 +199,7 @@ merge_xlsx_into_dart <- function(cache_dir = NULL, dry_run = FALSE, verbose = TR
 verify_merge <- function(cache_dir = NULL, verbose = TRUE) {
 
   if (is.null(cache_dir)) {
-    proj_root <- "/mnt/c/Users/User/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot"
+    proj_root <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
     cache_dir <- file.path(proj_root, ".cache", "factor_db")
   }
 

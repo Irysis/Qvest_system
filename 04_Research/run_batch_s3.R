@@ -4,7 +4,7 @@
 
 cat("=== Batch S3 Orthogonality Analysis ===\n\n")
 
-PROJECT_ROOT <- "/mnt/c/Users/User/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot"
+PROJECT_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 INFRA_DIR <- file.path(PROJECT_ROOT, "02_Infrastructure")
 source(file.path(INFRA_DIR, "config.R"))
 source(file.path(INFRA_DIR, "backtest_harness.R"))

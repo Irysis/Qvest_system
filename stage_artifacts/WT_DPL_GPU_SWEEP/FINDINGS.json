@@ -1,0 +1,65 @@
+{
+  "study": "DPL GPU sweep with daily Factor DB rolling features (Qvest v8.x)",
+  "feasibility": "FEASIBLE (executes GPU-native, PIT-clean) but does NOT break ceiling",
+  "feature_engineering": {
+    "n_features": 90,
+    "n_factors": 30,
+    "stats": "level-z / slope(OLS) / vol per factor, category-custom windows",
+    "panel_months": 256,
+    "oos_window": "2010-01..2023-12 (168m, lockbox 2023-12)"
+  },
+  "pit_audit": {
+    "bear_date_audit": "4/4 PASS",
+    "panel_forward_match": 1,
+    "panel_backward_match": 0.002,
+    "verdict": "PASS — no Cycle50 lookahead"
+  },
+  "gpu_convex_layer": "analytic capped-simplex Euclidean projection (GPU-native, autograd; qpth NOT needed). softmax(temp)+projection for gradient flow",
+  "sweep": {
+    "n_trials": 96,
+    "device": "cuda",
+    "best_cell": 37,
+    "best_cfg": {
+      "lam": 0.0,
+      "gamma": 1.5,
+      "lookback": 72,
+      "depth": 3,
+      "width": 32,
+      "l2": 0.001,
+      "temp": 1.0
+    }
+  },
+  "results_contract_grade_NW_lag3": {
+    "DPL_best": {
+      "alpha_t": 2.7658,
+      "p": 0.0057,
+      "net_SR": 0.5945,
+      "TO_yr": 15.8267
+    },
+    "EW_top20": {
+      "alpha_t": 0.8349,
+      "net_SR": 0.1794,
+      "TO_yr": 11.1071
+    },
+    "MVO_2stage": {
+      "alpha_t": 0.1085,
+      "net_SR": 0.0252,
+      "TO_yr": 13.199
+    },
+    "STR_1715_incumbent": {
+      "alpha_t": 5.3436,
+      "net_SR": 1.0707
+    }
+  },
+  "honesty": {
+    "DSR_corrected": 0.378488929467545,
+    "walk_forward_subperiod_SR": [
+      1.139,
+      0.091,
+      0.495
+    ],
+    "subperiod_min": 0.09123529551211183,
+    "turnover_feasible_cells": "0/96 cells achieve TO<=11 (structural violation)",
+    "verdict": "DPL beats naive EW/MVO on same features but α-t 2.77 < Harvey 2.95 < STR_1715 5.34. DSR 0.378 = overfit-discounted, NOT confident. OOS unstable (sub-period min SR 0.09). Ceiling NOT broken."
+  }
+}

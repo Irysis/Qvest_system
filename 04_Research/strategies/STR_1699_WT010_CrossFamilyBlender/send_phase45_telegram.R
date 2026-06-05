@@ -6,7 +6,7 @@ suppressPackageStartupMessages({
 
 `%||%` <- function(a, b) if (!is.null(a) && length(a) > 0 && !all(is.na(a))) a else b
 
-BASE_DIR <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+BASE_DIR <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 WT_ID    <- "WT-D20260425_010"
 WT_DIR   <- file.path(BASE_DIR, "qepm/mailbox/worktask", WT_ID)
 OUT_DIR  <- file.path(BASE_DIR, "04_Research/strategies/STR_1699_WT010_CrossFamilyBlender/output")

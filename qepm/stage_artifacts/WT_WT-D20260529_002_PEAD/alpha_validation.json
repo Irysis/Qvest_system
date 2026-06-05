@@ -1,0 +1,103 @@
+{
+  "task_id": "WT-D20260529_002",
+  "track": "PEAD",
+  "verdict": "DROP",
+  "graduation": {
+    "min_rank_ic": {
+      "threshold": 0.04,
+      "actual": 0.0021,
+      "pass": false
+    },
+    "min_icir": {
+      "threshold": 0.2,
+      "actual": 0.024,
+      "pass": false
+    },
+    "min_subperiod_stability": {
+      "threshold": 0.5,
+      "actual": 0.004,
+      "pass": false
+    },
+    "min_harvey_t": {
+      "threshold": 3,
+      "actual": 0.186,
+      "pass": false
+    },
+    "min_dsr": {
+      "threshold": 0.5,
+      "actual": 0.4242,
+      "pass": false
+    },
+    "monotonicity": {
+      "threshold": 0.7,
+      "actual": 0.115,
+      "pass": false
+    }
+  },
+  "diagnostics": {
+    "rank_ic": 0.0021,
+    "icir": 0.024,
+    "harvey_t_rankIC": 0.186,
+    "harvey_t_portfolio": 0.485,
+    "harvey_t_portfolio_nw": 0.624,
+    "monotonicity": 0.115,
+    "subperiod_stability": 0.004,
+    "turnover_yr_one_way": 4.45,
+    "net_sr": 0.297,
+    "gross_sr": 0.349,
+    "dsr": 0.2977,
+    "psr": 0.7459,
+    "ax001_v2_ratio": -2.156,
+    "ic_window": "2018-05-31 to 2023-11-30 (62 months, lockbox; DART data starts 2015-06 + 8q seasonal-RW requirement)",
+    "n_tickers_with_signal": 557,
+    "dsr_N0": 5,
+    "dsr_note": "N0=5 per Codex C3 (variant scan count). More conservative; DROP verdict unchanged.",
+    "rank_ic_pit_clean_robustness": 0.0016,
+    "rank_ic_pit_clean_note": "Codex C5: t-1 lagged liquidity+membership PIT-clean -> rank_ic=0.0016 (immaterial vs 0.0021). PIT did not inflate."
+  },
+  "orthogonality": {
+    "cor_vs_STR1715": 0.1702,
+    "cor_vs_D": -0.0026,
+    "cor_vs_FLOW": -0.1222,
+    "threshold": "<0.30 mandate (all PASS); <0.95 admitted (all PASS)",
+    "note": "Key proof: STR_1715 uses C01_SUE (analyst-CONSENSUS surprise). PEAD uses time-series seasonal-RW realized-earnings surprise. cor=0.17 confirms distinct despite shared earnings family."
+  },
+  "robustness_variants": {
+    "candidates_tried": 5,
+    "method_log": [
+      {
+        "name": "SUE_ts_90d_decay45_chosen",
+        "rank_ic": 0.0006,
+        "selected": true
+      },
+      {
+        "name": "SUE_ts_45d_no_recency",
+        "rank_ic": 0.0103,
+        "selected": false
+      },
+      {
+        "name": "SUE_ts_60d_decay30",
+        "rank_ic": 0.0069,
+        "selected": false
+      },
+      {
+        "name": "SUE_ts_120d_decay60",
+        "rank_ic": 0.0051,
+        "selected": false
+      },
+      {
+        "name": "SUE_ts_90d_no_recency",
+        "rank_ic": 0.0015,
+        "selected": false
+      }
+    ]
+  },
+  "codex": {
+    "stance": "REJECT",
+    "n_concerns": 8,
+    "n_high": 5,
+    "disposition": "ACCEPT C1/C2/C5 + PARTIAL C3/C4/C7/C8 + REBUTTAL(partial) C8 KR-decay. Codex REJECT == agent DROP (concordant). No silent override.",
+    "challenge_note": "qepm/mailbox/worktask/WT-D20260529_002/challenge_note_alpha_PEAD.md"
+  },
+  "generated": "2026-05-29"
+}

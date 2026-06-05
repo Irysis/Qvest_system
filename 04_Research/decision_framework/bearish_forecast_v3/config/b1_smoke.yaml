@@ -1,0 +1,60 @@
+# B1 smoke test config — quick pipeline verification
+# Uses small data window + reduced epochs to catch bugs before full reproduce
+
+architecture:
+  type: lstm
+  hidden_sizes: [128, 64, 32]
+  output_distribution: [normal, student_t, skewed_t]
+  dropout: 0.02
+  l2_reg: 0.002
+
+cnn_architecture:
+  type: cnn
+  filters: 256
+  kernel_size: 2
+  pool_size: 2
+
+training:
+  sequence_length: 10
+  batch_size: 128
+  optimizer: adam
+  learning_rate: 0.002
+  epochs: 20                        # smoke: 20 instead of 300
+  early_stopping_patience: 10       # smoke: short
+  early_stopping_monitor: val_loss
+
+walk_forward:
+  train_min: 1008
+  test_window: 504
+  expand_step: 504
+
+data:
+  benchmark: kospi200
+  bm_path: ".cache/benchmark.parquet"
+  target_path: "04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/02_targets/targets_full.parquet"
+  date_start: "2010-01-04"          # smoke: shorter window
+  date_end: "2018-12-31"
+  horizon: paper                    # 'paper' = 1-day (paper reproduce); '21d' = monthly
+  percent_scale: true               # paper CRPS 0.5165 reported in percent units
+  features:
+    paper_baseline:
+      - log_ret
+      - rv_22d
+    alt_data:
+      enabled: false
+
+seed:
+  stage_1: 0
+  stage_2_top_k: 5
+  stage_2_seeds: [0,1,2,3,4]
+
+reproduce_pass_criteria:
+  paper_kospi_lstm_sstd_crps: 0.5165
+  loose_tolerance: 0.05
+  ordering_check: true
+  var_1pct_lstm_std_target: 0.0084
+
+output:
+  models_dir: "04_Research/decision_framework/bearish_forecast_v3/03_models/b1_smoke"
+  predictions_dir: "04_Research/decision_framework/bearish_forecast_v3/04_evaluation/b1_smoke_predictions"
+  metrics_path: "04_Research/decision_framework/bearish_forecast_v3/04_evaluation/b1_smoke_metrics.json"

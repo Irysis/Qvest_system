@@ -18,7 +18,7 @@ if [[ "$EVENT" != "SubagentStop" && "$EVENT" != "Stop" ]]; then
   echo '{}'; exit 0
 fi
 
-PROJECT_ROOT="/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+PROJECT_ROOT="${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$(ls -d /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot 2>/dev/null | head -1)}}"
 
 # Detect WT_id from current working dir or env
 WT_ID="${QVEST_CURRENT_WT_ID:-}"

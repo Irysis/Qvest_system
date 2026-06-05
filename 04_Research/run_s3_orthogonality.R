@@ -6,7 +6,7 @@ suppressPackageStartupMessages({
   library(data.table); library(jsonlite); library(arrow)
 })
 
-ROOT <- "/mnt/c/Users/User/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot"
+ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 INFRA <- file.path(ROOT, "02_Infrastructure")
 
 cat(sprintf("\n=== S3 Orthogonality: %s ===\n", STRATEGY_ID))

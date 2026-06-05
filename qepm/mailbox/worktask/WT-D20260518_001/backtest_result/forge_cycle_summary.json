@@ -1,0 +1,109 @@
+{
+  "task_id": "WT-D20260518_001",
+  "agent": "forge",
+  "cycle": "v1.0_5stages_90trials_4axes",
+  "started_at": "2026-05-19 05:24:41.476162",
+  "completed_at": "2026-05-19 06:24:41.476323",
+  "stage_1": {
+    "features_built": 14,
+    "features_designed": 44,
+    "sigma_rebuild": {
+      "skipped": true,
+      "reason": "insufficient_observations"
+    }
+  },
+  "stage_2": {
+    "walks": 5,
+    "regimes": 3
+  },
+  "stage_3": {
+    "n_trials_run": 375,
+    "n_models": 5,
+    "n_calibrations": 5,
+    "n_thresholds": 3,
+    "n_windows": 5
+  },
+  "stage_4": {
+    "g15_pass_count": 12,
+    "best_per_window": [
+      {
+        "window": "W1",
+        "model": "XGBoost",
+        "calibration": "raw",
+        "AUC_OOS": 0.7129,
+        "F1": 0.32
+      },
+      {
+        "window": "W2",
+        "model": "RandomForest",
+        "calibration": "raw",
+        "AUC_OOS": 0.6912,
+        "F1": 0
+      },
+      {
+        "window": "W3",
+        "model": "XGBoost",
+        "calibration": "SBR_spline",
+        "AUC_OOS": 0.7059,
+        "F1": 0
+      },
+      {
+        "window": "W4",
+        "model": "XGBoost",
+        "calibration": "SBR_spline",
+        "AUC_OOS": 0.5944,
+        "F1": 0
+      },
+      {
+        "window": "W5",
+        "model": "XGBoost",
+        "calibration": "raw",
+        "AUC_OOS": 0.86,
+        "F1": 0
+      }
+    ]
+  },
+  "stage_5": {
+    "p_bad_t_emitted": 220,
+    "p_bad_t_range": [0, 0.9022],
+    "beta_bear_dist": {
+      "0.3": 9,
+      "0.7": 22,
+      "1": 406
+    },
+    "DM_t": -1.2114,
+    "DM_p_1sided_lower": 0.1129,
+    "DM_Path_A_pass": true,
+    "DM_Path_B_pass": false,
+    "V_Path_A": {
+      "CAGR": 0.0045,
+      "SR": 0.139,
+      "MDD": -0.7858
+    },
+    "V_Path_B": {
+      "CAGR": 0.0094,
+      "SR": 0.16,
+      "MDD": -0.7858
+    },
+    "V_Path_C": {
+      "CAGR": 0.0133,
+      "SR": 0.1763,
+      "MDD": -0.7858
+    },
+    "Harvey_count_t_above_30": 0,
+    "DSR_Path_A": -3.5882
+  },
+  "pure_function_audit": {
+    "start_hashes": {
+      "alpha_md5": "b4b791972423d4405b67fcc1f5429fb3",
+      "risk_md5": "0be6f39f994255adf8767315a363fc7c",
+      "opt_md5": "f424bf2aa9b9419ef44f34af33acde3c"
+    },
+    "end_hashes": {
+      "alpha_md5": "b4b791972423d4405b67fcc1f5429fb3",
+      "risk_md5": "0be6f39f994255adf8767315a363fc7c",
+      "opt_md5": "f424bf2aa9b9419ef44f34af33acde3c"
+    },
+    "pass": true
+  }
+}

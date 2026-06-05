@@ -1,0 +1,111 @@
+{
+  "task_id": "WT-D20260528_003",
+  "hypothesis": "B",
+  "hypothesis_title": "STR_1724 Bali 2011 MAX Lottery Anomaly Pure (M22_Max_Return single-factor)",
+  "step": "05_validation_summary",
+  "as_of": "2026-05-28T23:17:19+0900",
+  "diagnostics": {
+    "rank_ic": 0.0226,
+    "icir": 0.2638,
+    "harvey_t": 3.9663,
+    "subperiod_stability": 0.3746,
+    "monotonicity_neut": -0.5758,
+    "dsr_pure_n1": 1,
+    "dsr_selection_n269": 1.5392e-97,
+    "ic_skew": -0.2008,
+    "ic_kurt": 2.8143,
+    "ic_annualized_sr": 0.914,
+    "n_dates": 226
+  },
+  "graduation_gates": {
+    "min_rank_ic": 0.04,
+    "min_icir": 0.2,
+    "min_subperiod_stability": 0.5,
+    "min_harvey_t_stat": 3,
+    "min_deflated_sharpe_ratio": 0.5
+  },
+  "gate_results": {
+    "rank_ic": {
+      "value": 0.0226,
+      "threshold": 0.04,
+      "pass": false
+    },
+    "icir": {
+      "value": 0.2638,
+      "threshold": 0.2,
+      "pass": true
+    },
+    "subperiod_stability": {
+      "value": 0.3746,
+      "threshold": 0.5,
+      "pass": false
+    },
+    "harvey_t": {
+      "value": 3.9663,
+      "threshold": 3,
+      "pass": true
+    },
+    "dsr_pure": {
+      "value": 1,
+      "threshold": 0.5,
+      "pass": true
+    },
+    "dsr_selection": {
+      "value": 1.5392e-97,
+      "threshold": 0.5,
+      "pass": false
+    }
+  },
+  "auxiliary_checks": {
+    "monotonicity_neut": {
+      "value": -0.5758,
+      "threshold": 0.5,
+      "pass": true
+    },
+    "ax_001_v2_crisis_pass": false,
+    "ax_001_v2_bad_normal_pass": false,
+    "top20_active_t": {
+      "value": -0.666,
+      "threshold": 1.5,
+      "pass": false
+    }
+  },
+  "graduation_pass": false,
+  "fail_reasons": ["rank_ic", "subperiod_stability", "dsr_selection"],
+  "ax_compliance": {
+    "AX_001_v2_status": "FAIL — crisis IC = -0.0195 (defensive role broken)",
+    "AX_005_status": "ELEVATED RISK — 2020-2026 ICIR=0.209 (decay vs 2015-2019=0.498); BAB-type 약화 가설 부분 지지",
+    "AX_007_status": "VIOLATION — single-sleeve top20 long-only, no exception applied",
+    "AX_008_status": "PENDING — requires Codex Round + downstream verification"
+  },
+  "top20_active": {
+    "n_dates": 226,
+    "top20_mean_monthly_ret_pct": 0.8108,
+    "universe_mean_monthly_ret_pct": 0.9332,
+    "active_mean_monthly_pct": -0.1224,
+    "active_t_stat": -0.666
+  },
+  "top20_subperiod": {
+    "P1": {
+      "label": "2005_2014",
+      "n": 120,
+      "active_mean": -0.315,
+      "active_sd": 2.472,
+      "t_stat": -1.3958
+    },
+    "P2": {
+      "label": "2015_2019",
+      "n": 60,
+      "active_mean": 0.4097,
+      "active_sd": 1.7298,
+      "t_stat": 1.8348
+    },
+    "P3": {
+      "label": "2020_2026",
+      "n": 46,
+      "active_mean": -0.3141,
+      "active_sd": 4.1931,
+      "t_stat": -0.5081
+    }
+  }
+}

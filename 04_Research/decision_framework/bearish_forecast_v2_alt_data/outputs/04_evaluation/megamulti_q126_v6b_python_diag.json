@@ -1,0 +1,96 @@
+{
+  "cycle": "56D_prelim_megamulti_3arch",
+  "approach": "MEGA_MULTI_VIEW_3ARCH_DLinear_Informer_TimesNet_FIRST_PASS",
+  "panel": "feature_panel_v5e_q126_usmacro.parquet",
+  "targets_source": "targets_long_horizon.parquet",
+  "n_features": 74,
+  "forward_labels": true,
+  "validation_strategy": "walk_forward_expanding_5_fold_CV",
+  "horizons_evaluated": [
+    "y_tail_q15",
+    "y_tail_q126"
+  ],
+  "seed": 42,
+  "architectures_evaluated": [
+    "DLinear (Zeng et al. AAAI 2023)",
+    "Informer (Zhou et al. AAAI 2021)",
+    "TimesNet (Wu et al. ICLR 2023)"
+  ],
+  "training_common": {
+    "batch_size": 96,
+    "max_epochs": 80,
+    "early_stop_patience": 15,
+    "early_stop_min_delta": 0.0005,
+    "grad_clip_norm": 1.0,
+    "warmup_steps": 500,
+    "mixed_precision_amp": true,
+    "gpu_mem_fraction": 0.2
+  },
+  "baseline_cycle53h_seed42": {
+    "y_tail_q126": 0.4012,
+    "y_tail_q15": 0.2082
+  },
+  "per_arch_per_target": {
+    "DLinear_y_tail_q15": {
+      "oos_pr": 0.2064,
+      "oos_ic": 0.0406,
+      "avg_best_epoch": 10,
+      "n_params": 9645,
+      "elapsed_sec": 119.3,
+      "delta_vs_53h": -0.0018
+    },
+    "DLinear_y_tail_q126": {
+      "oos_pr": 0.2039,
+      "oos_ic": -0.175,
+      "avg_best_epoch": 25,
+      "n_params": 9645,
+      "elapsed_sec": 119.4,
+      "delta_vs_53h": -0.1973
+    },
+    "Informer_y_tail_q15": {
+      "oos_pr": 0.1946,
+      "oos_ic": -0.019,
+      "avg_best_epoch": 6,
+      "n_params": 119233,
+      "elapsed_sec": 426.7,
+      "delta_vs_53h": -0.0136
+    },
+    "Informer_y_tail_q126": {
+      "oos_pr": 0.23,
+      "oos_ic": -0.0903,
+      "avg_best_epoch": 2,
+      "n_params": 119233,
+      "elapsed_sec": 245.5,
+      "delta_vs_53h": -0.1712
+    },
+    "TimesNet_y_tail_q15": {
+      "oos_pr": 0.161,
+      "oos_ic": -0.029,
+      "avg_best_epoch": 5,
+      "n_params": 581249,
+      "elapsed_sec": 391.8,
+      "delta_vs_53h": -0.0472
+    },
+    "TimesNet_y_tail_q126": {
+      "oos_pr": 0.2795,
+      "oos_ic": 0.0779,
+      "avg_best_epoch": 10,
+      "n_params": 581249,
+      "elapsed_sec": 444.0,
+      "delta_vs_53h": -0.1217
+    }
+  },
+  "ensemble_ew3": {
+    "y_tail_q15": {
+      "oos_pr": 0.1926,
+      "oos_ic": 0.0013,
+      "delta_vs_53h": -0.0156
+    },
+    "y_tail_q126": {
+      "oos_pr": 0.2143,
+      "oos_ic": -0.1113,
+      "delta_vs_53h": -0.1869
+    }
+  },
+  "per_fold_diagnostics_path": "/mnt/c/Users/User/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/03_models/v6b_megamulti_q126/per_fold_diagnostics.json"
+}

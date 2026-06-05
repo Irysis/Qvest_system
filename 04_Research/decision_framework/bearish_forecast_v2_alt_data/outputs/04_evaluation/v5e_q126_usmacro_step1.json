@@ -1,0 +1,49 @@
+{
+  "cycle": "53H_path_c_extension_q126_usmacro",
+  "step": "step1_feature_panel_build",
+  "base_panel": {
+    "path": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/01_data/feature_panel_v4a_combined.parquet",
+    "n_features": 70,
+    "pit_validated": true,
+    "inherit": "v1.3 baseline 69 + Cycle 43 winner foreign_breadth_ad_ratio_5d_avg_lag1"
+  },
+  "added_features": {
+    "us_t10y2y_spread_lag1": {
+      "source": "v3f panel (Cycle 47B FRED fetch)",
+      "semantics": "US 10y-2y Treasury yield spread, lag1",
+      "cycle_48a_q126_xgb_rank": "found in top",
+      "pit_lag1": true
+    },
+    "us_initial_claims_4w_avg_lag1": {
+      "source": "v3f panel (Cycle 47B FRED fetch)",
+      "semantics": "US weekly initial jobless claims, 4-week MA, lag1",
+      "cycle_48a_q126_xgb_rank": "rank 1 (XGB q126), rank 1 (RF q126)",
+      "pit_lag1": true
+    },
+    "us_cfnai_lag1": {
+      "source": "v3f panel (Cycle 47B FRED fetch)",
+      "semantics": "Chicago Fed National Activity Index, lag1",
+      "cycle_48a_q126_xgb_rank": "rank 1 (q15 + q63), strong q126",
+      "pit_lag1": true
+    },
+    "us_stlfsi_lag1": {
+      "source": "v3f panel (Cycle 47B FRED fetch)",
+      "semantics": "St. Louis Fed Financial Stress Index, lag1",
+      "cycle_48a_q126_xgb_rank": "found in top",
+      "pit_lag1": true
+    }
+  },
+  "combined_n_features": 74,
+  "output": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/01_data/feature_panel_v5e_q126_usmacro.parquet",
+  "pit_audit": {
+    "C13": "no negation / sign flip — US macro features use raw lag1 shift",
+    "C14": "label-side NOT used in feature panel — IC contamination 무관",
+    "C15": "non-Factor DB features — FRED enhancement"
+  },
+  "inherits_from": [
+    "Cycle 47B: v3f panel build (us_macro_features fetch + lag1 validation)",
+    "Cycle 48A: q126 target swap discovery (us_initial_claims, us_cfnai rank 1)",
+    "Cycle 52: v4a base panel build (v1.3 + foreign breadth winner)",
+    "Cycle 53B: PatchTST q126 0.3456 (forward best ever) — baseline for additivity test"
+  ]
+}

@@ -13,7 +13,7 @@
 
 suppressPackageStartupMessages({ library(arrow); library(data.table) })
 
-ROOT <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 OUT  <- file.path(ROOT, "stage_artifacts", "WT_DPL_GPU_SWEEP")
 source(file.path(ROOT, "02_Infrastructure/contracts/backtest_result_contract.R"))
 

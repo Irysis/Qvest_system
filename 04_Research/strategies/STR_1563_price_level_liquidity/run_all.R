@@ -15,7 +15,7 @@ SCRIPT_DIR <- tryCatch({
   d <- dirname(sys.frame(1)$ofile)
   if (is.null(d) || d == ".") getwd() else d
 }, error = function(e) getwd())
-INFRA_DIR <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/02_Infrastructure"
+INFRA_DIR <- file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")), "02_Infrastructure")
 
 source(file.path(INFRA_DIR, "config.R"))
 source(file.path(INFRA_DIR, "backtest_harness.R"))

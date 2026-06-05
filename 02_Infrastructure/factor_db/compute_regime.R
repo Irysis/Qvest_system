@@ -44,24 +44,41 @@ compute_regime <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
   setorder(bm_daily, Date)
 
   # ---- Macro data loading ----
-  proj_root <- tryCatch(
-    dirname(dirname(dirname(sys.frame(1)$ofile))),
-    error = function(e) {
-      Sys.getenv("QUANT_ROOT",
-                 unset = "/mnt/c/Users/User/OneDrive/\xeb\xb0\x94\xed\x83\x95 \xed\x99\x94\xeb\xa9\xb4/Quant_Module_Moltbot")
-    }
-  )
-
-  macro_path <- file.path(proj_root, ".cache", "macro_fred.parquet")
+  # Robust path resolution: prefer CACHE_DIR from config.R, then env var, then auto-detect
+  macro_path <- if (exists("CACHE_DIR")) {
+    file.path(CACHE_DIR, "macro_fred.parquet")
+  } else {
+    candidates <- c(
+      Sys.getenv("QUANT_CACHE", unset = ""),
+      file.path(Sys.getenv("QUANT_ROOT", unset = ""), ".cache"),
+      "/mnt/c/Users/99922/OneDrive/바탕 화면/Quant_Module_Moltbot/.cache",
+      "C:/Users/99922/OneDrive/바탕 화면/Quant_Module_Moltbot/.cache",
+      file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")), ".cache")
+    )
+    candidates <- candidates[nchar(candidates) > 0 & dir.exists(candidates)]
+    if (length(candidates) > 0) file.path(candidates[1], "macro_fred.parquet")
+    else "macro_fred.parquet"
+  }
   MACRO <- NULL
   if (file.exists(macro_path)) {
     MACRO <- tryCatch({
       if (requireNamespace("arrow", quietly = TRUE)) {
         dt <- as.data.table(arrow::read_parquet(macro_path))
         dt[, Date := as.Date(Date)]
+        # Series column: legacy macro_fred used FRED codes (VIXCLS) directly,
+        # but new schema uses Series_ID for codes and Series for human names.
+        # Align: if Series_ID present, prefer it (so existing == "VIXCLS" matches).
+        if ("Series_ID" %in% names(dt) && any(!is.na(dt[["Series_ID"]]))) {
+          dt[, Series := fifelse(!is.na(Series_ID) & nchar(Series_ID) > 0,
+                                  Series_ID, Series)]
+        }
         # C11: FRED monthly data published with lag. Use data available by sig_date.
         # Conservative: only use data up to sig_date - 1 day (publication lag)
-        dt[Date <= (sig_d - 1L)]
+        dt <- dt[Date <= (sig_d - 1L) & !is.na(Value)]
+        # Deduplicate (Series, Date) — guard against Cartesian merges downstream
+        setorder(dt, Series, Date)
+        dt <- unique(dt, by = c("Series", "Date"), fromLast = TRUE)
+        dt
       } else NULL
     }, error = function(e) NULL)
   }
@@ -362,11 +379,14 @@ compute_regime <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
       if (nrow(ms) < 12L) return(NULL)
       setorder(ms, Date)
       ms[, YM := format(Date, "%Y-%m")]
+      # Aggregate to monthly (last value per YM) — guards against daily series cartesian merge
+      ms <- ms[, .SD[.N], by = YM]
+      setorder(ms, YM)
       # Monthly change in macro variable
       ms[, macro_chg := Value - shift(Value, 1)]
       ms <- ms[!is.na(macro_chg), .(YM, macro_chg)]
 
-      merged <- merge(rd_monthly, ms, by = "YM", all.x = TRUE)
+      merged <- merge(rd_monthly, ms, by = "YM", all.x = TRUE, allow.cartesian = FALSE)
       merged <- merged[!is.na(monthly_ret) & !is.na(macro_chg)]
 
       if (nrow(merged) < 12L) return(NULL)
@@ -411,12 +431,16 @@ compute_regime <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
       setorder(ys10, Date); setorder(ys2, Date)
       ys10[, YM := format(Date, "%Y-%m")]
       ys2[, YM := format(Date, "%Y-%m")]
-      yc <- merge(ys10[, .(YM, y10 = Value)], ys2[, .(YM, y2 = Value)], by = "YM")
+      # Monthly aggregate (last value per YM) — guards Cartesian merge
+      ys10_m <- ys10[, .(y10 = last(Value)), by = YM]
+      ys2_m  <- ys2[,  .(y2  = last(Value)), by = YM]
+      yc <- merge(ys10_m, ys2_m, by = "YM")
+      setorder(yc, YM)
       yc[, spread := y10 - y2]
       yc[, spread_chg := spread - shift(spread, 1)]
       yc <- yc[!is.na(spread_chg)]
       if (nrow(yc) >= 12L) {
-        merged_yc <- merge(rd_monthly, yc[, .(YM, macro_chg = spread_chg)], by = "YM", all.x = TRUE)
+        merged_yc <- merge(rd_monthly, yc[, .(YM, macro_chg = spread_chg)], by = "YM", all.x = TRUE, allow.cartesian = FALSE)
         merged_yc <- merged_yc[!is.na(monthly_ret) & !is.na(macro_chg)]
         if (nrow(merged_yc) >= 12L) {
           betas_yc <- merged_yc[, {
@@ -453,7 +477,12 @@ compute_regime <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
     }
 
     # ---- MA06: Risk Sentiment (1Y equity market return) ----
-    if (nrow(bm_daily) >= 252L) {
+    # Threshold 240 (was 252): a 365-calendar-day window holds 242~253 KR
+    # trading days depending on holidays. 252 was too strict for recent years
+    # (more KR holidays) -> MA06 silently dropped 2012-10 onward. 240 still
+    # guarantees ~11.5 months of data for a 1Y market-return reading.
+    # PIT-safe: still uses only past 365-day window. (build-gap fix 2026-05-29)
+    if (nrow(bm_daily) >= 240L) {
       bm_1y <- bm_daily[Date >= (sig_d - 365)]
       if (nrow(bm_1y) > 0L) {
         mkt_1y_ret <- prod(1 + bm_1y$BM_Ret, na.rm = TRUE) - 1

@@ -1,0 +1,79 @@
+
+========== Step 4: 5-way merge (XGB+Cat+RF + LSTM + TFT) ==========
+
+----- 5-way merge: y_tail_q15 -----
+[merge] OOS N=2531 / events=530 (20.94%)
+[v3f_us_macro individual OOS PR-AUC] XGB=0.4765 / CAT=0.4463 / RF=0.5361 / LSTM=0.2711 / TFT=0.3513
+[v3f_us_macro] EW5=0.4832 / WEW=0.4956
+
+----- 5-way merge: y_onset -----
+[merge] OOS N=2531 / events=254 (10.04%)
+[v3f_us_macro individual OOS PR-AUC] XGB=0.0863 / CAT=0.0942 / RF=0.1035 / LSTM=0.0970 / TFT=0.0825
+[v3f_us_macro] EW5=0.0877 / WEW=0.0872
+
+========== Step 5: Dynamic 5-method ensemble synthesis ==========
+
+----- Dynamic 5-method: y_tail_q15 -----
+[Static WEW] PR-AUC=0.4956
+[M1 Rolling]  PR-AUC=0.4992 ★
+[M2 Regime]   PR-AUC=0.5004 ★
+[M3 Hedge]    PR-AUC=0.4878 
+[M4 Bayes]    PR-AUC=0.4925 
+[M5 Bandit]   PR-AUC=0.4915 
+
+----- Dynamic 5-method: y_onset -----
+[Static WEW] PR-AUC=0.0872
+[M1 Rolling]  PR-AUC=0.0975 ★
+[M2 Regime]   PR-AUC=0.0998 ★
+[M3 Hedge]    PR-AUC=0.0945 ★
+[M4 Bayes]    PR-AUC=0.0945 ★
+[M5 Bandit]   PR-AUC=0.0875 ★
+
+[Step 5 Dynamic SUMMARY]
+        target     method      PRAUC
+        <char>     <char>      <num>
+ 1: y_tail_q15 Static_WEW 0.49558819
+ 2: y_tail_q15 M1_Rolling 0.49915735
+ 3: y_tail_q15  M2_Regime 0.50038947
+ 4: y_tail_q15   M3_Hedge 0.48784092
+ 5: y_tail_q15   M4_Bayes 0.49247908
+ 6: y_tail_q15  M5_Bandit 0.49152378
+ 7:    y_onset Static_WEW 0.08724806
+ 8:    y_onset M1_Rolling 0.09754372
+ 9:    y_onset  M2_Regime 0.09981438
+10:    y_onset   M3_Hedge 0.09450074
+11:    y_onset   M4_Bayes 0.09451278
+12:    y_onset  M5_Bandit 0.08752761
+
+========== Step 6: Compare vs V1.3 baseline 0.6078 ==========
+
+[V1.3 baseline (69 features)]
+        target     method     PRAUC
+        <char>     <char>     <num>
+ 1: y_tail_q15 Static_WEW 0.5814020
+ 2: y_tail_q15 M1_Rolling 0.6062722
+ 3: y_tail_q15  M2_Regime 0.6077786
+ 4: y_tail_q15   M3_Hedge 0.5509715
+ 5: y_tail_q15   M4_Bayes 0.5525285
+ 6: y_tail_q15  M5_Bandit 0.5798092
+ 7:    y_onset Static_WEW 0.1327539
+ 8:    y_onset M1_Rolling 0.1292491
+ 9:    y_onset  M2_Regime 0.1369264
+10:    y_onset   M3_Hedge 0.1103762
+11:    y_onset   M4_Bayes 0.1105948
+12:    y_onset  M5_Bandit 0.1221203
+
+[Δ vs V1.3 baseline on y_tail_q15]
+  Static WEW:  V1.3=0.5814 → v3f_us_macro=0.4956  (Δ -0.0858)
+  M1 Rolling:  V1.3=0.6063 → v3f_us_macro=0.4992  (Δ -0.1071)
+  M2 Regime:   V1.3=0.6078 → v3f_us_macro=0.5004  (Δ -0.1074) ★
+
+[Verdict (5-way M2 Regime)] DILUTION_FAMILY_SATURATED
+
+========== Step 7: Save outputs ==========
+[JSON] /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/04_evaluation/5way_retrain_v3f_us_macro.json
+[Chart] /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/06_reports/charts/98_pr_curve_v3f_us_macro.png
+
+========== Cycle 47B DONE ==========
+Verdict: DILUTION_FAMILY_SATURATED
+Δ Static: -0.0858  /  Δ M1 Rolling: -0.1071  /  Δ M2 Regime: -0.1074

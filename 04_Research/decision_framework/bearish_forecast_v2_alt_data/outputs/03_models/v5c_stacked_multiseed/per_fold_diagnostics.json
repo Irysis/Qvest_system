@@ -1,0 +1,273 @@
+{
+  "cycle": "53C_patchtst_stacked_multiseed",
+  "stacked_config": {
+    "name": "stacked_v4_v8_v10",
+    "patch_size": 4,
+    "d_model": 32,
+    "n_heads": 4,
+    "n_layers": 2,
+    "dropout": 0.2,
+    "stride": 2
+  },
+  "seeds": [
+    42,
+    123,
+    456
+  ],
+  "targets": [
+    "y_tail_q15",
+    "y_onset"
+  ],
+  "panel": "feature_panel_v4a_combined.parquet",
+  "n_features": 70,
+  "forward_labels": true,
+  "validation_strategy": "walk_forward_expanding_5_fold_CV",
+  "fixed_training": {
+    "batch_size": 96,
+    "max_epochs": 80,
+    "early_stop_patience": 15,
+    "warmup_steps": 500,
+    "weight_decay": 0.005,
+    "lr": 0.001,
+    "grad_clip_norm": 1.0,
+    "mixed_precision_amp": true,
+    "gpu_mem_fraction": 0.3
+  },
+  "per_seed_per_target_results": {
+    "seed42_y_tail_q15": {
+      "seed": 42,
+      "target": "y_tail_q15",
+      "config": {
+        "name": "stacked_v4_v8_v10",
+        "patch_size": 4,
+        "d_model": 32,
+        "n_heads": 4,
+        "n_layers": 2,
+        "dropout": 0.2,
+        "stride": 2
+      },
+      "oos_pr": 0.1594,
+      "oos_ic": -0.0909,
+      "avg_best_epoch": 5,
+      "per_fold_best_pr": [
+        0.2187,
+        0.527,
+        0.2574,
+        0.2811,
+        0.1372
+      ],
+      "per_fold_best_epoch": [
+        17,
+        2,
+        4,
+        1,
+        1
+      ],
+      "per_fold_n_params": 28353,
+      "final_train_loss_first": 1.1944,
+      "final_train_loss_last": 1.1442,
+      "elapsed_sec": 341.2,
+      "gpu_mem_peak_mb": 595.7,
+      "n_params": 28353,
+      "n_oos_obs": 2042,
+      "n_oos_events": 365,
+      "oos_dates_path": "/mnt/c/Users/User/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/03_models/v5c_stacked_multiseed/predictions_stacked_seed42_y_tail_q15.parquet"
+    },
+    "seed42_y_onset": {
+      "seed": 42,
+      "target": "y_onset",
+      "config": {
+        "name": "stacked_v4_v8_v10",
+        "patch_size": 4,
+        "d_model": 32,
+        "n_heads": 4,
+        "n_layers": 2,
+        "dropout": 0.2,
+        "stride": 2
+      },
+      "oos_pr": 0.1361,
+      "oos_ic": -0.1087,
+      "avg_best_epoch": 18,
+      "per_fold_best_pr": [
+        0.5942,
+        0.4199,
+        0.0893,
+        0.3079,
+        -1.0
+      ],
+      "per_fold_best_epoch": [
+        16,
+        8,
+        33,
+        16,
+        null
+      ],
+      "per_fold_n_params": 28353,
+      "final_train_loss_first": 1.2216,
+      "final_train_loss_last": 0.9968,
+      "elapsed_sec": 501.0,
+      "gpu_mem_peak_mb": 595.7,
+      "n_params": 28353,
+      "n_oos_obs": 2042,
+      "n_oos_events": 251,
+      "oos_dates_path": "/mnt/c/Users/User/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/03_models/v5c_stacked_multiseed/predictions_stacked_seed42_y_onset.parquet"
+    },
+    "seed123_y_tail_q15": {
+      "seed": 123,
+      "target": "y_tail_q15",
+      "config": {
+        "name": "stacked_v4_v8_v10",
+        "patch_size": 4,
+        "d_model": 32,
+        "n_heads": 4,
+        "n_layers": 2,
+        "dropout": 0.2,
+        "stride": 2
+      },
+      "oos_pr": 0.15,
+      "oos_ic": -0.0997,
+      "avg_best_epoch": 9,
+      "per_fold_best_pr": [
+        0.2604,
+        0.2779,
+        0.3165,
+        0.1344,
+        0.1438
+      ],
+      "per_fold_best_epoch": [
+        31,
+        1,
+        10,
+        1,
+        1
+      ],
+      "per_fold_n_params": 28353,
+      "final_train_loss_first": 1.1951,
+      "final_train_loss_last": 1.1185,
+      "elapsed_sec": 261.9,
+      "gpu_mem_peak_mb": 595.7,
+      "n_params": 28353,
+      "n_oos_obs": 2042,
+      "n_oos_events": 365,
+      "oos_dates_path": "/mnt/c/Users/User/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/03_models/v5c_stacked_multiseed/predictions_stacked_seed123_y_tail_q15.parquet"
+    },
+    "seed123_y_onset": {
+      "seed": 123,
+      "target": "y_onset",
+      "config": {
+        "name": "stacked_v4_v8_v10",
+        "patch_size": 4,
+        "d_model": 32,
+        "n_heads": 4,
+        "n_layers": 2,
+        "dropout": 0.2,
+        "stride": 2
+      },
+      "oos_pr": 0.1286,
+      "oos_ic": -0.0966,
+      "avg_best_epoch": 10,
+      "per_fold_best_pr": [
+        0.3377,
+        0.4147,
+        0.0789,
+        0.252,
+        -1.0
+      ],
+      "per_fold_best_epoch": [
+        14,
+        9,
+        1,
+        14,
+        null
+      ],
+      "per_fold_n_params": 28353,
+      "final_train_loss_first": 1.2236,
+      "final_train_loss_last": 1.1525,
+      "elapsed_sec": 264.4,
+      "gpu_mem_peak_mb": 595.7,
+      "n_params": 28353,
+      "n_oos_obs": 2042,
+      "n_oos_events": 251,
+      "oos_dates_path": "/mnt/c/Users/User/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/03_models/v5c_stacked_multiseed/predictions_stacked_seed123_y_onset.parquet"
+    },
+    "seed456_y_tail_q15": {
+      "seed": 456,
+      "target": "y_tail_q15",
+      "config": {
+        "name": "stacked_v4_v8_v10",
+        "patch_size": 4,
+        "d_model": 32,
+        "n_heads": 4,
+        "n_layers": 2,
+        "dropout": 0.2,
+        "stride": 2
+      },
+      "oos_pr": 0.1813,
+      "oos_ic": -0.0282,
+      "avg_best_epoch": 7,
+      "per_fold_best_pr": [
+        0.197,
+        0.1108,
+        0.2866,
+        0.1836,
+        0.1062
+      ],
+      "per_fold_best_epoch": [
+        1,
+        1,
+        5,
+        1,
+        27
+      ],
+      "per_fold_n_params": 28353,
+      "final_train_loss_first": 1.195,
+      "final_train_loss_last": 1.1274,
+      "elapsed_sec": 268.8,
+      "gpu_mem_peak_mb": 595.7,
+      "n_params": 28353,
+      "n_oos_obs": 2042,
+      "n_oos_events": 365,
+      "oos_dates_path": "/mnt/c/Users/User/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/03_models/v5c_stacked_multiseed/predictions_stacked_seed456_y_tail_q15.parquet"
+    },
+    "seed456_y_onset": {
+      "seed": 456,
+      "target": "y_onset",
+      "config": {
+        "name": "stacked_v4_v8_v10",
+        "patch_size": 4,
+        "d_model": 32,
+        "n_heads": 4,
+        "n_layers": 2,
+        "dropout": 0.2,
+        "stride": 2
+      },
+      "oos_pr": 0.15,
+      "oos_ic": -0.0346,
+      "avg_best_epoch": 15,
+      "per_fold_best_pr": [
+        0.6093,
+        0.4229,
+        0.0901,
+        0.2483,
+        -1.0
+      ],
+      "per_fold_best_epoch": [
+        22,
+        3,
+        21,
+        15,
+        null
+      ],
+      "per_fold_n_params": 28353,
+      "final_train_loss_first": 1.2176,
+      "final_train_loss_last": 1.0904,
+      "elapsed_sec": 325.2,
+      "gpu_mem_peak_mb": 595.7,
+      "n_params": 28353,
+      "n_oos_obs": 2042,
+      "n_oos_events": 251,
+      "oos_dates_path": "/mnt/c/Users/User/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/03_models/v5c_stacked_multiseed/predictions_stacked_seed456_y_onset.parquet"
+    }
+  },
+  "elapsed_grand_total_sec": 1962.8
+}

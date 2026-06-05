@@ -1,0 +1,15 @@
+{
+  "run_id": "forge_WT-D20260528_003_20260529_092133",
+  "strategy_name": "WT-D20260528_003_D_PROD",
+  "rebalance_frequency": "monthly",
+  "execution_date_rule": "month_end_signal_t_plus_1",
+  "lookahead_prevention": "C13 Z_Score_Aligned (no negate/flip); C14 Usable_Date<=sig_date; C15 ML daily-parquet carve-out approved; purged 10-fold expanding CV + 30d embargo; weights from alpha sig_dates<=lockbox 2023-12-22; rolling cov Date<sig_date (C9 t-1)",
+  "survivorship_bias_control": "RAWDATA universe includes delisted/suspended (KRX full panel 1990-2026); missing daily Ret imputed 0 for halt/suspension within holding period",
+  "universe": "KOSPI200_KOSDAQ150_intersection",
+  "benchmark": "KOSPI200_total_return",
+  "n_holdings": 20,
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "method_selected": "Schedule_EWbase",
+  "graduated": false,
+  "dsr_fail_acknowledged": true
+}

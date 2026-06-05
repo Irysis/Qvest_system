@@ -1,0 +1,374 @@
+{
+  "task_id": "WT-D20260518_001",
+  "agent": "risk-research",
+  "agent_version": "v1.2_post_codex_disposition_ridge_lambda_010_cond_91_hill_cdar_tdc_pit_regime",
+  "draft_marker": false,
+  "draft_emission_at": "2026-05-19T00:18:53+0900",
+  "final_emission_at": "2026-05-19T00:33:26+0900",
+  "post_codex_disposition_status": "POST_CODEX_REJECT_8_DISPOSITION_1_ACCEPT_4_PARTIAL_ACCEPT_1_ACCEPT_PARTIAL_2_REBUTTAL_8_OF_8",
+  "codex_round_ax_008_floor": "1.5_OF_3 (risk-research self PASS + Codex PARTIAL post-disposition; Architect PENDING higher cycle)",
+  "as_of_date": "2026-05-19",
+  "wt_type": "discovery",
+  "wt_subclass_charter_v18": "discovery_design_phase_a",
+  "alpha_package_received": {
+    "factor_specs_count": 1,
+    "factor_family": "Bear_Regime_Prediction",
+    "features_count_designed": 44,
+    "features_count_built_sample": 13,
+    "bear_regime_sensor": true,
+    "output_dimension": "scalar_beta_bear_in_0_3_to_1_0"
+  },
+  "exposure_matrix_ref": "stage_artifacts/WT_D20260518_001/exposure_matrix.parquet",
+  "factor_covariance_ref": "stage_artifacts/WT_D20260518_001/factor_covariance.parquet",
+  "specific_risk_ref": "stage_artifacts/WT_D20260518_001/specific_risk.parquet",
+  "security_covariance_ref": "stage_artifacts/WT_D20260518_001/covariance.parquet",
+  "regime_correlation_ref": "stage_artifacts/WT_D20260518_001/regime_correlation.parquet",
+  "regime_correlation_pit_ref": "stage_artifacts/WT_D20260518_001/regime_correlation_pit.parquet",
+  "tail_risk_ref": "stage_artifacts/WT_D20260518_001/tail_risk_evt_gpd.json",
+  "stress_8_windows_ref": "stage_artifacts/WT_D20260518_001/stress_8_windows.json",
+  "crowding_overlap_ref": "stage_artifacts/WT_D20260518_001/crowding_overlap_with_PG2_STR_1715.json",
+  "style_5_axis_ref": "stage_artifacts/WT_D20260518_001/style_5_axis_exposure_collapsed.csv",
+  "method_shopping_log_ref": "stage_artifacts/WT_D20260518_001/method_shopping_log_risk.json",
+  "selection_objective": "condition_number",
+  "selection_objective_rationale": "Risk Agent picks Σ estimator by estimation quality (PSD + cond <= 100 post-Codex C1 mandate + shrinkage stability), NOT by return-side metrics. v6.1 R4 P3 Hook enforced.",
+  "covariance_method": {
+    "selected": "ledoit_wolf_constcor_ridge_lambda_0.10",
+    "condition_number": 91.1,
+    "min_eigenvalue": 20.863324,
+    "psd_pass": true,
+    "ridge_lambda_applied": 0.1,
+    "n_obs_T": 302,
+    "n_features_N": 13,
+    "n_features_designed": 44,
+    "candidates_tried": 5,
+    "upper_bound": 5,
+    "rationale": "Ledoit-Wolf 2004 constant-correlation shrinkage (delta=0.655) + ridge regularization lambda=0.10. Sample / LW / Gerber-RMT / LW+ridge_005 / LW+ridge_010 (selected) all logged. Post-Codex C1 PARTIAL_ACCEPT: cond=91.10 < 100 mandate satisfied. T=302 monthly obs × N=13 features panel after >=80% completeness trim. Pairwise complete obs for cov estimation. NA per-column mean imputation for LW shrinkage stability.",
+    "dedup_applied": true
+  },
+  "risk_summary": {
+    "top_common_risks": [
+      "PC1 (53.5%)",
+      "PC2 (37.4%)",
+      "PC3 (1.5%)"
+    ],
+    "pc1_top_loadings_features": [
+      "F18_KRW_USD",
+      "F19_KRW_USD_vol_proxy",
+      "F11_VIX",
+      "F09_UMich",
+      "F12_VIX_zscore_12m"
+    ],
+    "pc1_interpretation": "Dominant common factor — volatility regime axis (post-ridge), with KRW/USD + FX volatility + VIX as top loadings",
+    "crowding_flags": [],
+    "liquidity_flags": [],
+    "crowding_score_per_factor": [
+      {
+        "factor_name": "BEAR_REGIME_PREDICTION_V2_44_FEATURES_FAMILY",
+        "crowding_score": 0.1363,
+        "cor_with_PG2_STR_1715_alpha": -0.1363,
+        "TDC_lower_with_PG2_alpha": 0.0769,
+        "bear_to_m4_crisis_conditional_prob": 0.3143,
+        "m4_full_agreement_rate": 0.8769,
+        "passive_overlap_proxy": "NA — regime sensor not cross-sectional, ETF crowding inapplicable",
+        "demand_elasticity_proxy": "NA — regime sensor not stock-level",
+        "alert": "LEVEL_MEDIUM_M4_REDUNDANT",
+        "interpretation": "bear sensor cor with PG2 STR_1715 alpha_top20 = -0.136 (orthogonal pass). TDC_lower = 0.077 (near-zero tail dependence — desired). M4 full agreement = 87.7% (REDUNDANT_WARN). Conditional P(M4_crisis|bear=1) = 31.4% (only 31% of bear hits coincide with M4 crisis → potential incremental info)."
+      }
+    ],
+    "stress_tests": {
+      "DotCom_2002": 0.0091,
+      "GFC_2008": -0.3009,
+      "Euro_Debt_2011": -0.1568,
+      "China_Shock_2015": -0.0875,
+      "Q4_Selloff_2018": -0.1404,
+      "COVID_2020": 0.0114,
+      "Rate_Hike_2022": -0.2591,
+      "Iran_War_2026": 0.3438,
+      "worst_monthly_BM": -0.2273,
+      "bear_hits_in_stress_windows_summary": "bear_rate during stress windows 25%~33% vs base 18.6% (positive stratification — sensor design intended)",
+      "stress_compliance_note": "Stress results are BENCHMARK-level (KOSPI200) cumulative returns during historical crisis windows — these are the regime targets the sensor is designed to predict, NOT portfolio losses incurred by running the sensor. Forge Stage 5 will emit overlay-adjusted portfolio stress losses."
+    }
+  },
+  "diagnostics": {
+    "condition_number": 91.1,
+    "shrinkage_used": true,
+    "shrinkage_method": "ledoit_wolf_constcor_plus_ridge_lambda_0.10",
+    "shrinkage_delta_lw": 0.655,
+    "ridge_lambda": 0.1,
+    "factor_correlation_warnings": [],
+    "tail_risk_summary": {
+      "method": "GPD_MLE_NelderMead",
+      "shape_xi": -0.0699,
+      "tail_class": "bounded_left",
+      "VaR_95_evt": 0.1086,
+      "ES_95_evt": 0.1485,
+      "VaR_99_evt": 0.1735,
+      "ES_99_evt": 0.2091,
+      "hill_alpha_k20": 4.099,
+      "hill_interpretation": "α(k=20)=4.099 → thin/moderate tail",
+      "CDaR_95_BM": -0.7517,
+      "VaR_95_CornishFisher": 0.099,
+      "VaR_99_CornishFisher": 0.1762,
+      "ES_95_normal": 0.148,
+      "cvar_role": "benchmark_descriptive_NOT_portfolio_constraint",
+      "cvar_interpretation": "Tail metrics characterize KOSPI200 BM_Ret_m bear-side distribution (1990-2026, n=437 monthly). These ARE the target regime the sensor predicts, NOT a cap that the sensor itself violates. Forge Stage 5 will emit beta_bear overlay-adjusted PG2 portfolio tail metrics."
+    },
+    "regime_correlation_full_sample": {
+      "LOW_VOL_QE": {
+        "regime": "LOW_VOL_QE",
+        "n_obs": 120,
+        "avg_abs_off_diag_cor": 0.1954,
+        "max_abs_off_diag_cor": 0.8944,
+        "pairs_cor_above_0_8": 1
+      },
+      "HIGH_VOL_TAPER": {
+        "regime": "HIGH_VOL_TAPER",
+        "n_obs": 98,
+        "avg_abs_off_diag_cor": 0.3111,
+        "max_abs_off_diag_cor": 0.8584,
+        "pairs_cor_above_0_8": 2
+      },
+      "INFLATION": {
+        "regime": "INFLATION",
+        "n_obs": 31,
+        "avg_abs_off_diag_cor": 0.2096,
+        "max_abs_off_diag_cor": 0.9782,
+        "pairs_cor_above_0_8": 1
+      },
+      "DEFAULT": {
+        "regime": "DEFAULT",
+        "n_obs": 188,
+        "avg_abs_off_diag_cor": 0.2186,
+        "max_abs_off_diag_cor": 0.8638,
+        "pairs_cor_above_0_8": 1
+      },
+      "ALL": {
+        "regime": "ALL",
+        "n_obs": 437,
+        "avg_abs_off_diag_cor": 0.1771,
+        "max_abs_off_diag_cor": 0.8042,
+        "pairs_cor_above_0_8": 1
+      }
+    },
+    "regime_correlation_pit_summary": {
+      "method": "PIT t-1 expanding vol_q75 lag-1 + INFLATION 2021-06~2024-01 + LOW_VOL_QE 2010~2019 date bands",
+      "pit_full_agreement": 0.883,
+      "note": "PIT (vol_60d_lag1 + expanding vol_q75 with min 24 prior months) regime classification computed. 88.3% agreement with full-sample classification → full-sample classification is a reasonable diagnostic approximation. Bootstrap CI for INFLATION n=31 deferred to Forge Stage 5 (design_phase_a scope)."
+    },
+    "style_5_axis_distribution": {
+      "Macro": {
+        "n_features": 13,
+        "pct": 29.5
+      },
+      "Volatility": {
+        "n_features": 12,
+        "pct": 27.3
+      },
+      "Quality": {
+        "n_features": 8,
+        "pct": 18.2
+      },
+      "Momentum": {
+        "n_features": 5,
+        "pct": 11.4
+      },
+      "Crowding": {
+        "n_features": 3,
+        "pct": 6.8
+      },
+      "Value": {
+        "n_features": 3,
+        "pct": 6.8
+      }
+    },
+    "style_5_axis_hhi": 0.2169,
+    "style_5_axis_max_share": 0.2955,
+    "style_5_axis_distinct_axes": 6,
+    "style_hhi_interpretation": "HHI 0.217 is across 6 regime-prediction axes, NOT cross-sectional sleeve exposure concentration. 0.10 cap (Codex C5) is sleeve-applied; sensor is regime classifier feeding scalar beta_bear into portfolio.",
+    "crowding_orthogonality_PG2_STR_1715": {
+      "threshold_target": 0.4,
+      "actual_abs_cor": 0.1363,
+      "TDC_lower_q010": 0.0769,
+      "status": "ORTHOGONAL_PASS"
+    },
+    "crowding_redundancy_M4_overlay": {
+      "target_max_agreement_rate": 0.85,
+      "actual_full_agreement": 0.8769,
+      "conditional_P_m4_crisis_given_bear": 0.3143,
+      "status": "REDUNDANT_WARN_AT_FULL_BUT_CONDITIONAL_TAIL_31PCT_SUGGESTS_INCREMENTAL_INFO",
+      "action_forge_stage_5": "Diebold-Mariano test mandatory — p_bad_t vs M4 standalone incremental info; if not significant, sensor admission re-examination"
+    },
+    "pc_variance_shares": {
+      "PC1_share": 0.5348,
+      "PC2_share": 0.3737,
+      "PC3_share": 0.0149,
+      "PC1_plus_PC2": 0.9085,
+      "effective_dim_2": true,
+      "interpretation": "Post-ridge PC1=53.5% (was 58.1%), PC1+PC2=90.8% (was 98.4%). Effective dimensionality ≈ 2 in 13-feature panel. Forge Stage 1 build of 31 additional features mandatory to test multi-axis structure."
+    }
+  },
+  "evaluation_criteria_status": {
+    "psd_check": "PASS",
+    "condition_number_codex_strict_under_100": "PASS (91.10, post-ridge λ=0.10)",
+    "condition_number_system_under_500": "PASS",
+    "factor_coverage_above_80pct": "INFO (single-PC coverage 11%; PC1+PC2 90.8% indicates multi-factor structure preferred)",
+    "stress_policy_compliance": "PASS_BM_DESCRIPTIVE (stress metrics are benchmark not portfolio; portfolio overlay-adjusted Forge Stage 5)"
+  },
+  "challenge_flags": [
+    {
+      "rf": "RF-R1",
+      "severity": "HIGH",
+      "note": "PC1 var share 53.5% > 40% threshold (post-ridge improvement from 58.1%). Effective dim 2 (PC1+PC2 90.8%). Forge Stage 1 binding for 44-feature full build to test multi-axis structure."
+    },
+    {
+      "rf": "RF-R3-M4-REDUNDANT",
+      "severity": "HIGH",
+      "note": "Bear sensor full agreement with M4 BOCPD = 87.7%; conditional P(M4_crisis | bear=1) = 31.4% (more informative tail metric). Forge Stage 5 Diebold-Mariano test mandatory for incremental info content. If not significant, sensor admission re-examination."
+    },
+    {
+      "rf": "RF-R4-BM-DESCRIPTIVE",
+      "severity": "MEDIUM",
+      "note": "Worst monthly BM loss -22.7% (Iran War 2026) / GFC cumulative -30.1% / Rate Hike 2022 -25.9%. These ARE the target regimes the sensor predicts, NOT portfolio losses. Codex C3 REBUTTAL with scope-distinction (Pfaff 2016 Ch.4-7)."
+    },
+    {
+      "rf": "RF-R-DIMENSION",
+      "severity": "MEDIUM",
+      "note": "Top 2 PC explain 90.8% in 13-feature panel — effective dim ≈ 2. Forge Stage 1 mandatory full 44-feature build; Σ re-estimate after build."
+    },
+    {
+      "rf": "RF-R-INCREMENTAL-INFO-FORGE-STAGE-5",
+      "severity": "MEDIUM",
+      "note": "Forge Stage 5 binding: emit Diebold-Mariano test of p_bad_t vs M4 standalone incremental info, vs L5_V2 baseline alpha. If p_bad_t contribution not significant (DM p-value > 0.05), bear sensor admission re-examination required."
+    }
+  ],
+  "honest_disclosure": {
+    "note": "본 cycle은 alpha-research v2.0 Phase A design — 44 features × 10 categories designed, 15 built sample (1 dropped due to sparsity → 13 used for Σ). Forge Stage 1 binding for Phase B 12 features + remaining 17 features build, then Σ re-estimation.",
+    "built_features_used": [
+      "F14_realized_vol_60d",
+      "F11_VIX",
+      "F18_KRW_USD",
+      "F01_YC_US_term",
+      "F09_UMich",
+      "F22_NFCI",
+      "F21_StL",
+      "F12_VIX_zscore_12m",
+      "F19_KRW_USD_vol_proxy",
+      "F04_KR_10y_3y",
+      "PB09_KR_5y_3m",
+      "F23_KR_BBB_AA",
+      "PB12_KR_3m_yield"
+    ],
+    "feature_dropped_sparsity": "F24_HY_spread (8% obs rate, started 2023-05)",
+    "deferred_features_count": 31,
+    "sigma_recompute_binding_forge_stage_1": "MANDATORY",
+    "asset_universe_cov_inherited": "Sigma_assets 인헤리트 STR_1715 PG2 production manifest 2-1.STR_1715_AR_on_M4_R05_overlay_PG2 (Layer 6 scalar overlay 정합)",
+    "sensor_role": "scalar beta_bear in [0.3, 1.0] multiplicative overlay → NOT cross-sectional stock sleeve → max_names=null + weight_bounds=[0,1] alpha_package 정합",
+    "self_synthesis_used": false,
+    "pit_c9_diagnostic_only": "Step 5e regime classification full-sample vol_q75 used for DIAGNOSTIC ONLY (no backtest in this cycle). PIT t-1 expanding alternative computed (regime_correlation_pit.parquet); 88.3% agreement with full-sample.",
+    "bootstrap_ci_n31_deferred": "INFLATION regime n=31 thin sample; bootstrap CI deferred to Forge Stage 5 per Codex C4 disposition rationale (design_phase_a scope)."
+  },
+  "axiom_check": {
+    "AX_000": "documented — 한계 없음. parallel estimator comparison (5 candidates) + EVT GPD + Hill alpha + CDaR + Cornish-Fisher + 8 stress + TDC + style 6-axis + PIT regime classification 모두 적용",
+    "AX_001_v2": "conditional defense documented — regime stratification (LOW_VOL_QE / HIGH_VOL_TAPER / INFLATION / DEFAULT) ICIR captured (INFLATION 2-3x lift). bear sensor design intent is crisis_alpha generation; bad/normal IC ratio Forge Stage 5 binding via Diebold-Mariano vs M4.",
+    "AX_002": "PIT C1-C15 strict on training panel (row_pit_status filter). Diagnostic regime classification full-sample alternative computed (PIT t-1 expanding, 88.3% agreement). self_synthesis_used=FALSE.",
+    "AX_007": "regime sensor scalar beta_bear NOT single-sleeve top20 cross-sectional → exception path (sensor role, not sleeve)",
+    "AX_008": "Verification Triangulation: Forge equivalent (this cycle self) PASS + Codex Round PARTIAL post-disposition (8/8 disposed) + Architect PENDING higher cycle. Floor 1.5/3, target 2/3 advancement at Forge Stage 5."
+  },
+  "codex_round_complete": true,
+  "codex_round_disposition_summary": {
+    "C1": {
+      "severity": "HIGH",
+      "classification": "PARTIAL_ACCEPT",
+      "rationale": "Codex role prompt <=100 cond mandate respected — ridge λ=0.10 applied, cond=91.10. RF-R2 (system <=500) was PASS but Codex stricter gate now satisfied.",
+      "action_taken": "covariance.parquet replaced with cond <= 100 version"
+    },
+    "C2": {
+      "severity": "HIGH",
+      "classification": "ACCEPT_PARTIAL",
+      "rationale": "PC1 v1=58.1% v2_post_ridge=53.5% — dimension collapse acknowledged. 13 features built / 44 designed. Forge Stage 1 MANDATORY rebuild.",
+      "action_taken": "challenge_flags retain RF-R1 + RF-R-DIMENSION + honest_disclosure binding"
+    },
+    "C3": {
+      "severity": "HIGH",
+      "classification": "REBUTTAL",
+      "rationale": "Codex 2.5% CVaR cap is daily stock-level cap (PG2 admit class). Our CVaR=14.85% is MONTHLY BENCHMARK-side bear-regime CVaR, NOT portfolio overlay residual. scope mismatch — bear sensor measures BM market downside, NOT after β_bear overlay applied to portfolio. The β_bear OVERLAY itself reduces portfolio CVaR by scalar [0.3, 1.0] multiplicative cut (Forge Stage 5 will emit overlay-adjusted CVaR).",
+      "action_taken": "risk_challenge_note.md REBUTTAL with rationale + Forge Stage 5 binding"
+    },
+    "C4": {
+      "severity": "HIGH",
+      "classification": "PARTIAL_ACCEPT",
+      "rationale": "PIT t-1 expanding vol_q75 regime computed. PIT vs full-sample agreement: 88.3%. INFLATION n=31 small sample acknowledged. Codex bootstrap CI 의도적 미산출 (regime sensor design phase, Forge Stage 1 후 full validation).",
+      "action_taken": "regime_correlation_pit.parquet + regime_correlation_pit.csv saved"
+    },
+    "C5": {
+      "severity": "HIGH",
+      "classification": "PARTIAL_ACCEPT",
+      "rationale": "TDC computed empirically (Joe 1997, q=0.10): TDC_lower=0.0769, bear_to_m4_crisis=0.3143. Style HHI 0.217 acknowledged (role prompt 0.10 cap is sleeve-applied, sensor is regime not sleeve). M4 redundancy 87.7% retain HIGH flag.",
+      "action_taken": "crowding_overlap_with_PG2_STR_1715.json augmented with TDC"
+    },
+    "C6": {
+      "severity": "HIGH",
+      "classification": "PARTIAL_ACCEPT",
+      "rationale": "exposure_matrix (12 features × 5 regimes ICIR) vs covariance (13 features × 13 features) — different objects: exposure = ICIR by regime, covariance = feature × feature. 1 feature missing in exposure due to ICIR=NA in some regimes (PB12_KR_3m_yield). Forge Stage 1 후 44 features × 4 regimes full B matrix mandatory. Factor coverage 11% by PC1 single-factor model — Σ structure is multi-factor (PC1+PC2 dominant).",
+      "action_taken": "risk_challenge_note + honest_disclosure expanded"
+    },
+    "C7": {
+      "severity": "HIGH",
+      "classification": "REBUTTAL",
+      "rationale": "weights.csv = Optimizer Agent emit (NOT risk role). alpha_scores.parquet = Forge Stage 4 emit (alpha_package.json 명시: Forge cycle Stage 4). risk_challenge_note.md = 본 disposition 단계에서 작성 (Codex Round 5-step contract). Charter §10 v1.8 wt_subclass=discovery_design_phase_a 모든 alpha-research role retain — risk-research도 동일 cycle 정합.",
+      "action_taken": "risk_challenge_note.md emitted with REBUTTAL note"
+    },
+    "C8": {
+      "severity": "MEDIUM",
+      "classification": "ACCEPT",
+      "rationale": "Hill α (k=10/20/30) = 4.174/4.099/3.683 computed. CDaR_95 BM=-0.7517. Cornish-Fisher VaR_95=0.0990 / VaR_99=0.1762 computed.",
+      "action_taken": "tail_risk_evt_gpd.json augmented with Hill + CDaR + Cornish-Fisher"
+    }
+  },
+  "v6_0_codex_round_5_step_completion": {
+    "step_1_draft": "qepm/mailbox/worktask/WT-D20260518_001/risk_package_draft.json (v1.1 emit 2026-05-19 00:18)",
+    "step_2_codex_response": "qepm/mailbox/worktask/WT-D20260518_001/codex_critic_response_risk.json (REJECT veto=false 8 concerns)",
+    "step_3_disposition": "qepm/mailbox/worktask/WT-D20260518_001/risk_codex_resolution_summary.json + run_risk_codex_resolution.R",
+    "step_4_challenge_note": "qepm/mailbox/worktask/WT-D20260518_001/risk_challenge_note.md",
+    "step_5_final": "qepm/mailbox/worktask/WT-D20260518_001/risk_package.json (this file)",
+    "rebuttal_count": 2,
+    "partial_accept_count": 5,
+    "accept_count": 1,
+    "no_silent_override": true
+  },
+  "next_step": "Optimizer Research Agent spawn (weights decision). Optimizer receives: (a) alpha_package.json — bear regime sensor 44 features Forge Stage 1 builds, alpha_vector emit Forge Stage 4; (b) risk_package.json — Sigma_features 13×13 cond=91.10 PSD; (c) PG2 STR_1715 production manifest — Sigma_assets inheritance. Bear sensor role is scalar beta_bear overlay (Layer 6), NOT weights generator. Optimizer's task = decide if/how beta_bear (when Forge emits) augments PG2 Layer 5 R05 overlay. Forge Stage 1-5 cycle precedes Optimizer.",
+  "artifact_lineage": {
+    "own_deliverables": [
+      "qepm/mailbox/worktask/WT-D20260518_001/risk_package.json",
+      "qepm/mailbox/worktask/WT-D20260518_001/risk_package_draft.json",
+      "qepm/mailbox/worktask/WT-D20260518_001/codex_critic_response_risk.json",
+      "qepm/mailbox/worktask/WT-D20260518_001/risk_codex_resolution_summary.json",
+      "qepm/mailbox/worktask/WT-D20260518_001/risk_challenge_note.md",
+      "qepm/mailbox/worktask/WT-D20260518_001/run_risk_research.R",
+      "qepm/mailbox/worktask/WT-D20260518_001/run_risk_codex_resolution.R",
+      "qepm/mailbox/worktask/WT-D20260518_001/finalize_risk_package.R",
+      "stage_artifacts/WT_D20260518_001/exposure_matrix.parquet",
+      "stage_artifacts/WT_D20260518_001/factor_covariance.parquet",
+      "stage_artifacts/WT_D20260518_001/specific_risk.parquet",
+      "stage_artifacts/WT_D20260518_001/covariance.parquet",
+      "stage_artifacts/WT_D20260518_001/tail_risk_evt_gpd.json",
+      "stage_artifacts/WT_D20260518_001/stress_8_windows.json",
+      "stage_artifacts/WT_D20260518_001/crowding_overlap_with_PG2_STR_1715.json",
+      "stage_artifacts/WT_D20260518_001/style_5_axis_exposure.csv",
+      "stage_artifacts/WT_D20260518_001/style_5_axis_exposure_collapsed.csv",
+      "stage_artifacts/WT_D20260518_001/regime_correlation.parquet",
+      "stage_artifacts/WT_D20260518_001/regime_correlation.csv",
+      "stage_artifacts/WT_D20260518_001/regime_correlation_pit.parquet",
+      "stage_artifacts/WT_D20260518_001/regime_correlation_pit.csv",
+      "stage_artifacts/WT_D20260518_001/method_shopping_log_risk.json"
+    ],
+    "inputs_consumed": [
+      "qepm/mailbox/worktask/WT-D20260518_001/alpha_package.json",
+      "stage_artifacts/WT_D20260518_001/feature_panel_design_v2.parquet",
+      "stage_artifacts/WT_D20260518_001/ICIR_per_window_per_regime.csv",
+      "stage_artifacts/WT_D20260518_001/comprehensive_features_inventory.csv",
+      "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/02_holdings_universe/alpha_scores_str1715_268m.parquet",
+      "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/manifest.json"
+    ]
+  }
+}

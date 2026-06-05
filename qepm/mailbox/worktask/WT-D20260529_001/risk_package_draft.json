@@ -1,0 +1,128 @@
+{
+  "task_id": "WT-D20260529_001",
+  "track": "FLOW",
+  "role": "risk",
+  "as_of_date": "2023-10-31",
+  "pit": {
+    "lockbox_cutoff": "2023-12-22",
+    "covariance_window": "2021-10-01..2023-10-31 (513 trading days, trailing ~2yr ending as_of)",
+    "freshness": "covariance_asof=2023-10-31, all returns Date<=as_of (C2 no same-day circular; daily Ret observed at close, used for as_of cov)",
+    "connector": "RAWDATA.parquet daily Ret/BM_Ret (price-derived, label-free); factor exposures via market/style regressions"
+  },
+  "exposure_matrix_ref": "stage_artifacts/WT_D20260529_001_FLOW/exposure_matrix.parquet",
+  "factor_covariance_ref": "stage_artifacts/WT_D20260529_001_FLOW/factor_covariance.parquet",
+  "specific_risk_ref": "stage_artifacts/WT_D20260529_001_FLOW/specific_risk.parquet",
+  "security_covariance_ref": "stage_artifacts/WT_D20260529_001_FLOW/covariance.parquet",
+  "regime_correlation_ref": "stage_artifacts/WT_D20260529_001_FLOW/regime_correlation.parquet",
+  "tail_risk_ref": "qepm/mailbox/worktask/WT-D20260529_001/tail_risk.json",
+  "selection_objective": "condition_number",
+  "method_log": {
+    "candidates_tried": 3,
+    "cap": 5,
+    "method_log": [
+      {"name": "sample", "condition": 31.48, "psd": true, "selected": false},
+      {"name": "ledoit_wolf", "condition": 6.50, "psd": true, "selected": true},
+      {"name": "gerber_rmt", "condition": 65.25, "psd": true, "selected": false}
+    ],
+    "selection_rule": "min condition_number among PSD estimators (estimation-quality only, no return/SR reference)"
+  },
+  "covariance_structure": {
+    "form": "Sigma = B Omega B' + D (market single-factor + idiosyncratic; annualized x252)",
+    "estimator_selected": "ledoit_wolf",
+    "condition_number": 6.50,
+    "condition_number_sample": 31.48,
+    "psd": true,
+    "min_eigenvalue": 0.1046,
+    "n_obs": 513,
+    "p": 20,
+    "shrinkage_used": true,
+    "shrinkage_method": "ledoit_wolf_analytical",
+    "note": "all three estimators well-conditioned (cond<70 << 500 floor); LW chosen for max stability + finite-sample shrinkage. No ill-conditioning, no eigen-floor needed."
+  },
+  "factor_specific_share": {
+    "mean_market_factor_var_share": 0.215,
+    "mean_specific_var_share": 0.785,
+    "mkt_var_share_range": [0.08, 0.36],
+    "interpretation": "idiosyncratic-dominated cross-section (78.5% specific) — consistent with a settlement-identity flow sleeve whose names are not co-driven by a single common factor; RF-R1 NOT triggered (max single-name market share 36% < 40%)."
+  },
+  "risk_summary": {
+    "top_common_risks": ["Market (21.5% mean var share)", "Momentum-style (sleeve MOM beta 0.231, t 3.9)", "Sector_Chemicals (4/20 names, HHI 0.115)"],
+    "concentration": {
+      "sector_hhi": 0.115,
+      "n_effective_sector": 8.70,
+      "top_sector": "화학 (Chemicals) 4/20",
+      "vol_concentration_hhi": 0.053,
+      "note": "EW-proxy concentration only; optimizer sets actual weights. Sector well-diversified (n_eff 8.7)."
+    },
+    "crowding_score_per_factor": [
+      {"factor_name": "investor_flow_contrarian_composite", "crowding_score": 0.301, "hhi_top": 0.053, "vol_concentration": 0.053, "passive_overlap_proxy": 0.115, "demand_elasticity_proxy": 0.72, "alert": null},
+      {"factor_name": "INV02_Foreign_NetBuy_60d", "crowding_score": 0.361, "hhi_top": 0.053, "vol_concentration": 0.053, "passive_overlap_proxy": 0.115, "demand_elasticity_proxy": 0.66, "alert": null},
+      {"factor_name": "INV04_Inst_NetBuy_60d", "crowding_score": 0.361, "hhi_top": 0.053, "vol_concentration": 0.053, "passive_overlap_proxy": 0.115, "demand_elasticity_proxy": 0.66, "alert": null},
+      {"factor_name": "INV09_Flow_Persistence", "crowding_score": 0.361, "hhi_top": 0.053, "vol_concentration": 0.053, "passive_overlap_proxy": 0.115, "demand_elasticity_proxy": 0.66, "alert": null},
+      {"factor_name": "INV11_Foreign_Concentration", "crowding_score": 0.361, "hhi_top": 0.053, "vol_concentration": 0.053, "passive_overlap_proxy": 0.115, "demand_elasticity_proxy": 0.66, "alert": null},
+      {"factor_name": "INV07_Retail_Contrarian", "crowding_score": 0.361, "hhi_top": 0.053, "vol_concentration": 0.053, "passive_overlap_proxy": 0.115, "demand_elasticity_proxy": 0.66, "alert": null}
+    ],
+    "crowding_self_reference_caveat": "FLOW is itself a CROWDING-UNWIND/price-pressure-reversal signal (Choe-Kho-Stulz 2005): it buys names being net-SOLD by crowded foreign/institutional flow. Intrinsic crowding of the resulting holdings is structurally LOW (all scores 0.30-0.36 << 0.75 threshold). The relevant crowding risk is META: if many managers adopt the same contrarian-flow signal the reversal premium decays — not capturable from this single-book snapshot; flagged for monitoring decay.",
+    "crowding_flags": [],
+    "liquidity_flags": [],
+    "stress_tests": {
+      "market_down_5_beta_implied": -0.0582,
+      "ew_sleeve_beta": 1.163,
+      "gfc_2008": {"sleeve": -0.285, "bm": -0.270, "coverage": 0.80, "status": "UNRELIABLE_PARTIAL_COVERAGE"},
+      "euro_2011": {"sleeve": -0.156, "bm": -0.105, "coverage": 0.80, "status": "UNRELIABLE_PARTIAL_COVERAGE"},
+      "china_2015": {"sleeve": -0.031, "bm": -0.033, "coverage": 0.85, "status": "OK"},
+      "covid_2020": {"sleeve": -0.401, "bm": -0.329, "coverage": 0.90, "status": "OK"},
+      "ratehike_2022": {"sleeve": -0.115, "bm": -0.230, "coverage": 1.00, "status": "OK"}
+    },
+    "crisis_hedge_verdict": "PARTIAL. The alpha-package crisis-strengthening claim (crisis_ic 0.074 vs normal 0.0177, AX-001 v2 ratio 4.18) is a SIGNAL-IC property and is accepted at face value (not re-measured here). At the realized top20-HOLDINGS level the EW sleeve UNDERPERFORMED bm in equity crashes (COVID -40.1% vs -32.9%; GFC/Euro worse-but-UNRELIABLE) yet markedly OUTPERFORMED in the 2022 monetary-tightening drawdown (-11.5% vs bm -23.0%). Interpretation: foreign-flight-reversal hedge manifests in slow flow-driven regimes (2022) rather than fast liquidity crashes (COVID). Sleeve beta 1.16 means it is NOT a low-beta defensive sleeve — diversification benefit is correlation/timing-based, not beta-reduction."
+  },
+  "tail_risk": {
+    "var95": 0.0248, "cvar95": 0.0343, "var99": 0.0390, "cvar99": 0.0456,
+    "skewness": -0.368, "excess_kurtosis": 0.77,
+    "lower_tdc_mean": 0.279, "lower_tdc_max": 0.510, "tdc_threshold": 0.30, "tdc_pass": true,
+    "note": "mean lower-tail dependence 0.279 just below 0.30 threshold (marginal PASS); max pairwise 0.510 indicates a co-crash cluster (likely chemicals/IT cyclicals). Negative skew -0.37 + excess kurtosis 0.77 = mild left-fat-tail, typical KR equity."
+  },
+  "style_exposure": {
+    "model": "EW-top20-sleeve daily return ~ MKT + SMB + MOM (FF-style proxies from RAWDATA; VALUE/RMW/CMA unavailable in RAWDATA -> partial FF5)",
+    "MKT_beta": 1.170, "MKT_t": 37.36,
+    "SMB_beta": 0.036, "SMB_t": 0.67,
+    "MOM_beta": 0.231, "MOM_t": 3.90,
+    "r2": 0.742,
+    "orthogonality_assessment": "Two levels must be distinguished. (1) SIGNAL-level orthogonality (alpha-package): cor vs STR_1715 -0.070, cor vs D -0.010 — genuinely orthogonal alpha axes (settlement-flow vs earnings-revision vs microstructure). ACCEPTED. (2) HOLDINGS-level style: the realized top20 carries market beta 1.17 and a significant MOMENTUM tilt (t 3.9). STR_1715 (earnings-revision/momentum) ALSO loads momentum, so at the realized-holdings level FLOW and 1715 may share momentum-style exposure even while their alpha signals are uncorrelated. This is a multi-sleeve overlap RISK to flag for the optimizer, NOT an alpha defect.",
+    "style_overlap_flag": "MOMENTUM style co-loading between FLOW and STR_1715 — recommend optimizer monitor combined momentum active exposure."
+  },
+  "regime_correlation": {
+    "crisis_2022plus_mean_pairwise_cor": 0.263,
+    "normal_mean_pairwise_cor": 0.192,
+    "crisis_corr_lift": 0.071,
+    "note": "intra-sleeve correlation rises +0.07 in 2022 stress era (correlation breakdown is mild, not a co-crash blowup). Window-internal regime split proxy (crisis = 2022+); CRISIS n=450, normal n=63 within trailing window."
+  },
+  "diagnostics": {
+    "condition_number": 6.50,
+    "shrinkage_used": true,
+    "shrinkage_method": "ledoit_wolf",
+    "factor_correlation_warnings": [],
+    "high_corr_pairs_gt_0.8": 0,
+    "tdc_summary": {"sleeve_lower_tdc_mean": 0.279, "sleeve_lower_tdc_max": 0.510}
+  },
+  "red_flags": [],
+  "red_flag_assessment": {
+    "RF-R1_top_risk_gt_40pct": "PASS (mean market var share 21.5%, max single-name 36%)",
+    "RF-R2_cond_gt_500": "PASS (6.50)",
+    "RF-R3_crowding": "PASS (no factor crowding_score >= 0.75)",
+    "RF-R4_market_down_5_lt_neg8pct": "PASS (-5.82%)",
+    "RF-R5_high_corr_pairs": "PASS (0 pairs cor>0.8)"
+  },
+  "ax_compliance": {
+    "AX-007": "multi-sleeve framing — FLOW is 4th sleeve combined with STR_1715+D; single-sleeve top20 metric-break exception (multi-sleeve) applies. Risk diagnostics measure co-movement structure, not standalone graduation.",
+    "AX-001_v2": "defensive/crisis evaluation accepted from alpha-package (crisis_ic/normal_ic ratio 4.18 PASS); holdings-level stress shows PARTIAL crisis-hedge (2022 yes, COVID no). Conditional evaluation, NOT full-period SR.",
+    "AX-002": "all returns PIT (Date<=as_of); no look-ahead; daily Ret label-free."
+  },
+  "challenge_flags": [
+    "STYLE_OVERLAP: FLOW top20 holdings carry significant MOMENTUM tilt (MOM beta 0.231, t 3.9); STR_1715 also momentum-loaded -> holdings-level momentum co-exposure despite signal-level orthogonality. Optimizer should monitor combined active momentum.",
+    "CRISIS_HEDGE_PARTIAL: crisis-strengthening verified only in 2022 tightening regime, not in fast liquidity crashes (COVID sleeve -40.1% vs bm -32.9%). Sleeve beta 1.16 -> NOT beta-defensive.",
+    "TDC_MARGINAL: mean lower-tail dependence 0.279 is just under 0.30 threshold; max pairwise 0.510 indicates a co-crash cluster.",
+    "STRESS_COVERAGE: GFC2008/Euro2011 stress UNRELIABLE (<85% of 20 names listed in those windows) — partial-listing artifact, not hard-fail."
+  ],
+  "selection_objective_audit": "Estimator chosen by condition_number (estimation quality) only. No SR/IR/return reference used in Sigma method selection (R4 P3 HARD compliance)."
+}

@@ -1,0 +1,144 @@
+{
+  "task_id": "WT-D20260529_002",
+  "track": "FIP",
+  "hypothesis_handle": "FIP_information_discreteness_momentum_refine",
+  "wt_type": "discovery",
+  "schema_version": "alpha_package_v1",
+  "as_of_date": "2026-05-27",
+  "signal_cutoff": "2023-12-22",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe": "KOSPI200_KOSDAQ150_intersection",
+  "liquidity_floor_won_20d_avg": 200000000,
+  "benchmark": "EW_universe_proxy (KOSPI200_total_return downstream)",
+  "hypothesis_title": "Frog-in-the-Pan / Information Discreteness momentum refinement — continuous info underreaction (Da-Gurun-Warachka 2014 RFS) in KR",
+  "hypothesis_description": "DGW2014: for SAME cumulative momentum, CONTINUOUS gradual (low-attention) information arrival -> sustained underreaction -> stronger & less-reversing momentum than DISCRETE jump momentum. ID=sign(PRET)*(%neg_days-%pos_days) over 12M-1M formation; FIP signal = momentum_z REFINED by ID (boost low-ID/continuous, dampen high-ID/discrete), sector-neutralized, top20 long-only. Designed to REFINE (path quality) not cannibalize STR_1715(level/fundamental).",
+  "selection_objective": "rank_ic",
+  "model_type": "linear_cross_sectional_momentum_path_conditioned",
+  "alpha_vector": [-0.5162, -1.1595, 0.0072, 2.5094, 0.2756, -0.1252, 1.3573, -0.0669, 2.8782, -1.4287, 1.2473, -0.6281, -0.0348, -0.8158, 1.6921, 1.5716, -0.2591, -0.233, 0.2714, -1.4131, -0.0912, -0.0573, -0.8239, -0.6316, -0.1742, 0.263, -0.3194, 0.8444, -0.1618, -1.2215, 0.1106, 0.0184, -0.293, 0.8072, -0.5175, -0.3438, -1.1036, -0.4914, -1.2222, 0.0703, 1.2829, -0.338, -0.4024, -0.0069, 0.2246, 1.4351, -0.3508, -0.3826, 0.2212, -0.3865, -0.1641, 1.8368, 0.1211, 1.2348, 2.6419, -0.1941, -0.4264, 0.2796, -0.8429, 1.3607, -0.4428, -0.1434, -0.2232, 2.7903, -1.1583, 0.1835, -0.3296, -0.5732, -0.7812, 0.5909, 3.0817, -1.7865, 0.8464, -0.1022, 0.1243, 1.1963, -0.0737, -0.2714, 0.2101, -0.484, -0.6271, -0.1174, -0.8466, -1.5109, -1.2199, 0.6076, -0.3846, -0.0842, 0.0046, -0.5209, 0.363, -1.6018, 0.2059, 0.1892, -1.7048, -0.2885, -0.5085, 0.4635, 0.2367, -0.2424, -1.7835, -0.6742, -0.0993, 0.1544, 0.5018, -0.2152, -0.3976, 0.0389, -0.4522, 0.075, -0.1727, -0.147, 0.3893, -0.5593, -0.0316, -0.169, 3.0817, 1.1196, -0.9501, -0.731, 0.3117, 1.567, -0.5161, -0.1976, 0.8063, -0.0972, 0.1859, 0.3279, 0.177, 0.2361, -0.3948, -0.2371, 0.7329, 0.305, -0.8985, 0.2083, -0.1002, 1.6221, 0.309, 0.4432, -0.0785, -0.1158, -1.2389, -0.6391, 0.7444, 0.1495, 3.0817, -0.9527, -0.7071, 0.6874, -1.0865, -0.2438, -0.9318, -0.1545, 0.588, 0.7922, -1.2213, 0.3144, 0.2608, 0.2033, -1.4053, 0.173, 2.626, -1.0332, -1.1713, 1.1229, 0.3065, -0.0345, 1.0993, -0.3627, 0.2815, 0.3434, -0.9216, -0.3815, 0.9113, -0.4513, 0.2496, -0.2743, -0.2124, -0.2386, -0.4193, -0.0465, 0.1318, 0.3561, -0.1227, 0.5063, -0.3657, -0.9977, 0.0493, -1.2972, -0.3009, -1.6843, 0.2762, 0.8893, -0.4916, -2.3119, 0.7625, 1.3558, 0.8089, 0.134, 0.4168, 0.1514, 0.791, 0.286, -1.1434, 0.1575, 0.086, -1.3886, -0.039, 0.9025, 1.8467, 1.2161, -0.0501, -0.6252, -0.6583, 0.1058, -0.454, -1.2779, -0.5754, -0.593, 0.5531, 0.144, 3.0517, -0.0676, 0.0542, -0.5264, -0.4962, -0.1983, 1.1481, -0.3219, -0.1615, 0.1671, 1.3882, 1.3557, -0.8786, -0.6814, -1.9606, 0.1058, 0.1708, -0.3303, -1.832, 0.1971, -0.8776, -0.3013, -1.5734, -0.3666, -0.4664, 0.6734, -0.0578, -0.3619, 0.0129, -0.9681, -0.3417, -0.0535, 0.0239, -0.3087, -1.0678, -0.3201, -0.3585, -0.9973, -1.831, -0.2119, -0.3408, -0.269, -0.0645, -0.8369, 2.3402, -0.7388, -0.5132, -0.5997, 0.3373, 2.7903, 0.165, 2.66, -0.2987, 2.1769, -0.9738, 0.3914, 2.1221, -1.4452, 0.3333, -0.2034, 0.2628, -0.5367, -0.4668, -1.2735, -0.2731, -0.4564, 0.5838, 1.8714, 1.6419, -1.3992, -0.1274, 0.1699, -0.2067, -0.687, -0.443, 3.0817, 0.2817, -0.0606, -0.1779, -0.2621, 1.0686, -0.4028, 0.5169, 3.0517, -0.4278, 0.4808, -1.43, -0.0965, -0.5609, 2.3782, 1.0052, 0.2023, 1.8516, 0.6876, -0.2606, -0.505, -0.9186, -0.5915, -0.7757, 2.4258, -1.8917, -2.0339, -0.8301, -0.0243, -0.5957, -0.1163, -1.0801, 0.1721, -0.8201, -0.1429, -0.8947, 0.6616, -0.6586, -1.1445, -1.314, -1.4201, 3.0817, -0.8957, 0.3646, -0.5828, 2.6099, -0.5341, -1.0429, 0.7575, -0.7863, -0.4582],
+  "confidence_vector": [0.1721, 0.3865, 0.0024, 0.8365, 0.0919, 0.0417, 0.4524, 0.0223, 0.9594, 0.4762, 0.4158, 0.2094, 0.0116, 0.2719, 0.564, 0.5239, 0.0864, 0.0777, 0.0905, 0.471, 0.0304, 0.0191, 0.2746, 0.2105, 0.0581, 0.0877, 0.1065, 0.2815, 0.0539, 0.4072, 0.0369, 0.0061, 0.0977, 0.2691, 0.1725, 0.1146, 0.3679, 0.1638, 0.4074, 0.0234, 0.4276, 0.1127, 0.1341, 0.0023, 0.0749, 0.4784, 0.1169, 0.1275, 0.0737, 0.1288, 0.0547, 0.6122, 0.0404, 0.4116, 0.8806, 0.0647, 0.1421, 0.0932, 0.281, 0.4536, 0.1476, 0.0478, 0.0744, 0.9301, 0.3861, 0.0612, 0.1099, 0.1911, 0.2604, 0.197, 1, 0.5955, 0.2821, 0.0341, 0.0414, 0.3988, 0.0246, 0.0905, 0.07, 0.1613, 0.209, 0.0391, 0.2822, 0.5036, 0.4066, 0.2025, 0.1282, 0.028, 0.0015, 0.1736, 0.121, 0.5339, 0.0686, 0.063, 0.5683, 0.0962, 0.1695, 0.1545, 0.0789, 0.0808, 0.5945, 0.2247, 0.0331, 0.0515, 0.1673, 0.0717, 0.1325, 0.013, 0.1507, 0.025, 0.0576, 0.049, 0.1298, 0.1864, 0.0105, 0.0564, 1, 0.3732, 0.3167, 0.2437, 0.1039, 0.5223, 0.172, 0.0659, 0.2688, 0.0324, 0.062, 0.1093, 0.059, 0.0787, 0.1316, 0.079, 0.2443, 0.1017, 0.2995, 0.0694, 0.0334, 0.5407, 0.103, 0.1477, 0.0262, 0.0386, 0.413, 0.213, 0.2481, 0.0498, 1, 0.3176, 0.2357, 0.2291, 0.3622, 0.0813, 0.3106, 0.0515, 0.196, 0.2641, 0.4071, 0.1048, 0.0869, 0.0678, 0.4684, 0.0577, 0.8753, 0.3444, 0.3904, 0.3743, 0.1022, 0.0115, 0.3664, 0.1209, 0.0938, 0.1145, 0.3072, 0.1272, 0.3038, 0.1504, 0.0832, 0.0914, 0.0708, 0.0795, 0.1398, 0.0155, 0.0439, 0.1187, 0.0409, 0.1688, 0.1219, 0.3326, 0.0164, 0.4324, 0.1003, 0.5614, 0.0921, 0.2964, 0.1639, 0.7706, 0.2542, 0.4519, 0.2696, 0.0447, 0.1389, 0.0505, 0.2637, 0.0953, 0.3811, 0.0525, 0.0287, 0.4629, 0.013, 0.3008, 0.6156, 0.4054, 0.0167, 0.2084, 0.2194, 0.0353, 0.1513, 0.426, 0.1918, 0.1977, 0.1844, 0.048, 1, 0.0225, 0.0181, 0.1755, 0.1654, 0.0661, 0.3827, 0.1073, 0.0538, 0.0557, 0.4627, 0.4519, 0.2929, 0.2271, 0.6535, 0.0353, 0.0569, 0.1101, 0.6107, 0.0657, 0.2925, 0.1004, 0.5245, 0.1222, 0.1555, 0.2245, 0.0193, 0.1206, 0.0043, 0.3227, 0.1139, 0.0178, 0.008, 0.1029, 0.3559, 0.1067, 0.1195, 0.3324, 0.6103, 0.0706, 0.1136, 0.0897, 0.0215, 0.279, 0.7801, 0.2463, 0.1711, 0.1999, 0.1124, 0.9301, 0.055, 0.8867, 0.0996, 0.7256, 0.3246, 0.1305, 0.7074, 0.4817, 0.1111, 0.0678, 0.0876, 0.1789, 0.1556, 0.4245, 0.091, 0.1521, 0.1946, 0.6238, 0.5473, 0.4664, 0.0425, 0.0566, 0.0689, 0.229, 0.1477, 1, 0.0939, 0.0202, 0.0593, 0.0874, 0.3562, 0.1343, 0.1723, 1, 0.1426, 0.1603, 0.4767, 0.0322, 0.187, 0.7927, 0.3351, 0.0674, 0.6172, 0.2292, 0.0869, 0.1683, 0.3062, 0.1972, 0.2586, 0.8086, 0.6306, 0.678, 0.2767, 0.0081, 0.1986, 0.0388, 0.36, 0.0574, 0.2734, 0.0476, 0.2982, 0.2205, 0.2195, 0.3815, 0.438, 0.4734, 1, 0.2986, 0.1216, 0.1943, 0.87, 0.178, 0.3476, 0.2525, 0.2621, 0.1527],
+  "signal_matrix_ref": "file:///mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/stage_artifacts/WT_WT_D20260529_002_FIP/alpha_scores.parquet",
+  "multi_sleeve": false,
+  "redundancy_cluster_id": "MOMENTUM_PATH (refines MOMENTUM level cluster; HIGH return-overlap with FUNDAMENTAL STR_1715)",
+  "construction": "long_only_top20 (discovery; long_only configurable)",
+  "factor_specs": [
+    {
+      "factor_family": "Momentum_PathQuality",
+      "proxy": "information_discreteness_refined_12m1m_momentum",
+      "formula": "ID=sign(PRET)*(pct_neg-pct_pos) over (t-12m,t-1m] daily; alpha = zsc(mom_z * (1-0.5*clamp(ID_z))); sector-demean; zsc",
+      "lag_rule": "price t-1 close; formation [t-12m,t-1m] skip-month; daily signs from RAWDATA dret; liquidity tv20>=2e8 PIT-safe",
+      "winsorization": "3std",
+      "neutralization": "sector",
+      "economic_rationale": "Underreaction to gradual (low-attention) info persists longer than to discrete jumps (limited-attention, Hirshleifer-Lim-Teoh). Continuous formation = many small same-direction days = low ID. PIT-cleanest (daily sign only, 0 extra data).",
+      "weight_theta": 1,
+      "references": ["Da-Gurun-Warachka 2014 RFS (Frog in the Pan)", "Jegadeesh-Titman 1993 JF", "Hirshleifer-Lim-Teoh 2011 JF (limited attention)"]
+    }
+  ],
+  "diagnostics": {
+    "rank_ic": 0.0018,
+    "rank_ic_vanilla_mom": 0.0024,
+    "ic_improve_vs_vanilla": -0.0007,
+    "icir": 0.0156,
+    "harvey_t_rankIC": 0.2333,
+    "harvey_t_portfolio": 0.9328,
+    "net_sr": 0.2304,
+    "turnover_yr": 3.8141,
+    "dsr": 0.5493,
+    "dsr_z": 0.1239,
+    "dsr_8trials": 0.3083,
+    "ax001_v2_ratio": -2.8133,
+    "ic_bad": 0.0174,
+    "ic_norm": -0.0062,
+    "monotonicity": 0.103,
+    "subperiod_stability": 0.3333,
+    "subperiods": [
+      0.0154,
+      -0.0123,
+      -0.0113
+    ],
+    "cor_vs_str1715": 0.3356,
+    "cor_vs_D": -0.0954,
+    "cor_vs_FLOW": -0.2332,
+    "return_cor_vs_str1715": 0.7559,
+    "realized_beta": 1.0847,
+    "realized_alpha_monthly": 0.0078,
+    "oos_rank_ic": 0.0275,
+    "n_months_lb": 214,
+    "n_months_oos": 29
+  },
+  "robustness_variants": {
+    "note": "12M-1M & 6M-1M formation x {fip_refine, fip_pure_continuous, vanilla_mom}. vanilla_mom DOMINATES fip_refine in BOTH; fip_pure_continuous NEGATIVE. DGW2014 premise does NOT replicate in KR.",
+    "fip_refine_12m": {
+      "t_port": 0.96,
+      "net_sr": 0.235
+    },
+    "vanilla_mom_12m": {
+      "t_port": 1.48,
+      "net_sr": 0.364
+    },
+    "fip_pure_continuous_12m": {
+      "t_port": -0.51,
+      "net_sr": -0.118
+    }
+  },
+  "ic_vs_portfolio_t_note": "rank-IC harvey-t=0.23328 (cross-sectional, ~0) vs portfolio-alpha t=0.93281 (top20 long-only net). Cycle 2 lesson: portfolio-alpha t authoritative for Judge. Neither passes graduation (t>3).",
+  "realized_orthogonality_note": "SIGNAL cor vs STR_1715=0.33558 (modest) BUT realized RETURN cor=0.75592 (HIGH) — FLOW lesson materialized: low signal-cor != return orthogonal. realized_beta(K200)=1.08473 (~1.08, FULL market exposure — a top20 long-only momentum sleeve; an earlier -0.06 estimate was a 1-month formation/holding misalignment artifact, corrected). NO favorable orthogonality dimension: beta~1 (not market-neutral) AND 0.76 return-overlap with STR_1715 = cannibalization not diversification.",
+  "method_shopping_log": {
+    "candidates_tried": 8,
+    "parallel_exec": false,
+    "method_log": [
+      {
+        "name": "fip_refine_12m1m",
+        "t_portfolio": 0.96,
+        "net_sr": 0.235,
+        "selected": true
+      },
+      {
+        "name": "vanilla_mom_12m1m",
+        "t_portfolio": 1.48,
+        "net_sr": 0.364,
+        "selected": false
+      },
+      {
+        "name": "fip_pure_continuous_12m",
+        "t_portfolio": -0.51,
+        "net_sr": -0.118,
+        "selected": false
+      },
+      {
+        "name": "fip_refine_6m1m",
+        "t_portfolio": 0.58,
+        "net_sr": 0.144,
+        "selected": false
+      },
+      {
+        "name": "vanilla_mom_6m1m",
+        "t_portfolio": 0.71,
+        "net_sr": 0.179,
+        "selected": false
+      },
+      {
+        "name": "fip_pure_continuous_6m",
+        "t_portfolio": -1.73,
+        "net_sr": -0.404,
+        "selected": false
+      }
+    ]
+  },
+  "challenge_flags": [
+    "RF-A HIGH: rank_ic=0.00175 ~0 << 0.04 graduation FAIL; harvey_t_rankIC=0.23328 << 3.0",
+    "ic_improve_vs_vanilla=-0.00068 NEGATIVE — ID/FIP refinement DESTROYS alpha vs vanilla momentum (core hypothesis falsified)",
+    "fip_pure_continuous portfolio-t NEGATIVE (-0.51 to -1.73): DGW2014 'continuous info stronger' premise does NOT hold in KR",
+    "return_cor_vs_str1715=0.75592 HIGH — cannibalizes STR_1715, not diversifying (FLOW lesson)",
+    "DSR=0.54929 (3 trials) but 0.30833 (8 honest budget) < 0.5; single-alpha ceiling",
+    "ax001_v2_ratio=-2.81327 anomalous (ic_norm negative) — not interpretable as defensive",
+    "portfolio-alpha t=0.93281 < 3.0 — NOT tradeable standalone top20 long-only"
+  ],
+  "final_stance": "DROP_as_standalone (hypothesis FALSIFIED in KR: FIP/ID refinement DESTROYS alpha vs vanilla momentum; pure-continuity NEGATIVE; rank-IC~0; realized_beta~1.08 (full market exposure, NOT neutral) AND 0.76 return-overlap with STR_1715 = cannibalization not diversification. No favorable orthogonality dimension survives.)",
+  "pit_assertions": {
+    "lockbox": "2023-12-22 strict; selection+diagnostics use sig_date<=cutoff ONLY",
+    "forward_label": "FORWARD return (shift lead) for IC only, never in signal",
+    "signal_inputs": "100% trailing/past (12M-1M formation daily returns + signs, t-1 close, 20d trailing liquidity)",
+    "shift_convention": "forward label compliant; no negative-n+lead double negation used"
+  }
+}

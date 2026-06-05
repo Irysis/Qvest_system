@@ -1,0 +1,255 @@
+{
+  "task_id": "WT-D20260529_001",
+  "track": "FLOW",
+  "role": "forge",
+  "agent": "forge_integration_v8x_pure_function",
+  "as_of_date": "2026-05-29",
+  "method": "weights.csv_daily_share_based_NAV_reconstruction_carry_forward_quarterly",
+  "measurement_basis_primary": "forge_realized_share_based",
+  "backtest_summary": {
+    "period": "2005-02-01 ~ 2026-05-27",
+    "n_trading_days": 5267,
+    "n_months": 256,
+    "n_rebalances": 76,
+    "sr_daily": 0.8227,
+    "cagr": 0.1966,
+    "mdd": 0.5879,
+    "ann_turnover": 2.592,
+    "information_ratio_monthly": 0.5397,
+    "alpha_annualized_monthly": 0.0917,
+    "metric_type": "backtested",
+    "ann_turnover_convention": "one-way L1 per rebal x 4 quarterly = 2.59/yr; round-trip 5.18/yr (matches optimizer 5.51). Contract 06_metrics Annualized_Turnover=163.296 is x252 mislabel, INVALID for quarterly.",
+    "mdd_daily_basis": 0.5879,
+    "mdd_monthly_basis": -0.4914
+  },
+  "portfolio_alpha_t_nw_lag3": 2.3497,
+  "portfolio_alpha_t_pvalue": 0.0188,
+  "portfolio_alpha_t_basis": "monthly net active series, NW lag-3, build_benchmark_compare (matches alpha proxy basis)",
+  "portfolio_alpha_t_daily_reference": 2.5325,
+  "proxy_vs_realized": {
+    "alpha_proxy_portfolio_alpha_t": 3.55,
+    "forge_realized_portfolio_alpha_t_FULL": 2.3497,
+    "forge_realized_portfolio_alpha_t_LOCKBOX_TRUNC": 3.6632,
+    "lockbox_trunc_n_months": 226,
+    "delta_full": -1.2003,
+    "delta_lockbox_trunc": 0.1132,
+    "diagnosis": "DOWNSHIFT_GATE_C_FAIL",
+    "diagnosis_detail": "On the EXACT proxy basis (lockbox-truncated <=2023-12, quarterly sleeve), forge realized portfolio-alpha t = 3.66 ~= proxy 3.55 -> MEASUREMENT CHAIN VALID (share-based realized reproduces alpha continuous proxy; SR 0.78 ~= proxy 0.817). On the FULL window incl. frozen-weights OOS deploy-extension (2024-01~latest, 29 mo), t drops to 2.35 (< 2.95 Gate C). The degradation is concentrated in the OOS deploy extension, NOT a measurement artifact.",
+    "cycle2_precedent_note": "Cycle 2: D ML alpha 4.31 -> forge 2.31 down-shift on full-window realized; this WT lands forge FULL=2.35 (near-identical OOS-driven drop)."
+  },
+  "graduation_gate_c": {
+    "metric": "portfolio_alpha_t_nw_lag3",
+    "hurdle": 2.95,
+    "realized": 2.3497,
+    "pass": false
+  },
+  "sr_realized_share_based": 0.8227,
+  "sr_factor_engine_continuous": {},
+  "sr_lockbox_daily_harness": {},
+  "weights_csv_unique_dates_count": 76,
+  "alpha_sig_dates_count": 226,
+  "schedule_density_ratio": 0.3363,
+  "schedule_density_pass": false,
+  "schedule_density_note": "0.336 < 0.95 — quarterly cadence FORCED by TO hard cap (alpha monthly TO 10.66 FAIL, quarterly 5.93 PASS). See optimizer INFEAS-2. Quarterly weights held across intervening months (NAV carry-forward); NO monthly holdings fabricated. Schedule Fidelity Mandate honored.",
+  "pure_function_violation": false,
+  "audit_status": "WARNING",
+  "audit_frequency_mislabel": false,
+  "hash_audit": {
+    "alpha_hash_start": "a7d301e64ce38e2d48f69360f67f85b1",
+    "risk_hash_start": "db465397da55aa7b260fe5f35bbd2a38",
+    "opt_hash_start": "3864f32f42c402f7e7af3a0d286ab55a",
+    "weights_hash_start": "20604531a280118aa0596275839f754d",
+    "alpha_hash_end": "a7d301e64ce38e2d48f69360f67f85b1",
+    "risk_hash_end": "db465397da55aa7b260fe5f35bbd2a38",
+    "opt_hash_end": "3864f32f42c402f7e7af3a0d286ab55a",
+    "weights_hash_end": "20604531a280118aa0596275839f754d",
+    "integrity_pass": true
+  },
+  "output_paths": {
+    "bt_result_rds": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260529_001/backtest_result/bt_result.rds",
+    "equity_curve": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260529_001/backtest_result/equity_curve.png",
+    "annual_returns": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260529_001/backtest_result/annual_returns.png",
+    "oos_zoom": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260529_001/backtest_result/oos_zoom_chart.png"
+  },
+  "generated_at": "2026-05-29 17:05:07.940754",
+  "mdd_hard_constraint_breach": {
+    "mdd_daily": 0.5879,
+    "mdd_monthly": -0.4914,
+    "hard_cap": -0.45,
+    "breach": true,
+    "note": "Independent hard-fail beyond Gate C (Codex C2 ACCEPT). 2008 GFC on long-only beta~1 sleeve."
+  },
+  "three_window_metrics": {
+    "full": {
+      "label": "FULL 2005-2026",
+      "n": 256,
+      "sr": 0.7788,
+      "cagr": 0.1917,
+      "mdd": -0.4914,
+      "vol": 0.2746,
+      "pa_t": 2.3497,
+      "ir": 0.5397,
+      "ann_excess": 0.0879,
+      "dsr_raw": 3.5568,
+      "dsr_post": 2.2568
+    },
+    "pre_lb": {
+      "label": "PRE-LB <=2023-12",
+      "n": 226,
+      "sr": 0.7811,
+      "cagr": 0.1895,
+      "mdd": -0.4914,
+      "vol": 0.2702,
+      "pa_t": 3.6632,
+      "ir": 0.8526,
+      "ann_excess": 0.1349,
+      "dsr_raw": 3.2853,
+      "dsr_post": 1.9853
+    },
+    "lockbox_oos": {
+      "label": "LOCKBOX-OOS 2024+",
+      "n": 29,
+      "sr": 0.7349,
+      "cagr": 0.204,
+      "mdd": -0.236,
+      "vol": 0.3157,
+      "pa_t": -2.397,
+      "ir": -1.4883,
+      "ann_excess": -0.3473,
+      "dsr_raw": 1.2359,
+      "dsr_post": 1.2359
+    }
+  },
+  "harvey_5spec_supporting": {
+    "full": {
+      "CAPM": {
+        "t": 2.531,
+        "alpha_monthly_pct": 0.8324,
+        "p": 0.012,
+        "n": 254,
+        "pass": false
+      },
+      "Carhart3": {
+        "t": 2.22,
+        "alpha_monthly_pct": 0.6335,
+        "p": 0.0273,
+        "n": 254,
+        "pass": false
+      },
+      "Carhart4": {
+        "t": 2.216,
+        "alpha_monthly_pct": 0.6394,
+        "p": 0.0276,
+        "n": 254,
+        "pass": false
+      },
+      "FF5": {
+        "t": 1.895,
+        "alpha_monthly_pct": 0.549,
+        "p": 0.0593,
+        "n": 254,
+        "pass": false
+      },
+      "FF6": {
+        "t": 1.939,
+        "alpha_monthly_pct": 0.5568,
+        "p": 0.0537,
+        "n": 254,
+        "pass": false
+      }
+    },
+    "pre_lb": {
+      "CAPM": {
+        "t": 3.321,
+        "alpha_monthly_pct": 1.1061,
+        "p": 0.001,
+        "n": 226,
+        "pass": true
+      },
+      "Carhart3": {
+        "t": 2.864,
+        "alpha_monthly_pct": 0.8495,
+        "p": 0.0046,
+        "n": 226,
+        "pass": false
+      },
+      "Carhart4": {
+        "t": 2.769,
+        "alpha_monthly_pct": 0.8312,
+        "p": 0.0061,
+        "n": 226,
+        "pass": false
+      },
+      "FF5": {
+        "t": 2.471,
+        "alpha_monthly_pct": 0.7566,
+        "p": 0.0142,
+        "n": 226,
+        "pass": false
+      },
+      "FF6": {
+        "t": 2.441,
+        "alpha_monthly_pct": 0.7414,
+        "p": 0.0154,
+        "n": 226,
+        "pass": false
+      }
+    },
+    "pass_full": 0,
+    "pass_pre_lb": 1,
+    "note": "v8.x graduation Gate C metric = portfolio_alpha_t_nw_lag3 (judge owns 5-spec Gate); 5-spec emitted as supporting evidence per Codex C1."
+  },
+  "same_period_baseline": {
+    "overlap_months": 219,
+    "str_1715": {
+      "n": 219,
+      "sr": 0.8285,
+      "mdd": -0.4124,
+      "pa_t": 3.2003,
+      "ir": 0.6789,
+      "dsr_post": 3.6617
+    },
+    "flow_same_period": {
+      "n": 219,
+      "sr": 0.741,
+      "mdd": -0.4785,
+      "pa_t": 2.4318,
+      "ir": 0.6135,
+      "dsr_post": 1.8199
+    },
+    "note": "STR_1715 realized monthly (Charter v1.4 standard basis), same overlap period, net. FLOW DSR penalized n_cands=26."
+  },
+  "realized_dsr": {
+    "full_dsr_post": 2.2568,
+    "pre_lb_dsr_post": 1.9853,
+    "n_cands": 26,
+    "penalty_per": 0.05,
+    "note": "alpha 15 + optimizer 11 disclosed trials"
+  },
+  "codex_round": {
+    "stance": "REJECT",
+    "veto_flag": false,
+    "disposition": "6 ACCEPT + 1 PARTIAL(C1) + 2 REBUTTAL(C7,C8)",
+    "challenge_note": "qepm/mailbox/worktask/WT-D20260529_001/challenge_note_forge.md",
+    "ax_008_codex_status": "FAIL",
+    "high_severity_count": 6,
+    "escalated_to_qlead": false,
+    "escalation_note": "6 HIGH all addressed/rebutted; none PIT C1 or AX hard-fail. Existing INFEAS-3 book-architecture escalation (optimizer) remains the open Q-Lead item."
+  },
+  "forge_verdict": {
+    "admission_grade": false,
+    "e2e_objective": "DELIVERED",
+    "hard_fails": [
+      "portfolio_alpha_t_full 2.35 < 2.95 Gate C",
+      "MDD 49-59% > 45% hard cap",
+      "5-spec Harvey FULL 0/5, PRE-LB 1/5",
+      "same-period < incumbent STR_1715 (pa_t 2.43 vs 3.20)",
+      "frozen-weights OOS pa_t -2.40 (IR -1.49)"
+    ],
+    "measurement_chain_valid": true,
+    "measurement_chain_evidence": "PRE-LB forge pa_t 3.66 ~= proxy 3.55; forge SR 0.78 ~= proxy 0.817; n_months 226 match exact",
+    "flow_documented_role": "blended diversifier (optimizer book IR +0.33), pending Q-Lead INFEAS-3 book-architecture decision",
+    "cycle2_parallel": "forge FULL 2.35 ~= Cycle 2 D ML 2.31 (alpha 4.31->forge 2.31). Proxy-to-realized down-shift reproduced."
+  },
+  "finalized_post_codex": true
+}

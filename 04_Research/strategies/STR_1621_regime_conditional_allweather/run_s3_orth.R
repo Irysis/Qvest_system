@@ -4,8 +4,8 @@ cat("=== STR_1621: S3 Orthogonality Analysis ===\n")
 options(scipen=999); Sys.setenv(TZ="Asia/Seoul")
 set.seed(1621)
 
-INFRA_DIR  <- "/mnt/c/Users/User/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot/02_Infrastructure"
-STRAT_DIR  <- "/mnt/c/Users/User/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot/research_output/strategies/STR_1621_regime_conditional_allweather"
+INFRA_DIR  <- file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")), "02_Infrastructure")
+STRAT_DIR  <- file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")), "research_output/strategies/STR_1621_regime_conditional_allweather")
 STRATEGY_ID <- "STR_1621"
 FACTOR_ID   <- "C19_FY1_Revision_1m+V14_EBIT_EV+D01_Low_Vol+D44_Kurtosis"
 

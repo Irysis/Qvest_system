@@ -1,0 +1,338 @@
+{
+  "task_id": "WT-D20260518_001",
+  "agent": "forge",
+  "agent_version": "v2.0_5stages_375trials_4axes_true_OOS_walkforward_POST_CODEX_C1_C2_C3_C4_FIX",
+  "wt_type": "discovery",
+  "wt_subclass_charter_v18": "discovery_forge_phase_a",
+  "draft_marker": true,
+  "draft_emission_at": "2026-05-19T08:00:00+0900",
+  "as_of_date": "2026-05-19",
+  "post_codex_disposition_status": "POST_CODEX_REJECT_8_DISPOSITION_4_ACCEPT_FULL_4_PARTIAL_ACCEPT_REBUTTAL",
+
+  "package_md5_inherit": {
+    "alpha_package_md5_start": "b4b791972423d4405b67fcc1f5429fb3",
+    "risk_package_md5_start": "0be6f39f994255adf8767315a363fc7c",
+    "optimization_package_md5_start": "f424bf2aa9b9419ef44f34af33acde3c",
+    "alpha_package_md5_end": "b4b791972423d4405b67fcc1f5429fb3",
+    "risk_package_md5_end": "0be6f39f994255adf8767315a363fc7c",
+    "optimization_package_md5_end": "f424bf2aa9b9419ef44f34af33acde3c",
+    "pure_function_audit": "PASS"
+  },
+
+  "design_name": "Bear Sensor v2.0 Layer 6 Overlay Forge cycle v2.0 — 5-stages × 375-trials × 4-axes calibration + TRUE OOS walk-forward (C1 fix) + overlay merge all.x=TRUE (C2 fix) + 2026-05 future_labeled skip (C3 fix) + 3 charts emit (C4 fix). Honest FAIL verdict at true OOS scope.",
+
+  "stage_1_feature_build": {
+    "features_designed_alpha": 44,
+    "features_built_actual": 14,
+    "feature_gap_disclosure": "alpha-research v2.0 panel as-is inherit (self_synthesis_used=false strict).",
+    "sigma_rebuild": {
+      "status": "skipped_insufficient_observations",
+      "skip_reason": "14 features × 302 complete obs panel — risk-research v1.2 Σ inherit retained",
+      "delta_lw_inherited": 0.655,
+      "ridge_lambda_inherited": 0.10,
+      "cond_number_inherited": 91.10,
+      "psd_pass_inherited": true
+    },
+    "per_feature_lookahead_audit": "stage_artifacts/WT_D20260518_001/feature_panel_full_44_lookahead_audit.json"
+  },
+
+  "stage_2_walk_forward_regime": {
+    "n_walks": 5,
+    "walks": {
+      "W1": "train_end=2007-12-31, OOS_test=2008-01-01~2011-12-31",
+      "W2": "train_end=2011-12-31, OOS_test=2012-01-01~2015-12-31",
+      "W3": "train_end=2015-12-31, OOS_test=2016-01-01~2019-12-31",
+      "W4": "train_end=2019-12-31, OOS_test=2020-01-01~2023-12-31",
+      "W5": "train_end=2023-12-31, OOS_test=2024-01-01~2026-04-30"
+    },
+    "c1_fix_true_walk_forward": "Pre-2008 sig_dates EXCLUDED from p_bad_t emission (no OOS canonical model). 2026-05 sig_date EXCLUDED (future_labeled). True OOS only n=220.",
+    "regime_stratification_method": "Pesaran-Timmermann 2007 PIT-safe expanding vol_60d_lag1 q33/q66"
+  },
+
+  "stage_3_calibrated_ensemble_375_trials": {
+    "n_models": 5, "models_used": ["Logistic_L1", "XGBoost", "RandomForest", "Logistic_L2", "Logistic_EN"],
+    "model_substitution_disclosure": "R 환경 + small sample size 제약상 LightGBM/MarkovSwitching/LSTM → Logistic_L2/EN/RandomForest 대체",
+    "n_calibrations": 5, "calibrations": ["raw", "Platt", "isotonic", "Beta", "SBR_spline"],
+    "n_thresholds": 3, "thresholds": ["Youden_J", "cost_weighted_3_1", "fixed_0.5"],
+    "n_windows": 5, "n_trials_total_raw": 375,
+    "trial_results_artifact": "stage_artifacts/WT_D20260518_001/trial_results_90.parquet"
+  },
+
+  "stage_4_g15_gates": {
+    "gate_strict": "ECE<0.10 AND p_max>0.5 AND p_mean_sep>0.10",
+    "gate_strict_pass": 0,
+    "gate_relaxed": "ECE<0.20 AND p_max>0.4 AND p_mean_sep>0.05",
+    "gate_relaxed_pass": 12,
+    "g15_pass_artifact": "stage_artifacts/WT_D20260518_001/g15_pass_trial.csv",
+    "best_per_window": {
+      "W1": "XGBoost / raw / Youden_J / AUC_OOS=0.7129",
+      "W2": "RandomForest / raw / Youden_J / AUC_OOS=0.6912",
+      "W3": "XGBoost / SBR_spline / Youden_J / AUC_OOS=0.7059",
+      "W4": "XGBoost / SBR_spline / Youden_J / AUC_OOS=0.5944",
+      "W5": "XGBoost / raw / Youden_J / AUC_OOS=0.8600"
+    }
+  },
+
+  "stage_5_emission_and_backtest_TRUE_OOS_v2": {
+    "p_bad_t_emission_TRUE_OOS": {
+      "n_sig_dates_emitted": 220,
+      "n_sig_dates_excluded_pre_OOS": 216,
+      "n_sig_dates_excluded_future_labeled": 1,
+      "p_bad_t_range": [0.0, 0.9022],
+      "p_bad_t_mean": 0.2162,
+      "min_sig_date": "2008-01-31",
+      "max_sig_date": "2026-04-30",
+      "distribution_by_window": {"W1": 48, "W2": 48, "W3": 48, "W4": 48, "W5": 28},
+      "artifact": "stage_artifacts/WT_D20260518_001/p_bad_t_emission.parquet"
+    },
+    "m05_policy_applied_realized_TRUE_OOS": {
+      "method_id": "M05_Sequential_Layer6_Quantile_Hard3step_Hysteresis_5pct",
+      "hysteresis_5_percent": true,
+      "beta_dist_realized_OOS": {
+        "1.0_NORMAL": 189,
+        "0.7_CAUTION": 22,
+        "0.3_CRISIS": 9,
+        "total_OOS": 220,
+        "pre_OOS_default_1.0": 217
+      },
+      "defensive_activation_share_OOS_pct": 14.1
+    },
+    "dm_test_p_bad_t_vs_m4_TRUE_OOS": {
+      "m4_source_used": "realized_vol_60d z-score proxy (production M4 BOCPD file column mismatch)",
+      "n_obs_OOS": 220,
+      "mean_loss_diff": -0.0306,
+      "nw_var_lag12": 0.0006,
+      "DM_t_stat_NW_HAC_lag12": -1.2114,
+      "DM_p_1sided_lower": 0.1129,
+      "DM_p_2sided": 0.2258,
+      "Path_A_admit_threshold_p_le_015": true,
+      "Path_B_replace_threshold_p_le_005": false,
+      "Path_A_pass": "TECHNICAL_PASS_p_0.113_lt_0.15_BUT_BORDERLINE",
+      "Path_B_pass": false,
+      "interpretation": "True OOS DM test t=-1.21, p=0.113. Path A admit gate p<0.15 PASSES BORDERLINE (down from v1 in-sample-mixed t=-4.92). Path B replace gate p<0.05 FAILS. M4 proxy DM strength materially weakened on PIT-clean OOS — bear sensor incremental info modest.",
+      "artifact": "stage_artifacts/WT_D20260518_001/dm_test_results.json"
+    },
+    "v_path_abc_backtest_metrics_TRUE_OOS_scope": {
+      "scope_disclosure": "True OOS walk-forward (v2 post C1 fix). 436 monthly obs with β_bear OOS emit n=220. BM-overlay test (β_bear × KOSPI200 BM_Ret_m) — Forge cycle scope. Full PG2 sleeve NAV deployment cycle architect 단계 의무.",
+      "v_path_a_bear_overlay_layer6": {
+        "n_obs": 436,
+        "CAGR": 0.0045,
+        "SR_annual": 0.1390,
+        "MDD": -0.7858,
+        "Sortino": 0.2511,
+        "Calmar": 0.0057,
+        "metric_type": "backtested_BM_overlay_TRUE_OOS"
+      },
+      "v_path_b_bear_replace_m4": {
+        "n_obs": 436,
+        "CAGR": 0.0094,
+        "SR_annual": 0.1600,
+        "MDD": -0.7858,
+        "Sortino": 0.2934,
+        "Calmar": 0.0120,
+        "metric_type": "backtested_BM_overlay_TRUE_OOS"
+      },
+      "v_path_c_baseline_no_overlay": {
+        "n_obs": 436,
+        "CAGR": 0.0133,
+        "SR_annual": 0.1763,
+        "MDD": -0.7858,
+        "Sortino": 0.3269,
+        "Calmar": 0.0169,
+        "metric_type": "backtested_BM_baseline"
+      },
+      "delta_SR_A_vs_C": -0.0373,
+      "delta_SR_A_vs_C_status": "NEGATIVE — Path A WORSE than baseline at true OOS",
+      "delta_MDD_A_vs_C_pp": 0.0,
+      "delta_MDD_A_vs_C_status": "ZERO — bear overlay did NOT trigger before crisis periods",
+      "delta_SR_B_vs_C": -0.0163,
+      "delta_SR_B_vs_C_status": "NEGATIVE — Path B worse than baseline",
+      "delta_MDD_B_vs_C_pp": 0.0,
+      "turnover_ann": {"Path_A": 0.300, "Path_B": 0.308, "Path_C": 0.0},
+      "Path_A_TO_cap_6.0_compliance": "PASS",
+      "v_path_TRUE_OOS_admission_verdict": "FAIL — Path A negative ΔSR vs baseline, MDD unchanged, defensive activation 14% but no MDD benefit captured. v1 SR uplift +0.197 was IN-SAMPLE-CONTAMINATED.",
+      "artifact": "stage_artifacts/WT_D20260518_001/v_path_abc_backtest_metrics.csv"
+    },
+    "harvey_5spec_NW_HAC_lag12_TRUE_OOS": {
+      "spec1_intercept_only": {"alpha": -0.0009, "t_NW": -1.6104},
+      "spec2_CAPM": {"alpha": -0.0007, "t_NW": -1.8501},
+      "spec3_CAPM_AR1": {"alpha": null, "t_NW": null, "reason": "lag def error retained from v1"},
+      "spec4_CAPM_vol": {"alpha": -0.0006, "t_NW": -0.9932},
+      "spec5_CAPM_p_bad_t": {"alpha": 0.0005, "t_NW": 0.6528},
+      "count_t_above_30": 0,
+      "count_t_above_20": 0,
+      "count_t_above_10": 0,
+      "target_3_of_5_above_30": "TOTAL_FAIL (0 of 5)",
+      "verdict_harvey": "Active return (Path A vs Path C) at TRUE OOS exhibits negative alpha across all specs. Bear sensor v2.0 at TRUE OOS shows no incremental alpha vs baseline KOSPI200.",
+      "honest_disclosure": "v1 in-sample mixed result spec1=3.08 + spec2=3.46 PASS were artifacts of training-period contamination.",
+      "artifact": "stage_artifacts/WT_D20260518_001/harvey_5spec_NW_HAC.json"
+    },
+    "dsr_bailey_lopez_n_trials_90_TRUE_OOS": {
+      "DSR_Path_A": -3.5882,
+      "DSR_Path_B": -3.4770,
+      "DSR_Path_C": -3.3943,
+      "n_trials": 90,
+      "interpretation": "DSR all negative under n_trials=90 + Path_A worst. Bear sensor reduces DSR vs baseline (counter to admission). Multi-testing penalty (375 trial cohort) further punishes Path A.",
+      "honest_disclosure": "True OOS DSR Path_A = -3.59 is FAIL signal. Bear sensor v2.0 reduces DSR vs baseline under proper PIT walk-forward.",
+      "artifact": "stage_artifacts/WT_D20260518_001/dsr_bailey_lopez_n_trials_90.json"
+    },
+    "oos_charts_emit": {
+      "equity_curve_png": "qepm/mailbox/worktask/WT-D20260518_001/backtest_result/equity_curve.png (95K)",
+      "annual_returns_png": "qepm/mailbox/worktask/WT-D20260518_001/backtest_result/annual_returns.png (31K)",
+      "oos_zoom_chart_png": "qepm/mailbox/worktask/WT-D20260518_001/backtest_result/oos_zoom_chart.png (60K)"
+    }
+  },
+
+  "selection_objective": "crowding_adj_ret",
+  "selection_objective_realized_TRUE_OOS": {
+    "delta_SR_A_vs_C": -0.0373,
+    "redundancy_M4_DM_pvalue": 0.1129,
+    "winning_path": "NONE — Path A negative ΔSR fails admission gate at TRUE OOS"
+  },
+
+  "method_family": "bear_regime_overlay_scalar_emission_realized_M05",
+  "method_id": "M05_Sequential_Layer6_Quantile_Hard3step_Hysteresis_5pct",
+  "method_selected_TRUE_OOS": "NONE_FAIL — bear sensor v2.0 cannot admit at TRUE OOS walk-forward",
+
+  "overlay_schedule_realized": {
+    "csv_path": "stage_artifacts/WT_D20260518_001/overlay_schedule.csv",
+    "n_sig_dates_total_actual": 277,
+    "n_sig_dates_total_optimizer_claim": 437,
+    "n_sig_dates_total_disclosure": "Optimizer template claimed 437 but actual KOSPI200 monthly sig_dates with valid BM_Ret_m = 277 (1990~2026 KOSPI200 trading data). v2 overlay merge retained 277 source rows. 437 claim was based on raw fp panel rows including future_labeled + non-trainable.",
+    "n_sig_dates_with_beta_emitted_TRUE_OOS": 220,
+    "schedule_density_ratio_TRUE_OOS": "220 / 277 = 0.794 (TRUE OOS) — pre-OOS 60 default β=1.0",
+    "schedule_density_status_TRUE_OOS": "WARN_below_0.95_strict_PIT_C1_compliant",
+    "beta_distribution_TRUE_OOS": {"NORMAL_1.0": 189, "CAUTION_0.7": 22, "CRISIS_0.3": 9}
+  },
+
+  "v6_1_breadth_constraints_status": "N_A_overlay_role",
+  "v6_1_breadth_rationale": "Bear sensor = scalar β_bear overlay. max_names null 4-way consistent.",
+
+  "sr_provenance_mandate_4_fields": {
+    "sr_realized_share_based": 0.1390,
+    "sr_realized_share_based_note": "True OOS BM-overlay β_bear × KOSPI200 monthly NAV reconstruction (Path A primary, scope = BM-overlay test)",
+    "sr_factor_engine_continuous": null,
+    "sr_factor_engine_continuous_note": "n/a — overlay role",
+    "sr_lockbox_daily_harness": null,
+    "sr_lockbox_daily_harness_note": "n/a — Lockbox scope FORGE 폐기 (도훈 mandate 2026-05-09)",
+    "measurement_basis_primary": "forge_realized_BM_overlay_TRUE_OOS",
+    "measurement_basis_primary_note": "True OOS walk-forward post C1 fix. BM-overlay scope (not full PG2 sleeve NAV). DEPLOY cycle architect 단계 full integration."
+  },
+
+  "binding_constraints_inherited_realized": [
+    "PIT_C1_C15_strict — TRUE OOS walk-forward (C1 fix). Pre-OOS sig_dates EXCLUDED. 2026-05 future_labeled EXCLUDED.",
+    "PIT_C2_calibration_window_expanding — tau_caution/tau_crisis = expanding q70/q90 of p_bad_t TRUE OOS series",
+    "PIT_C5_overlay_t_minus_1 — β_bear shifted lag1",
+    "schedule_density_TRUE_OOS_0.794 — WARN below 0.95 strict, PIT-clean tradeoff",
+    "AX_007_overlay_role_max_names_null_4_way_consistent",
+    "underlying_STR_1715_max_names_20_bounds_0_0.20_sigma_w_1_LIQ_2e8_RETAIN",
+    "DM_test_p_bad_t_vs_M4_executed_PROXY",
+    "TO_ann_cap_6.0_PASS (Path A 0.30, Path B 0.31)"
+  ],
+
+  "verdict_FORGE_CYCLE_TRUE_OOS_FAIL": {
+    "DM_test_path_A_admit": "BORDERLINE_PASS_p_0.113_lt_0.15 (down from v1 p=4.35e-7 in-sample-mixed)",
+    "DM_test_path_B_replace": "FAIL_p_0.113_gt_0.05",
+    "V_Path_A_delta_SR_vs_C": "-0.037 (NEGATIVE)",
+    "V_Path_A_delta_MDD_vs_C_pp": "0.0 (no crisis MDD reduction captured at OOS)",
+    "Harvey_count_t_above_30": "0/5 (TOTAL FAIL)",
+    "DSR_Path_A_n_trials_90": -3.5882,
+    "production_grade": false,
+    "admission_verdict": "FAIL_at_TRUE_OOS_walk_forward",
+    "honest_disclosure": "Bear sensor v2.0 at TRUE OOS (post C1 fix) FAILS: ΔSR vs baseline NEGATIVE -0.037 + Harvey 0/5 t>3.0 + DSR Path_A -3.59 worse than baseline. v1 result (+0.197 SR uplift) was IN-SAMPLE CONTAMINATION (Codex C1 ACCEPT). 4-axis calibration v2.0 design + Phase B 12 features fully build deployment cycle 단계 재검증 의무."
+  },
+
+  "axiom_check": {
+    "AX_000_documented_no_limits": "375 trial × 4 axes 적극 탐색. True OOS 결과 정직 보고.",
+    "AX_001_v2_conditional_defense": "bear sensor 설계 의도 crisis_alpha — TRUE OOS에서 미실현. β_bear CRISIS 9건 OOS 발화했으나 MDD reduction 0pp (timing miss). AX-001 v2 conditional defense FAIL at TRUE OOS.",
+    "AX_002_PIT_strict_no_synthesis": "self_synthesis_used=FALSE strict. All p_bad_t from trained models on real feature panel. True OOS walk-forward (post C1 fix). No future leakage.",
+    "AX_007_overlay_role_exception": "정합",
+    "AX_008_verification_triangulation": "Forge self FAIL_HONEST (true OOS) + Codex REJECT v1 ACCEPT 4 + PARTIAL 4 → 1.0/3 floor. Honest FAIL admission verdict."
+  },
+
+  "codex_round_v6_complete_v1": {
+    "received_at": "2026-05-19T06:21:00+09:00",
+    "stance": "REJECT",
+    "veto_flag": false,
+    "n_concerns_total": 8,
+    "n_concerns_HIGH": 6,
+    "n_concerns_MEDIUM": 1,
+    "n_concerns_LOW": 1,
+    "weakest_assumption": "BM-overlay DM/SR/MDD uplift admissible for Layer 6 approval even though p_bad_t partly in-sample/future-informed + M4 proxied + DSR/Harvey gates fail",
+    "disposition_summary": {
+      "C1_p_bad_t_in_sample_HIGH_ACCEPT": "FIXED v2 — true walk-forward (pre-2008 + 2026-05 exclude)",
+      "C2_overlay_277_vs_437_HIGH_ACCEPT": "FIXED v2 — all.x=TRUE merge, but discovered optimizer claim 437 vs actual 277 mismatch (KOSPI200 valid monthly = 277)",
+      "C3_2026_05_future_labeled_HIGH_ACCEPT": "FIXED v2 — row_pit_status skip applied",
+      "C4_lockbox_charts_HIGH_ACCEPT": "FIXED v2 — equity_curve.png + annual_returns.png + oos_zoom_chart.png all emit",
+      "C5_harvey_FF_HIGH_PARTIAL_ACCEPT": "KR FF data 부재 인정, Spec3 NA fix 시도. 2/5 → 0/5 at TRUE OOS (FAIL deeper).",
+      "C6_DSR_negative_HIGH_PARTIAL_ACCEPT_PARTIAL_REBUTTAL": "DSR fail at TRUE OOS confirmed -3.59 worse than baseline. honest FAIL verdict.",
+      "C7_BM_overlay_full_PG2_NAV_HIGH_PARTIAL_REBUTTAL_PARTIAL_ACCEPT": "Forge cycle scope = BM-overlay test (Charter §10 v1.8 phase_a). Full PG2 NAV deployment cycle architect 단계.",
+      "C8_M4_proxy_MEDIUM_PARTIAL_ACCEPT": "production M4 column mismatch retained, proxy DM weak at OOS (t=-1.21)"
+    },
+    "rationalization_red_flags_count": 6,
+    "rationalization_disposition": "True OOS re-run 결과 모두 honest FAIL — 합리화 회피 표현은 v1 in-sample contamination 인정 후 폐기. v2 disclosure는 scope-honest fail report.",
+    "verification_triangulation": "Codex AX-008 status: FAIL (v1 mixed signal). v2 honest FAIL verdict는 Codex concerns ACCEPT 정합.",
+    "challenge_note_file": "qepm/mailbox/worktask/WT-D20260518_001/challenge_note_forge.md"
+  },
+
+  "v6_0_codex_round_5_step_completion": {
+    "step_1_draft_v1": "qepm/mailbox/worktask/WT-D20260518_001/forge_package_draft.json (v1 emit + REJECT received)",
+    "step_2_codex_response": "qepm/mailbox/worktask/WT-D20260518_001/codex_critic_response_forge.json (v1 REJECT 8 concerns)",
+    "step_3_disposition": "challenge_note_forge.md Section 2 per-concern",
+    "step_4_challenge_note": "qepm/mailbox/worktask/WT-D20260518_001/challenge_note_forge.md",
+    "step_5_final_v2": "qepm/mailbox/worktask/WT-D20260518_001/forge_package.json (this draft → final post-Codex re-spawn 또는 v1 disposition retain)",
+    "accept_count": 4,
+    "partial_accept_count": 3,
+    "partial_rebuttal_count": 1,
+    "no_silent_override": true
+  },
+
+  "artifact_lineage": {
+    "own_deliverables_v2": [
+      "qepm/mailbox/worktask/WT-D20260518_001/forge_package_draft.json (this)",
+      "qepm/mailbox/worktask/WT-D20260518_001/forge_package.json (final post-Codex)",
+      "qepm/mailbox/worktask/WT-D20260518_001/challenge_note_forge.md (Codex disposition)",
+      "qepm/mailbox/worktask/WT-D20260518_001/run_all.R (v2 post-C1-C4 fix)",
+      "qepm/mailbox/worktask/WT-D20260518_001/codex_critic_response_forge.json",
+      "qepm/mailbox/worktask/WT-D20260518_001/backtest_result/bt_result.rds",
+      "qepm/mailbox/worktask/WT-D20260518_001/backtest_result/forge_cycle_summary.json",
+      "qepm/mailbox/worktask/WT-D20260518_001/backtest_result/equity_curve.png",
+      "qepm/mailbox/worktask/WT-D20260518_001/backtest_result/annual_returns.png",
+      "qepm/mailbox/worktask/WT-D20260518_001/backtest_result/oos_zoom_chart.png",
+      "stage_artifacts/WT_D20260518_001/feature_panel_full_44_lookahead_audit.json",
+      "stage_artifacts/WT_D20260518_001/trial_results_90.parquet",
+      "stage_artifacts/WT_D20260518_001/g15_pass_trial.csv",
+      "stage_artifacts/WT_D20260518_001/p_bad_t_emission.parquet",
+      "stage_artifacts/WT_D20260518_001/dm_test_results.json",
+      "stage_artifacts/WT_D20260518_001/v_path_abc_backtest_metrics.csv",
+      "stage_artifacts/WT_D20260518_001/harvey_5spec_NW_HAC.json",
+      "stage_artifacts/WT_D20260518_001/dsr_bailey_lopez_n_trials_90.json",
+      "stage_artifacts/WT_D20260518_001/overlay_schedule.csv (v2 patched)"
+    ],
+    "inputs_consumed_read_only": [
+      "qepm/mailbox/worktask/WT-D20260518_001/alpha_package.json (md5 unchanged)",
+      "qepm/mailbox/worktask/WT-D20260518_001/risk_package.json (md5 unchanged)",
+      "qepm/mailbox/worktask/WT-D20260518_001/optimization_package.json (md5 unchanged)",
+      "stage_artifacts/WT_D20260518_001/feature_panel_design_v2.parquet",
+      "stage_artifacts/WT_D20260518_001/covariance.parquet (risk-research)",
+      "stage_artifacts/WT_D20260518_001/overlay_schedule.csv (optimizer placeholder)",
+      ".cache/rawdata.parquet",
+      ".cache/benchmark.parquet"
+    ]
+  },
+
+  "honest_disclosure": {
+    "v2_TRUE_OOS_admission_FAIL_RESULT": "Bear sensor v2.0 at TRUE OOS walk-forward (post C1 fix) FAILS: V_Path_A SR 0.139 vs Path_C baseline SR 0.176 = ΔSR -0.037 (NEGATIVE). MDD all paths -78.58% (defensive trigger 9 CRISIS sig_dates 모두 timing miss). Harvey 5-spec t_NW all NEGATIVE 0/5 t>3.0. DSR Path_A -3.59 worse than baseline -3.39. v1 result (+0.197 SR uplift) was IN-SAMPLE-CONTAMINATED — Codex C1 정합 확인.",
+    "v1_to_v2_delta_disclosure": "v1 (in-sample mixed): ΔSR +0.197 / DM t=-4.92 / Harvey 2/5. v2 (TRUE OOS only): ΔSR -0.037 / DM t=-1.21 / Harvey 0/5. Delta = bear sensor v2.0 fails 정통 PIT walk-forward at Forge cycle scope.",
+    "production_grade_FALSE": "Forge cycle TRUE OOS verdict = FAIL. Deployment cycle architect 단계 admission 불가. Re-design 또는 추가 features build + KR FF data + production M4 integration 후 재검증 필요.",
+    "feature_build_gap_30_of_44": "alpha-research v2.0 design 44 features → built 14. nonbuilt 30 features (VKOSPI/SEIBro/KR_LEI etc.) might recover predictive power.",
+    "model_substitution": "LightGBM/MarkovSwitching/LSTM → L2/EN/RF 대체. ensemble diversity retain.",
+    "G15_strict_0_relaxed_12": "strict 0 → relaxed 12 (G1.5 calibration weakness).",
+    "BM_overlay_scope_not_full_PG2_NAV": "Forge cycle은 incremental overlay effect 검증 cycle. Full PG2 NAV deployment cycle architect 단계 의무.",
+    "Harvey_KR_FF_data_absence": "KR FF3/FF5/Carhart factor series 부재 → BM-only proxy. deployment cycle 단계 KR FF integration 의무.",
+    "M4_proxy_DM_weak_OOS": "production M4 column mismatch → realized_vol z-score proxy. True OOS DM t=-1.21 borderline. deployment cycle 단계 production M4 column structure 재정렬 후 재DM test.",
+    "self_synthesis_used": false,
+    "self_synthesis_verification": "All p_bad_t emitted from trained calibrated models on real feature panel. β_bear from real p_bad_t via M05 expanding quantile. V_Path returns from real BM_Ret_m × β_bear lag1. No rnorm/sample synthetic. Pure function audit PASS.",
+    "PIT_C1_C15_TRUE_OOS_compliance": "TRUE OOS walk-forward post C1 fix: pre-2008 sig_dates EXCLUDED + 2026-05 future_labeled EXCLUDED. Per-window canonical model emits prediction ONLY for OOS test window of that walk. No train_period prediction emission."
+  }
+}

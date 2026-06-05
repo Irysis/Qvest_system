@@ -1,0 +1,407 @@
+{
+  "cycle": "49B_timemixer_pivot",
+  "validation_strategy": "walk_forward_expanding_5_fold_CV",
+  "patience": 15,
+  "min_delta": 0.0005,
+  "max_epochs": 80,
+  "folds": [
+    {
+      "name": "Fold1_Lehman",
+      "train_start": "1995-01-01",
+      "train_end": "2007-12-31",
+      "valid_start": "2008-01-01",
+      "valid_end": "2009-12-31"
+    },
+    {
+      "name": "Fold2_EuroAfter",
+      "train_start": "1995-01-01",
+      "train_end": "2009-12-31",
+      "valid_start": "2010-01-01",
+      "valid_end": "2011-12-31"
+    },
+    {
+      "name": "Fold3_CyprusTT",
+      "train_start": "1995-01-01",
+      "train_end": "2011-12-31",
+      "valid_start": "2012-01-01",
+      "valid_end": "2013-12-31"
+    },
+    {
+      "name": "Fold4_KRLowVol",
+      "train_start": "1995-01-01",
+      "train_end": "2013-12-31",
+      "valid_start": "2014-01-01",
+      "valid_end": "2015-12-31"
+    },
+    {
+      "name": "Fold5_BestSignal",
+      "train_start": "1995-01-01",
+      "train_end": "2015-12-31",
+      "valid_start": "2016-01-01",
+      "valid_end": "2017-12-31"
+    }
+  ],
+  "oos_window": {
+    "start": "2018-01-01",
+    "end": "2026-04-30",
+    "note": "fold 5 valid 2016-2017 \uc81c\uc678\ud558\uc5ec leakage \ubc29\uc9c0"
+  },
+  "results": {
+    "timemixer_y_tail_q15": {
+      "model": "TIMEMIXER",
+      "target": "y_tail_q15",
+      "oos_pr": 0.1591627928661265,
+      "avg_best_epoch": 9,
+      "elapsed_sec": 91.2361626625061,
+      "gpu_mem_peak_mb": 86.8046875,
+      "n_params": 50608,
+      "per_fold": [
+        {
+          "fold": "Fold1_Lehman",
+          "model": "TIMEMIXER",
+          "target": "y_tail_q15",
+          "best_valid_pr": 0.2768,
+          "best_epoch": 9,
+          "epochs_done": 24,
+          "early_stop_ep": 24,
+          "valid_bear_count": 119,
+          "train_loss_first": 1.1827,
+          "train_loss_last": 0.6757,
+          "n_params": 50608
+        },
+        {
+          "fold": "Fold2_EuroAfter",
+          "model": "TIMEMIXER",
+          "target": "y_tail_q15",
+          "best_valid_pr": 0.1251,
+          "best_epoch": 8,
+          "epochs_done": 23,
+          "early_stop_ep": 23,
+          "valid_bear_count": 57,
+          "train_loss_first": 1.1647,
+          "train_loss_last": 0.6385,
+          "n_params": 50608
+        },
+        {
+          "fold": "Fold3_CyprusTT",
+          "model": "TIMEMIXER",
+          "target": "y_tail_q15",
+          "best_valid_pr": 0.1299,
+          "best_epoch": 1,
+          "epochs_done": 16,
+          "early_stop_ep": 16,
+          "valid_bear_count": 33,
+          "train_loss_first": 1.1719,
+          "train_loss_last": 0.6233,
+          "n_params": 50608
+        },
+        {
+          "fold": "Fold4_KRLowVol",
+          "model": "TIMEMIXER",
+          "target": "y_tail_q15",
+          "best_valid_pr": 0.1499,
+          "best_epoch": 24,
+          "epochs_done": 39,
+          "early_stop_ep": 39,
+          "valid_bear_count": 66,
+          "train_loss_first": 1.1856,
+          "train_loss_last": 0.506,
+          "n_params": 50608
+        },
+        {
+          "fold": "Fold5_BestSignal",
+          "model": "TIMEMIXER",
+          "target": "y_tail_q15",
+          "best_valid_pr": 0.1141,
+          "best_epoch": 1,
+          "epochs_done": 16,
+          "early_stop_ep": 16,
+          "valid_bear_count": 29,
+          "train_loss_first": 1.1894,
+          "train_loss_last": 0.5583,
+          "n_params": 50608
+        }
+      ],
+      "final_train": {
+        "fold": "FINAL_TRAIN",
+        "model": "TIMEMIXER",
+        "target": "y_tail_q15",
+        "best_valid_pr": null,
+        "best_epoch": 9,
+        "epochs_done": 9,
+        "early_stop_ep": null,
+        "valid_bear_count": null,
+        "train_loss_first": 1.1848,
+        "train_loss_last": 0.7545,
+        "n_params": 50608
+      }
+    },
+    "timemixer_y_onset": {
+      "model": "TIMEMIXER",
+      "target": "y_onset",
+      "oos_pr": 0.1475560812447063,
+      "avg_best_epoch": 6,
+      "elapsed_sec": 63.05767631530762,
+      "gpu_mem_peak_mb": 86.8046875,
+      "n_params": 50608,
+      "per_fold": [
+        {
+          "fold": "Fold1_Lehman",
+          "model": "TIMEMIXER",
+          "target": "y_onset",
+          "best_valid_pr": 0.0569,
+          "best_epoch": 1,
+          "epochs_done": 16,
+          "early_stop_ep": 16,
+          "valid_bear_count": 29,
+          "train_loss_first": 1.2253,
+          "train_loss_last": 0.6334,
+          "n_params": 50608
+        },
+        {
+          "fold": "Fold2_EuroAfter",
+          "model": "TIMEMIXER",
+          "target": "y_onset",
+          "best_valid_pr": 0.5447,
+          "best_epoch": 14,
+          "epochs_done": 29,
+          "early_stop_ep": 29,
+          "valid_bear_count": 44,
+          "train_loss_first": 1.196,
+          "train_loss_last": 0.5516,
+          "n_params": 50608
+        },
+        {
+          "fold": "Fold3_CyprusTT",
+          "model": "TIMEMIXER",
+          "target": "y_onset",
+          "best_valid_pr": 0.4472,
+          "best_epoch": 2,
+          "epochs_done": 17,
+          "early_stop_ep": 17,
+          "valid_bear_count": 62,
+          "train_loss_first": 1.1773,
+          "train_loss_last": 0.5014,
+          "n_params": 50608
+        },
+        {
+          "fold": "Fold4_KRLowVol",
+          "model": "TIMEMIXER",
+          "target": "y_onset",
+          "best_valid_pr": 0.2649,
+          "best_epoch": 5,
+          "epochs_done": 20,
+          "early_stop_ep": 20,
+          "valid_bear_count": 74,
+          "train_loss_first": 1.1898,
+          "train_loss_last": 0.4745,
+          "n_params": 50608
+        },
+        {
+          "fold": "Fold5_BestSignal",
+          "model": "TIMEMIXER",
+          "target": "y_onset",
+          "best_valid_pr": -1.0,
+          "best_epoch": null,
+          "epochs_done": 15,
+          "early_stop_ep": 15,
+          "valid_bear_count": 3,
+          "train_loss_first": 1.2226,
+          "train_loss_last": 0.4802,
+          "n_params": 50608
+        }
+      ],
+      "final_train": {
+        "fold": "FINAL_TRAIN",
+        "model": "TIMEMIXER",
+        "target": "y_onset",
+        "best_valid_pr": null,
+        "best_epoch": 6,
+        "epochs_done": 6,
+        "early_stop_ep": null,
+        "valid_bear_count": null,
+        "train_loss_first": 1.2152,
+        "train_loss_last": 0.8136,
+        "n_params": 50608
+      }
+    },
+    "nbeats_y_tail_q15": {
+      "model": "NBEATS",
+      "target": "y_tail_q15",
+      "oos_pr": 0.16105464263747765,
+      "avg_best_epoch": 8,
+      "elapsed_sec": 194.5654742717743,
+      "gpu_mem_peak_mb": 239.2451171875,
+      "n_params": 9496375,
+      "per_fold": [
+        {
+          "fold": "Fold1_Lehman",
+          "model": "NBEATS",
+          "target": "y_tail_q15",
+          "best_valid_pr": 0.3939,
+          "best_epoch": 14,
+          "epochs_done": 29,
+          "early_stop_ep": 29,
+          "valid_bear_count": 119,
+          "train_loss_first": 1.1753,
+          "train_loss_last": 0.6302,
+          "n_params": 9496375
+        },
+        {
+          "fold": "Fold2_EuroAfter",
+          "model": "NBEATS",
+          "target": "y_tail_q15",
+          "best_valid_pr": 0.0944,
+          "best_epoch": 8,
+          "epochs_done": 23,
+          "early_stop_ep": 23,
+          "valid_bear_count": 57,
+          "train_loss_first": 1.1598,
+          "train_loss_last": 0.5775,
+          "n_params": 9496375
+        },
+        {
+          "fold": "Fold3_CyprusTT",
+          "model": "NBEATS",
+          "target": "y_tail_q15",
+          "best_valid_pr": 0.0987,
+          "best_epoch": 1,
+          "epochs_done": 16,
+          "early_stop_ep": 16,
+          "valid_bear_count": 33,
+          "train_loss_first": 1.1647,
+          "train_loss_last": 0.5822,
+          "n_params": 9496375
+        },
+        {
+          "fold": "Fold4_KRLowVol",
+          "model": "NBEATS",
+          "target": "y_tail_q15",
+          "best_valid_pr": 0.1608,
+          "best_epoch": 7,
+          "epochs_done": 22,
+          "early_stop_ep": 22,
+          "valid_bear_count": 66,
+          "train_loss_first": 1.1791,
+          "train_loss_last": 0.4587,
+          "n_params": 9496375
+        },
+        {
+          "fold": "Fold5_BestSignal",
+          "model": "NBEATS",
+          "target": "y_tail_q15",
+          "best_valid_pr": 0.1066,
+          "best_epoch": 11,
+          "epochs_done": 26,
+          "early_stop_ep": 26,
+          "valid_bear_count": 29,
+          "train_loss_first": 1.1777,
+          "train_loss_last": 0.4284,
+          "n_params": 9496375
+        }
+      ],
+      "final_train": {
+        "fold": "FINAL_TRAIN",
+        "model": "NBEATS",
+        "target": "y_tail_q15",
+        "best_valid_pr": null,
+        "best_epoch": 8,
+        "epochs_done": 8,
+        "early_stop_ep": null,
+        "valid_bear_count": null,
+        "train_loss_first": 1.1844,
+        "train_loss_last": 0.7321,
+        "n_params": 9496375
+      }
+    },
+    "nbeats_y_onset": {
+      "model": "NBEATS",
+      "target": "y_onset",
+      "oos_pr": 0.17164342675566424,
+      "avg_best_epoch": 7,
+      "elapsed_sec": 175.09821939468384,
+      "gpu_mem_peak_mb": 239.2451171875,
+      "n_params": 9496375,
+      "per_fold": [
+        {
+          "fold": "Fold1_Lehman",
+          "model": "NBEATS",
+          "target": "y_onset",
+          "best_valid_pr": 0.289,
+          "best_epoch": 1,
+          "epochs_done": 16,
+          "early_stop_ep": 16,
+          "valid_bear_count": 29,
+          "train_loss_first": 1.2236,
+          "train_loss_last": 0.6708,
+          "n_params": 9496375
+        },
+        {
+          "fold": "Fold2_EuroAfter",
+          "model": "NBEATS",
+          "target": "y_onset",
+          "best_valid_pr": 0.4062,
+          "best_epoch": 20,
+          "epochs_done": 35,
+          "early_stop_ep": 35,
+          "valid_bear_count": 44,
+          "train_loss_first": 1.1989,
+          "train_loss_last": 0.4904,
+          "n_params": 9496375
+        },
+        {
+          "fold": "Fold3_CyprusTT",
+          "model": "NBEATS",
+          "target": "y_onset",
+          "best_valid_pr": 0.3209,
+          "best_epoch": 1,
+          "epochs_done": 16,
+          "early_stop_ep": 16,
+          "valid_bear_count": 62,
+          "train_loss_first": 1.1878,
+          "train_loss_last": 0.5034,
+          "n_params": 9496375
+        },
+        {
+          "fold": "Fold4_KRLowVol",
+          "model": "NBEATS",
+          "target": "y_onset",
+          "best_valid_pr": 0.302,
+          "best_epoch": 7,
+          "epochs_done": 22,
+          "early_stop_ep": 22,
+          "valid_bear_count": 74,
+          "train_loss_first": 1.1846,
+          "train_loss_last": 0.4263,
+          "n_params": 9496375
+        },
+        {
+          "fold": "Fold5_BestSignal",
+          "model": "NBEATS",
+          "target": "y_onset",
+          "best_valid_pr": -1.0,
+          "best_epoch": null,
+          "epochs_done": 15,
+          "early_stop_ep": 15,
+          "valid_bear_count": 3,
+          "train_loss_first": 1.2071,
+          "train_loss_last": 0.4457,
+          "n_params": 9496375
+        }
+      ],
+      "final_train": {
+        "fold": "FINAL_TRAIN",
+        "model": "NBEATS",
+        "target": "y_onset",
+        "best_valid_pr": null,
+        "best_epoch": 7,
+        "epochs_done": 7,
+        "early_stop_ep": null,
+        "valid_bear_count": null,
+        "train_loss_first": 1.2119,
+        "train_loss_last": 0.5955,
+        "n_params": 9496375
+      }
+    }
+  }
+}

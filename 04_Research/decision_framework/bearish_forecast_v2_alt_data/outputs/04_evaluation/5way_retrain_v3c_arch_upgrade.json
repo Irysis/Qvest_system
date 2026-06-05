@@ -1,0 +1,199 @@
+{
+  "cycle": "45C_arch_upgrade",
+  "approach": "ARCHITECTURE_UPGRADE_NO_NEW_FEATURES",
+  "baseline_v1_3": {
+    "n_features": 69,
+    "static_wew_y_tail_q15": 0.5814,
+    "m1_rolling_y_tail_q15": 0.6063,
+    "m2_regime_y_tail_q15": 0.6078
+  },
+  "v3c_arch_upgrade": {
+    "n_features": 69,
+    "new_features": "none — architecture upgrade only (orthogonal to 45A/45B feature cycles)",
+    "architecture_changes": {
+      "lstm": "hidden 64→192, layers 2→3, dropout 0.3→0.45, weight_decay 1e-5→5e-3",
+      "tft": "d_model 64→128, heads 4→8, layers 2→6, ff_mult 4x→6x, dropout 0.2→0.45, norm_first=True",
+      "common": "batch 64→96, cosine warmup 500, mixed precision AMP, GPU mem 0.3 fraction"
+    },
+    "gbdt_reproduction": {
+      "step": "step2_3way_gbdt_reproduction",
+      "panel": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/01_data/feature_panel_v1_3.parquet",
+      "n_features": 69,
+      "baseline_v1_3": true,
+      "new_features": "none — architecture upgrade only (orthogonal to Cycle 44/45A/45B)",
+      "y_tail_q15": {
+        "xgb": 0.5503,
+        "cat": 0.5636,
+        "rf": 0.5272,
+        "ew3": 0.5674
+      },
+      "y_onset": {
+        "xgb": 0.1027,
+        "cat": 0.104,
+        "rf": 0.0958,
+        "ew3": 0.1175
+      },
+      "reproduction": {
+        "expected_ew3_y_tail_q15": 0.6078,
+        "observed_ew3_y_tail_q15": 0.5674,
+        "abs_delta": 0.0404,
+        "verdict": "WARN_DRIFT"
+      }
+    },
+    "individual_OOS_PRAUC_y_tail_q15": {
+      "xgb": 0.5503,
+      "cat": 0.5636,
+      "rf": 0.5272,
+      "lstm": 0.3957,
+      "tft": 0.3772
+    },
+    "individual_OOS_IC_y_tail_q15": {
+      "xgb": 0.3873,
+      "cat": 0.4253,
+      "rf": 0.3627,
+      "lstm": 0.2459,
+      "tft": 0.2291
+    },
+    "individual_OOS_PRAUC_y_onset": {
+      "xgb": 0.1027,
+      "cat": 0.104,
+      "rf": 0.0958,
+      "lstm": 0.0992,
+      "tft": 0.1389
+    },
+    "dynamic_PRAUC_y_tail_q15": {
+      "Static_WEW": 0.5641,
+      "M1_Rolling": 0.5919,
+      "M2_Regime": 0.6003,
+      "M3_Hedge": 0.5499,
+      "M4_Bayes": 0.5532,
+      "M5_Bandit": 0.5567
+    },
+    "dynamic_PRAUC_y_onset": {
+      "Static_WEW": 0.1507,
+      "M1_Rolling": 0.1479,
+      "M2_Regime": 0.1452,
+      "M3_Hedge": 0.1191,
+      "M4_Bayes": 0.1388,
+      "M5_Bandit": 0.1457
+    }
+  },
+  "delta_vs_baseline": {
+    "delta_static_wew": -0.0173,
+    "delta_m1_rolling": -0.0144,
+    "delta_m2_regime": -0.0075
+  },
+  "delta_individual_vs_cycle43_v2_2feat": {
+    "lstm_baseline_0_3799": 0.3957,
+    "lstm_delta": 0.0158,
+    "tft_baseline_0_4052": 0.3772,
+    "tft_delta": -0.028,
+    "lstm_passes_target_0_45": false,
+    "tft_passes_target_0_45": false
+  },
+  "verdict": "REGRESSION_ARCH_UPGRADE_FAILED",
+  "ablation_diagnosis": "INDIVIDUAL_NOT_IMPROVED — Architecture upgrade itself ineffective (overfitting / training instability)",
+  "decision_rule": {
+    "CONTINUE": "Δ M2 Regime ≥ +0.01",
+    "MARGINAL": "0 < Δ < +0.01",
+    "REGRESSION": "Δ ≤ 0"
+  },
+  "python_training_diagnostics": {
+    "cycle": "45C_arch_upgrade",
+    "baseline_v1_3_features": 69,
+    "no_new_features": true,
+    "architecture_upgrades": {
+      "lstm": {
+        "hidden": 192,
+        "layers": 3,
+        "dropout": 0.45,
+        "weight_decay": 0.005,
+        "lr": 0.001,
+        "bidirectional": true
+      },
+      "tft": {
+        "d_model": 128,
+        "nhead": 8,
+        "num_layers": 6,
+        "ff_dim": 768,
+        "dropout": 0.45,
+        "attn_dropout": 0.2,
+        "norm_first": true,
+        "weight_decay": 0.005,
+        "lr": 0.001
+      },
+      "common": {
+        "batch_size": 96,
+        "epochs": 50,
+        "early_stop_patience": 8,
+        "grad_clip_norm": 1,
+        "warmup_steps": 500,
+        "mixed_precision_amp": true,
+        "gpu_mem_fraction": 0.3
+      }
+    },
+    "baseline_individual_prauc_y_tail_q15": {
+      "lstm_cycle_43_v2_2feat": 0.3799,
+      "tft_cycle_43_v2_2feat": 0.4052
+    },
+    "upgraded_individual_prauc_y_tail_q15": {
+      "lstm": 0.3957,
+      "tft": 0.3772
+    },
+    "upgraded_individual_prauc_y_onset": {
+      "lstm": 0.0992,
+      "tft": 0.1389
+    },
+    "delta_individual_y_tail_q15": {
+      "lstm": 0.0158,
+      "tft": -0.028
+    },
+    "training_diagnostics": {
+      "lstm_y_tail_q15": {
+        "oos_pr": 0.3957,
+        "best_valid_pr": 0.2976,
+        "epochs_done": 13,
+        "early_stop_ep": 13,
+        "final_grad_norm": 3.4042,
+        "elapsed_sec": 25.5624,
+        "gpu_mem_peak_mb": 880.8325
+      },
+      "lstm_y_onset": {
+        "oos_pr": 0.0992,
+        "best_valid_pr": 0.2472,
+        "epochs_done": 13,
+        "early_stop_ep": 13,
+        "final_grad_norm": 1.3871,
+        "elapsed_sec": 7.0569,
+        "gpu_mem_peak_mb": 880.0503
+      },
+      "tft_y_tail_q15": {
+        "oos_pr": 0.3772,
+        "best_valid_pr": 0.2602,
+        "epochs_done": 22,
+        "early_stop_ep": 22,
+        "final_grad_norm": 2.3041,
+        "elapsed_sec": 15.9832,
+        "gpu_mem_peak_mb": 335.04
+      },
+      "tft_y_onset": {
+        "oos_pr": 0.1389,
+        "best_valid_pr": 0.2335,
+        "epochs_done": 17,
+        "early_stop_ep": 17,
+        "final_grad_norm": 5.9904,
+        "elapsed_sec": 21.1521,
+        "gpu_mem_peak_mb": 335.04
+      }
+    },
+    "model_params": {
+      "lstm": 2206337,
+      "tft": 1603713
+    }
+  },
+  "outputs": {
+    "panel": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/01_data/feature_panel_v1_3.parquet",
+    "v3c_dir": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/03_models/v3c_arch_upgrade",
+    "chart": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/06_reports/charts/83_pr_curve_v3c_arch_upgrade.png"
+  }
+}

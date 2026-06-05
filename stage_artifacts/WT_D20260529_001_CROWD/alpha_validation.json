@@ -1,0 +1,192 @@
+{
+  "task_id": "WT-D20260529_001",
+  "track": "CROWD",
+  "generated_at": "2026-05-29T11:50:41+0900",
+  "universe": "KOSPI200_KOSDAQ150_intersection (KR_top342, via STR_1715 268m panel)",
+  "forward_return_verification": "Ret_1m cross-checked vs rawdata.parquet (A005930 2004 exact match, forward t->t+1, no shift bug)",
+  "pit_cutoff": "2023-12-22",
+  "factors_used": ["CR01_Sector_Comovement", "CR02_Volume_Concentration", "CR03_Herding_Dispersion", "CR04_Ownership_Concentration", "CR05_Short_Pressure_Proxy", "CR06_DTC_Proxy", "CR08_Volume_Price_Divergence", "CR09_Money_Flow_Ratio", "CR10_Convergence_Premium", "CR11_Idiosyncratic_Return"],
+  "factors_excluded": {
+    "CR07_Momentum_Crowding": "only 16 months coverage (2006-02..2010-08), structurally unusable",
+    "CR07_note": "headline gap-directed candidate but n_months=18 in conditional_ic_matrix = sparse"
+  },
+  "per_factor_ic": [
+    {
+      "factor": "CR03_Herding_Dispersion",
+      "n_months": 0,
+      "rank_ic": null,
+      "ic_sd": null,
+      "icir": null,
+      "t_stat": null
+    },
+    {
+      "factor": "CR06_DTC_Proxy",
+      "n_months": 267,
+      "rank_ic": 0.022712,
+      "ic_sd": 0.171001,
+      "icir": 0.132817,
+      "t_stat": 2.170245
+    },
+    {
+      "factor": "CR04_Ownership_Concentration",
+      "n_months": 267,
+      "rank_ic": 0.022144,
+      "ic_sd": 0.17068,
+      "icir": 0.129739,
+      "t_stat": 2.119953
+    },
+    {
+      "factor": "CR08_Volume_Price_Divergence",
+      "n_months": 267,
+      "rank_ic": 0.019078,
+      "ic_sd": 0.110062,
+      "icir": 0.173342,
+      "t_stat": 2.832434
+    },
+    {
+      "factor": "CR11_Idiosyncratic_Return",
+      "n_months": 267,
+      "rank_ic": 0.013804,
+      "ic_sd": 0.170834,
+      "icir": 0.080803,
+      "t_stat": 1.320329
+    },
+    {
+      "factor": "CR09_Money_Flow_Ratio",
+      "n_months": 267,
+      "rank_ic": 0.012651,
+      "ic_sd": 0.145321,
+      "icir": 0.087056,
+      "t_stat": 1.422514
+    },
+    {
+      "factor": "CR05_Short_Pressure_Proxy",
+      "n_months": 267,
+      "rank_ic": 0.010218,
+      "ic_sd": 0.096929,
+      "icir": 0.105418,
+      "t_stat": 1.722544
+    },
+    {
+      "factor": "CR01_Sector_Comovement",
+      "n_months": 267,
+      "rank_ic": 0.009154,
+      "ic_sd": 0.153816,
+      "icir": 0.059513,
+      "t_stat": 0.972443
+    },
+    {
+      "factor": "CR10_Convergence_Premium",
+      "n_months": 267,
+      "rank_ic": 0.005385,
+      "ic_sd": 0.099774,
+      "icir": 0.053973,
+      "t_stat": 0.881923
+    },
+    {
+      "factor": "CR02_Volume_Concentration",
+      "n_months": 267,
+      "rank_ic": -0.009374,
+      "ic_sd": 0.104788,
+      "icir": -0.089454,
+      "t_stat": -1.461688
+    }
+  ],
+  "composite": {
+    "rank_ic": 0.015703,
+    "icir": 0.117776,
+    "ic_t_stat": 1.824585,
+    "harvey_t": 0.3951,
+    "harvey_t_method": "Bonferroni n_tests=10 (crowding cluster size)",
+    "subperiod_stability": 0.666667,
+    "monotonicity": -0.648485,
+    "n_months": 240,
+    "subperiods": [
+      {
+        "sp": "2008-14",
+        "ic": -0.006718
+      },
+      {
+        "sp": "2015-19",
+        "ic": 0.015217
+      },
+      {
+        "sp": "2020-26",
+        "ic": 0.077966
+      }
+    ]
+  },
+  "diagnostics_window_split": {
+    "authoritative": "lockbox (<=2023-12-22) per init <v61_window_isolation> (Codex C1 ACCEPT)",
+    "lockbox": {
+      "rank_ic": 0.015703,
+      "icir": 0.117776,
+      "ic_t": 1.824585,
+      "harvey_t": 0.3951,
+      "monotonicity": -0.648485,
+      "subperiod_stability": 0.666667,
+      "n_months": 240,
+      "recent36_icir": 0.80091
+    },
+    "full": {
+      "rank_ic": 0.020895,
+      "icir": 0.157564,
+      "ic_t": 2.574619,
+      "harvey_t": 1.623049,
+      "monotonicity": -0.624242,
+      "n_months": 267,
+      "recent36_icir": 0.640234
+    }
+  },
+  "composite_vs_best_single": {
+    "best_single": "CR08_Volume_Price_Divergence",
+    "best_single_icir": 0.173342,
+    "composite_icir": 0.117776,
+    "fractional_improvement": -0.320555,
+    "rf_a2_fires": true,
+    "note": "Codex C4 ACCEPT: composite does NOT beat best single proxy (RF-A2)."
+  },
+  "portfolio": {
+    "sr_net": 0.4076,
+    "sr_gross": 0.458629,
+    "ir_net": -0.287866,
+    "portfolio_alpha_t": -1.35786,
+    "turnover_annual": 4.373034,
+    "dsr_active": 0.03281,
+    "dsr_absolute": 0.919293,
+    "note": "top20 long-only EW, net 15bps; portfolio_alpha_t != IC_t (Cycle 2). DSR_active authoritative (Codex)."
+  },
+  "liquidity_audit": {
+    "median_adv_won": 5230130800.85,
+    "pct_below_2e8": 0.01367,
+    "pct_below_5e7": 0.000375
+  },
+  "orthogonality": {
+    "cor_vs_STR_1715": {
+      "pearson_mean": -0.019936,
+      "rank_mean": -0.03547,
+      "n_months": 267
+    },
+    "cor_vs_D_track": {
+      "pearson_mean": 0.162845,
+      "rank_mean": 0.057575,
+      "n_months": 116
+    },
+    "target": "<0.30",
+    "passes_1715": true,
+    "passes_D": true
+  },
+  "ax001_v2": {
+    "ic_bad": 0.018943,
+    "ic_normal": 0.016063,
+    "ic_good": 0.037073,
+    "bad_normal_ratio": 1.179342,
+    "crisis_alpha_bad_active_net": -0.005234,
+    "bad_month_decile_spread": "flat ~-7% across all deciles (no cross-sectional protection)",
+    "is_crisis_hedge": false,
+    "crisis_hedge_basis": "REALIZED portfolio active return in bad months (Codex C3 ACCEPT). IC-ratio alone insufficient per AX-001 v2.",
+    "ic_ratio_favorable_but_not_realized": true
+  },
+  "economic_rationale": "Crowding/comovement factors proxy investor concentration. Less-crowded, idiosyncratic, dispersed-ownership names carry a de-crowding / liquidity-provision premium that intensifies in stress (de-leveraging cascades hit crowded names hardest) — Acadian 2026 crowding, Lou-Polk 2013 comomentum, Pojarliev-Levich crowdedness.",
+  "redundancy_cluster_id": "crowding_cluster (orthogonal to value/quality/momentum/size cores; vs STR_1715 core+defense and D microstructure-ML)"
+}

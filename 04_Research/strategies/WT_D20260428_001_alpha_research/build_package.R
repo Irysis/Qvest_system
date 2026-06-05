@@ -1,15 +1,15 @@
 ## Build alpha_package_draft.json + alpha_package.json from V1+V2 results
 suppressPackageStartupMessages({library(jsonlite); library(data.table); library(arrow)})
-ws <- readRDS("/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/stage_artifacts/WT_D20260428_001/alpha_workspace.rds")
-v2 <- readRDS("/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/stage_artifacts/WT_D20260428_001/v2_diagnostics.rds")
+ws <- readRDS(file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")), "stage_artifacts/WT_D20260428_001/alpha_workspace.rds"))
+v2 <- readRDS(file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")), "stage_artifacts/WT_D20260428_001/v2_diagnostics.rds"))
 av_v1 <- ws$alpha_vec
 cv_v1 <- ws$conf_vec
 av_v2 <- v2$alpha_vec
 spec_t_v1 <- ws$spec_t
 sub_v1 <- ws$sub_ic
 
-WT_DIR <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260428_001"
-STAGE_DIR <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/stage_artifacts/WT_D20260428_001"
+WT_DIR <- file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")), "qepm/mailbox/worktask/WT-D20260428_001")
+STAGE_DIR <- file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")), "stage_artifacts/WT_D20260428_001")
 
 # Recompute V2 confidence_vector simplistic (similar to V1 but reranked by V2 alpha)
 panel <- as.data.table(read_parquet(file.path(STAGE_DIR, "alpha_scores.parquet")))

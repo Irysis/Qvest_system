@@ -1,0 +1,97 @@
+{
+  "plan_version": "v1.0_alt_data",
+  "date": "2026-05-19",
+  "owner": "도훈",
+  "q_lead": "Claude Opus 4.7 (1M context)",
+  "purpose": "Alt data based KOSPI200 forward bearish forecast — Phase 1 v0.4.2 null result 후속 cycle",
+  "inherit_from": "bearish_forecast_v1 (v0.4.2 null result)",
+  "target": {
+    "horizon_days": 21,
+    "primary": "Y_onset",
+    "off_by_one_fix": "v0.4.2 → v1.0: window H+1 align='left' (Codex round 4 critical)",
+    "events_v1": 945,
+    "events_v0_4_2": 891,
+    "events_delta": 54
+  },
+  "hard_cap_features": 8,
+  "feature_blocks_planned": {
+    "A6_bbva_global_macro": {
+      "rank": 1,
+      "status": "sprint_2_immediate",
+      "features": ["bbva_market_z", "bbva_sovereign_z", "bbva_transmission_z", "bbva_macro_composite"],
+      "source": "fred_macro_wide.parquet (4-channel decomposition)",
+      "academic_anchor": "BBVA Research 2026 (KR-016) — Geopolitics, Geoeconomics, Sovereign Risk",
+      "channels": {
+        "Markets": "VIX + Copper_Price + Init_Claims",
+        "Sovereign": "BBB_Spread + HY_Spread",
+        "Transmission": "T10Y2Y + KRW_USD + DGS10",
+        "News": "stretch (A2)"
+      }
+    },
+    "A3_us_sector_flow": {
+      "rank": 2,
+      "status": "sprint_3",
+      "features": ["us_sector_avg_z", "us_sector_dispersion_z"],
+      "source": "yfinance MCP — XLF/XLK/XLE/XLY/XLI/XLV/XLP daily",
+      "academic_anchor": "Asness-Moskowitz-Pedersen 2013 — Value-Momentum Everywhere (global factor structure)"
+    },
+    "A5_options_higher_moments": {
+      "rank": 3,
+      "status": "sprint_3",
+      "features": ["k200_implied_skew_z", "k200_implied_kurt_z"],
+      "source": "krx_options/ 4023 daily parquet (ATM/OTM 분리)",
+      "academic_anchor": "Bates 2008 JF / Conrad-Dittmar-Ghysels 2013 RFS"
+    },
+    "A4_google_trends_svi": {
+      "rank": 4,
+      "status": "stretch (jina MCP limit)",
+      "features": ["kr_panic_svi_z"],
+      "source": "jina MCP search_web (Google Trends rate limit)",
+      "academic_anchor": "Da-Engelberg-Gao 2011 JoF — Search Volume Index"
+    },
+    "A1_dart_nlp": {
+      "rank": 5,
+      "status": "stretch (구현 복잡)",
+      "features": ["dart_tone_z", "dart_risk_kw_freq"],
+      "source": "jina classify + DART 사업보고서 PDF",
+      "academic_anchor": "Cohen-Malloy-Nguyen 2020 JoF — Lazy Prices"
+    },
+    "A2_news_sentiment": {
+      "rank": 6,
+      "status": "stretch (rss-reader feed history 한계)",
+      "features": ["news_sentiment_z"],
+      "source": "rss-reader MCP 한경/조경/매경 + jina classify",
+      "academic_anchor": "Bybee-Kelly-Manela-Xiu 2024 — News Topic Models"
+    },
+    "A7_arxiv_discovery": {
+      "rank": 7,
+      "status": "stretch (meta)",
+      "features": "(auto-discovered)",
+      "source": "arxiv MCP search → factor proposals",
+      "academic_anchor": "Gu-Kelly-Xiu 2020 — Empirical Asset Pricing via ML"
+    }
+  },
+  "sprint_2_features_final": ["bbva_market_z", "bbva_sovereign_z", "bbva_transmission_z", "bbva_macro_composite"],
+  "sprint_3_features_final": ["us_sector_avg_z", "us_sector_dispersion_z", "k200_implied_skew_z", "k200_implied_kurt_z"],
+  "total_sprint_2_3_features": 8,
+  "s4_iva_mandate": {
+    "policy": "POSITIVE incremental value 의무 (cor < 0.5 vs MRS/KTRI/M4/R05 + residualized log-loss lift > 0)",
+    "rationale": "v0.4.2 8/9 NEGATIVE 입증 → v1.0 strict 채택",
+    "drop_threshold": "NEGATIVE features 즉시 DROP"
+  },
+  "walk_forward": {
+    "train": "1995-01 ~ 2009-12 (leave-one-crisis-out)",
+    "validation": "2010-01 ~ 2015-12 (rolling-origin folds 6)",
+    "oos": "2016-01 ~ 2026-04",
+    "purge": "≥ 21 trading days",
+    "embargo": "21~63 trading days",
+    "na_imputation": "alt data 시작 시점 결측 → XGBoost native handling"
+  },
+  "evaluation_gates": "v0.4.2 retain (5 gates + 1 uncertainty)",
+  "v0_4_2_inherit": {
+    "scripts": ["00_pit_manifest_loader.R", "02_target_builder.R (off-by-one fix)", "03_orthogonality_audit.R", "04_model_runner.R (FEATURE_COLS expand)", "05_validation_suite.R"],
+    "tests": ["test_pit_manifest_loader.R"],
+    "data_infra": ["FRED 1990-01 확장", "ECOS bond 1990-01 확장", "macro_regime.parquet 1990-01~"],
+    "collectors": ["ecos_fetch_bond_rates() v0.4.2 신규"]
+  }
+}

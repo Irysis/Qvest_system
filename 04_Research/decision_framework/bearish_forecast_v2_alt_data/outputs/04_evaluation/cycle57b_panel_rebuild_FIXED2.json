@@ -1,0 +1,49 @@
+{
+  "cycle": "57B_Phase3",
+  "description": "Panel rebuild v1.3/v4a/v5e/v5f FIXED2 (BBVA indirect ICSA also fixed)",
+  "inputs": {
+    "fred_macro_wide_FIXED": "outputs/01_data/fred_macro_wide_FIXED.parquet (Phase 1 output, NOT .cache/fred_macro_wide.parquet — corrected per Codex C2 2026-05-21)",
+    "a6_bbva_FIXED": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/01_data/A6_bbva_macro_FIXED.parquet",
+    "a5_options": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/01_data/A5_options_higher_moments.parquet",
+    "a3_us_sector": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/01_data/A3_us_sector_flow.parquet",
+    "v2_2feat": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/01_data/feature_panel_v2_2feat.parquet",
+    "fred_us_macro_daily_fixed_csv": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/01_data/fred_us_macro_daily_fixed.csv",
+    "ecos_kr_daily_csv": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/01_data/ecos_kr_daily.csv"
+  },
+  "outputs": {
+    "v1_alt_FIXED2": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/01_data/feature_panel_v1_alt_FIXED2.parquet",
+    "v1_alt_enhanced_FIXED2": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/01_data/feature_panel_v1_alt_enhanced_FIXED2.parquet",
+    "v1_3_FIXED2": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/01_data/feature_panel_v1_3_FIXED2.parquet",
+    "v4a_FIXED2": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/01_data/feature_panel_v4a_FIXED2.parquet",
+    "v5e_FIXED2": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/01_data/feature_panel_v5e_FIXED2.parquet",
+    "v5f_FIXED2": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/01_data/feature_panel_v5f_FIXED2.parquet"
+  },
+  "feature_counts": {
+    "v1_3_FIXED2": 69,
+    "v4a_FIXED2": 70,
+    "v5e_FIXED2": 74,
+    "v5f_FIXED2": 79
+  },
+  "bbva_contamination_removed": {
+    "common_dates": 6179,
+    "bbva_market_z_mean_abs_diff": 0.3318,
+    "bbva_market_z_max_abs_diff": 38.8206,
+    "bbva_market_z_p95_abs_diff": 1.5824,
+    "bbva_market_z_pct_unchanged": 0.05
+  },
+  "v1_3_col_validation": {
+    "in_orig_not_FIXED2": "NONE",
+    "in_FIXED2_not_orig": "NONE"
+  },
+  "next_step": "Phase 4: scripts/182-184 (5 q15 cycle retrain on FIXED2 panels)",
+  "codex_review_acknowledgments": {
+    "c2_path_metadata_corrected": "Phase 3 audit input key fred_macro_wide_FIXED now correctly points to Phase 1 output (was misleading CACHE_DIR path in initial write)",
+    "c4_calendar_day_shift_dropouts": {
+      "affected": ["US_M2 -54", "Housing_Permits -51", "Init_Claims -28", "US_CPI -52", "US_IndProd -53", "US_Unemployment -49", "Bank_Lending_Std -12", "Copper_Price -29", "UMich_Sentiment -29", "Fed_Funds_Rate -29", "Fed_BalSheet -24", "Chi_Fin_Cond -1", "StL_Fin_Stress -1"],
+      "root_cause": "fred_macro_wide.parquet spine is irregular (Sundays mostly missing 51/8169 vs others 1273-1376; Mondays slightly missing 1273) — shifted dates landing on Sunday or other rare-spine days drop via merge",
+      "practical_impact_on_A6_output": "MINIMAL — A6 builder uses zoo::na.locf forward-fill which absorbs dropouts. A6 bbva_market_z non-NA: orig=7914 vs fix=7912 (only 2 fewer of 8167-8169 rows = 0.025%)",
+      "methodological_caveat": "Improvement opportunity: next-business-day handling for releases landing on weekends/holidays. Not addressed in 57B scope (within < 0.05% A6 coverage impact).",
+      "severity": "MEDIUM (Codex flag) reduced to LOW (post-LOCF verification)"
+    }
+  }
+}

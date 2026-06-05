@@ -227,7 +227,20 @@ compute_crowding <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
 
   # ---- CR07: Factor Crowding (correlation with momentum factor portfolio) ----
   # Stocks moving too closely with momentum portfolio = crowded
-  mom_12_1 <- rd[!is.na(Ret), {
+  #
+  # build-gap fix (2026-05-29): the 12-1 momentum needs >252 daily points per
+  # ticker, but the shared `rd` is truncated to a 365-calendar-day window
+  # (line 37-38) holding only 242~253 KR trading days. In recent years (more
+  # holidays) max .N fell to ~248 -> 0 tickers qualified -> CR07 silently
+  # dropped (only 200602~201008 survived, exactly the 253-trading-day windows).
+  # Fix: build the momentum ranking from a wider ~410-day slice of the ORIGINAL
+  # RAWDATA argument (PIT-safe: Date <= sig_d only, past data only). The
+  # correlation step still uses the 365d `rd` (MIN_OBS=60), unchanged.
+  rd_mom <- copy(RAWDATA)
+  rd_mom[, Date := as.Date(Date)]
+  rd_mom <- rd_mom[Date <= sig_d & Date >= (sig_d - 410L)]
+  setorder(rd_mom, Ticker, Date)
+  mom_12_1 <- rd_mom[!is.na(Ret), {
     if (.N > 252L) {
       idx_s <- max(1L, .N - 252L + 1L)
       idx_e <- .N - 21L
@@ -431,6 +444,29 @@ compute_crowding <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
     }, by = Ticker]
     se01_fb <- se01_fb[!is.na(Raw_Value)]
     if (nrow(se01_fb) > 0L) results[["SE01_fb"]] <- se01_fb
+  }
+
+  # ---- SE01 fallback when consensus exists but has NO dispersion column ----
+  # build-gap fix (2026-05-29): consensus tables (eps_1y, target_price, sue, ...)
+  # exist from 2000-03 onward but NONE carry a dispersion column (eps_std /
+  # eps_dispersion / target_std / target_dispersion). The consensus branch
+  # therefore produced SE02 but never SE01_Consensus_Dispersion, AND the
+  # else-fallback above only fires when consensus is entirely absent. Net result:
+  # SE01 had a permanent hole 2000-03 onward (only 199002~200002 survived via
+  # the pre-consensus fallback). This block emits the realized-vol uncertainty
+  # proxy whenever the consensus dispersion measure was unavailable, restoring
+  # full-history SE01 coverage. PIT-safe: 21-day trailing realized vol, past only.
+  if (is.null(results[["SE01"]]) && is.null(results[["SE01_fb"]])) {
+    se01_fb2 <- rd[!is.na(Ret), {
+      if (.N >= 21L) {
+        vol21 <- sd(Ret[max(1, .N - 20):.N], na.rm = TRUE)
+        .(Factor_Name = "SE01_Volatility_Uncertainty", Raw_Value = -vol21)
+      } else {
+        .(Factor_Name = "SE01_Volatility_Uncertainty", Raw_Value = NA_real_)
+      }
+    }, by = Ticker]
+    se01_fb2 <- se01_fb2[!is.na(Raw_Value)]
+    if (nrow(se01_fb2) > 0L) results[["SE01_fb2"]] <- se01_fb2
   }
 
   # ==========================================================================

@@ -12,7 +12,11 @@ suppressPackageStartupMessages({
 })
 
 # ─── Paths ───────────────────────────────────────────────────────────────────
-MEMORY_DIR <- "/home/quant/.claude/projects/-mnt-c-Users-User-OneDrive-------Quant-Module-Moltbot/memory"
+MEMORY_DIR <- local({
+  .c <- c(file.path(Sys.getenv("USERPROFILE", unset = "C:/Users/User"), ".claude/projects/G--Quant-Module-Moltbot/memory"),  # Windows (2026-06-04)
+          "/home/quant/.claude/projects/-mnt-c-Users-User-OneDrive-------Quant-Module-Moltbot/memory")
+  .e <- .c[dir.exists(.c)]; if (length(.e)) .e[1] else .c[1]
+})
 # v3.0: auto-generated 결과는 experiment_log.md로 분리.
 # methodology_memory.md는 Q-Lead 수동 승격만 허용.
 METHODOLOGY_PATH <- file.path(MEMORY_DIR, "experiment_log.md")

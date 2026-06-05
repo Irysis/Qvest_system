@@ -1,0 +1,164 @@
+{
+  "task_id": "WT-D20260529_003",
+  "track": "TECHNICAL",
+  "wt_type": "discovery",
+  "as_of_date": "2026-05-29",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "selection_objective": "icir",
+  "hypothesis_title": "TECHNICAL multi-axis composite (oscillator/trend/volume) — 직교 5th sleeve 탐색",
+  "economic_rationale": "차트 기반 행동 신호 3축 (oscillator 과매수/과매도 + trend 추세정렬 + volume 거래구조)을 multi-axis composite로 합성. KR 시장에서 registry momentum-prior 방향은 실증 역전(reversal)으로 확인되어, PIT 36개월 expanding-window IC sign으로 방향 정렬(C13/C14 정합, lookahead 없음). 11개 미사용 T factor를 축당 ≥2 proxy로 묶음.",
+  "verdict": "DROP",
+  "alpha_scores_ref": "stage_artifacts/WT_WT_D20260529_003_TECHNICAL/alpha_scores.parquet",
+  "validation_ref": "stage_artifacts/WT_WT_D20260529_003_TECHNICAL/alpha_validation.json",
+  "lockbox_cutoff": "2023-12-22",
+  "universe": "KOSPI200 ∪ KOSDAQ150 (KR_top342)",
+  "constraints": {
+    "long_only": true,
+    "max_names": 25,
+    "max_names_mandate_note": "도훈 mandate 20→25 (task prompt 명시). base context의 20과 충돌 — task가 우선.",
+    "weight_bounds": [
+      0,
+      0.2
+    ],
+    "sum_w": 1,
+    "liquidity_floor_won_20d": 200000000,
+    "cost_one_way_bps": 15,
+    "turnover_cap_yr": 11.0,
+    "liquidity_enforcement": "adv20 >= 2e8 hard filter (universe rows below 2e8 dropped before scoring)"
+  },
+  "factor_specs": [
+    {
+      "factor_family": "Technical_Oscillator",
+      "axis": "oscillator",
+      "proxies": [
+        "T01_RSI14",
+        "T10_RSI28",
+        "T05_MFI14",
+        "T03_BB20"
+      ],
+      "lag_rule": "price t-1 (daily factor t-1 based)",
+      "winsorization": "1/99 pct",
+      "neutralization": "sector (cross-sectional demean within Sector each month)",
+      "direction": "PIT expanding-IC (36m burn-in, sign from data <= sig_date only)",
+      "economic_rationale": "과매수/과매도 — KR 실증 reversal",
+      "axis_icir": 0.294
+    },
+    {
+      "factor_family": "Technical_Trend",
+      "axis": "trend",
+      "proxies": [
+        "T06_PMA5",
+        "T07_PMA20",
+        "T08_PMA60",
+        "T09_PMA120"
+      ],
+      "lag_rule": "price t-1",
+      "winsorization": "1/99 pct",
+      "neutralization": "sector",
+      "direction": "PIT expanding-IC (36m burn-in)",
+      "economic_rationale": "추세정렬 — KR 실증 reversal(registry momentum-prior 역전)",
+      "axis_icir": 0.339
+    },
+    {
+      "factor_family": "Technical_Volume",
+      "axis": "volume",
+      "proxies": [
+        "T04_OBV21",
+        "T14_HLRange",
+        "T15_AutoCorr"
+      ],
+      "lag_rule": "price/vol t-1",
+      "winsorization": "1/99 pct",
+      "neutralization": "sector",
+      "direction": "PIT expanding-IC (36m burn-in)",
+      "economic_rationale": "거래구조 (OBV 흐름 + HL변동성 + 수익률 자기상관)",
+      "axis_icir": 0.4
+    }
+  ],
+  "redundancy_cluster_id": "TECHNICAL_REVERSAL_cluster (overlaps FLOW contrarian sleeve, return cor 0.746)",
+  "diagnostics": {
+    "rank_ic": 0.041292,
+    "rank_ic_gate": "PASS (>=0.04)",
+    "icir": 0.414771,
+    "icir_gate": "PASS (>=0.20)",
+    "harvey_t_rankIC": 3.639603,
+    "harvey_t_gate": "PASS (>=3.0) raw IC-t; N_candidates=20",
+    "harvey_t_portfolio_net": -0.267169,
+    "portfolio_alpha_gross_note": "gross active +0.148%/mo (positive but weak)",
+    "net_sr_active": -0.096873,
+    "net_sr_note": "top-25 long-only EW; gross active +0.148%/mo, net -0.103%/mo (15bps x 10.2/yr cost wipes alpha)",
+    "realized_beta_kospi200": 1.010836,
+    "turnover_oneway_yr": 10.174737,
+    "turnover_gate": "PASS (<=11.0)",
+    "dsr": 0.016544,
+    "dsr_gate": "FAIL (<<0.5)",
+    "post_neutralization_ic": "all z-scores already sector-neutralized; reported IC IS post-neutral",
+    "ax001_v2_ratio": 0.309727,
+    "ic_bad_regime": "0.310x normal (defensive value weak in bad regimes)",
+    "n_months": 77,
+    "N_candidates_tested": 20,
+    "harvey_n_tests_rationale": "11 factors + 3 axes (x2 variants) + 2 composites + sign-search overhead = ~20",
+    "subperiod_note": "year-by-year active unstable: 2019/2020/2023 negative; recent-36 IC not inflated vs full (composite IC stable)"
+  },
+  "orthogonality": {
+    "cor_signal_vs_str1715": -0.059307,
+    "return_cor_vs_str1715": 0.390339,
+    "cor_vs_D_microstructure": 0.107449,
+    "cor_vs_FLOW_contrarian": 0.74645,
+    "interpretation": "신호 cor는 직교(1715 -0.06, D 0.11)이나 IC-alignment 후 reversal sleeve화 → FLOW와 return cor 0.746로 비직교. 수익률직교 실패 (BAB 교훈: 신호직교 != 수익률직교).",
+    "return_cor_vs_FLOW_REV": 0.916,
+    "flow_note": "cor_vs_FLOW 0.746은 signal cor. Codex C5 ACCEPT — top25 RETURN cor vs FLOW(REV)=0.916 (수익률 비직교 심각)"
+  },
+  "composite_vs_single": {
+    "composite_beats_single": true,
+    "composite_icir": 0.414771,
+    "best_single": "zB_T14_HLRange",
+    "best_single_icir": 0.327706,
+    "best_axis": "axisB_trend",
+    "best_axis_icir": 0.339,
+    "note": "multi-axis composite가 single/axis를 ICIR로 능가 (QMJ 교훈 회피 성공). 그러나 portfolio 단계에서 net alpha 소멸 → IC 우위가 실현수익으로 전환 안 됨."
+  },
+  "challenge_flags": [
+    {
+      "id": "RF-NET-COST",
+      "severity": "HIGH",
+      "detail": "net SR(active) -0.097 < 0. gross +0.15%/mo가 15bps x 10.2/yr cost에 완전 잠식. Cost-aware(research_philosophy 2) FAIL."
+    },
+    {
+      "id": "RF-PORT-ALPHA",
+      "severity": "HIGH",
+      "detail": "rank-IC t=3.64 (PASS)이나 portfolio-alpha t(net)=-0.27. IC != portfolio alpha (Cycle 2 교훈) + AX-007 single-sleeve top25 mechanism break."
+    },
+    {
+      "id": "RF-RETURN-COR",
+      "severity": "HIGH",
+      "detail": "cor_vs_FLOW return 0.746. IC-aligned T-composite는 reversal sleeve로 수렴 → FLOW와 비직교. 직교 개구부 실패."
+    },
+    {
+      "id": "RF-DIRECTION-PRIOR",
+      "severity": "MEDIUM",
+      "detail": "registry momentum-prior(Variant A) ICIR -0.157(역전). PIT IC-align(Variant B)만 양(+). 방향 robustness 취약."
+    },
+    {
+      "id": "RF-DSR",
+      "severity": "HIGH",
+      "detail": "DSR=0.017 << 0.5. graduation FAIL."
+    },
+    {
+      "id": "RF-AX001v2",
+      "severity": "MEDIUM",
+      "detail": "AX-001 v2 ratio 0.310 (bad/normal IC). 방어형 조건부 성과 미달."
+    }
+  ],
+  "decision_rationale": "교차분석 rank-IC(0.041,t=3.64)와 composite>single(ICIR 0.415>0.328)은 진짜이나, (1) net-of-cost portfolio alpha 음수(t=-0.27, SR=-0.10), (2) DSR 0.017, (3) FLOW 대비 수익률 cor 0.746(비직교), (4) beta 1.01(분산효과 없음), (5) 방향이 registry-prior 역전이라 reversal 메커니즘 의존. 단순 momentum 변형은 아니나(registry momentum 역전 확인), reversal/FLOW 변형으로 수렴 → 52WHIGH/QMJ 교훈에 따라 DROP. 5th sleeve 직교 개구부로서 부적합.",
+  "codex_round": {
+    "stance": "REJECT",
+    "model": "gpt-5.5_xhigh",
+    "agent_verdict": "DROP",
+    "alignment": "Codex REJECT == agent DROP (방향 일치, escalate 불요)",
+    "challenge_note": "qepm/mailbox/worktask/WT-D20260529_003/challenge_note_TECHNICAL.md",
+    "response": "qepm/mailbox/worktask/WT-D20260529_003/codex_critic_response_TECHNICAL_alpha.json",
+    "concern_classification": "8 concerns: C1 PARTIAL / C2 ACCEPT(C15 gap, T monthly 미구축) / C3 REBUTTAL(25=도훈mandate)+ACCEPT(AX-007) / C4 ACCEPT / C5 ACCEPT(return_cor_vs_FLOW=0.916) / C6 PARTIAL / C7 PARTIAL / C8 PARTIAL"
+  }
+}

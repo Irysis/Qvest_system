@@ -1,0 +1,53 @@
+[06:44:05] === E_ALTDATA Step 1 START ===
+[06:44:05] Step 1 — sig_date schedule (matched to D_ML)
+  sig_dates total: 191  first: 2008-01-31  last: 2023-11-30
+[06:44:16] Step 2 — universe filter (K200 ∪ KQ150, LIQ 20d >= 2e8)
+  Universe size: min=0 med=345 max=352
+[06:44:24] Step 3 — forward 1M log return label
+  Forward 1M log return — n=371739  Winsorize [-0.5457, 0.5684]
+  Selected DB factors: Block1=12 Block3=10 Block4=18 total=40
+[06:44:37] Step 5 — loading daily factor data (40 factors)
+  Daily data loaded: 196 months, 7871529 rows × 42 cols
+  Factor coverage (top/bottom):
+                          factor  coverage
+                          <char>     <num>
+ 1: CR04_Ownership_Concentration 0.9967457
+ 2:                 L02_Turnover 0.9967457
+ 3:               L09_Amihud_20d 0.9965801
+ 4:             L29_Illiq_Change 0.9929775
+ 5: CR08_Volume_Price_Divergence 0.9893690
+ 6:        INV04_Inst_NetBuy_60d 0.7030572
+ 7:       INV09_Flow_Persistence 0.7025104
+ 8:  INV11_Foreign_Concentration 0.7006522
+ 9:       INV05_Foreign_Momentum 0.6776963
+10:          INV06_Inst_Momentum 0.6708439
+[06:45:25] Step 6 — Block 1.B raw flow rolling (investor_wide)
+  investor_wide loaded: 7232702 rows
+  Block 1.B derived: 8 cols
+  Daily after merge: 7871529 rows × 50 cols
+[06:45:33] Step 7 — Block 2 insider trades (DART)
+  insider trades: 9790 rows (date range 2024-03-22 ~ 2026-03-20)
+[06:45:34] Step 8 — Monthly snapshot at sig_date (t-1 lag strict)
+  Mapped 191 / 191 sig_dates to t-1 trading days
+  snap_keys: 58341 (sig_date, lag_date, Ticker) tuples
+  Snapshot panel: 58341 rows × 50 cols
+[06:45:34] Step 9 — Block 1 rolling moments on top flow factors
+[06:45:35] Step 10 — Block 4 interactions
+[06:45:35] Step 11 — merge label + sector
+  Panel filter (min 5 non-NA features): 58338 -> 58336 rows
+[06:45:36] Step 12 — saving panel
+  Saved: stage_artifacts/WT_D20260528_003_E_ALTDATA/altdata_panel_train.parquet (58336 rows × 71 cols)
+  Feature cols: 67
+  Coverage summary:
+    >0.95: 43 / 67
+    >0.50: 67 / 67
+    >0.05: 67 / 67
+  Block breakdown:
+               block_tag     N
+                  <char> <int>
+1:           Block1_Flow    27
+2:       Block3_Crowding    14
+3: Block4_Microstructure    22
+4:    Block5_Interaction     4
+
+=== E_ALTDATA Step 1 COMPLETE — elapsed 1.52 min ===

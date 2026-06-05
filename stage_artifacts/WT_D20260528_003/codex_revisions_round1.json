@@ -1,0 +1,137 @@
+{
+  "task_id": "WT-D20260528_003",
+  "codex_revisions_round": 1,
+  "built_at": "2026-05-28T15:27:51",
+  "C7_missing_months_audit": {
+    "factor_db_files_for_201803_202006_202210": {
+      "201803": {
+        "file": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/.cache/factor_db/factor_db_201803.parquet",
+        "exists": true,
+        "size_bytes": 21944934
+      },
+      "202006": {
+        "file": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/.cache/factor_db/factor_db_202006.parquet",
+        "exists": true,
+        "size_bytes": 23138061
+      },
+      "202210": {
+        "file": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/.cache/factor_db/factor_db_202210.parquet",
+        "exists": true,
+        "size_bytes": 24140445
+      }
+    },
+    "alpha_present_months": 80,
+    "alpha_expected_months": 84,
+    "alpha_missing_months": ["2018-03", "2020-06", "2022-10", "2023-12"],
+    "interpretation": "missing months map to lockbox or no-K200-membership / no-factor-db gaps."
+  },
+  "C4_regime_t_lag1_diagnostic": {
+    "description": "regime_state lag 1 trading day before alpha construction (PIT-C9 strict).",
+    "n_dates_alpha_lag": 77,
+    "rank_ic_lag1": -0.0007,
+    "icir_lag1": -0.004,
+    "rank_ic_original": 0.0121,
+    "icir_original": 0.0735,
+    "delta_ic": -0.0128,
+    "delta_icir": -0.0775,
+    "interpretation": "FAIL — lag1 does not improve materially. Confirms signal weakness independent of PIT C9 issue."
+  },
+  "C2_single_family_vs_composite": {
+    "description": "Per-family Z ICIR vs composite alpha ICIR",
+    "families": {
+      "value": {
+        "family": "value",
+        "n_dates": 80,
+        "mean_ic": 0.0111,
+        "sd_ic": 0.1431,
+        "icir": 0.0776
+      },
+      "quality": {
+        "family": "quality",
+        "n_dates": 80,
+        "mean_ic": 0.001,
+        "sd_ic": 0.1123,
+        "icir": 0.0092
+      },
+      "momentum": {
+        "family": "momentum",
+        "n_dates": 80,
+        "mean_ic": -0.0285,
+        "sd_ic": 0.1613,
+        "icir": -0.1769
+      },
+      "low_vol": {
+        "family": "low_vol",
+        "n_dates": 80,
+        "mean_ic": -0.0056,
+        "sd_ic": 0.2178,
+        "icir": -0.0256
+      },
+      "size": {
+        "family": "size",
+        "n_dates": 80,
+        "mean_ic": 0.0221,
+        "sd_ic": 0.1352,
+        "icir": 0.1633
+      },
+      "dividend": {
+        "family": "dividend",
+        "n_dates": 80,
+        "mean_ic": 0.0274,
+        "sd_ic": 0.1317,
+        "icir": 0.2081
+      }
+    },
+    "composite_original_icir": 0.0735,
+    "composite_lag1_icir": -0.004,
+    "best_single_family": {
+      "family": "dividend",
+      "n_dates": 80,
+      "mean_ic": 0.0274,
+      "sd_ic": 0.1317,
+      "icir": 0.2081
+    },
+    "interpretation": "If best single family ICIR > composite ICIR, regime blending dilutes signal. RF-A2 challenge flag confirmed."
+  },
+  "C8_liquidity_edge_audit": [
+    {
+      "ticker": "A009540",
+      "date": "2017-04-28",
+      "at_t": [
+        {
+          "Date": "2017-04-28",
+          "Close": 149889,
+          "Vol": 0,
+          "tv": 0,
+          "tv_20d_avg": 0,
+          "liq_pass": false
+        }
+      ],
+      "pre_t": [
+        {
+          "Date": "2017-04-27",
+          "Close": 149889,
+          "Vol": 0,
+          "tv": 0,
+          "tv_20d_avg": 0,
+          "liq_pass": false
+        }
+      ]
+    },
+    {
+      "ticker": "A008560",
+      "date": "2023-04-28",
+      "at_t": [],
+      "pre_t": [
+        {
+          "Date": "2023-04-24",
+          "Close": 6100,
+          "Vol": 0,
+          "tv": 0,
+          "tv_20d_avg": 16792125733,
+          "liq_pass": true
+        }
+      ]
+    }
+  ]
+}

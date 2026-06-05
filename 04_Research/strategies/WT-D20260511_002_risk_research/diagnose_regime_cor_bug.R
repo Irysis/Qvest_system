@@ -6,7 +6,7 @@ suppressPackageStartupMessages({
   library(data.table)
 })
 
-PROJ <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+PROJ <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 base_dir <- file.path(PROJ, "qepm/mailbox/worktask/WT-T20260508_004/output/5family_post_incremental")
 
 s0 <- fread(file.path(base_dir, "S0_baseline/03_period_returns.csv"))[, .(date, ret_net)]

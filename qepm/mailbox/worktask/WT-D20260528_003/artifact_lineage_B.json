@@ -1,0 +1,177 @@
+{
+  "task_id": "WT-D20260528_003",
+  "hypothesis_id": "B",
+  "hypothesis_title": "STR_1724 Bali 2011 MAX Lottery Anomaly Pure (M22_Max_Return single-factor)",
+  "as_of": "2026-05-28T23:30:00+09:00",
+  "wt_type": "discovery",
+  "research_status": "TERMINATE",
+  "research_philosophy_alignment": ["P1_factor_zoo_validation"],
+  "data_lineage": [
+    {
+      "step": "01_m22_pit_load",
+      "script": "qepm/mailbox/worktask/WT-D20260528_003/scripts/overnight_B/01_m22_pit_load.R",
+      "inputs": [
+        ".cache/factor_db/factor_db_YYYYMM.parquet (via load_month_factors)",
+        ".cache/rawdata.parquet (Close, Ret, Sector, Vol, Size)",
+        ".cache/universe_support/us_k200.parquet",
+        ".cache/universe_support/us_kq150.parquet"
+      ],
+      "outputs": [
+        "qepm/mailbox/worktask/WT-D20260528_003/outputs/overnight_B/m22_panel_pit.parquet (67533 rows clean)",
+        "qepm/mailbox/worktask/WT-D20260528_003/outputs/overnight_B/m22_step1_diag.json"
+      ],
+      "pit_constraints": [
+        "SIGNAL_CUTOFF = 2023-12-22 (lockbox)",
+        "TV_20d_PIT t-1 lag (Cycle 51 shift)",
+        "Usable_Date <= sig_d via load_month_factors auto"
+      ]
+    },
+    {
+      "step": "02_sector_neutralize_ic",
+      "script": "qepm/mailbox/worktask/WT-D20260528_003/scripts/overnight_B/02_sector_neutralize_ic.R",
+      "inputs": [
+        "qepm/mailbox/worktask/WT-D20260528_003/outputs/overnight_B/m22_panel_pit.parquet"
+      ],
+      "outputs": [
+        "qepm/mailbox/worktask/WT-D20260528_003/outputs/overnight_B/m22_panel_sector_neutral.parquet",
+        "qepm/mailbox/worktask/WT-D20260528_003/outputs/overnight_B/m22_ic_per_date.parquet",
+        "qepm/mailbox/worktask/WT-D20260528_003/outputs/overnight_B/m22_step2_ic.json"
+      ],
+      "key_metrics": {
+        "rank_ic_raw": 0.0238,
+        "rank_ic_neut": 0.0226,
+        "icir_neut": 0.2638,
+        "harvey_t_neut": 3.9663,
+        "retention": 0.95
+      }
+    },
+    {
+      "step": "03_ax001v2_defense_eval",
+      "script": "qepm/mailbox/worktask/WT-D20260528_003/scripts/overnight_B/03_ax001v2_defense_eval.R",
+      "inputs": [
+        "qepm/mailbox/worktask/WT-D20260528_003/outputs/overnight_B/m22_ic_per_date.parquet",
+        "qepm/mailbox/worktask/WT-D20260528_003/outputs/overnight_B/m22_panel_sector_neutral.parquet",
+        ".cache/macro_regime.parquet (VIX_Regime, Fin_Stress_Regime, Buddha_Mode)"
+      ],
+      "outputs": [
+        "qepm/mailbox/worktask/WT-D20260528_003/outputs/overnight_B/m22_step3_ax001v2.json"
+      ],
+      "key_metrics": {
+        "crisis_ic_neut": -0.0195,
+        "normal_ic_neut": 0.0205,
+        "ax001v2_crisis_pass": false,
+        "ax001v2_bad_normal_pass": false,
+        "monotonicity_neut_signed": -0.5758
+      }
+    },
+    {
+      "step": "04_alpha_vector_construct",
+      "script": "qepm/mailbox/worktask/WT-D20260528_003/scripts/overnight_B/04_alpha_vector_construct.R",
+      "inputs": [
+        "qepm/mailbox/worktask/WT-D20260528_003/outputs/overnight_B/m22_panel_sector_neutral.parquet"
+      ],
+      "outputs": [
+        "qepm/mailbox/worktask/WT-D20260528_003/outputs/overnight_B/m22_alpha_scores.parquet",
+        "qepm/mailbox/worktask/WT-D20260528_003/outputs/overnight_B/m22_top20_per_date.parquet",
+        "qepm/mailbox/worktask/WT-D20260528_003/outputs/overnight_B/m22_top20_performance.parquet",
+        "qepm/mailbox/worktask/WT-D20260528_003/outputs/overnight_B/m22_step4_alpha.json",
+        "stage_artifacts/WT_D20260528_003_overnight_B/alpha_scores.parquet"
+      ],
+      "key_metrics": {
+        "top20_active_monthly_pct": -0.122,
+        "top20_active_t_stat": -0.666,
+        "as_of_sig_date": "2023-10-31",
+        "top20_count": 20
+      }
+    },
+    {
+      "step": "05_validation_summary",
+      "script": "qepm/mailbox/worktask/WT-D20260528_003/scripts/overnight_B/05_validation_summary.R",
+      "inputs": [
+        "qepm/mailbox/worktask/WT-D20260528_003/outputs/overnight_B/m22_step2_ic.json",
+        "qepm/mailbox/worktask/WT-D20260528_003/outputs/overnight_B/m22_step3_ax001v2.json",
+        "qepm/mailbox/worktask/WT-D20260528_003/outputs/overnight_B/m22_step4_alpha.json",
+        "qepm/mailbox/worktask/WT-D20260528_003/outputs/overnight_B/m22_ic_per_date.parquet"
+      ],
+      "outputs": [
+        "qepm/mailbox/worktask/WT-D20260528_003/outputs/overnight_B/m22_step5_validation.json",
+        "stage_artifacts/WT_D20260528_003_overnight_B/alpha_validation.json"
+      ],
+      "key_metrics": {
+        "dsr_pure_n1": 1.0,
+        "dsr_selection_n269": 1.5392e-97,
+        "graduation_pass": false,
+        "failed_gates": ["rank_ic", "subperiod_stability", "dsr_selection_n269"]
+      }
+    },
+    {
+      "step": "06_alpha_package_draft",
+      "script": "Q-Lead session direct write (no script, JSON build from outputs)",
+      "outputs": [
+        "qepm/mailbox/worktask/WT-D20260528_003/alpha_package_draft_B.json"
+      ]
+    },
+    {
+      "step": "07_codex_critic_round",
+      "script": "bash 02_Infrastructure/tools/debate_helpers/run_codex_qepm_critic.sh --role=alpha --task_id=WT-D20260528_003 --package=alpha_package_draft_B.json --output=codex_critic_response_alpha_B.json",
+      "inputs": [
+        "qepm/mailbox/worktask/WT-D20260528_003/alpha_package_draft_B.json",
+        "02_Infrastructure/prompts/qepm_codex_base_context.md",
+        "02_Infrastructure/prompts/codex_alpha_critic_prompt.md"
+      ],
+      "outputs": [
+        "qepm/mailbox/worktask/WT-D20260528_003/codex_critic_response_alpha_B.json"
+      ],
+      "result": {
+        "stance": "REJECT",
+        "concerns_total": 8,
+        "concerns_high": 5,
+        "concerns_medium": 3,
+        "model": "gpt-5.5",
+        "reasoning_effort": "xhigh"
+      }
+    },
+    {
+      "step": "08_challenge_note_resolve",
+      "script": "Q-Lead session direct write (challenge_note_B.md + alpha_package_B.json final)",
+      "outputs": [
+        "qepm/mailbox/worktask/WT-D20260528_003/challenge_note_B.md",
+        "qepm/mailbox/worktask/WT-D20260528_003/alpha_package_B.json",
+        "qepm/mailbox/worktask/WT-D20260528_003/artifact_lineage_B.json"
+      ],
+      "codex_decisions": {
+        "ACCEPT": 5,
+        "PARTIAL": 2,
+        "REBUTTAL": 1
+      }
+    }
+  ],
+  "ax_axiom_compliance_final": {
+    "AX_001_v2": "FAIL — crisis IC -0.0195 (defensive broken)",
+    "AX_002": "PASS — no fabrication, all metrics verifiable in outputs",
+    "AX_003": "N/A",
+    "AX_004": "N/A",
+    "AX_005": "ELEVATED RISK — 2020-2026 ICIR decay -58%",
+    "AX_007": "VIOLATION — single-sleeve top20 no exception",
+    "AX_008": "PARTIAL — Codex Round complete, downstream (Risk + Optimizer) skipped due to TERMINATE verdict"
+  },
+  "pit_c1_c15_compliance_final": {
+    "C1": "PASS",
+    "C9": "N/A (no overlay)",
+    "C10": "PASS",
+    "C13": "PASS",
+    "C14": "PASS",
+    "C15": "PASS",
+    "cycle_51_shift_convention": "PASS"
+  },
+  "verdict": "TERMINATE",
+  "verdict_path": "Alpha graduation FAIL (4 gates) + AX-001 v2 defensive FAIL + AX-007 violation + Codex C5 monotonicity inversion. No PG1 advancement. Recommendations documented in alpha_package_B.json::follow_up_recommendations.",
+  "downstream_skipped": {
+    "risk_research_skipped": true,
+    "optimizer_research_skipped": true,
+    "forge_skipped": true,
+    "judge_skipped": true,
+    "governor_skipped": true,
+    "reason": "TERMINATE verdict at Alpha stage. No downstream spawn required per common_charter.md Section 8."
+  }
+}

@@ -15,7 +15,7 @@ import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 
-PROJ = Path("/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot")
+PROJ = Path(os.environ.get('CLAUDE_PROJECT_DIR') or os.environ.get('QM_ROOT') or Path(__file__).resolve().parents[2])
 CACHE = PROJ / ".cache" / "krx_options"
 CACHE.mkdir(parents=True, exist_ok=True)
 LOG = Path("/tmp/krx_options_fetch.log")

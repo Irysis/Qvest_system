@@ -1,0 +1,138 @@
+
+========== Step 0: FRED → 4 US macro lag1 features ==========
+[fred] rows=11462  cols=Date, t10y2y_raw, icsa_raw, cfnai_raw, stlfsi4_raw
+
+[us_macro feats cover after lag1]:
+  us_t10y2y_spread_lag1               valid=11459 (100.0%)  first=1995-01-04
+  us_initial_claims_4w_avg_lag1       valid=11434 (99.8%)  first=1995-01-29
+  us_cfnai_lag1                       valid=11461 (100.0%)  first=1995-01-02
+  us_stlfsi_lag1                      valid=11456 (99.9%)  first=1995-01-07
+
+========== Step 1: Build v3f_us_macro panel (73 features) ==========
+[1a] v1.3 baseline panel: 8955 rows × 69 cols (69 features)
+[1b] v3f_us_macro panel: 8955 rows × 73 cols (73 features)
+  us_t10y2y_spread_lag1              : 86.3% cover (n=7730)
+  us_initial_claims_4w_avg_lag1      : 86.1% cover (n=7712)
+  us_cfnai_lag1                      : 86.3% cover (n=7731)
+  us_stlfsi_lag1                     : 86.3% cover (n=7727)
+[1c] Saved: /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/01_data/feature_panel_v3f_us_macro.parquet
+
+========== Step 1.5: Orthogonality diagnostic ==========
+
+[Correlation US macro vs KR macro/sector features]:
+                              bbva_market_z bbva_sovereign_z
+us_t10y2y_spread_lag1                -0.013           -0.048
+us_initial_claims_4w_avg_lag1        -0.081            0.031
+us_cfnai_lag1                        -0.017            0.043
+us_stlfsi_lag1                        0.072           -0.127
+                              bbva_transmission_z bbva_macro_composite
+us_t10y2y_spread_lag1                       0.012               -0.012
+us_initial_claims_4w_avg_lag1               0.005               -0.082
+us_cfnai_lag1                              -0.009               -0.020
+us_stlfsi_lag1                              0.033                0.080
+                              us_sector_avg_z us_sector_dispersion_z
+us_t10y2y_spread_lag1                   0.014                 -0.213
+us_initial_claims_4w_avg_lag1           0.138                  0.190
+us_cfnai_lag1                           0.115                 -0.143
+us_stlfsi_lag1                         -0.354                  0.305
+
+[Max |cor| US-KR]: 0.354
+[Ortho verdict]: MODERATELY_ORTHOGONAL (max cor 0.3~0.5 — mixed)
+
+[Inter US macro correlation]:
+                              us_t10y2y_spread_lag1
+us_t10y2y_spread_lag1                         1.000
+us_initial_claims_4w_avg_lag1                 0.153
+us_cfnai_lag1                                -0.039
+us_stlfsi_lag1                                0.269
+                              us_initial_claims_4w_avg_lag1 us_cfnai_lag1
+us_t10y2y_spread_lag1                                 0.153        -0.039
+us_initial_claims_4w_avg_lag1                         1.000        -0.315
+us_cfnai_lag1                                        -0.315         1.000
+us_stlfsi_lag1                                        0.245        -0.374
+                              us_stlfsi_lag1
+us_t10y2y_spread_lag1                  0.269
+us_initial_claims_4w_avg_lag1          0.245
+us_cfnai_lag1                         -0.374
+us_stlfsi_lag1                         1.000
+
+[saved correlations] /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/04_evaluation/5way_retrain_v3f_us_macro_correlations.json
+
+========== Step 2: 3-way GBDT retrain ==========
+[2a] Panel for training: 8937 rows / 73 features
+
+========== Target: y_tail_q15 (3-way GBDT) ==========
+[M1 XGB] pos_weight=6.13 / training...
+[M1 XGB] OOS PR-AUC: 0.4765
+[M2 CatBoost] training...
+[M2 CatBoost] OOS PR-AUC: 0.4463
+[M3 Ranger RF] training (1000 trees, mtry=sqrt(p))...
+[M3 Ranger RF] OOS PR-AUC: 0.5361
+
+[3way EW] OOS PR-AUC: 0.4901
+
+[New US macro features importance — XGB]:
+                         Feature       Gain  rank total
+                          <char>      <num> <int> <int>
+1:                 us_cfnai_lag1 0.14561748     1    47
+2:         us_t10y2y_spread_lag1 0.10851678     2    47
+3: us_initial_claims_4w_avg_lag1 0.08910931     4    47
+4:                us_stlfsi_lag1 0.08695942     5    47
+
+[New US macro features importance — CatBoost]:
+                         Feature      Gain  rank total
+                          <char>     <num> <int> <int>
+1:                 us_cfnai_lag1 11.295956     1    73
+2:         us_t10y2y_spread_lag1  9.853842     2    73
+3: us_initial_claims_4w_avg_lag1  8.839453     3    73
+4:                us_stlfsi_lag1  8.557582     4    73
+
+[New US macro features importance — RF]:
+                         Feature      Gain  rank total
+                          <char>     <num> <int> <int>
+1:                 us_cfnai_lag1 117.94730     1    73
+2:         us_t10y2y_spread_lag1 109.95084     2    73
+3: us_initial_claims_4w_avg_lag1  98.54858     3    73
+4:                us_stlfsi_lag1  90.36532     4    73
+
+========== Target: y_onset (3-way GBDT) ==========
+[M1 XGB] pos_weight=8.00 / training...
+[M1 XGB] OOS PR-AUC: 0.0863
+[M2 CatBoost] training...
+[M2 CatBoost] OOS PR-AUC: 0.0942
+[M3 Ranger RF] training (1000 trees, mtry=sqrt(p))...
+[M3 Ranger RF] OOS PR-AUC: 0.1035
+
+[3way EW] OOS PR-AUC: 0.0894
+
+[New US macro features importance — XGB]:
+                         Feature       Gain  rank total
+                          <char>      <num> <int> <int>
+1:                 us_cfnai_lag1 0.14487114     1    47
+2:         us_t10y2y_spread_lag1 0.11518023     3    47
+3:                us_stlfsi_lag1 0.10872052     4    47
+4: us_initial_claims_4w_avg_lag1 0.09094217     5    47
+
+[New US macro features importance — CatBoost]:
+                         Feature      Gain  rank total
+                          <char>     <num> <int> <int>
+1:         us_t10y2y_spread_lag1 13.860123     1    73
+2:                 us_cfnai_lag1 11.498143     2    73
+3:                us_stlfsi_lag1 11.284390     3    73
+4: us_initial_claims_4w_avg_lag1  6.513004     5    73
+
+[New US macro features importance — RF]:
+                         Feature     Gain  rank total
+                          <char>    <num> <int> <int>
+1:         us_t10y2y_spread_lag1 153.6855     1    73
+2:                us_stlfsi_lag1 140.3601     2    73
+3:                 us_cfnai_lag1 129.8915     3    73
+4: us_initial_claims_4w_avg_lag1 108.2149     4    73
+
+============================================================
+[Step 2 SUMMARY] 3-way GBDT retrain on v3f_us_macro (73 features)
+y_tail_q15:  XGB=0.4765 / CAT=0.4463 / RF=0.5361 / EW=0.4901
+y_onset:     XGB=0.0863 / CAT=0.0942 / RF=0.1035 / EW=0.0894
+[Step 2] Summary JSON: /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/04_evaluation/5way_retrain_v3f_us_macro_step2.json
+
+========== Step 2 DONE — Run scripts/97_5way_retrain_v3f_us_macro.py next ==========

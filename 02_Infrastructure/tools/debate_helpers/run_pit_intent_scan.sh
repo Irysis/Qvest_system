@@ -22,7 +22,7 @@ if [ -z "$STRATEGY_DIR" ] || [ ! -d "$STRATEGY_DIR" ]; then
   exit 0
 fi
 
-DIR=$(ls -d /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1)
+DIR=$(ls -d /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1)
 TEMPLATE="$DIR/02_Infrastructure/prompts/pit_intent_scan_prompt.md"
 STR_NAME=$(basename "$STRATEGY_DIR" | head -c 50)
 OUTPUT="/tmp/pit_intent_result_${STR_NAME}.json"

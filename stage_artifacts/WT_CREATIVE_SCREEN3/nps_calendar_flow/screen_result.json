@@ -1,0 +1,50 @@
+{
+  "screen_id": "nps_calendar_flow",
+  "wt": "WT_CREATIVE_SCREEN3",
+  "screen_tier": "3rd cheap SCREEN (advisory, read-only, tradeable 아님 — Cycle2 교훈)",
+  "date": "2026-05-30",
+  "idea": "연기금(NPS) calendar flow — NPS가 가장 기계적 flow 주체. 분기말 ±5영업일 리밸 window에서 sector tilt 발생 → 연기금 누적순매수 상위 sector의 forward 수익이 하위 대비 우월한가. sector-level flow 부재 시 market-level 연기금 timing forward 예측력으로 축소 검증.",
+  "test_type_intended": "event-study (calendar 구조): 분기말 ±5영업일 window. 연기금 누적순매수 상위 sector window-내/직후 수익률 vs 하위. PIT: flow는 window 진입 직전(t-1 backward)까지, 수익은 이후 forward label만.",
+
+  "execution_status": "데이터 존재여부 gate까지 실행 완료. event-study 정량은 미실행(데이터 전제 미충족으로 진입 불가).",
+
+  "step1_data_feasibility_check": {
+    "method": "investor flow 데이터 3개 소스를 read-only로 직접 inspect + screen2 선행 gate 재사용.",
+    "sources_inspected": [
+      {
+        "source": ".cache/investor_stock/investor_wide.parquet (read_parquet 전체 read 성공 — 권위 검증)",
+        "nrow": 10244224,
+        "n_distinct_ticker": 3410,
+        "date_range": "2000-01-03 ~ 2026-03-26",
+        "columns": ["Date","Ticker","Foreign","Individual","Institutional","OtherCorp"],
+        "pension_column": "ABSENT — 연기금 컬럼 없음(4-type only). 기관은 'Institutional' 단일 버킷으로 통합되어 연기금 분리 불가."
+      },
+      {
+        "source": ".cache/flow_features_daily.parquet (arrow schema inspect 성공, 22 cols, per-stock Ticker 보유)",
+        "columns_relevant": "inst_netbuy_{5,20,60}d / foreign_netbuy_{5,20,60}d / individual_netbuy_5d / inst_flow_momentum / foreign_flow_momentum / inst_concentration / fwd_inst_foreign_netbuy_21d 등",
+        "pension_or_sector_column": "ABSENT — 연기금/sector/pension 파생 컬럼 없음. 기관(inst)·외국인·개인 3축만. (Ticker만 sector-like 패턴매치에 걸렸을 뿐 실제 sector/pension 없음.)"
+      },
+      {
+        "source": "stage_artifacts/WT_CREATIVE_SCREEN2/investor_composition_10subtype/screen.json (전체 read 성공)",
+        "fact": "market-level 10-subtype flow는 .cache/investor/investor_{kospi,kosdaq}_YYYYMMDD.csv에 존재하며 header에 '연기금' 포함 — 단 2 rows/date (시장 aggregate, Ticker 없음). per-stock 패널은 4-type only라고 screen2가 판정했고, 본 screen의 직접 read가 이를 ground-truth로 재확인함."
+      }
+    ],
+    "verdict": "sector/종목 레벨 연기금 flow 부재(CONFIRMED by direct read). 연기금 순매수는 시장(KOSPI/KOSDAQ 지수) 단위 일별 금액으로만 존재. primary 가설(연기금 sector tilt event-study) INFEASIBLE — sector tilt를 구성할 sector/종목 레벨 연기금 feature가 인프라에 없음."
+  },
+
+  "step2_fallback_market_level": {
+    "fallback_test": "market-level 연기금 timing forward 예측력 (분기말 ±5d window의 forward 시장수익 예측)",
+    "data_for_fallback": "존재 (.cache/investor/*.csv 연기금 column, market-level daily). 시계열 timing 가설로만 가능 — cross-sectional alpha 아님.",
+    "calendar_overlay_marginal_value_untested": "본 screen의 차별 가설은 '분기말 ±5d window conditioning이 기계적 flow를 또렷하게 만든다'. 그러나 (a) sector-level이 없어 tilt 자체를 직접 관측 불가, (b) market-level 연기금 timing의 forward 예측력 + calendar overlay가 15bps one-way 비용을 넘는 edge를 만든다는 근거는 본 screen에서 신규 산출하지 않음(fabricate 회피). market-level 단일축 timing은 종목선택 alpha가 아니므로 v8 종목선택 파이프라인 적합도 낮음."
+  },
+
+  "pit_note": "flow는 거래일 마감 후 저녁 공시 → 사용은 t-1 lag (C2/C5 same-day circular 금지). forward label만 미래 (C14 Usable_Date<=sig_date). 정규 리서치 진입 시 lockbox 2023-12-22 strict. sector 매핑 시 factor_db는 load_month_factors() 경유(C15). KR(KOSPI200∪KOSDAQ150).",
+
+  "finding_summary": "이 screen에서 확인(데이터소스 3건 직접 inspect, event-study 0건): (1) per-stock 패널 investor_wide.parquet(10.2M행/3410종목/2000~2026-03)은 4-type only로 연기금 컬럼 부재. (2) flow_features_daily.parquet(22컬럼)도 inst/foreign/individual 3축만, 연기금·sector 파생 없음. (3) 연기금 flow는 market-level aggregate(2 rows/date)로만 존재. → 연기금 sector tilt event-study의 핵심 데이터(sector/종목 레벨 연기금 순매수)가 인프라에 없음.",
+  "screen_result": "INFEASIBLE (primary) — sector/종목 레벨 연기금 flow 부재로 sector tilt event-study 실행 불가. market-level 연기금 timing fallback은 가능하나 종목선택 alpha 아님 + calendar edge 미검증. advisory(tradeable 아님).",
+  "data_feasible": false,
+  "key_metric_name": "sector_or_stock_level_pension_flow_columns_available",
+  "key_metric_value": 0,
+  "recommend_full_research": false,
+  "recommendation": "정식 canonical/forge 권고하지 않음(통과 아님). primary 가설(연기금 sector tilt)은 sector/종목 레벨 연기금 flow 데이터가 인프라에 없어 진행 불가 — 진행하려면 KRX 종목별 투자자매매 중 '연기금' subtype 수집 task가 선행돼야 함(data-engineering WT, cheap screen 범위 밖). market-level 연기금 timing(시장 타이밍)은 별개 가설로 분리 가능하나 종목선택 alpha가 아니고 단일축 flow timing은 우선순위 낮음. screen=advisory, 통과 시에만 canonical/forge."
+}

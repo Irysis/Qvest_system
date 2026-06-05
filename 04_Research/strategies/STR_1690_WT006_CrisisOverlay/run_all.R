@@ -27,7 +27,7 @@ STR_ID <- "STR_1690_WT006_CrisisOverlay"
 # 0. Environment
 # ──────────────────────────────────────────────────────────────────────────────
 .root_candidates <- c(
-  "/mnt/c/Users/User/OneDrive/\xeb\xb0\x94\xed\x83\x95 \xed\x99\x94\xeb\xa9\xb4/Quant_Module_Moltbot",
+  Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")),
   "/mnt/c/Users/99922/OneDrive/\xeb\xb0\x94\xed\x83\x95 \xed\x99\x94\xeb\xa9\xb4/Quant_Module_Moltbot"
 )
 PROJECT_ROOT <- .root_candidates[sapply(.root_candidates, dir.exists)][1]

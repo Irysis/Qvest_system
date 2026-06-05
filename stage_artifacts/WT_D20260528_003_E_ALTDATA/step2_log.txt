@@ -1,0 +1,94 @@
+[06:48:12] === E_ALTDATA Step 2 — LightGBM Walk-Forward CV + Optuna ===
+  Panel: 58336 rows × 71 cols
+  sig_date range: 2009-03-31 00:00:00 -> 2023-11-30 00:00:00
+  Added 45 sector dummies
+  Numeric features (≤90% NaN): 112
+  Target: target_zxs
+  Walk-forward folds: 10
+    Fold 0: train[2009-03-31..2014-03-31] (n=61m) -> test[2014-04-30..2015-03-31] (n=12m)
+    Fold 1: train[2009-03-31..2015-03-31] (n=73m) -> test[2015-04-30..2016-04-29] (n=13m)
+    Fold 2: train[2009-03-31..2016-03-31] (n=85m) -> test[2016-05-31..2017-04-28] (n=12m)
+    Fold 3: train[2009-03-31..2017-03-31] (n=97m) -> test[2017-05-31..2018-03-30] (n=11m)
+    Fold 4: train[2009-03-31..2018-03-31] (n=109m) -> test[2018-04-30..2019-03-29] (n=12m)
+    Fold 5: train[2009-03-31..2019-03-31] (n=121m) -> test[2019-04-30..2020-04-29] (n=13m)
+    Fold 6: train[2009-03-31..2020-03-31] (n=133m) -> test[2020-05-29..2021-03-31] (n=11m)
+    Fold 7: train[2009-03-31..2021-03-31] (n=145m) -> test[2021-04-30..2022-04-29] (n=13m)
+    Fold 8: train[2009-03-31..2022-03-31] (n=157m) -> test[2022-05-31..2023-04-28] (n=12m)
+    Fold 9: train[2009-03-31..2023-03-31] (n=169m) -> test[2023-05-31..2023-11-30] (n=7m)
+
+[06:48:12] Step 5 — Optuna sweep on Fold 0 (n=50 trials)
+    [Optuna] trial 1/50 value=0.5939 best=0.5939
+    [Optuna] trial 5/50 value=0.5246 best=0.5939
+    [Optuna] trial 10/50 value=0.6998 best=0.7241
+    [Optuna] trial 15/50 value=0.4462 best=0.7241
+    [Optuna] trial 20/50 value=0.4945 best=0.7241
+    [Optuna] trial 25/50 value=0.4832 best=0.7558
+    [Optuna] trial 30/50 value=0.5407 best=0.7558
+    [Optuna] trial 35/50 value=0.6145 best=0.8081
+    [Optuna] trial 40/50 value=0.7155 best=0.8081
+    [Optuna] trial 45/50 value=0.6666 best=0.8081
+    [Optuna] trial 50/50 value=0.5798 best=0.8081
+  Best Fold 0 composite score: 0.8081
+  Best params: {'learning_rate': 0.01016863420385247, 'num_leaves': 51, 'max_depth': 3, 'min_child_samples': 50, 'subsample': 0.8986522363740348, 'colsample_bytree': 0.6761933524367716, 'reg_alpha': 0.001159495878393049, 'reg_lambda': 0.00931400135126661, 'min_split_gain': 0.035815884686009096, 'feature_fraction_bynode': 0.9002217089272051, 'n_estimators': 328}
+
+[06:48:55] Step 6 — Full walk-forward with best params
+    Fold 0 model trained (328 trees, n_train=18060)
+  Fold 0: rank IC mean=0.0936 std=0.0766 IR=1.222 (n=12 sds)
+    Fold 1 model trained (328 trees, n_train=22119)
+  Fold 1: rank IC mean=0.0180 std=0.0887 IR=0.203 (n=13 sds)
+    Fold 2 model trained (328 trees, n_train=26252)
+  Fold 2: rank IC mean=0.0222 std=0.1028 IR=0.216 (n=12 sds)
+    Fold 3 model trained (328 trees, n_train=30417)
+  Fold 3: rank IC mean=0.0327 std=0.0897 IR=0.364 (n=11 sds)
+    Fold 4 model trained (328 trees, n_train=34592)
+  Fold 4: rank IC mean=0.0074 std=0.0861 IR=0.086 (n=12 sds)
+    Fold 5 model trained (328 trees, n_train=38785)
+  Fold 5: rank IC mean=0.0107 std=0.1570 IR=0.068 (n=13 sds)
+    Fold 6 model trained (328 trees, n_train=42969)
+  Fold 6: rank IC mean=0.0832 std=0.0964 IR=0.863 (n=11 sds)
+    Fold 7 model trained (328 trees, n_train=47158)
+  Fold 7: rank IC mean=0.0750 std=0.0904 IR=0.829 (n=13 sds)
+    Fold 8 model trained (328 trees, n_train=51348)
+  Fold 8: rank IC mean=0.0374 std=0.1074 IR=0.348 (n=12 sds)
+    Fold 9 model trained (328 trees, n_train=55541)
+  Fold 9: rank IC mean=0.0447 std=0.0562 IR=0.795 (n=7 sds)
+
+[06:49:09] Step 7 — aggregate metrics
+
+  OVERALL Walk-Forward (test only):
+    Rank IC mean = 0.0419
+    Rank IC std  = 0.1047
+    Rank IC IR   = 0.400
+    Hit rate     = 65.52%
+    Median IC    = 0.0441
+    N sig_dates  = 116
+
+  Net-of-Cost (Top 20 EW, 15.0bps one-way):
+    Avg monthly turnover: 0.585 (7.02/yr)
+    Monthly cost drag:    17.6bps
+    Net SR (annualized):  0.237
+
+  Orthogonality vs D_ML: mean_xs_corr = 0.308
+
+  Saved: cv_results.json + predictions_walkforward.parquet + feature_importance.parquet
+  Top 15 features by importance:
+    L09_Amihud_20d                           5654.4959
+    CR06_DTC_Proxy                           3836.1910
+    L14_Price_Impact                         2836.4517
+    L04_Bid_Ask_Proxy                        2036.0251
+    CR05_Short_Pressure_Proxy                1516.9883
+    CR03_Herding_Dispersion                  1515.3178
+    CR01_Sector_Comovement                   1505.3413
+    CR09_Money_Flow_Ratio                    1453.4871
+    foreign_flow_5d                          1228.2661
+    INV10_Smart_Money_Flow_rank_pct          1223.9898
+    CR05_Short_Pressure_Proxy_zxs            1076.6483
+    CR03_Herding_Dispersion_zxs              1068.5798
+    L38_DolVol_Mom                           948.7323
+    L32_Ret_Vol_Corr                         832.2270
+    INV12_Supply_Demand_Imbalance            717.3941
+
+=== E_ALTDATA Step 2 COMPLETE — elapsed 1.15 min ===
+  Overall: IC mean = 0.0419, ICIR = 0.400, t_HAC = 4.24, DSR = 0.193
+  Subperiod stability: 1.00, AX-001 v2 ratio bad/normal: 0.330
+  Net SR (Top 20): 0.237 (turnover 7.02/yr)

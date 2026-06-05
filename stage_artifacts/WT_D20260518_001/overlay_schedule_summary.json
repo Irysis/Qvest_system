@@ -1,0 +1,58 @@
+{
+  "task_id": "WT-D20260518_001",
+  "agent": "optimizer-research",
+  "agent_version": "v1.0_overlay_schedule_design_phase_a",
+  "wt_subclass": "discovery_design_phase_a",
+  "schedule_csv_path": "stage_artifacts/WT_D20260518_001/overlay_schedule.csv",
+  "policy": {
+    "method_id": "M05",
+    "name": "Sequential_Layer6_Quantile_Hard3step_Hysteresis_5pct",
+    "beta_NORMAL": 1,
+    "beta_CAUTION": 0.7,
+    "beta_CRISIS": 0.3,
+    "hysteresis_buffer": 0.05,
+    "smoothing": "hysteresis",
+    "multi_horizon_sanity": "1m_primary_plus_3m_cross_check",
+    "composition": "Sequential_Layer_6_after_R05",
+    "status_default": "PLACEHOLDER_pending_Forge_Stage_4_p_bad_t_emission"
+  },
+  "schedule_density": {
+    "n_sig_dates_total": 437,
+    "n_with_beta": 437,
+    "density_ratio": 1,
+    "placeholder_share": 1,
+    "illustrative_W3_share": 0,
+    "schedule_density_status": "PASS_density_1.0_all_placeholder_phase_a_design_no_simulation",
+    "real_Forge_Stage_5_density_pending": true,
+    "codex_C2_disposition": "ACCEPT — W3 simulated reference REMOVED. No self_synthesis."
+  },
+  "turnover": {
+    "illustrative_simulation_REMOVED": "Codex C2 ACCEPT",
+    "full_sample_TO_ann_pending_Forge_Stage_5": true,
+    "target_cap_ann": 6,
+    "infeasibility_trigger": "Forge Stage 5 if full_sample TO > 6.0/yr — infeasibility_report mandatory"
+  },
+  "infeasibility_report": {
+    "raised": false,
+    "reason": null,
+    "binding_constraints": [],
+    "suggested_resolution": null,
+    "note": "No infeasibility in design phase. Forge Stage 5 may raise if τ thresholds produce zero CAUTION/CRISIS transitions in 4+/5 windows (overfitting concern)."
+  },
+  "hard_constraints_check": {
+    "max_names_check": "N_A_overlay_role_alpha_pkg_max_names_null",
+    "long_only_check": "N_A_overlay_scalar_beta_in_0.3_1.0",
+    "weight_bounds_check": "N_A_beta_bear_in_0.3_1.0_underlying_str1715_retains_0_0.20",
+    "sigma_w_check": "N_A_overlay_multiplicative_underlying_str1715_retains_sigma_w_1",
+    "LIQ_check": "N_A_overlay_role_underlying_str1715_retains_LIQ_2e8",
+    "cost_15bps_check": "PENDING_Forge_S5_emission_real_p_bad_t_then_TO_x_15bps_x_2_sides_consistent_formula",
+    "PIT_C5_check": "PASS_overlay_t_minus_1_basis_quantile_calibration_window_expanding",
+    "schedule_density_gte_095": "PASS_placeholder_filled_100pct"
+  },
+  "decision_branches": {
+    "DB_A_M07_replacement_M4_conditional": "Forge Stage 5 DM test p < 0.05",
+    "DB_B_M11_calibrator_ensemble_conditional": "Forge Stage 3 isotonic ECE > 0.10",
+    "DB_C_M06_regime_stratified_conditional": "Forge Stage 5 per-regime AUC variance < 0.10 + bootstrap CI"
+  },
+  "next_step": "Forge Stage 4 emit p_bad_t time series -> Stage 5 replace beta_bear placeholder with quantile-hysteresis policy emission"
+}

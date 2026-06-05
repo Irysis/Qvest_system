@@ -9,7 +9,7 @@ suppressPackageStartupMessages({
   library(ggplot2)
 })
 
-ROOT <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 OUT_DIR <- file.path(ROOT, "research_output", "regime_analysis")
 
 # ─── 1. Load all sim results ─────────────────────────────────────────────────

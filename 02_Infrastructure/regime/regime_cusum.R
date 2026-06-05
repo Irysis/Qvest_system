@@ -30,7 +30,7 @@ suppressPackageStartupMessages({
 })
 
 if (!exists("PROJECT_ROOT")) {
-  PROJECT_ROOT <- "/mnt/c/Users/User/OneDrive/\xeb\xb0\x94\xed\x83\x95 \xed\x99\x94\xeb\xa9\xb4/Quant_Module_Moltbot"
+  PROJECT_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 }
 if (!exists("CACHE_DIR")) {
   CACHE_DIR <- file.path(PROJECT_ROOT, ".cache")

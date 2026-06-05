@@ -1,0 +1,151 @@
+{
+  "task_id": "WT-D20260528_003",
+  "spec": "D_PROD = LightGBM(30 pruned features) + Optuna + net-of-cost loss + EWMA(0.5) + bandbuffer(keep50/entry20/cooldown3m) + softmax-cap0.20",
+  "signal_cutoff_lockbox": "2023-12-22",
+  "walkforward_test_range": "2014-04-30 .. 2023-11-30",
+  "n_features": 30,
+  "feature_set_decision": {
+    "method": "AX-008 verify: 162f vs 30f under IDENTICAL EWMA+bandbuffer+net-of-cost overlay",
+    "decision": "30f",
+    "rationale": "30f wins net-SR (0.306 vs 0.085), turnover hard-constraint (5.30 PASS vs 6.04 FAIL), AX-001 v2 crisis robustness (0.759 PASS vs 0.450 FAIL), DSR-z (-7.80 vs -8.67). 162f higher in-sample IC (0.0503 vs 0.0449) does NOT survive cost+turnover+crisis. Pruning IC sacrifice buys tradeability + defensive robustness (Factor-Zoo Reduction + Cost-aware Alpha).",
+    "comparison_30f": {
+      "n_features": 30,
+      "ic_raw_mean": 0.04490612515751556,
+      "icir_raw": 0.38862355686271927,
+      "ic_smth_mean": 0.042785228924081695,
+      "icir_smth": 0.3668985832243064,
+      "turnover_yr": 5.300705393039634,
+      "turnover_pass_6": true,
+      "sr_net_annual": 0.3062119698802904,
+      "sr_gross_annual": 0.3365344491609006,
+      "dsr_proper": 3.0515791681648724e-15,
+      "dsr_z": -7.801797384091537,
+      "dsr_pass_05": false,
+      "skewness": -0.528840599271451,
+      "kurtosis": 4.037968404836261,
+      "ax001_v2_bad": 0.03626345974772907,
+      "ax001_v2_normal": 0.0477870136274444,
+      "ax001_v2_ratio": 0.758855793791324,
+      "ax001_v2_pass_05": true,
+      "n_crisis": 29,
+      "n_normal": 87
+    },
+    "comparison_162f": {
+      "n_features": 162,
+      "ic_raw_mean": 0.05031881756281322,
+      "icir_raw": 0.4467376024276969,
+      "ic_smth_mean": 0.05103645850900832,
+      "icir_smth": 0.43584924115553525,
+      "turnover_yr": 6.040454492124205,
+      "turnover_pass_6": false,
+      "sr_net_annual": 0.08470365270342729,
+      "sr_gross_annual": 0.11953967442407058,
+      "dsr_proper": 2.165478311836184e-18,
+      "dsr_z": -8.669743301458404,
+      "dsr_pass_05": false,
+      "skewness": -0.18425221023871044,
+      "kurtosis": 4.0980342387737405,
+      "ax001_v2_bad": 0.026234507242540655,
+      "ax001_v2_normal": 0.058346921002904076,
+      "ax001_v2_ratio": 0.4496295999053471,
+      "ax001_v2_pass_05": false,
+      "n_crisis": 29,
+      "n_normal": 87
+    }
+  },
+  "diagnostics": {
+    "rank_ic": 0.04490612515751556,
+    "rank_ic_median": 0.05123071615689866,
+    "icir": 0.38862355686271927,
+    "hit_rate": 0.6379310344827587,
+    "n_sig_dates": 116,
+    "ic_ci_95_lower": 0.023042735591062298,
+    "ic_ci_95_upper": 0.06515848479961436,
+    "harvey_t_stat_nw": 4.309376370705461,
+    "p_value_hac": 3.469347724949223e-05,
+    "subperiod_stability": 1.0,
+    "subperiod_metrics": {
+      "2008-2014": {
+        "n_sd": 9,
+        "mean_ic": 0.10512054157186396,
+        "icir": 2.217812619708477
+      },
+      "2015-2019": {
+        "n_sd": 60,
+        "mean_ic": 0.032802225406038284,
+        "icir": 0.31377728892073353
+      },
+      "2020-2023": {
+        "n_sd": 47,
+        "mean_ic": 0.04882749190984537,
+        "icir": 0.3672579700620447
+      }
+    },
+    "harvey_t_subperiods": {
+      "2008-2014": [
+        9,
+        0.10512054157186396,
+        6.27292269463682
+      ],
+      "2015-2019": [
+        60,
+        0.032802225406038284,
+        2.4101693191215636
+      ],
+      "2020-2023": [
+        47,
+        0.04882749190984537,
+        2.490864929244948
+      ]
+    },
+    "ax001_v2_bad_normal_ratio": 0.758855793791324,
+    "ax001_v2_pass_threshold_05": true,
+    "net_of_cost_sr_annual": 0.3062119698802904,
+    "gross_sr_annual": 0.3365344491609006,
+    "turnover_yr": 5.300705393039634,
+    "turnover_pass_6": true,
+    "dsr_proper": 3.0515791681648724e-15,
+    "dsr_z": -7.801797384091537,
+    "dsr_pass_05": false,
+    "dsr_n_trials_eff": 411,
+    "capm_alpha_annual": 0.061851744961878945,
+    "capm_alpha_t_nw": 0.7408641319380163,
+    "information_ratio": 0.24337037996005914
+  },
+  "graduation_criteria_check": {
+    "min_rank_ic_0.04": {
+      "actual": 0.04490612515751556,
+      "PASS": true
+    },
+    "min_icir_0.20": {
+      "actual": 0.38862355686271927,
+      "PASS": true
+    },
+    "min_subperiod_0.50": {
+      "actual": 1.0,
+      "PASS": true
+    },
+    "min_harvey_t_3.0": {
+      "actual": 4.309376370705461,
+      "PASS": true
+    },
+    "min_dsr_0.50": {
+      "actual": 3.0515791681648724e-15,
+      "PASS": false
+    }
+  },
+  "universe_comparison": {
+    "note": "L-227 universe v2 mandate: not triggered. ICIR=0.389 (>0.15) and turnover gated by 20-name max; KR_top342 default sufficient. Universe per request.json = KOSPI200_KOSDAQ150_intersection (max 500, liq floor 5e7). v2 FREEFLOAT comparison NOT run (ICIR not attenuated; cost_model_version=v2.3_kr_retail_15bps per request).",
+    "universe_used": "request.json KOSPI200_KOSDAQ150_intersection (349 cross-section at last sig_date)",
+    "v2_triggered": false
+  },
+  "alpha_inheritance": {
+    "vs_admitted": "STR_1715_AR_on_M4_R05_overlay_PG2",
+    "mean_cross_sectional_spearman": -0.024,
+    "abs_mean": 0.1213,
+    "max_abs": 0.4732,
+    "cor_lt_0.95_PASS": true,
+    "note": "D ML microstructure (IdioVol/RealVol/Amihud/Size/ROE) orthogonal to AR/momentum overlay. Discovery cor<0.95 satisfied."
+  },
+  "generated_at": "2026-05-29T07:26:06.937922"
+}

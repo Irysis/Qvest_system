@@ -23,7 +23,7 @@ PROMPT=$(echo "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); pr
 
 # WT ID 추출 (v6.1 WT-D/WT-P + legacy WT 모두 지원)
 WT_ID=$(echo "$PROMPT" | grep -oE 'WT-[DP][0-9]{8}_[0-9]{3}|WT[0-9]{8}_[0-9]{3}' | head -1 || echo "")
-PROJECT_ROOT="/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+PROJECT_ROOT="${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$(ls -d /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot 2>/dev/null | head -1)}}"
 WT_DIR="$PROJECT_ROOT/qepm/mailbox/worktask/$WT_ID"
 
 # v6.1 R9: Monitoring Agent는 WT ID 없어도 검증 필요 (book-wide 감시)

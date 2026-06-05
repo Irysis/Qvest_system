@@ -1,0 +1,71 @@
+{
+  "cycle": "45D_walkforward",
+  "baseline_v1_3_features": 69,
+  "no_new_features": true,
+  "validation_strategy": "walk_forward_expanding_5_fold_CV",
+  "training_relaxation": {
+    "patience": "8 \u2192 15",
+    "min_delta": "0 \u2192 0.0005",
+    "max_epochs": "50 \u2192 80"
+  },
+  "architecture_unchanged_from_45C": {
+    "lstm": {
+      "hidden": 192,
+      "layers": 3,
+      "dropout": 0.45,
+      "weight_decay": 0.005,
+      "lr": 0.001,
+      "bidirectional": true
+    },
+    "tft": {
+      "d_model": 128,
+      "nhead": 8,
+      "num_layers": 6,
+      "ff_dim": 768,
+      "dropout": 0.45,
+      "attn_dropout": 0.2,
+      "norm_first": true,
+      "weight_decay": 0.005,
+      "lr": 0.001
+    },
+    "common": {
+      "batch_size": 96,
+      "epochs": 80,
+      "early_stop_patience": 15,
+      "early_stop_min_delta": 0.0005,
+      "grad_clip_norm": 1.0,
+      "warmup_steps": 500,
+      "mixed_precision_amp": true,
+      "gpu_mem_fraction": 0.3
+    }
+  },
+  "baseline_45c_oos_y_tail_q15": {
+    "lstm": 0.3957,
+    "tft": 0.3772,
+    "lstm_ep_stop": 13,
+    "tft_ep_stop": 22
+  },
+  "v3d_oos_y_tail_q15": {
+    "lstm": 0.3253,
+    "tft": 0.4508,
+    "lstm_avg_ep": 5,
+    "tft_avg_ep": 10
+  },
+  "v3d_oos_y_onset": {
+    "lstm": 0.1617,
+    "tft": 0.1746,
+    "lstm_avg_ep": 10,
+    "tft_avg_ep": 9
+  },
+  "delta_45c_to_45d_y_tail_q15": {
+    "lstm_pr": -0.0704,
+    "tft_pr": 0.0736,
+    "lstm_ep": -8,
+    "tft_ep": -12
+  },
+  "model_params": {
+    "lstm": 2206337,
+    "tft": 1603713
+  },
+  "per_fold_diagnostics_path": "/mnt/c/Users/User/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/03_models/v3d_walkforward/per_fold_diagnostics.json"
+}

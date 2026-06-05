@@ -478,13 +478,19 @@ compute_quality <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
 
     # --- Q27: CapEx / Revenue (Investment Discipline) ---
     # Lower = more conservative = higher quality (CMA logic)
+    # CapEx proxy: |InvestCF| if direct CapEx column absent
     if ("CapEx" %in% names(fund_wide) && "Revenue" %in% names(fund_wide)) {
       q27 <- fund_wide[!is.na(CapEx) & !is.na(Revenue) & Revenue > 0,
                         .(Ticker, Factor_Name = "Q27_CapEx_to_Rev",
-                          Raw_Value = -(abs(CapEx) / Revenue))]  # negate: lower capex = better
+                          Raw_Value = -(abs(CapEx) / Revenue))]
+      if (nrow(q27) > 0) results[["Q27"]] <- q27
+    } else if ("InvestCF" %in% names(fund_wide) && "Revenue" %in% names(fund_wide)) {
+      # Proxy: |InvestCF| / Revenue (CapEx ≈ |InvestCF| for non-financial firms)
+      q27 <- fund_wide[!is.na(InvestCF) & !is.na(Revenue) & Revenue > 0,
+                        .(Ticker, Factor_Name = "Q27_CapEx_to_Rev",
+                          Raw_Value = -(abs(InvestCF) / Revenue))]
       if (nrow(q27) > 0) results[["Q27"]] <- q27
     }
-    # else: # DATA_NEEDED: CapEx column in FUND
 
     # --- Q28: Cash Conversion = OperatingCF / NetIncome ---
     # Higher = earnings backed by cash = higher quality

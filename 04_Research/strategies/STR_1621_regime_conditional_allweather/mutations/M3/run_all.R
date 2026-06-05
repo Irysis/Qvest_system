@@ -3,7 +3,7 @@ cat("=== STR_1621_M3: Low Beta defense — D01+D44+D18_BAB_Rank ===\n")
 set.seed(1621); options(scipen=999); Sys.setenv(TZ="Asia/Seoul")
 STRATEGY_NAME <- "STR_1621_M3_LowBeta"; STRATEGY_ID <- "STR_1621_M3"
 
-PROJ_ROOT <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+PROJ_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 INFRA_DIR <- file.path(PROJ_ROOT, "02_Infrastructure")
 CACHE_DIR <- file.path(PROJ_ROOT, ".cache")
 STR_DIR   <- file.path(PROJ_ROOT, "04_Research/strategies/STR_1621_regime_conditional_allweather")

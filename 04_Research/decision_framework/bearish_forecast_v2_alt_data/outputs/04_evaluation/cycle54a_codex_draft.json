@@ -1,0 +1,168 @@
+{
+  "cycle": "54A",
+  "phase": "P0.1",
+  "generated_at": "2026-05-21T08:38:00+09:00",
+  "workflow_version": "code-first → codex review → fix → retrain (Codex Critic Round 5-step REPLACED per 도훈 mandate 2026-05-21)",
+  "scope": "v5d sweep code bug fix + 53E v2 0.4747 re-verification",
+  "pre_cycle_audits": {
+    "bear_date_audit": {
+      "status": "PASS",
+      "passed": 4,
+      "failed": 0,
+      "log": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/observability/sanity_checks/bear_date_audit_20260521_082525.json",
+      "covid_assertion": {
+        "ret_h_forward": -0.3405,
+        "ret_h_backward": 0.0182,
+        "fwd_pass": true,
+        "bwd_pass": true
+      }
+    }
+  },
+  "phase1_audit": {
+    "audit_target": "scripts/129_patchtst_q126_sweep.py",
+    "bug_hypothesis": "v5d sweep v1 baseline = v5b q126 reuse (Cycle 53M finding)",
+    "evidence": {
+      "bit_identicality": {
+        "v5b_vs_v5d_v1_correlation": 1.0000000000,
+        "max_abs_diff": 0.0,
+        "distinct_value_count_v5b": 891,
+        "distinct_value_count_v5d_v1": 891,
+        "all_2042_values_match_float64": true
+      },
+      "v5d_v1_trained_freshly": {
+        "elapsed_sec": 880.7,
+        "gpu_peak_mb": 884.8,
+        "per_fold_best_pr": [0.8335, 0.1054, null, 0.1707, 0.0308],
+        "per_fold_best_epoch": [52, 5, null, 18, 28],
+        "n_params": 156865,
+        "avg_best_epoch": 26,
+        "evidence_source": "outputs/03_models/v5d_patchtst_q126_sweep/per_fold_diagnostics.json"
+      },
+      "md5_hashes": {
+        "v5b": "05b3e3ca38c4057cc336b4df30db72a5",
+        "v5d_v1": "2f95f6973d54aa6f09378ee4ff1cff4b",
+        "v5d_v2": "56d42e7a2d029b26e53580a26b6ede8e",
+        "note": "MD5 differs because v5d files have 2 extra columns (variant_id, variant_name) → different parquet metadata. p_patchtst values are bit-identical between v5b and v5d_v1."
+      },
+      "logit_collapse_v5b_v1": {
+        "p_max": 3.674403448172825e-09,
+        "p_p99": 8.066214e-11,
+        "p_p50_median": 7.574435e-18,
+        "logit_median": -39.4,
+        "logit_min": -59.5,
+        "logit_max": -19.4,
+        "p_under_1e-9_count": "2037/2042 (99.75%)"
+      }
+    },
+    "bug_verdict": {
+      "code_copy_or_reuse": false,
+      "fresh_retrain_confirmed": true,
+      "bit_identicality_cause": "deterministic CUDA+seed+AMP convergence to identical collapsed local minimum",
+      "substantive_concern": "v1 baseline PR-AUC=0.3454 is artifactual — ranking metric survives logit collapse, but absolute predictions [1e-26, 4e-9] are unusable for any threshold/weighting/Bayesian update. The +0.1293 'BREAKTHROUGH' framing of 53E v2 vs v1 is methodologically valid as RANKING comparison but the absolute v1 baseline number is misleading."
+    }
+  },
+  "phase2_fix": {
+    "fix_script": "scripts/139_patchtst_q126_sweep_FIXED.py",
+    "filename_note": "User requested 138_patchtst_q126_sweep_FIXED.py but 138 was taken by 138_cycle54b_abs15_reeval.R; chose 139 (closest free integer).",
+    "fix_components": [
+      {
+        "name": "strict_determinism",
+        "details": [
+          "CUBLAS_WORKSPACE_CONFIG=:4096:8 set BEFORE torch import",
+          "torch.backends.cudnn.deterministic=True",
+          "torch.backends.cudnn.benchmark=False",
+          "torch.use_deterministic_algorithms(True, warn_only=True)",
+          "DataLoader generator+worker_init_fn for shuffle reproducibility",
+          "PYTHONHASHSEED=42 (documentary)"
+        ]
+      },
+      {
+        "name": "logit_collapse_detector",
+        "criteria": "p_max < 1e-4 AND logit_median < -15.0 (both must hold)",
+        "unit_test_passed": "5/5 cases (collapsed, healthy, border, v5b-like, mixed)"
+      },
+      {
+        "name": "reseed_rescue",
+        "max_attempts": 4,
+        "seeds_tried": "SEED_BASE, SEED+1, SEED+2, SEED+3",
+        "all_attempts_logged": true,
+        "bias_assessment": "Selection on prediction-distribution collapse (NOT on OOS PR/y) — Codex review: 'acceptable as failure-mode mitigation, NOT label method-shopping'"
+      },
+      {
+        "name": "period_balanced_metrics",
+        "periods": {
+          "S2018-19_calm": "2018-01-01 ~ 2019-12-31",
+          "S2020-21_COVID": "2020-01-01 ~ 2021-12-31",
+          "S2022-24_Stagflation": "2022-01-01 ~ 2024-12-31",
+          "S2025-26_post": "2025-01-01 ~ 2026-04-30"
+        },
+        "min_bears_per_period": 5,
+        "s2025_26_note": "0 bears in 321 rows — entire period bull → insufficient_bear_events; will return NA"
+      },
+      {
+        "name": "provenance_log",
+        "fields": ["git_sha", "torch_version", "cuda_version", "feature_panel_md5", "targets_md5", "cudnn_flags", "AMP", "seed_base", "reseed_max"]
+      },
+      {
+        "name": "per_fold_diagnostics_writer",
+        "added_per_codex_review_required_fix_1": true,
+        "output_path": "outputs/03_models/v5d_FIXED/per_fold_diagnostics.json"
+      },
+      {
+        "name": "unresolved_label_mask",
+        "added_per_codex_review_required_fix_2": true,
+        "mechanism": "y_resolved_mask threaded through prepare_data_full → predict_oos → period_balanced_metrics; OOS PR/IC computed on resolved labels only",
+        "verification": "All 2042 OOS rows have non-NaN y_tail_q126; mask is no-op for our data but FIX provides defense"
+      },
+      {
+        "name": "tie_aware_ic_spearman",
+        "added_per_codex_review_optional_fix_1": true,
+        "mechanism": "pandas Series.rank() instead of argsort-of-argsort"
+      },
+      {
+        "name": "all_collapsed_oos_pr_null",
+        "added_per_codex_review_optional_fix_3": true,
+        "mechanism": "If all 4 attempts collapse → oos_pr=None for leaderboard exclusion (predictions still saved for diagnostic)"
+      }
+    ],
+    "py_compile_check": "PASS",
+    "unit_tests": {
+      "detect_logit_collapse": "5/5 PASS",
+      "preflight_compile": "PASS"
+    }
+  },
+  "phase3_status": "RUNNING",
+  "phase3_launch": {
+    "launched_at": "2026-05-21T08:53:22+09:00 KST",
+    "pid": 1682550,
+    "log": "/tmp/cycle54a_fixed_sweep.log",
+    "gpu_concurrent_load": "Sharing with 140_patchtst_v5e_q126_multiseed.py (PID 1644098)",
+    "runtime_estimate_codex": "1.5-2.5 GPU hours baseline; 3-6 hours worst-case if many variants collapse"
+  },
+  "codex_review_session": {
+    "reviewer": "codex exec 0.128.0",
+    "prompt_path": "/tmp/cycle54a_codex_review_prompt_v2.md",
+    "review_output": "/tmp/codex_review_139_FIXED.md",
+    "review_session_log": "/tmp/codex_review_output_v2.json",
+    "review_workflow_log": "outputs/04_evaluation/cycle54a_code_review_log.md",
+    "findings_summary": {
+      "bug_confirmed": true,
+      "pit_violations": 0,
+      "required_fixes": 2,
+      "optional_improvements": 4,
+      "all_required_fixes_accepted": true
+    }
+  },
+  "next_phase": "Phase 3 sweep completion → 139_v5d_FIXED_aggregate.R → final verdict",
+  "expected_outputs": [
+    "outputs/03_models/v5d_FIXED/predictions_patchtst_v{1..11}_y_tail_q126.parquet",
+    "outputs/03_models/v5d_FIXED/variant_diagnostics.json",
+    "outputs/03_models/v5d_FIXED/per_fold_diagnostics.json",
+    "outputs/03_models/v5d_FIXED/provenance.json",
+    "outputs/04_evaluation/cycle54a_v5d_FIXED_period_analysis.json",
+    "outputs/04_evaluation/cycle54a_v5d_FIXED_aggregate.json",
+    "outputs/04_evaluation/v5d_FIXED_v2_period_analysis.json",
+    "outputs/06_reports/charts/138_v5d_fix_comparison.png"
+  ],
+  "verdict_pending_run_completion": true
+}

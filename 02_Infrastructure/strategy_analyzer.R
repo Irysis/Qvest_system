@@ -31,7 +31,7 @@ if (!exists("rolling_sharpe_cpp")) {
     } else {
       tryCatch(dirname(sys.frame(1)$ofile),
                error = function(e) file.path(
-                 "/mnt/c/Users/User/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot",
+                 Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")),
                  "02_Infrastructure"
                ))
     }
@@ -558,7 +558,7 @@ run_analysis <- function(sim, FACTORS, RAWDATA, BM_DT,
       )
       if (!file.exists(catalog_path)) {
         catalog_path <- file.path(
-          "/mnt/c/Users/User/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot",
+          Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")),
           "04_Research", "grade_a_catalog.json"
         )
       }

@@ -1,0 +1,158 @@
+{
+  "task_id": "WT-D20260529_001",
+  "track": "FLOW",
+  "role": "risk",
+  "as_of_date": "2023-10-31",
+  "codex_round": {
+    "stance": "REJECT",
+    "veto_flag": false,
+    "disposition": "4 ACCEPT(remediated) + 2 PARTIAL + 2 REBUTTAL",
+    "challenge_note": "qepm/mailbox/worktask/WT-D20260529_001/challenge_note_risk.md",
+    "high_severity_count": 4,
+    "escalated_to_qlead": false,
+    "escalation_rationale": "HIGH<5, no Sigma PD violation (all 4 estimators PSD), no PIT hard violation, no portfolio-scope CVaR hard breach"
+  },
+  "pit": {
+    "lockbox_cutoff": "2023-12-22",
+    "covariance_window": "2021-10-01..2023-10-31 (513 trading days, trailing ~2yr ending as_of)",
+    "freshness": "covariance_asof=2023-10-31; all returns Date<=as_of (C2 no same-day circular). Regime split partitions only in-window already-observed returns (no future data, C9/C12 PASS).",
+    "connector": "RAWDATA.parquet daily Ret/BM_Ret (price-derived, label-free)"
+  },
+  "exposure_matrix_ref": "stage_artifacts/WT_D20260529_001_FLOW/exposure_matrix.parquet",
+  "factor_covariance_ref": "stage_artifacts/WT_D20260529_001_FLOW/factor_covariance.parquet",
+  "specific_risk_ref": "stage_artifacts/WT_D20260529_001_FLOW/specific_risk.parquet",
+  "security_covariance_ref": "stage_artifacts/WT_D20260529_001_FLOW/covariance.parquet",
+  "regime_correlation_ref": "stage_artifacts/WT_D20260529_001_FLOW/regime_correlation.parquet",
+  "tail_risk_ref": "qepm/mailbox/worktask/WT-D20260529_001/tail_risk.json",
+  "remediation_ref": "stage_artifacts/WT_D20260529_001_FLOW/risk_remediation.json",
+  "selection_objective": "condition_number",
+  "method_log": {
+    "candidates_tried": 4,
+    "cap": 5,
+    "lw_shrinkage_intensity": 0.4711,
+    "method_log": [
+      {"name": "sample", "condition": 31.48, "psd": true, "selected": false},
+      {"name": "ledoit_wolf", "condition": 6.50, "psd": true, "selected": true},
+      {"name": "gerber_rmt", "condition": 65.25, "psd": true, "selected": false},
+      {"name": "constant_correlation", "condition": 25.67, "psd": true, "selected": false, "rbar": 0.255}
+    ],
+    "selection_rule": "min condition_number among PSD estimators; estimation-quality only (no return/SR ref). All 4 PSD, all cond < 70 << 100 role-threshold.",
+    "dcc_copula_exclusion_justification": "DCC-GARCH over-parameterized for static 20-name as_of handoff (optimizer consumes static Sigma not dynamic path); regime correlation shift measured separately. Parsimony/reproducibility per qvest-risk-style small-sample fallback."
+  },
+  "covariance_structure": {
+    "form": "Ledoit-Wolf shrunk SECURITY covariance (full matrix, annualized x252) — THIS is the optimizer handoff object",
+    "decomposition_note": "B/Omega/D single-factor (market) artifacts are a SEPARATE risk-attribution diagnostic, NOT a reconstruction of the LW Sigma (Frobenius reconstruction err 0.38 by design — LW Sigma is full-rank shrunk, not one-factor). Codex C1 ACCEPT: relabelled.",
+    "estimator_selected": "ledoit_wolf",
+    "condition_number": 6.50,
+    "psd": true,
+    "min_eigenvalue": 0.1046,
+    "n_obs": 513,
+    "p": 20,
+    "shrinkage_used": true,
+    "shrinkage_method": "ledoit_wolf_analytical",
+    "shrinkage_intensity": 0.4711,
+    "factor_attribution_r2_market": 0.230
+  },
+  "factor_specific_share": {
+    "mean_market_factor_var_share": 0.215,
+    "mean_specific_var_share": 0.785,
+    "mkt_var_share_range": [0.08, 0.36],
+    "interpretation": "idiosyncratic-dominated (78.5% specific). Low single-factor coverage (R2 0.23) reported honestly — typical of KR liquid universe; not a model defect. RF-R1 NOT triggered (max single-name share 36% < 40%)."
+  },
+  "risk_summary": {
+    "top_common_risks": ["Market (mean var share 21.5%)", "Momentum-style (holdings MOM beta 0.231, t 3.9)", "Sector_Chemicals (4/20, HHI 0.115)"],
+    "concentration": {
+      "sector_hhi": 0.115, "n_effective_sector": 8.70, "top_sector": "화학(Chemicals) 4/20",
+      "vol_concentration_hhi": 0.053,
+      "combined_book_50_50_hhi": 0.030, "combined_book_n_eff": 33.5, "combined_book_n_union": 39
+    },
+    "crowding_score_per_factor": [
+      {"factor_name": "investor_flow_contrarian_composite", "crowding_score": 0.301, "hhi_top": 0.053, "vol_concentration": 0.053, "passive_overlap_proxy": 0.115, "demand_elasticity_proxy": 0.72, "alert": null},
+      {"factor_name": "INV02_Foreign_NetBuy_60d", "crowding_score": 0.361, "hhi_top": 0.053, "vol_concentration": 0.053, "passive_overlap_proxy": 0.115, "demand_elasticity_proxy": 0.66, "alert": null},
+      {"factor_name": "INV04_Inst_NetBuy_60d", "crowding_score": 0.361, "hhi_top": 0.053, "vol_concentration": 0.053, "passive_overlap_proxy": 0.115, "demand_elasticity_proxy": 0.66, "alert": null},
+      {"factor_name": "INV09_Flow_Persistence", "crowding_score": 0.361, "hhi_top": 0.053, "vol_concentration": 0.053, "passive_overlap_proxy": 0.115, "demand_elasticity_proxy": 0.66, "alert": null},
+      {"factor_name": "INV11_Foreign_Concentration", "crowding_score": 0.361, "hhi_top": 0.053, "vol_concentration": 0.053, "passive_overlap_proxy": 0.115, "demand_elasticity_proxy": 0.66, "alert": null},
+      {"factor_name": "INV07_Retail_Contrarian", "crowding_score": 0.361, "hhi_top": 0.053, "vol_concentration": 0.053, "passive_overlap_proxy": 0.115, "demand_elasticity_proxy": 0.66, "alert": null}
+    ],
+    "crowding_cross_book_vs_PG2": {
+      "pg2_book": "STR_1715_AR_on_M4_R05_overlay_PG2",
+      "pg2_holdings_snapshot": "2023-10-01",
+      "holdings_overlap_names": 1,
+      "holdings_overlap_pct": 0.05,
+      "overlap_ticker": "A010950",
+      "raw_cross_book_return_corr": 0.776,
+      "raw_cross_book_lower_tdc": 0.725,
+      "market_residual_cross_corr": 0.240,
+      "residual_lower_tdc": 0.235,
+      "flow_beta": 1.163,
+      "pg2_beta": 1.132,
+      "interpretation": "Codex C4 ACCEPT. Raw cross-book corr 0.776 / TDC 0.725 are OVERWHELMINGLY shared market beta (both books beta~1.13). After market-residualization: cross-corr 0.240, residual lower-TDC 0.235 (<0.30). Genuine alpha-level diversification benefit confirmed (consistent with signal cor vs 1715 -0.07). 1/20 holdings overlap. L-219 family saturation: NEW settlement-flow axis, no saturation."
+    },
+    "crowding_flags": [],
+    "liquidity_flags": [],
+    "stress_tests_8period": {
+      "Terror_9_11":    {"sleeve": 0.154, "bm": 0.273, "coverage": 0.65, "status": "UNRELIABLE_PARTIAL_COVERAGE"},
+      "GFC":            {"sleeve": -0.242, "bm": -0.380, "coverage": 0.80, "status": "UNRELIABLE_PARTIAL_COVERAGE"},
+      "Euro_Debt":      {"sleeve": -0.176, "bm": -0.131, "coverage": 0.80, "status": "UNRELIABLE_PARTIAL_COVERAGE"},
+      "China_Shock":    {"sleeve": -0.068, "bm": -0.094, "coverage": 0.85, "status": "OK"},
+      "US_China_Trade": {"sleeve": -0.025, "bm": -0.159, "coverage": 0.85, "status": "OK"},
+      "COVID":          {"sleeve": 0.124, "bm": -0.041, "coverage": 0.90, "status": "OK"},
+      "Rate_Hike":      {"sleeve": -0.100, "bm": -0.249, "coverage": 1.00, "status": "OK"},
+      "Iran_War":       {"sleeve": 0.366, "bm": 0.281, "coverage": 0.95, "status": "OK"},
+      "market_down_5_beta_implied": -0.0582,
+      "ew_sleeve_beta": 1.163,
+      "rf_r4_flag": false,
+      "note": "Codex C3 ACCEPT: ran full canonical 8-period suite (was 5, narrow windows). RF-R4 NONE at OK coverage. Draft's COVID -40% was a narrow-window crash-leg artifact; full-window COVID +12.4% vs bm -4.1% (OUTPERFORM +16.5pp). GFC/Euro/Terror coverage<85% UNRELIABLE (partial listing)."
+    },
+    "crisis_hedge_verdict": "CONFIRMED (upgraded from draft PARTIAL). At OK-coverage stress windows the sleeve OUTPERFORMS bm in EVERY drawdown: COVID +12.4% vs -4.1%, Rate_Hike -10.0% vs -24.9%, US_China_Trade -2.5% vs -15.9%, China_Shock -6.8% vs -9.4%. Realized-holdings crisis usefulness corroborates the alpha signal-IC crisis ratio (4.18). AX-001 v2 conditional PASS at BOTH signal and holdings level. Caveat: sleeve beta 1.16 -> NOT beta-defensive; diversification is correlation/timing-based (foreign-flight reversal in slow flow regimes)."
+  },
+  "tail_risk": {
+    "var95_daily": 0.0248, "cvar95_daily": 0.0343, "var99_daily": 0.0390, "cvar99_daily": 0.0456,
+    "cvar95_monthly_sqrt21": 0.1571, "cvar_horizon": "daily (sleeve return); monthly via sqrt-time",
+    "hill_alpha": 3.40,
+    "skewness": -0.368, "excess_kurtosis": 0.77,
+    "lower_tdc_intra_sleeve_mean": 0.279, "lower_tdc_intra_sleeve_max": 0.510, "tdc_threshold": 0.30, "tdc_pass": true,
+    "cvar_scope_note": "Codex C2 PARTIAL. CVaR95 0.0343 is DAILY; normal for ~25% ann-vol KR equity sleeve. The 0.025 cap (if daily) would be infeasible for any KR long-only book incl PG2; binding CVaR constraint is portfolio-level monthly -> OPTIMIZER scope. No infeasibility report at risk-research scope."
+  },
+  "style_exposure": {
+    "model": "EW-top20 sleeve daily ret ~ MKT + SMB + MOM (partial FF5; VALUE/RMW/CMA unavailable in RAWDATA)",
+    "MKT_beta": 1.170, "MKT_t": 37.36, "SMB_beta": 0.036, "SMB_t": 0.67, "MOM_beta": 0.231, "MOM_t": 3.90, "r2": 0.742,
+    "orthogonality_assessment": "SIGNAL-level (alpha-package): cor vs STR_1715 -0.070, cor vs D -0.010 — orthogonal alpha axes, ACCEPTED. HOLDINGS-level: market beta 1.17 + significant MOM tilt (t 3.9). STR_1715 also momentum-loaded -> holdings-level momentum co-exposure despite uncorrelated signals (market-residual cross-corr 0.24 quantifies the residual overlap). Flag for optimizer, NOT alpha defect.",
+    "style_overlap_flag": "MOMENTUM style co-loading between FLOW and STR_1715 -> optimizer monitor combined active momentum exposure (RF-R bound = optimizer scope)."
+  },
+  "regime_correlation": {
+    "crisis_2022plus_mean_pairwise_cor": 0.263, "normal_mean_pairwise_cor": 0.192, "crisis_corr_lift": 0.071,
+    "crisis_n_days": 450, "normal_n_days": 63,
+    "note": "Codex C6 PARTIAL/REBUTTAL: this is a DIAGNOSTIC correlation-regime split (crisis=2022+), NOT a 4-state regime-conditional covariance. 4-state per-regime cov on 513 daily obs -> CRISIS n possibly <30 unstable; pooled fallback per qvest-risk-style. Handoff Sigma is static LW; regime split advisory. Mild +0.07 lift (no co-crash blowup)."
+  },
+  "diagnostics": {
+    "condition_number": 6.50, "shrinkage_used": true, "shrinkage_method": "ledoit_wolf",
+    "factor_correlation_warnings": [], "high_corr_pairs_gt_0.8": 0,
+    "tdc_summary": {"intra_sleeve_lower_tdc_mean": 0.279, "cross_book_residual_lower_tdc": 0.235}
+  },
+  "red_flags": [],
+  "red_flag_assessment": {
+    "RF-R1_top_risk_gt_40pct": "PASS (mean market var share 21.5%, max single-name 36%)",
+    "RF-R2_cond_gt_500": "PASS (6.50; also < stricter 100 threshold)",
+    "RF-R3_crowding": "PASS (no factor crowding_score >= 0.75; cross-book residual diversification confirmed)",
+    "RF-R4_stress_loss_gt_25pct": "PASS (none at OK coverage; full 8-period suite)",
+    "RF-R5_high_corr_pairs": "PASS (0 intra-sleeve pairs cor>0.8)"
+  },
+  "ax_compliance": {
+    "AX-007": "multi-sleeve framing — FLOW is 4th sleeve combined with STR_1715+D; single-sleeve top20 metric-break exception (multi-sleeve) applies.",
+    "AX-001_v2": "PASS at both signal-IC (crisis/normal ratio 4.18) and realized-holdings (8-period stress outperformance) levels. Conditional evaluation, not full-period SR.",
+    "AX-002": "all returns PIT (Date<=as_of); no look-ahead; daily Ret label-free; Sigma label corrected for honesty (C1)."
+  },
+  "challenge_flags": [
+    "STYLE_OVERLAP (optimizer scope): FLOW & STR_1715 share MOMENTUM holdings-level tilt (market-residual cross-corr 0.24); monitor combined active momentum.",
+    "CVaR_SCOPE: daily CVaR95 0.0343 normal for KR equity; portfolio-level monthly CVaR cap binds at optimizer.",
+    "TDC_MARGINAL: intra-sleeve mean lower-TDC 0.279 just under 0.30; max pairwise 0.510 (co-crash cluster).",
+    "STRESS_COVERAGE: GFC/Euro_Debt/Terror UNRELIABLE (<85% listing) — partial-listing artifact, not hard-fail."
+  ],
+  "selection_objective_audit": "Estimator chosen by condition_number only (R4 P3 HARD). No SR/IR/return reference in Sigma method selection.",
+  "handoff_to_optimizer": {
+    "covariance": "stage_artifacts/WT_D20260529_001_FLOW/covariance.parquet (LW 20x20 annualized, PSD, cond 6.50)",
+    "recommended_constraints_advisory": ["monitor combined-book momentum active exposure", "portfolio-level monthly CVaR cap (optimizer sets bound)", "sleeve beta 1.16 -> account for non-defensive in regime weighting"],
+    "note": "Weights are OPTIMIZER scope (risk-research produces NO weights). Advisory only."
+  }
+}

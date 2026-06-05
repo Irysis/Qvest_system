@@ -13,7 +13,7 @@ suppressPackageStartupMessages({
   library(jsonlite)
 })
 
-PROJECT_ROOT <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+PROJECT_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 DAILY_DB_DIR <- file.path(PROJECT_ROOT, ".cache/factor_db_daily")
 OUTPUT_DIR   <- file.path(PROJECT_ROOT, "04_Research/ml_logistic_output")
 dir.create(OUTPUT_DIR, showWarnings = FALSE, recursive = TRUE)

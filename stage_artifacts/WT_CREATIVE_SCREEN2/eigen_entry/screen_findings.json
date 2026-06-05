@@ -1,0 +1,58 @@
+{
+  "screen": "EIGEN-ENTRY",
+  "run_date": "2026-05-30",
+  "idea": "일간 종목수익률 rolling(60d) 상관행렬의 λ1-share(1st-eigenmode 집중도 = Absorption Ratio k=1)의 진입/이탈을 long-only market-timing(노출 타이밍) 신호로. return_cor 0.78 1st-eigenmode 벽을 회피 대신 market-level 타이밍 alpha로 역활용. CROWD(REJECT, 종목 음tilt)와 구분되는 market-level timing 신호.",
+  "test_type": "event-study (4 canonical bear date 직전 λ1-share spike lead-time) + RE_MRS 통제 incremental regression (fwd_21d ~ mrs_z + l1_z). 타이밍 신호이므로 rank-IC 아님. SCREEN(advisory), tradeable 아님.",
+  "screen_only": true,
+  "tradeable": false,
+  "data_feasible": true,
+  "pit_notes": {
+    "feature": "λ1-share = max(λ)/Σλ of cross-sectional Pearson corr of daily Ret over trailing 60 trading days, end_date <= t (C2 same-day circular 회피; 실배포 시 decision은 t-1 lag). expanding z-score(과거값만, warmup 60obs).",
+    "label": "forward 21d BM return r(t,t+21)=BM[t+21]/BM[t]-1, shift(n=H,type='lead') CORRECT convention.",
+    "universe": "KOSPI200 ∪ KOSDAQ150 (rawdata K200==1 | KQ150==1, PIT index flags). universe-filter 후 2.36M rows / 8947 trading days.",
+    "lockbox": "event-study anchor 4 bear dates(2008/2011/2020/2022) 모두 < 2023-12-22 lockbox. 회귀표본도 전부 lockbox 이전. read-only diagnostic.",
+    "C14_C15": "rawdata returns로 corr 직접 산출(diagnostic). load_month_factors 경유는 정식 alpha 단계 적용."
+  },
+  "re_mrs_control_source": ".cache/regime_daily_v2.parquet column MRS (daily 2000-01-01~2026-04-22), expanding z(mrs_z)로 통제.",
+  "inputs": {
+    "rawdata": ".cache/rawdata.parquet (13.95M rows; K200|KQ150 -> 2.36M rows)",
+    "benchmark": ".cache/benchmark.parquet (2026-05-29, forward-21d label)",
+    "reuse": "02_Infrastructure/regime/regime_absorption_ratio.R 로직 차용(Kritzman-Li-Page-Rigobon 2010), k=15→k=1(λ1-share)."
+  },
+  "grid": "coarse 5-trading-day from 2007 + dense daily in [-100d,+40d] around each bear date. n_ar_days(valid)=1265.",
+  "lambda1_share_distribution": {"mean": 0.247, "sd": 0.108, "range": [0.060, 0.612]},
+  "event_study_ACTUAL": {
+    "spike_def": "first day with expanding l1_z >= 1.0 within 90-calendar-day pre-window; lead_days = bear - first_cross. NA = window 내 z>=1 진입 없음.",
+    "Lehman_2008_09_15":   {"l1_at_bear": 0.314, "l1z_at_bear": 1.00, "mrsz_at_bear": 1.40, "lead_days_z1": null, "note": "at-bear z=1.00이나 90d window 내 z>=1 지속 진입 없음(직전에만 도달). RE_MRS(1.40)가 오히려 더 높음."},
+    "Euro_2011_08_08":     {"l1_at_bear": 0.267, "l1z_at_bear": 0.20, "mrsz_at_bear": -0.32, "lead_days_z1": null, "note": "선행 없음(z=0.20, 평균 수준). RE_MRS도 음."},
+    "COVID_2020_02_19":    {"l1_at_bear": 0.310, "l1z_at_bear": 0.99, "mrsz_at_bear": -0.56, "lead_days_z1": 13, "note": "13일 선행은 있으나 z=0.99로 임계 직전 수준. RE_MRS는 음(-0.56)이라 λ1이 RE_MRS 대비 약한 신호 제공."},
+    "Stagflation_2022_09_26": {"l1_at_bear": 0.363, "l1z_at_bear": 1.11, "mrsz_at_bear": 1.02, "lead_days_z1": 90, "note": "90d 선행(window 전체 elevated). 단 RE_MRS(1.02)와 동행 — 직교적 추가정보 약함."}
+  },
+  "incremental_regression_ACTUAL": {
+    "model": "fwd_21d ~ mrs_z + l1_z (pooled over time, n=1200)",
+    "mrs_z_univ": {"coef": -0.00110, "t": -0.56, "R2": 0.0003},
+    "l1_z_univ":  {"coef":  0.00184, "t":  0.92, "R2": 0.0007},
+    "both_mrs_z": {"coef": -0.00414, "t": -1.58},
+    "both_l1_z":  {"coef":  0.00468, "t":  1.74, "label": "incremental over RE_MRS"},
+    "deltaR2_l1_over_mrs": 0.0025,
+    "R2_mrs_only": 0.0003,
+    "R2_both": 0.0028,
+    "cor_l1_mrs": 0.667,
+    "sign": "POSITIVE (집중↑ -> forward 21d return↑) — risk/timing 신호로 기대되는 음 부호와 반대. 경제적으로 문제.",
+    "interpretation": "incremental t=1.74(부호 양, 기대 반대) / ΔR²=0.25%(무의미) / RE_MRS와 cor=0.667(높음, 직교 아님). RE_MRS 초과정보 사실상 부재 + 부호가 timing 의도와 반대."
+  },
+  "residual_l1_given_mrs_at_bear_ACTUAL": {
+    "Lehman": 0.12, "Euro": 0.45, "COVID": 1.40, "Stagflation": 0.48,
+    "note": "RE_MRS 통제 잔차는 COVID(1.40)에서만 elevated, slow bear(Lehman 0.12 / Euro 0.45)에서는 낮음. event-study와 비일관 — 신호 안정성 결여."
+  },
+  "verdict": "NO-GO (정식 full-research 추천 안 함). 폐기 수준은 아니나(데이터·메커니즘은 살아 있음) 현 cheap spec에서 합격선 미달.",
+  "go_no_go_rationale": "NO-GO 근거(우세): (1) RE_MRS 통제 후 incremental t=1.74로 임계(|t|>=2) 미달 + ΔR²=0.25%로 무의미. (2) 부호가 POSITIVE(집중↑→forward return↑)로 risk/timing 신호 기대와 반대 — 메커니즘 일관성 결여. (3) λ1·RE_MRS cor=0.667로 높음 → 직교 추가정보 약함('RE_MRS 초과정보' 전제 불충족). (4) event-study 선행성 4 bear에 비일관(Lehman NA·Euro NA·COVID 13d·Stagflation 90d)이고 spike한 2건(Lehman/Stagflation)은 RE_MRS와 동행. (5) 잔차 elevation도 event와 비일관(COVID만 높음). 잔존 GO 여지(약): λ1 분포 변동성은 충분(mean 0.247 sd 0.108)하고 일부 bear에서 elevation은 존재 → 신호 자체가 죽은 것은 아님. 단 본 screen의 1차 합격선(직교 t>=2 + 올바른 부호 + 선행 다수)은 명확히 불통과.",
+  "caveats_measurement": [
+    "pooled-OLS forward-21d 중첩 → Newey-West HAC 미적용(t 다소 낙관 가능). 그럼에도 t=1.74로 이미 미달이라 결론 robust(HAC 적용 시 더 약해질 뿐).",
+    "spike threshold(z>=1.0)/window(90d) 단일 cheap 설정 — 강건성 sweep 미수행.",
+    "coarse 5d + dense ±100d 혼합 그리드. 전기간 dense daily(2000+) 재산출 시 정밀도 향상 가능하나 본 결론(부호·직교성)은 spec 변경으로 뒤집힐 가능성 낮음.",
+    "lookback 60d 고정. lookback(21/126d) 민감도 미검증."
+  ],
+  "recommendation": "정식 canonical/forge 추천 안 함(NO). 폐기도 단정 안 함 — 재시도 시 다음 변경 후에만 재screen 권고: (a) entry/exit를 λ1 level이 아닌 Δλ1(변화율/가속)로 재정의(level은 RE_MRS와 0.667 중복), (b) 부호 음(-) 확보 여부 우선 확인, (c) HAC t로 직교 incremental t>=2 + 4 bear 중 선행 >=3 동시 충족 시에만 alpha-research 진입. 현 spec은 미달이므로 백테/admission/full-package 금지(Cycle2 교훈: screen advisory, tradeable 단정 금지).",
+  "correction_note": "본 JSON은 정정본. 직전 작성본은 RE_MRS merge 버그(컬럼명 오류) 시점 placeholder 수치였음. 본 수치는 모두 .cache/eigen_entry_screen.R 실제 실행(EXIT=0, .cache/eigen_entry_run.log) 산출."
+}

@@ -6,7 +6,7 @@
 # 4096자 제한 자동 분할. curl은 () & 서브쉘로 critical path 영향 0.
 
 if [ -z "${DIR:-}" ]; then
-  DIR=$(ls -d /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo "$PWD")
+  DIR=$(ls -d /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo "$PWD")
 fi
 if [ -f "$DIR/.env" ]; then
   set -a; source "$DIR/.env" 2>/dev/null; set +a

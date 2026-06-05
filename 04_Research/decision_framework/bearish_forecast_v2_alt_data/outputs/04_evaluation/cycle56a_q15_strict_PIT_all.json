@@ -1,0 +1,309 @@
+{
+  "cycle": "56A_strict_PIT_all_q15",
+  "target": "y_tail_q15",
+  "target_horizon_days": 21,
+  "generated_at": "2026-05-21T14:22:05+0900",
+  "n_cycles": 5,
+  "seeds": [42, 123, 456, 789, 1024],
+  "pit_fixes": {
+    "bug_1_purged_kfold_cv": "np.busday_offset(dates, 21, roll='forward') < valid_start",
+    "bug_2_y_valid_mask": "ret_q15.notna() — train/valid/OOS exclude unresolved",
+    "M6_phantom0_guard": "target_path = targets_long_horizon_observable.parquet (Cycle 54D Phase 4)",
+    "M7_pub_lag_acknowledged": "CFNAI ~22d / ICSA ~5d in v5e/v4a/v5f panels inherited — q15 horizon (21d forward) impact est. < 0.005 PR-AUC (55B Codex)",
+    "reference_master": "scripts/167b_patchtst_strict_PIT_q15_template.py (adapted from 157)"
+  },
+  "leaderboard": [
+    {
+      "cycle": "53H_v5e",
+      "n_feat": 74,
+      "hparams": "patch=4 d=64 nhead=4 nlayer=3",
+      "n_seeds_used": 5,
+      "n_obs": 2039,
+      "n_bears": 365,
+      "per_seed_pr_mean": 0.2238,
+      "per_seed_pr_std": 0.0289,
+      "per_seed_pr_min": 0.194,
+      "per_seed_pr_max": 0.2582,
+      "mean5_pr_auc": 0.248,
+      "mean5_ic": 0.1253,
+      "bootstrap_lo": 0.2131,
+      "bootstrap_hi": 0.285,
+      "euroafter_lift": 1.03,
+      "covid_lift": 2.1,
+      "recent_lift": 1.28,
+      "lift_3of3": 3
+    },
+    {
+      "cycle": "53I_v5f",
+      "n_feat": 79,
+      "hparams": "patch=4 d=64 nhead=4 nlayer=3",
+      "n_seeds_used": 5,
+      "n_obs": 2039,
+      "n_bears": 365,
+      "per_seed_pr_mean": 0.2227,
+      "per_seed_pr_std": 0.0224,
+      "per_seed_pr_min": 0.1832,
+      "per_seed_pr_max": 0.2383,
+      "mean5_pr_auc": 0.2356,
+      "mean5_ic": 0.1153,
+      "bootstrap_lo": 0.2025,
+      "bootstrap_hi": 0.2749,
+      "euroafter_lift": 1.08,
+      "covid_lift": 1.49,
+      "recent_lift": 1.49,
+      "lift_3of3": 3
+    },
+    {
+      "cycle": "53B_v5b",
+      "n_feat": 70,
+      "hparams": "patch=4 d=64 nhead=4 nlayer=3",
+      "n_seeds_used": 5,
+      "n_obs": 2039,
+      "n_bears": 365,
+      "per_seed_pr_mean": 0.2233,
+      "per_seed_pr_std": 0.0302,
+      "per_seed_pr_min": 0.1783,
+      "per_seed_pr_max": 0.255,
+      "mean5_pr_auc": 0.2295,
+      "mean5_ic": 0.1145,
+      "bootstrap_lo": 0.1972,
+      "bootstrap_hi": 0.2604,
+      "euroafter_lift": 1.18,
+      "covid_lift": 1.65,
+      "recent_lift": 1.35,
+      "lift_3of3": 3
+    },
+    {
+      "cycle": "54A_v3_patch7",
+      "n_feat": 70,
+      "hparams": "patch=7 d=64 nhead=4 nlayer=3 stride=2",
+      "n_seeds_used": 5,
+      "n_obs": 2039,
+      "n_bears": 365,
+      "per_seed_pr_mean": 0.2104,
+      "per_seed_pr_std": 0.0338,
+      "per_seed_pr_min": 0.1591,
+      "per_seed_pr_max": 0.247,
+      "mean5_pr_auc": 0.1924,
+      "mean5_ic": 0.0363,
+      "bootstrap_lo": 0.1679,
+      "bootstrap_hi": 0.2216,
+      "euroafter_lift": 0.88,
+      "covid_lift": 1.85,
+      "recent_lift": 1.08,
+      "lift_3of3": 2
+    },
+    {
+      "cycle": "54A_v4_dm32",
+      "n_feat": 70,
+      "hparams": "patch=4 d=32 nhead=4 nlayer=3 stride=2",
+      "n_seeds_used": 5,
+      "n_obs": 2039,
+      "n_bears": 365,
+      "per_seed_pr_mean": 0.2012,
+      "per_seed_pr_std": 0.0498,
+      "per_seed_pr_min": 0.1648,
+      "per_seed_pr_max": 0.2847,
+      "mean5_pr_auc": 0.1882,
+      "mean5_ic": 0.044,
+      "bootstrap_lo": 0.1651,
+      "bootstrap_hi": 0.2126,
+      "euroafter_lift": 1.3,
+      "covid_lift": 0.98,
+      "recent_lift": 1.28,
+      "lift_3of3": 2
+    }
+  ],
+  "baseline_55a_q126_top_mean5": 0.5473,
+  "baseline_54e_new_5seed_q15_range": {
+    "min": 0.1874,
+    "max": 0.2568
+  },
+  "per_cycle_detail": [
+    {
+      "cycle": "53B_v5b",
+      "mean5_pr_auc": 0.2295,
+      "mean5_ic": 0.1145,
+      "bootstrap_95ci": [0.2292, 0.1972, 0.2604],
+      "per_seed_pr_mean": 0.2233,
+      "per_seed_pr_std": 0.0302,
+      "per_seed_pr_min": 0.1783,
+      "per_seed_pr_max": 0.255,
+      "period_balanced": {
+        "per1": {
+          "period": "EuroAfter_2018_2019",
+          "n": 490,
+          "n_bear": 133,
+          "pr_auc": 0.3204,
+          "base_rate": 0.2714,
+          "lift_vs_base": 1.1806
+        },
+        "per2": {
+          "period": "Covid_2020_2021",
+          "n": 496,
+          "n_bear": 77,
+          "pr_auc": 0.2565,
+          "base_rate": 0.1552,
+          "lift_vs_base": 1.6525
+        },
+        "per3": {
+          "period": "Recent_2022_2026",
+          "n": 1053,
+          "n_bear": 155,
+          "pr_auc": 0.1986,
+          "base_rate": 0.1472,
+          "lift_vs_base": 1.3491
+        },
+        "lift_3of3": 3
+      }
+    },
+    {
+      "cycle": "53H_v5e",
+      "mean5_pr_auc": 0.248,
+      "mean5_ic": 0.1253,
+      "bootstrap_95ci": [0.2477, 0.2131, 0.285],
+      "per_seed_pr_mean": 0.2238,
+      "per_seed_pr_std": 0.0289,
+      "per_seed_pr_min": 0.194,
+      "per_seed_pr_max": 0.2582,
+      "period_balanced": {
+        "per1": {
+          "period": "EuroAfter_2018_2019",
+          "n": 490,
+          "n_bear": 133,
+          "pr_auc": 0.2801,
+          "base_rate": 0.2714,
+          "lift_vs_base": 1.0318
+        },
+        "per2": {
+          "period": "Covid_2020_2021",
+          "n": 496,
+          "n_bear": 77,
+          "pr_auc": 0.3257,
+          "base_rate": 0.1552,
+          "lift_vs_base": 2.0979
+        },
+        "per3": {
+          "period": "Recent_2022_2026",
+          "n": 1053,
+          "n_bear": 155,
+          "pr_auc": 0.188,
+          "base_rate": 0.1472,
+          "lift_vs_base": 1.2772
+        },
+        "lift_3of3": 3
+      }
+    },
+    {
+      "cycle": "53I_v5f",
+      "mean5_pr_auc": 0.2356,
+      "mean5_ic": 0.1153,
+      "bootstrap_95ci": [0.2374, 0.2025, 0.2749],
+      "per_seed_pr_mean": 0.2227,
+      "per_seed_pr_std": 0.0224,
+      "per_seed_pr_min": 0.1832,
+      "per_seed_pr_max": 0.2383,
+      "period_balanced": {
+        "per1": {
+          "period": "EuroAfter_2018_2019",
+          "n": 490,
+          "n_bear": 133,
+          "pr_auc": 0.2937,
+          "base_rate": 0.2714,
+          "lift_vs_base": 1.082
+        },
+        "per2": {
+          "period": "Covid_2020_2021",
+          "n": 496,
+          "n_bear": 77,
+          "pr_auc": 0.2316,
+          "base_rate": 0.1552,
+          "lift_vs_base": 1.4919
+        },
+        "per3": {
+          "period": "Recent_2022_2026",
+          "n": 1053,
+          "n_bear": 155,
+          "pr_auc": 0.2197,
+          "base_rate": 0.1472,
+          "lift_vs_base": 1.4929
+        },
+        "lift_3of3": 3
+      }
+    },
+    {
+      "cycle": "54A_v3_patch7",
+      "mean5_pr_auc": 0.1924,
+      "mean5_ic": 0.0363,
+      "bootstrap_95ci": [0.193, 0.1679, 0.2216],
+      "per_seed_pr_mean": 0.2104,
+      "per_seed_pr_std": 0.0338,
+      "per_seed_pr_min": 0.1591,
+      "per_seed_pr_max": 0.247,
+      "period_balanced": {
+        "per1": {
+          "period": "EuroAfter_2018_2019",
+          "n": 490,
+          "n_bear": 133,
+          "pr_auc": 0.2387,
+          "base_rate": 0.2714,
+          "lift_vs_base": 0.8795
+        },
+        "per2": {
+          "period": "Covid_2020_2021",
+          "n": 496,
+          "n_bear": 77,
+          "pr_auc": 0.2865,
+          "base_rate": 0.1552,
+          "lift_vs_base": 1.8456
+        },
+        "per3": {
+          "period": "Recent_2022_2026",
+          "n": 1053,
+          "n_bear": 155,
+          "pr_auc": 0.1583,
+          "base_rate": 0.1472,
+          "lift_vs_base": 1.0754
+        },
+        "lift_3of3": 2
+      }
+    },
+    {
+      "cycle": "54A_v4_dm32",
+      "mean5_pr_auc": 0.1882,
+      "mean5_ic": 0.044,
+      "bootstrap_95ci": [0.1889, 0.1651, 0.2126],
+      "per_seed_pr_mean": 0.2012,
+      "per_seed_pr_std": 0.0498,
+      "per_seed_pr_min": 0.1648,
+      "per_seed_pr_max": 0.2847,
+      "period_balanced": {
+        "per1": {
+          "period": "EuroAfter_2018_2019",
+          "n": 490,
+          "n_bear": 133,
+          "pr_auc": 0.3521,
+          "base_rate": 0.2714,
+          "lift_vs_base": 1.2971
+        },
+        "per2": {
+          "period": "Covid_2020_2021",
+          "n": 496,
+          "n_bear": 77,
+          "pr_auc": 0.1519,
+          "base_rate": 0.1552,
+          "lift_vs_base": 0.9783
+        },
+        "per3": {
+          "period": "Recent_2022_2026",
+          "n": 1053,
+          "n_bear": 155,
+          "pr_auc": 0.189,
+          "base_rate": 0.1472,
+          "lift_vs_base": 1.2842
+        },
+        "lift_3of3": 2
+      }
+    }
+  ]
+}

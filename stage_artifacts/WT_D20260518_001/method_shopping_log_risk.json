@@ -1,0 +1,55 @@
+{
+  "task_id": "WT-D20260518_001",
+  "agent": "risk-research",
+  "as_of_date": "2026-05-19",
+  "selection_objective": "condition_number",
+  "candidates_tried": 5,
+  "upper_bound": 5,
+  "method_log": [
+    {
+      "name": "sample",
+      "condition_number": 1030475.72,
+      "min_eigenvalue": 0.0012,
+      "psd": true,
+      "selected": false,
+      "reason": "baseline reference, no shrinkage"
+    },
+    {
+      "name": "ledoit_wolf_constcor",
+      "condition_number": 767713.16,
+      "min_eigenvalue": 0.0016,
+      "shrinkage_delta": 0.655,
+      "psd": true,
+      "selected": false,
+      "reason": "Ledoit-Wolf 2004 constant correlation target, default shrinkage"
+    },
+    {
+      "name": "gerber_rmt",
+      "condition_number": 842832.89,
+      "min_eigenvalue": 0.0012,
+      "threshold": 0.5,
+      "q_ratio": 23.23,
+      "psd": true,
+      "selected": false,
+      "reason": "Gerber-Hurst-Konev 2022 robust correlation + Marchenko-Pastur RMT denoise"
+    },
+    {
+      "name": "ledoit_wolf_constcor_ridge_lambda_005",
+      "condition_number": 207.02,
+      "min_eigenvalue": 10.43,
+      "psd": true,
+      "selected": false,
+      "reason": "First-pass ridge for cond <500 (RF-R2). Codex C1 raised concern that role prompt mandates <=100."
+    },
+    {
+      "name": "ledoit_wolf_constcor_ridge_lambda_0.10",
+      "condition_number": 91.1,
+      "min_eigenvalue": 20.8633,
+      "psd": true,
+      "selected": true,
+      "reason": "Post-Codex C1 disposition — raised ridge to λ=0.10 to satisfy <=100 cond mandate"
+    }
+  ],
+  "dedup_applied": true,
+  "dedup_note": "Duplicate entries from run_risk_codex_resolution.R re-append removed. Unique: sample, ledoit_wolf_constcor, gerber_rmt, ledoit_wolf_constcor_ridge_lambda_005, ledoit_wolf_constcor_ridge_lambda_0.10 (SELECTED). 5 candidates within upper_bound."
+}

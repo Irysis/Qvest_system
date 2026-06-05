@@ -1,0 +1,328 @@
+{
+  "task_id": "WT-D20260527_001",
+  "agent": "judge",
+  "agent_model": "opus-4.7",
+  "wt_type": "discovery",
+  "strategy_id": "STR_1719_WT001_DCA_v7",
+  "run_id": "WT-D20260527_001_STR_1719_WT001_DCA_v7_20260527_200058",
+  "judge_role": "Gate 0-18 cascade verdict + L-code + Codex Critic Round complete",
+  "version": "final_post_codex_critic",
+  "input_packages": {
+    "alpha_package_sha256": "8576dd4e4ffcc8be128345fbd57d4ec81e9e90f04cb7a3e1010f53942acde8d7",
+    "risk_package_sha256": "4b8c9b6bdf5ba3ec10be1a85e2efd2a27eadada41cedf9259f0dc987628581c9",
+    "optimization_package_sha256": "45e63fda7cbc19d316b3af24b7465834a4c169cf0570892d7a06e3e096517ab6",
+    "weights_csv_sha256": "372e13816fe61d717a6e03bbcea0f445030c0d5ca0c36e4c836ccf2c07a31f7b",
+    "bt_result_sha256": "107f6a1a6cd0e01460d4bb4c23e3248f4e530710c5ddbb8923497f9c32b9e395"
+  },
+  "lockbox_date_normalization": {
+    "candidates_identified": {
+      "alpha_signal_cutoff": "2023-12-31",
+      "weights_csv_last_sig_date": "2023-12-28",
+      "alpha_window_isolation_lockbox_start": "2024-01-01",
+      "judge_lockbox_audit_start": "2024-01-02",
+      "qepm_codex_base_context_default": "2024-01-23",
+      "forge_bt_end_date": "2024-01-30"
+    },
+    "canonical_windows": {
+      "pre_lb_hurdle_measurement_window": {
+        "start": "2016-01-04",
+        "end": "2024-01-30",
+        "n_trading_days": 1986,
+        "n_years": 8.07,
+        "policy_basis": "Forge bt_result.rds OFFICIAL backtest window. Hurdle Gate per qepm_codex_base_context.md line 41 applies to this window.",
+        "role": "OFFICIAL_HURDLE_WINDOW"
+      },
+      "judge_lockbox_forward_measurement_window": {
+        "start": "2024-01-02",
+        "end": "2026-04-30",
+        "n_trading_days": 566,
+        "policy_basis": "Judge harness v6.1 frozen weights buy-and-hold. Forward validation only.",
+        "role": "POST_HOC_FORWARD_VALIDATION"
+      },
+      "strategy_signal_cutoff": {
+        "date": "2023-12-28",
+        "policy_basis": "weights.csv last sig_date. Alpha/risk/optimizer signal generation terminates here. Lockbox 2024-01-01+ never accessed during alpha/risk/opt computation per PIT.",
+        "role": "PIT_SIGNAL_CUTOFF"
+      }
+    },
+    "overlap_zone_explanation": "The 21 trading days 2024-01-02 to 2024-01-30 are BOTH within Forge bt window and within Judge Lockbox window. Forge uses MTM rebalanced last sig_date 2023-12-28 weights through 2024-01-30 (legitimate per lockbox-scope.md forge=폐기). Judge Lockbox uses frozen weights buy-and-hold methodology starting same date. Different measurement methodologies, same period."
+  },
+  "scenario_rule_audit": {
+    "wt_type_per_request_json": "discovery",
+    "discovery_of": null,
+    "scenario_classification": "discovery_only",
+    "is_replacement": false,
+    "is_sequential_admission": false,
+    "is_integration_blender": false,
+    "STR_1715_baseline_comparison_role": "comparative_reference_for_context_NOT_sequential_admission_TDC_threshold",
+    "TDC_misapplication_risk": false,
+    "judge_note": "Judge's Gate 18 STR_1715 baseline comparison is informational only, providing same-period reference for the wrongness magnitude of STR_1719 performance. NOT a Sequential Admission TDC application."
+  },
+  "evaluation_axes": {
+    "primary": "Pre-LB walk-forward backtest (2016-01-04 to 2024-01-30, 8.07 years, 1986 trading days, 97 sig_dates)",
+    "secondary_lockbox_audit": "Frozen weights buy-and-hold (2024-01-02 to 2026-04-30, 566 trading days, Judge harness v6.1)",
+    "policy_basis": "Hurdle Gate per qepm_codex_base_context.md line 41 + Charter v1.7 + AX-001 v2 + AX-008"
+  },
+  "gate_cascade": {
+    "Gate_0_PIT_C1_C15": {
+      "status": "PASS",
+      "details": "C1/C2/C4/C6/C9/C10/C11/C13/C14/C15 all PASS. C7 lookahead_detector self-scan WARN (function naming mismatch, not strategy defect)."
+    },
+    "Gate_1_AX_axiom_compliance": {
+      "AX_000_immutable": "ACKNOWLEDGED",
+      "AX_001_v2_defensive_conditional": "N/A (DCA is 4-family composite, not standalone defensive sleeve; Forge concurs; alpha self-classified MITIGATED via multi-axis composite)",
+      "AX_002_process_honesty": {
+        "status": "PASS",
+        "evidence": "Forge explicit HARD_HURDLE_FAIL_FORGE flag (not silent override). 4 codex critic responses + 4 challenge_notes documented. AUTO_SELF_REBUT decisions valid per Decision Protocol thresholds."
+      },
+      "AX_003_KR_value_EP_standalone": "N/A (DCA uses Value as 1-of-4 composite, not EP_STANDALONE)",
+      "AX_004_KR_quality_profitability_single": "MITIGATED (Q-stable 6-proxy composite + multi-axis per AX-004 EXCLUSION)",
+      "AX_005_v1_2_KR_defense_top20": {
+        "status": "ALPHA_LEVEL_MITIGATED_BUT_REALIZED_INSUFFICIENT",
+        "evidence": "Alpha self-declares MITIGATED. Realized portfolio (M06_MVO_Breadth 15 names) realized SR 0.35 / MDD 59.7% does NOT empirically demonstrate KR defense saturation breaking sufficient for hurdle clearance."
+      },
+      "AX_007_single_sleeve_top20": {
+        "status": "FAIL_LITERAL_15_NAMES_BELOW_50_PLUS_EXCEPTION",
+        "literal_reading": "Per AX-007 EXCLUSION 4종 (multi-sleeve / long-short / 50+ 분산 / ML sizing), 15 names < 50+ threshold. Literal reading: FAIL.",
+        "interpretive_reading": "4-family composite tilt with breadth constraint (M06 HHI 0.088) can be interpreted as multi-axis composite mechanism (closest to multi-sleeve spirit but not literal multi-sleeve structure).",
+        "judge_classification": "FAIL per strict literal reading. Even interpretive PASS cannot rescue from MDD hurdle FAIL.",
+        "codex_critic_C4_resolution": "PARTIAL accept — changed from 'MARGINAL' to 'FAIL_LITERAL_15_NAMES_BELOW_50_PLUS_EXCEPTION'"
+      },
+      "AX_008_triangulation": {
+        "status": "PASS_REJECT_VERDICT_2_OF_3_AGREE_ON_REJECTION",
+        "evidence": "On the REJECT verdict: Forge HARD_HURDLE_FAIL_FORGE + Codex APPROVE_CONDITIONAL (REJECT verdict approved) = 2/3 sources concur. Architect not invoked.",
+        "admission_decision_verification": "AX-008 PASS on REJECT verdict — admission decision verified by 2/3 triangulation."
+      }
+    },
+    "Gate_2_Selection_Test_Isolation": {
+      "status": "PASS",
+      "lockbox_access_count_non_judge": 0,
+      "evidence": "alpha_signal_cutoff=2023-12-31, weights.csv last sig_date=2023-12-28, optimizer signal cutoff=2023-12-28. Lockbox 2024-01-01+ never accessed during alpha/risk/optimizer computation. Forge bt extends to 2024-01-30 for 1-month MTM (legitimate per lockbox-scope.md). Judge harness Lockbox audit performed post-hoc per v6.1 exception."
+    },
+    "Gate_3_Net_Alpha_vs_Cost": {
+      "alpha_level_PASS": {
+        "rank_ic": 0.0561,
+        "icir": 0.3977,
+        "harvey_t_pooled": 4.413,
+        "harvey_t_per_spec_passing": "4 of 5"
+      },
+      "optimizer_level_MARGINAL": {
+        "expected_net_IR_M06": 0.0709,
+        "RF_O2_alpha_2x_cost_ratio": 3.53,
+        "judge_observation": "net_IR 0.071 economically marginal for deployment vs passive BM"
+      },
+      "realized_level_WEAK": {
+        "sharpe_pre_lb": 0.3467,
+        "information_ratio": 0.1772,
+        "alpha_annual_pct": 2.7046
+      }
+    },
+    "Gate_4_Crowding_Stress": {
+      "status": "PARTIAL_3_OF_4_PASS",
+      "RF_R3b_HHI_defense": {"value": 0.5366, "threshold": 0.40, "status": "FLAGGED_MITIGATED_VIA_OPTIMIZER_BREADTH"},
+      "stress_8_period": "COMPLETE_NO_SINGLE_BREACH"
+    },
+    "Gate_5_Concentration": {
+      "status": "PASS",
+      "max_weight": 0.12,
+      "hhi": 0.088,
+      "n_names": 15,
+      "long_only": true,
+      "sum_weights": 1.000
+    },
+    "Gate_6_Drift_Tolerance_OOS_IS_Ratio": {
+      "status": "DRAMATIC_INVERSION_NOTED_INSUFFICIENT_TO_OVERRIDE_HURDLE",
+      "is_period_pre_lb_2016_2023": {"sharpe": 0.3467, "mdd_pct": -59.7351, "cagr_pct": 5.14},
+      "oos_period_lockbox_2024_2026": {"sharpe": 1.9220, "mdd_pct": -17.24, "ann_ret_pct": 60.4},
+      "oos_is_sr_ratio": 5.54,
+      "interpretation": "Highly unusual inversion. Three hypotheses: (a) Pre-LB COVID 2020-03 outlier dominates IS, (b) post-2023 regime favors DCA mix, (c) 28-month lockbox too short to override. Per policy, Pre-LB is OFFICIAL hurdle window."
+    },
+    "Gate_7_Hard_Hurdle_Gates": {
+      "MDD_45pct_PRE_LB": {
+        "threshold": 0.45,
+        "realized": 0.5974,
+        "breach_margin": 0.1474,
+        "peak_to_trough": "2018-02-02 to 2020-03-23 (COVID-19 crash)",
+        "status": "FAIL"
+      },
+      "MDD_45pct_LOCKBOX": {
+        "threshold": 0.45,
+        "realized": 0.1724,
+        "buffer": 0.2776,
+        "status": "PASS"
+      },
+      "TO_600pct_annual_two_side": {
+        "realized": 5.25,
+        "status": "PASS"
+      },
+      "max_names_20": {"realized": 15, "status": "PASS"},
+      "weight_bounds_0_20pct": {"max_w": 0.12, "status": "PASS"},
+      "long_only": "PASS",
+      "sum_weights_1": "PASS",
+      "cost_model_15bps": "PASS",
+      "verdict_basis": "Hurdle Gate measurement window = Pre-LB walk-forward backtest (OFFICIAL). Lockbox 28-month forward measurement is post-hoc validation only. MDD<45% FAIL on Pre-LB window is the binding constraint."
+    },
+    "Gate_8_to_11_Multi_Objective_Indicators": {
+      "1_sharpe_ratio_0_347": "WEAK (Charter Goal 2.0+; 5.8x miss)",
+      "2_calmar_0_086": "VERY_WEAK (CAGR/MDD severe inefficiency)",
+      "3_sortino_0_487": "WEAK",
+      "4_information_ratio_0_177": "WEAK (below typical 0.30 active mgmt)",
+      "5_alpha_annual_2_70pct": "MODEST_POSITIVE",
+      "6_max_dd_neg_59_74pct": "FAIL (hurdle 45%)",
+      "7_total_return_48_5pct_over_8_07yr_CAGR_5_14pct": "WEAK (Charter Goal 16%+; 3.1x miss)",
+      "8_dsr_post_method_shopping": "NOT_COMPUTED_REJECT_PRIMARY (per codex C1 ACCEPT; ad hoc 0.998/1.05 not used)"
+    },
+    "Gate_12_NW_regression_CAPM": "DEFERRED_REJECT_PRIMARY (per codex C1 ACCEPT)",
+    "Gate_13_Carhart_3": "DEFERRED_REJECT_PRIMARY",
+    "Gate_14_Carhart_4": "DEFERRED_REJECT_PRIMARY",
+    "Gate_15_FF5": "DEFERRED_REJECT_PRIMARY",
+    "Gate_16_FF6": "DEFERRED_REJECT_PRIMARY",
+    "Gate_17_DSR_method_shopping": {
+      "status": "DEFERRED_REJECT_PRIMARY",
+      "n_trials_alpha": 7,
+      "n_trials_risk": 5,
+      "n_trials_optimizer": 9,
+      "n_trials_total": 21,
+      "alpha_dsr_5_trials_only": 0.9981,
+      "dsr_post_full_penalty": "NOT_COMPUTED_REJECT_PRIMARY",
+      "rationale_for_non_computation": "Per codex critic C1 ACCEPT, ad hoc DSR/1.05 estimate is invalid. Either full post-method-shopping DSR or explicit non-computation. Disposition is REJECT on Pre-LB MDD hurdle; non-decisive for verdict."
+    },
+    "Gate_18_Same_Period_Baseline_Comparison": {
+      "status": "BASELINE_FAR_SUPERIOR_VERDICT_DECISIVE_AT_GATE_7",
+      "STR_1715_R5_PG2_admitted": {
+        "SR": 1.9536,
+        "CAGR_pct": 41.5,
+        "MDD_pct": -24.81,
+        "Sortino": 1.22,
+        "Calmar": 1.67,
+        "n_months_admit": 255
+      },
+      "STR_1719_DCA_v7_pre_lb": {
+        "SR": 0.3467,
+        "CAGR_pct": 5.14,
+        "MDD_pct": -59.74,
+        "Sortino": 0.487,
+        "Calmar": 0.086,
+        "n_months": 97
+      },
+      "ratio_str1719_to_str1715": {
+        "SR_inferior_factor": 5.6,
+        "CAGR_inferior_factor": 8.0,
+        "MDD_worse_factor": 2.4
+      },
+      "scenario_rule_role": "comparative_reference_NOT_sequential_admission_TDC"
+    }
+  },
+  "lockbox_judge_audit_v6_1": {
+    "harness": "02_Infrastructure/judge/judge_lockbox_harness.R v6.1",
+    "mandate_citation": "judge.md v6.1 Core Mandate — Lockbox 성과 검증은 Judge 본질 임무",
+    "executed": true,
+    "audit_json_path": "qepm/mailbox/worktask/WT-D20260527_001/judge_lockbox_audit.json",
+    "oos_chart_path": "qepm/mailbox/worktask/WT-D20260527_001/judge_oos_zoom_chart.png",
+    "strategy_lockbox_metrics": {
+      "method": "frozen_weights_buy_and_hold_M06_15_names_at_2023-12-28",
+      "period": "2024-01-02 to 2026-04-30 (566 trading days)",
+      "total_return": 1.8911,
+      "ann_ret": 0.6043,
+      "ann_vol": 0.2644,
+      "sharpe": 1.9220,
+      "mdd": -0.1724
+    },
+    "benchmark_lockbox_metrics": {
+      "name": "KOSPI200_total_return",
+      "ann_ret": 0.5101,
+      "sharpe": 1.6516,
+      "mdd": -0.2067
+    },
+    "lockbox_vs_bm_excess_annual_pct": 9.42,
+    "lockbox_vs_bm_excess_sharpe": 0.27,
+    "lockbox_mdd_vs_45pct_hurdle": "PASS_BY_27.76pp_buffer",
+    "lockbox_does_NOT_override_pre_lb": "Lockbox is forward validation only. 28-month sample insufficient to override 8-year Pre-LB hurdle FAIL per policy."
+  },
+  "codex_round_review": {
+    "alpha_critic_stance": "REJECT (5 HIGH + 2 MEDIUM; agent AUTO_SELF_REBUT)",
+    "risk_critic_stance": "REJECT (4 HIGH + 2 MEDIUM; agent AUTO_SELF_REBUT)",
+    "optimizer_critic_stance": "REJECT (6 HIGH + 2 MEDIUM; agent AUTO_SELF_REBUT)",
+    "forge_critic_stance": "REJECT (4 HIGH + 3 MEDIUM; agent ACKNOWLEDGED_HURDLE_FAIL submit_with_flag)",
+    "judge_critic_stance": "APPROVE_CONDITIONAL (1 HIGH + 4 MEDIUM; REJECT verdict approved, cleanup applied)",
+    "judge_codex_round_path": {
+      "draft_path": "qepm/mailbox/worktask/WT-D20260527_001/judge_verdict_draft.json",
+      "critic_response_path": "qepm/mailbox/worktask/WT-D20260527_001/codex_critic_response_judge.json",
+      "challenge_note_path": "qepm/mailbox/worktask/WT-D20260527_001/judge_challenge_note.md",
+      "final_path": "qepm/mailbox/worktask/WT-D20260527_001/judge_verdict.json"
+    },
+    "judge_codex_resolution_summary": "1 HIGH ACCEPT (C1 DSR) + 4 MEDIUM (3 ACCEPT + 1 PARTIAL)",
+    "rf_j5_echo_chamber_audit": {
+      "echo_risk_acknowledged": "MEDIUM",
+      "auto_self_rebut_count": 3,
+      "auto_self_rebut_agents": ["alpha", "risk", "optimizer"],
+      "non_rebut_evidence_sources": [
+        "Forge HARD_HURDLE_FAIL_FORGE submit_with_flag",
+        "Codex judge_critic APPROVE_CONDITIONAL cross-model review",
+        "bt_result.rds realized MDD 59.74% deterministic"
+      ],
+      "future_waiver_path_weakened": true
+    }
+  },
+  "final_verdict": {
+    "disposition": "JUDGE_FAILED",
+    "grade": "REJECT_PRE_LB_HURDLE_VIOLATION",
+    "primary_basis": "Hard Hurdle Gate MDD < 45% binding constraint VIOLATED during OFFICIAL Pre-LB walk-forward backtest window (2016-01-04 to 2024-01-30). Realized MDD 59.74% during COVID-19 crash (peak 2018-02-02 → trough 2020-03-23) exceeds threshold by 14.74pp (1.33× breach margin).",
+    "secondary_findings": [
+      "Sharpe 0.347 (5.8x miss vs Charter Goal 2.0+); CAGR 5.14% (3.1x miss vs Goal 16%+)",
+      "Same-period STR_1715 R5 PG2 baseline dominates STR_1719 DCA v7 across all dimensions (SR 5.6x, CAGR 8x, MDD 2.4x better)",
+      "Lockbox 28-month frozen weights forward measurement (SR 1.92, MDD -17.2%, BM-beating) — insufficient to override Pre-LB hurdle FAIL per policy",
+      "AX-008 triangulation = 2/3 PASS on REJECT verdict (Forge + Codex CONCUR on rejection)",
+      "All 4 agent Codex stances were REJECT; 3 of 4 AUTO_SELF_REBUT (alpha/risk/opt); Forge ACKNOWLEDGED_HURDLE_FAIL; Codex judge_critic APPROVE_CONDITIONAL on REJECT verdict",
+      "AX-007 FAIL_LITERAL (15 names below 50+ exception); AX-005 v1.2 alpha-mitigated but realized inadequate; AX-001 v2 N/A (composite not single-sleeve defense)"
+    ],
+    "what_works": [
+      "Alpha discovery 5/5 PASS graduation_criteria (IC 0.0561, ICIR 0.3977, Harvey-t 4.41, DSR 0.998, subperiod stability 1.0)",
+      "PIT C1-C15 integral compliance across alpha/risk/opt/forge",
+      "Process honesty (AX-002) — explicit hurdle FAIL flag, no silent override",
+      "Lockbox 28-month forward measurement BM-beating (but insufficient as standalone admission basis)"
+    ],
+    "what_fails": [
+      "Realized backtest hurdle MDD<45% VIOLATED (59.7%)",
+      "Sharpe/Calmar/CAGR all far below Charter goals",
+      "Same-period STR_1715 PG2 baseline overwhelmingly inferior",
+      "Crowding RF-R3b defense HHI 0.54 mitigated but underlying concentration risk persists",
+      "AX-007 literal FAIL (15-name single portfolio, not multi-sleeve / long-short / 50+ / ML sizing)"
+    ],
+    "judge_recommendation": [
+      "REJECT this WT at Judge stage. Strategy does not qualify for admission.",
+      "Possible follow-up paths (Q-Lead orchestration):",
+      "  (a) Alpha-research follow-up — defensive overlay redesign to reduce COVID-2020 drawdown (vol-targeting on confidence vector, multi-sleeve cash buffer)",
+      "  (b) Optimizer fallback — M11_CVaR backup (net_IR 0.019, MDD-aware)",
+      "  (c) Reformulation — incorporate explicit drawdown control mandate; spawn fresh WT with risk-aware mandate",
+      "  (d) Conditional re-evaluation — IF Q-Lead deems Lockbox 28-month evidence sufficient for forward decision (waiver of Pre-LB hurdle policy), Judge can re-verdict with conditional grade. This requires explicit Q-Lead policy override.",
+      "  (e) Partial alpha-library admission — alpha-level discovery PASS could be retained as alpha library entry without portfolio admission (requires separate gates run; see codex critic C1)."
+    ],
+    "l_code_assignment_candidate": "L-CAND-2026-05-27-001",
+    "l_code_message": "DCA v7 4-family static EW + P3/P4 confidence vector: alpha-level discovery PASS (Harvey-t 4.41, ICIR 0.398, DSR 0.998) but realized portfolio (M06_MVO_Breadth 15 names) FAILS MDD<45% hurdle on Pre-LB walk-forward window (MDD 59.74% during COVID-2020 crash). Judge Lockbox forward 28-month measurement BM-beating (SR 1.92, MDD -17.2%) but insufficient to override Pre-LB hurdle FAIL. Pre-LB vs Lockbox SR ratio 5.54x indicates regime-shift or outlier-dominated IS measurement. Recommend alpha follow-up with explicit drawdown control or M11_CVaR optimizer fallback."
+  },
+  "ax_008_status_judge_final": {
+    "scope": "REJECT_VERDICT_VERIFICATION",
+    "forge": "HARD_HURDLE_FAIL_FORGE (REJECT-aligned)",
+    "codex_judge_critic": "APPROVE_CONDITIONAL on REJECT verdict (REJECT verdict approved)",
+    "architect": "NOT_INVOKED",
+    "result": "2/3 PASS on REJECT verdict — admission decision (REJECT) verified by triangulation",
+    "note": "AX-008 triangulation initially 0/2 PASS on admission, but on the REJECT verdict itself 2/3 PASS achieved via Forge concur + Codex judge_critic approve. The REJECT decision is therefore properly verified."
+  },
+  "judge_role_compliance_check": {
+    "boundary_pure_judging": "PASS (alpha/risk/opt/forge results not re-interpreted; verdict based on Hard Hurdle Gate + multi-objective evaluation + AX-008 triangulation)",
+    "codex_round_obligation": "COMPLETE (5 stages: draft → codex spawn → critic response → challenge_note → final)",
+    "lockbox_audit_obligation": "EXECUTED via judge_lockbox_harness.R v6.1 (frozen NAV + BM same-period + OOS chart + audit JSON)",
+    "lockbox_unavailable_handling": "NOT_APPLICABLE (lockbox measurement available and executed)",
+    "no_silent_override_section_8": "PASS (5 Codex concerns all classified ACCEPT/PARTIAL/REBUTTAL with citations in judge_challenge_note.md)"
+  },
+  "telegram_notification_pending": {
+    "format": "tg_agent_brief(agent='Judge', title='WT-D20260527_001 REJECT / JUDGE_FAILED', charts=c('judge_oos_zoom_chart.png'), ...)",
+    "qlead_handoff": "Q-Lead may execute telegram notification after final verdict review"
+  },
+  "generated_at": "2026-05-27T23:10:00+0900",
+  "forward_to": "q-lead",
+  "next_phase": "JUDGE_DONE_REJECT",
+  "next_agent": "q-lead",
+  "reproduction_command": "Rscript -e 'source(\"02_Infrastructure/judge/judge_lockbox_harness.R\"); judge_lockbox_nav(\"qepm/mailbox/worktask/WT-D20260527_001/weights.csv\", \"2023-12-28\", \"2024-01-02\", \"2026-04-30\")' && bash 02_Infrastructure/tools/debate_helpers/run_codex_qepm_critic.sh --role=judge --task_id=WT-D20260527_001 --package=qepm/mailbox/worktask/WT-D20260527_001/judge_verdict_draft.json"
+}

@@ -1,0 +1,104 @@
+
+[Loaded] per_fold_diagnostics.json + multiseed_variance_audit.json
+[Stacked config] stacked_v4_v8_v10
+  d_model=32 n_layers=2 dropout=0.2 patch_size=4 n_heads=4
+
+========== Step 1: Per-seed OOS PR-AUC + IC (R verification) ==========
+
+[Per-seed table]
+    seed     target n_obs n_events event_rate oos_pr  oos_ic
+   <int>     <char> <int>    <num>      <num>  <num>   <num>
+1:    42 y_tail_q15  2042      365     0.1787 0.1594 -0.0294
+2:    42    y_onset  2042      251     0.1229 0.1361  0.0384
+3:   123 y_tail_q15  2042      365     0.1787 0.1500 -0.0785
+4:   123    y_onset  2042      251     0.1229 0.1286  0.0576
+5:   456 y_tail_q15  2042      365     0.1787 0.1812  0.0122
+6:   456    y_onset  2042      251     0.1229 0.1500  0.0792
+
+========== Step 2: 3-seed mean prediction PR-AUC (R verify) ==========
+
+[3-seed mean prediction]
+  y_tail_q15: PR-AUC=0.1570 IC=-0.0460 n_obs=2042 n_events=365 per_date_std mean=0.0523 / median=0.0457 / max=0.1514
+  y_onset: PR-AUC=0.1313 IC=0.0608 n_obs=2042 n_events=251 per_date_std mean=0.0235 / median=0.0036 / max=0.2431
+
+========== Step 3: Multi-seed stability verdict ==========
+
+[Stability per target]
+       target n_seeds mean_pr std_pr min_pr max_pr range_pr stability_verdict
+       <char>   <int>   <num>  <num>  <num>  <num>    <num>            <char>
+1: y_tail_q15       3  0.1635 0.0160 0.1500 0.1812   0.0312            STABLE
+2:    y_onset       3  0.1382 0.0109 0.1286 0.1500   0.0214            STABLE
+
+========== Step 4: vs Cycle 53A v10 (single seed=42) — additivity ==========
+
+[Cycle 53A v10 reference] y_tail_q15=0.2598 / y_onset=0.1443 (single seed=42)
+
+[Stacked seed=42 (match) vs v10] q15: 0.1594 Δ-0.1004 / onset: 0.1361 Δ-0.0082
+
+[Stacked 3-seed mean prediction vs v10] q15: 0.1570 Δ-0.1028 / onset: 0.1313 Δ-0.0130
+
+[Stacked across-seed mean PR-AUC vs v10] q15: 0.1635 Δ-0.0963 / onset: 0.1382 Δ-0.0061
+
+[Additivity verdict — 3-seed mean prediction]
+  y_tail_q15: NEGATIVE (Δ=-0.1028 vs v10)
+  y_onset:    NEGATIVE (Δ=-0.0130 vs v10)
+
+[Additivity verdict — across-seed mean PR-AUC]
+  y_tail_q15: NEGATIVE (Δ=-0.0963 vs v10)
+  y_onset:    NEGATIVE (Δ=-0.0061 vs v10)
+
+[Sanity — stacked seed=42 matched comparison]
+  y_tail_q15 Δ=-0.1004 → NEGATIVE (single seed=42, same as v10 seed)
+
+========== Step 5: vs cross-cycle baselines ==========
+
+[y_tail_q15 cross-cycle ladder]
+  Cycle 43 forward best (M4_Bayes):     0.2129
+  Cycle 52 PatchTST baseline:           0.2463
+  Cycle 53A v1 (replication baseline):  0.2396
+  Cycle 53A v10 (dropout=0.20 winner):  0.2598
+  Cycle 53C stacked seed=42:            0.1594 (Δ-0.1004 vs v10 / Δ-0.0535 vs Cycle 43 fwd best)
+  Cycle 53C stacked across-seed mean PR-AUC: 0.1635 (Δ-0.0963 vs v10 / Δ-0.0494 vs Cycle 43 fwd best)
+  Cycle 53C stacked 3-seed mean prediction:  0.1570 (Δ-0.1028 vs v10 / Δ-0.0559 vs Cycle 43 fwd best)
+
+[y_onset cross-cycle ladder]
+  Cycle 52 PatchTST baseline:           0.1372
+  Cycle 53A v1:                          0.1332
+  Cycle 53A v10:                         0.1443
+  Cycle 53C stacked seed=42:            0.1361
+  Cycle 53C stacked across-seed mean:   0.1382
+  Cycle 53C stacked 3-seed mean pred:   0.1313
+
+========== Step 6: Per-date prediction std audit ==========
+
+[Per-date std (lower = more consistent across seeds)]
+  y_tail_q15: mean=0.0523 / median=0.0457 / max=0.1514 / n=2042
+  y_onset: mean=0.0235 / median=0.0036 / max=0.2431 / n=2042
+
+[Cross-target rank consistency] Spearman rho(stacked mean q15, stacked mean onset) = -0.7309
+
+========== Step 7: NEW_CYCLE_CHECKLIST status ==========
+
+[NEW_CYCLE_CHECKLIST]
+  M1_bear_date_audit: PASS (pre-cycle 4/4, latest log retained in qepm/observability/sanity_checks)
+  M2_validate_label_direction: PASS (forward labels via Cycle 50 fix, inherited from Cycle 52/53A)
+  M3_PIT_C1_C15: PASS (v4a panel PIT validated Cycle 52, no new data introduced)
+  M4_shift_convention: PASS (forward targets via shift(.,n=H,'lead'), inherited)
+  M5_AX_008: EXEMPT (Forge single-source quick screening, NOT admit cycle)
+  S1_PRAUC_sanity: PASS (3-seed mean prediction PR-AUC 0.1570 ∈ [0.15, 0.40])
+  S2_COVID_spot_check: PASS (targets_full.parquet 2020-02-19 ret_h = -0.3405, inherited)
+  S3_cross_target_rank_consistency: rho=-0.7309
+  A1_cross_cycle_same_forward_labels: PASS (all seeds + v10 use targets_full.parquet forward labels)
+  A2_dohun_audit_checkpoint: AWAITING_REVIEW
+  A3_codex_critic: DEFER (Forge multi-seed audit; verdict=NEGATIVE)
+
+========== Step 8: Output JSON + chart ==========
+[JSON] /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/04_evaluation/stacked_multiseed_v5c.json
+[Chart] /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/06_reports/charts/128_stacked_multiseed.png
+
+========== Cycle 53C AGGREGATE DONE ==========
+Additivity verdict (3-seed mean prediction vs v10): NEGATIVE (Δ=-0.1028)
+Stability verdict (y_tail_q15): STABLE (per-seed std=0.0160)
+Headline 3-seed mean prediction PR-AUC: 0.1570 (Δ-0.0559 vs Cycle 43 forward best)
+Next cycle suggestion:
+  3-axis combine -> dilution (worse than v10 single axis). v10 single-axis dropout is correct headline. Stop combine; pivot to architecture-side exploration (DLinear / Informer / FEDformer / TimesNet).

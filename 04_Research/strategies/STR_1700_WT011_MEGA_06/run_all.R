@@ -50,7 +50,7 @@ suppressPackageStartupMessages({
   library(e1071)
 })
 
-BASE_DIR <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+BASE_DIR <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 STR_ID   <- "STR_1700"
 WT_ID    <- "WT-D20260425_011"
 PREV_WT  <- "WT-D20260425_010"   # for STR_1699 (Iter5) reference NAV

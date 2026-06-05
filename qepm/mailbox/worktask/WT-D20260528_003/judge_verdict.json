@@ -1,0 +1,125 @@
+{
+  "task_id": "WT-D20260528_003",
+  "hypothesis_handle": "D_PROD",
+  "agent": "judge_v6.1_multi_gate_validator",
+  "as_of_date": "2026-05-29",
+  "verdict": "JUDGE_FAILED",
+  "disposition": "GRADUATION_FAIL_NOT_ADMIT_ELIGIBLE",
+  "grade": "FAIL",
+  "handoff_received": "forge_to_judge_dsr_fail_acknowledged",
+  "summary": "Independent re-verification confirms all 4 hard-gate FAILs are REAL (not fabricated): DSR z=-7.80 / Harvey 0/5 (peak t_NW 2.31 independent recompute vs forge 2.255) / MDD 47.68%>45% / realized turnover 6.018>6.0. AX-000 reframe honored: proven limitation NOT denied. Strategy beats KOSPI200 (+8.4%/yr alpha, Sharpe 0.82 vs 0.64) but on higher MDD and fails multiple-testing-adjusted significance. NOT graduation-eligible; NOT admission-eligible.",
+  "independent_verification": {
+    "metrics_reproduced_from_bt_result": {
+      "sharpe_mean_er": {"forge": 0.8204, "judge_recompute": 0.8204, "match": true},
+      "sharpe_pa_geometric": {"forge": 0.7523, "judge_recompute": 0.7523, "match": true},
+      "cagr": {"forge": 0.2012, "judge_recompute": 0.203, "match": "rounding"},
+      "mdd": {"forge": 0.4768, "judge_recompute": 0.4768, "match": true},
+      "total_return": {"forge": 7.832, "judge_recompute": 7.832, "match": true},
+      "n_days": {"forge": 2970, "judge_recompute": 2970, "match": true}
+    },
+    "is_oos_split_2023_11_30": {
+      "oos_n": 612,
+      "oos_sharpe_meaner": 0.7665,
+      "oos_is_sharpe_ratio": 0.916,
+      "gate_f_threshold": 0.7,
+      "gate_f_pass": true,
+      "note": "OOS retention STRONG (0.916 >> 0.7). Frozen-weights buy-and-hold deploy extension legitimately constructed (Lockbox extension audit SATISFIED — forge provided OOS 612 days, no truncation)."
+    },
+    "harvey_5spec_independent_nw_hac": {
+      "source": "judge re-ran lm + NeweyWest on 144 monthly obs vs kr_factor_returns_v2.parquet",
+      "CAPM_t": 1.9641, "Carhart3_t": 2.1357, "Carhart4_t": 2.2182, "FF5_t": 2.2004, "FF6_t": 2.3123,
+      "peak_t": 2.3123, "hurdle": 2.95, "pass_count": 0,
+      "vs_forge": "forge peak 2.255 (FF6); judge peak 2.3123 (FF6). Within NW-lag rounding. 0/5 PASS CONFIRMED.",
+      "harvey_t_discrepancy_resolved": "alpha_package min_harvey_t_3.0=4.309 is RANK-IC t-stat (cross-sectional factor t), NOT portfolio-alpha t. The Harvey-Liu-Zhu 2016 hurdle applies to REALIZED PORTFOLIO ALPHA regression t (forge 5-spec), which is the rigorous test. alpha capm_alpha_t_nw=0.741 corroborates. Judge adopts forge 5-spec portfolio-alpha interpretation as authoritative. Genuine FAIL."
+    },
+    "dsr_independent_reconstruction": {
+      "monthly_sr": 0.231, "annualized_sr": 0.8003, "n_obs": 146,
+      "alpha_reported_z": -7.8018, "alpha_dsr_proper": 3.05e-15, "n_trials_eff": 411,
+      "judge_reconstruction": "DSR z negative across ALL plausible trial-variance assumptions (z range -5.48 to -1.37; DSR <= 0.21 even under most generous). E[max SR | 411 trials] (0.35-0.69 monthly) >= observed (0.231 monthly). FAIL ROBUST. Exact z=-7.80 sensitive to trial-SR dispersion input but FAIL direction not.",
+      "dsr_pass_05": false
+    },
+    "turnover_independent": {
+      "target_vs_target": 5.30, "optimizer_reported": 5.282, "match": true,
+      "forge_realized_target_vs_drifted": 6.0181, "cap": 6.0,
+      "judge_ruling": "Realized target-vs-DRIFTED 6.018 is the economically correct round-trip turnover (includes intra-period drift rebalancing). 6.018>6.0 marginal FAIL CONFIRMED. Optimizer 5.282 (target-vs-target) is a different, looser convention. Forge convention authoritative."
+    },
+    "benchmark_compare_independent": {
+      "bm_cagr": 0.123, "bm_mdd": 0.439, "ir": 0.4359, "beta": 0.9851, "corr": 0.7011, "alpha_annual": "0.0837 (judge) vs 0.0857 (forge), rounding", "match": true
+    },
+    "concentration_gate_e_independent": {
+      "sum_w_dev_from_1": 0.0, "max_n_holdings": 20, "max_single_weight": 0.0682, "hhi_mean": 0.0502,
+      "weight_bounds_0_0.20": "PASS", "n_le_20": "PASS", "verdict": "Gate E PASS (strong diversification, near-EW)"
+    }
+  },
+  "pit_c1_c15": {
+    "result": "PASS (no real lookahead)",
+    "lookahead_detector_findings": {
+      "run_all.R_line144_C6": "FALSE POSITIVE — bt_end<-RAW_MAX extends OOS deploy window to latest raw price date. Holdings come from frozen weights.csv per historical sig_date; no current-universe survivorship. Detector matched comment text heuristically.",
+      "optimizer_pipeline_lines312_313_C1": "FALSE POSITIVE — IR/TE computed as EX-POST reporting metrics on completed walk-forward sim$port (OOS-by-construction), not signals fed back. Standard summary statistics, equivalent to PerformanceAnalytics table.AnnualizedReturns on same line above. No information leakage."
+    },
+    "C1_full_sample": "PASS (walk-forward 115 periods, purged 10-fold expanding CV + 30d embargo)",
+    "C2_same_day_circular": "PASS",
+    "C4_fundamental_lag": "PASS (inherited from D_ML panel build; quarterly 45d / annual May attested upstream)",
+    "C9_vt_dd_t1": "PASS (rolling cov Date<sig_date t-1)",
+    "C10_liquidity_t1": "PASS (D_ENSEMBLE top20_liquidity_audit t-1 2e8 verified; request.json 5e7 floor superseded by 2e8 on executable book)",
+    "C13_no_negate": "PASS (Z_Score_Aligned label, no FLIP_SIGN)",
+    "C14_usable_date": "PASS (Usable_Date<=sig_date)",
+    "C15_ml_carveout": "PASS (ML daily-parquet direct load carve-out APPROVED for this WT per L-164 v1.1; bt_result audit WARN advisory only)",
+    "signal_cutoff_respected": "2023-12-22 lockbox; walkforward_max_sig_date 2023-11-30",
+    "bt_audit": "14 PASS / 0 FAIL / 2 WARN (c15_factor_db_load_path + lookahead_self_scan, both advisory)"
+  },
+  "gate_table": {
+    "Gate_A_PIT": "PASS",
+    "Gate_B_selection_isolation": "PASS (lockbox access judge-only; hash START==END integrity PASS)",
+    "Gate_C_net_alpha_gt_cost": "PASS (net Sharpe 0.74-0.82 positive after 15bps; net IR 0.436)",
+    "Gate_D_crowding_stress": "PARTIAL (microstructure alpha; crowding deferred to risk_package, not blocking)",
+    "Gate_E_concentration": "PASS (max_w 0.068<=0.20, HHI 0.050<=0.15, n=20)",
+    "Gate_F_drift_tolerance": "PASS (OOS/IS Sharpe 0.916>=0.7)",
+    "Harvey_t_ge_2.95": "FAIL (0/5, peak 2.31)",
+    "DSR_ge_0.50": "FAIL (z=-7.80, DSR~3e-15)",
+    "MDD_le_45pct": "FAIL (47.68%)",
+    "Turnover_le_6.0": "FAIL (6.018 realized)",
+    "Max_DD_Days_le_100": "FAIL (952 days underwater, DD#2 2021-09 to 2025-08 recovery in OOS)",
+    "SR_target_2.5": "FAIL (0.82 << 2.5)"
+  },
+  "graduation_verdict": {
+    "graduated": false,
+    "official_criteria_request_json": {
+      "min_rank_ic_0.04": "PASS (0.0449)",
+      "min_icir_0.20": "PASS (0.389)",
+      "min_subperiod_0.50": "PASS (1.0)",
+      "max_drawdown_days_100": "FAIL (952 days underwater, DD#2 2021-09->trough 2022-10->recovery 2025-08; recovery in OOS = persists out-of-sample) [added per Codex C1]",
+      "min_harvey_t_3.0": "FAIL (portfolio-alpha 5-spec peak 2.31; alpha's 4.309 was rank-IC t, not the graduation metric)",
+      "min_deflated_sharpe_0.50": "FAIL (z=-7.80)"
+    },
+    "official_criteria_fail_count": "3 of 5 (max_drawdown_days, harvey_t, dsr) + 2 production hard constraints (mdd_le_45, turnover_le_6)",
+    "binding_fails": ["max_drawdown_days_100", "min_harvey_t_3.0", "min_deflated_sharpe_0.50", "mdd_le_45", "turnover_le_6"],
+    "rationale": "3 of 5 official graduation criteria FAIL (max_drawdown_days, Harvey-t, DSR) + 2 production hard constraints FAIL (MDD, turnover). All independently re-verified by Judge — NONE fabricated. AX-000 reframe (limits are reframable) does NOT license denying an empirically proven, independently reproduced FAIL. SR 0.82 vs new target 2.5 = decisive gap."
+  },
+  "governor_handoff": {
+    "admission_eligible": false,
+    "reason": "Discovery WT failed graduation (Harvey-t + DSR + MDD + turnover). PG0-PG3 admission requires graduation PASS. NOT forwarded to Governor for admit. Incumbent STR_1715_AR_on_M4_R05_overlay_PG2 baseline retained (no replacement).",
+    "incumbent_delta_note": "C3 PARTIAL: STR_1715 per-stock NAV reconstruction infeasible from overlay-scalar artifacts (forge scope limit). Moot — candidate not admission-eligible regardless of incumbent delta."
+  },
+  "ax_compliance": {
+    "AX-000": "HONORED — proven independently-reproduced limitation NOT denied; reframe != fabrication",
+    "AX-001_v2": "N/A primary (this is offensive ML alpha, not defense factor); AX001v2 proxy 0.759 noted advisory",
+    "AX-002": "PASS — all metrics harness-derived (build_bt_result PerformanceAnalytics); no process bypass",
+    "AX-008": "Verification Triangulation (canonical sources = Forge + Codex + Architect): Forge PASS (self-surfaced 4-gate FAIL) + Codex PASS (REVISE, agrees FAILs real, no rebuttal). 2/3 SATISFIED. Architect not invoked (not required when >=2/3 hold for a FAIL conclusion). [corrected per Codex C2 — Judge is adjudicator, not a source]"
+  },
+  "codex_round": {
+    "stance": "REVISE",
+    "n_concerns": 3,
+    "n_high": 2,
+    "n_medium": 1,
+    "response_file": "codex_critic_response_judge.json",
+    "challenge_note": "judge_challenge_note.md",
+    "resolution": {"ACCEPT": ["C1", "C2"], "PARTIAL": ["C3"], "REBUTTAL": []},
+    "escalate_triggered": false,
+    "escalate_reason": "HIGH=2 (<5), AX hard-FAIL=0, PIT C1 violation=0. All concerns ACCEPT/PARTIAL; verdict unchanged (strengthened). No Q-Lead escalation.",
+    "net_outcome": "C1 added max_drawdown_days FAIL (3/5 official). C2 AX-008 corrected to Forge+Codex 2/3. C3 stale path WT_WT-D20260528_003 flagged for quarantine (lineage hash-verified clean, no contamination). Verdict UNCHANGED: JUDGE_FAILED."
+  },
+  "stale_path_quarantine_flag": ["qepm/stage_artifacts/WT_WT-D20260528_003 (double-prefix stale STR_1721/v3.6)", "stage_artifacts/WT_WT-D20260528_003_v3_7"],
+  "final_stance": "JUDGE_FAILED — graduation FAIL on 5 hurdles (Harvey-t, DSR, MDD, turnover, max_DD_days), all independently re-verified, none fabricated. NOT admission-eligible. Incumbent STR_1715 baseline retained.",
+  "generated_at": "2026-05-29"
+}

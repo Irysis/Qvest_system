@@ -43,7 +43,7 @@ suppressPackageStartupMessages({
   library(lmtest)      # coeftest
 })
 
-BASE_DIR <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+BASE_DIR <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 STR_ID   <- "STR_1697"
 WT_ID    <- "WT-D20260425_009"
 PARENT_WT_ID <- "WT-D20260425_005"   # Iter 4 parent — factor mix 동일

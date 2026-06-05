@@ -1,0 +1,427 @@
+{
+  "task_id": "WT-D20260527_001",
+  "agent": "forge",
+  "wt_type": "discovery",
+  "strategy_id": "STR_1719_WT001_DCA_v7",
+  "strategy_version": "v1.0",
+  "strategy_name": "DCA_v7_4family_static_EW_P3P4_confidence_M06_MVO_Breadth",
+  "run_id": "WT-D20260527_001_STR_1719_WT001_DCA_v7_20260527_200058",
+  "forge_inputs": {
+    "alpha_package_path": "qepm/mailbox/worktask/WT-D20260527_001/alpha_package.json",
+    "alpha_package_sha256": "8576dd4e4ffcc8be128345fbd57d4ec81e9e90f04cb7a3e1010f53942acde8d7",
+    "alpha_package_md5": "2dffcb69b4404e3c773315ff70ffb556",
+    "alpha_iter": 7,
+    "alpha_iter_name": "DCA_v7_4family_static_EW_P3P4_confidence",
+    "risk_package_path": "qepm/mailbox/worktask/WT-D20260527_001/risk_package.json",
+    "risk_package_sha256": "4b8c9b6bdf5ba3ec10be1a85e2efd2a27eadada41cedf9259f0dc987628581c9",
+    "risk_package_md5": "86c0436dfafd6d14abe674a821c6a83e",
+    "risk_method": "ledoit_wolf_oracle",
+    "risk_condition_number": 14.5068,
+    "risk_psd_verified": true,
+    "opt_package_path": "qepm/mailbox/worktask/WT-D20260527_001/optimization_package.json",
+    "opt_package_sha256": "45e63fda7cbc19d316b3af24b7465834a4c169cf0570892d7a06e3e096517ab6",
+    "opt_package_md5": "5e4e42bff8027901ec7ace78df78cb29",
+    "opt_method": "M06_MVO_Breadth",
+    "opt_n_names": 15,
+    "opt_expected_net_IR": 0.0709,
+    "weights_csv_path": "stage_artifacts/WT_WT-D20260527_001/optimizer/weights.csv",
+    "weights_csv_sha256": "372e13816fe61d717a6e03bbcea0f445030c0d5ca0c36e4c836ccf2c07a31f7b",
+    "weights_csv_md5": "d76caa2ecda4ac768f91019a1e8e6762",
+    "weights_n_sig_dates": 97,
+    "weights_n_unique_tickers": 133,
+    "pure_function_boundary_status": "PASS",
+    "boundary_note": "3-package + weights.csv md5 unchanged between START and END of run_all.R"
+  },
+  "bt_result_path": "04_Research/strategies/STR_1719_WT001_DCA_v7/output/bt_result.rds",
+  "bt_result_sha256": "107f6a1a6cd0e01460d4bb4c23e3248f4e530710c5ddbb8923497f9c32b9e395",
+  "bt_result_summary_path": "04_Research/strategies/STR_1719_WT001_DCA_v7/output/bt_result_summary.json",
+  "bt_result_summary_sha256": "d59491ff14a2e0f339cfd6139376a374067958fa3bac672604ed60dc1e28d8b5",
+  "audit_status": "PASS_WITH_WARN",
+  "audit_summary": {
+    "n_checks": 16,
+    "n_pass": 15,
+    "n_warn": 1,
+    "n_fail": 0,
+    "n_critical_fail": 0,
+    "n_high_fail": 0,
+    "warn_details": "lookahead_detector_self_scan: scan_lookahead() function not exported by lookahead_detector.R (detect_lookahead, detect_lookahead_dir, detect_gate15_infra_pit exist instead) — known contract function name limitation, not a strategy PIT defect"
+  },
+  "integrity": "HARD_HURDLE_FAIL_FORGE",
+  "integrity_note": "Backtest Contract audit = PASS_WITH_WARN (15/16 PASS, 0 critical/high fails). HOWEVER, realized MDD 59.7351% > 45% hard hurdle gate (qepm_codex_base_context.md line 41). Per Codex Round C1 (HIGH ACCEPT-full), integrity classification escalated to HARD_HURDLE_FAIL_FORGE. Pure Function constraint (v6.1 R12) prevents in-Forge mitigation. Forward to Judge with hurdle flag.",
+  "hurdle_gate_status": {
+    "overall_status": "FAIL",
+    "failed_gates": [
+      "MDD_45pct"
+    ],
+    "pass_gates": [
+      "turnover_600pct",
+      "max_names_20",
+      "weight_bounds_0_20pct",
+      "long_only",
+      "sum_weights_1",
+      "cost_model_15bps",
+      "PIT_C1_C15"
+    ],
+    "mdd_45pct": {
+      "threshold": 0.45,
+      "realized": 0.5974,
+      "breach_margin": 0.1474,
+      "status": "FAIL",
+      "timing": {
+        "peak_date": "2018-02-02",
+        "trough_date": "2020-03-23",
+        "recovery_date": "2021-03-18",
+        "drawdown_days": 766,
+        "recovery_days": 243,
+        "regime": "COVID-19 (2020-Q1 crash)"
+      },
+      "bm_same_period_mdd": 0.4325,
+      "strategy_to_bm_ratio": 1.3812,
+      "source_citation": "qepm_codex_base_context.md line 41: '| MDD | < 45% hard fail (Hurdle Gate) |'"
+    },
+    "turnover_600pct": {
+      "threshold_one_way": 6,
+      "realized_two_side": 5.25,
+      "realized_one_side": 2.63,
+      "status": "PASS"
+    }
+  },
+  "signal_cutoff": "2023-12-28",
+  "signal_cutoff_note": "Last sig_date in weights.csv. PIT lockbox 2024-01-01+ never accessed during alpha/risk/opt computation. Forge backtest uses RAWDATA through 2024-01-30 for last-rebal 1-month forward NAV mark-to-market only.",
+  "rebalance_count": 97,
+  "rebalance_count_note": "97 sig_dates × 1 rebalance/sig = 97 rebalances over 2015-12-30 to 2023-12-28 (8.07 years). Density 97/97 = 1.000 (>= 0.95 per v6.3 §9).",
+  "cost_breakdown": {
+    "cost_model_version": "v2.3_kr_retail_15bps",
+    "commission_one_way_bps": 15,
+    "slippage_bps": 0,
+    "realized_annual_cost_pct": 0.92,
+    "expected_annual_cost_pct": 0.79,
+    "realized_per_rebal_TO_oneside": 0.2208,
+    "realized_per_rebal_TO_twoside": 0.4417,
+    "realized_annual_TO_oneside": 2.63,
+    "realized_annual_TO_twoside": 5.25,
+    "optimizer_claimed_annual_TO_twoside": 5.3,
+    "realized_vs_claimed_TO_pct_diff": -0.94,
+    "TO_convention_note": "annual_TO_twoside = sum(per_rebal_L1) / n_years. Matches optimizer Charter §15 P6 cap = 6.0/y two-side. Forge realized 5.25/y < cap = PASS.",
+    "cost_application_method": "delta_share_notional (15bps × |Δshares_t| × price_t per ticker per rebal)",
+    "contract_field_caveat": "Contract metrics$Annualized_Turnover (55.65) uses naive avg(turnover)×252 (daily ann_factor) — wrong unit for monthly-rebal; should be ×12 = 2.65. Forge prefers realized_annual_TO_oneside/twoside fields (per Codex C5 ACCEPT-full)."
+  },
+  "schedule_density": 1,
+  "schedule_density_note": "97/97 sig_dates carry holdings in Forge backtest (density = 1.000, >= 0.95). NO fabrication. weights.csv as-is. alpha_scores.parquet NOT used for holding-selection.",
+  "sr_realized_share_based": 0.3467,
+  "sr_realized_share_based_note": "Daily share-based NAV (Forge PG2 grade): weights.csv → 100M KRW initial cap → T+1 exec → delta-share commission → daily NAV → PerformanceAnalytics::SharpeRatio.annualized(Rf=0, scale=252). PRIMARY.",
+  "sr_factor_engine_continuous": 0.3493,
+  "sr_factor_engine_continuous_note": "Optimizer walk-forward monthly sim (idealized): sig_date weights × forward-1m last-bday Close returns. From optimizer_pipeline.R STEP 6.",
+  "sr_lockbox_daily_harness": null,
+  "sr_lockbox_daily_harness_note": "Per CLAUDE.md lockbox-scope.md (도훈 mandate 2026-05-09): forge stage = 'lockbox 폐기'. No lockbox period exists between signal_cutoff and bt_end (extension is natural 1m forward MTM). Judge may run lockbox harness if needed.",
+  "measurement_basis_primary": "forge_realized_share_based",
+  "measurement_basis_rationale": "Per v6.3 §8 mandate, forge_realized_share_based is primary. factor_engine_continuous is idealized.",
+  "vs_factor_engine": {
+    "sr_factor_engine": 0.3493,
+    "sr_realized": 0.3467,
+    "divergence_factor_engine_vs_realized_pp": 0.0026,
+    "abs_divergence_pp": 0.0026,
+    "diagnosis": "NEGLIGIBLE",
+    "diagnosis_rule": "|div| < 0.2: NEGLIGIBLE / 0.2-0.4: MINOR_DRIFT / 0.4-0.6: SIGNIFICANT_DRAG / >= 0.6: FABRICATION_SUSPECTED",
+    "explanation": "Factor engine SR (0.3493) = optimizer walk-fwd monthly sim. Forge realized SR (0.3467) = daily share-based with commission on |Δshares|. Divergence 0.0026pp within NEGLIGIBLE band."
+  },
+  "backtest_metrics": {
+    "start_date": "2016-01-04",
+    "end_date": "2024-01-30",
+    "n_trading_days": 1986,
+    "n_years": 8.07,
+    "cagr_pct": 5.1433,
+    "total_return_pct": 48.507,
+    "annualized_volatility_pct": 20.5986,
+    "sharpe": 0.3467,
+    "sortino": 0.4871,
+    "calmar": 0.0861,
+    "mdd_pct": 59.7351,
+    "cvar_99_daily_pct": -5.0125,
+    "benchmark": "KOSPI200_total_return",
+    "benchmark_cagr_pct": 3.41,
+    "benchmark_sharpe": 0.2032,
+    "benchmark_mdd_pct": 43.9,
+    "benchmark_alpha_pct": 2.7046,
+    "benchmark_beta": 0.9324,
+    "tracking_error_pct": 13.4496,
+    "information_ratio": 0.1772,
+    "up_capture": 0.8793,
+    "down_capture": 0.8468,
+    "hit_ratio_vs_bm": 0.5005,
+    "avg_n_holdings": 15
+  },
+  "period_decomposition": {
+    "by_year": [
+      {
+        "year": "2016",
+        "return_pct": 10.6644,
+        "vol_pct": 14.6583,
+        "mdd_pct": 10.2782,
+        "sharpe": 0.7844
+      },
+      {
+        "year": "2017",
+        "return_pct": 10.6245,
+        "vol_pct": 13.9564,
+        "mdd_pct": 9.9941,
+        "sharpe": 0.8197
+      },
+      {
+        "year": "2018",
+        "return_pct": -14.0422,
+        "vol_pct": 19.2052,
+        "mdd_pct": 29.3494,
+        "sharpe": -0.7176
+      },
+      {
+        "year": "2019",
+        "return_pct": -1.3536,
+        "vol_pct": 16.9643,
+        "mdd_pct": 22.0217,
+        "sharpe": 0.0025
+      },
+      {
+        "year": "2020",
+        "return_pct": 13.323,
+        "vol_pct": 35.682,
+        "mdd_pct": 46.8734,
+        "sharpe": 0.5344
+      },
+      {
+        "year": "2021",
+        "return_pct": 38.0364,
+        "vol_pct": 18.1029,
+        "mdd_pct": 11.2571,
+        "sharpe": 1.9006
+      },
+      {
+        "year": "2022",
+        "return_pct": -11.4565,
+        "vol_pct": 21.6173,
+        "mdd_pct": 24.6538,
+        "sharpe": -0.4686
+      },
+      {
+        "year": "2023",
+        "return_pct": 2.5926,
+        "vol_pct": 16.6013,
+        "mdd_pct": 13.252,
+        "sharpe": 0.2413
+      },
+      {
+        "year": "2024",
+        "return_pct": 0.6785,
+        "vol_pct": 13.5814,
+        "mdd_pct": 5.2731,
+        "sharpe": 0.6622
+      }
+    ],
+    "note": "Per-year breakdown shows the strategy has high vol/MDD years (2018-2020 = COVID prelude + crash) and recovery years (2020-2021). MDD of 59.74% spans 2018-02 to 2020-03 entirely within bt window (no lockbox-sealed period in this WT)."
+  },
+  "hard_constraint_status": {
+    "max_names_20": {
+      "observed_max": 15,
+      "status": "PASS"
+    },
+    "long_only": {
+      "observed_min_w": 0.04,
+      "status": "PASS"
+    },
+    "weight_bounds": {
+      "observed_max_w": 0.1304,
+      "bound": 0.2,
+      "status": "PASS"
+    },
+    "sum_weights_1": {
+      "observed_range": [1, 1],
+      "tol": 0.005,
+      "status": "PASS"
+    },
+    "liquidity_threshold": {
+      "threshold_won_20d_avg": 50000000,
+      "note": "Inherited from alpha/risk filtering"
+    },
+    "cost_model": {
+      "version": "v2.3_kr_retail_15bps",
+      "applied_delta_share_notional": true,
+      "status": "PASS"
+    },
+    "pit_compliance": {
+      "C1": true,
+      "C2": true,
+      "C9": true,
+      "C10": true,
+      "C11": true,
+      "C13": true,
+      "C14": true,
+      "C15": true,
+      "note": "Inherited from alpha/risk/optimizer"
+    },
+    "mdd_45_hurdle": {
+      "threshold": 0.45,
+      "observed": 0.5974,
+      "status": "FAIL",
+      "note": "Hurdle Gate per qepm_codex_base_context.md line 41 — see hurdle_gate_status"
+    }
+  },
+  "hash_audit": {
+    "pre_post_match": true,
+    "snapshot_method": "md5 + sha256 computed at start (step 1) and end (step 14) of run_all.R execution",
+    "alpha_package": {
+      "pre_md5": "2dffcb69b4404e3c773315ff70ffb556",
+      "post_md5": "2dffcb69b4404e3c773315ff70ffb556",
+      "pre_sha256": "8576dd4e4ffcc8be128345fbd57d4ec81e9e90f04cb7a3e1010f53942acde8d7",
+      "match": true
+    },
+    "risk_package": {
+      "pre_md5": "86c0436dfafd6d14abe674a821c6a83e",
+      "post_md5": "86c0436dfafd6d14abe674a821c6a83e",
+      "pre_sha256": "4b8c9b6bdf5ba3ec10be1a85e2efd2a27eadada41cedf9259f0dc987628581c9",
+      "match": true
+    },
+    "optimization_package": {
+      "pre_md5": "5e4e42bff8027901ec7ace78df78cb29",
+      "post_md5": "5e4e42bff8027901ec7ace78df78cb29",
+      "pre_sha256": "45e63fda7cbc19d316b3af24b7465834a4c169cf0570892d7a06e3e096517ab6",
+      "match": true
+    },
+    "weights_csv": {
+      "pre_md5": "d76caa2ecda4ac768f91019a1e8e6762",
+      "post_md5": "d76caa2ecda4ac768f91019a1e8e6762",
+      "pre_sha256": "372e13816fe61d717a6e03bbcea0f445030c0d5ca0c36e4c836ccf2c07a31f7b",
+      "match": true
+    },
+    "audit_evidence_path": "04_Research/strategies/STR_1719_WT001_DCA_v7/run_all.R (lines [step 1] + [step 14] log to stdout)"
+  },
+  "canonical_artifact_paths": {
+    "sot_root": "stage_artifacts/WT_WT-D20260527_001/",
+    "alpha_scores_parquet": "stage_artifacts/WT_WT-D20260527_001/alpha_scores.parquet",
+    "weights_csv": "stage_artifacts/WT_WT-D20260527_001/optimizer/weights.csv",
+    "covariance_parquet": "stage_artifacts/WT_WT-D20260527_001/risk/covariance.parquet",
+    "risk_artifacts": "stage_artifacts/WT_WT-D20260527_001/risk/",
+    "note": "Canonical SOT path = 'stage_artifacts/WT_WT-D20260527_001/' (no qepm/ prefix). The prompt-referenced 'qepm/stage_artifacts/' is a legacy alias not used in this WT. Per Codex C7 ACCEPT, declared explicit canonical path."
+  },
+  "pending_judge_gates": {
+    "Gate_12_NW_regression": {
+      "spec": "CAPM (1-factor) Newey-West regression on monthly net returns",
+      "required_outputs": ["t_NW", "alpha_monthly", "beta", "R2"]
+    },
+    "Gate_13_Carhart_3": {
+      "spec": "Fama-French 3-factor (MKT + SMB + HML)",
+      "required_outputs": ["alpha_annual", "t_NW", "factor_loadings"]
+    },
+    "Gate_14_Carhart_4": {
+      "spec": "Carhart 4-factor (MKT + SMB + HML + MOM)",
+      "required_outputs": ["alpha_annual", "t_NW", "factor_loadings"]
+    },
+    "Gate_15_FF5": {
+      "spec": "Fama-French 5-factor (MKT + SMB + HML + RMW + CMA)",
+      "required_outputs": ["alpha_annual", "t_NW", "factor_loadings"]
+    },
+    "Gate_16_FF6": {
+      "spec": "FF6 (FF5 + MOM)",
+      "required_outputs": ["alpha_annual", "t_NW", "factor_loadings"]
+    },
+    "DSR_method_shopping": {
+      "N_trials_alpha": 7,
+      "N_trials_risk": 5,
+      "N_trials_optimizer": 9,
+      "N_trials_total": 21,
+      "DSR_method": "Bailey-Lopez de Prado 2014 Deflated Sharpe Ratio",
+      "required_outputs": ["PSR", "DSR_post_method_shopping"]
+    },
+    "note": "Forge's role per CLAUDE.md Multi-Agent table = backtest integration (Charter v1.0 10-component). Judge stage owns Gate 0-18 + PIT verification. Pending gates documented per Codex C3 PARTIAL ACCEPT."
+  },
+  "pending_judge_baseline_comparison": {
+    "required_baselines": ["STR_1715_R5_PG2_admitted_book", "mega05_if_applicable", "EW_KOSPI200_KOSDAQ150_universe_passive"],
+    "comparison_requirements": ["same_period_2016-01_to_2024-01", "same_cost_model_v2.3_kr_retail_15bps", "same_DSR_penalty_method", "same_PerformanceAnalytics_functions"],
+    "forge_provided_baseline": "KOSPI200_total_return (same-period, same-data-pipeline, BM has no cost so direct net comparison)",
+    "note": "Forge benchmark_compare 10 metrics cover same-period KOSPI200 comparison. mega05 / STR_1715 / EW baselines require cross-WT context (Q-Lead/Judge orchestration). Per Codex C4 PARTIAL ACCEPT."
+  },
+  "oos_chart_status": {
+    "equity_curve_png": "04_Research/strategies/STR_1719_WT001_DCA_v7/output/equity_curve.png",
+    "annual_returns_png": "04_Research/strategies/STR_1719_WT001_DCA_v7/output/annual_returns.png",
+    "oos_zoom_chart_png": "04_Research/strategies/STR_1719_WT001_DCA_v7/output/oos_zoom_chart.png",
+    "drawdown_chart_png": "04_Research/strategies/STR_1719_WT001_DCA_v7/output/drawdown_chart.png",
+    "note": "Walk-forward bt 2016-01 to 2024-01. OOS zoom = recent 3Y (2021-2023, pre-cutoff)."
+  },
+  "pure_function_self_check": {
+    "boundary_hash_consistency": "PASS",
+    "weights_csv_modified": false,
+    "alpha_package_modified": false,
+    "risk_package_modified": false,
+    "opt_package_modified": false,
+    "schedule_fabrication": "NONE",
+    "schedule_fabrication_note": "weights.csv 97 sig_dates as-is. NO ProductionSchedule[N]m. NO alpha_scores head(N) holding-selection.",
+    "alpha_scores_usage": "NONE",
+    "alpha_scores_used": false,
+    "pure_function_violation": false
+  },
+  "charter_compliance": {
+    "P1_factor_zoo_reduction": "INHERITED (alpha: 4-family static EW post-momentum-drop)",
+    "P2_cost_aware": "PASS (net-of-cost backtest 15bps on traded notional; gross-cost-net audit PASS)",
+    "P3_uncertainty_aware": "INHERITED (alpha: P3/P4 confidence vector)",
+    "P4_direct_portfolio_learning": "N/A (two-stage architecture)",
+    "P5_crowding_risk": "INHERITED (risk: RF-R3b HHI defense 0.54 → optimizer M06 breadth mitigated)",
+    "P6_implementation_discipline": "PASS (realized_annual_TO_twoside 5.25 < 6.0 cap; max_w 0.13 < 0.20; n_names 15)",
+    "P7_attribution_feedback": "PARTIAL (benchmark_compare 10 metrics; full Brinson + Carhart 4 at Judge — see pending_judge_gates)",
+    "P8_ax_002_axiom": "PASS (no method-shopping override; weights.csv hash start/end identical; MDD hurdle FAIL acknowledged not silenced)"
+  },
+  "backtest_contract_audit": {
+    "n_checks": 16,
+    "pass": 15,
+    "warn": 1,
+    "fail": 0,
+    "integrity_status_contract": "WARNING",
+    "critical_fail": 0,
+    "high_fail": 0,
+    "audit_path": "04_Research/strategies/STR_1719_WT001_DCA_v7/output/10_audit.csv",
+    "note": "16 checks executed. 15 PASS + 1 medium WARN (lookahead_detector_self_scan function name mismatch). Contract integrity = WARNING. SEPARATE from Forge hurdle_gate_status which is FAIL on MDD_45pct."
+  },
+  "registry_status": {
+    "registered": true,
+    "registry_path": "qepm/registry/backtest_registry.csv",
+    "registry_entry_id": "WT-D20260527_001_STR_1719_WT001_DCA_v7_20260527_200058",
+    "block_on_fail_triggered": false,
+    "note": "Registry append PASSED (integrity_status='WARNING' did not trigger L3 block). Registry has run_id row with summary metrics. Hurdle FAIL is a Forge-package field (separate from registry integrity)."
+  },
+  "artifact_lineage_appended": true,
+  "artifact_lineage_path": "qepm/mailbox/worktask/WT-D20260527_001/artifact_lineage.json",
+  "ax_008_status": {
+    "forge_source": "HARD_HURDLE_FAIL_FORGE (Forge acknowledges Codex C1; MDD 59.74% > 45% gate)",
+    "codex_source": "REJECT (4 HIGH + 3 MEDIUM; primary concern MDD hurdle FAIL)",
+    "architect_source": "NOT_INVOKED",
+    "triangulation_target": "2/3 sources PASS",
+    "current_status": "0/2 PASS — Forge + Codex CONVERGE on rejection finding",
+    "recommendation": "Forward to Judge with hurdle_gate_failed flag. Judge may decide: (a) terminate WT, (b) send back to optimizer for M11_CVaR fallback, (c) send back to alpha for defensive overlay iteration."
+  },
+  "codex_critic_round": {
+    "round_number": 1,
+    "draft_path": "qepm/mailbox/worktask/WT-D20260527_001/forge_package_draft.json",
+    "critic_response_path": "qepm/mailbox/worktask/WT-D20260527_001/codex_critic_response_forge.json",
+    "critic_stance": "REJECT",
+    "critic_critical_concerns_count": 7,
+    "critic_high_severity_count": 4,
+    "critic_medium_severity_count": 3,
+    "critic_weakest_assumption": "The weakest assumption is that a contract audit with no critical/high audit failures is sufficient to forward the package, even though the actual realized strategy breaches the MDD hard gate and several Forge-specific admission checks are deferred or absent.",
+    "challenge_note_path": "qepm/mailbox/worktask/WT-D20260527_001/forge_challenge_note.md",
+    "challenge_note_sha256": "df3387ddf98f7c4d90ce3584ec248fa4649126b1654170201f26298a435f9891",
+    "resolution_summary": "4 ACCEPT-full (C1 MDD hurdle, C5 contract turnover unit, C6 explicit hash_audit, C7 canonical_artifact_paths) + 2 PARTIAL (C3 5-spec defer to Judge / C4 mega05 baseline defer to Judge) + 1 REBUTTAL (C2 lockbox-scope rule cites Forge as 폐기)",
+    "high_after_resolution": 1,
+    "ax_hard_fail_after_resolution": 0,
+    "pit_c1_violation": false,
+    "q_lead_manual_review_triggered": true,
+    "q_lead_review_reason": "integrity = HARD_HURDLE_FAIL_FORGE itself triggers Judge/Q-Lead review per Codex Round Decision Protocol (HIGH severity ≥ 5 trigger NOT met, but binding hurdle fail = explicit escalation)",
+    "resolved_at": "2026-05-27T20:18:14+09:00"
+  },
+  "agent_resolution": {
+    "status": "ACKNOWLEDGED_HURDLE_FAIL",
+    "note": "Forge acknowledges Codex Round 1 REJECT correctness on C1 (MDD hurdle). Strategy as constructed by alpha+risk+optimizer chain does not meet MDD < 45% hard gate. Pure Function v6.1 R12 constraint prevents Forge mitigation. Forward to Judge with explicit hurdle_gate_failed flag for adjudication.",
+    "forward_to": "judge",
+    "forge_disposition": "submit_with_flag"
+  },
+  "generated_at": "2026-05-27T20:18:14+09:00",
+  "forward_to": "judge",
+  "reproduction_command": "cd Quant_Module_Moltbot && Rscript -e 'source(\"04_Research/strategies/STR_1719_WT001_DCA_v7/run_all.R\")'"
+}

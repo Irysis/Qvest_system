@@ -1,0 +1,115 @@
+{
+  "task_id": "WT-D20260530_002",
+  "track": "SECTORRV",
+  "wt_type": "discovery",
+  "as_of_date": "2026-05-30",
+  "forecast_horizon": "1M",
+  "selection_objective": "icir",
+  "construction": "Sector-pair relative-value reversion translated to long-only 25-name sector-tilt. (1) Build cap-weighted sector daily index per RAWDATA Sector (KSI Lv1, 27 sectors) using LAGGED (t-1) market cap as weights (C2 same-day cap-in-return avoidance). (2) For each survivor-core pair (A,B): spread = log(idx_A / idx_B); trailing 252d rolling z; LAG z by 1 day (PIT: signal at t uses data thru t-1). (3) |z|>=2 extreme => bet on reversion: cheap sector +tilt, expensive sector -tilt, magnitude = min(|z|,4). z>+2 => A expensive(tilt -), B cheap(tilt +). (4) Per-stock score = sum of its sector's signed tilt across active pairs. Long-only translation: only positive-tilt (cheap-side) names selectable; top-25 EW long-only via canonical_screen_bt. Survivor-core = 5 pairs only (over-fit avoidance), NOT full 18 robust set.",
+  "survivor_core_pairs": ["보험 / 유틸리티", "상사,자본재 / 필수소비재", "소매(유통) / 유틸리티", "디스플레이 / 철강", "디스플레이 / 보험"],
+  "sector_source": "RAWDATA Sector column (QuantiWise/internal, KSI Lv1, 27 sectors). Slow-moving classification, PIT-safe at sig_date. Cap weights from RAWDATA Size, lagged t-1.",
+  "factor_specs": [
+    {
+      "factor_family": "RelativeValue_MeanReversion",
+      "proxy": "sector_pair_spread_zscore_tilt",
+      "formula": "spread_{A,B,t} = log( capwt_idx_A,t-1 / capwt_idx_B,t-1 ); z = (spread - rollmean_252) / rollsd_252, lagged 1d; tilt = sign-of-reversion * min(|z|,4) if |z|>=2 else 0; per-stock score = sum_{active pairs} sector_tilt(stock.sector)",
+      "lag_rule": "price/cap t-1; spread z computed thru t-1 (lagged 1d); sector classification PIT-safe slow-moving",
+      "winsorization": "tilt magnitude capped at 4 (|z| excess truncated)",
+      "neutralization": "none (sector-tilt IS the signal; long-only cheap-side selection)",
+      "economic_rationale": "Cap-weighted sector indices co-move via shared macro/style exposure; when a survivor-core pair's relative valuation (price log-ratio) stretches >2sd from its 252d trailing mean, the historically-validated tendency is mean-reversion of the spread (cheap sector outperforms expensive sector over ~21d). The pairs were chosen because their reversion was BH-FDR q0.10 + clean-walk-forward-OOS survivors (insurance/utility additionally Bonferroni-pass: screen nw_t 4.84 full, 3.96 pre-lockbox, hit 0.73, n=326). Mechanism = transient cross-sector dislocation (flow/rotation overshoot) that reverts as fundamentals reassert; structural (sector-allocation), not idiosyncratic stock-picking.",
+      "weight_theta": 1.0,
+      "redundancy_cluster_id": "sector_relative_value_reversion",
+      "references": ["Gatev-Goetzmann-Rouwenhorst 2006 RFS (Pairs Trading)", "Cohen-Polk-Vuolteenaho 2003 JF (The Value Spread)", "Asness-Porter-Stevens 2000 (Industry-Relative Characteristics)"]
+    }
+  ],
+  "measurement": {
+    "metric_type_authoritative": "canonical_screen (canonical_screen_bt, top-25 EW long-only, contract build_benchmark_compare NW lag-3). NOT proxy hand-calc. forge build_bt_result remains admission-binding authority.",
+    "lockbox_cutoff": "2023-12-22",
+    "in_sample_window": "2004-01 .. 2023-12 (canonical n_months = 176 active-selection months)",
+    "oos_window": "2024-01 .. 2026-04 (canonical n_months = 21)",
+    "full_window": "2004-01 .. 2026-04 (n_months = 197)",
+    "top_n": 25,
+    "cost_bps_oneway": 15,
+    "liq_min_won": 200000000,
+    "universe": "KOSPI200_KOSDAQ150_intersection",
+    "z_thr": 2.0,
+    "roll_win_days": 252
+  },
+  "diagnostics_in_sample": {
+    "portfolio_alpha_t_canonical_nw_lag3": 1.661,
+    "net_sr": 0.391,
+    "information_ratio": 0.391,
+    "alpha_annualized": 0.0458,
+    "turnover_annual": 2.56,
+    "n_months": 176,
+    "rank_ic": 0.0084,
+    "icir": 0.067,
+    "harvey_t_rankIC_nw_lag3": 1.46,
+    "subperiod_stability": 0.667,
+    "subperiod_rank_ic": {"E1_2004_2013": 0.0226, "E2_2014_2019": 0.0023, "E3_2020_2023": -0.0009},
+    "dsr_n325_screen_honest": 0.143,
+    "dsr_n28_session": 0.480,
+    "realized_beta_kospi200": 0.967,
+    "return_cor_active_vs_str1715": 0.379,
+    "return_cor_port_vs_str1715": 0.832,
+    "n_active_pair_months": 178,
+    "sel_months_in": 176
+  },
+  "diagnostics_out_of_sample_2024_2026": {
+    "portfolio_alpha_t_canonical_nw_lag3": 0.879,
+    "net_sr": 0.515,
+    "information_ratio": 0.515,
+    "turnover_annual": 2.56,
+    "n_months": 21,
+    "sel_months_oos": 21,
+    "interpretation": "OOS portfolio-alpha t = 0.879 (positive, no reversal — contrast WT-D20260529_005 SECTOR_REL which reversed to -1.665). But t<<2, statistically weak on 21 months. net_sr 0.515 OOS slightly above in-sample 0.391, suggesting NO decay but also NO standalone strength."
+  },
+  "diagnostics_full": {
+    "portfolio_alpha_t_canonical_nw_lag3": 1.072,
+    "net_sr": 0.405,
+    "turnover_annual": 2.56,
+    "n_months": 197
+  },
+  "ic_vs_portfolio_alpha_note": "rank-IC (0.0084, advisory) and rank-IC harvey-t (1.46) are WEAK — this is expected because the signal is a SECTOR-allocation tilt, not a cross-sectional stock-ranking signal; within a tilted sector all stocks share the same tilt so cross-sectional dispersion is low by design. portfolio-alpha t (1.661 in-sample, NW lag-3) is the authoritative metric per measurement-graduation §2. Both reported separately and explicitly distinguished (Cycle 2 lesson).",
+  "graduation_assessment": {
+    "hard_gate_portfolio_alpha_t_nw": {"hurdle": 2.95, "in_sample_value": 1.661, "PASS": false, "note": "alpha-stage canonical_screen value; forge-authoritative not yet computed. Below 2.95 HARD hurdle."},
+    "hard_gate_dsr": {"hurdle": 0.5, "value_n28": 0.480, "value_n325": 0.143, "PASS": false, "note": "DSR below 0.5 under both honest trial counts. binding."},
+    "advisory_rank_ic": {"hurdle": 0.04, "value": 0.0084, "note": "advisory; low by sector-tilt design."},
+    "overall": "DOES NOT meet discovery-graduation HARD gates (portfolio_alpha_t 1.661 < 2.95, DSR 0.143-0.480 < 0.5) at the alpha canonical_screen stage. This is a QUALIFIED-but-not-winner result: the screen survival (FDR+OOS) earned a measurement slot, and the canonical portfolio-alpha t is the authoritative read — which is weak."
+  },
+  "diagnostics": {
+    "rank_ic": 0.0084,
+    "icir": 0.067,
+    "monotonicity": null,
+    "subperiod_stability": 0.667,
+    "turnover_proxy": 2.56,
+    "harvey_t_stat": 1.46,
+    "post_neutralization_ic": null
+  },
+  "selection_objective_value": 0.067,
+  "n_trials_within": 1,
+  "n_trials_within_detail": "1 within-track construction (survivor-core 5-pair tilt, top-25). z_thr/roll_win/top_n are spec parameters, not separate trials.",
+  "n_trials_honest_screen": 325,
+  "session_cumulative_trials": 28,
+  "alpha_inheritance_cor_vs_str1715": 0.379,
+  "finding": "Sector-pair RV reversion translated to long-only 25-name cheap-side sector-tilt (5 survivor-core pairs led by 보험/유틸리티) measured via canonical_screen_bt: IN-SAMPLE (2004-2023, N=176) portfolio-alpha t (NW lag-3) = 1.661, net_sr 0.391, TO 2.56/yr (well under cap), beta 0.967, active-return cor vs STR_1715 = 0.379 (lower 1st-eigenmode contamination than SECTOR_REL 0.528 / BAB-VALUE 0.76-0.78). OOS (2024-2026, N=21) portfolio-alpha t = 0.879 (positive, NO reversal — unlike the closely-related SECTOR_REL which reversed to -1.665), net_sr 0.515. FULL (N=197) PORT_t 1.072. DSR honest 0.143 (n=325 screen) / 0.480 (n=28 session) — both < 0.5. rank-IC 0.0084 (advisory, weak by sector-tilt design; portfolio-alpha t is authoritative). The pair-screen survival (BH-FDR q0.10 + clean-OOS) earned this signal a measurement slot but the long-only-translated portfolio-alpha t does NOT clear the 2.95 hurdle nor DSR 0.5 — i.e. the spread-reversion signal that screened strongly in a 2-leg long-short pair frame does NOT survive translation into a long-only cap-constrained 25-name tilt (1st-eigenmode + long-only no-short of the expensive leg dilutes it). Low turnover and reduced STR_1715 correlation are the two genuinely favorable properties.",
+  "honest_caveats": [
+    "★ SCREEN-vs-PORTFOLIO GAP (most important): screen pair nw_t 4.84 (long-short 2-leg) -> long-only 25-name portfolio-alpha t 1.661 in-sample. The strong screen signal does NOT translate to long-only tradeable alpha — consistent with measurement-graduation §6 (long-only no-short cannot realize the short leg of a relative-value spread).",
+    "DSR < 0.5 under both honest trial counts (0.143 with 325-pair screen selection, 0.480 with 28 session-cumulative). Multi-testing binding — survivor selection from 325 pairs is a large search.",
+    "rank-IC 0.0084 << 0.04 (advisory). Sector-tilt by design has low cross-sectional dispersion within a sector; not a stock-ranking signal. portfolio-alpha t authoritative.",
+    "OOS N=21 months only — OOS PORT_t 0.879 positive is encouraging vs SECTOR_REL reversal but statistically weak (|t|<2) on a short window. NOT evidence of standalone OOS strength.",
+    "return_cor_port vs STR_1715 = 0.832 (beta 0.967): long-only 1st eigenmode dominates the gross portfolio. active cor 0.379 is the differentiated part (< SECTOR_REL 0.528).",
+    "Only survivor-core 5 pairs used (over-fit avoidance). Full-18 / other z_thr / other roll_win / Lv2 sector / longer horizon NOT explored this run.",
+    "verdict/공간폐쇄/소거 금지: this is the measured result of THIS construction (N_in=176, N_oos=21, 5-pair long-only top-25 tilt). It is qualification-grade not winner-grade. Abandonment/admission judgment = Q-Lead/도훈 authority."
+  ],
+  "challenge_flags": [
+    {"id": "RF-A7", "severity": "HIGH", "note": "portfolio-alpha t in-sample 1.661 < 2.95 hurdle AND DSR < 0.5 — does not meet discovery-graduation HARD gates at canonical_screen stage."},
+    {"id": "RF-A2", "severity": "MEDIUM", "note": "strong long-short screen signal (nw_t 4.84) does NOT translate to long-only portfolio alpha (1.661) — screen-vs-portfolio gap."},
+    {"id": "RF-A8", "severity": "LOW_FAVORABLE", "note": "OOS PORT_t 0.879 positive (no reversal, unlike SECTOR_REL -1.665) + low TO 2.56 + active cor vs STR_1715 0.379 — favorable orthogonality/implementation properties despite weak standalone alpha."}
+  ],
+  "artifacts": {
+    "alpha_scores_parquet": "stage_artifacts/WT_WT_D20260530_002_SECTORRV/alpha_scores.parquet (clean — Date/Ticker/Sector/tilt/score, no forward Ret)",
+    "results_json": "stage_artifacts/WT_WT_D20260530_002_SECTORRV/sector_rv_results.json",
+    "pipeline_script": "stage_artifacts/WT_WT_D20260530_002_SECTORRV/run_sector_rv.R"
+  }
+}

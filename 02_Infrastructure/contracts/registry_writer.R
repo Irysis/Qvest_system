@@ -7,7 +7,7 @@ suppressMessages({library(data.table)})
 
 REGISTRY_PATH <- file.path(
   ifelse(exists("PROJECT_ROOT"), PROJECT_ROOT,
-         "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"),
+         Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))),
   "qepm/registry/backtest_registry.csv"
 )
 

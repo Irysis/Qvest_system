@@ -6,7 +6,7 @@ cat("=== weight_engine.cpp 컴파일 + 검증 ===\n")
 cat("시작:", format(Sys.time()), "\n\n")
 
 # ── 경로 설정 ─────────────────────────────────────────────────────────────────
-proj_root <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+proj_root <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 cpp_path  <- file.path(proj_root, "02_Infrastructure/portfolio/weight_engine.cpp")
 harness_path <- file.path(proj_root, "02_Infrastructure/backtest_harness.R")
 

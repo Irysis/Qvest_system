@@ -4,8 +4,8 @@ cat("=== STR_1622: S3 Orthogonality Analysis ===\n")
 options(scipen=999); Sys.setenv(TZ="Asia/Seoul")
 set.seed(1622)
 
-INFRA_DIR  <- "/mnt/c/Users/User/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot/02_Infrastructure"
-STRAT_DIR  <- "/mnt/c/Users/User/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot/research_output/strategies/STR_1622_ic_weighted_statistical_blend"
+INFRA_DIR  <- file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")), "02_Infrastructure")
+STRAT_DIR  <- file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")), "research_output/strategies/STR_1622_ic_weighted_statistical_blend")
 STRATEGY_ID <- "STR_1622"
 FACTOR_ID   <- "C19+V14+Q01+D01+M25_IC_Weighted"
 

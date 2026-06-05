@@ -13,7 +13,7 @@ HYP_ID="${1:-}"
 ARTIFACTS_DIR="${2:-}"
 [ -z "$HYP_ID" ] || [ -z "$ARTIFACTS_DIR" ] && exit 0
 
-DIR=$(ls -d /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo "$PWD")
+DIR=$(ls -d /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo "$PWD")
 LOG="/tmp/s0_debate_enforcer.log"
 CODEX_R2_OUT="$DIR/stage_artifacts/r2_codex_verdict_${HYP_ID}.json"
 

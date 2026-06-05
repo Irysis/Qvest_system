@@ -21,7 +21,7 @@
 
 # ─── Bootstrap ───────────────────────────────────────────────────────────────
 .pg_root <- tryCatch(dirname(sys.frame(1)$ofile), error = function(e) {
-  "/mnt/c/Users/User/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot/02_Infrastructure/portfolio"
+  file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")), "02_Infrastructure/portfolio")
 })
 # config.R is one level up from portfolio/
 if (!exists("INFRA_DIR")) {
@@ -629,10 +629,14 @@ pg1_admission <- function(portfolio_id, candidate_id, validated_role, pg0_artifa
 pg1_admission_with_book_context <- function(portfolio_id, candidate_id,
                                             validated_role, pg0_artifact,
                                             incumbent_book_state,
-                                            marginal_ir_threshold = 0.05) {
+                                            marginal_ir_threshold = 0.05,
+                                            artifact_type = "STR") {
+  # artifact_type ∈ {STR, FR}: FR(factor rotation 운용체계)도 STR과 동일 book-marginal ΔIR 경로로
+  #   admit 평가. book sleeve = STR(단일모듈) 또는 FR(1 sleeve). 도훈 2026-06-05. book_state 쓰기=수동.
 
   # ── Step 1: standalone admission (do NOT modify pg1_admission) ──────────────
   artifact <- pg1_admission(portfolio_id, candidate_id, validated_role, pg0_artifact)
+  artifact$artifact_type <- artifact_type
 
   # REJECT short-circuits: book context cannot rescue a rejected sleeve.
   if (identical(artifact$decision, "REJECT")) {

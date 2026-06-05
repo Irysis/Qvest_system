@@ -1,0 +1,110 @@
+{
+  "task_id": "WT-D20260529_002",
+  "tag": "NN",
+  "wt_type": "discovery",
+  "as_of_date": "2026-05-29",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "selection_objective": "icir",
+  "model_type": "MLP_walkforward_mcdropout",
+  "codex_round": {
+    "stance": "REJECT",
+    "agent_disposition": "REVISE",
+    "challenge_note": "qepm/mailbox/worktask/WT-D20260529_002/challenge_note_NN.md",
+    "critic_response": "qepm/mailbox/worktask/WT-D20260529_002/codex_critic_response_alpha_NN.json",
+    "summary": "C1/C2 ACCEPT (cor vs D 0.347 + portfolio-t 2.27<3.0 + TO 7.88>6.0 → standalone 부적격). C3 PARTIAL (DSR 0.716→0.277 panel-budget 상속 보정). C4 REBUTTAL(L-164 carve-out)+PARTIAL(lineage emit). C5 REBUTTAL(weights/cov 역할경계). C6 REBUTTAL(monotonicity 0.521 수치오류; 실측 Spearman 0.891 / adjacent 0.778)."
+  },
+  "model_description": "117-feature MLP (128-64-32-1, GELU+BatchNorm+Dropout 0.3). net-of-cost loss = MSE(cross-section z target) + lambda_to(0.05)*E|pred|. MC-dropout (T=30) → mu_tilde = mu_hat - k*SE (k=1). Walk-forward purged CV 10 folds (train>=5y, test 1y, embargo 30d). Lockbox sig_date<=2023-12-22. Identical 117-feature panel/target as tree-D for fair model-class comparison (NN vs tree).",
+  "signal_matrix_ref": "stage_artifacts/WT_WT_D20260529_002_NN/alpha_scores.parquet",
+  "economic_rationale": "Factor 간 비선형 상호작용(value×momentum, quality×size, skewness×max_return, kurtosis×turnover)은 선형 합성/tree axis-aligned split로 불완전 포착. MLP가 연속·교차 비선형 함수를 근사해 tree(D)가 놓치는 잔여 nonlinear interaction alpha 추출. 실증: tree-D에 cross-section residualize 후에도 rank-IC=0.0240 (Harvey-t=3.10) 유지 → tree-D 신호 너머 incremental nonlinear 성분 존재.",
+  "redundancy_cluster_id": "ML_daily_informed_monthly_cluster — D tree와 동일 117-feature panel/target. cluster 내 model-class 다각화(NN vs tree). cor vs D=0.347 = 동일 cluster 형제. residual-NN만 incremental orthogonal 성분.",
+  "factor_specs": [
+    {
+      "factor_family": "ML_NN_nonlinear_composite",
+      "proxy": "MLP(117 daily-informed monthly features)",
+      "formula": "mu_hat = MLP(z_features); features = momentum/idiovol/beta/skew/kurt/liquidity/value/quality/size/regime x {raw, 21d&60d mean/std/zscore, rank_pct, rank_change, xs_zscore, 4 interaction terms}",
+      "lag_rule": "fundamental quarterly 45d / annual May / price t-1 / daily rolling on Usable_Date<=sig_date (L-164 v1.1 ML carve-out)",
+      "winsorization": "3std (panel pre-winsorized; log_ret target winsorized)",
+      "neutralization": "cross-section z-score target (per sig_date demean/scale)",
+      "economic_rationale": "nonlinear factor interaction",
+      "weight_theta": 1.0,
+      "references": ["Gu-Kelly-Xiu 2020 RFS", "Jensen-Kelly-Malamud-Pedersen 2022", "Liao-Ma-Neuhierl-Schilling 2025 RFS", "Gal-Ghahramani 2016", "Bailey-Lopez de Prado 2014"]
+    }
+  ],
+  "diagnostics": {
+    "rank_ic": 0.0414,
+    "rank_ic_median": 0.0440,
+    "icir": 0.426,
+    "hit_rate": 0.6121,
+    "n_sig_dates": 116,
+    "harvey_t_rankIC": 4.59,
+    "p_value_rankic": 1.12e-05,
+    "ic_ci_95": [0.0228, 0.0606],
+    "rank_ic_mu_tilde": 0.0446,
+    "subperiod_stability": 1.0,
+    "subperiod_metrics": {
+      "2008-2014": {"note": "all positive"},
+      "2015-2019": {"note": "all positive"},
+      "2020-2023": {"note": "all positive"}
+    },
+    "monotonicity_decile_spearman": 0.891,
+    "monotonicity_adjacent": 0.778,
+    "monotonicity_top_bottom_spread_pct": 1.262,
+    "monotonicity_note": "C6 정정: Codex 주장 0.521 수치오류. 실측 decile-rank Spearman 0.891 (강함) / adjacent step 0.778 (0.80 미달, 중간 decile noise). D0 -0.06% -> D9 +1.20%.",
+    "dsr_standalone": 0.716,
+    "dsr_budget_corrected": 0.277,
+    "dsr_authoritative": 0.277,
+    "dsr_note": "C3 PARTIAL: n_trials_eff 3(NN단독)->33(D panel-budget 상속). 보정 DSR=0.277 < 0.5 graduation 미달. Judge authoritative로 0.277 채택 권고.",
+    "ax001_v2_bad_normal_ratio": 1.640,
+    "turnover_proxy_yr": 7.88
+  },
+  "portfolio_alpha": {
+    "config": "band-buffer entry20/exit35, top20 EW long-only, net-of-cost 15bps",
+    "harvey_t_portfolio": 2.267,
+    "p_value": 0.025,
+    "net_active_sr_ann": 0.647,
+    "turnover_yr_oneway": 7.88,
+    "mean_active_monthly_pct": 0.733,
+    "n_months": 116,
+    "note": "Implementation Discipline TO 6.0/yr 초과. entry15/exit30시 TO 6.83(t=1.80) trade-off."
+  },
+  "cycle2_lesson_rankIC_vs_portfolio_alpha": {
+    "rank_ic_harvey_t": 4.59,
+    "portfolio_alpha_harvey_t": 2.267,
+    "note": "rank-IC Harvey-t(4.59) >> portfolio-alpha t(2.27). Judge는 portfolio-alpha t를 authoritative로 채택. 단일 NN net SR=0.647 — DSR 천장(단일 신호 SR 2.5 불가, multi-sleeve 전제)."
+  },
+  "orthogonality_vs_incumbents": {
+    "STR_1715_fundamental": {"abs_mean_monthly_spearman": 0.015, "verdict": "OK <0.30"},
+    "D_tree_ML": {"abs_mean_monthly_spearman": 0.347, "verdict": "HIGH >=0.30 (same panel sibling)"},
+    "FLOW_contrarian": {"abs_mean_monthly_spearman": 0.012, "verdict": "OK <0.30"},
+    "cor_vs_str1715": 0.015,
+    "cor_vs_D": 0.347,
+    "cor_vs_FLOW": 0.012,
+    "residualized_vs_D": {"rank_ic": 0.0240, "icir": 0.291, "harvey_t_nw": 3.10, "interpretation": "tree-D 잔차에 incremental nonlinear alpha. raw NN은 D와 0.347 형제이나 residual 성분이 직교 source."}
+  },
+  "method_shopping_log": {
+    "alpha_agent": {
+      "candidates_tried": 3,
+      "method_log": [
+        {"name": "MLP_raw_top20_clean", "portfolio_alpha_t": 1.999, "turnover_yr": 9.13, "selected": false},
+        {"name": "MLP_band_buffer_entry20_exit35", "portfolio_alpha_t": 2.267, "turnover_yr": 7.88, "selected": true},
+        {"name": "MLP_residualized_vs_D_band_buffer", "portfolio_alpha_t": 1.369, "turnover_yr": 7.99, "selected": false, "note": "직교성 높으나 portfolio-alpha 약화 — 진단용 보관"}
+      ]
+    }
+  },
+  "challenge_flags": [
+    {"id": "RF-NN-1", "severity": "HIGH", "concern": "cor vs D(tree) 0.347 > 0.30. raw NN은 D와 동일 panel/target 형제. standalone 5th orthogonal source 부적격. residual-NN(rank-IC 0.024 Harvey-t 3.10)은 incremental 성분."},
+    {"id": "RF-NN-2", "severity": "MEDIUM", "concern": "turnover 7.88/yr > 6.0/yr Implementation Discipline. band buffer로 9.13->7.88 완화했으나 미달."},
+    {"id": "RF-NN-3", "severity": "HIGH", "concern": "rank-IC Harvey-t(4.59) vs portfolio-alpha t(2.27) divergence. portfolio 유의성 marginal(p=0.025). 단일 net SR 0.647 — multi-sleeve 전제."},
+    {"id": "RF-NN-4", "severity": "HIGH", "concern": "DSR budget-corrected 0.277 < 0.5. 동일 D panel search budget 상속(n_trials_eff 3->33). graduation 미달."}
+  ],
+  "graduation_self_assessment": {
+    "min_rank_ic_0.04": "PASS (0.0414)",
+    "min_icir_0.20": "PASS (0.426)",
+    "min_subperiod_stability_0.50": "PASS (1.0)",
+    "min_harvey_t_3.0_rankIC": "PASS (4.59)",
+    "min_harvey_t_3.0_portfolio": "FAIL (2.27)",
+    "min_dsr_0.5": "FAIL (budget-corrected 0.277)",
+    "verdict_self": "REVISE — standalone graduation 부적격(portfolio-t + DSR FAIL, cor vs D 0.347). 단 incremental nonlinear 입증(residual rank-IC 0.024 Harvey-t 3.10). 재포지셔닝 권고: (a) D+NN ensemble(model-class blend) 또는 (b) residual-overlay. STR_1715/FLOW 직교성 OK."
+  }
+}

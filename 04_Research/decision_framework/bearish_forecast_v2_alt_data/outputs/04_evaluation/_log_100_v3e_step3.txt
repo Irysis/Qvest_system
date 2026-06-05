@@ -1,0 +1,181 @@
+[Cycle 45E Python] Device: cuda
+[Cycle 45E] CUDA memory fraction set to 0.30 (parallel cycles)
+[Cycle 45E] Mixed precision (torch.cuda.amp): True
+======================================================================
+[Cycle 45E Architecture Pivot — PatchTST + N-BEATS]
+[v1.3 baseline 69 features, walk-forward 5-fold CV, patience 15 retain]
+[OOS window: 2018-2026 (fold 5 valid 2016-2017 제외)]
+======================================================================
+
+======================================================================
+[Cycle 45E walk-forward] PATCHTST target: y_tail_q15
+======================================================================
+
+  --- Fold1_Lehman ---
+/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/.venv_dpl/lib/python3.12/site-packages/numpy/lib/_nanfunctions_impl.py:1215: RuntimeWarning: All-NaN slice encountered
+  return fnb._ureduce(a, func=_nanmedian, keepdims=keepdims,
+    [PATCHTST] Fold1_Lehman train_n=3194 valid_n=501 pos_w=6.38 target_ep=80
+      Early stop @ ep 16 (best ep=1, best_vpr=0.2116)
+
+  --- Fold2_EuroAfter ---
+/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/.venv_dpl/lib/python3.12/site-packages/numpy/lib/_nanfunctions_impl.py:1215: RuntimeWarning: All-NaN slice encountered
+  return fnb._ureduce(a, func=_nanmedian, keepdims=keepdims,
+    [PATCHTST] Fold2_EuroAfter train_n=3695 valid_n=499 pos_w=6.13 target_ep=80
+      Early stop @ ep 16 (best ep=1, best_vpr=0.0825)
+
+  --- Fold3_CyprusTT ---
+    [PATCHTST] Fold3_CyprusTT train_n=4194 valid_n=495 pos_w=6.56 target_ep=80
+      Early stop @ ep 17 (best ep=2, best_vpr=0.0687)
+
+  --- Fold4_KRLowVol ---
+    [PATCHTST] Fold4_KRLowVol train_n=4689 valid_n=493 pos_w=7.00 target_ep=80
+      Early stop @ ep 35 (best ep=20, best_vpr=0.0790)
+
+  --- Fold5_BestSignal ---
+    [PATCHTST] Fold5_BestSignal train_n=5182 valid_n=489 pos_w=7.45 target_ep=80
+      Early stop @ ep 17 (best ep=2, best_vpr=0.4030)
+
+  [Avg best_epoch across 5 folds] = 5
+  [Per-fold best_epoch] = [1, 1, 2, 20, 2]
+  [Per-fold best_valid_pr] = [0.2116, 0.0825, 0.0687, 0.079, 0.403]
+
+  --- Final training: TRAIN 1995-2015 / epochs=5 (no valid, no early stop) ---
+    [PATCHTST] FINAL_TRAIN train_n=5182 valid_n=- pos_w=7.45 target_ep=5
+
+  --- OOS evaluation: 2018-2026 (fold 5 valid 2016-2017 제외) ---
+
+  [PATCHTST] OOS PR-AUC: 0.3256  | elapsed=157.6s
+  GPU memory peak: 875.9 MB
+  Saved: /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/03_models/v3e_arch_pivot/predictions_patchtst_y_tail_q15.parquet
+
+======================================================================
+[Cycle 45E walk-forward] PATCHTST target: y_onset
+======================================================================
+
+  --- Fold1_Lehman ---
+/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/.venv_dpl/lib/python3.12/site-packages/numpy/lib/_nanfunctions_impl.py:1215: RuntimeWarning: All-NaN slice encountered
+  return fnb._ureduce(a, func=_nanmedian, keepdims=keepdims,
+    [PATCHTST] Fold1_Lehman train_n=3194 valid_n=501 pos_w=8.00 target_ep=80
+      Early stop @ ep 28 (best ep=13, best_vpr=0.6806)
+
+  --- Fold2_EuroAfter ---
+    [PATCHTST] Fold2_EuroAfter train_n=3695 valid_n=499 pos_w=8.00 target_ep=80
+      Early stop @ ep 22 (best ep=7, best_vpr=0.4448)
+
+  --- Fold3_CyprusTT ---
+    [PATCHTST] Fold3_CyprusTT train_n=4194 valid_n=495 pos_w=8.00 target_ep=80
+      Early stop @ ep 57 (best ep=42, best_vpr=0.1106)
+
+  --- Fold4_KRLowVol ---
+    [PATCHTST] Fold4_KRLowVol train_n=4689 valid_n=493 pos_w=8.00 target_ep=80
+      Early stop @ ep 73 (best ep=58, best_vpr=0.4091)
+
+  --- Fold5_BestSignal ---
+    [PATCHTST] Fold5_BestSignal train_n=5182 valid_n=489 pos_w=8.00 target_ep=80
+      Early stop @ ep 15 (best ep=-1, best_vpr=-1.0000)
+
+  [Avg best_epoch across 4 folds] = 30
+  [Per-fold best_epoch] = [13, 7, 42, 58, None]
+  [Per-fold best_valid_pr] = [0.6806, 0.4448, 0.1106, 0.4091, -1.0]
+
+  --- Final training: TRAIN 1995-2015 / epochs=30 (no valid, no early stop) ---
+    [PATCHTST] FINAL_TRAIN train_n=5182 valid_n=- pos_w=8.00 target_ep=30
+
+  --- OOS evaluation: 2018-2026 (fold 5 valid 2016-2017 제외) ---
+
+  [PATCHTST] OOS PR-AUC: 0.1446  | elapsed=283.2s
+  GPU memory peak: 875.9 MB
+  Saved: /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/03_models/v3e_arch_pivot/predictions_patchtst_y_onset.parquet
+
+======================================================================
+[Cycle 45E walk-forward] NBEATS target: y_tail_q15
+======================================================================
+
+  --- Fold1_Lehman ---
+/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/.venv_dpl/lib/python3.12/site-packages/numpy/lib/_nanfunctions_impl.py:1215: RuntimeWarning: All-NaN slice encountered
+  return fnb._ureduce(a, func=_nanmedian, keepdims=keepdims,
+    [NBEATS] Fold1_Lehman train_n=3194 valid_n=501 pos_w=6.38 target_ep=80
+      Early stop @ ep 18 (best ep=3, best_vpr=0.5162)
+
+  --- Fold2_EuroAfter ---
+    [NBEATS] Fold2_EuroAfter train_n=3695 valid_n=499 pos_w=6.13 target_ep=80
+      Early stop @ ep 20 (best ep=5, best_vpr=0.4178)
+
+  --- Fold3_CyprusTT ---
+    [NBEATS] Fold3_CyprusTT train_n=4194 valid_n=495 pos_w=6.56 target_ep=80
+      Early stop @ ep 16 (best ep=1, best_vpr=0.1421)
+
+  --- Fold4_KRLowVol ---
+    [NBEATS] Fold4_KRLowVol train_n=4689 valid_n=493 pos_w=7.00 target_ep=80
+      Early stop @ ep 16 (best ep=1, best_vpr=0.1953)
+
+  --- Fold5_BestSignal ---
+    [NBEATS] Fold5_BestSignal train_n=5182 valid_n=489 pos_w=7.45 target_ep=80
+      Early stop @ ep 35 (best ep=20, best_vpr=0.2979)
+
+  [Avg best_epoch across 5 folds] = 6
+  [Per-fold best_epoch] = [3, 5, 1, 1, 20]
+  [Per-fold best_valid_pr] = [0.5162, 0.4178, 0.1421, 0.1953, 0.2979]
+
+  --- Final training: TRAIN 1995-2015 / epochs=6 (no valid, no early stop) ---
+    [NBEATS] FINAL_TRAIN train_n=5182 valid_n=- pos_w=7.45 target_ep=6
+
+  --- OOS evaluation: 2018-2026 (fold 5 valid 2016-2017 제외) ---
+
+  [NBEATS] OOS PR-AUC: 0.5479  | elapsed=200.2s
+  GPU memory peak: 239.2 MB
+  Saved: /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/03_models/v3e_arch_pivot/predictions_nbeats_y_tail_q15.parquet
+
+======================================================================
+[Cycle 45E walk-forward] NBEATS target: y_onset
+======================================================================
+
+  --- Fold1_Lehman ---
+/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/.venv_dpl/lib/python3.12/site-packages/numpy/lib/_nanfunctions_impl.py:1215: RuntimeWarning: All-NaN slice encountered
+  return fnb._ureduce(a, func=_nanmedian, keepdims=keepdims,
+    [NBEATS] Fold1_Lehman train_n=3194 valid_n=501 pos_w=8.00 target_ep=80
+      Early stop @ ep 16 (best ep=1, best_vpr=0.2571)
+
+  --- Fold2_EuroAfter ---
+    [NBEATS] Fold2_EuroAfter train_n=3695 valid_n=499 pos_w=8.00 target_ep=80
+      Early stop @ ep 43 (best ep=28, best_vpr=0.3192)
+
+  --- Fold3_CyprusTT ---
+    [NBEATS] Fold3_CyprusTT train_n=4194 valid_n=495 pos_w=8.00 target_ep=80
+      Early stop @ ep 18 (best ep=3, best_vpr=0.5432)
+
+  --- Fold4_KRLowVol ---
+    [NBEATS] Fold4_KRLowVol train_n=4689 valid_n=493 pos_w=8.00 target_ep=80
+      Early stop @ ep 19 (best ep=4, best_vpr=0.3104)
+
+  --- Fold5_BestSignal ---
+    [NBEATS] Fold5_BestSignal train_n=5182 valid_n=489 pos_w=8.00 target_ep=80
+      Early stop @ ep 15 (best ep=-1, best_vpr=-1.0000)
+
+  [Avg best_epoch across 4 folds] = 9
+  [Per-fold best_epoch] = [1, 28, 3, 4, None]
+  [Per-fold best_valid_pr] = [0.2571, 0.3192, 0.5432, 0.3104, -1.0]
+
+  --- Final training: TRAIN 1995-2015 / epochs=9 (no valid, no early stop) ---
+    [NBEATS] FINAL_TRAIN train_n=5182 valid_n=- pos_w=8.00 target_ep=9
+
+  --- OOS evaluation: 2018-2026 (fold 5 valid 2016-2017 제외) ---
+
+  [NBEATS] OOS PR-AUC: 0.2143  | elapsed=216.1s
+  GPU memory peak: 239.2 MB
+  Saved: /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/03_models/v3e_arch_pivot/predictions_nbeats_y_onset.parquet
+
+======================================================================
+[Python Cycle 45E SUMMARY] PatchTST + N-BEATS architecture pivot
+  PatchTST y_tail_q15: OOS=0.3256  avg_ep=5
+  PatchTST y_onset:    OOS=0.1446  avg_ep=30
+  N-BEATS  y_tail_q15: OOS=0.5479  avg_ep=6
+  N-BEATS  y_onset:    OOS=0.2143  avg_ep=9
+======================================================================
+
+[Architecture pivot verdict (y_tail_q15)]
+  PatchTST vs LSTM (45D): 0.3253 / ep=5  →  0.3256 / avg_ep=5  (Δ_PR=+0.0003 / Δ_ep=+0)
+  N-BEATS  vs TFT  (45D): 0.4508 / ep=10 →  0.5479 / avg_ep=6  (Δ_PR=+0.0971 / Δ_ep=-4)
+
+[Per-fold diagnostics] Saved: /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/03_models/v3e_arch_pivot/per_fold_diagnostics.json
+[Diagnostics] Saved: /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/04_evaluation/5way_retrain_v3e_arch_pivot_python_diag.json

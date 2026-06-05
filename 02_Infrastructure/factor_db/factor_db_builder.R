@@ -29,7 +29,7 @@
   error = function(e) {
     if (exists("FUNC_PATH")) file.path(FUNC_PATH, "factor_db")
     else file.path(
-      "/mnt/c/Users/User/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot",
+      Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")),
       "02_Infrastructure", "factor_db"
     )
   }
@@ -99,16 +99,136 @@ cat("[factor_db_builder] Loaded. FACTOR_DB_DIR:", FACTOR_DB_DIR, "\n")
               format(nrow(.fdb_env$RAWDATA), big.mark = ","),
               min(.fdb_env$RAWDATA$Date), max(.fdb_env$RAWDATA$Date)))
 
+  # VIX column from macro_fred (for D32_Beta_VIX in compute_defense.R)
+  macro_path <- file.path(CACHE_DIR, "macro_fred.parquet")
+  if (!("VIX" %in% names(.fdb_env$RAWDATA)) && file.exists(macro_path)) {
+    tryCatch({
+      macro <- as.data.table(read_parquet(macro_path))
+      macro[, Date := as.Date(Date)]
+      vix_col <- if ("Series_ID" %in% names(macro) &&
+                      "VIXCLS" %in% macro[["Series_ID"]]) {
+        macro[Series_ID == "VIXCLS" & !is.na(Value),
+              .(Date, VIX = Value)][, .(VIX = last(VIX)), by = Date]
+      } else if ("VIX" %in% macro[["Series"]]) {
+        macro[Series == "VIX" & !is.na(Value),
+              .(Date, VIX = Value)][, .(VIX = last(VIX)), by = Date]
+      } else NULL
+      if (!is.null(vix_col) && nrow(vix_col) > 0L) {
+        setkey(vix_col, Date)
+        # ffill VIX over all RAWDATA dates
+        all_dates <- data.table(Date = sort(unique(.fdb_env$RAWDATA$Date)))
+        vix_filled <- vix_col[all_dates, on = "Date", roll = TRUE]
+        .fdb_env$RAWDATA <- merge(.fdb_env$RAWDATA, vix_filled, by = "Date", all.x = TRUE)
+        cat(sprintf("  RAWDATA: VIX column added (%d carry-forwarded values)\n",
+                    sum(!is.na(vix_filled$VIX))))
+      }
+    }, error = function(e) {
+      cat(sprintf("  RAWDATA: VIX merge failed (%s)\n", conditionMessage(e)))
+    })
+  }
+
   # Fundamentals
   fund_path <- file.path(CACHE_DIR, "fundamental_merged.parquet")
   if (file.exists(fund_path)) {
     .fdb_env$FUND <- as.data.table(read_parquet(fund_path))
     cat(sprintf("  Fundamentals: %s rows\n",
                 format(nrow(.fdb_env$FUND), big.mark = ",") ))
+
+    # ── Item alias mapping (compute_*.R name compatibility) ──────────────
+    # Append rows with canonical names expected by compute modules whose
+    # source names differ from fundamental_merged.parquet schema.
+    # Audit (2026-05-23):
+    #   compute_accrual.R expects CurrentLiabilities/TotalLiabilities
+    #   compute_growth.R  expects RnDExpense (PPE/Inventories/SharesOutstanding
+    #                              are derived below)
+    # Other names (CashAndEquiv, DepAmort, SGAExpense, FinanceCF, AccountsRecv,
+    # AccountsPay) match exactly — no alias needed.
+    .item_aliases <- list(
+      CurrentLiabilities = "CurrentLiab",
+      TotalLiabilities   = "TotalLiab",
+      RnDExpense         = "RandD",
+      AccountsReceivable = "AccountsRecv",
+      AccountsPayable    = "AccountsPay"
+    )
+    .alias_rows <- list()
+    for (canonical in names(.item_aliases)) {
+      orig <- .item_aliases[[canonical]]
+      if (orig %in% .fdb_env$FUND$Item && !(canonical %in% .fdb_env$FUND$Item)) {
+        sub <- .fdb_env$FUND[Item == orig]
+        if (nrow(sub) > 0L) {
+          sub <- copy(sub)[, Item := canonical]
+          .alias_rows[[canonical]] <- sub
+        }
+      }
+    }
+    if (length(.alias_rows) > 0L) {
+      .fdb_env$FUND <- rbindlist(c(list(.fdb_env$FUND), .alias_rows),
+                                  use.names = TRUE, fill = TRUE)
+      cat(sprintf("  Fundamentals alias: +%d Items (%s)\n",
+                  length(.alias_rows),
+                  paste(names(.alias_rows), collapse = ", ")))
+    }
+
+    # Inventories: derive from working capital approximation
+    # (CurrentAssets - CashAndEquiv - AccountsRecv) ≈ Inventories + other current assets
+    # Best-effort; may be wide. compute_*.R handles NA gracefully.
+    if (!("Inventories" %in% .fdb_env$FUND$Item) &&
+        all(c("CurrentAssets","CashAndEquiv","AccountsRecv") %in% .fdb_env$FUND$Item)) {
+      ca <- .fdb_env$FUND[Item == "CurrentAssets",
+                          .(Ticker, Factor_Date, Period, ca = Value)]
+      ch <- .fdb_env$FUND[Item == "CashAndEquiv",
+                          .(Ticker, Factor_Date, Period, cash = Value)]
+      rv <- .fdb_env$FUND[Item == "AccountsRecv",
+                          .(Ticker, Factor_Date, Period, recv = Value)]
+      inv_est <- merge(merge(ca, ch, by = c("Ticker","Factor_Date","Period"), all = FALSE),
+                       rv, by = c("Ticker","Factor_Date","Period"), all = FALSE)
+      inv_est[, Inv_proxy := ca - cash - recv]
+      inv_est <- inv_est[!is.na(Inv_proxy) & Inv_proxy >= 0]
+      if (nrow(inv_est) > 0L) {
+        src <- .fdb_env$FUND[Item == "CurrentAssets",
+                              .SD[1L], by = .(Ticker, Factor_Date, Period)]
+        inv_rows <- merge(inv_est[, .(Ticker, Factor_Date, Period, Value = Inv_proxy)],
+                          src[, .(Ticker, Factor_Date, Period, Period_Date, Source)],
+                          by = c("Ticker","Factor_Date","Period"), all.x = TRUE)
+        inv_rows[, Item := "Inventories"][, Source := paste0(Source %||% "derived", "_proxy")]
+        .fdb_env$FUND <- rbindlist(list(.fdb_env$FUND,
+                                          inv_rows[, .(Ticker, Period, Period_Date, Factor_Date, Item, Value, Source)]),
+                                    use.names = TRUE, fill = TRUE)
+        cat(sprintf("  Fundamentals derived: Inventories proxy (+%d rows)\n", nrow(inv_rows)))
+      }
+    }
+
+    # SharesOutstanding: derive from RAWDATA Size / Close (market cap / price)
+    if (!("SharesOutstanding" %in% .fdb_env$FUND$Item) &&
+        all(c("Date","Close","Size") %in% names(.fdb_env$RAWDATA))) {
+      sh <- .fdb_env$RAWDATA[!is.na(Close) & Close > 1e-6 & !is.na(Size) & Size > 0,
+                              .(Ticker, Date, est_shares = Size / Close)]
+      # Quarterly snapshot — end of quarter
+      sh[, qtr := paste0(year(Date), "Q", quarter(Date))]
+      sh_q <- sh[, .SD[.N], by = .(Ticker, qtr)]
+      sh_q[, `:=`(Factor_Date = Date,
+                  Period_Date = Date,
+                  Period = qtr,
+                  Item = "SharesOutstanding",
+                  Value = est_shares,
+                  Source = "derived_from_size")]
+      .fdb_env$FUND <- rbindlist(list(.fdb_env$FUND,
+                                        sh_q[, .(Ticker, Period, Period_Date, Factor_Date, Item, Value, Source)]),
+                                  use.names = TRUE, fill = TRUE)
+      cat(sprintf("  Fundamentals derived: SharesOutstanding (+%d rows)\n", nrow(sh_q)))
+    }
+
+    # PPE: alias from TangibleAssets if available
+    if (!("PPE" %in% .fdb_env$FUND$Item) && "TangibleAssets" %in% .fdb_env$FUND$Item) {
+      sub <- copy(.fdb_env$FUND[Item == "TangibleAssets"])[, Item := "PPE"]
+      .fdb_env$FUND <- rbindlist(list(.fdb_env$FUND, sub), use.names = TRUE, fill = TRUE)
+      cat(sprintf("  Fundamentals alias: PPE <- TangibleAssets (+%d rows)\n", nrow(sub)))
+    }
   } else {
     .fdb_env$FUND <- NULL
     cat("  Fundamentals: NOT FOUND\n")
   }
+  if (!exists("%||%")) `%||%` <- function(a, b) if (!is.null(a)) a else b
 
   # Valuation (pre-computed fPER/fPBR/fDY/EV_EBITDA/PSR)
   val_path <- file.path(CACHE_DIR, "valuation.parquet")
@@ -192,36 +312,38 @@ cat("[factor_db_builder] Loaded. FACTOR_DB_DIR:", FACTOR_DB_DIR, "\n")
   if (isTRUE(.fdb_env$.modules_loaded)) return(invisible(NULL))
 
   module_map <- list(
-    value      = "compute_value.R",
-    momentum   = "compute_momentum.R",
-    quality    = "compute_quality.R",
-    defense    = "compute_defense.R",
-    size       = "compute_size.R",
-    consensus  = "compute_consensus.R",
-    liquidity  = "compute_liquidity.R",
-    accrual    = "compute_accrual.R",
-    risk       = "compute_risk.R",
-    regime     = "compute_regime.R",
-    crowding   = "compute_crowding.R",
-    growth     = "compute_growth.R",
-    investor   = "compute_investor.R",
-    xlsx_fund  = "xlsx_factor_calculator.R"
+    value            = "compute_value.R",
+    momentum         = "compute_momentum.R",
+    quality          = "compute_quality.R",
+    quality_xf_native = "compute_quality_xf_native.R",
+    defense          = "compute_defense.R",
+    size             = "compute_size.R",
+    consensus        = "compute_consensus.R",
+    liquidity        = "compute_liquidity.R",
+    accrual          = "compute_accrual.R",
+    risk             = "compute_risk.R",
+    regime           = "compute_regime.R",
+    crowding         = "compute_crowding.R",
+    growth           = "compute_growth.R",
+    investor         = "compute_investor.R",
+    xlsx_fund        = "xlsx_factor_calculator.R"
   )
   func_name_map <- list(
-    value      = "compute_value",
-    momentum   = "compute_momentum",
-    quality    = "compute_quality",
-    defense    = "compute_defense",
-    size       = "compute_size",
-    consensus  = "compute_consensus",
-    liquidity  = "compute_liquidity",
-    accrual    = "compute_accrual",
-    risk       = "compute_risk",
-    regime     = "compute_regime",
-    crowding   = "compute_crowding",
-    growth     = "compute_growth",
-    investor   = "compute_investor",
-    xlsx_fund  = "compute_xlsx_fundamentals"
+    value            = "compute_value",
+    momentum         = "compute_momentum",
+    quality          = "compute_quality",
+    quality_xf_native = "compute_quality_xf_native",
+    defense          = "compute_defense",
+    size             = "compute_size",
+    consensus        = "compute_consensus",
+    liquidity        = "compute_liquidity",
+    accrual          = "compute_accrual",
+    risk             = "compute_risk",
+    regime           = "compute_regime",
+    crowding         = "compute_crowding",
+    growth           = "compute_growth",
+    investor         = "compute_investor",
+    xlsx_fund        = "compute_xlsx_fundamentals"
   )
 
   .fdb_env$module_funcs <- list()
@@ -476,7 +598,9 @@ if (!force && file.exists(out_path)) {
   # Module display names (for logging)
   module_display <- list(
     value = "compute_value.R", momentum = "compute_momentum.R",
-    quality = "compute_quality.R", defense = "compute_defense.R",
+    quality = "compute_quality.R",
+    quality_xf_native = "compute_quality_xf_native.R",
+    defense = "compute_defense.R",
     size = "compute_size.R", consensus = "compute_consensus.R",
     liquidity = "compute_liquidity.R", accrual = "compute_accrual.R",
     risk = "compute_risk.R", regime = "compute_regime.R",
@@ -512,10 +636,85 @@ if (!force && file.exists(out_path)) {
   combined <- rbindlist(all_factors, use.names = TRUE, fill = TRUE)
 
   # Remove XF_ factors (xlsx originals already merged into DART names)
-  n_xf <- sum(grepl("^XF_", combined$Factor_Name))
-  if (n_xf > 0L) {
-    combined <- combined[!grepl("^XF_", Factor_Name)]
-    cat(sprintf("  Removed %d XF_ rows (merged into DART names)\n", n_xf))
+  # Inline xlsx-into-dart merge (per Quality factor merge principle):
+  #   - 19 mapped pairs (DART <- XF): DART preferred (higher quality),
+  #     XF fills gap only when DART has 0 rows for this sig_date
+  #   - Unmapped XF_* (DU/EF/GD/LL/PR/RI) preserved as standalone
+  # See merge_xlsx_into_dart.R for batch post-process (legacy compatibility)
+  .XF_TO_DART <- c(
+    XF_Q01_GPA               = "Q01_GPA",
+    XF_Q02_ROE               = "Q02_ROE",
+    XF_Q03_ROA               = "Q03_ROA",
+    XF_A01_Accrual           = "Q05_Accrual",
+    XF_Q05_Gross_Margin      = "Q10_Gross_Margin",
+    XF_Q07_Net_Margin        = "Q11_Net_Margin",
+    XF_Q04_Asset_Turnover    = "Q12_Asset_Turnover",
+    XF_Q08_Interest_Coverage = "Q32_Interest_Coverage",
+    XF_L01_Debt_to_Equity    = "Q15_Debt_to_Equity",
+    XF_L02_Current_Ratio     = "Q14_Current_Ratio",
+    XF_P01_Piotroski_F       = "Q04_Piotroski_F",
+    XF_V01_BM                = "V01_BM",
+    XF_V02_EP                = "V02_EP",
+    XF_V03_CFP               = "V03_CFP",
+    XF_V04_SP                = "V08_PSR",
+    XF_G01_Asset_Growth      = "GR03_Asset_Growth",
+    XF_G02_Revenue_Growth    = "GR01_Revenue_Growth",
+    XF_G03_Earnings_Growth   = "GR02_Earnings_Growth",
+    XF_A02_NOA               = "AC05_NOA"
+  )
+  # Per-ticker merge: for each (ticker, sig_date) pair, DART value preferred;
+  # XF (QuantiWise) used only when DART lacks coverage for that specific ticker.
+  # Dohoon mandate (2026-05-23): "DART에서 구할 수 없는 과거데이터를 퀀티와이즈로 보강"
+  .n_filled <- 0L; .n_dropped_dup <- 0L
+  for (xf_nm in names(.XF_TO_DART)) {
+    dart_nm <- .XF_TO_DART[[xf_nm]]
+    xf_rows   <- combined[Factor_Name == xf_nm]
+    if (nrow(xf_rows) == 0L) next
+    dart_tickers <- combined[Factor_Name == dart_nm, unique(Ticker)]
+    # XF tickers NOT covered by DART → adopt as fill (renamed to DART)
+    xf_fill <- xf_rows[!Ticker %in% dart_tickers]
+    xf_drop <- nrow(xf_rows) - nrow(xf_fill)
+    if (nrow(xf_fill) > 0L) {
+      xf_fill <- copy(xf_fill)[, Factor_Name := dart_nm]
+      .n_filled <- .n_filled + nrow(xf_fill)
+    }
+    # Remove all mapped XF rows + append fill rows under DART name
+    combined <- rbindlist(list(combined[Factor_Name != xf_nm], xf_fill),
+                          use.names = TRUE, fill = TRUE)
+    .n_dropped_dup <- .n_dropped_dup + xf_drop
+  }
+  if (.n_filled + .n_dropped_dup > 0L) {
+    cat(sprintf("  Quality merge: %d XF→DART filled (per-ticker), %d XF dropped (DART covered)\n",
+                .n_filled, .n_dropped_dup))
+  }
+  # Unmapped XF (DU/EF/GD/LL/PR/RI 25개): both compute_quality_xf_native (DART)
+  # AND xlsx_factor_calculator (QuantiWise) emit same Factor_Name.
+  # Per-(Ticker, Factor_Name) dedup keep first → DART preferred (module called earlier).
+  # QuantiWise row remains only for tickers not in DART. Dohoon mandate 2026-05-23.
+  .unmapped_xf <- c(
+    "XF_DU01_NetMargin","XF_DU02_AssetTurnover","XF_DU03_EquityMultiplier",
+    "XF_LL01_DebtToCapital","XF_LL02_NetDebt","XF_LL03_CashRatio",
+    "XF_LL04_QuickRatio","XF_LL05_WorkingCapital",
+    "XF_PR01_EBITDA_Margin","XF_PR02_RetainedEarnings_Ratio",
+    "XF_PR03_TaxRate","XF_PR04_NetInterestMargin","XF_PR05_EBITDA_to_Assets",
+    "XF_EF01_InventoryTurnover","XF_EF02_DaysPayable",
+    "XF_EF03_DaysReceivable","XF_EF04_CCC",
+    "XF_GD01_GrossProfit_Growth","XF_GD02_OpProfit_Growth",
+    "XF_GD03_OCF_Growth","XF_GD04_Dividend_Growth",
+    "XF_RI01_RnD_to_Revenue","XF_RI02_CapEx_proxy","XF_RI03_SGA_to_Revenue"
+  )
+  .unmapped_present <- intersect(.unmapped_xf, unique(combined$Factor_Name))
+  if (length(.unmapped_present) > 0L) {
+    xf_rows <- combined[Factor_Name %in% .unmapped_present]
+    before_n <- nrow(xf_rows)
+    xf_dedupe <- unique(xf_rows, by = c("Ticker","Factor_Name"), fromLast = FALSE)
+    after_n <- nrow(xf_dedupe)
+    combined <- rbindlist(list(
+      combined[!Factor_Name %in% .unmapped_present],
+      xf_dedupe
+    ), use.names = TRUE, fill = TRUE)
+    cat(sprintf("  Unmapped XF dedup: %d rows kept (DART preferred, was %d)\n",
+                after_n, before_n))
   }
 
   # Ensure required columns

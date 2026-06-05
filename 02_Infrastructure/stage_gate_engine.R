@@ -19,7 +19,7 @@ suppressPackageStartupMessages(library(jsonlite))
 
 # ─── Source schemas ───────────────────────────────────────────────────────────
 .sg_root <- tryCatch(dirname(sys.frame(1)$ofile), error = function(e) {
-  "/mnt/c/Users/User/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot/02_Infrastructure"
+  file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")), "02_Infrastructure")
 })
 # Try validation/ subdirectory first, then root
 .sg_schema_path <- file.path(.sg_root, "validation", "stage_artifact_schemas.R")

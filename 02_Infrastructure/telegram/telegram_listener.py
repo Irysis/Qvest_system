@@ -24,7 +24,7 @@ import os, json, subprocess, time, re, signal, sys
 from datetime import datetime
 
 # ── Credentials (.env 로드, hardcoded 금지 — 2026-04-17 rotation) ─────────────
-BASE        = "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+BASE        = os.environ.get("QM_ROOT", "/mnt/g/Quant_Module_Moltbot")
 
 def _load_env():
     env_path = f"{BASE}/.env"

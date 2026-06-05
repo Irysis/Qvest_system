@@ -25,7 +25,7 @@ suppressPackageStartupMessages({
   if (is.atomic(x) && length(x) == 1 && is.na(x)) return(y); x
 }
 
-source(file.path("/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot",
+source(file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")),
                  "02_Infrastructure", "config.R"))
 source(file.path(FUNC_PATH, "factor_db", "factor_db_connector.R"))
 source(file.path(FUNC_PATH, "backtest_harness.R"))

@@ -101,7 +101,7 @@ compute_dsr_family <- function(observed_sr, n_obs, family_name,
 
 FAMILY_TRIAL_PATH <- file.path(
   ifelse(exists("CACHE_DIR"), CACHE_DIR,
-         "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/.cache"),
+         file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")), ".cache")),
   "family_trial_accounting.json"
 )
 
@@ -172,7 +172,7 @@ get_family_n_trials <- function(family_data, family_name) {
 batch_dsr_audit <- function(strategies_dir = NULL, n_total_trials = NULL) {
   if (is.null(strategies_dir)) {
     strategies_dir <- file.path(
-      "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot",
+      Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")),
       "04_Research/strategies"
     )
   }

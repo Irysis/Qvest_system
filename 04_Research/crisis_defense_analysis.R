@@ -6,7 +6,7 @@ suppressMessages({
   library(arrow)
 })
 
-ROOT <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 CACHE_DIR <- file.path(ROOT, ".cache")
 
 # ── 1. 캐시 파일 로드 ─────────────────────────────────────────────

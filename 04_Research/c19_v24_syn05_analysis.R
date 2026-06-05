@@ -28,7 +28,7 @@ cat("=== C19 x V24 Interaction Score v2 (SYN_05 필터) ===\n")
 cat("시작 시각:", format(Sys.time(), "%Y-%m-%d %H:%M:%S"), "\n\n")
 
 # ── 0. 인프라 로드 ─────────────────────────────────────────────────────────────
-PROJECT_ROOT <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+PROJECT_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 source(file.path(PROJECT_ROOT, "02_Infrastructure/config.R"))
 source(file.path(INFRA_DIR, "backtest_harness.R"))
 # factor_db_connector는 C15 준수를 위해 경로 저장 (함수 참조용)

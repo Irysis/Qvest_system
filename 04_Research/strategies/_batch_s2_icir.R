@@ -3,8 +3,8 @@ cat("=== Batch S2 ICIR Computation for STR_1619/1620/1621/1622 ===\n")
 
 options(scipen = 999); Sys.setenv(TZ = "Asia/Seoul")
 
-INFRA_DIR  <- "/mnt/c/Users/User/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot/02_Infrastructure"
-STRAT_BASE <- "/mnt/c/Users/User/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot/research_output/strategies"
+INFRA_DIR  <- file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")), "02_Infrastructure")
+STRAT_BASE <- file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")), "research_output/strategies")
 
 suppressPackageStartupMessages({
   library(data.table)

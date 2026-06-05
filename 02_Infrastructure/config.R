@@ -7,15 +7,23 @@
 #==============================================================================
 
 # ─── Project Root ────────────────────────────────────────────────────────────
-# Auto-detect across machines (노트북: 99922, 로컬PC: User, 등)
+# 우선순위: QM_ROOT 환경변수 → 알려진 후보 경로(드라이브 무관).
+# 새 위치/드라이브로 옮겨도 QM_ROOT만 설정하면 무수정 동작.
+# (2026-06-03 G:\ 이전 대응 — 본 파일 단일 수정으로 config.R-source 스크립트 181개 자동 정합)
 .root_candidates <- c(
-  "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot",
+  Sys.getenv("QM_ROOT", unset = ""),                            # 명시 override (최우선)
+  "G:/Quant_Module_Moltbot",                                    # Windows-native R (G:\ 직접, 2026-06-03)
+  "/mnt/g/Quant_Module_Moltbot",                                # WSL G:\ (잔존 호환)
+  "/mnt/g/Ent/Quant_Module_Moltbot",
+  Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")),   # legacy C:/OneDrive
   "/mnt/c/Users/99922/OneDrive/바탕 화면/Quant_Module_Moltbot"
 )
+.root_candidates <- .root_candidates[nzchar(.root_candidates)]
 PROJECT_ROOT <- .root_candidates[sapply(.root_candidates, dir.exists)][1]
 if (is.na(PROJECT_ROOT)) {
-  # 환경변수 fallback
-  PROJECT_ROOT <- Sys.getenv("QM_ROOT", unset = "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot")
+  # 후보 미발견 — QM_ROOT 미설정 + 미이동 상태. 임시 fallback + 경고.
+  PROJECT_ROOT <- Sys.getenv("QM_ROOT", unset = Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")))
+  warning("[config.R] 후보 경로 미발견 — QM_ROOT 환경변수를 설정하세요. 임시값: ", PROJECT_ROOT)
 }
 rm(.root_candidates)
 

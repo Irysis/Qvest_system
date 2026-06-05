@@ -1,0 +1,110 @@
+{
+  "task_id": "WT-D20260529_001",
+  "track": "FLOW",
+  "as_of_date": "2023-10-31",
+  "variant_selected": "quarterly_rebal_buffer_E8_K30",
+  "cross_section_ic": {
+    "rank_ic": 0.0214,
+    "icir": 0.212,
+    "harvey_t_naive": 3.19,
+    "newey_west_t_lag3": 3.18,
+    "n_months": 226,
+    "monotonicity": 0.842
+  },
+  "subperiod_stability": {
+    "value": 1,
+    "detail": [
+      {
+        "period": "P1",
+        "ic": 0.0135,
+        "pos": 0.525,
+        "n": 120
+      },
+      {
+        "period": "P2",
+        "ic": 0.0343,
+        "pos": 0.65,
+        "n": 60
+      },
+      {
+        "period": "P3",
+        "ic": 0.0254,
+        "pos": 0.609,
+        "n": 46
+      }
+    ]
+  },
+  "portfolio_alpha": {
+    "note": "DISTINCT from IC t. forge-authoritative metric is portfolio-alpha t.",
+    "rebalance": "quarterly_3m",
+    "buffer": "entry_top8 keep_top30",
+    "n_names": 20,
+    "ann_net_excess_pct": 14.13,
+    "port_alpha_t": 3.55,
+    "port_alpha_nw_t": 3.52,
+    "net_sr": 0.817,
+    "dsr": 0.968
+  },
+  "cost_aware": {
+    "cost_model": "v2.3_kr_retail_15bps",
+    "turnover_per_yr": 5.93,
+    "turnover_mandate": 6,
+    "turnover_pass": true,
+    "note": "quarterly rebal required to satisfy mandate; monthly variant=10.66/yr FAIL"
+  },
+  "ax001_v2": {
+    "crisis_ic": 0.074,
+    "normal_ic": 0.0177,
+    "bad_normal_ratio": 4.176,
+    "threshold": 0.5,
+    "pass": true,
+    "note": "E_ALTDATA prior fail=0.330; FLOW contrarian strengthens in crisis (crowding unwind)"
+  },
+  "orthogonality": {
+    "vs_STR_1715": {
+      "mean_monthly_spearman": -0.0701,
+      "pooled": -0.0751,
+      "n_months": 226,
+      "target_lt_0_30": true
+    },
+    "vs_D_microstructure": {
+      "mean_monthly_spearman": -0.0096,
+      "pooled": -0.0095,
+      "n_months": 115,
+      "target_lt_0_30": true
+    }
+  },
+  "graduation_check": {
+    "min_rank_ic_0_04": {
+      "value": 0.0214,
+      "pass": false,
+      "note": "FAIL on raw rank-IC magnitude — flow IC low but high-breadth; portfolio-alpha t compensates"
+    },
+    "min_icir_0_20": {
+      "value": 0.212,
+      "pass": true
+    },
+    "min_subperiod_0_50": {
+      "value": 1,
+      "pass": true
+    },
+    "min_harvey_t_3_0": {
+      "value": 3.19,
+      "pass": true
+    },
+    "min_dsr_0_50": {
+      "value": 0.968,
+      "pass": true
+    }
+  },
+  "selection_objective": "icir",
+  "method_log": {
+    "candidates_tried": 5,
+    "cap": 5,
+    "factors": ["INV02_Foreign_NetBuy_60d", "INV04_Inst_NetBuy_60d", "INV09_Flow_Persistence", "INV11_Foreign_Concentration", "INV07_Retail_Contrarian"],
+    "note": "all 15 INV factors diagnosed; contrarian direction = ex-ante crowding-reversal hypothesis (Choe-Kho-Stulz 2005), not post-hoc flip"
+  },
+  "economic_rationale": "KR liquid-universe aggregate investor net-buy flow is a CROWDING/PRICE-PRESSURE REVERSAL signal: stocks heavily net-bought by foreigners/institutions subsequently underperform as crowding unwinds; retail flow fades. Distinct settlement-identity data axis -> orthogonal to fundamentals (1715) and price microstructure (D). Crisis-strengthening (foreign flight reversal).",
+  "redundancy_cluster_id": "investor_flow_cluster",
+  "references": ["Choe-Kho-Stulz 2005 RFS (foreign flow price pressure KR)", "Barber-Odean 2000 (retail underperformance)", "learning_kr_lottery_anomaly_reversal.md (KR mechanism reversal)"]
+}

@@ -46,7 +46,7 @@ suppressPackageStartupMessages({
 
 # ─── 환경 설정 ───────────────────────────────────────────────────────────────
 # config.R 경유로 PROJECT_ROOT 설정 (normalizePath 사용 금지 — WSL 한글 경로 버그)
-PROJECT_ROOT <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+PROJECT_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 source(file.path(PROJECT_ROOT, "02_Infrastructure", "config.R"))
 
 # ─── 경로 ────────────────────────────────────────────────────────────────────
@@ -59,7 +59,7 @@ OUT_META   <- file.path(CACHE_DIR, "ic_matrix_meta.json")
 
 # ─── 파라미터 ────────────────────────────────────────────────────────────────
 DATE_START     <- as.Date("2005-01-01")
-DATE_END       <- as.Date("2025-12-31")
+DATE_END       <- as.Date("2026-04-30")  # 2026-05-24 audit: 2025-12-31 → 2026-04-30 (fwd_ret 21d + buffer 사용 가능)
 FWD_DAYS       <- 21L          # 21 거래일 선행 수익률
 MIN_STOCKS     <- 30L          # IC 계산 최소 주식수
 BATCH_YEARS    <- 3L           # 연도별 배치 크기 (RAM 관리)

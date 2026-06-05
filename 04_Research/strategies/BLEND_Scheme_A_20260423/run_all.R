@@ -14,7 +14,7 @@ suppressPackageStartupMessages({
   library(data.table); library(ggplot2); library(jsonlite)
 })
 
-PROJECT_ROOT <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+PROJECT_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 STRATEGY_DIR <- file.path(PROJECT_ROOT, "04_Research/strategies/BLEND_Scheme_A_20260423")
 OUTPUT_DIR   <- file.path(STRATEGY_DIR, "output")
 dir.create(OUTPUT_DIR, showWarnings=FALSE, recursive=TRUE)

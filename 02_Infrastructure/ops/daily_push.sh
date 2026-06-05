@@ -22,7 +22,7 @@ set -u
 LOG="/tmp/daily_push.log"
 TS="$(date '+%Y-%m-%d %H:%M:%S')"
 
-PROJECT=$(ls -d /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1)
+PROJECT=$(ls -d /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1)
 if [ -z "$PROJECT" ]; then
   echo "$TS NO_PROJECT" >> "$LOG"; exit 1
 fi

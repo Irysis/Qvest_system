@@ -28,7 +28,7 @@ suppressPackageStartupMessages({
     grep("--file=", commandArgs(FALSE), value = TRUE)[1])))) ),
   error = function(e) getwd())
 if (is.na(.PE_ROOT) || !dir.exists(file.path(.PE_ROOT, "qepm")))
-  .PE_ROOT <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+  .PE_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 
 .PE_MAILBOX  <- file.path(.PE_ROOT, "qepm/mailbox/worktask")
 .PE_OUTDIR   <- file.path(.PE_ROOT, "qepm/observability/perf_eval")

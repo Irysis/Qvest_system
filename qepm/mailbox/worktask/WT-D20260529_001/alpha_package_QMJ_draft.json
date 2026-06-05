@@ -1,0 +1,118 @@
+{
+  "task_id": "WT-D20260529_001",
+  "track": "QMJ",
+  "wt_type": "discovery",
+  "role_card": "discovery",
+  "as_of_date": "2026-05-29",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_default": "KR_top342",
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "selection_objective": "icir",
+  "signal_matrix_ref": "stage_artifacts/WT_D20260529_001_QMJ/alpha_scores.parquet",
+  "alpha_vector_ref": "stage_artifacts/WT_D20260529_001_QMJ/alpha_scores.parquet#alpha_z",
+  "confidence_vector_ref": "stage_artifacts/WT_D20260529_001_QMJ/alpha_scores.parquet#confidence",
+  "economic_rationale": "Quality-Minus-Junk (Asness-Frazzini-Pedersen 2019 JFE). High-quality firms (profitable, safe, growing) are systematically underpriced relative to junk because investors over-extrapolate distress and under-pay for stable cash generation; the quality premium is a compensation for the willingness to hold boring, slow firms during euphoria. In KR this manifests as a defensive/crisis-hedge tilt rather than a strong unconditional premium (see AX-004): single-axis profitability fails long-only, but the multi-axis profitability+safety+growth composite preserves the crisis-conditional payoff. Mechanism is fundamental (balance-sheet/income-statement) and therefore structurally orthogonal to STR_1715 (earnings-revision/price momentum core) and D (size/microstructure ML).",
+  "redundancy_cluster_id": "quality_fundamental_QMJ_AFP2019",
+  "redundancy_note": "Distinct from STR_1715 defense sleeve which uses only Q07_Earnings_Stability + Q25_Ohlson_O (2 of 15 QMJ proxies). QMJ here is a full 3-axis composite (profitability+safety+growth) — measured cor vs STR_1715 score_eff = 0.246 (<0.30). Distinct from D microstructure (cor 0.204).",
+  "factor_specs": [
+    {
+      "axis": "Profitability",
+      "factor_family": "Quality/Profitability",
+      "proxies": ["Q01_GPA","Q02_ROE","Q03_ROA","Q35_CashBased_OpProf","Q10_Gross_Margin","Q11_Net_Margin"],
+      "formula": "cross-sectional mean of Z_Score_Aligned over >=2 available profitability proxies, then re-standardized",
+      "lag_rule": "quarterly 45d / annual May (C4)",
+      "winsorization": "Factor DB built-in (3std)",
+      "neutralization": "none (composite measured raw; direction via IC Usable_Date<=sig_date, C13/C14)",
+      "economic_rationale": "profitability premium (Novy-Marx 2013 GPA; cash-based OP Ball et al 2016)",
+      "axis_rank_ic": 0.0238,
+      "references": ["Novy-Marx 2013", "Ball-Gerakos-Linnainmaa-Nikolaev 2016", "Asness-Frazzini-Pedersen 2019"]
+    },
+    {
+      "axis": "Safety",
+      "factor_family": "Quality/Safety",
+      "proxies": ["Q13_Fin_Leverage","Q25_Ohlson_O","Q07_Earnings_Stability","AC18_Accrual_Quality","AC10_Pct_Accruals"],
+      "formula": "cross-sectional mean of Z_Score_Aligned over >=2 available safety proxies, then re-standardized",
+      "lag_rule": "quarterly 45d / annual May (C4)",
+      "winsorization": "Factor DB built-in (3std)",
+      "neutralization": "none",
+      "economic_rationale": "low default risk + earnings stability + low accruals (Sloan 1996; Ohlson 1980)",
+      "axis_rank_ic": 0.0169,
+      "references": ["Sloan 1996", "Ohlson 1980", "Asness-Frazzini-Pedersen 2019"]
+    },
+    {
+      "axis": "Growth",
+      "factor_family": "Quality/Growth",
+      "proxies": ["GR04_GPA_Growth","GR01_Revenue_Growth","GR02_Earnings_Growth","GR07_Composite_Growth"],
+      "formula": "cross-sectional mean of Z_Score_Aligned over >=2 available growth proxies, then re-standardized",
+      "lag_rule": "quarterly 45d / annual May (C4)",
+      "winsorization": "Factor DB built-in (3std)",
+      "neutralization": "none",
+      "economic_rationale": "sustainable growth of quality metrics (AFP 2019 growth axis)",
+      "axis_rank_ic": 0.0178,
+      "references": ["Asness-Frazzini-Pedersen 2019"]
+    }
+  ],
+  "composite_construction": {
+    "method": "equal-axis weighting (AFP 2019): qmj = (prof_z + safe_z + grow_z)/3, then cross-sectional re-standardize",
+    "axis_weights": {"Profitability": 0.3333, "Safety": 0.3333, "Growth": 0.3333},
+    "inclusion_rule": "require >=2 proxies present per axis AND all 3 axes present per name",
+    "ax004_exclusion_satisfied": true,
+    "ax004_note": "multi-axis quality composite (15 proxies across 3 axes) — NOT single GP/single cash-profitability. AX-004 EXCLUSION condition met."
+  },
+  "diagnostics": {
+    "rank_ic": 0.0256,
+    "icir": 0.2019,
+    "harvey_t_rank_ic": 2.6756,
+    "portfolio_alpha_t_net": 0.6316,
+    "portfolio_alpha_t_gross": 0.7031,
+    "monotonicity": 0.6,
+    "subperiod_stability": 0.3333,
+    "subperiod_ic": {"p2008_14": 0.0543, "p2015_19": 0.0117, "p2020_lockbox": -0.007},
+    "turnover_annual": 1.0168,
+    "sr_net_of_cost_annual": 0.1721,
+    "dsr": 0.358,
+    "ax001_v2_bad_normal_ratio": 8.0969,
+    "ax001_v2_ic_bad": 0.1002,
+    "ax001_v2_ic_normal": 0.0124,
+    "crisis_active_net_monthly": 0.01156,
+    "quintile_returns": [0.00401, 0.00516, 0.00835, 0.00828, 0.00823]
+  },
+  "orthogonality": {
+    "cor_vs_STR_1715_score_eff": 0.2459,
+    "cor_vs_D_ML_alpha_z": 0.2036,
+    "threshold": 0.30,
+    "pass_1715": true,
+    "pass_D": true,
+    "n_overlap_1715": 47162,
+    "n_overlap_D": 38741
+  },
+  "universe_comparison": {
+    "KR_top342": {"rank_ic": 0.0256, "icir": 0.2019, "harvey_t": 2.6756, "n": 192},
+    "KR_TOP500_FREEFLOAT": {"rank_ic": 0.0239, "icir": 0.1835, "harvey_t": 2.4247, "n": 192}
+  },
+  "method_shopping_log": {
+    "candidates_tried": 4,
+    "method_log": [
+      {"name": "QMJ_3axis_equal", "icir": 0.2019, "selected": true},
+      {"name": "axis_Profitability_only", "rank_ic": 0.0238, "selected": false, "reason": "AX-004 single-axis prohibited"},
+      {"name": "axis_Safety_only", "rank_ic": 0.0169, "selected": false, "reason": "AX-004 single-axis prohibited"},
+      {"name": "axis_Growth_only", "rank_ic": 0.0178, "selected": false, "reason": "AX-004 single-axis prohibited"}
+    ]
+  },
+  "graduation_assessment": {
+    "min_rank_ic_0.04": {"value": 0.0256, "pass": false},
+    "min_icir_0.20": {"value": 0.2019, "pass": true},
+    "min_subperiod_stability_0.50": {"value": 0.3333, "pass": false},
+    "min_harvey_t_3.0": {"value": 2.6756, "pass": false},
+    "min_dsr_0.50": {"value": 0.358, "pass": false},
+    "overall_graduation": "FAIL_AS_STANDALONE",
+    "verdict": "QMJ FAILS Discovery->Deployment graduation as a STANDALONE alpha (rank_IC<0.04, harvey_t<3.0, DSR<0.5, subperiod<0.5, recent-period IC negative). However it is a GENUINE 4th-orthogonal diversifier (cor<0.30 vs both STR_1715 and D) with strong crisis-conditional behavior (AX-001 v2 ratio 8.1, ic_bad 0.100) and ultra-low turnover (1.0/yr). Its value proposition is as a defensive 4th sleeve in a multi-sleeve blend (AX-007 exception), NOT as an independent admit."
+  },
+  "challenge_flags": [
+    {"id": "RF-A3-inverse", "severity": "HIGH", "note": "recent 3Y (2020-LB) IC = -0.007, NEGATIVE vs overall 0.026 — quality premium decayed/reversed in KR recent regime (consistent with KR lottery/skewness anomaly reversal, memory learning_kr_lottery_anomaly_reversal). Standalone use unsafe."},
+    {"id": "RF-A-monotonicity-top", "severity": "MEDIUM", "note": "quintile returns plateau at top (Q3 0.00835 > Q5 0.00823) — best-quality names do not beat merely-good. Long top-20 selection mechanism weak (AX-004 caution)."},
+    {"id": "QMJ-portfolio-alpha-t", "severity": "HIGH", "note": "portfolio_alpha_t_net=0.63 << IC harvey_t=2.68. Per Cycle 2 lesson, portfolio-alpha t is authoritative for sleeve viability — standalone sleeve statistically insignificant."},
+    {"id": "QMJ-value-as-diversifier", "severity": "INFO", "note": "Despite standalone failure, orthogonality (cor 0.25/0.20) + crisis ratio 8.1 + TO 1.0/yr make QMJ a credible defensive 4th-sleeve candidate for multi-sleeve blend, subject to optimizer sizing."}
+  ]
+}

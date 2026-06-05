@@ -42,7 +42,7 @@ suppressPackageStartupMessages({
 # =============================================================================
 # 경로 (normalizePath 금지 — WSL 한글 경로 버그)
 # =============================================================================
-PROJECT_ROOT <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+PROJECT_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 STRATEGY_DIR <- file.path(PROJECT_ROOT, "04_Research/strategies/STR_1675_QRebal_Hybrid")
 OUTPUT_DIR   <- file.path(STRATEGY_DIR, "output")
 dir.create(OUTPUT_DIR, showWarnings = FALSE, recursive = TRUE)

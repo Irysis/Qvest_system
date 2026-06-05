@@ -15,7 +15,7 @@
 set -u
 LOG=/tmp/qm_mrs_daily.log
 TS=$(date -Iseconds)
-DIR=$(ls -d /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1)
+DIR=$(ls -d /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1)
 
 if [ -z "$DIR" ]; then
   echo "$TS [mrs_daily] PROJECT_ROOT not found" >> "$LOG"

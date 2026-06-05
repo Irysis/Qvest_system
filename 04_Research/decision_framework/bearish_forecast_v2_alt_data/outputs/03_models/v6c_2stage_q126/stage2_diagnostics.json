@@ -1,0 +1,223 @@
+{
+  "cycle": "56-2stage Stage 2 XGB meta",
+  "seed": 20260521,
+  "stage1_source": "53H PatchTST v5e q126 (seed=42, reuse)",
+  "stage1_oos_window": ["2018-01-02", "2026-04-30"],
+  "stage1_oos_n": 2042,
+  "stage1_oos_events": 515,
+  "ecos_features": ["ecos_m2_yoy_lag1", "ecos_krw_usd_change_5d_lag1", "ecos_base_rate_lag1", "ecos_industrial_production_yoy_lag1", "ecos_cpi_yoy_lag1"],
+  "us_macro_features": ["us_t10y2y_spread_lag1", "us_initial_claims_4w_avg_lag1", "us_cfnai_lag1", "us_stlfsi_lag1"],
+  "cv_scheme": "5-fold expanding chronological time-series (OOS-only)",
+  "bear_date_audit": "PASS (Fold3 q126 zero events confirmed; Stage 1 53H skipped Fold3)",
+  "baseline_reference_53H_full_oos_pr_auc": 0.4012,
+  "per_fold": [
+    {
+      "fold": 2,
+      "test_dates": ["2019-08-30", "2021-04-26"],
+      "train_n": 408,
+      "test_n": 408,
+      "train_events": 209,
+      "test_events": 49,
+      "stage1_baseline": {
+        "pr_auc": 0.4804,
+        "roc_auc": 0.9268
+      },
+      "v1_naive_6": {
+        "pr_auc": 0.0654,
+        "roc_auc": 0.0851
+      },
+      "v2_augmented_10": {
+        "pr_auc": 0.0691,
+        "roc_auc": 0.1396
+      },
+      "v3_blend": {
+        "pr_auc": 0.0773,
+        "roc_auc": 0.2468,
+        "best_alpha": 0.5,
+        "alpha_grid": {
+          "fallback": "insufficient_alpha_val_n_or_events",
+          "default_alpha": 0.5
+        }
+      }
+    },
+    {
+      "fold": 3,
+      "test_dates": ["2021-04-27", "2022-12-19"],
+      "train_n": 816,
+      "test_n": 408,
+      "train_events": 258,
+      "test_events": 227,
+      "stage1_baseline": {
+        "pr_auc": 0.743,
+        "roc_auc": 0.7302
+      },
+      "v1_naive_6": {
+        "pr_auc": 0.5812,
+        "roc_auc": 0.5614
+      },
+      "v2_augmented_10": {
+        "pr_auc": 0.8062,
+        "roc_auc": 0.8244
+      },
+      "v3_blend": {
+        "pr_auc": 0.6581,
+        "roc_auc": 0.6089,
+        "best_alpha": 0.5,
+        "alpha_grid": {
+          "fallback": "insufficient_alpha_val_n_or_events",
+          "default_alpha": 0.5
+        }
+      }
+    },
+    {
+      "fold": 4,
+      "test_dates": ["2022-12-20", "2024-08-16"],
+      "train_n": 1224,
+      "test_n": 408,
+      "train_events": 485,
+      "test_events": 27,
+      "stage1_baseline": {
+        "pr_auc": 0.0358,
+        "roc_auc": 0.0991
+      },
+      "v1_naive_6": {
+        "pr_auc": 0.0409,
+        "roc_auc": 0.2156
+      },
+      "v2_augmented_10": {
+        "pr_auc": 0.0413,
+        "roc_auc": 0.2456
+      },
+      "v3_blend": {
+        "pr_auc": 0.0358,
+        "roc_auc": 0.0991,
+        "best_alpha": 1,
+        "alpha_grid": {
+          "grid": [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1],
+          "pr_auc_per_alpha": [0.4314, 0.4492, 0.4634, 0.4729, 0.482, 0.4876, 0.4949, 0.4951, 0.5047, 0.51, 0.5153, 0.524, 0.527, 0.5324, 0.5392, 0.5628, 0.6117, 0.672, 0.714, 0.742, 0.7649],
+          "best_alpha": 1,
+          "best_pr_train_tail": 0.7649
+        }
+      }
+    },
+    {
+      "fold": 5,
+      "test_dates": ["2024-08-19", "2026-04-30"],
+      "train_n": 1632,
+      "test_n": 410,
+      "train_events": 512,
+      "test_events": 3,
+      "stage1_baseline": {
+        "pr_auc": null,
+        "roc_auc": null
+      },
+      "v1_naive_6": {
+        "pr_auc": null,
+        "roc_auc": null
+      },
+      "v2_augmented_10": {
+        "pr_auc": null,
+        "roc_auc": null
+      },
+      "v3_blend": {
+        "pr_auc": null,
+        "roc_auc": null,
+        "best_alpha": 0,
+        "alpha_grid": {
+          "grid": [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1],
+          "pr_auc_per_alpha": [0.0497, 0.0489, 0.0484, 0.0481, 0.0478, 0.0474, 0.0472, 0.047, 0.0467, 0.0464, 0.0462, 0.0457, 0.0453, 0.0449, 0.0447, 0.0445, 0.0442, 0.0441, 0.0441, 0.044, 0.044],
+          "best_alpha": 0,
+          "best_pr_train_tail": 0.0497
+        }
+      }
+    }
+  ],
+  "aggregate_oos": {
+    "baseline_53H_patchtst": {
+      "pr_auc": 0.2879,
+      "roc_auc": 0.6749,
+      "ic_spearman": 0.2364,
+      "n": 1634,
+      "events": 306
+    },
+    "v1_naive_concat_6": {
+      "pr_auc": 0.1255,
+      "roc_auc": 0.2872,
+      "ic_spearman": -0.2877
+    },
+    "v2_augmented_concat_10": {
+      "pr_auc": 0.1335,
+      "roc_auc": 0.3364,
+      "ic_spearman": -0.2211
+    },
+    "v3_weighted_blend": {
+      "pr_auc": 0.1513,
+      "roc_auc": 0.4281,
+      "ic_spearman": -0.0972,
+      "alpha_per_fold": [0.5, 1, 0]
+    }
+  },
+  "feature_importance_v2_full_oos_refit": [
+    {
+      "feature": "ecos_base_rate_lag1",
+      "gain": 0.2449,
+      "cover": 0.12,
+      "frequency": 0.0755
+    },
+    {
+      "feature": "p_patchtst",
+      "gain": 0.1629,
+      "cover": 0.1335,
+      "frequency": 0.1385
+    },
+    {
+      "feature": "us_initial_claims_4w_avg_lag1",
+      "gain": 0.1186,
+      "cover": 0.0773,
+      "frequency": 0.0977
+    },
+    {
+      "feature": "us_t10y2y_spread_lag1",
+      "gain": 0.1086,
+      "cover": 0.0862,
+      "frequency": 0.1037
+    },
+    {
+      "feature": "us_stlfsi_lag1",
+      "gain": 0.0939,
+      "cover": 0.1299,
+      "frequency": 0.1355
+    },
+    {
+      "feature": "ecos_m2_yoy_lag1",
+      "gain": 0.0938,
+      "cover": 0.1385,
+      "frequency": 0.1079
+    },
+    {
+      "feature": "ecos_cpi_yoy_lag1",
+      "gain": 0.0871,
+      "cover": 0.1532,
+      "frequency": 0.1163
+    },
+    {
+      "feature": "ecos_industrial_production_yoy_lag1",
+      "gain": 0.0548,
+      "cover": 0.0813,
+      "frequency": 0.1007
+    },
+    {
+      "feature": "us_cfnai_lag1",
+      "gain": 0.023,
+      "cover": 0.0352,
+      "frequency": 0.0492
+    },
+    {
+      "feature": "ecos_krw_usd_change_5d_lag1",
+      "gain": 0.0124,
+      "cover": 0.0448,
+      "frequency": 0.0749
+    }
+  ],
+  "pit_integrity_notes": ["Stage 1 preds OOS only — no in-sample leakage", "ECOS lag1 (53I verified)", "US macro lag1 (47B/48A verified)", "Time-series CV train_idx < test_idx (chronological)", "V3 α grid selected on train-fold tail (no test-fold information)", "Feature importance refit is DIAGNOSTIC only; predictions are per-fold OOF"]
+}

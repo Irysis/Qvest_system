@@ -274,7 +274,10 @@ Rscript -e 'source("02_Infrastructure/config.R"); source("02_Infrastructure/back
 # ──────────────────────────────────────────────────────────────────────────────
 echo "[6/6] P2 bearish forecast brief..."
 P2_BF_DIR="$BASE/04_Research/decision_framework/bearish_forecast_v3"
-P2_PY="$BASE/.venv_dpl/bin/python"
+P2_PY=""
+for _c in "$BASE/.venv_dpl/Scripts/python.exe" "$BASE/.venv_dpl/bin/python" "$BASE/.venv_qvest_ml/Scripts/python.exe" "$BASE/.venv_qvest_ml/bin/python"; do
+  [ -x "$_c" ] && P2_PY="$_c" && break
+done
 if [[ -x "$P2_PY" && -d "$P2_BF_DIR" ]]; then
   # 6_pre. Naver benchmark patch (KOSPI200 종가 자동 최신화, 도훈 mandate 2026-05-28)
   cd "$BASE"

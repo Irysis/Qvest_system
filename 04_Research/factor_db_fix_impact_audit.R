@@ -5,7 +5,7 @@
 #       |delta| > 0.05 팩터 식별 + 과거 전략 매핑
 #
 # 실행 방법: rebuild 완료 후 아래 실행
-#   cd "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+#   cd Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 #   Rscript -e 'source("04_Research/factor_db_fix_impact_audit.R")'
 #
 # 출력: stage_artifacts/factor_db_fix_impact_audit_v1.json
@@ -17,7 +17,7 @@ suppressPackageStartupMessages({
   library(jsonlite)
 })
 
-PROJECT_ROOT <- "/mnt/c/Users/User/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot"
+PROJECT_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 source(file.path(PROJECT_ROOT, "02_Infrastructure", "config.R"))
 source(file.path(PROJECT_ROOT, "02_Infrastructure", "factor_db", "factor_db_builder.R"))
 

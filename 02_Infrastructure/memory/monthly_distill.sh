@@ -32,21 +32,24 @@ tryCatch({
   cat(sprintf("Conditional IC: %d factors updated\n", nrow(cond)))
 }, error = function(e) cat("[cond_ic] Failed:", conditionMessage(e), "\n"))
 
-# 3. Axiom quarterly review (활성 axiom 재검증)
+# 3. Axiom quarterly review (v8.0 fix: 부재 qepm/R/memory/r7_axiom.R → review.R + promote.R.
+#    구 블록은 source 실패로 매월 "Review failed" silent no-op였음 — 자동화 사멸 엣지 복구.)
 tryCatch({
-  source(file.path(PROJECT_ROOT, "qepm/R/memory/r7_axiom.R"))
-  active <- load_all_axioms()
-  if (length(active) > 0) {
-    for (ax_id in names(active)) {
-      review <- review_axiom(ax_id)
-      cat(sprintf("[axiom] %s: %s\n", ax_id, review$action))
-    }
-  } else {
-    cat("[axiom] No active axioms to review\n")
+  # 활성 axiom dry-run 재검증 (deprecation/유지 판정 보고만, apply=FALSE)
+  source(file.path(PROJECT_ROOT, "02_Infrastructure/axiom/review.R"))
+  review_all_active_axioms(apply = FALSE)
+  # candidate dry-scan (promote.R 5-axis 점수)
+  source(file.path(PROJECT_ROOT, "02_Infrastructure/axiom/promote.R"))
+  cand_dir <- file.path(PROJECT_ROOT, "qepm/memory/axioms/candidates")
+  cands <- list.files(cand_dir, pattern="^CAND_.*\\.json$", full.names=TRUE)
+  cat(sprintf("[axiom] %d candidates found\n", length(cands)))
+  for (cp in cands) {
+    r <- tryCatch(promote_to_axiom(cp, threshold=0.80, auto_inject=FALSE),
+                  error=function(e) NULL)
+    if (!is.null(r)) cat(sprintf("[axiom]   %s weighted=%.3f %s\n",
+        r$candidate_id, r$weighted_score,
+        if (isTRUE(r$passed)) "PROMOTE-READY" else "below"))
   }
-  # Scan for new candidates
-  candidates <- scan_axiom_candidates()
-  cat(sprintf("[axiom] %d candidates found\n", length(candidates)))
 }, error = function(e) cat("[axiom] Review failed:", conditionMessage(e), "\n"))
 
 # 4. methodology_memory 통계

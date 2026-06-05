@@ -39,7 +39,7 @@ if (!exists("PROJECT_ROOT")) {
     .here <- dirname(sys.frame(1)$ofile)
     file.path(dirname(.here), "config.R")
   }, error = function(e) {
-    file.path("/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot",
+    file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")),
               "02_Infrastructure", "config.R")
   })
   source(.config_path)

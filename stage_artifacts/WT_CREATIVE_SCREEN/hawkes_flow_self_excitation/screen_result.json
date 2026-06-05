@@ -1,0 +1,41 @@
+{
+  "idea": "Hawkes self-excitation of smart-money (Foreign+Institutional) daily net-buy: branching ratio (clustering persistence) + residual-intensity rising-turn as cross-sectional long ranking signal.",
+  "estimator": "lightweight Ozaki/Ogata recursive exponential-kernel Hawkes (beta grid + Poisson pseudo-likelihood + branching-ratio split). NOT full MLE.",
+  "data_feasible": true,
+  "universe": "KOSPI200 union KOSDAQ150 (K200==1 | KQ150==1), liq20>=2e8",
+  "horizon_days": 21,
+  "lockbox_cutoff": "2023-12-22",
+  "n_obs_panel": 49365,
+  "n_sig_dates": 144,
+  "rank_ic": 0.00825,
+  "icir": 0.1043,
+  "naive_t": 1.251,
+  "harvey_t_rankic_NW": 1.33,
+  "nw_lag": 4,
+  "subperiod": {
+    "h1_ic": 0.00622,
+    "h2_ic": 0.01029,
+    "min_over_mean": 0.753,
+    "yearly_sign_consistency": 0.667
+  },
+  "orthogonality": {
+    "controls": ["INV01_Foreign_NetBuy_20d", "INV05_Foreign_Momentum", "INV09_Flow_Persistence"],
+    "residual_rank_ic": 0.02827,
+    "residual_icir": 0.3318,
+    "residual_harvey_t": 3.572,
+    "retention_ratio": 3.425,
+    "spearman_corr": {
+      "INV01": 0.162,
+      "INV05": 0.013,
+      "INV09": 0.394
+    },
+    "control_raw_ic": {
+      "INV01": -0.01815,
+      "INV05": -0.00577,
+      "INV09": -0.02834
+    }
+  },
+  "pit_notes": "features Date<sig_date (C2 strict); forward label shift(Close,n=H,type='lead'); lockbox<=2023-12-22; Usable_Date<=sig_date.",
+  "caveat": "rank-IC is SCREEN/advisory, NOT tradeable alpha (Cycle2: rank-IC t >> portfolio-alpha t). Pass => recommend formal canonical_screen_bt + forge.",
+  "generated": "2026-05-30 07:38:42.886793"
+}

@@ -1,0 +1,387 @@
+{
+  "cycle": "48A",
+  "approach": "TARGET_HORIZON_SWAP_v3g — same v3f_us_macro panel (73 features) × {q15 ctrl, q63, q126}",
+  "panel": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/01_data/feature_panel_v3f_us_macro.parquet",
+  "targets": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/02_targets/targets_long_horizon.parquet",
+  "target_summary": {
+    "y_tail_q15": {
+      "horizon_days": 21,
+      "events": 1148,
+      "non_na": 8955,
+      "event_rate": 0.1282
+    },
+    "y_tail_q63": {
+      "horizon_days": 63,
+      "events": 1245,
+      "non_na": 8955,
+      "event_rate": 0.139
+    },
+    "y_tail_q126": {
+      "horizon_days": 126,
+      "events": 1386,
+      "non_na": 8955,
+      "event_rate": 0.1548
+    }
+  },
+  "walk_forward_splits": {
+    "train": "1995-01-01 ~ 2009-12-31",
+    "valid": "2010-01-01 ~ 2015-12-31",
+    "oos": "2016-01-01 ~ 2026-04-30"
+  },
+  "per_horizon": {
+    "y_tail_q15": {
+      "n_oos_eff": 2531,
+      "event_rate": 0.1557,
+      "individual_5way": {
+        "xgb": 0.1423,
+        "cat": 0.142,
+        "rf": 0.1405,
+        "lstm": 0.1891,
+        "tft": 0.1508
+      },
+      "ensemble_static": {
+        "ew5": 0.1592,
+        "wew": 0.1555
+      },
+      "dynamic_5method": {
+        "Static_WEW": 0.1555,
+        "M1_Rolling": 0.1581,
+        "M2_Regime": 0.1581,
+        "M3_Hedge": 0.1415,
+        "M4_Bayes": 0.153,
+        "M5_Bandit": 0.1618
+      },
+      "feature_importance_new": {
+        "xgb": [
+          {
+            "feature": "us_cfnai_lag1",
+            "gain": 0.1158,
+            "rank": 1,
+            "total": 47
+          },
+          {
+            "feature": "us_t10y2y_spread_lag1",
+            "gain": 0.0752,
+            "rank": 3,
+            "total": 47
+          },
+          {
+            "feature": "us_initial_claims_4w_avg_lag1",
+            "gain": 0.0679,
+            "rank": 4,
+            "total": 47
+          },
+          {
+            "feature": "us_stlfsi_lag1",
+            "gain": 0.0571,
+            "rank": 6,
+            "total": 47
+          }
+        ],
+        "cat": [
+          {
+            "feature": "us_stlfsi_lag1",
+            "gain": 39.7462,
+            "rank": 1,
+            "total": 73
+          },
+          {
+            "feature": "us_t10y2y_spread_lag1",
+            "gain": 0,
+            "rank": 71,
+            "total": 73
+          },
+          {
+            "feature": "us_initial_claims_4w_avg_lag1",
+            "gain": 0,
+            "rank": 72,
+            "total": 73
+          },
+          {
+            "feature": "us_cfnai_lag1",
+            "gain": 0,
+            "rank": 73,
+            "total": 73
+          }
+        ],
+        "rf": [
+          {
+            "feature": "us_cfnai_lag1",
+            "gain": 70.5587,
+            "rank": 1,
+            "total": 73
+          },
+          {
+            "feature": "us_t10y2y_spread_lag1",
+            "gain": 64.6959,
+            "rank": 2,
+            "total": 73
+          },
+          {
+            "feature": "us_stlfsi_lag1",
+            "gain": 62.9866,
+            "rank": 3,
+            "total": 73
+          },
+          {
+            "feature": "us_initial_claims_4w_avg_lag1",
+            "gain": 56.8699,
+            "rank": 5,
+            "total": 73
+          }
+        ]
+      }
+    },
+    "y_tail_q63": {
+      "n_oos_eff": 2531,
+      "event_rate": 0.1648,
+      "individual_5way": {
+        "xgb": 0.1364,
+        "cat": 0.1553,
+        "rf": 0.12,
+        "lstm": 0.1701,
+        "tft": 0.1286
+      },
+      "ensemble_static": {
+        "ew5": 0.1395,
+        "wew": 0.1363
+      },
+      "dynamic_5method": {
+        "Static_WEW": 0.1363,
+        "M1_Rolling": 0.1834,
+        "M2_Regime": 0.1797,
+        "M3_Hedge": 0.1723,
+        "M4_Bayes": 0.2124,
+        "M5_Bandit": 0.1452
+      },
+      "feature_importance_new": {
+        "xgb": [
+          {
+            "feature": "us_cfnai_lag1",
+            "gain": 0.1573,
+            "rank": 1,
+            "total": 46
+          },
+          {
+            "feature": "us_t10y2y_spread_lag1",
+            "gain": 0.1109,
+            "rank": 3,
+            "total": 46
+          },
+          {
+            "feature": "us_stlfsi_lag1",
+            "gain": 0.0823,
+            "rank": 5,
+            "total": 46
+          },
+          {
+            "feature": "us_initial_claims_4w_avg_lag1",
+            "gain": 0.061,
+            "rank": 7,
+            "total": 46
+          }
+        ],
+        "cat": [
+          {
+            "feature": "us_stlfsi_lag1",
+            "gain": 12.5439,
+            "rank": 3,
+            "total": 73
+          },
+          {
+            "feature": "us_t10y2y_spread_lag1",
+            "gain": 9.252,
+            "rank": 6,
+            "total": 73
+          },
+          {
+            "feature": "us_cfnai_lag1",
+            "gain": 5.8396,
+            "rank": 8,
+            "total": 73
+          },
+          {
+            "feature": "us_initial_claims_4w_avg_lag1",
+            "gain": 0,
+            "rank": 73,
+            "total": 73
+          }
+        ],
+        "rf": [
+          {
+            "feature": "us_stlfsi_lag1",
+            "gain": 95.4869,
+            "rank": 1,
+            "total": 73
+          },
+          {
+            "feature": "us_cfnai_lag1",
+            "gain": 86.6424,
+            "rank": 2,
+            "total": 73
+          },
+          {
+            "feature": "us_t10y2y_spread_lag1",
+            "gain": 82.2361,
+            "rank": 4,
+            "total": 73
+          },
+          {
+            "feature": "us_initial_claims_4w_avg_lag1",
+            "gain": 58.2404,
+            "rank": 8,
+            "total": 73
+          }
+        ]
+      }
+    },
+    "y_tail_q126": {
+      "n_oos_eff": 2531,
+      "event_rate": 0.211,
+      "individual_5way": {
+        "xgb": 0.1777,
+        "cat": 0.1724,
+        "rf": 0.1776,
+        "lstm": 0.2387,
+        "tft": 0.3248
+      },
+      "ensemble_static": {
+        "ew5": 0.2271,
+        "wew": 0.205
+      },
+      "dynamic_5method": {
+        "Static_WEW": 0.205,
+        "M1_Rolling": 0.3096,
+        "M2_Regime": 0.3079,
+        "M3_Hedge": 0.2148,
+        "M4_Bayes": 0.187,
+        "M5_Bandit": 0.2257
+      },
+      "feature_importance_new": {
+        "xgb": [
+          {
+            "feature": "us_initial_claims_4w_avg_lag1",
+            "gain": 0.1795,
+            "rank": 1,
+            "total": 45
+          },
+          {
+            "feature": "us_cfnai_lag1",
+            "gain": 0.109,
+            "rank": 3,
+            "total": 45
+          },
+          {
+            "feature": "us_t10y2y_spread_lag1",
+            "gain": 0.0941,
+            "rank": 5,
+            "total": 45
+          },
+          {
+            "feature": "us_stlfsi_lag1",
+            "gain": 0.0443,
+            "rank": 9,
+            "total": 45
+          }
+        ],
+        "cat": [
+          {
+            "feature": "us_cfnai_lag1",
+            "gain": 9.3318,
+            "rank": 4,
+            "total": 73
+          },
+          {
+            "feature": "us_t10y2y_spread_lag1",
+            "gain": 6.8667,
+            "rank": 5,
+            "total": 73
+          },
+          {
+            "feature": "us_stlfsi_lag1",
+            "gain": 6.1073,
+            "rank": 7,
+            "total": 73
+          },
+          {
+            "feature": "us_initial_claims_4w_avg_lag1",
+            "gain": 5.1855,
+            "rank": 9,
+            "total": 73
+          }
+        ],
+        "rf": [
+          {
+            "feature": "us_initial_claims_4w_avg_lag1",
+            "gain": 117.1166,
+            "rank": 1,
+            "total": 73
+          },
+          {
+            "feature": "us_cfnai_lag1",
+            "gain": 103.2636,
+            "rank": 2,
+            "total": 73
+          },
+          {
+            "feature": "us_t10y2y_spread_lag1",
+            "gain": 101.6293,
+            "rank": 4,
+            "total": 73
+          },
+          {
+            "feature": "us_stlfsi_lag1",
+            "gain": 92.8277,
+            "rank": 5,
+            "total": 73
+          }
+        ]
+      }
+    }
+  },
+  "delta_vs_q15": {
+    "static_vs_q15": {
+      "q63": -0.0192,
+      "q126": 0.0495
+    },
+    "m2_regime_vs_q15": {
+      "q63": 0.0216,
+      "q126": 0.1498
+    },
+    "best_vs_q15": {
+      "q63": 0.0506,
+      "q126": 0.1478
+    }
+  },
+  "verdict": {
+    "q63": "WEAK_POSITIVE_q63 (q63 > q15 but < +0.03 threshold)",
+    "q126": "HORIZON_HYPOTHESIS_PROVEN_q126 (M2 q126 > q15 +0.03)",
+    "overall": "HORIZON_HYPOTHESIS_PROVEN",
+    "decision_rule": {
+      "proven": "Δ M2 Regime ≥ +0.03 vs q15",
+      "weak_positive": "Δ > 0 but < +0.03",
+      "rejected": "Δ <= 0",
+      "inverse": "BOTH q63 and q126 Δ < -0.03 (US macro short-horizon stronger)",
+      "neutral": "mixed"
+    }
+  },
+  "reproduction_sanity_47B": {
+    "note": "47B 02_target_builder.R line 39 uses shift(BM_Close, -H, type='lead') which returns BACKWARD price (pre-existing bug — see Step 0 v3 log). 48A uses correct forward-looking ret_qN. Therefore the 47B q15 OOS PR-AUC 0.5004 is NOT directly comparable to 48A q15 OOS PR-AUC (different label distributions). Report as 'methodology divergence' rather than 'reproduction failure'.",
+    "bug_finding": "scripts/02_target_builder.R line 39: shift(BM_Close, -H, type='lead') == past values, NOT forward returns",
+    "fix_recommendation": "shift(BM_Close, n=H, type='lead') for correct forward returns",
+    "b47b_m2_regime_q15_backward_target": 0.5004,
+    "b48a_m2_regime_q15_forward_target": 0.1581,
+    "b47b_static_wew_q15_backward_target": 0.4956,
+    "b48a_static_wew_q15_forward_target": 0.1555
+  },
+  "hypothesis_findings": {
+    "us_macro_4_features": ["us_t10y2y_spread_lag1", "us_initial_claims_4w_avg_lag1", "us_cfnai_lag1", "us_stlfsi_lag1"],
+    "rank_change_summary": "US macro features dominate at q126 (us_initial_claims rank 1 in XGB+RF, us_cfnai rank 1 in 47B q15). Q63 also strong but smaller. Q15 dilutes (47B finding reproduced).",
+    "next_cycle": "PROVEN → retain US macro family + add multi-horizon ensemble (q15 ⊕ q63 ⊕ q126) + consider production horizon shift OR multi-horizon overlay layer"
+  },
+  "outputs": {
+    "targets": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/02_targets/targets_long_horizon.parquet",
+    "v3g_dir": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/03_models/v3g_horizon_swap",
+    "chart_3panel": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/06_reports/charts/106_pr_curve_v3g_horizon_swap.png"
+  }
+}

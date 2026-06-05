@@ -1,0 +1,47 @@
+{
+  "stance_change": "DOWNGRADED",
+  "new_overall_stance": "APPROVE_WITH_CHANGES",
+  "conceded": [
+    "3개 운영 모드 자체가 semantic drift를 필연적으로 만든다는 R1 핵심 주장은 v0.2 합성안에서는 더 이상 그대로 유지하기 어렵다.",
+    "Grade A/B/C/F를 mode-local 의미에서 essence_score 단일 계약 산출로 분리한 점은 R1의 가장 큰 drift 메커니즘을 제거한다.",
+    "screen_pass, contract_pass, qe_pm_graduated, capital_admitted, fr_eligible 상태 spine은 cross-mode graduation ambiguity에 대한 정답에 가깝다.",
+    "manifest 기반 mode detection은 path-prefix detector 비판을 해소한다.",
+    "proxy sink-ban, authority_level/metric_type/source_contract_id/n_trials/admissible_for_capital 강제는 proxy 권위화 비판을 상당 부분 해소한다.",
+    "FR 전용 registry 물리 분리는 FR composite가 QEPM alpha 후보처럼 섞이는 문제를 해소한다.",
+    "FR이 이미 별도 Lane-3로 빌드되어 검증 실행까지 존재한다는 사실은 'FR을 blender로 접어라'라는 구조 처방의 실익을 크게 약화시킨다."
+  ],
+  "residual_objections": [
+    {
+      "severity": "HIGH",
+      "objection": "alpha-search의 screen_pass가 survivor selection 권한을 가지면, Grade drift는 사라져도 selection-bias drift는 남는다.",
+      "why_synthesis_insufficient": "합성안은 proxy가 grade를 못 쓰게 했지만, screen_pass가 어떤 sink와 의사결정에 영향을 줄 수 있는지는 아직 충분히 좁히지 않았다. screen_pass가 계약 백테스트 대상 선정, backlog 우선순위, L-code/axiom corpus 편입을 실질적으로 좌우하면 계약 실측은 이미 proxy가 만든 조건부 표본 위에서만 작동한다."
+    },
+    {
+      "severity": "MED",
+      "objection": "3 operational modes와 1 authority spine의 관계가 헌법 조항으로 고정되지 않으면, 이후 구현자가 다시 mode별 gate 표를 만들 수 있다.",
+      "why_synthesis_insufficient": "지금 문구는 방향으로는 맞지만, v0.2에는 'mode는 workflow taxonomy일 뿐이고 authority class가 아니다'라는 금지 규칙, 단일 grade 함수 위치, mode-local grade/gate 정의 금지가 명시되어야 한다."
+    },
+    {
+      "severity": "MED",
+      "objection": "FR의 RCMA가 grade-independent라고 해도 capital_admitted 또는 fr_eligible과 충돌할 수 있다.",
+      "why_synthesis_insufficient": "FR은 composite allocation 진단을 만들 수 있지만, 입력 모듈의 qe_pm_graduated/source_contract_id/hash/version 검증과 실제 capital admission 권한은 분리되어야 한다. RCMA가 module admission이라는 이름으로 자본 편입처럼 읽히면 또 다른 권위 혼동이 생긴다."
+    },
+    {
+      "severity": "LOW",
+      "objection": "manifest가 있더라도 enforcement 실패 시 fallback path hint가 권위처럼 쓰일 위험이 있다.",
+      "why_synthesis_insufficient": "path는 보조 신호라고 했지만, manifest 누락 또는 불일치 시 fail-closed인지, legacy artifact 예외가 어떤 절차로 허용되는지까지 v0.2에 들어가야 한다."
+    }
+  ],
+  "strongest_remaining_argument": "가장 강한 잔여 반론은 mode 수가 아니라 alpha-search proxy의 survivor-selection 권한이다. proxy가 Grade를 못 붙여도 screen_pass만으로 연구 표본, backlog, corpus를 움직이면 편향은 여전히 제도화된다.",
+  "v0_2_must_include": [
+    "명시 조항: operational mode는 workflow/lifecycle 구분일 뿐 authority tier가 아니며, Grade A/B/C/F는 essence_score contract만 산출한다.",
+    "mode-local grade, mode-local gate, registry-local Grade 의미 정의 금지.",
+    "screen_pass의 허용 sink와 금지 sink 목록. 특히 contract 전에는 capital, PG 권고, shared registry headline, book_state, L-code/axiom canon 편입 금지.",
+    "contract_pass 이전 proxy 결과는 triage metadata로만 저장하고 statistical evidence로 집계하지 않는다는 규칙.",
+    "FR 입력은 qe_pm_graduated 또는 명시 override만 허용하고, source_contract_id, module_hash, build_version, freeze_time 검증을 강제.",
+    "FR 산출물에는 strategy_type=composite_allocator, eligible_for_alpha_registry=false, input_module_hashes를 필수화.",
+    "manifest 누락, contract_run_id 누락, authority_level 불일치, path/manifest 충돌 시 fail-closed.",
+    "n_trials는 실행 로그에서 자동 산출하고 idea_id 아래 parameter, universe, period, rebalance, weighting 변형을 합산."
+  ],
+  "one_line_verdict": "R1의 '3모드라서 반드시 붕괴한다'는 핵심 반대는 철회하지만, v0.2 승인은 proxy screen_pass의 권한을 triage로 묶고 단일 authority spine을 헌법 조항으로 못 박는 조건부 승인이다."
+}

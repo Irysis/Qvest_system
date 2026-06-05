@@ -1,0 +1,196 @@
+{
+  "task_id": "WT-D20260529_001",
+  "track": "CROWD",
+  "variant_namespace": true,
+  "canonical": false,
+  "wt_type": "discovery",
+  "as_of_date": "2026-05-29",
+  "forecast_horizon": "1M",
+  "selection_objective": "rank_ic",
+  "verdict": "ABORTED_NEGATIVE_ALPHA",
+  "verdict_rationale": "Crowding cluster composite fails graduation on the AUTHORITATIVE lockbox window (<=2023-12-22): rank_IC 0.0157, ICIR 0.118, Harvey_t 0.40, monotonicity -0.65 (inverted). Full-sample (contaminated) numbers were more favorable (0.0209/0.158/1.62) — re-ran with lockbox per init window isolation. Top-20 long-only realized active return NEGATIVE (portfolio_alpha_t=-1.36, DSR_active=0.033). Composite is -32% WORSE than best single proxy CR08 (ICIR 0.118 vs 0.173) = static-blend dilution. recent36_ICIR 0.80 = 6.8x lockbox ICIR (severe recent-period concentration). No realized crisis hedge (crisis_alpha_bad=-0.0052; bad-month deciles flat ~-7%). Liquidity is fine (median ADV 5.2e9 KRW, 1.4% <2e8) so the failure is genuine signal absence, not microcap artifact. AX-005 echo + Cycle 2 lesson (rank-IC t positive but portfolio-alpha t negative). Per failure_rules (mono<0.5) = STOP.",
+  "primary_finding": "ORTHOGONALITY GOAL MET but ALPHA ABSENT. cor vs STR_1715 = -0.020 (Pearson) / -0.035 (rank); cor vs D track = +0.163 (Pearson) / +0.058 (rank). Both far below the <0.30 target. The crowding cluster IS structurally orthogonal to the book, but it carries no usable long-only alpha or crisis hedge in the KOSPI200_KOSDAQ150 universe, so it cannot serve as a 4th sleeve as-is.",
+  "alpha_vector_ref": "stage_artifacts/WT_D20260529_001_CROWD/alpha_scores.parquet",
+  "signal_matrix_ref": "feature_store://factor_db/crowding_cluster_z_aligned",
+  "factor_specs": [
+    {
+      "factor_family": "Crowding",
+      "proxy": "crowding_cluster_composite (EW z of 9 available CR factors)",
+      "formula": "cross-sectional z of rowMean(Z_Score_Aligned[CR01,CR02,CR03(absent),CR04,CR05,CR06,CR08,CR09,CR10,CR11])",
+      "lag_rule": "factor_db monthly snapshot, IC direction via Usable_Date<=sig_date (C14)",
+      "winsorization": "factor_db builder 3std",
+      "neutralization": "none (raw cross-sectional rank)",
+      "economic_rationale": "Crowding/comovement factors proxy investor concentration. Theory (Acadian 2026 crowding; Lou-Polk 2013 comomentum; Pojarliev-Levich crowdedness): less-crowded / dispersed-ownership / idiosyncratic names should carry a de-crowding + liquidity-provision premium that intensifies in de-leveraging stress. EMPIRICAL RESULT: this premium does NOT materialize monotonically in the KR large-cap index universe; the long extreme is adverse.",
+      "redundancy_cluster_id": "crowding_cluster (orthogonal to value/quality/momentum/size; orthogonal to STR_1715 core+defense and D microstructure-ML)",
+      "weight_theta": 1.0,
+      "references": [
+        "Acadian 2026 crowding risk",
+        "Lou-Polk 2013 comomentum",
+        "Pojarliev-Levich 2011 crowdedness",
+        "Harvey-Liu-Zhu 2016 (multiple testing)"
+      ]
+    }
+  ],
+  "diagnostics": {
+    "authoritative_window": "lockbox <=2023-12-22 (init <v61_window_isolation>; Codex C1 ACCEPT)",
+    "lockbox": {
+      "rank_ic": 0.0157,
+      "icir": 0.118,
+      "ic_t_stat": 1.82,
+      "harvey_t_stat": 0.4,
+      "monotonicity": -0.65,
+      "subperiod_stability": 0.67,
+      "recent36_icir": 0.8,
+      "n_months": 240
+    },
+    "full_2004_2026": {
+      "rank_ic": 0.0209,
+      "icir": 0.158,
+      "ic_t_stat": 2.57,
+      "harvey_t_stat": 1.62,
+      "monotonicity": -0.62,
+      "recent36_icir": 0.64,
+      "n_months": 267
+    },
+    "harvey_t_method": "Bonferroni n_tests=10 (crowding cluster candidate count)",
+    "monotonicity_top3_variant": -0.82,
+    "turnover_proxy_annual": 4.37,
+    "portfolio_alpha_t": -1.36,
+    "ir_net": -0.288,
+    "sr_net_absolute": 0.408,
+    "dsr_active": 0.033,
+    "dsr_absolute": 0.919,
+    "dsr_note": "DSR_active=0.033 authoritative (alpha basis). DSR_absolute=0.919 includes market beta = misleading. Codex C1/unresolved ACCEPT.",
+    "composite_vs_best_single": {
+      "best_single": "CR08_Volume_Price_Divergence",
+      "best_single_icir": 0.173,
+      "composite_icir": 0.118,
+      "fractional_improvement": -0.321,
+      "rf_a2_fires": true,
+      "note": "Composite does NOT beat best single (RF-A2). Codex C4 ACCEPT."
+    },
+    "liquidity_audit": {
+      "median_20d_adv_won": 5230000000.0,
+      "pct_below_2e8": 0.014,
+      "pct_below_5e7": 0.0,
+      "note": "Liquidity adequate — failure is signal absence not illiquidity. Codex C5 RF-A5 resolved."
+    }
+  },
+  "ic_vs_portfolio_alpha_separation": {
+    "rank_ic_t_stat": 2.57,
+    "portfolio_alpha_t_stat": -1.36,
+    "interpretation": "Cycle 2 lesson confirmed: positive rank-IC t (2.57) but NEGATIVE portfolio-alpha t (-1.36). Judge must treat portfolio-alpha t as authoritative. The positive IC is a low-decile artifact, not a tradable long signal."
+  },
+  "orthogonality": {
+    "cor_vs_STR_1715": {
+      "pearson_mean": -0.02,
+      "rank_mean": -0.035,
+      "n_months": 267,
+      "passes_0.30": true
+    },
+    "cor_vs_D_track": {
+      "pearson_mean": 0.163,
+      "rank_mean": 0.058,
+      "n_months": 116,
+      "passes_0.30": true
+    },
+    "target": "<0.30",
+    "conclusion": "Both pass. Crowding cluster is genuinely orthogonal to the existing book."
+  },
+  "ax001_v2_crisis": {
+    "ic_bad": 0.0189,
+    "ic_normal": 0.0161,
+    "ic_good": 0.0371,
+    "bad_normal_ic_ratio": 1.18,
+    "crisis_alpha_bad_months_active_net": -0.0052,
+    "bad_month_decile_spread": "flat ~-7% across all deciles (no cross-sectional protection)",
+    "is_crisis_hedge": false,
+    "crisis_hedge_basis": "REALIZED portfolio active return in bad months (Codex C3 ACCEPT). IC-ratio alone insufficient per AX-001 v2.",
+    "ic_ratio_favorable_but_not_realized": true
+  },
+  "method_log": {
+    "candidates_tried": 2,
+    "log": [
+      {
+        "name": "crowding_cluster_EW_9factor",
+        "rank_ic": 0.0209,
+        "monotonicity": -0.62,
+        "portfolio_alpha_t": -1.36,
+        "selected": "primary_reported"
+      },
+      {
+        "name": "crowding_top3_IC_CR06_CR04_CR08",
+        "rank_ic": 0.0247,
+        "monotonicity": -0.82,
+        "portfolio_alpha_t": -2.77,
+        "selected": "robustness_check_worse"
+      }
+    ],
+    "note": "Both candidates fail signal->portfolio translation. Higher IC (top3) gives WORSE portfolio alpha — illustrates IC != tradable alpha."
+  },
+  "factors_excluded": {
+    "CR07_Momentum_Crowding": "HEADLINE gap-directed candidate (conditional_ic 0.114, ic_bad 0.083) but only 16 months of factor_db coverage (2006-02..2010-08); n_months=18 in conditional_ic_matrix. STRUCTURALLY UNUSABLE as a 2004-2026 alpha — its high conditional_value is a small-sample (GFC-window) artifact. This invalidates CR07 as the gap-directed thesis anchor.",
+    "CR03_Herding_Dispersion": "Present in factor_db months but z-scores did not survive merge onto the index universe panel (0 usable months) — coverage gap in large-cap names."
+  },
+  "graduation_assessment": {
+    "basis": "lockbox window <=2023-12-22",
+    "min_rank_ic_0.04": "FAIL (0.0157)",
+    "min_icir_0.20": "FAIL (0.118)",
+    "min_subperiod_stability_0.50": "nominal PASS (0.67) but RF-A3: 2020-26 only (0.078); 2008-14 negative",
+    "min_harvey_t_3.0": "FAIL (0.40)",
+    "min_dsr_0.5": "FAIL (DSR_active 0.033)",
+    "monotonicity_0.7": "FAIL (-0.65 inverted)",
+    "overall": "FAIL all graduation criteria"
+  },
+  "challenge_flags": [
+    {
+      "id": "RF-A3",
+      "severity": "HIGH",
+      "detail": "Subperiod IC concentrated in 2020-26 (0.074) vs 2008-14 negative (-0.007). recent-period concentration."
+    },
+    {
+      "id": "RF-MONO",
+      "severity": "HIGH",
+      "detail": "Monotonicity inverted (-0.62). Top de-crowding decile underperforms. Signal not tradable long-only."
+    },
+    {
+      "id": "RF-AX005-ECHO",
+      "severity": "HIGH",
+      "detail": "Crowding/defense standalone top-20 long-only signal->portfolio translation break (AX-005 echo). portfolio_alpha_t=-1.36 negative."
+    },
+    {
+      "id": "RF-CR07",
+      "severity": "HIGH",
+      "detail": "Gap-directed thesis anchor CR07 has only 16 months coverage; conditional_ic_matrix value is a small-sample GFC artifact. Thesis foundation invalid."
+    },
+    {
+      "id": "RF-CRISIS",
+      "severity": "MEDIUM",
+      "detail": "bad/normal IC ratio 1.18 favorable but realized crisis_alpha NEGATIVE. AX-001 v2 fails realized criterion."
+    }
+  ],
+  "fourth_sleeve_value_judgment": {
+    "orthogonality": "EXCELLENT (cor<0.04 vs STR_1715, cor<0.17 vs D) — the diversification slot the book needs IS available in the crowding dimension.",
+    "alpha": "ABSENT — lockbox rank_IC 0.0157, inverted monotonicity, negative portfolio alpha.",
+    "crisis_hedge": "ABSENT in portfolio terms.",
+    "recommendation": "REJECT as a long-only 4th sleeve in current form. The orthogonality is real and valuable, but a crowding signal usable as a 4th sleeve would require one of the AX-007 exception structures (long-short to harvest the monotone-but-flat cross-section, or ML sizing to exploit non-linear/regime-conditional crowding) rather than a top-20 long-only tilt. Recommend Q-Lead consider a long-short or regime-gated follow-up ONLY if the broad-universe (not index-restricted) crowding IC reproduces — current index-universe result is a negative."
+  },
+  "pit_compliance": {
+    "lockbox_cutoff": "2023-12-22",
+    "C13": "Z_Score_Aligned only (no manual negate)",
+    "C14": "IC direction via Usable_Date<=sig_date",
+    "C15": "load_month_factors() connector (no direct parquet)",
+    "forward_return_check": "Ret_1m cross-checked vs rawdata.parquet (A005930 2004 exact, forward t->t+1, no data.table::shift bug)"
+  },
+  "universe": "KOSPI200_KOSDAQ150_intersection (KR_top342, via STR_1715 268m panel)",
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "codex_round": {
+    "stance": "REJECT",
+    "veto_flag": false,
+    "model": "gpt-5.5",
+    "concordant_with_agent": true,
+    "concerns_resolved": "6/6 (C1 ACCEPT+refit lockbox, C2 ACCEPT, C3 ACCEPT+flag fix, C4 ACCEPT+single-proxy, C5 PARTIAL+liq audit, C6 ACCEPT challenge_note/lineage + REBUTTAL downstream out-of-scope)",
+    "challenge_note": "challenge_note_CROWD.md",
+    "response": "codex_critic_response_alpha_CROWD.json"
+  }
+}

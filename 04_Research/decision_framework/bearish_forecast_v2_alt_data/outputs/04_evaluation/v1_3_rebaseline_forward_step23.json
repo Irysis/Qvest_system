@@ -1,0 +1,381 @@
+{
+  "cycle": "50_v1_3_rebaseline_forward",
+  "step": "step2_3_walkforward_gbdt_FORWARD_LABELS",
+  "panel": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/01_data/feature_panel_v1_3.parquet",
+  "target_file": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/02_targets/targets_full_forward.parquet",
+  "n_features": 69,
+  "baseline_v1_3": true,
+  "forward_labels": true,
+  "bug_fix_commit": "Cycle 50 Phase 1: scripts/02_target_builder.R line 39 shift(., -H, 'lead') → shift(., n=H, 'lead')",
+  "validation_strategy": "walk_forward_expanding_5_fold_CV",
+  "oos_window": {
+    "start": "2018-01-01",
+    "end": "2026-04-30",
+    "note": "fold 5 valid 2016-2017 제외하여 leakage 방지"
+  },
+  "folds": [
+    {
+      "name": "Fold1_Lehman",
+      "train_start": "1995-01-01",
+      "train_end": "2007-12-31",
+      "valid_start": "2008-01-01",
+      "valid_end": "2009-12-31"
+    },
+    {
+      "name": "Fold2_EuroAfter",
+      "train_start": "1995-01-01",
+      "train_end": "2009-12-31",
+      "valid_start": "2010-01-01",
+      "valid_end": "2011-12-31"
+    },
+    {
+      "name": "Fold3_CyprusTT",
+      "train_start": "1995-01-01",
+      "train_end": "2011-12-31",
+      "valid_start": "2012-01-01",
+      "valid_end": "2013-12-31"
+    },
+    {
+      "name": "Fold4_KRLowVol",
+      "train_start": "1995-01-01",
+      "train_end": "2013-12-31",
+      "valid_start": "2014-01-01",
+      "valid_end": "2015-12-31"
+    },
+    {
+      "name": "Fold5_BestSignal",
+      "train_start": "1995-01-01",
+      "train_end": "2015-12-31",
+      "valid_start": "2016-01-01",
+      "valid_end": "2017-12-31"
+    }
+  ],
+  "fold_diagnostics_y_tail_q15": [
+    {
+      "fold": "Fold1_Lehman",
+      "model": "xgb",
+      "target": "y_tail_q15",
+      "best_iter": 500,
+      "valid_pr": 0.3589,
+      "bear_count": 119,
+      "n_valid": 501,
+      "pos_weight": 5.67
+    },
+    {
+      "fold": "Fold1_Lehman",
+      "model": "cat",
+      "target": "y_tail_q15",
+      "best_iter": 500,
+      "valid_pr": 0.3898,
+      "bear_count": 119,
+      "n_valid": 501,
+      "pos_weight": 5.67
+    },
+    {
+      "fold": "Fold1_Lehman",
+      "model": "rf",
+      "target": "y_tail_q15",
+      "best_iter": 1000,
+      "valid_pr": 0.3559,
+      "bear_count": 119,
+      "n_valid": 501,
+      "pos_weight": 5.67
+    },
+    {
+      "fold": "Fold2_EuroAfter",
+      "model": "xgb",
+      "target": "y_tail_q15",
+      "best_iter": 500,
+      "valid_pr": 0.1729,
+      "bear_count": 57,
+      "n_valid": 499,
+      "pos_weight": 5.18
+    },
+    {
+      "fold": "Fold2_EuroAfter",
+      "model": "cat",
+      "target": "y_tail_q15",
+      "best_iter": 500,
+      "valid_pr": 0.1339,
+      "bear_count": 57,
+      "n_valid": 499,
+      "pos_weight": 5.18
+    },
+    {
+      "fold": "Fold2_EuroAfter",
+      "model": "rf",
+      "target": "y_tail_q15",
+      "best_iter": 1000,
+      "valid_pr": 0.1106,
+      "bear_count": 57,
+      "n_valid": 499,
+      "pos_weight": 5.18
+    },
+    {
+      "fold": "Fold3_CyprusTT",
+      "model": "xgb",
+      "target": "y_tail_q15",
+      "best_iter": 500,
+      "valid_pr": 0.0912,
+      "bear_count": 33,
+      "n_valid": 495,
+      "pos_weight": 5.4
+    },
+    {
+      "fold": "Fold3_CyprusTT",
+      "model": "cat",
+      "target": "y_tail_q15",
+      "best_iter": 500,
+      "valid_pr": 0.0924,
+      "bear_count": 33,
+      "n_valid": 495,
+      "pos_weight": 5.4
+    },
+    {
+      "fold": "Fold3_CyprusTT",
+      "model": "rf",
+      "target": "y_tail_q15",
+      "best_iter": 1000,
+      "valid_pr": 0.0397,
+      "bear_count": 33,
+      "n_valid": 495,
+      "pos_weight": 5.4
+    },
+    {
+      "fold": "Fold4_KRLowVol",
+      "model": "xgb",
+      "target": "y_tail_q15",
+      "best_iter": 500,
+      "valid_pr": 0.1259,
+      "bear_count": 66,
+      "n_valid": 493,
+      "pos_weight": 5.82
+    },
+    {
+      "fold": "Fold4_KRLowVol",
+      "model": "cat",
+      "target": "y_tail_q15",
+      "best_iter": 500,
+      "valid_pr": 0.1282,
+      "bear_count": 66,
+      "n_valid": 493,
+      "pos_weight": 5.82
+    },
+    {
+      "fold": "Fold4_KRLowVol",
+      "model": "rf",
+      "target": "y_tail_q15",
+      "best_iter": 1000,
+      "valid_pr": 0.1312,
+      "bear_count": 66,
+      "n_valid": 493,
+      "pos_weight": 5.82
+    },
+    {
+      "fold": "Fold5_BestSignal",
+      "model": "xgb",
+      "target": "y_tail_q15",
+      "best_iter": 500,
+      "valid_pr": 0.131,
+      "bear_count": 29,
+      "n_valid": 489,
+      "pos_weight": 5.87
+    },
+    {
+      "fold": "Fold5_BestSignal",
+      "model": "cat",
+      "target": "y_tail_q15",
+      "best_iter": 500,
+      "valid_pr": 0.1102,
+      "bear_count": 29,
+      "n_valid": 489,
+      "pos_weight": 5.87
+    },
+    {
+      "fold": "Fold5_BestSignal",
+      "model": "rf",
+      "target": "y_tail_q15",
+      "best_iter": 1000,
+      "valid_pr": 0.0831,
+      "bear_count": 29,
+      "n_valid": 489,
+      "pos_weight": 5.87
+    }
+  ],
+  "fold_diagnostics_y_onset": [
+    {
+      "fold": "Fold1_Lehman",
+      "model": "xgb",
+      "target": "y_onset",
+      "best_iter": 500,
+      "valid_pr": 0.1853,
+      "bear_count": 29,
+      "n_valid": 501,
+      "pos_weight": 8
+    },
+    {
+      "fold": "Fold1_Lehman",
+      "model": "cat",
+      "target": "y_onset",
+      "best_iter": 500,
+      "valid_pr": 0.1291,
+      "bear_count": 29,
+      "n_valid": 501,
+      "pos_weight": 8
+    },
+    {
+      "fold": "Fold1_Lehman",
+      "model": "rf",
+      "target": "y_onset",
+      "best_iter": 1000,
+      "valid_pr": 0.0422,
+      "bear_count": 29,
+      "n_valid": 501,
+      "pos_weight": 8
+    },
+    {
+      "fold": "Fold2_EuroAfter",
+      "model": "xgb",
+      "target": "y_onset",
+      "best_iter": 500,
+      "valid_pr": 0.3098,
+      "bear_count": 44,
+      "n_valid": 499,
+      "pos_weight": 8
+    },
+    {
+      "fold": "Fold2_EuroAfter",
+      "model": "cat",
+      "target": "y_onset",
+      "best_iter": 500,
+      "valid_pr": 0.2683,
+      "bear_count": 44,
+      "n_valid": 499,
+      "pos_weight": 8
+    },
+    {
+      "fold": "Fold2_EuroAfter",
+      "model": "rf",
+      "target": "y_onset",
+      "best_iter": 1000,
+      "valid_pr": 0.0513,
+      "bear_count": 44,
+      "n_valid": 499,
+      "pos_weight": 8
+    },
+    {
+      "fold": "Fold3_CyprusTT",
+      "model": "xgb",
+      "target": "y_onset",
+      "best_iter": 500,
+      "valid_pr": 0.2109,
+      "bear_count": 62,
+      "n_valid": 495,
+      "pos_weight": 8
+    },
+    {
+      "fold": "Fold3_CyprusTT",
+      "model": "cat",
+      "target": "y_onset",
+      "best_iter": 500,
+      "valid_pr": 0.2329,
+      "bear_count": 62,
+      "n_valid": 495,
+      "pos_weight": 8
+    },
+    {
+      "fold": "Fold3_CyprusTT",
+      "model": "rf",
+      "target": "y_onset",
+      "best_iter": 1000,
+      "valid_pr": 0.0847,
+      "bear_count": 62,
+      "n_valid": 495,
+      "pos_weight": 8
+    },
+    {
+      "fold": "Fold4_KRLowVol",
+      "model": "xgb",
+      "target": "y_onset",
+      "best_iter": 500,
+      "valid_pr": 0.1431,
+      "bear_count": 74,
+      "n_valid": 493,
+      "pos_weight": 8
+    },
+    {
+      "fold": "Fold4_KRLowVol",
+      "model": "cat",
+      "target": "y_onset",
+      "best_iter": 500,
+      "valid_pr": 0.1641,
+      "bear_count": 74,
+      "n_valid": 493,
+      "pos_weight": 8
+    },
+    {
+      "fold": "Fold4_KRLowVol",
+      "model": "rf",
+      "target": "y_onset",
+      "best_iter": 1000,
+      "valid_pr": 0.1563,
+      "bear_count": 74,
+      "n_valid": 493,
+      "pos_weight": 8
+    },
+    {
+      "fold": "Fold5_BestSignal",
+      "model": "xgb",
+      "target": "y_onset",
+      "best_iter": 500,
+      "valid_pr": "NA",
+      "bear_count": 3,
+      "n_valid": 489,
+      "pos_weight": 8
+    },
+    {
+      "fold": "Fold5_BestSignal",
+      "model": "cat",
+      "target": "y_onset",
+      "best_iter": 500,
+      "valid_pr": "NA",
+      "bear_count": 3,
+      "n_valid": 489,
+      "pos_weight": 8
+    },
+    {
+      "fold": "Fold5_BestSignal",
+      "model": "rf",
+      "target": "y_onset",
+      "best_iter": 1000,
+      "valid_pr": "NA",
+      "bear_count": 3,
+      "n_valid": 489,
+      "pos_weight": 8
+    }
+  ],
+  "avg_best_iter": {
+    "y_tail_q15": {
+      "xgb": 500,
+      "cat": 500,
+      "rf": 1000
+    },
+    "y_onset": {
+      "xgb": 500,
+      "cat": 500,
+      "rf": 1000
+    }
+  },
+  "final_oos_y_tail_q15": {
+    "xgb": 0.1857,
+    "cat": 0.1823,
+    "rf": 0.18,
+    "ew3": 0.1803
+  },
+  "final_oos_y_onset": {
+    "xgb": 0.1027,
+    "cat": 0.1152,
+    "rf": 0.1046,
+    "ew3": 0.0949
+  }
+}

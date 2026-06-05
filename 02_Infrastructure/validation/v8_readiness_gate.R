@@ -318,9 +318,17 @@ check_schema_active_wt <- function(project_root, no_write = FALSE) {
     # ARCHIVED/REJECT + JUDGE_FAILED/PASSED/COMPLETED/GRADUATION_FAIL/GOVERNOR 종결 포함.
     status_data <- tryCatch(jsonlite::fromJSON(sf, simplifyVector = FALSE),
                             error = function(e) NULL)
-    if (!is.null(status_data) && !is.null(status_data$current_phase)) {
+    if (!is.null(status_data)) {
+      # phase 키 변종 수용: current_phase | phase (status.json 작성 주체별 상이).
+      phase_val <- status_data$current_phase %||% status_data$phase %||% ""
       if (grepl("^ARCHIVED_|^REJECT_|_REJECT_|^REJECTED|JUDGE_FAILED|JUDGE_PASSED|GRADUATION_FAIL|^COMPLETED|GOVERNOR_REJECTED|GOVERNOR_ADMITTED",
-                status_data$current_phase)) next
+                phase_val)) next
+      # result/codex_stance 기반 종결 신호: standalone FAIL / 모든 hard gate 탈락 / Codex REJECT
+      # = 비-admit 종결 리서치 WT (alpha_vector 부재가 정상, schema 검증 무의미).
+      result_val <- status_data$result %||% ""
+      stance_val <- status_data$codex_stance %||% ""
+      if (grepl("FAIL|REJECT", result_val, ignore.case = TRUE) ||
+          identical(toupper(stance_val), "REJECT")) next
     }
     # Try alpha_package validation if present
     alpha_pkg_abs <- file.path(wt_dir, "alpha_package.json")

@@ -1,0 +1,29 @@
+# v3 actual use case — paper-faithful baseline + alt data ablation + 21d horizon
+
+training:
+  sequence_length: 3
+  batch_size: 64
+  optimizer: adam
+  learning_rate: 0.003
+  clipnorm: 1.0
+  epochs: 300
+  early_stopping_patience: 5
+  weight_decay: 0.0
+
+walk_forward:
+  train_min: 2008
+  test_window: 504
+
+data:
+  benchmark: kospi
+  bm_path: ".cache/benchmark.parquet"
+  alt_features_path: "04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/01_data/feature_panel_v1_alt.parquet"
+  date_start: "2001-04-06"   # bbva_transmission_z first valid (paper window 5 alt features 모두 가용)
+  date_end: "2020-11-30"
+  horizons: [1, 21]
+  percent_scale: true
+  exclude_alt_features:
+    - bbva_sovereign_z       # 2024-03-08+ only (paper window 100% NaN)
+    - k200_implied_skew_z    # 2017-01-02+ only (partial — 3yrs in paper window)
+    - k200_implied_kurt_z    # 2017-01-02+ only
+  alt_max_first_valid: "2002-01-01"  # Features available from 2002 or earlier

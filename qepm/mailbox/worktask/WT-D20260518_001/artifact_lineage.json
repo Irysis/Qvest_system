@@ -1,0 +1,84 @@
+{
+  "task_id": "WT-D20260518_001",
+  "schema_version": "v1.0",
+  "entries": [
+    {
+      "task_id": "WT-D20260518_001",
+      "package_type": "risk_package",
+      "created_at": "2026-05-19T00:35:00+0900",
+      "git_commit": "c0eb5de6941b820cc07423505e43676b52f1ee68",
+      "git_dirty": true,
+      "r_version": "4.5.2",
+      "r_packages": {
+        "data.table": "1.18.2.1",
+        "jsonlite": "2.0.0",
+        "arrow": "23.0.1.1",
+        "quadprog": "1.5.8",
+        "digest": "0.6.39",
+        "PerformanceAnalytics": "2.0.8",
+        "xts": "0.14.1"
+      },
+      "random_seed": 20260424,
+      "input_hashes": {
+        "qepm/mailbox/worktask/WT-D20260518_001/alpha_package.json": "a2af6389d271480eea1b1dbcf047ff47f69d294d81f5263b1fbab6ee38bb937c",
+        "stage_artifacts/WT_D20260518_001/feature_panel_design_v2.parquet": "5e7e6241777b4c06e7155926acf42f68d7a42fad5be5892f606f99ed9b7bbfeb",
+        "stage_artifacts/WT_D20260518_001/ICIR_per_window_per_regime.csv": "e8562f8611b264cf2cf6e9c87035816764e3e5f53c5c52dee3ff2edb743ce629",
+        "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/manifest.json": "4e6507027f99b28e076f66fd256169433ad1e9fa1ceb7f3fd2aa1c584d1ee68d"
+      },
+      "method_selected": "ledoit_wolf_constcor_ridge_lambda_0.10",
+      "method_shopping_log_ref": null,
+      "windows": [
+        {
+          "name": "train_panel",
+          "start": "1990-01-31",
+          "end": "2026-05-31"
+        },
+        {
+          "name": "cov_trim",
+          "start": "2001-02-28",
+          "end": "2026-03-31"
+        }
+      ],
+      "reproduction_command": "Rscript -e 'set.seed(20260424); source(\"qepm/mailbox/worktask/WT-D20260518_001/run_all.R\")'",
+      "file_path": "qepm/mailbox/worktask/WT-D20260518_001/risk_package.json",
+      "file_hash_sha256": "889fbae6ed37b0424881093f4cd3285cc225681c3aff0101913081dd566bfe6a"
+    },
+    {
+      "task_id": "WT-D20260518_001",
+      "package_type": "optimization_package",
+      "created_at": "2026-05-19T01:32:04+0900",
+      "git_commit": "c0eb5de6941b820cc07423505e43676b52f1ee68",
+      "git_dirty": true,
+      "r_version": "4.5.2",
+      "r_packages": {
+        "data.table": "1.18.2.1",
+        "jsonlite": "2.0.0",
+        "arrow": "23.0.1.1",
+        "quadprog": "1.5.8",
+        "digest": "0.6.39",
+        "PerformanceAnalytics": "2.0.8",
+        "xts": "0.14.1"
+      },
+      "random_seed": 20260424,
+      "input_hashes": {
+        "qepm/mailbox/worktask/WT-D20260518_001/alpha_package.json": "a2af6389d271480eea1b1dbcf047ff47f69d294d81f5263b1fbab6ee38bb937c",
+        "qepm/mailbox/worktask/WT-D20260518_001/risk_package.json": "59c073cffd75ea535f8bb196a0707e2d93d1b03137d49aa235691d026e3bcee2",
+        "qepm/mailbox/worktask/WT-D20260518_001/request.json": "afed7354cbe9667741375341073960f1db30cac5364288f982d75a12c5f9bb29",
+        "stage_artifacts/WT_D20260518_001/W3_OOS_explicit_check.json": "940978b52e57ca7a25d24687615bc9674d13f13aba7b31ad806e3344a4b1b8ed",
+        "stage_artifacts/WT_D20260518_001/crowding_overlap_with_PG2_STR_1715.json": "cb598d268bf5f84afb0e57d5add09fd6951fd58eb305f4c99ab42b55b5501d99",
+        "stage_artifacts/WT_D20260518_001/tail_risk_evt_gpd.json": "a755282e88e5c5bb7642f82cdcb5594aabb87f8392cacbbae862468947d78321",
+        "stage_artifacts/WT_D20260518_001/covariance.parquet": "990b35b2084cad89433971e7963082a3bc6bf34dcaad6b2bdbe7f0675ed88636",
+        "stage_artifacts/WT_D20260518_001/feature_panel_design_v2.parquet": "5e7e6241777b4c06e7155926acf42f68d7a42fad5be5892f606f99ed9b7bbfeb",
+        "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/manifest.json": "4e6507027f99b28e076f66fd256169433ad1e9fa1ceb7f3fd2aa1c584d1ee68d",
+        ".cache/benchmark.parquet": "9458ef910ba2ac89dd442352b7088d9d9b63626521b76386b0b93857630b4572"
+      },
+      "method_selected": "M05_Sequential_Layer6_Quantile_Hard3step_Hysteresis_5pct",
+      "method_shopping_log_ref": null,
+      "windows": null,
+      "reproduction_command": "Rscript -e 'set.seed(20260424); source(\"qepm/mailbox/worktask/WT-D20260518_001/run_all.R\")'",
+      "file_path": "qepm/mailbox/worktask/WT-D20260518_001/optimization_package.json",
+      "file_hash_sha256": "74e21944cc3abc26fd914d9e99a4a509c93244c829690ce77a0ec01f09b40331"
+    }
+  ],
+  "last_updated": "2026-05-19T01:32:04+0900"
+}

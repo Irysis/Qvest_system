@@ -1,0 +1,38 @@
+
+========== Step 1: v1.3 baseline panel (69 features, NO new features) ==========
+[1a] Source v1_alt_enhanced: 8955 rows × 69 features
+[1b] Saved v1_3 panel (canonical baseline 69 features): /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/01_data/feature_panel_v1_3.parquet
+
+========== Step 2: 3-way GBDT retrain (재현 검증) ==========
+[2a] Panel for training: 8937 rows / 69 features
+
+========== Target: y_tail_q15 (3-way GBDT v1.3 reproduction) ==========
+[M1 XGB] pos_weight=6.13 / training...
+[M1 XGB] OOS PR-AUC: 0.5503
+[M2 CatBoost] training...
+[M2 CatBoost] OOS PR-AUC: 0.5636
+[M3 Ranger RF] training (1000 trees, mtry=sqrt(p))...
+[M3 Ranger RF] OOS PR-AUC: 0.5272
+
+[3way EW] OOS PR-AUC: 0.5674
+
+========== Target: y_onset (3-way GBDT v1.3 reproduction) ==========
+[M1 XGB] pos_weight=8.00 / training...
+[M1 XGB] OOS PR-AUC: 0.1027
+[M2 CatBoost] training...
+[M2 CatBoost] OOS PR-AUC: 0.1040
+[M3 Ranger RF] training (1000 trees, mtry=sqrt(p))...
+[M3 Ranger RF] OOS PR-AUC: 0.0958
+
+[3way EW] OOS PR-AUC: 0.1175
+
+============================================================
+[Step 2 SUMMARY] 3-way GBDT retrain on v1.3 baseline (69 features)
+y_tail_q15:  XGB=0.5503 / CAT=0.5636 / RF=0.5272 / EW=0.5674
+y_onset:     XGB=0.1027 / CAT=0.1040 / RF=0.0958 / EW=0.1175
+
+[Reproduction check] EW3 y_tail_q15: 0.5674 (expected ≈ 0.6078 ± 0.005)
+  |Δ| vs expected baseline = 0.0404 WARN
+[Step 2] Summary JSON: /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/04_evaluation/5way_retrain_v3c_arch_upgrade_step2.json
+
+========== Step 2 DONE — Run scripts/82_5way_retrain_v3c_arch_upgrade.py next ==========

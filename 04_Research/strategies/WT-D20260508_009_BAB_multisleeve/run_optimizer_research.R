@@ -38,7 +38,7 @@ suppressPackageStartupMessages({
 })
 
 # ─── Paths ──────────────────────────────────────────────
-PROJ_ROOT <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+PROJ_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 setwd(PROJ_ROOT)
 
 WT_ID <- "WT-D20260508_009"

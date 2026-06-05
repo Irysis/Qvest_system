@@ -1,0 +1,78 @@
+{
+  "study": "DPL ENSEMBLE variance-reduction — seed-averaging (K8/K16) + config-diversity (top5) on DPL_C (research/feasibility only)",
+  "scope": "findings-only. admission/book_state 변경 없음. canonical alpha_package handoff 없음 (CBE/lex run과 동일 findings-only posture). DPL 한계/된다 verdict 없음 — 측정값만.",
+  "hypothesis": "단일-seed NN 추정분산이 binding constraint. 독립 seed(및 top-N config) 앙상블 = projection 후 weight 벡터 평균 → 추정분산↓ → OOS DSR 0.5↑ + subperiod 안정 + portfolio-α t 유지/소폭개선.",
+  "lockbox": "2023-12-22 strict (regular research)",
+  "oos_window": "2010-01..2023-12 (168m, walk-forward refit/12m)",
+  "device": "cuda RTX 4080 SUPER",
+  "pit_audit": {
+    "bear_date_audit": "4/4 PASS",
+    "panel_forward_match": 1.0,
+    "panel_backward_match": 0.002,
+    "overall_pass": true,
+    "note": "ENSEMBLE는 동일 PIT-clean feature panel + 동일 walk-forward refit + 동일 lockbox 재사용. 새 lookahead 표면 없음(Cycle50-style 재발 아님). weight 산출은 per-refit-window 학습된 per-seed projection weight 평균만 추가."
+  },
+  "design": {
+    "base_config_DPL_C": {
+      "loss": "active-alpha Sharpe (net - benchmark_monthly)",
+      "buffer": "hysteresis keep_n=32 / entry_n=25",
+      "hp": {"gamma": 1.5, "lookback": 72, "depth": 3, "width": 32, "l2": 0.001, "dropout": 0.1, "temp": 1.0, "lam": 0.0, "lr": 0.005, "epochs": 40, "min_train": 60}
+    },
+    "ensemble_mechanism": "각 refit window마다 K개 독립모델 학습 → 월별 per-seed simplex-projected effective weight 벡터 평균 → [0,0.20] clip → renorm(Σ=1) → max-25 enforce. long-only/Σw=1/cap/buffer 모두 per-seed에서 보존. convex layer/feature pipeline/buffer 재구현 없음(dpl_gpu_sweep_cbe 재사용).",
+    "seed_K8": [7, 17, 23, 42, 101, 202, 303, 404],
+    "seed_K16": [7, 17, 23, 42, 101, 202, 303, 404, 505, 606, 707, 808, 909, 111, 222, 333],
+    "config5": "단일 seed=7, sweep_results.json(96-cell GPU sweep) OOS-SR 상위 5 config의 HP(lookback/depth/width/temp/gamma/lam)를 DPL_C loss/buffer 틀에 이식해 평균."
+  },
+  "results_contract_grade_NW_lag3_OOS": {
+    "_comment": "build_benchmark_compare 단일경로, metric_type=backtested, 동일 168m OOS·동일 KOSPI200 benchmark. DSR_corrected는 동일 BLdP(2014) per-period 공식·각 행 n_trials_cumulative 보정.",
+    "DPL_C_baseline": {"portfolio_alpha_t_nw_lag3": 2.906, "p": 0.0037, "IR": 0.703, "net_active_SR": 0.703, "TE": 0.355, "TO_yr": 14.35, "DSR_corrected": 0.508, "subperiod_active_SR": [1.482, -0.346, 0.763], "subperiod_min": -0.346, "n_trials_cumulative": 123, "metric_type": "backtested"},
+    "ENS_seed_K8":  {"portfolio_alpha_t_nw_lag3": 1.850, "p": 0.0644, "IR": 0.388, "net_active_SR": 0.388, "TE": 0.305, "TO_yr": 12.69, "DSR_corrected": 0.116, "subperiod_active_SR": [1.359, -0.250, 0.019], "subperiod_min": -0.250, "n_trials_cumulative": 124, "metric_type": "backtested"},
+    "ENS_seed_K16": {"portfolio_alpha_t_nw_lag3": 2.387, "p": 0.0170, "IR": 0.521, "net_active_SR": 0.521, "TE": 0.304, "TO_yr": 11.96, "DSR_corrected": 0.242, "subperiod_active_SR": [1.478, -0.122, 0.127], "subperiod_min": -0.122, "n_trials_cumulative": 125, "metric_type": "backtested"},
+    "ENS_config5":  {"portfolio_alpha_t_nw_lag3": 2.092, "p": 0.0365, "IR": 0.391, "net_active_SR": 0.391, "TE": 0.298, "TO_yr": 15.71, "DSR_corrected": 0.114, "subperiod_active_SR": [1.283, -0.080, 0.028], "subperiod_min": -0.080, "n_trials_cumulative": 130, "metric_type": "backtested"}
+  },
+  "results_in_sample_SEPARATE": {
+    "_comment": "전체구간 fit·eval = 과적합 상한 (cherry-pick 경계 명시). 의사결정 근거 아님.",
+    "ENS_seed_K8_IS":  {"alpha_t": 8.035, "IR": 1.563, "TO_yr": 8.17, "subperiod": [1.261, 2.211, 1.465]},
+    "ENS_seed_K16_IS": {"alpha_t": 8.211, "IR": 1.681, "TO_yr": 7.76, "subperiod": [1.274, 2.474, 1.681]},
+    "ENS_config5_IS":  {"alpha_t": 8.600, "IR": 1.642, "TO_yr": 12.89, "subperiod": [1.424, 2.560, 1.176]},
+    "note": "IS↔OOS 격차 큼(8.0+ → 1.85~2.39). 단일모델과 동일하게 앙상블도 OOS 일반화에서 IS 우월성 대부분 소실."
+  },
+  "findings_X_tried_Y_measured": [
+    "seed_K8(8 독립 seed 평균) 시도 → OOS portfolio-α t 2.906→1.850 (하락), DSR_corrected 0.508→0.116, subperiod min -0.346→-0.250, TO 14.35→12.69, TE 0.355→0.305.",
+    "seed_K16(16 seed 평균) 시도 → OOS portfolio-α t 2.906→2.387 (하락), DSR_corrected →0.242, subperiod min →-0.122 (가장 안정), TO →11.96 (ceiling 11 근접·미달), TE →0.304.",
+    "config5(top5 IS config, seed=7 평균) 시도 → OOS portfolio-α t 2.906→2.092 (하락), DSR_corrected →0.114, subperiod min →-0.080 (절대값 가장 작음), TO 15.71 (악화), TE 0.298.",
+    "공통 측정: 앙상블 3종 모두 TE를 0.355→0.30 부근으로 축소(변동성↓ 확인) + 중간 subperiod 음수 폭을 -0.35→-0.08~-0.25로 완화(불안정성 완화 확인). 그러나 같은 평균화가 active-return 분자도 함께 축소 → portfolio-α t·IR·DSR 모두 동반 하락.",
+    "K8→K16 단조 회복(α-t 1.85→2.39, sub_min -0.25→-0.12) 관측 — seed 수 증가가 K8의 과도한 희석을 일부 되돌림. K16에서도 baseline 2.906 미회복."
+  ],
+  "key_diagnosis": {
+    "variance_vs_dilution": "가설(분산이 binding)은 부분만 성립. 앙상블이 TE·subperiod 변동성을 실제로 낮춤(분산축소 확인). 그러나 KR top-25 long-only에서 seed들이 '어느 종목'에 불일치 → weight 평균이 EW-중심으로 끌려 conviction 희석 → active 분자 동반 축소. 결과적으로 분산축소 이득 < 신호희석 손실 → α-t/DSR 순감소.",
+    "why_not_pure_denoise": "이상적 분산축소는 동일 signal의 noise만 평균소거(분자 유지·분모 축소). 여기선 seed간 종목선택 불일치가 systematic(같은 데이터로 다른 local minima) → 평균이 신호 자체를 깎음. 즉 binding constraint는 'seed noise'가 아니라 'seed간 종목선택 모델불확실성(epistemic)'에 가까움.",
+    "to_feasibility": "K16만 TO 11.96으로 ceiling 11에 근접(미달). 앙상블 단독으로 TO≤11 미해결(예고대로). config5는 lookback 다양성 때문에 오히려 TO 악화(15.71)."
+  },
+  "honesty_block": {
+    "DSR_corrected": {"DPL_C": 0.508, "ENS_seed_K8": 0.116, "ENS_seed_K16": 0.242, "ENS_config5": 0.114, "hurdle": 0.5, "note": "어떤 앙상블도 DSR 0.5 hurdle을 baseline보다 더 가까이 못 감. baseline DPL_C(0.508)이 본 contract DSR 공식·n_trials=123 기준 최고. (과제 명시 0.378은 다른 cumulative n_trials 기준 — 본 run의 동일-공식 내부비교가 apples-to-apples.)"},
+    "subperiod_min": {"DPL_C": -0.346, "ENS_seed_K8": -0.250, "ENS_seed_K16": -0.122, "ENS_config5": -0.080, "note": "subperiod 안정성은 앙상블이 개선(중간기 음수폭 축소). 단 안정화가 alpha 희생을 동반."},
+    "alpha_t_cross_2_95": "어떤 앙상블도 2.95 hurdle 미도달(최고 K16 2.387 < baseline 2.906 < 2.95). baseline조차 미도달.",
+    "TO_feasibility": "K16 11.96(근접·미달), seed_K8 12.69, config5 15.71. 앙상블 단독으로 TO≤11 미충족.",
+    "scope_reaffirm": "findings-only. book_state/admission 무변경. canonical handoff 없음."
+  },
+  "answers": {
+    "did_DSR_rise_toward_0_5": "아니오. 동일 contract DSR 공식 기준 baseline DPL_C 0.508이 최고. 앙상블 K8 0.116 / K16 0.242 / config5 0.114 — 모두 baseline보다 낮음.",
+    "did_subperiods_stabilize": "예 (부분). 중간 subperiod 음수폭 -0.346→-0.080~-0.250로 완화. K16/config5가 가장 안정. 그러나 1·3분기 SR도 함께 완만해짐(전반적 active 축소).",
+    "did_alpha_t_hold_or_cross_2_95": "아니오. baseline 2.906 대비 모두 하락(K16 2.387 최고). 2.95 hurdle은 baseline·앙상블 모두 미도달."
+  },
+  "next_candidates_not_verdicts": [
+    "weight-평균이 아닌 score(μ̂)-평균 앙상블: per-seed projection 전 단계에서 μ̂를 평균 후 단일 projection → conviction 희석 회피 가능성(분자 보존 시도). 미시도.",
+    "rank-기반/교집합 앙상블: seed 다수결 종목만 채택(intersection top-N) → 종목불일치 희석 대신 합의신호 강화. 미시도.",
+    "epistemic-uncertainty 선택(research_philosophy ③): seed간 μ̂ 분산 큰 종목 down-weight(μ̃=μ̂-k·SE) → 모델불확실성을 alpha 손실 없이 risk-control. 미시도.",
+    "K16에서 TO 11.96 ceiling 근접 — buffer keep_n 추가조정 + K16 결합으로 TO≤11 도달 가능성 별도 측정 여지(α 영향 동시 측정 필요)."
+  ],
+  "artifacts": {
+    "ensemble_wrapper": "02_Infrastructure/ml_pipeline/dpl_gpu_sweep_ens.py",
+    "eval_contract": "02_Infrastructure/ml_pipeline/dpl_ens_eval_contract.R",
+    "results_python_preview": "stage_artifacts/WT_DPL_GPU_SWEEP/ens_sweep_results.json",
+    "results_contract_grade": "stage_artifacts/WT_DPL_GPU_SWEEP/ens_eval_contract.json",
+    "net_return_series": ["ens_seed_K8_net_returns.parquet", "ens_seed_K16_net_returns.parquet", "ens_config5_net_returns.parquet", "(+ *_is_*)"],
+    "run_log": "stage_artifacts/WT_DPL_GPU_SWEEP/ens_sweep.log"
+  }
+}

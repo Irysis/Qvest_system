@@ -1,0 +1,81 @@
+You are a code reviewer. Scope: code-only review (no design verdicts, no recommendations
+on label choice, no rankings). Focus exclusively on numerical / implementation correctness.
+
+Target file:
+  /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/scripts/138_cycle54b_abs15_reeval.R
+
+Context (from the user / coordinator):
+  - Cycle 54B re-evaluates all prior cycle prediction parquet files under both the original
+    label (y_tail_q126 = rolling 60m purged 15th-pctile of forward 126d return) and a fixed
+    alternative label (y_tail_q126_abs15 = 1{ret_q126 <= -0.15}).
+  - ret_q126 is forward-looking: BM[t+126] / BM[t] - 1 (already computed upstream in
+    outputs/02_targets/targets_long_horizon.parquet; verified for 3 known dates).
+  - bear_date_audit PRE-CYCLE PASS (4/4: Lehman 2008-09-12, Euro 2011-08-08, COVID 2020-02-19,
+    Stagflation 2022-09-26 — forward 21d semantics).
+  - Pred files: cycles 52 (v4a 5way q15), 53B (v5b q15+q126), 53E (sweep v1..v11 q126),
+    53H (v5e q126 + US macro), 53I (v5f q126 + ECOS KR macro).
+  - Q-Lead (NOT Codex) will decide "abs15 primary vs orig retain" verdict separately.
+
+Please audit ONLY the following numerical / implementation correctness items:
+
+1. **abs15 label computation**
+   - `lh[, y_tail_q126_abs15 := as.integer(ret_q126 <= -0.15)]`
+   - Is this forward-semantics correct given ret_q126 is forward 126d?
+   - Does NA in ret_q126 propagate to NA in y_tail_q126_abs15 correctly?
+   - Sanity: COVID 2020-02-19 has ret_q126=+0.0289 (recovered by trough+126d), so
+     y_tail_q126_abs15 should be 0 — is this consistent?
+
+2. **PR-AUC trapezoidal computation** (function pr_auc)
+   - Edge cases: <30 obs returns NA, <5 events returns NA, all-1 returns NA.
+   - Sorted by p decreasing, cumulative precision/recall.
+   - Trapezoidal rule: sum(diff(rec) * (prec[-1] + prec[-n]) / 2)
+   - Correct?
+
+3. **Moving-block bootstrap CI** (function pr_auc_bootstrap_ci)
+   - Default B=1000, block_len=21 (~1 trading month).
+   - Sampling n_blocks=ceil(n/block_len) starts, taking idx[1:n].
+   - Edge: starts_max < 1 → no bootstrap, returns NA.
+   - Boot vals filtered for NA before quantile.
+   - Is the block-bootstrap construction valid for time-series PR-AUC CI?
+   - Note: set.seed(20260521L) is at top of script — seed reproducibility preserved across
+     1000 bootstrap iterations × multiple cycle calls? (i.e., does multiple sequential
+     bootstrap calls eat through the same RNG stream deterministically?)
+
+4. **Date alignment / merge**
+   - Prediction files have POSIXct Date (e.g., "2018-01-02 09:00:00"); script converts to Date.
+   - Merge on Date (all.x=TRUE) joins prediction p_xx with abs15/orig labels.
+   - Orig label cross-check: `m$y_orig_file == m$y_orig` reports 100% match across all cycles.
+   - Is the Date conversion (POSIXct → Date) and merge correct?
+   - Any timezone / boundary risk?
+
+5. **Per-segment evaluation**
+   - SEGMENTS = list with 4 segments (S2018-19 / S2020-21 / S2022-24 / S2025-26).
+   - sel = !is.na(Date) & Date >= start & Date <= end (inclusive both ends).
+   - Is the segment boundary inclusion correct? (e.g., 2019-12-31 belongs to S2018-19 only,
+     2020-01-01 to S2020-21 only)
+
+6. **NA handling in yearly event rate (Phase 1 events_by_year)**
+   - View A (OOS 2018-2025) uses `fcoalesce(y, 0L)` (NA → 0) — matches 53M convention.
+   - View B (Full 1990-2026) uses `na.rm = TRUE` on summands.
+   - Note: 2025 has 29 NA in y_tail_q126_abs15 (last forward-window incomplete).
+   - Is NA → 0 the right convention for "yearly event rate" reporting? Is there a sign-flip
+     risk in any of the rolling 60m purged threshold (q15_thr_q126) computation?
+
+7. **Ranking consistency (Spearman)**
+   - merged_rank = merge(orig_q126_tbl, abs15_tbl, by="cycle").
+   - cor(pr_orig, pr_abs15, method="spearman").
+   - Is this an appropriate measure of "label ranking robustness"? Any tie-handling concerns?
+
+8. **`%||%` operator definition**
+   - Defined AFTER its first use in cat(sprintf(...)) inside Phase 2 loop.
+   - Will R lazy-eval the function body and defer lookup, OR will it error out?
+   - (i.e., `cat(sprintf("%.4f", overall$pr_auc %||% NA))` happens before the line
+     `\`%||%\` <- function(a, b) if (is.null(a) || (is.numeric(a) && is.na(a))) b else a`)
+
+For each item above, return:
+  - status: OK | BUG | WARN
+  - line numbers (if BUG or WARN)
+  - specific fix suggestion (if BUG)
+
+OUTPUT FORMAT: structured JSON with one block per item (1..8). No design opinions.
+No "recommend abs15 as primary" or similar — ONLY code correctness.

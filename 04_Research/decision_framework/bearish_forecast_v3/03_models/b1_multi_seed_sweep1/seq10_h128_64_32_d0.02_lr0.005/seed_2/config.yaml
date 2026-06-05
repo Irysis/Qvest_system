@@ -1,0 +1,71 @@
+architecture:
+  dropout: 0.02
+  hidden_sizes:
+  - 128
+  - 64
+  - 32
+  l2_reg: 0.002
+  output_distribution:
+  - normal
+  - student_t
+  - skewed_t
+  type: lstm
+cnn_architecture:
+  filters: 256
+  kernel_size: 2
+  pool_size: 2
+  type: cnn
+data:
+  benchmark: kospi200
+  bm_path: .cache/benchmark.parquet
+  date_end: '2021-12-31'
+  date_start: '2000-01-03'
+  features:
+    alt_data:
+      enabled: false
+    paper_baseline:
+    - log_ret
+    - rv_22d
+  horizon: paper
+  percent_scale: true
+  target_path: 04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/02_targets/targets_full.parquet
+output:
+  metrics_path: 04_Research/decision_framework/bearish_forecast_v3/04_evaluation/b1_paper_metrics.json
+  models_dir: 04_Research/decision_framework/bearish_forecast_v3/03_models/b1_paper_reproduce
+  predictions_dir: 04_Research/decision_framework/bearish_forecast_v3/04_evaluation/b1_paper_predictions
+reproduce_pass_criteria:
+  loose_tolerance: 0.05
+  ordering_check: true
+  paper_kospi_lstm_sstd_crps: 0.5165
+  var_1pct_lstm_std_target: 0.0084
+seed:
+  stage_1: 0
+  stage_2_seeds:
+  - 0
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  - 13
+  - 14
+  stage_2_top_k: 5
+training:
+  batch_size: 128
+  early_stopping_monitor: val_loss
+  early_stopping_patience: 30
+  epochs: 300
+  learning_rate: 0.005
+  optimizer: adam
+  sequence_length: 10
+walk_forward:
+  expand_step: 504
+  test_window: 504
+  train_min: 1008

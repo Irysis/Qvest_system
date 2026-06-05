@@ -1,0 +1,433 @@
+{
+  "cycle": "56D_prelim_megamulti_3arch",
+  "approach": "MEGA_MULTI_VIEW_3ARCH_DLinear_Informer_TimesNet_FIRST_PASS",
+  "hypothesis": "PatchTST 53H 0.4012 vs 3 NEW architectures (DLinear / Informer / TimesNet). Some arch beat 0.4012?",
+  "panel": "feature_panel_v5e_q126_usmacro.parquet",
+  "targets_source": "targets_long_horizon.parquet (forward labels)",
+  "n_features": 74,
+  "seed": 42,
+  "forward_labels": true,
+  "validation_strategy": "walk_forward_expanding_5_fold_CV (single seed first-pass)",
+  "oos_window": {
+    "start": "2018-01-01",
+    "end": "2026-04-30"
+  },
+  "baselines": {
+    "cycle_53H_patchtst_seed42_y_tail_q126_raw": 0.4012,
+    "cycle_53H_patchtst_seed42_y_tail_q15_raw": 0.2082,
+    "cycle_53H_patchtst_seed42_y_tail_q126_fair_mask_clean": 0.4016,
+    "cycle_53H_patchtst_seed42_y_tail_q15_fair_mask_clean": 0.2082,
+    "fair_baseline_note": "Cycle 56D primary delta uses *_fair_mask_clean baseline (Codex review fix label-mask convention). Raw retained for headline reference. Mask convention drift impact: q126 ~+0.0004, q15 ~negligible."
+  },
+  "verdict_thresholds": {
+    "BREAKTHROUGH_min": 0.42,
+    "MARGINAL_range": [0.4, 0.42]
+  },
+  "per_arch": [
+    {
+      "arch": "dlinear",
+      "target": "y_tail_q15",
+      "n_obs": 2039,
+      "n_events": 365,
+      "event_rate": 0.179,
+      "oos_pr": 0.2064,
+      "oos_ic": 0.0406,
+      "delta_vs_53h": -0.0018
+    },
+    {
+      "arch": "dlinear",
+      "target": "y_tail_q126",
+      "n_obs": 1934,
+      "n_events": 515,
+      "event_rate": 0.2663,
+      "oos_pr": 0.2039,
+      "oos_ic": -0.175,
+      "delta_vs_53h": -0.1977
+    },
+    {
+      "arch": "informer",
+      "target": "y_tail_q15",
+      "n_obs": 2039,
+      "n_events": 365,
+      "event_rate": 0.179,
+      "oos_pr": 0.1946,
+      "oos_ic": -0.019,
+      "delta_vs_53h": -0.0136
+    },
+    {
+      "arch": "informer",
+      "target": "y_tail_q126",
+      "n_obs": 1934,
+      "n_events": 515,
+      "event_rate": 0.2663,
+      "oos_pr": 0.23,
+      "oos_ic": -0.0903,
+      "delta_vs_53h": -0.1716
+    },
+    {
+      "arch": "timesnet",
+      "target": "y_tail_q15",
+      "n_obs": 2039,
+      "n_events": 365,
+      "event_rate": 0.179,
+      "oos_pr": 0.161,
+      "oos_ic": -0.029,
+      "delta_vs_53h": -0.0472
+    },
+    {
+      "arch": "timesnet",
+      "target": "y_tail_q126",
+      "n_obs": 1934,
+      "n_events": 515,
+      "event_rate": 0.2663,
+      "oos_pr": 0.2796,
+      "oos_ic": 0.0779,
+      "delta_vs_53h": -0.122
+    }
+  ],
+  "ensemble_ew3": {
+    "y_tail_q126": {
+      "target": "y_tail_q126",
+      "n_obs": 1934,
+      "n_events": 515,
+      "event_rate": 0.2663,
+      "oos_pr": 0.2143,
+      "oos_ic": -0.1113
+    },
+    "y_tail_q15": {
+      "target": "y_tail_q15",
+      "n_obs": 2039,
+      "n_events": 365,
+      "event_rate": 0.179,
+      "oos_pr": 0.1926,
+      "oos_ic": 0.0013
+    },
+    "delta_vs_53h": {
+      "q126": -0.1873,
+      "q15": -0.0156
+    }
+  },
+  "period_balanced": {
+    "segments": [
+      {
+        "name": "S2018_19_calm",
+        "start": "2018-01-01",
+        "end": "2019-12-31"
+      },
+      {
+        "name": "S2020_21_covid_lift",
+        "start": "2020-01-01",
+        "end": "2021-12-31"
+      },
+      {
+        "name": "S2022_24_inflation",
+        "start": "2022-01-01",
+        "end": "2024-12-31"
+      }
+    ],
+    "bootstrap_n": 1000,
+    "per_arch_segments": [
+      {
+        "arch": "dlinear",
+        "target": "y_tail_q15",
+        "segment": "S2018_19_calm",
+        "n_obs": 490,
+        "n_events": 133,
+        "pr_auc": 0.2361,
+        "ci_lo": 0.1916,
+        "ci_hi": 0.2934
+      },
+      {
+        "arch": "dlinear",
+        "target": "y_tail_q15",
+        "segment": "S2020_21_covid_lift",
+        "n_obs": 496,
+        "n_events": 77,
+        "pr_auc": 0.4932,
+        "ci_lo": 0.3849,
+        "ci_hi": 0.595
+      },
+      {
+        "arch": "dlinear",
+        "target": "y_tail_q15",
+        "segment": "S2022_24_inflation",
+        "n_obs": 735,
+        "n_events": 132,
+        "pr_auc": 0.1549,
+        "ci_lo": 0.1282,
+        "ci_hi": 0.1932
+      },
+      {
+        "arch": "dlinear",
+        "target": "y_tail_q126",
+        "segment": "S2018_19_calm",
+        "n_obs": 490,
+        "n_events": 257,
+        "pr_auc": 0.4926,
+        "ci_lo": 0.4422,
+        "ci_hi": 0.5493
+      },
+      {
+        "arch": "dlinear",
+        "target": "y_tail_q126",
+        "segment": "S2020_21_covid_lift",
+        "n_obs": 496,
+        "n_events": 152,
+        "pr_auc": 0.5169,
+        "ci_lo": 0.4551,
+        "ci_hi": 0.5868
+      },
+      {
+        "arch": "dlinear",
+        "target": "y_tail_q126",
+        "segment": "S2022_24_inflation",
+        "n_obs": 735,
+        "n_events": 106,
+        "pr_auc": 0.0874,
+        "ci_lo": 0.072,
+        "ci_hi": 0.1043
+      },
+      {
+        "arch": "informer",
+        "target": "y_tail_q15",
+        "segment": "S2018_19_calm",
+        "n_obs": 490,
+        "n_events": 133,
+        "pr_auc": 0.3223,
+        "ci_lo": 0.2636,
+        "ci_hi": 0.4003
+      },
+      {
+        "arch": "informer",
+        "target": "y_tail_q15",
+        "segment": "S2020_21_covid_lift",
+        "n_obs": 496,
+        "n_events": 77,
+        "pr_auc": 0.2045,
+        "ci_lo": 0.149,
+        "ci_hi": 0.2734
+      },
+      {
+        "arch": "informer",
+        "target": "y_tail_q15",
+        "segment": "S2022_24_inflation",
+        "n_obs": 735,
+        "n_events": 132,
+        "pr_auc": 0.1295,
+        "ci_lo": 0.1081,
+        "ci_hi": 0.1555
+      },
+      {
+        "arch": "informer",
+        "target": "y_tail_q126",
+        "segment": "S2018_19_calm",
+        "n_obs": 490,
+        "n_events": 257,
+        "pr_auc": 0.541,
+        "ci_lo": 0.485,
+        "ci_hi": 0.6069
+      },
+      {
+        "arch": "informer",
+        "target": "y_tail_q126",
+        "segment": "S2020_21_covid_lift",
+        "n_obs": 496,
+        "n_events": 152,
+        "pr_auc": 0.4881,
+        "ci_lo": 0.4282,
+        "ci_hi": 0.56
+      },
+      {
+        "arch": "informer",
+        "target": "y_tail_q126",
+        "segment": "S2022_24_inflation",
+        "n_obs": 735,
+        "n_events": 106,
+        "pr_auc": 0.1953,
+        "ci_lo": 0.1497,
+        "ci_hi": 0.259
+      },
+      {
+        "arch": "timesnet",
+        "target": "y_tail_q15",
+        "segment": "S2018_19_calm",
+        "n_obs": 490,
+        "n_events": 133,
+        "pr_auc": 0.2117,
+        "ci_lo": 0.18,
+        "ci_hi": 0.2538
+      },
+      {
+        "arch": "timesnet",
+        "target": "y_tail_q15",
+        "segment": "S2020_21_covid_lift",
+        "n_obs": 496,
+        "n_events": 77,
+        "pr_auc": 0.2471,
+        "ci_lo": 0.1928,
+        "ci_hi": 0.3087
+      },
+      {
+        "arch": "timesnet",
+        "target": "y_tail_q15",
+        "segment": "S2022_24_inflation",
+        "n_obs": 735,
+        "n_events": 132,
+        "pr_auc": 0.133,
+        "ci_lo": 0.1106,
+        "ci_hi": 0.1615
+      },
+      {
+        "arch": "timesnet",
+        "target": "y_tail_q126",
+        "segment": "S2018_19_calm",
+        "n_obs": 490,
+        "n_events": 257,
+        "pr_auc": 0.4985,
+        "ci_lo": 0.4454,
+        "ci_hi": 0.5539
+      },
+      {
+        "arch": "timesnet",
+        "target": "y_tail_q126",
+        "segment": "S2020_21_covid_lift",
+        "n_obs": 496,
+        "n_events": 152,
+        "pr_auc": 0.7899,
+        "ci_lo": 0.7274,
+        "ci_hi": 0.8523
+      },
+      {
+        "arch": "timesnet",
+        "target": "y_tail_q126",
+        "segment": "S2022_24_inflation",
+        "n_obs": 735,
+        "n_events": 106,
+        "pr_auc": 0.141,
+        "ci_lo": 0.1127,
+        "ci_hi": 0.1886
+      },
+      {
+        "arch": "ew3",
+        "target": "y_tail_q15",
+        "segment": "S2018_19_calm",
+        "n_obs": 490,
+        "n_events": 133,
+        "pr_auc": 0.256,
+        "ci_lo": 0.2051,
+        "ci_hi": 0.3202
+      },
+      {
+        "arch": "ew3",
+        "target": "y_tail_q15",
+        "segment": "S2020_21_covid_lift",
+        "n_obs": 496,
+        "n_events": 77,
+        "pr_auc": 0.3359,
+        "ci_lo": 0.2525,
+        "ci_hi": 0.4313
+      },
+      {
+        "arch": "ew3",
+        "target": "y_tail_q15",
+        "segment": "S2022_24_inflation",
+        "n_obs": 735,
+        "n_events": 132,
+        "pr_auc": 0.135,
+        "ci_lo": 0.1102,
+        "ci_hi": 0.1648
+      },
+      {
+        "arch": "ew3",
+        "target": "y_tail_q126",
+        "segment": "S2018_19_calm",
+        "n_obs": 490,
+        "n_events": 257,
+        "pr_auc": 0.5098,
+        "ci_lo": 0.458,
+        "ci_hi": 0.5711
+      },
+      {
+        "arch": "ew3",
+        "target": "y_tail_q126",
+        "segment": "S2020_21_covid_lift",
+        "n_obs": 496,
+        "n_events": 152,
+        "pr_auc": 0.6113,
+        "ci_lo": 0.538,
+        "ci_hi": 0.6931
+      },
+      {
+        "arch": "ew3",
+        "target": "y_tail_q126",
+        "segment": "S2022_24_inflation",
+        "n_obs": 735,
+        "n_events": 106,
+        "pr_auc": 0.1077,
+        "ci_lo": 0.0883,
+        "ci_hi": 0.1289
+      }
+    ],
+    "per_arch_3_3_lift_check": [
+      {
+        "arch": "dlinear",
+        "n_seg_lift_gt1": 1,
+        "n_seg_total": 3,
+        "all_3_lift_gt1": false
+      },
+      {
+        "arch": "informer",
+        "n_seg_lift_gt1": 3,
+        "n_seg_total": 3,
+        "all_3_lift_gt1": true
+      },
+      {
+        "arch": "timesnet",
+        "n_seg_lift_gt1": 1,
+        "n_seg_total": 3,
+        "all_3_lift_gt1": false
+      },
+      {
+        "arch": "ew3",
+        "n_seg_lift_gt1": 1,
+        "n_seg_total": 3,
+        "all_3_lift_gt1": false
+      }
+    ]
+  },
+  "cross_check_53h_re_computed": {
+    "y_tail_q15": 0.2082,
+    "y_tail_q126": 0.4016
+  },
+  "best_arch_q126": {
+    "arch": "timesnet",
+    "pr_auc": 0.2796
+  },
+  "verdict": "ARCH_INFERIOR",
+  "verdict_msg": "ARCH_INFERIOR — best arch timesnet q126=0.2796 < 0.40 (vs 53H-fair 0.4016). 3 arch drop, PatchTST 53H retain. 다음 cycle: 다른 미시도 arch (Mamba/S4/FEDformer).",
+  "next_cycle_suggestion": {
+    "primary": "Drop 3 arch (DLinear/Informer/TimesNet). PatchTST 53H 0.4012 retain as headline.",
+    "secondary": "Batch 2 (Mamba/S4/FEDformer) start — 3 different architecture family. 진정한 미시도 axes.",
+    "tertiary": "Capacity 재검토: best 56D arch timesnet n_params=1934, PatchTST 140K. 작은 size 1차 결과로 ceiling 검증."
+  },
+  "new_cycle_checklist_compliance": {
+    "M1_bear_date_audit": "PASS (pre-cycle 4/4, bear_date_audit_20260521_085130.json)",
+    "M2_validate_label_direction": "PASS (forward labels inherited; targets_long_horizon.parquet)",
+    "M3_PIT_C1_C15": "PASS (v5e panel PIT validated 53H; arch-internal FFT/ProbSparse uses train window only)",
+    "M4_shift_convention": "PASS (forward targets via shift(.,n=H,'lead'); inherited)",
+    "M5_AX_008": "EXEMPT (Forge first-pass architecture survey, NOT admit cycle)",
+    "S1_PRAUC_sanity_q126": "PASS (best arch timesnet q126=0.2796 ∈ [0.15, 0.40])",
+    "S2_COVID_spot_check": "PASS (targets inherited from 53H A2 — 2020-02-19 ret_q126=+0.0289 verified)",
+    "S3_singleseed_firstpass": "N/A (single seed=42 first-pass; multi-seed stability in cycle 56D-second if BREAKTHROUGH)",
+    "S4_period_balanced_q126": "[per arch] dlinear=1/3 / informer=3/3 / timesnet=1/3 / ew3=1/3",
+    "A1_cross_cycle_same_forward_labels": "PASS (56D + 53H + 53B all use targets_long_horizon.parquet)",
+    "A2_dohun_audit_checkpoint": "AWAITING_REVIEW",
+    "A3_codex_code_review": "PENDING (Codex code review log: outputs/04_evaluation/cycle56d_code_review_log.md)"
+  },
+  "outputs": {
+    "megamulti_dir": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/03_models/v6b_megamulti_q126",
+    "final_json": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/04_evaluation/megamulti_q126_v6b.json",
+    "chart": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/06_reports/charts/147_megamulti_q126.png",
+    "codex_code_review_log": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/04_evaluation/cycle56d_code_review_log.md"
+  }
+}

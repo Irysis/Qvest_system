@@ -1,0 +1,306 @@
+{
+  "task_id": "WT-D20260528_003",
+  "wt_type": "discovery",
+  "schema_version": "alpha_package_v1",
+  "hypothesis_id": "STR_1725",
+  "hypothesis_title": "STR_1725 Microstructure Vol-Ret Asymmetry (L44+L42+L33+L13 Multi-Sleeve)",
+  "hypothesis_description": "Microstructure liquidity multi-sleeve alpha (4-family × 5-stocks per sleeve = top 20 union). 4 factors L44/L42/L33/L13 — all sp_stable TRUE per Factor DB IC history. Multi-sleeve design AX-007 exception clause #1 (multi-sleeve composition). Z_Score_Aligned via factor_db_connector::align_factor_direction (PIT-safe IC inference, min_ic_months=36, Usable_Date <= sig_date enforced). Academic grounding: Roll 1984 (bid-ask bounce), Amihud 2002 (illiquidity), Chordia-Roll-Subrahmanyam 2001/2008 (microstructure-volume nexus), Hasbrouck 2009 (microstructure noise), Clark 1973 / Tauchen-Pitts 1983 / Karpoff 1987 (Mixture-of-Distributions Hypothesis), Lo-MacKinlay 1988 (variance ratios). KR retail-driven market posits under-explored microstructure alpha via volume-return asymmetry indicators not captured in fundamental/momentum/quality signal stacks.",
+  "as_of_date": "2026-05-28",
+  "signal_cutoff": "2023-12-22",
+  "forecast_horizon": "1M",
+  "universe": "KOSPI200_KOSDAQ150_intersection",
+  "benchmark": "KOSPI200_total_return",
+  "selection_objective": "icir",
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "alpha_vector": {
+    "A016590": 1.2591,
+    "A210120": 1.2591,
+    "A058970": 1.2591,
+    "A003100": 1.2591,
+    "A005930": 1.2591,
+    "A338220": 0.5756,
+    "A006740": 0.5756,
+    "A000810": 0.5756,
+    "A246250": -0.1079,
+    "A393210": -0.1079,
+    "A032640": -0.1079,
+    "A375500": -0.1079,
+    "A175140": -0.7915,
+    "A315640": -0.7915,
+    "A086450": -0.7915,
+    "A086790": -0.7915,
+    "A303360": -1.475,
+    "A060280": -1.475,
+    "A105560": -1.475
+  },
+  "confidence_vector": {
+    "A016590": 0.625,
+    "A210120": 0.65,
+    "A058970": 0.625,
+    "A003100": 0.625,
+    "A005930": 0.625,
+    "A338220": 0.525,
+    "A006740": 0.525,
+    "A000810": 0.525,
+    "A246250": 0.425,
+    "A393210": 0.425,
+    "A032640": 0.425,
+    "A375500": 0.425,
+    "A175140": 0.325,
+    "A315640": 0.325,
+    "A086450": 0.325,
+    "A086790": 0.325,
+    "A303360": 0.225,
+    "A060280": 0.225,
+    "A105560": 0.225
+  },
+  "signal_matrix_ref": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/stage_artifacts/WT_D20260528_003_overnight_C/alpha_scores.parquet",
+  "factor_specs": [
+    {
+      "factor_family": "microstructure_liquidity",
+      "proxy": "L44_Vol_Ret_Asymmetry",
+      "formula": "corr(volume[t], ret[t] | up-day) - corr(volume[t], ret[t] | down-day) over 60d rolling",
+      "lag_rule": "Date <= sig_date (daily)",
+      "winsorization": "3std (factor_db_builder default)",
+      "neutralization": "sector (Z_Sector available, but multi-sleeve top-K uses Z_Score_Aligned)",
+      "economic_rationale": "Information asymmetry indicator. Roll (1984) bid-ask bounce + Hasbrouck (2009) microstructure noise. KR retail-driven market exhibits asymmetric volume response to up/down moves (informed-vs-noise trader segregation).",
+      "weight_theta": 0.25,
+      "direction": "higher_better",
+      "references": [
+        "Roll 1984 JF",
+        "Hasbrouck 2009 RFS",
+        "Chordia-Roll-Subrahmanyam 2001 JFE"
+      ]
+    },
+    {
+      "factor_family": "microstructure_liquidity",
+      "proxy": "L42_Vol_Skewness",
+      "formula": "skewness(log(volume)) over 21d rolling",
+      "lag_rule": "Date <= sig_date (daily)",
+      "winsorization": "3std",
+      "neutralization": "sector available",
+      "economic_rationale": "Trading intensity heterogeneity. Amihud (2002) illiquidity proxy variant — extreme volume spikes signal information events. Lower skewness = balanced trading = better-priced asset. KR retail flow concentration creates fat-tailed volume distributions.",
+      "weight_theta": 0.25,
+      "direction": "lower_better",
+      "references": [
+        "Amihud 2002 JFM",
+        "Brennan-Subrahmanyam 1996 JFE"
+      ]
+    },
+    {
+      "factor_family": "microstructure_liquidity",
+      "proxy": "L33_AbsRet_Vol_Corr",
+      "formula": "corr(|return|, volume) over 60d rolling",
+      "lag_rule": "Date <= sig_date (daily)",
+      "winsorization": "3std",
+      "neutralization": "sector available",
+      "economic_rationale": "Mixture-of-Distributions Hypothesis (Clark 1973, Tauchen-Pitts 1983): volume-volatility positive correlation = information arrival rate. Higher corr → informed trading is active → mispricing potential.",
+      "weight_theta": 0.25,
+      "direction": "higher_better",
+      "references": [
+        "Clark 1973 Econometrica",
+        "Tauchen-Pitts 1983 Econometrica",
+        "Karpoff 1987 JFQA"
+      ]
+    },
+    {
+      "factor_family": "microstructure_liquidity",
+      "proxy": "L13_Vol_Variance_Ratio",
+      "formula": "Var(volume 21d) / Var(volume 252d)",
+      "lag_rule": "Date <= sig_date (daily)",
+      "winsorization": "3std",
+      "neutralization": "sector available",
+      "economic_rationale": "Volume consistency indicator. Lo-MacKinlay (1988) variance-ratio analogy applied to volume. Ratio > 1 = recent volume regime shift (information events). Lower ratio = stable liquidity = institutional preference.",
+      "weight_theta": 0.25,
+      "direction": "lower_better",
+      "references": [
+        "Lo-MacKinlay 1988 RFS",
+        "Chordia-Roll-Subrahmanyam 2008 JFE"
+      ]
+    }
+  ],
+  "diagnostics": {
+    "rank_ic": 0.0217,
+    "icir": 0.285,
+    "icir_individual_avg": 0.218,
+    "rho_bar": 0.2634,
+    "diversification": 1.495,
+    "monotonicity": null,
+    "subperiod_stability": 1,
+    "turnover_proxy": null,
+    "harvey_t_stat": 3.926,
+    "harvey_t_specs_pass_count": 1,
+    "harvey_t_pass_count": 1,
+    "post_neutralization_ic": null,
+    "sr_implied_annual": 0.987,
+    "avg_union_size": 18.72,
+    "avg_sleeves_per_ticker": 1.072,
+    "pct_multi_sleeve": 7.08,
+    "unique_alpha_values_final": 5,
+    "dsr_skill": 0.1564,
+    "composite_n_months": 190,
+    "composite_method": "PIT-aligned 4-factor IC arithmetic mean (equal-weighted across orthogonal sleeves)",
+    "subperiod_p1_icir": 0.217,
+    "subperiod_p2_icir": 0.191,
+    "subperiod_p3_icir": 0.612,
+    "recent_p3_ratio": 2.148
+  },
+  "cross_correlation_audit": {
+    "max_abs_cor": 0.4593,
+    "mandate": "|cor| < 0.5",
+    "pass": true,
+    "pairwise": [
+      {
+        "pair": "L44_Vol_Ret_Asymmetry_vs_L42_Vol_Skewness",
+        "cor": 0.1943
+      },
+      {
+        "pair": "L44_Vol_Ret_Asymmetry_vs_L33_AbsRet_Vol_Corr",
+        "cor": 0.0999
+      },
+      {
+        "pair": "L44_Vol_Ret_Asymmetry_vs_L13_Vol_Variance_Ratio",
+        "cor": 0.4593
+      },
+      {
+        "pair": "L42_Vol_Skewness_vs_L33_AbsRet_Vol_Corr",
+        "cor": 0.2891
+      },
+      {
+        "pair": "L42_Vol_Skewness_vs_L13_Vol_Variance_Ratio",
+        "cor": 0.4559
+      },
+      {
+        "pair": "L33_AbsRet_Vol_Corr_vs_L13_Vol_Variance_Ratio",
+        "cor": 0.1443
+      }
+    ]
+  },
+  "method_shopping_log": {
+    "candidates_tried": 4,
+    "candidates_max": 5,
+    "method_log": [
+      {
+        "name": "L44_Vol_Ret_Asymmetry",
+        "icir_raw": -0.2681,
+        "selected": true,
+        "reason": "sp_stable TRUE, ICIR -0.786, mandate specified"
+      },
+      {
+        "name": "L42_Vol_Skewness",
+        "icir_raw": -0.1617,
+        "selected": true,
+        "reason": "sp_stable TRUE, ICIR -0.644, mandate specified"
+      },
+      {
+        "name": "L33_AbsRet_Vol_Corr",
+        "icir_raw": -0.2594,
+        "selected": true,
+        "reason": "sp_stable TRUE, ICIR -0.568, mandate specified"
+      },
+      {
+        "name": "L13_Vol_Variance_Ratio",
+        "icir_raw": 0.1841,
+        "selected": true,
+        "reason": "sp_stable TRUE, ICIR +0.658, mandate specified"
+      }
+    ],
+    "parallel_exec": false,
+    "rcpp_used": false,
+    "composite_ic_method": "Real PIT-aligned arithmetic mean (no abs(IC) inflation)",
+    "universe_filter": "KR_top342 + 2e8 won AvgTrdVal_20d"
+  },
+  "alpha_inheritance": {
+    "parent_strategy": "STR_1715_AR_on_M4_R05_overlay_PG2",
+    "inheritance_cor_estimate": "N/A — microstructure family orthogonal to STR_1715 (fundamentals+momentum+quality+value composite)",
+    "factor_overlap": "0 — none of L44/L42/L33/L13 belongs to STR_1715 factor set"
+  },
+  "challenge_flags": [
+    {
+      "id": "RF-A3",
+      "severity": "MEDIUM",
+      "description": "Recent P3 (2020-23) composite ICIR ratio = 2.15x overall (mandate < 1.5). Microstructure alpha shows regime-dependent strengthening post-COVID. Likely retail flow surge effect."
+    },
+    {
+      "id": "RF-AX-007",
+      "severity": "MEDIUM",
+      "description": "Multi-sleeve overlap weak: avg sleeves_in per ticker = 1.072 (near-orthogonal selection). Multi-sleeve design provides factor *diversification* but not significant ticker overlap; AX-007 exception clause #1 satisfied by structure, not by overlap."
+    },
+    {
+      "id": "RF-GRADUATION",
+      "severity": "MEDIUM",
+      "description": "Graduation gate FAIL: 2 of 5 criteria. Real composite IC = 0.0217 (threshold 0.04). ICIR = 0.285 (threshold 0.20). Harvey-t = 3.926 (threshold 3.0). DSR = 0.1564 (threshold 0.50). Subperiod_consistent = TRUE."
+    }
+  ],
+  "graduation_gate_summary": {
+    "description": "Discovery → Deployment graduation criteria",
+    "criteria": {
+      "min_rank_ic": {
+        "threshold": 0.04,
+        "observed": 0.0217,
+        "pass": false
+      },
+      "min_icir": {
+        "threshold": 0.2,
+        "observed": 0.285,
+        "pass": true
+      },
+      "min_subperiod_stability": {
+        "threshold": 0.5,
+        "observed": 1,
+        "pass": true
+      },
+      "min_harvey_t": {
+        "threshold": 3,
+        "observed": 3.926,
+        "pass": true
+      },
+      "min_dsr": {
+        "threshold": 0.5,
+        "observed": 0.1564,
+        "pass": false
+      }
+    }
+  },
+  "pit_compliance": {
+    "c1_full_sample": "OK (rolling expanding via Usable_Date <= sig_date)",
+    "c2_same_day": "OK (factor_db builder lag_rule enforced)",
+    "c3_aggregation": "OK",
+    "c4_financials": "N/A (microstructure, no fundamentals)",
+    "c5_overlay": "OK (no S0/S1 overlay)",
+    "c11_data_lag": "OK (Date <= sig_d for rawdata-source factors)",
+    "c13_negate_factors": "OK (Z_Score_Aligned via load_month_factors; no Raw_Value or manual sign)",
+    "c14_ic_usable_date": "OK (Usable_Date <= sig_date in compute_rolling_ic_all + ic_sign inference)",
+    "c15_load_via_connector": "OK (load_month_factors() exclusive; no direct read_parquet)",
+    "c10_liquidity": "OK (KR_top342 universe + AvgTrdVal_20d >= 2e+08 won applied via build_universe_v2)",
+    "c2_universe": "OK (KR_top342 PIT snapshot via build_universe_v2)"
+  },
+  "ax_compliance": {
+    "AX_001_v2_defensive_eval": "N/A (microstructure not defense family)",
+    "AX_002_process_honesty": "OK (single-pass walk-forward, no selection bias)",
+    "AX_007_single_sleeve_break": "OK (multi-sleeve 4-family by design, mandate AX-007 exception clause 1)"
+  },
+  "research_philosophy_compliance": {
+    "P1_factor_zoo_reduction": "Validated 4 pre-existing factors (no new factor zoo creation). All from registry. sp_stable TRUE.",
+    "P2_cost_aware": "Cost model v2.3_kr_retail_15bps = 15bps one-way. TC reflected at portfolio level (Optimizer stage).",
+    "P3_uncertainty_aware": "confidence_vector populated (sleeves_in / 2.0). Direct CI on alpha possible at Risk/Optimizer stage.",
+    "P5_crowding": "4 microstructure factors orthogonal to fundamentals/momentum (low expected crowding). Risk Agent will compute crowding_score.",
+    "P6_implementation": "Universe filter + 20-name target via 4×5 multi-sleeve union. Σw=1 / [0, 0.20] / TO ≤ 6/yr at Optimizer.",
+    "P7_attribution_loop": "Factor specs Brinson-decomposable post-deployment."
+  },
+  "build_metadata": {
+    "factor_db_build_hash": "20260523184858_unknown",
+    "sig_dates_processed": 191,
+    "sig_dates_skipped": 0,
+    "walk_forward_seconds": 46.1,
+    "r_version": "R version 4.5.2 (2025-10-31)",
+    "timestamp": "2026-05-28T23:14:23+0900",
+    "alpha_vector_fix_applied": true,
+    "alpha_vector_fix_timestamp": "2026-05-28T23:16:34+0900",
+    "alpha_vector_method": "v3 rank-based composite: per sleeve f, rank tickers by ic_sign(f, sig_date) * Raw_Value descending. Top 5 receive sleeve_score = (6 - rank)/5 ∈ {1.0, 0.8, 0.6, 0.4, 0.2}. alpha_raw = sum(sleeve_score) across sleeves a ticker appears in (max 4.0 if rank 1 in all 4 sleeves). Cross-sectional z-score within sig_date. Confidence = 0.5*(sleeves_in/4) + 0.5*((6 - best_rank)/5). PIT-safe: ic_sign computed from Usable_Date <= sig_date expanding window with min_months=36 burn-in, registry direction fallback if insufficient IC history.",
+    "alpha_v3_timestamp": "2026-05-28T23:18:38+0900",
+    "alpha_v4_method": "v4 final: load_month_factors() with Z_Score_Aligned (C13/C14/C15). Universe = KR_top342 (KOSPI200 ∪ KOSDAQ150 intersection) PIT via build_universe_v2. Liquidity floor AvgTrdVal_20d >= 2e8 won (C2). Per sleeve f: top 5 by Z_Score_Aligned descending. sleeve_score = (6 - rank)/5. alpha_raw = sum(sleeve_score). Cross-sectional z. Confidence weighted (sleeves_in + best_rank). REAL composite IC: per-month direction-aligned 4-factor IC arithmetic mean (orthogonal portfolio approximation under rho_bar < 0.5).",
+    "codex_revision_id": "v4_codex_critic_response_2026-05-28T23:30",
+    "codex_concerns_addressed": ["C1", "C2", "C3", "C4", "C5", "C6", "C7"]
+  }
+}

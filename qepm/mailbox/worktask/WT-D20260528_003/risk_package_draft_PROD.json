@@ -1,0 +1,237 @@
+{
+  "task_id": "WT-D20260528_003",
+  "schema_version": "risk_package_v1",
+  "as_of_date": "2023-11-30",
+  "signal_cutoff": "2023-12-22",
+  "alpha_handle": "D_PROD",
+  "alpha_package_ref": "qepm/mailbox/worktask/WT-D20260528_003/alpha_package_PROD.json",
+  "hypothesis_title": "D_PROD LightGBM Microstructure Vol-Ret ML Alpha (30 pruned features + net-of-cost + bandbuffer turnover control)",
+  "selection_objective": "condition_number",
+  "primary_sigma_method": "factor_model_BOmegaBT_plus_D_eigfloor_cond100",
+  "universe_n": 314,
+  "exposure_matrix_ref": "stage_artifacts/WT_D20260528_003_risk_PROD/exposure_matrix.parquet",
+  "factor_covariance_ref": "stage_artifacts/WT_D20260528_003_risk_PROD/factor_covariance.parquet",
+  "specific_risk_ref": "stage_artifacts/WT_D20260528_003_risk_PROD/specific_risk.parquet",
+  "security_covariance_ref": "stage_artifacts/WT_D20260528_003_risk_PROD/covariance.parquet",
+  "regime_correlation_ref": "stage_artifacts/WT_D20260528_003_risk_PROD/regime_correlation.parquet",
+  "tail_risk_ref": "stage_artifacts/WT_D20260528_003_risk_PROD/tail_risk.json",
+  "stress_test_ref": "stage_artifacts/WT_D20260528_003_risk_PROD/stress_test_results.json",
+  "style_exposure_ref": "stage_artifacts/WT_D20260528_003_risk_PROD/style_exposure.json",
+  "crowding_ref": "stage_artifacts/WT_D20260528_003_risk_PROD/crowding_score.json",
+  "method_shopping_log_ref": "stage_artifacts/WT_D20260528_003_risk_PROD/method_shopping_log.json",
+  "risk_summary": {
+    "portfolio_vol_ann_pct": 22.202,
+    "factor_var_share_pct": 80.23,
+    "specific_var_share_pct": 19.77,
+    "top_common_risks": ["MKT (64.8%)", "DEF (15.5%)", "STR (1.4%)"],
+    "crowding_flags": [],
+    "liquidity_flags": [],
+    "crowding_score_per_factor": [
+      {
+        "factor_name": "D_PROD_LightGBM_30f",
+        "crowding_score": 0.2018,
+        "hhi_top": 0.1727,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 0.6,
+        "demand_elasticity_proxy": 0
+      },
+      {
+        "factor_name": "D01_IdioVol_proxy",
+        "crowding_score": 0.0487,
+        "hhi_top": 0.0717,
+        "vol_concentration": 0.009,
+        "passive_overlap_proxy": 0.1,
+        "demand_elasticity_proxy": 0
+      },
+      {
+        "factor_name": "D03_RealVol_proxy",
+        "crowding_score": 0.1308,
+        "hhi_top": 0.2153,
+        "vol_concentration": 0.0148,
+        "passive_overlap_proxy": 0.25,
+        "demand_elasticity_proxy": 0
+      },
+      {
+        "factor_name": "L01_Amihud_proxy",
+        "crowding_score": 0.0372,
+        "hhi_top": 0.0249,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 0,
+        "demand_elasticity_proxy": 0.1488
+      }
+    ],
+    "sector_hhi": 0.1432,
+    "sector_top1_pct": 30.73,
+    "sector_top1": "전기제품",
+    "idio_vol_tilt": {
+      "port_idio_vol_z": 0.1234,
+      "port_realized_vol_z": 0.2498,
+      "port_amihud_z": -0.4281,
+      "port_size_z": 0.4446
+    },
+    "stress_tests": {
+      "market_down_5": -0.0546,
+      "value_def_shock": 0.0156,
+      "mom_reversal": 0.0049,
+      "covid_2020_replay": -0.1266,
+      "rate_hike_2022": -0.1834,
+      "rate_hike_2022_excess_vs_bm": 0.0463,
+      "gfc_2008": -0.1715,
+      "kr_bear_2023_h1": 0.0561
+    },
+    "tail_risk": {
+      "port_vol_ann_pct": 22.202,
+      "var_1pct_daily": -0.0403,
+      "es_1pct_daily": -0.0405,
+      "cf_var_1pct": null,
+      "evt_var_1pct": 0.0139,
+      "evt_es_1pct": 0.014,
+      "evt_method": "gpd_mle",
+      "hill_tail_index_alpha": 3.3304,
+      "cvar_95_monthly": null,
+      "skewness": 0.082,
+      "excess_kurtosis": 2.247
+    },
+    "stress_reliability": [
+      {
+        "window": "GFC_2008",
+        "weight_coverage": 0.3537,
+        "reliable": false
+      },
+      {
+        "window": "EuDebt_2011",
+        "weight_coverage": 0.451,
+        "reliable": false
+      },
+      {
+        "window": "China_2015",
+        "weight_coverage": 0.6488,
+        "reliable": true
+      },
+      {
+        "window": "COVID_2020",
+        "weight_coverage": 0.8547,
+        "reliable": true
+      },
+      {
+        "window": "Rate_Hike_2022",
+        "weight_coverage": 1,
+        "reliable": true
+      },
+      {
+        "window": "KR_Bear_2023_H1",
+        "weight_coverage": 1,
+        "reliable": true
+      }
+    ]
+  },
+  "diagnostics": {
+    "condition_number_primary": 100,
+    "condition_number_fm_before": 193.8,
+    "condition_number_fm_after": 100,
+    "condition_number_sample": 7.712e+18,
+    "condition_number_schafer_strimmer": 842.1,
+    "condition_number_gr": 56890,
+    "shrinkage_used": true,
+    "shrinkage_method": "factor_model_BOmegaBT_plus_D_eigfloor_cond100",
+    "target_cond": 100,
+    "min_eigenvalue_primary": 0.0969,
+    "factor_coverage_median_r2": 0.198,
+    "factor_coverage_mean_r2": 0.206,
+    "factor_correlation_warnings": [],
+    "factor_correlations": [
+      {
+        "pair": "MKT_SMB",
+        "corr": -0.401
+      },
+      {
+        "pair": "MKT_DEF",
+        "corr": -0.562
+      },
+      {
+        "pair": "MKT_WML",
+        "corr": -0.095
+      },
+      {
+        "pair": "MKT_STR",
+        "corr": -0.23
+      },
+      {
+        "pair": "SMB_DEF",
+        "corr": 0.03
+      },
+      {
+        "pair": "SMB_WML",
+        "corr": -0.34
+      },
+      {
+        "pair": "SMB_STR",
+        "corr": 0.444
+      },
+      {
+        "pair": "DEF_WML",
+        "corr": -0.084
+      },
+      {
+        "pair": "DEF_STR",
+        "corr": 0.039
+      },
+      {
+        "pair": "WML_STR",
+        "corr": -0.133
+      }
+    ],
+    "n_universe_for_sigma": 314,
+    "n_holdings_for_decomp": 20,
+    "regime_correlation_delta": 0.1766,
+    "specific_var_floor": 0.05,
+    "specific_var_ceiling": 2
+  },
+  "alpha_risk_integration": {
+    "note": "Risk estimation independent of alpha values. Σ used downstream by Optimizer with alpha_vector unchanged.",
+    "portfolio_construction": "EWMA(0.5)+bandbuffer+softmax-cap [0,0.20] from LightGBM 30f pred. Σw=1.",
+    "no_weight_proposal": "Risk agent emits Σ + diagnostics only. No weight/MVO."
+  },
+  "pit_assertions": {
+    "lockbox_strict": "All sig_dates <= 2023-12-22. RAWDATA lookback Date < sig_date (no C2).",
+    "sigma_pit": "Σ on 252d lookback ending sig_date - 1 (C9 t-1 lag).",
+    "crowding_pit": "Crowding RAWDATA[Date <= 2023-12-22] strict.",
+    "omega_pit_note": "Codex C5: Ω factor returns use static t-1 PIT-lagged style z-scores (computed at sig_date-1) as quintile sort keys over the 252d lookback. Standard 'static exposure × time-varying return' factor-return construction (Grinold-Kahn 2000 §3); NO future data enters — exposures are as-of sig_date-1, returns are historical. This is a known approximation (cross-section ranks held fixed over the window), not a lookahead (C12) violation. Time-varying date-wise exposures deferred (one-period Σ snapshot is sufficient for monthly rebalance).",
+    "no_alpha_modification": "alpha_vector/pred/weights read-only. risk_package alpha 미수정.",
+    "boundary_compliance": "20 max + Σw=1 + [0,0.20] + LIQ 2e8 — Risk passive observation (Optimizer enforces)."
+  },
+  "challenge_flags": [
+    {
+      "id": "RF-R2-soft",
+      "severity": "LOW",
+      "detail": "Σ cond 100.0 in (100, 500] — within hard gate but above soft cond<=100 preference (Codex C1). Eigen-floor target_cond=100 applied; raw BΩB'+D was 193.8.",
+      "action_required": "Acceptable for inversion; Optimizer may prefer HRP for robustness."
+    },
+    {
+      "id": "RF-R4-coverage",
+      "severity": "MEDIUM",
+      "detail": "Stress windows with <60% 2023-book coverage (UNRELIABLE — 2023 holdings partially unlisted in window): GFC_2008, EuDebt_2011. GFC_2008 cov=35% (7/20 names). Pre-IPO survivorship: these MDDs are NOT representative of the executable book.",
+      "action_required": "Forge/Judge: weight reliable windows (COVID/Rate2022, cov>=85%) over deep-history (GFC/EuDebt). GFC MDD -50.6% is on 35% partial book, not 100% portfolio."
+    },
+    {
+      "id": "RF-R1",
+      "severity": "HIGH",
+      "detail": "Top common risk 64.8% > 40% (MKT).",
+      "action_required": "Optimizer impose factor exposure constraints."
+    },
+    {
+      "id": "RF-R-idio",
+      "severity": "INFO",
+      "detail": "PROD vol-factor tilt: idio_vol_z=0.12 realized_vol_z=0.25 amihud_z=-0.43 size_z=0.44. Net HIGH-vol (lottery) tilt — AX-001 crisis fragility risk.",
+      "action_required": "Forge: AX-001 v2 crisis bad/normal IC robustness on vol-tilted book."
+    }
+  ],
+  "rule2_status": "PASS",
+  "build_meta": {
+    "agent": "risk-research",
+    "pipeline_version": "risk_PROD_v1.0",
+    "build_timestamp": "2026-05-29 07:58:08.531475",
+    "Rscript_path": "qepm/mailbox/worktask/WT-D20260528_003/scripts/risk_PROD_pipeline.R",
+    "libraries": ["data.table", "arrow", "jsonlite", "PerformanceAnalytics", "corpcor", "fExtremes", "evir"]
+  }
+}

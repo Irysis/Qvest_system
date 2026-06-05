@@ -5,7 +5,7 @@ set.seed(1422); options(scipen=999); Sys.setenv(TZ="Asia/Seoul")
 STRATEGY_ID   <- "STR_1422"
 STRATEGY_NAME <- "S5_M2_FlowRev_VT15_DD5_15"
 
-PROJ_ROOT <- "/mnt/c/Users/User/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot"
+PROJ_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 INFRA_DIR <- file.path(PROJ_ROOT, "02_Infrastructure")
 SCRIPT_DIR <- file.path(PROJ_ROOT, "04_Research/strategies/STR_1422_flow_reversal")
 source(file.path(INFRA_DIR, "config.R"))

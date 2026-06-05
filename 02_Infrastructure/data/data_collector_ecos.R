@@ -90,4 +90,99 @@ ecos_load_krw <- function() {
   as.data.table(read_parquet(ECOS_KRW_CACHE))
 }
 
-cat("[ecos] Loaded. Functions: ecos_fetch_krw(), ecos_load_krw()\n")
+# ── ECOS Bond Rates Collector (Plan v0.4.1 H4 자원, 2026-05-19 신규) ───
+if (!exists("ECOS_BOND_CACHE")) ECOS_BOND_CACHE <- file.path(CACHE_DIR, "ecos_bond_rates.parquet")
+
+# ECOS 시장금리 (817Y002 일별) + CPI (901Y010 월별) 통계표·항목 매핑
+# 기존 ecos_bond_rates.parquet 7 series inherit
+ECOS_BOND_SERIES <- list(
+  list(name = "KR_Gov3Y",   stat = "817Y002", item = "010190000", freq = "D"),
+  list(name = "KR_Gov10Y",  stat = "817Y002", item = "010210000", freq = "D"),
+  # 2026-05-19 Q-Lead 자체 부정확 fix: CorpAA = 010300000 (3년 AA-), CorpBBB = 010320000 (3년 BBB-)
+  # 이전 매핑 (010320000 / 010330000) 잘못. 기존 cache KR_CorpAA 3.906 정합 검증.
+  list(name = "KR_CorpAA",  stat = "817Y002", item = "010300000", freq = "D"),
+  list(name = "KR_CorpBBB", stat = "817Y002", item = "010320000", freq = "D"),
+  list(name = "KR_CD91",    stat = "817Y002", item = "010150000", freq = "D"),
+  list(name = "KR_Call1D",  stat = "817Y002", item = "010101000", freq = "D"),
+  list(name = "KR_CPI",     stat = "901Y009", item = "0",         freq = "M")
+)
+
+#' Fetch single ECOS series
+.ecos_fetch_series <- function(stat_code, item_code, freq, start, end) {
+  url <- sprintf(
+    "https://ecos.bok.or.kr/api/StatisticSearch/%s/json/kr/1/100000/%s/%s/%s/%s/%s",
+    ECOS_API_KEY, stat_code, freq, start, end, item_code
+  )
+  resp <- tryCatch(GET(url, timeout(60)), error = function(e) NULL)
+  if (is.null(resp) || status_code(resp) != 200) return(NULL)
+  json <- fromJSON(content(resp, "text", encoding = "UTF-8"), simplifyVector = FALSE)
+  if (is.null(json$StatisticSearch$row)) {
+    if (!is.null(json$RESULT)) {
+      cat(sprintf("  [ecos_bond] API msg: %s - %s\n", json$RESULT$CODE, json$RESULT$MESSAGE))
+    }
+    return(NULL)
+  }
+  rbindlist(json$StatisticSearch$row, fill = TRUE)
+}
+
+#' Fetch all ECOS bond rates + CPI series
+#'
+#' 통계표: 817Y002 (시장금리, 일별) + 901Y009 (소비자물가지수, 월별)
+#' 7 series inherit 기존 ecos_bond_rates.parquet schema (Date, Value, Series)
+#'
+#' @param start_date YYYYMMDD (daily) — monthly series는 YYYYMM 변환
+#' @param end_date YYYYMMDD (default: today)
+#' @export
+ecos_fetch_bond_rates <- function(start_date = "20010101", end_date = NULL) {
+  if (is.null(end_date)) end_date <- format(Sys.Date(), "%Y%m%d")
+
+  all_data <- list()
+  for (s in ECOS_BOND_SERIES) {
+    if (s$freq == "M") {
+      st <- substr(start_date, 1, 6); en <- substr(end_date, 1, 6)
+    } else {
+      st <- start_date; en <- end_date
+    }
+    cat(sprintf("[ecos_bond] %-12s (%s/%s, freq=%s): ", s$name, s$stat, s$item, s$freq))
+    rows <- .ecos_fetch_series(s$stat, s$item, s$freq, st, en)
+    if (is.null(rows) || nrow(rows) == 0) {
+      cat("FAIL\n"); next
+    }
+    parse_date <- if (s$freq == "M") {
+      as.Date(paste0(rows$TIME, "01"), format = "%Y%m%d")
+    } else {
+      as.Date(rows$TIME, format = "%Y%m%d")
+    }
+    df <- data.table(
+      Date = parse_date,
+      Value = as.numeric(rows$DATA_VALUE),
+      Series = s$name
+    )[!is.na(Date) & !is.na(Value)]
+    cat(sprintf("OK %d rows (latest %s = %.3f)\n",
+                nrow(df), as.character(max(df$Date)), tail(df$Value, 1)))
+    all_data[[s$name]] <- df
+  }
+  if (length(all_data) == 0) {
+    cat("[ecos_bond] No series fetched. Abort.\n")
+    return(NULL)
+  }
+  result <- rbindlist(all_data)
+  setorder(result, Series, Date)
+  dir.create(dirname(ECOS_BOND_CACHE), recursive = TRUE, showWarnings = FALSE)
+  write_parquet(result, ECOS_BOND_CACHE)
+  cat(sprintf("[ecos_bond] Cache saved: %s (%d rows, %d series)\n",
+              ECOS_BOND_CACHE, nrow(result), length(unique(result$Series))))
+  result
+}
+
+#' Load bond rates from cache
+#' @export
+ecos_load_bond_rates <- function() {
+  if (!file.exists(ECOS_BOND_CACHE)) {
+    cat("[ecos_bond] Cache not found, fetching...\n")
+    return(ecos_fetch_bond_rates())
+  }
+  as.data.table(read_parquet(ECOS_BOND_CACHE))
+}
+
+cat("[ecos] Loaded. Functions: ecos_fetch_krw(), ecos_load_krw(), ecos_fetch_bond_rates(), ecos_load_bond_rates()\n")

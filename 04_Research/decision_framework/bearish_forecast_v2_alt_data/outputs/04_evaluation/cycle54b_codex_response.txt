@@ -1,0 +1,44 @@
+{
+  "1": {
+    "status": "OK",
+    "line_numbers": [],
+    "details": "Forward semantics are correct because ret_q126 is already BM[t+126]/BM[t]-1. In R, NA <= -0.15 is NA, and as.integer(NA) remains NA_integer_. COVID 2020-02-19 ret_q126=+0.0289 maps to 0."
+  },
+  "2": {
+    "status": "BUG",
+    "line_numbers": [57],
+    "details": "The implementation omits the initial recall=0 anchor. A perfect ranking with 5 positives first returns 0.8 instead of 1.0, so the PR-AUC is numerically understated.",
+    "fix": "Prepend an initial PR point before trapezoidal integration, e.g. rec <- c(0, rec); prec <- c(1, prec); then compute sum(diff(rec) * (prec[-1] + prec[-length(prec)]) / 2)."
+  },
+  "3": {
+    "status": "WARN",
+    "line_numbers": [68, 72, 83, 90],
+    "details": "The moving-block bootstrap construction itself is standard: overlapping fixed-length blocks sampled with replacement, truncated to n, NA bootstrap values filtered, deterministic under the fixed seed and fixed call order. However, its CI currently inherits the PR-AUC bug from item 2. Also, complete-case filtering before blocking can compress time if there are interior missing rows."
+  },
+  "4": {
+    "status": "WARN",
+    "line_numbers": [285],
+    "details": "The merge logic is correct, and sampled prediction files use POSIXct 09:00:00 dates that convert to the intended calendar Date. The only risk is that as.Date.POSIXct without an explicit tz uses the process timezone, so a future file with near-midnight timestamps or different timezone metadata could shift dates."
+  },
+  "5": {
+    "status": "OK",
+    "line_numbers": [],
+    "details": "Segment filtering is inclusive on both start and end dates, and the segment definitions are non-overlapping. 2019-12-31 belongs only to S2018-19; 2020-01-01 belongs only to S2020-21."
+  },
+  "6": {
+    "status": "WARN",
+    "line_numbers": [149, 150, 151, 152, 153, 154, 155, 160, 161, 162, 163, 164, 165],
+    "details": "NA->0 is implemented as stated for the OOS 53M convention, but it is not an observed-label event-rate denominator; it treats incomplete forward-window labels as non-events. In View B, n=.N can include rows excluded by mean(..., na.rm=TRUE), so n may not equal the abs15 rate denominator. No sign-flip risk was found for the rolling q15 threshold direction: the tail event is lower-return <= lower-quantile."
+  },
+  "7": {
+    "status": "WARN",
+    "line_numbers": [378, 380, 403, 404, 405, 406, 407, 408, 409],
+    "details": "Spearman correlation is an appropriate implementation for rank robustness, and R handles ties with average ranks. The concern is that pr_auc and ic_rank are rounded to 4 decimals before the Spearman calculation, which can introduce artificial ties or alter rho. cor() also returns NA if any merged value is NA."
+  },
+  "8": {
+    "status": "BUG",
+    "line_numbers": [354, 355, 356, 357, 358, 359, 363],
+    "details": "R does not defer lookup to the later assignment at line 363. The operator used at lines 354-359 must already exist in the search path. In current R, base may provide %||%, masking the bug; in environments without an ambient %||%, this errors before reaching line 363.",
+    "fix": "Move the `%||%` definition above its first use, ideally into the utility section before the Phase 2 loop."
+  }
+}

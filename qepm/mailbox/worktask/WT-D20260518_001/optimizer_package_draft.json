@@ -1,0 +1,290 @@
+{
+  "task_id": "WT-D20260518_001",
+  "agent": "optimizer-research",
+  "agent_version": "v1.0_overlay_schedule_design_phase_a_draft",
+  "wt_type": "discovery",
+  "wt_subclass_charter_v18": "discovery_design_phase_a",
+  "draft_marker": true,
+  "draft_emission_at": "2026-05-19T01:30:00+0900",
+  "as_of_date": "2026-05-19",
+  "method_family": "bear_regime_overlay_scalar_emission_v1_0",
+  "design_name": "Bear Sensor v2.0 Overlay Schedule Policy — M05 Sequential_Layer6_Quantile_Hard3step_Hysteresis_5pct + 3 decision branches + DM incrementality protocol + Phase A template emission",
+  "alpha_package_received": {
+    "factor_specs_count": 1,
+    "factor_family": "Bear_Regime_Prediction",
+    "features_count_designed": 44,
+    "features_count_built_sample": 13,
+    "alpha_vector_status": "PLACEHOLDER_PENDING_FORGE_Stage_4",
+    "output_dimension": "scalar_beta_bear_in_0.3_to_1.0"
+  },
+  "risk_package_received": {
+    "sigma_features_method": "ledoit_wolf_constcor_ridge_lambda_0.10",
+    "sigma_cond_number": 91.1,
+    "sigma_psd": true,
+    "tail_xi": -0.0699,
+    "crowding_cor_PG2_alpha": -0.1363,
+    "TDC_lower": 0.0769,
+    "m4_full_agreement": 0.8769,
+    "m4_conditional_tail_prob": 0.3143,
+    "redundancy_flag": "RF-R3-M4-REDUNDANT_HIGH"
+  },
+  "scope_disclaimer": "Bear sensor v2.0 = Layer 6 candidate scalar overlay (NOT cross-sectional 20-stock sleeve). Optimizer Phase A scope = policy specification + 12 candidate methodology shopping + DM incrementality test protocol + overlay_schedule.csv template. Actual β_bear emission requires Forge Stage 4 p_bad_t time series. Phase A current cycle: design + W3 OOS illustrative reference (5.26% of 437 sig_dates emission, 94.74% placeholder β=1.0 no-op).",
+  "selection_objective": "crowding_adj_ret",
+  "selection_objective_rationale": "v6.1 R4 P3 enum compliance. crowding_adj_ret = ΔSR × (1 - α·redundancy_M4_DM_pvalue) - λ_TO·turnover_ann × cost_15bps. Single sharpe maximization forbidden. M4 redundancy (87.7% agreement) penalized via DM test p-value scaling.",
+  "method_shopping_log_ref": "qepm/mailbox/worktask/WT-D20260518_001/method_shopping_log_optimizer.json",
+  "method_shopping_summary": {
+    "n_candidates_total": 12,
+    "n_dimensions": 6,
+    "n_candidates_rejected": 11,
+    "n_candidates_selected": 1,
+    "selected_method_id": "M05",
+    "selected_method_name": "Sequential_Layer6_Quantile_Hard3step_Hysteresis_5pct",
+    "decision_branches_reserved_count": 3
+  },
+  "policy_spec": {
+    "method_id": "M05",
+    "name": "Sequential_Layer6_Quantile_Hard3step_Hysteresis_5pct",
+    "composition_type": "Sequential_after_Layer_5_R05",
+    "formula": "w_final(t) = w_str1715(t) × m4_scalar(t) × β_AR(t) × β_R05(t, regime) × β_bear(t, p_bad_t)",
+    "threshold_policy": {
+      "type": "quantile_based_calibration_window_expanding",
+      "tau_caution": "q70 of calibrator output expanding window",
+      "tau_crisis": "q90 of calibrator output expanding window",
+      "tau_optimal_W3_OOS_reference": 0.41,
+      "tau_caution_W3_illustrative": 0.715,
+      "tau_crisis_W3_illustrative": 0.817,
+      "PIT_C2_compliance": "STRICT_expanding_calibration_window_no_in_sample_full_panel"
+    },
+    "beta_step_function": {
+      "type": "hard_3_step",
+      "beta_NORMAL": 1.0,
+      "beta_CAUTION": 0.7,
+      "beta_CRISIS": 0.3,
+      "rationale": "Production architecture echo — STR_1715 Layer 4 AR ∈ {0.4, 0.7, 1.0} + Layer 5 R05 ∈ {0.3, 0.5, 1.0} → β_bear ∈ {0.3, 0.7, 1.0} consistent integer step"
+    },
+    "smoothing_anti_flicker": {
+      "type": "hysteresis_5_percent_buffer",
+      "entry_threshold": "p > tau_threshold",
+      "exit_threshold": "p < tau_threshold × (1 - 0.05)",
+      "rationale": "Suppress monthly flicker around tau boundaries while preserving sharp regime transition"
+    },
+    "multi_horizon_sanity": {
+      "primary": "1m_forward_label",
+      "cross_check": "3m_forward_label_sign_consistency_verification",
+      "horizon_3m_decisioning_impact": "diagnostic_only_no_beta_emission_change"
+    },
+    "academic_refs": [
+      "Kritzman-Page-Turkington 2011 FAJ (regime overlay precedent, Layer 4 AR admit L-277/278)",
+      "Kelly-Jiang 2014 RFS (tail risk overlay precedent, Layer 5 R05 admit L-308)",
+      "Diebold-Mariano 1995 JBES (incremental info test)",
+      "Youden 1950 (threshold optimization)",
+      "Pesaran-Timmermann 2007 JBES (regime stratification)",
+      "Newey-West 1987 ECMA (HAC variance)",
+      "Frazzini-Israel-Moskowitz 2012 (TO smoothing)",
+      "Bailey-Lopez de Prado 2014 (DSR multi-test correction)",
+      "Harvey-Liu-Zhu 2016 RFS (multi-testing t-stat)",
+      "Berta-Bach-Jordan 2023 (ROC-reg calibration)",
+      "Ledoit-Wolf 2004 (shrinkage cov for sigma_features)"
+    ]
+  },
+  "decision_branches_reserved": [
+    {
+      "id": "DB-A",
+      "alternative_method_id": "M07",
+      "name": "Replacement_Layer_3_M4_with_bear_sensor",
+      "trigger_condition": "Forge_Stage_5_DM_test_p_value_p_bad_t_vs_M4_BOCPD",
+      "admit_threshold": "DM_p_1sided < 0.05 AND mean_diff > 0 AND per_window_3plus_of_5 AND HIGH_VOL_TAPER+INFLATION significant AND Path_B_SR > Path_A_SR > Path_C_SR AND TO_ann <= 6.0 AND book_state_version_bump_v2.3_to_v3.0_dohoon_approval",
+      "binding_artifact": "stage_artifacts/WT_D20260518_001/m4_incrementality_protocol.md"
+    },
+    {
+      "id": "DB-B",
+      "alternative_method_id": "M11",
+      "name": "Calibrator_ensemble_3of5_majority",
+      "trigger_condition": "Forge_Stage_3_calibrator_dominance_audit",
+      "admit_threshold": "isotonic_ECE > 0.10 OR no_calibrator_dominates_4_of_5_windows",
+      "compute_cost": "5x_Forge_Stage_3_retrain"
+    },
+    {
+      "id": "DB-C",
+      "alternative_method_id": "M06",
+      "name": "Per_regime_stratified_tau_LOW_VOL_HIGH_VOL_INFLATION",
+      "trigger_condition": "Forge_Stage_5_per_regime_audit",
+      "admit_threshold": "per_regime_AUC_variance < 0.10 AND INFLATION_bootstrap_CI_lower > 0.55",
+      "risk": "INFLATION_n_31_thin_sample_per_regime_tau_unstable"
+    }
+  ],
+  "overlay_schedule": {
+    "csv_path": "stage_artifacts/WT_D20260518_001/overlay_schedule.csv",
+    "summary_json_path": "stage_artifacts/WT_D20260518_001/overlay_schedule_summary.json",
+    "n_sig_dates_total": 437,
+    "n_sig_dates_with_beta": 437,
+    "schedule_density_ratio": 1.0,
+    "placeholder_share": 0.9474,
+    "illustrative_W3_OOS_share": 0.0526,
+    "illustrative_W3_TO_ann_ref": 5.217,
+    "real_Forge_Stage_5_replaces_placeholder": true,
+    "schedule_density_status": "PASS_density_ratio_1.0_>=_0.95_mandate"
+  },
+  "target_weights": null,
+  "target_weights_explanation": "n/a — overlay role emits scalar β_bear ∈ [0.3, 1.0] per sig_date, NOT 20-stock weights. Underlying STR_1715 retains target_weights (Σw = 1.0, max_names = 20, weight_bounds = [0, 0.20]).",
+  "active_weights": null,
+  "active_weights_explanation": "n/a — overlay multiplicative scalar.",
+  "expected_active_return": null,
+  "expected_tracking_error": null,
+  "expected_information_ratio": null,
+  "expected_metrics_pending_forge_stage_5": "All performance metrics (AR/TE/IR/SR/IR/MDD/Calmar/Sortino) require Forge Stage 4 p_bad_t emission + Stage 5 V_Path_A/B/C backtest. Phase A scope = policy specification only.",
+  "turnover": {
+    "W3_OOS_illustrative_ann": 5.217,
+    "policy_target_cap_ann": 6.0,
+    "full_sample_estimate_pending": "Forge Stage 5 replaces W3 illustrative TO with actual p_bad_t-driven TO. Expected 2.0~4.0/yr based on M05 hysteresis design.",
+    "PG2_underlying_TO_ann_inherit": "~2.5 (STR_1715 base)",
+    "total_TO_ann_estimate_post_Layer_6": "4.0~5.5/yr expected (within cap)",
+    "TO_smoothing_method": "hysteresis_5_percent_buffer_M05_default"
+  },
+  "estimated_cost": {
+    "underlying_PG2_cost_bps": 75,
+    "incremental_Layer_6_cost_bps_estimate": "10~25 bps (M05 hysteresis 1.5~2.5 transitions × 12bps round-trip)",
+    "total_cost_estimate_bps_W3_ref": "~85~100bps annual",
+    "cost_model_version": "v2.3_kr_retail_15bps",
+    "cost_aware_objective_compliance": "PASS — crowding_adj_ret penalizes TO × cost"
+  },
+  "binding_constraints": [
+    "PIT_C2_calibration_window_expanding_no_full_sample_quantile",
+    "PIT_C5_overlay_t_minus_1_basis_sig_date",
+    "TO_ann_cap_6.0_yr",
+    "schedule_density_gte_0.95",
+    "AX_007_overlay_role_max_names_null_exception",
+    "underlying_STR_1715_max_names_20_bounds_0_0.20_sigma_w_1_RETAIN",
+    "Σ_features_inherit_risk_pkg_cond_91.10_PSD",
+    "DM_test_p_bad_t_vs_M4_mandatory_Forge_Stage_5"
+  ],
+  "infeasibility_report": null,
+  "method_selected": "M05_Sequential_Layer6_Quantile_Hard3step_Hysteresis_5pct",
+  "method_comparison_top_3": {
+    "M05_Sequential_Hysteresis": "SELECTED — POLICY_DEFAULT",
+    "M07_Replacement_M4": "RESERVED DB-A — Forge S5 DM conditional",
+    "M11_Calibrator_ensemble_3of5": "RESERVED DB-B — Forge S3 audit conditional"
+  },
+  "explanation": {
+    "top_principle": "Sequential Layer 6 retains all 5 production layers + bear sensor as additive overlay. Multiplicative composition (Kritzman 2011 + Kelly 2014 precedent).",
+    "key_decision_1": "Sequential over Replacement: M4 (BOCPD changepoint) + bear sensor (44-feature ensemble) capture different signal types — both retained captures ~100% incremental info coverage (31.4% M4-only + 68.6% bear-only)",
+    "key_decision_2": "Quantile-based τ (q70/q90) over fixed τ=0.5: PIT-safe calibration window expanding (alpha-research v1.0 root cause fix), self-adapts per walk-forward window",
+    "key_decision_3": "Hard 3-step β {1.0, 0.7, 0.3} over continuous sigmoid: discrete decisioning matches production STR_1715 architecture (m4/AR/R05 all discrete)",
+    "key_decision_4": "Hysteresis 5% buffer over EWMA/K-of-N: lowest TO without lag introduction",
+    "main_tradeoffs": [
+      "M4 redundancy 87.7% acknowledged → DM test in Forge Stage 5 binding for Path B branch",
+      "INFLATION regime n=31 thin → per-regime τ (M06) reserved as DB-C branch only",
+      "W3 OOS illustrative TO_ann 5.22/yr borderline → Forge Stage 5 actual emission expected lower (1.5~2.5/yr with isotonic-calibrated p)",
+      "Phase A design phase — actual performance pending Forge Stage 4/5 emission"
+    ]
+  },
+  "v6_1_breadth_constraints_status": "N_A_overlay_role",
+  "v6_1_breadth_rationale": "Bear sensor v2.0 = scalar β_bear overlay role. max_names null + weight_bounds [0,1] consistent with alpha_package + risk_package + request.json. Production PG2 STR_1715 underlying retains all v6.1 breadth constraints (max_names 20 / bounds [0, 0.20] / Σw 1.0). β_bear preserves underlying structure (multiplicative only). v6.1 R4 selection_objective enum compliance (crowding_adj_ret).",
+  "validation_pre_forge": {
+    "policy_M05_design_phase_consistency_check": "PASS",
+    "PIT_C2_C5_compliance_check": "PASS — calibration window expanding, overlay t-1 sig_date",
+    "production_architecture_echo_check": "PASS — multiplicative Layer 6 fallback no-op safe",
+    "TO_cap_check": "PASS_pending_actual_emission_Forge_Stage_5",
+    "schedule_density_check": "PASS — 437/437 = 1.0 >= 0.95 mandate",
+    "selection_objective_enum_compliance": "PASS — crowding_adj_ret in v6.1 R4 enum",
+    "hard_constraints_check": "PASS_overlay_role_exception_documented",
+    "DM_test_protocol_specified": "PASS — m4_incrementality_protocol.md emit"
+  },
+  "validation_post_forge_target": {
+    "G0_PIT": "C1~C15 + overlay t-1 + calibration window expanding",
+    "G1_DM_test_p_bad_t_vs_M4": "p < 0.15 in full sample AND 3+/5 windows (Path A) / p < 0.05 (Path B)",
+    "G2_Path_A_SR_uplift": ">= 0.10 net vs Path C control",
+    "G3_per_regime_DM_significant": "HIGH_VOL_TAPER OR INFLATION (Path A) / AND (Path B)",
+    "G4_TO_ann_cap": "<= 6.0/yr full sample with hysteresis",
+    "G5_AX_008": "Forge + Codex + Architect >= 2.5/3",
+    "G6_admission_decision": "Branch A1/A2/A3/A4 verdict per m4_incrementality_protocol.md"
+  },
+  "artifact_lineage": {
+    "own_deliverables_phase_a": [
+      "qepm/mailbox/worktask/WT-D20260518_001/optimization_package_draft.json (this)",
+      "qepm/mailbox/worktask/WT-D20260518_001/method_shopping_log_optimizer.json",
+      "qepm/mailbox/worktask/WT-D20260518_001/build_overlay_schedule_template.R",
+      "stage_artifacts/WT_D20260518_001/overlay_schedule.csv",
+      "stage_artifacts/WT_D20260518_001/overlay_schedule_summary.json",
+      "stage_artifacts/WT_D20260518_001/threshold_sensitivity_analysis.md",
+      "stage_artifacts/WT_D20260518_001/path_a_vs_b_comparison.md",
+      "stage_artifacts/WT_D20260518_001/m4_incrementality_protocol.md"
+    ],
+    "pending_post_codex": [
+      "qepm/mailbox/worktask/WT-D20260518_001/codex_critic_response_optimizer.json",
+      "qepm/mailbox/worktask/WT-D20260518_001/challenge_note_optimizer.md",
+      "qepm/mailbox/worktask/WT-D20260518_001/optimization_package.json (final, post Codex disposition)"
+    ],
+    "exempt_deliverables_phase_a": [
+      "weights.csv (overlay role emits overlay_schedule.csv, NOT 20-stock weights)",
+      "actual β_bear time series (Forge Stage 4 p_bad_t + Stage 5 emission)",
+      "Path A/B/C backtest results (Forge Stage 5)",
+      "ensemble_to_M4_DM_test_results (Forge Stage 5 binding via m4_incrementality_protocol.md)"
+    ],
+    "inputs_consumed": [
+      "qepm/mailbox/worktask/WT-D20260518_001/alpha_package.json",
+      "qepm/mailbox/worktask/WT-D20260518_001/risk_package.json",
+      "qepm/mailbox/worktask/WT-D20260518_001/request.json",
+      "stage_artifacts/WT_D20260518_001/W3_OOS_explicit_check.json",
+      "stage_artifacts/WT_D20260518_001/crowding_overlap_with_PG2_STR_1715.json",
+      "stage_artifacts/WT_D20260518_001/tail_risk_evt_gpd.json",
+      "stage_artifacts/WT_D20260518_001/covariance.parquet",
+      "stage_artifacts/WT_D20260518_001/feature_panel_design_v2.parquet",
+      "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/manifest.json",
+      ".cache/benchmark.parquet"
+    ]
+  },
+  "axiom_check": {
+    "AX_000": "documented — 한계 없음. 12 candidate × 6 dimension method shopping + 3 reserved decision branches + DM incrementality protocol + 3-variant Path A/B/C Forge Stage 5 binding",
+    "AX_001_v2": "conditional defense documented — bear sensor 설계 의도 crisis_alpha generation. M4 redundancy + bear incremental coverage 100% combined (Path A). bad/normal IC ratio Forge Stage 5 binding via DM stratified by regime.",
+    "AX_002": "PIT C1-C15 strict — overlay t-1 (C5) + calibration window expanding (C2) + no in-sample full-sample quantile (C1). self_synthesis_used=FALSE.",
+    "AX_007": "regime sensor overlay scalar — single_sleeve top20 mechanism break 회피 exception path (sensor role NOT sleeve, max_names null consistent across pkgs)",
+    "AX_008": "Verification Triangulation: Optimizer self PASS + Codex Round PENDING + Architect PENDING higher cycle. Floor 1.0/3, target 1.5+/3 advancement post-Codex."
+  },
+  "challenge_flags": [
+    {
+      "rf": "RF-O8-design-phase-no-actual-emission",
+      "severity": "MEDIUM",
+      "note": "Phase A scope: policy specification + 94.74% placeholder β=1.0 + 5.26% W3 illustrative reference. Actual β_bear emission requires Forge Stage 4 p_bad_t. Forge cycle binding mandatory before admission gate."
+    },
+    {
+      "rf": "RF-O9-overlay-role-N_A-breadth-constraints",
+      "severity": "INFO",
+      "note": "v6.1 breadth constraints (min_names 15 / HHI 0.10 / bounds [0, 0.10]) N/A for scalar overlay. Underlying STR_1715 retains all v6.1 breadth. max_names null in request.json + alpha_package + risk_package + optimization_package consistent."
+    },
+    {
+      "rf": "RF-O10-W3-illustrative-TO-5.22-borderline",
+      "severity": "MEDIUM",
+      "note": "W3 OOS illustrative reference TO_ann 5.22/yr is sample size 23 (24-1 missing month) random p_distribution simulation. Real Forge Stage 5 actual emission with isotonic-calibrated p expected lower (1.5~2.5/yr). Monitoring binding Forge Stage 5 TO_full_sample <= 6.0/yr cap."
+    },
+    {
+      "rf": "RF-O11-DM-test-binding-condition-DB-A",
+      "severity": "INFO",
+      "note": "Replacement decision branch DB-A conditional on Forge Stage 5 DM test outcome. m4_incrementality_protocol.md specifies exact test procedure + 4 outcome branches A1~A4."
+    },
+    {
+      "rf": "RF-O12-empirical-sigma-features-recomputation-binding",
+      "severity": "INFO",
+      "note": "Σ_features inherited from risk_package 13×13 cond=91.10. Forge Stage 1 builds full 44 features + Σ_features re-estimation mandated (risk_package honest_disclosure). β_bear policy invariant to Σ_features (depends on p scalar). No optimization re-run required for Σ update."
+    }
+  ],
+  "honest_disclosure": {
+    "phase_a_scope_only": "Policy specification + 12-candidate methodology shopping + DM protocol + schedule template. NO actual β_bear time series emission. NO backtest performance metrics.",
+    "Forge_Stage_4_prerequisite": "ensemble Stage 4 emits p_bad_t time series 437 monthly. Optimizer policy is applied mechanically.",
+    "Forge_Stage_5_binding": "DM test + Path A/B/C 3-variant backtest + per-regime stratified retrain audit + admission decision verdict",
+    "self_synthesis_used": false,
+    "AX_002_strict": "self_synthesis FALSE — overlay_schedule.csv illustrative reference uses alpha-research W3 OOS distribution (OOS_p_bear_mean / OOS_p_non_bear_mean / p_max published) NOT synthetic fabrication. Illustrative reference clearly tagged in CSV phase_a_status column.",
+    "max_names_null_consistent_3_packages": "alpha_package max_names null + risk_package max_names null + request.json max_names null + optimization_package max_names null (4-way consistent for overlay role)",
+    "RF_R3_M4_redundant_addressed": "DM incrementality protocol specifies exact test + Path B replacement branch reserved + Path C control baseline included",
+    "RF_O5_O6_O7_max_names_weight_sigma_compliance": "N/A overlay scalar (no 20-stock weights to validate). Underlying STR_1715 retains all 5 production layers + max_names 20 + bounds [0, 0.20] + Σw=1 (unchanged by Layer 6 multiplicative scalar).",
+    "illustrative_W3_reference_caveat": "23 observations × 5.22 TO_ann is illustrative random draw using OOS_p_bear_mean=0.7907 and OOS_p_non_bear_mean=0.6345 — real Forge Stage 5 p_bad_t emission with isotonic calibration expected smoother + lower TO."
+  },
+  "v6_0_codex_round_5_step_progress": {
+    "step_1_draft": "qepm/mailbox/worktask/WT-D20260518_001/optimization_package_draft.json (this file, current step)",
+    "step_2_codex_auto_spawn": "PostToolUse codex_round_auto_trigger.sh background spawn ~9-15 min after this Write",
+    "step_3_codex_response": "qepm/mailbox/worktask/WT-D20260518_001/codex_critic_response_optimizer.json (PENDING)",
+    "step_4_challenge_note": "qepm/mailbox/worktask/WT-D20260518_001/challenge_note_optimizer.md (PENDING post step 3)",
+    "step_5_final": "qepm/mailbox/worktask/WT-D20260518_001/optimization_package.json (PENDING post step 4)"
+  },
+  "next_step": "Codex Critic Round auto-trigger background spawn (~9-15min). Upon response: 8-step disposition (ACCEPT/PARTIAL/REBUTTAL each concern) → challenge_note_optimizer.md → optimization_package.json final emission with Codex disposition tracking."
+}

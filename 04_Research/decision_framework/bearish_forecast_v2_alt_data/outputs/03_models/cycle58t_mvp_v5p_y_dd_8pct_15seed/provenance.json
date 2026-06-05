@@ -1,0 +1,86 @@
+{
+  "cycle": "56D-Batch2-multiseed",
+  "script": "164_mamba_5seed_strict.py",
+  "git_sha": "76118315a5ddeb99142b52571ceea38f173493cf",
+  "torch_version": "2.12.0+cu130",
+  "cuda_version": "13.0",
+  "device": "cuda",
+  "python_hashseed": "42",
+  "cublas_workspace": ":4096:8",
+  "cudnn_deterministic": true,
+  "cudnn_benchmark": false,
+  "use_amp": true,
+  "seeds": [
+    42,
+    123,
+    456,
+    789,
+    1024,
+    2048,
+    3000,
+    5000,
+    7777,
+    9999,
+    10000,
+    20000,
+    30000,
+    40000,
+    50000
+  ],
+  "reseed_max": 0,
+  "feature_panel_md5": "cb44edea04522c517ae82a88c386fa22",
+  "targets_observable_md5": "95b4fcc3f8ed68c2aceda5f3e5a5490f",
+  "oos_window": {
+    "start": "2018-01-01",
+    "end": "2026-04-30"
+  },
+  "folds_used": [
+    {
+      "name": "Fold1_Lehman",
+      "train_start": "1995-01-01",
+      "train_end": "2007-12-31",
+      "valid_start": "2008-01-01",
+      "valid_end": "2009-12-31"
+    },
+    {
+      "name": "Fold2_EuroAfter",
+      "train_start": "1995-01-01",
+      "train_end": "2009-12-31",
+      "valid_start": "2010-01-01",
+      "valid_end": "2011-12-31"
+    },
+    {
+      "name": "Fold3_CyprusTT",
+      "train_start": "1995-01-01",
+      "train_end": "2011-12-31",
+      "valid_start": "2012-01-01",
+      "valid_end": "2013-12-31"
+    },
+    {
+      "name": "Fold4_KRLowVol",
+      "train_start": "1995-01-01",
+      "train_end": "2013-12-31",
+      "valid_start": "2014-01-01",
+      "valid_end": "2015-12-31"
+    },
+    {
+      "name": "Fold5_BestSignal",
+      "train_start": "1995-01-01",
+      "train_end": "2015-12-31",
+      "valid_start": "2016-01-01",
+      "valid_end": "2017-12-31"
+    }
+  ],
+  "skip_folds_per_target": {
+    "y_tail_q126": [
+      "Fold3_CyprusTT"
+    ]
+  },
+  "target": [
+    "y_dd_8pct"
+  ],
+  "architecture": "Mamba (Gu & Dao 2023 S6) \u2014 d_model=64 d_state=16 d_conv=4 expand=2 n_layers=2 dropout=0.30",
+  "ref_53h_mean5": 0.488,
+  "ref_mamba_seed42": 0.4264,
+  "notes": "Strict determinism + y_valid_mask + observable targets + period-balanced metrics."
+}

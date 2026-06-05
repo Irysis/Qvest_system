@@ -136,7 +136,7 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--project-dir",
         default=os.environ.get("QVEST_PROJECT_DIR")
-        or "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot")
+        or os.environ.get("CLAUDE_PROJECT_DIR") or os.environ.get("QM_ROOT") or os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
     ap.add_argument("--days", type=int, default=30)
     ap.add_argument("--output", default=None)
     args = ap.parse_args()

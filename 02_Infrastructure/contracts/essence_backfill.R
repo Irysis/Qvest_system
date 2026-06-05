@@ -18,7 +18,7 @@ suppressPackageStartupMessages({ library(data.table) })
 
 local({
   .here <- tryCatch(dirname(sys.frame(1)$ofile), error = function(e) NA)
-  root  <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+  root  <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
   src <- function(p) if (file.exists(file.path(root, p))) sys.source(file.path(root, p), envir = globalenv())
   if (!exists("build_benchmark_compare")) src("02_Infrastructure/contracts/backtest_result_contract.R")
   if (!exists("essence_score"))           src("02_Infrastructure/contracts/essence_score.R")
@@ -64,7 +64,7 @@ essence_backfill <- function(bt_result, n_trials_cumulative = NULL) {
 
 # ── CLI: 모든 bt_result.rds 스캔 → 재등급 테이블 ────────────────────────────
 if (sys.nframe() == 0) {
-  root <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+  root <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
   files <- list.files(root, pattern = "^bt_result.*\\.rds$", recursive = TRUE, full.names = TRUE)
   files <- files[!grepl("/\\.git/", files)]
   rows <- list()

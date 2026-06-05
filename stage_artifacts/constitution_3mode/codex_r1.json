@@ -1,0 +1,88 @@
+{
+  "overall_stance": "MAJOR_REVISION",
+  "is_3mode_right_cut": {
+    "verdict": "아니다. 3개를 모두 동등한 1급 모드로 세우면 경계가 선명해지는 것이 아니라 등급, registry, hook, 승격 의미가 3곳에서 따로 진화한다.",
+    "reasoning": "더 깨끗한 절단은 2개다. ① 리서치 검증 파이프라인: Alpha-Searching은 QEPM의 lean rigor-tier 또는 pre-screen sub-mode로 둔다. ② 포트폴리오 조립/소비자 파이프라인: Factor-Rotation은 QEPM 산출물의 2차 소비자인 blender 계층으로 둔다. 3-way split 비용은 작지 않다. entrypoint 3개, namespace 3개, registry 3개, hook scope 3개, gate wording 3개, telemetry/reporting 3개가 생기며 metric/gate 변경 1건마다 최소 6~10개 표면을 동기화해야 한다. semantic drift는 실제 top risk다. 초안 안에서도 Alpha는 proxy A/B/C/F를 쓰고, FR은 essence_score를 쓰지만 register_bt_result를 호출하지 않으며, QEPM은 WorkTask/certificate를 요구한다. 같은 'Grade A'가 서로 다른 provenance, audit depth, registry path, 재사용 권한을 갖게 된다."
+  },
+  "top_concerns": [
+    {
+      "severity": "HIGH",
+      "dimension": "1",
+      "concern": "3모드 분리는 독립성보다 중복된 거버넌스 표면을 만든다. Alpha-Searching은 검증 깊이의 차이이고, Factor-Rotation은 신규 알파 발굴이 아니라 졸업 모듈의 allocation 소비자다.",
+      "concrete_fix": "헌법에는 'Research lane with rigor tiers: proxy-screen, lean-contract, full-QEPM'와 'Allocation/blender consumer lane'의 2축으로 재작성한다. 사용자 명령은 3개를 유지하더라도 내부 권위 모델은 2개로 묶는다."
+    },
+    {
+      "severity": "HIGH",
+      "dimension": "2",
+      "concern": "essence_score 단일 권위 선언만으로는 proxy 권위화를 막지 못한다. proxy가 telegram, methodology, backlog priority, registry summary, PG 권고 문구, 파일명 Grade_A, L-code 학습 corpus에 들어가면 이미 의사결정 권위가 된다.",
+      "concrete_fix": "proxy 산출물에는 grade라는 단어를 금지하고 screen_status만 허용한다. registry/book/backlog/corpus/telegram으로 나가는 모든 수치 payload에 authority_level, metric_type, source_contract_id, n_trials, mode, admissible_for_capital 필드를 강제한다."
+    },
+    {
+      "severity": "HIGH",
+      "dimension": "3",
+      "concern": "§5-A 권고안 (c)는 proxy 1차 스크린의 실패 모드를 과소평가한다. proxy가 survivor selection을 결정하면 계약 백테스트는 이미 proxy가 만든 선택편향 조건부 표본만 평가한다.",
+      "concrete_fix": "정답은 (a) 또는 엄격한 변형 (c')다. 빠른 실행은 가능하되 survivor를 고르기 전 최소 build_bt_result 계약을 호출해야 한다. proxy는 디버그/triage 전용으로 두고, 통과/탈락/Grade/PG 권고에는 쓰지 않는다."
+    },
+    {
+      "severity": "HIGH",
+      "dimension": "4",
+      "concern": "Factor-Rotation을 3번째 peer mode로 두면 QEPM 산출물을 재등급화하는 별도 권위처럼 보인다. 실제로는 Grade-A 전략의 regime-conditional allocation이며 blender와 같은 직무다.",
+      "concrete_fix": "Factor-Rotation은 독립 모드가 아니라 blender/allocation sub-mode로 접는다. 입력 조건은 'contract-backed frozen module only', 출력은 'composite portfolio diagnostic'으로 제한하고 신규 전략 Grade-A와 동일 registry 칸에 넣지 않는다."
+    },
+    {
+      "severity": "HIGH",
+      "dimension": "5",
+      "concern": "path-prefix 기반 mode detector는 파일명 우연을 경로 우연으로 바꾼 것뿐이다. 복사, 임시 산출물, shared cache, symlink, output 이동, legacy script 실행에서 쉽게 틀린 모드를 판정한다.",
+      "concrete_fix": "모드 판정은 artifact manifest 기반으로 한다. 모든 write 대상에 qvest_mode_manifest.json 또는 frontmatter를 요구하고 mode, authority_level, contract_run_id, parent_strategy_id, generated_by_entrypoint를 검증한다. hook은 path를 보조 신호로만 사용한다."
+    },
+    {
+      "severity": "HIGH",
+      "dimension": "6",
+      "concern": "분리 자체가 cross-mode graduation ambiguity를 만든다. Alpha에서 'Grade A 권고'를 받은 전략이 QEPM Governor부터 편입되는지, full forge 재실측을 거쳐야 하는지, FR 모듈풀에 바로 들어갈 수 있는지 불명확하다.",
+      "concrete_fix": "재사용 권한을 분리한다. screen_pass, contract_pass, qe_pm_graduated, capital_admitted, fr_eligible을 별도 상태로 만들고, FR 입력은 qe_pm_graduated 또는 명시 human override만 허용한다."
+    },
+    {
+      "severity": "HIGH",
+      "dimension": "7",
+      "concern": "Phase 3까지 alpha_search_wall.sh를 미루면 live integrity hole이 남는다. 초안도 현행 Alpha가 proxy로 A/B/C/F 선언 및 PG 권고 트리거를 한다고 인정한다.",
+      "concrete_fix": "Phase 1 적용 전에 최소 guard를 넣어야 한다. 계약 run_id 없는 Alpha 산출물은 registry, book_state, methodology, Grade_A 명명, telegram headline, L-code corpus ingestion을 차단한다."
+    },
+    {
+      "severity": "MED",
+      "dimension": "2",
+      "concern": "DSR 조건부 적용이 모드별 재량으로 새어 나갈 수 있다. '② 1논문/1알파는 부적용'이라는 문구는 같은 논문에서 파라미터, universe, rebalance, weighting 변형을 여러 번 시험해도 n_trials=1로 포장할 여지를 준다.",
+      "concrete_fix": "n_trials는 사람이 선언하는 값이 아니라 실행 로그에서 산출한다. 같은 idea_id 아래 파라미터/유니버스/기간/weighting 변형은 자동으로 trial count에 합산한다."
+    },
+    {
+      "severity": "MED",
+      "dimension": "6",
+      "concern": "FR_001_result.json이 essence_score와 metric_type=backtested를 담으면 QEPM 후보로 오인될 수 있다는 문제를 초안이 알고도 Phase 2로 미룬다.",
+      "concrete_fix": "FR 산출물에는 strategy_type=composite_allocator, eligible_for_alpha_registry=false, input_module_hashes를 강제한다. QEPM strategy registry와 FR performance registry를 물리적으로 분리한다."
+    }
+  ],
+  "open_decisions": {
+    "alpha_grade_5A": "권장안 (c)는 그대로는 위험하다. 선택지는 (a) full contract-backed lean-forge가 맞고, 속도 때문에 2-tier가 필요하면 proxy-screen은 이름 그대로 triage만 하며 탈락/통과/Grade 권한을 갖지 못하게 해야 한다. 계약 실측 전에는 Grade A/B/C/F, PG 권고, registry headline 금지다.",
+    "factor_rotation_5B": "독립 3rd mode가 아니라 blender/allocation sub-mode로 접어야 한다. FR은 QEPM 산출물을 소비하는 2차 포트폴리오 구성 계층이지 QEPM·Alpha와 같은 연구 생산자 peer가 아니다.",
+    "hooks_mechanism": "path-prefix 단독 판정은 불충분하다. entrypoint가 생성한 signed/validated run manifest와 artifact metadata를 권위로 삼고, hook은 manifest의 mode, authority_level, contract_run_id, admissible_targets를 검증해야 한다."
+  },
+  "weakest_assumption": "모드를 나누면 governance가 선명해진다는 가정이 가장 약하다. 실제 위험은 shared RAWDATA/Factor DB/backtest contract 위에서 산출물 권위와 재사용 권한이 갈라지는 semantic drift이며, 초안은 그 drift를 줄이기보다 3개의 공식 표면으로 제도화한다.",
+  "what_it_breaks": [
+    "같은 Grade A라는 단어의 의미가 QEPM, Alpha, FR에서 달라질 수 있다.",
+    "Alpha proxy 결과가 계약 실측 전에도 backlog 우선순위, telegram, L-code corpus, PG 권고에 영향을 줄 수 있다.",
+    "FR composite가 신규 alpha strategy처럼 registry나 QEPM 후보군에 섞일 수 있다.",
+    "QEPM gate 변경 시 Alpha lean-forge, FR build_bt_result, hook wall, 문서 표가 동시에 갱신되지 않아 gate drift가 생긴다.",
+    "frozen module의 hash, build version, source contract가 고정되지 않으면 FR이 stale Grade-A pool을 조용히 소비한다.",
+    "경로 기반 hook은 임시 파일, legacy output, 복사된 artifact, shared cache에서 잘못된 모드를 적용하거나 우회될 수 있다."
+  ],
+  "missing": [
+    "mode별 artifact manifest schema와 필수 필드 정의가 없다.",
+    "proxy 산출물의 금지 대상 sink 목록이 없다.",
+    "cross-mode promotion의 상태기계가 없다: screen_pass, contract_pass, qe_pm_graduated, fr_eligible, capital_admitted를 구분해야 한다.",
+    "FR 입력 모듈의 hash/version/source_run_id 검증 규칙이 없다.",
+    "n_trials 산정 방식과 DSR 적용 자동화 규칙이 없다.",
+    "register_bt_result 미호출 산출물의 격리 정책이 없다.",
+    "Phase 1과 Phase 2 사이 interim guard가 없다."
+  ],
+  "interim_integrity_hole": "있다. Phase 1 문서만 먼저 바꾸고 alpha_search_wall.sh를 Phase 3로 미루면 현재 Alpha proxy A/B/C/F가 계속 registry, methodology, telegram, backlog, L-code corpus로 새어 나갈 수 있다. 최소 임시 가드는 계약 run_id 없는 Alpha 산출물에 대해 Grade 표기, PG 권고, book_state 접근, shared registry write, capital-admission 관련 파일 write를 즉시 block하는 것이다.",
+  "one_line_verdict": "3모드 헌법으로 승인하면 경계가 정리되는 것이 아니라 proxy 권위화와 cross-mode semantic drift를 공식화하므로, Alpha는 rigor-tier로, Factor-Rotation은 blender 소비자로 재절단한 뒤 manifest 기반 guard를 먼저 넣어야 한다."
+}

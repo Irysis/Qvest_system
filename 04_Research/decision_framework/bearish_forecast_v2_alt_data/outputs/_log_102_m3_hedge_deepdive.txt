@@ -1,0 +1,147 @@
+[Cycle 47C] M3 Hedge Deep Dive — 4 variants × 3 datasets
+
+========== Dataset: v2_2feat ==========
+  OOS rows: 2042 (date 2018-01-02 -> 2026-04-30)  events=456 (22.33%)
+  [CV] best η=0.100 (scores: η=0.1→0.5743 | η=0.3→0.5491 | η=0.5→0.5383 | η=1.0→0.5337)
+  Bootstrapping CIs (B=1000)...
+
+  ── PR-AUC results ──
+    Static_WEW                 PR-AUC=0.6264  CI=[0.4903, 0.7424]
+    M1_Rolling                 PR-AUC=0.6701  CI=[0.5365, 0.7707] >M2
+    M2_Regime                  PR-AUC=0.6690  CI=[0.5348, 0.7748]
+    V1_Classical_eta0.1        PR-AUC=0.5507  CI=[0.3984, 0.6802]
+    V1_Classical_eta0.3        PR-AUC=0.5308  CI=[0.3713, 0.6738]
+    V1_Classical_eta0.5        PR-AUC=0.5198  CI=[0.3523, 0.6723]
+    V1_Classical_eta1          PR-AUC=0.5130  CI=[0.3596, 0.6793]
+    V1_Classical_CV            PR-AUC=0.5507  CI=[0.3885, 0.6885]
+    V2_Adaptive                PR-AUC=0.5959  CI=[0.4542, 0.7160]
+    V3_AdaHedge                PR-AUC=0.5883  CI=[0.4327, 0.7118]
+    V4_RegretMin               PR-AUC=0.6538  CI=[0.5138, 0.7663]
+
+========== Dataset: v3b_inst_suite ==========
+  OOS rows: 2042 (date 2018-01-02 -> 2026-04-30)  events=456 (22.33%)
+  [CV] best η=0.100 (scores: η=0.1→0.6123 | η=0.3→0.6021 | η=0.5→0.6011 | η=1.0→0.6006)
+  Bootstrapping CIs (B=1000)...
+
+  ── PR-AUC results ──
+    Static_WEW                 PR-AUC=0.6166  CI=[0.4686, 0.7340]
+    M1_Rolling                 PR-AUC=0.7255  CI=[0.5871, 0.8228]
+    M2_Regime                  PR-AUC=0.7333  CI=[0.5977, 0.8299]
+    V1_Classical_eta0.1        PR-AUC=0.6297  CI=[0.4798, 0.7420]
+    V1_Classical_eta0.3        PR-AUC=0.6303  CI=[0.4940, 0.7473]
+    V1_Classical_eta0.5        PR-AUC=0.6317  CI=[0.4785, 0.7437]
+    V1_Classical_eta1          PR-AUC=0.6324  CI=[0.4843, 0.7473]
+    V1_Classical_CV            PR-AUC=0.6297  CI=[0.4863, 0.7446]
+    V2_Adaptive                PR-AUC=0.6380  CI=[0.4902, 0.7606]
+    V3_AdaHedge                PR-AUC=0.6320  CI=[0.4837, 0.7512]
+    V4_RegretMin               PR-AUC=0.7454  CI=[0.6144, 0.8440] >M2
+
+========== Dataset: v3d_walkforward ==========
+  OOS rows: 2042 (date 2018-01-02 -> 2026-04-30)  events=456 (22.33%)
+  [CV] best η=0.500 (scores: η=0.1→0.5617 | η=0.3→0.5669 | η=0.5→0.5673 | η=1.0→0.5613)
+  Bootstrapping CIs (B=1000)...
+
+  ── PR-AUC results ──
+    Static_WEW                 PR-AUC=0.5875  CI=[0.4407, 0.7105]
+    M1_Rolling                 PR-AUC=0.5896  CI=[0.4370, 0.7110]
+    M2_Regime                  PR-AUC=0.5917  CI=[0.4368, 0.7116]
+    V1_Classical_eta0.1        PR-AUC=0.6098  CI=[0.4675, 0.7304] >M2
+    V1_Classical_eta0.3        PR-AUC=0.6115  CI=[0.4667, 0.7229] >M2
+    V1_Classical_eta0.5        PR-AUC=0.6080  CI=[0.4717, 0.7224] >M2
+    V1_Classical_eta1          PR-AUC=0.6019  CI=[0.4545, 0.7130] >M2
+    V1_Classical_CV            PR-AUC=0.6080  CI=[0.4617, 0.7247] >M2
+    V2_Adaptive                PR-AUC=0.6085  CI=[0.4670, 0.7213] >M2
+    V3_AdaHedge                PR-AUC=0.5826  CI=[0.4323, 0.7138]
+    V4_RegretMin               PR-AUC=0.6569  CI=[0.5148, 0.7626] >M2
+
+[TIME] All datasets done in 0.2 min
+
+============================================================
+[CROSS-DATASET PR-AUC MATRIX]
+============================================================
+                    v2_2feat v3b_inst_suite v3d_walkforward
+Static_WEW            0.6264         0.6166          0.5875
+M1_Rolling            0.6701         0.7255          0.5896
+M2_Regime             0.6690         0.7333          0.5917
+V1_Classical_eta0.1   0.5507         0.6297          0.6098
+V1_Classical_eta0.3   0.5308         0.6303          0.6115
+V1_Classical_eta0.5   0.5198         0.6317          0.6080
+V1_Classical_eta1     0.5130         0.6324          0.6019
+V1_Classical_CV       0.5507         0.6297          0.6080
+V2_Adaptive           0.5959         0.6380          0.6085
+V3_AdaHedge           0.5883         0.6320          0.5826
+V4_RegretMin          0.6538         0.7454          0.6569
+
+[BEST PER DATASET]
+  v2_2feat           top3: M1_Rolling=0.6701  M2_Regime=0.6690  V4_RegretMin=0.6538  
+  v3b_inst_suite     top3: V4_RegretMin=0.7454  M2_Regime=0.7333  M1_Rolling=0.7255  
+  v3d_walkforward    top3: V4_RegretMin=0.6569  V1_Classical_eta0.3=0.6115  V1_Classical_eta0.1=0.6098  
+
+[VARIANT WIN COUNT (PR-AUC > M2_Regime) across 3 datasets]
+  Static_WEW                 wins=0/3   sig_wins(CI_lo>M2)=0/3
+  M1_Rolling                 wins=1/3   sig_wins(CI_lo>M2)=0/3
+  V1_Classical_eta0.1        wins=1/3   sig_wins(CI_lo>M2)=0/3
+  V1_Classical_eta0.3        wins=1/3   sig_wins(CI_lo>M2)=0/3
+  V1_Classical_eta0.5        wins=1/3   sig_wins(CI_lo>M2)=0/3
+  V1_Classical_eta1          wins=1/3   sig_wins(CI_lo>M2)=0/3
+  V1_Classical_CV            wins=1/3   sig_wins(CI_lo>M2)=0/3
+  V2_Adaptive                wins=1/3   sig_wins(CI_lo>M2)=0/3
+  V3_AdaHedge                wins=0/3   sig_wins(CI_lo>M2)=0/3
+  V4_RegretMin               wins=2/3   sig_wins(CI_lo>M2)=0/3
+
+[VERDICT] M2_RETAIN   (best_hedge=V4_RegretMin wins=2 sig=0)
+
+[OUT] /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/04_evaluation/m3_hedge_deepdive.json
+[OUT] /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/04_evaluation/m3_hedge_weight_trajectories.parquet   (rows=42882)
+[CHART] /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/06_reports/charts/102_m3_hedge_comparison.png
+[CHART] /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/06_reports/charts/102_m3_weight_evolution.png
+
+[WEIGHT STABILITY — std dev of weights over time, mean across 5 models]
+  v2_2feat           | V1_eta0.1          mean_sd=0.1214  range_sd=[0.0329, 0.2535]
+  v2_2feat           | V1_eta0.3          mean_sd=0.1324  range_sd=[0.0199, 0.2640]
+  v2_2feat           | V1_eta0.5          mean_sd=0.1383  range_sd=[0.0144, 0.2722]
+  v2_2feat           | V1_eta1            mean_sd=0.1497  range_sd=[0.0096, 0.2911]
+  v2_2feat           | V2_Adaptive        mean_sd=0.0666  range_sd=[0.0203, 0.1066]
+  v2_2feat           | V3_AdaHedge        mean_sd=0.1019  range_sd=[0.0063, 0.2459]
+  v2_2feat           | V4_RegretMin       mean_sd=0.1370  range_sd=[0.1041, 0.1867]
+  v3b_inst_suite     | V1_eta0.1          mean_sd=0.0889  range_sd=[0.0186, 0.1969]
+  v3b_inst_suite     | V1_eta0.3          mean_sd=0.1114  range_sd=[0.0088, 0.2537]
+  v3b_inst_suite     | V1_eta0.5          mean_sd=0.1187  range_sd=[0.0068, 0.2746]
+  v3b_inst_suite     | V1_eta1            mean_sd=0.1248  range_sd=[0.0054, 0.2938]
+  v3b_inst_suite     | V2_Adaptive        mean_sd=0.0531  range_sd=[0.0074, 0.1025]
+  v3b_inst_suite     | V3_AdaHedge        mean_sd=0.1281  range_sd=[0.0063, 0.3055]
+  v3b_inst_suite     | V4_RegretMin       mean_sd=0.1105  range_sd=[0.0269, 0.1732]
+  v3d_walkforward    | V1_eta0.1          mean_sd=0.0934  range_sd=[0.0237, 0.2008]
+  v3d_walkforward    | V1_eta0.3          mean_sd=0.1186  range_sd=[0.0130, 0.2588]
+  v3d_walkforward    | V1_eta0.5          mean_sd=0.1212  range_sd=[0.0093, 0.2610]
+  v3d_walkforward    | V1_eta1            mean_sd=0.1305  range_sd=[0.0064, 0.2725]
+  v3d_walkforward    | V2_Adaptive        mean_sd=0.0392  range_sd=[0.0131, 0.0680]
+  v3d_walkforward    | V3_AdaHedge        mean_sd=0.0739  range_sd=[0.0044, 0.1785]
+  v3d_walkforward    | V4_RegretMin       mean_sd=0.1210  range_sd=[0.0675, 0.2115]
+
+[CRISIS REACTIVE — weight shift |Δw| in 2020-03 COVID window]
+  v2_2feat           | V1_eta1            |Δw|_L1 (pre→post)=0.0000
+  v2_2feat           | V2_Adaptive        |Δw|_L1 (pre→post)=0.0382
+  v2_2feat           | V3_AdaHedge        |Δw|_L1 (pre→post)=0.0000
+  v2_2feat           | V4_RegretMin       |Δw|_L1 (pre→post)=0.2401
+  v3b_inst_suite     | V1_eta1            |Δw|_L1 (pre→post)=0.0004
+  v3b_inst_suite     | V2_Adaptive        |Δw|_L1 (pre→post)=0.0221
+  v3b_inst_suite     | V3_AdaHedge        |Δw|_L1 (pre→post)=0.0000
+  v3b_inst_suite     | V4_RegretMin       |Δw|_L1 (pre→post)=0.0931
+  v3d_walkforward    | V1_eta1            |Δw|_L1 (pre→post)=0.0013
+  v3d_walkforward    | V2_Adaptive        |Δw|_L1 (pre→post)=0.0381
+  v3d_walkforward    | V3_AdaHedge        |Δw|_L1 (pre→post)=0.0000
+  v3d_walkforward    | V4_RegretMin       |Δw|_L1 (pre→post)=0.1272
+
+============================================================
+[FINAL RECOMMENDATION — Cycle 47C]
+============================================================
+Verdict: M2_RETAIN
+Best hedge variant globally: V4_RegretMin
+Wins vs M2 Regime (across 3 datasets): 2/3
+Significant (CI lower > M2): 0/3
+
+Production recommendation:
+  ⇒ RETAIN M2 Regime as production. M3 Hedge edge in 45D appears spurious.
+
+[ALL DONE in 0.2 min] outputs at /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/04_evaluation and /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/06_reports/charts

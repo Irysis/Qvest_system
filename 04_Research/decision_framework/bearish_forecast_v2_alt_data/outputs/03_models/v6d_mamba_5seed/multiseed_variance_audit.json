@@ -1,0 +1,505 @@
+{
+  "cycle": "56D_Batch2_multiseed_mamba",
+  "audit_type": "5_seed_variance_audit_mamba",
+  "purpose": "Verify Mamba seed=42 0.4264 is robust or lucky seed",
+  "panel": "feature_panel_v5e_q126_usmacro.parquet",
+  "targets_source": "targets_long_horizon_observable.parquet",
+  "n_features": 74,
+  "seeds": [
+    42,
+    43,
+    44,
+    45,
+    46
+  ],
+  "n_seeds": 5,
+  "validation_strategy": "walk_forward_expanding_5_fold_CV_Fold3_skipped_q126",
+  "architecture": "Mamba (Gu & Dao 2023 S6)",
+  "mamba_hparams": {
+    "d_model": 64,
+    "d_state": 16,
+    "d_conv": 4,
+    "expand": 2,
+    "n_layers": 2,
+    "dropout": 0.3
+  },
+  "training_common": {
+    "batch_size": 96,
+    "max_epochs": 80,
+    "early_stop_patience": 15,
+    "early_stop_min_delta": 0.0005,
+    "grad_clip_norm": 1.0,
+    "warmup_steps": 500,
+    "mixed_precision_amp": true,
+    "gpu_mem_fraction": 0.15,
+    "lr": 0.001,
+    "weight_decay": 0.005,
+    "strict_determinism": true,
+    "cudnn_deterministic": true,
+    "cudnn_benchmark": false,
+    "cublas_workspace_config": ":4096:8"
+  },
+  "stability_thresholds": {
+    "STABLE_std_lt": 0.02,
+    "MODERATE_std_max": 0.05,
+    "UNSTABLE_std_gt": 0.05
+  },
+  "baselines": {
+    "cycle_53h_v5e_mean5_strict_pit_q126": 0.488,
+    "cycle_56d_batch2_mamba_seed42_q126": 0.4264
+  },
+  "provenance": {
+    "cycle": "56D-Batch2-multiseed",
+    "script": "164_mamba_5seed_strict.py",
+    "git_sha": "c0eb5de6941b820cc07423505e43676b52f1ee68",
+    "torch_version": "2.12.0+cu130",
+    "cuda_version": "13.0",
+    "device": "cuda",
+    "python_hashseed": "42",
+    "cublas_workspace": ":4096:8",
+    "cudnn_deterministic": true,
+    "cudnn_benchmark": false,
+    "use_amp": true,
+    "seeds": [
+      42,
+      43,
+      44,
+      45,
+      46
+    ],
+    "reseed_max": 0,
+    "feature_panel_md5": "cd82068e15a3341fb42e7bf0f3b987f9",
+    "targets_observable_md5": "6647e43685c8ce9a9584f3e32bfc255d",
+    "oos_window": {
+      "start": "2018-01-01",
+      "end": "2026-04-30"
+    },
+    "folds_used": [
+      {
+        "name": "Fold1_Lehman",
+        "train_start": "1995-01-01",
+        "train_end": "2007-12-31",
+        "valid_start": "2008-01-01",
+        "valid_end": "2009-12-31"
+      },
+      {
+        "name": "Fold2_EuroAfter",
+        "train_start": "1995-01-01",
+        "train_end": "2009-12-31",
+        "valid_start": "2010-01-01",
+        "valid_end": "2011-12-31"
+      },
+      {
+        "name": "Fold3_CyprusTT",
+        "train_start": "1995-01-01",
+        "train_end": "2011-12-31",
+        "valid_start": "2012-01-01",
+        "valid_end": "2013-12-31"
+      },
+      {
+        "name": "Fold4_KRLowVol",
+        "train_start": "1995-01-01",
+        "train_end": "2013-12-31",
+        "valid_start": "2014-01-01",
+        "valid_end": "2015-12-31"
+      },
+      {
+        "name": "Fold5_BestSignal",
+        "train_start": "1995-01-01",
+        "train_end": "2015-12-31",
+        "valid_start": "2016-01-01",
+        "valid_end": "2017-12-31"
+      }
+    ],
+    "skip_folds_per_target": {
+      "y_tail_q126": [
+        "Fold3_CyprusTT"
+      ]
+    },
+    "target": [
+      "y_tail_q126"
+    ],
+    "architecture": "Mamba (Gu & Dao 2023 S6) \u2014 d_model=64 d_state=16 d_conv=4 expand=2 n_layers=2 dropout=0.30",
+    "ref_53h_mean5": 0.488,
+    "ref_mamba_seed42": 0.4264,
+    "notes": "Strict determinism + y_valid_mask + observable targets + period-balanced metrics."
+  },
+  "audit_per_target": {
+    "y_tail_q126": {
+      "n_seeds": 5,
+      "seeds_used": [
+        42,
+        43,
+        44,
+        45,
+        46
+      ],
+      "n_common_dates": 1934,
+      "per_seed_pr": [
+        0.31250762176209423,
+        0.2417386834387888,
+        0.37048090710900394,
+        0.18394047243145845,
+        0.22631360036779588
+      ],
+      "per_seed_ic": [
+        0.09585954245344824,
+        -0.03155263717411245,
+        0.11857327347401828,
+        -0.30180865297572845,
+        -0.11323245578657957
+      ],
+      "per_seed_pr_mean": 0.2669962570218283,
+      "per_seed_pr_std": 0.06628973382634926,
+      "per_seed_pr_min": 0.18394047243145845,
+      "per_seed_pr_max": 0.37048090710900394,
+      "per_seed_pr_range": 0.1865404346775455,
+      "mean5_pr_auc": 0.20760840684659004,
+      "mean5_ic": -0.1611752807540506,
+      "per_date_std_mean": 0.22721721231937408,
+      "per_date_std_median": 0.2086549699306488,
+      "per_date_std_max": 0.36424827575683594,
+      "per_date_std_min": 0.07203210145235062,
+      "stability_verdict": "UNSTABLE",
+      "n_segments_lift_gt1": 2,
+      "n_segments_evaluable": 3,
+      "period_metrics_mean5": {
+        "S2018-19_calm": {
+          "n": 490,
+          "n_bear": 257,
+          "base_rate": 0.5245,
+          "pr_auc": 0.5462,
+          "ic": -0.1596,
+          "lift": 1.0414,
+          "p_max": 0.504191,
+          "p_p99": 0.496236,
+          "p_p50": 0.287384
+        },
+        "S2020-21_COVID": {
+          "n": 496,
+          "n_bear": 152,
+          "base_rate": 0.3065,
+          "pr_auc": 0.5214,
+          "ic": 0.5228,
+          "lift": 1.7015,
+          "p_max": 0.554963,
+          "p_p99": 0.542465,
+          "p_p50": 0.169442
+        },
+        "S2022-24_Stagflation": {
+          "n": 735,
+          "n_bear": 106,
+          "base_rate": 0.1442,
+          "pr_auc": 0.1281,
+          "ic": -0.0329,
+          "lift": 0.8883,
+          "p_max": 0.726439,
+          "p_p99": 0.716717,
+          "p_p50": 0.555655
+        },
+        "S2025-26_post": {
+          "n": 213,
+          "n_bear": 0,
+          "pr_auc": null,
+          "ic": null,
+          "note": "insufficient_bear_events"
+        }
+      },
+      "final_verdict": "MAMBA_LUCKY_SEED"
+    }
+  },
+  "per_seed_summary_per_target": {
+    "y_tail_q126": {
+      "seed42": {
+        "oos_pr": 0.3125,
+        "oos_ic": 0.0959,
+        "collapsed": false,
+        "p_max": 0.6103954315185547,
+        "logit_median": -0.48364266753196716,
+        "avg_best_epoch": 4,
+        "elapsed_sec": 422.2,
+        "per_fold_best_pr": [
+          0.8251,
+          0.1367,
+          null,
+          0.2931,
+          0.0877
+        ],
+        "period_metrics": {
+          "S2018-19_calm": {
+            "n": 490,
+            "n_bear": 257,
+            "base_rate": 0.5245,
+            "pr_auc": 0.463,
+            "ic": -0.0661,
+            "lift": 0.8828,
+            "p_max": 0.460501,
+            "p_p99": 0.454969,
+            "p_p50": 0.345713
+          },
+          "S2020-21_COVID": {
+            "n": 496,
+            "n_bear": 152,
+            "base_rate": 0.3065,
+            "pr_auc": 0.9165,
+            "ic": 0.7235,
+            "lift": 2.9907,
+            "p_max": 0.475834,
+            "p_p99": 0.474175,
+            "p_p50": 0.336113
+          },
+          "S2022-24_Stagflation": {
+            "n": 735,
+            "n_bear": 106,
+            "base_rate": 0.1442,
+            "pr_auc": 0.3229,
+            "ic": 0.0958,
+            "lift": 2.2389,
+            "p_max": 0.610395,
+            "p_p99": 0.600656,
+            "p_p50": 0.431405
+          },
+          "S2025-26_post": {
+            "n": 213,
+            "n_bear": 0,
+            "pr_auc": null,
+            "ic": null,
+            "note": "insufficient_bear_events"
+          }
+        }
+      },
+      "seed43": {
+        "oos_pr": 0.2417,
+        "oos_ic": -0.0316,
+        "collapsed": false,
+        "p_max": 0.9449946880340576,
+        "logit_median": -3.384765625,
+        "avg_best_epoch": 10,
+        "elapsed_sec": 594.9,
+        "per_fold_best_pr": [
+          0.7686,
+          0.3982,
+          null,
+          0.4486,
+          0.0277
+        ],
+        "period_metrics": {
+          "S2018-19_calm": {
+            "n": 490,
+            "n_bear": 257,
+            "base_rate": 0.5245,
+            "pr_auc": 0.4911,
+            "ic": -0.0105,
+            "lift": 0.9363,
+            "p_max": 0.563198,
+            "p_p99": 0.518687,
+            "p_p50": 0.008332
+          },
+          "S2020-21_COVID": {
+            "n": 496,
+            "n_bear": 152,
+            "base_rate": 0.3065,
+            "pr_auc": 0.8194,
+            "ic": 0.6415,
+            "lift": 2.6737,
+            "p_max": 0.875041,
+            "p_p99": 0.843691,
+            "p_p50": 0.002087
+          },
+          "S2022-24_Stagflation": {
+            "n": 735,
+            "n_bear": 106,
+            "base_rate": 0.1442,
+            "pr_auc": 0.142,
+            "ic": 0.061,
+            "lift": 0.9849,
+            "p_max": 0.914138,
+            "p_p99": 0.88972,
+            "p_p50": 0.336113
+          },
+          "S2025-26_post": {
+            "n": 213,
+            "n_bear": 0,
+            "pr_auc": null,
+            "ic": null,
+            "note": "insufficient_bear_events"
+          }
+        }
+      },
+      "seed44": {
+        "oos_pr": 0.3705,
+        "oos_ic": 0.1186,
+        "collapsed": false,
+        "p_max": 0.5761843323707581,
+        "logit_median": -0.013847297988831997,
+        "avg_best_epoch": 2,
+        "elapsed_sec": 387.6,
+        "per_fold_best_pr": [
+          0.7496,
+          0.1617,
+          null,
+          0.2295,
+          0.4003
+        ],
+        "period_metrics": {
+          "S2018-19_calm": {
+            "n": 490,
+            "n_bear": 257,
+            "base_rate": 0.5245,
+            "pr_auc": 0.5312,
+            "ic": -0.0316,
+            "lift": 1.0129,
+            "p_max": 0.576184,
+            "p_p99": 0.574693,
+            "p_p50": 0.522362
+          },
+          "S2020-21_COVID": {
+            "n": 496,
+            "n_bear": 152,
+            "base_rate": 0.3065,
+            "pr_auc": 0.46,
+            "ic": 0.2814,
+            "lift": 1.501,
+            "p_max": 0.558237,
+            "p_p99": 0.556671,
+            "p_p50": 0.488874
+          },
+          "S2022-24_Stagflation": {
+            "n": 735,
+            "n_bear": 106,
+            "base_rate": 0.1442,
+            "pr_auc": 0.1007,
+            "ic": -0.1995,
+            "lift": 0.6986,
+            "p_max": 0.550426,
+            "p_p99": 0.545237,
+            "p_p50": 0.496298
+          },
+          "S2025-26_post": {
+            "n": 213,
+            "n_bear": 0,
+            "pr_auc": null,
+            "ic": null,
+            "note": "insufficient_bear_events"
+          }
+        }
+      },
+      "seed45": {
+        "oos_pr": 0.1839,
+        "oos_ic": -0.3018,
+        "collapsed": false,
+        "p_max": 0.9365176558494568,
+        "logit_median": -2.1201171875,
+        "avg_best_epoch": 7,
+        "elapsed_sec": 470.7,
+        "per_fold_best_pr": [
+          0.8481,
+          0.0992,
+          null,
+          0.1637,
+          0.0262
+        ],
+        "period_metrics": {
+          "S2018-19_calm": {
+            "n": 490,
+            "n_bear": 257,
+            "base_rate": 0.5245,
+            "pr_auc": 0.3948,
+            "ic": -0.3609,
+            "lift": 0.7527,
+            "p_max": 0.848972,
+            "p_p99": 0.821531,
+            "p_p50": 0.024917
+          },
+          "S2020-21_COVID": {
+            "n": 496,
+            "n_bear": 152,
+            "base_rate": 0.3065,
+            "pr_auc": 0.3585,
+            "ic": 0.2569,
+            "lift": 1.1699,
+            "p_max": 0.895705,
+            "p_p99": 0.845125,
+            "p_p50": 0.010673
+          },
+          "S2022-24_Stagflation": {
+            "n": 735,
+            "n_bear": 106,
+            "base_rate": 0.1442,
+            "pr_auc": 0.1109,
+            "ic": -0.1158,
+            "lift": 0.7688,
+            "p_max": 0.936518,
+            "p_p99": 0.930705,
+            "p_p50": 0.679498
+          },
+          "S2025-26_post": {
+            "n": 213,
+            "n_bear": 0,
+            "pr_auc": null,
+            "ic": null,
+            "note": "insufficient_bear_events"
+          }
+        }
+      },
+      "seed46": {
+        "oos_pr": 0.2263,
+        "oos_ic": -0.1132,
+        "collapsed": false,
+        "p_max": 0.9809125065803528,
+        "logit_median": 0.10934439301490784,
+        "avg_best_epoch": 8,
+        "elapsed_sec": 320.9,
+        "per_fold_best_pr": [
+          0.818,
+          0.117,
+          null,
+          0.2066,
+          0.1967
+        ],
+        "period_metrics": {
+          "S2018-19_calm": {
+            "n": 490,
+            "n_bear": 257,
+            "base_rate": 0.5245,
+            "pr_auc": 0.5518,
+            "ic": 0.1601,
+            "lift": 1.0521,
+            "p_max": 0.980913,
+            "p_p99": 0.978847,
+            "p_p50": 0.185002
+          },
+          "S2020-21_COVID": {
+            "n": 496,
+            "n_bear": 152,
+            "base_rate": 0.3065,
+            "pr_auc": 0.4087,
+            "ic": 0.359,
+            "lift": 1.3337,
+            "p_max": 0.956957,
+            "p_p99": 0.943544,
+            "p_p50": 0.001893
+          },
+          "S2022-24_Stagflation": {
+            "n": 735,
+            "n_bear": 106,
+            "base_rate": 0.1442,
+            "pr_auc": 0.162,
+            "ic": -0.0142,
+            "lift": 1.1231,
+            "p_max": 0.975343,
+            "p_p99": 0.974321,
+            "p_p50": 0.852445
+          },
+          "S2025-26_post": {
+            "n": 213,
+            "n_bear": 0,
+            "pr_auc": null,
+            "ic": null,
+            "note": "insufficient_bear_events"
+          }
+        }
+      }
+    }
+  }
+}

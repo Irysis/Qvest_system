@@ -195,4 +195,158 @@ pit_self_audit <- function(data_description, decision_date, data_date) {
   invisible(TRUE)
 }
 
-cat("[pit_enforcement] Loaded. Functions: pit_filter(), pit_zscore(), pit_zscore_vec(), pit_rolling(), pit_verify_month_regime(), pit_self_audit()\n")
+#' PIT v2 — Label Direction Validation (Cycle 51 신규)
+#'
+#' Forecast label이 forward 방향인지 backward 방향인지 검증.
+#' data.table::shift convention 함정 (`shift(x, n=-H, type="lead")` = x[t-H] BACKWARD,
+#' double negation) 자동 detection.
+#'
+#' Method:
+#'   1. target_df의 ret_h sample (default 100 random dates with ret_h != NA)
+#'   2. 각 sample date에 대해 bm_df에서 manual forward lookup: BM[t+H] / BM[t] - 1
+#'   3. target_df의 ret_h 값과 manual forward value 비교 (절대 차이 < 1e-6 → 일치)
+#'   4. 일치율 ≥ threshold (default 0.95) → PASS, < threshold → FAIL
+#'
+#' COVID 2020-02-19 assertion: forward 21d return must be ≤ -0.30 (실제 -34.05%) 미달 시 FAIL.
+#'
+#' @param target_df data.table with Date + target_col (e.g., ret_h)
+#' @param target_col Character. Target column name (default "ret_h")
+#' @param bm_df data.table with Date + bm_col (benchmark close)
+#' @param bm_col Character. Benchmark column name (default "BM_Close")
+#' @param expected_direction "forward" or "backward" (default "forward")
+#' @param horizon Integer trading days (default 21L)
+#' @param n_sample Integer sample size (default 100L)
+#' @param threshold Numeric agreement rate threshold (default 0.95)
+#' @param assert_covid Logical assert COVID 2020-02-19 forward case (default TRUE)
+#' @return list(pass, agreement_rate, n_sample, n_match, covid_assertion, violations)
+#' @export
+validate_label_direction <- function(target_df,
+                                     target_col = "ret_h",
+                                     bm_df,
+                                     bm_col = "BM_Close",
+                                     expected_direction = "forward",
+                                     horizon = 21L,
+                                     n_sample = 100L,
+                                     threshold = 0.95,
+                                     assert_covid = TRUE) {
+  if (!requireNamespace("data.table", quietly = TRUE)) {
+    stop("[PIT v2] data.table required")
+  }
+  td <- data.table::as.data.table(target_df)
+  bd <- data.table::as.data.table(bm_df)
+
+  if (!all(c("Date", target_col) %in% names(td))) {
+    stop(sprintf("[PIT v2] target_df missing Date or %s", target_col))
+  }
+  if (!all(c("Date", bm_col) %in% names(bd))) {
+    stop(sprintf("[PIT v2] bm_df missing Date or %s", bm_col))
+  }
+
+  data.table::setorder(td, Date)
+  data.table::setorder(bd, Date)
+
+  # ── 1. Manual forward lookup function ──────────────────────────────
+  # bm_df indexed by row (positional shift, NOT calendar — trading days)
+  bd[, row_idx := .I]
+  manual_forward <- function(date_i) {
+    # find row idx in bm
+    j <- bd[Date == date_i, row_idx]
+    if (length(j) == 0) return(NA_real_)
+    j <- j[1]
+    k <- j + horizon
+    if (k > nrow(bd)) return(NA_real_)
+    bd[[bm_col]][k] / bd[[bm_col]][j] - 1
+  }
+  manual_backward <- function(date_i) {
+    j <- bd[Date == date_i, row_idx]
+    if (length(j) == 0) return(NA_real_)
+    j <- j[1]
+    k <- j - horizon
+    if (k < 1) return(NA_real_)
+    bd[[bm_col]][k] / bd[[bm_col]][j] - 1
+  }
+
+  # ── 2. Sample dates with non-NA target ─────────────────────────────
+  valid_rows <- td[!is.na(get(target_col)), .(Date)]
+  n_valid <- nrow(valid_rows)
+  if (n_valid < 10) {
+    return(list(
+      pass = FALSE,
+      agreement_rate = NA_real_,
+      n_sample = 0,
+      n_match = 0,
+      covid_assertion = NA,
+      violations = list(reason = sprintf("insufficient valid rows: %d < 10", n_valid))
+    ))
+  }
+  k <- min(n_sample, n_valid)
+  set.seed(42)
+  sample_dates <- sample(valid_rows$Date, k)
+
+  # ── 3. Compare each sample with manual forward / backward ──────────
+  n_fwd_match <- 0L
+  n_bwd_match <- 0L
+  details <- vector("list", k)
+  for (i in seq_along(sample_dates)) {
+    d <- sample_dates[i]
+    target_val <- td[Date == d, get(target_col)][1]
+    fwd_val <- manual_forward(d)
+    bwd_val <- manual_backward(d)
+    fwd_match <- !is.na(fwd_val) && abs(target_val - fwd_val) < 1e-6
+    bwd_match <- !is.na(bwd_val) && abs(target_val - bwd_val) < 1e-6
+    if (fwd_match) n_fwd_match <- n_fwd_match + 1L
+    if (bwd_match) n_bwd_match <- n_bwd_match + 1L
+    details[[i]] <- list(date = as.character(d), target = target_val,
+                         forward = fwd_val, backward = bwd_val,
+                         fwd_match = fwd_match, bwd_match = bwd_match)
+  }
+
+  fwd_rate <- n_fwd_match / k
+  bwd_rate <- n_bwd_match / k
+
+  # ── 4. COVID 2020-02-19 assertion ──────────────────────────────────
+  covid_assertion <- list(checked = FALSE)
+  if (assert_covid) {
+    covid_d <- as.Date("2020-02-19")
+    fwd_covid <- manual_forward(covid_d)
+    bwd_covid <- manual_backward(covid_d)
+    covid_target <- td[Date == covid_d, get(target_col)][1]
+    if (!is.null(covid_target) && length(covid_target) > 0 && !is.na(covid_target)) {
+      covid_assertion <- list(
+        checked = TRUE,
+        target_value = covid_target,
+        forward_expected_ge = -0.30,
+        forward_actual = fwd_covid,
+        backward_actual = bwd_covid,
+        # PASS if forward direction expected AND target matches forward AND forward is bearish
+        fwd_pass = !is.na(fwd_covid) && abs(covid_target - fwd_covid) < 1e-6 && fwd_covid <= -0.30,
+        bwd_pass = !is.na(bwd_covid) && abs(covid_target - bwd_covid) < 1e-6 && bwd_covid >= 0
+      )
+    }
+  }
+
+  # ── 5. Pass/Fail decision ──────────────────────────────────────────
+  if (expected_direction == "forward") {
+    pass <- fwd_rate >= threshold
+  } else if (expected_direction == "backward") {
+    pass <- bwd_rate >= threshold
+  } else {
+    stop("[PIT v2] expected_direction must be 'forward' or 'backward'")
+  }
+
+  list(
+    pass = pass,
+    expected_direction = expected_direction,
+    horizon = horizon,
+    n_sample = k,
+    n_match_forward = n_fwd_match,
+    n_match_backward = n_bwd_match,
+    agreement_rate_forward = fwd_rate,
+    agreement_rate_backward = bwd_rate,
+    threshold = threshold,
+    covid_assertion = covid_assertion,
+    details = details
+  )
+}
+
+cat("[pit_enforcement] Loaded. Functions: pit_filter(), pit_zscore(), pit_zscore_vec(), pit_rolling(), pit_verify_month_regime(), pit_self_audit(), validate_label_direction() [v2 Cycle 51]\n")

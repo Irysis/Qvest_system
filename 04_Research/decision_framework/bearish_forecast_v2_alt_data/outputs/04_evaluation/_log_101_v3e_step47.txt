@@ -1,0 +1,85 @@
+
+========== Step 4: 5-way merge (XGB+Cat+RF + PatchTST + N-BEATS) ==========
+[Reuse] GBDT preds = Cycle 45D outputs (walk-forward + v1.3 baseline 동일)
+
+----- 5-way merge: y_tail_q15 -----
+[merge] OOS N=2042 / events=456 (22.33%)
+[v3e individual OOS PR-AUC] XGB=0.5846 / CAT=0.5470 / RF=0.5923 / PatchTST=0.3256 / N-BEATS=0.5479
+[v3e individual OOS IC   ] XGB=0.4155 / CAT=0.4098 / RF=0.4377 / PatchTST=0.1747 / N-BEATS=0.3200
+[v3e] EW5=0.6092 / WEW=0.6105
+
+----- 5-way merge: y_onset -----
+[merge] OOS N=2042 / events=251 (12.29%)
+[v3e individual OOS PR-AUC] XGB=0.1027 / CAT=0.1152 / RF=0.1046 / PatchTST=0.1446 / N-BEATS=0.2143
+[v3e individual OOS IC   ] XGB=-0.0935 / CAT=-0.0629 / RF=-0.0457 / PatchTST=0.1226 / N-BEATS=0.2053
+[v3e] EW5=0.1114 / WEW=0.1083
+
+========== Step 5: Dynamic 5-method ensemble synthesis ==========
+
+----- Dynamic 5-method: y_tail_q15 -----
+[Static WEW] PR-AUC=0.6105
+[M1 Rolling]  PR-AUC=0.5796 
+[M2 Regime]   PR-AUC=0.5765 
+[M3 Hedge]    PR-AUC=0.5794 
+[M4 Bayes]    PR-AUC=0.5905 
+[M5 Bandit]   PR-AUC=0.6103 
+
+----- Dynamic 5-method: y_onset -----
+[Static WEW] PR-AUC=0.1083
+[M1 Rolling]  PR-AUC=0.1462 *
+[M2 Regime]   PR-AUC=0.1507 *
+[M3 Hedge]    PR-AUC=0.1409 *
+[M4 Bayes]    PR-AUC=0.1164 *
+[M5 Bandit]   PR-AUC=0.1205 *
+
+[Step 5 Dynamic SUMMARY]
+        target     method     PRAUC
+        <char>     <char>     <num>
+ 1: y_tail_q15 Static_WEW 0.6104871
+ 2: y_tail_q15 M1_Rolling 0.5795562
+ 3: y_tail_q15  M2_Regime 0.5765080
+ 4: y_tail_q15   M3_Hedge 0.5793625
+ 5: y_tail_q15   M4_Bayes 0.5904910
+ 6: y_tail_q15  M5_Bandit 0.6102561
+ 7:    y_onset Static_WEW 0.1082514
+ 8:    y_onset M1_Rolling 0.1462141
+ 9:    y_onset  M2_Regime 0.1507482
+10:    y_onset   M3_Hedge 0.1409455
+11:    y_onset   M4_Bayes 0.1163699
+12:    y_onset  M5_Bandit 0.1205182
+
+========== Step 6: Architecture pivot verdict ==========
+
+[Per-model individual diagnosis y_tail_q15]
+  PatchTST vs LSTM (45D): 0.3253 / ep=5  →  0.3256 / avg_ep=5
+        Δ_PR=+0.0003
+  N-BEATS  vs TFT  (45D): 0.4508 / ep=10 →  0.5479 / avg_ep=6
+        Δ_PR=+0.0971
+
+[Pivot verdict] PIVOT_PARTIAL — 한 architecture만 개선, 다른 axis 추가 교체 필요 (Informer/FEDformer)
+
+========== Step 7: Compare vs Cycle 45D + V1.3 baseline ==========
+
+[Δ vs Cycle 45D — y_tail_q15]
+  Static WEW: 45D=0.5875 → 45E=0.6105  (Δ +0.0230)
+  M1 Rolling: 45D=0.5896 → 45E=0.5796  (Δ -0.0100)
+  M2 Regime:  45D=0.5917 → 45E=0.5765  (Δ -0.0152) *
+  M3 Hedge:   45D=0.6019 → 45E=0.5794  (Δ -0.0225) *
+
+[Δ vs V1.3 baseline — y_tail_q15]
+  Static WEW: V1.3=0.5814 → 45E=0.6105  (Δ +0.0291)
+  M1 Rolling: V1.3=0.6063 → 45E=0.5796  (Δ -0.0267)
+  M2 Regime:  V1.3=0.6078 → 45E=0.5765  (Δ -0.0313) *
+
+[M2 vs v1.3 verdict] BELOW_V13 — v1.3 baseline 미달
+
+========== Step 8: Save outputs ==========
+[JSON] /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/04_evaluation/5way_retrain_v3e_arch_pivot.json
+[Chart] /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/06_reports/charts/101_pr_curve_v3e_arch_pivot.png
+
+========== Cycle 45E DONE ==========
+Architecture pivot verdict: PIVOT_PARTIAL — 한 architecture만 개선, 다른 axis 추가 교체 필요 (Informer/FEDformer)
+M2 vs V1.3 verdict: BELOW_V13 — v1.3 baseline 미달
+Δ vs 45D — Static +0.0230 / M1 -0.0100 / M2 -0.0152 / M3 -0.0225
+Δ vs V1.3 — Static +0.0291 / M1 -0.0267 / M2 -0.0313
+PatchTST: 0.3256 (Δ vs LSTM +0.0003, avg_ep=5)  /  N-BEATS: 0.5479 (Δ vs TFT +0.0971, avg_ep=6)

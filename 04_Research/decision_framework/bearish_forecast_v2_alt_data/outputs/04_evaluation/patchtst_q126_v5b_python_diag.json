@@ -1,0 +1,69 @@
+{
+  "cycle": "53B_patchtst_q126_horizon",
+  "panel": "feature_panel_v4a_combined.parquet",
+  "targets_source": "targets_long_horizon.parquet (Cycle 48A 103_compute_long_horizon_targets.R)",
+  "n_features": 70,
+  "forward_labels": true,
+  "validation_strategy": "walk_forward_expanding_5_fold_CV",
+  "horizons_evaluated": [
+    "y_tail_q15",
+    "y_tail_q63",
+    "y_tail_q126"
+  ],
+  "patchtst_hparams": {
+    "patch_size": 4,
+    "patch_stride": 2,
+    "d_model": 64,
+    "nhead": 4,
+    "n_layers": 3,
+    "ff_dim": 256,
+    "dropout": 0.3,
+    "attn_dropout": 0.15,
+    "weight_decay": 0.005,
+    "lr": 0.001,
+    "seed": 42
+  },
+  "training_common": {
+    "batch_size": 96,
+    "max_epochs": 80,
+    "early_stop_patience": 15,
+    "early_stop_min_delta": 0.0005,
+    "grad_clip_norm": 1.0,
+    "warmup_steps": 500,
+    "mixed_precision_amp": true,
+    "gpu_mem_fraction": 0.35
+  },
+  "patchtst_y_tail_q15": {
+    "oos_pr": 0.2396,
+    "oos_ic": 0.1843,
+    "avg_best_epoch": 21,
+    "n_params": 156865,
+    "elapsed_sec": 679.8
+  },
+  "patchtst_y_tail_q63": {
+    "oos_pr": 0.2656,
+    "oos_ic": 0.2127,
+    "avg_best_epoch": 20,
+    "n_params": 156865,
+    "elapsed_sec": 611.5
+  },
+  "patchtst_y_tail_q126": {
+    "oos_pr": 0.3454,
+    "oos_ic": 0.2474,
+    "avg_best_epoch": 26,
+    "n_params": 156865,
+    "elapsed_sec": 713.2
+  },
+  "multi_horizon_ensemble": {
+    "target_baseline": "y_tail_q15",
+    "equal_weight_pr": 0.2381,
+    "performance_weighted_pr": 0.2379,
+    "weights_performance": [
+      0.2817,
+      0.3123,
+      0.4061
+    ],
+    "note": "performance-weighted uses OOS PR for weighting; post-hoc bias"
+  },
+  "per_fold_diagnostics_path": "/mnt/c/Users/User/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/03_models/v5b_patchtst_q126/per_fold_diagnostics.json"
+}

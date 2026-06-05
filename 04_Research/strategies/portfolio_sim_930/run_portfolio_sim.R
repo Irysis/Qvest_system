@@ -14,7 +14,7 @@ options(scipen = 999)
 # ===================================================================
 # 경로 설정
 # ===================================================================
-ROOT <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 SCRIPT_DIR <- file.path(ROOT, "04_Research/strategies/portfolio_sim_930")
 
 PG2_NAV  <- file.path(ROOT, "04_Research/strategies/STR_1631_PG2_MDD_OPT/output/daily_nav_bcde.csv")

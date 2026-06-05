@@ -1,0 +1,46 @@
+{
+  "schema": "creative_screen_v1",
+  "wt": "WT_CREATIVE_SCREEN3",
+  "idea_id": "coverage_initiation_burst_abandonment",
+  "idea_label": "Coverage Initiation Burst / Abandonment (analyst coverage head-count change/acceleration)",
+  "screen_date": "2026-05-30",
+  "screen_type": "data_existence_precheck",
+  "mode": "SCREEN_ONLY_advisory",
+  "tradeable": false,
+  "note_advisory": "Screen은 advisory이며 tradeable 아님 (Cycle2 교훈). 데이터 가용 확인이 1차 게이트.",
+  "correction_note": "초기 run 중 작성한 결론(working tree 미동기화 = infeasible)은 오류였음. 재확인 결과 601개 표본 중 599개 materialized — OneDrive tree는 정상 동기화 상태. 본 파일이 정정된 최종 결론.",
+  "intended_cheap_test": {
+    "design": "cross-sectional Rank-IC: month-end dN_1m / dN_3m (analyst head-count change) residualized within size-group (large-cap baseline removed) -> forward 12M quantile / Rank-IC. Control for revision momentum (M27_Analyst_Rev_Mom) to isolate residual IC (coverage-change != repackaged revision).",
+    "go_criteria": "abs(IC) >= 0.02 AND |t| > 2 AND orthogonal to revision momentum",
+    "pit": ["feature t-1 backward only", "forward label = future only", "lockbox SIGNAL_CUTOFF 2023-12-22 strict", "C14 Usable_Date <= sig_date", "C2 no same-day circular"],
+    "universe": "KOSPI200 ∪ KOSDAQ150",
+    "executed": false,
+    "executed_reason": "Required primitive (N_analysts time-series) exists, but the derived dN_1m/dN_3m change/acceleration feature is NOT pre-built. Constructing + PIT-validating it crosses from read-only existence check into feature engineering, which is beyond a 3rd-pass cheap SCREEN. Stopped at existence gate per protocol."
+  },
+  "data_feasibility": {
+    "feasible": true,
+    "verdict": "FEASIBLE_PRIMITIVE_PRESENT_BUT_DERIVED_FEATURE_NOT_PREBUILT",
+    "inputs_located": [
+      {"id": "C08_Coverage", "what": "Analyst Coverage = 'Number of analysts covering the stock' (LEVEL)", "where": "02_Infrastructure/factor_db/factor_registry.json:5357-5360"},
+      {"id": "coverage.parquet", "what": "coverage time-series cache (primitive N_analysts source)", "where": ".cache/consensus/coverage.parquet"},
+      {"id": "M27_Analyst_Rev_Mom", "what": "Analyst Revision Momentum (orthogonality control the idea requires)", "where": "02_Infrastructure/factor_db/factor_registry.json:1752-1753"},
+      {"id": "C08_Coverage_tracker", "what": "stage-gate tracker for coverage factor", "where": ".cache/stage_gate/C08_Coverage_tracker.json"}
+    ],
+    "gap_confirmed": "Registry has C08_Coverage as LEVEL only. No head-count change/acceleration factor (no dN_1m / dN_3m, no initiation-burst / abandonment factor) is registered or pre-computed. This exactly matches the idea's stated premise ('커버리지 head-count 변화/가속은 전무').",
+    "honest_statement": "이 screen에서 C08_Coverage(level) + coverage.parquet(primitive 시계열) + M27_Analyst_Rev_Mom(revision 통제) 3개 입력의 존재를 확인했다(N=3). 단, dN_1m/dN_3m 변화/가속 feature는 사전 구축돼 있지 않다(0건). 따라서 Rank-IC cheap test는 미실행 — feature 빌드가 선행돼야 하며 그것은 cheap screen 범위를 넘는다. alpha 자체의 'works/doesn't work'는 단정하지 않는다."
+  },
+  "key_metric": {
+    "name": "required_inputs_located",
+    "value": 3,
+    "unit": "count_of_3_required_inputs_present",
+    "detail": "C08_Coverage(level) + coverage.parquet(primitive) + M27(control) present; derived dN feature = 0 (must build)."
+  },
+  "findings": [
+    "이 screen에서 C08_Coverage(level) + .cache/consensus/coverage.parquet(primitive 시계열) + M27_Analyst_Rev_Mom(revision 통제) 3개 입력 존재 확인 (N=3).",
+    "이 screen에서 head-count 변화/가속 factor(dN_1m/dN_3m, initiation-burst/abandonment) 사전 구축분=0 — 아이디어 전제(registry엔 level만, 변화/가속 전무)와 일치.",
+    "Rank-IC cheap test 미실행 — dN feature 구축이 선행 필요(cheap screen 범위 초과). alpha 유효성 단정 없음."
+  ],
+  "recommend_full_research": false,
+  "recommendation_text": "정식 full research는 아직 권고하지 않음 (이유: alpha가 죽어서가 아니라, 가장 싼 다음 단계가 '소규모 feature 빌드'이지 full pipeline이 아니기 때문). 권장 경로: (1) coverage.parquet에서 month-end N_analysts -> dN_1m/dN_3m 파생 feature를 최소 빌드(PIT: feature t-1 backward, C14 Usable_Date<=sig_date, C2 no same-day circular, lockbox 2023-12-22 strict). (2) size-group residual -> forward-12M Rank-IC + M27 통제 partial-IC mini-screen. (3) go(|IC|>=0.02 & |t|>2 & orthogonal) 통과 시에만 정식 canonical/forge 권고까지 (admission/book_state 쓰기 금지 — advisory, Cycle2 교훈).",
+  "next_step_if_feasible": "minimal feature job: coverage.parquet load -> month-end N_analysts panel -> dN_1m/dN_3m (t-1 backward) -> size-group residualize -> forward-12M Rank-IC + partial-IC vs M27_Analyst_Rev_Mom. PASS 시 promote-to-canonical 권고만."
+}

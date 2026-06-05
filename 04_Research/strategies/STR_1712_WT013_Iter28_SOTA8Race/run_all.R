@@ -47,7 +47,7 @@ suppressPackageStartupMessages({
   library(lmtest)
 })
 
-BASE_DIR   <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+BASE_DIR   <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 STR_ID     <- "STR_1712"
 WT_ID      <- "WT-D20260427_013"
 

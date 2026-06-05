@@ -11,9 +11,9 @@ suppressPackageStartupMessages({
 })
 
 .SELF_DIR <- tryCatch(dirname(sys.frame(1)$ofile),
-  error = function(e) "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/02_Infrastructure/factor_db")
+  error = function(e) "/mnt/c/Users/99922/OneDrive/바탕 화면/Quant_Module_Moltbot/02_Infrastructure/factor_db")
 INFRA_DIR <- tryCatch(dirname(dirname(sys.frame(1)$ofile)),
-  error = function(e) "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/02_Infrastructure")
+  error = function(e) "/mnt/c/Users/99922/OneDrive/바탕 화면/Quant_Module_Moltbot/02_Infrastructure")
 source(file.path(INFRA_DIR, "config.R"))
 sourceCpp(file.path(.SELF_DIR, "factor_db_daily_rcpp.cpp"))
 
@@ -187,6 +187,9 @@ for(i in seq_along(files)) {
   ev <- fd$Size+fifelse(is.na(fd$TotalDebt),0,fd$TotalDebt)-fifelse(is.na(fd$CashAndEquiv),0,fd$CashAndEquiv)
   fd[, V22_FCFF_EV := safe_div(OperatingCF-abs(fifelse(is.na(InvestCF),0,InvestCF)), ev)]
 
+  # Stage 1: Q27 CapEx_to_Rev proxy (negate: lower capex = better)
+  fd[, Q27_CapEx_to_Rev := -safe_div(abs(InvestCF), Revenue)]
+
   # Composite factors (cross-sectional z-score → proxy with raw for now)
   # GR07, Q08, V12, R19, M09, L45, M32 — 이 값들은 개별 팩터의 평균으로 근사
   # 정확한 cross-sectional composite는 전 종목 z-score 필요 → 별도 post-processing
@@ -203,7 +206,7 @@ for(i in seq_along(files)) {
   fd[, R19_Composite_Risk := 0]  # placeholder
 
   # 팩터 컬럼 추출
-  gap_cols <- grep("^AC[0-9]|^GR0[4-7]|^IN0[56]|^Q0[4-8]|^Q2[3-5]|^Q33|^V0[9]|^V1[25789]|^V2[123]|^R19",
+  gap_cols <- grep("^AC[0-9]|^GR0[4-7]|^IN0[56]|^Q0[4-8]|^Q2[3-5]|^Q27|^Q33|^V0[9]|^V1[25789]|^V2[123]|^R19",
                    names(fd), value=TRUE)
   fd_out <- fd[, c("Ticker","Date",gap_cols), with=FALSE]
   setkey(fd_out, Date, Ticker)

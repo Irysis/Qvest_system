@@ -37,6 +37,25 @@
 
 ---
 
+## 2.5 Lane3 — Factor Rotation Mode (meta-layer, 도훈 2026-06-05)
+
+Lane1/Lane2는 **모듈을 생산**. **Lane3 = 그 모듈 풀을 국면(regime) 조건부로 *배합*하는 meta-layer**(생성 없이 소비). 단일 모듈 long-only SR 천장 ~2.0 → SR 2.5는 앙상블 레벨에서.
+
+| | **Factor Rotation (Lane3)** |
+|---|---|
+| 대상 | Lane1/2가 생산한 STR 모듈 풀 (frozen 소비) |
+| 진입 | `/factor-rotation <track∈{regime-engine, allocation}>` → `dispatch-orchestrator` |
+| 구조 | 1모드 2트랙: Track1 레짐엔진(정의+예측, 학술기반) → Track2 배분 |
+| 적재 | 모든 모드 산출물 `register_module()` 경유 표준화(sim_result.rds + module_catalog). QEPM=native |
+| 풀 admission | **RCMA**(overall 등급 아닌 국면조건부, 방어형 CRISIS + 공격형 확장 specialist 양방향) |
+| 백테 | `run_wf_ensemble` → `build_bt_result` 실측 → `essence_score` (자체합성 금지) |
+| 게이트 | OOS_retention≥0.7 → DSR≥0.5 HARD → placebo → holdout |
+| 산출물 | `FR_XXXX` (운용체계, STR과 구분) → `factor_rotation_registry.json` |
+| admission | **governor 정지** (book sleeve = STR or FR(1 sleeve), book_state 수동 + 도훈 confirm) |
+| SOT | `.claude/skills/factor-rotation/SKILL.md` · `.claude/rules/factor-rotation.md` |
+
+---
+
 ## 3. ⭐ 권위 = 계약(contract), 에이전트 아님 — load-bearing 불변식
 
 **risk/optimizer 에이전트만 스킵** (논문이 비중 제공 → Σ·최적화 불요). forge는 **lean 모드로 유지.** 권위는 *에이전트*가 아니라 **`build_bt_result()` 계약**에서 나온다 (measurement-graduation §1).

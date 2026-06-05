@@ -1,0 +1,179 @@
+{
+  "cycle": "54A",
+  "script": "139_patchtst_q126_sweep_FIXED.py",
+  "git_sha": "c0eb5de6941b820cc07423505e43676b52f1ee68",
+  "torch_version": "2.6.0+cu124",
+  "cuda_version": "12.4",
+  "device": "cuda",
+  "python_hashseed": "42",
+  "cublas_workspace": ":4096:8",
+  "cudnn_deterministic": true,
+  "cudnn_benchmark": false,
+  "use_amp": true,
+  "seed_base": 42,
+  "reseed_max": 3,
+  "feature_panel_md5": "4728e1f904a5a16095b76673858ec6bf",
+  "targets_md5": "7036b729a440b49c80ef10519f88e026",
+  "oos_window": {
+    "start": "2018-01-01",
+    "end": "2026-04-30"
+  },
+  "folds_used": [
+    {
+      "name": "Fold1_Lehman",
+      "train_start": "1995-01-01",
+      "train_end": "2007-12-31",
+      "valid_start": "2008-01-01",
+      "valid_end": "2009-12-31"
+    },
+    {
+      "name": "Fold2_EuroAfter",
+      "train_start": "1995-01-01",
+      "train_end": "2009-12-31",
+      "valid_start": "2010-01-01",
+      "valid_end": "2011-12-31"
+    },
+    {
+      "name": "Fold3_CyprusTT",
+      "train_start": "1995-01-01",
+      "train_end": "2011-12-31",
+      "valid_start": "2012-01-01",
+      "valid_end": "2013-12-31"
+    },
+    {
+      "name": "Fold4_KRLowVol",
+      "train_start": "1995-01-01",
+      "train_end": "2013-12-31",
+      "valid_start": "2014-01-01",
+      "valid_end": "2015-12-31"
+    },
+    {
+      "name": "Fold5_BestSignal",
+      "train_start": "1995-01-01",
+      "train_end": "2015-12-31",
+      "valid_start": "2016-01-01",
+      "valid_end": "2017-12-31"
+    }
+  ],
+  "skip_folds_per_target": {
+    "y_tail_q126": [
+      "Fold3_CyprusTT"
+    ]
+  },
+  "variants": [
+    {
+      "id": 1,
+      "name": "baseline",
+      "patch_size": 4,
+      "d_model": 64,
+      "n_heads": 4,
+      "n_layers": 3,
+      "dropout": 0.3,
+      "stride": 2
+    },
+    {
+      "id": 2,
+      "name": "patch_size_2",
+      "patch_size": 2,
+      "d_model": 64,
+      "n_heads": 4,
+      "n_layers": 3,
+      "dropout": 0.3,
+      "stride": 1
+    },
+    {
+      "id": 3,
+      "name": "patch_size_7",
+      "patch_size": 7,
+      "d_model": 64,
+      "n_heads": 4,
+      "n_layers": 3,
+      "dropout": 0.3,
+      "stride": 2
+    },
+    {
+      "id": 4,
+      "name": "d_model_32",
+      "patch_size": 4,
+      "d_model": 32,
+      "n_heads": 4,
+      "n_layers": 3,
+      "dropout": 0.3,
+      "stride": 2
+    },
+    {
+      "id": 5,
+      "name": "d_model_128",
+      "patch_size": 4,
+      "d_model": 128,
+      "n_heads": 4,
+      "n_layers": 3,
+      "dropout": 0.3,
+      "stride": 2
+    },
+    {
+      "id": 6,
+      "name": "n_heads_2",
+      "patch_size": 4,
+      "d_model": 64,
+      "n_heads": 2,
+      "n_layers": 3,
+      "dropout": 0.3,
+      "stride": 2
+    },
+    {
+      "id": 7,
+      "name": "n_heads_8",
+      "patch_size": 4,
+      "d_model": 64,
+      "n_heads": 8,
+      "n_layers": 3,
+      "dropout": 0.3,
+      "stride": 2
+    },
+    {
+      "id": 8,
+      "name": "n_layers_2",
+      "patch_size": 4,
+      "d_model": 64,
+      "n_heads": 4,
+      "n_layers": 2,
+      "dropout": 0.3,
+      "stride": 2
+    },
+    {
+      "id": 9,
+      "name": "n_layers_4",
+      "patch_size": 4,
+      "d_model": 64,
+      "n_heads": 4,
+      "n_layers": 4,
+      "dropout": 0.3,
+      "stride": 2
+    },
+    {
+      "id": 10,
+      "name": "dropout_020",
+      "patch_size": 4,
+      "d_model": 64,
+      "n_heads": 4,
+      "n_layers": 3,
+      "dropout": 0.2,
+      "stride": 2
+    },
+    {
+      "id": 11,
+      "name": "dropout_045",
+      "patch_size": 4,
+      "d_model": 64,
+      "n_heads": 4,
+      "n_layers": 3,
+      "dropout": 0.45,
+      "stride": 2
+    }
+  ],
+  "targets": [
+    "y_tail_q126"
+  ],
+  "notes": "Strict determinism + logit-collapse detector + reseed rescue + period-balanced PR-AUC."
+}

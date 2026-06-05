@@ -1,0 +1,83 @@
+
+========== Step 4: 5-way merge (XGB+Cat+RF + LSTM_wf + TFT_wf) ==========
+
+----- 5-way merge: y_tail_q15 -----
+[merge] OOS N=2042 / events=456 (22.33%)
+[v3d individual OOS PR-AUC] XGB=0.5846 / CAT=0.5470 / RF=0.5923 / LSTM=0.3253 / TFT=0.4508
+[v3d individual OOS IC   ] XGB=0.4155 / CAT=0.4098 / RF=0.4377 / LSTM=0.1442 / TFT=0.2743
+[v3d] EW5=0.5744 / WEW=0.5875
+
+----- 5-way merge: y_onset -----
+[merge] OOS N=2042 / events=251 (12.29%)
+[v3d individual OOS PR-AUC] XGB=0.1027 / CAT=0.1152 / RF=0.1046 / LSTM=0.1617 / TFT=0.1746
+[v3d individual OOS IC   ] XGB=-0.0935 / CAT=-0.0629 / RF=-0.0457 / LSTM=0.0629 / TFT=0.0533
+[v3d] EW5=0.1462 / WEW=0.1335
+
+========== Step 5: Dynamic 5-method ensemble synthesis ==========
+
+----- Dynamic 5-method: y_tail_q15 -----
+[Static WEW] PR-AUC=0.5875
+[M1 Rolling]  PR-AUC=0.5896 ★
+[M2 Regime]   PR-AUC=0.5917 ★
+[M3 Hedge]    PR-AUC=0.6019 ★
+[M4 Bayes]    PR-AUC=0.5979 ★
+[M5 Bandit]   PR-AUC=0.5860 
+
+----- Dynamic 5-method: y_onset -----
+[Static WEW] PR-AUC=0.1335
+[M1 Rolling]  PR-AUC=0.1537 ★
+[M2 Regime]   PR-AUC=0.1616 ★
+[M3 Hedge]    PR-AUC=0.1115 
+[M4 Bayes]    PR-AUC=0.1255 
+[M5 Bandit]   PR-AUC=0.1408 ★
+
+[Step 5 Dynamic SUMMARY]
+        target     method     PRAUC
+        <char>     <char>     <num>
+ 1: y_tail_q15 Static_WEW 0.5875381
+ 2: y_tail_q15 M1_Rolling 0.5896485
+ 3: y_tail_q15  M2_Regime 0.5917206
+ 4: y_tail_q15   M3_Hedge 0.6019000
+ 5: y_tail_q15   M4_Bayes 0.5979269
+ 6: y_tail_q15  M5_Bandit 0.5860269
+ 7:    y_onset Static_WEW 0.1334900
+ 8:    y_onset M1_Rolling 0.1537324
+ 9:    y_onset  M2_Regime 0.1616366
+10:    y_onset   M3_Hedge 0.1114976
+11:    y_onset   M4_Bayes 0.1254841
+12:    y_onset  M5_Bandit 0.1407562
+
+========== Step 6: Under-training hypothesis verdict ==========
+
+[Per-model individual diagnosis y_tail_q15]
+  LSTM: 45C OOS=0.3957 / ep=13  →  45D OOS=0.3253 / avg_ep=5
+        Δ_PR=-0.0704  /  Δ_ep=-8
+  TFT : 45C OOS=0.3772 / ep=22  →  45D OOS=0.4508 / avg_ep=10
+        Δ_PR=+0.0736  /  Δ_ep=-12
+
+[Per-model verdict] MIXED_RESULT — Re-examine training stability
+
+========== Step 7: Compare vs Cycle 45C + V1.3 baseline ==========
+
+[Δ vs Cycle 45C — y_tail_q15]
+  Static WEW: 45C=0.5641 → 45D=0.5875  (Δ +0.0234)
+  M1 Rolling: 45C=0.5919 → 45D=0.5896  (Δ -0.0023)
+  M2 Regime:  45C=0.6003 → 45D=0.5917  (Δ -0.0086) ★
+
+[Δ vs V1.3 baseline — y_tail_q15]
+  Static WEW: V1.3=0.5814 → 45D=0.5875  (Δ +0.0061)
+  M1 Rolling: V1.3=0.6063 → 45D=0.5896  (Δ -0.0166)
+  M2 Regime:  V1.3=0.6078 → 45D=0.5917  (Δ -0.0161) ★
+
+[M2 Regime verdict] WALKFORWARD_REGRESSION — Patience relaxation did not recover M2
+
+========== Step 8: Save outputs ==========
+[JSON] /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/04_evaluation/5way_retrain_v3d_walkforward.json
+[Chart] /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/06_reports/charts/94_pr_curve_v3d_walkforward.png
+
+========== Cycle 45D DONE ==========
+Under-training hypothesis: MIXED_RESULT — Re-examine training stability
+M2 Regime recovery: WALKFORWARD_REGRESSION — Patience relaxation did not recover M2
+Δ vs 45C — Static +0.0234 / M1 -0.0023 / M2 -0.0086
+Δ vs V1.3 — Static +0.0061 / M1 -0.0166 / M2 -0.0161
+LSTM: 0.3253 (Δ -0.0704, avg_ep=5, Δ_ep=-8)  /  TFT: 0.4508 (Δ +0.0736, avg_ep=10, Δ_ep=-12)

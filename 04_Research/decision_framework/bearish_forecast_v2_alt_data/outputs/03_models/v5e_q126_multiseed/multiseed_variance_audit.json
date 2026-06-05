@@ -1,0 +1,133 @@
+{
+  "cycle": "54C_patchtst_v5e_q126_multiseed",
+  "audit_type": "5_seed_variance_audit",
+  "purpose": "Verify 53H single seed=42 OOS PR-AUC=0.4012 (forward best ever) is not lucky tail",
+  "panel": "feature_panel_v5e_q126_usmacro.parquet",
+  "targets_source": "targets_long_horizon.parquet",
+  "n_features": 74,
+  "seeds": [
+    42,
+    123,
+    456,
+    789,
+    1024
+  ],
+  "n_seeds": 5,
+  "targets": [
+    "y_tail_q15",
+    "y_tail_q126"
+  ],
+  "validation_strategy": "walk_forward_expanding_5_fold_CV",
+  "architecture_mirror": "Cycle 53H scripts/132_patchtst_q126_usmacro.py (exact)",
+  "patchtst_hparams": {
+    "patch_size": 4,
+    "patch_stride": 2,
+    "d_model": 64,
+    "nhead": 4,
+    "n_layers": 3,
+    "ff_dim": 256,
+    "dropout": 0.3,
+    "attn_dropout": 0.15,
+    "weight_decay": 0.005,
+    "lr": 0.001
+  },
+  "training_common": {
+    "batch_size": 96,
+    "max_epochs": 80,
+    "early_stop_patience": 15,
+    "early_stop_min_delta": 0.0005,
+    "grad_clip_norm": 1.0,
+    "warmup_steps": 500,
+    "mixed_precision_amp": true,
+    "gpu_mem_fraction": 0.3
+  },
+  "stability_thresholds": {
+    "STABLE_std_lt": 0.02,
+    "MODERATE_std_max": 0.05,
+    "UNSTABLE_std_gt": 0.05,
+    "note": "Mirror Cycle 53C STABILITY_STABLE_STD / STABILITY_MODERATE_STD"
+  },
+  "audit_per_target": {
+    "y_tail_q15": {
+      "target": "y_tail_q15",
+      "n_seeds": 5,
+      "seeds_used": [
+        42,
+        123,
+        456,
+        789,
+        1024
+      ],
+      "n_obs": 2042,
+      "n_events": 365,
+      "per_seed_pr_auc": {
+        "42": 0.170819,
+        "123": 0.244053,
+        "456": 0.187819,
+        "789": 0.269738,
+        "1024": 0.241192
+      },
+      "per_seed_ic": {
+        "42": -0.009425,
+        "123": 0.147973,
+        "456": 0.048385,
+        "789": 0.148576,
+        "1024": 0.143981
+      },
+      "per_seed_pr_mean": 0.222724,
+      "per_seed_pr_std": 0.04159,
+      "per_seed_pr_min": 0.170819,
+      "per_seed_pr_max": 0.269738,
+      "per_seed_pr_range": 0.09892,
+      "mean_prediction_pr_auc": 0.240609,
+      "mean_prediction_ic": 0.116405,
+      "per_date_std_mean": 0.150894,
+      "per_date_std_median": 0.146387,
+      "per_date_std_max": 0.246482,
+      "per_date_std_min": 0.033188
+    },
+    "y_tail_q126": {
+      "target": "y_tail_q126",
+      "n_seeds": 5,
+      "seeds_used": [
+        42,
+        123,
+        456,
+        789,
+        1024
+      ],
+      "n_obs": 2042,
+      "n_events": 515,
+      "per_seed_pr_auc": {
+        "42": 0.413635,
+        "123": 0.349401,
+        "456": 0.500023,
+        "789": 0.331333,
+        "1024": 0.494206
+      },
+      "per_seed_ic": {
+        "42": 0.34191,
+        "123": 0.28447,
+        "456": 0.244419,
+        "789": 0.274316,
+        "1024": 0.262366
+      },
+      "per_seed_pr_mean": 0.41772,
+      "per_seed_pr_std": 0.078693,
+      "per_seed_pr_min": 0.331333,
+      "per_seed_pr_max": 0.500023,
+      "per_seed_pr_range": 0.16869,
+      "mean_prediction_pr_auc": 0.561715,
+      "mean_prediction_ic": 0.380976,
+      "per_date_std_mean": 0.151062,
+      "per_date_std_median": 0.1506,
+      "per_date_std_max": 0.217918,
+      "per_date_std_min": 0.113389
+    }
+  },
+  "baseline_53H_seed42": {
+    "y_tail_q126": 0.4012,
+    "y_tail_q15": 0.2082
+  },
+  "total_elapsed_sec": 4553.7
+}

@@ -8,7 +8,7 @@ library(data.table)
 library(zoo)
 options(scipen = 999)
 
-ROOT <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 OUT_DIR <- file.path(ROOT, "04_Research/strategies/regime_dynamic_blend/output")
 dir.create(OUT_DIR, showWarnings = FALSE, recursive = TRUE)
 

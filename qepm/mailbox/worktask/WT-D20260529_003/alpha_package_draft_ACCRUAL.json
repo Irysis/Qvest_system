@@ -1,0 +1,125 @@
+{
+  "task_id": "WT-D20260529_003",
+  "track": "ACCRUAL",
+  "agent": "alpha-research",
+  "wt_type": "discovery",
+  "as_of_date": "2026-05-29",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "signal_cutoff": "2023-12-22",
+  "selection_objective": "icir",
+  "verdict": "REJECT",
+  "verdict_rationale": "ACCRUAL multi-axis composite FAILS all graduation criteria. (1) composite_beats_single=FALSE — composite ICIR 0.019 << best-single AC22 ICIR 0.260 (QMJ kill criterion: 합성<단일이면 무의미). (2) composite mean rank-IC 0.0014 (≈0), harvey-t(rank-IC) 0.166 << 3.0. (3) DSR 0.053 << 0.50 (beta-neutral alpha residual). (4) portfolio-alpha t 1.087 (NS). (5) realized_beta 0.897 — top25 EW basket is market-like, no defensive/orthogonal return structure. (6) return_cor vs STR_1715 = 0.806 despite signal cor -0.063 (BAB structural problem: signal orthogonal, returns not). Even the sole signal carrier AC22_Accrual_Volatility (harvey-t 2.26) fails the 3.0 gate. AX-003/AX-004 pattern confirmed: KR single-family long-only fails; composite did NOT rescue.",
+  "hypothesis": {
+    "title": "ACCRUAL / earnings-quality multi-axis composite (5th sleeve, 직교 개구부)",
+    "economic_rationale": "Sloan 1996 발생액 anomaly — 투자자가 발생액의 낮은 persistence를 오해하여 고발생액 기업을 과대가격. low-accrual long. 회계 실현품질 축이라 1715 consensus(추정치)와 직교 기대.",
+    "references": ["Sloan 1996 (TAR)", "Dechow-Dichev 2002 (accrual quality)", "Hirshleifer-Hou-Teoh-Zhang 2004 (NOA)", "Asness-Frazzini-Pedersen 2019 QMJ (composite>single 검증 교훈)"]
+  },
+  "factor_specs": [
+    {
+      "factor_family": "Accrual_Level",
+      "axis": "발생액 수준",
+      "proxies_dedup": ["AC01_Total_Accruals_CF", "AC10_Pct_Accruals"],
+      "redundancy_cluster_id": "ACC_LEVEL_C1 (AC01=AC11=AC18 cor=1.0; AC07≈AC24 cor=0.87)",
+      "lag_rule": "quarterly 45d / annual May",
+      "winsorization": "3std",
+      "neutralization": "cross-sectional z (sector via Factor DB)",
+      "economic_rationale": "high accrual = low earnings persistence -> overpriced; low-accrual long",
+      "direction": "lower_better (Z_Score_Aligned via PIT-safe IC)",
+      "weight_theta": 0.333
+    },
+    {
+      "factor_family": "Accrual_Quality",
+      "axis": "회계품질",
+      "proxies_dedup": ["AC13_Abnormal_Accruals", "AC22_Accrual_Volatility", "AC23_Accrual_Persistence"],
+      "redundancy_cluster_id": "ACC_QUALITY_C2 (AC18 collapsed into ACC_LEVEL_C1 — identical to AC01)",
+      "lag_rule": "quarterly 45d / annual May",
+      "winsorization": "3std",
+      "neutralization": "cross-sectional z",
+      "economic_rationale": "low abnormal/volatile accruals = higher realized earnings quality",
+      "direction": "lower_better",
+      "weight_theta": 0.333
+    },
+    {
+      "factor_family": "Asset_Efficiency",
+      "axis": "자산효율",
+      "proxies_dedup": ["AC05_NOA", "AC24_NOA_Growth"],
+      "redundancy_cluster_id": "ACC_NOA_C3 (AC24≈AC07 cor=0.87)",
+      "lag_rule": "quarterly 45d / annual May",
+      "winsorization": "3std",
+      "neutralization": "cross-sectional z",
+      "economic_rationale": "high NOA / NOA growth = balance-sheet bloat, lower future returns (HHTZ 2004)",
+      "direction": "lower_better",
+      "weight_theta": 0.334
+    }
+  ],
+  "data_quality_findings": [
+    "AC01_Total_Accruals_CF = AC11_Accruals_to_Assets = AC18_Accrual_Quality are IDENTICAL columns in Factor DB (cor=1.0). Raw 10-factor 'multi-axis' spec was inflating level+quality axes with the SAME series 3x.",
+    "AC07_Operating_Accruals ≈ AC24_NOA_Growth (cor=0.87).",
+    "AC22_Accrual_Volatility has only ~12 distinct values (low-cardinality, ranked) yet is the ONLY signal carrier (rank-IC 0.026, ICIR 0.26). Treat with suspicion — likely captures a stability/size proxy, not pure accrual mechanism.",
+    "Deduplicated to cluster representatives (level: AC01+AC10; quality: AC13+AC22+AC23; asseteff: AC05+AC24). Composite STILL ICIR 0.019."
+  ],
+  "diagnostics": {
+    "rank_ic": 0.0014,
+    "icir": 0.0191,
+    "harvey_t_rankIC": 0.166,
+    "harvey_t_portfolio": 1.087,
+    "portfolio_alpha_monthly": 0.00305,
+    "net_sr": 0.154,
+    "abs_net_sr": 0.598,
+    "dsr": 0.053,
+    "turnover_yr": 2.07,
+    "realized_beta": 0.897,
+    "monotonicity": -0.10,
+    "subperiod_stability": 0.33,
+    "subperiod_ic": {"y2008_2014": -0.0106, "y2015_2019": -0.0101, "y2020_2026": 0.0340},
+    "ax001_v2_ratio": "degenerate (normal_ic≈0 denominator; bad_ic=0.0199 vs normal_ic≈0 → no stable crisis alpha)",
+    "cost_alpha_ratio": 2.71,
+    "n_months": 256,
+    "n_tests": 11
+  },
+  "composite_vs_best_single": {
+    "composite_icir": 0.0191,
+    "best_single_factor": "AC22_Accrual_Volatility",
+    "best_single_icir": 0.2606,
+    "best_single_harvey_t": 2.26,
+    "composite_beats_single": false,
+    "conclusion": "Composite is WORSE than best single by ~13.6x ICIR. Multi-axis aggregation destroys the only signal (AC22) by averaging it with 6 noise factors. QMJ교훈 위반 — 무의미."
+  },
+  "orthogonality": {
+    "signal_cor_str1715": -0.063,
+    "signal_cor_D": -0.057,
+    "signal_cor_FLOW": -0.015,
+    "return_cor_str1715": 0.806,
+    "note": "신호 cor는 모두 |cor|<0.30 (직교 충족) — 그러나 realized 수익률 cor는 0.806 (천장). top25 long-only KR universe에서 종목 겹침/시장 베타로 인해 수익률직교 실패. BAB 교훈 재확인."
+  },
+  "graduation_gate_check": {
+    "min_rank_ic_0.04": "FAIL (0.0014)",
+    "min_icir_0.20": "FAIL (0.019)",
+    "min_subperiod_stability_0.50": "FAIL (0.33)",
+    "min_harvey_t_3.0": "FAIL (rank-IC 0.166 / portfolio 1.087)",
+    "min_dsr_0.50": "FAIL (0.053)",
+    "result": "0/5 PASS"
+  },
+  "method_shopping_log": {
+    "candidates_tried": 2,
+    "method_log": [
+      {"name": "ACCRUAL_10factor_3axis_raw", "icir": "contaminated (3 identical factors)", "selected": false},
+      {"name": "ACCRUAL_dedup_composite", "icir": 0.019, "selected": true, "note": "selected for reporting; still FAIL"}
+    ]
+  },
+  "alpha_scores_ref": "stage_artifacts/WT_WT_D20260529_003_ACCRUAL/alpha_scores.parquet",
+  "validation_ref": "stage_artifacts/WT_WT_D20260529_003_ACCRUAL/alpha_validation.json",
+  "challenge_flags": [
+    {"id": "RF-A2", "severity": "HIGH", "msg": "Composite WORSE than best-single (ICIR 0.019 vs 0.26) — aggregation destroys signal"},
+    {"id": "RF-A6", "severity": "HIGH", "msg": "return_cor vs STR_1715 = 0.806 — 수익률직교 실패 (BAB 구조)"},
+    {"id": "RF-DATA", "severity": "HIGH", "msg": "3 AC factors identical in Factor DB (AC01=AC11=AC18); multi-axis structure largely illusory"},
+    {"id": "RF-GRAD", "severity": "HIGH", "msg": "0/5 graduation gate PASS — no admission eligibility"}
+  ],
+  "axiom_compliance": {
+    "AX-002": "PIT lockbox 2023-12-22 strict applied; Usable_Date<=sig_date (C14); Z_Score_Aligned (C13); load_month_factors (C15); annual May / quarterly 45d (C4). Reported honestly as FAIL.",
+    "AX-003": "Confirmed — KR value/quality single-family standalone fails. Composite did NOT rescue.",
+    "AX-004": "Confirmed — KR quality single-signal long-only structural failure pattern.",
+    "AX-000": "입증된 한계 정직 보고 — ACCRUAL family는 KR top25 long-only에서 직교 5th sleeve로 부적합."
+  }
+}

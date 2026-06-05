@@ -1,0 +1,487 @@
+{
+  "task_id": "WT-D20260528_003",
+  "hypothesis": "A (Distribution Moments Pure: D43_Skewness + D44_Kurtosis multi-sleeve)",
+  "snapshot_sig_date": "2023-11-30",
+  "signal_cutoff_lockbox": "2023-12-22",
+  "universe": "KOSPI200 union KOSDAQ150",
+  "liquidity_floor_won_20d_avg": 200000000,
+  "factors_used": ["D43_Skewness", "D44_Kurtosis"],
+  "factor_db_build_hash_tag": "factor_db_v2_pit_safe",
+  "pit_assertions": {
+    "factor_load": "load_month_factors() — align_factor_direction PIT-safe (Usable_Date <= sig_date)",
+    "sig_date_cutoff": "Date <= 2023-12-22 (alpha-research lockbox per lockbox-scope.md)",
+    "walk_forward": "Expanding ICIR weights: w(t) = ICIR computed on IC ≤ t-1 only (36m burn-in)",
+    "sector_neutralize": "OLS residual per sig_date (cross-section, no time leak)",
+    "forward_return": "Next-month-end close / current-month-end close - 1",
+    "pit_clean": true,
+    "c1_c15_assertion": "C1 expanding rolling / C13 Z_Score_Aligned / C14 IC Usable_Date / C15 load_month_factors()"
+  },
+  "step1_summary": {
+    "hypothesis": "A",
+    "factors": [
+      "D43_Skewness",
+      "D44_Kurtosis"
+    ],
+    "sig_dates_used": 177,
+    "signal_cutoff": "2023-12-22",
+    "universe": "KOSPI200 union KOSDAQ150",
+    "liq_threshold_won_20d_avg": 200000000,
+    "panel_rows": 57042,
+    "cor_neut": {
+      "mean": 0.3395,
+      "median": 0.3305
+    },
+    "ic_summary": {
+      "D43_neut": {
+        "name": "D43_neut",
+        "ic_mean": 0.0175,
+        "ic_sd": 0.0656,
+        "icir": 0.2667,
+        "n": 177,
+        "t": 3.5486
+      },
+      "D44_neut": {
+        "name": "D44_neut",
+        "ic_mean": 0.0083,
+        "ic_sd": 0.0757,
+        "icir": 0.1098,
+        "n": 177,
+        "t": 1.4606
+      },
+      "D43_raw": {
+        "name": "D43_raw",
+        "ic_mean": 0.0202,
+        "ic_sd": 0.0918,
+        "icir": 0.2204,
+        "n": 177,
+        "t": 2.9326
+      },
+      "D44_raw": {
+        "name": "D44_raw",
+        "ic_mean": 0.0121,
+        "ic_sd": 0.0983,
+        "icir": 0.1231,
+        "n": 177,
+        "t": 1.6377
+      }
+    }
+  },
+  "step2_summary": {
+    "hypothesis": "A",
+    "walk_forward_sig_dates": 141,
+    "burn_in_months": 36,
+    "subperiod": {
+      "D43_neut": {
+        "p1_2007_2014": {
+          "ic_mean": 0.0091,
+          "ic_sd": 0.0711,
+          "icir": 0.129,
+          "n": 70,
+          "t_nw": 0.97
+        },
+        "p2_2015_2019": {
+          "ic_mean": 0.0193,
+          "ic_sd": 0.0625,
+          "icir": 0.309,
+          "n": 60,
+          "t_nw": 2.08
+        },
+        "p3_2020_2023": {
+          "ic_mean": 0.0276,
+          "ic_sd": 0.0604,
+          "icir": 0.457,
+          "n": 47,
+          "t_nw": 3.63
+        }
+      },
+      "D44_neut": {
+        "p1_2007_2014": {
+          "ic_mean": -0.0043,
+          "ic_sd": 0.084,
+          "icir": -0.051,
+          "n": 70,
+          "t_nw": -0.42
+        },
+        "p2_2015_2019": {
+          "ic_mean": 0.021,
+          "ic_sd": 0.0657,
+          "icir": 0.319,
+          "n": 60,
+          "t_nw": 2.26
+        },
+        "p3_2020_2023": {
+          "ic_mean": 0.0109,
+          "ic_sd": 0.0731,
+          "icir": 0.149,
+          "n": 47,
+          "t_nw": 1.33
+        }
+      },
+      "stability_score_D43": 1,
+      "stability_score_D44": 0.6667
+    },
+    "walk_forward_metrics": {
+      "D43_neut_WF": {
+        "icir": 0.229,
+        "t_nw": 2.18
+      },
+      "D44_neut_WF": {
+        "icir": 0.148,
+        "t_nw": 1.63
+      },
+      "Composite_WF": {
+        "icir": 0.208,
+        "t_nw": 1.98,
+        "ic_mean": 0.0117
+      }
+    },
+    "portfolio_perf": {
+      "months": 141,
+      "mean_er_monthly": 0.0041,
+      "sd_er_monthly": 0.0558,
+      "sharpe_monthly": 0.074,
+      "sharpe_annualized": 0.26,
+      "t_nw_er": 0.82
+    },
+    "ax_001_v2_regime": {
+      "bad_normal_ratio_D43": 3.61,
+      "bad_normal_ratio_D44": 7.41,
+      "by_regime": [
+        {
+          "regime": "normal",
+          "D43_neut_IC": 0.0123,
+          "D44_neut_IC": 0.0069,
+          "N": 130
+        },
+        {
+          "regime": "bad",
+          "D43_neut_IC": 0.0442,
+          "D44_neut_IC": 0.0508,
+          "N": 11
+        }
+      ]
+    },
+    "harvey_check": {
+      "n_trials": 5,
+      "threshold": 2.58,
+      "D43_neut_WF": {
+        "t": 2.18,
+        "pass": false
+      },
+      "D44_neut_WF": {
+        "t": 1.63,
+        "pass": false
+      },
+      "D43_raw_WF": {
+        "t": 1.94,
+        "pass": false
+      },
+      "D44_raw_WF": {
+        "t": 1.91,
+        "pass": false
+      },
+      "Composite_WF": {
+        "t": 1.98,
+        "pass": false
+      },
+      "pass_count": 0
+    },
+    "dsr_pvalue": 0.376,
+    "bootstrap_ci": {
+      "D43_neut": {
+        "mean": 0.0148,
+        "lo": 0.0042,
+        "hi": 0.0253,
+        "excludes_0": true
+      },
+      "D44_neut": {
+        "mean": 0.0102,
+        "lo": -0.0011,
+        "hi": 0.0223,
+        "excludes_0": false
+      }
+    }
+  },
+  "step3_summary": {
+    "monotonicity": {
+      "D43_neut": -0.2,
+      "D44_neut": -0.455,
+      "D43_decile_spread_monthly": -0.0017,
+      "D44_decile_spread_monthly": -0.0006,
+      "D43_avg_decile": [
+        {
+          "deci": "1",
+          "mean_ret": 0.0091,
+          "n_sigdates": 141
+        },
+        {
+          "deci": "2",
+          "mean_ret": 0.0051,
+          "n_sigdates": 141
+        },
+        {
+          "deci": "3",
+          "mean_ret": 0.0064,
+          "n_sigdates": 141
+        },
+        {
+          "deci": "4",
+          "mean_ret": 0.006,
+          "n_sigdates": 141
+        },
+        {
+          "deci": "5",
+          "mean_ret": 0.0026,
+          "n_sigdates": 141
+        },
+        {
+          "deci": "6",
+          "mean_ret": 0.0061,
+          "n_sigdates": 141
+        },
+        {
+          "deci": "7",
+          "mean_ret": 0.0031,
+          "n_sigdates": 141
+        },
+        {
+          "deci": "8",
+          "mean_ret": 0.0047,
+          "n_sigdates": 141
+        },
+        {
+          "deci": "9",
+          "mean_ret": 0.0054,
+          "n_sigdates": 141
+        },
+        {
+          "deci": "10",
+          "mean_ret": 0.0073,
+          "n_sigdates": 141
+        }
+      ],
+      "D44_avg_decile": [
+        {
+          "deci": "1",
+          "mean_ret": 0.0062,
+          "n_sigdates": 141
+        },
+        {
+          "deci": "2",
+          "mean_ret": 0.0075,
+          "n_sigdates": 141
+        },
+        {
+          "deci": "3",
+          "mean_ret": 0.0062,
+          "n_sigdates": 141
+        },
+        {
+          "deci": "4",
+          "mean_ret": 0.0055,
+          "n_sigdates": 141
+        },
+        {
+          "deci": "5",
+          "mean_ret": 0.0049,
+          "n_sigdates": 141
+        },
+        {
+          "deci": "6",
+          "mean_ret": 0.0062,
+          "n_sigdates": 141
+        },
+        {
+          "deci": "7",
+          "mean_ret": 0.0056,
+          "n_sigdates": 141
+        },
+        {
+          "deci": "8",
+          "mean_ret": 0.0025,
+          "n_sigdates": 141
+        },
+        {
+          "deci": "9",
+          "mean_ret": 0.0057,
+          "n_sigdates": 141
+        },
+        {
+          "deci": "10",
+          "mean_ret": 0.0056,
+          "n_sigdates": 141
+        }
+      ]
+    },
+    "single_vs_multi": {
+      "D43_single_top20": {
+        "label": "D43 single (top20)",
+        "mean_er": 0.0061,
+        "sd": 0.0541,
+        "sr_ann": 0.39,
+        "t_nw": 1.23,
+        "n": 141
+      },
+      "D44_single_top20": {
+        "label": "D44 single (top20)",
+        "mean_er": 0.005,
+        "sd": 0.0579,
+        "sr_ann": 0.3,
+        "t_nw": 0.95,
+        "n": 141
+      },
+      "Multi_sleeve_10_10": {
+        "label": "Multi-sleeve (10+10)",
+        "mean_er": 0.0041,
+        "sd": 0.0558,
+        "sr_ann": 0.26,
+        "t_nw": 0.82,
+        "n": 141
+      },
+      "Composite_WF_top20": {
+        "label": "Composite WF (top20)",
+        "mean_er": 0.0036,
+        "sd": 0.0531,
+        "sr_ann": 0.24,
+        "t_nw": 0.75,
+        "n": 141
+      },
+      "improvement_pct": -33.3,
+      "rf_a2_trigger": true
+    },
+    "alpha_inheritance": {
+      "parent": "STR_1722 (WT-D20260528_003 prior, 3-factor composite)",
+      "snapshot_sig_date": "2023-11-30",
+      "intersect_n": 20,
+      "spearman_corr": 0.508,
+      "top20_overlap": 7,
+      "inh_pass": true
+    },
+    "sector_diagnostics": {
+      "D43_post_neut_retention": 0.81,
+      "D44_post_neut_retention": 0.65,
+      "rf_a4_d43_trigger": false,
+      "rf_a4_d44_trigger": false,
+      "max_sector_share": {
+        "mean": 0.28,
+        "median": 0.25,
+        "max": 0.6
+      }
+    },
+    "turnover": {
+      "monthly_mean_one_way": 0.291,
+      "annualized_2way": 6.98,
+      "cost_15bps_drag_monthly": 0.0009,
+      "cost_adjusted_mean_er_monthly": 0.0033,
+      "cost_adjusted_sr_ann": 0.2
+    }
+  },
+  "graduation_criteria_check": {
+    "min_rank_ic": {
+      "threshold": 0.04,
+      "actual_d43_neut": 0.0175,
+      "actual_d44_neut": 0.0083,
+      "actual_composite_wf": 0.0117,
+      "PASS": false
+    },
+    "min_icir": {
+      "threshold": 0.2,
+      "actual_d43_neut_wf": 0.229,
+      "actual_d44_neut_wf": 0.148,
+      "actual_composite_wf": 0.208,
+      "PASS": true
+    },
+    "min_subperiod_stability": {
+      "threshold": 0.5,
+      "actual_d43": 1,
+      "actual_d44": 0.6667,
+      "PASS": true
+    },
+    "min_harvey_t_stat": {
+      "threshold": 3,
+      "pass_count": 0,
+      "max_t": 2.18,
+      "PASS": false
+    },
+    "min_deflated_sharpe_ratio": {
+      "threshold": 0.5,
+      "actual": 0.376,
+      "PASS": false
+    },
+    "monotonicity": {
+      "threshold": 0.7,
+      "actual_d43": -0.2,
+      "actual_d44": -0.455,
+      "PASS": false
+    }
+  },
+  "overall_verdict": "FAIL",
+  "red_flags": [
+    {
+      "id": "RF-A3",
+      "severity": "HIGH",
+      "detail": "D43_neut recent p3 ICIR=0.457 vs overall ICIR=0.229 (>1.5x)"
+    },
+    {
+      "id": "RF-A2",
+      "severity": "MEDIUM",
+      "detail": "Multi-sleeve -33.3% improvement vs best single (negative — composite WORSE)"
+    },
+    {
+      "id": "MONO_COLLAPSE",
+      "severity": "HIGH",
+      "detail": "Decile monotonicity collapse: D43_neut=-0.200, D44_neut=-0.455 (negative or near-zero)"
+    },
+    {
+      "id": "TO_DISCIPLINE",
+      "severity": "MEDIUM",
+      "detail": "Annualized 2-way turnover 6.98 > 6.0/yr (Trend P6 Implementation Discipline)"
+    }
+  ],
+  "multi_sleeve_design": {
+    "rationale": "AX-007 회피 의도 — single sleeve top20 long-only KR mechanism break 우회",
+    "sleeve_A_skewness": {
+      "factor": "D43_Skewness",
+      "top_k": 10,
+      "snapshot": ["A003380", "A003100", "A069620", "A024110", "A029780", "A007390", "A006360", "A032190", "A000100", "A278280"]
+    },
+    "sleeve_B_kurtosis": {
+      "factor": "D44_Kurtosis",
+      "top_k": 10,
+      "snapshot": ["A001440", "A027360", "A086450", "A080160", "A215000", "A003850", "A005250", "A039130", "A294570", "A195940"]
+    },
+    "cross_corr_neut_mean": 0.3395,
+    "cross_corr_neut_median": 0.3305
+  },
+  "ax_007_check": {
+    "structure": "multi_sleeve",
+    "sleeve_count": 2,
+    "per_sleeve_size": 10,
+    "note": "multi_sleeve 적용 but performance shows worse than best single — RF-A2 mechanism collapse"
+  },
+  "ax_001_v2_check": {
+    "bad_normal_ratio_D43": 3.61,
+    "bad_normal_ratio_D44": 7.41,
+    "by_regime": [
+      {
+        "regime": "normal",
+        "D43_neut_IC": 0.0123,
+        "D44_neut_IC": 0.0069,
+        "N": 130
+      },
+      {
+        "regime": "bad",
+        "D43_neut_IC": 0.0442,
+        "D44_neut_IC": 0.0508,
+        "N": 11
+      }
+    ]
+  },
+  "honest_assessment": {
+    "one_sentence_verdict": "Distribution moments pure multi-sleeve fails graduation: monotonicity collapse + Harvey-t 0/5 + DSR p=0.376 + decile spread sign reversal + composite WORSE than best single.",
+    "primary_failure_modes": ["Monotonicity collapse: D43 -0.20 / D44 -0.46 (bottom decile outperforms top)", "Harvey-Liu-Zhu 0/5 PASS (max t=2.18 vs threshold 2.58 Bonferroni n_trials=5)", "Multi-sleeve RF-A2: -33% SR vs best single (mechanism failure)", "Cost-adjusted SR_ann = +0.20 (near-zero net alpha)", "Annualized 2-way turnover 6.98 > 6.0/yr (Implementation Discipline)"],
+    "salvage_signals": ["AX-001 v2 strong PASS: bad/normal IC ratio D43=+3.61, D44=+7.41 (defense alpha 가능성)", "Subperiod p3 (2020-23) ICIR D43=0.46, recent regime strong (RF-A3 trigger)", "D43_neut WF Bootstrap CI95 [+0.0042, +0.0253] excludes 0", "Cross-corr D43-D44 neut mean 0.34 (orthogonal-ish, design valid in concept)"],
+    "interpretation": "Boyer-Mitton-Vorkink 2010 idiosyncratic skewness anomaly 가설은 KR에서 정반대 작동. Decile 1 (low skewness = stable / 비-lottery 종목) > Decile 10 (high skewness = lottery 종목). Bali-Murray 2013 kurtosis tail risk premium도 동일 — KR retail-driven 시장은 lottery preference 강함. Cross-section IC가 양수임에도 portfolio top20 decile 단조성 negative — 신호는 약하게 cross-sectional 정보 보유하나 top-decile 집중이 alpha 발현 메커니즘 아님. Multi-sleeve 회피도 effectivity 입증 X.",
+    "recommendation": "TERMINATE this hypothesis — graduation FAIL, mechanism not validated, no path to Deployment WT."
+  }
+}

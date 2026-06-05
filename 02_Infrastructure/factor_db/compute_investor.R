@@ -77,7 +77,7 @@ compute_investor <- function(RAWDATA, sig_date, FUND = NULL, CONSENSUS = NULL) {
       file.path(CACHE_DIR, "investor_stock", "investor_wide.parquet")
     } else {
       file.path(
-        "/mnt/c/Users/User/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot",
+        Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")),
         ".cache", "investor_stock", "investor_wide.parquet"
       )
     }

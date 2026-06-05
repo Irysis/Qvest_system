@@ -32,9 +32,8 @@ if (!exists("PROJECT_ROOT")) {
 if (!exists("load_rawdata")) {
   source(file.path(PROJECT_ROOT, "02_Infrastructure", "backtest_harness.R"))
 }
-if (!exists("get_portfolio_at_date")) {
-  source(file.path(PROJECT_ROOT, "02_Infrastructure", "sleeve_save_helper.R"))
-}
+# sleeve_save_helper.R 제거됨 (2026-05-28 cron fix). get_portfolio_at_date 함수는
+# 미사용 또는 별도 path. cron silent fail 방지 위해 reference 자체 제거.
 
 `%||%` <- function(a, b) if (!is.null(a)) a else b
 

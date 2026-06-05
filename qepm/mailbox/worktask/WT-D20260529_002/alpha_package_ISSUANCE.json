@@ -1,0 +1,127 @@
+{
+  "task_id": "WT-D20260529_002",
+  "tag": "ISSUANCE",
+  "track": "ISSUANCE",
+  "wt_type": "discovery",
+  "schema_version": "alpha_package_v1",
+  "as_of_date": "2026-05-29",
+  "signal_cutoff": "2023-12-22",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe": "KOSPI200_KOSDAQ150_intersection",
+  "liquidity_floor_won_20d_avg": 200000000,
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "selection_objective": "rank_ic",
+  "model_type": "linear_cross_sectional_composite",
+  "hypothesis_title": "Net share issuance (Pontiff-Woodgate 2008) + asset growth/investment (Cooper-Gulen-Schill 2008) composite anomaly — KR",
+  "hypothesis_description": "발행 많고 공격적 투자 기업의 후행 저성과. NSI = paid-in capital(자본금+자본잉여금) YoY growth, AG = 자산총계 YoY growth. 두 축 모두 high->low return academic prior로 a-priori sign-flip 후 동일가중 합성. PIT: DART announcement-date(rcept_no) strict C4 + t-1 liquidity/universe(C10/C2), lockbox 2023-12-22.",
+  "economic_rationale": "Pontiff-Woodgate(2008 JF): 신주발행 많은 기업 = 경영진 고평가 시점 market-timing 발행 -> 후행 저수익. Cooper-Gulen-Schill(2008 JF): 자산성장 높은 기업 = 과잉투자(empire-building)+발생액 -> 후행 저수익. 공유 mechanism = balance-sheet conservatism premium(외부자본 의존/재량적 확장 -> 낮은 미래수익). value(EP)/quality(QMJ)와 별개 발행·투자 축.",
+  "redundancy_cluster_id": "issuance_investment_conservatism_cluster (신규 — Factor DB 미보유. STR_1715 earnings-revision fundamental과 별개 balance-sheet 발행/성장 축)",
+  "pit_clean": {
+    "C4": "PASS — DART rcept_no 파생 ann_date <= sig_date (양 item max로 보수적)",
+    "C10_C2": "PASS (fix 적용) — adv20_lag1 + K200_lag1/KQ150_lag1 t-1 shift. rebalance-day bar 미사용",
+    "C13": "PASS (new-factor attestation) — NSI/AG는 신규 설계 factor. 부호는 IC 관찰 전 academic prior로 a-priori 결정 (NEGATE_FACTORS 아님). build header 명문화",
+    "C14": "PASS — ann_date <= sig_date",
+    "C15": "carve-out — load_month_factors는 288 existing factor만 노출. 신규 DART 파생은 PEAD/REV sibling과 동일 documented new-factor pattern (.cache/dart + .cache/rawdata)",
+    "lockbox": "2023-12-22 strict (81 sig_dates 2017-03 ~ 2023-11)"
+  },
+  "method_log": {
+    "candidates_tried": 3,
+    "log": [
+      {"name": "NSI_paidin_growth_flipped", "rank_ic": 0.0156, "nw_t": 1.365, "net_sr": 0.374, "subperiod_early": 0.0151, "subperiod_late": 0.0159, "selected": false},
+      {"name": "AG_asset_growth_flipped", "rank_ic": 0.0001, "nw_t": 0.004, "selected": false},
+      {"name": "composite_0.5NSI_0.5AG", "rank_ic": 0.0050, "nw_t": 0.448, "selected": true, "note": "primary spec — DROP"}
+    ]
+  },
+  "diagnostics": {
+    "rank_ic": 0.0050,
+    "icir": 0.0453,
+    "harvey_t_rankIC": 0.448,
+    "harvey_t_portfolio_ols": -0.079,
+    "harvey_t_portfolio_nw": -0.074,
+    "monotonicity": -0.418,
+    "subperiod_stability": 0.000,
+    "subperiod_early_ic": -0.0016,
+    "subperiod_late_ic": 0.0098,
+    "recent_2021_2023_icir": 0.1718,
+    "sector_neutral_icir": 0.060,
+    "net_sr": 0.259,
+    "gross_sr": 0.287,
+    "turnover_yr_one_way": 2.00,
+    "dsr": 0.1578,
+    "psr": 0.7458,
+    "dsr_N0": 12,
+    "ax001_v2_ratio": -3.024,
+    "ax_cost_ratio": -0.52,
+    "T_ic": 81,
+    "alpha_mo": -0.00026
+  },
+  "ic_vs_portfolio_alpha_distinction": {
+    "note": "Cycle 2 교훈 정합: rank-IC harvey_t(0.448)와 portfolio-alpha t(-0.074)를 명시 구분. Judge는 portfolio-alpha t를 authoritative로 채택. 본 track은 둘 다 ~0 -> 일치하여 DROP.",
+    "rank_IC_harvey_t": 0.448,
+    "portfolio_alpha_t_nw": -0.074
+  },
+  "uncertainty_aware": {
+    "note": "mu_tilde = mu_hat - k*SE. ICIR 0.045 -> per-month rank-IC SE >> mean. mu_tilde 하한 깊은 음수. 점추정 ~0, CI가 0을 가로지름.",
+    "k": 1.0
+  },
+  "leg_decomposition": {
+    "NSI_raw_sign_ic": -0.0156, "NSI_raw_sign_t": -1.41,
+    "NSI_flipped_ic": 0.0156, "NSI_flipped_nw_t": 1.365,
+    "NSI_flipped_subperiod_early": 0.0151, "NSI_flipped_subperiod_late": 0.0159, "NSI_flipped_net_sr": 0.374,
+    "AG_ic": 0.0001, "AG_t": 0.004,
+    "composite_dilutes_best_leg": true,
+    "interpretation": "AG anomaly KR 전무(t=0.004). NSI-avoidance만 weak·stable(early/late same-sign) but t=1.37<<3.0. composite는 best leg(NSI) 대비 ICIR 희석(0.156->0.045)."
+  },
+  "orthogonality_vs_incumbents": {
+    "cor_vs_STR_1715": -0.0493,
+    "cor_vs_D": 0.0632,
+    "cor_vs_FLOW": 0.0190,
+    "threshold": 0.30,
+    "verdict": "PASS (|cor|<0.07) — 발행/투자 축은 3 incumbent에 구조적 직교. 단 necessary-not-sufficient (AX-005 교훈): 직교하나 신호 자체가 alpha 無 -> diversifying-but-empty = noise. book 5th source 부적격."
+  },
+  "graduation_check": {
+    "min_rank_ic_0.04": "FAIL (0.0050)",
+    "min_icir_0.20": "FAIL (0.0453)",
+    "min_subperiod_stability_0.50": "FAIL (0.000)",
+    "min_harvey_t_3.0": "FAIL (rankIC 0.448 / portfolio -0.074)",
+    "min_dsr_0.5": "FAIL (0.158, N0=12)",
+    "monotonicity_0.7": "FAIL (-0.418)",
+    "cost_ratio_2.0": "FAIL (-0.52)"
+  },
+  "failure_rules_triggered": [
+    "monotonicity collapse (<0.5): -0.418",
+    "subperiod instability: composite sign flips (early -0.0016 / late +0.0098)",
+    "cost_ratio < 2: -0.52 (expected alpha 음수)"
+  ],
+  "alpha_vector_ref": "stage_artifacts/WT_WT_D20260529_002_ISSUANCE/alpha_scores.parquet",
+  "confidence_vector_note": "alpha_scores.parquet 내 confidence 열 (0.6 + 0.4*exp(-days_since/365); data recency 기반).",
+  "challenge_flags": [
+    "RF-A1: Harvey-t<3 + subperiod_stability 0 (HIGH)",
+    "RF-A2: composite ICIR 0.045 < best-leg NSI 0.156 (dilution)",
+    "RF-A3: recent 2021-23 ICIR 0.172 > full ×1.5 (recent-overfit optics)",
+    "RF-A4: sector-neutral ICIR 0.060 ~ raw, 둘 다 noise",
+    "portfolio-alpha t negative: no realized alpha"
+  ],
+  "codex_round": {
+    "stance": "REJECT",
+    "agree_with_claude_verdict": "directionally right (Codex 명시)",
+    "challenge_note": "qepm/mailbox/worktask/WT-D20260529_002/challenge_note_ISSUANCE.md",
+    "actions_taken": [
+      "C6 ACCEPT: t-1 liquidity/universe fix -> 재실행 (결과 불변, DROP 확인)",
+      "C7 ACCEPT: DSR N0 3->12 -> 0.158 (DROP 강화)",
+      "C5 PARTIAL: C13 new-factor attestation 명문화 / C15 carve-out REBUTTAL (학술2+init Step2-C+정량 3축)",
+      "C2/C3/C4 ACCEPT: sector-neutral·recent·leg 검증 first-class 보고 (모두 DROP 강화)",
+      "C8 ACCEPT: challenge_note 작성 + lineage 기록. risk/opt artifact 부재는 alpha 단계 정상(역할경계)",
+      "negative L-code: candidate로 격하, 일반화 주장 철회"
+    ]
+  },
+  "verdict": "DROP",
+  "verdict_rationale": "Net-issuance + asset-growth 합성 anomaly는 KR liquid universe(KOSPI200∪KQ150, 2e8 LIQ, 81m lockbox, PIT-clean t-1)에서 empirically 실패. rank_IC 0.0050 / Harvey-t 0.45 / portfolio-alpha t -0.07 / DSR 0.158(N0=12) — 모든 graduation 미달. Asset-growth leg는 KR 무신호(t=0.004). NSI-avoidance leg만 weak·stable(t=1.37)이나 단독 graduation 미달. 직교성 우수(|cor|<0.07)하나 신호 부재로 book 5th source 부적격. PIT fix·N0 상향·sector-neutral·recent 검증이 모두 DROP을 강화. AX-000 정합: 입증된 한계(본 spec family 한정)를 정직 보고.",
+  "negative_finding_candidate": {
+    "scope": "market=KR, universe=KOSPI200∪KQ150 liquid(2e8), family=issuance_investment, spec=composite NSI(paidin YoY)+AG(assets YoY) long-only top20, window=2017-03~2023-11 lockbox",
+    "finding": "rank-IC≈0, Harvey-t<1, portfolio-alpha t<0, DSR<0.2. asset-growth leg 완전 무신호. net-issuance-avoidance만 weak(t≈1.4) but 단독 graduation 미달.",
+    "generalization_caveat": "본 spec family 한정 non-replication. '전 KR universe / 전 spec absent' 일반화 아님 (Codex weakest_assumption 수용). 미검증 대안: micro-cap universe / share-count 기반 NSI(공시 신주발행수) / SEO event-study / 5-year composite issuance(Daniel-Titman 2006).",
+    "lcode_proposal_status": "candidate (not promoted). Pontiff-Woodgate/Cooper-Gulen-Schill US-origin anomaly KR non-replication 후보. AX-003/004 계열."
+  }
+}

@@ -64,7 +64,7 @@ tryCatch({
   } else {
     tryCatch(dirname(sys.frame(1)$ofile),
              error = function(e) file.path(
-               "/mnt/c/Users/User/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot",
+               Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")),
                "02_Infrastructure"
              ))
   }
@@ -1321,7 +1321,7 @@ run_hurdle_gate <- function(sim_result,
   d075_penalty <- 0
 
   .axiom_root <- function() {
-    c1 <- "/mnt/c/Users/User/OneDrive/\xeb\xb0\x94\xed\x83\x95 \xed\x99\x94\xeb\xa9\xb4/Quant_Module_Moltbot"
+    c1 <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
     c2 <- Sys.getenv("PROJECT_ROOT", "")
     if (dir.exists(c1)) c1 else if (nzchar(c2) && dir.exists(c2)) c2 else getwd()
   }

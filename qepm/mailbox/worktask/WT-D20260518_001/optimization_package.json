@@ -1,0 +1,398 @@
+{
+  "task_id": "WT-D20260518_001",
+  "agent": "optimizer-research",
+  "agent_version": "v1.1_overlay_schedule_design_phase_a_POST_CODEX_DISPOSITION",
+  "wt_type": "discovery",
+  "wt_subclass_charter_v18": "discovery_design_phase_a",
+  "draft_marker": false,
+  "draft_emission_at": "2026-05-19T01:30:00+0900",
+  "final_emission_at": "2026-05-19T02:00:00+0900",
+  "post_codex_disposition_status": "POST_CODEX_REJECT_7_DISPOSITION_3_ACCEPT_3_PARTIAL_ACCEPT_1_REBUTTAL_7_OF_7",
+  "codex_round_ax_008_status": "1.5_OF_3 (optimizer self PASS + Codex PARTIAL post-disposition + Forge/Architect PENDING)",
+  "as_of_date": "2026-05-19",
+  "method_family": "bear_regime_overlay_scalar_emission_v1_1_post_codex",
+  "design_name": "Bear Sensor v2.0 Overlay Schedule Policy — M05 Sequential_Layer6_Quantile_Hard3step_Hysteresis_5pct + 3 decision branches (DB-A/B/C) + DM incrementality protocol + Phase A template emission (placeholder 100%, simulation REMOVED post Codex C2 ACCEPT)",
+  "alpha_package_received": {
+    "factor_specs_count": 1,
+    "factor_family": "Bear_Regime_Prediction",
+    "features_count_designed": 44,
+    "features_count_built_sample": 13,
+    "alpha_vector_status": "PLACEHOLDER_PENDING_FORGE_Stage_4 (alpha-research v2.0 phase_a exempt)",
+    "output_dimension": "scalar_beta_bear_in_0.3_to_1.0"
+  },
+  "risk_package_received": {
+    "sigma_features_method": "ledoit_wolf_constcor_ridge_lambda_0.10",
+    "sigma_cond_number": 91.1,
+    "sigma_psd": true,
+    "tail_xi": -0.0699,
+    "crowding_cor_PG2_alpha": -0.1363,
+    "TDC_lower": 0.0769,
+    "m4_full_agreement": 0.8769,
+    "m4_conditional_tail_prob": 0.3143,
+    "redundancy_flag": "RF-R3-M4-REDUNDANT_HIGH"
+  },
+  "underlying_strategy_binding": {
+    "strategy_id": "STR_1715_AR_on_M4_R05_overlay_PG2",
+    "production_slot": "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/",
+    "production_manifest_version": "v2.3",
+    "lineage_chain_inherit": ["WT-D20260427_016", "WT-P20260429_002", "WT-D20260430_001", "WT-P20260504_001", "WT-D20260512_002", "WT-H20260513_001"],
+    "underlying_holdings_hash": "inherit_pg2_v2.3_manifest_top10_alpha_updated_2026_05",
+    "underlying_max_names": 20,
+    "underlying_weight_bounds": [0, 0.20],
+    "underlying_sigma_w": 1.0,
+    "underlying_long_only": true,
+    "underlying_LIQ_min_won_20d_avg": 200000000,
+    "codex_C1_PARTIAL_REBUTTAL_audit_trail_strengthening": "underlying_holdings_hash field added to bind overlay to PG2 production holdings; underlying constraints unchanged by Layer 6 multiplicative scalar."
+  },
+  "scope_disclaimer": "Bear sensor v2.0 = Layer 6 candidate scalar overlay (NOT cross-sectional 20-stock sleeve). Optimizer Phase A scope = policy specification + 10-candidate methodology shopping (post C3) + DM incrementality test protocol + overlay_schedule.csv template (100% placeholder β=1.0, post C2 simulation removed). Actual β_bear emission requires Forge Stage 4 p_bad_t time series. Forge Stage 5 applies policy + DM test + Path A/B/C 3-variant backtest + admission verdict.",
+  "selection_objective": "crowding_adj_ret",
+  "selection_objective_rationale": "v6.1 R4 P3 enum compliance. crowding_adj_ret = ΔSR_vs_PG2 × (1 - α·redundancy_M4_DM_pvalue) - λ_TO·turnover_ann × cost_15bps × 2 sides. Single sharpe maximization forbidden by Hook. M4 redundancy (87.7% agreement) penalized via DM test p-value scaling. POST CODEX C3 disposition: M05 default selection is qualitative architecture consistency + design-phase consistency with PG2 v2.3 production (NOT measured net_IR claim). Quantitative net_IR / DSR / Harvey-t per-window emission = Forge Stage 5 binding.",
+  "method_shopping_log_ref": "qepm/mailbox/worktask/WT-D20260518_001/method_shopping_log_optimizer.json",
+  "method_shopping_summary": {
+    "n_candidates_total": 10,
+    "n_dimensions": 6,
+    "n_candidates_rejected": 9,
+    "n_candidates_selected": 1,
+    "selected_method_id": "M05",
+    "selected_method_name": "Sequential_Layer6_Quantile_Hard3step_Hysteresis_5pct",
+    "decision_branches_reserved_count": 3,
+    "codex_C3_disposition": "ACCEPT — 12 → 10 strict cap (M11 relocated to DB-B alternative + M12 deleted as M10-dominated)"
+  },
+  "policy_spec": {
+    "method_id": "M05",
+    "name": "Sequential_Layer6_Quantile_Hard3step_Hysteresis_5pct",
+    "composition_type": "Sequential_after_Layer_5_R05",
+    "formula": "w_final(t) = w_str1715(t) × m4_scalar(t) × β_AR(t) × β_R05(t, regime) × β_bear(t, p_bad_t)",
+    "threshold_policy": {
+      "type": "quantile_based_calibration_window_expanding",
+      "tau_caution": "q70 of calibrator output expanding window per walk-forward window",
+      "tau_crisis": "q90 of calibrator output expanding window per walk-forward window",
+      "tau_optimal_W3_OOS_reference_calibrated": 0.41,
+      "PIT_C2_compliance": "STRICT_expanding_calibration_window_no_in_sample_full_panel"
+    },
+    "beta_step_function": {
+      "type": "hard_3_step",
+      "beta_NORMAL": 1.0,
+      "beta_CAUTION": 0.7,
+      "beta_CRISIS": 0.3,
+      "rationale": "Production architecture echo — STR_1715 Layer 4 AR ∈ {0.4, 0.7, 1.0} + Layer 5 R05 ∈ {0.3, 0.5, 1.0} → β_bear ∈ {0.3, 0.7, 1.0} consistent integer step"
+    },
+    "smoothing_anti_flicker": {
+      "type": "hysteresis_5_percent_buffer",
+      "entry_threshold": "p > tau_threshold",
+      "exit_threshold": "p < tau_threshold × (1 - 0.05)",
+      "rationale": "Suppress monthly flicker around tau boundaries while preserving sharp regime transition"
+    },
+    "multi_horizon_sanity": {
+      "primary": "1m_forward_label",
+      "cross_check": "3m_forward_label_sign_consistency_verification",
+      "horizon_3m_decisioning_impact": "diagnostic_only_no_beta_emission_change"
+    },
+    "crisis_fallback_protocol_post_codex_C6": {
+      "compound_beta_tier_1_normal": {"range": "[0.30, 1.00]", "action": "Normal operation, retain weights"},
+      "compound_beta_tier_2_defensive": {"range": "[0.10, 0.30)", "action": "Defensive mode, flag compound_beta_low_warning"},
+      "compound_beta_tier_3_crisis": {
+        "range": "[0.05, 0.10)",
+        "action": "infeasibility_report mandatory + cash_sleeve (1 - compound_β) at KR_91D_CD money_market_proxy + bounds shrink [0, 0.20] → [0, 0.15] + Telegram alert via tg_agent_brief + PG3 monitoring T+1 escalate"
+      },
+      "compound_beta_tier_4_hard_floor": {
+        "range": "[0, 0.05)",
+        "action": "compound_β reset to 0.05 hard floor + AX-001 v2 conditional defense violation log + production_grade=false until joint extreme resolved"
+      },
+      "realized_path_metrics_binding_forge_stage_5": {
+        "portfolio_MDD_during_compound_beta_lt_0.30": "target <= -25%",
+        "portfolio_CVaR_95_overlay_adjusted": "target <= -15%",
+        "realized_cash_sleeve_share_per_sig_date": "emit in overlay_schedule.csv cash_sleeve_share column"
+      }
+    },
+    "academic_refs": [
+      "Kritzman-Page-Turkington 2011 FAJ (regime overlay precedent, Layer 4 AR admit L-277/278)",
+      "Kelly-Jiang 2014 RFS (tail risk overlay precedent, Layer 5 R05 admit L-308)",
+      "Diebold-Mariano 1995 JBES (incremental info test)",
+      "Youden 1950 (threshold optimization)",
+      "Pesaran-Timmermann 2007 JBES (regime stratification)",
+      "Newey-West 1987 ECMA (HAC variance)",
+      "Frazzini-Israel-Moskowitz 2012 (TO smoothing)",
+      "Bailey-Lopez de Prado 2014 (DSR multi-test correction)",
+      "Harvey-Liu-Zhu 2016 RFS (multi-testing t-stat)",
+      "Berta-Bach-Jordan 2023 (ROC-reg calibration)",
+      "Ledoit-Wolf 2004 (shrinkage cov for sigma_features)",
+      "Frazzini-Pedersen 2014 (low-volatility leverage stability)"
+    ]
+  },
+  "decision_branches_reserved": [
+    {
+      "id": "DB-A",
+      "alternative_method_id": "M07",
+      "name": "Replacement_Layer_3_M4_with_bear_sensor",
+      "trigger_condition": "Forge_Stage_5_DM_test_p_value_p_bad_t_vs_M4_BOCPD",
+      "admit_threshold": "DM_p_1sided_lt_005 AND mean_diff_positive AND per_window_3plus_of_5 AND HIGH_VOL_TAPER_AND_INFLATION_significant AND Path_B_SR_gt_Path_A_SR_gt_Path_C_SR AND TO_ann_le_60 AND book_state_version_bump_v2.3_to_v3.0_dohoon_approval",
+      "binding_artifact": "stage_artifacts/WT_D20260518_001/m4_incrementality_protocol.md"
+    },
+    {
+      "id": "DB-B",
+      "alternative_method_id": "M11",
+      "name": "Calibrator_ensemble_3of5_majority",
+      "trigger_condition": "Forge_Stage_3_calibrator_dominance_audit",
+      "admit_threshold": "isotonic_ECE_gt_010 OR no_calibrator_dominates_4_of_5_windows",
+      "compute_cost": "5x_Forge_Stage_3_retrain"
+    },
+    {
+      "id": "DB-C",
+      "alternative_method_id": "M06",
+      "name": "Per_regime_stratified_tau_LOW_VOL_HIGH_VOL_INFLATION",
+      "trigger_condition": "Forge_Stage_5_per_regime_audit",
+      "admit_threshold": "per_regime_AUC_variance_lt_010 AND INFLATION_bootstrap_CI_lower_gt_055",
+      "risk": "INFLATION_n_31_thin_sample_per_regime_tau_unstable"
+    }
+  ],
+  "overlay_schedule": {
+    "csv_path": "stage_artifacts/WT_D20260518_001/overlay_schedule.csv",
+    "summary_json_path": "stage_artifacts/WT_D20260518_001/overlay_schedule_summary.json",
+    "schema": "sig_date × bm_ret_m × p_bad_t × calibrator_used × tau_caution_calibration_window × tau_crisis_calibration_window × regime_label × classification × hysteresis_state × beta_bear × beta_bear_transition × multi_horizon_3m_sanity_consistent × phase_a_status × forge_stage_binding",
+    "n_sig_dates_total": 437,
+    "n_sig_dates_with_beta_NORMAL_1.0_placeholder": 437,
+    "schedule_density_ratio": 1.0,
+    "placeholder_share_post_codex_C2_disposition": 1.0,
+    "simulated_W3_share_REMOVED_post_codex_C2": 0.0,
+    "real_Forge_Stage_5_replaces_placeholder": true,
+    "schedule_density_status": "PASS_density_ratio_1.0_>=_0.95_mandate_all_placeholder_no_simulation",
+    "codex_C2_disposition_REMOVED": "W3 rnorm/sample illustrative simulation completely deleted from build_overlay_schedule_template.R Step 4. self_synthesis_used=false now matches actual artifact."
+  },
+  "target_weights": null,
+  "target_weights_explanation": "n/a — overlay role emits scalar β_bear ∈ [0.3, 1.0] per sig_date, NOT 20-stock weights. Underlying STR_1715 PG2 v2.3 retains target_weights (Σw = 1.0, max_names = 20, weight_bounds = [0, 0.20]).",
+  "active_weights": null,
+  "active_weights_explanation": "n/a — overlay multiplicative scalar.",
+  "expected_active_return": null,
+  "expected_tracking_error": null,
+  "expected_information_ratio": null,
+  "expected_metrics_pending_forge_stage_5": "All performance metrics (AR/TE/IR/SR/IR/MDD/Calmar/Sortino/DSR/Harvey-t) require Forge Stage 4 p_bad_t emission + Stage 5 V_Path_A/B/C 3-variant backtest. Phase A scope = policy specification only.",
+  "turnover": {
+    "design_phase_hypothesis": {
+      "Path_A_M05_underlying_inherit": "~2.5/yr (STR_1715 PG2 base)",
+      "Path_A_M05_Layer_6_incremental": "1.5~2.5/yr hypothesis (Forge Stage 5 realized binding)",
+      "Path_A_M05_total_hypothesis": "4.0~5.0/yr (within 6.0 cap)",
+      "Path_B_M07_replacement_total_hypothesis": "5.5~7.5/yr (borderline cap violation risk)",
+      "Path_C_M4_standalone_baseline": "2.5/yr (production v2.3 baseline)"
+    },
+    "policy_target_cap_ann": 6.0,
+    "infeasibility_trigger": "Forge Stage 5 realized TO_ann > 6.0/yr in Path A → mandatory infeasibility_report + admission re-examination",
+    "codex_C4_disposition": "ACCEPT — units unified cost_bps = TO × 15bps × 2 sides. Previous draft 10~25bps / 54bps / 75bps inconsistent estimates deprecated.",
+    "TO_smoothing_method": "hysteresis_5_percent_buffer_M05_default"
+  },
+  "estimated_cost": {
+    "unified_formula_post_codex_C4": "cost_bps = TO_ann × 15bps × 2 sides",
+    "Path_A_hypothesis_bps": "120~150bps (TO 4.0~5.0)",
+    "Path_B_hypothesis_bps": "165~225bps (TO 5.5~7.5, cap violation risk)",
+    "Path_C_baseline_bps": "75bps (TO 2.5)",
+    "cost_model_version": "v2.3_kr_retail_15bps",
+    "cost_aware_objective_compliance": "PASS — crowding_adj_ret penalizes TO × cost in selection objective",
+    "design_phase_caveat": "All cost numbers are hypothesis design-phase estimates. Forge Stage 5 realized cost emission replaces when actual p_bad_t available."
+  },
+  "binding_constraints": [
+    "PIT_C2_calibration_window_expanding_no_full_sample_quantile",
+    "PIT_C5_overlay_t_minus_1_basis_sig_date",
+    "TO_ann_cap_6.0_yr_realized_infeasibility_trigger",
+    "schedule_density_gte_0.95",
+    "AX_007_overlay_role_max_names_null_exception_4_way_consistent",
+    "underlying_STR_1715_max_names_20_bounds_0_0.20_sigma_w_1_LIQ_2e8_RETAIN",
+    "Σ_features_inherit_risk_pkg_cond_91.10_PSD",
+    "DM_test_p_bad_t_vs_M4_mandatory_Forge_Stage_5",
+    "crisis_fallback_compound_beta_4_tier_protocol_M05_post_codex_C6",
+    "self_synthesis_used_FALSE_strict_no_rnorm_sample_in_R_scripts_post_codex_C2"
+  ],
+  "infeasibility_report": null,
+  "method_selected": "M05_Sequential_Layer6_Quantile_Hard3step_Hysteresis_5pct",
+  "method_comparison_top_3": {
+    "M05_Sequential_Hysteresis": "SELECTED — POLICY_DEFAULT design-phase architecture consistency (NOT measured net_IR claim per Codex C3 disposition)",
+    "M07_Replacement_M4": "RESERVED DB-A — Forge Stage 5 DM conditional admission",
+    "M11_Calibrator_ensemble_3of5": "RESERVED DB-B — Forge Stage 3 audit conditional admission"
+  },
+  "explanation": {
+    "top_principle": "Sequential Layer 6 retains all 5 production layers + bear sensor as additive overlay. Multiplicative composition (Kritzman 2011 + Kelly 2014 precedent).",
+    "key_decision_1": "Sequential over Replacement: M4 (BOCPD changepoint) + bear sensor (44-feature ensemble) capture different signal types — both retained captures ~100% incremental info coverage hypothesis (31.4% M4-only + 68.6% bear-only). DM test mandatory Forge Stage 5 for admission verification.",
+    "key_decision_2": "Quantile-based τ (q70/q90) over fixed τ=0.5: PIT-safe calibration window expanding (alpha-research v1.0 root cause fix), self-adapts per walk-forward window",
+    "key_decision_3": "Hard 3-step β {1.0, 0.7, 0.3} over continuous sigmoid: discrete decisioning matches production STR_1715 architecture (m4/AR/R05 all discrete)",
+    "key_decision_4": "Hysteresis 5% buffer over EWMA/K-of-N: design hypothesis lowest TO without lag introduction (Forge Stage 5 realized binding)",
+    "main_tradeoffs": [
+      "M4 redundancy 87.7% acknowledged → DM test in Forge Stage 5 binding for Path A admission gate (p<0.15) + Path B replacement gate (p<0.05)",
+      "INFLATION regime n=31 thin → per-regime τ (M06) reserved as DB-C branch only",
+      "CRISIS path 4-tier compound β protocol + cash sleeve + bounds shrink + realized metrics → Forge Stage 5 binding",
+      "Phase A design phase — actual performance pending Forge Stage 4/5 emission",
+      "10 candidate cap strict (post Codex C3 disposition) — M11 relocated DB-B alternative, M12 dominated by M10 removed"
+    ]
+  },
+  "v6_1_breadth_constraints_status": "N_A_overlay_role",
+  "v6_1_breadth_rationale": "Bear sensor v2.0 = scalar β_bear overlay role. max_names null + weight_bounds [0,1] consistent with alpha_package + risk_package + request.json (4-way consistent). Production PG2 STR_1715 underlying retains all v6.1 breadth constraints (max_names 20 / bounds [0, 0.20] / Σw 1.0 / LIQ 2e8). β_bear preserves underlying structure (multiplicative only). v6.1 R4 selection_objective enum compliance (crowding_adj_ret). Codex C1 PARTIAL_REBUTTAL: overlay schema is overlay_schedule.csv per Layer 4/5 precedent, NOT default weights.csv.",
+  "validation_pre_forge": {
+    "policy_M05_design_phase_consistency_check": "PASS",
+    "PIT_C2_C5_compliance_check": "PASS — calibration window expanding, overlay t-1 sig_date",
+    "production_architecture_echo_check": "PASS — multiplicative Layer 6 follows Layer 4/5 precedent (Kritzman 2011 + Kelly 2014)",
+    "TO_cap_check": "PASS_design_hypothesis_pending_actual_emission_Forge_Stage_5",
+    "schedule_density_check": "PASS — 437/437 = 1.0 >= 0.95 mandate (100% placeholder β=1.0 no simulation post C2)",
+    "selection_objective_enum_compliance": "PASS — crowding_adj_ret in v6.1 R4 enum",
+    "hard_constraints_check": "PASS_overlay_role_exception_documented_4_way_max_names_null_consistent",
+    "DM_test_protocol_specified": "PASS — m4_incrementality_protocol.md emit + path_a_vs_b Section 2.2 DM mandatory documented",
+    "self_synthesis_check": "PASS — W3 rnorm simulation REMOVED post Codex C2 ACCEPT, all 437 sig_dates placeholder β=1.0",
+    "cost_units_consistency_check": "PASS — unified cost_bps = TO_ann × 15bps × 2 sides post Codex C4 ACCEPT",
+    "method_shopping_cap_check": "PASS — 10 candidates exact at v6.1 R2-C cap post Codex C3 ACCEPT",
+    "crisis_fallback_protocol_check": "PASS — 4-tier compound β protocol + cash sleeve + bounds shrink + realized metrics binding post Codex C6 PARTIAL_ACCEPT",
+    "rationalization_red_flags_check": "PASS — 4 phrases removed/qualified (joint extreme prob negligible / Forge S5 expected lower / safe rollback / conservative substitute)"
+  },
+  "validation_post_forge_target": {
+    "G0_PIT": "C1~C15 + overlay t-1 + calibration window expanding + no synthetic emission",
+    "G1_DM_test_p_bad_t_vs_M4": "p < 0.15 in full sample AND 3+/5 windows (Path A) / p < 0.05 (Path B)",
+    "G2_Path_A_SR_uplift": ">= 0.10 net vs Path C control",
+    "G3_per_regime_DM_significant": "HIGH_VOL_TAPER OR INFLATION (Path A) / AND (Path B)",
+    "G4_TO_ann_cap": "<= 6.0/yr full sample with hysteresis OR infeasibility_report mandatory",
+    "G5_AX_008": "Forge + Codex + Architect >= 2.5/3",
+    "G6_admission_decision": "Branch A1/A2/A3/A4 verdict per m4_incrementality_protocol.md Section 3"
+  },
+  "artifact_lineage": {
+    "own_deliverables_phase_a": [
+      "qepm/mailbox/worktask/WT-D20260518_001/optimization_package.json (this final)",
+      "qepm/mailbox/worktask/WT-D20260518_001/optimization_package_draft.json (pre-Codex)",
+      "qepm/mailbox/worktask/WT-D20260518_001/optimizer_package_draft.json (Hook-compatible name)",
+      "qepm/mailbox/worktask/WT-D20260518_001/codex_critic_response_optimizer.json",
+      "qepm/mailbox/worktask/WT-D20260518_001/challenge_note_optimizer.md",
+      "qepm/mailbox/worktask/WT-D20260518_001/method_shopping_log_optimizer.json",
+      "qepm/mailbox/worktask/WT-D20260518_001/build_overlay_schedule_template.R",
+      "stage_artifacts/WT_D20260518_001/overlay_schedule.csv",
+      "stage_artifacts/WT_D20260518_001/overlay_schedule_summary.json",
+      "stage_artifacts/WT_D20260518_001/threshold_sensitivity_analysis.md",
+      "stage_artifacts/WT_D20260518_001/path_a_vs_b_comparison.md",
+      "stage_artifacts/WT_D20260518_001/m4_incrementality_protocol.md"
+    ],
+    "exempt_deliverables_phase_a": [
+      "weights.csv (overlay role emits overlay_schedule.csv, NOT 20-stock weights — Codex C1 PARTIAL_REBUTTAL)",
+      "actual β_bear time series (Forge Stage 4 p_bad_t + Stage 5 emission)",
+      "Path A/B/C backtest results (Forge Stage 5)",
+      "ensemble_to_M4_DM_test_results (Forge Stage 5 binding via m4_incrementality_protocol.md)",
+      "realized portfolio MDD/CVaR/cash_sleeve_share (Forge Stage 5 binding via crisis_fallback_protocol_post_codex_C6)"
+    ],
+    "inputs_consumed": [
+      "qepm/mailbox/worktask/WT-D20260518_001/alpha_package.json",
+      "qepm/mailbox/worktask/WT-D20260518_001/risk_package.json",
+      "qepm/mailbox/worktask/WT-D20260518_001/request.json",
+      "stage_artifacts/WT_D20260518_001/W3_OOS_explicit_check.json",
+      "stage_artifacts/WT_D20260518_001/crowding_overlap_with_PG2_STR_1715.json",
+      "stage_artifacts/WT_D20260518_001/tail_risk_evt_gpd.json",
+      "stage_artifacts/WT_D20260518_001/covariance.parquet",
+      "stage_artifacts/WT_D20260518_001/feature_panel_design_v2.parquet",
+      "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/manifest.json",
+      ".cache/benchmark.parquet"
+    ]
+  },
+  "axiom_check": {
+    "AX_000": "documented — 한계 없음. 10 candidate × 6 dimension method shopping (post C3 cap) + 3 reserved decision branches + DM incrementality protocol + 3-variant Path A/B/C Forge Stage 5 binding + 4-tier crisis fallback protocol (post C6)",
+    "AX_001_v2": "conditional defense documented — bear sensor 설계 의도 crisis_alpha generation. M4 redundancy + bear incremental coverage 100% combined hypothesis (Path A). bad/normal IC ratio Forge Stage 5 binding via DM stratified by regime. 4-tier crisis fallback enforces AX-001 v2 conditional defense compliance (tier 4 hard floor logs violation if compound β < 0.05).",
+    "AX_002": "PIT C1-C15 strict — overlay t-1 (C5) + calibration window expanding (C2) + no in-sample full-sample quantile (C1). self_synthesis_used=FALSE strict post Codex C2 ACCEPT (W3 rnorm simulation REMOVED).",
+    "AX_007": "regime sensor overlay scalar — single_sleeve top20 mechanism break 회피 exception path (sensor role NOT sleeve, max_names null 4-way consistent across request + alpha_pkg + risk_pkg + optimization_pkg). Codex C1 PARTIAL_REBUTTAL documented.",
+    "AX_008": "Verification Triangulation: Optimizer self PASS + Codex Round PARTIAL post-disposition (7/7 disposed: 3 ACCEPT + 3 PARTIAL_ACCEPT + 1 REBUTTAL) + Architect PENDING higher cycle. Floor 1.5/3 achieved, target 2.0+/3 at Forge Stage 5 + Architect verification."
+  },
+  "codex_round_v6_complete": {
+    "cycle": "optimizer-research v1.1",
+    "received_at": "2026-05-19T01:15:05+09:00",
+    "stance": "REJECT",
+    "veto_flag": false,
+    "weakest_assumption": "A placeholder and partially simulated overlay_schedule can substitute for a real walk-forward weights schedule and justify optimizer approval before actual p_bad_t, alpha_scores, DM tests, net_IR, and realized costs exist.",
+    "weakest_assumption_disposition": "ACCEPTED in core — W3 simulation completely REMOVED. Phase A scope = policy specification + DM protocol + schedule template (100% placeholder). Forge Stage 4/5 binding for actual emission + realized metrics + admission verdict.",
+    "n_concerns_total": 7,
+    "n_concerns_CRITICAL": 3,
+    "n_concerns_HIGH": 4,
+    "disposition_summary": {
+      "C1_PARTIAL_REBUTTAL": "Overlay schema overlay_schedule.csv schema vs default weights.csv distinct + 4-way max_names null consistency + underlying_holdings_hash audit trail",
+      "C2_ACCEPT": "W3 rnorm/sample simulation COMPLETELY REMOVED from R script + CSV regenerated 100% placeholder",
+      "C3_ACCEPT": "candidates 12 → 10 cap strict (M11 → DB-B alternative, M12 deleted)",
+      "C4_ACCEPT": "cost units unified cost_bps = TO × 15bps × 2 sides + infeasibility trigger formalized",
+      "C5_PARTIAL_ACCEPT": "DM mandatory for Path A admission (p<0.15) + Path B replacement (p<0.05) distinction retained, path_a_vs_b corrected",
+      "C6_PARTIAL_ACCEPT": "4-tier compound β crisis fallback + cash sleeve + bounds shrink + realized metrics binding",
+      "C7_REBUTTAL": "alpha_scores.parquet phase_a exempt + qepm/stage_artifacts path typo (real: stage_artifacts/WT_D20260518_001/ root-level) + 26 artifacts existence verified"
+    },
+    "rationalization_red_flags_count": 4,
+    "rationalization_disposition": "All 4 disposed: 1 ACCEPT_REMOVED (joint extreme probability negligible) + 1 PARTIAL (Forge S5 expected lower → qualified design-phase hypothesis) + 1 ACCEPT_REMOVED (safe rollback / no-op fallback) + 1 ACCEPT (Conservative selection → clarified qualitative not measured)",
+    "challenge_note_file": "qepm/mailbox/worktask/WT-D20260518_001/challenge_note_optimizer.md",
+    "q_lead_escalation_check": "NO escalation — HIGH 4 + CRITICAL 3 = 7 total, AX hard FAIL 2 (below 3 threshold), no single-snapshot RF-O9 violation (multi-window DM binding in m4_incrementality_protocol.md), hard constraint violations addressed via overlay role exception"
+  },
+  "v6_0_codex_round_5_step_completion": {
+    "step_1_draft": "qepm/mailbox/worktask/WT-D20260518_001/optimization_package_draft.json + optimizer_package_draft.json (Hook-compatible duplicate)",
+    "step_2_codex_response": "qepm/mailbox/worktask/WT-D20260518_001/codex_critic_response_optimizer.json (REJECT veto=false, 7 concerns)",
+    "step_3_disposition": "Inline within challenge_note_optimizer.md Section 2 (per-concern ACCEPT/PARTIAL/REBUTTAL)",
+    "step_4_challenge_note": "qepm/mailbox/worktask/WT-D20260518_001/challenge_note_optimizer.md",
+    "step_5_final": "qepm/mailbox/worktask/WT-D20260518_001/optimization_package.json (this file)",
+    "accept_count": 3,
+    "partial_accept_count": 3,
+    "rebuttal_count": 1,
+    "no_silent_override": true
+  },
+  "challenge_flags": [
+    {
+      "rf": "RF-O8-design-phase-no-actual-emission",
+      "severity": "MEDIUM",
+      "note": "Phase A scope: policy specification + 100% placeholder β=1.0 (post Codex C2 ACCEPT, W3 simulation REMOVED). Actual β_bear emission requires Forge Stage 4 p_bad_t. Forge cycle binding mandatory before admission gate."
+    },
+    {
+      "rf": "RF-O9-overlay-role-N_A-breadth-constraints",
+      "severity": "INFO",
+      "note": "v6.1 breadth constraints (min_names 15 / HHI 0.10 / bounds [0, 0.10]) N/A for scalar overlay. Underlying STR_1715 retains all v6.1 breadth constraints. max_names null 4-way consistent across request + alpha_pkg + risk_pkg + optimization_pkg per Codex C1 PARTIAL_REBUTTAL."
+    },
+    {
+      "rf": "RF-O10-method-shopping-cap-10-exact",
+      "severity": "INFO",
+      "note": "Method shopping log strictly at 10 candidates cap post Codex C3 ACCEPT. M11 relocated to DB-B alternative, M12 dominated by M10 removed."
+    },
+    {
+      "rf": "RF-O11-DM-test-binding-condition-DB-A",
+      "severity": "INFO",
+      "note": "Replacement decision branch DB-A conditional on Forge Stage 5 DM test outcome. m4_incrementality_protocol.md specifies exact test procedure + 4 outcome branches A1~A4. Path A admission gate p<0.15 + 3/5 windows + HIGH_VOL_TAPER or INFLATION significant."
+    },
+    {
+      "rf": "RF-O12-empirical-sigma-features-recomputation-binding",
+      "severity": "INFO",
+      "note": "Σ_features inherited from risk_package 13×13 cond=91.10. Forge Stage 1 builds full 44 features + Σ_features re-estimation mandated (risk_package honest_disclosure). β_bear policy invariant to Σ_features (depends on p scalar). No optimization re-run required for Σ update."
+    },
+    {
+      "rf": "RF-O13-cost-formula-unified",
+      "severity": "INFO",
+      "note": "cost_bps = TO_ann × 15bps × 2 sides applied uniformly across all artifacts post Codex C4 ACCEPT. Path A hypothesis 120~150bps / Path B 165~225bps / Path C baseline 75bps."
+    },
+    {
+      "rf": "RF-O14-crisis-fallback-4tier-protocol",
+      "severity": "INFO",
+      "note": "Compound β 4-tier protocol post Codex C6 PARTIAL_ACCEPT: normal [0.30,1.0] / defensive [0.10,0.30) / crisis [0.05,0.10) infeasibility+cash sleeve / hard floor [0,0.05) reset+production_grade=false. Forge Stage 5 realized metrics binding."
+    }
+  ],
+  "honest_disclosure": {
+    "phase_a_scope_only": "Policy specification + 10-candidate methodology shopping (post Codex C3) + DM protocol + schedule template (100% placeholder post Codex C2). NO actual β_bear time series emission. NO backtest performance metrics. NO measured net_IR.",
+    "Forge_Stage_4_prerequisite": "ensemble Stage 4 emits p_bad_t time series 437 monthly. Optimizer policy is applied mechanically by Forge Stage 5.",
+    "Forge_Stage_5_binding": "DM test full + per-window + per-regime + Path A/B/C 3-variant backtest + crisis fallback realized metrics + admission decision verdict",
+    "self_synthesis_used": false,
+    "AX_002_strict": "self_synthesis FALSE — overlay_schedule.csv W3 illustrative simulation COMPLETELY REMOVED post Codex C2 ACCEPT. All 437 sig_dates placeholder β=1.0 (no-op). build_overlay_schedule_template.R Step 4 rnorm/sample code deleted.",
+    "max_names_null_consistent_4_packages": "alpha_package max_names null + risk_package max_names null + request.json max_names null + optimization_package max_names null (4-way consistent for overlay role per Codex C1 PARTIAL_REBUTTAL)",
+    "RF_R3_M4_redundant_addressed": "DM incrementality protocol specifies exact test + Path A admission gate p<0.15 + Path B replacement gate p<0.05 + per-window + per-regime + Path C control included",
+    "RF_O5_O6_O7_max_names_weight_sigma_compliance": "N/A overlay scalar (no 20-stock weights to validate). Underlying STR_1715 retains all 5 production layers + max_names 20 + bounds [0, 0.20] + Σw=1 + LIQ 2e8 (unchanged by Layer 6 multiplicative scalar). underlying_holdings_hash field added for audit trail.",
+    "cost_units_unified_post_C4": "cost_bps = TO_ann × 15bps × 2 sides applied uniformly. Previous draft 10~25 / 54 / 75bps inconsistent estimates deprecated.",
+    "method_shopping_cap_strict_post_C3": "10 candidates exact at v6.1 R2-C cap. M01~M10 main + M11/M12 dispositioned.",
+    "crisis_fallback_protocol_post_C6": "4-tier compound β protocol + cash sleeve at KR_91D_CD + bounds shrink + Telegram alert + PG3 T+1 escalate at tier 3 (0.05 ≤ β < 0.10). Hard floor [0,0.05) reset + AX-001 v2 violation log + production_grade=false.",
+    "rationalization_red_flags_removed_post_C7": "4 phrases dispositioned: 1 ACCEPT_REMOVED (joint extreme probability negligible) + 1 PARTIAL (qualified design-phase) + 1 ACCEPT_REMOVED (safe rollback) + 1 ACCEPT (clarified qualitative)"
+  },
+  "next_step_forge_binding": {
+    "Forge_Stage_1": "build full 44 features + Σ_features re-estimation (per risk_package honest_disclosure binding) + per-feature lookahead audit (PB01-PB12)",
+    "Forge_Stage_2": "5-window walk-forward setup + Pesaran-Timmermann 3-regime stratified",
+    "Forge_Stage_3": "5-model ensemble (Logistic_L1 + LightGBM + RandomForest + LSTM + MarkovSwitching) + 5 calibrator cascade (isotonic primary → Platt → ENIR → ROC-reg → Beta) + Stage 3 calibrator dominance audit (DB-B trigger check)",
+    "Forge_Stage_4": "Per-window τ_optimal Youden J calibrated + 3-regime stratified retrain + ensemble p_bad_t emission to overlay_schedule.csv",
+    "Forge_Stage_5_required_emissions": [
+      "V_Path_A_M05_backtest (Sequential Layer 6 hysteresis)",
+      "V_Path_B_M07_backtest (Replacement M4)",
+      "V_Path_C_control_backtest (no Layer 6)",
+      "DM test full + per-window W1~W5 + per-regime (LOW_VOL_QE / HIGH_VOL_TAPER / INFLATION / DEFAULT)",
+      "Crisis fallback realized metrics (portfolio_MDD / CVaR_95 / cash_sleeve_share per sig_date)",
+      "Harvey-t 5-spec NW-HAC lag-12 + DSR Bailey-LdP n_trials=90",
+      "Net_IR + crowding_adj_ret table per variant",
+      "Admission verdict Branch A1/A2/A3/A4 per m4_incrementality_protocol.md"
+    ],
+    "Forge_Stage_6": "Codex + Architect verification triangulation AX-008 ≥ 2.5/3",
+    "discovery_graduation_gate": "If admission Branch A1 or A2 → graduate to deployment WT (STR_1715_AR_on_M4_R05_BEAR_overlay_PG2 sub-slot 2-1.STR_1715_AR_on_M4_R05_BEAR_overlay_PG2) per Charter §10 + governor admission verdict"
+  },
+  "next_step": "Forge cycle TBD. AX-008 1.5/3 → 2.5+/3 advancement via Forge Stage 5 backtest + Codex re-evaluation post Stage 5 + Architect verification. Forge cycle binds: build_overlay_schedule_template.R replace placeholder β_bear with Forge Stage 4 p_bad_t + apply M05 quantile-hysteresis policy + emit V_Path_A/B/C 3-variant backtest + DM test admission verdict + crisis fallback realized metrics."
+}

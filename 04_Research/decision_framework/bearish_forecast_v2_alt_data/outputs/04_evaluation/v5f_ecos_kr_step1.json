@@ -1,0 +1,104 @@
+{
+  "cycle": "53I_ecos_kr_macro_q126",
+  "step": "step1_feature_panel_build",
+  "base_panel": {
+    "path": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/01_data/feature_panel_v5e_q126_usmacro.parquet",
+    "n_features": 74,
+    "inherit": "Cycle 53H Path C extension: v4a 70 + 4 US macro (additive proven at q126 +0.0556)"
+  },
+  "added_features": {
+    "ecos_m2_yoy_lag1": {
+      "source": "ECOS 161Y006/BBHA00 M2 평잔 원계열 (monthly)",
+      "semantics": "M2 broad money YoY %, 35d publication lag",
+      "pit_lag": "monthly + 35d shift + daily ffill"
+    },
+    "ecos_krw_usd_change_5d_lag1": {
+      "source": "ECOS 731Y001 KRW/USD 매매기준율 (daily)",
+      "semantics": "5-day % change of KRW/USD, lag1",
+      "pit_lag": "daily + 1d shift"
+    },
+    "ecos_base_rate_lag1": {
+      "source": "ECOS 817Y002 KR_Call1D (daily call rate, base rate proxy)",
+      "semantics": "한국은행 기준금리 proxy (call rate, daily), lag1",
+      "pit_lag": "daily + 1d shift"
+    },
+    "ecos_industrial_production_yoy_lag1": {
+      "source": "ECOS 901Y033/A00 전산업생산지수 (monthly)",
+      "semantics": "Industrial production index YoY %, 50d publication lag",
+      "pit_lag": "monthly + 50d shift + daily ffill"
+    },
+    "ecos_cpi_yoy_lag1": {
+      "source": "ECOS 901Y009 KR_CPI (monthly)",
+      "semantics": "CPI YoY %, 35d publication lag",
+      "pit_lag": "monthly + 35d shift + daily ffill"
+    }
+  },
+  "combined_n_features": 79,
+  "output": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/01_data/feature_panel_v5f_ecos_kr.parquet",
+  "bbva_overlap_diagnostic": {
+    "ecos_m2_yoy_lag1": {
+      "max_abs_cor_bbva": 0.383,
+      "top_bbva_partner": "bbva_sovereign_z_rsd63"
+    },
+    "ecos_krw_usd_change_5d_lag1": {
+      "max_abs_cor_bbva": 0.32,
+      "top_bbva_partner": "bbva_transmission_z_lag5"
+    },
+    "ecos_base_rate_lag1": {
+      "max_abs_cor_bbva": 0.368,
+      "top_bbva_partner": "bbva_transmission_z_rsd21"
+    },
+    "ecos_industrial_production_yoy_lag1": {
+      "max_abs_cor_bbva": 0.254,
+      "top_bbva_partner": "bbva_macro_composite_rsd63"
+    },
+    "ecos_cpi_yoy_lag1": {
+      "max_abs_cor_bbva": 0.521,
+      "top_bbva_partner": "bbva_transmission_z_rsd63"
+    }
+  },
+  "ecos_vs_us_macro_correlation": {
+    "ecos_m2_yoy_lag1": {
+      "us_t10y2y_spread_lag1": 0.357,
+      "us_initial_claims_4w_avg_lag1": 0.337,
+      "us_cfnai_lag1": -0.056,
+      "us_stlfsi_lag1": 0.454
+    },
+    "ecos_krw_usd_change_5d_lag1": {
+      "us_t10y2y_spread_lag1": -0.001,
+      "us_initial_claims_4w_avg_lag1": -0.025,
+      "us_cfnai_lag1": -0.029,
+      "us_stlfsi_lag1": 0.112
+    },
+    "ecos_base_rate_lag1": {
+      "us_t10y2y_spread_lag1": -0.157,
+      "us_initial_claims_4w_avg_lag1": -0.215,
+      "us_cfnai_lag1": -0.088,
+      "us_stlfsi_lag1": 0.109
+    },
+    "ecos_industrial_production_yoy_lag1": {
+      "us_t10y2y_spread_lag1": 0.071,
+      "us_initial_claims_4w_avg_lag1": -0.215,
+      "us_cfnai_lag1": 0.105,
+      "us_stlfsi_lag1": -0.274
+    },
+    "ecos_cpi_yoy_lag1": {
+      "us_t10y2y_spread_lag1": -0.018,
+      "us_initial_claims_4w_avg_lag1": -0.141,
+      "us_cfnai_lag1": -0.128,
+      "us_stlfsi_lag1": 0.302
+    }
+  },
+  "pit_audit": {
+    "C2": "PASS — daily series shifted +1d (no same-day circular)",
+    "C4": "PASS — monthly stats shifted by publication lag (35d/50d/35d)",
+    "C13": "PASS — no sign flip, raw lag1 features",
+    "C14": "N/A — not factor IC",
+    "C15": "N/A — not Factor DB"
+  },
+  "inherits_from": [
+    "Cycle 53H: v5e panel (v4a 70 + 4 US macro) — q126 ADDITIVE_STRONG +0.0556",
+    "Cycle 52: v4a base panel (v1.3 + foreign breadth winner)",
+    "Cycle 134 (this cycle): ecos_kr_daily.csv from BOK ECOS API"
+  ]
+}

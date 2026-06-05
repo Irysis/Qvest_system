@@ -1,0 +1,104 @@
+{
+  "task_id": "WT-D20260529_005",
+  "track": "SECTOR_REL",
+  "wt_type": "discovery",
+  "as_of_date": "2026-05-29",
+  "forecast_horizon": "1M",
+  "selection_objective": "icir",
+  "construction": "within-sector (Date,Sector) z-score of canonical value/quality/momentum base factors, equal-weight composite. Firm-specific signal isolated by removing sector mean (sector beta / cross-industry comparability noise). Contrast = same base factors composited market-wide.",
+  "sector_source": "RAWDATA Sector column (QuantiWise/internal, KSI Level-1, 27 sectors, 96.8% non-NA). Slow-moving classification, PIT-safe at sig_date. NOTE: QMJ factor-DB had Sector=NA; RAWDATA is the gold source.",
+  "base_factors": ["V12_Composite_Value", "Q01_GPA", "M01_Mom_12_1"],
+  "factor_specs": [
+    {
+      "factor_family": "Value",
+      "proxy": "V12_Composite_Value",
+      "formula": "factor-DB composite value z-score, then within (Date,Sector) re-z-score",
+      "lag_rule": "quarterly 45d / annual May",
+      "winsorization": "factor-DB 3std + Z_Score_Aligned (C13)",
+      "neutralization": "sector (within-sector z-score)",
+      "economic_rationale": "Cross-industry P/E and book multiples are not comparable (banks vs software trade at structurally different multiples). Within-sector value ranking isolates relative mispricing from sector-level valuation regimes.",
+      "weight_theta": 0.333,
+      "redundancy_cluster_id": "value_core",
+      "references": ["Cohen-Polk-Vuolteenaho 2003", "Asness-Porter-Stevens 2000"]
+    },
+    {
+      "factor_family": "Quality",
+      "proxy": "Q01_GPA",
+      "formula": "gross profits / assets z-score, then within (Date,Sector) re-z-score",
+      "lag_rule": "quarterly 45d / annual May",
+      "winsorization": "factor-DB 3std + Z_Score_Aligned (C13)",
+      "neutralization": "sector",
+      "economic_rationale": "Gross profitability margins differ structurally across industries (software ~80% vs retail ~20%); raw cross-sectional GPA is partly a sector proxy. Within-sector GPA isolates firm-level operating quality.",
+      "weight_theta": 0.333,
+      "redundancy_cluster_id": "quality_profitability",
+      "references": ["Novy-Marx 2013", "Asness-Porter-Stevens 2000"]
+    },
+    {
+      "factor_family": "Momentum",
+      "proxy": "M01_Mom_12_1",
+      "formula": "12-1 month return z-score, then within (Date,Sector) re-z-score",
+      "lag_rule": "price t-1",
+      "winsorization": "factor-DB 3std + Z_Score_Aligned (C13)",
+      "neutralization": "sector",
+      "economic_rationale": "Market-wide momentum is partly sector rotation (an industry-level signal). Within-sector momentum isolates firm-specific relative-strength, reducing crowded sector-momentum exposure.",
+      "weight_theta": 0.333,
+      "redundancy_cluster_id": "momentum_core",
+      "references": ["Asness-Porter-Stevens 2000", "Moskowitz-Grinblatt 1999"]
+    }
+  ],
+  "measurement": {
+    "metric_type_authoritative": "canonical_screen (canonical_screen_bt, top-25 EW long-only, contract build_benchmark_compare NW lag-3). NOT proxy hand-calc. forge build_bt_result remains admission-binding authority.",
+    "lockbox_cutoff": "2023-12-22",
+    "start_date": "2004-01-01",
+    "n_months_canonical": 238,
+    "top_n": 25,
+    "cost_bps_oneway": 15,
+    "liq_min_won": 200000000,
+    "universe": "KOSPI200_KOSDAQ150_intersection"
+  },
+  "diagnostics_sector_relative": {
+    "rank_ic": 0.0229,
+    "icir": 0.269,
+    "harvey_t_rankIC_nw_lag3": 3.93,
+    "portfolio_alpha_t_canonical_nw_lag3": 3.424,
+    "net_sr": 0.811,
+    "information_ratio": 0.811,
+    "turnover_annual": 7.0,
+    "dsr_n_trials_2": 0.999,
+    "dsr_n_trials_22_honest": 0.947,
+    "realized_beta_kospi200": 0.965,
+    "return_cor_active_vs_str1715": 0.528,
+    "return_cor_port_vs_str1715": 0.852,
+    "subperiod_rank_ic": {"E1_2004_2013": 0.0347, "E2_2014_2019": 0.0209, "E3_2020_2023": -0.004},
+    "subperiod_stability": 0.667
+  },
+  "diagnostics_market_wide_baseline": {
+    "rank_ic": 0.0291,
+    "icir": 0.225,
+    "harvey_t_rankIC_nw_lag3": 3.39,
+    "portfolio_alpha_t_canonical_nw_lag3": 2.379,
+    "net_sr": 0.578,
+    "information_ratio": 0.578,
+    "turnover_annual": 5.4,
+    "dsr_n_trials_22_honest": 0.729
+  },
+  "finding": "이 구성(within-sector z-score of value/quality/momentum, top-25 EW long-only)에서 sector-relative ranking은 market-wide baseline 대비 canonical portfolio-alpha t를 2.379 -> 3.424로 개선(net_sr 0.578 -> 0.811). N=238m lockbox. rank-IC는 오히려 하락(0.0291 -> 0.0229)하나 long-only 실현 alpha(portfolio-alpha t)는 상승 — Cycle 2 교훈(rank-IC와 portfolio-alpha t 괴리) 재현. active-return cor vs STR_1715 = 0.528 (port gross cor 0.852, beta 0.965). TO 7.0/yr < 11. DSR honest(n_trials=22) = 0.947 > 0.5.",
+  "honest_caveats": [
+    "RF-A3 유형: E3(2020-2023) rank-IC = -0.004 (최근 era 횡단면 IC 약화). portfolio-alpha t는 전기간 강하나 최근 순위력 decay 관찰 — 일반화 금지.",
+    "return_cor(port) 0.852 / beta 0.965: long-only top-25는 시장 1st eigenmode 제거 불가(measurement-graduation 6 확립 진실 정합). active cor 0.528가 직교 측정치 — BAB/VALUE 0.76-0.78 대비 개선이나 완전 직교 아님.",
+    "rank-IC 0.0229 < 0.04 (advisory hurdle 미달). v8.x WS2 재설계로 rank-IC advisory, portfolio-alpha t(3.424)가 hard gate 권위 — 통과.",
+    "verdict/공간폐쇄 금지: 본 결과는 이 구성(N=238, 3-factor within-sector EW top-25)에서의 실측. 다른 base factor set / horizon / cap-tier 미탐색."
+  ],
+  "selection_objective_value": 0.269,
+  "n_trials_within": 2,
+  "session_cumulative_trials": 22,
+  "challenge_flags": [
+    {"id": "RF-A3", "severity": "MEDIUM", "note": "E3 2020-2023 rank-IC negative (-0.004) — recent era cross-sectional IC decay. portfolio-alpha t remains strong full-window."}
+  ],
+  "alpha_inheritance_cor_vs_str1715": 0.528,
+  "artifacts": {
+    "alpha_scores_parquet": "stage_artifacts/WT_WT_D20260529_005_SECTOR_REL/alpha_scores.parquet",
+    "results_json": "stage_artifacts/WT_WT_D20260529_005_SECTOR_REL/sector_rel_results.json",
+    "pipeline_script": "stage_artifacts/WT_WT_D20260529_005_SECTOR_REL/run_sector_rel.R"
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "task_id": "WT-D20260529_005",
+  "track": "SECTOR_REL",
+  "wt_type": "discovery",
+  "as_of_date": "2026-05-29",
+  "forecast_horizon": "1M",
+  "selection_objective": "icir",
+  "construction": "within-sector (Date,Sector) z-score of canonical value/quality/momentum base factors (V12_Composite_Value, Q01_GPA, M01_Mom_12_1), equal-weight composite. Firm-specific signal isolated by removing sector mean. Contrast = same base factors composited market-wide.",
+  "sector_source": "RAWDATA Sector column (QuantiWise/internal, KSI Level-1, 27 sectors, 96.8% non-NA). Slow-moving classification, PIT-safe at sig_date. QMJ factor-DB had Sector=NA; RAWDATA is the gold source — verified available.",
+  "base_factors": ["V12_Composite_Value", "Q01_GPA", "M01_Mom_12_1"],
+  "factor_specs": [
+    {"factor_family": "Value", "proxy": "V12_Composite_Value", "formula": "factor-DB composite value z, then within (Date,Sector) re-z", "lag_rule": "quarterly 45d / annual May", "winsorization": "factor-DB 3std + Z_Score_Aligned (C13)", "neutralization": "sector", "economic_rationale": "Cross-industry P/E and book multiples are structurally non-comparable (banks vs software). Within-sector value ranking isolates relative mispricing from sector valuation regimes.", "weight_theta": 0.333, "redundancy_cluster_id": "value_core", "references": ["Cohen-Polk-Vuolteenaho 2003 JF (The Value Spread)", "Asness-Porter-Stevens 2000 (Industry-Relative Firm Characteristics)"]},
+    {"factor_family": "Quality", "proxy": "Q01_GPA", "formula": "gross profits/assets z, then within (Date,Sector) re-z", "lag_rule": "quarterly 45d / annual May", "winsorization": "factor-DB 3std + Z_Score_Aligned (C13)", "neutralization": "sector", "economic_rationale": "Gross margins differ structurally across industries (software ~80% vs retail ~20%); raw GPA is partly a sector proxy. Within-sector GPA isolates firm operating quality.", "weight_theta": 0.333, "redundancy_cluster_id": "quality_profitability", "references": ["Novy-Marx 2013 JFE (The Other Side of Value)", "Asness-Porter-Stevens 2000"]},
+    {"factor_family": "Momentum", "proxy": "M01_Mom_12_1", "formula": "12-1 month return z, then within (Date,Sector) re-z", "lag_rule": "price t-1", "winsorization": "factor-DB 3std + Z_Score_Aligned (C13)", "neutralization": "sector", "economic_rationale": "Market-wide momentum is partly sector rotation. Within-sector momentum isolates firm-specific relative strength, reducing crowded sector-momentum exposure.", "weight_theta": 0.333, "redundancy_cluster_id": "momentum_core", "references": ["Asness-Porter-Stevens 2000", "Moskowitz-Grinblatt 1999 JF (Do Industries Explain Momentum)"]}
+  ],
+  "measurement": {
+    "metric_type_authoritative": "canonical_screen (canonical_screen_bt, top-N EW long-only, contract build_benchmark_compare NW lag-3). NOT proxy hand-calc. forge build_bt_result remains admission-binding authority.",
+    "lockbox_cutoff": "2023-12-22",
+    "in_sample_window": "2004-02 .. 2023-11 (238 months)",
+    "oos_window": "2024-01 .. 2026-04 (27 months)",
+    "top_n_primary": 25,
+    "cost_bps_oneway": 15,
+    "liq_min_won": 200000000,
+    "universe": "KOSPI200_KOSDAQ150_intersection"
+  },
+  "diagnostics_in_sample": {
+    "sector_relative_top25": {
+      "rank_ic": 0.0229, "icir": 0.269, "harvey_t_rankIC_nw_lag3": 3.93,
+      "portfolio_alpha_t_canonical_nw_lag3": 3.424, "net_sr": 0.811, "information_ratio": 0.811,
+      "turnover_annual": 7.0, "dsr_n_trials_2": 0.999, "dsr_n_trials_22_honest": 0.947,
+      "realized_beta_kospi200": 0.965, "return_cor_active_vs_str1715": 0.528, "return_cor_port_vs_str1715": 0.852,
+      "subperiod_rank_ic": {"E1_2004_2013": 0.0347, "E2_2014_2019": 0.0209, "E3_2020_2023": -0.004},
+      "subperiod_stability": 0.667, "monotonicity_spearman_decile": 0.636
+    },
+    "market_wide_baseline_top25": {
+      "rank_ic": 0.0291, "icir": 0.225, "harvey_t_rankIC_nw_lag3": 3.39,
+      "portfolio_alpha_t_canonical_nw_lag3": 2.379, "net_sr": 0.578, "information_ratio": 0.578,
+      "turnover_annual": 5.4, "dsr_n_trials_22_honest": 0.729
+    },
+    "single_factor_sector_rel_baselines_top25": {
+      "V12_sr": {"portfolio_alpha_t": 2.117, "net_sr": 0.497, "turnover": 6.3},
+      "Q01_sr": {"portfolio_alpha_t": 1.271, "net_sr": 0.294, "turnover": 2.9},
+      "M01_sr": {"portfolio_alpha_t": 2.684, "net_sr": 0.627, "turnover": 7.9},
+      "composite_improvement_vs_best_single_pct": 27.6
+    },
+    "robustness_top_n": {
+      "top25": {"portfolio_alpha_t": 3.424, "net_sr": 0.811, "turnover": 7.0, "dsr_n22": 0.947},
+      "top20": {"portfolio_alpha_t": 3.200, "net_sr": 0.741, "turnover": 7.6, "dsr_n22": 0.906},
+      "top15": {"portfolio_alpha_t": 2.954, "net_sr": 0.702, "turnover": 8.2, "dsr_n22": 0.874}
+    }
+  },
+  "diagnostics_out_of_sample_2024_2026": {
+    "portfolio_alpha_t_canonical_nw_lag3": -1.665,
+    "net_sr": -0.813,
+    "information_ratio": -0.813,
+    "n_months": 27,
+    "rank_ic_oos": 0.0312,
+    "interpretation": "RANK-IC OOS는 +0.0312로 양수(횡단면 순위력 잔존)이나 LONG-ONLY TOP-25 실현 portfolio-alpha는 OOS에서 REVERSAL(-1.665, net_sr -0.813). in-sample E3(2020-23) rank-IC -0.004 decay의 연장 — 최근 alpha decay 확정. Cycle 2 교훈(rank-IC vs portfolio-alpha 괴리) OOS 재현."
+  },
+  "finding": "이 구성(within-sector V/Q/M EW top-25)에서 sector-relative ranking은 in-sample(2004-2023, N=238)에서 market-wide baseline 대비 canonical portfolio-alpha t를 2.379->3.424로 개선, composite는 best single sleeve(M01_sr 2.684) 대비 +27.6%. top20에서도 PORT_t 3.200(>2.95 hurdle), DSR(n=22) 0.906. 단 2024-2026 OOS(27m)에서 portfolio-alpha t -1.665로 REVERSAL — standalone alpha는 in-sample 강함, OOS 무너짐. rank-IC는 OOS도 +(0.0312)이나 long-only 실현 alpha 역전. monotonicity spearman 0.636(<0.7). active cor vs STR_1715 0.528(BAB/VALUE 0.76-0.78 대비 개선이나 <0.5 권고 미달).",
+  "honest_caveats": [
+    "★ OOS REVERSAL (최중요): 2024-2026 portfolio-alpha t = -1.665. in-sample 강도가 OOS로 전이 안 됨. standalone deployment 부적격.",
+    "rank-IC 0.0229 < 0.04 (advisory hurdle 미달). v8.x WS2: rank-IC advisory, portfolio-alpha t가 hard gate 권위. in-sample PORT_t는 hurdle 통과하나 OOS는 음수.",
+    "monotonicity spearman 0.636 < 0.7 (decile 중간 non-monotonic).",
+    "TO 7.0-8.2/yr: task cap 11 통과, base cap 6.0 초과 (implementation discipline borderline).",
+    "active cor 0.528 < 0.5 권고 미달, port cor 0.852 (beta 0.965). long-only 1st eigenmode 잔존 — measurement-graduation §6 정합.",
+    "verdict/공간폐쇄/소거 금지: 본 결과는 이 구성(N_in=238, N_oos=27, 3-factor within-sector EW top-25)의 실측. 다른 base factor set/horizon/cap-tier/sector_Lv2 미탐색. 포기 판단은 Q-Lead/도훈 권한."
+  ],
+  "selection_objective_value": 0.269,
+  "n_trials_within": 5,
+  "n_trials_within_detail": "2 constructions (mw, sr) + 3 single-factor baselines = 5 within-track. (top-N robustness는 동일 신호 sizing sweep, 별도 trial 미산입)",
+  "session_cumulative_trials": 22,
+  "challenge_flags": [
+    {"id": "RF-A6", "severity": "HIGH", "note": "OOS 2024-2026 portfolio-alpha t = -1.665 (reversal). in-sample alpha가 OOS 미전이."},
+    {"id": "RF-A3", "severity": "MEDIUM", "note": "E3 2020-2023 rank-IC negative (-0.004), OOS로 decay 연장."},
+    {"id": "RF-A2", "severity": "RESOLVED", "note": "composite +27.6% vs best single sector-rel sleeve — RF-A2 해소."}
+  ],
+  "alpha_inheritance_cor_vs_str1715": 0.528,
+  "codex_round": {
+    "stance": "REJECT",
+    "veto_flag": false,
+    "resolution": "PARTIAL ACCEPT — C2(clean parquet) fix, C5(single-factor baselines+monotonicity) 추가, C3(OOS reversal) 실측이 결정적. challenge_note_SECTOR_REL.md 8 concern 분류 완료.",
+    "response_file": "codex_critic_response_alpha_SECTOR_REL.json",
+    "challenge_note": "challenge_note_SECTOR_REL.md"
+  },
+  "artifacts": {
+    "alpha_scores_parquet": "stage_artifacts/WT_WT_D20260529_005_SECTOR_REL/alpha_scores.parquet (clean — no Ret_1m)",
+    "results_json": "stage_artifacts/WT_WT_D20260529_005_SECTOR_REL/sector_rel_results.json",
+    "rebuttal_addenda_json": "stage_artifacts/WT_WT_D20260529_005_SECTOR_REL/rebuttal_addenda.json",
+    "pipeline_script": "stage_artifacts/WT_WT_D20260529_005_SECTOR_REL/run_sector_rel.R"
+  }
+}

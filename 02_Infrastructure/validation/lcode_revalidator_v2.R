@@ -19,7 +19,7 @@ suppressPackageStartupMessages({
 })
 
 INFRA_DIR <- tryCatch(dirname(dirname(sys.frame(1)$ofile)),
-  error = function(e) "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/02_Infrastructure")
+  error = function(e) file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")), "02_Infrastructure"))
 source(file.path(INFRA_DIR, "config.R"))
 source(file.path(INFRA_DIR, "backtest_harness.R"))
 

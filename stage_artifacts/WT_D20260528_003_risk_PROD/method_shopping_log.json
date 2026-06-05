@@ -1,0 +1,46 @@
+{
+  "task_id": "WT-D20260528_003",
+  "agent_role": "risk",
+  "as_of_date": "2023-11-30",
+  "selection_objective": "condition_number",
+  "n_candidates": 4,
+  "cap": 5,
+  "method_log": {
+    "sample": {
+      "name": "sample_pairwise",
+      "condition": 7.7116218423102966e+18,
+      "min_eig": -6.8676e-18,
+      "psd": true,
+      "selected": false
+    },
+    "schafer_strimmer": {
+      "name": "schafer_strimmer_2005",
+      "condition": 842.0551,
+      "min_eig": 0,
+      "lambda_var": 0.1846,
+      "lambda_cor": 0.124,
+      "psd": true,
+      "selected": false
+    },
+    "gerber_rmt": {
+      "name": "gerber_rmt",
+      "condition": 56893.7887,
+      "min_eig": -0.0118,
+      "psd": false,
+      "selected": false
+    },
+    "factor_model": {
+      "name": "factor_model_BOmegaBT_plus_D_eigfloor_cond100",
+      "condition_before": 193.7814,
+      "condition_after": 100,
+      "min_eig": 0.0969,
+      "psd": true,
+      "specific_var_floor": 0.05,
+      "specific_var_ceiling": 2,
+      "target_cond": 100,
+      "selected": true
+    }
+  },
+  "selected_method": "factor_model_BOmegaBT_plus_D_eigfloor_cond100",
+  "rationale": "Σ = BΩB' + D (QEPM standard, Connor-Korajczyk 1995 / Grinold-Kahn 2000). Codex C6 (Track1 cond=291.8): explicit eigen-floor target cond<200 applied; before/after reported. Schäfer-Strimmer 2005 + sample + Gerber-RMT compared as estimation-quality candidates."
+}

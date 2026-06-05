@@ -1,0 +1,250 @@
+#==============================================================================
+# 117_v3e_arch_pivot_rebaseline_forward_aggregate.R — Cycle 50 Phase 3 v3e AGG
+#
+# Reuses GBDT preds from v1_3_forward (cycle 45E uses identical v1.3 baseline + arch pivot only).
+# Uses PatchTST + N-BEATS preds from scripts/117 Python.
+# 5-way merge + dynamic synthesis over OOS 2018-2026.
+#==============================================================================
+
+suppressPackageStartupMessages({
+  library(arrow); library(data.table); library(jsonlite)
+})
+
+PROJECT_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
+WS <- file.path(PROJECT_ROOT, "04_Research/decision_framework/bearish_forecast_v2_alt_data")
+DATA_DIR <- file.path(WS, "outputs/01_data")
+V3E_DIR <- file.path(WS, "outputs/03_models/v3e_arch_pivot_forward")
+V1F_DIR <- file.path(WS, "outputs/03_models/v1_3_forward")
+EVAL_DIR <- file.path(WS, "outputs/04_evaluation")
+
+dir.create(V3E_DIR, recursive = TRUE, showWarnings = FALSE)
+
+set.seed(42)
+LOOKBACK <- 252
+PURGE <- 21
+
+OOS_START <- as.Date("2018-01-01")
+OOS_END   <- as.Date("2026-04-30")
+
+pr_auc <- function(p, y) {
+  ok <- !is.na(p) & !is.na(y); p <- p[ok]; y <- y[ok]
+  if (length(p) < 30 || sum(y) < 5) return(NA_real_)
+  ord <- order(p, decreasing = TRUE); y_ord <- y[ord]
+  prec <- cumsum(y_ord) / seq_along(y_ord); rec <- cumsum(y_ord) / sum(y_ord)
+  n <- length(prec); sum(diff(rec) * (prec[-1] + prec[-n]) / 2)
+}
+
+softmax <- function(x, beta = 5) {
+  e <- exp(x * beta - max(x * beta)); e / sum(e)
+}
+
+cat("\n========== 5-way merge (XGB+Cat+RF + PatchTST + N-BEATS) — v3e forward ==========\n")
+cat("[Reuse] GBDT preds = v1_3_forward (v1.3 baseline + arch pivot only)\n")
+
+make_5way <- function(target_col) {
+  cat(sprintf("\n----- 5-way merge: %s -----\n", target_col))
+  gbdt <- as.data.table(read_parquet(file.path(V1F_DIR, sprintf("predictions_3way_%s.parquet", target_col))))
+  gbdt[, Date := as.Date(Date)]
+  pt <- as.data.table(read_parquet(file.path(V3E_DIR, sprintf("predictions_patchtst_%s.parquet", target_col))))
+  pt[, Date := as.Date(Date)]
+  nb <- as.data.table(read_parquet(file.path(V3E_DIR, sprintf("predictions_nbeats_%s.parquet", target_col))))
+  nb[, Date := as.Date(Date)]
+
+  oos_gbdt <- gbdt[split == "oos" & Date >= OOS_START & Date <= OOS_END,
+                    .(Date, p_xgb, p_cat, p_rf, y)]
+  oos <- merge(oos_gbdt, pt[, .(Date, p_patchtst)], by = "Date", all = TRUE)
+  oos <- merge(oos, nb[, .(Date, p_nbeats)], by = "Date", all = TRUE)
+  oos <- oos[!is.na(y) & !is.na(p_xgb) & !is.na(p_patchtst) & !is.na(p_nbeats)]
+  oos <- oos[Date >= OOS_START & Date <= OOS_END]
+
+  cat(sprintf("[merge] OOS N=%d / events=%d (%.2f%%)\n",
+              nrow(oos), sum(oos$y), 100 * mean(oos$y)))
+
+  pr_xgb <- pr_auc(oos$p_xgb, oos$y); pr_cat <- pr_auc(oos$p_cat, oos$y)
+  pr_rf <- pr_auc(oos$p_rf, oos$y); pr_pt <- pr_auc(oos$p_patchtst, oos$y); pr_nb <- pr_auc(oos$p_nbeats, oos$y)
+
+  cat(sprintf("[v3e forward] XGB=%.4f / CAT=%.4f / RF=%.4f / PatchTST=%.4f / N-BEATS=%.4f\n",
+              pr_xgb, pr_cat, pr_rf, pr_pt, pr_nb))
+
+  oos[, p_ew5 := (p_xgb + p_cat + p_rf + p_patchtst + p_nbeats) / 5]
+  oos[, p_wew := 0.25 * p_xgb + 0.25 * p_cat + 0.25 * p_rf + 0.125 * p_patchtst + 0.125 * p_nbeats]
+  pr_ew5 <- pr_auc(oos$p_ew5, oos$y); pr_wew <- pr_auc(oos$p_wew, oos$y)
+  cat(sprintf("[v3e forward] EW5=%.4f / WEW=%.4f\n", pr_ew5, pr_wew))
+
+  write_parquet(oos, file.path(V3E_DIR, sprintf("predictions_5way_%s.parquet", target_col)))
+  list(individual = list(xgb=pr_xgb, cat=pr_cat, rf=pr_rf, patchtst=pr_pt, nbeats=pr_nb),
+       ew5 = pr_ew5, wew = pr_wew, oos = oos)
+}
+
+res_5w_q15 <- make_5way("y_tail_q15")
+res_5w_onset <- make_5way("y_onset")
+
+cat("\n========== Dynamic 5-method ensemble (v3e) ==========\n")
+
+run_dynamic <- function(target_col, oos_in) {
+  cat(sprintf("\n----- Dynamic 5-method: %s -----\n", target_col))
+  p5 <- copy(oos_in); setorder(p5, Date); n_total <- nrow(p5)
+  M_NAMES <- c("p_xgb", "p_cat", "p_rf", "p_patchtst", "p_nbeats")
+  M <- as.matrix(p5[, ..M_NAMES]); Y <- p5$y
+
+  w_static <- c(0.25, 0.25, 0.25, 0.125, 0.125)
+  p_static <- as.numeric(M %*% w_static)
+  pa_static <- pr_auc(p_static, Y)
+  cat(sprintf("[Static WEW] PR-AUC=%.4f\n", pa_static))
+
+  p_M1 <- rep(NA_real_, n_total)
+  for (i in seq_len(n_total)) {
+    cutoff <- i - PURGE; start <- cutoff - LOOKBACK + 1
+    if (start < 1) next
+    p_w <- M[start:cutoff, , drop = FALSE]; y_w <- Y[start:cutoff]
+    pr_m <- sapply(seq_len(5), function(m) pr_auc(p_w[, m], y_w))
+    pr_m[is.na(pr_m)] <- 0
+    w <- softmax(pr_m, beta = 5)
+    p_M1[i] <- sum(M[i, ] * w)
+  }
+  pa_M1 <- pr_auc(p_M1, Y)
+  cat(sprintf("[M1 Rolling]  PR-AUC=%.4f\n", pa_M1))
+
+  feat <- as.data.table(read_parquet(file.path(DATA_DIR, "feature_panel_v1_3.parquet")))
+  feat[, Date := as.Date(Date)]
+  if (!"bbva_macro_composite" %in% names(feat)) {
+    cat("[M2 WARN] bbva_macro_composite not found — fallback Static\n")
+    p_M2 <- p_static
+    Regime <- rep("sideways", n_total)
+    p5_r <- copy(p5); p5_r[, regime := "sideways"]
+    M_r <- M; Y_r <- Y
+  } else {
+    p5_r <- merge(p5, feat[, .(Date, bbva_macro_composite)], by = "Date", all.x = TRUE)
+    setorder(p5_r, Date)
+    train_macro <- p5_r$bbva_macro_composite[seq_len(min(2000, n_total))]
+    q33 <- quantile(train_macro, 0.33, na.rm = TRUE)
+    q67 <- quantile(train_macro, 0.67, na.rm = TRUE)
+    p5_r[, regime := fcase(
+      is.na(bbva_macro_composite), NA_character_,
+      bbva_macro_composite <= q33, "bull",
+      bbva_macro_composite >= q67, "bear",
+      default = "sideways"
+    )]
+    M_r <- as.matrix(p5_r[, ..M_NAMES]); Y_r <- p5_r$y; Regime <- p5_r$regime
+    p_M2 <- rep(NA_real_, n_total)
+    for (i in seq_len(n_total)) {
+      cur_reg <- Regime[i]
+      if (is.na(cur_reg)) next
+      cutoff <- i - PURGE; start <- cutoff - LOOKBACK + 1
+      if (start < 1) next
+      in_reg <- which(Regime[start:cutoff] == cur_reg) + (start - 1)
+      if (length(in_reg) < 30) {
+        p_M2[i] <- sum(M_r[i, ] * w_static); next
+      }
+      pr_m <- sapply(seq_len(5), function(m) pr_auc(M_r[in_reg, m], Y_r[in_reg]))
+      pr_m[is.na(pr_m)] <- 0
+      w <- softmax(pr_m, beta = 5)
+      p_M2[i] <- sum(M_r[i, ] * w)
+    }
+  }
+  pa_M2 <- pr_auc(p_M2, Y_r)
+  cat(sprintf("[M2 Regime]   PR-AUC=%.4f\n", pa_M2))
+
+  eta <- 1.0; w_hedge <- rep(1/5, 5)
+  p_M3 <- rep(NA_real_, n_total)
+  for (i in seq_len(n_total)) {
+    p_M3[i] <- sum(M[i, ] * w_hedge)
+    if (!is.na(Y[i])) {
+      losses <- (M[i, ] - Y[i])^2
+      w_hedge <- w_hedge * exp(-eta * losses); w_hedge <- w_hedge / sum(w_hedge)
+    }
+  }
+  pa_M3 <- pr_auc(p_M3, Y)
+  cat(sprintf("[M3 Hedge]    PR-AUC=%.4f\n", pa_M3))
+
+  log_lik <- rep(0, 5); w_bayes <- rep(1/5, 5)
+  p_M4 <- rep(NA_real_, n_total); eps <- 1e-6
+  for (i in seq_len(n_total)) {
+    p_M4[i] <- sum(M[i, ] * w_bayes)
+    if (!is.na(Y[i])) {
+      p_clip <- pmax(pmin(M[i, ], 1 - eps), eps)
+      log_lik_i <- Y[i] * log(p_clip) + (1 - Y[i]) * log(1 - p_clip)
+      log_lik <- log_lik + log_lik_i
+      w_bayes <- softmax(log_lik / max(i, 100), beta = 50)
+    }
+  }
+  pa_M4 <- pr_auc(p_M4, Y)
+  cat(sprintf("[M4 Bayes]    PR-AUC=%.4f\n", pa_M4))
+
+  EPSILON <- 0.1
+  Q <- matrix(0, nrow = 3, ncol = 5); counts <- matrix(0, nrow = 3, ncol = 5)
+  regime_to_idx <- function(r) {
+    if (is.na(r)) return(2)
+    fcase(r == "bull", 1, r == "sideways", 2, r == "bear", 3, default = 2)
+  }
+  p_M5 <- rep(NA_real_, n_total)
+  for (i in seq_len(n_total)) {
+    reg_idx <- regime_to_idx(Regime[i])
+    if (runif(1) < EPSILON) chosen <- sample(1:5, 1) else chosen <- which.max(Q[reg_idx, ])
+    w_q <- softmax(Q[reg_idx, ], beta = 3)
+    p_M5[i] <- sum(M[i, ] * w_q)
+    if (!is.na(Y[i])) {
+      for (m in seq_len(5)) {
+        reward <- -((M[i, m] - Y[i])^2)
+        counts[reg_idx, m] <- counts[reg_idx, m] + 1
+        Q[reg_idx, m] <- Q[reg_idx, m] + (reward - Q[reg_idx, m]) / counts[reg_idx, m]
+      }
+    }
+  }
+  pa_M5 <- pr_auc(p_M5, Y)
+  cat(sprintf("[M5 Bandit]   PR-AUC=%.4f\n", pa_M5))
+
+  out <- p5_r[, .(Date, y, regime,
+                  p_static = p_static,
+                  p_M1_rolling = p_M1,
+                  p_M2_regime = p_M2,
+                  p_M3_hedge = p_M3,
+                  p_M4_bayes = p_M4,
+                  p_M5_bandit = p_M5)]
+  write_parquet(out, file.path(V3E_DIR, sprintf("predictions_dynamic_%s.parquet", target_col)))
+
+  data.table(
+    target = target_col,
+    method = c("Static_WEW", "M1_Rolling", "M2_Regime", "M3_Hedge", "M4_Bayes", "M5_Bandit"),
+    PRAUC = c(pa_static, pa_M1, pa_M2, pa_M3, pa_M4, pa_M5)
+  )
+}
+
+dyn_q15 <- run_dynamic("y_tail_q15", res_5w_q15$oos)
+dyn_onset <- run_dynamic("y_onset", res_5w_onset$oos)
+
+cat("\n[v3e forward Dynamic SUMMARY]\n")
+print(rbind(dyn_q15, dyn_onset))
+
+v1_path <- file.path(EVAL_DIR, "v1_3_rebaseline_forward.json")
+delta_wew <- NA_real_
+if (file.exists(v1_path)) {
+  v1 <- fromJSON(v1_path)
+  v1_wew_q15 <- v1$v1_3_forward$dynamic_PRAUC_y_tail_q15["Static_WEW"]
+  v3e_wew_q15 <- dyn_q15[method == "Static_WEW", PRAUC]
+  delta_wew <- v3e_wew_q15 - v1_wew_q15
+  cat(sprintf("\n[Δ Static WEW vs v1.3 forward] %+.4f (v1.3=%.4f / v3e=%.4f)\n",
+              delta_wew, v1_wew_q15, v3e_wew_q15))
+}
+
+result_json <- list(
+  cycle = "50_v3e_arch_pivot_rebaseline_forward",
+  forward_labels = TRUE,
+  oos_window = list(start = as.character(OOS_START), end = as.character(OOS_END)),
+  v3e_forward = list(
+    n_features = 69,
+    individual_OOS_PRAUC_y_tail_q15 = res_5w_q15$individual,
+    individual_OOS_PRAUC_y_onset = res_5w_onset$individual,
+    dynamic_PRAUC_y_tail_q15 = setNames(dyn_q15$PRAUC, dyn_q15$method),
+    dynamic_PRAUC_y_onset = setNames(dyn_onset$PRAUC, dyn_onset$method)
+  ),
+  delta_vs_v1_3_forward = list(
+    Static_WEW_y_tail_q15 = if (!is.na(delta_wew)) round(delta_wew, 4) else NULL
+  )
+)
+
+out_json <- file.path(EVAL_DIR, "v3e_arch_pivot_rebaseline_forward.json")
+write_json(result_json, out_json, auto_unbox = TRUE, pretty = TRUE, na = "null")
+cat(sprintf("\n[JSON] %s\n", out_json))
+
+cat("\n========== v3e_arch_pivot forward DONE ==========\n")

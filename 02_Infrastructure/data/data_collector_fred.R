@@ -74,6 +74,12 @@ FRED_SERIES <- list(
   list(id = "VIXCLS",    name = "VIX",                freq = "d",
        desc = "CBOE VIX Index"),
 
+  # 글로벌 위험선호 / Canary (RE16_Canary_Signal source) — 2026-05-29 추가
+  # FRED SP500 라이선스 제약: 최근 ~10년만 제공 (현재 2016-05-31~). 그 이전은
+  # 데이터 자체가 FRED에서 미제공 → RE16은 2016-08 이후만 backfill 가능 (정직).
+  list(id = "SP500",     name = "SP500",              freq = "d",
+       desc = "S&P 500 Index (canary momentum, ~10y FRED license window)"),
+
   # 환율 (Exchange Rates)
   list(id = "DEXKOUS",   name = "KRW_USD",            freq = "d",
        desc = "Korean Won / US Dollar"),

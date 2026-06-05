@@ -1,0 +1,237 @@
+{
+  "task_id": "WT-D20260528_003",
+  "hypothesis_id": "B",
+  "schema_version": "alpha_package_v1",
+  "as_of_date": "2026-05-28",
+  "signal_cutoff": "2023-12-22",
+  "as_of_sig_date": "2023-10-31",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe": "KOSPI200 ∪ KOSDAQ150 union (n_ticker ~ 350 at as_of_sig_date; PIT t-1 liq 2e8 filter applied)",
+  "benchmark": "KOSPI200_total_return",
+  "hypothesis_title": "STR_1724 Bali 2011 MAX Lottery Anomaly Pure (M22_Max_Return single-factor, KR market)",
+  "hypothesis_description": "Bali-Cakici-Whitelaw 2011 JFE 99(2) MAX anomaly pure single-factor validation in KR market. M22_Max_Return (highest single-day return in past month, lower_better direction per factor_registry) — lottery preference predicts high MAX → 1M return underperformance. KR retail 50%+ market structure 정합 가설. Sector neutralized + PIT lockbox <= 2023-12-22 + walk-forward expanding + liq 2e8 t-1 strict. Single-sleeve top20 long-only design (Option a). Result: ICIR_neut=0.264 (PASS gate), Harvey t=3.97 (PASS gate), but rank_ic=0.023 (FAIL gate 0.04), subperiod_stability=0.375 (FAIL gate 0.5), selection-corrected DSR=0.0 (FAIL gate 0.5), AX-001 v2 crisis IC=-0.0195 (defensive FAIL), top20 active return=-0.122%/month t=-0.67 (signal-portfolio break, AX-007 정합 risk).",
+  "wt_type": "discovery",
+  "selection_objective": "icir",
+  "alpha_vector": {
+    "A009520": 1.4822,
+    "A005490": 1.3967,
+    "A004020": 1.2232,
+    "A000670": 1.1997,
+    "A285130": 1.1141,
+    "A294090": 1.0654,
+    "A084850": 1.0581,
+    "A047040": 1.0379,
+    "A009240": 1.0334,
+    "A031430": 0.9893,
+    "A081660": 0.989,
+    "A006360": 0.9578,
+    "A267980": 0.8816,
+    "A089980": 0.8802,
+    "A091700": 0.8757,
+    "A043150": 0.8466,
+    "A001680": 0.8447,
+    "A011070": 0.8314,
+    "A021240": 0.8097,
+    "A029780": 0.8085
+  },
+  "confidence_vector": {
+    "A009520": 0.6723,
+    "A005490": 0.6766,
+    "A004020": 0.6861,
+    "A000670": 0.6875,
+    "A285130": 0.6927,
+    "A294090": 0.6957,
+    "A084850": 0.6962,
+    "A047040": 0.6975,
+    "A009240": 0.6978,
+    "A031430": 0.7007,
+    "A081660": 0.7007,
+    "A006360": 0.7029,
+    "A267980": 0.7082,
+    "A089980": 0.7083,
+    "A091700": 0.7086,
+    "A043150": 0.7108,
+    "A001680": 0.7109,
+    "A011070": 0.7119,
+    "A021240": 0.7135,
+    "A029780": 0.7136
+  },
+  "signal_matrix_ref": "stage_artifacts/WT_D20260528_003_overnight_B/alpha_scores.parquet",
+  "alpha_inheritance": {
+    "parent_strategy_id": null,
+    "alpha_inheritance_cor_vs_parent": null,
+    "parent_alpha_check_note": "Pure single-factor discovery (no parent inheritance). M22_Max_Return is sourced from factor_db_registry, but selection denominator for DSR includes 269 Factor DB candidates."
+  },
+  "factor_specs": [
+    {
+      "factor_family": "lottery_anomaly",
+      "proxy": "M22_Max_Return",
+      "formula": "Max single-day return in past month (calendar window). align_factor_direction (IC-based, lower_better → Z_aligned = Z_Score * -1). Per-Date sector demean + re-standardize sd=1.",
+      "lag_rule": "Date <= sig_d (computed from t-30d daily returns, lookback period only)",
+      "winsorization": "3std (factor_db_builder default)",
+      "neutralization": "sector (per-Date demean), no size or beta neut applied",
+      "economic_rationale": "Bali-Cakici-Whitelaw 2011: Investors with lottery preference systematically overpay for stocks with recent extreme positive returns. High MAX(t) predicts negative 1M ahead return. KR retail share >50% predicts strong lottery preference. Direction in registry: lower_better. After IC-based alignment, high Z_aligned = low MAX = high expected alpha (defensive direction).",
+      "weight_theta": 1.0,
+      "references": [
+        "Bali, T. G., Cakici, N., & Whitelaw, R. F. (2011). Maxing out: Stocks as lotteries and the cross-section of expected returns. Journal of Financial Economics, 99(2), 427-446.",
+        "factor_registry.json M22_Max_Return entry (direction=lower_better, category=momentum, evidence_tier=B)"
+      ],
+      "source": "db_existing",
+      "factor_db_loader": "load_month_factors(sig_d) via factor_db_connector (PIT C14+C15 compliant)"
+    }
+  ],
+  "diagnostics": {
+    "rank_ic": 0.0226,
+    "icir": 0.2638,
+    "harvey_t_stat": 3.9663,
+    "subperiod_stability": 0.3746,
+    "monotonicity_neut": -0.5758,
+    "post_neutralization_ic_retention": 0.95,
+    "dsr_pure_n_trials_1": 1.0000,
+    "dsr_selection_n_trials_269": 0.0000,
+    "ic_annualized_sharpe": 0.914,
+    "ic_skew": -0.201,
+    "ic_kurt": 2.814,
+    "n_dates": 226,
+    "n_tickers": 751,
+    "avg_n_per_date": 298.8,
+    "top20_active_monthly_pct": -0.122,
+    "top20_active_t_stat": -0.666,
+    "subperiod_icir_neut": {
+      "P1_2005_2014": 0.187,
+      "P2_2015_2019": 0.498,
+      "P3_2020_2026": 0.209
+    },
+    "subperiod_sign_stable": true,
+    "subperiod_top20_active": {
+      "P1_2005_2014": {"active_pct_per_month": -0.315, "t_stat": -1.4},
+      "P2_2015_2019": {"active_pct_per_month": 0.410, "t_stat": 1.83},
+      "P3_2020_2026": {"active_pct_per_month": -0.314, "t_stat": -0.51}
+    },
+    "ax_001_v2": {
+      "crisis_ic_neut": -0.0195,
+      "normal_ic_neut": 0.0205,
+      "elevated_ic_neut": 0.0383,
+      "crisis_icir_neut": -0.1766,
+      "normal_icir_neut": 0.2497,
+      "elevated_icir_neut": 0.4793,
+      "crisis_ic_positive_pass": false,
+      "bad_normal_ratio": -0.95,
+      "bad_normal_pass": false,
+      "interpretation": "Defensive role HARD FAIL. M22 only works in elevated/normal regimes (peak ICIR=0.479 in elevated), NOT in crisis. Suggests Bali MAX in KR market is risk-on alpha factor, not defensive (contrary to original 2011 Bali defensive characterization)."
+    },
+    "regime_distribution": {
+      "crisis": 22,
+      "elevated": 76,
+      "normal": 128
+    },
+    "decile_returns_neut_pct_per_month": {
+      "D1": 0.9224, "D2": 1.3174, "D3": 0.7807, "D4": 0.8784, "D5": 0.7842,
+      "D6": 0.5691, "D7": 0.5434, "D8": 0.8435, "D9": 0.6797, "D10": 0.7823
+    },
+    "decile_returns_raw_pct_per_month": {
+      "D1": 1.0189, "D2": 1.1778, "D3": 1.2094, "D4": 0.9587, "D5": 0.7253,
+      "D6": 0.8056, "D7": 0.6736, "D8": 0.6229, "D9": 0.5264, "D10": 0.3868
+    }
+  },
+  "graduation_criteria_check": {
+    "min_rank_ic": {"threshold": 0.04, "value": 0.0226, "pass": false},
+    "min_icir": {"threshold": 0.2, "value": 0.2638, "pass": true},
+    "min_subperiod_stability": {"threshold": 0.5, "value": 0.3746, "pass": false},
+    "min_harvey_t_stat": {"threshold": 3.0, "value": 3.9663, "pass": true},
+    "min_deflated_sharpe_ratio_n1": {"threshold": 0.5, "value": 1.0, "pass": true, "note": "pure single-factor, no candidate selection"},
+    "min_deflated_sharpe_ratio_n269": {"threshold": 0.5, "value": 0.0, "pass": false, "note": "selection-corrected with full factor_db candidate denominator"},
+    "overall_graduation_pass": false,
+    "failed_gates": ["rank_ic", "subperiod_stability", "dsr_selection_n269"]
+  },
+  "ax_compliance": {
+    "AX_001_v2": {
+      "status": "FAIL",
+      "evidence": "crisis IC_neut = -0.0195 (negative, defensive role broken). Bad/Normal ratio = -0.95 (negative). Factor only works in elevated/normal regimes."
+    },
+    "AX_005": {
+      "status": "ELEVATED RISK",
+      "evidence": "2020-2026 ICIR_neut=0.209 vs 2015-2019=0.498 (-58% decay). Suggests BAB-type 2020+ persistence weakening. Direction stable (same sign) but magnitude compression."
+    },
+    "AX_007": {
+      "status": "VIOLATION",
+      "evidence": "Single-sleeve top20 long-only design with NO exception applied (no multi-sleeve / no long-short / no 50+ diversification / no ML sizing). Top20 active=-0.122%/month t=-0.67 confirms signal-portfolio translation break. Optimizer/Risk could pivot to multi-sleeve later, but draft itself violates."
+    },
+    "AX_008": {
+      "status": "PENDING",
+      "evidence": "Requires Forge (backtest) + Codex Round + (optional Architect) triangulation. Current state: Alpha self-eval FAIL on 3 gates, awaiting Codex Round."
+    },
+    "PIT_C1_C15_compliance": {
+      "C1_walk_forward": "PASS — expanding per-sig_date load",
+      "C9_VT_DD_lag": "N/A — no overlay/regime use in pure alpha",
+      "C10_liquidity_t1": "PASS — TV_20d_PIT t-1 lag, 2e8 threshold",
+      "C13_no_flip_sign": "PASS — Z_Score_Aligned via factor_db_connector only, no manual flip",
+      "C14_usable_date": "PASS — load_month_factors() auto Usable_Date <= sig_date",
+      "C15_connector_only": "PASS — no direct parquet load",
+      "cycle_51_shift": "PASS — shift(n=1L, type='lead') forward direction (Cycle 51 mandate)"
+    }
+  },
+  "challenge_flags": [
+    {
+      "id": "RF-A1",
+      "severity": "LOW",
+      "description": "Bali 2011 is single seminal paper but factor has 200+ subsequent citations and replicated globally. Single-factor pure validation in KR: subperiod_stability=0.375 (FAIL).",
+      "axiom_cite": "RF-A1"
+    },
+    {
+      "id": "RF-A6",
+      "severity": "MEDIUM",
+      "description": "DSR with n_trials=269 (factor_db full set as selection denominator) = 0.0 (collapses). Even Bali's 'isolated' single-factor hypothesis is conditional on prior selection from broader candidate set. Pure n_trials=1 baseline DSR=1.0 misleading.",
+      "axiom_cite": "RF-A6|AX-002"
+    },
+    {
+      "id": "RF-A7-EQUIVALENT",
+      "severity": "HIGH",
+      "description": "Top 20 sleeve active return = -0.122%/month with negative t-stat (-0.67) over full 226 dates. Even cross-sectional IC is statistically positive (Harvey t=3.97), portfolio-level translation BROKEN. Confirms AX-007 single-sleeve top20 mechanism break — factor exists, sleeve does not.",
+      "axiom_cite": "AX-007|L-484"
+    },
+    {
+      "id": "AX-001-v2-DEFENSIVE-FAIL",
+      "severity": "HIGH",
+      "description": "Bali MAX hypothesized as defensive (lottery preference UP in stress). KR result: crisis_ic=-0.0195 (negative, defensive ROLE BROKEN). Factor works in elevated/normal regimes only. Hypothesis reconceptualization needed: M22 is RISK-ON momentum-cluster factor in KR, not defensive lottery anomaly.",
+      "axiom_cite": "AX-001"
+    },
+    {
+      "id": "AX-005-DECAY",
+      "severity": "MEDIUM",
+      "description": "2020-2026 ICIR_neut=0.209 vs 2015-2019=0.498 (-58% magnitude decay). Direction stable (positive sign all subperiods) but compression. AX-005 BAB-type 2020+ family weakening partially supported. Bali MAX 2011 published; 13y arbitrage erosion plausible.",
+      "axiom_cite": "AX-005"
+    }
+  ],
+  "verdict_self": "TERMINATE",
+  "verdict_rationale": "Alpha signal exists (cross-sectional IC and ICIR pass minimum gates; Harvey t=3.97 robust to multiple testing in narrow N=1 sense). However: (1) rank_ic 0.023 BELOW 0.04 KR threshold; (2) subperiod stability 0.375 BELOW 0.5; (3) selection-corrected DSR=0 collapses; (4) AX-001 v2 crisis FAIL — defensive role broken; (5) top20 sleeve active = -0.12%/month t=-0.67, signal-portfolio break. Pure single-sleeve top20 long-only graduation FAILS. Honest termination recommended. Two follow-ups conceivable: (a) reconceptualize M22 as risk-on alpha (not defensive) and pair with true defensive in multi-sleeve; (b) test top 50+ diversified or long-short variant (AX-007 exceptions). Both require fresh WT, not retrofit.",
+  "follow_up_recommendations": [
+    "TERMINATE current single-sleeve hypothesis. Do NOT advance to PG1 admission.",
+    "Reconceptualize M22 as risk-on / momentum-adjacent factor in KR (regime-conditional ICIR pattern strongly supports). New WT could test M22 long-only top20 GATED by regime (only deploy when elevated/normal).",
+    "Or pair M22 with verified defensive factor in multi-sleeve (AX-007 exception 1). Examples: M22 risk-on sleeve + Q11_Net_Margin or D43_Skewness defensive sleeve.",
+    "Or test M22 long-short variant (AX-007 exception 2): long low-MAX top 20 / short high-MAX top 20. KR no-short-legal constraint requires ETF inverse or KOSPI 200 future hedge — outside current mandate.",
+    "Or scale to 50+ diversified (AX-007 exception 3) — top 50 by Z_neutral, equal-weighted. Likely improves portfolio translation but breaks 20-stock hard constraint (도훈 confirm needed)."
+  ],
+  "selection_objective_check": {
+    "objective_used": "icir",
+    "objective_value": 0.2638,
+    "objective_passed": true,
+    "no_sharpe_cagr_mdd_used": true
+  },
+  "lineage": {
+    "phase1_factor_db_screen": "M22_Max_Return is in Factor DB Phase 1 untapped Top12 by ICIR_5y (-0.655 raw, i.e., lower_better strongly significant in 5y window). Source: outputs of Phase 1/3 in prior WT runs (e.g., factor_db_untapped_icir_ranking).",
+    "phase1_pit_caveat": "Factor DB Phase1 screen used IC history through ~2026-02 (lockbox post-cutoff). However, current Hypothesis B uses M22 selection as FIXED a-priori from Bali 2011 academic literature, NOT from Phase 1 ranking output. Selection bias is therefore Bali academic citation (1 selected from 1 published Bali factor), not 269-candidate Phase 1 selection. Codex critic may challenge this — see challenge_flags.",
+    "selection_corrected_dsr_caveat": "If reviewer disagrees with academic-citation framing and insists on 269-candidate selection denominator, DSR collapses to 0. Provided BOTH DSR values for transparency."
+  },
+  "files_emitted": {
+    "alpha_scores_parquet": "stage_artifacts/WT_D20260528_003_overnight_B/alpha_scores.parquet (67533 rows, 226 dates)",
+    "alpha_validation_json": "stage_artifacts/WT_D20260528_003_overnight_B/alpha_validation.json",
+    "step1_diag": "qepm/mailbox/worktask/WT-D20260528_003/outputs/overnight_B/m22_step1_diag.json",
+    "step2_ic": "qepm/mailbox/worktask/WT-D20260528_003/outputs/overnight_B/m22_step2_ic.json",
+    "step3_ax001v2": "qepm/mailbox/worktask/WT-D20260528_003/outputs/overnight_B/m22_step3_ax001v2.json",
+    "step4_alpha": "qepm/mailbox/worktask/WT-D20260528_003/outputs/overnight_B/m22_step4_alpha.json",
+    "step5_validation": "qepm/mailbox/worktask/WT-D20260528_003/outputs/overnight_B/m22_step5_validation.json"
+  },
+  "telegram_brief_expected": "STR_1724 Bali MAX Pure → TERMINATE (3 gates FAIL + AX-001 v2 defensive broken + top20 break)"
+}

@@ -1,0 +1,520 @@
+{
+  "cycle": "53C_patchtst_stacked_multiseed",
+  "panel": "feature_panel_v4a_combined.parquet",
+  "n_features": 70,
+  "forward_labels": true,
+  "validation_strategy": "walk_forward_expanding_5_fold_CV",
+  "oos_window": {
+    "start": "2018-01-01",
+    "end": "2026-04-30"
+  },
+  "stacked_config": {
+    "name": "stacked_v4_v8_v10",
+    "patch_size": 4,
+    "d_model": 32,
+    "n_heads": 4,
+    "n_layers": 2,
+    "dropout": 0.2,
+    "stride": 2
+  },
+  "seeds": [42, 123, 456],
+  "targets": ["y_tail_q15", "y_onset"],
+  "references": {
+    "cycle_43_forward_best_q15": 0.2129,
+    "cycle_52_patchtst_q15": 0.2463,
+    "cycle_52_patchtst_onset": 0.1372,
+    "cycle_53a_v1_q15": 0.2396,
+    "cycle_53a_v1_onset": 0.1332,
+    "cycle_53a_v10_q15": 0.2598,
+    "cycle_53a_v10_onset": 0.1443
+  },
+  "thresholds": {
+    "additivity_strong_delta": 0.02,
+    "additivity_weak_delta": 0.005,
+    "stability_stable_std": 0.02,
+    "stability_moderate_std": 0.05,
+    "sanity_pr_min": 0.15,
+    "sanity_pr_max": 0.4
+  },
+  "per_seed_results": {
+    "seed42_y_tail_q15": {
+      "seed": 42,
+      "target": "y_tail_q15",
+      "oos_pr": 0.1594,
+      "oos_ic": -0.0294,
+      "n_obs": 2042,
+      "n_events": 365,
+      "event_rate": 0.1787
+    },
+    "seed42_y_onset": {
+      "seed": 42,
+      "target": "y_onset",
+      "oos_pr": 0.1361,
+      "oos_ic": 0.0384,
+      "n_obs": 2042,
+      "n_events": 251,
+      "event_rate": 0.1229
+    },
+    "seed123_y_tail_q15": {
+      "seed": 123,
+      "target": "y_tail_q15",
+      "oos_pr": 0.15,
+      "oos_ic": -0.0785,
+      "n_obs": 2042,
+      "n_events": 365,
+      "event_rate": 0.1787
+    },
+    "seed123_y_onset": {
+      "seed": 123,
+      "target": "y_onset",
+      "oos_pr": 0.1286,
+      "oos_ic": 0.0576,
+      "n_obs": 2042,
+      "n_events": 251,
+      "event_rate": 0.1229
+    },
+    "seed456_y_tail_q15": {
+      "seed": 456,
+      "target": "y_tail_q15",
+      "oos_pr": 0.1812,
+      "oos_ic": 0.0122,
+      "n_obs": 2042,
+      "n_events": 365,
+      "event_rate": 0.1787
+    },
+    "seed456_y_onset": {
+      "seed": 456,
+      "target": "y_onset",
+      "oos_pr": 0.15,
+      "oos_ic": 0.0792,
+      "n_obs": 2042,
+      "n_events": 251,
+      "event_rate": 0.1229
+    }
+  },
+  "stability_per_target": {
+    "y_tail_q15": {
+      "target": "y_tail_q15",
+      "n_seeds": 3,
+      "mean_pr_across_seeds": 0.1635,
+      "std_pr_across_seeds": 0.016,
+      "min_pr": 0.15,
+      "max_pr": 0.1812,
+      "range_pr": 0.0312,
+      "stability_verdict": "STABLE"
+    },
+    "y_onset": {
+      "target": "y_onset",
+      "n_seeds": 3,
+      "mean_pr_across_seeds": 0.1382,
+      "std_pr_across_seeds": 0.0109,
+      "min_pr": 0.1286,
+      "max_pr": 0.15,
+      "range_pr": 0.0214,
+      "stability_verdict": "STABLE"
+    }
+  },
+  "mean_prediction": {
+    "y_tail_q15": {
+      "target": "y_tail_q15",
+      "n_obs": 2042,
+      "n_events": 365,
+      "event_rate": 0.1787,
+      "oos_pr_mean_prediction": 0.157,
+      "oos_ic_mean_prediction": -0.046,
+      "per_date_std_mean": 0.0523,
+      "per_date_std_median": 0.0457,
+      "per_date_std_max": 0.1514
+    },
+    "y_onset": {
+      "target": "y_onset",
+      "n_obs": 2042,
+      "n_events": 251,
+      "event_rate": 0.1229,
+      "oos_pr_mean_prediction": 0.1313,
+      "oos_ic_mean_prediction": 0.0608,
+      "per_date_std_mean": 0.0235,
+      "per_date_std_median": 0.0036,
+      "per_date_std_max": 0.2431
+    }
+  },
+  "vs_cycle_53a_v10": {
+    "y_tail_q15": {
+      "v10_reference": 0.2598,
+      "stacked_seed42_match": 0.1594,
+      "stacked_seed42_match_delta": -0.1004,
+      "stacked_across_seed_mean_pr": 0.1635,
+      "stacked_across_seed_mean_delta": -0.0963,
+      "stacked_3seed_mean_prediction": 0.157,
+      "stacked_3seed_mean_prediction_delta": -0.1028,
+      "additivity_verdict_mean_prediction": "NEGATIVE",
+      "additivity_verdict_across_seed_mean": "NEGATIVE",
+      "additivity_verdict_seed42_match": "NEGATIVE"
+    },
+    "y_onset": {
+      "v10_reference": 0.1443,
+      "stacked_seed42_match": 0.1361,
+      "stacked_seed42_match_delta": -0.0082,
+      "stacked_across_seed_mean_pr": 0.1382,
+      "stacked_across_seed_mean_delta": -0.0061,
+      "stacked_3seed_mean_prediction": 0.1313,
+      "stacked_3seed_mean_prediction_delta": -0.013,
+      "additivity_verdict_mean_prediction": "NEGATIVE"
+    }
+  },
+  "cross_target_rank_consistency_spearman": -0.7309,
+  "cycle_verdict": {
+    "additivity_q15_mean_prediction": "NEGATIVE",
+    "additivity_q15_across_seed_mean": "NEGATIVE",
+    "additivity_q15_seed42_match": "NEGATIVE",
+    "additivity_onset_mean_prediction": "NEGATIVE",
+    "stability_q15": "STABLE",
+    "stability_onset": "STABLE",
+    "primary_summary": "Stacked PatchTST (d_model=32 / n_layers=2 / dropout=0.20): y_tail_q15 mean-prediction PR-AUC=0.1570 (Δ-0.1028 vs v10 → NEGATIVE additivity) | across-seed std=0.0160 → STABLE stability | seed=42 match Δ-0.1004 → NEGATIVE"
+  },
+  "next_cycle_suggestion": "3-axis combine -> dilution (worse than v10 single axis). v10 single-axis dropout is correct headline. Stop combine; pivot to architecture-side exploration (DLinear / Informer / FEDformer / TimesNet).",
+  "new_cycle_checklist": {
+    "M1_bear_date_audit": "PASS (pre-cycle 4/4, latest log retained in qepm/observability/sanity_checks)",
+    "M2_validate_label_direction": "PASS (forward labels via Cycle 50 fix, inherited from Cycle 52/53A)",
+    "M3_PIT_C1_C15": "PASS (v4a panel PIT validated Cycle 52, no new data introduced)",
+    "M4_shift_convention": "PASS (forward targets via shift(.,n=H,'lead'), inherited)",
+    "M5_AX_008": "EXEMPT (Forge single-source quick screening, NOT admit cycle)",
+    "S1_PRAUC_sanity": "PASS (3-seed mean prediction PR-AUC 0.1570 ∈ [0.15, 0.40])",
+    "S2_COVID_spot_check": "PASS (targets_full.parquet 2020-02-19 ret_h = -0.3405, inherited)",
+    "S3_cross_target_rank_consistency": "rho=-0.7309",
+    "A1_cross_cycle_same_forward_labels": "PASS (all seeds + v10 use targets_full.parquet forward labels)",
+    "A2_dohun_audit_checkpoint": "AWAITING_REVIEW",
+    "A3_codex_critic": "DEFER (Forge multi-seed audit; verdict=NEGATIVE)"
+  },
+  "python_per_fold_diag": {
+    "cycle": "53C_patchtst_stacked_multiseed",
+    "stacked_config": {
+      "name": "stacked_v4_v8_v10",
+      "patch_size": 4,
+      "d_model": 32,
+      "n_heads": 4,
+      "n_layers": 2,
+      "dropout": 0.2,
+      "stride": 2
+    },
+    "seeds": [
+      42,
+      123,
+      456
+    ],
+    "targets": [
+      "y_tail_q15",
+      "y_onset"
+    ],
+    "panel": "feature_panel_v4a_combined.parquet",
+    "n_features": 70,
+    "forward_labels": true,
+    "validation_strategy": "walk_forward_expanding_5_fold_CV",
+    "fixed_training": {
+      "batch_size": 96,
+      "max_epochs": 80,
+      "early_stop_patience": 15,
+      "warmup_steps": 500,
+      "weight_decay": 0.005,
+      "lr": 0.001,
+      "grad_clip_norm": 1,
+      "mixed_precision_amp": true,
+      "gpu_mem_fraction": 0.3
+    },
+    "per_seed_per_target_results": {
+      "seed42_y_tail_q15": {
+        "seed": 42,
+        "target": "y_tail_q15",
+        "config": {
+          "name": "stacked_v4_v8_v10",
+          "patch_size": 4,
+          "d_model": 32,
+          "n_heads": 4,
+          "n_layers": 2,
+          "dropout": 0.2,
+          "stride": 2
+        },
+        "oos_pr": 0.1594,
+        "oos_ic": -0.0909,
+        "avg_best_epoch": 5,
+        "per_fold_best_pr": [
+          0.2187,
+          0.527,
+          0.2574,
+          0.2811,
+          0.1372
+        ],
+        "per_fold_best_epoch": [
+          17,
+          2,
+          4,
+          1,
+          1
+        ],
+        "per_fold_n_params": 28353,
+        "final_train_loss_first": 1.1944,
+        "final_train_loss_last": 1.1442,
+        "elapsed_sec": 341.2,
+        "gpu_mem_peak_mb": 595.7,
+        "n_params": 28353,
+        "n_oos_obs": 2042,
+        "n_oos_events": 365,
+        "oos_dates_path": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/03_models/v5c_stacked_multiseed/predictions_stacked_seed42_y_tail_q15.parquet"
+      },
+      "seed42_y_onset": {
+        "seed": 42,
+        "target": "y_onset",
+        "config": {
+          "name": "stacked_v4_v8_v10",
+          "patch_size": 4,
+          "d_model": 32,
+          "n_heads": 4,
+          "n_layers": 2,
+          "dropout": 0.2,
+          "stride": 2
+        },
+        "oos_pr": 0.1361,
+        "oos_ic": -0.1087,
+        "avg_best_epoch": 18,
+        "per_fold_best_pr": [
+          0.5942,
+          0.4199,
+          0.0893,
+          0.3079,
+          -1
+        ],
+        "per_fold_best_epoch": [
+          16,
+          8,
+          33,
+          16,
+          {}
+        ],
+        "per_fold_n_params": 28353,
+        "final_train_loss_first": 1.2216,
+        "final_train_loss_last": 0.9968,
+        "elapsed_sec": 501,
+        "gpu_mem_peak_mb": 595.7,
+        "n_params": 28353,
+        "n_oos_obs": 2042,
+        "n_oos_events": 251,
+        "oos_dates_path": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/03_models/v5c_stacked_multiseed/predictions_stacked_seed42_y_onset.parquet"
+      },
+      "seed123_y_tail_q15": {
+        "seed": 123,
+        "target": "y_tail_q15",
+        "config": {
+          "name": "stacked_v4_v8_v10",
+          "patch_size": 4,
+          "d_model": 32,
+          "n_heads": 4,
+          "n_layers": 2,
+          "dropout": 0.2,
+          "stride": 2
+        },
+        "oos_pr": 0.15,
+        "oos_ic": -0.0997,
+        "avg_best_epoch": 9,
+        "per_fold_best_pr": [
+          0.2604,
+          0.2779,
+          0.3165,
+          0.1344,
+          0.1438
+        ],
+        "per_fold_best_epoch": [
+          31,
+          1,
+          10,
+          1,
+          1
+        ],
+        "per_fold_n_params": 28353,
+        "final_train_loss_first": 1.1951,
+        "final_train_loss_last": 1.1185,
+        "elapsed_sec": 261.9,
+        "gpu_mem_peak_mb": 595.7,
+        "n_params": 28353,
+        "n_oos_obs": 2042,
+        "n_oos_events": 365,
+        "oos_dates_path": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/03_models/v5c_stacked_multiseed/predictions_stacked_seed123_y_tail_q15.parquet"
+      },
+      "seed123_y_onset": {
+        "seed": 123,
+        "target": "y_onset",
+        "config": {
+          "name": "stacked_v4_v8_v10",
+          "patch_size": 4,
+          "d_model": 32,
+          "n_heads": 4,
+          "n_layers": 2,
+          "dropout": 0.2,
+          "stride": 2
+        },
+        "oos_pr": 0.1286,
+        "oos_ic": -0.0966,
+        "avg_best_epoch": 10,
+        "per_fold_best_pr": [
+          0.3377,
+          0.4147,
+          0.0789,
+          0.252,
+          -1
+        ],
+        "per_fold_best_epoch": [
+          14,
+          9,
+          1,
+          14,
+          {}
+        ],
+        "per_fold_n_params": 28353,
+        "final_train_loss_first": 1.2236,
+        "final_train_loss_last": 1.1525,
+        "elapsed_sec": 264.4,
+        "gpu_mem_peak_mb": 595.7,
+        "n_params": 28353,
+        "n_oos_obs": 2042,
+        "n_oos_events": 251,
+        "oos_dates_path": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/03_models/v5c_stacked_multiseed/predictions_stacked_seed123_y_onset.parquet"
+      },
+      "seed456_y_tail_q15": {
+        "seed": 456,
+        "target": "y_tail_q15",
+        "config": {
+          "name": "stacked_v4_v8_v10",
+          "patch_size": 4,
+          "d_model": 32,
+          "n_heads": 4,
+          "n_layers": 2,
+          "dropout": 0.2,
+          "stride": 2
+        },
+        "oos_pr": 0.1813,
+        "oos_ic": -0.0282,
+        "avg_best_epoch": 7,
+        "per_fold_best_pr": [
+          0.197,
+          0.1108,
+          0.2866,
+          0.1836,
+          0.1062
+        ],
+        "per_fold_best_epoch": [
+          1,
+          1,
+          5,
+          1,
+          27
+        ],
+        "per_fold_n_params": 28353,
+        "final_train_loss_first": 1.195,
+        "final_train_loss_last": 1.1274,
+        "elapsed_sec": 268.8,
+        "gpu_mem_peak_mb": 595.7,
+        "n_params": 28353,
+        "n_oos_obs": 2042,
+        "n_oos_events": 365,
+        "oos_dates_path": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/03_models/v5c_stacked_multiseed/predictions_stacked_seed456_y_tail_q15.parquet"
+      },
+      "seed456_y_onset": {
+        "seed": 456,
+        "target": "y_onset",
+        "config": {
+          "name": "stacked_v4_v8_v10",
+          "patch_size": 4,
+          "d_model": 32,
+          "n_heads": 4,
+          "n_layers": 2,
+          "dropout": 0.2,
+          "stride": 2
+        },
+        "oos_pr": 0.15,
+        "oos_ic": -0.0346,
+        "avg_best_epoch": 15,
+        "per_fold_best_pr": [
+          0.6093,
+          0.4229,
+          0.0901,
+          0.2483,
+          -1
+        ],
+        "per_fold_best_epoch": [
+          22,
+          3,
+          21,
+          15,
+          {}
+        ],
+        "per_fold_n_params": 28353,
+        "final_train_loss_first": 1.2176,
+        "final_train_loss_last": 1.0904,
+        "elapsed_sec": 325.2,
+        "gpu_mem_peak_mb": 595.7,
+        "n_params": 28353,
+        "n_oos_obs": 2042,
+        "n_oos_events": 251,
+        "oos_dates_path": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/03_models/v5c_stacked_multiseed/predictions_stacked_seed456_y_onset.parquet"
+      }
+    },
+    "elapsed_grand_total_sec": 1962.8
+  },
+  "python_audit": {
+    "per_target": {
+      "y_tail_q15": {
+        "seeds": [
+          42,
+          123,
+          456
+        ],
+        "per_seed_pr": [
+          0.1594,
+          0.15,
+          0.1813
+        ],
+        "per_seed_ic": [
+          -0.0909,
+          -0.0997,
+          -0.0282
+        ],
+        "mean_pr_across_seeds": 0.1636,
+        "std_pr_across_seeds": 0.0161,
+        "min_pr": 0.15,
+        "max_pr": 0.1813,
+        "range_pr": 0.0313,
+        "stability_verdict": "STABLE",
+        "mean_prediction_pr": 0.157,
+        "mean_prediction_ic": -0.0895,
+        "per_date_std_mean": 0.0523,
+        "per_date_std_median": 0.0457
+      },
+      "y_onset": {
+        "seeds": [
+          42,
+          123,
+          456
+        ],
+        "per_seed_pr": [
+          0.1361,
+          0.1286,
+          0.15
+        ],
+        "per_seed_ic": [
+          -0.1087,
+          -0.0966,
+          -0.0346
+        ],
+        "mean_pr_across_seeds": 0.1382,
+        "std_pr_across_seeds": 0.0109,
+        "min_pr": 0.1286,
+        "max_pr": 0.15,
+        "range_pr": 0.0214,
+        "stability_verdict": "STABLE",
+        "mean_prediction_pr": 0.1313,
+        "mean_prediction_ic": -0.094,
+        "per_date_std_mean": 0.0235,
+        "per_date_std_median": 0.0036
+      }
+    }
+  }
+}

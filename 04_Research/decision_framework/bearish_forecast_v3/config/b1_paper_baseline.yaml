@@ -1,0 +1,63 @@
+# B1 LSTM × {N, STD, SSTD} paper exact spec
+# Source: Michańków 2025 arXiv:2508.18921 Table 1
+# v0.5 AMENDMENT CR-V02: paper actual spec (3-layer 128/64/32, seq=10)
+
+architecture:
+  type: lstm
+  hidden_sizes: [128, 64, 32]      # paper actual (v0.4 "2-layer hidden=64" 오류)
+  output_distribution: [normal, student_t, skewed_t]  # 3 variants per architecture
+  dropout: 0.02                     # paper KerasTuner selected
+  l2_reg: 0.002                     # paper KerasTuner selected
+
+# CNN variant (for ordering comparison)
+cnn_architecture:
+  type: cnn
+  filters: 256                      # paper Table 1
+  kernel_size: 2
+  pool_size: 2
+
+training:
+  sequence_length: 10               # paper actual baseline (v0.4 "60-120 sliding" 오류)
+  batch_size: 128                   # paper
+  optimizer: adam
+  learning_rate: 0.002              # paper KerasTuner selected
+  epochs: 300
+  early_stopping_patience: 30
+  early_stopping_monitor: val_loss
+
+# Walk-forward expanding window (paper Section 4)
+walk_forward:
+  train_min: 1008                   # ~4 years daily
+  test_window: 504                  # ~2 years
+  expand_step: 504
+
+data:
+  benchmark: kospi200
+  bm_path: ".cache/benchmark.parquet"
+  target_path: "04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/02_targets/targets_full.parquet"
+  date_start: "2000-01-03"          # paper window start
+  date_end: "2021-12-31"            # paper window end
+  horizon: paper                    # paper reproduce — 1-day forward log return
+  percent_scale: true               # paper CRPS in percent units
+  features:
+    paper_baseline:                 # Stage 1 (Phase 5a-1.A)
+      - log_ret
+      - rv_22d
+    alt_data:                       # Stage 2 (Phase 5a-1.B, ablation)
+      enabled: false                # Stage 1 OFF
+
+seed:
+  stage_1: 0                        # 1-seed Stage 1 (도훈 Loose 기준 confirm)
+  stage_2_top_k: 5                  # Stage 2 top 5 hyperparam × 15-seed
+  stage_2_seeds: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14]
+
+reproduce_pass_criteria:              # 도훈 confirm 2026-05-24: Loose ± 5% + ordering
+  paper_kospi_lstm_sstd_crps: 0.5165
+  loose_tolerance: 0.05               # ± 5% = [0.4907, 0.5423]
+  ordering_check: true                # LSTM-SSTD < LSTM-STD < LSTM-N (CRPS)
+  var_1pct_lstm_std_target: 0.0084    # paper Table 4
+
+output:
+  models_dir: "04_Research/decision_framework/bearish_forecast_v3/03_models/b1_paper_reproduce"
+  predictions_dir: "04_Research/decision_framework/bearish_forecast_v3/04_evaluation/b1_paper_predictions"
+  metrics_path: "04_Research/decision_framework/bearish_forecast_v3/04_evaluation/b1_paper_metrics.json"

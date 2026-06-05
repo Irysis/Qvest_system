@@ -11,7 +11,7 @@ suppressPackageStartupMessages({
 })
 
 # ── 1. conditional_ic_matrix 로드 ──────────────────────────────
-ic_path <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/.cache/conditional_ic_matrix.csv"
+ic_path <- file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")), ".cache/conditional_ic_matrix.csv")
 ic_mat  <- fread(ic_path)
 setnames(ic_mat, "Factor_Name", "factor_id")
 
@@ -74,7 +74,7 @@ cat("─────────────────────────
 cat("[4] 팩터 간 상관 계산 (Factor DB 최근 36개월)\n")
 cat("─────────────────────────────────────────────────────────\n")
 
-fdb_dir <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/.cache/factor_db/"
+fdb_dir <- file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")), ".cache/factor_db/")
 fdb_files <- list.files(fdb_dir, pattern="^factor_db_2[0-9]{5}\\.parquet$", full.names=TRUE)
 fdb_files <- sort(fdb_files)
 

@@ -9,9 +9,9 @@ cat("═══ Phase 10: Cross-Sectional Winsorizing ═══\n")
 suppressPackageStartupMessages({ library(data.table); library(arrow) })
 
 .SELF_DIR <- tryCatch(dirname(sys.frame(1)$ofile),
-  error = function(e) "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/02_Infrastructure/factor_db")
+  error = function(e) "/mnt/c/Users/99922/OneDrive/바탕 화면/Quant_Module_Moltbot/02_Infrastructure/factor_db")
 INFRA_DIR <- tryCatch(dirname(dirname(sys.frame(1)$ofile)),
-  error = function(e) "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/02_Infrastructure")
+  error = function(e) "/mnt/c/Users/99922/OneDrive/바탕 화면/Quant_Module_Moltbot/02_Infrastructure")
 source(file.path(INFRA_DIR, "config.R"))
 
 FDB <- file.path(CACHE_DIR, "factor_db_daily")

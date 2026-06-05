@@ -14,7 +14,7 @@
 
 trap 'echo "{\"decision\":\"allow\"}"; exit 0' ERR
 
-DIR=$(ls -d /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo "$PWD")
+DIR=$(ls -d /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo "$PWD")
 
 # ─── 입력 처리 ───
 INPUT_PATH="${1:-}"

@@ -1,0 +1,248 @@
+{
+  "strategy_id": "STR_1721_SBETA_P4_Regime",
+  "phase": "Phase 1 v3 — winsorize + monthly non-overlap + log return",
+  "task_id": "WT-D20260528_003",
+  "corrections": {
+    "correction_1": "Outlier handling — direct rawdata forward return + winsorize [-30%, +30%]",
+    "correction_2": "Monthly non-overlap (last trading day per month, 1M horizon)",
+    "correction_3": "Log return primary + simple return retain (Asness-Pedersen 2003)"
+  },
+  "winsorize": {
+    "low": -0.3,
+    "high": 0.3,
+    "ref": "Fama-French 1993 ± 3sd monthly equity"
+  },
+  "families": {
+    "value": {
+      "proxies": ["V01_BM", "V02_EP", "V03_CFP", "V20_SP", "V14_EBIT_EV"],
+      "directions": ["higher_better", "higher_better", "higher_better", "higher_better", "higher_better"],
+      "ref": "Asness-Frazzini 2013 (Devil in HML's Details) — 5-proxy composite"
+    },
+    "quality": {
+      "proxies": ["Q02_ROE", "Q03_ROA", "Q17_ROIC", "GR05_ROE_Growth"],
+      "directions": ["higher_better", "higher_better", "higher_better", "higher_better"],
+      "ref": "Asness-Frazzini-Pedersen 2019 QMJ (Profitability + Growth)"
+    },
+    "momentum": {
+      "proxies": ["M01_Mom_12_1", "M02_Mom_6_1", "M03_Mom_3_1"],
+      "directions": ["higher_better", "higher_better", "higher_better"],
+      "ref": "Asness-Moskowitz-Pedersen 2014 multi-horizon"
+    },
+    "low_vol": {
+      "proxies": ["D01_IdioVol", "D02_Beta", "D03_RealVol", "D04_Downside_Beta"],
+      "directions": ["lower_better", "lower_better", "lower_better", "lower_better"],
+      "ref": "Frazzini-Pedersen 2014 BAB + Ang 2006 IVOL + Baker-Bradley-Wurgler 2011"
+    },
+    "size": {
+      "proxies": "S01_Size",
+      "directions": "lower_better",
+      "ref": "Banz 1981 SMB (sign flip from raw size = SMB)"
+    },
+    "dividend": {
+      "proxies": ["V06_fDY", "V11_Shareholder_Yield", "V17_Payout_Ratio"],
+      "directions": ["higher_better", "higher_better", "higher_better"],
+      "ref": "Boudoukh-Michaely-Richardson-Roberts 2007 Shareholder Yield"
+    }
+  },
+  "top_quintile_n": 40,
+  "horizon_trading_days": 21,
+  "liquidity_floor_krw": 200000000,
+  "liquidity_window": 20,
+  "n_months": 256,
+  "date_start": "2005-01-31",
+  "date_end": "2026-04-30",
+  "winsorize_pre": [
+    {
+      "n": 1050863,
+      "mean_pre": 0.0096,
+      "sd_pre": 0.1257,
+      "p001_pre": -0.451,
+      "p999_pre": 0.8107,
+      "max_pre": 2.7743,
+      "min_pre": -0.9867
+    }
+  ],
+  "winsorize_post": [
+    {
+      "n": 1050863,
+      "mean_post": 0.0069,
+      "sd_post": 0.1114,
+      "p001_post": -0.3,
+      "p999_post": 0.3,
+      "max_post": 0.3,
+      "min_post": -0.3
+    }
+  ],
+  "family_stats": {
+    "value_simple": {
+      "family": "value",
+      "kind": "simple",
+      "n_months": 256,
+      "monthly_mean": 0.0091,
+      "monthly_sd": 0.0668,
+      "ann_ret": 0.1094,
+      "ann_vol": 0.2315,
+      "sr": 0.4726,
+      "min": -0.2766,
+      "max": 0.1894,
+      "p01": -0.1538,
+      "p99": 0.1811
+    },
+    "value_log": {
+      "family": "value",
+      "kind": "log",
+      "n_months": 256,
+      "monthly_mean": 0.0028,
+      "monthly_sd": 0.0676,
+      "ann_ret": 0.0339,
+      "ann_vol": 0.2342,
+      "sr": 0.1448,
+      "min": -0.3255,
+      "max": 0.1713,
+      "p01": -0.175,
+      "p99": 0.1622
+    },
+    "quality_simple": {
+      "family": "quality",
+      "kind": "simple",
+      "n_months": 256,
+      "monthly_mean": 0.006,
+      "monthly_sd": 0.0583,
+      "ann_ret": 0.0718,
+      "ann_vol": 0.2021,
+      "sr": 0.3553,
+      "min": -0.2381,
+      "max": 0.1634,
+      "p01": -0.1527,
+      "p99": 0.137
+    },
+    "quality_log": {
+      "family": "quality",
+      "kind": "log",
+      "n_months": 256,
+      "monthly_mean": -0.0002,
+      "monthly_sd": 0.0596,
+      "ann_ret": -0.0026,
+      "ann_vol": 0.2064,
+      "sr": -0.0124,
+      "min": -0.2774,
+      "max": 0.1443,
+      "p01": -0.1718,
+      "p99": 0.1243
+    },
+    "momentum_simple": {
+      "family": "momentum",
+      "kind": "simple",
+      "n_months": 256,
+      "monthly_mean": 0.0048,
+      "monthly_sd": 0.066,
+      "ann_ret": 0.0577,
+      "ann_vol": 0.2288,
+      "sr": 0.2523,
+      "min": -0.2131,
+      "max": 0.2123,
+      "p01": -0.1882,
+      "p99": 0.1759
+    },
+    "momentum_log": {
+      "family": "momentum",
+      "kind": "log",
+      "n_months": 256,
+      "monthly_mean": -0.0026,
+      "monthly_sd": 0.0669,
+      "ann_ret": -0.0307,
+      "ann_vol": 0.2317,
+      "sr": -0.1327,
+      "min": -0.2451,
+      "max": 0.1865,
+      "p01": -0.2141,
+      "p99": 0.1577
+    },
+    "low_vol_simple": {
+      "family": "low_vol",
+      "kind": "simple",
+      "n_months": 256,
+      "monthly_mean": 0.0018,
+      "monthly_sd": 0.0816,
+      "ann_ret": 0.0213,
+      "ann_vol": 0.2827,
+      "sr": 0.0754,
+      "min": -0.2836,
+      "max": 0.2231,
+      "p01": -0.2038,
+      "p99": 0.1854
+    },
+    "low_vol_log": {
+      "family": "low_vol",
+      "kind": "log",
+      "n_months": 256,
+      "monthly_mean": -0.0073,
+      "monthly_sd": 0.0834,
+      "ann_ret": -0.087,
+      "ann_vol": 0.289,
+      "sr": -0.3012,
+      "min": -0.3352,
+      "max": 0.1947,
+      "p01": -0.2343,
+      "p99": 0.1661
+    },
+    "size_simple": {
+      "family": "size",
+      "kind": "simple",
+      "n_months": 256,
+      "monthly_mean": 0.0053,
+      "monthly_sd": 0.0576,
+      "ann_ret": 0.0634,
+      "ann_vol": 0.1996,
+      "sr": 0.3178,
+      "min": -0.2253,
+      "max": 0.1795,
+      "p01": -0.1607,
+      "p99": 0.1366
+    },
+    "size_log": {
+      "family": "size",
+      "kind": "log",
+      "n_months": 256,
+      "monthly_mean": 0.0002,
+      "monthly_sd": 0.0586,
+      "ann_ret": 0.0019,
+      "ann_vol": 0.2031,
+      "sr": 0.0092,
+      "min": -0.2607,
+      "max": 0.1581,
+      "p01": -0.1824,
+      "p99": 0.1245
+    },
+    "dividend_simple": {
+      "family": "dividend",
+      "kind": "simple",
+      "n_months": 256,
+      "monthly_mean": 0.0061,
+      "monthly_sd": 0.0563,
+      "ann_ret": 0.0727,
+      "ann_vol": 0.1951,
+      "sr": 0.3728,
+      "min": -0.2297,
+      "max": 0.1661,
+      "p01": -0.1319,
+      "p99": 0.1434
+    },
+    "dividend_log": {
+      "family": "dividend",
+      "kind": "log",
+      "n_months": 256,
+      "monthly_mean": 0.001,
+      "monthly_sd": 0.0573,
+      "ann_ret": 0.012,
+      "ann_vol": 0.1986,
+      "sr": 0.0605,
+      "min": -0.2674,
+      "max": 0.1508,
+      "p01": -0.1496,
+      "p99": 0.1297
+    }
+  },
+  "built_at": "2026-05-28T15:08:06",
+  "elapsed_min": 1.48
+}

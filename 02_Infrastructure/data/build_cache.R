@@ -18,7 +18,7 @@ library(xts)
 library(arrow)
 library(dplyr)
 
-PROJECT_ROOT <- "/mnt/c/Users/User/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot"
+PROJECT_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 RAWDATA_PATH <- file.path(PROJECT_ROOT, "03_Universe")
 FUNC_PATH    <- file.path(PROJECT_ROOT, "02_Infrastructure")
 CACHE_DIR    <- file.path(PROJECT_ROOT, ".cache")

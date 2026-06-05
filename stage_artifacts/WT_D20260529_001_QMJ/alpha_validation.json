@@ -1,0 +1,140 @@
+{
+  "task_id": "WT-D20260529_001",
+  "track": "QMJ",
+  "as_of_date": "2026-05-29",
+  "lockbox": "2023-12-22",
+  "universe_default": "KR_top342",
+  "cost_model": "v2.3_kr_retail_15bps",
+  "diagnostics": {
+    "n_months": 192,
+    "rank_ic": 0.0256,
+    "icir": 0.2019,
+    "harvey_t_rank_ic": 2.6756,
+    "harvey_t_method": "Newey-West lag=3 on monthly rank-IC series",
+    "portfolio_alpha_t_gross": 0.7031,
+    "portfolio_alpha_t_net": 0.6316,
+    "portfolio_alpha_t_note": "DISTINCT from rank-IC t. NW lag=3 on top-quintile EW net active monthly series.",
+    "monotonicity": 0.6,
+    "subperiod_stability": 0.3333,
+    "subperiod_ic": {
+      "p2008_14": 0.0543,
+      "p2015_19": 0.0117,
+      "p2020_lockbox": -0.007
+    },
+    "axis_ic": {
+      "profitability": 0.0238,
+      "safety": 0.0169,
+      "growth": 0.0178
+    },
+    "turnover_proxy_monthly": 0.0847,
+    "turnover_annual": 1.0168,
+    "sr_net_of_cost_annual": 0.1721,
+    "sr_gross_annual": 0.1915,
+    "mean_active_net_monthly": 0.00112,
+    "dsr": 0.358,
+    "dsr_N_trials": 4,
+    "ax001_v2": {
+      "ic_bad": 0.1002,
+      "ic_normal": 0.0124,
+      "bad_normal_ratio": 8.0969,
+      "crisis_active_net_monthly": 0.01156
+    },
+    "quintile_returns": [
+      0.00401,
+      0.00516,
+      0.00835,
+      0.00828,
+      0.00823
+    ]
+  },
+  "orthogonality": {
+    "cor_vs_STR_1715_score_eff": 0.2459,
+    "cor_vs_D_ML_alpha_z": 0.2036,
+    "cor_vs_D_method": "month-normalized (D month-end -> month-start) spearman, per-date avg = pooled",
+    "n_overlap_1715": 47162,
+    "n_overlap_D": 38741,
+    "n_overlap_D_months": 116,
+    "threshold": 0.3,
+    "pass_1715": true,
+    "pass_D": true
+  },
+  "universe_comparison": {
+    "KR_top342": {
+      "rank_ic": 0.0256,
+      "icir": 0.2019,
+      "harvey_t": 2.6756,
+      "n": 192
+    },
+    "KR_TOP500_FREEFLOAT": {
+      "rank_ic": 0.0239,
+      "icir": 0.1835,
+      "harvey_t": 2.4247,
+      "n": 192
+    }
+  },
+  "ax004_exclusion": {
+    "structure": "multi-axis quality composite",
+    "axes": [
+      "Profitability",
+      "Safety",
+      "Growth"
+    ],
+    "n_factors": 15,
+    "profitability": [
+      "Q01_GPA",
+      "Q02_ROE",
+      "Q03_ROA",
+      "Q35_CashBased_OpProf",
+      "Q10_Gross_Margin",
+      "Q11_Net_Margin"
+    ],
+    "safety": [
+      "Q13_Fin_Leverage",
+      "Q25_Ohlson_O",
+      "Q07_Earnings_Stability",
+      "AC18_Accrual_Quality",
+      "AC10_Pct_Accruals"
+    ],
+    "growth": [
+      "GR04_GPA_Growth",
+      "GR01_Revenue_Growth",
+      "GR02_Earnings_Growth",
+      "GR07_Composite_Growth"
+    ],
+    "single_signal_avoided": true,
+    "note": "AFP 2019 QMJ 3-axis. require >=2 proxies/axis AND all 3 axes present per name. NOT single GP/profitability."
+  },
+  "codex_round1_remediation": {
+    "C2_pit_clean_alpha_scores": {
+      "fixed": true,
+      "pit_clean_rows": 244105,
+      "note": "alpha_scores.parquet re-emitted with membership = universe ∩ factor-coverage. NO forward-return (!is.na(Ret_1m)) conditioning. IC/portfolio diagnostics use a SEPARATE label-merged frame, never the handoff."
+    },
+    "C4_rf_a2_best_single": {
+      "composite_icir": 0.2019,
+      "best_single_icir": 0.2654,
+      "best_single_proxy": "Q03_ROA",
+      "improve_pct": -23.9,
+      "rf_a2_cleared": false
+    },
+    "C4_rf_a6_dsr_expanded": {
+      "N_trials": 22,
+      "dsr": 0.105,
+      "still_fail": true
+    },
+    "C5_rf_a5_liquidity": {
+      "top_quintile_below_2e8_frac": 0,
+      "rf_a5_cleared": true
+    },
+    "C5_rf_a4_sector_neutral": {
+      "status": "UNAVAILABLE",
+      "note": "PIT universe.parquet Sector column is NA across panel (verified). Sector-neutral IC not computable from available KR PIT data without external sector map. Reported transparently per answer-principles (no fabrication)."
+    },
+    "C7_cor_vs_D_reproducible": {
+      "value": 0.2036,
+      "n": 39046,
+      "months": 116,
+      "method": "D month-end -> month-start normalization, per-date spearman avg. Folded into this script (reproducible)."
+    }
+  }
+}

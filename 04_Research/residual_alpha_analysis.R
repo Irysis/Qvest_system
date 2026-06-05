@@ -8,7 +8,7 @@ t0 <- Sys.time()
 # ─────────────────────────────────────────────────────────────────────────────
 # 0. 경로 설정
 # ─────────────────────────────────────────────────────────────────────────────
-PROJECT_ROOT <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+PROJECT_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 CACHE_DIR    <- file.path(PROJECT_ROOT, ".cache")
 OUT_DIR      <- file.path(PROJECT_ROOT, "04_Research")
 

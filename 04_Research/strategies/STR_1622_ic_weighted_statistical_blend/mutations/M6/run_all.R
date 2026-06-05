@@ -2,7 +2,7 @@ cat("=== STR_1622_M6: 5F IC-Weighted Shrinkage 강화 (LAMBDA=0.75) ===\n")
 ## M6: LAMBDA 0.5 → 0.75. EW 75% 의존. DeMiguel 2009 (RFS): 추정 오차 높을 때 EW 우위
 set.seed(1622); options(scipen=999); Sys.setenv(TZ="Asia/Seoul")
 
-PROJ_ROOT  <- "/mnt/c/Users/User/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot"
+PROJ_ROOT  <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 INFRA_DIR  <- file.path(PROJ_ROOT, "02_Infrastructure")
 CACHE_DIR  <- file.path(PROJ_ROOT, ".cache")
 STR_DIR    <- file.path(PROJ_ROOT, "04_Research/strategies/STR_1622_ic_weighted_statistical_blend")

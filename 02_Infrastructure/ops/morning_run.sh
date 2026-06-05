@@ -11,7 +11,7 @@
 #   @reboot      sleep 150 && bash .../02_Infrastructure/ops/morning_run.sh reboot
 #   10 7 * * 1-5 bash .../02_Infrastructure/ops/morning_run.sh cron
 
-BASE=$(ls -d /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo "$PWD")
+BASE=$(ls -d /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo "$PWD")
 LOG="/tmp/qm_morning_run.log"
 TRIGGER="${1:-manual}"
 TODAY=$(date +%Y%m%d)

@@ -1,0 +1,188 @@
+{
+  "device": "cuda",
+  "lockbox": "2023-12-22",
+  "scope": "findings-only — admission/book_state 변경 없음. canonical alpha_package handoff 없음.",
+  "dpl_c_cfg": {
+    "lam": 0.0,
+    "gamma": 1.5,
+    "lookback": 72,
+    "depth": 3,
+    "width": 32,
+    "l2": 0.001,
+    "dropout": 0.1,
+    "temp": 1.0,
+    "lr": 0.005,
+    "epochs": 40,
+    "min_train": 60,
+    "buffer": true
+  },
+  "keep_n": 32,
+  "entry_n": 25,
+  "seeds_K8": [
+    7,
+    17,
+    23,
+    42,
+    101,
+    202,
+    303,
+    404
+  ],
+  "seeds_K16": [
+    7,
+    17,
+    23,
+    42,
+    101,
+    202,
+    303,
+    404,
+    505,
+    606,
+    707,
+    808,
+    909,
+    111,
+    222,
+    333
+  ],
+  "baseline_dpl_c_contract": {
+    "portfolio_alpha_t_nw_lag3": 2.9058,
+    "p": 0.0037,
+    "IR": 0.7026,
+    "net_active_SR": 0.703,
+    "TE": 0.3554,
+    "TO_yr": 14.35,
+    "sub_period_active_SR_python": [
+      1.495,
+      -0.349,
+      0.77
+    ],
+    "DSR_cumulative_prior": 0.378,
+    "metric_type": "backtested (cbe_eval_contract.json)"
+  },
+  "modes": {
+    "seed_K8": {
+      "mode": "seed_K8",
+      "meta": {
+        "seeds": [
+          7,
+          17,
+          23,
+          42,
+          101,
+          202,
+          303,
+          404
+        ],
+        "K": 8,
+        "config": "DPL_C_fixed",
+        "ensemble_trials": 1
+      },
+      "net_active_sr_python": 0.38941037578098253,
+      "turnover_ann": 12.688119946759025,
+      "n_oos_months": 168,
+      "sub_period_srs_python": [
+        1.371,
+        -0.253,
+        0.019
+      ],
+      "sr_min_subperiod_python": -0.2526802486448065,
+      "n_names_mean": 25.0,
+      "n_names_max": 25,
+      "insample_active_sr_python": 1.5667521288464081,
+      "insample_turnover_ann": 8.171402713007327,
+      "active_skew": 0.6257845924213289,
+      "active_kurt": 3.699422916265535,
+      "metric_type": "python_screen_preview",
+      "n_trials_cumulative": 124,
+      "DSR_cumulative_python": 0.11701252011388608
+    },
+    "seed_K16": {
+      "mode": "seed_K16",
+      "meta": {
+        "seeds": [
+          7,
+          17,
+          23,
+          42,
+          101,
+          202,
+          303,
+          404,
+          505,
+          606,
+          707,
+          808,
+          909,
+          111,
+          222,
+          333
+        ],
+        "K": 16,
+        "config": "DPL_C_fixed",
+        "ensemble_trials": 1
+      },
+      "net_active_sr_python": 0.5221142139001357,
+      "turnover_ann": 11.962313770957525,
+      "n_oos_months": 168,
+      "sub_period_srs_python": [
+        1.491,
+        -0.124,
+        0.128
+      ],
+      "sr_min_subperiod_python": -0.12350026698111057,
+      "n_names_mean": 25.0,
+      "n_names_max": 25,
+      "insample_active_sr_python": 1.6850097378509858,
+      "insample_turnover_ann": 7.756096327374142,
+      "active_skew": 0.7201577235007368,
+      "active_kurt": 3.833649815728175,
+      "metric_type": "python_screen_preview",
+      "n_trials_cumulative": 125,
+      "DSR_cumulative_python": 0.2440888113520866
+    },
+    "config5": {
+      "mode": "config5",
+      "meta": {
+        "seed": 7,
+        "K": 5,
+        "config": "top5_IS_cells",
+        "src_cells": [
+          37,
+          85,
+          7,
+          63,
+          21
+        ],
+        "src_oos_sr": [
+          0.5962574684049852,
+          0.5528060304949013,
+          0.43435753415932793,
+          0.41984646335817605,
+          0.41248757782086104
+        ],
+        "ensemble_trials": 5
+      },
+      "net_active_sr_python": 0.39244908085016883,
+      "turnover_ann": 15.713776083084339,
+      "n_oos_months": 168,
+      "sub_period_srs_python": [
+        1.295,
+        -0.081,
+        0.028
+      ],
+      "sr_min_subperiod_python": -0.08105982079642728,
+      "n_names_mean": 25.0,
+      "n_names_max": 25,
+      "insample_active_sr_python": 1.645520573397646,
+      "insample_turnover_ann": 12.886382820619652,
+      "active_skew": 0.6949123610987058,
+      "active_kurt": 3.9403550146643886,
+      "metric_type": "python_screen_preview",
+      "n_trials_cumulative": 130,
+      "DSR_cumulative_python": 0.1150978319231094
+    }
+  },
+  "n_trials_cumulative_final": 130
+}

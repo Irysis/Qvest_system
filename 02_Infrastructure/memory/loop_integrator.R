@@ -25,7 +25,7 @@ suppressPackageStartupMessages({
 
 # --- Paths ---
 if (!exists("PROJECT_ROOT")) {
-  PROJECT_ROOT <- "/mnt/c/Users/User/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot"
+  PROJECT_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 }
 .LI_ROOT       <- PROJECT_ROOT
 .LI_FRESHIDEA  <- file.path(.LI_ROOT, "_deleted_FreshIdea")

@@ -1,0 +1,573 @@
+{
+  "cycle": "45D_walkforward",
+  "approach": "WALK_FORWARD_5_FOLD_CV_UNDER_TRAINING_TEST",
+  "context": {
+    "cycle_45c_finding": "M2 Regime PR-AUC 0.6003 vs v1.3 baseline 0.6078 = Δ-0.0075 REGRESSION",
+    "cycle_45c_under_training_signal": "best_valid_pr (LSTM 0.298 / TFT 0.260) << oos_pr (0.396/0.377)",
+    "cycle_45c_early_stop": "LSTM ep 13 / TFT ep 22 @ patience 8 → DNN under-trained",
+    "hypothesis": "Validation strategy 자체 결함 (2010-2015 KR 저변동 안정기 noise) → walk-forward 5-fold CV로 검증"
+  },
+  "validation_strategy": "walk_forward_expanding_5_fold_CV",
+  "oos_window": {
+    "start": "2018-01-01",
+    "end": "2026-04-30",
+    "note": "fold 5 valid 2016-2017 제외하여 leakage 방지"
+  },
+  "baselines": {
+    "cycle_45c": {
+      "static_wew_y_tail_q15": 0.5641,
+      "m1_rolling_y_tail_q15": 0.5919,
+      "m2_regime_y_tail_q15": 0.6003,
+      "lstm_individual_y_tail_q15": 0.3957,
+      "tft_individual_y_tail_q15": 0.3772,
+      "lstm_ep_stop": 13,
+      "tft_ep_stop": 22
+    },
+    "v1_3": {
+      "static_wew_y_tail_q15": 0.5814,
+      "m1_rolling_y_tail_q15": 0.6063,
+      "m2_regime_y_tail_q15": 0.6078
+    }
+  },
+  "v3d_walkforward": {
+    "n_features": 69,
+    "training_relaxation": {
+      "patience": "8 → 15",
+      "min_delta": "0 → 0.0005",
+      "max_epochs": "50 → 80"
+    },
+    "architecture_unchanged_from_45C": true,
+    "gbdt_walkforward": {
+      "cycle": "45D_walkforward",
+      "step": "step2_3_walkforward_gbdt",
+      "panel": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/01_data/feature_panel_v1_3.parquet",
+      "n_features": 69,
+      "baseline_v1_3": true,
+      "validation_strategy": "walk_forward_expanding_5_fold_CV",
+      "oos_window": {
+        "start": "2018-01-01",
+        "end": "2026-04-30",
+        "note": "fold 5 valid 2016-2017 제외하여 leakage 방지"
+      },
+      "folds": [
+        {
+          "name": "Fold1_Lehman",
+          "train_start": "1995-01-01",
+          "train_end": "2007-12-31",
+          "valid_start": "2008-01-01",
+          "valid_end": "2009-12-31"
+        },
+        {
+          "name": "Fold2_EuroAfter",
+          "train_start": "1995-01-01",
+          "train_end": "2009-12-31",
+          "valid_start": "2010-01-01",
+          "valid_end": "2011-12-31"
+        },
+        {
+          "name": "Fold3_CyprusTT",
+          "train_start": "1995-01-01",
+          "train_end": "2011-12-31",
+          "valid_start": "2012-01-01",
+          "valid_end": "2013-12-31"
+        },
+        {
+          "name": "Fold4_KRLowVol",
+          "train_start": "1995-01-01",
+          "train_end": "2013-12-31",
+          "valid_start": "2014-01-01",
+          "valid_end": "2015-12-31"
+        },
+        {
+          "name": "Fold5_BestSignal",
+          "train_start": "1995-01-01",
+          "train_end": "2015-12-31",
+          "valid_start": "2016-01-01",
+          "valid_end": "2017-12-31"
+        }
+      ],
+      "fold_diagnostics_y_tail_q15": [
+        {
+          "fold": "Fold1_Lehman",
+          "model": "xgb",
+          "target": "y_tail_q15",
+          "best_iter": 500,
+          "valid_pr": 0.6807,
+          "bear_count": 85,
+          "n_valid": 501,
+          "pos_weight": 6.38
+        },
+        {
+          "fold": "Fold1_Lehman",
+          "model": "cat",
+          "target": "y_tail_q15",
+          "best_iter": 500,
+          "valid_pr": 0.7175,
+          "bear_count": 85,
+          "n_valid": 501,
+          "pos_weight": 6.38
+        },
+        {
+          "fold": "Fold1_Lehman",
+          "model": "rf",
+          "target": "y_tail_q15",
+          "best_iter": 1000,
+          "valid_pr": 0.6689,
+          "bear_count": 85,
+          "n_valid": 501,
+          "pos_weight": 6.38
+        },
+        {
+          "fold": "Fold2_EuroAfter",
+          "model": "xgb",
+          "target": "y_tail_q15",
+          "best_iter": 500,
+          "valid_pr": 0.2881,
+          "bear_count": 37,
+          "n_valid": 499,
+          "pos_weight": 6.13
+        },
+        {
+          "fold": "Fold2_EuroAfter",
+          "model": "cat",
+          "target": "y_tail_q15",
+          "best_iter": 500,
+          "valid_pr": 0.285,
+          "bear_count": 37,
+          "n_valid": 499,
+          "pos_weight": 6.13
+        },
+        {
+          "fold": "Fold2_EuroAfter",
+          "model": "rf",
+          "target": "y_tail_q15",
+          "best_iter": 1000,
+          "valid_pr": 0.1719,
+          "bear_count": 37,
+          "n_valid": 499,
+          "pos_weight": 6.13
+        },
+        {
+          "fold": "Fold3_CyprusTT",
+          "model": "xgb",
+          "target": "y_tail_q15",
+          "best_iter": 500,
+          "valid_pr": 0.1416,
+          "bear_count": 31,
+          "n_valid": 495,
+          "pos_weight": 6.56
+        },
+        {
+          "fold": "Fold3_CyprusTT",
+          "model": "cat",
+          "target": "y_tail_q15",
+          "best_iter": 500,
+          "valid_pr": 0.1231,
+          "bear_count": 31,
+          "n_valid": 495,
+          "pos_weight": 6.56
+        },
+        {
+          "fold": "Fold3_CyprusTT",
+          "model": "rf",
+          "target": "y_tail_q15",
+          "best_iter": 1000,
+          "valid_pr": 0.0772,
+          "bear_count": 31,
+          "n_valid": 495,
+          "pos_weight": 6.56
+        },
+        {
+          "fold": "Fold4_KRLowVol",
+          "model": "xgb",
+          "target": "y_tail_q15",
+          "best_iter": 500,
+          "valid_pr": 0.176,
+          "bear_count": 27,
+          "n_valid": 493,
+          "pos_weight": 7
+        },
+        {
+          "fold": "Fold4_KRLowVol",
+          "model": "cat",
+          "target": "y_tail_q15",
+          "best_iter": 500,
+          "valid_pr": 0.2127,
+          "bear_count": 27,
+          "n_valid": 493,
+          "pos_weight": 7
+        },
+        {
+          "fold": "Fold4_KRLowVol",
+          "model": "rf",
+          "target": "y_tail_q15",
+          "best_iter": 1000,
+          "valid_pr": 0.1028,
+          "bear_count": 27,
+          "n_valid": 493,
+          "pos_weight": 7
+        },
+        {
+          "fold": "Fold5_BestSignal",
+          "model": "xgb",
+          "target": "y_tail_q15",
+          "best_iter": 500,
+          "valid_pr": 0.2652,
+          "bear_count": 74,
+          "n_valid": 489,
+          "pos_weight": 7.45
+        },
+        {
+          "fold": "Fold5_BestSignal",
+          "model": "cat",
+          "target": "y_tail_q15",
+          "best_iter": 500,
+          "valid_pr": 0.2272,
+          "bear_count": 74,
+          "n_valid": 489,
+          "pos_weight": 7.45
+        },
+        {
+          "fold": "Fold5_BestSignal",
+          "model": "rf",
+          "target": "y_tail_q15",
+          "best_iter": 1000,
+          "valid_pr": 0.2013,
+          "bear_count": 74,
+          "n_valid": 489,
+          "pos_weight": 7.45
+        }
+      ],
+      "fold_diagnostics_y_onset": [
+        {
+          "fold": "Fold1_Lehman",
+          "model": "xgb",
+          "target": "y_onset",
+          "best_iter": 500,
+          "valid_pr": 0.1853,
+          "bear_count": 29,
+          "n_valid": 501,
+          "pos_weight": 8
+        },
+        {
+          "fold": "Fold1_Lehman",
+          "model": "cat",
+          "target": "y_onset",
+          "best_iter": 500,
+          "valid_pr": 0.1291,
+          "bear_count": 29,
+          "n_valid": 501,
+          "pos_weight": 8
+        },
+        {
+          "fold": "Fold1_Lehman",
+          "model": "rf",
+          "target": "y_onset",
+          "best_iter": 1000,
+          "valid_pr": 0.0422,
+          "bear_count": 29,
+          "n_valid": 501,
+          "pos_weight": 8
+        },
+        {
+          "fold": "Fold2_EuroAfter",
+          "model": "xgb",
+          "target": "y_onset",
+          "best_iter": 500,
+          "valid_pr": 0.3098,
+          "bear_count": 44,
+          "n_valid": 499,
+          "pos_weight": 8
+        },
+        {
+          "fold": "Fold2_EuroAfter",
+          "model": "cat",
+          "target": "y_onset",
+          "best_iter": 500,
+          "valid_pr": 0.2683,
+          "bear_count": 44,
+          "n_valid": 499,
+          "pos_weight": 8
+        },
+        {
+          "fold": "Fold2_EuroAfter",
+          "model": "rf",
+          "target": "y_onset",
+          "best_iter": 1000,
+          "valid_pr": 0.0513,
+          "bear_count": 44,
+          "n_valid": 499,
+          "pos_weight": 8
+        },
+        {
+          "fold": "Fold3_CyprusTT",
+          "model": "xgb",
+          "target": "y_onset",
+          "best_iter": 500,
+          "valid_pr": 0.2109,
+          "bear_count": 62,
+          "n_valid": 495,
+          "pos_weight": 8
+        },
+        {
+          "fold": "Fold3_CyprusTT",
+          "model": "cat",
+          "target": "y_onset",
+          "best_iter": 500,
+          "valid_pr": 0.2329,
+          "bear_count": 62,
+          "n_valid": 495,
+          "pos_weight": 8
+        },
+        {
+          "fold": "Fold3_CyprusTT",
+          "model": "rf",
+          "target": "y_onset",
+          "best_iter": 1000,
+          "valid_pr": 0.0847,
+          "bear_count": 62,
+          "n_valid": 495,
+          "pos_weight": 8
+        },
+        {
+          "fold": "Fold4_KRLowVol",
+          "model": "xgb",
+          "target": "y_onset",
+          "best_iter": 500,
+          "valid_pr": 0.1431,
+          "bear_count": 74,
+          "n_valid": 493,
+          "pos_weight": 8
+        },
+        {
+          "fold": "Fold4_KRLowVol",
+          "model": "cat",
+          "target": "y_onset",
+          "best_iter": 500,
+          "valid_pr": 0.1641,
+          "bear_count": 74,
+          "n_valid": 493,
+          "pos_weight": 8
+        },
+        {
+          "fold": "Fold4_KRLowVol",
+          "model": "rf",
+          "target": "y_onset",
+          "best_iter": 1000,
+          "valid_pr": 0.1563,
+          "bear_count": 74,
+          "n_valid": 493,
+          "pos_weight": 8
+        },
+        {
+          "fold": "Fold5_BestSignal",
+          "model": "xgb",
+          "target": "y_onset",
+          "best_iter": 500,
+          "valid_pr": null,
+          "bear_count": 3,
+          "n_valid": 489,
+          "pos_weight": 8
+        },
+        {
+          "fold": "Fold5_BestSignal",
+          "model": "cat",
+          "target": "y_onset",
+          "best_iter": 500,
+          "valid_pr": null,
+          "bear_count": 3,
+          "n_valid": 489,
+          "pos_weight": 8
+        },
+        {
+          "fold": "Fold5_BestSignal",
+          "model": "rf",
+          "target": "y_onset",
+          "best_iter": 1000,
+          "valid_pr": null,
+          "bear_count": 3,
+          "n_valid": 489,
+          "pos_weight": 8
+        }
+      ],
+      "avg_best_iter": {
+        "y_tail_q15": {
+          "xgb": 500,
+          "cat": 500,
+          "rf": 1000
+        },
+        "y_onset": {
+          "xgb": 500,
+          "cat": 500,
+          "rf": 1000
+        }
+      },
+      "final_oos_y_tail_q15": {
+        "xgb": 0.5846,
+        "cat": 0.547,
+        "rf": 0.5923,
+        "ew3": 0.5924
+      },
+      "final_oos_y_onset": {
+        "xgb": 0.1027,
+        "cat": 0.1152,
+        "rf": 0.1046,
+        "ew3": 0.0949
+      }
+    },
+    "individual_OOS_PRAUC_y_tail_q15": {
+      "xgb": 0.5846,
+      "cat": 0.547,
+      "rf": 0.5923,
+      "lstm": 0.3253,
+      "tft": 0.4508
+    },
+    "individual_OOS_IC_y_tail_q15": {
+      "xgb": 0.4155,
+      "cat": 0.4098,
+      "rf": 0.4377,
+      "lstm": 0.1442,
+      "tft": 0.2743
+    },
+    "individual_OOS_PRAUC_y_onset": {
+      "xgb": 0.1027,
+      "cat": 0.1152,
+      "rf": 0.1046,
+      "lstm": 0.1617,
+      "tft": 0.1746
+    },
+    "individual_OOS_IC_y_onset": {
+      "xgb": -0.0935,
+      "cat": -0.0629,
+      "rf": -0.0457,
+      "lstm": 0.0629,
+      "tft": 0.0533
+    },
+    "dnn_avg_best_epoch_y_tail_q15": {
+      "lstm": 5,
+      "tft": 10
+    },
+    "dynamic_PRAUC_y_tail_q15": {
+      "Static_WEW": 0.5875,
+      "M1_Rolling": 0.5896,
+      "M2_Regime": 0.5917,
+      "M3_Hedge": 0.6019,
+      "M4_Bayes": 0.5979,
+      "M5_Bandit": 0.586
+    },
+    "dynamic_PRAUC_y_onset": {
+      "Static_WEW": 0.1335,
+      "M1_Rolling": 0.1537,
+      "M2_Regime": 0.1616,
+      "M3_Hedge": 0.1115,
+      "M4_Bayes": 0.1255,
+      "M5_Bandit": 0.1408
+    }
+  },
+  "delta_vs_cycle_45c_y_tail_q15": {
+    "delta_static_wew": 0.0234,
+    "delta_m1_rolling": -0.0023,
+    "delta_m2_regime": -0.0086,
+    "lstm_individual_delta": -0.0704,
+    "tft_individual_delta": 0.0736,
+    "lstm_ep_delta": -8,
+    "tft_ep_delta": -12
+  },
+  "delta_vs_v1_3_y_tail_q15": {
+    "delta_static_wew": 0.0061,
+    "delta_m1_rolling": -0.0166,
+    "delta_m2_regime": -0.0161
+  },
+  "verdict_under_training_hypothesis": "MIXED_RESULT — Re-examine training stability",
+  "verdict_m2_regime_recovery": "WALKFORWARD_REGRESSION — Patience relaxation did not recover M2",
+  "decision_rules": {
+    "under_training": {
+      "PROVEN": "avg_ep_delta ≥ 5 AND (LSTM Δ_PR > 0.01 AND TFT Δ_PR > 0.01)",
+      "REJECTED": "avg_ep_delta ≥ 5 BUT individual NOT improved",
+      "NULL_RES": "|avg_ep_delta| < 5"
+    },
+    "m2_regime": {
+      "VALIDATED": "Δ M2 vs 45C ≥ +0.01",
+      "MARGINAL": "0 < Δ M2 < +0.01",
+      "REGRESSION": "Δ M2 ≤ 0"
+    }
+  },
+  "next_cycle_suggestion": "Re-examine training stability + selective fold re-run",
+  "python_diagnostics_summary": {
+    "cycle": "45D_walkforward",
+    "baseline_v1_3_features": 69,
+    "no_new_features": true,
+    "validation_strategy": "walk_forward_expanding_5_fold_CV",
+    "training_relaxation": {
+      "patience": "8 → 15",
+      "min_delta": "0 → 0.0005",
+      "max_epochs": "50 → 80"
+    },
+    "architecture_unchanged_from_45C": {
+      "lstm": {
+        "hidden": 192,
+        "layers": 3,
+        "dropout": 0.45,
+        "weight_decay": 0.005,
+        "lr": 0.001,
+        "bidirectional": true
+      },
+      "tft": {
+        "d_model": 128,
+        "nhead": 8,
+        "num_layers": 6,
+        "ff_dim": 768,
+        "dropout": 0.45,
+        "attn_dropout": 0.2,
+        "norm_first": true,
+        "weight_decay": 0.005,
+        "lr": 0.001
+      },
+      "common": {
+        "batch_size": 96,
+        "epochs": 80,
+        "early_stop_patience": 15,
+        "early_stop_min_delta": 0.0005,
+        "grad_clip_norm": 1,
+        "warmup_steps": 500,
+        "mixed_precision_amp": true,
+        "gpu_mem_fraction": 0.3
+      }
+    },
+    "baseline_45c_oos_y_tail_q15": {
+      "lstm": 0.3957,
+      "tft": 0.3772,
+      "lstm_ep_stop": 13,
+      "tft_ep_stop": 22
+    },
+    "v3d_oos_y_tail_q15": {
+      "lstm": 0.3253,
+      "tft": 0.4508,
+      "lstm_avg_ep": 5,
+      "tft_avg_ep": 10
+    },
+    "v3d_oos_y_onset": {
+      "lstm": 0.1617,
+      "tft": 0.1746,
+      "lstm_avg_ep": 10,
+      "tft_avg_ep": 9
+    },
+    "delta_45c_to_45d_y_tail_q15": {
+      "lstm_pr": -0.0704,
+      "tft_pr": 0.0736,
+      "lstm_ep": -8,
+      "tft_ep": -12
+    },
+    "model_params": {
+      "lstm": 2206337,
+      "tft": 1603713
+    },
+    "per_fold_diagnostics_path": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/03_models/v3d_walkforward/per_fold_diagnostics.json"
+  },
+  "per_fold_diagnostics_path": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/03_models/v3d_walkforward/per_fold_diagnostics.json",
+  "outputs": {
+    "panel": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/01_data/feature_panel_v1_3.parquet",
+    "v3d_dir": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/03_models/v3d_walkforward",
+    "chart": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/06_reports/charts/94_pr_curve_v3d_walkforward.png"
+  }
+}

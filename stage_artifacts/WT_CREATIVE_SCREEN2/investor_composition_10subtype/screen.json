@@ -1,0 +1,55 @@
+{
+  "idea": "Investor Composition Quality (10-subtype flow): decompose coarse 3/4-type investor flow into 10-subtype (금융투자/보험/투신/은행/기타금융/연기금 + 개인/외국인/기타법인) to build an information hierarchy. composition spread = high-info-subtype netbuy - low-info; claim = return-orthogonal (low-beta) alpha.",
+  "screen_type": "data_existence_gate (precedes cheap rank-IC)",
+  "planned_cheap_test": "cross-sectional forward Rank-IC/ICIR of composition spread + residual IC after controlling existing INV (3/4-type) + pre/post price-change-orthogonalization portfolio beta",
+  "verdict": "NO-GO (granularity-axis mismatch). cheap rank-IC NOT runnable on current infra.",
+  "data_feasible": false,
+  "evidence": {
+    "raw_market_level_csv": {
+      "path": ".cache/investor/investor_kosdaq_YYYYMMDD.csv (also kospi)",
+      "header": "Date,개인,외국인,기관계,기타법인,금융투자,보험,투신,은행,기타금융,연기금,market",
+      "subtype_count": 10,
+      "rows_per_file": 2,
+      "axis": "market-level (one row per date per market) — NOT per-stock",
+      "note": "10-subtype DOES exist but only on market aggregate axis"
+    },
+    "per_stock_panel": {
+      "path": ".cache/investor_stock/investor_wide.parquet",
+      "cols": ["Date","Ticker","Foreign","Individual","Institutional","OtherCorp"],
+      "subtype_count": 4,
+      "axis": "per-stock (has Ticker) — but only 4-type"
+    },
+    "production_factor_layer": {
+      "path": "02_Infrastructure/factor_db/compute_investor.R line 14",
+      "input_cols": ["Date","Ticker","Foreign","Individual","Institutional","OtherCorp"],
+      "factors": "INV01~INV13 all built on 4-type",
+      "registry": "factor_registry.json investor_flow cluster = 3/4-type based (e.g. INV13_Foreign_Resid_Individual_*)"
+    },
+    "investor_act_xlsx": {
+      "path": "03_Universe/Investor_Act.xlsx (511MB)",
+      "sheets": ["외인","기관","개인","기타법인","DATA_Key"],
+      "subtype_count": 4,
+      "note": "sheet structure = 4-type, matches cache; not per-stock 10-subtype"
+    }
+  },
+  "root_cause": "The 10-subtype split exists only on the MARKET axis (1 row/date), while the per-STOCK panel collapses institutions into a single 'Institutional' bucket. A cross-sectional rank-IC needs per-stock subtype features, which do not exist. So 'high-info-subtype - low-info' composition spread cannot be formed at stock level.",
+  "metrics": {
+    "per_stock_investor_subtype_granularity": 4,
+    "market_level_investor_subtype_granularity": 10,
+    "rank_ic": null,
+    "icir": null,
+    "residual_ic_after_3type_control": null,
+    "portfolio_beta_pre_orthogonalization": null,
+    "portfolio_beta_post_orthogonalization": null,
+    "note": "all IC/beta null — feature not constructible at stock axis, test not run"
+  },
+  "recommendation": {
+    "as_cheap_screen": "infeasible — abandon as a cheap SCREEN (cross-sectional rank-IC needs per-stock subtype, absent).",
+    "alt_path_A_market_timeseries": "If using market-level 10-subtype: redesign as time-series/regime idea (market composition -> market forward return). This is a DIFFERENT idea (market timing, not stock selection) and NOT the proposed cross-sectional alpha.",
+    "alt_path_B_build_parser": "If per-stock institution-subtype actually exists in raw QuantiWise source (NOT confirmed here — Investor_Act.xlsx is 4-type), it would require a NEW per-stock subtype parser FIRST = data-engineering WT, not a cheap screen.",
+    "redundancy_warning": "Even a per-stock 4-type composition spread risks repackaging existing INV01~INV13 -> Factor Zoo reduction principle weak."
+  },
+  "pit_notes": "C2 same-day circular forbidden; feature t-1 backward, forward label only future; lockbox 2023-12-22 strict; C14 Usable_Date<=sig_date. Not reached (gate failed before feature build).",
+  "scope": "SCREEN only (read-only). No backtest/admission/full-package. advisory not tradeable (Cycle2 lesson).",
+  "date": "2026-05-30"
+}

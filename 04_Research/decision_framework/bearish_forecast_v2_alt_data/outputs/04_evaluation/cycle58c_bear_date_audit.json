@@ -1,0 +1,140 @@
+{
+  "cycle": "58C",
+  "generated_at": "2026-05-21T17:00:23+0900",
+  "panel_existence": {
+    "v5f_FIXED2": true,
+    "v5g_cross_market": true,
+    "cross_market_daily": true,
+    "targets_observable": true
+  },
+  "target_sanity": {
+    "n_total": 8955,
+    "n_y_tail_q15_notna": 8934,
+    "n_ret_q15_notna": 8934,
+    "n_phantom_rows": 0,
+    "M6_guard": "PASS"
+  },
+  "bear_anchors": {
+    "Lehman_GFC": {
+      "date": "2008-09-12",
+      "n_window": 20,
+      "max_y_tail_q15": 1,
+      "max_abs_ret_q15": 0.3725,
+      "status": "BEAR_LABELED"
+    },
+    "Euro_Crisis": {
+      "date": "2011-08-08",
+      "n_window": 23,
+      "max_y_tail_q15": 1,
+      "max_abs_ret_q15": 0.1139,
+      "status": "BEAR_LABELED"
+    },
+    "COVID": {
+      "date": "2020-02-19",
+      "n_window": 23,
+      "max_y_tail_q15": 1,
+      "max_abs_ret_q15": 0.3405,
+      "status": "BEAR_LABELED"
+    },
+    "Stagflation_22": {
+      "date": "2022-06-15",
+      "n_window": 23,
+      "max_y_tail_q15": 1,
+      "max_abs_ret_q15": 0.0885,
+      "status": "BEAR_LABELED"
+    }
+  },
+  "bbva_FIXED2_inheritance": {
+    "columns_audited": 8,
+    "audit_per_col": {
+      "bbva_market_z": {
+        "n_common": 6181,
+        "max_abs_diff": 0,
+        "n_diff_gt_1e6": 0
+      },
+      "bbva_sovereign_z": {
+        "n_common": 534,
+        "max_abs_diff": 0,
+        "n_diff_gt_1e6": 0
+      },
+      "bbva_transmission_z": {
+        "n_common": 3484,
+        "max_abs_diff": 0,
+        "n_diff_gt_1e6": 0
+      },
+      "bbva_macro_composite": {
+        "n_common": 6181,
+        "max_abs_diff": 0,
+        "n_diff_gt_1e6": 0
+      },
+      "bbva_market_z_lag1": {
+        "n_common": 6181,
+        "max_abs_diff": 0,
+        "n_diff_gt_1e6": 0
+      },
+      "bbva_sovereign_z_lag1": {
+        "n_common": 534,
+        "max_abs_diff": 0,
+        "n_diff_gt_1e6": 0
+      },
+      "bbva_transmission_z_lag1": {
+        "n_common": 3484,
+        "max_abs_diff": 0,
+        "n_diff_gt_1e6": 0
+      },
+      "bbva_macro_composite_lag1": {
+        "n_common": 6181,
+        "max_abs_diff": 0,
+        "n_diff_gt_1e6": 0
+      }
+    },
+    "overall": "PASS_IDENTICAL"
+  },
+  "cross_market_audit": {
+    "columns": 7,
+    "all_PIT_safe_lag1": true,
+    "per_col": {
+      "nikkei225_return_lag1": {
+        "n_notna": 8955,
+        "n_total": 8957,
+        "pct_notna": 100
+      },
+      "sp500_overnight_return_lag1": {
+        "n_notna": 8955,
+        "n_total": 8957,
+        "pct_notna": 100
+      },
+      "dxy_change_5d_lag1": {
+        "n_notna": 8951,
+        "n_total": 8957,
+        "pct_notna": 99.9
+      },
+      "usdkrw_change_5d_lag1": {
+        "n_notna": 6502,
+        "n_total": 8957,
+        "pct_notna": 72.6
+      },
+      "hangseng_return_lag1": {
+        "n_notna": 8955,
+        "n_total": 8957,
+        "pct_notna": 100
+      },
+      "wti_change_5d_lag1": {
+        "n_notna": 6346,
+        "n_total": 8957,
+        "pct_notna": 70.8
+      },
+      "vix_change_5d_lag1": {
+        "n_notna": 6502,
+        "n_total": 8957,
+        "pct_notna": 72.6
+      }
+    }
+  },
+  "pre_cycle_verdict": {
+    "n_bear_labeled": 4,
+    "n_bear_total": 4,
+    "overall": "PASS",
+    "rationale": "4/4 bear anchors labeled (need >=2 since Lehman/Euro pre-panel); BBVA inheritance PASS; M6 guard PASS; PIT-safe PASS"
+  }
+}

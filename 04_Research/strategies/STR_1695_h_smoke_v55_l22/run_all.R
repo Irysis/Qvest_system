@@ -17,7 +17,7 @@ WEIGHT_METHOD  <- "equal"
 BUFFER_ZONE    <- list(keep_n = 22L, entry_n = 20L)
 
 .root_candidates <- c(
-  "/mnt/c/Users/User/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot",
+  Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")),
   "/mnt/c/Users/99922/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot"
 )
 PROJECT_ROOT <- .root_candidates[sapply(.root_candidates, dir.exists)][1]

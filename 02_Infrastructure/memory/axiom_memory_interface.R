@@ -24,13 +24,13 @@ suppressPackageStartupMessages({
 # ─── Config: find project root ───────────────────────────────────────────────
 if (!exists("PROJECT_ROOT")) {
   .ami_root_candidates <- c(
-    "/mnt/c/Users/User/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot",
+    Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")),
     "/mnt/c/Users/99922/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot"
   )
   PROJECT_ROOT <- .ami_root_candidates[sapply(.ami_root_candidates, dir.exists)][1]
   if (is.na(PROJECT_ROOT)) {
     PROJECT_ROOT <- Sys.getenv("QM_ROOT",
-      unset = "/mnt/c/Users/User/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot")
+      unset = Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")))
   }
   rm(.ami_root_candidates)
 }

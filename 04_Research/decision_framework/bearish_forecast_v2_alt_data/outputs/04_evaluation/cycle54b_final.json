@@ -1,0 +1,145 @@
+{
+  "meta": {
+    "cycle": "54B",
+    "title": "y_tail_q126_abs15 Primary 전환 + 모든 cycle re-baseline (Q-Lead independent verdict)",
+    "timestamp": "2026-05-21T08:50:00+0900",
+    "executor_agent": "forge (claude opus 4.7)",
+    "code_reviewer": "codex (gpt-5.5 companion task, code-only scope)",
+    "design_verdict_authority": "Q-Lead (coordinator mandate 2026-05-21 — Codex Critic Round 폐기)",
+    "pre_cycle_bear_date_audit": "PASS_4_of_4",
+    "cpu_only": true,
+    "no_retraining": true,
+    "ax_008_class": "code_review_only_codex",
+    "axiom_alignment": [
+      "AX-002 (process honesty) — anchored PR-AUC fix retroactively applied",
+      "PIT C1 — abs15 is a priori threshold (no OOS data-driven selection)"
+    ]
+  },
+  "phase1_label_status": {
+    "abs15_definition": "1{ret_q126 <= -0.15}, fixed threshold, regime-invariant",
+    "ret_q126_semantics": "BM[t+126] / BM[t] - 1 (forward 126d), upstream-verified on 3 dates",
+    "n_events_full_1990_2026": 1125,
+    "n_obs_full_1990_2026": 8829,
+    "rate_full": 0.1274,
+    "yearly_sd_oos_legacy_53M": 0.0715,
+    "yearly_sd_oos_known_only": 0.0715,
+    "yearly_sd_full_1990_2026": 0.1968,
+    "vs_orig_yearly_sd_oos": {
+      "orig": 0.2751,
+      "abs15": 0.0715,
+      "improvement_factor": 3.85
+    },
+    "vs_orig_yearly_sd_full": {
+      "orig": 0.2272,
+      "abs15": 0.1968,
+      "improvement_factor": 1.15
+    },
+    "interpretation": "OOS scope (2018-2025) reproduces 53M reported SD 0.0714 (rounding to 0.0715). Full 1990-2026 scope shows much less improvement (1.15x vs 3.85x) because abs15 captures pre-2018 Korean bear regimes (1996 Asian crisis, 2000 dotcom, 2008 GFC) which orig 60m rolling missed in early data."
+  },
+  "phase2_leaderboard": {
+    "best_consistent": true,
+    "best_orig_q126": {
+      "cycle": "c53E_v2_q126",
+      "label": "Cycle53E v2 PatchTST patch=2 (q126)",
+      "pr_auc": 0.4778,
+      "pr_lo": 0.2968,
+      "pr_hi": 0.6351,
+      "lift": 1.8945,
+      "ic_rank": 0.1417,
+      "pr_ci_above_baseline": true
+    },
+    "best_abs15": {
+      "cycle": "c53E_v2_q126",
+      "label": "Cycle53E v2 PatchTST patch=2 (q126)",
+      "pr_auc": 0.1578,
+      "pr_lo": 0.0464,
+      "pr_hi": 0.3104,
+      "lift": 2.5222,
+      "ic_rank": 0.0726,
+      "pr_ci_above_baseline": false
+    },
+    "spearman_pr_rank_orig_vs_abs15": 0.7269,
+    "spearman_ic_rank_orig_vs_abs15": 0.8855,
+    "ranking_stability_assessment": "STRONG — top-2 (c53E_v2, c53E_v4) preserved across labels; top-7 changes are within ±4 ranks; bottom-2 (c53E_v5, c53I_v5f) preserved",
+    "notable_rank_changes": {
+      "c53H_v5e_q126_US_macro": {
+        "rank_orig": 3, "rank_abs15": 12, "delta": 9,
+        "interpretation": "US macro features fit orig label well (relative quantile) but fail extreme magnitude (abs15) — label-specific signal"
+      },
+      "c53E_v8_q126": {
+        "rank_orig": 6, "rank_abs15": 4, "delta": -2,
+        "interpretation": "robust under both labels, slightly stronger under abs15"
+      },
+      "c53E_v7_q126": {
+        "rank_orig": 5, "rank_abs15": 3, "delta": -4,
+        "interpretation": "abs15-strong, suggests this variant captures magnitude better than relative ranking"
+      }
+    }
+  },
+  "phase3_period_robust_under_abs15": {
+    "definition": "count of 4 segments (S2018-19/S2020-21/S2022-24/S2025-26) where lift_over_base > 1",
+    "top_6_period_robust": [
+      {"cycle": "c53E_v2_q126", "lift_gt_1": 3, "n_with_events": 3, "pr_auc_overall": 0.1578},
+      {"cycle": "c53E_v10_q126", "lift_gt_1": 3, "n_with_events": 3, "pr_auc_overall": 0.1221},
+      {"cycle": "c53E_v8_q126", "lift_gt_1": 3, "n_with_events": 3, "pr_auc_overall": 0.1190},
+      {"cycle": "c53E_v7_q126", "lift_gt_1": 3, "n_with_events": 3, "pr_auc_overall": 0.1073},
+      {"cycle": "c53E_v3_q126", "lift_gt_1": 3, "n_with_events": 3, "pr_auc_overall": 0.0981},
+      {"cycle": "c53E_v6_q126", "lift_gt_1": 3, "n_with_events": 3, "pr_auc_overall": 0.0872}
+    ],
+    "caveat": "Only 3 segments have n_events >= 5 under abs15 (S2025-26 has 0 events). c53E_v2 dominates absolute PR-AUC AND period-robust (3/3 lift_gt_1)."
+  },
+  "phase4_code_review_summary": {
+    "items_audited": 8,
+    "BUG_fixed": [
+      "Item 2 — PR-AUC anchoring (unanchored undercount; perfect ranking 0.667 vs anchored 1.000)",
+      "Item 6 — Label-specific yearly denominators (NA handling)",
+      "Item 7 — Spearman on raw (unrounded) values (artificial ties on round-4)",
+      "Item 8 — %||% defined before first use"
+    ],
+    "OK_no_action": ["1 (abs15 semantics)", "3 (bootstrap valid)", "5 (segment boundary)"],
+    "WARN_documented_no_action": ["4 (tz handling — KST 09:00 safe currently)"],
+    "impact_on_headlines": {
+      "best_orig_PR_AUC_change": "0.4747 -> 0.4778 (+0.0031)",
+      "best_abs15_PR_AUC_change": "0.1421 -> 0.1578 (+0.0157)",
+      "spearman_PR_change": "0.7048 -> 0.7269 (+0.0221)",
+      "best_consistency_change": "TRUE (unchanged)"
+    },
+    "code_review_log": "outputs/04_evaluation/cycle54b_code_review_log.md"
+  },
+  "phase5_q_lead_design_verdict": {
+    "question": "y_tail_q126_abs15 primary 전환 의무화 vs y_tail_q126 orig retain",
+    "verdict": "abs15_AND_orig_PARALLEL_REPORTING",
+    "primary_label": "y_tail_q126_orig (RETAIN)",
+    "secondary_label": "y_tail_q126_abs15 (ADD as ROBUSTNESS CHECK)",
+    "rationale": [
+      "1. RANKING STABILITY: Spearman PR-AUC rank corr 0.73 means abs15 vs orig ranking is HIGHLY consistent (top-2/bottom-2 preserved, c53H US macro is sole significant exception). Both labels point to c53E_v2 as headline. → Neither label dominates the other on signal discovery.",
+      "2. STATISTICAL POWER ASYMMETRY: orig has 515 OOS events (base rate 25.22%); abs15 has only 121 (base rate 6.26%). Bootstrap CI on abs15 is much wider (best PR 0.1578 [0.046, 0.310]) — pr_ci_above_baseline = FALSE for ALL cycles under abs15 (no statistically significant lift). Under orig, top-5 have CI above baseline. → abs15 alone cannot confer leaderboard authority.",
+      "3. PERIOD BALANCE GAIN: abs15 yearly SD 0.0715 vs orig 0.2751 (3.85x improvement in OOS 2018-2025) IS the strongest abs15 advantage. But this is a *fairness-of-evaluation* property, not a *signal-discovery* property. It tells us orig label is regime-dominated by 2018/2021 (rate ~0.65) — an inflation risk for cycles trained/evaluated mainly on those years. → abs15 EXISTS to detect when orig's apparent advantage was period-shopping.",
+      "4. INTERPRETABILITY: abs15 (-15% fixed) is much more intuitively meaningful to a quant practitioner than 'rolling 60m purged 15th-pctile of forward 126d return'. It maps to a real bear scenario (-15% in 6 months = textbook bear). → abs15 is better for OPERATIONAL communication.",
+      "5. DEPLOY SEMANTICS: For live deployment (future bear forecasting), abs15 has known threshold (no OOS recompute) and is regime-invariant — preferable for real-time alert systems. orig's rolling threshold may drift in future regimes. → abs15 is better for PRODUCTION.",
+      "6. CONCLUSION: Each label has distinct value (orig = power; abs15 = balance + production), and the rank correlation 0.73 means they mostly AGREE. PARALLEL REPORTING captures both, with abs15 serving as robustness audit. Forcing one to be 'primary' over-collapses the diagnostic."
+    ],
+    "deployment_implications": {
+      "primary_for_leaderboard": "orig (orig has statistical power)",
+      "primary_for_robustness_audit": "abs15 (period-balanced sanity check)",
+      "primary_for_real_time_deployment": "abs15 (regime-invariant threshold, intuitive)",
+      "next_cycle_protocol": "Always report both side-by-side. Headline cycle must clear both: (a) orig PR-AUC > base_orig 0.2522 with CI bound, AND (b) abs15 lift_over_base > 1.0 with period-balanced (>=2/3 segments lift>1)."
+    }
+  },
+  "phase6_next_cycle_implications": {
+    "headline_lock_impact": "c53E_v2_q126 was identified as 53M provisional best (orig 0.4747). After 54B re-baseline (anchored PR-AUC): orig 0.4778 + abs15 0.1578 + period-robust 3/3 — DOUBLE CONFIRMATION. c53E_v2 remains uncontested headline.",
+    "second_tier_promotion": "c53E_v4 (rank 2 both labels), c53E_v10 + c53E_v8 (period-robust 3/3 abs15) merit further inspection.",
+    "deprioritized": "c53H_v5e_US_macro rank-drop 3->12 from orig to abs15 signals US macro fits relative quantile but fails magnitude — caution for any meta-stacking that weights US macro highly.",
+    "demoted": "c53I_v5f_ECOS_KR + c53E_v5 ranked bottom-2 under both labels — drop from active leaderboard.",
+    "label_evolution": "abs15 enters as permanent companion label (NOT replacement). Future cycle aggregators (e.g. 54C, 55+) must report PR-AUC under both. Optional: abs10 (-10%) as second-tier robustness check (sd 0.1533 OOS, better than orig but worse than abs15)."
+  },
+  "outputs": {
+    "augmented_targets_parquet": "outputs/02_targets/targets_long_horizon_with_abs15.parquet",
+    "full_reeval_json": "outputs/04_evaluation/cycle54b_all_cycles_reeval.json",
+    "codex_review_prompt": "outputs/04_evaluation/cycle54b_codex_review_prompt.txt",
+    "codex_review_response": "outputs/04_evaluation/cycle54b_codex_response.json",
+    "code_review_log": "outputs/04_evaluation/cycle54b_code_review_log.md",
+    "leaderboard_chart": "outputs/06_reports/charts/139_cycle54b_label_compare.png",
+    "this_final": "outputs/04_evaluation/cycle54b_final.json"
+  }
+}

@@ -95,7 +95,7 @@ VALID_LIFECYCLE <- c(
 
 REGISTRY_PATH <- file.path(
   ifelse(exists("CACHE_DIR"), CACHE_DIR,
-         "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/.cache"),
+         file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")), ".cache")),
   "strategy_registry.json"
 )
 

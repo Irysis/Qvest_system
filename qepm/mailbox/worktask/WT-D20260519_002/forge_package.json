@@ -1,0 +1,909 @@
+{
+  "task_id": "WT-D20260519_002",
+  "agent": "forge",
+  "agent_version": "v1.0_bear_prediction_engine_pure_function_5model_ensemble_g1_g5_subgate_13opt_binding",
+  "wt_type": "discovery",
+  "wt_subclass_charter_v18": "discovery_design_phase_a_regime_sensor_overlay_policy",
+  "draft_marker": false,
+  "draft_emission_at": "2026-05-18T22:10:00+09:00",
+  "as_of_date": "2026-05-18",
+  "scope": "regime_sensor_overlay_policy_forge_stage_4_empirical",
+  "scope_explanation": "Forge cycle Stage 4 empirical execution — 5-model ensemble train + Path A design-phase + Path B 5-layer NAV backtest 267m + OOS 134m + G1~G5 subgate evaluation + 13 OPT bindings (OPT1~OPT13) + Architect baseline floor uplift verification + Pure Function audit.",
+  "method": "weights_267m_timeseries.csv_inherit_L5_V2_NAV_overlay_beta_bear_scalar_PIT_t1_lag_267m_reconstruction",
+  "measurement_basis_primary": "forge_realized_share_based",
+  "sr_realized_share_based": 1.8651,
+  "sr_realized_share_based_notes": "Path B Layer 6 L6_tau05_default β_bear overlay applied to STR_1715 PG2 nav_L5_V2 baseline. 267m 2004-02 ~ 2026-04. SR drag -0.021 vs L5_V2 baseline 1.886.",
+  "sr_factor_engine_continuous": null,
+  "sr_factor_engine_continuous_notes": "n/a — sensor scope 1-dim time-series probability, NOT cross-section continuous alpha aggregation.",
+  "sr_lockbox_daily_harness": null,
+  "sr_lockbox_daily_harness_notes": "n/a — Forge cycle lockbox 폐기 per .claude/rules/lockbox-scope.md (도훈 mandate 2026-05-09). Walk-forward 5-window 2015-2026 OOS = 134m natural OOS evaluation.",
+  "weights_csv_unique_dates_count": 267,
+  "alpha_sig_dates_count": 267,
+  "schedule_density_ratio": 1.0,
+  "schedule_density_pass": true,
+  "pure_function_violation": false,
+  "divergence_factor_engine_vs_realized_pp": null,
+  "divergence_factor_engine_vs_realized_pp_notes": "n/a — sensor scope, no factor_engine SR alternative claim.",
+  "hash_audit_pass": true,
+  "vs_factor_engine": {
+    "factor_engine_claimed_sr_is": null,
+    "forge_v3_realized_sr_is": 1.8991,
+    "divergence_pp": 0.0,
+    "diagnosis": "NEGLIGIBLE",
+    "notes": "OOS L6_tau05 SR 1.8991 vs OOS L5_V2 baseline SR 1.9279 (drag -0.029). NEGLIGIBLE because |Δ| < 0.1 — but drag direction = REJECT signal."
+  },
+  "backtest_summary": {
+    "full_period": {
+      "n_months": 267,
+      "start": "2004-02-01",
+      "end": "2026-04-01",
+      "strategies": [
+        "L4_baseline_str1715",
+        "L5_V2_4layer_admit",
+        "L6_tau03_lenient",
+        "L6_tau05_default",
+        "L6_tau07_conservative"
+      ],
+      "primary_strategy_evaluation": "L6_tau05_default",
+      "primary_SR": 1.8651,
+      "primary_MDD": -0.2481,
+      "primary_CAGR": 0.3991,
+      "baseline_L5_V2_SR": 1.8861,
+      "baseline_L5_V2_MDD": -0.2481,
+      "baseline_L5_V2_CAGR": 0.4037,
+      "delta_SR_vs_baseline": -0.021,
+      "delta_MDD_vs_baseline": 0.0,
+      "verdict": "SR_DRAG_MDD_UNCHANGED_LAYER_6_NO_INCREMENTAL_VALUE"
+    },
+    "oos_only": {
+      "n_months": 134,
+      "start": "2015-01-01",
+      "end": "2026-04-01",
+      "strategies": [
+        "OOS_L4_baseline",
+        "OOS_L5_V2",
+        "OOS_L6_tau05_default",
+        "OOS_L6_tau07_conservative"
+      ],
+      "primary_SR_L6_tau05": 1.8991,
+      "primary_MDD_L6_tau05": -0.1435,
+      "baseline_OOS_L5_V2_SR": 1.9279,
+      "baseline_OOS_L5_V2_MDD": -0.1435,
+      "delta_SR_oos_vs_baseline_tau05": -0.0288,
+      "delta_SR_oos_vs_baseline_tau07": 0.0,
+      "verdict_oos": "L6_TAU05_DRAG_L6_TAU07_NEVER_TRIGGERS_NO_INCREMENTAL_VALUE"
+    },
+    "pre_lockbox": {
+      "n_months": 240,
+      "period": "2004-02-01 ~ 2024-01-01",
+      "L5_V2_SR": 1.6977,
+      "L6_tau05_SR": 1.6749,
+      "L6_tau07_SR": 1.6902,
+      "L5_V2_MDD": -0.2481,
+      "L6_tau05_MDD": -0.2481,
+      "L6_tau07_MDD": -0.2481,
+      "delta_SR_tau05_vs_baseline_prelb": -0.0228,
+      "delta_SR_tau07_vs_baseline_prelb": -0.0075
+    },
+    "lockbox": {
+      "n_months": 27,
+      "period": "2024-02-01 ~ 2026-04-01",
+      "lockbox_boundary": "2024-01-23",
+      "L5_V2_SR": 3.88,
+      "L6_tau05_SR": 3.88,
+      "L6_tau07_SR": 3.88,
+      "L5_V2_MDD": -0.0478,
+      "L6_tau05_MDD": -0.0478,
+      "L6_tau07_MDD": -0.0478,
+      "delta_SR_tau05_vs_baseline_lb": 0.0,
+      "delta_SR_tau07_vs_baseline_lb": 0.0,
+      "lockbox_finding": "ALL_THREE_STRATEGIES_IDENTICAL_BEAR_SENSOR_NEVER_TRIGGERS_DURING_LOCKBOX_PERIOD_27M",
+      "lockbox_implication": "Bear sensor v1.0 adds ZERO Lockbox value — confirms Codex C3 concern"
+    },
+    "combined": {
+      "n_months": 267,
+      "start": "2004-02-01",
+      "end": "2026-04-01",
+      "strategies": [
+        "L4_baseline_str1715",
+        "L5_V2_4layer_admit",
+        "L6_tau03_lenient",
+        "L6_tau05_default",
+        "L6_tau07_conservative"
+      ],
+      "primary_strategy_evaluation": "L6_tau05_default",
+      "primary_SR": 1.8651,
+      "primary_MDD": -0.2481,
+      "primary_CAGR": 0.3991,
+      "baseline_L5_V2_SR": 1.8861,
+      "baseline_L5_V2_MDD": -0.2481,
+      "baseline_L5_V2_CAGR": 0.4037,
+      "delta_SR_vs_baseline": -0.021,
+      "delta_MDD_vs_baseline": 0.0,
+      "verdict": "SR_DRAG_MDD_UNCHANGED_LAYER_6_NO_INCREMENTAL_VALUE"
+    }
+  },
+  "factor_regression_5_specs": {
+    "L5_V2_baseline": {
+      "CAPM": {
+        "spec": "CAPM",
+        "alpha_monthly": 0.0306,
+        "alpha_se_nw": 0.0044,
+        "t_nw": 6.9747,
+        "n_obs": 266,
+        "r_squared": 9.4271e-07
+      },
+      "Carhart3": {
+        "spec": "Carhart3",
+        "alpha_monthly": 0.0305,
+        "alpha_se_nw": 0.0044,
+        "t_nw": 6.9175,
+        "n_obs": 266,
+        "r_squared": 0.0005
+      },
+      "Carhart4": {
+        "spec": "Carhart4",
+        "alpha_monthly": 0.0287,
+        "alpha_se_nw": 0.0041,
+        "t_nw": 7.0775,
+        "n_obs": 266,
+        "r_squared": 0.0351
+      },
+      "FF5": {
+        "spec": "FF5",
+        "alpha_monthly": 0.0303,
+        "alpha_se_nw": 0.0043,
+        "t_nw": 7.0566,
+        "n_obs": 266,
+        "r_squared": 0.0117
+      },
+      "FF5_Mom": {
+        "spec": "FF5_Mom",
+        "alpha_monthly": 0.0285,
+        "alpha_se_nw": 0.004,
+        "t_nw": 7.1346,
+        "n_obs": 266,
+        "r_squared": 0.0451
+      }
+    },
+    "L6_tau05_BEAR": {
+      "CAPM": {
+        "spec": "CAPM",
+        "alpha_monthly": 0.0303,
+        "alpha_se_nw": 0.0044,
+        "t_nw": 6.8842,
+        "n_obs": 266,
+        "r_squared": 3.6268e-06
+      },
+      "Carhart3": {
+        "spec": "Carhart3",
+        "alpha_monthly": 0.0303,
+        "alpha_se_nw": 0.0044,
+        "t_nw": 6.8262,
+        "n_obs": 266,
+        "r_squared": 0.0006
+      },
+      "Carhart4": {
+        "spec": "Carhart4",
+        "alpha_monthly": 0.0284,
+        "alpha_se_nw": 0.0041,
+        "t_nw": 6.9812,
+        "n_obs": 266,
+        "r_squared": 0.0354
+      },
+      "FF5": {
+        "spec": "FF5",
+        "alpha_monthly": 0.03,
+        "alpha_se_nw": 0.0043,
+        "t_nw": 6.9701,
+        "n_obs": 266,
+        "r_squared": 0.0122
+      },
+      "FF5_Mom": {
+        "spec": "FF5_Mom",
+        "alpha_monthly": 0.0282,
+        "alpha_se_nw": 0.004,
+        "t_nw": 7.0453,
+        "n_obs": 266,
+        "r_squared": 0.0458
+      }
+    },
+    "L6_tau07_BEAR": {
+      "CAPM": {
+        "spec": "CAPM",
+        "alpha_monthly": 0.0305,
+        "alpha_se_nw": 0.0044,
+        "t_nw": 6.9524,
+        "n_obs": 266,
+        "r_squared": 4.3078e-07
+      },
+      "Carhart3": {
+        "spec": "Carhart3",
+        "alpha_monthly": 0.0304,
+        "alpha_se_nw": 0.0044,
+        "t_nw": 6.8961,
+        "n_obs": 266,
+        "r_squared": 0.0005
+      },
+      "Carhart4": {
+        "spec": "Carhart4",
+        "alpha_monthly": 0.0286,
+        "alpha_se_nw": 0.0041,
+        "t_nw": 7.0585,
+        "n_obs": 266,
+        "r_squared": 0.0351
+      },
+      "FF5": {
+        "spec": "FF5",
+        "alpha_monthly": 0.0302,
+        "alpha_se_nw": 0.0043,
+        "t_nw": 7.0317,
+        "n_obs": 266,
+        "r_squared": 0.0117
+      },
+      "FF5_Mom": {
+        "spec": "FF5_Mom",
+        "alpha_monthly": 0.0284,
+        "alpha_se_nw": 0.004,
+        "t_nw": 7.1124,
+        "n_obs": 266,
+        "r_squared": 0.0452
+      }
+    }
+  },
+  "factor_regression_5_specs_notes": "All 15 t_NW (3 strategies × 5 specs) > 6.8 PASS Harvey 3.0 threshold. BUT alpha inherited from L5_V2 baseline (STR_1715 PG2). Bear sensor contribution = -0.05% to -0.15% monthly alpha (NEGATIVE delta). FF5+Mom highest t_NW 7.05-7.14. CAPM lowest 6.88-6.98. Spread 0.16 = no spec shopping.",
+  "hard_caps": {
+    "mdd_pass": false,
+    "mdd_actual": -0.2481,
+    "mdd_target": -0.25,
+    "mdd_notes": "267m MDD -24.81% marginal pass (target <= -25%). Bear sensor v1.0 fails to reduce MDD — all τ schedules identical -24.81%.",
+    "to_pass": true,
+    "to_actual_per_yr_tau05": 5.86,
+    "to_target_per_yr": 6.0,
+    "cvar_d_pass": null,
+    "cvar_d_notes": "n/a — STR_1715 PG2 4-layer admit inherit (Session 80 v2.3 manifest, CVaR 95% measurement already PASS).",
+    "all_pass": false,
+    "all_pass_notes": "TO PASS but MDD marginal + G1 hard fail + OPT9 reject — overall Forge REJECT Layer 6 admit"
+  },
+  "pure_function_audit": {
+    "boundary_compliance": "PASS",
+    "alpha_package_hash_start": "b79ad949b0f97f8e646f61d5a77db85c",
+    "alpha_package_hash_end": "b79ad949b0f97f8e646f61d5a77db85c",
+    "risk_package_hash_start": "95e656ca3a18b8f06b0b810cbd8df556",
+    "risk_package_hash_end": "95e656ca3a18b8f06b0b810cbd8df556",
+    "optimization_package_hash_start": "46d6cfdd0a99d86f229efadee460d1c6",
+    "optimization_package_hash_end": "46d6cfdd0a99d86f229efadee460d1c6",
+    "hash_unchanged": true,
+    "self_synthesis_used": false,
+    "schedule_fidelity": "weights_267m_timeseries.csv source inherit — STR_1715 PG2 Σ_assets + 4-layer overlay (m4×AR×R05) NOT recomputed. Layer 6 β_bear scalar applied PIT t-1 lag.",
+    "pure_function_violation": false
+  },
+  "input_packages_received": {
+    "alpha_package_path": "qepm/mailbox/worktask/WT-D20260519_002/alpha_package.json",
+    "alpha_features_count_designed": 32,
+    "alpha_features_count_actual_buildable": 20,
+    "alpha_features_deferred_count": 12,
+    "alpha_features_deferred_list": [
+      "F04_YC_KR_10y_3y_spread",
+      "F10_LEI_KR_CPI_yoy",
+      "F13_VIX_term_structure_3m_1m",
+      "F15_VKOSPI_level",
+      "F16_VKOSPI_zscore_252d",
+      "F23_KR_credit_spread_BBB_AA",
+      "F25_KR_credit_deterioration_3m",
+      "F26_SEFRS_EBI_PRIMARY",
+      "F27_SEFRS_F9_EXTREME_CROWDING",
+      "F28_SEFRS_F2_CUM5D",
+      "F29_Foreign_NetSell_intensity_zscore_20d",
+      "F30_Foreign_NetSell_reversal_signal"
+    ],
+    "alpha_features_deferred_rationale": "VKOSPI / SEIBro KR_credit / KR_LEI / KRX foreign flow direct fetch sources unavailable in local .cache. Phase B mandate.",
+    "risk_package_path": "qepm/mailbox/worktask/WT-D20260519_002/risk_package.json",
+    "risk_scope_inherited": "regime_sensor_formal_waiver",
+    "optimization_package_path": "qepm/mailbox/worktask/WT-D20260519_002/optimization_package.json",
+    "optimization_scope_inherited": "regime_sensor_overlay_policy_formal_waiver",
+    "optimizer_overlay_schedule_267m": "stage_artifacts/WT_D20260519_002/overlay_schedule.csv",
+    "architect_verification_inherit": {
+      "verdict": "PARTIAL",
+      "baseline_3_feat_mean_auc": 0.4438,
+      "baseline_5_feat_mean_auc": 0.4236,
+      "baseline_mean_recall_at_05": 0.0,
+      "spec_drift_findings_count": 7,
+      "high_severity_findings": 2,
+      "medium_severity_findings": 3,
+      "low_severity_findings": 2
+    }
+  },
+  "honest_substitution_declarations": {
+    "lightgbm_to_xgboost": {
+      "original_spec": "LightGBM in alpha_package multi-model ensemble",
+      "actual": "xgboost (gradient boosting equivalent paradigm)",
+      "honest_label": "M2_xgboost_substitute_lightgbm",
+      "rationale": "LightGBM R bindings unavailable, xgboost is gradient boosting equivalent + cv hyperparameter convergence verified."
+    },
+    "lstm_to_lag_glmnet": {
+      "original_spec": "LSTM ~5K params sequential proxy",
+      "actual": "5-lag explicit-lag glmnet (elastic net alpha=0.5)",
+      "honest_label": "M4_lag_glm_substitute_lstm",
+      "rationale": "keras/tensorflow R unavailable in environment. 5-lag explicit OLS-equivalent sequential proxy captures local temporal autocorrelation."
+    },
+    "features_32_to_20": {
+      "original_spec": "32 dedicated features × 8 academic backbones",
+      "actual": "20 features × 8 backbones (subset)",
+      "honest_label": "feat_panel_20_of_32_phase_a_buildable",
+      "rationale": "12 features require VKOSPI / SEIBro / KR_credit / KR_LEI / KRX foreign flow direct fetch (not in local .cache). Phase B direct collection mandate."
+    },
+    "architect_spec_drift_acknowledged": {
+      "SD_1_DGS3MO": "F02 uses 10y-FedFunds proxy (DGS3MO missing in FRED cache)",
+      "SD_2_F06": "renamed F06_INDPRO_growth_3m (not PMI)",
+      "SD_3_F17_SP500": "F17 uses KOSPI-KRW cor60 (Ang-Chen 2002 proxy, SP500 daily unavailable)",
+      "SD_4_F13": "F13 VIX term proxy dropped from feature list (Engle-Mistry 2014 strict spec unmet)",
+      "SD_5_F22": "renamed F22_US_Bank_Lending_Std (DRTSCILM = US Senior Loan Survey, not KR)",
+      "SD_6_F24_BAML": "F24 HY_IG_spread pre-2023 NaN documented (BAML BAMLH0A0HYM2 + BBB coverage starts 2023-05). 8 crisis epoch 2008/2011/2020 F24 NaN.",
+      "SD_7_TO_layer_6": "Empirical TO_layer_6_bear@tau=0.5 = 0.36/yr (Forge measured) vs Architect coarse 0.68/yr estimate vs Optimizer design-phase 0.388/yr. Forge empirical 0.36 (with proper anti-flicker)."
+    }
+  },
+  "forge_stage_outputs": {
+    "stage_1_feature_panel": {
+      "path": "qepm/mailbox/worktask/WT-D20260519_002/output/feature_panel_daily.parquet",
+      "n_obs_daily": 5271,
+      "n_obs_monthly": 257,
+      "n_bad_months_at_neg5pct_threshold": 29,
+      "bad_class_ratio_monthly": 0.113,
+      "feature_count_built": 20,
+      "pit_strict": "t-1 lag enforced via shift(..., 1) on all features + macro publish-lag locf forward-fill"
+    },
+    "stage_2_walk_forward_windows": {
+      "W1_train": "1990-01 ~ 2014-12 (2478 daily / 124 monthly approx)",
+      "W1_test": "2015-01 ~ 2017-12 (737 daily / 36 monthly, n_bad_daily=0)",
+      "W2_train": "1990-01 ~ 2017-12",
+      "W2_test": "2018-01 ~ 2020-12 (738 daily / 36 monthly, n_bad_daily=101)",
+      "W3_train": "1990-01 ~ 2020-12",
+      "W3_test": "2021-01 ~ 2022-12 (494 daily / 24 monthly, n_bad_daily=87)",
+      "W4_train": "1990-01 ~ 2022-12",
+      "W4_test": "2023-01 ~ 2024-12 (489 daily / 24 monthly, n_bad_daily=38)",
+      "W5_train": "1990-01 ~ 2024-12",
+      "W5_test": "2025-01 ~ 2026-04 (321 daily / 16 monthly, n_bad_daily=17)"
+    },
+    "stage_3_ensemble_predictions": {
+      "path": "qepm/mailbox/worktask/WT-D20260519_002/output/bear_prob_daily_walk_forward.parquet",
+      "auc_by_window_csv": "qepm/mailbox/worktask/WT-D20260519_002/output/auc_by_window.csv",
+      "auc_per_window_ensemble": {
+        "W1": null,
+        "W2": 0.4357,
+        "W3": 0.3643,
+        "W4": 0.794,
+        "W5": 0.8526
+      },
+      "auc_mean_4_window": 0.6117,
+      "auc_per_window_per_model": {
+        "W2": {
+          "LR_L1": 0.5999,
+          "XGB": 0.3945,
+          "RF": 0.4191,
+          "lag_glm": 0.5957,
+          "MS": 0.3893,
+          "ensemble": 0.4357
+        },
+        "W3": {
+          "LR_L1": 0.6845,
+          "XGB": 0.371,
+          "RF": 0.3366,
+          "lag_glm": 0.6218,
+          "MS": 0.4482,
+          "ensemble": 0.3643
+        },
+        "W4": {
+          "LR_L1": 0.8624,
+          "XGB": 0.8162,
+          "RF": 0.8021,
+          "lag_glm": 0.8858,
+          "MS": 0.2815,
+          "ensemble": 0.794
+        },
+        "W5": {
+          "LR_L1": 0.3129,
+          "XGB": 0.5677,
+          "RF": 0.3816,
+          "lag_glm": 0.4284,
+          "MS": 0.8781,
+          "ensemble": 0.8526
+        }
+      },
+      "brier_per_window_ensemble": {
+        "W1": 0.0148,
+        "W2": 0.1482,
+        "W3": 0.1616,
+        "W4": 0.0786,
+        "W5": 0.0509
+      },
+      "recall_at_05_per_window_ensemble": {
+        "W1": null,
+        "W2": 0.0,
+        "W3": 0.0,
+        "W4": 0.0,
+        "W5": 0.0
+      },
+      "precision_at_05_per_window_ensemble": {
+        "W1": null,
+        "W2": 0.0,
+        "W3": null,
+        "W4": 0.0,
+        "W5": null
+      }
+    },
+    "stage_4_monthly_aggregation": {
+      "path": "qepm/mailbox/worktask/WT-D20260519_002/output/bear_prob_monthly_oos.csv",
+      "schedule_267m_path": "qepm/mailbox/worktask/WT-D20260519_002/output/bear_prob_monthly_267m.parquet",
+      "oos_rows": 136,
+      "is_design_phase_rows": 131,
+      "p_bad_distribution_diagnostic": {
+        "comment": "CRITICAL FINDING — p_bad mean(non-bear)=0.130, p_bad mean(bear)=0.120. Probability scale never reaches τ=0.5 in any window's positive class. Sensor RANKS bear vs non-bear adequately (W4 AUC 0.79, W5 AUC 0.85) but probability calibration is biased low.",
+        "p_mean_non_bear_class": 0.13,
+        "p_mean_bear_class": 0.12,
+        "p_max_bear_class": 0.397,
+        "interpretation": "Ensemble probability output systematically biased toward base rate (~0.11 bear class ratio). Without Platt scaling or isotonic regression calibration, raw ensemble probabilities are useless for threshold-based decisioning at τ=0.5. Recall@0.5 = 0 across all 4 windows."
+      }
+    },
+    "stage_5_path_a_design_phase": {
+      "status": "DESIGN_PHASE_ONLY",
+      "rationale": "DPL_KR_v3 (WT-D20260519_001) has independent Forge lifecycle. Integration test (re-train DPL_KR_v3 with bear_prob as 81st feature) is owned by WT-D20260519_001 Forge cycle.",
+      "delta_auc_threshold": 0.05,
+      "oos_ensemble_auc_mean_4_window": 0.6117,
+      "decision": "DEFER_TO_WT_019_001_FORGE_CYCLE_INTEGRATION_TEST"
+    },
+    "stage_5_path_b_5layer_267m_nav": {
+      "comment": "Path B Layer 6 β_bear schedule applied to STR_1715 PG2 nav_L5_V2 (4-layer admit baseline). Cost: 30bps per β_bear transition (15bps × 2 round-trip). PIT t-1 lag.",
+      "results_267m": {
+        "L4_baseline_str1715": {
+          "SR": 1.6957,
+          "MDD": -0.2481,
+          "CAGR": 0.377,
+          "Sortino": 3.391,
+          "Calmar": 1.52,
+          "N": 267
+        },
+        "L5_V2_4layer_admit_baseline": {
+          "SR": 1.8861,
+          "MDD": -0.2481,
+          "CAGR": 0.4037,
+          "Sortino": 4.067,
+          "Calmar": 1.628,
+          "N": 267
+        },
+        "L6_tau03_lenient_BEAR": {
+          "SR": 1.8259,
+          "MDD": -0.2481,
+          "CAGR": 0.3893,
+          "Sortino": 3.972,
+          "Calmar": 1.57,
+          "N": 267
+        },
+        "L6_tau05_default_BEAR": {
+          "SR": 1.8651,
+          "MDD": -0.2481,
+          "CAGR": 0.3991,
+          "Sortino": 4.029,
+          "Calmar": 1.609,
+          "N": 267
+        },
+        "L6_tau07_conservative_BEAR": {
+          "SR": 1.8792,
+          "MDD": -0.2481,
+          "CAGR": 0.4022,
+          "Sortino": 4.054,
+          "Calmar": 1.621,
+          "N": 267
+        }
+      },
+      "delta_sr_vs_L5_V2_baseline": {
+        "L6_tau03_lenient": -0.0602,
+        "L6_tau05_default": -0.021,
+        "L6_tau07_conservative": -0.0069
+      },
+      "delta_mdd_vs_L5_V2_baseline": {
+        "L6_tau03_lenient": 0.0,
+        "L6_tau05_default": 0.0,
+        "L6_tau07_conservative": 0.0
+      },
+      "interpretation_267m": "Bear sensor v1.0 Path B Layer 6 ALL τ schedules produce SR drag vs L5_V2 baseline. MDD unchanged (-24.81%) at all τ — sensor fails to reduce MDD even at lenient τ=0.3. β_bear transitions occur but defensively scale during NORMAL/BULL false positives (cost paid, no benefit). Combined with raw probability under-calibration, sensor provides no incremental tail protection.",
+      "results_oos_134m_2015_2026": {
+        "OOS_L4_baseline": {
+          "SR": 1.5937,
+          "MDD": -0.2232,
+          "CAGR": 0.3437,
+          "N": 136
+        },
+        "OOS_L5_V2_4layer_admit": {
+          "SR": 1.9279,
+          "MDD": -0.1435,
+          "CAGR": 0.3871,
+          "N": 136
+        },
+        "OOS_L6_tau05_default": {
+          "SR": 1.8991,
+          "MDD": -0.1435,
+          "CAGR": 0.3811,
+          "N": 136
+        },
+        "OOS_L6_tau07_conservative": {
+          "SR": 1.9279,
+          "MDD": -0.1435,
+          "CAGR": 0.3871,
+          "N": 136
+        }
+      },
+      "delta_sr_oos_vs_L5_V2_baseline": {
+        "OOS_L6_tau05_default": -0.0288,
+        "OOS_L6_tau07_conservative": 0.0
+      },
+      "interpretation_oos": "OOS L6_tau07_conservative IDENTICAL to L5_V2 baseline (β_bear never triggers in OOS at τ=0.7 — no p_bad reaches 0.7). OOS L6_tau05_default produces -0.029 SR drag from false positive scaling during W3 2021-2022 normal markets (sensor predicted high p_bad due to W3 AUC 0.36 anti-predictive)."
+    },
+    "stage_6_g1_g5_subgate_evaluation": {
+      "g1_subgate_5_per_window": {
+        "criteria": "AUC ≥ 0.60 AND Brier < 0.20 AND Recall@0.5 ≥ 0.60 AND Precision@0.5 ≥ 0.40",
+        "target_4_of_5_windows_pass": true,
+        "actual_pass_count": 0,
+        "per_window_pass": {
+          "W1": null,
+          "W2": false,
+          "W3": false,
+          "W4": false,
+          "W5": false
+        },
+        "pass_status": "HARD_FAIL",
+        "failure_mode": "Recall@0.5 = 0 across all 4 evaluable windows (W1 has no positive class). G1 hardgate requires Recall ≥ 0.60 — sensor probabilities never reach 0.5 even in true bear months. Even though W4 (AUC 0.79) + W5 (AUC 0.85) show good RANKING, threshold-based recall is zero."
+      },
+      "g2_pit_integrity": {
+        "criteria": "C1~C15 strict (t-1 lag, no same-day circular, no full-sample stat, embargo)",
+        "pass_status": "PASS",
+        "audit_evidence": "All feature transforms applied via shift(..., 1) PIT t-1 lag. Walk-forward expanding window train + non-overlapping test. Macro publish-lag locf forward-fill (publication delay aware)."
+      },
+      "g3_feature_stability": {
+        "criteria": "Gini concentration < 0.7 AND top-10 overlap ≥ 0.6 across windows",
+        "gini_per_window": {
+          "W1": 0.402,
+          "W2": 0.403,
+          "W3": 0.408,
+          "W4": 0.357,
+          "W5": 0.388
+        },
+        "gini_mean": 0.391,
+        "gini_pass": true,
+        "top10_overlap_pairwise_mean": 0.84,
+        "top10_overlap_pass": true,
+        "pass_status": "PASS"
+      },
+      "g4_calibration": {
+        "criteria": "Mean Brier < 0.20",
+        "brier_per_window": {
+          "W1": 0.0148,
+          "W2": 0.1482,
+          "W3": 0.1616,
+          "W4": 0.0786,
+          "W5": 0.0509
+        },
+        "brier_mean_5_window": 0.0908,
+        "pass_status": "PASS_NUMERICALLY_BUT_FAIL_MEANINGFULLY",
+        "interpretation": "Brier低 due to predicting near base rate (~0.13). Brier doesn't fully capture calibration — raw probabilities biased low + Recall=0. Platt scaling or isotonic regression missing (deferred to alpha agent per OPT8 binding)."
+      },
+      "g5_path_a_delta_auc": {
+        "criteria": "Path A ΔAUC ≥ 0.05 vs DPL_KR_v3 80-feature baseline",
+        "status": "DESIGN_PHASE_DEFER_WT_019_001",
+        "pass_status": "DEFERRED"
+      },
+      "g_overall_pass_count": "1.5_of_5_g1_FAIL_g2_PASS_g3_PASS_g4_PASS_BUT_MEANINGLESS_g5_DEFERRED"
+    },
+    "opt_bindings_13_evaluation": {
+      "OPT1_tau_threshold_sweep": {
+        "criteria": "τ ∈ {0.3, 0.5, 0.7} sensitivity",
+        "result": {
+          "tau_0_3": {
+            "SR_267m": 1.8259,
+            "TO_per_yr": 0.989,
+            "trigger_n": 22
+          },
+          "tau_0_5": {
+            "SR_267m": 1.8651,
+            "TO_per_yr": 0.36,
+            "trigger_n": 8
+          },
+          "tau_0_7": {
+            "SR_267m": 1.8792,
+            "TO_per_yr": 0.18,
+            "trigger_n": 4
+          }
+        },
+        "primary_recommendation": "τ=0.7 conservative — least disruptive (matches L5_V2 OOS SR exactly). τ=0.5 default produces SR drag.",
+        "pass_status": "MEASURED_TAU_07_LEAST_DISRUPTIVE_BUT_ALSO_NO_VALUE_ADD"
+      },
+      "OPT2_beta_bear_schedule": {
+        "criteria": "{<0.3:1.0, 0.3-0.5:0.7, 0.5-0.7:0.5, >0.7:0.3}",
+        "implemented_simplification": "binary {p_bad ≥ τ: 0.5, else: 1.0} (50% cash when triggered) for Phase A speed",
+        "note": "Full 4-bucket schedule deferred — at simplified binary, Recall=0 ⇒ no benefit ⇒ no need for finer granularity",
+        "pass_status": "MEASURED_SIMPLIFIED"
+      },
+      "OPT3_anti_flicker": {
+        "criteria": "1m persistence rule (β update only if change persists ≥ 1m)",
+        "implementation": "beta_bear_emp_smoothed applied",
+        "pass_status": "IMPLEMENTED"
+      },
+      "OPT4_m4_incrementality": {
+        "criteria": "ρ(p_bad_monthly, m4_scalar_monthly) < 0.85 (Hard, < 0.70 preferred)",
+        "rho_pearson_S4_117m": -0.5373,
+        "abs_rho": 0.5373,
+        "pass_status": "PASS",
+        "interpretation": "p_bad and m4 scalar are inversely correlated (when p_bad high → m4 low). Distinct mechanisms confirmed. NOT redundant with M4 BOCPD."
+      },
+      "OPT5_path_a_delta_auc": {
+        "criteria": "ΔAUC ≥ 0.05 vs DPL_KR_v3 80-feature baseline",
+        "status": "DEFERRED_TO_WT_019_001_DPL_KR_v3_FORGE_CYCLE",
+        "pass_status": "DEFERRED"
+      },
+      "OPT6_to_cap": {
+        "criteria": "TO_total ≤ 6.0/yr Hard",
+        "TO_str1715_base_per_yr": 4.0,
+        "TO_4layer_overlay_per_yr": 1.5,
+        "TO_layer_6_bear_per_yr_tau05": 0.36,
+        "TO_total_per_yr_tau05": 5.86,
+        "TO_total_per_yr_tau07": 5.68,
+        "pass_status": "PASS_tau05_margin_0140",
+        "interpretation": "Forge empirical 0.36 better than Optimizer design-phase 0.388 (smaller drift) and Architect coarse 0.68 estimate (refined). TO cap PASS margin 0.140/yr at τ=0.5."
+      },
+      "OPT7_ensemble_weights": {
+        "spec": "simple_average_5_models",
+        "implemented": "simple_average_5_models (Logistic L1 + XGB + RF + Lag-GLM + MSM)",
+        "calibration_strategy_deferred": "Platt scaling vs isotonic regression deferred to alpha agent (OPT8)",
+        "pass_status": "IMPLEMENTED"
+      },
+      "OPT8_calibration": {
+        "criteria": "Platt vs isotonic calibration compare",
+        "status": "DEFERRED_TO_ALPHA_AGENT_NEXT_CYCLE",
+        "critical_note": "Calibration failure (p_bad bias low, Recall=0) is THE root cause of Path B drag. Platt scaling next cycle mandatory.",
+        "pass_status": "DEFERRED_CRITICAL_FOR_NEXT_CYCLE"
+      },
+      "OPT9_tdc_tail_dependence": {
+        "criteria": "TDC (Joe-Clayton 1997) lower tail 0.05 quantile p_bad+m4 joint < 0.5 PASS / 0.5-0.7 marginal / ≥ 0.7 REJECT",
+        "tdc_empirical_S4_2015_2026": 0.75,
+        "pass_status": "REJECT_LAYER_6_PER_OPTIMIZER_DECISION_RULE",
+        "interpretation_critical": "TDC 0.75 ≥ 0.7 REJECT threshold per optimization_package m4_incrementality_protocol_codex_c7_extended. p_bad and (1-m4) co-fire in 75% of lower tail events — high joint tail dependence. Combined with G1 Recall=0 fail, Path B Layer 6 admit is unjustified."
+      },
+      "OPT10_replacement_vs_integration": {
+        "replacement_5_layer_full_tau05": {
+          "SR": 1.8651,
+          "MDD": -0.2481,
+          "CAGR": 0.3991
+        },
+        "integration_4l_80pct_plus_bear_20pct_standalone": "DEFERRED (separate cycle — standalone bear sleeve requires asset universe, not 1-dim probability output)",
+        "pass_status": "REPLACEMENT_MEASURED_INTEGRATION_DEFERRED"
+      },
+      "OPT11_cumulative_dsr": {
+        "criteria": "DSR Bailey-LdP Z ≥ 1.5 with n_trials = 54 (alpha 20 + risk 17 + optimizer 17)",
+        "dsr_Z_267m": {
+          "L5_V2_baseline": 5.944,
+          "L6_tau05_default_BEAR": 5.9,
+          "L6_tau07_conservative_BEAR": 5.929
+        },
+        "pass_status": "PASS_NUMERICALLY_BUT_INHERITED_FROM_L5_V2_BASELINE",
+        "interpretation": "DSR Z > 1.5 PASS at all τ + L5_V2 baseline. CRITICAL: DSR Z primarily reflects STR_1715 PG2 base + 4-layer admit (L5_V2 SR 1.886) NOT bear sensor contribution. Sensor contribution = -0.044 SR. DSR Z drift NOT attributable to bear sensor value."
+      },
+      "OPT12_pg2_active_book_tdc": {
+        "criteria": "β_bear emission moments overlap with STR_1715 PG2 rebalance — joint TDC",
+        "joint_rebalance_months_tau05": 8,
+        "pct_of_267m": 0.03,
+        "pass_status": "MEASURED_LOW_OVERLAP_3PCT"
+      },
+      "OPT13_beta_drift_regime": {
+        "criteria": "β_bear transitions BULL→NORMAL→CAUTION→CRISIS — PG2 SR/MDD drift",
+        "beta_bear_mean_by_regime": {
+          "BULL": 1.0,
+          "NORMAL": 0.9904,
+          "CAUTION": 0.875,
+          "CRISIS": 1.0
+        },
+        "sr_partial_by_regime_L6_tau05": {
+          "BULL": 2.978,
+          "NORMAL": 1.666,
+          "CAUTION": -3.258,
+          "CRISIS": "n=1_undefined"
+        },
+        "pass_status": "MEASURED_CAUTION_SR_NEGATIVE",
+        "interpretation": "β_bear ONLY trips in NORMAL regime (CAUTION 0.875 mean reduction) and CRISIS regime (n=1 only). BULL untouched (β=1.0). CAUTION regime SR_partial -3.26 (8 obs, sensor fires defensively + negative return overlay during caution = drag). Sensor adds NO regime-conditional value."
+      }
+    },
+    "architect_baseline_floor_uplift_verification": {
+      "criteria": "Forge mean AUC ≥ 0.60 AND Recall@0.5 ≥ 0.60 to constitute uplift over baseline floor 0.44",
+      "architect_baseline_3_feat_mean_auc": 0.4438,
+      "architect_baseline_5_feat_mean_auc": 0.4236,
+      "architect_baseline_recall_at_05": 0.0,
+      "forge_ensemble_mean_auc_4_window": 0.6117,
+      "forge_ensemble_mean_recall_at_05": 0.0,
+      "delta_auc": 0.1679,
+      "delta_recall": 0.0,
+      "auc_uplift_target_06_pass": true,
+      "recall_uplift_target_06_pass": false,
+      "verdict": "PARTIAL_UPLIFT_RANKING_YES_DECISIONING_NO",
+      "interpretation": "Forge ensemble RANKS bear months adequately (AUC 0.61 vs baseline 0.44, +0.17 uplift). However threshold-based DECISIONING fails (Recall@0.5 = 0 same as baseline). Without Platt/isotonic calibration (OPT8 deferred), AUC uplift cannot translate to actionable Path B Layer 6 admit decisions."
+    }
+  },
+  "verdict_summary": {
+    "g1_subgate_pass_count": "0_of_5",
+    "g1_target_4_of_5_pass_status": "HARD_FAIL",
+    "architect_uplift_auc_target_06_pass": true,
+    "architect_uplift_recall_target_06_pass": false,
+    "opt9_tdc_layer_6_admit_decision_rule": "REJECT (TDC 0.75 GE 0.7)",
+    "path_b_layer_6_admit_recommendation": "REJECT — multi-axis hard fails: (1) G1 Recall=0 across all 4 windows (2) OPT9 TDC 0.75 REJECT threshold (3) Path B all τ schedules SR drag vs L5_V2 baseline (-0.007 to -0.060 SR) (4) MDD unchanged at -24.81% (5) Lockbox 27m bear sensor never triggers — zero Lockbox value (6) Harvey 5-spec alpha inherited from L5_V2 not bear sensor contribution",
+    "framing": "DESIGN_INVALIDATION_NOT_JUDGE_READY_PASS_ARTIFACT",
+    "path_a_dpl_kr_v3_inject_recommendation": "DEFER — parallel WT-D20260519_001 Forge BLOCKED (Session 82 EIO). bear_prob_monthly_oos.csv ready for 81st feature inject when WT-D20260519_001 Forge unblocks.",
+    "redesign_path_forward_v2_cycle_mandates_priority_4_axes": {
+      "axis_1_platt_calibration_MANDATORY": "Platt 1999 OR Zadrozny-Elkan 2002 isotonic regression — root cause of Recall=0 across all windows",
+      "axis_2_cost_sensitive_classifier": "class weight = 1/base_rate ~ 8.6 push p_bad distribution higher",
+      "axis_3_threshold_optimization": "Youden's J OR cost-weighted threshold selection per window",
+      "axis_4_w3_feature_drift_stratified_retrain": "Pesaran-Timmermann 2007 structural breaks — 3 macro regimes (low_vol_QE / high_vol_taper / inflation_regime)"
+    },
+    "phase_b_direct_data_collection_12_features_deferred": [
+      "VKOSPI daily (KRX 정보데이터시스템)",
+      "SEIBro ETF flow (WT-D20260518_001 SEFRS Phase A artifact)",
+      "KR credit spread (ECOS KIS Credit / KEDB IG/HY)",
+      "KR LEI (ECOS PMI + Consumer Confidence + Housing)",
+      "KRX foreign flow"
+    ]
+  },
+  "method_selected": "Bear_Sensor_Layer_6_Path_B_5model_ensemble_simple_avg_tau_sweep_267m_NAV_subject_to_G1_subgate_HARD_FAIL_TDC_REJECT_recommendation_LAYER_6_REJECT",
+  "self_synthesis_audit": {
+    "self_synthesis_used": false,
+    "self_synthesis_blocked_declaration": "AX-002 strict — NO self-fabrication. All metrics from PerformanceAnalytics standard functions (Return.annualized / StdDev.annualized / SharpeRatio.annualized / maxDrawdown / SortinoRatio). NAV reconstruction via cumprod(1+ret) per Backtest Contract v1.0. No prod(1+r) self-aggregation outside cumprod. No w_i × r_i custom blending — schedule fidelity from weights_267m_timeseries.csv inherit + β_bear scalar overlay only.",
+    "performance_analytics_functions_used": [
+      "Return.annualized",
+      "StdDev.annualized",
+      "SharpeRatio.annualized",
+      "maxDrawdown",
+      "SortinoRatio",
+      "Return.cumulative",
+      "table.Drawdowns"
+    ],
+    "schedule_fidelity_check": "weights_267m_timeseries.csv 267 sig_dates inherit. NO holdings re-derivation from alpha_scores top-N selection. Layer 6 β_bear scalar multiplicative only."
+  },
+  "challenge_flags": [
+    {
+      "id": "FORGE_FLAG_G1_RECALL_ZERO_HARD_FAIL",
+      "severity": "CRITICAL",
+      "type": "calibration_failure_root_cause",
+      "concern": "Recall@0.5 = 0 across all 4 evaluable windows (W2-W5) despite W4 AUC 0.794 + W5 AUC 0.853. Ensemble probability output systematically biased to base rate (mean ~0.13 vs threshold 0.5). Root cause = no Platt scaling or isotonic regression calibration.",
+      "resolution_path": "OPT8 calibration mandatory next cycle. Alpha agent v2.0 Platt scaling + isotonic + threshold optimization (Youden's J or cost-weighted). Without calibration, all threshold-based Path B Layer 6 decisions fail.",
+      "academic_grounding": "Platt 1999 + Zadrozny-Elkan 2002 isotonic regression for probability calibration of margin classifiers + Niculescu-Mizil & Caruana 2005 (xgboost / random forest output is uncalibrated)."
+    },
+    {
+      "id": "FORGE_FLAG_OPT9_TDC_REJECT_THRESHOLD",
+      "severity": "HIGH",
+      "type": "decision_rule_violation_layer_6_reject",
+      "concern": "OPT9 TDC empirical 0.75 ≥ 0.7 REJECT threshold per optimization_package m4_incrementality_protocol decision rule (axis_1_fail_or_CO9_TDC_geq_0_7 → Path B REJECT, Path A fallback). p_bad and (1-m4) co-fire in 75% of lower tail events.",
+      "resolution_path": "Path B Layer 6 REJECT recommendation. Path A DPL_KR_v3 inject parallel track if WT-D20260519_001 admit. If Path A also fails — bear sensor v1.0 paradigm REDESIGN cycle (Phase B direct collection + calibration + cost-sensitive classifier).",
+      "academic_grounding": "Joe-Clayton 1997 + Patton 2006 time-varying copula + Lopez de Prado AFML Ch 6 uniqueness (sample weight under high tail co-dependence)."
+    },
+    {
+      "id": "FORGE_FLAG_SR_DRAG_ALL_TAU_SCHEDULES",
+      "severity": "HIGH",
+      "type": "no_incremental_value_layer_6_admit_unjustified",
+      "concern": "267m: L6_tau05 SR 1.865 vs L5_V2 baseline 1.886 (Δ -0.021). L6_tau07 SR 1.879 vs 1.886 (Δ -0.007). OOS 134m: L6_tau05 SR 1.899 vs L5_V2 1.928 (Δ -0.029). L6_tau07 SR 1.928 (identical, never triggers OOS). All τ schedules produce SR drag or zero benefit. MDD unchanged at -24.81% (267m) and -14.35% (OOS).",
+      "resolution_path": "Layer 6 admit REJECT. Bear sensor v1.0 provides no incremental value to STR_1715 PG2 admit lineage. Redesign or deprecate.",
+      "academic_grounding": "Kritzman-Page-Turkington 2011 FAJ sequential overlay independent value test — bear sensor must demonstrate POSITIVE SR or MDD improvement over base."
+    },
+    {
+      "id": "FORGE_FLAG_W3_AUC_ANTI_PREDICTIVE",
+      "severity": "MEDIUM",
+      "type": "feature_drift_2021_2022_post_covid",
+      "concern": "W3 (2021-2022) ensemble AUC 0.364 (anti-predictive, below 0.5 random). Per-model: LR_L1 0.685 OK, XGB 0.371 fail, RF 0.337 fail, lag_glm 0.622 OK, MS 0.448 weak. XGB + RF + MS all predict opposite direction in W3. Post-COVID monetary regime shift (Fed taper + rate hike + inflation) caused feature pattern reversal.",
+      "resolution_path": "v2.0 stratified retraining per macro regime (low_vol_QE / high_vol_taper / inflation_regime). Feature winsorization per regime. Bayesian model averaging weighted by recent-regime fit.",
+      "academic_grounding": "Pesaran-Timmermann 2007 structural breaks + Chen-Zhao 2016 regime-conditional bear prediction."
+    },
+    {
+      "id": "FORGE_FLAG_FEATURE_DEFERRED_12_OF_32",
+      "severity": "MEDIUM",
+      "type": "phase_a_limitation_phase_b_mandate",
+      "concern": "20 of 32 features built. 12 deferred to Phase B (VKOSPI / SEIBro KR_credit / KR_LEI / KRX foreign flow). Particularly missing: F26-F28 SEFRS ETF flow crowding (WT-D20260518_001 Phase A inherit), F29-F30 KRX foreign flow (key KR-specific sentiment), F23/F25 KR credit spread (Gilchrist-Zakrajsek 2012 backbone partial). 8 academic backbones partially covered.",
+      "resolution_path": "Phase B direct collection mandate: (a) KRX 정보데이터시스템 foreign flow API + VKOSPI scrape (b) SEIBro ETF flow integration via WT-D20260518_001 SEFRS Phase A artifact (c) ECOS KR credit spread (KIS Credit / KEDB IG/HY) (d) ECOS KR PMI + Consumer Confidence + Housing.",
+      "academic_grounding": "Charter §15 P1 Factor Zoo validation — 8 backbone literature anchor retain; partial Phase A acknowledged."
+    },
+    {
+      "id": "FORGE_FLAG_MS_MARKOV_SWITCHING_WEAK",
+      "severity": "LOW",
+      "type": "single_model_quality_within_ensemble",
+      "concern": "Markov Switching depmixS4 2-state per-window AUC: W2 0.389 W3 0.448 W4 0.282 W5 0.878. Highly variable. Hamilton 1989 paradigm assumes regime persistence — but 2-state may oversimplify KR market multi-regime structure.",
+      "resolution_path": "v2.0: 3-state MSM (bull/normal/bear) or 4-state (add transition regime). Or replace with HMM_GARCH (Engle-Mistry 2014). Or drop from ensemble if persistently weak (W4 0.282 worst).",
+      "academic_grounding": "Hamilton 1989 + Engle-Mistry 2014 + Krolzig 1997 multi-regime VAR."
+    }
+  ],
+  "downstream_judge_handoff": {
+    "judge_inputs_ready": {
+      "bt_result_rds": "qepm/mailbox/worktask/WT-D20260519_002/backtest_result/bt_result.rds",
+      "audit_json": "qepm/mailbox/worktask/WT-D20260519_002/output/audit.json",
+      "metrics_combined_json": "qepm/mailbox/worktask/WT-D20260519_002/output/metrics_combined.json",
+      "opt_bindings_13_json": "qepm/mailbox/worktask/WT-D20260519_002/output/opt_bindings_13.json",
+      "auc_by_window_csv": "qepm/mailbox/worktask/WT-D20260519_002/output/auc_by_window.csv",
+      "g1_subgate_per_window_csv": "qepm/mailbox/worktask/WT-D20260519_002/output/g1_subgate_per_window.csv",
+      "path_b_267m_schedule_csv": "qepm/mailbox/worktask/WT-D20260519_002/output/path_b_267m_schedule.csv",
+      "metrics_path_b_267m_csv": "qepm/mailbox/worktask/WT-D20260519_002/output/metrics_path_b_267m.csv",
+      "metrics_path_b_oos_csv": "qepm/mailbox/worktask/WT-D20260519_002/output/metrics_path_b_oos.csv"
+    },
+    "judge_gate_evaluation_target": "Gate 0~6 + AX-008 ≥ 2/3 floor measurement",
+    "ax_008_status_after_forge": {
+      "forge": "REJECT_HARD_FAIL_G1_RECALL_ZERO_AND_OPT9_TDC_GE_07_AND_SR_DRAG_ALL_TAU (honest empirical declaration)",
+      "codex": "PENDING_POST_FORGE_ROUND",
+      "architect": "PARTIAL (5 backbone + 4 spec drift + Forge artifact 4-decimal verify post-emission)"
+    }
+  },
+  "v61_compliance": {
+    "R4_selection_objective_role_specific_HARD": "regime_sensor_overlay_role_card_scope (sensor scope formal waiver inherit). Path B Layer 6 SR/MDD compared vs L5_V2 baseline (4-layer admit) — proper sensor scope.",
+    "R3_challenge_authority_review": {
+      "objection": true,
+      "objection_basis": "Honest empirical hard fail declaration — G1 Recall=0 across all windows + OPT9 TDC 0.75 REJECT + Path B SR drag all τ. Bear sensor v1.0 Layer 6 admit unjustified per multi-axis decision rules.",
+      "targets_reviewed": [
+        "alpha_package_5model_ensemble",
+        "risk_package_8_backbone_inherit",
+        "optimization_package_overlay_policy_267m_design_phase_simulation"
+      ]
+    },
+    "R11_lineage_obligation": "post-final-write lineage_utils::record_package_lineage call binding"
+  },
+  "research_philosophy_compliance_charter_v18_section_15": {
+    "P1_factor_zoo_validation": "compliant — 20 features × 8 backbones, NOT factor zoo addition",
+    "P2_cost_aware_alpha": "PRIMARY ALIGNMENT — net SR drag measurement (15bps × 2 × transitions). All τ schedules produce net SR drag → cost-aware decision REJECT Layer 6",
+    "P3_uncertainty_aware_forecasting": "compliant — Brier score per window + τ sweep + calibration failure honest declaration",
+    "P4_direct_portfolio_learning": "compliant_indirect — Path A two-stage acknowledged, Path B sequential overlay",
+    "P5_risk_model_advancement": "compliant — TDC empirical measurement (Joe-Clayton 1997 + Patton 2006) + OPT9 binding",
+    "P6_implementation_discipline": "PRIMARY ALIGNMENT — TO ≤ 6.0/yr measured PASS (5.86 tau05 vs 6.0 cap, margin 0.14) + all hard constraints inherit (max_names 20 + long-only + Σw=1 + LIQ 2e8)",
+    "P7_attribution_feedback_loop": "PRIMARY — per-window AUC/Brier/Recall/Precision attribution + regime-conditional β drift (OPT13) + feature stability Gini + top-10 overlap"
+  },
+  "codex_round_disposition_summary_pending": {
+    "stage_1_draft_emit": "forge_package_draft.json 2026-05-18T22:10:00+09:00",
+    "stage_2_codex_invocation_pending": "PostToolUse codex auto-spawn after this draft write",
+    "stage_3_codex_response_pending": "expected 9-15min background",
+    "stage_4_challenge_note_pending": "challenge_note_forge.md after codex response",
+    "stage_5_final_emit_pending": "forge_package.json (no _draft) post Codex Round + challenge_note"
+  },
+  "schema_version": "forge_package_v1",
+  "lineage_record_pending": "lineage_utils::record_package_lineage post forge_package.json final write",
+  "final_emission_at": "2026-05-18T22:25:00+09:00",
+  "post_codex_disposition_status": "POST_CODEX_REJECT_7_DISPOSITION_5_ACCEPT_FULL_2_PARTIAL_REBUTTAL_VETO_FALSE_DESIGN_INVALIDATION_REQUEST",
+  "codex_round_ax_008_status": "FORGE_REJECT_PLUS_CODEX_REJECT_2_OF_3_CONSENSUS_DESIGN_INVALIDATION_FINDING (Forge Codex agree on Layer 6 REJECT direction; Architect concurrent pre-Forge PARTIAL orthogonal)",
+  "codex_round_disposition_summary": {
+    "stage_1_draft_emit": "forge_package_draft.json 2026-05-18T22:10:00+09:00",
+    "stage_2_codex_invocation_completed": "run_codex_qepm_critic.sh --role=forge --task_id=WT-D20260519_002 (gpt-5.5 xhigh, PostToolUse background spawn)",
+    "stage_3_codex_response_received": "qepm/mailbox/worktask/WT-D20260519_002/codex_critic_response_forge.json 2026-05-18T22:18:03+09:00 (stance=REJECT veto_flag=False, 7 critical_concerns: 5 HIGH + 2 MEDIUM)",
+    "stage_4_challenge_note_emitted": "qepm/mailbox/worktask/WT-D20260519_002/challenge_note_forge.md 2026-05-18T22:25:00+09:00 (7 disposition: 5 ACCEPT_FULL [C2 C3 C4 C5 C6] + 2 PARTIAL_REBUTTAL [C1 C7])",
+    "stage_5_final_emit_completed": "qepm/mailbox/worktask/WT-D20260519_002/forge_package.json 2026-05-18T22:25:00+09:00 (this file)",
+    "disposition_breakdown": {
+      "C1_HIGH_stage_path_artifacts_missing": "PARTIAL_REBUTTAL — regime_sensor_scope_formal_waiver inherited from Charter §10 v1.8 + 3-cycle precedent. Functional equivalents emitted (overlay_schedule.csv + bear_prob_monthly_oos.csv + STR_1715 PG2 Σ inherit).",
+      "C2_HIGH_267m_mixed_empirical_design_phase": "ACCEPT — pre-2015 (131m) design-phase regime mapping fallback acknowledged. forge_package rescopes 267m as 'mixed empirical OOS 134m + design-phase pre-2015 131m'. OOS-only 134m = primary empirical SR basis.",
+      "C3_HIGH_lockbox_reporting_incomplete": "ACCEPT_FULL — Pre-LB/LB/Combined split emitted. Lockbox 27m metrics show L5_V2=L6_tau05=L6_tau07 IDENTICAL (β_bear never triggers in LB). Bear sensor v1.0 adds zero Lockbox value.",
+      "C4_HIGH_harvey_5spec_missing": "ACCEPT_FULL — All 15 NW-HAC regressions complete. All t_NW > 6.8 PASS but inherited from L5_V2 base (not bear sensor contribution). Bear sensor alpha = -0.05% to -0.15% monthly NEGATIVE delta.",
+      "C5_HIGH_design_invalidation_framing": "ACCEPT_FULL — Forge verdict_summary explicitly declares design_invalidation_request NOT judge_ready_pass_artifact. v2.0 cycle 4 axes mandate documented.",
+      "C6_MEDIUM_OPT12_contradiction": "ACCEPT_FULL — opt_bindings_13.json + audit.json reconciled to 8/267=3.0% (matches draft claim, run_log NA was R variable scoping bug).",
+      "C7_MEDIUM_rationalization_phrases_inherited": "PARTIAL_REBUTTAL — Forge own artifacts grep clean (0 occurrences). Inherited stage artifacts contain prior optimistic phrases but Forge empirical replaces (TDC 0.75 / TO 5.86 / margin 0.14 / n_bad 17-101)."
+    },
+    "unresolved_disputes_count": 5,
+    "unresolved_disputes_summary": [
+      "regime_sensor_overlay_waiver_vs_standard_weights_alpha_cov_contract (Forge: ACCEPTED_under_Charter_v18_3_cycle_precedent)",
+      "W5_train_2024_data_lockbox_leakage (Forge: ACKNOWLEDGED_no_admit_impact_LB_27m_identical)",
+      "DSR_n_trials_54_vs_candidates_x_005 (Forge: BOTH_REPORTED_converge_on_PG2_pass_baseline)",
+      "267m_relabel_OOS_only_or_design_phase (Forge: ACCEPTED_C2_disposition)",
+      "calibration_failure_path_b_layer_6_only_or_entire_v1_architecture (Forge: PATH_B_REJECT_v1_arch_partial_retain_v2_recalibrate)"
+    ]
+  },
+  "ax_008_status_post_forge": {
+    "forge": "REJECT_HARD_FAIL_HONEST_DECLARATION",
+    "codex": "REJECT_veto_flag_False_7_concerns_disposed",
+    "architect": "PARTIAL_concurrent_pre_forge_5_backbone_PASS_4_SPEC_DRIFT",
+    "consensus_2_of_3": "Forge_REJECT + Codex_REJECT = 2/3 REJECT consensus for Path B Layer 6 admit + design_invalidation finding",
+    "architect_remaining_4_decimal_verify": "post-Forge artifact 4-decimal precision compare on bear_prob_monthly_oos.csv + auc_by_window.csv (next architect cycle Stage 6)"
+  },
+  "lockbox_leakage_acknowledgement": {
+    "w5_train_end": "2024-12-31 (includes 2024-01-23+ Lockbox boundary 343 days)",
+    "lockbox_boundary_charter_v17": "2024-01-23",
+    "leakage_present": true,
+    "mitigation_impact_analysis": "Lockbox 2024-02 ~ 2026-04 (27m) metrics show L5_V2 = L6_tau05 = L6_tau07 IDENTICAL (β_bear never triggers in Lockbox period). Therefore W5 training on Lockbox-window data CANNOT bias Layer 6 admit decision (because Layer 6 never activates in Lockbox).",
+    "v2_cycle_mandate": "W5 train_end = 2024-01-22 strict (1 day pre-Lockbox)",
+    "impact_on_admit_decision": "ZERO — bear sensor v1.0 REJECT independent of Lockbox leakage"
+  }
+}

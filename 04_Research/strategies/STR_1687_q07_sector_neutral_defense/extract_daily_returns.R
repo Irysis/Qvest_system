@@ -1,7 +1,7 @@
 cat("=== STR_1687 daily_returns.csv 추출 (S3 orthogonality용) ===\n")
 
 .root_candidates <- c(
-  "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot",
+  Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")),
   "/mnt/c/Users/99922/OneDrive/바탕 화면/Quant_Module_Moltbot"
 )
 PROJECT_ROOT <- .root_candidates[sapply(.root_candidates, dir.exists)][1]

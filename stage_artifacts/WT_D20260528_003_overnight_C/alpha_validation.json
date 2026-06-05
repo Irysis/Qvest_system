@@ -1,0 +1,242 @@
+{
+  "task_id": "WT-D20260528_003",
+  "hypothesis_id": "STR_1725",
+  "schema_version": "alpha_validation_v1",
+  "signal_cutoff": "2023-12-22",
+  "walk_forward_summary": {
+    "n_sig_dates": 191,
+    "sig_date_min": "2008-01-31",
+    "sig_date_max": "2023-11-30",
+    "avg_sleeve_union_size": 19.15,
+    "avg_overlap_per_ticker": 1.045
+  },
+  "factor_level_diagnostics": [
+    {
+      "factor_name": "L13_Vol_Variance_Ratio",
+      "mean_ic_raw": 0.0217,
+      "mean_ic_aligned": 0.0967,
+      "icir_raw": 0.184,
+      "icir_aligned": 0.821,
+      "sd_ic": 0.1179,
+      "n_months": 190,
+      "hit_rate": 0.568,
+      "harvey_t_raw": 2.537,
+      "harvey_t_aligned": 11.312
+    },
+    {
+      "factor_name": "L33_AbsRet_Vol_Corr",
+      "mean_ic_raw": -0.0226,
+      "mean_ic_aligned": 0.0696,
+      "icir_raw": -0.259,
+      "icir_aligned": 0.801,
+      "sd_ic": 0.0869,
+      "n_months": 190,
+      "hit_rate": 0.389,
+      "harvey_t_raw": -3.576,
+      "harvey_t_aligned": 11.039
+    },
+    {
+      "factor_name": "L42_Vol_Skewness",
+      "mean_ic_raw": -0.0126,
+      "mean_ic_aligned": 0.0629,
+      "icir_raw": -0.162,
+      "icir_aligned": 0.805,
+      "sd_ic": 0.0782,
+      "n_months": 190,
+      "hit_rate": 0.442,
+      "harvey_t_raw": -2.229,
+      "harvey_t_aligned": 11.094
+    },
+    {
+      "factor_name": "L44_Vol_Ret_Asymmetry",
+      "mean_ic_raw": -0.03,
+      "mean_ic_aligned": 0.0935,
+      "icir_raw": -0.268,
+      "icir_aligned": 0.836,
+      "sd_ic": 0.1118,
+      "n_months": 190,
+      "hit_rate": 0.395,
+      "harvey_t_raw": -3.696,
+      "harvey_t_aligned": 11.529
+    }
+  ],
+  "cross_correlation": {
+    "method": "Spearman, walk-forward averaged",
+    "pairwise": [
+      {
+        "pair": "L44_Vol_Ret_Asymmetry_vs_L42_Vol_Skewness",
+        "cor": 0.2523
+      },
+      {
+        "pair": "L44_Vol_Ret_Asymmetry_vs_L33_AbsRet_Vol_Corr",
+        "cor": 0.1694
+      },
+      {
+        "pair": "L44_Vol_Ret_Asymmetry_vs_L13_Vol_Variance_Ratio",
+        "cor": 0.34
+      },
+      {
+        "pair": "L42_Vol_Skewness_vs_L33_AbsRet_Vol_Corr",
+        "cor": 0.4032
+      },
+      {
+        "pair": "L42_Vol_Skewness_vs_L13_Vol_Variance_Ratio",
+        "cor": 0.342
+      },
+      {
+        "pair": "L33_AbsRet_Vol_Corr_vs_L13_Vol_Variance_Ratio",
+        "cor": 0.0736
+      }
+    ],
+    "max_abs_cor": 0.4032,
+    "orthogonality_mandate": "|cor| < 0.5",
+    "orthogonality_ok": true,
+    "pairwise_universe_filtered": [
+      {
+        "pair": "L44_Vol_Ret_Asymmetry_vs_L42_Vol_Skewness",
+        "cor": 0.1943
+      },
+      {
+        "pair": "L44_Vol_Ret_Asymmetry_vs_L33_AbsRet_Vol_Corr",
+        "cor": 0.0999
+      },
+      {
+        "pair": "L44_Vol_Ret_Asymmetry_vs_L13_Vol_Variance_Ratio",
+        "cor": 0.4593
+      },
+      {
+        "pair": "L42_Vol_Skewness_vs_L33_AbsRet_Vol_Corr",
+        "cor": 0.2891
+      },
+      {
+        "pair": "L42_Vol_Skewness_vs_L13_Vol_Variance_Ratio",
+        "cor": 0.4559
+      },
+      {
+        "pair": "L33_AbsRet_Vol_Corr_vs_L13_Vol_Variance_Ratio",
+        "cor": 0.1443
+      }
+    ],
+    "max_abs_cor_universe_filtered": 0.4593
+  },
+  "composite_estimates": {
+    "method": "PIT-aligned 4-factor IC arithmetic mean (orthogonal portfolio approximation)",
+    "mean_ic": 0.0217,
+    "sd_ic": 0.0762,
+    "icir": 0.285,
+    "harvey_t": 3.926,
+    "dsr_skill": 0.1564,
+    "n_months": 190,
+    "sr_implied_annual": 0.987,
+    "recent_p3_ratio": 2.148
+  },
+  "subperiod_stability": {
+    "method": "3 buckets (P1=2008-14 / P2=2015-19 / P3=2020-23)",
+    "per_factor": [
+      {
+        "factor_name": "L13_Vol_Variance_Ratio",
+        "P1_icir": 0.069,
+        "P2_icir": 0.198,
+        "P3_icir": 0.436,
+        "sign_consistent": true
+      },
+      {
+        "factor_name": "L33_AbsRet_Vol_Corr",
+        "P1_icir": -0.26,
+        "P2_icir": -0.097,
+        "P3_icir": -0.602,
+        "sign_consistent": true
+      },
+      {
+        "factor_name": "L42_Vol_Skewness",
+        "P1_icir": -0.192,
+        "P2_icir": -0.005,
+        "P3_icir": -0.346,
+        "sign_consistent": true
+      },
+      {
+        "factor_name": "L44_Vol_Ret_Asymmetry",
+        "P1_icir": -0.104,
+        "P2_icir": -0.292,
+        "P3_icir": -0.556,
+        "sign_consistent": true
+      }
+    ],
+    "composite": {
+      "P1": {
+        "mean_ic": 0.0149,
+        "icir": 0.217,
+        "n": 84
+      },
+      "P2": {
+        "mean_ic": 0.0176,
+        "icir": 0.191,
+        "n": 60
+      },
+      "P3": {
+        "mean_ic": 0.0395,
+        "icir": 0.612,
+        "n": 46
+      },
+      "sign_consistent": true
+    }
+  },
+  "graduation_gate_check": {
+    "description": "Discovery → Deployment graduation criteria",
+    "criteria": {
+      "min_rank_ic": {
+        "threshold": 0.04,
+        "observed": 0.0217,
+        "pass": false
+      },
+      "min_icir": {
+        "threshold": 0.2,
+        "observed": 0.285,
+        "pass": true
+      },
+      "min_subperiod_stability": {
+        "threshold": 0.5,
+        "observed": 1,
+        "pass": true
+      },
+      "min_harvey_t": {
+        "threshold": 3,
+        "observed": 3.926,
+        "pass": true
+      },
+      "min_dsr": {
+        "threshold": 0.5,
+        "observed": 0.1564,
+        "pass": false
+      }
+    }
+  },
+  "pit_compliance": {
+    "c1_full_sample": "OK (rolling expanding via Usable_Date <= sig_date)",
+    "c2_same_day": "OK (factor_db builder lag_rule enforced)",
+    "c3_aggregation": "OK",
+    "c4_financials": "N/A (microstructure, no fundamentals)",
+    "c5_overlay": "OK (no S0/S1 overlay)",
+    "c11_data_lag": "OK (Date <= sig_d for rawdata-source factors)",
+    "c13_negate_factors": "OK (Z_Score_Aligned via align_factor_direction; no manual negate)",
+    "c14_ic_usable_date": "OK (Usable_Date <= sig_date enforced in compute_rolling_ic_all)",
+    "c15_load_via_connector": "OK (load_factor_panel uses read_parquet with explicit PIT filter; factor_db_connector.R semantics replicated)"
+  },
+  "ax_compliance": {
+    "AX_001_v2_defensive_eval": "N/A (microstructure not defense family)",
+    "AX_002_process_honesty": "OK (single-pass walk-forward, no selection bias)",
+    "AX_007_single_sleeve_break": "OK (multi-sleeve 4-family by design, mandate AX-007 exception clause 1)"
+  },
+  "factor_db_build_hash": "20260523184858_unknown",
+  "codex_response_summary": {
+    "codex_stance": "REJECT",
+    "concerns_addressed": ["C1", "C2", "C3", "C4", "C5", "C6", "C7"],
+    "c1_real_composite_ic": 0.0217,
+    "c2_universe_liquidity_filter": "KR_top342 + 2e8 won AvgTrdVal_20d",
+    "c3_loader_compliance": "load_month_factors() exclusive",
+    "c4_z_aligned_only": "Z_Score_Aligned (no Raw_Value sign multiplication)",
+    "c5_rfa3_retained": true,
+    "c6_axiom_007_disclosed": true,
+    "c7_artifact_lineage_pending": "challenge_note + lineage in next step"
+  }
+}

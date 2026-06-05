@@ -1,0 +1,231 @@
+{
+  "task_id": "WT-D20260528_003",
+  "hypothesis_handle": "hypothesis_D",
+  "model_type": "XGBoost_walkforward_purged_cv",
+  "as_of": "2026-05-28T23:40:10.078372",
+  "lockbox_cutoff": "2023-12-22",
+  "embargo_days": 30,
+  "min_train_years": 5,
+  "n_features": 162,
+  "n_optuna_trials": 25,
+  "n_trials_effective_for_dsr": 30,
+  "best_hyperparams": {
+    "learning_rate": 0.01714200459361962,
+    "max_depth": 8.0,
+    "min_child_weight": 50.0,
+    "subsample": 0.6018742527836715,
+    "colsample_bytree": 0.6946851112603579,
+    "reg_alpha": 0.010725137748130754,
+    "reg_lambda": 0.8654520839165118,
+    "gamma": 0.34155009493549227
+  },
+  "best_n_estimators": 102,
+  "panel_rows": 58338,
+  "panel_sig_dates": 177,
+  "graduation_check": {
+    "min_rank_ic": {
+      "threshold": 0.04,
+      "actual": 0.04518854406228853,
+      "pass": true
+    },
+    "min_icir": {
+      "threshold": 0.2,
+      "actual": 0.39205416027262435,
+      "pass": true
+    },
+    "min_harvey_t_hac": {
+      "threshold": 3.0,
+      "actual": 4.356055416786581,
+      "pass": true
+    },
+    "min_subperiod_stability": {
+      "threshold": 0.5,
+      "actual": 1.0,
+      "pass": true
+    },
+    "min_deflated_sharpe_ratio": {
+      "threshold": 0.5,
+      "actual": 0.2505294278663022,
+      "pass": false
+    },
+    "min_ax001_v2_bad_normal_ratio": {
+      "threshold": 0.5,
+      "actual": 0.7527892457816779,
+      "pass": true
+    }
+  },
+  "overall_metrics": {
+    "rank_ic_mean": 0.04518854406228853,
+    "rank_ic_median": 0.03897723377040719,
+    "rank_ic_std": 0.11526096320550198,
+    "icir": 0.39205416027262435,
+    "hit_rate": 0.6379310344827587,
+    "n_sig_dates": 116,
+    "ic_ci_95_lower": 0.023925805013310077,
+    "ic_ci_95_upper": 0.064205001106186,
+    "t_hac_newey_west": 4.356055416786581,
+    "p_value_hac": 2.8914362766752078e-05
+  },
+  "subperiod_metrics": {
+    "2008-2014": {
+      "n_sd": 9,
+      "mean_ic": 0.13323973113991971,
+      "icir": 1.833514093132991
+    },
+    "2015-2019": {
+      "n_sd": 60,
+      "mean_ic": 0.024454380495632592,
+      "icir": 0.24763758857831303
+    },
+    "2020-2023": {
+      "n_sd": 47,
+      "mean_ic": 0.054796823430388,
+      "icir": 0.4177879388856932
+    }
+  },
+  "fold_metrics": {
+    "0": {
+      "train_end": "2014-03-31",
+      "test_start": "2014-04-30",
+      "test_end": "2015-03-31",
+      "n_train_rows": 18062,
+      "n_test_rows": 4059,
+      "rank_ic_mean": 0.11591057522123412,
+      "rank_ic_std": 0.08640753647580328,
+      "rank_ic_ir": 1.3414404175183077,
+      "rank_ic_count": 12,
+      "rmse_mean": 0.9925659359905522
+    },
+    "1": {
+      "train_end": "2015-03-31",
+      "test_start": "2015-04-30",
+      "test_end": "2016-04-29",
+      "n_train_rows": 22121,
+      "n_test_rows": 4476,
+      "rank_ic_mean": 0.01756655306408587,
+      "rank_ic_std": 0.1037101286635581,
+      "rank_ic_ir": 0.16938125134585755,
+      "rank_ic_count": 13,
+      "rmse_mean": 1.0005042465658192
+    },
+    "2": {
+      "train_end": "2016-03-31",
+      "test_start": "2016-05-31",
+      "test_end": "2017-04-28",
+      "n_train_rows": 26254,
+      "n_test_rows": 4167,
+      "rank_ic_mean": 0.026915900490234484,
+      "rank_ic_std": 0.06834937840412166,
+      "rank_ic_ir": 0.39379870279294826,
+      "rank_ic_count": 12,
+      "rmse_mean": 0.997958259715077
+    },
+    "3": {
+      "train_end": "2017-03-31",
+      "test_start": "2017-05-31",
+      "test_end": "2018-03-30",
+      "n_train_rows": 30419,
+      "n_test_rows": 3830,
+      "rank_ic_mean": -0.015255659727122518,
+      "rank_ic_std": 0.06982873219581603,
+      "rank_ic_ir": -0.2184724978196242,
+      "rank_ic_count": 11,
+      "rmse_mean": 1.0047192962419986
+    },
+    "4": {
+      "train_end": "2018-03-31",
+      "test_start": "2018-04-30",
+      "test_end": "2019-03-29",
+      "n_train_rows": 34594,
+      "n_test_rows": 4193,
+      "rank_ic_mean": 0.06580048326856651,
+      "rank_ic_std": 0.11422670419301562,
+      "rank_ic_ir": 0.5760516157138124,
+      "rank_ic_count": 12,
+      "rmse_mean": 0.9953491725820078
+    },
+    "5": {
+      "train_end": "2019-03-31",
+      "test_start": "2019-04-30",
+      "test_end": "2020-04-29",
+      "n_train_rows": 38787,
+      "n_test_rows": 4532,
+      "rank_ic_mean": 0.01854911344051364,
+      "rank_ic_std": 0.1619457434187519,
+      "rank_ic_ir": 0.11453905427547824,
+      "rank_ic_count": 13,
+      "rmse_mean": 0.9973546634121833
+    },
+    "6": {
+      "train_end": "2020-03-31",
+      "test_start": "2020-05-29",
+      "test_end": "2021-03-31",
+      "n_train_rows": 42971,
+      "n_test_rows": 3841,
+      "rank_ic_mean": 0.060944162544558034,
+      "rank_ic_std": 0.12094700070447846,
+      "rank_ic_ir": 0.5038914330298647,
+      "rank_ic_count": 11,
+      "rmse_mean": 0.9966414414844081
+    },
+    "7": {
+      "train_end": "2021-03-31",
+      "test_start": "2021-04-30",
+      "test_end": "2022-04-29",
+      "n_train_rows": 47160,
+      "n_test_rows": 4539,
+      "rank_ic_mean": 0.07950063557075422,
+      "rank_ic_std": 0.12535132489614048,
+      "rank_ic_ir": 0.6342224886286554,
+      "rank_ic_count": 13,
+      "rmse_mean": 0.9941843836951184
+    },
+    "8": {
+      "train_end": "2022-03-31",
+      "test_start": "2022-05-31",
+      "test_end": "2023-04-28",
+      "n_train_rows": 51350,
+      "n_test_rows": 4192,
+      "rank_ic_mean": 0.03332682484145987,
+      "rank_ic_std": 0.10804494968820944,
+      "rank_ic_ir": 0.30845330441727875,
+      "rank_ic_count": 12,
+      "rmse_mean": 0.9994443925038542
+    },
+    "9": {
+      "train_end": "2023-03-31",
+      "test_start": "2023-05-31",
+      "test_end": "2023-11-30",
+      "n_train_rows": 55543,
+      "n_test_rows": 2447,
+      "rank_ic_mean": 0.047548606770877126,
+      "rank_ic_std": 0.08531819566229125,
+      "rank_ic_ir": 0.557309033889968,
+      "rank_ic_count": 7,
+      "rmse_mean": 0.9979446539323634
+    }
+  },
+  "pit_assertions": {
+    "factor_load": "Daily Factor DB direct (C15 carve-out: ML + daily parquet exception)",
+    "sig_date_cutoff": "2023-12-22",
+    "walk_forward": "Purged CV: train >= 5y expanding, test 1y, embargo 30d (L\u00f3pez de Prado 2018)",
+    "feature_lag": "t-1 trading day strict (Cycle 51 shift convention positive n + type='lag')",
+    "forward_return": "log(P_next_me / P_this_me), winsorize 99.5%",
+    "sector_neutralize": "Sector_Lv2 dummies as ML features (45 categories)",
+    "pit_clean": true,
+    "c1_c15_assertion": "C1 / C2 / C3 / C7 verified by walk-forward design",
+    "c15_carve_out_justification": "ML + daily parquet exception per .claude/rules/factor-db.md"
+  },
+  "ax_compliance": {
+    "ax_007_avoidance": "ML sizing exception #4 (confidence-weighted top-K, not equal weight)",
+    "ax_001_v2": {
+      "ic_bad_mean": 0.03625831712961655,
+      "ic_normal_mean": 0.04816528637317919,
+      "ratio_bad_over_normal": 0.7527892457816779,
+      "pass_threshold_05": true
+    },
+    "ax_002": "Walk-forward purged CV + no full-sample leakage, all metrics reproducible",
+    "ax_008": "Awaiting Codex critic (Triangulation 2/3)"
+  },
+  "elapsed_seconds": 64.76903557777405
+}

@@ -1,0 +1,135 @@
+{
+  "task_id": "WT-D20260529_004",
+  "track": "QVALUE",
+  "wt_type": "discovery",
+  "as_of_date": "2026-05-29",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "selection_objective": "icir",
+  "universe": "KOSPI200_KOSDAQ150_intersection (KR_top342, via STR_1715 268m panel)",
+  "primary_signal": "s_cond",
+  "signal_matrix_ref": "stage_artifacts/WT_WT_D20260529_004_QVALUE/alpha_scores.parquet",
+
+  "hypothesis": "Quality-at-a-reasonable-price (QARP). value cheapness × quality 우량 conditional/interaction 결합으로 cheap-junk(value trap) 회피 + expensive-quality 회피. value premium은 quality 통제 시 강화 (Asness-Frazzini-Pedersen 2019 QMJ + Piotroski 2000).",
+
+  "factor_specs": [
+    {"factor_family": "Value", "proxy": "V01_BM/V02_EP/V03_CFP/V10_FCF_Yield", "axis": "s_value cheapness EW-z",
+     "lag_rule": "quarterly 45d / annual May (C4)", "winsorization": "Z_Score_Aligned (DB)", "neutralization": "cross-sectional z per month",
+     "economic_rationale": "backward fundamental 저평가 mean-reversion (Fama-French 1993 HML)", "references": ["Fama-French 1993", "Asness-Frazzini-Pedersen 2013"]},
+    {"factor_family": "Quality_Profitability", "proxy": "Q01_GPA/Q02_ROE/Q17_ROIC/Q35_CashBased_OpProf", "axis": "s_quality profitability",
+     "lag_rule": "quarterly 45d (C4)", "neutralization": "cross-sectional z per month",
+     "economic_rationale": "profitable firms compound; QMJ profitability leg (Asness 2019)", "references": ["Asness-Frazzini-Pedersen 2019", "Novy-Marx 2013"]},
+    {"factor_family": "Quality_Safety", "proxy": "Q24_Altman_Z/Q32_Interest_Coverage/Q15_Debt_to_Equity/Q13_Fin_Leverage", "axis": "s_quality safety",
+     "lag_rule": "quarterly 45d (C4)", "neutralization": "Z_Score_Aligned direction-aligned (low leverage = high quality)",
+     "economic_rationale": "low default risk = QMJ safety leg; value trap 제거", "references": ["Asness-Frazzini-Pedersen 2019", "Piotroski 2000"]}
+  ],
+  "quality_axis_overlap_note": "Q07_Earnings_Stability / Q25_Ohlson_O EXCLUDED — STR_1715 already uses them. residual signal cor(s_quality, 1715)=0.001, cor(s_value, 1715)=-0.032 → 직교 매우 양호.",
+
+  "signal_family_diagnostics_lockbox": {
+    "note": "All 240 lockbox months (<=2023-12-22). rank-IC = Spearman(signal, fwd 1M return). authoritative.",
+    "s_cond_conditional_doublesort": {"rank_ic": 0.0430, "icir": 0.4089, "ic_t": 6.33},
+    "s_value_only": {"rank_ic": 0.0415, "icir": 0.3668, "ic_t": 5.68},
+    "s_marginal_sum": {"rank_ic": 0.0351, "icir": 0.3475, "ic_t": 5.38},
+    "s_quality_only": {"rank_ic": 0.0268, "icir": 0.2744, "ic_t": 4.25},
+    "s_interact_multiplicative": {"rank_ic": 0.0006, "icir": 0.0072, "ic_t": 0.11, "honest_finding": "★ pure multiplicative product = NOISE. Only conditional double-sort form (s_cond) works. AX-000 정직 보고."}
+  },
+
+  "interaction_beats_marginal": {
+    "verdict": true,
+    "primary_form": "s_cond (conditional double-sort): (value_pctile - 0.5) * (0.2 + 0.8*quality_pctile)",
+    "icir_interaction": 0.4089, "icir_marginal_sum": 0.3475, "icir_value_only": 0.3668, "icir_quality_only": 0.2744,
+    "improvement_vs_sum_pct": 17.6, "improvement_vs_best_component_pct": 11.5,
+    "portfolio_sr_net_lb_interaction": 0.924, "portfolio_sr_net_lb_marginal": 0.725,
+    "criterion": "ICIR(interaction) > ICIR(marginal sum) AND SR_net_lb(interaction) > SR_net_lb(marginal). 둘 다 충족.",
+    "critical_caveat": "interaction_beats_marginal=TRUE는 conditional double-sort(s_cond) 형태에서만 성립. 단순 multiplicative product(s_interact)는 ICIR 0.007로 무의미. 즉 'value×quality 상호작용'은 FUNCTIONAL FORM 의존적 — 비선형 gating(QARP)이 본질, 곱셈 항 자체가 아님."
+  },
+
+  "diagnostics": {
+    "rank_ic": 0.0430,
+    "icir": 0.4089,
+    "ic_t_stat": 6.33,
+    "harvey_t_stat": 5.81,
+    "harvey_t_method": "Bonferroni n_tests=17 (12 factors + 5 signal forms)",
+    "monotonicity": 0.78,
+    "subperiod_stability": 1.0,
+    "subperiod_note": "all 3 subperiods (2008-14/2015-19/2020-26) same sign as full",
+    "n_months_lockbox": 240,
+    "recent36_icir_lockbox": null,
+    "full_window": {"rank_ic": 0.0405, "icir": 0.3808, "harvey_t": 5.70, "n_months": 267}
+  },
+
+  "portfolio_diagnostics": {
+    "basis": "s_cond top-25 long-only EW, net 15bps one-way (buy+sell legs)",
+    "sr_net_full": 0.915, "sr_net_lockbox": 0.924, "sr_gross": null,
+    "ir_net": 0.795,
+    "portfolio_alpha_t_full": 3.75, "portfolio_alpha_t_lockbox": 4.84,
+    "portfolio_alpha_t_note": "★ portfolio-alpha t (active net vs universe EW) != rank-IC t (6.33). Judge는 forge 5-spec portfolio-alpha t를 authoritative로 채택 (Cycle 2 교훈).",
+    "turnover_annual": 2.78, "turnover_annual_lockbox": 2.86, "turnover_cap": 11.0, "turnover_cap_ok": true,
+    "realized_beta_kospi200": -0.080,
+    "dsr_active": 1.000, "dsr_absolute": 0.99979,
+    "dsr_honest_n_trials_caveat": "DSR formula n_tests=17 (within-track). cross-cycle 누적 trial ~19 (52WHIGH/BAB/BAC/DISPERSION/.../VALUE/ACCRUAL/TECHNICAL/QVALUE) 인지 시 DSR 천장은 단일-alpha 한계로 여전히 net SR ~0.3 binding (Cycle 2 교훈). DSR=1.0은 within-track multi-form 보정만 반영 — single-alpha deployment 시 multi-sleeve 전제 필수.",
+    "marginal_sum_sr_net": 0.729, "marginal_sum_sr_net_lockbox": 0.725, "marginal_sum_pa_t": 1.47,
+    "n_names": 25
+  },
+
+  "orthogonality": {
+    "signal_cor_vs_STR_1715": 0.006,
+    "signal_cor_rank_vs_STR_1715": 0.006,
+    "signal_cor_vs_D": 0.179,
+    "signal_cor_vs_FLOW": 0.094,
+    "component_overlap": {"s_value_vs_1715": -0.032, "s_quality_vs_1715": 0.001, "note": "Q07/Q25 제외로 quality overlap 거의 0"},
+    "realized_return_cor_vs_STR_1715": 0.778,
+    "realized_return_cor_rank_vs_STR_1715": 0.749,
+    "return_cor_n_months": 267,
+    "interpretation": "★ signal cor 0.006 (near-perfectly orthogonal in signal space) 이지만 realized return cor 0.778 (높음). KR long-only 구조적 한계 — 신호 직교 ≠ 수익률 직교 (BAB/VALUE track 교훈 재확인). 단 standalone 강도(net SR 0.92, pa_t 3.75)와 DPL 피처 가치(s_cond는 비선형 QARP gating feature)로 평가 시 가치 있음."
+  },
+
+  "ax001_v2": {
+    "ic_bad": 0.0646, "ic_normal": 0.0340, "ic_good": 0.0356,
+    "bad_normal_ratio": 1.90, "crisis_alpha_bad_active_net": 0.0082,
+    "is_crisis_hedge": true,
+    "basis": "REALIZED active return in bottom-20% benchmark months. IC bad>normal>good monotone — quality safety leg가 위기에서 강화."
+  },
+
+  "liquidity_audit": {"median_adv_20d_won": 2.17e9, "pct_below_2e8": 0.024, "pit": "t-1 20d ADV (C10)"},
+
+  "economic_rationale": "Quality-at-a-reasonable-price (QARP). KR value premium은 quality 통제 시 강화 (Asness-Frazzini-Pedersen 2019 QMJ; Piotroski 2000 value-stock fundamental selection). cheap-AND-good (low BM/EP × high ROIC/GP/Altman-Z) 종목이 cheap-junk(저평가 부실) 대비 우월 mean-revert. 비선형 conditional gating으로 value trap 제거 + 비싼 우량 배제. STR_1715 forward consensus-revision과 메커니즘 직교 (signal cor 0.006), quality axis는 Q07/Q25 제외로 overlap 최소화.",
+
+  "redundancy_cluster_id": "quality_value_interaction_cluster (QARP)",
+
+  "selection_log": {
+    "candidates_tried": 5,
+    "method_log": [
+      {"name": "s_value", "icir": 0.367, "selected": false},
+      {"name": "s_quality", "icir": 0.274, "selected": false},
+      {"name": "s_marginal", "icir": 0.348, "selected": false},
+      {"name": "s_interact", "icir": 0.007, "selected": false, "reason": "multiplicative product = noise"},
+      {"name": "s_cond", "icir": 0.409, "selected": true, "reason": "conditional double-sort beats marginal +17.6%"}
+    ]
+  },
+
+  "axiom_compliance": {
+    "AX_003": "EP NOT standalone — value is 4-proxy axis inside conditional interaction",
+    "AX_004": "quality NOT single — profitability(4) + safety(4) multi-axis",
+    "AX_007": "multi-sleeve / interaction exception (long-only)",
+    "AX_002": "PIT lockbox 2023-12-22 strict; graduation metrics on lockbox window only",
+    "AX_000": "입증된 한계 정직 보고 — s_interact NOISE + realized return cor 0.778 high 그대로 보고",
+    "AX_001_v2": "조건부 평가 — bad/normal IC ratio 1.90 + realized crisis_alpha 양수"
+  },
+
+  "graduation_check": {
+    "min_rank_ic_0.04": {"value": 0.0430, "pass": true},
+    "min_icir_0.20": {"value": 0.4089, "pass": true},
+    "min_subperiod_0.50": {"value": 1.0, "pass": true},
+    "min_harvey_t_3.0": {"value": 5.81, "pass": true},
+    "min_dsr_0.5": {"value": 1.000, "pass": true, "honest_caveat": "within-track; cross-cycle n_trials caveat 별도"}
+  },
+
+  "verdict": "STRONG_STANDALONE — interaction_beats_marginal TRUE (conditional form only). graduation 5/5 PASS. DPL 피처 가치 + standalone 강도 모두 충족. 단 realized return cor vs 1715=0.778 (수익률 직교 약함) → diversifier 아닌 강한 standalone/DPL 피처로 채택.",
+
+  "challenge_flags": [
+    {"id": "QV-1", "severity": "MEDIUM", "note": "realized return cor vs STR_1715 = 0.778 (high). signal 직교에도 long-only 수익률 직교 약함 — diversifier 가치 제한. standalone/DPL로만 가치."},
+    {"id": "QV-2", "severity": "LOW", "note": "s_interact(multiplicative) ICIR 0.007 = noise. interaction은 functional-form 의존 (conditional gating만 작동). spec robustness 제한."},
+    {"id": "QV-3", "severity": "LOW", "note": "DSR=1.0은 within-track 보정. cross-cycle ~19 trials 인지 시 single-alpha SR 천장 여전 (multi-sleeve 전제)."}
+  ]
+}

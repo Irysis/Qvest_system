@@ -1,0 +1,87 @@
+{
+  "task_id": "WT-D20260529_002",
+  "track": "BAC",
+  "wt_type": "discovery",
+  "as_of_date": "2026-05-29",
+  "forecast_horizon": "1M",
+  "selection_objective": "rank_ic",
+  "signal_matrix_ref": "stage_artifacts/WT_WT_D20260529_002_BAC/alpha_scores.parquet",
+  "construction": "long_only_top20_tilt AND long_short_decile (both per mandate)",
+  "factor_specs": [
+    {
+      "factor_family": "low_risk",
+      "proxy": "BAC (Betting-Against-Correlation)",
+      "formula": "alpha_i = -corr(r_i_daily, r_mkt_daily) over rolling 252d window ending at month-end (PIT t<=sig_date); SMAX-orthogonalized then sector-neutralized cross-sectionally; beta_i = (sd_i/sd_mkt)*corr_i decomposed, correlation component isolated.",
+      "lag_rule": "daily t-1 close; window ends AT month-end m, label = forward 1M return",
+      "winsorization": "3std",
+      "neutralization": "sector + SMAX-orthogonalization",
+      "economic_rationale": "Asness-Frazzini-Gormsen-Pedersen 2020 JFE: beta=vol x corr; the CORRELATION component carries the genuine leverage/funding-constraint low-risk premium (co-moves with margin debt), while the vol component is contaminated by IVOL/lottery. Long low-correlation stocks should earn the funding-constrained premium and naturally diversify (low realized beta + low common-risk).",
+      "weight_theta": 1.0,
+      "redundancy_cluster_id": "low_risk",
+      "references": ["Asness-Frazzini-Gormsen-Pedersen 2020 JFE", "Bali-Cakici-Whitelaw 2011 (SMAX)", "Frazzini-Pedersen 2014 (BAB)"]
+    },
+    {
+      "factor_family": "lottery",
+      "proxy": "SMAX = mean of 5 largest daily returns (MAX(5))",
+      "formula": "smax_i over same 252d window; used as orthogonalization control to disentangle BAC correlation premium from lottery/IVOL contamination",
+      "lag_rule": "daily t-1; window <= sig_date",
+      "winsorization": "3std",
+      "neutralization": "control variable only",
+      "economic_rationale": "Bali 2011: lottery (MAX) demand drives overpricing -> negative premium. Separated from BAC to ensure the correlation signal is clean (post-orthogonalization cor_vs_SMAX=0.025).",
+      "weight_theta": 0.0,
+      "redundancy_cluster_id": "lottery",
+      "references": ["Bali-Cakici-Whitelaw 2011"]
+    }
+  ],
+  "diagnostics": {
+    "rank_ic": -0.01556,
+    "icir": -0.15267,
+    "harvey_t_rankIC": -2.30631,
+    "harvey_t_portfolio": -1.3622,
+    "net_sr": -0.31853,
+    "turnover_yr": 2.94592,
+    "dsr": 0.00748,
+    "monotonicity": -0.35758,
+    "subperiod_stability": 0.0,
+    "post_neutralization_ic": -0.01556,
+    "oos_rank_ic": 0.00088
+  },
+  "realized_metrics_CYCLE2_FLOW_LESSON": {
+    "realized_beta_long_only": 0.82129,
+    "realized_beta_long_short": -0.20294,
+    "return_cor_vs_str1715_long_only": -0.04194,
+    "return_cor_vs_str1715_long_short": -0.00028,
+    "note": "signal cor (0.079 vs STR1715) and return cor (-0.042) BOTH measured per FLOW lesson; orthogonality is good but moot — signal has no alpha."
+  },
+  "ax001_v2": {
+    "ax001_v2_ratio": -0.83085,
+    "ic_bad": 0.03318,
+    "ic_norm": -0.03993,
+    "interpretation": "BAC works slightly in bad months (ic_bad +0.033) but reverses in normal months (ic_norm -0.040) -> negative ratio, fails AX-001 v2 conditional-defense criterion (no consistent crisis-alpha)."
+  },
+  "orthogonality": {
+    "cor_signal_vs_str1715": 0.07922,
+    "cor_vs_D": 0.04489,
+    "cor_vs_FLOW": -0.0051,
+    "cor_vs_lowbeta_BAB": 0.62394,
+    "cor_vs_SMAX": 0.02504
+  },
+  "alpha_inheritance_cor": 0.07922,
+  "method_shopping_log": {
+    "candidates_tried": 4,
+    "method_log": [
+      {"name": "corr_part_raw", "rank_ic": -0.0149, "selected": false},
+      {"name": "BAC_SMAX_cleaned", "rank_ic": -0.01556, "selected": true},
+      {"name": "sector_neut", "rank_ic": -0.0152, "selected": false},
+      {"name": "long_short_decile", "rank_ic": -0.01556, "selected": false}
+    ]
+  },
+  "challenge_flags": [
+    {"id": "RF-VERDICT", "severity": "HIGH", "msg": "rank_IC NEGATIVE (-0.0156), harvey_t -2.31, all 3 subperiods negative, DSR 0.0075. Graduation criteria FAIL (rank_ic>=0.04, icir>=0.20, harvey_t>=3.0, dsr>=0.5 ALL fail)."},
+    {"id": "RF-REDUNDANCY", "severity": "HIGH", "msg": "cor_vs_lowbeta_BAB=0.624 -> 62% redundant with simple low-beta tilt = AX-005 defense low-vol single-sleeve long-only VALIDATED_HARD_FAIL family."},
+    {"id": "RF-BETA", "severity": "MEDIUM", "msg": "long-only realized_beta=0.82 -> NOT low-beta as thesis claimed; KR low-corr names are pro-cyclical small/idiosyncratic, not defensive."}
+  ],
+  "verdict": "DROP",
+  "verdict_rationale": "BAC US/intl premium does NOT transfer to KR (consistent with KR lottery/skewness anomaly reversal, learning_kr_lottery_anomaly_reversal.md). Negative IC across all subperiods, high redundancy with already-failed KR low-risk family, and realized beta refutes the low-risk diversification thesis. Sign-flip prohibited (C13) and economically void. AX-000 honest limit reported.",
+  "economic_rationale_summary": "Correlation-component low-risk premium (AFGP 2020) — empirically a developed-market funding-constraint phenomenon — inverts in KR's retail-driven lottery-preferring market."
+}

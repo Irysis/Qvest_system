@@ -1,0 +1,113 @@
+{
+  "task_id": "WT-D20260528_003",
+  "step": "05_full_validation",
+  "alpha_construction": {
+    "selected_factors": ["D22_Tracking_Error", "D43_Skewness", "M22_Max_Return"],
+    "weights": [0.3762, 0.3575, 0.2663],
+    "sector_neutralized": true
+  },
+  "ic_diagnostics": {
+    "rank_ic_mean": 0.044,
+    "rank_ic_sd": 0.0971,
+    "icir": 0.4531,
+    "rank_ic_t": 6.81,
+    "n_dates": 226
+  },
+  "harvey_5spec": {
+    "spec_A_spearman": 6.81,
+    "spec_B_pearson": 2,
+    "spec_C_d10_d1": 0.54,
+    "spec_D_newey_west": 6.92,
+    "spec_E_q5_q1": 0.39,
+    "n_pass_3": 2,
+    "n_pass_25": 2
+  },
+  "dsr": {
+    "sr_observed": 0.4531,
+    "expected_max_sr": 0.1233,
+    "n_trials": 18,
+    "dsr_z": 5.13,
+    "dsr_prob": 1
+  },
+  "ax_001_v2": {
+    "crisis_n_dates": 9,
+    "normal_n_dates": 217,
+    "crisis_ic_mean": -0.0098,
+    "normal_ic_mean": 0.0462,
+    "bad_normal_ratio": -0.211,
+    "pass": false
+  },
+  "monotonicity": {
+    "decile_means": [0.0093, 0.009, 0.0102, 0.0083, 0.0075, 0.0079, 0.0072, 0.0085, 0.0081, 0.0097],
+    "spearman_decile_rank": -0.261,
+    "d10_minus_d1": 0.0003
+  },
+  "turnover": {
+    "month_to_month_rank_corr": 0.835,
+    "turnover_proxy": 0.165
+  },
+  "gates": {
+    "rank_ic": {
+      "value": 0.044,
+      "gate": 0.04,
+      "pass": true
+    },
+    "icir": {
+      "value": 0.4531,
+      "gate": 0.2,
+      "pass": true
+    },
+    "harvey_t_pass_count_3": {
+      "value": 2,
+      "gate": 3,
+      "pass": false
+    },
+    "harvey_t_pass_count_25": {
+      "value": 2,
+      "gate": 3,
+      "pass": false
+    },
+    "subperiod_stability": {
+      "value": 0.733,
+      "gate": 0.5,
+      "pass": true
+    },
+    "rf_a2_composite_gte_single": {
+      "value": true,
+      "gate": true,
+      "pass": true
+    },
+    "rf_a4_sector_retention": {
+      "value_sample": "138%/150%/139% (D43/D22/M22)",
+      "gate": "50%",
+      "pass": true
+    },
+    "bad_normal_ic_ratio": {
+      "value": -0.211,
+      "gate": 0.5,
+      "pass": false
+    },
+    "monotonicity": {
+      "value": -0.261,
+      "gate": 0.7,
+      "pass": false
+    },
+    "dsr_z": {
+      "value": 5.13,
+      "gate": 0.5,
+      "pass": true
+    },
+    "dsr_prob": {
+      "value": 1,
+      "gate": 0.5,
+      "pass": true
+    },
+    "turnover_proxy": {
+      "value": 0.165,
+      "gate": 0.5,
+      "pass": true
+    }
+  },
+  "all_pass": false,
+  "critical_pass": false
+}

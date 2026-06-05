@@ -27,7 +27,7 @@ if (grepl("04_Research/strategies/", STRATEGY_DIR)) {
   PROJECT_ROOT <- sub("/04_Research/strategies/.*", "", STRATEGY_DIR)
 } else {
   PROJECT_ROOT <- Sys.getenv("PROJECT_ROOT",
-    unset = "/mnt/c/Users/User/OneDrive/\uBC14\uD0D5 \uD654\uBA74/Quant_Module_Moltbot")
+    unset = Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")))
 }
 setwd(PROJECT_ROOT)
 

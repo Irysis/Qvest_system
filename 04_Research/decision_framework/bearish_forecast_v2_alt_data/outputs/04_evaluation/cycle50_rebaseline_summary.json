@@ -1,0 +1,406 @@
+{
+  "cycle": "50_rebaseline_comparative",
+  "forward_labels": true,
+  "bug_fix": {
+    "file": "scripts/02_target_builder.R",
+    "line": 39,
+    "old": "bm[, ret_h := shift(BM_Close, -H, type = 'lead') / BM_Close - 1]  # BACKWARD",
+    "new": "bm[, ret_h := shift(BM_Close, n = H, type = 'lead') / BM_Close - 1]  # FORWARD",
+    "semantics": "shift(., n=H, 'lead') returns x[t+H] (forward), NOT x[t-H] (backward as shift(.,-H,'lead') does)"
+  },
+  "event_rate_change": {
+    "y_tail_q15_buggy_pct": 12.96,
+    "y_tail_q15_forward_pct": 12.82,
+    "y_onset_buggy_pct": 10.55,
+    "y_onset_forward_pct": 10.55,
+    "note": "y_onset event rate unchanged (uses dd_252_fwd_min via frollapply align='left', already correct)"
+  },
+  "comparative_y_tail_q15": [
+    {
+      "cycle": "v1.3 baseline",
+      "method": "Static_WEW",
+      "buggy_PRAUC": 0.5814,
+      "forward_PRAUC": 0.1605,
+      "delta": -0.4209,
+      "ratio": 0.2761
+    },
+    {
+      "cycle": "v1.3 baseline",
+      "method": "M1_Rolling",
+      "buggy_PRAUC": 0.6063,
+      "forward_PRAUC": 0.1493,
+      "delta": -0.457,
+      "ratio": 0.2463
+    },
+    {
+      "cycle": "v1.3 baseline",
+      "method": "M2_Regime",
+      "buggy_PRAUC": 0.6078,
+      "forward_PRAUC": 0.145,
+      "delta": -0.4628,
+      "ratio": 0.2386
+    },
+    {
+      "cycle": "v1.3 baseline",
+      "method": "M3_Hedge",
+      "buggy_PRAUC": 0.551,
+      "forward_PRAUC": 0.179,
+      "delta": -0.372,
+      "ratio": 0.3249
+    },
+    {
+      "cycle": "v1.3 baseline",
+      "method": "M4_Bayes",
+      "buggy_PRAUC": 0.5525,
+      "forward_PRAUC": 0.1917,
+      "delta": -0.3608,
+      "ratio": 0.347
+    },
+    {
+      "cycle": "v1.3 baseline",
+      "method": "M5_Bandit",
+      "buggy_PRAUC": 0.5798,
+      "forward_PRAUC": 0.1604,
+      "delta": -0.4194,
+      "ratio": 0.2766
+    },
+    {
+      "cycle": "Cycle 43 v2_2feat",
+      "method": "Static_WEW",
+      "buggy_PRAUC": 0.5827,
+      "forward_PRAUC": 0.1483,
+      "delta": -0.4344,
+      "ratio": 0.2545
+    },
+    {
+      "cycle": "Cycle 43 v2_2feat",
+      "method": "M1_Rolling",
+      "buggy_PRAUC": 0.6459,
+      "forward_PRAUC": 0.159,
+      "delta": -0.4869,
+      "ratio": 0.2462
+    },
+    {
+      "cycle": "Cycle 43 v2_2feat",
+      "method": "M2_Regime",
+      "buggy_PRAUC": 0.639,
+      "forward_PRAUC": 0.1575,
+      "delta": -0.4815,
+      "ratio": 0.2465
+    },
+    {
+      "cycle": "Cycle 43 v2_2feat",
+      "method": "M3_Hedge",
+      "buggy_PRAUC": 0.5296,
+      "forward_PRAUC": 0.1528,
+      "delta": -0.3768,
+      "ratio": 0.2885
+    },
+    {
+      "cycle": "Cycle 43 v2_2feat",
+      "method": "M4_Bayes",
+      "buggy_PRAUC": 0.5271,
+      "forward_PRAUC": 0.2129,
+      "delta": -0.3142,
+      "ratio": 0.4039
+    },
+    {
+      "cycle": "Cycle 43 v2_2feat",
+      "method": "M5_Bandit",
+      "buggy_PRAUC": 0.5503,
+      "forward_PRAUC": 0.1528,
+      "delta": -0.3975,
+      "ratio": 0.2777
+    },
+    {
+      "cycle": "Cycle 45B v3b_inst",
+      "method": "Static_WEW",
+      "buggy_PRAUC": 0.5779,
+      "forward_PRAUC": 0.1452,
+      "delta": -0.4327,
+      "ratio": 0.2513
+    },
+    {
+      "cycle": "Cycle 45B v3b_inst",
+      "method": "M1_Rolling",
+      "buggy_PRAUC": 0.6382,
+      "forward_PRAUC": 0.1397,
+      "delta": -0.4985,
+      "ratio": 0.2189
+    },
+    {
+      "cycle": "Cycle 45B v3b_inst",
+      "method": "M2_Regime",
+      "buggy_PRAUC": 0.6417,
+      "forward_PRAUC": 0.1413,
+      "delta": -0.5004,
+      "ratio": 0.2202
+    },
+    {
+      "cycle": "Cycle 45B v3b_inst",
+      "method": "M3_Hedge",
+      "buggy_PRAUC": 0.5789,
+      "forward_PRAUC": 0.1374,
+      "delta": -0.4415,
+      "ratio": 0.2373
+    },
+    {
+      "cycle": "Cycle 45B v3b_inst",
+      "method": "M4_Bayes",
+      "buggy_PRAUC": 0.6018,
+      "forward_PRAUC": 0.1384,
+      "delta": -0.4634,
+      "ratio": 0.23
+    },
+    {
+      "cycle": "Cycle 45B v3b_inst",
+      "method": "M5_Bandit",
+      "buggy_PRAUC": 0.5438,
+      "forward_PRAUC": 0.1449,
+      "delta": -0.3989,
+      "ratio": 0.2665
+    },
+    {
+      "cycle": "Cycle 45E v3e_arch",
+      "method": "Static_WEW",
+      "buggy_PRAUC": 0.6105,
+      "forward_PRAUC": 0.1706,
+      "delta": -0.4399,
+      "ratio": 0.2794
+    },
+    {
+      "cycle": "Cycle 45E v3e_arch",
+      "method": "M1_Rolling",
+      "buggy_PRAUC": 0.5796,
+      "forward_PRAUC": 0.1458,
+      "delta": -0.4338,
+      "ratio": 0.2516
+    },
+    {
+      "cycle": "Cycle 45E v3e_arch",
+      "method": "M2_Regime",
+      "buggy_PRAUC": 0.5765,
+      "forward_PRAUC": 0.1474,
+      "delta": -0.4291,
+      "ratio": 0.2557
+    },
+    {
+      "cycle": "Cycle 45E v3e_arch",
+      "method": "M3_Hedge",
+      "buggy_PRAUC": 0.5794,
+      "forward_PRAUC": 0.1797,
+      "delta": -0.3997,
+      "ratio": 0.3101
+    },
+    {
+      "cycle": "Cycle 45E v3e_arch",
+      "method": "M4_Bayes",
+      "buggy_PRAUC": 0.5905,
+      "forward_PRAUC": 0.1789,
+      "delta": -0.4116,
+      "ratio": 0.303
+    },
+    {
+      "cycle": "Cycle 45E v3e_arch",
+      "method": "M5_Bandit",
+      "buggy_PRAUC": 0.6103,
+      "forward_PRAUC": 0.1687,
+      "delta": -0.4416,
+      "ratio": 0.2764
+    }
+  ],
+  "comparative_y_onset": [
+    {
+      "cycle": "v1.3 baseline",
+      "method": "Static_WEW",
+      "buggy_PRAUC": 0.1328,
+      "forward_PRAUC": 0.1235,
+      "delta": -0.0093,
+      "ratio": 0.9303
+    },
+    {
+      "cycle": "v1.3 baseline",
+      "method": "M1_Rolling",
+      "buggy_PRAUC": 0.1292,
+      "forward_PRAUC": 0.159,
+      "delta": 0.0298,
+      "ratio": 1.2302
+    },
+    {
+      "cycle": "v1.3 baseline",
+      "method": "M2_Regime",
+      "buggy_PRAUC": 0.1369,
+      "forward_PRAUC": 0.1585,
+      "delta": 0.0216,
+      "ratio": 1.1576
+    },
+    {
+      "cycle": "v1.3 baseline",
+      "method": "M3_Hedge",
+      "buggy_PRAUC": 0.1104,
+      "forward_PRAUC": 0.1219,
+      "delta": 0.0115,
+      "ratio": 1.1044
+    },
+    {
+      "cycle": "v1.3 baseline",
+      "method": "M4_Bayes",
+      "buggy_PRAUC": 0.1106,
+      "forward_PRAUC": 0.1717,
+      "delta": 0.0611,
+      "ratio": 1.5525
+    },
+    {
+      "cycle": "v1.3 baseline",
+      "method": "M5_Bandit",
+      "buggy_PRAUC": 0.1221,
+      "forward_PRAUC": 0.1271,
+      "delta": 0.005,
+      "ratio": 1.0408
+    },
+    {
+      "cycle": "Cycle 43 v2_2feat",
+      "method": "Static_WEW",
+      "buggy_PRAUC": 0.1411,
+      "forward_PRAUC": 0.1134,
+      "delta": -0.0277,
+      "ratio": 0.8037
+    },
+    {
+      "cycle": "Cycle 43 v2_2feat",
+      "method": "M1_Rolling",
+      "buggy_PRAUC": 0.1204,
+      "forward_PRAUC": 0.111,
+      "delta": -0.0094,
+      "ratio": 0.9219
+    },
+    {
+      "cycle": "Cycle 43 v2_2feat",
+      "method": "M2_Regime",
+      "buggy_PRAUC": 0.1352,
+      "forward_PRAUC": 0.1135,
+      "delta": -0.0217,
+      "ratio": 0.8395
+    },
+    {
+      "cycle": "Cycle 43 v2_2feat",
+      "method": "M3_Hedge",
+      "buggy_PRAUC": 0.1219,
+      "forward_PRAUC": 0.0918,
+      "delta": -0.0301,
+      "ratio": 0.7531
+    },
+    {
+      "cycle": "Cycle 43 v2_2feat",
+      "method": "M4_Bayes",
+      "buggy_PRAUC": 0.1228,
+      "forward_PRAUC": 0.0975,
+      "delta": -0.0253,
+      "ratio": 0.794
+    },
+    {
+      "cycle": "Cycle 43 v2_2feat",
+      "method": "M5_Bandit",
+      "buggy_PRAUC": 0.1307,
+      "forward_PRAUC": 0.1039,
+      "delta": -0.0268,
+      "ratio": 0.795
+    },
+    {
+      "cycle": "Cycle 45B v3b_inst",
+      "method": "Static_WEW",
+      "buggy_PRAUC": 0.1789,
+      "forward_PRAUC": 0.1433,
+      "delta": -0.0356,
+      "ratio": 0.801
+    },
+    {
+      "cycle": "Cycle 45B v3b_inst",
+      "method": "M1_Rolling",
+      "buggy_PRAUC": 0.1128,
+      "forward_PRAUC": 0.1079,
+      "delta": -0.0049,
+      "ratio": 0.9566
+    },
+    {
+      "cycle": "Cycle 45B v3b_inst",
+      "method": "M2_Regime",
+      "buggy_PRAUC": 0.1284,
+      "forward_PRAUC": 0.1274,
+      "delta": -0.001,
+      "ratio": 0.9922
+    },
+    {
+      "cycle": "Cycle 45B v3b_inst",
+      "method": "M3_Hedge",
+      "buggy_PRAUC": 0.1514,
+      "forward_PRAUC": 0.1581,
+      "delta": 0.0067,
+      "ratio": 1.0443
+    },
+    {
+      "cycle": "Cycle 45B v3b_inst",
+      "method": "M4_Bayes",
+      "buggy_PRAUC": 0.1477,
+      "forward_PRAUC": 0.1582,
+      "delta": 0.0105,
+      "ratio": 1.0711
+    },
+    {
+      "cycle": "Cycle 45B v3b_inst",
+      "method": "M5_Bandit",
+      "buggy_PRAUC": 0.1642,
+      "forward_PRAUC": 0.1464,
+      "delta": -0.0178,
+      "ratio": 0.8916
+    },
+    {
+      "cycle": "Cycle 45E v3e_arch",
+      "method": "Static_WEW",
+      "buggy_PRAUC": 0.1083,
+      "forward_PRAUC": 0.1133,
+      "delta": 0.005,
+      "ratio": 1.0462
+    },
+    {
+      "cycle": "Cycle 45E v3e_arch",
+      "method": "M1_Rolling",
+      "buggy_PRAUC": 0.1462,
+      "forward_PRAUC": 0.1646,
+      "delta": 0.0184,
+      "ratio": 1.1259
+    },
+    {
+      "cycle": "Cycle 45E v3e_arch",
+      "method": "M2_Regime",
+      "buggy_PRAUC": 0.1507,
+      "forward_PRAUC": 0.1559,
+      "delta": 0.0052,
+      "ratio": 1.0345
+    },
+    {
+      "cycle": "Cycle 45E v3e_arch",
+      "method": "M3_Hedge",
+      "buggy_PRAUC": 0.1409,
+      "forward_PRAUC": 0.1777,
+      "delta": 0.0368,
+      "ratio": 1.2612
+    },
+    {
+      "cycle": "Cycle 45E v3e_arch",
+      "method": "M4_Bayes",
+      "buggy_PRAUC": 0.1164,
+      "forward_PRAUC": 0.1442,
+      "delta": 0.0278,
+      "ratio": 1.2388
+    },
+    {
+      "cycle": "Cycle 45E v3e_arch",
+      "method": "M5_Bandit",
+      "buggy_PRAUC": 0.1205,
+      "forward_PRAUC": 0.1423,
+      "delta": 0.0218,
+      "ratio": 1.1809
+    }
+  ]
+}

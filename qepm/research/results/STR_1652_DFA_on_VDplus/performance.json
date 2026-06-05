@@ -1,0 +1,126 @@
+{
+  "strategy": "STR_1652_DFA_on_VDplus",
+  "synthesis": "STR_1631 SYN_05_2002 + DFA Q07/Q03/D29 MRS-conditional blend",
+  "dfa_weights": {
+    "Normal": {
+      "C19": 1,
+      "Q07": 0,
+      "Q03": 0,
+      "D29": 0,
+      "condition": "MRS lt 20"
+    },
+    "Caution": {
+      "C19": 0.6,
+      "Q07": 0.25,
+      "Q03": 0.15,
+      "D29": 0,
+      "condition": "20 le MRS lt 50"
+    },
+    "Crisis": {
+      "C19": 0.3,
+      "Q07": 0.3,
+      "Q03": 0.2,
+      "D29": 0.2,
+      "condition": "MRS ge 50"
+    }
+  },
+  "anchor": {
+    "strategy": "STR_1631 VD+",
+    "CAGR": 22.53,
+    "Sharpe": 1.243,
+    "MDD": 25.4
+  },
+  "components": [
+    "SYN_04_ic_weighted",
+    "M23_score_tilt",
+    "M19_bimonthly",
+    "DFA_Q07_Q03_D29_mrs_conditional"
+  ],
+  "axes": [
+    "factor_weight",
+    "stock_weight",
+    "structural"
+  ],
+  "backtest_start": "2003-01-30",
+  "hrp_tilt_w": 0.6,
+  "score_tilt_w": 0.4,
+  "rebal_months": 2,
+  "ic_min_months": 12,
+  "pit_notes": {
+    "C1": "expanding IC only — Date lt sd (t-1 기준)",
+    "C2": "Score + IC weights t-1 lag",
+    "C4": "Consensus roll=7d PIT join",
+    "C9": "MRS t-1 lagged in regime_engine_daily.R — no additional shift",
+    "C13": "Z_Score_Aligned: Q07/Q03/D29 higher_better, ic_sign=+1",
+    "OPT1": "Factor DB arrow open_dataset 1회 bulk preload — no loop I/O"
+  },
+  "consensus_start": "2001-06-04",
+  "final_ic_weights": {
+    "Date": "2026-03-31",
+    "w_sue": 0.2946,
+    "w_esbr": 0.3255,
+    "w_eps1m": 0.2432,
+    "w_tpgap": 0.1367
+  },
+  "dfa_regime_dist": {
+    "regime": ["Normal", "Caution", "Crisis"],
+    "N": [106, 20, 14]
+  },
+  "base": {
+    "Label": "DFA_VDplus_Base",
+    "CAGR": 22.48,
+    "AnnVol": 20.17,
+    "Sharpe": 1.115,
+    "Sharpe_m": 1.097,
+    "Sortino": 1.56,
+    "MDD": 48.2,
+    "Calmar": 0.466,
+    "WinRate": 66.3,
+    "WorstMonth": -24.05,
+    "Worst3M": -28.81,
+    "ES99_d": 5.13,
+    "ES99_m": 18.53
+  },
+  "overlay": {
+    "Label": "DFA_VDplus_Overlay",
+    "CAGR": 21.89,
+    "AnnVol": 17.85,
+    "Sharpe": 1.226,
+    "Sharpe_m": 1.174,
+    "Sortino": 1.734,
+    "MDD": 30.23,
+    "Calmar": 0.724,
+    "WinRate": 66.7,
+    "WorstMonth": -15.32,
+    "Worst3M": -16.17,
+    "ES99_d": 4.39,
+    "ES99_m": 13.66
+  },
+  "benchmark": {
+    "Label": "KOSPI200",
+    "CAGR": 10.22,
+    "AnnVol": 20.68,
+    "Sharpe": 0.494,
+    "Sharpe_m": 0.571,
+    "Sortino": 0.691,
+    "MDD": 54.54,
+    "Calmar": 0.187,
+    "WinRate": 57.3,
+    "WorstMonth": -23.13,
+    "Worst3M": -30.2,
+    "ES99_d": 5.27,
+    "ES99_m": 18.86
+  },
+  "ab_comparison": {
+    "anchor_cagr": 22.53,
+    "dfa_cagr": 21.89,
+    "anchor_sr": 1.243,
+    "dfa_sr": 1.226,
+    "anchor_mdd": 25.4,
+    "dfa_mdd": 30.23
+  },
+  "turnover": 215.4,
+  "hurdle_pass": true,
+  "hurdle_score": 62.9,
+  "run_time": 415.8393
+}

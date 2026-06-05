@@ -13,7 +13,7 @@ MUTATION_CONFIG <- list(
   n_holdings = 30L,
   commission = 0.0015
 )
-source("/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/02_Infrastructure/s5_mutation_runner.R")
+source(file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")), "02_Infrastructure/s5_mutation_runner.R"))
 cat(sprintf("RESULT: %s/%s Grade=%s Score=%.1f SR=%.3f CAGR=%.1f%% MDD=%.1f%%\n",
     MUTATION_RESULT$strategy_id, MUTATION_RESULT$mutation_id,
     MUTATION_RESULT$grade, MUTATION_RESULT$score,

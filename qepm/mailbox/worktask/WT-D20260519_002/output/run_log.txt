@@ -1,0 +1,51 @@
+[22:07:20] === Forge Stage Start: WT-D20260519_002 === 
+[22:07:20] Working dir: /mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260519_002 
+[22:07:20] Start hash: alpha_package.json=b79ad949b0f97f8e646f61d5a77db85c; risk_package.json=95e656ca3a18b8f06b0b810cbd8df556; optimization_package.json=46d6cfdd0a99d86f229efadee460d1c6 
+[22:07:21] --- STAGE 1: PIT feature panel build --- 
+[22:07:21] FRED loaded: nrow=8166 ncol=23 range=2000-01-01~2026-05-15 
+[22:07:31] BM daily loaded: nrow=8953 range=1990-01-05~2026-05-18 
+[22:07:31] Date spine (trading days only): nrow=5524 
+[22:07:31] Panel after FRED+BM merge + locf: nrow=5524 ncol=24 
+[22:07:33] Feature panel rows: 5506 → 5271 (dropped 235 with >30% NA) 
+[22:07:33] Monthly aggregation: 257 months; bad_label sum=29 /256 
+[22:07:33] Stage 1 done. Panel saved: feature_panel_daily.parquet n=5271 features_built=20 
+[22:07:33] --- STAGE 2: Walk-forward split --- 
+[22:07:33] 5 walk-forward windows defined 
+[22:07:34] --- STAGE 3: 5-model ensemble train --- 
+[22:07:41] W1 n_tr=2478 n_te=737 bad_te=0 AUC ens=NA Recall@0.5=NA Precision@0.5=NA 
+[22:07:47] W2 n_tr=3215 n_te=738 bad_te=101 AUC ens=0.4357 Recall@0.5=0 Precision@0.5=0 
+[22:07:54] W3 n_tr=3953 n_te=494 bad_te=87 AUC ens=0.3643 Recall@0.5=0 Precision@0.5=NA 
+[22:07:59] W4 n_tr=4447 n_te=489 bad_te=38 AUC ens=0.794 Recall@0.5=0 Precision@0.5=0 
+[22:08:06] W5 n_tr=4936 n_te=321 bad_te=17 AUC ens=0.8526 Recall@0.5=0 Precision@0.5=NA 
+[22:08:06] Stage 3 done. Test predictions saved: n=2779 
+[22:08:06] auc_by_window.csv saved 
+[22:08:06] --- STAGE 4: Monthly aggregation --- 
+[22:08:06] Monthly bear_prob (OOS): 136 months 2015~2026 
+[22:08:06] 267m bridged schedule emit. OOS empirical rows=136 IS design-phase rows=131 
+[22:08:06] --- STAGE 5: Path A + Path B backtest --- 
+[22:08:06] STR_1715 PG2 nav loaded: nrow=267 
+[22:08:06] Path B merged 267m: nrow=267 
+[22:08:06] Layer 6 transitions: tau03=22 tau05=8 tau07=4 
+[22:08:06] TO_layer_6_bear_per_yr: tau03 = 0.989 tau05 = 0.36 tau07 = 0.18 
+[22:08:06] === Path B 5-layer NAV metrics === 
+[22:08:06] OOS window: 136 months 2015-01 ~ 2026-04 
+[22:08:06] === OOS (2015~2026) metrics === 
+[22:08:06] --- STAGE 6: G1~G5 + 13 OPT bindings --- 
+[22:08:06] G1 sub-window pass: 0/5 
+[22:08:20] G3 Gini per window: W1=0.402 W2=0.403 W3=0.408 W4=0.357 W5=0.388 
+[22:08:20] G3 mean Gini=0.391 < 0.7 PASS=TRUE 
+[22:08:20] G3 top-10 overlap mean=0.84 
+[22:08:20] OPT4 rho(p_bad, m4_scalar)=-0.5373 PASS=TRUE 
+[22:08:20] OPT6 TO_total tau05=5.86 ≤ 6.0 PASS=TRUE 
+[22:08:20] OPT9 TDC(p_bad, m4)=0.75 < 0.7 PASS=FALSE 
+[22:08:20] OPT11 DSR Z (n_trials=54): L5_V2=5.944 L6_tau05=5.9 L6_tau07=5.929 
+[22:08:20] OPT12 PG2 active-book β_bear change months: NA (NA%) 
+[22:08:20] OPT13 β drift by regime: 
+[22:08:20] Architect baseline floor: AUC=0.4438 recall=0.0 
+[22:08:20] Forge ensemble mean: AUC=0.6117 recall@0.5=0 
+[22:08:20] Uplift: ΔAUC=0.1679 (target ≥0.60 TRUE), Δrecall=0 (target ≥0.60 FALSE) 
+[22:08:20] --- Building bt_result 10-component --- 
+[22:08:20] bt_result.rds saved 
+[22:08:20] End hash:   alpha_package.json=b79ad949b0f97f8e646f61d5a77db85c; risk_package.json=95e656ca3a18b8f06b0b810cbd8df556; optimization_package.json=46d6cfdd0a99d86f229efadee460d1c6 
+[22:08:20] Pure function audit: hash_unchanged=TRUE 
+[22:08:20] === Forge Stage Complete === 

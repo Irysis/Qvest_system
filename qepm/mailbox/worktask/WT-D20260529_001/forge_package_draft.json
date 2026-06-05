@@ -1,0 +1,72 @@
+{
+  "task_id": "WT-D20260529_001",
+  "track": "FLOW",
+  "role": "forge",
+  "agent": "forge_integration_v8x_pure_function",
+  "as_of_date": "2026-05-29",
+  "method": "weights.csv_daily_share_based_NAV_reconstruction_carry_forward_quarterly",
+  "measurement_basis_primary": "forge_realized_share_based",
+  "backtest_summary": {
+    "period": "2005-02-01 ~ 2026-05-27",
+    "n_trading_days": 5267,
+    "n_months": 256,
+    "n_rebalances": 76,
+    "sr_daily": 0.8227,
+    "cagr": 0.1966,
+    "mdd": 0.5879,
+    "ann_turnover": 2.4441,
+    "information_ratio_monthly": 0.5397,
+    "alpha_annualized_monthly": 0.0917,
+    "metric_type": "backtested"
+  },
+  "portfolio_alpha_t_nw_lag3": 2.3497,
+  "portfolio_alpha_t_pvalue": 0.0188,
+  "portfolio_alpha_t_basis": "monthly net active series, NW lag-3, build_benchmark_compare (matches alpha proxy basis)",
+  "portfolio_alpha_t_daily_reference": 2.5325,
+  "proxy_vs_realized": {
+    "alpha_proxy_portfolio_alpha_t": 3.55,
+    "forge_realized_portfolio_alpha_t_FULL": 2.3497,
+    "forge_realized_portfolio_alpha_t_LOCKBOX_TRUNC": 3.6632,
+    "lockbox_trunc_n_months": 226,
+    "delta_full": -1.2003,
+    "delta_lockbox_trunc": 0.1132,
+    "diagnosis": "DOWNSHIFT_GATE_C_FAIL",
+    "diagnosis_detail": "On the EXACT proxy basis (lockbox-truncated <=2023-12, quarterly sleeve), forge realized portfolio-alpha t = 3.66 ~= proxy 3.55 -> MEASUREMENT CHAIN VALID (share-based realized reproduces alpha continuous proxy; SR 0.78 ~= proxy 0.817). On the FULL window incl. frozen-weights OOS deploy-extension (2024-01~latest, 29 mo), t drops to 2.35 (< 2.95 Gate C). The degradation is concentrated in the OOS deploy extension, NOT a measurement artifact.",
+    "cycle2_precedent_note": "Cycle 2: D ML alpha 4.31 -> forge 2.31 down-shift on full-window realized; this WT lands forge FULL=2.35 (near-identical OOS-driven drop)."
+  },
+  "graduation_gate_c": {
+    "metric": "portfolio_alpha_t_nw_lag3",
+    "hurdle": 2.95,
+    "realized": 2.3497,
+    "pass": false
+  },
+  "sr_realized_share_based": 0.8227,
+  "sr_factor_engine_continuous": null,
+  "sr_lockbox_daily_harness": null,
+  "weights_csv_unique_dates_count": 76,
+  "alpha_sig_dates_count": 226,
+  "schedule_density_ratio": 0.3363,
+  "schedule_density_pass": false,
+  "schedule_density_note": "0.336 < 0.95 — quarterly cadence FORCED by TO hard cap (alpha monthly TO 10.66 FAIL, quarterly 5.93 PASS). See optimizer INFEAS-2. Quarterly weights held across intervening months (NAV carry-forward); NO monthly holdings fabricated. Schedule Fidelity Mandate honored.",
+  "pure_function_violation": false,
+  "audit_status": "WARNING",
+  "audit_frequency_mislabel": false,
+  "hash_audit": {
+    "alpha_hash_start": "a7d301e64ce38e2d48f69360f67f85b1",
+    "risk_hash_start": "db465397da55aa7b260fe5f35bbd2a38",
+    "opt_hash_start": "3864f32f42c402f7e7af3a0d286ab55a",
+    "weights_hash_start": "20604531a280118aa0596275839f754d",
+    "alpha_hash_end": "a7d301e64ce38e2d48f69360f67f85b1",
+    "risk_hash_end": "db465397da55aa7b260fe5f35bbd2a38",
+    "opt_hash_end": "3864f32f42c402f7e7af3a0d286ab55a",
+    "weights_hash_end": "20604531a280118aa0596275839f754d",
+    "integrity_pass": true
+  },
+  "output_paths": {
+    "bt_result_rds": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260529_001/backtest_result/bt_result.rds",
+    "equity_curve": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260529_001/backtest_result/equity_curve.png",
+    "annual_returns": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260529_001/backtest_result/annual_returns.png",
+    "oos_zoom": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260529_001/backtest_result/oos_zoom_chart.png"
+  },
+  "generated_at": "2026-05-29 16:59:34.238635"
+}

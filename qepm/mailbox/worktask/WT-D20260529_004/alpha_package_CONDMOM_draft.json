@@ -1,0 +1,145 @@
+{
+  "task_id": "WT-D20260529_004",
+  "wt_type": "discovery",
+  "track": "CONDMOM",
+  "as_of_date": "2026-05-29",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "signal_matrix_ref": "stage_artifacts/WT_WT_D20260529_004_CONDMOM/alpha_scores.parquet",
+  "selection_objective": "icir",
+  "hypothesis": "State-conditional momentum — momentum strength is a function of information-diffusion speed (Hong-Stein 1999). In low-vol / high-liquidity / low-dispersion stocks information diffuses slowly & cleanly, so underreaction persists and momentum is stronger with less reversal. CONDMOM conditions cross-sectional momentum on a stock-level stability/diffusion STATE index. Distinct from STR_1715 M08 residual-mom marginal and its market-regime overlay.",
+  "factor_specs": [
+    {
+      "factor_family": "Momentum",
+      "proxy": "MOM axis = EW(M01_Mom_12_1, M10_Intermediate_Mom, M08_Residual_Mom)",
+      "formula": "cross-sectional zstd of EW Z_Score_Aligned",
+      "lag_rule": "price t-1, daily factors",
+      "winsorization": "Z_Score_Aligned (3std upstream)",
+      "neutralization": "none (cross-sectional rank)",
+      "economic_rationale": "momentum underreaction (Jegadeesh-Titman 1993, residual mom Blitz 2011)",
+      "weight_theta": 0.5,
+      "references": ["Jegadeesh-Titman 1993", "Hong-Stein 1999", "Hou 2007"]
+    },
+    {
+      "factor_family": "State/Stability",
+      "proxy": "STATE axis = EW(D35_RealVol_63d, D01_IdioVol, C12_Estimate_Dispersion_Proxy, L02_Turnover), slow-diffusion/stable direction",
+      "formula": "cross-sectional zstd; all 4 aligned-z-high == stable/liquid (registry direction verified)",
+      "lag_rule": "daily factors t-1",
+      "winsorization": "Z_Score_Aligned",
+      "neutralization": "none",
+      "economic_rationale": "slow & clean information diffusion -> persistent underreaction (Hong-Stein 1999, Hou 2007)",
+      "weight_theta": 0.5,
+      "references": ["Hong-Stein 1999", "Ang-Hodrick-Xing-Zhang 2006"]
+    }
+  ],
+  "interaction_construction": {
+    "chosen_form": "CONDMOM_tilt = zstd(MOM * (1 + 0.5*clip(STATE,-2,2)))",
+    "alternatives_tested": {
+      "MOM_x_STATE": "zstd(MOM * STATE) — pure product (ICIR -0.007, noise)",
+      "MOM_plus_STATE": "zstd(MOM + STATE) — SUM-OF-MARGINALS benchmark (NOT interaction)"
+    }
+  },
+  "diagnostics": {
+    "rank_ic": 0.0157,
+    "rank_ic_full": 0.0201,
+    "icir": 0.103,
+    "icir_full": 0.132,
+    "ic_t_stat": 1.59,
+    "harvey_t_rankIC": 0.12,
+    "harvey_t_rankIC_full": 1.13,
+    "monotonicity": 0.758,
+    "subperiod_stability": 0.333,
+    "recent36_icir": -0.137,
+    "portfolio_alpha_t": 2.64,
+    "portfolio_alpha_t_lockbox": 1.80,
+    "net_sr": 0.783,
+    "net_sr_lockbox": 0.654,
+    "ir_net": 0.559,
+    "turnover_yr": 4.57,
+    "turnover_cap_ok": true,
+    "realized_beta_kospi200": -0.082,
+    "dsr_active": 0.921,
+    "dsr_absolute": 0.993,
+    "dsr_n_trials": 19,
+    "liq_pct_below_2e8": 0.0066
+  },
+  "interaction_beats_marginal_test": {
+    "interaction_icir": 0.103,
+    "best_single_marginal_icir": 0.131,
+    "icir_MOM": 0.106,
+    "icir_STATE": 0.131,
+    "icir_sum_of_marginals": 0.197,
+    "beats_best_marginal": false,
+    "beats_sum_of_marginals": false,
+    "interaction_beats_marginal": false,
+    "portfolio_level": {
+      "sr_net_int_lb": 0.654,
+      "sr_net_mom_marginal_lb": 0.604,
+      "sr_beats_marginal_at_portfolio": true,
+      "pa_t_int_lb": 1.80,
+      "pa_t_mom_marginal_lb": 1.62
+    },
+    "verdict": "FAIL — interaction does NOT beat best single marginal NOR sum-of-marginals at the signal/ICIR level. The additive MOM+STATE (sum of marginals) is materially superior (ICIR 0.197, IC_t 3.06). Per QMJ lesson, the conditioning/interaction structure is meaningless: the value is in the linear combination, not the interaction."
+  },
+  "mechanism_test": {
+    "mom_ic_high_state": 0.0263,
+    "mom_ic_low_state": 0.0198,
+    "mechanism_confirmed": true,
+    "note": "Momentum IS slightly stronger in high-STATE (stable/liquid) names — Hong-Stein diffusion mechanism directionally confirmed, but effect too weak (delta IC ~0.0065) to make multiplicative interaction dominate the additive combination."
+  },
+  "return_orthogonality": {
+    "return_cor_vs_str1715": 0.876,
+    "return_cor_rank_vs_str1715": 0.827,
+    "return_cor_vs_MOM_marginal": 0.921,
+    "note": "Realized return cor vs STR_1715 high (0.876). vs own MOM marginal 0.921 -> dominated by momentum component, interaction adds little."
+  },
+  "signal_orthogonality": {
+    "cor_vs_str1715": 0.352,
+    "cor_vs_str1715_rank": 0.417,
+    "cor_vs_D": -0.081,
+    "cor_vs_FLOW": -0.162,
+    "cor_vs_MOM_marginal": 0.864
+  },
+  "ax001_v2": {
+    "bad_normal_ratio": 0.988,
+    "crisis_alpha_bad_active_net": 0.0013,
+    "is_crisis_hedge": false
+  },
+  "method_shopping_log": {
+    "candidates_tried": 8,
+    "method_log": [
+      {"name": "M01_Mom_12_1", "icir": 0.070, "selected": false},
+      {"name": "M10_Intermediate_Mom", "icir": 0.114, "selected": false},
+      {"name": "M08_Residual_Mom", "icir": 0.127, "selected": false},
+      {"name": "MOM", "icir": 0.106, "selected": false},
+      {"name": "STATE", "icir": 0.131, "selected": false},
+      {"name": "MOM_plus_STATE", "icir": 0.197, "selected": false},
+      {"name": "MOM_x_STATE", "icir": -0.007, "selected": false},
+      {"name": "CONDMOM_tilt", "icir": 0.103, "selected": true}
+    ]
+  },
+  "economic_rationale": "State-conditional momentum (Hong-Stein 1999 gradual information diffusion, Hou 2007). Mechanism directionally confirmed but interaction structure adds no value over linear combination.",
+  "redundancy_cluster_id": "momentum_state_interaction (overlaps 1715 M08 residual-mom marginal; return cor vs 1715 0.876)",
+  "axiom_compliance": {
+    "AX_002": "PIT lockbox 2023-12-22 strict; graduation metrics on lockbox window only",
+    "AX_007": "multi-sleeve / DPL feature library context",
+    "AX_000": "interaction_beats_marginal FALSE honestly reported (proven limit reported, not denied)"
+  },
+  "graduation_assessment": {
+    "min_rank_ic_0.04": false,
+    "min_icir_0.20": false,
+    "min_subperiod_0.50": false,
+    "min_harvey_t_3.0": false,
+    "min_dsr_0.5": "true (0.921) but inflated by single-alpha + high beta-neutral active",
+    "passes_graduation": false
+  },
+  "challenge_flags": [
+    "RF-A3 HIGH: recent36 ICIR (-0.137) inverted vs overall (0.103) — momentum-state alpha decayed post-2020.",
+    "INTERACTION_FAIL: interaction_beats_marginal=FALSE. Sum-of-marginals (0.197) >> interaction (0.103). Conditioning structure meaningless (QMJ lesson).",
+    "SUBPERIOD_FAIL: subperiod_stability 0.33 (<0.50). IC positive only 2008-14, flat/negative 2015-26.",
+    "HARVEY_FAIL: lockbox Harvey-t 0.12 (<3.0). Not robust to multiple-testing haircut.",
+    "RETURN_COR_HIGH: realized return cor vs STR_1715 0.876 — not a return-orthogonal diversifier."
+  ],
+  "verdict_summary": "REJECT as standalone/interaction alpha. Central test interaction_beats_marginal=FALSE — the conditioning structure adds nothing over a simple linear MOM+STATE combination (which itself is a modest IC_t=3.06 additive signal, not novel). Mechanism (Hong-Stein diffusion) is directionally confirmed but quantitatively too weak. recent36 ICIR inverted (-0.137) + subperiod 0.33 + Harvey-t 0.12 all fail graduation. High return cor vs 1715 (0.876) means low DPL-feature incremental value. Honest finding (AX-000): state-conditioning of momentum is not a meaningful KR alpha source; the marginal factors combine additively, not interactively.",
+  "codex_critic_round": {"status": "pending_draft"}
+}

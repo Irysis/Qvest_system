@@ -25,9 +25,9 @@ suppressPackageStartupMessages({
 })
 
 .SELF_DIR <- tryCatch(dirname(sys.frame(1)$ofile),
-  error = function(e) "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/02_Infrastructure/factor_db")
+  error = function(e) "/mnt/c/Users/99922/OneDrive/바탕 화면/Quant_Module_Moltbot/02_Infrastructure/factor_db")
 INFRA_DIR <- tryCatch(dirname(dirname(sys.frame(1)$ofile)),
-  error = function(e) "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/02_Infrastructure")
+  error = function(e) "/mnt/c/Users/99922/OneDrive/바탕 화면/Quant_Module_Moltbot/02_Infrastructure")
 source(file.path(INFRA_DIR, "config.R"))
 sourceCpp(file.path(.SELF_DIR, "factor_db_daily_rcpp.cpp"))
 
@@ -59,6 +59,33 @@ if (!"BM_Ret" %in% names(RW) || all(is.na(RW$BM_Ret))) {
   RW <- BM[, .(Date, BM_Ret)][RW, on = "Date"]
 }
 cat(sprintf("  RAWDATA: %s rows, %d tickers\n", format(nrow(RW), big.mark=","), length(unique(RW$Ticker))))
+
+# ── VIX column from macro_fred (for D32_Beta_VIX) ──────────────────────────
+.macro_path_p6 <- file.path(CACHE_DIR, "macro_fred.parquet")
+if (file.exists(.macro_path_p6) && !("VIX" %in% names(RW))) {
+  tryCatch({
+    .macro <- as.data.table(read_parquet(.macro_path_p6))
+    .macro[, Date := as.Date(Date)]
+    .vix_d <- if ("Series_ID" %in% names(.macro) && "VIXCLS" %in% .macro[["Series_ID"]]) {
+      .macro[Series_ID == "VIXCLS" & !is.na(Value), .(VIX = last(Value)), by = Date]
+    } else if ("VIX" %in% .macro[["Series"]]) {
+      .macro[Series == "VIX" & !is.na(Value), .(VIX = last(Value)), by = Date]
+    } else NULL
+    if (!is.null(.vix_d) && nrow(.vix_d) > 0L) {
+      setkey(.vix_d, Date)
+      # ffill VIX across all RAWDATA dates (carry-forward weekend/holiday)
+      .all_dates <- data.table(Date = sort(unique(RW[["Date"]])))
+      .vix_filled <- .vix_d[.all_dates, on = "Date", roll = TRUE]
+      RW <- merge(RW, .vix_filled, by = "Date", all.x = TRUE)
+      setkey(RW, Ticker, Date)
+      cat(sprintf("  VIX column merged: %d carried values\n", sum(!is.na(RW$VIX))))
+    }
+  }, error = function(e) {
+    cat(sprintf("  VIX merge failed: %s\n", conditionMessage(e)))
+  })
+}
+# Ensure VIX column exists even if merge skipped (NA fallback for by=Ticker)
+if (!("VIX" %in% names(RW))) RW[, VIX := NA_real_]
 
 FUND <- as.data.table(read_parquet(file.path(CACHE_DIR, "fundamental_merged.parquet")))
 FUND[, Factor_Date := as.Date(Factor_Date)]
@@ -178,6 +205,29 @@ PART_A <- RW[, {
   D58_Vol_Asymmetry   <- fifelse(!is.na(D57_Down_Vol)&!is.na(D56_Up_Vol),
                                  D57_Down_Vol-D56_Up_Vol, NA_real_)
 
+  # ─── Stage 1 NEW: D08 Tail Beta + D32 Beta VIX ──────────────────────
+  # D08: filter by |bm| > 2*sd (full-history tail beta, replicated)
+  D08_Tail_Beta <- {
+    bm_sd_loc <- sd(bm, na.rm=TRUE)
+    if (!is.na(bm_sd_loc) && bm_sd_loc > 1e-8) {
+      tail_mask <- !is.na(bm) & abs(bm) > 2*bm_sd_loc
+      if (sum(tail_mask) >= 60L) {
+        f <- tryCatch(lm.fit(cbind(1, bm[tail_mask]), ret[tail_mask]),
+                      error = function(e) NULL)
+        if (!is.null(f)) rep(-as.numeric(f$coefficients[2L]), m) else rep(NA_real_, m)
+      } else rep(NA_real_, m)
+    } else rep(NA_real_, m)
+  }
+  # D32: rolling 252d beta of ret vs daily VIX log-change
+  vix_chg <- if (exists("VIX") && any(!is.na(VIX))) {
+    v <- as.double(VIX); v[v <= 0] <- NA_real_
+    c(NA_real_, diff(log(v)))
+  } else rep(NA_real_, m)
+  vix_chg[!is.finite(vix_chg)] <- NA_real_
+  D32_Beta_VIX <- if (sum(!is.na(vix_chg) & !is.na(ret)) >= 60L) {
+    roll_beta_cpp(ret, vix_chg, 252L)
+  } else rep(NA_real_, m)
+
   # ─── LIQUIDITY (L01~L45 subset) ────────────────────────────────────
   ami <- abs(ret)/pmax(sz/1e8, 1e-9)
   L01_Amihud          <- roll_mean_cpp(ami, 252L)
@@ -274,6 +324,7 @@ PART_A <- RW[, {
     D45_Downside_Dev, D46_Sortino, D47_CVaR_5pct, D48_VaR_5pct,
     D49_VaR_1pct, D50_MaxDrawdown, D52_MinRet, D53_Range_Vol,
     D54_Neg_Ret_Prop, D55_Vol_Trend, D56_Up_Vol, D57_Down_Vol, D58_Vol_Asymmetry,
+    D08_Tail_Beta, D32_Beta_VIX,
     L01_Amihud, L02_Turnover, L03_Volume_Mom, L04_Bid_Ask_Proxy,
     L05_Dollar_Volume, L06_Zero_Trade_Days, L07_Zero_Return_Days,
     L09_Amihud_20d, L10_Amihud_Ratio, L11_Kyle_Lambda, L14_Price_Impact,

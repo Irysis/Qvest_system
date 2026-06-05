@@ -1,0 +1,18 @@
+# B5 NGBoost paper baseline reproduce config
+
+data:
+  benchmark: kospi200
+  bm_path: ".cache/benchmark.parquet"
+  date_start: "2000-01-03"
+  date_end: "2021-12-31"
+  horizon: paper                    # 1-day forward log return
+  percent_scale: true               # percent units to align with B1
+
+walk_forward:
+  n_splits: 5
+  train_min: 1008
+  test_window: 504
+  embargo: 21                       # paper i.i.d. → 21d embargo PIT-safe
+
+reproduce_pass_criteria:
+  reference: "Paper UCI tabular only — no KOSPI baseline. v3 acceptance: val NLL stable across folds (std < 0.1) + best NLL < B1 NLL × 1.1"

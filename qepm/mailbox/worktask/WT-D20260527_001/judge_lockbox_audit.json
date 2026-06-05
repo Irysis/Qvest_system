@@ -1,0 +1,49 @@
+{
+  "wt_id": "WT-D20260527_001",
+  "audit_type": "judge_lockbox_audit_v6.1",
+  "harness_version": "judge_lockbox_harness.R v6.1",
+  "last_sig_date": "2023-12-28",
+  "lockbox_period": {
+    "start": "2024-01-02",
+    "end": "2026-04-30",
+    "n_days": 566
+  },
+  "strategy_frozen_lockbox": {
+    "method": "frozen weights buy-and-hold (M06_MVO_Breadth, 15 names @ 2023-12-28)",
+    "total_return": 1.8911,
+    "ann_ret": 0.6043,
+    "ann_vol": 0.2644,
+    "sharpe": 1.922,
+    "mdd": -0.1724
+  },
+  "benchmark_lockbox": {
+    "name": "KOSPI200_total_return",
+    "total_return": 1.5198,
+    "ann_ret": 0.5101,
+    "ann_vol": 0.2724,
+    "sharpe": 1.6516,
+    "mdd": -0.2067
+  },
+  "pre_lb_walk_forward": {
+    "period": "2016-01-04 to 2024-01-30",
+    "sharpe": 0.3467,
+    "mdd_pct": -0.5974,
+    "cagr": 0.0514
+  },
+  "judgment_pre_vs_lockbox": {
+    "sr_ratio_lb_over_pre": 5.54,
+    "mdd_lb_minus_pre_pp": 0.425,
+    "interpretation": "Lockbox period (frozen weights) shows DRAMATICALLY different risk-return profile vs Pre-LB walk-forward. Pre-LB MDD 59.7% > 45% hurdle FAIL, but Lockbox MDD 17.2% << 45% hurdle PASS. SR ratio 5.54x (1.92 / 0.35). This is highly unusual — typical regime structure breaks point to: (a) overfitting on Pre-LB (less likely given walk-forward), (b) regime shift post-2023 favorable to defense+quality+value+consensus mix, (c) lucky 28-month window. The Pre-LB MDD COVID-2020 event (-60% trough 2020-03-23) is the operative hurdle violation."
+  },
+  "hurdle_gate_lockbox": {
+    "threshold": -0.45,
+    "realized_lockbox_mdd": -0.1724,
+    "status": "PASS_LOCKBOX",
+    "note": "Lockbox MDD < hurdle threshold. However, Pre-LB MDD (which is the OFFICIAL backtest window per Forge) is FAIL."
+  },
+  "judge_disposition": {
+    "primary_basis": "Pre-LB walk-forward backtest is the OFFICIAL hurdle measurement window (2016-2024 8-year). Lockbox is forward-looking validation, not historical hurdle test.",
+    "rationale": "Hurdle Gate (45% MDD) applies to the official backtest window. The strategy realized 59.7% MDD during 2018-02-2020-03 (COVID era). Lockbox 28-month favorable period cannot override the historical hurdle violation. Judge must judge on full historical record."
+  },
+  "audit_timestamp": "2026-05-27T22:58:05+0900"
+}

@@ -14,7 +14,7 @@ suppressPackageStartupMessages({
 })
 
 # ── 1. 경로 설정 (normalizePath 금지) ────────────────────────────────────────
-PROJECT_ROOT  <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+PROJECT_ROOT  <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 CACHE_DIR     <- file.path(PROJECT_ROOT, ".cache")
 INV_DIR       <- file.path(CACHE_DIR, "investor_stock")
 FDB_DIR       <- file.path(CACHE_DIR, "factor_db")          # 월간 (월별 z-score)

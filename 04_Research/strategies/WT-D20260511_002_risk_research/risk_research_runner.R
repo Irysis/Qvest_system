@@ -13,7 +13,7 @@ suppressPackageStartupMessages({
   library(corpcor)
 })
 
-PROJ <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+PROJ <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 WT_ID <- "WT-D20260511_002"
 STAGE_DIR <- file.path(PROJ, "stage_artifacts", paste0("WT_", gsub("-", "_", WT_ID) |> sub("WT_D", "WT_D", x = _)))
 # Normalize: stage_artifacts/WT_D20260511_002

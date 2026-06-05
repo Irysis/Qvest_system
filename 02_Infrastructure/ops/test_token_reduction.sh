@@ -10,7 +10,7 @@
 #==============================================================================
 
 set -u
-DIR=$(ls -d /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1)
+DIR=$(ls -d /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1)
 if [ -z "$DIR" ]; then echo "ERROR: project dir not found"; exit 1; fi
 cd "$DIR"
 

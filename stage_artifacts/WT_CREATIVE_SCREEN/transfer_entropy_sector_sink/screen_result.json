@@ -1,0 +1,46 @@
+{
+  "idea": "Transfer-Entropy sector information-propagation SINK: within-sector pairwise TE(j->i) on tercile-discretized daily returns (rolling 90d) -> net_TE_inflow_i = sum_j TE(j->i) - sum_j TE(i->j). High net inflow = info-sink (absorbs late) hypothesized short-term drift.",
+  "estimator": "k=1 history, lag-1 source transfer entropy (NQ=3 tercile bins, within-window contingency + eps Laplace smoothing, log2). NOT continuous KSG; cheap-test on 2 largest sectors only.",
+  "data_feasible": true,
+  "universe": "KOSPI200 union KOSDAQ150 (K200==1|KQ150==1), liq20(t-1)>=2e8; cheap-test sectors = 반도체(~34)+화학(~25)",
+  "te_window_days": 90,
+  "horizon_days": 21,
+  "n_quantiles": 3,
+  "lockbox_cutoff": "2023-12-22",
+  "n_sig_dates_signal": 388,
+  "n_sig_dates_ic": 383,
+  "n_obs_panel": 11812,
+  "rank_ic": -0.00269,
+  "icir": -0.01358,
+  "naive_t": -0.26577,
+  "harvey_t_rankic_NW": -0.235,
+  "nw_lag": 5,
+  "subperiod": {
+    "h1_ic": -0.01538,
+    "h2_ic": 0.00992,
+    "min_over_mean": 3.6379,
+    "yearly_sign_consistency": 0.5312
+  },
+  "orthogonality": {
+    "controls": ["M24_Sector_Rel_Mom", "L19_Price_Delay", "CR07_Momentum_Crowding"],
+    "method": "cross-sectional OLS residualization of net_TE_inflow on controls, then forward Rank-IC of residual (incremental/partial IC)",
+    "n_resid_dates": 382,
+    "residual_rank_ic": -0.00274,
+    "residual_icir": -0.01439,
+    "residual_harvey_t": -0.251,
+    "retention_ratio": 1.0184,
+    "spearman_corr": {
+      "M24_Sector_Rel_Mom": 0.0177,
+      "L19_Price_Delay": -0.0263,
+      "CR07_Momentum_Crowding": -0.0135
+    },
+    "control_raw_ic": {
+      "M24_Sector_Rel_Mom": 0.00178,
+      "L19_Price_Delay": 0.01724,
+      "CR07_Momentum_Crowding": -0.00503
+    }
+  },
+  "pit_notes": "TE features Date<sig_date strict (C2); within-window tercile bins (no full-sample). forward label = H-day fwd via cs[t+H]-cs[t] (shift n=-H type=lag, FORWARD per data_table_shift_convention). lockbox<=2023-12-22 strict (regular research). controls Z_Score via factor DB (Usable_Date<=sig_date by construction of monthly snapshot).",
+  "caveat": "rank-IC is SCREEN/advisory ONLY, NOT tradeable alpha (Cycle2: rank-IC t >> portfolio-alpha t). cheap-test 2 sectors. Pass => recommend formal canonical_screen_bt + forge + full-universe TE.",
+  "generated": "2026-05-30 08:17:57.156495"
+}

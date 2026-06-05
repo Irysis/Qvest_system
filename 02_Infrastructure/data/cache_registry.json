@@ -40,11 +40,12 @@
       "path": ".cache/universe.parquet",
       "producer": "02_Infrastructure/data/krx_update_universe.R",
       "entry_fn": "(source)",
-      "schedule": "daily",
-      "date_col": null,
-      "max_lag_days": 7,
+      "schedule": "monthly",
+      "date_col": "Date",
+      "max_lag_days": 35,
       "depends_on": [".cache/RAWDATA.parquet"],
-      "tier": 1
+      "tier": 1,
+      "_note": "universe는 월말 snapshot만 추가 — krx_update_universe()가 'No new month-ends' 시 skip. 2026-05-24 도훈 audit: schedule=daily mislabel 정정 (lag false-CRITICAL)"
     },
     {
       "path": ".cache/trading_calendar.parquet",
@@ -174,9 +175,10 @@
       "entry_fn": "dart_daily_incremental",
       "schedule": "daily",
       "date_col": "Date",
-      "max_lag_days": 4,
+      "max_lag_days": 90,
       "depends_on": [".cache/dart/corpcode_map.parquet"],
-      "tier": 2
+      "tier": 2,
+      "_note": "DART insider 공시는 비정기 filing (분기 또는 그 이상 gap 가능). 2026-05-24 audit: max_lag 4 → 90 정정 (data refresh OK but upstream filing 빈도 의존). daily_refresh.sh가 매일 fetch 시도하나 새 filing 없으면 max Date 정체"
     },
     {
       "path": ".cache/fundamental_dart.parquet",
@@ -212,24 +214,25 @@
     },
     {
       "path": ".cache/kr_factor_returns.parquet",
-      "producer": "02_Infrastructure/factor_db/factor_db_builder.R",
-      "entry_fn": "(orchestrated)",
+      "producer": "04_Research/worktask_scratch/WT-D20260425_009/step0_kr_ff5_backfill.R",
+      "entry_fn": "(source — writes v2)",
       "schedule": "monthly",
       "date_col": "Date",
-      "max_lag_days": 35,
+      "max_lag_days": 180,
       "depends_on": [".cache/RAWDATA.parquet", ".cache/fundamental_merged.parquet"],
-      "tier": 3
+      "tier": 3,
+      "_note": "FF5 v1 (legacy) + v2 (active, kr_factor_returns_v2.parquet). PIT lag: 연결산 5월 적용 → 항상 ~5개월 behind. 2026-05-24 도훈 audit: max_lag 35 → 180 정정 (PIT 정합)"
     },
     {
       "path": ".cache/flow_features_daily.parquet",
-      "producer": "04_Research/flow_concentration_ml/build_flow_features.R",
+      "producer": "04_Research/strategies/flow_concentration_ml/01_flow_features.R",
       "entry_fn": "(source)",
       "schedule": "weekly",
       "date_col": "Date",
-      "max_lag_days": 14,
-      "depends_on": [".cache/investor/"],
+      "max_lag_days": 90,
+      "depends_on": [".cache/investor_stock/"],
       "tier": 3,
-      "_note": "도훈 audit — research output, weekly catch-up"
+      "_note": "도훈 audit — research output, weekly catch-up. investor_stock source data ~60d lag = max_lag 14 → 90 (2026-05-24 정정)"
     }
   ]
 }

@@ -39,7 +39,7 @@ suppressPackageStartupMessages({
   error = function(e) {
     if (exists("FUNC_PATH")) file.path(FUNC_PATH, "factor_db")
     else file.path(
-      "/mnt/c/Users/User/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot",
+      Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")),
       "02_Infrastructure", "factor_db"
     )
   }

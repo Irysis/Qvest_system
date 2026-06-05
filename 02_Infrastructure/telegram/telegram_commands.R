@@ -10,7 +10,7 @@ suppressPackageStartupMessages({
 })
 
 PROJECT_ROOT <- Sys.getenv("QEPM_PROJECT_ROOT",
-  "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot")
+  Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")))
 
 source(file.path(PROJECT_ROOT, "02_Infrastructure", "config.R"))
 source(file.path(PROJECT_ROOT, "02_Infrastructure", "telegram", "telegram_notify.R"))

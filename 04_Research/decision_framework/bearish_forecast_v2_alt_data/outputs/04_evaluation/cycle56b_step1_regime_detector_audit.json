@@ -1,0 +1,41 @@
+{
+  "cycle": "56B_step1_regime_detector",
+  "source_panel": "05_Production/.../alpha_scores_r05_panel.parquet",
+  "n_sig_dates": 268,
+  "sig_date_range": {
+    "start": "2004-01-01",
+    "end": "2026-04-01"
+  },
+  "regime_distribution_sig_date": {
+    "BULL": 92,
+    "CAUTION": 15,
+    "CRISIS": 3,
+    "NORMAL": 158
+  },
+  "n_daily_dates_total": 8955,
+  "n_daily_dates_na": 3427,
+  "n_daily_dates_assigned": 5528,
+  "regime_distribution_daily": {
+    "BULL": 1896,
+    "CAUTION": 313,
+    "CRISIS": 62,
+    "NORMAL": 3257
+  },
+  "lag1_violation_count": 0,
+  "pit_compliance": {
+    "lag_strategy": "sig_date_used strictly < Date (t-1 enforced via Date_join = sig_date + 1)",
+    "inherit_pit": "Production regime_state already t-1 lagged in R05 overlay",
+    "additional_lag": "+1 day enforced in roll join"
+  },
+  "per_period_distribution": {
+    "period": ["S2018-19", "S2020-21", "S2022-24"],
+    "BULL": [61, 129, 21],
+    "CAUTION": [63, 43, 125],
+    "CRISIS": [0, 0, 19],
+    "NORMAL": [366, 324, 570]
+  },
+  "output_files": {
+    "daily_parquet": "outputs/01_data/regime_daily_lag1.parquet",
+    "sig_csv": "outputs/01_data/regime_monthly_sig.csv"
+  }
+}

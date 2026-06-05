@@ -21,7 +21,7 @@ cat("PIT C1 강제: 모든 PCA/K-means는 t-1까지 expanding window 사용\n\n"
 ## ---------------------------------------------------------------------------
 ## 0. 환경 설정
 ## ---------------------------------------------------------------------------
-PROJECT_ROOT <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+PROJECT_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 CACHE_DIR    <- file.path(PROJECT_ROOT, ".cache")
 OUT_DIR      <- file.path(PROJECT_ROOT, "04_Research/strategies/meta_learning/output")
 

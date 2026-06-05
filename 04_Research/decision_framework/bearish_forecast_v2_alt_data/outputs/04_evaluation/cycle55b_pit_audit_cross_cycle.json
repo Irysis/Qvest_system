@@ -1,0 +1,35 @@
+{
+  "panel_inheritance": {
+    "verdict": "RED",
+    "description": "All cycles 47B+ (v3f_us_macro, v4a_combined, v5f_ecos_kr, 53I, 54A/E, 55A, 56B, 56D) inherit feature_panel_v3f_us_macro.parquet (or derivatives), which contains: (a) us_t10y2y_spread_lag1 — GREEN (daily release); (b) us_initial_claims_4w_avg_lag1 — RED (4-5 day lookahead via ICSA Sat dating); (c) us_cfnai_lag1 — RED (~22 day lookahead via month-end dating); (d) us_stlfsi_lag1 — GREEN (Fri ~01:00 KST next-day). All cycles using these features in 5way ensembles inherit the 2 RED columns' lookahead.",
+    "recommendation": "Patch 96_5way_retrain_v3f_us_macro.R lines 73,78,82 with explicit publication-lag shifts: icsa[, Date := Date + 5L] before LOCF; cfnai[, Date := Date + 25L] before LOCF. Rebuild v3f / v4a / v5f panels; re-run downstream cycles for comparison."
+  },
+  "cycle56D_FFT_leak_status": {
+    "verdict": "FIXED",
+    "description": "Cycle 56D-Batch2 FedFormer batch composition leak already identified and fixed."
+  },
+  "cycle56B_label_time_leak_status": {
+    "verdict": "FIXED",
+    "description": "Cycle 56B label-time CV leak identified; fix pending verification."
+  },
+  "sequence_padding_LSTM_TFT": {
+    "verdict": "GREEN",
+    "description": "make_sequences pattern uses past+current causal window. Verified in 100/111/127."
+  },
+  "fedformer_fft_batch_invariance": {
+    "verdict": "FIXED",
+    "description": "Cycle 56D-Batch2 patch (per task description)."
+  },
+  "mamba_causal_scan": {
+    "verdict": "GREEN_PROVISIONAL",
+    "description": "Mamba SSM uses left-to-right scan by design (causal). No specific bug identified."
+  },
+  "informer_probsparse": {
+    "verdict": "GREEN_PROVISIONAL",
+    "description": "ProbSparse attention computed over input window only. No specific bug identified."
+  },
+  "timesnet_fft_amp": {
+    "verdict": "GREEN_PROVISIONAL",
+    "description": "TimesNet FFT over input window (not labels). No specific bug identified. AMP autocast is float16/bf16 numerical concern only — not PIT."
+  }
+}

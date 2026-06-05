@@ -1,0 +1,43 @@
+{
+  "pg2_admit": "STR_1715_AR_on_M4_R05_overlay_PG2",
+  "pg2_book_state": "v2.3",
+  "pg2_layers": [
+    "Layer 1+2: STR_1715 alpha (4F Consensus)",
+    "Layer 3: M4 BOCPD regime trigger",
+    "Layer 4: AR threshold overlay",
+    "Layer 5: R05 Tail-Risk overlay (new 2026-05-13)"
+  ],
+  "bear_sensor_role": "Layer 6 candidate — scalar β_bear ∈ [0.3, 1.0] multiplicative",
+  "m4_overlap_table": {
+    "bear_0_m4_normal": 227,
+    "bear_0_m4_caution": 10,
+    "bear_1_m4_normal": 23,
+    "bear_1_m4_caution": 8,
+    "total_n": 268
+  },
+  "m4_agreement_count": 235,
+  "m4_agreement_rate": 0.8769,
+  "cor_bear_signal_with_alpha_top20": -0.1363,
+  "cor_bear_signal_with_BM_Ret": 0.0813,
+  "monthly_BM_when_bear_hit": 0.0247,
+  "monthly_BM_when_bull": 0.0109,
+  "bear_vs_bull_return_spread": 0.0138,
+  "interpretation": "Bear sensor v2.0 (44 features, 4-axis calibration) measures market-level downturn risk. M4 BOCPD measures cross-sectional regime change. Low cor with alpha_top20 (cross-sectional signal) is desired (orthogonality); high cor with BM_Ret (mechanical) is expected.",
+  "orthogonality_with_PG2_alpha": {
+    "threshold_target": 0.4,
+    "actual_abs_cor": 0.1363,
+    "status": "ORTHOGONAL_PASS"
+  },
+  "redundancy_with_M4_overlay": {
+    "target_max_agreement_rate": 0.85,
+    "actual_rate": 0.8769,
+    "status": "REDUNDANT_WARN"
+  },
+  "TDC_with_PG2": {
+    "method": "Joe 1997 empirical TDC (q=0.10 lower quantile)",
+    "TDC_lower_bear_alpha": 0.0769,
+    "TDC_upper_bear_alpha": 0.0385,
+    "bear_to_m4_crisis_conditional_prob": 0.3143,
+    "interpretation": "TDC_lower=0.077 → bear signal & PG2 alpha extreme-bad joint prob. TDC interpretation: 0=independence, 1=perfect joint extreme. Low values desired (orthogonality at tails)."
+  }
+}

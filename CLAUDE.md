@@ -23,13 +23,17 @@
 
 ---
 
-## Active Path (v7.2.1, lifecycle은 v6.4와 동일)
+## Active Modes (3-Mode — 각자 평가·자가발전, 도훈 mandate 2026-06-05)
 
+Qvest = 독립 리서치 모드 3개 (lifecycle ①②생산 → ③소비; 진입점은 아래 `## Active Entrypoints`).
+**각 모드 = 자기 평가체계 + 자기 자가발전** (L-code → mode-local axiom `AX-<MODE>-*`, `.claude/rules/axiom-engine.md` v8.0 E2E 검증). **평가체계(산출물 채점)는 모드별 자율 — 통일 금지.** 공유하는 건 *평가가 아니라 토대*: ① 정직 라벨 (`metric_type` proxy/backtested) ② 자본 게이트 (`book_state` = governor 수동+도훈) ③ **교차검증 global 공리** (자가발전 결과 중 backtested + r7 5축 + AX-008 + 도훈 confirm 통과분만 `AX-NNN`; 공유 *사실*이지 평가 통일 아님 — proxy·한 모드 loose 평가는 INV-1로 global 차단). SOT: `02_Infrastructure/docs/qvest_modes_sot.md`.
+
+**① QEPM 모드 경로** (신호-only 알파 정밀 검증·편입):
 ```
 WorkTask → alpha-research → risk-research → optimizer-research → forge → judge → governor
 ```
-
 각 agent spawn 시 **v6.0 Codex Critic Round 의무** (5단계 흐름, `_draft → codex → challenge_note → final`).
+**② alpha-search · ③ factor-rotation**: 각자 경량 경로 (각 skill + `## Active Entrypoints`).
 
 ---
 

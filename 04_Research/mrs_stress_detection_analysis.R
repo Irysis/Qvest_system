@@ -11,7 +11,7 @@ suppressPackageStartupMessages({
   library(arrow)
 })
 
-PROJECT_ROOT <- "/mnt/c/Users/User/OneDrive/\xeb\xb0\x94\xed\x83\x95 \xed\x99\x94\xeb\xa9\xb4/Quant_Module_Moltbot"
+PROJECT_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 CACHE_DIR    <- file.path(PROJECT_ROOT, ".cache")
 REGIME_DAILY_CACHE <- file.path(CACHE_DIR, "regime_daily_v2.parquet")
 BM_CACHE     <- file.path(CACHE_DIR, "benchmark.parquet")

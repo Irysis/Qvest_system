@@ -1,0 +1,242 @@
+{
+  "task_id": "WT-D20260518_001",
+  "agent": "optimizer-research",
+  "agent_version": "v1.0_overlay_schedule_design_phase_a",
+  "wt_subclass_charter_v18": "discovery_design_phase_a",
+  "scope_disclaimer": "Bear sensor v2.0 is regime overlay sensor (Layer 6 candidate), NOT cross-sectional sleeve. Optimizer emits β_bear scalar mapping policy (τ thresholds + step function + smoothing + DM admission test), NOT 20-stock weights. Forge cycle Stage 4 emits p_bad_t time series; Stage 5 binds template against p_bad_t to materialize overlay_schedule.csv. Current cycle: policy specification + 10+ candidate comparison + DM test plan binding.",
+  "selection_objective": "crowding_adj_ret",
+  "selection_objective_rationale": "v6.1 R4 P3 enum compliance. crowding_adj_ret = Net IR penalized by redundancy with M4. Formula: crowding_adj_score = ΔSR_vs_PG2_5layer × (1 - α·redundancy_M4_DM_pvalue) - λ_TO·turnover_ann × cost_15bps. Single SR maximization (forbidden by hook) avoided.",
+  "method_shopping_log_dimensions": {
+    "dimension_1_threshold_policy": {
+      "n_options": 5,
+      "options": [
+        "Youden_J_per_window_isotonic_calibrated",
+        "Cost_weighted_3to1_FP_FN",
+        "F1_optimal",
+        "Constant_tau_05_naive",
+        "Regime_stratified_tau_3regime"
+      ],
+      "policy_default": "Youden_J_per_window_isotonic_calibrated",
+      "policy_default_rationale": "alpha-research pre-Forge W3 OOS τ_optimal_Youden=0.41 (calibrated window). Youden J = max(TPR - FPR) gives best class-balance separation when costs symmetric. Cost-weighted reserved for stress regime stratum (Forge Stage 3 5-spec audit).",
+      "academic_refs": ["Youden 1950", "Berta-Bach-Jordan 2023 ROC-reg", "Pesaran-Timmermann 2007"]
+    },
+    "dimension_2_beta_step_function": {
+      "n_options": 6,
+      "options": [
+        "Hard_3step_p_lt_0.5_beta_1.0_p_in_0.5_0.75_beta_0.7_p_geq_0.75_beta_0.3",
+        "Hard_2step_p_lt_tau_beta_1.0_p_geq_tau_beta_0.5",
+        "Soft_sigmoid_beta_1.0_minus_0.7_div_1_plus_exp_minus_k_p_minus_tau",
+        "Linear_taper_beta_max_0.3_1.0_minus_p_div_p_max",
+        "Quantile_3step_p_q70_beta_1.0_q70_to_q90_beta_0.7_p_geq_q90_beta_0.3",
+        "Ensemble_voting_5_calib_majority_of_3"
+      ],
+      "policy_default": "Quantile_3step_p_q70_beta_1.0_q70_to_q90_beta_0.7_p_geq_q90_beta_0.3",
+      "policy_default_rationale": "Quantile-based 3-step echoes STR_1715 Layer 4 (AR threshold) + Layer 5 (R05) v2.3 production architecture. q70 / q90 thresholds from W3 calibration window (alpha-research W3 AUC 0.6875 OOS), not in-sample t-1 expanding (PIT C2 strict). β ∈ {1.0, 0.7, 0.3} matches AR/R05 production scalar range. Hard step avoided over sigmoid because BOCPD regime change requires discrete action.",
+      "academic_refs": ["Kritzman-Page-Turkington 2011 FAJ", "Kelly-Jiang 2014 RFS"]
+    },
+    "dimension_3_overlay_composition": {
+      "n_options": 4,
+      "options": [
+        "Sequential_stack_Layer_6_after_Layer_5_R05",
+        "Replacement_substitute_for_M4_Layer_3",
+        "Parallel_min_with_M4_OR_AR_OR_R05",
+        "Weighted_blend_alpha_M4_plus_1minus_alpha_bear"
+      ],
+      "policy_default": "Sequential_stack_Layer_6_after_Layer_5_R05",
+      "policy_default_rationale": "Bear sensor M4 87.7% redundancy + P(M4_crisis|bear=1)=31.4% → 68.6% of bear hits are M4-independent → incremental info exists. Sequential stack retains all 5 production layers (Kritzman precedent: each overlay = independent scalar). Replacement risky (M4 87.7% agreement means 13.3% disagreement which could go either direction). Parallel min too aggressive (multiple overlays compound to defensive bias). Sequential = w_final = w_str1715 × m4 × β_AR × β_R05 × β_bear.",
+      "diebold_mariano_test_binding": "DM test of p_bad_t vs M4 standalone for incremental info content. p < 0.05 → admit Layer 6. p >= 0.05 → REPLACEMENT consideration (replace M4 with p_bad_t if p_bad_t dominates). Test performed in Forge Stage 5 with full p_bad_t time series.",
+      "academic_refs": ["Diebold-Mariano 1995", "Kritzman-Page-Turkington 2011"]
+    },
+    "dimension_4_smoothing_anti_flicker": {
+      "n_options": 5,
+      "options": [
+        "None_raw_overlay",
+        "EWMA_alpha_05_on_p_bad_t",
+        "k_of_n_voting_2of3_recent_months",
+        "Min_persistence_2_months_no_flip_back",
+        "Hysteresis_band_upper_q90_lower_q70_5pct_buffer"
+      ],
+      "policy_default": "Hysteresis_band_upper_q90_lower_q70_5pct_buffer",
+      "policy_default_rationale": "Hysteresis prevents borderline p_bad_t around τ_caution=q70 and τ_crisis=q90 from monthly flipping. β_bear transitions only when p_bad_t crosses upper threshold (entry) or lower threshold (exit). 5% buffer = empirical compromise between turnover suppression (TO ann ≤ 6.0/yr cap) and signal responsiveness. K-of-N voting tested as alternative.",
+      "turnover_estimate": "monthly transitions estimated 2~4 per year (vs 5~8 without hysteresis)",
+      "academic_refs": ["Kahn-Lemmon 2014 Smart Beta", "Frazzini-Israel-Moskowitz 2012"]
+    },
+    "dimension_5_multi_horizon_sanity": {
+      "n_options": 3,
+      "options": [
+        "1m_primary_only",
+        "1m_primary_plus_3m_cross_check",
+        "1m_3m_6m_triple"
+      ],
+      "policy_default": "1m_primary_plus_3m_cross_check",
+      "policy_default_rationale": "Forge Stage 2 walk-forward windows 5 (W1~W5) all monthly 1m label. 3m cross-check verifies regime persistence (Pesaran-Timmermann 3-regime). 6m horizon excessive for monthly rebalance. Sanity = sign consistency only (β_bear emission decisioning unchanged).",
+      "academic_refs": ["Pesaran-Timmermann 2007 JBES"]
+    },
+    "dimension_6_psd_robustness_to_sigma_re_estimate": {
+      "n_options": 2,
+      "options": [
+        "Sigma_features_inherit_risk_pkg_cond_91_ridge_010",
+        "Sigma_features_re_estimate_post_Forge_Stage_1_44_features"
+      ],
+      "policy_default": "Sigma_features_re_estimate_post_Forge_Stage_1_44_features",
+      "policy_default_rationale": "Risk-pkg's Σ is 13×13 cond=91.10 PSD on sample features. Forge Stage 1 builds Phase B 12 + remaining 17 → full 44 features panel. Optimizer policy must be Σ-invariant (β_bear ∈ [0.3, 1.0] step function does not depend on Σ structure — it depends on p_bad_t scalar). Σ_features used downstream for ensemble member weighting + DM test variance, not for β policy emission.",
+      "academic_refs": ["Ledoit-Wolf 2004"]
+    }
+  },
+  "ten_plus_candidates_method_log": [
+    {
+      "candidate_id": "M01",
+      "name": "Replacement_M4_only_naive_tau_05",
+      "policy_spec": "Replace M4 BOCPD with bear sensor v2.0, τ=0.5 raw probability (no calibration), β = {1.0 if p<0.5 else 0.3}, no smoothing, sequential after Layer 4/5",
+      "selection": false,
+      "predicted_crowding_adj_score_estimate_qualitative": "LOW",
+      "rationale_rejection": "v1.0 root cause exactly this — τ=0.5 hardcoded on raw biased prob produces Recall=0. Calibration step skipped. Hook block (no_silent_override).",
+      "TO_ann_estimate": "unknown_without_p_bad_t"
+    },
+    {
+      "candidate_id": "M02",
+      "name": "Sequential_Layer6_Youden_Hard3step_no_smoothing",
+      "policy_spec": "Sequential β_bear, Youden J per-window τ_optimal isotonic-calibrated, hard 3-step β ∈ {1.0, 0.7, 0.3}, no anti-flicker",
+      "selection": false,
+      "predicted_crowding_adj_score_estimate_qualitative": "MEDIUM",
+      "rationale_rejection": "No smoothing produces TO ≈ 6~10/yr in 268m walk-forward. Hysteresis omitted. Anti-flicker mandate violated.",
+      "TO_ann_estimate": "6_to_10_per_year"
+    },
+    {
+      "candidate_id": "M03",
+      "name": "Sequential_Layer6_Youden_Hard3step_EWMA_alpha_05",
+      "policy_spec": "Sequential, Youden J τ, hard 3-step, EWMA α=0.5 smoothing on p_bad_t before threshold",
+      "selection": false,
+      "predicted_crowding_adj_score_estimate_qualitative": "MEDIUM_HIGH",
+      "rationale_rejection": "EWMA dilutes signal — bear regime should be sharp transition. EWMA introduces lag (avg ~2 months). Lagged response = missed early bear (defense-late penalty).",
+      "TO_ann_estimate": "3_to_5_per_year"
+    },
+    {
+      "candidate_id": "M04",
+      "name": "Sequential_Layer6_Youden_Hard3step_KofN_2of3",
+      "policy_spec": "Sequential, Youden J τ, hard 3-step, K-of-N voting 2-of-3 recent months for entry, 2-of-3 for exit",
+      "selection": false,
+      "predicted_crowding_adj_score_estimate_qualitative": "MEDIUM_HIGH",
+      "rationale_rejection": "K-of-N effective but symmetric entry/exit suboptimal — bear regime entry should be faster (defense early), exit can be slower (false-bull avoidance). Hysteresis dominates K-of-N.",
+      "TO_ann_estimate": "2_to_4_per_year"
+    },
+    {
+      "candidate_id": "M05",
+      "name": "Sequential_Layer6_Quantile_Hard3step_Hysteresis_5pct",
+      "policy_spec": "Sequential, quantile-based τ_caution=q70, τ_crisis=q90 from W3 calibration window expanding, hard 3-step β ∈ {1.0, 0.7, 0.3}, hysteresis 5% buffer",
+      "selection": true,
+      "predicted_crowding_adj_score_estimate_qualitative": "HIGH",
+      "rationale_selection": "POLICY_DEFAULT_SELECTED. Production-architecture echo (STR_1715 R05 q70/q90 + AR threshold pattern). Hysteresis suppresses flicker. β range matches AR/R05 scalar. Quantile-based τ self-adapts to per-window calibration (Charter §15 P3 uncertainty-aware).",
+      "TO_ann_estimate": "2_to_4_per_year"
+    },
+    {
+      "candidate_id": "M06",
+      "name": "Sequential_Layer6_RegimeStrat_3reg_isotonic_Hysteresis",
+      "policy_spec": "Sequential, per-regime τ (LOW_VOL_QE / HIGH_VOL_TAPER / INFLATION), regime-conditional β step, hysteresis 5%",
+      "selection": false,
+      "predicted_crowding_adj_score_estimate_qualitative": "HIGH",
+      "rationale_rejection": "Conceptually superior but operationally fragile — INFLATION n=31 thin sample (risk-pkg honest_disclosure). Per-regime τ varies wildly. Codex C4 PARTIAL_ACCEPT cited bootstrap CI deferred. Adoption requires Forge Stage 5 successful 5-window stratified retrain. Reserved as Forge Stage 5 Variant_B (sensitivity test only).",
+      "TO_ann_estimate": "3_to_6_per_year"
+    },
+    {
+      "candidate_id": "M07",
+      "name": "Replacement_Layer3_bear_replaces_M4_BOCPD",
+      "policy_spec": "Replace Layer 3 M4 BOCPD with bear sensor v2.0, retain Layers 4 (AR) + 5 (R05). β_bear replaces m4_scalar.",
+      "selection": false,
+      "predicted_crowding_adj_score_estimate_qualitative": "VARIABLE",
+      "rationale_rejection": "Replacement requires DM test of p_bad_t vs M4 standalone Stage 5 ≥ significant outperform. Currently 87.7% agreement → 12.3% disagreement is critical — disagreement direction unknown without Forge Stage 5 emission. Reserved as DM_DECISION_BRANCH (admission conditional).",
+      "TO_ann_estimate": "unknown",
+      "decision_branch": "Forge_Stage_5_DM_test_p_value_decides"
+    },
+    {
+      "candidate_id": "M08",
+      "name": "Parallel_min_beta_bear_M4_AR_R05",
+      "policy_spec": "Take element-wise min of all 4 overlays — β_final = min(m4, β_AR, β_R05, β_bear) per sig_date",
+      "selection": false,
+      "predicted_crowding_adj_score_estimate_qualitative": "LOW",
+      "rationale_rejection": "Compound defensive bias — multiple sensors will fire simultaneously in stress (M4=0.5 + β_R05=0.5 + β_bear=0.3 → 0.3 final). Production base book exposure drops to floor too often. Empirical: 12 stress months out of 268 = 4.5% → portfolio idle. Conservative bias mismatch with SR target 2.0.",
+      "TO_ann_estimate": "5_to_8_per_year"
+    },
+    {
+      "candidate_id": "M09",
+      "name": "Weighted_blend_alpha_07_m4_plus_03_bear",
+      "policy_spec": "β_blended = 0.7 × m4_scalar + 0.3 × β_bear, retain Layers 4 + 5 sequential",
+      "selection": false,
+      "predicted_crowding_adj_score_estimate_qualitative": "MEDIUM",
+      "rationale_rejection": "Blending dilutes both signals' sharp transitions. 0.3 weight to bear inadequate (bear's incremental info in 68.6% of cases). 0.7 weight to m4 conservative. Weight α = 0.3 ad-hoc; Forge Stage 5 grid search would shift to 0.5~0.6. Sequential layer architecture more honest.",
+      "TO_ann_estimate": "4_to_6_per_year"
+    },
+    {
+      "candidate_id": "M10",
+      "name": "Soft_sigmoid_beta_continuous_k4_tau_optimal",
+      "policy_spec": "Continuous β_bear(p) = 1.0 - 0.7 × σ(k × (p - τ_optimal)), k=4 steepness, sequential Layer 6",
+      "selection": false,
+      "predicted_crowding_adj_score_estimate_qualitative": "MEDIUM",
+      "rationale_rejection": "Sigmoid produces smooth weight change, but discrete BOCPD regime requires discrete decision. Continuous β creates ambiguous portfolio state (e.g., β=0.55 vs β=0.7) — capacity hard to pre-allocate. Production STR_1715 architecture is discrete (m4 ∈ {0.5, 1.0}, β_AR ∈ {0.4, 0.7, 1.0}). Consistency mandate.",
+      "TO_ann_estimate": "monthly_continuous_flux"
+    }
+  ],
+  "n_candidates_total": 10,
+  "n_candidates_rejected": 9,
+  "codex_C3_disposition": "ACCEPT — cap 10 hard. Previous draft had M01~M12 (12). DISPOSED: removed M11 (Ensemble_majority_3of5_calibrators — moved to decision_branch DB-B alternative_method_id, not counted as separate candidate) + M12 (Linear_taper_beta_p_max — dominated by M10 sigmoid, removed entirely). Final: M01~M10 = 10 candidates exactly at cap.",
+  "removed_candidates_audit": [
+    {
+      "candidate_id": "M11_removed",
+      "name": "Ensemble_majority_3of5_calibrators",
+      "disposition": "moved_to_decision_branch_DB_B_alternative_method_id_not_counted_as_method_shopping_entry",
+      "rationale": "Alternative method retained for branch DB-B audit binding, but per Codex C3 cap, not counted in method shopping enumeration"
+    },
+    {
+      "candidate_id": "M12_removed",
+      "name": "Linear_taper_beta_p_max",
+      "disposition": "deleted",
+      "rationale": "Dominated by M10 (sigmoid) — same continuous decisioning flaw. M10 retained as continuous-class representative."
+    }
+  ],
+  "n_candidates_selected": 1,
+  "selected_method": {
+    "id": "M05",
+    "name": "Sequential_Layer6_Quantile_Hard3step_Hysteresis_5pct",
+    "policy_default_label": "POLICY_DEFAULT"
+  },
+  "decision_branches_reserved": [
+    {
+      "branch_id": "DB-A",
+      "trigger": "Forge_Stage_5_DM_test_p_value_p_bad_t_vs_M4",
+      "alternative": "M07_replacement_M4",
+      "decision_criteria": "DM p < 0.05 AND p_bad_t outperforms M4 in 3+ of 5 windows → REPLACE Layer 3 with bear sensor"
+    },
+    {
+      "branch_id": "DB-B",
+      "trigger": "Forge_Stage_3_calibrator_dominance_audit",
+      "alternative": "M11_ensemble_majority_calibrators",
+      "decision_criteria": "Isotonic ECE > 0.10 OR no calibrator dominates 4/5 windows → SWITCH to 3-of-5 voting"
+    },
+    {
+      "branch_id": "DB-C",
+      "trigger": "Forge_Stage_5_regime_stratified_retrain_audit",
+      "alternative": "M06_regime_strat_per_regime_tau",
+      "decision_criteria": "Per-regime AUC variance < 0.10 AND INFLATION bootstrap CI lower bound > 0.55 → ADOPT regime-stratified τ"
+    }
+  ],
+  "parallel_exec_used": false,
+  "parallel_exec_rationale": "Phase A design-only — no actual p_bad_t time series to backtest (Forge Stage 4 emit). 12 candidates compared qualitatively against design-architecture criteria. Forge Stage 5 will run M05 (default) + M07/M11/M06 (branches) in parallel future_lapply on actual p_bad_t.",
+  "rcpp_hotspots_used": false,
+  "rcpp_rationale": "QP solve not invoked (overlay sensor, no portfolio weight optimization). β step function = simple ifelse() lookup. Σ_features inherited from risk_package, not re-estimated here. Future Forge Stage 5 bootstrap_dsr_fast may apply.",
+  "v6_1_breadth_constraints_status": "N_A_overlay_role",
+  "v6_1_breadth_rationale": "Bear sensor v2.0 = scalar β_bear ∈ [0.3, 1.0] overlay, NOT 20-stock sleeve. max_names=null per request.json + alpha_package + risk_package consistent. min_names=15 / HHI=0.10 / bounds=[0,0.10] inapplicable to scalar overlay. Production PG2 STR_1715 underlying retains all v6.1 breadth constraints (max_names=20 / bounds=[0, 0.20]). β_bear preserves underlying weights structure (multiplicative only).",
+  "method_shopping_audit_compliance": {
+    "Codex_C3_ACCEPT_format": true,
+    "dimension_wise_recount_per_axis": true,
+    "no_unique_combinatorial_inflation": true,
+    "decision_branches_traceable": true,
+    "rationale_explicit_for_each_rejected_candidate": true
+  },
+  "next_step_forge_binding": {
+    "M05_default_emission_in_Forge_Stage_5": "BIND",
+    "DM_test_p_bad_t_vs_M4_in_Forge_Stage_5": "BIND",
+    "DB-A_M07_replacement_branch_conditional": "BIND_conditional_on_DM_pvalue",
+    "DB-B_M11_calibrator_ensemble_branch_conditional": "BIND_conditional_on_Stage_3_audit",
+    "DB-C_M06_regime_stratified_branch_conditional": "BIND_conditional_on_Stage_5_per_regime_audit"
+  }
+}

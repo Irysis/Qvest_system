@@ -1,0 +1,132 @@
+{
+  "schema_version": "artifact_lineage_v1",
+  "task_id": "WT-D20260528_003",
+  "hypothesis_id": "STR_1725",
+  "hypothesis_suffix": "_C",
+  "agent": "alpha-research",
+  "wt_type": "discovery",
+  "lineage_entries": [
+    {
+      "stage": "alpha_package_draft_C_v1",
+      "timestamp_kst": "2026-05-28T23:14",
+      "script_path": "qepm/mailbox/worktask/WT-D20260528_003/scripts/overnight_C/01_microstructure_alpha.R",
+      "output_paths": [
+        "qepm/mailbox/worktask/WT-D20260528_003/alpha_package_draft_C.json",
+        "stage_artifacts/WT_D20260528_003_overnight_C/alpha_scores.parquet",
+        "stage_artifacts/WT_D20260528_003_overnight_C/alpha_validation.json"
+      ],
+      "input_data": [
+        ".cache/factor_db/factor_db_YYYYMM.parquet (2008-01 ~ 2023-12, 191 sig_dates)",
+        ".cache/factor_db/factor_ic_monthly.parquet",
+        "02_Infrastructure/factor_db/factor_registry.json"
+      ],
+      "method": "Multi-sleeve top 5 per factor × 4 factors = top 20 union (initial implementation, abs(IC) diagnostics)",
+      "issues_discovered": [
+        "alpha_vector serialized as unnamed array (lost Ticker keys)",
+        "intra-sleeve ties (5 stocks same alpha_z)"
+      ]
+    },
+    {
+      "stage": "alpha_package_draft_C_v2",
+      "timestamp_kst": "2026-05-28T23:18",
+      "script_path": "qepm/mailbox/worktask/WT-D20260528_003/scripts/overnight_C/02_alpha_fix_named_ranked.R",
+      "output_paths": [
+        "qepm/mailbox/worktask/WT-D20260528_003/alpha_package_draft_C.json (overwrite)",
+        "stage_artifacts/WT_D20260528_003_overnight_C/alpha_scores.parquet (overwrite)"
+      ],
+      "method": "Named alpha_vector list + additive sleeve_score composite",
+      "issues_discovered": [
+        "intra-sleeve ties persist (winsorize cap saturates top 5)"
+      ]
+    },
+    {
+      "stage": "alpha_package_draft_C_v3",
+      "timestamp_kst": "2026-05-28T23:22",
+      "script_path": "qepm/mailbox/worktask/WT-D20260528_003/scripts/overnight_C/03_alpha_rank_alpha.R",
+      "output_paths": [
+        "qepm/mailbox/worktask/WT-D20260528_003/alpha_package_draft_C.json (overwrite)",
+        "stage_artifacts/WT_D20260528_003_overnight_C/alpha_scores.parquet (overwrite)"
+      ],
+      "method": "Rank-based sleeve_score using ic_sign × Raw_Value (resolves ties)",
+      "issues_discovered": [
+        "C13 violation: Raw_Value ranking outside Z_Score_Aligned surface (per Codex C4)"
+      ]
+    },
+    {
+      "stage": "codex_critic_round_alpha_C",
+      "timestamp_kst": "2026-05-28T23:24",
+      "input_package": "qepm/mailbox/worktask/WT-D20260528_003/alpha_package_draft_C.json (v3)",
+      "output_path": "qepm/mailbox/worktask/WT-D20260528_003/codex_critic_response_alpha_C.json",
+      "audit_log": "/tmp/codex_qepm_critic_WT-D20260528_003_alpha_1779977952.log",
+      "codex_model": "gpt-5.5 (xhigh reasoning effort)",
+      "codex_stance": "REJECT",
+      "critical_concerns_count": 7,
+      "high_severity_count": 5,
+      "rationalization_red_flags_count": 6
+    },
+    {
+      "stage": "challenge_note_C",
+      "timestamp_kst": "2026-05-28T23:32",
+      "output_path": "qepm/mailbox/worktask/WT-D20260528_003/challenge_note_C.md",
+      "resolution_summary": "ACCEPT: 4 (C1, C2, C3, C5) | PARTIAL: 3 (C4, C6, C7) | REBUTTAL: 0",
+      "triangulation_evidence": "학술 5 / L-code 6 / 정량 7 (각 concern별)",
+      "self_rationalization_grep": "PASS (회피 표현 0 hits)",
+      "q_lead_escalate_triggers": "ALL CLEAR (high <5, ax_fail <3, no PIT C1, no all-REBUTTAL)"
+    },
+    {
+      "stage": "alpha_package_draft_C_v4",
+      "timestamp_kst": "2026-05-28T23:35",
+      "script_path": "qepm/mailbox/worktask/WT-D20260528_003/scripts/overnight_C/05_alpha_v4_final.R",
+      "output_paths": [
+        "qepm/mailbox/worktask/WT-D20260528_003/alpha_package_draft_C.json (overwrite final)",
+        "stage_artifacts/WT_D20260528_003_overnight_C/alpha_scores.parquet (overwrite final)",
+        "stage_artifacts/WT_D20260528_003_overnight_C/alpha_validation.json (overwrite final)"
+      ],
+      "input_data": [
+        "load_month_factors(sig_date, coverage_min=0.05) via 02_Infrastructure/factor_db/factor_db_connector.R (C15 compliant)",
+        "build_universe_v2(sig_date, 'KR_top342') via 02_Infrastructure/factor_db/universe_expanded_v2.R (C2 universe)",
+        ".cache/factor_db/factor_ic_monthly.parquet (composite IC computation audit-only)"
+      ],
+      "method": "Codex-compliant v4: Z_Score_Aligned ranking, KR_top342 + AvgTrdVal_20d >= 2e8 won filter, real PIT-aligned composite IC (4-factor direction-aligned arithmetic mean)",
+      "codex_concerns_addressed": [
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "C5",
+        "C6",
+        "C7"
+      ]
+    },
+    {
+      "stage": "alpha_package_C_FINAL",
+      "timestamp_kst": "2026-05-28T23:53:08+0900",
+      "script_path": "qepm/mailbox/worktask/WT-D20260528_003/scripts/overnight_C/06_finalize.R",
+      "output_paths": [
+        "qepm/mailbox/worktask/WT-D20260528_003/alpha_package_C.json"
+      ],
+      "promotion_reason": "Codex Round complete + challenge_note + lineage written. v4 draft promoted.",
+      "codex_critic_status": "stance=REJECT addressed via challenge_note_C.md (4 ACCEPT, 3 PARTIAL, 0 REBUTTAL)",
+      "q_lead_morning_action": "Compare with hypothesis A/B + decide admit/terminate"
+    }
+  ],
+  "scope_compliance": {
+    "alpha_only": true,
+    "no_covariance": true,
+    "no_weights": true,
+    "no_risk_artifacts": true,
+    "no_optimizer_artifacts": true,
+    "factor_db_via_connector": true,
+    "universe_via_pit_snapshot": true,
+    "lockbox_signal_cutoff": "2023-12-22"
+  },
+  "downstream_artifacts_pending": [
+    "risk_package (Risk Agent spawn pending)",
+    "optimization_package (Optimizer Agent spawn pending)",
+    "forge_package (Forge Agent spawn pending)",
+    "judge_verdict (Judge Agent spawn pending)",
+    "governor_admission (Governor Agent spawn pending)"
+  ],
+  "decoupling_notes": "본 hypothesis_C는 hypothesis A/B와 병렬 overnight parallel. 각 hypothesis별 _A / _B / _C suffix 명시. Q-Lead morning retrieval 시 3 hypothesis 비교 후 통합 결정 (best-of-3 admit 또는 ensemble).",
+  "h_a_b_independence": "hypothesis A/B 작업물 (alpha_package.json 등 _suffix 미사용)은 본 hypothesis_C와 완전 분리 — 본 작업물은 모두 _C suffix로 격리."
+}

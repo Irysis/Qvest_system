@@ -27,14 +27,14 @@ cat("[experiment_contract] Loaded.\n")
 
 CONTRACT_DIR <- file.path(
   ifelse(exists("RESEARCH_REG"), RESEARCH_REG,
-         "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/06_Registry"),
+         file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")), "06_Registry")),
   "contracts"
 )
 
 #' Compute data snapshot ID from cache file modification times
 compute_data_snapshot_id <- function() {
   cache_dir <- ifelse(exists("CACHE_DIR"), CACHE_DIR,
-                      "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/.cache")
+                      file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")), ".cache"))
   key_files <- c("RAWDATA.parquet", "benchmark.parquet", "fundamental_dart.parquet")
   mtimes <- sapply(file.path(cache_dir, key_files), function(f) {
     if (file.exists(f)) format(file.mtime(f), "%Y%m%d_%H%M") else "missing"

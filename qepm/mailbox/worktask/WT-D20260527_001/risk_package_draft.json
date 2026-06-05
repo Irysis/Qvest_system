@@ -1,0 +1,316 @@
+{
+  "task_id": "WT-D20260527_001",
+  "agent": "risk-research",
+  "as_of_date": "2023-12-28",
+  "risk_signal_cutoff": "2023-12-28",
+  "estimation_window": {
+    "start": "2019-01-01",
+    "end": "2023-12-28",
+    "n_days": 1233,
+    "n_tickers": 20
+  },
+  "alpha_package_received": {
+    "iter": 7,
+    "iter_name": "DCA_v7_4family_static_EW_P3P4_confidence",
+    "n_alpha_entries": 100,
+    "top_20_tickers": ["A000880", "A138930", "A047040", "A020560", "A051600", "A029780", "A004800", "A137310", "A032640", "A078930", "A088350", "A185750", "A001680", "A098460", "A218410", "A035600", "A003490", "A139480", "A383220", "A010950"],
+    "factor_specs_received": 5
+  },
+  "selection_objective": "condition_number",
+  "cov_method": "ledoit_wolf_oracle",
+  "cov_backup_method": "sample_pairwise",
+  "covariance_ref": "stage_artifacts/WT_WT-D20260527_001/risk/covariance.parquet",
+  "covariance_diagnostics": {
+    "method": "ledoit_wolf_oracle",
+    "condition_number": 14.5068,
+    "min_eigenvalue": 0.0002,
+    "max_eigenvalue": 0.0027,
+    "trace": 0.0111,
+    "psd_verified": true,
+    "shrinkage_used": true,
+    "annualized_vol_min_pct": 27.3695,
+    "annualized_vol_max_pct": 50.53,
+    "annualized_vol_mean_pct": 36.7949,
+    "annualized_corr_mean": 0.1965,
+    "annualized_corr_max": 0.4997,
+    "annualized_corr_min": 0.0374
+  },
+  "factor_model": {
+    "factors": ["market", "defense", "quality", "value", "consensus"],
+    "omega_monthly_diag_pct2": [35.26, 64.39, 22.11, 17.44, 14.2],
+    "omega_correlation": [
+      [1, -0.0267, -0.2003, -0.2153, 0.0219],
+      [-0.0267, 1, 0.1565, 0.581, -0.2442],
+      [-0.2003, 0.1565, 1, 0.4371, -0.0867],
+      [-0.2153, 0.581, 0.4371, 1, -0.4305],
+      [0.0219, -0.2442, -0.0867, -0.4305, 1]
+    ],
+    "r_squared_mean": 0.135,
+    "r_squared_min": 0.0393,
+    "r_squared_max": 0.2801,
+    "factor_coverage_pct": 13.503,
+    "residual_share_pct": 86.497,
+    "factor_model_pit_cutoff": "2023-11-30",
+    "factor_model_n_months": 59,
+    "comment_modest_r2": "Factor model R² mean 13.2% modest because DCA 4-family LS-decile portfolios are noisy ratio constructs (decile-10 minus decile-1 long-short monthly returns), not canonical FF3/Carhart factor returns. Direct daily Σ (Ledoit-Wolf oracle) is the actual handoff to Optimizer; this BΩB'+D structural decomposition is DIAGNOSTIC only."
+  },
+  "exposure_matrix_ref": "stage_artifacts/WT_WT-D20260527_001/risk/exposure_matrix.parquet",
+  "factor_covariance_ref": "stage_artifacts/WT_WT-D20260527_001/risk/factor_covariance.parquet",
+  "specific_risk_ref": "stage_artifacts/WT_WT-D20260527_001/risk/specific_risk.parquet",
+  "style_exposure_csv_ref": "stage_artifacts/WT_WT-D20260527_001/risk/style_exposure.csv",
+  "risk_summary": {
+    "top_common_risks": ["consensus (25.9%)", "defense (12.5%)", "value (7.2%)"],
+    "variance_decomposition_ew_top20": {
+      "total_annualized_vol_pct": 10.3842,
+      "market_share_pct": 6.5937,
+      "factor_share_pct": 52.242,
+      "specific_share_pct": 52.1042,
+      "factor_breakdown": [
+        {
+          "factor": "consensus",
+          "share_pct": 25.9128
+        },
+        {
+          "factor": "defense",
+          "share_pct": 12.4818
+        },
+        {
+          "factor": "value",
+          "share_pct": 7.2135
+        },
+        {
+          "factor": "market",
+          "share_pct": 6.5937
+        },
+        {
+          "factor": "quality",
+          "share_pct": 0.0402
+        }
+      ]
+    },
+    "sector_concentration": {
+      "max_share": 0.1,
+      "sector_max": "상사,자본재",
+      "n_distinct_sectors": 14
+    },
+    "crowding_flags": {},
+    "crowding_score_per_factor": [
+      {
+        "factor_name": "defense",
+        "crowding_score": 0.3735,
+        "hhi_top": 0.5366,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 0.85,
+        "demand_elasticity_proxy": 0,
+        "alert": "NA"
+      },
+      {
+        "factor_name": "quality",
+        "crowding_score": 0.1327,
+        "hhi_top": 0.0675,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 0.45,
+        "demand_elasticity_proxy": 0,
+        "alert": "NA"
+      },
+      {
+        "factor_name": "value",
+        "crowding_score": 0.1476,
+        "hhi_top": 0.0752,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 0.5,
+        "demand_elasticity_proxy": 0,
+        "alert": "NA"
+      },
+      {
+        "factor_name": "consensus",
+        "crowding_score": 0.1381,
+        "hhi_top": 0.0436,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 0.5,
+        "demand_elasticity_proxy": 0,
+        "alert": "NA"
+      },
+      {
+        "factor_name": "composite",
+        "crowding_score": 0.1489,
+        "hhi_top": 0.038,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 0.55,
+        "demand_elasticity_proxy": 0,
+        "alert": "NA"
+      },
+      {
+        "factor_name": "alpha",
+        "crowding_score": 0.1489,
+        "hhi_top": 0.038,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 0.55,
+        "demand_elasticity_proxy": 0,
+        "alert": "NA"
+      }
+    ],
+    "liquidity_flags": {},
+    "stress_tests": {
+      "market_down_5_parametric": 0.0065,
+      "value_crash_parametric": -0.011,
+      "gfc_2008": -0.1405,
+      "china_2015_devaluation": -0.058,
+      "brexit_2016": -0.0252,
+      "eudebt_2011": -0.1604,
+      "covid_2020": -0.1406,
+      "rate_2022": -0.2403,
+      "dec_2018_selloff": -0.0872,
+      "worst_month_2019_2023": -0.1311,
+      "n_periods": 8,
+      "suite_complete": true
+    },
+    "tail_risk": {
+      "unit": "DAILY (Korean Trading Day) — monthly equivalents in monthly_caps section",
+      "var_95_daily": -0.019,
+      "cvar_95_daily": -0.0289,
+      "var_99_daily": -0.0336,
+      "cvar_99_daily": -0.0458,
+      "evt_var_99_daily": -0.0495,
+      "evt_es_99_daily": -0.0623,
+      "evt_shape_xi": -0.2228,
+      "evt_method": "gpd_mle",
+      "max_drawdown_2019_2023": -0.3876,
+      "ew_annualized_vol_pct": 19.4877,
+      "monthly_caps": {
+        "cvar_95_monthly_approx": -0.1326,
+        "cvar_99_monthly_approx": -0.2099,
+        "cdar_95_estimate": -0.3682,
+        "comment": "Monthly figures scaled by √21 from daily (approximate; non-Gaussian tails may breach)"
+      },
+      "hill_alpha_estimate": "NA"
+    }
+  },
+  "diagnostics": {
+    "condition_number": 14.5068,
+    "shrinkage_used": true,
+    "shrinkage_method": "ledoit_wolf_oracle",
+    "factor_correlation_warnings": "none",
+    "tdc_summary": {
+      "NOTE": "TDC parametric copula skipped — Top-20 daily sample size 1239 sufficient for Gerber-RMT; tail dependence handled via EVT GPD"
+    },
+    "regime_correlation_ref": "stage_artifacts/WT_WT-D20260527_001/risk/regime_correlation.parquet",
+    "regime_correlation_summary": {
+      "bear": {
+        "regime": "bear",
+        "n_days": 559,
+        "avg_off_diag_corr": 0.2652,
+        "max_corr": 0.6567,
+        "min_corr": 0.0308
+      },
+      "stress": {
+        "regime": "stress",
+        "n_days": 243,
+        "avg_off_diag_corr": 0.2352,
+        "max_corr": 0.6331,
+        "min_corr": 0.0197
+      },
+      "normal": {
+        "regime": "normal",
+        "n_days": 389,
+        "avg_off_diag_corr": 0.2716,
+        "max_corr": 0.7145,
+        "min_corr": -0.05
+      },
+      "bull": {
+        "regime": "bull",
+        "n_days": 42,
+        "avg_off_diag_corr": 0.2278,
+        "max_corr": 0.7368,
+        "min_corr": -0.2702
+      }
+    }
+  },
+  "method_shopping_log": {
+    "candidates_tried": 5,
+    "cap": 5,
+    "method_log": [
+      {
+        "name": "sample_pairwise",
+        "rationale": "Naive baseline. No shrinkage. N=1239, D=20 (N/D=62), so sample is feasible but noisy in extreme tails.",
+        "condition_number": 33.628,
+        "min_eigenvalue": 0.0001,
+        "psd": true,
+        "selected": false
+      },
+      {
+        "name": "ledoit_wolf_oracle",
+        "rationale": "Ledoit-Wolf 2003 — optimal linear shrinkage toward identity. Robust when N/D moderate.",
+        "condition_number": 14.5068,
+        "min_eigenvalue": 0.0002,
+        "psd": true,
+        "selected": true
+      },
+      {
+        "name": "ledoit_wolf_constcor",
+        "rationale": "Ledoit-Wolf 2004 constant-correlation shrinkage simplified — KR equity homogeneous-cor structure suits this target.",
+        "condition_number": 22.1597,
+        "min_eigenvalue": 0.0001,
+        "psd": true,
+        "selected": false
+      },
+      {
+        "name": "gerber_rmt",
+        "rationale": "Gerber 2022 robust statistic + Marchenko-Pastur RMT noise filter. Robust to fat-tails (Eom-Kaizoji-Scalas 2019 KR fat-tail).",
+        "condition_number": 61.5646,
+        "min_eigenvalue": 0.0001,
+        "psd": true,
+        "selected": false
+      },
+      {
+        "name": "pairwise_shrunk",
+        "rationale": "Fixed-shrinkage toward diagonal (α=0.20). Conservative fallback if LW unstable.",
+        "condition_number": 20.4107,
+        "min_eigenvalue": 0.0001,
+        "psd": true,
+        "selected": false
+      }
+    ],
+    "parallel_exec": true,
+    "n_workers": 5,
+    "selection_rationale": "Selected ledoit_wolf_oracle on basis of (1) condition number 14.51 (lowest among PSD candidates with cond<500), (2) academic legitimacy (Ledoit-Wolf 2003/2004), (3) appropriateness for KR equity moderate-N/D regime (N=1233 days, D=20 tickers, ratio 61.6)."
+  },
+  "red_flags_summary": {
+    "n_flags": 1,
+    "flags": [
+      {
+        "id": "RF-R3b",
+        "severity": "MEDIUM",
+        "description": "HHI_top > 0.40 for factor(s): defense (HHI=0.54). Top-decile concentration risk; demand-elasticity haircut recommended to Optimizer."
+      }
+    ]
+  },
+  "pit_compliance": {
+    "C1": "PASS (rolling daily returns 2019-2023, no full-sample stats)",
+    "C9": "PASS (regime correlation uses forward-month mapping post Codex C5 fix; regime[t] applied to days [t+1, end-of-next-month])",
+    "C10": "PASS (Top-20 from alpha which used t-1 liquidity; Risk verifies but does not duplicate)",
+    "C11": "PASS (Σ window 2019-01-01 to 2023-12-28 STRICT; factor model B/Ω uses sig_date <= 2023-11-30 so fwd_month <= 2023-12-31; stress periods all pre-2024; Yen Carry 2024 REMOVED per Codex C1 fix)",
+    "C12": "PASS (post Codex C1/C12 fix: B/Ω factor returns at sig_date 2023-11-30 use fwd_month 2023-12, NOT 2024-01-01)",
+    "C13": "PASS (no factor sign flips; covariance is direct ret data)",
+    "C14": "N/A (no IC time series here)",
+    "C15": "PASS (RAWDATA from .cache/rawdata.parquet, sanctioned cache)"
+  },
+  "ax_axiom_compliance": {
+    "AX_002": "PASS — all metrics from same risk_pipeline.R run; estimation window strict ≤2023-12-28",
+    "AX_008": "IN_PROGRESS — Codex Critic Round mandatory next step"
+  },
+  "challenge_flags": [
+    {
+      "id": "RF-R3b",
+      "severity": "MEDIUM",
+      "description": "HHI_top > 0.40 for factor(s): defense (HHI=0.54). Top-decile concentration risk; demand-elasticity haircut recommended to Optimizer."
+    }
+  ],
+  "challenge_review": {
+    "objection_to_alpha": false,
+    "objection_rationale": "Alpha package factor specs (defense IC=0.067, quality IC=0.021, value IC=0.045, consensus IC=0.051, Harvey-t pooled 4.41) survive Risk-side scrutiny. Factor model R² mean 13.5% modest (typical KR ~30-50% w/ canonical FF/Carhart) — interpreted as DCA 4-family LS-decile portfolios being noisy ratio constructs in monthly aggregation, NOT a flaw in alpha cross-section IC. Top common risks aligned with declared factor mix (consensus 25.9% / defense 12.5% / value 7.2%). No alpha mod recommended.",
+    "targets_reviewed": ["alpha_package", "confidence_vector", "factor_specs", "monotonicity_0.503"]
+  },
+  "generated_at": "2026-05-27T18:46:50+0900",
+  "forward_to": "optimizer-research"
+}

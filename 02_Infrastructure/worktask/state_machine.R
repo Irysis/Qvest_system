@@ -22,7 +22,7 @@ suppressPackageStartupMessages({
 
 PROJ_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", unset = "")
 if (PROJ_ROOT == "" || !dir.exists(PROJ_ROOT)) {
-  PROJ_ROOT <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+  PROJ_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 }
 
 SM_POLICY_PATH <- file.path(PROJ_ROOT, "02_Infrastructure/hooks/policies/state_transitions.json")

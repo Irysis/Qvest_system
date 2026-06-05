@@ -1,0 +1,79 @@
+{
+  "cycle": "49B_timemixer_pivot",
+  "baseline_v1_3_features": 69,
+  "no_new_features": true,
+  "validation_strategy": "walk_forward_expanding_5_fold_CV",
+  "architecture_pivot": {
+    "patchtst_replaced_by": "TimeMixer (Wang et al. ICLR 2024, multi-scale decomposable mixing)",
+    "nbeats_retained": "N-BEATS Generic (Oreshkin et al. ICLR 2019, Cycle 45E proven 0.5479)",
+    "timemixer": {
+      "n_scales": 3,
+      "seq_lens": [
+        21,
+        10,
+        5
+      ],
+      "hidden": 128,
+      "n_layers": 2,
+      "dropout": 0.3,
+      "kernel_trend": 5,
+      "weight_decay": 0.005,
+      "lr": 0.001,
+      "rationale": "MLP-based multi-scale (no attention overhead), 21d short-horizon proven ICLR 2024"
+    },
+    "nbeats": {
+      "n_stacks": 5,
+      "n_blocks_per_stack": 3,
+      "hidden": 256,
+      "dropout": 0.3,
+      "theta_dim": 32,
+      "weight_decay": 0.005,
+      "lr": 0.001
+    },
+    "common": {
+      "batch_size": 96,
+      "epochs": 80,
+      "early_stop_patience": 15,
+      "early_stop_min_delta": 0.0005,
+      "grad_clip_norm": 1.0,
+      "warmup_steps": 500,
+      "mixed_precision_amp": true,
+      "gpu_mem_fraction": 0.3
+    }
+  },
+  "baseline_45e_oos_y_tail_q15": {
+    "patchtst": 0.3256,
+    "nbeats": 0.5479
+  },
+  "v3i_oos_y_tail_q15": {
+    "timemixer": 0.1592,
+    "nbeats": 0.1611,
+    "timemixer_avg_ep": 9,
+    "nbeats_avg_ep": 8
+  },
+  "v3i_oos_y_onset": {
+    "timemixer": 0.1476,
+    "nbeats": 0.1716,
+    "timemixer_avg_ep": 6,
+    "nbeats_avg_ep": 7
+  },
+  "delta_45e_to_49b_y_tail_q15": {
+    "timemixer_vs_patchtst_pr": -0.1664,
+    "nbeats_vs_nbeats_pr": -0.3868
+  },
+  "model_params": {
+    "timemixer": 50608,
+    "nbeats": 9496375
+  },
+  "elapsed_sec": {
+    "timemixer_y_tail_q15": 91.2361626625061,
+    "timemixer_y_onset": 63.05767631530762,
+    "nbeats_y_tail_q15": 194.5654742717743,
+    "nbeats_y_onset": 175.09821939468384
+  },
+  "gpu_mem_peak_mb": {
+    "timemixer_y_tail_q15": 86.8046875,
+    "nbeats_y_tail_q15": 239.2451171875
+  },
+  "per_fold_diagnostics_path": "/mnt/c/Users/User/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/03_models/v3i_timemixer/per_fold_diagnostics.json"
+}

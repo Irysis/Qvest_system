@@ -1,0 +1,61 @@
+{
+  "task_id": "WT-D20260527_001",
+  "current_phase": "JUDGE_DONE_REJECT",
+  "updated_at": "2026-05-27T23:10:00+0900",
+  "blocker": {
+    "hurdle_gate_failed": ["MDD_45pct"],
+    "axiom_failed": ["AX_007_literal_15_names_below_50plus"],
+    "blocker_note": "Realized Pre-LB MDD 59.74% > 45% hard hurdle gate (OFFICIAL backtest window 2016-2024). Judge final verdict = JUDGE_FAILED. Lockbox 28-month forward measurement BM-beating (SR 1.92, MDD -17.2%) but insufficient to override Pre-LB hurdle per policy."
+  },
+  "next_phase": "QLEAD_REVIEW_OR_TERMINATE",
+  "next_agent": "q-lead",
+  "state": "JUDGE_DONE_REJECT_HURDLE_FAIL_PRE_LB",
+  "last_update": "2026-05-27T23:10:00+0900",
+  "next_step": "q-lead",
+  "judge_summary": {
+    "strategy_id": "STR_1719_WT001_DCA_v7",
+    "run_id": "WT-D20260527_001_STR_1719_WT001_DCA_v7_20260527_200058",
+    "verdict_disposition": "JUDGE_FAILED",
+    "grade": "REJECT_PRE_LB_HURDLE_VIOLATION",
+    "primary_basis": "MDD 59.74% > 45% hurdle (Pre-LB walk-fwd OFFICIAL window)",
+    "pre_lb_metrics": {
+      "sharpe": 0.347,
+      "cagr_pct": 5.14,
+      "mdd_pct": 59.74,
+      "information_ratio": 0.177,
+      "alpha_annual_pct": 2.70
+    },
+    "lockbox_judge_v6_1_metrics": {
+      "method": "frozen_weights_buy_and_hold",
+      "period": "2024-01-02 to 2026-04-30 (566d)",
+      "sharpe": 1.922,
+      "ann_ret_pct": 60.4,
+      "mdd_pct": 17.24,
+      "bm_sharpe": 1.652,
+      "bm_mdd_pct": 20.67,
+      "lockbox_hurdle_status": "PASS_28pp_buffer_but_insufficient_to_override_pre_lb"
+    },
+    "codex_judge_critic_stance": "APPROVE_CONDITIONAL",
+    "codex_judge_critic_concerns": "1 HIGH + 4 MEDIUM",
+    "challenge_note_resolution": "4 ACCEPT-full + 1 PARTIAL",
+    "ax_008_triangulation_on_reject": "2/3 PASS (Forge ACK + Codex APPROVE_COND on REJECT)",
+    "ax_007_status": "FAIL_LITERAL_15_names_below_50plus_exception",
+    "lockbox_audit_executed": true,
+    "lockbox_audit_path": "qepm/mailbox/worktask/WT-D20260527_001/judge_lockbox_audit.json",
+    "oos_chart_path": "qepm/mailbox/worktask/WT-D20260527_001/judge_oos_zoom_chart.png",
+    "l_code_candidate": "L-CAND-2026-05-27-001"
+  },
+  "forge_summary_carry_forward": {
+    "strategy_id": "STR_1719_WT001_DCA_v7",
+    "cagr_pct": 5.14,
+    "sharpe": 0.347,
+    "mdd_pct": 59.74,
+    "information_ratio": 0.177,
+    "alpha_annualized_pct": 2.70,
+    "n_rebals": 97,
+    "annual_TO_twoside": 5.25,
+    "integrity": "HARD_HURDLE_FAIL_FORGE",
+    "audit_status": "PASS_WITH_WARN",
+    "ax_008_status_forge": "0/2_PASS_FORGE_CODEX_CONVERGE_REJECT"
+  }
+}

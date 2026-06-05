@@ -11,9 +11,9 @@ suppressPackageStartupMessages({
 })
 
 .SELF_DIR <- tryCatch(dirname(sys.frame(1)$ofile),
-  error = function(e) "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/02_Infrastructure/factor_db")
+  error = function(e) "/mnt/c/Users/99922/OneDrive/바탕 화면/Quant_Module_Moltbot/02_Infrastructure/factor_db")
 INFRA_DIR <- tryCatch(dirname(dirname(sys.frame(1)$ofile)),
-  error = function(e) "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/02_Infrastructure")
+  error = function(e) "/mnt/c/Users/99922/OneDrive/바탕 화면/Quant_Module_Moltbot/02_Infrastructure")
 source(file.path(INFRA_DIR, "config.R"))
 sourceCpp(file.path(.SELF_DIR, "factor_db_daily_rcpp.cpp"))
 
@@ -240,6 +240,70 @@ if(!is.null(INV)) {
 }
 rm(INV); gc(verbose=FALSE)
 
+# ═══ 4-pre. Stage 1 NEW: Macro-derived daily Regime (RE10/11/13/14) ════════
+cat("[4-pre/6] Macro daily Regime (RE10/11/13/14)...\n")
+.macro_path_p7 <- file.path(CACHE_DIR, "macro_fred.parquet")
+MACRO_F <- NULL
+if (file.exists(.macro_path_p7)) {
+  tryCatch({
+    .m_p7 <- as.data.table(read_parquet(.macro_path_p7))
+    .m_p7[, Date := as.Date(Date)]
+    .m_p7 <- .m_p7[!is.na(Value)]
+
+    .ewma_d <- function(x, halflife = 21) {
+      alpha <- 1 - exp(-log(2) / halflife)
+      n <- length(x); out <- rep(NA_real_, n)
+      if (n == 0L) return(out)
+      out[1] <- x[1]
+      for (k in 2:n) {
+        if (is.na(x[k])) out[k] <- out[k-1]
+        else if (is.na(out[k-1])) out[k] <- x[k]
+        else out[k] <- alpha * x[k] + (1-alpha) * out[k-1]
+      }
+      out
+    }
+
+    .all_dates <- data.table(Date = sort(unique(RW$Date)))
+    MACRO_F <- copy(.all_dates)
+
+    # RE10 VIX expanding percentile (negate: high VIX = bad)
+    .vix <- .m_p7[Series_ID == "VIXCLS", .(VIX = last(Value)), by = Date]
+    if (nrow(.vix) > 0L) {
+      setorder(.vix, Date)
+      .vix[, RE10_VIX_Pctile := -frank(VIX, ties.method = "average") / .N]
+      .vix[, vix_chg := c(NA_real_, diff(log(VIX)))]
+      .vix[!is.finite(vix_chg), vix_chg := NA_real_]
+      .vix[, RE11_VIX_Change_EWMA := -.ewma_d(vix_chg, 21)]
+      MACRO_F <- .vix[, .(Date, RE10_VIX_Pctile, RE11_VIX_Change_EWMA)][MACRO_F,
+                       on = "Date", roll = TRUE]
+    }
+    # RE13 HY OAS expanding percentile
+    .hy <- .m_p7[Series_ID == "BAMLH0A0HYM2", .(HY = last(Value)), by = Date]
+    if (nrow(.hy) > 0L) {
+      setorder(.hy, Date)
+      .hy[, RE13_Credit_Spread_Pctile := -frank(HY, ties.method = "average") / .N]
+      MACRO_F <- .hy[, .(Date, RE13_Credit_Spread_Pctile)][MACRO_F,
+                       on = "Date", roll = TRUE]
+    }
+    # RE14 CPI YoY (negate: high inflation = bad)
+    .cpi <- .m_p7[Series_ID == "CPIAUCSL", .(CPI = last(Value)), by = Date]
+    if (nrow(.cpi) > 0L) {
+      setorder(.cpi, Date)
+      .cpi[, RE14_Inflation_YoY := -(CPI / shift(CPI, 12) - 1)]
+      MACRO_F <- .cpi[, .(Date, RE14_Inflation_YoY)][MACRO_F,
+                       on = "Date", roll = TRUE]
+    }
+    MACRO_F[, YM := format(Date, "%Y%m")]
+    setkey(MACRO_F, Date)
+    .macro_cols <- setdiff(names(MACRO_F), c("Date","YM"))
+    cat(sprintf("  macro daily: %d factors (%s)\n",
+                length(.macro_cols), paste(.macro_cols, collapse=", ")))
+  }, error = function(e) {
+    cat(sprintf("  macro merge failed: %s\n", conditionMessage(e)))
+    MACRO_F <<- NULL
+  })
+}
+
 # ═══ 4. Regime 팩터 (RE02~RE09) ════════════════════════════════════════════
 cat("[4/6] Regime 팩터 (8개)...\n")
 t3 <- proc.time()
@@ -311,6 +375,12 @@ for(i in seq_along(files)) {
   # Regime merge
   rg_ym <- REG_F[YM == ym, c("Date","Ticker",reg_cols), with=FALSE]
   if(nrow(rg_ym)>0) { setkey(rg_ym, Date, Ticker); chunk <- merge(chunk, rg_ym, by=c("Date","Ticker"), all.x=TRUE) }
+
+  # Stage 1: Macro daily (Date-level broadcast to all tickers)
+  if (!is.null(MACRO_F)) {
+    mf_ym <- MACRO_F[YM == ym, setdiff(names(MACRO_F), "YM"), with=FALSE]
+    if (nrow(mf_ym) > 0L) chunk <- merge(chunk, mf_ym, by="Date", all.x=TRUE)
+  }
 
   write_parquet(chunk, files[i], compression="snappy")
   if(i %% pb == 0 || i == length(files))

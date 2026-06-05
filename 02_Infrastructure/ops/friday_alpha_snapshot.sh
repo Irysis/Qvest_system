@@ -18,7 +18,7 @@
 
 set -euo pipefail
 
-PROJ=$(ls -d /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1)
+PROJ=$(ls -d /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1)
 if [ -z "$PROJ" ]; then
   echo "ERROR: 프로젝트 루트를 찾을 수 없습니다."
   exit 1

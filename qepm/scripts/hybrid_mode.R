@@ -25,9 +25,13 @@ suppressPackageStartupMessages({
 
 QEPM_BASE <- (function() {
   cand <- c(
+    Sys.getenv("QM_ROOT", unset = ""),
+    "G:/Quant_Module_Moltbot",                          # Windows-native (2026-06-03)
+    "/mnt/g/Quant_Module_Moltbot",                      # WSL G:\
     "/mnt/c/Users/User/OneDrive/\xeb\xb0\x94\xed\x83\x95 \xed\x99\x94\xeb\xa9\xb4/Quant_Module_Moltbot",
     "/mnt/c/Users/99922/OneDrive/\xeb\xb0\x94\xed\x83\x95 \xed\x99\x94\xeb\xa9\xb4/Quant_Module_Moltbot"
   )
+  cand <- cand[nzchar(cand)]
   cand[dir.exists(cand)][1]
 })()
 
@@ -238,9 +242,14 @@ hybrid_commit <- function(strategy_name,
   }
 
   # ═══ Step 6: L-code lesson append ═══
-  meth_path <- file.path("/home/quant/.claude/projects",
-                          "-mnt-c-Users-User-OneDrive-------Quant-Module-Moltbot",
-                          "memory/methodology_active.md")
+  meth_path <- {
+    .mc <- c(
+      file.path(Sys.getenv("USERPROFILE", unset = "C:/Users/User"),
+                ".claude/projects/G--Quant-Module-Moltbot/memory/methodology_active.md"),  # Windows (2026-06-03)
+      "/home/quant/.claude/projects/-mnt-c-Users-User-OneDrive-------Quant-Module-Moltbot/memory/methodology_active.md"
+    )
+    .e <- .mc[file.exists(.mc)]; if (length(.e)) .e[1] else .mc[1]
+  }
   if (file.exists(meth_path) && length(lessons) > 0) {
     # Find next L-code
     existing_codes <- readLines(meth_path)

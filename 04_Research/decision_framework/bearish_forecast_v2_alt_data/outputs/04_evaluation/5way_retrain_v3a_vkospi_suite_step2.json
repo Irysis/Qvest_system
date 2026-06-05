@@ -1,0 +1,548 @@
+{
+  "step": "step2_3way_gbdt_retrain",
+  "cycle": "45A",
+  "panel": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/01_data/feature_panel_v3a_vkospi_suite.parquet",
+  "n_features": 73,
+  "vkospi_features_new": ["vkospi_lag1", "vkospi_change_5d_lag1", "vkospi_vix_spread_lag1", "vkospi_z60_lag1"],
+  "pre_2003_NA_handling": "median-impute on train-period (1995-2009) — VKOSPI starts 2003-01-02",
+  "y_tail_q15": {
+    "xgb": 0.5365,
+    "cat": 0.5483,
+    "rf": 0.5362,
+    "ew3": 0.5636,
+    "imp_vkospi_xgb": [
+      {
+        "feature": "vkospi_z60_lag1",
+        "gain": 0.0135,
+        "rank": 23,
+        "total": 47
+      },
+      {
+        "feature": "vkospi_vix_spread_lag1",
+        "gain": 0.0084,
+        "rank": 26,
+        "total": 47
+      },
+      {
+        "feature": "vkospi_lag1",
+        "gain": 0.0082,
+        "rank": 27,
+        "total": 47
+      },
+      {
+        "feature": "vkospi_change_5d_lag1",
+        "gain": 0.0021,
+        "rank": 35,
+        "total": 47
+      }
+    ],
+    "imp_vkospi_cat": [
+      {
+        "feature": "vkospi_lag1",
+        "gain": 1.5958,
+        "rank": 26,
+        "total": 73
+      },
+      {
+        "feature": "vkospi_vix_spread_lag1",
+        "gain": 1.5463,
+        "rank": 27,
+        "total": 73
+      },
+      {
+        "feature": "vkospi_z60_lag1",
+        "gain": 1.4102,
+        "rank": 28,
+        "total": 73
+      },
+      {
+        "feature": "vkospi_change_5d_lag1",
+        "gain": 0.4297,
+        "rank": 39,
+        "total": 73
+      }
+    ],
+    "imp_vkospi_rf": [
+      {
+        "feature": "vkospi_z60_lag1",
+        "gain": 18.2341,
+        "rank": 25,
+        "total": 73
+      },
+      {
+        "feature": "vkospi_lag1",
+        "gain": 15.3729,
+        "rank": 27,
+        "total": 73
+      },
+      {
+        "feature": "vkospi_vix_spread_lag1",
+        "gain": 12.3325,
+        "rank": 30,
+        "total": 73
+      },
+      {
+        "feature": "vkospi_change_5d_lag1",
+        "gain": 7.8517,
+        "rank": 32,
+        "total": 73
+      }
+    ],
+    "top10_xgb": [
+      {
+        "feature": "us_sector_avg_z",
+        "gain": 0.171,
+        "rank": 1,
+        "total": {}
+      },
+      {
+        "feature": "us_sector_avg_z_lag1",
+        "gain": 0.1099,
+        "rank": 2,
+        "total": {}
+      },
+      {
+        "feature": "us_sector_dispersion_z_rm63",
+        "gain": 0.0955,
+        "rank": 3,
+        "total": {}
+      },
+      {
+        "feature": "us_sector_avg_z_lag5",
+        "gain": 0.0497,
+        "rank": 4,
+        "total": {}
+      },
+      {
+        "feature": "us_sector_avg_z_rsd63",
+        "gain": 0.0462,
+        "rank": 5,
+        "total": {}
+      },
+      {
+        "feature": "us_sector_avg_z_rm63",
+        "gain": 0.0416,
+        "rank": 6,
+        "total": {}
+      },
+      {
+        "feature": "bbva_transmission_z_rm63",
+        "gain": 0.0394,
+        "rank": 7,
+        "total": {}
+      },
+      {
+        "feature": "bbva_market_z_rm21",
+        "gain": 0.034,
+        "rank": 8,
+        "total": {}
+      },
+      {
+        "feature": "us_sector_dispersion_z_rm21",
+        "gain": 0.0335,
+        "rank": 9,
+        "total": {}
+      },
+      {
+        "feature": "us_sector_avg_z_lag21",
+        "gain": 0.0299,
+        "rank": 10,
+        "total": {}
+      }
+    ],
+    "top10_cat": [
+      {
+        "feature": "us_sector_avg_z",
+        "gain": 9.1655,
+        "rank": 1,
+        "total": {}
+      },
+      {
+        "feature": "us_sector_dispersion_z_rm63",
+        "gain": 7.8714,
+        "rank": 2,
+        "total": {}
+      },
+      {
+        "feature": "us_sector_avg_z_lag1",
+        "gain": 6.4871,
+        "rank": 3,
+        "total": {}
+      },
+      {
+        "feature": "bbva_market_z_rm21",
+        "gain": 4.1636,
+        "rank": 4,
+        "total": {}
+      },
+      {
+        "feature": "us_sector_avg_z_lag21",
+        "gain": 3.9885,
+        "rank": 5,
+        "total": {}
+      },
+      {
+        "feature": "bbva_market_z_rsd63",
+        "gain": 3.9401,
+        "rank": 6,
+        "total": {}
+      },
+      {
+        "feature": "us_sector_avg_z_rsd21",
+        "gain": 3.923,
+        "rank": 7,
+        "total": {}
+      },
+      {
+        "feature": "us_sector_avg_z_lag5",
+        "gain": 3.6457,
+        "rank": 8,
+        "total": {}
+      },
+      {
+        "feature": "us_sector_avg_z_rsd63",
+        "gain": 3.6093,
+        "rank": 9,
+        "total": {}
+      },
+      {
+        "feature": "bbva_transmission_z_rm63",
+        "gain": 3.5857,
+        "rank": 10,
+        "total": {}
+      }
+    ],
+    "top10_rf": [
+      {
+        "feature": "us_sector_avg_z",
+        "gain": 85.4953,
+        "rank": 1,
+        "total": {}
+      },
+      {
+        "feature": "us_sector_avg_z_lag1",
+        "gain": 67.7485,
+        "rank": 2,
+        "total": {}
+      },
+      {
+        "feature": "us_sector_dispersion_z_rm63",
+        "gain": 53.828,
+        "rank": 3,
+        "total": {}
+      },
+      {
+        "feature": "us_sector_avg_z_lag5",
+        "gain": 48.3348,
+        "rank": 4,
+        "total": {}
+      },
+      {
+        "feature": "bbva_macro_composite_rsd63",
+        "gain": 36.8038,
+        "rank": 5,
+        "total": {}
+      },
+      {
+        "feature": "us_sector_avg_z_rsd63",
+        "gain": 34.8753,
+        "rank": 6,
+        "total": {}
+      },
+      {
+        "feature": "us_sector_dispersion_z_rsd63",
+        "gain": 32.9984,
+        "rank": 7,
+        "total": {}
+      },
+      {
+        "feature": "bbva_market_z_rm21",
+        "gain": 32.8765,
+        "rank": 8,
+        "total": {}
+      },
+      {
+        "feature": "us_sector_dispersion_z_rm21",
+        "gain": 31.8594,
+        "rank": 9,
+        "total": {}
+      },
+      {
+        "feature": "us_sector_avg_z_rsd21",
+        "gain": 29.8759,
+        "rank": 10,
+        "total": {}
+      }
+    ]
+  },
+  "y_onset": {
+    "xgb": 0.1143,
+    "cat": 0.1021,
+    "rf": 0.0984,
+    "ew3": 0.1136,
+    "imp_vkospi_xgb": [
+      {
+        "feature": "vkospi_lag1",
+        "gain": 0.0324,
+        "rank": 10,
+        "total": 42
+      },
+      {
+        "feature": "vkospi_vix_spread_lag1",
+        "gain": 0.0103,
+        "rank": 21,
+        "total": 42
+      },
+      {
+        "feature": "vkospi_change_5d_lag1",
+        "gain": 0.0018,
+        "rank": 28,
+        "total": 42
+      },
+      {
+        "feature": "vkospi_z60_lag1",
+        "gain": 0.0014,
+        "rank": 31,
+        "total": 42
+      }
+    ],
+    "imp_vkospi_cat": [
+      {
+        "feature": "vkospi_vix_spread_lag1",
+        "gain": 2.1012,
+        "rank": 14,
+        "total": 73
+      },
+      {
+        "feature": "vkospi_lag1",
+        "gain": 1.6853,
+        "rank": 18,
+        "total": 73
+      },
+      {
+        "feature": "vkospi_change_5d_lag1",
+        "gain": 0,
+        "rank": 72,
+        "total": 73
+      },
+      {
+        "feature": "vkospi_z60_lag1",
+        "gain": 0,
+        "rank": 73,
+        "total": 73
+      }
+    ],
+    "imp_vkospi_rf": [
+      {
+        "feature": "vkospi_lag1",
+        "gain": 34.542,
+        "rank": 8,
+        "total": 73
+      },
+      {
+        "feature": "vkospi_z60_lag1",
+        "gain": 17.5884,
+        "rank": 25,
+        "total": 73
+      },
+      {
+        "feature": "vkospi_vix_spread_lag1",
+        "gain": 17.2859,
+        "rank": 26,
+        "total": 73
+      },
+      {
+        "feature": "vkospi_change_5d_lag1",
+        "gain": 8.7961,
+        "rank": 32,
+        "total": 73
+      }
+    ],
+    "top10_xgb": [
+      {
+        "feature": "us_sector_avg_z_rm63",
+        "gain": 0.2656,
+        "rank": 1,
+        "total": {}
+      },
+      {
+        "feature": "us_sector_dispersion_z_rm63",
+        "gain": 0.1017,
+        "rank": 2,
+        "total": {}
+      },
+      {
+        "feature": "us_sector_avg_z_rsd63",
+        "gain": 0.0856,
+        "rank": 3,
+        "total": {}
+      },
+      {
+        "feature": "us_sector_dispersion_z_rsd63",
+        "gain": 0.0816,
+        "rank": 4,
+        "total": {}
+      },
+      {
+        "feature": "bbva_macro_composite_rm63",
+        "gain": 0.0507,
+        "rank": 5,
+        "total": {}
+      },
+      {
+        "feature": "bbva_macro_composite_rsd63",
+        "gain": 0.0506,
+        "rank": 6,
+        "total": {}
+      },
+      {
+        "feature": "bbva_transmission_z_rsd63",
+        "gain": 0.0475,
+        "rank": 7,
+        "total": {}
+      },
+      {
+        "feature": "bbva_market_z_rsd21",
+        "gain": 0.034,
+        "rank": 8,
+        "total": {}
+      },
+      {
+        "feature": "us_sector_avg_z_rm21",
+        "gain": 0.0331,
+        "rank": 9,
+        "total": {}
+      },
+      {
+        "feature": "vkospi_lag1",
+        "gain": 0.0324,
+        "rank": 10,
+        "total": {}
+      }
+    ],
+    "top10_cat": [
+      {
+        "feature": "us_sector_dispersion_z_rm63",
+        "gain": 19.5803,
+        "rank": 1,
+        "total": {}
+      },
+      {
+        "feature": "us_sector_avg_z_rm63",
+        "gain": 18.438,
+        "rank": 2,
+        "total": {}
+      },
+      {
+        "feature": "bbva_macro_composite_rsd63",
+        "gain": 10.1201,
+        "rank": 3,
+        "total": {}
+      },
+      {
+        "feature": "us_sector_dispersion_z_rsd63",
+        "gain": 8.9615,
+        "rank": 4,
+        "total": {}
+      },
+      {
+        "feature": "bbva_macro_composite_rm63",
+        "gain": 5.891,
+        "rank": 5,
+        "total": {}
+      },
+      {
+        "feature": "bbva_market_z_rsd63",
+        "gain": 3.9234,
+        "rank": 6,
+        "total": {}
+      },
+      {
+        "feature": "us_sector_avg_z_rsd21",
+        "gain": 3.3304,
+        "rank": 7,
+        "total": {}
+      },
+      {
+        "feature": "us_sector_avg_z_rm21",
+        "gain": 3.3268,
+        "rank": 8,
+        "total": {}
+      },
+      {
+        "feature": "bbva_macro_composite_rm21",
+        "gain": 3.2219,
+        "rank": 9,
+        "total": {}
+      },
+      {
+        "feature": "bbva_transmission_z_rm63",
+        "gain": 2.7486,
+        "rank": 10,
+        "total": {}
+      }
+    ],
+    "top10_rf": [
+      {
+        "feature": "us_sector_avg_z_rm63",
+        "gain": 102.1899,
+        "rank": 1,
+        "total": {}
+      },
+      {
+        "feature": "us_sector_dispersion_z_rm63",
+        "gain": 78.6042,
+        "rank": 2,
+        "total": {}
+      },
+      {
+        "feature": "us_sector_avg_z_rsd63",
+        "gain": 73.0004,
+        "rank": 3,
+        "total": {}
+      },
+      {
+        "feature": "us_sector_dispersion_z_rsd63",
+        "gain": 59.6359,
+        "rank": 4,
+        "total": {}
+      },
+      {
+        "feature": "bbva_transmission_z_rsd63",
+        "gain": 51.2205,
+        "rank": 5,
+        "total": {}
+      },
+      {
+        "feature": "bbva_macro_composite_rsd63",
+        "gain": 45.2363,
+        "rank": 6,
+        "total": {}
+      },
+      {
+        "feature": "bbva_macro_composite_rm63",
+        "gain": 43.8958,
+        "rank": 7,
+        "total": {}
+      },
+      {
+        "feature": "vkospi_lag1",
+        "gain": 34.542,
+        "rank": 8,
+        "total": {}
+      },
+      {
+        "feature": "us_sector_avg_z_rm21",
+        "gain": 33.0907,
+        "rank": 9,
+        "total": {}
+      },
+      {
+        "feature": "bbva_macro_composite_rsd21",
+        "gain": 32.8443,
+        "rank": 10,
+        "total": {}
+      }
+    ]
+  }
+}

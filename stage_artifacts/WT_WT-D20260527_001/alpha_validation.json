@@ -1,0 +1,75 @@
+{
+  "task_id": "WT-D20260527_001",
+  "validation_summary": "PASS",
+  "graduation_criteria_pass": 5,
+  "graduation_criteria_total": 5,
+  "graduation_detail": {
+    "min_rank_ic_0_04": {"actual": 0.0561, "pass": true},
+    "min_icir_0_20": {"actual": 0.3977, "pass": true},
+    "min_subperiod_stability_0_50": {"actual": 1.0, "pass": true},
+    "min_harvey_t_3_0": {"actual": 4.4135, "pass": true},
+    "min_dsr_0_50": {"actual": 0.9984, "pass": true}
+  },
+  "pit_violations": 0,
+  "pit_violations_detail": [],
+  "pit_compliance": {
+    "C1": "PASS (expanding/rolling only)",
+    "C2": "PASS (close(t-1))",
+    "C9": "PASS (sig_date t -> [t, t+1m))",
+    "C10": "PASS (tv_20d shift n=1 lag — Codex C5 fix)",
+    "C11": "PASS (P3/P4 Date < sig_date strict)",
+    "C13": "PASS (Z_Score_Aligned via load_month_factors only)",
+    "C14": "PASS (Usable_Date <= sig_date)",
+    "C15": "PASS (load_month_factors only, no direct parquet)"
+  },
+  "red_flag_count": 4,
+  "high_severity_flag_count": 0,
+  "iter": 7,
+  "iter_name": "DCA_v7_4family_static_EW_P3P4_confidence",
+  "portfolio_proxy_backtest": {
+    "top20_EW_monthly_excess_vs_universe_pct": 0.27,
+    "top20_EW_annual_excess_pct": 3.30,
+    "top20_conf_weighted_annual_excess_pct": 3.55,
+    "top50_EW_annual_excess_pct": 2.26,
+    "D10_minus_D1_annual_pct": 6.60,
+    "hit_rate_top20_excess_pos_pct": 51.0,
+    "ax_007_alpha_level_status": "PASS — single-sleeve top-20 long-only mechanism works at alpha level (+3.30%/y excess), no optimizer extraction required"
+  },
+  "codex_critic_round_summary": {
+    "stance": "REJECT_initial",
+    "critical_concerns_count": 7,
+    "high_severity_count": 5,
+    "agent_response": "AUTO_SELF_REBUT",
+    "concerns_accepted": ["C1", "C2", "C3", "C5", "C7"],
+    "concerns_partial": ["C6"],
+    "concerns_rebutted": ["C4"],
+    "final_status_after_fixes": "all_graduation_criteria_pass + monotonicity 0.50 > STR_1715_admit_precedent_0.44"
+  },
+  "ax_axiom_status": {
+    "AX_002": "PASS",
+    "AX_004": "MITIGATED (multi-axis quality)",
+    "AX_005": "MITIGATED (4-family orthogonal; not standalone defense)",
+    "AX_007": "PASS at alpha level (top-20 EW +3.30%/y excess; multi-family structure)",
+    "AX_008": "IN_PROGRESS (1/3 reviewed: codex. Forge pending downstream.)"
+  },
+  "bear_date_audit": {
+    "status": "NOT_APPLICABLE",
+    "note": "Alpha pipeline does not generate forecast labels — no bear_date_audit needed. P3/P4 source (bearish_forecast_v3) already has bear_date_audit PASS upstream."
+  },
+  "universe_comparison": {
+    "KR_top342_default": true,
+    "KR_TOP500_FREEFLOAT_v2": {
+      "tested": false,
+      "reason": "ICIR 0.3977 + Harvey-t 4.41 + DSR 0.998 — strong evidence not consistent with universe-restriction attenuation. v2 comparison not mandated by L-227 trigger conditions (ICIR < 0.15 / Iter 13-16 plateau)."
+    }
+  },
+  "bootstrap_ci_95": {
+    "rank_ic_lower": 0.0279,
+    "rank_ic_upper": 0.0843
+  },
+  "iter_history": {
+    "n_iterations": 5,
+    "iters": ["Iter1 (rejected, momentum-inverted)", "Iter2 (rejected, defense saturation)", "Iter3 (rejected, defense dominance)", "Iter4 (Codex REJECT)", "Iter7 (SELECTED, post-Codex fixes)"]
+  },
+  "written_at": "2026-05-27T18:18:00+0900"
+}

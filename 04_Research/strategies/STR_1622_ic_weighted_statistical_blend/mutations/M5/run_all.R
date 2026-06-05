@@ -2,7 +2,7 @@ cat("=== STR_1622_M5: 5F IC-Weighted IC_WINDOW=6M (단축) ===\n")
 ## M5: IC_WINDOW 12 → 6. 단기 반응속도 향상. Arnott 2019 Factor Momentum
 set.seed(1622); options(scipen=999); Sys.setenv(TZ="Asia/Seoul")
 
-PROJ_ROOT  <- "/mnt/c/Users/User/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot"
+PROJ_ROOT  <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 INFRA_DIR  <- file.path(PROJ_ROOT, "02_Infrastructure")
 CACHE_DIR  <- file.path(PROJ_ROOT, ".cache")
 STR_DIR    <- file.path(PROJ_ROOT, "04_Research/strategies/STR_1622_ic_weighted_statistical_blend")

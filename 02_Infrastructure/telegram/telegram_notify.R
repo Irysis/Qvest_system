@@ -26,7 +26,7 @@ suppressPackageStartupMessages(library(jsonlite))
 # ─── Credentials (.env 로드, hardcoded 금지 — 2026-04-17 rotation) ───────────
 .tg_load_env <- function() {
   candidates <- c(
-    "/mnt/c/Users/User/OneDrive/\xeb\xb0\x94\xed\x83\x95 \xed\x99\x94\xeb\xa9\xb4/Quant_Module_Moltbot/.env",
+    file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")), ".env"),
     Sys.getenv("QVEST_PROJECT_DIR", ""),
     getwd()
   )
@@ -198,8 +198,9 @@ tg_send <- function(msg, parse_mode = "", silent = FALSE,
   # 2026-04-24: validate_emoji — 이모지 0개 감지 시 warning log (Judge/Risk 누락 방지)
   if (validate_emoji) {
     # Unicode emoji 범위 (1F300~1F9FF 확장 + 2600~27BF 기본)
-    emoji_n <- length(
-      regmatches(msg, gregexpr("[\U0001F300-\U0001F9FF☀-➿]", msg))[[1]]
+    emoji_n <- tryCatch(
+      length(regmatches(msg, gregexpr("[\U0001F300-\U0001F9FF☀-➿]", msg, perl = TRUE))[[1]]),
+      error = function(e) 0L  # Windows R: astral-range regex invalid → 검증 skip, 발송은 진행
     )
     if (!is.finite(emoji_n)) emoji_n <- 0L
     if (emoji_n < emoji_min) {
@@ -482,7 +483,8 @@ tg_format_gate_block <- function(gates, max_note_chars = 46L) {
   "Scout"    = "📚",
   "Execution" = "🎬",
   "Monitoring" = "📡",
-  "Architect" = "🏛️"
+  "Architect" = "🏛️",
+  "AlphaSearch" = "🔭"
 )
 
 # ─── Emoji Catalog v1 (2026-04-24) — SOT for tg_agent_brief sections ────────
@@ -775,6 +777,66 @@ tg_format_summary <- function(text, emoji = "\U0001F4CC") {
   sprintf("%s <b>%s</b>", emoji, tg_html_escape(text))
 }
 
+# ── v6.6 (2026-05-27) — Quant 고유명사 whitelist 확장 (도훈 mandate) ──────────
+# 퀀트 리서치 자주 쓰는 영어 고유명사 면제 list. bullet + kv key 양쪽 적용.
+.QUANT_WHITELIST <- c(
+  # 머신러닝 모델 (기존 v6.5)
+  "LightGBM", "XGBoost", "CatBoost", "Ridge", "LASSO", "ElasticNet", "Ensemble",
+  "RandomForest", "GBT", "NGBoost", "RNN", "LSTM", "GRU", "CNN", "Transformer",
+  "BERT", "GPT", "MLP", "DNN",
+  # 분포 / 시계열 모델
+  "Hansen", "Skewed-t", "Skew-t", "Cauchy", "GMM", "MoG", "Mixture",
+  "Bayesian", "MCMC", "TPE", "Optuna", "ACI", "EnbPI", "CQR", "SCP", "ECDF",
+  "ARIMA", "ARMA", "ARMAX", "VAR", "VECM", "GBM", "BOCPD", "Markov", "HMM",
+  "GARCH", "EGARCH", "EWMA", "Kalman", "PCA", "FA", "ICA", "EM",
+  # 분포 검정
+  "Kupiec", "Christoffersen", "McNeil-Frey", "Berkowitz", "Diebold-Mariano",
+  "DM-test", "KS-test", "JB-test", "ADF", "KPSS", "Ljung-Box",
+  # 거리/메트릭
+  "Wasserstein", "Hellinger", "Bhattacharyya", "KL", "Mahalanobis",
+  "CRPS", "NLL", "ELBO", "RMSE", "MAE", "MAPE", "R2", "AUC", "AUROC", "ROC",
+  "PR-AUC", "F1",
+  # 운용 메트릭
+  "Sharpe", "Sortino", "Calmar", "Sterling", "Treynor", "Jensen", "Omega",
+  "Newey-West", "Hansen-Hodrick", "Harvey-t", "Harvey", "Fama-MacBeth",
+  "Diebold-Mariano-West", "MDD", "IC", "ICIR", "DSR", "TE", "IR",
+  "VaR", "ES", "CVaR", "CAGR", "CTR", "TO", "PnL", "NAV", "AUM",
+  # 최적화
+  "HRP", "MVO", "ERC", "RP", "TWAP", "VWAP", "POV", "BL", "Black-Litterman",
+  "Kelly", "Pareto", "Markowitz", "Tobin",
+  # 알파 / 팩터 (학술)
+  "FF3", "FF4", "FF5", "Carhart", "AQR", "SMB", "HML", "UMD", "RMW", "CMA",
+  "BAB", "MOM", "REV", "LIQ", "IDIO", "EP", "BP", "GP", "FP", "ROE", "ROA",
+  "ROIC", "EBIT", "EBITDA", "NOPAT", "FCFE", "FCFF", "FCF", "DCF", "WACC",
+  "CAPM", "APT", "Beta", "SUE", "Novy-Marx", "Frazzini-Pedersen", "Piotroski",
+  "Fama-French", "Carhart-1997", "Asness", "Moskowitz",
+  # 시장 / 자산
+  "KOSPI", "KOSPI200", "KOSDAQ", "KOSDAQ150", "SP500", "NASDAQ", "DJIA",
+  "FTSE", "Russell", "MSCI", "STOXX", "ETF", "REIT", "ADR", "IPO",
+  "KRW", "USD", "JPY", "EUR", "GBP", "CNY", "VIX",
+  # 데이터/통계
+  "PIT", "OOS", "IS", "WF", "CV", "Backtest", "EW",
+  "JSON", "YAML", "CSV", "API", "SQL", "GPU", "CPU", "RAM",
+  "ML", "NN", "RL", "AI",
+  # 통계 분포/특성
+  "Skew", "Kurtosis", "Quantile", "CDF", "PDF", "QQ", "Hessian",
+  # Agent / WT system
+  "Q-Lead", "Q_Lead", "Alpha", "Risk", "Optimizer", "Forge", "Judge",
+  "Governor", "Scout", "Execution", "Monitoring", "Architect", "Codex",
+  # 학술 저널
+  "JF", "JFE", "JFQA", "RFS", "JPM", "FAJ", "RAS", "QJE", "AER", "JBF",
+  "RAJ", "JFM", "JoF",
+  # Macro / regime
+  "MRS", "ESBR", "ADV", "NFCI", "FRED", "FOMC", "ECB", "BOJ", "BOK",
+  # 기타 통상
+  "TDC", "ROC", "PnL"
+)
+.QUANT_WHITELIST_PATTERN <- paste0(
+  "\\b(?:",
+  paste(gsub("-", "[-]?", .QUANT_WHITELIST), collapse = "|"),
+  ")\\b"
+)
+
 tg_agent_brief <- function(agent,
                              title,
                              sections = list(),
@@ -805,21 +867,31 @@ tg_agent_brief <- function(agent,
                  gsub("[^A-Za-z0-9]", "_", substr(title, 1, 40)))
       }
     }
-    lock_file <- file.path("/tmp",
-                            sprintf("qvest_tg_lock_%s.lock", scope_key))
+    # tg lock: /tmp(Windows는 C:/tmp로 해석·TTL 없어 영구잔존) → 프로젝트 .cache/tg_locks + TTL.
+    #   run_id 고유화로 scope 충돌은 이미 해결됐고, 본 변경은 경로 크로스플랫폼화 + stale 자동 무시(위생). 2026-06-05.
+    .tg_lock_root <- if (exists("PROJECT_ROOT")) get("PROJECT_ROOT") else Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", tempdir()))
+    .tg_lock_dir  <- file.path(.tg_lock_root, ".cache", "tg_locks")
+    dir.create(.tg_lock_dir, recursive = TRUE, showWarnings = FALSE)
+    lock_file <- file.path(.tg_lock_dir, sprintf("qvest_tg_lock_%s.lock", scope_key))
+    .TG_LOCK_TTL_SEC <- 1800L   # 30분 — 이보다 오래된 lock은 stale로 간주, 차단하지 않음(영구잔존 방지)
 
     if (file.exists(lock_file) && !isTRUE(force)) {
-      first_call <- tryCatch(readLines(lock_file, n = 2),
-                              error = function(e) c("unknown", "unknown"))
-      warn_msg <- sprintf("[tg_agent_brief] BLOCKED duplicate dispatch. agent=%s scope=%s first_call=%s. Use force=TRUE to override.",
-                           agent, scope_key, first_call[1])
-      message(warn_msg)
-      log_f <- "/tmp/qvest_tg_duplicate_dispatch.log"
-      tryCatch(cat(sprintf("%s %s\n", format(Sys.time()), warn_msg),
-                    file = log_f, append = TRUE),
-                error = function(e) NULL)
-      return(invisible(list(ok = FALSE, error = "DUPLICATE_DISPATCH_BLOCKED",
-                             scope = scope_key, first_call = first_call[1])))
+      .lock_age <- tryCatch(as.numeric(difftime(Sys.time(), file.info(lock_file)$mtime, units = "secs")),
+                            error = function(e) Inf)
+      if (is.finite(.lock_age) && .lock_age < .TG_LOCK_TTL_SEC) {
+        first_call <- tryCatch(readLines(lock_file, n = 2),
+                                error = function(e) c("unknown", "unknown"))
+        warn_msg <- sprintf("[tg_agent_brief] BLOCKED duplicate dispatch. agent=%s scope=%s first_call=%s (age %.0fs < %ds). Use force=TRUE to override.",
+                             agent, scope_key, first_call[1], .lock_age, .TG_LOCK_TTL_SEC)
+        message(warn_msg)
+        log_f <- file.path(.tg_lock_dir, "_duplicate_dispatch.log")
+        tryCatch(cat(sprintf("%s %s\n", format(Sys.time()), warn_msg),
+                      file = log_f, append = TRUE),
+                  error = function(e) NULL)
+        return(invisible(list(ok = FALSE, error = "DUPLICATE_DISPATCH_BLOCKED",
+                               scope = scope_key, first_call = first_call[1])))
+      }
+      # stale lock (age >= TTL) — 무시하고 진행 (§5.5에서 새 lock으로 덮어씀)
     }
   }
 
@@ -928,19 +1000,15 @@ tg_agent_brief <- function(agent,
                         heading, paste(too_long, collapse=","), .TG_CONFIG$BULLET_ITEM_MAX))
         }
         # v6.3 SOT — bullet 안 영어 약어 라벨 금지 (예: AX-007, RF-A3, STR_055, C13)
-        # v6.5 (2026-05-15) — 도훈 명시: 통상 영어 표기 약어 OK (LightGBM/Ensemble/Pareto 등)
-        #   면제: WT 식별자 / agent name / 학술 저자-연도 / 저널 약어 / 통상 영어 표기
+        # v6.5 (2026-05-15) — 통상 영어 표기 OK
+        # v6.6 (2026-05-27) — 도훈 mandate: quant 고유명사 whitelist 확장 (.QUANT_WHITELIST)
         abbrev_pattern <- "\\b[A-Z]{2,5}[-_]?[A-Z0-9]{1,5}\\b"
         exempt_pattern <- paste0(
           "WT[-_][DPSH]?[0-9_]{4,15}|WT_[0-9]+",
-          # agent names (도훈 명시 2026-05-15)
-          "|Q[-_]Lead|Alpha|Risk|Optimizer|Forge|Judge|Governor|Scout|Execution|Monitoring|Architect|Codex",
-          # 학술 저자-연도
+          # 학술 저자-연도 (e.g., "Asness 2013", "Frazzini-Pedersen 2014")
           "|[A-Z][a-z]{2,}(?:[- ][A-Z][a-z]+)*\\s+(?:19|20)[0-9]{2}",
-          # 저널 약어
-          "|\\b(?:JF|JFE|JFQA|RFS|JPM|FAJ|RAS|QJE|AER|JBF|RAJ|JFM|JoF)\\b",
-          # 통상 영어 표기 quant 용어 (도훈 mandate 2026-05-15)
-          "|\\b(?:LightGBM|XGBoost|Ridge|LASSO|ElasticNet|Ensemble|Pareto|Sharpe|Newey-West|HRP|CVaR|MVO|ERC|TWAP|VWAP|TDC|MDD|IC|ICIR|DSR|TE|VaR|FF3|FF5|CAGR|MRS|ESBR|SUE|ADV|EWMA|GARCH|HMM|EM|PIT|OOS|GPU|CPU|ML|NN|RL|EW|JSON|YAML|CSV|API)\\b"
+          # Quant 고유명사 whitelist (v6.6)
+          "|", .QUANT_WHITELIST_PATTERN
         )
         bad_idx <- which(vapply(item_chars, function(it) {
           # 1) 면제 패턴 먼저 마스킹
@@ -972,20 +1040,20 @@ tg_agent_brief <- function(agent,
           stop(sprintf("[tg_agent_brief] 'kv' section heading='%s' values %s > %d 자 max. 축약 의무.",
                         heading, paste(names(kv)[too_long], collapse=","), .TG_CONFIG$KV_VALUE_MAX))
         }
-        # v6.3 SOT (2026-05-08) — kv key 한글 비율 강제 (영어 약어 라벨 금지)
-        # v6.4 (2026-05-08) — 학술 인용 (Asness 2013 / Frazzini-Pedersen 2014) 면제
-        # v6.5 (2026-05-15) — 도훈 mandate: 통상 영어 quant 용어 / agent name 면제 후 비율 측정
+        # v6.3 SOT (2026-05-08) — kv key 한글 비율 강제
+        # v6.5 (2026-05-15) — 통상 quant 용어 면제
+        # v6.6 (2026-05-27) — 도훈 mandate: quant 고유명사 whitelist 확장 (.QUANT_WHITELIST)
         kv_keys <- names(kv)
         academic_cite_pattern <- "[A-Z][a-z]{2,}(?:[- ][A-Z][a-z]+)*\\s+(?:19|20)[0-9]{2}"
-        common_terms_pattern <- "\\b(?:LightGBM|XGBoost|Ridge|LASSO|ElasticNet|Ensemble|Pareto|Sharpe|Newey-West|HRP|CVaR|MVO|ERC|TWAP|VWAP|TDC|MDD|IC|ICIR|DSR|TE|VaR|FF3|FF5|CAGR|MRS|ESBR|SUE|ADV|EWMA|GARCH|HMM|EM|PIT|OOS|GPU|CPU|ML|NN|RL|EW|JSON|YAML|CSV|API|Q[-_]Lead|Alpha|Risk|Optimizer|Forge|Judge|Governor|Scout|Execution|Monitoring|Architect|Codex)\\b"
         ascii_heavy <- vapply(kv_keys, function(k) {
-          # 학술 인용 / 통상 quant 용어 / agent name 매칭 시 마스킹 후 비율 측정
+          # 학술 인용 + quant whitelist 매칭 시 마스킹 후 비율 측정
           masked <- gsub(academic_cite_pattern, "", k, perl = TRUE)
-          masked <- gsub(common_terms_pattern, "", masked, perl = TRUE)
+          masked <- gsub(.QUANT_WHITELIST_PATTERN, "", masked, perl = TRUE)
           n_total <- nchar(masked)
           n_ascii_alpha <- length(regmatches(masked, gregexpr("[A-Za-z]", masked))[[1]])
           if (n_total == 0) return(FALSE)
-          (n_ascii_alpha / n_total) > 0.4
+          # v6.6 (2026-05-27) — 도훈 mandate: 임계 0.4 → 0.6 완화 (고유명사 OK)
+          (n_ascii_alpha / n_total) > 0.6
         }, logical(1))
         if (any(ascii_heavy)) {
           stop(sprintf("[tg_agent_brief] 'kv' section heading='%s' keys %s 영어 비율 > 40%%. v6.3 SOT: 한글 정통 용어 의무 (예: '샤프지수' / '정보계수' / '회전율'). 학술 인용 (Asness 2013 / Frazzini-Pedersen 2014)은 면제.",
@@ -1686,7 +1754,7 @@ tg_full_briefing <- function(slot = "AM") {
 
 .TG_TRIGGER_CACHE <- file.path(
   ifelse(exists("CACHE_DIR"), CACHE_DIR,
-         "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/.cache"),
+         file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")), ".cache")),
   "tg_trigger_snapshot.json"
 )
 

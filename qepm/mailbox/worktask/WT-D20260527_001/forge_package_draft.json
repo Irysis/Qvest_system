@@ -1,0 +1,209 @@
+{
+  "task_id": "WT-D20260527_001",
+  "agent": "forge",
+  "wt_type": "discovery",
+  "strategy_id": "STR_1719_WT001_DCA_v7",
+  "strategy_version": "v1.0",
+  "strategy_name": "DCA_v7_4family_static_EW_P3P4_confidence_M06_MVO_Breadth",
+  "run_id": "WT-D20260527_001_STR_1719_WT001_DCA_v7_20260527_200058",
+  "forge_inputs": {
+    "alpha_package_path": "qepm/mailbox/worktask/WT-D20260527_001/alpha_package.json",
+    "alpha_package_sha256": "8576dd4e4ffcc8be128345fbd57d4ec81e9e90f04cb7a3e1010f53942acde8d7",
+    "alpha_iter": 7,
+    "alpha_iter_name": "DCA_v7_4family_static_EW_P3P4_confidence",
+    "risk_package_path": "qepm/mailbox/worktask/WT-D20260527_001/risk_package.json",
+    "risk_package_sha256": "4b8c9b6bdf5ba3ec10be1a85e2efd2a27eadada41cedf9259f0dc987628581c9",
+    "risk_method": "ledoit_wolf_oracle",
+    "risk_condition_number": 14.5068,
+    "risk_psd_verified": true,
+    "opt_package_path": "qepm/mailbox/worktask/WT-D20260527_001/optimization_package.json",
+    "opt_package_sha256": "45e63fda7cbc19d316b3af24b7465834a4c169cf0570892d7a06e3e096517ab6",
+    "opt_method": "M06_MVO_Breadth",
+    "opt_n_names": 15,
+    "opt_expected_net_IR": 0.0709,
+    "weights_csv_path": "stage_artifacts/WT_WT-D20260527_001/optimizer/weights.csv",
+    "weights_csv_sha256": "372e13816fe61d717a6e03bbcea0f445030c0d5ca0c36e4c836ccf2c07a31f7b",
+    "weights_n_sig_dates": 97,
+    "weights_n_unique_tickers": 133,
+    "pure_function_boundary_status": "PASS",
+    "boundary_note": "3-package + weights.csv md5 unchanged between START and END of run_all.R"
+  },
+  "bt_result_path": "04_Research/strategies/STR_1719_WT001_DCA_v7/output/bt_result.rds",
+  "bt_result_sha256": "107f6a1a6cd0e01460d4bb4c23e3248f4e530710c5ddbb8923497f9c32b9e395",
+  "bt_result_summary_path": "04_Research/strategies/STR_1719_WT001_DCA_v7/output/bt_result_summary.json",
+  "bt_result_summary_sha256": "d59491ff14a2e0f339cfd6139376a374067958fa3bac672604ed60dc1e28d8b5",
+  "audit_status": "PASS_WITH_WARN",
+  "audit_summary": {
+    "n_checks": 16,
+    "n_pass": 15,
+    "n_warn": 1,
+    "n_fail": 0,
+    "n_critical_fail": 0,
+    "n_high_fail": 0,
+    "warn_details": "lookahead_detector_self_scan: scan_lookahead() function not exported by lookahead_detector.R (detect_lookahead, detect_lookahead_dir, detect_gate15_infra_pit exist instead) — known contract limitation"
+  },
+  "integrity": "WARNING",
+  "integrity_note": "Audit critical_fail=0, high_fail=0, only 1 medium-severity WARN on lookahead_detector_self_scan (function name mismatch, not strategy PIT issue). Integrity downgraded from PASS to WARNING per contract convention.",
+  "signal_cutoff": "2023-12-28",
+  "signal_cutoff_note": "Last sig_date in weights.csv. PIT lockbox 2024-01-01+ never accessed during weight computation. Forge backtest uses RAWDATA through 2024-01-30 only for last sig_date holding period mark-to-market.",
+  "rebalance_count": 97,
+  "rebalance_count_note": "97 sig_dates × 1 rebalance/sig = 97 rebalances over 2015-12-30 to 2023-12-28 (8.07 years). Density 97/97 = 1.000 (>= 0.95 per v6.3 §9 schedule fidelity).",
+  "cost_breakdown": {
+    "cost_model_version": "v2.3_kr_retail_15bps",
+    "commission_one_way_bps": 15,
+    "slippage_bps": 0,
+    "realized_annual_cost_pct": 0.92,
+    "expected_annual_cost_pct": 0.789,
+    "realized_per_rebal_TO_oneside": 0.2208,
+    "realized_per_rebal_TO_twoside": 0.4417,
+    "realized_annual_TO_oneside": 2.63,
+    "realized_annual_TO_twoside": 5.25,
+    "optimizer_claimed_annual_TO": 5.3,
+    "realized_vs_claimed_TO_pct_diff": -0.94,
+    "TO_convention_note": "annual_TO_twoside = sum(per_rebal_L1) / n_years. Matches optimizer convention (Charter §15 P6 cap = 6.0/y two-side). Forge realized TO 5.25/y < cap = PASS.",
+    "contract_field_caveat": "Contract metrics$Annualized_Turnover (55.65) uses naive avg(turnover) × 252 (daily ann_factor) which is wrong unit for monthly-rebal — should be × 12 = 2.65. Forge prefers realized_annual_TO_oneside/twoside fields here."
+  },
+  "schedule_density": 1,
+  "schedule_density_note": "97/97 sig_dates carry holdings in Forge backtest (density = 1.000, >= 0.95). NO fabrication of additional sig_dates. weights.csv as-is. alpha_scores.parquet NOT used for holding-selection (Pure Function v6.1 R12).",
+  "sr_realized_share_based": 0.3467,
+  "sr_realized_share_based_note": "Daily share-based NAV reconstruction (Forge PG2 grade): weights.csv schedule → 100M KRW initial cap → T+1 exec → delta-share commission (15bps × |Δshares| × price) → daily NAV → PerformanceAnalytics::SharpeRatio.annualized(Rf=0, scale=252). Primary measurement.",
+  "sr_factor_engine_continuous": 0.3493,
+  "sr_factor_engine_continuous_note": "Optimizer walk-forward monthly NAV simulation (idealized): sig_date weights × forward-1m last-business-day Close returns. Implemented in optimizer_pipeline.R STEP 6.",
+  "sr_lockbox_daily_harness": null,
+  "sr_lockbox_daily_harness_note": "Not computed at Forge step — will be computed at Judge.",
+  "measurement_basis_primary": "forge_realized_share_based",
+  "measurement_basis_rationale": "Per v6.3 §8 mandate, forge_realized_share_based is the primary measurement basis. factor_engine_continuous is idealized — does not capture daily NAV path, intra-month price moves, or actual commission on traded notional.",
+  "vs_factor_engine": {
+    "sr_factor_engine": 0.3493,
+    "sr_realized": 0.3467,
+    "divergence_factor_engine_vs_realized_pp": 0.0026,
+    "abs_divergence_pp": 0.0026,
+    "diagnosis": "NEGLIGIBLE",
+    "diagnosis_rule": "|div| < 0.2: NEGLIGIBLE / 0.2-0.4: MINOR_DRIFT / 0.4-0.6: SIGNIFICANT_DRAG / >= 0.6: FABRICATION_SUSPECTED",
+    "explanation": "Factor engine SR (0.3493) = optimizer walk-fwd monthly sim. Forge realized SR (0.3467) = daily share-based with commission on |Δshares|. Divergence -0.0026pp is within NEGLIGIBLE band. Confirms (a) optimizer walk-fwd sim closely tracks daily share-based path despite different granularity, (b) cost model applied correctly (~0.91%/y drag matches 15bps × 5.25 two-side TO expectation 0.79%/y plus small MTM noise)."
+  },
+  "backtest_metrics": {
+    "start_date": "2016-01-04",
+    "end_date": "2024-01-30",
+    "n_trading_days": 1986,
+    "n_years": 8.07,
+    "cagr_pct": 5.1433,
+    "total_return_pct": 48.507,
+    "annualized_volatility_pct": 20.5986,
+    "sharpe": 0.3467,
+    "sortino": 0.4871,
+    "calmar": 0.0861,
+    "mdd_pct": 59.7351,
+    "cvar_99_daily_pct": -5.0125,
+    "benchmark": "KOSPI200_total_return",
+    "benchmark_cagr_pct": 3.41,
+    "benchmark_sharpe": 0.2032,
+    "benchmark_mdd_pct": 43.9,
+    "benchmark_alpha_pct": 2.7046,
+    "benchmark_beta": 0.9324,
+    "tracking_error_pct": 13.4496,
+    "information_ratio": 0.1772,
+    "up_capture": 0.8793,
+    "down_capture": 0.8468,
+    "hit_ratio_vs_bm": 0.5005,
+    "avg_n_holdings": 15
+  },
+  "hard_constraint_status": {
+    "max_names_20": {
+      "observed_max": 15,
+      "status": "PASS"
+    },
+    "long_only": {
+      "observed_min_w": 0.04,
+      "status": "PASS"
+    },
+    "weight_bounds": {
+      "observed_max_w": 0.1304,
+      "bound": 0.2,
+      "status": "PASS"
+    },
+    "sum_weights_1": {
+      "observed_range": [1, 1],
+      "tol": 0.005,
+      "status": "PASS"
+    },
+    "liquidity_threshold": {
+      "threshold_won_20d_avg": 50000000,
+      "note": "Inherited from alpha/risk filtering"
+    },
+    "cost_model": {
+      "version": "v2.3_kr_retail_15bps",
+      "applied_delta_share_notional": true,
+      "status": "PASS"
+    },
+    "pit_compliance": {
+      "C1": true,
+      "C2": true,
+      "C9": true,
+      "C10": true,
+      "C11": true,
+      "C13": true,
+      "C14": true,
+      "C15": true,
+      "note": "Inherited from alpha/risk/optimizer; Forge uses T+1 exec + frozen sig_date weights"
+    }
+  },
+  "oos_chart_status": {
+    "equity_curve_png": "04_Research/strategies/STR_1719_WT001_DCA_v7/output/equity_curve.png",
+    "annual_returns_png": "04_Research/strategies/STR_1719_WT001_DCA_v7/output/annual_returns.png",
+    "oos_zoom_chart_png": "04_Research/strategies/STR_1719_WT001_DCA_v7/output/oos_zoom_chart.png",
+    "drawdown_chart_png": "04_Research/strategies/STR_1719_WT001_DCA_v7/output/drawdown_chart.png",
+    "note": "Walk-forward bt 2016-01-04 to 2024-01-30. OOS zoom = recent 3Y (2021-2023, pre-lockbox)."
+  },
+  "pure_function_self_check": {
+    "boundary_hash_consistency": "PASS",
+    "weights_csv_modified": false,
+    "alpha_package_modified": false,
+    "risk_package_modified": false,
+    "opt_package_modified": false,
+    "schedule_fabrication": "NONE",
+    "schedule_fabrication_note": "weights.csv 97 sig_dates used AS-IS. NO ProductionSchedule[N]m label. NO alpha_scores.parquet head(N) holding-selection.",
+    "alpha_scores_usage": "NONE",
+    "alpha_scores_used": false,
+    "pure_function_violation": false
+  },
+  "charter_compliance": {
+    "P1_factor_zoo_reduction": "INHERITED (alpha: 4-family static EW post-momentum-drop)",
+    "P2_cost_aware": "PASS (net-of-cost backtest 15bps on traded notional; gross_ret - cost_ret == ret_net audit PASS)",
+    "P3_uncertainty_aware": "INHERITED (alpha: P3/P4 confidence vector)",
+    "P4_direct_portfolio_learning": "N/A (two-stage architecture: alpha → risk → optimizer → forge)",
+    "P5_crowding_risk": "INHERITED (risk: RF-R3b HHI defense 0.54 → optimizer M06 breadth mitigated)",
+    "P6_implementation_discipline": "PASS (realized_annual_TO_twoside 5.25 < 6.0 cap; max_w 0.13 < 0.20; n_names 15 < 20)",
+    "P7_attribution_feedback": "PARTIAL (benchmark_compare 10 metrics; full Brinson + Carhart 4 attribution at Judge)",
+    "P8_ax_002_axiom": "PASS (no method-shopping override; weights.csv hash start/end identical)"
+  },
+  "backtest_contract_audit": {
+    "n_checks": 16,
+    "pass": 15,
+    "warn": 1,
+    "fail": 0,
+    "integrity_status": "WARNING",
+    "critical_fail": 0,
+    "high_fail": 0,
+    "audit_path": "04_Research/strategies/STR_1719_WT001_DCA_v7/output/10_audit.csv",
+    "note": "16 checks executed. 15 PASS + 1 medium WARN (lookahead_detector_self_scan — known contract limitation)."
+  },
+  "registry_status": {
+    "registered": true,
+    "registry_path": "qepm/registry/backtest_registry.csv",
+    "registry_entry_id": "WT-D20260527_001_STR_1719_WT001_DCA_v7_20260527_200058",
+    "block_on_fail_triggered": false
+  },
+  "artifact_lineage_appended": true,
+  "artifact_lineage_path": "qepm/mailbox/worktask/WT-D20260527_001/artifact_lineage.json",
+  "ax_008_status": {
+    "forge_source": "PASS (15/16 audit checks PASS, integrity WARNING, no critical/high fails, pure-function boundary PASS)",
+    "codex_source": "IN_PROGRESS",
+    "architect_source": "OPTIONAL",
+    "triangulation_target": "2/3 sources PASS",
+    "current_status": "1/3 (Forge) pending Codex"
+  },
+  "generated_at": "2026-05-27T20:05:01+09:00",
+  "forward_to": "judge",
+  "reproduction_command": "cd /mnt/c/Users/User/OneDrive/바탕\\ 화면/Quant_Module_Moltbot && Rscript -e 'source(\"04_Research/strategies/STR_1719_WT001_DCA_v7/run_all.R\")'"
+}

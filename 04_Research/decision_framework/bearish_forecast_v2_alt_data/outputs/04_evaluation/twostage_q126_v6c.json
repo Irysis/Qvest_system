@@ -1,0 +1,513 @@
+{
+  "cycle": "56-2stage Aggregate",
+  "generated_at": "2026-05-21 08:59:53.32789",
+  "baselines": {
+    "reference_53H_full_oos": 0.4012,
+    "same_coverage_T2": 0.2879,
+    "observable_only_T3": 0.2887
+  },
+  "variants": {
+    "v1_naive_concat_6": {
+      "T2": 0.1255,
+      "T3": 0.1314,
+      "delta_T2": -0.1625,
+      "delta_53H": -0.2757
+    },
+    "v2_augmented_concat_10": {
+      "T2": 0.1335,
+      "T3": 0.1405,
+      "delta_T2": -0.1544,
+      "delta_53H": -0.2677
+    },
+    "v3_weighted_blend": {
+      "T2": 0.1513,
+      "T3": 0.1542,
+      "delta_T2": -0.1367,
+      "delta_53H": -0.2499
+    }
+  },
+  "T1_53H_reference_frame": {
+    "scope": "Full OOS 2018-01-02..2026-04-30 (53H reporting frame)",
+    "n": 2042,
+    "events": 515,
+    "stage1_pr_auc": 0.4012,
+    "stage1_roc_auc": 0.7033,
+    "note": "53H reported 0.4012 — reproduces here; phantom 0s in Fold 5 inflate denominator"
+  },
+  "T2_same_coverage": {
+    "scope": "Stage-2 OOF coverage (folds 2-5, 1634 rows)",
+    "n": 1634,
+    "events": 306,
+    "stage1_pr_auc": 0.2879,
+    "v1_naive_pr_auc": 0.1255,
+    "v2_augmented_pr_auc": 0.1335,
+    "v3_blend_pr_auc": 0.1513,
+    "stage1_roc_auc": 0.6749,
+    "v1_naive_roc_auc": 0.2872,
+    "v2_augmented_roc_auc": 0.3364,
+    "v3_blend_roc_auc": 0.4281
+  },
+  "T3_observable_only": {
+    "scope": "Observable-label only (ret_q126 NOT NaN, drops phantom-0s end-of-data)",
+    "n": 1526,
+    "events": 306,
+    "stage1_pr_auc": 0.2887,
+    "v1_naive_pr_auc": 0.1314,
+    "v2_augmented_pr_auc": 0.1405,
+    "v3_blend_pr_auc": 0.1542,
+    "stage1_roc_auc": 0.6497,
+    "v1_naive_roc_auc": 0.2616,
+    "v2_augmented_roc_auc": 0.3169,
+    "v3_blend_roc_auc": 0.3915
+  },
+  "T4_per_fold_bootstrap": {
+    "per_fold": {
+      "fold_2": {
+        "fold": 2,
+        "n": 408,
+        "events": 49,
+        "date_min": "2019-08-30",
+        "date_max": "2021-04-26",
+        "metrics": {
+          "p_patchtst": {
+            "point": 0.4804,
+            "ci_lo": 0.3907,
+            "ci_hi": 0.5968
+          },
+          "p_v1_naive": {
+            "point": 0.0654,
+            "ci_lo": 0.0642,
+            "ci_hi": 0.0671
+          },
+          "p_v2_augment": {
+            "point": 0.0691,
+            "ci_lo": 0.0669,
+            "ci_hi": 0.0725
+          },
+          "p_v3_blend": {
+            "point": 0.0773,
+            "ci_lo": 0.0735,
+            "ci_hi": 0.0822
+          }
+        }
+      },
+      "fold_3": {
+        "fold": 3,
+        "n": 408,
+        "events": 227,
+        "date_min": "2021-04-27",
+        "date_max": "2022-12-19",
+        "metrics": {
+          "p_patchtst": {
+            "point": 0.743,
+            "ci_lo": 0.6841,
+            "ci_hi": 0.801
+          },
+          "p_v1_naive": {
+            "point": 0.5812,
+            "ci_lo": 0.5408,
+            "ci_hi": 0.6336
+          },
+          "p_v2_augment": {
+            "point": 0.8062,
+            "ci_lo": 0.7539,
+            "ci_hi": 0.8593
+          },
+          "p_v3_blend": {
+            "point": 0.6581,
+            "ci_lo": 0.6037,
+            "ci_hi": 0.7118
+          }
+        }
+      },
+      "fold_4": {
+        "fold": 4,
+        "n": 408,
+        "events": 27,
+        "date_min": "2022-12-20",
+        "date_max": "2024-08-16",
+        "metrics": {
+          "p_patchtst": {
+            "point": 0.0358,
+            "ci_lo": 0.035,
+            "ci_hi": 0.0372
+          },
+          "p_v1_naive": {
+            "point": 0.0409,
+            "ci_lo": 0.0376,
+            "ci_hi": 0.0545
+          },
+          "p_v2_augment": {
+            "point": 0.0413,
+            "ci_lo": 0.0388,
+            "ci_hi": 0.0489
+          },
+          "p_v3_blend": {
+            "point": 0.0358,
+            "ci_lo": 0.035,
+            "ci_hi": 0.0372
+          }
+        }
+      },
+      "fold_5": {
+        "fold": 5,
+        "n": 410,
+        "events": 3,
+        "status": "SKIP_INSUFFICIENT_EVENTS"
+      }
+    },
+    "average": {
+      "stage1_per_fold_avg": 0.4197,
+      "v1_per_fold_avg": 0.2292,
+      "v2_per_fold_avg": 0.3055,
+      "v3_per_fold_avg": 0.257,
+      "folds_used": ["fold_2", "fold_3", "fold_4"]
+    }
+  },
+  "period_segmentation_53M": {
+    "P1_2018_2019_TrumpTariff": {
+      "period": "P1_2018_2019_TrumpTariff",
+      "range": ["2018-01-01", "2019-12-31"],
+      "n": 82,
+      "events": 48,
+      "stage1_pr": 0.8226,
+      "v1_pr": 0.4456,
+      "v2_pr": 0.7771,
+      "v3_pr": 0.4999
+    },
+    "P2_2020_2021_COVID": {
+      "period": "P2_2020_2021_COVID",
+      "range": ["2020-01-01", "2021-12-31"],
+      "n": 496,
+      "events": 152,
+      "stage1_pr": 0.4843,
+      "v1_pr": 0.1763,
+      "v2_pr": 0.1807,
+      "v3_pr": 0.1819
+    },
+    "P3_2022_InflationShock": {
+      "period": "P3_2022_InflationShock",
+      "range": ["2022-01-01", "2022-12-31"],
+      "n": 246,
+      "events": 76,
+      "stage1_pr": 0.7538,
+      "v1_pr": 0.4411,
+      "v2_pr": 0.6105,
+      "v3_pr": 0.5748
+    },
+    "P4_2023_2024_SoftLanding": {
+      "period": "P4_2023_2024_SoftLanding",
+      "range": ["2023-01-01", "2024-12-31"],
+      "n": 489,
+      "events": 30,
+      "stage1_pr": 0.0391,
+      "v1_pr": 0.0409,
+      "v2_pr": 0.043,
+      "v3_pr": 0.0385
+    },
+    "P5_2025_2026_recent": {
+      "period": "P5_2025_2026_recent",
+      "range": ["2025-01-01", "2026-04-30"],
+      "n": 321,
+      "events": 0,
+      "status": "SKIP_INSUFFICIENT"
+    }
+  },
+  "feature_importance_v2_full_oos_refit": [
+    {
+      "feature": "ecos_base_rate_lag1",
+      "gain": 0.2449,
+      "cover": 0.12,
+      "frequency": 0.0755
+    },
+    {
+      "feature": "p_patchtst",
+      "gain": 0.1629,
+      "cover": 0.1335,
+      "frequency": 0.1385
+    },
+    {
+      "feature": "us_initial_claims_4w_avg_lag1",
+      "gain": 0.1186,
+      "cover": 0.0773,
+      "frequency": 0.0977
+    },
+    {
+      "feature": "us_t10y2y_spread_lag1",
+      "gain": 0.1086,
+      "cover": 0.0862,
+      "frequency": 0.1037
+    },
+    {
+      "feature": "us_stlfsi_lag1",
+      "gain": 0.0939,
+      "cover": 0.1299,
+      "frequency": 0.1355
+    },
+    {
+      "feature": "ecos_m2_yoy_lag1",
+      "gain": 0.0938,
+      "cover": 0.1385,
+      "frequency": 0.1079
+    },
+    {
+      "feature": "ecos_cpi_yoy_lag1",
+      "gain": 0.0871,
+      "cover": 0.1532,
+      "frequency": 0.1163
+    },
+    {
+      "feature": "ecos_industrial_production_yoy_lag1",
+      "gain": 0.0548,
+      "cover": 0.0813,
+      "frequency": 0.1007
+    },
+    {
+      "feature": "us_cfnai_lag1",
+      "gain": 0.023,
+      "cover": 0.0352,
+      "frequency": 0.0492
+    },
+    {
+      "feature": "ecos_krw_usd_change_5d_lag1",
+      "gain": 0.0124,
+      "cover": 0.0448,
+      "frequency": 0.0749
+    }
+  ],
+  "alpha_per_fold_v3": [
+    {
+      "fold": 2,
+      "test_dates": [
+        "2019-08-30",
+        "2021-04-26"
+      ],
+      "train_n": 408,
+      "test_n": 408,
+      "train_events": 209,
+      "test_events": 49,
+      "stage1_baseline": {
+        "pr_auc": 0.4804,
+        "roc_auc": 0.9268
+      },
+      "v1_naive_6": {
+        "pr_auc": 0.0654,
+        "roc_auc": 0.0851
+      },
+      "v2_augmented_10": {
+        "pr_auc": 0.0691,
+        "roc_auc": 0.1396
+      },
+      "v3_blend": {
+        "pr_auc": 0.0773,
+        "roc_auc": 0.2468,
+        "best_alpha": 0.5,
+        "alpha_grid": {
+          "fallback": "insufficient_alpha_val_n_or_events",
+          "default_alpha": 0.5
+        }
+      }
+    },
+    {
+      "fold": 3,
+      "test_dates": [
+        "2021-04-27",
+        "2022-12-19"
+      ],
+      "train_n": 816,
+      "test_n": 408,
+      "train_events": 258,
+      "test_events": 227,
+      "stage1_baseline": {
+        "pr_auc": 0.743,
+        "roc_auc": 0.7302
+      },
+      "v1_naive_6": {
+        "pr_auc": 0.5812,
+        "roc_auc": 0.5614
+      },
+      "v2_augmented_10": {
+        "pr_auc": 0.8062,
+        "roc_auc": 0.8244
+      },
+      "v3_blend": {
+        "pr_auc": 0.6581,
+        "roc_auc": 0.6089,
+        "best_alpha": 0.5,
+        "alpha_grid": {
+          "fallback": "insufficient_alpha_val_n_or_events",
+          "default_alpha": 0.5
+        }
+      }
+    },
+    {
+      "fold": 4,
+      "test_dates": [
+        "2022-12-20",
+        "2024-08-16"
+      ],
+      "train_n": 1224,
+      "test_n": 408,
+      "train_events": 485,
+      "test_events": 27,
+      "stage1_baseline": {
+        "pr_auc": 0.0358,
+        "roc_auc": 0.0991
+      },
+      "v1_naive_6": {
+        "pr_auc": 0.0409,
+        "roc_auc": 0.2156
+      },
+      "v2_augmented_10": {
+        "pr_auc": 0.0413,
+        "roc_auc": 0.2456
+      },
+      "v3_blend": {
+        "pr_auc": 0.0358,
+        "roc_auc": 0.0991,
+        "best_alpha": 1,
+        "alpha_grid": {
+          "grid": [
+            0,
+            0.05,
+            0.1,
+            0.15,
+            0.2,
+            0.25,
+            0.3,
+            0.35,
+            0.4,
+            0.45,
+            0.5,
+            0.55,
+            0.6,
+            0.65,
+            0.7,
+            0.75,
+            0.8,
+            0.85,
+            0.9,
+            0.95,
+            1
+          ],
+          "pr_auc_per_alpha": [
+            0.4314,
+            0.4492,
+            0.4634,
+            0.4729,
+            0.482,
+            0.4876,
+            0.4949,
+            0.4951,
+            0.5047,
+            0.51,
+            0.5153,
+            0.524,
+            0.527,
+            0.5324,
+            0.5392,
+            0.5628,
+            0.6117,
+            0.672,
+            0.714,
+            0.742,
+            0.7649
+          ],
+          "best_alpha": 1,
+          "best_pr_train_tail": 0.7649
+        }
+      }
+    },
+    {
+      "fold": 5,
+      "test_dates": [
+        "2024-08-19",
+        "2026-04-30"
+      ],
+      "train_n": 1632,
+      "test_n": 410,
+      "train_events": 512,
+      "test_events": 3,
+      "stage1_baseline": {
+        "pr_auc": null,
+        "roc_auc": null
+      },
+      "v1_naive_6": {
+        "pr_auc": null,
+        "roc_auc": null
+      },
+      "v2_augmented_10": {
+        "pr_auc": null,
+        "roc_auc": null
+      },
+      "v3_blend": {
+        "pr_auc": null,
+        "roc_auc": null,
+        "best_alpha": 0,
+        "alpha_grid": {
+          "grid": [
+            0,
+            0.05,
+            0.1,
+            0.15,
+            0.2,
+            0.25,
+            0.3,
+            0.35,
+            0.4,
+            0.45,
+            0.5,
+            0.55,
+            0.6,
+            0.65,
+            0.7,
+            0.75,
+            0.8,
+            0.85,
+            0.9,
+            0.95,
+            1
+          ],
+          "pr_auc_per_alpha": [
+            0.0497,
+            0.0489,
+            0.0484,
+            0.0481,
+            0.0478,
+            0.0474,
+            0.0472,
+            0.047,
+            0.0467,
+            0.0464,
+            0.0462,
+            0.0457,
+            0.0453,
+            0.0449,
+            0.0447,
+            0.0445,
+            0.0442,
+            0.0441,
+            0.0441,
+            0.044,
+            0.044
+          ],
+          "best_alpha": 0,
+          "best_pr_train_tail": 0.0497
+        }
+      }
+    }
+  ],
+  "verdict": "2STAGE_FAIL_LARGE_REGRESSION",
+  "best_variant": "v3_blend",
+  "best_pr_auc": 0.1513,
+  "best_delta_vs_53H_reference": -0.2499,
+  "best_delta_vs_same_coverage": -0.1367,
+  "notes": [
+    "53H baseline 0.4012 was computed on FULL OOS 2018-2026 = 2042 rows",
+    "Stage 2 OOF covers folds 2-5 = 1634 rows (Fold 1 has no train data; required by chronological CV)",
+    "T3 observable-only: drops rows where ret_q126 is NaN (forward-label not yet observable) — phantom-0 contamination removed",
+    "Fold 5 has only 3 events / 410 rows because targets file fills NaN-y as 0 at end-of-data — labeling bug inherited from Cycle 48A targets_long_horizon.parquet (not introduced by Cycle 56-2stage)",
+    "Fold 1 → Fold 2 transition: train events 209 (51%) → test events 49 (12%) creates severe regime shift, XGB scale_pos_weight overfit drives V1/V2 catastrophic Fold 2 PR collapse to 0.06",
+    "Per-fold AVG (T4) more robust than OOF-concat (T2) under distribution shift — see Fold 3 V2 PR=0.8062 > S1 PR=0.7430 (V2 wins where train/test event base rates aligned)"
+  ]
+}

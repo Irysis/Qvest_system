@@ -14,7 +14,7 @@ suppressPackageStartupMessages({
   library(future.apply)
 })
 
-PROJECT_ROOT <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+PROJECT_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 setwd(PROJECT_ROOT)
 
 source("02_Infrastructure/config.R")

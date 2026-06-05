@@ -1,0 +1,92 @@
+{
+  "axiom_compliance": {
+    "AX_002": "PASS_no_synthesis",
+    "PIT_C1_C15": "PASS"
+  },
+  "self_synthesis_used": false,
+  "hard_constraints": {
+    "max_names": 20,
+    "long_only": true,
+    "sum_weights": 1,
+    "weight_bounds": [0, 0.2],
+    "TO_cap_yr": 6
+  },
+  "pure_function_violation": false,
+  "schedule_fidelity": "weights_267m_timeseries.csv source inherit, β_bear scalar applied",
+  "architect_uplift": {
+    "baseline_floor_auc": 0.4438,
+    "baseline_floor_recall": 0,
+    "forge_mean_auc": 0.6117,
+    "forge_mean_recall": 0,
+    "uplift_auc_target_ge_060_pass": true,
+    "uplift_recall_target_ge_060_pass": false
+  },
+  "g1_subgate_pass_count": 0,
+  "g1_subgate_target": 4,
+  "g1_subgate_pass": false,
+  "g2_pit_pass": true,
+  "g3_feature_stability_gini_mean": 0.3914,
+  "g3_top10_overlap_mean": 0.84,
+  "g3_pass": true,
+  "g4_brier_mean": 0.0908,
+  "g4_pass": true,
+  "g5_design_phase": true,
+  "opt_bindings_13": {
+    "OPT1_tau_sweep": {
+      "tau_03": {
+        "SR_L6": 1.8259,
+        "MDD_L6": 0.2481
+      },
+      "tau_05": {
+        "SR_L6": 1.8651,
+        "MDD_L6": 0.2481
+      },
+      "tau_07": {
+        "SR_L6": 1.8792,
+        "MDD_L6": 0.2481
+      }
+    },
+    "OPT2_beta_schedule": {
+      "schedule": "{<0.3: 1.0, 0.3-0.5: 0.7, 0.5-0.7: 0.5, >0.7: 0.3}",
+      "implemented": "binary {>tau:0.5, <tau:1.0} simplified in this run for speed"
+    },
+    "OPT3_anti_flicker": "1m persistence default, beta_bear_emp_smoothed applied",
+    "OPT4_rho_pbad_m4": -0.5373,
+    "OPT4_pass": true,
+    "OPT5_path_a": "deferred_to_WT_019_001_DPL_KR_v3_Forge_cycle",
+    "OPT6_TO_total_tau05": 5.8596,
+    "OPT6_pass": true,
+    "OPT7": "simple_average_5_models_default (Logistic L1 + XGB + RF + Lag-GLM + MSM)",
+    "OPT8": "platt_scaling_deferred_to_alpha_agent",
+    "OPT9_TDC": 0.75,
+    "OPT9_pass": false,
+    "OPT10_replacement": {
+      "SR": 1.8651,
+      "MDD": 0.2481,
+      "CAGR": 0.3991
+    },
+    "OPT10_integration": "Integration scenario (4L × 80% + bear × 20%) requires separate cycle",
+    "OPT11_DSR_L5_V2": 5.9439,
+    "OPT11_DSR_L6_tau05": 5.9004,
+    "OPT11_DSR_L6_tau07": 5.9292,
+    "OPT11_pass_tau05": true,
+    "OPT11_pass_tau07": true,
+    "OPT12_active_book_overlap_pct": 0.03,
+    "OPT13_beta_drift_by_regime": {
+      "regime_str1715": ["BULL", "NORMAL", "CAUTION", "CRISIS"],
+      "n_obs": [47, 83, 8, 1],
+      "mean_beta_bear_tau05": [1, 0.9904, 0.875, 1],
+      "SR_partial": [2.9777, 1.6662, -3.2575, null]
+    },
+    "OPT12_active_book_overlap_joint_rebalance_n": 8
+  },
+  "sd_drift_findings": {
+    "SD_1_DGS3MO_missing": "F02 uses 10y-FedFunds proxy (honest label)",
+    "SD_2_F06_INDPRO": "renamed F06_INDPRO_growth_3m",
+    "SD_3_SP500_missing": "F17 uses KOSPI-KRW cor60 (Ang-Chen 2002 proxy)",
+    "SD_4_F13_disabled": "F13 dropped from feature list",
+    "SD_5_F22_US": "renamed F22_US_Bank_Lending_Std",
+    "SD_6_BAML_2023plus": "F24 pre-2023 NaN documented in BAML series",
+    "SD_7_TO_layer_6_empirical": 0.3596
+  }
+}

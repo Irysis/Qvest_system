@@ -36,7 +36,7 @@ load_kr_riskfree <- function(
   basis <- match.arg(basis)
   if (is.null(bond_path)) {
     cand <- c(
-      "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/.cache/ecos_bond_rates.parquet",
+      file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")), ".cache/ecos_bond_rates.parquet"),
       file.path(getwd(), ".cache/ecos_bond_rates.parquet")
     )
     bond_path <- cand[file.exists(cand)][1]

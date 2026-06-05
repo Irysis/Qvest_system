@@ -1,7 +1,7 @@
 ## Scout: 12 S0 Hypotheses Allocation (manual, no sg_init dependency)
 cat("=== Scout: 12 S0 Hypotheses Allocation ===\n")
 
-PROJECT_ROOT <- "/mnt/c/Users/User/OneDrive/\ubc14\ud0d5 \ud654\uba74/Quant_Module_Moltbot"
+PROJECT_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 source(file.path(PROJECT_ROOT, "02_Infrastructure/config.R"))
 library(jsonlite)
 

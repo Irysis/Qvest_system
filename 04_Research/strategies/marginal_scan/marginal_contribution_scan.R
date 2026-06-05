@@ -15,7 +15,7 @@ suppressPackageStartupMessages({
   library(arrow)
 })
 
-PROJECT_ROOT <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+PROJECT_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 FDB_DIR      <- file.path(PROJECT_ROOT, ".cache/factor_db")
 OUTPUT_DIR   <- file.path(PROJECT_ROOT, "04_Research/strategies/marginal_scan")
 

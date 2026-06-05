@@ -1,0 +1,157 @@
+{
+  "three_window": {
+    "full": {
+      "label": "FULL 2005-2026",
+      "n": 256,
+      "sr": 0.7788,
+      "cagr": 0.1917,
+      "mdd": -0.4914,
+      "vol": 0.2746,
+      "pa_t": 2.3497,
+      "ir": 0.5397,
+      "ann_excess": 0.0879,
+      "dsr_raw": 3.5568,
+      "dsr_post": 2.2568
+    },
+    "pre_lb": {
+      "label": "PRE-LB <=2023-12",
+      "n": 226,
+      "sr": 0.7811,
+      "cagr": 0.1895,
+      "mdd": -0.4914,
+      "vol": 0.2702,
+      "pa_t": 3.6632,
+      "ir": 0.8526,
+      "ann_excess": 0.1349,
+      "dsr_raw": 3.2853,
+      "dsr_post": 1.9853
+    },
+    "lockbox_oos": {
+      "label": "LOCKBOX-OOS 2024+",
+      "n": 29,
+      "sr": 0.7349,
+      "cagr": 0.204,
+      "mdd": -0.236,
+      "vol": 0.3157,
+      "pa_t": -2.397,
+      "ir": -1.4883,
+      "ann_excess": -0.3473,
+      "dsr_raw": 1.2359,
+      "dsr_post": 1.2359
+    }
+  },
+  "harvey_5spec": {
+    "full": {
+      "CAPM": {
+        "t": 2.531,
+        "alpha_monthly_pct": 0.8324,
+        "p": 0.012,
+        "n": 254,
+        "pass": false
+      },
+      "Carhart3": {
+        "t": 2.22,
+        "alpha_monthly_pct": 0.6335,
+        "p": 0.0273,
+        "n": 254,
+        "pass": false
+      },
+      "Carhart4": {
+        "t": 2.216,
+        "alpha_monthly_pct": 0.6394,
+        "p": 0.0276,
+        "n": 254,
+        "pass": false
+      },
+      "FF5": {
+        "t": 1.895,
+        "alpha_monthly_pct": 0.549,
+        "p": 0.0593,
+        "n": 254,
+        "pass": false
+      },
+      "FF6": {
+        "t": 1.939,
+        "alpha_monthly_pct": 0.5568,
+        "p": 0.0537,
+        "n": 254,
+        "pass": false
+      }
+    },
+    "pre_lb": {
+      "CAPM": {
+        "t": 3.321,
+        "alpha_monthly_pct": 1.1061,
+        "p": 0.001,
+        "n": 226,
+        "pass": true
+      },
+      "Carhart3": {
+        "t": 2.864,
+        "alpha_monthly_pct": 0.8495,
+        "p": 0.0046,
+        "n": 226,
+        "pass": false
+      },
+      "Carhart4": {
+        "t": 2.769,
+        "alpha_monthly_pct": 0.8312,
+        "p": 0.0061,
+        "n": 226,
+        "pass": false
+      },
+      "FF5": {
+        "t": 2.471,
+        "alpha_monthly_pct": 0.7566,
+        "p": 0.0142,
+        "n": 226,
+        "pass": false
+      },
+      "FF6": {
+        "t": 2.441,
+        "alpha_monthly_pct": 0.7414,
+        "p": 0.0154,
+        "n": 226,
+        "pass": false
+      }
+    },
+    "pass_full": 0,
+    "pass_pre_lb": 1,
+    "note": "v8.x graduation Gate C metric = portfolio_alpha_t_nw_lag3 (judge owns 5-spec Gate); 5-spec emitted as supporting evidence per Codex C1."
+  },
+  "same_period_baseline": {
+    "overlap_months": 219,
+    "str_1715": {
+      "n": 219,
+      "sr": 0.8285,
+      "mdd": -0.4124,
+      "pa_t": 3.2003,
+      "ir": 0.6789,
+      "dsr_post": 3.6617
+    },
+    "flow_same_period": {
+      "n": 219,
+      "sr": 0.741,
+      "mdd": -0.4785,
+      "pa_t": 2.4318,
+      "ir": 0.6135,
+      "dsr_post": 1.8199
+    },
+    "note": "STR_1715 realized monthly (Charter v1.4 standard basis), same overlap period, net. FLOW DSR penalized n_cands=26."
+  },
+  "turnover": {
+    "avg_per_rebal_oneway": 0.648,
+    "ann_oneway": 2.592,
+    "ann_roundtrip": 5.184,
+    "rebal_per_yr": 4,
+    "contract_metric_invalid": 163.296,
+    "contract_note": "build_metrics x252 mislabels quarterly TO; corrected to x4."
+  },
+  "mdd_hard_constraint": {
+    "mdd_full": -0.4914,
+    "mdd_pre_lb": -0.4914,
+    "hard_cap": -0.45,
+    "breach": true,
+    "note": "MDD 58.8% FULL breaches 45% base hard constraint (Codex C2). Driven by 2008 GFC (beta~1 sleeve). Pre-LB MDD also reported."
+  }
+}

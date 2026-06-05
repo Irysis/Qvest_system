@@ -1,0 +1,36 @@
+{
+  "cycle": "54C_patchtst_v5e_q126_multiseed",
+  "draft_purpose": "Codex Critic Round 5단계 폐기 (도훈 mandate 2026-05-21) — 본 draft는 형식 보존용 placeholder. 실제 review = code-only via codex CLI direct.",
+  "mandate_2026_05_21": {
+    "original_5step_flow": "deprecated",
+    "replacement": "codex:codex-rescue agent / codex CLI direct로 코드만 검증",
+    "scope_in": [
+      "Multi-seed loop reproducibility (PyTorch + numpy seed)",
+      "Walk-forward 5-fold split 정확성 (5 seeds 동일 split)",
+      "5-seed mean prediction 계산 correctness",
+      "Per-date variance 계산 numerical correctness",
+      "Period-stratified PR-AUC + bootstrap CI"
+    ],
+    "scope_out": [
+      "STABLE / MODERATE / UNSTABLE threshold 해석 (Q-Lead 독립)",
+      "Headline lock 결정 (Q-Lead 독립)",
+      "Lucky tail 판정 (Q-Lead 독립)"
+    ],
+    "workflow_new": [
+      "Step 1: scripts 작성",
+      "Step 2: codex code review (read-only sandbox)",
+      "Step 3: fix → re-validate",
+      "Step 4: cycle run + aggregate",
+      "Step 5: Q-Lead verdict in cycle54c_final.json"
+    ],
+    "artifacts_new": [
+      "cycle54c_code_review_log.md (codex review + fix)",
+      "cycle54c_final.json (Q-Lead verdict)"
+    ],
+    "artifacts_deprecated": [
+      "cycle54c_codex_response.json (5단계 흐름 placeholder)",
+      "cycle54c_challenge_note.md (5단계 흐름 placeholder)"
+    ]
+  },
+  "see_also": "outputs/04_evaluation/cycle54c_code_review_log.md"
+}

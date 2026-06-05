@@ -1,0 +1,143 @@
+{
+  "task_id": "WT-D20260528_003",
+  "agent": "alpha-research-v3.6-pivot",
+  "schema": "alpha_validation_v1",
+  "as_of": "2026-05-28T17:31:45",
+  "graduation_status": "FAIL",
+  "v3_6_fix_summary": {
+    "fix_1_sector_neutralization": {
+      "result": "PASS",
+      "retention_pct": 67.8,
+      "threshold_pct": 50
+    },
+    "fix_2_hmm_regime_state_reduction": {
+      "result": "PASS",
+      "fallback_pct": 10.8,
+      "threshold_pct": 30
+    },
+    "fix_3_composite_vs_single_rf_a2": {
+      "result": "FAIL",
+      "composite_regime_weighted_neut_icir": 0.224,
+      "best_single_low_vol_raw_icir": 0.3862,
+      "dilution_vs_raw_pct": 42
+    }
+  },
+  "diagnostics_v36": {
+    "rank_ic": 0.0201,
+    "icir": 0.224,
+    "harvey_5_spec": {
+      "A_raw_ic": {
+        "t_nw_lag6": 1.9464,
+        "n": 82
+      },
+      "B_resid_naive": {
+        "t_nw_lag6": 1.9464,
+        "n": 82
+      },
+      "C_top_minus_bot_quintile": {
+        "t_nw_lag6": 1.2257,
+        "n": 82
+      },
+      "D_top_decile_minus_market": {
+        "t_nw_lag6": 0.0464,
+        "n": 82
+      },
+      "E_regime_residual": {
+        "t_nw_lag6": 0,
+        "n": 82
+      }
+    },
+    "harvey_n_pass_3": 0,
+    "harvey_n_pass_25": 0,
+    "subperiod_stability": 1,
+    "dsr": 0,
+    "dsr_n_trials": 18,
+    "bad_normal_ic_ratio": -4.8227,
+    "ax001_v2_pass": false,
+    "monotonicity": 0.072,
+    "decile_spread_d10_d1": 0.0032,
+    "annual_top_decile_turnover": 5.0765
+  },
+  "v3_5_to_v3_6_metric_comparison": {
+    "rank_ic": {
+      "v3_5": 0.0425,
+      "v3_6": 0.0201
+    },
+    "icir": {
+      "v3_5": 0.3392,
+      "v3_6": 0.224
+    },
+    "harvey_pass_3": {
+      "v3_5": 1,
+      "v3_6": 0
+    },
+    "harvey_pass_25": {
+      "v3_5": 3,
+      "v3_6": 0
+    },
+    "dsr": {
+      "v3_5": 1,
+      "v3_6": 0
+    },
+    "bad_normal_ic_ratio": {
+      "v3_5": 3.453,
+      "v3_6": -4.8227
+    },
+    "sector_retention_pct": {
+      "v3_5": 48.1,
+      "v3_6": 67.8
+    },
+    "fallback_pct": {
+      "v3_5": 54.2,
+      "v3_6": 10.8
+    }
+  },
+  "graduation_criteria_check": {
+    "rank_ic_ge_004": {
+      "v3_6_value": 0.0201,
+      "pass": false
+    },
+    "icir_ge_020": {
+      "v3_6_value": 0.224,
+      "pass": true
+    },
+    "harvey_3_of_5_at_t3": {
+      "v3_6_value": 0,
+      "pass": false
+    },
+    "subperiod_stability_ge_05": {
+      "v3_6_value": 1,
+      "pass": true
+    },
+    "dsr_ge_05": {
+      "v3_6_value": 0,
+      "pass": false
+    },
+    "monotonicity_ge_07": {
+      "v3_6_value": 0.072,
+      "pass": false
+    },
+    "ax001_v2_bad_normal": {
+      "v3_6_value": -4.8227,
+      "pass": false
+    },
+    "rf_a2_composite_ge_single": {
+      "v3_6_value": false,
+      "pass": false
+    },
+    "rf_a4_sector_retention_ge_50": {
+      "v3_6_value": true,
+      "pass": true
+    }
+  },
+  "charter_5_data_mining_check": {
+    "cycles_failed": 3,
+    "cycles_detail": {
+      "v1": "FAIL: composite 64% dilution, regime PIT-C9 same-date IC 0.012 vs t-1 lag -0.0007 (mechanism artifact)",
+      "v3_5": "FAIL: Harvey 1/5, sector retention 48.1%, composite 0.339 < single low_vol 0.393",
+      "v3_6": "FAIL: 2/3 fix PASS but RF-A2 still FAIL (composite_rw_neut 0.224 < single low_vol_raw 0.386)"
+    },
+    "verdict": "TERMINATE_STR_1721_FAMILY_RECOMMENDED",
+    "rationale": "Charter §5 Data Mining 방지 정합 — 3 cycles FAIL hypothesis 본질 의문. Composite paradigm 폐기 + alternative hypothesis 권고."
+  }
+}

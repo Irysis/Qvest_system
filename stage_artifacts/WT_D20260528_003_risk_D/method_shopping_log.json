@@ -1,0 +1,57 @@
+{
+  "task_id": "WT-D20260528_003",
+  "agent_role": "risk",
+  "as_of_date": "2023-11-30",
+  "selection_objective": "condition_number_plus_structural_BOmegaBT_D",
+  "n_candidates": 6,
+  "cap": 5,
+  "method_log": {
+    "sample": {
+      "name": "sample_pairwise",
+      "condition": 2.2500776987404714e+19,
+      "min_eig": -5.2711e-17,
+      "psd": true,
+      "selected": false
+    },
+    "schafer_strimmer": {
+      "name": "schafer_strimmer_2005",
+      "condition": 2110.8092,
+      "min_eig": 0,
+      "lambda_var": 0.1645,
+      "lambda_cor": 0.1198,
+      "psd": true,
+      "selected": false
+    },
+    "ledoit_wolf_legacy": {
+      "name": "ledoit_wolf_const_var_legacy",
+      "condition": 1,
+      "min_eig": 0.0008,
+      "psd": true,
+      "selected": false,
+      "note": "Legacy hrp_core LW uses constant-variance target → may degenerate to identity when N>>T"
+    },
+    "gerber_rmt": {
+      "name": "gerber_rmt",
+      "condition": 77420.9192,
+      "min_eig": -0.0143,
+      "psd": false,
+      "selected": false
+    },
+    "schafer_strimmer_eigfloored": {
+      "name": "schafer_strimmer_eigfloored",
+      "condition": 1000,
+      "selected": true
+    },
+    "factor_model": {
+      "name": "factor_model_BOmegaBT_plus_D_eigfloored",
+      "condition": 291.8151,
+      "min_eig": 0.05,
+      "psd": true,
+      "selected": true,
+      "specific_var_floor": 0.05,
+      "specific_var_ceiling": 2
+    }
+  },
+  "selected_method": "factor_model_BOmegaBT_plus_D_eigfloored",
+  "rationale": "factor_model structure (Σ = BΩB' + D) is the QEPM standard frame (Connor-Korajczyk 1995, Grinold-Kahn 2000). Selected when PSD + cond<500. Schäfer-Strimmer 2005 reserved as fallback (analytical empirical Bayes shrinkage, well-conditioned by construction). Legacy hrp_core LW (constant-variance target) shown to degenerate when N>>T (cond=1 → identity-like)."
+}

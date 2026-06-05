@@ -1,0 +1,16 @@
+# A LASSO Quantile GaR — Full window 2001-2026 (paper + 6년 OOS)
+
+data:
+  benchmark: kospi
+  bm_path: ".cache/benchmark.parquet"
+  alt_features_path: "04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/01_data/feature_panel_v1_alt.parquet"
+  date_start: "2001-01-03"
+  date_end: "2026-05-25"
+  horizon: paper
+  percent_scale: true
+
+walk_forward:
+  n_splits: 12
+  train_min: 1008
+  test_window: 504
+  embargo: 21

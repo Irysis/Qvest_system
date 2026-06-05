@@ -1,0 +1,205 @@
+{
+  "task_id": "WT-D20260528_003",
+  "hypothesis_handle": "D_PROD",
+  "wt_type": "discovery",
+  "schema_version": "forge_package_v1",
+  "agent": "forge_integration_v6.1_pure_function",
+  "as_of_date": "2026-05-29",
+  "method": "weights.csv_direct_NAV_reconstruction_daily_share_based_IS_plus_OOS_extension",
+  "sr_realized_share_based": 0.8204,
+  "sr_factor_engine_continuous": 0.7414,
+  "sr_lockbox_daily_harness": {},
+  "measurement_basis_primary": "forge_realized_share_based",
+  "weights_csv_unique_dates_count": 116,
+  "alpha_sig_dates_count": 116,
+  "schedule_density_ratio": 1,
+  "schedule_density_pass": true,
+  "pure_function_violation": false,
+  "divergence_factor_engine_vs_realized_pp": -0.0326,
+  "vs_factor_engine": {
+    "factor_engine_claimed_sr_is": 0.7414,
+    "forge_v3_realized_sr_is": 0.774,
+    "forge_realized_sr_full": 0.8204,
+    "divergence_pp": -0.0326,
+    "diagnosis": "NEGLIGIBLE",
+    "note": "factor_engine=optimizer WF continuous net SR 0.7414. forge realized IS=0.7740 (PA geometric basis used for fair IS-vs-WF comparison). divergence -0.0326pp (forge HIGHER, no inflation). |0.0326|<0.6 NEGLIGIBLE. Full-period contract Sharpe SOT=0.8204."
+  },
+  "sr_convention": {
+    "authoritative": "contract_charter_v1.4_section12_mean_ER_sharpe",
+    "sr_realized_share_based": 0.8204,
+    "sr_pa_geometric_aux": 0.7523,
+    "note": "C6 resolved: 0.8204 (build_bt_result mean-ER) is THE single SOT. 0.7523 (table.AnnualizedReturns geometric) is aux cross-check only. Chart+bundle+package consistent."
+  },
+  "backtest_metrics": {
+    "source": "build_bt_result() PerformanceAnalytics standard (Charter v1.4 §12)",
+    "period": "2014-04-30~2026-05-29",
+    "n_days": 2970,
+    "sharpe": 0.8204,
+    "cagr": 0.2012,
+    "mdd": 0.4768,
+    "sortino": 1.1815,
+    "calmar": 0.4221,
+    "hit_rate": 0.5337,
+    "annualized_vol": 0.2698,
+    "cvar_95": -0.0387,
+    "skewness": -0.1838,
+    "kurtosis": 5.66,
+    "total_return": 7.832
+  },
+  "is_oos": {
+    "deploy_cutoff": "2023-11-30",
+    "IS": {
+      "sharpe": 0.774,
+      "cagr": 0.2043,
+      "mdd": 0.4768,
+      "n": 2358
+    },
+    "OOS": {
+      "sharpe": 0.6792,
+      "cagr": 0.198,
+      "mdd": 0.3287,
+      "n": 612,
+      "note": "frozen 2023-11 weights buy-and-hold deploy extension to 2026-05-29"
+    }
+  },
+  "benchmark_compare": {
+    "benchmark": "KOSPI200_total_return",
+    "bm_sharpe": 0.6418,
+    "bm_cagr": 0.123,
+    "bm_mdd": 0.439,
+    "alpha_annual": 0.0857,
+    "beta": 0.9851,
+    "information_ratio": 0.4359,
+    "tracking_error": 0.192,
+    "correlation": 0.7011,
+    "up_capture": 1.0761,
+    "down_capture": 0.9981,
+    "sharpe_vs_bm_delta": 0.1786,
+    "incumbent_str1715_note": "C3 PARTIAL: STR_1715 PG2 per-stock reconstruction INFEASIBLE from overlay-scalar artifacts (out of forge pure-function scope). KOSPI200 same-period/same-cost comparison provided. Judge owns incumbent delta at admission."
+  },
+  "harvey_5spec": {
+    "source": "forge NW-HAC on 144 monthly obs vs kr_factor_returns_v2",
+    "CAPM": {
+      "alpha_ann": 0.1203,
+      "t_nw": 1.95,
+      "pass": false
+    },
+    "Carhart3": {
+      "alpha_ann": 0.1091,
+      "t_nw": 2.106,
+      "pass": false
+    },
+    "Carhart4": {
+      "alpha_ann": 0.1102,
+      "t_nw": 2.179,
+      "pass": false
+    },
+    "FF5": {
+      "alpha_ann": 0.1102,
+      "t_nw": 2.154,
+      "pass": false
+    },
+    "FF6": {
+      "alpha_ann": 0.1121,
+      "t_nw": 2.255,
+      "pass": false
+    },
+    "pass_count_t295": 0,
+    "note": "0/5 PASS at t>=2.95. Alpha +11%/yr but t_NW peaks 2.255 (FF6) < Harvey-Liu-Zhu 2016 hurdle 2.95. Corroborates alpha DSR FAIL."
+  },
+  "turnover": {
+    "annual_round_trip_realized": 6.0181,
+    "n_rebalances": 116,
+    "cap_6_pass": false,
+    "convention": "share-based realized target-vs-DRIFTED |w|/2 *2 round-trip /years",
+    "contract_annualized_turnover_artifact": 55.66,
+    "note": "Realized 6.018 > 6.0 cap (marginal). Optimizer 5.282 = target-vs-target convention; forge = target-vs-DRIFTED (realized, higher). Contract 55.66 = daily-cadence annualization ARTIFACT, NOT economically meaningful. Use 6.018."
+  },
+  "hard_gate_fails": {
+    "mdd_45_fail": true,
+    "mdd_realized": 0.4768,
+    "mdd_cap": 0.45,
+    "turnover_6_fail": true,
+    "turnover_realized": 6.0181,
+    "turnover_cap": 6,
+    "dsr_05_fail": true,
+    "harvey_295_fail": true,
+    "note": "4 hard/binding gates FAIL: MDD 47.68%>45%, TO 6.018>6.0, DSR z=-7.80<0.5, Harvey 0/5<t2.95. Forge surfaces honestly; graduation verdict = Judge."
+  },
+  "dsr_inheritance": {
+    "inherited_from": "alpha_package_PROD",
+    "dsr_proper": 3.0516e-15,
+    "dsr_z": -7.8018,
+    "dsr_pass_05": false,
+    "graduated": false,
+    "dsr_fail_acknowledged": true,
+    "total_search_candidates": 419,
+    "alpha_n_trials_eff": 411,
+    "optimizer_methods": 8,
+    "forge_monthly_dsr_raw": 2.5892,
+    "note": "Alpha DSR binding FAIL z=-7.80 (411-trial penalty) inherited. Optimizer +8 methods=419 total. forge monthly DSR_raw 2.589 is PRE-penalty; binding gate is alpha 411-trial DSR. Harvey 0/5 independently confirms. graduated=false."
+  },
+  "graduated": false,
+  "handoff_type": "forge_to_judge_dsr_fail_acknowledged",
+  "bt_result_audit": {
+    "n_pass": 14,
+    "n_fail": 0,
+    "integrity": "WARNING",
+    "warns": ["c15_factor_db_load_path (forge rawdata direct — allowed)", "lookahead_detector_self_scan (advisory)"],
+    "registry_appended": true
+  },
+  "hash_audit": {
+    "integrity_pass": true,
+    "start": {
+      "alpha": "2b8df9b24fc95213b354b40955ceb108",
+      "risk": "347f8d7d9a1e70fd7c41cb4b9f134a9c",
+      "opt": "31c5fdcbd30e421723bebf8d2bfc6cc7",
+      "cov": "27a6643a1b6bc386b548edbaad139533",
+      "weights": "bf4974d2f1462cb0d550db7c32120a1e"
+    },
+    "end": {
+      "alpha": "2b8df9b24fc95213b354b40955ceb108",
+      "risk": "347f8d7d9a1e70fd7c41cb4b9f134a9c",
+      "opt": "31c5fdcbd30e421723bebf8d2bfc6cc7",
+      "cov": "27a6643a1b6bc386b548edbaad139533",
+      "weights": "bf4974d2f1462cb0d550db7c32120a1e"
+    }
+  },
+  "artifact_lineage": {
+    "alpha": "qepm/mailbox/worktask/WT-D20260528_003/alpha_package_PROD.json",
+    "risk": "qepm/mailbox/worktask/WT-D20260528_003/risk_package_PROD.json",
+    "covariance": "stage_artifacts/WT_D20260528_003_risk_PROD/covariance.parquet",
+    "optimization": "qepm/mailbox/worktask/WT-D20260528_003/optimization_package_PROD.json",
+    "weights": "stage_artifacts/WT_D20260528_003/weights.csv",
+    "note": "C7: canonical PROD lineage. Hash START==END PASS confirms exact read-only consumption. archive_v3_* NOT inputs."
+  },
+  "cost_model_version": "v2.3_kr_retail_15bps",
+  "output_paths": {
+    "bt_result_dir": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260528_003/backtest_result",
+    "bt_result_rds": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260528_003/backtest_result/bt_result.rds",
+    "equity_curve": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260528_003/output/equity_curve.png",
+    "annual_returns": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260528_003/output/annual_returns.png",
+    "oos_zoom": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260528_003/output/oos_zoom_chart.png",
+    "harvey_addendum": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260528_003/forge_harvey_addendum.json",
+    "daily_nav": "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260528_003/backtest_result/daily_nav.csv"
+  },
+  "codex_round_prod": {
+    "stance": "REJECT",
+    "n_concerns": 7,
+    "n_high": 5,
+    "n_medium": 2,
+    "response_file": "codex_critic_response_forge.json",
+    "challenge_note": "forge_challenge_note_PROD.md",
+    "resolution": {
+      "ACCEPT": ["C1", "C2", "C4", "C5", "C6", "C7"],
+      "PARTIAL": "C3",
+      "REBUTTAL": {}
+    },
+    "escalate_triggered": false,
+    "escalate_reason": "5 HIGH reviewed. Hard-gate FAILs (MDD/TO/DSR/Harvey) HONESTLY SURFACED (graduated=false), NOT overridden — Judge adjudication scope. No AX hard-FAIL, no PIT C1, no fabrication. C3 documented limitation (out of forge scope).",
+    "self_rationalization_audit": "0 forbidden-phrase hits",
+    "net_outcome": "REJECT addressed: C4 Harvey RAN (0/5), C6 SR reconciled (0.8204 SOT), C5 419-candidate penalty, C7 lineage+hash PASS. C1/C2 hard-gate fails surfaced. C3 partial (incumbent infeasible). graduated=false. Handoff to Judge."
+  },
+  "final_stance": "FORGE_HANDOFF (DSR+MDD+TO+Harvey all FAIL, surfaced honestly, NOT graduated). Codex REJECT addressed via forge_challenge_note_PROD.md.",
+  "generated_at": "2026-05-29 09:35:09.969727"
+}

@@ -36,7 +36,7 @@ suppressPackageStartupMessages({
 
 # Ensure PROJECT_ROOT / INFRA_DIR are available
 if (!exists("PROJECT_ROOT")) {
-  source("/mnt/c/Users/User/OneDrive/\xeb\xb0\x94\xed\x83\x95 \xed\x99\x94\xeb\xa9\xb4/Quant_Module_Moltbot/02_Infrastructure/config.R")
+  source(file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")), "02_Infrastructure/config.R"))
 }
 
 
@@ -377,7 +377,7 @@ generate_mrs_dashboard <- function(send_telegram = TRUE,
 
   # ── 0. 의존성 로드 ──────────────────────────────────────────────────────────
   if (!exists("INFRA_DIR")) {
-    source("/mnt/c/Users/User/OneDrive/\xeb\xb0\x94\xed\x83\x95 \xed\x99\x94\xeb\xa9\xb4/Quant_Module_Moltbot/02_Infrastructure/config.R")
+    source(file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")), "02_Infrastructure/config.R"))
   }
 
   # regime_engine_daily.R

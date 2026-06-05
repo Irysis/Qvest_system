@@ -1,0 +1,110 @@
+{
+  "plan_version": "v0.4.2",
+  "date": "2026-05-19",
+  "owner": "도훈",
+  "q_lead": "Claude Opus 4.7 (1M context)",
+  "purpose": "KOSPI200 forward bearish forecast model — Phase 1 standalone forecast validity",
+  "target": {
+    "horizon_days": 21,
+    "primary": "Y_onset",
+    "secondary": ["Y_tail_Q15", "Y_tail_Q10", "Y_regime_strong"],
+    "Y_onset_definition": "1{ DD_252(t-1) > -0.10 AND ∃ τ ∈ [t, t+h]: DD_252(τ) ≤ -0.10 최초 crossing }",
+    "Y_tail_Q15_definition": "1{ r(t, t+h) ≤ quantile_purged_60m_Q15 }",
+    "purged_quantile_rule": "q(t) = quantile({r(s, s+h): s ≤ t-h-data_lag}, prob, window=60m)"
+  },
+  "hard_cap_features": 10,
+  "feature_blocks": {
+    "H3_파생_stress": {
+      "features": ["vkospi_z", "otm_skew_25d"],
+      "kr_anchor": ["KR-008 (KCMI L/S skew operational)"],
+      "method_transfer": ["KR-013 Exhibit 3 Downside Deviation log 21d"],
+      "data_source": "krx_options/ 4023 daily parquet",
+      "start_date": "2010-01-04",
+      "train_cover_1995_01": "NO — 15년 결측, NA imputation"
+    },
+    "H4_rates_credit": {
+      "features": ["kr_term_spread", "kr_credit_spread"],
+      "kr_anchor": ["KR-006 (Korean ERP econstor)", "KR-017 (경기국면 KR)"],
+      "method_transfer": ["Estrella-Mishkin 1998 RES", "Gilchrist-Zakrajsek 2012 AER"],
+      "data_source": "ecos_bond_rates.parquet (7 series)",
+      "start_date": "term: 2000-12-18 / credit: 2000-09-30",
+      "train_cover_1995_01": "PARTIAL — KR_Call1D/CPI/CorpAA 1995-01 cover, 단 spread 계산은 5년 결측"
+    },
+    "H5_글로벌_전이": {
+      "features": ["macro_risk_score", "vix_log_diff_ewma_21d"],
+      "kr_anchor": ["KR-015 한국은행 미→한 전이 SSRN 3016974"],
+      "method_transfer": ["Bloom 2009 Econometrica (uncertainty)", "Bollerslev-Tauchen-Zhou 2009 RFS (VRP)"],
+      "data_source": "macro_regime.parquet (44 cols composite) + fred_macro_wide.parquet (23 cols)",
+      "start_date": "1990-01 ⭐",
+      "train_cover_1995_01": "YES ⭐⭐⭐ — Macro_Risk_Score 1990-01부터 cover"
+    },
+    "H6_flow_공매도": {
+      "features": ["foreign_netbuy_20d_z", "short_interest_20d_z"],
+      "kr_anchor": ["KR-022 KCMI Korean short-selling", "KR-020 High Volume Return Premium Korea"],
+      "method_transfer": [],
+      "data_source": "flow_features_daily.parquet (X features 20개 only, fwd_* 2건 denylist)",
+      "start_date": "2000-01-03",
+      "train_cover_1995_01": "NO — 5년 결측, NA imputation"
+    },
+    "H7_valuation": {
+      "features": ["q08_composite_quality", "v12_composite_value", "sue_z"],
+      "kr_anchor": ["KR-001 Kim 2021 PBFJ", "KR-002 박종원 2024 재무관리연구", "KR-004 FF5 KCI 2016", "KR-005 148 anomaly KR"],
+      "method_transfer": ["Piotroski 2000 JAR", "Altman 1968 JF"],
+      "data_source": "factor_db_{YYYYMM}.parquet (Quality 33 + Value 24 family) + consensus/sue.parquet",
+      "start_date": "factor_db Q+V: 2005-05 / sue: 2000-04",
+      "train_cover_1995_01": "NO — Q+V family 10년 결측 / sue 5년 결측, NA imputation",
+      "rationale": "Q-Lead 자체 결정 2026-05-19: fund_dart QualityScore (2016~) 폐기 → factor_db Q08 (2005-05~) 채택. 도훈 mandate '쓰레기 넣으면 쓰레기 나와' GIGO 정합. compute_quality.R 33 factor 100% verified (FUNDAMENTAL_DATA_GAP_ANALYSIS.md line 358)."
+    },
+    "State_engine": {
+      "features": ["sjm_state_lag1", "state_age", "distance_to_centroid", "m4_regime_lag1", "r05_regime_lag1"],
+      "kr_anchor": ["KR-014 momentum-regime SSRN", "L-465~L-470 SJM 메모리"],
+      "method_transfer": ["KR-013 Shu-Mulvey 2024 arXiv:2410.14841 SJM", "KR-023 Yale HMM"],
+      "data_source": "factor_db regime + 04_Research/regime_comparison/output/MSM_updated_*.RData",
+      "start_date": "factor_db 1990-01 / MSM daily refresh FRESH",
+      "train_cover_1995_01": "YES ⭐ — factor_db price-based + regime 1990-01부터 cover"
+    }
+  },
+  "dropped_blocks": {
+    "H1_모멘텀": {
+      "reason": "KR 학술 실증 약함 + STR_1715 cross-section 모멘텀 dimension 중복",
+      "date": "2026-05-19",
+      "decision_by": "Q-Lead 자체 (Plan v0.4)"
+    },
+    "H2_변동성": {
+      "reason": "4중 근거 strict lock: (1) KR-002 박종원 2024 'low-risk sorting 무효' / (2) AX-005 v1.2 'KR defense top20 long-only 실패' / (3) Codex round 1 H3-R05 중복 / (4) 도훈 mandate 2026-05-19",
+      "date": "2026-05-19",
+      "decision_by": "도훈 mandate STRICT LOCK"
+    }
+  },
+  "pit_manifest_required": {
+    "denylist_pattern": "^fwd_|^future_|^lead_|^next_|^t_plus_|^forward_|^ahead_",
+    "fail_closed": true,
+    "known_leakage_columns": {
+      "flow_features_daily.parquet": ["fwd_inst_foreign_netbuy_21d", "fwd_flow_top20"]
+    },
+    "publish_timing_lock": {
+      "KRX_EOD_1차": "16:00 KST",
+      "KRX_EOD_2차": "18:10 KST",
+      "KRX_장후_외인_기관": "18:00 KST",
+      "ECOS_KRW": "15:30 KST",
+      "FRED": "release_timestamp_ct + ingestion_lag",
+      "DART_annual": "Year+1 Mar 31",
+      "QuantiWise_quarterly": "Period_Date + 45d"
+    }
+  },
+  "data_freshness_status": {
+    "FRESH_2026-05-19": ["benchmark", "flow_features_daily", "fundamental_merged", "fred_macro_wide", "macro_regime", "macro_fred", "ecos_krw_usd"],
+    "FRESH_2026-05-18": ["ecos_bond_rates (Q-Lead fix + 1990 확장)"],
+    "stale_acceptable": ["fundamental_dart (05-01, annual)", "universe (05-01)"]
+  },
+  "q_lead_dialectic_log": {
+    "codex_rounds": 3,
+    "verdicts": ["WEAK", "ACCEPTABLE", "STRONG"],
+    "q_lead_self_inaccuracy_count": 3,
+    "inaccuracy_list": [
+      "Phase 4 inventory 부재 (Codex round 2 발견)",
+      "macro_fred.parquet 잘못된 폐기 권고 (즉시 복구)",
+      "ECOS 항목 코드 초기 매핑 오류 (즉시 fix + 재 fetch)"
+    ]
+  }
+}

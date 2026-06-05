@@ -19,7 +19,7 @@ suppressPackageStartupMessages({
   library(patchwork)
 })
 
-PROJECT_ROOT <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+PROJECT_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 args <- commandArgs(trailingOnly = TRUE)
 src_path <- if (length(args) >= 1) args[1] else file.path(
   PROJECT_ROOT,

@@ -7,7 +7,7 @@ suppressPackageStartupMessages({
 })
 
 # --- 0. Config ---
-ROOT <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 source(file.path(ROOT, "02_Infrastructure", "config.R"))
 
 STR_DIR <- file.path(ROOT, "04_Research/strategies/STR_1425_adaptive_ic_rotation")
