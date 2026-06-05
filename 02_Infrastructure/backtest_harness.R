@@ -50,7 +50,7 @@ source(file.path(FUNC_PATH, "F1. QT_to_xts.r"))
 # 컴파일 실패 시 R fallback 자동 적용
 .USE_RCPP_WEIGHT_ENGINE <- tryCatch({
   cpp_path <- file.path(
-    "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot",
+    Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")),
     "02_Infrastructure/portfolio/weight_engine.cpp"
   )
   if (file.exists(cpp_path)) {
@@ -73,7 +73,7 @@ cat("[backtest_harness] Loaded.\n")
 # 컴파일 실패 시 R fallback 자동 적용 (기존 이중 루프)
 .USE_RCPP_NAV_ENGINE <- tryCatch({
   nav_cpp_path <- file.path(
-    "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot",
+    Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")),
     "02_Infrastructure/portfolio/sim_engine_nav.cpp"
   )
   if (file.exists(nav_cpp_path)) {
@@ -948,6 +948,11 @@ run_monthly_simulation <- function(RAWDATA,
       sc <- month_factors[Ticker %in% selected, setNames(Score, Ticker)]
       w <- calc_score_tilt_weights(selected, sc, ret_sub,
                                     cov_method = cov_method)
+    } else if (weight_method == "score_pure") {
+      # 순수 Score 비례 가중 (alpha=1.0 → HRP 0%). max_w=1.0 = 종목당 상한 제거 (도훈 mandate, 탐색용)
+      sc <- month_factors[Ticker %in% selected, setNames(Score, Ticker)]
+      w <- calc_score_tilt_weights(selected, sc, ret_sub,
+                                    alpha = 1.0, max_w = 1.0, cov_method = cov_method)
     } else if (weight_method == "regime_tilt") {
       # V1: Regime-Conditional Alpha — alpha varies by MRS layer (t-1 lagged)
       # PIT: regime_dt[Date == exec_date, MRS] is already t-1 lagged from build_daily_regime()
@@ -1156,6 +1161,13 @@ summarise_perf <- function(ret_xts, label = "Strategy",
   }
   # CAGR (compound annual growth rate) — 별도 metric, Sharpe 분자 아님
   ann <- (prod(1 + r))^(252 / n) - 1
+  # v8.0 (-2028%p 버그 fix): bm_xts 정렬/결측으로 n이 비정상 작으면 (252/n) 지수가 커져
+  # annualize가 폭발한다. |CAGR|>1000%(=10)는 정상 전략에 없으므로 산식오류로 보고 NA + 경고.
+  if (is.finite(ann) && abs(ann) > 10) {
+    warning(sprintf("[summarise_perf] %s CAGR=%.0f%% (|.|>1000%%) — bm/return 정렬·결측 의심, NA 처리",
+                    label, ann * 100))
+    ann <- NA_real_
+  }
   # Annualized vol (daily sd × √252)
   vol <- sd(r) * sqrt(252)
   mdd <- maxDrawdown(r)

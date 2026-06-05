@@ -27,7 +27,7 @@ suppressPackageStartupMessages({
 
 PROJ_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", unset = "")
 if (PROJ_ROOT == "" || !dir.exists(PROJ_ROOT)) {
-  PROJ_ROOT <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+  PROJ_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 }
 
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0) b else a
@@ -67,7 +67,8 @@ cat("=== memory_knowledge_health.R v7.2.1 Sprint 5 ===\n\n")
 # ─── HARD 1: active axiom JSON parse ─────────────────────────────
 cat("[1/6 HARD] active axiom JSON parse\n")
 active_dir <- file.path(PROJ_ROOT, "qepm/memory/axioms/active")
-active_files <- list.files(active_dir, pattern = "\\.json$", full.names = TRUE)
+# v8.0: mode-local(active/modes/<mode>/) 포함 recursive
+active_files <- list.files(active_dir, pattern = "\\.json$", full.names = TRUE, recursive = TRUE)
 active_data <- list()
 for (f in active_files) {
   d <- tryCatch(fromJSON(f, simplifyVector = FALSE),
@@ -104,7 +105,9 @@ if (!file.exists(sot_path)) {
 } else {
   sot <- fromJSON(sot_path, simplifyVector = FALSE)
   documented_active_ids <- c()
+  all_sot_ids <- c()
   for (ax in sot$axioms) {
+    all_sot_ids <- c(all_sot_ids, ax$axiom_id)
     if (isTRUE(ax$documented_active)) {
       documented_active_ids <- c(documented_active_ids, ax$axiom_id)
     }
@@ -113,7 +116,8 @@ if (!file.exists(sot_path)) {
     safe_str(d$memory_id %||% d$axiom_id)
   }, character(1))
   missing_in_json <- setdiff(documented_active_ids, json_active_ids)
-  extra_in_json <- setdiff(json_active_ids, documented_active_ids)
+  # v8.0: mode-local(documented_active=FALSE이나 sot에 등록)은 통과 — sot 전체 레코드와 대조
+  extra_in_json <- setdiff(json_active_ids, all_sot_ids)
   if (length(missing_in_json) > 0) {
     add_hard("HARD_3_sot_documented_missing_json",
              sprintf("documented active 중 JSON 부재: %s",
@@ -221,10 +225,17 @@ cat("\n")
 
 # ─── WARN 1: L-code corpus outliers ──────────────────────────────
 cat("[W1/6] L-code corpus outliers\n")
-corpus_path <- file.path(PROJ_ROOT, ".cache/lcode_corpus.json")
+# v8.0: outlier(L-code gap>50)는 rebuild(v7.2.1_lcode_corpus)의 summary.outliers에만 존재.
+# harvester corpus(v53_ax_p0)엔 그 필드가 없어 과거 본 체크가 inert였음(clobber race로 harvester가
+# canonical 차지). methodology corpus 우선, 없으면 canonical fallback.
+corpus_path <- file.path(PROJ_ROOT, ".cache/lcode_corpus_methodology.json")
+if (!file.exists(corpus_path)) corpus_path <- file.path(PROJ_ROOT, ".cache/lcode_corpus.json")
 if (file.exists(corpus_path)) {
   corpus <- fromJSON(corpus_path, simplifyVector = FALSE)
-  outliers <- corpus$summary$outliers %||% character(0)
+  # null-safe (이 파일의 %||%는 multi-element 벡터를 logical(1)로 강제하다 깨짐 —
+  # 과거 outliers가 항상 NULL[inert]이라 미노출됐던 잠재버그. 직접 NULL 처리.)
+  outliers <- corpus$summary$outliers
+  outliers <- if (is.null(outliers)) character(0) else as.character(unlist(outliers))
   if (length(outliers) > 0) {
     add_warn("WARN_1_lcode_outliers",
              sprintf("L-code gap>50: %s",

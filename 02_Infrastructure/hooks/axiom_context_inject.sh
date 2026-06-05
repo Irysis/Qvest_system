@@ -7,7 +7,7 @@
 #==============================================================================
 trap 'echo "{}"; exit 0' ERR
 INPUT=$(cat)
-DIR=$(ls -d /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo "$PWD")
+DIR=$(ls -d /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo "$PWD")
 AGENT_NAME=$(printf '%s' "$INPUT" | python3 -c 'import json,sys
 try:
     d=json.load(sys.stdin); ti=d.get("tool_input",{})
@@ -19,12 +19,14 @@ ACTIVE_DIR="$DIR/qepm/memory/axioms/active"
 CACHE_BODY="$DIR/.cache/axiom_inject_body.md"
 
 # regen body if missing or active AX newer than cache
-NEWEST=$(ls -t "$ACTIVE_DIR"/AX-*.json 2>/dev/null | head -1)
+shopt -s globstar 2>/dev/null  # mode-local(active/modes/**) 포함
+NEWEST=$(ls -t "$ACTIVE_DIR"/**/AX-*.json "$ACTIVE_DIR"/AX-*.json 2>/dev/null | head -1)
 if [ -n "$NEWEST" ] && { [ ! -f "$CACHE_BODY" ] || [ "$NEWEST" -nt "$CACHE_BODY" ]; }; then
   python3 -c "
 import json, os, glob
 lines = []
-for f in sorted(glob.glob(os.path.join('$ACTIVE_DIR', 'AX-*.json'))):
+_files = set(glob.glob(os.path.join('$ACTIVE_DIR', '**', 'AX-*.json'), recursive=True)) | set(glob.glob(os.path.join('$ACTIVE_DIR', 'AX-*.json')))
+for f in sorted(_files):
     try:
         ax = json.load(open(f))
         axid = ax.get('axiom_id') or ax.get('id') or os.path.basename(f)[:-5]
@@ -33,7 +35,7 @@ for f in sorted(glob.glob(os.path.join('$ACTIVE_DIR', 'AX-*.json'))):
         tp = ax.get('polarity') or ('axiom' if ax.get('grade')=='IMMUTABLE' else '?')
         lines.append(f'  - {axid} [{tt}/{tp}]: {stmt}')
     except Exception: pass
-lines.append('  → 전문: .claude/rules/axioms.md / qepm/memory/axioms/active/AX-*.json (active 8)')
+lines.append(f'  → 전문: .claude/rules/axioms.md / active/ (+ modes/, total {len(_files)})')
 open('$CACHE_BODY', 'w').write(chr(10).join(lines))
 " 2>/dev/null
 fi

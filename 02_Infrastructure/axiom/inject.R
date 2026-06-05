@@ -21,7 +21,7 @@ suppressPackageStartupMessages({
 
 .ij_root <- function() {
   cands <- c(
-    "/mnt/c/Users/User/OneDrive/\xeb\xb0\x94\xed\x83\x95 \xed\x99\x94\xeb\xa9\xb4/Quant_Module_Moltbot",
+    Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")),
     Sys.getenv("QVEST_PROJECT_DIR", ""),
     Sys.getenv("PROJECT_ROOT", ""),
     getwd()
@@ -205,9 +205,24 @@ inject_axiom <- function(axiom_path, claude_md_path = NULL,
   diff_path <- if (claude_result$changed) .write_diff(axiom, claude_result) else NULL
   if (!is.null(diff_path)) cat(sprintf("  diff: %s\n", diff_path))
 
-  # 2) prompts/*_init.md (6개)
-  prompt_files <- c("scout_init.md", "forge_init.md", "judge_init.md",
-                     "governor_init.md", "risk_manager_init.md", "qlead_init.md")
+  # 2) prompts/*_init.md — tier/mode 인지 라우팅 (검증된 9개; scout/risk_manager 죽은 타겟 제거)
+  tier <- axiom$tier %||% (if (grepl("^AX-[A-Z]+-", axiom$axiom_id %||% "")) "mode_local" else "global")
+  ax_mode <- axiom$research_mode %||% ""
+  .MODE_PROMPT <- list(
+    alpha_research = "alpha_research_init.md", risk_research = "risk_research_init.md",
+    optimizer_research = "optimizer_research_init.md",
+    judge_gate = "judge_init.md", governor_admission = "governor_init.md")
+  global_prompts <- c("alpha_research_init.md", "risk_research_init.md", "optimizer_research_init.md",
+                      "forge_init.md", "judge_init.md", "governor_init.md",
+                      "execution_init.md", "monitoring_init.md", "qlead_init.md")
+  if (identical(tier, "mode_local")) {
+    mp <- .MODE_PROMPT[[ax_mode]]
+    prompt_files <- if (!is.null(mp)) mp else character(0)  # alpha_search/factor_rotation 전용 init 없음 → CLAUDE.md만
+    cat(sprintf("  [inject] mode-local(%s) → %s\n", ax_mode,
+                if (length(prompt_files)) paste(prompt_files, collapse = ",") else "CLAUDE.md only"))
+  } else {
+    prompt_files <- global_prompts
+  }
   prompt_results <- list()
   for (pf in prompt_files) {
     pp <- file.path(prompts_dir, pf)

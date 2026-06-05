@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
 # =============================================================================
-# run_alpha_search.R — 경량 "알파 서칭" 엔진 (Qvest 초기 모델 스타일)
+# run_alpha_search.R — "알파 서칭" 엔진 (Qvest 초기 모델 스타일)
 # =============================================================================
 # 논문/가설을 빠르게 백테스트 검증하고 전략별로:
 #   (1) 전기간 Equity Curve(vs BM) + (2) 연간 수익률 막대그래프(vs BM) 2차트
@@ -172,6 +172,15 @@ run_alpha_search <- function(strategy_name,
   cat(sprintf("[AlphaSearch] Grade=%s Score=%.0f Excess=%+.2f%%p | pass=%s notable=%s\n",
               grade, score %||% 0, excess_cagr %||% 0, pass, notable))
 
+  # ---- 6c. FR 모듈 등재 (공용 계약 register_module — ★등급무관: 하위등급도 국면 specialist 가능) ----
+  # PIT-clean 백테 완료분만(이 지점 도달=detect_lookahead 통과). 사용여부는 RCMA가 국면조건부 판단.
+  if (isTRUE(pit_clean)) tryCatch({
+    source(file.path(PROJECT_ROOT, "02_Infrastructure", "contracts", "register_module.R"))
+    register_module(sim, strategy_id, grade = grade, origin_mode = "alpha_search",
+                    role = NA_character_, meta = list(strategy_idea = strategy_idea, score = score))
+    assign("%||%", `%||%`, envir = globalenv())   # register_module source 후 전역 %||% 복원
+  }, error = function(e) cat("[AlphaSearch] register_module 생략:", conditionMessage(e), "\n"))
+
   # ---- 7. Telegram: 2차트 + 전략아이디어 + 성과요약(스코어링 지표) ----
   if (isTRUE(send_telegram)) {
     .send_alpha_search_brief(strategy_name, strategy_idea, strategy_id, grade, score,
@@ -281,6 +290,11 @@ run_alpha_search <- function(strategy_name,
     sprintf("%s: 등급 %s, 연복리 %.1f%% (벤치마크 대비 %+.1f%%p), 샤프 %.2f. %s",
             strategy_name, grade, .as_num(m$CAGR), excess_cagr %||% 0, .as_num(m$Sharpe),
             if (is_fail) "명확한 실패 패턴 — 역방향 가설 탐색 후보." else "근접 탈락 — 보강 후 재검증 후보.")
+  # v8.0 입력 품질 게이트 (lcode_schema.R) — garbage corpus 진입 차단 (안전핀 #1)
+  schema_src <- file.path(.AS_INFRA, "axiom", "lcode_schema.R")
+  if (file.exists(schema_src)) source(schema_src, local = TRUE)
+  construction_type <- if (exists("infer_construction_type", mode = "function"))
+    infer_construction_type(strategy_name, strategy_idea) else "single_factor_long_only"
   lcode <- list(
     l_code         = paste0("L-AS-", sub("^STR_AS_", "", strategy_id)),
     strategy_id    = strategy_id,
@@ -290,11 +304,26 @@ run_alpha_search <- function(strategy_name,
     tags           = tags,
     created_at     = format(Sys.Date()),
     research_mode  = "alpha_search",
-    created_by     = "AlphaSearch"
+    created_by     = "AlphaSearch",
+    metric_type       = "proxy",              # alpha_search = run_hurdle_gate proxy → INV-1: mode-local 한정
+    construction_type = construction_type,    # r7 Independence 축
+    cagr_pct          = .as_num(m$CAGR),
+    sharpe            = .as_num(m$Sharpe),
+    mdd_pct           = abs(.as_num(m$MDD)),
+    excess_cagr       = excess_cagr %||% NA_real_
   )
+  if (exists("validate_lcode", mode = "function")) {
+    v <- validate_lcode(lcode)
+    if (!isTRUE(v$valid)) {
+      cat(sprintf("[AlphaSearch][L-CODE BLOCKED] %s: %s\n", strategy_id, paste(v$errors, collapse = "; ")))
+      return(invisible(NULL))
+    }
+    if (length(v$warnings))
+      cat(sprintf("[AlphaSearch][L-CODE WARN] %s: %s\n", strategy_id, paste(v$warnings, collapse = "; ")))
+  }
   path <- file.path(lc_dir, sprintf("l_code_%s.json", strategy_id))
   write_json(lcode, path, auto_unbox = TRUE, pretty = TRUE)
-  cat(sprintf("[AlphaSearch] L-code 적립: %s\n", path))
+  cat(sprintf("[AlphaSearch] L-code 적립: %s [validated]\n", path))
   path
 }
 

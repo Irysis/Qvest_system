@@ -20,6 +20,10 @@
 AX-code (Lv0) > PIT C1-C15 (Lv1) > L-code (Lv2) > Signals (Lv3)
 ```
 
+## 2-Tier (v8.0)
+
+mode-local `AX-<MODE>-NNN` (`active/modes/<mode>/`, MODE=AS/QPM/FR) + global `AX-NNN` (`active/`). negative 공리 = **provisional failure-ledger**(INV-7, 재도전 대상 — 불변 법칙 아님). 엔진 SOT: `.claude/rules/axiom-engine.md` (원전 r7 복원 + INV-1~7).
+
 ## AX-000 ~ AX-008
 
 - **AX-000** [IMMUTABLE]: 한계는 대개 법칙이 아니라 방법의 한계다. 모든 목표는 충분한 엄밀함·창의성·반복으로 달성 가능하다는 전제로 임한다. 단, 실증·PIT·수리로 입증된 한계는 부정할 대상이 아니라 정직히 보고할 발견이며, 포기는 가용한 모든 방법을 소진한 뒤에만 정당하다. (v8.0 reframe — 4.8 정직성 정합)

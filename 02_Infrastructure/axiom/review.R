@@ -22,7 +22,7 @@ suppressPackageStartupMessages({
 
 .rv_root <- function() {
   cands <- c(
-    "/mnt/c/Users/User/OneDrive/\xeb\xb0\x94\xed\x83\x95 \xed\x99\x94\xeb\xa9\xb4/Quant_Module_Moltbot",
+    Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")),
     Sys.getenv("QVEST_PROJECT_DIR", ""),
     Sys.getenv("PROJECT_ROOT", ""),
     getwd()
@@ -34,8 +34,24 @@ suppressPackageStartupMessages({
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0 ||
                              (length(a) == 1 && is.na(a))) b else a
 
+# mode-local 포함 axiom 경로 탐색 (active/ + active/modes/**)
+.find_axiom_path <- function(root, axiom_id) {
+  active_dir <- file.path(root, "qepm", "memory", "axioms", "active")
+  direct <- file.path(active_dir, paste0(axiom_id, ".json"))
+  if (file.exists(direct)) return(direct)
+  hits <- list.files(active_dir, pattern = paste0("^", axiom_id, "\\.json$"),
+                     full.names = TRUE, recursive = TRUE)
+  if (length(hits)) hits[1] else NA_character_
+}
+
 # ─── OOS 열화 체크 ──────────────────────────────────────────────────
 .check_oos_degradation <- function(axiom) {
+  # INV-3/INV-7: proxy/estimated 유래 공리는 STR hurdle_result 부재 → 자동 OOS 판정 불가, human-review 플래그
+  mt <- axiom$metric_type %||% ""
+  if (mt %in% c("proxy", "estimated")) {
+    return(list(degraded = FALSE, human_review = TRUE,
+                reason = sprintf("metric_type=%s — 자동 OOS deprecation 불가, 매 사이클 human-review", mt)))
+  }
   root <- .rv_root()
   supporting <- axiom$supporting_l_codes %||% character(0)
   if (length(supporting) == 0L) return(list(degraded = FALSE, reason = "no supporting L-codes"))
@@ -200,9 +216,8 @@ suppressPackageStartupMessages({
 # ─── 메인 함수 ─────────────────────────────────────────────────────
 review_axiom <- function(axiom_id, apply = FALSE) {
   root <- .rv_root()
-  active_dir <- file.path(root, "qepm", "memory", "axioms", "active")
-  ax_path <- file.path(active_dir, paste0(axiom_id, ".json"))
-  if (!file.exists(ax_path)) {
+  ax_path <- .find_axiom_path(root, axiom_id)
+  if (is.na(ax_path) || !file.exists(ax_path)) {
     cat(sprintf("[review] %s active 파일 없음\n", axiom_id))
     return(NULL)
   }
@@ -229,6 +244,21 @@ review_axiom <- function(axiom_id, apply = FALSE) {
   }
 
   if (length(reasons) > 0L) {
+    # INV-7: provisional negative가 반증되면 deprecate가 아니라 NARROW(범위 축소) + 재도전 트리거
+    is_provisional <- identical(axiom$epistemic_status %||% "", "provisional")
+    if (is_provisional && isTRUE(fal$falsified)) {
+      if (isTRUE(apply)) {
+        axiom$scope_narrowed_at <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+        axiom$narrow_reasons <- reasons
+        axiom$retry_trigger <- "반증 출현 — kr-inverse-pattern-miner 역가설 재도전 대상"
+        write_json(axiom, ax_path, pretty = TRUE, auto_unbox = TRUE, null = "null")
+        cat(sprintf("[review] %s → NARROW (provisional negative 반증, 재도전 트리거)\n", axiom_id))
+      } else {
+        cat(sprintf("[review] dry-run: %s would_narrow (provisional negative 반증)\n", axiom_id))
+      }
+      return(list(axiom_id = axiom_id, action = if (apply) "narrowed" else "would_narrow",
+                  reasons = reasons, apply = apply))
+    }
     .deprecate_axiom(axiom_id, reasons, apply = apply)
     return(list(axiom_id = axiom_id,
                 action = if (apply) "deprecated" else "would_deprecate",
@@ -257,9 +287,9 @@ review_axiom <- function(axiom_id, apply = FALSE) {
 review_all_active_axioms <- function(apply = FALSE) {
   root <- .rv_root()
   active_dir <- file.path(root, "qepm", "memory", "axioms", "active")
-  files <- list.files(active_dir,
-                      pattern = "^AX-.*\\.json$", full.names = FALSE)
-  ax_ids <- sub("\\.json$", "", files)
+  files <- list.files(active_dir, pattern = "^AX-.*\\.json$",
+                      full.names = FALSE, recursive = TRUE)  # mode-local(modes/**) 포함
+  ax_ids <- sub("\\.json$", "", basename(files))
   results <- list()
   for (id in ax_ids) {
     r <- tryCatch(review_axiom(id, apply = apply), error = function(e) {

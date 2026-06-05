@@ -23,12 +23,15 @@ suppressPackageStartupMessages({
 
 PROJ_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", unset = "")
 if (PROJ_ROOT == "" || !dir.exists(PROJ_ROOT)) {
-  PROJ_ROOT <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+  PROJ_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 }
 
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0) b else a
 
-EXTERNAL_BASE <- "/home/quant/.claude/projects/-mnt-c-Users-User-OneDrive-------Quant-Module-Moltbot/memory"
+# v8.0 Windows-native: 죽은 WSL 경로(/home/quant/...) 제거. 환경변수 우선 + Windows 메모리 dir fallback.
+# (methodology_active/archive.md가 해당 경로에 없으면 extract_lcodes_from_file이 MISSING 처리 — line 143-146.)
+EXTERNAL_BASE <- Sys.getenv("QVEST_MEMORY_DIR",
+                            "C:/Users/User/.claude/projects/G--Quant-Module-Moltbot/memory")
 
 SOURCE_FILES <- c(
   file.path(PROJ_ROOT, "qepm/memory/methodology_memory.md"),
@@ -225,11 +228,16 @@ corpus <- list(
 )
 
 # Write
-out_path <- file.path(PROJ_ROOT, ".cache", "lcode_corpus.json")
+# v8.0: 출력 경로 분리. lcode_harvester.py(v53_ax_p0, lcodes+grade/strategy_id)가
+# `.cache/lcode_corpus.json` canonical 단독 소유 — promote.R/review.R가 grade/strategy_id를
+# 요구하므로 그 스키마가 권위. 본 rebuild(v7.2.1_lcode_corpus, methodology 4-source +
+# summary.outliers)는 별도 파일로 써서 clobber race 제거(과거: 둘이 같은 파일 경합 → harvester
+# 가 이겨 rebuild 출력 매 부팅 파괴). memory_knowledge_health.R의 outlier 체크가 본 파일을 읽음.
+out_path <- file.path(PROJ_ROOT, ".cache", "lcode_corpus_methodology.json")
 dir.create(dirname(out_path), recursive = TRUE, showWarnings = FALSE)
 write_json(corpus, out_path, pretty = TRUE, auto_unbox = TRUE, null = "null")
 
-cat(sprintf("\n[OK] lcode_corpus.json written: %s\n", out_path))
+cat(sprintf("\n[OK] lcode_corpus_methodology.json written: %s\n", out_path))
 cat(sprintf("  total: %d unique L-codes\n", length(lcodes_list)))
 cat(sprintf("  max_id: %s\n", max_id))
 cat(sprintf("  outliers (gap>50): %d\n", length(outliers)))

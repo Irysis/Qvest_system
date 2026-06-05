@@ -6,7 +6,8 @@ L-code Harvester — Sprint 4 AX-P0 Layer 1
 생성한다. Axiom 엔진의 입력 단.
 
 Inputs:
-  - stage_artifacts/l_code_*.json (primary)
+  - stage_artifacts/l_code_*.json            (flat, back-compat)
+  - stage_artifacts/l_code/<mode>/l_code_*.json  (mode-separated; e.g. alpha_search/)
   - qepm/memory/axioms/active/AX-*.json (승격된 L-code 역링크 확인용)
 
 Output:
@@ -14,19 +15,21 @@ Output:
 
 Schema:
   {
-    "schema_version": "v53_ax_p0",
+    "schema_version": "v54_ax_p0_mode",
     "last_updated": ISO8601,
     "n_lcodes": int,
+    "mode_distribution": {mode: count, ...},
     "lcodes": [
       {
         "l_code": "L-XXX",
         "strategy_id": str,
         "lesson_text": str,
         "tags": [str, ...],
-        "family": str | null,      (inferred from strategy_id/tags)
+        "family": str | null,        (inferred from strategy_id/tags)
+        "research_mode": str,         (explicit field > directory > heuristic)
         "grade": "A|B|C|F",
         "core_reference": str,
-        "source_file": str,        (relative path)
+        "source_file": str,          (relative path)
         "mtime": ISO8601,
         "promoted_to_axiom": str | null  (AX-XXX if already promoted)
       }
@@ -53,9 +56,11 @@ FAMILY_KEYWORDS = {
     "quality_profitability": ["Q01", "GPA", "profitability", "CBPQ", "cash_profitability", "GSCD"],
     "value": ["EP", "BP", "value_trap", "BCSNA", "sector_neutral_accrual"],
     "defense": ["D29", "D25", "D04", "lowbeta", "defense"],
-    "momentum": ["M01", "IndMom", "momentum", "factor_mom"],
-    "ml_complexity": ["CVaR_LP", "XGB", "ML", "HRP", "FM", "factor_vol"],
-    "behavioral": ["contrarian", "flow", "ret_autocorr", "atypicality"],
+    "momentum": ["M01", "IndMom", "momentum", "모멘텀", "mom12", "mom6", "12-1", "6-1",
+                 "factor_mom", "추세", "trend", "reversal", "역방향", "52주", "저점", "mean-rev"],
+    "ml_complexity": ["CVaR_LP", "XGB", "ML", "HRP", "FM", "factor_vol", "lightgbm",
+                      "ensemble", "앙상블", "딥러닝", "신경망", "ngboost"],
+    "behavioral": ["contrarian", "flow", "ret_autocorr", "atypicality", "수급", "투자자"],
     "consensus": ["C19", "consensus", "analyst"],
 }
 
@@ -68,8 +73,10 @@ def _load(path: str):
         return None
 
 
-def _infer_family(strategy_id: str, tags: list[str], lesson_text: str) -> str | None:
-    text = (strategy_id or "") + " " + " ".join(tags or []) + " " + (lesson_text or "")[:500]
+def _infer_family(strategy_id: str, tags: list[str], lesson_text: str,
+                  core_reference: str = "") -> str | None:
+    text = ((strategy_id or "") + " " + " ".join(tags or []) + " "
+            + (lesson_text or "")[:500] + " " + (core_reference or "")[:200])
     text_lower = text.lower()
     best = None
     best_hits = 0
@@ -79,6 +86,75 @@ def _infer_family(strategy_id: str, tags: list[str], lesson_text: str) -> str | 
             best_hits = hits
             best = fam
     return best
+
+
+def _infer_mode(data: dict, source_file: str) -> str:
+    """Infer research_mode. Priority: explicit field > directory > created_by/strategy_id pattern.
+
+    모드별 L-code 분리: stage_artifacts/l_code/<mode>/ 디렉터리이거나 research_mode 필드가
+    있으면 그 모드. 기존 평면 파일(stage_artifacts/l_code_*.json)은 출처 추론.
+    """
+    explicit = data.get("research_mode")
+    if explicit:
+        return str(explicit)
+    # directory-based: .../l_code/<mode>/l_code_*.json
+    parts = source_file.replace("\\", "/").split("/")
+    if "l_code" in parts:
+        i = parts.index("l_code")
+        if i + 1 < len(parts) - 1:  # there is a subdir between l_code/ and the file
+            return parts[i + 1]
+    # source/created_by/strategy_id heuristics (back-compat for flat files)
+    created_by = str(data.get("created_by") or "").lower()
+    source = str(data.get("source") or "").lower()
+    sid = str(data.get("strategy_id") or "")
+    if sid.startswith("STR_AS_"):
+        return "alpha_search"
+    if "judge" in created_by or "judge" in source:
+        return "judge_gate"
+    if "governor" in created_by or "governor" in source or "admission" in sid.lower():
+        return "governor_admission"
+    if created_by == "scout":
+        return "alpha_research"
+    return "qepm_legacy"
+
+
+_CONSTRUCTION_KEYWORDS = {
+    # momentum을 reversal보다 먼저 체크 + "역방향"(실패 lesson 상투어 "역방향 가설 탐색 후보") 제거
+    "momentum": ["momentum", "모멘텀", "mom12", "mom6", "12-1", "6-1", "추세", "trend"],
+    "reversal": ["reversal", "52주", "저점", "mean-rev", "단기반전"],
+    "ml_sizing": ["ml", "xgb", "lightgbm", "ensemble", "앙상블", "딥러닝", "신경망", "ngboost"],
+    "value": ["value", "밸류", "per", "pbr", " ep", "저평가", "장부"],
+    "quality": ["quality", "퀄리티", " gp", "수익성", "profitab"],
+    "low_vol": ["저변동", "low-vol", "lowvol", "변동성"],
+    "dividend": ["배당", "dividend"],
+    "size": ["규모", "size", "소형", "중소형", "small-cap"],
+}
+
+
+def _infer_construction(data: dict) -> str:
+    """construction_type 추론(r7 Independence 축). explicit 필드 우선, 없으면 키워드."""
+    explicit = data.get("construction_type")
+    if explicit:
+        return str(explicit)
+    text = (str(data.get("strategy_id") or "") + " " + str(data.get("core_reference") or "")
+            + " " + str(data.get("lesson_text") or "")[:300] + " "
+            + " ".join(data.get("tags") or [])).lower()
+    for ct, kws in _CONSTRUCTION_KEYWORDS.items():
+        if any(kw in text for kw in kws):
+            return ct
+    return "single_factor_long_only"
+
+
+def _infer_metric_type(data: dict, mode: str) -> str:
+    """metric_type 추론(INV-1 게이트 입력). explicit 우선, 없으면 모드 기반 보수 추론."""
+    mt = data.get("metric_type")
+    if mt:
+        return str(mt)
+    if mode == "alpha_search":
+        return "proxy"
+    if mode in ("factor_rotation", "regime_research"):
+        return "backtested"
+    return "estimated"  # 불명확 → 보수적(mode-local 한정)
 
 
 def _check_promoted(l_code: str, project_dir: str) -> str | None:
@@ -99,8 +175,22 @@ def _check_promoted(l_code: str, project_dir: str) -> str | None:
 def harvest(project_dir: str) -> dict:
     arts = os.path.join(project_dir, "stage_artifacts")
     lcodes: list[dict] = []
+    seen: set[str] = set()  # dedup by absolute path
 
-    for p in sorted(glob.glob(os.path.join(arts, "l_code_*.json"))):
+    # Flat (back-compat) + mode-separated subdirectories (stage_artifacts/l_code/<mode>/).
+    patterns = [
+        os.path.join(arts, "l_code_*.json"),
+        os.path.join(arts, "l_code", "**", "l_code_*.json"),
+    ]
+    paths: list[str] = []
+    for pat in patterns:
+        paths.extend(glob.glob(pat, recursive=True))
+
+    for p in sorted(paths):
+        ap = os.path.abspath(p)
+        if ap in seen:
+            continue
+        seen.add(ap)
         data = _load(p)
         if not isinstance(data, dict):
             continue
@@ -115,7 +205,10 @@ def harvest(project_dir: str) -> dict:
         strategy_id = data.get("strategy_id", "")
         tags = data.get("tags", []) or []
         lesson_text = data.get("lesson_text", "") or ""
-        family = _infer_family(strategy_id, tags, lesson_text)
+        core_reference = data.get("core_reference", "")
+        source_file = os.path.relpath(p, project_dir)
+        family = _infer_family(strategy_id, tags, lesson_text, core_reference)
+        mode = _infer_mode(data, source_file)
         promoted = _check_promoted(l_code, project_dir)
 
         lcodes.append({
@@ -124,9 +217,12 @@ def harvest(project_dir: str) -> dict:
             "lesson_text": lesson_text,
             "tags": tags,
             "family": family,
+            "research_mode": mode,
+            "construction_type": _infer_construction(data),
+            "metric_type": _infer_metric_type(data, mode),
             "grade": data.get("grade"),
-            "core_reference": data.get("core_reference", ""),
-            "source_file": os.path.relpath(p, project_dir),
+            "core_reference": core_reference,
+            "source_file": source_file,
             "mtime": datetime.fromtimestamp(os.path.getmtime(p), tz=timezone.utc).isoformat(timespec="seconds"),
             "promoted_to_axiom": promoted,
         })
@@ -134,10 +230,11 @@ def harvest(project_dir: str) -> dict:
     lcodes.sort(key=lambda x: x["l_code"])
 
     return {
-        "schema_version": "v53_ax_p0",
+        "schema_version": "v54_ax_p0_mode",
         "last_updated": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "n_lcodes": len(lcodes),
         "family_distribution": _family_dist(lcodes),
+        "mode_distribution": _mode_dist(lcodes),
         "grade_distribution": _grade_dist(lcodes),
         "n_promoted": sum(1 for x in lcodes if x["promoted_to_axiom"]),
         "lcodes": lcodes,
@@ -149,6 +246,14 @@ def _family_dist(lcodes: list[dict]) -> dict[str, int]:
     for x in lcodes:
         fam = x.get("family") or "unknown"
         out[fam] = out.get(fam, 0) + 1
+    return dict(sorted(out.items(), key=lambda kv: -kv[1]))
+
+
+def _mode_dist(lcodes: list[dict]) -> dict[str, int]:
+    out: dict[str, int] = {}
+    for x in lcodes:
+        m = x.get("research_mode") or "unknown"
+        out[m] = out.get(m, 0) + 1
     return dict(sorted(out.items(), key=lambda kv: -kv[1]))
 
 
@@ -165,7 +270,7 @@ def main() -> int:
     ap.add_argument(
         "--project-dir",
         default=os.environ.get("QVEST_PROJECT_DIR")
-        or "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot",
+        or os.environ.get("CLAUDE_PROJECT_DIR") or os.environ.get("QM_ROOT") or os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
     )
     ap.add_argument("--output", default=None)
     args = ap.parse_args()

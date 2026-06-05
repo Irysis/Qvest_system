@@ -68,10 +68,14 @@ Qvest 시스템 전체 구동. bootstrap.sh 실행 → 플러그인 리로드 �
 
 ## Active Entrypoints
 
+**3 리서치 모드** (도훈 mandate): ① **QEPM**(6-에이전트 풀파이프라인, `/worktask`) — 모듈 생산 · ② **alpha-search**(논문 1편 경량 검증, `/alpha-search`) — 모듈 생산 · ③ **factor-rotation**(국면조건부 모듈 배합 meta-layer, `/factor-rotation`) — 모듈 *소비*. ②③ 산출물은 `register_module()` 경유 표준화돼 ③이 소비.
+
 | Command | 용도 |
 |---|---|
 | `/qvest` | Session startup + bootstrap + status |
-| `/worktask` | WorkTask 생성 + 상태 + 전이 + admission |
+| `/worktask` | WorkTask 생성 + 상태 + 전이 + admission (QEPM 모드) |
+| `/alpha-search` | 논문/가설 경량 백테 검증 (alpha-search 모드) |
+| `/factor-rotation <track>` | 국면조건부 모듈 배합 FR_XXXX (factor-rotation 모드. track∈{regime-engine, allocation}) |
 
 ---
 
@@ -82,6 +86,7 @@ Qvest 시스템 전체 구동. bootstrap.sh 실행 → 플러그인 리로드 �
 - **Codex Critic Round 의무**: `.claude/rules/codex-round.md` (모든 agent spawn 시 5단계 흐름, 우회 시 PreToolUse Hook block)
 - **Backtest Result Contract v1.0**: `.claude/rules/backtest-contract.md` (PerformanceAnalytics 표준 함수만)
 - **Measurement Integrity + Graduation 허들 (v8.x)**: `.claude/rules/measurement-graduation.md` ⭐ (위반 = AX-002 동급. 실측 처리(canonical_screen_bt/build_bt_result + metric_type 라벨, proxy 손계산 금지) / portfolio-alpha t = forge-authoritative(NW lag-3) / graduation severity: PORT_t 2.95·DSR hard, rank-IC계열 advisory / admission = book-marginal ΔIR≥0.05 / DPL 구성레이어. E2E: FLOW proxy 3.55→forge 2.35)
+- **Axiom Engine 2-Tier (v8.0)**: `.claude/rules/axiom-engine.md` ⭐ (원전 r7 복원 + 3-mode 2-tier(AS proxy→mode-local / QPM·FR backtested→global) + INV-1~7. mode-local AX-&lt;MODE&gt;-NNN / global AX-NNN. negative=provisional failure-ledger. 자동승격=documented·hook block은 주간 confirm. E2E 10/10. 위반=AX-002 동급)
 - **Qvest 답변 원칙 (8원칙 + 5금지)**: `.claude/rules/answer-principles.md` (위반 = AX-002 동급)
 - **Telegram v6 SOT**: `.claude/skills/qvest-telegram/SKILL.md` (단일 규칙. `tg_agent_brief()` 진입점, 약어 풀이 자동, 표준 4섹션 권장)
 - **Caching Discipline**: `.claude/rules/caching.md` (Anthropic 5분 TTL, ScheduleWakeup ≤270s)
@@ -237,7 +242,8 @@ cd qepm && Rscript -e 'source("scripts/hybrid_mode.R")'
 | `backtest-contract.md` | bt_result 10-component + audit |
 | `caching.md` | Anthropic 5분 TTL + ScheduleWakeup |
 | `factor-db.md` | C13~C15 + load_month_factors 경유 |
-| `axioms.md` | AX-000~008 본문 |
+| `axioms.md` | AX-000~008 본문 + 2-tier |
+| `axiom-engine.md` | 3-mode 2-tier 엔진 SOT (원전 r7 복원 + INV-1~7) |
 
 ---
 

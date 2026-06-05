@@ -26,6 +26,7 @@ Rule extraction (초안만 — 5축 검증은 promote.R):
 from __future__ import annotations
 
 import argparse
+import glob
 import json
 import os
 import re
@@ -188,57 +189,122 @@ def _draft_scope(cluster: dict) -> dict:
     }
 
 
+def _independence(cluster: dict) -> dict:
+    """r7 Independence 축: distinct construction/signature 집계 (같은 construction = 상관 1건)."""
+    sigs, constructions, metric_types = set(), set(), set()
+    for m in cluster["members"]:
+        ct = m.get("construction_type") or "unknown"
+        constructions.add(ct)
+        metric_types.add(m.get("metric_type") or "estimated")
+        sigs.add((m.get("research_mode"), m.get("metric_type"), m.get("family"), ct))
+    return {
+        "n_eff_signatures": len(sigs),
+        "independent_constructions": len(constructions),
+        "constructions": sorted(constructions),
+        "metric_types": sorted(metric_types),
+    }
+
+
+def _cluster_metric_type(cluster: dict) -> str:
+    """INV-1: 멤버 metric_type 집계. 하나라도 proxy면 proxy, 전부 backtested여야 backtested."""
+    mts = set(m.get("metric_type") or "estimated" for m in cluster["members"])
+    if mts == {"backtested"}:
+        return "backtested"
+    if "proxy" in mts:
+        return "proxy"
+    return "estimated"
+
+
+def _build_one_candidate(cl: dict, mode: str, today: str):
+    cand_type = _classify_type(cl)
+    polarity = _polarity(cl)
+    family = Counter(m.get("family") for m in cl["members"]).most_common(1)[0][0]
+    cluster_key = f"{mode}_{family or 'unknown'}_{polarity}_{'_'.join(sorted(cl['l_codes'])[:3])}"
+    candidate_id = f"CAND_{today}_{cluster_key}"
+
+    evidence = _draft_evidence(cl)
+    evidence.update(_independence(cl))
+
+    candidate = {
+        "schema_version": "v54_ax_p0_mode",
+        "candidate_id": candidate_id,
+        "research_mode": mode,
+        "metric_type": _cluster_metric_type(cl),
+        "type": cand_type,
+        "polarity": polarity,
+        "statement_draft": _draft_statement(cl, cand_type, polarity),
+        "supporting_l_codes": cl["l_codes"],
+        "scope_draft": _draft_scope(cl),
+        "evidence_draft": evidence,
+        "falsification_draft": {
+            "attempts": [],
+            "note": "promote.R 5축(r7 적극 반증)에서 kr-inverse-pattern-miner 역가설 + role_honesty로 채움",
+        },
+        "mechanism_draft": {
+            "economic_explanation": None,
+            "mechanism_type": "unknown",
+            "causal_plausibility": None,
+        },
+        "oos_validation_draft": {
+            "oos_months": None,
+            "oos_effect_vs_is": None,
+            "note": "promote.R r4_regime_payoff / essence_score 경유 확정",
+        },
+        "cluster_members_count": cl["size"],
+        "status": "pending_5axis",
+        "created_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+    }
+    return candidate_id, candidate, set(cl["l_codes"])
+
+
+def _write_with_superset_dedup(new_cands: list, out_dir: str) -> list[str]:
+    """replace-by-superset: 신 후보가 기존 pending CAND의 supporting 진부분집합을 포함하면 subset 제거."""
+    existing: dict = {}
+    for f in glob.glob(os.path.join(out_dir, "CAND_*.json")):
+        d = _load(f)
+        if isinstance(d, dict):
+            existing[f] = set(d.get("supporting_l_codes") or [])
+    written: list[str] = []
+    for cand_id, cand, sup in new_cands:
+        cand_fname = f"{cand_id}.json"
+        # subset 또는 equal(파일명 상이 — 옛 mode-less id) 제거: 새 후보가 대체/갱신
+        for ef in [k for k, v in existing.items()
+                   if v and v <= sup and os.path.basename(k) != cand_fname]:
+            try:
+                os.remove(ef)
+                print(f"  [dedup] removed {os.path.basename(ef)} (subset/equal of {cand_id})")
+            except OSError:
+                pass
+            existing.pop(ef, None)
+        # 새 후보가 남은 기존의 진부분집합이면 skip
+        if any(sup and sup < v for v in existing.values()):
+            continue
+        path = os.path.join(out_dir, f"{cand_id}.json")
+        with open(path, "w", encoding="utf-8") as fh:
+            json.dump(cand, fh, indent=2, ensure_ascii=False)
+        existing[path] = sup
+        written.append(path)
+    return written
+
+
 def build_candidates(corpus: dict, out_dir: str) -> list[str]:
     lcodes = corpus.get("lcodes", [])
     if not lcodes:
         return []
-    clusters = cluster_lcodes(lcodes)
     os.makedirs(out_dir, exist_ok=True)
-
     today = datetime.now(timezone.utc).strftime("%Y%m%d")
-    written: list[str] = []
 
-    for cl in clusters:
-        cand_type = _classify_type(cl)
-        polarity = _polarity(cl)
-        family = Counter(m.get("family") for m in cl["members"]).most_common(1)[0][0]
-        cluster_key = f"{family or 'unknown'}_{polarity}_{'_'.join(sorted(cl['l_codes'])[:3])}"
-        candidate_id = f"CAND_{today}_{cluster_key}"
+    # mode-partition: 같은 research_mode 내에서만 클러스터 (cross-mode 일반화는 promote_global 영역)
+    by_mode: dict = {}
+    for lc in lcodes:
+        by_mode.setdefault(lc.get("research_mode") or "unknown", []).append(lc)
 
-        candidate = {
-            "schema_version": "v53_ax_p0",
-            "candidate_id": candidate_id,
-            "type": cand_type,
-            "polarity": polarity,
-            "statement_draft": _draft_statement(cl, cand_type, polarity),
-            "supporting_l_codes": cl["l_codes"],
-            "scope_draft": _draft_scope(cl),
-            "evidence_draft": _draft_evidence(cl),
-            "falsification_draft": {
-                "attempts": [],
-                "note": "promote.R 5축 검증에서 evidence_summary/ + role_honesty 스캔으로 채움",
-            },
-            "mechanism_draft": {
-                "economic_explanation": None,   # human/LLM-filled pre-promote
-                "mechanism_type": "unknown",
-                "causal_plausibility": None,
-            },
-            "oos_validation_draft": {
-                "oos_months": None,
-                "oos_effect_vs_is": None,
-                "note": "promote.R에서 r4_regime_payoff 호출로 확정",
-            },
-            "cluster_members_count": cl["size"],
-            "status": "pending_5axis",
-            "created_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        }
+    new_cands: list = []
+    for mode, mode_lcodes in by_mode.items():
+        for cl in cluster_lcodes(mode_lcodes):
+            new_cands.append(_build_one_candidate(cl, mode, today))
 
-        path = os.path.join(out_dir, f"{candidate_id}.json")
-        with open(path, "w", encoding="utf-8") as f:
-            json.dump(candidate, f, indent=2, ensure_ascii=False)
-        written.append(path)
-
-    return written
+    return _write_with_superset_dedup(new_cands, out_dir)
 
 
 def main() -> int:
@@ -246,7 +312,7 @@ def main() -> int:
     ap.add_argument(
         "--project-dir",
         default=os.environ.get("QVEST_PROJECT_DIR")
-        or "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot",
+        or os.environ.get("CLAUDE_PROJECT_DIR") or os.environ.get("QM_ROOT") or os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
     )
     ap.add_argument("--corpus", default=None)
     ap.add_argument("--out-dir", default=None)

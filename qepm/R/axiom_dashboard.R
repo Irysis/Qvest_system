@@ -10,7 +10,7 @@ suppressPackageStartupMessages({
 
 .dash_root <- function() {
   cands <- c(
-    "/mnt/c/Users/User/OneDrive/\xeb\xb0\x94\xed\x83\x95 \xed\x99\x94\xeb\xa9\xb4/Quant_Module_Moltbot",
+    Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")),
     Sys.getenv("QVEST_PROJECT_DIR", ""),
     Sys.getenv("PROJECT_ROOT", ""),
     getwd()
@@ -29,7 +29,7 @@ axiom_status <- function(verbose = TRUE) {
   .count_dir <- function(sub) {
     d <- file.path(ax_dir, sub)
     if (!dir.exists(d)) return(0L)
-    length(list.files(d, pattern = "\\.json$"))
+    length(list.files(d, pattern = "\\.json$", recursive = TRUE))  # mode-local 포함
   }
 
   counts <- list(
@@ -41,7 +41,7 @@ axiom_status <- function(verbose = TRUE) {
 
   # Active axiom 상세
   active_files <- list.files(file.path(ax_dir, "active"),
-                              pattern = "^AX-.*\\.json$", full.names = TRUE)
+                              pattern = "^AX-.*\\.json$", full.names = TRUE, recursive = TRUE)
   active_detail <- list()
   for (f in active_files) {
     ax <- tryCatch(fromJSON(f, simplifyVector = FALSE), error = function(e) NULL)

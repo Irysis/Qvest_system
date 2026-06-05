@@ -14,6 +14,13 @@
 source "$(dirname "${BASH_SOURCE[0]:-$0}")/resolve_project.sh"
 cd "$PROJECT"
 
+# Windows-native (2026-06-04): R/python이 인식하는 경로로 CLAUDE_PROJECT_DIR/QM_ROOT export.
+# cygpath -m → G:/Quant_Module_Moltbot (Windows mixed). R file.exists + python open 둘 다 OK.
+# (POSIX /g/는 python open() 실패. WSL/Linux엔 cygpath 없어 $PROJECT fallback = /mnt/g 정상.)
+export CLAUDE_PROJECT_DIR="$(cygpath -m "$PROJECT" 2>/dev/null || echo "$PROJECT")"
+export QM_ROOT="${QM_ROOT:-$CLAUDE_PROJECT_DIR}"
+export PYTHONUTF8=1   # Windows python 기본 cp949 → UTF-8 강제 (PG2/readiness UnicodeDecodeError 방지, 2026-06-04)
+
 echo "━━━ Qvest v8.0 부트스트랩 (Opus 4.8 Native) ━━━"
 
 # 1. (제거됨 v8.0 2026-05-29) tmux rc telegram inbound listener — outbound tg_agent_brief()는
@@ -102,6 +109,14 @@ echo "[boot] 데이터 리프레시 백그라운드 (PID=$REFRESH_PID, log=$REFR
 QVEST_PROJECT_DIR="$PROJECT" \
   python3 "$PROJECT/02_Infrastructure/axiom/lcode_harvester.py" >/tmp/axiom_boot.log 2>&1 &
 echo "[boot] L-code harvester 백그라운드"
+
+# 6b. v8.0 axiom weekly pipeline (지난 weekly_report 7일+ 경과 시 — Windows cron 대체)
+LAST_W=$(ls -t "$PROJECT"/qepm/memory/axioms/review_log/weekly_report_*.json 2>/dev/null | head -1)
+LASTW_T=0; [ -n "$LAST_W" ] && LASTW_T=$(stat -c %Y "$LAST_W" 2>/dev/null || echo 0)
+if [ $(( ($(date +%s) - LASTW_T) / 86400 )) -ge 7 ]; then
+  (cd "$PROJECT" && bash "$PROJECT/02_Infrastructure/ops/axiom_weekly.sh" >/tmp/axiom_weekly_boot.log 2>&1) &
+  echo "[boot] axiom_weekly 파이프라인 백그라운드 (7일+ 경과)"
+fi
 
 # 7. Hook health check
 HH_OUT=$(bash "$PROJECT/02_Infrastructure/hooks/harness_health.sh" 2>&1)
