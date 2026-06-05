@@ -49,8 +49,8 @@ run_alpha_search <- function(strategy_name,
                              n_holdings    = 20L,
                              weight_method = "ivol",
                              commission    = 0.0015,
-                             start_date    = NULL,   # FACTORS 시그널 시작일(예 "2005-01-01"). NULL=전기간
-                             universe      = "ALL",  # "ALL"=전종목(유동성 2e8만) / "KR_TOP500"=유동성 2e8 통과 중 시총 top500 (KR_TOP500_FREEFLOAT, PIT-safe)
+                             start_date    = "2005-01-01",  # 표준 백테 시작(도훈 mandate 2026-06-05): KR value/재무 한계(BM 2002-08~)+FF3 36m → 2005 공통 고정. NULL=전기간
+                             universe      = "K200_KQ150",  # 표준 고정(도훈 2026-06-05): KOSPI200/KOSDAQ150 멤버십(실투). "ALL"=전종목 / "KR_TOP500"=시총top500 / "K200_KQ150"=인덱스멤버십(PIT 시변)
                              out_root      = NULL,
                              portfolio_id  = "PF_ALPHASEARCH",
                              send_telegram = TRUE,
@@ -101,6 +101,17 @@ run_alpha_search <- function(strategy_name,
     universe_n_eff <- as.integer(round(nrow(.keep) / max(uniqueN(.keep$Date), 1L)))
     cat(sprintf("[AlphaSearch] universe=KR_TOP500 (시총 top500, PIT): tickers %d->%d | avg/month %d | rows->%d\n",
                 .n0, uniqueN(FACTORS$Ticker), universe_n_eff, nrow(FACTORS)))
+  } else if (!is.null(universe) && universe %in% c("K200_KQ150", "INDEX")) {
+    # KOSPI200 ∪ KOSDAQ150 인덱스 멤버십 (PIT 시변: sig_date 시점 멤버만). 실투 표준 유니버스.
+    if (!all(c("K200", "KQ150") %in% names(RAWDATA)))
+      stop("[AlphaSearch] universe=K200_KQ150 requires RAWDATA K200/KQ150 membership columns")
+    .me_uni <- unique(FACTORS$Date)
+    .mem <- unique(RAWDATA[Date %in% .me_uni & (K200 == TRUE | KQ150 == TRUE), .(Date, Ticker)])
+    .n0  <- uniqueN(FACTORS$Ticker)
+    FACTORS <- merge(FACTORS, .mem, by = c("Date", "Ticker"))
+    universe_n_eff <- as.integer(round(nrow(.mem) / max(uniqueN(.mem$Date), 1L)))
+    cat(sprintf("[AlphaSearch] universe=K200_KQ150 (KOSPI200/KOSDAQ150 membership, PIT time-varying): tickers %d->%d | avg/month %d\n",
+                .n0, uniqueN(FACTORS$Ticker), universe_n_eff))
   } else {
     universe_n_eff <- as.integer(round(uniqueN(paste(FACTORS$Date, FACTORS$Ticker)) / max(uniqueN(FACTORS$Date), 1L)))
   }

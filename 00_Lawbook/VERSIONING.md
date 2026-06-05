@@ -18,7 +18,8 @@
 | v7.0.0 | v7.0 Hardening (execution path unification + CI + schema strict + E2E + legacy + ledger) |
 | v7.0.1 | v7.0 patch (CI fix, hook bug 등) |
 | v7.1.0 | Plugin / docs / dashboard (확장 layer) |
-| v8.0.0 | Major refactor (예: R → Python migration, factor DB schema 변경) |
+| v8.0.0 | Opus 4.8-Native + R→Python 1급(polyglot) + Axiom 엔진 리뉴얼 — Major |
+| v8.1.0 | 3-Mode 헌법 + 실측 거버넌스 + 모듈 자동흐름 (MINOR — backward-compatible 신규) |
 
 ## Pre-release tag
 

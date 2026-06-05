@@ -219,10 +219,16 @@ PG2 active (STR_1631_SYN_05_2002 + STR_1656_MLRA_M05) **그대로 유지**.
 
 ---
 
-## 부팅 직후 체크리스트 (v8.0 갱신 — 13 + v8.0 5건)
+## 부팅 직후 체크리스트 (v8.1 갱신 — 13 + v8.0 5 + v8.1 4건)
+
+### v8.1 신규 확인 (4건, 2026-06-05)
+19. ✅ 완료 배너 `Qvest v8.1 — Opus 4.8 Native · 3-Mode · 실측 거버넌스` + `v8.1:` 상태 라인 출력
+20. ✅ **데이터 캐시 검증(Step 4e)** 부트 메시지 — `[boot] 데이터 캐시: rawdata.parquet ✓ + K200/KQ150 멤버십 ✓` (없으면 WARN: alpha-search `universe=K200_KQ150` stop 위험) + `kr_factor_returns_v2 ✓`
+21. ✅ alpha-search 제1원칙 (`.claude/skills/alpha-search/SKILL.md` `## ★ 제1원칙`): 논문 완전 복제 + 유니버스 K200∪KQ150 고정(`run_alpha_search` universe 기본값) + 기간 2005~ 고정(start_date 기본값)
+22. ✅ 모듈 자동흐름: `register_module`(공용계약) + `register_research_outputs`(ML/DPL 다리) + `run_factor_rotation` 신선도 / Axiom r7 복원(`.claude/rules/axiom-engine.md` 5축 boolean-AND + INV-1~7)
 
 ### v8.0 신규 확인 (5건)
-14. ✅ 완료 배너 `Qvest v8.0 — Opus 4.8 Native` + `v8.0:` 상태 라인 출력 확인
+14. ✅ 완료 배너 `Qvest v8.1 — Opus 4.8 Native` + `v8.1:` 상태 라인 출력 확인
 15. ✅ PreToolUse[Agent] = `axiom_context_inject` + `worktask_sequence_enforcer` (unified_agent_guard 등록 해제 — `grep -c unified_agent_guard .claude/settings.json` = 0)
 16. ✅ agent effort frontmatter (judge/governor xhigh, alpha/risk/optimizer/forge high) — `grep -l 'effort:' .claude/agents/*.md`
 17. ✅ qvest-*-style skill 4종 + `skills:` frontmatter 부착 (alpha/risk/opt/judge/gov)
@@ -244,7 +250,7 @@ PG2 active (STR_1631_SYN_05_2002 + STR_1656_MLRA_M05) **그대로 유지**.
 
 10. ✅ **Memory Knowledge Health** 부트 메시지 확인 (`[boot] Memory health: hard=0 warn=≤6 info=N`). HARD ≥1 이면 즉시 중단. 출력: `qepm/observability/memory_health_latest.json`
 11. ✅ **Axiom SOT 3축 동기화** 부트 메시지 확인 (`[boot] Axioms: active=N candidates=M (sot_map documented=8: documented=3 / block=1 / advisory=4)`). primary (`active/AX-*.json`) ↔ documented (`.claude/rules/axioms.md`) 8:8 일치 = `memory_knowledge_health.R` HARD 3 PASS
-12. ✅ **v8 Readiness Gate** 부트 메시지 확인 (`[boot] v8 readiness (--no-write, 15 check): PASS — pass=13 fail=0 skip=2`). 15 check 중 e2e_kernel + timeline_generation은 no-write 시 SKIP 정상. `memory_health` (v7.2.1 신규 15번째 check)는 cached `memory_health_latest.json` read
+12. ✅ **v8 Readiness Gate** 부트 메시지 확인 (`[boot] v8 readiness (--no-write, 16 check incl v8_architecture): PASS — pass=13 fail=0 skip=2`). e2e_kernel + timeline_generation은 no-write 시 SKIP 정상. `memory_health` cached `memory_health_latest.json` read
 13. ✅ **Cache_core sync** 부트 메시지 확인 (`[boot] Cache_core: FULL (8)` 또는 `STALE (n vs 8 — derived cache, WARN only)`). STALE은 hard fail 아님 (axiom_sot_map.json sot_definition.hard_fail_basis = primary↔documented만)
 
 체크 실패 시 → `next_session_task.md` 참조 + 복구.
@@ -300,6 +306,7 @@ PG2 active (STR_1631_SYN_05_2002 + STR_1656_MLRA_M05) **그대로 유지**.
 
 ## Version
 
+- **v8.1.0** — 2026-06-05 — **3-Mode 헌법 + 실측 거버넌스 + 모듈 자동흐름 승격**. (1) alpha-search 제1원칙(논문 완전 복제 + 유니버스 K200∪KQ150 고정 `universe="K200_KQ150"` + 기간 2005~ 고정 `start_date="2005-01-01"`) — KR 데이터 한계(value/BM 2002-08~ · M08_ResidMom 1995~ · factor DB 1990~) 진단 기반. (2) factor-rotation Lane3(register_module 공용계약 등급무관 + RCMA 6기준 양방향 + run_factor_rotation 신선도 자동인식) + ML/DPL register 다리(register_research_outputs). (3) Axiom r7 원전 복원(5축 boolean-AND + 3-mode 2-tier + INV-1~7). (4) measurement-graduation 실측-only(real-computation · portfolio-α t forge-authoritative · oos_retention/calmar HARD · book-marginal). **bootstrap v8.1**: 배너 v8.1 + Step 4e 데이터 캐시/K200_KQ150 멤버십 검증(Critical 패치). 체크리스트 13+5 → +v8.1 4건(19-22). v8 readiness 15→16 check(v8_architecture). E2E 4축 배선 닫힘. 미완: residual momentum 사이클 register/factor_analysis 디버깅 / qvest_v8_1_sot 발행.
 - **v7.2.1-boot** — 2026-05-02 Session 76 — **부팅 시퀸스 v7.2.1 자원 11항 통합 + readiness gate 15-check 갭 해소**. bootstrap.sh Step 4 교체 (`memory_knowledge_health.R` foreground hard 6 + warning 6) + Step 4b 신규 (`memory_metadata_normalize.R` selftest 2/2) + Step 4c 신규 (`lcode_corpus_rebuild.R` 백그라운드, 4 source 통합) + Step 7d 신규 (`qvest_v8_ready --no-write --json` 13/15 PASS + 2 SKIP 정상) + Step 8 확장 (axiom sot_map 기반 documented_active count + enforcement_mode 분류 documented/block/advisory + cache_core sync 표시). 부팅 직후 체크리스트 9 → 13건 확장. **메모리 정합성 갭 1건 해소**: `v8_readiness_gate.R` `check_memory_health` (15번째 check)는 코드상 이미 호출되어 있었으나 README/last run JSON이 14에 멈춰 있어서 메모리 "15 total" 표기와 외관 갭 발생. README 14→15 갱신 + bootstrap 메시지/qvest.md 체크리스트 동기화로 해소. baseline: HARD 0 / WARN 3 / INFO 1 PASS + readiness 13/15 PASS + 2 SKIP.
 - **v6.3.3** — 2026-05-01 Session 75 — **v6.0 Codex Critic Round 의무 3중 장치 영구 정착**. 본 cycle WT-D20260501_001 alpha+risk codex round 누락 (도훈 지적) → 4-Layer 진단 (Q-Lead 인지 40% + spawn prompt 30% + agent 자율 무시 15% + Hook regex 갭 15%). 3중 장치 fix: (A) `CLAUDE.md` Level 0 `## v6.0 Codex Critic Round 의무` 신규 명문화 / (B) PreToolUse Hook `codex_round_pre_enforcer.sh` 신규 (130 LoC, final {role}_package.json 작성 시 _draft + critic_response 부재 block + waiver via challenge_note.md) / (C) `qlead_spawn_template.md` 신규 (5단계 흐름 + Self-Check + 6 role 적용 대상). settings.json PreToolUse Hook 17→18. 사후 alpha+risk codex round background spawn. L-269 적립.
 - **v6.3.2** — 2026-05-01 Session 75 — **Cert Auto-Issuance Paths 명문화 + Layer 4 영구 deferred 확정**. (1) `.claude/settings.json` `hooks.FileChanged` array 영구 제거 (Layer 4 inconclusive 결론, B-3 채택). (2) 신규 `02_Infrastructure/worktask/cert_issuance_paths.md` SOT — Claude Code Write/Edit tool 경유 시 5 cert PostToolUse Hook 100% 자동 발급, Bash/Rscript/외부 editor 시 Layer 2 bootstrap sweep 사후 backfill 매트릭스 6 row + 운영 권장 패턴. E2E dry-run 6/6 PASS (alpha_discovery + sr_provenance + forge_package_validated + schedule_fidelity 4 cert auto-issue + 음의 시나리오 cert 부재 admit 차단 + Hard block fabrication label PASS) 입증 후 발행. L-267/L-268.

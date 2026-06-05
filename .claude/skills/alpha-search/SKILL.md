@@ -8,6 +8,21 @@ description: 알파 서칭 모드 — 논문/가설을 빠르게 백테스트 �
 Qvest 초기 모델처럼 **논문 한 편을 빠르게 검증**하는 가벼운 독립 루프.
 무거운 QEPM 6-에이전트 파이프라인 대신, 알파 단독으로 백테스트 → 리포트 → 교훈 적립.
 
+## ★ 제1원칙 — 논문 완전 복제 (Faithful Full Replication)
+
+**알파 서칭 모드는 논문 완전 복제가 원칙이다** (도훈 mandate 2026-06-05). 논문/가설의 전략을 **원본 그대로** 재현해 검증하는 것이 본 모드의 목적이며, 재현 충실도 자체가 검증의 전제다.
+
+- **각종 파라미터를 논문 명시값 그대로 복제**한다:
+  - **팩터 구성 방법론**: 회귀 기간(예 36m)·skip(예 11-1, 직전 1개월 제외)·표준화(잔차 σ 분모)·윈도우·랭킹 방식.
+  - **포트폴리오 구성 비중**: equal-weight / value-weight / decile / signal-proportional 등 — **논문이 쓴 방식 그대로**.
+  - **종목수 · 리밸 주기 · long/short 구조**: 논문대로(decile이면 decile, 10종목이면 10종목).
+- **유니버스 = 고정 K200∪KQ150** (도훈 mandate 2026-06-05): 외국 논문 유니버스(US NYSE/Russell/S&P)는 KR 직접 적용 불가(데이터 부재·시장구조 차이) → **모든 검증을 KOSPI200∪KOSDAQ150 실투 유니버스로 고정**(`universe="K200_KQ150"`, PIT 시변 멤버십). 소형주 논문도 이 범위로 좁혀 검증(size effect 알파는 약화될 수 있으나 실투·비교 정합 우선). 방법론·비중·종목수는 복제하되 유니버스만 K200∪KQ150 단일 고정.
+- **백테 기간 = 2005-01-01~현재 고정** (도훈 mandate 2026-06-05): KR value/재무 데이터 한계(book-to-market 2002-08~, factor DB `V01_BM`·fundamental 공통) + FF3 36m 회귀 → FF 의존 전략 실효 2005-08. 공통 표준을 `start_date="2005-01-01"`로 고정. 가격 기반 전략은 1990~ 가능하나 비교 일관성 위해 2005 통일. (factor DB `M08_Residual_Mom`은 1995~ 있어 2000 우회 가능했으나, 논문 FF3 복제 충실 택함.)
+- **Q-Lead/agent의 임의 변형 금지**: 종목수·비중scheme를 시스템 관습(top20 / 순수스코어 등)으로 **바꾸지 말 것**. 변형하면 그것은 논문 검증이 아니라 별개 전략이며 **검증 무효**다. (유니버스는 위 KR 치환 예외 — 단 논문 의도에 맞게, 무근거 축소는 금지.)
+- **논문 미명시 값만** 시스템 표준 적용(PIT C1~C15, 15bps 비용, 유동성 2e8) — 단 무엇을 보충했는지 **명시**.
+- **production constraint(max25 등)와 논문(decile 등)이 충돌**하면 검증 단계는 **논문 우선**, 충돌 사실을 명시 보고(production 적용은 운용 단계 별도).
+- 근거 사건: residual momentum(Blitz-Huij-Martens 2011) 검증 중 Q-Lead가 top20·순수스코어가중·KR_TOP500으로 임의 변형 → 도훈 정정 "논문 그대로 비중". 본 원칙으로 재발 차단.
+
 ## 동작 절차 (4-step)
 
 ### 1. 가설 intake
@@ -27,9 +42,9 @@ run_alpha_search(
   strategy_name      = "STR명",
   strategy_idea      = "한 줄 전략 아이디어",
   factor_engine_path = "<작성한 factor_engine.R 절대경로>",
-  n_holdings = 20, weight_method = "ivol", commission = 0.0015,
+  n_holdings = 20, weight_method = "ivol", commission = 0.0015,   # ★ 제1원칙: 종목수·비중을 논문 명시값으로 대체(예 decile·equal-weight). 여기 값은 예시일 뿐 임의 기본값 아님
   start_date = "2010-01-01",  # 시그널 시작일. 빠른 검증 권장(전기간 NULL은 36년 풀시뮬로 매우 느림)
-  universe = "ALL",           # "ALL"=전종목(유동성 2e8만) / "KR_TOP500"=유동성통과 중 시총 top500(PIT-safe)
+  universe = "ALL",           # "ALL"=전종목(유동성 2e8만) / "KR_TOP500"=top500. ★ 외국 논문이면 KR 시장으로 치환(US→KOSPI200∪KOSDAQ150 등), 논문 의도(대형/소형)에 맞는 KR 유니버스 선택
   factor_analysis = TRUE      # FF3/FF5/Carhart 알파 + Fama-MacBeth 회귀 동시 산출(텔레그램 [팩터분석] 별도 발송)
 )
 ```
@@ -57,6 +72,7 @@ run_alpha_search(
 - **`book_state.json`은 코드가 쓰지 않음** — 실제 편입은 도훈 수동 승인(기존 안전장치 준수).
 
 ## 제약 (반드시 준수)
+- **논문 완전 복제(제1원칙)**: 팩터 구성 방법론·포트폴리오 비중·유니버스·종목수·리밸을 논문 그대로. 임의 변형 = 검증 무효 (상단 ★ 제1원칙 참조).
 - **QEPM 이행 금지**: Risk/Optimizer/Forge/Judge/Governor 미호출. Codex Critic Round 없음. WorkTask status 전이/`*_package.json`·`*_verdict.json` 산출 없음. certificate 의존 없음.
 - **WT-id 사용 금지** (worktask_sequence_enforcer 등 Hook 오발동 회피).
 - 텔레그램 직접 호출 금지 — `tg_agent_brief()`만(run_alpha_search 내부에서 처리).

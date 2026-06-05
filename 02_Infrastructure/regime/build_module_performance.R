@@ -12,7 +12,8 @@ suppressPackageStartupMessages({ library(data.table); library(arrow); library(js
 PROJ <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")); setwd(PROJ)
 `%||%` <- function(a,b) if(is.null(a)||length(a)==0||(length(a)==1&&is.na(a))) b else a
 ANN <- 252
-sr  <- function(r){ r<-r[is.finite(r)]; if(length(r)<20||sd(r)==0) return(NA_real_); mean(r)/sd(r)*sqrt(ANN) }
+# freq-aware Sharpe/IR: annf=252(daily)/12(monthly). 월간 DPL 등 비-일간 모듈 정합(도훈 2026-06-05).
+sr  <- function(r, annf=ANN){ r<-r[is.finite(r)]; if(length(r) < (if(annf<=12) 8L else 20L) || sd(r)==0) return(NA_real_); mean(r)/sd(r)*sqrt(annf) }
 mdd <- function(r){ r<-r[is.finite(r)]; if(!length(r)) return(NA_real_); n<-cumprod(1+r); as.numeric(1-min(n/cummax(n))) }
 
 # 1. regime Category (t-1 lag for PIT)
@@ -52,11 +53,18 @@ for(f in sim_files){
   s <- tryCatch(readRDS(f), error=function(e) NULL); if(is.null(s)||is.null(s$DAILY_NAV_DT)) next
   d <- as.data.table(s$DAILY_NAV_DT); if(!all(c("Date","Strategy_Ret")%in%names(d))) next
   d[, Date:=as.Date(Date)]
+  # ★ freq 감지 (월간 DPL 등 비-일간 모듈 정합). s$freq 우선, 없으면 날짜간격 중앙값.
+  freq <- s$freq %||% (if(nrow(d)>5 && stats::median(as.numeric(diff(sort(unique(d$Date)))))>=20) "monthly" else "daily")
+  annf <- if(identical(freq,"monthly")) 12 else 252; mdiv <- if(identical(freq,"monthly")) 1L else 21L
   bm <- if(!is.null(s$bm_xts)) data.table(Date=as.Date(index(s$bm_xts)), bm=as.numeric(s$bm_xts[,1])) else NULL
-  d <- merge(d[, .(Date, ret=Strategy_Ret)], RG, by="Date")
+  dm <- d[, .(Date, ret=Strategy_Ret)]
+  # 월간 모듈: 월말 날짜가 RG(거래일) 미일치 가능 → roll-join으로 직전 거래일 regime 귀속(PIT t-1 정합)
+  if(identical(freq,"monthly")){ setkey(RG,Date); setkey(dm,Date); d <- RG[dm, roll=TRUE]
+  } else d <- merge(dm, RG, by="Date")
   if(!is.null(bm)) d <- merge(d, bm, by="Date", all.x=TRUE) else d[, bm:=NA_real_]
+  d <- d[!is.na(regime)]
   d[, active := ret - fifelse(is.finite(bm), bm, 0)]
-  if(nrow(d) < 100) next
+  if(nrow(d) < (if(identical(freq,"monthly")) 24L else 100L)) next
   # validity 필터 (★데이터-깨짐만 — blown-up/NAV→~0. 등급·overall성과로 거르지 않음:
   #   91% MDD grade-F도 국면 specialist일 수 있어 풀 진입 허용, 사용여부는 RCMA가 국면조건부 판단. 도훈 #4)
   full_mdd <- mdd(d$ret)
@@ -65,14 +73,14 @@ for(f in sim_files){
   meta <- lookup_meta(dirn)
   per <- list()
   for(rg in regimes){ sub <- d[regime==rg]
-    per[[rg]] <- list(n_days=nrow(sub), n_months=round(nrow(sub)/21,1),
-      sharpe=round(sr(sub$ret),3), ir=round(sr(sub$active),3),
-      mdd=round(mdd(sub$ret),3), mean_ann=round(mean(sub$ret,na.rm=TRUE)*ANN,4)) }
+    per[[rg]] <- list(n_days=nrow(sub), n_months=round(nrow(sub)/mdiv,1),
+      sharpe=round(sr(sub$ret,annf),3), ir=round(sr(sub$active,annf),3),
+      mdd=round(mdd(sub$ret),3), mean_ann=round(mean(sub$ret,na.rm=TRUE)*annf,4)) }
   out[[dirn]] <- list(
     source_strategy_id = dirn, grade = meta$grade %||% "ungraded", role = meta$role %||% NA,
-    origin_mode = meta$origin %||% "qepm",
+    origin_mode = meta$origin %||% "qepm", freq = freq,
     sim_result_path = sub("^.*Quant_Module_Moltbot/","",f),
-    full_sharpe = round(sr(d$ret),3), full_ir = round(sr(d$active),3),
+    full_sharpe = round(sr(d$ret,annf),3), full_ir = round(sr(d$active,annf),3),
     n_days = nrow(d), date_range = c(as.character(min(d$Date)), as.character(max(d$Date))),
     per_regime = per)
   kept <- kept + 1

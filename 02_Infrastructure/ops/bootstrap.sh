@@ -21,7 +21,7 @@ export CLAUDE_PROJECT_DIR="$(cygpath -m "$PROJECT" 2>/dev/null || echo "$PROJECT
 export QM_ROOT="${QM_ROOT:-$CLAUDE_PROJECT_DIR}"
 export PYTHONUTF8=1   # Windows python 기본 cp949 → UTF-8 강제 (PG2/readiness UnicodeDecodeError 방지, 2026-06-04)
 
-echo "━━━ Qvest v8.0 부트스트랩 (Opus 4.8 Native) ━━━"
+echo "━━━ Qvest v8.1 부트스트랩 (Opus 4.8 Native · 3-Mode) ━━━"
 
 # 1. (제거됨 v8.0 2026-05-29) tmux rc telegram inbound listener — outbound tg_agent_brief()는
 #    영향 없음. inbound 명령 listener 불필요 판단(도훈). 필요 시 persistent_remote_control.sh 수동 기동.
@@ -97,6 +97,28 @@ if [ -f "$BEAR_AUDIT_R" ] && [ -f "$TARGET_PARQUET" ]; then
   fi
 else
   echo "[boot] bear_date_audit: SKIP (script or target parquet 미존재)"
+fi
+
+# 4e. (v8.1) 데이터 캐시 + 유니버스 멤버십 검증 — alpha-search universe=K200_KQ150 런타임 stop 방지.
+#      schema만 읽어 빠름(전체 load X). Foreground (Critical 부팅 게이트, Agent3 분석).
+RAWDATA_PARQUET="$PROJECT/.cache/rawdata.parquet"
+if [ -f "$RAWDATA_PARQUET" ]; then
+  RD_CHECK=$(cd "$PROJECT" && Rscript -e 'suppressMessages(library(arrow)); d<-tryCatch(read_parquet(".cache/rawdata.parquet", col_select=c("K200","KQ150")), error=function(e) NULL); cat(if(!is.null(d)) "K200_KQ150_OK" else "K200_KQ150_MISSING")' 2>/dev/null | grep -oE 'K200_KQ150_(OK|MISSING)')
+  if [ "$RD_CHECK" = "K200_KQ150_OK" ]; then
+    echo "[boot] 데이터 캐시: rawdata.parquet ✓ + K200/KQ150 멤버십 ✓ (alpha-search universe=K200_KQ150 가용)"
+  else
+    echo "[boot] WARN: rawdata.parquet K200/KQ150 컬럼 부재 — alpha-search universe=K200_KQ150 런타임 stop 위험 (daily_refresh apply_universe_mapping Layer2 활성화 필요)"
+  fi
+else
+  echo "[boot] WARN: rawdata.parquet 부재 — alpha-search/backtest stop 위험 (build_cache.R 또는 daily_refresh 선행)"
+fi
+# kr_factor_returns_v2 신선도 (FF3 회귀 의존 — value 2002-08~)
+KRF_V2="$PROJECT/.cache/kr_factor_returns_v2.parquet"
+if [ -f "$KRF_V2" ]; then
+  KRF_AGE=$(( ($(date +%s) - $(stat -c %Y "$KRF_V2" 2>/dev/null || echo 0)) / 86400 ))
+  echo "[boot] kr_factor_returns_v2: ✓ (age ${KRF_AGE}d · MKT/SMB 2001-04~ · HML/RMW/CMA 2002-08~)"
+else
+  echo "[boot] WARN: kr_factor_returns_v2 부재 — FF 알파/residual momentum 전략 불가"
 fi
 
 # 5. 데이터 리프레시 (백그라운드 — xlsx 증분 + KRX/FRED/ECOS)
@@ -283,11 +305,12 @@ PYEOF
 fi
 
 echo ""
-echo "━━━ 부트스트랩 완료 (Qvest v8.0 — Opus 4.8 Native · Polyglot · Workflow) ━━━"
+echo "━━━ 부트스트랩 완료 (Qvest v8.1 — Opus 4.8 Native · 3-Mode · 실측 거버넌스) ━━━"
 if [ -n "$PG2_INFO" ]; then
   echo "$PG2_INFO"
 fi
-echo "v8.0:       R+Python 1급 / SR목표 2.5 / agent effort(judge·gov xhigh) / axiom_context_inject(unified_agent_guard 폐기) / qvest-*-style skill"
+echo "v8.1:       3-Mode 헌법(alpha-search 논문복제·K200∪KQ150·2005 / factor-rotation Lane3 / Axiom r7 복원) / 실측 거버넌스(measurement-graduation) / register_module 자동흐름"
+echo "v8.0 base:  R+Python 1급 / SR목표 2.5 / agent effort(judge·gov xhigh) / axiom_context_inject / qvest-*-style skill"
 echo "Skills:     $(ls "$PROJECT"/.claude/skills/*/SKILL.md 2>/dev/null | wc -l)개 (worktask/alpha/risk/optimizer + qvest-*-style 4종)"
 echo "Hooks:      settings.json 등록 (harness_health 결과 위 참조)"
 echo "WT Active:  $WT_ACTIVE건"

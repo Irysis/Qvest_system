@@ -368,6 +368,17 @@ def main():
     with open(out_dir / "manifest.json", "w") as f:
         json.dump(manifest, f, indent=2, default=str)
 
+    # ── FR 풀 자동 등재 (마지막 다리): ML/DPL 산출물 → register_research_outputs.R → factor-rotation 풀.
+    #    freshness-gated(idempotent) — 새 산출물 있을 때만 등재. 다음 run_factor_rotation서 풀 자동 편입.
+    try:
+        import os as _os, subprocess as _sp, shutil as _sh
+        _proj = _os.environ.get("CLAUDE_PROJECT_DIR") or _os.environ.get("QM_ROOT") or "G:/Quant_Module_Moltbot"
+        _rbin = _sh.which("Rscript") or r"C:/Program Files/R/R-4.5.2/bin/Rscript.exe"
+        _sp.run([_rbin, _os.path.join(_proj, "02_Infrastructure/contracts/register_research_outputs.R")], check=False)
+        print("[run_ml_cycle] register_research_outputs 호출 — ML/DPL 산출물 FR 풀 등재 시도")
+    except Exception as _e:
+        print(f"[run_ml_cycle] FR 등재 브릿지 생략: {_e}")
+
     print(f"\nDONE. out_dir = {out_dir}")
 
 

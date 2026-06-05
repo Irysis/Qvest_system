@@ -20,7 +20,7 @@ suppressPackageStartupMessages({ library(data.table); library(arrow); library(js
 if (!exists("PROJ")) PROJ <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 if (!exists("%||%")) `%||%` <- function(a,b) if(is.null(a)||length(a)==0||all(is.na(a))) b else a
 ANN <- 252
-ir_ann <- function(a){ a<-a[is.finite(a)]; if(length(a)<20||sd(a)==0) return(NA_real_); mean(a)/sd(a)*sqrt(ANN) }
+ir_ann <- function(a, annf=ANN){ a<-a[is.finite(a)]; if(length(a) < (if(annf<=12) 8L else 20L) || sd(a)==0) return(NA_real_); mean(a)/sd(a)*sqrt(annf) }
 
 # ── thresholds (합격선) ──
 # MIN_MONTHS = 12 floor (희소 국면 CRISIS/CAUTION는 36월-in-regime이 비현실 — 방어형 specialist 차단).
@@ -34,19 +34,21 @@ IR_FLOOR <- 0.5; MIN_MONTHS <- 12; T_MIN <- 2.0; HIGH_CONF_MONTHS <- 36
   mod_ids <- names(MP$modules)
   RG <- as.data.table(read_parquet(file.path(proj,".cache/unified_regime_signal_daily.parquet")))[!is.na(Category), .(Date=as.Date(Date), Category)]
   setorder(RG,Date); RG[, regime:=shift(Category,1L)]; RG <- RG[!is.na(regime), .(Date,regime)]
-  AL <- list()
+  AL <- list(); FREQ <- list()
   for(sid in mod_ids){
     p <- file.path(proj, MP$modules[[sid]]$sim_result_path)
     s <- tryCatch(readRDS(p), error=function(e) NULL); if(is.null(s)||is.null(s$DAILY_NAV_DT)) next
+    fq <- MP$modules[[sid]]$freq %||% s$freq %||% "daily"      # ★ freq-aware (월간 DPL 등 비-일간)
     d <- as.data.table(s$DAILY_NAV_DT)[, .(Date=as.Date(Date), r=Strategy_Ret)]
     bm <- if(!is.null(s$bm_xts)) data.table(Date=as.Date(index(s$bm_xts)), bm=as.numeric(s$bm_xts[,1])) else NULL
     if(!is.null(bm)) d<-merge(d,bm,by="Date",all.x=TRUE) else d[,bm:=0]
     d[, a := r - fifelse(is.finite(bm),bm,0)]
-    d <- merge(d[,.(Date,a)], RG, by="Date")
-    if(nrow(d) >= 250) AL[[sid]] <- d
+    if(identical(fq,"monthly")){ setkey(RG,Date); dd<-d[,.(Date,a)]; setkey(dd,Date); d <- RG[dd, roll=TRUE][!is.na(regime)]
+    } else d <- merge(d[,.(Date,a)], RG, by="Date")
+    if(nrow(d) >= (if(identical(fq,"monthly")) 60L else 250L)){ AL[[sid]] <- d; FREQ[[sid]] <- fq }
   }
   regimes <- unlist(MP$regimes) %||% c("RISK_ON","NEUTRAL","CAUTION","CRISIS","RISK_OFF")
-  list(MP = MP, AL = AL, mod_ids = names(AL), regimes = regimes)
+  list(MP = MP, AL = AL, FREQ = FREQ, mod_ids = names(AL), regimes = regimes)
 }
 
 # ── ★ compute_rcma(asof_date): point-in-time admission (Date ≤ asof_date 만 사용) ─────
@@ -55,19 +57,21 @@ IR_FLOOR <- 0.5; MIN_MONTHS <- 12; T_MIN <- 2.0; HIGH_CONF_MONTHS <- 36
 #   c3(IS·OOS sign): asof 창 *내부* 시간순 65/35 분할(고정 2012 cut 폐기).
 compute_rcma <- function(asof_date, ctx = NULL, proj = PROJ) {
   if (is.null(ctx)) ctx <- .rcma_load(proj)
-  AL <- ctx$AL; mod_ids <- ctx$mod_ids; regimes <- ctx$regimes; MP <- ctx$MP
+  AL <- ctx$AL; mod_ids <- ctx$mod_ids; regimes <- ctx$regimes; MP <- ctx$MP; FREQ <- ctx$FREQ %||% list()
   asof_date <- as.Date(asof_date)
 
   cells <- list()
   for(sid in mod_ids){
     d <- AL[[sid]][Date <= asof_date]                       # ★ PIT: asof 이하만
-    if(nrow(d) < 250) next                                  # cold-start: 데이터 부족 모듈 skip
-    for(L in regimes){ sub <- d[regime==L]; nm <- nrow(sub)/21
-      full_ir <- ir_ann(sub$a)
+    fq <- FREQ[[sid]] %||% "daily"; annf <- if(identical(fq,"monthly")) 12 else 252
+    mdiv <- if(identical(fq,"monthly")) 1L else 21L; split_min <- if(identical(fq,"monthly")) 16L else 40L
+    if(nrow(d) < (if(identical(fq,"monthly")) 60L else 250L)) next   # cold-start: 데이터 부족 모듈 skip
+    for(L in regimes){ sub <- d[regime==L]; nm <- nrow(sub)/mdiv
+      full_ir <- ir_ann(sub$a, annf)
       # asof 창 내부 65/35 시간순 분할 (자연 OOS — 고정 2012 cut 폐기)
-      if(nrow(sub) >= 40){
+      if(nrow(sub) >= split_min){
         setorder(sub, Date); kk <- floor(nrow(sub)*0.65)
-        is_ir  <- ir_ann(sub$a[1:kk]); oos_ir <- ir_ann(sub$a[(kk+1):nrow(sub)])
+        is_ir  <- ir_ann(sub$a[1:kk], annf); oos_ir <- ir_ann(sub$a[(kk+1):nrow(sub)], annf)
       } else { is_ir <- NA_real_; oos_ir <- NA_real_ }
       tstat <- if(is.finite(full_ir)) full_ir*sqrt(nm/12) else NA_real_
       cells[[paste(sid,L)]] <- data.table(module=sid, regime=L, n_months=round(nm,1),

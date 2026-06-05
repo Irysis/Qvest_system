@@ -5,6 +5,42 @@ All notable changes to Qvest are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](00_Lawbook/VERSIONING.md).
 
+## [v8.1.0] — 2026-06-05
+
+**3-Mode 헌법 + 실측 거버넌스 + 모듈 자동흐름** (도훈 mandate 9건)
+
+### Added
+- `.claude/skills/alpha-search/SKILL.md` `## ★ 제1원칙` — 논문 완전 복제(방법론/비중/종목수) + 유니버스 K200∪KQ150 고정 + 기간 2005~ 고정
+- `02_Infrastructure/alpha_search/run_alpha_search.R` — `universe="K200_KQ150"` 옵션(PIT 시변 멤버십) + `start_date="2005-01-01"` 기본값
+- `.claude/skills/factor-rotation/SKILL.md` + `.claude/rules/factor-rotation.md` — Lane3 모드(국면조건부 모듈 배합)
+- `02_Infrastructure/contracts/register_module.R` — 공용 모듈 적재 계약(QEPM/alpha-search/ML/DPL 등급무관)
+- `02_Infrastructure/contracts/register_research_{module,outputs}.R` — ML/DPL → FR 풀 register 다리
+- `02_Infrastructure/portfolio/regime_module_admission.R` — RCMA 6기준(등급무관 양방향)
+- `04_Research/factor_rotation/run_factor_rotation.R` — 신선도 자동인식 오케스트레이터
+- `.claude/rules/axiom-engine.md` — Axiom r7 원전 복원(5축 boolean-AND + 3-mode 2-tier + INV-1~7)
+- `.claude/rules/{python-policy,measurement-graduation,artifact-naming}.md` — 신규 rule
+- `bootstrap.sh` Step 4e — 데이터 캐시 + K200/KQ150 멤버십 검증(Critical 부팅 게이트)
+- 메모리: `project-qvest-e2e-validation` / `feedback-alpha-search-paper-replication`(KR 데이터 한계 reference: value/BM 2002-08~, M08_ResidMom 1995~, factor DB 1990~)
+
+### Changed
+- `02_Infrastructure/regime/build_module_performance.R` — 광역 모듈 유니버스(80+, 등급게이트 폐지, validity 필터만)
+- `02_Infrastructure/axiom/promote.R` — weighted-sum 폐기 → r7 5축 min-hurdle AND
+- CLAUDE.md / bootstrap.sh / qvest.md — v8.0.0 → v8.1.0(배너·상태·체크리스트 16-check)
+- measurement-graduation — DSR 다중검정스타일only, oos_retention≥0.7 + calmar≥0.64 HARD, book-marginal ΔIR≥0.05
+
+### 미완(후속)
+- residual momentum 사이클 register/factor_analysis 디버깅 / qvest_v8_1_sot.md 발행 / Axiom global 실가동
+
+## [v8.0.0] — 2026-05-29
+
+**Opus 4.8-Native · Polyglot · Workflow-Orchestrated** (도훈 mandate)
+
+### Added/Changed
+- 헌법: R-only 폐지 → R+Python 1급 동등(`.claude/rules/python-policy.md`) · SR 목표 2.0→2.5 · AX-000 reframe
+- Opus 4.8 정합: agent effort frontmatter(judge/gov xhigh) · axiom_context_inject(unified_agent_guard v52 폐기) · init 압축
+- 신규: harness_perf_eval(추론성능 측정) · Dynamic Workflow(/qvest-multi-track) · artifact-naming 정책
+- hook allow-noise 147 fix · research_philosophy 7-trend → qvest-*-style skill 4종
+
 ## [v7.2.1] — 2026-05-02
 
 **Memory Knowledge Hardening Patch** — Memory layer SOT/enforcement/safety 정합화 (도훈 audit-revised v6 plan, 32 critical 모두 반영)

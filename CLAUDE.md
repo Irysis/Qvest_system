@@ -2,18 +2,19 @@
 
 ## Active Version
 
-**Qvest v8.0.0 — Opus 4.8-Native · Polyglot · Workflow-Orchestrated** (2026-05-29)
+**Qvest v8.1.0 — Opus 4.8-Native · 3-Mode 헌법 · 실측 거버넌스** (2026-06-05)
 
-**계보**: v6.4.0 → v7.0.0 → v7.0.1 → v7.1.0-lite → v7.2.0 → v7.2.1 → **v8.0.0** (현재 active)
+**계보**: v6.4.0 → v7.0.0 → v7.0.1 → v7.1.0-lite → v7.2.0 → v7.2.1 → v8.0.0 → **v8.1.0** (현재 active)
 **Branch**: `main` (Qvest active — GitHub default)
 
-**v8.0 핵심** (Opus 4.8 정합 + Qvest 성능 극대화, 도훈 mandate 2026-05-29):
-- **헌법**: R-only 폐지 → R+Python 1급 동등 (PIT/Contract 언어무관) · SR 목표 2.0→2.5 · AX-000 reframe(정직성 정합)
-- **Opus 4.8 정합**: agent effort frontmatter(judge/gov xhigh) · _shared_prefix 실행가드 · axiom 주입 경량화 · init 압축
-- **에이전트 skill**: research_philosophy 7-trend → 역할별 qvest-*-style skill 4종
-- **하네스 위생**: hook allow-noise 147 fix · unified_agent_guard(v52) 폐기 → axiom_context_inject 분리 · Codex Round는 이미 6-critical scoped(재계층화 불요)
-- **신규**: 추론성능 측정 루프(eval/harness_perf_eval) · Dynamic Workflow(/qvest-multi-track, pilot 대기) · artifact-naming 정책
-- **미완(후속)**: WS4 workflow 실 pilot 검증 / qvest_v8_0_sot.md 정식 발행 / WT_WT-* bulk cleanup
+**v8.1 핵심** (3-Mode 정립 + 실측-only + 모듈 자동흐름, 도훈 mandate 2026-06-05):
+- **3-Mode 헌법**: alpha-search 제1원칙(**논문 완전 복제** + 유니버스 K200∪KQ150 고정 + 기간 2005~ 고정) · factor-rotation Lane3(모듈 국면배합, RCMA 등급무관 양방향) · Axiom **r7 원전 복원**(5축 boolean-AND + 3-mode 2-tier + INV-1~7)
+- **실측-only 거버넌스**: measurement-graduation(real-computation 의무 · portfolio-α t forge-authoritative · oos_retention≥0.7·calmar≥0.64 HARD · DSR 다중검정스타일only · book-marginal ΔIR≥0.05). proxy 손계산 graduation 폐지
+- **모듈 표준화 + 자동흐름**: `register_module` 공용계약(QEPM/alpha-search/ML/DPL 등급무관) · build_module_performance 광역(80+, 등급게이트 폐지) · run_factor_rotation 신선도 자동인식 · ML/DPL register 다리(register_research_outputs) · **E2E 4축 배선 닫힘**(자본게이트 book confirm+실주문 2버튼만 수동)
+- **KR 데이터 한계 reference**: value/BM 2002-08~ · M08_ResidMom 1995~ · factor DB 1990~ (`feedback-alpha-search-paper-replication`)
+- **부팅 패치(v8.1)**: bootstrap에 RAWDATA K200/KQ150 컬럼 검증 + 데이터 캐시 존재·신선도 검증 추가
+- **v8.0 흡수(retain)**: R+Python 1급 · SR 2.5 · agent effort(judge/gov xhigh) · axiom_context_inject · harness_perf_eval · artifact-naming
+- **미완(후속)**: residual momentum 사이클 register/factor_analysis 디버깅 · qvest_v8_1_sot.md 발행 · WT_WT-* cleanup · axiom global 실가동
 
 **★ Active SOT (단일 진실)**: `02_Infrastructure/docs/qvest_v8_0_upgrade_plan.md` (v8.0 설계 SOT) + `qvest_v7_2_1_sot.md` (v7.2.1 base 흡수, retain)
 **전임 SOT (흡수됨)**: `02_Infrastructure/docs/qvest_v6_4_sot.md` (v6.4 base 흡수, read-only retain)
