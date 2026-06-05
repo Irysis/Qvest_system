@@ -14,9 +14,9 @@
 - **KR 데이터 한계 reference**: value/BM 2002-08~ · M08_ResidMom 1995~ · factor DB 1990~ (`feedback-alpha-search-paper-replication`)
 - **부팅 패치(v8.1)**: bootstrap에 RAWDATA K200/KQ150 컬럼 검증 + 데이터 캐시 존재·신선도 검증 추가
 - **v8.0 흡수(retain)**: R+Python 1급 · SR 2.5 · agent effort(judge/gov xhigh) · axiom_context_inject · harness_perf_eval · artifact-naming
-- **미완(후속)**: residual momentum 사이클 register/factor_analysis 디버깅 · qvest_v8_1_sot.md 발행 · WT_WT-* cleanup · axiom global 실가동
+- **미완(후속)**: residual momentum 사이클 register/factor_analysis 디버깅 · WT_WT-* cleanup · axiom global 실가동
 
-**★ Active SOT (단일 진실)**: `02_Infrastructure/docs/qvest_v8_0_upgrade_plan.md` (v8.0 설계 SOT) + `qvest_v7_2_1_sot.md` (v7.2.1 base 흡수, retain)
+**★ Active SOT (단일 진실)**: `02_Infrastructure/docs/qvest_v8_1_sot.md` (v8.1 설계 SOT) + `qvest_v8_0_upgrade_plan.md` (v8.0 base 흡수, retain)
 **전임 SOT (흡수됨)**: `02_Infrastructure/docs/qvest_v6_4_sot.md` (v6.4 base 흡수, read-only retain)
 **Legacy boundary**: `02_Infrastructure/docs/qvest_legacy_boundary.md` (v55 / S0~S7 격리)
 
