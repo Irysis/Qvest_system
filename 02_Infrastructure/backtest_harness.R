@@ -103,7 +103,9 @@ cat("[backtest_harness] Loaded.\n")
     last_prices_vec <- sapply(holdings, `[[`, "last_price")
 
     # rawdata subset: 관련 종목 + 기간만 (C15 준수 — 이미 RAWDATA에서 추출)
-    rd_sub <- RAWDATA[Ticker %in% tickers_vec & Date %in% exec_dates_range,
+    #   범위비교(연속구간) — `Date %in% <vec>`는 Date→character 강제변환(sprintf)으로 매우 느림.
+    .edr_lo <- min(exec_dates_range); .edr_hi <- max(exec_dates_range)
+    rd_sub <- RAWDATA[Ticker %in% tickers_vec & Date >= .edr_lo & Date <= .edr_hi,
                       .(Ticker, Date_int = as.integer(Date), Close)]
 
     result <- cpp_daily_nav(
@@ -122,20 +124,27 @@ cat("[backtest_harness] Loaded.\n")
     return(out)
   }
 
-  # ── R fallback (기존 이중 루프, 동작 동일) ──────────────────────────────────
-  nav_list <- vector("list", length(exec_dates_range))
-  for (i in seq_along(exec_dates_range)) {
-    d         <- as.Date(exec_dates_range[i])
-    daily_val <- cash
-    for (tk in names(holdings)) {
-      price_row <- RAWDATA[Ticker == tk & Date == d, Close]
-      if (length(price_row) > 0 && !is.na(price_row[1])) {
-        daily_val <- daily_val + holdings[[tk]]$shares * price_row[1]
-      } else {
-        daily_val <- daily_val + holdings[[tk]]$shares * holdings[[tk]]$last_price
-      }
-    }
-    nav_list[[i]] <- data.table(Date = d, NAV = daily_val)
+  # ── R fallback (벡터화 — Rcpp 미가용 시에도 per-ticker 풀스캔 회피, 동작 동일) ──
+  #   관련 종목 × 기간 슬라이스를 1회 추출 후 (Date,Ticker)→Close wide 조회.
+  tks   <- names(holdings)
+  shares_v <- vapply(holdings, function(h) h$shares,     numeric(1))
+  lastp_v  <- vapply(holdings, function(h) h$last_price, numeric(1))
+  rng_dates <- as.Date(exec_dates_range)
+  # 범위비교(연속구간) — `Date %in% rng_dates`는 Date→character 강제변환으로 느림.
+  sub <- RAWDATA[Ticker %in% tks & Date >= min(rng_dates) & Date <= max(rng_dates),
+                 .(Date, Ticker, Close)]
+  # 가격 매트릭스(행=date, 열=ticker); 없는 셀은 last_price fallback
+  price_lookup <- function(d) {
+    px <- sub[Date == d]                       # 당일 슬라이스(작음)
+    v  <- setNames(rep(NA_real_, length(tks)), tks)
+    if (nrow(px)) v[px$Ticker] <- px$Close
+    miss <- is.na(v)
+    if (any(miss)) v[miss] <- lastp_v[miss]
+    sum(shares_v * v) + cash
+  }
+  nav_list <- vector("list", length(rng_dates))
+  for (i in seq_along(rng_dates)) {
+    nav_list[[i]] <- data.table(Date = rng_dates[i], NAV = price_lookup(rng_dates[i]))
   }
   rbindlist(nav_list)
 }
@@ -778,6 +787,13 @@ run_monthly_simulation <- function(RAWDATA,
 
   cat("[simulation] Starting monthly simulation...\n")
 
+  # 속도 핵심 (2026-06-05 segfault/slowness fix): RAWDATA를 (Ticker, Date)로 keying.
+  #   루프 내 per-ticker 조회 `RAWDATA[Ticker==tk & Date==d, ...]`(전체 14M행 벡터스캔)를
+  #   binary-join `RAWDATA[.(tk, d), ...]`로 바꾸면 O(log n)으로 ~15x 빨라진다(decile N=68~184
+  #   보유 종목 × 시그널일마다 반복되던 비용 제거). 함수 시작 시 1회만 setkey(데이터 불변, 결과 동일).
+  #   함수 docstring(L94)이 이미 setkey(Date,Ticker) 상태를 전제로 명시 — 이를 실제 보장.
+  if (!identical(key(RAWDATA), c("Ticker", "Date"))) setkey(RAWDATA, Ticker, Date)
+
   all_dates    <- sort(unique(RAWDATA$Date))
   signal_dates <- sort(unique(FACTORS$Date))
 
@@ -864,7 +880,7 @@ run_monthly_simulation <- function(RAWDATA,
     # --- Liquidate if no stocks selected ---
     if (length(selected) == 0) {
       for (tk in names(holdings)) {
-        price_row <- RAWDATA[Ticker == tk & Date == exec_date, Close]
+        price_row <- RAWDATA[.(tk, exec_date), Close]   # keyed binary-join (was Ticker==tk & Date==exec_date 풀스캔)
         if (length(price_row) > 0 && !is.na(price_row[1])) {
           proceeds <- holdings[[tk]]$shares * price_row[1]
           cash     <- cash + proceeds * (1 - commission)
@@ -890,7 +906,7 @@ run_monthly_simulation <- function(RAWDATA,
     # --- Portfolio value before rebalance ---
     total_val <- cash
     for (tk in names(holdings)) {
-      price_row <- RAWDATA[Ticker == tk & Date == exec_date, Close]
+      price_row <- RAWDATA[.(tk, exec_date), Close]   # keyed binary-join (was 풀스캔)
       if (length(price_row) > 0 && !is.na(price_row[1])) {
         total_val <- total_val + holdings[[tk]]$shares * price_row[1]
       }
@@ -928,14 +944,19 @@ run_monthly_simulation <- function(RAWDATA,
     }
 
     # --- Weights ---
-    # For advanced methods, only pass recent 150 days of selected tickers
-    if (weight_method %in% c("hrp", "minvar", "riskparity")) {
-      lookback_dates <- tail(all_dates[all_dates <= exec_date], 150)
-      ret_sub <- RAWDATA[Ticker %in% selected & Date %in% lookback_dates,
-                         .(Date, Ticker, Ret)]
-    } else {
-      ret_sub <- RAWDATA[Date <= exec_date]
-    }
+    # ret_sub: 선택 종목 + 최근 lookback만 전달 (메모리/속도 — 2026-06-05 segfault fix).
+    #   모든 weight_method는 내부적으로 selected 종목 + ≤120일(.adv_ret_matrix n_days=120 / ivol 60
+    #   / hrp 60)만 사용하므로 전체 유니버스 전기간 복사는 불필요. 252일 cap = 모든 메서드 lookback의
+    #   상한(120)을 충분히 포함 → 결과 불변. 기존 `RAWDATA[Date <= exec_date]`(전종목 전기간, 14M행
+    #   ~378MB)를 매 시그널일 복사하던 것이 99회 누적되며 ~9-10GB peak를 만들어(메모리 압박 시
+    #   malloc 실패 → Windows R Segmentation fault) 비결정적 크래시를 유발 (migration note 10.5GB peak).
+    .lb_n   <- if (weight_method %in% c("hrp", "minvar", "riskparity")) 150L else 252L
+    .lb_dates <- tail(all_dates[all_dates <= exec_date], .lb_n)
+    # 연속 구간이므로 [min, exec_date] 범위 비교 사용 — `Date %in% <vec>`는 Date를
+    #   character로 강제변환(sprintf)해 극단적으로 느림(프로파일 71% sprintf). 범위비교는 numeric.
+    .lb_lo  <- .lb_dates[1L]
+    ret_sub <- RAWDATA[Ticker %in% selected & Date >= .lb_lo & Date <= exec_date,
+                       .(Date, Ticker, Ret)]
     if (weight_method == "ivol") {
       w <- calc_ivol_weights(selected, ret_sub)
     } else if (weight_method == "hrp") {
@@ -1058,9 +1079,13 @@ run_monthly_simulation <- function(RAWDATA,
     prev_date <- exec_date
 
     # --- Holdings detail log ---
+    # exec_date 당일 슬라이스를 1회 추출해 Ticker로 keying → per-ticker 풀스캔 제거
+    #   (decile N=68~184 보유 시 이 루프가 sim 시간 지배. 결과 동일).
+    day_info <- RAWDATA[Date == exec_date, .(Ticker, Name, Sector)]
+    setkey(day_info, Ticker)
     holding_rows <- lapply(selected, function(tk) {
-      name_val <- RAWDATA[Ticker == tk & Date == exec_date, Name]
-      sect_val <- RAWDATA[Ticker == tk & Date == exec_date, Sector]
+      name_val <- day_info[.(tk), Name]
+      sect_val <- day_info[.(tk), Sector]
       score_val <- month_factors[Ticker == tk, Score]
       data.table(
         Signal_Date = sig_date,
@@ -1093,20 +1118,13 @@ run_monthly_simulation <- function(RAWDATA,
   }
 
   # --- Final daily NAV after last signal ---
+  # .compute_daily_nav() 재사용(Rcpp 빠른 경로 + R fallback 동일 로직) — 기존 per-ticker
+  #   풀스캔 이중루프를 대체. 동일 결과(holdings × dates, 가격없으면 last_price fallback). 2026-06-05 fix.
   remaining_dates <- all_dates[all_dates > prev_date]
   if (length(remaining_dates) > 0 && length(holdings) > 0) {
-    for (d in remaining_dates) {
-      d <- as.Date(d)
-      daily_val <- cash
-      for (tk in names(holdings)) {
-        price_row <- RAWDATA[Ticker == tk & Date == d, Close]
-        if (length(price_row) > 0 && !is.na(price_row[1])) {
-          daily_val <- daily_val + holdings[[tk]]$shares * price_row[1]
-        } else {
-          daily_val <- daily_val + holdings[[tk]]$shares * holdings[[tk]]$last_price
-        }
-      }
-      daily_nav[[length(daily_nav) + 1]] <- data.table(Date = d, NAV = daily_val)
+    nav_tail <- .compute_daily_nav(RAWDATA, holdings, remaining_dates, cash)
+    for (ri in seq_len(nrow(nav_tail))) {
+      daily_nav[[length(daily_nav) + 1]] <- nav_tail[ri]
     }
   }
 

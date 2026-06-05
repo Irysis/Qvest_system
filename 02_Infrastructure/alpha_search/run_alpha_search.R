@@ -169,14 +169,6 @@ run_alpha_search <- function(strategy_name,
   bm_cagr_pct <- if (!is.null(perf_bm)) .as_num(perf_bm$CAGR) else NA_real_  # summarise_perf CAGR은 이미 percent(round(ann*100,2))
   excess_cagr <- round(.as_num(m$CAGR) - bm_cagr_pct, 2)
 
-  # ---- 6b. 팩터 회귀 분석 (FF3/FF5/Carhart 알파 + Fama-MacBeth) — 기존 run_analysis 재사용 ----
-  if (isTRUE(factor_analysis) && exists("run_analysis")) {
-    tryCatch({
-      run_analysis(sim, FACTORS, RAWDATA, BM_DT, output_dir = OUT_DIR, strategy_name = strategy_name)
-      assign("%||%", `%||%`, envir = globalenv())   # run_analysis 내부 source 오염 복원
-    }, error = function(e) cat("[AlphaSearch] 팩터분석 생략:", conditionMessage(e), "\n"))
-  }
-
   pass    <- grade %in% c("A", "A_NOVEL", "A_DEF")
   is_fail <- grade %in% c("F")
   notable <- grade %in% c("B", "C") || (is_fail && pit_clean)   # 명확한 실패 패턴(clean PIT)
@@ -184,6 +176,8 @@ run_alpha_search <- function(strategy_name,
               grade, score %||% 0, excess_cagr %||% 0, pass, notable))
 
   # ---- 6c. FR 모듈 등재 (공용 계약 register_module — ★등급무관: 하위등급도 국면 specialist 가능) ----
+  # ★ factor_analysis(무거운 FF 회귀) 보다 먼저 실행 — 회귀가 시간 병목/에러여도 register/sim_result 보존
+  #   (2026-06-05 디버깅: 논문 run이 factor_analysis 단계에서 register 미도달하던 문제 fix).
   # PIT-clean 백테 완료분만(이 지점 도달=detect_lookahead 통과). 사용여부는 RCMA가 국면조건부 판단.
   if (isTRUE(pit_clean)) tryCatch({
     source(file.path(PROJECT_ROOT, "02_Infrastructure", "contracts", "register_module.R"))
@@ -191,6 +185,14 @@ run_alpha_search <- function(strategy_name,
                     role = NA_character_, meta = list(strategy_idea = strategy_idea, score = score))
     assign("%||%", `%||%`, envir = globalenv())   # register_module source 후 전역 %||% 복원
   }, error = function(e) cat("[AlphaSearch] register_module 생략:", conditionMessage(e), "\n"))
+
+  # ---- 6b. 팩터 회귀 분석 (FF3/FF5/Carhart 알파 + Fama-MacBeth) — register 후(무거운 회귀, 실패해도 등재 보존) ----
+  if (isTRUE(factor_analysis) && exists("run_analysis")) {
+    tryCatch({
+      run_analysis(sim, FACTORS, RAWDATA, BM_DT, output_dir = OUT_DIR, strategy_name = strategy_name)
+      assign("%||%", `%||%`, envir = globalenv())   # run_analysis 내부 source 오염 복원
+    }, error = function(e) cat("[AlphaSearch] 팩터분석 생략:", conditionMessage(e), "\n"))
+  }
 
   # ---- 7. Telegram: 2차트 + 전략아이디어 + 성과요약(스코어링 지표) ----
   if (isTRUE(send_telegram)) {
