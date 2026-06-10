@@ -48,5 +48,5 @@
 ## 참조
 
 - `02_Infrastructure/factor_db/factor_db_connector.R` (load_month_factors)
-- `02_Infrastructure/data/load_rawdata.R`
+- `02_Infrastructure/backtest_harness.R` (load_rawdata 정의 — 2026-06-10 링크 정정)
 - `infrastructure_state.md` (구체적 코딩 패턴 + L-code 누적)

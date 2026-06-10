@@ -69,6 +69,13 @@ CRITIC_EXISTS="missing"
 [[ -f "$CRITIC_RESPONSE" ]] && CRITIC_EXISTS="present"
 
 if [[ "$DRAFT_EXISTS" == "present" && "$CRITIC_EXISTS" == "present" ]]; then
+  # (2026-06-10) STUB 침묵통과 차단 — codex CLI 부재 시 생성되는 stance=STUB 응답은
+  # 실제 교차검증이 아니므로 형식 존재만으로 통과 금지 (WT-D20260604_001 alpha 사례, AX-008)
+  if grep -q '"stance"[[:space:]]*:[[:space:]]*"STUB"' "$CRITIC_RESPONSE" 2>/dev/null; then
+    echo "[$(date -Iseconds)] BLOCK_STUB file=$FILE_PATH role=$ROLE critic=STUB" >> "$LOG"
+    printf '{"decision":"block","reason":"CODEX_CRITIC_STUB (AX-008): codex_critic_response_%s.json stance=STUB — codex CLI 부재 시 생성된 무검증 응답. codex 설치 확인 후 round 재실행, 또는 challenge_note.md에 codex_critic_skip_waiver + 사유 명시."}\n' "$ROLE"
+    exit 0
+  fi
   echo "[$(date -Iseconds)] PASS file=$FILE_PATH role=$ROLE draft=present critic=present" >> "$LOG"
   echo '{}'
   exit 0

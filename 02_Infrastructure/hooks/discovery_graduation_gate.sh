@@ -91,10 +91,17 @@ if pa_t is None:
 elif pa_t < thr_pa:
     hard_fail.append(f"portfolio_alpha_t_nw {pa_t:.2f}<{thr_pa:.2f} (forge-authoritative)")
 
-# HARD 2 — DSR (forge 우선, 없으면 alpha diag fallback)
+# HARD 2 — DSR: sweep형 selection에서만 HARD (measurement-graduation §3, 도훈 mandate 2026-05-31/2026-06-10).
+#   chain(가설주도 순차개선)/단일검증은 advisory 강등 — 과적합 방어는 oos_retention/holdout 담당.
+sel = str(req.get("selection_type") or forge_pkg.get("selection_type") or alpha_pkg.get("selection_type") or "").lower()
+ntr = num(forge_pkg.get("n_trials_cumulative"), num(criteria.get("n_trials_cumulative")))
+is_sweep = sel == "sweep" or (sel != "chain" and ntr is not None and ntr > 1)
 dsr = num(forge_pkg.get("deflated_sharpe_ratio"), num(diag.get("dsr"), num(diag.get("deflated_sharpe_ratio"))))
 if dsr is not None and dsr < thr_dsr:
-    hard_fail.append(f"DSR {dsr:.3f}<{thr_dsr:.2f}")
+    if is_sweep:
+        hard_fail.append(f"DSR {dsr:.3f}<{thr_dsr:.2f} (sweep)")
+    else:
+        advisory_fail.append(f"DSR {dsr:.3f}<{thr_dsr:.2f} (chain/단일 — non-block)")
 
 # ADVISORY — rank-IC 계열 (block 안 함, warn 기록)
 for ckey, dkey in [("min_rank_ic","rank_ic"),("min_icir","icir"),

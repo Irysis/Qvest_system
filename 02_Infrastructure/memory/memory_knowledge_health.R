@@ -223,6 +223,25 @@ if (!file.exists(helper_path)) {
 }
 cat("\n")
 
+# ─── HARD 7: 세션(하네스) 메모리 존재 (2026-06-10 신설) ─────────────
+# 배경: 메모리 전손(autoload 0/5) 상태에서 본 게이트가 PASS를 보고한 맹점 —
+# axiom JSON 정합만 검사하고 정작 '세션 메모리'는 검사 대상이 아니었음.
+cat("[7/7 HARD] 하네스 세션 메모리 존재\n")
+harness_mem <- file.path(Sys.getenv("USERPROFILE", unset = "C:/Users/99922"),
+                         ".claude/projects/C--Users-99922-OneDrive-Quant-Module-Moltbot/memory")
+if (!dir.exists(harness_mem)) {
+  add_hard("HARD_7_harness_memory_dir", sprintf("하네스 메모리 디렉토리 부재: %s — 세션 메모리 전손 의심 (2026-06-10 사건 재발)", harness_mem))
+} else {
+  mem_idx <- file.path(harness_mem, "MEMORY.md")
+  if (!file.exists(mem_idx) || file.size(mem_idx) < 50) {
+    add_hard("HARD_7_memory_index", "MEMORY.md 부재 또는 공백 — autoload 인덱스 단절")
+  } else {
+    cat(sprintf("  하네스 메모리 OK (%d files, MEMORY.md %dB)\n",
+                length(list.files(harness_mem)), file.size(mem_idx)))
+  }
+}
+cat("\n")
+
 # ─── WARN 1: L-code corpus outliers ──────────────────────────────
 cat("[W1/6] L-code corpus outliers\n")
 # v8.0: outlier(L-code gap>50)는 rebuild(v7.2.1_lcode_corpus)의 summary.outliers에만 존재.

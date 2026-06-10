@@ -287,7 +287,9 @@ run_alpha_search <- function(strategy_name,
   weak <- character(0)
   if (.as_num(m$Turnover_Ann) > 300) weak <- c(weak, sprintf("회전율 높음 (연 %.0f%%) — 거래비용 민감", .as_num(m$Turnover_Ann)))
   if (abs(.as_num(m$MDD)) > 30)      weak <- c(weak, sprintf("최대낙폭 큼 (%.1f%%)", -abs(.as_num(m$MDD))))
-  if (!is.na(dsr) && dsr < 0.5)      weak <- c(weak, "감가샤프지수 낮음 — 다중검정에 취약")
+  # DSR weak-flag = 게이트 적용분(sweep)만. chain/단일은 진단수치라 비표기 (도훈 mandate 2026-06-10).
+  dsr_gated <- is.null(sdef$dsr_gate_applied) || isTRUE(sdef$dsr_gate_applied)  # 필드 없으면 legacy(=sweep만 산출되던 시절) 표기 유지
+  if (!is.na(dsr) && dsr < 0.5 && dsr_gated) weak <- c(weak, "감가샤프지수 낮음 — 다중검정(sweep)에 취약")
   if (!is.na(excess_cagr) && excess_cagr <= 0) weak <- c(weak, "벤치마크 대비 초과수익 미확보")
   if (length(weak) < 2) weak <- c(weak, "특이 위험요인 제한적", "추가 정밀검증 권고")
   weak <- head(weak, 5L)

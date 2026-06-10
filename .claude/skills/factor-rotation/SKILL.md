@@ -86,7 +86,7 @@ Track1은 **각종 학술논문·헤지펀드 페이퍼를 참고해 국면 정�
 
 ## 9. 측정·과적합 게이트 (SR2.5보다 먼저)
 
-실측-only. ① OOS_retention ≥ 0.7 → ② DSR ≥ 0.5 HARD(n_trials 누적: 축탐색+레짐grid+forecaster+hyper) → ③ placebo(국면라벨 셔플 앙상블과 통계 구분, p<0.05) → ④ holdout(최근 18~24월 봉인). `measurement-graduation §3` 정합.
+실측-only. ① OOS_retention ≥ 0.7 → ② DSR ≥ 0.5 HARD — **sweep형 selection만**(grid/축탐색/레짐grid/forecaster/hyper sweep, n_trials 누적. 가설주도 chain·단일 A/B는 게이트 면제 `selection_type="chain"` — 도훈 mandate 2026-06-10) → ③ placebo(국면라벨 셔플 앙상블과 통계 구분, p<0.05) → ④ holdout(최근 18~24월 봉인). `measurement-graduation §3` 정합.
 
 ## 10. 거버넌스 · 제약 (반드시 준수)
 

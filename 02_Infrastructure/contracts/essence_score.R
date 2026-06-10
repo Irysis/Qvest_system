@@ -11,15 +11,19 @@
 #   OOS retention ≥ 0.7  (활성 Sharpe OOS/IS, 65/35; 과적합 게이트 — DSR 대체)
 #   Sharpe ≥ 0.8, CAGR ≥ 16%  (legacy hurdle_gate Grade A 유지 / CLAUDE.md 제2목표)
 #   Calmar ≥ 0.64   (= 16%/25%, CAGR16·MDD25 제2목표서 도출 — "리스크 대비 수익" 위험조정 게이트)
-#   DSR ≥ 0.5 (BLdP 2014)  ← **다중검정 스타일(n_trials>1: ML스윕/optimizer서치/앙상블)에서만 추가 게이트.**
-#                            1논문/1알파 검증엔 부적용(PORT_t 2.95가 이미 문헌 다중검정 반영, 중복).
+#   DSR ≥ 0.5 (BLdP 2014)  ← **sweep형 selection(열거집합 argmax/threshold-pick: ML스윕/optimizer서치/앙상블/사전등록 grid)에서만 게이트.**
+#                            1논문/1알파 + 가설주도 순차개선 chain(selection_type="chain")엔 부적용
+#                            (도훈 mandate 2026-05-31/2026-06-10; chain 자격 = IS-only 변형선택 + holdout 1회 — measurement-graduation §3).
+#                            DSR 수치는 n_trials>1이면 진단용으로 항상 산출(게이트와 무관).
 #
 # 18-component proxy 합산(hurdle_gate.R)은 폐기 — 진단용으로만 retain.
 #
-# essence_score(bt_result, n_trials_cumulative = NULL, hard_fail = NULL)
+# essence_score(bt_result, n_trials_cumulative = NULL, hard_fail = NULL, ..., selection_type = NULL)
 #   bt_result : build_bt_result() 10-component (계약). 필수: metrics, benchmark_compare.
-#   n_trials_cumulative : DSR 산출용 누적 시행수. NULL이면 DSR=NA → Grade A 불가(B 이하).
+#   n_trials_cumulative : DSR 산출용 누적 시행수 (기록 의무 유지 — 게이트 적용 여부와 별개).
 #   hard_fail : 외부 주입(judge). NULL이면 MDD>mdd_hard로 추론.
+#   selection_type : "sweep"(게이트 강제) / "chain"(가설주도 순차개선 — 게이트 면제) /
+#                    NULL(legacy: n_trials>1 휴리스틱 유지, 기존 sweep caller 호환).
 # Returns: list(grade, metric_type, essence{...}, hard_fail, reasons)
 #==============================================================================
 
@@ -46,7 +50,8 @@ suppressPackageStartupMessages({ library(data.table) })
 
 essence_score <- function(bt_result, n_trials_cumulative = NULL,
                           hard_fail = NULL, mdd_hard = 0.45,
-                          oos_is_ratio_override = NULL, calmar_min = 0.64) {
+                          oos_is_ratio_override = NULL, calmar_min = 0.64,
+                          selection_type = NULL) {
   stopifnot(is.list(bt_result),
             !is.null(bt_result$metrics), !is.null(bt_result$benchmark_compare))
   M  <- as.data.table(bt_result$metrics)
@@ -72,8 +77,13 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
   af <- suppressWarnings(as.numeric(M[["annualization_factor"]][1]))
   if (length(af) != 1 || !is.finite(af)) af <- 12
   dsr <- NA_real_; oos_retention <- NA_real_
-  # DSR 적용 = 다중검정 스타일(ML 스윕/optimizer 서치/앙상블 스윕)에서만. n_trials>1이 그 신호.
-  is_sweep <- !is.null(n_trials_cumulative) && is.finite(n_trials_cumulative) && n_trials_cumulative > 1
+  # DSR *게이트* = sweep형 selection(열거집합 argmax/threshold-pick)에서만 (도훈 mandate 2026-06-10).
+  #   selection_type "sweep"=강제 / "chain"(가설주도 순차개선, IS-only 선택 규율)=면제 /
+  #   NULL(legacy)=n_trials>1 휴리스틱 (기존 sweep caller 호환). DSR 수치는 n_trials>1이면 진단용 항상 산출.
+  has_trials <- !is.null(n_trials_cumulative) && is.finite(n_trials_cumulative) && n_trials_cumulative > 1
+  is_sweep <- if (identical(selection_type, "chain")) FALSE
+              else if (identical(selection_type, "sweep")) TRUE
+              else has_trials
   pr <- bt_result$period_returns; br <- bt_result$benchmark_returns
   if (!is.null(pr) && !is.null(br)) {
     pr <- as.data.table(pr); br <- as.data.table(br)
@@ -92,8 +102,8 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
           oos_ir <- if (sd(oa) > 0) mean(oa) / sd(oa) * sqrt(af) else NA_real_
           if (is.finite(is_ir) && is_ir > 0.05) oos_retention <- oos_ir / is_ir
         }
-        # DSR(BLdP) = 스윕에서만. 1논문/1알파엔 부적용(PORT_t 2.95가 이미 문헌 다중검정 반영).
-        if (is_sweep) {
+        # DSR(BLdP) 수치 = n_trials>1이면 진단용 산출 (게이트 적용은 is_sweep — 아래 dsr_ok).
+        if (has_trials) {
           mu <- mean(a); s <- sd(a)
           dsr <- .essence_dsr(mean(a) / s * sqrt(af), n, n_trials_cumulative,
                               mean(((a - mu) / s)^3), mean(((a - mu) / s)^4), A = af)
@@ -110,7 +120,7 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
   # --- 등급 (SOT §3.5): 유의성=PORT_t / 과적합=OOS retention / 위험조정=Calmar / DSR=스윕한정 ---
   reasons <- character(0)
   contract_ok <- is.finite(port_t) && is.finite(net_ir)  # 계약 경유 여부
-  # DSR 게이트: 스윕(n_trials>1)에서만 요구. 1논문/1알파에선 부적용(통과 간주).
+  # DSR 게이트: sweep형 selection에서만 요구. chain/1논문/1알파에선 부적용(통과 간주).
   dsr_ok <- if (is_sweep) (is.finite(dsr) && dsr >= 0.5) else TRUE
   a_core <- (is.finite(port_t) && port_t >= 2.95 &&
              is.finite(oos_retention) && oos_retention >= 0.7 &&
@@ -160,8 +170,10 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
     ),
     hard_fail = hard_fail,
     n_trials_cumulative = n_trials_cumulative,
+    selection_type = selection_type,
+    dsr_gate_applied = is_sweep,
     reasons = reasons
   )
 }
 
-if (sys.nframe() == 0) cat("[essence_score] Loaded — essence_score(bt_result, n_trials_cumulative).\n")
+if (sys.nframe() == 0) cat("[essence_score] Loaded — essence_score(bt_result, n_trials_cumulative, selection_type).\n")

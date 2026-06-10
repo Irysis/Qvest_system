@@ -114,7 +114,7 @@
   },
 
   "tier_graduation": {
-    "description": "Discovery → Deployment 전환 조건. discovery_graduation_gate.sh 강제. v8.x WS2 재설계(2026-05-29): rank-IC 계열은 long-only 실현 alpha와 어긋나(16후보 calibration 실측: rank_ic가 FLOW 거짓탈락+NN/TECH 거짓통과) advisory로 강등, portfolio-alpha t(forge NW lag-3)+DSR을 hard로. hard 기준은 forge-authoritative 값(alpha-stage proxy 아님)에 적용.",
+    "description": "Discovery → Deployment 전환 조건. discovery_graduation_gate.sh 강제. v8.x WS2 재설계(2026-05-29): rank-IC 계열은 long-only 실현 alpha와 어긋나(16후보 calibration 실측: rank_ic가 FLOW 거짓탈락+NN/TECH 거짓통과) advisory로 강등, portfolio-alpha t(forge NW lag-3)를 hard로. DSR hard는 sweep형 selection만(2026-06-10 개정 — chain/단일은 advisory). hard 기준은 forge-authoritative 값(alpha-stage proxy 아님)에 적용.",
     "min_rank_ic": 0.04,
     "min_rank_ic_rationale": "KR top-universe benchmark. <0.04는 IC 약함. (v8.x severity=advisory — long-only 실현 alpha 미전이)",
 
@@ -131,7 +131,7 @@
     "min_harvey_t_stat_rationale": "rank-IC Harvey-t. (v8.x severity=advisory — rank-IC t는 portfolio-alpha t와 구분, 후자가 권위)",
 
     "min_deflated_sharpe_ratio": 0.5,
-    "min_deflated_sharpe_ratio_rationale": "Bailey-Lopez de Prado DSR — multi-testing 보정 SR. (v8.x severity=HARD)",
+    "min_deflated_sharpe_ratio_rationale": "Bailey-Lopez de Prado DSR — multi-testing 보정 SR. (severity=HARD는 sweep형 selection만 — ML스윕/optimizer서치/앙상블·사전등록 grid. 가설주도 chain/단일검증은 advisory 강등+진단산출. 도훈 mandate 2026-05-31/2026-06-10, measurement-graduation §3)",
 
     "min_portfolio_alpha_t_nw": 2.95,
     "min_portfolio_alpha_t_nw_rationale": "★v8.x 신규 HARD. forge-authoritative 실현 portfolio-alpha t (NW lag-3, forge_package.portfolio_alpha_t_nw_lag3). Harvey-Liu-Zhu 2016 hurdle. rank-IC t 아님. 게이트 핵심 판별(16후보 중 FLOW만 통과=정확).",

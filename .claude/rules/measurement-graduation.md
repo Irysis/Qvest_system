@@ -15,7 +15,9 @@
 ## §3 Graduation 게이트 severity (문턱 완화 X, 게이트 선택 수정)
 `constraint_defaults.json::tier_graduation.severity` + `discovery_graduation_gate.sh`:
 - **HARD (block)**: `portfolio_alpha_t_nw` ≥ 2.95 (Harvey-Liu-Zhu, 문헌-레벨 다중검정 이미 반영) + **`oos_retention` ≥ 0.7** (활성 Sharpe OOS/IS — 과적합 게이트) + **`calmar` ≥ 0.64** (=16%/25%, CAGR16·MDD25서 도출, 위험조정). **forge-authoritative 값에만** 적용(alpha proxy로 graduation 선언 금지).
-- **DSR 조건부 (2026-05-31 도훈 mandate)**: `deflated_sharpe_ratio` ≥ 0.5는 **다중검정 스타일(n_trials>1: ML 스윕/optimizer 서치/앙상블 스윕)에서만 HARD 게이트.** 1논문/1알파 검증(n_trials≈1)엔 **부적용** — PORT_t 2.95가 이미 문헌 다중검정 보정이라 중복이고, n_trials가 무의미. (구 규칙 "DSR 무조건 HARD" 폐기.) 명시적 스윕에서만 적용. 단일전략 과적합은 DSR 아닌 oos_retention이 담당.
+- **DSR 적용경계 = selection operator (2026-05-31 + 2026-06-10 도훈 mandate)**: `deflated_sharpe_ratio` ≥ 0.5 HARD는 **sweep형 selection에서만** — 열거된 trial 집합에서 argmax/threshold-pick으로 최종안을 고르는 구조(ML HPO 스윕 / optimizer 서치 / 앙상블·파라미터 grid / 사전등록 family grid). **"n_trials>1"은 sweep의 신호가 아니다** — 가설주도 순차개선 체인(1가설 1전략, 진단→개선 반복)은 iteration이 몇 번이든 각각 독립 리서치 결과로 보고 **DSR 게이트 부적용**(`selection_type="chain"`). 1논문/1알파(n_trials≈1)도 부적용 (PORT_t 2.95가 문헌-레벨 다중검정 기보정). 단일전략 과적합 방어 주책임 = oos_retention 0.7 + holdout + placebo.
+  - **chain 자격요건 (전부 충족 — 미충족 시 sweep 재분류)**: ① iteration별 변경사유 = mechanism 진단 1줄 기록 ② **iteration 중 변형 선택은 IS-only** (OOS 반복조회 = OOS 오염 = oos_retention 게이트 무효화 — valearn IS-only 선택 protocol이 실무 선례) ③ holdout은 최종판 1회만 조회.
+  - DSR 수치 자체는 n_trials>1이면 **진단용으로 계속 산출·기록** (게이트 아님). n_iterations/n_trials 기록 의무는 유지 (사후 감사 가능성).
 - **ADVISORY (warn only)**: rank_ic / icir / harvey_t_stat(rank-IC) / subperiod_stability. long-only 실현 alpha와 어긋나 거짓통과·거짓탈락 유발(16후보 calibration 실증: rank_ic≥0.04가 FLOW 거짓탈락 + NN/TECH 거짓통과, PORT_t는 FLOW 1건만 정확 통과).
 - judge Gate C = portfolio-alpha t ≥ 2.95 AND net_IR > 0.2. **Grade 산정 권위 = `02_Infrastructure/contracts/essence_score.R`** (hurdle_gate 18-component은 proxy 진단용 강등).
 
@@ -37,5 +39,6 @@
 - SOT: `02_Infrastructure/docs/qvest_v8_0_upgrade_plan.md`
 
 ## Change log
+- 2026-06-10 (도훈 mandate): §3 DSR 적용경계 정정 — "n_trials>1 = sweep" 휴리스틱 폐기, **selection operator 기준**(sweep = 열거집합 argmax/threshold-pick / chain = 가설주도 순차개선 → 게이트 면제 + 진단산출만). chain 자격요건 ①진단사유 기록 ②IS-only 변형선택 ③holdout 1회. 구현: `essence_score.R` selection_type 파라미터 + `discovery_graduation_gate.sh` HARD 2 sweep-한정(비-sweep advisory 강등).
 - 2026-05-31 (도훈 mandate): §3 게이트 재설계. DSR≥0.5 "무조건 HARD" 폐기 → **다중검정 스타일(n_trials>1)에서만 HARD**(DSR은 multiple-testing 개념, 1논문/1알파엔 부적용·PORT_t 2.95와 중복). 단일전략 과적합 게이트 = **oos_retention≥0.7**(DSR 대체) + 위험조정 게이트 **calmar≥0.64**(=16%/25%). Grade 권위 = `essence_score.R`(hurdle_gate 18-component proxy 강등). Dual-Mode SOT §3.5 정합.
 - 2026-05-29 v8.x: 신규. WS1 real-computation + WS2 graduation severity 재설계 + WS3 book-marginal admission. E2E(FLOW forge 2.35) 입증.

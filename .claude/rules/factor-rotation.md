@@ -23,8 +23,8 @@
 ## 4. 측정·게이트 (실측-only)
 
 - 자체합성 금지. `build_bt_result`(PerformanceAnalytics 표준함수, metric_type=backtested) → `audit_bt_result` → `essence_score`. proxy 손계산·`prod(1+r)`·`cumprod` 금지(`backtest-contract.md`/`answer-principles.md`).
-- 과적합 게이트(SR2.5보다 먼저): **OOS_retention≥0.7 → DSR≥0.5 HARD(n_trials 누적) → placebo(국면셔플 p<0.05) → holdout**. SR2.5 미달 시 정직 표기.
-- **n_trials**: 앙상블=다중검정(축탐색+레짐grid+forecaster+hyper 누적 상향계상).
+- 과적합 게이트(SR2.5보다 먼저): **OOS_retention≥0.7 → DSR≥0.5 HARD(sweep형 selection만 — 2026-06-10 개정) → placebo(국면셔플 p<0.05) → holdout**. SR2.5 미달 시 정직 표기.
+- **n_trials**: 앙상블 grid/축탐색/레짐grid/forecaster/hyper sweep = 다중검정(누적 상향계상, DSR HARD 유지). **단일 가설 A/B·가설주도 순차개선 chain은 DSR 게이트 면제**(`selection_type="chain"`, 자격요건·재분류 = `measurement-graduation §3` 2026-06-10).
 
 ## 5. PIT · frozen · 거버넌스
 

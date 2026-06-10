@@ -148,7 +148,10 @@ if ! command -v codex >/dev/null 2>&1; then
   "verification_triangulation": {"ax_008_status": "FAIL", "agree_with_claude": false, "additional_perspective": "stub"}
 }
 JSON
-  exit 0
+  # (2026-06-10) 침묵 통과 금지 — STUB은 교차검증 미수행이므로 exit 1로 호출자에 실패 신호
+  # (pre_enforcer의 stance=STUB block과 이중 방어, AX-008)
+  echo "[ERR] STUB critic_response written — Codex Round NOT performed (AX-008 Codex축 FAIL)" >&2
+  exit 1
 fi
 
 CODEX_VER=$(codex --version 2>&1 | head -1)

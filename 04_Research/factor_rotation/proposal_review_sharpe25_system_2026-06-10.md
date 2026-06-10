@@ -117,6 +117,8 @@
 
 현 머신은 미프로비저닝 클론: hook 0/46, Python 부재, 메모리 5종 미복원. **E1~E3는 R+arrow만으로 실행 가능**(arrow 06-10 설치 완료)하나, 착수 전 확인 필수: ① `.cache/unified_regime_signal_daily.parquet` / `regime_daily_v2.parquet` / module sim_result.rds 존재·신선도 ② QM_ROOT/CLAUDE_PROJECT_DIR 경로 (코드 기본값 `G:/Quant_Module_Moltbot` = 구 머신) ③ hook 수리 전이라 FR 모드(원래 hook 의존 낮음, governor 수동)만 안전.
 
-## 6. n_trials 회계
+## 6. n_trials 회계 (v1.2 — DSR selection_type 개정 반영)
 
-E1~E3 채택 시 FR 누적 n_trials 97 + (E1 변형 수 + E2 2 + E3 변형 수) 상향 계상 — DSR 게이트에 반영 의무 (`factor-rotation.md §4`). **E6는 family별 Stage A grid를 시행 전 사전등록 + 전량 계상** (alpha-search/QEPM 계열 n_trials, FR과 별도 누적).
+n_trials/n_iterations **기록**은 전 실험 의무 유지. DSR **게이트**는 selection operator 기준 (`measurement-graduation §3` 2026-06-10 도훈 mandate):
+- **sweep (DSR HARD 유지)**: E6 Stage A 사전등록 grid · FR 레짐grid/hyper sweep — 시행 전 grid 전량 계상.
+- **chain (DSR 게이트 면제, 진단산출만)**: E1/E2/E3 단일 설계 A/B · 가설주도 순차개선 — 자격요건(IS-only 변형선택 + holdout 최종 1회 + iteration 사유 기록) 충족 시 `selection_type="chain"`.
