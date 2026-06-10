@@ -56,5 +56,17 @@ Track B (PG2 정밀화): B0 Baseline lock + 수수료결함 수리
 
 제안의 "L1 Alpha를 4-family로 완전 분해하고 family별 IC·성과·MDD·OOS 기여 확인"에 동의. **추가**: 동일 사이클에서 **수수료 결함 수리**(Phase 0)와 **governor trigger overlap 실측**(Phase 5 진단부)을 병행 — 셋 다 비파괴 진단이라 병렬 가능, 모두 production 데이터 기존재.
 
+## 6. Track B 1차 사이클 결과 (2026-06-10 동일자 실행 — B0·B1·B2 종결)
+
+| 항목 | 결과 | 핵심 발견 |
+|---|---|---|
+| **B0** 비용모델 | ✅ 종결 — `pg2_forensics/b0_fee_bug_report.md` | 엔진 = 회전율 무관 **flat per-rebalance 매수 15bps** (A/B: 0%/100% 회전 비용 동일). TO≈6x/yr(book 5.57x)는 정확, TO≳10x −50% 과소·TO≲3x 3× 과대. "매도 flat 추가" 패치 기각·원복(회귀 PASS, NAV 원단위 일치). **수리 = delta-based v2.4, 도훈 confirm 대기.** 잠정: TO>10x 게이트 경고 의무 |
+| **B2** governor overlap | ✅ 종결 — `b2_governor_overlap.json` | 진짜 중복 페어 = **M4↔AR** (P(AR\|M4)=91%, sev corr 0.50) — 제안의 M4↔R05 의심(18%, 0.24)보다 큼. 과방어 비용 위치 = 중간 밴드(β<0.5 45개월, base +1.40%/월) / 깊은 디리스크(β<0.25 6개월, base −9.83%/월)는 정확. combine 재설계 1순위 타깃 = M4×AR |
+| **B1** 4-family 분해 | ✅ 1차 종결 — `b1_*.json` + `b1_summary.md` | ① **Q25_Ohlson_O IC-사멸** (전기간 0.013, 최근 36m 0.003 — defense의 ⅓ 비중인데) ② **C01_SUE×C04_ESBR = 단일 클러스터** (score ρ0.68/ret ρ0.58 — E7 tilt에서 1축 취급) ③ Core-4 나머지는 내부 분산 존재(avg ρ0.12) ④ blend ΔSR +0.070·ΔMDD −4.4pp vs core-only — defense 가치는 한계 개선(AX-004/005/007 정합) ⑤ **Q07 최근 36m IC 0.0522 = 7팩터 중 1위** (방어팩터 강화 중) ⑥ 재구성 충실도 core 0.965/defense 0.989, 정합 검증(offset/lookahead 부재) 통과. 전부 diagnostic 라벨 — Q25 처분은 IC 아닌 PORT-레벨 ablation으로 (B3) |
+
+**B3 설계 입력 확정**: SC2 4-family 분해 시 (a) Earnings는 실질 3축(C04클러스터/C02/C06) (b) Q25 제거/교체 후보 — 단 PORT-레벨 검증 의무(27m에선 Q25단독-defense가 최고 SR이었던 rank-IC↔PORT 괴리 실례 있음) (c) Q07 비중 상향 후보.
+**데이터 위생 노트**: BM 캐시(~06-10)와 RAWDATA 캐시(~06-02) 비동기 — 06-04 이후 BM 일간 ±8% 급변동은 국면엔진 CRISIS 라벨과 정합(실제 시장 사건 개연), 단 캐시 풀런(P2 잔여) 후 교차검증 + 도훈 확인 필요.
+
 ## Change log
+- 2026-06-10 (2차): Track B 1차 사이클(B0·B1·B2) 동일자 완료 — §6 결과 추가. B0 패치 기각·원복 + v2.4 제안, B2 M4↔AR 중복 발견, B1 Q25 사멸·C01×C04 클러스터.
 - 2026-06-10: 신규. 제안 #2(8-Phase PG2 로드맵) 검토 — 사실검증(구조·수치 대부분 실재), 수렴 4/기각 3/채택 4, Track A·B 통합 로드맵.

@@ -1,0 +1,168 @@
+{
+  "artifact": "b1_oos27m_decomposition",
+  "generated": "2026-06-10 15:04:24",
+  "metric_type": "proxy",
+  "label": "27m은 PASS_LOW_INFO 영역 (Sharpe SE ±0.6) — admission 근거 사용 금지",
+  "label2": "diagnostic_only — top-20 EW 근사 (production 재현 아님). 등급/admission 판단 금지.",
+  "window": {
+    "return_months": "2024-02 ~ 2026-04 (27개월)",
+    "score_dates": "2024-01-01 ~ 2026-03-01"
+  },
+  "variant_stats_27m": {
+    "blend_65_35": {
+      "n_months": 27,
+      "ann_return": 0.6596,
+      "ann_vol": 0.3312,
+      "sharpe": 1.9916,
+      "mdd": 0.1218
+    },
+    "core_only": {
+      "n_months": 27,
+      "ann_return": 0.5871,
+      "ann_vol": 0.3132,
+      "sharpe": 1.8748,
+      "mdd": 0.1394
+    },
+    "defense_only": {
+      "n_months": 27,
+      "ann_return": 0.4945,
+      "ann_vol": 0.3709,
+      "sharpe": 1.3333,
+      "mdd": 0.2175
+    },
+    "blend_core65_q07only": {
+      "n_months": 27,
+      "ann_return": 0.5406,
+      "ann_vol": 0.2999,
+      "sharpe": 1.8024,
+      "mdd": 0.1326
+    },
+    "blend_core65_m08only": {
+      "n_months": 27,
+      "ann_return": 0.5129,
+      "ann_vol": 0.3406,
+      "sharpe": 1.5059,
+      "mdd": 0.1453
+    },
+    "blend_core65_q25only": {
+      "n_months": 27,
+      "ann_return": 0.6549,
+      "ann_vol": 0.317,
+      "sharpe": 2.066,
+      "mdd": 0.1255
+    },
+    "defense_q07_only": {
+      "n_months": 27,
+      "ann_return": 0.3148,
+      "ann_vol": 0.1933,
+      "sharpe": 1.629,
+      "mdd": 0.1244
+    },
+    "defense_m08_only": {
+      "n_months": 27,
+      "ann_return": 0.442,
+      "ann_vol": 0.3697,
+      "sharpe": 1.1957,
+      "mdd": 0.1876
+    },
+    "defense_q25_only": {
+      "n_months": 27,
+      "ann_return": 0.3766,
+      "ann_vol": 0.2951,
+      "sharpe": 1.2764,
+      "mdd": 0.1702
+    }
+  },
+  "regime_decomposition": [
+    {
+      "regime_state": "CAUTION",
+      "n_months": 2,
+      "blend_65_35": 0.0382,
+      "core_only": 0.0125,
+      "defense_only": 0.0846,
+      "blend_core65_q07only": 0.0134,
+      "blend_core65_m08only": 0.0488,
+      "blend_core65_q25only": 0.0248,
+      "defense_q07_only": 0.0516,
+      "defense_m08_only": 0.103,
+      "defense_q25_only": 0.0539
+    },
+    {
+      "regime_state": "NORMAL",
+      "n_months": 22,
+      "blend_65_35": 0.0366,
+      "core_only": 0.0338,
+      "defense_only": 0.0278,
+      "blend_core65_q07only": 0.0323,
+      "blend_core65_m08only": 0.029,
+      "blend_core65_q25only": 0.0375,
+      "defense_q07_only": 0.0177,
+      "defense_m08_only": 0.0271,
+      "defense_q25_only": 0.0211
+    },
+    {
+      "regime_state": "BULL",
+      "n_months": 2,
+      "blend_65_35": 0.0564,
+      "core_only": 0.0569,
+      "defense_only": 0.0096,
+      "blend_core65_q07only": 0.0443,
+      "blend_core65_m08only": 0.0176,
+      "blend_core65_q25only": 0.0538,
+      "defense_q07_only": 0.0025,
+      "defense_m08_only": 0.0155,
+      "defense_q25_only": 0.0093
+    },
+    {
+      "regime_state": "CRISIS",
+      "n_months": 1,
+      "blend_65_35": 0.2752,
+      "core_only": 0.2765,
+      "defense_only": 0.2538,
+      "blend_core65_q07only": 0.2552,
+      "blend_core65_m08only": 0.2919,
+      "blend_core65_q25only": 0.2742,
+      "defense_q07_only": 0.1639,
+      "defense_m08_only": 0.1436,
+      "defense_q25_only": 0.2235
+    }
+  ],
+  "sleeve_source": {
+    "avg_blend_top20_overlap_with_core_top20": 13.48,
+    "avg_blend_top20_overlap_with_defense_top20": 6.52,
+    "cor_blend_vs_core_27m": 0.9594,
+    "cor_blend_vs_defense_27m": 0.9062,
+    "note": "명단 중첩(20명 중) + 월수익 corr — blend 성과의 sleeve 원천 진단"
+  },
+  "production_reference_27rows": {
+    "n_months": 27,
+    "ann_return": 1.1456,
+    "ann_vol": 0.2863,
+    "sharpe": 4.0018,
+    "mdd": 0.0739,
+    "metric_type": "backtested",
+    "calendar_coverage": "realized_ym 2024-02~2026-04 = calendar 2024-01~2026-03",
+    "regime_breakdown": [
+      {
+        "regime": "CAUTION",
+        "n": 2,
+        "mean_ret_orig": -0.0286
+      },
+      {
+        "regime": "NORMAL",
+        "n": 22,
+        "mean_ret_orig": 0.0842
+      },
+      {
+        "regime": "BULL",
+        "n": 2,
+        "mean_ret_orig": 0.0339
+      },
+      {
+        "regime": "CRISIS",
+        "n": 1,
+        "mean_ret_orig": -0.007
+      }
+    ]
+  }
+}

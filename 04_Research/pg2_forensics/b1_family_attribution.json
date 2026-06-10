@@ -1,0 +1,294 @@
+{
+  "artifact": "b1_family_attribution",
+  "generated": "2026-06-10 15:04:24",
+  "metric_type": "proxy",
+  "label": "diagnostic_only — top-20 EW 재구성은 production(λ-tilt Iter31 + 유동성 필터 + buffer)의 근사이며 production 재현 아님. 실제 book 수익률 권위 = period_returns_layer5.csv ret_orig (metric_type=backtested). 등급 선언 금지.",
+  "method": {
+    "construction": "각 score 상위 20종목 EW, 월간 리밸런스. Return.portfolio(PerformanceAnalytics) 사용 — 자체합성 없음",
+    "pit": "score @ Date t = month-end(t) 데이터 / 수익 = calendar month(t)+1 (Ret_1m, b0b/b0e 검증). weights 인덱스 = month-end(t)",
+    "blend_formula": "score_eff = 0.65*score_core_z + 0.35*score_defense_z (검증: exact=TRUE)",
+    "net_cost": "production 공식 ret_gross - 0.0015 × one-way turnover (estimated 라벨)",
+    "period": "2004-01-01 ~ 2026-03-01 score dates → calendar 2004-02 ~ 2026-04 수익월 (267개월)"
+  },
+  "production_authority": {
+    "n_months": 267,
+    "ann_return": 0.4351,
+    "ann_vol": 0.2667,
+    "sharpe": 1.6315,
+    "mdd": 0.4074,
+    "metric_type": "backtested",
+    "source": "period_returns_layer5.csv ret_orig (Iter31 base, cost embedded)"
+  },
+  "variants": {
+    "blend_65_35": {
+      "gross": {
+        "n_months": 267,
+        "ann_return": 0.2599,
+        "ann_vol": 0.249,
+        "sharpe": 1.044,
+        "mdd": 0.3736
+      },
+      "net_est": {
+        "n_months": 267,
+        "ann_return": 0.248,
+        "ann_vol": 0.2491,
+        "sharpe": 0.9957,
+        "mdd": 0.3824,
+        "note": "production cost 공식 ret - 0.0015×one-way TO (metric_type=estimated)"
+      },
+      "avg_oneway_turnover_monthly": 0.5364
+    },
+    "core_only": {
+      "gross": {
+        "n_months": 267,
+        "ann_return": 0.2384,
+        "ann_vol": 0.2448,
+        "sharpe": 0.9738,
+        "mdd": 0.4172
+      },
+      "net_est": {
+        "n_months": 267,
+        "ann_return": 0.2255,
+        "ann_vol": 0.2449,
+        "sharpe": 0.9209,
+        "mdd": 0.4247,
+        "note": "production cost 공식 ret - 0.0015×one-way TO (metric_type=estimated)"
+      },
+      "avg_oneway_turnover_monthly": 0.5861
+    },
+    "defense_only": {
+      "gross": {
+        "n_months": 267,
+        "ann_return": 0.2016,
+        "ann_vol": 0.2798,
+        "sharpe": 0.7206,
+        "mdd": 0.4815
+      },
+      "net_est": {
+        "n_months": 267,
+        "ann_return": 0.1946,
+        "ann_vol": 0.2798,
+        "sharpe": 0.6956,
+        "mdd": 0.4862,
+        "note": "production cost 공식 ret - 0.0015×one-way TO (metric_type=estimated)"
+      },
+      "avg_oneway_turnover_monthly": 0.3293
+    },
+    "blend_core65_q07only": {
+      "gross": {
+        "n_months": 267,
+        "ann_return": 0.2324,
+        "ann_vol": 0.2391,
+        "sharpe": 0.9723,
+        "mdd": 0.4017
+      },
+      "net_est": {
+        "n_months": 267,
+        "ann_return": 0.2197,
+        "ann_vol": 0.2392,
+        "sharpe": 0.9188,
+        "mdd": 0.4095,
+        "note": "production cost 공식 ret - 0.0015×one-way TO (metric_type=estimated)"
+      },
+      "avg_oneway_turnover_monthly": 0.5817
+    },
+    "blend_core65_m08only": {
+      "gross": {
+        "n_months": 267,
+        "ann_return": 0.2326,
+        "ann_vol": 0.2543,
+        "sharpe": 0.9146,
+        "mdd": 0.3963
+      },
+      "net_est": {
+        "n_months": 267,
+        "ann_return": 0.2206,
+        "ann_vol": 0.2544,
+        "sharpe": 0.8673,
+        "mdd": 0.4052,
+        "note": "production cost 공식 ret - 0.0015×one-way TO (metric_type=estimated)"
+      },
+      "avg_oneway_turnover_monthly": 0.5465
+    },
+    "blend_core65_q25only": {
+      "gross": {
+        "n_months": 267,
+        "ann_return": 0.2299,
+        "ann_vol": 0.2343,
+        "sharpe": 0.9815,
+        "mdd": 0.4334
+      },
+      "net_est": {
+        "n_months": 267,
+        "ann_return": 0.2177,
+        "ann_vol": 0.2344,
+        "sharpe": 0.9287,
+        "mdd": 0.4397,
+        "note": "production cost 공식 ret - 0.0015×one-way TO (metric_type=estimated)"
+      },
+      "avg_oneway_turnover_monthly": 0.5638
+    },
+    "defense_q07_only": {
+      "gross": {
+        "n_months": 267,
+        "ann_return": 0.0964,
+        "ann_vol": 0.1984,
+        "sharpe": 0.486,
+        "mdd": 0.4865
+      },
+      "net_est": {
+        "n_months": 267,
+        "ann_return": 0.0947,
+        "ann_vol": 0.1984,
+        "sharpe": 0.4775,
+        "mdd": 0.4875,
+        "note": "production cost 공식 ret - 0.0015×one-way TO (metric_type=estimated)"
+      },
+      "avg_oneway_turnover_monthly": 0.0874
+    },
+    "defense_m08_only": {
+      "gross": {
+        "n_months": 267,
+        "ann_return": 0.194,
+        "ann_vol": 0.2945,
+        "sharpe": 0.6585,
+        "mdd": 0.532
+      },
+      "net_est": {
+        "n_months": 267,
+        "ann_return": 0.1856,
+        "ann_vol": 0.2946,
+        "sharpe": 0.6301,
+        "mdd": 0.536,
+        "note": "production cost 공식 ret - 0.0015×one-way TO (metric_type=estimated)"
+      },
+      "avg_oneway_turnover_monthly": 0.3935
+    },
+    "defense_q25_only": {
+      "gross": {
+        "n_months": 267,
+        "ann_return": 0.1171,
+        "ann_vol": 0.2137,
+        "sharpe": 0.5479,
+        "mdd": 0.4443
+      },
+      "net_est": {
+        "n_months": 267,
+        "ann_return": 0.1147,
+        "ann_vol": 0.2136,
+        "sharpe": 0.5369,
+        "mdd": 0.446,
+        "note": "production cost 공식 ret - 0.0015×one-way TO (metric_type=estimated)"
+      },
+      "avg_oneway_turnover_monthly": 0.1185
+    }
+  },
+  "delta": {
+    "dSR_blend_minus_core": 0.0702,
+    "dMDD_blend_minus_core": -0.0436,
+    "dSR_blend_minus_defense": 0.3234,
+    "dMDD_blend_minus_defense": -0.1079,
+    "note": "gross 기준. MDD 음수 delta = blend가 MDD 더 얕음(개선)"
+  },
+  "variant_return_correlation_gross": {
+    "blend_65_35": {
+      "blend_65_35": 1,
+      "core_only": 0.949,
+      "defense_only": 0.857,
+      "blend_core65_q07only": 0.946,
+      "blend_core65_m08only": 0.967,
+      "blend_core65_q25only": 0.945,
+      "defense_q07_only": 0.802,
+      "defense_m08_only": 0.816,
+      "defense_q25_only": 0.781
+    },
+    "core_only": {
+      "blend_65_35": 0.949,
+      "core_only": 1,
+      "defense_only": 0.789,
+      "blend_core65_q07only": 0.99,
+      "blend_core65_m08only": 0.957,
+      "blend_core65_q25only": 0.969,
+      "defense_q07_only": 0.834,
+      "defense_m08_only": 0.774,
+      "defense_q25_only": 0.769
+    },
+    "defense_only": {
+      "blend_65_35": 0.857,
+      "core_only": 0.789,
+      "defense_only": 1,
+      "blend_core65_q07only": 0.782,
+      "blend_core65_m08only": 0.837,
+      "blend_core65_q25only": 0.779,
+      "defense_q07_only": 0.726,
+      "defense_m08_only": 0.924,
+      "defense_q25_only": 0.788
+    },
+    "blend_core65_q07only": {
+      "blend_65_35": 0.946,
+      "core_only": 0.99,
+      "defense_only": 0.782,
+      "blend_core65_q07only": 1,
+      "blend_core65_m08only": 0.952,
+      "blend_core65_q25only": 0.967,
+      "defense_q07_only": 0.834,
+      "defense_m08_only": 0.764,
+      "defense_q25_only": 0.758
+    },
+    "blend_core65_m08only": {
+      "blend_65_35": 0.967,
+      "core_only": 0.957,
+      "defense_only": 0.837,
+      "blend_core65_q07only": 0.952,
+      "blend_core65_m08only": 1,
+      "blend_core65_q25only": 0.936,
+      "defense_q07_only": 0.808,
+      "defense_m08_only": 0.821,
+      "defense_q25_only": 0.761
+    },
+    "blend_core65_q25only": {
+      "blend_65_35": 0.945,
+      "core_only": 0.969,
+      "defense_only": 0.779,
+      "blend_core65_q07only": 0.967,
+      "blend_core65_m08only": 0.936,
+      "blend_core65_q25only": 1,
+      "defense_q07_only": 0.804,
+      "defense_m08_only": 0.75,
+      "defense_q25_only": 0.811
+    },
+    "defense_q07_only": {
+      "blend_65_35": 0.802,
+      "core_only": 0.834,
+      "defense_only": 0.726,
+      "blend_core65_q07only": 0.834,
+      "blend_core65_m08only": 0.808,
+      "blend_core65_q25only": 0.804,
+      "defense_q07_only": 1,
+      "defense_m08_only": 0.726,
+      "defense_q25_only": 0.729
+    },
+    "defense_m08_only": {
+      "blend_65_35": 0.816,
+      "core_only": 0.774,
+      "defense_only": 0.924,
+      "blend_core65_q07only": 0.764,
+      "blend_core65_m08only": 0.821,
+      "blend_core65_q25only": 0.75,
+      "defense_q07_only": 0.726,
+      "defense_m08_only": 1,
+      "defense_q25_only": 0.733
+    },
+    "defense_q25_only": {
+      "blend_65_35": 0.781,
+      "core_only": 0.769,
+      "defense_only": 0.788,
+      "blend_core65_q07only": 0.758,
+      "blend_core65_m08only": 0.761,
+      "blend_core65_q25only": 0.811,
+      "defense_q07_only": 0.729,
+      "defense_m08_only": 0.733,
+      "defense_q25_only": 1
+    }
+  }
+}
