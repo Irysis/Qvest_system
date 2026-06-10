@@ -216,21 +216,22 @@ fi
 #     memory_health check은 cached memory_health_latest.json read
 QV8_CLI="$PROJECT/02_Infrastructure/tools/qvest_v8_ready"
 if [ -f "$QV8_CLI" ]; then
-  # L-314 follow-up: temp file 경유로 stdin pipe parse 문제 회피 + 1회 parse로 4값 동시 추출
+  # L-314 follow-up: temp file 1회 parse로 4값 동시 추출.
+  # (v8.1.1 2026-06-10 fix) python에는 stdin 리다이렉트로 전달 — Git Bash mktemp의 MSYS 경로(/tmp/...)를
+  # native Windows python이 open() 못 하는 함정 (FileNotFoundError → 영구 '?' 표시) 해소.
   V8_TMP=$(mktemp)
   # qvest_v8_ready CLI exit code 0=PASS / 1=FAIL / 2=WARN — 모두 정상 JSON 반환. 'true'로 exit code 무시.
   bash "$QV8_CLI" --no-write --json > "$V8_TMP" 2>/dev/null || true
   [ -s "$V8_TMP" ] || echo "{}" > "$V8_TMP"
   V8_PARSED=$(python3 -c "
-import json
+import json, sys
 try:
-    with open('$V8_TMP') as fp:
-        d = json.load(fp)
+    d = json.load(sys.stdin)
     s = d.get('summary', {})
     print(f\"{d.get('overall','?')}|{s.get('pass','?')}|{s.get('fail','?')}|{s.get('skip','?')}\")
 except Exception:
     print('?|?|?|?')
-" 2>/dev/null || echo "?|?|?|?")
+" < "$V8_TMP" 2>/dev/null || echo "?|?|?|?")
   rm -f "$V8_TMP"
   IFS='|' read -r V8_OVERALL V8_PASS V8_FAIL V8_SKIP <<< "$V8_PARSED"
   echo "[boot] v8 readiness (--no-write, 16 check incl v8_architecture): $V8_OVERALL — pass=$V8_PASS fail=$V8_FAIL skip=$V8_SKIP (e2e+timeline SKIP 정상, memory_health cached)"
