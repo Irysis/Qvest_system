@@ -29,13 +29,17 @@ ir_ann <- function(a, annf=ANN){ a<-a[is.finite(a)]; if(length(a) < (if(annf<=12
 # MIN_MONTHS = 12 floor (희소 국면 CRISIS/CAUTION는 36월-in-regime이 비현실 — 방어형 specialist 차단).
 # 표본-significance는 ④ t = IR·√(n_m/12) ≥ 2 가 담당(소표본일수록 더 높은 IR 요구). n≥36 = high_conf 플래그.
 IR_FLOOR <- 0.5; MIN_MONTHS <- 12; T_MIN <- 2.0; HIGH_CONF_MONTHS <- 36
-# ── C2 희소국면 완화 경로 (2026-06-10 도훈 mandate — calibration 백로그 C2) ──
-# 긴장: ②n≥12 × ④t≥2 곱 → n=12 셀에 IR≥2.0 요구 = CRISIS specialist 수학적 차단 (RCMA 존재이유와 충돌).
-# 완화(희소국면 = base rate < RARE_SHARE 셀 한정): n≥6 · t≥1.5, OR stress-pool(CRISIS∪RISK_OFF∪CAUTION)
-#   합산 t≥2 대체경로. 두 경로 모두 ⑤ rationale strict(review_pending 불가) 의무. ①③ 불변.
-# 방어 논거: admission은 저위험 — dispatcher shrink n/(n+36)이 n=6 셀 신호반영 ≤14% + w_cap 0.25.
+# ── C2 소표본 셀 완화 경로 v2.1 (2026-06-10 — calibration 백로그 C2, A/B 1차 진단 반영 재설계) ──
+# 긴장: ②n≥12 × ④t≥2 곱 → n=12 셀에 IR≥2.0 요구 = 소표본 specialist 셀 수학적 차단.
+# ★ v2.0(기각)의 두 결함 — 1차 A/B(2026-06-10, FR_001_c2ab) 실측 진단:
+#   ① rare를 *국면 base rate*(<10%)로 정의 → CRISIS(실측 16.7%)가 비껴감. 차단의 실변수는
+#      국면 희소성이 아니라 **셀-레벨 n_months**(모듈 이력 × 국면 겹침 — 예: valearn CRISIS n=7).
+#   ② rationale-strict를 legacy-통과 셀에 소급 적용 → 무고한 강셀 제거(STR_1622 CAUTION n=33m
+#      IR 1.27 t 2.12 — 전 asof 유일 diff = ensemble SR −0.043/PORT_t −0.375 전손 원인).
+# v2.1 = **순수 완화**: legacy 판정 불변(소급 조임 금지). rare 셀 = 위기군 국면(STRESS_POOL) ∧ n<12.
+#   신규 입장 경로만 추가: 직접(n≥6·t≥1.5) OR stress-pool 합산 t≥2 — 두 경로 모두 ⑤ strict 의무.
 # ★ 활성화 게이트: rare_mode 기본 OFF — run_wf_ensemble A/B(전후 ensemble OOS 비악화) 통과 후 ON (도훈 confirm).
-RARE_SHARE <- 0.10; RARE_MIN_MONTHS <- 6; RARE_T_MIN <- 1.5
+RARE_MIN_MONTHS <- 6; RARE_T_MIN <- 1.5
 STRESS_POOL <- c("CRISIS", "RISK_OFF", "CAUTION")
 
 # ── 모듈 per-regime active 일간 시계열 로드 (한 번만; asof는 함수에서 슬라이스) ──────
@@ -73,8 +77,6 @@ compute_rcma <- function(asof_date, ctx = NULL, proj = PROJ,
   if (is.null(ctx)) ctx <- .rcma_load(proj)
   AL <- ctx$AL; mod_ids <- ctx$mod_ids; regimes <- ctx$regimes; MP <- ctx$MP; FREQ <- ctx$FREQ %||% list()
   asof_date <- as.Date(asof_date)
-  # C2: rare regime set (base rate < RARE_SHARE). ctx에 share 없으면(구버전 ctx) 보수적 공집합.
-  rare_set <- { sh <- ctx$regime_share %||% numeric(0); names(sh)[sh < RARE_SHARE] }
 
   cells <- list(); pool_t_vec <- c()
   for(sid in mod_ids){
@@ -121,35 +123,36 @@ compute_rcma <- function(asof_date, ctx = NULL, proj = PROJ,
     "review_pending" }
   CELL[, rationale := mapply(.rat, module, regime, regime_ir)]
 
-  # RCMA 판정
-  CELL[, rare := regime %in% rare_set]
+  # RCMA 판정 — legacy 4기준은 rare_mode와 무관하게 항상 동일 산출 (v2.1: 소급 조임 금지)
   CELL[, pool_t := pool_t_vec[module]]
   CELL[, c1_perf  := is.finite(regime_ir) & (regime_ir>=IR_FLOOR | top_tercile)]
+  CELL[, c2_n     := is.finite(n_months) & n_months>=MIN_MONTHS]
   CELL[, high_conf := is.finite(n_months) & n_months>=HIGH_CONF_MONTHS]
   CELL[, c3_oos   := is.finite(is_ir) & is.finite(oos_ir) & is_ir>0 & oos_ir>0]   # asof창 IS·OOS 둘 다 + (지속)
+  CELL[, c4_sig   := is.finite(t_stat) & abs(t_stat)>=T_MIN]
   CELL[, c6_adv   := is.finite(regime_ir) & regime_ir>median_ir_L]
+  CELL[, legacy_adm := c1_perf & c2_n & c3_oos & c4_sig]
+  # C2 v2.1 rare 셀 = 위기군 국면 ∧ 셀 n<12 (국면 base rate 정의 폐기 — 1차 A/B 진단 ①)
+  CELL[, rare := regime %in% STRESS_POOL & is.finite(n_months) & n_months < MIN_MONTHS]
   if (isTRUE(rare_mode)) {
-    # C2 v2: 희소국면(base rate<10%) 셀 — ② n≥6 · ④ t≥1.5 완화 OR stress-pool 합산 t≥2 대체경로.
-    #   두 경로 모두 ⑤ rationale strict 의무(review_pending 불가). ①③ 불변. 비-희소 셀 = legacy 동일.
+    # 순수 완화: legacy 판정 불변 + rare 셀 신규 입장 경로 2개 (둘 다 ⑤ strict 의무)
     CELL[, rationale_strict := rationale != "review_pending"]
-    CELL[, c2_n   := is.finite(n_months) & n_months >= fifelse(rare, RARE_MIN_MONTHS, MIN_MONTHS)]
-    CELL[, c4_sig := is.finite(t_stat) & abs(t_stat) >= fifelse(rare, RARE_T_MIN, T_MIN)]
+    CELL[, rare_direct := rare & c1_perf & c3_oos & rationale_strict &
+                          is.finite(n_months) & n_months >= RARE_MIN_MONTHS &
+                          is.finite(t_stat) & abs(t_stat) >= RARE_T_MIN]
     CELL[, rare_alt := rare & c1_perf & c3_oos & rationale_strict &
                        is.finite(pool_t) & abs(pool_t) >= T_MIN]
-    CELL[, admitted := (c1_perf & c2_n & c3_oos & c4_sig & (!rare | rationale_strict)) | rare_alt]
+    CELL[, admitted := legacy_adm | rare_direct | rare_alt]
   } else {
-    # legacy (rare_mode OFF — A/B 활성화 게이트 통과 전 기본)
-    CELL[, c2_n     := is.finite(n_months) & n_months>=MIN_MONTHS]
-    CELL[, c4_sig   := is.finite(t_stat) & abs(t_stat)>=T_MIN]
-    CELL[, rare_alt := FALSE]
-    CELL[, admitted := c1_perf & c2_n & c3_oos & c4_sig]
+    CELL[, rare_direct := FALSE]; CELL[, rare_alt := FALSE]
+    CELL[, admitted := legacy_adm]
   }
 
   admitted_by_regime <- setNames(lapply(regimes, function(L) sort(CELL[admitted==TRUE & regime==L]$module)), regimes)
   admitted_modules <- sort(unique(CELL[admitted==TRUE]$module))
   list(CELL=CELL, admitted_by_regime=admitted_by_regime, admitted_modules=admitted_modules,
        pool_oos_rho=pool_rho, asof=asof_date, n_modules=length(mod_ids),
-       rare_mode=isTRUE(rare_mode), rare_regimes=rare_set)
+       rare_mode=isTRUE(rare_mode), rare_def="cell-level: regime in STRESS_POOL & n_months<12 (v2.1)")
 }
 
 # ── 정적 진단 JSON 산출 (asof = max date). run_wf_ensemble는 함수를 직접 호출. ─────────
