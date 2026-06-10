@@ -51,7 +51,7 @@ Defense 전략은 multi-sleeve 내에서만 평가:
 
 <gate_sequence>
 0. **PIT**: C1~C15 + detect_lookahead + lookahead_detector.R (Codex cross-model rescue 결과 확인)
-1. **구현**: 종목수 ≤ 20, 15bps, 유동성 ≥ 2억
+1. **구현**: 종목수 ≤ 25, 15bps, 유동성 ≥ 2억
 2. **견고성**: OOS retention, rolling 3Y SR, 8대 스트레스 4/4
 3. **성과**: SR / CAGR / MDD vs 목표 (trail별 기준 적용)
 4. **통계**: FF5 alpha t-stat, 최근 3Y SR < 0.3 = ALPHA DECAY, **gap_reduction 측정** (S0 gap_targeting_axes 달성도 정량화)
@@ -178,7 +178,7 @@ SOT: `.claude/skills/qvest-telegram/SKILL.md` §7.4 (Judge Gate 판정 예시). 
 `judge_verdict_{wt_id}.json` Write 시 Hook이 `lockbox_sealed.json` 생성. 재접근 warn.
 </v61_worktask_gates>
 
-<work_dir>/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/</work_dir>
+<work_dir>C:/Users/99922/OneDrive/Quant_Module_Moltbot/</work_dir>
 
 
 ## Research Philosophy (Charter §15, v1.8) — 7 QEPM Modern Trends 정합 의무
@@ -193,7 +193,7 @@ SOT: `.claude/skills/qvest-telegram/SKILL.md` §7.4 (Judge Gate 판정 예시). 
 3. **Uncertainty-aware Forecasting** (CI > Point) — Liao-Ma-Neuhierl-Schilling 2025 RFS
 4. **Direct Portfolio Learning** (Integration > Two-stage) — You-Zhang 2025 (Phase 3)
 5. **Risk Model 고도화** (Crowding + Concentration) — Acadian 2026 + Behmaram 2024
-6. **Implementation Discipline** — TO ≤ 6.0/yr + LIQ + max_names 20 + weight [0, 0.20] + Σw=1
+6. **Implementation Discipline** — TO ≤ 11.0/yr + LIQ + max_names 25 + weight [0, 0.20] + Σw=1
 7. **Attribution & Feedback Loop** — Brinson-Fachler 1985 + Carhart 1997 + Newey-West 1987
 
 **참조**: `_shared_prefix.md` <research_philosophy> tag (모든 agent autoload) + `02_Infrastructure/worktask/common_charter.md` §15 + `.claude/rules/research_philosophy.md`.

@@ -51,7 +51,12 @@ RSCRIPT
 )
 
 # cd into PROJ first to avoid 한글 path env-string shell escape (run from PROJ_DIR)
-JSON_OUT=$(cd "$PROJ_DIR" && Rscript -e "$R_CMD" 2>/tmp/qvest_v8_ready_stderr.log)
+# (2026-06-10 fix) Windows Rscript.exe는 멀티라인 -e의 첫 줄만 실행 → 빈 JSON 반환하던 버그.
+# temp .R 파일 경유로 전환 (실증: 단일라인/file 방식만 전체 게이트 실행).
+R_TMP=$(mktemp /tmp/qvest_v8_ready_XXXXXX.R)
+printf '%s\n' "$R_CMD" > "$R_TMP"
+JSON_OUT=$(cd "$PROJ_DIR" && Rscript "$R_TMP" 2>/tmp/qvest_v8_ready_stderr.log)
+rm -f "$R_TMP"
 
 if [ "$JSON_ONLY" -eq 1 ]; then
   echo "$JSON_OUT"

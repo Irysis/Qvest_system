@@ -48,5 +48,5 @@
 ## 참조
 
 - `02_Infrastructure/factor_db/factor_db_connector.R` (load_month_factors)
-- `02_Infrastructure/factor_db/load_rawdata.R`
+- `02_Infrastructure/data/load_rawdata.R`
 - `infrastructure_state.md` (구체적 코딩 패턴 + L-code 누적)

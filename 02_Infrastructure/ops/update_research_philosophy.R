@@ -56,12 +56,12 @@ AXIS_FILES <- list(
     ".claude/agents/execution.md",
     ".claude/agents/monitoring.md"
   ),
-  axis5_memory = "/home/quant/.claude/projects/-mnt-c-Users-User-OneDrive-------Quant-Money-Moltbot/memory/methodology_active.md"  # auto-detect runtime
+  axis5_memory = "C:/Users/99922/.claude/projects/C--Users-99922-OneDrive-Quant-Module-Moltbot/memory/methodology_active.md"  # auto-detect runtime
 )
 
 # auto-detect memory path
 .detect_memory_path <- function() {
-  candidates <- list.files("/home/quant/.claude/projects",
+  candidates <- list.files(c("C:/Users/99922/.claude/projects", "/home/quant/.claude/projects"),
                             pattern = "Quant.Module.Moltbot",
                             full.names = TRUE, recursive = FALSE)
   if (length(candidates) > 0) {

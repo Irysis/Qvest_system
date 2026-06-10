@@ -25,7 +25,7 @@ CONTENT_HASH="${3:-}"
 [ -z "$STRAT_NAME" ] || [ -z "$STRAT_DIR" ] || [ -z "$CONTENT_HASH" ] && exit 0
 [ -d "$STRAT_DIR" ] || exit 0
 
-PROJ=$(ls -d /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1)
+PROJ=$(ls -d /c/Users/99922/OneDrive/Quant_Module_Moltbot /mnt/c/Users/99922/OneDrive/Quant_Module_Moltbot /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1)
 LOG="/tmp/pit_v3_daemon.log"
 LOCK="/tmp/pit_v3_daemon_${STRAT_NAME}_${CONTENT_HASH}.lock"
 

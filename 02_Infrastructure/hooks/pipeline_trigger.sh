@@ -18,8 +18,23 @@ source "$SCRIPT_DIR/_shared_parse.sh"
 source "$SCRIPT_DIR/resolve_project.sh"
 
 LOCKFILE="/tmp/pipeline_trigger.lock"
-exec 9>"$LOCKFILE" || exit 0
-flock -n 9 || { echo "$(date +%H:%M:%S) SKIP: another trigger running" >> /tmp/pipeline_trigger.log; exit 0; }
+# Git Bash(MSYS)엔 flock 부재 → command not found가 SKIP 분기로 빠져 stage_dispatch 영구 미호출이던 버그 수정 (2026-06-10)
+if command -v flock >/dev/null 2>&1; then
+  exec 9>"$LOCKFILE" || exit 0
+  flock -n 9 || { echo "$(date +%H:%M:%S) SKIP: another trigger running" >> /tmp/pipeline_trigger.log; exit 0; }
+else
+  LOCKDIR="/tmp/pipeline_trigger.lock.d"
+  if ! mkdir "$LOCKDIR" 2>/dev/null; then
+    # stale lock (10분+) 자동 해제 후 재시도
+    if [ -n "$(find "$LOCKDIR" -maxdepth 0 -mmin +10 2>/dev/null)" ]; then
+      rmdir "$LOCKDIR" 2>/dev/null
+      mkdir "$LOCKDIR" 2>/dev/null || { echo "$(date +%H:%M:%S) SKIP: mkdir lock held" >> /tmp/pipeline_trigger.log; exit 0; }
+    else
+      echo "$(date +%H:%M:%S) SKIP: mkdir lock held" >> /tmp/pipeline_trigger.log; exit 0
+    fi
+  fi
+  trap 'rmdir "$LOCKDIR" 2>/dev/null' EXIT
+fi
 
 # Stale axiom lockfile cleanup (24h+) — 기존 정책 유지
 find /tmp -name "axiom_distill_trigger_*" -mmin +1440 -delete 2>/dev/null || true

@@ -15,7 +15,7 @@
 
 trap 'echo "{\"decision\":\"allow\"}"; exit 0' ERR
 
-DIR=$(ls -d /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo "$PWD")
+DIR=$(ls -d /c/Users/99922/OneDrive/Quant_Module_Moltbot /mnt/c/Users/99922/OneDrive/Quant_Module_Moltbot /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo "$PWD")
 
 # ─── 입력 처리 ───
 INPUT_PATH="${1:-}"
@@ -86,7 +86,7 @@ import json, re, os, sys
 hyp_id = os.environ.get("FC_HYP_ID", "unknown")
 family = os.environ.get("FC_FAMILY", "")
 r_raw = os.environ.get("FC_R_RESULT", "")
-mem_active = "/home/quant/.claude/projects/-mnt-c-Users-99922-OneDrive-------Quant-Module-Moltbot/memory/methodology_active.md"
+mem_active = "C:/Users/99922/.claude/projects/C--Users-99922-OneDrive-Quant-Module-Moltbot/memory/methodology_active.md"
 
 # Parse R result (JSON expected on last line)
 r_data = {}

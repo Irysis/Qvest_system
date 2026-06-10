@@ -216,7 +216,7 @@ ARROW_DIR <- file.path(PROJECT_ROOT, "03_Universe", "raw", "arrow")
 #    v2: WSL 로컬 캐시에서 작업 → OneDrive로 복사 (I/O 10x 개선)
 #    백업: 업데이트 성공 후 기존 백업 파일 삭제
 #──────────────────────────────────────────────────────────────────────────────
-LOCAL_ARROW_CACHE <- "/home/quant/.cache/arrow_work"
+LOCAL_ARROW_CACHE <- file.path(Sys.getenv("QM_ROOT", unset = "C:/Users/99922/OneDrive/Quant_Module_Moltbot"), ".cache", "arrow_work")  # 2026-06-10 fix: 구 WSL 경로가 Windows에서 C:home 오염 유발
 if (!dir.exists(LOCAL_ARROW_CACHE)) dir.create(LOCAL_ARROW_CACHE, recursive = TRUE)
 
 .append_to_arrow <- function(sheet_num, new_rows, field_name) {

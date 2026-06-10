@@ -128,7 +128,7 @@ if pkg_type == "forge_package" and not missing:
     cert_path = os.path.join(wt_dir, "forge_package_validated_certificate.json")
     if not os.path.exists(cert_path):
         try:
-            _sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)) if "__file__" in dir() else "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/02_Infrastructure/hooks")
+            _sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)) if "__file__" in dir() else "/c/Users/99922/OneDrive/Quant_Module_Moltbot/02_Infrastructure/hooks")
             # router 단일 source
             from qvest_cert_eval import issue_certificate
             issue_certificate("forge_package_validated", fp, cert_path,

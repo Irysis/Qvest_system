@@ -15,7 +15,7 @@
 set -u
 LOG=/tmp/qm_mrs_daily.log
 TS=$(date -Iseconds)
-DIR=$(ls -d /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1)
+DIR=$(ls -d /c/Users/99922/OneDrive/Quant_Module_Moltbot /mnt/c/Users/99922/OneDrive/Quant_Module_Moltbot /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1)
 
 if [ -z "$DIR" ]; then
   echo "$TS [mrs_daily] PROJECT_ROOT not found" >> "$LOG"
@@ -36,7 +36,7 @@ fi
 echo "$TS [mrs_daily] start briefing v2.8" >> "$LOG"
 
 Rscript -e '
-  PROJECT_ROOT <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+  PROJECT_ROOT <- Sys.getenv("QM_ROOT", unset = "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
   CACHE_DIR <- file.path(PROJECT_ROOT, ".cache")
   setwd(PROJECT_ROOT)
   source("02_Infrastructure/config.R")

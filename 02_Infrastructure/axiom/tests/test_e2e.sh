@@ -2,11 +2,11 @@
 # v8.0 axiom engine E2E smoke (Windows-native, 3-mode 2-tier r7-복원)
 # 실행: bash 02_Infrastructure/axiom/tests/test_e2e.sh
 set -u
-DIR=$(ls -d /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot 2>/dev/null | head -1)
+DIR=$(ls -d /c/Users/99922/OneDrive/Quant_Module_Moltbot /mnt/c/Users/99922/OneDrive/Quant_Module_Moltbot /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot 2>/dev/null | head -1)
 [ -z "$DIR" ] && DIR="G:/Quant_Module_Moltbot"
 cd "$DIR" || exit 2
 export CLAUDE_PROJECT_DIR="$DIR" PYTHONUTF8=1
-PY="${QVEST_PY:-C:/Users/User/anaconda3/python.exe}"
+PY="${QVEST_PY:-C:/Users/99922/AppData/Local/Programs/Python/Python312/python.exe}"
 RS="${QVEST_RSCRIPT:-C:/Program Files/R/R-4.5.2/bin/Rscript.exe}"
 pass=0; fail=0
 ok(){ echo "  PASS $1"; pass=$((pass+1)); }

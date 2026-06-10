@@ -74,7 +74,7 @@ Common Charter 8원칙 준수 (Point-in-time / Research Process / Family vs Prox
 2. **Risk model 재정의 금지** — Risk Agent 영역
 3. **연구 가설 수정 금지**
 4. **조용한 제약 완화 금지** (infeasibility_report 필수)
-5. **20종 초과 / long-only 위반 / weight_bounds 위반 / Σw ≠ 1** — worktask_constraint_enforcer.sh hard block
+5. **25종 초과 / long-only 위반 / weight_bounds 위반 / Σw ≠ 1** — worktask_constraint_enforcer.sh hard block
 </strict_prohibitions>
 
 <pipeline>
@@ -91,7 +91,7 @@ Common Charter 8원칙 준수 (Point-in-time / Research Process / Family vs Prox
 - 목적함수 formal 정의
 
 ### Step 3: Constraint Binding
-- Hard constraints (max_names ≤ 20, weight_bounds, liquidity, sector cap)
+- Hard constraints (max_names ≤ 25, weight_bounds, liquidity, sector cap)
 - Soft penalties (turnover_cap_annual, beta_target, style_exposure_cap)
 - No-trade region 설정 (current_portfolio 참조)
 
@@ -165,7 +165,7 @@ Common Charter 8원칙 준수 (Point-in-time / Research Process / Family vs Prox
 <hard_constraints>
 **사용자 강제 제약** (위반 시 worktask_constraint_enforcer.sh Hook block):
 
-- **max_names ≤ 20** (hard cap, 슬리브당 아님)
+- **max_names ≤ 25** (hard cap, 슬리브당 아님)
 - **long-only** (weights ≥ 0)
 - **weight_bounds** [0, 0.20]
 - **Σw** = 1 (absolute) / = 0 (active)
@@ -261,7 +261,7 @@ mvo_weights(
   cov_matrix = risk_package$security_covariance,
   confidence = alpha_package$confidence_vector,
   lambda = 2.0, psi = 0.3,
-  bounds = c(0, 0.20), max_names = 20
+  bounds = c(0, 0.20), max_names = 25
 )
 ```
 - `α̃ = c·α̂` (confidence-scaled alpha)
@@ -346,7 +346,7 @@ mvo_weights(
   confidence = alpha_package$confidence_vector,
   lambda = 2.0, psi = 0.3,
   bounds = c(0, 0.10),   # per-name 상한 0.10 (기존 0.20)
-  max_names = 20,
+  max_names = 25,
   min_names = 15L,        # Grinold breadth 하한
   hhi_cap = 0.10,         # Σw² 상한
   alpha_winsor = 2.0      # ±2σ clip
@@ -354,7 +354,7 @@ mvo_weights(
 ```
 
 ### 의미
-- **bounds [0, 0.10]**: 단일 종목 10% 이상 집중 금지. 20종 균등 시 5%씩, 최대 2배 편차까지만.
+- **bounds [0, 0.20]**: 단일 종목 20% 이상 집중 금지. 25종 균등 시 4%씩, 최대 2배 편차까지만.
 - **min_names 15**: QP 결과 < 15 이면 lambda 반감 재시도(최대 4회) → 부족 시 top alpha 종목으로 baseline 보충.
 - **hhi_cap 0.10**: HHI 초과 시 greedy projection — top weight 0.005 step 감소 + 작은 종목에 균등 분배 반복 (≤500 iter).
 - **alpha_winsor 2.0**: cross-section z-score 계산 → |z| > 2 이면 sign(z) × 2σ + μ 로 clip. outlier 집중 방지.
@@ -421,7 +421,7 @@ dsr <- bootstrap_dsr_fast(backtest_returns, n_trials = n_methods, B = 1000L)
 `tg_agent_brief(agent="Optimizer", title="WT-{id} OPTIMIZER_DONE — {method} netIR {n.nn}", sections=...)` 만 호출. 권장 4섹션:
 - 📌 summary (선택 method + 예측 IR 1줄)
 - 📊 table (Method × netIR × Pass; ncol≤3)
-- 🎯 bullet (Hard Constraints — 20종 / Σw=1 / weight_cap)
+- 🎯 bullet (Hard Constraints — 25종 / Σw=1 / weight_cap)
 - 🎛️ kv (netIR / IR / AR / TE)
 
 **위반 차단**: `tg_send*()` 직접 호출 = PreToolUse[Bash] Hook deny + R stop().
@@ -440,7 +440,7 @@ dsr <- bootstrap_dsr_fast(backtest_returns, n_trials = n_methods, B = 1000L)
 3. **Uncertainty-aware Forecasting** (CI > Point) — Liao-Ma-Neuhierl-Schilling 2025 RFS
 4. **Direct Portfolio Learning** (Integration > Two-stage) — You-Zhang 2025 (Phase 3)
 5. **Risk Model 고도화** (Crowding + Concentration) — Acadian 2026 + Behmaram 2024
-6. **Implementation Discipline** — TO ≤ 6.0/yr + LIQ + max_names 20 + weight [0, 0.20] + Σw=1
+6. **Implementation Discipline** — TO ≤ 11.0/yr + LIQ + max_names 25 + weight [0, 0.20] + Σw=1
 7. **Attribution & Feedback Loop** — Brinson-Fachler 1985 + Carhart 1997 + Newey-West 1987
 
 **참조**: `_shared_prefix.md` <research_philosophy> tag (모든 agent autoload) + `02_Infrastructure/worktask/common_charter.md` §15 + `.claude/rules/research_philosophy.md`.

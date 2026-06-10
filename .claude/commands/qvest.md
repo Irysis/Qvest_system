@@ -67,7 +67,7 @@ bash 02_Infrastructure/ops/bootstrap.sh
 ### 4. Work Task 상태 확인
 
 ```bash
-cd "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+cd "C:/Users/99922/OneDrive/Quant_Module_Moltbot"
 Rscript -e 'source("02_Infrastructure/worktask/worktask_manager.R"); wt_list()'
 ```
 
@@ -89,7 +89,7 @@ wt_id <- wt_create(
 
 자동 주입:
 - `task_id = WT{YYYYMMDD}_{NNN}`
-- `hard_constraints.max_names = 20`
+- `hard_constraints.max_names = 25`
 - `weight_bounds = [0, 0.20]`
 - `liquidity_min = 2e8`
 - `cost_model = v2.3_kr_retail_15bps`
@@ -138,7 +138,7 @@ PG2 active (STR_1631_SYN_05_2002 + STR_1656_MLRA_M05) **그대로 유지**.
 
 | 제약 | 값 | 강제 Hook |
 |---|---|---|
-| **max_names** | **20 hard** | `worktask_constraint_enforcer.sh` |
+|  **max_names** | **25 hard** | `worktask_constraint_enforcer.sh` |
 | **Long-only** | weights ≥ 0 | same |
 | **Weight bounds** | **[0, 0.20]** | same |
 | **Σw** | = 1 (absolute) / = 0 (active) | same |

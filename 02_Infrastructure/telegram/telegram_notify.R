@@ -26,12 +26,14 @@ suppressPackageStartupMessages(library(jsonlite))
 # ─── Credentials (.env 로드, hardcoded 금지 — 2026-04-17 rotation) ───────────
 .tg_load_env <- function() {
   candidates <- c(
-    file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")), ".env"),
+    file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")), ".env"),
     Sys.getenv("QVEST_PROJECT_DIR", ""),
     getwd()
   )
   for (p in candidates) {
-    env_path <- if (file.exists(p)) p else file.path(p, ".env")
+    if (!nzchar(p)) next
+    # dir.exists 가드: p가 디렉토리면 file.exists(p)=TRUE라 readLines(디렉토리) crash (2026-06-10 fix)
+    env_path <- if (file.exists(p) && !dir.exists(p)) p else file.path(p, ".env")
     if (file.exists(env_path)) {
       lines <- readLines(env_path, warn = FALSE)
       for (ln in lines) {

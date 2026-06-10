@@ -420,9 +420,11 @@ check_qvest_search <- function(project_root, no_write = FALSE) {
                     "WARN", "search_index.jsonl 부재 (첫 build 필요)",
                     tool$path))
   }
+  # (2026-06-10 fix) system2 env= 인자는 Windows에서 명령행 앞에 "VAR=0"이 붙어 rc=127 거짓 FAIL 유발.
+  # --no-auto-rebuild 플래그가 이미 동일 효과이므로 env 인자 제거.
   out <- run_cmd("bash",
                   c(tool$rel, "governor", "--limit", "3", "--no-auto-rebuild"),
-                  env = "QVEST_SEARCH_AUTO_REBUILD=0", wd = project_root)
+                  wd = project_root)
   if (out$rc != 0) {
     return(mk_check("qvest_search", "qvest_search CLI",
                     "FAIL", sprintf("rc=%d", out$rc), tool$path))

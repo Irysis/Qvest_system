@@ -31,7 +31,7 @@ if (PROJ_ROOT == "" || !dir.exists(PROJ_ROOT)) {
 # v8.0 Windows-native: 죽은 WSL 경로(/home/quant/...) 제거. 환경변수 우선 + Windows 메모리 dir fallback.
 # (methodology_active/archive.md가 해당 경로에 없으면 extract_lcodes_from_file이 MISSING 처리 — line 143-146.)
 EXTERNAL_BASE <- Sys.getenv("QVEST_MEMORY_DIR",
-                            "C:/Users/User/.claude/projects/G--Quant-Module-Moltbot/memory")
+                            "C:/Users/99922/.claude/projects/C--Users-99922-OneDrive-Quant-Module-Moltbot/memory")
 
 SOURCE_FILES <- c(
   file.path(PROJ_ROOT, "qepm/memory/methodology_memory.md"),

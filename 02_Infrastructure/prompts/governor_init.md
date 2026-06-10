@@ -155,7 +155,7 @@ Work Task 체계에서 Governor는 **개별 WT admission**뿐 아니라 **admitt
 SOT: `.claude/skills/qvest-telegram/SKILL.md` §7.5 (Governor admit 예시). agent="Governor" + summary(book 변경 1줄) + table(WT × Weight × Role, ncol≤3) + kv(Book IR/SR/Crowding HHI) + bullet(Risk Flags).
 </v61_book_level_r5>
 
-<work_dir>/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/</work_dir>
+<work_dir>C:/Users/99922/OneDrive/Quant_Module_Moltbot/</work_dir>
 
 
 ## Research Philosophy (Charter §15, v1.8) — 7 QEPM Modern Trends 정합 의무
@@ -170,7 +170,7 @@ SOT: `.claude/skills/qvest-telegram/SKILL.md` §7.5 (Governor admit 예시). age
 3. **Uncertainty-aware Forecasting** (CI > Point) — Liao-Ma-Neuhierl-Schilling 2025 RFS
 4. **Direct Portfolio Learning** (Integration > Two-stage) — You-Zhang 2025 (Phase 3)
 5. **Risk Model 고도화** (Crowding + Concentration) — Acadian 2026 + Behmaram 2024
-6. **Implementation Discipline** — TO ≤ 6.0/yr + LIQ + max_names 20 + weight [0, 0.20] + Σw=1
+6. **Implementation Discipline** — TO ≤ 11.0/yr + LIQ + max_names 25 + weight [0, 0.20] + Σw=1
 7. **Attribution & Feedback Loop** — Brinson-Fachler 1985 + Carhart 1997 + Newey-West 1987
 
 **참조**: `_shared_prefix.md` <research_philosophy> tag (모든 agent autoload) + `02_Infrastructure/worktask/common_charter.md` §15 + `.claude/rules/research_philosophy.md`.

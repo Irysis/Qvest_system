@@ -27,7 +27,7 @@
 3. **Uncertainty-aware Forecasting** (CI > Point) — Liao-Ma-Neuhierl-Schilling 2025 RFS. `μ̃ = μ̂ - k·SE(μ̂)` + Confident-High-Low. ML pipeline `predictions_with_ci.parquet` mandate
 4. **Direct Portfolio Learning** (Integration > Two-stage) — You-Zhang 2025 SSRN. features → constrained NN weights (sigmoid + L1). Phase 3 도입 (Phase 1/2 후)
 5. **Risk Model 고도화** (Crowding + Concentration) — Acadian 2026 systematic crowding + Behmaram 2024 demand elasticity. **`crowding_score_per_factor` 필수** in risk_package.json (Phase 2.C, `02_Infrastructure/factor_db/crowding_score_per_factor.R`)
-6. **Implementation Discipline** (이미 정합) — TO ≤ 6.0/yr + LIQ ≥ 2e8 + max_names 20 + weight [0, 0.20] + Σw=1. Hook hard-enforced. Governor admit 결정 기준
+6. **Implementation Discipline** (이미 정합) — TO ≤ 11.0/yr + LIQ ≥ 2e8 + max_names 25 + weight [0, 0.20] + Σw=1. Hook hard-enforced. Governor admit 결정 기준
 7. **Attribution & Feedback Loop** (Decay 감시) — Brinson-Fachler 1985 + Carhart 1997 JoF + Newey-West 1987. **분기별 자동** factor + selection + sector + cost + residual 분해 (Phase 2.D, `02_Infrastructure/attribution/{brinson_decomp.R, carhart_4factor.R}`). Monitoring agent integration
 
 **Agent 역할별 trends 매핑** (각 agent init / definition은 본 mandate inherit):
@@ -291,7 +291,7 @@ v2 대기 (Risk/Optimizer용):
 </parallel_tool_calls>
 
 <production_constraints>
-- 종목수 ≤ 20 (슬리브 조합 포함 최종 포트폴리오 기준)
+- 종목수 ≤ 25 (슬리브 조합 포함 최종 포트폴리오 기준)
 - 유동성 필터 ≥ 2억원 (LIQ_THRESHOLD = 2e8)
 - 롱온리 기본. 백테스트 커미션 15bps.
 - 05_Production/ 수정 금지 (promote_to_production()만 예외). 01_Literature/ read-only.

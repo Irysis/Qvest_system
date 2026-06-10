@@ -53,10 +53,9 @@
               file.path("/mnt/c/Users/User/OneDrive")
             }
           }
-          # Handle Korean directory name via UTF-8 literal
-          proj_root <- file.path(onedrive,
-                                 "\ubc14\ud0d5 \ud654\uba74",
-                                 "Quant_Module_Moltbot")
+          # QM_ROOT/CLAUDE_PROJECT_DIR \uc6b0\uc120, \ub2e4\uc74c OneDrive \uc9c1\ud558 (2026-06-10 OneDrive canonical \u2014 \uad6c '\ubc14\ud0d5 \ud654\uba74' \uacbd\ub85c \ud3d0\uae30)
+          qm <- Sys.getenv("QM_ROOT", unset = Sys.getenv("CLAUDE_PROJECT_DIR", unset = ""))
+          proj_root <- if (nzchar(qm)) qm else file.path(onedrive, "Quant_Module_Moltbot")
           file.path(proj_root, "02_Infrastructure", "factor_db")
         }
       } else {

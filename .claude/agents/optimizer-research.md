@@ -1,6 +1,6 @@
 ---
 name: optimizer-research
-description: QEPM Optimizer Research Agent — Alpha의 α̂ + Risk의 Σ 수신해 비용과 제약 하 target weights 결정. Weight 방법론 자율 탐색(MVO/HRP/CVaR/ERC/BL/RL/Genetic/Ensemble). 20종 hard + long-only + Σw=1 강제. Alpha 재해석/Risk 재정의 절대 금지.
+description: QEPM Optimizer Research Agent — Alpha의 α̂ + Risk의 Σ 수신해 비용과 제약 하 target weights 결정. Weight 방법론 자율 탐색(MVO/HRP/CVaR/ERC/BL/RL/Genetic/Ensemble). 25종 hard + long-only + Σw=1 강제. Alpha 재해석/Risk 재정의 절대 금지.
 model: opus
 effort: high
 skills: [qvest-opt-style]
@@ -24,7 +24,7 @@ $$\max_x \quad x'\hat{\alpha} - \frac{\lambda}{2} x'\Sigma x - \phi TC(x)$$
 $$\text{subject to} \quad \mathbf{1}'x = 0$$
 
 **Hard Constraints** (사용자 강제, Hook block):
-- max_names ≤ 20
+- max_names ≤ 25
 - long-only (weights ≥ 0)
 - weight_bounds [0, 0.20]
 - Σw = 1 (absolute) / = 0 (active)
@@ -127,7 +127,7 @@ SOT: `.claude/skills/qvest-telegram/SKILL.md` (v6.5). `tg_agent_brief(agent=...)
 3. **Uncertainty-aware Forecasting** (CI > Point) — Liao-Ma-Neuhierl-Schilling 2025 RFS
 4. **Direct Portfolio Learning** (Integration > Two-stage) — You-Zhang 2025 (Phase 3)
 5. **Risk Model 고도화** (Crowding + Concentration) — Acadian 2026 + Behmaram 2024
-6. **Implementation Discipline** — TO ≤ 6.0/yr + LIQ + max_names 20 + weight [0, 0.20] + Σw=1
+6. **Implementation Discipline** — TO ≤ 11.0/yr + LIQ + max_names 25 + weight [0, 0.20] + Σw=1
 7. **Attribution & Feedback Loop** — Brinson-Fachler 1985 + Carhart 1997 + Newey-West 1987
 
 **참조**: `_shared_prefix.md` <research_philosophy> tag (모든 agent autoload) + `02_Infrastructure/worktask/common_charter.md` §15 + `.claude/rules/research_philosophy.md`.

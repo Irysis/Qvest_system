@@ -14,7 +14,7 @@
 suppressPackageStartupMessages({ library(arrow); library(data.table) })
 
 ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
-OUT  <- file.path(ROOT, "stage_artifacts", "WT_DPL_GPU_SWEEP")
+OUT  <- file.path(ROOT, "stage_artifacts", Sys.getenv("DPL_WT_DIR", "WT_DPL_GPU_SWEEP"))
 source(file.path(ROOT, "02_Infrastructure/contracts/backtest_result_contract.R"))
 
 ym_key <- function(d) format(as.Date(d), "%Y-%m")

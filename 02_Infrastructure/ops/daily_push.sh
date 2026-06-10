@@ -3,7 +3,7 @@
 # daily_push.sh — 매일 미푸시 commit을 origin으로 전송 (v7.2.1-boot 확장)
 #
 # crontab 예시 (매일 03:00):
-#   0 3 * * * bash /mnt/c/Users/User/OneDrive/바탕\ 화면/Quant_Module_Moltbot/02_Infrastructure/ops/daily_push.sh
+#   0 3 * * * bash /c/Users/99922/OneDrive/Quant_Module_Moltbot/02_Infrastructure/ops/daily_push.sh
 #
 # 동작 (v7.2.1-boot 확장):
 #   1. 모든 local branch (refs/heads/*) loop
@@ -22,7 +22,7 @@ set -u
 LOG="/tmp/daily_push.log"
 TS="$(date '+%Y-%m-%d %H:%M:%S')"
 
-PROJECT=$(ls -d /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1)
+PROJECT=$(ls -d /c/Users/99922/OneDrive/Quant_Module_Moltbot /mnt/c/Users/99922/OneDrive/Quant_Module_Moltbot /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1)
 if [ -z "$PROJECT" ]; then
   echo "$TS NO_PROJECT" >> "$LOG"; exit 1
 fi

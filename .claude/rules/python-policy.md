@@ -11,7 +11,7 @@
 
 ## 2. Python 환경 표준
 
-- venv: `/home/quant/.venvs/qvest_ml/` (`source .../bin/activate` 후 실행). 주요: PyTorch/cu124 · xgboost · lightgbm · ngboost · optuna · mapie · statsmodels · properscoring.
+- venv: `C:/Users/99922/OneDrive/Quant_Module_Moltbot/.venv_qvest_ml/ (Windows venv, 2026-06-10 재생성)` (`source .../bin/activate` 후 실행). 주요: PyTorch/cu124 · xgboost · lightgbm · ngboost · optuna · mapie · statsmodels · properscoring.
 - **한글 경로 회피**: `normalizePath()` 류 금지. 스크립트 내 상대경로 또는 환경변수 PROJECT_ROOT 사용. R의 `source('run_all.R')` 패턴과 동등하게 Python도 `cd` 후 실행.
 - I/O: parquet 표준 (pyarrow). RAWDATA 컬럼명 R과 동일 (`Vol`/`Size`/`Ret`/`Close`/`BM_Ret`/`Ticker`).
 - 동시성: RAM 80% 이하, 프로세스당 4GB 이하 (R 규칙과 동일).

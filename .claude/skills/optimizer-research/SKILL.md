@@ -1,6 +1,6 @@
 ---
 name: optimizer-research
-description: QEPM Optimizer Research Agent 자율 리서치 루프. Alpha의 α̂ + Risk의 Σ로 target weights 결정. 방법론 자율 탐색(MVO/HRP/CVaR/ERC/BL/Genetic/PPO RL/Ensemble). SR 최대화 방법론을 스스로 발견. 20종 hard + long-only + Σw=1 Hook 강제. Alpha/Risk 재해석 절대 금지.
+description: QEPM Optimizer Research Agent 자율 리서치 루프. Alpha의 α̂ + Risk의 Σ로 target weights 결정. 방법론 자율 탐색(MVO/HRP/CVaR/ERC/BL/Genetic/PPO RL/Ensemble). SR 최대화 방법론을 스스로 발견. 25종 hard + long-only + Σw=1 Hook 강제. Alpha/Risk 재해석 절대 금지.
 ---
 
 # /optimizer-research {WT_id}
@@ -52,7 +52,7 @@ Agent가 주어진 Alpha + Risk에서 SR 최대화 방법론 **스스로 발견*
 
 ## Hard Constraints (Hook 강제)
 
-- max_names ≤ 20
+- max_names ≤ 25
 - long-only (weights ≥ 0)
 - weight_bounds [0, 0.20]
 - Σw = 1 (absolute) / = 0 (active)

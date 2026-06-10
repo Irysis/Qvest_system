@@ -795,6 +795,7 @@ def main() -> int:
 
     project_root = os.environ.get(
         "QVEST_PROJECT_ROOT",
+        "C:/Users/99922/OneDrive/Quant_Module_Moltbot",
         "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot",
     )
 

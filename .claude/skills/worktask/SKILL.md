@@ -1,6 +1,6 @@
 ---
 name: worktask
-description: QEPM Work Task lifecycle 관리. 1 Work Task = QEPM Full Pipeline 1회 (Alpha → Risk → Optimizer → Forge → Judge → Governor). 생성 / 상태 확인 / 단계 전이 / admission 트리거. 사용자 지정 20종 hard + long-only + Σw=1 자동 강제.
+description: QEPM Work Task lifecycle 관리. 1 Work Task = QEPM Full Pipeline 1회 (Alpha → Risk → Optimizer → Forge → Judge → Governor). 생성 / 상태 확인 / 단계 전이 / admission 트리거. 사용자 지정 25종 hard + long-only + Σw=1 자동 강제.
 ---
 
 # /worktask — Work Task 관리
@@ -80,7 +80,7 @@ stage_artifacts/WT_{id}/
 ## 자동 강제 제약
 
 **Hook 강제 (Level 3 hard block)**:
-- `worktask_spec_validator.sh`: request.json 검증 (task_id 형식 / universe / max_names ≤ 20 / data_lag_rules)
+- `worktask_spec_validator.sh`: request.json 검증 (task_id 형식 / universe / max_names ≤ 25 / data_lag_rules)
 - `worktask_sequence_enforcer.sh`: Alpha → Risk → Optimizer 순서 강제
 - `agent_role_guard.sh`: 역할 침범 차단
 - `worktask_constraint_enforcer.sh`: 20종 / long-only / bounds / Σw=1

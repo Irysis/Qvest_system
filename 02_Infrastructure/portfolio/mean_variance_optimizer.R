@@ -146,7 +146,7 @@ mvo_weights <- function(alpha,
                          lambda = 1.0,
                          psi = 0.3,
                          bounds = c(0, 0.15),
-                         max_names = 20,
+                         max_names = 25,
                          min_names = 20L,
                          hhi_cap = 0.15,
                          alpha_winsor = 2.0,
@@ -435,7 +435,7 @@ mvo_grid_search <- function(alpha, cov_matrix,
                              lambda_grid = c(0.5, 1.0, 2.0, 5.0),
                              phi_grid = c(0.0, 0.2, 0.5),
                              bounds = c(0, 0.15),
-                             max_names = 20,
+                             max_names = 25,
                              min_names = 20L,
                              hhi_cap = 0.15,
                              alpha_winsor = 2.0) {
@@ -469,5 +469,5 @@ mvo_grid_search <- function(alpha, cov_matrix,
 
 cat("[mean_variance_optimizer.R] v2.2 (n=20 hard + max_w 0.15) Loaded. Functions:\n")
 cat("  mvo_weights(alpha, cov, confidence=NULL, lambda=1.0, psi=0.3,\n")
-cat("              bounds=c(0,0.15), max_names=20, min_names=20, hhi_cap=0.15, alpha_winsor=2.0)\n")
+cat("              bounds=c(0,0.15), max_names=25, min_names=20, hhi_cap=0.15, alpha_winsor=2.0)\n")
 cat("  mvo_grid_search(alpha, cov, lambda_grid, phi_grid)\n")

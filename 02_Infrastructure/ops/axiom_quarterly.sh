@@ -6,7 +6,7 @@
 # 수행: review_all_active_axioms() — 열화/반증 축적분 deprecate 처리
 
 set -u
-DIR=$(ls -d /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1)
+DIR=$(ls -d /c/Users/99922/OneDrive/Quant_Module_Moltbot /mnt/c/Users/99922/OneDrive/Quant_Module_Moltbot /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1)
 [ -z "$DIR" ] && { echo "[axiom_quarterly] project root not found" >&2; exit 2; }
 LOG="${QVEST_AXIOM_LOG:-/tmp/axiom_quarterly.log}"
 cd "$DIR" || exit 2

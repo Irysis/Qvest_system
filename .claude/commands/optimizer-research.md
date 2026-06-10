@@ -15,6 +15,6 @@ Optimizer Research Agent를 Work Task에 spawn합니다.
 /optimizer-research WT20260423_001
 ```
 
-**산출**: `optimization_package.json` (20종 hard + long-only + Σw=1 + method_comparison).
+**산출**: `optimization_package.json` (25종 hard + long-only + Σw=1 + method_comparison).
 
 상세: `.claude/skills/optimizer-research/SKILL.md` 참조.

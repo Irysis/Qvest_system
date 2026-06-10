@@ -21,6 +21,19 @@ export CLAUDE_PROJECT_DIR="$(cygpath -m "$PROJECT" 2>/dev/null || echo "$PROJECT
 export QM_ROOT="${QM_ROOT:-$CLAUDE_PROJECT_DIR}"
 export PYTHONUTF8=1   # Windows python 기본 cp949 → UTF-8 강제 (PG2/readiness UnicodeDecodeError 방지, 2026-06-04)
 
+# (v8.1.1 2026-06-10) 도구 체인 가드 — Rscript/python3 PATH 보정 + 부재 시 명시 카운트 (침묵 실패 금지)
+BOOT_FAILS=0
+if ! command -v Rscript >/dev/null 2>&1; then
+  [ -d "/c/Program Files/R/R-4.5.2/bin" ] && export PATH="/c/Program Files/R/R-4.5.2/bin:$PATH"
+fi
+if ! python3 -c 'import sys' >/dev/null 2>&1; then
+  [ -d "/c/Users/99922/AppData/Local/Programs/Python/Python312" ] && export PATH="/c/Users/99922/AppData/Local/Programs/Python/Python312:$PATH"
+fi
+export QVEST_PY="${QVEST_PY:-$(command -v python3 2>/dev/null || echo python3)}"
+command -v Rscript >/dev/null 2>&1 && RS_OK="OK" || { RS_OK="MISSING"; BOOT_FAILS=$((BOOT_FAILS+1)); }
+python3 -c 'import sys' >/dev/null 2>&1 && PY_OK="OK" || { PY_OK="MISSING_OR_STUB"; BOOT_FAILS=$((BOOT_FAILS+1)); }
+echo "[boot] 도구 체인: Rscript=$RS_OK python3=$PY_OK (QVEST_PY=$QVEST_PY)"
+
 echo "━━━ Qvest v8.1 부트스트랩 (Opus 4.8 Native · 3-Mode) ━━━"
 
 # 1. (제거됨 v8.0 2026-05-29) tmux rc telegram inbound listener — outbound tg_agent_brief()는
@@ -54,6 +67,7 @@ if [ -f "$MKH_R" ]; then
   if [ "${MKH_HARD:-99}" != "0" ]; then
     echo "[boot] ERROR: memory_knowledge_health HARD FAIL — Q-Lead 즉시 수정 (qepm/observability/memory_health_latest.json 참조)"
     echo "$MKH_OUT" | grep -E '\[HARD FAIL\]' | head -10
+    BOOT_FAILS=$((BOOT_FAILS+1))
   fi
 else
   echo "[boot] Memory health: SKIP (memory_knowledge_health.R 부재)"
@@ -140,10 +154,25 @@ if [ $(( ($(date +%s) - LASTW_T) / 86400 )) -ge 7 ]; then
   echo "[boot] axiom_weekly 파이프라인 백그라운드 (7일+ 경과)"
 fi
 
-# 7. Hook health check
+# 7. Hook health check (v8.1.1 — 침묵 삼킴 금지: 빈 결과 = ERROR)
 HH_OUT=$(bash "$PROJECT/02_Infrastructure/hooks/harness_health.sh" 2>&1)
 HH_SUMMARY=$(echo "$HH_OUT" | grep -E "Result:" | head -1)
-echo "[boot] $HH_SUMMARY"
+if [ -z "$HH_SUMMARY" ]; then
+  echo "[boot] ERROR: harness_health 실행 불가 — hook 전수 점검 필요 (첫 줄: $(echo "$HH_OUT" | head -1))"
+  BOOT_FAILS=$((BOOT_FAILS+1))
+else
+  echo "[boot] $HH_SUMMARY"
+fi
+
+# 7a. (v8.1.1 2026-06-10) Hook 카나리아 — 보호선 실작동 실증 (46-hook 전수 침묵사망 사건 재발 방지)
+#     인터프리터+스크립트 레이어 검증. settings.json dispatch 레이어는 앱 재시작 후 /tmp 로그로 별도 확인.
+CANARY_OUT=$(printf '{"tool_name":"Write","tool_input":{"file_path":"%s/05_Production/_canary_test.R","content":"x"}}' "$CLAUDE_PROJECT_DIR" | bash "$PROJECT/02_Infrastructure/hooks/safety_guard.sh" 2>/dev/null)
+if echo "$CANARY_OUT" | grep -q '"decision"[[:space:]]*:[[:space:]]*"block"'; then
+  echo "[boot] Hook 카나리아: safety_guard BLOCK 정상 (보호선 실작동)"
+else
+  echo "[boot] ERROR: Hook 카나리아 FAIL — safety_guard가 05_Production Write를 차단 못 함 (출력: ${CANARY_OUT:-empty}). python3/_shared_parse 점검!"
+  BOOT_FAILS=$((BOOT_FAILS+1))
+fi
 
 # 7b. v1.2 Charter §10 Measurement Coherence Health Score (Component D)
 BS_PATH="$PROJECT/qepm/mailbox/governor/book_state.json"
@@ -207,6 +236,11 @@ except Exception:
   echo "[boot] v8 readiness (--no-write, 16 check incl v8_architecture): $V8_OVERALL — pass=$V8_PASS fail=$V8_FAIL skip=$V8_SKIP (e2e+timeline SKIP 정상, memory_health cached)"
   if [ "${V8_FAIL:-99}" != "0" ] && [ "${V8_FAIL:-99}" != "?" ]; then
     echo "[boot] WARN: v8_readiness FAIL — bash 02_Infrastructure/tools/qvest_v8_ready --strict 직접 실행 권장"
+  fi
+  # (v8.1.1 2026-06-10) readiness CLI 자체 고장('?')도 침묵 금지 — 게이트 실패로 계상
+  if [ "${V8_OVERALL:-?}" = "?" ]; then
+    echo "[boot] ERROR: v8 readiness CLI 자체 실행 실패 ('?') — /tmp/qvest_v8_ready_stderr.log 확인"
+    BOOT_FAILS=$((BOOT_FAILS+1))
   fi
 fi
 
@@ -305,7 +339,11 @@ PYEOF
 fi
 
 echo ""
-echo "━━━ 부트스트랩 완료 (Qvest v8.1 — Opus 4.8 Native · 3-Mode · 실측 거버넌스) ━━━"
+if [ "${BOOT_FAILS:-0}" -gt 0 ]; then
+  echo "━━━ 부트스트랩 DEGRADED — ${BOOT_FAILS}개 게이트 실패 (위 ERROR 라인 확인, '완료' 아님) ━━━"
+else
+  echo "━━━ 부트스트랩 완료 (Qvest v8.1 — Opus 4.8 Native · 3-Mode · 실측 거버넌스) ━━━"
+fi
 if [ -n "$PG2_INFO" ]; then
   echo "$PG2_INFO"
 fi
@@ -317,7 +355,7 @@ echo "WT Active:  $WT_ACTIVE건"
 echo "Inbox:      alpha=$ALPHA_T risk=$RISK_T optimizer=$OPT_T forge=$FORGE_T judge=$JUDGE_T governor=$GOV_T"
 echo "Axioms:     active=$AX_ACTIVE candidates=$AX_CAND (sot_map documented=$AX_DOC_ACTIVE: documented=$AX_DOCUMENTED_MODE / block=$AX_BLOCK_MODE / advisory=$AX_ADVISORY_MODE)"
 echo "Cache_core: $AX_CACHE_STATUS"
-free -m | awk '/Mem:/ {printf "RAM:        %.0f%%\n", $3/$2*100}'
+command -v free >/dev/null 2>&1 && free -m | awk '/Mem:/ {printf "RAM:        %.0f%%\n", $3/$2*100}' || true
 # (Remote tmux rc 라인 제거 v8.0 — inbound listener 폐지)
 echo ""
 echo "다음: /qvest 5-B 절차 따라 Work Task 생성 + 3-agent 순차 spawn"

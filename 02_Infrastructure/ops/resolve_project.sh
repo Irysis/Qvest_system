@@ -19,7 +19,7 @@ if [ -z "$PROJECT" ]; then
 fi
 # 3) 후보 경로 glob (드라이브 무관)
 if [ -z "$PROJECT" ]; then
-  PROJECT=$(ls -d /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot /mnt/g/Ent/Quant_Module_Moltbot \
+  PROJECT=$(ls -d /c/Users/99922/OneDrive/Quant_Module_Moltbot /mnt/c/Users/99922/OneDrive/Quant_Module_Moltbot /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot /mnt/g/Ent/Quant_Module_Moltbot \
                   /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1)
 fi
 if [ -z "$PROJECT" ] || [ ! -d "$PROJECT" ]; then

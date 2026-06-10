@@ -21,7 +21,7 @@ case "$FILE_PATH" in
     PHASE=$(echo "$CONTENT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("current_phase",""))' 2>/dev/null || echo "")
 
     if [[ "$PHASE" == "COMPLETED" ]]; then
-      DIR=$(ls -d /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo "$PWD")
+      DIR=$(ls -d /c/Users/99922/OneDrive/Quant_Module_Moltbot /mnt/c/Users/99922/OneDrive/Quant_Module_Moltbot /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo "$PWD")
       FLAG="$DIR/qepm/mailbox/worktask/$WT_ID/reproducibility_pending.flag"
       echo "$(date -Iseconds) | WT=$WT_ID | smoke_reproduce() pending" > "$FLAG"
       echo "[reproducibility] $WT_ID flagged for smoke test" >> "/tmp/qvest_reproducibility.log"

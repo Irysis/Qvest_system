@@ -9,7 +9,7 @@
 3. **Uncertainty-aware Forecasting** — CI > Point Estimate. `μ̃ = μ̂ - k·SE(μ̂)` (Liao 2025 RFS)
 4. **Direct Portfolio Learning** — Integration > Two-stage. Features → weights 직접 (You-Zhang 2025) — Phase 3
 5. **Risk Model 고도화** — Σ + Crowding + Concentration. `crowding_score_per_factor` 필수 (Acadian 2026)
-6. **Implementation Discipline** — TO ≤ 11.0/yr (도훈 mandate 2026-05-29, 기존 6.0에서 완화 — KR alpha turnover-intensive 반영. 비용 15bps 계속 차감 + net>cost 입증 의무) + LIQ 2e8 + max 20 + [0, 0.20] + Σw=1 (Hook 강제)
+6. **Implementation Discipline** — TO ≤ 11.0/yr (도훈 mandate 2026-05-29, 기존 6.0에서 완화 — KR alpha turnover-intensive 반영. 비용 15bps 계속 차감 + net>cost 입증 의무) + LIQ 2e8 + max 25 + [0, 0.20] + Σw=1 (Hook 강제)
 7. **Attribution & Feedback Loop** — factor + selection + cost + residual 분해. 분기별 자동 (Brinson + Carhart 4)
 
 ## Update Mechanism

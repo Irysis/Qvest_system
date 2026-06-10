@@ -35,7 +35,9 @@ torch.set_default_dtype(torch.float64)
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(THIS_DIR, "..", ".."))
-OUT_DIR = os.path.join(PROJECT_ROOT, "stage_artifacts", "WT_DPL_GPU_SWEEP")
+OUT_DIR = os.environ.get(
+    "DPL_OUT_DIR",
+    os.path.join(PROJECT_ROOT, "stage_artifacts", "WT_DPL_GPU_SWEEP"))
 PANEL = os.path.join(OUT_DIR, "dpl_feature_panel.parquet")
 BENCH = os.path.join(OUT_DIR, "benchmark_monthly.parquet")
 
@@ -134,6 +136,22 @@ def load_panel():
     panel["ym"] = panel["ym"].astype(str)
     bm["ym"] = bm["ym"].astype(str)
     feat_cols = [c for c in panel.columns if c.endswith(("__lvl", "__slp", "__vol"))]
+    # DPL_FEAT_DROP (CSV of exact feature names) — prune panel cols for ablation
+    # (risk RF-R5: drop RESIDMOM__lvl + 4 __slp -> 93f; or base90 ablation).
+    # Non-invasive: only filters columns, verified projection/train logic untouched.
+    drop_env = os.environ.get("DPL_FEAT_DROP", "").strip()
+    if drop_env:
+        drop = {c.strip() for c in drop_env.split(",") if c.strip()}
+        feat_cols = [c for c in feat_cols if c not in drop]
+        print(f"[load_panel] DPL_FEAT_DROP applied: dropped {len(drop)} -> {len(feat_cols)} feats")
+    # DPL_FEAT_KEEP_ADDED (CSV of added-feature names to KEEP; all other added dropped to base90)
+    keep_env = os.environ.get("DPL_FEAT_KEEP_ADDED", "").strip()
+    if keep_env:
+        added = ["RESIDMOM__lvl", "RESIDMOM__slp", "PIOTROSKI__lvl", "PIOTROSKI__slp",
+                 "MOHANRAM__lvl", "MOHANRAM__slp", "NETISSUE__lvl", "NETISSUE__slp"]
+        keep = {c.strip() for c in keep_env.split(",") if c.strip()}
+        feat_cols = [c for c in feat_cols if (c not in added) or (c in keep)]
+        print(f"[load_panel] DPL_FEAT_KEEP_ADDED={sorted(keep)} -> {len(feat_cols)} feats (base90 + kept)")
     return panel, bm, feat_cols
 
 
@@ -343,6 +361,16 @@ def main():
         "epochs":   [40],
         "min_train": [60],
     }
+    # DPL_GRID env override (JSON): partial axis override, defaults retained for unset keys.
+    # e.g. DPL_GRID='{"gamma":[2,4,7],"temp":[0.7,1.5]}' → extend TO penalty upward (TO≤11 압박).
+    grid_override = os.environ.get("DPL_GRID")
+    if grid_override:
+        ov = json.loads(grid_override)
+        for k, v in ov.items():
+            if k not in grid:
+                raise KeyError(f"DPL_GRID unknown axis '{k}' (valid: {list(grid.keys())})")
+            grid[k] = v if isinstance(v, list) else [v]
+        print(f"[sweep] DPL_GRID override applied: {list(ov.keys())}")
     if os.environ.get("DPL_SMOKE") == "1":
         grid = {k: [v[0]] for k, v in grid.items()}
         grid["epochs"] = [5]
@@ -355,12 +383,28 @@ def main():
     results = []
     all_series = []
     best = None
+    # ── completion-guarantee checkpoint: append each cell's record as soon as it
+    #    finishes so a mid-sweep crash never loses completed work (death-loss fix).
+    ckpt_path = os.path.join(OUT_DIR, "sweep_progress.jsonl")
+    with open(ckpt_path, "w", encoding="utf-8") as _f:
+        _f.write(json.dumps({"_meta": "DPL sweep progress checkpoint",
+                             "n_trials": n_trials, "n_feature_cols": len(feat_cols),
+                             "device": DEVICE, "grid": grid}, ensure_ascii=False) + "\n")
+    print(f"[sweep] checkpoint -> {ckpt_path}", flush=True)
     for ci, vals in enumerate(combos):
         cfg = dict(zip(keys, vals))
         torch.manual_seed(7)
         np.random.seed(7)
+        print(f"[sweep] cell {ci+1}/{n_trials} START cfg={cfg}", flush=True)
         wdf = walk_forward(cache, n_feat, cfg, months)
+        # free per-cell GPU scratch (refit Xb cats) before next cell — OOM guard
+        if DEVICE == "cuda":
+            torch.cuda.empty_cache()
         if wdf.empty:
+            print(f"[sweep] cell {ci+1}/{n_trials} EMPTY (skipped)", flush=True)
+            with open(ckpt_path, "a", encoding="utf-8") as _f:
+                _f.write(json.dumps({"cell": ci, **cfg, "status": "EMPTY"},
+                                    ensure_ascii=False, default=float) + "\n")
             continue
         s = net_return_series(wdf, rets, bm)
         sr = sharpe_of(s)
@@ -380,9 +424,17 @@ def main():
         if (best is None) or (np.nan_to_num(sr, nan=-9) > np.nan_to_num(best["net_active_sr"], nan=-9)):
             best = rec
             best_wdf = wdf.copy()
-        print(f"[sweep] cell {ci+1}/{n_trials} SR={sr:.3f} TO={to_ann:.2f} "
-              f"sub_min={sr_min_sub:.3f} cfg={cfg}")
+        print(f"[sweep] cell {ci+1}/{n_trials} DONE SR={sr:.3f} TO={to_ann:.2f} "
+              f"sub_min={sr_min_sub:.3f} cfg={cfg}", flush=True)
+        # checkpoint append (death-loss fix — completed cell persisted immediately)
+        with open(ckpt_path, "a", encoding="utf-8") as _f:
+            _f.write(json.dumps({**rec, "status": "DONE"},
+                                ensure_ascii=False, default=float) + "\n")
 
+    if best is None:
+        print("[sweep] NO valid cells produced output — aborting export. "
+              f"See checkpoint {ckpt_path}", flush=True)
+        return
     # DSR for best (honest n_trials)
     best_series = [s for s in all_series if s["method"].iloc[0] == f"DPL_cell{best['cell']}"][0]
     active = (best_series["ret_net"] - best_series["BM_Ret_1m"]).values

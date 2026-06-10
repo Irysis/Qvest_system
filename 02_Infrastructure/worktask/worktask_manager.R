@@ -93,14 +93,14 @@ wt_create <- function(hypothesis_title = NULL,
   } else if (wt_type == "deployment") {
     # Deployment: HARD + SOFT 모두 강제
     liquidity_floor <- defaults$tier_soft_deployment$liquidity_min_won_20d_avg
-    effective_max_names <- 20L
+    effective_max_names <- 25L  # 도훈 mandate 2026-05-29 20→25 (constraint_defaults.json 정합, 2026-06-10 fix)
     effective_long_only <- TRUE
     effective_bounds <- defaults$tier_soft_deployment$weight_bounds
     pg1_eligibility <- "deployment_track"  # 검증 alpha 직접 편성
   } else {
     # sizing_only / hyperparameter_sweep: parent inheritance만, alpha 0건이 정상
     liquidity_floor <- defaults$tier_soft_deployment$liquidity_min_won_20d_avg
-    effective_max_names <- 20L
+    effective_max_names <- 25L  # 도훈 mandate 2026-05-29 20→25 (constraint_defaults.json 정합, 2026-06-10 fix)
     effective_long_only <- TRUE
     effective_bounds <- defaults$tier_soft_deployment$weight_bounds
     pg1_eligibility <- "certificate_required"  # alpha_discovery_certificate 미발급 → passive deny

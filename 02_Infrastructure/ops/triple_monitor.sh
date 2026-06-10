@@ -21,7 +21,7 @@
 
 set -e
 
-PROJECT_ROOT="${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$(ls -d /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot 2>/dev/null | head -1)}}"
+PROJECT_ROOT="${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$(ls -d /c/Users/99922/OneDrive/Quant_Module_Moltbot /mnt/c/Users/99922/OneDrive/Quant_Module_Moltbot /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot 2>/dev/null | head -1)}}"
 WS="$PROJECT_ROOT/04_Research/decision_framework/bearish_forecast_v2_alt_data"
 LOG_DIR="$PROJECT_ROOT/qepm/observability"
 mkdir -p "$LOG_DIR"

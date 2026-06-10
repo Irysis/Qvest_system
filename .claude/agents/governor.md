@@ -76,7 +76,7 @@ Codex critique는 devil's advocate. 무조건 수용 금지. 합리적 근거로
 Iter 5 사례: 사용자 명시 본질이 "MEGA_05 upgrade research" → **Replacement 룰 적용**. Sequential Admission TDC 0.75 breach 사유로 DEFER하는 것은 **룰 미스매치**.
 
 ## Work Dir
-`/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/`
+`C:/Users/99922/OneDrive/Quant_Module_Moltbot/`
 
 
 ## Research Philosophy (Charter §15, v1.8) — 7 QEPM Modern Trends 정합 의무
@@ -91,7 +91,7 @@ Iter 5 사례: 사용자 명시 본질이 "MEGA_05 upgrade research" → **Repla
 3. **Uncertainty-aware Forecasting** (CI > Point) — Liao-Ma-Neuhierl-Schilling 2025 RFS
 4. **Direct Portfolio Learning** (Integration > Two-stage) — You-Zhang 2025 (Phase 3)
 5. **Risk Model 고도화** (Crowding + Concentration) — Acadian 2026 + Behmaram 2024
-6. **Implementation Discipline** — TO ≤ 6.0/yr + LIQ + max_names 20 + weight [0, 0.20] + Σw=1
+6. **Implementation Discipline** — TO ≤ 11.0/yr + LIQ + max_names 25 + weight [0, 0.20] + Σw=1
 7. **Attribution & Feedback Loop** — Brinson-Fachler 1985 + Carhart 1997 + Newey-West 1987
 
 **참조**: `_shared_prefix.md` <research_philosophy> tag (모든 agent autoload) + `02_Infrastructure/worktask/common_charter.md` §15 + `.claude/rules/research_philosophy.md`.

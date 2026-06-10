@@ -3,11 +3,11 @@
 **Anthropic prompt cache 5분 TTL. 세션 토큰 비용 핵심 절감 레버.**
 **Session 68 Day 2 도입 / Session 75 v6.4 rule 분리**
 
-## 모델 라우팅 (Block A 도훈 결정 2026-04-30)
+## 모델 라우팅 (Block A 도훈 결정 2026-04-30, 2026-06-10 현행화)
 
-**Opus 4.7 [1M context] — 전 모델 통일**:
+**최신 Opus [1M context] — 전 모델 통일** (2026-06-10 현재 Opus 4.8 [1M]):
 - 모든 agent: Q-Lead / Judge / Risk Manager / Scout / Forge / Governor / Alpha-Research / Risk-Research / Optimizer-Research / Architect / Blender / Execution / Monitoring / Academic / Quant
-- frontmatter `model: opus` alias = 자동 최신 Opus 가리킴 (현재 4.7 [1M], 향후 자동 승계)
+- frontmatter `model: opus` alias = 자동 최신 Opus 가리킴 (버전 명시는 본 라인 1곳만 — 모델 교체 시 여기만 갱신)
 - **격상 사유**: WT-D20260429_001 첫 정식 lifecycle에서 Forge Sonnet이 frequency mislabel fabrication (Sharpe 6.94× inflate) 산출 → Charter v1.4 §9 FABRICATION_SUSPECTED 첫 발동 (L-249).
 - 이전 정책 (deprecated 2026-04-30): Sonnet 4.6 downgrade
 

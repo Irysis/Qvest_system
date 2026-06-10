@@ -50,7 +50,7 @@ wt_id <- wt_create(
 
 자동 주입:
 - `task_id = WT-{D|P|S|H}YYYYMMDD_NNN`
-- `hard_constraints.max_names = 20` (deployment) / NULL (discovery breadth)
+- `hard_constraints.max_names = 25` (deployment) / NULL (discovery breadth)
 - `weight_bounds = [0, 0.20]` (deployment)
 - `liquidity_min = 2e8` (deployment) / 1e7 (discovery hard mandate floor)
 - `cost_model = v2.3_kr_retail_15bps`

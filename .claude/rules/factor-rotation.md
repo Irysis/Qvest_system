@@ -1,7 +1,7 @@
 # Factor Rotation Mode (Level 1)
 
 **발효**: 2026-06-05 (도훈 mandate). **위반 = AX-002 동급**(실측-only·프로세스 우회 금지).
-**SOT**: `.claude/skills/factor-rotation/SKILL.md` (절차) · `C:\Users\User\.claude\plans\curious-sauteeing-hippo.md` (원본 설계).
+**SOT**: `.claude/skills/factor-rotation/SKILL.md` (절차). 원본 설계 plan(curious-sauteeing-hippo)은 구 머신 경로라 도달불가 — 설계 내용은 본 rule + SKILL.md에 흡수됨 (2026-06-10).
 
 ## 1. 모드 정의 (제3 리서치 모드, Lane3)
 

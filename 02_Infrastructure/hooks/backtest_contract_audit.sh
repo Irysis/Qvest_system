@@ -42,7 +42,7 @@ if ! echo "$FILE_PATH" | grep -qE "$TARGET_PATTERN"; then
 fi
 
 # 가장 최근 bt_result.rds 검색 — strategy_id 추정
-PROJECT="/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+PROJECT="${CLAUDE_PROJECT_DIR:-${QM_ROOT:-/c/Users/99922/OneDrive/Quant_Module_Moltbot}}"
 LATEST_RDS=$(find "$PROJECT/04_Research/strategies" -name "bt_result.rds" -mmin -60 2>/dev/null | head -1)
 
 if [ -z "$LATEST_RDS" ]; then

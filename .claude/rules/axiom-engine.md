@@ -40,7 +40,7 @@ L-code(모드별 적립) → harvest → cluster(mode-partition) → CAND
 - 파이프라인: `02_Infrastructure/ops/axiom_weekly.sh`(cron) · bootstrap(harvest)
 - consumer: `hooks/{axiom_context_inject,axiom_enforcement_hook}.sh` · `memory/memory_knowledge_health.R` · `qepm/R/axiom_dashboard.R` (전부 recursive)
 - 데이터: `qepm/memory/axioms/{active/,active/modes/<mode>/,candidates/,deprecated/,review_log/,axiom_sot_map.json}`
-- 실행(Windows): `PY=C:/Users/User/anaconda3/python.exe` · `RS=C:/Program Files/R/R-4.5.2/bin/Rscript.exe` · `CLAUDE_PROJECT_DIR` + `PYTHONUTF8=1`
+- 실행(Windows): `PY=%QVEST_PY% (User env: C:/Users/99922/AppData/Local/Programs/Python/Python312/python.exe)` · `RS=C:/Program Files/R/R-4.5.2/bin/Rscript.exe` · `CLAUDE_PROJECT_DIR` + `PYTHONUTF8=1`
 
 ## 5. 운영 규칙
 

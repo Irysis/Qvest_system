@@ -7,7 +7,7 @@
 # 검증 항목:
 #   - task_id 형식 (^WT(-[DPSH])?[0-9]{8}_[0-9]{3}$ — backward-compat: 옛 WT12345678_001 + 신 WT-D12345678_001 둘 다)
 #   - universe_definition.label allowed list
-#   - hard_constraints.max_names ≤ 20
+#   - hard_constraints.max_names ≤ 25
 #   - data_lag_rules 필수 필드 4종
 
 set -euo pipefail
@@ -47,10 +47,10 @@ uni = req.get("universe_definition", {})
 if uni.get("label") not in allowed_univs:
     errs.append(f"universe label not allowed: {uni.get('label')}")
 
-# max_names ≤ 20
+# max_names ≤ 25 (도훈 mandate 2026-05-29)
 hc = req.get("hard_constraints", {})
-if hc.get("max_names", 999) > 20:
-    errs.append(f"max_names {hc.get('max_names')} > 20 (사용자 hard cap)")
+if hc.get("max_names", 999) > 25:
+    errs.append(f"max_names {hc.get('max_names')} > 25 (사용자 hard cap)")
 
 # data_lag_rules 필수 4종
 dlr = req.get("data_lag_rules", {})

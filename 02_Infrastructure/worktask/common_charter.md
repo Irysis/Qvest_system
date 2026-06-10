@@ -58,7 +58,7 @@ Alpha Agent는 가설에 맞는 source를 **자율 선택**. 각 팩터에 `sour
 
 - **자사 유니버스** (KR top500) 하 재현
 - **자사 데이터** (Factor DB + 투자자 flow + DART) 정합
-- **자사 비용 + 제약** (15bps + 20종) 하 robust
+- **자사 비용 + 제약** (15bps + 25종) 하 robust
 
 APT 실무: 거시요인 접근보다 **기업특성(fundamental) 접근**이 OOS 예측력 우선.
 
@@ -196,7 +196,7 @@ factor_engine 측정과 forge_realized 측정 동시 존재 시:
 
 | 항목 | 값 | Hook 강제 |
 |---|---|---|
-| 최종 종목수 | **20종 hard** | `worktask_constraint_enforcer.sh` |
+| 최종 종목수 | **25종 hard** | `worktask_constraint_enforcer.sh` |
 | Long-only | weights ≥ 0 | same |
 | Weight bounds | [0, 0.20] | same |
 | Σw | = 1 (absolute) / = 0 (active) | same |
@@ -252,7 +252,7 @@ Common Charter는 **AX-000 ~ AX-008** 공리 하위에 위치:
 | **P3** | **Uncertainty-aware Forecasting** (CI > Point) | Liao-Ma-Neuhierl-Schilling 2025 RFS | ML pipeline: bootstrap CI / `μ̃ = μ̂ - k·SE(μ̂)` / Confident-High-Low strategy |
 | **P4** | **Direct Portfolio Learning** (Integration > Two-stage) | You-Zhang 2025 SSRN | (Phase 3) optimizer: features → constrained NN weights (sigmoid + L1) |
 | **P5** | **Risk Model 고도화** (Crowding + Concentration) | Acadian 2026 systematic crowding + Behmaram 2024 demand elasticity | risk-research 의무: **`crowding_score_per_factor` 필수** in risk_package.json (Phase 2.C) |
-| **P6** | **Implementation Discipline** (이미 정합) | KR retail constraints | Hook hard-enforced: TO ≤ 6.0/yr + LIQ ≥ 2e8 + max_names 20 + weight [0, 0.20] + Σw=1. Governor admit 기준 |
+| **P6** | **Implementation Discipline** (이미 정합) | KR retail constraints | Hook hard-enforced: TO ≤ 11.0/yr + LIQ ≥ 2e8 + max_names 25 + weight [0, 0.20] + Σw=1. Governor admit 기준 |
 | **P7** | **Attribution & Feedback Loop** (Decay 감시) | Brinson-Fachler 1985 + Carhart 1997 JoF + Newey-West 1987 | monitoring agent: 분기별 자동 factor + selection + sector + cost + residual 분해 (Phase 2.D) |
 
 ### Update Mechanism (영구 진화 구조)

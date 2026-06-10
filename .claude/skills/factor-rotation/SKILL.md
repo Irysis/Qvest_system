@@ -67,7 +67,7 @@ admitted = ①∧②∧③∧④. m이 ≥1 regime admitted면 풀 진입. `run_
 ## 7. ★ Track1 = 학술 기반 리서치 (국면 정의·예측 강화)
 
 Track1은 **각종 학술논문·헤지펀드 페이퍼를 참고해 국면 정의 및 예측 모델을 강화**하는 리서치 트랙이다. SOT: `04_Research/factor_rotation/regime_model_literature_review.md`.
-- **SOTA = Statistical/Sparse Jump Model**(Bemporad 2018 / Nystrup sparse 2021 / Shu-Mulvey 2024) — jump penalty λ로 과전환 명시 차단, HMM 대비 Sharpe·MDD 우위. **시스템 유일 미보유 계열**(HMM·GARCH·CUSUM·absorption·GMM은 보유). 도입 시 `msm_daily_refit`(2-state HMM) 대체/병렬 PoC.
+- **SOTA = Statistical/Sparse Jump Model**(Bemporad 2018 / Nystrup sparse 2021 / Shu-Mulvey 2024) — jump penalty λ로 과전환 명시 차단, HMM 대비 Sharpe·MDD 우위. **✅ PoC 빌드 완료(2026-06-05)** `02_Infrastructure/regime/regime_jump_model.R`(K=2, coordinate-descent+DP, feature=EWM downside-dev/Sortino + log-VIX, PIT online lookback+126d refit+1d delay). **실측: 월 churn 33.2%→7.1%(4.7×↓; λ↑ 단조 2.5%까지), GFC 100%/COVID 94%/2022 100% hit, HMM 73% parity.** 단 **앙상블 OOS SR 로버스트 이득 없음**(SJM_SR_GAIN_NONROBUST — k=3 top-3 집중·seed flip; min-across-k+seed gate로 노이즈 차단) — 신호품질은 크게 개선되나 현 0.70-상관 풀에선 천장이 입력(직교 슬리브)에 의해 결정(regime_study 정합). SJM 실가치는 직교 슬리브 확보 후 §3 Shu-Mulvey 결합 시 발현. 현재는 msm_daily 대체/병렬 신호로 보유. 검증: `04_Research/factor_rotation/regime_jm_{validation,ensemble_ab}.R`.
 - **팩터 로테이션 정본 = Shu-Mulvey 2024(arXiv 2410.14841)**: 팩터별 국면(SJM)→Black-Litterman→long-only MVO. 단 SOTA 순효익도 IR~0.5/active~1.5%/turnover 522%(겸손)+Quality(방어) 팩터 최약.
 - forecaster 신호: MSM transition matrix + BOCPD changepoint + FRED 선행지표(Claims/Term-spread). KR: **US-VIX가 KR 국면 Granger-cause**(US 신호 1급 feature 의무).
 - **신규 국면축/모델은 문헌 economic-rationale 선존 필수**(research_philosophy ① Factor Zoo 축소 정합).
@@ -99,11 +99,11 @@ Track1은 **각종 학술논문·헤지펀드 페이퍼를 참고해 국면 정�
 
 ## 11. 구현 상태 (정직)
 
-- **빌드 완료**: Track2 전부(`module_dispatcher`/`run_wf_ensemble`/`build_module_performance` 광역화) · Track1 판별검증(`regime_engine_research`) · **공용 `register_module`** · **RCMA `regime_module_admission`** · FR_001(grade C 실측).
+- **빌드 완료**: Track2 전부(`module_dispatcher`/`run_wf_ensemble`/`build_module_performance` 광역화) · Track1 판별검증(`regime_engine_research`) · **Track1 SJM PoC(`regime_jump_model.R` — SOTA jump model, churn 33→7%, crisis 신속탐지·신호품질↑·앙상블SR 로버스트이득 無)** · **공용 `register_module`** · **RCMA `regime_module_admission`** · FR_001(grade C 실측).
 - **미빌드(후속)**: `regime_forecaster.R`(T1-B 예측 — 지표는 §8 정의) · `/factor-rotation` command · `dispatch-orchestrator` agent · `.claude/rules/factor-rotation.md` · 3 hooks · `factor_rotation_registry.json` · L-code mode 태깅 · CLAUDE.md 3-mode 명문화 · QEPM의 register_module 일원화. → **현재는 직접 스크립트 실행**(Q-Lead).
 
 ## 12. 참조 · 실행 메모
 
 - 설계 SOT: `C:\Users\User\.claude\plans\curious-sauteeing-hippo.md`(원본 구현 계획) · Track1 학술: `04_Research/factor_rotation/regime_model_literature_review.md`.
 - 현 풀 한계·EW 천장 등 **실증 결과는 별도 연구노트**: `04_Research/factor_rotation/output/regime_study*.json` + 메모리 `project-factor-rotation-regime-study`.
-- 실행(Windows-native, 재시작 전): `"/c/Program Files/R/R-4.5.2/bin/Rscript.exe"` + env `CLAUDE_PROJECT_DIR=G:/Quant_Module_Moltbot` `PYTHONUTF8=1`. 레짐/모듈 분석은 R(arrow)로(anaconda python pandas DLL 손상). 참조 메모리 `project-windows-native-migration`.
+- 실행(Windows-native, 재시작 전): `"/c/Program Files/R/R-4.5.2/bin/Rscript.exe"` + env `CLAUDE_PROJECT_DIR=C:/Users/99922/OneDrive/Quant_Module_Moltbot` `PYTHONUTF8=1`. 레짐/모듈 분석은 R(arrow)로(anaconda python pandas DLL 손상). 참조 메모리 `project-windows-native-migration`.

@@ -37,7 +37,7 @@ if [[ "$FILE_PATH" =~ \.(bak|backup|tmp)$ ]]; then
   echo '{}'; exit 0
 fi
 
-PROJECT_ROOT="${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$(ls -d /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot 2>/dev/null | head -1)}}"
+PROJECT_ROOT="${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$(ls -d /c/Users/99922/OneDrive/Quant_Module_Moltbot /mnt/c/Users/99922/OneDrive/Quant_Module_Moltbot /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot 2>/dev/null | head -1)}}"
 HELPER="$PROJECT_ROOT/02_Infrastructure/tools/debate_helpers/run_codex_qepm_critic.sh"
 [[ ! -x "$HELPER" ]] && { echo '{}'; exit 0; }
 

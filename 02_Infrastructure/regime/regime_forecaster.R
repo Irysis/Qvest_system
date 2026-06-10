@@ -69,6 +69,10 @@ res <- list(
   note="채택 조건: beats_baseline=TRUE 시에만 forecast로 dispatch. 아니면 contemporaneous 분류 사용(과적합 회피, plan T1-B).")
 dir.create(file.path(PROJ,"04_Research/factor_rotation/output"), showWarnings=FALSE, recursive=TRUE)
 write_json(res, file.path(PROJ,"04_Research/factor_rotation/output/regime_forecast.json"), auto_unbox=TRUE, pretty=TRUE, na="null", digits=4)
+# ★ 월별 예측 시계열 emit (run_wf_ensemble proactive dispatch 소비용). fc[i] = M$ym[i] 월에 적용할 예측(i-1 정보).
+#   PIT: 예측은 trailing-only(전이행렬 IS 1..t, t-1 feature). 미평가 월(<MIN_IS)은 NA → 소비측이 Category로 fallback.
+fc_series <- data.table(ym = M$ym, forecast_regime = ifelse(nzchar(fc), fc, NA_character_))
+arrow::write_parquet(fc_series, file.path(PROJ,".cache/regime_forecast_series.parquet"))
 cat(sprintf("\n==== regime_forecaster (다음국면 사전예측, walk-forward) ====\n"))
 cat(sprintf("n_eval=%d | hit-rate forecast=%.3f vs persistence=%.3f | Brier forecast=%.4f vs %.4f\n",
   length(ev), mean(fc_hit[ev]), mean(base_hit[ev]), mean(fc_brier[ev]), mean(base_brier[ev])))

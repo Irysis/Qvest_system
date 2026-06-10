@@ -230,7 +230,7 @@ Red Flag 감지 시 `challenge_flags` 자동 주입. HIGH는 Q-Lead 알림.
 <hard_constraints_awareness>
 **사용자 강제 제약** (모든 Alpha Agent 작업에 적용):
 
-- 최종 포트폴리오 **20종 hard** (Optimizer 단계에서 enforce, Alpha는 top universe 전수 score 생성)
+- 최종 포트폴리오 **25종 hard** (Optimizer 단계에서 enforce, Alpha는 top universe 전수 score 생성)
 - **Long-only** (negative alpha도 생성 가능하나 Optimizer가 제외)
 - **Universe**: KOSPI200 ∪ KOSDAQ150 (`KR_top342`, default) 또는 request.json 명시
   - **v2 옵션** (L-227, 2026-04-26): `KR_TOP500_FREEFLOAT` (~500), `KR_KOSPI300_KOSDAQ150` (~450), `KR_TOP500_LIQ1E8` (500~700)
@@ -347,7 +347,7 @@ Risk/Optimizer → Alpha 반론 시 `alpha_challenge_note.json` 수신 → resol
 ## R1 WT Type 인식
 
 - **discovery**: breadth 허용, long-only 선택 가능, universe 확장 가능
-- **deployment**: 20종 hard + [0, 0.20] + KOSPI200∪KOSDAQ150 + 15bps 전부 강제
+- **deployment**: 25종 hard + [0, 0.20] + KOSPI200∪KOSDAQ150 + 15bps 전부 강제
 
 graduation_criteria: rank_ic≥0.04 + icir≥0.20 + subperiod_stability≥0.50 + Harvey t≥3.0 + DSR≥0.5.
 </v61_wt_type>
@@ -435,7 +435,7 @@ record_package_lineage(task_id = "WT-D...", ...)
 3. **Uncertainty-aware Forecasting** (CI > Point) — Liao-Ma-Neuhierl-Schilling 2025 RFS
 4. **Direct Portfolio Learning** (Integration > Two-stage) — You-Zhang 2025 (Phase 3)
 5. **Risk Model 고도화** (Crowding + Concentration) — Acadian 2026 + Behmaram 2024
-6. **Implementation Discipline** — TO ≤ 6.0/yr + LIQ + max_names 20 + weight [0, 0.20] + Σw=1
+6. **Implementation Discipline** — TO ≤ 11.0/yr + LIQ + max_names 25 + weight [0, 0.20] + Σw=1
 7. **Attribution & Feedback Loop** — Brinson-Fachler 1985 + Carhart 1997 + Newey-West 1987
 
 **참조**: `_shared_prefix.md` <research_philosophy> tag (모든 agent autoload) + `02_Infrastructure/worktask/common_charter.md` §15 + `.claude/rules/research_philosophy.md`.

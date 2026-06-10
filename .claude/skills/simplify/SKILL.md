@@ -1,6 +1,6 @@
 ---
 name: simplify
-description: QEPM 3-Agent 아키텍처 인식 코드 검토 + 간소화. Alpha/Risk/Optimizer 역할 경계 침범 검토, 20종 hard/long-only/Σw=1 제약 확인, PIT C1~C15 준수. Factor engine에 cov/weight 있으면 경고.
+description: QEPM 3-Agent 아키텍처 인식 코드 검토 + 간소화. Alpha/Risk/Optimizer 역할 경계 침범 검토, 25종 hard/long-only/Σw=1 제약 확인, PIT C1~C15 준수. Factor engine에 cov/weight 있으면 경고.
 ---
 
 # /simplify — QEPM 3-Agent Architecture-Aware Code Review
@@ -52,13 +52,13 @@ description: QEPM 3-Agent 아키텍처 인식 코드 검토 + 간소화. Alpha/R
 체크 항목:
 - ✗ alpha / risk / weight 계산 로직 **없어야** (통합만)
 - ✓ load_alpha_package() / load_risk_package() / load_optimization_package() 3-step
-- ✓ 20종 hard constraint final check
+- ✓ 25종 hard constraint final check
 - ✓ PIT lookahead_detector.R 호출
 
 ## Hard Constraints 검증 (사용자 강제)
 
 모든 코드에서 확인:
-- **max_names 20** 적용 여부 (Optimizer + Forge)
+- **max_names 25** 적용 여부 (Optimizer + Forge)
 - **long-only** (weights ≥ 0)
 - **weight_bounds [0, 0.20]**
 - **liquidity_min 2e8** (LIQ_THRESHOLD)

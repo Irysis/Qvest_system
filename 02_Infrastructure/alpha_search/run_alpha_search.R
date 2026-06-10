@@ -26,7 +26,7 @@ suppressWarnings(suppressMessages({
 .AS_INFRA <- local({
   cand <- Sys.getenv("QVEST_INFRA_DIR", "")
   if (nzchar(cand) && file.exists(file.path(cand, "config.R"))) return(cand)
-  file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")), "02_Infrastructure")
+  file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")), "02_Infrastructure")
 })
 source(file.path(.AS_INFRA, "config.R"))
 source(file.path(.AS_INFRA, "backtest_harness.R"))
@@ -148,15 +148,36 @@ run_alpha_search <- function(strategy_name,
     buffer_zone = list(keep_n = as.integer(2L * n_holdings), entry_n = as.integer(n_holdings))
   )
 
+  # ---- 4b. ★ FR 모듈 등재 (register_module) — 백테 직후, 등급/등급게이트 무관 ----
+  #   v8.1 헌법(factor-rotation §2 + measurement-graduation): "register_module 등급무관 등재".
+  #   ★ register는 grade·hard_fail·차트/허들/회귀 성공여부와 무관하게 PIT-clean 백테 완료분이면 무조건 실행.
+  #   과거(2026-06-05 QMJ MDD59% hard_fail) 차트/허들 이후 register가 skip된 사건(다운스트림 crash/early-skip)
+  #   재발 방지: register를 차트·허들·factor_analysis보다 *앞*으로 이동 — sim_result.rds + module_catalog 보존을
+  #   downstream 취약점(무거운 FF 회귀 OOM·hurdle 예외)으로부터 격리. PIT-clean = detect_lookahead 통과(아래 §3).
+  if (isTRUE(pit_clean)) tryCatch({
+    source(file.path(PROJECT_ROOT, "02_Infrastructure", "contracts", "register_module.R"))
+    register_module(sim, strategy_id, grade = NA_character_, origin_mode = "alpha_search",
+                    role = NA_character_, meta = list(strategy_idea = strategy_idea))
+    assign("%||%", `%||%`, envir = globalenv())   # register_module source 후 전역 %||% 복원
+  }, error = function(e) cat("[AlphaSearch] register_module 생략:", conditionMessage(e), "\n"))
+
   # ---- 5. Charts: equity_curve.png + annual_returns.png (vs BM) ----
-  generate_charts(sim, output_dir = OUT_DIR, strategy_name = strategy_name)
+  #   차트 생성이 실패(예 그래픽 디바이스 이슈)해도 register/측정/등재는 이미 완료 — 전체 run 중단 방지.
+  tryCatch(
+    generate_charts(sim, output_dir = OUT_DIR, strategy_name = strategy_name),
+    error = function(e) cat("[AlphaSearch] generate_charts 생략:", conditionMessage(e), "\n"))
   equity_png <- file.path(OUT_DIR, "equity_curve.png")
   annual_png <- file.path(OUT_DIR, "annual_returns.png")
   charts <- Filter(file.exists, c(equity_png, annual_png))
 
   # ---- 6. 점수·등급 = 기존 스코어링 체계(run_hurdle_gate) 재사용 ----
-  hg     <- run_hurdle_gate(sim_result = sim, FACTORS = FACTORS,
-                            strategy_name = strategy_name, output_dir = OUT_DIR)
+  #   허들 게이트는 PG 편입 *권고*에만 영향 — 측정·등재·직교성 분석은 등급무관 진행(v8.1 헌법).
+  #   허들 예외 시에도 grade="F"로 안전 강등하고 진행(register/factor_analysis 보존).
+  hg     <- tryCatch(
+    run_hurdle_gate(sim_result = sim, FACTORS = FACTORS,
+                    strategy_name = strategy_name, output_dir = OUT_DIR),
+    error = function(e) { cat("[AlphaSearch] run_hurdle_gate 예외 — grade=F 강등 후 진행:",
+                              conditionMessage(e), "\n"); list(grade = "F", score = NA_real_, verdict = list()) })
   # run_hurdle_gate가 내부 source(weight_method_registry 등)로 전역 %||%를 취약버전
   # (`!is.null(a) && !is.na(a)`: 벡터에서 크래시)으로 덮어쓴다. tg_agent_brief 등 전역
   # %||%를 쓰는 함수가 오작동하지 않도록 견고버전(로컬)을 전역에 복원.
@@ -175,18 +196,18 @@ run_alpha_search <- function(strategy_name,
   cat(sprintf("[AlphaSearch] Grade=%s Score=%.0f Excess=%+.2f%%p | pass=%s notable=%s\n",
               grade, score %||% 0, excess_cagr %||% 0, pass, notable))
 
-  # ---- 6c. FR 모듈 등재 (공용 계약 register_module — ★등급무관: 하위등급도 국면 specialist 가능) ----
-  # ★ factor_analysis(무거운 FF 회귀) 보다 먼저 실행 — 회귀가 시간 병목/에러여도 register/sim_result 보존
-  #   (2026-06-05 디버깅: 논문 run이 factor_analysis 단계에서 register 미도달하던 문제 fix).
-  # PIT-clean 백테 완료분만(이 지점 도달=detect_lookahead 통과). 사용여부는 RCMA가 국면조건부 판단.
+  # ---- 6c. FR 모듈 카탈로그 grade 갱신 (등재는 4b에서 이미 완료 — 여기선 grade/score upsert만) ----
+  #   register_module은 4b(백테 직후·등급무관)에서 실행됨. 허들 등급 산출 후 catalog의 grade/score만 갱신
+  #   (id 중복 = update). register가 4b에서 실패했어도(skip 로그) 여기서 재시도해 등재 보존(이중 안전망).
   if (isTRUE(pit_clean)) tryCatch({
-    source(file.path(PROJECT_ROOT, "02_Infrastructure", "contracts", "register_module.R"))
+    if (!exists("register_module", mode = "function"))
+      source(file.path(PROJECT_ROOT, "02_Infrastructure", "contracts", "register_module.R"))
     register_module(sim, strategy_id, grade = grade, origin_mode = "alpha_search",
                     role = NA_character_, meta = list(strategy_idea = strategy_idea, score = score))
     assign("%||%", `%||%`, envir = globalenv())   # register_module source 후 전역 %||% 복원
-  }, error = function(e) cat("[AlphaSearch] register_module 생략:", conditionMessage(e), "\n"))
+  }, error = function(e) cat("[AlphaSearch] register_module(grade 갱신) 생략:", conditionMessage(e), "\n"))
 
-  # ---- 6b. 팩터 회귀 분석 (FF3/FF5/Carhart 알파 + Fama-MacBeth) — register 후(무거운 회귀, 실패해도 등재 보존) ----
+  # ---- 6b. 팩터 회귀 분석 (FF3/FF5/Carhart 알파 + Fama-MacBeth) — 등급무관 진행(직교성 핵심 지표) ----
   if (isTRUE(factor_analysis) && exists("run_analysis")) {
     tryCatch({
       run_analysis(sim, FACTORS, RAWDATA, BM_DT, output_dir = OUT_DIR, strategy_name = strategy_name)
@@ -344,11 +365,23 @@ run_alpha_search <- function(strategy_name,
 .run_axiom_pipeline <- function() {
   hv <- file.path(.AS_INFRA, "axiom", "lcode_harvester.py")
   cl <- file.path(.AS_INFRA, "axiom", "cluster_extractor.py")
-  tryCatch(system2("python3", c(shQuote(hv), "--project-dir", shQuote(PROJECT_ROOT)),
-                   stdout = FALSE, stderr = FALSE), error = function(e) NULL)
-  tryCatch(system2("python3", c(shQuote(cl), "--project-dir", shQuote(PROJECT_ROOT)),
-                   stdout = FALSE, stderr = FALSE), error = function(e) NULL)
-  cat("[AlphaSearch] Axiom 파이프라인(harvester+cluster) 갱신\n")
+  # QVEST_PY 우선 → PATH python3. 침묵 실패 금지 — 종료코드 검사 + 정직한 메시지 (2026-06-10 fix:
+  # 기존엔 python3 스텁 실패에도 무조건 "갱신" 출력하는 거짓 성공 로그였음)
+  py <- Sys.getenv("QVEST_PY", unset = Sys.which("python3"))
+  if (!nzchar(py)) {
+    cat("[AlphaSearch] WARN: python 부재 — Axiom 파이프라인 SKIP (QVEST_PY 환경변수 설정 필요)\n")
+    return(invisible(FALSE))
+  }
+  rc1 <- tryCatch(system2(py, c(shQuote(hv), "--project-dir", shQuote(PROJECT_ROOT)),
+                          stdout = FALSE, stderr = FALSE), error = function(e) 1L)
+  rc2 <- tryCatch(system2(py, c(shQuote(cl), "--project-dir", shQuote(PROJECT_ROOT)),
+                          stdout = FALSE, stderr = FALSE), error = function(e) 1L)
+  if (identical(rc1, 0L) && identical(rc2, 0L)) {
+    cat("[AlphaSearch] Axiom 파이프라인(harvester+cluster) 갱신 완료\n")
+  } else {
+    cat(sprintf("[AlphaSearch] WARN: Axiom 파이프라인 실패 (harvester rc=%s / cluster rc=%s) — corpus 갱신 안 됨\n",
+                as.character(rc1), as.character(rc2)))
+  }
 }
 
 # ---- STR 등록 (best-effort, origin=alpha_search) ----

@@ -13,7 +13,8 @@ suppressPackageStartupMessages({
 
 # ─── Paths ───────────────────────────────────────────────────────────────────
 MEMORY_DIR <- local({
-  .c <- c(file.path(Sys.getenv("USERPROFILE", unset = "C:/Users/User"), ".claude/projects/G--Quant-Module-Moltbot/memory"),  # Windows (2026-06-04)
+  .c <- c(file.path(Sys.getenv("USERPROFILE", unset = "C:/Users/99922"), ".claude/projects/C--Users-99922-OneDrive-Quant-Module-Moltbot/memory"),  # Windows OneDrive canonical (2026-06-10)
+          file.path(Sys.getenv("USERPROFILE", unset = "C:/Users/99922"), ".claude/projects/G--Quant-Module-Moltbot/memory"),                        # legacy G: era (2026-06-04)
           "/home/quant/.claude/projects/-mnt-c-Users-User-OneDrive-------Quant-Module-Moltbot/memory")
   .e <- .c[dir.exists(.c)]; if (length(.e)) .e[1] else .c[1]
 })

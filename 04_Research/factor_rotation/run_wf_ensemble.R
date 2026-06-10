@@ -73,6 +73,21 @@ me <- RM[, .(me_date=max(Date)), by=ym]; setorder(me, me_date)
 mreg <- merge(me, RG, by.x="me_date", by.y="Date", all.x=TRUE)
 setorder(mreg, me_date); mreg[, regime_lag := shift(Category, 1L)]    # 어제(전월말) 국면 → 이번달 적용
 mreg[is.na(regime_lag), regime_lag := "NEUTRAL"]
+# ★ Track1-B proactive dispatch (env FR_REGIME_SOURCE=forecast): contemporaneous regime_lag 대신
+#   regime_forecaster의 *다음국면 예측*을 dispatch에 사용(reactive→proactive). 예측 NA 월은 regime_lag fallback.
+#   forecaster beats_baseline=TRUE 일 때만 의미(아니면 과적합). baseline(category)은 default — FR_001 불변.
+REGIME_SOURCE <- Sys.getenv("FR_REGIME_SOURCE", "category")
+mreg[, regime_dispatch := regime_lag]                                # default = contemporaneous (baseline)
+if(REGIME_SOURCE == "forecast"){
+  fcp <- file.path(PROJ,".cache/regime_forecast_series.parquet")
+  if(!file.exists(fcp)) stop("FR_REGIME_SOURCE=forecast 인데 regime_forecast_series.parquet 부재 — regime_forecaster.R 먼저 실행")
+  FS <- as.data.table(read_parquet(fcp))
+  mreg <- merge(mreg, FS, by="ym", all.x=TRUE)
+  mreg[!is.na(forecast_regime), regime_dispatch := forecast_regime]  # 예측 가용 월만 override
+  setorder(mreg, me_date)                                            # ★ merge 후 순서 복원 (months 인덱스 정합)
+  cat(sprintf("[regime] ★ proactive dispatch: forecast %d/%d 월 override (나머지 category fallback)\n",
+              mreg[!is.na(forecast_regime), .N], nrow(mreg)))
+} else cat("[regime] dispatch source = category (contemporaneous, baseline)\n")
 
 # 3. anchored walk-forward: 월별 가중(IS-only) → 다음달 적용 -------------------
 #    weights는 월초(첫 거래일)에 적용·월중 frozen → Return.portfolio가 monthly rebalance로 합성.
@@ -82,7 +97,7 @@ adm_cache <- NULL; adm_cache_asof <- NULL   # WF RCMA 멤버십 캐시(연 1회 
 months_used <- character(0)
 for(i in seq_along(months)){
   if(i <= MIN_IS_MONTHS) next
-  m <- months[i]; reg_now <- mreg$regime_lag[i]
+  m <- months[i]; reg_now <- mreg$regime_dispatch[i]
   if(m < OOS_START_YM) next                                      # ★ breadth gate: 대표성 충분한 첫 달 전 구간은 OOS 미평가
   is_end <- mreg$me_date[i-1]                                    # IS = 이전월말까지
   IS <- RM[Date <= is_end]
@@ -176,8 +191,10 @@ sim_result <- list(
   DAILY_NAV_DT  = data.table(Date=mdates, NAV=nav_net, NAV_gross=nav_gross),  # ★ 월간 NAV (frequency 정합)
   strategy_xts  = ED_xts, bm_xts = bm_xts,                                    # strategy_xts/bm_xts는 일간 — contract가 apply.monthly로 집계
   HOLDINGS_LOG  = list(), PORTFOLIO_LOG = data.table(Exec_Date=as.Date(Wdt$Date)))  # ★ rb_dates 미정의 fix: rebalance 날짜 = W_rows 집계행(Wdt)의 Date
-spec <- list(strategy_name="FR_001_regime_rotation", signal="regime-conditional module rotation",
-             module_pool=all_used_mods, regime_source="unified_regime_signal_daily Category (t-1)",
+spec <- list(strategy_name=if(REGIME_SOURCE=="forecast") "FR_001_fc_proactive_rotation" else "FR_001_regime_rotation",
+             signal="regime-conditional module rotation",
+             module_pool=all_used_mods,
+             regime_source=if(REGIME_SOURCE=="forecast") "regime_forecaster predicted-next-regime (proactive, PIT trailing-only)" else "unified_regime_signal_daily Category (t-1)",
              weighting="module_dispatcher rp+IR shrink (λ/τ/k0 fixed); Return.portfolio monthly rebalance",
              rebalance="monthly",
              lookahead_prevention="regime t-1 lag; module frozen; IS-only weights; walk-forward RCMA admission (compute_rcma asof=prior month-end, annual refit); Return.portfolio (no self-synthesis)")
@@ -215,7 +232,11 @@ ew_sr <- if(is.null(ew_rp)) NA_real_ else {
   ewm <- apply.monthly(xts(ewd$r, order.by=ewd$Date), Return.cumulative); sr(as.numeric(ewm)) }
 
 dir.create(file.path(PROJ,"04_Research/factor_rotation/output"), showWarnings=FALSE, recursive=TRUE)
-fr <- list(fr_id="FR_001", grade=es$grade, metric_type=es$metric_type, essence=es$essence,
+# ★ A/B 출력 게이트: forecast 변형은 별도 파일·등재 생략(FR_001 baseline 보존). category=권위 FR_001.
+FR_ID    <- if(REGIME_SOURCE=="forecast") "FR_001_fc" else "FR_001"
+OUT_JSON <- if(REGIME_SOURCE=="forecast") "FR_001_fc_result.json" else "FR_001_result.json"
+OUT_RDS  <- if(REGIME_SOURCE=="forecast") "FR_001_fc_bt_result.rds" else "FR_001_bt_result.rds"
+fr <- list(fr_id=FR_ID, grade=es$grade, metric_type=es$metric_type, essence=es$essence,
   n_modules=length(all_used_mods), module_pool=all_used_mods, n_months=n, n_trials_cumulative=N_TRIALS,
   oos_retention=if(is.finite(oos_ret)) round(oos_ret,3) else NA_real_, oos_retention_status=oos_ret_label,
   oos_is_active_sharpe=round(is_sr_active,3), oos_oos_active_sharpe=round(oos_sr_active,3),
@@ -228,12 +249,14 @@ fr <- list(fr_id="FR_001", grade=es$grade, metric_type=es$metric_type, essence=e
   rcma_mode="walk-forward (compute_rcma asof=prior month-end, annual refit)",
   return_synthesis="PerformanceAnalytics::Return.portfolio (monthly rebalance; no prod/cumprod/Sigma-w self-synthesis)",
   date_range=c(as.character(min(MM$date)), as.character(max(MM$date))))
-write_json(fr, file.path(PROJ,"04_Research/factor_rotation/output/FR_001_result.json"), auto_unbox=TRUE, pretty=TRUE, na="null", digits=4)
-saveRDS(bt, file.path(PROJ,"04_Research/factor_rotation/output/FR_001_bt_result.rds"))
-# FR 운용체계 레지스트리 등재 (실측-only; metric_type=backtested 아니면 거부)
-tryCatch({ source(file.path(CD, "factor_rotation_registry.R"))
-  register_fr_result(fr, regime_engine_version="unified_regime_signal_daily Category(t-1) + walk-forward RCMA") },
-  error=function(e) cat("[run_wf_ensemble] FR registry 생략:", conditionMessage(e), "\n"))
+write_json(fr, file.path(PROJ,"04_Research/factor_rotation/output", OUT_JSON), auto_unbox=TRUE, pretty=TRUE, na="null", digits=4)
+saveRDS(bt, file.path(PROJ,"04_Research/factor_rotation/output", OUT_RDS))
+# FR 운용체계 레지스트리 등재 (실측-only; metric_type=backtested 아니면 거부). forecast 변형은 A/B 실험 → 등재 생략.
+if(REGIME_SOURCE != "forecast"){
+  tryCatch({ source(file.path(CD, "factor_rotation_registry.R"))
+    register_fr_result(fr, regime_engine_version="unified_regime_signal_daily Category(t-1) + walk-forward RCMA") },
+    error=function(e) cat("[run_wf_ensemble] FR registry 생략:", conditionMessage(e), "\n"))
+} else cat("[run_wf_ensemble] forecast A/B 변형 — FR registry 등재 생략(baseline FR_001 보존)\n")
 
 cat("\n==== FR_001 (regime rotation 앙상블) — 실측 [v3: Return.portfolio + WF RCMA + breadth gate + oos guard] ====\n")
 cat(sprintf("grade=%s  net_Sharpe=%.3f  PORT_t=%.3f  DSR=%s  Calmar=%.2f  CAGR=%.1f%%  MDD=%.1f%%\n",

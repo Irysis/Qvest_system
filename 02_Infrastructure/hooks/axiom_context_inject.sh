@@ -7,7 +7,13 @@
 #==============================================================================
 trap 'echo "{}"; exit 0' ERR
 INPUT=$(cat)
-DIR=$(ls -d /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo "$PWD")
+# CLAUDE_PROJECT_DIR(native Windows 경로) 우선 — MSYS형(/c/...) 경로를 native python glob에 넘기면 0건 매치로
+# regen 실패 → ERR trap {} 무출력이던 버그 수정 (2026-06-10). 백슬래시도 슬래시로 정규화.
+DIR="${CLAUDE_PROJECT_DIR:-${QM_ROOT:-}}"
+DIR="${DIR//\\//}"
+if [ -z "$DIR" ] || [ ! -d "$DIR" ]; then
+  DIR=$(ls -d /c/Users/99922/OneDrive/Quant_Module_Moltbot /mnt/c/Users/99922/OneDrive/Quant_Module_Moltbot /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot 2>/dev/null | head -1 || echo "$PWD")
+fi
 AGENT_NAME=$(printf '%s' "$INPUT" | python3 -c 'import json,sys
 try:
     d=json.load(sys.stdin); ti=d.get("tool_input",{})
@@ -28,7 +34,7 @@ lines = []
 _files = set(glob.glob(os.path.join('$ACTIVE_DIR', '**', 'AX-*.json'), recursive=True)) | set(glob.glob(os.path.join('$ACTIVE_DIR', 'AX-*.json')))
 for f in sorted(_files):
     try:
-        ax = json.load(open(f))
+        ax = json.load(open(f, encoding='utf-8'))
         axid = ax.get('axiom_id') or ax.get('id') or os.path.basename(f)[:-5]
         stmt = (ax.get('statement') or ax.get('text') or ax.get('name') or '')[:75]
         tt = ax.get('type') or ax.get('grade') or 'IMMUTABLE'

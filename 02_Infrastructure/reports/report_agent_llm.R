@@ -200,7 +200,7 @@ render_report <- function(strategy_id, output_dir = NULL, lang = "en") {
   source(file.path(REPORTS_DIR, "report_charts.R"))
 
   render_ok <- tryCatch({
-    Sys.setenv(RSTUDIO_PANDOC = "/home/quant/.local/share/r-pandoc/3.9/pandoc-3.9/bin")
+    .pandoc_dir <- "/home/quant/.local/share/r-pandoc/3.9/pandoc-3.9/bin"; if (dir.exists(.pandoc_dir)) Sys.setenv(RSTUDIO_PANDOC = .pandoc_dir)  # 조건부 (2026-06-10 fix: 죽은 WSL 경로 무조건 setenv 제거)
     rmarkdown::render(
       out_rmd, output_file = basename(out_html),
       params = list(

@@ -133,12 +133,13 @@ Qvest 시스템 전체 구동. bootstrap.sh 실행 → 플러그인 리로드 �
 
 ## Key Paths
 
-- Project root: `/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/`
+- Project root: `C:/Users/99922/OneDrive/Quant_Module_Moltbot/` (OneDrive canonical, 도훈 mandate 2026-06-10. Git Bash: `/c/Users/99922/OneDrive/Quant_Module_Moltbot`)
 - Infrastructure: `02_Infrastructure/` (config.R + 12 subdirs: data/ factor_db/ regime/ validation/ hooks/ agents/ telegram/ reports/ memory/ portfolio/ ops/ docs/ worktask/ contracts/ tools/ axiom/ prompts/)
 - Strategies: `04_Research/strategies/STR_XXX_name/` (legacy retain)
 - WT mailbox: `qepm/mailbox/worktask/{WT_ID}/`
 - Stage artifacts: `stage_artifacts/WT_{ID}/`
-- Memory: `/home/quant/.claude/projects/.../memory/MEMORY.md`
+- Memory: `C:/Users/99922/.claude/projects/C--Users-99922-OneDrive-Quant-Module-Moltbot/memory/MEMORY.md`
+- Env (User scope 영구): `QM_ROOT` + `QVEST_PY` + `~/.Renviron` 동일값 (경로 이전 시 이 3곳 + config.R 후보만 갱신)
 
 ---
 

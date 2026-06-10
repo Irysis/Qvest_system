@@ -37,6 +37,7 @@ if (!exists("PROJECT_ROOT")) {
 # Claude memory directory (cross-machine)
 .LI_CLAUDE_MEM <- tryCatch({
   candidates <- c(
+    "C:/Users/99922/.claude/projects/C--Users-99922-OneDrive-Quant-Module-Moltbot/memory",
     "/home/quant/.claude/projects/-mnt-c-Users-User-OneDrive-------Quant-Module-Moltbot/memory",
     "/home/quant/.claude/projects/-mnt-c-Users-99922-OneDrive-------Quant-Module-Moltbot/memory"
   )

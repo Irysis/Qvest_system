@@ -4,7 +4,7 @@
 # 1) 데이터 최신화 (KRX + Naver T+0 + Arrow + KTRI + FRED + Regime Signal)
 # 2) 텔레그램 레짐 브리핑 발송
 #
-# crontab: 10 7 * * 1-5 bash "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/02_Infrastructure/morning_briefing.sh"
+# crontab: 10 7 * * 1-5 bash "/c/Users/99922/OneDrive/Quant_Module_Moltbot/02_Infrastructure/morning_briefing.sh"
 #==============================================================================
 set -uo pipefail  # -e 제거: 개별 스텝 실패해도 나머지 계속 실행
 LOGFILE="/tmp/qm_morning_briefing_$(date +%Y%m%d).log"

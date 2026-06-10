@@ -17,7 +17,9 @@ import cvxpy as cp
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(THIS_DIR, "..", ".."))
-OUT_DIR = os.path.join(PROJECT_ROOT, "stage_artifacts", "WT_DPL_GPU_SWEEP")
+OUT_DIR = os.environ.get(
+    "DPL_OUT_DIR",
+    os.path.join(PROJECT_ROOT, "stage_artifacts", "WT_DPL_GPU_SWEEP"))
 PANEL = os.path.join(OUT_DIR, "dpl_feature_panel.parquet")
 BENCH = os.path.join(OUT_DIR, "benchmark_monthly.parquet")
 DPL_BEST = os.path.join(OUT_DIR, "dpl_best_net_returns.parquet")

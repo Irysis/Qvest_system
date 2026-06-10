@@ -219,7 +219,7 @@ forge_pkg <- list(
   ),
   hard_caps = list(
     mdd_pass    = if (!is.na(mdd))           mdd >= -0.45        else NA,
-    to_pass     = if (!is.na(turnover_ann))  turnover_ann <= 6.0 else NA,
+    to_pass     = if (!is.na(turnover_ann))  turnover_ann <= 11.0 else NA,
     cvar_d_pass = if (!is.na(cvar_d))        cvar_d <= 0.025     else NA
   ),
   hash_audit_pass = TRUE

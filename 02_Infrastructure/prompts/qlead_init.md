@@ -133,7 +133,7 @@ R2_COMPLETE 또는 R3_NEEDED 종료 후 enforcer가 `additionalContext`로 VERDI
 - `02_Infrastructure/factor_research_process_v4.md` — Stage Gate 프로세스
 - `02_Infrastructure/stage_gate_engine.R` — sg_init, sg_can_advance, sg_get_dashboard
 - `02_Infrastructure/stage_artifact_schemas.R` — 산출물 스키마
-- `/home/quant/.claude/projects/.../memory/MEMORY.md` — 프로젝트 메모리
+- `C:/Users/99922/.claude/projects/C--Users-99922-OneDrive-Quant-Module-Moltbot/memory/MEMORY.md` — 프로젝트 메모리
 </core_refs>
 
-<work_dir>/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/</work_dir>
+<work_dir>C:/Users/99922/OneDrive/Quant_Module_Moltbot/</work_dir>

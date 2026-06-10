@@ -59,7 +59,7 @@
 - 백테스트 산출 시 `metrics.csv`에 `net_cost_basis` + `cost_drag_bps` columns 의무
 - **Hook**: `C_gross > C_threshold` (예: 100bps/yr) 시 strategy 폐기 mandate
 
-**현 Qvest 정합도**: ⚠️ cost_model_version v2.3_kr_retail_15bps 정합 + TO ≤ 6.0/yr constraint 있지만 ML loss 통합 X. Phase 1.B에서 즉시 통합.
+**현 Qvest 정합도**: ⚠️ cost_model_version v2.3_kr_retail_15bps 정합 + TO ≤ 11.0/yr constraint(2026-05-29 완화) 있지만 ML loss 통합 X. Phase 1.B에서 즉시 통합.
 
 ---
 
@@ -126,7 +126,7 @@
 - Springer JAM 2024 "Cost mitigation of factor investing in emerging equity markets"
 
 **의무 (Hook 강제 — 이미 정합)**:
-- TO ≤ 6.0/yr (Charter §10 R5)
+- TO ≤ 11.0/yr (Charter §10 R5, 도훈 mandate 2026-05-29 6.0→11.0 완화)
 - LIQ_THRESHOLD 2e8 KRW (20d ADV)
 - max_names 20 hard
 - weight_bounds [0, 0.20]

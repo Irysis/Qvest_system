@@ -104,7 +104,18 @@
 
 ## 6. 시스템 갭 분석 + FR 모드 함의
 
-**갭 1 — 모델(②)**: SJM 부재. 시스템은 HMM(2-state)·GARCH·CUSUM·absorption·GMM·ensemble까지 있으나 **현 SOTA인 jump model이 없다.** SJM은 우리의 과전환 문제(Category 25%/월)를 **정확히 겨냥**(λ penalty)하고, KR 단일지수 시계열에 K=2로 바로 적용 가능(`msm_daily_refit` 대체/병렬). 도입난도 낮음(목적함수 단순, DP).
+**갭 1 — 모델(②)**: ~~SJM 부재.~~ **✅ 2026-06-05 PoC 빌드 완료** (`02_Infrastructure/regime/regime_jump_model.R`). 시스템은 HMM(2-state)·GARCH·CUSUM·absorption·GMM·ensemble까지 있으나 **현 SOTA인 jump model이 미보유**였던 갭을 닫음. SJM은 우리의 과전환 문제를 **정확히 겨냥**(λ penalty)하고, KR 단일지수 시계열에 K=2로 바로 적용. 도입난도 낮음(목적함수 단순, coordinate-descent + DP 선형시간).
+
+> **★ SJM PoC 실측 (2026-06-05, KOSPI 1990~2026, K=2, λ=50 canonical, refit 126d, feature=EWM downside-dev hl10 + EWM Sortino hl20/hl60 + log-VIX(KR 보강); PIT online lookback DP + 6m/126d refit + 1d delay):**
+> | 신호품질 지표 | SJM | 기존 | 평결 |
+> |---|---|---|---|
+> | **월 전환율(churn)** | **7.1%** | Category(5-state) 33.2% | **26.1pp↓ (4.7×)** — λ가 과전환 명시 억제 (SOTA 핵심 주장 KR 재현) |
+> | **λ 민감도(단조)** | churn: λ10→25→50→100→200 = **11.9→10.3→6.6→4.3→2.5%** | — | **λ가 지속성 직접 제어 입증**(HMM 암묵 전이행렬 대비 명시). λ=50 = bear frac 30%(non-degenerate) |
+> | crisis bear hit | **GFC 100%(lat 0d) · COVID 94%(5d) · 2022 100%(2d)** | — | 3대 KR 위기 모두 신속·강건 탐지 |
+> | HMM parity | state 73% 일치 · Bear_Prob~Crisis_Prob corr 0.43 · bear frac 32% vs HMM 31% | msm_daily 2-state HMM | **유효 신호**(잡음 아님)이되 27% 비중복 = 제거한 churn |
+> | Kendall τ (모듈 IR 순위 bull vs bear) | **0.57 (>0.5 → 미판별)** | — | 2-state 깨끗한 분할에도 모듈 순위 불변 → 풀이 같이 움직임 (regime_study 정합) |
+>
+> **앙상블 OOS SR A/B (83모듈, IS/OOS 60/40, net Sharpe, `regime_jm_ensemble_ab.R`)**: EW **0.72**(천장) · Rotate-Category 0.74~0.85 · Rotate-SJM 0.75~**0.99**. SJM−EW = k3 **+0.27** / k4 +0.17 / k5 +0.03 (**k별 단조감소** = 집중 효과). 게다가 **독립 restart-seed 2회서 부호 flip(−0.04 vs +0.16)** → **평결 `SJM_SR_GAIN_NONROBUST`** (k=3 top-3 집중 outlier + seed 의존, 노이즈 처리. 순진한 mean>0 은 measurement-graduation §3 위반이라 min-across-k + seed-stability 게이트로 차단). **로버스트 SR 이득 부재 — 천장=EW 결론 유지**(`project-factor-rotation-regime-study` 정합). SJM 신호품질 개선(churn 4.7×↓·crisis 신속)은 별개로 실재. **SJM 실가치는 직교 슬리브 확보 후 §3 Shu-Mulvey 결합 시 발현**(measurement-graduation §6). 산출: `output/regime_jm_{validation,ensemble_ab,_lambda_sweep}.json`.
 
 **갭 2 — 구조(③)**: 더 근본적. 학술 SOTA(Shu-Mulvey)는 **팩터별 국면 → BL views**. 우리 FR는 **단일 시장국면(Category) → 12모듈 dispatch**. 본 세션 실증이 보인 한계(모듈 0.70 상관 → 로테이션 무가치)는 **③ 구조의 문제이기도 하다**: 단일 시장국면은 상관 높은 모듈들을 *같은 방향*으로만 흔든다. Shu-Mulvey식 *팩터/슬리브별* 국면은 직교 슬리브가 있을 때만 의미.
 
@@ -117,7 +128,7 @@
 ## 7. 권고 (우선순위)
 
 1. **[입력 우선]** 직교 슬리브 확보가 ②③ 어떤 고도화보다 선행(본 세션 실증 = 천장은 입력이 결정).
-2. **[②, 저난도·고가치]** **SJM(jump penalty λ) PoC** — 현 `Category`/MSM 2-state를 SJM로 대체 비교(λ로 과전환 25%→<5% 목표). KR 단일지수 + US-VIX feature(D-doc #1). known-case parity는 `msm_daily` 대비.
+2. **[②, 저난도·고가치] ✅ 완료 (2026-06-05)** — **SJM(jump penalty λ) PoC** 빌드+검증. 목표 달성: 과전환 **33.2%→7.1%**(λ=50; λ↑ 단조 2.5%까지, 목표 <10% 초과 달성), KR log-VIX feature 포함, crisis 신속탐지(GFC/COVID/2022 모두 hit), `msm_daily` HMM과 73% parity(유효 신호 확인). **앙상블 OOS SR은 로버스트 이득 없음**(SJM_SR_GAIN_NONROBUST — k=3 집중·seed flip): 신호는 깨끗해졌으나 현 풀에선 천장이 입력(갭2)에 의해 결정됨을 재확인. → 다음 우선순위는 #1(직교 슬리브), SJM은 그 후 #3과 결합 시 가치. 현재는 `msm_daily` 대체/병렬 신호로 보유 가치(더 안정·crisis 신속). `regime_jump_model.R` + `regime_jm_{validation,ensemble_ab}.R`.
 3. **[③, SOTA 이식]** 직교 슬리브 ≥4건 확보 후 **Shu-Mulvey 팩터별-국면 → BL → long-only MVO** 이식(우리 제약 15bps/[0,0.20]/Σw=1/max25 native). turnover 522%는 우리 11.0/yr 한도와 충돌하므로 **TE 타깃 하향 + λ 상향**으로 회전 억제 필수.
 4. **[방법론 위생]** 국면라벨 online-only(PIT C5) + DSR/CSCV 다중검정 보정(이미 보유) 유지.
 

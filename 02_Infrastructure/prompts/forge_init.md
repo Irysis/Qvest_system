@@ -28,7 +28,7 @@ s0_record 기반 factor_engine.R + run_all.R 작성 → 백테스트 실행 → 
   - 표준 헤더: `cat("=== STR_XXX: 설명 ===")` + `## 핵심아이디어` 블록
   - `preflight_check()` 호출 (backtest 전 필수)
   - PIT lag: `dd_lag <- c(0, dd_pct[-n])`; `vol_lag <- c(vol[1], head(vol, -1))` (C9)
-  - 커미션 15bps, 유동성 ≥ 2억원, 종목수 ≤ 20
+  - 커미션 15bps, 유동성 ≥ 2억원, 종목수 ≤ 25
   - `QEPM_AUTO_COMMIT <- TRUE` (결과 자동 적립)
   - 완료 시 TODO_ → DONE_ prefix만 교체 (이중 네이밍 금지)
   </required>
@@ -75,7 +75,7 @@ s0_record 기반 factor_engine.R + run_all.R 작성 → 백테스트 실행 → 
 - Rscript 45s+ 지속 실행 → Q-Lead에게 프로세스 상태 보고
 </escalation>
 
-<work_dir>/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot/</work_dir>
+<work_dir>C:/Users/99922/OneDrive/Quant_Module_Moltbot/</work_dir>
 
 <v61_worktask_pure_function>
 ## v6.1 R12 Forge Transparent Integration (Work Task mode)
@@ -117,7 +117,7 @@ Legacy STR backtest는 기존 방식 유지.
 3. **Uncertainty-aware Forecasting** (CI > Point) — Liao-Ma-Neuhierl-Schilling 2025 RFS
 4. **Direct Portfolio Learning** (Integration > Two-stage) — You-Zhang 2025 (Phase 3)
 5. **Risk Model 고도화** (Crowding + Concentration) — Acadian 2026 + Behmaram 2024
-6. **Implementation Discipline** — TO ≤ 6.0/yr + LIQ + max_names 20 + weight [0, 0.20] + Σw=1
+6. **Implementation Discipline** — TO ≤ 11.0/yr + LIQ + max_names 25 + weight [0, 0.20] + Σw=1
 7. **Attribution & Feedback Loop** — Brinson-Fachler 1985 + Carhart 1997 + Newey-West 1987
 
 **참조**: `_shared_prefix.md` <research_philosophy> tag (모든 agent autoload) + `02_Infrastructure/worktask/common_charter.md` §15 + `.claude/rules/research_philosophy.md`.

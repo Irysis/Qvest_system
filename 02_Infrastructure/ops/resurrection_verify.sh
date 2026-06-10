@@ -8,7 +8,7 @@
 set -uo pipefail
 # ERR trap 제거 (개별 명령의 non-zero는 if/||로 처리, 전역 trap은 false-positive 양산)
 
-ROOT=$(ls -d /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo "$PWD")
+ROOT=$(ls -d /c/Users/99922/OneDrive/Quant_Module_Moltbot /mnt/c/Users/99922/OneDrive/Quant_Module_Moltbot /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo "$PWD")
 cd "$ROOT" || exit 1
 
 PASS=0; FAIL=0

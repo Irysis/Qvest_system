@@ -1,6 +1,6 @@
 {
   "schema_version": "v2.0",
-  "generated": "2026-06-05",
+  "generated": "2026-06-07",
   "method": "RCMA 국면조건부 모듈 admission (★WALK-FORWARD: compute_rcma(asof) point-in-time). 본 JSON은 asof=max date 진단용. 실측 권위 = run_wf_ensemble의 WF 함수 호출. 6기준(IR≥0.5|top⅓ / n≥12m / asof창 IS·OOS sign+ / |t|≥2 / 경제논리 / 한계기여). overall 등급 게이트 폐지(도훈 2026-06-05).",
   "pit_note": "lookahead 차단: 멤버십이 asof 시점 데이터로만 산정(고정 2012 cut 폐기). 본 정적 JSON은 진단용이며 walk-forward 실측이 권위.",
   "thresholds": {
@@ -8,14 +8,85 @@
     "min_months": 12,
     "t_min": 2
   },
-  "diagnostic_asof": "2026-06-01",
-  "pool_oos_rho": 0.164,
-  "n_modules": 82,
+  "diagnostic_asof": "2026-06-02",
+  "pool_oos_rho": 0.109,
+  "n_modules": 136,
   "n_admitted_cells": 23,
   "n_admitted_modules": 23,
   "admitted_modules": ["STR_1028_gerber_dcc_hrp", "STR_1033_nco", "STR_1047_4sleeve_regime", "STR_1393_esbr_sue_adaptive", "STR_1435_5sleeve_dd620_repair", "STR_1439_1047_to_fix", "STR_1550_consensus_core_alpha", "STR_1555_score_blend_3factor", "STR_1562_gerber_dcc_hrp_c11fix", "STR_1563_oc_epschg_c9c11fix", "STR_1566_c19_l22_blend", "STR_1567_c19_l22_dd_regime", "STR_1567_c19_l22_dd820", "STR_1570_c19_l22_d01_dd_regime", "STR_1570_sue_netdebt_dd1225", "STR_1571_bayesian_bl_c11fix", "STR_1571_c19_v14_d01_l22_dd_regime", "STR_1572_c19_l22_dd1228", "STR_1621_regime_conditional_allweather", "STR_1622_ic_weighted_statistical_blend", "STR_1622_M1_3factor", "STR_1636_piotroski_ret_autocorr_diversifier", "STR_943_oc_eps_chg"],
   "admission": {
-    "DPL_pilot_net": {
+    "DPL_DPL_CENSUS": {
+      "grade": "ungraded",
+      "role": "ml_dpl",
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": -0.326,
+          "n_months": 130,
+          "is_ir": -0.067,
+          "oos_ir": -0.763,
+          "oos_sign_ok": false,
+          "t_stat": -1.07,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 7,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 5,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 2,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 0,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "DPL_DPL_PILOT": {
       "grade": "ungraded",
       "role": "ml_dpl",
       "by_regime": {
@@ -210,7 +281,7 @@
           "t_stat": 0.17,
           "top_tercile": false,
           "high_confidence": false,
-          "marginal_above_median": false,
+          "marginal_above_median": true,
           "rationale": "review_pending"
         },
         "RISK_OFF": {
@@ -253,7 +324,7 @@
           "oos_ir": 0.82,
           "oos_sign_ok": false,
           "t_stat": 0.18,
-          "top_tercile": false,
+          "top_tercile": true,
           "high_confidence": false,
           "marginal_above_median": true,
           "rationale": "review_pending"
@@ -410,7 +481,7 @@
           "t_stat": 0.24,
           "top_tercile": false,
           "high_confidence": false,
-          "marginal_above_median": false,
+          "marginal_above_median": true,
           "rationale": "review_pending"
         },
         "CRISIS": {
@@ -453,7 +524,7 @@
           "oos_ir": -0.746,
           "oos_sign_ok": false,
           "t_stat": 1.87,
-          "top_tercile": false,
+          "top_tercile": true,
           "high_confidence": true,
           "marginal_above_median": true,
           "rationale": "expansion contributor (review)"
@@ -597,7 +668,7 @@
           "t_stat": 1.05,
           "top_tercile": false,
           "high_confidence": true,
-          "marginal_above_median": false,
+          "marginal_above_median": true,
           "rationale": "review_pending"
         },
         "NEUTRAL": {
@@ -621,7 +692,7 @@
           "oos_ir": 0.992,
           "oos_sign_ok": true,
           "t_stat": 0.58,
-          "top_tercile": false,
+          "top_tercile": true,
           "high_confidence": false,
           "marginal_above_median": true,
           "rationale": "review_pending"
@@ -634,9 +705,9 @@
           "oos_ir": 0.253,
           "oos_sign_ok": true,
           "t_stat": 0.57,
-          "top_tercile": false,
+          "top_tercile": true,
           "high_confidence": false,
-          "marginal_above_median": false,
+          "marginal_above_median": true,
           "rationale": "crisis specialist (mechanism review)"
         },
         "RISK_OFF": {
@@ -778,7 +849,7 @@
           "t_stat": 0.18,
           "top_tercile": false,
           "high_confidence": false,
-          "marginal_above_median": false,
+          "marginal_above_median": true,
           "rationale": "review_pending"
         },
         "RISK_OFF": {
@@ -1062,7 +1133,7 @@
           "t_stat": 0.28,
           "top_tercile": false,
           "high_confidence": false,
-          "marginal_above_median": false,
+          "marginal_above_median": true,
           "rationale": "review_pending"
         },
         "RISK_OFF": {
@@ -1120,7 +1191,7 @@
           "t_stat": 0.3,
           "top_tercile": false,
           "high_confidence": false,
-          "marginal_above_median": false,
+          "marginal_above_median": true,
           "rationale": "review_pending"
         },
         "CRISIS": {
@@ -1133,7 +1204,7 @@
           "t_stat": 0.36,
           "top_tercile": false,
           "high_confidence": false,
-          "marginal_above_median": false,
+          "marginal_above_median": true,
           "rationale": "review_pending"
         },
         "RISK_OFF": {
@@ -1191,7 +1262,7 @@
           "t_stat": 0.22,
           "top_tercile": false,
           "high_confidence": false,
-          "marginal_above_median": false,
+          "marginal_above_median": true,
           "rationale": "review_pending"
         },
         "CRISIS": {
@@ -1204,7 +1275,7 @@
           "t_stat": 0.34,
           "top_tercile": false,
           "high_confidence": false,
-          "marginal_above_median": false,
+          "marginal_above_median": true,
           "rationale": "review_pending"
         },
         "RISK_OFF": {
@@ -1320,7 +1391,7 @@
           "t_stat": -0.27,
           "top_tercile": false,
           "high_confidence": false,
-          "marginal_above_median": true,
+          "marginal_above_median": false,
           "rationale": "review_pending"
         },
         "CAUTION": {
@@ -1331,7 +1402,7 @@
           "oos_ir": 1.451,
           "oos_sign_ok": false,
           "t_stat": 0.51,
-          "top_tercile": false,
+          "top_tercile": true,
           "high_confidence": false,
           "marginal_above_median": true,
           "rationale": "review_pending"
@@ -1404,7 +1475,7 @@
           "t_stat": 0.27,
           "top_tercile": false,
           "high_confidence": false,
-          "marginal_above_median": false,
+          "marginal_above_median": true,
           "rationale": "defensive crisis_alpha (AX-001)"
         },
         "CRISIS": {
@@ -1447,7 +1518,7 @@
           "oos_ir": -0.299,
           "oos_sign_ok": false,
           "t_stat": 1.5,
-          "top_tercile": false,
+          "top_tercile": true,
           "high_confidence": true,
           "marginal_above_median": true,
           "rationale": "review_pending"
@@ -1473,7 +1544,7 @@
           "oos_ir": 0.55,
           "oos_sign_ok": true,
           "t_stat": 0.65,
-          "top_tercile": false,
+          "top_tercile": true,
           "high_confidence": false,
           "marginal_above_median": true,
           "rationale": "review_pending"
@@ -1520,7 +1591,7 @@
           "t_stat": 1.11,
           "top_tercile": false,
           "high_confidence": true,
-          "marginal_above_median": false,
+          "marginal_above_median": true,
           "rationale": "review_pending"
         },
         "NEUTRAL": {
@@ -1557,7 +1628,7 @@
           "oos_ir": 0.087,
           "oos_sign_ok": true,
           "t_stat": 0.82,
-          "top_tercile": false,
+          "top_tercile": true,
           "high_confidence": false,
           "marginal_above_median": true,
           "rationale": "crisis specialist (mechanism review)"
@@ -1673,7 +1744,7 @@
           "oos_ir": 0.735,
           "oos_sign_ok": false,
           "t_stat": 0.09,
-          "top_tercile": false,
+          "top_tercile": true,
           "high_confidence": false,
           "marginal_above_median": true,
           "rationale": "review_pending"
@@ -1733,7 +1804,7 @@
           "t_stat": 0.95,
           "top_tercile": false,
           "high_confidence": true,
-          "marginal_above_median": false,
+          "marginal_above_median": true,
           "rationale": "review_pending"
         },
         "NEUTRAL": {
@@ -1802,7 +1873,7 @@
           "oos_ir": -0.443,
           "oos_sign_ok": false,
           "t_stat": 1.81,
-          "top_tercile": false,
+          "top_tercile": true,
           "high_confidence": true,
           "marginal_above_median": true,
           "rationale": "expansion contributor (review)"
@@ -1828,7 +1899,7 @@
           "oos_ir": 1.315,
           "oos_sign_ok": true,
           "t_stat": 0.63,
-          "top_tercile": false,
+          "top_tercile": true,
           "high_confidence": false,
           "marginal_above_median": true,
           "rationale": "review_pending"
@@ -1841,7 +1912,7 @@
           "oos_ir": 0.803,
           "oos_sign_ok": true,
           "t_stat": 0.81,
-          "top_tercile": false,
+          "top_tercile": true,
           "high_confidence": false,
           "marginal_above_median": true,
           "rationale": "crisis specialist (mechanism review)"
@@ -1875,7 +1946,7 @@
           "t_stat": 1.28,
           "top_tercile": false,
           "high_confidence": true,
-          "marginal_above_median": false,
+          "marginal_above_median": true,
           "rationale": "review_pending"
         },
         "NEUTRAL": {
@@ -1901,7 +1972,7 @@
           "t_stat": 0.18,
           "top_tercile": false,
           "high_confidence": false,
-          "marginal_above_median": false,
+          "marginal_above_median": true,
           "rationale": "review_pending"
         },
         "CRISIS": {
@@ -1912,7 +1983,7 @@
           "oos_ir": 0.108,
           "oos_sign_ok": true,
           "t_stat": 0.96,
-          "top_tercile": false,
+          "top_tercile": true,
           "high_confidence": false,
           "marginal_above_median": true,
           "rationale": "crisis specialist (mechanism review)"
@@ -1946,7 +2017,7 @@
           "t_stat": 1.13,
           "top_tercile": false,
           "high_confidence": true,
-          "marginal_above_median": false,
+          "marginal_above_median": true,
           "rationale": "review_pending"
         },
         "NEUTRAL": {
@@ -1983,9 +2054,9 @@
           "oos_ir": 0.324,
           "oos_sign_ok": true,
           "t_stat": 0.54,
-          "top_tercile": false,
+          "top_tercile": true,
           "high_confidence": false,
-          "marginal_above_median": false,
+          "marginal_above_median": true,
           "rationale": "crisis specialist (mechanism review)"
         },
         "RISK_OFF": {
@@ -2015,7 +2086,7 @@
           "oos_ir": -0.776,
           "oos_sign_ok": false,
           "t_stat": 1.56,
-          "top_tercile": false,
+          "top_tercile": true,
           "high_confidence": true,
           "marginal_above_median": true,
           "rationale": "review_pending"
@@ -2088,7 +2159,7 @@
           "t_stat": 1.26,
           "top_tercile": false,
           "high_confidence": true,
-          "marginal_above_median": false,
+          "marginal_above_median": true,
           "rationale": "review_pending"
         },
         "NEUTRAL": {
@@ -2114,7 +2185,7 @@
           "t_stat": 0.16,
           "top_tercile": false,
           "high_confidence": false,
-          "marginal_above_median": false,
+          "marginal_above_median": true,
           "rationale": "review_pending"
         },
         "CRISIS": {
@@ -2157,7 +2228,7 @@
           "oos_ir": -0.355,
           "oos_sign_ok": false,
           "t_stat": 1.49,
-          "top_tercile": false,
+          "top_tercile": true,
           "high_confidence": true,
           "marginal_above_median": true,
           "rationale": "review_pending"
@@ -2267,7 +2338,7 @@
           "oos_ir": -0.059,
           "oos_sign_ok": false,
           "t_stat": 0.79,
-          "top_tercile": false,
+          "top_tercile": true,
           "high_confidence": false,
           "marginal_above_median": true,
           "rationale": "crisis specialist (mechanism review)"
@@ -2327,7 +2398,7 @@
           "t_stat": 0.3,
           "top_tercile": false,
           "high_confidence": false,
-          "marginal_above_median": false,
+          "marginal_above_median": true,
           "rationale": "review_pending"
         },
         "CRISIS": {
@@ -2340,7 +2411,7 @@
           "t_stat": 0.4,
           "top_tercile": false,
           "high_confidence": false,
-          "marginal_above_median": false,
+          "marginal_above_median": true,
           "rationale": "review_pending"
         },
         "RISK_OFF": {
@@ -2372,7 +2443,7 @@
           "t_stat": 1.02,
           "top_tercile": false,
           "high_confidence": true,
-          "marginal_above_median": false,
+          "marginal_above_median": true,
           "rationale": "review_pending"
         },
         "NEUTRAL": {
@@ -2385,7 +2456,7 @@
           "t_stat": -0.25,
           "top_tercile": false,
           "high_confidence": false,
-          "marginal_above_median": true,
+          "marginal_above_median": false,
           "rationale": "review_pending"
         },
         "CAUTION": {
@@ -2409,7 +2480,7 @@
           "oos_ir": 0.933,
           "oos_sign_ok": true,
           "t_stat": 0.83,
-          "top_tercile": false,
+          "top_tercile": true,
           "high_confidence": false,
           "marginal_above_median": true,
           "rationale": "crisis specialist (mechanism review)"
@@ -2443,7 +2514,7 @@
           "t_stat": 1.2,
           "top_tercile": false,
           "high_confidence": true,
-          "marginal_above_median": false,
+          "marginal_above_median": true,
           "rationale": "review_pending"
         },
         "NEUTRAL": {
@@ -2467,7 +2538,7 @@
           "oos_ir": 1.992,
           "oos_sign_ok": false,
           "t_stat": 0.58,
-          "top_tercile": false,
+          "top_tercile": true,
           "high_confidence": false,
           "marginal_above_median": true,
           "rationale": "review_pending"
@@ -2480,7 +2551,7 @@
           "oos_ir": 1.174,
           "oos_sign_ok": true,
           "t_stat": 1.02,
-          "top_tercile": false,
+          "top_tercile": true,
           "high_confidence": false,
           "marginal_above_median": true,
           "rationale": "crisis specialist (mechanism review)"
@@ -2514,7 +2585,7 @@
           "t_stat": 1.15,
           "top_tercile": false,
           "high_confidence": true,
-          "marginal_above_median": false,
+          "marginal_above_median": true,
           "rationale": "review_pending"
         },
         "NEUTRAL": {
@@ -2538,7 +2609,7 @@
           "oos_ir": 1.683,
           "oos_sign_ok": false,
           "t_stat": 0.63,
-          "top_tercile": false,
+          "top_tercile": true,
           "high_confidence": false,
           "marginal_above_median": true,
           "rationale": "review_pending"
@@ -2611,7 +2682,7 @@
           "t_stat": 0.28,
           "top_tercile": false,
           "high_confidence": false,
-          "marginal_above_median": false,
+          "marginal_above_median": true,
           "rationale": "review_pending"
         },
         "CRISIS": {
@@ -2622,7 +2693,7 @@
           "oos_ir": 0.346,
           "oos_sign_ok": true,
           "t_stat": 0.92,
-          "top_tercile": false,
+          "top_tercile": true,
           "high_confidence": false,
           "marginal_above_median": true,
           "rationale": "crisis specialist (mechanism review)"
@@ -2867,7 +2938,7 @@
           "oos_ir": -0.331,
           "oos_sign_ok": false,
           "t_stat": 1.81,
-          "top_tercile": false,
+          "top_tercile": true,
           "high_confidence": true,
           "marginal_above_median": true,
           "rationale": "review_pending"
@@ -2908,7 +2979,7 @@
           "t_stat": 0.81,
           "top_tercile": false,
           "high_confidence": true,
-          "marginal_above_median": false,
+          "marginal_above_median": true,
           "rationale": "review_pending"
         },
         "RISK_OFF": {
@@ -3119,7 +3190,7 @@
           "oos_ir": 0.993,
           "oos_sign_ok": true,
           "t_stat": 0.81,
-          "top_tercile": false,
+          "top_tercile": true,
           "high_confidence": false,
           "marginal_above_median": true,
           "rationale": "crisis specialist (mechanism review)"
@@ -3151,7 +3222,7 @@
           "oos_ir": 0.054,
           "oos_sign_ok": true,
           "t_stat": 2.11,
-          "top_tercile": false,
+          "top_tercile": true,
           "high_confidence": true,
           "marginal_above_median": true,
           "rationale": "expansion contributor (review)"
@@ -3545,9 +3616,9 @@
           "oos_ir": 0.825,
           "oos_sign_ok": true,
           "t_stat": 0.55,
-          "top_tercile": false,
+          "top_tercile": true,
           "high_confidence": false,
-          "marginal_above_median": false,
+          "marginal_above_median": true,
           "rationale": "crisis specialist (mechanism review)"
         },
         "RISK_OFF": {
@@ -3689,7 +3760,7 @@
           "t_stat": 0.33,
           "top_tercile": false,
           "high_confidence": false,
-          "marginal_above_median": false,
+          "marginal_above_median": true,
           "rationale": "review_pending"
         },
         "RISK_OFF": {
@@ -3758,7 +3829,7 @@
           "oos_ir": 0.89,
           "oos_sign_ok": true,
           "t_stat": 0.85,
-          "top_tercile": false,
+          "top_tercile": true,
           "high_confidence": false,
           "marginal_above_median": true,
           "rationale": "crisis specialist (mechanism review)"
@@ -3861,7 +3932,7 @@
           "oos_ir": -0.421,
           "oos_sign_ok": false,
           "t_stat": 1.95,
-          "top_tercile": false,
+          "top_tercile": true,
           "high_confidence": true,
           "marginal_above_median": true,
           "rationale": "expansion contributor (review)"
@@ -3934,7 +4005,7 @@
           "t_stat": 1.18,
           "top_tercile": false,
           "high_confidence": true,
-          "marginal_above_median": false,
+          "marginal_above_median": true,
           "rationale": "review_pending"
         },
         "NEUTRAL": {
@@ -4005,7 +4076,7 @@
           "t_stat": 0.88,
           "top_tercile": false,
           "high_confidence": true,
-          "marginal_above_median": false,
+          "marginal_above_median": true,
           "rationale": "review_pending"
         },
         "NEUTRAL": {
@@ -4044,7 +4115,7 @@
           "t_stat": 0.35,
           "top_tercile": false,
           "high_confidence": false,
-          "marginal_above_median": false,
+          "marginal_above_median": true,
           "rationale": "review_pending"
         },
         "RISK_OFF": {
@@ -4287,7 +4358,7 @@
           "oos_ir": -0.702,
           "oos_sign_ok": false,
           "t_stat": 1.33,
-          "top_tercile": false,
+          "top_tercile": true,
           "high_confidence": true,
           "marginal_above_median": true,
           "rationale": "review_pending"
@@ -4610,7 +4681,7 @@
           "oos_ir": 1.802,
           "oos_sign_ok": false,
           "t_stat": 0.72,
-          "top_tercile": false,
+          "top_tercile": true,
           "high_confidence": false,
           "marginal_above_median": true,
           "rationale": "crisis specialist (mechanism review)"
@@ -4752,9 +4823,9 @@
           "oos_ir": 0.714,
           "oos_sign_ok": true,
           "t_stat": 1.56,
-          "top_tercile": false,
+          "top_tercile": true,
           "high_confidence": true,
-          "marginal_above_median": false,
+          "marginal_above_median": true,
           "rationale": "crisis specialist (mechanism review)"
         },
         "RISK_OFF": {
@@ -4784,7 +4855,7 @@
           "oos_ir": -0.381,
           "oos_sign_ok": false,
           "t_stat": 2.09,
-          "top_tercile": false,
+          "top_tercile": true,
           "high_confidence": true,
           "marginal_above_median": true,
           "rationale": "expansion contributor (review)"
@@ -4810,7 +4881,7 @@
           "oos_ir": 1.361,
           "oos_sign_ok": true,
           "t_stat": 0.56,
-          "top_tercile": false,
+          "top_tercile": true,
           "high_confidence": false,
           "marginal_above_median": true,
           "rationale": "review_pending"
@@ -4894,7 +4965,7 @@
           "oos_ir": 1.627,
           "oos_sign_ok": false,
           "t_stat": 0.97,
-          "top_tercile": false,
+          "top_tercile": true,
           "high_confidence": false,
           "marginal_above_median": true,
           "rationale": "crisis specialist (mechanism review)"
@@ -4926,7 +4997,7 @@
           "oos_ir": 0.215,
           "oos_sign_ok": true,
           "t_stat": 2.25,
-          "top_tercile": false,
+          "top_tercile": true,
           "high_confidence": true,
           "marginal_above_median": true,
           "rationale": "expansion contributor (review)"
@@ -4999,7 +5070,7 @@
           "t_stat": 0.96,
           "top_tercile": false,
           "high_confidence": true,
-          "marginal_above_median": false,
+          "marginal_above_median": true,
           "rationale": "review_pending"
         },
         "NEUTRAL": {
@@ -5036,7 +5107,7 @@
           "oos_ir": 0.136,
           "oos_sign_ok": true,
           "t_stat": 1.08,
-          "top_tercile": false,
+          "top_tercile": true,
           "high_confidence": false,
           "marginal_above_median": true,
           "rationale": "crisis specialist (mechanism review)"
@@ -5154,7 +5225,7 @@
           "t_stat": -0.31,
           "top_tercile": false,
           "high_confidence": false,
-          "marginal_above_median": true,
+          "marginal_above_median": false,
           "rationale": "review_pending"
         },
         "CAUTION": {
@@ -5283,7 +5354,7 @@
           "t_stat": 1.09,
           "top_tercile": false,
           "high_confidence": true,
-          "marginal_above_median": false,
+          "marginal_above_median": true,
           "rationale": "review_pending"
         },
         "NEUTRAL": {
@@ -5322,7 +5393,7 @@
           "t_stat": 0.39,
           "top_tercile": false,
           "high_confidence": false,
-          "marginal_above_median": false,
+          "marginal_above_median": true,
           "rationale": "review_pending"
         },
         "RISK_OFF": {
@@ -5354,7 +5425,7 @@
           "t_stat": 1.28,
           "top_tercile": false,
           "high_confidence": true,
-          "marginal_above_median": false,
+          "marginal_above_median": true,
           "rationale": "review_pending"
         },
         "NEUTRAL": {
@@ -5391,7 +5462,7 @@
           "oos_ir": 0.29,
           "oos_sign_ok": true,
           "t_stat": 0.98,
-          "top_tercile": false,
+          "top_tercile": true,
           "high_confidence": false,
           "marginal_above_median": true,
           "rationale": "crisis specialist (mechanism review)"
@@ -5425,7 +5496,7 @@
           "t_stat": 1.11,
           "top_tercile": false,
           "high_confidence": true,
-          "marginal_above_median": false,
+          "marginal_above_median": true,
           "rationale": "review_pending"
         },
         "NEUTRAL": {
@@ -5567,7 +5638,7 @@
           "t_stat": 1.16,
           "top_tercile": false,
           "high_confidence": true,
-          "marginal_above_median": false,
+          "marginal_above_median": true,
           "rationale": "review_pending"
         },
         "NEUTRAL": {
@@ -5677,7 +5748,7 @@
           "t_stat": 0.09,
           "top_tercile": false,
           "high_confidence": false,
-          "marginal_above_median": false,
+          "marginal_above_median": true,
           "rationale": "review_pending"
         },
         "RISK_OFF": {
@@ -5766,6 +5837,219 @@
         }
       }
     },
+    "STR_AC09_NNI_LO_top25": {
+      "grade": "F",
+      "role": "core",
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": -0.151,
+          "n_months": 195,
+          "is_ir": -0.12,
+          "oos_ir": -0.203,
+          "oos_sign_ok": false,
+          "t_stat": -0.61,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": -1.264,
+          "n_months": 26,
+          "is_ir": 0.001,
+          "oos_ir": -3,
+          "oos_sign_ok": false,
+          "t_stat": -1.86,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": -1.517,
+          "n_months": 19,
+          "is_ir": -1.131,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": -1.91,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": -0.867,
+          "n_months": 15,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": -0.97,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 1,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_AC13_Abnormal_Accruals_LO_top25": {
+      "grade": "F",
+      "role": "core",
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": 0.388,
+          "n_months": 195,
+          "is_ir": 0.327,
+          "oos_ir": 0.527,
+          "oos_sign_ok": true,
+          "t_stat": 1.57,
+          "top_tercile": true,
+          "high_confidence": true,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": -1.174,
+          "n_months": 26,
+          "is_ir": -0.789,
+          "oos_ir": -1.613,
+          "oos_sign_ok": false,
+          "t_stat": -1.73,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": 0.346,
+          "n_months": 19,
+          "is_ir": 1.022,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": 0.44,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": -1.106,
+          "n_months": 15,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": -1.24,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 1,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_AC24_NOA_Growth_LO_top25": {
+      "grade": "F",
+      "role": "core",
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": -0.129,
+          "n_months": 195,
+          "is_ir": -0.116,
+          "oos_ir": -0.15,
+          "oos_sign_ok": false,
+          "t_stat": -0.52,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": -1.192,
+          "n_months": 26,
+          "is_ir": 0.118,
+          "oos_ir": -2.927,
+          "oos_sign_ok": false,
+          "t_stat": -1.75,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": -1.256,
+          "n_months": 19,
+          "is_ir": -1.114,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": -1.58,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": -0.7,
+          "n_months": 15,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": -0.78,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 1,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
     "STR_AS_20260605_095531_37468": {
       "grade": "F",
       "role": null,
@@ -5826,6 +6110,3556 @@
           "admitted": false,
           "regime_ir": null,
           "n_months": 0,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_AS_20260605_135743_30748": {
+      "grade": "F",
+      "role": null,
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": -0.397,
+          "n_months": 159,
+          "is_ir": -0.109,
+          "oos_ir": -0.867,
+          "oos_sign_ok": false,
+          "t_stat": -1.45,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": -0.044,
+          "n_months": 17.3,
+          "is_ir": 0.962,
+          "oos_ir": -2.169,
+          "oos_sign_ok": false,
+          "t_stat": -0.05,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": 0.334,
+          "n_months": 6.9,
+          "is_ir": 1.795,
+          "oos_ir": -2.077,
+          "oos_sign_ok": false,
+          "t_stat": 0.25,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": -0.652,
+          "n_months": 8.3,
+          "is_ir": 0.471,
+          "oos_ir": -2.025,
+          "oos_sign_ok": false,
+          "t_stat": -0.54,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 0,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_AS_20260605_152406_36892": {
+      "grade": "C",
+      "role": null,
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": 0.222,
+          "n_months": 177.1,
+          "is_ir": 0.796,
+          "oos_ir": -0.847,
+          "oos_sign_ok": false,
+          "t_stat": 0.85,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": 0.43,
+          "n_months": 24,
+          "is_ir": 0.862,
+          "oos_ir": -0.224,
+          "oos_sign_ok": false,
+          "t_stat": 0.61,
+          "top_tercile": true,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": 0.387,
+          "n_months": 15.1,
+          "is_ir": 0.839,
+          "oos_ir": -0.05,
+          "oos_sign_ok": false,
+          "t_stat": 0.43,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": -0.983,
+          "n_months": 15.9,
+          "is_ir": -0.546,
+          "oos_ir": -1.489,
+          "oos_sign_ok": false,
+          "t_stat": -1.13,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 0.8,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_AS_20260605_185153_35464": {
+      "grade": "C",
+      "role": null,
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": 0.222,
+          "n_months": 177.1,
+          "is_ir": 0.796,
+          "oos_ir": -0.847,
+          "oos_sign_ok": false,
+          "t_stat": 0.85,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": 0.43,
+          "n_months": 24,
+          "is_ir": 0.862,
+          "oos_ir": -0.224,
+          "oos_sign_ok": false,
+          "t_stat": 0.61,
+          "top_tercile": true,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": 0.387,
+          "n_months": 15.1,
+          "is_ir": 0.839,
+          "oos_ir": -0.05,
+          "oos_sign_ok": false,
+          "t_stat": 0.43,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": -0.983,
+          "n_months": 15.9,
+          "is_ir": -0.546,
+          "oos_ir": -1.489,
+          "oos_sign_ok": false,
+          "t_stat": -1.13,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 0.8,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_AS_20260605_191921_7088": {
+      "grade": "F",
+      "role": null,
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": -0.286,
+          "n_months": 189.9,
+          "is_ir": 0.145,
+          "oos_ir": -0.967,
+          "oos_sign_ok": false,
+          "t_stat": -1.14,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": -0.101,
+          "n_months": 27.8,
+          "is_ir": -0.193,
+          "oos_ir": 0.012,
+          "oos_sign_ok": false,
+          "t_stat": -0.15,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": -0.51,
+          "n_months": 16.2,
+          "is_ir": -0.383,
+          "oos_ir": -0.692,
+          "oos_sign_ok": false,
+          "t_stat": -0.59,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": -0.248,
+          "n_months": 16,
+          "is_ir": 0.721,
+          "oos_ir": -1.547,
+          "oos_sign_ok": false,
+          "t_stat": -0.29,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 0.8,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_AS_20260605_193919_29820": {
+      "grade": "F",
+      "role": null,
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": -0.185,
+          "n_months": 189.9,
+          "is_ir": 0.376,
+          "oos_ir": -1.365,
+          "oos_sign_ok": false,
+          "t_stat": -0.73,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": 0.81,
+          "n_months": 27.8,
+          "is_ir": 0.744,
+          "oos_ir": 0.928,
+          "oos_sign_ok": true,
+          "t_stat": 1.23,
+          "top_tercile": true,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "offensive expansion specialist"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": 0.337,
+          "n_months": 16.2,
+          "is_ir": 0.236,
+          "oos_ir": 0.517,
+          "oos_sign_ok": true,
+          "t_stat": 0.39,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": -0.751,
+          "n_months": 16,
+          "is_ir": 0.129,
+          "oos_ir": -2.06,
+          "oos_sign_ok": false,
+          "t_stat": -0.87,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 0.8,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_AS_20260605_200252_11056": {
+      "grade": "C",
+      "role": null,
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": -0.21,
+          "n_months": 189.9,
+          "is_ir": 0.012,
+          "oos_ir": -0.556,
+          "oos_sign_ok": false,
+          "t_stat": -0.84,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": -0.643,
+          "n_months": 27.8,
+          "is_ir": -0.541,
+          "oos_ir": -0.81,
+          "oos_sign_ok": false,
+          "t_stat": -0.98,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": -0.181,
+          "n_months": 16.2,
+          "is_ir": -0.236,
+          "oos_ir": -0.096,
+          "oos_sign_ok": false,
+          "t_stat": -0.21,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": -1.929,
+          "n_months": 16,
+          "is_ir": -1.418,
+          "oos_ir": -2.644,
+          "oos_sign_ok": false,
+          "t_stat": -2.23,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 0.8,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_AS_20260605_202226_37668": {
+      "grade": "F",
+      "role": null,
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": 0.667,
+          "n_months": 189.9,
+          "is_ir": 1.136,
+          "oos_ir": -0.25,
+          "oos_sign_ok": false,
+          "t_stat": 2.65,
+          "top_tercile": true,
+          "high_confidence": true,
+          "marginal_above_median": true,
+          "rationale": "expansion contributor (review)"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": 0.197,
+          "n_months": 27.8,
+          "is_ir": 0.324,
+          "oos_ir": -0.065,
+          "oos_sign_ok": false,
+          "t_stat": 0.3,
+          "top_tercile": true,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": 0.705,
+          "n_months": 16.2,
+          "is_ir": 0.425,
+          "oos_ir": 1.211,
+          "oos_sign_ok": true,
+          "t_stat": 0.82,
+          "top_tercile": true,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": 0.085,
+          "n_months": 16,
+          "is_ir": 0.505,
+          "oos_ir": -0.492,
+          "oos_sign_ok": false,
+          "t_stat": 0.1,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 0.8,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_AS_20260605_203918_32780": {
+      "grade": "F",
+      "role": null,
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": 0.388,
+          "n_months": 189.9,
+          "is_ir": 0.744,
+          "oos_ir": -0.331,
+          "oos_sign_ok": false,
+          "t_stat": 1.54,
+          "top_tercile": true,
+          "high_confidence": true,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": -0.094,
+          "n_months": 27.8,
+          "is_ir": -0.313,
+          "oos_ir": 0.405,
+          "oos_sign_ok": false,
+          "t_stat": -0.14,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": 0.629,
+          "n_months": 16.2,
+          "is_ir": 0.163,
+          "oos_ir": 1.509,
+          "oos_sign_ok": true,
+          "t_stat": 0.73,
+          "top_tercile": true,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": 0.188,
+          "n_months": 16,
+          "is_ir": 0.784,
+          "oos_ir": -0.701,
+          "oos_sign_ok": false,
+          "t_stat": 0.22,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 0.8,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_AS_20260605_221011_31932": {
+      "grade": "F",
+      "role": null,
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": 0.676,
+          "n_months": 189.9,
+          "is_ir": 1.056,
+          "oos_ir": -0.14,
+          "oos_sign_ok": false,
+          "t_stat": 2.69,
+          "top_tercile": true,
+          "high_confidence": true,
+          "marginal_above_median": true,
+          "rationale": "expansion contributor (review)"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": 0.815,
+          "n_months": 27.8,
+          "is_ir": 0.615,
+          "oos_ir": 1.232,
+          "oos_sign_ok": true,
+          "t_stat": 1.24,
+          "top_tercile": true,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "offensive expansion specialist"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": 1.217,
+          "n_months": 16.2,
+          "is_ir": 1.906,
+          "oos_ir": 0.146,
+          "oos_sign_ok": true,
+          "t_stat": 1.41,
+          "top_tercile": true,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": 0.124,
+          "n_months": 16,
+          "is_ir": 0.589,
+          "oos_ir": -0.482,
+          "oos_sign_ok": false,
+          "t_stat": 0.14,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 0.8,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_AS_20260605_223652_38700": {
+      "grade": "F",
+      "role": null,
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": 0.352,
+          "n_months": 189.9,
+          "is_ir": 1.01,
+          "oos_ir": -1.069,
+          "oos_sign_ok": false,
+          "t_stat": 1.4,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": 0.589,
+          "n_months": 27.8,
+          "is_ir": 0.644,
+          "oos_ir": 0.472,
+          "oos_sign_ok": true,
+          "t_stat": 0.9,
+          "top_tercile": true,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "expansion contributor (review)"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": 0.951,
+          "n_months": 16.2,
+          "is_ir": 1.502,
+          "oos_ir": 0.072,
+          "oos_sign_ok": true,
+          "t_stat": 1.1,
+          "top_tercile": true,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": -0.651,
+          "n_months": 16,
+          "is_ir": 0.241,
+          "oos_ir": -1.84,
+          "oos_sign_ok": false,
+          "t_stat": -0.75,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 0.8,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_AS_20260606_185736_1568": {
+      "grade": "F",
+      "role": null,
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": 0.003,
+          "n_months": 189.9,
+          "is_ir": 0.358,
+          "oos_ir": -0.692,
+          "oos_sign_ok": false,
+          "t_stat": 0.01,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": -0.197,
+          "n_months": 27.8,
+          "is_ir": 0.168,
+          "oos_ir": -0.789,
+          "oos_sign_ok": false,
+          "t_stat": -0.3,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": -0.62,
+          "n_months": 16.2,
+          "is_ir": -0.401,
+          "oos_ir": -0.95,
+          "oos_sign_ok": false,
+          "t_stat": -0.72,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": 0.094,
+          "n_months": 16,
+          "is_ir": 0.809,
+          "oos_ir": -0.597,
+          "oos_sign_ok": false,
+          "t_stat": 0.11,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 0.8,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_AS_20260606_190756_6848": {
+      "grade": "F",
+      "role": null,
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": 0.105,
+          "n_months": 189.9,
+          "is_ir": 0.646,
+          "oos_ir": -0.88,
+          "oos_sign_ok": false,
+          "t_stat": 0.42,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": -0.169,
+          "n_months": 27.8,
+          "is_ir": -0.081,
+          "oos_ir": -0.325,
+          "oos_sign_ok": false,
+          "t_stat": -0.26,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": -0.335,
+          "n_months": 16.2,
+          "is_ir": -1.134,
+          "oos_ir": 0.773,
+          "oos_sign_ok": false,
+          "t_stat": -0.39,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": -0.413,
+          "n_months": 16,
+          "is_ir": 0.24,
+          "oos_ir": -1.125,
+          "oos_sign_ok": false,
+          "t_stat": -0.48,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 0.8,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_AS_20260606_192427_38104": {
+      "grade": "F",
+      "role": null,
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": -0.124,
+          "n_months": 189.9,
+          "is_ir": 0.285,
+          "oos_ir": -0.901,
+          "oos_sign_ok": false,
+          "t_stat": -0.49,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": 0.169,
+          "n_months": 27.8,
+          "is_ir": 0.189,
+          "oos_ir": 0.147,
+          "oos_sign_ok": true,
+          "t_stat": 0.26,
+          "top_tercile": true,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": -0.489,
+          "n_months": 16.2,
+          "is_ir": -0.305,
+          "oos_ir": -0.721,
+          "oos_sign_ok": false,
+          "t_stat": -0.57,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": -0.542,
+          "n_months": 16,
+          "is_ir": 0.376,
+          "oos_ir": -1.454,
+          "oos_sign_ok": false,
+          "t_stat": -0.63,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 0.8,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_AS_20260606_192910_23228": {
+      "grade": "F",
+      "role": null,
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": 0.145,
+          "n_months": 189.9,
+          "is_ir": 0.836,
+          "oos_ir": -1.344,
+          "oos_sign_ok": false,
+          "t_stat": 0.58,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": 0.175,
+          "n_months": 27.8,
+          "is_ir": 0.337,
+          "oos_ir": -0.088,
+          "oos_sign_ok": false,
+          "t_stat": 0.27,
+          "top_tercile": true,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": 0.205,
+          "n_months": 16.2,
+          "is_ir": 0.929,
+          "oos_ir": -0.717,
+          "oos_sign_ok": false,
+          "t_stat": 0.24,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": -0.523,
+          "n_months": 16,
+          "is_ir": 0.286,
+          "oos_ir": -1.412,
+          "oos_sign_ok": false,
+          "t_stat": -0.6,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 0.8,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_AS_20260606_193820_7804": {
+      "grade": "F",
+      "role": null,
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": 0.145,
+          "n_months": 189.9,
+          "is_ir": 0.836,
+          "oos_ir": -1.344,
+          "oos_sign_ok": false,
+          "t_stat": 0.58,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": 0.175,
+          "n_months": 27.8,
+          "is_ir": 0.337,
+          "oos_ir": -0.088,
+          "oos_sign_ok": false,
+          "t_stat": 0.27,
+          "top_tercile": true,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": 0.205,
+          "n_months": 16.2,
+          "is_ir": 0.929,
+          "oos_ir": -0.717,
+          "oos_sign_ok": false,
+          "t_stat": 0.24,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": -0.523,
+          "n_months": 16,
+          "is_ir": 0.286,
+          "oos_ir": -1.412,
+          "oos_sign_ok": false,
+          "t_stat": -0.6,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 0.8,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_AS_20260606_204027_36304": {
+      "grade": "C",
+      "role": null,
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": -0.153,
+          "n_months": 189.9,
+          "is_ir": 0.305,
+          "oos_ir": -0.694,
+          "oos_sign_ok": false,
+          "t_stat": -0.61,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": 0.187,
+          "n_months": 27.8,
+          "is_ir": 0.126,
+          "oos_ir": 0.27,
+          "oos_sign_ok": true,
+          "t_stat": 0.28,
+          "top_tercile": true,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": 0.681,
+          "n_months": 16.2,
+          "is_ir": 0.904,
+          "oos_ir": 0.473,
+          "oos_sign_ok": true,
+          "t_stat": 0.79,
+          "top_tercile": true,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": 0.35,
+          "n_months": 16,
+          "is_ir": 0.92,
+          "oos_ir": -0.124,
+          "oos_sign_ok": false,
+          "t_stat": 0.4,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 0.8,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_AS_20260606_204916_40216": {
+      "grade": "F",
+      "role": null,
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": -0.199,
+          "n_months": 189.9,
+          "is_ir": 0.285,
+          "oos_ir": -0.947,
+          "oos_sign_ok": false,
+          "t_stat": -0.79,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": 0.018,
+          "n_months": 27.8,
+          "is_ir": 0.041,
+          "oos_ir": -0.021,
+          "oos_sign_ok": false,
+          "t_stat": 0.03,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": 0.528,
+          "n_months": 16.2,
+          "is_ir": 0.709,
+          "oos_ir": 0.271,
+          "oos_sign_ok": true,
+          "t_stat": 0.61,
+          "top_tercile": true,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": -0.269,
+          "n_months": 16,
+          "is_ir": 0.524,
+          "oos_ir": -1.041,
+          "oos_sign_ok": false,
+          "t_stat": -0.31,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 0.8,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_AS_20260606_205938_35016": {
+      "grade": "C",
+      "role": null,
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": -0.019,
+          "n_months": 189.9,
+          "is_ir": 0.387,
+          "oos_ir": -0.615,
+          "oos_sign_ok": false,
+          "t_stat": -0.08,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": -0.09,
+          "n_months": 27.8,
+          "is_ir": -0.062,
+          "oos_ir": -0.128,
+          "oos_sign_ok": false,
+          "t_stat": -0.14,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": 0.407,
+          "n_months": 16.2,
+          "is_ir": 1.179,
+          "oos_ir": -0.555,
+          "oos_sign_ok": false,
+          "t_stat": 0.47,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": -0.642,
+          "n_months": 16,
+          "is_ir": 0.149,
+          "oos_ir": -1.5,
+          "oos_sign_ok": false,
+          "t_stat": -0.74,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 0.8,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_AS_20260606_211717_4644": {
+      "grade": "F",
+      "role": null,
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": -0.3,
+          "n_months": 189.9,
+          "is_ir": -0.05,
+          "oos_ir": -0.948,
+          "oos_sign_ok": false,
+          "t_stat": -1.19,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": -0.209,
+          "n_months": 27.8,
+          "is_ir": -0.631,
+          "oos_ir": 0.604,
+          "oos_sign_ok": false,
+          "t_stat": -0.32,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": 0.051,
+          "n_months": 16.2,
+          "is_ir": 0.855,
+          "oos_ir": -1.163,
+          "oos_sign_ok": false,
+          "t_stat": 0.06,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": -0.599,
+          "n_months": 16,
+          "is_ir": 0.194,
+          "oos_ir": -1.599,
+          "oos_sign_ok": false,
+          "t_stat": -0.69,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 0.8,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_AS_20260606_213438_42004": {
+      "grade": "F",
+      "role": null,
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": -0.284,
+          "n_months": 189.9,
+          "is_ir": 0.16,
+          "oos_ir": -1.127,
+          "oos_sign_ok": false,
+          "t_stat": -1.13,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": 0.303,
+          "n_months": 27.8,
+          "is_ir": 0.06,
+          "oos_ir": 0.635,
+          "oos_sign_ok": true,
+          "t_stat": 0.46,
+          "top_tercile": true,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": -0.255,
+          "n_months": 16.2,
+          "is_ir": -0.321,
+          "oos_ir": -0.212,
+          "oos_sign_ok": false,
+          "t_stat": -0.3,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": -0.082,
+          "n_months": 16,
+          "is_ir": 0.952,
+          "oos_ir": -1.069,
+          "oos_sign_ok": false,
+          "t_stat": -0.09,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 0.8,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_AS_20260606_214808_10352": {
+      "grade": "F",
+      "role": null,
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": -0.246,
+          "n_months": 189.9,
+          "is_ir": 0.068,
+          "oos_ir": -0.797,
+          "oos_sign_ok": false,
+          "t_stat": -0.98,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": 0.56,
+          "n_months": 27.8,
+          "is_ir": 0.474,
+          "oos_ir": 0.69,
+          "oos_sign_ok": true,
+          "t_stat": 0.85,
+          "top_tercile": true,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "expansion contributor (review)"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": -0.221,
+          "n_months": 16.2,
+          "is_ir": -0.466,
+          "oos_ir": 0.076,
+          "oos_sign_ok": false,
+          "t_stat": -0.26,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": 0.9,
+          "n_months": 16,
+          "is_ir": 1.893,
+          "oos_ir": -0.385,
+          "oos_sign_ok": false,
+          "t_stat": 1.04,
+          "top_tercile": true,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "crisis specialist (mechanism review)"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 0.8,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_AS_20260606_232717_11136": {
+      "grade": "F",
+      "role": null,
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": 0.018,
+          "n_months": 189.9,
+          "is_ir": 0.379,
+          "oos_ir": -0.761,
+          "oos_sign_ok": false,
+          "t_stat": 0.07,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": -0.038,
+          "n_months": 27.8,
+          "is_ir": -0.217,
+          "oos_ir": 0.245,
+          "oos_sign_ok": false,
+          "t_stat": -0.06,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": -0.373,
+          "n_months": 16.2,
+          "is_ir": -0.467,
+          "oos_ir": -0.289,
+          "oos_sign_ok": false,
+          "t_stat": -0.43,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": -0.083,
+          "n_months": 16,
+          "is_ir": 1.037,
+          "oos_ir": -1.396,
+          "oos_sign_ok": false,
+          "t_stat": -0.1,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 0.8,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_AS_20260606_233737_11136": {
+      "grade": "F",
+      "role": null,
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": 0.271,
+          "n_months": 189.9,
+          "is_ir": 0.695,
+          "oos_ir": -0.571,
+          "oos_sign_ok": false,
+          "t_stat": 1.08,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": 0.008,
+          "n_months": 27.8,
+          "is_ir": 0.395,
+          "oos_ir": -0.581,
+          "oos_sign_ok": false,
+          "t_stat": 0.01,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": -0.073,
+          "n_months": 16.2,
+          "is_ir": 0.224,
+          "oos_ir": -0.456,
+          "oos_sign_ok": false,
+          "t_stat": -0.08,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": -1.049,
+          "n_months": 16,
+          "is_ir": -1.137,
+          "oos_ir": -1.036,
+          "oos_sign_ok": false,
+          "t_stat": -1.21,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 0.8,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_AS_20260606_235146_41744": {
+      "grade": "F",
+      "role": null,
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": 0.157,
+          "n_months": 189.9,
+          "is_ir": 0.658,
+          "oos_ir": -0.784,
+          "oos_sign_ok": false,
+          "t_stat": 0.62,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": -0.089,
+          "n_months": 27.8,
+          "is_ir": -0.72,
+          "oos_ir": 0.793,
+          "oos_sign_ok": false,
+          "t_stat": -0.14,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": -0.501,
+          "n_months": 16.2,
+          "is_ir": -0.265,
+          "oos_ir": -0.799,
+          "oos_sign_ok": false,
+          "t_stat": -0.58,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": -0.312,
+          "n_months": 16,
+          "is_ir": 1.061,
+          "oos_ir": -1.662,
+          "oos_sign_ok": false,
+          "t_stat": -0.36,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 0.8,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_AS_20260607_000154_41744": {
+      "grade": "F",
+      "role": null,
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": -0.153,
+          "n_months": 189.9,
+          "is_ir": 0.14,
+          "oos_ir": -0.654,
+          "oos_sign_ok": false,
+          "t_stat": -0.61,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": 0.434,
+          "n_months": 27.8,
+          "is_ir": 0.229,
+          "oos_ir": 0.727,
+          "oos_sign_ok": true,
+          "t_stat": 0.66,
+          "top_tercile": true,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": -0.413,
+          "n_months": 16.2,
+          "is_ir": -0.414,
+          "oos_ir": -0.448,
+          "oos_sign_ok": false,
+          "t_stat": -0.48,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": -0.079,
+          "n_months": 16,
+          "is_ir": 1.128,
+          "oos_ir": -1.219,
+          "oos_sign_ok": false,
+          "t_stat": -0.09,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 0.8,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_AS_20260607_190615_28336": {
+      "grade": "F",
+      "role": null,
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": 0.031,
+          "n_months": 189.9,
+          "is_ir": 0.436,
+          "oos_ir": -0.72,
+          "oos_sign_ok": false,
+          "t_stat": 0.12,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": 0.172,
+          "n_months": 27.8,
+          "is_ir": -0.294,
+          "oos_ir": 0.851,
+          "oos_sign_ok": false,
+          "t_stat": 0.26,
+          "top_tercile": true,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": -0.655,
+          "n_months": 16.2,
+          "is_ir": -0.61,
+          "oos_ir": -0.728,
+          "oos_sign_ok": false,
+          "t_stat": -0.76,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": -0.29,
+          "n_months": 16,
+          "is_ir": 0.259,
+          "oos_ir": -1.027,
+          "oos_sign_ok": false,
+          "t_stat": -0.34,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 0.8,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_C16_EPS_Acceleration_LO_top25": {
+      "grade": "F",
+      "role": "core",
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": -0.757,
+          "n_months": 195,
+          "is_ir": -0.558,
+          "oos_ir": -1.063,
+          "oos_sign_ok": false,
+          "t_stat": -3.05,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": -0.083,
+          "n_months": 26,
+          "is_ir": 2.153,
+          "oos_ir": -1.17,
+          "oos_sign_ok": false,
+          "t_stat": -0.12,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": 0.789,
+          "n_months": 19,
+          "is_ir": 0.263,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": 0.99,
+          "top_tercile": true,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": 0.292,
+          "n_months": 15,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": 0.33,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 1,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_C19_Composite_Earnings_LO_top25": {
+      "grade": "F",
+      "role": "core",
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": -0.174,
+          "n_months": 195,
+          "is_ir": 0.098,
+          "oos_ir": -0.631,
+          "oos_sign_ok": false,
+          "t_stat": -0.7,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": -0.102,
+          "n_months": 26,
+          "is_ir": 2.901,
+          "oos_ir": -1.453,
+          "oos_sign_ok": false,
+          "t_stat": -0.15,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": 1.135,
+          "n_months": 19,
+          "is_ir": 0.832,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": 1.43,
+          "top_tercile": true,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": 0.113,
+          "n_months": 15,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": 0.13,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 1,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_CR01_Sector_Comovement_LO_top25": {
+      "grade": "F",
+      "role": "core",
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": -0.545,
+          "n_months": 195,
+          "is_ir": -0.549,
+          "oos_ir": -0.534,
+          "oos_sign_ok": false,
+          "t_stat": -2.2,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": -0.678,
+          "n_months": 26,
+          "is_ir": -0.859,
+          "oos_ir": -0.368,
+          "oos_sign_ok": false,
+          "t_stat": -1,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": -1.227,
+          "n_months": 19,
+          "is_ir": -2.496,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": -1.54,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": -0.121,
+          "n_months": 15,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": -0.13,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 1,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_CR02_Volume_Concentration_LO_top25": {
+      "grade": "F",
+      "role": "core",
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": -0.756,
+          "n_months": 195,
+          "is_ir": -0.651,
+          "oos_ir": -0.955,
+          "oos_sign_ok": false,
+          "t_stat": -3.05,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": -0.44,
+          "n_months": 26,
+          "is_ir": 1.591,
+          "oos_ir": -1.978,
+          "oos_sign_ok": false,
+          "t_stat": -0.65,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": -0.408,
+          "n_months": 19,
+          "is_ir": -0.82,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": -0.51,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": -0.413,
+          "n_months": 15,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": -0.46,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 1,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_CR04_Ownership_Concentration_LO_top25": {
+      "grade": "F",
+      "role": "core",
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": -0.735,
+          "n_months": 195,
+          "is_ir": -0.411,
+          "oos_ir": -1.258,
+          "oos_sign_ok": false,
+          "t_stat": -2.96,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": -0.505,
+          "n_months": 26,
+          "is_ir": 0.142,
+          "oos_ir": -0.982,
+          "oos_sign_ok": false,
+          "t_stat": -0.74,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": -0.325,
+          "n_months": 19,
+          "is_ir": -0.912,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": -0.41,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": -1.101,
+          "n_months": 15,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": -1.23,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 1,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_CR05_Short_Pressure_Proxy_LO_top25": {
+      "grade": "F",
+      "role": "core",
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": -0.064,
+          "n_months": 195,
+          "is_ir": 0.056,
+          "oos_ir": -0.268,
+          "oos_sign_ok": false,
+          "t_stat": -0.26,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": -0.1,
+          "n_months": 26,
+          "is_ir": 1.386,
+          "oos_ir": -1.142,
+          "oos_sign_ok": false,
+          "t_stat": -0.15,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": -0.257,
+          "n_months": 19,
+          "is_ir": -0.866,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": -0.32,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": -0.64,
+          "n_months": 15,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": -0.72,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 1,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_CR06_DTC_Proxy_LO_top25": {
+      "grade": "F",
+      "role": "core",
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": -0.745,
+          "n_months": 195,
+          "is_ir": -0.436,
+          "oos_ir": -1.24,
+          "oos_sign_ok": false,
+          "t_stat": -3,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": -0.494,
+          "n_months": 26,
+          "is_ir": 0.174,
+          "oos_ir": -0.981,
+          "oos_sign_ok": false,
+          "t_stat": -0.73,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": -0.292,
+          "n_months": 19,
+          "is_ir": -0.813,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": -0.37,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": -1.133,
+          "n_months": 15,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": -1.27,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 1,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_CR07_Momentum_Crowding_LO_top25": {
+      "grade": "F",
+      "role": "core",
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": -0.522,
+          "n_months": 195,
+          "is_ir": -0.392,
+          "oos_ir": -0.708,
+          "oos_sign_ok": false,
+          "t_stat": -2.1,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": -0.34,
+          "n_months": 26,
+          "is_ir": 1.151,
+          "oos_ir": -1.589,
+          "oos_sign_ok": false,
+          "t_stat": -0.5,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": -0.618,
+          "n_months": 19,
+          "is_ir": -0.354,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": -0.78,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": -0.586,
+          "n_months": 15,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": -0.65,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 1,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_CR08_Volume_Price_Divergence_LO_top25": {
+      "grade": "F",
+      "role": "core",
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": -1.172,
+          "n_months": 195,
+          "is_ir": -1.085,
+          "oos_ir": -1.315,
+          "oos_sign_ok": false,
+          "t_stat": -4.72,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": -0.003,
+          "n_months": 26,
+          "is_ir": 1.986,
+          "oos_ir": -1.147,
+          "oos_sign_ok": false,
+          "t_stat": -0,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": -0.179,
+          "n_months": 19,
+          "is_ir": -0.493,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": -0.22,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": 0.063,
+          "n_months": 15,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": 0.07,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 1,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_CR09_Money_Flow_Ratio_LO_top25": {
+      "grade": "F",
+      "role": "core",
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": 0.175,
+          "n_months": 195,
+          "is_ir": 0.549,
+          "oos_ir": -0.701,
+          "oos_sign_ok": false,
+          "t_stat": 0.71,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": -0.87,
+          "n_months": 26,
+          "is_ir": -0.381,
+          "oos_ir": -1.325,
+          "oos_sign_ok": false,
+          "t_stat": -1.28,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": 0.036,
+          "n_months": 19,
+          "is_ir": 0.183,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": 0.04,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": -0.349,
+          "n_months": 15,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": -0.39,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 1,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_CR10_Convergence_Premium_LO_top25": {
+      "grade": "F",
+      "role": "core",
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": -0.698,
+          "n_months": 195,
+          "is_ir": -0.455,
+          "oos_ir": -1.076,
+          "oos_sign_ok": false,
+          "t_stat": -2.81,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": -0.55,
+          "n_months": 26,
+          "is_ir": 0.678,
+          "oos_ir": -1.319,
+          "oos_sign_ok": false,
+          "t_stat": -0.81,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": -0.37,
+          "n_months": 19,
+          "is_ir": -0.394,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": -0.47,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": -0.031,
+          "n_months": 15,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": -0.03,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 1,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_CR11_Idiosyncratic_Return_LO_top25": {
+      "grade": "F",
+      "role": "core",
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": -0.375,
+          "n_months": 195,
+          "is_ir": -0.464,
+          "oos_ir": -0.179,
+          "oos_sign_ok": false,
+          "t_stat": -1.51,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": -0.596,
+          "n_months": 26,
+          "is_ir": -2.468,
+          "oos_ir": 1.256,
+          "oos_sign_ok": false,
+          "t_stat": -0.88,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": -1.303,
+          "n_months": 19,
+          "is_ir": -1.933,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": -1.64,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": -0.131,
+          "n_months": 15,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": -0.15,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 1,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_IN01_CapEx_to_Assets_LO_top25": {
+      "grade": "F",
+      "role": "core",
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": -0.024,
+          "n_months": 195,
+          "is_ir": 0.131,
+          "oos_ir": -0.274,
+          "oos_sign_ok": false,
+          "t_stat": -0.1,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": -0.339,
+          "n_months": 26,
+          "is_ir": 0.547,
+          "oos_ir": -1.234,
+          "oos_sign_ok": false,
+          "t_stat": -0.5,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": -1.271,
+          "n_months": 19,
+          "is_ir": -0.125,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": -1.6,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": -0.857,
+          "n_months": 15,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": -0.96,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 1,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_IN02_CapEx_to_Revenue_LO_top25": {
+      "grade": "F",
+      "role": "core",
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": -0.243,
+          "n_months": 195,
+          "is_ir": -0.021,
+          "oos_ir": -0.622,
+          "oos_sign_ok": false,
+          "t_stat": -0.98,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": -0.42,
+          "n_months": 26,
+          "is_ir": 0.675,
+          "oos_ir": -1.365,
+          "oos_sign_ok": false,
+          "t_stat": -0.62,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": -1.382,
+          "n_months": 19,
+          "is_ir": -0.292,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": -1.74,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": -0.616,
+          "n_months": 15,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": -0.69,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 1,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_IN04_top25": {
+      "grade": "C",
+      "role": "core",
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": 0.204,
+          "n_months": 195,
+          "is_ir": 0.353,
+          "oos_ir": -0.081,
+          "oos_sign_ok": false,
+          "t_stat": 0.82,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": -0.272,
+          "n_months": 26,
+          "is_ir": 1.543,
+          "oos_ir": -1.443,
+          "oos_sign_ok": false,
+          "t_stat": -0.4,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": -0.878,
+          "n_months": 19,
+          "is_ir": -1.066,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": -1.11,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": 0.41,
+          "n_months": 15,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": 0.46,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 1,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_IN05_Net_Debt_Issuance_LO_top25": {
+      "grade": "F",
+      "role": "core",
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": 0.04,
+          "n_months": 195,
+          "is_ir": 0.027,
+          "oos_ir": 0.075,
+          "oos_sign_ok": true,
+          "t_stat": 0.16,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": -1.194,
+          "n_months": 26,
+          "is_ir": -0.783,
+          "oos_ir": -1.66,
+          "oos_sign_ok": false,
+          "t_stat": -1.76,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": -0.031,
+          "n_months": 19,
+          "is_ir": 0.23,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": -0.04,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": -0.84,
+          "n_months": 15,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": -0.94,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 1,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_V10_FCF_Yield_LO_top25": {
+      "grade": "F",
+      "role": "core",
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": 0.014,
+          "n_months": 195,
+          "is_ir": 0.05,
+          "oos_ir": -0.051,
+          "oos_sign_ok": false,
+          "t_stat": 0.05,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": -0.331,
+          "n_months": 26,
+          "is_ir": 1.361,
+          "oos_ir": -1.604,
+          "oos_sign_ok": false,
+          "t_stat": -0.49,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": -0.065,
+          "n_months": 19,
+          "is_ir": 0.564,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": -0.08,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": -0.537,
+          "n_months": 15,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": -0.6,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 1,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_V15_NetDebt_Adj_EP_LO_top25": {
+      "grade": "F",
+      "role": "core",
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": 0.452,
+          "n_months": 195,
+          "is_ir": 0.545,
+          "oos_ir": 0.275,
+          "oos_sign_ok": true,
+          "t_stat": 1.82,
+          "top_tercile": true,
+          "high_confidence": true,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": -0.062,
+          "n_months": 26,
+          "is_ir": 0.85,
+          "oos_ir": -1.134,
+          "oos_sign_ok": false,
+          "t_stat": -0.09,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": -0.021,
+          "n_months": 19,
+          "is_ir": 1.056,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": -0.03,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": -0.596,
+          "n_months": 15,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": -0.67,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 1,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_V17_Payout_Ratio_LO_top25": {
+      "grade": "F",
+      "role": "core",
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": -0.311,
+          "n_months": 158,
+          "is_ir": -0.45,
+          "oos_ir": -0.031,
+          "oos_sign_ok": false,
+          "t_stat": -1.13,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": -0.001,
+          "n_months": 18,
+          "is_ir": 0.341,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": -0,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": -1.865,
+          "n_months": 18,
+          "is_ir": -2.166,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": -2.28,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": -0.339,
+          "n_months": 9,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": -0.29,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 1,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_V19_Debt_to_Market_LO_top25": {
+      "grade": "F",
+      "role": "core",
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": -0.06,
+          "n_months": 195,
+          "is_ir": -0.062,
+          "oos_ir": -0.056,
+          "oos_sign_ok": false,
+          "t_stat": -0.24,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": -0.94,
+          "n_months": 26,
+          "is_ir": -0.229,
+          "oos_ir": -1.574,
+          "oos_sign_ok": false,
+          "t_stat": -1.38,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": -0.4,
+          "n_months": 19,
+          "is_ir": 0.406,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": -0.5,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": -0.248,
+          "n_months": 15,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": -0.28,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 1,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_V21_Composite_Equity_Issuance_LO_top25": {
+      "grade": "F",
+      "role": "core",
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": -0.384,
+          "n_months": 195,
+          "is_ir": -0.282,
+          "oos_ir": -0.618,
+          "oos_sign_ok": false,
+          "t_stat": -1.55,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": -1.266,
+          "n_months": 26,
+          "is_ir": -1.353,
+          "oos_ir": -1.303,
+          "oos_sign_ok": false,
+          "t_stat": -1.86,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": -0.051,
+          "n_months": 19,
+          "is_ir": -0.223,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": -0.06,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": -0.65,
+          "n_months": 15,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": -0.73,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 1,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_str1715v2": {
+      "grade": "C",
+      "role": "core",
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": 0.412,
+          "n_months": 195,
+          "is_ir": 0.721,
+          "oos_ir": -0.202,
+          "oos_sign_ok": false,
+          "t_stat": 1.66,
+          "top_tercile": true,
+          "high_confidence": true,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": -0.145,
+          "n_months": 26,
+          "is_ir": 1.231,
+          "oos_ir": -0.943,
+          "oos_sign_ok": false,
+          "t_stat": -0.21,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": 0.503,
+          "n_months": 19,
+          "is_ir": 1.241,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": 0.63,
+          "top_tercile": true,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": 0.211,
+          "n_months": 15,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": 0.24,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 1,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_str1715v3": {
+      "grade": "C",
+      "role": "core",
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": -0.042,
+          "n_months": 195,
+          "is_ir": 0.311,
+          "oos_ir": -0.724,
+          "oos_sign_ok": false,
+          "t_stat": -0.17,
+          "top_tercile": false,
+          "high_confidence": true,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": 0.134,
+          "n_months": 26,
+          "is_ir": 1.997,
+          "oos_ir": -0.981,
+          "oos_sign_ok": false,
+          "t_stat": 0.2,
+          "top_tercile": true,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": 0.539,
+          "n_months": 19,
+          "is_ir": 1.489,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": 0.68,
+          "top_tercile": true,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": 0.434,
+          "n_months": 15,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": 0.49,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 1,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": null,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        }
+      }
+    },
+    "STR_valearn_70_top25": {
+      "grade": "F",
+      "role": "core",
+      "by_regime": {
+        "RISK_ON": {
+          "admitted": false,
+          "regime_ir": 0.432,
+          "n_months": 195,
+          "is_ir": 0.63,
+          "oos_ir": 0.079,
+          "oos_sign_ok": true,
+          "t_stat": 1.74,
+          "top_tercile": true,
+          "high_confidence": true,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "NEUTRAL": {
+          "admitted": false,
+          "regime_ir": -0.259,
+          "n_months": 26,
+          "is_ir": 0.767,
+          "oos_ir": -1.33,
+          "oos_sign_ok": false,
+          "t_stat": -0.38,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CAUTION": {
+          "admitted": false,
+          "regime_ir": -0.238,
+          "n_months": 19,
+          "is_ir": 0.057,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": -0.3,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": false,
+          "rationale": "review_pending"
+        },
+        "CRISIS": {
+          "admitted": false,
+          "regime_ir": 0.154,
+          "n_months": 15,
+          "is_ir": null,
+          "oos_ir": null,
+          "oos_sign_ok": false,
+          "t_stat": 0.17,
+          "top_tercile": false,
+          "high_confidence": false,
+          "marginal_above_median": true,
+          "rationale": "review_pending"
+        },
+        "RISK_OFF": {
+          "admitted": false,
+          "regime_ir": null,
+          "n_months": 1,
           "is_ir": null,
           "oos_ir": null,
           "oos_sign_ok": false,

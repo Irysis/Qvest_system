@@ -23,7 +23,7 @@ INFRA_DIR <- tryCatch(dirname(dirname(sys.frame(1)$ofile)),
 source(file.path(INFRA_DIR, "config.R"))
 source(file.path(INFRA_DIR, "backtest_harness.R"))
 
-MEM_FILE <- "/home/quant/.claude/projects/-mnt-c-Users-User-OneDrive-------Quant-Module-Moltbot/memory/methodology_memory.md"
+MEM_FILE <- local({ .c <- c("C:/Users/99922/.claude/projects/C--Users-99922-OneDrive-Quant-Module-Moltbot/memory/methodology_memory.md", "/home/quant/.claude/projects/-mnt-c-Users-User-OneDrive-------Quant-Module-Moltbot/memory/methodology_memory.md"); .e <- .c[file.exists(.c)]; if (length(.e)) .e[1] else .c[1] })  # 2026-06-10 현 경로 1순위
 STRAT_BASE <- file.path(PROJECT_ROOT, "04_Research", "strategies")
 
 # ─── L-code 파싱 ─────────────────────────────────────────────────────────────

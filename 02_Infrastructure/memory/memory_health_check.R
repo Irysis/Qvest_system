@@ -13,7 +13,7 @@ SCRIPT_DIR <- tryCatch({ d <- dirname(sys.frame(1)$ofile); if (d == ".") getwd()
     if (length(file_arg) > 0) { p <- sub("--file=", "", file_arg[1]); p <- gsub("~+~", " ", p, fixed = TRUE); dirname(p) } else getwd() })
 
 PROJECT_ROOT <- dirname(SCRIPT_DIR)
-MEMORY_DIR   <- "/home/quant/.claude/projects/-mnt-c-Users-User-OneDrive-------Quant-Module-Moltbot/memory"
+MEMORY_DIR   <- local({ .c <- c("C:/Users/99922/.claude/projects/C--Users-99922-OneDrive-Quant-Module-Moltbot/memory", "/home/quant/.claude/projects/-mnt-c-Users-User-OneDrive-------Quant-Module-Moltbot/memory"); .e <- .c[dir.exists(.c)]; if (length(.e)) .e[1] else .c[1] })  # 2026-06-10 현 경로 1순위
 STRAT_DIR    <- file.path(PROJECT_ROOT, "04_Research", "strategies")
 
 cat("══════════════════════════════════════\n")

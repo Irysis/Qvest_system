@@ -4,7 +4,7 @@
 # 사용: bash 02_Infrastructure/ops/count_prompt_tokens.sh [--json]
 set -uo pipefail
 
-ROOT="$(ls -d /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo "$PWD")"
+ROOT="$(ls -d /c/Users/99922/OneDrive/Quant_Module_Moltbot /mnt/c/Users/99922/OneDrive/Quant_Module_Moltbot /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1 || echo "$PWD")"
 cd "$ROOT" || exit 1
 
 JSON_OUT=0
