@@ -58,7 +58,7 @@ FR이 모듈을 소비하려면 **표준형** 필수:
 
 admitted = ①∧②∧③∧④. m이 ≥1 regime admitted면 풀 진입. `run_wf_ensemble`이 admitted union으로 풀 제한 + regime별 후보 제한.
 
-**★ C2 희소국면 경로 (2026-06-10 도훈 mandate — `compute_rcma(rare_mode=)`, 기본 OFF)**: ②n≥12 × ④t≥2의 곱이 n=12 셀에 IR≥2.0을 요구해 CRISIS specialist를 수학적으로 차단(RCMA 존재이유와 충돌). base rate<10% 국면(CRISIS·RISK_OFF) 셀 한정 **②n≥6·④t≥1.5 완화 OR stress-pool(CRISIS∪RISK_OFF∪CAUTION) 합산 t≥2 대체경로**. 두 경로 모두 ⑤ strict(review_pending 불가) 의무, ①③ 불변. 사이징 방어 = dispatcher shrink n/(n+36)(n=6 → 신호반영 ≤14%) + w_cap 0.25. **활성화 게이트 = `run_wf_ensemble` A/B(전후 ensemble OOS 비악화) + 도훈 confirm** (그 전까지 legacy 판정). 합성 검증: CRISIS n=5.5m·IR 4.22 셀이 OFF에서 차단 → ON에서 pool-path(t 5.55) 진입, noise 모듈 차단 유지, 비희소 셀 판정 불변.
+**★ C2 희소국면 경로 (2026-06-10 도훈 mandate — `compute_rcma(rare_mode=)`) → A/B 실측 기각, rare_mode OFF 유지**: ②n≥12 × ④t≥2의 곱이 n=12 셀에 IR≥2.0을 요구해 CRISIS specialist를 수학적으로 차단(RCMA 존재이유와 충돌) → base rate<10% 국면 셀 한정 ②n≥6·④t≥1.5 OR stress-pool 합산 t≥2 경로를 코드 반영(⑤ strict 의무·①③ 불변·shrink+w_cap 사이징 방어). **2026-06-10 실측 A/B(`FR_001_c2ab_{OFF,ON}.json`): OFF 0.880/PORT_t 1.871(기존 FR_001 재현 — 회귀 PASS) vs ON 0.837/1.496/DSR 0.228 → 악화 = 활성화 기각.** 현 0.73~0.80 상관 풀엔 넣을 진짜 희소국면 specialist가 부족 — 완화가 약한 셀 노이즈만 추가. **재도전 트리거(INV-7)**: 직교 sleeve·CRISIS specialist 신규 등재 시 A/B 재실행. 그 전까지 legacy 판정이 권위.
 
 ## 6. 작동 메커니즘
 
