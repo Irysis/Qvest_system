@@ -60,6 +60,25 @@
 
 **1715 숫자 보정 (정직)**: STR ID는 전 family 합산 일련번호라 "1715회 전부 revision 시도"는 아님 (현존 224 dirs, census 1주에만 ~500 구성). 단 논지 유지 — 유일한 production 성공은 최다 반복 축에서 나왔고, 그 반복이 frame 발견(전종목·book-marginal·overlay)을 가능케 했음.
 
+### 2.2 Dynamic Tilt/로테이션 "기각"의 정확한 scope (2026-06-10 도훈 이의 반영 — 과잉 일반화 정정)
+
+**확립된 좁은 명제 (실측 다중 — 철회 안 함)**:
+- "**현 0.73~0.80 상관 모듈 풀**에서, **국면-IR 조건화**로, **모듈 레벨** 로테이션"은 알파 무익 — regime_study_decisive(전 k 음수) + C2 2회 A/B + SJM 업그레이드 비전이(분류 품질↑에도 SR 不변) + forecaster FR_001_fc(OOS active 음수). 4중 실측.
+- 팩터 모멘텀 *단독* trend-chasing: F (tsmom + L-code 계열).
+
+**미답 영역 (기각된 적 없음 — "불가" 단정 금지)**:
+| # | 미검증 축 | 상태 |
+|---|---|---|
+| 1 | **제안 tilt 4항 중 3항**: Z^valuation(E1)·Z^crowding(E3)·soft 확률(E2) | 채택해놓고 미실행 — 검증한 건 regime 항 1개뿐 |
+| 2 | **팩터/슬리브 레벨 틸트** (모듈 로테이션과 구조 다름): book 내부 Core/Defense/Value 슬리브 가중의 bounded 동적화 | 미검증 — Iter5 65/35은 정적. **E7로 신규 등재** (아래) |
+| 3 | **Shu-Mulvey 정본 파이프라인** (팩터별 SJM→BL→long-only MVO) | 의도적 이연("직교 슬리브 확보 후") — 실패 아님 |
+| 4 | 연속 bounded-z 틸트 (이산 국면 스위치 대비) | 미검증 |
+| 5 | **이질(직교) 풀에서의 로테이션** | **미검증이자 핵심** — 아래 |
+
+**구조적 핵심**: 모든 기각 실측의 공통 진단 = "천장은 로테이션이 아니라 **입력 직교성**"(regime_study·SJM 노트 동일 결론). 즉 기각은 "로테이션 가설의 사망"이 아니라 "**돌릴 재료가 없는 풀**에서의 무익" 판정. **전종목 value sleeve(active-cor 0.005~0.03)가 admit되어 모듈로 등재되는 순간 — 사상 첫 직교 모듈 — 재도전 트리거가 자연 발동**한다 (run_factor_rotation 신선도 자동감지 + C2 v2.1 재A/B + Rotate-vs-Static 재실행).
+
+**E7 (신규 — 도훈 confirm 대기): book 내부 슬리브-레벨 동적 틸트** — Core/Defense/Value 슬리브 가중을 국면·밸류에이션 조건부로 bounded(±10~15%p) 동적화. 제안 §5의 원형에 가장 가까운 미검증 실험. 단 PG2 직접 수정이라 overlay 영역과의 중복 진단 선행 + production-fidelity 하니스 필요. 사전확률 중하(모듈 로테이션 기각과 같은 메커니즘이면 무익하나, 슬리브는 모듈보다 상호 직교적 — Core⊥value cor 0.03).
+
 **양날 명시**: ① 깊은 탐색 = 다중검정 — 1715-trial 끝 승자 선택이 바로 admit window 1.95가 DSR로 1.1~1.5까지 deflate되는 이유. 사전등록 spec grid + n_trials 누적 회계 없는 깊은 탐색은 금지. ② 비용 반론은 약화 — frame이 확립된 지금 fair trial 비용은 1715가 아니라 **value 선례 기준 ~9 cycle** (revision의 1715에는 frame 발견 비용이 포함).
 
 ---
