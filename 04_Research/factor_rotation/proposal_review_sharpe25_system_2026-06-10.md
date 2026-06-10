@@ -122,3 +122,27 @@
 n_trials/n_iterations **기록**은 전 실험 의무 유지. DSR **게이트**는 selection operator 기준 (`measurement-graduation §3` 2026-06-10 도훈 mandate):
 - **sweep (DSR HARD 유지)**: E6 Stage A 사전등록 grid · FR 레짐grid/hyper sweep — 시행 전 grid 전량 계상.
 - **chain (DSR 게이트 면제, 진단산출만)**: E1/E2/E3 단일 설계 A/B · 가설주도 순차개선 — 자격요건(IS-only 변형선택 + holdout 최종 1회 + iteration 사유 기록) 충족 시 `selection_type="chain"`.
+
+## 7. 게이트 Calibration 백로그 C1~C3 (2026-06-10 적립 — 도훈 confirm 대기, 수치개정은 헌법 사안)
+
+게이트 점검(도훈 질의)에서 확인된 긴장 3건의 수정 설계. 공통 원칙: **문턱을 낮추지 않고 통계량/결합구조를 고친다.**
+
+### C1. oos_retention — 통계량 보강 + 사유 분리 (긴장: 비율 노이즈 ±0.4 + 과적합·decay 혼동)
+- **(a) 다중 분할 중앙값**: 단일 65/35 → anchored 3분할 {55/45, 65/35, 75/25} retention의 **중앙값** (임의 절단점 노이즈 축소. 표본 노이즈 자체는 정보이론적 한계 — 제거 불가 명시).
+- **(b) Borderline band + 보강증거 escalation**: retention ≥ 0.7 단독 PASS(불변) / **< 0.5 무조건 FAIL**(band 남용 차단) / **[0.5, 0.7) = 보강증거 2/3 충족 시 조건부 PASS**: ① trailing-subwindow(최근 40% 또는 2017+) PORT_t > 0 ② placebo p < 0.05 ③ book-marginal ΔSR > 0 (직교 cor < 0.30 동시). **holdout은 escalation 증거에서 제외**(최종 1회 봉인 원칙 위반 금지). — 전종목 value 0.601 판단(도훈 기허용 + 2017+ +1.41 + cor 0.005)을 규칙으로 성문화한 것.
+- **(c) FAIL 사유 라벨 의무**: overfit-pattern(전략 고유 붕괴 — cohort 대비 특이) vs **decay-pattern**(동일 구간 cohort-wide 붕괴 — 예: 327팩터 2017+ 전멸) 진단 동봉. decay-pattern은 measurement-graduation §3 screening tier `screen_route`(FR_RCMA/era-limited)로 라우팅 — 자본 graduation은 여전히 불가, 단 "정직한 전략의 시대 탈락"과 "체리픽 탈락"을 같은 사형으로 처리하지 않음.
+- **채택 전 검증**: 16후보 calibration + census 데이터 재채점 — value 0.601 구제 & false-accept 무증가 확인.
+
+### C2. RCMA 희소국면 차단 해소 (긴장: ②n≥12 × ④t≥2 곱 → CRISIS 셀 IR≥1.4~2.0 요구, specialist 수학적 차단)
+- **희소국면 정의**: regime base rate < 10% (실측 CRISIS·RISK_OFF).
+- **완화 경로 (희소국면 셀 한정)**: ② n≥12 → **n≥6** / ④ t≥2 → **t≥1.5**, **OR 대체경로 = stress-pool 합산**(CRISIS∪RISK_OFF∪CAUTION 셀 합산 t ≥ 2 — admission 증거용만, dispatch는 세분 국면 유지).
+- **강화 조건**: ⑤ 경제논리(AX-001 방어 메커니즘 명시)를 이 경로에선 의무-strict. ③ 부호지속 불변.
+- **이중 방어 논거**: admission은 저위험 결정 — dispatcher shrink n/(n+36)이 n=6 specialist를 자동 저비중(≤14% 신호반영) + w_cap 0.25. 엄격 admission과 강 shrink의 이중 게이트가 차단의 원인이었으므로 한쪽(admission)만 완화.
+- **채택 전 검증**: admission 재계산 → `run_wf_ensemble` A/B(변경 전후) — ensemble OOS 개선/불변이면 채택, 악화면 기각.
+
+### C3. holdout — 해석 규율 명문화 (긴장: 18~24m SR SE ±0.7~0.8 → 유의성 검정 무력)
+- 길이 불변(연장은 IS/OOS 잠식 trade-off). **판정 기준을 성과 기준 → 사전등록 예측구간 falsification으로 전환**: 채택 시점에 IS+OOS 블록 부트스트랩으로 holdout-길이 Sharpe **예측구간 [5%, 95%]를 사전 기록** → 실측이 5% 하단 미만 = FAIL / 구간 내 = PASS(저정보 명시) / 95% 초과 = PASS+.
+- **소모 규칙**: holdout 조회 후 파라미터 재조정 시 그 holdout은 소모 — 새 봉인 구간 누적 전까지 재판정 금지. (chain 자격요건 ③과 정합.)
+- **연장 개념**: 채택 후 페이퍼/라이브 트래킹 = holdout의 자동 연장 — monitoring agent가 동일 예측구간 대비 drift 추적 (라이브 0개월 공백 보완 경로).
+
+**우선순위 권고**: C2(FR 모드 존재이유 직결) > C1(binding 게이트) > C3(문구·헬퍼만). 구현은 도훈 confirm 후 — C1/C2는 essence_score·regime_module_admission 코드 + A/B 실측 의무, C3는 규칙 문서 + 부트스트랩 헬퍼.
