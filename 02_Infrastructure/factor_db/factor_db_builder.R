@@ -479,21 +479,32 @@ cat("[factor_db_builder] Loaded. FACTOR_DB_DIR:", FACTOR_DB_DIR, "\n")
   # Merge sector info
   dt <- merge(dt, sector_map[, .(Ticker, Sector)], by = "Ticker", all.x = TRUE)
 
-  # Coverage: TRUE if Raw_Value is not NA
-  dt[, Coverage := !is.na(Raw_Value)]
+  # ── Raw-value winsorize (P1 2026-06-10): cross-sectional 1/99 clip ────────
+  # Ratio factors with near-zero denominators let a single ticker dominate
+  # mean/sd (e.g., A015390 |Z|≈50 → Q11_Net_Margin 79.6% identical-Z collapse
+  # via the ±3 clip + re-standardize below: post-clip sd≈0 re-inflates Z).
+  # Clip Raw_Value per factor BEFORE z-scoring. Output Raw_Value and Rank_Pct
+  # stay computed from the ORIGINAL Raw_Value (reversibility guaranteed).
+  .winsorize_raw <- function(x) {
+    if (sum(!is.na(x)) < 20L) return(x)
+    q <- quantile(x, c(0.01, 0.99), na.rm = TRUE, names = FALSE)
+    if (!all(is.finite(q))) return(x)
+    pmin(pmax(x, q[1]), q[2])
+  }
+  dt[, Raw_W := .winsorize_raw(Raw_Value), by = Factor_Name]
 
-  # Universe z-score (cross-sectional)
+  # Universe z-score (cross-sectional, winsorized raw)
   dt[, Z_Score := {
-    vals <- Raw_Value
+    vals <- Raw_W
     mu <- mean(vals, na.rm = TRUE)
     s  <- sd(vals, na.rm = TRUE)
     if (is.na(s) || s < 1e-12) rep(NA_real_, .N)
     else (vals - mu) / s
   }, by = Factor_Name]
 
-  # Sector-neutral z-score
+  # Sector-neutral z-score (winsorized raw; clip bounds are universe-level 1/99)
   dt[, Z_Sector := {
-    vals <- Raw_Value
+    vals <- Raw_W
     mu <- mean(vals, na.rm = TRUE)
     s  <- sd(vals, na.rm = TRUE)
     if (is.na(s) || s < 1e-12) rep(NA_real_, .N)
@@ -523,8 +534,14 @@ cat("[factor_db_builder] Loaded. FACTOR_DB_DIR:", FACTOR_DB_DIR, "\n")
     if (!is.na(s) && s > 1e-12) Z_Sector / s else Z_Sector
   }, by = .(Factor_Name, Sector)]
 
-  # Drop Sector column (not in output schema)
-  dt[, Sector := NULL]
+  # Coverage (P1 2026-06-10 redefinition): raw present AND usable Z exists.
+  # Market-level factors (cross-sectional sd=0 → Z all NA, e.g. RE*/MA05~07/
+  # M31_Breadth_Mom/CR03) become FALSE so connector coverage_min filtering
+  # actually bites. Previously: Coverage = !is.na(Raw_Value) only.
+  dt[, Coverage := !is.na(Raw_Value) & !is.na(Z_Score)]
+
+  # Drop working columns (not in output schema)
+  dt[, c("Sector", "Raw_W") := NULL]
 
   dt
 }
@@ -1085,7 +1102,35 @@ load_factor_db <- function(sig_date, factors = NULL, format = "wide",
 # 4. update_factor_db_daily() — Cron hook: compute current month if missing
 #==============================================================================
 
+#' Enumerate missing month tags between (last cached month + 1) and the month
+#' BEFORE as_of's month. P1 2026-06-10: gap-scan support — previously
+#' update_factor_db_daily() only built the current month, so any month the
+#' machine was off on month-end stayed missing forever.
+#' @param as_of Date. Reference "today" (default Sys.Date()).
+#' @return Character vector of YYYYMM tags needing backfill (possibly empty).
+.fdb_gap_months <- function(as_of = Sys.Date()) {
+  cached_ym <- gsub("factor_db_(\\d{6})\\.parquet", "\\1",
+                    list.files(FACTOR_DB_DIR, "^factor_db_\\d{6}\\.parquet$"))
+  if (length(cached_ym) == 0L) return(character(0))
+
+  last_first <- as.Date(paste0(max(cached_ym), "01"), format = "%Y%m%d")
+  cur_first  <- as.Date(format(as.Date(as_of), "%Y-%m-01"))
+  if (last_first >= cur_first) return(character(0))
+
+  # Month firsts from last cached through current, then drop both endpoints
+  # (last cached already exists; current month is handled by the caller).
+  month_firsts <- seq(last_first, cur_first, by = "month")
+  if (length(month_firsts) <= 2L) return(character(0))
+  gap_yms <- format(month_firsts[-c(1L, length(month_firsts))], "%Y%m")
+  setdiff(gap_yms, cached_ym)
+}
+
 #' Daily update hook for cron. Builds current month's factor DB if not cached.
+#' P1 2026-06-10:
+#'   1. Gap-scan: backfills all missing months (last cached month + 1 ~
+#'      previous month) using each month's last trading day from RAWDATA.
+#'   2. IC auto-refresh: compute_all_factor_ic_monthly() runs automatically
+#'      after a month-end build or any gap backfill (was manual-only).
 #' @export
 update_factor_db_daily <- function() {
   today <- Sys.Date()
@@ -1096,12 +1141,54 @@ update_factor_db_daily <- function() {
   next_day <- today + 1L
   is_month_end <- (format(today, "%m") != format(next_day, "%m"))
 
+  # ── Gap-scan backfill (past missing months) ────────────────────────────────
+  gap_yms <- .fdb_gap_months(today)
+  n_backfilled <- 0L
+  if (length(gap_yms) > 0L) {
+    cat(sprintf("[update_factor_db_daily] Gap-scan: %d missing month(s): %s\n",
+                length(gap_yms), paste(gap_yms, collapse = ", ")))
+    .load_base_data()
+    trd_dates <- .fdb_env$trading_dates
+    trd_ym    <- format(trd_dates, "%Y%m")
+    for (ym in gap_yms) {
+      m_dates <- trd_dates[trd_ym == ym]
+      if (length(m_dates) == 0L) {
+        cat(sprintf("  [SKIP] %s: no trading days in RAWDATA\n", ym))
+        next
+      }
+      m_last <- max(m_dates)
+      cat(sprintf("  [BACKFILL] %s -> last trading day %s\n", ym, m_last))
+      tryCatch({
+        build_factor_db(m_last, save = TRUE)
+        n_backfilled <- n_backfilled + 1L
+      }, error = function(e) {
+        cat(sprintf("  [ERROR] %s: %s\n", ym, conditionMessage(e)))
+      })
+    }
+  }
+
+  # ── Current month ───────────────────────────────────────────────────────────
   if (!file.exists(fpath) || is_month_end) {
     cat(sprintf("[update_factor_db_daily] Building/updating %s...\n", ym_tag))
     build_factor_db(today, save = TRUE, force = is_month_end)
   } else {
     cat(sprintf("[update_factor_db_daily] %s already cached. Skipping.\n", ym_tag))
   }
+
+  # ── IC auto-refresh ─────────────────────────────────────────────────────────
+  # Month-end build per mandate; also after gap backfill (otherwise the IC
+  # parquet stays stale for the backfilled months until the next month-end).
+  if (is_month_end || n_backfilled > 0L) {
+    cat("[update_factor_db_daily] Refreshing monthly IC (factor_ic_monthly.parquet)...\n")
+    tryCatch(
+      compute_all_factor_ic_monthly(),
+      error = function(e) {
+        cat(sprintf("[update_factor_db_daily] WARN: IC refresh failed: %s\n",
+                    conditionMessage(e)))
+      }
+    )
+  }
+  invisible(NULL)
 }
 
 

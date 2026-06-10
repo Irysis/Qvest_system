@@ -13024,5 +13024,77 @@
       "deprecation_reason": {},
       "mutation_parent": {}
     }
+  },
+  "AC14_Discretionary_Accruals": {
+    "name": "Discretionary Accruals",
+    "category": "accrual",
+    "definition": "Jones-model discretionary (managed) component of total accruals: residual after regressing accruals on dRevenue and PPE (Jones 1991). High discretionary accruals proxy earnings management and predict lower future returns (Sloan 1996; Xie 2001).",
+    "direction": "lower_better",
+    "data_source": "fundamental",
+    "lag_rule": "Factor_Date <= sig_d",
+    "update_freq": "quarterly",
+    "storage": "monthly",
+    "labels": {
+      "economic_family": "accrual",
+      "construction": "ratio",
+      "neutrality": "raw",
+      "horizon": "quarterly",
+      "capacity": "large",
+      "evidence_tier": "B",
+      "macro_sensitivity": "neutral",
+      "regime_profile": {
+        "risk_on": "neutral",
+        "elevated": "neutral",
+        "crisis": "neutral"
+      },
+      "correlation_group": "quality_cluster",
+      "turnover_profile": "low",
+      "data_dependency": "fundamental"
+    },
+    "lifecycle": {
+      "status": "active",
+      "research_stage": "S7",
+      "mutation_count": 0,
+      "added_date": "2026-06-10",
+      "last_validated": {},
+      "deprecation_reason": {},
+      "mutation_parent": {}
+    }
+  },
+  "XF_Q06_Op_Margin": {
+    "name": "Operating Margin (XF native)",
+    "category": "quality",
+    "definition": "OperatingProfit / Revenue. Core operating profitability margin, xlsx-native quarterly. Higher operating profitability predicts higher returns (operating-profitability evidence: Novy-Marx 2013; Ball-Gerakos-Linnainmaa-Nikolaev 2015).",
+    "direction": "higher_better",
+    "data_source": "fundamental_xlsx",
+    "lag_rule": "Factor_Date <= sig_d",
+    "update_freq": "quarterly",
+    "storage": "monthly",
+    "labels": {
+      "economic_family": "quality",
+      "construction": "ratio",
+      "neutrality": "raw",
+      "horizon": "quarterly",
+      "capacity": "large",
+      "evidence_tier": "B",
+      "macro_sensitivity": "defensive",
+      "regime_profile": {
+        "risk_on": "neutral",
+        "elevated": "positive",
+        "crisis": "positive"
+      },
+      "correlation_group": "quality_cluster",
+      "turnover_profile": "low",
+      "data_dependency": "fundamental_xlsx"
+    },
+    "lifecycle": {
+      "status": "active",
+      "research_stage": "S7",
+      "mutation_count": 0,
+      "added_date": "2026-06-10",
+      "last_validated": {},
+      "deprecation_reason": {},
+      "mutation_parent": {}
+    }
   }
 }

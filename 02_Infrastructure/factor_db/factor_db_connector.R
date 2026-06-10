@@ -1,8 +1,13 @@
 #==============================================================================
 # Factor DB Connector — Factor DB → Architecture Bridge
 #
-# Connects the Factor DB (268 factors, monthly parquets) to the
+# Connects the Factor DB (monthly long parquets, .cache/factor_db/) to the
 # regime-conditional factor allocation engine.
+# Factor counts vary by month — 고정 "N factors" 표기 금지 (2026-06-10 실측:
+#   registry 373 등록 / 월간 parquet distinct 342 (최신월 202605 = 315) /
+#   IC history 327 / 일간 DB 304).
+# Registry 제안(미백필, open item): entry별 "storage" 필드(monthly/daily/both)
+#   — 신규 등재 2건(AC14_Discretionary_Accruals, XF_Q06_Op_Margin)에만 시범 도입.
 #
 # Functions:
 #   load_month_factors(sig_date, coverage_min)
@@ -75,7 +80,11 @@ FACTOR_REG_PATH <- file.path(FACTOR_DB_DIR, "factor_registry.json")
   if (!file.exists(FACTOR_IC_MONTHLY_PATH)) {
     stop("[connector] factor_ic_monthly.parquet not found. Run compute_all_factor_ic_monthly() first.")
   }
-  .fdc_ic_hist <<- as.data.table(read_parquet(FACTOR_IC_MONTHLY_PATH))
+  # v2.1: col_select — N_Stocks 미사용. any_of()로 Usable_Date 부재 legacy 파일 호환 유지.
+  .fdc_ic_hist <<- as.data.table(read_parquet(
+    FACTOR_IC_MONTHLY_PATH,
+    col_select = tidyselect::any_of(c("Factor_Name", "IC", "Date", "Usable_Date"))
+  ))
   .fdc_ic_hist[, Date := as.Date(Date)]
   # v2.0 (L-168): ensure Usable_Date is also Date type for consistent filtering
   if ("Usable_Date" %in% names(.fdc_ic_hist)) {
@@ -108,15 +117,23 @@ load_month_factors <- function(sig_date, coverage_min = 0.05) {
     fpath <- file.path(FACTOR_DB_DIR, paste0("factor_db_", closest, ".parquet"))
   }
 
-  dt <- as.data.table(read_parquet(fpath))
+  # v2.1: col_select — only columns needed downstream (Coverage filter + direction
+  # alignment). Date/Raw_Value/Z_Sector/Rank_Pct unused here → IO/메모리 절감.
+  dt <- as.data.table(read_parquet(
+    fpath,
+    col_select = c("Ticker", "Factor_Name", "Z_Score", "Coverage")
+  ))
 
-  # Coverage filter: exclude factors with too few stocks
+  # Coverage filter: exclude factors with too few stocks.
+  # v2.1: N_Covered = Coverage & !is.na(Z_Score) — 시장레벨 dead 팩터(RE*/MA05-07/
+  # M31_Breadth_Mom/CR03 등)는 Z 전부 NA인데 Coverage=TRUE 전행이라 구 sum(Coverage)
+  # 집계가 필터를 무력화했음. 빌더 Coverage 재정의와 이중 방어 (구 parquet에도 즉효).
   n_tickers <- uniqueN(dt$Ticker)
-  factor_cov <- dt[, .(N_Covered = sum(Coverage == TRUE)), by = Factor_Name]
+  factor_cov <- dt[, .(N_Covered = sum(Coverage == TRUE & !is.na(Z_Score))), by = Factor_Name]
   factor_cov[, Pct := N_Covered / n_tickers]
   keep_factors <- factor_cov[Pct >= coverage_min, Factor_Name]
 
-  dt <- dt[Factor_Name %in% keep_factors & Coverage == TRUE]
+  dt <- dt[Factor_Name %in% keep_factors & Coverage == TRUE & !is.na(Z_Score)]
 
   # Direction alignment (v2.0 PIT-safe: pass sig_date for expanding IC window)
   registry <- .load_registry()
@@ -203,12 +220,11 @@ align_factor_direction <- function(factor_dt, registry, sig_date = NULL, min_ic_
             list(Mean_IC = NA_real_, ic_sign = NA_integer_, N_IC = n)
           }
         }, by = Factor_Name]
-
-        # Log direction inference summary
-        n_ic_inferred <- sum(!is.na(ic_dir$ic_sign))
-        n_ic_fallback <- sum(is.na(ic_dir$ic_sign))
-        cat(sprintf("[align_factor_direction] PIT-safe: sig_date=%s | IC-inferred=%d | fallback=%d | min_months=%d\n",
-                    sig_d, n_ic_inferred, n_ic_fallback, min_ic_months))
+        # v2.1: 구 로그(IC-history 전체 기준 카운트) 제거 — 로드된 팩터 기준
+        # 집계로 대체 (merge 이후 하단). IC-history에 아예 없는 팩터(구 73건)가
+        # 로그에 비가시화되던 문제 해소.
+        cat(sprintf("[align_factor_direction] PIT-safe: sig_date=%s | min_months=%d\n",
+                    sig_d, min_ic_months))
       }
     }
   } else {
@@ -216,31 +232,50 @@ align_factor_direction <- function(factor_dt, registry, sig_date = NULL, min_ic_
     cat("[align_factor_direction] No sig_date provided — registry-only direction (PIT-safe default).\n")
   }
 
-  # ---- Merge direction into factor_dt ----
+  # ---- Merge direction into factor_dt (v2.1: per-factor source tracking) ----
   if (!is.null(ic_dir) && nrow(ic_dir[!is.na(ic_sign)]) > 0) {
     # Primary: IC-based direction (PIT-filtered)
     factor_dt <- merge(factor_dt, ic_dir[, .(Factor_Name, ic_sign)],
                        by = "Factor_Name", all.x = TRUE)
+    factor_dt[, dir_source := fifelse(is.na(ic_sign), NA_character_, "ic")]
 
     # Secondary fallback: registry direction for factors without sufficient IC
     if (!is.null(reg_dir)) {
       factor_dt <- merge(factor_dt, reg_dir, by = "Factor_Name", all.x = TRUE)
+      factor_dt[is.na(ic_sign) & !is.na(reg_sign), dir_source := "registry"]
       factor_dt[is.na(ic_sign), ic_sign := reg_sign]
       factor_dt[, reg_sign := NULL]
     }
 
-    # Tertiary fallback: default higher_better
-    factor_dt[is.na(ic_sign), ic_sign := 1L]
+    # Tertiary fallback: default higher_better — WARN emitted below (v2.1)
+    factor_dt[is.na(ic_sign), `:=`(ic_sign = 1L, dir_source = "default")]
   } else {
     # Registry-only path (no IC available or no sig_date)
     if (!is.null(reg_dir)) {
       factor_dt <- merge(factor_dt, reg_dir[, .(Factor_Name, ic_sign = reg_sign)],
                          by = "Factor_Name", all.x = TRUE)
-      factor_dt[is.na(ic_sign), ic_sign := 1L]
+      factor_dt[, dir_source := fifelse(is.na(ic_sign), NA_character_, "registry")]
+      factor_dt[is.na(ic_sign), `:=`(ic_sign = 1L, dir_source = "default")]
     } else {
-      factor_dt[, ic_sign := 1L]
+      factor_dt[, `:=`(ic_sign = 1L, dir_source = "default")]
     }
   }
+
+  # ---- v2.1 direction-source log: LOADED-factor 기준 (IC-history 전체 아님) ----
+  .src_per_factor <- factor_dt[, .(src = dir_source[1L]), by = Factor_Name]
+  n_dir_ic  <- .src_per_factor[src == "ic", .N]
+  n_dir_reg <- .src_per_factor[src == "registry", .N]
+  n_dir_def <- .src_per_factor[src == "default", .N]
+  cat(sprintf("[align_factor_direction] loaded-factor direction: IC-inferred=%d / registry-fallback=%d / default-fallback=%d (n_factors=%d)\n",
+              n_dir_ic, n_dir_reg, n_dir_def, n_dir_ic + n_dir_reg + n_dir_def))
+  if (n_dir_def > 0) {
+    .def_names <- sort(.src_per_factor[src == "default", Factor_Name])
+    cat(sprintf("[align_factor_direction] WARN: %d factor(s) in neither IC history nor registry — defaulted ic_sign=1 (higher_better 가정): %s%s\n",
+                n_dir_def,
+                paste(head(.def_names, 10L), collapse = ", "),
+                if (length(.def_names) > 10L) sprintf(" ... (+%d more)", length(.def_names) - 10L) else ""))
+  }
+  factor_dt[, dir_source := NULL]
 
   # Apply direction: Z_Score_Aligned = Z_Score * ic_sign
   # This ensures higher Z_Score_Aligned = higher expected return for ALL factors
