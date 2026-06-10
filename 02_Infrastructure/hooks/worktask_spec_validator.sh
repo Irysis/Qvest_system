@@ -41,7 +41,10 @@ if not re.match(r'^WT(-[DPSH])?[0-9]{8}_[0-9]{3}$', tid):
 allowed_univs = [
     "KOSPI200", "KOSDAQ150", "KOSPI200_KOSDAQ150_intersection", "KR_top500",
     # universe_v2 (L-227 architect advisory, 2026-04-26)
-    "KR_top342", "KR_TOP500_FREEFLOAT", "KR_KOSPI300_KOSDAQ150", "KR_TOP500_LIQ1E8"
+    "KR_top342", "KR_TOP500_FREEFLOAT", "KR_KOSPI300_KOSDAQ150", "KR_TOP500_LIQ1E8",
+    # 전종목 유니버스 (도훈 mandate 2026-06-02 기허용 — Cycle 4/5/9 전종목 value 검증 경로.
+    #  LIQ 20d평균 거래대금 >= 2e8 KRW 필터 의무, ~2005종목. 2026-06-10 validator 배선)
+    "KR_ALL_LIQ2E8"
 ]
 uni = req.get("universe_definition", {})
 if uni.get("label") not in allowed_univs:

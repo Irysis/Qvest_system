@@ -1,0 +1,104 @@
+{
+  "task_id": "WT-D20260610_001",
+  "as_of_date": "2026-06-10",
+  "metric_type": "canonical_screen",
+  "metric_type_note": "All performance numbers via canonical_screen_bt() (contract build_benchmark_compare, NW lag-3). NOT forge-authoritative (admission binding = forge build_bt_result).",
+  "universe": {
+    "label": "KR_ALL_LIQ2E8",
+    "liq_min_won_20d": 200000000,
+    "mean_monthly_names": 1303.33463035,
+    "note": "full-universe (NOT KOSPI200 union KOSDAQ150). factor parquet universe-agnostic; LIQ>=2e8 t-PIT filter applied at consumer layer."
+  },
+  "period": {
+    "start": "2005-01-01",
+    "end": "2026-05-01",
+    "n_months": 257,
+    "start_rationale": "2005-01 standard (value/BM data from 2002-08, 36m IC burn-in)"
+  },
+  "authoritative_metrics": {
+    "portfolio_alpha_t_nw_lag3": 2.32551978,
+    "portfolio_alpha_t_pvalue": 0.02004418,
+    "information_ratio": 0.39784171,
+    "net_sr_active": 0.39784171,
+    "abs_sleeve_net_sr": 0.784,
+    "abs_sleeve_cagr": 0.251,
+    "abs_sleeve_mdd": -0.574,
+    "alpha_annualized": 0.24807259,
+    "turnover_annual": 16.34428016
+  },
+  "advisory_diagnostics": {
+    "rank_ic": 0.06123883,
+    "icir": 0.72942864,
+    "ic_t_stat": 11.69363071,
+    "n_ic_months": 257,
+    "monotonicity": 1,
+    "quintile_mean_fwd": [-0.0014581, 0.00324604, 0.00846947, 0.01250237, 0.01909027],
+    "subperiod_stability": 1,
+    "subperiod_ic": [0.07791433, 0.05128728, 0.04300549],
+    "note": "rank-IC family ADVISORY per WS2 (long-only realized alpha != cross-sectional rank power). portfolio_alpha_t is authoritative."
+  },
+  "graduation_gate": {
+    "portfolio_alpha_t_nw_HARD": 2.95,
+    "actual": 2.32551978,
+    "pass": false,
+    "oos_retention_HARD": 0.7,
+    "oos_band_lo": 0.5,
+    "actual_oos": -0.07230379,
+    "oos_pass": false,
+    "oos_status": "fail (<0.5, evidence-irrelevant)",
+    "dsr_gate_applicable": false,
+    "dsr_reason": "selection_type=chain (single-spec reconstruction). DSR diagnostic-only.",
+    "verdict": "DOES NOT clear deployment graduation as standalone. Full-period PORT_t 2.33<2.95 + OOS retention fail."
+  },
+  "oos_retention_v2": {
+    "value": -0.07230379,
+    "splits": [-0.07230379, 0.04924837, -0.09494876],
+    "split_fractions": [0.55, 0.65, 0.75],
+    "method": "essence_score v2: anchored 3-split median of active-IR(ann) OOS/IS",
+    "pattern_label": "decay",
+    "pattern_rationale": "Pre-2017 active t=2.95 (active SR 0.85), post-2017 active t=-0.24 (active SR -0.08). Cohort-wide KR/global value premium collapse 2017-2020, not strategy-specific overfit. screen_route eligible (DPL_FEATURE / FR_RCMA), NOT capital graduation.",
+    "escalation_evidence": {
+      "trailing36_port_t": -0.29995684,
+      "placebo_p": null,
+      "book_marginal_note": "orthogonal (cor -0.035) but trailing PORT_t negative -> band escalation NOT met (oos<0.5 anyway, escalation moot)."
+    }
+  },
+  "orthogonality_vs_book": {
+    "book_base": "STR_1715_AR_on_M4_R05_overlay_PG2 period_returns_layer5.csv ret_orig",
+    "n_overlap": 256,
+    "cor_net": -0.03458348,
+    "cor_active": -0.03918241,
+    "threshold": 0.3,
+    "orthogonal": true,
+    "note": "Strongly orthogonal (|cor| 0.035 << 0.30). Matches prior record (0.005~0.03). Fundamental value = genuine orthogonal axis vs STR_1715 momentum/defense book."
+  },
+  "prior_record_comparison": {
+    "source": "memory reference-str1715-structure / census Cycle 5/9 (proxy/scouting, _census_v2 absent this machine)",
+    "prior": {
+      "sleeve_SR": 0.808,
+      "CAGR": 0.32,
+      "oos_retention": 0.601,
+      "cor_vs_vanilla": [0.005, 0.03],
+      "port_t_2017plus": 1.41,
+      "port_t_2017plus_restricted_universe": -0.74
+    },
+    "reconstruction": {
+      "abs_sleeve_SR": 0.784,
+      "CAGR": 0.251,
+      "oos_retention_v2": -0.07230379,
+      "cor_vs_book": -0.03458348,
+      "port_t_2017plus": -0.23695111
+    },
+    "divergence_finding": "ABSOLUTE SR/orthogonality REPRODUCED (SR 0.78 vs 0.81, cor -0.035 vs 0.005-0.03). But 2017+ active t=-0.24 CONTRADICTS prior +1.41 claim and oos_retention -0.07 vs 0.601. The prior scouting OOS/2017+ figures are NOT reproduced under full-universe real-computation. Most likely prior figures were proxy-level (top-quintile EW inline cost) inflating recent-period alpha; canonical_screen top-25 net shows value decay. This divergence is itself a first-class finding (per WT mandate: do NOT adjust spec to match)."
+  },
+  "pit_compliance": {
+    "C13": "Z_Score_Aligned only (no NEGATE/FLIP). PASS.",
+    "C14": "IC direction via Usable_Date<=sig_date expanding window (load_month_factors PIT-safe). PASS.",
+    "C15": "All factors via load_month_factors() (no direct parquet load). PASS.",
+    "C4": "fundamental lag quarterly 45d / annual May embedded in factor DB builder. PASS.",
+    "C1": "expanding-window IC direction (no full-sample). PASS.",
+    "forward_return": "month-end Close[t] -> Close[t+1], contiguous months only (gap_ok), realized forward. No same-day circularity.",
+    "lockbox": "alpha regular-research stage. SIGNAL_CUTOFF applies; data through 2026-05 factor DB / 2026-06-10 RAWDATA. No lockbox/paper-trade window accessed."
+  },
+  "reconstruction_limitation": "_census_v2 original artifacts ABSENT on this machine (per WT request). Spec re-built from memory description. Cross-validation against original impossible. Reported honestly per Common Charter principle 4/8."
+}

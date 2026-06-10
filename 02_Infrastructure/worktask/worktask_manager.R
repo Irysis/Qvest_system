@@ -123,7 +123,8 @@ wt_create <- function(hypothesis_title = NULL,
     universe_definition = list(
       label = universe,
       liquidity_min_won_20d_avg = liquidity_floor,
-      max_names_total = 500L
+      # KR_ALL_LIQ2E8 = 전종목(LIQ 2e8 필터, ~2005종목 시변) — 도훈 mandate 2026-06-02 (2026-06-10 배선)
+      max_names_total = if (identical(universe, "KR_ALL_LIQ2E8")) 2100L else 500L
     ),
     benchmark_definition = benchmark,
     data_lag_rules = defaults$tier_hard_mandate$data_lag_rules_default,
