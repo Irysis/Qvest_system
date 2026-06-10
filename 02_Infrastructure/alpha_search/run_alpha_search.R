@@ -349,6 +349,7 @@ run_alpha_search <- function(strategy_name,
 
 # =============================================================================
 # FMT-01~08 실패모드 자동판정 (strategy_postmortem.md taxonomy → hurdle metrics rule)
+# 임계값 도훈 승인 2026-06-10: FMT-02 IR<-0.1 / FMT-04 corr≥0.7 / FMT-07 post-SR≤0.1 (FMT-06 수동 전용)
 # =============================================================================
 # 정의 SOT: 04_Research/strategy_postmortem.md "Failure Mode Taxonomy (FMT)".
 # 모든 rule은 proxy 진단(라벨)이며 게이트가 아님. 측정 가능한 지표 rule만 자동판정:

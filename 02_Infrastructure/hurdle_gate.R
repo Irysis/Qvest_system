@@ -1732,31 +1732,11 @@ run_hurdle_gate <- function(sim_result,
     })
   }
 
-  # --- Loop Integrator: Post-Strategy Review + Hypothesis Generation ---
-  if (exists("QEPM_AUTO_COMMIT") && isTRUE(QEPM_AUTO_COMMIT)) {
-    tryCatch({
-      li_path <- file.path(PROJECT_ROOT, "02_Infrastructure", "memory", "loop_integrator.R")
-      if (!exists("loop_post_strategy_review") && file.exists(li_path)) source(li_path)
-
-      if (exists("loop_post_strategy_review")) {
-        # Stage 5: _deleted_FreshIdea hostile review
-        loop_post_strategy_review(strategy_name, verdict)
-
-        # Stage 6: Family direction check
-        family_guess <- gsub("^STR_\\d+_?", "", basename(dirname(output_dir)))
-        if (nchar(family_guess) == 0) family_guess <- "general"
-        direction <- loop_check_direction(family_guess)
-
-        # Stage 3: Hypothesis generation (rate-limited)
-        should_gen <- isTRUE(direction$should_pivot) || identical(grade, "A")
-        if (should_gen && exists("loop_generate_hypotheses")) {
-          loop_generate_hypotheses(n = 3)
-        }
-      }
-    }, error = function(e) {
-      cat(sprintf("[loop_integrator] Post-review skipped: %s\n", conditionMessage(e)))
-    })
-  }
+  # --- (제거됨 2026-06-10 도훈 mandate) Loop Integrator FreshIdea hostile review ---
+  # 사유: _deleted_FreshIdea 폴더 완전 삭제 결정. generic Mutation Seed 생성이
+  # 신규 체계(L-code 학습 3필드 next_probe + FMT 자동판정 + screening tier 라우팅
+  # + kr-inverse-pattern-miner)와 역할 중복이고 질이 낮았으며, 소비자(loop_integrator
+  # 정기 실행처)가 0건인 반쪽 루프였음. loop_integrator.R 파일은 FS retain.
 
   list(pass = pass, score = total_score, grade = grade, role = role,
        axes = axes, verdict = verdict, verification = verification,
