@@ -1,0 +1,12 @@
+# b0d_fdb_vintage.R — Factor DB month-m build: data through end of month m? (diagnostic)
+suppressPackageStartupMessages({ library(data.table); library(arrow) })
+PROJECT_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
+fp <- file.path(PROJECT_ROOT, ".cache/factor_db/factor_db_201801.parquet")
+dt <- as.data.table(read_parquet(fp))
+cat("cols:", paste(names(dt), collapse=", "), "\n")
+cat("unique Date values in 201801 file:\n")
+print(dt[, .N, by = Date])
+# momentum factor raw values vs known returns: M01 or M08 check
+cat("\nfactors starting with M0:\n")
+print(unique(grep("^M0", dt$Factor_Name, value=TRUE)))
+cat("\n[b0d] DONE\n")

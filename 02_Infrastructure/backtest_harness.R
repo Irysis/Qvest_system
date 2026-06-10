@@ -753,10 +753,10 @@ calc_score_tilt_weights <- function(tickers, scores, ret_dt,
 #   FACTORS     — data.table with columns: Date, Ticker, Score
 #                 (monthly signal dates, higher Score = better)
 #   n_holdings  — max number of holdings (default 20)
-#   commission  — one-way commission rate (default 0.0015 = 15bps,
-#                 cost_model v2.3_kr_retail_15bps: 매수/매도 각 레그에 적용.
-#                 구 주석 "round-trip"은 오기 — 매도 레그 누락 결함의 원인.
-#                 2026-06-10 fee fix 참조: 04_Research/pg2_forensics/b0_fee_bug_report.md)
+#   commission  — per-rebalance cost rate (default 0.0015 = 15bps). 현 구현 = 매수 명목
+#                 flat 부과(실회전율 무관) → one-way 15bps 모델의 TO≈6x/yr 보정점 근사.
+#                 한계·정량 진단·v2.4(delta-based) 계획: 04_Research/pg2_forensics/
+#                 b0_fee_bug_report.md (2026-06-10 B0)
 #   initial_cap — initial capital (default 1e8)
 #   weight_method — "equal", "ivol", "hrp", "minvar", "riskparity"
 #   buffer_zone — list(keep_n, entry_n) for hysteresis band turnover control
@@ -907,23 +907,22 @@ run_monthly_simulation <- function(RAWDATA,
     selected <- exec_prices$Ticker
 
     # --- Portfolio value before rebalance ---
-    # 2026-06-10 fee fix: 리밸 경로 매도 수수료 누락 수리.
-    #   엔진은 매 리밸마다 기존 보유분 전량 매도 → 신규 포트 전량 매수 구조(netting 없음).
-    #   매수 레그는 아래 Allocate 블록에서 (1 + commission) 차감되지만, 매도 레그는
-    #   청산 경로(selected=0, proceeds * (1 - commission))와 달리 0bps였음 →
-    #   cost_model v2.3_kr_retail_15bps(one-way 15bps)의 매도분 누락.
-    #   수리: 청산가치(liq_val)에 sell fee = liq_val * commission 차감.
+    # ★ 비용모델 주의 (2026-06-10 B0 진단 — 04_Research/pg2_forensics/b0_fee_bug_report.md):
+    #   엔진은 매 리밸마다 "전량매도→전량매수" share 재계산 구조(netting 없음)이고, 비용은
+    #   아래 Allocate 블록에서 매수 명목 × commission(15bps)만 부과 = flat per-rebalance 모델
+    #   (실회전율 무관, 월간 리밸 기준 연 ~1.8%). 보정 진단: one-way TO≈6x/yr 부근(현 book
+    #   5.57x 포함)은 사실상 정확, TO≳10x는 과소·TO≲3x는 과대 과금.
+    #   "매도 레그 flat 추가" 패치는 A/B 실측으로 기각·원복(0%/100% 회전 비용 동일 = 회전
+    #   민감성 미해결, flat만 2배화 → 전형 TO 구간 2× 과대). 올바른 수리 = delta-based
+    #   양방향 15bps(거래분에만, cost_model v2.4 — 도훈 confirm 대기).
+    #   그때까지: TO>10x/yr 전략은 게이트 판정 시 "비용 과소계상" 경고 의무.
     total_val <- cash
-    liq_val   <- 0  # 매도 대상 기존 보유분 시가 (sell leg notional)
     for (tk in names(holdings)) {
       price_row <- RAWDATA[.(tk, exec_date), Close]   # keyed binary-join (was 풀스캔)
       if (length(price_row) > 0 && !is.na(price_row[1])) {
-        pos_val   <- holdings[[tk]]$shares * price_row[1]
-        total_val <- total_val + pos_val
-        liq_val   <- liq_val + pos_val
+        total_val <- total_val + holdings[[tk]]$shares * price_row[1]
       }
     }
-    total_val <- total_val - liq_val * commission  # 매도 수수료 차감 (one-way 15bps)
 
     # --- DD Brake: reduce exposure when drawdown exceeds threshold (C9: t-1 lag) ---
     invest_val <- total_val
