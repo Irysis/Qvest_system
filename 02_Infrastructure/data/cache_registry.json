@@ -9,6 +9,7 @@
       "entry_fn": "function name to call (or '(source)' if top-level script)",
       "schedule": "daily | weekly | monthly | on_demand",
       "date_col": "column name for max(Date) freshness check (null if not applicable)",
+      "file_pattern": "OPTIONAL (2026-06-10 P1) — set for directory caches (path=dir). regex matching member files; freshness = latest matching file. date_col set: max(date_col) of latest file / date_col null: month-end of YYYYMM in latest filename",
       "max_lag_days": "stale alert threshold (days). null if not applicable",
       "depends_on": "list of upstream cache files (topological order)",
       "args": "optional R named-list args passed to entry_fn",
@@ -222,6 +223,41 @@
       "depends_on": [".cache/RAWDATA.parquet", ".cache/fundamental_merged.parquet"],
       "tier": 3,
       "_note": "FF5 v1 (legacy) + v2 (active, kr_factor_returns_v2.parquet). PIT lag: 연결산 5월 적용 → 항상 ~5개월 behind. 2026-05-24 도훈 audit: max_lag 35 → 180 정정 (PIT 정합)"
+    },
+    {
+      "path": ".cache/factor_db/",
+      "producer": "02_Infrastructure/factor_db/factor_db_builder.R",
+      "entry_fn": "(orchestrated)",
+      "schedule": "daily",
+      "file_pattern": "^factor_db_[0-9]{6}\\.parquet$",
+      "date_col": null,
+      "max_lag_days": 40,
+      "depends_on": [".cache/RAWDATA.parquet"],
+      "tier": 2,
+      "_note": "월간 Factor DB 디렉토리 (1파일=1개월, 437파일 1990~). freshness=최신 파일명 YYYYMM 월말 기준 (전월 기대 → lag ≤40 정상, 초과=한 달 이상 미빌드). 빌더는 daily_refresh [6a] update_factor_db_daily() — 이름과 달리 '월간' DB 현재월 빌드 함수. 2026-06-10 P1 등재"
+    },
+    {
+      "path": ".cache/factor_db_daily/",
+      "producer": "02_Infrastructure/factor_db/factor_db_daily_incremental.R",
+      "entry_fn": "(orchestrated)",
+      "schedule": "daily",
+      "file_pattern": "^fdb_daily_[0-9]{6}\\.parquet$",
+      "date_col": "Date",
+      "max_lag_days": 5,
+      "depends_on": [".cache/RAWDATA.parquet"],
+      "tier": 2,
+      "_note": "일간 Factor DB 디렉토리 (1파일=1개월 wide). freshness=최신 파일 max(Date), 기대 ~3거래일(달력 5일). 갱신은 daily_refresh [6b] — update_daily_fdb_current()는 phase6+7+8 전체 재빌드(전파일 삭제, 수시간)라 QVEST_FDB_DAILY_AUTOREBUILD=1 명시 시에만 실행 (기본 stale WARN만). 2026-06-10 P1 등재"
+    },
+    {
+      "path": ".cache/factor_db/factor_ic_monthly.parquet",
+      "producer": "02_Infrastructure/factor_db/factor_db_builder.R",
+      "entry_fn": "compute_all_factor_ic_monthly",
+      "schedule": "monthly",
+      "date_col": "Usable_Date",
+      "max_lag_days": 40,
+      "depends_on": [".cache/factor_db/"],
+      "tier": 2,
+      "_note": "월간 factor IC (327팩터, C14 Usable_Date 게이트). freshness=max(Usable_Date), 전월 월말 기대 (예: 2026-06-10 시점 max=2026-05-31, lag 10). 기존 수동 재산출 전용이던 것을 registry monthly 등재 — cache_registry_run(schedule=monthly)로 실행 가능. 2026-06-10 P1 등재"
     },
     {
       "path": ".cache/flow_features_daily.parquet",

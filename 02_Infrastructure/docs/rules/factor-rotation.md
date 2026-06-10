@@ -19,6 +19,7 @@
 **Grade-A만 쓰지 않는다.** 어느 국면이든 그 국면에서 압도적이면 차용 — F-overall이어도.
 - 방어형(CRISIS specialist) + **공격형(RISK_ON/확장 specialist)** 양방향. dispatcher가 강점 국면만 쓰고 약점은 ~0 → overall 등급=잡음, 게이트 부적합. **AX-001**(방어형 조건부 평가) 양방향 일반화.
 - **RCMA 6기준** (`regime_module_admission.R` → `module_regime_admission.json`): ① regime_IR≥0.5 OR regime-L 상위⅓ ② n_months≥12(36=high_conf) ③ IS·OOS regime IR 둘 다 양수 ④ |t|=|IR·√(n_m/12)|≥2 ⑤ 경제논리 1줄 ⑥ ΔIR>0(advisory). admitted=①∧②∧③∧④.
+- **C2 소표본 셀 완화경로 = 2회 A/B 실측 기각 (2026-06-10, `rare_mode` 영구 OFF)**: 위기군 소표본(n<12) 셀 완화(v2.1 순수완화)도 OOS active SR −0.084→−0.178 악화 — 소표본 셀 측정 IR≈운 + dispatcher RP-앵커가 IR무관 배분(admission=유일 품질게이트). 재도전 트리거 = 직교 sleeve/진짜 CRISIS specialist 등재 시. 상세 = FR SKILL §5.
 
 ## 4. 측정·게이트 (실측-only)
 

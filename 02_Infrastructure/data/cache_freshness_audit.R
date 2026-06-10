@@ -45,6 +45,54 @@ cache_freshness_audit <- function(telegram_alert = TRUE,
       registered = TRUE
     )
 
+    if (!is.null(c$file_pattern)) {
+      # ── 디렉토리형 cache (월별 parquet 묶음 — 예: .cache/factor_db/) ─────────
+      #    2026-06-10 P1: factor_db / factor_db_daily 디렉토리 freshness 지원.
+      #    최신 파일 = file_pattern 매칭 사전순 max (YYYYMM zero-pad → 시간순 일치).
+      #    date_col 있으면 최신 파일의 해당 컬럼 max(Date) (col_select — 대용량 wide 대비),
+      #    없으면 파일명 YYYYMM의 월말 기준 lag (당월 진행 중 음수 → 0 clamp).
+      if (!dir.exists(cache_path)) {
+        res$status <- "MISSING"
+        res$severity <- "CRITICAL"
+        results[[c$path]] <- res
+        next
+      }
+      fs <- sort(list.files(cache_path, pattern = c$file_pattern))
+      if (length(fs) == 0) {
+        res$status <- "MISSING"
+        res$severity <- "CRITICAL"
+        res$note <- sprintf("file_pattern '%s' 매칭 파일 0건", c$file_pattern)
+        results[[c$path]] <- res
+        next
+      }
+      latest_file <- fs[length(fs)]
+      latest_path <- file.path(cache_path, latest_file)
+      res$latest_file <- latest_file
+      res$n_files <- length(fs)
+
+      mtime <- file.info(latest_path)$mtime
+      mtime_lag <- as.integer(today - as.Date(mtime))
+
+      data_lag <- NA_integer_
+      if (!is.null(c$date_col)) {
+        dt <- tryCatch(as.data.table(read_parquet(latest_path, col_select = c$date_col)),
+                       error = function(e)
+                         tryCatch(as.data.table(read_parquet(latest_path)),
+                                  error = function(e2) NULL))
+        if (!is.null(dt) && c$date_col %in% names(dt)) {
+          last_d <- max(as.Date(dt[[c$date_col]]), na.rm = TRUE)
+          data_lag <- as.integer(today - last_d)
+        }
+      } else {
+        ym <- regmatches(latest_file, regexpr("[0-9]{6}", latest_file))
+        if (length(ym) == 1) {
+          m_start <- as.Date(paste0(ym, "01"), format = "%Y%m%d")
+          m_end <- seq(m_start, by = "month", length.out = 2)[2] - 1
+          data_lag <- max(0L, as.integer(today - m_end))
+        }
+      }
+    } else {
+    # ── 단일 파일 cache (기존 경로) ──────────────────────────────────────────
     if (!file.exists(cache_path)) {
       res$status <- "MISSING"
       res$severity <- "CRITICAL"
@@ -71,6 +119,7 @@ cache_freshness_audit <- function(telegram_alert = TRUE,
         last_d <- max(as.Date(dt[[c$date_col]]), na.rm = TRUE)
         data_lag <- as.integer(today - last_d)
       }
+    }
     }
 
     # Pick worse of mtime_lag and data_lag for evaluation
