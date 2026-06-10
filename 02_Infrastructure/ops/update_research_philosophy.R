@@ -31,7 +31,7 @@ BASELINE_FILE <- "/tmp/qvest_rp_update_baseline.txt"
 AXIS_FILES <- list(
   axis1_sot = "02_Infrastructure/docs/qvest_research_philosophy.md",
   axis2_claude_md = "CLAUDE.md",
-  axis2b_rules = ".claude/rules/research_philosophy.md",
+  axis2b_rules = "02_Infrastructure/docs/rules/research_philosophy.md",
   axis3_shared_prefix = "02_Infrastructure/prompts/_shared_prefix.md",
   axis4_charter = "02_Infrastructure/worktask/common_charter.md",
   axis5_init_prompts = c(

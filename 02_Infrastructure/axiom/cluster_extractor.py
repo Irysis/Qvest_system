@@ -215,6 +215,85 @@ def _cluster_metric_type(cluster: dict) -> str:
     return "estimated"
 
 
+# ── v8.1 트랙D: L-code 실값 → draft 매핑 (없으면 빈값 유지 — 가짜 데이터 생성 금지) ──
+
+_MECHANISM_TYPE_KEYWORDS = {
+    # r7 Mechanism 축 type 추론용 (mechanism_hypothesis 텍스트 키워드 — heuristic, promote.R에서 재검증)
+    "behavioral": ["과잉반응", "과소반응", "행동", "군집", "심리", "주목", "overreaction",
+                   "underreaction", "behavioral", "lottery", "복권", "anchoring"],
+    "risk_premium": ["리스크 프리미엄", "위험 프리미엄", "위험 보상", "베타", "변동성 보상",
+                     "risk premium", "tail risk", "꼬리위험", "꼬리 위험"],
+    "friction": ["거래비용", "회전율", "유동성", "마찰", "비용 소진", "비용이 알파",
+                 "turnover", "liquidity", "cost", "슬리피지"],
+    "structural": ["시장구조", "한국 시장", "공매도", "롱온리", "long-only", "구조적",
+                   "제도", "structural", "동반급락", "mdd"],
+    "information": ["정보", "공시", "실적", "애널리스트", "earnings", "information", "pead", "수급"],
+}
+
+
+def _draft_mechanism(cluster: dict) -> dict:
+    """멤버 mechanism_hypothesis 실값 → mechanism_draft. 값 없으면 기존 빈 draft 유지."""
+    hyps = []
+    for m in cluster["members"]:
+        v = m.get("mechanism_hypothesis")
+        if v in (None, "", [], {}):
+            continue
+        # 일부 구 L-code는 dict/list 구조 — Python repr 오염 방지 위해 compact JSON으로 보존
+        h = v.strip() if isinstance(v, str) else json.dumps(v, ensure_ascii=False)
+        if h:
+            hyps.append(h)
+    if not hyps:
+        return {"economic_explanation": None, "mechanism_type": "unknown",
+                "causal_plausibility": None}
+    rep = max(hyps, key=len)  # 가장 구체적(긴) 가설을 대표로
+    expl = rep if len(hyps) == 1 else f"{rep} (멤버 가설 {len(hyps)}건 — promote.R에서 일치성 재검증)"
+    text = " ".join(hyps).lower()
+    mtype, best_hits = "unknown", 0
+    for t, kws in _MECHANISM_TYPE_KEYWORDS.items():
+        hits = sum(1 for k in kws if k.lower() in text)
+        if hits > best_hits:
+            best_hits, mtype = hits, t
+    return {"economic_explanation": expl, "mechanism_type": mtype,
+            "causal_plausibility": None}  # plausibility 판정은 promote.R/human — 자동 생성 금지
+
+
+def _draft_oos(cluster: dict) -> dict:
+    """멤버 oos_retention(IS65/OOS35 SR retention) 실값 median → oos_validation_draft."""
+    vals: list[float] = []
+    for m in cluster["members"]:
+        try:
+            v = float(m.get("oos_retention"))
+            if v == v:  # NaN guard
+                vals.append(v)
+        except (TypeError, ValueError):
+            pass
+    if not vals:
+        return {"oos_months": None, "oos_effect_vs_is": None,
+                "note": "promote.R r4_regime_payoff / essence_score 경유 확정"}
+    vals.sort()
+    n = len(vals)
+    med = vals[n // 2] if n % 2 else (vals[n // 2 - 1] + vals[n // 2]) / 2
+    return {
+        "oos_months": None,  # L-code에 월수 미기록 — 추정 생성 금지(promote.R에서 확정)
+        "oos_effect_vs_is": round(med, 3),
+        "note": f"L-code oos_retention 실값 {n}건 median (IS65/OOS35 활성SR retention) — promote.R essence_score 경유 재확정",
+    }
+
+
+def _draft_falsification(cluster: dict) -> dict:
+    """멤버 falsification_attempts 실기록 집계. 기록 없으면 기존 빈 attempts 유지."""
+    attempts: list = []
+    for m in cluster["members"]:
+        fa = m.get("falsification_attempts")
+        if isinstance(fa, list):
+            attempts.extend(a for a in fa if a)
+        elif isinstance(fa, str) and fa.strip():
+            attempts.append(fa.strip())
+    note = ("L-code 기록 반증 시도 실값 집계" if attempts else
+            "promote.R 5축(r7 적극 반증)에서 kr-inverse-pattern-miner 역가설 + role_honesty로 채움")
+    return {"attempts": attempts, "note": note}
+
+
 def _build_one_candidate(cl: dict, mode: str, today: str):
     cand_type = _classify_type(cl)
     polarity = _polarity(cl)
@@ -236,20 +315,11 @@ def _build_one_candidate(cl: dict, mode: str, today: str):
         "supporting_l_codes": cl["l_codes"],
         "scope_draft": _draft_scope(cl),
         "evidence_draft": evidence,
-        "falsification_draft": {
-            "attempts": [],
-            "note": "promote.R 5축(r7 적극 반증)에서 kr-inverse-pattern-miner 역가설 + role_honesty로 채움",
-        },
-        "mechanism_draft": {
-            "economic_explanation": None,
-            "mechanism_type": "unknown",
-            "causal_plausibility": None,
-        },
-        "oos_validation_draft": {
-            "oos_months": None,
-            "oos_effect_vs_is": None,
-            "note": "promote.R r4_regime_payoff / essence_score 경유 확정",
-        },
+        # v8.1 트랙D: 빈 하드코딩 → L-code 실값 매핑 (mechanism_hypothesis / oos_retention /
+        # falsification_attempts). 실값 없으면 종전과 동일한 빈 draft — 가짜 데이터 생성 금지.
+        "falsification_draft": _draft_falsification(cl),
+        "mechanism_draft": _draft_mechanism(cl),
+        "oos_validation_draft": _draft_oos(cl),
         "cluster_members_count": cl["size"],
         "status": "pending_5axis",
         "created_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),

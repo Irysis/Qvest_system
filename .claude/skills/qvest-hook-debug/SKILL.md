@@ -145,5 +145,5 @@ ROLE_INFO=$(python3 "$ROUTER" classify --file-path "$FILE_PATH")
 - `02_Infrastructure/worktask/state_machine.R` (Phase 5)
 - `02_Infrastructure/worktask/cert_rules.R` (Phase 7)
 - `08_Tests/hooks/run_all_hooks.sh` (Phase 8 dry-run)
-- `.claude/rules/harness.md`
-- `.claude/rules/codex-round.md`
+- `02_Infrastructure/docs/rules/harness.md`
+- `02_Infrastructure/docs/rules/codex-round.md`

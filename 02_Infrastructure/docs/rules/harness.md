@@ -73,8 +73,8 @@
 | auto_commit_on_stop | Stop | 세션 종료 auto-commit |
 | s0_verdict_router | FileChanged[S0_VERDICT_*] | (legacy v55) APPROVE/REVISE/REJECT 라우팅 |
 | s0_debate_enforcer | PostToolUse[W] | (legacy v55) 3-Round 상태 머신 |
-| teammate_idle_guard | TeammateIdle | idle teammate 재할당 |
-| task_complete_guard | TaskCompleted | 파이프라인 다음 단계 트리거 |
+| ~~teammate_idle_guard~~ | TeammateIdle | ❌ 등록 해제 2026-06-10 (v53 전용 — FS retain) |
+| ~~task_complete_guard~~ | TaskCompleted | ❌ 등록 해제 2026-06-10 (v53 전용 — FS retain) |
 | harness_health | 부트스트랩 | Hook 건강 체크 + `--profile` latency 측정 |
 
 ## Tier 의미
@@ -113,3 +113,12 @@
 - **Deprecated 2026-05-16 (2건)**: forge_code_guard / risk_gate (`_archive_v55/` Tier 1 cleanup 삭제)
 - **Phase 1/2 신규 등록 (4건)**: feature_registry_economic_rationale_check / ml_cost_aware_audit / ml_uncertainty_audit / risk_crowding_score_check
 - **Active loaded**: 45 distinct .sh (settings.json registered)
+
+## v8.1.1 정합 (2026-06-10)
+
+- settings.json 46개 hook DIR = `${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}` 3중 fallback (구 경로 glob 폐기 — 46-hook 전수 침묵사망 사건 수리)
+- Stop hook 재등록: auto_commit_on_stop + auto_push_on_stop
+- TeammateIdle/TaskCompleted (v53 전용) 등록 해제 — 스크립트 FS retain
+- pre_enforcer에 codex stance=STUB 차단 추가 (AX-008 이중방어)
+- bootstrap 카나리아: safety_guard block 실증 실패 시 BOOT_FAILS (침묵사망 재발 방지선)
+- **차기 (1주 soak 후)**: qvest_hook_router.py 단일 진입 전환 — 이벤트당 1 spawn으로 Write당 35 spawn(~4.6s) 축소. policy JSON 4종은 기존재. soak 조건: 재시작 후 /tmp 로그 7일 무에러.

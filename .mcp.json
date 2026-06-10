@@ -1,0 +1,64 @@
+{
+  "mcpServers": {
+    "jina": {
+      "type": "http",
+      "url": "https://mcp.jina.ai/v1",
+      "headers": {
+        "Authorization": "Bearer ${JINA_API_KEY}"
+      }
+    },
+    "arxiv": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "arxiv-mcp-server",
+        "--storage-path",
+        "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/arxiv_papers"
+      ]
+    },
+    "paper-search": {
+      "type": "stdio",
+      "command": "uv",
+      "args": [
+        "run",
+        "--no-project",
+        "--with",
+        "paper-search-mcp",
+        "python",
+        "-m",
+        "paper_search_mcp.server"
+      ]
+    },
+    "fred": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "--python",
+        "3.13",
+        "macroeconomic-mcp-server"
+      ],
+      "env": {
+        "FRED_API_KEY": "${FRED_API_KEY}"
+      }
+    },
+    "yfinance": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "yfmcp@latest"
+      ]
+    },
+    "rss-reader": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "--package=rss-reader-mcp",
+        "rss-mcp"
+      ],
+      "env": {
+        "TRANSPORT": "stdio"
+      }
+    }
+  }
+}

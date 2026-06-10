@@ -180,4 +180,4 @@ wt_check_graduation("WT-D20260501_NNN")  # cert 발급 상태 검사
 - `02_Infrastructure/worktask/common_charter.md` v1.7
 - `02_Infrastructure/worktask/red_flag_rules.md`
 - `02_Infrastructure/worktask/role_card_cert_inheritance.R`
-- `.claude/rules/pit.md` / `.claude/rules/codex-round.md` / `.claude/rules/harness.md`
+- `.claude/rules/pit.md` / `02_Infrastructure/docs/rules/codex-round.md` / `02_Infrastructure/docs/rules/harness.md`

@@ -225,7 +225,7 @@ PG2 active (STR_1631_SYN_05_2002 + STR_1656_MLRA_M05) **그대로 유지**.
 19. ✅ 완료 배너 `Qvest v8.1 — Opus 4.8 Native · 3-Mode · 실측 거버넌스` + `v8.1:` 상태 라인 출력
 20. ✅ **데이터 캐시 검증(Step 4e)** 부트 메시지 — `[boot] 데이터 캐시: rawdata.parquet ✓ + K200/KQ150 멤버십 ✓` (없으면 WARN: alpha-search `universe=K200_KQ150` stop 위험) + `kr_factor_returns_v2 ✓`
 21. ✅ alpha-search 제1원칙 (`.claude/skills/alpha-search/SKILL.md` `## ★ 제1원칙`): 논문 완전 복제 + 유니버스 K200∪KQ150 고정(`run_alpha_search` universe 기본값) + 기간 2005~ 고정(start_date 기본값)
-22. ✅ 모듈 자동흐름: `register_module`(공용계약) + `register_research_outputs`(ML/DPL 다리) + `run_factor_rotation` 신선도 / Axiom r7 복원(`.claude/rules/axiom-engine.md` 5축 boolean-AND + INV-1~7)
+22. ✅ 모듈 자동흐름: `register_module`(공용계약) + `register_research_outputs`(ML/DPL 다리) + `run_factor_rotation` 신선도 / Axiom r7 복원(`02_Infrastructure/docs/rules/axiom-engine.md` 5축 boolean-AND + INV-1~7)
 
 ### v8.0 신규 확인 (5건)
 14. ✅ 완료 배너 `Qvest v8.1 — Opus 4.8 Native` + `v8.1:` 상태 라인 출력 확인

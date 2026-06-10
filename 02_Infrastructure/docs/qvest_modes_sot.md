@@ -30,7 +30,7 @@ Lane1(QEPM)·Lane2(alpha-search) = 모듈 *생산*. Lane3(factor-rotation) = 졸
 
 ## 2. 각자 자가발전 = Axiom 엔진 (3-mode 2-tier) — 이미 가동·검증
 
-각 모드가 자기 L-code → 자기 **mode-local axiom**(`qepm/memory/axioms/active/modes/<mode>/AX-<MODE>-NNN.json`)으로 발전. SOT: **`.claude/rules/axiom-engine.md`** (v8.0, E2E 10/0 PASS, 2026-06-05 검증). r7 5축 hurdle(Independence/Rigor/Falsification/OOS/Mechanism). **검증된(backtested) 증거만 global `AX-NNN`으로 승격**(INV-1). negative=provisional failure-ledger(INV-7). 안전망: rollback + 주간 human-review.
+각 모드가 자기 L-code → 자기 **mode-local axiom**(`qepm/memory/axioms/active/modes/<mode>/AX-<MODE>-NNN.json`)으로 발전. SOT: **`02_Infrastructure/docs/rules/axiom-engine.md`** (v8.0, E2E 10/0 PASS, 2026-06-05 검증). r7 5축 hurdle(Independence/Rigor/Falsification/OOS/Mechanism). **검증된(backtested) 증거만 global `AX-NNN`으로 승격**(INV-1). negative=provisional failure-ledger(INV-7). 안전망: rollback + 주간 human-review.
 → **factor-rotation도 자기 트랙(`AX-FR`)으로 자가발전**(도훈 "이 또한 자가발전"). 현재 FR L-code 0건 — emit 시작 시 자동 합류.
 
 ---
@@ -50,7 +50,7 @@ Lane1(QEPM)·Lane2(alpha-search) = 모듈 *생산*. Lane3(factor-rotation) = 졸
 어느 모드 결과든 **실제 자본 편입(`book_state`)은 governor 수동 + 도훈 confirm 한 곳**으로 수렴. 돈은 한 군데서만 막는다. (이미 도훈 장치 — governor 정지.)
 
 ### 3.3 교차검증 global 공리 (axiom 엔진 2-tier)
-각 모드가 자가발전으로 얻은 *교훈* 중 **backtested + r7 5축 + AX-008(2/3 verification) + 도훈 confirm**을 통과한 것만 mode-local `AX-<MODE>-*` → global `AX-NNN`으로 승격(INV-1). **이건 평가 통일이 아니라 *교차검증된 사실*의 공유** — 법칙을 공유해도 모드별 채점 기준은 안 통일되는 것과 같다. 안전: proxy·한 모드 loose 평가는 global 차단(INV-1) / negative=provisional+재도전(INV-7) → 모드 자율 불침해 / global 승격=비가역이라 도훈 수동. 즉 **각자 평가하되, 공유 *사실*은 가장 엄격한 공통 falsification 통과분만.** SOT: `.claude/rules/axiom-engine.md`.
+각 모드가 자가발전으로 얻은 *교훈* 중 **backtested + r7 5축 + AX-008(2/3 verification) + 도훈 confirm**을 통과한 것만 mode-local `AX-<MODE>-*` → global `AX-NNN`으로 승격(INV-1). **이건 평가 통일이 아니라 *교차검증된 사실*의 공유** — 법칙을 공유해도 모드별 채점 기준은 안 통일되는 것과 같다. 안전: proxy·한 모드 loose 평가는 global 차단(INV-1) / negative=provisional+재도전(INV-7) → 모드 자율 불침해 / global 승격=비가역이라 도훈 수동. 즉 **각자 평가하되, 공유 *사실*은 가장 엄격한 공통 falsification 통과분만.** SOT: `02_Infrastructure/docs/rules/axiom-engine.md`.
 
 ---
 

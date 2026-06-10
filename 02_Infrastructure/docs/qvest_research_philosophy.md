@@ -4,7 +4,7 @@
 **Version**: v1.0 (2026-05-14, Session 81 도훈 mandate)
 **Adoption**: 모든 alpha/risk/optimizer/forge/judge/governor cycle reference
 **Update**: 분기별 review (3개월) + trigger-based 보강
-**Reference**: `CLAUDE.md` Level 0 / `.claude/rules/research_philosophy.md` autoload
+**Reference**: `CLAUDE.md` Level 0 / `02_Infrastructure/docs/rules/research_philosophy.md` autoload
 
 ---
 
@@ -223,7 +223,7 @@
 ### 4.3 Amendment 절차
 1. 본 SOT (`qvest_research_philosophy.md`) 안 Principle 추가/수정 (version bump)
 2. `CLAUDE.md` Level 0 reference 1줄 갱신
-3. `.claude/rules/research_philosophy.md` 1줄 reference 갱신
+3. `02_Infrastructure/docs/rules/research_philosophy.md` 1줄 reference 갱신
 4. `methodology_active.md`에 L-code 적립 (amendment 사유 + 학술 인용 + 도훈 mandate)
 5. (선택) `axiom_signals.json` candidate 추가 (예: AX-009 Net-of-Cost)
 
@@ -237,7 +237,7 @@
 | Layer | File | 관계 |
 |---|---|---|
 | Level 0 Constitutional | 본 SOT (`qvest_research_philosophy.md`) | 7 principles |
-| Level 0 Q-Lead autoload | `.claude/rules/research_philosophy.md` | 1줄 reference |
+| Level 0 Q-Lead autoload | `02_Infrastructure/docs/rules/research_philosophy.md` | 1줄 reference |
 | Level 0 Constitution main | `CLAUDE.md` Level 0 | "## Research Philosophy" section reference |
 | Level 1 axioms | `.claude/rules/axioms.md` (AX-000~008) | AX-009 Net-of-Cost candidate |
 | Level 1 PIT | `.claude/rules/pit.md` (C1~C15) | 본 SOT P2 cost-aware + P3 uncertainty의 PIT 정합 의무 |

@@ -211,7 +211,7 @@ def harvest(project_dir: str) -> dict:
         mode = _infer_mode(data, source_file)
         promoted = _check_promoted(l_code, project_dir)
 
-        lcodes.append({
+        entry = {
             "l_code": l_code,
             "strategy_id": strategy_id,
             "lesson_text": lesson_text,
@@ -225,7 +225,15 @@ def harvest(project_dir: str) -> dict:
             "source_file": source_file,
             "mtime": datetime.fromtimestamp(os.path.getmtime(p), tz=timezone.utc).isoformat(timespec="seconds"),
             "promoted_to_axiom": promoted,
-        })
+        }
+        # v8.1 트랙C+D: 학습/실측 필드 pass-through (있을 때만 — 없는 구 L-code는 그대로 = 정직성).
+        # cluster_extractor가 mechanism_draft/oos_validation_draft/falsification_draft 실값 매핑에 사용.
+        for opt in ("mechanism_hypothesis", "data_supported_conclusion", "next_probe",
+                    "fmt_codes", "oos_retention", "falsification_attempts", "authoritative"):
+            v = data.get(opt)
+            if v not in (None, "", [], {}):
+                entry[opt] = v
+        lcodes.append(entry)
 
     lcodes.sort(key=lambda x: x["l_code"])
 

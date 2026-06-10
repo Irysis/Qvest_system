@@ -29,10 +29,10 @@
       "mcp__paper-search__search_google_scholar",
       "mcp__paper-search__read_arxiv_paper",
       "mcp__paper-search__download_arxiv",
-      "mcp__fred__get_series",
+      "mcp__fred__fetch_series_data",
       "mcp__fred__search_series",
-      "mcp__yfinance__get_price_history",
-      "mcp__yfinance__get_ticker_info",
+      "mcp__yfinance__yfinance_get_price_history",
+      "mcp__yfinance__yfinance_get_ticker_info",
       "mcp__rss-reader__fetch_feed_entries"
     ],
     "defaultMode": "acceptEdits"
@@ -427,26 +427,6 @@
           {
             "type": "command",
             "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/ml_cost_aware_audit.sh\" 2>>/tmp/ml_cost_aware_audit.log || true"
-          }
-        ]
-      }
-    ],
-    "TeammateIdle": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/teammate_idle_guard.sh\""
-          }
-        ]
-      }
-    ],
-    "TaskCompleted": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/task_complete_guard.sh\""
           }
         ]
       }

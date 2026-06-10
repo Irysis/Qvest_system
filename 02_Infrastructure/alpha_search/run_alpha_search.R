@@ -196,6 +196,19 @@ run_alpha_search <- function(strategy_name,
   cat(sprintf("[AlphaSearch] Grade=%s Score=%.0f Excess=%+.2f%%p | pass=%s notable=%s\n",
               grade, score %||% 0, excess_cagr %||% 0, pass, notable))
 
+  # ---- 6a-2. FMT-01~08 실패모드 자동판정 (proxy 진단 라벨 — 게이트 아님) ----
+  #   strategy_postmortem.md FMT taxonomy를 hurdle metrics rule로 매핑(.judge_fmt 주석 참조).
+  #   판정 실패 시에도 run은 계속 (진단 누락은 콘솔 WARN으로 정직 고지).
+  fmt_hits <- tryCatch(.judge_fmt(m, hg, sim, strategy_name, strategy_idea, excess_cagr, grade),
+                       error = function(e) { cat("[AlphaSearch][FMT] WARN: 자동판정 실패 —",
+                                                 conditionMessage(e), "\n"); list() })
+  if (length(fmt_hits)) {
+    cat(sprintf("[AlphaSearch] FMT 자동판정: %s\n",
+                paste(vapply(fmt_hits, function(x) x$code, ""), collapse = ", ")))
+  } else {
+    cat("[AlphaSearch] FMT 자동판정: 해당 없음 (rule 기준 미충족 — FMT-06은 수동 진단 전용)\n")
+  }
+
   # ---- 6c. FR 모듈 카탈로그 grade 갱신 (등재는 4b에서 이미 완료 — 여기선 grade/score upsert만) ----
   #   register_module은 4b(백테 직후·등급무관)에서 실행됨. 허들 등급 산출 후 catalog의 grade/score만 갱신
   #   (id 중복 = update). register가 4b에서 실패했어도(skip 로그) 여기서 재시도해 등재 보존(이중 안전망).
@@ -215,6 +228,26 @@ run_alpha_search <- function(strategy_name,
     }, error = function(e) cat("[AlphaSearch] 팩터분석 생략:", conditionMessage(e), "\n"))
   }
 
+  # ---- 6b-2. analysis_report.md FMT 체크리스트 자동 체크 ([x] + 사유) ----
+  #   run_analysis가 생성한 보고서의 "Failure Mode Diagnosis" 빈 체크박스를 6a-2 판정으로 채움.
+  .patch_fmt_checklist(OUT_DIR, fmt_hits)
+
+  # ---- 6d. ★ 권위측정 사다리: hurdle B 이상 → 계약 실측 재측정 (자동) ----
+  #   v8.1 트랙C(measurement-graduation §1~§3): proxy(run_hurdle_gate) 등급이 B 이상이면
+  #   build_bt_result + audit_bt_result + essence_score로 authoritative 재측정.
+  #   → OUT_DIR/authoritative_remeasure.json (essence grade / PORT_t NW lag-3 / metric_type=backtested).
+  #   C/F는 기존 proxy 흐름 유지(비용 절약). 실패 시 정직 WARN — 침묵 금지.
+  auth <- NULL
+  if (grade %in% c("A", "A_NOVEL", "A_DEF", "B", "B_DEF")) {
+    auth <- .authoritative_remeasure(sim, strategy_id, strategy_name, strategy_idea,
+                                     factor_engine_path, OUT_DIR, grade,
+                                     universe = universe, weight_method = weight_method,
+                                     commission = commission)
+    assign("%||%", `%||%`, envir = globalenv())   # contract source 후 전역 %||% 복원
+  } else {
+    cat(sprintf("[AlphaSearch] 권위측정 사다리: grade=%s (B 미만) — proxy 유지, 실측 재측정 생략\n", grade))
+  }
+
   # ---- 7. Telegram: 2차트 + 전략아이디어 + 성과요약(스코어링 지표) ----
   if (isTRUE(send_telegram)) {
     .send_alpha_search_brief(strategy_name, strategy_idea, strategy_id, grade, score,
@@ -231,7 +264,8 @@ run_alpha_search <- function(strategy_name,
   l_code_path <- NULL
   if (pass || notable) {
     l_code_path <- .write_lcode(strategy_id, strategy_name, strategy_idea, grade,
-                                m, excess_cagr, pass, is_fail)
+                                m, excess_cagr, pass, is_fail,
+                                hg = hg, fmt = fmt_hits, auth = auth)
     .run_axiom_pipeline()   # harvester + cluster (자가발전)
   }
 
@@ -244,7 +278,9 @@ run_alpha_search <- function(strategy_name,
 
   invisible(list(strategy_id = strategy_id, grade = grade, score = score,
                  pass = pass, notable = notable, excess_cagr = excess_cagr,
-                 out_dir = OUT_DIR, charts = charts, l_code = l_code_path))
+                 out_dir = OUT_DIR, charts = charts, l_code = l_code_path,
+                 fmt_codes = vapply(fmt_hits, function(x) x$code, ""),
+                 authoritative = auth))
 }
 
 # ---- Telegram brief (tg_agent_brief 단일 진입점; 헤더에 모드 배지 자동) ----
@@ -311,14 +347,235 @@ run_alpha_search <- function(strategy_name,
     error = function(e) cat("[AlphaSearch][TG] 발송 실패:", conditionMessage(e), "\n"))
 }
 
+# =============================================================================
+# FMT-01~08 실패모드 자동판정 (strategy_postmortem.md taxonomy → hurdle metrics rule)
+# =============================================================================
+# 정의 SOT: 04_Research/strategy_postmortem.md "Failure Mode Taxonomy (FMT)".
+# 모든 rule은 proxy 진단(라벨)이며 게이트가 아님. 측정 가능한 지표 rule만 자동판정:
+#   FMT-01 Structural MDD        : MDD > 45% (graduation hard limit과 동일 임계)
+#   FMT-02 Factor Degeneration   : IR < -0.1 AND 초과CAGR < 0 (KR에서 부호 역작동 의심)
+#   FMT-03 Ensemble Dilution     : 앙상블/블렌드 구성(키워드) AND grade C/F
+#   FMT-04 Regime Blindness      : MDD > 35% AND BM_Corr >= 0.7 (위기 동조 낙폭 + 국면필터 부재)
+#   FMT-05 Turnover Toxicity     : 연환산 회전율 > 600% (postmortem 정의 임계)
+#   FMT-06 Korea-Specific Signal Inversion : ★자동판정 제외 — SG사태/작전주 등 사건 식별은
+#          메트릭만으로 불가(수동 진단 전용). 거짓 양성 방지를 위해 rule 미구현 (정직성).
+#   FMT-07 Publication Decay     : pre-2017 활성SR >= 0.5 AND post-2017 활성SR <= 0.1
+#          (각 2년+ 데이터 필요) OR alpha_trend ratio(최근3Y/전체) <= 0.3 (전체 SR >= 0.3 전제)
+#   FMT-08 Regime Overfit        : regime/국면/게이팅 키워드 구성 AND 초과CAGR < 0 (회복랠리 상실)
+.judge_fmt <- function(m, hg, sim, strategy_name, strategy_idea, excess_cagr, grade) {
+  `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
+  hits <- list()
+  add <- function(code, label, reason)
+    hits[[length(hits) + 1L]] <<- list(code = code, label = label, reason = reason)
+
+  mdd  <- abs(.as_num(m$MDD))          # percent
+  to   <- .as_num(m$Turnover_Ann)      # percent
+  ir   <- .as_num(m$IR)
+  bmc  <- .as_num(m$BM_Corr)
+  shp  <- .as_num(m$Sharpe)
+  exc  <- .as_num(excess_cagr)
+  txt  <- tolower(paste(strategy_name %||% "", strategy_idea %||% ""))
+
+  # FMT-01
+  if (!is.na(mdd) && mdd > 45)
+    add("FMT-01", "Structural MDD",
+        sprintf("MDD %.1f%% > 45%% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)", mdd))
+  # FMT-02
+  if (!is.na(ir) && ir < -0.1 && !is.na(exc) && exc < 0)
+    add("FMT-02", "Factor Degeneration",
+        sprintf("IR %.2f < -0.1 & 초과CAGR %+.1f%%p < 0 — KR에서 팩터 방향 역작동 의심", ir, exc))
+  # FMT-03 (키워드 + 등급)
+  if (grepl("ensemble|앙상블|blend|블렌드|배합|composite|합성|결합", txt) && grade %in% c("C", "F"))
+    add("FMT-03", "Ensemble Dilution",
+        sprintf("앙상블/블렌드 구성 + grade %s — 결합 시 강점 희석 의심 (키워드 기반 heuristic)", grade))
+  # FMT-04
+  if (!is.na(mdd) && mdd > 35 && !is.na(bmc) && bmc >= 0.7)
+    add("FMT-04", "Regime Blindness",
+        sprintf("MDD %.1f%% > 35%% & BM상관 %.2f >= 0.7 — 위기국면 동조 낙폭(국면필터 부재)", mdd, bmc))
+  # FMT-05
+  if (!is.na(to) && to > 600)
+    add("FMT-05", "Turnover Toxicity",
+        sprintf("연환산 회전율 %.0f%% > 600%% — 15bps 비용이 알파 소진", to))
+  # FMT-07 (2017 전후 활성수익 SR 분해 — PerformanceAnalytics 표준함수만)
+  fmt07 <- tryCatch({
+    mg <- merge(sim$strategy_xts, sim$bm_xts, join = "inner")
+    act <- mg[, 1] - mg[, 2]
+    pre  <- act[zoo::index(act) <  as.Date("2017-01-01")]
+    post <- act[zoo::index(act) >= as.Date("2017-01-01")]
+    if (nrow(pre) >= 252 * 2 && nrow(post) >= 252 * 2) {
+      sr_pre  <- as.numeric(PerformanceAnalytics::SharpeRatio.annualized(pre,  Rf = 0))
+      sr_post <- as.numeric(PerformanceAnalytics::SharpeRatio.annualized(post, Rf = 0))
+      if (is.finite(sr_pre) && is.finite(sr_post) && sr_pre >= 0.5 && sr_post <= 0.1)
+        sprintf("활성SR pre-2017 %.2f -> post-2017 %.2f — 논문발표 후 알파 소진 패턴", sr_pre, sr_post)
+      else NULL
+    } else NULL
+  }, error = function(e) NULL)
+  if (is.null(fmt07)) {
+    at_ratio <- .as_num(tryCatch(hg$verdict$score_breakdown$alpha_trend$value, error = function(e) NA))
+    if (!is.na(at_ratio) && at_ratio <= 0.3 && !is.na(shp) && shp >= 0.3)
+      fmt07 <- sprintf("alpha_trend ratio(최근3Y/전체 SR) %.2f <= 0.3 — 후반부 알파 붕괴", at_ratio)
+  }
+  if (!is.null(fmt07)) add("FMT-07", "Publication Decay", fmt07)
+  # FMT-08
+  if (grepl("regime|국면|게이팅|gating|타이밍|timing", txt) && !is.na(exc) && exc < 0)
+    add("FMT-08", "Regime Overfit",
+        sprintf("국면 게이팅 구성 + 초과CAGR %+.1f%%p < 0 — 회복랠리 상실로 CAGR 훼손 의심", exc))
+
+  hits
+}
+
+# ---- analysis_report.md FMT 체크리스트 자동 체크 ([ ] -> [x] + 사유) ----
+.patch_fmt_checklist <- function(out_dir, fmt_hits) {
+  rp <- file.path(out_dir, "analysis_report.md")
+  if (!file.exists(rp)) {
+    if (length(fmt_hits))
+      cat("[AlphaSearch][FMT] WARN: analysis_report.md 부재 — 체크리스트 자동 체크 생략 (판정값은 L-code에 보존)\n")
+    return(invisible(FALSE))
+  }
+  if (!length(fmt_hits)) return(invisible(TRUE))   # 빈 판정 = 체크 없음 (원본 유지)
+  tryCatch({
+    lines <- readLines(rp, warn = FALSE, encoding = "UTF-8")
+    for (h in fmt_hits) {
+      pat <- sprintf("- [ ] %s:", h$code)
+      idx <- which(startsWith(lines, pat))
+      if (length(idx) == 1L)
+        lines[idx] <- sprintf("%s — AUTO: %s",
+                              sub("- [ ] ", "- [x] ", lines[idx], fixed = TRUE), h$reason)
+    }
+    # 자동판정 명시 (rule 출처 + heuristic 고지 — 수동 진단 FMT-06 제외)
+    tail_note <- "(FMT 자동판정: run_alpha_search.R::.judge_fmt rule 기반 — FMT-06은 수동 진단 전용)"
+    if (!any(grepl("FMT 자동판정", lines, fixed = TRUE))) lines <- c(lines, "", tail_note)
+    writeLines(lines, rp, useBytes = FALSE)
+    cat(sprintf("[AlphaSearch] analysis_report.md FMT %d건 자동 체크 완료\n", length(fmt_hits)))
+    invisible(TRUE)
+  }, error = function(e) {
+    cat("[AlphaSearch][FMT] WARN: 체크리스트 패치 실패 —", conditionMessage(e), "\n")
+    invisible(FALSE)
+  })
+}
+
+# =============================================================================
+# 권위측정 사다리: proxy(hurdle B+) → 계약 실측 재측정 (build_bt_result + essence_score)
+# =============================================================================
+# measurement-graduation §1(real-computation) §2(PORT_t forge-authoritative) §3(severity).
+# alpha-search = 1논문/1알파 가설주도 검증 → selection_type="chain" (DSR 게이트 부적용,
+# essence_score 주석 + 도훈 mandate 2026-05-31/2026-06-10). 결과는 OUT_DIR/
+# authoritative_remeasure.json + 호출부 L-code 라벨. 실패 시 정직 WARN + status="FAIL" 기록.
+.authoritative_remeasure <- function(sim, strategy_id, strategy_name, strategy_idea,
+                                     factor_engine_path, out_dir, hurdle_grade,
+                                     universe = "K200_KQ150", weight_method = "ivol",
+                                     commission = 0.0015, n_trials_cumulative = NULL) {
+  `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
+  out_path <- file.path(out_dir, "authoritative_remeasure.json")
+  res <- tryCatch({
+    cdir <- file.path(PROJECT_ROOT, "02_Infrastructure", "contracts")
+    source(file.path(cdir, "backtest_result_contract.R"))   # build_bt_result()
+    source(file.path(cdir, "audit_bt_result.R"))            # audit_bt_result()
+    source(file.path(cdir, "essence_score.R"))              # essence_score()
+
+    # strategy_spec: STRATEGY_SPEC_FIELDS 정합 (audit Check 7/8/9 입력)
+    spec <- list(
+      strategy_id     = strategy_id,
+      strategy_name   = strategy_name,
+      strategy_family = "alpha_search",
+      signal_description   = substr(strategy_idea %||% "", 1, 300),
+      universe_rule        = sprintf("%s + 20d avg trading value >= 2e8 KRW (t-1 PIT)", universe %||% "ALL"),
+      rebalance_frequency  = "monthly",
+      signal_date_rule     = "month_end_signal",
+      execution_date_rule  = "t_plus_1_first_trading_day",
+      weighting_method     = weight_method,
+      max_position_weight  = 0.20,
+      max_leverage         = 1.0,
+      cash_rule            = "fully_invested_after_floor_shares",
+      cost_model           = "v2.3_kr_retail_15bps",
+      missing_data_rule    = "exclude_na_scores",
+      risk_controls        = "none (alpha-search S1 — overlay 금지)",
+      lookahead_prevention = "detect_lookahead static scan CLEAN (PIT C1-C15)",
+      survivorship_bias_control = "RAWDATA PIT membership (K200/KQ150 time-varying)",
+      factor_engine_path   = factor_engine_path
+    )
+    run_id <- sprintf("ASRM_%s", basename(out_dir))
+    bt <- build_bt_result(
+      sim, spec, run_id = run_id, strategy_id = strategy_id,
+      strategy_version = "alpha_search_v1",
+      benchmark_id = "KOSPI200", benchmark_name = "KOSPI 200",
+      transaction_cost_bps = round(commission * 1e4, 1),
+      slippage_bps = 0,                       # 별도 슬리피지 미부과 (commission에 일원화) — 정직 기록
+      risk_free_rate = 0, frequency = "daily", annualization_factor = 252,
+      universe_id = universe %||% "ALL",
+      code_version = "run_alpha_search_v8.1_ladder",
+      created_by_agent = "AlphaSearch")
+    bt <- audit_bt_result(bt)
+    es <- essence_score(bt, n_trials_cumulative = n_trials_cumulative,
+                        selection_type = "chain")
+
+    AU <- as.data.table(bt$audit)
+    getm <- function(nm) { v <- bt$metrics[metric_name == nm, metric_value]
+                           if (length(v)) as.numeric(v[1]) else NA_real_ }
+    integrity <- bt$manifest$integrity_status[1] %||% "UNKNOWN"
+    ok <- identical(es$metric_type, "backtested") && !identical(integrity, "FAIL")
+    list(
+      status        = if (ok) "OK" else "FAIL",
+      strategy_id   = strategy_id,
+      strategy_name = strategy_name,
+      trigger_grade = hurdle_grade,                    # proxy hurdle 등급 (사다리 트리거)
+      remeasured_at = format(Sys.time(), "%Y-%m-%d %H:%M:%S"),
+      run_id        = run_id,
+      metric_type   = es$metric_type,                  # "backtested" = 계약 경유 실측
+      essence_grade = es$grade,
+      essence       = es$essence,                      # PORT_t NW lag-3 / OOS retention / DSR 등
+      dsr_gate_applied = es$dsr_gate_applied,
+      selection_type   = "chain",
+      hard_fail        = es$hard_fail,
+      reasons          = es$reasons,
+      contract = list(
+        integrity_status = integrity,
+        audit_pass = nrow(AU[status == "PASS"]), audit_fail = nrow(AU[status == "FAIL"]),
+        audit_warn = nrow(AU[status == "WARN"]),
+        cagr = getm("CAGR"), sharpe = getm("Sharpe"), mdd = getm("MDD"), calmar = getm("Calmar")
+      ),
+      note = if (ok) "build_bt_result+audit_bt_result+essence_score 계약 경유 실측 (proxy hurdle와 별도 권위값)"
+             else sprintf("재측정 비권위 (metric_type=%s, integrity=%s) — proxy 유지", es$metric_type, integrity)
+    )
+  }, error = function(e) {
+    list(status = "FAIL", strategy_id = strategy_id, strategy_name = strategy_name,
+         trigger_grade = hurdle_grade, remeasured_at = format(Sys.time(), "%Y-%m-%d %H:%M:%S"),
+         metric_type = "proxy", error = conditionMessage(e),
+         note = "authoritative 재측정 실패 — proxy(run_hurdle_gate) 수치만 유효. 침묵 금지 정책에 따라 기록.")
+  })
+  tryCatch(jsonlite::write_json(res, out_path, auto_unbox = TRUE, pretty = TRUE, digits = 6),
+           error = function(e) cat("[AlphaSearch][권위측정] WARN: JSON 저장 실패 —", conditionMessage(e), "\n"))
+  if (identical(res$status, "OK")) {
+    cat(sprintf("[AlphaSearch] ★ 권위측정 사다리: essence %s | PORT_t(NW lag-3) %s | OOS_ret %s | metric_type=backtested -> %s\n",
+                res$essence_grade,
+                ifelse(is.na(res$essence$portfolio_alpha_t_nw_lag3 %||% NA), "NA",
+                       sprintf("%.2f", res$essence$portfolio_alpha_t_nw_lag3)),
+                ifelse(is.na(res$essence$oos_retention %||% NA), "NA",
+                       sprintf("%.2f", res$essence$oos_retention)),
+                basename(out_path)))
+  } else {
+    cat(sprintf("[AlphaSearch] WARN: 권위측정 재측정 실패/비권위 (%s) — proxy 수치만 유효. 상세: %s\n",
+                res$error %||% res$note %||% "unknown", basename(out_path)))
+  }
+  res
+}
+
 # ---- L-code 작성 (모드별 디렉터리 stage_artifacts/l_code/alpha_search/) ----
 .write_lcode <- function(strategy_id, strategy_name, strategy_idea, grade,
-                         m, excess_cagr, pass, is_fail) {
+                         m, excess_cagr, pass, is_fail,
+                         hg = NULL, fmt = NULL, auth = NULL) {
   `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
   lc_dir <-file.path(PROJECT_ROOT, "stage_artifacts", "l_code", "alpha_search")
   dir.create(lc_dir, recursive = TRUE, showWarnings = FALSE)
   tags <- c("ALPHA_SEARCH", "FAST_VALIDATION")
   if (!pass) tags <- c(tags, "VALIDATED_HARD_FAIL")   # 실패 교훈 → 역패턴 마이너 입력
+
+  fmt <- fmt %||% list()
+  fmt_codes <- vapply(fmt, function(x) x$code, "")
+  oos_retention <- .as_num(tryCatch(hg$verdict$score_breakdown$oos$value, error = function(e) NA))
+  fail_reasons  <- tryCatch(unlist(hg$verdict$fail_reasons), error = function(e) character(0))
+  auth_ok <- !is.null(auth) && identical(auth$status, "OK")
+
   lesson <- if (pass)
     sprintf("%s: 등급 %s, 연복리 %.1f%% (벤치마크 대비 %+.1f%%p), 샤프 %.2f, 최대낙폭 %.1f%%. 통과 — PG 편입 권고.",
             strategy_name, grade, .as_num(m$CAGR), excess_cagr %||% 0, .as_num(m$Sharpe), -abs(.as_num(m$MDD)))
@@ -326,6 +583,62 @@ run_alpha_search <- function(strategy_name,
     sprintf("%s: 등급 %s, 연복리 %.1f%% (벤치마크 대비 %+.1f%%p), 샤프 %.2f. %s",
             strategy_name, grade, .as_num(m$CAGR), excess_cagr %||% 0, .as_num(m$Sharpe),
             if (is_fail) "명확한 실패 패턴 — 역방향 가설 탐색 후보." else "근접 탈락 — 보강 후 재검증 후보.")
+  if (auth_ok)
+    lesson <- sprintf("%s [실측재측정: essence %s, PORT_t(NW) %s, metric_type=backtested]",
+                      lesson, auth$essence_grade %||% "?",
+                      ifelse(is.na(.as_num(auth$essence$portfolio_alpha_t_nw_lag3)), "NA",
+                             sprintf("%.2f", .as_num(auth$essence$portfolio_alpha_t_nw_lag3))))
+
+  # ---- 학습 3필드 (의무, v8.1 트랙D — 형해화 해소: 탈락축/실측수치 기반 구체 문장) ----
+  # mechanism_hypothesis: 전략 아이디어 + 판정된 실패축(FMT/fail_reasons)에서 구성. 보일러플레이트 금지.
+  axis_txt <- if (length(fmt)) {
+    paste(vapply(fmt, function(x) sprintf("%s(%s)", x$code, x$reason), ""), collapse = "; ")
+  } else if (length(fail_reasons)) {
+    paste(fail_reasons, collapse = "; ")
+  } else if (pass) {
+    sprintf("주요 허들 통과 (초과CAGR %+.1f%%p, 샤프 %.2f) — 아이디어의 메커니즘이 KR %s 유니버스에서 유효",
+            excess_cagr %||% 0, .as_num(m$Sharpe), "K200/KQ150")
+  } else {
+    sprintf("hard_fail 없이 점수 미달 (종합 %.0f점) — 신호 자체가 약함(IR %.2f)",
+            .as_num(hg$score), .as_num(m$IR))
+  }
+  mechanism_hypothesis <- sprintf("가설 '%s' — 검증 결과 지배 요인: %s",
+                                  strtrim(strategy_idea %||% "", 140), axis_txt)
+  # data_supported_conclusion: 실측 수치 인용 (proxy/backtested 라벨 명시)
+  data_supported_conclusion <- sprintf(
+    "측정치(%s): CAGR %.1f%% (BM 대비 %+.1f%%p), 샤프 %.2f, MDD %.1f%%, IR %.2f, 회전율 연 %.0f%%, OOS retention %s%s.",
+    if (auth_ok) "proxy hurdle + 계약 실측 병기" else "proxy — run_hurdle_gate",
+    .as_num(m$CAGR), excess_cagr %||% 0, .as_num(m$Sharpe), -abs(.as_num(m$MDD)),
+    .as_num(m$IR), .as_num(m$Turnover_Ann),
+    ifelse(is.na(oos_retention), "NA", sprintf("%.2f", oos_retention)),
+    if (auth_ok) sprintf(" | 실측(backtested): essence %s, PORT_t(NW lag-3) %s, OOS_ret %s",
+                         auth$essence_grade %||% "?",
+                         ifelse(is.na(.as_num(auth$essence$portfolio_alpha_t_nw_lag3)), "NA",
+                                sprintf("%.2f", .as_num(auth$essence$portfolio_alpha_t_nw_lag3))),
+                         ifelse(is.na(.as_num(auth$essence$oos_retention)), "NA",
+                                sprintf("%.2f", .as_num(auth$essence$oos_retention)))) else "")
+  # next_probe: 탈락축 기반 다음 탐색 제안 (축별 분기 — 빈 제안 금지)
+  next_probe <- if (pass) {
+    "QEPM 정밀검증(WorkTask) 이행 + Grade-A 풀 직교성(GradeA_Corr)·book-marginal ΔIR>=0.05 확인."
+  } else if ("FMT-05" %in% fmt_codes) {
+    sprintf("회전율 축 탈락(연 %.0f%%) — 리밸 주기 연장(월->분기)·buffer_zone 확대·신호 지속성 측정 후 재검증.", .as_num(m$Turnover_Ann))
+  } else if (any(c("FMT-01", "FMT-04") %in% fmt_codes)) {
+    sprintf("MDD 축 탈락(%.1f%%) — 신호력 보존 시 OVERLAY_CANDIDATE 라우트(국면/DD overlay는 S5/QEPM 단계) 또는 저변동 결합 재검증.", abs(.as_num(m$MDD)))
+  } else if ("FMT-02" %in% fmt_codes) {
+    "방향 역작동 의심 — kr-inverse-pattern-miner로 역방향 가설 생성 + long-short/multi-sleeve 구성 변경 탐색."
+  } else if ("FMT-07" %in% fmt_codes) {
+    "후반부 알파 붕괴 — 2017 전후 서브기간 분해 + 최근 5Y 한정 재검증으로 소멸 여부 확정."
+  } else if ("FMT-08" %in% fmt_codes) {
+    "게이팅 과적합 의심 — 게이트 임계 완화/제거 대조 실험으로 회복랠리 기여 분리."
+  } else if ("FMT-03" %in% fmt_codes) {
+    "앙상블 희석 의심 — 구성 팩터 단독 성과 분해 후 강한 축 단독/가중 재설계."
+  } else if (is_fail) {
+    sprintf("탈락 사유(%s) 직접 해소 변형 1건 + 역방향 가설(kr-inverse-pattern-miner) 1건 검증.",
+            if (length(fail_reasons)) paste(fail_reasons, collapse = "; ") else "점수 미달")
+  } else {
+    sprintf("근접 탈락(종합 %.0f점) — 최약 축 보강(파라미터 아닌 구성 변경) 후 1회 재검증. 반복 sweep 시 n_trials 누적 신고.", .as_num(hg$score))
+  }
+
   # v8.0 입력 품질 게이트 (lcode_schema.R) — garbage corpus 진입 차단 (안전핀 #1)
   schema_src <- file.path(.AS_INFRA, "axiom", "lcode_schema.R")
   if (file.exists(schema_src)) source(schema_src, local = TRUE)
@@ -346,8 +659,36 @@ run_alpha_search <- function(strategy_name,
     cagr_pct          = .as_num(m$CAGR),
     sharpe            = .as_num(m$Sharpe),
     mdd_pct           = abs(.as_num(m$MDD)),
-    excess_cagr       = excess_cagr %||% NA_real_
+    excess_cagr       = excess_cagr %||% NA_real_,
+    # ---- 학습 3필드 (v8.1 트랙D 의무) + FMT + OOS ----
+    mechanism_hypothesis      = mechanism_hypothesis,   # r7 Mechanism 축 입력
+    data_supported_conclusion = data_supported_conclusion,
+    next_probe                = next_probe,
+    fmt_codes                 = as.list(fmt_codes),     # 빈 list = 판정 없음 (정직)
+    oos_retention             = oos_retention           # IS65/OOS35 SR retention (hurdle D062, proxy)
   )
+  # ---- 권위측정 사다리 결과 라벨 (트랙C): 계약 실측 성공 시 backtested로 승격 ----
+  #   INV-1: proxy는 mode-local 한정 — 실측(backtested) 라벨은 build_bt_result+essence_score
+  #   계약 경유 성공분에만 부여. 수치도 계약값으로 교체하고 proxy 원값은 proxy_metrics에 보존.
+  if (auth_ok) {
+    lcode$metric_type   <- "backtested"
+    lcode$proxy_metrics <- list(cagr_pct = .as_num(m$CAGR), sharpe = .as_num(m$Sharpe),
+                                mdd_pct = abs(.as_num(m$MDD)), excess_cagr = excess_cagr %||% NA_real_,
+                                source = "run_hurdle_gate (proxy). excess_cagr는 계약 미산출 — 상단 excess_cagr도 proxy값 유지")
+    if (is.finite(.as_num(auth$contract$cagr)))   lcode$cagr_pct <- round(.as_num(auth$contract$cagr) * 100, 2)
+    if (is.finite(.as_num(auth$contract$sharpe))) lcode$sharpe   <- round(.as_num(auth$contract$sharpe), 3)
+    if (is.finite(.as_num(auth$contract$mdd)))    lcode$mdd_pct  <- round(abs(.as_num(auth$contract$mdd)) * 100, 2)
+    if (is.finite(.as_num(auth$essence$oos_retention))) lcode$oos_retention <- .as_num(auth$essence$oos_retention)
+    lcode$authoritative <- list(
+      essence_grade             = auth$essence_grade,
+      portfolio_alpha_t_nw_lag3 = .as_num(auth$essence$portfolio_alpha_t_nw_lag3),
+      oos_retention             = .as_num(auth$essence$oos_retention),
+      dsr                       = .as_num(auth$essence$dsr),
+      audit_integrity           = auth$contract$integrity_status,
+      selection_type            = "chain",
+      source                    = "authoritative_remeasure.json"
+    )
+  }
   if (exists("validate_lcode", mode = "function")) {
     v <- validate_lcode(lcode)
     if (!isTRUE(v$valid)) {

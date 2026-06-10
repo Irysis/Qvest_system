@@ -30,4 +30,4 @@ Qvest 제3 리서치 모드. 신규 알파를 찾지 않고 **이미 생산된 �
 
 **제약**: 모듈 frozen(재백테 금지) · 스타일태깅 없음 · dispatcher=book_optimize 래퍼 · 실측-only(자체합성 금지) · governor 정지(book_state 도훈 수동 confirm) · WT-id 미사용. 위반=AX-002.
 
-상세: `.claude/skills/factor-rotation/SKILL.md` · `.claude/rules/factor-rotation.md`.
+상세: `.claude/skills/factor-rotation/SKILL.md` · `02_Infrastructure/docs/rules/factor-rotation.md`.

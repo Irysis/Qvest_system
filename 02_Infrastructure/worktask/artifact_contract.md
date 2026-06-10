@@ -171,5 +171,5 @@ grep -rE 'optimizer_package|judge_package|governor_package' \
 - `02_Infrastructure/worktask/artifact_contract.json` (JSON SOT)
 - `02_Infrastructure/docs/qvest_v6_4_sot.md` Section 3.5 (Active Path 의무 자산 위치)
 - `.claude/skills/qvest-worktask/SKILL.md` Section 2~5
-- `.claude/rules/codex-round.md`
+- `02_Infrastructure/docs/rules/codex-round.md`
 - L-269 (Codex Round 우회 사례) / L-270 (Bayesian validation + drift evidence)

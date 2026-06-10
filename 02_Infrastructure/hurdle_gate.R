@@ -1411,12 +1411,50 @@ run_hurdle_gate <- function(sim_result,
   }
 
   # ==========================================================================
+  # SCREENING TIER (v8.1.1 2026-06-10, 도훈 mandate P2 게이트 계층화)
+  # 배경: alpha-search 탈락 66/66건이 MDD>45% 단일 사유 (long-only β≈0.8 구조 —
+  #   overlay 없는 맨몸 채점이라 구조적 전멸. near-miss: SR 0.825·CAGR 20.8%가 MDD로 F).
+  # 설계: 졸업/자본 게이트(grade·HARD)는 불변. screening은 "알파 신호력" 별도 축 —
+  #   MDD·turnover 등 구조 사유를 제외하고 신호가 실재하는 후보를
+  #   overlay 결합 / FR RCMA 국면소비 / DPL 피처 경로로 라우팅하는 라벨.
+  # PIT 위반(D000)만은 계층 무관 절대 기각 (AX-002).
+  # ==========================================================================
+  .pit_violated <- any(grepl("^PIT violation", fail_reasons))
+  screen_pass <- !.pit_violated && (
+    (sharpe >= 0.7 && ann_ret >= 0.12) ||
+    (total_score >= 40 && sharpe >= 0.5)
+  )
+  screen_route <- if (!screen_pass) {
+    "NONE"
+  } else if (grade %in% c("A", "A_NOVEL", "A_DEF", "B", "B_DEF")) {
+    "STANDALONE_TRACK"  # 기존 등급 경로가 이미 소화
+  } else {
+    .routes <- character(0)
+    if (mdd > 0.45)         .routes <- c(.routes, "OVERLAY_CANDIDATE")  # MDD가 죽인 신호 — overlay/regime 결합 후보
+    if (ann_turnover > 600) .routes <- c(.routes, "DPL_FEATURE")        # 고회전 신호 — 직접운용 불가, 피처로
+    .routes <- c(.routes, "FR_RCMA")                                    # 국면조건부 소비는 항상 후보 (등급무관 등재)
+    paste(unique(.routes), collapse = "|")
+  }
+  if (screen_pass && grade %in% c("C", "F")) {
+    diagnostics <- c(diagnostics, list(list(
+      code = "D090",
+      msg  = sprintf("[SCREENING] 신호력 PASS (SR %.2f, CAGR %.1f%%) — grade %s는 구조 사유. 라우팅: %s",
+                     sharpe, ann_ret * 100, grade, screen_route)
+    )))
+  }
+
+  # ==========================================================================
   # VERDICT
   # ==========================================================================
 
   pass <- !hard_fail && total_score >= 40
 
   verdict <- list(
+    screening   = list(
+      screen_pass  = screen_pass,
+      screen_route = screen_route,
+      note = "탐색 게이트 — 자본/졸업 게이트 아님 (graduation HARD 불변). PIT만 절대."
+    ),
     strategy    = strategy_name,
     timestamp   = format(Sys.time(), "%Y-%m-%d %H:%M:%S"),
     pass        = pass,

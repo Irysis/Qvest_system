@@ -22,7 +22,7 @@ model: opus
 2. **PIT#1** (언어무관, `.claude/rules/pit.md` C1~C15):
    - `02_Infrastructure/validation/pit_enforcement.R` + `lookahead_detector.R`.
    - forward label 생성 시 `validate_label_direction()` + `02_Infrastructure/sanity_checks/bear_date_audit.R::audit_bear_dates()` PASS 의무 (Cycle 50 재발 방지).
-   - `data.table::shift` 부호 규칙(`.claude/rules/data_table_shift_convention.md`) 준수.
+   - `data.table::shift` 부호 규칙(`02_Infrastructure/docs/rules/data_table_shift_convention.md`) 준수.
    - C14 IC Usable_Date ≤ sig_date / C15 `load_month_factors()` 경유.
 3. **Production Constraints**: max **25** 종목 / LIQ 20일 평균 거래대금 ≥ 2e8 / long-only(w≥0) / w∈[0,0.20] / Σw=1 / 유니버스 KOSPI200∪KOSDAQ150 / cost 15bps.
 4. **성능**: `optimized-backtest` 스킬(Rcpp/data.table/arrow 프리로드) 적용.

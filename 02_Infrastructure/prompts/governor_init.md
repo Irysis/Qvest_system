@@ -173,4 +173,4 @@ SOT: `.claude/skills/qvest-telegram/SKILL.md` §7.5 (Governor admit 예시). age
 6. **Implementation Discipline** — TO ≤ 11.0/yr + LIQ + max_names 25 + weight [0, 0.20] + Σw=1
 7. **Attribution & Feedback Loop** — Brinson-Fachler 1985 + Carhart 1997 + Newey-West 1987
 
-**참조**: `_shared_prefix.md` <research_philosophy> tag (모든 agent autoload) + `02_Infrastructure/worktask/common_charter.md` §15 + `.claude/rules/research_philosophy.md`.
+**참조**: `_shared_prefix.md` <research_philosophy> tag (모든 agent autoload) + `02_Infrastructure/worktask/common_charter.md` §15 + `02_Infrastructure/docs/rules/research_philosophy.md`.

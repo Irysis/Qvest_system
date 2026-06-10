@@ -22,7 +22,7 @@ AX-code (Lv0) > PIT C1-C15 (Lv1) > L-code (Lv2) > Signals (Lv3)
 
 ## 2-Tier (v8.0)
 
-mode-local `AX-<MODE>-NNN` (`active/modes/<mode>/`, MODE=AS/QPM/FR) + global `AX-NNN` (`active/`). negative 공리 = **provisional failure-ledger**(INV-7, 재도전 대상 — 불변 법칙 아님). 엔진 SOT: `.claude/rules/axiom-engine.md` (원전 r7 복원 + INV-1~7).
+mode-local `AX-<MODE>-NNN` (`active/modes/<mode>/`, MODE=AS/QPM/FR) + global `AX-NNN` (`active/`). negative 공리 = **provisional failure-ledger**(INV-7, 재도전 대상 — 불변 법칙 아님). 엔진 SOT: `02_Infrastructure/docs/rules/axiom-engine.md` (원전 r7 복원 + INV-1~7).
 
 ## AX-000 ~ AX-008
 

@@ -20,9 +20,9 @@
 
 - **PIT C1~C15** (`.claude/rules/pit.md`) Python에도 100% 적용. 특히:
   - C1 rolling/expanding window only. C2 same-day circular 금지.
-  - **data.table::shift 부호 규칙**(`.claude/rules/data_table_shift_convention.md`)의 Python 등가: `df.shift(periods)` / `.groupby().shift()` 방향 명시. forward label은 `validate_label_direction()` + `bear_date_audit.R` PASS 의무 (Cycle 50 lookahead 사건 재발 방지 — 언어 무관).
+  - **data.table::shift 부호 규칙**(`02_Infrastructure/docs/rules/data_table_shift_convention.md`)의 Python 등가: `df.shift(periods)` / `.groupby().shift()` 방향 명시. forward label은 `validate_label_direction()` + `bear_date_audit.R` PASS 의무 (Cycle 50 lookahead 사건 재발 방지 — 언어 무관).
   - C14 IC Usable_Date ≤ sig_date. C15 Factor DB는 `load_month_factors()` 경유 (Python에서도 — ML daily parquet carve-out은 명시 승인 hypothesis만).
-- **lockbox-scope** (`.claude/rules/lockbox-scope.md`): alpha/risk/optimizer 정규 리서치는 SIGNAL_CUTOFF 적용, forge/monitoring은 폐기 — 언어 무관.
+- **lockbox-scope** (`02_Infrastructure/docs/rules/lockbox-scope.md`): alpha/risk/optimizer 정규 리서치는 SIGNAL_CUTOFF 적용, forge/monitoring은 폐기 — 언어 무관.
 
 ## 4. Backtest Contract — 자체합성 금지 (최우선)
 

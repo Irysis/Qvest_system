@@ -95,5 +95,5 @@ alpha-research / risk-research / optimizer-research / forge / judge / governor.
 - `02_Infrastructure/tools/debate_helpers/run_codex_qepm_critic.sh`
 - `02_Infrastructure/prompts/qlead_spawn_template.md`
 - `02_Infrastructure/docs/qvest_v6_4_sot.md`
-- `.claude/rules/codex-round.md` (rule SOT)
+- `02_Infrastructure/docs/rules/codex-round.md` (rule SOT)
 - L-269 (우회 사례) / L-270 (Bayesian 검증)

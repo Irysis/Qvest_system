@@ -59,7 +59,7 @@
 
 이 단계들은 **최신 sig_date까지 자동 갱신** 의무 (lockbox 무관).
 
-**상세 SOT**: `.claude/rules/lockbox-scope.md`
+**상세 SOT**: `02_Infrastructure/docs/rules/lockbox-scope.md`
 
 **Hook 강제**: `02_Infrastructure/hooks/selection_contamination_detector.sh` v6.5
 - alpha / risk / optimizer / opt_ → block (정규 리서치 lockbox 차단)

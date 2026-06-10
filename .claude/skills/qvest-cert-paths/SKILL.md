@@ -102,5 +102,5 @@ L4 (FileChanged event)는 영구 deferred (`CLAUDE_FILE_PATH` 미주입 + race r
 - `02_Infrastructure/hooks/policies/cert_rules.json` (policy JSON)
 - `02_Infrastructure/ops/cert_backfill_audit.R` (Layer 2)
 - `02_Infrastructure/portfolio/measurement_basis_audit.R` (Health Score)
-- `.claude/rules/codex-round.md`
+- `02_Infrastructure/docs/rules/codex-round.md`
 - L-262 (deployment WT cert backfill) / L-267 (Layer 4 deferred) / L-268 (E2E 6/6 PASS)

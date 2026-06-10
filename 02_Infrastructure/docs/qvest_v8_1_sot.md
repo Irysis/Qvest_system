@@ -45,7 +45,7 @@ v8.1은 v8.0(Opus 4.8-Native · Polyglot) 위에서 **① 3개 리서치 모드�
 - **3-mode 2-tier**: alpha_search(proxy → mode-local `AX-AS-NNN`) / QEPM·FR(backtested → global `AX-NNN`). proxy는 global 승격 불가(INV-1).
 - **INV-1~7 안전 불변식**: metric_type 게이트 / 생성≠강제 / rollback+weekly리포트 / min-hurdle / AX-008 2/3 / statement 정제 / negative=provisional.
 - **AX-003~007 provisional 재분류**: N=2~3 섣부른 부정형 공리 → 잠정 실패기록(재도전 대상).
-- SOT: `.claude/rules/axiom-engine.md`.
+- SOT: `02_Infrastructure/docs/rules/axiom-engine.md`.
 
 ---
 

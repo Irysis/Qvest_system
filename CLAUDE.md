@@ -20,14 +20,14 @@
 **전임 SOT (흡수됨)**: `02_Infrastructure/docs/qvest_v6_4_sot.md` (v6.4 base 흡수, read-only retain)
 **Legacy boundary**: `02_Infrastructure/docs/qvest_legacy_boundary.md` (v55 / S0~S7 격리)
 
-본 CLAUDE.md는 헌법만. 절차는 `.claude/skills/`, 룰은 `.claude/rules/`, 강제는 `02_Infrastructure/hooks/`, 역할은 `.claude/agents/`.
+본 CLAUDE.md는 헌법만. 절차는 `.claude/skills/`, 룰은 2단(`코어 6 = .claude/rules/ autoload` + `확장 10 = 02_Infrastructure/docs/rules/ on-demand` — 아래 Rules 절), 강제는 `02_Infrastructure/hooks/`, 역할은 `.claude/agents/`.
 
 ---
 
 ## Active Modes (3-Mode — 각자 평가·자가발전, 도훈 mandate 2026-06-05)
 
 Qvest = 독립 리서치 모드 3개 (lifecycle ①②생산 → ③소비; 진입점은 아래 `## Active Entrypoints`).
-**각 모드 = 자기 평가체계 + 자기 자가발전** (L-code → mode-local axiom `AX-<MODE>-*`, `.claude/rules/axiom-engine.md` v8.0 E2E 검증). **평가체계(산출물 채점)는 모드별 자율 — 통일 금지.** 공유하는 건 *평가가 아니라 토대*: ① 정직 라벨 (`metric_type` proxy/backtested) ② 자본 게이트 (`book_state` = governor 수동+도훈) ③ **교차검증 global 공리** (자가발전 결과 중 backtested + r7 5축 + AX-008 + 도훈 confirm 통과분만 `AX-NNN`; 공유 *사실*이지 평가 통일 아님 — proxy·한 모드 loose 평가는 INV-1로 global 차단). SOT: `02_Infrastructure/docs/qvest_modes_sot.md`.
+**각 모드 = 자기 평가체계 + 자기 자가발전** (L-code → mode-local axiom `AX-<MODE>-*`, `02_Infrastructure/docs/rules/axiom-engine.md` v8.0 E2E 검증). **평가체계(산출물 채점)는 모드별 자율 — 통일 금지.** 공유하는 건 *평가가 아니라 토대*: ① 정직 라벨 (`metric_type` proxy/backtested) ② 자본 게이트 (`book_state` = governor 수동+도훈) ③ **교차검증 global 공리** (자가발전 결과 중 backtested + r7 5축 + AX-008 + 도훈 confirm 통과분만 `AX-NNN`; 공유 *사실*이지 평가 통일 아님 — proxy·한 모드 loose 평가는 INV-1로 global 차단). SOT: `02_Infrastructure/docs/qvest_modes_sot.md`.
 
 **① QEPM 모드 경로** (신호-only 알파 정밀 검증·편입):
 ```
@@ -87,18 +87,18 @@ Qvest 시스템 전체 구동. bootstrap.sh 실행 → 플러그인 리로드 �
 ## Absolute Rules (1줄 reference)
 
 - **PIT C1~C15**: `.claude/rules/pit.md`
-- **Lockbox / Frozen Alpha Scope**: `.claude/rules/lockbox-scope.md` (정규 리서치 alpha/risk/optimizer만 적용. forge/monitoring/Q-Lead/execution = 폐기. 도훈 mandate 2026-05-09)
-- **Codex Critic Round 의무**: `.claude/rules/codex-round.md` (모든 agent spawn 시 5단계 흐름, 우회 시 PreToolUse Hook block)
+- **Lockbox / Frozen Alpha Scope**: `02_Infrastructure/docs/rules/lockbox-scope.md` (정규 리서치 alpha/risk/optimizer만 적용. forge/monitoring/Q-Lead/execution = 폐기. 도훈 mandate 2026-05-09)
+- **Codex Critic Round 의무**: `02_Infrastructure/docs/rules/codex-round.md` (모든 agent spawn 시 5단계 흐름, 우회 시 PreToolUse Hook block)
 - **Backtest Result Contract v1.0**: `.claude/rules/backtest-contract.md` (PerformanceAnalytics 표준 함수만)
 - **Measurement Integrity + Graduation 허들 (v8.x)**: `.claude/rules/measurement-graduation.md` ⭐ (위반 = AX-002 동급. 실측 처리(canonical_screen_bt/build_bt_result + metric_type 라벨, proxy 손계산 금지) / portfolio-alpha t = forge-authoritative(NW lag-3) / graduation severity: PORT_t 2.95·DSR hard, rank-IC계열 advisory / admission = book-marginal ΔIR≥0.05 / DPL 구성레이어. E2E: FLOW proxy 3.55→forge 2.35)
-- **Axiom Engine 2-Tier (v8.0)**: `.claude/rules/axiom-engine.md` ⭐ (원전 r7 복원 + 3-mode 2-tier(AS proxy→mode-local / QPM·FR backtested→global) + INV-1~7. mode-local AX-&lt;MODE&gt;-NNN / global AX-NNN. negative=provisional failure-ledger. 자동승격=documented·hook block은 주간 confirm. E2E 10/10. 위반=AX-002 동급)
+- **Axiom Engine 2-Tier (v8.0)**: `02_Infrastructure/docs/rules/axiom-engine.md` ⭐ (원전 r7 복원 + 3-mode 2-tier(AS proxy→mode-local / QPM·FR backtested→global) + INV-1~7. mode-local AX-&lt;MODE&gt;-NNN / global AX-NNN. negative=provisional failure-ledger. 자동승격=documented·hook block은 주간 confirm. E2E 10/10. 위반=AX-002 동급)
 - **Qvest 답변 원칙 (8원칙 + 5금지)**: `.claude/rules/answer-principles.md` (위반 = AX-002 동급)
 - **Telegram v6 SOT**: `.claude/skills/qvest-telegram/SKILL.md` (단일 규칙. `tg_agent_brief()` 진입점, 약어 풀이 자동, 표준 4섹션 권장)
-- **Caching Discipline**: `.claude/rules/caching.md` (Anthropic 5분 TTL, ScheduleWakeup ≤270s)
-- **Harness Engineering (Hooks Tier 1~6)**: `.claude/rules/harness.md`
-- **Factor DB + Forge 자원**: `.claude/rules/factor-db.md` (C13~C15 + load_month_factors 경유)
+- **Caching Discipline**: `02_Infrastructure/docs/rules/caching.md` (Anthropic 5분 TTL, ScheduleWakeup ≤270s)
+- **Harness Engineering (Hooks Tier 1~6)**: `02_Infrastructure/docs/rules/harness.md`
+- **Factor DB + Forge 자원**: `02_Infrastructure/docs/rules/factor-db.md` (C13~C15 + load_month_factors 경유)
 - **Axioms (AX-000~008)**: `.claude/rules/axioms.md`
-- **Research Philosophy (7 QEPM Modern Trends)**: `.claude/rules/research_philosophy.md` ⭐ (Charter-level SOT `02_Infrastructure/docs/qvest_research_philosophy.md` v1.0 2026-05-14. Factor Zoo 축소 / Cost-aware / Uncertainty-aware / Direct Portfolio / Crowding / Implementation / Attribution. 분기별 review + trigger-based 보강. 위반 = AX-002 동급)
+- **Research Philosophy (7 QEPM Modern Trends)**: `02_Infrastructure/docs/rules/research_philosophy.md` ⭐ (Charter-level SOT `02_Infrastructure/docs/qvest_research_philosophy.md` v1.0 2026-05-14. Factor Zoo 축소 / Cost-aware / Uncertainty-aware / Direct Portfolio / Crowding / Implementation / Attribution. 분기별 review + trigger-based 보강. 위반 = AX-002 동급)
 
 ---
 
@@ -217,12 +217,9 @@ cd qepm && Rscript -e 'source("scripts/hybrid_mode.R")'
 |---|---|
 | `/qvest` | Session startup + bootstrap + status |
 | `/worktask` | WorkTask CRUD |
-| `/scout` (legacy) | scout_init.md 로드 — alpha-research로 흡수, retain compat |
-| `/forge` (legacy) | forge_init.md 로드 — v6.4 forge agent로 점진 |
-| `/judge` (legacy) | judge_init.md 로드 |
-| `/governor` (legacy) | governor_init.md 로드 |
+| `/alpha-search` · `/factor-rotation` | 모드 진입 (Active Entrypoints 표 참조) |
 | `/qlead` | Q-Lead session dashboard |
-| `/launch-team` | TeamCreate 4인 가동 (legacy v53) |
+| (legacy retain) | `/forge` `/judge` `/governor` `/launch-team` — v53/v6.4 호환 보존, 신규 사용 금지. `/scout`은 파일 부재로 표에서 제거 (2026-06-10) |
 
 ---
 
@@ -237,25 +234,30 @@ cd qepm && Rscript -e 'source("scripts/hybrid_mode.R")'
 | `qvest-telegram` | 텔레그램 단일 SOT (v6) — 양식 / 약어 풀이 / Hook 정책 / caller 예시 통합 |
 | (Phase 9 추가 예정) | qvest-hook-debug / qvest-cert-paths |
 
-### Rules (`.claude/rules/`) — Level 0 헌법 보강
+### Rules — 2단 구조 (2026-06-10 P2 다이어트: autoload 16→6)
 
-| Rule | 용도 |
+**코어 6 (`.claude/rules/` — 매 세션 autoload)**: `pit.md` (C1~C15) · `axioms.md` (AX-000~008) · `answer-principles.md` (8원칙+5금지) · `backtest-contract.md` (bt_result 10-component) · `measurement-graduation.md` (게이트 2계층+HARD) · `python-policy.md` (R/Python 1급)
+
+**확장 10 (`02_Infrastructure/docs/rules/` — 해당 작업 시 on-demand Read, 효력 동일)**:
+
+| Rule | 로드 시점 |
 |---|---|
-| `answer-principles.md` | 8원칙 + 5금지 + 자가체크 |
-| `pit.md` | C1~C15 + S0/S1 overlay 금지 + Production Constraints |
-| `codex-round.md` | Codex Round + Positive Hook 패러다임 |
-| `harness.md` | Hooks Tier 1~6 매트릭스 |
-| `backtest-contract.md` | bt_result 10-component + audit |
-| `caching.md` | Anthropic 5분 TTL + ScheduleWakeup |
-| `factor-db.md` | C13~C15 + load_month_factors 경유 |
-| `axioms.md` | AX-000~008 본문 + 2-tier |
-| `axiom-engine.md` | 3-mode 2-tier 엔진 SOT (원전 r7 복원 + INV-1~7) |
+| `codex-round.md` | QEPM agent spawn 시 (qvest-codex-round skill이 안내) |
+| `harness.md` | hook 디버깅 시 (qvest-hook-debug skill) |
+| `axiom-engine.md` | axiom 승격/주간 파이프라인 작업 시 |
+| `factor-rotation.md` | factor-rotation 모드 진입 시 (SKILL이 참조) |
+| `lockbox-scope.md` | lockbox 판단 시 (pit.md에 요약 잔존) |
+| `factor-db.md` | factor DB 직접 작업 시 |
+| `data_table_shift_convention.md` | shift/forward label 작성 시 (pit.md C-체크 연계) |
+| `artifact-naming.md` | WT 핸드오프 파일 생성 시 |
+| `caching.md` | 토큰/캐시 운영 판단 시 |
+| `research_philosophy.md` | 분기 review 시 (본문 SOT는 docs/qvest_research_philosophy.md) |
 
 ---
 
-## Multi-Agent Team v53 (legacy compat retain)
+## Multi-Agent Team v53 (legacy — 2026-06-10 hook 등록 해제)
 
-TeamCreate teammate 4인 (Scout / Forge / Judge / Governor) Q-Lead 세션 spawn. Hook (SubagentStop / FileChanged / TeammateIdle / TaskCompleted) 자동 발동. tmux `rc` (telegram listener) 1개 retain.
+v53 TeamCreate 패턴은 v8.1에서 Agent tool spawn으로 대체됨. TeammateIdle/TaskCompleted hook은 settings.json에서 등록 해제 (스크립트는 FS retain — `02_Infrastructure/docs/rules/harness.md` 참조). tmux rc listener는 v8.0에서 폐지.
 
 상세: `.claude/skills/qvest-worktask/SKILL.md` Section 7.
 
@@ -271,41 +273,8 @@ TeamCreate teammate 4인 (Scout / Forge / Judge / Governor) Q-Lead 세션 spawn.
 
 ---
 
-## Release Status (v6.4.0 → v7.2.1)
+## Release Status + 변경 이력
 
-| Release | 일자 | 핵심 |
-|---|---|---|
-| ✅ **v6.4.0** | 2026-05-01 | Harness Kernel Stabilization. Sprint 0+1+2+3 9-phase. Codex 3중 장치 + 5 Cert + State Machine. |
-| ✅ **v7.0.0** | 2026-05-02 | Hardening 7 sprint. "검증 가능한 소프트웨어 커널" — 우회 불가능한 실행 계약. 14 schema + sm_validated_advance + events.jsonl + qvest_observe + legacy_write_block. E2E 12/12 PASS. |
-| ✅ **v7.0.1** | 2026-05-02 | 도훈 흠 4건 fix (synthetic cleanup / cert_rules data layer / harness_health hook 제거 / qvest_observe error masking). |
-| ✅ **v7.1.0-lite** | 2026-05-02 | Solo Operator productivity 5 sprint (qvest_search + qvest_wt + INDEX.md + 3 workflow examples). 15 atomic commits. |
-| ✅ **v7.2.0** | 2026-05-02 | v8 readiness gate 14-check write mode strict PASS + CHANGELOG + 3-day soak. |
-| ✅ **v7.2.1** | 2026-05-02 | Memory Knowledge Hardening. Axiom JSON SOT (8 active) + memory_health 12-check (hard 6 + warn 6) + 15 readiness + auto-push hook. 도훈 audit 32 critical 모두 반영. |
-
-**검증 (v7.2.1 strict run, 2026-05-02 17:22:55)**: 30/30 hooks PASS · 15/15 readiness · memory_health hard 0 · 19 JSON validate-schema PASS.
-
-**v8 후속 (이연)**:
-- v7.3: AX-002/003/004/005 advisory → block 강화 / AX-007/008 hook hard-block 검토 / timeline_e2e check 추가 (15→16)
-- v7.x ext: SQLite event DB (현 JSONL fallback) / Daily brief Telegram SLO / Dashboard Shiny UI / legacy file 이동
-
-Plan (v6.4): `/home/quant/.claude/plans/nifty-tickling-hinton.md`
-
----
-
-## 변경 이력
-
-- **v7.2.1** — 2026-05-02 Session 76 — Memory Knowledge Hardening release (도훈 audit 32 critical 반영). Axiom JSON SOT (active 8건) + memory_health 12-check + 15 readiness + auto-push Stop hook. CLAUDE.md Active Version 슬롯 v6.4 → v7.2.1 full sync (옵션 B), 신규 SOT `qvest_v7_2_1_sot.md` 발행. L-273~L-275.
-- **v7.2.0** — 2026-05-02 — v8 readiness gate 14 check write mode strict PASS + CHANGELOG v7.2.0 entry + 3-day soak.
-- **v7.1.0-lite** — 2026-05-02 — Solo Operator productivity (qvest_search + qvest_wt + INDEX.md + 3 examples). 15 atomic commits.
-- **v7.0.1** — 2026-05-02 — Hardening patch (도훈 흠 4건 fix).
-- **v7.0.0** — 2026-05-02 — Hardening 7 sprint release. "검증 가능한 소프트웨어 커널" 패러다임 (Codex 외부 평가 "SW 아키텍처 약함" → 우회 불가능한 실행 계약). L-272.
-- **v6.4.0** — 2026-05-01 Session 75 — Harness Kernel Stabilization release. Sprint 0+1+2+3 9-phase. Codex 3중 장치 + 5 Cert + State Machine + dry-run 30/30 + E2E 10/10. L-269~L-271.
-- **v6.4 Sprint 1** — 2026-05-01 Session 75 — Active SOT 단일화 + CLAUDE.md 경량화 (436 → ~270 lines) + skills/rules 8 신규.
-- **v6.3.3** — 2026-05-01 — v6.0 Codex Critic Round 3중 장치 영구 정착 (L-269)
-- **v6.3.2** — 2026-05-01 — Cert Auto-Issuance Paths 명문화 + Layer 4 deferred
-- **v6.31** — 2026-04-28 — Charter v1.2 §10 Certification System
-- **v6.0** — 2026-04-23 — QEPM 3-Agent WorkTask 도입
-- **v5.5** — 2026-04-19 — v55 strict
-- **v5.3** — 2026-04-13 — v53 TeamCreate + Hook 17종
-
-상세: `.claude/commands/qvest.md` ## Version
+**SOT 분리 (2026-06-10 P2 다이어트)**: 버전 연혁·릴리스 상세는 `02_Infrastructure/docs/CHANGELOG_constitution.md` — CLAUDE.md는 현행 헌법만 담는다.
+- 현행: **v8.1.1** (2026-06-10 완벽 수리 + P2 구조 개편 — hook 47/47 부활 · OneDrive canonical · 게이트 2계층 · rules autoload 6 코어)
+- 최근 검증: hook 차단 4종 실증 · readiness pass 12/fail 0 · bootstrap BOOT_FAILS=0 (2026-06-10 현 머신)

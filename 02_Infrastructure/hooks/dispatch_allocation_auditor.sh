@@ -3,7 +3,7 @@
 # dispatch_allocation_auditor.sh — PostToolUse[Write] (Level 2 advisory)
 # FR 배분 산출물(module_regime_admission / FR registry) 쓰기 후 구조 점검 기록.
 #   RCMA admission JSON: admitted 셀 수 로그. 가중 산출물: Σw / bounds 위반 경고.
-# Reference: .claude/rules/factor-rotation.md §3·§5 (admitted only / Σw=1 / [0,0.20])
+# Reference: 02_Infrastructure/docs/rules/factor-rotation.md §3·§5 (admitted only / Σw=1 / [0,0.20])
 # 우회: QVEST_SKIP_DISPATCH_ALLOC_AUDITOR=1 · 로그: /tmp/dispatch_allocation_auditor.log
 #==============================================================================
 trap 'echo "{}"; exit 0' ERR

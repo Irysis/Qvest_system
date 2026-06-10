@@ -48,7 +48,7 @@
 - `risk_crowding_score_check.sh` (P5)
 - `attribution_quarterly_trigger.sh` (P7)
 
-상세: `02_Infrastructure/docs/qvest_research_philosophy.md` (Charter-level SOT 본문) + `.claude/rules/research_philosophy.md` (Q-Lead autoload). L-321 ~ L-323 적립.
+상세: `02_Infrastructure/docs/qvest_research_philosophy.md` (Charter-level SOT 본문) + `02_Infrastructure/docs/rules/research_philosophy.md` (Q-Lead autoload). L-321 ~ L-323 적립.
 </research_philosophy>
 
 <answer_principles level="0" version="v1.0" enforce="HOOK+L_CODE+AX_002" effective="2026-04-29">

@@ -21,6 +21,37 @@ echo "=== Daily Refresh v2 @ $(date) ==="
 source "$(dirname "${BASH_SOURCE[0]:-$0}")/../ops/resolve_project.sh"
 INFRA="$BASE/02_Infrastructure"
 
+# ── Telegram 실발송 가드 (v8.1.1 2026-06-10) ────────────────────────────────
+#   QVEST_REFRESH_TG=0 (기본) → tg_send/telegram_alert/send_telegram 전부 skip, 로그만.
+#   운영 cron만 1로 켬 (ops/scheduler/Qvest_DailyRefresh.bat에서 export).
+export QVEST_REFRESH_TG="${QVEST_REFRESH_TG:-0}"
+echo "[guard] QVEST_REFRESH_TG=$QVEST_REFRESH_TG (0=telegram 발송 skip)"
+
+# ── Rscript 해석 (PATH 미등록 머신 fallback — v8.1.1) ────────────────────────
+RSCRIPT="$(command -v Rscript || true)"
+if [ -z "$RSCRIPT" ]; then
+  for _r in "/c/Program Files/R/R-4.5.2/bin/Rscript.exe" "/c/Program Files/R"/R-*/bin/Rscript.exe; do
+    [ -x "$_r" ] && RSCRIPT="$_r" && break
+  done
+fi
+if [ -z "$RSCRIPT" ]; then
+  echo "[FATAL] Rscript not found (PATH + /c/Program Files/R/*) — abort"
+  exit 1
+fi
+echo "[env] RSCRIPT=$RSCRIPT"
+
+# ── run_r: Windows Rscript 멀티라인 -e 함정(첫 줄만 실행) 회피 (v8.1.1) ──────
+#   temp .R 파일 경유 실행. R 코드 본문은 호출부 single-quote 블록 그대로 보존.
+run_r() {
+  local _tmp _rc
+  _tmp=$(mktemp /tmp/qm_refresh_XXXX.R) || { echo "[run_r] mktemp failed"; return 1; }
+  printf '%s\n' "$1" > "$_tmp"
+  "$RSCRIPT" --no-save "$_tmp"
+  _rc=$?
+  rm -f "$_tmp"
+  return $_rc
+}
+
 # ──────────────────────────────────────────────────────────────────────────────
 # [0] QuantiWise xlsx 증분 체크
 #     OHLCVS = 수정주가 → 전체 리빌드 + API 데이터 보존
@@ -28,7 +59,7 @@ INFRA="$BASE/02_Infrastructure"
 # ──────────────────────────────────────────────────────────────────────────────
 echo "[0/7] QuantiWise xlsx update check..."
 cd "$INFRA"
-Rscript --no-save -e '
+run_r '
   source("config.R")
   source("data/incremental_cache_update.R")
   incremental_update_all()
@@ -40,13 +71,17 @@ Rscript --no-save -e '
 #   benchmark.parquet은 여기서만 갱신 → 아래 [1] naver merge가 실제 종가로 BM_Ret lookup.
 # ──────────────────────────────────────────────────────────────────────────────
 echo "[1pre/7] Benchmark (KOSPI200 chart-API)..."
+# Python 체인 (v8.1.1): venv 우선 → QVEST_PY env → 시스템 Python312 fallback
 QVENV_PY=""
-for _c in "$BASE/.venv_qvest_ml/Scripts/python.exe" "$BASE/.venv_qvest_ml/bin/python" "/home/quant/.venvs/qvest_ml/bin/python"; do
-  [ -x "$_c" ] && QVENV_PY="$_c" && break
+for _c in "$BASE/.venv_qvest_ml/Scripts/python.exe" "$BASE/.venv_qvest_ml/bin/python" "/home/quant/.venvs/qvest_ml/bin/python" \
+          "${QVEST_PY:-}" "/c/Users/99922/AppData/Local/Programs/Python/Python312/python.exe"; do
+  [ -n "$_c" ] && [ -x "$_c" ] && QVENV_PY="$_c" && break
 done
 if [ -n "$QVENV_PY" ]; then
   ( cd "$INFRA" && "$QVENV_PY" data/naver_benchmark_update.py --start_date "$(date -d '10 days ago' +%Y-%m-%d)" ) \
     || echo "  benchmark chart-API update skipped (기존 cache 유지)"
+else
+  echo "  python 미발견 — benchmark chart-API update skipped (기존 cache 유지)"
 fi
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -55,7 +90,7 @@ fi
 # ──────────────────────────────────────────────────────────────────────────────
 echo "[1/7] Naver T+0 Primary Pipeline..."
 cd "$INFRA"
-Rscript --no-save -e '
+run_r '
   source("config.R")
   source("data/naver_data_collector.R")
   suppressPackageStartupMessages({library(data.table); library(arrow)})
@@ -74,7 +109,7 @@ Rscript --no-save -e '
 # ──────────────────────────────────────────────────────────────────────────────
 echo "[2/7] KRX gap-fill (fallback)..."
 cd "$INFRA"
-Rscript --no-save -e '
+run_r '
   source("config.R")
   source("data/krx_data_collector.R")
   source("data/krx_build_rawdata.R")
@@ -102,7 +137,7 @@ Rscript --no-save -e '
 # ──────────────────────────────────────────────────────────────────────────────
 echo "[3/7] Universe update + RAWDATA mapping..."
 cd "$INFRA"
-Rscript --no-save -e '
+run_r '
   source("config.R")
   source("data/krx_update_universe.R")
   tryCatch(krx_update_universe(),
@@ -120,7 +155,7 @@ echo "[4/7] Arrow + FRED + KTRI + Regime..."
 
 # Arrow 확장
 cd "$INFRA"
-Rscript --no-save -e '
+run_r '
   source("config.R")
   source("data/krx_data_collector.R")
   source("data/krx_arrow_pipeline.R")
@@ -134,7 +169,7 @@ Rscript --no-save -e '
 # 이전에 compute 누락으로 macro_regime.parquet 2개월 stale 발생 → 둘 다 호출
 cd "$INFRA"
 if [ -f "data/data_collector_fred.R" ]; then
-  Rscript --no-save -e '
+  run_r '
     source("config.R")
     source("data/data_collector_fred.R")
     tryCatch(fred_run_pipeline(),
@@ -144,7 +179,7 @@ fi
 
 # KTRI + Regime Signal
 cd "$INFRA"
-Rscript --no-save -e '
+run_r '
   source("config.R")
   source("data/krx_data_collector.R")
   source("data/ktri_index_collector.R")
@@ -152,7 +187,7 @@ Rscript --no-save -e '
     error = function(e) cat(sprintf("KTRI skipped: %s\n", e$message)))
 '
 cd "$BASE"
-Rscript --no-save -e '
+run_r '
   tryCatch(source("04_Regime_Engine/KTRI_v3_reinforced.R"),
     error = function(e) cat(sprintf("KTRI v3.1 skipped: %s\n", e$message)))
 '
@@ -161,7 +196,7 @@ Rscript --no-save -e '
 # Fallback: 02_Infrastructure/regime/msm_daily_refit.R (lightweight, daily only)
 # 순서 critical: MSM 먼저 → build_regime_signal_table() 그 후 (unified_regime_signal stale 방지)
 cd "$BASE"
-Rscript --no-save -e '
+run_r '
   setwd("'"$BASE"'")
   tryCatch({
     source("02_Infrastructure/config.R")
@@ -181,7 +216,7 @@ Rscript --no-save -e '
 # build_regime_signal_table — MSM 갱신 후 호출 (monthly + daily 양쪽 rebuild)
 # 차트 (tg_regime_briefing)가 unified_regime_signal + _daily 양쪽 읽으므로 둘 다 재build
 cd "$INFRA"
-Rscript --no-save -e '
+run_r '
   source("config.R")
   source("regime/regime_signal.R")
   tryCatch(build_regime_signal_table(),               # monthly
@@ -192,7 +227,7 @@ Rscript --no-save -e '
 
 # ─── ECOS KRW/USD (도훈 audit 2026-05-15 — daily_refresh 호출 누락 fix) ──────
 cd "$INFRA"
-Rscript --no-save -e '
+run_r '
   source("config.R")
   source("data/data_collector_ecos.R")
   tryCatch(ecos_fetch_krw(),
@@ -202,10 +237,12 @@ Rscript --no-save -e '
 # ─── Cache Freshness Audit (도훈 mandate 2026-05-15 영구 보호망 L3) ─────────
 # Registry 기반 stale + orphan 양방향 감지, Telegram alert
 cd "$BASE"
-Rscript --no-save -e '
+run_r '
   setwd("'"$BASE"'")
   source("02_Infrastructure/data/cache_freshness_audit.R")
-  tryCatch(cache_freshness_audit(telegram_alert = TRUE),
+  .tg_on <- Sys.getenv("QVEST_REFRESH_TG", "0") == "1"   # v8.1.1 telegram guard
+  if (!.tg_on) cat("[tg guard] QVEST_REFRESH_TG=0 — cache audit telegram_alert off\n")
+  tryCatch(cache_freshness_audit(telegram_alert = .tg_on),
     error = function(e) cat(sprintf("Cache freshness audit skipped: %s\n", e$message)))
 '
 
@@ -221,7 +258,7 @@ DAY_OF_MONTH=$(date +%d)
 if [ "$DAY_OF_MONTH" = "01" ]; then
   echo "[5a/7] DART Annual Financials (monthly)..."
   cd "$INFRA"
-  Rscript --no-save -e '
+  run_r '
     source("config.R")
     source("data/data_collector_dart.R")
     tryCatch(dart_run_pipeline(years = as.integer(format(Sys.Date(), "%Y"))),
@@ -234,7 +271,7 @@ fi
 # (b) + (c) Quarterly + Insider — daily incremental (도훈 mandate 2026-05-15)
 echo "[5b/7] DART Quarterly + Insider Daily Incremental..."
 cd "$INFRA"
-Rscript --no-save -e '
+run_r '
   source("config.R")
   source("data/dart_daily_incremental.R")
   tryCatch(dart_daily_incremental(),
@@ -246,7 +283,7 @@ Rscript --no-save -e '
 # ──────────────────────────────────────────────────────────────────────────────
 echo "[6/7] Factor DB update..."
 cd "$INFRA"
-Rscript --no-save -e '
+run_r '
   source("config.R")
   source("factor_db/factor_db_builder.R")
   tryCatch({
@@ -269,13 +306,15 @@ DAY_OF_MONTH=$(date +%d)
 if [ "$DAY_OF_MONTH" = "01" ] || [ "$DAY_OF_MONTH" = "15" ]; then
   echo "[6.5/7] Forward Weights Orchestrator (DAY_OF_MONTH=$DAY_OF_MONTH)..."
   cd "$INFRA"
-  Rscript --no-save -e '
+  run_r '
     tryCatch({
       source("portfolio/forward_weights_orchestrator.R")
+      .tg_on <- Sys.getenv("QVEST_REFRESH_TG", "0") == "1"   # v8.1.1 telegram guard
+      if (!.tg_on) cat("[tg guard] QVEST_REFRESH_TG=0 — forward weights send_telegram off\n")
       orchestrate_forward_weights(
         as_of_date = NULL,           # default = max schedule date
         apply_mandate_cap = "cap_0.20",
-        send_telegram = TRUE
+        send_telegram = .tg_on
       )
     }, error = function(e) cat(sprintf("Forward weights orchestrator skipped: %s\n", e$message)))
   '
@@ -286,7 +325,7 @@ fi
 # ──────────────────────────────────────────────────────────────────────────────
 echo "[7/7] Telegram + NAV + Memory..."
 cd "$INFRA"
-Rscript --no-save -e '
+run_r '
   library(data.table)
   source("config.R")
   source("telegram/telegram_notify.R")
@@ -295,15 +334,22 @@ Rscript --no-save -e '
   n_tickers <- uniqueN(raw[Date == last_d]$Ticker)
   msg <- sprintf("📅 Daily Refresh v2 완료\nRAWDATA: %s까지 (%d tickers)\n총 %s rows",
                  last_d, n_tickers, format(nrow(raw), big.mark=","))
-  tryCatch(tg_send(msg), error = function(e) cat("TG send failed:", e$message, "\n"))
+  if (Sys.getenv("QVEST_REFRESH_TG", "0") == "1") {     # v8.1.1 telegram guard
+    tryCatch(tg_send(msg), error = function(e) cat("TG send failed:", e$message, "\n"))
+  } else {
+    cat("[tg guard] QVEST_REFRESH_TG=0 — 발송 skip. msg:\n", msg, "\n")
+  }
 '
 
 # NAV Tracking
 WATCHLIST="$INFRA/nav_watchlist.json"
 if [ -f "$WATCHLIST" ] && [ "$(cat "$WATCHLIST" | wc -c)" -gt 5 ]; then
-  cd "$INFRA" && Rscript --no-save -e '
+  cd "$INFRA" && run_r '
     source("config.R")
     source("telegram/telegram_notify.R")
+    # v8.1.1 telegram guard — QVEST_REFRESH_TG=0이면 tg_send를 로그 no-op으로 shadow
+    if (Sys.getenv("QVEST_REFRESH_TG", "0") != "1")
+      tg_send <- function(msg, ...) { cat("[tg guard] skip:", substr(msg, 1, 80), "\n"); invisible(NULL) }
     source("portfolio/daily_nav_tracker.R")
     nav_track()
     tryCatch(source("portfolio/regime_change_detector.R"), error=function(e) cat("regime_change_detector skipped\n"))
@@ -313,7 +359,7 @@ fi
 
 # Memory Distillation
 cd "$BASE"
-Rscript --no-save -e '
+run_r '
 suppressMessages({
   source("02_Infrastructure/config.R")
   source("02_Infrastructure/memory/memory_logger.R")

@@ -26,7 +26,8 @@ Qvest 초기 모델처럼 **논문 한 편을 빠르게 검증**하는 가벼운
 ## 동작 절차 (4-step)
 
 ### 1. 가설 intake
-- 입력이 논문 URL이면 `mcp__jina__read_url` / `mcp__arxiv__*` / `mcp__jina__search_arxiv|search_ssrn`로 핵심 시그널·구성·기간을 추출.
+- 입력이 논문 URL이면 `mcp__jina__read_url` / `mcp__arxiv__*` / `mcp__jina__search_arxiv|search_ssrn`로 핵심 시그널·구성·기간을 추출. (MCP 서버 6종 `.mcp.json` 등록 — 2026-06-10 재구축. arxiv 전문 PDF는 `mcp__arxiv__download_paper` → `.cache/arxiv_papers/`)
+- MCP 불가 시 fallback: WebFetch(abs 페이지) + 로컬 추출기 `02_Infrastructure/alpha_search/paper_extract.py`(venv python — pymupdf/pdfplumber/pypdf 설치됨).
 - 입력이 가설 문장이면 그대로 사용.
 - 한 문장 `strategy_idea`(전략 아이디어 요약)와 `strategy_name`(STR명) 확정.
 

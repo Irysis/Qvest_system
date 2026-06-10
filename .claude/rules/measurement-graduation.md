@@ -20,6 +20,9 @@
   - DSR 수치 자체는 n_trials>1이면 **진단용으로 계속 산출·기록** (게이트 아님). n_iterations/n_trials 기록 의무는 유지 (사후 감사 가능성).
 - **ADVISORY (warn only)**: rank_ic / icir / harvey_t_stat(rank-IC) / subperiod_stability. long-only 실현 alpha와 어긋나 거짓통과·거짓탈락 유발(16후보 calibration 실증: rank_ic≥0.04가 FLOW 거짓탈락 + NN/TECH 거짓통과, PORT_t는 FLOW 1건만 정확 통과).
 - judge Gate C = portfolio-alpha t ≥ 2.95 AND net_IR > 0.2. **Grade 산정 권위 = `02_Infrastructure/contracts/essence_score.R`** (hurdle_gate 18-component은 proxy 진단용 강등).
+- **게이트 2계층 (2026-06-10 도훈 mandate P2 — 계층 분리이지 완화 아님)**:
+  - **Screening tier (탐색 게이트)**: `hurdle_gate.R` `verdict$screening` — 알파 *신호력*만 평가(`screen_pass` = no-PIT ∧ [SR≥0.7∧CAGR≥12% 또는 score≥40∧SR≥0.5]). MDD·turnover 등 *구조* 사유로 grade C/F여도 신호가 실재하면 `screen_route`(OVERLAY_CANDIDATE / FR_RCMA / DPL_FEATURE)로 후속 소비 경로 라우팅. 근거: alpha-search 탈락 66/66이 MDD>45% 단일 사유(β≈0.8 맨몸 채점 — overlay가 시스템 입증 MDD 레버인데 모듈 단계에서 선기각하는 구조 모순). **PIT 위반만 계층 무관 절대 기각.**
+  - **Graduation/자본 tier (불변)**: 위 HARD 3종(PORT_t 2.95·oos_retention 0.7·calmar 0.64) + §4 book-marginal — screening pass는 이 계층에 어떤 면제도 주지 않음. screening은 "버릴 후보"와 "다른 방식으로 쓸 후보"를 구분하는 라벨일 뿐.
 
 ## §4 Admission = book-marginal (standalone 졸업 아님)
 - `portfolio_governor.R::pg1_admission_with_book_context()`: standalone ADMIT 후 **ΔIR = new_book_ir − incumbent_book_ir ≥ 0.05** 충족 시에만 ADMIT(미달 DEFER). `book_optimizer.R` book_information_ratio/book_update 재사용. baseline = `book_state.json::incumbent_book_ir`.
@@ -39,6 +42,7 @@
 - SOT: `02_Infrastructure/docs/qvest_v8_0_upgrade_plan.md`
 
 ## Change log
+- 2026-06-10 (도훈 mandate P2): §3 게이트 2계층 신설 — Screening tier(`hurdle_gate.R verdict$screening`, 신호력 라벨 + screen_route 라우팅) / Graduation·자본 tier(HARD 3종 불변). 탈락 66/66 MDD 단일사유 전멸 구조 해소. PIT만 계층 무관 절대.
 - 2026-06-10 (도훈 mandate): §3 DSR 적용경계 정정 — "n_trials>1 = sweep" 휴리스틱 폐기, **selection operator 기준**(sweep = 열거집합 argmax/threshold-pick / chain = 가설주도 순차개선 → 게이트 면제 + 진단산출만). chain 자격요건 ①진단사유 기록 ②IS-only 변형선택 ③holdout 1회. 구현: `essence_score.R` selection_type 파라미터 + `discovery_graduation_gate.sh` HARD 2 sweep-한정(비-sweep advisory 강등).
 - 2026-05-31 (도훈 mandate): §3 게이트 재설계. DSR≥0.5 "무조건 HARD" 폐기 → **다중검정 스타일(n_trials>1)에서만 HARD**(DSR은 multiple-testing 개념, 1논문/1알파엔 부적용·PORT_t 2.95와 중복). 단일전략 과적합 게이트 = **oos_retention≥0.7**(DSR 대체) + 위험조정 게이트 **calmar≥0.64**(=16%/25%). Grade 권위 = `essence_score.R`(hurdle_gate 18-component proxy 강등). Dual-Mode SOT §3.5 정합.
 - 2026-05-29 v8.x: 신규. WS1 real-computation + WS2 graduation severity 재설계 + WS3 book-marginal admission. E2E(FLOW forge 2.35) 입증.

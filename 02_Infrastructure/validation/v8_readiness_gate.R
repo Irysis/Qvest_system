@@ -743,7 +743,7 @@ check_v8_architecture <- function(project_root, no_write = FALSE) {
   if (all(vapply(core, has_fm, logical(1), key = "effort"))) ok <- c(ok, "effort") else bad <- c(bad, "effort_frontmatter")
   if (all(vapply(skl,  has_fm, logical(1), key = "skills"))) ok <- c(ok, "skills") else bad <- c(bad, "skills_frontmatter")
   if (length(rl(".claude/rules/python-policy.md"))   > 0) ok <- c(ok, "python-policy") else bad <- c(bad, "python-policy.md")
-  if (length(rl(".claude/rules/artifact-naming.md")) > 0) ok <- c(ok, "artifact-naming") else bad <- c(bad, "artifact-naming.md")
+  if (length(rl("02_Infrastructure/docs/rules/artifact-naming.md")) > 0) ok <- c(ok, "artifact-naming") else bad <- c(bad, "artifact-naming.md")
   if (length(rl("02_Infrastructure/eval/harness_perf_eval.R")) > 0) ok <- c(ok, "perf-eval") else bad <- c(bad, "harness_perf_eval.R")
   sj <- paste(rl(".claude/settings.json"), collapse = "\n")
   if (grepl("axiom_context_inject", sj)) ok <- c(ok, "axiom_inject_registered") else bad <- c(bad, "axiom_context_inject_unregistered")

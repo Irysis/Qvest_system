@@ -2,7 +2,7 @@
 #==============================================================================
 # factor_rotation_pit_guard.sh — PreToolUse[Write|Edit] (Level 2 advisory)
 # FR 파이프라인 PIT 가드: 금지 shift 패턴(Cycle 50) / 자체합성(prod·cumprod) 경고.
-# Reference: .claude/rules/factor-rotation.md §5 / data_table_shift_convention.md / measurement-graduation.md
+# Reference: 02_Infrastructure/docs/rules/factor-rotation.md §5 / data_table_shift_convention.md / measurement-graduation.md
 # 우회: QVEST_SKIP_FR_PIT_GUARD=1 · 로그: /tmp/factor_rotation_pit_guard.log
 #==============================================================================
 trap 'echo "{}"; exit 0' ERR

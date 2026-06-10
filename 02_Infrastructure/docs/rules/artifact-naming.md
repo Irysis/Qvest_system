@@ -34,7 +34,7 @@ WT 파이프라인 단계 간 인계 파일은 **반드시 canonical 이름**:
 sequence_enforcer / forge_integration_audit가 canonical 이름만 검사하되, variant가 handoff 자리에 잘못 놓이면 명시 WARN. (현재는 본 정책 + Q-Lead 규율로 보강.)
 
 ## 참조
-- `.claude/rules/harness.md` (hook matrix) · `02_Infrastructure/hooks/worktask_sequence_enforcer.sh` · `qvest_hook_router.py` classify
+- `02_Infrastructure/docs/rules/harness.md` (hook matrix) · `02_Infrastructure/hooks/worktask_sequence_enforcer.sh` · `qvest_hook_router.py` classify
 - Cycle 2 사건: WT-D20260528_003 (`_PROD` copy 우회) — `project_cycle2_overnight_active` 메모리
 
 ## Change log

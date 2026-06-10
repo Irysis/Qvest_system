@@ -52,7 +52,7 @@ Lane1/Lane2는 **모듈을 생산**. **Lane3 = 그 모듈 풀을 국면(regime) 
 | 게이트 | OOS_retention≥0.7 → DSR≥0.5 HARD → placebo → holdout |
 | 산출물 | `FR_XXXX` (운용체계, STR과 구분) → `factor_rotation_registry.json` |
 | admission | **governor 정지** (book sleeve = STR or FR(1 sleeve), book_state 수동 + 도훈 confirm) |
-| SOT | `.claude/skills/factor-rotation/SKILL.md` · `.claude/rules/factor-rotation.md` |
+| SOT | `.claude/skills/factor-rotation/SKILL.md` · `02_Infrastructure/docs/rules/factor-rotation.md` |
 
 ---
 

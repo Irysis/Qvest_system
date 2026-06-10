@@ -78,7 +78,7 @@ SIGNAL_CUTOFF <- as.Date(format(Sys.Date(), "%Y-%m-01")) - 1
 ## 적용 자원
 
 - `02_Infrastructure/hooks/selection_contamination_detector.sh` (v6.5 scope 정정)
-- `.claude/rules/lockbox-scope.md` (본 파일, 신규 SOT)
+- `02_Infrastructure/docs/rules/lockbox-scope.md` (본 파일, 신규 SOT)
 - `.claude/rules/pit.md` (lockbox 섹션 reference)
 - 운용 cycle R 코드 (run_all.R / forward_weights.R / monitoring scripts)
 

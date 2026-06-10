@@ -331,7 +331,7 @@ sim <- run_monthly_simulation(
 source("02_Infrastructure/validation/pit_enforcement.R")
 source("02_Infrastructure/sanity_checks/bear_date_audit.R")
 # forward label 생성 시: validate_label_direction() + audit_bear_dates(target, bm) PASS 후 진행.
-# (Cycle 50 shift-convention lookahead 재발 방지 — .claude/rules/data_table_shift_convention.md)
+# (Cycle 50 shift-convention lookahead 재발 방지 — 02_Infrastructure/docs/rules/data_table_shift_convention.md)
 
 # ── 8. 계약 빌드 = 권위 측정 (summarise_perf 아님) ───────────────
 source("02_Infrastructure/contracts/backtest_result_contract.R")
