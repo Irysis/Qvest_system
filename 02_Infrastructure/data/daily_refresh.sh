@@ -279,9 +279,22 @@ run_r '
 '
 
 # ──────────────────────────────────────────────────────────────────────────────
-# [6] Factor DB 갱신 (월말 또는 데이터 변경 시)
+# [6] Factor DB 갱신 (월간 [6a] + 일간 [6b]) — P1 수리 2026-06-10
+#
+#   ★ 함수명 혼동 주의 (이름과 실체가 어긋남 — 명문화):
+#     - update_factor_db_daily()        [factor_db/factor_db_builder.R]
+#         → "월간" Factor DB(.cache/factor_db/factor_db_YYYYMM.parquet)의 현재월
+#           1파일을 빌드/스킵. 이름의 daily는 "cron 호출 주기"의 의미 (DB는 월간).
+#     - update_daily_fdb(ym) / update_daily_fdb_current()
+#                                       [factor_db/factor_db_daily_incremental.R]
+#         → "일간" Factor DB(.cache/factor_db_daily/fdb_daily_YYYYMM.parquet) 갱신.
+#           ⚠ update_daily_fdb(ym)는 미완 stub이며 내부에서 source(phase6)를 호출해
+#           일간 DB "전 파일 삭제 후 1990~ 전체 재구축"을 트리거 (2026-06-10 검증,
+#           factor_db_daily_incremental.R L41 + phase6 L42-48). update_daily_fdb_current()
+#           역시 phase6+7+8 전체 재빌드(수시간). → cron 무인 자동호출 금지,
+#           QVEST_FDB_DAILY_AUTOREBUILD=1 명시 시에만 실행 (기본 0 = stale WARN만).
 # ──────────────────────────────────────────────────────────────────────────────
-echo "[6/7] Factor DB update..."
+echo "[6a/7] Factor DB update (monthly DB, current-month build)..."
 cd "$INFRA"
 run_r '
   source("config.R")
@@ -293,6 +306,40 @@ run_r '
       cat("update_factor_db_daily() not found — skip.\n")
     }
   }, error = function(e) cat(sprintf("Factor DB update skipped: %s\n", e$message)))
+'
+
+echo "[6b/7] Daily Factor DB (fdb_daily) freshness + gated rebuild..."
+export QVEST_FDB_DAILY_AUTOREBUILD="${QVEST_FDB_DAILY_AUTOREBUILD:-0}"
+echo "[guard] QVEST_FDB_DAILY_AUTOREBUILD=$QVEST_FDB_DAILY_AUTOREBUILD (0=stale 감지+WARN만, 재빌드 안함)"
+cd "$INFRA"
+run_r '
+  source("config.R")
+  suppressPackageStartupMessages({library(arrow); library(data.table)})
+  fdb_dir <- file.path(CACHE_DIR, "factor_db_daily")
+  fs <- sort(list.files(fdb_dir, pattern = "^fdb_daily_[0-9]{6}\\.parquet$"))
+  if (length(fs) == 0) {
+    cat("[6b][WARN] fdb_daily 디렉토리 비어있음 — 일간 Factor DB 부재\n")
+  } else {
+    latest <- file.path(fdb_dir, fs[length(fs)])
+    last_d <- tryCatch(
+      max(as.Date(as.data.table(read_parquet(latest, col_select = "Date"))$Date), na.rm = TRUE),
+      error = function(e) as.Date(NA))
+    lag_d <- if (is.na(last_d)) NA_integer_ else as.integer(Sys.Date() - last_d)
+    cat(sprintf("[6b] fdb_daily latest=%s max(Date)=%s lag=%s days (기대 ~3거래일)\n",
+                fs[length(fs)], format(last_d), ifelse(is.na(lag_d), "NA", lag_d)))
+    if (!is.na(lag_d) && lag_d > 5) {
+      cat(sprintf("[6b][WARN] 일간 Factor DB stale (lag=%d일 > 5)\n", lag_d))
+      if (Sys.getenv("QVEST_FDB_DAILY_AUTOREBUILD", "0") == "1") {
+        cat("[6b] QVEST_FDB_DAILY_AUTOREBUILD=1 — update_daily_fdb_current() 실행 (phase6+7+8 전체 재빌드, 수시간 소요)\n")
+        tryCatch({
+          source("factor_db/factor_db_daily_incremental.R")
+          update_daily_fdb_current()
+        }, error = function(e) cat(sprintf("[6b] fdb_daily rebuild FAIL: %s\n", e$message)))
+      } else {
+        cat("[6b] 자동 재빌드 OFF (기본). 사유: update_daily_fdb(ym) 미완 stub이 phase6 전체재빌드(일간 DB 전파일 삭제 후 1990~ 재구축)를 source — cron 무인 실행 부적합 (2026-06-10 검증). 진짜 단일월 증분 구현 전까지 stale WARN만. 수동 갱신: QVEST_FDB_DAILY_AUTOREBUILD=1 또는 운영자 update_daily_fdb_range() 직접 실행.\n")
+      }
+    }
+  }
 '
 
 # ──────────────────────────────────────────────────────────────────────────────

@@ -19,24 +19,54 @@ dpl_feature_builder.py — Qvest v8.x: 일간 Factor DB → 팩터특성별 커�
 
 피처폭발 대응: 카테고리당 대표 팩터만 선별(전체 316 → 커스텀 subset). 정규화는 sweep 단계.
 
+결측 팩터 정직화 (2026-06-10 P1 — 침묵 NaN 금지):
+  - SELECTED_FACTORS 중 일간 DB에 없는 컬럼(전 파일 부재) + 최신월 파일 탈락(trailing gap)
+    발견 시 명시 [WARN] 출력 + manifest(stage_artifacts/WT_DPL_GPU_SWEEP/dpl_feature_manifest.json)에
+    missing_factors / trailing_gap_factors 기록.
+  - 실측 (2026-06-10): INV01_Foreign_NetBuy_20d / INV03_Inst_NetBuy_20d 등 INV* 12컬럼이
+    fdb_daily 202603까지 존재(318col) → 202604/202605 빌드에서 탈락(306col) = trailing gap.
+    월간 factor_db에는 INV01/INV03 존재 (202605 포함).
+  - 월간 DB 브릿지 옵션: DPL_USE_MONTHLY_BRIDGE=1 시 월간 factor_db(long)에서 읽어
+    일간으로 backward-asof forward-fill, NaN 행만 채움 (기본 OFF — DPL 재실행 시 명시 결정).
+
 실행: cd <root> && source /home/quant/.venvs/qvest_ml/bin/activate
       python 02_Infrastructure/ml_pipeline/dpl_feature_builder.py
 한글경로 회피: __file__ 기준 상대경로.
 """
 import os
 import re
+import sys
 import json
 import gc
 import numpy as np
 import pandas as pd
 
+# Windows-native 콘솔(cp949)에서 한글/유니코드 print 깨짐 방지 (2026-06-10 P1)
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        try:
+            _stream.reconfigure(encoding="utf-8")
+        except Exception:
+            pass
+
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(THIS_DIR, "..", ".."))
 DAILY_DIR = os.path.join(PROJECT_ROOT, ".cache", "factor_db_daily")
+MONTHLY_DIR = os.path.join(PROJECT_ROOT, ".cache", "factor_db")  # 월간 long DB (브릿지 소스)
 REGISTRY = os.path.join(PROJECT_ROOT, "02_Infrastructure", "factor_db", "factor_registry.json")
 RAWDATA = os.path.join(PROJECT_ROOT, ".cache", "rawdata.parquet")
 OUT_DIR = os.path.join(PROJECT_ROOT, "stage_artifacts", "WT_DPL_GPU_SWEEP")
 os.makedirs(OUT_DIR, exist_ok=True)
+MANIFEST_PATH = os.path.join(OUT_DIR, "dpl_feature_manifest.json")
+
+# ── 월간 DB 브릿지 (기본 OFF — DPL 재실행 시 결정, 2026-06-10 P1) ────────────
+# 일간 DB에 없는 SELECTED 팩터(INV01/INV03 등)를 월간 factor_db(long:
+# Date/Ticker/Factor_Name/Raw_Value/Z_Score)에서 읽어 일간 (Ticker,Date)로
+# backward-asof forward-fill. PIT: 월말 관측치를 그 일자 및 이후 일자에만 적용.
+# 기본 OFF인 이유: 월간 step-function ffill은 단기창(slope/vol) 롤링 통계가
+# 계단 아티팩트가 되므로 사용 여부는 DPL 재실행 시 명시적으로 결정.
+USE_MONTHLY_BRIDGE = os.environ.get("DPL_USE_MONTHLY_BRIDGE", "0") == "1"
+BRIDGE_TOLERANCE_DAYS = 35  # 월말 관측 이후 최대 carry-forward (다음 월말 + 여유)
 
 LOCKBOX = pd.Timestamp("2023-12-22")
 LIQ_MIN = 2e8
@@ -84,8 +114,89 @@ SELECTED_FACTORS = {
 
 
 def _load_registry_categories():
-    reg = json.load(open(REGISTRY))
+    # encoding 명시 (Windows-native cp949 기본값 → UTF-8 registry decode 오류 방지, 2026-06-10)
+    reg = json.load(open(REGISTRY, encoding="utf-8"))
     return {k: v.get("category", "?") for k, v in reg.items()}
+
+
+def _write_manifest(manifest):
+    """피처 가용성 manifest 기록 (침묵 NaN 금지 — 2026-06-10 P1)."""
+    with open(MANIFEST_PATH, "w", encoding="utf-8") as f:
+        json.dump(manifest, f, indent=2, ensure_ascii=False)
+    print(f"[feat] availability manifest -> {MANIFEST_PATH}")
+
+
+def _bridge_monthly_to_daily(daily, missing):
+    """월간 factor_db(long)에서 결측 팩터를 읽어 일간으로 backward-asof ffill.
+
+    PIT: 월말 관측치(Date=관측일)를 그 일자 및 이후 일자에만 적용(direction="backward",
+    tolerance=BRIDGE_TOLERANCE_DAYS) — lookahead 없음.
+    값: Raw_Value 우선, 전결측이면 Z_Score 폴백 (팩터 단위 결정).
+    대상 2유형: 컬럼 전체 부재(전기간 채움) / trailing gap(기존 일간값 보존, NaN 행만 채움).
+    반환: (daily, bridged, failed). 호출은 USE_MONTHLY_BRIDGE=1일 때만.
+    """
+    lo = (daily["Date"].min().to_period("M") - 1).strftime("%Y%m")
+    hi = daily["Date"].max().strftime("%Y%m")
+    if not os.path.isdir(MONTHLY_DIR):
+        print(f"[feat][bridge][WARN] 월간 DB 디렉토리 없음: {MONTHLY_DIR} — bridge skip")
+        return daily, [], list(missing)
+    mfiles = sorted(f for f in os.listdir(MONTHLY_DIR)
+                    if re.match(r"factor_db_\d{6}\.parquet$", f) and lo <= f[10:16] <= hi)
+    rows = []
+    for fb in mfiles:
+        fp = os.path.join(MONTHLY_DIR, fb)
+        try:
+            df = pd.read_parquet(
+                fp, columns=["Date", "Ticker", "Factor_Name", "Raw_Value", "Z_Score"],
+                filters=[("Factor_Name", "in", list(missing))])
+            if len(df):
+                rows.append(df)
+        except Exception as e:
+            print(f"[feat][bridge][warn] skip {fb}: {e}")
+    if not rows:
+        print(f"[feat][bridge][WARN] 월간 DB({len(mfiles)} files)에서 {missing} 미발견 — bridge 실패")
+        return daily, [], list(missing)
+    mlong = pd.concat(rows, ignore_index=True)
+    mlong["Date"] = pd.to_datetime(mlong["Date"])
+    base = daily[["Date", "Ticker"]].copy()
+    base["__row"] = np.arange(len(base))
+    base = base.sort_values("Date", kind="mergesort")  # merge_asof: on-key 전역 정렬 필수
+    bridged, failed = [], []
+    for f in missing:
+        mf = mlong[mlong["Factor_Name"] == f]
+        if mf.empty:
+            print(f"[feat][bridge][WARN] {f}: 월간 DB에도 없음 — NaN 유지")
+            failed.append(f)
+            continue
+        use_raw = bool(mf["Raw_Value"].notna().any())
+        mfv = pd.DataFrame({
+            "Date": mf["Date"].values,
+            "Ticker": mf["Ticker"].values,
+            "__val": (mf["Raw_Value"] if use_raw else mf["Z_Score"]).values,
+        }).dropna(subset=["__val"]).sort_values("Date", kind="mergesort")
+        if mfv.empty:
+            failed.append(f)
+            continue
+        merged = pd.merge_asof(base, mfv, on="Date", by="Ticker", direction="backward",
+                               tolerance=pd.Timedelta(days=BRIDGE_TOLERANCE_DAYS))
+        out = np.full(len(daily), np.nan)
+        out[merged["__row"].values] = merged["__val"].values
+        if f in daily.columns:
+            # trailing gap: 기존 일간 native 값 보존, NaN 행만 월간값으로 채움
+            cur = daily[f].to_numpy(dtype=float, copy=True)  # 위치 기준
+            fill_mask = ~np.isfinite(cur) & np.isfinite(out)
+            cur[fill_mask] = out[fill_mask]
+            daily[f] = cur
+            n_fill = int(fill_mask.sum())
+            mode = "trailing-gap(NaN행만)"
+        else:
+            daily[f] = out  # ndarray 대입 = 위치 기준 (daily 현재 행순서와 정합)
+            n_fill = int(np.isfinite(out).sum())
+            mode = "full-column"
+        print(f"[feat][bridge] {f}: monthly→daily ffill {n_fill:,}/{len(out):,} rows "
+              f"({n_fill / max(len(out), 1):.1%}, {mode}, value={'Raw_Value' if use_raw else 'Z_Score'})")
+        bridged.append(f)
+    return daily, bridged, failed
 
 
 def _month_files():
@@ -150,13 +261,24 @@ def build_features():
     # ── 일간 데이터 누적 로드 (카테고리 배치가 아닌 컬럼 subset만 → RAM 효율) ──
     # 월별 parquet은 wide. 필요 컬럼만 읽음(rbindlist once). RAM≤4GB.
     frames = []
+    presence = {f: 0 for f in use_factors}  # 파일별 컬럼 존재 카운트 (침묵 NaN 금지)
+    last_present_ym = {}                    # 팩터별 마지막 존재 파일 ym (trailing gap 감지)
+    latest_ym = None
+    n_files_read = 0
     for fp in files:
         try:
             import pyarrow.parquet as pq
             avail = set(pq.ParquetFile(fp).schema.names)
+            ym_tag = os.path.basename(fp)[10:16]
+            for f in use_factors:
+                if f in avail:
+                    presence[f] += 1
+                    last_present_ym[f] = ym_tag
             rd = [c for c in cols_needed if c in avail]
             df = pd.read_parquet(fp, columns=rd)
             frames.append(df)
+            latest_ym = ym_tag
+            n_files_read += 1
         except Exception as e:
             print(f"[feat][warn] skip {os.path.basename(fp)}: {e}")
     daily = pd.concat(frames, ignore_index=True)
@@ -164,10 +286,53 @@ def build_features():
     gc.collect()
     daily["Date"] = pd.to_datetime(daily["Date"])
     daily = daily.sort_values(["Ticker", "Date"])
-    # 결측 팩터 컬럼 보강
+
+    # ── 결측 팩터 정직화 (2026-06-10 P1 — 명시 WARN + manifest, 침묵 NaN 금지) ──
+    # 두 결측 유형 (실측 2026-06-10):
+    #   (a) missing  : 전 파일 부재 (presence==0)
+    #   (b) trailing : 과거엔 있었으나 최신월 파일에서 탈락 — 일간 DB 202604/202605가
+    #       318→306 컬럼으로 빌드되며 INV* 12컬럼 drop. 패널 꼬리(최신 의사결정 구간)가
+    #       침묵 NaN→중립 0이 되는 가장 위험한 유형.
+    missing = sorted(f for f in use_factors if presence[f] == 0)
+    trailing_gap = {f: {"last_present_file_ym": last_present_ym[f], "latest_file_ym": latest_ym}
+                    for f in sorted(use_factors)
+                    if presence[f] > 0 and last_present_ym.get(f, "") < (latest_ym or "")}
+    partial = {f: f"{presence[f]}/{n_files_read}" for f in sorted(use_factors)
+               if 0 < presence[f] < n_files_read}
+    if missing:
+        print(f"[feat][WARN] selected factor {len(missing)}건이 일간 Factor DB({n_files_read} files)에 전혀 없음: {missing}")
+    for f, info in trailing_gap.items():
+        print(f"[feat][WARN] {f}: 일간 DB 최신월 파일에서 탈락 (마지막 존재={info['last_present_file_ym']}, "
+              f"최신 파일={info['latest_file_ym']}) — 패널 꼬리가 NaN")
+    if missing or trailing_gap:
+        print(f"[feat][WARN] → 결측 구간은 NaN→월말 z단계 0(중립) 처리됨. "
+              f"월간 DB 브릿지: DPL_USE_MONTHLY_BRIDGE=1 (현재 {'ON' if USE_MONTHLY_BRIDGE else 'OFF'})")
+    bridge_targets = missing + sorted(trailing_gap)
+    bridged, bridge_failed = [], []
+    if USE_MONTHLY_BRIDGE and bridge_targets:
+        daily, bridged, bridge_failed = _bridge_monthly_to_daily(daily, bridge_targets)
+    # 브릿지 후에도 없는 컬럼만 NaN 보강 (구 침묵 보강 대체)
     for f in use_factors:
         if f not in daily.columns:
             daily[f] = np.nan
+    manifest = {
+        "built_at": pd.Timestamp.now().isoformat(timespec="seconds"),
+        "n_daily_files": n_files_read,
+        "n_selected_factors": len(use_factors),
+        "missing_factors": missing,
+        "trailing_gap_factors": trailing_gap,
+        "partial_presence_files": partial,
+        "use_monthly_bridge": USE_MONTHLY_BRIDGE,
+        "bridge_targets": bridge_targets,
+        "bridged_factors": bridged,
+        "bridge_failed_factors": bridge_failed,
+        "unresolved_after_bridge": sorted(f for f in bridge_targets if f not in bridged),
+        "note": ("missing_factors = 일간 DB 전 파일 부재 / trailing_gap_factors = 최신월 파일 탈락 "
+                 "(둘 다 침묵 NaN 금지로 명시 기록 — 결측 구간은 월말 단면 z 단계에서 0(중립)으로 들어감). "
+                 "bridged_factors는 월간 관측의 step-function ffill(NaN 구간만 채움) — slope/vol 통계 해석 주의. "
+                 "partial_presence_files는 팩터 역사 시작 시점 차이일 수도 있음(전 기간 실행 시 정상 가능)."),
+    }
+    _write_manifest(manifest)
     print(f"[feat] daily rows={len(daily):,}  range=[{daily['Date'].min().date()}..{daily['Date'].max().date()}]")
 
     daily["ym"] = daily["Date"].dt.to_period("M")
@@ -207,7 +372,7 @@ def build_features():
             lambda v: (v - v.mean()) / (v.std(ddof=0) + 1e-9))
     snap[feat_cols] = snap[feat_cols].fillna(0.0)  # 중립 z
     print(f"[feat] monthly snapshot rows={len(snap):,}  feature_cols={len(feat_cols)}")
-    return snap[["ym", "Ticker"] + feat_cols], feat_cols
+    return snap[["ym", "Ticker"] + feat_cols], feat_cols, manifest
 
 
 def build_labels_and_universe():
@@ -258,7 +423,7 @@ def build_labels_and_universe():
 
 def main():
     print("[feat] building rolling features from daily Factor DB ...")
-    snap, feat_cols = build_features()
+    snap, feat_cols, availability = build_features()
     print("[feat] building forward labels + universe ...")
     labels, bm_m = build_labels_and_universe()
 
@@ -281,6 +446,7 @@ def main():
         "selected_factors": SELECTED_FACTORS,
         "category_windows": CATEGORY_WINDOWS,
         "stats_per_factor": ["lvl(level z)", "slp(short-window OLS slope)", "vol(long-window std)"],
+        "daily_factor_availability": availability,  # missing_factors/bridge 기록 (P1 2026-06-10)
         "panel_rows": int(len(panel)),
         "n_months": int(panel["ym"].nunique()),
         "month_range": [str(panel["ym"].min()), str(panel["ym"].max())],
@@ -292,7 +458,7 @@ def main():
         "out_panel": out_panel,
         "out_benchmark": bm_path,
     }
-    with open(os.path.join(OUT_DIR, "feature_panel_meta.json"), "w") as f:
+    with open(os.path.join(OUT_DIR, "feature_panel_meta.json"), "w", encoding="utf-8") as f:
         json.dump(meta, f, indent=2, ensure_ascii=False)
     print(f"[feat] panel -> {out_panel}  rows={len(panel):,}  feats={len(feat_cols)}  "
           f"months={panel['ym'].nunique()}")

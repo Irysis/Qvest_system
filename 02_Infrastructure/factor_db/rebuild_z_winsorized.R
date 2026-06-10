@@ -84,11 +84,15 @@ cat(sprintf("  RAWDATA sector map: %s rows | %s ~ %s\n",
 #==============================================================================
 
 #' Worst per-factor identical-Z share: max over factors of
-#' (count of the most frequent Z value) / (non-NA Z count in that factor).
-#' Captures the Q11_Net_Margin-type collapse (79.6% of tickers on one Z).
+#' (count of the most frequent Z value, rounded to 2 decimals) /
+#' (non-NA Z count in that factor).
+#' Captures the Q11_Net_Margin-type collapse, where one outlier ticker squeezes
+#' the rest of the cross-section into a near-identical Z cluster (~79.6%).
+#' Rounding to 0.01 is needed because the cluster is near-identical, not
+#' bit-identical (healthy N(0,1) cross-section: mode share < ~2%).
 .worst_tie_share <- function(dt) {
   tie <- dt[!is.na(Z_Score),
-            .(share = max(tabulate(frank(Z_Score, ties.method = "dense"))) / .N,
+            .(share = max(tabulate(frank(round(Z_Score, 2), ties.method = "dense"))) / .N,
               n = .N),
             by = Factor_Name][n >= 20L]
   if (nrow(tie) == 0L) return(list(share = NA_real_, factor = NA_character_))

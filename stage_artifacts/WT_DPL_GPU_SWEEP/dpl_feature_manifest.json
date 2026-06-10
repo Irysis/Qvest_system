@@ -1,0 +1,32 @@
+{
+  "built_at": "2026-06-10T14:18:33",
+  "n_daily_files": 3,
+  "n_selected_factors": 30,
+  "missing_factors": [],
+  "trailing_gap_factors": {
+    "INV01_Foreign_NetBuy_20d": {
+      "last_present_file_ym": "202603",
+      "latest_file_ym": "202605"
+    },
+    "INV03_Inst_NetBuy_20d": {
+      "last_present_file_ym": "202603",
+      "latest_file_ym": "202605"
+    }
+  },
+  "partial_presence_files": {
+    "INV01_Foreign_NetBuy_20d": "1/3",
+    "INV03_Inst_NetBuy_20d": "1/3"
+  },
+  "use_monthly_bridge": true,
+  "bridge_targets": [
+    "INV01_Foreign_NetBuy_20d",
+    "INV03_Inst_NetBuy_20d"
+  ],
+  "bridged_factors": [
+    "INV01_Foreign_NetBuy_20d",
+    "INV03_Inst_NetBuy_20d"
+  ],
+  "bridge_failed_factors": [],
+  "unresolved_after_bridge": [],
+  "note": "missing_factors = 일간 DB 전 파일 부재 / trailing_gap_factors = 최신월 파일 탈락 (둘 다 침묵 NaN 금지로 명시 기록 — 결측 구간은 월말 단면 z 단계에서 0(중립)으로 들어감). bridged_factors는 월간 관측의 step-function ffill(NaN 구간만 채움) — slope/vol 통계 해석 주의. partial_presence_files는 팩터 역사 시작 시점 차이일 수도 있음(전 기간 실행 시 정상 가능)."
+}
