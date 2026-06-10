@@ -1,0 +1,104 @@
+{
+  "artifact": "b1_redundancy_matrix",
+  "generated": "2026-06-10 15:02:06",
+  "metric_type": "proxy",
+  "label": "diagnostic_only — top-quintile EW 월수익 시계열은 진단용 (백테스트 아님, NAV 합성 없음). 의사결정 지표는 PORT_t.",
+  "method": {
+    "score_corr": "월별 cross-sectional Spearman corr (공통 비-NA ticker, n>=30), 268개월 평균",
+    "return_corr": "각 팩터 top-quintile(상위 20%) EW 월간 forward return 시계열(단월 mean(Ret_1m), 합성 없음) 간 Pearson corr. raw = 그대로 / market_excess = 동월 universe EW mean 차감(시장베타 제거)",
+    "verdict_rubric": "단일베팅: avg_score_rho>0.4 AND avg_excess_ret_rho>0.6 / 내부분산: avg_score_rho<0.3 AND avg_excess_ret_rho<0.5 / 그 외 중간"
+  },
+  "score_correlation": {
+    "pairwise_avg": [
+      {
+        "pair": "C01_SUE x C02_EPS_Chg_1m",
+        "avg_spearman": 0.051,
+        "n_months": 268
+      },
+      {
+        "pair": "C01_SUE x C04_ESBR",
+        "avg_spearman": 0.6787,
+        "n_months": 268
+      },
+      {
+        "pair": "C01_SUE x C06_TP_Gap",
+        "avg_spearman": -0.0165,
+        "n_months": 268
+      },
+      {
+        "pair": "C02_EPS_Chg_1m x C04_ESBR",
+        "avg_spearman": 0.0651,
+        "n_months": 268
+      },
+      {
+        "pair": "C02_EPS_Chg_1m x C06_TP_Gap",
+        "avg_spearman": -0.0361,
+        "n_months": 268
+      },
+      {
+        "pair": "C04_ESBR x C06_TP_Gap",
+        "avg_spearman": -0.0207,
+        "n_months": 268
+      }
+    ],
+    "avg_pairwise": 0.1202
+  },
+  "return_correlation": {
+    "raw": {
+      "C01_SUE": {
+        "C01_SUE": 1,
+        "C02_EPS_Chg_1m": 0.9386,
+        "C04_ESBR": 0.9665,
+        "C06_TP_Gap": 0.9083
+      },
+      "C02_EPS_Chg_1m": {
+        "C01_SUE": 0.9386,
+        "C02_EPS_Chg_1m": 1,
+        "C04_ESBR": 0.9174,
+        "C06_TP_Gap": 0.8766
+      },
+      "C04_ESBR": {
+        "C01_SUE": 0.9665,
+        "C02_EPS_Chg_1m": 0.9174,
+        "C04_ESBR": 1,
+        "C06_TP_Gap": 0.9189
+      },
+      "C06_TP_Gap": {
+        "C01_SUE": 0.9083,
+        "C02_EPS_Chg_1m": 0.8766,
+        "C04_ESBR": 0.9189,
+        "C06_TP_Gap": 1
+      }
+    },
+    "market_excess": {
+      "C01_SUE": {
+        "C01_SUE": 1,
+        "C02_EPS_Chg_1m": 0.1166,
+        "C04_ESBR": 0.5786,
+        "C06_TP_Gap": -0.0365
+      },
+      "C02_EPS_Chg_1m": {
+        "C01_SUE": 0.1166,
+        "C02_EPS_Chg_1m": 1,
+        "C04_ESBR": -0.0594,
+        "C06_TP_Gap": -0.2984
+      },
+      "C04_ESBR": {
+        "C01_SUE": 0.5786,
+        "C02_EPS_Chg_1m": -0.0594,
+        "C04_ESBR": 1,
+        "C06_TP_Gap": 0.1066
+      },
+      "C06_TP_Gap": {
+        "C01_SUE": -0.0365,
+        "C02_EPS_Chg_1m": -0.2984,
+        "C04_ESBR": 0.1066,
+        "C06_TP_Gap": 1
+      }
+    },
+    "avg_pairwise_raw": 0.9211,
+    "avg_pairwise_market_excess": 0.0679,
+    "note": "raw corr은 시장베타 공통항으로 상향 편의 — 중복 판정은 market_excess 기준"
+  },
+  "verdict": "내부 분산 존재 (score corr 낮음 + excess return corr 낮음~중간)"
+}
