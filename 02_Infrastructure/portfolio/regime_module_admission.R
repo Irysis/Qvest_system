@@ -14,6 +14,9 @@
 # 6기준 (m,L): ① regime_IR≥0.5 OR regime-L 상위⅓  ② n_months≥12 floor  ③ asof창 IS·OOS sign+(둘 다 +)
 #             ④ |t|=|IR·√(n_m/12)|≥2  ⑤ 경제논리(role/regime 휴리스틱+보류)  ⑥ 한계기여(>median, advisory)
 # admitted = ①∧②∧③∧④ (hard). ⑤ 플래그, ⑥ advisory.
+# ★ C2 (2026-06-10 도훈 mandate, rare_mode flag — 기본 OFF, A/B 통과 후 활성):
+#   희소국면(base rate<10%: CRISIS·RISK_OFF) 셀 한정 ②n≥6·④t≥1.5 완화 OR stress-pool 합산 t≥2 대체경로.
+#   두 경로 모두 ⑤ strict(review_pending 불가) 의무. dispatcher shrink n/(n+36)+w_cap이 사이징 방어.
 # PIT: regime t-1 lag. 실측-only. 모듈 frozen(소비).
 # =============================================================================
 suppressPackageStartupMessages({ library(data.table); library(arrow); library(jsonlite); library(xts) })
@@ -26,6 +29,14 @@ ir_ann <- function(a, annf=ANN){ a<-a[is.finite(a)]; if(length(a) < (if(annf<=12
 # MIN_MONTHS = 12 floor (희소 국면 CRISIS/CAUTION는 36월-in-regime이 비현실 — 방어형 specialist 차단).
 # 표본-significance는 ④ t = IR·√(n_m/12) ≥ 2 가 담당(소표본일수록 더 높은 IR 요구). n≥36 = high_conf 플래그.
 IR_FLOOR <- 0.5; MIN_MONTHS <- 12; T_MIN <- 2.0; HIGH_CONF_MONTHS <- 36
+# ── C2 희소국면 완화 경로 (2026-06-10 도훈 mandate — calibration 백로그 C2) ──
+# 긴장: ②n≥12 × ④t≥2 곱 → n=12 셀에 IR≥2.0 요구 = CRISIS specialist 수학적 차단 (RCMA 존재이유와 충돌).
+# 완화(희소국면 = base rate < RARE_SHARE 셀 한정): n≥6 · t≥1.5, OR stress-pool(CRISIS∪RISK_OFF∪CAUTION)
+#   합산 t≥2 대체경로. 두 경로 모두 ⑤ rationale strict(review_pending 불가) 의무. ①③ 불변.
+# 방어 논거: admission은 저위험 — dispatcher shrink n/(n+36)이 n=6 셀 신호반영 ≤14% + w_cap 0.25.
+# ★ 활성화 게이트: rare_mode 기본 OFF — run_wf_ensemble A/B(전후 ensemble OOS 비악화) 통과 후 ON (도훈 confirm).
+RARE_SHARE <- 0.10; RARE_MIN_MONTHS <- 6; RARE_T_MIN <- 1.5
+STRESS_POOL <- c("CRISIS", "RISK_OFF", "CAUTION")
 
 # ── 모듈 per-regime active 일간 시계열 로드 (한 번만; asof는 함수에서 슬라이스) ──────
 # AL[[sid]] = data.table(Date, a=active daily, regime=t-1 lag). 무겁지 않게 캐시.
@@ -48,24 +59,33 @@ IR_FLOOR <- 0.5; MIN_MONTHS <- 12; T_MIN <- 2.0; HIGH_CONF_MONTHS <- 36
     if(nrow(d) >= (if(identical(fq,"monthly")) 60L else 250L)){ AL[[sid]] <- d; FREQ[[sid]] <- fq }
   }
   regimes <- unlist(MP$regimes) %||% c("RISK_ON","NEUTRAL","CAUTION","CRISIS","RISK_OFF")
-  list(MP = MP, AL = AL, FREQ = FREQ, mod_ids = names(AL), regimes = regimes)
+  # C2: 국면 base rate (일수 비중) — rare 판정용 (rare = share < RARE_SHARE)
+  sh <- RG[, .N, by = regime]; regime_share <- setNames(sh$N / sum(sh$N), sh$regime)
+  list(MP = MP, AL = AL, FREQ = FREQ, mod_ids = names(AL), regimes = regimes, regime_share = regime_share)
 }
 
 # ── ★ compute_rcma(asof_date): point-in-time admission (Date ≤ asof_date 만 사용) ─────
 #   반환: list(CELL=data.table(셀 진단+판정), admitted_by_regime=list(L->module ids),
 #              admitted_modules, pool_oos_rho, asof=asof_date, n_modules)
 #   c3(IS·OOS sign): asof 창 *내부* 시간순 65/35 분할(고정 2012 cut 폐기).
-compute_rcma <- function(asof_date, ctx = NULL, proj = PROJ) {
+compute_rcma <- function(asof_date, ctx = NULL, proj = PROJ,
+                         rare_mode = isTRUE(as.logical(Sys.getenv("RCMA_RARE_MODE", "FALSE")))) {
   if (is.null(ctx)) ctx <- .rcma_load(proj)
   AL <- ctx$AL; mod_ids <- ctx$mod_ids; regimes <- ctx$regimes; MP <- ctx$MP; FREQ <- ctx$FREQ %||% list()
   asof_date <- as.Date(asof_date)
+  # C2: rare regime set (base rate < RARE_SHARE). ctx에 share 없으면(구버전 ctx) 보수적 공집합.
+  rare_set <- { sh <- ctx$regime_share %||% numeric(0); names(sh)[sh < RARE_SHARE] }
 
-  cells <- list()
+  cells <- list(); pool_t_vec <- c()
   for(sid in mod_ids){
     d <- AL[[sid]][Date <= asof_date]                       # ★ PIT: asof 이하만
     fq <- FREQ[[sid]] %||% "daily"; annf <- if(identical(fq,"monthly")) 12 else 252
     mdiv <- if(identical(fq,"monthly")) 1L else 21L; split_min <- if(identical(fq,"monthly")) 16L else 40L
     if(nrow(d) < (if(identical(fq,"monthly")) 60L else 250L)) next   # cold-start: 데이터 부족 모듈 skip
+    # C2 stress-pool 합산 증거 (모듈 단위, asof-sliced): CRISIS∪RISK_OFF∪CAUTION 합산 t
+    ps <- d[regime %in% STRESS_POOL]
+    pool_ir <- ir_ann(ps$a, annf); pool_nm <- nrow(ps)/mdiv
+    pool_t_vec[sid] <- if (is.finite(pool_ir)) pool_ir * sqrt(pool_nm/12) else NA_real_
     for(L in regimes){ sub <- d[regime==L]; nm <- nrow(sub)/mdiv
       full_ir <- ir_ann(sub$a, annf)
       # asof 창 내부 65/35 시간순 분할 (자연 OOS — 고정 2012 cut 폐기)
@@ -102,18 +122,34 @@ compute_rcma <- function(asof_date, ctx = NULL, proj = PROJ) {
   CELL[, rationale := mapply(.rat, module, regime, regime_ir)]
 
   # RCMA 판정
+  CELL[, rare := regime %in% rare_set]
+  CELL[, pool_t := pool_t_vec[module]]
   CELL[, c1_perf  := is.finite(regime_ir) & (regime_ir>=IR_FLOOR | top_tercile)]
-  CELL[, c2_n     := is.finite(n_months) & n_months>=MIN_MONTHS]
   CELL[, high_conf := is.finite(n_months) & n_months>=HIGH_CONF_MONTHS]
   CELL[, c3_oos   := is.finite(is_ir) & is.finite(oos_ir) & is_ir>0 & oos_ir>0]   # asof창 IS·OOS 둘 다 + (지속)
-  CELL[, c4_sig   := is.finite(t_stat) & abs(t_stat)>=T_MIN]
   CELL[, c6_adv   := is.finite(regime_ir) & regime_ir>median_ir_L]
-  CELL[, admitted := c1_perf & c2_n & c3_oos & c4_sig]
+  if (isTRUE(rare_mode)) {
+    # C2 v2: 희소국면(base rate<10%) 셀 — ② n≥6 · ④ t≥1.5 완화 OR stress-pool 합산 t≥2 대체경로.
+    #   두 경로 모두 ⑤ rationale strict 의무(review_pending 불가). ①③ 불변. 비-희소 셀 = legacy 동일.
+    CELL[, rationale_strict := rationale != "review_pending"]
+    CELL[, c2_n   := is.finite(n_months) & n_months >= fifelse(rare, RARE_MIN_MONTHS, MIN_MONTHS)]
+    CELL[, c4_sig := is.finite(t_stat) & abs(t_stat) >= fifelse(rare, RARE_T_MIN, T_MIN)]
+    CELL[, rare_alt := rare & c1_perf & c3_oos & rationale_strict &
+                       is.finite(pool_t) & abs(pool_t) >= T_MIN]
+    CELL[, admitted := (c1_perf & c2_n & c3_oos & c4_sig & (!rare | rationale_strict)) | rare_alt]
+  } else {
+    # legacy (rare_mode OFF — A/B 활성화 게이트 통과 전 기본)
+    CELL[, c2_n     := is.finite(n_months) & n_months>=MIN_MONTHS]
+    CELL[, c4_sig   := is.finite(t_stat) & abs(t_stat)>=T_MIN]
+    CELL[, rare_alt := FALSE]
+    CELL[, admitted := c1_perf & c2_n & c3_oos & c4_sig]
+  }
 
   admitted_by_regime <- setNames(lapply(regimes, function(L) sort(CELL[admitted==TRUE & regime==L]$module)), regimes)
   admitted_modules <- sort(unique(CELL[admitted==TRUE]$module))
   list(CELL=CELL, admitted_by_regime=admitted_by_regime, admitted_modules=admitted_modules,
-       pool_oos_rho=pool_rho, asof=asof_date, n_modules=length(mod_ids))
+       pool_oos_rho=pool_rho, asof=asof_date, n_modules=length(mod_ids),
+       rare_mode=isTRUE(rare_mode), rare_regimes=rare_set)
 }
 
 # ── 정적 진단 JSON 산출 (asof = max date). run_wf_ensemble는 함수를 직접 호출. ─────────

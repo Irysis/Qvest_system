@@ -146,3 +146,10 @@ n_trials/n_iterations **기록**은 전 실험 의무 유지. DSR **게이트**�
 - **연장 개념**: 채택 후 페이퍼/라이브 트래킹 = holdout의 자동 연장 — monitoring agent가 동일 예측구간 대비 drift 추적 (라이브 0개월 공백 보완 경로).
 
 **우선순위 권고**: C2(FR 모드 존재이유 직결) > C1(binding 게이트) > C3(문구·헬퍼만). 구현은 도훈 confirm 후 — C1/C2는 essence_score·regime_module_admission 코드 + A/B 실측 의무, C3는 규칙 문서 + 부트스트랩 헬퍼.
+
+### 반영 상태 (2026-06-10 도훈 confirm "모두 반영" — 동일자 구현)
+| 항목 | 상태 | 비고 |
+|---|---|---|
+| C1 | ✅ **반영·활성** — `essence_score.R` `oos_stat_version="v2"` 기본 + band escalation + `oos_fail_pattern` | 기능검증 6케이스 PASS (band 미증거 B / 2-of-3 A / 1-of-3 B / <0.5 증거무관 FAIL / 고retention A / v1 재현). splits 실측 [0.55,0.59,0.78] — 절단점 노이즈 실증. 16후보·census 재채점은 `_census_v2` 데이터(구 머신) 필요 — 후속 |
+| C2 | ✅ **코드 반영, 기본 OFF** — `compute_rcma(rare_mode=)` + `RCMA_RARE_MODE` env | 합성 검증 PASS (CRISIS n=5.5m·IR 4.22: OFF 차단 → ON pool-path t 5.55 진입 / noise 차단 유지 / 비희소 판정 불변). **활성화 = run_wf_ensemble A/B 비악화 + 도훈 confirm** — 현 머신 `module_performance.json`·sim_result 부재로 A/B 불가, P0 수리 후 |
+| C3 | ✅ **반영·활성** — `02_Infrastructure/contracts/holdout_falsification.R` 신규 (build/save/judge/mark_consumed) | book 실측 demo: 246m 기준 구간 [0.33,3.11], 최근 21m SR 2.92 → PASS_LOW_INFO (정확 분류). 불변성·소모 규칙 검증 PASS. **라이브 1호 사전등록**: `06_Registry/live_track/STR_1715_AR_on_M4_R05_overlay_PG2/holdout_interval.json` — 267m 기준 trailing-21m 구간 **[0.39, 3.16]** |

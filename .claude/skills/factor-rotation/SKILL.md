@@ -58,6 +58,8 @@ FR이 모듈을 소비하려면 **표준형** 필수:
 
 admitted = ①∧②∧③∧④. m이 ≥1 regime admitted면 풀 진입. `run_wf_ensemble`이 admitted union으로 풀 제한 + regime별 후보 제한.
 
+**★ C2 희소국면 경로 (2026-06-10 도훈 mandate — `compute_rcma(rare_mode=)`, 기본 OFF)**: ②n≥12 × ④t≥2의 곱이 n=12 셀에 IR≥2.0을 요구해 CRISIS specialist를 수학적으로 차단(RCMA 존재이유와 충돌). base rate<10% 국면(CRISIS·RISK_OFF) 셀 한정 **②n≥6·④t≥1.5 완화 OR stress-pool(CRISIS∪RISK_OFF∪CAUTION) 합산 t≥2 대체경로**. 두 경로 모두 ⑤ strict(review_pending 불가) 의무, ①③ 불변. 사이징 방어 = dispatcher shrink n/(n+36)(n=6 → 신호반영 ≤14%) + w_cap 0.25. **활성화 게이트 = `run_wf_ensemble` A/B(전후 ensemble OOS 비악화) + 도훈 confirm** (그 전까지 legacy 판정). 합성 검증: CRISIS n=5.5m·IR 4.22 셀이 OFF에서 차단 → ON에서 pool-path(t 5.55) 진입, noise 모듈 차단 유지, 비희소 셀 판정 불변.
+
 ## 6. 작동 메커니즘
 
 - **Track1** — `regime_engine_research.R`(축 t-1 → 판별력 검증 → 채택) · `regime_forecaster.R`(다음국면 사전예측 — 후속).
@@ -86,7 +88,7 @@ Track1은 **각종 학술논문·헤지펀드 페이퍼를 참고해 국면 정�
 
 ## 9. 측정·과적합 게이트 (SR2.5보다 먼저)
 
-실측-only. ① OOS_retention ≥ 0.7 → ② DSR ≥ 0.5 HARD — **sweep형 selection만**(grid/축탐색/레짐grid/forecaster/hyper sweep, n_trials 누적. 가설주도 chain·단일 A/B는 게이트 면제 `selection_type="chain"` — 도훈 mandate 2026-06-10) → ③ placebo(국면라벨 셔플 앙상블과 통계 구분, p<0.05) → ④ holdout(최근 18~24월 봉인). `measurement-graduation §3` 정합.
+실측-only. ① OOS_retention ≥ 0.7 — **C1 v2 (2026-06-10)**: anchored 3분할{55/65/75} 중앙값, <0.5 무조건 FAIL, [0.5,0.7) band는 보강증거 2/3(trailing PORT_t>0 / placebo / book-marginal ΔSR — holdout 제외) 시 조건부 통과, FAIL 시 overfit/decay 사유 라벨 → ② DSR ≥ 0.5 HARD — **sweep형 selection만**(grid/축탐색/레짐grid/forecaster/hyper sweep, n_trials 누적. 가설주도 chain·단일 A/B는 게이트 면제 `selection_type="chain"` — 도훈 mandate 2026-06-10) → ③ placebo(국면라벨 셔플 앙상블과 통계 구분, p<0.05) → ④ holdout — **C3 (2026-06-10)**: 성과 채점 금지, 채택 시점 사전등록 블록부트스트랩 예측구간 [5%,95%] falsification(`holdout_falsification.R`: <q05 FAIL / 구간내 PASS_LOW_INFO / >q95 PASS_PLUS), 열람 후 수정 시 구간 소모, 라이브 트래킹 = holdout 자동 연장(`06_Registry/live_track/`). `measurement-graduation §3` 정합.
 
 ## 10. 거버넌스 · 제약 (반드시 준수)
 

@@ -24,6 +24,13 @@
 #   hard_fail : 외부 주입(judge). NULL이면 MDD>mdd_hard로 추론.
 #   selection_type : "sweep"(게이트 강제) / "chain"(가설주도 순차개선 — 게이트 면제) /
 #                    NULL(legacy: n_trials>1 휴리스틱 유지, 기존 sweep caller 호환).
+#   oos_stat_version : "v2"(기본, 2026-06-10 도훈 mandate C1) = anchored 3분할{55/65/75} retention 중앙값
+#                      / "v1" = 단일 65/35 (legacy 재현용).
+#   escalation_evidence : C1 borderline band [0.5,0.7) 보강증거 (2/3 충족 시 조건부 PASS).
+#                      list(trailing_port_t=, placebo_p=, book_marginal_delta_sr=, cor_vs_book=).
+#                      ① trailing PORT_t>0 ② placebo p<0.05 ③ ΔSR>0 ∧ |cor|<0.30. holdout은 증거 불가(봉인).
+#                      retention<0.5는 증거 무관 FAIL(band 남용 차단).
+#   oos_fail_pattern : 선택 라벨 "overfit"/"decay" — FAIL 시 사유 분리(decay→screen_route 라우팅, 자본졸업 불가).
 # Returns: list(grade, metric_type, essence{...}, hard_fail, reasons)
 #==============================================================================
 
@@ -51,7 +58,11 @@ suppressPackageStartupMessages({ library(data.table) })
 essence_score <- function(bt_result, n_trials_cumulative = NULL,
                           hard_fail = NULL, mdd_hard = 0.45,
                           oos_is_ratio_override = NULL, calmar_min = 0.64,
-                          selection_type = NULL) {
+                          selection_type = NULL,
+                          oos_stat_version = "v2",
+                          escalation_evidence = NULL,
+                          oos_fail_pattern = NULL) {
+  .nz <- function(x) { v <- suppressWarnings(as.numeric(if (is.null(x) || length(x) == 0L) NA else x[[1]])); v }
   stopifnot(is.list(bt_result),
             !is.null(bt_result$metrics), !is.null(bt_result$benchmark_compare))
   M  <- as.data.table(bt_result$metrics)
@@ -76,7 +87,7 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
   # --- 활성(alpha) 시계열: OOS retention(과적합, DSR 대체) + DSR(스윕 한정) ---
   af <- suppressWarnings(as.numeric(M[["annualization_factor"]][1]))
   if (length(af) != 1 || !is.finite(af)) af <- 12
-  dsr <- NA_real_; oos_retention <- NA_real_
+  dsr <- NA_real_; oos_retention <- NA_real_; oos_retention_splits <- NA_real_
   # DSR *게이트* = sweep형 selection(열거집합 argmax/threshold-pick)에서만 (도훈 mandate 2026-06-10).
   #   selection_type "sweep"=강제 / "chain"(가설주도 순차개선, IS-only 선택 규율)=면제 /
   #   NULL(legacy)=n_trials>1 휴리스틱 (기존 sweep caller 호환). DSR 수치는 n_trials>1이면 진단용 항상 산출.
@@ -94,14 +105,19 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
       a <- m$ret_net - m$benchmark_ret; a <- a[is.finite(a)]
       n <- length(a)
       if (n >= 12 && sd(a) > 0) {
-        # OOS retention = 활성 Sharpe(OOS) / 활성 Sharpe(IS), 65/35 chronological
-        k <- floor(n * 0.65)
-        if (k >= 6 && (n - k) >= 6) {
+        # OOS retention (C1 v2, 2026-06-10 도훈 mandate): anchored 다중분할 {55/65/75} 중앙값
+        #   — 단일 절단점의 임의성 노이즈 축소 (표본 노이즈 자체는 정보이론적 한계, 제거 불가).
+        splits <- if (identical(oos_stat_version, "v1")) 0.65 else c(0.55, 0.65, 0.75)
+        rets <- vapply(splits, function(fr) {
+          k <- floor(n * fr)
+          if (k < 6 || (n - k) < 6) return(NA_real_)
           ia <- a[1:k]; oa <- a[(k + 1):n]
           is_ir  <- if (sd(ia) > 0) mean(ia) / sd(ia) * sqrt(af) else NA_real_
           oos_ir <- if (sd(oa) > 0) mean(oa) / sd(oa) * sqrt(af) else NA_real_
-          if (is.finite(is_ir) && is_ir > 0.05) oos_retention <- oos_ir / is_ir
-        }
+          if (is.finite(is_ir) && is_ir > 0.05 && is.finite(oos_ir)) oos_ir / is_ir else NA_real_
+        }, numeric(1))
+        oos_retention_splits <- rets
+        if (any(is.finite(rets))) oos_retention <- stats::median(rets[is.finite(rets)])
         # DSR(BLdP) 수치 = n_trials>1이면 진단용 산출 (게이트 적용은 is_sweep — 아래 dsr_ok).
         if (has_trials) {
           mu <- mean(a); s <- sd(a)
@@ -117,13 +133,35 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
   # --- hard_fail: 외부(judge) 주입 우선, 없으면 MDD 한도로 추론 ---
   if (is.null(hard_fail)) hard_fail <- isTRUE(is.finite(mdd) && mdd > mdd_hard)
 
+  # --- C1 borderline band [0.5, 0.7): 보강증거 2/3 충족 시 조건부 통과 (2026-06-10 도훈 mandate) ---
+  #   retention >= 0.7 단독 PASS(불변) / < 0.5 무조건 FAIL(증거 무관) / band는 escalation 2/3.
+  band_lo <- 0.5; band_hi <- 0.7
+  esc_pass <- NA; esc_detail <- NULL
+  if (!is.null(escalation_evidence) && is.list(escalation_evidence)) {
+    ev <- escalation_evidence
+    e1 <- isTRUE(is.finite(.nz(ev$trailing_port_t)) && .nz(ev$trailing_port_t) > 0)
+    e2 <- isTRUE(is.finite(.nz(ev$placebo_p)) && .nz(ev$placebo_p) < 0.05)
+    e3 <- isTRUE(is.finite(.nz(ev$book_marginal_delta_sr)) && .nz(ev$book_marginal_delta_sr) > 0 &&
+                 is.finite(.nz(ev$cor_vs_book)) && abs(.nz(ev$cor_vs_book)) < 0.30)
+    esc_pass <- sum(c(e1, e2, e3)) >= 2L
+    esc_detail <- list(trailing_port_t_pos = e1, placebo_sig = e2, book_marginal = e3)
+  }
+  oos_in_band <- is.finite(oos_retention) && oos_retention >= band_lo && oos_retention < band_hi
+  oos_ok <- (is.finite(oos_retention) && oos_retention >= band_hi) ||
+            (oos_in_band && isTRUE(esc_pass))
+  oos_band_status <- if (!is.finite(oos_retention)) NA_character_
+                     else if (oos_retention >= band_hi) "pass"
+                     else if (oos_in_band && isTRUE(esc_pass)) "band_escalated"
+                     else if (oos_in_band) "band_fail"
+                     else "fail"
+
   # --- 등급 (SOT §3.5): 유의성=PORT_t / 과적합=OOS retention / 위험조정=Calmar / DSR=스윕한정 ---
   reasons <- character(0)
   contract_ok <- is.finite(port_t) && is.finite(net_ir)  # 계약 경유 여부
   # DSR 게이트: sweep형 selection에서만 요구. chain/1논문/1알파에선 부적용(통과 간주).
   dsr_ok <- if (is_sweep) (is.finite(dsr) && dsr >= 0.5) else TRUE
   a_core <- (is.finite(port_t) && port_t >= 2.95 &&
-             is.finite(oos_retention) && oos_retention >= 0.7 &&
+             oos_ok &&
              is.finite(sharpe) && sharpe >= 0.8 &&
              is.finite(cagr)   && cagr   >= 0.16 &&
              is.finite(calmar) && calmar >= calmar_min)
@@ -139,11 +177,14 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
     reasons <- "non-positive alpha (PORT_t<=0 또는 net_IR<=0)"
   } else if (a_core && dsr_ok) {
     grade <- "A"
-    reasons <- sprintf("Standalone: PORT_t>=2.95 & OOS_ret>=0.7 & Sharpe>=0.8 & CAGR>=16%% & Calmar>=%.2f%s",
+    reasons <- sprintf("Standalone: PORT_t>=2.95 & OOS_ret %s & Sharpe>=0.8 & CAGR>=16%% & Calmar>=%.2f%s",
+                       if (identical(oos_band_status, "band_escalated")) "band[0.5,0.7) escalated 2/3" else ">=0.7",
                        calmar_min, if (is_sweep) " & DSR>=0.5(sweep)" else "")
   } else if (port_t >= 2.0 && net_ir > 0.2) {
     grade <- "B"
-    miss <- c(if (!is.finite(oos_retention) || oos_retention < 0.7) "OOS_ret<0.7" else NULL,
+    miss <- c(if (!oos_ok) sprintf("OOS_ret %s<0.7(band %s)",
+                                   if (is.finite(oos_retention)) sprintf("%.2f", oos_retention) else "NA",
+                                   if (is.na(oos_band_status)) "NA" else oos_band_status) else NULL,
               if (!is.finite(sharpe) || sharpe < 0.8) "Sharpe<0.8" else NULL,
               if (!is.finite(cagr) || cagr < 0.16) "CAGR<16%" else NULL,
               if (!is.finite(calmar) || calmar < calmar_min) sprintf("Calmar<%.2f", calmar_min) else NULL,
@@ -172,6 +213,11 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
     n_trials_cumulative = n_trials_cumulative,
     selection_type = selection_type,
     dsr_gate_applied = is_sweep,
+    oos_stat_version = oos_stat_version,
+    oos_retention_splits = round(oos_retention_splits, 3),
+    oos_band_status = oos_band_status,
+    oos_escalation = esc_detail,
+    oos_fail_pattern = if (is.null(oos_fail_pattern)) NA_character_ else as.character(oos_fail_pattern),
     reasons = reasons
   )
 }
