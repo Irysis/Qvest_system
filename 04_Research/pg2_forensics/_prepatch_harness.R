@@ -753,10 +753,7 @@ calc_score_tilt_weights <- function(tickers, scores, ret_dt,
 #   FACTORS     — data.table with columns: Date, Ticker, Score
 #                 (monthly signal dates, higher Score = better)
 #   n_holdings  — max number of holdings (default 20)
-#   commission  — one-way commission rate (default 0.0015 = 15bps,
-#                 cost_model v2.3_kr_retail_15bps: 매수/매도 각 레그에 적용.
-#                 구 주석 "round-trip"은 오기 — 매도 레그 누락 결함의 원인.
-#                 2026-06-10 fee fix 참조: 04_Research/pg2_forensics/b0_fee_bug_report.md)
+#   commission  — round-trip commission rate (default 0.0015)
 #   initial_cap — initial capital (default 1e8)
 #   weight_method — "equal", "ivol", "hrp", "minvar", "riskparity"
 #   buffer_zone — list(keep_n, entry_n) for hysteresis band turnover control
@@ -907,23 +904,13 @@ run_monthly_simulation <- function(RAWDATA,
     selected <- exec_prices$Ticker
 
     # --- Portfolio value before rebalance ---
-    # 2026-06-10 fee fix: 리밸 경로 매도 수수료 누락 수리.
-    #   엔진은 매 리밸마다 기존 보유분 전량 매도 → 신규 포트 전량 매수 구조(netting 없음).
-    #   매수 레그는 아래 Allocate 블록에서 (1 + commission) 차감되지만, 매도 레그는
-    #   청산 경로(selected=0, proceeds * (1 - commission))와 달리 0bps였음 →
-    #   cost_model v2.3_kr_retail_15bps(one-way 15bps)의 매도분 누락.
-    #   수리: 청산가치(liq_val)에 sell fee = liq_val * commission 차감.
     total_val <- cash
-    liq_val   <- 0  # 매도 대상 기존 보유분 시가 (sell leg notional)
     for (tk in names(holdings)) {
       price_row <- RAWDATA[.(tk, exec_date), Close]   # keyed binary-join (was 풀스캔)
       if (length(price_row) > 0 && !is.na(price_row[1])) {
-        pos_val   <- holdings[[tk]]$shares * price_row[1]
-        total_val <- total_val + pos_val
-        liq_val   <- liq_val + pos_val
+        total_val <- total_val + holdings[[tk]]$shares * price_row[1]
       }
     }
-    total_val <- total_val - liq_val * commission  # 매도 수수료 차감 (one-way 15bps)
 
     # --- DD Brake: reduce exposure when drawdown exceeds threshold (C9: t-1 lag) ---
     invest_val <- total_val
