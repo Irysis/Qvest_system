@@ -1,0 +1,109 @@
+{
+  "task_id": "WT-D20260606_001",
+  "agent": "judge",
+  "agent_version": "v6.1_multigate_validator",
+  "as_of_date": "2026-06-06",
+  "wt_type": "discovery",
+  "role": "adjudicator (AX-008 — NOT a verification source; independently re-computed forge numbers, did not rubber-stamp)",
+
+  "DISPOSITION": "JUDGE_FAILED",
+  "essence_grade": "B",
+  "graduation": "BLOCKED",
+  "governor_handoff_required": false,
+
+  "headline": "JUDGE_FAILED / Grade B (essence_score authoritative, independently reproduced). Discovery graduation BLOCKED on TWO independent grounds: (1) oos_retention active-SR HARD FAIL (0.216 @65/35 contract split; -0.149 @true 2024-01 lockbox boundary; both << 0.7), and (2) Gate A PIT C15 sanctioned-path precondition NOT remediated (alpha read factor_db parquet directly, load_month_factors() rebuild outstanding). Independent of these, the residual-mom sleeve adds NO measurable incremental return (book-vs-R05 incremental -1.85%/yr IS t-2.17, flat OOS t+0.09) and book-marginal ΔIR is NOT robust (alignment-dependent +0.059/-0.006). SR 2.5 target NOT reached (net Sharpe 1.56). Verdict independently CONCURS with forge + optimizer: DPL transition, governor admit NOT recommended.",
+
+  "independent_recomputation": {
+    "_method": "Judge loaded bt_result.rds and re-ran 02_Infrastructure/contracts/essence_score.R + manual active 65/35 and lockbox-2024-01 splits. NOT trusting forge-reported values.",
+    "essence_score_single_paper_n_trials_NULL": {"grade": "B", "oos_retention": 0.216, "dsr": "NA (single-paper, not required)", "reason": "Component: PORT_t>=2.0 & net_IR>0.2; A 미달[OOS_ret<0.7]"},
+    "essence_score_sweep_n_trials_17": {"grade": "B", "oos_retention": 0.216, "dsr": 0.962, "reason": "A 미달[OOS_ret<0.7]; DSR passes — NOT the binding gate"},
+    "active_65_35_split": {"IS_active_SR": 1.1405, "OOS_active_SR": 0.2464, "retention": 0.2161, "IS_end": "2018-07", "OOS": "2018-08..2026-05"},
+    "active_lockbox_2024_01": {"IS_n": 239, "IS_active_SR": 0.9568, "OOS_n": 29, "OOS_active_SR": -0.1425, "retention": -0.1489, "note": "matches forge -0.149 exactly; OOS active SR NEGATIVE"},
+    "total_65_35_retention": 0.7567,
+    "total_lockbox_2024_01_retention": 1.2935,
+    "interpretation": "Diagnosis CONFIRMED: the HARD FAIL is in ACTIVE-vs-KOSPI200 alpha, not total return. Total-SR retention healthy (book still beats cash OOS). The active-alpha decay is driven by the rallying KOSPI200 (visible in equity_curve.png: BM 0.85->2.5 in final stretch) AND inherited from R05 (R05 active retention 0.166) AND the sleeve adds no incremental rescue (OOS incremental t+0.09). Slight delta vs forge 0.171: forge used 70/30, contract-authoritative essence_score uses 65/35 = 0.216. Both HARD FAIL."
+  },
+
+  "gate_assessment": {
+    "Gate_A_PIT": {
+      "verdict": "CONDITIONAL_FAIL (graduation precondition outstanding)",
+      "C1_C14_lookahead": "PASS — forward-month alignment (Jegadeesh-Titman, score t-1 close -> realized t..t+1); R05 leg frozen ret_net (no re-fit); overlay signal t-1 lagged (C5); IC computed by alpha script from forward realized returns (NOT connector IC history -> no Usable_Date/C14 manipulation path). bt_result audit: 14 PASS / 2 WARN (both C15-path artifacts) / 0 FAIL. No lookahead injected.",
+      "C15_sanctioned_path": "FAIL (procedural, not lookahead). Alpha read .cache/factor_db parquet via arrow::read_parquet directly (01_build_panels.R), bypassing load_month_factors(). Judge independent assessment: this is a SANCTIONED-PATH violation, NOT a PIT-correctness/lookahead violation — same cache file, Z_Score column only (DB pre-computed/aligned, byte-identical to connector), no future information enters. Measured numbers are NOT invalidated by C15. BUT it is an explicit graduation precondition (alpha challenge_note C1 PARTIAL ACCEPT, status.json blocker) that has NOT been remediated. Independently blocks graduation until load_month_factors() rebuild + C14 cert.",
+      "C7_residualization_builder": "PROBABLE_PASS_builder_unverified — M08 residual-mom is a Factor DB pre-computed proxy (registry lag_rule Factor_Date<=sig_d). Alpha did not independently re-derive the residualization window. Codex-flagged builder-level PIT recheck is a 2nd graduation precondition. No evidence of leakage in this WT's measurement.",
+      "lockbox_selection_isolation": "PASS — Judge-exclusive lockbox access. No non-judge lockbox-access contamination evidence; alpha as_of cutoff 2026-05-31 (regular-research SIGNAL_CUTOFF applied); forge/optimizer correctly treat operational stage as lockbox-폐기 (latest sig_date, OOS measured beyond R05 2024-01 train cutoff). lockbox-scope.md compliant.",
+      "honest": "Gate A does NOT invalidate the numbers (no lookahead) but FAILS the C15 sanctioned-path graduation precondition. This is an INDEPENDENT graduation block from oos_retention."
+    },
+    "Gate_B_isolation": {
+      "verdict": "PASS",
+      "note": "lockbox_access_count_non_judge=0 (no contamination signal). Selection isolation intact. R05 leg frozen (hash-audited PRE=POST, codex pure_function rf_f1=false). weights.csv used as-is (no alpha_scores re-selection)."
+    },
+    "Gate_C_portfolio_alpha_t": {
+      "verdict": "PASS (value) but NON-DECISIVE for graduation",
+      "portfolio_alpha_t_nw_lag3": 4.900,
+      "independent_reproduce": "07_benchmark_compare.csv Portfolio_Alpha_t_NW_lag3 = 4.89986, p=9.6e-07. Reproduced. Under optimizer fwd-shift alignment 3.98 — still >2.95.",
+      "net_IR": 0.7848,
+      "hurdle": "Harvey-Liu-Zhu 2016 t>=2.95 (Judge does NOT lower hurdle)",
+      "oos_contradiction_resolution": "Gate C 4.90 measures FULL-SAMPLE realized active alpha (IS-dominated). It does NOT contradict the OOS retention fail — it is its mirror: strong IS active alpha (active SR 1.14) that decays to ~0 / negative OOS (active SR 0.25 @65/35, -0.14 @lockbox). PORT_t 4.90 is dominated by the FROZEN R05 leg (0.85), NOT the sleeve — incremental sleeve return is negative IS (t-2.17) / flat OOS (t+0.09). PASS on the value, but the value is NOT evidence the NEW sleeve graduates; it is evidence R05 (already admitted) has historical alpha."
+    },
+    "Gate_D_crowding": {
+      "verdict": "PASS",
+      "note": "risk crowding_score_per_factor: ResidMom 0.213, CR07 0.128 — both LOW (<<0.75). hill_alpha 3.17 (finite var). Survival >= 3/4 satisfied. No family-saturation. Style overlap vs R05 -0.062 (well below RF-R5 0.7)."
+    },
+    "Gate_E_concentration": {
+      "verdict": "PASS",
+      "independent_reproduce": "Judge re-aggregated 04_holdings.csv (269 dates, 20 names/date). Sleeve-leg book-effective max weight 0.0075, sum 0.15. Implied standalone sleeve: max weight 0.05 <= 0.20 cap PASS; HHI 0.05 <= 0.15 cap PASS. Book n_names=20<=25. Sector HHI top20 0.185 (~5.4 effective sectors) LOW. All concentration constraints PASS.",
+      "max_w": 0.05, "hhi": 0.05
+    },
+    "Gate_F_drift": {
+      "verdict": "FAIL",
+      "oos_is_ratio_active": "0.216 (@65/35 contract) / -0.149 (@2024-01 lockbox)",
+      "threshold": 0.7,
+      "note": "Active-alpha drift tolerance HARD FAIL. This is the SAME finding as oos_retention HARD gate. Total-return drift is fine (0.757/1.293) but the deliverable's value proposition is ACTIVE alpha vs KOSPI200, which does not survive OOS."
+    }
+  },
+
+  "graduation_decision": {
+    "graduated": false,
+    "blocking_grounds": [
+      "GROUND 1 (HARD, measurement): oos_retention active-SR 0.216/-0.149 << 0.7. essence_score authoritative grade = B (not A). HARD overfitting/drift gate FAIL, independently reproduced by Judge.",
+      "GROUND 2 (HARD, PIT procedural): Gate A C15 sanctioned-path violation un-remediated (load_month_factors() rebuild + C14 cert outstanding). Explicit graduation precondition per alpha challenge_note + status.json blocker.",
+      "GROUND 3 (admission, measurement-graduation §4): book-marginal ΔIR NOT robustly >= 0.05 — +0.059 realized-month / -0.006 fwd-shift (sign flips with BM alignment); incremental book-vs-R05 return NEGATIVE IS (-1.85%/yr, t-2.17) / FLAT OOS (t+0.09). Sleeve is at best a weak vol/beta shaper, NOT a return-additive diversifier. Standalone alpha already FAILED (port-α t 1.46 canonical-screen)."
+    ],
+    "passing_gates": "PORT_t 4.90 (Gate C value), Calmar 1.01, DSR 0.96 (sweep)/NA (single), net_IR 0.78, concentration (Gate E), crowding (Gate D), isolation (Gate B), no-lookahead (Gate A C1-C14).",
+    "verdict": "Multiple HARD gates pass on book-level full-sample metrics, BUT the binding overfitting gate (oos_retention active) HARD-FAILS and Gate A C15 precondition is outstanding. Per essence_score.R the authoritative grade is B, not A. Discovery->Deployment graduation requires clearing all HARD gates. NOT graduated."
+  },
+
+  "attribution_decomposition": {
+    "_basis": "qvest-attribution-style ⑦ (factor/selection/cost/residual). Where does the book alpha come from?",
+    "factor_vs_selection": "Book PORT_t 4.90 is FACTOR/legacy-driven (frozen R05 value/consensus leg, 0.85 weight), NOT from the NEW residual-mom sleeve. Incremental sleeve contribution: NEGATIVE in-sample (-1.85%/yr, t-2.17), FLAT out-of-sample (+0.29%/yr, t+0.09). The new sleeve contributes ~0 pure selection alpha at the book level.",
+    "cost": "Book turnover 1.056x round-trip (forge) / 2.11x (optimizer book-RT convention) — both PASS RF-O13 (6.0) and P6 (11.0) ceilings. Incremental book cost ~0.0032/yr. Net active return 0.198 >> 2x cost. Cost is NOT the binding issue.",
+    "residual": "After removing R05 factor exposure, the residual-mom sleeve's residual return is statistically indistinguishable from zero OOS (risk RX-2: cov-contribution 95% CI [-0.0149,+0.0056] straddles 0; downside cov flips +0.0014). The diversification benefit is a weak, alignment-dependent vol/beta effect.",
+    "redundancy_risk": "LOW return-correlation (-0.062) confirms the sleeve is return-orthogonal to R05 in the mean — but orthogonal-AND-zero-incremental-return = a diversifier with no return to diversify. Not factor-redundant, but not value-additive either."
+  },
+
+  "codex_critic_round": {
+    "stance": "PENDING — codex exec direct (helper broken per WT mandate)",
+    "prompt": "qepm/mailbox/worktask/WT-D20260606_001/codex_judge_critic_prompt.md",
+    "response": "qepm/mailbox/worktask/WT-D20260606_001/codex_critic_response_judge.json"
+  },
+
+  "consistency_with_upstream": {
+    "forge": "CONCUR (independent). Forge honest_conclusion: low/no-conviction marginal diversifier, sleeve adds no return, governor admit NOT recommended, DPL is the lever. Judge independently reproduced every material number (Sharpe 1.56, PORT_t 4.90, Calmar 1.01, oos_retention -0.149 lockbox, ΔIR not robust). NOT a rubber-stamp — re-ran essence_score + splits from bt_result.rds.",
+    "optimizer": "CONCUR. Optimizer REJECT central thesis (overlay no SR lift; book beta ~0.107 nothing to time; ceiling ~1.74<<2.5); ΔIR borderline; DPL transition. Judge concurs the SR-2.5 thesis is refuted.",
+    "alpha": "CONCUR. Alpha self-grade F standalone / diversifier-DPL-feature candidate. Judge concurs standalone FAIL; adds that the diversifier value-add is also unproven (Ground 3)."
+  },
+
+  "honest_assessment": "This is a clean, honest pipeline. Every agent self-flagged the failure and dispositioned its Codex round transparently (alpha REJECT, risk/optimizer/forge REVISE, no silent overrides). Judge independent re-computation CONFIRMS: net Sharpe 1.56 (<<2.5 target), PORT_t 4.90 (full-sample, R05-driven), but oos_retention active HARD-FAILS (0.216/-0.149) and the new residual-mom sleeve adds no incremental return (negative IS / flat OOS). The hypothesis (orthogonal diversifier sleeve + regime overlay -> break single-sleeve SR ceiling toward 2.5) is REFUTED. Grade B, NOT graduated. The structural truth ([[reference-str1715-structure]], [[learning-gate-calibration-longonly]]) holds: KR long-only return-orthogonal sleeves are dominated by the market 1st-eigenmode (MKT 96.4% of variance) and cannot be the SR-2.5 lever. The lever is DPL (measurement-graduation §5), not more sleeve/overlay stacking. Governor handoff NOT required (un-graduated discovery; incumbent R05 retained).",
+
+  "recommendation": "(1) DO NOT graduate / DO NOT admit. (2) Incumbent book (STR_1631_80_STR_1656_20 / R05) RETAINED. (3) If the residual-mom sleeve is to be pursued: remediate C15 (load_month_factors rebuild) + M08 builder PIT recheck FIRST, then route as a DPL INPUT FEATURE (not a standalone/two-stage sleeve). (4) Redirect SR-2.5 effort to DPL (features->weights end-to-end, net-SR objective) per measurement-graduation §5 + optimizer/forge unanimous recommendation. (5) No tuning of overlay parameters (control-proven dead end).",
+
+  "references": [
+    "essence_score.R (authoritative grade — Judge re-ran on bt_result.rds)",
+    "measurement-graduation.md §3 (HARD gates) §4 (book-marginal ΔIR) §5 (DPL)",
+    "Harvey-Liu-Zhu 2016 (t>=2.95)",
+    "Bailey-Lopez de Prado 2014 (DSR)",
+    "Blitz-Huij-Martens 2011 (residual momentum)",
+    ".claude/rules/pit.md C15 / factor-db.md C15 / lockbox-scope.md",
+    "AX-007 (single-sleeve top20 ceiling) / AX-008 (triangulation)"
+  ]
+}

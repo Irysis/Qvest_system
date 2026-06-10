@@ -1,0 +1,56 @@
+{
+  "role": "dispatch-orchestrator",
+  "mode": "factor_rotation",
+  "track": "allocation",
+  "fr_candidate": "FR_VALEARN_OVERLAY",
+  "status": "FINAL (post Codex Critic Round; APPROVE_CONDITIONAL reconciled)",
+  "objective": "Test whether a regime/bear de-risk overlay on the FROZEN valearn orthogonal-alpha module (STR_valearn_70_top25) can lift its collapsed OOS retention (-0.517 active-Sharpe ratio) toward >=0.7 and ease its 45.6% MDD — re-examining the prior factor-rotation conclusion that 'no orthogonal sleeve -> regime overlay OOS-worthless' now that a genuine long-short Carhart4 t=4.11 orthogonal alpha exists as a module.",
+  "design": {
+    "module": "STR_valearn_70_top25 (FROZEN; signals/weights never modified)",
+    "regime_source_primary": "unified_regime_signal_daily.parquet Category 5-state (RISK_ON/CAUTION/NEUTRAL/RISK_OFF/CRISIS), frozen classifier, prior month-end label shifted 1 month (t-1 lag)",
+    "regime_source_crosscheck": "regime_jump_daily.parquet SJM JM_State_lag (bull=0/bear=1, already daily t-1 lagged) + additional month shift",
+    "overlay_mechanism": "book-level exposure scalar e(regime) in [0,1] on module monthly net return; (1-e)=cash earning 0 (conservative); 15bps one-way regime-transition turnover. = measurement-graduation §6 beta/regime-timing overlay.",
+    "rule_derivation": "IS-only (first 60% chronological, 2005-03..2017-11). de-risk regime = lowest IS Sharpe (n>=6) = CAUTION (IS Sharpe -0.969). Exposure level e ALSO IS-selectable: CAUTION-off IS Sharpe e0.0=1.093 > e0.5=1.006 -> IS picks e=0.0 without viewing OOS (Codex HIGH#1 resolved).",
+    "measurement": "build_bt_result (monthly, annualization_factor=12, PerformanceAnalytics standard fns) -> audit_bt_result (16 checks, integrity=WARNING from empty-holdings WARNs, 0 FAIL) -> essence_score. No prod/cumprod self-synthesis; net = e*ret - known transition cost; NAV = cumprod(net) value path.",
+    "pit": "regime t-1 lag (LOCF roll then shift); IS-only rule+exposure; module frozen; forward OOS. Codex pit_leak_found=false."
+  },
+  "results_essence": {
+    "baseline_frozen_valearn": {"grade":"F","net_SR":0.713,"PORT_t":0.874,"oos_retention":-0.517,"MDD":0.456,"Calmar":0.323,"CAGR":0.147},
+    "best_IS_clean_variant_cat_CAUTION_e0.0": {"grade":"C","net_SR":0.881,"PORT_t":1.369,"oos_retention":-0.372,"MDD":0.344,"Calmar":0.516,"CAGR":0.177},
+    "CRISIS_off_e0.0_AX001": {"grade":"F","net_SR":0.569,"PORT_t":-0.113,"oos_retention":-1.221,"MDD":0.457,"note":"CRISIS de-risk HURTS — valearn is crisis-rebound, not defensive"},
+    "sjm_bear_off_e0.0": {"grade":"F","net_SR":0.719,"oos_retention":-1.582,"note":"independent regime def confirms bear de-risk hurts"}
+  },
+  "robustness": {
+    "is_only_exposure_protocol": "e=0.0 selected by IS Sharpe alone (1.093>1.006); forward OOS net_SR 0.590 vs baseline 0.466, MDD 34.4% vs 45.6% — NOT OOS-cherry-picked.",
+    "placebo_per_regime": "Of all 5 single-regime de-risks, only CAUTION improves OOS_retention vs baseline (-0.372 > RISK_OFF -0.694 > NEUTRAL -1.157 > CRISIS -1.221 > RISK_ON NA). CAUTION worst in BOTH IS and OOS -> economic persistence, not luck.",
+    "leave_one_crash_out": "Removing BOTH 2008 and 2020 crash windows, overlay still beats baseline net_SR 0.850 vs 0.810 (MDD identical 30.1%) -> CAUTION benefit NOT a 2-event artifact; persists modestly in non-crash periods.",
+    "risk_on_throttle": "RISK_ON e0.5 -> OOS_retention -1.423 (much worse): RISK_ON is BOTH the OOS-alpha-decay regime AND the bulk-carry regime; exposure scaling cannot time it. RISK_ON would be an IS-violating choice (IS Sharpe 1.08)."
+  },
+  "mechanism": "valearn is a counter-cyclical value module: best in CRISIS (full +7.4%/mo, OOS active +2.26%/mo Sharpe 0.59), worst in CAUTION (-3.1%/mo). The -45.6% MDD bottoms occur 2020-03 / 2008-10 whose t-1 regime label is CAUTION (classifier flags CRISIS only the month AFTER the crash), so CRISIS de-risk fires post-crash and strips the rebound. The OOS active-alpha collapse is concentrated in the dominant RISK_ON state (n=81=79% of OOS, active -0.40%/mo) = earnings-rev OOS decay + market-beta drag — un-timeable by book-level exposure.",
+  "verdict": "RETENTION_LIMIT + PARTIAL_RISK_RESCUE",
+  "verdict_detail": {
+    "alpha_retention": "FAIL — overlay cannot lift OOS_retention positive (best IS-clean variant -0.372, far below 0.5/0.7 gates). SR2.5 not demonstrated. The long-only translation break is cross-sectional selection failure in the dominant RISK_ON regime, NOT a timing problem.",
+    "risk_repair": "PARTIAL PASS — CAUTION-off (e0.0, IS-selected) eases MDD 45.6%->34.4% (-11.2pp), lifts net_SR 0.713->0.881, Calmar 0.323->0.516, grade F->C. leave-crash-out robust.",
+    "project_factor_rotation_update": "Prior conclusion 'no orthogonal sleeve -> overlay worthless' is REFINED, not overturned: even WITH a genuine orthogonal alpha (valearn), regime overlay only trims the tail (MDD); it does NOT restore OOS alpha-retention. Orthogonal-sleeve existence is NOT a sufficient condition for overlay to make a sleeve OOS-robust. STR_1715's overlay success (OOS 0.91) came from a multi-factor consensus base whose alpha persists in normal regimes; valearn's single value+earnings-rev base decays in the dominant normal (RISK_ON) regime, which exposure timing cannot fix."
+  },
+  "codex_round": {
+    "stance": "APPROVE_CONDITIONAL",
+    "pit_leak_found": false,
+    "concerns_addressed": "HIGH#1 (e-selection) ACCEPT+IS-only re-derivation; HIGH#2 (wording) ACCEPT -> RETENTION_LIMIT+PARTIAL_RISK_RESCUE; MED#3 (n fragility) REBUTTAL via leave-crash-out; MED#4 (RISK_ON untested) REBUTTAL via diagnostic + IS-violation note; LOW#5 (cash=0) REBUTTAL conservative-against-overlay; MED#6 (LOCF PIT) REBUTTAL PIT-clean + ACCEPT untested-filter follow-up.",
+    "challenge_note": "qepm/mailbox/worktask/FR-valearn-overlay/challenge_note.md"
+  },
+  "follow_up": "Codex untested design (PIT-valid within-CAUTION crash-entry confirmation filter: index trend/realized vol/credit stress; RISK_ON quality/selection throttle) worth testing before any FINAL absolute LIMIT. Current LIMIT is scoped to *exposure-scaling* overlays.",
+  "governance": {
+    "governor": "HALTED. book_state.json NOT written. Measurement + diagnosis only. F/C grade + negative OOS_retention -> not registered as admitted FR. Real admission would require Q-Lead + Dohoon manual confirm (moot here given FAIL).",
+    "fr_registry": "NOT registered (best variant grade C, oos_retention negative -> would mislead as operational system; result JSON serves as diagnostic record).",
+    "constraints": "long-only, e in [0,1], 15bps transition cost, monthly rebalance, WT-id unused (FR track outside WorkTask lifecycle)."
+  },
+  "artifacts": {
+    "driver": "04_Research/factor_rotation/run_valearn_overlay.R",
+    "result_json": "04_Research/factor_rotation/output/valearn_overlay_result.json",
+    "baseline_bt": "04_Research/factor_rotation/output/valearn_baseline_bt_result.rds",
+    "best_overlay_bt": "04_Research/factor_rotation/output/valearn_best_overlay_bt_result.rds",
+    "charts": ["04_Research/factor_rotation/output/valearn_overlay_equity.png", "04_Research/factor_rotation/output/valearn_overlay_drawdown.png"],
+    "diagnostics": ["_diag_dd_regime.R", "_diag_placebo.R", "_diag_robust.R"]
+  }
+}

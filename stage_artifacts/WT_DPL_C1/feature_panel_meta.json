@@ -1,0 +1,23 @@
+{
+  "variant": "c1 — 90f baseline + residual-momentum (RESIDMOM lvl/slp) = 92f",
+  "n_feature_cols": 92,
+  "base_feature_cols": 90,
+  "added": [
+    "RESIDMOM__lvl (month-end residual-mom alpha z)",
+    "RESIDMOM__slp (backward 1-lag delta)"
+  ],
+  "residmom_source": "G:\\Quant_Module_Moltbot\\stage_artifacts\\WT_WT-D20260606_001\\alpha_scores.parquet",
+  "residmom_alpha_pkg": "qepm/mailbox/worktask/WT-D20260606_001/alpha_package.json",
+  "residmom_return_cor_vs_R05": -0.061,
+  "residmom_coverage_on_base_rows": 0.9879753340184995,
+  "panel_rows": 77840,
+  "n_months": 256,
+  "month_range": [
+    "2005-01",
+    "2026-04"
+  ],
+  "lockbox": "2023-12-22",
+  "pit_note": "residmom alpha_score = month-end signal (t-known, forward-1M predict, 기존 90f 동일 semantics). __slp = backward diff(past-only). label(Ret_1m forward) = base panel 것 유지. merge=ym inner. R dpl_c1_pit_audit forward-recompute + bear_date PASS 의무.",
+  "baseline_ref": "stage_artifacts/WT_DPL_GPU_SWEEP/ (90f, apples-to-apples)",
+  "out_panel": "G:\\Quant_Module_Moltbot\\stage_artifacts\\WT_DPL_C1\\dpl_feature_panel.parquet"
+}

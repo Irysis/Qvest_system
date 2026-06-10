@@ -1,0 +1,55 @@
+{
+  "role": "dispatch-orchestrator",
+  "mode": "factor_rotation",
+  "track": "allocation",
+  "fr_candidate": "FR_VALEARN_OVERLAY",
+  "objective": "Apply a regime/bear de-risk overlay to the FROZEN valearn orthogonal-alpha module (STR_valearn_70_top25) to test whether regime/bear-conditional exposure scaling can rescue its collapsed OOS retention (-0.517 active-Sharpe ratio) and ease its 45.6% MDD, while preserving/improving net Sharpe. This re-examines the prior factor-rotation conclusion ('current 12-module pool has no orthogonal sleeve, so regime overlay is OOS-worthless') now that a genuine long-short Carhart4 t=4.11 orthogonal alpha (valearn) exists as a module.",
+  "module": {
+    "id": "STR_valearn_70_top25",
+    "path": "04_Research/strategies/STR_valearn_70_top25/sim_result.rds",
+    "granularity": "monthly (256 month-end obs, 2005-03..2026-06)",
+    "frozen": true,
+    "baseline_long_only_top25": {
+      "construction": "value(BM) + earnings-revision sleeve hierarchical 0.7/0.3, long-only top25 (avg_N 23.5)",
+      "full_period_monthly_SR": 0.713,
+      "MDD": 0.456,
+      "oos_retention_active_sharpe": -0.517,
+      "essence_grade": "F",
+      "underlying_alpha": "long-short Carhart4 t=4.11 (orthogonal); long-only translation breaks via market-beta + earnings-rev OOS decay"
+    }
+  },
+  "design": {
+    "regime_source": "unified_regime_signal_daily.parquet Category (5-state RISK_ON/CAUTION/NEUTRAL/RISK_OFF/CRISIS), FROZEN classifier",
+    "secondary_regime_source": "regime_jump_daily.parquet JM_State_lag (SJM bull/bear binary, already t-1 lagged) — cross-check",
+    "pit": "regime label taken at PRIOR month-end then lagged 1 (shift) so this-month exposure uses only info available at decision time. No look-ahead.",
+    "overlay_mechanism": "exposure scalar e(regime) in [0,1] applied to valearn monthly net return; (1-e) held in cash earning 0 (conservative, no cash-yield assumption); regime-transition turnover charged 15bps one-way. Module signals NEVER modified (frozen) — only book-level exposure scaled. This is the measurement-graduation §6 'beta/regime timing overlay = SR2.5 prime lever' mechanism.",
+    "rule_derivation": "IS-ONLY. Over IS window (first 60% chronological), compute valearn monthly Sharpe by regime; de-risk regimes = lowest-Sharpe regimes (n>=6 floor). Also test CRISIS-specific de-risk (AX-001 crisis_alpha/MDD). Exposure grid e in {1.0 (=frozen baseline), 0.5, 0.0}. Selected rule applied FORWARD to OOS with PIT-lagged labels.",
+    "variants": [
+      "baseline_e1.0 (frozen valearn, no overlay)",
+      "derisk_<IS-lowest-Sharpe-regime>_e0.5 / e0.0",
+      "CRISIS_off_e0.5 / e0.0 (AX-001)",
+      "bear_off (SJM JM_State bear) e0.5 / e0.0 (cross-check on independent regime def)"
+    ]
+  },
+  "measurement": {
+    "contract": "build_bt_result (frequency=monthly, annualization_factor=12, PerformanceAnalytics standard fns only) -> audit_bt_result -> essence_score",
+    "no_self_synthesis": "overlay net series = e*module_ret - transition_cost (known-cost subtraction, NOT prod/cumprod/Sigma-w synthesis). Monthly NAV path = cumprod of monthly net (value path of net series, answer-principles compliant). Benchmark = module bm_xts (KOSPI200).",
+    "primary_judgment_metric": "oos_retention from essence_score (active-Sharpe OOS/IS, 65/35 chronological) — must move from -0.517 toward >=0.7 (STR_1715-style robustness)",
+    "secondary": ["net Sharpe", "MDD (45.6% -> ?)", "Calmar", "PORT_t NW lag-3", "essence grade"]
+  },
+  "verdict_logic": {
+    "overlay_rescues": "overlay raises valearn oos_retention from negative toward >=0.5 (ideally 0.7) AND eases MDD -> proves 'valearn orthogonal alpha + overlay = path to SR2.5' + updates project-factor-rotation-regime-study (overlay HAS value once a genuine orthogonal sleeve exists)",
+    "overlay_fails": "if overlay cannot lift oos_retention positive / cannot ease MDD materially -> honest report: KR long-only regime-overlay limit re-confirmed even with orthogonal alpha; the long-only translation break is in cross-sectional selection, not timeable by book-level regime exposure"
+  },
+  "governance": {
+    "governor": "HALTED. book_state.json NOT written. Measurement + diagnosis only. Real admission requires Q-Lead + Dohoon manual confirm.",
+    "frozen": ["valearn module signals/weights", "regime classifier (Category)", "SJM forecaster"],
+    "constraints": "long-only, exposure e in [0,1], 15bps transition cost, monthly rebalance, WT-id unused (FR track outside WorkTask lifecycle)"
+  },
+  "weakest_assumptions_self_flag": [
+    "IS-only rule derivation over a SINGLE module + small exposure grid still constitutes a (small) search -> overfitting risk; mitigated by (a) using frozen regime classifier not re-tuned, (b) testing on TWO independent regime defs (Category + SJM), (c) reporting baseline e1.0 alongside so 'no-overlay' is always a visible counterfactual, (d) essence_score oos_retention is itself an OOS-honest 65/35 metric.",
+    "cash=0 understates de-risk benefit (real cash yields ~RF) -> conservative, biases AGAINST overlay helping -> honest.",
+    "5-state Category regimes thin in CRISIS/RISK_OFF (small n) -> CRISIS de-risk rule may be sample-fragile; cross-check with SJM bear which has different sampling.",
+    "monthly granularity means regime timing is coarse (month-end labels); intra-month crashes (e.g. COVID Mar-2020) only partially captured."
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "bootstrap_ci": {
+    "cov_contribution_annualized": [-0.0149, -0.0044, 0.0056],
+    "beta_down_R05": [-0.5314, 0.0675, 0.713],
+    "full_correlation": [-0.2126, -0.0628, 0.0772],
+    "joint_left_tail_TDC": [0.0562, 0.1498, 0.2434],
+    "prob_cov_negative": 0.8065,
+    "prob_fullcor_negative": 0.8065,
+    "B": 2000
+  },
+  "cov_sensitivity": {
+    "full_annualized": -0.0044,
+    "downside_only_annualized": 0.0014,
+    "n_downside": 82
+  },
+  "residual_offdiagonal": {
+    "mean": -0.0127,
+    "abs_mean": 0.1146,
+    "max": 0.999,
+    "n_pairs_gt_0.3": 81,
+    "n_pairs_total": 1225
+  },
+  "single_month_stress": {
+    "worst_sleeve_1m": -0.2681,
+    "worst_sleeve_1m_ym": "2008-09",
+    "worst_r05_1m": -0.1512,
+    "brexit_2016_sleeve_cum": -0.0241
+  },
+  "tstat_reconciliation": {
+    "risk_forward_bm_t": 2.06,
+    "risk_forward_bm_IR": 0.469,
+    "contemporaneous_bm_t": 1.583,
+    "contemporaneous_bm_IR": 0.238,
+    "alpha_reported_t": 1.461,
+    "alpha_reported_IR": 0.219,
+    "root_cause": "alpha aligned benchmark to SCORE-month (backward), risk aligned to FORWARD realized month. Contemporaneous-BM reproduces alpha (1.58 vs 1.46, residual = liq/winsorize minutiae). Forward-BM alignment (risk, 2.06) is methodologically MORE correct (forward port return vs forward market). BOTH < 2.95 -> standalone FAIL unchanged."
+  }
+}

@@ -1,0 +1,191 @@
+{
+  "task_id": "WT-D20260606_001",
+  "agent": "forge_integration_v6.1_pure_function",
+  "agent_version": "v1.0",
+  "as_of_date": "2026-06-06",
+  "wt_type": "discovery",
+  "method": "weights.csv_as_is_share_based_sleeve_NAV + Return.portfolio 2-leg book (0.85 R05 frozen + 0.15 residual-mom EW top-20), monthly grid, 15bps round-trip on sleeve rebalance",
+  "measurement_basis_primary": "forge_realized_share_based",
+
+  "pure_function_attestation": {
+    "weights_csv_as_is": true,
+    "alpha_scores_topN_reselection": false,
+    "target_weights_modified": false,
+    "covariance_modified": false,
+    "alpha_vector_modified": false,
+    "R05_leg_frozen": true,
+    "portfolio_return_construction": "R PerformanceAnalytics::Return.portfolio (sleeve daily share-drift -> monthly; book 2-asset monthly rebalance). NO prod/cumprod/sum hand-synthesis (measurement-graduation §1 / answer-principles).",
+    "schedule_fidelity_note": "weights.csv 269 monthly as_of_dates used directly. No fabricated schedule. ProductionSchedule[N]m label NOT used."
+  },
+
+  "hash_audit_pass": true,
+  "hash_audit": {
+    "alpha_start": "8bc23f00af12a4d26eb2667a74131fa1",
+    "risk_start": "4856be6add50c65dd6768a305c685658",
+    "opt_start": "0f070c0affdb8b70d2d8d8f56e0cfbba",
+    "alpha_end": "8bc23f00af12a4d26eb2667a74131fa1",
+    "risk_end": "4856be6add50c65dd6768a305c685658",
+    "opt_end": "0f070c0affdb8b70d2d8d8f56e0cfbba",
+    "all_pass": true
+  },
+
+  "schedule_fidelity": {
+    "weights_csv_unique_dates_count": 269,
+    "alpha_sig_dates_count": 269,
+    "schedule_density_ratio": 1.0,
+    "schedule_density_pass": true,
+    "book_overlap_months_with_R05": 268,
+    "panel_period": ["2004-02", "2026-05"]
+  },
+
+  "sr_realized_share_based": 1.6831,
+  "sr_factor_engine_continuous": 1.701,
+  "sr_lockbox_daily_harness": null,
+  "divergence_factor_engine_vs_realized_pp": -0.0179,
+  "vs_factor_engine": {
+    "factor_engine_claimed_sr_is": 1.701,
+    "forge_v3_realized_sr_is": 1.6831,
+    "divergence_pp": -0.0179,
+    "diagnosis": "NEGLIGIBLE",
+    "note": "Optimizer design-stage expected_book_sr 1.701 (finalize.R Return.annualized/StdDev on a=0.15 book, n=268). Forge authoritative 1.6831 via the SAME Return.portfolio 2-leg construction but with TRUE share-based daily-within-month sleeve NAV (vs optimizer sum(w*Ret_1m) shortcut) + 15bps round-trip cost at rebalance. |div| 0.018 < 0.1 -> NEGLIGIBLE. No fabrication."
+  },
+
+  "authoritative_metrics_book_a0.15_overlay_OFF": {
+    "metric_type": "backtested",
+    "n_months": 268,
+    "net_sharpe": 1.6831,
+    "cagr_net": 0.3545,
+    "vol_ann": 0.2106,
+    "mdd": 0.3506,
+    "calmar": 1.0112,
+    "information_ratio_vs_KOSPI200": 0.7848,
+    "portfolio_alpha_t_nw_lag3": 4.900,
+    "portfolio_alpha_t_pvalue": 9.6e-07,
+    "alpha_annualized_vs_BM": 0.2984,
+    "beta_vs_BM": 0.244,
+    "down_capture": -0.319,
+    "up_capture": 0.802,
+    "hit_ratio_vs_BM": 0.646,
+    "oos_retention_active_sr": 0.171,
+    "oos_retention_total_sr": 0.884,
+    "dsr": 1.0,
+    "dsr_n_trials": 9,
+    "dsr_sr_per_period": 0.4503,
+    "dsr_sr0_per_period": 0.0929,
+    "book_turnover_annual_round_trip": 1.056,
+    "sleeve_turnover_annual_round_trip": 7.04
+  },
+
+  "book_marginal_dIR_vs_R05": {
+    "incumbent_R05_ir_same_panel": 0.7254,
+    "book_a0.15_ir": 0.7848,
+    "delta_ir": 0.0593,
+    "admission_threshold": 0.05,
+    "meets_threshold": true,
+    "incumbent_R05_port_t_same_panel": 4.821,
+    "basis": "net active IR vs KOSPI200 TR (contemporaneous realized-month), NW lag-3, n=268. R05 leg frozen ret_net. Book = Return.portfolio(0.85 R05 + 0.15 sleeve), monthly rebal.",
+    "honest_caveat": "dIR +0.0593 > 0.05 (authoritative, ABOVE the marginal threshold; optimizer design EW estimate was +0.049 below). BUT risk RX-2 (cov_contribution 95%CI [-0.0149,+0.0056] straddles 0; downside cov flips +0.0014) means the in-sample positive dIR is statistically UNCERTAIN. Combined with standalone alpha FAIL (port-a t 1.46) and active-SR OOS collapse (oos_retention 0.171), this is a LOW-CONVICTION marginal admit, not a confident one."
+  },
+
+  "gate_assessment": {
+    "_note": "measurement-graduation §3 severity applied to forge-authoritative book values.",
+    "HARD": {
+      "portfolio_alpha_t_nw_2.95": {"value": 4.900, "pass": true},
+      "oos_retention_0.7": {"value_active": 0.171, "value_total": 0.884, "pass_active": false, "pass_total": true,
+        "honest": "Active-vs-BM SR retention 0.171 << 0.7 -> HARD FAIL on the active-Sharpe definition. CRITICAL: this is INHERITED from R05 itself (R05 active-SR retention 0.166), NOT introduced by the sleeve. Driver = KOSPI200 rallied 2024-26 (BM cum +grey curve), compressing realized active alpha OOS; the BOOK total-SR retention is healthy 0.884 (IS 1.614 -> OOS 1.428). Honest flag for judge: the active-alpha-vs-BM hurdle is failed by the incumbent book on this panel split, so it is not a discriminating gate for THIS sleeve's incremental value."},
+      "calmar_0.64": {"value": 1.0112, "pass": true},
+      "dsr_0.5_if_multiple_testing": {"value": 1.0, "n_trials": 9, "pass": true}
+    },
+    "ADVISORY": {
+      "net_ir_gt_0.2": {"value": 0.7848, "pass": true}
+    },
+    "honest_overall": "Book PASSES PORT_t (4.90 >> 2.95), Calmar (1.01 > 0.64), DSR (1.0), net_IR (0.78). FAILS active-SR oos_retention (0.171 < 0.7) — but the failure is a property of the frozen incumbent R05 active-alpha decay vs a rallying KOSPI200, not of the residual-mom sleeve (book total-SR retention 0.884 is strong). The sleeve's OWN value-add is the marginal dIR +0.0593 (statistically uncertain per risk RX-2)."
+  },
+
+  "overlay_ON_reference": {
+    "method": "regime de-risk: crisis months (MSM/combined_regime signal>=0.6, t-1 lagged PIT C5) book exposure 0.30 else 1.0",
+    "net_sharpe": 1.6704,
+    "cagr_net": 0.2861,
+    "mdd": 0.2169,
+    "information_ratio": 0.5683,
+    "delta_ir_vs_R05": -0.1571,
+    "crisis_months": 57,
+    "verdict": "MDD cut 35.1% -> 21.7% but SR flat (1.683 -> 1.670) and active IR HURT (-0.157). Confirms optimizer: overlay = MDD control only, NOT an SR/IR lever. Apply ONLY if drawdown-priority mandate. IR-optimal deliverable = overlay OFF."
+  },
+
+  "vs_optimizer_design_stage": {
+    "opt_design_book_sr": 1.701,
+    "forge_book_sr": 1.6831,
+    "sr_divergence_pp": -0.0179,
+    "opt_design_dIR_EW": 0.049,
+    "forge_dIR": 0.0593,
+    "opt_design_r05_ir": 0.661,
+    "forge_r05_ir": 0.7254,
+    "reconciliation": "Book SR matches within 0.018pp (NEGLIGIBLE). dIR slightly higher in forge (+0.059 vs +0.049) and R05 IR higher (0.725 vs 0.661) because forge uses CONTEMPORANEOUS realized-month KOSPI200 alignment, while optimizer finalize.R used a one-month-FORWARD-shifted BM (shift(bm_ret,lead)) joined to R05's realized return — a benchmark misalignment (same family as risk RF-R6). Forge alignment (R05 ret_net month Y vs KOSPI200 realized month Y) is PIT-correct; R05 beta consequently 0.108 (vs opt -0.054) and book beta 0.244 (vs opt 0.107). Economic conclusion UNCHANGED: marginal diversifier, no SR-2.5 lever."
+  },
+
+  "constraint_compliance": {
+    "max_names_per_date": 20,
+    "max_names_cap": 25,
+    "long_only": true,
+    "weight_bounds_sleeve": [0.0, 0.05],
+    "weight_bounds_cap": [0.0, 0.20],
+    "sum_weights_sleeve": 1.0,
+    "book_turnover_annual_rt": 1.056,
+    "turnover_cap_p6": 11.0,
+    "turnover_pass": true,
+    "cost_model_version": "v2.3_kr_retail_15bps",
+    "all_hard_pass": true
+  },
+
+  "pit_compliance": {
+    "forward_alignment": "PASS — score t-1 close -> realized t..t+1 (Jegadeesh-Titman); R05 ret_net realized-month aligned to KOSPI200 realized-month (contemporaneous, PIT-correct).",
+    "C5_overlay_lag": "PASS — overlay signal t-1 lagged (MSM_Crisis_Prob_lag, combined_regime).",
+    "C15_caveat_inherited": "alpha read factor_db parquet directly (not load_month_factors) — alpha graduation precondition. Forge measurement is via contract path on byte-identical Z_Score cache; does not affect forge book NAV. Disclosed per WT mandate.",
+    "lockbox_scope": "forge = operational stage -> SIGNAL_CUTOFF 폐기 (lockbox-scope.md). weights.csv extends to latest sig_date 2026-05-31; OOS measured beyond R05 train cutoff."
+  },
+
+  "audit_bt_result": {
+    "integrity_status": "WARNING",
+    "checks_pass": 14,
+    "checks_fail": 0,
+    "checks_warn": 2,
+    "warn_detail": "2 WARN are contract-path artifacts (c15_factor_db_load_path skip + lookahead_detector self_scan skip) — both expected for a 3-package integration measurement (not a factor_engine run). No FAIL. No L249 frequency mislabel.",
+    "frequency_mislabel_detected": false
+  },
+
+  "output_paths": {
+    "bt_result_10component": "qepm/mailbox/worktask/WT-D20260606_001/backtest_result/output_a015",
+    "run_all": "stage_artifacts/WT_D20260606_001/run_all.R",
+    "equity_curve": "stage_artifacts/WT_D20260606_001/output/equity_curve.png",
+    "annual_returns": "stage_artifacts/WT_D20260606_001/output/annual_returns.png",
+    "oos_zoom_chart": "stage_artifacts/WT_D20260606_001/output/oos_zoom_chart.png",
+    "regime_decomposition": "stage_artifacts/WT_D20260606_001/output/regime_decomposition.png"
+  },
+
+  "regime_decomposition": {
+    "Normal_months": {"n": 211, "book_sr": 1.654, "book_cagr": 0.3338},
+    "Crisis_overlay_months": {"n": 57, "book_sr": 1.420, "book_cagr": 0.4342},
+    "note": "Crisis-tagged months (overlay would de-risk) actually show HIGHER book CAGR (43.4%) — momentum-rebound months (e.g. COVID +53% sleeve per risk). This is WHY overlay ON hurts IR: it de-risks in months the book would have profited. Defensive value is limited."
+  },
+
+  "handoff_to_judge": {
+    "ready": true,
+    "ready_qualifier": "Authoritative bt_result built + audited (integrity WARNING, 0 FAIL). Gate values supplied for Judge Gate C (PORT_t 4.90 >= 2.95 PASS, net_IR 0.78 > 0.2 PASS). HONEST: marginal-admit diversifier with active-SR OOS-retention HARD-fail (inherited from R05), statistically-uncertain dIR (risk RX-2), standalone alpha FAIL (alpha t 1.46). NOT an SR-2.5 solution.",
+    "judge_focus": [
+      "Gate C: PORT_t 4.90 (book) PASS; but is the dIR +0.059 a real incremental edge given risk RX-2 CI straddles 0?",
+      "oos_retention active-SR 0.171 HARD-fail — is it disqualifying, given it is inherited from the frozen incumbent R05 (0.166) and book total-SR retention is 0.884?",
+      "DPL transition recommendation (optimizer + measurement-graduation §5) — sleeve+overlay has structural SR ceiling ~1.70."
+    ]
+  },
+
+  "honest_conclusion": "Authoritative book (0.85 R05 + 0.15 residual-mom EW, overlay OFF): net Sharpe 1.683, CAGR 35.4%, MDD 35.1%, Calmar 1.01, PORT_t 4.90, book-marginal dIR vs R05 +0.0593 (> 0.05 threshold). This CONFIRMS the optimizer design-stage (book SR ~1.70, dIR ~0.05-0.06) within rounding. The residual-mom sleeve IS a marginally-admissible diversifier (dIR clears 0.05) but: (1) the dIR is statistically uncertain (risk RX-2 95%CI straddles 0); (2) standalone alpha FAILED graduation (port-a t 1.46 < 2.95); (3) active-vs-BM oos_retention 0.171 HARD-fails (inherited from R05, not the sleeve). The SR-2.5 target is NOT reached (book 1.68 vs 2.5). Overlay ON gives MDD control (35%->22%) but NO SR lift and HURTS active IR (-0.157). Recommendation aligns with optimizer: marginal diversifier admit is LOW-CONVICTION; the real lever is DPL (measurement-graduation §5), not more sleeve/overlay stacking.",
+
+  "references": [
+    "Harvey-Liu-Zhu 2016 (t>=2.95 hurdle)",
+    "Bailey-Lopez de Prado 2014 (DSR/PSR)",
+    "Jegadeesh-Titman 1993 (forward-month alignment)",
+    "DeMiguel-Garlappi-Uppal 2009 (1/N)",
+    "Blitz-Huij-Martens 2011 (residual momentum)"
+  ]
+}

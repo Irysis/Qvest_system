@@ -1,0 +1,101 @@
+{
+  "agent_id": "codex_qepm_critic",
+  "role": "risk_critic",
+  "model": "gpt-5.5",
+  "timestamp": "2026-06-06T00:00:00+09:00",
+  "task_id": "WT-D20260606_001",
+  "stance": "REVISE",
+  "stance_rationale": "The package has enough evidence to call the sleeve a low/negative-covariance diversifier input, but not enough to use stronger language such as hedge, defensive, or no crash clustering. Final revision is needed because RF code mapping, RF-R2 threshold handling, CVaR/stress treatment, and AX-002 benchmark alignment are not clean.",
+  "sigma_audit": {
+    "method_selected": "structural_BOmegaB_plus_D with Omega=Ledoit-Wolf",
+    "cond_post_shrink": 86.2,
+    "cond_sample": 239.9,
+    "cond_lw_direct": 1.0,
+    "pd_verified": true,
+    "min_eigenvalue": 0.0005,
+    "shrinkage_intensity": null,
+    "factor_coverage_r2": 0.972,
+    "method_shopping_count": 3,
+    "rf_r1_flag": true,
+    "rf_r2_flag": false
+  },
+  "regime_sigma_audit": {
+    "regime_n": {"BULL": null, "NORMAL": null, "CAUTION": null, "CRISIS": null},
+    "crisis_fallback_method": "not_provided",
+    "rf_r8_flag": true,
+    "regime_switch_rate_estimated": null,
+    "regime_switch_rate_realized": null,
+    "comment": "No regime-conditional Sigma was delivered. Crisis co-risk samples are thin: GFC n=18, Euro n=6, COVID n=6, Rate n=12, with no bootstrap CI."
+  },
+  "tail_risk_audit": {
+    "cvar_95": 0.1699,
+    "cvar_cap": 0.025,
+    "cvar_breach": true,
+    "hill_alpha": 3.1665,
+    "rf_r6_flag": false,
+    "stress_8_pass": false,
+    "worst_stress_period": "GFC_2008 window-cumulative",
+    "worst_stress_loss": -0.427
+  },
+  "crowding_audit": {
+    "tdc_vs_pg2": 0.1311,
+    "hhi": 0.185,
+    "rf_r3_flag": false,
+    "family_saturation_check": "Crowding scores are LOW: ResidMom 0.213 and CR07 0.128; style correlation vs R05 is -0.0623, below RF-R5. This is a current-snapshot crowding check, not a full L-219-style family saturation proof."
+  },
+  "pit_c1_c15_audit": [
+    {"check": "C10", "status": "PASS", "evidence": "risk_build.R uses adv20 = frollmean(shift(dvol,1L), 20L)."},
+    {"check": "C12", "status": "PASS", "evidence": "Sigma factor returns are estimated from daily returns with Date <= as_of_date."},
+    {"check": "C2/C12 alignment", "status": "FAIL", "evidence": "Same holdings/turnover produce risk port-alpha t=2.06 vs alpha t=1.461; benchmark/forward-return alignment remains unreconciled."}
+  ],
+  "ax_axiom_compliance": {
+    "ax_001_v2_conditional_metric": "PASS",
+    "ax_002_process_honesty": "FAIL"
+  },
+  "critical_concerns": [
+    {"id": "C1", "severity": "HIGH", "description": "Weakest Sigma assumption: BOmegaB'+D treats residual covariance as diagonal while factor_share=97.2% and MKT contributes 96.4%; this may be a market-factor collapse, not robust covariance discovery.", "ax_cite": "RF-R1|RF-R2"},
+    {"id": "C2", "severity": "HIGH", "description": "Diversifier conclusion is only narrow: cov_contribution_annualized=-0.0044 and full_cor=-0.0623 help, but beta_down_R05=+0.0821, sleeve vol=30.1% vs R05 23.7%, and GFC=-42.7% mean it is not a hedge or defensive sleeve.", "ax_cite": "AX-001|RF-R4"},
+    {"id": "C3", "severity": "HIGH", "description": "Canonical screen discrepancy is an AX-002 concern until reconciled: turnover matches 7.05/7.06, so holdings are identical, but t-stat and IR diverge materially.", "ax_cite": "AX-002"},
+    {"id": "C4", "severity": "MEDIUM", "description": "RF taxonomy is inconsistent: draft summary uses RF-R2_cond_gt_500 though prompt threshold is cond>100; RF-R6/R7/R8 labels are also applied to unrelated issues.", "ax_cite": "AX-002|RF-R2"},
+    {"id": "C5", "severity": "MEDIUM", "description": "Tail/stress handling is under-flagged: monthly CVaR95 loss is 17.0% vs default 2.5% cap, stress grid has 7 windows not 8, and GFC -42.7% is cumulative so it cannot be used as a formal single-period RF-R4 proof.", "ax_cite": "RF-R4|RF-R6"},
+    {"id": "C6", "severity": "MEDIUM", "description": "Joint-left-tail TDC=0.131 is supportive but proxy-level; no bootstrap CI is given and crisis-window n is below 30.", "ax_cite": "RF-R8"}
+  ],
+  "supporting_arguments": [
+    "Selected structural Sigma is PSD with min eigenvalue 0.0005 and cond=86.2, under RF-R2 cond>100.",
+    "Co-risk evidence is directionally favorable: beta_vs_R05=-0.0794, cov_monthly=-0.0004, rolling36m_cor_mean=-0.0572.",
+    "Crowding is not the main blocker: scores 0.213 and 0.128 are LOW, and RF-R3 is not triggered.",
+    "Standalone alpha remains failed under both measurements: 1.461 and 2.06 are below the Harvey t>=2.95 hurdle."
+  ],
+  "unresolved_disputes": [
+    "Exact source of alpha vs risk canonical benchmark/return alignment divergence.",
+    "Whether BOmegaB'+D remains acceptable after residual-correlation and regime/downside covariance sensitivity checks.",
+    "Whether CVaR95 cap is waived for discovery; if not, an infeasibility/challenge note is required.",
+    "Correct hard constraint reminder: base context says max_names=20 hard, while risk draft handoff says max 25."
+  ],
+  "weakest_assumption": "The selected 252d MKT/SIZE/SECTOR BOmegaB'+D Sigma, with diagonal D and 96.4% MKT variance contribution, is assumed sufficient for optimizer risk despite raw sample cond=239.9 and no residual-correlation or crisis-regime sensitivity.",
+  "rebuttal_required": [
+    "Report Ledoit-Wolf shrinkage intensity and residual-correlation diagnostics for D.",
+    "Recompute co-risk uncertainty with bootstrap CI for cov contribution, beta_down, and TDC.",
+    "Reconcile risk t=2.06 vs alpha t=1.461 before retaining any risk-measured alpha metric.",
+    "Complete 8 stress windows, report max single-month loss, and separate cumulative stress from formal RF-R4.",
+    "Replace any hedge/defensive/no-crash wording with low-covariance diversifier only."
+  ],
+  "rationalization_red_flags": [
+    "GENUINE diversifier confirmed",
+    "NO crash clustering with R05",
+    "MKT dominance ... expected",
+    "well-conditioned, no escalation",
+    "RF-R2_cond_gt_500",
+    "conclusion unchanged either way"
+  ],
+  "verification_triangulation": {
+    "ax_008_status": "FAIL",
+    "agree_with_claude": false,
+    "additional_perspective": "Build script and artifacts reproduce the draft numbers, but they do not provide independent Forge/Architect triangulation or uncertainty bands for the central co-risk claim."
+  },
+  "risk_specific_questions": [
+    "What is the residual off-diagonal correlation left after the BOmegaB'+D fit, and does ignoring it change optimizer Sigma materially?",
+    "Does cov_contribution_annualized remain negative under sample Sigma, direct LW Sigma, and downside-only R05 months?",
+    "What are bootstrap confidence intervals for beta_down_R05=+0.0821 and joint-left-tail TDC=0.1311?"
+  ]
+}

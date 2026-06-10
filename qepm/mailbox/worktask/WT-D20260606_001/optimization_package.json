@@ -1,0 +1,221 @@
+{
+  "task_id": "WT-D20260606_001",
+  "wt_type": "discovery",
+  "agent": "optimizer-research",
+  "as_of_date": "2026-05-31",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "selection_objective": "net_ir",
+  "selection_objective_note": "Method/sizing selected on net-of-cost book-marginal ΔIR vs incumbent R05 (15bps deducted). R4-P3 enum compliant (net_ir; NOT raw sharpe). Overlay rejected on net_ir basis (active ΔIR negative).",
+  "metric_type_global": "design_stage_simulation (Return.portfolio 2-asset book; canonical_screen sleeve via build path; NW lag-3 active-IR; book-level CVaR/beta/turnover quantified). NOT forge-authoritative. All decision numbers labeled; no proxy hand-calc (measurement-graduation §1). Authoritative backtest = forge build_bt_result.",
+
+  "hypothesis_under_test": "직교 diversifier sleeve + 국면 overlay + uncertainty 사이징으로 단일-sleeve(R05) book SR을 2.5로 돌파.",
+  "honest_headline_verdict": "REJECT (central thesis not supported). β/regime overlay + uncertainty sizing does NOT meaningfully lift book SR/IR. Best achievable book SR ≈ 1.74 (incumbent R05 1.55; target 2.5) — gap NOT closed. The residual-mom sleeve IS a MARGINALLY-ADMISSIBLE diversifier (book ΔIR +0.049 EW / +0.052–0.060 sized, at a=0.15), but the SR-2.5 lever is NOT here. Recommend DPL transition (measurement-graduation §5).",
+
+  "target_weights": {
+    "A009150": 0.05, "A011070": 0.05, "A402340": 0.05, "A032820": 0.05, "A047040": 0.05,
+    "A131970": 0.05, "A005930": 0.05, "A000660": 0.05, "A006400": 0.05, "A010060": 0.05,
+    "A218410": 0.05, "A298040": 0.05, "A131290": 0.05, "A319660": 0.05, "A240810": 0.05,
+    "A222800": 0.05, "A032830": 0.05, "A034730": 0.05, "A066970": 0.05, "A032500": 0.05
+  },
+  "target_weights_note": "residual-mom SLEEVE-leg target weights at latest sig_date 2026-05-31 (top-20 EW, Σw=1, max 0.05, long-only). 20 names ≤ 25 cap. The sleeve is ONE leg of a multi-sleeve book; incumbent R05 leg is frozen book_state. Book allocation to this sleeve = 0.15 (book_construction).",
+
+  "active_weights_note": "Active weights are book-level: effective_book_weight per name = 0.15 * sleeve_weight * overlay_exposure (see weights.csv). At full exposure ~0.0075/name. Active vs benchmark = book - KOSPI200 TR.",
+
+  "book_construction": {
+    "structure": "multi_sleeve (AX-007 EXCLUSION #1)",
+    "incumbent_leg": "R05 (STR_1715_AR_on_M4_R05_overlay_PG2, book_state 100%) — FROZEN, not re-weighted",
+    "new_leg": "residual-mom sleeve (alpha_package M08+M14), top-20 EW",
+    "book_allocation_to_sleeve": 0.15,
+    "book_allocation_alternatives": {"a_0.15_selected": {"dIR_EW": 0.049, "book_cvar95_m": -0.0953, "worst_month": -0.1338}, "a_0.20_defensible": {"dIR_EW": 0.067, "book_cvar95_m": -0.0913, "worst_month": -0.1417}},
+    "book_allocation_rationale": "a=0.15 = conservative default. HONEST (Codex C4): a=0.20 is also defensible (higher ΔIR +0.067, marginally better book CVaR95). The ONLY metric favoring 0.15 is worst-month tail (-13.4% vs -14.2%, momentum-crash leak per RF-R4) + statistical uncertainty of the benefit (risk RX-2: ΔIR 95%CI straddles 0). Difference is small; a∈[0.15,0.20] handed to forge/governor. DeMiguel 2009 1/N caution applied."
+  },
+
+  "method_selected": "STATIC_MULTISLEEVE_EW_a0.15 (overlay OFF for IR-optimal deliverable; functional regime de-risk overlay schedule provided in weights.csv for MDD-priority mandate only)",
+
+  "method_comparison": {
+    "_basis": "design_stage. book net_IR = active vs KOSPI200 TR forward-month, NW lag-3, n=267. ΔIR = book_IR - R05 incumbent IR 0.661. Turnover = annual round-trip (one-way×12×2).",
+    "incumbent_R05_baseline": {"book_sr": 1.549, "active_ir": 0.661, "active_t_nw": 4.02, "mdd": 0.344, "beta_bm": -0.054, "cvar95_m": -0.1110, "note": "incumbent book, already M4 regime-overlaid"},
+
+    "sleeve_internal_scheme_book_level": {
+      "_note": "book net_IR at a=0.15 per internal weighting of the 20-name sleeve leg (Codex C6 — book-level, NOT standalone SR).",
+      "EW":  {"book_net_ir": 0.710, "dIR": 0.049, "sleeve_turnover_rt": 14.08, "selected": true,  "reason": "lowest turnover + 1/N OOS robustness (DeMiguel 2009); IR edge of sizing is marginal & noisy for weak 20-name alpha"},
+      "MVO": {"book_net_ir": 0.721, "dIR": 0.060, "sleeve_turnover_rt": 20.65, "selected": false, "reason": "highest book IR but +47% sleeve turnover; gain (+0.011 IR) within noise"},
+      "HRP": {"book_net_ir": 0.712, "dIR": 0.052, "sleeve_turnover_rt": 18.27, "selected": false},
+      "ERC": {"book_net_ir": 0.718, "dIR": 0.057, "sleeve_turnover_rt": 15.56, "selected": false, "reason": "best IR/turnover balance among SIZED schemes — legitimate alt to EW"}
+    },
+    "ew_not_ir_dominant_honest_note": "EW does NOT dominate on IR — MVO/HRP/ERC are +0.003 to +0.011 higher and clear 0.05 while EW (+0.049) is just below. EW chosen for turnover + 1/N robustness; the sizing IR edge is marginal and unreliable OOS (Grinold breadth: alpha edge is in SELECTION not SIZING). forge may legitimately prefer ERC.",
+
+    "book_allocation_scan_EW": {
+      "a_0.05": {"book_sr": 1.589, "book_ir": 0.677, "dIR": 0.016, "mdd": 0.339},
+      "a_0.10": {"book_sr": 1.648, "book_ir": 0.693, "dIR": 0.032, "mdd": 0.342},
+      "a_0.15": {"book_sr": 1.701, "book_ir": 0.710, "dIR": 0.049, "mdd": 0.345, "cvar95_m": -0.0953, "worst_month": -0.1338, "beta_bm": 0.107, "selected": true},
+      "a_0.20": {"book_sr": 1.742, "book_ir": 0.728, "dIR": 0.067, "mdd": 0.356, "cvar95_m": -0.0913, "worst_month": -0.1417}
+    },
+
+    "overlay_comparison": {
+      "_note": "WT CORE QUESTION — does β/regime overlay + uncertainty sizing lift book SR/IR? Applied on a=0.15 book.",
+      "regime_derisk_best_SR": {"config": "thr0.6 exp_low0.5", "book_sr": 1.736, "mdd": 0.240, "verdict": "≈ static a0.15 (1.70); NO SR lift, vol/MDD cut only"},
+      "regime_derisk_active_IR": {"config": "thr0.6 exp_low0.3", "active_ir": 0.578, "dIR_vs_R05": -0.083, "mdd": 0.210, "verdict": "overlay HURTS active IR (forgoes alpha in benign months). Good for MDD, bad for IR."},
+      "uncertainty_sizing": {"k_0.0": {"book_sr": 1.638, "avg_a": 0.169}, "k_1.0": {"book_sr": 1.575, "avg_a": 0.049}, "k_2.0": {"book_sr": 1.551, "avg_a": 0.011}, "verdict": "μ̃=μ̂−k·SE haircut de-allocates the statistically-weak sleeve as k rises (→ R05). NO SR gain beyond small static allocation — confirms risk RX-2."},
+      "CONTROL_overlay_on_R05_alone": {"thr0.6_exp0.0": 1.475, "thr0.6_exp0.3": 1.571, "thr0.7_exp0.0": 1.461, "thr0.7_exp0.3": 1.550, "base": 1.549, "verdict": "DECISIVE: same overlay on R05 ALONE gives SR 1.46–1.57 ≈ no lift. Overlay machinery has NO incremental alpha because R05 is ALREADY M4 regime-overlaid + book beta ≈0.1 (nothing to de-beta). measurement-graduation §5 'overlay=SR2.5 lever' NOT supported here."}
+    },
+
+    "candidates_tried": 9,
+    "method_log": [
+      {"name": "static_multisleeve_EW_a0.05", "net_dIR": 0.016, "selected": false},
+      {"name": "static_multisleeve_EW_a0.10", "net_dIR": 0.032, "selected": false},
+      {"name": "static_multisleeve_EW_a0.15", "net_dIR": 0.049, "selected": true},
+      {"name": "static_multisleeve_EW_a0.20", "net_dIR": 0.067, "selected": false, "reason": "worst-month tail + uncertainty (a=0.20 otherwise defensible)"},
+      {"name": "sleeve_internal_MVO_a0.15", "net_dIR": 0.060, "selected": false, "reason": "turnover 20.6 >> EW; IR gain within noise"},
+      {"name": "sleeve_internal_HRP_a0.15", "net_dIR": 0.052, "selected": false},
+      {"name": "sleeve_internal_ERC_a0.15", "net_dIR": 0.057, "selected": false, "reason": "legit alt; turnover 15.6 > EW"},
+      {"name": "overlay_regime_derisk", "net_dIR": -0.083, "selected": false, "reason": "hurts IR (MDD-only benefit)"},
+      {"name": "overlay_uncertainty_sizing", "net_dIR": "≤+0.02 vs static", "selected": false, "reason": "no lift; converges to R05 as k rises"}
+    ],
+    "parallel_exec": false
+  },
+
+  "book_marginal_dIR": {
+    "incumbent_ir": 0.661,
+    "selected_book_ir_EW_a0.15": 0.710,
+    "delta_ir_EW_a0.15": 0.049,
+    "delta_ir_range_across_schemes_a0.15": [0.049, 0.060],
+    "admission_threshold": 0.05,
+    "meets_threshold": "borderline (EW 0.049 below; MVO/HRP/ERC 0.052–0.060 above; a=0.20 EW 0.067 above)",
+    "meets_threshold_note": "The diversifier is at/just-above the 0.05 book-marginal admission threshold (measurement-graduation §4) for sized schemes and a≥0.20. Combined with standalone alpha FAIL (port-α t 1.46) and statistically-uncertain benefit (risk RX-2: 95%CI [-0.0149,+0.0056] straddles 0), HONEST status = MARGINALLY admissible, low-conviction. Not a confident admit; forge must confirm authoritatively.",
+    "basis": "net active-IR vs KOSPI200 TR forward-month, NW lag-3, n=267 overlap months, design-stage Return.portfolio."
+  },
+
+  "overlay_spec": {
+    "applied_to_ir_optimal_deliverable": false,
+    "rationale_for_off": "On net_ir basis overlay is NEGATIVE (ΔIR -0.083). CONTROL proves no SR lift on R05 alone. Book beta already ≈0.107 (near-neutral) so β-timing has nothing to act on. Silent application would degrade IR while looking like risk control.",
+    "functional_mdd_control_overlay": {
+      "signal": "max(MSM_Crisis_Prob_lag, combined_regime) from R05 series (both t-1 lagged — PIT C5 compliant)",
+      "rule": "if signal >= 0.60 -> total book exposure 0.30 (hold 0.70 cash), else 1.0",
+      "beta_target": "implicit ~0.3-0.7 book in crisis months; 1.0 otherwise",
+      "k_uncertainty": "reference k=1.0 de-allocates sleeve to avg 4.9% (not used in IR-optimal deliverable)",
+      "effect": "MDD 0.345 -> 0.210, book_sr ~1.70 (flat), active_IR -0.083. Use ONLY if mandate prioritizes drawdown over IR.",
+      "schedule_status": "FUNCTIONAL (Codex C5 fix): weights.csv overlay_exposure = 0.3 for 58 crisis months (1160 rows), 1.0 otherwise (4220 rows). Latest sig_date 2026-05-31 is currently in crisis state (exposure 0.3).",
+      "switch_cost_note": "regime switches incur de/re-risking cost; book-level small (15% sleeve). Not internalized in IR-optimal series (overlay OFF there). forge to cost if overlay applied."
+    }
+  },
+
+  "expected_active_return": 0.198,
+  "expected_tracking_error": 0.279,
+  "expected_information_ratio": 0.710,
+  "expected_book_sr": 1.701,
+  "expected_book_mdd": 0.345,
+  "book_beta_vs_benchmark": 0.107,
+  "book_beta_note": "book (a=0.15, overlay OFF) beta vs KOSPI200 = 0.107 (R05 -0.054, sleeve 1.018). Combined book near market-neutral — confirms β-overlay premise is moot (no beta to time). Codex C7.",
+  "book_cvar95_monthly": -0.0953,
+  "book_worst_month": -0.1338,
+
+  "turnover": {
+    "sleeve_leg_one_way_monthly_L1": 0.587,
+    "sleeve_leg_annual_round_trip": 14.08,
+    "book_level_annual_round_trip": 2.11,
+    "book_level_basis": "sleeve is 15% of book; R05 leg frozen (its turnover already costed in ret_net). book RT = 0.15 * 14.08 = 2.11.",
+    "rf_o13_check_portfolio_level": "2.11x < 6.0x (600%) -> PASS",
+    "p6_ceiling_check_portfolio_level": "2.11x < 11.0x -> PASS",
+    "honest_note": "Codex C2: the deployed BOOK turnover PASSES both ceilings. The 14.08x sleeve-leg figure breaches in isolation but is not the deployed portfolio. NO silent relaxation; units corrected."
+  },
+  "estimated_cost": 0.0032,
+  "estimated_cost_note": "BOOK incremental annual cost = book RT turnover 2.11 * 15bps = 0.0032 (Codex C8 unit reconciliation; prior draft 0.0021 was a mislabeled monthly figure). Sleeve-leg annual cost 0.0211 already deducted in sleeve_net.",
+
+  "covariance_used": {
+    "source": "direct Ledoit-Wolf (constant-correlation target), rebuilt per-month on each candidate universe (PSD, well-conditioned)",
+    "structural_sigma_status": "ADVISORY only per risk RX-1 (structural BΩB'+D diagonal-D VIOLATED: residual off-diag |cor| 0.115, 81/1225 pairs >0.30). Direct-LW used per risk handoff. Σ used only for MVO/HRP/ERC comparison; selected EW needs no Σ."
+  },
+
+  "binding_constraints": ["book_marginal_dIR borderline (EW 0.049 ≈ 0.05 threshold)"],
+  "infeasibility_report": null,
+  "infeasibility_note": "No infeasibility: all hard constraints satisfied (n_names 20≤25, w≤0.05≤0.20, Σw=1, long-only, book turnover 2.11<6.0/11.0, book CVaR -9.5% within book context). The borderline ΔIR is a marginal-admission flag for governor, NOT an infeasibility (no constraint relaxed). Codex C2 §8-clean confirmed at portfolio level.",
+
+  "constraint_compliance": {
+    "max_names": 20, "max_names_cap": 25, "ok": true,
+    "long_only": true,
+    "weight_bounds_realized": [0.0, 0.05], "bounds_cap": [0.0, 0.20], "ok_bounds": true,
+    "sum_weights": 1.0, "ok_sum": true,
+    "book_turnover_rt": 2.11, "turnover_ok": true,
+    "liquidity_floor_won": 50000000, "note_liq": "universe pre-filtered at alpha stage",
+    "cost_model": "v2.3_kr_retail_15bps"
+  },
+
+  "schedule_fidelity": {
+    "weights_csv_unique_dates": 269,
+    "alpha_sig_dates_count": 269,
+    "schedule_density_ratio": 1.0,
+    "threshold": 0.95,
+    "ok": true,
+    "as_of_date_column": true,
+    "method_selected_column": true,
+    "overlay_exposure_column": true,
+    "walk_forward_note": "full monthly time-series schedule (269 unique as_of_dates 2004-01..2026-05) — RF-O9 satisfied. Codex confirmed 269 dates, 20 names/date, Σw=1/date."
+  },
+
+  "red_flags": [
+    {"id": "RF-O-thesis", "severity": "CRITICAL", "note": "WT central thesis (overlay lifts SR to 2.5) REFUTED: overlay ΔIR -0.083; CONTROL no lift; book SR ceiling 1.74 << 2.5; book beta ≈0.1 (nothing to time). Codex agrees."},
+    {"id": "RF-O-dIR", "severity": "MEDIUM", "note": "book-marginal ΔIR borderline (EW 0.049, sized 0.052–0.060). Marginally admissible + statistically uncertain (RX-2) + standalone FAIL. Low conviction."},
+    {"id": "RF-O-turnover", "severity": "LOW", "note": "DOWNGRADED from draft HIGH (Codex C2): deployed BOOK turnover 2.11x PASSES RF-O13/P6. Sleeve-leg 14.08x noted for transparency only."},
+    {"id": "RF-O2", "severity": "LOW", "note": "net active return 0.198 >> cost*2 (0.0064) — passes; standalone sleeve alpha weak (t 1.46)."}
+  ],
+
+  "explanation": {
+    "top_overweights": ["A009150", "A005930 삼성전자", "A000660 SK하이닉스"],
+    "main_tradeoffs": [
+      "EW chosen over MVO/HRP/ERC: lowest turnover + 1/N robustness. HONEST: EW does not dominate on IR (sized schemes +0.003 to +0.011 higher); forge may prefer ERC.",
+      "Overlay OFF in IR-optimal deliverable: cuts MDD (34%→21%) but hurts active IR (-0.083) and adds no SR alpha (control-proven; book near-neutral β).",
+      "a=0.15 conservative default; a=0.20 also defensible (Codex C4) — boundary handed to forge/governor with full CVaR/worst-month numbers."
+    ]
+  },
+
+  "handoff_to_forge": {
+    "ready": true,
+    "ready_qualifier": "ready for forge MEASUREMENT (authoritative build_bt_result). NOT a governor-admit recommendation — ΔIR borderline + standalone FAIL.",
+    "deliverable": "multi-sleeve book = 0.85*R05(frozen) + 0.15*residual-mom-sleeve(EW top-20). weights.csv = sleeve-leg monthly schedule (as_of_date + method_selected + overlay_exposure columns). Optional regime de-risk overlay is FUNCTIONAL (58 crisis months at exp 0.3); apply ONLY if MDD-priority mandate.",
+    "deploy_cutoff": "open-ended — weights.csv extends to latest sig_date 2026-05-31; forge stage = lockbox폐기 (latest sig_date), measure OOS beyond R05 train cutoff per lockbox-scope.",
+    "forge_must_confirm": [
+      "authoritative book-marginal ΔIR via build_bt_result (design +0.049 EW / +0.052–0.060 sized to verify)",
+      "portfolio_alpha_t_nw_lag3 of the COMBINED book",
+      "book-level turnover round-trip (design 2.11)",
+      "book MDD with/without overlay (design 0.345 / 0.210)",
+      "book CVaR95 (design -9.5%) and beta (design 0.107)"
+    ],
+    "honest_flag": "Standalone sleeve FAILED graduation (port-α t 1.46). This is a MARGINAL multi-sleeve diversifier, NOT an SR-2.5 solution. forge/judge/governor should weigh the DPL transition recommendation."
+  },
+
+  "honest_conclusion": {
+    "does_overlay_lift_SR_toward_2.5": "NO — definitively refuted. Overlay (regime de-risk + uncertainty sizing) gives MDD control (34%→21%) but NO SR/IR lift. Three independent proofs: (1) overlay active ΔIR -0.083; (2) CONTROL — same overlay on R05 alone gives SR 1.46-1.57 ≈ base 1.549; (3) book beta ≈0.107 (near-neutral) so β-timing has no exposure to act on. R05 is already M4 regime-overlaid; a second overlay layer is redundant. measurement-graduation §5 'overlay = SR 2.5 main lever' is NOT supported on this incumbent.",
+    "diversifier_value": "Marginal: book SR 1.55→1.70 (+0.15), book ΔIR +0.049 (EW) to +0.060 (sized), at/just-above 0.05 threshold but statistically uncertain (RX-2). Real but small and low-conviction.",
+    "residual_mom_final_allocation": "SMALL — book allocation 0.15 (effective ~0.0075/name at full exposure), vol-aware per risk guidance. a=0.20 defensible.",
+    "schedule_fidelity": "1.0 (269/269 dates), RF-O9 satisfied, overlay schedule functional.",
+    "recommendation": "DPL TRANSITION (measurement-graduation §5). Incremental sleeve+overlay tuning has a STRUCTURAL ceiling (~SR 1.74, control-proven; book already near-neutral β). The SR-2.5 gap (+0.95) needs direct portfolio learning (features→weights end-to-end, net-SR objective) OR a structurally different lever — not more two-stage sleeve stacking. Do NOT spin wheels tuning overlay parameters. forge handoff prepared for the marginal diversifier; governor admit NOT recommended on borderline ΔIR + standalone FAIL."
+  },
+
+  "codex_critic_round": {
+    "stance": "REVISE",
+    "veto": false,
+    "agree_on_economic_conclusion": true,
+    "concerns_total": 8,
+    "disposition": {
+      "ACCEPT": ["C3", "C5", "C6", "C7", "C8"],
+      "PARTIAL": ["C2", "C4"],
+      "REBUTTAL": ["C1"]
+    },
+    "challenge_note": "qepm/mailbox/worktask/WT-D20260606_001/optimizer_challenge_note.md",
+    "critic_response": "qepm/mailbox/worktask/WT-D20260606_001/codex_critic_response_optimizer.json",
+    "material_changes": "C1 rebutted (JSON valid, re-verified). C2: turnover dispositioned at BOOK level (2.11x PASSES; sleeve-leg 14.08x note only) — RF-O-turnover downgraded HIGH→LOW, no infeasibility. C3/C6/C7: book CVaR95(-9.5%)/per-scheme net_IR/beta(0.107) quantified & added. C4: a=0.20 acknowledged defensible (self-serving boundary removed). C5: overlay schedule BUG FIXED (ym-join; 58 crisis months now real). C8: cost units reconciled (book 0.0032). Economic conclusion UNCHANGED & Codex-agreed.",
+    "escalation": "none required (no ≥5 HIGH after disposition; no AX/PIT hard FAIL; hard constraints + book turnover PASS)."
+  },
+
+  "references": [
+    "DeMiguel-Garlappi-Uppal 2009 (1/N OOS)",
+    "Blitz-Huij-Martens 2011 (residual momentum)",
+    "Jensen-Kelly-Malamud-Pedersen 2022 (cost-aware)",
+    "Liao-Ma-Neuhierl-Schilling 2025 RFS (uncertainty μ̃=μ̂−k·SE)",
+    "You-Zhang 2025 (DPL)",
+    "Grinold 1989 (breadth)",
+    "Newey-West 1987"
+  ]
+}

@@ -1,0 +1,199 @@
+{
+  "task_id": "WT-D20260606_001",
+  "agent": "risk-research",
+  "as_of_date": "2026-06-06",
+  "wt_type": "discovery",
+  "role_context": "residual-mom (CompResidMom M08+M14) sleeve co-risk vs incumbent R05 (STR_1715_AR_on_M4_R05_overlay_PG2, book_state 100%). Risk scope = Sigma + co-risk + tail + stress + crowding ONLY. NO alpha edit / NO weights / NO delta-IR (optimizer). Standalone FAILED at alpha stage (port-alpha t<2.95).",
+  "selection_objective": "shrinkage_quality",
+  "selection_objective_note": "Sigma estimator chosen on conditioning/PSD (estimation quality), NOT alpha return. R4-P3 enum compliant (no SR/IR/return basis).",
+  "metric_type_global": "canonical_screen (sleeve series) + structural_factor_model (Sigma). NOT forge-authoritative. All decision numbers labeled; no proxy hand-calc (measurement-graduation §1).",
+
+  "exposure_matrix_ref": "stage_artifacts/WT_D20260606_001/covariance.parquet",
+  "factor_covariance_ref": "stage_artifacts/WT_D20260606_001/covariance.parquet",
+  "specific_risk_ref": "stage_artifacts/WT_D20260606_001/covariance.parquet",
+  "security_covariance_ref": "stage_artifacts/WT_D20260606_001/covariance.parquet",
+  "corisk_R05_ref": "stage_artifacts/WT_D20260606_001/corisk_R05.json",
+  "tail_risk_ref": "stage_artifacts/WT_D20260606_001/tail_risk.json",
+  "regime_correlation_ref": "stage_artifacts/WT_D20260606_001/regime_correlation.parquet",
+  "revise_diagnostics_ref": "stage_artifacts/WT_D20260606_001/risk_revise.json",
+
+  "covariance_method": {
+    "structure": "Sigma = B Omega B' + D",
+    "B": "50 current alpha_vector names x {MKT (rolling 252d beta), SIZE (std log mktcap), SECTOR one-hot}.",
+    "Omega": "factor covariance via Ledoit-Wolf (2004) shrinkage.",
+    "D": "idiosyncratic residual variance per name, floored 1e-8.",
+    "estimator_rationale": "Structural model: cond 86.2 (< 100 critic rubric, < 500 init rubric) vs raw sample cond 239.9 (> 100). Direct Ledoit-Wolf Sigma also provided (cond 1.0, PSD) as the well-conditioned optimizer handoff.",
+    "DIAGONAL_D_CAVEAT": "C1(Codex)-verified: residual off-diagonal correlation is NON-trivial (abs-mean 0.115, 81/1225 pairs |cor|>0.30, max 0.999 = near-duplicate pair). Diagonal-D assumption is VIOLATED. Therefore structural Sigma is ADVISORY (factor attribution only). OPTIMIZER DIRECTED to use direct Ledoit-Wolf Sigma (cond 1.0, PSD) for weight optimization, OR add a residual-correlation block if factor attribution needed."
+  },
+
+  "method_shopping_log": {
+    "risk_agent": {
+      "candidates_tried": 3,
+      "method_log": [
+        {"name": "sample_cov", "condition_number": 239.9, "selected": false, "note": "noisy at p/n=0.20, cond>100"},
+        {"name": "ledoit_wolf_direct", "condition_number": 1.0, "selected": "handoff_for_optimizer", "note": "PSD, well-conditioned; RECOMMENDED for weight optimization"},
+        {"name": "structural_BOmegaB_plus_D (Omega=LW)", "condition_number": 86.2, "selected": "advisory_attribution", "note": "interpretable factor decomp; diagonal-D violated -> attribution only"}
+      ],
+      "parallel_exec": false
+    }
+  },
+
+  "diagnostics": {
+    "condition_number": 86.2,
+    "condition_number_critic_rubric_threshold": 100,
+    "condition_number_init_rubric_threshold": 500,
+    "condition_number_sample": 239.9,
+    "condition_number_ledoit_wolf_direct": 1.0,
+    "shrinkage_used": true,
+    "shrinkage_method": "ledoit_wolf (Ledoit-Wolf 2004, on Omega)",
+    "shrinkage_intensity_note": "hrp_core .get_cor_cov computes LW intensity internally per call; direct-LW handoff Sigma cond=1.0 indicates high shrinkage at p/n=0.20 (expected, noisy sample).",
+    "psd": true,
+    "min_eigenvalue": 0.0005,
+    "factor_variance_share": 0.972,
+    "specific_variance_share": 0.028,
+    "residual_offdiagonal_abs_mean": 0.115,
+    "residual_offdiagonal_pairs_gt_0.3": 81,
+    "residual_offdiagonal_pairs_total": 1225,
+    "n_universe": 50,
+    "n_days": 252,
+    "sector_hhi_top20": 0.185,
+    "n_effective_sectors_top20": 5.4
+  },
+
+  "risk_summary": {
+    "top_common_risks": ["MKT 96.4%", "SEC_Semiconductor 3.6%", "SEC_IT_appliance 0.9%", "SEC_IT_hardware 0.8%", "SEC_Machinery 0.7%"],
+    "top_common_risks_note": "Variance decomposition of EW-50 ref portfolio under structural Sigma. MKT 96.4% = single-KR-market 1st-eigenmode dominance shared by all long-only names (structural truth, [[reference-str1715-structure]]: no-short cannot remove the market mode). Honestly labeled a concentration the optimizer must handle, NOT 'expected/fine'. Sector concentration LOW (HHI 0.185, ~5.4 effective sectors).",
+
+    "corisk_vs_R05": {
+      "overlap_months": 267,
+      "full_correlation_point": -0.062,
+      "full_correlation_95ci": [-0.213, 0.077],
+      "beta_vs_R05_point": -0.079,
+      "beta_down_R05_point": 0.082,
+      "beta_down_R05_95ci": [-0.531, 0.713],
+      "cov_contribution_annualized_point": -0.0044,
+      "cov_contribution_annualized_95ci": [-0.0149, 0.0056],
+      "prob_cov_negative": 0.806,
+      "cov_contribution_downside_only": 0.0014,
+      "ann_vol_sleeve": 0.301,
+      "ann_vol_R05": 0.237,
+      "joint_left_tail_TDC_point": 0.131,
+      "joint_left_tail_TDC_95ci": [0.056, 0.243],
+      "rolling36m_cor_mean": -0.057,
+      "rolling36m_cor_range": [-0.457, 0.257],
+      "HONEST_INTERPRETATION": "Return-orthogonal IN THE MEAN (point cov -0.0044, ~81% bootstrap prob negative; full_cor -0.062). BUT: (1) cov_contribution 95% CI [-0.0149, +0.0056] STRADDLES ZERO -> diversification benefit is statistically UNCERTAIN, not confirmed. (2) cov flips POSITIVE (+0.0014) in R05-down months -> the (weak) benefit is concentrated in normal/up regimes; NOT a downside diversifier. (3) beta_down 95% CI [-0.53,+0.71] essentially unestimable -> NO hedge claim possible. (4) joint-left-tail TDC 0.13 [0.06,0.24] < 1 -> no evidence of crash clustering, but imprecise. NET: a weak return-orthogonal diversifier prior for the optimizer, NOT a hedge/defensive sleeve. Optimizer should treat the ΔIR benefit as a weak prior, not a fact.",
+      "optimizer_input_note": "cov_contribution_annualized + its CI + downside-only flip are the book-marginal ΔIR inputs. Risk does NOT compute ΔIR/weights."
+    },
+
+    "tail_risk": {
+      "evt_gpd_var99_daily": 0.0758,
+      "evt_gpd_es99_daily": 0.0995,
+      "evt_gpd_var95_daily": 0.0383,
+      "hill_alpha": 3.17,
+      "hill_alpha_note": "3.17 > 1.5 -> finite variance, RF-R6 not triggered. Heavier than Gaussian (momentum tail).",
+      "hist_var95_monthly": -0.109,
+      "hist_cvar95_monthly": -0.170,
+      "hist_cvar99_monthly": -0.246,
+      "cvar95_vs_book_cap_note": "Monthly CVaR95 -17.0% is the STANDALONE 20-name concentrated sleeve (30% ann vol), NOT a book CVaR. The 2.5% portfolio cap applies to the BOOK after optimizer sizing -> RX-3 sizing constraint handed to optimizer (risk sets no weights, so no infeasibility report at this stage).",
+      "evt_method": "EVT-GPD (POT, MLE) inline (fExtremes/evir absent in Windows-native env)."
+    },
+
+    "stress_tests": {
+      "market_down_5_sleeve_1m": -0.043,
+      "sleeve_beta_BM": 1.018,
+      "worst_single_month_sleeve": -0.268,
+      "worst_single_month_ym": "2008-09",
+      "worst_single_month_r05": -0.151,
+      "RF_R4_single_period_flag": true,
+      "windows_cumulative": {
+        "GFC_2008": {"sleeve_cum": -0.427, "r05_cum": -0.316, "n": 18, "reliable": true},
+        "Euro_2011": {"sleeve_cum": -0.108, "r05_cum": 0.162, "n": 6, "reliable": true},
+        "China_2015": {"sleeve_cum": -0.248, "r05_cum": 0.248, "n": 9, "reliable": true},
+        "Brexit_2016": {"sleeve_cum": -0.024, "n": 2, "reliable": false},
+        "USChina_2018": {"sleeve_cum": -0.174, "r05_cum": -0.182, "n": 10, "reliable": true},
+        "COVID_2020": {"sleeve_cum": 0.534, "r05_cum": 0.103, "n": 6, "reliable": true},
+        "RateHike_2022": {"sleeve_cum": -0.161, "r05_cum": -0.006, "n": 12, "reliable": true},
+        "Iran_2026": {"sleeve_cum": 0.111, "r05_cum": 0.518, "n": 3, "reliable": false}
+      },
+      "stress_note": "8 windows (Brexit added per Codex C5). Window values are CUMULATIVE (not single-period RF-R4). Formal RF-R4 = worst SINGLE MONTH -26.8% (2008-09) > 25% -> FLAGGED. KEY profile: momentum-crash exposure (GFC cum -42.7% > R05 -31.6%); and in Euro/China crises sleeve fell while R05 ROSE -> diversification is symmetric (can drag in R05 good periods). COVID +53% = momentum rebound. NOT defensive/crisis-alpha. Small-n windows (Brexit n=2, Iran n=3) labeled unreliable."
+    },
+
+    "crowding_flags": [],
+    "crowding_score_per_factor": [
+      {"factor_name": "ResidMom_M08_M14", "crowding_score": 0.213, "hhi_top": 0.333, "vol_concentration": 0.003, "passive_overlap_proxy": 0.45, "demand_elasticity_proxy": 0.0, "alert": "LOW"},
+      {"factor_name": "CR07_Momentum_Crowding", "crowding_score": 0.128, "hhi_top": 0.342, "vol_concentration": 0.003, "passive_overlap_proxy": 0.10, "demand_elasticity_proxy": 0.0, "alert": "LOW"}
+    ],
+    "crowding_note": "crowding_score_per_factor (Acadian 2026, research_philosophy P5). BOTH LOW (<<0.75). CR07 momentum-crowding 0.128 included per alpha handoff (alpha excluded CR07 as alpha source: bad-regime IC -0.041, port-alpha t -2.26, AX-001 v2 FAIL). Risk confirms CR07 crowding NOT elevated -> momentum exposure carries no current crowding-driven risk. Current-snapshot check, not full L-219-style family-saturation proof.",
+    "style_overlap_R05": "style cor vs R05 = -0.062 (well below RF-R5 0.7). residual-mom by construction strips market/size/industry loadings that drive R05 value/consensus correlation -> low style overlap.",
+
+    "liquidity_flags": []
+  },
+
+  "canonical_screen_integrity_check": {
+    "purpose": "independent risk-side reproduction of sleeve series for co-risk (NOT a graduation claim).",
+    "risk_forward_bm_t": 2.06, "risk_forward_bm_IR": 0.469, "risk_turnover_annual": 7.05,
+    "contemporaneous_bm_t": 1.583, "contemporaneous_bm_IR": 0.238,
+    "alpha_reported_t": 1.461, "alpha_reported_IR": 0.219, "alpha_turnover": 7.06,
+    "root_cause": "Turnover matches 7.05/7.06 => holdings IDENTICAL. Divergence is BENCHMARK ALIGNMENT: alpha used SCORE-month (backward) BM; risk used FORWARD realized-month BM. Contemporaneous-BM reproduces alpha (1.58 vs 1.46). Forward-BM (risk default, 2.06) is MORE PIT-correct (forward port return vs forward market, Jegadeesh-Titman convention). Filed as RF-R6 challenge to alpha. CONCLUSION INVARIANT: 1.46/1.58/2.06 ALL < 2.95 -> standalone FAIL.",
+    "ax_002_assessment": "NOT an AX-002 violation by risk (method documented, reproducible, more PIT-correct alignment, no lookahead). Legitimate cross-stage measurement difference -> R3 challenge.",
+    "metric_type": "canonical_screen (NOT forge-authoritative)"
+  },
+
+  "challenge_flags": [
+    {"id": "RF-R1", "severity": "HIGH", "note": "top_common_risk[0] MKT=96.4% > 40%. Single-KR-market 1st-eigenmode dominance (structural, no-short irremovable). Book-marginal risk = co-risk vs R05 (weak neg cov). Optimizer must manage market concentration."},
+    {"id": "RF-R4", "severity": "HIGH", "note": "Worst SINGLE MONTH sleeve -26.8% (2008-09) > 25% single-period threshold. Severe momentum-crash tail. Optimizer must size small / vol-target."},
+    {"id": "RF-R6", "severity": "MEDIUM", "note": "RISK->ALPHA challenge (R3): benchmark-alignment divergence (alpha backward-BM t=1.46 vs risk forward-BM t=2.06). Reconciled (root cause = BM alignment). Conclusion unchanged (<2.95)."},
+    {"id": "RX-1", "severity": "HIGH", "note": "DIAGONAL-D VIOLATED: residual off-diag |cor| abs-mean 0.115, 81/1225 pairs >0.30. Structural Sigma -> ADVISORY only. Optimizer use direct Ledoit-Wolf Sigma (cond 1.0, PSD)."},
+    {"id": "RX-2", "severity": "HIGH", "note": "DIVERSIFICATION STATISTICALLY UNCERTAIN: cov_contribution 95%CI [-0.0149,+0.0056] straddles 0; flips POSITIVE (+0.0014) in R05-down months. NOT a downside hedge. Optimizer treat ΔIR benefit as weak prior."},
+    {"id": "RX-3", "severity": "MEDIUM", "note": "Standalone sleeve monthly CVaR95 -17.0% >> 2.5% book cap. Cap is book-level post-sizing; handed to optimizer as sizing constraint (risk sets no weights)."},
+    {"id": "RX-4", "severity": "LOW", "note": "Crisis-window co-risk samples small (GFC n=18, Euro/COVID n=6) — no per-window CI (RF-R8 acknowledged). Crisis cors are directional context only."}
+  ],
+
+  "red_flag_summary": {
+    "RF-R1_top_risk_gt_40pct": true,
+    "RF-R2_cond_gt_500_init_rubric": false,
+    "RF-R2_cond_gt_100_critic_rubric": false,
+    "RF-R3_crowding": false,
+    "RF-R4_worst_single_month_gt_25pct": true,
+    "RF-R5_style_pair_cor_gt_07": false,
+    "RF-R6_hill_alpha_lt_15": false,
+    "RF-R9_psd_violation": false
+  },
+
+  "evaluation_self_check": {
+    "sigma_psd": true,
+    "condition_number_ok": "structural 86.2 < 100 (critic) & < 500 (init); direct-LW 1.0",
+    "factor_coverage": "factor_variance_share 0.972 (residual 2.8%) BUT diagonal-D violated (RX-1) -> attribution-grade only",
+    "stress_policy": "market_down_5 1m -4.3% > -10% PASS; worst single month -26.8% triggers RF-R4 (sizing constraint to optimizer)",
+    "uncertainty_bands": "bootstrap 95% CI provided for cov_contribution / full_cor / beta_down / TDC (B=2000)"
+  },
+
+  "handoff_to_optimizer": {
+    "covariance_for_optimization": "USE direct Ledoit-Wolf Sigma (cond 1.0, PSD). Structural Sigma is attribution-advisory only (diagonal-D violated). Both saved in stage_artifacts/WT_D20260606_001/covariance.parquet (structural); risk recommends optimizer rebuild direct-LW on its final candidate universe.",
+    "corisk_R05": "corisk_R05.json + risk_revise.json: cov_contribution -0.0044 [CI -0.0149,+0.0056], downside-only +0.0014, TDC 0.13 [0.06,0.24]. Treat diversification as WEAK PRIOR (CI straddles 0; no downside benefit).",
+    "sizing_guidance": "Sleeve is higher-vol leg (30.1% vs R05 23.7%) with -26.8% worst-month momentum-crash tail. Vol-aware / risk-parity-leaning + small allocation. CVaR book cap (2.5% monthly) binds via sizing.",
+    "constraints_reminder": "long-only, [0,0.20], Sigma_w=1, max 25 names (hook strict; base context legacy 20 noted but current mandate 2026-05-29 = 25), LIQ 2e8, 15bps. Optimizer enforces.",
+    "delta_IR_caveat": "book-marginal ΔIR is OPTIMIZER scope. Risk provides neg-cov structure (weak, uncertain). A POSITIVE ΔIR is PLAUSIBLE at conservative sizing but NOT guaranteed by risk evidence."
+  },
+
+  "codex_critic_round": {
+    "stance": "REVISE",
+    "veto": false,
+    "concerns_total": 6,
+    "disposition": {"ACCEPT": ["C1", "C4", "C5", "C6"], "PARTIAL": ["C2"], "REBUTTAL": ["C3_AX002_framing"]},
+    "challenge_note": "qepm/mailbox/worktask/WT-D20260606_001/risk_challenge_note.md",
+    "critic_response": "qepm/mailbox/worktask/WT-D20260606_001/codex_critic_response_risk.json",
+    "material_changes": "Codex REVISE materially WEAKENED draft confidence (correctly): diversification reframed from 'confirmed' to 'statistically uncertain weak prior'; downside-diversifier claim RETRACTED (cov flips +0.0014 when R05 down); diagonal-D violation surfaced (structural Sigma demoted to advisory, direct-LW recommended); RF-R4 single-month -26.8% surfaced; bootstrap CIs added; t-stat discrepancy reconciled (BM alignment, not AX-002).",
+    "rationalization_phrases_removed": 5
+  },
+
+  "pit_compliance": {
+    "C10_liquidity_t1": "PASS — adv20 = frollmean(shift(dvol,1L),20L)",
+    "C12_factor_return_pit": "PASS — Sigma factor returns from daily Ret, Date<=as_of",
+    "forward_return_alignment": "PASS — score month-end t -> realized t..t+1 (Jegadeesh-Titman), forward-BM aligned",
+    "C15_note": "Sigma built from RAWDATA daily returns (sanctioned for risk Sigma, not factor_db parquet). Inherits alpha's C15 caveat (alpha read factor_db directly) — graduation precondition is alpha rebuild via load_month_factors(); does NOT affect risk Sigma."
+  },
+
+  "lockbox_note": "risk-research = regular research stage -> SIGNAL_CUTOFF applied (alpha as_of 2026-05-31). Co-risk series PIT forward-aligned.",
+  "honest_assessment": "Sigma well-conditioned and PSD; direct-LW recommended for optimization (structural diagonal-D violated, RX-1). The CORE co-risk deliverable, after bootstrap, is: residual-mom is return-orthogonal to R05 IN THE MEAN (point cov -0.0044, ~81% prob negative) but the diversification benefit is STATISTICALLY UNCERTAIN (95% CI straddles zero) and ABSENT in R05-down months (downside cov +0.0014). It is a high-vol (30%), momentum-crash-exposed (-26.8% worst month) leg, NOT a hedge or defensive sleeve. A positive book-marginal ΔIR is plausible only at small, vol-aware sizing — that is the optimizer's call, and risk provides the (weak, uncertain) negative-cov + low-TDC structure that makes it possible but not certain. Standalone graduation already failed (t 1.46/1.58/2.06 all < 2.95). Crowding LOW for both residual-mom and CR07."
+}

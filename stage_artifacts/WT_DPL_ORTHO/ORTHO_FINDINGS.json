@@ -1,0 +1,87 @@
+{
+  "study": "DPL 직교-피처 추가 — 이번 cycle 직교 슬리브 사냥서 standalone OOS 붕괴한 알파(value BM / earnings-rev breadth / reversal)를 DPL 피처로 추가, net Sharpe 직접최적화가 비선형 결합으로 천장 올리는지 (measurement-graduation §5 검증)",
+  "scope": "findings-only. admission/book_state 변경 없음. canonical alpha_package handoff 없음. governor 정지(measurement만). DPL 한계 verdict 아닌 측정값 + direction-of-effect.",
+  "hypothesis": "§5: 실패한 standalone 알파 폐기 않고 DPL 입력 피처로. standalone long-only OOS 붕괴(시장베타에 가림)해도 DPL이 net Sharpe로 비선형 결합 → 90f baseline(DPL_C OOS α-t 2.906) 천장 상회 가능?",
+  "venv": "G:/Quant_Module_Moltbot/.venv_qvest_ml/Scripts/python.exe (python.org 3.12.10, torch 2.6.0+cu124, cvxpy 1.9.1, RTX 4080 SUPER). 구 /home/quant/.venvs/qvest_ml = WSL 잔재 무효.",
+  "lockbox": "2023-12-22 strict (regular research)",
+  "oos_window": "2010-01..2023-12 (168m, walk-forward refit/12m, MIN_TRAIN 60)",
+  "device": "cuda RTX 4080 SUPER",
+  "added_features": {
+    "_design": "기존 90f(30 factor×3 stat lvl/slp/vol) → 102f(34 factor). 직교 슬리브 사냥(project-orthogonal-sleeve-hunt) 발견을 피처로 배선.",
+    "V01_BM": "순수 book-to-market. 메모리: 유일 강(LS Carhart4 t3.28)+OOS-robust(+0.41) 직교 value축이나 STR_1715엔 부재. 기존 90f는 EV/earnings value(V02_EP/V12/V14)만 → 순수 B/M 부재였음. coverage 88~99%.",
+    "C13_Revision_Breadth_3m": "earnings-revision breadth. STR_1715 고SR 알파원(earnings-rev) 보강(기존 C01_SUE/C02 외). standalone OOS 붕괴(착시)이나 §5대로 피처. coverage ~99%.",
+    "M12_LR_Reversal": "장기 reversal (기존 M11 단기 reversal 보완). reversal LS OOS 유지(turnover↑). coverage 56~81%.",
+    "L35_Reversal_Intensity": "reversal intensity (liquidity 계열). coverage ~95%.",
+    "_excluded_sparse": "C19_Composite_Earnings/SE02_Consensus_Revision/M27_Analyst_Rev_Mom — KR analyst-consensus coverage 26~38% → 결측 z=0 noise 회피로 제외."
+  },
+  "pit_audit": {
+    "bear_date_audit": "4/4 PASS (Lehman/Euro/COVID/Stagflation forward-label semantics)",
+    "panel_forward_match": 1.0,
+    "panel_backward_match": 0.002,
+    "overall_pass": true,
+    "note": "102f 패널 독립 forward-label 재계산 PASS. Cycle50-style lookahead 없음. sweep 진입 허가됨."
+  },
+  "methodology": {
+    "loss_A_grid": "net-Sharpe loss (gross−cost − benchmark 미차감), 96-cell GPU 그리드 재탐색 (baseline 동일 그리드). honest n_trials=96.",
+    "loss_B_dplC": "active-alpha Sharpe loss (net − benchmark_monthly), cell37 HP (기존 OOS 최고 2.906 동조건 비교).",
+    "constraints": "long-only / top-25 universe 사전제약 / w∈[0,0.20] / Σw=1 / 15bps one-way / analytic capped-simplex projection (GPU-native, autograd-diff).",
+    "contract": "월별 net return series만 Python export → R build_benchmark_compare() 단일경로 (NW lag-3, metric_type=backtested). 자체합성 금지. 동일 168m OOS·동일 KOSPI200 benchmark로 ORTHO vs DPL_C_90f vs EW/MVO vs STR_1715 apples-to-apples."
+  },
+  "results_contract_grade_NW_lag3_OOS": {
+    "_comment": "build_benchmark_compare 단일경로, metric_type=backtested, 동일 168m OOS(2010-01..2023-12)·동일 KOSPI200 benchmark.",
+    "ORTHO_grid_best": {"portfolio_alpha_t_nw_lag3": 2.833, "p": 0.0046, "IR": 0.605, "net_active_SR": 0.605, "TE": 0.317, "TO_yr": 14.70, "grid_cell": 47, "cfg": "lam0/gamma1.5/lookback120/depth3/width64/temp1.0", "DSR_thisgrid": 0.392, "DSR_cumulative": 0.274, "subperiod_active_SR": [1.158, 0.617, 0.058], "subperiod_min": 0.058, "metric_type": "backtested"},
+    "ORTHO_DPL_C": {"portfolio_alpha_t_nw_lag3": 1.895, "p": 0.0582, "IR": 0.399, "net_active_SR": 0.399, "TE": 0.325, "TO_yr": 14.93, "subperiod_active_SR": [0.428, -0.150, 0.086], "subperiod_min": -0.150, "metric_type": "backtested"},
+    "DPL_C_90f_baseline": {"portfolio_alpha_t_nw_lag3": 2.906, "p": 0.0037, "IR": 0.703, "net_active_SR": 0.703, "TE": 0.355, "TO_yr": 14.35, "metric_type": "backtested", "_note": "기존 90f(직교피처 없음) OOS 최고 — apples-to-apples 직교효과 격리 기준."},
+    "EW_top20": {"portfolio_alpha_t_nw_lag3": 0.835, "net_active_SR": 0.179, "TO_yr": 11.11, "metric_type": "backtested"},
+    "MVO_2stage": {"portfolio_alpha_t_nw_lag3": 0.108, "net_active_SR": 0.025, "TO_yr": 13.20, "metric_type": "backtested"},
+    "STR_1715_incumbent": {"portfolio_alpha_t_nw_lag3": 5.344, "net_active_SR": 1.071, "TO_yr": "NA", "OOS_retention": 0.91, "metric_type": "backtested"}
+  },
+  "is_oos_retention": {
+    "_gate": "oos_retention = OOS active SR / IS active SR >= 0.7 (measurement-graduation §3, 과적합 게이트)",
+    "ORTHO_DPL_C": {"IS_SR": 1.433, "OOS_SR": 0.399, "retention": 0.279, "verdict": "fail (baseline보다 악화)"},
+    "DPL_C_90f": {"IS_SR": 1.206, "OOS_SR": 0.703, "retention": 0.583, "verdict": "fail (그러나 ORTHO보다 양호)"},
+    "note": "ORTHO_DPL_C IS SR 1.433 = 전 변형 중 최고(직교 피처가 IS 강도는 올림) → 그러나 OOS 전이 실패(retention 0.279 << 0.583 baseline). 직교 알파의 standalone OOS-fragility가 DPL 결합서도 잔존."
+  },
+  "findings_X_tried_Y_measured": [
+    "value BM(V01_BM) + earnings-rev breadth(C13) + reversal(M12/L35) 4 직교 factor를 90f DPL 패널에 추가(102f) → 96-cell net-Sharpe 그리드 best OOS portfolio-α t 2.833 (90f baseline DPL_C 2.906 대비 -0.073 하락, net SR 0.605 vs 0.703).",
+    "동일 직교 102f를 active-alpha DPL_C config(cell37 HP)로 학습 → OOS portfolio-α t 1.895 (90f DPL_C 2.906 대비 -1.011 대폭 하락). IS SR은 1.206→1.433 상승(직교 피처가 IS 강도↑)이나 OOS retention 0.583→0.279 붕괴.",
+    "grid best(cell47, net-Sharpe loss)는 sub-period 전부 양수[1.158,0.617,0.058]로 90f DPL_C(sub_min -0.346)보다 OOS 안정성은 개선 — 그러나 portfolio-α t/net SR은 하락(안정성↑가 alpha 강도↓ 동반).",
+    "direction-of-effect(직교효과 = ORTHO − 90f): 두 loss 모두 음수(grid -0.073, active-alpha -1.011). 4 직교 factor 추가가 long-only DPL 천장을 올리지 못함(오히려 내림).",
+    "DSR_cumulative(누적 n_trials 141~236 보정): grid best 0.274 — 0.5 hurdle 미달(90f DPL_C 0.51 대비 하락)."
+  ],
+  "key_diagnosis": {
+    "why_no_lift": "직교 슬리브 사냥서 value BM/earnings-rev/reversal의 직교성·강도는 LONG-SHORT(시장중립 gross)에서만 발현(Carhart4 t3.28~4.11). DPL은 LONG-ONLY top-25 → 같은 신호가 시장베타에 가려(standalone long-only grade F) DPL 결합서도 net alpha 기여 못 함. DPL의 비선형 net-Sharpe 최적화가 IS 강도는 흡수(IS SR 1.433 최고)하나 OOS 전이 실패 = §5 가설('실패 알파를 DPL이 net Sharpe로 구제')이 long-only 제약 하에서 성립 안 함.",
+    "value_BM_specific": "V01_BM(순수 B/M, STR_1715 부재한 유일 OOS-robust 직교원) 추가도 long-only DPL OOS 못 올림 → '직교 알파 존재 ≠ long-only 포트 OOS 개선' (project-orthogonal-sleeve-hunt 최종수렴 재확인).",
+    "is_strength_oos_decay": "직교 피처가 IS active SR을 1.206→1.433로 올린 건 over-fitting 신호(피처폭발). OOS retention이 0.583→0.279로 동반 악화 = 추가 피처가 IS noise를 더 fit. §6('SR2.5 ≠ 새 standalone sleeve') 실증 재확인."
+  },
+  "honesty_block": {
+    "alpha_t_cross_2_95": "어떤 ORTHO 변형도 2.95 hurdle 미도달(grid 2.833 최고 < 90f DPL_C 2.906 < 2.95). 직교 피처가 baseline 대비 후퇴.",
+    "vs_incumbent": "STR_1715 5.344 / net SR 1.071 / OOS retention 0.91 — ORTHO 최선(grid 2.833 / 0.605)도 근접 전혀 못 함. incumbent의 OOS robustness(0.91)는 ORTHO(0.279~0.583) 압도.",
+    "oos_retention_0_7": "ORTHO_DPL_C 0.279·DPL_C_90f 0.583 — 둘 다 0.7 게이트 미달. 직교 추가가 retention 악화.",
+    "TO_feasibility": "ORTHO 변형 TO 14.7~14.93 — TO≤11 미달(90f와 동일 구조적 위반).",
+    "scope_reaffirm": "findings-only. book_state/admission 무변경. canonical handoff 없음. governor 정지."
+  },
+  "answers": {
+    "did_ortho_beat_baseline_2_906": "아니오. grid 2.833(-0.073), active-alpha 1.895(-1.011). 두 loss 모두 90f baseline 미달. 직교효과 음수.",
+    "did_dpl_rescue_standalone_collapse": "아니오. 직교 알파의 standalone OOS 붕괴가 DPL long-only 결합서도 잔존(IS SR↑·OOS retention↓). §5 가설 long-only 제약 하 불성립.",
+    "near_or_exceed_str1715": "전혀. STR_1715 α-t 5.344 / SR 1.071 / retention 0.91 vs ORTHO 최선 2.833 / 0.605 / 0.583."
+  },
+  "next_candidates_not_verdicts": [
+    "long-SHORT DPL (현 long-only 제약 완화): 직교 알파가 LS에서만 강하므로, DPL을 dollar-neutral long-short(또는 130/30)로 확장하면 직교 신호 기여 가능성 — 단 CLAUDE.md long-only 제약(weights≥0) 위반이라 도훈 mandate 필요.",
+    "STR_1715 IC-weighted 정교 재현 (orthogonal-sleeve-hunt 결론): STR_1715 OOS0.91은 sleeve 구성 아닌 IC-weighted 동적합성+linear_tilt+overlay+lockbox 정교구현에서 옴(STR_1715 v2 단순 EW는 OOS 붕괴). DPL보다 이 경로가 SR2.5에 가까울 수 있음.",
+    "overlay(regime/bear timing)를 DPL과 결합 (measurement-graduation §6 'SR2.5=overlay 주역+DPL+uncertainty'): DPL 단독 천장이 2.9 부근으로 확인됐으니, β/regime overlay가 tail 완화하는 LEX(learned-exposure) 경로 + DPL 결합 재측정 (단 CBE/LEX 선행연구서 overlay는 강세장 cash-drag로 α 하락 관측).",
+    "uncertainty-aware 피처선택 (research_philosophy ③): 직교 피처를 raw 추가 말고 μ̃=μ̂-k·SE down-weight로 epistemic 불확실 종목 제어 — IS over-fit 완화 시도 (현 raw 추가는 IS noise fit)."
+  ],
+  "artifacts": {
+    "feature_builder": "02_Infrastructure/ml_pipeline/dpl_ortho_feature_builder.py",
+    "pit_audit": "02_Infrastructure/ml_pipeline/dpl_ortho_pit_audit.R",
+    "sweep": "02_Infrastructure/ml_pipeline/dpl_ortho_sweep.py",
+    "eval_contract": "02_Infrastructure/ml_pipeline/dpl_ortho_eval_contract.R",
+    "feature_panel": "stage_artifacts/WT_DPL_ORTHO/dpl_feature_panel.parquet (102f, 78188 rows, 257m)",
+    "sweep_results": "stage_artifacts/WT_DPL_ORTHO/ortho_sweep_results.json",
+    "eval_results": "stage_artifacts/WT_DPL_ORTHO/ortho_eval_contract.json",
+    "net_return_series": ["ortho_best_net_returns.parquet", "ortho_dplC_net_returns.parquet", "ortho_dplC_is_net_returns.parquet"],
+    "run_log": "stage_artifacts/WT_DPL_ORTHO/ortho_run.log",
+    "baseline_ref": "stage_artifacts/WT_DPL_GPU_SWEEP/ (90f, 비손상 — apples-to-apples 비교군)"
+  }
+}

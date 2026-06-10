@@ -1,0 +1,189 @@
+{
+  "agent_id": "codex_qepm_critic",
+  "role": "optimizer_critic",
+  "model": "gpt-5.5",
+  "timestamp": "2026-06-06T00:00:00+09:00",
+  "task_id": "WT-D20260606_001",
+  "veto": false,
+  "stance": "REVISE",
+  "stance_rationale": "The optimizer's thesis rejection is mostly honest: overlay-off is defensible, delta_IR +0.049 is correctly borderline, and the walk-forward schedule is real. Revise is required because the draft JSON is invalid and several binding implementation/risk constraints are flagged but not dispositioned with an infeasibility report or quantified book-level CVaR/cost/beta evidence.",
+  "hard_constraints_audit": {
+    "draft_json_parse_pass": false,
+    "draft_json_parse_issue": "optimization_package_draft.json is not valid JSON; method_log.overlay_uncertainty_sizing.reason appears unterminated.",
+    "n_names": 20,
+    "n_names_pass": true,
+    "max_w": 0.05,
+    "max_w_pass": true,
+    "sigma_w": 1.0,
+    "sigma_w_pass": true,
+    "long_only_pass": true,
+    "book_new_leg_sum_in_weights_csv": 0.15,
+    "full_book_schedule_present": false,
+    "turnover_annual_roundtrip": 14.08,
+    "turnover_pass": false,
+    "turnover_failure_basis": "14.08/yr exceeds the stated P6 ceiling 11.0/yr and also exceeds RF-O13 600% annual if interpreted as 6.0x.",
+    "liquidity_pass": null,
+    "liquidity_note": "Optimizer relies on alpha-stage prefilter; not independently verified in this critique.",
+    "cost_model_present": true,
+    "any_critical_block": true
+  },
+  "method_shopping_audit": {
+    "candidates_tried": 9,
+    "selection_objective": "net_ir",
+    "selection_method": "Net active IR versus R05, with disclosed risk/tail override for a=0.20 and disclosed overlay rejection.",
+    "cherry_pick_risk": "LOW",
+    "rf_o10_flag": false,
+    "heavy_tail_tiebreaker_applied": true,
+    "assessment": "Core honesty passes: the draft rejects the attractive overlay thesis instead of selecting the best-looking SR. Remaining gap is evidentiary, not apparent cherry-picking: MVO/HRP/ERC book-level net_IR and the a=0.20 book CVaR constraint are not shown."
+  },
+  "walk_forward_audit": {
+    "weights_csv_path": "stage_artifacts/WT_D20260606_001/weights.csv",
+    "n_rows": 5380,
+    "n_sig_dates_in_weights_csv": 269,
+    "first_sig_date": "2004-01-30",
+    "last_sig_date": "2026-05-31",
+    "names_per_date_min": 20,
+    "names_per_date_max": 20,
+    "single_snapshot_risk": "LOW",
+    "rf_o9_flag": false,
+    "forge_handoff_walkforward_explicit": true,
+    "schema_pass": "PARTIAL",
+    "schema_note": "as_of_date is present and schedule is monthly, but schema lacks method_selected and is sleeve-leg only rather than full book holdings."
+  },
+  "cost_audit": {
+    "turnover_monthly_l1": 0.587,
+    "turnover_annual_roundtrip": 14.08,
+    "estimated_cost_reported": 0.0021,
+    "regime_switch_cost_internalized": false,
+    "cost_proportionality_check": "Unclear units. 0.587 * 0.0015 * 2 = 0.001761 per month, while 14.08 * 0.0015 = 0.02112 annual if annual round-trip units are used. The reported 0.0021 needs unit reconciliation.",
+    "cost_audit_pass": false
+  },
+  "iter_specific_method_alignment": {
+    "alpha_rf_a1_addressed": true,
+    "alpha_rf_a1_note": "Weak standalone alpha is addressed by small allocation, EW 1/N, and explicit non-admission framing.",
+    "risk_rf_r6_addressed": true,
+    "risk_rf_r6_note": "Hill alpha heavy-tail hard trigger is not active; RF-R4 worst-month tail is addressed qualitatively by sizing.",
+    "regime_per_weight_schedule": false,
+    "regime_schedule_note": "overlay_exposure exists but all values are 1; the optional MDD overlay schedule claimed in the draft is not actually present.",
+    "crisis_fallback_explicit": true
+  },
+  "infeasibility_handling": {
+    "cvar_breach": null,
+    "cvar_book_cap_quantified": false,
+    "infeasibility_report_issued": false,
+    "hard_constraint_violations": [
+      "turnover_ceiling_P6: 14.08 > 11.0 round-trip per year",
+      "RF-O13 if 600% annual is enforced: 14.08x > 6.0x",
+      "book_marginal_delta_IR admission: 0.049 < 0.050"
+    ],
+    "charter_8_status": "PARTIAL_FAIL",
+    "assessment": "The constraints are flagged honestly, but ready=true and infeasibility_report=null are not consistent with Charter section 8 treatment of binding constraints."
+  },
+  "sequential_admission_audit": {
+    "tdc_vs_pg2": 0.131,
+    "tdc_source": "risk_package joint_left_tail_TDC_point versus R05",
+    "replacement_scenario_reported": true,
+    "integration_scenario_reported": true,
+    "integration_weight_breakdown": "0.85 R05 frozen + 0.15 residual-mom sleeve; EW allocation scan shown for a=0.05, 0.10, 0.15, 0.20.",
+    "admission_assessment": "Do not admit as a confident sleeve: delta_IR misses threshold and standalone alpha failed. Conditional Forge measurement only is reasonable."
+  },
+  "ax_axiom_compliance": {
+    "ax_001_v2_conditional_metric": "N/A",
+    "ax_002_process_honesty": "PASS",
+    "r4_p3_selection_enum": "PASS",
+    "rf_o9_walkforward": "PASS",
+    "charter_8_no_silent_override": "PARTIAL_FAIL"
+  },
+  "critical_concerns": [
+    {
+      "id": "C1",
+      "severity": "CRITICAL",
+      "description": "The optimization draft is not valid JSON, so the formal package cannot be consumed reliably.",
+      "ax_cite": "Infrastructure"
+    },
+    {
+      "id": "C2",
+      "severity": "CRITICAL",
+      "description": "Turnover is honestly flagged but not dispositioned. A binding ceiling breach with infeasibility_report=null and handoff ready=true is not Charter section 8 clean.",
+      "ax_cite": "RF-O13"
+    },
+    {
+      "id": "C3",
+      "severity": "HIGH",
+      "description": "RX-3 CVaR book cap is invoked to justify a=0.15 over a=0.20, but no book-level CVaR numbers are provided for either allocation.",
+      "ax_cite": "RF-O8"
+    },
+    {
+      "id": "C4",
+      "severity": "MEDIUM",
+      "description": "a=0.20 has higher net delta_IR (+0.067) than selected a=0.15 (+0.049). The override is plausible but must be backed by quantified CVaR/tail/beta evidence.",
+      "ax_cite": "RF-O10"
+    },
+    {
+      "id": "C5",
+      "severity": "MEDIUM",
+      "description": "The optional overlay schedule claim is false as delivered: weights.csv overlay_exposure is 1 for all 5380 rows.",
+      "ax_cite": "RF-O9"
+    },
+    {
+      "id": "C6",
+      "severity": "MEDIUM",
+      "description": "EW over MVO is defensible given weak alpha, 1/N robustness, concentration risk, and MVO turnover, but the draft should report MVO/HRP/ERC book-level net_IR after costs rather than standalone SR only.",
+      "ax_cite": "RF-O10"
+    },
+    {
+      "id": "C7",
+      "severity": "MEDIUM",
+      "description": "Selected overlay-off book beta drift versus benchmark is not measured, despite beta overlay being central to the WT.",
+      "ax_cite": "Beta Drift"
+    },
+    {
+      "id": "C8",
+      "severity": "MEDIUM",
+      "description": "Cost accounting units are unclear and likely inconsistent across monthly turnover, annual round-trip turnover, and estimated_cost.",
+      "ax_cite": "Cost & Turnover"
+    }
+  ],
+  "supporting_arguments": [
+    "The optimizer correctly rejects the central SR 2.5 overlay thesis instead of method-shopping an MDD-improving overlay.",
+    "delta_IR +0.049 is correctly treated as below the 0.05 admission threshold, not rounded into a pass.",
+    "Overlay-off is defensible for an IR-optimal deliverable because the reported overlay active_IR is lower and the R05-only control shows no incremental SR lift.",
+    "Walk-forward validity is verified: 269 monthly as_of_date values, 20 names per date, sleeve weights sum to 1 per date.",
+    "EW-over-MVO is directionally defensible under weak alpha and high MVO turnover, but needs book-level net evidence."
+  ],
+  "unresolved_disputes": [
+    "Whether a=0.20 actually violates book-level CVaR/tail limits or was rejected by discretionary conservatism.",
+    "Whether annual turnover 14.08 should trigger RF-O13 as >600% annual or only the P6 >11.0 discipline ceiling.",
+    "Whether a sleeve-only regime gate was tested; the reported regime overlay appears to de-risk the total book.",
+    "Whether Forge authoritative build_bt_result confirms design-stage delta_IR +0.049."
+  ],
+  "weakest_assumption": "The weakest assumption is that a=0.15 is risk-acceptable while a=0.20 is not, despite no numeric book-level CVaR, beta drift, or tail-cap table proving the boundary.",
+  "rebuttal_required": [
+    "Fix optimization_package_draft.json syntax.",
+    "Issue an infeasibility report or change handoff readiness for turnover and delta_IR threshold breaches.",
+    "Provide book-level CVaR95 and worst-month contribution for a=0.15 and a=0.20.",
+    "Report book-level net_IR after costs for EW, MVO, HRP, and ERC.",
+    "Reconcile estimated_cost units with turnover and 15 bps one-way cost.",
+    "Measure selected book beta versus benchmark with overlay OFF.",
+    "Remove the optional overlay schedule claim or provide a nontrivial overlay_exposure schedule with switch costs."
+  ],
+  "rationalization_red_flags": [
+    "ready=true while binding_constraints contains turnover and delta_IR threshold breaches",
+    "selection_objective=net_ir while the highest net_IR allocation is rejected without quantified cap evidence",
+    "optional overlay schedule claimed but overlay_exposure is all 1",
+    "cost deducted claim is directionally plausible but unit reconciliation is missing"
+  ],
+  "verification_triangulation": {
+    "ax_008_status": "PASS",
+    "agree_with_claude": false,
+    "additional_perspective": "I agree with the optimizer's honesty on thesis rejection and overlay-off. The required revision is mostly package integrity and quantitative constraint disposition, not a reversal of the economic conclusion."
+  },
+  "optimizer_specific_questions": [
+    "What numeric book-level CVaR or tail metric makes a=0.15 acceptable and a=0.20 unacceptable?",
+    "What is the book-level annual turnover after scaling the sleeve to 15% and adding frozen R05 turnover?",
+    "Why is infeasibility_report null when turnover and delta_IR thresholds are listed as binding constraints?",
+    "Can the internal schemes be compared on book-level net_IR after 15 bps costs rather than standalone sleeve SR?",
+    "Was a sleeve-only regime gate tested, or only total-book de-risking?",
+    "Should weights.csv include full book holdings or is the sleeve-only schedule sufficient for Forge?"
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "experiment": "STR_1715 v3 (Core consensus + Defense + IN04 issuance) LONG-ONLY top-25 (run_alpha_search OOM 우회 — 가벼운 Return.portfolio driver)",
+  "strategy_id": "STR_str1715v3",
+  "fe_path": "G:/Quant_Module_Moltbot/02_Infrastructure/alpha_search/fe_str1715v3.R",
+  "run_id": "STR1715V3_LO_20260606_151849_40600",
+  "metric_type": "backtested",
+  "universe": "K200_KQ150",
+  "weights": {
+    "w_C": 0.45,
+    "w_D": 0.25,
+    "w_I": 0.3,
+    "n_cap": 25,
+    "weighting": "equal_weight"
+  },
+  "start_date": "2005-01-01",
+  "n_months": 256,
+  "avg_n_holdings": 23.4,
+  "annualized": {
+    "sharpe": 0.8684,
+    "cagr_pct": 13.638,
+    "mdd_pct": 23.754,
+    "calmar": 0.5741
+  },
+  "oos_retention": -0.85,
+  "active_vs_kospi200": {
+    "net_ir": 0.1001,
+    "portfolio_alpha_t_nw_lag3": 0.4,
+    "excess_total_return_pct": 639.647
+  },
+  "carhart4": {
+    "alpha_ann_pct": 4.841,
+    "alpha_t": 2.0907
+  },
+  "comparison": {
+    "valearn": {
+      "oos_retention": -0.517,
+      "sharpe": 0.713,
+      "note": "value+earnings-rev 2축 long-only"
+    },
+    "str_1715_v2": {
+      "oos_retention": -0.445,
+      "sharpe": 0.911,
+      "carhart4_t": 2.78,
+      "note": "Core consensus + Defense + Value(V01_BM)"
+    },
+    "str_1715": {
+      "oos_retention": 0.91,
+      "sharpe": 1.5,
+      "note": "Core consensus + Defense (issuance 0%)"
+    }
+  },
+  "in04_orthogonality": {
+    "vs_str_1715": -0.027,
+    "vs_value": "IN04 max상관 0.21 < value 0.41",
+    "in04_longonly_single_oos": -0.983,
+    "note": "IN04 진짜 직교(STR_1715 무관)이나 long-only 단일 OOS 붕괴(엣지=short leg)"
+  },
+  "essence": {
+    "grade": "C",
+    "hard_fail": false,
+    "reasons": "Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
+    "detail": {
+      "net_sharpe": 0.868,
+      "net_ir": 0.1,
+      "portfolio_alpha_t_nw_lag3": 0.4,
+      "oos_retention": -0.85,
+      "dsr": null,
+      "mdd": 0.238,
+      "calmar": 0.574,
+      "cagr": 0.136
+    }
+  },
+  "registered": "04_Research/strategies/STR_str1715v3/sim_result.rds + module_catalog.json",
+  "generated_at": "2026-06-06T15:18:50"
+}

@@ -1,0 +1,266 @@
+{
+  "task_id": "WT-D20260606_002",
+  "wt_type": "discovery",
+  "as_of_date": "2026-06-06",
+  "forecast_horizon": "1M",
+  "agent": "alpha-research",
+  "role": "DPL feature-alpha panel curation + per-feature canonical validation (alphâ only; Sigma/weight 금지)",
+  "selection_objective": "icir",
+  "hypothesis_title": "DPL feature-alpha 패널 — cross-sectional 강신호(quality/issuance) + 직교 다양성으로 DPL이 long-only top-20이 버리는 ranking power를 활용",
+  "alpha_summary": "DPL(features->weights end-to-end)이 먹을 98f 패널을 조립·검증. 핵심 발견: 신규 quality/issuance __lvl 3종(PIOTROSKI/MOHANRAM/NETISSUE)은 cross-sectional rank-IC ICIR 0.20~0.24, Harvey-t 2.96~3.55(gate PASS) + 3-era 전부 동부호(stability 1.0) + base90 대비 직교(max|corr| 0.16~0.26). 그러나 long-only top-20 실현 active t는 0.72~1.39로 약함 — 신호가 cross-section 전체에 있고 top-20 long tail엔 미전이(Cycle 1/2 IC!=portfolio-alpha 발산 재현). 바로 이 점이 DPL의 존재 이유: DPL은 full cross-sectional 가중을 학습하므로 top-20이 버리는 ranking power를 활용 가능. residual-mom(WT-D20260606_001)은 R05 *book*엔 직교(-0.06)이나 DPL *feature panel* 안에선 base M05_Trended_Mom과 |corr| 0.847로 중복 — 패널 내 한계효익 낮음(정직).",
+  "feature_panel": {
+    "panel_ref": "stage_artifacts/WT_DPL_C2/dpl_feature_panel.parquet",
+    "n_feature_cols": 98,
+    "base_90f": "stage_artifacts/WT_DPL_GPU_SWEEP (momentum/value/quality/accrual/consensus/defense/flow, level-z/slope/vol per factor)",
+    "added_8f": [
+      "RESIDMOM__lvl",
+      "RESIDMOM__slp",
+      "PIOTROSKI__lvl",
+      "PIOTROSKI__slp",
+      "MOHANRAM__lvl",
+      "MOHANRAM__slp",
+      "NETISSUE__lvl",
+      "NETISSUE__slp"
+    ],
+    "panel_months": 256,
+    "month_range": [
+      "2005-01",
+      "2026-04"
+    ],
+    "lockbox": "2023-12-22",
+    "pit_audit": {
+      "panel_forward_match": 1.0,
+      "panel_backward_match": 0.001,
+      "label_pass": true,
+      "bear_date_audit_pass": true,
+      "overall_pass": true,
+      "ref": "stage_artifacts/WT_DPL_C2/pit_audit.json (forward-label recompute + concurrent-lookahead + 4 bear dates)"
+    }
+  },
+  "factor_specs": [
+    {
+      "factor_family": "Quality",
+      "proxy": "PIOTROSKI__lvl (F-Score 0..9 cross-section z)",
+      "formula": "Piotroski (2000) 9-criterion fundamental F-Score; cross-section z within month",
+      "lag_rule": "quarterly 45d / annual May (재무제표 PIT)",
+      "winsorization": "cross-section z (panel csz)",
+      "neutralization": "none (raw cross-section z; DPL이 가중 학습)",
+      "economic_rationale": "fundamental strength composite; crisis 방어 + profitability/quality 종합. base90 quality(Q03_ROA |corr|0.26)와 부분상관이나 9-criterion 합성은 직교 증분.",
+      "weight_theta": null,
+      "references": [
+        "Piotroski 2000 JAR"
+      ]
+    },
+    {
+      "factor_family": "Quality_Growth",
+      "proxy": "MOHANRAM__lvl (G-Score signal rate cross-section z)",
+      "formula": "Mohanram (2005) G-Score on low-BM growth firms; cross-section z within month",
+      "lag_rule": "quarterly 45d / annual May",
+      "winsorization": "cross-section z",
+      "neutralization": "none",
+      "economic_rationale": "저BM growth 종목 방어/품질 신호. base90(Q01_GPA |corr|0.16)와 직교. coverage 18.6% (low-BM subset만) — DPL 결측 z=0 중립.",
+      "weight_theta": null,
+      "references": [
+        "Mohanram 2005 RAS"
+      ]
+    },
+    {
+      "factor_family": "Net_Issuance",
+      "proxy": "NETISSUE__lvl (-Delta log(shares) YoY cross-section z)",
+      "formula": "negative YoY change in log capital stock (net issuance reversal); cross-section z",
+      "lag_rule": "quarterly 45d (Factor_Date<=sig PIT)",
+      "winsorization": "cross-section z",
+      "neutralization": "none",
+      "economic_rationale": "Pontiff-Woodgate (2008) net share issuance anomaly — 증자기업 underperform. base90 IN(flow)과 직교(max|corr| 0.17 vs M11). coverage 96%.",
+      "weight_theta": null,
+      "references": [
+        "Pontiff-Woodgate 2008 JF",
+        "Daniel-Titman 2006"
+      ]
+    },
+    {
+      "factor_family": "Momentum_Residual",
+      "proxy": "RESIDMOM__lvl (WT-D20260606_001 residual-mom alpha cross-section z)",
+      "formula": "M08 residual momentum + M14 risk-adj momentum composite (cycle1 alpha_score)",
+      "lag_rule": "price t-1 close",
+      "winsorization": "cross-section z",
+      "neutralization": "residualized by construction",
+      "economic_rationale": "R05 *book*엔 return-직교(-0.06). 그러나 DPL *feature panel* 안에선 base M05_Trended_Mom과 |corr| 0.847 (momentum 축 이미 90f에 존재) -> 패널 내 한계효익 낮음. 정직히 marginal feature로 분류.",
+      "weight_theta": null,
+      "references": [
+        "Blitz-Huij-Martens 2011",
+        "Barroso-Santa-Clara 2015"
+      ]
+    }
+  ],
+  "per_feature_diagnostics": {
+    "metric_type": "canonical_screen_proxy (rank-IC Spearman + top20 EW active; NOT forge-authoritative)",
+    "universe": "KOSPI200_KOSDAQ150_intersection (in_univ==1), lockbox<=2023-12, 228 months",
+    "ref": "stage_artifacts/WT_D20260606_002/feature_diag.json",
+    "features": {
+      "PIOTROSKI__lvl": {
+        "rank_ic": 0.0226,
+        "icir": 0.242,
+        "harvey_t_rankic_nw3": 3.55,
+        "subperiod_stability": 1.0,
+        "top20_active_t_nw3_proxy": 1.39,
+        "ic_lower_bound_k1": 0.0216,
+        "max_corr_vs_base90": 0.264,
+        "verdict": "STRONG cross-sectional; ICIR/Harvey-t gate PASS; top20 약함 -> DPL-suitable"
+      },
+      "MOHANRAM__lvl": {
+        "rank_ic": 0.0162,
+        "icir": 0.22,
+        "harvey_t_rankic_nw3": 3.37,
+        "subperiod_stability": 1.0,
+        "top20_active_t_nw3_proxy": 0.72,
+        "ic_lower_bound_k1": 0.0153,
+        "max_corr_vs_base90": 0.163,
+        "verdict": "STRONG cross-sectional; gate PASS; coverage 18.6% caveat; DPL-suitable"
+      },
+      "NETISSUE__lvl": {
+        "rank_ic": 0.0207,
+        "icir": 0.196,
+        "harvey_t_rankic_nw3": 2.96,
+        "subperiod_stability": 1.0,
+        "top20_active_t_nw3_proxy": -0.02,
+        "ic_lower_bound_k1": 0.0196,
+        "max_corr_vs_base90": 0.169,
+        "verdict": "BORDERLINE (ICIR 0.196<0.20, Harvey-t ~3.0); orthogonal; signal short-side -> DPL-only value"
+      },
+      "RESIDMOM__lvl": {
+        "rank_ic": 0.0073,
+        "icir": 0.044,
+        "harvey_t_rankic_nw3": 0.66,
+        "subperiod_stability": 0.67,
+        "top20_active_t_nw3_proxy": 1.88,
+        "ic_lower_bound_k1": 0.0065,
+        "max_corr_vs_base90": 0.847,
+        "verdict": "WEAK cross-sectional + REDUNDANT in panel (corr 0.85 vs M05); marginal feature"
+      },
+      "RESIDMOM__slp": {
+        "rank_ic": -0.0043,
+        "icir": -0.04,
+        "harvey_t_rankic_nw3": -0.62,
+        "verdict": "NOISE"
+      },
+      "PIOTROSKI__slp": {
+        "rank_ic": 0.0034,
+        "icir": 0.04,
+        "harvey_t_rankic_nw3": 0.61,
+        "verdict": "NOISE (slope-of-feature carries no signal)"
+      },
+      "MOHANRAM__slp": {
+        "rank_ic": 0.0035,
+        "icir": 0.049,
+        "harvey_t_rankic_nw3": 0.77,
+        "verdict": "NOISE"
+      },
+      "NETISSUE__slp": {
+        "rank_ic": 0.0038,
+        "icir": 0.038,
+        "harvey_t_rankic_nw3": 0.61,
+        "subperiod_stability": 0.33,
+        "verdict": "NOISE + unstable"
+      }
+    }
+  },
+  "orthogonality": {
+    "mutual_max_abs_corr_among_new_8f": 0.202,
+    "mutual_mean_abs_corr_among_new_8f": 0.055,
+    "new_lvl_vs_base90_max_abs_corr": {
+      "PIOTROSKI": 0.264,
+      "MOHANRAM": 0.163,
+      "NETISSUE": 0.169,
+      "RESIDMOM": 0.847
+    },
+    "interpretation": "신규 quality/issuance __lvl 3종은 상호+base 직교(<0.27) -> DPL 입력 다양성 양호. RESIDMOM__lvl만 패널 중복(0.85). __slp 4종은 신호 없음."
+  },
+  "diagnostics": {
+    "metric_type": "canonical_screen_proxy",
+    "best_new_feature": "PIOTROSKI__lvl (ICIR 0.242, Harvey-t 3.55, stability 1.0)",
+    "rank_ic": 0.0226,
+    "icir": 0.242,
+    "harvey_t_stat": 3.55,
+    "harvey_t_note": "PIOTROSKI__lvl rank-IC Harvey-t (cross-sectional). portfolio-alpha t와 명확히 구분 — long-only top-20 실현 active t는 1.39로 약함(forge-authoritative DPL 결과는 optimizer 단계).",
+    "subperiod_stability": 1.0,
+    "monotonicity": {},
+    "turnover_proxy": null
+  },
+  "dpl_suitability_assessment": {
+    "thesis": "DPL이 가치 있는 정확한 이유 = 강한 cross-sectional 신호(quality/issuance ICIR 0.2~0.24)가 long-only top-20에선 미전이(active t 0.7~1.4)되나, DPL은 full cross-section 가중을 직접 net-Sharpe로 학습하므로 long tail이 버리는 ranking power를 활용 가능. 즉 본 feature들은 standalone alpha로는 F이나 DPL 연료로는 의미.",
+    "useful_features_for_dpl": [
+      "PIOTROSKI__lvl",
+      "MOHANRAM__lvl",
+      "NETISSUE__lvl",
+      "+ base90 momentum/value/quality/flow"
+    ],
+    "marginal_features": [
+      "RESIDMOM__lvl (panel redundant 0.85)"
+    ],
+    "drop_candidates_noise": [
+      "RESIDMOM__slp",
+      "PIOTROSKI__slp",
+      "MOHANRAM__slp",
+      "NETISSUE__slp"
+    ],
+    "honest_ceiling_view": "현 DPL 90f 프런티어 = OOS portfolio-alpha t 2.77~2.91, net active SR 0.59~0.70, DSR 0.38~0.51, subperiod min -0.35(불안정), TO 14~16(>11). 앙상블(K8/K16/config5) 전부 alpha 희석(α-t 하락). incumbent STR_1715 = α-t 5.34, net SR 1.07. 신규 3 feature가 직교 신호를 더하나(ICIR~0.2), top20 active t가 약한 점은 DPL이 이를 충분히 살릴지 불확실. 1.74 천장 돌파 + SR 2.5 달성은 feature만으로 보장 안 됨 — optimizer DPL c2 sweep(forge-authoritative) 결과가 판정. 본 alpha-stage는 '재료는 직교·검증됨, 천장 돌파는 미입증' 정직 보고.",
+    "c2_dpl_sweep_result": "INCOMPLETE — dpl_c2_sweep.py(256-cell)가 cell 19/256(gamma=1.5만)에서 프로세스 종료, sweep_results.json 미생성. 관측된 19 cell: net-active SR 0.18~0.46, TO 14~16(전부 >11), sub_min 빈번 음수 — 90f 프런티어와 동급, 천장 미돌파 징후. 고-gamma(4/8/16, TO<=11 압박 셀)은 미실행. forge-authoritative DPL 판정 = optimizer-research가 sweep 재실행 후 dpl_c2_eval_total.R contract로 확정해야 함(alpha 역할 밖)."
+  },
+  "challenge_flags": [
+    {
+      "id": "RF-A-c2-1",
+      "severity": "HIGH",
+      "note": "신규 3 feature 모두 강한 cross-sectional ICIR(0.2~0.24)이나 long-only top-20 portfolio-alpha t는 0.72~1.39로 graduation hurdle 2.95 미달. standalone alpha 아님 — DPL feature로만 honest. IC!=portfolio-alpha 발산(Cycle 2 교훈) 재현."
+    },
+    {
+      "id": "RF-A-c2-2",
+      "severity": "HIGH",
+      "note": "RESIDMOM__lvl은 R05 book엔 직교(-0.06)이나 DPL feature panel 안에선 base M05_Trended_Mom과 |corr| 0.847로 중복. cycle1의 직교성 주장은 book 대상이지 feature-panel 대상이 아님 — 패널 내 한계효익 낮음 정직 정정."
+    },
+    {
+      "id": "RF-A-c2-3",
+      "severity": "MEDIUM",
+      "note": "MOHANRAM__lvl coverage 18.6%(low-BM subset). DPL 결측 z=0 중립 처리 -> 신호 희석 가능. NETISSUE__lvl ICIR 0.196로 advisory gate(0.2) 미달."
+    },
+    {
+      "id": "RF-A-c2-4",
+      "severity": "MEDIUM",
+      "note": "__slp(slope-of-feature) 4종 전부 신호 없음(ICIR<0.05, Harvey-t<0.8). DPL 입력에서 제외 권고 -> 차원축소 + 과적합 위험 감소."
+    },
+    {
+      "id": "RF-A-c2-5",
+      "severity": "MEDIUM",
+      "note": "C15: residmom alpha_score를 stage_artifacts/WT_WT-D20260606_001(double-prefix 경로)에서 직접 read. cycle1 RF-A-C15 미해소 상속. 신규 3 feature(Piotroski/Mohanram/NetIssue)는 dpl_c2_quality_features.R에서 RAWDATA/FACTORS Factor_Date<=sig PIT로 산출(load_month_factors 미경유, ML carve-out posture). graduation 진입 전 sanctioned path 정합 의무."
+    },
+    {
+      "id": "RF-A-c2-6",
+      "severity": "HIGH",
+      "note": "feature 직교·검증은 됐으나 DPL이 1.74 천장 + SR 2.5 돌파한다는 보장 없음. 90f DPL 프런티어(α-t 2.9, sub_min -0.35 불안정)에서 신규 feature 한계효익은 optimizer DPL c2 sweep이 forge-authoritative로 판정. alpha-stage는 천장 돌파 미입증."
+    }
+  ],
+  "honest_grade": "feature 패널 = 검증된 직교 재료(3 quality/issuance __lvl ICIR 0.2~0.24, Harvey-t ~3, stability 1.0). standalone alpha = F(top20 portfolio-alpha t 0.7~1.4 << 2.95). DPL 적합성 = 조건부 유망(cross-sectional 강신호를 DPL이 살릴 수 있다면)이나 천장 돌파 미입증.",
+  "selection_objective_note": "feature 선택 1차 필터 = icir(cross-sectional predictive power, R4-P3 enum). sharpe/net_ir/cagr/mdd 미사용. top20 portfolio-alpha는 보고용(IC와 구분), 선택 기준 아님.",
+  "graduation_claim": false,
+  "intended_use": [
+    "DPL_input_feature_panel(measurement-graduation Section 5, research_philosophy 4)"
+  ],
+  "next_step": "risk-research 핸드오프: 본 패널 feature들의 (1) covariance contribution + downside beta, (2) crowding_score_per_factor(특히 quality/momentum crowding), (3) tail. 이후 optimizer-research가 dpl_c2_sweep(cvxpylayers GPU, weight_method DPL) end-to-end net-Sharpe 최적화 -> forge build_bt_result authoritative -> judge graduation(PORT_t>=2.95/oos_retention>=0.7/calmar>=0.64/DSR>=0.5).",
+  "references": [
+    "Piotroski 2000",
+    "Mohanram 2005",
+    "Pontiff-Woodgate 2008",
+    "Blitz-Huij-Martens 2011",
+    "Harvey-Liu-Zhu 2016",
+    "Jensen-Kelly-Malamud-Pedersen 2022",
+    "You-Zhang 2025 DPL",
+    "Liao-Ma-Neuhierl-Schilling 2025 RFS"
+  ],
+  "codex_critic_round": {
+    "stance": "REVISE",
+    "concerns_total": 6,
+    "critic_response": "codex_critic_response_alpha.json",
+    "disposition": "ACCEPT (draft가 이미 자기-플래그한 것과 합치). DPL ceiling realism LOW (Codex+alpha 독립 일치: 2.5 비현실, 1.74 미돌파). 핵심 미입증 가정 = 'DPL이 top-20 버린 cross-sectional IC를 net-Sharpe로 회수'. definitive 판정 = optimizer full 256-cell DPL sweep + base90 대비 신규3feature marginal ablation (Codex what_missing).",
+    "finalized_by": "Q-Lead (alpha agent가 Codex를 async 폭주시키고 미완료 -> clean bounded codex exec 재실행 후 마무리)"
+  }
+}

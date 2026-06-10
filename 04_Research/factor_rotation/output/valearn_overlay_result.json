@@ -1,0 +1,230 @@
+{
+  "study": "valearn_regime_overlay",
+  "fr_candidate": "FR_VALEARN_OVERLAY",
+  "module": "STR_valearn_70_top25 (frozen)",
+  "n_months": 256,
+  "is_cut": 153,
+  "is_range": ["200503", "201711"],
+  "oos_range": ["201712", "202606"],
+  "regime_source": "unified_regime_signal_daily Category(t-1) + SJM JM_State_lag(t-1)",
+  "derisk_regime_IS": "CAUTION",
+  "IS_category_stats": [
+    {
+      "reg_cat": "CAUTION",
+      "n": 11,
+      "mean": -0.0283,
+      "sharpe": -0.969,
+      "mdd": 0.373
+    },
+    {
+      "reg_cat": "NEUTRAL",
+      "n": 17,
+      "mean": 0.0088,
+      "sharpe": 0.539,
+      "mdd": 0.176
+    },
+    {
+      "reg_cat": "RISK_ON",
+      "n": 116,
+      "mean": 0.0158,
+      "sharpe": 1.079,
+      "mdd": 0.213
+    },
+    {
+      "reg_cat": "CRISIS",
+      "n": 7,
+      "mean": 0.0707,
+      "sharpe": 2.523,
+      "mdd": 0.022
+    },
+    {
+      "reg_cat": "RISK_OFF",
+      "n": 2,
+      "mean": 0.1915,
+      "sharpe": null,
+      "mdd": 0
+    }
+  ],
+  "IS_sjm_stats": [
+    {
+      "sjm_bear": 0,
+      "n": 117,
+      "sharpe": 1.127,
+      "mean": 0.0168
+    },
+    {
+      "sjm_bear": 1,
+      "n": 36,
+      "sharpe": 0.576,
+      "mean": 0.0164
+    }
+  ],
+  "baseline": {
+    "oos_retention": -0.517,
+    "MDD": 0.456,
+    "net_SR": 0.713,
+    "grade": "F",
+    "PORT_t": 0.874,
+    "CAGR": 0.147,
+    "Calmar": 0.323
+  },
+  "variants": [
+    {
+      "variant": "valearn_baseline_e1.0",
+      "grade": "F",
+      "net_SR": 0.713,
+      "PORT_t": 0.874,
+      "oos_ret": -0.517,
+      "MDD": 0.456,
+      "Calmar": 0.323,
+      "CAGR": 0.147,
+      "net_IR": 0.212,
+      "DSR": 0.381,
+      "audit": null,
+      "oos_rescue": false,
+      "mdd_ease": false
+    },
+    {
+      "variant": "valearn_cat_CAUTION_e0.5",
+      "grade": "C",
+      "net_SR": 0.809,
+      "PORT_t": 1.146,
+      "oos_ret": -0.43,
+      "MDD": 0.4,
+      "Calmar": 0.409,
+      "CAGR": 0.164,
+      "net_IR": 0.285,
+      "DSR": 0.505,
+      "audit": null,
+      "oos_rescue": false,
+      "mdd_ease": true
+    },
+    {
+      "variant": "valearn_cat_CAUTION_e0.0",
+      "grade": "C",
+      "net_SR": 0.881,
+      "PORT_t": 1.369,
+      "oos_ret": -0.372,
+      "MDD": 0.344,
+      "Calmar": 0.516,
+      "CAGR": 0.177,
+      "net_IR": 0.342,
+      "DSR": 0.607,
+      "audit": null,
+      "oos_rescue": false,
+      "mdd_ease": true
+    },
+    {
+      "variant": "valearn_CRISIS_off_e0.5",
+      "grade": "F",
+      "net_SR": 0.658,
+      "PORT_t": 0.397,
+      "oos_ret": -0.789,
+      "MDD": 0.456,
+      "Calmar": 0.276,
+      "CAGR": 0.126,
+      "net_IR": 0.093,
+      "DSR": 0.199,
+      "audit": null,
+      "oos_rescue": false,
+      "mdd_ease": false
+    },
+    {
+      "variant": "valearn_CRISIS_off_e0.0",
+      "grade": "F",
+      "net_SR": 0.569,
+      "PORT_t": -0.113,
+      "oos_ret": -1.221,
+      "MDD": 0.457,
+      "Calmar": 0.226,
+      "CAGR": 0.103,
+      "net_IR": -0.025,
+      "DSR": 0.077,
+      "audit": null,
+      "oos_rescue": false,
+      "mdd_ease": false
+    },
+    {
+      "variant": "valearn_defbundle_e0.5",
+      "grade": "F",
+      "net_SR": 0.643,
+      "PORT_t": 0.19,
+      "oos_ret": -0.878,
+      "MDD": 0.456,
+      "Calmar": 0.258,
+      "CAGR": 0.118,
+      "net_IR": 0.045,
+      "DSR": 0.141,
+      "audit": null,
+      "oos_rescue": false,
+      "mdd_ease": false
+    },
+    {
+      "variant": "valearn_defbundle_e0.0",
+      "grade": "F",
+      "net_SR": 0.514,
+      "PORT_t": -0.512,
+      "oos_ret": -1.998,
+      "MDD": 0.468,
+      "Calmar": 0.185,
+      "CAGR": 0.086,
+      "net_IR": -0.12,
+      "DSR": 0.027,
+      "audit": null,
+      "oos_rescue": false,
+      "mdd_ease": false
+    },
+    {
+      "variant": "valearn_sjm_bear_e0.5",
+      "grade": "C",
+      "net_SR": 0.783,
+      "PORT_t": 0.268,
+      "oos_ret": -0.839,
+      "MDD": 0.434,
+      "Calmar": 0.298,
+      "CAGR": 0.129,
+      "net_IR": 0.066,
+      "DSR": 0.164,
+      "audit": null,
+      "oos_rescue": false,
+      "mdd_ease": false
+    },
+    {
+      "variant": "valearn_sjm_bear_e0.0",
+      "grade": "F",
+      "net_SR": 0.719,
+      "PORT_t": -0.314,
+      "oos_ret": -1.582,
+      "MDD": 0.424,
+      "Calmar": 0.244,
+      "CAGR": 0.104,
+      "net_IR": -0.075,
+      "DSR": 0.048,
+      "audit": null,
+      "oos_rescue": false,
+      "mdd_ease": true
+    }
+  ],
+  "best_oos_variant": "valearn_cat_CAUTION_e0.0",
+  "best_oos_retention": -0.372,
+  "verdict": "RETENTION_LIMIT + PARTIAL_RISK_RESCUE (Codex APPROVE_CONDITIONAL 반영; 구 OVERLAY_LIMIT 정정): overlay가 OOS_retention(-0.517) 회복 실패(best IS-clean -0.372, 0.5 게이트 미달, SR2.5 미입증) — 붕괴원인=지배국면 RISK_ON 횡단선택 실패+earnings-rev decay, exposure-scaling으로 타이밍 불가. 단 CAUTION off(e0.0, IS-선택)는 MDD 45.6%->34.4%·SR 0.713->0.881·F->C 실질 tail 개선(leave-crash-out robust).",
+  "codex_round": {
+    "stance": "APPROVE_CONDITIONAL",
+    "pit_leak_found": false,
+    "response": "qepm/mailbox/worktask/FR-valearn-overlay/codex_critic_response_dispatch-orchestrator.json",
+    "challenge_note": "qepm/mailbox/worktask/FR-valearn-overlay/challenge_note.md"
+  },
+  "robustness": {
+    "is_only_exposure_protocol": "e=0.0를 IS Sharpe만으로 선택(e0.0=1.093>e0.5=1.006; OOS 미열람) -> forward OOS net_SR 0.590 vs baseline 0.466, MDD 34.4% vs 45.6%. OOS cherry-pick 아님(Codex HIGH#1).",
+    "placebo_per_regime": "5국면 단독 디리스크 중 CAUTION만 OOS_retention 개선(-0.372 > RISK_OFF -0.694 > NEUTRAL -1.157 > CRISIS -1.221 > RISK_ON NA). CAUTION IS·OOS 둘 다 최악 -> 경제적 persistence.",
+    "leave_one_crash_out": "2008·2020 위기 둘 다 제외 후에도 overlay net_SR 0.850 > baseline 0.810 (MDD 동일 30.1%) -> 2-event 아티팩트 아님(Codex MED#3).",
+    "risk_on_throttle": "RISK_ON e0.5 -> OOS_retention -1.423(악화): RISK_ON=OOS decay 국면이자 bulk carry 국면 -> exposure scaling 회복 불가. RISK_ON은 IS-위반 선택(IS Sharpe 1.08)(Codex MED#4)."
+  },
+  "mechanism": "valearn = counter-cyclical 가치모듈: CRISIS 최고(full +7.4%/월, OOS active +2.26%/월 Sharpe 0.59), CAUTION 최악(-3.1%/월). -45.6% MDD 바닥은 2020-03/2008-10 (t-1 regime=CAUTION; classifier는 crash 다음달 CRISIS 라벨) -> CRISIS 디리스크는 rebound strip. OOS alpha 붕괴는 지배국면 RISK_ON(n=81=OOS 79%, active -0.40%/월)에 집중 = earnings-rev OOS decay + market-beta drag, book-level exposure로 타이밍 불가.",
+  "project_factor_rotation_update": "구 '직교 부재로 overlay 무가치' -> 정밀화(번복 아님): 직교 알파(valearn) 확보로도 overlay는 tail(MDD)만 다듬고 alpha 부재 구간(RISK_ON OOS decay)은 못 살림. 직교 슬리브 존재 != overlay OOS-robust 충분조건. STR_1715 overlay 성공(OOS 0.91)은 멀티팩터 consensus base가 normal 국면서 alpha 지속하기 때문; valearn 단일 value+earnings-rev base는 지배 normal(RISK_ON)서 decay -> exposure timing으로 fix 불가.",
+  "governor": "HALTED (book_state 미기록; 측정·진단만; FR registry 미등재(grade C/oos_ret 음수); 실편입=도훈 confirm)",
+  "n_trials_cumulative": 6,
+  "return_synthesis": "net 시계열 = e*module_ret - known transition cost; NAV=cumprod(net) value path; build_bt_result(monthly, PerformanceAnalytics 표준함수)",
+  "lookahead_prevention": "regime t-1 lag (prior month-end); IS-only rule derivation; module frozen; forward OOS",
+  "code_version": "run_valearn_overlay_v1"
+}

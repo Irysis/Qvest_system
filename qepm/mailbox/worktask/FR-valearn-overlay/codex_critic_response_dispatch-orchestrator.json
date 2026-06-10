@@ -1,0 +1,41 @@
+{
+  "verdict": {
+    "stance": "APPROVE_CONDITIONAL"
+  },
+  "weakest_assumption": "That CAUTION underperformance is a stable, exploitable regime effect rather than a two-event crash-entry artifact. IS n=11 and OOS n=5 are too small to treat the CAUTION overlay as robust, especially because 2008-10 and 2020-03 dominate the drawdown benefit.",
+  "critical_concerns": [
+    {
+      "severity": "HIGH",
+      "concern": "The rule choice appears IS-only, so not a direct PIT leak, but promoting CAUTION e0.0 as the best variant using OOS_retention and MDD is OOS model selection unless e=0 was fixed from IS before evaluation.",
+      "suggested_fix": "Report the exact IS-only selection protocol for both regime and exposure level. If e was not preselected, use nested IS validation, rolling walk-forward, or label the e0.0 result as exploratory."
+    },
+    {
+      "severity": "HIGH",
+      "concern": "The conclusion 'book-level regime exposure cannot rescue it' is directionally supported for OOS_retention, but the overlay did improve SR, MDD, Calmar, and grade. Calling it worthless undersells a real partial risk-control benefit.",
+      "suggested_fix": "Use verdict wording like 'RETENTION_LIMIT / PARTIAL_RISK_RESCUE': overlay helps drawdown and total SR but fails the stated alpha-retention objective."
+    },
+    {
+      "severity": "MEDIUM",
+      "concern": "CAUTION persistence is statistically fragile: n=11 IS and n=5 OOS cannot establish regime stability. The OOS CAUTION result may be luck from catching 2020-03 rather than a repeatable edge.",
+      "suggested_fix": "Bootstrap by regime blocks, run leave-one-crash-out tests, and report performance excluding 2008-10 and 2020-03."
+    },
+    {
+      "severity": "MEDIUM",
+      "concern": "The dominant OOS failure is RISK_ON active underperformance, but no overlay targeting RISK_ON was tested because IS Sharpe did not select it. That supports discipline, but weakens any broad statement that no PIT-valid timing overlay can help.",
+      "suggested_fix": "Test pre-registered alternatives: market trend/breadth/volatility filters, valuation-spread compression, earnings-revision dispersion, and within-CAUTION crash-entry confirmation."
+    },
+    {
+      "severity": "LOW",
+      "concern": "Cash=0 slightly penalizes de-risked variants versus a risk-free cash sleeve, especially after 2022. It likely would not move OOS_retention from negative to 0.7, but it biases against overlays.",
+      "suggested_fix": "Re-run with PIT monthly T-bill or Korean cash proxy and show sensitivity."
+    },
+    {
+      "severity": "MEDIUM",
+      "concern": "LOCF with roll=TRUE can leak if labels are not timestamped by publication/availability date, or if a month-end label is applied to the same month's return before the shift is verified.",
+      "suggested_fix": "Audit row-level timestamps: return month t must use only labels observable no later than t-1 month-end, preferably with explicit signal_date, available_date, rebalance_date, and return_start_date."
+    }
+  ],
+  "pit_leak_found": false,
+  "verdict_challenge": "OVERLAY_LIMIT is acceptable only if the objective is strictly OOS_retention >= 0.7. On that metric, the best result remains negative at -0.372, so the module is not rescued as an alpha sleeve. But the verdict should not imply the overlay is economically useless: CAUTION e0.0 improved MDD from 45.6% to 34.4%, net_SR from 0.713 to 0.881, Calmar from 0.323 to 0.516, and grade F to C. The cleaner conclusion is that the overlay is a partial drawdown/SR repair, not an OOS alpha-retention repair.",
+  "untested_design_worth_trying": "A PIT-valid crash-entry or value-drawdown filter inside CAUTION is worth testing before a final LIMIT verdict: require CAUTION plus deteriorating index trend, rising realized volatility, negative market breadth, widening credit/liquidity stress, or worsening aggregate earnings revisions. Also test a RISK_ON quality/selection throttle, because OOS alpha collapse is concentrated in RISK_ON, not CRISIS."
+}

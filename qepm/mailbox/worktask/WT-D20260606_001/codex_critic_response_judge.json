@@ -1,0 +1,56 @@
+{
+  "agent_id": "codex_qepm_critic",
+  "role": "judge_critic",
+  "model": "gpt-5.5",
+  "task_id": "WT-D20260606_001",
+  "veto_power": false,
+  "stance": "APPROVE_CONDITIONAL",
+  "stance_rationale": "The Judge verdict is materially correct: JUDGE_FAILED, Grade B, graduation BLOCKED, and governor_handoff=false follow from the independently recomputed active OOS-retention failure, unresolved C15 sanctioned-path breach, and non-robust marginal contribution of the new sleeve. The main revisions needed are framing precision: distinguish more sharply between book-level Grade B and sleeve-level non-admission, treat the 2024-01 negative lockbox SR as corroborating rather than the sole hard gate because n=29 is short, and avoid implying C15 invalidates measured performance when the verdict itself says it does not.",
+  "critical_concerns": [
+    {
+      "id": "C1",
+      "severity": "MEDIUM",
+      "title": "Book-level Grade B and sleeve-level failure are partially conflated",
+      "evidence": "The verdict assigns essence_grade=B from bt_result/essence_score while also arguing the new residual-momentum sleeve adds no incremental return and should not graduate.",
+      "impact": "Not fatal, but the verdict should explicitly state that Grade B is a book-level measurement outcome dominated by frozen R05, while sleeve admission is blocked by marginal and OOS evidence.",
+      "required_rebuttal": "Clarify that Grade B does not constitute positive evidence for the new sleeve; it only describes the blended book under the essence_score contract."
+    },
+    {
+      "id": "C2",
+      "severity": "LOW",
+      "title": "2024-01 lockbox negative active SR should be framed as corroborating, not independently decisive",
+      "evidence": "Lockbox OOS_n=29 and active_SR=-0.1425; 65/35 OOS retention=0.216 over a longer OOS window also fails.",
+      "impact": "The hard fail is sound because the contract-authoritative 65/35 active retention is far below 0.7. The short lockbox window strengthens the diagnosis but should not be over-weighted as a standalone statistical disqualifier.",
+      "required_rebuttal": "State that the binding retention fail is the 65/35 contract value, with the 2024-01 lockbox serving as an economically important stress confirmation."
+    },
+    {
+      "id": "C3",
+      "severity": "LOW",
+      "title": "C15 block is valid but should remain explicitly procedural",
+      "evidence": "Judge says direct parquet access was byte-identical and not a lookahead path, yet still blocks graduation pending load_month_factors rebuild and C14 certification.",
+      "impact": "Correct if C15 is an explicit sanctioned-path graduation precondition. The verdict should avoid any wording that could be read as invalidating the performance numbers.",
+      "required_rebuttal": "Keep C15 as an auditability/reproducibility block, not a performance-validity or PIT-lookahead block."
+    }
+  ],
+  "ax_violations": [],
+  "agreements": [
+    "JUDGE_FAILED is the correct disposition because at least one hard graduation gate fails.",
+    "Grade B is correct if essence_score.R authoritatively returns B with oos_retention below the A threshold.",
+    "Graduation BLOCKED is correct on active OOS-retention failure alone, even before considering C15 and marginal dIR.",
+    "The active-vs-total distinction is correct: healthy total-return retention does not rescue a benchmark-relative active-alpha deliverable.",
+    "A rallying KOSPI200 is context, not an excuse; benchmark-relative strategies must survive benchmark-relative OOS evaluation.",
+    "C15 can be procedural rather than lookahead and still block graduation if sanctioned-path compliance is mandatory.",
+    "Gate C PASS-but-non-decisive is logically coherent because PORT_t=4.90 is full-sample and R05-dominated, while the new sleeve's marginal contribution is weak or negative.",
+    "Governor handoff=false is correct for an ungraduated discovery candidate with no recommended admit action."
+  ],
+  "weakest_assumption": "The verdict assumes active OOS-retention is the binding evaluation target for this discovery despite the sleeve being proposed as an orthogonal diversifier rather than standalone alpha. That assumption is defensible because the final object is a KOSPI200-relative book admission and the sleeve's marginal dIR/incremental return also fail, but it should be stated explicitly.",
+  "verdict_correctness": "CORRECT_WITH_REVISIONS",
+  "rebuttal_required": [
+    "Confirm that essence_score.R contractually uses active OOS-retention, not total-return retention, for this WT type.",
+    "Clarify that the 65/35 active retention is the binding hard fail and the 2024-01 lockbox result is corroborative stress evidence.",
+    "Document that C15 remediation is required for graduation even when recomputed numbers are byte-identical.",
+    "Separate book-level evidence from sleeve-level marginal evidence so PORT_t=4.90 is not misread as validating residual momentum.",
+    "Confirm no additional AX-001 v2, AX-007, AX-008, or builder-level PIT violations remain unresolved beyond the already flagged M08 residualization recheck."
+  ],
+  "_judge_note": "Codex returned the JSON object twice (identical content). Captured once here. Raw transcript: codex_judge_raw_output.txt. Invoked via `codex exec --model gpt-5.5 -c model_reasoning_effort=high --sandbox read-only` (helper run_codex_qepm_critic.sh bypassed per WT mandate)."
+}

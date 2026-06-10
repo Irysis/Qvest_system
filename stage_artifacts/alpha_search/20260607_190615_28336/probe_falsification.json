@@ -1,0 +1,22 @@
+{
+  "probe": "probe1_leadlag_network_momentum",
+  "strategy_id": "STR_AS_20260607_190615_28336",
+  "hypothesis": "price lead-lag network momentum (slow info diffusion, Cohen-Lou 2012) — long-only top25 KR",
+  "primary_goal": "orthogonality to STR_1715 (escape covariance eigenmode-1 wall)",
+  "falsification_criteria": {
+    "1_portfolio_alpha_t_nw_lag3": {"value": -0.076, "threshold": ">=2.95", "result": "FAIL"},
+    "2_oos_retention": {"value": -1.081, "threshold": ">=0.7", "result": "FAIL", "detail": "active SR IS 0.491 -> OOS -0.531 (sign flip)"},
+    "3_return_cor_vs_STR_1715": {"value": 0.0745, "threshold": "<0.5", "result": "PASS", "note": "active-return cor 0.0676; PRIMARY criterion satisfied"}
+  },
+  "supporting_metrics": {
+    "grade": "F", "score": 35.4, "sharpe": 0.358, "ir": -0.116, "cagr_pct": 9.02,
+    "mdd_pct": 70.79, "calmar": 0.127, "turnover_ann_pct": 975.6, "bm_corr": 0.77,
+    "ic": -0.0066, "icir": -0.067, "fmb_score_nw_t": 0.25,
+    "ff3_alpha_t": -0.216, "carhart4_alpha_t": -0.557, "ff5_alpha_t": -0.402
+  },
+  "verdict": "Orthogonality LIVE (cor 0.07 vs STR_1715) but alpha DEAD (PORT_t -0.08, OOS sign-flip, IC noise). Mechanism escaped the eigenmode-1 wall but the lead-lag signal carries no realized long-only predictive content at monthly rebalance in K200/KQ150.",
+  "n_months": 256,
+  "period": "2005-02 ~ 2026-05",
+  "universe": "K200_KQ150",
+  "n_trials": 1
+}

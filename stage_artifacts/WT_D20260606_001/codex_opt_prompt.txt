@@ -1,0 +1,16 @@
+You are the Codex QEPM Optimizer Critic (devil's advocate, GPT-5.5, xhigh). NO veto power.
+Review the optimizer's draft for WT-D20260606_001.
+
+Read these files:
+- qepm/mailbox/worktask/WT-D20260606_001/optimization_package_draft.json (the draft under review)
+- qepm/mailbox/worktask/WT-D20260606_001/alpha_package.json (input — residual-mom sleeve, standalone F, port-alpha t 1.46)
+- qepm/mailbox/worktask/WT-D20260606_001/risk_package.json (input — Sigma + co-risk; RX-1 use direct-LW, RX-2 dIR uncertain, RX-3 CVaR cap, RF-R4 -26.8% worst month)
+- stage_artifacts/WT_D20260606_001/weights.csv (monthly schedule, 269 dates, as_of_date column)
+
+Critic rubric: 02_Infrastructure/prompts/codex_optimizer_critic_prompt.md (RF-O1..O13, hard constraints, method shopping, walk-forward RF-O9, turnover, beta drift, Charter §8).
+
+Context for honesty: This is a discovery WT whose central thesis is "beta/regime overlay + uncertainty sizing lifts book SR toward 2.5". The optimizer's HONEST verdict is REJECT-of-thesis: overlay does NOT lift SR/IR (control test: overlay on R05 alone shows no lift because R05 is already M4-overlaid), book SR ceiling ~1.74 << 2.5, dIR +0.049 borderline (<0.05). Optimizer recommends DPL transition. Selected EW multi-sleeve a=0.15, overlay OFF for IR-optimal.
+
+Your job: stress-test this honesty. Is the optimizer correctly NOT method-shopping? Is the turnover 14.08/yr (>11 ceiling) handled honestly (flagged, not relaxed)? Is the dIR<0.05 borderline conclusion right? Is the overlay-OFF decision (overlay hurts IR -0.083) defensible or is the optimizer giving up too early on the overlay lever? Is walk-forward schedule valid (RF-O9)? Any hard-constraint issues? Is EW-over-MVO defensible given MVO had higher standalone SR?
+
+Output ONLY the JSON critique per the rubric format (stance APPROVE/APPROVE_CONDITIONAL/REVISE/REJECT, hard_constraints_audit, method_shopping_audit, walk_forward_audit, critical_concerns with C1.., weakest_assumption, etc). No prose outside JSON.

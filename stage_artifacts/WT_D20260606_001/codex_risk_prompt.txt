@@ -1,0 +1,22 @@
+You are the QEPM Codex Risk Critic (devil's advocate, GPT-5.5, xhigh reasoning). NO veto power.
+
+Read these files in the repo (cwd = repo root):
+1. Base context: 02_Infrastructure/prompts/qepm_codex_base_context.md
+2. Critic spec: 02_Infrastructure/prompts/codex_risk_critic_prompt.md
+3. RISK DRAFT under review: qepm/mailbox/worktask/WT-D20260606_001/risk_package_draft.json
+4. Co-risk artifact: stage_artifacts/WT_D20260606_001/corisk_R05.json
+5. Tail artifact: stage_artifacts/WT_D20260606_001/tail_risk.json
+6. Alpha input (context): qepm/mailbox/worktask/WT-D20260606_001/alpha_package.json
+7. Build script (verify method honesty): stage_artifacts/WT_D20260606_001/risk_build.R
+
+CONTEXT: residual-mom (CompResidMom M08+M14) sleeve. Role = co-risk diagnosis vs incumbent R05 (book_state 100%). Risk agent scope = Sigma + co-risk + tail + stress + crowding ONLY. NO alpha edit, NO weights, NO delta-IR (optimizer scope). Standalone already FAILED at alpha stage (port-alpha t<2.95).
+
+Your job: adversarially critique the RISK package per codex_risk_critic_prompt.md sections 1-8. Focus on the WEAKEST Sigma assumption and whether the co-risk deliverable (negative cov contribution -0.0044, beta_down +0.082, joint-left-tail TDC 0.13) honestly supports a diversifier conclusion. Scrutinize:
+- Sigma = BOmegaB'+D: cond 86.2 (RF-R2 threshold is cond>100 -> note structural is under it; sample 239.9 is over). PSD true. factor_share 0.972 (MKT 96.4% RF-R1).
+- The canonical_screen integrity discrepancy: risk-measured port-alpha t=2.06 vs alpha-reported 1.461 (turnover matches => holdings identical, benchmark/return alignment differs). Is this a process-honesty (AX-002) concern?
+- Tail: Hill alpha 3.17 (RF-R6 threshold <1.5 -> ok). EVT-GPD inline (fExtremes absent).
+- Crowding: both LOW (0.21, 0.13).
+- Stress: GFC sleeve -42.7% (RF-R4 threshold >25% single-period loss -> FLAG, but window-cumulative not 1m).
+- Is the diversifier claim honest given beta_down is POSITIVE (+0.082, not a hedge) and sleeve vol 30% >> R05 24%?
+
+Output ONLY a single JSON object matching the schema in codex_risk_critic_prompt.md section "너의 critique 형식". stance in {APPROVE, APPROVE_CONDITIONAL, REVISE, REJECT}. Be specific and quantitative. Cite RF-R / AX / PIT codes.

@@ -1,0 +1,75 @@
+{
+  "schema_version": "v1.0",
+  "generated": "2026-06-05",
+  "model": "Statistical Jump Model (SJM, K=2, coordinate-descent + DP). Shu et al. 2024 arXiv 2402.05272.",
+  "features": ["EWM downside dev(hl10)", "EWM Sortino(hl20)", "EWM Sortino(hl60)", "log-VIX(KR 보강, Kang-Yoon 2015)"],
+  "pit": "online lookback DP; 6m refit; +1d delay (t-1 lag); expanding z standardization.",
+  "lambda_sweep_done": true,
+  "lambda_sensitivity": {
+    "10": {
+      "lambda": 10,
+      "monthly_churn": 0.119,
+      "bear_fraction": 0.3554
+    },
+    "25": {
+      "lambda": 25,
+      "monthly_churn": 0.103,
+      "bear_fraction": 0.3039
+    },
+    "50": {
+      "lambda": 50,
+      "monthly_churn": 0.0664,
+      "bear_fraction": 0.296
+    },
+    "100": {
+      "lambda": 100,
+      "monthly_churn": 0.0435,
+      "bear_fraction": 0.2643
+    },
+    "200": {
+      "lambda": 200,
+      "monthly_churn": 0.0252,
+      "bear_fraction": 0.2456
+    }
+  },
+  "lambda_monotone_note": "λ 10→25→50→100→200 시 churn 11.9→10.3→6.6→4.3→2.5% 단조 감소 = λ가 지속성 명시 제어(SJM 핵심 주장 KR 실증). 채택 λ=50(canonical, 126d refit, churn~7%, bear~32%).",
+  "churn": {
+    "sjm_monthly": 0.0709,
+    "baseline_category": 0.3318,
+    "sjm_bear_fraction": 0.3215,
+    "improvement": true,
+    "reduction_pp": 26.1
+  },
+  "crisis_detection": {
+    "GFC": {
+      "window": ["2008-09-01", "2009-03-31"],
+      "bear_hit_rate": 1,
+      "first_bear_date": "2008-09-01",
+      "latency_days": 0
+    },
+    "COVID": {
+      "window": ["2020-02-20", "2020-04-30"],
+      "bear_hit_rate": 0.939,
+      "first_bear_date": "2020-02-25",
+      "latency_days": 5
+    },
+    "Bear22": {
+      "window": ["2022-01-01", "2022-10-31"],
+      "bear_hit_rate": 1,
+      "first_bear_date": "2022-01-03",
+      "latency_days": 2
+    }
+  },
+  "hmm_parity": {
+    "state_agreement": 0.7263,
+    "prob_corr": 0.4306
+  },
+  "discrimination": {
+    "kendall_tau_bull_bear": 0.568,
+    "ir_spread": 0.836,
+    "n_modules_sig": 78,
+    "discriminative": false
+  },
+  "verdict_signal_quality": "SJM_REDUCES_CHURN_ONLY",
+  "note": "신호품질(churn/판별/parity) 평가. 앙상블 OOS SR 실익은 regime_jm_ensemble_ab에서 별도 판정 — 현 풀(0.70 상관)서 SR 무변 예상(regime_study 정합)."
+}

@@ -1,0 +1,63 @@
+{
+  "experiment": "STR_1715 v2 (Core consensus + Defense + Value) LONG-ONLY top-25 (run_alpha_search OOM 우회 — 가벼운 Return.portfolio driver)",
+  "strategy_id": "STR_str1715v2",
+  "fe_path": "G:/Quant_Module_Moltbot/02_Infrastructure/alpha_search/fe_str1715v2.R",
+  "run_id": "STR1715V2_LO_20260606_045408_13084",
+  "metric_type": "backtested",
+  "universe": "K200_KQ150",
+  "weights": {
+    "w_C": 0.45,
+    "w_D": 0.25,
+    "w_V": 0.3,
+    "n_cap": 25,
+    "weighting": "equal_weight"
+  },
+  "start_date": "2005-01-01",
+  "n_months": 256,
+  "avg_n_holdings": 23.4,
+  "annualized": {
+    "sharpe": 0.9105,
+    "cagr_pct": 16.956,
+    "mdd_pct": 39.224,
+    "calmar": 0.4323
+  },
+  "oos_retention": -0.445,
+  "active_vs_kospi200": {
+    "net_ir": 0.2948,
+    "portfolio_alpha_t_nw_lag3": 1.1008,
+    "excess_total_return_pct": 1871.508
+  },
+  "carhart4": {
+    "alpha_ann_pct": 7.746,
+    "alpha_t": 2.7802
+  },
+  "comparison": {
+    "valearn": {
+      "oos_retention": -0.517,
+      "sharpe": 0.713,
+      "note": "value+earnings-rev 2축 long-only"
+    },
+    "str_1715": {
+      "oos_retention": 0.91,
+      "sharpe": 1.5,
+      "note": "Core consensus + Defense (value 0%)"
+    }
+  },
+  "essence": {
+    "grade": "C",
+    "hard_fail": false,
+    "reasons": "Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
+    "detail": {
+      "net_sharpe": 0.911,
+      "net_ir": 0.295,
+      "portfolio_alpha_t_nw_lag3": 1.101,
+      "oos_retention": -0.445,
+      "dsr": null,
+      "mdd": 0.392,
+      "calmar": 0.432,
+      "cagr": 0.17
+    }
+  },
+  "registered": "04_Research/strategies/STR_str1715v2/sim_result.rds + module_catalog.json",
+  "generated_at": "2026-06-06T04:54:09"
+}

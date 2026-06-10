@@ -1,0 +1,249 @@
+{
+  "agent_id": "codex_qepm_critic",
+  "role": "forge_critic",
+  "model": "gpt-5.5",
+  "task_id": "WT-D20260606_001",
+  "veto_power": false,
+  "stance": "REVISE",
+  "stance_rationale": "Pure-function construction, schedule fidelity, core IR/PORT_t reproduction, and charts mostly pass. Revision is required because the draft overstates measurement integrity: headline Sharpe conflicts with the official bt_result Sharpe, active-OOS HARD fail is rationalized rather than resolved, dIR threshold pass is BM-alignment-sensitive, DSR uses an undercounted/approximate trial penalty, and turnover/cost units are not self-contained in bt_result.",
+
+  "pure_function_audit": {
+    "hash_match": true,
+    "alpha_md5_unchanged": true,
+    "risk_md5_unchanged": true,
+    "optimization_md5_unchanged": true,
+    "reported_hashes": {
+      "alpha": "8bc23f00af12a4d26eb2667a74131fa1",
+      "risk": "4856be6add50c65dd6768a305c685658",
+      "optimization": "0f070c0affdb8b70d2d8d8f56e0cfbba"
+    },
+    "package_write_code_found": false,
+    "alpha_scores_topN_reselection": false,
+    "weights_csv_used_as_is": true,
+    "current_alpha_package_used_for_holdings": false,
+    "r05_alpha_scores_read_only_for_frozen_ret_net": true,
+    "rf_f1_flag": false,
+    "rf_f1_note": "Static audit of run_all.R supports the PRE=POST claim: packages are read, weights.csv drives holdings, and writes go to bt_result/output/intermediate artifacts, not the three input packages."
+  },
+
+  "walk_forward_audit": {
+    "n_sig_dates_in_weights_csv": 269,
+    "weights_date_range": ["2004-01-30", "2026-05-31"],
+    "backtest_panel": ["2004-02", "2026-05"],
+    "as_of_date_column_present": true,
+    "monthly_returns_date_range": null,
+    "monthly_returns_note": "run_all.R uses .cache/rawdata.parquet daily Close/BM_Ret rather than monthly_returns.parquet.",
+    "single_snapshot_risk": "LOW",
+    "rf_f2_flag": false
+  },
+
+  "lockbox_audit": {
+    "equity_curve_lockbox_strategy_line_visible": true,
+    "lockbox_marker_date": "2024-01-01",
+    "frozen_extension_applied": true,
+    "oos_zoom_chart_present": true,
+    "rf_f3_flag": false,
+    "metric_mismatch_flag": true,
+    "metric_mismatch_note": "Charts mark OOS at 2024-01, but oos_retention in run_all.R is a 70/30 split, approximately 2019-09..2026-05 OOS. The draft should not imply the 0.171 retention is specifically the 2024-01 lockbox result unless recomputed on that boundary."
+  },
+
+  "baseline_fairness_audit": {
+    "baseline_method": "same_period_recomputed_for_IR",
+    "same_period_evidence_present": true,
+    "same_cost_basis_evidence_present": true,
+    "same_dsr_penalty_applied": false,
+    "rf_f4_flag": false,
+    "note": "R05 baseline IR is recomputed on the same 268-month forge panel and same contemporaneous BM basis. Baseline DSR is not reported, but dIR does not depend on it."
+  },
+
+  "harvey_5spec_audit": {
+    "all_5_specs_present": false,
+    "present_specs": ["benchmark_active_NW_lag3_only"],
+    "missing_specs": ["CAPM", "Carhart3", "Carhart4", "FF5", "FF6"],
+    "any_spec_shopping_risk": "MEDIUM",
+    "rf_f6_flag": true,
+    "note": "The draft has PORT_t vs KOSPI200 but not the full 5-spec Harvey package requested by the rubric."
+  },
+
+  "dsr_penalty_audit": {
+    "reported_dsr": 1.0,
+    "reported_candidates_tried_total": 9,
+    "rubric_min_candidates_tried_total": 17,
+    "components": {
+      "alpha_candidates": 8,
+      "optimizer_candidates": 9,
+      "risk_candidates_excluded_from_minimum": 3
+    },
+    "formula_plausibility": "NUMERICALLY_PLAUSIBLE_BUT_NOT_RIGOROUS",
+    "penalty_applied_consistently": false,
+    "rf_f5_flag": true,
+    "note": "Long 268-month high-SR sample makes a high DSR plausible. However run_all.R comments mention alpha+optimizer trials but sets n_trials=9, and _dsr.R explicitly notes the analytic trial-SR proxy is not the correct DSR input. Recompute/report DSR under N=17 and stated trial-SR dispersion."
+  },
+
+  "turnover_formula_audit": {
+    "round_trip_x2_used": true,
+    "forge_one_way_definition": "0.5 * sum(abs(delta_weights))",
+    "reported_sleeve_annual_round_trip": 7.04,
+    "reported_book_annual_round_trip": 1.056,
+    "optimizer_reported_book_annual_round_trip": 2.11,
+    "rf_f7_flag": false,
+    "unit_reconciliation_warning": true,
+    "note": "Mechanically, forge applies x2 to half-L1 one-way turnover. The remaining issue is unit language: optimizer reported roughly double turnover using L1-as-one-way, while bt_result period_returns has blank turnover and does not make the reported 1.056 self-auditable."
+  },
+
+  "chart_audit": {
+    "equity_curve_png": true,
+    "annual_returns_png": true,
+    "oos_zoom_chart_png": true,
+    "regime_decomposition_png": true,
+    "scenario_comparison_png": false,
+    "all_4_requested_charts_present": true,
+    "equity_curve_oos_marker_visible": true,
+    "oos_zoom_oos_marker_visible": true,
+    "annual_returns_includes_oos_years": true,
+    "annual_returns_explicit_oos_marker": false,
+    "rf_f8_flag": false
+  },
+
+  "verification_triangulation": {
+    "bt_result_components_present": true,
+    "manifest_integrity_status": "WARNING",
+    "audit_fail_count": 0,
+    "audit_warn_count": 2,
+    "official_metrics": {
+      "06_metrics_sharpe": 1.55987452864024,
+      "06_metrics_cagr": 0.353885754455639,
+      "06_metrics_mdd": 0.350609120136714,
+      "06_metrics_calmar": 1.00934554787864,
+      "07_benchmark_ir": 0.784771755412506,
+      "07_portfolio_alpha_t_nw_lag3": 4.89985690525616
+    },
+    "draft_headline_metrics": {
+      "net_sharpe": 1.6831,
+      "cagr": 0.3545,
+      "mdd": 0.3506,
+      "calmar": 1.0112,
+      "ir": 0.7848,
+      "port_t": 4.9
+    },
+    "sharpe_basis_conflict": true,
+    "sharpe_basis_note": "Draft headline Sharpe 1.6831 is CAGR/annualized-vol, while the official bt_result Sharpe is arithmetic mean excess / vol = 1.5599."
+  },
+
+  "critical_concerns": [
+    {
+      "id": "C1",
+      "severity": "HIGH",
+      "title": "Headline Sharpe is not the official bt_result Sharpe",
+      "evidence": "06_metrics.csv official Sharpe = 1.5599; forge_package_draft headline net Sharpe = 1.6831 using Return.annualized/StdDev.",
+      "impact": "The draft calls 1.6831 authoritative, but the authoritative 10-component output says 1.5599. This is a measurement-basis mismatch, not rounding.",
+      "required_rebuttal": "Rename 1.6831 as CAGR/vol or geometric return-to-vol, and headline the official 06_metrics Sharpe when saying 'net Sharpe'."
+    },
+    {
+      "id": "C2",
+      "severity": "HIGH",
+      "title": "Active-SR OOS HARD fail is explained but not neutralized",
+      "evidence": "oos_retention_active_sr = 0.171 < 0.7; R05 active retention = 0.166; total-SR retention = 0.884.",
+      "impact": "Inheritance from R05 is useful attribution, but it does not waive a HARD active-alpha retention gate for the combined book. A KOSPI200 rally can be genuine active alpha decay.",
+      "required_rebuttal": "Report incremental OOS dIR/book-vs-R05 retention and recompute the retention on the explicit 2024-01 lockbox boundary."
+    },
+    {
+      "id": "C3",
+      "severity": "HIGH",
+      "title": "dIR pass is basis-sensitive at the admission threshold",
+      "evidence": "Optimizer dIR = +0.049 under bm_fwd; forge dIR = +0.0593 under realized-month BM.",
+      "impact": "Forge alignment appears economically correct if returns are keyed by realized month, but the threshold crossing is not robust. The +0.0593 should be called marginal and alignment-dependent.",
+      "required_rebuttal": "Include a dual-alignment table for R05 IR, book IR, beta, dIR, and n under both realized-month and signal-month-forward BM semantics."
+    },
+    {
+      "id": "C4",
+      "severity": "MEDIUM",
+      "title": "DSR=1.0 is plausible but under-audited",
+      "evidence": "run_all.R sets n_trials_book <- 9 despite alpha_package candidates_tried = 8 and optimizer_package candidates_tried = 9; _dsr.R warns the trial-SR proxy is not correct.",
+      "impact": "Likely not outcome-changing, but the draft should not use DSR=1.0 as a clean HARD pass without disclosing assumptions.",
+      "required_rebuttal": "Recompute/report DSR with at least N=17 and a stated cross-trial SR dispersion assumption."
+    },
+    {
+      "id": "C5",
+      "severity": "MEDIUM",
+      "title": "5-spec Harvey audit is absent",
+      "evidence": "Only KOSPI200 active NW lag-3 t-stat is present in bt_result/forge draft.",
+      "impact": "This leaves RF-F6 open if the rubric is enforced for this discovery WT.",
+      "required_rebuttal": "Either add CAPM/C3/C4/FF5/FF6 results or explicitly request a discovery-stage waiver."
+    },
+    {
+      "id": "C6",
+      "severity": "MEDIUM",
+      "title": "Turnover/cost evidence is not self-contained in bt_result",
+      "evidence": "run_all.R reports book RT = 1.056, optimizer reports 2.11, and 03_period_returns.csv turnover is blank with cost artifacts.",
+      "impact": "The formula in run_all.R is defensible, but the saved authoritative result does not let a judge audit turnover/cost without reading source code.",
+      "required_rebuttal": "Persist sleeve/book turnover and cost metrics into bt_result or a companion audit artifact with explicit half-L1 vs L1 units."
+    },
+    {
+      "id": "C7",
+      "severity": "LOW",
+      "title": "NEGLIGIBLE divergence is honest only for SR basis",
+      "evidence": "SR 1.701 vs 1.683 differs by 0.018, but active IR/beta changed materially due BM alignment.",
+      "impact": "The SR divergence is small, but it should not be used to imply optimizer active-metric validation.",
+      "required_rebuttal": "Scope the 'NEGLIGIBLE' label to CAGR/vol SR only."
+    }
+  ],
+
+  "supporting_arguments": [
+    "run_all.R uses weights.csv directly and does not reselect current alpha scores.",
+    "R05 leg is read as frozen ret_net from WT-D20260430_001.",
+    "10-component bt_result exists and audit has 0 FAIL.",
+    "IR 0.7848 and PORT_t 4.900 are reproduced in 07_benchmark_compare.csv.",
+    "All four requested charts are present; equity and OOS zoom show the 2024-01 OOS marker with strategy line after it."
+  ],
+
+  "unresolved_disputes": [
+    "Whether admission should use realized-month BM dIR +0.0593 or optimizer signal-month-forward BM dIR +0.049.",
+    "Whether active-SR OOS retention can be waived for an incremental sleeve when the incumbent R05 also fails.",
+    "Whether the official Sharpe for judge reporting is 06_metrics Sharpe 1.5599 or optimizer-style CAGR/vol 1.6831.",
+    "Whether DSR trial count should be 9, 17, or larger including prior momentum pre-search.",
+    "Whether book turnover should be reported as 1.056 or 2.11 under the house round-trip convention."
+  ],
+
+  "weakest_assumption": "The weakest assumption is that the active-SR OOS HARD fail is non-disqualifying because it is inherited from R05 and total-SR retention is healthy. That is attribution, not a gate waiver.",
+
+  "rationalization_red_flags": [
+    {
+      "phrase": "INHERITED from R05",
+      "challenge": "Correct attribution, but not sufficient to nullify a HARD active-retention failure for the delivered book."
+    },
+    {
+      "phrase": "NEGLIGIBLE",
+      "challenge": "Honest for CAGR/vol SR divergence only; not honest if applied to active IR/beta alignment changes."
+    },
+    {
+      "phrase": "ABOVE the marginal threshold",
+      "challenge": "dIR clears by only 0.0093 and fails/straddles under the optimizer alignment and risk CI."
+    },
+    {
+      "phrase": "DSR 1.0",
+      "challenge": "Likely high, but n_trials and trial-SR dispersion are under-specified."
+    },
+    {
+      "phrase": "PIT-correct",
+      "challenge": "Forge realized-month BM is likely correct, but the package needs explicit date-key semantics to prove the optimizer lead-BM was misaligned rather than differently labeled."
+    }
+  ],
+
+  "rebuttal_required": [
+    "Correct or relabel the Sharpe basis mismatch against 06_metrics.csv.",
+    "Add dual BM-alignment reconciliation table and state which date key each basis uses.",
+    "Recompute OOS retention on the explicit 2024-01 lockbox boundary, plus incremental book-vs-R05 OOS dIR.",
+    "Recompute DSR with at least N=17 and disclose trial-SR dispersion assumption.",
+    "Persist turnover/cost audit values into the saved bt_result or a formal companion artifact.",
+    "Add or waive the 5-spec Harvey audit explicitly."
+  ],
+
+  "forge_specific_questions": [
+    "Pure Function v6.1 R12 hash audit PRE=POST is self-consistent, but will final package include the run log or only self-reported hashes?",
+    "Which Sharpe definition is governing: official bt_result mean/sd Sharpe 1.5599 or optimizer-style CAGR/vol 1.6831?",
+    "Is oos_retention meant to be 70/30 split OOS or the charted 2024-01 lockbox OOS?",
+    "Should dIR admission be judged on realized-month BM (+0.0593) or also require robustness to optimizer bm_fwd (+0.049)?",
+    "Should DSR n_trials include alpha candidates plus optimizer candidates at minimum?"
+  ]
+}

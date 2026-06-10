@@ -1,0 +1,40 @@
+You are an adversarial quant critic (Codex Critic Round) for a factor-rotation Track2 study.
+Mode: regime/bear de-risk OVERLAY applied to a FROZEN orthogonal-alpha module. Your job is to find the WEAKEST assumption, any PIT/look-ahead leak, any self-serving rationalization, and to challenge the verdict. Be skeptical. Output STRICT JSON only.
+
+CONTEXT
+- Module (frozen, signals never modified): STR_valearn_70_top25 = value(BM)+earnings-revision sleeve hierarchical 0.7/0.3, long-only top25, monthly, 256 months 2005-03..2026-06.
+- Underlying alpha is long-short Carhart4 t=4.11 (orthogonal), but long-only top25 baseline: full-period monthly Sharpe 0.713, MDD 45.6%, essence_score OOS_retention = -0.517 (active-Sharpe OOS/IS, 65/35), grade F.
+- Goal: test whether a book-level regime/bear de-risk overlay (exposure scalar e(regime) in [0,1]; cash=0; 15bps transition cost) can lift OOS_retention from -0.517 toward >=0.7 (like STR_1715 base SR1.50 -> overlay OOS 0.91) and ease MDD. This re-examines the prior factor-rotation conclusion that 'no orthogonal sleeve in pool -> regime overlay OOS-worthless'.
+- PIT: regime label = prior month-end Category (frozen 5-state classifier: RISK_ON/CAUTION/NEUTRAL/RISK_OFF/CRISIS) then shifted 1 month. Rule (which regime to de-risk + e) derived on IS (first 60%) ONLY, applied forward to OOS. Cross-checked with independent SJM jump-model bear state (JM_State_lag, already t-1 lagged).
+- Measurement: build_bt_result (monthly, PerformanceAnalytics standard fns) -> audit_bt_result -> essence_score. No prod/cumprod self-synthesis of returns; net = e*module_ret - known transition cost; NAV = cumprod(net) value path.
+
+IS DERIVATION
+- IS Category Sharpe (ascending): CAUTION -0.969 (n=11), NEUTRAL 0.539 (n=17), RISK_ON 1.079 (n=116), CRISIS 2.523 (n=7), RISK_OFF NA (n=2). -> IS-derived de-risk regime = CAUTION (lowest Sharpe, n>=6).
+- IS SJM: bull Sharpe 1.127 (n=117), bear 0.576 (n=36).
+
+RESULTS (essence_score, variant -> grade / net_SR / PORT_t / OOS_retention / MDD / Calmar):
+- baseline_e1.0:        F / 0.713 / 0.874 / -0.517 / 0.456 / 0.323
+- cat_CAUTION_e0.5:     C / 0.809 / 1.146 / -0.430 / 0.400 / 0.409
+- cat_CAUTION_e0.0:     C / 0.881 / 1.369 / -0.372 / 0.344 / 0.516   <- best OOS_retention, best MDD ease
+- CRISIS_off_e0.5:      F / 0.658 / 0.397 / -0.789 / 0.456 / 0.276
+- CRISIS_off_e0.0:      F / 0.569 / -0.113 / -1.221 / 0.457 / 0.226
+- defbundle(CRISIS+RISK_OFF)_e0.0: F / 0.514 / -0.512 / -1.998 / 0.468 / 0.185
+- sjm_bear_e0.5:        C / 0.783 / 0.268 / -0.839 / 0.434 / 0.298
+- sjm_bear_e0.0:        F / 0.719 / -0.314 / -1.582 / 0.424 / 0.244
+
+DIAGNOSTIC (why)
+- Worst drawdown months: 2020-03 (valearn -17.3%, t-1 regime=CAUTION), 2008-10 (-25.9%, t-1=CAUTION). The classifier labels CRISIS the month AFTER the crash, so CRISIS de-risk fires post-crash and strips valearn's rebound.
+- valearn full-period mean monthly return by regime: CRISIS +7.4%, NEUTRAL +2.2%, RISK_ON +1.05%, CAUTION -3.1%. It is a counter-cyclical value module: best in CRISIS, worst in CAUTION.
+- OOS active (vs KOSPI200) by regime: CRISIS +2.26%/mo (Sharpe 0.59), NEUTRAL +0.57%, RISK_ON -0.40%/mo (Sharpe -0.345, n=81 = 79% of OOS months), CAUTION -9.9%/mo (Sharpe -1.88, n=5).
+- So OOS alpha collapse is concentrated in the dominant RISK_ON state (un-timeable), and CRISIS is the module's best regime.
+
+VERDICT (draft): OVERLAY_LIMIT. Best variant (CAUTION de-risk e0.0) eases MDD 45.6%->34.4% and lifts net_SR 0.713->0.881 (grade F->C), but OOS_retention stays NEGATIVE (-0.372), nowhere near 0.7. Conclusion: the long-only translation break is cross-sectional selection failure in the dominant RISK_ON regime, NOT a timing problem; book-level regime exposure cannot rescue it. project-factor-rotation 'overlay worthless' conclusion stands even with a genuine orthogonal alpha present.
+
+CHALLENGE THIS. Specifically address:
+1) Is the IS-only rule derivation honest, or is choosing CAUTION (which also happens to carry the 2008/2020 crash entry) a subtle in-sample/full-sample leak? The de-risk regime was picked by IS Sharpe; CAUTION is bad in BOTH IS and OOS — is that legitimate persistence or luck given n=11 IS / n=5 OOS?
+2) Is OVERLAY_LIMIT the right verdict, or does 'MDD 45.6%->34.4% + net_SR 0.713->0.881 + grade F->C with CAUTION de-risk' actually constitute a meaningful partial rescue that the verdict undersells?
+3) Any unconsidered overlay design that could plausibly work (e.g. de-risk on a forward-looking but PIT-valid signal, or a within-CAUTION refinement) that was not tested and should be before concluding LIMIT?
+4) Does cash=0 (vs risk-free) materially bias the conclusion?
+5) PIT/look-ahead leaks in the regime join (roll=TRUE LOCF) or the shift.
+
+Output JSON: {"verdict":{"stance":"APPROVE|APPROVE_CONDITIONAL|REVISE|REJECT"},"weakest_assumption":"...","critical_concerns":[{"severity":"HIGH|MEDIUM|LOW","concern":"...","suggested_fix":"..."}],"pit_leak_found":true|false,"verdict_challenge":"...","untested_design_worth_trying":"..."}

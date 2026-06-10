@@ -1,0 +1,37 @@
+{
+  "variant": "c2 — 90f baseline + residmom + Piotroski-F + Mohanram-G + NetIssue (98f)",
+  "n_feature_cols": 98,
+  "base_feature_cols": 90,
+  "added_blocks": {
+    "RESIDMOM": "WT-D20260606_001 residual-mom alpha (R05 return_cor -0.061 직교)",
+    "PIOTROSKI": "F-Score 0..9 (crisis 방어/quality 종합, Piotroski 2000)",
+    "MOHANRAM": "G-Score 신호율 (저BM growth 방어, Mohanram 2005)",
+    "NETISSUE": "-Δlog(CapitalStock) YoY (Pontiff-Woodgate 2008; IN04 직교 proxy)"
+  },
+  "added_feature_cols": [
+    "RESIDMOM__lvl",
+    "RESIDMOM__slp",
+    "PIOTROSKI__lvl",
+    "PIOTROSKI__slp",
+    "MOHANRAM__lvl",
+    "MOHANRAM__slp",
+    "NETISSUE__lvl",
+    "NETISSUE__slp"
+  ],
+  "coverage_on_base_rows": {
+    "RESIDMOM": 0.9879753340184995,
+    "PIOTROSKI": 0.7948997944501541,
+    "MOHANRAM": 0.1855858170606372,
+    "NETISSUE": 0.9594938335046249
+  },
+  "panel_rows": 77840,
+  "n_months": 256,
+  "month_range": [
+    "2005-01",
+    "2026-04"
+  ],
+  "lockbox": "2023-12-22",
+  "pit_note": "신규 score=month-end signal(t-known, forward-1M predict, 90f 동일 semantics). __lvl=단면z, __slp=backward 1-lag Δ(past-only). label(Ret_1m forward)=base 유지. merge=ym,Ticker left. R dpl_c2_pit_audit forward-recompute + concurrent-lookahead PASS 의무.",
+  "baseline_ref": "stage_artifacts/WT_DPL_GPU_SWEEP/ (90f) + WT_DPL_C1 (92f residmom)",
+  "out_panel": "G:\\Quant_Module_Moltbot\\stage_artifacts\\WT_DPL_C2\\dpl_feature_panel.parquet"
+}

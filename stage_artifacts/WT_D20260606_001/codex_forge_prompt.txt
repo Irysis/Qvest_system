@@ -1,0 +1,37 @@
+You are the Codex QEPM Forge Critic (devil's advocate, GPT-5.5, xhigh). NO veto power.
+Review the forge integration draft for WT-D20260606_001.
+
+Read these files:
+- qepm/mailbox/worktask/WT-D20260606_001/forge_package_draft.json (the draft under review)
+- qepm/mailbox/worktask/WT-D20260606_001/alpha_package.json (input — residual-mom sleeve, standalone F, port-alpha t 1.46)
+- qepm/mailbox/worktask/WT-D20260606_001/risk_package.json (input — RX-1 use direct-LW, RX-2 dIR uncertain CI straddles 0, RF-R4 -26.8% worst month)
+- qepm/mailbox/worktask/WT-D20260606_001/optimization_package.json (input — STATIC_MULTISLEEVE_EW_a0.15, overlay OFF, design book SR 1.701, dIR 0.049, DPL recommendation)
+- stage_artifacts/WT_D20260606_001/run_all.R (the authoritative backtest source — reproduce the logic)
+- stage_artifacts/WT_D20260606_001/weights.csv (monthly schedule, 269 dates, as_of_date column)
+- qepm/mailbox/worktask/WT-D20260606_001/backtest_result/output_a015/ (10-component bt_result: 02_nav.csv, 03_period_returns.csv, 06_metrics.csv, 07_benchmark_compare.csv, 10_audit.csv)
+- stage_artifacts/WT_D20260606_001/output/ (4 charts: equity_curve.png, annual_returns.png, oos_zoom_chart.png, regime_decomposition.png)
+
+Critic rubric: 02_Infrastructure/prompts/codex_forge_critic_prompt.md (RF-F1..F9, Pure Function audit, walk-forward, lockbox, baseline fairness, turnover formula, charts).
+
+Context: This is a discovery WT. The forge measured the AUTHORITATIVE backtest of the optimizer's adopted STATIC_MULTISLEEVE_EW_a0.15 = 0.85*R05(frozen incumbent monthly ret_net from WT-D20260430_001) + 0.15*residual-mom-sleeve(EW top-20 from weights.csv). Construction = R PerformanceAnalytics::Return.portfolio (sleeve daily share-drift -> monthly net with 15bps round-trip; book 2-asset monthly rebalance). 10-component bt_result via build_bt_result()->audit_bt_result()->save_bt_result().
+
+Forge authoritative results (overlay OFF, n=268 months 2004-02..2026-05):
+- net Sharpe 1.6831, CAGR 35.45%, MDD 35.06%, Calmar 1.0112
+- IR vs KOSPI200 0.7848, PORT_t (NW lag-3) 4.900, dIR vs R05 +0.0593 (> 0.05 threshold)
+- oos_retention active-SR 0.171 (HARD-fail 0.7) BUT total-SR retention 0.884; forge claims active-SR fail is INHERITED from frozen R05 (R05 active-SR retention 0.166), driven by KOSPI200 rally 2024-26
+- DSR 1.0 (n_trials=9), book turnover ann round-trip 1.056
+- vs optimizer design book SR 1.701 -> forge 1.6831 (div -0.018 NEGLIGIBLE)
+- Reconciliation: forge uses CONTEMPORANEOUS realized-month KOSPI200 BM; optimizer used forward-shifted BM (one-month misalignment, same family as risk RF-R6). This shifted R05 IR 0.661->0.725 and beta -0.054->0.108.
+- Overlay ON reference: SR 1.6704 (flat), MDD 21.7% (cut), IR 0.5683 (dIR -0.157, hurts active IR).
+
+Your job: stress-test the forge honesty and measurement integrity.
+1. Pure Function: is hash audit PRE=POST (3-package md5 unchanged) genuine? Does run_all.R modify any package / re-select holdings from alpha_scores instead of weights.csv? (RF-F1, RF-F2)
+2. Is the BM-alignment reconciliation (forge contemporaneous vs optimizer forward-shifted) correct, and is the resulting dIR +0.0593 trustworthy or an artifact of choosing the alignment that flatters the book? Could either alignment be a lookahead/PIT issue?
+3. oos_retention: is forge right that the active-SR HARD-fail (0.171) is inherited from R05 and non-disqualifying because total-SR retention is 0.884? Or is this a rationalization that hides genuine alpha decay?
+4. DSR=1.0: legitimate (long 22y high-SR sample) or formula error?
+5. Charts: all 4 present and do they show OOS period? (RF-F8, RF-F3)
+6. Turnover formula: round-trip x2 used correctly? (RF-F7)
+7. Is the NEGLIGIBLE divergence vs optimizer (1.701 vs 1.683) honest given different sleeve-return construction (share-based vs sum(w*ret)) AND different BM alignment?
+8. Any silent rationalization ("NEGLIGIBLE", "inherited", "marginal") that should be challenged?
+
+Output ONLY the JSON critique per the rubric format (stance APPROVE/APPROVE_CONDITIONAL/REVISE/REJECT, pure_function_audit, walk_forward_audit, lockbox_audit, turnover_formula_audit, chart_audit, critical_concerns with C1.., weakest_assumption, rationalization_red_flags, etc). No prose outside JSON.

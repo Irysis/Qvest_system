@@ -1,0 +1,182 @@
+{
+  "agent_id": "codex_qepm_critic",
+  "role": "alpha_critic",
+  "model": "gpt-5.5",
+  "timestamp": "2026-06-06T21:30:00+09:00",
+  "task_id": "WT-D20260606_001",
+  "veto_flag": false,
+  "stance": "REJECT",
+  "stance_rationale": "The package is not an admissible alpha sleeve. Its only surviving thesis is 'orthogonal diversifier', but that rests on one full-sample return correlation (-0.061) without tail/regime/covariance triangulation, while the deployable alpha evidence fails the hard statistical screen: portfolio-alpha t=1.461 < 2.95, IR=0.219 far below target SR 2.5, DSR(n_trials=8)=0.337 < 0.5, and rank-IC ICIR=0.095 is weak. The package also has a process-integrity failure: declared selection_objective='icir' but selected a lower-ICIR candidate on realized portfolio alpha plus correlation. C15 is a direct PIT compliance problem if Factor DB parquet was read directly instead of load_month_factors().",
+  "ic_diagnostics_audit": {
+    "rank_ic": {
+      "value": 0.0156,
+      "assessment": "weak positive, barely above diversifier IC floor but not a credible primary alpha signal"
+    },
+    "icir": {
+      "value": 0.095,
+      "assessment": "FAIL versus advisory ICIR>=0.20; selected candidate is weaker than M08_Residual_Mom (0.155), Q17_ROIC (0.298), Q09_CFOA (0.253), CompProfSafety (0.290), and CompResidMom_x_Prof (0.224)"
+    },
+    "harvey_t_rankic": {
+      "value": 1.585,
+      "assessment": "not statistically persuasive; below Harvey-style discovery threshold"
+    },
+    "subperiod_rank_ic": {
+      "E1_2004_2011": 0.0176,
+      "E2_2012_2018": 0.018,
+      "E3_2019_2026": 0.0113,
+      "assessment": "positive all eras, but recent-era decay weakens the stability claim"
+    },
+    "monotonicity": {
+      "value": null,
+      "assessment": "missing; top-20 concentration could be exploiting a noisy right tail rather than a monotone cross-sectional effect"
+    }
+  },
+  "time_series_alpha_audit": {
+    "portfolio_alpha_t_nw_lag3": {
+      "value": 1.461,
+      "assessment": "FAIL hard graduation gate; not forge-authoritative and still materially below 2.95"
+    },
+    "information_ratio": {
+      "value": 0.219,
+      "assessment": "nominally positive but nowhere near target SR 2.5; cannot be sold as a standalone alpha"
+    },
+    "alpha_annualized_net": {
+      "value": 0.0829,
+      "assessment": "economically tempting but statistically underpowered and potentially concentrated in selected episodes"
+    },
+    "turnover_annual": {
+      "value": 7.06,
+      "assessment": "high enough that 15bps cost assumptions and liquidity timing must be reverified strictly at t-1"
+    },
+    "measurement_basis": "canonical_screen only; Measurement Integrity requires forge/build_bt_result authority for graduation claims"
+  },
+  "ax_axiom_compliance": {
+    "AX-002_measurement_integrity": "FAIL/PARTIAL: canonical_screen is correctly labeled, but the package rhetorically leans on non-authoritative portfolio alpha and self-serving DSR(n_trials=1).",
+    "AX-007_single_sleeve_top20_mechanism_break": "FAIL as standalone; at best this reconfirms AX-007. Single-sleeve long-only top-20 does not translate weak IC into SR 2.5. Any survival path must use an AX-007 exception: multi-sleeve, long-short, 50+ names, or ML/DPL sizing.",
+    "AX-001_v2_defense": "N/A for selected alpha unless marketed as defense. CR07 correctly fails conditional defense: bad-regime IC and portfolio alpha are negative under the reported BM-tercile regime.",
+    "v55_diversifier_threshold": "UNPROVEN: max_corr appears acceptable in full sample, but div_benefit>0 and book-marginal ΔIR>=0.05 are not demonstrated."
+  },
+  "pit_c1_c15_audit": {
+    "C1": {
+      "status": "UNRESOLVED_HIGH_RISK",
+      "description": "M08 residual momentum beta/industry projection window is not proven expanding/rolling only. If beta projection used full-sample or same-month realized returns, the residual signal leaks future structure."
+    },
+    "C2_C3": {
+      "status": "UNRESOLVED",
+      "description": "Need proof that formation returns, residualization inputs, liquidity filters, benchmark active return, and rebalance application are not same-day circular."
+    },
+    "C10": {
+      "status": "UNRESOLVED",
+      "description": "Liquidity eligibility is stated but not independently shown as t-1. Turnover 7.06/yr makes this material."
+    },
+    "C13": {
+      "status": "PASS_CLAIM_UNVERIFIED",
+      "description": "No explicit sign flip is visible in the package, but Z_Score_Aligned lineage is not provided for M08/M14."
+    },
+    "C14": {
+      "status": "PROBABLE_PASS_WITH_GAP",
+      "description": "alpha_scores appears to be a multi-sig_date panel, not a single snapshot; however Usable_Date<=sig_date certificate is not included."
+    },
+    "C15": {
+      "status": "FAIL",
+      "description": "User note says the agent read Factor DB parquet directly rather than via load_month_factors(); local Factor DB rule marks direct parquet load as prohibited."
+    },
+    "benchmark_dedup_winsorize": {
+      "status": "UNRESOLVED",
+      "description": "Benchmark dedup and 1/99 return winsorization may be valid fixes, but the package does not prove they were pre-specified before selection rather than post-hoc cleanup affecting correlation/alpha."
+    }
+  },
+  "critical_concerns": [
+    {
+      "id": "C1_PIT_C15_DIRECT_PARQUET",
+      "severity": "CRITICAL",
+      "description": "Direct Factor DB parquet access violates the repo's C15 rule requiring load_month_factors(). A Level-0 PIT violation invalidates the result until rebuilt cleanly.",
+      "ax_cite": "PIT-C15; AX-002"
+    },
+    {
+      "id": "C2_HARD_ALPHA_GATE_FAIL",
+      "severity": "CRITICAL",
+      "description": "portfolio-alpha t=1.461 is far below the 2.95 hard gate, and the value is canonical-screen, not forge-authoritative. The package cannot graduate as an alpha.",
+      "ax_cite": "Measurement Integrity §2-§3; AX-002"
+    },
+    {
+      "id": "C3_MULTIPLE_TESTING_FAIL",
+      "severity": "HIGH",
+      "description": "Eight candidates were tried. DSR(n_trials=8)=0.337 fails; highlighting DSR(n_trials=1)=0.992 is self-serving because the package selected after a candidate sweep.",
+      "ax_cite": "Measurement Graduation DSR rule; Judge method_shopping_log discipline"
+    },
+    {
+      "id": "C4_SELECTION_OBJECTIVE_MISMATCH",
+      "severity": "HIGH",
+      "description": "The declared objective is ICIR, but the selected candidate has ICIR=0.095 and is the lowest-ICIR choice among plausible leaders. Selection was actually based on realized portfolio-alpha t plus return correlation, a post-hoc objective switch.",
+      "ax_cite": "R4-P3 role-objective integrity; AX-002 process honesty"
+    },
+    {
+      "id": "C5_ORTHOGONALITY_UNTRIANGULATED",
+      "severity": "HIGH",
+      "description": "return_cor=-0.061 over 268 months is not enough. No rolling correlation, crisis/tail correlation, downside beta, drawdown overlap, sector/size overlap, covariance contribution, or book-marginal ΔIR is reported.",
+      "ax_cite": "v55 Diversifier threshold; Measurement Graduation §4 book-marginal"
+    },
+    {
+      "id": "C6_AX007_RECONFIRMATION",
+      "severity": "HIGH",
+      "description": "The result mainly reconfirms the single-sleeve top-20 ceiling: weak IC, low IR, and failed t-stat despite a plausible academic mechanism. It needs an AX-007 exception path, not admission as-is.",
+      "ax_cite": "AX-007"
+    },
+    {
+      "id": "C7_RESIDUALIZATION_LEAKAGE_RISK",
+      "severity": "HIGH",
+      "description": "M08 residual momentum depends on beta/industry residualization. The package does not prove projection coefficients were estimated only from past data and applied out-of-sample.",
+      "ax_cite": "PIT-C1; PIT-C2; AX-002"
+    },
+    {
+      "id": "C8_CR07_REGIME_REJECTION_AMBIGUITY",
+      "severity": "MEDIUM",
+      "description": "CR07 rejection uses BM-tercile bad regime, while prior conditional claims may use MSM crisis_prob. Regime-definition mismatch can invert a conditional-alpha claim; CR07 should remain rejected as alpha, but the risk-crowding diagnostic should not be overgeneralized without regime harmonization.",
+      "ax_cite": "AX-001 v2; PIT-C11"
+    }
+  ],
+  "supporting_arguments": [
+    "The selected alpha is genuinely different in mechanism from R05: residual/risk-adjusted momentum versus value/consensus/earnings-stability.",
+    "Full-sample return correlation of -0.061 is directionally useful if reproduced under strict pipeline and rolling/tail tests.",
+    "Subperiod rank-IC is positive in all three eras, so the signal is not an obvious one-era artifact.",
+    "The package is honest in labeling F standalone and canonical-screen/non-forge-authoritative status.",
+    "CR07 was appropriately not selected as a long-only alpha given negative portfolio-alpha t and bad-regime weakness under the reported test."
+  ],
+  "weakest_assumption": "The most fragile claim is that full-sample return_cor=-0.061 proves an orthogonal sleeve worth preserving. Because every standalone alpha gate is weak or failed, the entire package survives only on this orthogonality claim. A single full-period Pearson correlation can be an artifact of sample endpoints, winsorization, benchmark dedup, sector composition, or offsetting calm-period behavior while crisis/tail months still co-move with R05.",
+  "rebuttal_required": [
+    "Rebuild M08/M14 through load_month_factors() only and attach C1-C15 evidence, especially C1 residualization window and C14 Usable_Date<=sig_date.",
+    "Recompute selected alpha with predeclared objective. If objective is ICIR, select by ICIR; if objective is diversifier utility, amend the package and rerun the sweep under that objective.",
+    "Report rolling 36/60-month correlation to R05, crisis-window correlation, downside correlation, drawdown overlap, beta to R05 active returns, and covariance contribution.",
+    "Provide forge-authoritative build_bt_result or explicitly downgrade to research-only DPL feature with no admission claim.",
+    "Use DSR with n_trials=8 at minimum, and justify whether the true trial count is greater than 8 given seed/search history.",
+    "Demonstrate book-marginal ΔIR>=0.05 versus incumbent R05, not just standalone IR and pairwise correlation."
+  ],
+  "rationalization_red_flags": [
+    "DSR(n_trials=1)=0.992 is highlighted even though candidates_tried=8 is admitted.",
+    "selection_objective='icir' conflicts with the actual final pick rationale.",
+    "Net alpha 8.3%/yr is foregrounded despite portfolio-alpha t=1.461.",
+    "Orthogonality is equated with one full-sample return correlation.",
+    "Canonical-screen t-stat is caveated as non-authoritative but still used to motivate a sleeve.",
+    "Self-grade 'F standalone / meaningful diversifier' risks becoming a bypass around hard alpha gates."
+  ],
+  "verification_triangulation": [
+    "Strict PIT rebuild via canonical_screen_bt and load_month_factors.",
+    "Independent script reproducing alpha_scores, active returns, turnover, and correlation from raw allowed interfaces.",
+    "Rolling and regime-conditioned R05 correlation: calm, normal, bad, crisis, top/bottom R05 return quintiles.",
+    "Tail co-movement tests: conditional correlation during R05 drawdowns, market drawdowns, and momentum-crash months.",
+    "Book optimizer test: R05 plus CompResidMom_M08_M14 with realistic constraints, reporting ΔIR, ΔSR, ΔMDD, turnover, and capacity.",
+    "Robustness to winsorization choices: no winsor, 0.5/99.5, 1/99, 2/98, with fixed predeclared benchmark treatment.",
+    "Selection audit: rerun all 8 candidates under one declared objective and compare selected output."
+  ],
+  "alpha_specific_questions": [
+    "Were M08 beta/industry residualization coefficients estimated using only returns available before sig_date?",
+    "Did benchmark dedup and per-month winsorization occur before candidate selection, or after anomalies were observed?",
+    "What is the correlation to R05 in 2008, 2011, 2020, and 2022 crisis windows?",
+    "What is the rolling 60-month minimum/maximum correlation to R05?",
+    "What is the overlap/Jaccard with R05 top-20 holdings by month?",
+    "Does the alpha still rank top under the declared ICIR objective? If not, why is the objective not restated?",
+    "What is book-marginal ΔIR after costs when this sleeve is blended with R05 under realistic optimizer constraints?",
+    "Does DSR remain above 0.5 if the true candidate family includes all residual/raw/risk-adjusted momentum variants explored on June 5-6?"
+  ]
+}

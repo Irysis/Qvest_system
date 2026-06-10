@@ -1,0 +1,15 @@
+suppressPackageStartupMessages({library(arrow);library(data.table)})
+base <- 'G:/Quant_Module_Moltbot/05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/02_holdings_universe/'
+a <- as.data.table(read_parquet(paste0(base,'alpha_scores_str1715_268m.parquet')))
+cat('=== alpha_scores_str1715_268m ===\n'); cat('dims',dim(a),'\n'); print(names(a))
+dc <- intersect(c('date','Date','sig_date','ym'), names(a))
+if(length(dc)) { cat('dates:',length(unique(a[[dc[1]]])),'range',as.character(range(a[[dc[1]]])),'\n') }
+print(head(a,4))
+cat('\n=== r05 panel ===\n')
+r <- as.data.table(read_parquet(paste0(base,'alpha_scores_r05_panel.parquet')))
+cat('dims',dim(r),'\n'); print(names(r)); print(head(r,3))
+cat('\n=== weights_267m_timeseries.csv ===\n')
+w <- fread(paste0(base,'weights_267m_timeseries.csv'))
+cat('dims',dim(w),'\n'); print(names(w)); print(head(w,4))
+dcw <- intersect(c('date','Date','sig_date','ym'), names(w))
+if(length(dcw)) cat('w dates:',length(unique(w[[dcw[1]]])),'range',as.character(range(w[[dcw[1]]])),'\n')

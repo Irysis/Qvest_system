@@ -1,0 +1,140 @@
+{
+  "task_id": "WT-D20260606_002",
+  "as_of_date": "2026-06-06",
+  "agent": "risk-research",
+  "role": "Sigma + crowding + tail + residual-orthogonality diagnostics for DPL cycle 2 (Sigma/diag only; NO alpha edit, NO weights)",
+  "selection_objective": "shrinkage_quality",
+  "selection_objective_note": "Sigma estimator chosen on estimation quality only (condition number target + PSD), not on any alpha return / SR / IR. R4-P3 enum=shrinkage_quality.",
+  "wt_context": "DPL cycle 2. ceiling ~1.74 from cycle1 5-agent consensus. DPL optimizes net-Sharpe end-to-end so Sigma is auxiliary (DPL does not require a pre-estimated Sigma as a hard input), but this package supplies: (1) candidate-universe Sigma for any covariance-aware DPL regularizer / risk-budget overlay, (2) residual orthogonality of the 3 new features (Codex alpha critique #4 directly addressed), (3) crowding_score_per_factor, (4) tail/stress diagnostics so DPL net-Sharpe objective does not silently ignore tail.",
+
+  "exposure_matrix_ref": "stage_artifacts/WT_DPL_C2/dpl_feature_panel.parquet (98f cross-section z exposures; B = panel itself)",
+  "factor_covariance_ref": "computed in-process (panel feature correlation eigen-decomposition; see diagnostics.panel_pca)",
+  "specific_risk_ref": "diagonal of security_covariance (idiosyncratic var after LW shrink)",
+  "security_covariance_ref": "stage_artifacts/WT_D20260606_002/covariance.parquet",
+
+  "risk_summary": {
+    "top_common_risks": [
+      "Panel feature PC1 (dominant common factor) = 10.0% of feature variance — LOW common-factor dominance (98f panel well-diversified, no single style dominates)",
+      "Security-level avg pairwise return correlation = 0.156 (KR market beta common mode)",
+      "Universe n_effective (adv-weighted) = 37.8 of 350 names — concentration moderate (HHI 0.0265)"
+    ],
+    "metric_type": "canonical_screen / panel-native diagnostic (NOT forge-authoritative; forge DPL backtest is optimizer->forge stage)",
+
+    "crowding_flags": [
+      "NETISSUE__lvl crowding_score 0.785 >= 0.75 -> FLAG (but driven by HHI of narrow top-20 within 96% coverage; passive_overlap_proxy=1 is a constant ceiling artifact since all candidates are in_univ — true passive crowding NOT separable in panel-only data)",
+      "MOHANRAM__lvl crowding_score 0.749 (borderline; HHI 0.307 inflated by 18.6% low-BM coverage subset -> small effective pool, NOT genuine institutional crowding)"
+    ],
+    "crowding_score_per_factor": [
+      {"factor_name": "PIOTROSKI__lvl", "crowding_score": 0.392, "hhi_top": 0.087, "vol_concentration": 0.025, "passive_overlap_proxy": 1.0, "demand_elasticity_proxy": 0.975, "alert": null, "metric_type": "proxy"},
+      {"factor_name": "MOHANRAM__lvl", "crowding_score": 0.749, "hhi_top": 0.307, "vol_concentration": 0.085, "passive_overlap_proxy": 1.0, "demand_elasticity_proxy": 0.915, "alert": "BORDERLINE_coverage_artifact", "metric_type": "proxy"},
+      {"factor_name": "NETISSUE__lvl", "crowding_score": 0.785, "hhi_top": 0.332, "vol_concentration": 0.082, "passive_overlap_proxy": 1.0, "demand_elasticity_proxy": 0.918, "alert": "LEVEL_HIGH_proxy", "metric_type": "proxy"},
+      {"factor_name": "RESIDMOM__lvl", "crowding_score": 0.561, "hhi_top": 0.155, "vol_concentration": 0.173, "passive_overlap_proxy": 1.0, "demand_elasticity_proxy": 0.827, "alert": null, "metric_type": "proxy"},
+      {"factor_name": "M05_Trended_Mom__lvl", "crowding_score": 0.556, "hhi_top": 0.138, "vol_concentration": 0.220, "passive_overlap_proxy": 1.0, "demand_elasticity_proxy": 0.780, "alert": null, "metric_type": "proxy"},
+      {"factor_name": "Q03_ROA__lvl", "crowding_score": 0.472, "hhi_top": 0.138, "vol_concentration": 0.034, "passive_overlap_proxy": 1.0, "demand_elasticity_proxy": 0.966, "alert": null, "metric_type": "proxy"}
+    ],
+    "crowding_methodology_caveat": "Full Acadian 2026 crowding (crowding_score_per_factor.R) requires RAWDATA daily Vol/Size + institutional flow; the DPL panel (sanctioned input) carries only monthly adv. Computed panel-native proxy. passive_overlap_proxy is a CONSTANT 1.0 (all candidates in_univ) -> contributes a flat 0.25 to every score, so absolute scores are upward-biased; RANK across factors is the usable signal. momentum (M05) crowding 0.556 is the genuinely tradable-volume-crowded axis (vol_concentration 0.220, highest). The 2 new-feature 'flags' are coverage/HHI artifacts, not institutional crowding -> advisory only.",
+
+    "liquidity_flags": [
+      "Sigma universe restricted to lockbox cross-section with adv >= 5e7 KRW (request liquidity floor); 239 names with >=60mo history retained from 350."
+    ],
+
+    "stress_tests": {
+      "market_down_5_proxy": -0.05,
+      "gfc_2008": {"cum_ret": 0.0742, "reliable": false, "note": "book coverage min 0.54 < 0.85 -> UNRELIABLE (partial KQ150 listing in 2008-09); positive value is a coverage artifact, DISREGARD"},
+      "eudebt_2011": {"cum_ret": -0.0024, "reliable": true},
+      "china_2015": {"cum_ret": -0.0583, "reliable": true},
+      "covid_2020": {"cum_ret": 0.1050, "reliable": true, "note": "EW candidate basket recovered fast (3mo window Feb-Apr 2020 net positive); short window"},
+      "ratehike_2022": {"cum_ret": -0.0991, "reliable": true, "note": "worst reliable drawdown scenario"},
+      "kr_bear_2018": {"cum_ret": -0.0711, "reliable": true}
+    },
+    "stress_note": "These are HISTORICAL realized cumulative returns of the equal-weight candidate basket (descriptive, metric_type=proxy; NOT a contract build_bt_result and NOT the DPL portfolio). They bound the candidate pool's regime exposure, not the optimized DPL weights. Worst reliable scenario RateHike2022 -9.91%, within policy (no scenario < -10% on reliable windows)."
+  },
+
+  "diagnostics": {
+    "condition_number": 480.0,
+    "condition_number_before_shrinkage": 1.183e18,
+    "condition_number_lw_analytic": 991.0,
+    "shrinkage_used": true,
+    "shrinkage_method": "ledoit_wolf_constant_corr + RF-R2 escalation (delta 0.37->0.95) + eigenvalue-floor ridge (cond# target <480)",
+    "shrinkage_intensity_analytic": 0.3705,
+    "shrinkage_intensity_effective": 0.95,
+    "eigen_ridge_added": 0.000083,
+    "psd": true,
+    "min_eigenvalue": 0.000869,
+    "avg_pairwise_corr_rbar": 0.156,
+    "sigma_universe_N": 239,
+    "sigma_history_T": 227,
+    "sigma_caveat": "N=239 ~ T=227 -> sample cov singular (cond# 1.18e18). LW analytic shrinkage alone insufficient (cond# 991 > 500 hard threshold), required RF-R2 escalation to delta=0.95 + eigenvalue floor to reach cond# 480 < 500. Sigma is heavily regularized (95% toward constant-correlation target) -> reliable for risk-budget / ranking but cross-name covariance detail is shrunk away. DPL does NOT require this Sigma as a hard input (net-Sharpe is learned end-to-end); supplied for optional covariance-aware regularization only.",
+
+    "panel_pca": {
+      "pc1_var_share": 0.100,
+      "top5_pc_var_share": [0.100, 0.058, 0.049, 0.043, 0.035],
+      "interpretation": "98f panel has NO dominant common factor (PC1 only 10%) -> feature diversity is genuine, good for DPL (no single collinear mode to overfit)."
+    },
+
+    "residual_orthogonality": {
+      "method": "per-month cross-sectional OLS residualization of each new feature against [S01_Size, 5 value axes, log(adv) liquidity] structural style axes, then (a) residual variance share retained, (b) residual max|corr| vs base90, (c) era-stability of raw corr vs argmax-base, (d) unique variance = 1 - top5-PC communality. Directly addresses Codex alpha critique #4 (max-pairwise-corr insufficient).",
+      "PIOTROSKI__lvl": {"resid_var_share_after_style_neutral": 0.875, "resid_maxcorr_vs_base90": 0.209, "unique_var_vs_top5PC": 0.861, "era_corr_vs_Q03_ROA": [0.165, 0.299, 0.304], "verdict": "GENUINELY ORTHOGONAL — 87.5% of variance survives style neutralization, residual corr vs base90 only 0.21, 86% idiosyncratic info. Era corr stable & modest (0.17-0.30). Confirms alpha claim with stronger evidence than max-corr."},
+      "MOHANRAM__lvl": {"resid_var_share_after_style_neutral": 0.962, "resid_maxcorr_vs_base90": 0.204, "unique_var_vs_top5PC": 0.960, "era_corr_vs_Q01_GPA": [0.316, 0.151, 0.060], "verdict": "STRONGLY ORTHOGONAL — 96% variance survives, 96% idiosyncratic. Era corr DECAYING (0.32->0.06) i.e. increasingly independent. Coverage 18.6% caveat stands (signal lives in low-BM subset)."},
+      "NETISSUE__lvl": {"resid_var_share_after_style_neutral": 0.933, "resid_maxcorr_vs_base90": 0.264, "unique_var_vs_top5PC": 0.955, "era_corr_vs_M11_STRev": [-0.130, -0.157, -0.184], "verdict": "ORTHOGONAL & STABLE — 93% survives, negative stable corr vs reversal axis (consistent issuance-reversal economics). 95% idiosyncratic."},
+      "RESIDMOM__lvl": {"resid_var_share_after_style_neutral": 0.834, "resid_maxcorr_vs_base90": 0.781, "unique_var_vs_top5PC": 0.395, "era_corr_vs_M05_TrendMom": [0.842, 0.848, 0.873], "verdict": "REDUNDANT IN PANEL — even after style neutralization residual corr vs base90 stays 0.78, only 39.5% idiosyncratic, era corr vs M05_Trended_Mom rock-stable at 0.84-0.87 across ALL eras. Confirms alpha RF-A-c2-2: residmom's cycle1 orthogonality was vs the R05 BOOK not the feature PANEL. RISK RECOMMENDS DROP from DPL panel (collinear -> overfit risk)."}
+    },
+
+    "tail_risk": {
+      "metric_type": "proxy (EW candidate basket monthly, pre-lockbox; NOT DPL portfolio)",
+      "empirical_var95": -0.0842, "empirical_es95": -0.1332,
+      "empirical_var99": -0.1533, "empirical_es99": -0.2071,
+      "evt_gpd_xi": 0.23, "evt_var95": -0.0889, "evt_var99": -0.1569,
+      "hill_alpha": 2.69,
+      "interpretation": "GPD shape xi=0.23 > 0 -> heavy-tailed (finite but fat). Hill alpha 2.69 (<3) -> 3rd moment borderline-infinite, fat left tail typical of KR equity. ES95 -13.3% monthly. DPL caveat: net-Sharpe-only objective is tail-blind; a DPL solution maximizing Sharpe can still carry ES95 ~-13% — RECOMMEND optimizer add a CVaR/ES penalty or report DPL portfolio ES alongside Sharpe (does NOT override DPL, advisory)."
+    },
+
+    "concentration": {"universe_N": 350, "n_effective_adv_weighted": 37.8, "hhi": 0.0265},
+
+    "regime_correlation": {
+      "ref": "stage_artifacts/WT_D20260606_002/regime_correlation.parquet",
+      "CRISIS": {"months": 14, "mean_cross_sec_disp": 0.121, "mean_ret": -0.1293},
+      "NORMAL": {"months": 215, "mean_cross_sec_disp": 0.115, "mean_ret": 0.006},
+      "RALLY": {"months": 27, "mean_cross_sec_disp": 0.152, "mean_ret": 0.1219},
+      "note": "Cross-sectional dispersion is HIGHER in RALLY (0.152) than CRISIS (0.121) -> in KR crises names move TOGETHER (corr up, dispersion compressed) = classic crisis correlation spike. DPL trained on full sample may under-hedge crisis co-movement. CRISIS n=14 small -> regime-conditional Sigma would be noisy; pooled Sigma used (reproducibility over thin bootstrap, per risk-style guidance)."
+    },
+
+    "factor_correlation_warnings": [
+      "RESIDMOM__lvl vs M05_Trended_Mom__lvl: corr 0.847 raw, 0.781 style-neutralized residual, era-stable 0.84-0.87 -> persistent collinearity (RF-R5)."
+    ],
+    "tdc_summary": {},
+    "regime_correlation_ref": "stage_artifacts/WT_D20260606_002/regime_correlation.parquet"
+  },
+
+  "dpl_handoff": {
+    "for_optimizer": "DPL c2 sweep (cvxpylayers, weight_method DPL). Risk inputs: (1) covariance.parquet (cond# 480, PSD, heavily shrunk — use only if covariance-aware DPL variant) (2) PRUNE RESIDMOM__lvl + 4 __slp from panel (collinear/noise -> overfit) -> recommended DPL panel = base90 + PIOTROSKI__lvl + MOHANRAM__lvl + NETISSUE__lvl = ~93f (3) tail: report DPL portfolio ES95 alongside net-Sharpe; consider ES/CVaR penalty (4) crisis co-movement: cross-sec dispersion compresses in CRISIS -> DPL Sharpe-only may under-hedge; suggest subperiod-min as graduation guard (already in calmar/oos_retention gates).",
+    "ceiling_view_from_risk": "Risk-side honest assessment: nothing in the risk structure suggests a ceiling BREAKOUT. (a) The 3 new features ARE genuinely orthogonal (resid var 0.87-0.96) so they DO add independent information — this is the necessary condition for DPL to help. BUT (b) orthogonal information with weak long-side transfer (top20 active t 0.7-1.4) + fat tail (ES95 -13%) + crisis correlation spike means the marginal Sharpe DPL can extract is bounded. (c) The candidate basket's own tail/stress (worst reliable -9.9%, ES99 -20.7%) caps risk-adjusted upside. (d) avg pairwise corr 0.156 = a hard common-mode floor that long-only cannot diversify below. Risk verdict: orthogonality REFUTES the 'no new info' worry but does NOT support SR 2.5; consistent with alpha+Codex independent view that 1.74 breakout is unproven. Definitive judgment is the optimizer full DPL sweep (forge-authoritative), not risk."
+  },
+
+  "red_flags": [
+    {"id": "RF-R2", "severity": "HIGH", "note": "cond# sample 1.18e18 (singular, N~T) -> RF-R2 auto re-estimation triggered: LW delta 0.37->0.95 + eigen-floor ridge -> cond# 480 < 500. RESOLVED but Sigma is heavily regularized (interpret as risk-budget tool, not fine covariance)."},
+    {"id": "RF-R3", "severity": "MEDIUM", "note": "crowding flags MOHANRAM 0.749 / NETISSUE 0.785 >= 0.75, but both are coverage/HHI proxy artifacts (passive_overlap constant + narrow subset HHI), NOT genuine institutional crowding. Advisory only."},
+    {"id": "RF-R5", "severity": "MEDIUM", "note": "RESIDMOM__lvl persistent collinearity vs M05_Trended_Mom (era-stable 0.84-0.87). Recommend DROP from DPL panel."},
+    {"id": "RF-R-tail", "severity": "MEDIUM", "note": "Candidate basket fat-tailed (GPD xi 0.23, Hill alpha 2.69, ES95 -13.3%). DPL net-Sharpe-only objective is tail-blind; recommend optimizer report DPL ES / add CVaR penalty (advisory, no override of DPL)."}
+  ],
+  "challenge_flags": [
+    {"id": "RF-R5", "severity": "MEDIUM", "to_agent": "alpha", "note": "Risk CONFIRMS alpha RF-A-c2-2 with stronger evidence: RESIDMOM__lvl is redundant in the DPL panel (style-neutralized residual corr 0.78 vs base90, era-stable 0.84-0.87 vs M05). Recommend pruning from panel. No objection to the 3 new features — residual orthogonality independently validates them (resid var share 0.87-0.96)."}
+  ],
+  "challenge_review": {"objection": false, "to_agent": "alpha", "targets_reviewed": ["alpha_package", "factor_specs", "orthogonality", "feature_diag"], "note": "Reviewed alpha orthogonality claim. No objection to the 3 new features (independently confirmed orthogonal via style-neutralized residual analysis). One CONFIRMATION (not objection): RESIDMOM__lvl redundancy in panel — alpha already self-flagged (RF-A-c2-2), risk strengthens the evidence."},
+  "evaluation_self_check": {
+    "sigma_psd": true,
+    "cond_number_under_500": true,
+    "factor_coverage_over_80pct": "N/A (panel PC1 only 10%, residual-dominated — features are mostly idiosyncratic by design, not a B*Omega*B' factor model; this is a feature-panel for DPL, not a classic risk factor model)",
+    "stress_policy_compliant": true,
+    "ir_estimate_note": "Risk does NOT estimate alpha-risk IR (would require alpha return = out of scope). Deferred to optimizer/forge."
+  },
+  "metric_type_global": "All risk numbers are canonical_screen / panel-native diagnostic / proxy as labelled per field. NONE are forge-authoritative. The authoritative DPL portfolio risk is produced at optimizer->forge stage.",
+  "references": [
+    "Ledoit-Wolf 2004 (constant-correlation shrinkage)",
+    "Acadian 2026 (crowding monitoring)",
+    "Behmaram 2024 (demand elasticity)",
+    "Pfaff 2016 FRM Ch7 (EVT-GPD POT)",
+    "Hill 1975 (tail index)",
+    "Harvey-Liu-Zhu 2016"
+  ]
+}
