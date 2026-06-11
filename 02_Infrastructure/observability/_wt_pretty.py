@@ -20,7 +20,7 @@ CERT_GLYPH = {
     "ISSUED": "✅",
     "NOT_ISSUED": "❌",
     "ABSENT": "⏸",
-    "REVOKED": "⛔",  # U+26D4 (BMP). non-BMP 🚫(U+1F6AB)는 Claude Code 출력 절단 시 lone surrogate -> API 400 위험
+    "REVOKED": "⛔",  # U+26D4 (BMP). non-BMP U+1F6AB는 Claude Code 출력 절단 시 lone surrogate -> API 400 위험
     "N/A": "⚪",
 }
 

@@ -49,7 +49,12 @@ def main() -> int:
     src = sys.stdin.buffer
     dst = sys.stdout.buffer
     try:
-        for raw in src:
+        # readline(64KB) 상한: 개행 없는 대용량 스트림(바이너리 cat 등)이 통째로
+        # 메모리에 적재되는 것 방지. 절단된 multibyte는 decode replace -> '?' 처리.
+        while True:
+            raw = src.readline(1 << 16)
+            if not raw:
+                break
             dst.write(sanitize_line(raw))
             dst.flush()
     except BrokenPipeError:

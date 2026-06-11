@@ -12,6 +12,8 @@
 #==============================================================================
 
 source "$(dirname "${BASH_SOURCE[0]:-$0}")/resolve_project.sh"
+# (v8.1.2) 자기 파일 절대경로 — cd 이전에 확정 (worktree/사본 테스트 시 utf8 가드 재실행이 canonical 본으로 새는 것 방지)
+SELF_BOOTSTRAP="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" 2>/dev/null && pwd)/$(basename "${BASH_SOURCE[0]:-$0}")"
 cd "$PROJECT"
 
 # Windows-native (2026-06-04): R/python이 인식하는 경로로 CLAUDE_PROJECT_DIR/QM_ROOT export.
@@ -38,8 +40,9 @@ fi
 UTF8_GUARD="$PROJECT/02_Infrastructure/ops/utf8_output_guard.py"
 if [ -z "${QVEST_BOOT_SANITIZED:-}" ]; then
   if [ -f "$UTF8_GUARD" ] && python3 -c 'import sys' >/dev/null 2>&1; then
-    export QVEST_BOOT_SANITIZED=1
-    bash "$PROJECT/02_Infrastructure/ops/bootstrap.sh" "$@" 2>&1 \
+    # "pipe:$$" — 외부에서 임의로 1을 export해 가드를 우회하고도 ACTIVE로 오표시되는 것 방지
+    export QVEST_BOOT_SANITIZED="pipe:$$"
+    bash "${SELF_BOOTSTRAP:-$PROJECT/02_Infrastructure/ops/bootstrap.sh}" "$@" 2>&1 \
       | python3 -u "$(cygpath -m "$UTF8_GUARD" 2>/dev/null || echo "$UTF8_GUARD")"
     exit "${PIPESTATUS[0]}"
   fi
@@ -50,11 +53,10 @@ export QVEST_PY="${QVEST_PY:-$(command -v python3 2>/dev/null || echo python3)}"
 command -v Rscript >/dev/null 2>&1 && RS_OK="OK" || { RS_OK="MISSING"; BOOT_FAILS=$((BOOT_FAILS+1)); }
 python3 -c 'import sys' >/dev/null 2>&1 && PY_OK="OK" || { PY_OK="MISSING_OR_STUB"; BOOT_FAILS=$((BOOT_FAILS+1)); }
 echo "[boot] 도구 체인: Rscript=$RS_OK python3=$PY_OK (QVEST_PY=$QVEST_PY)"
-if [ "${QVEST_BOOT_SANITIZED:-}" = "1" ]; then
-  echo "[boot] utf8_output_guard: ACTIVE (non-BMP/invalid-byte 출력 정제 — API 400 surrogate 방지)"
-else
-  echo "[boot] WARN: utf8_output_guard INACTIVE (python3 또는 guard 부재) — 이모지 포함 출력 시 API 400 위험"
-fi
+case "${QVEST_BOOT_SANITIZED:-}" in
+  pipe:*) echo "[boot] utf8_output_guard: ACTIVE (non-BMP/invalid-byte 출력 정제 — API 400 surrogate 방지)" ;;
+  *)      echo "[boot] WARN: utf8_output_guard INACTIVE (python3/guard 부재 또는 외부 QVEST_BOOT_SANITIZED 선점) — 이모지 포함 출력 시 API 400 위험" ;;
+esac
 
 echo "=== Qvest v8.1 부트스트랩 (Opus 4.8 Native · 3-Mode) ==="
 
@@ -386,5 +388,5 @@ command -v free >/dev/null 2>&1 && free -m | awk '/Mem:/ {printf "RAM:        %.
 # (Remote tmux rc 라인 제거 v8.0 — inbound listener 폐지)
 echo ""
 echo "다음: /qvest 5-B 절차 따라 Work Task 생성 + 3-agent 순차 spawn"
-echo "  wt_create('{hypothesis}') → alpha-research → risk-research → optimizer-research"
+echo "  wt_create('{hypothesis}') -> alpha-research -> risk-research -> optimizer-research"
 echo "===================================="
