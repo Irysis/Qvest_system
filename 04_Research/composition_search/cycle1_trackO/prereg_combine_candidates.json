@@ -1,0 +1,145 @@
+{
+  "schema_version": "trackO_prereg_v1.0",
+  "program": "Composition Search Cycle 1 - Track O (B3 overlay combine redesign)",
+  "written_at": "2026-06-12T07:55:41+09:00",
+  "status": "PREREGISTERED - measurement NOT yet performed. Candidate list frozen as of written_at. No candidate may be added, removed, or modified after this timestamp. All 5 candidates must be reported in full (silent drop forbidden).",
+  "mandate": "Dohoon mandate 2026-06-11 (Cycle 1 Track O). Design-only stage; A/B measurement is a separate follow-up task.",
+
+  "diagnosis_basis": {
+    "source": "04_Research/pg2_forensics/b2_governor_overlap.json (metric_type=diagnostic, 267m)",
+    "facts": {
+      "m4_ar_true_overlap": "P(AR active | M4 active) = 91%; severity corr(M4, AR) = 0.4951 -> multiplicative combine double-discounts a shared shock",
+      "midband_overdefense": "months with total beta < 0.5 (45m incl deep): base mean +1.4%/mo -> de-risking in the mid band destroyed value; implied mid-only (excl 6 deep months) approx +3.1%/mo",
+      "deep_derisk_accurate": "months with total beta < 0.25 (6m): base mean -9.83%/mo -> deep de-risking was correct and must be preserved",
+      "m4_r05_overlap": "P(R05|M4)=18% (partial) - R05 layer explicitly OUT OF SCOPE this cycle"
+    }
+  },
+
+  "incumbent_structure": {
+    "formula": "ret_L5_V2 = beta_R05_V2 * beta_threshold_lag * m4_weight_lag * ret_orig - db_thr*0.0015 - db_R05_V2*0.0015",
+    "combine_under_test": "g_inc = beta_threshold_lag * m4_weight_lag  (AR x M4 multiplicative product; the non-R05 exposure combine)",
+    "realized_path_source": "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/04_backtest_results/period_returns_layer5.csv (READ-ONLY, 267 rows, realized_ym 2004-02..2026-04)",
+    "base_monthly_source": "04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd/output/03_period_returns.csv (ret_orig == base ret_net, identity verified in v24_book_remeasure)",
+    "verified_identities_metric_type_diagnostic": {
+      "ret_L5_V2_recomposition_max_abs_resid": 5.135e-16,
+      "db_thr_equals_abs_delta_beta_threshold_lag_max_abs_resid": 5.551e-17,
+      "db_R05_V2_equals_abs_delta_beta_R05_V2_max_abs_resid": 0.0,
+      "note": "production cost legs charge |delta beta_AR| and |delta beta_R05| only; m4_weight path changes are UNCHARGED in the stored series. See cost_convention below for the uniform A/B re-pricing.",
+      "verification_script": "04_Research/composition_search/cycle1_trackO/inspect_inputs.R (run 2026-06-12, input inspection only - no candidate performance computed)"
+    },
+    "realized_path_facts_metric_type_diagnostic": {
+      "beta_threshold_lag_values": [0.4, 0.7, 1.0],
+      "beta_threshold_lag_months_active": 95,
+      "m4_weight_lag_range": [0.4291, 1.0],
+      "m4_weight_lag_months_active": 33,
+      "beta_R05_V2_values": [0.3, 0.5, 1.0],
+      "beta_R05_V2_months_active": 18,
+      "g_inc_min": 0.1716,
+      "total_beta_min": 0.0858,
+      "months_total_beta_lt_050": 45,
+      "months_total_beta_lt_025": 6
+    }
+  },
+
+  "invariant_constraints": [
+    {
+      "id": "INV-O1_deep_derisk_guard",
+      "rule": "GLOBAL DEEP-GUARD applied to every candidate: in any month where incumbent total beta b_inc_t = beta_threshold_lag * m4_weight_lag * beta_R05_V2 < 0.25, the candidate combine is overridden to g_cand_t := g_inc_t (incumbent product), so candidate total beta equals incumbent total beta EXACTLY in those months (6 months on realized path). B2 verdict: deep de-risking accurate (-9.83%/mo base) - crisis defense must not be weakened.",
+      "audit": "mandatory per-candidate report: max|beta_cand - beta_inc| over the 6 deep months must be 0 (machine epsilon)."
+    },
+    {
+      "id": "INV-O2_r05_frozen",
+      "rule": "beta_R05_V2 path and its cost leg are consumed AS STORED. No candidate may modify, re-trigger, or re-weight the R05 layer (replacement is a follow-up cycle, out of scope)."
+    },
+    {
+      "id": "INV-O3_function_of_realized_signals_only",
+      "rule": "Every candidate g is a pointwise function of the already-lagged realized columns (beta_threshold_lag, m4_weight_lag) of month t only. No new signals, no re-estimation, no fitted parameters (the rho=0.4951 constant in O4/O5 is a FROZEN B2 diagnostic value, fixed here pre-measurement, not tuned). PIT is inherited from the production lagged paths (C5 t-1 convention already applied upstream)."
+    },
+    {
+      "id": "INV-O4_no_silent_drop",
+      "rule": "All 5 candidates reported in full on all 4 windows regardless of selection outcome. selection_type=sweep, n_trials=5 counted in cumulative trial ledger."
+    }
+  ],
+
+  "candidates": [
+    {
+      "id": "O1_MIN_DEDUP",
+      "formula": "g = min(beta_AR, m4_weight); deep-guard per INV-O1",
+      "mechanism": "Severity corr 0.50 + P(AR|M4)=91% mean the product stacks two discounts for one shared shock; min() takes the single most severe signal (max-severity OR-dedup), removing the double subtraction entirely."
+    },
+    {
+      "id": "O2_M4_PRIORITY_OR",
+      "formula": "g = m4_weight if m4_weight < 1 else beta_AR; deep-guard per INV-O1",
+      "mechanism": "P(AR|M4)=91% means AR carries almost no independent information inside M4-active months; let M4 own the discount when it fires (33m) and let AR act only standalone (M4-inactive months) - conditional dedup rather than pointwise min."
+    },
+    {
+      "id": "O3_MIDBAND_FLOOR",
+      "formula": "g = g_inc if g_inc < 0.25 else max(g_inc, 0.5); deep-guard per INV-O1",
+      "mechanism": "B2 band evidence directly: mid-band de-risking cost +1.4%/mo base (deep band accurate), so clamp only the mid band of the combine to 0.5 and leave both the full-exposure and deep paths untouched."
+    },
+    {
+      "id": "O4_POWER_RHO",
+      "formula": "g = (beta_AR * m4_weight)^(1/(1+0.4951)) = product^0.66888; deep-guard per INV-O1",
+      "mechanism": "Correlation-corrected product: with severity corr rho, effective independent signal count is ~2/(1+rho), so the joint discount exponent is tempered by 1/(1+rho) - a continuous, monotone softening of the double-discount (rho=0.4951 frozen from B2, not fitted)."
+    },
+    {
+      "id": "O5_BLEND_RHO",
+      "formula": "g = (1-0.4951)*(beta_AR*m4_weight) + 0.4951*min(beta_AR, m4_weight); deep-guard per INV-O1",
+      "mechanism": "Convex interpolation between the independence limit (product correct) and the full-redundancy limit (min correct), weighted by the measured redundancy rho=0.4951 - the combine sits where the diagnosed overlap says it should."
+    }
+  ],
+
+  "reference_arms_not_trials": [
+    {
+      "id": "INCUMBENT_PRODUCT",
+      "formula": "g = beta_AR * m4_weight (current production combine), re-priced under the uniform cost convention below",
+      "role": "A/B baseline. Also report stored ret_L5_V2 (production cost convention) as a second reference row for traceability."
+    },
+    {
+      "id": "BASE_NO_OVERLAY",
+      "formula": "ret_orig (no overlay layers)",
+      "role": "context row only"
+    }
+  ],
+
+  "series_construction": {
+    "formula": "ret_cand_t = beta_R05_V2_t * g_cand_t * ret_orig_t - 0.0015*|delta g_cand_t| - 0.0015*db_R05_V2_t",
+    "delta_convention": "delta g at t=1 measured against initial exposure 1.0 (matches production: first row betas=1, db=0). db_R05_V2 consumed as stored.",
+    "cost_convention": "UNIFORM v2.4-delta legs for A/B: 15bps per leg on |delta of combined non-R05 exposure g| + stored R05 leg. Applied identically to all 5 candidates AND the incumbent reference (note: this re-prices the incumbent slightly vs stored ret_L5_V2, because production charged |delta beta_AR| only and left the m4 leg uncharged - both incumbent rows reported, labeled). Rationale: candidates that move mid-band exposure must not be advantaged/penalized by an inconsistent leg definition.",
+    "engine": "PerformanceAnalytics standard functions only (xts + table.AnnualizedReturns scale=12 + maxDrawdown). No prod/cumprod self-synthesis. Recomposition arithmetic on realized paths is permitted because the identical identity reproduces stored ret_L5_V2 at 5.1e-16 (verified above).",
+    "metric_type_label": "estimated (realized-artifact recomposition, v24_book_remeasure precedent). Forge-authoritative re-run is required before any graduation/admission claim - this A/B alone grades nothing."
+  },
+
+  "evaluation_prereg": {
+    "windows": {
+      "IS_selection": "realized_ym 2005-01 .. 2018-12 (168m) - the ONLY window used to select",
+      "OOS_confirm": "realized_ym 2019-01 .. 2026-04 (88m) - confirmation only, never selection",
+      "FULL_report": "realized_ym 2004-02 .. 2026-04 (267m)",
+      "SUB2017_report": "realized_ym 2017-01 .. 2026-04 (112m) - cohort-decay subperiod"
+    },
+    "metrics_per_arm_per_window": [
+      "SR (annualized, net)",
+      "CAGR (annualized, net)",
+      "MDD",
+      "annual_overlay_cost = mean(0.0015*|delta g| + 0.0015*db_R05_V2) * 12",
+      "delta_vs_incumbent_repriced: dSR, dCAGR, dMDD (pp)"
+    ],
+    "selection_rule": "argmax IS net SR over the 5 candidates. Tie-break (|dSR| < 0.005): lower IS MDD. OOS values MUST NOT be inspected before the IS winner is committed to the results file.",
+    "oos_confirmation_rule": "Selected candidate CONFIRMED iff (OOS net SR >= incumbent_repriced OOS net SR - 0.05) AND (OOS MDD <= incumbent_repriced OOS MDD + 3pp absolute). On failure: report FAIL honestly, no second pick from OOS, cycle ends with a negative result and an L-code.",
+    "mandatory_audits": [
+      "INV-O1 deep-guard audit: 6 deep months candidate-vs-incumbent total beta max|diff| = 0 for every candidate",
+      "per-candidate count of months where candidate exposure > incumbent (dedup lift footprint)",
+      "incumbent re-priced vs stored ret_L5_V2 reconciliation row"
+    ],
+    "selection_type": "sweep",
+    "n_trials": 5,
+    "dsr_note": "DSR computed and recorded for the sweep (n_trials=5) per charter; DSR >= 0.5 HARD binds at the graduation tier if the winner proceeds beyond this realized-path A/B. This stage itself grades nothing (estimated label)."
+  },
+
+  "out_of_scope_explicit": [
+    "R05 layer replacement or re-tuning (follow-up cycle)",
+    "any change to base STR_1715 alpha/weights",
+    "regime detector re-estimation (M4/AR trigger logic upstream untouched - only the combine of their realized outputs)",
+    "parameter sweeps over floor levels / exponents / blend weights (each candidate is ONE frozen spec; a grid here would be a different, larger sweep requiring its own prereg)"
+  ]
+}

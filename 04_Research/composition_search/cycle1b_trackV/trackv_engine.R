@@ -107,6 +107,11 @@ tv_run_portfolio <- function(H, RET) {
   grid <- sort(unique(RET$Date))
   grid <- grid[grid >= min(rb)]                 # months from first rebalance
   R <- RET[Ticker %in% tks & Date %in% grid, .(Date, Ticker, ret_fwd, r_idx)]
+  # drop rows with NA r_idx (per-ticker last obs in me_panel: ret_fwd is also NA
+  #   there — verified 3,840/3,840 in _probe_fix.R; lossless). NA r_idx otherwise
+  #   propagates into rb_map and crashes the held-cell loop ("missing value where
+  #   TRUE/FALSE needed" — root cause of the 2026-06-11 B2 all-run failure).
+  R <- R[!is.na(r_idx)]
   # full month x ticker matrix (NA -> 0, counted below for held cells only)
   Rw <- dcast(R, r_idx ~ Ticker, value.var = "ret_fwd")
   miss_tk <- setdiff(tks, names(Rw))
