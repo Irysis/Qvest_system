@@ -1,0 +1,5 @@
+suppressPackageStartupMessages({library(data.table)})
+M <- as.data.table(readRDS("aligned_series.rds"))
+cat("cols:", paste(names(M), collapse=","), "\n")
+cat("n:", nrow(M), " range:", M$realized_ym[1], "..", M$realized_ym[nrow(M)], "\n")
+print(head(M,3)); print(tail(M,3))
