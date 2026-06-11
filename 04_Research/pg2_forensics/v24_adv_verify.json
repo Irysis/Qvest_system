@@ -1,0 +1,125 @@
+{
+  "meta": {
+    "date": "2026-06-11",
+    "metric_type": "diagnostic",
+    "verifier": "independent adversarial re-run (does not reuse implementer outputs)",
+    "commission": 0.0015,
+    "n_rebal": 17,
+    "patch_commits": ["5e2b83fc", "74c018ac"]
+  },
+  "A_default_regression": {
+    "low": {
+      "label": "low_default",
+      "n_rebal": 17,
+      "nav_end": 97480600,
+      "total_ret": -0.025194
+    },
+    "high": {
+      "label": "high_default",
+      "n_rebal": 17,
+      "nav_end": 97480600,
+      "total_ret": -0.025194
+    },
+    "nav_identical": {
+      "low": true,
+      "high": true
+    },
+    "ret_identical": {
+      "low": true,
+      "high": true
+    },
+    "n_rebal_match": true,
+    "pass": true
+  },
+  "B_explicit_alias": {
+    "explicit": true,
+    "alias": true,
+    "pass": true
+  },
+  "C_v24_closed_forms": {
+    "rows": [
+      {
+        "case": "v24_low",
+        "measured": -0.001503,
+        "expected": -0.0015,
+        "pass": true
+      },
+      {
+        "case": "v24_mid",
+        "measured": -0.0252276,
+        "expected": -0.0251962829981,
+        "pass": true
+      },
+      {
+        "case": "v24_high",
+        "measured": -0.048423,
+        "expected": -0.04836457117516,
+        "pass": true
+      },
+      {
+        "case": "flat_mid",
+        "measured": -0.0251922,
+        "expected": -0.0251962829981,
+        "pass": true
+      }
+    ],
+    "monotonic": true,
+    "mid_between": true,
+    "flat_insensitive": true,
+    "tol": 0.0005,
+    "pass": true
+  },
+  "D_liquidation_cycle": {
+    "finding": "pre-existing rbindlist 4-vs-7-col portfolio_log crash on liquidation months (harness L912 vs L1165, untouched by patch)",
+    "default_error": "Item 6 has 4 columns, inconsistent with item 1 which has 7 columns. To fill missing columns use fill=TRUE.",
+    "v24_error": "Item 6 has 4 columns, inconsistent with item 1 which has 7 columns. To fill missing columns use fill=TRUE.",
+    "mode_equivalent": true,
+    "pass": true
+  },
+  "E_odd_price": {
+    "v24": {
+      "label": "odd_v24",
+      "n_rebal": 17,
+      "nav_end": 99849806.620000005,
+      "total_ret": -0.0015019338
+    },
+    "flat": {
+      "label": "odd_flat",
+      "n_rebal": 17,
+      "nav_end": 97481044.592499897,
+      "total_ret": -0.025189554075
+    },
+    "pass": true
+  },
+  "F_dynN_netting": {
+    "v24": {
+      "label": "dynN_v24",
+      "n_rebal": 17,
+      "nav_end": 98895505,
+      "total_ret": -0.01104495
+    },
+    "v24_expected": -0.01104258534338,
+    "flat": {
+      "label": "dynN_flat",
+      "n_rebal": 17,
+      "nav_end": 97480720,
+      "total_ret": -0.0251928
+    },
+    "pass": true
+  },
+  "G_invalid_version_rejected": {
+    "harness": true,
+    "judge": true,
+    "pass": true
+  },
+  "H_judge_helper": {
+    "default_nav": 95160307.256176546,
+    "prepatch_nav": 95160307.256176546,
+    "default_identical": true,
+    "alias_identical": true,
+    "v23_closed_form_ok": true,
+    "v24_ret": -0.00150225338007,
+    "pass": true
+  },
+  "overall": "PASS"
+}
