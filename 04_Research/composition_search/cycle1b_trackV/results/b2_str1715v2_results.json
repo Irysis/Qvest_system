@@ -1,0 +1,61 @@
+{
+  "base_id": "B2_STR1715V2",
+  "generated_at": "2026-06-11T16:04:40",
+  "cost_model": "v2.4_kr_retail_15bps delta (cost_t = 0.0015 x sum|dW| both legs, drift-aware BOP/EOP)",
+  "metric_type": "canonical_screen",
+  "repro_check": {
+    "target": {
+      "source": "str1715v2_top25_longonly_result.json / module_performance.json",
+      "sharpe": 0.911,
+      "cagr_pct": 16.96,
+      "mdd_pct": 39.22,
+      "n_months": 256,
+      "cost_note": "driver cost = gross - oneway_TO x 15bps (NOT v2.4; half of v2.4 both-leg charge)"
+    },
+    "measured_driver_replication": {
+      "sharpe": 0.8922,
+      "cagr": 0.1655,
+      "mdd": 0.32079,
+      "n_months": 255
+    },
+    "note": "tv_repro_driver replicates the driver verbatim incl. its same-grid Return.portfolio construction (one-month weight/return mis-alignment, probe_env.R-proven). Gap vs target = signal/data-vintage drift only."
+  },
+  "runs": {
+    "B2_BASE": {
+      "run_id": "B2_BASE",
+      "error": "missing value where TRUE/FALSE needed"
+    },
+    "B2_V1_topN15": {
+      "run_id": "B2_V1_topN15",
+      "error": "missing value where TRUE/FALSE needed"
+    },
+    "B2_V2_topN20": {
+      "run_id": "B2_V2_topN20",
+      "error": "missing value where TRUE/FALSE needed"
+    },
+    "B2_V3_rebal_quarterly": {
+      "run_id": "B2_V3_rebal_quarterly",
+      "error": "missing value where TRUE/FALSE needed"
+    },
+    "B2_V4_band_1p5N": {
+      "run_id": "B2_V4_band_1p5N",
+      "error": "missing value where TRUE/FALSE needed"
+    },
+    "B2_V5_band_2N": {
+      "run_id": "B2_V5_band_2N",
+      "error": "missing value where TRUE/FALSE needed"
+    },
+    "B2_V6_smooth3m": {
+      "run_id": "B2_V6_smooth3m",
+      "error": "missing value where TRUE/FALSE needed"
+    },
+    "B2_V7_liq_4e8": {
+      "run_id": "B2_V7_liq_4e8",
+      "error": "missing value where TRUE/FALSE needed"
+    },
+    "B2_V8_combo_band2N_smooth3m": {
+      "run_id": "B2_V8_combo_band2N_smooth3m",
+      "error": "missing value where TRUE/FALSE needed"
+    }
+  }
+}
