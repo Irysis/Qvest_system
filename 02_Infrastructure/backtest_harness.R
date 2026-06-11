@@ -753,10 +753,16 @@ calc_score_tilt_weights <- function(tickers, scores, ret_dt,
 #   FACTORS     — data.table with columns: Date, Ticker, Score
 #                 (monthly signal dates, higher Score = better)
 #   n_holdings  — max number of holdings (default 20)
-#   commission  — per-rebalance cost rate (default 0.0015 = 15bps). 현 구현 = 매수 명목
-#                 flat 부과(실회전율 무관) → one-way 15bps 모델의 TO≈6x/yr 보정점 근사.
-#                 한계·정량 진단·v2.4(delta-based) 계획: 04_Research/pg2_forensics/
-#                 b0_fee_bug_report.md (2026-06-10 B0)
+#   commission  — per-rebalance cost rate (default 0.0015 = 15bps).
+#   cost_model_version — "v2.3_flat" (기본값) | "v2.4_delta" (2026-06-11 도훈 confirm)
+#                 v2.3_flat: 매 리밸 신규 포트 전체 매수 명목 × commission flat 부과
+#                   (실회전율 무관) — 기존 전 기록과 비트단위 동일. one-way TO≈6x/yr
+#                   보정점 근사 (TO≳10x 과소 / TO≲3x 과대 — b0_fee_bug_report.md §3).
+#                 v2.4_delta: 리밸마다 종목별 |Δ보유 명목|에만 과금 (Δ>0 매수레그
+#                   commission + Δ<0 매도레그 commission, 보유 지속분 netting).
+#                   최초 진입 = 전액 매수레그. 전량청산 경로(매도 commission)는 양 모드 동일.
+#                 진단·회귀 증명: 04_Research/pg2_forensics/{b0_fee_bug_report.md,
+#                 v24_ab_results.json}. 기본값 flip은 book 재측정 후 별도 결정(Q-Lead).
 #   initial_cap — initial capital (default 1e8)
 #   weight_method — "equal", "ivol", "hrp", "minvar", "riskparity"
 #   buffer_zone — list(keep_n, entry_n) for hysteresis band turnover control
@@ -786,9 +792,21 @@ run_monthly_simulation <- function(RAWDATA,
                                     buffer_zone   = NULL,    # list(keep_n, entry_n) for TO control
                                     cov_method    = "sample",  # "sample" | "ledoit_wolf" | "gerber_rmt"
                                     regime_dt     = NULL,    # data.table(Date, MRS, ...) from build_daily_regime()
-                                    ic_history    = NULL) {  # numeric vector of past IC values (for V2 ic_tilt)
+                                    ic_history    = NULL,    # numeric vector of past IC values (for V2 ic_tilt)
+                                    cost_model_version = "v2.3_flat") {  # "v2.3_flat"(기본, 기존과 비트동일) | "v2.4_delta"
 
   cat("[simulation] Starting monthly simulation...\n")
+
+  # ── 비용모델 dispatch (cost_model v2.4 구현, 2026-06-11 도훈 confirm — B0 후속) ──
+  #   alias: config 라벨 "v2.3_kr_retail_15bps" = "v2.3_flat".
+  #   기본값은 v2.3_flat 유지 (기존 178+ STR / alpha-search 기록과의 비교가능성).
+  #   flip(기본값 전환)은 book 핵심수치 재측정 후 Q-Lead가 별도 수행.
+  if (identical(cost_model_version, "v2.3_kr_retail_15bps")) cost_model_version <- "v2.3_flat"
+  if (!cost_model_version %in% c("v2.3_flat", "v2.4_delta")) {
+    stop(sprintf("[simulation] unknown cost_model_version: '%s' (allowed: v2.3_flat / v2.4_delta)",
+                 cost_model_version))
+  }
+  .cost_delta <- identical(cost_model_version, "v2.4_delta")
 
   # 속도 핵심 (2026-06-05 segfault/slowness fix): RAWDATA를 (Ticker, Date)로 keying.
   #   루프 내 per-ticker 조회 `RAWDATA[Ticker==tk & Date==d, ...]`(전체 14M행 벡터스캔)를
@@ -907,20 +925,21 @@ run_monthly_simulation <- function(RAWDATA,
     selected <- exec_prices$Ticker
 
     # --- Portfolio value before rebalance ---
-    # ★ 비용모델 주의 (2026-06-10 B0 진단 — 04_Research/pg2_forensics/b0_fee_bug_report.md):
-    #   엔진은 매 리밸마다 "전량매도→전량매수" share 재계산 구조(netting 없음)이고, 비용은
-    #   아래 Allocate 블록에서 매수 명목 × commission(15bps)만 부과 = flat per-rebalance 모델
-    #   (실회전율 무관, 월간 리밸 기준 연 ~1.8%). 보정 진단: one-way TO≈6x/yr 부근(현 book
-    #   5.57x 포함)은 사실상 정확, TO≳10x는 과소·TO≲3x는 과대 과금.
-    #   "매도 레그 flat 추가" 패치는 A/B 실측으로 기각·원복(0%/100% 회전 비용 동일 = 회전
-    #   민감성 미해결, flat만 2배화 → 전형 TO 구간 2× 과대). 올바른 수리 = delta-based
-    #   양방향 15bps(거래분에만, cost_model v2.4 — 도훈 confirm 대기).
-    #   그때까지: TO>10x/yr 전략은 게이트 판정 시 "비용 과소계상" 경고 의무.
+    # ★ 비용모델 (2026-06-10 B0 진단 → 2026-06-11 v2.4 구현 — b0_fee_bug_report.md):
+    #   기본값 v2.3_flat = 매 리밸 "전량매도→전량매수" share 재계산 + 매수 명목 ×
+    #   commission flat 부과 (실회전율 무관, 월간 리밸 연 ~1.8%). 보정 진단: one-way
+    #   TO≈6x/yr 부근(현 book 5.57x 포함)은 사실상 정확, TO≳10x 과소·TO≲3x 과대.
+    #   "매도 레그 flat 추가" 패치는 A/B 실측 기각·원복(flat 2배화일 뿐 — B0 §2).
+    #   opt-in v2.4_delta = 종목별 |Δ보유 명목|에만 매수/매도 각 commission (netting).
+    #   v2.3_flat 사용 시 잔존 규율: TO>10x/yr 전략은 게이트 판정에 "비용 과소계상" 경고 의무.
     total_val <- cash
+    prev_notional <- numeric(0)   # v2.4_delta: 기존 보유 종목별 exec-price 명목 (Δ과금 기준)
     for (tk in names(holdings)) {
       price_row <- RAWDATA[.(tk, exec_date), Close]   # keyed binary-join (was 풀스캔)
       if (length(price_row) > 0 && !is.na(price_row[1])) {
-        total_val <- total_val + holdings[[tk]]$shares * price_row[1]
+        pos_val   <- holdings[[tk]]$shares * price_row[1]
+        total_val <- total_val + pos_val
+        prev_notional[tk] <- pos_val
       }
     }
 
@@ -1073,17 +1092,39 @@ run_monthly_simulation <- function(RAWDATA,
     # --- Allocate ---
     new_holdings <- list()
     total_cost   <- 0
+    buy_notional <- numeric(0)    # v2.4_delta: 신규 목표 명목 (정수 shares 확정 후)
     for (tk in selected) {
       alloc     <- invest_val * w[tk]
       price_now <- exec_prices[Ticker == tk, Close]
       shares    <- floor(alloc / price_now)
-      cost      <- shares * price_now * (1 + commission)
-      total_cost <- total_cost + cost
+      if (.cost_delta) {
+        notional_tk      <- shares * price_now
+        buy_notional[tk] <- notional_tk
+        total_cost       <- total_cost + notional_tk  # 명목만 — 수수료는 루프 뒤 Δ기준 합산
+      } else {
+        cost       <- shares * price_now * (1 + commission)  # v2.3_flat: 매수 명목 × (1+c)
+        total_cost <- total_cost + cost
+      }
       new_holdings[[tk]] <- list(
         shares     = shares,
         last_price = price_now,
         weight     = w[tk]
       )
+    }
+
+    # v2.4_delta: 종목별 |Δ명목| 과금 — Δ>0 매수레그 + Δ<0 매도레그 (각 commission).
+    #   보유 지속분 netting (변화분에만 과금). 미선택 기존 보유분 = 전량 매도레그.
+    #   최초 진입(prev_notional 빈 벡터) = 전액 매수레그. 전량청산 경로는 위 별도 분기 유지.
+    if (.cost_delta) {
+      fee_buy <- 0; fee_sell <- 0
+      for (tk in union(names(buy_notional), names(prev_notional))) {
+        nv <- if (tk %in% names(buy_notional))  buy_notional[[tk]]  else 0
+        pv <- if (tk %in% names(prev_notional)) prev_notional[[tk]] else 0
+        d  <- nv - pv
+        if (d > 0) fee_buy  <- fee_buy  + d * commission
+        else       fee_sell <- fee_sell - d * commission
+      }
+      total_cost <- total_cost + fee_buy + fee_sell
     }
 
     cash      <- total_val - total_cost

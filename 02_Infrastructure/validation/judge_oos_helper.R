@@ -70,9 +70,24 @@ suppressMessages({
 .joh_run_static_weight_sim <- function(RAWDATA, weights_dt,
                                         start_date, end_date,
                                         commission = 0.0015,
-                                        initial_cap = 1e8) {
+                                        initial_cap = 1e8,
+                                        cost_model_version = "v2.3_flat") {
   stopifnot(is.data.table(RAWDATA))
   stopifnot(is.data.table(weights_dt))
+
+  # ── 비용모델 dispatch (cost_model v2.4, 2026-06-11 — b0_fee_bug_report.md 후속) ──
+  #   "v2.3_flat" (기본값, 기존과 비트단위 동일): 매 리밸 전량매도 proceeds×(1-c) +
+  #     전량재매수 shares×(1-c) = flat ~30bps/리밸 (실회전율 무관 — B0가 기각한
+  #     양레그 flat 구조의 독립 복제본. 정적 weight 월리밸의 실거래는 drift분뿐이라
+  #     저TO 구간 수배 과대 과금). 회귀 증명: 04_Research/pg2_forensics/v24_ab_results.json
+  #   "v2.4_delta": 종목별 |Δ보유 명목|에만 매수레그/매도레그 각 commission (netting).
+  #   alias: "v2.3_kr_retail_15bps"(request.json 라벨) = "v2.3_flat".
+  if (identical(cost_model_version, "v2.3_kr_retail_15bps")) cost_model_version <- "v2.3_flat"
+  if (!cost_model_version %in% c("v2.3_flat", "v2.4_delta")) {
+    stop(sprintf("[judge_oos_helper] unknown cost_model_version: '%s' (allowed: v2.3_flat / v2.4_delta)",
+                 cost_model_version))
+  }
+  .cost_delta <- identical(cost_model_version, "v2.4_delta")
 
   # ticker + weight 정규화
   if (!"Ticker" %in% names(weights_dt) && "ticker" %in% names(weights_dt)) {
