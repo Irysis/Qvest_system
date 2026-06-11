@@ -148,16 +148,29 @@ setnames(.SIGF, "ord", "form_ord")
 .bcols <- paste0(.acols, ".b")
 .ER[, Er := rowSums(as.matrix(.SD[, .acols, with = FALSE]) *
                     as.matrix(.SD[, .bcols, with = FALSE])), .SDcols = c(.acols, .bcols)]
-SIGOUT <- .ER[is.finite(Er), .(Date = SigDate, Ticker, Score = Er)]
+# ---- 7b. invert 스위치 (HZZ inverse probe — anti-trend bottom-quintile long) --
+#   ★ .HZZ_INVERT (호출환경 변수, 기본 FALSE — 미설정 시 원본 동작 byte-무변).
+#   invert=FALSE (원방향): Score = E[r]. 엔진 descending-Score 선택 → E[r] top quintile(Q5) long.
+#   invert=TRUE  (역방향): Score = -E[r]. 엔진 descending 선택 → E[r] *bottom* quintile(Q1) long.
+#     = anti-trend. KR 부호역전 가설(개인 추세추종 과잉 → 트렌드 신호 과대반영 → 반전).
+#   ★ C13 무관: NEGATE_FACTORS/FLIP_SIGN(factor DB 부호 조작으로 알파 날조)이 아니라,
+#     동일 E[r] 예측의 *하위 분위* long 포트폴리오 구성(문서화된 anti-trend 가설의 정의 그 자체).
+#     E[r] 자체는 식(1)~(5) 그대로(forward 없음). 선택만 Q5→Q1. n_trials=chain 2번째(유의 음수알파 관찰).
+.hzz_invert <- if (exists(".HZZ_INVERT", inherits = TRUE)) isTRUE(get(".HZZ_INVERT", inherits = TRUE)) else FALSE
+SIGOUT <- .ER[is.finite(Er), .(Date = SigDate, Ticker, Er)]
+SIGOUT[, Score := if (.hzz_invert) -Er else Er]
+SIGOUT[, Er := NULL]
 
-# ---- 8. top quintile(Q5) long-only — N 컬럼으로 엔진에 전달 -----------------
+# ---- 8. quintile long-only — N 컬럼으로 엔진에 전달 -------------------------
 #   각 형성월 유효 후보의 상위 20%(quintile) = N. equal-weight(weight_method="equal"), 월간 리밸.
-#   ★ L/S(Q5−Q1) 사상 → Q5 long-only only (도훈 mandate). Score 높을수록 매수(부호 반전 없음).
+#   ★ L/S(Q5−Q1) 사상 → 단일 분위 long-only (도훈 mandate). 선택 방향 = invert 스위치.
+#     invert=FALSE → Score=E[r] 최상위 분위(원방향) / invert=TRUE → E[r] 최하위 분위(역방향).
 .NDT <- SIGOUT[, .(N = as.integer(pmax(1L, round(.N / .HZZ_NQ)))), by = Date]
 FACTORS <- merge(SIGOUT, .NDT, by = "Date")
 setorder(FACTORS, Date, -Score)
 
-cat(sprintf("[fe_hzz_trend · 논문스펙] FACTORS rows=%d | 신호월=%d | 종목=%d | β추정월=%d | quintile N=%d~%d med=%d\n",
+cat(sprintf("[fe_hzz_trend · 논문스펙%s] FACTORS rows=%d | 신호월=%d | 종목=%d | β추정월=%d | quintile N=%d~%d med=%d\n",
+            if (.hzz_invert) " · INVERT(anti-trend Q1)" else " · Q5",
             nrow(FACTORS), uniqueN(FACTORS$Date), uniqueN(FACTORS$Ticker),
             nrow(.BETA), min(.NDT$N), max(.NDT$N), as.integer(median(.NDT$N))))
 
