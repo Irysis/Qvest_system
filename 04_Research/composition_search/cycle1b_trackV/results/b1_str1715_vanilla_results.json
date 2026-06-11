@@ -1,0 +1,820 @@
+{
+  "base_id": "B1_STR1715_VANILLA",
+  "generated_at": "2026-06-11T16:02:46",
+  "cost_model": "v2.4_kr_retail_15bps delta (cost_t = 0.0015 x sum|dW| both legs, drift-aware BOP/EOP)",
+  "metric_type": "canonical_screen",
+  "repro_check": {
+    "target": {
+      "source": "b1_family_attribution blend_65_35 gross",
+      "sharpe_gross": 1.044,
+      "mdd": 0.374,
+      "n_months": 267
+    },
+    "measured": {
+      "sharpe_gross_full": 1.0414,
+      "mdd_net": 0.39111,
+      "n_months": 268
+    },
+    "note": "b1 gross had no cost; compare sr_gross. Window 2004+ both. MDD here is net-of-v2.4-cost (not directly comparable)."
+  },
+  "runs": {
+    "B1_BASE": {
+      "run_id": "B1_BASE",
+      "metric_type": "canonical_screen",
+      "cfg": {
+        "n_fixed": 20
+      },
+      "windows": {
+        "FULL": {
+          "n_months": 256,
+          "sr_net": 0.9147,
+          "sr_gross": 1.0103,
+          "cagr_net": 0.22683,
+          "mdd_net": 0.39111,
+          "calmar": 0.58,
+          "to_oneway_ann": 6.4283,
+          "to_traded_ann": 12.8567,
+          "cost_ann_pct": 1.9285,
+          "gross_ann": 0.25039,
+          "active_sr": 0.7176,
+          "port_t_nw": 3.3361,
+          "net_ir": 0.7176,
+          "alpha_ann": 0.12122
+        },
+        "IS": {
+          "n_months": 167,
+          "sr_net": 1.0401,
+          "sr_gross": 1.1456,
+          "cagr_net": 0.24335,
+          "mdd_net": 0.39111,
+          "calmar": 0.6222,
+          "to_oneway_ann": 6.5988,
+          "to_traded_ann": 13.1976,
+          "cost_ann_pct": 1.9796,
+          "gross_ann": 0.26784,
+          "active_sr": 1.2819,
+          "port_t_nw": 4.9348,
+          "net_ir": 1.2819,
+          "alpha_ann": 0.16882
+        },
+        "OOS": {
+          "n_months": 89,
+          "sr_net": 0.7178,
+          "sr_gross": 0.798,
+          "cagr_net": 0.19642,
+          "mdd_net": 0.37469,
+          "calmar": 0.5242,
+          "to_oneway_ann": 6.1085,
+          "to_traded_ann": 12.217,
+          "cost_ann_pct": 1.8326,
+          "gross_ann": 0.21828,
+          "active_sr": -0.0874,
+          "port_t_nw": -0.2539,
+          "net_ir": -0.0874,
+          "alpha_ann": 0.03414
+        },
+        "R2017": {
+          "n_months": 113,
+          "sr_net": 0.6484,
+          "sr_gross": 0.7327,
+          "cagr_net": 0.16526,
+          "mdd_net": 0.37469,
+          "calmar": 0.4411,
+          "to_oneway_ann": 6.1305,
+          "to_traded_ann": 12.2611,
+          "cost_ann_pct": 1.8392,
+          "gross_ann": 0.18667,
+          "active_sr": 0.0001,
+          "port_t_nw": 0.0004,
+          "net_ir": 0.0001,
+          "alpha_ann": 0.03781
+        }
+      },
+      "diag": {
+        "avg_n": 20,
+        "n_rebalances": 255,
+        "na_fill_cells": 20,
+        "na_fill_share": 0.00391
+      }
+    },
+    "B1_V1_topN15": {
+      "run_id": "B1_V1_topN15",
+      "metric_type": "canonical_screen",
+      "cfg": {
+        "n_fixed": 15
+      },
+      "windows": {
+        "FULL": {
+          "n_months": 256,
+          "sr_net": 0.908,
+          "sr_gross": 1.0073,
+          "cagr_net": 0.23634,
+          "mdd_net": 0.43291,
+          "calmar": 0.5459,
+          "to_oneway_ann": 6.9319,
+          "to_traded_ann": 13.8637,
+          "cost_ann_pct": 2.0796,
+          "gross_ann": 0.26197,
+          "active_sr": 0.7365,
+          "port_t_nw": 3.4845,
+          "net_ir": 0.7365,
+          "alpha_ann": 0.12831
+        },
+        "IS": {
+          "n_months": 167,
+          "sr_net": 0.9662,
+          "sr_gross": 1.0739,
+          "cagr_net": 0.23702,
+          "mdd_net": 0.43291,
+          "calmar": 0.5475,
+          "to_oneway_ann": 7.0864,
+          "to_traded_ann": 14.1728,
+          "cost_ann_pct": 2.1259,
+          "gross_ann": 0.26322,
+          "active_sr": 1.1579,
+          "port_t_nw": 4.4978,
+          "net_ir": 1.1579,
+          "alpha_ann": 0.16409
+        },
+        "OOS": {
+          "n_months": 89,
+          "sr_net": 0.817,
+          "sr_gross": 0.903,
+          "cagr_net": 0.23508,
+          "mdd_net": 0.3803,
+          "calmar": 0.6181,
+          "to_oneway_ann": 6.6419,
+          "to_traded_ann": 13.2837,
+          "cost_ann_pct": 1.9926,
+          "gross_ann": 0.25962,
+          "active_sr": 0.1151,
+          "port_t_nw": 0.3295,
+          "net_ir": 0.1151,
+          "alpha_ann": 0.0643
+        },
+        "R2017": {
+          "n_months": 113,
+          "sr_net": 0.7394,
+          "sr_gross": 0.8295,
+          "cagr_net": 0.19781,
+          "mdd_net": 0.3803,
+          "calmar": 0.5201,
+          "to_oneway_ann": 6.6771,
+          "to_traded_ann": 13.3541,
+          "cost_ann_pct": 2.0031,
+          "gross_ann": 0.22176,
+          "active_sr": 0.1838,
+          "port_t_nw": 0.5829,
+          "net_ir": 0.1838,
+          "alpha_ann": 0.06395
+        }
+      },
+      "diag": {
+        "avg_n": 15,
+        "n_rebalances": 255,
+        "na_fill_cells": 15,
+        "na_fill_share": 0.00391
+      }
+    },
+    "B1_V2_topN25": {
+      "run_id": "B1_V2_topN25",
+      "metric_type": "canonical_screen",
+      "cfg": {
+        "n_fixed": 25
+      },
+      "windows": {
+        "FULL": {
+          "n_months": 256,
+          "sr_net": 0.9197,
+          "sr_gross": 1.0119,
+          "cagr_net": 0.22517,
+          "mdd_net": 0.40439,
+          "calmar": 0.5568,
+          "to_oneway_ann": 6.1185,
+          "to_traded_ann": 12.2371,
+          "cost_ann_pct": 1.8356,
+          "gross_ann": 0.24757,
+          "active_sr": 0.7237,
+          "port_t_nw": 3.2714,
+          "net_ir": 0.7237,
+          "alpha_ann": 0.11971
+        },
+        "IS": {
+          "n_months": 167,
+          "sr_net": 1.0315,
+          "sr_gross": 1.1309,
+          "cagr_net": 0.24234,
+          "mdd_net": 0.40439,
+          "calmar": 0.5993,
+          "to_oneway_ann": 6.2318,
+          "to_traded_ann": 12.4637,
+          "cost_ann_pct": 1.8696,
+          "gross_ann": 0.26545,
+          "active_sr": 1.322,
+          "port_t_nw": 4.9326,
+          "net_ir": 1.322,
+          "alpha_ann": 0.16652
+        },
+        "OOS": {
+          "n_months": 89,
+          "sr_net": 0.7343,
+          "sr_gross": 0.8148,
+          "cagr_net": 0.19359,
+          "mdd_net": 0.38659,
+          "calmar": 0.5008,
+          "to_oneway_ann": 5.906,
+          "to_traded_ann": 11.8119,
+          "cost_ann_pct": 1.7718,
+          "gross_ann": 0.21469,
+          "active_sr": -0.1186,
+          "port_t_nw": -0.3377,
+          "net_ir": -0.1186,
+          "alpha_ann": 0.03514
+        },
+        "R2017": {
+          "n_months": 113,
+          "sr_net": 0.6497,
+          "sr_gross": 0.7344,
+          "cagr_net": 0.16012,
+          "mdd_net": 0.38659,
+          "calmar": 0.4142,
+          "to_oneway_ann": 5.9707,
+          "to_traded_ann": 11.9414,
+          "cost_ann_pct": 1.7912,
+          "gross_ann": 0.1809,
+          "active_sr": -0.041,
+          "port_t_nw": -0.1305,
+          "net_ir": -0.041,
+          "alpha_ann": 0.03571
+        }
+      },
+      "diag": {
+        "avg_n": 25,
+        "n_rebalances": 255,
+        "na_fill_cells": 25,
+        "na_fill_share": 0.00391
+      }
+    },
+    "B1_V3_rebal_quarterly": {
+      "run_id": "B1_V3_rebal_quarterly",
+      "metric_type": "canonical_screen",
+      "cfg": {
+        "n_fixed": 20,
+        "quarterly": true
+      },
+      "windows": {
+        "FULL": {
+          "n_months": 254,
+          "sr_net": 0.881,
+          "sr_gross": 0.92,
+          "cagr_net": 0.21227,
+          "mdd_net": 0.43228,
+          "calmar": 0.4911,
+          "to_oneway_ann": 2.6856,
+          "to_traded_ann": 5.3712,
+          "cost_ann_pct": 0.8057,
+          "gross_ann": 0.22189,
+          "active_sr": 0.613,
+          "port_t_nw": 2.587,
+          "net_ir": 0.613,
+          "alpha_ann": 0.11464
+        },
+        "IS": {
+          "n_months": 165,
+          "sr_net": 0.951,
+          "sr_gross": 0.9934,
+          "cagr_net": 0.22011,
+          "mdd_net": 0.43228,
+          "calmar": 0.5092,
+          "to_oneway_ann": 2.7283,
+          "to_traded_ann": 5.4566,
+          "cost_ann_pct": 0.8185,
+          "gross_ann": 0.22999,
+          "active_sr": 1.1548,
+          "port_t_nw": 3.7638,
+          "net_ir": 1.1548,
+          "alpha_ann": 0.15219
+        },
+        "OOS": {
+          "n_months": 89,
+          "sr_net": 0.764,
+          "sr_gross": 0.7978,
+          "cagr_net": 0.19786,
+          "mdd_net": 0.31952,
+          "calmar": 0.6193,
+          "to_oneway_ann": 2.6064,
+          "to_traded_ann": 5.2128,
+          "cost_ann_pct": 0.7819,
+          "gross_ann": 0.20703,
+          "active_sr": -0.0949,
+          "port_t_nw": -0.2639,
+          "net_ir": -0.0949,
+          "alpha_ann": 0.04963
+        },
+        "R2017": {
+          "n_months": 113,
+          "sr_net": 0.6032,
+          "sr_gross": 0.6386,
+          "cagr_net": 0.14728,
+          "mdd_net": 0.3245,
+          "calmar": 0.4539,
+          "to_oneway_ann": 2.6168,
+          "to_traded_ann": 5.2335,
+          "cost_ann_pct": 0.785,
+          "gross_ann": 0.15616,
+          "active_sr": -0.1077,
+          "port_t_nw": -0.3349,
+          "net_ir": -0.1077,
+          "alpha_ann": 0.03167
+        }
+      },
+      "diag": {
+        "avg_n": 20,
+        "n_rebalances": 85,
+        "na_fill_cells": 106,
+        "na_fill_share": 0.02087
+      }
+    },
+    "B1_V4_band_1p5N": {
+      "run_id": "B1_V4_band_1p5N",
+      "metric_type": "canonical_screen",
+      "cfg": {
+        "n_fixed": 20,
+        "band": 30
+      },
+      "windows": {
+        "FULL": {
+          "n_months": 256,
+          "sr_net": 0.9566,
+          "sr_gross": 1.0304,
+          "cagr_net": 0.23937,
+          "mdd_net": 0.37675,
+          "calmar": 0.6354,
+          "to_oneway_ann": 4.9817,
+          "to_traded_ann": 9.9635,
+          "cost_ann_pct": 1.4945,
+          "gross_ann": 0.25776,
+          "active_sr": 0.7829,
+          "port_t_nw": 3.5898,
+          "net_ir": 0.7829,
+          "alpha_ann": 0.13148
+        },
+        "IS": {
+          "n_months": 167,
+          "sr_net": 1.056,
+          "sr_gross": 1.1354,
+          "cagr_net": 0.25361,
+          "mdd_net": 0.37675,
+          "calmar": 0.6732,
+          "to_oneway_ann": 5.0981,
+          "to_traded_ann": 10.1962,
+          "cost_ann_pct": 1.5294,
+          "gross_ann": 0.27262,
+          "active_sr": 1.3462,
+          "port_t_nw": 5.1908,
+          "net_ir": 1.3462,
+          "alpha_ann": 0.17572
+        },
+        "OOS": {
+          "n_months": 89,
+          "sr_net": 0.791,
+          "sr_gross": 0.8554,
+          "cagr_net": 0.21309,
+          "mdd_net": 0.36464,
+          "calmar": 0.5844,
+          "to_oneway_ann": 4.7633,
+          "to_traded_ann": 9.5267,
+          "cost_ann_pct": 1.429,
+          "gross_ann": 0.23033,
+          "active_sr": -0.0099,
+          "port_t_nw": -0.0275,
+          "net_ir": -0.0099,
+          "alpha_ann": 0.05214
+        },
+        "R2017": {
+          "n_months": 113,
+          "sr_net": 0.7415,
+          "sr_gross": 0.8095,
+          "cagr_net": 0.18684,
+          "mdd_net": 0.36464,
+          "calmar": 0.5124,
+          "to_oneway_ann": 4.8161,
+          "to_traded_ann": 9.6321,
+          "cost_ann_pct": 1.4448,
+          "gross_ann": 0.20391,
+          "active_sr": 0.1124,
+          "port_t_nw": 0.3493,
+          "net_ir": 0.1124,
+          "alpha_ann": 0.05903
+        }
+      },
+      "diag": {
+        "avg_n": 20,
+        "n_rebalances": 255,
+        "na_fill_cells": 20,
+        "na_fill_share": 0.00391
+      }
+    },
+    "B1_V5_band_2N": {
+      "run_id": "B1_V5_band_2N",
+      "metric_type": "canonical_screen",
+      "cfg": {
+        "n_fixed": 20,
+        "band": 40
+      },
+      "windows": {
+        "FULL": {
+          "n_months": 256,
+          "sr_net": 0.9229,
+          "sr_gross": 0.9839,
+          "cagr_net": 0.23048,
+          "mdd_net": 0.38492,
+          "calmar": 0.5988,
+          "to_oneway_ann": 4.1355,
+          "to_traded_ann": 8.271,
+          "cost_ann_pct": 1.2407,
+          "gross_ann": 0.24563,
+          "active_sr": 0.7497,
+          "port_t_nw": 3.3359,
+          "net_ir": 0.7497,
+          "alpha_ann": 0.12295
+        },
+        "IS": {
+          "n_months": 167,
+          "sr_net": 0.9948,
+          "sr_gross": 1.059,
+          "cagr_net": 0.2374,
+          "mdd_net": 0.38492,
+          "calmar": 0.6168,
+          "to_oneway_ann": 4.1582,
+          "to_traded_ann": 8.3163,
+          "cost_ann_pct": 1.2474,
+          "gross_ann": 0.25269,
+          "active_sr": 1.2619,
+          "port_t_nw": 4.4971,
+          "net_ir": 1.2619,
+          "alpha_ann": 0.16266
+        },
+        "OOS": {
+          "n_months": 89,
+          "sr_net": 0.8038,
+          "sr_gross": 0.8592,
+          "cagr_net": 0.2176,
+          "mdd_net": 0.29606,
+          "calmar": 0.735,
+          "to_oneway_ann": 4.093,
+          "to_traded_ann": 8.186,
+          "cost_ann_pct": 1.2279,
+          "gross_ann": 0.23247,
+          "active_sr": 0.0104,
+          "port_t_nw": 0.0295,
+          "net_ir": 0.0104,
+          "alpha_ann": 0.05199
+        },
+        "R2017": {
+          "n_months": 113,
+          "sr_net": 0.737,
+          "sr_gross": 0.7941,
+          "cagr_net": 0.18732,
+          "mdd_net": 0.30966,
+          "calmar": 0.6049,
+          "to_oneway_ann": 4.081,
+          "to_traded_ann": 8.162,
+          "cost_ann_pct": 1.2243,
+          "gross_ann": 0.20178,
+          "active_sr": 0.1195,
+          "port_t_nw": 0.3762,
+          "net_ir": 0.1195,
+          "alpha_ann": 0.0556
+        }
+      },
+      "diag": {
+        "avg_n": 20,
+        "n_rebalances": 255,
+        "na_fill_cells": 20,
+        "na_fill_share": 0.00391
+      }
+    },
+    "B1_V6_smooth3m": {
+      "run_id": "B1_V6_smooth3m",
+      "metric_type": "canonical_screen",
+      "cfg": {
+        "n_fixed": 20,
+        "smooth": true
+      },
+      "windows": {
+        "FULL": {
+          "n_months": 255,
+          "sr_net": 0.8487,
+          "sr_gross": 0.9026,
+          "cagr_net": 0.21016,
+          "mdd_net": 0.40428,
+          "calmar": 0.5198,
+          "to_oneway_ann": 3.6853,
+          "to_traded_ann": 7.3706,
+          "cost_ann_pct": 1.1056,
+          "gross_ann": 0.22345,
+          "active_sr": 0.6558,
+          "port_t_nw": 2.6733,
+          "net_ir": 0.6558,
+          "alpha_ann": 0.11028
+        },
+        "IS": {
+          "n_months": 166,
+          "sr_net": 0.9601,
+          "sr_gross": 1.019,
+          "cagr_net": 0.22432,
+          "mdd_net": 0.40428,
+          "calmar": 0.5549,
+          "to_oneway_ann": 3.7461,
+          "to_traded_ann": 7.4922,
+          "cost_ann_pct": 1.1238,
+          "gross_ann": 0.23798,
+          "active_sr": 1.2672,
+          "port_t_nw": 4.1757,
+          "net_ir": 1.2672,
+          "alpha_ann": 0.15751
+        },
+        "OOS": {
+          "n_months": 89,
+          "sr_net": 0.6743,
+          "sr_gross": 0.7205,
+          "cagr_net": 0.18418,
+          "mdd_net": 0.3485,
+          "calmar": 0.5285,
+          "to_oneway_ann": 3.5718,
+          "to_traded_ann": 7.1436,
+          "cost_ann_pct": 1.0715,
+          "gross_ann": 0.19679,
+          "active_sr": -0.1426,
+          "port_t_nw": -0.3649,
+          "net_ir": -0.1426,
+          "alpha_ann": 0.02698
+        },
+        "R2017": {
+          "n_months": 113,
+          "sr_net": 0.5837,
+          "sr_gross": 0.6319,
+          "cagr_net": 0.1488,
+          "mdd_net": 0.40043,
+          "calmar": 0.3716,
+          "to_oneway_ann": 3.5778,
+          "to_traded_ann": 7.1556,
+          "cost_ann_pct": 1.0733,
+          "gross_ann": 0.16109,
+          "active_sr": -0.0864,
+          "port_t_nw": -0.2521,
+          "net_ir": -0.0864,
+          "alpha_ann": 0.02525
+        }
+      },
+      "diag": {
+        "avg_n": 20,
+        "n_rebalances": 254,
+        "na_fill_cells": 20,
+        "na_fill_share": 0.00392
+      }
+    },
+    "B1_V7_liq_2e8": {
+      "run_id": "B1_V7_liq_2e8",
+      "metric_type": "canonical_screen",
+      "cfg": {
+        "n_fixed": 20,
+        "liq_floor": 200000000
+      },
+      "windows": {
+        "FULL": {
+          "n_months": 256,
+          "sr_net": 0.9182,
+          "sr_gross": 1.0138,
+          "cagr_net": 0.22761,
+          "mdd_net": 0.39443,
+          "calmar": 0.5771,
+          "to_oneway_ann": 6.4161,
+          "to_traded_ann": 12.8322,
+          "cost_ann_pct": 1.9248,
+          "gross_ann": 0.25115,
+          "active_sr": 0.7242,
+          "port_t_nw": 3.3754,
+          "net_ir": 0.7242,
+          "alpha_ann": 0.12173
+        },
+        "IS": {
+          "n_months": 167,
+          "sr_net": 1.0449,
+          "sr_gross": 1.1505,
+          "cagr_net": 0.2442,
+          "mdd_net": 0.39443,
+          "calmar": 0.6191,
+          "to_oneway_ann": 6.5801,
+          "to_traded_ann": 13.1603,
+          "cost_ann_pct": 1.974,
+          "gross_ann": 0.26865,
+          "active_sr": 1.2927,
+          "port_t_nw": 5.003,
+          "net_ir": 1.2927,
+          "alpha_ann": 0.16943
+        },
+        "OOS": {
+          "n_months": 89,
+          "sr_net": 0.7197,
+          "sr_gross": 0.7999,
+          "cagr_net": 0.19708,
+          "mdd_net": 0.37469,
+          "calmar": 0.526,
+          "to_oneway_ann": 6.1084,
+          "to_traded_ann": 12.2167,
+          "cost_ann_pct": 1.8325,
+          "gross_ann": 0.21895,
+          "active_sr": -0.084,
+          "port_t_nw": -0.2441,
+          "net_ir": -0.084,
+          "alpha_ann": 0.03443
+        },
+        "R2017": {
+          "n_months": 113,
+          "sr_net": 0.6682,
+          "sr_gross": 0.7531,
+          "cagr_net": 0.16999,
+          "mdd_net": 0.37469,
+          "calmar": 0.4537,
+          "to_oneway_ann": 6.1418,
+          "to_traded_ann": 12.2835,
+          "cost_ann_pct": 1.8425,
+          "gross_ann": 0.19153,
+          "active_sr": 0.0254,
+          "port_t_nw": 0.0816,
+          "net_ir": 0.0254,
+          "alpha_ann": 0.0417
+        }
+      },
+      "diag": {
+        "avg_n": 20,
+        "n_rebalances": 255,
+        "na_fill_cells": 20,
+        "na_fill_share": 0.00391
+      }
+    },
+    "B1_V8_liq_4e8": {
+      "run_id": "B1_V8_liq_4e8",
+      "metric_type": "canonical_screen",
+      "cfg": {
+        "n_fixed": 20,
+        "liq_floor": 400000000
+      },
+      "windows": {
+        "FULL": {
+          "n_months": 256,
+          "sr_net": 0.9011,
+          "sr_gross": 0.9959,
+          "cagr_net": 0.22339,
+          "mdd_net": 0.39391,
+          "calmar": 0.5671,
+          "to_oneway_ann": 6.3881,
+          "to_traded_ann": 12.7762,
+          "cost_ann_pct": 1.9164,
+          "gross_ann": 0.24675,
+          "active_sr": 0.7104,
+          "port_t_nw": 3.3355,
+          "net_ir": 0.7104,
+          "alpha_ann": 0.11749
+        },
+        "IS": {
+          "n_months": 167,
+          "sr_net": 1.0147,
+          "sr_gross": 1.1189,
+          "cagr_net": 0.23688,
+          "mdd_net": 0.39391,
+          "calmar": 0.6014,
+          "to_oneway_ann": 6.5222,
+          "to_traded_ann": 13.0445,
+          "cost_ann_pct": 1.9567,
+          "gross_ann": 0.26098,
+          "active_sr": 1.281,
+          "port_t_nw": 4.9828,
+          "net_ir": 1.281,
+          "alpha_ann": 0.16251
+        },
+        "OOS": {
+          "n_months": 89,
+          "sr_net": 0.7234,
+          "sr_gross": 0.8038,
+          "cagr_net": 0.19848,
+          "mdd_net": 0.36998,
+          "calmar": 0.5364,
+          "to_oneway_ann": 6.1364,
+          "to_traded_ann": 12.2729,
+          "cost_ann_pct": 1.8409,
+          "gross_ann": 0.22047,
+          "active_sr": -0.0759,
+          "port_t_nw": -0.2219,
+          "net_ir": -0.0759,
+          "alpha_ann": 0.03562
+        },
+        "R2017": {
+          "n_months": 113,
+          "sr_net": 0.6763,
+          "sr_gross": 0.7616,
+          "cagr_net": 0.17232,
+          "mdd_net": 0.36998,
+          "calmar": 0.4658,
+          "to_oneway_ann": 6.1581,
+          "to_traded_ann": 12.3163,
+          "cost_ann_pct": 1.8474,
+          "gross_ann": 0.19396,
+          "active_sr": 0.0386,
+          "port_t_nw": 0.1251,
+          "net_ir": 0.0386,
+          "alpha_ann": 0.04368
+        }
+      },
+      "diag": {
+        "avg_n": 20,
+        "n_rebalances": 255,
+        "na_fill_cells": 20,
+        "na_fill_share": 0.00391
+      }
+    },
+    "B1_V9_combo_band2N_smooth3m": {
+      "run_id": "B1_V9_combo_band2N_smooth3m",
+      "metric_type": "canonical_screen",
+      "cfg": {
+        "n_fixed": 20,
+        "band": 40,
+        "smooth": true
+      },
+      "windows": {
+        "FULL": {
+          "n_months": 255,
+          "sr_net": 0.8238,
+          "sr_gross": 0.8582,
+          "cagr_net": 0.2031,
+          "mdd_net": 0.41371,
+          "calmar": 0.4909,
+          "to_oneway_ann": 2.366,
+          "to_traded_ann": 4.732,
+          "cost_ann_pct": 0.7098,
+          "gross_ann": 0.21156,
+          "active_sr": 0.6019,
+          "port_t_nw": 2.5601,
+          "net_ir": 0.6019,
+          "alpha_ann": 0.10598
+        },
+        "IS": {
+          "n_months": 166,
+          "sr_net": 0.9446,
+          "sr_gross": 0.9824,
+          "cagr_net": 0.21761,
+          "mdd_net": 0.41371,
+          "calmar": 0.526,
+          "to_oneway_ann": 2.3752,
+          "to_traded_ann": 4.7505,
+          "cost_ann_pct": 0.7126,
+          "gross_ann": 0.22621,
+          "active_sr": 1.2419,
+          "port_t_nw": 4.3371,
+          "net_ir": 1.2419,
+          "alpha_ann": 0.15235
+        },
+        "OOS": {
+          "n_months": 89,
+          "sr_net": 0.6407,
+          "sr_gross": 0.6703,
+          "cagr_net": 0.1765,
+          "mdd_net": 0.35707,
+          "calmar": 0.4943,
+          "to_oneway_ann": 2.3488,
+          "to_traded_ann": 4.6976,
+          "cost_ann_pct": 0.7046,
+          "gross_ann": 0.18471,
+          "active_sr": -0.1682,
+          "port_t_nw": -0.4436,
+          "net_ir": -0.1682,
+          "alpha_ann": 0.02438
+        },
+        "R2017": {
+          "n_months": 113,
+          "sr_net": 0.5824,
+          "sr_gross": 0.6137,
+          "cagr_net": 0.14853,
+          "mdd_net": 0.39925,
+          "calmar": 0.372,
+          "to_oneway_ann": 2.3377,
+          "to_traded_ann": 4.6753,
+          "cost_ann_pct": 0.7013,
+          "gross_ann": 0.15653,
+          "active_sr": -0.0856,
+          "port_t_nw": -0.2547,
+          "net_ir": -0.0856,
+          "alpha_ann": 0.02804
+        }
+      },
+      "diag": {
+        "avg_n": 20,
+        "n_rebalances": 254,
+        "na_fill_cells": 20,
+        "na_fill_share": 0.00392
+      }
+    }
+  }
+}

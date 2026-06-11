@@ -82,7 +82,10 @@ stopifnot(.D[, uniqueN(fs_div), by = Ticker][, max(V1)] == 1L)  # ticker내 단�
 .D <- .D[is.finite(fq)]
 
 # 11014(Q3)의 YTD 누적 = thstrm_add_amount (3Q 누적 순이익). ticker·연도별로 매핑.
-.ytd3 <- .D[reprt_code == "11014", .(Ticker, bsns_year, ytd3 = thstrm_add_amount)]
+#   (정정공시로 11014 중복 가능 → ticker·연도별 첫 접수분만, dup 방지)
+.ytd3 <- .D[reprt_code == "11014" & is.finite(thstrm_add_amount)]
+setorder(.ytd3, Ticker, bsns_year, rcept_no)
+.ytd3 <- .ytd3[, .(ytd3 = thstrm_add_amount[1L]), by = .(Ticker, bsns_year)]
 .D <- merge(.D, .ytd3, by = c("Ticker","bsns_year"), all.x = TRUE)
 .D[, q_ni := fifelse(reprt_code == "11011",
                      thstrm_amount - ytd3,            # Q4 = 연간 − 3Q YTD

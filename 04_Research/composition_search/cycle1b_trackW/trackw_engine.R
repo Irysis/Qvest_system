@@ -266,7 +266,15 @@ compute_month_weights <- function(spec, tickers, scores, ret_slice) {
                   wv <- linear_tilt_qd(a, lambda = spec$lambda, lb = 0, ub = 0.20)
                   setNames(wv, tickers) },
     ivol      = setNames(calc_ivol_weights(tickers, ret_slice), tickers),
-    riskparity= setNames(calc_riskparity_weights(tickers, ret_slice), tickers),
+    # NOTE: calc_riskparity_weights returns weights in .build_ret_matrix dcast
+    # column order (sorted tickers), unnamed. Harness dispatch names them by
+    # score-order `selected` (latent misalignment). Here: call with SORTED
+    # tickers and map back by name — correct alignment, EW fallback on drops
+    # (harness-identical fallback behavior).
+    riskparity= { tks <- sort(tickers)
+                  wv <- calc_riskparity_weights(tks, ret_slice)
+                  if (length(wv) == length(tks)) setNames(wv, tks)[tickers]
+                  else setNames(rep(1/n, n), tickers) },
     minvar    = setNames(calc_minvar_weights(tickers, ret_slice), tickers),
     volscaled = calc_volscaled_ew(tickers, ret_slice),
     hrp       = setNames(trackw_hrp_weights(tickers, ret_slice, n_days = spec$n_days,
