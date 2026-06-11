@@ -1,0 +1,131 @@
+{
+  "meta": {
+    "task": "value_sleeve_combination_stage1",
+    "as_of": "2026-06-11",
+    "agent": "forge",
+    "selection_type": "sweep",
+    "n_trials": 5,
+    "grid": [0.05, 0.1, 0.15, 0.2, 0.3],
+    "n_overlap_months": 248,
+    "book_series": {
+      "source": "05_Production/.../period_returns_layer5.csv col ret_L5_V2",
+      "variant": "L5_V2_aggressive_regime",
+      "admit_sr_255m": 1.9536,
+      "cost_model": "v2.3_kr_retail_15bps_flat_per_rebalance"
+    },
+    "value_series": {
+      "source": "04_Research/strategies/STR_WT-D20260611_001_value_sleeve/scores_cache.parquet -> build_sleeve_series",
+      "standalone_sr_perfa": 0.4804,
+      "cost_model": "delta_based_15bps_oneway",
+      "turnover_annual": 16.3904
+    },
+    "benchmark": ".cache/benchmark.parquet BM_Ret monthly",
+    "blend_method": "PerformanceAnalytics::Return.portfolio rebalance_on=months",
+    "blend_cost": "sleeve-level rebal turnover x 15bps one-way (sleeve-internal cost already in net series)",
+    "ir_substitution_note": "book_optimizer book_information_ratio requires cross-WT packages; series-level analog = build_benchmark_compare Information_Ratio (active/TE)",
+    "metric_type": "backtested"
+  },
+  "cor_value_book": -0.0455,
+  "book_only": {
+    "SR": 1.9175,
+    "CAGR": 0.4054,
+    "MDD": 0.2481,
+    "Calmar": 1.6343,
+    "IR": 0.8539,
+    "PORT_t": 5.093
+  },
+  "blends": {
+    "0.05": {
+      "w_value": 0.05,
+      "SR": 1.9718,
+      "CAGR": 0.3958,
+      "MDD": 0.2374,
+      "Calmar": 1.6673,
+      "IR": 0.862,
+      "PORT_t": 5.154,
+      "dSR": 0.0543,
+      "dMDD": -0.0107,
+      "dCalmar": 0.033,
+      "dIR": 0.0081,
+      "blend_to_annual": 0.09
+    },
+    "0.1": {
+      "w_value": 0.1,
+      "SR": 2.018,
+      "CAGR": 0.3858,
+      "MDD": 0.2267,
+      "Calmar": 1.7017,
+      "IR": 0.8693,
+      "PORT_t": 5.197,
+      "dSR": 0.1005,
+      "dMDD": -0.0213,
+      "dCalmar": 0.0674,
+      "dIR": 0.0153,
+      "blend_to_annual": 0.1706
+    },
+    "0.15": {
+      "w_value": 0.15,
+      "SR": 2.0522,
+      "CAGR": 0.3754,
+      "MDD": 0.216,
+      "Calmar": 1.7376,
+      "IR": 0.8751,
+      "PORT_t": 5.216,
+      "dSR": 0.1346,
+      "dMDD": -0.032,
+      "dCalmar": 0.1033,
+      "dIR": 0.0211,
+      "blend_to_annual": 0.2419
+    },
+    "0.2": {
+      "w_value": 0.2,
+      "SR": 2.0695,
+      "CAGR": 0.3648,
+      "MDD": 0.2054,
+      "Calmar": 1.7763,
+      "IR": 0.8789,
+      "PORT_t": 5.204,
+      "dSR": 0.152,
+      "dMDD": -0.0427,
+      "dCalmar": 0.1419,
+      "dIR": 0.025,
+      "blend_to_annual": 0.3039
+    },
+    "0.3": {
+      "w_value": 0.3,
+      "SR": 2.0366,
+      "CAGR": 0.3424,
+      "MDD": 0.224,
+      "Calmar": 1.5289,
+      "IR": 0.8777,
+      "PORT_t": 5.054,
+      "dSR": 0.1191,
+      "dMDD": -0.0241,
+      "dCalmar": -0.1054,
+      "dIR": 0.0238,
+      "blend_to_annual": 0.3998
+    }
+  },
+  "selection": {
+    "best_by_IR": "0.2",
+    "best_w_value": 0.2,
+    "best_SR": 2.0695,
+    "best_dIR": 0.025
+  },
+  "dsr": {
+    "n_trials": 5,
+    "exp_max_sr_null": 0.0447,
+    "DSR": 1,
+    "skew": 0.5581,
+    "kurt": 4.8368
+  },
+  "gate_reference": {
+    "dIR_hurdle": 0.05,
+    "dIR_best": 0.025,
+    "cor_hurdle": 0.3,
+    "cor_actual": -0.0455,
+    "dsr_hurdle": 0.5,
+    "dsr_actual": 1,
+    "combined_holdings_note": "two-sleeve top-20 union > 25 (admission max 25) — research-stage report only"
+  }
+}
