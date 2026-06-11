@@ -1,0 +1,57 @@
+{
+  "meta": {
+    "task": "census_v3_targeted val_rd_wc formal",
+    "variant": "B",
+    "run_id": "CENSUSV3_VAL_B_202606111453",
+    "as_of": "2026-06-11",
+    "metric_type": "backtested",
+    "selection_type": "chain",
+    "n_trials_cumulative": 1,
+    "engine": "run_monthly_simulation daily NAV + build_bt_result(freq=daily)"
+  },
+  "essence": {
+    "grade": "F",
+    "metric_type": "backtested",
+    "essence": {
+      "net_sharpe": 0.509,
+      "net_ir": 0.096,
+      "portfolio_alpha_t_nw_lag3": 0.397,
+      "oos_retention": -1.496,
+      "dsr": null,
+      "mdd": 0.654,
+      "calmar": 0.15,
+      "cagr": 0.098
+    },
+    "hard_fail": true,
+    "n_trials_cumulative": 1,
+    "selection_type": "chain",
+    "dsr_gate_applied": false,
+    "oos_stat_version": "v2",
+    "oos_retention_splits": [-1.084, -1.496, -2.059],
+    "oos_band_status": "fail",
+    "oos_escalation": {},
+    "oos_fail_pattern": null,
+    "reasons": "hard_fail (MDD 65.4% > 45% 또는 외부주입)"
+  },
+  "contract": {
+    "sharpe": 0.5087,
+    "cagr": 0.098204,
+    "mdd": 0.653978,
+    "calmar": 0.150165,
+    "turnover_annual": null,
+    "portfolio_alpha_t_nw_lag3": 0.396678,
+    "information_ratio": 0.095964,
+    "alpha_annualized": 0.020014
+  },
+  "audit_status": "PASS",
+  "anchor": {
+    "port_t": 2.3,
+    "mdd": 0.381,
+    "sr": 0.85,
+    "cagr": 0.168,
+    "turnover": 5,
+    "calmar": 0.44,
+    "grade": "B",
+    "note": "old census (pre-winsorize machine, artifacts lost) - memory anchor"
+  }
+}
