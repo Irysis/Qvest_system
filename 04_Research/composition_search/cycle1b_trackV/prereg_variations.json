@@ -1,0 +1,193 @@
+{
+  "schema_version": "v1.0",
+  "track": "Composition Search Cycle 1b - Track V (variation grid preregistration)",
+  "status": "PREREGISTERED_FROZEN - no measurement performed yet. Post-registration additions/deletions PROHIBITED; all preregistered runs must be reported in full (including failures).",
+  "preregistered_at": "2026-06-11",
+  "preregistered_by": "Track V prereg subagent (Composition Search Cycle 1b, Dohoon mandate 2026-06-11)",
+  "selection_protocol": {
+    "selection_type": "sweep",
+    "n_trials_total": 38,
+    "n_trials_breakdown": {
+      "variants": 34,
+      "base_remeasurements_v24_delta": 4,
+      "note": "Base re-runs counted in n_trials conservatively (selection compares variants vs base; base is a candidate outcome of selection)."
+    },
+    "selection_rule": "Per base: IS-only (2005-01-01 ~ 2018-12-31) comparison of preregistered variants vs base. OOS (2019-01-01 ~ data end) consulted exactly once per variant for non-worsening check. NO OOS argmax. No iteration, no grid extension after measurement starts.",
+    "dsr_note": "selection_type=sweep -> DSR>=0.5 HARD applies at graduation tier for any variant carried forward (measurement-graduation.md section 3). Track V verdicts themselves are screening-tier only."
+  },
+  "primary_hypothesis": "H1: Under the v2.4_kr_retail_15bps DELTA cost model (harness default flipped 2026-06-11), turnover-reduction variations (holding bands / lower rebalance frequency / signal smoothing) improve NET performance of good-base screen strategies. This axis was structurally unmeasurable under the old FLAT per-rebalance cost model (cost was turnover-invariant; B0 forensics 04_Research/pg2_forensics/b0_fee_bug_report.md).",
+  "secondary_hypotheses": [
+    "H2: top-N breadth changes shift the gross-signal vs idiosyncratic-risk tradeoff (AX-007 translation context); direction base-dependent.",
+    "H3: For fast-decay signals (momentum sleeve in VALMOM_AMP), quarterly rebalancing loses more gross alpha than it saves in cost (expected NEGATIVE for that base; preregistered to test, not to confirm)."
+  ],
+  "cost_model": {
+    "active": "v2.4_kr_retail_15bps delta (per-name traded notional delta, 15bps one-way). Harness default since 2026-06-11 incl. canonical_screen_bt.",
+    "legacy_label_warning": "All registry full_sharpe values cited below were produced in the FLAT per-rebalance cost era (pre 06-11). Per B0: flat over-charges ~3x for one-way TO <= ~3x/yr and under-charges ~50% for TO >= ~10x/yr. Therefore each base is RE-MEASURED under v2.4 delta as the comparison reference; registry numbers are labeled metric_type=backtested_realized(flat-era) and never mixed with delta-era numbers without label."
+  },
+  "constraints_invariant": {
+    "long_only": true,
+    "weight_bounds": [0.0, 0.20],
+    "sum_weights": 1.0,
+    "max_names_final": 25,
+    "liquidity_floor_min": "20d avg traded value >= 2e8 KRW (variants may only RAISE the floor, never lower)",
+    "universe": "K200 union KQ150 (fixed; universe axis NOT exercised in this track - all bases already use it; charter fixes the universe)",
+    "pit": "C1~C15 unchanged; all signals as in base engines (PIT-verified paths reused)"
+  },
+  "base_selection": {
+    "source": "06_Registry/module_performance.json (metric_type=backtested_realized, sim_result NAV, generated 2026-06-07)",
+    "rule_applied": "Top measured-SR modules in the 0.8+ cluster among register_module-standardized signal-screen strategies (alpha_search origin), plus STR_1715 vanilla base via the verified b1 reconstruction path (04_Research/pg2_forensics/b1_*).",
+    "scope_decision": "Legacy QEPM daily composites (SR 1.2~1.77, e.g. STR_1439/1047/1033/1435) are EXCLUDED from Track V scope: they are optimizer/overlay portfolio products consumed as frozen sim_result; screen-variation axes (top-N / banding / rebalance frequency) do not map onto them. Track V is restricted to signal->top-N screen strategies where the variation grammar is well-defined and re-runnable.",
+    "excluded_with_reason": [
+      {
+        "module": "STR_str1715v3",
+        "full_sharpe_flat_era": 0.868,
+        "reason": "70% spec overlap with STR_str1715v2 (identical Core 0.45 + Defense 0.25 sleeves; only third sleeve differs: IN04 issuance vs V01_BM). Variation responses would be near-duplicated -> trial budget anti-explosion."
+      },
+      {
+        "module": "STR_AS_20260605_202226_37668",
+        "full_sharpe_flat_era": 0.832,
+        "reason": "Basu(1977) high-EP decile = standalone single-factor value EP screen. AX-003 (KR value EP_STANDALONE fail, L-132/135) + program charter pre-exclusion ('standalone single-factor top-N screen' re-exploration prohibited)."
+      }
+    ]
+  },
+  "bases": [
+    {
+      "base_id": "B1_STR1715_VANILLA",
+      "name": "STR_1715 vanilla 7-factor blend (b1-verified reconstruction)",
+      "spec": {
+        "signal": "score_eff = 0.65*score_core_z + 0.35*score_defense_z. Core = z(C01_SUE)+z(C02_EPS_Chg_1m)+z(C04_ESBR)+z(C06_TP_Gap) re-z'd; Defense = z(Q07_Earnings_Stability)+z(M08_Residual_Mom)+z(Q25_Ohlson_O) re-z'd. Panel = 04_Research/pg2_forensics/intermediate/factor_panel_7f.parquet (blend formula verified exact, max|diff|=0).",
+        "selection": "top-20 by score_eff, equal-weight",
+        "rebalance": "monthly (month-end score t -> hold calendar month t+1; b0b/b0e alignment verified)",
+        "universe": "production universe panel (K200 union KQ150 era-consistent); NOTE: b1 reconstruction has NO liquidity filter and no buffer zone (production approximation, corr 0.81 vs ret_orig) - liquidity floor is exercised as an explicit variation axis for this base",
+        "period_available": "score dates 2004-01 ~ 2026-03 (267 months); Track V uses 2005-01+ per IS window definition",
+        "reconstruction_path": "04_Research/pg2_forensics/b1_step1_factor_pull.R + b1_step3_ablation_oos.R (Return.portfolio only)"
+      },
+      "base_performance_reference": {
+        "production_ret_orig": { "sharpe": 1.631, "mdd_pct": 40.7, "metric_type": "backtested (authoritative, includes lambda-tilt/overlay/cost layers - NOT the variation target)" },
+        "b1_blend_reconstruction": { "sharpe_gross": 1.044, "mdd_pct": 37.4, "metric_type": "proxy (b1 diagnostic, gross, flat-era cost not applied)" },
+        "note": "Track V base reference = fresh re-measurement of the b1 top-20 EW spec under v2.4 delta net cost (planned run B1_BASE). Variation deltas are computed against that, never against production."
+      },
+      "variants": [
+        { "variant_id": "B1_V1_topN15", "axis": "top_n", "param": { "n": 15 }, "mechanism": "Concentration: higher signal density per name vs higher idio risk (AX-007 translation tradeoff)." },
+        { "variant_id": "B1_V2_topN25", "axis": "top_n", "param": { "n": 25 }, "mechanism": "Breadth: lower idio risk and lower per-name churn at rank boundary." },
+        { "variant_id": "B1_V3_rebal_quarterly", "axis": "rebalance_freq", "param": { "freq": "quarterly (Mar/Jun/Sep/Dec month-ends, hold 3m)" }, "mechanism": "Turnover / cost reduction (~/3); risk = earnings-revision signal decay over 3m horizon." },
+        { "variant_id": "B1_V4_band_1p5N", "axis": "holding_band", "param": { "band": 30, "rule": "hold incumbent while rank <= 1.5*N; refill to N=20 with top-ranked non-held" }, "mechanism": "Hysteresis kills rank-noise churn at the selection boundary - the dominant screen turnover source - with minimal signal loss." },
+        { "variant_id": "B1_V5_band_2N", "axis": "holding_band", "param": { "band": 40, "rule": "hold incumbent while rank <= 2*N; refill to N=20" }, "mechanism": "Wider hysteresis: more turnover reduction, more signal staleness - dose-response vs V4." },
+        { "variant_id": "B1_V6_smooth3m", "axis": "signal_smoothing", "param": { "rule": "score_eff_smooth(t) = mean(score_eff(t), t-1, t-2), min 2 non-NA; rank on smoothed score" }, "mechanism": "Noise reduction in monthly score -> fewer spurious rank crossings -> lower turnover; risk = staleness." },
+        { "variant_id": "B1_V7_liq_2e8", "axis": "liquidity_floor", "param": { "floor": "AvgTV20 >= 2e8 KRW at selection (PIT t-1)" }, "mechanism": "Brings b1 vanilla path up to the production liquidity constraint - implementability; quantifies the filter's cost on this base." },
+        { "variant_id": "B1_V8_liq_4e8", "axis": "liquidity_floor", "param": { "floor": "AvgTV20 >= 4e8 KRW" }, "mechanism": "Conservative implementability margin (slippage not modeled - tighter floor = realism buffer)." },
+        { "variant_id": "B1_V9_combo_band2N_smooth3m", "axis": "combo", "param": { "band": 40, "smoothing": "3m" }, "mechanism": "Max turnover-reduction stack; tests additivity of the two strongest cost levers (single preregistered combo - no combo grid)." }
+      ]
+    },
+    {
+      "base_id": "B2_STR1715V2",
+      "name": "STR_str1715v2 - Core+Defense+Value 3-sleeve LO top-25",
+      "spec": {
+        "signal": "Score = 0.45*Zc + 0.25*Zd + 0.30*Zv; sleeve-level 2-stage z hierarchy (factor z -> sleeve EW sum -> re-z); Core = C01/C02/C04/C06, Defense = Q07/M08/Q25, Value = V01_BM. Engine: 02_Infrastructure/alpha_search/fe_str1715v2.R",
+        "selection": "top-25 by Score, equal-weight (avg holdings 23.4)",
+        "rebalance": "monthly",
+        "universe": "K200 union KQ150 + AvgTV20 >= 2e8 (PIT time-varying)",
+        "period_available": "2005-03-31 ~ 2026-06-02 (256 months)",
+        "driver": "stage_artifacts/alpha_search/driver_str1715v2_lo.R"
+      },
+      "base_performance_reference": {
+        "registry": { "full_sharpe": 0.911, "full_ir": 0.295, "grade": "C", "metric_type": "backtested_realized (flat-era)" },
+        "result_json": { "portfolio_alpha_t_nw_lag3": 1.101, "oos_retention": -0.445, "mdd_pct": 39.2, "cagr_pct": 16.96, "source": "stage_artifacts/alpha_search/str1715v2_top25_longonly_result.json" },
+        "honesty_note": "Base oos_retention is already NEGATIVE (-0.445): strong IS, weak OOS. The OOS non-worsening criterion is therefore non-worsening vs THIS base's own OOS, not vs an absolute bar. No graduation claim possible from Track V."
+      },
+      "variants": [
+        { "variant_id": "B2_V1_topN15", "axis": "top_n", "param": { "n": 15 }, "mechanism": "Concentration tradeoff (see B1_V1)." },
+        { "variant_id": "B2_V2_topN20", "axis": "top_n", "param": { "n": 20 }, "mechanism": "Intermediate breadth point; aligns with STR_1715 production n=20." },
+        { "variant_id": "B2_V3_rebal_quarterly", "axis": "rebalance_freq", "param": { "freq": "quarterly" }, "mechanism": "Cost reduction vs consensus-signal decay (C01/C02/C04 decay ~1-3m: expected partial alpha loss)." },
+        { "variant_id": "B2_V4_band_1p5N", "axis": "holding_band", "param": { "band": 38, "rule": "hold while rank <= 1.5*25; refill to N=25" }, "mechanism": "Boundary-churn hysteresis (see B1_V4)." },
+        { "variant_id": "B2_V5_band_2N", "axis": "holding_band", "param": { "band": 50 }, "mechanism": "Dose-response wider band." },
+        { "variant_id": "B2_V6_smooth3m", "axis": "signal_smoothing", "param": { "rule": "3m mean of final Score, min 2 non-NA" }, "mechanism": "Score-noise turnover reduction; monthly consensus revisions are noisy month-to-month." },
+        { "variant_id": "B2_V7_liq_4e8", "axis": "liquidity_floor", "param": { "floor": "AvgTV20 >= 4e8 KRW" }, "mechanism": "Implementability margin." },
+        { "variant_id": "B2_V8_combo_band2N_smooth3m", "axis": "combo", "param": { "band": 50, "smoothing": "3m" }, "mechanism": "Max turnover-reduction stack additivity test." }
+      ]
+    },
+    {
+      "base_id": "B3_VALMOM_AMP",
+      "name": "STR_AS_20260605_221011_31932 - AMP(2013) value(BM)+momentum(12-1) z-combo, top decile EW",
+      "spec": {
+        "signal": "Score = z(V01_BM Z_Score_Aligned) + z(mom 12-1 = shift(21)/shift(252)-1), cross-sectional z within universe. Engine: 02_Infrastructure/alpha_search/fe_valmom.R (AMP 2013 full replication)",
+        "selection": "top decile (ceiling(universe/10), min 5; ~30-35 names time-varying), equal-weight",
+        "rebalance": "monthly",
+        "universe": "K200 union KQ150 + AvgTV20 >= 2e8 (PIT time-varying)",
+        "period_available": "2005-02-03 ~ 2026-06-01",
+        "compliance_note": "Base decile N(t) ~ 30-35 EXCEEDS the max-25 production constraint. Base is measured as registered (paper replication); variant B3_V3_topN25 is the production-compliant spec and is the reference point for any forward routing."
+      },
+      "base_performance_reference": {
+        "registry": { "full_sharpe": 0.887, "full_ir": 0.651, "grade": "F", "metric_type": "backtested_realized (flat-era)" },
+        "hurdle_json": { "sharpe": 0.825, "cagr_pct": 20.76, "mdd_pct": 60.4, "turnover_ann_oneway_pct": 213.7, "is_sr": 0.912, "oos_sr": 0.673, "oos_retention_hurdle_split": 0.74, "fail_reason": "MDD 60.4% > 45% (single-cause fail - screening-tier P2 routing case)", "source": "stage_artifacts/alpha_search/20260605_221011_31932/hurdle_result.json", "metric_type": "proxy (alpha-search hurdle)" },
+        "track_v_relevance": "Highest-turnover base in the set (one-way TO ~2.1x/yr; momentum leg drives churn). Under flat-era cost (over-charge ~3x at TO<3x per B0) base SR was penalized - delta re-measurement expected to LIFT base. Prime testbed for H1 banding/smoothing. MDD 60% is the overlay-lever concern (screen_route), not a Track V selection criterion."
+      },
+      "variants": [
+        { "variant_id": "B3_V1_topN15", "axis": "top_n", "param": { "n": 15 }, "mechanism": "Concentration; also halves name count vs decile -> higher signal density." },
+        { "variant_id": "B3_V2_topN20", "axis": "top_n", "param": { "n": 20 }, "mechanism": "Intermediate point." },
+        { "variant_id": "B3_V3_topN25", "axis": "top_n", "param": { "n": 25 }, "mechanism": "Production-compliance (max 25) with least deviation from paper decile." },
+        { "variant_id": "B3_V4_rebal_quarterly", "axis": "rebalance_freq", "param": { "freq": "quarterly" }, "mechanism": "H3 test: momentum decays fast - expected gross alpha loss > cost saving (preregistered expected-negative)." },
+        { "variant_id": "B3_V5_band_1p5N", "axis": "holding_band", "param": { "band": "1.5*N(t) on native decile N(t)", "rule": "hold incumbent while combo rank <= 1.5*N(t); refill to N(t)" }, "mechanism": "Hysteresis on the highest-churn base - largest expected absolute cost saving in the grid." },
+        { "variant_id": "B3_V6_band_2N", "axis": "holding_band", "param": { "band": "2*N(t)" }, "mechanism": "Dose-response wider band." },
+        { "variant_id": "B3_V7_smooth3m", "axis": "signal_smoothing", "param": { "rule": "3m mean of combo Score, min 2 non-NA" }, "mechanism": "Mild for 12-1 momentum (already 12m window) but suppresses BM-z month noise." },
+        { "variant_id": "B3_V8_liq_4e8", "axis": "liquidity_floor", "param": { "floor": "AvgTV20 >= 4e8 KRW" }, "mechanism": "Implementability margin; momentum names skew to liquid leaders - low expected cost." },
+        { "variant_id": "B3_V9_combo_band2N_smooth3m", "axis": "combo", "param": { "band": "2*N(t)", "smoothing": "3m" }, "mechanism": "Max turnover-reduction stack on the max-turnover base." }
+      ]
+    },
+    {
+      "base_id": "B4_C19_LO25",
+      "name": "STR_C19_Composite_Earnings_LO_top25 - earnings family-deep composite LO top-25",
+      "spec": {
+        "signal": "C19_Composite_Earnings (factor DB, Z_Score_Aligned via load_month_factors - single factor-DB column that is itself an earnings-family composite, NOT a heterogeneous additive-Z combo)",
+        "selection": "top-25 by score, equal-weight",
+        "rebalance": "monthly",
+        "universe": "K200 union KQ150 + liquidity floor (lo_screen batch standard)",
+        "period_available": "2005-03-31 ~ 2026-06-02 (256 months)",
+        "driver": "stage_artifacts/alpha_search/driver_lo_screen.R (run C19_LO_20260606_175215_1304)"
+      },
+      "base_performance_reference": {
+        "registry": { "full_sharpe": 0.865, "full_ir": -0.002, "grade": "F", "metric_type": "backtested_realized (flat-era)" },
+        "result_json": { "mdd_pct": 20.97, "cagr_pct": 12.28, "portfolio_alpha_t_nw_lag3": -0.0072, "net_ir": -0.0018, "oos_retention": -0.737, "verdict": "defense_candidate (MDD<30%)", "source": "stage_artifacts/alpha_search/lo_screen/C19_Composite_Earnings.json" },
+        "honesty_note": "Base has NO positive alpha vs KOSPI200 (PORT_t ~ 0); its value is the absolute-SR/low-MDD defensive profile (lowest MDD in the cluster, 21%). Included as the defensive-profile base; AX-007 single-sleeve caveat acknowledged - C19 is a family-deep composite, which is the charter's allowed sleeve grammar, not a raw single signal. Track V cannot and will not convert this into an alpha claim."
+      },
+      "variants": [
+        { "variant_id": "B4_V1_topN15", "axis": "top_n", "param": { "n": 15 }, "mechanism": "Concentration tradeoff." },
+        { "variant_id": "B4_V2_topN20", "axis": "top_n", "param": { "n": 20 }, "mechanism": "Intermediate breadth point." },
+        { "variant_id": "B4_V3_rebal_quarterly", "axis": "rebalance_freq", "param": { "freq": "quarterly" }, "mechanism": "Earnings-composite is slow-moving - quarterly expected to retain most signal while cutting cost (best a-priori fit for H1 among rebal variants)." },
+        { "variant_id": "B4_V4_band_1p5N", "axis": "holding_band", "param": { "band": 38, "rule": "hold while rank <= 1.5*25; refill to N=25" }, "mechanism": "Boundary-churn hysteresis." },
+        { "variant_id": "B4_V5_band_2N", "axis": "holding_band", "param": { "band": 50 }, "mechanism": "Dose-response wider band." },
+        { "variant_id": "B4_V6_smooth3m", "axis": "signal_smoothing", "param": { "rule": "3m mean of score, min 2 non-NA" }, "mechanism": "Score-noise turnover reduction." },
+        { "variant_id": "B4_V7_liq_4e8", "axis": "liquidity_floor", "param": { "floor": "AvgTV20 >= 4e8 KRW" }, "mechanism": "Implementability margin." },
+        { "variant_id": "B4_V8_combo_band2N_smooth3m", "axis": "combo", "param": { "band": 50, "smoothing": "3m" }, "mechanism": "Max turnover-reduction stack additivity test." }
+      ]
+    }
+  ],
+  "evaluation_preregistration": {
+    "windows": {
+      "IS": "2005-01-01 ~ 2018-12-31 (selection window - the ONLY window used for choosing among variants)",
+      "OOS": "2019-01-01 ~ each base's data end (consulted once per variant, non-worsening check only)",
+      "FULL": "base-native full sample (reporting only)",
+      "RECENT_2017PLUS": "2017-01-01 ~ end (reporting only - cohort-wide factor decay reference, decay-pattern labeling)"
+    },
+    "metrics_per_window": [
+      "net Sharpe (annualized, v2.4 delta cost)",
+      "PORT_t = portfolio_alpha_t_nw_lag3 vs KOSPI200 (net active)",
+      "CAGR (net)",
+      "MDD",
+      "one-way annual turnover",
+      "annual cost (bps, = 15bps x one-way TO under delta)",
+      "Delta vs same-window base re-measurement for all of the above"
+    ],
+    "metric_type_label": "canonical_screen (all Track V numbers; engine = canonical_screen_bt / Return.portfolio infrastructure). No 'backtested' claim without forge build_bt_result.",
+    "improvement_verdict_rule": "IMPROVED iff (1) IS delta net SR > 0, AND (2) OOS delta net SR >= 0 (non-worsening, point estimate), AND (3) cost-consistency: for turnover-reduction variants, delta annual cost ~ 0.0015 x delta one-way TO (sign-consistent and magnitude within rounding), i.e. the net gain is attributable to the cost channel rather than IS noise. All three required; partial passes reported as NOT_IMPROVED with the failing leg named.",
+    "reporting_obligation": "ALL 38 runs reported (every variant of every base, including failures and errors). No silent drops. Verdict table per base + cross-base summary of which axes generalize.",
+    "graduation_firewall": "Track V output = screening-tier composition knowledge only. Any forward routing to capital requires the unchanged graduation tier: forge-authoritative PORT_t >= 2.95, oos_retention >= 0.7 (v2 median 3-split), calmar >= 0.64, DSR >= 0.5 (sweep), book-marginal delta IR >= 0.05, governor manual."
+  },
+  "implementation_notes": {
+    "engine": "canonical_screen_bt (02_Infrastructure/contracts/canonical_screen_bt.R, v2.4 delta default since 06-11) for plain top-N variants; banding/quarterly/smoothing variants implemented as preregistered selection-rule inputs feeding PerformanceAnalytics::Return.portfolio - NO self-synthesized return compounding (prod/cumprod prohibited).",
+    "banding_definition": "At rebalance t: incumbent stock kept iff its score rank <= band; freed slots filled by highest-ranked non-held; weights reset to EW over the resulting N names. Band is evaluated on the SAME score used for selection (smoothed score in combo variants).",
+    "quarterly_definition": "Rebalance only at Mar/Jun/Sep/Dec month-end signals; holdings static between rebalances (drift via Return.portfolio).",
+    "process_discipline": "Max 2 concurrent R processes, <= 4GB each (Cycle 1 workflows running in parallel).",
+    "no_new_axes": "Universe restriction axis intentionally NOT exercised (charter fixes K200 union KQ150). Weighting-scheme axis intentionally NOT exercised (charter pre-exclusion: weighting variations on composites all <= EW)."
+  }
+}

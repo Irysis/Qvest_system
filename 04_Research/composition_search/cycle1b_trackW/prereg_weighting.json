@@ -1,0 +1,188 @@
+{
+  "prereg_id": "TRACKW_WEIGHTING_PREREG_v1",
+  "program": "composition_search Cycle 1b - Track W (sleeve-level + within-sleeve weighting methodology comparison)",
+  "created_kst": "2026-06-11 15:33:16 +09:00",
+  "status": "REGISTERED_BEFORE_MEASUREMENT",
+  "registration_rule": "Grid below is FROZEN. No addition/deletion after any measurement starts. All trials measured and reported in full (including failures). Any deviation must be logged as protocol violation, not silently absorbed.",
+
+  "honesty_frame": {
+    "prior_evidence": "Prior weighting-axis sweep (HRP/RMT/copula/CVaR/NCO/MaxDiv/robustMV/Kelly/minvar; 9 trials) all <= EW with OOS -0.5~-0.8, BUT measured on val_rd_wc top-25 substrate later graded F (2026-06-11 pre-winsorize artifact).",
+    "this_experiment": "INV-7 re-trial of the weighting axis on VALIDATED substrates. First measurement of low-turnover weighting benefit under cost model v2.4 delta (flat model overstated cost for low-TO methods by up to 3x at TO<3x/yr, b0_fee_bug_report).",
+    "negative_outcome_value": "If EW wins again on clean substrates, the weighting axis is cleanly closed (mode-local axiom candidate). That is a valid, valuable result."
+  },
+
+  "selection_protocol": {
+    "selection_type": "sweep",
+    "is_window_selection": "common_start ~ 2018-12 (IS-only selection: argmax IS net SR, tie-break IS PORT_t_nw_lag3)",
+    "oos_window_confirmation": "2019-01 ~ data end. OOS used ONLY for non-degradation confirmation (OOS delta-SR vs EW >= 0). OOS argmax FORBIDDEN.",
+    "reporting_windows": ["full (common_start~end)", "IS (~2018-12)", "OOS (2019-01~)", "2017+ subwindow"],
+    "dsr_gate": "DSR >= 0.5 HARD applies (explicit sweep). n_trials counted in full below.",
+    "n_trials_this_track": 77,
+    "n_trials_cumulative_weighting_axis": 86,
+    "n_trials_cumulative_note": "77 (this prereg) + 9 (prior 2026-06 weighting sweep on invalidated val_rd_wc substrate - counted because same question family despite F-grade substrate)"
+  },
+
+  "cost_model": "v2.4_kr_retail_15bps (delta-based, per-name |delta holding| charged; harness default since 2026-06-11 flip). Any comparison to historical flat-cost records must be labeled.",
+  "constraints": {
+    "long_only": true,
+    "weight_bounds": [0, 0.20],
+    "sum_w": 1.0,
+    "max_names_final": 25,
+    "liquidity": "20d ADV >= 2e8 KRW, t-1 PIT (C10), harness standard filter",
+    "universe": "KOSPI200 + KOSDAQ150",
+    "no_overlay": "No VT/DD/regime exposure overlay in any trial - weighting axis isolated. Substrate score panels regenerated as-is (incl. any PIT t-1 regime_scale inside the signal), but simulation runs without vol_target/soft exposure layers."
+  },
+
+  "substrates": {
+    "selection_rationale": "Within-sleeve substrates must be SIGNAL-defined (weighting axis free), not weighting-defined. Registry SR>0.8 cluster top entries STR_1439/1047/1033/1435/1028/1562 are excluded as substrates because their identity IS an allocation scheme (gerber-HRP/NCO/multi-sleeve) - circular. Chosen: production-book signal (S1) + two signal-pure grade-A registry modules from distinct signal families (S2, S3).",
+    "S1": {
+      "id": "STR_1715_blend6535_top20_reconstruction",
+      "type": "within_sleeve + between_sleeve",
+      "source": [
+        "04_Research/pg2_forensics/intermediate/factor_panel_7f.parquet (stock-month 7-factor z + score_core_z/score_defense_z)",
+        "04_Research/pg2_forensics/intermediate/variant_top20_selections.csv (monthly top-20 lists incl. blend_65_35, PIT-verified b1 section 0)",
+        "04_Research/pg2_forensics/intermediate/theta_by_date.csv (production core theta)"
+      ],
+      "fidelity": "reconstruction vs production sleeve scores: core spearman 0.965 / defense 0.989 (b1_summary.md)",
+      "top_n": 20,
+      "score_for_tilt": "score_eff = 0.65*score_core_z + 0.35*score_defense_z (exact production formula, max|diff|=0)",
+      "label_note": "metric_type=backtested on reconstruction substrate; production ret_orig remains the authoritative book series. All deltas are vs this substrate's own EW baseline, NOT vs production."
+    },
+    "S2": {
+      "id": "STR_943_oc_eps_chg",
+      "type": "within_sleeve",
+      "registry": "module_performance.json full_sharpe 1.626 / IR 0.411 / grade A / 2002-03~2026-03 (metric_type=backtested_realized)",
+      "source": "04_Research/strategies/STR_943_oc_eps_chg/run_all.R - regenerate FACTORS(Date,Ticker,Score) panel (rank composite: ivol + operating-cashflow + EPS chg 1m/3m, sector-demeaned)",
+      "top_n": 20,
+      "rationale": "Highest-SR signal-pure module in SR>=0.8 cluster; weight_method axis fully free (original uses weight_method='equal'); longest history covering entire IS window."
+    },
+    "S3": {
+      "id": "STR_1550_consensus_core_alpha",
+      "type": "within_sleeve",
+      "registry": "module_performance.json full_sharpe 1.329 / IR 1.266 (highest IR in grade-A cluster) / grade A / 2005-02~2026-03 (metric_type=backtested_realized)",
+      "source": "04_Research/strategies/STR_1550_consensus_core_alpha/run_all.R - regenerate FACTORS panel (consensus core alpha family - distinct signal family from S2)",
+      "top_n": 25,
+      "top_n_note": "Original uses n_holdings=30 + buffer_zone; capped to 25 per immutable max-names constraint. EW baseline re-measured at 25 on same engine - registry 1.329 NOT comparable, all deltas internal."
+    },
+    "B": {
+      "id": "STR_1715_core_defense_2sleeve",
+      "type": "between_sleeve",
+      "source": "same as S1 (score_core_z / score_defense_z sleeves)",
+      "current_baseline": "score-level blend theta_core=0.65 (production)",
+      "b1_motivation": "b1 section 5: uncovered design areas of production = defense internal weighting and the FIXED 65/35 sleeve ratio. blend vs core_only: dSR +0.070 / dMDD -4.4pp (proxy, b1)."
+    }
+  },
+
+  "methods_within_sleeve": {
+    "applies_to": ["S1", "S2", "S3"],
+    "engine_mapping": "02_Infrastructure/backtest_harness.R::run_monthly_simulation weight_method dispatch (lines ~767-1090) + 02_Infrastructure/portfolio/advanced_weights.R + hrp_core.R",
+    "list": [
+      {"id": "W01", "name": "EW (BASELINE)", "engine": "weight_method='equal'", "mechanism": "Maximum breadth, zero estimation error - the incumbent that beat all prior challengers."},
+      {"id": "W02", "name": "score-tilt lambda=0.5", "engine": "rank_tilt (calc_rank_tilt_weights)", "mechanism": "Monotone signal->return: mild conviction concentration."},
+      {"id": "W03", "name": "score-tilt lambda=1.0", "engine": "rank_tilt", "mechanism": "Linear-rank conviction weighting."},
+      {"id": "W04", "name": "score-tilt lambda=1.5", "engine": "rank_tilt", "mechanism": "Production Iter31 lambda - replicates the live book's chosen tilt strength."},
+      {"id": "W05", "name": "score-tilt lambda=2.0", "engine": "rank_tilt", "mechanism": "Aggressive conviction - tests overconcentration boundary."},
+      {"id": "W06", "name": "inverse-vol", "engine": "weight_method='ivol'", "mechanism": "Per-name vol equalization - low-vol tilt + dispersion stabilization."},
+      {"id": "W07", "name": "ERC", "engine": "weight_method='riskparity'", "mechanism": "Equal risk contribution with full covariance - balances risk beyond the diagonal."},
+      {"id": "W08", "name": "min-var", "engine": "weight_method='minvar'", "mechanism": "Variance minimization / beta compression - candidate MDD lever under long-only."},
+      {"id": "W09", "name": "vol-scaled EW", "engine": "NEW local fn (reuses .adv_ret_matrix)", "definition": "w_i propto (1/N)*clamp(sigma_med/sigma_i, 0.5, 1.5), renormalize; sigma_i = 252d rolling vol, sigma_med = cross-sectional median", "mechanism": "Damped half-step between EW and inverse-vol - robust to vol estimation noise."}
+    ],
+    "trials_per_substrate_non_hrp": 9
+  },
+
+  "hrp_grid": {
+    "mandate": "Dohoon directive 2026-06-11: HRP performance is highly sensitive to covariance estimator and allocation scheme - structured 4-axis grid, NO full cross (one-axis-at-a-time around anchor).",
+    "applies_to": ["S1", "S2", "S3"],
+    "anchor": {
+      "id": "H00",
+      "spec": "sample cov + single linkage + Lopez de Prado (2016) recursive bisection + 36m (756d) rolling window",
+      "mechanism": "Original paper spec - inversion-free hierarchical diversification.",
+      "honesty_note": "In-house calc_hrp_weights hardcodes ward.D2 linkage and n_days=120 - anchor itself requires the pre-registered parameter exposure (see code_change_allowlist)."
+    },
+    "axis_A_covariance_one_at_a_time": [
+      {"id": "H01", "variant": "Ledoit-Wolf shrinkage", "infra": "existing (.get_cor_cov 'ledoit_wolf')", "mechanism": "Shrinks sample noise in small-sample top-N covariances toward scaled identity."},
+      {"id": "H02", "variant": "Gerber statistic", "infra": "existing (.gerber_cor)", "mechanism": "Threshold co-movement - robust to noise and non-normality."},
+      {"id": "H03", "variant": "RMT denoise (Marchenko-Pastur)", "infra": "existing (.rmt_denoise on sample cor)", "mechanism": "Averages noise-band eigenvalues, keeps signal eigenmodes."},
+      {"id": "H04", "variant": "Gerber+RMT combo", "infra": "existing (.get_cor_cov 'gerber_rmt')", "mechanism": "In-house battle-tested combo (STR_1028/1435 lineage)."},
+      {"id": "H05", "variant": "EWMA lambda=0.94", "infra": "NEW implementation (RiskMetrics)", "mechanism": "Recency-weighted covariance - regime adaptivity."}
+    ],
+    "axis_B_linkage_one_at_a_time": [
+      {"id": "H06", "variant": "average linkage", "infra": "hclust native", "mechanism": "Mitigates single-linkage chaining."},
+      {"id": "H07", "variant": "ward.D2 linkage", "infra": "hclust native (current in-house default)", "mechanism": "Balanced cluster sizes - stabilizes bisection splits."},
+      {"id": "H08", "variant": "complete linkage", "infra": "hclust native", "mechanism": "Max-distance clustering - conservative, tight clusters."}
+    ],
+    "axis_C_allocation_one_at_a_time": [
+      {"id": "H09", "variant": "HERC (cluster equal-risk-contribution)", "infra": "NEW implementation (reuses .cluster_var)", "mechanism": "Corrects asymmetric-tree bias of naive bisection."},
+      {"id": "H10", "variant": "cluster-level inverse-variance", "infra": "NEW small (reuses .cluster_var)", "mechanism": "IV across clusters + IV within - simplest hierarchical allocation, robustness probe."}
+    ],
+    "axis_D_window_one_at_a_time": [
+      {"id": "H11", "variant": "12m (252d) window", "infra": "param", "mechanism": "Responsive but small-sample - tests estimation-noise sensitivity floor."},
+      {"id": "H12", "variant": "24m (504d) window", "infra": "param", "mechanism": "Midpoint stability/adaptivity trade-off."}
+    ],
+    "trials_per_substrate": 13,
+    "full_cross_forbidden": true
+  },
+
+  "methods_between_sleeve": {
+    "applies_to": ["B"],
+    "representation_1_score_level": {
+      "definition": "score_eff = theta*score_core_z + (1-theta)*score_defense_z -> single top-20 EW (production mechanism)",
+      "grid": [
+        {"id": "B01", "theta_core": 0.35, "mechanism": "Defense-heavy pole."},
+        {"id": "B02", "theta_core": 0.50, "mechanism": "Equal signal blend."},
+        {"id": "B03", "theta_core": 0.65, "mechanism": "PRODUCTION BASELINE (current book)."},
+        {"id": "B04", "theta_core": 0.80, "mechanism": "Core-tilted - b1 shows recent engine is core."},
+        {"id": "B05", "theta_core": 1.00, "mechanism": "core_only ablation pole (b1: blend dSR +0.070 vs this)."}
+      ]
+    },
+    "representation_2_portfolio_level": {
+      "definition": "core top-13 EW portfolio + defense top-12 EW portfolio (13+12<=25 names), combined monthly with weight theta. Sleeve internals fixed EW to isolate the between-sleeve axis.",
+      "grid": [
+        {"id": "B06", "method": "fixed theta_core=0.50", "mechanism": "Static portfolio-level split."},
+        {"id": "B07", "method": "fixed theta_core=0.65", "mechanism": "Production ratio at portfolio level (vs score level B03 - representation comparison)."},
+        {"id": "B08", "method": "fixed theta_core=0.80", "mechanism": "Core-tilted static."},
+        {"id": "B09", "method": "inverse-vol (36m rolling monthly sleeve returns, t-1)", "mechanism": "Sleeve vol equalization - dynamic, no return forecast."},
+        {"id": "B10", "method": "inverse-downside-vol (36m semi-deviation, t-1)", "mechanism": "Tail-risk balancing. NOTE: 2-asset ERC is analytically identical to inverse-vol, so ERC is NOT separately registered (honest de-duplication); downside variant registered instead."},
+        {"id": "B11", "method": "min-var 2-sleeve (rolling 36m cov incl. correlation), theta_core bounded [0.2, 0.9]", "mechanism": "Correlation-aware minimum variance - differs from IV when sleeve correlation is high (b1: monthly corr ~0.9)."}
+      ]
+    },
+    "trials_total": 11
+  },
+
+  "n_trials_breakdown": {
+    "within_sleeve_non_hrp": "9 methods x 3 substrates = 27",
+    "hrp_grid": "13 trials x 3 substrates = 39",
+    "between_sleeve": 11,
+    "total": 77,
+    "baseline_overlap_note": "W01(EW) on S1 reproduces b1 blend_65_35 reconstruction except cost model (v2.4 delta vs b1 gross/flat-est) and common-start window - expected small level shift, labeled."
+  },
+
+  "evaluation": {
+    "rebalance": "monthly, month-end score date t -> weights applied month t+1 (harness standard, PIT-verified b0 series)",
+    "common_start_rule": "Per substrate, all methods (incl. EW) evaluated on IDENTICAL rebalance months: first month where the longest cov window (756d) is fully available from RAWDATA daily returns AND substrate scores exist. Expected: S1/S2 ~2005-03 (RAWDATA from 2002-03), S3 ~2008-02 (scores from 2005-02). Apples-to-apples enforced.",
+    "metrics_per_trial": ["net SR (annualized, monthly)", "PORT_t = portfolio_alpha_t_nw_lag3 (contract build_benchmark_compare, net active series)", "CAGR", "MDD", "one-way turnover x/yr", "annual cost bps (v2.4 delta)"],
+    "comparison_basis": "delta vs same-substrate W01 EW baseline on identical months",
+    "engine": {
+      "simulation": "02_Infrastructure/backtest_harness.R::run_monthly_simulation (validated standard engine, cost v2.4_delta default). Portfolio return construction NEVER hand-rolled (no prod/cumprod synthesis).",
+      "between_sleeve_combination": "Two sleeve portfolios combined via PerformanceAnalytics::Return.portfolio with monthly theta weights (b1 precedent) - no manual (w*r).sum.",
+      "stats": "build_benchmark_compare for PORT_t on every trial; full build_bt_result (10-component) for IS-selected finalists (max 3: one per axis family) before any graduation claim.",
+      "labels": "every reported number carries metric_type (backtested via harness on reconstruction/regenerated substrate)."
+    },
+    "alive_criteria_preregistered": "Weighting axis declared ALIVE only if some non-EW trial satisfies ALL: (a) IS dSR >= +0.10 vs EW, (b) OOS dSR >= 0 vs EW, (c) dMDD <= +2pp vs EW. Otherwise axis declared CLOSED on validated substrates (negative result, mode-local axiom candidate, INV-7 re-trial complete).",
+    "runtime_discipline": "max 2 concurrent R processes, <=4GB each (Cycle 1 tracks running in parallel)"
+  },
+
+  "code_change_allowlist": [
+    "1. Local hrp_grid.R under 04_Research/composition_search/cycle1b_trackW/ - sources 02_Infrastructure/portfolio/hrp_core.R, exposes linkage/window/allocation params (calc_hrp_weights currently hardcodes ward.D2 + n_days=120). Infra files NOT modified.",
+    "2. NEW algorithm implementations limited to: EWMA(0.94) covariance, HERC allocation, cluster-level IV allocation, vol-scaled EW, 2-sleeve closed-form allocators (B09-B11).",
+    "3. Everything else reuses existing harness/advanced_weights/hrp_core/contracts functions verbatim. No edits to 05_Production/, 01_Literature/, 02_Infrastructure/."
+  ],
+
+  "pit_compliance": [
+    "C1: all cov/vol estimation strictly trailing rolling windows (252/504/756d daily, 36m monthly for sleeves)",
+    "C2/C3: weights at month t use data through t-1 month-end; sleeve IV/min-var use trailing returns excluding application month",
+    "C10: liquidity filter on t-1 ADV (harness standard)",
+    "C13/C14/C15: S1 panel already built via load_month_factors (b1, verified); S2/S3 panels regenerated from their run_all.R which consume RAWDATA/factor infra as originally validated",
+    "S0/S1 overlay prohibition respected: no DD/VT/regime exposure overlay in any trial"
+  ]
+}
