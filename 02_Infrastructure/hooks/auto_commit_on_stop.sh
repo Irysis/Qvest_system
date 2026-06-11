@@ -17,6 +17,9 @@
 
 trap 'echo "{}"; exit 0' ERR
 set -u
+# (v8.1.2 2026-06-11) python stdio를 UTF-8 강제 — locale(cp949) 디코딩이 additionalContext에
+# lone surrogate(\udcXX)를 만들어 이후 모든 API 요청 400 (invalid high surrogate) 유발한 사건 수리.
+export PYTHONUTF8=1
 
 INPUT=$(cat 2>/dev/null || echo '{}')
 LOG="/tmp/auto_commit.log"
@@ -58,10 +61,10 @@ git status --porcelain 2>/dev/null | awk '{print $2}' | grep -q '^\.env$' && ENV
 
 if [ "$TOKEN_HITS" -gt 0 ] || [ "$GENERIC_HITS" -gt 0 ] || [ "$ENV_INCLUDED" -eq 1 ]; then
   echo "$TS SECRET_ABORT token=$TOKEN_HITS generic=$GENERIC_HITS env=$ENV_INCLUDED" >> "$LOG"
-  MSG="⚠️ [auto-commit] Secret 탐지로 자동 commit 중단."
+  MSG="[WARN] [auto-commit] Secret 탐지로 자동 commit 중단."
   MSG+=" token=$TOKEN_HITS generic=$GENERIC_HITS env=$ENV_INCLUDED."
   MSG+=" /tmp/auto_commit.log 확인 후 수동 정리 필요."
-  MSG_ESC=$(printf '%s' "$MSG" | python3 -c "import sys,json;print(json.dumps(sys.stdin.read()))")
+  MSG_ESC=$(printf '%s' "$MSG" | python3 -c "import sys,json; s=sys.stdin.buffer.read().decode('utf-8','replace'); print(json.dumps(''.join(ch if not(0xD800<=ord(ch)<=0xDFFF) else '?' for ch in s)))")
   echo "{\"hookSpecificOutput\":{\"hookEventName\":\"Stop\",\"additionalContext\":$MSG_ESC}}"
   exit 0
 fi
@@ -74,8 +77,8 @@ NEW_COUNT=$(git diff --cached --name-status 2>/dev/null | awk '$1=="A"' | wc -l)
 if [ "$NEW_COUNT" -gt 100 ]; then
   echo "$TS TOO_MANY_NEW ($NEW_COUNT) — abort + reset" >> "$LOG"
   git reset HEAD -- . 2>>"$LOG"
-  MSG="⚠️ [auto-commit] 신규 파일 $NEW_COUNT개 (>100) — 실수 방지로 abort. 수동 검토 후 커밋 필요."
-  MSG_ESC=$(printf '%s' "$MSG" | python3 -c "import sys,json;print(json.dumps(sys.stdin.read()))")
+  MSG="[WARN] [auto-commit] 신규 파일 $NEW_COUNT개 (>100) - 실수 방지로 abort. 수동 검토 후 커밋 필요."
+  MSG_ESC=$(printf '%s' "$MSG" | python3 -c "import sys,json; s=sys.stdin.buffer.read().decode('utf-8','replace'); print(json.dumps(''.join(ch if not(0xD800<=ord(ch)<=0xDFFF) else '?' for ch in s)))")
   echo "{\"hookSpecificOutput\":{\"hookEventName\":\"Stop\",\"additionalContext\":$MSG_ESC}}"
   exit 0
 fi
@@ -105,8 +108,8 @@ COMMIT_EOF
 if [ $? -eq 0 ]; then
   HASH=$(git rev-parse --short HEAD)
   echo "$TS AUTO_COMMIT $HASH staged=$STAGED" >> "$LOG"
-  MSG="✅ [auto-commit] $HASH — $STAGED files committed. Push는 milestone/cron으로 자동."
-  MSG_ESC=$(printf '%s' "$MSG" | python3 -c "import sys,json;print(json.dumps(sys.stdin.read()))")
+  MSG="[OK] [auto-commit] $HASH - $STAGED files committed. Push는 milestone/cron으로 자동."
+  MSG_ESC=$(printf '%s' "$MSG" | python3 -c "import sys,json; s=sys.stdin.buffer.read().decode('utf-8','replace'); print(json.dumps(''.join(ch if not(0xD800<=ord(ch)<=0xDFFF) else '?' for ch in s)))")
   echo "{\"hookSpecificOutput\":{\"hookEventName\":\"Stop\",\"additionalContext\":$MSG_ESC}}"
 else
   echo "$TS COMMIT_FAILED" >> "$LOG"

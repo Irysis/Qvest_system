@@ -21,6 +21,8 @@
 
 trap 'echo "{}"; exit 0' ERR
 set -u
+# (v8.1.2 2026-06-11) python stdio UTF-8 강제 — additionalContext lone surrogate(API 400) 수리
+export PYTHONUTF8=1
 
 INPUT=$(cat 2>/dev/null || echo '{}')
 LOG="/tmp/auto_push.log"
@@ -75,20 +77,20 @@ if [ "$HAS_UPSTREAM" = "1" ]; then
   if git push origin "$BRANCH" >> "$LOG" 2>&1; then
     HASH=$(git rev-parse --short HEAD)
     echo "$TS AUTO_PUSH_OK branch=$BRANCH ahead=$AHEAD hash=$HASH" >> "$LOG"
-    MSG="✅ [auto-push] $BRANCH @ $HASH — $AHEAD commits pushed."
+    MSG="[OK] [auto-push] $BRANCH @ $HASH - $AHEAD commits pushed."
   else
     echo "$TS AUTO_PUSH_FAIL branch=$BRANCH ahead=$AHEAD — 다음 Stop/daily 재시도" >> "$LOG"
-    MSG="⚠️ [auto-push] $BRANCH push 실패 — log /tmp/auto_push.log"
+    MSG="[WARN] [auto-push] $BRANCH push 실패 - log /tmp/auto_push.log"
   fi
 else
   # 신규 branch — upstream 설정 + push
   if git push -u origin "$BRANCH" >> "$LOG" 2>&1; then
     HASH=$(git rev-parse --short HEAD)
     echo "$TS AUTO_PUSH_NEW_BRANCH branch=$BRANCH hash=$HASH" >> "$LOG"
-    MSG="✅ [auto-push] 신규 branch $BRANCH origin 등록 + push @ $HASH."
+    MSG="[OK] [auto-push] 신규 branch $BRANCH origin 등록 + push @ $HASH."
   else
     echo "$TS AUTO_PUSH_NEW_FAIL branch=$BRANCH" >> "$LOG"
-    MSG="⚠️ [auto-push] 신규 branch $BRANCH push 실패 — log /tmp/auto_push.log"
+    MSG="[WARN] [auto-push] 신규 branch $BRANCH push 실패 - log /tmp/auto_push.log"
   fi
 fi
 
@@ -99,6 +101,4 @@ else
   echo "$TS TAGS_PUSH_FAIL" >> "$LOG"
 fi
 
-MSG_ESC=$(printf '%s' "$MSG" | python3 -c "import sys,json;print(json.dumps(sys.stdin.read()))")
-echo "{\"hookSpecificOutput\":{\"hookEventName\":\"Stop\",\"additionalContext\":$MSG_ESC}}"
-exit 0
+MSG_ESC=$(printf '%s' "$MSG" | python3 -c "import sys,json; s=sys.stdin.buffer.read().decode('utf-8','replace'); print(json.dumps(''.join(ch if not(0xD800<=ord(ch)<=0xDFFF) else '?' for ch in s)))
