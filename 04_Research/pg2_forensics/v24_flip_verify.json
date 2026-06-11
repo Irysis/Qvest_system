@@ -1,0 +1,151 @@
+{
+  "meta": {
+    "date": "2026-06-11",
+    "metric_type": "diagnostic",
+    "verifier": "independent post-flip regression (v24_flip_verify.R)",
+    "scope": "default flip to v2.4_delta + v2.4 alias + liquidation rbindlist fix + constraint_defaults label",
+    "commission": 0.0015,
+    "n_rebal": 17,
+    "baseline": "b0_ab_reverted.json (v2.3 flat won-level reference)"
+  },
+  "T1_parse": {
+    "error": null,
+    "pass": true
+  },
+  "T2_legacy_repro": {
+    "explicit": {
+      "low": {
+        "label": "low_v23_explicit",
+        "n_rebal": 17,
+        "nav_end": 97480600,
+        "total_ret": -0.025194
+      },
+      "high": {
+        "label": "high_v23_explicit",
+        "n_rebal": 17,
+        "nav_end": 97480600,
+        "total_ret": -0.025194
+      }
+    },
+    "alias": {
+      "low": {
+        "label": "low_v23_alias",
+        "n_rebal": 17,
+        "nav_end": 97480600,
+        "total_ret": -0.025194
+      },
+      "high": {
+        "label": "high_v23_alias",
+        "n_rebal": 17,
+        "nav_end": 97480600,
+        "total_ret": -0.025194
+      }
+    },
+    "baseline": {
+      "low_nav": 97480600,
+      "high_nav": 97480600,
+      "low_ret": -0.025194,
+      "high_ret": -0.025194
+    },
+    "nav_identical_won": {
+      "low_explicit": true,
+      "high_explicit": true,
+      "low_alias": true,
+      "high_alias": true
+    },
+    "ret_identical": {
+      "low": true,
+      "high": true
+    },
+    "alias_equals_explicit": true,
+    "n_rebal_match": true,
+    "pass": true
+  },
+  "T3_new_default": {
+    "rows": [
+      {
+        "case": "default_low",
+        "measured": -0.001503,
+        "expected": -0.0015,
+        "pass": true
+      },
+      {
+        "case": "default_mid",
+        "measured": -0.0252276,
+        "expected": -0.0251962829981,
+        "pass": true
+      },
+      {
+        "case": "default_high",
+        "measured": -0.048423,
+        "expected": -0.04836457117516,
+        "pass": true
+      }
+    ],
+    "monotonic": true,
+    "mid_between": true,
+    "default_differs_from_legacy_flat": true,
+    "tol": 0.0005,
+    "pass": true
+  },
+  "T4_v24_alias": {
+    "low": true,
+    "mid": true,
+    "high": true,
+    "delta_equals_default": true,
+    "navs": {
+      "low_delta": 99849700,
+      "low_alias": 99849700,
+      "mid_delta": 97477240,
+      "mid_alias": 97477240,
+      "high_delta": 95157700,
+      "high_alias": 95157700
+    },
+    "pass": true
+  },
+  "T5_liquidation_fix": {
+    "flat": {
+      "mode": "liq_v23_flat",
+      "crashed": false,
+      "error": null,
+      "n_rows": 17,
+      "liq_row_present": true,
+      "liq_na_cols_ok": true,
+      "nav_end": 97480375
+    },
+    "v24": {
+      "mode": "liq_v24_delta",
+      "crashed": false,
+      "error": null,
+      "n_rows": 17,
+      "liq_row_present": true,
+      "liq_na_cols_ok": true,
+      "nav_end": 99550225
+    },
+    "prefix_behavior": "pre-patch harness crashed: 'Item 6 has 4 columns, inconsistent with item 1 which has 7 columns' (v24_adv_verify_d.json)",
+    "pass": true
+  },
+  "T6_constraint_defaults": {
+    "json_parse_ok": true,
+    "label": "v2.4_kr_retail_15bps",
+    "label_expected_ok": true,
+    "schema_pattern": "^v[0-9.]+_.+_[0-9]+bps$",
+    "pattern_match": true,
+    "judge_mapped_model": "v2.4_delta",
+    "map_is_delta": true,
+    "map_source_line_present": true,
+    "judge_static_w_ret": -0.00150225338007,
+    "judge_functional_delta": true,
+    "pass": true
+  },
+  "T7_unknown_label_guard": {
+    "harness_error": "[simulation] unknown cost_model_version: 'v9.9_bogus' (allowed: v2.3_flat / v2.4_delta)",
+    "judge_error": "[judge_oos_helper] unknown cost_model_version: 'v9.9_bogus' (allowed: v2.3_flat / v2.4_delta)",
+    "pass": true
+  },
+  "observations": [
+    "judge_oos_helper .joh_run_static_weight_sim default remains v2.3_flat and only aliases the v2.3 label; raw label 'v2.4_kr_retail_15bps' passed directly to it would stop(). Request path is safe (L371-377 maps via grepl before dispatch), but direct callers must pass 'v2.4_delta'.",
+    "judge_oos_helper request fallback (req$cost_model_version missing) is still 'v2.3_kr_retail_15bps' -> flat. Intentional for legacy requests; new requests inherit v2.4 label from constraint_defaults.json."
+  ],
+  "overall": "PASS"
+}
