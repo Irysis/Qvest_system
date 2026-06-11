@@ -121,7 +121,8 @@ bmret <- bm[!is.na(BM_Ret), .(bm_mret = prod(1 + BM_Ret) - 1), by = ym]
 
 # month-end state: 20d ADV (t-1 PIT C10), K200|KQ150 membership, bad flags
 raw[, tv := Vol * Close]
-raw[, adv20 := frollmean(tv, 20, align = "right"), by = Ticker]
+# C10 fix (2026-06-12, pre-measurement): t-1 PIT per prereg liquidity_filter — shift(frollmean, 1) per Ticker (dpl_census.py L91-93 harness-standard pattern)
+raw[, adv20 := shift(frollmean(tv, 20, align = "right"), 1L), by = Ticker]
 me_state <- raw[Date %in% me_dates$eom,
   .(Ticker, ym, adv20,
     member = (K200 %in% 1) | (KQ150 %in% 1),
