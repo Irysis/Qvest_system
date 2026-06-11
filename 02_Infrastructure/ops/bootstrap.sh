@@ -29,12 +29,34 @@ fi
 if ! python3 -c 'import sys' >/dev/null 2>&1; then
   [ -d "/c/Users/99922/AppData/Local/Programs/Python/Python312" ] && export PATH="/c/Users/99922/AppData/Local/Programs/Python/Python312:$PATH"
 fi
+
+# (v8.1.2 2026-06-11) UTF-8 출력 가드 — Claude Code API 400 'invalid high surrogate' 차단.
+#   부트 전체 출력(자식 R/Python/백그라운드 포함)을 utf8_output_guard.py로 정제하는 1회 재실행 래퍼:
+#   invalid UTF-8 byte + non-BMP 문자(U+10000+, Claude Code 30k자 절단 시 surrogate pair가 갈라져
+#   lone surrogate -> RFC 8259 위반 -> API 400)를 '?'로 치환. 근거: anthropics/claude-code#44230 + #16294.
+#   python3 부재 시 무가드 진행 (아래 INACTIVE WARN 표시). 임의 커맨드용 래퍼는 ops/safe_run.sh.
+UTF8_GUARD="$PROJECT/02_Infrastructure/ops/utf8_output_guard.py"
+if [ -z "${QVEST_BOOT_SANITIZED:-}" ]; then
+  if [ -f "$UTF8_GUARD" ] && python3 -c 'import sys' >/dev/null 2>&1; then
+    export QVEST_BOOT_SANITIZED=1
+    bash "$PROJECT/02_Infrastructure/ops/bootstrap.sh" "$@" 2>&1 \
+      | python3 -u "$(cygpath -m "$UTF8_GUARD" 2>/dev/null || echo "$UTF8_GUARD")"
+    exit "${PIPESTATUS[0]}"
+  fi
+  export QVEST_BOOT_SANITIZED=skip
+fi
+
 export QVEST_PY="${QVEST_PY:-$(command -v python3 2>/dev/null || echo python3)}"
 command -v Rscript >/dev/null 2>&1 && RS_OK="OK" || { RS_OK="MISSING"; BOOT_FAILS=$((BOOT_FAILS+1)); }
 python3 -c 'import sys' >/dev/null 2>&1 && PY_OK="OK" || { PY_OK="MISSING_OR_STUB"; BOOT_FAILS=$((BOOT_FAILS+1)); }
 echo "[boot] 도구 체인: Rscript=$RS_OK python3=$PY_OK (QVEST_PY=$QVEST_PY)"
+if [ "${QVEST_BOOT_SANITIZED:-}" = "1" ]; then
+  echo "[boot] utf8_output_guard: ACTIVE (non-BMP/invalid-byte 출력 정제 — API 400 surrogate 방지)"
+else
+  echo "[boot] WARN: utf8_output_guard INACTIVE (python3 또는 guard 부재) — 이모지 포함 출력 시 API 400 위험"
+fi
 
-echo "━━━ Qvest v8.1 부트스트랩 (Opus 4.8 Native · 3-Mode) ━━━"
+echo "=== Qvest v8.1 부트스트랩 (Opus 4.8 Native · 3-Mode) ==="
 
 # 1. (제거됨 v8.0 2026-05-29) tmux rc telegram inbound listener — outbound tg_agent_brief()는
 #    영향 없음. inbound 명령 listener 불필요 판단(도훈). 필요 시 persistent_remote_control.sh 수동 기동.
@@ -51,8 +73,10 @@ if [ "${QVEST_KEEP_LEGACY_TMUX:-0}" != "1" ]; then
 fi
 
 # 3. Cleanup (위생 관리, 백그라운드)
-bash "$PROJECT/02_Infrastructure/ops/cleanup.sh" --execute 2>/dev/null &
-echo "[boot] Cleanup 백그라운드"
+#    (v8.1.2) stdout도 로그로 — 미리다이렉트 시 비동기 출력이 부트 출력에 끼어들고
+#    utf8 guard 파이프를 cleanup 종료까지 물고 있는 문제(du -sh 수 분 소요 가능) 방지.
+bash "$PROJECT/02_Infrastructure/ops/cleanup.sh" --execute >/tmp/qm_cleanup_boot.log 2>&1 &
+echo "[boot] Cleanup 백그라운드 (log=/tmp/qm_cleanup_boot.log)"
 
 # 4. Memory Knowledge Health Gate (v7.2.1 — hard 6 + warning 6)
 #    Foreground: hard fail 즉시 표시. axiom SOT 3축 cross-check (sot_map↔active JSON↔.claude/rules/axioms.md)
@@ -78,7 +102,7 @@ MMN_R="$PROJECT/02_Infrastructure/memory/memory_metadata_normalize.R"
 if [ -f "$MMN_R" ]; then
   MMN_OUT=$(cd "$PROJECT" && Rscript "$MMN_R" selftest 2>&1 || true)
   if echo "$MMN_OUT" | grep -q 'selftest 2/2 PASS'; then
-    echo "[boot] memory_metadata_normalize selftest 2/2 PASS ✓"
+    echo "[boot] memory_metadata_normalize selftest 2/2 PASS"
   else
     echo "[boot] WARN: memory_metadata_normalize selftest FAIL — promote helper 호환 위반 가능"
   fi
@@ -119,7 +143,7 @@ RAWDATA_PARQUET="$PROJECT/.cache/rawdata.parquet"
 if [ -f "$RAWDATA_PARQUET" ]; then
   RD_CHECK=$(cd "$PROJECT" && Rscript -e 'suppressMessages(library(arrow)); d<-tryCatch(read_parquet(".cache/rawdata.parquet", col_select=c("K200","KQ150")), error=function(e) NULL); cat(if(!is.null(d)) "K200_KQ150_OK" else "K200_KQ150_MISSING")' 2>/dev/null | grep -oE 'K200_KQ150_(OK|MISSING)')
   if [ "$RD_CHECK" = "K200_KQ150_OK" ]; then
-    echo "[boot] 데이터 캐시: rawdata.parquet ✓ + K200/KQ150 멤버십 ✓ (alpha-search universe=K200_KQ150 가용)"
+    echo "[boot] 데이터 캐시: rawdata.parquet OK + K200/KQ150 멤버십 OK (alpha-search universe=K200_KQ150 가용)"
   else
     echo "[boot] WARN: rawdata.parquet K200/KQ150 컬럼 부재 — alpha-search universe=K200_KQ150 런타임 stop 위험 (daily_refresh apply_universe_mapping Layer2 활성화 필요)"
   fi
@@ -130,7 +154,7 @@ fi
 KRF_V2="$PROJECT/.cache/kr_factor_returns_v2.parquet"
 if [ -f "$KRF_V2" ]; then
   KRF_AGE=$(( ($(date +%s) - $(stat -c %Y "$KRF_V2" 2>/dev/null || echo 0)) / 86400 ))
-  echo "[boot] kr_factor_returns_v2: ✓ (age ${KRF_AGE}d · MKT/SMB 2001-04~ · HML/RMW/CMA 2002-08~)"
+  echo "[boot] kr_factor_returns_v2: OK (age ${KRF_AGE}d · MKT/SMB 2001-04~ · HML/RMW/CMA 2002-08~)"
 else
   echo "[boot] WARN: kr_factor_returns_v2 부재 — FF 알파/residual momentum 전략 불가"
 fi
@@ -341,9 +365,9 @@ fi
 
 echo ""
 if [ "${BOOT_FAILS:-0}" -gt 0 ]; then
-  echo "━━━ 부트스트랩 DEGRADED — ${BOOT_FAILS}개 게이트 실패 (위 ERROR 라인 확인, '완료' 아님) ━━━"
+  echo "=== 부트스트랩 DEGRADED — ${BOOT_FAILS}개 게이트 실패 (위 ERROR 라인 확인, '완료' 아님) ==="
 else
-  echo "━━━ 부트스트랩 완료 (Qvest v8.1 — Opus 4.8 Native · 3-Mode · 실측 거버넌스) ━━━"
+  echo "=== 부트스트랩 완료 (Qvest v8.1 — Opus 4.8 Native · 3-Mode · 실측 거버넌스) ==="
 fi
 if [ -n "$PG2_INFO" ]; then
   echo "$PG2_INFO"
@@ -361,4 +385,4 @@ command -v free >/dev/null 2>&1 && free -m | awk '/Mem:/ {printf "RAM:        %.
 echo ""
 echo "다음: /qvest 5-B 절차 따라 Work Task 생성 + 3-agent 순차 spawn"
 echo "  wt_create('{hypothesis}') → alpha-research → risk-research → optimizer-research"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "===================================="
