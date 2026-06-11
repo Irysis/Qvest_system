@@ -99,7 +99,24 @@ cat(sprintf("[prep] B: score-grid rows %d | sleeve rows %d | months %d\n",
 #   then cap top-25 (immutable max-names; original n=30+buffer dropped, doc'd)
 # =============================================================================
 S3_DIR <- file.path(PROJECT_ROOT, "04_Research/strategies/STR_1550_consensus_core_alpha")
+# ── ENV-COMPAT SHIM (documented deviation, 2026-06-12): .cache/factor_db/ gained
+#    build_hash.txt (Gate 13.1 governance file, written 2026-06-11 10:47 — AFTER
+#    STR_1550 original validation). arrow::open_dataset(<dir>) now fails schema
+#    inference on that txt file. factor_engine.R is sourced VERBATIM (substrate
+#    identity), so instead of editing it, shadow the unqualified open_dataset()
+#    here: directory sources are expanded to the explicit factor_db_*.parquet
+#    file list — exactly the files the original read. build_hash.txt cannot be
+#    renamed (referenced by path in factor_db_connector.R:145 + WT scripts).
+#    No factor value is changed by this shim.
+open_dataset <- function(sources, ...) {
+  if (is.character(sources) && length(sources) == 1 && dir.exists(sources)) {
+    fl <- list.files(sources, pattern = "^factor_db_\\d{6}\\.parquet$", full.names = TRUE)
+    if (length(fl) > 0) return(arrow::open_dataset(fl, ...))
+  }
+  arrow::open_dataset(sources, ...)
+}
 source(file.path(S3_DIR, "factor_engine.R"))   # liq >= 2e8 (t-1) applied inside
+rm(open_dataset)                               # shim scope ends with the source
 stopifnot(exists("FACTORS"), nrow(FACTORS) > 0)
 F3 <- copy(FACTORS)
 F3[, ym := format(Date, "%Y-%m")]
