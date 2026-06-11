@@ -109,7 +109,7 @@ for (tr in trials) {
   }
   m <- run_trial_portfolio(weights_dt, rets_dt, grid, bench_dt)
   trial_id <- sprintf("B_%s", tr$id)
-  row <- summarise_trial(m, grid, trial_id, "B")
+  row <- summarise_trial(m, grid, trial_id, "B", weighting_method = tr$label)
   row[, method_id := tr$id]; row[, method_label := tr$label]
   results[[trial_id]] <- row
   series[[trial_id]] <- m

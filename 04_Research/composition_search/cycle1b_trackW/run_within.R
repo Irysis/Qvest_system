@@ -66,7 +66,7 @@ for (sp in specs) {
   weights_dt <- rbindlist(wt_list)
   m <- run_trial_portfolio(weights_dt, rets_dt, grid, bench_dt)
   trial_id <- sprintf("%s_%s", SUB, sp$id)
-  row <- summarise_trial(m, grid, trial_id, SUB)
+  row <- summarise_trial(m, grid, trial_id, SUB, weighting_method = sp$label)
   row[, method_id := sp$id]; row[, method_label := sp$label]
   results[[trial_id]] <- row
   series[[trial_id]] <- m

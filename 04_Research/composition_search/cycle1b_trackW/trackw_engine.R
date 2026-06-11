@@ -19,8 +19,12 @@
 #       same convention as contracts/canonical_screen_bt.R, drift-aware via
 #       BOP/EOP weights so netting matches harness v2.4 delta charging)
 #     + contracts build_benchmark_compare() for PORT_t NW lag-3 (forge-identical fn)
-#   metric_type = "canonical_screen_weighted" (canonical_screen generalized to
-#   externally supplied weights; NOT forge build_bt_result "backtested").
+#   metric_type = "canonical_screen" (enum-compliant; the weighting method is
+#   carried in a SEPARATE weighting_method column + metric_type_note — label
+#   schema corrected 2026-06-12 per Q-Lead approval, adversarial-verifier
+#   finding: 'canonical_screen_weighted' was outside the enum
+#   {canonical_screen, backtested, estimated, proxy}. Numbers unchanged.
+#   NOT forge build_bt_result "backtested").
 #
 # Reuse (verbatim, no infra edits):
 #   - backtest_harness.R: .build_ret_matrix / .get_cor_cov / .gerber_cor /
@@ -363,7 +367,8 @@ run_trial_portfolio <- function(weights_dt, rets_dt, month_grid, bench_dt) {
 # windows: signal-month basis (Date label of formation month)
 #   IS: formation <= 2018-12 | OOS: formation >= 2019-01 | 2017+: formation >= 2017-01
 # m carries r_idx (= month_end(formation+1)); formation month-end = w_idx.
-summarise_trial <- function(m, month_grid, trial_id, substrate, n_trials_cum = 86) {
+summarise_trial <- function(m, month_grid, trial_id, substrate, n_trials_cum = 86,
+                            weighting_method = NA_character_) {
   m <- merge(m, month_grid, by = "r_idx", all.x = TRUE)
   is_m   <- m[w_idx <= as.Date("2018-12-31")]
   oos_m  <- m[w_idx >= as.Date("2019-01-01")]
@@ -385,7 +390,13 @@ summarise_trial <- function(m, month_grid, trial_id, substrate, n_trials_cum = 8
     oos_n = o$n, oos_net_sr = o$net_sr, oos_cagr = o$cagr, oos_mdd = o$mdd,
     p2017_net_sr = p7$net_sr, p2017_cagr = p7$cagr, p2017_mdd = p7$mdd,
     dsr_n_trials86 = dsr, skew_m = sk, kurt_m = ku,
-    metric_type = "canonical_screen_weighted"
+    weighting_method = weighting_method,
+    metric_type = "canonical_screen",
+    metric_type_note = paste(
+      "canonical_screen engine generalized to externally supplied weights",
+      "(see weighting_method column): Return.portfolio monthly + per-name |dW|",
+      "15bps delta cost + build_benchmark_compare PORT_t NW lag-3.",
+      "NOT forge build_bt_result 'backtested'.")
   )
 }
 

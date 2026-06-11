@@ -61,13 +61,20 @@ meta <- list(
   artifact = "TRACKW_WEIGHTING_RESULTS_v1",
   prereg = "TRACKW_WEIGHTING_PREREG_v1 (FROZEN 2026-06-11 15:33 KST)",
   generated = format(Sys.time(), "%Y-%m-%d %H:%M:%S"),
-  metric_type = "canonical_screen_weighted",
+  metric_type = "canonical_screen",
   metric_type_note = paste(
     "All 77 trials on ONE engine: PerformanceAnalytics::Return.portfolio (monthly",
     "weights @ month-end t, forward returns @ month-end t+1, b1_step3 precedent)",
     "+ per-name |dW|x15bps both-leg delta cost (= v2.4_delta semantics in weight",
     "space, drift-aware via BOP/EOP) + contracts build_benchmark_compare PORT_t",
-    "NW lag-3 (forge-identical function). NOT forge build_bt_result 'backtested'."),
+    "NW lag-3 (forge-identical function). NOT forge build_bt_result 'backtested'.",
+    "Weighting method carried in SEPARATE weighting_method column. Label schema",
+    "corrected 2026-06-12 (Q-Lead approval): metric_type restored to enum value",
+    "'canonical_screen' ('canonical_screen_weighted' was outside the enum;",
+    "measurement numbers unchanged)."),
+  label_schema = list(
+    metric_type_enum = c("canonical_screen", "backtested", "estimated", "proxy"),
+    weighting_method_column = "per-trial weighting method (was wrongly encoded in metric_type)"),
   cost_model = "v2.4_kr_retail_15bps delta-equivalent (monthly weight-space)",
   selection_protocol = list(
     selection_type = "sweep", n_trials_this_track = nrow(res),
