@@ -84,31 +84,31 @@ for (L in .HZZ_LAGS) {
 .acols <- paste0("A", .HZZ_LAGS)
 .SIG <- merge(.SIG[, c("Date", "Ticker", .acols), with = FALSE],
               .CAL[, .(Date = MEnd, ym = .ym, ord)], by = "Date")
-setnames(.SIG, "Date", "MEnd")
+setnames(.SIG, "Date", "MEnd")    # .SIG: 형성월 t 월말 신호. ord = 형성월 ordinal.
 
 # ---- 4. 종목 월간 실현수익 r_{j,t} (일간 Ret 월내 복리집계 — 자산수익) ------
+#   수익월 ym → ord (캘린더 ordinal) 부착.
 .MR <- RAWDATA[is.finite(Ret), .(MRet = prod(1 + Ret) - 1), by = .(Ticker, ym = .ym)]
+.MR <- merge(.MR, .CAL[, .(ym = .ym, ret_ord = ord)], by = "ym")
 
 # ---- 5. 1단계 월간 횡단면 OLS (식 3): r_t ~ Ã_{t-1}  → β_{i,t} -------------
 #   각 월 t: 종목별 (실현수익 r_{j,t}) 를 (직전월말 t-1 정규화신호 Ã_{j,t-1,L}) 에 OLS.
-#   ★ 신호 lag: 신호 ord = t-1, 수익 ord = t (다음 달). PIT 핵심.
-#   β_{i,t} 시계열 산출. 절편 포함(식 3 β0_t). 회귀 표본 = 그 달 유효 종목(유동성·멤버십 통과).
-.SIG[, ord_next := ord + 1L]   # 신호@t-1을 수익@t에 매칭 (다음 달 수익 회귀)
-.REG <- merge(.SIG[, c("Ticker", "ord_next", .acols), with = FALSE],
-              .CAL[, .(ord_next = ord, ym_ret = .ym)], by = "ord_next")     # ord_next→수익월 ym
-.REG <- merge(.REG, .MR, by.x = c("Ticker", "ym_ret"), by.y = c("Ticker", "ym"))
-# 유동성·멤버십 필터 (신호 형성 월말 t-1 기준 — 신호 ord = ord_next-1)
-.REG <- merge(.REG, .MMETA[, .(Ticker, sig_ord = ord, in_univ, liq_ok)],
-              by.x = c("Ticker"), by.y = c("Ticker"), allow.cartesian = TRUE)
-.REG <- .REG[sig_ord == ord_next - 1L & in_univ == TRUE & liq_ok == TRUE]
+#   ★ 신호 lag: 신호 ord = t-1, 수익 ord = t. → 신호의 ord_next = ord+1 = 수익월 ord.
+#   β_{i,t} 시계열 산출. 절편 포함(식 3 β0_t). 회귀표본 = 그 달 유효종목(유동성·멤버십 통과).
+#   유동성·멤버십은 신호 형성 월말(t-1, = 신호 ord) 기준 PIT — .SIG에 직접 결합.
+.SIGM <- merge(.SIG, .MMETA[, .(Ticker, ord, in_univ, liq_ok)], by = c("Ticker", "ord"))
+.SIGM <- .SIGM[in_univ == TRUE & liq_ok == TRUE]
+.SIGM[, ret_ord := ord + 1L]                       # 신호@ord → 수익@ord+1
+.REG <- merge(.SIGM[, c("Ticker", "ret_ord", .acols), with = FALSE],
+              .MR[, .(Ticker, ret_ord, MRet)], by = c("Ticker", "ret_ord"))
 .REG <- .REG[stats::complete.cases(.REG[, .acols, with = FALSE]) & is.finite(MRet)]
 
-.reg_months <- sort(unique(.REG$ord_next))
+.reg_months <- sort(unique(.REG$ret_ord))
 .fml <- stats::as.formula(paste("MRet ~", paste(.acols, collapse = " + ")))
 .beta_list <- vector("list", length(.reg_months))
 for (k in seq_along(.reg_months)) {
   m <- .reg_months[k]
-  sub <- .REG[ord_next == m]
+  sub <- .REG[ret_ord == m]
   if (nrow(sub) < (length(.acols) + 10L)) next   # 회귀 안정성: 변수수+10 이상
   fit <- tryCatch(stats::lm(.fml, data = sub), error = function(e) NULL)
   if (is.null(fit)) next

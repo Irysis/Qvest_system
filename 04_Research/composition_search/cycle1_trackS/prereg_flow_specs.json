@@ -1,0 +1,181 @@
+{
+  "preregistration": {
+    "id": "PREREG_FLOW_STAGEA_CYCLE1_TRACKS",
+    "program": "Composition Search Cycle 1 — Track S (FLOW family fair-trial, E6 protocol Stage A)",
+    "charter_ref": "04_Research/composition_search/program_charter.md",
+    "e6_protocol_ref": "04_Research/factor_rotation/proposal_review_sharpe25_system_2026-06-10.md",
+    "registered_at": "2026-06-12T07:59:21+0900",
+    "registered_by": "Q subagent (Track S Stage A prereg, Dohoon mandate 2026-06-11)",
+    "status": "REGISTERED_PRE_MEASUREMENT",
+    "measurement_performed": false,
+    "immutability_note": "Specs below are FROZEN as of registered_at. No spec may be added, removed, or re-directed after any measurement begins. All 9 specs must be reported (silent drop forbidden).",
+    "selection_type": "sweep",
+    "n_trials_this_stage": 9,
+    "n_trials_cumulative_note": "Prior FLOW family search (WT-D20260529_001): effective_search = 15 INV factors + 1 sign-direction + 1 EMA smoothing + 8 buffer cells + 6 quarterly cells. This stage adds 9 preregistered specs. DSR (if computed at Stage B+) must count cumulative family trials."
+  },
+
+  "data_inventory": {
+    "raw_source": {
+      "path": ".cache/investor_stock/investor_wide.parquet",
+      "columns": ["Date", "Ticker", "Foreign", "Individual", "Institutional", "OtherCorp"],
+      "unit": "daily net buy amount KRW (positive = net buy)",
+      "date_range_observed": "2000-01-03 ~ 2026-03-26",
+      "n_tickers": 3410,
+      "rows": 10244224,
+      "freshness_flag": "raw cache max Date 2026-03-26 vs factor DB INV months present through 202606 — discrepancy MUST be verified at measurement time (which source built 202604~202606 INV rows); if INV tail months are stale-built, truncate measurement window accordingly and report.",
+      "collector": "02_Infrastructure/data/parse_investor_quantiwise.R + naver_investor_collector.R (quantiwise_investor dependency)"
+    },
+    "factor_db": {
+      "store": ".cache/factor_db/factor_db_YYYYMM.parquet (444 month files), access ONLY via load_month_factors() (PIT C15)",
+      "compute_script": "02_Infrastructure/factor_db/compute_investor.R (INV01~INV13, PIT Date < sig_date strict t-1, C2/C10 compliant)",
+      "registry": "02_Infrastructure/factor_db/factor_registry.json (category investor_flow, 15 factors)",
+      "inv_factor_coverage": {
+        "INV01_Foreign_NetBuy_20d": "200001~202606 (318m)",
+        "INV02_Foreign_NetBuy_60d": "200003~202606 (316m)",
+        "INV03_Inst_NetBuy_20d": "200001~202606 (318m)",
+        "INV04_Inst_NetBuy_60d": "200003~202606 (316m)",
+        "INV05_Foreign_Momentum": "200003~202606 (316m)",
+        "INV06_Inst_Momentum": "200003~202606 (316m)",
+        "INV07_Retail_Contrarian": "200001~202606 (318m)",
+        "INV08_Foreign_Inst_Agreement": "200001~202606 (318m)",
+        "INV09_Flow_Persistence": "200001~202606 (318m)",
+        "INV10_Smart_Money_Flow": "200001~202606 (318m)",
+        "INV11_Foreign_Concentration": "200001~202606 (318m)",
+        "INV12_Supply_Demand_Imbalance": "200001~202606 (318m)",
+        "INV13_Foreign_Resid_Individual_21d": "200502~202604 (255m)",
+        "INV13_Foreign_Resid_Individual_63d": "200502~202604 (255m)",
+        "INV13_Foreign_Resid_Individual_126d": "200502~202604 (255m)"
+      },
+      "inventory_check_script": "04_Research/composition_search/cycle1_trackS/inv_inventory_check.R (read-only availability scan; NO performance measurement performed)"
+    },
+    "prior_flow_work": {
+      "wt_id": "WT-D20260529_001 (track FLOW, one of 16-candidate calibration)",
+      "artifacts": [
+        "stage_artifacts/WT_D20260529_001_FLOW/alpha_validation.json",
+        "stage_artifacts/WT_D20260529_001_FLOW/run_flow_v2.R",
+        "qepm/mailbox/worktask/WT-D20260529_001/alpha_package.json",
+        "qepm/mailbox/worktask/WT-D20260529_001/forge_package.json"
+      ],
+      "incumbent_spec": "uniform contrarian composite alpha_flow = -mean(Z of INV02, INV04, INV09, INV11, INV07), cross-sectional re-z, quarterly rebal + entry_top8/keep_top30 buffer, n_names=20",
+      "incumbent_results_metric_type_labels": {
+        "alpha_proxy_port_alpha_t": {"value": 3.55, "metric_type": "proxy", "cost_model": "v2.3_kr_retail_15bps"},
+        "forge_full_window_port_alpha_t_nw_lag3": {"value": 2.3497, "metric_type": "backtested", "note": "FULL window incl. 2024-01~ frozen-weights OOS extension; lockbox-truncated basis was 3.66"},
+        "single_factor_note": "single INV10 ICIR 0.291 > composite 0.212 (intentional crisis-robustness trade-off, alpha_package C3 PARTIAL)",
+        "ax001_crisis_ratio": 4.176
+      },
+      "direction_evidence": "Contrarian-to-flow direction was declared ex-ante in WT-D20260529_001 (Choe-Kho-Stulz 2005 price pressure + learning_kr_lottery_anomaly_reversal.md), validated OOS, and survived forge. Reversal directions in this prereg inherit that documented prior evidence — they are NOT learned from the Stage A measurement sample."
+    }
+  },
+
+  "measurement_conditions_frozen": {
+    "universe": "KOSPI200 ∪ KOSDAQ150, PIT membership",
+    "period": "2005-01 ~ latest verified factor DB month (target 2026; subject to freshness_flag verification above). INV13-based spec S07 effectively starts 2005-02 (factor first month 200502) — reported as-is, not a drop.",
+    "portfolio": "top-25 equal-weight, monthly rebalance",
+    "engine": "02_Infrastructure/contracts/canonical_screen_bt.R::canonical_screen_bt() — contract-grade, build_benchmark_compare routing",
+    "metric_type": "canonical_screen (screening tier — NOT admission-binding; forge build_bt_result remains authoritative at Stage C)",
+    "cost_model": "v2.4_kr_retail_15bps — 15bps one-way, delta-based (canonical_screen_bt native: cost_t = sum|w_t - w_{t-1}| * 15/1e4)",
+    "liquidity_filter": "20d avg traded value >= 2e8 KRW, t-1 PIT (C10)",
+    "factor_input_rule": "factor DB monthly Z_Score via load_month_factors() ONLY (C15). score_t(i) = direction_multiplier * Z_Score_t(i); direction_multiplier preregistered per spec below (C13: these are new preregistered signals with documented ex-ante direction rationale, not flips of admitted production factors).",
+    "pit": "investor flow data Date < sig_date strict (t-1, C2/C10 — compute_investor.R enforces); forward returns = realized 1m after sig_date; PIT C1~C15 full",
+    "gate_stage_a": {
+      "rule": "PASS = (full-window screen portfolio_alpha_t_nw_lag3 >= 1.96) AND (2017-01~ subwindow portfolio_alpha_t_nw_lag3 > 0)",
+      "rationale": "E6 fair-trial Stage A screen gate; 2017+ condition screens cohort-wide post-2017 factor decay",
+      "next_stage": "Stage B = production-fidelity (rebal/buffer/overlay-eligible) + book-marginal ΔIR>=0.05 + |cor|<0.30 vs incumbent book; Stage C = forge build_bt_result (authoritative)"
+    },
+    "reporting_obligation": "ALL 9 specs reported with full metrics regardless of outcome. Failures reported verbatim. Every reported number carries metric_type label."
+  },
+
+  "specs": [
+    {
+      "spec_id": "FLOW-S01",
+      "name": "Foreign 60d crowding reversal (single)",
+      "factor": "INV02_Foreign_NetBuy_60d",
+      "formula": "score = -1 * Z(frollsum(Foreign,60d)/Size)",
+      "direction_multiplier": -1,
+      "pit_lag": "investor flow Date < sig_date (t-1, C10); Size normalization t-1",
+      "direction_rationale": "Foreign 60d accumulation = price-pressure crowding; subsequent unwind underperforms (Choe-Kho-Stulz 2005; KR-validated direction, WT-D20260529_001 OOS)."
+    },
+    {
+      "spec_id": "FLOW-S02",
+      "name": "Institutional 60d crowding reversal (single)",
+      "factor": "INV04_Inst_NetBuy_60d",
+      "formula": "score = -1 * Z(frollsum(Institutional,60d)/Size)",
+      "direction_multiplier": -1,
+      "pit_lag": "investor flow Date < sig_date (t-1, C10); Size normalization t-1",
+      "direction_rationale": "Institutional herding at 60d horizon mirrors foreign crowding; reversal direction per same KR price-pressure framework (Gompers-Metrick mechanism reversed in KR liquid universe)."
+    },
+    {
+      "spec_id": "FLOW-S03",
+      "name": "Retail-follow (KR reversal of Barber-Odean)",
+      "factor": "INV07_Retail_Contrarian",
+      "formula": "score = -1 * Z(-frollsum(Individual,20d)/Size) [= long stocks retail is net-BUYING]",
+      "direction_multiplier": -1,
+      "pit_lag": "investor flow Date < sig_date (t-1, C10)",
+      "direction_rationale": "In KR liquid universe retail is the counterparty absorbing institutional/foreign unwind; contrarian-to-flow framework implies retail-follow (KR mechanism reversal of classic fade-retail; consistent with WT-D20260529_001 composite which negated INV07 uniformly)."
+    },
+    {
+      "spec_id": "FLOW-S04",
+      "name": "Incumbent contrarian composite — Stage A standard re-measurement",
+      "factor": "INV02_Foreign_NetBuy_60d + INV04_Inst_NetBuy_60d + INV09_Flow_Persistence + INV11_Foreign_Concentration + INV07_Retail_Contrarian",
+      "formula": "score = -1 * mean(Z_f for f in 5 factors, na.rm), then cross-sectional re-z per Date",
+      "direction_multiplier": -1,
+      "pit_lag": "all components investor flow Date < sig_date (t-1, C10)",
+      "direction_rationale": "Forge-validated incumbent (PORT_t 2.35 backtested, quarterly/buffer/top-20) re-measured under Stage A frozen conditions (monthly top-25 EW, 2005-01~, delta cost) as the family baseline. Within-FLOW-family combination — charter additive-Z ban applies to cross-family composites only.",
+      "charter_compliance_note": "FLOW family internal combination; no cross-family Z averaging."
+    },
+    {
+      "spec_id": "FLOW-S05",
+      "name": "Smart-money participation imbalance reversal",
+      "factor": "INV10_Smart_Money_Flow",
+      "formula": "score = -1 * Z(rollsum(F+I,20d) / rollsum(|F|+|I|+|Ind|,20d))",
+      "direction_multiplier": -1,
+      "pit_lag": "investor flow Date < sig_date (t-1, C10)",
+      "direction_rationale": "Volume-normalized (foreign+inst) net participation = crowding intensity scale-free of market cap; reversal per same framework. Prior diagnostics flagged INV10 as strongest single (ICIR 0.291) — never measured standalone at portfolio level."
+    },
+    {
+      "spec_id": "FLOW-S06",
+      "name": "Foreign flow acceleration continuation (short-horizon)",
+      "factor": "INV05_Foreign_Momentum",
+      "formula": "score = +1 * Z(rollsum(Foreign,20d)/rollsum(Foreign,60d) - 1)",
+      "direction_multiplier": 1,
+      "pit_lag": "investor flow Date < sig_date (t-1, C10)",
+      "direction_rationale": "Distinct mechanism axis from S01: 20d-vs-60d ACCELERATION proxies new information arrival -> short-horizon continuation precedes long-horizon price-pressure reversal (horizon-structure hypothesis; only continuation-direction spec in this prereg)."
+    },
+    {
+      "spec_id": "FLOW-S07",
+      "name": "Foreign residual flow (orthogonal to retail mirror) reversal",
+      "factor": "INV13_Foreign_Resid_Individual_63d",
+      "formula": "score = -1 * Z(z_F_63d - beta_t * z_I_63d), beta_t = expanding no-intercept OLS (lag 1, burn-in 60m)",
+      "direction_multiplier": -1,
+      "pit_lag": "investor flow Date < sig_date (t-1, C10); beta_t expanding-window lag-1 (C1)",
+      "direction_rationale": "Removes the mechanical retail-mirror component from foreign flow; tests whether the crowding-reversal edge survives orthogonalization (pure foreign price-pressure axis, Choe-Kho-Stulz 2005). Coverage 2005-02~ (one month short of window start — reported as-is)."
+    },
+    {
+      "spec_id": "FLOW-S08",
+      "name": "Foreign-institutional agreement reversal",
+      "factor": "INV08_Foreign_Inst_Agreement",
+      "formula": "score = -1 * Z(sign(F20)*sign(I20)*min(|F20|,|I20|)/Size)",
+      "direction_multiplier": -1,
+      "pit_lag": "investor flow Date < sig_date (t-1, C10)",
+      "direction_rationale": "Simultaneous foreign AND institutional net buying = maximum-consensus crowding; framework predicts strongest subsequent unwind when both informed classes are positioned the same way."
+    },
+    {
+      "spec_id": "FLOW-S09",
+      "name": "Flow persistence reversal (single)",
+      "factor": "INV09_Flow_Persistence",
+      "formula": "score = -1 * Z(fraction of last 20 days with F+I > 0)",
+      "direction_multiplier": -1,
+      "pit_lag": "investor flow Date < sig_date (t-1, C10)",
+      "direction_rationale": "Persistence (breadth-in-time) vs magnitude (S01/S02) is a distinct construction axis: sustained multi-day accumulation = sustained price pressure -> reversal (KR reversal of Yan-Zhang 2009 persistence-continuation)."
+    }
+  ],
+
+  "exclusions_documented": {
+    "INV01/INV03 (20d magnitude)": "horizon between S06 acceleration and 60d magnitude specs; excluded to keep mechanisms distinct, not silently dropped",
+    "INV06_Inst_Momentum": "same acceleration mechanism as S06 (foreign chosen as the KR-evidence-stronger class)",
+    "INV11_Foreign_Concentration standalone": "binary 90th-pct indicator — covered inside S04 composite; standalone binary score degenerate for top-25 ranking",
+    "INV12_Supply_Demand_Imbalance": "near-duplicate of INV10 construction (same (F+I-Ind) normalization family)",
+    "INV13 21d/126d variants": "63d chosen ex-ante as the mid-horizon matching the 60d evidence base; registering all 3 would be horizon-fishing",
+    "cross_family_composites": "FORBIDDEN by program charter (additive-Z cross-family ban)"
+  }
+}

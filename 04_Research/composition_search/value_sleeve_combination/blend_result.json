@@ -1,4 +1,11 @@
 {
+  "_INVALIDATED": {
+    "date": "2026-06-12",
+    "reason": "realized_ym label offset artifact: book (period_returns_layer5 ret_L5_V2) joined on realized_ym is mislabeled +1 month (book label m = calendar month m-1) vs value/bench which are calendar-keyed. cor(value,book)=-0.0455 reported here is spurious; corrected alignment gives +0.3132. book IR(0.8539)/TE(0.3005)/beta(-0.004)/cor_bm(-0.004)/PORT_t(5.093) and ALL blend dSR/dMDD/dIR/dCalmar are distorted. book-only SR/CAGR/MDD/Calmar are label-order-invariant -> valid.",
+    "superseded_by": "corrected/blend_result_corrected.json",
+    "report": "04_Research/pg2_forensics/realized_ym_offset_report.md",
+    "decision_note": "Under corrected cor +0.31 the SR diversification benefit collapses (all blend dSR<=0); do not use this file for the blend decision."
+  },
   "meta": {
     "task": "value_sleeve_combination_stage1",
     "as_of": "2026-06-11",
