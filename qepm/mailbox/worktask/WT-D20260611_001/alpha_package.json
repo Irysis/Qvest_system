@@ -1,0 +1,161 @@
+{
+  "task_id": "WT-D20260611_001",
+  "wt_type": "discovery",
+  "as_of_date": "2026-06-11",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe": "KR_ALL_LIQ2E8",
+  "selection_objective": "rank_ic",
+  "selection_type": "chain",
+  "metric_type": "canonical_screen",
+  "signal_matrix_ref": "stage_artifacts/WT-D20260611_001/alpha_scores.parquet",
+
+  "mechanism": "Full-universe (KR_ALL_LIQ2E8, ~1500-1850 names/month with 20d ADV>=2e8, t-1 PIT C10) risk-aware value composite. Economic rationale: cross-sectional value premium (cheap-on-fundamentals stocks earn risk/behavioral premium; Fama-French 1992/1993, Asness-Frazzini-Pedersen 2013) measured via an equal-weight composite of 6 PIT-safe value proxies (earnings, EBIT, EV/EBITDA, sales, EV/Sales, book yields), with a tail-risk tilt (R05_Tail_Risk) intended to lean toward names with milder downside tail exposure (defensive value, AX-001 v2 spirit). Composite avoids single-proxy fragility (KR EP_STANDALONE failure AX-003, L-132/135). The full-universe scope is the central claim of the lost Cycle 1~9 artifact: restricted KOSPI200/KOSDAQ150 value was reported negative post-2017, full-universe allegedly survived. THIS RE-DERIVATION DOES NOT REPRODUCE THAT SURVIVAL (see anchor_comparison + escalation).",
+
+  "factor_specs": [
+    {"factor_family": "Value", "proxy": "V02_EP", "formula": "earnings / market_cap (Z_Score_Aligned, C13)", "lag_rule": "quarterly 45d / annual May", "winsorization": "3std (factor DB builder)", "neutralization": "none (cross-sectional Z only)", "economic_rationale": "earnings yield risk premium", "weight_theta": 0.1429, "redundancy_cluster_id": "VALUE_earnings", "references": ["Basu 1977", "Fama-French 1992"]},
+    {"factor_family": "Value", "proxy": "V14_EBIT_EV", "formula": "EBIT / enterprise_value (Z_Score_Aligned)", "lag_rule": "quarterly 45d", "winsorization": "3std", "neutralization": "none", "economic_rationale": "operating earnings yield, capital-structure neutral", "weight_theta": 0.1429, "redundancy_cluster_id": "VALUE_ev", "references": ["Loughran-Wellman 2011"]},
+    {"factor_family": "Value", "proxy": "V07_EV_EBITDA", "formula": "EV / EBITDA inverted (Z_Score_Aligned, higher=cheaper)", "lag_rule": "quarterly 45d", "winsorization": "3std", "neutralization": "none", "economic_rationale": "cash-flow valuation multiple", "weight_theta": 0.1429, "redundancy_cluster_id": "VALUE_ev", "references": ["Gray-Vogel 2012"]},
+    {"factor_family": "Value", "proxy": "V20_SP", "formula": "sales / price (Z_Score_Aligned)", "lag_rule": "quarterly 45d", "winsorization": "3std", "neutralization": "none", "economic_rationale": "sales yield, robust to earnings manipulation", "weight_theta": 0.1429, "redundancy_cluster_id": "VALUE_sales", "references": ["O'Shaughnessy 2005"]},
+    {"factor_family": "Value", "proxy": "V13_EV_Sales", "formula": "EV / Sales inverted (Z_Score_Aligned)", "lag_rule": "quarterly 45d", "winsorization": "3std", "neutralization": "none", "economic_rationale": "enterprise sales yield", "weight_theta": 0.1429, "redundancy_cluster_id": "VALUE_sales", "references": ["Damodaran 2012"]},
+    {"factor_family": "Value", "proxy": "V01_BM", "formula": "book / market (Z_Score_Aligned)", "lag_rule": "annual May", "winsorization": "3std", "neutralization": "none", "economic_rationale": "book-to-market value premium", "weight_theta": 0.1429, "redundancy_cluster_id": "VALUE_book", "references": ["Fama-French 1993", "Rosenberg-Reid-Lanstein 1985"]},
+    {"factor_family": "Tail_Risk", "proxy": "R05_Tail_Risk", "formula": "0.5 * Z_Score_Aligned(R05_Tail_Risk) tilt", "lag_rule": "price t-1", "winsorization": "3std (builder); NOTE: aligned-Z has fat RIGHT tail (99pct=4.54, max=5.56, median=-0.07) -> 0.5x weight effectively dominates value_z (sd 0.59) for extreme-tail names", "neutralization": "none", "economic_rationale": "downside-tail defensive tilt (AX-001 v2)", "weight_theta": 0.5, "redundancy_cluster_id": "DEFENSE_tail", "references": ["Bali-Cakici-Whitelaw 2011 (MAX)", "Kelly-Jiang 2014 (tail risk)"]}
+  ],
+
+  "composite_formula": "score_i = mean(Z_aligned over 6 value proxies)_i + 0.5 * Z_aligned(R05_Tail_Risk)_i ; long-only top-20 EW screen, monthly rebal, 15bps one-way, LIQ>=2e8 t-1.",
+
+  "diagnostics": {
+    "rank_ic": 0.057101,
+    "icir": 0.685946,
+    "harvey_t_rankic": 10.824043,
+    "monotonicity": null,
+    "subperiod_stability_note": "rank-IC stable & strong; portfolio-alpha is NOT (see subperiod_2017plus negative).",
+    "turnover_proxy_annual": 16.390361,
+    "post_neutralization_ic": null
+  },
+
+  "performance_measured": {
+    "metric_type": "canonical_screen",
+    "engine": "02_Infrastructure/contracts/canonical_screen_bt.R::canonical_screen_bt (contract build_benchmark_compare, NW lag-3)",
+    "full_period": {
+      "date_range": ["2005-08-31", "2026-04-30"],
+      "n_months": 249,
+      "net_sr": 0.375339,
+      "portfolio_alpha_t_nw_lag3": 1.711832,
+      "portfolio_alpha_t_pvalue": 0.086928,
+      "information_ratio": 0.375339,
+      "alpha_annualized": 0.118574,
+      "cagr": 0.203135,
+      "calmar": 0.329158,
+      "turnover_annual": 16.390361
+    },
+    "subperiod_2017plus": {
+      "n_months": 112,
+      "net_sr": -0.041105,
+      "portfolio_alpha_t_nw_lag3": -0.135071,
+      "information_ratio": -0.041105,
+      "note": "NEGATIVE. Anchor claimed full-universe value survives 2017+ (PORT_t +1.41). NOT reproduced."
+    },
+    "oos_anchored_3split": {
+      "splits": {
+        "0.55_cut_2016-11-30": {"is_sr": 1.028417, "oos_sr": -0.049967, "is_port_t": 3.256507, "oos_port_t": -0.16482, "retention": -0.048587},
+        "0.65_cut_2018-12-28": {"is_sr": 0.748549, "oos_sr": 0.075057, "is_port_t": 2.464358, "oos_port_t": 0.220249, "retention": 0.100269},
+        "0.75_cut_2021-01-29": {"is_sr": 0.708626, "oos_sr": 0.045101, "is_port_t": 2.548135, "oos_port_t": 0.111558, "retention": 0.063646}
+      },
+      "retention_median": 0.063646,
+      "note": "OOS retention collapses (~0.06, anchor ~0.601). IS PORT_t 2.5-3.3 strong but does not transfer OOS. Classic rank-IC vs realized-alpha divergence (Cycle 2)."
+    }
+  },
+
+  "orthogonality": {
+    "vs_production_ret_orig_vanilla1715": -0.042245,
+    "n_overlap_months": 248,
+    "source_file": "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/04_backtest_results/period_returns_layer5.csv (ret_orig, read-only)",
+    "verdict": "REPRODUCED. cor -0.042 vs anchor ~0.02 -> sleeve is orthogonal to incumbent book. This is the one anchor that holds.",
+    "alpha_inheritance_cor_proxy": -0.042245
+  },
+
+  "anchor_comparison": {
+    "sleeve_full_sr": {"anchor": 0.81, "rederived": 0.375339, "verdict": "MATERIAL_DEVIATION (-54%)"},
+    "port_t": {"anchor": 2.72, "rederived": 1.711832, "verdict": "MATERIAL_DEVIATION (-37%, below 2.95 hard gate)"},
+    "cagr": {"anchor": 0.32, "rederived": 0.203135, "verdict": "MATERIAL_DEVIATION"},
+    "oos_retention": {"anchor": 0.601, "rederived": 0.063646, "verdict": "MATERIAL_DEVIATION (collapse)"},
+    "cor_vs_vanilla1715": {"anchor": 0.02, "rederived": -0.042245, "verdict": "REPRODUCED"},
+    "subperiod_2017plus_port_t": {"anchor": 1.41, "rederived": -0.135071, "verdict": "MATERIAL_DEVIATION (sign flip: anchor +1.41 -> -0.14)"},
+    "overall": "PARTIAL/MATERIAL_DEVIATION. Only orthogonality reproduces. The central claim (full-universe value SURVIVES 2017+, drives book-marginal lift) is NOT reproduced by faithful re-measurement of the reconstructed spec."
+  },
+
+  "chain_iteration_log": [
+    {"iter": 0, "spec": "value(6 EW Z) + 0.5*R05_Tail_Risk(raw aligned-Z), top20", "change_reason": "literal reconstruction of mandated lost spec", "is_port_t": 2.464358, "is_net_sr": 0.748549, "to_annual": 14.29, "selected": true, "note": "PRIMARY reported result. IS-only metrics (cut 0.65 IS window 2005-08..2018-12)."},
+    {"iter": 1, "spec": "value-only top20 (drop tail tilt)", "change_reason": "MECHANISM DIAGNOSIS (IS-only): raw R05 aligned-Z has fat right tail (sd 1.0, 99pct 4.5) that hijacks top-20 -> turnover 1429%/yr, hurts realized alpha. Test if tail tilt is the cost.", "is_port_t": 3.117, "is_net_sr": 0.990, "to_annual": 10.02, "selected": false, "note": "value-only BEATS reconstructed on IS PORT_t (3.12 vs 2.46) at lower turnover. Tail tilt as literally reconstructed is NET-NEGATIVE."},
+    {"iter": 2, "spec": "value_std + 0.5*clip(tail,+-3) top20", "change_reason": "IS-only: test if symmetric-clipped tail recovers a benign tilt", "is_port_t": 3.069, "is_net_sr": 0.962, "to_annual": 10.87, "selected": false},
+    {"iter": 3, "spec": "value_std + 0.5*rank(tail in [-1,1]) top20", "change_reason": "IS-only: rank-based tail tilt (bounded, no saturation)", "is_port_t": 3.410, "is_net_sr": 1.052, "to_annual": 10.05, "selected": false, "note": "best bounded-tail variant; marginally beats value-only."},
+    {"iter": 4, "spec": "value-only top30", "change_reason": "IS-only: diversification to reduce turnover/concentration", "is_port_t": 3.541, "is_net_sr": 1.087, "to_annual": 9.55, "selected": false, "note": "best IS variant. NONE of iter1-4 were OOS-validated (OOS untouched, selection IS-only per measurement-graduation §3 chain protocol)."}
+  ],
+
+  "challenge_flags": [
+    {"id": "RF-TURNOVER", "severity": "HIGH", "detail": "turnover_annual 16.39 (1639%/yr) >> 11.0/yr implementation discipline ceiling (research_philosophy P6). Driven by R05_Tail_Risk aligned-Z right-tail saturation. At 15bps x 16x = ~25%/yr cost drag. Even value-only is ~1000%/yr (top-20 over ~1800-name universe churns)."},
+    {"id": "RF-ANCHOR-DEVIATION", "severity": "HIGH", "detail": "Reconstructed spec does NOT reproduce lost-artifact anchors. SR 0.375 (vs 0.81), 2017+ PORT_t -0.14 (vs +1.41), OOS 0.064 (vs 0.601). Central full-universe-survival claim refuted by re-measurement."},
+    {"id": "RF-A3-ISdecay", "severity": "HIGH", "detail": "IS PORT_t 2.5-3.3 strong, OOS_port_t ~0 / 2017+ negative. recent-period decay (cohort-wide value decay 2017+, see methodology decay-pattern). overfit-pattern vs decay-pattern: decay (matches KR value broad weakening + 327-factor 2017+ decay note)."},
+    {"id": "RF-RANKIC-vs-PORTT", "severity": "MEDIUM", "detail": "rank-IC 0.057 / harvey-t 10.8 STRONG, but portfolio-alpha t 1.71 (full) WEAK. Cross-sectional rank power does not translate to long-only top-20 realized alpha (Cycle 2 lesson). Judge must use PORT_t as authoritative."},
+    {"id": "RF-screening-route", "severity": "INFO", "detail": "Despite graduation failure, sleeve has genuine cross-sectional value signal + orthogonality to book (cor -0.04). screening tier: screen_route candidate = FR_RCMA / DPL_FEATURE (per measurement-graduation §3 2-tier + §5). NOT capital-graduation eligible at this spec."}
+  ],
+
+  "graduation_assessment": {
+    "note": "Graduation HARD gates (PORT_t>=2.95, oos_retention>=0.7, calmar>=0.64) are forge-authoritative; alpha-stage does NOT declare graduation. Reporting alpha-stage canonical_screen measurement only.",
+    "port_t_nw_full": 1.711832,
+    "port_t_hard_gate": 2.95,
+    "port_t_pass_alpha_stage": false,
+    "oos_retention_median": 0.063646,
+    "oos_hard_gate": 0.7,
+    "calmar": 0.329158,
+    "calmar_hard_gate": 0.64,
+    "screening_tier_signal_present": true,
+    "alpha_stage_verdict": "FAIL graduation thresholds at reconstructed spec; PASS screening (genuine rank signal + orthogonal). Recommend FR_RCMA / DPL feature route, NOT standalone capital admit."
+  },
+
+  "harvey_t_specs_pass_count": 1,
+  "harvey_t_specs_pass_note": "Only rank-IC harvey-t (10.8) passes >=3.0; portfolio-alpha t (1.71 full / -0.14 2017+) does NOT. Discovery cert requires harvey_t_specs_pass_count>=3 -> NOT met for portfolio-alpha. rank-IC alone is advisory.",
+
+  "method_shopping_log": {
+    "alpha_agent": {
+      "candidates_tried": 5,
+      "selection_type": "chain",
+      "parallel_exec": false,
+      "method_log": [
+        {"name": "V0_value+0.5rawtail_top20", "is_port_t": 2.464, "selected": true},
+        {"name": "V1_value_only_top20", "is_port_t": 3.117, "selected": false},
+        {"name": "V2_value+0.5cliptail_top20", "is_port_t": 3.069, "selected": false},
+        {"name": "V3_value+0.5ranktail_top20", "is_port_t": 3.410, "selected": false},
+        {"name": "V4_value_only_top30", "is_port_t": 3.541, "selected": false}
+      ],
+      "note": "chain (1 hypothesis = full-universe value sleeve, sequential mechanism diagnosis). variants are IS-only diagnostics of the SAME hypothesis spec ambiguity, not a sweep over distinct strategies. PRIMARY reported = V0 (literal mandate spec)."
+    }
+  },
+
+  "escalation": {
+    "required": true,
+    "to": "Q-Lead",
+    "triggers": ["RF-ANCHOR-DEVIATION (material, multi-metric)", "central full-universe-survival claim refuted", "2017+ PORT_t sign flip vs anchor", "codex_critic_skip_waiver (auth infra failure)"],
+    "summary": "Faithful re-measurement of the reconstructed (lost-artifact) value-sleeve spec does NOT reproduce the Cycle 1~9 anchors. The sleeve is orthogonal to the book (the one reproduced anchor) but its full-period portfolio-alpha t (1.71) is below the 2.95 hard gate, 2017+ realized alpha is negative, and OOS retention collapses to ~0.06. IS pre-2017 strength does not transfer. The lost spec likely differed (tail scaling / top-N / weighting) OR the original anchors were optimistic/contaminated. Need Dohoon decision: (a) treat as screening/FR-RCMA/DPL feature route only (recommended), or (b) authorize a bounded chain re-spec with a fresh sealed holdout."
+  },
+
+  "confidence_vector_note": "confidence in alpha_scores.parquet = n_val coverage / 6 value factors (0.5-1.0). Optimizer applies alpha_tilde = c * alpha_hat.",
+
+  "axiom_check": {
+    "AX-002": "PASS (all metrics via canonical_screen_bt real-computation, no proxy hand-calc, metric_type labeled)",
+    "AX-003": "RESPECTED (multi-proxy value composite, not EP_STANDALONE)",
+    "AX-001_v2": "tail tilt intended as defensive but NET-NEGATIVE as scaled (IS diagnosis)",
+    "PIT_C10": "PASS (20d ADV t-1, liquidity applied to next-month selection)",
+    "PIT_C13": "PASS (Z_Score_Aligned only, no NEGATE/FLIP)",
+    "PIT_C14": "PASS (load_month_factors IC alignment Usable_Date<=sig_date)",
+    "PIT_C15": "PASS (load_month_factors() connector, no direct parquet load for scoring)"
+  },
+
+  "finalization": {
+    "codex_critic_round": "WAIVER (codex_critic_skip_waiver) — codex CLI auth token expired (401 token_expired), infra failure on this clone. See challenge_note.md §0. Layer-2 re-run obligation after codex login.",
+    "self_critique_substitute": "5 self-raised concerns (SC-1..SC-5) in challenge_note.md §0b, self-rationalization grep 0 hits.",
+    "alpha_discovery_certificate": "NOT ISSUED (expected) — discovery cert requires harvey_t_specs_pass_count>=3 on portfolio-alpha t; only 1 (rank-IC) passes. portfolio-alpha t 1.71 < 2.95. cor -0.04 < 0.95 (cor criterion met) but harvey criterion fails. Passive deny -> NOT PG1 admission eligible at this spec. CONSISTENT with FAIL verdict.",
+    "next_step": "Q-Lead review of escalation. Do NOT auto-advance to risk/forge book-marginal blend on this spec."
+  }
+}
