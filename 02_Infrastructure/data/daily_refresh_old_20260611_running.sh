@@ -18,24 +18,6 @@ LOGFILE="/tmp/qm_daily_refresh_$(date +%Y%m%d).log"
 exec > >(tee -a "$LOGFILE") 2>&1
 
 echo "=== Daily Refresh v2 @ $(date) ==="
-
-# ── 재진입 가드 (2026-06-11): 동시 2+ 인스턴스가 DART 쿼터 소진(10905종목 × N중복)·캐시 경합 유발 ──
-#   실증: 2026-06-10 21:31/21:32 + 06-11 00:03/07:55/08:24 — 12시간 내 5중복 관측
-LOCKDIR="/tmp/qm_daily_refresh.lock"
-if mkdir "$LOCKDIR" 2>/dev/null; then
-  echo $$ > "$LOCKDIR/pid"
-  trap 'rm -rf "$LOCKDIR"' EXIT
-else
-  _oldpid=$(cat "$LOCKDIR/pid" 2>/dev/null)
-  if [ -n "${_oldpid:-}" ] && kill -0 "$_oldpid" 2>/dev/null; then
-    echo "[guard] daily_refresh 이미 실행 중 (PID=$_oldpid) — 중복 인스턴스 종료 (정상)"
-    exit 0
-  fi
-  echo "[guard] stale lock (PID=${_oldpid:-?} 사망) — 인계"
-  echo $$ > "$LOCKDIR/pid"
-  trap 'rm -rf "$LOCKDIR"' EXIT
-fi
-
 source "$(dirname "${BASH_SOURCE[0]:-$0}")/../ops/resolve_project.sh"
 INFRA="$BASE/02_Infrastructure"
 
@@ -196,28 +178,18 @@ if [ -f "data/data_collector_fred.R" ]; then
 fi
 
 # KTRI + Regime Signal
-# krx_derivatives_collector를 ktri_index_collector보다 먼저 source — krx_vkospi()가
-# 있어야 IKS221(VKOSPI) 수집됨 (없으면 exists() 가드로 조용히 영구 NA — 2026-06-11 발견)
 cd "$INFRA"
 run_r '
   source("config.R")
   source("data/krx_data_collector.R")
-  source("data/krx_derivatives_collector.R")
   source("data/ktri_index_collector.R")
   tryCatch(ktri_update_indices(),
     error = function(e) cat(sprintf("KTRI skipped: %s\n", e$message)))
 '
-# KTRI v3 — 원본 04_Regime_Engine/KTRI_v3_reinforced.R 소실, 재구축 builder로 교체
-# (2026-06-11 — morning_briefing.sh와 동일 경로. 구 참조는 매일 "skipped"만 찍고 있었음)
 cd "$BASE"
 run_r '
-  setwd("'"$BASE"'")
-  source("02_Infrastructure/config.R")
-  source("02_Infrastructure/regime/ktri_v3_builder.R")
-  tryCatch({
-    out_path <- build_ktri_v3_safe()
-    cat(sprintf("KTRI v3 signals regenerated: %s\n", out_path))
-  }, error = function(e) cat(sprintf("KTRI v3 build FAILED: %s\n", e$message)))
+  tryCatch(source("04_Regime_Engine/KTRI_v3_reinforced.R"),
+    error = function(e) cat(sprintf("KTRI v3.1 skipped: %s\n", e$message)))
 '
 # MSM Daily + Hybrid Refit (도훈 mandate 2026-05-15)
 # Primary: 04_Research/regime_comparison/msm_update.R (Production-aligned, hybrid + daily 양쪽 write)

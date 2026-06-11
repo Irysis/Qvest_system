@@ -29,6 +29,8 @@ suppressPackageStartupMessages({
 if (!exists("PROJECT_ROOT")) source(file.path(dirname(dirname(sys.frame(1)$ofile %||% ".")), "config.R"))
 
 KTRI_INDEX_CACHE <- file.path(CACHE_DIR, "ktri_indices.parquet")
+# KTRI_INDEX_CACHE read는 mmap = FALSE 필수: 같은 프로세스가 직후 같은 경로에 write하는데,
+# Windows에서 mmap이 살아있으면 write_parquet이 error 1224로 전부 실패 (2026-06-11 실증)
 
 # ── KRX IDX_NM → KTRI code mapping ──
 .KOSPI_MAP <- list(
@@ -272,7 +274,7 @@ ktri_update_from_api <- function(date_str) {
 
   # 기존 파일에 추가
   if (file.exists(KTRI_INDEX_CACHE)) {
-    existing <- as.data.table(arrow::read_parquet(KTRI_INDEX_CACHE))
+    existing <- as.data.table(arrow::read_parquet(KTRI_INDEX_CACHE, mmap = FALSE))
     existing[, Date := as.Date(Date)]
     # 중복 제거: 같은 날짜가 있으면 새 데이터로 교체
     existing <- existing[Date != row$Date]
@@ -426,7 +428,7 @@ ktri_update_indices <- function() {
     return(ktri_collect_indices())
   }
 
-  existing <- as.data.table(arrow::read_parquet(KTRI_INDEX_CACHE))
+  existing <- as.data.table(arrow::read_parquet(KTRI_INDEX_CACHE, mmap = FALSE))
   existing[, Date := as.Date(Date)]
   last_date <- max(existing$Date, na.rm = TRUE)
   cat(sprintf("[ktri_index_collector] Existing: %d rows up to %s\n",
