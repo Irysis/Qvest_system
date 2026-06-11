@@ -54,6 +54,10 @@ load_sub <- function(SUB) {
   bench <- fread(file.path(INT, "bench_monthly.csv"))
   sel[, `:=`(w_idx = as.Date(w_idx), r_idx = as.Date(r_idx))]
   setorder(grid, w_idx)
+  # mirror run_within.R registered-rule trial-month filters (2026-06-12)
+  if (SUB == "S3") grid <- grid[w_idx >= as.Date("2005-02-01")]
+  if (SUB %in% c("S2", "S3")) grid <- grid[w_idx <= as.Date("2026-04-30")]
+  sel <- sel[w_idx %in% grid$w_idx]
   bench_dt <- data.table(r_idx = grid$r_idx, ym = format(grid$r_idx, "%Y-%m"))
   bench_dt <- merge(bench_dt, bench, by = "ym", all.x = TRUE)[, .(r_idx, bm_ret)]
   list(sel = sel, grid = grid, RET = RET, bench_dt = bench_dt)

@@ -1,0 +1,144 @@
+{
+  "prereg_id": "TRACKD_3SLEEVE_DYNAMIC_PREREG_v1",
+  "status": "FROZEN",
+  "frozen_at": "2026-06-12",
+  "agent": "forge",
+  "cycle": "Composition Search Cycle 1c — Track D: 3-sleeve dynamic allocation",
+  "mandate": "도훈 2026-06-12: PG2 공격(core)+방어(defense) 2-슬리브에 value 3번째 슬리브 추가, 비중 동적 조절. 컨센서스 모멘텀 스코어 조건화 검토.",
+
+  "honest_prior_framing": {
+    "note": "본 실험의 사전 확률은 낮다. negative면 'value 3rd-sleeve 동적배분 구제 불가'를 깨끗이 닫는 가치. 결과 미화 금지 (AX-000).",
+    "prior_evidence": [
+      "보정 정렬 static blend (value vs post-overlay book): 전 비중 ΔSR ≤ 0, cor(value,book)=+0.313, best ΔIR +0.036<0.05 (value_sleeve_combination/corrected/). 직교성은 realized_ym 오프셋 아티팩트였음.",
+      "FR 모드: Rotate<Static 전 k + 모듈級 국면-IR 조건화 4중 기각.",
+      "Track W (병행): 2-슬리브 risk-based 동적(B09~B11) 측정 중."
+    ]
+  },
+
+  "substrate": {
+    "constraint": "3 sleeve 월간 net 시계열만 사용. S0/S1 오버레이 금지 (DD/VT/Regime 오버레이 적용 안 함). 조건화 신호는 sleeve간 weight 조절에만 사용.",
+    "S_core": {
+      "definition": "b1 panel score_core_z top-13 EW long-only 월간 net",
+      "source_panel": "04_Research/pg2_forensics/intermediate/factor_panel_7f.parquet (read-only)",
+      "construction": "Track W between-sleeve representation_2 동일: per Date top-13 by score_core_z, EW 1/13. score @ month-end(t) -> hold calendar month t+1 (Ret_1m, PIT b0b/b0e 검증). r_idx = month_end(t+1) = calendar return month.",
+      "fidelity_anchor": "b1 core spearman 0.965",
+      "n_names": 13
+    },
+    "S_def": {
+      "definition": "b1 panel score_defense_z top-12 EW long-only 월간 net",
+      "construction": "per Date top-12 by score_defense_z, EW 1/12, same PIT convention as S_core.",
+      "fidelity_anchor": "b1 defense spearman 0.989",
+      "n_names": 12
+    },
+    "S_val": {
+      "definition": "value sleeve net (V02_EP..V01_BM composite top-20 EW, delta 15bps) — 재구성 금지, 그대로 소비",
+      "source": "04_Research/composition_search/value_sleeve_combination/corrected/aligned_series_corrected.rds col value_ret",
+      "alignment": "realized_ym = TRUE calendar return month (run_blend.R L83-86 검증: realized_ym = sig month +1 = forward return calendar month). 달력월 정렬, net."
+    },
+    "calendar_alignment_rule": {
+      "join_key": "calendar return month %Y-%m",
+      "S_core_S_def": "format(r_idx, '%Y-%m') = calendar return month",
+      "S_val": "realized_ym = calendar return month (직접)",
+      "book_offset_doc": "02_Infrastructure/docs/period_returns_realized_ym_convention.md — corrected rds는 이미 calendar-aligned (book_ret shift +1 적용됨). value_ret/bench_ret 본디 calendar."
+    },
+    "common_window": "3 시계열 + 조건화 신호 교집합. value가 하한 bind: 2005-09 ~ 2026-03 calendar 수익월 예상.",
+    "windows": {
+      "IS": "formation <= 2018-12 (선택 IS-only)",
+      "OOS": "formation >= 2019-01",
+      "report": ["full", "IS", "OOS", "2017+"]
+    }
+  },
+
+  "baseline": {
+    "id": "B_static2",
+    "definition": "core 65 / defense 35 (portfolio-level, production 비율). w_val=0. trial 아님 — Δ 기준선.",
+    "note": "value 미포함. 모든 Δ는 vs B_static2."
+  },
+
+  "trial_grid": {
+    "n_trials": 6,
+    "selection_type": "sweep",
+    "dsr_gate": "DSR>=0.5 HARD (sweep)",
+    "common_rules": {
+      "conditioning_lag": "모든 조건화 신호 t-1 (C5)",
+      "threshold_basis": "expanding window (C1 — full-sample 통계 금지)",
+      "switching_cost": "sleeve간 회전 15bps, Return.portfolio 경유 (per-name |dW| delta 비용, 손계산 blend 금지). Track W evaluation engine 컨벤션 준수.",
+      "weight_constraint": "3 sleeve 합 = 1, 각 >= 0 (sleeve-level)."
+    },
+    "trials": [
+      {
+        "id": "T1",
+        "kind": "static_3sleeve",
+        "w_val": 0.10,
+        "residual_core_def": "65:35",
+        "weights": {"core": 0.585, "defense": 0.315, "value": 0.10}
+      },
+      {
+        "id": "T2",
+        "kind": "static_3sleeve",
+        "w_val": 0.20,
+        "residual_core_def": "65:35",
+        "weights": {"core": 0.52, "defense": 0.28, "value": 0.20}
+      },
+      {
+        "id": "T3",
+        "kind": "value_spread_timing_E1",
+        "rule": "value 스프레드 z(t-1) > +0.5 -> w_val=0.20, else 0. 잔여 core:def=65:35.",
+        "spread_def": "V02_EP top-bottom quintile (q80-q20) Raw_Value gap의 expanding z. 가치팩터 = V02_EP (사전 지정).",
+        "spread_source": "load_month_value_raw() 연결자 확장 (load_month_factors 파일 해석 + Coverage 필터 동일, Raw_Value만 추가 노출). C15 정합: 연결자 경유, raw parquet 직접 bypass 아님. z spread는 sd=1 정규화로 무정보 -> Raw_Value 필요 입증됨 (probe_spread.R).",
+        "w_val_on": 0.20
+      },
+      {
+        "id": "T4",
+        "kind": "consensus_momentum_cycle",
+        "rule": "시장 집계 revision breadth z(t-1) < 0 (컨센 사이클 약세) -> w_val=0.20, else 0. 잔여 65:35.",
+        "signal_def": "esbr (earnings surprise breadth ratio) 시장 cross-sectional mean per month -> 3m MA -> expanding z, t-1.",
+        "signal_source": ".cache/consensus/esbr.parquet (Date,Ticker,esbr) — daily stock-level, universe mean 집계.",
+        "mechanism": "컨센 모멘텀 엔진(core)이 굶는 국면에서 value 보완.",
+        "w_val_on": 0.20,
+        "aux_diagnostic": "컨센 breadth 신호 z vs 익월 core-sleeve 수익 spearman (진단용 라벨)."
+      },
+      {
+        "id": "T5",
+        "kind": "control_trailing_sr",
+        "rule": "trailing 12m SR(value) > trailing 12m SR(B_static2) -> w_val=0.20, else 0. 잔여 65:35.",
+        "note": "선행 기각 축 재확인 (control). trailing SR은 t-1까지 데이터만 (expanding/rolling, no lookahead)."
+      },
+      {
+        "id": "T6",
+        "kind": "risk_based_3sleeve",
+        "rule": "36m rolling 월간 수익 inverse-vol 3-sleeve. w_val 상한 0.30, 잔여 정규화.",
+        "note": "Track W B09 (2-슬리브 inverse-vol)의 3-슬리브 판. vol은 t-1까지 36m rolling (no lookahead). 첫 36m는 EW 1/3 fallback."
+      }
+    ]
+  },
+
+  "alive_criteria": {
+    "logic": "어떤 trial이 (a) AND (b) AND (c) 전부 충족 시에만 ALIVE.",
+    "a_IS_dSR": ">= +0.10 vs B_static2 (IS window)",
+    "b_OOS_dSR": ">= 0 vs B_static2 (OOS window)",
+    "c_dMDD": "<= +2pp vs B_static2 (full window)",
+    "fail_verdict": "어떤 trial도 미충족 시 'value 3rd-sleeve 동적배분 축 CLOSED' 선언 (mode-local axiom 후보)."
+  },
+
+  "measurement": {
+    "engine": "Track W trackw_engine.R 컨벤션: Return.portfolio (monthly weights) + per-name |dW| delta 15bps + build_benchmark_compare PORT_t NW lag-3 + essence_score .essence_dsr. 자체 NAV 합성 금지.",
+    "metric_type": "backtested",
+    "per_trial_metrics": ["net_SR","CAGR","MDD","Calmar","PORT_t_NW_lag3","sleeve_TO","dSR/dCAGR/dMDD/dCalmar vs B_static2 (IS/OOS/full/2017+)","w_val 평균비중","w_val 전환횟수"],
+    "dsr": "n_trials=6 sweep DSR 산출·기록",
+    "T4_aux": "컨센 신호 정보력 진단 (signal z vs 익월 core 수익 spearman)"
+  },
+
+  "outputs": [
+    "prereg_trackD.json (this)",
+    "trackd_engine.R + run_trackd.R",
+    "results_trackD.csv",
+    "summary_trackD.md"
+  ],
+
+  "boundaries": {
+    "read_only": ["04_Research/composition_search/cycle1b_trackW/", "05_Production/", "01_Literature/", "value_sleeve_combination/corrected/aligned_series_corrected.rds", "pg2_forensics/intermediate/factor_panel_7f.parquet"],
+    "no_write_wt_mailbox": true,
+    "concurrency": "동시 R <=2, <=4GB, setDTthreads(2)"
+  }
+}

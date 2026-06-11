@@ -96,7 +96,26 @@ meta <- list(
       "S3 2005-02+, B = first month with 36m sleeve history."),
     s2_liquidity = "ADV(20d Close*Vol, t-1) >= 2e8 added at selection (immutable constraint; original module used share-volume percentile only)",
     s3_capping = "top-25 plain (original n=30 + buffer_zone 50/25 dropped; prereg-registered cap)",
-    window_basis = "IS/OOS/2017+ cut on FORMATION month (w_idx); IS returns realize through 2019-01"
+    window_basis = "IS/OOS/2017+ cut on FORMATION month (w_idx); IS returns realize through 2019-01",
+    s3_identity_period = paste(
+      "S3 trial months held to registered substrate identity (registry 2005-02~,",
+      "'scores from 2005-02' premise in prereg common_start_rule). 2026-06-10",
+      "factor-db rebuild extended C19 scores to 2000-04, which would silently",
+      "widen the substrate and leave 2000-04~2004 cov windows truncated",
+      "(ret_s3 slice from 2001-09). Formation w_idx >= 2005-02-01. Decided",
+      "PRE-measurement, documented (registration_rule compliance)."),
+    forward_month_completeness = paste(
+      "S2/S3 formation months kept only where the forward month is fully",
+      "realized (w_idx <= 2026-04-30; RAWDATA ends mid-month 2026-06-12).",
+      "Prevents fabricated all-zero final month (Ret_1m NA->0) and a",
+      "partial-month forward return. S1/B end 2026-03/2026-02 naturally.",
+      "Decided PRE-measurement, documented."),
+    s3_factor_db_env_shim = paste(
+      "prep_s1b_s3.R: unqualified open_dataset() shadowed during VERBATIM",
+      "source of STR_1550 factor_engine.R - .cache/factor_db gained",
+      "build_hash.txt (Gate 13.1, 2026-06-11) which breaks arrow schema",
+      "inference on the directory; shim passes the explicit factor_db_*.parquet",
+      "file list (identical files). No factor value changed.")
   ),
   verdicts = verdicts,
   axis_alive_overall = axis_alive_overall,

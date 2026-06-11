@@ -21,6 +21,23 @@ bench <- fread(file.path(INT_DIR, "bench_monthly.csv"))
 
 sel[, `:=`(w_idx = as.Date(w_idx), r_idx = as.Date(r_idx))]
 setorder(grid, w_idx)
+
+# ── Registered-rule trial-month filters (documented, 2026-06-12, pre-measurement)
+# (1) S3 substrate identity period: prereg substrates.S3 registers STR_1550 as
+#     registry 2005-02~ ("scores from 2005-02" premise in common_start_rule).
+#     The 2026-06-10 factor-db rebuild extended C19 history to 2000-04, which
+#     would silently widen the substrate AND leave 2000-04~2004 cov windows
+#     truncated (ret_s3 slice starts 2001-09 = 756d coverage only from 2005-02
+#     formations onward) -> formation w_idx >= 2005-02-01.
+# (2) Forward-month completeness (S2/S3): RAWDATA ends mid-month (2026-06-12).
+#     Keep formation months whose forward month (r_idx month) is fully realized:
+#     w_idx <= 2026-04-30. Prevents a fabricated all-zero final month
+#     (Ret_1m NA->0 convention) and a partial-month forward return.
+#     S1/B end 2026-03/2026-02 naturally (b1 panel).
+if (SUB == "S3") grid <- grid[w_idx >= as.Date("2005-02-01")]
+if (SUB %in% c("S2", "S3")) grid <- grid[w_idx <= as.Date("2026-04-30")]
+sel <- sel[w_idx %in% grid$w_idx]
+
 if (MAXM > 0) {
   grid <- grid[seq_len(min(MAXM, .N))]
   sel <- sel[w_idx %in% grid$w_idx]
