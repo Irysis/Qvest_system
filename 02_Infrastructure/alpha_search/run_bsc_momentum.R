@@ -227,7 +227,7 @@ run_bsc_momentum <- function(start_date     = "2005-01-01",
   cat(sprintf("[BSC][TG-DBG] types: pf_raw$Sharpe=%s ds_raw$skew=%s wm_raw=%s grade=%s score=%s\n",
               class(pf_raw$Sharpe)[1], class(ds_raw$skew)[1], class(wm_raw)[1], class(grade)[1], class(score)[1]))
   ctx <- sprintf(paste0("[연구목적] Barroso-Santa-Clara(2015) 위험관리 모멘텀 KR 충실복제.\n",
-                        "[방법] WML(2x3 size×prior 12-2 VW L/S) · 직전 126일 실현변동성으로 σ목표 12% scaling · K200∪KQ150 · 2005~.\n",
+                        "[방법] WML(2x3 size×prior 12-2 VW L/S) · 직전 126일 실현변동성으로 σ목표 12%% scaling · K200∪KQ150 · 2005~.\n",
                         "[결론] 헤드라인 회귀 α(managed~raw) %s · 샤프 %.2f→%.2f (%s)."),
                  rt(reg), .as_num(pf_raw$Sharpe), .as_num(pf_mgd$Sharpe), verdict_word)
   K <- function(tag, expr) tryCatch(expr, error = function(e) { cat(sprintf("[BSC][TG-DBG][ERR @%s] %s\n", tag, conditionMessage(e))); "n/a" })
