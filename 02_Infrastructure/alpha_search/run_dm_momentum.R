@@ -43,9 +43,9 @@ run_dm_momentum <- function(start_date    = "2005-01-01",
   strategy_name <- "DM Dynamic Momentum (KR)"
   strategy_id   <- paste0("STR_AS_DM_", run_id)
   strategy_idea <- paste0(
-    "Daniel-Moskowitz(2016) 동적 모멘텀: WML(decile D10-D1 VW 12-2)을 ",
-    "예측 평균 μ̂(bear지표×시장분산 회귀)/예측 분산 σ̂²(126일 실현)로 w∝μ̂/σ̂² scaling. ",
-    "모멘텀 크래시(bear+고변동 loser leg 옵션성) 회피 + μ타이밍으로 constant-vol 초월 검증.")
+    "Daniel-Moskowitz(2016) 동적 모멘텀: 12-2개월 모멘텀 십분위(상위-하위) 시가총액가중 포트를 ",
+    "예측 기대수익(하락장지표×시장분산 회귀)/예측 분산(126일 실현)으로 비중 동적 조절. ",
+    "모멘텀 크래시(하락장+고변동의 패자 다리 옵션성) 회피 + 기대수익 타이밍의 증분 검증.")
 
   OUT_DIR <- file.path(PROJECT_ROOT, "stage_artifacts", "alpha_search", run_id)
   dir.create(OUT_DIR, recursive = TRUE, showWarnings = FALSE)
@@ -225,48 +225,51 @@ run_dm_momentum <- function(start_date    = "2005-01-01",
                            sr_raw_pre, sr_cvol_pre, sr_dyn_pre, sr_raw_post, sr_cvol_post, sr_dyn_post,
                            reg_post, mf, grade, score, bear_pct, charts, dry_run = FALSE) {
   `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
-  rt <- function(r) if (is.null(r)) "n/a" else sprintf("%+.2f%%/yr (t=%.2f)", .as_num(r$alpha_ann_pct), .as_num(r$alpha_t))
+  rt <- function(r) if (is.null(r)) "해당없음" else sprintf("%+.2f%%/연 (t=%.2f)", .as_num(r$alpha_ann_pct), .as_num(r$alpha_t))
   sr_raw <- .as_num(pf_raw$Sharpe); sr_cvol <- .as_num(pf_cvol$Sharpe); sr_dyn <- .as_num(pf_dyn$Sharpe)
   d_sr_dyn_cvol <- sr_dyn - sr_cvol
   verdict_word <- if (!is.null(reg_dyn_cvol) && .as_num(reg_dyn_cvol$alpha_t) >= 2.0 && d_sr_dyn_cvol > 0)
-                    "dynamic이 constant-vol 초월(유의)"
-                  else if (d_sr_dyn_cvol > 0) "dynamic 부분 개선(무유의)"
-                  else "dynamic이 constant-vol 미달"
+                    "동적이 상수변동성 초월(유의)"
+                  else if (d_sr_dyn_cvol > 0) "동적 부분 개선(무유의)"
+                  else "동적이 상수변동성 미달"
   wmym <- as.character(worst_raw_ym$ym)
   wm_dyn <- .as_num(dyn_mdt[ym == wmym, dyn]); wm_raw <- .as_num(worst_raw_ym$raw)
-  # tg 양식: text body 220자 한도 초과(273자 실측) → bullet 분할(항목 ≤80자). 2026-06-12 수리.
+  # tg 양식 수리 이력(2026-06-12): ① text 220자 한도 → bullet 분할(≤80자/항목)
+  #   ② 영어 약어 ≥2건/항목 금지(v6.3 한글 풀어쓰기 의무) → 전면 한글화
   ctx_items <- c(
-    "[연구목적] Daniel-Moskowitz(2016) 동적 모멘텀 KR 충실복제",
-    "[방법] WML decile D10-D1 VW 12-2 · K200∪KQ150 · 2005~",
-    "[방법] w∝μ̂/σ̂² (μ̂=bear×시장분산 expanding 회귀, σ̂²=126일 RV) · target vol 19%",
-    sprintf("[결론] 샤프 raw %.2f → cvol %.2f → dyn %.2f", sr_raw, sr_cvol, sr_dyn),
-    sprintf("[결론] dyn~cvol α %s (%s)", rt(reg_dyn_cvol), verdict_word))
+    "[연구목적] Daniel-Moskowitz(2016) 동적 모멘텀 한국시장 충실복제",
+    "[방법] 12-2개월 모멘텀 십분위(상위-하위) 시가총액가중 · 코스피200∪코스닥150",
+    "[방법] 비중∝기대수익/분산(하락장지표 확장회귀·126일 실현분산) · 목표변동성 19%",
+    sprintf("[결론] 샤프: 원전 %.2f → 상수변동성 %.2f → 동적 %.2f", sr_raw, sr_cvol, sr_dyn),
+    sprintf("[결론] 동적~상수변동성 회귀알파 %s — %s", rt(reg_dyn_cvol), verdict_word))
   kv <- list(
-    "샤프 raw/cvol/dyn"   = sprintf("%.2f / %.2f / %.2f", sr_raw, sr_cvol, sr_dyn),
-    "회귀 α dyn~raw"      = rt(reg_dyn_raw),
-    "회귀 α dyn~cvol"     = rt(reg_dyn_cvol),
-    "최대낙폭 raw/dyn"    = sprintf("%.1f%% / %.1f%%", -abs(.as_num(pf_raw$MDD)), -abs(.as_num(pf_dyn$MDD))),
-    "왜도 raw→dyn"        = sprintf("%.2f → %.2f", .as_num(ds_raw$skew), .as_num(ds_dyn$skew)),
-    "최악월(raw)"         = sprintf("%s raw%+.0f%% / dyn%+.0f%%", wmym, wm_raw * 100, wm_dyn * 100),
-    "서브 샤프 dyn pre/post" = sprintf("pre %.2f / post %.2f", .as_num(sr_dyn_pre), .as_num(sr_dyn_post)),
-    "post2017 dyn~cvol"   = if (!is.null(reg_post)) rt(reg_post) else "n/a",
-    "bear 월비율"         = sprintf("%.0f%% (I_B=1, 24m<0)", .as_num(bear_pct)),
-    "등급(허들·long-only)" = sprintf("%s · %.0f/100", as.character(grade), .as_num(score) %||% 0))
+    "샤프(원전/상수변동성/동적)" = sprintf("%.2f / %.2f / %.2f", sr_raw, sr_cvol, sr_dyn),
+    "회귀알파 동적~원전"        = rt(reg_dyn_raw),
+    "회귀알파 동적~상수변동성"   = rt(reg_dyn_cvol),
+    "최대낙폭(원전/동적)"       = sprintf("%.1f%% / %.1f%%", -abs(.as_num(pf_raw$MDD)), -abs(.as_num(pf_dyn$MDD))),
+    "왜도(원전→동적)"           = sprintf("%.2f → %.2f", .as_num(ds_raw$skew), .as_num(ds_dyn$skew)),
+    "최악월(원전 기준)"         = sprintf("%s 원전%+.0f%% / 동적%+.0f%%", wmym, wm_raw * 100, wm_dyn * 100),
+    "동적 샤프(2017이전/이후)"  = sprintf("%.2f / %.2f", .as_num(sr_dyn_pre), .as_num(sr_dyn_post)),
+    "2017이후 동적~상수변동성"  = if (!is.null(reg_post)) rt(reg_post) else "해당없음",
+    "하락장 월비율"             = sprintf("%.0f%% (24개월 누적수익<0)", .as_num(bear_pct)),
+    "등급(허들·매수전용)"       = sprintf("%s · %.0f/100", as.character(grade), .as_num(score) %||% 0))
   if (!is.null(mf)) { best <- mf[[names(mf)[1]]]
-    kv[["팩터모델 α(raw WML)"]] <- sprintf("%s %+.2f%%/yr (t=%.2f)", as.character(best$model),
+    mdl_kr <- c(FF3 = "파마프렌치3팩터", Carhart4 = "카하트4팩터", FF5 = "파마프렌치5팩터")
+    mdl <- mdl_kr[[as.character(best$model)]] %||% as.character(best$model)
+    kv[["팩터모델 알파(원전)"]] <- sprintf("%s %+.2f%%/연 (t=%.2f)", mdl,
                                           .as_num(best$alpha) * 12 * 100, .as_num(best$alpha_tstat)) }
   notes <- c(
-    "3-way: raw(static L/S) / cvol(constant-vol BSC형) / dyn(eq.5 w∝μ̂/σ̂²) 전부 target vol 19% 매칭",
-    "헤드라인 = dyn~cvol α (μ타이밍 증분 — DM 핵심 주장: dynamic>constant-vol)",
-    "μ̂는 expanding-window OOS(매월 γ 재추정) — DM in-sample 대비 PIT 보강(명시 일탈)",
-    if (!is.null(reg_dyn_cvol) && .as_num(reg_dyn_cvol$alpha_t) >= 2.0) "dyn~cvol α 유의(t≥2) — μ타이밍 작동"
-      else "dyn~cvol α 무유의(t<2) — KR에서 μ타이밍 약함",
-    "롱숏 불허(도훈 mandate 06-11): 판정=long-only(Win leg·캡[0,1]). L/S는 진단 보존만",
-    "비용한계: 엔진=flat per-rebalance 15bps. L/S 양다리+레버리지 → 과소계상 가능")
+    "삼중비교: 원전(정적) / 상수변동성(바로소-산타클라라형) / 동적(기대수익비례) — 목표변동성 19% 동일",
+    "헤드라인 = 동적~상수변동성 회귀알파 (논문 핵심주장: 동적 > 상수변동성)",
+    "기대수익 추정 = 확장창 표본외(매월 재추정) — 원논문 표본내 대비 시점무결성 보강(명시 일탈)",
+    if (!is.null(reg_dyn_cvol) && .as_num(reg_dyn_cvol$alpha_t) >= 2.0) "동적 회귀알파 유의 — 기대수익 타이밍 작동"
+      else "동적 회귀알파 무유의 — 한국시장에서 기대수익 타이밍 약함",
+    "롱숏 불허(도훈 지시 06-11): 판정 = 매수전용(승자 다리·비중 캡 0~1). 롱숏 수치는 진단 보존만",
+    "비용 한계: 엔진 = 리밸런스당 고정 0.15%. 롱숏 양다리+레버리지는 과소계상 가능")
   sections <- list(
     list(type = "bullet", emoji = "\U0001F4DA", heading = "연구 컨텍스트", items = ctx_items),
     list(type = "text", emoji = "\U0001F4A1", heading = "전략 아이디어", body = strategy_idea),
-    list(type = "kv",   emoji = "\U0001F4C8", heading = "성과 요약(raw/cvol/dyn)", kv = kv),
+    list(type = "kv",   emoji = "\U0001F4C8", heading = "성과 요약(원전·상수변동성·동적)", kv = kv),
     list(type = "bullet", emoji = "\U0001F4DD", heading = "해석/주의", items = notes))
   tg_agent_brief(agent = "AlphaSearch",
                  title = sprintf("알파 서칭 — Daniel-Moskowitz 동적 모멘텀 (등급 %s)", grade),

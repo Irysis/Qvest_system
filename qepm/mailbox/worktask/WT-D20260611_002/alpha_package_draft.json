@@ -1,0 +1,100 @@
+{
+  "task_id": "WT-D20260611_002",
+  "track": "FLOW",
+  "wt_type": "discovery",
+  "as_of_date": "2026-06-11",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly (quarterly variant also evaluated)",
+  "selection_type": "sweep",
+  "n_trials": 8,
+  "verdict": "FAIL_NO_GRADUATION",
+  "verdict_summary": "8 preregistered specs ALL fail screen gate (IS net PORT_t >= 1.96 AND 2017+ IS PORT_t > 0). The new hypothesis direction (momentum: flow LEADS 1-3M price) is FALSIFIED — every momentum spec (S1-S4,S6,S8) has GROSS PORT_t at or below the random-placebo floor (-2.46), i.e. no positive raw cross-sectional direction. Only the CONTRARIAN direction (S7, = old WT-D20260529_001 crowding-reversal) and inst-flow-acceleration (S5) clear the placebo, and only on quarterly cadence — but S7 IS net PORT_t = 1.64 < 1.96 screen gate, far below graduation 2.95. Full-universe + latest-data + monthly leverage did NOT recover the anchor's +2.35; the larger universe + frozen-OOS drag (2024+ all-negative) weakens it below the 349-name quarterly anchor.",
+  "alpha_discovery_certificate": "NOT_ISSUED",
+  "certificate_rationale": "No spec selected (screen_passers = []). alpha_inheritance_cor / harvey_t_specs_pass_count criteria moot. discovery WT with honest FAIL — no PG1 admission candidate. AX-000 honest reporting (WT-D20260611_001 precedent).",
+
+  "preregistration_ref": "qepm/mailbox/worktask/WT-D20260611_002/spec_preregistration.md",
+  "preregistration_integrity": "8 specs박제 before exploration; no post-hoc spec added/direction flipped. S7 contrarian + S5 acceleration were BOTH preregistered (not data-mined after seeing momentum fail).",
+
+  "screen_gate": {
+    "definition": "IS(<=2021-12) net PORT_t(NW lag-3, best of monthly/quarterly cadence) >= 1.96 AND 2017+IS PORT_t > 0",
+    "graduation_hard_note": "PORT_t>=2.95 + DSR>=0.5 are forge-authoritative (this alpha stage = screening + DSR diagnostic only)",
+    "screen_passers": [],
+    "selected": null
+  },
+
+  "spec_results_summary": {
+    "basis": "canonical_screen_bt (contract build_benchmark_compare, NW lag-3); benchmark = universe-EW monthly; cost v2.4 delta 15bps; top-20 EW; liq 2e8; metric_type=canonical_screen",
+    "placebo_random_top20": {"net_t": -3.3516, "gross_t": -2.4598, "to_ann": 23.6,
+      "interpretation": "cost-drag floor — monthly top-20 net PORT_t is structurally negative for ANY high-TO signal vs frictionless universe-EW benchmark. Gross_t -2.46 also negative = top-20-vs-universeEW small/concentration structural tilt. Specs must clear THIS, not zero."},
+    "table": [
+      {"spec":"S1_INST20","dir":"momentum(+)","is_net_t":-3.261,"is_gross_t":-2.504,"q_full_net_t":-2.375,"q_is_net_t":-2.328,"oos_net_t":-1.438,"rank_ic":-0.0165,"icir":-0.182,"harvey_t":-3.23,"dsr_is":0.0,"gate":"fail","note":"gross BELOW placebo -2.46-ish: no signal"},
+      {"spec":"S2_FRGN20","dir":"momentum(+)","is_net_t":-2.894,"is_gross_t":-2.177,"q_full_net_t":-1.665,"q_is_net_t":-1.427,"oos_net_t":-1.351,"rank_ic":0.0027,"icir":0.034,"harvey_t":0.55,"dsr_is":0.0,"gate":"fail","note":"rank-IC ~0 flat; gross near placebo"},
+      {"spec":"S3_COMBO20","dir":"momentum(+)","is_net_t":-2.985,"is_gross_t":-2.236,"q_full_net_t":-2.221,"q_is_net_t":-2.156,"oos_net_t":-1.905,"rank_ic":-0.0121,"icir":-0.120,"harvey_t":-2.11,"dsr_is":0.0,"gate":"fail","note":"combo momentum negative"},
+      {"spec":"S4_FRGN_OWN","dir":"momentum(+)","is_net_t":-3.015,"is_gross_t":-2.413,"q_full_net_t":-1.403,"q_is_net_t":-1.110,"oos_net_t":-1.695,"rank_ic":0.0026,"icir":0.030,"harvey_t":0.42,"dsr_is":0.0,"gate":"fail","note":"foreign ownership chg flat"},
+      {"spec":"S5_INST_MOM","dir":"momentum(+)","is_net_t":-2.583,"is_gross_t":-1.824,"q_full_net_t":0.555,"q_is_net_t":0.188,"oos_net_t":-1.416,"rank_ic":0.0177,"icir":0.200,"harvey_t":3.46,"dsr_is":0.0,"gate":"fail","note":"BEST momentum: rank-IC harvey_t 3.46, quarterly gross +0.85 ABOVE placebo — weak real signal but q_net only +0.56, sub-gate; OOS negative"},
+      {"spec":"S6_COMBO_SMOOTH","dir":"momentum(+)","is_net_t":-3.299,"is_gross_t":-2.668,"q_full_net_t":-1.855,"q_is_net_t":-1.305,"oos_net_t":-1.331,"rank_ic":-0.0144,"icir":-0.137,"harvey_t":-2.37,"dsr_is":0.0,"gate":"fail","note":"EMA smoothing did NOT rescue momentum direction"},
+      {"spec":"S7_COMBO_CONTRA","dir":"contrarian(-)","is_net_t":-2.495,"is_gross_t":-1.755,"q_full_net_t":1.356,"q_is_net_t":1.642,"q_is_gross_t":1.890,"oos_net_t":-1.946,"rank_ic":0.0121,"icir":0.120,"harvey_t":2.11,"dsr_is":0.0001,"cor_vs_str1715":-0.1245,"gate":"fail","note":"BEST OVERALL (anchor WT direction). Quarterly: gross +1.62 net +1.36 (IS net +1.64) — clears placebo, orthogonal (cor -0.12). But < 1.96 screen gate, DSR 0.0001<<0.5, OOS net -1.95. Weaker than 349-name anchor (+3.66 PRE-LB) — dilution + OOS drag."},
+      {"spec":"S8_DISAGREE","dir":"momentum(+)","is_net_t":-3.319,"is_gross_t":-2.542,"q_full_net_t":-1.360,"q_is_net_t":-1.003,"oos_net_t":-1.827,"rank_ic":-0.0042,"icir":-0.050,"harvey_t":-0.86,"dsr_is":0.0,"gate":"fail","note":"smart-vs-dumb-money divergence flat"}
+    ]
+  },
+
+  "best_effort_factor_spec": {
+    "factor_family": "investor_flow_contrarian",
+    "proxy": "S7_COMBO_CONTRA = -1 * z_wins((inst_netbuy_20d + foreign_netbuy_20d)/liq_20d)",
+    "formula": "per-date: combo = (inst_netbuy_20d + foreign_netbuy_20d)/liq_20d (t-1 lag flow / t-1 ADV); winsorize 1/99; cross-sectional z; sign = -1 (contrarian). NEW signal (orthogonal to STR_1715 score_eff, cor -0.12).",
+    "direction": "contrarian_to_flow (crowding/price-pressure reversal — heavily net-bought names subsequently underperform)",
+    "lag_rule": "flow Date < sig_date (C2, 01_flow_features.R shift(1L)+frollsum); liq_20d t-1 ADV (C10)",
+    "neutralization": "raw cross-sectional z (winsorize 1/99, Charter §11)",
+    "economic_rationale": "KR liquid-universe aggregate institutional+foreign 20d net-buy (normalized by daily trading value) is a CROWDING/PRICE-PRESSURE REVERSAL signal at 1M horizon: stocks heavily net-bought by smart-money subsequently mean-revert as crowding unwinds. This REFUTES the WT hypothesis that flow LEADS price (momentum) — the data supports the OPPOSITE (reversal). Distinct settlement-identity data axis, orthogonal to STR_1715 fundamentals (cor -0.12). Reproduces direction of WT-D20260529_001 (which graduated to forge FULL +2.35) but at lower strength on the diluted full-universe.",
+    "redundancy_cluster_id": "investor_flow_cluster",
+    "references": ["Choe-Kho-Stulz 2005 RFS (foreign flow price pressure KR)", "Barber-Odean 2000 (retail underperformance)", "WT-D20260529_001 forge_package (anchor +2.35 FULL / +3.66 PRE-LB, contrarian INV composite)"]
+  },
+
+  "diagnostics_best_effort_S7": {
+    "rank_ic": 0.0121,
+    "icir": 0.120,
+    "harvey_t_rank_ic": 2.11,
+    "portfolio_alpha_t_quarterly_net_full": 1.3558,
+    "portfolio_alpha_t_quarterly_net_is": 1.6423,
+    "portfolio_alpha_t_quarterly_gross_is": 1.890,
+    "portfolio_alpha_t_monthly_net_full": -3.1179,
+    "portfolio_alpha_t_note": "DISTINCT from rank-IC t. Monthly net structurally killed by cost (TO 20x/yr). Quarterly net (TO 7.5/yr) is the cost-aware basis but still 1.64 < 1.96 screen gate.",
+    "oos_net_t_2022plus": -1.9461,
+    "dsr_is": 0.0001,
+    "dsr_note": "DSR << 0.5 (sweep, N_trials=8). Far below graduation HARD.",
+    "cor_vs_str1715_score_eff": -0.1245,
+    "turnover_quarterly_per_yr": 7.5,
+    "turnover_monthly_per_yr": 20.7
+  },
+
+  "selection_objective": "icir",
+  "method_log": {
+    "candidates_tried": 8,
+    "n_trials_dsr": 8,
+    "selection_type": "sweep",
+    "is_only_selection": true,
+    "is_cutoff": "2021-12-31",
+    "specs": ["S1_INST20","S2_FRGN20","S3_COMBO20","S4_FRGN_OWN","S5_INST_MOM","S6_COMBO_SMOOTH","S7_COMBO_CONTRA","S8_DISAGREE"],
+    "disclosure": "all 8 preregistered in spec_preregistration.md before exploration; both momentum and contrarian directions registered; IS-only argmax (OOS reviewed once post-selection)."
+  },
+
+  "challenge_flags": [
+    "RF-HIGH: ALL 8 specs fail screen gate (IS net PORT_t < 1.96). New momentum hypothesis FALSIFIED.",
+    "RF-HIGH: momentum specs (S1-S4,S6,S8) gross PORT_t at/below random placebo floor (-2.46) — no raw cross-sectional direction.",
+    "RF-MEDIUM: only contrarian S7 + acceleration S5 clear placebo, and only quarterly; S7 best net PORT_t 1.64 still < 1.96.",
+    "RF-HIGH: OOS (2022+) net PORT_t negative for ALL specs (-1.3 to -1.9), reproducing anchor WT-D20260529_001's 2024+ frozen-weights degradation.",
+    "RF-MEDIUM: monthly cadence cost-infeasible (TO ~20x/yr vs 11/yr mandate) — known anchor constraint (anchor forced to quarterly).",
+    "DATA-LIMITATION: full-universe forward returns unavailable in panel; screen restricted to K200UKQ150 panel grid (signal estimated on all flow tickers but scored on panel universe). '전종목 레버' partially unexercised — forward return availability is the binding constraint, not signal estimation."
+  ],
+
+  "next_step_recommendation": "DO NOT advance to risk-research as a standalone graduation candidate. S7 contrarian is orthogonal (cor -0.12) and reproduces a documented diversifier direction but is sub-screen-gate on the full universe. Options: (1) close as honest FAIL (recommended — full-universe E6 treatment did not recover anchor +2.35); (2) route S7 to DPL feature pool (research_philosophy P4 — failed standalone alpha as portfolio-learning input); (3) if a sleeve diversifier is still wanted, the richer 5-INV composite + EMA of the ANCHOR (WT-D20260529_001, 349-name quarterly) remains the stronger artifact and this E6 did not beat it.",
+
+  "pit_compliance": {
+    "connector": "flow_features_daily.parquet C15 carve-out (request.json data_carveout명시 승인)",
+    "flow_lag": "t-1 (shift(1L)+frollsum in 01_flow_features.R)",
+    "liquidity_lag": "t-1 ADV liq_20d (C10)",
+    "forward_label_columns_excluded": ["fwd_inst_foreign_netbuy_21d","fwd_flow_top20"],
+    "forward_labels_used_as_input": false,
+    "liquidity_floor_won": 200000000
+  }
+}
