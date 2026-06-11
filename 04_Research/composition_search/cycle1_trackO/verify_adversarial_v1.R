@@ -103,11 +103,7 @@ stored <- as.data.table(read_json(file.path(OUT, "combine_ab_results.json"),
                                   simplifyVector = TRUE)$table)
 check_arms <- c("O3_MIDBAND_FLOOR", rnd, "INCUMBENT_REPRICED")
 fails <- 0L
-for (arm in check_arms) for (wn in names(wins)) {
-  m  <- met(rets[[arm]], wins[[wn]])
-  s  <- stored[window == wn & arm_ == arm] # placeholder fixed below
-}
-# (data.table column is named 'arm' in stored; avoid name clash)
+setDF(stored)
 for (a in check_arms) for (wn in names(wins)) {
   m <- met(rets[[a]], wins[[wn]])
   s <- stored[stored$window == wn & stored$arm == a, ]
