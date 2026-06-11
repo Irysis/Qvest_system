@@ -224,8 +224,6 @@ run_bsc_momentum <- function(start_date     = "2005-01-01",
   wm_mgd <- .as_num(mgd_mdt[ym == wmym, mgd]); wm_raw <- .as_num(worst_raw_ym$raw)
   sr_raw_pre <- .as_num(sr_raw_pre); sr_mgd_pre <- .as_num(sr_mgd_pre)
   sr_raw_post <- .as_num(sr_raw_post); sr_mgd_post <- .as_num(sr_mgd_post)
-  cat(sprintf("[BSC][TG-DBG] types: pf_raw$Sharpe=%s ds_raw$skew=%s wm_raw=%s grade=%s score=%s\n",
-              class(pf_raw$Sharpe)[1], class(ds_raw$skew)[1], class(wm_raw)[1], class(grade)[1], class(score)[1]))
   ctx <- sprintf(paste0("[연구목적] Barroso-Santa-Clara(2015) 위험관리 모멘텀 KR 충실복제.\n",
                         "[방법] WML(2x3 size×prior 12-2 VW L/S) · 직전 126일 실현변동성으로 σ목표 12%% scaling · K200∪KQ150 · 2005~.\n",
                         "[결론] 헤드라인 회귀 α(managed~raw) %s · 샤프 %.2f→%.2f (%s)."),
