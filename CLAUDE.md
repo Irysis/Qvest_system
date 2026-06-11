@@ -126,7 +126,7 @@ Qvest 시스템 전체 구동. bootstrap.sh 실행 → 플러그인 리로드 �
 | Weight bounds | [0, 0.20] |
 | Σw | = 1 (absolute) |
 | Universe | KOSPI200 ∪ KOSDAQ150 |
-| Transaction cost | 15bps one-way (cost_model_version v2.3_kr_retail_15bps) |
+| Transaction cost | 15bps one-way (cost_model_version v2.4_kr_retail_15bps — delta-based, 종목별 Δ보유명목 절대값에 레그당 과금. 2026-06-11 도훈 confirm. 구 v2.3 flat 기록과 비교 시 라벨 확인) |
 | PIT | C1~C15 전체 (`.claude/rules/pit.md`) |
 
 ---

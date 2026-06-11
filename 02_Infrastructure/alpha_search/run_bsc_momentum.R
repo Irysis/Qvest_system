@@ -214,11 +214,15 @@ run_bsc_momentum <- function(start_date     = "2005-01-01",
                             sr_raw_pre, sr_mgd_pre, sr_raw_post, sr_mgd_post, mf, grade, score,
                             to_lambda_ann, charts, dry_run = FALSE) {
   `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
-  rt <- function(r) if (is.null(r)) "n/a" else sprintf("%+.2f%%/yr (t=%.2f)", r$alpha_ann_pct, r$alpha_t)
+  rt <- function(r) if (is.null(r)) "n/a" else sprintf("%+.2f%%/yr (t=%.2f)", .as_num(r$alpha_ann_pct), .as_num(r$alpha_t))
+  score <- .as_num(score)
   d_sr <- .as_num(pf_mgd$Sharpe) - .as_num(pf_raw$Sharpe)
   verdict_word <- if (!is.null(reg) && reg$alpha_t >= 2.0 && d_sr > 0) "위험관리 효과 확인"
                   else if (d_sr > 0) "부분 개선" else "효과 미확인"
-  wmym <- worst_raw_ym$ym; wm_mgd <- mgd_mdt[ym == wmym, mgd] %||% NA_real_
+  wmym <- as.character(worst_raw_ym$ym)
+  wm_mgd <- .as_num(mgd_mdt[ym == wmym, mgd]); wm_raw <- .as_num(worst_raw_ym$raw)
+  sr_raw_pre <- .as_num(sr_raw_pre); sr_mgd_pre <- .as_num(sr_mgd_pre)
+  sr_raw_post <- .as_num(sr_raw_post); sr_mgd_post <- .as_num(sr_mgd_post)
   ctx <- sprintf(paste0("[연구목적] Barroso-Santa-Clara(2015) 위험관리 모멘텀 KR 충실복제.\n",
                         "[방법] WML(2x3 size×prior 12-2 VW L/S) · 직전 126일 실현변동성으로 σ목표 12% scaling · K200∪KQ150 · 2005~.\n",
                         "[결론] 헤드라인 회귀 α(managed~raw) %s · 샤프 %.2f→%.2f (%s)."),
@@ -229,12 +233,12 @@ run_bsc_momentum <- function(start_date     = "2005-01-01",
     "최대낙폭 raw→관리"   = sprintf("%.1f%% → %.1f%%", -abs(.as_num(pf_raw$MDD)), -abs(.as_num(pf_mgd$MDD))),
     "왜도 raw→관리"       = sprintf("%.2f → %.2f", ds_raw$skew, ds_mgd$skew),
     "첨도 raw→관리"       = sprintf("%.1f → %.1f", ds_raw$kurt, ds_mgd$kurt),
-    "최악월(raw)"         = sprintf("%s raw%+.0f%% / 관리%+.0f%%", wmym, worst_raw_ym$raw * 100, wm_mgd * 100),
+    "최악월(raw)"         = sprintf("%s raw%+.0f%% / 관리%+.0f%%", wmym, wm_raw * 100, wm_mgd * 100),
     "서브 샤프 pre/post"  = sprintf("pre %.2f→%.2f / post %.2f→%.2f", sr_raw_pre, sr_mgd_pre, sr_raw_post, sr_mgd_post),
     "long-only 관리 샤프" = sprintf("%.2f (캡[0,1])", .as_num(pf_himgd$Sharpe)),
     "등급(허들)"          = sprintf("%s · %.0f/100", as.character(grade), score %||% 0))
   if (!is.null(mf)) { best <- mf[[names(mf)[1]]]
-    kv[["팩터모델 α(raw WML)"]] <- sprintf("%s %+.2f%%/yr (t=%.2f)", best$model, best$alpha * 12 * 100, best$alpha_tstat) }
+    kv[["팩터모델 α(raw WML)"]] <- sprintf("%s %+.2f%%/yr (t=%.2f)", as.character(best$model), .as_num(best$alpha) * 12 * 100, .as_num(best$alpha_tstat)) }
   notes <- c(
     "faithful=L/S 무캡(논문 원형, 레버리지 허용) / implementable=long leg λ캡[0,1] long-only",
     "헤드라인 검정 = managed를 raw WML에 회귀한 α (논문 정의)",

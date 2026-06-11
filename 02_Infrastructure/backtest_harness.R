@@ -793,15 +793,17 @@ run_monthly_simulation <- function(RAWDATA,
                                     cov_method    = "sample",  # "sample" | "ledoit_wolf" | "gerber_rmt"
                                     regime_dt     = NULL,    # data.table(Date, MRS, ...) from build_daily_regime()
                                     ic_history    = NULL,    # numeric vector of past IC values (for V2 ic_tilt)
-                                    cost_model_version = "v2.3_flat") {  # "v2.3_flat"(기본, 기존과 비트동일) | "v2.4_delta"
+                                    cost_model_version = "v2.4_delta") {  # "v2.4_delta"(기본, 2026-06-11 flip) | "v2.3_flat"(legacy 재현용)
 
   cat("[simulation] Starting monthly simulation...\n")
 
   # ── 비용모델 dispatch (cost_model v2.4 구현, 2026-06-11 도훈 confirm — B0 후속) ──
-  #   alias: config 라벨 "v2.3_kr_retail_15bps" = "v2.3_flat".
-  #   기본값은 v2.3_flat 유지 (기존 178+ STR / alpha-search 기록과의 비교가능성).
-  #   flip(기본값 전환)은 book 핵심수치 재측정 후 Q-Lead가 별도 수행.
+  #   alias: config 라벨 "v2.3_kr_retail_15bps"="v2.3_flat" / "v2.4_kr_retail_15bps"="v2.4_delta".
+  #   기본값 = v2.4_delta (2026-06-11 flip: 적대검증 PASS + book 재측정 이동 0 확인 후 전환).
+  #   기존 178+ STR / alpha-search 과거 기록은 v2.3_flat 측정 — 비교 시 명시적으로
+  #   cost_model_version="v2.3_flat" 전달 (flat은 one-way TO≈6x/yr에서만 정확, B0 §3).
   if (identical(cost_model_version, "v2.3_kr_retail_15bps")) cost_model_version <- "v2.3_flat"
+  if (identical(cost_model_version, "v2.4_kr_retail_15bps")) cost_model_version <- "v2.4_delta"
   if (!cost_model_version %in% c("v2.3_flat", "v2.4_delta")) {
     stop(sprintf("[simulation] unknown cost_model_version: '%s' (allowed: v2.3_flat / v2.4_delta)",
                  cost_model_version))
@@ -1182,7 +1184,8 @@ run_monthly_simulation <- function(RAWDATA,
   }
 
   # --- Assemble results ---
-  PORTFOLIO_LOG <- rbindlist(portfolio_log)
+  # fill=TRUE: 청산월 로그(4컬럼)와 정상월 로그(7컬럼) 혼재 시 크래시 방지 (pre-v2.4부터 잠복한 버그, 2026-06-11 수리)
+  PORTFOLIO_LOG <- rbindlist(portfolio_log, fill = TRUE)
   HOLDINGS_LOG  <- if (length(holdings_log) > 0) rbindlist(holdings_log, fill = TRUE) else data.table()
   DAILY_NAV_DT  <- rbindlist(daily_nav)
   setorder(DAILY_NAV_DT, Date)
