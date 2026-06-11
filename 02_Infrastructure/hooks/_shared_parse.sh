@@ -22,10 +22,13 @@ if [ -z "${INPUT+x}" ]; then
   INPUT=$(cat)
 fi
 
+# (v8.1.2 2026-06-11) bytes 경유 UTF-8 명시 디코딩 + stdout UTF-8 고정 — locale(cp949) 의존이던
+# 파싱을 결정론화. (현 런타임은 surrogateescape 왕복으로 우연히 무사했음 — env 운에 의존 금지)
 PARSED=$(printf '%s' "$INPUT" | python3 -c "
 import sys, json
+sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 try:
-    d = json.load(sys.stdin)
+    d = json.loads(sys.stdin.buffer.read().decode('utf-8', 'replace'))
     ti = d.get('tool_input', {}) or {}
     # Lines 1-6: tool_name, file_path, command, content_preview, agent_name, agent_prompt_preview
     print(d.get('tool_name', ''))

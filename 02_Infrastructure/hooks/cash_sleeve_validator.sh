@@ -9,6 +9,7 @@
 #==============================================================================
 
 trap 'echo "{}"; exit 0' ERR
+export PYTHONUTF8=1  # (v8.1.2) additionalContext lone surrogate(API 400) 방지
 
 INPUT=$(cat)
 FILE=$(printf '%s' "$INPUT" | python3 -c "
@@ -70,7 +71,7 @@ PYEOF
 
     if [ "$V55_STATUS" = "BLOCK" ]; then
       echo "$(date +%H:%M:%S) CASH_VALIDATOR BLOCK: $FILE — $V55_MSG" >> "$LOG"
-      CTX=$(printf '%s' "[Cash Sleeve Validator] ${V55_MSG}. admission_rule_v352 §1.4 참조." | python3 -c "import sys,json;print(json.dumps(sys.stdin.read()))")
+      CTX=$(printf '%s' "[Cash Sleeve Validator] ${V55_MSG}. admission_rule_v352 §1.4 참조." | python3 -c "import sys,json; s=sys.stdin.buffer.read().decode('utf-8','replace'); print(json.dumps(''.join(ch if not(0xD800<=ord(ch)<=0xDFFF) else '?' for ch in s)))")
       echo "{\"decision\":\"block\",\"reason\":${CTX}}"
       exit 0
     fi

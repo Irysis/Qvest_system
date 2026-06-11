@@ -268,7 +268,7 @@ import json, os, glob
 lines = []
 for f in sorted(glob.glob(os.path.join('$ACTIVE_DIR', 'AX-*.json'))):
     try:
-        ax = json.load(open(f))
+        ax = json.load(open(f, encoding='utf-8'))
         ax_id = ax.get('axiom_id') or ax.get('id') or os.path.basename(f).replace('.json','')
         stmt = (ax.get('statement') or ax.get('text') or ax.get('name') or '')[:75]
         tag_type = ax.get('type') or ax.get('grade') or 'IMMUTABLE'
@@ -277,7 +277,7 @@ for f in sorted(glob.glob(os.path.join('$ACTIVE_DIR', 'AX-*.json'))):
     except Exception: pass
 # [v8.0 WS5-4] 경량화: statement 75자 요약 + 전문 pointer (매 spawn ~600→~180 tok). 전문은 agent가 필요시 Read.
 lines.append('  → 전문: .claude/rules/axioms.md / qepm/memory/axioms/active/AX-*.json (active 8)')
-open('$CACHE_BODY', 'w').write(chr(10).join(lines))
+open('$CACHE_BODY', 'w', encoding='utf-8').write(chr(10).join(lines))
 " 2>/dev/null
   fi
 
@@ -330,7 +330,7 @@ fi
 
 # ─── 4. Axiom 단독 주입 (Scout 이외 에이전트) ────────────────────────
 if [ -n "$AXIOM_CONTEXT" ]; then
-  HINT_ESC=$(printf '%s' "$AXIOM_CONTEXT" | python3 -c "import sys,json;print(json.dumps(sys.stdin.read()))")
+  HINT_ESC=$(printf '%s' "$AXIOM_CONTEXT" | python3 -c "import sys,json; s=sys.stdin.buffer.read().decode('utf-8','replace'); print(json.dumps(''.join(ch if not(0xD800<=ord(ch)<=0xDFFF) else '?' for ch in s)))")
   echo "{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"additionalContext\":$HINT_ESC}}"
   exit 0
 fi

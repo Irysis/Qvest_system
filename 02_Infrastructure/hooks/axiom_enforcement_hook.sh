@@ -48,12 +48,16 @@ _ACTIVE_DIR="$DIR/qepm/memory/axioms/active"
 if [ -d "$_ACTIVE_DIR" ]; then
   _VIOLATION=$(printf '%s' "$CONTENT" | python3 -c "
 import sys, json, os, glob, re
-content = sys.stdin.read()
+# (v8.1.2) bytes 경유 UTF-8 명시 + axiom 파일 encoding 명시 — cp949 locale에서 한글 AX-*.json이
+# UnicodeDecodeError로 전부 silent skip 되던 결함 수리. skip은 로그로 가시화.
+content = sys.stdin.buffer.read().decode('utf-8', 'replace')
 file_path = '$FILE_PATH'
 for f in sorted(set(glob.glob(os.path.join('$_ACTIVE_DIR', '**', 'AX-*.json'), recursive=True)) | set(glob.glob(os.path.join('$_ACTIVE_DIR', 'AX-*.json')))):
     try:
-        ax = json.load(open(f))
-    except Exception: continue
+        ax = json.load(open(f, encoding='utf-8'))
+    except Exception as e:
+        open('/tmp/axiom_enforcement_skip.log', 'a', encoding='utf-8').write(f'{f}: {type(e).__name__}\n')
+        continue
     enforcement = ax.get('enforcement') or ''
     if not enforcement: continue
     ax_id = ax.get('axiom_id') or ax.get('id') or os.path.basename(f)

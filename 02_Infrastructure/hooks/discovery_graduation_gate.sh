@@ -14,19 +14,24 @@
 
 set -euo pipefail
 trap 'echo "{}"; exit 0' ERR
+# (v8.1.2 2026-06-11) python text 레이어 인코딩 사고 방지 — stdin은 buffer 경유 UTF-8 명시 디코딩,
+# stdout은 UTF-8 reconfigure. (cp949 환경에서 한글 content가 가드를 침묵 무력화하던 문제)
+export PYTHONUTF8=1
 
 INPUT=$(cat)
-FILE_PATH=$(echo "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
-CONTENT=$(echo "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("content",""))' 2>/dev/null || echo "")
+FILE_PATH=$(echo "$INPUT" | python3 -c 'import json,sys; sys.stdout.reconfigure(encoding="utf-8",errors="replace"); d=json.loads(sys.stdin.buffer.read().decode("utf-8","replace")); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
+CONTENT=$(echo "$INPUT" | python3 -c 'import json,sys; sys.stdout.reconfigure(encoding="utf-8",errors="replace"); d=json.loads(sys.stdin.buffer.read().decode("utf-8","replace")); print(d.get("tool_input",{}).get("content",""))' 2>/dev/null || echo "")
 
 # Deployment WT request.json만 검증
 case "$FILE_PATH" in
   */WT-P*/request.json)
-    python3 <<PYEOF
+    # (v8.1.2) content는 env 경유 — heredoc 소스 보간('''...''')은 triple-quote/backslash content에서
+    # python 소스가 깨져 ERR trap '{}' fail-open 되던 주입형 패턴
+    DGG_CONTENT="$CONTENT" python3 <<PYEOF
 import json, os, sys
 
 try:
-    req = json.loads('''$CONTENT''')
+    req = json.loads(os.environ.get("DGG_CONTENT", ""))
 except Exception as e:
     print(json.dumps({}))
     sys.exit(0)
@@ -59,8 +64,17 @@ if not os.path.exists(alpha_path):
     }))
     sys.exit(0)
 
-with open(alpha_path) as f:
-    alpha_pkg = json.load(f)
+# (v8.1.2) fail-closed + encoding 명시 — cp949 locale에서 한글 포함 alpha_package(실파일 95/112개)
+# 읽기 실패가 ERR trap '{}' allow로 빠져 graduation HARD 게이트가 침묵 통과되던 결함 수리
+try:
+    with open(alpha_path, encoding="utf-8") as f:
+        alpha_pkg = json.load(f)
+except Exception as e:
+    print(json.dumps({
+      "decision": "block",
+      "reason": f"{discovery_of}/alpha_package.json 읽기 실패({type(e).__name__}) — graduation 검증 불가 (fail-closed)"
+    }))
+    sys.exit(0)
 diag = alpha_pkg.get("diagnostics", {})
 criteria = req.get("graduation_criteria", {})
 
@@ -72,7 +86,7 @@ forge_path = os.path.join(disc_dir, "forge_package.json")
 forge_pkg = {}
 if os.path.exists(forge_path):
     try:
-        with open(forge_path) as f: forge_pkg = json.load(f)
+        with open(forge_path, encoding="utf-8") as f: forge_pkg = json.load(f)
     except Exception:
         forge_pkg = {}
 
