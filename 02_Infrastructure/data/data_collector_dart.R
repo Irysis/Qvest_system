@@ -137,6 +137,19 @@ dart_update_corpcode <- function(force = FALSE) {
 #==============================================================================
 
 # DART API 호출 (단일 종목, 단일 연도, 단일 보고서)
+#
+# 반환 규약 (2026-06-11 확장 — resume EMPTY 영속화 수리):
+#   data.table (>0행)                      = 데이터 수신
+#   data.table (0행, attr "dart_status"="empty")      = 공시 미제출 확정 (status 013 / 빈 list)
+#   data.table (0행, attr "dart_status"="rate_limit") = 일일 쿼터 초과 (status 020)
+#   NULL                                   = 일시 실패 (HTTP/파싱/기타 status — 재시도 대상)
+# 기존 호출부의 `is.null(dt) || nrow(dt) == 0` 체크와 완전 호환 (0행은 종전 NULL과 동일 분기).
+.dart_empty_result <- function(status) {
+  res <- data.table()
+  setattr(res, "dart_status", status)
+  res
+}
+
 .dart_fetch_single <- function(corp_code, bsns_year, reprt_code = "11011",
                                 fs_div = "CFS") {
   url <- "https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json"
@@ -160,11 +173,15 @@ dart_update_corpcode <- function(force = FALSE) {
   if (is.null(json$status) || json$status != "000") {
     if (!is.null(json$status) && json$status == "020") {
       warning("[dart] API rate limit exceeded!")
+      return(.dart_empty_result("rate_limit"))
+    }
+    if (!is.null(json$status) && json$status == "013") {
+      return(.dart_empty_result("empty"))
     }
     return(NULL)
   }
 
-  if (is.null(json$list) || length(json$list) == 0) return(NULL)
+  if (is.null(json$list) || length(json$list) == 0) return(.dart_empty_result("empty"))
 
   dt <- as.data.table(json$list)
   dt[, bsns_year := as.integer(bsns_year)]

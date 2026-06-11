@@ -60,6 +60,95 @@ REPRT_MAP <- data.table(
 
 
 #==============================================================================
+# 0. EMPTY 시도 원장 (resume 결함 수리 2026-06-11)
+#
+# 종전 결함: resume가 성공 레코드(DART_QUARTERLY_RAW)만 보고 EMPTY(공시 미제출)
+# 확인은 영속화하지 않아 매 실행 10,905 task 전수 재조회 (~127분, 일 쿼터 절반).
+#
+# 수리: EMPTY 확정 시도를 (corp_code, Ticker, bsns_year, reprt_code,
+# last_attempt_date, n_attempts) 원장으로 영속화하고 재조회 정책 적용.
+# 영구 skip 없음 — 늦은 제출 공시가 실제 존재 (수집 레이어, PIT 영향 없음).
+#
+# 재조회 정책:
+#   제출 시즌 내      → 일일 재시도
+#   시즌 외           → 주 1회
+#   마감 2년 경과 코호트 → 월 1회 (사실상 미제출 확정이나 영구 skip은 금지)
+#==============================================================================
+
+DART_QUARTERLY_EMPTY_LEDGER <- file.path(DART_CACHE_DIR, "dart_quarterly_empty_ledger.parquet")
+
+# 보고서 제출 시즌 경계 (12월 결산 기준 — KR 상장사 대다수. 비12월 결산은 주간 재시도로 커버)
+#   11014 1Q (3/31 결산, 마감 5/15)        : 4/1 ~ 5/31
+#   11012 반기 (6/30 결산, 마감 8/14)       : 7/1 ~ 8/31
+#   11013 3Q (9/30 결산, 마감 11/14)        : 10/1 ~ 11/30
+#   11011 사업보고서 (12/31 결산, 마감 익년 3/31): 익년 1/1 ~ 4/15
+.dart_season_bounds <- function(bsns_year, reprt_code) {
+  start <- as.Date(fcase(
+    reprt_code == "11014", sprintf("%d-04-01", bsns_year),
+    reprt_code == "11012", sprintf("%d-07-01", bsns_year),
+    reprt_code == "11013", sprintf("%d-10-01", bsns_year),
+    reprt_code == "11011", sprintf("%d-01-01", bsns_year + 1L),
+    default = NA_character_
+  ))
+  end <- as.Date(fcase(
+    reprt_code == "11014", sprintf("%d-05-31", bsns_year),
+    reprt_code == "11012", sprintf("%d-08-31", bsns_year),
+    reprt_code == "11013", sprintf("%d-11-30", bsns_year),
+    reprt_code == "11011", sprintf("%d-04-15", bsns_year + 1L),
+    default = NA_character_
+  ))
+  list(start = start, end = end)
+}
+
+.dart_load_empty_ledger <- function() {
+  if (!file.exists(DART_QUARTERLY_EMPTY_LEDGER)) return(NULL)
+  # mmap = FALSE 필수: 같은 실행 내에서 동일 경로에 write_parquet 덮어쓰기 발생.
+  # 기본 mmap(TRUE)은 매핑이 살아있는 동안 Windows error 1224로 쓰기 차단 (ktri 사례 동일)
+  lg <- tryCatch(as.data.table(read_parquet(DART_QUARTERLY_EMPTY_LEDGER, mmap = FALSE)),
+                 error = function(e) NULL)
+  if (is.null(lg) || nrow(lg) == 0) return(NULL)
+  lg[, last_attempt_date := as.Date(last_attempt_date)]
+  lg
+}
+
+# 원장 기준 오늘 재시도 차례가 아닌 키 반환 (tasks에서 제외할 대상)
+.dart_ledger_skip_keys <- function(ledger, today = Sys.Date()) {
+  if (is.null(ledger) || nrow(ledger) == 0) return(NULL)
+  se <- .dart_season_bounds(ledger$bsns_year, ledger$reprt_code)
+  in_season <- !is.na(se$start) & today >= se$start & today <= se$end
+  long_past <- !is.na(se$end) & today > (se$end + 730L)
+  interval  <- fifelse(in_season, 1L, fifelse(long_past, 30L, 7L))
+  due <- as.integer(today - ledger$last_attempt_date) >= interval
+  ledger[!due, .(corp_code, bsns_year, reprt_code)]
+}
+
+# 원장 병합 저장: 기존 + 신규 EMPTY 누적 (동일 키 = 시도일 최신화 + 횟수 합산),
+# 이번에 성공 수집된 키(ok_keys = 늦은 제출 도착)는 영구 제거
+.dart_save_empty_ledger <- function(ledger, empty_new, ok_keys = NULL) {
+  new_dt <- if (length(empty_new) > 0) rbindlist(empty_new) else NULL
+  merged <- rbindlist(list(ledger, new_dt), fill = TRUE, use.names = TRUE)
+  if (is.null(merged) || nrow(merged) == 0) return(invisible(ledger))
+  merged <- merged[, .(Ticker = Ticker[.N],
+                       last_attempt_date = max(last_attempt_date),
+                       n_attempts = sum(n_attempts)),
+                   by = .(corp_code, bsns_year, reprt_code)]
+  if (!is.null(ok_keys) && nrow(ok_keys) > 0) {
+    merged <- merged[!ok_keys, on = c("corp_code", "bsns_year", "reprt_code")]
+  }
+  write_parquet(merged, DART_QUARTERLY_EMPTY_LEDGER)
+  invisible(merged)
+}
+
+# .dart_fetch_single 반환 → 상태 분류 ("ok" / "empty" / "rate_limit" / "fail")
+.dart_result_status <- function(res) {
+  if (is.null(res)) return("fail")
+  s <- attr(res, "dart_status", exact = TRUE)
+  if (!is.null(s)) return(s)
+  if (nrow(res) > 0) "ok" else "fail"
+}
+
+
+#==============================================================================
 # 1. Fetch Quarterly Financial Statements
 #==============================================================================
 
@@ -84,9 +173,10 @@ dart_fetch_quarterly <- function(years = 2018:2025,
               length(raw_tickers), nrow(matched)))
 
   # 이미 수집된 데이터 (resume)
+  # mmap = FALSE: 같은 경로에 checkpoint write_parquet 덮어쓰기 — Windows 1224 차단
   existing <- NULL
   if (resume && file.exists(DART_QUARTERLY_RAW)) {
-    existing <- as.data.table(read_parquet(DART_QUARTERLY_RAW))
+    existing <- as.data.table(read_parquet(DART_QUARTERLY_RAW, mmap = FALSE))
     cat(sprintf("[dart_quarterly] Resuming: %d existing records\n", nrow(existing)))
   }
 
@@ -98,15 +188,33 @@ dart_fetch_quarterly <- function(years = 2018:2025,
   tasks <- merge(tasks, matched[, .(corp_code, Ticker, corp_name)], by = "corp_code")
 
   # 이미 수집된 건 제외
+  existing_keys <- NULL
   if (!is.null(existing) && nrow(existing) > 0) {
     existing_keys <- unique(existing[, .(corp_code, bsns_year, reprt_code)])
     tasks <- tasks[!existing_keys, on = c("corp_code", "bsns_year", "reprt_code")]
-    cat(sprintf("[dart_quarterly] Remaining tasks: %d\n", nrow(tasks)))
   }
+
+  # EMPTY 원장 제외 — 공시 미제출 확인 영속화 (2026-06-11 resume 결함 수리)
+  ledger <- NULL
+  if (resume) {
+    ledger <- .dart_load_empty_ledger()
+    if (!is.null(ledger) && !is.null(existing_keys)) {
+      # 뒤늦게 제출돼 수집 완료된 키는 원장에서 영구 제거
+      ledger <- ledger[!existing_keys, on = c("corp_code", "bsns_year", "reprt_code")]
+    }
+    skip_keys <- .dart_ledger_skip_keys(ledger)
+    if (!is.null(skip_keys) && nrow(skip_keys) > 0) {
+      tasks <- tasks[!skip_keys, on = c("corp_code", "bsns_year", "reprt_code")]
+    }
+    cat(sprintf("[dart_quarterly] EMPTY ledger: %d entries | skipped today (backoff): %d\n",
+                if (is.null(ledger)) 0L else nrow(ledger),
+                if (is.null(skip_keys)) 0L else nrow(skip_keys)))
+  }
+  cat(sprintf("[dart_quarterly] Remaining tasks: %d\n", nrow(tasks)))
 
   total <- nrow(tasks)
   if (total == 0) {
-    cat("[dart_quarterly] All data already collected.\n")
+    cat("[dart_quarterly] Nothing to fetch today (collected or EMPTY-ledger backoff).\n")
     return(invisible(existing))
   }
 
@@ -114,7 +222,10 @@ dart_fetch_quarterly <- function(years = 2018:2025,
               total, total * delay / 60))
 
   results <- list()
+  empty_new <- list()   # 이번 실행에서 EMPTY 확정된 키 (원장 누적분)
   n_success <- 0; n_empty <- 0; n_fail <- 0
+  last_data_ckpt <- 0L
+  rate_limited <- FALSE
 
   for (i in seq_len(total)) {
     task <- tasks[i]
@@ -131,51 +242,94 @@ dart_fetch_quarterly <- function(years = 2018:2025,
                           task$reprt_code, fs_div),
       error = function(e) NULL
     )
+    st_primary  <- .dart_result_status(dt)
+    st_fallback <- NA_character_
 
-    # CFS 없으면 OFS 시도
-    if (is.null(dt) || nrow(dt) == 0) {
-      if (fs_div == "CFS") {
-        dt <- tryCatch(
-          .dart_fetch_single(task$corp_code, task$bsns_year,
-                              task$reprt_code, "OFS"),
-          error = function(e) NULL
-        )
-        if (!is.null(dt) && nrow(dt) > 0) dt[, fs_div := "OFS"]
+    # CFS 없으면 OFS 시도 (013 포함 — 비연결 법인은 OFS만 존재)
+    if (st_primary %in% c("empty", "fail") && fs_div == "CFS") {
+      dt2 <- tryCatch(
+        .dart_fetch_single(task$corp_code, task$bsns_year,
+                            task$reprt_code, "OFS"),
+        error = function(e) NULL
+      )
+      st_fallback <- .dart_result_status(dt2)
+      if (st_fallback == "ok") {
+        dt2[, fs_div := "OFS"]
+        dt <- dt2
       }
     }
 
-    if (!is.null(dt) && nrow(dt) > 0) {
+    # 최종 분류: EMPTY는 시도한 fs_div 전부가 '데이터 없음(013)' 확정일 때만.
+    # 일시 실패(HTTP/쿼터/파싱)가 섞이면 fail → 원장 미기록 → 다음 실행 재시도.
+    st <- if (st_primary == "ok" || identical(st_fallback, "ok")) "ok"
+          else if (st_primary == "rate_limit" || identical(st_fallback, "rate_limit")) "rate_limit"
+          else if (st_primary == "empty" && (is.na(st_fallback) || st_fallback == "empty")) "empty"
+          else "fail"
+
+    if (st == "rate_limit") {
+      cat(sprintf("  !! [%d/%d] DART 일일 쿼터 초과(status 020) — 잔여 task 중단, 진행분 저장 후 종료\n",
+                  i, total))
+      rate_limited <- TRUE
+      break
+    }
+
+    if (st == "ok") {
       dt[, Ticker := task$Ticker]
       dt[, corp_code := task$corp_code]
       results[[length(results) + 1]] <- dt
       n_success <- n_success + 1
-    } else {
+    } else if (st == "empty") {
       n_empty <- n_empty + 1
+      empty_new[[length(empty_new) + 1]] <- data.table(
+        corp_code = task$corp_code, Ticker = task$Ticker,
+        bsns_year = task$bsns_year, reprt_code = task$reprt_code,
+        last_attempt_date = Sys.Date(), n_attempts = 1L)
+    } else {
+      n_fail <- n_fail + 1
     }
 
-    # 중간 저장 (매 500건)
-    if (length(results) > 0 && length(results) %% 500 == 0) {
+    # 중간 저장: 데이터는 신규 500건마다 1회
+    if (length(results) > last_data_ckpt && length(results) %% 500 == 0) {
       cat("  > Checkpoint save...\n")
       batch <- rbindlist(results, fill = TRUE)
       if (!is.null(existing)) batch <- rbindlist(list(existing, batch), fill = TRUE)
       write_parquet(batch, DART_QUARTERLY_RAW)
+      last_data_ckpt <- length(results)
+    }
+    # EMPTY 원장은 200 task마다 영속화 (성공 0건 런이 중도 사망해도 진행분 보존)
+    if (i %% 200 == 0 && length(empty_new) > 0) {
+      ledger <- .dart_save_empty_ledger(ledger, empty_new)
+      empty_new <- list()
     }
 
     Sys.sleep(delay)
   }
 
-  # 최종 저장
+  # 최종 저장 — EMPTY 원장은 성공 0건이어도 반드시 영속화 (2026-06-11 수리 핵심)
+  ok_keys <- NULL
+  out <- existing
   if (length(results) > 0) {
-    all_data <- rbindlist(results, fill = TRUE)
-    if (!is.null(existing)) all_data <- rbindlist(list(existing, all_data), fill = TRUE)
+    all_new <- rbindlist(results, fill = TRUE)
+    ok_keys <- unique(all_new[, .(corp_code, bsns_year, reprt_code)])
+    all_data <- if (!is.null(existing)) rbindlist(list(existing, all_new), fill = TRUE) else all_new
     write_parquet(all_data, DART_QUARTERLY_RAW)
     cat(sprintf("\n[dart_quarterly] DONE. Total: %d | OK: %d | Empty: %d | Fail: %d\n",
                 nrow(all_data), n_success, n_empty, n_fail))
-    invisible(all_data)
+    out <- all_data
   } else {
-    cat("[dart_quarterly] No new data.\n")
-    invisible(existing)
+    cat(sprintf("[dart_quarterly] No new data. | OK: 0 | Empty: %d | Fail: %d\n",
+                n_empty, n_fail))
   }
+
+  ledger <- .dart_save_empty_ledger(ledger, empty_new, ok_keys = ok_keys)
+  cat(sprintf("[dart_quarterly] EMPTY ledger saved: %d entries → %s\n",
+              if (is.null(ledger)) 0L else nrow(ledger),
+              basename(DART_QUARTERLY_EMPTY_LEDGER)))
+  if (rate_limited) {
+    cat("[dart_quarterly] 쿼터 초과로 조기 종료 — 잔여 task는 다음 실행에서 자동 재개.\n")
+  }
+
+  invisible(out)
 }
 
 
