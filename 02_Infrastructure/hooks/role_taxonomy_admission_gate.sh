@@ -8,6 +8,8 @@
 #==============================================================================
 
 trap 'echo "{}"; exit 0' ERR
+# (v8.1.2 2026-06-11) python stdio UTF-8 강제 — additionalContext lone surrogate(API 400) 수리
+export PYTHONUTF8=1
 
 INPUT=$(cat)
 LOG="/tmp/role_taxonomy_gate.log"
@@ -39,7 +41,7 @@ if echo "$AGENT_LC" | grep -qE "scout"; then
   if echo "$AGENT_PROMPT" | grep -qiE "s0|hypothesis|가설" \
      && ! echo "$ROLE_MENTION" | grep -qiE "core_alpha|diversifier|defense|cash_allocation|regime_adaptive|ml_predictive"; then
     HINT="[Role Taxonomy Gate] Scout 스폰 감지. v55: s0_record에 expected_role 필수 (6종 중 하나). 'unknown' 사용 금지. GAP-Directed 가설 설계 시 portfolio_gap_vector의 sleeve_needs를 참고하여 role을 결정하세요. 참조: 00_Lawbook/v55_consensus_addendum.md §2."
-    HINT_ESC=$(printf '%s' "$HINT" | python3 -c "import sys,json;print(json.dumps(sys.stdin.read()))")
+    HINT_ESC=$(printf '%s' "$HINT" | python3 -c "import sys,json; s=sys.stdin.buffer.read().decode('utf-8','replace'); print(json.dumps(''.join(ch if not(0xD800<=ord(ch)<=0xDFFF) else '?' for ch in s)))")
     echo "$(date +%H:%M:%S) ROLE_GATE WARN (scout): $AGENT_NAME (no explicit role hint)" >> "$LOG"
     echo "{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"additionalContext\":$HINT_ESC}}"
     exit 0
@@ -52,7 +54,7 @@ if echo "$AGENT_LC" | grep -qE "forge.*s1|s1.*forge"; then
 
   if [ -z "$TRAIL_MENTION" ]; then
     HINT="[Role Taxonomy Gate] Forge S1 스폰. v55: s0_record의 trail 필드가 S1 코딩 컨벤션 결정 (standard/ml_empirical_first/kr_statistical). trail 명시 없으면 standard로 진행. 참조: 02_Infrastructure/prompts/forge_init.md."
-    HINT_ESC=$(printf '%s' "$HINT" | python3 -c "import sys,json;print(json.dumps(sys.stdin.read()))")
+    HINT_ESC=$(printf '%s' "$HINT" | python3 -c "import sys,json; s=sys.stdin.buffer.read().decode('utf-8','replace'); print(json.dumps(''.join(ch if not(0xD800<=ord(ch)<=0xDFFF) else '?' for ch in s)))")
     echo "$(date +%H:%M:%S) ROLE_GATE WARN (forge_s1): $AGENT_NAME (no explicit trail)" >> "$LOG"
     echo "{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"additionalContext\":$HINT_ESC}}"
     exit 0

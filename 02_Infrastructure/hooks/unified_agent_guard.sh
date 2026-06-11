@@ -2,6 +2,7 @@
 # DEPRECATED 2026-05-29 v8.0 WS5-3 — settings.json 등록 해제. axiom 주입은 axiom_context_inject.sh로 이전. legacy Stage Guard(S0~S5/STR_XXX)는 v6.4 WT no-op. 파일 retain(legacy compat).
 
 trap 'echo "{}"; exit 0' ERR  # Phase C3 전수 강제
+export PYTHONUTF8=1  # (v8.1.2) additionalContext lone surrogate(API 400) 방지
 #==============================================================================
 # Unified Agent Guard — PreToolUse[Agent] Hook (v52 하네스)
 # 3중 검증:
@@ -320,7 +321,7 @@ except Exception:
 
 ${HINT}"
       fi
-      HINT_ESC=$(printf '%s' "$COMBINED" | python3 -c "import sys,json;print(json.dumps(sys.stdin.read()))")
+      HINT_ESC=$(printf '%s' "$COMBINED" | python3 -c "import sys,json; s=sys.stdin.buffer.read().decode('utf-8','replace'); print(json.dumps(''.join(ch if not(0xD800<=ord(ch)<=0xDFFF) else '?' for ch in s)))")
       echo "{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"additionalContext\":$HINT_ESC}}"
       exit 0
     fi

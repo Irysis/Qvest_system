@@ -6,6 +6,9 @@
 #   경량(WS5-4): AX 코드 + statement 75자 + 전문 pointer.
 #==============================================================================
 trap 'echo "{}"; exit 0' ERR
+# (v8.1.2 2026-06-11) python stdio/open UTF-8 강제 — cache body가 cp949로 쓰이고 additionalContext에
+# lone surrogate(\udcXX) 주입돼 Agent spawn 세션 전체가 API 400 나던 사건 수리.
+export PYTHONUTF8=1
 INPUT=$(cat)
 # CLAUDE_PROJECT_DIR(native Windows 경로) 우선 — MSYS형(/c/...) 경로를 native python glob에 넘기면 0건 매치로
 # regen 실패 → ERR trap {} 무출력이던 버그 수정 (2026-06-10). 백슬래시도 슬래시로 정규화.
@@ -42,7 +45,7 @@ for f in sorted(_files):
         lines.append(f'  - {axid} [{tt}/{tp}]: {stmt}')
     except Exception: pass
 lines.append(f'  → 전문: .claude/rules/axioms.md / active/ (+ modes/, total {len(_files)})')
-open('$CACHE_BODY', 'w').write(chr(10).join(lines))
+open('$CACHE_BODY', 'w', encoding='utf-8').write(chr(10).join(lines))
 " 2>/dev/null
 fi
 
@@ -57,6 +60,6 @@ esac
 
 CTX="$HEADER
 $(cat "$CACHE_BODY")"
-ESC=$(printf '%s' "$CTX" | python3 -c "import sys,json; print(json.dumps(sys.stdin.read()))")
+ESC=$(printf '%s' "$CTX" | python3 -c "import sys,json; s=sys.stdin.buffer.read().decode('utf-8','replace'); print(json.dumps(''.join(ch if not(0xD800<=ord(ch)<=0xDFFF) else '?' for ch in s)))")
 echo "{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"additionalContext\":$ESC}}"
 exit 0

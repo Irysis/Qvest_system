@@ -23,6 +23,8 @@
 
 trap 'echo "{}"; exit 0' ERR
 set -u
+# (v8.1.2 2026-06-11) python stdio UTF-8 강제 — additionalContext lone surrogate(API 400) 수리
+export PYTHONUTF8=1
 
 INPUT=$(cat 2>/dev/null || echo '{}')
 LOG="/tmp/milestone_commit.log"
@@ -177,9 +179,9 @@ if [ $? -eq 0 ]; then
     disown 2>/dev/null || true
   fi
 
-  MSG="✅ [milestone] $MILESTONE $HASH — $STAGED files"
-  [ "$PUSH_IMMEDIATE" -eq 1 ] && MSG+=" · push 진행 중"
-  MSG_ESC=$(printf '%s' "$MSG" | python3 -c "import sys,json;print(json.dumps(sys.stdin.read()))")
+  MSG="[OK] [milestone] $MILESTONE $HASH - $STAGED files"
+  [ "$PUSH_IMMEDIATE" -eq 1 ] && MSG+=" (push 진행 중)"
+  MSG_ESC=$(printf '%s' "$MSG" | python3 -c "import sys,json; s=sys.stdin.buffer.read().decode('utf-8','replace'); print(json.dumps(''.join(ch if not(0xD800<=ord(ch)<=0xDFFF) else '?' for ch in s)))")
   echo "{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":$MSG_ESC}}"
 else
   echo "$TS COMMIT_FAILED $MILESTONE" >> "$LOG"
