@@ -15,7 +15,8 @@
       "Bash([ -f \"$F\" ])",
       "Bash([ ! -f \"$F\" ])",
       "Bash(exit 1)",
-      "mcp__jina__extract_pdf"
+      "mcp__jina__extract_pdf",
+      "PowerShell($log = \"C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/scheduler_logs/daily_refresh.log\"; \"--- Head 30 lines \\(run start\\) ---\"; Get-Content $log -Head 30 -Encoding UTF8; \"`n--- Lines mentioning Factor DB / STEP / REFRESH / Telegram / ERROR / FAIL ---\"; Select-String -Path $log -Pattern \"Factor DB|STEP|REFRESH|Telegram|텔레그램|ERROR|FAIL|PASS|complete|COMPLETE|\\\\[6\\\\]|\\\\[5\\\\]|\\\\[4\\\\]\" | ForEach-Object { \"L$\\($_.LineNumber\\): $\\($_.Line\\)\" })"
     ]
   },
   "outputStyle": "default",

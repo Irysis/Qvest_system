@@ -124,6 +124,13 @@
 - **작성 규율**: transcript에 닿는 출력(echo/cat/print)에 **non-BMP 이모지 금지**. BMP 기호(✓ ✅ ❌ ⛔ ★ U+FFFF 이하)는 surrogate-safe하나, 장식은 ASCII 권장. 백그라운드 job은 stdout까지 로그 파일로 리다이렉트 (cleanup.sh 누수 사례 — 비동기 끼어들기 + 파이프 hold). 큰 로그 열람(tail/cat)은 safe_run.sh 경유.
 - PostToolUse hook은 tool 출력을 **재작성할 수 없으므로** hook 기반 sanitize는 불가 — 소스/파이프 레벨이 유일한 방어선.
 
+### Hook stdout JSON 규율 (v8.1.2 추보 — 실제 근본 원인, 2026-06-11 확정)
+- **실측 진범**: Bash tool 출력이 아니라 **hook의 additionalContext**. `printf '%s' "$MSG" | python3 -c "...json.dumps(sys.stdin.read())"` 패턴에서 hook 런타임의 python text-mode stdin이 UTF-8 한글/이모지를 cp949+surrogateescape로 디코딩 → lone surrogate(\udcXX)를 json.dumps가 그대로 escape 출력 → Claude Code가 대화에 주입 → **그 세션의 모든 후속 요청 400** (위치 고정, 재시도 무효). transcript에는 fs 기록 시 U+FFFD/escape로 남아 1차 스캔을 회피. 오염원 6: auto_commit_on_stop / auto_push_on_stop(Stop마다) · axiom_context_inject(Agent spawn마다) · milestone_commit · role_taxonomy_admission_gate · unified_agent_guard. 세션 8개 오염 실측(06-10 Stop hook 재등록 직후 발병).
+- **의무 패턴 (hook이 stdout JSON에 문자열을 실을 때)**: ① bash 변수 → python은 반드시 **`sys.stdin.buffer.read().decode('utf-8','replace')`** (bytes 경유 — locale 레이어 우회) ② **surrogate 스크럽** `0xD800-0xDFFF → '?'` 후 json.dumps ③ hook 상단 `export PYTHONUTF8=1` ④ python `open()` write는 `encoding='utf-8'` 명시. 표준 one-liner는 auto_commit_on_stop.sh 참조.
+- **안전한 경로 (오탐 방지)**: bash가 스크립트 파일 내 한글 literal을 **직접 echo**하는 것은 안전 (python text 레이어 없음 — Node가 UTF-8로 정상 디코딩). Bash tool의 일반 커맨드 CP949 출력도 Node lossy decode가 U+FFFD로 안전 처리 (400 원인 아님 — 가독성만 손실, safe_run.sh 권장).
+- **환경 영구화**: `setx PYTHONUTF8 1` 적용(2026-06-11, user env) — Claude Code 재시작 후 모든 hook/python에 전파. hook 내 export는 재시작 전에도 유효한 2중 방어.
+- **오염 세션 복구**: lone surrogate가 박힌 transcript는 해당 세션 영구 400. 복구 = jsonl 백업 후 string 값 내 surrogate → '?' 스크럽 (06-11 8개 세션 실시, `*.surrogate_bak` 보존).
+
 ## v8.1.1 정합 (2026-06-10)
 
 - settings.json 46개 hook DIR = `${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}` 3중 fallback (구 경로 glob 폐기 — 46-hook 전수 침묵사망 사건 수리)
