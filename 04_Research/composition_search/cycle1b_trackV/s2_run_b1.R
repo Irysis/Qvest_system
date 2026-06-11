@@ -12,10 +12,11 @@ pan[, Date := as.Date(Date)]
 last_d <- max(pan$Date)
 
 # sig grid = calendar month-end of score label month; returns realized at month_end(t+1)
-pan[, w_idx := month_end_cal(Date)]
-pan[, r_idx := month_end_cal(Date %m+% months(1))]
-# (avoid lubridate dep: compute via seq)
-pan[, r_idx := as.Date(vapply(Date, function(d) as.character(month_end_cal(seq(as.Date(d), by = "1 month", length.out = 2)[2])), character(1)))]
+udates <- sort(unique(pan$Date))
+umap <- data.table(Date = udates,
+                   w_idx = as.Date(vapply(udates, function(d) as.character(month_end_cal(as.Date(d))), character(1))),
+                   r_idx = as.Date(vapply(udates, function(d) as.character(month_end_cal(seq(as.Date(d), by = "1 month", length.out = 2)[2])), character(1))))
+pan <- merge(pan, umap, by = "Date")
 
 # adv by calendar month (trading month-end AvgTV20 of same month) — for liq variants
 ADV[, ym := format(Date, "%Y-%m")]

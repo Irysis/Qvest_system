@@ -1,0 +1,79 @@
+{
+  "task_id": "WT-D20260611_002",
+  "wt_type": "discovery",
+  "pg1_eligibility": "certificate_required",
+  "discovery_of": null,
+  "graduation_criteria": {
+    "description": "Discovery → Deployment 전환 조건. discovery_graduation_gate.sh 강제. v8.x WS2 재설계(2026-05-29): rank-IC 계열은 long-only 실현 alpha와 어긋나(16후보 calibration 실측: rank_ic가 FLOW 거짓탈락+NN/TECH 거짓통과) advisory로 강등, portfolio-alpha t(forge NW lag-3)를 hard로. DSR hard는 sweep형 selection만(2026-06-10 개정 — chain/단일은 advisory). hard 기준은 forge-authoritative 값(alpha-stage proxy 아님)에 적용.",
+    "min_rank_ic": 0.04,
+    "min_rank_ic_rationale": "KR top-universe benchmark. <0.04는 IC 약함. (v8.x severity=advisory — long-only 실현 alpha 미전이)",
+    "min_icir": 0.2,
+    "min_icir_rationale": "Alpha Lab Gate. (v8.x severity=advisory)",
+    "min_subperiod_stability": 0.5,
+    "min_subperiod_stability_rationale": "3개 subperiod 안정성. (v8.x severity=advisory)",
+    "max_drawdown_days": 100,
+    "max_drawdown_days_rationale": "100일 이상 drawdown 지속 시 alpha decay 의심. (severity=advisory)",
+    "min_harvey_t_stat": 3,
+    "min_harvey_t_stat_rationale": "rank-IC Harvey-t. (v8.x severity=advisory — rank-IC t는 portfolio-alpha t와 구분, 후자가 권위)",
+    "min_deflated_sharpe_ratio": 0.5,
+    "min_deflated_sharpe_ratio_rationale": "Bailey-Lopez de Prado DSR — multi-testing 보정 SR. (severity=HARD는 sweep형 selection만 — ML스윕/optimizer서치/앙상블·사전등록 grid. 가설주도 chain/단일검증은 advisory 강등+진단산출. 도훈 mandate 2026-05-31/2026-06-10, measurement-graduation §3)",
+    "min_portfolio_alpha_t_nw": 2.95,
+    "min_portfolio_alpha_t_nw_rationale": "★v8.x 신규 HARD. forge-authoritative 실현 portfolio-alpha t (NW lag-3, forge_package.portfolio_alpha_t_nw_lag3). Harvey-Liu-Zhu 2016 hurdle. rank-IC t 아님. 게이트 핵심 판별(16후보 중 FLOW만 통과=정확).",
+    "severity": {
+      "rank_ic": "advisory",
+      "icir": "advisory",
+      "subperiod_stability": "advisory",
+      "harvey_t_stat": "advisory",
+      "deflated_sharpe_ratio": "hard",
+      "portfolio_alpha_t_nw": "hard"
+    },
+    "severity_rationale": "hard = block(우회불가), advisory = warn(screening). hard 2종(DSR/portfolio_alpha_t_nw)은 forge-authoritative 값에만 적용 — alpha-stage proxy로 graduation 선언 금지(v8.x WS1 정합)."
+  },
+  "theme": null,
+  "hypothesis_title": "FLOW family E6 fair-trial: KR daily investor-flow alpha, full-universe, 6-10 spec preregistered sweep",
+  "hypothesis_description": "[mechanism] 기관/외국인 일간 순매수 흐름의 정보거래 비대칭 — 수급 주체별 매집 패턴이 1~3개월 가격 발현에 선행 (KR 미시구조에서 외국인/기관 flow의 정보거래 비중). [expected_role] core_alpha (PG0 sleeve_needs=core_alpha). [why_now] 구 WT-D20260529_001 forge 실측 portfolio_alpha_t_nw_lag3=2.3497 (graduation 2.95 최근접 유일), LOCKBOX_TRUNC=3.6632, 열화는 2024-01+ frozen-weights deploy-extension 집중(측정 아티팩트 아님 — forge 자체 진단). 구 유니버스 349종목 = 전종목 레버 미적용. 데이터 실확인: .cache/flow_features_daily.parquet 2000-01-03~2026-03-26, 3390 tickers. [treatment] E6 fair-trial 표준처치: 전종목 신호 추정(도훈 기허용 2026-06-02) + 6~10 spec 사전등록 sweep (selection_type=sweep, DSR>=0.5 HARD, n_trials 전량 계상, IS-only 선택) + screen 게이트 PORT_t>=1.96 AND 2017+ PORT_t>0. holdings는 유동성 20d>=2e8 + max 25. [data_carveout] 일간 flow parquet(.cache/flow_features_daily.parquet, .cache/investor_stock/) 직접 사용을 본 가설에서 명시 승인 (python-policy C15 carve-out 요건). fwd_* 컬럼은 forward label — validate_label_direction + bear_date_audit 의무. [cost] v2.4_kr_retail_15bps (delta-based). flow 신호는 고회전 위험 — cost-aware spec 설계 의무.",
+  "hypothesis_source": "user_defined",
+  "as_of_date": "2026-06-11",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KOSPI200_KOSDAQ150_intersection",
+    "liquidity_min_won_20d_avg": 50000000,
+    "max_names_total": 500
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d (재무제표 발표 지연)",
+    "fundamental_annual": "annual May (연간 재무제표 5월 리밸런싱)",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement (QuantiWise)",
+    "macro": "t-1 FRED (외부 매크로 lag)",
+    "ic_history": "Usable_Date <= sig_date (Factor DB 강제)"
+  },
+  "cost_model_version": "v2.4_kr_retail_15bps",
+  "current_portfolio": "STR_1715_AR_on_M4_R05_overlay_PG2_100",
+  "hard_mandate": {
+    "pit_enforcement": "C1-C15 all enforced",
+    "liquidity_floor_won_20d_avg": 50000000,
+    "mandate_restrictions": {
+      "no_short_legal_kr": true,
+      "no_cross_market": true,
+      "kr_domestic_only": true
+    },
+    "long_only_mandate": "configurable"
+  },
+  "hard_constraints": {
+    "max_names": null,
+    "weight_bounds": [
+      0,
+      1
+    ],
+    "sector_active_weight_cap": null,
+    "liquidity_min_won_20d_avg": 50000000
+  },
+  "soft_penalties": [],
+  "capacity_limits": {
+    "adv_multiplier": 0.1,
+    "capacity_max_aum_won": 100000000000
+  }
+}
