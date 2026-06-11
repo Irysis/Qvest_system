@@ -36,6 +36,13 @@ run_hzz_trend <- function(strategy_name = "Trend Factor (HZZ 2016)",
                           send_telegram = TRUE,
                           tg_dry_run    = FALSE,
                           factor_analysis = TRUE) {
+  # ★ 함수-로컬 robust %||% (lexical scope 우선). run_hurdle_gate가 source하는
+  #   qepm/scripts/hybrid_mode.R가 global %||%를 buggy form(!is.na(a) — length>1 list서 crash)으로
+  #   덮어쓰므로, 함수 내부 모든 %||%가 이 로컬을 쓰도록 고정. assign 복원도 이 로컬을 글로벌에 재주입.
+  `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
+  .restore_or <- function() assign("%||%",
+    function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a,
+    envir = globalenv())
   fe <- file.path(.AS_INFRA, "alpha_search", "fe_hzz_trend.R")
   stopifnot(file.exists(fe))
   run_id      <- paste0(format(Sys.time(), "%Y%m%d_%H%M%S"), "_", Sys.getpid())
@@ -94,7 +101,7 @@ run_hzz_trend <- function(strategy_name = "Trend Factor (HZZ 2016)",
   # ---- 6. 스코어링 (alpha-search 모드 동일 경로) ----
   hg <- run_hurdle_gate(sim_result = sim, FACTORS = FACTORS,
                         strategy_name = strategy_name, output_dir = OUT_DIR)
-  assign("%||%", `%||%`, envir = globalenv())
+  .restore_or()
   grade <- hg$grade %||% "uncertain"
   score <- .as_num(hg$score)
   m     <- hg$verdict$metrics %||% list()
@@ -107,7 +114,7 @@ run_hzz_trend <- function(strategy_name = "Trend Factor (HZZ 2016)",
   if (isTRUE(factor_analysis) && exists("run_analysis")) {
     tryCatch({ run_analysis(sim, FACTORS, RAWDATA, BM_DT, output_dir = OUT_DIR,
                             strategy_name = strategy_name)
-               assign("%||%", `%||%`, envir = globalenv()) },
+               .restore_or() },
              error = function(e) cat("[hzz] 팩터분석 생략:", conditionMessage(e), "\n"))
   }
 
@@ -122,7 +129,7 @@ run_hzz_trend <- function(strategy_name = "Trend Factor (HZZ 2016)",
     source(file.path(.AS_INFRA, "contracts", "register_module.R"))
     register_module(sim, strategy_id, grade = grade, origin_mode = "alpha_search",
                     role = NA_character_, meta = list(strategy_idea = strategy_idea, score = score))
-    assign("%||%", `%||%`, envir = globalenv())
+    .restore_or()
   }, error = function(e) cat("[hzz] register_module 생략:", conditionMessage(e), "\n"))
 
   # ---- 7. Telegram (run_alpha_search 헬퍼 재사용) ----

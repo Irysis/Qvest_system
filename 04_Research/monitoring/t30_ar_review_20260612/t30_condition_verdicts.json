@@ -1,0 +1,219 @@
+{
+  "review_id": "T30_POST_DEPLOY_AR_REVIEW_20260612",
+  "produced_at": "2026-06-12",
+  "produced_by": "Monitoring Agent (Q-Lead spawned), Opus 4.8 1M",
+  "subject_strategy": "STR_1715_AR_on_M4_R05_overlay_PG2",
+  "book_weight": 1.0,
+  "admission_tier": "PG2_CORE_ALPHA",
+  "deploy_effective_date": "2026-05-13",
+  "t30_anchor": "2026-06-11 to 2026-06-12",
+  "cost_label": "v2.4_kr_retail_15bps (delta-based, 2026-06-11 flip; prior flat records labeled separately)",
+  "data_integrity_critical_finding": {
+    "id": "DATA_INTEGRITY_001",
+    "severity": "HIGH",
+    "finding": "rawdata.parquet (this clone) is calendar-corrupted for the live window 2026-05-13..2026-06-11: carries Saturdays (05-16/05-23/05-30) as nonzero-return trading sessions, forward-fills Vol onto Sun/Mon, and is MISSING the real KRX June-crash sessions 06-04,06-05,06-08,06-09 (plus 05-18,05-26,05-28,05-29,06-01,06-11). benchmark.parquet IS clean (20 real sessions). Intersection of clean stock + clean benchmark = only 10 of 20 sessions, and the missing 10 include the entire June crash week. Any portfolio-side realized SR/MDD from this clone's rawdata is low-fidelity and must not drive a rollback verdict.",
+    "consequence": "Portfolio-side realized metrics downgraded to LOW_FIDELITY estimated(paper). Benchmark-side metrics are reliable.",
+    "remediation": "Re-run KRX rawdata pipeline (krx_build_rawdata.R + rawdata_sanitize.R) with trading-calendar filter, or pull a fresh provisioned RAWDATA, before any quantitative rollback decision."
+  },
+  "realized_measurement": {
+    "metric_type": "estimated(paper)",
+    "method": "Paper reconstruction: 2026-04-01 sig_date Top-20 EW (deploy snapshot), deployed overlay net 70% risk / 30% cash (m4=NORMAL 1.0, beta_AR=0.7, beta_R05=1.0 per manifest may_2026_regime_state), 15bps delta-based entry cost on risk notional. PerformanceAnalytics (Return.cumulative/maxDrawdown). NO live-account NAV (KOFIA tracking off).",
+    "window": "2026-05-13 to 2026-06-11",
+    "benchmark_clean_20_sessions": {
+      "fidelity": "RELIABLE",
+      "bm_window_total_ret": 0.0158,
+      "bm_window_maxDD": -0.1496,
+      "bm_june_peak_to_trough_pct": -14.96,
+      "note": "KOSPI200 fell 8801.49 (06-02) to 7484.41 (06-08) = -14.96%, then bounced. CRISIS-class June event."
+    },
+    "portfolio_clean_10_sessions": {
+      "fidelity": "LOW (excludes June crash week 06-04..06-09 due to rawdata gap)",
+      "port_net_window_total_ret": -0.0317,
+      "port_net_maxDD_within10d": -0.0457,
+      "active_vs_bm10d_pp": -3.26,
+      "SR_ann_point_uninformative": -2.139,
+      "SR_ann_SE_Lo_iid": 6.94,
+      "note": "1-month/10-day sample: SR SE ~6.9 annualized => point estimate carries no inferential weight for rollback. Crash week absent => cushioning effect of 30% cash overlay NOT captured."
+    }
+  },
+  "conditions": [
+    {
+      "id": "ROLLBACK_KPI_1_SR_70pct",
+      "source": "user_override_log OVERRIDE_008 rollback_conditions[0]",
+      "text": "T+30 realized SR cost-corrected < 1.10 (70% of baseline 1.5604)",
+      "due": "T+30 (2026-06-11)",
+      "measure": "realized cost-corrected SR vs 1.10",
+      "verdict": "UNMEASURABLE",
+      "reason": "1-month sample SR SE~6.9 (uninformative) + rawdata calendar corruption excludes June crash week. No reliable cost-corrected SR derivable. Point estimate must NOT trigger rollback (mandate).",
+      "flag": "ATTENTION"
+    },
+    {
+      "id": "ROLLBACK_KPI_2_DSR_post",
+      "source": "OVERRIDE_008 rollback_conditions[2]",
+      "text": "T+30 DSR_post < 0.95",
+      "due": "T+30",
+      "measure": "post-deploy DSR",
+      "verdict": "UNMEASURABLE",
+      "reason": "DSR requires sufficient OOS return series; 10-14 live sessions insufficient. Pre-existing integrity caveat: R05 V2 DSR_N37_Z = -3.5961 (post-hoc multi-test negative) already documented at admit (r05_pg2_promotion_reconfirm_20260602 integrity_caveat) — not a new live failure."
+    },
+    {
+      "id": "ROLLBACK_KPI_3_SR_150",
+      "source": "wt_D20260511_001 rollback_conditions / med_10pct",
+      "text": "T+30 realized SR cost-corrected < 1.50",
+      "due": "T+30",
+      "measure": "realized SR vs 1.50",
+      "verdict": "NOT_DUE_SUPERSEDED",
+      "reason": "This rollback belonged to the med_10pct 5-sleeve admit, FULLY REVOKED 2026-05-12 (pd25_revoke_log). Book reverted to single-sleeve R05. Condition is moot."
+    },
+    {
+      "id": "ROLLBACK_KPI_4_TDC_live",
+      "source": "wt_D20260511_001 rollback_conditions",
+      "text": "T+30 portfolio TDC live > 0.50",
+      "due": "T+30",
+      "verdict": "NOT_DUE_SUPERSEDED",
+      "reason": "Single-sleeve book (1 strategy 100%): cross-strategy TDC undefined. Also belonged to revoked 5-sleeve admit."
+    },
+    {
+      "id": "ROLLBACK_KPI_5_monthly_drift",
+      "source": "POST_DEPLOY_001 / monitoring_baseline_R05_V2.drift_warn_threshold_SR / monthly |dSR|>0.2",
+      "text": "T+30 monthly drift > 5pp (or |dSR|>0.2 escalate)",
+      "due": "T+30 monthly",
+      "verdict": "UNMEASURABLE",
+      "reason": "Drift requires reliable realized SR vs predicted 1.9536; rawdata corruption + 1m sample block it. Directional note only: benchmark June -14.96% DD is severe regime stress, predicted CRISIS distribution was only 1.2%."
+    },
+    {
+      "id": "ROLLBACK_HARD_MDD_45",
+      "source": "OVERRIDE_008 rollback_conditions[3]",
+      "text": "MDD > -45% (hard auto-rollback)",
+      "due": "ongoing",
+      "verdict": "PASS_PROVISIONAL",
+      "reason": "No evidence of -45% portfolio drawdown. Clean-10d portfolio maxDD -4.57%; benchmark window maxDD -14.96%. Deployed 30% cash overlay would dampen further. No hard breach. (Provisional: crash week not directly measured on portfolio side.)"
+    },
+    {
+      "id": "ROLLBACK_HARD_TO_600",
+      "source": "OVERRIDE_008 rollback_conditions[4]",
+      "text": "TO > 600% (hard)",
+      "due": "ongoing",
+      "verdict": "NOT_DUE",
+      "reason": "Turnover is annual; 1-month live window cannot establish annualized TO. Admit-basis TO 759.34%/yr already operates under FORMAL WAIVER (6 rationales). Re-validate annually."
+    },
+    {
+      "id": "ROLLBACK_HARD_IR_080",
+      "source": "OVERRIDE_008 rollback_conditions[5]",
+      "text": "IR vs KOSPI200 < 0.80 (hard)",
+      "due": "ongoing",
+      "verdict": "UNMEASURABLE",
+      "reason": "IR needs multi-month active series; 1m insufficient + rawdata gap. Note clean-10d active was -3.26pp, but excludes crash week where defensive cash should help relative IR."
+    },
+    {
+      "id": "ROLLBACK_HARD_weightsum_080",
+      "source": "OVERRIDE_008 rollback_conditions[6]",
+      "text": "actual_weight_sum mean < 0.80 (regime overlay sanity, baseline 0.9165)",
+      "due": "ongoing",
+      "verdict": "UNMEASURABLE",
+      "reason": "Live holdings actual_weight_sum requires production weights.csv for May/June sig_dates; production scores end at 2026-04-01 sig_date on this clone. Deployed May state risk_pct=0.70 (cash 0.30) is consistent with regime overlay operating."
+    },
+    {
+      "id": "POST_DEPLOY_004_AX001v2_T30",
+      "source": "deploy_post_conditions POST_DEPLOY_004 (Forge)",
+      "text": "AX-001 v2 defense conditional metrics (regime overlay) — T+30",
+      "due": "T+30",
+      "owner": "Forge",
+      "verdict": "OPEN_FORGE_OWNED",
+      "reason": "Forge deliverable, not Monitoring. R05 is pure overlay (AX-001 v2 N/A per admit). Carry to Forge backlog."
+    },
+    {
+      "id": "POST_DEPLOY_006_AX008_3rdsource_T30",
+      "source": "deploy_post_conditions POST_DEPLOY_006 (Architect)",
+      "text": "AX-008 3rd source independent verification (alpha/cov/Pre-LB 3-way) — T+30",
+      "due": "T+30",
+      "owner": "Architect",
+      "verdict": "SATISFIED_LAYER4_OPEN_LAYER5",
+      "reason": "Layer-4 (AR) Architect 3rd-source PASS exists (05_lineage_chain/architect_independent_verification.json, 6 metrics x 4 variants 4-decimal). Layer-5 R05 Architect verification was 2/3 strict at admit (Codex REVISE uncounted). Tied to ax_008 remediation below."
+    },
+    {
+      "id": "POST_DEPLOY_009_recent_OOS_drift_T30",
+      "source": "deploy_post_conditions POST_DEPLOY_009 (Monitoring)",
+      "text": "Recent 12M baseline 4.42 + OOS 27mo 2.99 drift tracking — T+30 monthly",
+      "due": "T+30 monthly",
+      "owner": "Monitoring",
+      "verdict": "UNMEASURABLE",
+      "reason": "Same data-integrity block. The recent-12M SR 4.42 and OOS-27m 2.99 are backtest figures; live 1m cannot refresh them reliably on this clone."
+    },
+    {
+      "id": "PD15_med10pct_schedule_T30",
+      "source": "five_pd_grace_clauses_post_admit PD15 (T+30 strict, deadline 2026-06-10)",
+      "text": "med_10pct 155 sig_dates schedule build (Optimizer/Forge re-spawn)",
+      "due": "T+30 (2026-06-10)",
+      "verdict": "MOOT_SUPERSEDED",
+      "reason": "med_10pct 5-sleeve admit FULLY REVOKED 2026-05-12 (pd25_revoke_log). Artifacts build_weights_schedule.R + pd15_remediation_build_med_10pct_schedule.R + schedule_fidelity_certificate.json exist in WT-D20260511_001/ (file-level confirmed), but the admit they conditioned no longer exists. No live obligation."
+    },
+    {
+      "id": "PD16_med10pct_clean_forge_T30",
+      "source": "five_pd_grace_clauses_post_admit PD16 (T+30 strict, deadline 2026-06-10)",
+      "text": "med_10pct clean Forge 256m primary + Codex Round 2 -> AX-008 2/3 recheck",
+      "due": "T+30 (2026-06-10)",
+      "verdict": "MOOT_SUPERSEDED",
+      "reason": "Same as PD15 — conditioned on revoked med_10pct admit."
+    },
+    {
+      "id": "GC7_overlay_cycle_6agent_T30",
+      "source": "grace_clauses_9_binding T_plus_30 GC7 (research_foundation_candidate C_softmax path)",
+      "text": "Overlay cycle (PD30 + AR + M4) Charter 10 6-agent lifecycle activation",
+      "due": "T+30 (2026-06-11)",
+      "verdict": "OPEN_SUPERSEDED_BY_R05_CYCLE",
+      "reason": "GC7 belongs to the C_softmax 4-sleeve research_foundation_candidate (production BLOCKED, lineage-disjoint). The active single-sleeve R05 overlay cycle (WT-H20260513_001) DID complete a 6-agent lifecycle (Forge+Judge+Governor+Architect+Codex). The C_softmax candidate's GC7 remains formally open but is not on the active book path."
+    },
+    {
+      "id": "AR_007_charter11_motion_T30",
+      "source": "turnover_disposition.post_deploy_ar_007_binding + post_deploy_ar_007_binding",
+      "text": "Q-Lead T+30 Charter 11 amendment motion (TO cap 600% -> formal amendment for 759.34%/yr)",
+      "due": "T+30 (2026-06-11)",
+      "owner": "Q-Lead",
+      "verdict": "DUE_NOW_ACTION_REQUIRED",
+      "reason": "Turnover 759.34%/yr operates under formal waiver; the binding requires Q-Lead to file a Charter 11 amendment motion to formalize the TO cap (or affirm waiver) at T+30. This is DUE today and is a Q-Lead action item, not a measurement.",
+      "flag": "ACTION_REQUIRED"
+    },
+    {
+      "id": "AX008_dohoon_3of3_remediation",
+      "source": "ax_008_dohoon_mandate_pending_remediation",
+      "text": "Overlay cycle T+30 + 9 grace clauses -> re-run Codex critic 3-stage -> 3-source PASS -> promotion_wt spawn",
+      "due": "T+30 (2026-06-11)",
+      "owner": "Q-Lead",
+      "verdict": "ENABLED_READY_TO_RUN",
+      "reason": "Codex CLI restored (codex-cli 0.139.0 on PATH, 2026-06-11) + helper run_codex_qepm_critic.sh Windows path fix (cygpath) confirmed. The codex 3-stage re-run on the R05 overlay cycle is now technically executable. Q-Lead decision required to execute. Targets specified in report section 6.",
+      "flag": "ACTION_AVAILABLE"
+    },
+    {
+      "id": "HOLDOUT_1st_pass_trailing",
+      "source": "live_track holdout_interval.json C3 live extension",
+      "text": "Monitor trailing realized Sharpe vs pre-registered interval [0.3929, 3.1626] (21m holdout), lower-bound breach -> Telegram alert",
+      "due": "monthly (1st pass)",
+      "owner": "Monitoring",
+      "verdict": "NOT_DUE_INSUFFICIENT_TRAILING",
+      "reason": "Holdout interval is a 21-month Sharpe band (boot_median 1.7535, q05 0.3929, q95 3.1626). Trailing live data is ~1 month — far below 21m horizon. No falsification possible. consumed=false retained. 1st-pass registered; lower-bound q05=0.3929 is the live-extension alert threshold for future months. No breach declarable now."
+    }
+  ],
+  "unmeasurable_list_reasons": {
+    "no_live_account_NAV": "KOFIA NAV tracking not running; no real-account series exists.",
+    "rawdata_calendar_corruption": "live-window rawdata.parquet on this clone has wrong KR trading calendar + missing June crash sessions.",
+    "production_scores_stale": "alpha-scores panels end at 2026-04-01 sig_date; no May/June production rebalance scores on this clone.",
+    "regime_daily_stale": "regime_daily_v2.parquet (M4/MRS source) ends 2026-04-22; live-window overlay scalars not reproducible.",
+    "one_month_sample": "1-month SR has annualized SE ~6.9 (Lo 2002 iid); statistically uninformative for SR/DSR/IR/drift verdicts."
+  },
+  "no_obvious_violation": "No hard rollback breach detected (no -45% MDD, no evidence of catastrophic divergence). Benchmark June DD -14.96% is severe regime stress but within strategy's documented CRISIS-design scope; deployed 30% cash overlay is risk-mitigating by design.",
+  "ax008_rerun_targets": {
+    "overlay_cycle_wt": "WT-H20260513_001 (R05 Layer 5 admit) — mailbox EMPTY on this clone; canonical packages in production 05_lineage_chain/",
+    "option_A_production_lineage": {
+      "governor": "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/05_lineage_chain/governor_admission.json",
+      "note": "production path is read-only; codex helper writes output to package dir -> would need --output to a writable WT/scratch dir"
+    },
+    "option_B_admit_artifacts": {
+      "forge": "05_Production/.../03_admit_artifacts/forge_package.json (if present) or 01_reproducible_code/forge_package.json",
+      "judge": "05_Production/.../03_admit_artifacts/judge_verdict.json",
+      "governor": "05_Production/.../03_admit_artifacts/governor_admission.json"
+    },
+    "recommended": "Restage the R05 overlay-cycle forge/judge/governor packages into a fresh scratch WT dir (e.g. qepm/mailbox/worktask/WT-AX008RERUN_20260612/) then run helper 3x (--role=forge|judge|governor) with --output into that dir. Keeps production read-only.",
+    "codex_cli": "codex-cli 0.139.0 (PATH: /c/Users/99922/AppData/Roaming/npm/codex). helper exec: codex exec --model gpt-5.5 -c reasoning.effort=xhigh."
+  }
+}
