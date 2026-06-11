@@ -28,12 +28,14 @@ cat("== cor(value, book) =", round(cor(al$value_ret, al$book_ret), 4), "\n")
 
 # --- metric helper (standard functions only) ---
 metr <- function(r, b) {
+  r <- xts(as.numeric(r), order.by = index(r)); colnames(r) <- "ret"
+  b <- xts(as.numeric(b), order.by = index(b)); colnames(b) <- "bm"
   cagr  <- as.numeric(Return.annualized(r, scale = 12, geometric = TRUE))
   sr_g  <- as.numeric(SharpeRatio.annualized(r, Rf = 0, scale = 12, geometric = TRUE))
   sr_a  <- as.numeric(SharpeRatio.annualized(r, Rf = 0, scale = 12, geometric = FALSE))
   mdd   <- as.numeric(maxDrawdown(r))
   cal   <- as.numeric(CalmarRatio(r, scale = 12))
-  act   <- r - b
+  act   <- r - b; colnames(act) <- "active"
   te    <- as.numeric(StdDev.annualized(act, scale = 12))
   ir_pa <- as.numeric(InformationRatio(r, b, scale = 12))           # ActivePremium(geom)/TE
   act_ann_arith <- mean(act) * 12
