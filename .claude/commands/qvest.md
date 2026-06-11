@@ -68,10 +68,12 @@ bash 02_Infrastructure/ops/bootstrap.sh
 
 ```bash
 cd "C:/Users/99922/OneDrive/Quant_Module_Moltbot"
-Rscript -e 'source("02_Infrastructure/worktask/worktask_manager.R"); wt_list()'
+bash 02_Infrastructure/ops/safe_run.sh Rscript -e 'source("02_Infrastructure/worktask/worktask_manager.R"); wt_list()'
 ```
 
-또는 `cat .cache/portfolio_gap_vector.json` (PG0 gap)
+또는 `bash 02_Infrastructure/ops/safe_run.sh cat .cache/portfolio_gap_vector.json` (PG0 gap)
+
+(safe_run.sh = utf8_output_guard 경유 실행 — 데이터 파일에 이모지가 섞여도 API 400 surrogate 차단, v8.1.2)
 
 ### 5. 리서치 개시 — Work Task 기반
 
@@ -219,7 +221,7 @@ PG2 active (STR_1631_SYN_05_2002 + STR_1656_MLRA_M05) **그대로 유지**.
 
 ---
 
-## 부팅 직후 체크리스트 (v8.1 갱신 — 13 + v8.0 5 + v8.1 4건)
+## 부팅 직후 체크리스트 (v8.1.2 갱신 — 13 + v8.0 5 + v8.1 4 + v8.1.2 1건)
 
 ### v8.1.2 신규 확인 (1건, 2026-06-11)
 23. ✅ **UTF-8 출력 가드** 부트 메시지 — `[boot] utf8_output_guard: ACTIVE`. INACTIVE WARN 시 python3 PATH 점검. 부트 외 이모지 출력 가능 커맨드는 `bash 02_Infrastructure/ops/safe_run.sh <cmd>` 경유 (API 400 invalid high surrogate 방지 — anthropics/claude-code#44230)
@@ -252,9 +254,9 @@ PG2 active (STR_1631_SYN_05_2002 + STR_1656_MLRA_M05) **그대로 유지**.
 ### v7.2.1 신규 (4건)
 
 10. ✅ **Memory Knowledge Health** 부트 메시지 확인 (`[boot] Memory health: hard=0 warn=≤6 info=N`). HARD ≥1 이면 즉시 중단. 출력: `qepm/observability/memory_health_latest.json`
-11. ✅ **Axiom SOT 3축 동기화** 부트 메시지 확인 (`[boot] Axioms: active=N candidates=M (sot_map documented=8: documented=3 / block=1 / advisory=4)`). primary (`active/AX-*.json`) ↔ documented (`.claude/rules/axioms.md`) 8:8 일치 = `memory_knowledge_health.R` HARD 3 PASS
+11. ✅ **Axiom SOT 3축 동기화** 상태 라인 확인 (`Axioms:` 라인 — `active=N candidates=M (sot_map documented=8: documented=3 / block=1 / advisory=4)`. 상태 보고 블록 출력, `[boot]` prefix 없음). primary (`active/AX-*.json`) ↔ documented (`.claude/rules/axioms.md`) 8:8 일치 = `memory_knowledge_health.R` HARD 3 PASS
 12. ✅ **v8 Readiness Gate** 부트 메시지 확인 (`[boot] v8 readiness (--no-write, 16 check incl v8_architecture): PASS — pass=13 fail=0 skip=2`). e2e_kernel + timeline_generation은 no-write 시 SKIP 정상. `memory_health` cached `memory_health_latest.json` read
-13. ✅ **Cache_core sync** 부트 메시지 확인 (`[boot] Cache_core: FULL (8)` 또는 `STALE (n vs 8 — derived cache, WARN only)`). STALE은 hard fail 아님 (axiom_sot_map.json sot_definition.hard_fail_basis = primary↔documented만)
+13. ✅ **Cache_core sync** 상태 라인 확인 (`Cache_core: FULL (8)` 또는 `STALE (n vs 8 — derived cache, WARN only)`. 상태 보고 블록 출력, `[boot]` prefix 없음). STALE은 hard fail 아님 (axiom_sot_map.json sot_definition.hard_fail_basis = primary↔documented만)
 
 체크 실패 시 → `next_session_task.md` 참조 + 복구.
 
