@@ -179,25 +179,52 @@ suppressMessages({
 
     invest_val <- total_val
 
-    # 청산
-    for (tk in names(holdings)) {
-      price_row <- RAWDATA[Ticker == tk & Date == exec_date, Close]
-      if (length(price_row) > 0 && !is.na(price_row[1])) {
-        proceeds <- holdings[[tk]]$shares * price_row[1]
-        cash     <- cash + proceeds * (1 - commission)
+    if (.cost_delta) {
+      # ── v2.4_delta: 종목별 |Δ명목| 과금 (보유 지속분 netting, 변화분에만) ──
+      prev_notional <- numeric(0)
+      for (tk in names(holdings)) {
+        price_row <- RAWDATA[Ticker == tk & Date == exec_date, Close]
+        if (length(price_row) > 0 && !is.na(price_row[1])) {
+          prev_notional[tk] <- holdings[[tk]]$shares * price_row[1]
+        }
       }
-    }
-    holdings <- list()
+      tgt_notional <- numeric(0)
+      for (tk in available) tgt_notional[tk] <- invest_val * w_local[[tk]]
+      fee <- 0
+      for (tk in union(names(tgt_notional), names(prev_notional))) {
+        nv <- if (tk %in% names(tgt_notional))  tgt_notional[[tk]]  else 0
+        pv <- if (tk %in% names(prev_notional)) prev_notional[[tk]] else 0
+        fee <- fee + abs(nv - pv) * commission  # 매수레그(Δ>0) + 매도레그(Δ<0) 각 c
+      }
+      holdings <- list()
+      for (tk in available) {
+        pr <- exec_prices[Ticker == tk, Close]
+        if (length(pr) == 0 || is.na(pr)) next
+        holdings[[tk]] <- list(shares = tgt_notional[[tk]] / pr, last_price = pr)
+      }
+      cash <- total_val - sum(tgt_notional) - fee
+    } else {
+      # ── v2.3_flat (기본값): 기존 로직 그대로 — 전량청산 + 전량재매수 ──
+      # 청산
+      for (tk in names(holdings)) {
+        price_row <- RAWDATA[Ticker == tk & Date == exec_date, Close]
+        if (length(price_row) > 0 && !is.na(price_row[1])) {
+          proceeds <- holdings[[tk]]$shares * price_row[1]
+          cash     <- cash + proceeds * (1 - commission)
+        }
+      }
+      holdings <- list()
 
-    # 신규 매수
-    for (i in seq_along(available)) {
-      tk    <- available[i]
-      alloc <- invest_val * w_local[tk]
-      pr    <- exec_prices[Ticker == tk, Close]
-      if (length(pr) == 0 || is.na(pr)) next
-      shares <- (alloc * (1 - commission)) / pr
-      cash   <- cash - alloc
-      holdings[[tk]] <- list(shares = shares, last_price = pr)
+      # 신규 매수
+      for (i in seq_along(available)) {
+        tk    <- available[i]
+        alloc <- invest_val * w_local[tk]
+        pr    <- exec_prices[Ticker == tk, Close]
+        if (length(pr) == 0 || is.na(pr)) next
+        shares <- (alloc * (1 - commission)) / pr
+        cash   <- cash - alloc
+        holdings[[tk]] <- list(shares = shares, last_price = pr)
+      }
     }
 
     nav_est <- cash + sum(sapply(names(holdings), function(tk) {
