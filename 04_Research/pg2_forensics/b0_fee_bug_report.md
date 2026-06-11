@@ -44,3 +44,10 @@
 - `b0_fee_ab_test.R` (A/B 하니스) · `_prepatch_harness.R` (패치 전 스냅샷)
 - `b0_ab_prepatch.json` / `b0_ab_postpatch.json` / `b0_ab_reverted.json` (실측)
 - 본 보고서. n_trials 영향 없음(엔진 진단 — 전략 선택 아님).
+
+## 6. 후속 — cost_model v2.4 구현 (2026-06-11, 도훈 confirm 후)
+
+- **구현 완료 (opt-in)**: `run_monthly_simulation(..., cost_model_version)` — `"v2.3_flat"`(기본값, 기존과 비트단위 동일) / `"v2.4_delta"`(종목별 |Δ보유 명목|에 매수레그+매도레그 각 15bps, 보유 지속분 netting, 최초 진입 전액 매수레그, 전량청산 경로 매도 15bps 양 모드 동일). `judge_oos_helper.R::.joh_run_static_weight_sim`(flat ~30bps/리밸 독립 복제본)도 동일 파라미터 추가.
+- **회귀 no-op PASS**: 기본값으로 SYN_low/SYN_high 재실행 → `b0_ab_reverted.json` 대비 nav_end 원단위 동일(97,480,600) + total_ret −0.025194 동일. judge helper도 prepatch baseline 대비 비트 동일.
+- **v2.4 합성 산술 PASS + 회전율 단조성 입증**: SYN_low(0%) −0.150%, SYN_mid(50%, 신설) −2.523%, SYN_high(100%) −4.842% — 분석적 기대값 [−c, (1−c)^17−1, (1−c)(1−2c)^16−1] 대비 |diff| ≤ 5.9e-5. v2.3은 3케이스 전부 −2.52% (flat 무감도 재확인).
+- **기본값 flip 미수행** — book 핵심수치 재측정 후 Q-Lead 별도 결정. 상세: `v24_ab_results.json` / `v24_fee_ab_test.R`.

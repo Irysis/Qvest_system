@@ -160,6 +160,9 @@ echo "[Codex] invoking codex exec --model gpt-5.5 -c reasoning.effort=\"xhigh\" 
 
 RAW_OUTPUT=$(mktemp /tmp/codex_raw_XXXXXX.txt)
 trap "rm -f $RAW_OUTPUT" EXIT
+# Windows(Git Bash) python은 /tmp/* 를 못 읽음 — cygpath mixed 경로로 변환 (Linux는 fallback no-op)
+RAW_OUTPUT_PY=$(cygpath -m "$RAW_OUTPUT" 2>/dev/null || echo "$RAW_OUTPUT")
+OUTPUT_PY=$(cygpath -m "$OUTPUT" 2>/dev/null || echo "$OUTPUT")
 
 timeout "${CODEX_TIMEOUT:-1200}" codex exec \
   --model gpt-5.5 \
@@ -174,7 +177,7 @@ timeout "${CODEX_TIMEOUT:-1200}" codex exec \
 python3 <<PYEOF > "$OUTPUT"
 import re, json, sys
 try:
-    text = open("$RAW_OUTPUT", encoding="utf-8").read()
+    text = open(r"$RAW_OUTPUT_PY", encoding="utf-8").read()
 except Exception as e:
     print(json.dumps({"stance":"ERROR","error":f"read fail: {e}"}, ensure_ascii=False))
     sys.exit(0)
@@ -208,7 +211,7 @@ else:
 PYEOF
 
 # Validate output is valid JSON
-if ! python3 -c "import json; json.load(open('$OUTPUT'))" 2>/dev/null; then
+if ! python3 -c "import json; json.load(open(r'$OUTPUT_PY'))" 2>/dev/null; then
   echo "[WARN] Codex output not valid JSON. Wrapping into error envelope." | tee -a "$AUDIT_LOG"
   RAW=$(cat "$OUTPUT" 2>/dev/null || echo "")
   cat > "$OUTPUT" <<JSON
@@ -220,15 +223,15 @@ if ! python3 -c "import json; json.load(open('$OUTPUT'))" 2>/dev/null; then
   "task_id": "$TASK_ID",
   "stance": "ERROR",
   "stance_rationale": "Codex output was not valid JSON. See raw_output_excerpt.",
-  "raw_output_excerpt": $(echo "$RAW" | head -c 500 | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))'),
+  "raw_output_excerpt": $(echo "$RAW" | head -c 500 | python3 -c 'import json,sys; print(json.dumps(sys.stdin.buffer.read().decode("utf-8","replace")))'),
   "audit_log": "$AUDIT_LOG"
 }
 JSON
 fi
 
 # Extract verdict for caller
-STANCE=$(python3 -c "import json; print(json.load(open('$OUTPUT')).get('stance',''))" 2>/dev/null || echo "?")
-WEAKEST=$(python3 -c "import json; print(json.load(open('$OUTPUT')).get('weakest_assumption',''))" 2>/dev/null || echo "?")
+STANCE=$(python3 -c "import json; print(json.load(open(r'$OUTPUT_PY')).get('stance',''))" 2>/dev/null || echo "?")
+WEAKEST=$(python3 -c "import json; print(json.load(open(r'$OUTPUT_PY')).get('weakest_assumption',''))" 2>/dev/null || echo "?")
 
 echo ""
 echo "[Codex QEPM Critic] DONE"

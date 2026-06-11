@@ -1,0 +1,128 @@
+{
+  "meta": {
+    "date": "2026-06-11",
+    "metric_type": "diagnostic",
+    "purpose": "cost model v2.4 (delta-based) patch verification: default no-op regression + delta arithmetic",
+    "patched_files": ["02_Infrastructure/backtest_harness.R (run_monthly_simulation)", "02_Infrastructure/validation/judge_oos_helper.R (.joh_run_static_weight_sim)"],
+    "default_model": "v2.3_flat (NOT flipped — flip = Q-Lead after book remeasure)",
+    "commission": 0.0015,
+    "n_rebal": 17
+  },
+  "harness_regression": {
+    "baseline_file": "b0_ab_reverted.json",
+    "baseline": {
+      "syn_low": {
+        "nav_end": 97480600,
+        "total_ret": -0.025194
+      },
+      "syn_high": {
+        "nav_end": 97480600,
+        "total_ret": -0.025194
+      }
+    },
+    "patched_default": {
+      "syn_low": {
+        "nav_end": 97480600,
+        "total_ret": -0.025194
+      },
+      "syn_high": {
+        "nav_end": 97480600,
+        "total_ret": -0.025194
+      }
+    },
+    "nav_end_identical": {
+      "syn_low": true,
+      "syn_high": true
+    },
+    "total_ret_match": {
+      "syn_low": true,
+      "syn_high": true
+    },
+    "explicit_flat_identical_to_default": true,
+    "alias_v23kr_identical_to_default": true,
+    "b0_script_rerun": {
+      "script": "b0_fee_ab_test.R (원본 무수정 재사용, 기본 인자 = 패치 후 default 경로)",
+      "output_file": "b0_ab_v24patched_default.json",
+      "syn_low": { "nav_end": 97480600, "total_ret": -0.025194 },
+      "syn_high": { "nav_end": 97480600, "total_ret": -0.025194 },
+      "identical_to_b0_ab_reverted": true,
+      "all_metrics_identical": "cagr/annvol/sharpe/mdd/ann_turnover/period 전부 동일",
+      "real_legs": "기존과 동일 에러 재현 ('names' attribute ...) — real_leg_diagnosis 절 참조"
+    },
+    "verdict": "PASS"
+  },
+  "v24_delta_verification": {
+    "closed_form": {
+      "v23_flat_any": "(1-c)^17 - 1",
+      "v24_syn_low": "-c (initial full-buy leg only)",
+      "v24_syn_mid": "(1-c)^17 - 1 (initial c, then 16 x sum|dW|=1.0 x c)",
+      "v24_syn_high": "(1-c)*(1-2c)^16 - 1 (initial c, then 16 x (sell c + buy c))"
+    },
+    "table": [
+      {
+        "case": "SYN_low  (0%)",
+        "model": "v2.4_delta",
+        "measured": -0.001503,
+        "expected": -0.0015,
+        "tol": 0.0005,
+        "pass": true
+      },
+      {
+        "case": "SYN_mid  (50%)",
+        "model": "v2.4_delta",
+        "measured": -0.0252276,
+        "expected": -0.0251962829981,
+        "tol": 0.0005,
+        "pass": true
+      },
+      {
+        "case": "SYN_high (100%)",
+        "model": "v2.4_delta",
+        "measured": -0.048423,
+        "expected": -0.04836457117516,
+        "tol": 0.0005,
+        "pass": true
+      },
+      {
+        "case": "SYN_mid  (50%)",
+        "model": "v2.3_flat",
+        "measured": -0.0251922,
+        "expected": -0.0251962829981,
+        "tol": 0.0005,
+        "pass": true
+      }
+    ],
+    "v23_flat_all_three": {
+      "syn_low": -0.025194,
+      "syn_mid": -0.0251922,
+      "syn_high": -0.025194,
+      "insensitive": true
+    },
+    "v24_monotonic_in_turnover": true,
+    "tolerance_abs": 0.0005,
+    "tolerance_rationale": "integer-share floor quantization + fee-induced re-target drift",
+    "verdict": "PASS"
+  },
+  "judge_oos_helper": {
+    "baseline_file": "v24_judge_prepatch_baseline.json (captured pre-patch this session)",
+    "prepatch": {
+      "nav_end": 95160307.256176546,
+      "total_ret": -0.04839692743823
+    },
+    "patched_default": {
+      "nav_end": 95160307.256176546,
+      "total_ret": -0.04839692743823
+    },
+    "default_identical": true,
+    "v24_delta": {
+      "nav_end": 99849774.661992997,
+      "total_ret": -0.00150225338007,
+      "expected": -0.0015,
+      "tol": 0.0001,
+      "pass": true
+    },
+    "note": "v2.3 helper = full-sell c + full-buy c per rebal (~30bps flat); v2.4 static-w cost = initial buy leg only",
+    "verdict": "PASS"
+  },
+  "overall": "PASS"
+}

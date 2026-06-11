@@ -373,6 +373,8 @@ judge_oos_backtest <- function(wt_id,
     m <- regmatches(cv, regexpr("[0-9]+(?=bps)", cv, perl = TRUE))
     if (length(m) == 1 && nzchar(m)) as.numeric(m) / 10000 else 0.0015
   }
+  # cost model 구조 인식 (2026-06-11): request가 v2.4_*면 delta 과금, 그 외 전부 기존 v2.3 flat
+  cost_model <- if (grepl("^v2\\.4", cv)) "v2.4_delta" else "v2.3_flat"
 
   # weights.csv
   if (is.null(weights_path)) {
@@ -410,7 +412,8 @@ judge_oos_backtest <- function(wt_id,
   sim <- .joh_run_static_weight_sim(RAWDATA, weights_dt,
                                      start_date = full_start,
                                      end_date   = full_end,
-                                     commission = commission)
+                                     commission = commission,
+                                     cost_model_version = cost_model)
 
   full_nav <- sim$daily_nav
   full_ret <- .joh_nav_to_ret(full_nav)
