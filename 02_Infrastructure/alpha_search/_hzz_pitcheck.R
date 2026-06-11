@@ -1,0 +1,5 @@
+Sys.setenv(CLAUDE_PROJECT_DIR = "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
+source("02_Infrastructure/validation/lookahead_detector.R")
+p <- detect_lookahead("02_Infrastructure/alpha_search/fe_hzz_trend.R", verbose = FALSE)
+cat("CLEAN=", isTRUE(p$clean), " nviol=", length(p$violations), "\n")
+if (length(p$violations)) for (v in p$violations) cat(sprintf("  L%s [%s]: %s\n", v$line, v$check, v$msg))
