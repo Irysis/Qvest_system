@@ -203,7 +203,8 @@ run_bsc_momentum <- function(start_date     = "2005-01-01",
                     pf_raw, pf_mgd, pf_himgd, ds_raw, ds_mgd, crash_tbl, worst_raw_ym, mgd_mdt,
                     sr_raw_pre, sr_mgd_pre, sr_raw_post, sr_mgd_post, mf, grade, score,
                     to_lambda_ann, charts, dry_run = tg_dry_run),
-    error = function(e) cat("[BSC][TG] 발송 실패:", conditionMessage(e), "\n"))
+    error = function(e) { cat("[BSC][TG] 발송 실패:", conditionMessage(e), "\n")
+                          print(utils::tail(sys.calls(), 8)) })
 
   invisible(result)
 }
@@ -245,6 +246,7 @@ run_bsc_momentum <- function(start_date     = "2005-01-01",
     if (!is.null(reg) && reg$alpha_t >= 2.0) "회귀 α 유의(t≥2) — 변동성 타이밍 작동" else "회귀 α 무유의(t<2) — KR에서 BSC 약함",
     "L/S 논문구조는 production(long-only)과 충돌 — 검증단계 논문 우선(명시 보고)",
     sprintf("비용한계: 엔진=flat per-rebalance 15bps. L/S 양다리 회전 → 과소계상 가능"))
+  cat("[BSC][TG-DBG] kv/notes 구성 완료, tg_agent_brief 진입\n")
   sections <- list(
     list(type = "text", emoji = "\U0001F4DA", heading = "연구 컨텍스트", body = ctx),
     list(type = "text", emoji = "\U0001F4A1", heading = "전략 아이디어", body = strategy_idea),
