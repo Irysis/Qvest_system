@@ -104,7 +104,7 @@
 
 - `02_Infrastructure/hooks/*.sh` (현재 55개 — Phase 1/2 hooks 신규 5건 포함)
 - ~~`02_Infrastructure/hooks/_archive_v55/`~~ (Tier 1 cleanup 2026-05-16 삭제 — legacy v55 hooks 6건 영구 폐기)
-- `.claude/settings.json` Hook 등록 (45 distinct .sh)
+- `.claude/settings.json` Hook 등록 (47 distinct .sh — v8.1.2 2026-06-11 기준, 아래 정합 절 참조)
 - `02_Infrastructure/docs/qvest_v6_4_sot.md` Section 5 (Hook + Cert + Codex Round Matrix)
 
 ## Hook 정합 audit (2026-05-16)
@@ -131,6 +131,14 @@
 - **안전한 경로 (오탐 방지)**: bash가 스크립트 파일 내 한글 literal을 **직접 echo**하는 것은 안전 (python text 레이어 없음 — Node가 UTF-8로 정상 디코딩). Bash tool의 일반 커맨드 CP949 출력도 Node lossy decode가 U+FFFD로 안전 처리 (400 원인 아님 — 가독성만 손실, safe_run.sh 권장).
 - **환경 영구화**: `setx PYTHONUTF8 1` 적용(2026-06-11, user env) — Claude Code 재시작 후 모든 hook/python에 전파. hook 내 export는 재시작 전에도 유효한 2중 방어.
 - **오염 세션 복구**: lone surrogate가 박힌 transcript는 해당 세션 영구 400. 복구 = jsonl 백업 후 string 값 내 surrogate → '?' 스크럽 (06-11 8개 세션 실시, `*.surrogate_bak` 보존).
+
+## v8.1.2 정합 (2026-06-11 — 등록 드리프트 전수 대조, 도훈 confirm)
+
+- **등록 셋**: settings.json 47 distinct .sh (고스트 등록 0 — 등록분 전부 FS 실재). `milestone_commit.sh` **재등록**(PostToolUse[Write]) — 8674cb3 무언급 소실분 복구 (Stop hook 2종과 동일 사건, qvest.md Tier 3 주장과 정합 회복).
+- **FS-only 미등록 (의도적, 5건)**: cash_sleeve_validator / circuit_breaker / trail_consistency_checker / attribution_quarterly_trigger / **role_taxonomy_admission_gate**(v55 Scout 전용 — v8.1 흐름 불일치로 강등 확정, 도훈 2026-06-11. 파일 retain).
+- **등록 해제 documented (v53/v8.0 폐지)**: unified_agent_guard / task_complete_guard / teammate_idle_guard. **헬퍼/비-hook**: _shared_parse / resolve_project / harness_health / pit_v3_daemon.
+- **agent_role_guard 복원**: MSYS ps가 `-o` 미지원이라 PARENT_PID 식별이 항상 실패 → 역할 경계 가드가 이 머신에서 상시 allow였음. bash 내장 `$PPID`로 교체 수리 (battery 13/13 검증).
+- **회귀 배터리**: `02_Infrastructure/ops/hook_e2e_battery.py` — 등록 hook 한글 payload 블록/통과 13케이스. hook 파서/이스케이프 변경 시 실행 의무.
 
 ## v8.1.1 정합 (2026-06-10)
 

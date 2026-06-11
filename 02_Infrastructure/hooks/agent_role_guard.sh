@@ -21,15 +21,18 @@
 
 set -euo pipefail
 trap 'echo "{}"; exit 0' ERR
+export PYTHONUTF8=1  # (v8.1.2) 인코딩 사고 방지 — harness.md "Hook stdout JSON 규율"
 
-# stdin JSON 파싱
+# stdin JSON 파싱 (v8.1.2: bytes 경유 UTF-8 명시 — locale 의존 제거)
 INPUT=$(cat)
-FILE_PATH=$(echo "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
+FILE_PATH=$(echo "$INPUT" | python3 -c 'import json,sys; sys.stdout.reconfigure(encoding="utf-8",errors="replace"); d=json.loads(sys.stdin.buffer.read().decode("utf-8","replace")); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
 
 # Agent 식별 (환경변수 또는 agent_id marker file)
 # Claude Code teammate system에서 agent name은 env var CLAUDE_AGENT_NAME 또는 process context로 식별
 # 임시 접근: marker file /tmp/qvest_current_agent_{pid}
-PARENT_PID=$(ps -o ppid= -p $$ 2>/dev/null | tr -d ' ' || echo "0")
+# (v8.1.2) bash 내장 $PPID 사용 — MSYS ps는 -o 미지원이라 PARENT_PID가 항상 빈값
+# → marker 미발견 → 역할 가드가 이 머신에서 상시 allow로 침묵 무력화되던 결함 수리
+PARENT_PID="${PPID:-0}"
 MARKER="/tmp/qvest_current_agent_${PARENT_PID}"
 AGENT_NAME=""
 if [[ -f "$MARKER" ]]; then

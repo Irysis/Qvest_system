@@ -24,9 +24,11 @@ set -euo pipefail
 LOG="/tmp/codex_round_pre_enforcer.log"
 trap 'echo "[$(date -Iseconds)] HOOK_ERR_TRAP" >> "$LOG"; echo "{}"; exit 0' ERR
 
+export PYTHONUTF8=1  # (v8.1.2) 인코딩 사고 방지 — harness.md "Hook stdout JSON 규율"
+
 INPUT=$(cat)
-TOOL=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_name",""))' 2>/dev/null || echo "")
-FILE_PATH=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
+TOOL=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; sys.stdout.reconfigure(encoding="utf-8",errors="replace"); d=json.loads(sys.stdin.buffer.read().decode("utf-8","replace")); print(d.get("tool_name",""))' 2>/dev/null || echo "")
+FILE_PATH=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; sys.stdout.reconfigure(encoding="utf-8",errors="replace"); d=json.loads(sys.stdin.buffer.read().decode("utf-8","replace")); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
 
 if [[ "$TOOL" != "Write" && "$TOOL" != "Edit" ]]; then echo '{}'; exit 0; fi
 
@@ -85,11 +87,6 @@ fi
 BLOCK_REASON="CODEX_CRITIC_ROUND_REQUIRED (v6.0 의무 단계, L-269): role=$ROLE | draft=$DRAFT_EXISTS | critic_response=$CRITIC_EXISTS. 절차: (1) ${ROLE}_package_draft.json Write → (2) PostToolUse codex_round_auto_trigger.sh background spawn 대기 (~9-15분) → (3) codex_critic_response_${ROLE}.json 도착 후 challenge_note.md 기록 → (4) ${ROLE}_package.json finalize. waiver 필요 시 challenge_note.md 에 'codex_critic_skip_waiver' 명시 + 사유 + 도훈 override 인용."
 
 echo "[$(date -Iseconds)] BLOCK file=$FILE_PATH role=$ROLE draft=$DRAFT_EXISTS critic=$CRITIC_EXISTS" >> "$LOG"
-python3 -c "
-import json
-print(json.dumps({
-    'decision': 'block',
-    'reason': '''$BLOCK_REASON'''
-}))
-"
+# (v8.1.2) reason은 env 경유 + surrogate 스크럽 — 소스 보간('''$VAR''') 제거
+CRPE_REASON="$BLOCK_REASON" python3 -c "import json,os; s=os.environ.get('CRPE_REASON',''); print(json.dumps({'decision':'block','reason': ''.join(ch if not(0xD800<=ord(ch)<=0xDFFF) else '?' for ch in s)}))"
 exit 0

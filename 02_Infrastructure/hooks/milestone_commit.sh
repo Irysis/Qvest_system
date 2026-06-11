@@ -39,11 +39,12 @@ PROJECT=$(ls -d /c/Users/99922/OneDrive/Quant_Module_Moltbot /mnt/c/Users/99922/
 cd "$PROJECT" || { echo '{}'; exit 0; }
 git rev-parse --git-dir >/dev/null 2>&1 || { echo '{}'; exit 0; }
 
-# 파일 경로 추출
+# 파일 경로 추출 (v8.1.2: bytes 경유 UTF-8 명시)
 FILE=$(printf '%s' "$INPUT" | python3 -c "
 import sys, json
+sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 try:
-    d = json.load(sys.stdin)
+    d = json.loads(sys.stdin.buffer.read().decode('utf-8', 'replace'))
     print(d.get('tool_input', {}).get('file_path', ''))
 except: print('')
 " 2>/dev/null || echo "")
@@ -64,24 +65,26 @@ case "$FILE" in
       echo '{}'; exit 0
     fi
     MILESTONE="AX_PROMOTE"
+    # (v8.1.2) 경로는 argv 전달 + encoding 명시 — 소스 보간 open('$FILE')은 quote 포함 경로에서 주입형
     STMT=$(python3 -c "
-import json
+import json, sys
+sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 try:
-    d = json.load(open('$FILE'))
+    d = json.load(open(sys.argv[1], encoding='utf-8'))
     s = (d.get('statement') or '')[:80]
     print(s)
-except: print('')" 2>/dev/null)
+except: print('')" "$FILE" 2>/dev/null)
     COMMIT_MSG="feat(axiom): $AX_ID 승격 — $STMT"
     PUSH_IMMEDIATE=1
     ;;
   */stage_artifacts/s7_disposition_*.json|stage_artifacts/s7_disposition_*.json)
     # Grade A/A_NOVEL/A_DEF만
     GRADE=$(python3 -c "
-import json
+import json, sys
 try:
-    d = json.load(open('$FILE'))
+    d = json.load(open(sys.argv[1], encoding='utf-8'))
     print(d.get('grade') or d.get('final_grade') or '')
-except: print('')" 2>/dev/null)
+except: print('')" "$FILE" 2>/dev/null)
     case "$GRADE" in
       A|A_NOVEL|A_DEF)
         STR_ID=$(basename "$FILE" .json | sed 's/^s7_disposition_//')
@@ -100,11 +103,11 @@ except: print('')" 2>/dev/null)
     ;;
   */stage_artifacts/l_code_STR_*.json|stage_artifacts/l_code_STR_*.json)
     LC=$(python3 -c "
-import json
+import json, sys
 try:
-    d = json.load(open('$FILE'))
+    d = json.load(open(sys.argv[1], encoding='utf-8'))
     print(d.get('l_code') or '')
-except: print('')" 2>/dev/null)
+except: print('')" "$FILE" 2>/dev/null)
     [ -z "$LC" ] && LC=$(basename "$FILE" .json)
     MILESTONE="LCODE_NEW"
     COMMIT_MSG="docs(lesson): $LC 추가"

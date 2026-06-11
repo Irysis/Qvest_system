@@ -15,18 +15,21 @@
 
 set -euo pipefail
 trap 'echo "{}"; exit 0' ERR
+export PYTHONUTF8=1  # (v8.1.2) 인코딩 사고 방지 — harness.md "Hook stdout JSON 규율"
 
 INPUT=$(cat)
-FILE_PATH=$(echo "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
-CONTENT=$(echo "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("content",""))' 2>/dev/null || echo "")
+FILE_PATH=$(echo "$INPUT" | python3 -c 'import json,sys; sys.stdout.reconfigure(encoding="utf-8",errors="replace"); d=json.loads(sys.stdin.buffer.read().decode("utf-8","replace")); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
+CONTENT=$(echo "$INPUT" | python3 -c 'import json,sys; sys.stdout.reconfigure(encoding="utf-8",errors="replace"); d=json.loads(sys.stdin.buffer.read().decode("utf-8","replace")); print(d.get("tool_input",{}).get("content",""))' 2>/dev/null || echo "")
 
 case "$FILE_PATH" in
   */optimization_package.json)
-    python3 <<PYEOF
+    # (v8.1.2) content/fp는 env 경유 + heredoc 인용 — 소스 보간('''$CONTENT''')은 triple-quote/
+    # backslash content에서 python 소스가 깨져 ERR trap '{}' fail-open (Tier-3 게이트 침묵 무력화)
+    WTE_CONTENT="$CONTENT" WTE_FP="$FILE_PATH" python3 <<'PYEOF'
 import json, os, re, sys
 
-content = '''$CONTENT'''
-fp = '''$FILE_PATH'''
+content = os.environ.get("WTE_CONTENT", "")
+fp = os.environ.get("WTE_FP", "")
 
 try:
     pkg = json.loads(content)
@@ -50,10 +53,12 @@ else:
     wt_type = "discovery" if tag == "D" else "deployment"
 
 # Request.json에서 wt_type 재확인 (파일명보다 우선)
+# (v8.1.2) req 선초기화 — open 실패 시 아래 mandate 참조가 NameError → ERR trap fail-open 되던 갭
+req = {}
 request_path = fp.replace("optimization_package.json", "request.json")
 if os.path.exists(request_path):
     try:
-        with open(request_path) as f:
+        with open(request_path, encoding="utf-8") as f:
             req = json.load(f)
         wt_type = req.get("wt_type", wt_type)
     except Exception:

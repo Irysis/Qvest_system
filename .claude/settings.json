@@ -266,6 +266,16 @@
         ]
       },
       {
+        "_doc_milestone_recommit": "v8.1.2 2026-06-11 재등록 — 8674cb3 무언급 소실분 복구 (도훈 confirm). AX승격/GradeA/PG2배분/L-code 마일스톤 즉시 semantic commit+push. 인코딩 패치(buffer-decode+scrub) 적용본.",
+        "matcher": "Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/milestone_commit.sh\" 2>>/tmp/milestone_commit.log || true"
+          }
+        ]
+      },
+      {
         "_doc_dispatch_allocation_auditor": "FR 배분 산출물(admission/registry) 쓰기 후 구조 기록 (Level 2 advisory) — 도훈 2026-06-05",
         "matcher": "Write",
         "hooks": [

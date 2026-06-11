@@ -18,8 +18,9 @@ if [ -z "$DIR" ] || [ ! -d "$DIR" ]; then
   DIR=$(ls -d /c/Users/99922/OneDrive/Quant_Module_Moltbot /mnt/c/Users/99922/OneDrive/Quant_Module_Moltbot /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot 2>/dev/null | head -1 || echo "$PWD")
 fi
 AGENT_NAME=$(printf '%s' "$INPUT" | python3 -c 'import json,sys
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 try:
-    d=json.load(sys.stdin); ti=d.get("tool_input",{})
+    d=json.loads(sys.stdin.buffer.read().decode("utf-8","replace")); ti=d.get("tool_input",{})
     print(ti.get("subagent_type","") or ti.get("description",""))
 except Exception: print("")' 2>/dev/null || echo "")
 AGENT_NAME_LC=$(printf '%s' "$AGENT_NAME" | tr "[:upper:]" "[:lower:]")
