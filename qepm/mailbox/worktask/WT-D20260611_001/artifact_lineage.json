@@ -28,9 +28,36 @@
       "method_shopping_log_ref": null,
       "windows": null,
       "reproduction_command": "Rscript -e 'set.seed(20260424); source(\"qepm/mailbox/worktask/WT-D20260611_001/run_all.R\")'",
+      "reproduction_command_defect": "run_all.R ABSENT (verified 2026-06-11). Corrected in entry[1]. This entry retained for audit (codex C15 lineage defect).",
       "file_path": "qepm/mailbox/worktask/WT-D20260611_001/alpha_package.json",
       "file_hash_sha256": "2f090324def89c2bc375f45f67ff4c748c6f6bc5110f34d0daf35a4795938f9b"
+    },
+    {
+      "task_id": "WT-D20260611_001",
+      "package_type": "alpha_package_panel_repair",
+      "created_at": "2026-06-11T15:00:00+0900",
+      "supersedes_entry": 0,
+      "repair_reason": "Codex critic round (stance=REVISE) concern C1/RF-A7: alpha_scores.parquet was a single-month snapshot with no Date column. Re-exported full Date x Ticker panel + corrected reproduction lineage (run_all.R was absent; real executable is run_alpha.R).",
+      "git_commit": "4c4c5caab7d95bea7174a4d64466054e2adb5a61",
+      "random_seed": 20260424,
+      "input_hashes": {
+        "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rawdata.parquet": "49f12d41ca7f9bad0bc9f24a0de213c11d7d6b98ed33dd59a64b9e0f390a8266",
+        "C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/strategies/STR_WT-D20260611_001_value_sleeve/scores_cache.parquet": "score_panel_437914rows_250months_200508_202605"
+      },
+      "output_artifacts": {
+        "stage_artifacts/WT-D20260611_001/alpha_scores_panel.parquet": "8cfb6e7f2e5a3b6c0719dbc5f225194bd10c0403c6e5d2d78bbc7021279f02fd"
+      },
+      "method_selected": "full-universe 6-value EW Z composite + 0.5*R05_Tail_Risk tilt (chain V0). Panel = Date x Ticker x alpha_hat(=composite score) x confidence(=n_val/6).",
+      "scoring_executable": "04_Research/strategies/STR_WT-D20260611_001_value_sleeve/run_alpha.R",
+      "scoring_executable_hash_sha256": "beb0ba2af2420422f7524560337190b0061d53d87bbc48c6cabf73c2c57b659a",
+      "reproduction_command": "cd 04_Research/strategies/STR_WT-D20260611_001_value_sleeve && Rscript -e 'source(\"run_alpha.R\", encoding=\"UTF-8\")'  # FORCE_RESCORE=1 to rebuild scores_cache",
+      "pit_evidence": {
+        "C14": "run_alpha.R L100: load_month_factors(eom, ...) called with eom = sig month-end; connector align_factor_direction enforces Usable_Date <= sig_date (factor_db_connector.R L202-203). IC alignment PIT-safe.",
+        "C15": "run_alpha.R L100 uses load_month_factors() connector (no direct parquet load for scoring). scores_cache.parquet is the connector OUTPUT cache, not a raw factor DB load.",
+        "C10": "run_alpha.R L82 adv20 = frollmean(tv,20,align='right') at month-end; membership applied to NEXT month (next_map L143-148) -> t-1 PIT.",
+        "future_dates": "panel max Date = 2026-05-31 < as_of 2026-06-11; 0 future sig_dates (verified)."
+      }
     }
   ],
-  "last_updated": "2026-06-11T13:54:52+0900"
+  "last_updated": "2026-06-11T15:00:00+0900"
 }

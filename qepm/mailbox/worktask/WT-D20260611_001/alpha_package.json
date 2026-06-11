@@ -8,7 +8,8 @@
   "selection_objective": "rank_ic",
   "selection_type": "chain",
   "metric_type": "canonical_screen",
-  "signal_matrix_ref": "stage_artifacts/WT-D20260611_001/alpha_scores.parquet",
+  "signal_matrix_ref": "stage_artifacts/WT-D20260611_001/alpha_scores_panel.parquet",
+  "signal_matrix_ref_snapshot_legacy": "stage_artifacts/WT-D20260611_001/alpha_scores.parquet (single-month snapshot, retained; superseded by panel per Codex C1/RF-A7 repair 2026-06-11)",
 
   "mechanism": "Full-universe (KR_ALL_LIQ2E8, ~1500-1850 names/month with 20d ADV>=2e8, t-1 PIT C10) risk-aware value composite. Economic rationale: cross-sectional value premium (cheap-on-fundamentals stocks earn risk/behavioral premium; Fama-French 1992/1993, Asness-Frazzini-Pedersen 2013) measured via an equal-weight composite of 6 PIT-safe value proxies (earnings, EBIT, EV/EBITDA, sales, EV/Sales, book yields), with a tail-risk tilt (R05_Tail_Risk) intended to lean toward names with milder downside tail exposure (defensive value, AX-001 v2 spirit). Composite avoids single-proxy fragility (KR EP_STANDALONE failure AX-003, L-132/135). The full-universe scope is the central claim of the lost Cycle 1~9 artifact: restricted KOSPI200/KOSDAQ150 value was reported negative post-2017, full-universe allegedly survived. THIS RE-DERIVATION DOES NOT REPRODUCE THAT SURVIVAL (see anchor_comparison + escalation).",
 
@@ -146,16 +147,47 @@
     "AX-002": "PASS (all metrics via canonical_screen_bt real-computation, no proxy hand-calc, metric_type labeled)",
     "AX-003": "RESPECTED (multi-proxy value composite, not EP_STANDALONE)",
     "AX-001_v2": "tail tilt intended as defensive but NET-NEGATIVE as scaled (IS diagnosis)",
+    "AX-007": "APPLICABLE / FAIL-MECHANISM (Codex C4, accepted). Reconstructed V0 = single-sleeve long-only top-20 over broad universe; invokes NONE of the 4 AX-007 exceptions (not multi-sleeve / not long-short / not 50+ diversified / not ML-sizing). This is the structural mechanism behind the rank-IC-strong / PORT_t-weak divergence. Consistent with and reinforces the FAIL verdict. A capital-eligible re-spec would need an AX-007 exception (e.g. multi-sleeve or 50+ names).",
     "PIT_C10": "PASS (20d ADV t-1, liquidity applied to next-month selection)",
     "PIT_C13": "PASS (Z_Score_Aligned only, no NEGATE/FLIP)",
-    "PIT_C14": "PASS (load_month_factors IC alignment Usable_Date<=sig_date)",
+    "PIT_C14": "PASS (load_month_factors IC alignment Usable_Date<=sig_date; verify_pit_c14_c15.R executable evidence on panel)",
     "PIT_C15": "PASS (load_month_factors() connector, no direct parquet load for scoring)"
   },
 
+  "post_codex_diagnostics": {
+    "metric_type": "canonical_screen (rank-IC advisory) / diagnostic",
+    "rf_a2_composite_vs_single": {
+      "composite_icir": 0.686, "value_only_icir": 0.727,
+      "best_single": {"V14_EBIT_EV": 0.974, "V02_EP": 0.970},
+      "weakest_single": {"V01_BM": 0.384, "V13_EV_Sales": 0.404, "V20_SP": 0.405},
+      "verdict": "RF-A2 TRIGGERS. EW 6-factor composite ICIR 0.686 < best single (V14_EBIT_EV 0.974). EW dilutes high-ICIR earnings-yield factors with low-ICIR sales/book. Mandated EW spec is not rank-optimal. Advisory (rank-IC); does not rescue PORT_t FAIL. Input to any future re-spec.",
+      "artifact": "stage_artifacts/WT-D20260611_001/rf_a2_single_factor_icir.csv"
+    },
+    "rf_a5_top20_liquidity": {
+      "median_adv_won": 644024381, "p10_adv_won": 248514426, "p25_adv_won": 344531114,
+      "pct_below_2e8": 0.0, "n_holding_months": 5000,
+      "verdict": "RF-A5 DOES NOT TRIGGER. Top-20 (post canonical liquidity-filter) holdings respect 2e8 floor (0% below; median 644M). Correction note: an initial pass reported 46% below-floor due to a filter-ordering error (ranked before filtering); corrected here transparently.",
+      "artifact": "stage_artifacts/WT-D20260611_001/rf_a5_liquidity_dist_corrected.csv"
+    },
+    "rf_a4_sector_neutral_icir": "SKIP (labeled, not silent). Reason: sector-map join over 250 months x 327 factors is high-cost; FAIL verdict does not hinge on it (PORT_t 1.71 already < 2.95 gate). Defer to forge/judge if a re-spec is authorized.",
+    "dsr": {
+      "selection_type": "chain", "n_trials_recorded": 5, "gate_applicable": false,
+      "note": "DSR is NOT a graduation gate for chain selection_type (measurement-graduation §3, 2026-06-10). n_trials recorded for audit. Diagnostic only.",
+      "artifact": "stage_artifacts/WT-D20260611_001/dsr_diagnostic.json"
+    }
+  },
+
   "finalization": {
-    "codex_critic_round": "WAIVER (codex_critic_skip_waiver) — codex CLI auth token expired (401 token_expired), infra failure on this clone. See challenge_note.md §0. Layer-2 re-run obligation after codex login.",
-    "self_critique_substitute": "5 self-raised concerns (SC-1..SC-5) in challenge_note.md §0b, self-rationalization grep 0 hits.",
-    "alpha_discovery_certificate": "NOT ISSUED (expected) — discovery cert requires harvey_t_specs_pass_count>=3 on portfolio-alpha t; only 1 (rank-IC) passes. portfolio-alpha t 1.71 < 2.95. cor -0.04 < 0.95 (cor criterion met) but harvey criterion fails. Passive deny -> NOT PG1 admission eligible at this spec. CONSISTENT with FAIL verdict.",
-    "next_step": "Q-Lead review of escalation. Do NOT auto-advance to risk/forge book-marginal blend on this spec."
+    "codex_critic_round": "COMPLETED — stance=REVISE (gpt-5.5, 2026-06-11T14:24:34, veto_flag=false). Supersedes the prior codex_critic_skip_waiver (auth restored). Response: codex_critic_response_alpha.json. Disposition (challenge_note §5): C1 ACCEPT (panel repaired), C2 REBUTTAL (role boundary: weights/Σ = optimizer/risk agents, alpha stage stopped, agent_role_guard Hook-blocked), C3 ACCEPT (= own FAIL), C4 ACCEPT (AX-007 named), C5 PARTIAL (RF-A2/A5 done, RF-A4 labeled skip), C6 ACCEPT (Codex axis of AX-008 now secured, 1 of >=2). Codex agrees with no-graduation direction; REVISE required artifact repair (done), not verdict change.",
+    "codex_round_repairs": [
+      "alpha_scores_panel.parquet (Date x Ticker x alpha_hat+confidence; 437914 rows / 250 sig_dates / 0 future / membership 1499-1849 time-varying)",
+      "artifact_lineage.json entry[1] (run_all.R ABSENT -> run_alpha.R real executable + hash; reproduction command corrected)",
+      "verify_pit_c14_c15.R (executable C14/C15 evidence on panel)",
+      "rf_a2_single_factor_icir.csv + rf_a5_liquidity_dist_corrected.csv + dsr_diagnostic.json"
+    ],
+    "self_critique_substitute": "RETAINED for audit (challenge_note §0b, SC-1..SC-5). No longer the AX-008 source — real Codex round secures the Codex axis.",
+    "ax_008_status": "codex_secured (1 of >=2). Forge axis (portfolio-alpha t authoritative, NW lag-3) + Architect axis are WT-downstream (forge/judge stages), not alpha-agent scope.",
+    "alpha_discovery_certificate": "NOT ISSUED (expected) — discovery cert requires harvey_t_specs_pass_count>=3 on portfolio-alpha t; only 1 (rank-IC) passes. portfolio-alpha t 1.71 < 2.95. cor -0.04 < 0.95 (cor criterion met) but harvey criterion fails. Passive deny -> NOT PG1 admission eligible at this spec. CONSISTENT with FAIL verdict. AX-007 applicable (no exception invoked) further blocks standalone capital path.",
+    "next_step": "Q-Lead review of escalation. Do NOT auto-advance to risk/forge book-marginal blend on this spec. WT stays SPEC_APPROVED pending Dohoon decision (screening/FR-RCMA/DPL feature route vs bounded re-spec with fresh sealed holdout)."
   }
 }
