@@ -163,5 +163,5 @@ cat(sprintf("[fe_hzz_trend · 논문스펙] FACTORS rows=%d | 신호월=%d | 종
 
 # 정리
 RAWDATA[, c(".ym", ".tv", ".adv") := NULL]
-rm(.PX, .SIG, .SIGF, .MR, .REG, .BETA, .EBETA, .ER, .MMETA, .CAL, .NDT, SIGOUT,
+rm(.PX, .SIG, .SIGM, .SIGF, .MR, .REG, .BETA, .EBETA, .ER, .MMETA, .CAL, .NDT, SIGOUT,
    .beta_list, .acols, .bcols); gc(verbose = FALSE)

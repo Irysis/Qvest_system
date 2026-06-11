@@ -47,7 +47,14 @@
   "is_selection": {
     "selected": "O3_MIDBAND_FLOOR",
     "tie_break_used": true,
-    "committed_file": "is_selection_commit.json"
+    "committed_file": "is_selection_commit.json",
+    "tie_break_audit": {
+      "tie_set": ["O3_MIDBAND_FLOOR", "O4_POWER_RHO"],
+      "note": "O4 IS SR 1.9180 within 0.005 of O3 1.9209 -> tie-break invoked. Unrounded IS MDD identical for both (-0.248053799245, shared 2008 drawdown episode under deep-guard) -> MDD tie-break indecisive -> argmax IS SR stands = O3_MIDBAND_FLOOR. Selection unchanged from commit.",
+      "o3_is_mdd_unrounded": -0.24805379925,
+      "o4_is_mdd_unrounded": -0.24805379925,
+      "audit_script": "tiebreak_audit.R"
+    }
   },
   "oos_confirmation": {
     "selected": "O3_MIDBAND_FLOOR",

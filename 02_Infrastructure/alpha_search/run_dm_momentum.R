@@ -234,10 +234,13 @@ run_dm_momentum <- function(start_date    = "2005-01-01",
                   else "dynamic이 constant-vol 미달"
   wmym <- as.character(worst_raw_ym$ym)
   wm_dyn <- .as_num(dyn_mdt[ym == wmym, dyn]); wm_raw <- .as_num(worst_raw_ym$raw)
-  ctx <- sprintf(paste0("[연구목적] Daniel-Moskowitz(2016) 동적 모멘텀 KR 충실복제.\n",
-                        "[방법] WML(decile D10-D1 VW 12-2) · w∝μ̂/σ̂²(μ̂=bear×시장분산 expanding 회귀, σ̂²=126일 WML실현분산) · target vol 19%% · K200∪KQ150 · 2005~.\n",
-                        "[결론] 샤프 raw %.2f → cvol %.2f → dyn %.2f · dyn~cvol α %s (%s)."),
-                 sr_raw, sr_cvol, sr_dyn, rt(reg_dyn_cvol), verdict_word)
+  # tg 양식: text body 220자 한도 초과(273자 실측) → bullet 분할(항목 ≤80자). 2026-06-12 수리.
+  ctx_items <- c(
+    "[연구목적] Daniel-Moskowitz(2016) 동적 모멘텀 KR 충실복제",
+    "[방법] WML decile D10-D1 VW 12-2 · K200∪KQ150 · 2005~",
+    "[방법] w∝μ̂/σ̂² (μ̂=bear×시장분산 expanding 회귀, σ̂²=126일 RV) · target vol 19%",
+    sprintf("[결론] 샤프 raw %.2f → cvol %.2f → dyn %.2f", sr_raw, sr_cvol, sr_dyn),
+    sprintf("[결론] dyn~cvol α %s (%s)", rt(reg_dyn_cvol), verdict_word))
   kv <- list(
     "샤프 raw/cvol/dyn"   = sprintf("%.2f / %.2f / %.2f", sr_raw, sr_cvol, sr_dyn),
     "회귀 α dyn~raw"      = rt(reg_dyn_raw),
@@ -258,10 +261,10 @@ run_dm_momentum <- function(start_date    = "2005-01-01",
     "μ̂는 expanding-window OOS(매월 γ 재추정) — DM in-sample 대비 PIT 보강(명시 일탈)",
     if (!is.null(reg_dyn_cvol) && .as_num(reg_dyn_cvol$alpha_t) >= 2.0) "dyn~cvol α 유의(t≥2) — μ타이밍 작동"
       else "dyn~cvol α 무유의(t<2) — KR에서 μ타이밍 약함",
-    "decile L/S 논문구조는 production(long-only)과 충돌 — 검증단계 논문 우선(명시 보고)",
+    "롱숏 불허(도훈 mandate 06-11): 판정=long-only(Win leg·캡[0,1]). L/S는 진단 보존만",
     "비용한계: 엔진=flat per-rebalance 15bps. L/S 양다리+레버리지 → 과소계상 가능")
   sections <- list(
-    list(type = "text", emoji = "\U0001F4DA", heading = "연구 컨텍스트", body = ctx),
+    list(type = "bullet", emoji = "\U0001F4DA", heading = "연구 컨텍스트", items = ctx_items),
     list(type = "text", emoji = "\U0001F4A1", heading = "전략 아이디어", body = strategy_idea),
     list(type = "kv",   emoji = "\U0001F4C8", heading = "성과 요약(raw/cvol/dyn)", kv = kv),
     list(type = "bullet", emoji = "\U0001F4DD", heading = "해석/주의", items = notes))

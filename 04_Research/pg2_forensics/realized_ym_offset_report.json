@@ -1,0 +1,88 @@
+{
+  "report": "realized_ym_label_offset",
+  "agent": "forge",
+  "date": "2026-06-12",
+  "type": "non_WT_measurement_defect_tracking",
+  "metric_type": "backtested",
+  "semantics": {
+    "verdict": "LABEL_CONVENTION_DEFECT_not_calculation_bug",
+    "rule": "book realized_ym label m corresponds to calendar month m-1 (period_end-anchored return labeled by period_end month)",
+    "provenance_chain": [
+      "STR_1715 run_all.R L1143: 03_period_returns.csv date = bt_dt$period_end (= end_d)",
+      "walk-forward L354: return earned over (start_d, end_d]; L391-393 period_end=end_d",
+      "run_layer5_R05_overlay.R L96-98: realized_ym = format(period_end, '%Y-%m')",
+      "run_blend.R L84-86 value + L109-111 bench = true calendar month keyed -> mismatch"
+    ],
+    "first_row": "anchor 2004-02-02 labeled realized_ym 2004-02 but return = (start_d, 2004-02-02] approx Jan 2004",
+    "label_invariant_metrics_valid": ["SR", "CAGR", "MDD", "Calmar"],
+    "admit_sr_unaffected": 1.9536
+  },
+  "evidence_cor": {
+    "n_months": 248,
+    "cor_book_m_bench_m": -0.0044,
+    "cor_book_mplus1_bench_m": 0.5707,
+    "cor_value_m_bench_m": 0.5660,
+    "cor_value_m_book_m_ARTIFACT": -0.0455,
+    "cor_value_m_book_mplus1_CORRECTED": 0.3132,
+    "lehman_label_2008_10_book": 0.0669,
+    "lehman_label_2008_10_bench": -0.2313,
+    "book_true_lehman_response_label": "2008-11 (-0.0194)"
+  },
+  "book_benchmark_relative_corrected": {
+    "n_months": 247,
+    "range": "2005-09..2026-03",
+    "TE_production_distorted": 0.3025,
+    "TE_corrected": 0.1921,
+    "IR_production_distorted": 1.0505,
+    "IR_corrected": 1.3985,
+    "PORT_t_NW_lag3_corrected": 5.998,
+    "beta_to_bm_corrected": 0.5959,
+    "cor_to_bm_corrected": 0.5707,
+    "SR_corrected": 1.9005,
+    "MDD_corrected": 0.2481,
+    "Calmar_corrected": 1.6210,
+    "lens4_provisional_validated": {"IR_~1.40": true, "PORT_t_~6.0": true, "TE_30.25_overstated": true}
+  },
+  "blend_corrected_reanswer": {
+    "book_only": {"SR": 1.9005, "MDD": 0.2481, "Calmar": 1.6210, "IR": 1.3985, "PORT_t": 5.998},
+    "grid": [
+      {"w_value": 0.05, "SR": 1.8988, "dSR": -0.0017, "MDD": 0.2360, "dMDD": -0.0120, "Calmar": 1.6570, "dCalmar": 0.0360, "IR": 1.4162, "dIR": 0.0177, "PORT_t": 6.099, "blend_TO_annual": 0.071},
+      {"w_value": 0.10, "SR": 1.8869, "dSR": -0.0136, "MDD": 0.2239, "dMDD": -0.0241, "Calmar": 1.6969, "dCalmar": 0.0759, "IR": 1.4289, "dIR": 0.0304, "PORT_t": 6.176, "blend_TO_annual": 0.135},
+      {"w_value": 0.15, "SR": 1.8637, "dSR": -0.0368, "MDD": 0.2118, "dMDD": -0.0363, "Calmar": 1.7411, "dCalmar": 0.1201, "IR": 1.4345, "dIR": 0.0360, "PORT_t": 6.218, "blend_TO_annual": 0.192},
+      {"w_value": 0.20, "SR": 1.8285, "dSR": -0.0720, "MDD": 0.1995, "dMDD": -0.0486, "Calmar": 1.7900, "dCalmar": 0.1689, "IR": 1.4311, "dIR": 0.0326, "PORT_t": 6.214, "blend_TO_annual": 0.241},
+      {"w_value": 0.30, "SR": 1.7213, "dSR": -0.1792, "MDD": 0.2438, "dMDD": -0.0042, "Calmar": 1.3682, "dCalmar": -0.2528, "IR": 1.3889, "dIR": -0.0096, "PORT_t": 6.024, "blend_TO_annual": 0.317}
+    ],
+    "best_by_IR": {"w_value": 0.15, "dIR": 0.0360, "dSR": -0.0368, "dCalmar": 0.1201},
+    "artifact_vs_corrected": {
+      "cor_value_book_artifact": -0.0455,
+      "cor_value_book_corrected": 0.3132,
+      "best_dSR_artifact": 0.152,
+      "best_dSR_corrected": -0.0368,
+      "best_dIR_artifact": 0.025,
+      "best_dIR_corrected": 0.0360
+    },
+    "decision": "NO SR improvement. cor +0.31 (not orthogonal) collapses SR diversification (all blend dSR<=0). Only MDD/Calmar marginal benefit. ΔIR best 0.036 < 0.05 book-marginal hurdle. book-marginal INELIGIBLE. AX-000 honest: artifact +0.15 SR gain was spurious orthogonality."
+  },
+  "contamination_scan": {
+    "contaminated": [
+      {"file": "04_Research/composition_search/value_sleeve_combination/results.csv", "fields": "book IR/TE/beta/cor_bm, all blend dSR/dMDD/dIR", "status": "INVALIDATED marker added"},
+      {"file": "04_Research/composition_search/value_sleeve_combination/blend_result.json", "fields": "cor_value_book -0.0455, all blend deltas", "status": "INVALIDATED marker added"},
+      {"file": "04_Research/strategies/STR_WT-D20260611_001_value_sleeve/alpha_validation.json", "field": "cor_vs_ret_orig -0.042245", "corrected_approx": 0.31},
+      {"file": "stage_artifacts/WT-D20260611_001/alpha_validation.json", "field": "cor_vs_ret_orig -0.042245", "corrected_approx": 0.31},
+      {"file": "stage_artifacts/WT_WT-D20260610_001/alpha_validation.json", "field": "orthogonality_vs_book.cor_net -0.0346 / cor_active -0.0392", "corrected_approx": 0.31, "note": "Strongly orthogonal conclusion + book-marginal escalation note invalidated"},
+      {"file": "stage_artifacts/WT_D20260515_002/alpha_validation.json", "field": "realized_ym<->ym_signal anchor align (ret_L5_V1)", "note": "alpha_overlap 60m, same offset label -> re-review"},
+      {"file": "05_Production/.../benchmark_comparison_metrics.json", "fields": "Active TE 0.3025 / IR 1.0505 / MDD_active 0.3274", "note": "Strategy/Benchmark blocks valid"}
+    ],
+    "not_contaminated": [
+      {"file": "04_Research/pg2_forensics/b1_*", "reason": "native forward Ret_1m reconstruction from factor panel, no book CSV join; rank-IC/inter-factor/inter-variant corr self-aligned"},
+      {"file": "04_Research/pg2_forensics/b2_governor_overlap.json", "reason": "regime severity same-month overlap, not book-vs-calendar join"}
+    ],
+    "common_pattern": "value/new-alpha (calendar forward-return keyed) vs book (period_returns_layer5, offset label) realized_ym join -> cor approx -0.04 spurious orthogonality; corrected approx +0.31"
+  },
+  "production_fix_proposals_DO_NOT_APPLY": [
+    "STR_1715 run_all.R L1143 use period_start for PR date (cascades to M4/AR outer schedule - large)",
+    "low-invasive: downstream join rule book label m+1 <-> calendar m (corrected/ implements; convention doc enforces)",
+    "benchmark_comparison_metrics.json Active block re-emit TE 0.1921 / IR 1.3985 (keep Strategy/Benchmark)"
+  ],
+  "recommended": "Option 2 (downstream join rule + convention doc) to avoid irreversible production re-run; Option 1 requires outer schedule full re-validation -> separate WT after Dohoon confirm"
+}

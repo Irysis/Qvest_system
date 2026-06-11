@@ -66,6 +66,11 @@ run_pead_paper <- function(
     tg_dry_run    = TRUE,           # 스모크 기본 dry-run. 풀런 wrapper만 FALSE.
     factor_analysis = TRUE) {
 
+  # ★ 함수-로컬 length-safe %||% shadow (run_hurdle_gate/loop_integrator가 global %||%를
+  #   vector에 깨지는 `&&` 버전으로 clobber — run_disclosure_meta.R 동일 수리. 2026-06-12,
+  #   실측: 풀런이 hurdle 직후 'length = 18 in coercion to logical(1)'로 사망)
+  `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
+
   fe <- file.path(.AS_INFRA, "alpha_search", "fe_sue_pead.R")
   stopifnot(file.exists(fe))
   run_id      <- paste0(format(Sys.time(), "%Y%m%d_%H%M%S"), "_", Sys.getpid())
