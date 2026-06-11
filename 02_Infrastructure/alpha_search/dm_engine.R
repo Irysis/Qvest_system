@@ -157,8 +157,9 @@ dm_bear_and_mktvar <- function(BM_DT, month_ends, bear_lookback_m = 24L, var_win
 #   bear_dt    : data.table(MEnd, I_B, sig2_m)
 #   반환 data.table(MEnd, mu_hat, I_B, sig2_m, X_int)  — mu_hat = t+1 적용 예측(PIT)
 #   X_int = I_B,t-1 · σ̂²_m,t-1 (eq.4 interaction term)
-dm_forecast_mu <- function(wml_monthly, bear_dt, min_obs = 60L) {
-  d <- merge(copy(wml_monthly), bear_dt, by = "MEnd", all.x = TRUE)
+dm_forecast_mu <- function(wml_monthly, bear_dt = NULL, min_obs = 60L) {
+  # bear_dt=NULL이면 wml_monthly가 이미 I_B/sig2_m 포함(pre-merged) 가정.
+  d <- if (is.null(bear_dt)) copy(wml_monthly) else merge(copy(wml_monthly), bear_dt, by = "MEnd", all.x = TRUE)
   setorder(d, MEnd)
   d[, X_int := I_B * sig2_m]          # 핵심 예측변수 (interaction)
   d[, mu_hat := NA_real_]
