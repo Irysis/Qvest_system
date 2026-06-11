@@ -203,8 +203,7 @@ run_bsc_momentum <- function(start_date     = "2005-01-01",
                     pf_raw, pf_mgd, pf_himgd, ds_raw, ds_mgd, crash_tbl, worst_raw_ym, mgd_mdt,
                     sr_raw_pre, sr_mgd_pre, sr_raw_post, sr_mgd_post, mf, grade, score,
                     to_lambda_ann, charts, dry_run = tg_dry_run),
-    error = function(e) { cat("[BSC][TG] 발송 실패:", conditionMessage(e), "\n")
-                          print(utils::tail(sys.calls(), 8)) })
+    error = function(e) cat("[BSC][TG] 발송 실패:", conditionMessage(e), "\n"))
 
   invisible(result)
 }
@@ -228,28 +227,24 @@ run_bsc_momentum <- function(start_date     = "2005-01-01",
                         "[방법] WML(2x3 size×prior 12-2 VW L/S) · 직전 126일 실현변동성으로 σ목표 12%% scaling · K200∪KQ150 · 2005~.\n",
                         "[결론] 헤드라인 회귀 α(managed~raw) %s · 샤프 %.2f→%.2f (%s)."),
                  rt(reg), .as_num(pf_raw$Sharpe), .as_num(pf_mgd$Sharpe), verdict_word)
-  K <- function(tag, expr) tryCatch(expr, error = function(e) { cat(sprintf("[BSC][TG-DBG][ERR @%s] %s\n", tag, conditionMessage(e))); "n/a" })
   kv <- list(
-    "회귀 α(managed~raw)" = K("reg",   rt(reg)),
-    "샤프 raw→관리"       = K("sharpe", sprintf("%.2f → %.2f (Δ%+.2f)", .as_num(pf_raw$Sharpe), .as_num(pf_mgd$Sharpe), d_sr)),
-    "최대낙폭 raw→관리"   = K("mdd",   sprintf("%.1f%% → %.1f%%", -abs(.as_num(pf_raw$MDD)), -abs(.as_num(pf_mgd$MDD)))),
-    "왜도 raw→관리"       = K("skew",  sprintf("%.2f → %.2f", .as_num(ds_raw$skew), .as_num(ds_mgd$skew))),
-    "첨도 raw→관리"       = K("kurt",  sprintf("%.1f → %.1f", .as_num(ds_raw$kurt), .as_num(ds_mgd$kurt))),
-    "최악월(raw)"         = K("worst", sprintf("%s raw%+.0f%% / 관리%+.0f%%", wmym, wm_raw * 100, wm_mgd * 100)),
-    "서브 샤프 pre/post"  = K("sub",   sprintf("pre %.2f→%.2f / post %.2f→%.2f", sr_raw_pre, sr_mgd_pre, sr_raw_post, sr_mgd_post)),
-    "long-only 관리 샤프" = K("lo",    sprintf("%.2f (캡[0,1])", .as_num(pf_himgd$Sharpe))),
-    "등급(허들)"          = K("grade", sprintf("%s · %.0f/100", as.character(grade), .as_num(score) %||% 0)))
-  cat("[BSC][TG-DBG] kv 본체 완료\n")
+    "회귀 α(managed~raw)" = rt(reg),
+    "샤프 raw→관리"       = sprintf("%.2f → %.2f (Δ%+.2f)", .as_num(pf_raw$Sharpe), .as_num(pf_mgd$Sharpe), d_sr),
+    "최대낙폭 raw→관리"   = sprintf("%.1f%% → %.1f%%", -abs(.as_num(pf_raw$MDD)), -abs(.as_num(pf_mgd$MDD))),
+    "왜도 raw→관리"       = sprintf("%.2f → %.2f", .as_num(ds_raw$skew), .as_num(ds_mgd$skew)),
+    "첨도 raw→관리"       = sprintf("%.1f → %.1f", .as_num(ds_raw$kurt), .as_num(ds_mgd$kurt)),
+    "최악월(raw)"         = sprintf("%s raw%+.0f%% / 관리%+.0f%%", wmym, wm_raw * 100, wm_mgd * 100),
+    "서브 샤프 pre/post"  = sprintf("pre %.2f→%.2f / post %.2f→%.2f", sr_raw_pre, sr_mgd_pre, sr_raw_post, sr_mgd_post),
+    "long-only 관리 샤프" = sprintf("%.2f (캡[0,1])", .as_num(pf_himgd$Sharpe)),
+    "등급(허들)"          = sprintf("%s · %.0f/100", as.character(grade), .as_num(score) %||% 0))
   if (!is.null(mf)) { best <- mf[[names(mf)[1]]]
-    kv[["팩터모델 α(raw WML)"]] <- K("mf", sprintf("%s %+.2f%%/yr (t=%.2f)", as.character(best$model), .as_num(best$alpha) * 12 * 100, .as_num(best$alpha_tstat))) }
-  cat("[BSC][TG-DBG] mf 블록 완료\n")
+    kv[["팩터모델 α(raw WML)"]] <- sprintf("%s %+.2f%%/yr (t=%.2f)", as.character(best$model), .as_num(best$alpha) * 12 * 100, .as_num(best$alpha_tstat)) }
   notes <- c(
     "faithful=L/S 무캡(논문 원형, 레버리지 허용) / implementable=long leg λ캡[0,1] long-only",
     "헤드라인 검정 = managed를 raw WML에 회귀한 α (논문 정의)",
     if (!is.null(reg) && .as_num(reg$alpha_t) >= 2.0) "회귀 α 유의(t≥2) — 변동성 타이밍 작동" else "회귀 α 무유의(t<2) — KR에서 BSC 약함",
     "L/S 논문구조는 production(long-only)과 충돌 — 검증단계 논문 우선(명시 보고)",
     sprintf("비용한계: 엔진=flat per-rebalance 15bps. L/S 양다리 회전 → 과소계상 가능"))
-  cat("[BSC][TG-DBG] kv/notes 구성 완료, tg_agent_brief 진입\n")
   sections <- list(
     list(type = "text", emoji = "\U0001F4DA", heading = "연구 컨텍스트", body = ctx),
     list(type = "text", emoji = "\U0001F4A1", heading = "전략 아이디어", body = strategy_idea),
