@@ -114,6 +114,16 @@
 - **Phase 1/2 신규 등록 (4건)**: feature_registry_economic_rationale_check / ml_cost_aware_audit / ml_uncertainty_audit / risk_crowding_score_check
 - **Active loaded**: 45 distinct .sh (settings.json registered)
 
+## Bash 출력 Unicode 규율 (v8.1.2 2026-06-11 — API 400 invalid high surrogate 방지)
+
+- **원인 체계**: Claude Code는 Bash tool 출력을 JS(UTF-16) 문자열로 보관 후 약 30k자에서 절단. non-BMP 문자(U+10000+, 이모지)는 surrogate pair 2 code-unit → 절단점에 걸리면 lone surrogate → JSON 직렬화 RFC 8259 위반 → Anthropic API 400. invalid UTF-8 byte 유입도 동일 계열 (anthropics/claude-code#44230 · #16294 · #15027 — closed as not planned, 공식 미수정).
+- **방어선**:
+  1. `02_Infrastructure/ops/utf8_output_guard.py` — invalid byte + non-BMP + U+FFFD → '?' 줄단위 정제 (BMP-only 유효 UTF-8 보장 → 어떤 절단에도 안전)
+  2. bootstrap.sh 자체 재실행 래퍼 (`QVEST_BOOT_SANITIZED`) — 부트 출력 전체(자식 R/Python/백그라운드 포함) 가드 경유. `[boot] utf8_output_guard: ACTIVE` 확인
+  3. 임의 커맨드: `bash 02_Infrastructure/ops/safe_run.sh <cmd> [args...]` (exit code 보존)
+- **작성 규율**: transcript에 닿는 출력(echo/cat/print)에 **non-BMP 이모지 금지**. BMP 기호(✓ ✅ ❌ ⛔ ★ U+FFFF 이하)는 surrogate-safe하나, 장식은 ASCII 권장. 백그라운드 job은 stdout까지 로그 파일로 리다이렉트 (cleanup.sh 누수 사례 — 비동기 끼어들기 + 파이프 hold). 큰 로그 열람(tail/cat)은 safe_run.sh 경유.
+- PostToolUse hook은 tool 출력을 **재작성할 수 없으므로** hook 기반 sanitize는 불가 — 소스/파이프 레벨이 유일한 방어선.
+
 ## v8.1.1 정합 (2026-06-10)
 
 - settings.json 46개 hook DIR = `${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}` 3중 fallback (구 경로 glob 폐기 — 46-hook 전수 침묵사망 사건 수리)

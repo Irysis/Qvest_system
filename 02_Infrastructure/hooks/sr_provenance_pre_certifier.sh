@@ -37,7 +37,7 @@ for FIELD in "${MANDATORY[@]}"; do
 done
 
 if [[ ${#MISSING[@]} -gt 0 ]]; then
-  GUIDE_MSG="📋 sr_provenance_certificate 발급 안내: 다음 field 추가 시 자동 발급 (Charter §9/§10): $(IFS=, ; echo "${MISSING[*]}")"
+  GUIDE_MSG="[cert] sr_provenance_certificate 발급 안내: 다음 field 추가 시 자동 발급 (Charter §9/§10): $(IFS=, ; echo "${MISSING[*]}")"
   echo "{}"
 else
   echo "{}"

@@ -111,7 +111,9 @@ fi
 # 4c. lcode_corpus rebuild (v7.2.1 — 4 source 통합, 백그라운드)
 LCR_R="$PROJECT/02_Infrastructure/memory/lcode_corpus_rebuild.R"
 if [ -f "$LCR_R" ]; then
-  (cd "$PROJECT" && Rscript "$LCR_R" >/tmp/lcode_corpus_boot.log 2>&1) &
+  # (v8.1.2) redirect를 subshell 전체에 — 내부 커맨드에만 붙이면 subshell이 utf8 guard 파이프
+  # write-end를 물고 있어 부트가 백그라운드 job 종료까지 블로킹됨 (아래 5/6b 동일)
+  (cd "$PROJECT" && Rscript "$LCR_R") >/tmp/lcode_corpus_boot.log 2>&1 &
   echo "[boot] lcode_corpus_rebuild 백그라운드 (log=/tmp/lcode_corpus_boot.log)"
 fi
 
@@ -161,7 +163,7 @@ fi
 
 # 5. 데이터 리프레시 (백그라운드 — xlsx 증분 + KRX/FRED/ECOS)
 REFRESH_LOG="/tmp/qm_boot_refresh_$(date +%Y%m%d_%H%M).log"
-(cd "$PROJECT/02_Infrastructure" && bash "$PROJECT/02_Infrastructure/data/daily_refresh.sh" > "$REFRESH_LOG" 2>&1) &
+(cd "$PROJECT/02_Infrastructure" && bash "$PROJECT/02_Infrastructure/data/daily_refresh.sh") > "$REFRESH_LOG" 2>&1 &
 REFRESH_PID=$!
 echo "[boot] 데이터 리프레시 백그라운드 (PID=$REFRESH_PID, log=$REFRESH_LOG)"
 
@@ -174,7 +176,7 @@ echo "[boot] L-code harvester 백그라운드"
 LAST_W=$(ls -t "$PROJECT"/qepm/memory/axioms/review_log/weekly_report_*.json 2>/dev/null | head -1)
 LASTW_T=0; [ -n "$LAST_W" ] && LASTW_T=$(stat -c %Y "$LAST_W" 2>/dev/null || echo 0)
 if [ $(( ($(date +%s) - LASTW_T) / 86400 )) -ge 7 ]; then
-  (cd "$PROJECT" && bash "$PROJECT/02_Infrastructure/ops/axiom_weekly.sh" >/tmp/axiom_weekly_boot.log 2>&1) &
+  (cd "$PROJECT" && bash "$PROJECT/02_Infrastructure/ops/axiom_weekly.sh") >/tmp/axiom_weekly_boot.log 2>&1 &
   echo "[boot] axiom_weekly 파이프라인 백그라운드 (7일+ 경과)"
 fi
 

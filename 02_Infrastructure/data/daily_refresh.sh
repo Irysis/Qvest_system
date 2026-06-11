@@ -407,7 +407,7 @@ run_r '
   raw <- as.data.table(arrow::read_parquet(RAWDATA_CACHE))
   last_d <- max(raw$Date)
   n_tickers <- uniqueN(raw[Date == last_d]$Ticker)
-  msg <- sprintf("📅 Daily Refresh v2 완료\nRAWDATA: %s까지 (%d tickers)\n총 %s rows",
+  msg <- sprintf("[Daily Refresh v2 완료]\nRAWDATA: %s까지 (%d tickers)\n총 %s rows",
                  last_d, n_tickers, format(nrow(raw), big.mark=","))
   if (Sys.getenv("QVEST_REFRESH_TG", "0") == "1") {     # v8.1.1 telegram guard
     tryCatch(tg_send(msg), error = function(e) cat("TG send failed:", e$message, "\n"))
