@@ -289,6 +289,9 @@ run_coverage_delta <- function(
   invisible(list(strategy_id = strategy_id, grade = grade, score = score, pass = pass,
                  notable = notable, excess_cagr = excess_cagr, out_dir = OUT_DIR,
                  charts = charts, l_code = l_code_path, signal_var = signal_var,
+                 invert = invert, track = track, p1_signal = p1_col,
+                 decile_n_med = decile_n_med, aband_in_decile_med = aband_n_med,
+                 aband_frac_in_decile_med = aband_frac_med, decile_thin = decile_thin,
                  ic_p1 = ic_p1, ic_p2 = ic_p2, ic_p3 = ic_p3, isoos = isoos,
                  top25 = top25, diag_path = diag_path,
                  metrics = m, cost_warn = cost_warn))
