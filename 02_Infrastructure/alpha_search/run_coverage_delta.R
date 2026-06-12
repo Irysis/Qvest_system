@@ -193,7 +193,13 @@ run_coverage_delta <- function(
   # ---- 6a. 진단 IC (P1/P2/P3) + IS/OOS (advisory — 게이트 미사용) ----
   #   P1 = dcov_abs(또는 선택 신호). P2 = -aband 회피(철수=음의 신호이면 aband와 수익 음상관 기대).
   #   P3 = neglect 구간 내 dcov_abs (조건부). aband는 binary라 IC = 점이연 상관 진단.
-  ic_p1 <- tryCatch(.compute_ic(FACTORS, RAWDATA, signal_var),     error = function(e) NULL)
+  #   ★ invert: P1 IC는 실제 랭킹신호(-signal)로 측정 (IC(-x) = -IC(x); 부호 정합 확인용).
+  if (isTRUE(invert)) {
+    .sigc <- if (identical(signal_var, "dcov_rel")) "dcov_rel" else "dcov_abs"
+    FACTORS[, aband_score := -get(.sigc)]
+    p1_col <- "aband_score"
+  } else p1_col <- signal_var
+  ic_p1 <- tryCatch(.compute_ic(FACTORS, RAWDATA, p1_col),          error = function(e) NULL)
   ic_p2 <- tryCatch(.compute_ic(FACTORS, RAWDATA, "aband"),         error = function(e) NULL)
   ic_p3 <- tryCatch(.compute_ic(FACTORS[neglect == 1L], RAWDATA, signal_var), error = function(e) NULL)
   isoos <- tryCatch(.is_oos(sim, oos_split), error = function(e) NULL)
