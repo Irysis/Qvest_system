@@ -78,7 +78,9 @@ run_coverage_delta <- function(
   fe <- file.path(.AS_INFRA, "alpha_search", "fe_coverage_delta.R")
   stopifnot(file.exists(fe))
   run_id      <- paste0(format(Sys.time(), "%Y%m%d_%H%M%S"), "_", Sys.getpid())
-  strategy_id <- paste0("STR_AS_COVD_", run_id)
+  .id_tag     <- if (isTRUE(invert)) "COVDINV" else "COVD"
+  strategy_id <- paste0("STR_AS_", .id_tag, "_", run_id)
+  track       <- track %||% if (isTRUE(invert)) "COVD_abandonment_inverse" else "COVD_coverage_delta"
   OUT_DIR <- file.path(PROJECT_ROOT, "stage_artifacts", "alpha_search", run_id)
   dir.create(OUT_DIR, recursive = TRUE, showWarnings = FALSE)
   cat(sprintf("\n=== [AlphaSearch · KR-native] %s (%s) ===\n", strategy_name, strategy_id))
