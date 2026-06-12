@@ -1,0 +1,583 @@
+{
+  "task": "Track B Stage B measurement (Composition Search Cycle 2)",
+  "prereg_file": "04_Research/composition_search/cycle2_trackB/prereg_stageb.json",
+  "prereg_frozen_at": "2026-06-12T09:19:58+09:00",
+  "generated_at": "2026-06-12T09:32:17+0900",
+  "data_cutoff": "2026-04-30",
+  "data_cutoff_note": "rawdata post 2026-05-01 contaminated (Track R repairing); all series truncated; spec panel ends natively 2026-04",
+  "cost_model": "v2.4_kr_retail_15bps delta (engine legs); book L5 = production realized legs (mixed basis disclosed)",
+  "selection_type": "sweep",
+  "n_trials_cumulative": 40,
+  "integrity": {
+    "repro_gate": {
+      "target": 0.9566,
+      "measured": 0.9566,
+      "pass": true,
+      "fresh_vs_stored_series_max_abs_net_diff": 0
+    },
+    "l5_v2_recomposition_max_resid": 5.13478149e-16,
+    "ret_orig_identity_max_diff": 0,
+    "book_state_incumbent_ir_stored": 1.5754,
+    "bm_na_filled_sb1": 0,
+    "bm_na_filled_sb2": 0
+  },
+  "formal_scoring": {
+    "note": "build_bt_result(frequency=monthly) + audit_bt_result + essence_score(selection_type=sweep, n_trials=40). Engine series = canonical_screen (trackv_engine); contract metric_type label applies to the bt_result artifact. Prereg no_backtested_claim: forge run_all re-run REQUIRED before any graduation/admission claim.",
+    "SB1_B1V4_SOLO": {
+      "audit": {
+        "n_fail_critical": 0,
+        "n_fail": 0,
+        "n_warn": 5,
+        "n_pass": 11
+      },
+      "grade": "B",
+      "metric_type": "backtested",
+      "essence": {
+        "net_sharpe": 0.989,
+        "net_ir": 0.961,
+        "portfolio_alpha_t_nw_lag3": 4.432,
+        "oos_retention": 0.185,
+        "dsr": 0.991,
+        "mdd": 0.377,
+        "calmar": 0.613,
+        "cagr": 0.231
+      },
+      "n_trials_cumulative": 40,
+      "selection_type": "sweep",
+      "dsr_gate_applied": true,
+      "oos_stat_version": "v2",
+      "oos_retention_splits": [0.244, 0.185, 0.149],
+      "oos_band_status": "fail",
+      "hard_fail": false,
+      "reasons": "Component: PORT_t>=2.0 & net_IR>0.2; A 미달[OOS_ret 0.18<0.7(band fail),Calmar<0.64]"
+    },
+    "SB2_B1V4_PLUS_LIQ2E8": {
+      "audit": {
+        "n_fail_critical": 0,
+        "n_fail": 0,
+        "n_warn": 5,
+        "n_pass": 11
+      },
+      "grade": "B",
+      "metric_type": "backtested",
+      "essence": {
+        "net_sharpe": 1.016,
+        "net_ir": 1.008,
+        "portfolio_alpha_t_nw_lag3": 4.662,
+        "oos_retention": 0.173,
+        "dsr": 0.995,
+        "mdd": 0.384,
+        "calmar": 0.621,
+        "cagr": 0.238
+      },
+      "n_trials_cumulative": 40,
+      "selection_type": "sweep",
+      "dsr_gate_applied": true,
+      "oos_stat_version": "v2",
+      "oos_retention_splits": [0.267, 0.173, 0.139],
+      "oos_band_status": "fail",
+      "hard_fail": false,
+      "reasons": "Component: PORT_t>=2.0 & net_IR>0.2; A 미달[OOS_ret 0.17<0.7(band fail),Calmar<0.64]"
+    }
+  },
+  "step1_correlation_gatekeeper": {
+    "SB1_B1V4_SOLO": {
+      "spec_id": "SB1_B1V4_SOLO",
+      "n_common": 255,
+      "cor_primary_vs_bookL5": 0.0161,
+      "cor_diag_vs_ret_orig": 0.026,
+      "g1_pass": true,
+      "verdict_step1": "ELIGIBLE"
+    },
+    "SB2_B1V4_PLUS_LIQ2E8": {
+      "spec_id": "SB2_B1V4_PLUS_LIQ2E8",
+      "n_common": 255,
+      "cor_primary_vs_bookL5": 0.014,
+      "cor_diag_vs_ret_orig": 0.0254,
+      "g1_pass": true,
+      "verdict_step1": "ELIGIBLE"
+    },
+    "label": "cor on FULL common window; spec=canonical_screen x book L5=estimated"
+  },
+  "blend_grid": {
+    "SB1": {
+      "winner": "BLEND_75_25",
+      "table": [
+        {
+          "spec_id": "SB1_B1V4_SOLO",
+          "arm": "BOOK_L5_ONLY",
+          "w_book": 1,
+          "window": "IS",
+          "n_months": 167,
+          "sr_net": 1.9175,
+          "cagr_net": 0.41473,
+          "mdd_net": 0.24805,
+          "net_ir": 1.0964,
+          "port_t_nw": 4.9926,
+          "d_ir_samebasis": 0,
+          "d_sr_samebasis": 0
+        },
+        {
+          "spec_id": "SB1_B1V4_SOLO",
+          "arm": "BOOK_L5_ONLY",
+          "w_book": 1,
+          "window": "OOS",
+          "n_months": 88,
+          "sr_net": 2.016,
+          "cagr_net": 0.41548,
+          "mdd_net": 0.14348,
+          "net_ir": 0.5131,
+          "port_t_nw": 2.1109,
+          "d_ir_samebasis": 0,
+          "d_sr_samebasis": 0
+        },
+        {
+          "spec_id": "SB1_B1V4_SOLO",
+          "arm": "BOOK_L5_ONLY",
+          "w_book": 1,
+          "window": "FULL",
+          "n_months": 255,
+          "sr_net": 1.9536,
+          "cagr_net": 0.41499,
+          "mdd_net": 0.24805,
+          "net_ir": 0.8591,
+          "port_t_nw": 5.2297,
+          "d_ir_samebasis": 0,
+          "d_sr_samebasis": 0
+        },
+        {
+          "spec_id": "SB1_B1V4_SOLO",
+          "arm": "BLEND_90_10",
+          "w_book": 0.9,
+          "window": "IS",
+          "n_months": 167,
+          "sr_net": 2.0482,
+          "cagr_net": 0.40378,
+          "mdd_net": 0.23038,
+          "net_ir": 1.1737,
+          "port_t_nw": 5.1869,
+          "d_ir_samebasis": 0.0773,
+          "d_sr_samebasis": 0.1307
+        },
+        {
+          "spec_id": "SB1_B1V4_SOLO",
+          "arm": "BLEND_90_10",
+          "w_book": 0.9,
+          "window": "OOS",
+          "n_months": 88,
+          "sr_net": 2.1483,
+          "cagr_net": 0.40095,
+          "mdd_net": 0.13185,
+          "net_ir": 0.5197,
+          "port_t_nw": 2.1084,
+          "d_ir_samebasis": 0.0066,
+          "d_sr_samebasis": 0.1323
+        },
+        {
+          "spec_id": "SB1_B1V4_SOLO",
+          "arm": "BLEND_90_10",
+          "w_book": 0.9,
+          "window": "FULL",
+          "n_months": 255,
+          "sr_net": 2.0848,
+          "cagr_net": 0.4028,
+          "mdd_net": 0.23038,
+          "net_ir": 0.9049,
+          "port_t_nw": 5.3725,
+          "d_ir_samebasis": 0.0458,
+          "d_sr_samebasis": 0.1312
+        },
+        {
+          "spec_id": "SB1_B1V4_SOLO",
+          "arm": "BLEND_85_15",
+          "w_book": 0.85,
+          "window": "IS",
+          "n_months": 167,
+          "sr_net": 2.1068,
+          "cagr_net": 0.39784,
+          "mdd_net": 0.22166,
+          "net_ir": 1.2175,
+          "port_t_nw": 5.2886,
+          "d_ir_samebasis": 0.1211,
+          "d_sr_samebasis": 0.1893
+        },
+        {
+          "spec_id": "SB1_B1V4_SOLO",
+          "arm": "BLEND_85_15",
+          "w_book": 0.85,
+          "window": "OOS",
+          "n_months": 88,
+          "sr_net": 2.2012,
+          "cagr_net": 0.39317,
+          "mdd_net": 0.12758,
+          "net_ir": 0.523,
+          "port_t_nw": 2.1037,
+          "d_ir_samebasis": 0.0099,
+          "d_sr_samebasis": 0.1852
+        },
+        {
+          "spec_id": "SB1_B1V4_SOLO",
+          "arm": "BLEND_85_15",
+          "w_book": 0.85,
+          "window": "FULL",
+          "n_months": 255,
+          "sr_net": 2.1415,
+          "cagr_net": 0.39623,
+          "mdd_net": 0.22166,
+          "net_ir": 0.9305,
+          "port_t_nw": 5.4442,
+          "d_ir_samebasis": 0.0714,
+          "d_sr_samebasis": 0.1879
+        },
+        {
+          "spec_id": "SB1_B1V4_SOLO",
+          "arm": "BLEND_80_20",
+          "w_book": 0.8,
+          "window": "IS",
+          "n_months": 167,
+          "sr_net": 2.1573,
+          "cagr_net": 0.3916,
+          "mdd_net": 0.21302,
+          "net_ir": 1.2653,
+          "port_t_nw": 5.3923,
+          "d_ir_samebasis": 0.1689,
+          "d_sr_samebasis": 0.2398
+        },
+        {
+          "spec_id": "SB1_B1V4_SOLO",
+          "arm": "BLEND_80_20",
+          "w_book": 0.8,
+          "window": "OOS",
+          "n_months": 88,
+          "sr_net": 2.2391,
+          "cagr_net": 0.38506,
+          "mdd_net": 0.13035,
+          "net_ir": 0.5264,
+          "port_t_nw": 2.0958,
+          "d_ir_samebasis": 0.0133,
+          "d_sr_samebasis": 0.2231
+        },
+        {
+          "spec_id": "SB1_B1V4_SOLO",
+          "arm": "BLEND_80_20",
+          "w_book": 0.8,
+          "window": "FULL",
+          "n_months": 255,
+          "sr_net": 2.1879,
+          "cagr_net": 0.38934,
+          "mdd_net": 0.21302,
+          "net_ir": 0.9581,
+          "port_t_nw": 5.5148,
+          "d_ir_samebasis": 0.099,
+          "d_sr_samebasis": 0.2343
+        },
+        {
+          "spec_id": "SB1_B1V4_SOLO",
+          "arm": "BLEND_75_25",
+          "w_book": 0.75,
+          "window": "IS",
+          "n_months": 167,
+          "sr_net": 2.196,
+          "cagr_net": 0.38505,
+          "mdd_net": 0.20446,
+          "net_ir": 1.3171,
+          "port_t_nw": 5.4972,
+          "d_ir_samebasis": 0.2207,
+          "d_sr_samebasis": 0.2785
+        },
+        {
+          "spec_id": "SB1_B1V4_SOLO",
+          "arm": "BLEND_75_25",
+          "w_book": 0.75,
+          "window": "OOS",
+          "n_months": 88,
+          "sr_net": 2.2573,
+          "cagr_net": 0.37663,
+          "mdd_net": 0.141,
+          "net_ir": 0.5296,
+          "port_t_nw": 2.0839,
+          "d_ir_samebasis": 0.0165,
+          "d_sr_samebasis": 0.2413
+        },
+        {
+          "spec_id": "SB1_B1V4_SOLO",
+          "arm": "BLEND_75_25",
+          "w_book": 0.75,
+          "window": "FULL",
+          "n_months": 255,
+          "sr_net": 2.22,
+          "cagr_net": 0.38214,
+          "mdd_net": 0.20446,
+          "net_ir": 0.9879,
+          "port_t_nw": 5.583,
+          "d_ir_samebasis": 0.1288,
+          "d_sr_samebasis": 0.2664
+        }
+      ]
+    },
+    "SB2": {
+      "winner": "BLEND_75_25",
+      "table": [
+        {
+          "spec_id": "SB2_B1V4_PLUS_LIQ2E8",
+          "arm": "BOOK_L5_ONLY",
+          "w_book": 1,
+          "window": "IS",
+          "n_months": 167,
+          "sr_net": 1.9175,
+          "cagr_net": 0.41473,
+          "mdd_net": 0.24805,
+          "net_ir": 1.0964,
+          "port_t_nw": 4.9926,
+          "d_ir_samebasis": 0,
+          "d_sr_samebasis": 0
+        },
+        {
+          "spec_id": "SB2_B1V4_PLUS_LIQ2E8",
+          "arm": "BOOK_L5_ONLY",
+          "w_book": 1,
+          "window": "OOS",
+          "n_months": 88,
+          "sr_net": 2.016,
+          "cagr_net": 0.41548,
+          "mdd_net": 0.14348,
+          "net_ir": 0.5131,
+          "port_t_nw": 2.1109,
+          "d_ir_samebasis": 0,
+          "d_sr_samebasis": 0
+        },
+        {
+          "spec_id": "SB2_B1V4_PLUS_LIQ2E8",
+          "arm": "BOOK_L5_ONLY",
+          "w_book": 1,
+          "window": "FULL",
+          "n_months": 255,
+          "sr_net": 1.9536,
+          "cagr_net": 0.41499,
+          "mdd_net": 0.24805,
+          "net_ir": 0.8591,
+          "port_t_nw": 5.2297,
+          "d_ir_samebasis": 0,
+          "d_sr_samebasis": 0
+        },
+        {
+          "spec_id": "SB2_B1V4_PLUS_LIQ2E8",
+          "arm": "BLEND_90_10",
+          "w_book": 0.9,
+          "window": "IS",
+          "n_months": 167,
+          "sr_net": 2.0556,
+          "cagr_net": 0.40505,
+          "mdd_net": 0.23046,
+          "net_ir": 1.1773,
+          "port_t_nw": 5.2121,
+          "d_ir_samebasis": 0.0809,
+          "d_sr_samebasis": 0.1381
+        },
+        {
+          "spec_id": "SB2_B1V4_PLUS_LIQ2E8",
+          "arm": "BLEND_90_10",
+          "w_book": 0.9,
+          "window": "OOS",
+          "n_months": 88,
+          "sr_net": 2.1481,
+          "cagr_net": 0.40091,
+          "mdd_net": 0.13185,
+          "net_ir": 0.5196,
+          "port_t_nw": 2.1079,
+          "d_ir_samebasis": 0.0065,
+          "d_sr_samebasis": 0.1321
+        },
+        {
+          "spec_id": "SB2_B1V4_PLUS_LIQ2E8",
+          "arm": "BLEND_90_10",
+          "w_book": 0.9,
+          "window": "FULL",
+          "n_months": 255,
+          "sr_net": 2.0897,
+          "cagr_net": 0.40362,
+          "mdd_net": 0.23046,
+          "net_ir": 0.907,
+          "port_t_nw": 5.39,
+          "d_ir_samebasis": 0.0479,
+          "d_sr_samebasis": 0.1361
+        },
+        {
+          "spec_id": "SB2_B1V4_PLUS_LIQ2E8",
+          "arm": "BLEND_85_15",
+          "w_book": 0.85,
+          "window": "IS",
+          "n_months": 167,
+          "sr_net": 2.1187,
+          "cagr_net": 0.39974,
+          "mdd_net": 0.22178,
+          "net_ir": 1.2234,
+          "port_t_nw": 5.3284,
+          "d_ir_samebasis": 0.127,
+          "d_sr_samebasis": 0.2012
+        },
+        {
+          "spec_id": "SB2_B1V4_PLUS_LIQ2E8",
+          "arm": "BLEND_85_15",
+          "w_book": 0.85,
+          "window": "OOS",
+          "n_months": 88,
+          "sr_net": 2.2009,
+          "cagr_net": 0.39311,
+          "mdd_net": 0.12758,
+          "net_ir": 0.5229,
+          "port_t_nw": 2.1028,
+          "d_ir_samebasis": 0.0098,
+          "d_sr_samebasis": 0.1849
+        },
+        {
+          "spec_id": "SB2_B1V4_PLUS_LIQ2E8",
+          "arm": "BLEND_85_15",
+          "w_book": 0.85,
+          "window": "FULL",
+          "n_months": 255,
+          "sr_net": 2.1494,
+          "cagr_net": 0.39745,
+          "mdd_net": 0.22178,
+          "net_ir": 0.9338,
+          "port_t_nw": 5.4717,
+          "d_ir_samebasis": 0.0747,
+          "d_sr_samebasis": 0.1958
+        },
+        {
+          "spec_id": "SB2_B1V4_PLUS_LIQ2E8",
+          "arm": "BLEND_80_20",
+          "w_book": 0.8,
+          "window": "IS",
+          "n_months": 167,
+          "sr_net": 2.174,
+          "cagr_net": 0.39412,
+          "mdd_net": 0.21318,
+          "net_ir": 1.2736,
+          "port_t_nw": 5.4484,
+          "d_ir_samebasis": 0.1772,
+          "d_sr_samebasis": 0.2565
+        },
+        {
+          "spec_id": "SB2_B1V4_PLUS_LIQ2E8",
+          "arm": "BLEND_80_20",
+          "w_book": 0.8,
+          "window": "OOS",
+          "n_months": 88,
+          "sr_net": 2.2387,
+          "cagr_net": 0.38499,
+          "mdd_net": 0.13035,
+          "net_ir": 0.5261,
+          "port_t_nw": 2.0946,
+          "d_ir_samebasis": 0.013,
+          "d_sr_samebasis": 0.2227
+        },
+        {
+          "spec_id": "SB2_B1V4_PLUS_LIQ2E8",
+          "arm": "BLEND_80_20",
+          "w_book": 0.8,
+          "window": "FULL",
+          "n_months": 255,
+          "sr_net": 2.199,
+          "cagr_net": 0.39096,
+          "mdd_net": 0.21318,
+          "net_ir": 0.9628,
+          "port_t_nw": 5.5532,
+          "d_ir_samebasis": 0.1037,
+          "d_sr_samebasis": 0.2454
+        },
+        {
+          "spec_id": "SB2_B1V4_PLUS_LIQ2E8",
+          "arm": "BLEND_75_25",
+          "w_book": 0.75,
+          "window": "IS",
+          "n_months": 167,
+          "sr_net": 2.2181,
+          "cagr_net": 0.38819,
+          "mdd_net": 0.20467,
+          "net_ir": 1.3284,
+          "port_t_nw": 5.5712,
+          "d_ir_samebasis": 0.232,
+          "d_sr_samebasis": 0.3006
+        },
+        {
+          "spec_id": "SB2_B1V4_PLUS_LIQ2E8",
+          "arm": "BLEND_75_25",
+          "w_book": 0.75,
+          "window": "OOS",
+          "n_months": 88,
+          "sr_net": 2.2568,
+          "cagr_net": 0.37653,
+          "mdd_net": 0.141,
+          "net_ir": 0.5293,
+          "port_t_nw": 2.0823,
+          "d_ir_samebasis": 0.0162,
+          "d_sr_samebasis": 0.2408
+        },
+        {
+          "spec_id": "SB2_B1V4_PLUS_LIQ2E8",
+          "arm": "BLEND_75_25",
+          "w_book": 0.75,
+          "window": "FULL",
+          "n_months": 255,
+          "sr_net": 2.2346,
+          "cagr_net": 0.38416,
+          "mdd_net": 0.20467,
+          "net_ir": 0.9941,
+          "port_t_nw": 5.6331,
+          "d_ir_samebasis": 0.135,
+          "d_sr_samebasis": 0.281
+        }
+      ]
+    }
+  },
+  "judgments": {
+    "SB1_B1V4_SOLO": {
+      "G1_correlation": {
+        "pass": true,
+        "value": 0.0161,
+        "bound": 0.3
+      },
+      "G2_delta_ir": {
+        "pass": true,
+        "value": 0.1288,
+        "threshold": 0.05,
+        "parallel_vs_stored_1p5754": -0.5875,
+        "parallel_caveat": "stored 1.5754 = gross/flat-era/full-267m; blend IR = net/v2.4-legs/cutoff window - basis mismatch, governor manual use only"
+      },
+      "G3_oos_nonworsening": {
+        "pass": true,
+        "oos_d_ir": 0.0165,
+        "oos_d_sr": 0.2413
+      },
+      "verdict": "STAGE_B_PASS"
+    },
+    "SB2_B1V4_PLUS_LIQ2E8": {
+      "G1_correlation": {
+        "pass": true,
+        "value": 0.014,
+        "bound": 0.3
+      },
+      "G2_delta_ir": {
+        "pass": true,
+        "value": 0.135,
+        "threshold": 0.05,
+        "parallel_vs_stored_1p5754": -0.5813,
+        "parallel_caveat": "stored 1.5754 = gross/flat-era/full-267m; blend IR = net/v2.4-legs/cutoff window - basis mismatch, governor manual use only"
+      },
+      "G3_oos_nonworsening": {
+        "pass": true,
+        "oos_d_ir": 0.0162,
+        "oos_d_sr": 0.2408
+      },
+      "verdict": "STAGE_B_PASS"
+    }
+  },
+  "metric_type_labels": {
+    "spec_series": "canonical_screen",
+    "book_L5_series": "estimated",
+    "blend_arms": "estimated",
+    "no_backtested_claim_for_stageB_gates": true
+  },
+  "book_state_write": "NONE - admission recommendation only; book_state write = Q-Lead + Dohoon manual (charter section 4)"
+}

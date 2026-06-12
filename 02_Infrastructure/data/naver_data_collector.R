@@ -26,6 +26,16 @@ suppressPackageStartupMessages({
 
 if (!exists("PROJECT_ROOT")) source(file.path(dirname(dirname(sys.frame(1)$ofile %||% ".")), "config.R"))
 
+# [Track R fix 2026-06-12] trading_calendar 의무 로드 — naver_merge_rawdata()의
+# 누락거래일 BLOCK 가드(get_trading_days/last_confirmed_trading_day)가 exists() 조건부라
+# 미로드 시 조용히 죽은 코드가 됨 (2026-05 토요일 phantom 적재의 공범). 실패 시 명시 경고.
+if (!exists("is_trading_day")) {
+  tryCatch(source(file.path(DATA_DIR, "trading_calendar.R")),
+           error = function(e) cat(sprintf(
+             "[naver_data_collector][WARN] trading_calendar load FAILED (%s) - merge guards DEAD\n",
+             e$message)))
+}
+
 NAVER_CACHE_DIR <- file.path(PROJECT_ROOT, ".cache", "naver")
 if (!dir.exists(NAVER_CACHE_DIR)) dir.create(NAVER_CACHE_DIR, recursive = TRUE)
 
@@ -128,18 +138,18 @@ naver_collect_all <- function() {
 
   all_dt <- rbindlist(results, fill = TRUE)
   all_dt <- all_dt[!is.na(Close) & Close > 0]
-  # 장마감 후(16:00+)면 당일, 아니면 전 거래일
-  # (00:03 cron에서 실행 시 Sys.Date()는 오늘이지만 종가는 전일 것)
-  now_hour <- as.integer(format(Sys.time(), "%H"))
-  if (now_hour >= 16) {
-    all_dt[, Date := Sys.Date()]
+  # 장마감 후(16:00+)면 당일(단, 거래일일 때만), 아니면 전 거래일
+  # [Track R fix 2026-06-12] last_confirmed_trading_day() 단일 경로 — 토/일/공휴일에
+  # Sys.Date() 직스탬프 금지 (phantom 세션 근원). 캘린더 부재 시 직전 평일 fallback + WARN.
+  if (exists("last_confirmed_trading_day")) {
+    all_dt[, Date := last_confirmed_trading_day()]
   } else {
-    # trading_calendar 있으면 사용, 없으면 단순 -1일
-    if (exists("get_prev_trading_day")) {
-      all_dt[, Date := get_prev_trading_day(Sys.Date())]
-    } else {
-      all_dt[, Date := Sys.Date() - 1L]
-    }
+    d <- Sys.Date()
+    now_hour <- as.integer(format(Sys.time(), "%H"))
+    if (now_hour < 16) d <- d - 1L
+    while (as.POSIXlt(d)$wday %in% c(0L, 6L)) d <- d - 1L
+    cat("[Naver][WARN] trading_calendar 미로드 - 직전 평일 fallback (공휴일 미대조)\n")
+    all_dt[, Date := d]
   }
 
   elapsed <- as.numeric(difftime(Sys.time(), t0, units = "secs"))
@@ -357,8 +367,30 @@ naver_run_pipeline <- function(target_date = NULL) {
   old_raw <- as.data.table(read_parquet(RAWDATA_CACHE))
   last_date <- max(old_raw$Date)
 
-  if (is.null(target_date)) target_date <- format(Sys.Date(), "%Y%m%d")
-  target <- as.Date(target_date, "%Y%m%d")
+  # [Track R fix 2026-06-12] 결함 원인: 구버전은 target = Sys.Date()를 무검증 스탬프.
+  #   cron 00:03에 Naver 시세페이지가 보여주는 종가는 '직전 거래일' 종가이므로
+  #   (1) 전 구간 +1일 시프트, (2) 토/일/공휴일(05-01, 05-05, 05-25, 06-03 등)에
+  #   phantom 세션 + Vol/Close forward-fill 적재 발생 (2026-05~06 실증, DATA_INTEGRITY_001).
+  # 수정: target = last_confirmed_trading_day() (16:00 이전엔 직전 거래일). 캘린더
+  #   부재 시 fail-loud (조용한 오염 적재보다 RAWDATA 미전진 WARN이 옳은 실패 모드).
+  if (is.null(target_date)) {
+    if (!exists("last_confirmed_trading_day"))
+      stop("[pipeline] trading_calendar not loaded - refuse to stamp Sys.Date() blindly (Track R fix)")
+    target <- last_confirmed_trading_day()
+  } else {
+    target <- as.Date(target_date, "%Y%m%d")
+  }
+
+  # 거래일 검증 게이트: 주말 무조건 차단 + 캘린더 대조
+  wd <- as.POSIXlt(target)$wday
+  if (wd %in% c(0L, 6L)) {
+    cat(sprintf("[pipeline] BLOCKED: target %s is a weekend - not a trading session\n", target))
+    return(invisible(NULL))
+  }
+  if (exists("is_trading_day") && !is_trading_day(target)) {
+    cat(sprintf("[pipeline] BLOCKED: target %s not in trading calendar (holiday?)\n", target))
+    return(invisible(NULL))
+  }
 
   if (target <= last_date) {
     cat(sprintf("[pipeline] RAWDATA (%s) already >= target (%s)\n", last_date, target))

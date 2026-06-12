@@ -1,0 +1,131 @@
+{
+  "schema_version": "trackB_prereg_v1.0",
+  "program": "Composition Search Cycle 2 - Track B (Stage B book-marginal preregistration for Cycle 1b Track V winner)",
+  "written_at": "2026-06-12T09:19:58+09:00",
+  "written_by": "Track B prereg subagent (Composition Search Cycle 2, Dohoon confirm 2026-06-12)",
+  "status": "PREREGISTERED_FROZEN - NO measurement performed in this task. Post-registration spec/grid/criteria changes PROHIBITED. All registered arms must be reported in full (including disqualification and failures). Silent drop forbidden.",
+
+  "stage_b_frame": {
+    "charter": ".claude/rules/measurement-graduation.md section 4 - Admission = book-marginal: delta_IR = new_book_ir - incumbent_book_ir >= 0.05 (shortfall = DEFER). governor admit (book_state write) is NOT automated - Q-Lead + Dohoon manual confirm. This prereg and its follow-up measurement grade NOTHING at the capital tier.",
+    "baseline_source": "qepm/mailbox/governor/book_state.json::incumbent_book_ir (READ-ONLY)",
+    "incumbent_book_ir": 1.5754,
+    "incumbent_book_ir_basis_caveat": "Stored 1.5754 = book_metrics_dual_track.official_gross_charter_v1_4.ir_vs_kospi200 (267mo, GROSS-of-cost, flat-era contract, full period). Stage B blend IR will be measured NET (v2.4 delta / production cost legs) with a 2026-04-30 cutoff. Direct subtraction is basis-mismatched (biased AGAINST the candidate since net < gross). Handling preregistered in judgment_criteria.G2: same-basis delta governs the prereg verdict; section-4-literal delta vs 1.5754 is reported in parallel for governor manual review.",
+    "incumbent_book": {
+      "n_admitted": 1,
+      "admitted_ids": ["STR_1715_AR_on_M4_R05_overlay_PG2"],
+      "book_weights": { "STR_1715_AR_on_M4_R05_overlay_PG2": 1.0 }
+    },
+    "tools": "02_Infrastructure/portfolio/book_optimizer.R (book_information_ratio = book_mu/book_te package-QP path; NOT usable for the incumbent - book_state.json provenance note: incumbent has no 3-package mailbox dir, stored 1.5754 is authoritative). Realized-series IR is therefore measured via the canonical contract path (build_benchmark_compare / Track V tv_metrics getbc machinery) identically for every arm."
+  },
+
+  "input_lineage": {
+    "track_v_winner": {
+      "run_id": "B1_V4_band_1p5N",
+      "base_id": "B1_STR1715_VANILLA",
+      "prereg": "04_Research/composition_search/cycle1b_trackV/prereg_variations.json (FROZEN 2026-06-11)",
+      "results": "04_Research/composition_search/cycle1b_trackV/variation_results.json (generated 2026-06-12T08:12:53)",
+      "measured_canonical_screen": {
+        "full_sr_net": 0.9566, "d_full_sr_vs_base": 0.0419,
+        "is_sr_net": 1.056, "d_is_sr": 0.0159,
+        "oos_sr_net": 0.791, "d_oos_sr": 0.0732,
+        "d_full_cost_pct_per_yr": -0.434, "full_to_oneway": 4.9817,
+        "full_port_t": 3.5898, "full_ir_vs_k200": 0.7829,
+        "full_mdd_pct": 37.675, "full_calmar": 0.6354,
+        "verdict_track_v": "IMPROVED (selected_by_IS, OOS_NONWORSENING_PASS, dsr_n38 0.899)",
+        "metric_type": "canonical_screen"
+      },
+      "series_artifact": "04_Research/composition_search/cycle1b_trackV/results/b1_str1715_vanilla_series.rds (list keyed by run_id; element B1_V4_band_1p5N = monthly Date/net/gross)"
+    },
+    "engine": "04_Research/composition_search/cycle1b_trackV/trackv_engine.R + s2_common.R (tv_run_variant; Return.portfolio drift-aware; v2.4 delta cost cost_t = 0.0015 x sum|dW| both legs)",
+    "book_series_sources": {
+      "overlaid_L5": {
+        "path": "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/04_backtest_results/period_returns_layer5.csv",
+        "rows": 267, "span": "realized_ym 2004-02 .. 2026-04",
+        "access_rule": "READ-ONLY. The 05_Production path must NEVER appear in any Bash command string (guard blocks it) - the measurement R script embeds the path in-source only (precedent: 04_Research/composition_search/cycle1_trackO/inspect_inputs.R).",
+        "identity_verified": "ret_L5_V2 recomposition max abs resid 5.135e-16 (Track O prereg, metric_type=diagnostic)"
+      },
+      "vanilla_ret_orig": {
+        "path": "04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd/output/03_period_returns.csv",
+        "note": "ret_orig == base ret_net, identity verified in v24_book_remeasure (Track O prereg)"
+      },
+      "benchmark": "04_Research/composition_search/cycle1b_trackV/inputs/bm_monthly.csv (KOSPI200 monthly, Track V frozen input)"
+    },
+    "data_boundary": "rawdata.parquet post 2026-05-01 is confirmed contaminated (Track R repairing). ALL Stage B series are truncated at realized month <= 2026-04-30 and every output row carries the label data_cutoff=2026-04-30. Book L5 already ends 2026-04 (native). Track V B1 panel scores end 2026-03 (returns through 2026-04) - no contamination exposure, cutoff labeled anyway. Data loaded ONCE at script start, held in memory; on load failure retry exactly once after 60s (atomic-swap window during repair)."
+  },
+
+  "specs_registered": [
+    {
+      "spec_id": "SB1_B1V4_SOLO",
+      "name": "B1_V4_band_1p5N solo (Track V frozen spec, unchanged)",
+      "spec": {
+        "signal": "score_eff = 0.65*score_core_z + 0.35*score_defense_z (b1-verified 7-factor blend, factor_panel_7f.parquet)",
+        "selection": "top-20 EW with holding band 1.5N: hold incumbent while rank <= 30; refill to N=20 with top-ranked non-held",
+        "rebalance": "monthly (month-end t -> hold t+1)",
+        "engine_cfg": "list(n_fixed = 20L, band = 30L)",
+        "cost": "v2.4_kr_retail_15bps delta",
+        "frozen": "IDENTICAL to Track V B1_V4_band_1p5N - no re-tuning. Series MAY be reused from b1_str1715_vanilla_series.rds; if re-run, must reproduce full_sr_net 0.9566 to 4dp (repro gate before any blend math)."
+      }
+    },
+    {
+      "spec_id": "SB2_B1V4_PLUS_LIQ2E8",
+      "name": "B1_V4 + liq 2e8 combined (NEW - not in Track V's 38 trials; first registration here)",
+      "spec": {
+        "signal": "same as SB1",
+        "selection": "holding band 1.5N (band=30, refill to N=20) AND liquidity floor AvgTV20 >= 2e8 KRW at selection (PIT t-1, adv_panel.parquet)",
+        "rebalance": "monthly",
+        "engine_cfg": "list(n_fixed = 20L, band = 30L, liq_floor = 2e8)",
+        "cost": "v2.4_kr_retail_15bps delta",
+        "fresh_run_required": true
+      },
+      "combination_rationale": "Both components were SOLO-IMPROVED on the same base under the Track V preregistered 3-leg verdict: B1_V4 (d_is_sr +0.0159 / d_oos_sr +0.0732 / cost -0.43%/yr) and B1_V7_liq_2e8 (d_is_sr +0.0048 / d_oos_sr +0.0019). Mechanisms are independent channels: V4 = rank-hysteresis turnover/cost reduction; V7 = execution-margin / implementability (production liquidity constraint, near-zero turnover impact d_to -0.012). No parameter is tuned for the combination; it is the conjunction of two frozen specs.",
+      "honesty_note": "Additivity is NOT assumed - the combined spec may underperform SB1 (Track V combo axis went 0/4). Expected-positive but preregistered to test, not to confirm."
+    }
+  ],
+
+  "selection_protocol": {
+    "selection_type": "sweep",
+    "n_trials_added_to_cumulative_ledger": 2,
+    "ledger_context": "Cycle 1b Track V 38 + Cycle 1 Track O 5; Stage B adds 2 spec-level trials (SB1, SB2). Within each spec the blend grid is a 4-point sweep (8 blend arms total); DSR is computed and recorded for the sweep as diagnostic per charter; graduation-tier DSR>=0.5 HARD binds only if a winner proceeds to forge-authoritative graduation.",
+    "is_window": "2005-01 .. 2018-12 (the ONLY window used for blend-point selection)",
+    "oos_window": "2019-01 .. 2026-04 (cutoff-truncated; consulted exactly ONCE per spec, confirmation only, never selection)",
+    "full_window": "common month grid of spec series x book L5 series, <= 2026-04-30 (reporting + G2 gate)",
+    "alignment": "inner join on calendar month grid across spec_net, book_L5_net, ret_orig, BM; n_months_common reported per spec"
+  },
+
+  "measurement_plan_order_of_operations": [
+    "STEP 0 (repro gate): load all inputs once; verify SB1 series reproduces Track V full_sr_net 0.9566 (4dp). SB2 fresh run via trackv_engine cfg above. Truncate everything at 2026-04-30.",
+    "STEP 1 (correlation gatekeeper, per spec): cor_primary = cor(spec_net, book_L5_net) on the FULL common window; cor_diag = cor(spec_net, ret_orig) reported as diagnostic. If |cor_primary| >= 0.30 -> verdict DISQUALIFIED_BOOK_MARGINAL, report immediately, and DO NOT measure the blend grid for that spec (no salvage, no forking).",
+    "STEP 2 (blend grid, only if STEP 1 passes): blends = Return.portfolio(R = cbind(book_L5_net, spec_net), weights = (w_book, 1-w_book), rebalance_on = 'months') for the FROZEN grid w_book in {0.90, 0.85, 0.80, 0.75}. NO hand-weighted return sums (w1*r1+w2*r2 self-synthesis prohibited; precedent value_sleeve_combination/run_blend.R).",
+    "STEP 3 (IS-only selection): argmax IS delta_IR_samebasis over the 4 grid points; tie-break (|d| < 0.005): lower IS MDD. IS winner committed to the results file BEFORE any OOS value is inspected.",
+    "STEP 4 (OOS confirm, once): evaluate the committed blend point on OOS; then FULL-window G2/G3 verdicts.",
+    "STEP 5 (report): all arms, all windows, both specs, including failures/disqualifications. metric_type labels on every number."
+  ],
+
+  "judgment_criteria_preregistered": {
+    "G1_correlation": "|cor(spec_net, book_L5_net)| < 0.30 (full common window, point estimate). Failure = DISQUALIFIED_BOOK_MARGINAL immediate honest report (charter section 3 band-evidence cor bound reused as the book-marginal eligibility bound per task mandate).",
+    "G2_delta_ir": "At the IS-selected blend point, FULL-window delta_IR_samebasis = IR(blend) - IR(book_L5 alone) >= 0.05, both IRs vs KOSPI200 computed by the identical contract machinery on the identical window/cutoff/cost basis. PARALLEL REPORT (not the prereg gate, basis-mismatched): delta_IR_vs_stored = IR(blend) - 1.5754 (section 4 literal, gross-vs-net caveat flagged) - supplied to governor/Dohoon for the manual section-4 application.",
+    "G3_oos_nonworsening": "At the committed blend point: OOS delta_IR_samebasis >= 0 AND OOS delta_SR (blend - book-only) >= 0 (point estimates, single consultation).",
+    "verdict_rule": "STAGE_B_PASS requires G1 AND G2 AND G3. Any failure -> honest FAIL report with the failing leg named; no second pick from OOS; no grid extension.",
+    "a_priori_expectation_honesty": "B1_V4 is a variation of the SAME STR_1715 7-factor signal that underlies the incumbent book. The b1 reconstruction correlates 0.81 with ret_orig (documented in Track V prereg). |cor| >= 0.30 at STEP 1 is therefore the LIKELY outcome for both specs. That outcome is a valid, preregistered negative result: it establishes that the band variation must route as an INCUMBENT-BASE UPGRADE candidate (replacement track - band rule applied to the production STR_1715 base, forge-authoritative re-run, governor manual) rather than as an additive book sleeve. This routing recommendation is preregistered here so it cannot be invented post hoc."
+  },
+
+  "metric_type_labels": {
+    "spec_series": "canonical_screen (Track V engine, v2.4 delta)",
+    "book_L5_series": "estimated (realized production artifact recomposition; Track O/v24_book_remeasure precedent)",
+    "blend_arms": "estimated (mixed-basis blend of canonical_screen x realized artifact; forge build_bt_result re-run REQUIRED before any graduation/admission claim)",
+    "no_backtested_claim": true
+  },
+
+  "limitations_disclosed": [
+    "Cross-sleeve netting between book holdings and candidate holdings is NOT modeled in Return.portfolio blends (each leg carries its own embedded cost); direction of bias unknown - disclosed, not assumed away.",
+    "Stored incumbent_book_ir 1.5754 is gross/flat-era/full-period; G2 dual-reporting handles the mismatch explicitly.",
+    "OOS window (2019-01..2026-04, ~88m) is confirmation-grade only; no holdout consumed by this stage (holdout falsification regime untouched).",
+    "Stage B PASS does not admit anything: book_state write = Q-Lead + Dohoon manual per charter section 4."
+  ],
+
+  "process_discipline": {
+    "concurrency": "max 2 concurrent R processes, <= 4GB each; RAM <= 80%",
+    "output_dir": "04_Research/composition_search/cycle2_trackB/",
+    "planned_artifacts_followup_measurement": ["stageb_results.json", "stageb_series.rds", "is_selection_commit.json (IS winner committed before OOS read, Track O precedent)"]
+  }
+}

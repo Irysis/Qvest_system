@@ -230,7 +230,9 @@ krx_collect_daily <- function(date_str) {
 #──────────────────────────────────────────────────────────────────────────────
 krx_collect_range <- function(start_str, end_str) {
   dates <- seq(as.Date(start_str, "%Y%m%d"), as.Date(end_str, "%Y%m%d"), by = "day")
-  dates <- dates[!weekdays(dates) %in% c("Saturday", "Sunday")]
+  # [Track R fix 2026-06-12] weekdays() 문자열 비교는 한국어 locale에서 dead filter
+  # ("토요일" != "Saturday") — locale 무관 wday 정수 비교로 교체
+  dates <- dates[!as.POSIXlt(dates)$wday %in% c(0L, 6L)]
   date_strs <- format(dates, "%Y%m%d")
 
   cat(sprintf("[KRX] Range collection: %s ~ %s (%d business days)\n",

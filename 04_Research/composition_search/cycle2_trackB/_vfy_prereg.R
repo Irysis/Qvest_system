@@ -1,0 +1,6 @@
+j <- jsonlite::fromJSON("C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/composition_search/cycle2_trackB/prereg_stageb.json")
+cat("JSON_VALID\n")
+cat("specs:", paste(j$specs_registered$spec_id, collapse=","), "\n")
+cat("baseline_ir:", j$stage_b_frame$incumbent_book_ir, "\n")
+cat("n_trials_added:", j$selection_protocol$n_trials_added_to_cumulative_ledger, "\n")
+cat("written_at:", j$written_at, "\n")

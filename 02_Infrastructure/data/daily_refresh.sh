@@ -110,6 +110,7 @@ echo "[1/7] Naver T+0 Primary Pipeline..."
 cd "$INFRA"
 run_r '
   source("config.R")
+  source("data/trading_calendar.R")   # [Track R fix 2026-06-12] 거래일 가드 활성화 (필수)
   source("data/naver_data_collector.R")
   suppressPackageStartupMessages({library(data.table); library(arrow)})
   before <- tryCatch(max(as.Date(as.data.table(read_parquet(RAWDATA_CACHE))$Date), na.rm=TRUE), error=function(e) NA)
@@ -129,6 +130,7 @@ echo "[2/7] KRX gap-fill (fallback)..."
 cd "$INFRA"
 run_r '
   source("config.R")
+  source("data/trading_calendar.R")   # [Track R fix 2026-06-12] interior gap 감지 + 거래일 가드 활성화
   source("data/krx_data_collector.R")
   source("data/krx_build_rawdata.R")
   gap <- krx_detect_gap()

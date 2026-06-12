@@ -35,7 +35,31 @@ CALENDAR_CACHE <- file.path(CACHE_DIR, "trading_calendar.parquet")
 }
 
 # ─── Build / Load 캘린더 ─────────────────────────────────────────────────────
-# ─── Internal: Naver T+0 거래일 추출 (RAWDATA의 unique Date) ─────────────────
+# ─── Internal: Benchmark 거래일 추출 (benchmark.parquet — chart-API 실세션 날짜) ──
+# [Track R fix 2026-06-12] 구버전 Layer 2는 RAWDATA 자기참조(.extract_naver_dates)였음.
+#   RAWDATA가 오염되면 캘린더도 따라 오염되는 순환 구조 (예: +1일 시프트로 05-01 노동절이
+#   '평일'로 통과, 06-04~09 누락이 캘린더에서도 누락 → naver/krx 가드 전부 무력화).
+#   benchmark.parquet은 naver_benchmark_update.py chart-API가 '실제 세션 날짜'로만 적재
+#   (2026-06 위기주간 포함 무결 검증, T+30 review DATA_INTEGRITY_001) → 이를 Layer 2로 사용.
+.extract_bm_dates <- function(start_after = NULL) {
+  bm_path <- file.path(CACHE_DIR, "benchmark.parquet")
+  if (!file.exists(bm_path)) return(as.Date(character(0)))
+
+  bm <- as.data.table(read_parquet(bm_path, col_select = "Date"))
+  bm[, Date := as.Date(Date)]
+  dates <- sort(unique(bm$Date))
+
+  # 주말 방어 (정상이라면 0건)
+  wday <- as.POSIXlt(dates)$wday
+  dates <- dates[wday >= 1 & wday <= 5]
+
+  if (!is.null(start_after)) {
+    dates <- dates[dates > as.Date(start_after)]
+  }
+  dates
+}
+
+# (구) RAWDATA 자기참조 추출 — 순환 오염으로 Layer 2에서 퇴출. 진단용으로만 보존.
 .extract_naver_dates <- function(start_after = NULL) {
   rawdata_path <- file.path(CACHE_DIR, "rawdata.parquet")
   if (!file.exists(rawdata_path)) return(as.Date(character(0)))
@@ -109,17 +133,18 @@ build_trading_calendar <- function(force = FALSE, verbose = TRUE) {
     cat("\n")
   }
 
-  # ─── Layer 2: Naver T+0 — QW max 이후 구간만 보충 ────────────────────────
+  # ─── Layer 2: Benchmark (chart-API 실세션) — QW max 이후 구간만 보충 ──────
+  # [Track R fix 2026-06-12] RAWDATA 자기참조 → benchmark.parquet 교체 (순환 오염 차단)
   naver_supplement <- if (!is.na(qw_max)) {
-    .extract_naver_dates(start_after = qw_max)
+    .extract_bm_dates(start_after = qw_max)
   } else {
-    .extract_naver_dates()
+    .extract_bm_dates()
   }
   if (verbose && length(naver_supplement) > 0) {
-    cat(sprintf("  [Layer 2] Naver 보충: %d일 (%s ~ %s)\n",
+    cat(sprintf("  [Layer 2] Benchmark 보충: %d일 (%s ~ %s)\n",
                 length(naver_supplement), min(naver_supplement), max(naver_supplement)))
   } else if (verbose) {
-    cat(sprintf("  [Layer 2] Naver 보충: 0일 (QW가 최신)\n"))
+    cat(sprintf("  [Layer 2] Benchmark 보충: 0일 (QW가 최신)\n"))
   }
 
   # ─── Layer 3: KRX OpenAPI (T+1 lag 감안 cross-check) ─────────────────────
@@ -154,7 +179,7 @@ build_trading_calendar <- function(force = FALSE, verbose = TRUE) {
     cal_qw <- data.table(Date = as.Date(character(0)), source = character(0))
   }
   cal_naver <- if (length(naver_supplement) > 0) {
-    data.table(Date = as.Date(naver_supplement), source = "naver_t0")
+    data.table(Date = as.Date(naver_supplement), source = "benchmark")
   } else {
     data.table(Date = as.Date(character(0)), source = character(0))
   }
@@ -181,6 +206,15 @@ build_trading_calendar <- function(force = FALSE, verbose = TRUE) {
   if (!is.null(.CALENDAR)) return(.CALENDAR)
   if (file.exists(CALENDAR_CACHE)) {
     .CALENDAR <<- as.data.table(read_parquet(CALENDAR_CACHE))
+    # [Track R fix 2026-06-12] staleness self-heal: 캐시 max(Date)가 benchmark max(Date)보다
+    # 뒤처지면 자동 재빌드. (실증: 캐시가 2026-04-28에 동결된 채 6주 방치 →
+    # last_confirmed_trading_day()가 4월을 반환, 모든 가드가 무의미해짐)
+    bm_max <- tryCatch(max(.extract_bm_dates(), na.rm = TRUE), error = function(e) as.Date(NA))
+    cal_max <- suppressWarnings(max(as.Date(.CALENDAR$Date), na.rm = TRUE))
+    if (!is.na(bm_max) && !is.na(cal_max) && bm_max > cal_max) {
+      cat(sprintf("[calendar] 캐시 stale (cal_max=%s < bm_max=%s) - 자동 재빌드\n", cal_max, bm_max))
+      .CALENDAR <<- build_trading_calendar(force = TRUE, verbose = FALSE)
+    }
   } else {
     .CALENDAR <<- build_trading_calendar()
   }

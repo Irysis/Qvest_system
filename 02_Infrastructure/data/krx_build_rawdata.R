@@ -17,6 +17,15 @@ suppressPackageStartupMessages({
 
 if (!exists("PROJECT_ROOT")) source(file.path(dirname(dirname(sys.frame(1)$ofile %||% ".")), "config.R"))
 if (!exists("krx_api")) source(file.path(DATA_DIR, "krx_data_collector.R"))
+# [Track R fix 2026-06-12] trading_calendar 의무 로드 — krx_detect_interior_gaps()/
+# krx_merge_rawdata()의 거래일 가드가 exists() 조건부라 미로드 시 죽은 코드였음
+# (daily_refresh [2]가 본 파일만 source → interior gap 감지 0건 고정, 06-04~09 누락 영구화).
+if (!exists("is_trading_day")) {
+  tryCatch(source(file.path(DATA_DIR, "trading_calendar.R")),
+           error = function(e) cat(sprintf(
+             "[krx_build_rawdata][WARN] trading_calendar load FAILED (%s) - calendar guards DEAD\n",
+             e$message)))
+}
 
 #──────────────────────────────────────────────────────────────────────────────
 # 1. Detect gap between RAWDATA and current date
@@ -152,7 +161,8 @@ krx_merge_rawdata <- function() {
   }
 
   dates <- seq(as.Date(gap$start, "%Y%m%d"), as.Date(gap$end, "%Y%m%d"), by = "day")
-  dates <- dates[!weekdays(dates) %in% c("Saturday", "Sunday")]
+  # [Track R fix 2026-06-12] locale 무관 주말 필터 (한국어 locale에서 weekdays() 비교 무력)
+  dates <- dates[!as.POSIXlt(dates)$wday %in% c(0L, 6L)]
   date_strs <- format(dates, "%Y%m%d")
 
   # Filter out known holidays

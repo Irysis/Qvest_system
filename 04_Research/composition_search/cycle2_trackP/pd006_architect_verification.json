@@ -1,0 +1,116 @@
+{
+  "task_id": "PD006",
+  "package_kind": "architect_3rd_source_verification",
+  "schema_version": "v1.0_cycle2_trackP",
+  "ax008_role": "third_source_independent_verification (codex governor C3 resolution)",
+  "subject": "STR_1715_AR_on_M4_R05_overlay_PG2 overlay cycle (WT-H20260513_001, PG2 admit 2026-05-13)",
+  "produced_at": "2026-06-12",
+  "produced_by": "Architect (PD006 subagent, Composition Search Cycle 2 Track P)",
+  "method": "read-only audit; production read via Read tool only; no production mutation; no new backtest run",
+  "metric_type_policy": "all cited numbers labeled; new computations in this audit are identity-recomposition (diagnostic) or proxy (diagnostic), never performance claims",
+
+  "verdict": "ARCHITECT_CONDITIONAL",
+  "verdict_one_line": "Measurement substance PASS on all 3 axes (PIT lag clean, structure sound, numbers re-derivable to 5.1e-16); CONDITIONAL because end-to-end re-execution on the current clone is broken by 3 restorable curation gaps (missing admit-lineage alpha parquet at recorded path, dead hardcoded BASE_DIR, lost architect repro scripts with the WT-H20260513_001 mailbox).",
+  "blocking_findings": [],
+
+  "axis_1_pit_lineage": {
+    "verdict": "PASS_WITH_ONE_LINEAGE_GAP",
+    "shift_lag_audit": {
+      "file": "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/01_reproducible_code/run_layer5_R05_overlay.R",
+      "m4_lag": "L116-117 shift(weight_str1715,1,fill=1.0) / shift(weight_cash,1,fill=0.0)",
+      "ar_lag": "L125 shift(beta_threshold,1,fill=1.0); db_thr L139 = |delta(beta_threshold_lag)|",
+      "r05_lag": "L175 realized_ym := format(Date + months(1)) -- beta_R05 decided at sig_date t-1 EOM, applied to month t; merge by realized_ym L269-275",
+      "v4_v5_quantiles": "L189-203 expanding_quantile uses dates < dates[i] strictly (past-only, min 12 obs); V2 (admitted variant) uses NO quantile at all (pure regime map) -- C1 immune",
+      "r05_beta_cost": "L282-287 db_R05 = |delta(beta_R05_lag-path)|, charged 15bps per leg",
+      "regime_source": "regime_state taken at sig_date from admit-lineage alpha panel -- t-1 information only",
+      "pit_honesty_evidence": "2008-10 row: regime=NORMAL, beta_R05_V2=1.0 (full exposure in Lehman month, defensive cut arrives 2008-11 CRISIS) -- the lag is real, no defensive lookahead",
+      "conclusion": "C1/C2/C5/C9 clean; consistent with admit-time architect PIT walkthrough 15/15 PASS (03_admit_artifacts/architect_independent_verification.json) which this audit independently re-confirms at the code-line level"
+    },
+    "observation_possible_double_lag": "admit-time architect notes m4_scalar 'shifted by 1 month at source' (C9) while run script applies shift(1) again; if true this is a conservative extra lag, not lookahead; L4 sanity check (|SR-1.7486|<0.05, observed delta 0.0000) anchors it to the admitted baseline either way",
+    "lineage_inputs_5": {
+      "pr_base": {"path": "04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd/output/03_period_returns.csv", "md5_recorded": "607dfb1be5d4373b8669843174133511", "exists_on_clone": true},
+      "m4_source": {"path": "qepm/mailbox/worktask/WT-D20260430_001/judge_ready/weights.csv", "md5_recorded": "2f7c8f034103d6c01a663216bcc154bf", "exists_on_clone": true},
+      "ar_source": {"path": "stage_artifacts/WT_WT-S20260504_007/beta_t_mapping.csv", "md5_recorded": "257f6586f709455246985ce186d4e489", "exists_on_clone": true},
+      "r05_source": {"path": "stage_artifacts/WT_D20260512_003/alpha_scores_new.parquet", "md5_recorded": "dd0ac2933410522134aa6c5314757327", "exists_on_clone": true},
+      "alpha_admit_lineage": {"path": "stage_artifacts/WT_D20260425_010/alpha_scores.parquet", "md5_recorded": "cbd8282ef3cdaa9333d08faf130de5af", "exists_on_clone": false, "note": "MISSING at recorded path on current clone. Production package retains 02_holdings_universe/alpha_scores_str1715_268m.parquet (presumed copy) but hash-equality not verifiable under read-only constraint (production reads via Read tool only; binary parquet). This file is REQUIRED by run script section 3 (score_eff top20 + regime_state) -- re-execution blocked until restored."}
+    },
+    "lineage_traceability": "manifest.json + bt_result manifest + governor production_artifacts_ready all record identical 5-path + md5 set; dual-recorded (architect JSON + governor admission) -- traceable on paper, 4/5 physically present"
+  },
+
+  "axis_2_structure": {
+    "verdict": "PASS_WITH_2_ADVISORY_COST_FINDINGS",
+    "layer_roles": {
+      "L1_L2": "STR_1715 alpha + Iter31 linear_tilt weights -- frozen, baked into PR ret_net (no holding change anywhere in overlay stack; selection invariance rank_corr=1.0 per admit artifacts)",
+      "L3_M4": "frozen schedule scalar (WT-D20260430_001 weights.csv)",
+      "L4_AR": "frozen threshold beta mapping (WT-S20260504_007 beta_t_mapping.csv)",
+      "L5_R05_V2": "deterministic regime map {BULL/NORMAL=1.0, CAUTION=0.5, CRISIS=0.3}, no estimation at apply time",
+      "schedule_determinism": "monthly EOM decision, t-1 apply, all scalars deterministic given frozen inputs -- forward path reproducible by table lookup"
+    },
+    "double_charging_check": {
+      "finding": "NO double charge. Base cost inside PR ret_net (engine, once); AR leg |delta beta_AR| x 15bps charged once (present identically in L4 baseline and L5 paths); R05 leg |delta beta_R05| x 15bps incremental only.",
+      "separate_leg_vs_composite": "charging legs separately vs |delta(product)|: Cycle 1 Track O re-priced incumbent uniformly on composite delta -- max monthly ret diff 0.00045, annualized cost diff +1.96bps/yr (combine_ab_results.json incumbent_reconciliation) -- immaterial",
+      "metric_type": "backtested (Track O recomposition on stored production series)"
+    },
+    "advisory_finding_1_uncosted_m4_leg": {
+      "finding": "M4 scalar transitions are uncosted in both L4 and L5 formulas (db_thr = |delta beta_AR| only; Track O inspect_inputs id1/id2 distinguishes; confirmed at code L139).",
+      "magnitude_proxy": "sum|delta m4_weight| over 267m = 6.5527 -> annualized one-way scalar TO 0.2945x -> ~4.4 bps/yr uncosted at 15bps/leg",
+      "metric_type": "proxy (diagnostic, computed this audit from qepm/mailbox/worktask/WT-D20260430_001/judge_ready/weights.csv)",
+      "materiality": "~4.4bps/yr vs admitted delta-CAGR +2.82pp and delta-SR +0.205 -- does not move the admit decision; should be priced in any future v2.4 re-measure"
+    },
+    "advisory_finding_2_cost_model_label": {
+      "finding": "Package labels cost_model_version v2.3_kr_retail_15bps (flat per-rebalance engine in base PR ret_net). Current standard is v2.4 delta-based (dohoon confirm 2026-06-11, post-admit). B0 forensic (04_Research/pg2_forensics/b0_fee_bug_report.md): flat is accurate near TO~6x/yr, under-charges toward TO>=10x; base one-way TO 7.5x/yr (750%) sits in the mild under-charge zone.",
+      "action": "label-discipline only at this stage -- any comparison of admit metrics vs v2.4-costed runs must carry the label (CLAUDE.md cost row); overlay legs are already delta-based by construction"
+    },
+    "decision_vs_code_gates": {
+      "finding": "The reproducible code's own hard gates produce best_eligible=NULL (all 5 variants fail coded AX-001v2 CRISIS/CAUTION SR>0; V2 fails gate_MDD_better since MDD equal not better; audit.json best_eligible_variant=null). V2 admission was made OUTSIDE the script via judge phase2 adjudication (AX-001 v2 reclassified N/A pure-overlay, Kritzman family) + governor 8-metric eval + TO 0.68>0.5 informal waiver.",
+      "assessment": "fully documented in judge_verdict.json + governor_admission.json -- not a silent override; but reproducing the ADMIT DECISION requires those artifacts, not the code alone. Re-running the script will again print 'NO variant passes all gates' -- expected, not a regression.",
+      "minor_inconsistency": "judge text calls the 2008-10 MDD event a CAUTION month; production period_returns shows 2008-10=NORMAL, 2008-11=CRISIS, 2008-12=CAUTION (narrative slip only, numbers unaffected)"
+    },
+    "small_sample_caveat_retained": "CRISIS n=3 / CAUTION n=15 over 255m; defensive value rests on 18 bad months; lagged regime means crash onset months are entered at full exposure (2008-10). Documented at admit (Lo 2002 citations) -- retained as standing caveat, not new."
+  },
+
+  "axis_3_reproducibility": {
+    "verdict": "RECOMPOSITION_PASS__REEXECUTION_BLOCKED_ON_CLONE",
+    "cycle1_trackO_citation": {
+      "path": "04_Research/composition_search/cycle1_trackO/ (inspect_inputs.R + combine_ab_results.json, 2026-06-12)",
+      "evidence": "ret_L5_V2 full-column recomposition from production period_returns_layer5.csv: max residual 5.1347814889e-16; db_thr identity 5.55e-17; db_R05 identity 0; 6-month deep-guard beta-path diff 0",
+      "metric_type": "backtested (identity recomposition on stored production series)"
+    },
+    "this_audit_supplement": {
+      "manual_deep_guard_row": "2008-11 (worst base month, CRISIS): L4 = 0.4 x 0.7270925 x (-0.1999582) - 0.6x0.0015 = -0.0590553 EXACT; V2 = 0.3 x product - 0.0009 - 0.7x0.0015 = -0.0193966 EXACT; V5 = V2 + (0.7-0.55)x0.0015 = -0.0191716 EXACT (vs stored 04_backtest_results/period_returns_layer5.csv row 2008-11-03)",
+      "cross_document_consistency": "SR 1.9536 / MDD -0.2481 / CAGR 0.4150 (255m) identical across 04_backtest_results/audit.json, selection_table_255m_admit.csv, manifest.json, judge_verdict.json, governor_admission.json; 267m SR 1.8861 consistent in audit/judge/governor; incremental TO V2 0.6824 consistent (audit.json vs incremental_turnover.csv)",
+      "admit_time_architect_table": "03_admit_artifacts/architect_independent_verification.json: independent base-R reproduction 32/32 metrics within strict 0.005 (max |delta| 0.0044), 5/5 source md5 unchanged, KR FF5/Carhart 5/5 t_NW>3 -- artifact retained and internally consistent with governor admission numbers",
+      "metric_type": "identity/recomposition diagnostic + document cross-check (no new performance computation)"
+    },
+    "reexecution_gaps_3": [
+      "GAP-1 (input): stage_artifacts/WT_D20260425_010/alpha_scores.parquet missing at recorded path -- run script section 3 (R05 top20 signal) cannot load; restore from production 02_holdings_universe copy or git history, then md5-check vs cbd8282ef3cdaa9333d08faf130de5af",
+      "GAP-2 (path): BASE_DIR hardcoded to dead WSL path '/mnt/c/Users/User/OneDrive/.../Quant_Module_Moltbot' (run_layer5_R05_overlay.R L70) and OUT_DIR points to qepm/mailbox/worktask/WT-H20260513_001 which is empty on this clone -- needs QM_ROOT-based portable root before any rerun",
+      "GAP-3 (verification code): the admit-time architect repro scripts (architect_repro_v2_fill_1.0.R, architect_kr_ff5_regression_v2.R, architect_bad_normal_ic_ratio.R, architect_pit_walkthrough.R) lived only in the WT-H20260513_001 mailbox, which is EMPTY on this clone (also flagged by T+30 review ax008_rerun_targets) -- only the JSON result survives; independent path not re-executable without rewrite"
+    ],
+    "holdout_live_extension_check": "06_Registry/live_track/STR_1715_AR_on_M4_R05_overlay_PG2/holdout_interval.json registered 2026-06-10 (q05 0.3929 / q95 3.1626, 21m, consumed=false) -- C3 falsification rail active; T+30 review (04_Research/monitoring/t30_ar_review_20260612/) confirms no hard rollback breach, live SR unmeasurable (1m sample + rawdata calendar corruption, consistent with Cycle 2 data-boundary rule 2026-04-30 cutoff)"
+  },
+
+  "graduation_gate_recheck_under_current_rules": {
+    "note": "advisory re-read of admit evidence against measurement-graduation v8.x as of 2026-06-12 (admit predates some rules)",
+    "port_alpha_t": "Harvey t_NW 6.767 (lag-6) + FF5/Carhart 5/5 t_NW 5.56-6.77 >> 2.95 -- PASS margin large; NW lag-3 vs lag-6 spec difference immaterial at this magnitude (advisory)",
+    "dsr_selection_type": "V1~V5 = sweep (enumerated grid argmax) -> DSR gate applies: N=5 ex-ante Z=1.448 >= 0.5 PASS; V6 N=21/37 FAIL disclosed and DEFERRED (honest handling consistent with current sweep rule)",
+    "oos": "judge lockbox strict is_oos_ratio_V2 1.8715 (>0.7); single-cut method predates oos_stat_version v2 (3-split median) -- re-measure only if re-certification cycle opens",
+    "calmar": "1.6730 >= 0.64 PASS"
+  },
+
+  "conditions_for_full_pass": [
+    "C-1: restore stage_artifacts/WT_D20260425_010/alpha_scores.parquet (from production 02_holdings_universe copy or git history) and verify md5 == cbd8282ef3cdaa9333d08faf130de5af",
+    "C-2: patch run_layer5_R05_overlay.R BASE_DIR to QM_ROOT/portable resolution (production edit requires dohoon-approved promote path; alternatively keep production frozen and stage a corrected copy in a scratch WT for rerun)",
+    "C-3: re-materialize architect verification scripts (rewrite-from-spec acceptable; JSON contains full methodology) into a retained location (04_Research or stage_artifacts), per T+30 ax008_rerun_targets recommended restage pattern",
+    "C-4: when any v2.4-cost re-measure happens, price the M4 scalar leg (~4.4bps/yr proxy) and carry cost_model_version labels on all comparisons"
+  ],
+
+  "ax008_triangulation_position": "This PD006 audit is the Architect 3rd-source line for the overlay cycle in Cycle 2: Forge-era numbers re-derived (Track O 5.1e-16 + manual deep-guard exact), PIT lag re-audited at code level, lineage hash chain re-checked (4/5 physical + 1 documented gap). With Forge admit-time PASS and this CONDITIONAL, AX-008 stands at 2/3 strict + Architect conditional -- promotion-class 3/3 still requires the codex re-run already enabled per T+30 (codex-cli 0.139.0 restored).",
+  "references": {
+    "production_package": "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/",
+    "cycle1_trackO": "04_Research/composition_search/cycle1_trackO/",
+    "t30_review": "04_Research/monitoring/t30_ar_review_20260612/t30_condition_verdicts.json",
+    "holdout": "06_Registry/live_track/STR_1715_AR_on_M4_R05_overlay_PG2/holdout_interval.json",
+    "b0_cost_forensic": "04_Research/pg2_forensics/b0_fee_bug_report.md"
+  }
+}
