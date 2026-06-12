@@ -63,9 +63,11 @@ run_coverage_delta <- function(
       "EW long-only — 커버리지 개시 급증=정보환경 개선·기관수요 선행 long, 철수=음의 신호. ",
       "커버리지 수준 아닌 변화 그 자체가 신호."),
     signal_var    = "dcov_abs",     # P1 변형: dcov_abs(절대증분, 기본) / dcov_rel(증가율). IS 분포 보고 선택
+    invert        = FALSE,          # ★ 역신호 프로브(abandonment long): TRUE면 Score=frank(-signal) — 철수 종목 상위 decile long
     start_date    = "2005-01-01",   # coverage floor 2001-06 — 2005 mandate 충족
     oos_split     = "2022-01-01",
     commission    = 0.0015,
+    track         = NULL,           # 산출 메타 라벨(NULL이면 기본 COVD). 역프로브는 "COVD_abandonment_inverse"
     send_telegram = TRUE,
     tg_dry_run    = FALSE,
     factor_analysis = TRUE) {
@@ -97,13 +99,21 @@ run_coverage_delta <- function(
             all(c("Date","Ticker","Score","N","dcov_abs","dcov_rel") %in% names(FACTORS)))
 
   # ---- 2a. P1 변형 선택 (IS-only): 기본 dcov_abs. signal_var=dcov_rel 지정 시 Score swap ----
+  #   ★ invert=TRUE(abandonment 역프로브): Score=frank(-signal) — 커버리지 철수(Δ 하위=감소 큰) 종목을
+  #     상위 decile로 long. 원 검증 P2 진단(aband IC +0.0220, t=3.39, 가설과 역부호)의 portfolio 집행.
+  #     aband 정의(dcov_abs<0)는 fe 원정의 그대로 보존 — 새 정의 발명 없음. invert는 랭크 방향만 뒤집음.
   if (identical(signal_var, "dcov_rel")) {
     FACTORS[, Score := frank(dcov_rel, ties.method = "average") / .N, by = Date]
-    setorder(FACTORS, Date, -Score)
     cat("[covd] P1 변형 = dcov_rel(증가율) 선택 — Score 재산출 (변경사유: IS 분포 보고 러너 지정)\n")
   } else {
     cat("[covd] P1 변형 = dcov_abs(절대증분, 기본)\n")
   }
+  if (isTRUE(invert)) {
+    .sigc <- if (identical(signal_var, "dcov_rel")) "dcov_rel" else "dcov_abs"
+    FACTORS[, Score := frank(-get(.sigc), ties.method = "average") / .N, by = Date]
+    cat(sprintf("[covd][INVERT] 역신호 프로브: Score=frank(-%s) — 철수(Δ 하위) 종목 상위 decile long\n", .sigc))
+  }
+  setorder(FACTORS, Date, -Score)
 
   if (!is.null(start_date)) FACTORS <- FACTORS[Date >= as.Date(start_date)]
 
