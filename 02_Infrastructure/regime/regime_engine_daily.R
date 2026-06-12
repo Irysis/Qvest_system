@@ -128,8 +128,10 @@ REGIME_DAILY_CACHE <- file.path(CACHE_DIR, "regime_daily_v2.parquet")
   z <- rep(NA_real_, n)
 
   # Rolling mean and sd
+  # [Track R fix 2026-06-12] frollapply 인자명 N -> n (data.table 신버전 API; 구버전 N은
+  # 현 머신 1.17+에서 "argument n is missing" 에러 — regime_daily_v2 갱신 중단의 직접 원인)
   roll_mean <- frollmean(x, n = window, align = "right", na.rm = TRUE)
-  roll_sd   <- frollapply(x, N = window, FUN = sd, align = "right")
+  roll_sd   <- frollapply(x, n = window, FUN = sd, align = "right")
 
   # For early period (before full window), use expanding window
   # We compute expanding stats for indices min_obs to window-1
