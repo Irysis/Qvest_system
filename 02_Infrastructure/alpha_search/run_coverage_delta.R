@@ -131,6 +131,19 @@ run_coverage_delta <- function(
               as.character(min(FACTORS$Date)), as.character(max(FACTORS$Date)),
               uniqueN(FACTORS$Ticker)))
 
+  # ---- 2c. ★ 잔존 폭 진단(역프로브 필수): top-decile N + 그 중 실제 철수(aband=1) 종목수 ----
+  #   철수 종목은 저유동 쏠림 가능 — 유동성 필터(2e8, fe LiqPass) 통과 후 잔존. decile N<15면 명시.
+  .topdec <- FACTORS[, head(.SD[order(-Score)], N[1L]), by = Date]
+  decile_n_med   <- as.integer(median(FACTORS[, .(N = N[1L]), by = Date]$N))
+  aband_in_dec   <- .topdec[, .(n_ab = sum(aband == 1L), n = .N), by = Date]
+  aband_n_med    <- as.integer(median(aband_in_dec$n_ab))
+  aband_frac_med <- round(median(aband_in_dec$n_ab / pmax(aband_in_dec$n, 1L)), 3)
+  decile_thin    <- decile_n_med < 15L
+  cat(sprintf("[covd][잔존폭] top-decile N med=%d | 그 중 실제철수(aband=1) med=%d (비율 med=%.1f%%) | %s\n",
+              decile_n_med, aband_n_med, 100 * aband_frac_med,
+              if (decile_thin) "★decile N<15 과소 — 분산 부족·일물쏠림 위험 명시"
+              else "decile N>=15 충분"))
+
   # ---- 3. PIT 검증 (정적분석 + fe 내장 self-assert는 source 시점에 이미 실행됨) ----
   pit <- detect_lookahead(fe)
   if (!isTRUE(pit$clean)) {
