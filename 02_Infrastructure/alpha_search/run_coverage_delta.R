@@ -221,12 +221,19 @@ run_coverage_delta <- function(
 
   diag_path <- file.path(OUT_DIR, "coverage_delta_diagnostics.json")
   tryCatch(write_json(list(
-    strategy_id = strategy_id, data_floor = as.character(min(FACTORS$Date)),
-    signal_var = signal_var, universe = "K200_KQ150", cand_per_month = universe_n_eff,
+    strategy_id = strategy_id, track = track, invert = invert,
+    data_floor = as.character(min(FACTORS$Date)),
+    signal_var = signal_var, p1_signal = p1_col,
+    universe = "K200_KQ150", cand_per_month = universe_n_eff,
+    decile_n_med = decile_n_med, aband_in_decile_med = aband_n_med,
+    aband_frac_in_decile_med = aband_frac_med, decile_thin = decile_thin,
     P1_ic = ic_p1, P2_aband_ic = ic_p2, P3_neglect_ic = ic_p3,
     is_oos = isoos, oos_split = oos_split,
     top25_compare = top25, turnover_oneway_x = to_oneway_x, cost_underreport_warn = cost_warn,
-    note = "P1 primary(Δcoverage_3m). P2/P3 IC=진단(게이트 미사용). NA->0(미커버=0) 가정. IC advisory."),
+    note = paste0(if (isTRUE(invert)) "INVERSE(abandonment long): Score=frank(-signal), 철수 decile long. "
+                  else "P1 primary(Δcoverage_3m initiation). ",
+                  "원검증 P2 aband IC +0.0220(t=3.39) 집행. P2/P3 IC=진단(게이트 미사용). ",
+                  "NA->0(미커버=0) 가정. aband 정의 fe 원정의 보존. IC advisory.")),
     diag_path, auto_unbox = TRUE, pretty = TRUE, digits = 6),
     error = function(e) cat("[covd] 진단 JSON 저장 실패:", conditionMessage(e), "\n"))
 
