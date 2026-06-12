@@ -206,7 +206,7 @@ run_coverage_delta <- function(
   fmt_diag <- function(x) if (is.null(x)) "산출불가"
     else sprintf("mean IC %.4f (t=%.2f, hit=%.0f%%, n=%d)", x$mean_ic, x$t_ic %||% NA, 100*(x$hit %||% NA), x$n)
   cat("\n[covd][진단 IC — advisory, 판정권위 아님]\n")
-  cat(sprintf("  P1 %-9s: %s\n", signal_var, fmt_diag(ic_p1)))
+  cat(sprintf("  P1 %-9s: %s\n", p1_col, fmt_diag(ic_p1)))
   cat(sprintf("  P2 철수(aband): %s [음의 IC = 철수가 음의 신호 = 가설 정합]\n", fmt_diag(ic_p2)))
   cat(sprintf("  P3 저커버리지내 %-6s: %s\n", signal_var, fmt_diag(ic_p3)))
   if (!is.null(isoos))
