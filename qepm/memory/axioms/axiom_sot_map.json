@@ -147,12 +147,13 @@
       "AX-007",
       "AX-008"
     ],
-    "enforcement_unverified": [
-      "AX-002",
-      "AX-003",
-      "AX-004",
-      "AX-005"
-    ],
+    "enforcement_unverified": [],
+    "enforcement_hook_backfill": {
+      "date": "2026-07-04",
+      "audit_ref": "AXM-03",
+      "note": "active AX-*.json 전 8건에 enforcement_hook dict 백필 (mode/regex/require/applies_to_files) + JSON enforcement_mode를 본 map·.claude/rules/axioms.md와 정렬 (AX-001 block / AX-002~005 advisory / AX-000·007·008 documented). axiom_enforcement_hook.sh 동적 경로가 이 dict를 소비 — legacy 하드코딩(AX-001/002)은 python 부재 fallback으로 유지. 기존 enforcement 문자열 필드는 schema(string) 및 inject.R 호환을 위해 무변경 — dict는 신규 키 enforcement_hook.",
+      "verified": "AX-001 위반 payload dynamic block + AX-004 advisory warn + 정상 payload allow 실측"
+    },
     "cache_core_sync_status": "STALE_PRE_SPRINT1 — bootstrap regenerate 후 FULL",
     "cache_core_authority": "derived_cache (NOT SOT)"
   },

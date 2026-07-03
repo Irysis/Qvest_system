@@ -1,0 +1,103 @@
+{
+  "candidate_id": "LH_D2_loser_augment",
+  "measured_at": "2026-07-03T23:57:56+0900",
+  "metric_type": "weighted_screen",
+  "harness": "02_Infrastructure/regime/overlay_candidate_ab_lh.R (auto_regime_overlay_ab 규약 재사용)",
+  "cost_bps_oneway": 15,
+  "note": "screen-tier A/B — 자본게이트 아님. 오버레이 리밸 비용 생략(하네스 규약: β-schedule 동일적용 상쇄 라벨). unified_regime_signal walk-forward 미보증 → lag1 스트레스 의무 반영.",
+  "scenarios": [
+    {
+      "scenario": "bare",
+      "n_months": 276,
+      "abs_SR": 0.954925,
+      "abs_CAGR": 0.340981,
+      "abs_MDD": -0.457823,
+      "IR": 0.705616,
+      "PORT_t": 3.702608,
+      "active_SR": 0.705616,
+      "oos_ret_v2": 0.727697,
+      "calmar": 0.744788,
+      "avg_exposure": 1
+    },
+    {
+      "scenario": "uni_cat",
+      "n_months": 276,
+      "abs_SR": 0.948074,
+      "abs_CAGR": 0.297063,
+      "abs_MDD": -0.447355,
+      "IR": 0.590541,
+      "PORT_t": 2.857293,
+      "active_SR": 0.590541,
+      "oos_ret_v2": 0.568063,
+      "calmar": 0.664043,
+      "avg_exposure": 0.951087
+    },
+    {
+      "scenario": "uni_cat_lag1",
+      "n_months": 276,
+      "abs_SR": 0.900656,
+      "abs_CAGR": 0.304363,
+      "abs_MDD": -0.471128,
+      "IR": 0.618262,
+      "PORT_t": 3.238184,
+      "active_SR": 0.618262,
+      "oos_ret_v2": 0.801171,
+      "calmar": 0.646031,
+      "avg_exposure": 0.952174
+    },
+    {
+      "scenario": "voltgt",
+      "n_months": 276,
+      "abs_SR": 0.954081,
+      "abs_CAGR": 0.226556,
+      "abs_MDD": -0.343198,
+      "IR": 0.403161,
+      "PORT_t": 2.064611,
+      "active_SR": 0.403161,
+      "oos_ret_v2": 0.517489,
+      "calmar": 0.660134,
+      "avg_exposure": 0.660068
+    },
+    {
+      "scenario": "voltgt_lag1",
+      "n_months": 276,
+      "abs_SR": 0.994356,
+      "abs_CAGR": 0.240949,
+      "abs_MDD": -0.307435,
+      "IR": 0.454227,
+      "PORT_t": 2.333876,
+      "active_SR": 0.454227,
+      "oos_ret_v2": 0.539015,
+      "calmar": 0.783739,
+      "avg_exposure": 0.662871
+    }
+  ],
+  "crisis_conditional": [
+    {
+      "crisis": false,
+      "n": 247,
+      "bare_mean": 0.026646,
+      "uni_mean": 0.026646
+    },
+    {
+      "crisis": true,
+      "n": 29,
+      "bare_mean": 0.069792,
+      "uni_mean": 0.032713
+    }
+  ],
+  "lag1_stress": {
+    "uni_cat": {
+      "mdd_improve_base": -0.010468,
+      "mdd_improve_lag1": 0.013305,
+      "dSR_base": -0.006851,
+      "dSR_lag1": -0.054269
+    },
+    "voltgt": {
+      "mdd_improve_base": -0.114626,
+      "mdd_improve_lag1": -0.150388,
+      "dSR_base": -0.000844,
+      "dSR_lag1": 0.039431
+    }
+  }
+}

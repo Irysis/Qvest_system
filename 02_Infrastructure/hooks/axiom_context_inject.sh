@@ -61,8 +61,32 @@ case "$AGENT_NAME_LC" in
   *)          HEADER='[AX 전제] 아래 공리는 qvest 모든 행위의 대전제.' ;;
 esac
 
-CTX="$HEADER
-$(cat "$CACHE_BODY")"
-ESC=$(printf '%s' "$CTX" | "$QVEST_PY_BIN" -c "import sys,json; s=sys.stdin.buffer.read().decode('utf-8','replace'); print(json.dumps(''.join(ch if not(0xD800<=ord(ch)<=0xDFFF) else '?' for ch in s)))")
+# (A6 2026-07-04, 감사 SC-02) 확립 전략 진실(strategic_truths.md) 추가 주입.
+#   합산 상한 2500자 — 초과 시 truths 우선 보존 + axiom 요약 라인 단위 축약.
+#   파일 부재/공백 시 기존 axiom-only 주입과 동일 (회귀 없음).
+TRUTHS_FILE="$DIR/02_Infrastructure/prompts/strategic_truths.md"
+ESC=$(printf '%s' "$HEADER" | CB="$CACHE_BODY" TF="$TRUTHS_FILE" "$QVEST_PY_BIN" -c "
+import json, os, sys
+def rd(p):
+    try:
+        return open(p, encoding='utf-8', errors='replace').read().strip()
+    except Exception:
+        return ''
+hdr = sys.stdin.buffer.read().decode('utf-8', 'replace')
+body = rd(os.environ.get('CB', ''))
+truths = rd(os.environ.get('TF', ''))
+MAX = 2500
+if truths and len(hdr) + len(body) + len(truths) + 4 > MAX:
+    budget = max(0, MAX - len(hdr) - len(truths) - 60)
+    kept, used = [], 0
+    for ln in body.splitlines():
+        if used + len(ln) + 1 > budget:
+            break
+        kept.append(ln); used += len(ln) + 1
+    body = chr(10).join(kept) + chr(10) + '  → (축약) 전문: .claude/rules/axioms.md'
+ctx = hdr + chr(10) + body + ((chr(10)*2) + truths if truths else '')
+ctx = ''.join(ch if not (0xD800 <= ord(ch) <= 0xDFFF) else '?' for ch in ctx)
+print(json.dumps(ctx))
+")
 echo "{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"additionalContext\":$ESC}}"
 exit 0

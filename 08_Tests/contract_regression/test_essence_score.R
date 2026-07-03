@@ -1,0 +1,173 @@
+# ============================================================================
+# test_essence_score.R - contract regression for essence_score()
+# Target (read-only): 02_Infrastructure/contracts/essence_score.R
+# Covered branches:
+#   - oos_stat_version v2 (anchored 3-split {55/65/75} median) vs v1 (single 65)
+#     with a mathematically exact fixture (periodic block series, period 3
+#     divides every cut point -> retention has a closed-form value)
+#   - selection_type sweep / chain / NULL-legacy DSR gate application
+#   - HARD boundaries: PORT_t 2.95, Calmar 0.64, oos_retention 0.7 (both sides)
+#   - oos band [0.5, 0.7) escalation 2/3 evidence, <0.5 unconditional FAIL
+#   - grade F (non-positive alpha), uncertain (contract not passed),
+#     structural drawdown hard fail, tail_review non-fail
+# ============================================================================
+
+suppressPackageStartupMessages({ library(data.table) })
+
+.this_file <- sub("^--file=", "", grep("^--file=", commandArgs(FALSE), value = TRUE)[1])
+.here <- dirname(normalizePath(.this_file, winslash = "/"))
+source(file.path(.here, "helpers.R"))
+ROOT <- t_root()
+
+source(file.path(ROOT, "02_Infrastructure/contracts/essence_score.R"))
+
+# ---------------------------------------------------------------------------
+# Fixture builder: minimal contract-shaped bt_result
+# ---------------------------------------------------------------------------
+mk_bt <- function(active, bench = rep(0, length(active)),
+                  sharpe = 0.9, cagr = 0.20, mdd = 0.20, calmar = 1.0,
+                  port_t = 3.5, ir = 0.5, drop_port_t = FALSE) {
+  n <- length(active)
+  dates <- seq(as.Date("2020-01-01"), by = "month", length.out = n)
+  M <- data.table(metric_name  = c("Sharpe", "CAGR", "MDD", "Calmar"),
+                  metric_value = c(sharpe, cagr, mdd, calmar))
+  bc_names <- c("Information_Ratio", "Portfolio_Alpha_t_NW_lag3")
+  bc_vals  <- c(ir, port_t)
+  if (drop_port_t) { bc_names <- bc_names[1]; bc_vals <- bc_vals[1] }
+  BC <- data.table(metric_name = bc_names, active_value = bc_vals)
+  list(metrics = M, benchmark_compare = BC,
+       period_returns    = data.table(date = dates, ret_net = active + bench),
+       benchmark_returns = data.table(date = dates, benchmark_ret = bench))
+}
+
+# Periodic block series (period 3, 20 blocks, n = 60). Cut points floor(60*fr)
+# = {33, 39, 45} and remainders {27, 21, 15} are all divisible by 3, so every
+# IS/OOS segment is a whole number of blocks: identical means, sd differs only
+# by the (n-1) sample-variance denominator -> closed-form retention:
+#   retention(k) = sd_is / sd_oos = sqrt( k*(n-k-1) / ((k-1)*(n-k)) )
+a_block <- rep(c(0.032, -0.030, 0.001), 20)
+exp_ret <- function(k, n = 60) sqrt(k * (n - k - 1) / ((k - 1) * (n - k)))
+exp_splits <- vapply(c(33L, 39L, 45L), exp_ret, numeric(1))
+exp_median <- stats::median(exp_splits)
+
+# --- ES01/ES02: v2 3-split median -------------------------------------------
+res_v2 <- essence_score(mk_bt(a_block))
+t_check("essence:ES01_v2_splits_closed_form",
+        length(res_v2$oos_retention_splits) == 3L &&
+        t_near(res_v2$oos_retention_splits, round(exp_splits, 3), tol = 5e-4))
+t_check("essence:ES02_v2_median_and_band_pass",
+        t_near(res_v2$essence$oos_retention, round(exp_median, 3), tol = 5e-4) &&
+        identical(res_v2$oos_band_status, "pass") &&
+        identical(res_v2$oos_stat_version, "v2"))
+
+# --- ES03: v1 legacy single 65/35 split --------------------------------------
+res_v1 <- essence_score(mk_bt(a_block), oos_stat_version = "v1")
+t_check("essence:ES03_v1_single_split",
+        length(res_v1$oos_retention_splits) == 1L &&
+        t_near(res_v1$oos_retention_splits, round(exp_ret(39L), 3), tol = 5e-4))
+
+# --- ES04-ES07: selection_type DSR gate branches -----------------------------
+# Block series has low annualized active IR (~0.14) -> DSR < 0.5 already at
+# n_trials = 50 (sr0 ~ 0.30 per period >> sr_m ~ 0.039). Metrics injected so
+# a_core passes; only the DSR gate differs across selection_type.
+res_chain <- essence_score(mk_bt(a_block), n_trials_cumulative = 50,
+                           selection_type = "chain")
+t_check("essence:ES04_chain_gate_exempt_dsr_diagnostic",
+        identical(res_chain$dsr_gate_applied, FALSE) &&
+        is.finite(res_chain$essence$dsr) && res_chain$essence$dsr < 0.5 &&
+        identical(res_chain$grade, "A"))
+
+res_sweep <- essence_score(mk_bt(a_block), n_trials_cumulative = 50,
+                           selection_type = "sweep")
+t_check("essence:ES05_sweep_gate_blocks_A",
+        identical(res_sweep$dsr_gate_applied, TRUE) &&
+        identical(res_sweep$grade, "B") &&
+        any(grepl("DSR<0.5(sweep)", res_sweep$reasons, fixed = TRUE)))
+
+res_legacy <- essence_score(mk_bt(a_block), n_trials_cumulative = 50,
+                            selection_type = NULL)
+t_check("essence:ES06_legacy_ntrials_heuristic_sweep",
+        identical(res_legacy$dsr_gate_applied, TRUE) &&
+        identical(res_legacy$grade, "B"))
+
+res_single <- essence_score(mk_bt(a_block))  # no trials, no selection_type
+t_check("essence:ES07_single_trial_no_gate_dsr_na",
+        identical(res_single$dsr_gate_applied, FALSE) &&
+        is.na(res_single$essence$dsr) &&
+        identical(res_single$grade, "A"))
+
+# --- ES08-ES11: PORT_t 2.95 / Calmar 0.64 HARD boundaries --------------------
+t_check("essence:ES08_port_t_at_2.95_passes_A",
+        identical(essence_score(mk_bt(a_block, port_t = 2.95))$grade, "A"))
+t_check("essence:ES09_port_t_below_2.95_drops_to_B",
+        identical(essence_score(mk_bt(a_block, port_t = 2.9499))$grade, "B"))
+t_check("essence:ES10_calmar_at_0.64_passes_A",
+        identical(essence_score(mk_bt(a_block, calmar = 0.64))$grade, "A"))
+t_check("essence:ES11_calmar_below_0.64_drops_to_B",
+        identical(essence_score(mk_bt(a_block, calmar = 0.6399))$grade, "B"))
+
+# --- ES12-ES15: oos_retention 0.7 boundary + band escalation -----------------
+ev_full <- list(trailing_port_t = 1.2, placebo_p = 0.01,
+                book_marginal_delta_sr = 0.08, cor_vs_book = 0.10)
+res12 <- essence_score(mk_bt(a_block), oos_is_ratio_override = 0.70)
+t_check("essence:ES12_oos_at_0.70_passes_A",
+        identical(res12$grade, "A") && identical(res12$oos_band_status, "pass"))
+res13 <- essence_score(mk_bt(a_block), oos_is_ratio_override = 0.69)
+t_check("essence:ES13_band_no_evidence_fails_to_B",
+        identical(res13$grade, "B") &&
+        identical(res13$oos_band_status, "band_fail") &&
+        any(grepl("OOS_ret", res13$reasons, fixed = TRUE)))
+res14 <- essence_score(mk_bt(a_block), oos_is_ratio_override = 0.69,
+                       escalation_evidence = ev_full)
+t_check("essence:ES14_band_escalated_2of3_passes_A",
+        identical(res14$grade, "A") &&
+        identical(res14$oos_band_status, "band_escalated"))
+res15 <- essence_score(mk_bt(a_block), oos_is_ratio_override = 0.49,
+                       escalation_evidence = ev_full)
+t_check("essence:ES15_below_band_unconditional_fail",
+        identical(res15$grade, "B") && identical(res15$oos_band_status, "fail"))
+
+# weak evidence (1/3) must not escalate
+ev_weak <- list(trailing_port_t = 1.2, placebo_p = 0.50,
+                book_marginal_delta_sr = -0.01, cor_vs_book = 0.10)
+res15b <- essence_score(mk_bt(a_block), oos_is_ratio_override = 0.69,
+                        escalation_evidence = ev_weak)
+t_check("essence:ES15b_band_weak_evidence_1of3_fails",
+        identical(res15b$grade, "B") &&
+        identical(res15b$oos_band_status, "band_fail"))
+
+# --- ES16: Sharpe A-core boundary --------------------------------------------
+t_check("essence:ES16_sharpe_below_0.8_drops_to_B",
+        identical(essence_score(mk_bt(a_block, sharpe = 0.79))$grade, "B"))
+
+# --- ES17/ES18: F non-positive alpha / uncertain (no contract) ---------------
+res17 <- essence_score(mk_bt(a_block, port_t = -0.5))
+t_check("essence:ES17_nonpositive_alpha_F",
+        identical(res17$grade, "F") &&
+        any(grepl("non-positive alpha", res17$reasons, fixed = TRUE)))
+res18 <- essence_score(mk_bt(a_block, drop_port_t = TRUE))
+t_check("essence:ES18_no_contract_uncertain",
+        identical(res18$grade, "uncertain") &&
+        identical(res18$metric_type, "uncertain"))
+
+# --- ES19: structural drawdown (catastrophic MDD >= 70%) inferred hard fail --
+a_cat <- c(rep(-0.20, 6), rep(0.02, 54))   # nav trough 0.8^6 = 0.262 -> dd 73.8%
+res19 <- essence_score(mk_bt(a_cat, mdd = 0.74))
+t_check("essence:ES19_catastrophic_dd_hard_fail_F",
+        identical(res19$grade, "F") && isTRUE(res19$hard_fail) &&
+        isTRUE(res19$essence$drawdown_profile$structural_hard_fail))
+
+# --- ES20: single deep episode -> tail_review, NOT hard fail -----------------
+a_tail <- c(rep(-0.108, 6), rep(0.04, 54)) # trough dd ~49.6%, one episode
+res20 <- essence_score(mk_bt(a_tail, mdd = 0.496, calmar = 0.70),
+                       oos_is_ratio_override = 0.9)
+t_check("essence:ES20_tail_review_single_episode_not_hard_fail",
+        identical(res20$hard_fail, FALSE) &&
+        isTRUE(res20$essence$drawdown_profile$tail_review) &&
+        identical(res20$grade, "A"))
+
+# --- ES21: externally injected hard_fail wins --------------------------------
+t_check("essence:ES21_injected_hard_fail_F",
+        identical(essence_score(mk_bt(a_block), hard_fail = TRUE)$grade, "F"))
+
+t_summary("test_essence_score")

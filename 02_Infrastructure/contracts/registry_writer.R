@@ -31,7 +31,8 @@ REGISTRY_COLS <- c(
   "universe_id", "benchmark_primary", "return_type",
   "cagr", "vol", "sharpe", "mdd", "calmar",
   "information_ratio", "portfolio_alpha_t", "hit_ratio_vs_bm", "turnover",
-  "cvar_99", "integrity_status", "created_at"
+  "cvar_99", "integrity_status", "created_at",
+  "cost_model_version"
 )
 
 #' Initialize registry CSV (skeleton with header only)
@@ -108,7 +109,12 @@ register_bt_result <- function(bt_result, path = REGISTRY_PATH,
     turnover = get_metric("Average_Turnover"),
     cvar_99 = get_metric("CVaR_99"),
     integrity_status = integrity,
-    created_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S+09:00")
+    created_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S+09:00"),
+    # cost_model_version (감사 MC-05, 2026-07-04): manifest 경유 기록.
+    #   manifest에 부재(구 계약 산출물)면 "unlabeled_pre_v24" 정직 라벨 (추정 금지).
+    cost_model_version = as.character(
+      bt_result$manifest$cost_model_version[1] %||% "unlabeled_pre_v24"
+    )
   )
 
   # Read existing + append (run_id 중복 방지: 같은 run_id 이미 있으면 update)

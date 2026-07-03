@@ -18,6 +18,17 @@
 #   그래서 lag1 스트레스가 의무이고, 결과는 screen-tier A/B이지 자본게이트 통과가 아님.
 # 기대치 낮음(KR long-only 시장타이밍 4중 settled-negative — project-pg2-offense-overlay-settled) → cheap-kill 목적.
 #
+# [2026-07-04 A7a] 오버레이 회전비용 반영 재측정 (전 라운드 deferred — 채택 판단의 전제):
+#   각 오버레이 시나리오에 월별 |Δexposure|×15bps(one-way)를 추가 차감한 `<nm>_cost` 변형을 병행 산출.
+#   근거: cost_model v2.4 (delta-based — 종목별 Δ보유명목 절대값에 레그당 과금, 2026-06-11 도훈 confirm).
+#     exposure 스칼라의 월간 변화 |Δe|는 포트 명목의 |Δe| 비율만큼 매수/매도 1개 레그 발생 → |Δe|×15bps.
+#   PG2 recovery-override 교훈 정합 (project-pg2-recovery-override-enhancement): "overlay 회전강화는
+#     |Δinv|×15bps 필수" — 동일 규약을 본 A/B에 적용. bare는 exposure≡1 → Δ=0 → 비용 0 (무영향).
+#   첫 월 Δ는 0 처리(fill=첫 exposure — 종목레벨 초기 진입비용 traded=1은 weighted_screen_bt가 이미 과금).
+#   기존 무비용 수치는 cost_applied=FALSE 행으로 그대로 보존(비교용) + 구 JSON은 *_nocost_20260703 백업.
+#   측정경로: 비용 차감 후 시계열을 동일 계약경로 build_benchmark_compare(NW lag-3)로 재측정 —
+#     abs_SR/CAGR/MDD 표시식은 weighted_screen_bt L82-85와 자구동일 미러(측정 일관성, proxy 신설 아님).
+#
 # 실행: Rscript 02_Infrastructure/regime/overlay_candidate_ab_lh.R
 suppressMessages({ library(data.table); library(arrow); library(jsonlite) })
 setDTthreads(1)
@@ -78,6 +89,47 @@ run_lh_overlay_ab <- function(cost_bps = 15) {
     median(sapply(c(.55, .65, .75), f1), na.rm = TRUE)
   }
 
+  # [A7a] 오버레이 회전비용 시리즈: |Δexposure|×bps one-way (cost_model v2.4 delta-based 정합).
+  #   첫 월 fill=exposure[1] → Δ=0 (종목레벨 초기 진입 traded=1은 weighted_screen_bt가 이미 과금).
+  overlay_cost_dt <- function(exp_dt, bps) {
+    e <- as.data.table(exp_dt)[, .(Date, exposure)]; setorder(e, Date)
+    e[, d_exp := abs(exposure - shift(exposure, 1L, fill = exposure[1]))]
+    e[, ov_cost := d_exp * bps / 1e4]
+    e[, .(Date, d_exp, ov_cost)]
+  }
+  # [A7a] 비용 차감 후 동일 계약경로(build_benchmark_compare NW lag-3) 재측정.
+  #   abs_SR/CAGR/MDD 식은 weighted_screen_bt L82-85 자구동일 미러(측정 일관성 — proxy 신설 아님).
+  remeasure_with_overlay_cost <- function(r, exp_dt, bps, nm) {
+    oc <- overlay_cost_dt(exp_dt, bps)
+    pr <- copy(r$period_returns)   # date, ret_net, benchmark_ret (무비용 계약 산출)
+    pr[oc, on = c(date = "Date"), `:=`(d_exp = i.d_exp, ov_cost = i.ov_cost)]
+    pr[is.na(ov_cost), `:=`(d_exp = 0, ov_cost = 0)]
+    pr[, ret_net := ret_net - ov_cost]
+    rid <- paste0("lh_d2_", nm, "_cost")
+    bc <- build_benchmark_compare(
+      data.table(date = pr$date, ret_net = pr$ret_net, frequency = "monthly"),
+      data.table(date = pr$date, benchmark_ret = pr$benchmark_ret, benchmark_id = "KOSPI200_total_return"),
+      run_id = rid, strategy_id = rid, annualization_factor = 12)
+    getbc <- function(mn) { v <- bc[metric_name == mn, active_value]; if (length(v) == 0) NA_real_ else as.numeric(v[1]) }
+    active <- pr$ret_net - pr$benchmark_ret
+    .mdd <- function(x) { cum <- cumprod(1 + x); min(cum / cummax(cum) - 1, na.rm = TRUE) }
+    abs_sr <- mean(pr$ret_net) / stats::sd(pr$ret_net) * sqrt(12)
+    cagr <- (prod(1 + pr$ret_net)^(12 / nrow(pr)) - 1)
+    mdd <- .mdd(pr$ret_net)
+    list(
+      row = data.table(
+        scenario = paste0(nm, "_cost"), n_months = nrow(pr),
+        abs_SR = abs_sr, abs_CAGR = cagr, abs_MDD = mdd,
+        IR = getbc("Information_Ratio"), PORT_t = getbc("Portfolio_Alpha_t_NW_lag3"),
+        active_SR = mean(active) / stats::sd(active) * sqrt(12),
+        oos_ret_v2 = oos_v2(pr),
+        calmar = { m <- abs(mdd); if (m > 0) cagr / m else NA_real_ },
+        avg_exposure = mean(as.data.table(exp_dt)$exposure, na.rm = TRUE),
+        cost_applied = TRUE, avg_abs_dexp_m = mean(pr$d_exp),
+        ov_cost_ann_bps = mean(pr$ov_cost) * 12 * 1e4),
+      pr = pr)
+  }
+
   res <- list()
   for (nm in names(scen)) {
     r <- weighted_screen_bt(W, R, B, cost_bps_oneway = cost_bps,
@@ -90,7 +142,15 @@ run_lh_overlay_ab <- function(cost_bps = 15) {
       IR = r$information_ratio, PORT_t = r$portfolio_alpha_t_nw_lag3,
       active_SR = r$net_sr, oos_ret_v2 = oos_v2(r$period_returns),
       calmar = { cagr <- r$abs_cagr; mdd <- abs(r$abs_mdd); if (mdd > 0) cagr / mdd else NA_real_ },
-      avg_exposure = avg_exp)
+      avg_exposure = avg_exp,
+      cost_applied = FALSE, avg_abs_dexp_m = 0, ov_cost_ann_bps = 0)
+    if (!is.null(scen[[nm]])) {   # [A7a] 오버레이 시나리오만 회전비용 변형 병행 (bare Δ≡0)
+      rc <- remeasure_with_overlay_cost(r, scen[[nm]], cost_bps, nm)
+      res[[paste0(nm, "_cost")]] <- rc$row
+      res[[nm]][, avg_abs_dexp_m := rc$row$avg_abs_dexp_m]   # 무비용 행에도 Δ 크기 참고 기재
+      res[[nm]][, ov_cost_ann_bps := rc$row$ov_cost_ann_bps]
+      res[[nm]][, cost_applied := FALSE]
+    }
   }
   tab <- rbindlist(res, fill = TRUE)
 
@@ -119,10 +179,28 @@ if (sys.nframe() == 0L && Sys.getenv("QVEST_LH_AB_NORUN") != "1") {
          dSR_base = b$abs_SR - bare$abs_SR, dSR_lag1 = l$abs_SR - bare$abs_SR)
   }
   s_uni <- lag_survive("uni_cat", "uni_cat_lag1"); s_vt <- lag_survive("voltgt", "voltgt_lag1")
+  s_uni_c <- lag_survive("uni_cat_cost", "uni_cat_lag1_cost"); s_vt_c <- lag_survive("voltgt_cost", "voltgt_lag1_cost")
   cat(sprintf("\n[lag1 스트레스] uni_cat: ΔMDD(완화,+가 개선) base %+.3f → lag1 %+.3f | ΔSR base %+.3f → lag1 %+.3f\n",
               -s_uni$mdd_improve_base, -s_uni$mdd_improve_lag1, s_uni$dSR_base, s_uni$dSR_lag1))
   cat(sprintf("[lag1 스트레스] voltgt : ΔMDD(완화,+가 개선) base %+.3f → lag1 %+.3f | ΔSR base %+.3f → lag1 %+.3f\n",
               -s_vt$mdd_improve_base, -s_vt$mdd_improve_lag1, s_vt$dSR_base, s_vt$dSR_lag1))
+  cat(sprintf("[lag1+cost ] uni_cat: ΔMDD base %+.3f → lag1 %+.3f | ΔSR base %+.3f → lag1 %+.3f\n",
+              -s_uni_c$mdd_improve_base, -s_uni_c$mdd_improve_lag1, s_uni_c$dSR_base, s_uni_c$dSR_lag1))
+  cat(sprintf("[lag1+cost ] voltgt : ΔMDD base %+.3f → lag1 %+.3f | ΔSR base %+.3f → lag1 %+.3f\n",
+              -s_vt_c$mdd_improve_base, -s_vt_c$mdd_improve_lag1, s_vt_c$dSR_base, s_vt_c$dSR_lag1))
+
+  # [A7a] 신구 대비 — 비용 반영 전/후 (오버레이 시나리오만)
+  cat("\n=== [A7a] 오버레이 회전비용(|Δexposure|×15bps one-way) 반영 신구 대비 ===\n")
+  ov_names <- setdiff(out$tab[cost_applied == FALSE & scenario != "bare", scenario], character(0))
+  cmp <- rbindlist(lapply(ov_names, function(nm) {
+    a <- out$tab[scenario == nm]; b <- out$tab[scenario == paste0(nm, "_cost")]
+    data.table(scenario = nm, avg_abs_dexp_m = a$avg_abs_dexp_m, ov_cost_ann_bps = a$ov_cost_ann_bps,
+               PORT_t_nocost = a$PORT_t, PORT_t_cost = b$PORT_t, d_PORT_t = b$PORT_t - a$PORT_t,
+               calmar_nocost = a$calmar, calmar_cost = b$calmar, d_calmar = b$calmar - a$calmar,
+               oos_nocost = a$oos_ret_v2, oos_cost = b$oos_ret_v2, d_oos = b$oos_ret_v2 - a$oos_ret_v2,
+               MDD_nocost = a$abs_MDD, MDD_cost = b$abs_MDD, d_MDD = b$abs_MDD - a$abs_MDD)
+  }))
+  print(cmp, digits = 4)
 
   dir.create(AB_RESULT_DIR, showWarnings = FALSE, recursive = TRUE)
   result <- list(
@@ -131,11 +209,17 @@ if (sys.nframe() == 0L && Sys.getenv("QVEST_LH_AB_NORUN") != "1") {
     metric_type = "weighted_screen",
     harness = "02_Infrastructure/regime/overlay_candidate_ab_lh.R (auto_regime_overlay_ab 규약 재사용)",
     cost_bps_oneway = 15,
-    note = paste("screen-tier A/B — 자본게이트 아님. 오버레이 리밸 비용 생략(하네스 규약: β-schedule 동일적용 상쇄 라벨).",
-                 "unified_regime_signal walk-forward 미보증 → lag1 스트레스 의무 반영."),
+    overlay_cost_model = paste("[A7a 2026-07-04] *_cost 시나리오 = 월별 |Δexposure|×15bps one-way 추가 차감",
+                               "(cost_model v2.4 delta-based 정합 — 레그당 과금. PG2 recovery-override 교훈",
+                               "'overlay 회전강화는 |Δinv|×15bps 필수' 동일 규약). 첫 월 Δ=0(fill=첫 exposure).",
+                               "cost_applied=FALSE 행 = 기존 무비용 수치 보존(비교용, 구본 백업 *_nocost_20260703.json)."),
+    note = paste("screen-tier A/B — 자본게이트 아님. cost_applied=FALSE 행은 오버레이 리밸 비용 미반영(구 라벨 유지),",
+                 "*_cost 행이 회전비용 반영 재측정. unified_regime_signal walk-forward 미보증 → lag1 스트레스 의무 반영."),
     scenarios = out$tab,
+    cost_comparison = cmp,
     crisis_conditional = out$crisis,
-    lag1_stress = list(uni_cat = s_uni, voltgt = s_vt)
+    lag1_stress = list(uni_cat = s_uni, voltgt = s_vt,
+                       uni_cat_cost = s_uni_c, voltgt_cost = s_vt_c)
   )
   write_json(result, file.path(AB_RESULT_DIR, paste0(CAND_ID, ".json")),
              auto_unbox = TRUE, pretty = TRUE, digits = 6, na = "null")

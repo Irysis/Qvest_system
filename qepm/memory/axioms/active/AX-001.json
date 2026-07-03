@@ -44,5 +44,14 @@
   "axiom_class": "methodological",
   "authority": "high",
   "review_policy": "quarterly",
-  "enforcement_mode": "documented"
+  "enforcement_mode": "block",
+  "enforcement_hook": {
+    "mode": "block",
+    "applies_to_files": ["(hurdle_result|s6_judge|s7_).*\\.json"],
+    "regex": ["defense|defence", "\"grade\".*\"F\""],
+    "require": ["crisis", "stress", "conditional", "bad_normal", "regime"],
+    "reason": "Defense 전략을 전기간 SR만으로 Grade F 판정 금지. 위기 구간 alpha + Core 대비 MDD + bad/normal IC ratio 조건부 평가 필수",
+    "semantics": "regex 전부 매치(AND) AND require 중 0개 존재 시 발화 — legacy 하드코딩(axiom_enforcement_hook.sh AX-001 절)과 동일 의미론",
+    "backfilled": "2026-07-04 AXM-03 — legacy 하드코딩 패턴에서 도출, 신규 금지사항 없음. enforcement_mode block은 .claude/rules/axioms.md Hook 강제 절 + axiom_sot_map.json 기왕 문서화(일부 패턴 hard-block 실증)와 정렬"
+  }
 }

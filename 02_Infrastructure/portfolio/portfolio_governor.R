@@ -52,6 +52,13 @@ suppressPackageStartupMessages({
 #   Information_Ratio와 동일 산식. gross IR / geometric-active IR(PerfA InformationRatio)은
 #   본 게이트에 사용 금지 (book_state.json::ir_convention 선언과 정합).
 .PG_IR_CONVENTION     <- "net_active_recon_v1"
+
+# ── A7c: sleeve_needs 신 조향 enum (gap_vector_steering.R::GV_STEERING_DIRECTIONS와 동일 키) ──
+# 감사 SC-01/SC-06 (도훈 confirm 2026-07-03): pg0 빌더의 구 enum(core_alpha/defense/
+# diversifier/none)은 steering 레이어가 실증-열린 방향 enum으로 재정의. 소비 코드는
+# 양쪽 vocabulary 모두 처리 (과거 JSON 재독 호환 — 구 라벨도 종래 로직 유지).
+.PG_STEERING_ENUM <- c("overlay_refinement", "residual_orthogonal_sleeve",
+                       "non_return_datasource", "dpl_feature", "core_alpha_standalone")
 .PG_MODULE_CATALOG    <- file.path(PROJECT_ROOT, "06_Registry", "module_catalog.json")
 .PG_BOOK_STATE_PATH   <- file.path(PROJECT_ROOT, "qepm", "mailbox", "governor", "book_state.json")
 .PG_BENCHMARK_PARQUET <- file.path(CACHE_DIR, "benchmark.parquet")  # 2026-07-02 IKS200 정정본
@@ -361,6 +368,26 @@ pg0_gap_review <- function(portfolio_id,
   # Cache for Scout/Forge consumption
   .pg_write_json(artifact, file.path(CACHE_DIR, "portfolio_gap_vector.json"))
 
+  # ── A7b: Steering 자동 재조향 (감사 SC-01/SC-06, 도훈 confirm 2026-07-03) ────
+  # gap_vector_steering.R 후처리 레이어를 빌더 직후 자동 호출 — 빌더 재실행이
+  # 구 enum(core_alpha/defense/diversifier)으로 .cache/portfolio_gap_vector.json을
+  # 덮어써도 즉시 신 조향 enum으로 재조향된다. 파일 부재/오류 시 WARN-only (크래시 금지).
+  tryCatch({
+    gvs_path <- file.path(.pg_root, "gap_vector_steering.R")
+    if (file.exists(gvs_path)) {
+      if (!exists("steer_gap_vector", envir = .GlobalEnv)) {
+        source(gvs_path, local = FALSE)
+      }
+      steered <- steer_gap_vector()  # cache 재조향 (sleeve_needs_raw_builder에 빌더 원본 보존)
+      artifact$sleeve_needs_steered <- steered$sleeve_needs
+      artifact$steering             <- steered$steering
+    } else {
+      warning("[pg0] gap_vector_steering.R not found — cache gap vector left with builder enum (WARN-only)")
+    }
+  }, error = function(e) {
+    warning("[pg0] gap vector steering failed (WARN-only, builder output retained): ", e$message)
+  })
+
   cat(sprintf("[pg0] Gap: CAGR=%+.1f%%, SR=%+.3f, MDD=%+.1f%%. Needs: [%s]. Regime: %s(%d)\n",
               gap$cagr_gap * 100, gap$sharpe_gap, gap$mdd_gap * 100,
               paste(sleeve_needs, collapse = ", "),
@@ -504,19 +531,34 @@ pg1_admission <- function(portfolio_id, candidate_id, validated_role, pg0_artifa
   }
 
   # ── Check 4: Role-gap alignment ────────────────────────────────────────────
-  # Even if all checks pass, candidate must fill a gap
-  if (decision == "ADMIT" && !("none" %in% pg0_artifact$sleeve_needs)) {
+  # Even if all checks pass, candidate must fill a gap.
+  # A7c 양쪽 vocabulary 호환 (감사 SC-01/SC-06, 도훈 confirm 2026-07-03):
+  #  - 신 조향 enum(.PG_STEERING_ENUM, gap_vector_steering.R 산출)은 role bucket이
+  #    아닌 탐색 *방향*이므로 role-bucket 멤버십 정합 판정의 대상이 아님 —
+  #    sleeve_needs가 순수 조향 enum이면 본 체크 not-applicable (DEFER 오발 방지).
+  #  - 구 enum(core_alpha/defense/diversifier/none) 요소가 있으면(과거 pg0 JSON 재독
+  #    포함) 그 부분집합에 대해 종래 정합 검사를 그대로 수행.
+  sn_all    <- unlist(pg0_artifact$sleeve_needs %||% character(0))
+  sn_legacy <- setdiff(sn_all, .PG_STEERING_ENUM)
+  if (decision == "ADMIT" && length(sn_all) > 0 && length(sn_legacy) == 0) {
+    # 순수 신 조향 enum — role-bucket 정합 비적용 (기록만 남김)
+    checks$role_gap_alignment <- list(
+      applicable   = FALSE,
+      reason       = "sleeve_needs is steering-direction enum (gap_vector_steering.R) — role-bucket alignment not applicable",
+      sleeve_needs = as.list(sn_all)
+    )
+  } else if (decision == "ADMIT" && !("none" %in% sn_legacy)) {
     role_bucket <- switch(validated_role,
       core_alpha  = "core_alpha",
       diversifier = "diversifier",
       defense     = "defense",
       validated_role  # pass through
     )
-    if (!(role_bucket %in% pg0_artifact$sleeve_needs)) {
+    if (!(role_bucket %in% sn_legacy)) {
       decision <- "DEFER"
       rationale <- c(rationale, sprintf(
         "Role '%s' not in current sleeve_needs: [%s]",
-        role_bucket, paste(pg0_artifact$sleeve_needs, collapse = ", ")
+        role_bucket, paste(sn_legacy, collapse = ", ")
       ))
     }
   }

@@ -45,8 +45,7 @@ except Exception as e:
   done
 }
 
-# Run all 4 tests
-run_test "codex_round_gate" "bash \"$TEST_DIR/test_codex_round_gate.sh\""
+# Run all 3 tests (codex_round_gate removed v8.2 — Codex Round 폐지)
 run_test "worktask_sequence_gate" "bash \"$TEST_DIR/test_worktask_sequence_gate.sh\""
 run_test "agent_role_guard" "bash \"$TEST_DIR/test_agent_role_guard.sh\""
 run_test "cert_rules" "Rscript \"$TEST_DIR/test_cert_rules.R\""
@@ -55,7 +54,7 @@ run_test "cert_rules" "Rscript \"$TEST_DIR/test_cert_rules.R\""
 TOTAL_PASS=0
 TOTAL_FAIL=0
 TESTS_JSON=""
-for test_script in test_codex_round_gate.sh test_worktask_sequence_gate.sh test_agent_role_guard.sh test_cert_rules.R; do
+for test_script in test_worktask_sequence_gate.sh test_agent_role_guard.sh test_cert_rules.R; do
   if [[ "$test_script" == *.R ]]; then
     OUT=$(Rscript "$TEST_DIR/$test_script" 2>&1 | tail -1)
   else

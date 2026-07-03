@@ -13,8 +13,11 @@ qvest_hook_router.py — Qvest v6.4 Hook Kernel Router
 
 상태:
 - v1.0 (2026-05-01 Session 75 Sprint 2 Phase 4)
-- 본 router 자체는 hook 아님 — hook이 호출하는 helper library
-- 향후 (Sprint 3 Phase 9 후속): 기존 17~18 hook 그룹별 router 경유 변경
+- v1.1 (2026-07-04 HOOK-P1-4): `dispatch` 커맨드 신설 — PreToolUse[Write|Edit]
+  게이트 17훅을 settings.json 1-command로 fan-out (등록 SOT:
+  policies/router_dispatch.json). 그 외 이벤트(Agent/Read/Bash 매처,
+  PostToolUse/Stop/SubagentStop)는 settings.json 개별 등록 유지.
+- helper library 겸 dispatch 진입점 (dispatch 외 커맨드는 종전과 동일)
 
 Usage examples:
 
@@ -321,6 +324,245 @@ def validate_schema(schema_name: str, package_path: str) -> Tuple[bool, str]:
 
 
 # ─────────────────────────────────────────────────────────────────
+# 7. dispatch — PreToolUse hook fan-out (HOOK-P1-4, 2026-07-04)
+# ─────────────────────────────────────────────────────────────────
+# settings.json의 PreToolUse[Write|Edit] 개별 17 command를 본 라우터
+# 1-command로 통합. 등록 SOT: policies/router_dispatch.json.
+# 판정 채널 보존: Qvest 훅 전수가 "stdout JSON + exit 0" 채널
+# ({"decision":"block",...} 또는 hookSpecificOutput.permissionDecision)
+# 이므로, dispatcher는 각 훅에 동일 payload를 stdin으로 주고
+# stdout을 수집·병합한다 (first-block verbatim 전달).
+# 실행 fidelity: cwd=PROJECT_ROOT(상대경로 훅 — discovery_graduation_gate),
+# per-hook stderr_log(구 2>>/tmp/*.log), soft_fail(구 '|| true').
+# fail-closed: dispatcher 내부 오류/훅 timeout 시 payload 보호 패턴
+# (05_Production / 01_Literature 비-Korea_Research / normalizePath /
+#  WT-P*+request.json graduation) 감지 시 block — safety_guard·
+# discovery_graduation_gate v8.2.1 fail-closed 정책과 동일 절충.
+
+DISPATCH_LOG = "/tmp/qvest_hook_router_dispatch.log"
+HOOKS_DIR = PROJECT_ROOT / "02_Infrastructure" / "hooks"
+PER_HOOK_TIMEOUT_S = 30
+
+
+def _dlog(msg: str):
+    """Append to dispatcher log (best-effort)."""
+    try:
+        import datetime
+        with open(DISPATCH_LOG, "a", encoding="utf-8", errors="replace") as f:
+            f.write(f"{datetime.datetime.now():%Y-%m-%d %H:%M:%S} {msg}\n")
+    except Exception:
+        pass
+
+
+def _fail_closed_decision(payload_text: str) -> bytes:
+    """Pattern-based fail-closed (safety_guard._gate_fail_closed +
+    discovery_graduation_gate 동일 절충): 보호 대상 패턴 감지 시 block, 아니면 allow."""
+    hay = payload_text or ""
+    protected = (
+        ("05_Production" in hay)
+        or ("normalizePath" in hay)
+        or ("01_Literature" in hay and "Korea_Research" not in hay)
+        or ("WT-P" in hay and "request.json" in hay)
+    )
+    if protected:
+        return json.dumps({
+            "decision": "block",
+            "reason": ("qvest_hook_router dispatch: 내부 오류/판별불능 — 보호 대상 패턴"
+                       "(05_Production, 01_Literature, normalizePath, WT-P graduation) 감지, "
+                       "검증 불가 시 차단 (fail-closed)")
+        }, ensure_ascii=False).encode("utf-8")
+    return b"{}"
+
+
+def _resolve_bash() -> Optional[str]:
+    """Git Bash 우선 해석 (System32 bash = WSL — 회피)."""
+    import shutil
+    cand = shutil.which("bash")
+    if cand and "system32" not in cand.lower():
+        return cand
+    for p in (r"C:\Program Files\Git\usr\bin\bash.exe",
+              r"C:\Program Files\Git\bin\bash.exe",
+              "/usr/bin/bash"):
+        if Path(p).exists():
+            return p
+    return cand  # 최후: System32 bash라도 (없으면 None)
+
+
+def _parse_hook_stdout(raw: bytes):
+    """Classify hook stdout. Returns (kind, parsed) — kind ∈ {empty, allow, block, context, other}."""
+    text = raw.decode("utf-8", "replace").strip()
+    if not text:
+        return "empty", None
+    try:
+        d = json.loads(text)
+    except Exception:
+        return "other", None  # plain-text advisory — verbatim 후보
+    if not isinstance(d, dict) or not d:
+        return "allow" if d == {} else "other", d
+    if d.get("decision") in ("block", "deny"):
+        return "block", d
+    hso = d.get("hookSpecificOutput") or {}
+    if isinstance(hso, dict) and hso.get("permissionDecision") in ("deny", "ask"):
+        return "block", d
+    if set(d.keys()) == {"additionalContext"}:
+        return "context", d
+    return "other", d
+
+
+def dispatch_event(event: str) -> int:
+    """Read hook payload from stdin, fan out to registered hooks, merge verdicts.
+    Returns process exit code."""
+    raw_payload = sys.stdin.buffer.read()
+    payload_text = raw_payload.decode("utf-8", "replace")
+
+    def emit(b: bytes) -> int:
+        sys.stdout.buffer.write(b)
+        sys.stdout.buffer.write(b"\n")
+        sys.stdout.buffer.flush()
+        return 0
+
+    try:
+        registry = load_policy("router_dispatch")
+        hooks = registry.get("events", {}).get(event, {}).get("hooks", [])
+        if not hooks:
+            _dlog(f"dispatch: no hooks registered for event={event} — allow")
+            return emit(b"{}")
+
+        try:
+            tool_name = (json.loads(payload_text) or {}).get("tool_name", "")
+        except Exception:
+            tool_name = ""
+        if not tool_name:
+            # PreToolUse는 tool_name 상시 존재 — 파싱 불능 = fail-closed 판정
+            _dlog(f"dispatch: tool_name unparseable — pattern fail-closed 판정")
+            return emit(_fail_closed_decision(payload_text))
+
+        bash_bin = _resolve_bash()
+        if not bash_bin:
+            _dlog("dispatch: bash 실행기 미발견 — pattern fail-closed 판정")
+            return emit(_fail_closed_decision(payload_text))
+
+        import subprocess
+        from concurrent.futures import ThreadPoolExecutor
+        env = dict(os.environ)
+        env.setdefault("CLAUDE_PROJECT_DIR", str(PROJECT_ROOT))
+
+        blocks = []          # (script, raw stdout bytes)
+        contexts = []        # additionalContext strings
+        others = []          # (script, raw stdout bytes) — 미분류 verbatim 후보
+        hard_stderr = []     # non-soft-fail 훅의 stderr (CC 원 semantics: verbose 표출)
+        fail_closed_pending = False
+
+        applicable = []
+        for entry in hooks:
+            script = entry.get("script", "")
+            if tool_name not in entry.get("tools", []):
+                continue
+            spath = HOOKS_DIR / script
+            if not spath.exists():
+                # 구 semantics: bash가 파일 부재 에러 → soft는 ||true 삼킴, hard는 non-blocking error
+                _dlog(f"dispatch: MISSING hook script {script} — continue (구 semantics 동일)")
+                continue
+            applicable.append((entry, spath))
+
+        def _run_one(item):
+            """Run single hook. Returns (entry, proc|None, err_tag)."""
+            entry, spath = item
+            try:
+                proc = subprocess.run(
+                    [bash_bin, str(spath).replace("\\", "/")],
+                    input=raw_payload,
+                    capture_output=True,
+                    cwd=str(PROJECT_ROOT),
+                    env=env,
+                    timeout=PER_HOOK_TIMEOUT_S,
+                )
+                return entry, proc, None
+            except subprocess.TimeoutExpired:
+                return entry, None, "TIMEOUT"
+            except Exception as e:
+                return entry, None, f"SPAWN-FAIL: {e}"
+
+        # CC 원 semantics = 매칭 훅 병렬 실행 → 병렬 fan-out (결과 병합은 등록 순서 유지)
+        if applicable:
+            with ThreadPoolExecutor(max_workers=len(applicable)) as pool:
+                run_results = list(pool.map(_run_one, applicable))
+        else:
+            run_results = []
+
+        for entry, proc, err in run_results:
+            script = entry.get("script", "")
+            soft = bool(entry.get("soft_fail"))
+            stderr_log = entry.get("stderr_log")
+            if err is not None:
+                _dlog(f"dispatch: {err} {script} (soft={soft})")
+                if err == "TIMEOUT" or not soft:
+                    fail_closed_pending = True  # 보호 패턴 감지 시에만 block (아래)
+                continue
+
+            # stderr fidelity: 구 2>>log 경로 보존 / hard 훅은 dispatcher stderr로 전달
+            if proc.stderr:
+                if stderr_log:
+                    try:
+                        with open(stderr_log, "ab") as f:
+                            f.write(proc.stderr)
+                    except Exception:
+                        _dlog(f"dispatch: stderr_log write fail {script} → {stderr_log}")
+                else:
+                    hard_stderr.append(proc.stderr)
+
+            # exit code fidelity: 전수 훅이 정상 시 exit 0. 비정상 exit는
+            # 구 semantics(soft=||true 삼킴 / hard=CC non-blocking error)와 동일하게 non-block.
+            if proc.returncode != 0:
+                _dlog(f"dispatch: EXIT {proc.returncode} {script} (soft={soft}) — non-block (구 semantics)")
+
+            kind, parsed = _parse_hook_stdout(proc.stdout)
+            if kind == "block":
+                blocks.append((script, proc.stdout.strip()))
+                _dlog(f"dispatch: BLOCK by {script} tool={tool_name}")
+            elif kind == "context":
+                contexts.append(str(parsed.get("additionalContext", "")))
+            elif kind == "other":
+                others.append((script, proc.stdout.strip()))
+
+        # timeout/spawn-fail 훅 존재 시 pattern fail-closed 판정 (block 미존재 시에만 의미)
+        if fail_closed_pending and not blocks:
+            fc = _fail_closed_decision(payload_text)
+            if fc != b"{}":
+                return emit(fc)
+
+        # stderr 전달 (hard 훅 — 구 semantics에서 CC verbose로 노출되던 채널)
+        for sb in hard_stderr:
+            try:
+                sys.stderr.buffer.write(sb)
+            except Exception:
+                pass
+
+        # 병합: block 최우선 (first-block verbatim — 등록 순서 = 구 settings 순서)
+        if blocks:
+            if len(blocks) > 1:
+                _dlog("dispatch: multi-block — forwarding first: "
+                      + ", ".join(s for s, _ in blocks))
+            return emit(blocks[0][1])
+        if contexts and not others:
+            if len(contexts) == 1:
+                return emit(json.dumps({"additionalContext": contexts[0]},
+                                       ensure_ascii=False).encode("utf-8"))
+            return emit(json.dumps({"additionalContext": "\n".join(contexts)},
+                                   ensure_ascii=False).encode("utf-8"))
+        if others:
+            if len(others) > 1 or contexts:
+                _dlog("dispatch: multiple non-block outputs — forwarding first verbatim: "
+                      + ", ".join(s for s, _ in others))
+            return emit(others[0][1])
+        return emit(b"{}")
+
+    except Exception as e:
+        _dlog(f"dispatch: INTERNAL ERROR {type(e).__name__}: {e} — pattern fail-closed 판정")
+        return emit(_fail_closed_decision(payload_text))
+
+
+# ─────────────────────────────────────────────────────────────────
 # CLI dispatch
 # ─────────────────────────────────────────────────────────────────
 
@@ -369,8 +611,11 @@ def main():
         ok, reason = validate_schema(args.get("schema", ""), args.get("package", "") or args.get("package_path", ""))
         print(json.dumps({"valid": ok, "reason": reason}))
         sys.exit(0 if ok else 1)
+    elif cmd == "dispatch":
+        # HOOK-P1-4: PreToolUse Write/Edit 게이트 fan-out (stdin = hook payload JSON)
+        sys.exit(dispatch_event(args.get("event", "PreToolUse")))
     elif cmd == "selftest":
-        # Selftest: load all 4 policies + classify few patterns
+        # Selftest: load all policies + classify few patterns
         loaded = []
         for name in ["state_transitions", "role_permissions", "cert_rules"]:
             try:
@@ -379,6 +624,23 @@ def main():
             except Exception as e:
                 print(json.dumps({"error": f"{name}: {e}"}), file=sys.stderr)
                 sys.exit(2)
+        # dispatch registry 검증 (HOOK-P1-4): 존재 시 스크립트 전수 실재 확인
+        dispatch_status = "absent"
+        try:
+            reg = load_policy("router_dispatch")
+            missing = []
+            n = 0
+            for ev, cfg in reg.get("events", {}).items():
+                for h in cfg.get("hooks", []):
+                    n += 1
+                    if not (HOOKS_DIR / h.get("script", "")).exists():
+                        missing.append(h.get("script", ""))
+            dispatch_status = f"OK ({n} hooks registered)" if not missing else f"MISSING: {missing}"
+            loaded.append("router_dispatch")
+        except FileNotFoundError:
+            pass
+        except Exception as e:
+            dispatch_status = f"ERROR: {e}"
         tests = [
             classify("/path/qepm/mailbox/worktask/WT-D20260501_001/alpha_package.json"),
             classify("/path/qepm/mailbox/worktask/WT-D20260501_001/optimization_package_draft.json"),
@@ -387,6 +649,7 @@ def main():
         print(json.dumps({
             "policies_loaded": loaded,
             "classify_tests": tests,
+            "dispatch_registry": dispatch_status,
             "project_root": str(PROJECT_ROOT),
             "policies_dir": str(POLICIES_DIR),
             "status": "OK"

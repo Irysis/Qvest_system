@@ -4,8 +4,9 @@
 #
 # 배경 (아키텍처 감사 SC-01/SC-06, 도훈 confirm 2026-07-03):
 #   .cache/portfolio_gap_vector.json의 빌더는
-#   02_Infrastructure/portfolio/portfolio_governor.R::pg0_gap_review()
-#   (다른 그룹 담당 파일 — 수정 금지). 본 파일은 그 산출물의 *후처리 레이어*:
+#   02_Infrastructure/portfolio/portfolio_governor.R::pg0_gap_review().
+#   본 파일은 그 산출물의 *후처리 레이어* (A7b 2026-07-04: pg0_gap_review 말미가
+#   steer_gap_vector()를 자동 호출 — 빌더 재실행이 구 enum으로 덮어써도 즉시 재조향):
 #   ① sleeve_needs를 실증 기록 기반 enum으로 재정의 (core_alpha standalone은
 #      16/16 admission FAIL posterior와 함께 closed/최후순위 강등)
 #   ② current_profile을 현 book 실값(backtested, 계약 재계산 meta)으로 갱신

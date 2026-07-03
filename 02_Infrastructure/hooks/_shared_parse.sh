@@ -16,7 +16,14 @@
 #   # 이제 $TOOL_NAME, $FILE_PATH 등 사용 가능
 #==============================================================================
 
-trap 'echo "{}"; exit 0' ERR
+# (v8.2.1 2026-07-04 감사 A7d) 게이트급 호출자 옵트아웃: 호출자가 source 전에
+# QVEST_PARSE_TRAP=caller 를 선지정하면 아래 내부 fail-open ERR trap('{}' allow)
+# 설치를 생략 — 호출자가 선장전한 자기 fail-closed trap이 본 파일 실행 구간
+# (파싱 python 호출 등)의 오류까지 커버한다. 미지정(기본)은 종전과 동일
+# (advisory 훅 수십 개 영향 0).
+if [ "${QVEST_PARSE_TRAP:-}" != "caller" ]; then
+  trap 'echo "{}"; exit 0' ERR
+fi
 
 #──────────────────────────────────────────────────────────────────────────────
 # (v8.2.1 2026-07-03 HOOK-P0-1) Python 해석 — PATH의 python3/python이 Windows Store

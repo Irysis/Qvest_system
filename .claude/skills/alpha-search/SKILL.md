@@ -24,6 +24,20 @@ Qvest 초기 모델처럼 **논문 한 편을 빠르게 검증**하는 가벼운
 - **production constraint(max25 등)와 논문(decile 등)이 충돌**하면 검증 단계는 **논문 우선**, 충돌 사실을 명시 보고(production 적용은 운용 단계 별도).
 - 근거 사건: residual momentum(Blitz-Huij-Martens 2011) 검증 중 Q-Lead가 top20·순수스코어가중·KR_TOP500으로 임의 변형 → 도훈 정정 "논문 그대로 비중". 본 원칙으로 재발 차단.
 
+## ★ Step 0 전 — 가설 중복실험 인덱스 조회 의무 (감사 AS-03, 2026-07-04)
+
+가설 intake **전에** 반드시 `06_Registry/hypothesis_index.json`을 조회한다 ("이미 시도됨" 판정을 LLM 메모리에 맡기지 말 것 — 687회+ 실험 인덱싱됨):
+
+```bash
+Rscript 02_Infrastructure/tools/hypothesis_index.R lookup <keyword> [keyword...]
+# 예: Rscript 02_Infrastructure/tools/hypothesis_index.R lookup residual momentum
+```
+
+- **동일 서명(`family|signal_group|universe|structure`) 기존 시도가 있으면**: 기존 결과(verdict·grade·key_metrics·source_paths)를 인용하고, **이번 가설의 차별점을 명시해야만 진행 가능**. 차별점 없는 동일 재실험 금지 (단순 재확인은 도훈 지시 시만).
+- hit 없으면 그대로 진행. 조회 사실(키워드 + hit/miss)을 결과 보고에 1줄 기록.
+- 인덱스가 stale하면(새 실험 다수 후) `Rscript 02_Infrastructure/tools/hypothesis_index.R build`로 재빌드.
+- 서명 정규화 규칙·원천 3계층(stage_artifacts manifest/hurdle + lcode_corpus + module_catalog)은 `02_Infrastructure/tools/hypothesis_index.R` 헤더 참조.
+
 ## 동작 절차 (4-step)
 
 ### 1. 가설 intake

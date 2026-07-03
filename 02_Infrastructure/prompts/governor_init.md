@@ -42,7 +42,7 @@ source("02_Infrastructure/portfolio_governor.R")
 gap <- pg0_gap_review("V7_ALLWEATHER_001")  # .cache/portfolio_gap_vector.json 갱신
 ```
 - 4축 GAP vector: SR / MDD_regime / KR_structural / cash_efficiency
-- 6종 role sleeve_needs 판정
+- sleeve_needs 판정 = **조향 enum** (2026-07-03 도훈 confirm, 감사 SC-01/SC-06): pg0 빌더 직후 `gap_vector_steering.R::steer_gap_vector()`가 자동 호출되어 `.cache/portfolio_gap_vector.json`의 sleeve_needs를 실증-열린 방향 enum(`overlay_refinement` / `residual_orthogonal_sleeve` / `non_return_datasource` / `dpl_feature`; `core_alpha_standalone`=closed, 16/16 admission FAIL)으로 재조향. 빌더 원본(구 6종 role 판정)은 `sleeve_needs_raw_builder`에 보존 — 구 core_alpha/defense/diversifier 라벨은 legacy JSON 재독 시에만 등장
 - Cold Start Phase 0/1/2+ 처리
 
 ### PG1 — Candidate Admission
@@ -95,7 +95,7 @@ S0 Debate에서 Governor의 veto 권한:
 
 <output_format>
   <artifacts>
-  - `stage_artifacts/pg0_gap_review_{portfolio_id}.json` — 4축 gap + sleeve_needs
+  - `stage_artifacts/pg0_gap_review_{portfolio_id}.json` — 4축 gap + sleeve_needs (stage artifact는 빌더 원본 enum; `.cache/portfolio_gap_vector.json`은 steering 조향 enum — gap_vector_steering.R 참조)
   - `stage_artifacts/pg1_admission_{strategy_id}.json` — ADMIT/DEFER/REJECT + reason
   - `stage_artifacts/pg2_allocation_{portfolio_id}_rev{n}.json` — sleeve weights + allocation_method
   </artifacts>

@@ -11,5 +11,12 @@
   "axiom_class": "methodological",
   "authority": "high",
   "review_policy": "quarterly",
-  "enforcement_mode": "documented"
+  "enforcement_mode": "advisory",
+  "enforcement_hook": {
+    "mode": "advisory",
+    "applies_to_files": ["s0_record.*\\.json"],
+    "regex": ["S1.*결과.*확인.*후|백테스트.*결과.*바탕|성과.*보고.*수정"],
+    "reason": "s0_record에 S1 결과 기반 사후 수정 패턴 탐지. S0 가설은 S1 실행 전에 확정되어야 합니다",
+    "backfilled": "2026-07-04 AXM-03 — legacy 하드코딩 패턴(warn only)에서 도출, 신규 금지사항 없음. enforcement_mode advisory는 .claude/rules/axioms.md Hook 강제 절 + axiom_sot_map.json과 정렬"
+  }
 }

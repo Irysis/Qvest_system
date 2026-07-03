@@ -20,6 +20,7 @@ MANIFEST_FIELDS <- c(
   "run_id", "strategy_id", "strategy_version", "run_datetime",
   "start_date", "end_date", "frequency", "rebalance_rule",
   "universe_id", "benchmark_ids", "transaction_cost_bps", "slippage_bps",
+  "cost_model_version",
   "risk_free_rate_source", "data_snapshot_id", "code_version",
   "created_by_agent", "integrity_status"
 )
@@ -126,6 +127,14 @@ build_manifest <- function(run_id, strategy_id, strategy_version,
                             universe_id = "KR_TOP342",
                             benchmark_ids = "KOSPI200") {
   nav_dt <- sim_result$DAILY_NAV_DT
+  # cost_model_version (감사 MC-05, 2026-07-04): v2.3_flat / v2.4_delta 감별 기록.
+  #   출처 우선순위: sim_result$cost_model_version → strategy_spec$cost_model_version.
+  #   harness(run_monthly_simulation)는 반환 list에 이 필드를 담지 않으므로 caller가
+  #   sim_result 또는 strategy_spec에 부착해야 함. 둘 다 부재 시 추정하지 않고
+  #   "unlabeled_pre_v24" 정직 라벨 (구 기록 v2.3 flat / v2.4 delta 혼용 감별 불가 표시).
+  cost_mv <- sim_result$cost_model_version %||%
+             strategy_spec$cost_model_version %||%
+             "unlabeled_pre_v24"
   data.table(
     run_id = run_id,
     strategy_id = strategy_id,
@@ -139,6 +148,7 @@ build_manifest <- function(run_id, strategy_id, strategy_version,
     benchmark_ids = benchmark_ids,
     transaction_cost_bps = transaction_cost_bps,
     slippage_bps = slippage_bps,
+    cost_model_version = as.character(cost_mv[1]),
     risk_free_rate_source = risk_free_rate_source,
     data_snapshot_id = data_snapshot_id,
     code_version = code_version,

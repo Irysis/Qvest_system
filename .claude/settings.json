@@ -40,40 +40,23 @@
   "hooks": {
     "PreToolUse": [
       {
+        "_doc_router_hookp14": "HOOK-P1-4 (2026-07-04): PreToolUse Write/Edit 게이트 17훅 → qvest_hook_router dispatch 1-command 통합 (병렬 fan-out, first-block verbatim 전달). 등록 SOT: 02_Infrastructure/hooks/policies/router_dispatch.json (구 등록 순서·'|| true'·2>>log 경로 보존 — W/E 게이트 훅 추가/제거는 그 파일만 수정). parity 실측 5/5 PASS + Edit-skip/fail-closed 엣지 PASS (구 등록 = settings.json.bak_20260704). venv python 부재 시 shell fallback = 보호패턴(05_Production/01_Literature/normalizePath/WT-P graduation) fail-closed block. Agent/Read/Bash 매처 + PostToolUse/Stop/SubagentStop은 라우터 미검증 이벤트 — 개별 등록 유지.",
         "matcher": "Write|Edit",
         "hooks": [
           {
             "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/backtest_contract_audit.sh\" 2>>/tmp/backtest_contract_audit.log || true"
+            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; PYX=\"$DIR/.venv_qvest_ml/Scripts/python.exe\"; if [ -x \"$PYX\" ]; then \"$PYX\" \"$DIR/02_Infrastructure/hooks/qvest_hook_router.py\" dispatch --event PreToolUse 2>>/tmp/qvest_hook_router_dispatch.stderr.log; else INPUT=$(cat); if printf '%s' \"$INPUT\" | grep -qE '05_Production|normalizePath' || { printf '%s' \"$INPUT\" | grep -q '01_Literature' && ! printf '%s' \"$INPUT\" | grep -q 'Korea_Research'; } || { printf '%s' \"$INPUT\" | grep -q 'WT-P' && printf '%s' \"$INPUT\" | grep -q 'request\\.json'; }; then echo '{\"decision\":\"block\",\"reason\":\"qvest_hook_router: python venv 부재 — 보호 대상 패턴 감지, 검증 불가 시 차단 (fail-closed)\"}'; else echo '{}'; fi; fi",
+            "timeout": 120
           }
         ]
       },
       {
-        "_doc_phase_c3": "fast→slow 순서: safety_guard <50ms → axiom <300ms → forge_code_guard <100ms (Phase C1 daemon 분리 후)",
-        "matcher": "Write|Edit|Bash",
+        "_doc_safety_bash": "safety_guard의 Write|Edit 분은 라우터(router_dispatch.json #2)로 이동 — Bash 분만 개별 잔존 (HOOK-P1-4, 커버리지 공백 0)",
+        "matcher": "Bash",
         "hooks": [
           {
             "type": "command",
             "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/safety_guard.sh\""
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/axiom_enforcement_hook.sh\""
-          }
-        ]
-      },
-      {
-        "_doc_v131": "v1.2 Charter §10 Positive Pre-Write Guide — forge_package.json 8-field 충족 안내",
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/sr_provenance_pre_certifier.sh\" 2>>/tmp/sr_provenance_pre_certifier.log || true"
           }
         ]
       },
@@ -87,42 +70,6 @@
         ]
       },
       {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/legacy_write_block.sh\" 2>>/tmp/legacy_write_block.log || true"
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/agent_role_guard.sh\""
-          }
-        ]
-      },
-      {
-        "matcher": "Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/worktask_constraint_enforcer.sh\""
-          }
-        ]
-      },
-      {
-        "matcher": "Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/worktask_spec_validator.sh\""
-          }
-        ]
-      },
-      {
         "matcher": "Agent",
         "hooks": [
           {
@@ -132,47 +79,11 @@
         ]
       },
       {
-        "matcher": "Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/discovery_graduation_gate.sh\" 2>>/tmp/discovery_graduation.log || true"
-          }
-        ]
-      },
-      {
         "matcher": "Read",
         "hooks": [
           {
             "type": "command",
             "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/selection_contamination_detector.sh\" 2>>/tmp/lockbox_contamination.log || true"
-          }
-        ]
-      },
-      {
-        "matcher": "Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/method_shopping_limiter.sh\" 2>>/tmp/method_shopping.log || true"
-          }
-        ]
-      },
-      {
-        "matcher": "Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/role_objective_guard.sh\" 2>>/tmp/role_objective.log || true"
-          }
-        ]
-      },
-      {
-        "matcher": "Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/challenge_loop_limiter.sh\" 2>>/tmp/challenge_loop.log || true"
           }
         ]
       },
@@ -192,56 +103,6 @@
           {
             "type": "command",
             "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/telegram_direct_call_guard.sh\""
-          }
-        ]
-      },
-      {
-        "_doc_7trends_p1": "7 QEPM Modern Trends Principle 1 — Factor Zoo 축소. feature_registry.json economic_rationale field 부재 시 advisory.",
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/feature_registry_economic_rationale_check.sh\" 2>>/tmp/feature_rationale.log || true"
-          }
-        ]
-      },
-      {
-        "_doc_7trends_p5": "7 QEPM Modern Trends Principle 5 — Risk Crowding Score per Factor. risk_package.json 검증 advisory.",
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/risk_crowding_score_check.sh\" 2>>/tmp/risk_crowding.log || true"
-          }
-        ]
-      },
-      {
-        "_doc_cache_registry": "D안 L4 — 데이터 최신화 영구 보호망. 신규 .cache write_parquet 시 registry entry 강제 advisory. 도훈 mandate 2026-05-15.",
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/cache_registry_enforce.sh\" 2>>/tmp/cache_registry_enforce.log || true"
-          }
-        ]
-      },
-      {
-        "_doc_factor_rotation_pit": "Factor Rotation 모드 PIT/실측 가드 (Cycle50 shift / prod·cumprod 자체합성 advisory) — 도훈 2026-06-05",
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/factor_rotation_pit_guard.sh\" 2>>/tmp/factor_rotation_pit_guard.log || true"
-          }
-        ]
-      },
-      {
-        "_doc_dispatch_measurement_gate": "FR 등재 metric_type=backtested 강제 (proxy/estimated/자체합성 deny) — measurement-graduation §1",
-        "matcher": "Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/dispatch_measurement_gate.sh\" 2>>/tmp/dispatch_measurement_gate.log || true"
           }
         ]
       }

@@ -26,8 +26,14 @@ _gate_fail_closed() {
 trap '_gate_fail_closed' ERR
 
 INPUT=$(cat)
+# (v8.2.1 2026-07-04 감사 A7d) source 구간 fail-open 봉인: _shared_parse.sh 내부
+# fail-open trap('{}' allow) 설치를 옵트아웃(QVEST_PARSE_TRAP=caller) — 위에서
+# 선장전한 _gate_fail_closed trap이 source 실행 구간(파싱 python 호출 등) 오류까지
+# fail-closed 커버. source 후 unset (자식/후속에 누출 방지).
+QVEST_PARSE_TRAP=caller
 source "$(dirname "${BASH_SOURCE[0]:-$0}")/_shared_parse.sh"
-# _shared_parse.sh가 자체 fail-open trap('{}')을 설치하므로 fail-closed trap 재장전
+unset QVEST_PARSE_TRAP
+# 방어적 재장전 (옵트아웃으로 내부 trap 미설치이나, 향후 변경 대비 불변식 유지)
 trap '_gate_fail_closed' ERR
 
 # stdin 파싱 판별불능(TOOL_NAME 공백 = 파서 실패 — PreToolUse는 tool_name 상시 존재) → fail-closed 판정

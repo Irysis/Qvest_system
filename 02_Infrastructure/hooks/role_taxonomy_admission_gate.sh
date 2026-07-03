@@ -47,7 +47,7 @@ if echo "$AGENT_LC" | grep -qE "scout"; then
   # Scout이 S0 가설 설계하는데 role이 unknown이거나 명시 안 됨
   if echo "$AGENT_PROMPT" | grep -qiE "s0|hypothesis|가설" \
      && ! echo "$ROLE_MENTION" | grep -qiE "core_alpha|diversifier|defense|cash_allocation|regime_adaptive|ml_predictive"; then
-    HINT="[Role Taxonomy Gate] Scout 스폰 감지. v55: s0_record에 expected_role 필수 (6종 중 하나). 'unknown' 사용 금지. GAP-Directed 가설 설계 시 portfolio_gap_vector의 sleeve_needs를 참고하여 role을 결정하세요. 참조: 00_Lawbook/v55_consensus_addendum.md §2."
+    HINT="[Role Taxonomy Gate] Scout 스폰 감지. v55: s0_record에 expected_role 필수 (6종 중 하나). 'unknown' 사용 금지. GAP-Directed 가설 설계 시 portfolio_gap_vector의 sleeve_needs를 참고하되, sleeve_needs는 조향 enum(overlay_refinement/residual_orthogonal_sleeve/non_return_datasource/dpl_feature; core_alpha_standalone=closed 16/16 admission FAIL)입니다 — role bucket이 아닌 탐색 방향이므로 방향에 부합하는 role(6종)을 별도로 명시하세요 (구 core_alpha/defense/diversifier 라벨은 legacy JSON에서만 등장). 참조: 02_Infrastructure/portfolio/gap_vector_steering.R + 00_Lawbook/v55_consensus_addendum.md §2."
     HINT_ESC=$(printf '%s' "$HINT" | "$QVEST_PY_BIN" -c "import sys,json; s=sys.stdin.buffer.read().decode('utf-8','replace'); print(json.dumps(''.join(ch if not(0xD800<=ord(ch)<=0xDFFF) else '?' for ch in s)))")
     echo "$(date +%H:%M:%S) ROLE_GATE WARN (scout): $AGENT_NAME (no explicit role hint)" >> "$LOG"
     echo "{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"additionalContext\":$HINT_ESC}}"
