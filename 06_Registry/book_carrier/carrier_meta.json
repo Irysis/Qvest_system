@@ -1,0 +1,28 @@
+{
+  "strategy": "STR_1715_AR_on_M4_R05_overlay_PG2",
+  "source_alpha_scores": "stage_artifacts/WT_D20260425_010/alpha_scores.parquet",
+  "rawdata": ".cache/rawdata.parquet",
+  "score_col": "score_eff",
+  "engine": "run_all.R 285-405 verbatim (top_n by score → liq PIT t-30..t-1 → linear_tilt_to_penalty_qd → forward prod(1+Ret)-1)",
+  "params": {
+    "top_n": 20,
+    "min_names": 15,
+    "liq_threshold": 200000000,
+    "lambda": 1.5,
+    "tophi": 3,
+    "ub_weight": 0.2,
+    "ub_weight_crisis": 0.1,
+    "commission_bps": 15,
+    "cash": "0 (M4 outer)"
+  },
+  "n_months": 269,
+  "n_rows_held": 5376,
+  "date_min": "2004-01-01",
+  "date_max": "2026-05-01",
+  "return_source": "RAWDATA forward 복리 (ret_fwd) — alpha_scores$Ret_1m 폐기",
+  "validated_against": "04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd/output/03_period_returns.csv",
+  "book_state_updated_at": "2026-06-02T00:00:00+09:00",
+  "csv": "06_Registry/book_carrier/carrier_STR_1715_AR_on_M4_R05_overlay_PG2.csv",
+  "parquet": "06_Registry/book_carrier/carrier_STR_1715_AR_on_M4_R05_overlay_PG2.parquet",
+  "note": "PG2 변경 시 book_carrier_sources.json 갱신 후 재실행. 하니스는 parquet(ret_fwd,weight_strategy)을 읽는다."
+}

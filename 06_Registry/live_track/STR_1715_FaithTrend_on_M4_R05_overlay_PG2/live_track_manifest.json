@@ -1,0 +1,31 @@
+{
+  "book_id": "STR_1715_FaithTrend_on_M4_R05_overlay_PG2",
+  "slot": "2-2.STR_1715_FaithTrend_on_M4_R05_overlay_PG2",
+  "tracking_mode": "paper",
+  "deploy_start": "2026-07-01",
+  "admit_wt": "WT-D20260701_002",
+  "admit_authority": "도훈 manual confirm 2026-07-01",
+  "holdout_interval": {
+    "q05": 0.6626,
+    "q95": 3.1866,
+    "holdout_months": 21,
+    "sr_input": 1.8747
+  },
+  "deploy_holdings_ref": "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/02_holdings_universe/20260601_R05_AR_weights_cap_0p20.csv (base 홀딩; FaithTrend는 β_faith로 재스케일)",
+  "june_forward_overlay": {
+    "m4": 1,
+    "beta_faith_june": 0.4,
+    "beta_R05": 0.5,
+    "note": "β_faith 0.4 = 5월말 高변동성 감지 강한 de-risk (구 AR 0.7 대비 더 방어)"
+  },
+  "monitoring": {
+    "cadence": "monthly",
+    "method": "trailing 실측(페이퍼 NAV) 21m window → judge_holdout(interval, realized) 대조",
+    "alert_rule": "trailing SR < q05(하단 침범) → Telegram alert (자동 퇴출 아님 — 도훈 수동)",
+    "drift_rule": "|ΔSR| > 0.2 vs 백테 → escalate",
+    "owner": "monitoring agent (on-demand 또는 cron)"
+  },
+  "paper_nav_file": "paper_nav.csv",
+  "reproduce": "05_Production/2.Factor_Model/2-2.../01_reproducible_code/run_layer5_faith_overlay.R (최신화)",
+  "honest_caveat": "2026 강세장 tradeoff: 개선 더 방어→단기 하회 가능. 하단 침범이 국면탓인지 alpha decay인지 monitoring이 사유 라벨."
+}

@@ -13,10 +13,10 @@
   "polarity": "positive",
   "grade": "VALIDATED_PROCESS",
   "level": 0,
-  "version": "v1.0",
-  "canonical_statement": "백테스트 결과·전략 admit·SR provenance 등 의사결정 영향 산출은 Forge + Codex + Architect 3-source 중 최소 2-source PASS가 필수다. Single-source PASS는 자기합리화 risk이며 admission 근거로 부적합. 2/3 미만 PASS 시 Q-Lead 직접 escalation 의무.",
-  "statement": "백테스트 결과·전략 admit·SR provenance 등 의사결정 영향 산출은 Forge + Codex + Architect 3-source 중 최소 2-source PASS가 필수다. Single-source PASS는 자기합리화 risk이며 admission 근거로 부적합. 2/3 미만 PASS 시 Q-Lead 직접 escalation 의무.",
-  "text": "백테스트 결과·전략 admit·SR provenance 등 의사결정 영향 산출은 Forge + Codex + Architect 3-source 중 최소 2-source PASS가 필수다. Single-source PASS는 자기합리화 risk이며 admission 근거로 부적합. 2/3 미만 PASS 시 Q-Lead 직접 escalation 의무.",
+  "version": "v1.1",
+  "canonical_statement": "백테스트 결과·전략 admit·SR provenance 등 의사결정 영향 산출은 Forge + Self-Adversarial(메인 에이전트 Opus 4.8 자체 적대검증) + Architect 3-source 중 최소 2-source PASS가 필수다. Single-source PASS는 자기합리화 risk이며 admission 근거로 부적합. 2/3 미만 PASS 시 Q-Lead 직접 escalation 의무.",
+  "statement": "백테스트 결과·전략 admit·SR provenance 등 의사결정 영향 산출은 Forge + Self-Adversarial(메인 에이전트 Opus 4.8 자체 적대검증) + Architect 3-source 중 최소 2-source PASS가 필수다. Single-source PASS는 자기합리화 risk이며 admission 근거로 부적합. 2/3 미만 PASS 시 Q-Lead 직접 escalation 의무.",
+  "text": "백테스트 결과·전략 admit·SR provenance 등 의사결정 영향 산출은 Forge + Self-Adversarial(메인 에이전트 Opus 4.8 자체 적대검증) + Architect 3-source 중 최소 2-source PASS가 필수다. Single-source PASS는 자기합리화 risk이며 admission 근거로 부적합. 2/3 미만 PASS 시 Q-Lead 직접 escalation 의무.",
   "supporting_l_codes": [
     "L-159",
     "L-167",
@@ -33,7 +33,7 @@
     ],
     "verification_sources": [
       "Forge",
-      "Codex",
+      "Self-Adversarial",
       "Architect"
     ],
     "min_pass_threshold": "2 of 3"
@@ -52,5 +52,6 @@
   "enforcement": "Discovery WT 및 deployment 전이 시 verification source 2/3 PASS 미달 → q_lead_approval 의무. v7.3에서 hook PreToolUse hard-block 검토.",
   "note_v7_2_1": "JSON SOT materialization only. v7.2.1에서 신규 hard-block regex 도입 X. enforcement_mode=documented. v7.3에서 advisory→block 검토.",
   "created_at": "2026-04-21",
-  "updated_at": "2026-05-02"
+  "updated_at": "2026-06-30",
+  "note_v8_2": "v8.2 (2026-06-30, 도훈 mandate): Codex Critic Round 제거(Opus 4.8 자체 적대검증으로 중복). verification source Codex→Self-Adversarial 치환, 3-source 2/3 구조·임계값 불변. 동기화: .claude/rules/axioms.md / _shared_prefix.md / state_transitions.json ax_008_sources."
 }

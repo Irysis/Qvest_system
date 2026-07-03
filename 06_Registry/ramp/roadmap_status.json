@@ -1,0 +1,24 @@
+{
+  "schema_version": "v1.0",
+  "as_of_date": "2026-06-17",
+  "generated_at": "2026-06-17",
+  "source_version": "ramp_phase1",
+  "note": "RAMP 단계 상태 (가이드 §13 Stage). 부풀림 금지 — running/pending 정직 표기.",
+  "phase": "PHASE_1",
+  "gates": {
+    "0_constitution_parsing": "done",
+    "1_repo_env": "done",
+    "2_synthetic_contract": "deferred (실데이터 직접검증 대체 + synthetic smoke 후속)",
+    "3_strategy_inventory": "done (479전략·dedup 343→136·CCS SDS=80)",
+    "4_pure_factor_factory": "done (PC1=76%·FWL직교 1.0·승인 8/20·잔차-α 18·CCS PFIS=85·정지게이트 CCS 91.9 PASS)",
+    "5_factor_grouping": "done (PC2~10 라벨링 R²:lowvol0.83/momentum0.59/liquidity0.57/value0.46; econ-groups=5; PCs 직교→통계 hclust singleton; net-of-cost PC basket SR -0.23~+0.21 전부 |t|<1 무유의(정직); 국면매트릭스 crisis>neutral 방어패턴; CCS=89.2 RIDS=70 인해 <90, judge gate_review 대기)",
+    "6_mcode_factory": "pending",
+    "7_risk_manager": "pending",
+    "8_investor_agent": "pending",
+    "9_integrated_backtest": "pending",
+    "10_dashboard": "pending",
+    "11_recursive_governance": "scaffolded (axiom 연계)"
+  },
+  "open_deviations": ["ADR-0002 #1 cost 4-level PARTIAL", "ADR-0002 #2 model-risk PARTIAL"],
+  "next_increments": ["Gate5 judge gate_review (CCS 89.2<90 RIDS 사유 판정)", "Gate5b regime-factor matrix 정식화 (현 outputs/ramp/regime_factor_matrix 산출됨)", "Gate6 M-code factory (분업)", "settings.json 3 hooks", "Gate2 synthetic smoke 후속"]
+}

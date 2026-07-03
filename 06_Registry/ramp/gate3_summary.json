@@ -1,0 +1,29 @@
+{
+  "as_of_date": "2026-06-18",
+  "generated_at": "2026-06-18T14:57:56+0900",
+  "source_version": "ramp_v1.0_gate3_4",
+  "security_id_field": "strategy_id",
+  "gate": "3",
+  "sds_components": {
+    "n_pool": 479,
+    "n_clusters": 12,
+    "n_representatives": 12,
+    "n_dedup_dropped": 343,
+    "n_unique_after_dedup": 136,
+    "dedup_pct": 71.6,
+    "median_offdiag_return_corr": 0.8078,
+    "similarity_dims_live": "return,rank,drawdown",
+    "turnover_holdings_status": "unavailable",
+    "meta_completeness": 1,
+    "overlay_inferred_rate": 1,
+    "diagnostic_or_components": 1
+  },
+  "excluded_n": 72,
+  "excluded_reasons": {
+    "source": ["matrix", "batch_434", "batch_434", "matrix", "matrix", "matrix"],
+    "reason": ["n_obs 256 < min 756 (36m)", "no 03_period_returns.csv / 02_nav.csv NAV", "item-manifest (no strategy_id / not executed)", "n_obs 144 < min 756 (36m)", "n_obs 180 < min 756 (36m)", "n_obs 204 < min 756 (36m)"],
+    "N": [26, 22, 21, 1, 1, 1]
+  },
+  "family_method": "hclust(ward.D2) on (1-return_corr), k=12",
+  "diagnostic_note": "config family_rule(return>0.90 OR dd>0.80) → 1 connected components (KR 베타지배: dd_corr≈universal>0.80 → 단일 거대성분 경향). 실제 클러스터는 return-corr hclust 채택."
+}
