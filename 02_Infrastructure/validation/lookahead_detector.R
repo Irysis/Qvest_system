@@ -7,7 +7,7 @@
 #   full-sample fit-transform / bfill / centered rolling 등).
 #
 # Usage:
-#   source("02_Infrastructure/lookahead_detector.R")
+#   source("02_Infrastructure/validation/lookahead_detector.R")
 #   result <- detect_lookahead("path/to/run_all.R")   # .R 또는 .py
 #   if (!result$clean) stop("Lookahead detected!")
 #==============================================================================

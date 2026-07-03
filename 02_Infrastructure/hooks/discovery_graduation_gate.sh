@@ -11,7 +11,7 @@
 #
 # 우회 조건:
 #   - discovery_of == null (명시적 직접 Deployment) → warn only
-#   - graduation_criteria 미설정 → allow
+#   - graduation_criteria 미설정 → 룰 기본 문턱(2.95/0.7/0.64, measurement-graduation §3) 적용 (v8.2.1 — 구 "allow" 우회 폐지)
 #
 # Block 조건:
 #   - discovery_of 참조된 Discovery WT의 alpha_package가 graduation_criteria 미충족

@@ -180,9 +180,19 @@ sanitize_rawdata <- function(dry_run = FALSE) {
   cat("\n[Step 8] 저장...\n")
   if (!dry_run) {
     # 컬럼 순서 정리
+    # [fix 2026-07-03, 감사 DATA-P1-3] Layer2 컬럼(K200/KQ150/UnfaithfulDisc/
+    #   AdminStock/TradingHalt/Float/Sector_Lv2)을 core_cols에 포함 — 구 버전이
+    #   이 7컬럼을 strip해 apply_universe_mapping 재복구가 필요했던 사고 재발 방지.
+    #   (intersect 방식이라 컬럼 부재 시에도 안전)
     core_cols <- c("Date", "BM_Ret", "Ticker", "Name", "Market", "Sector",
+                   "K200", "KQ150", "UnfaithfulDisc", "AdminStock", "TradingHalt",
+                   "Float", "Sector_Lv2",
                    "Open", "High", "Low", "Close", "Vol", "Size", "Ret", "source")
     keep <- intersect(core_cols, names(raw))
+    dropped <- setdiff(names(raw), keep)
+    if (length(dropped) > 0) {
+      cat(sprintf("  ⚠️ core_cols 외 컬럼 drop: %s\n", paste(dropped, collapse = ", ")))
+    }
     raw <- raw[, ..keep]
     setorder(raw, Date, Ticker)
 

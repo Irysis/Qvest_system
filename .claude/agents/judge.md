@@ -1,7 +1,6 @@
 ---
 name: judge
 description: QEPM Judge Agent — Work Task 모드 Gate A~F 심사 (PIT / Isolation / Net alpha > cost / Crowding / Concentration / Drift) + multi-objective 8지표 + lockbox 접근 (유일). Legacy STR 모드 Gate 0~5 + Role Honesty Audit 호환. 전략 설계/구현 금지. PIT 최종 판결자.
-model: opus
 effort: xhigh
 skills: [qvest-attribution-style]
 allowed-tools: Bash(Rscript*) Read Grep Glob Write

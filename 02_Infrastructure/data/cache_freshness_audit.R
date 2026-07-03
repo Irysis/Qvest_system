@@ -6,6 +6,15 @@
 #   - Registry에 등록되지 않은 .cache/*.parquet = ORPHAN alert
 #   - 양방향 검증으로 silent gap 차단
 #
+# 2026-07-03 (감사 DATA-P0-1) 값-sanity 섹션 추가:
+#   - 신선도(mtime/max Date) 단일축의 맹점 보완 — RAWDATA BM_Ret +581% 손상값이
+#     FRESH로 판정되고 7월 factor DB가 이를 소비해 59~60팩터(M08 포함) 결손되던
+#     사고 재발 방지. registry 항목의 value_checks 선언 소비:
+#       abs_ret_max   : |col| > threshold 건수 (값 폭주 탐지)
+#       required_cols : 필수 컬럼 존재 (K200/KQ150 strip 사고 탐지)
+#       parity        : 기준 캐시 대비 월수익(log1p 합) 상관 (손상 구간 탐지)
+#   - 위반 = VALUE_FAIL / CRITICAL (등록 캐시로 취급 → telegram alert 경로 포함)
+#
 # Output:
 #   .cache/freshness_log.json (daily append)
 #   qepm/observability/cache_freshness_latest.json (latest)
@@ -142,6 +151,117 @@ cache_freshness_audit <- function(telegram_alert = TRUE,
       res$status <- "NO_THRESHOLD"; res$severity <- "OK"
     }
     results[[c$path]] <- res
+  }
+
+  # ─── (1b) Value-sanity checks — registry value_checks 소비 (2026-07-03) ─────
+  #   신선도와 독립인 별도 result 항목("<path>::value")으로 기록. 파일 자체가 없으면
+  #   (1)의 MISSING/CRITICAL이 이미 커버하므로 스킵. parquet 전용 (col_select로
+  #   필요 컬럼만 read — RAWDATA 417MB full-load 회피). 위반 시 CRITICAL.
+  for (c in caches) {
+    if (is.null(c$value_checks)) next
+    cache_path <- file.path(PROJECT_ROOT, c$path)
+    vres <- list(
+      path = paste0(c$path, "::value"),
+      tier = c$tier, schedule = c$schedule,
+      registered = TRUE, check = "value_sanity"
+    )
+    if (!file.exists(cache_path) || !grepl("\\.parquet$", cache_path)) {
+      vres$status <- "VALUE_SKIP"; vres$severity <- "OK"
+      vres$note <- "파일 없음 또는 비-parquet — (1) freshness 결과 참조"
+      results[[vres$path]] <- vres
+      next
+    }
+    vc <- c$value_checks
+    viol <- character(0)
+
+    # 스키마 (lazy scan — full read 없이 컬럼명만)
+    sch_names <- tryCatch(arrow::open_dataset(cache_path)$schema$names,
+                          error = function(e) NULL)
+
+    # (a) required_cols — K200/KQ150 등 Layer2 컬럼 strip 사고 탐지
+    if (!is.null(vc$required_cols)) {
+      req <- unlist(vc$required_cols)
+      if (is.null(sch_names)) {
+        viol <- c(viol, "required_cols: 스키마 read 실패")
+      } else {
+        miss <- setdiff(req, sch_names)
+        if (length(miss) > 0)
+          viol <- c(viol, sprintf("required_cols 누락: %s", paste(miss, collapse = ",")))
+        vres$required_cols_missing <- if (length(miss) > 0) miss else NULL
+      }
+    }
+
+    # 대상 컬럼 read helper — Date + 지정 컬럼만, 날짜별 unique (RAWDATA는
+    # BM_Ret가 종목 행마다 반복이므로 날짜 단위로 축약)
+    .read_date_col <- function(path, col) {
+      if (is.null(sch_names) && path == cache_path) return(NULL)
+      dt <- tryCatch(
+        as.data.table(read_parquet(path, col_select = tidyselect::all_of(c("Date", col)))),
+        error = function(e) NULL)
+      if (is.null(dt) || !all(c("Date", col) %in% names(dt))) return(NULL)
+      dt <- dt[!is.na(get(col))]
+      dt[, Date := as.Date(Date)]
+      unique(dt, by = "Date")[, .(Date, v = get(col))]
+    }
+
+    # (b) abs_ret_max — 값 폭주 (예: BM_Ret +581% 손상)
+    if (!is.null(vc$abs_ret_max)) {
+      arm <- vc$abs_ret_max
+      d <- .read_date_col(cache_path, arm$col)
+      if (is.null(d)) {
+        viol <- c(viol, sprintf("abs_ret_max: 컬럼 %s read 실패", arm$col))
+      } else {
+        thr <- arm$threshold %||% 0.15
+        max_v <- arm$max_violations %||% 0L
+        n_bad <- d[abs(v) > thr, .N]
+        vres$abs_ret_n_violations <- n_bad
+        vres$abs_ret_max_abs <- round(max(abs(d$v), na.rm = TRUE), 4)
+        if (n_bad > max_v) {
+          bad_dates <- d[abs(v) > thr][order(-abs(v))][seq_len(min(5L, n_bad))]
+          viol <- c(viol, sprintf("|%s|>%.2f %d건 (max=%.4f, 예: %s)",
+                                  arm$col, thr, n_bad, vres$abs_ret_max_abs,
+                                  paste(format(bad_dates$Date), collapse = ",")))
+        }
+      }
+    }
+
+    # (c) parity — 기준 캐시(benchmark.parquet) 대비 월수익 상관
+    if (!is.null(vc$parity)) {
+      pr <- vc$parity
+      against_path <- file.path(PROJECT_ROOT, pr$against)
+      d_self <- .read_date_col(cache_path, pr$col)
+      d_ref  <- if (file.exists(against_path))
+                  .read_date_col(against_path, pr$against_col %||% pr$col)
+                else NULL
+      if (is.null(d_self) || is.null(d_ref)) {
+        viol <- c(viol, sprintf("parity: %s 또는 %s read 실패", c$path, pr$against))
+      } else {
+        m <- merge(d_self, d_ref, by = "Date", suffixes = c("_a", "_b"))
+        if (nrow(m) < 60L) {
+          viol <- c(viol, sprintf("parity: 공통 날짜 %d건 (<60) — 대조 불가", nrow(m)))
+        } else {
+          # 월수익 parity: log1p 합 기준 (데이터 무결성 대조용 — 백테스트 수익 합성 아님)
+          m[, ym := format(Date, "%Y-%m")]
+          mm <- m[, .(a = sum(log1p(pmax(v_a, -0.9999))),
+                      b = sum(log1p(pmax(v_b, -0.9999)))), by = ym]
+          mcor <- suppressWarnings(cor(mm$a, mm$b))
+          vres$parity_monthly_cor <- round(mcor, 6)
+          vres$parity_n_months <- nrow(mm)
+          min_cor <- pr$min_monthly_cor %||% 0.99
+          if (is.na(mcor) || mcor < min_cor)
+            viol <- c(viol, sprintf("parity: 월수익 상관 %.4f < %.2f (vs %s)",
+                                    mcor, min_cor, pr$against))
+        }
+      }
+    }
+
+    if (length(viol) > 0) {
+      vres$status <- "VALUE_FAIL"; vres$severity <- "CRITICAL"
+      vres$note <- paste(viol, collapse = " | ")
+    } else {
+      vres$status <- "VALUE_PASS"; vres$severity <- "OK"
+    }
+    results[[vres$path]] <- vres
   }
 
   # ─── (2) Orphan detection: .cache files NOT in registry ─────────────────────

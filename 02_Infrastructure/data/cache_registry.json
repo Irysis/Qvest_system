@@ -13,7 +13,8 @@
       "max_lag_days": "stale alert threshold (days). null if not applicable",
       "depends_on": "list of upstream cache files (topological order)",
       "args": "optional R named-list args passed to entry_fn",
-      "tier": "1=critical (regime/MSM/strategy), 2=important (factor/macro), 3=research"
+      "tier": "1=critical (regime/MSM/strategy), 2=important (factor/macro), 3=research",
+      "value_checks": "OPTIONAL (2026-07-03 감사 DATA-P0-1) — 값-무결성 선언. cache_freshness_audit.R (1b) 섹션이 소비, 위반=VALUE_FAIL/CRITICAL. keys: abs_ret_max {col, threshold, max_violations} = |col|>threshold 건수 상한 (날짜 unique 기준) / required_cols [..] = 필수 컬럼 존재 (Layer2 strip 사고 탐지) / parity {against, col, against_col, min_monthly_cor} = 기준 캐시 대비 월수익(log1p 합) 상관 하한"
     }
   },
   "caches": [
@@ -25,7 +26,13 @@
       "date_col": "Date",
       "max_lag_days": 1,
       "depends_on": [],
-      "tier": 1
+      "tier": 1,
+      "value_checks": {
+        "abs_ret_max": {"col": "BM_Ret", "threshold": 0.15, "max_violations": 0},
+        "required_cols": ["Date", "Ticker", "K200", "KQ150", "UnfaithfulDisc", "AdminStock", "TradingHalt", "Float", "Sector_Lv2", "BM_Ret", "Ret", "Close", "Vol", "Size"],
+        "parity": {"against": ".cache/benchmark.parquet", "col": "BM_Ret", "against_col": "BM_Ret", "min_monthly_cor": 0.99}
+      },
+      "_value_note": "2026-07-03 감사 DATA-P0-1: BM_Ret +581% 손상값이 신선도-단일축에서 FRESH 판정 → 7월 factor DB 60팩터(M08_Residual_Mom 포함) 결손. threshold 0.15 근거 = 1990~2026 실측 max |BM_Ret| 0.1223 (지수 일수익). required_cols = Layer2 strip 사고(rawdata_sanitize core_cols) 재발 방지"
     },
     {
       "path": ".cache/benchmark.parquet",
@@ -35,7 +42,11 @@
       "date_col": "Date",
       "max_lag_days": 1,
       "depends_on": [],
-      "tier": 1
+      "tier": 1,
+      "value_checks": {
+        "abs_ret_max": {"col": "BM_Ret", "threshold": 0.15, "max_violations": 0},
+        "required_cols": ["Date", "BM_Close", "BM_Ret"]
+      }
     },
     {
       "path": ".cache/universe.parquet",
