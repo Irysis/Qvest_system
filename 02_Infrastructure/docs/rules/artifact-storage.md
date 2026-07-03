@@ -88,8 +88,18 @@ CHANGELOG.md  CLAUDE.md   (+ ARTIFACTS.md 대시보드)
 
 부기 3 (2026-07-04 산출물·참고자료 3건 이동 — 의도적 미갱신 구경로 잔존): ① **legacy v55/S0-S7 스크립트의 `research_output/strategies/`·`research_output/regime_analysis/` 등 참조** (`04_Research/factor_scan.R`·`run_batch_s3.R`·`s3_batch_runner.R`·`s3_complex_runner.R`·`run_dart_strategies.sh`·`regime_analysis/*.R`·`strategies/batch_g12_*`·`rc_batch_runner.sh`·`_batch_s2_icir.R`·`STR_1621/1622 run_s3_orth.R`) — 참조 대상 디렉토리가 이동 이전부터 부재(dead path)·legacy 격리 대상이라 코드 미수정. 재실행 시 본 표+저장 4원칙에 맞게 경로 재지정 필요. ② `07_Registry/paper_registry.json`·`strategy_registry.json`의 `research_output/...` path 필드 — 과거 등록 기록(불변), 본 표로 해석. ③ 05_Production `production_config.json:11`의 `research_output/strategies/...` — NEVER-touch 경계(도훈 수동 갱신 대상). ④ `CHANGELOG.md:130` `examples/qvest_workflows/` — 릴리스 이력 불변. ⑤ 04_Research 과거 보고서·paper_notes·bearish_forecast plan 문서 내 `research_output` 언급 — 사람용 기록 불변. ⑥ `qepm/mailbox/worktask/WT-D20260501_003/` 내 `06_Reference/...` 언급 3건 — frozen WT 기록 불변. ⑦ examples fixture 내부 `examples/qvest_workflows/` 자기서술(challenge_note.md 3건) — synthetic WT 아티팩트 보존(README replay 경로만 갱신). ⑧ `04_Research/strategies/batch_g12_runner_v2.sh:9` 구머신 절대경로(`/mnt/c/Users/User/...`) — 이동 前부터 dead, legacy 보존. ⑨ `qepm/config/config.yaml:19,21` `paths.research_output`/`strategies` 키 — qepm 내부 NEVER-touch + 참조 대상(`research_output/strategies/`)이 이동 前부터 부재(dead key, qepm/R 소비자 grep 0건). qepm 정비 시 본 표 기준 정리 대상.
 
+## §8 집행 (2026-07-04 파일위생 mandate — 신규 파일 자동 정리 체계)
+
+본 규칙의 집행은 2단 메커니즘. 둘 다 **지식 기록이 아닌 죽은 코드·중복·캐시가 표적** — 보존 구역(§6 + stage_artifacts·qepm·05_Production·01_Literature·06_Registry·04_Research/strategies/STR_*)은 어떤 자동 삭제도 닿지 않는다.
+
+1. **훅 (advisory — 쓰기 시점 1선)**: `02_Infrastructure/hooks/artifact_placement_guard.sh` (PreToolUse Write/Edit, `hooks/policies/router_dispatch.json` 등록, soft_fail). 감지 3종 — (a) 루트 직하 무허가 신규 항목(§2) (b) 02_Infrastructure `_` 접두 신규 파일(§3) (c) results/output 명명 산출물성 파일의 4대 존 밖 신규 생성(§1). **additionalContext 경고만 — block 금지** (의도된 예외는 그대로 진행 가능).
+2. **일간 감사 (자동정리 + 리포트 — 2선)**: `02_Infrastructure/ops/artifact_hygiene_audit.R` (daily_refresh.sh [7.9], index 재생성 직전, fail-soft). *자동 정리 실삭제*: OS temp의 `qm_`/`qvest_` 접두 로그 90일+(§4) · `.cache/scratch/` 30일+(§4) · 청소 허용 존(02_Infrastructure/04_Research 비-strategies/outputs/.cache/08_Tests) 내 빈 디렉토리. 모든 삭제는 `06_Registry/hygiene_report.json` + `.cache/hygiene_manifest.log`에 기록. *감지·경고만(삭제 안 함)*: 루트 무허가 항목 / 인프라 `_` 파일 / 4대 존 밖 산출물성 데이터 파일 / `index_descriptions.json` 미등재 최상위 항목 → 위반 시 stderr `[hygiene][WARN]` (텔레그램 직접 발송 금지 — daily_refresh 로그로 노출). dry-run: `QVEST_HYGIENE_DRY=1`.
+
+이력: 2026-07-04 6월-동결 스윕 — 죽은 코드·중복·캐시 일괄 정리(untracked 데이터는 `C:/qm_archive/20260704/` 경유, git-tracked는 git rm으로 이력 보존) + 본 집행 체계 가동 (첫 실행: 빈 디렉토리 421건 정리, 실측 2026-07-04).
+
 ## 참조
 - `CLAUDE.md` Key Paths / Safety Rules · `.claude/rules/backtest-contract.md`(save_bt_result 산출 위치) · `02_Infrastructure/docs/rules/artifact-naming.md`(파일명 규약 — 본 문서는 *위치*, 그쪽은 *이름*) · `02_Infrastructure/contracts/registry_writer.R`
 
 ## Change log
+- 2026-07-04: §8 집행 신설 — artifact_placement_guard.sh(advisory 훅) + artifact_hygiene_audit.R(일간 자동정리·리포트) + daily_refresh [7.9] 배선 (파일위생 mandate).
 - 2026-07-04: 신설 (구조 재편 mandate — 저장 4원칙 + 루트 고정 + 인프라 코드전용 + Retention + 인덱스 + 이동 로그).

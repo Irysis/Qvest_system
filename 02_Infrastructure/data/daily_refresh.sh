@@ -450,6 +450,9 @@ tryCatch(update_memory_summary(), error = function(e) NULL)
 cat("[distill] MEMORY.md updated\n")
 ' 2>/dev/null
 
+# [7.9] Artifact hygiene audit (자동정리 log90d/scratch30d/빈디렉토리 + 위반감지 → 06_Registry/hygiene_report.json. fail-soft. 2026-07-04 파일위생 mandate)
+"$RSCRIPT" --no-save "$INFRA/ops/artifact_hygiene_audit.R" || echo "[warn] artifact hygiene audit failed (fail-soft)"
+
 # [8] Artifact index 재생성 (fail-soft — 실패해도 refresh 전체는 계속. 2026-07-04 저장규칙 재편)
 "$RSCRIPT" --no-save "$INFRA/tools/build_artifact_index.R" || echo "[warn] artifact index rebuild failed (fail-soft)"
 

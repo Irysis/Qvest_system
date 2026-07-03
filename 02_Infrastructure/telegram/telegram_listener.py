@@ -325,8 +325,29 @@ def handle_list():
         send(f"❌ 목록 오류: {e}")
 
 # ── QEPM Multi-Agent Commands ──────────────────────────────────────────────
+# NOTE (2026-07-04 파일위생): 아래 핸들러 다수가 legacy v55 오케스트레이션 모듈
+# (qepm/R/orchestration/*, qepm/R/utils/common.R, qepm/R/memory/r0_raw.R)을
+# source하는데, 해당 모듈은 v8.1 트리에 존재하지 않는다.
+# _require_files() 가드가 "조용한 즉사"(R source 실패 → 빈 stdout → 오해성
+# timeout 메시지) 대신 명시적 부재 사유를 발송한다. 기능 복원은 별도 결정 사항.
 DISPATCH_R = f"{BASE}/qepm/R/orchestration/skill_dispatch.R"
 MAILBOX_R  = f"{BASE}/qepm/R/orchestration/agent_mailbox.R"
+
+def _require_files(cmd_label, rel_paths, extra_note=""):
+    """모든 파일이 존재하면 True. 부재 시 명시적 legacy-경로 오류를 발송하고 False."""
+    missing = [p for p in rel_paths
+               if not os.path.exists(os.path.join(BASE, p))]
+    if not missing:
+        return True
+    msg = (f"🚫 {cmd_label}: 참조 모듈 부재 — 실행 불가\n"
+           f"(legacy v55 경로 — 현행 v8.1 트리에 없음)\n"
+           + "\n".join(f"  · {p}" for p in missing))
+    if extra_note:
+        msg += f"\n{extra_note}"
+    print(f"[Guard] {cmd_label} blocked — missing: {', '.join(missing)}",
+          flush=True)
+    send(msg)
+    return False
 
 def _run_rscript(expr, timeout=120):
     """Run R expression and return stdout."""
@@ -346,6 +367,11 @@ def _run_rscript(expr, timeout=120):
 
 def handle_regime():
     """국면 분석 — qepm-regime skill."""
+    # legacy 경로: 모듈은 02_Infrastructure/regime/regime_signal.R로 이동했고
+    # 컬럼 스키마(regime_score/TS_Signal 등)도 현행과 불일치 — 재배선 전까지 차단.
+    if not _require_files("/regime", ["02_Infrastructure/regime_signal.R"],
+                          extra_note="현행 모듈: 02_Infrastructure/regime/regime_signal.R (스키마 상이 — 핸들러 재배선 필요)"):
+        return
     send("🌐 국면 분석 중...")
     out = _run_rscript(
         'source("02_Infrastructure/config.R"); '
@@ -371,6 +397,8 @@ def handle_regime():
 
 def handle_allocation():
     """현재 목표 배분."""
+    if not _require_files("/allocation", ["config/dynamic_alloc_config.yaml"]):
+        return
     send("⚖️ 배분 계산 중...")
     out = _run_rscript(
         'library(yaml); '
@@ -442,6 +470,9 @@ def handle_research(args):
     if not args or args.isdigit():
         # /research 또는 /research 3 → backlog에서 N개 디스패치
         n = int(args) if args.isdigit() else 1
+        if not _require_files("/research (dispatch)",
+                              ["qepm/R/orchestration/skill_dispatch.R"]):
+            return
         send(f"🔬 백로그에서 {n}개 디스패치 중...")
         out = _run_rscript(
             f'source("qepm/R/orchestration/skill_dispatch.R"); '
@@ -460,6 +491,10 @@ def handle_research(args):
 
     # /research add <family> <objective> → 백로그에 새 과제 추가
     if args.startswith("add "):
+        if not _require_files("/research add",
+                              ["qepm/R/utils/common.R",
+                               "qepm/R/orchestration/backlog.R"]):
+            return
         parts = args[4:].strip().split(" ", 1)
         family = parts[0] if parts else "general"
         objective = parts[1] if len(parts) > 1 else "Research task"
@@ -487,6 +522,8 @@ def handle_research(args):
 
 def handle_dispatch_status():
     """에이전트 메일박스 현황."""
+    if not _require_files("/mailbox", ["qepm/R/orchestration/agent_mailbox.R"]):
+        return
     out = _run_rscript(
         'source("qepm/R/orchestration/agent_mailbox.R"); '
         'st <- mailbox_status(); '
@@ -508,6 +545,11 @@ def handle_perpetual(args):
     args = args.strip() if args else ""
     max_cycles = int(args) if args.isdigit() else 20
 
+    if not _require_files("/perpetual",
+                          ["qepm/R/utils/common.R",
+                           "qepm/R/memory/r0_raw.R",
+                           "qepm/R/orchestration/state_machine.R"]):
+        return
     send(f"🔄 <b>Perpetual Engine 시작</b>\n"
          f"최대 {max_cycles} 사이클 | 목표: Sharpe 2.0+, MDD &lt;25%\n"
          f"진행 상황은 5사이클마다 보고합니다.")
@@ -530,6 +572,10 @@ def handle_perpetual(args):
 
 def handle_targets():
     """현재 목표 대비 진행 상태."""
+    if not _require_files("/targets",
+                          ["qepm/R/utils/common.R",
+                           "qepm/R/orchestration/state_machine.R"]):
+        return
     out = _run_rscript(
         'source("02_Infrastructure/config.R"); '
         'source("qepm/R/utils/common.R"); '
@@ -596,6 +642,10 @@ def handle_agents(args):
     if task not in task_skill_map:
         send(f"❌ 알 수 없는 태스크: {task}\n"
              f"가능: {', '.join(task_skill_map.keys())}")
+        return
+
+    if not _require_files("/agent (mailbox_send)",
+                          ["qepm/R/orchestration/agent_mailbox.R"]):
         return
 
     skill, subcmd = task_skill_map[task]

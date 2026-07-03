@@ -58,8 +58,9 @@ hook_pg2_distill_and_gap <- function(strategy) {
   tryCatch({
     suppressMessages({
       source("02_Infrastructure/config.R")
-      source("02_Infrastructure/axiom_memory_interface.R")
-      source("02_Infrastructure/portfolio_governor.R")
+      # 경로 수리 (2026-07-04 파일위생): 루트 직속 → memory/ · portfolio/ 로 이동됨
+      source("02_Infrastructure/memory/axiom_memory_interface.R")
+      source("02_Infrastructure/portfolio/portfolio_governor.R")
     })
 
     # 1. Axiom partial distill
@@ -106,17 +107,27 @@ hook_pg2_distill_and_gap <- function(strategy) {
 hook_pg3_full_distill <- function(strategy) {
   tryCatch({
     suppressMessages({
-      source("02_Infrastructure/axiom_memory_interface.R")
+      # 경로 수리 (2026-07-04 파일위생): 루트 직속 → memory/ 로 이동됨
+      source("02_Infrastructure/memory/axiom_memory_interface.R")
     })
     sg_sync_methodology_memory()
-    tryCatch({
-      source("qepm/R/memory/r7_axiom.R")
-      candidates <- scan_axiom_candidates()
-      cat(sprintf("[Axiom] Full distill: %d candidates for %s\n",
-                  length(candidates), strategy))
-    }, error = function(e) {
-      cat(sprintf("[Axiom] scan_axiom error: %s\n", e$message))
-    })
+    # legacy v55 경로 가드 (2026-07-04 파일위생): qepm/R/memory/r7_axiom.R은
+    # 현행 v8.1 트리에 존재하지 않음. 부재 시 조용한 source 실패 대신 명시 skip.
+    r7_path <- "qepm/R/memory/r7_axiom.R"
+    if (!file.exists(r7_path)) {
+      cat(sprintf(
+        "[Axiom] SKIP full-distill scan: %s 부재 (legacy v55 경로 — v8.1 트리에 없음). %s\n",
+        r7_path, strategy))
+    } else {
+      tryCatch({
+        source(r7_path)
+        candidates <- scan_axiom_candidates()
+        cat(sprintf("[Axiom] Full distill: %d candidates for %s\n",
+                    length(candidates), strategy))
+      }, error = function(e) {
+        cat(sprintf("[Axiom] scan_axiom error: %s\n", e$message))
+      })
+    }
   }, error = function(e) {
     cat(sprintf("[Axiom] pg3_distill error: %s\n", e$message))
   })
@@ -203,9 +214,20 @@ hook_quant_factcheck <- function(factors_json, hyp_id = "unknown", family = "") 
     factor_db_ok   <- list()
 
     # load_month_factors() 경유 (C15 준수)
+    # NOTE (2026-07-04 파일위생): 구 경로 factor_db/load_month_factors.R 부재.
+    # 현행 정의는 factor_db/factor_db_connector.R (단, 시그니처가
+    # load_month_factors(sig_date, ...) 로 상이 — 아래 per-factor 호출은
+    # 재배선 전까지 error→unknown 폴백으로 동작. 조용한 즉사 대신 stderr 고지).
     tryCatch({
       suppressMessages(source("02_Infrastructure/config.R"))
-      suppressMessages(source("02_Infrastructure/factor_db/load_month_factors.R"))
+      lmf_path <- "02_Infrastructure/factor_db/load_month_factors.R"
+      if (!file.exists(lmf_path)) {
+        message(sprintf(
+          "[quant_factcheck] %s 부재 (stale 경로 — 현행 factor_db_connector.R, 시그니처 상이). factor lookup은 unknown 폴백.",
+          lmf_path))
+        stop("load_month_factors source missing (stale path)")
+      }
+      suppressMessages(source(lmf_path))
 
       for (fac in factors) {
         tryCatch({
@@ -253,6 +275,9 @@ hook_quant_factcheck <- function(factors_json, hyp_id = "unknown", family = "") 
       }
     }, error = function(e_load) {
       # load_month_factors 자체 실패 시 모든 팩터를 unknown 처리
+      # (stdout은 JSON line protocol이므로 고지는 stderr로)
+      message(sprintf("[quant_factcheck] factor lookup 불가 → 전체 unknown 폴백: %s",
+                      conditionMessage(e_load)))
       for (fac in factors) {
         factor_db_ok[[fac]] <<- FALSE
         icir_10y[[fac]]     <<- NA
