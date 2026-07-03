@@ -1,0 +1,69 @@
+# 06_Registry INDEX
+
+> 자동 생성 2026-07-04 04:20 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
+
+## 데이터 (8)
+
+| 항목 | 정체 | status | 최근 | 크기 |
+|---|---|---|---|---|
+| `index_descriptions.json` | 존별 INDEX 큐레이션 DB (본 파일 — 사람 수동 보완, build_artifact_index.R이 소비해 INDEX.md 4개 생성) | active | 2026-07-03 | 38KB |
+| `artifact_index.json` | build_artifact_index.R이 daily_refresh 말미 자동 재생성하는 전체 산출물 기계가독 인덱스 | active | 2026-07-03 | 291KB |
+| `book_carrier/` | PG2 book 수익 캐리어(carrier_STR_1715_*) + H1/H1b/H2 오버레이·가중 A/B 실측 결과 저장소 | active | 2026-06-18 | 727KB |
+| `idea_registry.json` | 구 S0 아이디어 소싱 레지스트리 — telegram_notify.R이 아직 참조하나 갱신은 06-08 정지 | legacy | 2026-06-07 | 40KB |
+| `live_track/STR_1715_on_M4_R05_noLayer4_PG2/` | 현행 PG2 book(noLayer4) 라이브 페이퍼트래킹 — daily_nav/paper_nav/holdout_interval, TaskScheduler 월간 소비 | active | 2026-07-03 | 68KB |
+| `live_track/STR_1715_FaithTrend_on_M4_R05_overlay_PG2/` | 제거된 구 FaithTrend 오버레이 라이브트랙 — look-ahead 판명 후 rollback 보존분(도훈 지시) | legacy | 2026-07-02 | 3KB |
+| `strategy_grades.json` | 전략 등급 레지스트리 — 검색 인덱스와 v8 readiness gate가 소비 (06-08 이후 정지 상태이나 게이트 의존) | active | 2026-06-07 | 79KB |
+| `strategy_registry.json` | 전략 마스터 레지스트리(178+ STR 메타) — telegram·strategy_registry.R 소비, 06-21 갱신 | active | 2026-06-20 | 275KB |
+
+## 계약 (5)
+
+| 항목 | 정체 | status | 최근 | 크기 |
+|---|---|---|---|---|
+| `factor_rotation_registry.json` | factor-rotation 모드 FR_XXXX 등록 레지스트리(현행 v6146B, 06-13 갱신) | active | 2026-06-13 | 6KB |
+| `live_track/STR_1715_AR_on_M4_R05_overlay_PG2/` | holdout falsification 1호 등록(구간 [0.39,3.16]) 라이브트랙 — measurement-graduation §3 규약상 불변 봉인 | active | 2026-06-10 | 485B |
+| `module_catalog.json` | register_module 공용계약의 모듈 카탈로그(SOT) — 계약 floor 통과 모듈 표준 등록부, 07-03 갱신 | active | 2026-07-03 | 509KB |
+| `module_quarantine.json` | register_module 계약 미충족 산출물 격리 보존소(v8.1 헌법이 보존 명시) | active | 2026-06-20 | 18KB |
+| `overlay_candidate_queue.json` | screen_route=OVERLAY_CANDIDATE 라우팅 큐(게이트 2계층 소비 경로) — 07-03 갱신 | active | 2026-07-03 | 19KB |
+
+## 훅 (1)
+
+| 항목 | 정체 | status | 최근 | 크기 |
+|---|---|---|---|---|
+| `hook_skip_audit.log` | backtest_contract_audit.sh가 hook skip 사유를 append하는 현행 감사 로그 | active | 2026-07-03 | 119B |
+
+## 모드-alpha-search (2)
+
+| 항목 | 정체 | status | 최근 | 크기 |
+|---|---|---|---|---|
+| `hypothesis_index.json` | alpha-search 가설/검증 이력 인덱스(중복 가설 방지용) — 07-04 갱신 중 | active | 2026-07-03 | 471KB |
+| `paper_registry.json` | 논문 리서치 파이프라인 레지스트리(수집→라우터→alpha-search 큐) — 07-03 갱신 | active | 2026-07-02 | 239KB |
+
+## 모드-FR (3)
+
+| 항목 | 정체 | status | 최근 | 크기 |
+|---|---|---|---|---|
+| `module_performance.json` | FR input-floor용 모듈 국면조건부 성과 매트릭스 — build_module_performance.R 산출, regime admission 소비 | active | 2026-07-03 | 281KB |
+| `module_regime_admission.json` | RCMA(국면조건부 모듈 admission) 판정 결과 레지스트리 — FR 모드 소비 | active | 2026-06-12 | 393KB |
+| `overlay_ab_results/` | 오버레이 후보(LH loser-harvest 등) A/B 실측 결과 — 07-03 스마트베타 LH 후속 소비 예정 | active | 2026-07-03 | 13KB |
+
+## 보고서 (1)
+
+| 항목 | 정체 | status | 최근 | 크기 |
+|---|---|---|---|---|
+| `quant_profile.md` | 도훈 퀀트 전략 선호 프로필 문서(팩터 구현 선호 우선순위) — 코드 소비 없음, 06-08 이후 정지 | report | 2026-06-07 | 4KB |
+
+## 모드-RAMP (1)
+
+| 항목 | 정체 | status | 최근 | 크기 |
+|---|---|---|---|---|
+| `ramp/` | RAMP 모드 레지스트리 존 — approved_factor_library.parquet(102 승인팩터)·CCS 13-score·Gate3/5 summary·ramp_registry·roadmap_status (07-04 갱신 중) | active | 2026-07-03 | 116KB |
+
+## 정리 후보 (status=dead) (4)
+
+| 항목 | 정체 | 카테고리 | 최근 | 크기 |
+|---|---|---|---|---|
+| `briefing_config.json` | 구 자동 브리핑/논문 검색토픽 로테이션 설정 — 현행 morning_briefing.sh 등 어떤 코드도 읽지 않음 | 데이터 | - | - |
+| `factor_rotation_registry.json.pre_c2ab_backup` | FR 레지스트리의 c2ab 변경 전(06-08) 수동 백업본 — 코드 소비 없음 | 데이터 | - | - |
+| `module_performance.FULL_B.json` | module_performance.json의 06-13 시점 스냅샷 백업 — 현본과 byte-identical 확인 | 데이터 | - | - |
+| `strategy_registry.json.backup_phaseE_20260425_220537` | strategy_registry의 2026-04-25 Phase E 이전 백업본 — 코드 소비 없음 | 데이터 | - | - |
+

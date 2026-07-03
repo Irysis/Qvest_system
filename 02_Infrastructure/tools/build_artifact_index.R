@@ -6,6 +6,9 @@
 #   1) <registry>/artifact_index.json  (기계가독 인덱스 — registry 존은
 #      06_Registry 존재 시 06_Registry, 아니면 07_Registry 동적 선택)
 #   2) <root>/ARTIFACTS.md             (사람용 한국어 대시보드, 1화면)
+#   3) 존별 INDEX.md 4개 (02_Infrastructure / 04_Research / <registry> / 08_Tests)
+#      — <registry>/index_descriptions.json (사람 큐레이션 DB) 병합.
+#      큐레이션에 없는 신규 항목은 '(미분류)' 표기 → JSON에 수동 추가.
 #
 # 실행: Rscript 02_Infrastructure/tools/build_artifact_index.R
 #       (daily_refresh.sh 말미에서 fail-soft 자동 재생성)
@@ -170,7 +173,9 @@ registry_desc <- c(
   "live_track"                    = "라이브 트래킹 (holdout_interval 사전등록 + 월간 대조)",
   "book_carrier"                  = "book carrier 상태 산출",
   "ramp"                          = "RAMP 모드 레지스트리 산출 (RAMP_XXXX)",
-  "artifact_index.json"           = "본 빌더 산출 — 전체 산출물 인덱스"
+  "artifact_index.json"           = "본 빌더 산출 — 전체 산출물 인덱스",
+  "index_descriptions.json"       = "존별 INDEX 큐레이션 DB (사람 수동 보완 — 본 빌더가 병합)",
+  "INDEX.md"                      = "본 빌더 산출 — registry 존 상세 INDEX"
 )
 z_registry <- scan_zone(registry_zone)
 if (!is.null(z_registry)) {
@@ -199,6 +204,150 @@ if (dir.exists(wt_dir)) {
   )
 }
 
+# ---- (f) 존별 INDEX.md — index_descriptions.json 큐레이션 병합 ----------------
+# 큐레이션 DB(사람 수동 보완) + 실측 mtime/크기를 병합해 존별 상세 인덱스 생성.
+# 파일 부재/파싱 실패 시 fail-soft (기존 index/ARTIFACTS 산출은 계속).
+zone_index_files <- character(0)
+desc_path <- file.path(root, registry_zone, "index_descriptions.json")
+descs <- NULL
+if (file.exists(desc_path)) {
+  descs <- tryCatch(fromJSON(desc_path, simplifyVector = FALSE), error = function(e) NULL)
+  if (is.null(descs)) cat("[artifact_index] WARN index_descriptions.json 파싱 실패 — 존별 INDEX.md 생략\n")
+} else {
+  cat("[artifact_index] WARN", desc_path, "부재 — 존별 INDEX.md 생략\n")
+}
+if (!is.null(descs)) {
+  descs[["_meta"]] <- NULL
+
+  # 큐레이션 키 → 파일시스템 매칭 토큰.
+  #  지원 표기: 뒤 괄호 주석 "xxx (설명)" / 그룹 "{a, b ×N}" / 병기 "a + b" / 글롭 "run_*.R"
+  parse_desc_tokens <- function(key_rel) {
+    s <- sub("\\s*\\([^()]*\\)\\s*$", "", key_rel)
+    parts <- trimws(strsplit(s, " \\+ ")[[1]])
+    toks <- unlist(lapply(parts, function(p) {
+      if (grepl("^\\{.*\\}$", p)) {
+        ts <- trimws(strsplit(sub("^\\{(.*)\\}$", "\\1", p), ",")[[1]])
+        sub("\\s*×[0-9]+\\s*$", "", ts)   # '×N' 개수 주석 제거
+      } else p
+    }))
+    toks <- sub("/+$", "", trimws(toks))
+    toks[nzchar(toks)]
+  }
+
+  # 존 1회 재귀 워크 → rel/size/mtime 프레임 (매칭·집계 공용)
+  zone_walk <- function(zone_rel) {
+    zp <- file.path(root, zone_rel)
+    af <- list.files(zp, recursive = TRUE, full.names = TRUE)
+    if (!length(af)) return(data.frame(rel = character(0), size = numeric(0),
+                                       mtime = numeric(0), stringsAsFactors = FALSE))
+    fi <- file.info(af, extra_cols = FALSE)
+    data.frame(rel = substring(af, nchar(zp) + 2L),
+               size = fi$size, mtime = as.numeric(fi$mtime), stringsAsFactors = FALSE)
+  }
+
+  match_mask <- function(wd, tokens) {
+    hit <- rep(FALSE, nrow(wd))
+    for (tk in tokens) {
+      if (grepl("[*?]", tk)) hit <- hit | grepl(utils::glob2rx(tk), wd$rel)
+      else hit <- hit | wd$rel == tk | startsWith(wd$rel, paste0(tk, "/"))
+    }
+    hit
+  }
+
+  md_esc <- function(s) gsub("\n", " ", gsub("\\|", "\\\\|", s))
+
+  build_zone_index <- function(zone_rel, fold = FALSE) {
+    zp <- file.path(root, zone_rel)
+    if (!dir.exists(zp)) return(NULL)
+    wd   <- zone_walk(zone_rel)
+    pref <- paste0(zone_rel, "/")
+    keys <- names(descs)[startsWith(names(descs), pref)]
+
+    items <- lapply(keys, function(k) {
+      d    <- descs[[k]]
+      disp <- substring(k, nchar(pref) + 1L)
+      toks <- parse_desc_tokens(disp)
+      mask <- if (nrow(wd)) match_mask(wd, toks) else logical(0)
+      n    <- sum(mask)
+      mx   <- suppressWarnings(max(wd$mtime[mask], na.rm = TRUE))
+      list(disp = disp, tokens = toks,
+           role     = if (is.null(d$role)) "(role 미기재)" else d$role,
+           status   = if (is.null(d$status)) "?" else d$status,
+           category = if (is.null(d$category)) "(기타)" else d$category,
+           n_files  = n,
+           size     = if (n) fmt_size(wd$size[mask]) else "-",
+           mtime    = if (n && is.finite(mx)) fmt_date(mx) else "-")
+    })
+
+    # 미분류 탐지: 존 top-level 실존 항목 중 어떤 큐레이션 토큰에도 안 걸리는 것
+    tops <- setdiff(list.files(zp, no.. = TRUE), "INDEX.md")
+    all_toks <- unique(unlist(lapply(items, `[[`, "tokens")))
+    covered <- vapply(tops, function(nm) {
+      length(all_toks) > 0 && any(vapply(all_toks, function(tk) {
+        if (grepl("[*?]", tk)) grepl(utils::glob2rx(tk), nm)
+        else tk == nm || startsWith(tk, paste0(nm, "/"))
+      }, FALSE))
+    }, FALSE)
+    unk <- tops[!covered]
+
+    tab_hdr <- c("| 항목 | 정체 | status | 최근 | 크기 |", "|---|---|---|---|---|")
+    row_of <- function(it) sprintf("| `%s` | %s | %s | %s | %s |",
+                                   md_esc(it$disp), md_esc(it$role), it$status, it$mtime, it$size)
+    lines <- c(
+      sprintf("# %s INDEX", zone_rel), "",
+      sprintf(paste0("> 자동 생성 %s — 큐레이션 원본: `%s/index_descriptions.json` ",
+                     "(role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` ",
+                     "(daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀."),
+              format(Sys.time(), "%Y-%m-%d %H:%M"), registry_zone), "")
+
+    live <- Filter(function(it) it$status != "dead", items)
+    dead <- Filter(function(it) it$status == "dead", items)
+    for (ct in unique(vapply(live, `[[`, "", "category"))) {
+      sub  <- Filter(function(it) it$category == ct, live)
+      rows <- vapply(sub, row_of, "")
+      if (fold) lines <- c(lines,
+        sprintf("<details><summary><b>%s</b> (%d)</summary>", ct, length(sub)), "",
+        tab_hdr, rows, "", "</details>", "")
+      else lines <- c(lines, sprintf("## %s (%d)", ct, length(sub)), "", tab_hdr, rows, "")
+    }
+    if (length(dead)) {
+      lines <- c(lines, sprintf("## 정리 후보 (status=dead) (%d)", length(dead)), "",
+        "| 항목 | 정체 | 카테고리 | 최근 | 크기 |", "|---|---|---|---|---|",
+        vapply(dead, function(it) sprintf("| `%s` | %s | %s | %s | %s |",
+               md_esc(it$disp), md_esc(it$role), md_esc(it$category), it$mtime, it$size), ""), "")
+    }
+    if (length(unk)) {
+      lines <- c(lines, sprintf("## 미분류 (%d) — index_descriptions.json에 추가하세요", length(unk)), "",
+        tab_hdr,
+        vapply(unk, function(nm) {
+          mask <- wd$rel == nm | startsWith(wd$rel, paste0(nm, "/"))
+          n <- sum(mask)
+          mx <- suppressWarnings(max(wd$mtime[mask], na.rm = TRUE))
+          sprintf("| `%s` | (미분류 — index_descriptions.json에 추가하세요) | - | %s | %s |",
+                  md_esc(nm),
+                  if (n && is.finite(mx)) fmt_date(mx) else "-",
+                  if (n) fmt_size(wd$size[mask]) else "0B")
+        }, ""), "")
+    }
+    p <- file.path(zp, "INDEX.md")
+    con <- file(p, open = "w", encoding = "UTF-8")
+    writeLines(lines, con); close(con)
+    cat("[artifact_index] wrote", p,
+        sprintf("(항목 %d / dead %d / 미분류 %d)\n", length(items), length(dead), length(unk)))
+    file.path(zone_rel, "INDEX.md")
+  }
+
+  for (zd in list(list(rel = "02_Infrastructure", fold = FALSE),
+                  list(rel = "04_Research",       fold = TRUE),   # 107토픽 → 카테고리 접기
+                  list(rel = registry_zone,       fold = FALSE),
+                  list(rel = "08_Tests",          fold = FALSE))) {
+    p <- tryCatch(build_zone_index(zd$rel, fold = zd$fold), error = function(e) {
+      cat("[artifact_index] WARN INDEX.md 생성 실패:", zd$rel, "-", conditionMessage(e), "\n"); NULL
+    })
+    if (!is.null(p)) zone_index_files <- c(zone_index_files, p)
+  }
+}
+
 # ---- artifact_index.json 쓰기 -----------------------------------------------
 index <- list(
   generated_at   = format(Sys.time(), "%Y-%m-%d %H:%M:%S"),
@@ -210,6 +359,8 @@ index <- list(
     "outputs/<pipeline>/ = canonical 데이터 (최신본만)",
     paste0(registry_zone, "/ = 기계가독 상태·큐·인덱스"),
     "04_Research/<topic>/ = 사람용 보고서"),
+  zone_indexes = as.list(zone_index_files),
+  curation_db  = if (file.exists(desc_path)) file.path(registry_zone, "index_descriptions.json") else NULL,
   zones = list(
     stage_artifacts  = z_stage,
     research         = z_research,
@@ -258,6 +409,14 @@ lines <- c(
                               z_wt$n_worktasks, z_wt$latest[[1]]$mtime, z_wt$latest[[1]]$name),
   "",
   if (nzchar(mode_tab)) sprintf("`stage_artifacts` mode 구성: %s", mode_tab),
+  "",
+  "## 존별 상세 INDEX (큐레이션 병합 — 자동 생성)",
+  "",
+  "- [`02_Infrastructure/INDEX.md`](02_Infrastructure/INDEX.md) — 인프라 코드 존: 카테고리별 정체·status·정리 후보",
+  "- [`04_Research/INDEX.md`](04_Research/INDEX.md) — 리서치 산출 존: 카테고리 접기(active-pipeline/report/experiment/…)",
+  sprintf("- [`%s/INDEX.md`](%s/INDEX.md) — 레지스트리 존: 파일별 정체·계약/모드 라벨", registry_zone, registry_zone),
+  "- [`08_Tests/INDEX.md`](08_Tests/INDEX.md) — 테스트 존: 스위트별 정체·실행 가능성",
+  sprintf("- 큐레이션 DB: `%s/index_descriptions.json` — 신규 항목이 '(미분류)'로 뜨면 여기에 추가 후 재생성", registry_zone),
   "",
   "## 자주 찾는 것",
   "",

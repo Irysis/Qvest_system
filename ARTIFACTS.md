@@ -1,6 +1,6 @@
 # Qvest 산출물 지도 (ARTIFACTS.md)
 
-> 자동 생성 2026-07-04 03:24:45 — 기계가독 원본: `06_Registry/artifact_index.json` · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동)
+> 자동 생성 2026-07-04 04:20:16 — 기계가독 원본: `06_Registry/artifact_index.json` · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동)
 
 **저장 4원칙**: ① `stage_artifacts/<mode>/<run_id>/` 실험 런(불변·이동금지) ② `outputs/<pipeline>/` canonical 데이터(최신본만) ③ `06_Registry/` 기계가독 상태·큐·인덱스 ④ `04_Research/<topic>/` 사람용 보고서
 
@@ -10,11 +10,19 @@
 |---|---|---|---|---|---|
 | `stage_artifacts/` | 실험 런 원본 (WT·legacy S0~S7·L-code·agent 산출) | 754항목 / 22,419파일 | 5.3GB | 2026-07-03 (`pg2_defense_drawdown`) | `reports/` + 최근 WT 디렉토리 |
 | `outputs/` | 파이프라인 canonical 데이터 (최신본) | 2항목 / 61파일 | 844.0MB | 2026-07-03 (`regime`) | `outputs/ramp/` (RAMP 순수팩터·팩터군 parquet) |
-| `06_Registry/` | 기계가독 상태·큐·인덱스 (JSON) | 22항목 / 53파일 | 4.0MB | 2026-07-03 (`artifact_index.json`) | `module_catalog.json` / `hypothesis_index.json` |
-| `04_Research/` | 사람용 리서치 보고서·분석 (토픽별) | 107항목 / 6,833파일 | 2.4GB | 2026-07-03 (`architecture_audit_20260703.md`) | `architecture_audit_*` / `pg2_forensics/` |
-| `qepm/mailbox/worktask/` | QEPM WT 핸드오프 mailbox (불변 기록) | 166 WT | - | 2026-07-02 (`WT-D20260702_002`) | 최근 WT의 `output/` |
+| `06_Registry/` | 기계가독 상태·큐·인덱스 (JSON) | 20항목 / 51파일 | 3.5MB | 2026-07-03 (`artifact_index.json`) | `module_catalog.json` / `hypothesis_index.json` |
+| `04_Research/` | 사람용 리서치 보고서·분석 (토픽별) | 84항목 / 6,812파일 | 2.4GB | 2026-07-03 (`architecture_audit_20260703.md`) | `architecture_audit_*` / `pg2_forensics/` |
+| `qepm/mailbox/worktask/` | QEPM WT 핸드오프 mailbox (불변 기록) | 166 WT | - | 2026-07-03 (`WT-D20260519_001`) | 최근 WT의 `output/` |
 
 `stage_artifacts` mode 구성: legacy_stage_S0_S7 439 · worktask_run 116 · other 77 · agent_artifact 61 · l_code 41 · pg2 12 · axiom 3 · report 3 · alpha_search 2
+
+## 존별 상세 INDEX (큐레이션 병합 — 자동 생성)
+
+- [`02_Infrastructure/INDEX.md`](02_Infrastructure/INDEX.md) — 인프라 코드 존: 카테고리별 정체·status·정리 후보
+- [`04_Research/INDEX.md`](04_Research/INDEX.md) — 리서치 산출 존: 카테고리 접기(active-pipeline/report/experiment/…)
+- [`06_Registry/INDEX.md`](06_Registry/INDEX.md) — 레지스트리 존: 파일별 정체·계약/모드 라벨
+- [`08_Tests/INDEX.md`](08_Tests/INDEX.md) — 테스트 존: 스위트별 정체·실행 가능성
+- 큐레이션 DB: `06_Registry/index_descriptions.json` — 신규 항목이 '(미분류)'로 뜨면 여기에 추가 후 재생성
 
 ## 자주 찾는 것
 

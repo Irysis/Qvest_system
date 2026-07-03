@@ -1,0 +1,771 @@
+{
+  "_meta": {
+    "updated": "2026-07-04",
+    "convention": "사람 수동 보완 큐레이션 DB — 신규 산출물이 존별 INDEX.md에 '(미분류)'로 뜨면 여기에 {path: {role,status,category}} 1건 추가 후 Rscript 02_Infrastructure/tools/build_artifact_index.R 재실행. status ∈ {active, legacy, dead, report} · path는 프로젝트 루트 기준 상대경로 (복수 파일 그룹은 '{a, b}' 또는 'a + b' 표기, 뒤 괄호 주석 허용)"
+  },
+  "06_Registry/index_descriptions.json": {
+    "role": "존별 INDEX 큐레이션 DB (본 파일 — 사람 수동 보완, build_artifact_index.R이 소비해 INDEX.md 4개 생성)",
+    "status": "active",
+    "category": "데이터"
+  },
+  "02_Infrastructure/F1. QT_to_xts.r": {
+    "role": "퀀티와이즈 엑셀 시계열을 xts로 변환하는 헬퍼 함수 2종(QT_to_xts / QT_to_xts_macro) — 데이터 인제스트 빌더들의 공용 유틸",
+    "status": "active",
+    "category": "데이터"
+  },
+  "02_Infrastructure/backtest_harness.R": {
+    "role": "공용 백테스트 하네스(시뮬레이션 엔진 62KB) — alpha_search 드라이버·contracts·data 빌더가 공통 source하는 실행 코어",
+    "status": "active",
+    "category": "백테스트"
+  },
+  "02_Infrastructure/config.R": {
+    "role": "전역 경로·상수 SOT(CACHE_DIR/QM_ROOT/LIQ_THRESHOLD 등) — 사실상 모든 R 스크립트의 진입 설정",
+    "status": "active",
+    "category": "설정"
+  },
+  "02_Infrastructure/experiment_contract.R": {
+    "role": "구 Lawbook v1.4.2 Ch.14 실험 사전등록 계약(가설·config·예측을 백테 전 불변 기록) — 구 프로세스 유물",
+    "status": "dead",
+    "category": "계약(구)"
+  },
+  "02_Infrastructure/factor_portfolios.R": {
+    "role": "KR FF3/FF5/Carhart-4F 팩터 회귀(NW HAC alpha t) — strategy_analyzer의 Multi-Factor Regression 공급자(2026-06-04 재작성)",
+    "status": "active",
+    "category": "백테스트"
+  },
+  "02_Infrastructure/factor_research_pipeline.R": {
+    "role": "구 S0-S7 프로세스 핵심 계산(S3 직교성/spanning, S4 ΔSharpe/IC_marginal, S7 lifecycle) — v55 리서치 파이프라인 코어",
+    "status": "legacy",
+    "category": "모드-QEPM(구 S0-S7)"
+  },
+  "02_Infrastructure/hurdle_gate.R": {
+    "role": "Screening tier 게이트 권위 구현(83KB — D002 turnover 1100%·D004 structural drawdown·verdict$screening·screen_route 라우팅)",
+    "status": "active",
+    "category": "게이트"
+  },
+  "02_Infrastructure/hurdle_gate_perf.cpp": {
+    "role": "hurdle_gate·strategy_analyzer 병목 루프 Rcpp 가속(rolling_sharpe/rolling_mdd/stress_periods, O(N))",
+    "status": "active",
+    "category": "성능"
+  },
+  "02_Infrastructure/stage_gate_engine.R": {
+    "role": "구 S0~S7+PG0~PG3 스테이지 상태머신(sg_transition/sg_dashboard) — v55 stage gate 코어이나 현행 스크립트가 아직 배선",
+    "status": "legacy",
+    "category": "모드-QEPM(구 S0-S7)"
+  },
+  "02_Infrastructure/strategy_analyzer.R": {
+    "role": "전략 진단 분석기 — 백테 후 IC/rolling/stress/sector/holdings CSV + analysis_report.md 생성(FF 회귀 포함)",
+    "status": "active",
+    "category": "백테스트"
+  },
+  "02_Infrastructure/strategy_registry.R": {
+    "role": "전략 fingerprint(중복탐지 해시)·팩터 라벨 taxonomy·lifecycle 상태 레지스트리(Lawbook Ch.17/19/21)",
+    "status": "active",
+    "category": "레지스트리"
+  },
+  "02_Infrastructure/strategy_template.R": {
+    "role": "v53 Forge용 {{PLACEHOLDER}} run_all.R 자동생성 템플릿 — 현행 worktask/run_all_template.R로 대체됨",
+    "status": "dead",
+    "category": "모드-QEPM(구 v53)"
+  },
+  "02_Infrastructure/04_Research/": {
+    "role": "중첩 이상 구조 — weekly_research_collect.sh가 PROJECT_ROOT 오설정 상태로 실행돼 생긴 logs/ 주간 리서치 로그 5건(2026-04-26~06-07)만 존재",
+    "status": "dead",
+    "category": "이상구조"
+  },
+  "02_Infrastructure/R/": {
+    "role": "hook_batch_runner.R 단일 파일 — 훅 R 로직을 세션 1회 source로 통합하는 배치 래퍼(Block C 토큰/spawn 최적화)",
+    "status": "active",
+    "category": "훅"
+  },
+  "02_Infrastructure/agents/": {
+    "role": "agent_team_config.md 1건 — 2026-03-15 v53 TeamCreate 시대(Scout/Reporter/Briefing) 멀티에이전트 팀 구성 문서. 현행 역할 SOT는 .claude/agents/*.md + CLAUDE.md 표",
+    "status": "legacy",
+    "category": "모드-QEPM(구 v53)"
+  },
+  "02_Infrastructure/alpha_search/": {
+    "role": "② alpha-search 모드 실행 계층(91건) — run_alpha_search.R + 논문 복제 드라이버(run_qmj_paper·run_residmom_paper 등)·캐시 빌더·검증 스크립트",
+    "status": "active",
+    "category": "모드-alpha-search"
+  },
+  "02_Infrastructure/attribution/": {
+    "role": "research_philosophy ⑦ Attribution 모듈 — Brinson 분해 + Carhart 4팩터 귀속(분기 트리거)",
+    "status": "active",
+    "category": "보고"
+  },
+  "02_Infrastructure/axiom/": {
+    "role": "Axiom 자가발전 엔진 구현 — L-code emit/schema/harvester·promote(mode-local→global)·rollback·weekly report·inject",
+    "status": "active",
+    "category": "공리엔진"
+  },
+  "02_Infrastructure/config/": {
+    "role": "데이터 소스 설정 2건 — book_carrier_sources.json(북 캐리어 추출) + paper_recharge_sources.csv(논문 수집 소스)",
+    "status": "active",
+    "category": "설정"
+  },
+  "02_Infrastructure/contracts/": {
+    "role": "측정·계약 코어 16건 — build_bt_result/canonical_screen_bt/essence_score(Grade 권위)/register_module/holdout_falsification 등 실측-only 거버넌스의 구현체",
+    "status": "active",
+    "category": "계약"
+  },
+  "02_Infrastructure/cpp/": {
+    "role": "Rcpp 핫스팟 가속 모듈 — roll_beta_cpp(일간 팩터 DB 베타)·bootstrap_cpp + 로더 rcpp_hotspots.R",
+    "status": "active",
+    "category": "성능"
+  },
+  "02_Infrastructure/data/": {
+    "role": "데이터 인제스트/캐시 계층 42건 — build_cache.R·build_index_cache.py·daily_refresh.sh·퀀티와이즈 파서(RAWDATA/benchmark parquet 생산)",
+    "status": "active",
+    "category": "데이터"
+  },
+  "02_Infrastructure/discovery/": {
+    "role": "발굴≠생산 substrate(P7) — pre-C13 raw 재조합 HGB 배터리(battery_phase0/round2·gate_phase0·phase1_raw) 발굴 인프라",
+    "status": "active",
+    "category": "발굴"
+  },
+  "02_Infrastructure/docs/": {
+    "role": "설계 SOT·확장 룰·CHANGELOG 계층 — qvest_v8_1_sot.md(Active SOT)·rules/ 확장 9·legacy_boundary·reference_textbooks",
+    "status": "active",
+    "category": "문서"
+  },
+  "02_Infrastructure/eval/": {
+    "role": "harness_perf_eval.R 단일 — v8.0 WS8-1 리서치 추론성능 before/after 측정 루프(2-tier: artifact + challenge_note)",
+    "status": "active",
+    "category": "측정"
+  },
+  "02_Infrastructure/factor_db/": {
+    "role": "Factor DB 계층 43건 — 월간 373팩터 + 일간 팩터 빌더·load_month_factors(C15 유일 진입점)·registry",
+    "status": "active",
+    "category": "데이터"
+  },
+  "02_Infrastructure/hooks/": {
+    "role": "하네스 강제 계층 64건 — qvest_hook_router.py + 47 훅(axiom_enforcement·graduation gate·backtest audit) + _archive_v55/_archive_4_6 격리분",
+    "status": "active",
+    "category": "훅"
+  },
+  "02_Infrastructure/judge/": {
+    "role": "judge_lockbox_harness.R 단일 — judge의 lockbox 격리 검증 하네스(Gate 심사 시 forge 산출 재검)",
+    "status": "active",
+    "category": "모드-QEPM"
+  },
+  "02_Infrastructure/memory/": {
+    "role": "메모리·지식 헬스 파이프라인 — memory_knowledge_health.R(axiom 헬스게이트 hard6+warn6)·weekly/monthly_distill.sh·lcode_corpus_rebuild",
+    "status": "active",
+    "category": "메모리"
+  },
+  "02_Infrastructure/ml_pipeline/": {
+    "role": "ML/DPL 파이프라인 — dpl_portfolio.py(DPL pilot, §5 구성레이어)·PIT audit 스크립트·feature panel 빌더(venv qvest_ml 소비)",
+    "status": "active",
+    "category": "ML"
+  },
+  "02_Infrastructure/monitoring/": {
+    "role": "라이브 페이퍼트래킹 — noLayer4 일별 마킹(mark_nolayer4_daily.R)·월간(run_nolayer4_monthly.sh)·holdout 대조(monitor_nolayer4_paper.R). 구 faithtrend 스크립트+.bak = deprecated rollback 보존",
+    "status": "active",
+    "category": "운영"
+  },
+  "02_Infrastructure/observability/": {
+    "role": "관측 CLI — qvest_observe/qvest_wt(WT 타임라인 조회)·emit_event.sh(이벤트 로그)·wt_timeline.R",
+    "status": "active",
+    "category": "관측"
+  },
+  "02_Infrastructure/ops/": {
+    "role": "운영 계층 54건 — bootstrap.sh(/qvest 진입)·cleanup.sh·scheduler/(.bat 태스크)·헬스체크·paper router",
+    "status": "active",
+    "category": "운영"
+  },
+  "02_Infrastructure/pipeline/": {
+    "role": "v55_stage_gate_extensions.R 단일 — v55 stage gate 확장(구 S0-S7 판정 보조). 격리 대상이나 judge 프롬프트가 아직 참조",
+    "status": "legacy",
+    "category": "모드-QEPM(구 S0-S7)"
+  },
+  "02_Infrastructure/portfolio/": {
+    "role": "포트폴리오·거버넌스 계층 31건 — portfolio_governor.R(PG1 book-marginal admission)·book_optimizer·s5_mutation_runner·measurement_basis_audit",
+    "status": "active",
+    "category": "포트폴리오"
+  },
+  "02_Infrastructure/prompts/": {
+    "role": "agent spawn init 프롬프트 14건 — _shared_prefix.md(axiom derived cache) + alpha/risk/optimizer/forge/judge/qlead_init.md",
+    "status": "active",
+    "category": "모드-QEPM"
+  },
+  "02_Infrastructure/ramp/": {
+    "role": "④ RAMP 모드 구현 — 순수팩터 추출(_extract_*)·ccs_evaluator.R(CCS 13-score)·graduation·진단 스크립트",
+    "status": "active",
+    "category": "모드-RAMP"
+  },
+  "02_Infrastructure/regime/": {
+    "role": "국면엔진 계층 28건 — regime_engine.R v7.1·regime_module_admission.R(RCMA)·국면 분류기(factor-rotation·overlay 공급)",
+    "status": "active",
+    "category": "국면"
+  },
+  "02_Infrastructure/report_templates/": {
+    "role": "전략 보고서 Rmd 템플릿(KR/EN) + report_style.css — LLM 보고 생성기의 렌더링 소재",
+    "status": "active",
+    "category": "보고"
+  },
+  "02_Infrastructure/reports/": {
+    "role": "보고 생성기 4건 — mrs_dashboard.R(모니터링 대시보드)·report_agent_llm.R·report_charts·report_narrative",
+    "status": "active",
+    "category": "보고"
+  },
+  "02_Infrastructure/risk/": {
+    "role": "리스크 측정 도구 — textbook_methods/(EVT 엔진 등 교과서 구현, WT에서 실사용) + 루스 3건(cash_drag/ml_overfitting/regime_switching_cost — 참조 0 ad-hoc 측정)",
+    "status": "active",
+    "category": "리스크"
+  },
+  "02_Infrastructure/sanity_checks/": {
+    "role": "bear_date_audit.R 단일 — forward label 방향 PIT 의무 감사(Cycle 50 lookahead 재발 방지 게이트)",
+    "status": "active",
+    "category": "검증"
+  },
+  "02_Infrastructure/schemas/": {
+    "role": "JSON 스키마 계층 — certs/(5 certificate)·packages/(6 agent package)·state/(book_state·axiom 등) 스키마 정의",
+    "status": "active",
+    "category": "계약"
+  },
+  "02_Infrastructure/search/": {
+    "role": "qvest_search CLI — 세션/artifact 검색 인덱스 빌드(build_index.R)·질의(_query.py)",
+    "status": "active",
+    "category": "관측"
+  },
+  "02_Infrastructure/telegram/": {
+    "role": "텔레그램 계층 4건 — telegram_notify.R(발송)·telegram_listener.py·telegram_commands.R·start_listener.sh (qvest-telegram SOT의 구현체)",
+    "status": "active",
+    "category": "운영"
+  },
+  "02_Infrastructure/tools/": {
+    "role": "운영 도구 16건 — build_artifact_index.R·paper_recharge_daily.R(논문 수집)·debate_helpers 등",
+    "status": "active",
+    "category": "운영"
+  },
+  "02_Infrastructure/validation/": {
+    "role": "검증 계층 26건 — pit_enforcement.R·lookahead_detector.R(PIT Level 0 구현)·v8_readiness_gate.R·preflight_check·stage_artifact_schemas",
+    "status": "active",
+    "category": "검증"
+  },
+  "02_Infrastructure/worktask/": {
+    "role": "WT 계약 계층 — common_charter.md·cert_rules.R·constraint_defaults.json(graduation severity)·run_all_template.R(현행 forge 템플릿)·lineage_utils",
+    "status": "active",
+    "category": "모드-QEPM"
+  },
+  "04_Research/strategies/ (STR_* 178+개 패턴 전체)": {
+    "role": "QEPM 전 세대 전략 백테스트 결과 저장소(STR_XXX_name 178+) — 헌법·legacy boundary가 명시 보존하는 결과 아카이브",
+    "status": "legacy",
+    "category": "strategy-legacy"
+  },
+  "04_Research/decision_framework/": {
+    "role": "bearish forecast v1~v3(예측 국면) + cross_section_distribution(DPL 피처 parquet) + smart_beta_regime·factor_untapped — 부팅·모닝브리핑·DPL 감사가 소비하는 활성 존 (409MB, 대부분 cross_section outputs 382MB)",
+    "status": "active",
+    "category": "active-pipeline"
+  },
+  "04_Research/regime_comparison/": {
+    "role": "KTRI/MSM 국면엔진 비교·검증·브리핑 발송 스크립트 — 일일 스케줄러(daily_refresh·모닝브리핑 ktri_rebuild)가 소비 중",
+    "status": "active",
+    "category": "active-pipeline"
+  },
+  "04_Research/factor_rotation/": {
+    "role": "FR 모드(제3모드) 산출 존 — FR_002 워크포워드 앙상블 + fof_first_slice(KNS/IPCA/BMA/E2E/SPO+ 슈퍼팩터 4방법론 실측, 07-03) + smartbeta_allstock(전종목 국면배분) + predictive_overlay_ab. 1.4GB 최대 존",
+    "status": "active",
+    "category": "모드-FR"
+  },
+  "04_Research/ramp/": {
+    "role": "RAMP 모드 Gate3~6 실행 스크립트(run_ramp_gate*.R) + reports(Shu-Mulvey 충실복제·순수팩터 추출 보고 등) — /ramp 모드 활성 산출 존",
+    "status": "active",
+    "category": "모드-RAMP"
+  },
+  "04_Research/grade_a_catalog.json": {
+    "role": "Grade A 전략 카탈로그(모듈 등록·성과 빌드의 입력 데이터) — register_module/build_module_performance/milestone hook이 소비",
+    "status": "active",
+    "category": "계약/데이터"
+  },
+  "04_Research/lessons_sent.json": {
+    "role": "텔레그램 L-code 레슨 발송 이력 상태 파일 (중복 발송 방지)",
+    "status": "active",
+    "category": "데이터"
+  },
+  "04_Research/logs/": {
+    "role": "리서치 로그 sink 디렉토리 — cleanup·주간 수집 스크립트의 대상 경로 (현재 비어 있음 = 정상 정리 상태)",
+    "status": "active",
+    "category": "인프라-sink"
+  },
+  "04_Research/paper_notes/": {
+    "role": "논문 노트·전략 요약 모음(P204/P207, QMJ·Liquidity·SmartBeta 전략요약) — 검색 인덱스 빌더가 색인",
+    "status": "active",
+    "category": "지식-논문"
+  },
+  "04_Research/pg2_schur_weight/": {
+    "role": "Cotton 2024 Schur 보완 가중 논문 지식노트 — HRP 프론티어 7논문 구현(07-03)의 원전 참조 문서",
+    "status": "active",
+    "category": "지식-논문"
+  },
+  "04_Research/strategy_postmortem.md": {
+    "role": "실패 전략 근본원인 체계 분석(SPMR) — alpha-search 러너가 참조하는 실패 지식 베이스",
+    "status": "active",
+    "category": "지식-실패사례"
+  },
+  "04_Research/pg2_reinforcement_roadmap_20260702.md": {
+    "role": "PG2 강화 W1~W4 로드맵(07-02) — W1 완료(오버레이 부정·Layer4 제거), W2/W3 잔여 큐의 SOT",
+    "status": "active",
+    "category": "전략-로드맵"
+  },
+  "04_Research/architecture_audit_20260703.md + architecture_audit_20260703_data/": {
+    "role": "07-03 아키텍처 전면 감사(71 agents·1,107 tool calls, 종합 4.5/10 — '자동 강제 계층 침묵 사망' 진단) 보고서 + file:line 증거 데이터",
+    "status": "report",
+    "category": "보고서-감사"
+  },
+  "04_Research/pg2_forensics/": {
+    "role": "PG2 법의학 패키지 — B0 비용모델 flat-bug, B1 STR_1715 4-family 분해, B2 governor overlap, realized_ym offset 검증 (11MB)",
+    "status": "report",
+    "category": "보고서-감사"
+  },
+  "04_Research/composition_search/": {
+    "role": "16-cycle 조합탐색 실측 산출(cycle1/1b/1c/2 × track B/D/F/O/P/S/V/W + trackW 적대검증) — measurement-graduation v8.x 재설계의 실증 근거 (117MB)",
+    "status": "report",
+    "category": "experiment"
+  },
+  "04_Research/paper_collection/": {
+    "role": "PG2 강화 논문 43편 수집 결과 노트(07-02) — W2/W3 후속 경로의 입력",
+    "status": "report",
+    "category": "지식-논문"
+  },
+  "04_Research/pg2_offense_overlay/": {
+    "role": "W1 공격 오버레이 딥리서치 노트(07-02) — KR long-only 시장타이밍 4중 최종부정(settled-negative)의 기록",
+    "status": "report",
+    "category": "보고서-실험"
+  },
+  "04_Research/proposal_review_pg2_roadmap_2026-06-10.md": {
+    "role": "PG2 8-Phase 로드맵 검토 보고(채택 4·기각 3, 06-10)",
+    "status": "report",
+    "category": "보고서-검토"
+  },
+  "04_Research/dvaa_dvfs_revalidation/": {
+    "role": "DVFS/DVAA vol-target·paradigm 재측정 실험(rds/xlsx, 06-17) — critical 2건 발견, 도훈 confirm 대기 상태",
+    "status": "report",
+    "category": "experiment"
+  },
+  "04_Research/asset_allocation/": {
+    "role": "인버스 ETF 헤지 Phase1/1b 실측(REJECT settled, 06-26) + DVAA/DVFS 강화 리서치 노트(06-13)",
+    "status": "report",
+    "category": "experiment"
+  },
+  "04_Research/audits/": {
+    "role": "batch_434 codegen 카탈로그 라벨 오염 감사(06-13) — 감사 스크립트+패치 플랜+NAV 클러스터 분석",
+    "status": "report",
+    "category": "보고서-감사"
+  },
+  "04_Research/monitoring/": {
+    "role": "T30 AR(Absorption Ratio) 리뷰 판정(06-12) — 조건 verdict + 리뷰 보고",
+    "status": "report",
+    "category": "보고서-모니터링"
+  },
+  "04_Research/regime/": {
+    "role": "RAMP용 국면엔진 33개 인벤토리 + bakeoff 실측(06-19) — [[project-ramp-regime-engines]]의 원 데이터",
+    "status": "report",
+    "category": "모드-RAMP"
+  },
+  "04_Research/regime_system/": {
+    "role": "국면시스템 업그레이드 플랜 문서(06-14) 단일 md",
+    "status": "report",
+    "category": "보고서-설계"
+  },
+  "04_Research/hypothesis_scan/": {
+    "role": "QEPM 가설 전수 스캔 보고(06-11) 단일 md",
+    "status": "report",
+    "category": "보고서-스캔"
+  },
+  "04_Research/factor_db/": {
+    "role": "Factor DB census v3 targeted 전수조사 — 커버리지 sweep·probe (24MB)",
+    "status": "report",
+    "category": "experiment"
+  },
+  "04_Research/defense_2022_recon/": {
+    "role": "2022 방어 국면 lensB 스타일 재구성 실험(스크립트+로그, 06-12)",
+    "status": "report",
+    "category": "experiment"
+  },
+  "04_Research/strategy_distill/": {
+    "role": "Grade A 증류(grade_a_distill.json) + 한계기여 스크리닝(marginal_screening) 실험",
+    "status": "report",
+    "category": "experiment"
+  },
+  "04_Research/multi_sleeve_analysis/": {
+    "role": "멀티슬리브 조합 분석 실험(run_analysis.R + output, v5x~v6 시대) — AX-007 예외 4종 검토 계열",
+    "status": "report",
+    "category": "experiment"
+  },
+  "04_Research/korea_research/": {
+    "role": "한국시장 리서치 배치 G1/G2/G7/RQ1~10 시리즈 출력(Gerber 공분산 등, v5x 시대) — 29MB",
+    "status": "legacy",
+    "category": "experiment"
+  },
+  "04_Research/ml_research/": {
+    "role": "ML 베이스라인 리서치(linear/logistic/elastic-net/xgboost) 스크립트 + ml_research_summary.md 종합 보고",
+    "status": "report",
+    "category": "experiment"
+  },
+  "04_Research/ml_overnight_output/": {
+    "role": "overnight ML 배치 결과(ridge/xgb/logit NAV·IC summary, 84MB) — ML 베이스라인 실측 원 데이터",
+    "status": "report",
+    "category": "experiment"
+  },
+  "04_Research/ml_elastic_net_output/": {
+    "role": "elastic net 팩터선택 빈도 결과(csv+log)",
+    "status": "report",
+    "category": "experiment"
+  },
+  "04_Research/ml_xgboost_pilot_output/": {
+    "role": "XGBoost 파일럿 연도별 모델 바이너리(.rds 2018~2025, 2.3MB) — 결과 csv 없이 모델만 잔존",
+    "status": "dead",
+    "category": "experiment"
+  },
+  "04_Research/ml_linear_baseline_output/ + ml_logistic_output/": {
+    "role": "ML 베이스라인 실행 로그(run_log.txt)만 잔존하는 빈 껍데기 출력 디렉토리 2개",
+    "status": "dead",
+    "category": "dead"
+  },
+  "04_Research/briefings/": {
+    "role": "빈 디렉토리 (브리핑 산출 예정지였으나 미사용 — 브리핑은 02_Infrastructure/ops로 정착)",
+    "status": "dead",
+    "category": "dead"
+  },
+  "04_Research/defense_2022_scan/": {
+    "role": "빈 디렉토리 (defense_2022_recon의 스캔 산출 예정지, 미사용)",
+    "status": "dead",
+    "category": "dead"
+  },
+  "04_Research/worktasks/": {
+    "role": "run_alpha_iter20.R 단일 잔존 — 구 alpha iteration 러너 스크립트 (WT 체계는 qepm/mailbox로 정착)",
+    "status": "dead",
+    "category": "dead"
+  },
+  "04_Research/worktask_scratch/": {
+    "role": "WT-D20260425_009 스크래치(KR FF5 백필·공분산 스텝 스크립트+rds) — 캐시 레지스트리가 경로 참조",
+    "status": "legacy",
+    "category": "훅/캐시"
+  },
+  "04_Research/stage_artifacts/": {
+    "role": "WT_WT-D20260425_009 이중 접두 오명명 스테이지 사본 1건 (루트 stage_artifacts/와 별개) — CLAUDE.md 미완 항목 'WT_WT-* cleanup'의 대상",
+    "status": "dead",
+    "category": "dead"
+  },
+  "04_Research/nav_tracking/": {
+    "role": "STR_905 일별 NAV csv 1건 — 구 수동 NAV 트래킹 (라이브 트래킹은 02_Infrastructure/monitoring으로 이관 완료)",
+    "status": "dead",
+    "category": "dead"
+  },
+  "04_Research/portfolios/": {
+    "role": "PF_001/PF_ALPHASEARCH/V7_ALLWEATHER_001/V7_M11_REF 포트폴리오 정의(v5x~v7 시대)",
+    "status": "legacy",
+    "category": "experiment"
+  },
+  "04_Research/regime_analysis/": {
+    "role": "구 국면 시각화 png(KTRI 9quad·3layer·MRS daily) + threshold 튜닝 스크립트(v5x 시대)",
+    "status": "dead",
+    "category": "dead"
+  },
+  "04_Research/blog_archive/": {
+    "role": "2026-03-14 블로그 아카이브 JSON 1건 (외부 콘텐츠 스크랩)",
+    "status": "dead",
+    "category": "dead"
+  },
+  "04_Research/v6_architecture.png": {
+    "role": "v6 시스템 아키텍처 다이어그램 이미지 (225KB)",
+    "status": "legacy",
+    "category": "보고서-설계"
+  },
+  "04_Research/{run_batch_s3*.R ×6, run_s3_*.R ×8, s0_*.R ×2, s3_*.R ×6} (S-stage 스크립트 22개)": {
+    "role": "v55 S0~S7 파이프라인 시대의 스테이지 배치 러너·직교성 측정 스크립트군 (S0 가설토론, S3 백테 배치, 직교성 측정)",
+    "status": "legacy",
+    "category": "strategy-legacy"
+  },
+  "04_Research/{allocate_12_hypotheses.R, allocate_gap_hypotheses.R, c19_v24_interaction_analysis.R, c19_v24_syn05_analysis.R, crisis_defense_analysis.R, factcheck_defense_hypotheses.R, factcheck_hypothesis.R, factor_correlation_vs_C19.R, factor_db_deep_analysis.R, factor_db_deep_phase2.R, factor_db_fix_impact_audit.R, ml_overnight_research.R, mrs_stress_detection_analysis.R, residual_alpha_analysis.R, risk_m4_m6_analysis.R, risk_validation_rev4.R, risk_validation_rev5.R, pg_run_STR_1656_M05.R, validate_rcpp_speedup.R} (일회성 분석 스크립트 19개)": {
+    "role": "v5x 시대 일회성 분석·팩트체크 스크립트군(C19/V24 상호작용, 위기방어, factor DB 심층분석, 리스크 검증 rev4/5, Rcpp 속도검증 등) — 결과 CSV/보고서는 별도 보존됨",
+    "status": "dead",
+    "category": "dead"
+  },
+  "04_Research/factor_scan.R + factor_scan_results.csv": {
+    "role": "초기 팩터 전수 스캔 스크립트와 결과(49KB) — artifact-storage 룰이 예시로 참조",
+    "status": "legacy",
+    "category": "experiment"
+  },
+  "04_Research/{rescore_v22_final.csv, rescore_v22_summary.csv, residual_alpha_ranking.csv, residual_alpha_top20.csv} (결과 CSV 4개)": {
+    "role": "v22 전략 재채점 결과 + 잔차 알파 랭킹 실측 결과 — v5x 시대 스캔 산출 데이터",
+    "status": "report",
+    "category": "report"
+  },
+  "04_Research/{DESIGN_DELIVERABLE_STR_930_935.md, STR_930_935_Design_Summary.md, STR_930_935_Quick_Reference.md, STRATEGIC_SUMMARY_Behavioral_Bias_P008_P020.md} (STR_930~935 설계 문서 4개)": {
+    "role": "행동편향 논문군(P008~P020) 기반 STR_930~935 전략 설계 문서 세트 (v5x 시대)",
+    "status": "report",
+    "category": "report"
+  },
+  "04_Research/{FUNDAMENTAL_DATA_GAP_ANALYSIS.md, FUNDAMENTAL_DATA_TECHNICAL_SPECS.md, FUNDAMENTAL_QUICK_REFERENCE.txt} (펀더멘털 데이터 문서 3개)": {
+    "role": "재무데이터 갭 분석·기술 스펙·퀵레퍼런스 — 펀더멘털 데이터 확충 검토 보고 세트",
+    "status": "report",
+    "category": "report"
+  },
+  "04_Research/{SCOUT_HYPOTHESES_SR2_SESSION38.md, scout_factor_vitality_scan_session45.txt} (Scout 산출 2개)": {
+    "role": "Session 38/45 Scout의 SR2 가설 목록·팩터 생존성 스캔 결과 (Scout는 alpha-research로 대체된 구 역할)",
+    "status": "legacy",
+    "category": "report"
+  },
+  "04_Research/{paper_ensemble_hypotheses.md, paper_inbox_2026-03-14.md, paper_research_latest_2026_03.md} (2026-03 논문 노트 3개)": {
+    "role": "2026-03 논문 인박스·앙상블 가설·최신 리서치 정리 노트 (현행 파이프는 paper_collection·stage_artifacts/paper_recharge로 이동)",
+    "status": "legacy",
+    "category": "지식-논문"
+  },
+  "04_Research/run_dart_strategies.sh": {
+    "role": "DART 전략 일괄 실행 셸(v5x 시대) — DART insider 백필은 02_Infrastructure/data로 이관",
+    "status": "legacy",
+    "category": "strategy-legacy"
+  },
+  "06_Registry/artifact_index.json": {
+    "role": "build_artifact_index.R이 daily_refresh 말미 자동 재생성하는 전체 산출물 기계가독 인덱스",
+    "status": "active",
+    "category": "데이터"
+  },
+  "06_Registry/book_carrier/": {
+    "role": "PG2 book 수익 캐리어(carrier_STR_1715_*) + H1/H1b/H2 오버레이·가중 A/B 실측 결과 저장소",
+    "status": "active",
+    "category": "데이터"
+  },
+  "06_Registry/briefing_config.json": {
+    "role": "구 자동 브리핑/논문 검색토픽 로테이션 설정 — 현행 morning_briefing.sh 등 어떤 코드도 읽지 않음",
+    "status": "dead",
+    "category": "데이터"
+  },
+  "06_Registry/factor_rotation_registry.json": {
+    "role": "factor-rotation 모드 FR_XXXX 등록 레지스트리(현행 v6146B, 06-13 갱신)",
+    "status": "active",
+    "category": "계약"
+  },
+  "06_Registry/factor_rotation_registry.json.pre_c2ab_backup": {
+    "role": "FR 레지스트리의 c2ab 변경 전(06-08) 수동 백업본 — 코드 소비 없음",
+    "status": "dead",
+    "category": "데이터"
+  },
+  "06_Registry/hook_skip_audit.log": {
+    "role": "backtest_contract_audit.sh가 hook skip 사유를 append하는 현행 감사 로그",
+    "status": "active",
+    "category": "훅"
+  },
+  "06_Registry/hypothesis_index.json": {
+    "role": "alpha-search 가설/검증 이력 인덱스(중복 가설 방지용) — 07-04 갱신 중",
+    "status": "active",
+    "category": "모드-alpha-search"
+  },
+  "06_Registry/idea_registry.json": {
+    "role": "구 S0 아이디어 소싱 레지스트리 — telegram_notify.R이 아직 참조하나 갱신은 06-08 정지",
+    "status": "legacy",
+    "category": "데이터"
+  },
+  "06_Registry/live_track/STR_1715_on_M4_R05_noLayer4_PG2/": {
+    "role": "현행 PG2 book(noLayer4) 라이브 페이퍼트래킹 — daily_nav/paper_nav/holdout_interval, TaskScheduler 월간 소비",
+    "status": "active",
+    "category": "데이터"
+  },
+  "06_Registry/live_track/STR_1715_AR_on_M4_R05_overlay_PG2/": {
+    "role": "holdout falsification 1호 등록(구간 [0.39,3.16]) 라이브트랙 — measurement-graduation §3 규약상 불변 봉인",
+    "status": "active",
+    "category": "계약"
+  },
+  "06_Registry/live_track/STR_1715_FaithTrend_on_M4_R05_overlay_PG2/": {
+    "role": "제거된 구 FaithTrend 오버레이 라이브트랙 — look-ahead 판명 후 rollback 보존분(도훈 지시)",
+    "status": "legacy",
+    "category": "데이터"
+  },
+  "06_Registry/module_catalog.json": {
+    "role": "register_module 공용계약의 모듈 카탈로그(SOT) — 계약 floor 통과 모듈 표준 등록부, 07-03 갱신",
+    "status": "active",
+    "category": "계약"
+  },
+  "06_Registry/module_performance.json": {
+    "role": "FR input-floor용 모듈 국면조건부 성과 매트릭스 — build_module_performance.R 산출, regime admission 소비",
+    "status": "active",
+    "category": "모드-FR"
+  },
+  "06_Registry/module_performance.FULL_B.json": {
+    "role": "module_performance.json의 06-13 시점 스냅샷 백업 — 현본과 byte-identical 확인",
+    "status": "dead",
+    "category": "데이터"
+  },
+  "06_Registry/module_quarantine.json": {
+    "role": "register_module 계약 미충족 산출물 격리 보존소(v8.1 헌법이 보존 명시)",
+    "status": "active",
+    "category": "계약"
+  },
+  "06_Registry/module_regime_admission.json": {
+    "role": "RCMA(국면조건부 모듈 admission) 판정 결과 레지스트리 — FR 모드 소비",
+    "status": "active",
+    "category": "모드-FR"
+  },
+  "06_Registry/overlay_ab_results/": {
+    "role": "오버레이 후보(LH loser-harvest 등) A/B 실측 결과 — 07-03 스마트베타 LH 후속 소비 예정",
+    "status": "active",
+    "category": "모드-FR"
+  },
+  "06_Registry/overlay_candidate_queue.json": {
+    "role": "screen_route=OVERLAY_CANDIDATE 라우팅 큐(게이트 2계층 소비 경로) — 07-03 갱신",
+    "status": "active",
+    "category": "계약"
+  },
+  "06_Registry/paper_registry.json": {
+    "role": "논문 리서치 파이프라인 레지스트리(수집→라우터→alpha-search 큐) — 07-03 갱신",
+    "status": "active",
+    "category": "모드-alpha-search"
+  },
+  "06_Registry/quant_profile.md": {
+    "role": "도훈 퀀트 전략 선호 프로필 문서(팩터 구현 선호 우선순위) — 코드 소비 없음, 06-08 이후 정지",
+    "status": "report",
+    "category": "보고서"
+  },
+  "06_Registry/ramp/": {
+    "role": "RAMP 모드 레지스트리 존 — approved_factor_library.parquet(102 승인팩터)·CCS 13-score·Gate3/5 summary·ramp_registry·roadmap_status (07-04 갱신 중)",
+    "status": "active",
+    "category": "모드-RAMP"
+  },
+  "06_Registry/strategy_grades.json": {
+    "role": "전략 등급 레지스트리 — 검색 인덱스와 v8 readiness gate가 소비 (06-08 이후 정지 상태이나 게이트 의존)",
+    "status": "active",
+    "category": "데이터"
+  },
+  "06_Registry/strategy_registry.json": {
+    "role": "전략 마스터 레지스트리(178+ STR 메타) — telegram·strategy_registry.R 소비, 06-21 갱신",
+    "status": "active",
+    "category": "데이터"
+  },
+  "06_Registry/strategy_registry.json.backup_phaseE_20260425_220537": {
+    "role": "strategy_registry의 2026-04-25 Phase E 이전 백업본 — 코드 소비 없음",
+    "status": "dead",
+    "category": "데이터"
+  },
+  "08_Tests/contract_regression/": {
+    "role": "핵심 계약코드(essence_score·canonical_screen_bt·register_module·hurdle_gate) 회귀 스위트 — 07-04 신설, 실행 실측 PASS",
+    "status": "active",
+    "category": "계약"
+  },
+  "08_Tests/hooks/": {
+    "role": "hook 배터리 dry-run 스위트(run_all_hooks.sh + role_guard/cert/sequence 테스트) — readiness gate·hook-debug skill이 직접 호출. _archive_codex_round_v8_2는 v8.2 폐지분 격리",
+    "status": "active",
+    "category": "훅"
+  },
+  "08_Tests/integration/": {
+    "role": "WT lifecycle E2E + execution path + readiness gate 통합테스트 — readiness gate가 test_wt_lifecycle_e2e.R·_e2e_cleanup_guard.sh 직접 참조",
+    "status": "active",
+    "category": "훅"
+  },
+  "08_Tests/ramp/": {
+    "role": "RAMP Gate3/4(순수팩터 추출·검증) 단위테스트 — .qm_root env 인지, 대상 4모듈 전부 현존",
+    "status": "active",
+    "category": "모드-RAMP"
+  },
+  "08_Tests/regime/": {
+    "role": "국면엔진 테스트 5종(ktri_v3·msm_daily_refit·fred_robust·briefing_partial·signal_merge) — 대상 코드 전부 02_Infrastructure/regime/에 현존",
+    "status": "active",
+    "category": "훅"
+  },
+  "08_Tests/baseline/": {
+    "role": "v6.4.0 기준선 스냅샷(v6_4_0_baseline.json, Session 76 Sprint 0 preflight) + hook 의존성 감사 기록 — 비교 기준 결과 기록물",
+    "status": "report",
+    "category": "보고서"
+  },
+  "08_Tests/e2e/": {
+    "role": "Phase 8 QEPM E2E 12시나리오(v53 skills/qepm-* 플러그인 대상) — 대상 skills/ 디렉토리 자체가 소멸해 실행 불가",
+    "status": "dead",
+    "category": "훅"
+  },
+  "08_Tests/portfolio/test_optimizer_breadth.R": {
+    "role": "mean_variance_optimizer 종목폭(breadth) 단발 테스트 — 대상 코드는 현존하나 참조 0 + 구 머신 경로 하드코딩",
+    "status": "dead",
+    "category": "훅"
+  },
+  "08_Tests/benchmark_factor_db_optimizations.R": {
+    "role": "Factor DB Rcpp 최적화(43초→5초) 전후 정합성 검증용 일회성 벤치마크 — 최적화 완료로 용도 소멸",
+    "status": "dead",
+    "category": "훅"
+  },
+  "qepm/": {
+    "role": "QEPM 모드의 라이브 운영 데이터 루트 — 자본상태(book_state)·axioms SOT·backtest registry·WT mailbox를 담는 필수 존 (R 패키지 스켈레톤은 v55 잔재)",
+    "status": "active",
+    "category": "모드-QEPM"
+  },
+  "qepm/mailbox/": {
+    "role": "6-에이전트 핸드오프 mailbox + WT 166건 아카이브 + governor/book_state.json(라이브 자본 상태, PG2 현행 book v2.5) — 시스템의 심장부",
+    "status": "active",
+    "category": "데이터/자본상태"
+  },
+  "qepm/mailbox/worktask/*/_{factor_wide,raw_dt,features_for_train,nav}_cache.{parquet,rds} (8개 파일, 580MB)": {
+    "role": "WT ML 훈련용 파생 캐시 blob — WT-D20260519_001 단독 573MB(존 전체의 38%). RAWDATA/Factor DB에서 재생성 가능한 언더스코어 캐시",
+    "status": "dead",
+    "category": "데이터/캐시"
+  },
+  "qepm/mailbox/qlead/ (q_lead/와 중복)": {
+    "role": "q_lead/와 표기만 다른 중복 Q-Lead inbox — 구 JUDGE_SUMMARY 4건(STR_1557/1558/1662a/1631) 잔존",
+    "status": "dead",
+    "category": "데이터/중복"
+  },
+  "qepm/memory/ (axioms/ evidence/ evidence_summary/ lessons/ regime_validation/ registry/)": {
+    "role": "Axiom SOT Primary authoritative(active AX-*.json + candidates) + L-code 증거·교훈 저장소 — 헌법이 지정한 단일 진실",
+    "status": "active",
+    "category": "데이터/SOT"
+  },
+  "qepm/registry/ (backtest_registry.csv 등)": {
+    "role": "backtest_registry.csv = 백테스트 결과 등재 권위 레지스트리(Backtest Contract v1.0 register_bt_result 대상, gitignore 예외로 강제 추적)",
+    "status": "active",
+    "category": "계약/레지스트리"
+  },
+  "qepm/observability/ (events.jsonl, readiness/, perf_eval/, *_latest.json)": {
+    "role": "부팅 readiness·캐시 신선도·메모리 헬스·agent perf 실측 로그의 착지점 — bootstrap/모닝브리핑/훅이 현행 사용",
+    "status": "active",
+    "category": "훅/관측"
+  },
+  "qepm/scripts/hybrid_mode.R": {
+    "role": "Q-Lead 하이브리드 모드 단일 스크립트 — hybrid_commit()/hybrid_status()/hybrid_queue()/hybrid_daily_digest(), R0 결과를 qepm/research/results/에 적재",
+    "status": "active",
+    "category": "모드-QEPM"
+  },
+  "qepm/research/ (results/ 103폴더 723MB CSV + literature_scouts/ 72KB)": {
+    "role": "hybrid_mode R0 raw artifact store — 전략별 bt_result CSV 덤프(nav/period_returns/holdings 각 ~8MB). 최신 기록 06-21(ReSGA)로 현행 write 대상",
+    "status": "report",
+    "category": "보고서/결과기록"
+  },
+  "qepm/R/ (5파일: axiom_dashboard.R, blender_scaffold*.R, briefing_daily.R, regime_scout_wrapper.R) + DESCRIPTION + NAMESPACE": {
+    "role": "구 qepm R 패키지의 잔존 소스 5개 + 패키지 메타 — axiom_dashboard.R은 axiom 엔진 문서·스킬이 현행 참조, 나머지는 v55 스캐폴드",
+    "status": "legacy",
+    "category": "모드-QEPM/legacy"
+  },
+  "qepm/config/ (8 yaml: agents.yaml, promotion_rules.yaml, regime_config.yaml 등)": {
+    "role": "v55 멀티에이전트 시절 설정 yaml 묶음 — artifact-storage 룰과 blender 에이전트가 일부 참조",
+    "status": "legacy",
+    "category": "모드-QEPM/legacy"
+  },
+  "qepm/stage_artifacts/ (6개 디렉토리, 4.8MB)": {
+    "role": "루트 stage_artifacts/와 별개로 생긴 WT 산출 사본 — WT_WT-D20260527_001은 루트와 이름 중복, 나머지 5건(PEAD·risk_cycle3 등)은 qepm에만 존재",
+    "status": "report",
+    "category": "보고서/중복"
+  },
+  "qepm/prompts/ (distill_r1.yaml, system/, verification/ — 17 tracked)": {
+    "role": "v55 메모리 증류 파이프라인·에이전트 시스템 프롬프트 원본 — 현행 distill 스크립트는 02_Infrastructure/memory 쪽을 사용",
+    "status": "legacy",
+    "category": "모드-QEPM/legacy"
+  },
+  "qepm/schemas/ (s0_verdict_schema.json, strategy_registry_v55.md)": {
+    "role": "v55 S0 verdict 스키마 + 전략 레지스트리 문서 — S0~S7 파이프라인 폐지로 용도 소멸",
+    "status": "legacy",
+    "category": "모드-QEPM/legacy"
+  },
+  "qepm/tests/ (testthat 12파일)": {
+    "role": "구 qepm R 패키지의 testthat 테스트 — 피검 소스(R/utils, R/memory r0/r1, orchestration)가 이미 삭제되어 실행 불가",
+    "status": "dead",
+    "category": "모드-QEPM/dead"
+  },
+  "qepm/logs/ (csda_phase*.log, str1721/str1722 phase 로그 7개)": {
+    "role": "06-08자 v55기 STR 실행 로그 7건 — 일회성 실행 기록, 이후 갱신·소비 없음",
+    "status": "dead",
+    "category": "모드-QEPM/dead"
+  },
+  "qepm/trails/trail_registry.json": {
+    "role": "v55 trail(작업 추적) 레지스트리 단일 파일 — trail 시스템 자체가 폐지되어 고아",
+    "status": "dead",
+    "category": "모드-QEPM/dead"
+  }
+}
