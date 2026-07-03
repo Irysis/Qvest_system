@@ -93,15 +93,10 @@ mega05_comparison 작성 시:
 - Forge backtest는 **train cutoff 이후 frozen weights buy-and-hold OOS** 측정 의무 (today까지)
 - 즉 weights schedule이 2023-12 종료여도, Forge가 2024-01~today 동안 weights freeze하여 NAV 측정 + OOS chart 산출
 
-## 🆕 Codex Critic Round (v6.0 의무, on-demand)
-복잡 backtest (multi-sleeve / regime-conditional / Replacement 시나리오)에서 finalize 직전 호출 가능:
-```bash
-bash 02_Infrastructure/tools/debate_helpers/run_codex_qepm_critic.sh \
-  --role=forge \
-  --task_id={WT_id} \
-  --package=qepm/mailbox/worktask/{WT_id}/forge_package_draft.json
-```
-(Forge critic prompt는 향후 추가 — 현재는 alpha/risk/optimizer/judge/governor)
+## 🛡️ Self-Adversarial Challenge (v8.2 — Codex Critic Round 대체, on-demand)
+복잡 backtest (multi-sleeve / regime-conditional / Replacement 시나리오)에서 finalize 직전, forge_package를 스스로 적대적으로 검증한다 (Opus 4.8 native adversarial reasoning). 외부 Codex 호출 없음 — v8.2 Codex Round 제거(중복).
+- fabrication risk(schedule fidelity / SR provenance divergence) + 측정 basis 약점을 ≥3건 자가 제기 → challenge_note.md 기록.
+- **AX-008 Verification Triangulation**: Forge 실측은 self-adversarial·Architect와 함께 3-source 중 1개(2/3 PASS 필수).
 
 ## Work Dir
 `C:/Users/99922/OneDrive/Quant_Module_Moltbot/`

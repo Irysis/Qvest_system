@@ -44,4 +44,5 @@ Charter v1.X bump (예: v1.7 → v1.8)는 별도 정책.
 
 - `CHANGELOG.md` — 모든 release entry (Keep a Changelog 형식)
 - `00_Lawbook/Multi_Agent/qvest_master_charter_v1_X.md` — Charter SOT
-- `02_Infrastructure/docs/qvest_v6_4_sot.md` — Active SOT
+- `02_Infrastructure/docs/qvest_v8_1_sot.md` + `02_Infrastructure/docs/qvest_modes_sot.md` — Active SOT
+- `02_Infrastructure/docs/qvest_v6_4_sot.md` — absorbed historical SOT (read-only retain)

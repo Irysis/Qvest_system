@@ -1,11 +1,11 @@
 ---
 name: qvest
-description: "Qvest 시스템 구동 (QEPM 3-Agent v6) — Alpha → Risk → Optimizer Work Task 기반 리서치 엔진 부트스트랩"
+description: "Qvest 시스템 구동 (QEPM v8.1 6-Agent + 3-Mode) — Work Task 기반 리서치 엔진 부트스트랩"
 disable-model-invocation: true
 user-invocable: true
 ---
 
-# Qvest — QEPM 3-Agent Work Task System (v6)
+# Qvest — QEPM v8.1 Work Task System
 
 전천후 포트폴리오 수확을 위한 QEPM 기반 자율 리서치 시스템.
 
@@ -32,7 +32,7 @@ bash 02_Infrastructure/ops/bootstrap.sh
 /reload-plugins
 ```
 
-### 3. 시스템 상태 확인 (v6 기준)
+### 3. 시스템 상태 확인 (v8.1 기준)
 
 **Agent Registry** (.claude/agents/ 자동 감지):
 - **`alpha-research`** — Alpha Research Agent (신규, Scout 대체)
@@ -54,7 +54,7 @@ bash 02_Infrastructure/ops/bootstrap.sh
 **Hooks 5-Tier 방어선 (v6.31 Charter v1.2 Positive Hook 패러다임)**:
 - Tier 1 (전역 hard block — system integrity 위협 영역만): `safety_guard`, `axiom_enforcement_hook`, `sr_provenance_check` (`ProductionSchedule[N]m` fabrication label hard block), `schedule_fidelity_check` (run_all.R fabrication hard block), `governor_concord_certifier` (admission graduation 우회 hard block)
 - Tier 2 (Agent): `agent_role_guard` (Alpha/Risk/Opt 경계), `worktask_sequence_enforcer` (WT 순서), `axiom_context_inject` (AX 공리 주입 — v8.0 WS5-3, unified_agent_guard[v52] 폐기 대체)
-- Tier 3 (Write/Edit hard mandate): `worktask_constraint_enforcer` (20종/bounds/Σw=1), `worktask_spec_validator`, `milestone_commit`
+- Tier 3 (Write/Edit hard mandate): `worktask_constraint_enforcer` (25종/bounds/Σw=1), `worktask_spec_validator`, `milestone_commit`
 - Tier 4 (Post artifact validation): `worktask_artifact_validator`, `red_flag_detector`, `pipeline_trigger`, `auto_commit_on_stop`
 - **Tier 5 (Positive Certifier — v6.31 신규)**: `alpha_discovery_certifier` (cor<0.95 + mechanism + factor_specs + harvey_t pass), `sr_provenance_check` (forge_package 4-field), `schedule_fidelity_check` (density≥0.95 또는 infeasibility), `worktask_artifact_validator` (forge_package 8-field), `governor_concord_certifier` (book_state↔admission match 또는 waiver 5-row), `sr_provenance_pre_certifier` (PreToolUse 안내)
 
@@ -94,11 +94,11 @@ wt_id <- wt_create(
 - `hard_constraints.max_names = 25`
 - `weight_bounds = [0, 0.20]`
 - `liquidity_min = 2e8`
-- `cost_model = v2.3_kr_retail_15bps`
+- `cost_model = v2.4_kr_retail_15bps`
 - `data_lag_rules` 4종 (fundamental / price / investor_flow / macro)
 - `status = SPEC_APPROVED`
 
-#### 5-B. 3-Agent 순차 실행 (Q-Lead orchestration)
+#### 5-B. 6-Agent 순차 실행 (Q-Lead orchestration)
 
 ```
 Step 1: Agent(subagent_type="alpha-research",
@@ -183,14 +183,14 @@ PG2 active (STR_1631_SYN_05_2002 + STR_1656_MLRA_M05) **그대로 유지**.
 ## Q-Lead 역할 경계 (Level 0)
 
 - ✅ 진단, 지시, 모니터링, 결과 수집, 텔레그램 보고
-- ✅ Work Task 생성 + 3-agent spawn orchestration
+- ✅ Work Task 생성 + 6-agent spawn orchestration
 - ❌ 직접 Rscript 실행 / 백테 / factor_engine 수정 → Forge / Alpha Agent에 위임
 - ❌ weight 결정 / 공분산 계산 → Optimizer / Risk Agent에 위임
 - ❌ Alpha/Risk/Opt 경계 침범 감독 (Hook 자동 차단)
 
 ---
 
-## 시스템 아키텍처 (v6)
+## 시스템 아키텍처 (v8.1)
 
 ```
 ┌─ Q-Lead 세션 ───────────────────────────────────────┐
@@ -214,14 +214,20 @@ PG2 active (STR_1631_SYN_05_2002 + STR_1656_MLRA_M05) **그대로 유지**.
 │  JUDGE_PASSED → GOVERNOR_ADMITTED → COMPLETED        │
 ├─ Legacy 유지 ──────────────────────────────────────┤
 │  PG2 active: STR_1631 + STR_1656                     │
-│  Governor / Judge / Forge / Codex Critic 유지        │
+│  Governor / Judge / Forge 유지 (v8.2 Self-Adversarial)│
 │  Axiom 엔진 active 6건 + AX_CAND tracking            │
 └────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 부팅 직후 체크리스트 (v8.1.2 갱신 — 13 + v8.0 5 + v8.1 4 + v8.1.2 1건)
+## 부팅 직후 체크리스트 (v8.1.3 갱신 — 13 + v8.0 5 + v8.1 4 + v8.1.2 1 + v8.1.3 4건)
+
+### v8.1.3 신규 확인 (4건, 2026-06-20)
+24. ✅ **페이퍼 적재 리서치풀 인지** 상태 라인 — `ResearchPool: route=<date> [NEW|seen · Nd] papers N · route a/o/r/rg/skip` + `AlphaQueue:`(alpha-search 대기 testable · `처리 N (ADOPT a/QUAR q)` auto_alpha_gate 결과) + `ModeQueue:`(optimizer/risk/regime = QEPM 연료 · dispatch 소비여부 · recheck 잔여). Step 3b `paper_recharge`가 적재한 신규 리서치풀을 부팅이 인지(`02_Infrastructure/ops/research_pool_status.py`, `.cache/research_pool_last_seen.json` 마커로 NEW 판정). `Routing: PENDING — collect>route`는 수집됐으나 라우터 미반영(`paper_router_run.sh _FORCE=1`). 부팅 후 갱신 시 Q-Lead가 reader 직접 재실행 가능. SKIP 시 script/python3 점검.
+25. ✅ **데이터 freshness 인지** 상태 라인 — `DataFresh: <audit시각> · OK/WARN/CRITICAL N — crit: <paths>` + 핵심 연구캐시(rawdata/benchmark/regime) FRESH/stale 강조. `cache_freshness_audit.R`(daily_refresh Step 5 백그라운드 산출 `qepm/observability/cache_freshness_latest.json`, mtime+내부 max(Date) lag)를 boot이 읽어 노출 — 06-12 arrow freeze류 silent staleness 조기감지. **advisory(부팅 무중단, BOOT_FAILS 비계상)** — 핵심 캐시 stale 시 "성과수치 산출 전 갱신 의무" 경고([[feedback-performance-real-code-only]]). SKIP 시 daily_refresh 선행. ※ 표시값은 마지막 audit 시각 기준(boot Step 5 백그라운드 갱신 후 차회 부팅 반영).
+26. ✅ **모닝 파이프라인 ran-today** 상태 라인 — `MorningRun: <date> 실행됨 (<시각>)` 또는 `미실행 (오늘 lock 부재)`. `/tmp/qm_morning_run_<today>.lock`(morning_run.sh once-per-day 락) 확인 — 스케줄러 silent 무발화([[project-morning-brief-scheduling]] mrs_daily 트랩) 조기감지. 미실행 시 수동 `bash 02_Infrastructure/ops/morning_run.sh manual`.
+27. ✅ **4-Mode +RAMP 배너 정합** — 배너/완료배너/`v8.1:` 라인 `4-Mode +RAMP` + `Modes:` 라인(① QEPM ② alpha-search ③ factor-rotation ④ RAMP `/ramp` Gate0~11·CCS 13-score·governor 정지). CLAUDE.md "4-Mode 헌법(RAMP 2026-06-17)"과 사실 정합(구 "3-Mode" 폐기).
 
 ### v8.1.2 신규 확인 (1건, 2026-06-11)
 23. ✅ **UTF-8 출력 가드** 부트 메시지 — `[boot] utf8_output_guard: ACTIVE`. INACTIVE WARN 시 python3 PATH 점검. 부트 외 이모지 출력 가능 커맨드는 `bash 02_Infrastructure/ops/safe_run.sh <cmd>` 경유 (API 400 invalid high surrogate 방지 — anthropics/claude-code#44230)
@@ -230,7 +236,7 @@ PG2 active (STR_1631_SYN_05_2002 + STR_1656_MLRA_M05) **그대로 유지**.
 19. ✅ 완료 배너 `Qvest v8.1 — Opus 4.8 Native · 3-Mode · 실측 거버넌스` + `v8.1:` 상태 라인 출력
 20. ✅ **데이터 캐시 검증(Step 4e)** 부트 메시지 — `[boot] 데이터 캐시: rawdata.parquet OK + K200/KQ150 멤버십 OK` (없으면 WARN: alpha-search `universe=K200_KQ150` stop 위험) + `kr_factor_returns_v2: OK`
 21. ✅ alpha-search 제1원칙 (`.claude/skills/alpha-search/SKILL.md` `## ★ 제1원칙`): 논문 완전 복제 + 유니버스 K200∪KQ150 고정(`run_alpha_search` universe 기본값) + 기간 2005~ 고정(start_date 기본값)
-22. ✅ 모듈 자동흐름: `register_module`(공용계약) + `register_research_outputs`(ML/DPL 다리) + `run_factor_rotation` 신선도 / Axiom r7 복원(`02_Infrastructure/docs/rules/axiom-engine.md` 5축 boolean-AND + INV-1~7)
+22. ✅ 모듈 자동흐름: `register_module` 계약 floor(`contract_pass + backtested + frozen + hash/build/cost`) + `register_research_outputs`(ML/DPL 다리, 계약 없으면 quarantine) + `run_factor_rotation` allowlist / Axiom r7 복원(`02_Infrastructure/docs/rules/axiom-engine.md` 5축 boolean-AND + INV-1~7)
 
 ### v8.0 신규 확인 (5건)
 14. ✅ 완료 배너 `Qvest v8.1 — Opus 4.8 Native` + `v8.1:` 상태 라인 출력 확인
@@ -311,8 +317,9 @@ PG2 active (STR_1631_SYN_05_2002 + STR_1656_MLRA_M05) **그대로 유지**.
 
 ## Version
 
+- **v8.1.3** — 2026-06-20 — **페이퍼 적재 리서치풀 부팅 인지 + 부팅 가시성 4종 보강**. 부팅이 산출만 하고 안 읽던 상태들을 상태 보고에 노출(도훈 "추가할 거 체크" mandate). **① 리서치풀 인지**: 신규 `02_Infrastructure/ops/research_pool_status.py`(fail-soft 리더) — `stage_artifacts/paper_recharge/`의 최신 `alpha_search_route_*`(route 분포+testable 팩터후보) / `alpha_search_queue_*`(alpha-search 대기, 큐 staleness 명시) / `mode_queue_*`(opt·risk·regime QEPM 연료) / `research_status_*`(dispatch 소비) / `factor_recheck_*`(tier-2 잔여) / `alpha_search_queue_done`+`auto_verify_*`(auto_alpha_gate ADOPT/QUARANTINE) / 수집·라우팅 날짜 비교(`collect>route`=라우터 미반영). `.cache/research_pool_last_seen.json` 마커 NEW 판정(`--mark` 인지). **② 데이터 freshness**: `cache_freshness_audit.R`가 daily_refresh(Step 5 백그라운드)에 산출하던 `qepm/observability/cache_freshness_latest.json`(mtime+내부 max(Date) lag, OK/WARN/CRITICAL)을 boot이 읽어 `DataFresh:` 라인 노출 — 핵심 캐시(rawdata/benchmark/regime) stale 별도 강조. 06-12 arrow freeze류 silent staleness 조기감지(현 실측 즉시 regime_daily_v2 stale 포착). advisory(BOOT_FAILS 비계상). **③ 모닝 ran-today**: `/tmp/qm_morning_run_<today>.lock` 확인 `MorningRun:` 라인 — 스케줄러 silent 무발화 감지. **④ 4-Mode +RAMP 정합**: 배너/완료/`v8.1:` 라인 3-Mode→4-Mode + `Modes:` 라인(RAMP `/ramp` governor 정지). CLAUDE.md 헌법 정합. bootstrap.sh Step 8f/8g/8h + 상태 블록 5라인 추가. 체크리스트 24~27. 검증: `bash -n` PASS · route 0620/queue 0619 stale 정확 · NEW→seen flip · freshness CRITICAL 2/WARN 72 + regime stale 포착 · MorningRun 10:19 포착 · fail-soft(dir/json/python3 부재 SKIP).
 - **v8.1.2** — 2026-06-11 — **UTF-8 출력 가드 (API 400 invalid high surrogate 완전 차단)**. /qvest 부트 시 Anthropic API 400 (`invalid high surrogate in string`) 근본 수리: 원인 = Bash tool 출력 내 non-BMP 문자(이모지, U+10000+)가 Claude Code 30k자 절단에서 surrogate pair가 갈라져 lone surrogate로 직렬화 (anthropics/claude-code#44230 + #16294, 공식 미수정). 조치: (1) `ops/utf8_output_guard.py` 신규 — invalid byte + non-BMP + U+FFFD → '?' 줄단위 정제, BMP-only 유효 UTF-8 보장. (2) bootstrap.sh 자체 재실행 래퍼(QVEST_BOOT_SANITIZED) — 자식 R/Python/백그라운드 출력 전부 가드 경유 + `[boot] utf8_output_guard: ACTIVE` 표시. (3) cleanup.sh stdout 누수 → /tmp/qm_cleanup_boot.log 리다이렉트 (비동기 끼어들기 + 가드 파이프 hold 방지). (4) 장식 글리프 ASCII화 (━→=, ✓→OK) + non-BMP 이모지 제거: sr_provenance_pre_certifier.sh U+1F4CB / daily_refresh.sh U+1F4C5(리프레시 로그 tail 경로) / _wt_pretty.py U+1F6AB→⛔(U+26D4 BMP). (5) 임의 커맨드용 `ops/safe_run.sh` 신규. 체크리스트 23 추가. **[추보 06-11 오후 — 실제 진범 확정]** 재발 포렌식(transcript 전수 스캔)으로 진범 = **hook additionalContext**: `python3 json.dumps(sys.stdin.read())`가 hook env에서 UTF-8 한글/이모지를 cp949+surrogateescape로 디코딩 → lone surrogate(\udcXX) 주입 → 해당 세션 전체 영구 400 (Stop마다 auto_commit/auto_push · Agent spawn마다 axiom_context_inject — 06-10 Stop hook 재등록 직후 발병). 수리: hook 6개(auto_commit/auto_push/axiom_context_inject/milestone_commit/role_taxonomy/unified_agent_guard) `sys.stdin.buffer` bytes-decode + surrogate 스크럽 + `export PYTHONUTF8=1`, `setx PYTHONUTF8 1`(user env 영구), 오염 transcript 8개 스크럽 복구(.surrogate_bak). 상세: `02_Infrastructure/docs/rules/harness.md` "Hook stdout JSON 규율".
-- **v8.1.0** — 2026-06-05 — **3-Mode 헌법 + 실측 거버넌스 + 모듈 자동흐름 승격**. (1) alpha-search 제1원칙(논문 완전 복제 + 유니버스 K200∪KQ150 고정 `universe="K200_KQ150"` + 기간 2005~ 고정 `start_date="2005-01-01"`) — KR 데이터 한계(value/BM 2002-08~ · M08_ResidMom 1995~ · factor DB 1990~) 진단 기반. (2) factor-rotation Lane3(register_module 공용계약 등급무관 + RCMA 6기준 양방향 + run_factor_rotation 신선도 자동인식) + ML/DPL register 다리(register_research_outputs). (3) Axiom r7 원전 복원(5축 boolean-AND + 3-mode 2-tier + INV-1~7). (4) measurement-graduation 실측-only(real-computation · portfolio-α t forge-authoritative · oos_retention/calmar HARD · book-marginal). **bootstrap v8.1**: 배너 v8.1 + Step 4e 데이터 캐시/K200_KQ150 멤버십 검증(Critical 패치). 체크리스트 13+5 → +v8.1 4건(19-22). v8 readiness 15→16 check(v8_architecture). E2E 4축 배선 닫힘. 미완: residual momentum 사이클 register/factor_analysis 디버깅 / qvest_v8_1_sot 발행.
+- **v8.1.0** — 2026-06-05 — **3-Mode 헌법 + 실측 거버넌스 + 모듈 자동흐름 승격**. (1) alpha-search 제1원칙(논문 완전 복제 + 유니버스 K200∪KQ150 고정 `universe="K200_KQ150"` + 기간 2005~ 고정 `start_date="2005-01-01"`) — KR 데이터 한계(value/BM 2002-08~ · M08_ResidMom 1995~ · factor DB 1990~) 진단 기반. (2) factor-rotation Lane3(`register_module` 계약 floor: `contract_pass + backtested + frozen + hash/build/cost`, RCMA 6기준 양방향, `run_factor_rotation` allowlist) + ML/DPL register 다리(`register_research_outputs`, 계약 없으면 quarantine). (3) Axiom r7 원전 복원(5축 boolean-AND + 3-mode 2-tier + INV-1~7). (4) measurement-graduation 실측-only(real-computation · portfolio-α t forge-authoritative · oos_retention/calmar HARD · book-marginal). **bootstrap v8.1**: 배너 v8.1 + Step 4e 데이터 캐시/K200_KQ150 멤버십 검증(Critical 패치). 체크리스트 13+5 → +v8.1 4건(19-22). v8 readiness 15→16 check(v8_architecture). E2E 4축 배선 닫힘. 미완: residual momentum 사이클 register/factor_analysis 디버깅.
 - **v7.2.1-boot** — 2026-05-02 Session 76 — **부팅 시퀸스 v7.2.1 자원 11항 통합 + readiness gate 15-check 갭 해소**. bootstrap.sh Step 4 교체 (`memory_knowledge_health.R` foreground hard 6 + warning 6) + Step 4b 신규 (`memory_metadata_normalize.R` selftest 2/2) + Step 4c 신규 (`lcode_corpus_rebuild.R` 백그라운드, 4 source 통합) + Step 7d 신규 (`qvest_v8_ready --no-write --json` 13/15 PASS + 2 SKIP 정상) + Step 8 확장 (axiom sot_map 기반 documented_active count + enforcement_mode 분류 documented/block/advisory + cache_core sync 표시). 부팅 직후 체크리스트 9 → 13건 확장. **메모리 정합성 갭 1건 해소**: `v8_readiness_gate.R` `check_memory_health` (15번째 check)는 코드상 이미 호출되어 있었으나 README/last run JSON이 14에 멈춰 있어서 메모리 "15 total" 표기와 외관 갭 발생. README 14→15 갱신 + bootstrap 메시지/qvest.md 체크리스트 동기화로 해소. baseline: HARD 0 / WARN 3 / INFO 1 PASS + readiness 13/15 PASS + 2 SKIP.
 - **v6.3.3** — 2026-05-01 Session 75 — **v6.0 Codex Critic Round 의무 3중 장치 영구 정착**. 본 cycle WT-D20260501_001 alpha+risk codex round 누락 (도훈 지적) → 4-Layer 진단 (Q-Lead 인지 40% + spawn prompt 30% + agent 자율 무시 15% + Hook regex 갭 15%). 3중 장치 fix: (A) `CLAUDE.md` Level 0 `## v6.0 Codex Critic Round 의무` 신규 명문화 / (B) PreToolUse Hook `codex_round_pre_enforcer.sh` 신규 (130 LoC, final {role}_package.json 작성 시 _draft + critic_response 부재 block + waiver via challenge_note.md) / (C) `qlead_spawn_template.md` 신규 (5단계 흐름 + Self-Check + 6 role 적용 대상). settings.json PreToolUse Hook 17→18. 사후 alpha+risk codex round background spawn. L-269 적립.
 - **v6.3.2** — 2026-05-01 Session 75 — **Cert Auto-Issuance Paths 명문화 + Layer 4 영구 deferred 확정**. (1) `.claude/settings.json` `hooks.FileChanged` array 영구 제거 (Layer 4 inconclusive 결론, B-3 채택). (2) 신규 `02_Infrastructure/worktask/cert_issuance_paths.md` SOT — Claude Code Write/Edit tool 경유 시 5 cert PostToolUse Hook 100% 자동 발급, Bash/Rscript/외부 editor 시 Layer 2 bootstrap sweep 사후 backfill 매트릭스 6 row + 운영 권장 패턴. E2E dry-run 6/6 PASS (alpha_discovery + sr_provenance + forge_package_validated + schedule_fidelity 4 cert auto-issue + 음의 시나리오 cert 부재 admit 차단 + Hard block fabrication label PASS) 입증 후 발행. L-267/L-268.

@@ -22,7 +22,7 @@ hooks:
 | Gate | 검증 | 탈락/페널티 |
 |------|------|----------------|
 | 0 | PIT C1~C16 전수 (pit_engine_v3) | 1건이라도 위반 → FAIL |
-| 1 | Hard fail: MDD > 45% OR TO > 600% | → F |
+| 1 | Hard fail: structural MDD OR TO > 1,100% | → F |
 | 2 | FF3/Carhart4/FF5 alpha 유의성 | t < 2.0 → 경고 |
 | 3 | DSR (Deflated Sharpe Ratio) | Harvey t > 3.0 |
 | 4 | LOO 4종: crisis/regime/subperiod/sleeve | 전천후 검증 |

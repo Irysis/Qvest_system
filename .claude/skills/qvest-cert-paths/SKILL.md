@@ -1,11 +1,11 @@
 ---
 name: qvest-cert-paths
-description: Qvest v6.4 Cert 발급 경로 매트릭스. Q-Lead Write tool 경유 vs Bash Rscript / 외부 editor / Cron daemon 비교.
+description: Qvest v8.1 Cert 발급 경로 매트릭스. Q-Lead Write tool 경유 vs Bash Rscript / 외부 editor / Cron daemon 비교.
 ---
 
 # Qvest Cert Auto-Issuance Paths Skill
 
-**v6.3.2 SOT 흡수** (`cert_issuance_paths.md` v1.0) → v6.4 single source.
+**v8.1 active**: v6.3.2/v6.4 cert path SOT를 흡수. 현재 해석 기준은 `qvest_v8_1_sot.md` + `qvest_modes_sot.md`.
 
 ## 1. 발급 경로 매트릭스 (6 row)
 
@@ -97,7 +97,8 @@ L4 (FileChanged event)는 영구 deferred (`CLAUDE_FILE_PATH` 미주입 + race r
 
 ## 참조
 
-- `02_Infrastructure/docs/qvest_v6_4_sot.md` (Active SOT)
+- `02_Infrastructure/docs/qvest_v8_1_sot.md` + `02_Infrastructure/docs/qvest_modes_sot.md` (Active SOT)
+- `02_Infrastructure/docs/qvest_v6_4_sot.md` (historical SOT, read-only retain)
 - `02_Infrastructure/worktask/cert_rules.R` (Phase 7 single source)
 - `02_Infrastructure/hooks/policies/cert_rules.json` (policy JSON)
 - `02_Infrastructure/ops/cert_backfill_audit.R` (Layer 2)

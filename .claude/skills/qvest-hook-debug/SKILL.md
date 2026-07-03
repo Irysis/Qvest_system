@@ -1,6 +1,6 @@
 ---
 name: qvest-hook-debug
-description: Qvest v6.4 Hook 디버깅 + dry-run test 실행. router selftest / cert eligibility 검증 / state machine transition 검증.
+description: Qvest v8.1 Hook 디버깅 + dry-run test 실행. router selftest / cert eligibility 검증 / state machine transition 검증.
 ---
 
 # Qvest Hook Debug Skill
@@ -140,7 +140,8 @@ ROLE_INFO=$(python3 "$ROUTER" classify --file-path "$FILE_PATH")
 
 ## 참조
 
-- `02_Infrastructure/docs/qvest_v6_4_sot.md` (Active SOT)
+- `02_Infrastructure/docs/qvest_v8_1_sot.md` + `02_Infrastructure/docs/qvest_modes_sot.md` (Active SOT)
+- `02_Infrastructure/docs/qvest_v6_4_sot.md` (historical SOT, read-only retain)
 - `02_Infrastructure/hooks/qvest_hook_router.py` (Phase 4 router)
 - `02_Infrastructure/worktask/state_machine.R` (Phase 5)
 - `02_Infrastructure/worktask/cert_rules.R` (Phase 7)

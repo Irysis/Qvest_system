@@ -293,7 +293,7 @@ TARGET_HORIZON <- 21L  # trading days
 
 #### 9.3 거래비용 민감도
 - 한국시장 유동성: 대형주 집중, 소형주 슬리피지 높음
-- ML 포트폴리오의 높은 회전율 주의 (Turnover < 600% hard fail)
+- ML 포트폴리오의 높은 회전율 주의 (Turnover < 1,100% hard fail)
 - Buffer zone 필수
 
 #### 9.4 국면 의존성
@@ -355,7 +355,7 @@ ML_CONFIG <- list(
 2. **309개 feature 전체를 NN에 투입** -- 과적합 확실
 3. **hyperparameter를 OOS에서 tuning** -- triple dipping
 4. **feature importance를 전체 기간에서 계산 후 feature 선택** -- 미래참조 (MC4)
-5. **일간 리밸런싱** -- transaction cost 폭발 (Turnover > 600% hard fail)
+5. **일간 리밸런싱** -- transaction cost 폭발 (Turnover > 1,100% hard fail)
 6. **단일 seed 결과 보고** -- seed lottery
 7. **SHAP 없이 ML 전략 제출** -- 해석 불가 = S0 규칙 위반
 8. **"ML이니까 비선형을 잡는다"로 economic_rationale 대체** -- 구체적 메커니즘 필수

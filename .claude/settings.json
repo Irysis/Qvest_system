@@ -44,15 +44,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/codex_round_pre_enforcer.sh\" 2>>/tmp/codex_round_pre_enforcer.log || true"
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
             "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/backtest_contract_audit.sh\" 2>>/tmp/backtest_contract_audit.log || true"
           }
         ]
@@ -380,15 +371,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/codex_round_auto_trigger.sh\""
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "command",
             "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/schedule_fidelity_check.sh\" 2>>/tmp/schedule_fidelity.log || true"
           }
         ]
@@ -449,14 +431,6 @@
             "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/agent_stop_continuity_check.sh\""
           }
         ]
-      },
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/codex_round_subagent_stop.sh\" 2>>/tmp/codex_round_subagent_stop.log || true"
-          }
-        ]
       }
     ],
     "Stop": [
@@ -470,6 +444,15 @@
           {
             "type": "command",
             "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/auto_push_on_stop.sh\" 2>>/tmp/auto_push_on_stop.log || true"
+          }
+        ]
+      },
+      {
+        "_doc_perf_gate": "2026-06-17 도훈 mandate — 성과 수치(%)+이번턴 코드미실행 시 Stop 차단(실측 강제). feedback-performance-real-code-only enforcement.",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/performance_realmeasure_gate.sh\""
           }
         ]
       }

@@ -24,40 +24,24 @@ QEPM Risk Research Agent. 공동위험 구조 계량화만 담당.
 
 **실행 방식**: Alpha Agent 완료 후 Q-Lead가 spawn. worktask_sequence_enforcer.sh가 alpha_package.json 존재 확인 후 허용.
 
-**🆕 Codex Critic Round** (v6.0 의무 단계, 영구):
-finalize 직전 Step N+1로 자동 호출. risk_package_draft.json 작성 후:
-```bash
-bash 02_Infrastructure/tools/debate_helpers/run_codex_qepm_critic.sh \
-  --role=risk \
-  --task_id={WT_id} \
-  --package=qepm/mailbox/worktask/{WT_id}/risk_package_draft.json \
-  --output=qepm/mailbox/worktask/{WT_id}/codex_critic_response_risk.json
-```
-- GPT-5.5 + xhigh 자동
-- timeout 1200, ~9-15분 대기
-- stance ∈ {APPROVE | APPROVE_CONDITIONAL | REVISE | REJECT}
-- REVISE/REJECT 시 명시적 rebuttal 또는 Σ method/regime/tail spec 수정 (Charter §8)
-- 결과 → `risk_challenge_note.md` 기록 + risk_package.json finalize
+**🛡️ Self-Adversarial Challenge** (v8.2 — Codex Critic Round 대체, 의무):
+finalize 직전, risk_package를 스스로 적대적으로 검증한다 (Opus 4.8 native adversarial reasoning). 외부 Codex 호출 없음 — v8.2 Codex Round 제거(메인 에이전트 자체 적대검증으로 중복).
 
-**🆕 Codex Round Decision Protocol** (v6.0 자율 토론):
-
-Codex critique는 devil's advocate. veto 권한 없음. 무조건 수용 금지. 합리적 근거로 토론.
-
-1. **자율 분류** (각 concern):
+1. **자기 비평 (devil's advocate)**: Σ 추정의 약한 가정·PD violation risk·regime small-sample fallback·tail metric 선택 타당성을 스스로 ≥3건 제기.
+2. **분류 + 처리** (각 self-concern):
    - **ACCEPT**: 명백한 위반 (PIT C9/C11/C12 / Σ PD violation / CVaR hard breach / Hard Constraint) → spec 수정
    - **PARTIAL**: 부분 인정 → 보완 자료 + 변경
-   - **REBUTTAL**: 학술 + L-code + 정량 data 3축 근거 필요
+   - **REBUTTAL**: 학술 + L-code + 정량 data 3축 근거 (Σ method shopping log / CRISIS n<30 pooled fallback / tail metric application context는 정당화 가능)
 
-2. **Risk-specific REBUTTAL 권장 영역**:
-   - Σ method 선택 (정직한 method shopping log 있으면 정당화 가능)
-   - regime small sample fallback (CRISIS n<30 시 pooled fallback이 합리적 — Codex가 stricter bootstrap 요구해도 reproducibility 우선)
-   - tail risk metric 선택 (CVaR vs CDaR vs EVT — application context 따라)
+3. **Self-rationalization auto-detection**: "미미 / 관행적 / 보수적이면 OK" 사용 시 auto RE-VIEW → 근거 강화.
 
-3. **자동 Q-Lead escalate trigger**:
+4. **자동 Q-Lead escalate trigger**:
    - HIGH ≥ 5 / AX axiom hard FAIL ≥ 3 / PIT hard violation
    - Σ PD violation 발견 (양정치성 깨짐) → 즉시 escalate
 
-4. **risk_challenge_note.md 기록** — ACCEPT/PARTIAL/REBUTTAL 분류 + 근거 + 합리화 자기 검증
+5. **challenge_note.md 의무 기록** — ACCEPT/PARTIAL/REBUTTAL 분류 + 근거 + 합리화 자기검증
+
+**AX-008 Verification Triangulation**: self-adversarial은 Forge·Architect와 함께 3-source 중 1개(2/3 PASS 필수).
 
 ## Telegram
 SOT: `.claude/skills/qvest-telegram/SKILL.md` (v6.5). `tg_agent_brief(agent=...)` 단일 진입점.

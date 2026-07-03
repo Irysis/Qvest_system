@@ -26,14 +26,14 @@ mode-local `AX-<MODE>-NNN` (`active/modes/<mode>/`, MODE=AS/QPM/FR) + global `AX
 
 ## AX-000 ~ AX-008
 
-- **AX-000** [IMMUTABLE]: 한계는 대개 법칙이 아니라 방법의 한계다. 모든 목표는 충분한 엄밀함·창의성·반복으로 달성 가능하다는 전제로 임한다. 단, 실증·PIT·수리로 입증된 한계는 부정할 대상이 아니라 정직히 보고할 발견이며, 포기는 가용한 모든 방법을 소진한 뒤에만 정당하다. (v8.0 reframe — 4.8 정직성 정합)
+- **AX-000** [IMMUTABLE]: 한계는 대개 법칙이 아니라 방법의 한계다. 모든 목표는 충분한 엄밀함·창의성·반복으로 달성 가능하다는 전제로 임한다. 소수(3~4회)의 실험 실패를 '구조적 한계'나 'dead-end'로 단정하는 것을 금지하며, 탐색은 가용한 모든 수단(개념 발산·다른 데이터원·다른 구조·ML·수리·물리)을 소진하거나 도훈이 중단을 지시할 때까지 계속한다. 실증·PIT·수리로 얻은 결과는 정직히 보고하되(성공 위장·추측 금지), 그 자체가 탐색 중단의 근거가 되지 않는다. (2026-06-21 개정 — 도훈 mandate: '포기 정당' 라이선스 절 삭제 + 조기-한계-단정 금지 명문화)
 - **AX-001 v2** [IMMUTABLE]: 방어형 팩터는 조건부 성과로 평가 (crisis_alpha + Core 대비 MDD 완화 + bad/normal IC ratio). 전기간 SR 기준 적용 금지.
 - **AX-002** [IMMUTABLE]: 하네스 내 성과만 유효. 프로세스 우회 = 미래참조 = C1 위반 동급.
 - **AX-003** [empirical]: market=KR, family=value, EP_STANDALONE+LOW_TURNOVER 실패. L-132/135.
 - **AX-004** [methodological]: market=KR, family=quality_profitability, single-signal long-only 구조적 실패. EXCLUSION: multi-axis quality composite + multi-sleeve 내 Q07. L-133/134/139.
 - **AX-005 v1.2** [methodological]: market=KR, family=defense, universe=top20_long_only, low-beta/Q07+D25/4-axis composite 실패. EXCLUSION은 necessary not sufficient (Gate13 PASS 동시). L-136/140/165/166.
 - **AX-007** [methodological]: roles=[defense, core_secondary], structure=single_sleeve_long_only_top20, signal-portfolio translation 메커니즘 단절. 예외 4종 (multi-sleeve / long-short / 50+ 분산 / ML sizing). L-160/165/166.
-- **AX-008** [process]: Verification Triangulation — Forge + Codex + Architect 3-source 중 최소 2-source PASS 필수. L-159/167/168.
+- **AX-008** [process]: Verification Triangulation — Forge + Self-Adversarial(메인 Opus 4.8 자체 적대검증) + Architect 3-source 중 최소 2-source PASS 필수. (v8.2: Codex Round 제거 → Codex source를 self-adversarial로 치환, 3-source 2/3 불변) L-159/167/168.
 
 ## Hook 강제 (v7.2.1+ enforcement_mode 기준)
 

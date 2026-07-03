@@ -29,22 +29,11 @@ $$\text{subject to} \quad \mathbf{1}'x = 0$$
 - weight_bounds [0, 0.20]
 - Σw = 1 (absolute) / = 0 (active)
 
-**🆕 Codex Critic Round** (v6.0 의무 단계, 영구):
-finalize 직전 Step N+1로 자동 호출. optimization_package_draft.json + weights.csv 작성 후:
-```bash
-bash 02_Infrastructure/tools/debate_helpers/run_codex_qepm_critic.sh \
-  --role=optimizer \
-  --task_id={WT_id} \
-  --package=qepm/mailbox/worktask/{WT_id}/optimization_package_draft.json \
-  --output=qepm/mailbox/worktask/{WT_id}/codex_critic_response_optimizer.json
-```
-- GPT-5.5 + xhigh 자동
-- timeout 1200, ~9-15분 대기
-- stance ∈ {APPROVE | APPROVE_CONDITIONAL | REVISE | REJECT}
-- REVISE/REJECT 시 명시적 rebuttal 또는 method shopping/weights 수정 (Charter §8)
+**🛡️ Self-Adversarial Challenge** (v8.2 — Codex Critic Round 대체, 의무):
+finalize 직전, optimization_package를 스스로 적대적으로 검증한다 (Opus 4.8 native adversarial reasoning). 외부 Codex 호출 없음 — v8.2 Codex Round 제거(중복). 상세 protocol은 아래 §Self-Adversarial Decision Protocol.
 - **walk-forward 검증 (RF-O9)**: weights.csv는 다중 as_of_date 시계열 schedule 의무
 - **turnover round-trip 식 ×2** (×12 annualization 금지 — Iter 3 violation 사례)
-- 결과 → `optimizer_challenge_note.md` 기록 + optimization_package.json finalize
+- 결과 → `challenge_note.md` 기록 + optimization_package.json finalize
 
 **🚨 Schedule Density Mandate** (v6.3 HARD — Charter §9):
 
@@ -79,12 +68,12 @@ bash 02_Infrastructure/tools/debate_helpers/run_codex_qepm_critic.sh \
 - 또는 explicit `deploy_cutoff` field에 "today" 또는 "open-ended" 명시
 - Forge가 train cutoff 이후 OOS 측정 가능하도록 weights handoff 명시
 
-**🆕 Codex Round Decision Protocol** (v6.0 자율 토론):
+**🛡️ Self-Adversarial Decision Protocol** (v8.2):
 
-Codex critique는 devil's advocate. veto 권한 없음. 무조건 수용 금지. 합리적 근거로 토론.
+finalize 직전 스스로 devil's advocate가 되어 약점 ≥3건 제기 후 분류·처리.
 
-1. **자율 분류** (각 concern):
-   - **ACCEPT (mandatory)**: Hard Constraint 위반 (RF-O5/O6/O7 — max_names>20, max_w>0.20, Σw≠1), turnover>600%, RF-O9 single-snapshot, infeasibility silent override
+1. **자율 분류** (각 self-concern):
+   - **ACCEPT (mandatory)**: Hard Constraint 위반 (RF-O5/O6/O7 — max_names>20, max_w>0.20, Σw≠1), turnover>1,100%, RF-O9 single-snapshot, infeasibility silent override
    - **PARTIAL**: 부분 인정 + 보완
    - **REBUTTAL**: 학술 + L-code + 정량 data 3축 근거 필요
 
@@ -101,7 +90,9 @@ Codex critique는 devil's advocate. veto 권한 없음. 무조건 수용 금지.
    - weights.csv as_of_date column 누락 = RF-O9 hard violation
    - REBUTTAL 불가능. 무조건 spec 수정 (시계열 schedule 작성)
 
-5. **optimizer_challenge_note.md 기록** — ACCEPT/PARTIAL/REBUTTAL 분류 + 근거
+5. **challenge_note.md 기록** — ACCEPT/PARTIAL/REBUTTAL 분류 + 근거
+
+**AX-008 Verification Triangulation**: self-adversarial은 Forge·Architect와 함께 3-source 중 1개(2/3 PASS 필수).
 
 ## Telegram
 SOT: `.claude/skills/qvest-telegram/SKILL.md` (v6.5). `tg_agent_brief(agent=...)` 단일 진입점.

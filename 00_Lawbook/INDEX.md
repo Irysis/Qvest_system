@@ -1,13 +1,14 @@
 # Qvest Index
 
 **3개월 후 도훈이 즉시 찾을 수 있게** — 1 page navigation + debug map.
-v7.2.1 Memory Hardening (2026-05-02).
+v8.1.0 3-Mode Architecture + FR input-floor hardening (2026-06-12).
 
 ---
 
 ## 1. Active SOT
 
-- `02_Infrastructure/docs/qvest_v6_4_sot.md` — Qvest active SOT (v6.4 base + v7.0 hardening + v7.1-lite productivity)
+- `02_Infrastructure/docs/qvest_v8_1_sot.md` — Qvest active SOT (3-mode constitution + measurement governance + module flow)
+- `02_Infrastructure/docs/qvest_modes_sot.md` — 3-mode constitution (per-mode evaluation/self-development + shared honesty gates)
 - `02_Infrastructure/docs/qvest_legacy_boundary.md` — v55/S0~S7 격리 정책
 - `00_Lawbook/DEPRECATION.md` — active vs legacy 자산 inventory + EOL plan
 
@@ -26,7 +27,8 @@ v7.2.1 Memory Hardening (2026-05-02).
 | `qvest_search --rebuild` | Force re-index |
 | `qvest_observe events --since=24h` | Event ledger query (qepm/observability/events.jsonl) |
 | `qvest_observe stats` | Hook count + p50/p99 + decision breakdown |
-| `bash 08_Tests/hooks/run_all_hooks.sh` | 30/30 hook dry-run |
+| `bash 08_Tests/hooks/run_all_hooks.sh` | hook dry-run |
+| `02_Infrastructure/tools/qvest_v8_ready --strict --json --no-write` | v8 readiness gate |
 
 ## 3. Debug Map
 
@@ -37,10 +39,11 @@ v7.2.1 Memory Hardening (2026-05-02).
 | State transition 거부 | `02_Infrastructure/worktask/state_machine.R` + `state_transitions.json` (11 phase) |
 | Schema invalid | `02_Infrastructure/schemas/{packages,certs,state}/` (14 schema, Draft-07) |
 | Telegram 차단 | `qepm/telegram/` + `qvest-telegram` skill (v5 ENFORCE) |
-| Codex Round 차단 | `02_Infrastructure/hooks/codex_round_pre_enforcer.sh` (final write 전 _draft + critic_response 의무) |
+| Self-Adversarial Challenge 누락 | challenge_note.md (self-adversarial record) — agent 내 자체 적대검증 (v8.2: Codex Round 훅 제거, 강제 훅 없음) |
 | WT phase jump | `02_Infrastructure/worktask/state_machine.R::sm_validated_advance` (force_waiver=TRUE 필요) |
 | Cert backfill (Layer 2) | `02_Infrastructure/ops/cert_backfill_audit.R` (--auto / --manual / --dry-run) |
 | Measurement Coherence DRIFTED | `02_Infrastructure/portfolio/measurement_basis_audit.R` + bootstrap L7c auto |
+| FR pool에 proxy 유입 의심 | `02_Infrastructure/contracts/register_module.R` + `06_Registry/module_quarantine.json` + `02_Infrastructure/regime/build_module_performance.R` |
 | Search index stale | `02_Infrastructure/search/build_index.R` (`qvest_search --rebuild`) |
 | Synthetic WT residue | `08_Tests/integration/_e2e_cleanup_guard.sh --check` (CI gate) |
 
@@ -48,7 +51,7 @@ v7.2.1 Memory Hardening (2026-05-02).
 
 **Hook flow (PreToolUse + PostToolUse)**:
 ```
-Tool → PreToolUse (safety_guard / axiom / codex_round_pre / agent_role / worktask_*)
+Tool → PreToolUse (safety_guard / axiom / agent_role / worktask_*)
      → Tool exec
      → PostToolUse (artifact_validator / pipeline_trigger / 5 cert certifier / lineage_recorder)
      → Stop (auto_commit_on_stop)
@@ -68,13 +71,13 @@ SPEC_APPROVED → ALPHA_DONE → RISK_DONE → OPTIMIZER_DONE → FORGE_DONE
               (또는 ABORTED / JUDGE_FAILED / GOVERNOR_REJECTED → ABORTED)
 ```
 
-**Codex Critic Round 5단계 의무 (모든 agent spawn)**:
+**Self-Adversarial Challenge (v8.2 — Codex Round 제거, Opus 4.8 자체 적대검증, 모든 agent spawn)**:
 ```
-1. Draft 작성 (_draft.json suffix)
-2. PostToolUse codex_round_auto_trigger background spawn (~9-15분)
-3. Codex response 검토 (codex_critic_response_<role>.json)
-4. challenge_note.md 의무 (ACCEPT/PARTIAL/REBUTTAL 분류)
-5. Final 작성 (_draft 제거 — codex_round_pre_enforcer 검증)
+1. Draft 작성 (메인 에이전트 산출)
+2. 자체 적대검증 (Opus 4.8 in-agent self-adversarial challenge — 외부 codex spawn 폐지)
+3. challenge_note.md 의무 (self-adversarial record: ACCEPT/PARTIAL/REBUTTAL 분류)
+4. Final 작성 (challenge 반영)
+- 강제 훅(codex_round_*) 폐지 — 2026-06-30 도훈 mandate, 자산 archive: 00_Lawbook/DEPRECATION.md
 ```
 
 ## 5. Memory & Registry

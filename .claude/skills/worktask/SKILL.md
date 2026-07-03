@@ -83,7 +83,7 @@ stage_artifacts/WT_{id}/
 - `worktask_spec_validator.sh`: request.json 검증 (task_id 형식 / universe / max_names ≤ 25 / data_lag_rules)
 - `worktask_sequence_enforcer.sh`: Alpha → Risk → Optimizer 순서 강제
 - `agent_role_guard.sh`: 역할 침범 차단
-- `worktask_constraint_enforcer.sh`: 20종 / long-only / bounds / Σw=1
+- `worktask_constraint_enforcer.sh`: 25종 / long-only / bounds / Σw=1
 
 **Hook 감지 (Level 2 soft gate)**:
 - `worktask_artifact_validator.sh`: 3-package schema 검증

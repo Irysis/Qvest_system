@@ -45,14 +45,14 @@ run_alpha_search(
   strategy_idea      = "한 줄 전략 아이디어",
   factor_engine_path = "<작성한 factor_engine.R 절대경로>",
   n_holdings = 20, weight_method = "ivol", commission = 0.0015,   # ★ 제1원칙: 종목수·비중을 논문 명시값으로 대체(예 decile·equal-weight). 여기 값은 예시일 뿐 임의 기본값 아님
-  start_date = "2010-01-01",  # 시그널 시작일. 빠른 검증 권장(전기간 NULL은 36년 풀시뮬로 매우 느림)
-  universe = "ALL",           # "ALL"=전종목(유동성 2e8만) / "KR_TOP500"=top500. ★ 외국 논문이면 KR 시장으로 치환(US→KOSPI200∪KOSDAQ150 등), 논문 의도(대형/소형)에 맞는 KR 유니버스 선택
+  start_date = "2005-01-01",  # 표준 고정. 전기간 NULL/임의 단축은 비교 무효 unless 별도 진단 라벨
+  universe = "K200_KQ150",     # 표준 고정: KOSPI200∪KOSDAQ150 PIT 시변 멤버십
   factor_analysis = TRUE      # FF3/FF5/Carhart 알파 + Fama-MacBeth 회귀 동시 산출(텔레그램 [팩터분석] 별도 발송)
 )
 ```
-- **start_date 권장**: 전기간(`NULL`)은 1990~현재 풀시뮬이라 수십 분 소요. "빠른 검증"에는 데이터가 충실한 구간(예 `"2005-01-01"`/`"2010-01-01"`)을 주면 수 분 내 완료. RAWDATA는 전체 유지되고 FACTORS 시그널만 제한된다.
+- **start_date 표준**: `"2005-01-01"` 고정. 전기간(`NULL`)이나 임의 단축은 진단용 라벨을 붙이고 표준 판정 근거로 쓰지 않는다. RAWDATA는 전체 유지되고 FACTORS 시그널만 제한된다.
 - 발송 없이 양식만 점검하려면 `send_telegram=TRUE, tg_dry_run=TRUE`.
-- 내부: `load_rawdata` → 유동성필터 → universe필터(ALL/KR_TOP500) → PIT검증 → `run_monthly_simulation` → `generate_charts`(equity_curve.png + annual_returns.png) → `run_hurdle_gate`(등급·점수·지표) → (factor_analysis 시) `run_analysis`(FF3/FF5/Carhart 알파 + Fama-MacBeth) → 텔레그램 → 조건부 L-code → Grade A PG 권고.
+- 내부: `load_rawdata` → 유동성필터 → universe필터(K200∪KQ150 표준) → PIT검증 → `run_monthly_simulation` → 후보 `register_module`(계약 전 quarantine) → `generate_charts`(equity_curve.png + annual_returns.png) → `run_hurdle_gate`(등급·점수·지표) → B 이상 또는 `screen_pass` 권위 재측정(`build_bt_result`+audit+essence) → 성공 시 FR-eligible 재등록 → (factor_analysis 시) `run_analysis`(FF3/FF5/Carhart 알파 + Fama-MacBeth) → 텔레그램 → 조건부 L-code → Grade A PG 권고.
 
 ### 4. 결과 해석
 - 반환 `list(strategy_id, grade, score, pass, notable, excess_cagr, out_dir, charts, l_code)`.

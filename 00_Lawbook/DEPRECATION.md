@@ -34,16 +34,20 @@
 |---|---|---|
 | legacy_write_block.sh | `harness_health.sh` REQUIRED_HOOKS | v7.0 Sprint 5 신규 — `_archive_v55/` write 차단 |
 
-## Active path (v6.4) — DO NOT deprecate
+## Active path (v8.1) — DO NOT deprecate
 
 | Component | 역할 |
 |---|---|
+| `02_Infrastructure/docs/qvest_v8_1_sot.md` | Active SOT — 3-mode constitution + measurement governance |
+| `02_Infrastructure/docs/qvest_modes_sot.md` | 3-mode constitution — per-mode evaluation/self-development |
 | `02_Infrastructure/hooks/qvest_hook_router.py` | Single hook entry (Phase 4) |
 | `02_Infrastructure/hooks/qvest_cert_eval.py` | v7.0 Sprint 1 cert generic evaluator |
 | `02_Infrastructure/hooks/policies/*.json` | 4 policy single source |
 | `02_Infrastructure/worktask/state_machine.R` | v6.4 Sprint 2 — state machine |
 | `02_Infrastructure/worktask/cert_rules.R` | v6.4 Sprint 2 — cert rules |
 | `02_Infrastructure/schemas/*` | v7.0 Sprint 3 — 14 JSON schema |
+| `02_Infrastructure/contracts/register_module.R` | FR input-floor contract + quarantine split |
+| `02_Infrastructure/regime/build_module_performance.R` | FR allowlist consumer + legacy QEPM Grade-A migration exception |
 
 ## Deprecated user commands
 
@@ -79,3 +83,22 @@ Hidden dependency 0 확인 후:
 - ✅ active hook list에 legacy 0건 (Sprint 5 종료 후)
 - ✅ legacy_write_block.sh 작동
 - ✅ DEPRECATION.md inventory 명문화
+
+## v8.2 Codex Critic Round 제거 (2026-06-30, 도훈 mandate)
+
+QEPM 파이프라인에서 **외부 Codex Critic Round를 완전 제거**. 메인 에이전트가 Opus 4.8로 자체 적대검증(self-adversarial challenge)을 수행하므로 외부 codex spawn은 중복. AX-008은 `Forge + Codex + Architect` → `Forge + Self-Adversarial + Architect`로 치환(3-source 2/3 불변). draft→codex→challenge_note→final 5단계 → in-agent self-adversarial로 reframe.
+
+**범위 한정**: 본 제거는 **QEPM Codex Critic Round 전용**. **S0 Debate codex**(codex_critic / s0_enforcer / s0_debate_*) · **RAMP "Codex"**(K_RAMP·ramp-orchestrator의 Q-Lead+agent 역할명) · 텔레그램 용어집 do-not-translate "Codex" · enabledPlugins `codex@openai-codex`(S0/RAMP가 codex CLI 사용)는 **별개 시스템으로 유지**.
+
+| 자산 | 이전 위치 | Action | Replacement |
+|---|---|---|---|
+| codex_round_pre_enforcer.sh | `02_Infrastructure/hooks/` | → `02_Infrastructure/hooks/_archive_codex_round_v8_2/` | self-adversarial in-agent |
+| codex_round_auto_trigger.sh | `02_Infrastructure/hooks/` | → `_archive_codex_round_v8_2/` | self-adversarial in-agent |
+| codex_round_subagent_stop.sh | `02_Infrastructure/hooks/` | → `_archive_codex_round_v8_2/` | self-adversarial in-agent |
+| run_codex_qepm_critic.sh | `02_Infrastructure/hooks/` | → `_archive_codex_round_v8_2/` | self-adversarial in-agent |
+| codex_round_contract.json | `02_Infrastructure/hooks/` | → `_archive_codex_round_v8_2/` | challenge_note.md (self-adversarial record) |
+| codex_{role}_critic_prompt.md × 6 (alpha/risk/optimizer/forge/judge/governor) | `02_Infrastructure/prompts/` | → `02_Infrastructure/prompts/_archive_codex_round_v8_2/` | self-adversarial in-agent |
+| qepm_codex_base_context.md | `02_Infrastructure/prompts/` | → `02_Infrastructure/prompts/_archive_codex_round_v8_2/` | self-adversarial in-agent |
+| `qvest-codex-round` skill | `.claude/skills/qvest-codex-round/` | **DELETED** | self-adversarial in-agent (각 agent 정의 내장) |
+
+**연계 변경**(타 파일, 본 inventory 참조용): settings.json 훅 3개 등록 제거 · state_transitions.json `codex_critic_response` required 제거 · AX-008 Codex→Self-Adversarial 치환 · 6 agent 정의 self-adversarial 전환 · CLAUDE.md 정정 · `02_Infrastructure/docs/rules/codex-round.md` = DEPRECATED 스텁.

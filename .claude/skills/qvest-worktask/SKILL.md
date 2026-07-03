@@ -1,11 +1,11 @@
 ---
 name: qvest-worktask
-description: QEPM v6.4 WorkTask lifecycle 절차 + 6 agent orchestration. /qvest 진입 후 신규 가설부터 admit까지 전 단계.
+description: QEPM v8.1 WorkTask lifecycle 절차 + 6-agent orchestration. /qvest 진입 후 신규 가설부터 admit까지 전 단계.
 ---
 
 # Qvest WorkTask Skill
 
-**Active SOT**: `02_Infrastructure/docs/qvest_v6_4_sot.md`
+**Active SOT**: `02_Infrastructure/docs/qvest_v8_1_sot.md` + `02_Infrastructure/docs/qvest_modes_sot.md`
 
 ## 1. WorkTask Lifecycle
 
@@ -22,7 +22,7 @@ SPEC_APPROVED
   → COMPLETED | ABORTED
 ```
 
-임의 phase jump는 waiver 없이 불가 (Phase 5 v6.4 enforced).
+임의 phase jump는 waiver 없이 불가 (v8.1 state machine enforced).
 
 ### wt_type 4종 (Charter v1.7 §10 Role Card)
 
@@ -53,11 +53,11 @@ wt_id <- wt_create(
 - `hard_constraints.max_names = 25` (deployment) / NULL (discovery breadth)
 - `weight_bounds = [0, 0.20]` (deployment)
 - `liquidity_min = 2e8` (deployment) / 1e7 (discovery hard mandate floor)
-- `cost_model = v2.3_kr_retail_15bps`
+- `cost_model = v2.4_kr_retail_15bps`
 - `data_lag_rules` 4종 (fundamental / price / investor_flow / macro)
 - `status = SPEC_APPROVED`
 
-## 3. 6-Agent Pipeline (v6.4 active path)
+## 3. 6-Agent Pipeline (v8.1 active path)
 
 ### Step 1: alpha-research
 
@@ -65,9 +65,8 @@ wt_id <- wt_create(
 Agent(subagent_type="alpha-research", prompt="WT{id} Alpha Research...")
   → 자율 hypothesis discovery + factor specs
   → alpha_package_draft.json (Write tool, _draft suffix)
-  → PostToolUse codex_round_auto_trigger (~9-15분 background)
-  → codex_critic_response_alpha.json
-  → challenge_note.md (5 ACCEPT + REBUTTAL 학술/L-code/정량 3축)
+  → Self-Adversarial Challenge (v8.2 — Codex Round 제거, Opus 4.8 자체 적대검증)
+  → challenge_note.md (self-adversarial record: 5 ACCEPT + REBUTTAL 학술/L-code/정량 3축)
   → alpha_package.json (no _draft, PreToolUse hook 통과)
 ```
 
@@ -78,7 +77,7 @@ Agent(subagent_type="alpha-research", prompt="WT{id} Alpha Research...")
 ```
 Agent(subagent_type="risk-research", prompt="WT{id} Risk Research...")
   → Σ + tail + stress + crowding + style 5축 자율 분석
-  → risk_package_draft.json → codex round → risk_package.json
+  → risk_package_draft.json → self-adversarial challenge → risk_package.json
   → covariance.parquet
 ```
 
@@ -87,7 +86,7 @@ Agent(subagent_type="risk-research", prompt="WT{id} Risk Research...")
 ```
 Agent(subagent_type="optimizer-research", prompt="WT{id} Optimizer Research...")
   → 10+ 방법론 비교 (MVO/HRP/CVaR/ERC/BL/Genetic/Ensemble/etc)
-  → optimization_package_draft.json → codex round → optimization_package.json
+  → optimization_package_draft.json → self-adversarial challenge → optimization_package.json
   → weights.csv (Date × Ticker × weight)
 ```
 
@@ -96,15 +95,15 @@ Agent(subagent_type="optimizer-research", prompt="WT{id} Optimizer Research...")
 ```
 Agent(subagent_type="forge", prompt="WT{id} Integrate 3-agent packages → backtest")
   → run_all.R + backtest 통합 (Pure function 강제)
-  → forge_package_draft.json → codex round → forge_package.json
-  → AX-008 Verification Triangulation: Forge + Codex + Architect 2/3 PASS 의무
+  → forge_package_draft.json → self-adversarial challenge → forge_package.json
+  → AX-008 Verification Triangulation: Forge + Self-Adversarial + Architect 2/3 PASS 의무
 ```
 
 ### Step 5: judge
 
 ```
 Agent(subagent_type="judge", prompt="WT{id} S6 cascade Gate 0~18")
-  → judge_verdict_draft.json → codex round → judge_verdict.json
+  → judge_verdict_draft.json → self-adversarial challenge → judge_verdict.json
   → JUDGE_PASSED / JUDGE_FAILED
 ```
 
@@ -112,7 +111,7 @@ Agent(subagent_type="judge", prompt="WT{id} S6 cascade Gate 0~18")
 
 ```
 Agent(subagent_type="governor", prompt="WT{id} PG0~PG3 admission")
-  → governor_admission_draft.json → codex round → governor_admission.json
+  → governor_admission_draft.json → self-adversarial challenge → governor_admission.json
   → GOVERNOR_ADMITTED / GOVERNOR_REJECTED
   → book_state.json admit (concord cert auto-issue)
 ```
@@ -121,7 +120,7 @@ Agent(subagent_type="governor", prompt="WT{id} PG0~PG3 admission")
 
 | 제약 | 값 | 강제 |
 |---|---|---|
-| max_names | 20 hard | worktask_constraint_enforcer |
+| max_names | 25 hard | worktask_constraint_enforcer |
 | Long-only | weights ≥ 0 | same |
 | Weight bounds | [0, 0.20] | same |
 | Σw | = 1 (absolute) | same |
@@ -157,7 +156,7 @@ Agent(subagent_type="governor", prompt="WT{id} PG0~PG3 admission")
 
 연구 사이클 동안 Scout / Forge / Judge / Governor teammate 4인 Q-Lead 세션 spawn. 모든 Hook (SubagentStop / FileChanged / TeammateIdle / TaskCompleted)이 Q-Lead 세션 내 자동 발동.
 
-추가 역할은 Agent tool로 spawn (Risk Manager / Architect / Codex Critic / Blender 등 ondemand).
+추가 역할은 Agent tool로 spawn (Risk Manager / Architect / Blender 등 ondemand). (v8.2 — Codex Critic ondemand 역할 제거, 각 agent가 Opus 4.8 self-adversarial challenge 내장)
 
 ## 8. WT 진행 상태 확인
 
@@ -175,9 +174,9 @@ wt_check_graduation("WT-D20260501_NNN")  # cert 발급 상태 검사
 
 ## 참조
 
-- `02_Infrastructure/docs/qvest_v6_4_sot.md` (active SOT)
+- `02_Infrastructure/docs/qvest_v8_1_sot.md` + `02_Infrastructure/docs/qvest_modes_sot.md` (active SOT)
 - `02_Infrastructure/worktask/worktask_manager.R` (wt_create / wt_advance / wt_check_graduation)
 - `02_Infrastructure/worktask/common_charter.md` v1.7
 - `02_Infrastructure/worktask/red_flag_rules.md`
 - `02_Infrastructure/worktask/role_card_cert_inheritance.R`
-- `.claude/rules/pit.md` / `02_Infrastructure/docs/rules/codex-round.md` / `02_Infrastructure/docs/rules/harness.md`
+- `.claude/rules/pit.md` / `02_Infrastructure/docs/rules/harness.md` (codex-round.md = DEPRECATED 스텁, v8.2 self-adversarial 전환)

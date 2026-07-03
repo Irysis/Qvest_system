@@ -125,6 +125,24 @@ R `02_Infrastructure/telegram/telegram_notify.R::.TG_CONFIG` list와 1:1 동기�
 - bullet 한 항목 80자 이하 (학술 인용 + 정량 + L-code 모두 한 줄에 X — 분할 의무)
 - text 220자 초과 시 bullet 분할 (long 섹션 X)
 
+### §3.1 `relaxed=TRUE` 완화 (페이퍼 적재 브리핑 전용 — 도훈 mandate 2026-06-18)
+
+`tg_agent_brief(..., relaxed = TRUE)` 는 다음 **콘텐츠-규율 가드만** 면제한다 (매직 상수 아님 — 함수 파라미터, `.TG_CONFIG` 동기화 무관):
+
+| 면제 대상 | 평소 규칙 |
+|---|---|
+| `bullet` 항목 길이 | `BULLET_ITEM_MAX` 80자 stop |
+| `bullet` 영어 약어 ≥2건 거부 | §2 원칙 3/5 (한글 풀어쓰기) |
+| `kv` 값 길이 | `KV_VALUE_MAX` 60자 stop |
+| `kv` 키 영어 비율 | 60% 초과 stop |
+
+**유지(면제 안 됨, relaxed여도 적용)**: 전체 메시지 4096 byte 가드 · skeleton 가드(`MIN_BYTES`/`MIN_SECTIONS` — `force=TRUE`로만 우회) · `BULLET_MIN`/`KV_MIN` 구조 최소.
+
+**렌더링 차이**: relaxed=TRUE면 `bullet` 항목을 빈 줄(`\n\n`)로 분리한다(긴 영어 제목이 모바일에서 줄바꿈돼 붙어 보이는 것 방지, 도훈 2026-06-18). 일반(FALSE)은 단일 줄바꿈 유지.
+
+- **기본값 `FALSE`** — 일반 에이전트(alpha/risk/optimizer/judge/governor/Q-Lead 등)는 **사용 금지**. §2 한글 규율 그대로 유지.
+- **유일 허용 용도** = 영어 논문 제목 등 고유명사 콘텐츠를 그대로 노출해야 하는 브리핑. 현재 유일 사용처 = 페이퍼 적재 digest (`02_Infrastructure/tools/paper_recharge_daily.R`, "오늘 적재 논문" bullet에 `영어제목 (한글요약)` 표시).
+
 ---
 
 ## §4 Section Type 6종
@@ -255,11 +273,11 @@ tg_agent_brief(
   title = "PG2 운용 변경 안내",
   sections = list(
     list(type = "summary",
-         body = "운용형 작업 PG2 70/15/15 도훈 승인. 6월 1일 발효."),
+         body = "STR_1715 AR-on-M4-R05 오버레이 단일 sleeve PG2 운용 재확인 (도훈 mandate)."),
     list(type = "kv", emoji = "📊", heading = "핵심 수치",
-         kv = list("샤프지수" = 1.665,
-                   "최대낙폭" = "-16.6%",
-                   "연복리수익률" = "26.4%"))
+         kv = list("샤프지수" = 1.71,
+                   "최대낙폭" = "-24.8%",
+                   "정보비율" = 1.575))
   )
 )
 ```
@@ -280,7 +298,7 @@ tg_agent_brief(
            낙폭   = c("-22%", "-31%", "-25%")
          )),
     list(type = "bullet", emoji = "🚩", heading = "주의",
-         items = c("회전율 614% 한도 600% 초과 6개월",
+         items = c("회전율 1,114% 한도 1,100% 초과 6개월",
                    "검증구간 샤프 0.16 하락")),
     list(type = "bullet", emoji = "➡️", heading = "다음",
          items = c("Judge 전이",
@@ -341,16 +359,15 @@ tg_agent_brief(
   title = "WT-P20260505_001 PG2 ADMIT",
   sections = list(
     list(type = "summary",
-         body = "Hybrid 70/15/15 PG2 ADMIT. 6월 1일 운용 발효."),
+         body = "STR_1715 AR-on-M4-R05 오버레이 PG2 단일 sleeve ADMIT (도훈 confirm)."),
     list(type = "table", emoji = "👑", heading = "Book 변경",
          df = data.frame(
-           구분     = c("이전", "이후"),
-           전략수   = c("1", "3"),
-           구성     = c("STR_1715 100%", "70/15/15")
+           구분 = c("이전", "이후"),
+           구성 = c("STR_1715+M4+R05", "STR_1715+M4+R05+AR")
          )),
-    list(type = "bullet", emoji = "➡️", heading = "발효 일정",
-         items = c("5월: 위험자산 70 + 현금 30 (M4 정상)",
-                   "6월 1일: STR_1715 70 + TSMOM 15 + 국채 15"))
+    list(type = "bullet", emoji = "➡️", heading = "발효",
+         items = c("단일 sleeve 100% (멀티슬리브 아님)",
+                   "AR 임계 β 동적 0.4~1.0 vol 오버레이 추가"))
   )
 )
 ```
@@ -374,7 +391,7 @@ tg_agent_brief(
          items = c("샤프지수 목표 2.0 vs 실측 1.665, 격차 0.335",
                    "4번째 직교 source 다음 사이클 탐색")),
     list(type = "bullet", emoji = "➡️", heading = "다음 단계",
-         items = c("6월 1일 70/15/15 발효",
+         items = c("STR_1715 단일 sleeve 오버레이 운용 (R05/AR)",
                    "9-Day grace PD1~PD3 모니터링",
                    "메모리 L-284 적립"))
   ),

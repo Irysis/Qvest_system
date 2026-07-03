@@ -41,31 +41,19 @@ SOT: `.claude/skills/qvest-telegram/SKILL.md` (v6). `tg_agent_brief(agent="Gover
 - 함수 enforcement: `telegram_notify.R` v6.5 exempt_pattern
 - 참조: `.claude/skills/qvest-telegram/SKILL.md` §"v6.5 통상 영어 표기 허용"
 
-## 🆕 Codex Critic Round (v6.0 의무 단계)
-admission verdict finalize 직전 자동 호출:
-```bash
-bash 02_Infrastructure/tools/debate_helpers/run_codex_qepm_critic.sh \
-  --role=governor \
-  --task_id={WT_id} \
-  --package=qepm/mailbox/worktask/{WT_id}/governor_admission_draft.json \
-  --output=qepm/mailbox/worktask/{WT_id}/codex_critic_response_governor.json
-```
-- GPT-5.5 + xhigh, timeout 1200
-- stance ∈ {APPROVE | APPROVE_CONDITIONAL | REVISE | REJECT}
-- REVISE/REJECT 시 admission rule 재검토 또는 명시적 rebuttal
+## 🛡️ Self-Adversarial Challenge (v8.2 — Codex Critic Round 대체, 의무)
+admission verdict finalize 직전, governor_admission을 스스로 적대적으로 검증한다 (Opus 4.8 native adversarial reasoning). 외부 Codex 호출 없음 — v8.2 Codex Round 제거(중복). 단 book_state 쓰기(자본 게이트)는 비가역이므로 도훈 수동 confirm 유지.
 
-## 🆕 Codex Round Decision Protocol (자율 토론)
-Codex critique는 devil's advocate. 무조건 수용 금지. 합리적 근거로 토론.
-
-1. **자율 분류**: ACCEPT / PARTIAL / REBUTTAL
-2. **Governor-specific REBUTTAL 권장 영역**:
+1. **자기 비평 (devil's advocate)**: admission rule 적용·book-marginal 계산·룰 미스매치 risk를 ≥3건 자가 제기.
+2. **자율 분류**: ACCEPT / PARTIAL / REBUTTAL
+3. **Governor-specific REBUTTAL 권장 영역**:
    - **Replacement vs Sequential Admission 룰 적용 구분** (Iter 5 사례: Sequential Admission은 add 시나리오, Replacement는 직접 SR/Harvey 비교)
    - Multi-objective 8지표 weighted score < 0.65인데 single axis (Harvey/DSR) 압도적 우월 시 인정
    - Lockbox 구조적 unavailable 시 probe phase 인정 (DEFERRED 자동 결정 거부)
-3. **자동 Q-Lead escalate**:
+4. **자동 Q-Lead escalate**:
    - admission rule 적용 의문 시 (Replacement vs Sequential Admission 혼동)
    - book-level IR improvement < 0.05 but single-axis robust 우월 trade-off
-4. `governor_challenge_note.md` 기록 + admission rule 적용 명시
+5. `challenge_note.md` 기록 + admission rule 적용 명시
 
 ## Replacement vs Sequential Admission 룰 명확화 (v6.1 신규)
 | 시나리오 | 룰 |

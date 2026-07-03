@@ -34,9 +34,10 @@ Qvest 제3 리서치 모드. **신규 알파를 찾지 않고**, 이미 생산�
 FR이 모듈을 소비하려면 **표준형** 필수:
 - `04_Research/strategies/{ID}/sim_result.rds` — `$DAILY_NAV_DT[Date, Strategy_Ret]` + `$bm_xts` (실측 NAV).
 - 카탈로그 엔트리(grade/role/origin/sim_result_path).
-- **진입점 = 공용 `register_module()`** (`02_Infrastructure/contracts/register_module.R`): sim_result 스키마 검증 → saveRDS(canonical) → upsert `06_Registry/module_catalog.json`. **등급무관 등재**(사용여부는 §6 RCMA가 판단).
-- **QEPM** = native 준수(`run_monthly_simulation` 표준 sim_result + grade_a_catalog). **alpha-search** = `register_module` 경유(`run_alpha_search.R` 배선). **`build_module_performance.R`가 grade_a_catalog ∪ module_catalog ∪ 04_Research/strategies/* 전수(validity 필터=데이터깨짐만: MDD≥99%/일간|ret|>50% 제외. ★등급·overall성과로 거르지 않음)를 union 적재** → `module_performance.json`(per-regime).
-- **★ 새 모듈 자동 인식**: allocation 단일 진입 `run_factor_rotation.R`이 `module_performance.json` 신선도(mtime vs strategies/·module_catalog 최신) 체크 → 새/변경 모듈 감지 시 pool 자동 rebuild(build_module_performance+RCMA). **QEPM/alpha-search 신규 산출물은 다음 FR 실행에 자동 편입**(`FR_FORCE_REBUILD=1` 강제). 실증: 신규 모듈 등록→stale 감지→풀 80→81 자동 편입.
+- **진입점 = 공용 `register_module()`** (`02_Infrastructure/contracts/register_module.R`): sim_result 스키마 검증 → 계약 floor 판정. `contract_pass=true` + `metric_type=backtested` + `frozen=true` + `source_contract_id/module_hash/build_version/cost_model_version`가 있어야 canonical `06_Registry/module_catalog.json(fr_eligible=true)`에 들어간다. 등급은 무관하지만 계약 floor는 필수다.
+- floor 미충족 산출(proxy alpha-search, 계약 manifest 없는 ML/DPL 등)은 `stage_artifacts/module_quarantine/{id}/sim_result.rds` + `06_Registry/module_quarantine.json`에 보존되고 FR은 소비하지 않는다.
+- **QEPM** = native 준수(`run_monthly_simulation` 표준 sim_result + legacy grade_a_catalog A migration exception). **alpha-search** = 권위 재측정 OK일 때만 FR-eligible 재등록. **`build_module_performance.R`가 module_catalog.fr_eligible=true allowlist ∪ legacy QEPM Grade-A 예외만 적재** → `module_performance.json`(per-regime). 광역 scan은 `QVEST_FR_ALLOW_BROAD_SCAN=1` 진단 모드에서만 허용.
+- **★ 새 모듈 자동 인식**: allocation 단일 진입 `run_factor_rotation.R`이 `module_performance.json` 신선도(mtime vs strategies/·module_catalog 최신) 체크 → 새/변경 모듈 감지 시 pool 자동 rebuild(build_module_performance+RCMA). **QEPM/alpha-search 신규 산출물은 계약 floor를 통과한 경우에만 다음 FR 실행에 자동 편입**(`FR_FORCE_REBUILD=1` 강제).
 
 ## 5. ★ 모듈 풀 admission = RCMA (overall 등급 아님 — 국면조건부, 양방향 대칭)
 
