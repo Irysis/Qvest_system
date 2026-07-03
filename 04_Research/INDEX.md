@@ -1,6 +1,6 @@
 # 04_Research INDEX
 
-> 자동 생성 2026-07-04 04:20 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
+> 자동 생성 2026-07-04 04:47 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
 
 <details><summary><b>strategy-legacy</b> (3)</summary>
 
@@ -114,7 +114,7 @@
 | `ml_research/` | ML 베이스라인 리서치(linear/logistic/elastic-net/xgboost) 스크립트 + ml_research_summary.md 종합 보고 | report | 2026-06-07 | 2.3MB |
 | `ml_overnight_output/` | overnight ML 배치 결과(ridge/xgb/logit NAV·IC summary, 84MB) — ML 베이스라인 실측 원 데이터 | report | 2026-06-07 | 83.6MB |
 | `ml_elastic_net_output/` | elastic net 팩터선택 빈도 결과(csv+log) | report | 2026-06-07 | 28KB |
-| `portfolios/` | PF_001/PF_ALPHASEARCH/V7_ALLWEATHER_001/V7_M11_REF 포트폴리오 정의(v5x~v7 시대) | legacy | 2026-06-12 | 98KB |
+| `portfolios/` | PF_001/PF_ALPHASEARCH/V7_ALLWEATHER_001/V7_M11_REF 포트폴리오 정의(v5x~v7 시대) | legacy | - | - |
 | `factor_scan.R + factor_scan_results.csv` | 초기 팩터 전수 스캔 스크립트와 결과(49KB) — artifact-storage 룰이 예시로 참조 | legacy | 2026-06-07 | 54KB |
 
 </details>
@@ -188,9 +188,9 @@
 | `briefings/` | 빈 디렉토리 (브리핑 산출 예정지였으나 미사용 — 브리핑은 02_Infrastructure/ops로 정착) | dead | - | - |
 | `defense_2022_scan/` | 빈 디렉토리 (defense_2022_recon의 스캔 산출 예정지, 미사용) | dead | - | - |
 | `worktasks/` | run_alpha_iter20.R 단일 잔존 — 구 alpha iteration 러너 스크립트 (WT 체계는 qepm/mailbox로 정착) | dead | - | - |
-| `stage_artifacts/` | WT_WT-D20260425_009 이중 접두 오명명 스테이지 사본 1건 (루트 stage_artifacts/와 별개) — CLAUDE.md 미완 항목 'WT_WT-* cleanup'의 대상 | dead | 2026-06-07 | 27KB |
-| `nav_tracking/` | STR_905 일별 NAV csv 1건 — 구 수동 NAV 트래킹 (라이브 트래킹은 02_Infrastructure/monitoring으로 이관 완료) | dead | 2026-06-07 | 208B |
-| `regime_analysis/` | 구 국면 시각화 png(KTRI 9quad·3layer·MRS daily) + threshold 튜닝 스크립트(v5x 시대) | dead | 2026-07-02 | 764KB |
-| `blog_archive/` | 2026-03-14 블로그 아카이브 JSON 1건 (외부 콘텐츠 스크랩) | dead | 2026-06-07 | 9KB |
+| `stage_artifacts/` | WT_WT-D20260425_009 이중 접두 오명명 스테이지 사본 1건 (루트 stage_artifacts/와 별개) — CLAUDE.md 미완 항목 'WT_WT-* cleanup'의 대상 | dead | - | - |
+| `nav_tracking/` | STR_905 일별 NAV csv 1건 — 구 수동 NAV 트래킹 (라이브 트래킹은 02_Infrastructure/monitoring으로 이관 완료) | dead | - | - |
+| `regime_analysis/` | 구 국면 시각화 png(KTRI 9quad·3layer·MRS daily) + threshold 튜닝 스크립트(v5x 시대) | dead | 2026-07-02 | 665KB |
+| `blog_archive/` | 2026-03-14 블로그 아카이브 JSON 1건 (외부 콘텐츠 스크랩) | dead | - | - |
 | `{allocate_12_hypotheses.R, allocate_gap_hypotheses.R, c19_v24_interaction_analysis.R, c19_v24_syn05_analysis.R, crisis_defense_analysis.R, factcheck_defense_hypotheses.R, factcheck_hypothesis.R, factor_correlation_vs_C19.R, factor_db_deep_analysis.R, factor_db_deep_phase2.R, factor_db_fix_impact_audit.R, ml_overnight_research.R, mrs_stress_detection_analysis.R, residual_alpha_analysis.R, risk_m4_m6_analysis.R, risk_validation_rev4.R, risk_validation_rev5.R, pg_run_STR_1656_M05.R, validate_rcpp_speedup.R} (일회성 분석 스크립트 19개)` | v5x 시대 일회성 분석·팩트체크 스크립트군(C19/V24 상호작용, 위기방어, factor DB 심층분석, 리스크 검증 rev4/5, Rcpp 속도검증 등) — 결과 CSV/보고서는 별도 보존됨 | dead | - | - |
 
