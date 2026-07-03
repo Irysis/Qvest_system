@@ -1,0 +1,38 @@
+[config.R] PROJECT_ROOT: C:/Users/99922/OneDrive/Quant_Module_Moltbot
+[advanced_weights] Loaded. 10 methods: cvar, maxdiv, nco, resampled, robust_mv, factor_rp, entropy, kelly, higher_moment, omega
+[advanced_weights] Score Tilt Variants: regime_tilt(V1), ic_tilt(V2), rank_tilt(V3), softmax_tilt(V4), winsor_tilt(V9), regime_softmax(V10), nco_score_tilt(V8)
+[advanced_weights] Phase 2 loaded. New methods: cvar_lp, cvar_budget, cdar, pmtd, robust_socp, robust_cov
+[advanced_weights] Phase 2 pkgs: cccp=MISSING (LP fallback), rrcov=MISSING (sample cov), FRAPO=MISSING (pure-R fallback)
+[backtest_harness] weight_engine.cpp loaded (Rcpp).
+[backtest_harness] Loaded.
+[backtest_harness] sim_engine_nav.cpp loaded (Rcpp NAV 4x speedup).
+[telegram_notify] Loaded. Bot: @quant12323413245_bot | Channel: -1003850915447
+[telegram_notify] +tg_trigger_check(), +tg_regime_briefing()
+[hurdle_gate] Rcpp 가속 로드 완료 (stress_periods_cpp, rolling_sharpe_cpp, rolling_mdd_cpp)
+[hurdle_gate] Loaded.
+[lookahead_detector] Loaded. Functions: detect_lookahead(), detect_lookahead_dir(), detect_gate15_infra_pit()
+[strategy_registry] Loaded.
+[strategy_registry] Functions: compute_fingerprint(), assign_factor_labels(), compute_label_signature(), register_strategy(), update_lifecycle(), compute_priority()
+[portfolio_governor] Loaded (v1.0.0). Functions:
+  pg0_gap_review()       — PG0: Portfolio gap diagnosis + cold start
+  pg1_admission()        — PG1: Candidate admission (anti-pattern/LOO/role)
+  pg2_allocation()       — PG2: Sleeve assembly & regime-adjusted allocation
+  pg3_monitor()          — PG3: Live monitoring (drift/regime/MDD alerts)
+  pg_cold_start()        — Cold start protocol (Phase 0/1/2+)
+  pg_state_save/load()   — Persistent portfolio state
+  pg_update_candidates() — Scan S7+ strategies for candidate roster
+[strategy_analyzer] Loaded. Use: run_analysis(sim, FACTORS, RAWDATA, BM_DT, output_dir)
+
+##### RUN direction=LOW #####
+
+=== [AlphaSearch] STR_AS_PINDEX_LOW_2606_08569 (STR_AS_20260620_103454_82332) ===
+    idea: p-index(유럽형 put 보험료/현재가, 이항모형 closed-form) 횡단면 정렬 — 저보험료(저다운사이드) 롱 [방향A: LOW p-index 롱]
+[load_rawdata] Loading from Parquet cache...
+[load_rawdata] Cache loaded: 13967436 rows | 1990-01-04 ~ 2026-06-19
+[fe_pindex 2606.08569] direction=LOW | FACTORS rows=472073 | signal dates=437 | tickers=3610
+[AlphaSearch] universe=K200_KQ150 (KOSPI200/KOSDAQ150 membership, PIT time-varying): tickers 3295->824 | avg/month 312
+[AlphaSearch] FACTORS: 78708 rows | 258 signal dates | 824 tickers
+[LOOKAHEAD] CLEAN: factor_engine_pindex_2606_08569.R (113 lines scanned)
+[AlphaSearch] PIT check: CLEAN
+[simulation] Starting monthly simulation...
+  > 257 signal dates | 8971 trading days

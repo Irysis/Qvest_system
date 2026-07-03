@@ -1,0 +1,66 @@
+{
+  "recompute_date": "2026-06-17",
+  "supersedes": "2026-06-08 provisional snapshot (degraded theta_core C04=0.2945)",
+  "trigger": "factor_db_202605 rebuilt (Consensus cache restored); raw May Z-scores available -> canonical expanding-IC theta restorable",
+  "sig_date": "2026-05-01",
+  "operating_month": "2026-06 (June PG2 forward weights, May signal)",
+  "recipe": {
+    "blend": "score_eff = 0.65*z(Score_Core) + 0.35*z(Score_Defense)",
+    "core_sleeve": ["C01_SUE", "C02_EPS_Chg_1m", "C04_ESBR", "C06_TP_Gap"],
+    "core_theta_method": "expanding-IC (mean past IC, clip>=0, L1-normalize), PIT-strict Usable_Date<2026-05-01 (max signal 2026-03-31)",
+    "core_theta": {"C01_SUE": 0.3039, "C02_EPS_Chg_1m": 0.2431, "C04_ESBR": 0.4392, "C06_TP_Gap": 0.0138},
+    "defense_sleeve": ["Q07_Earnings_Stability", "M08_Residual_Mom", "Q25_Ohlson_O"],
+    "defense_theta_method": "equal-weight 1/3 (build_composite_ew, IC-independent)",
+    "winsor": "2.5 sigma per factor before sleeve aggregation",
+    "layer_b": ".linear_tilt_to_penalty_qd_v2(lambda=1.5, phi=3, ub=0.20)",
+    "layer_c": "M4 overlay = passthrough 1.0 (M4_LOADED @ 2026-05-01)"
+  },
+  "data_sourcing": {
+    "core4_q07_q25": "factor_db_202605.parquet (REFRESHED 2026-06-17, Date=2026-05-31) — canonical sig_date->month mapping",
+    "m08_residual_mom": {
+      "source": "factor_db_202604.parquet (Date=2026-04-30)",
+      "reason": "FORCED DEVIATION — factor_db_202605 partial rebuild dropped 66 beta/regime/momentum-residual factors incl M08; 202605 lacks M08",
+      "pit": "PIT-safe (Apr-end past momentum for May-01 decision); 202606 (Jun-11) excluded as future",
+      "caveat": "1-month-stale momentum Z vs ideal May-end snapshot"
+    }
+  },
+  "theta_diff_vs_0608_snapshot": {
+    "C04_ESBR": "0.2945 -> 0.4392 (restored; degraded snapshot used contaminated/truncated 202605)",
+    "C06_TP_Gap": "0.2427 -> 0.0138",
+    "note": "validated against 05_Production 268m canonical 2026-04-01 theta (C04=0.45) and factor_engine_proposal.R build_composite logic"
+  },
+  "pit_checks": {
+    "forward_return_leak": "PASS (Ret_1m all NA at 2026-05-01)",
+    "C1_expanding_theta": "PASS (Usable_Date<2026-05-01)",
+    "C10_liquidity_t1": "PASS (AvgTV20 @ 2026-04-30)",
+    "C13_C14_direction": "PASS (align_factor_direction IC-inferred 7/7)",
+    "universe_pit": "PASS (K200/KQ150 membership @ 2026-03-31 <= 2026-04-30)"
+  },
+  "weights_summary": {
+    "sum": 1.0, "max": 0.20, "long_only": true, "n_active": 13, "n_total_lines": 20,
+    "top5": [
+      {"ticker": "A402340", "name": "SK스퀘어", "weight": 0.2000},
+      {"ticker": "A326030", "name": "SK바이오팜", "weight": 0.1734},
+      {"ticker": "A375500", "name": "DL이앤씨", "weight": 0.1280},
+      {"ticker": "A383220", "name": "F&F", "weight": 0.1164},
+      {"ticker": "A189300", "name": "인텔리안테크", "weight": 0.1100}
+    ]
+  },
+  "diff_vs_0608_snapshot": {
+    "membership_overlap": "2 of 13 active names (S-Oil, Samsung Electronics)",
+    "turnover_vs_prior": 0.8621,
+    "core_z_correlation": 0.371,
+    "defense_z_correlation": 0.896,
+    "interpretation": "Large churn driven by BOTH refreshed Core Z (06-08 snapshot built on contaminated 202605) AND theta restoration. Defense barely moved (M08 same Apr-end source both runs)."
+  },
+  "governance": {
+    "book_state": "UNCHANGED (governor halted; capital admission = manual + Dohoon confirm)",
+    "production_readonly": "05_Production untouched (read-only reference only)",
+    "qvest_codex_root": "NOT used (original OneDrive root only)"
+  },
+  "capacity_advisory": {
+    "n_breach_ADV5": 3,
+    "breach_tickers": ["A326030 (10.3%)", "A383220 (25.4%)", "A189300 (5.7%)"],
+    "note": "advisory only at AUM 10B; F&F (A383220) worst at 25.4% ADV — execution should scale or extend schedule"
+  }
+}

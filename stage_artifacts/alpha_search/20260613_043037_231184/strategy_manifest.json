@@ -1,0 +1,121 @@
+{
+  "schema_version": "alpha_search_strategy_manifest_v1",
+  "created_at": "2026-06-13T04:35:42+0900",
+  "mode": "alpha_search",
+  "strategy_id": "STR_AS_20260613_043037_231184",
+  "strategy_name": "[진단] FM Lookback Sweep — 1m/3m/6m/9m/12m × 3 국면 = 15건",
+  "strategy_idea": "[진단] FM Lookback Sweep — 1m/3m/6m/9m/12m × 3 국면 = 15건 diagnostic/sweep spec; code or target artifacts must be prepared diagnostic/sweep spec; code or target artifacts must be prepared",
+  "factor_engine_path": "02_Infrastructure/alpha_search/fe_factor_combo.R",
+  "execution": {
+    "universe": "ALL",
+    "universe_n": 141,
+    "n_holdings": 30,
+    "weight_method": "equal",
+    "commission": 0.0015,
+    "risk_controls": {
+      "vol_target": null,
+      "vol_lookback": 60,
+      "dd_brake": {
+        "entry_pct": 0.25,
+        "exit_pct": 0.35
+      },
+      "buffer_zone": {
+        "keep_n": 60,
+        "entry_n": 30
+      },
+      "use_default_buffer": true,
+      "cov_method": "sample"
+    },
+    "bt_result_path": "stage_artifacts/alpha_search/20260613_043037_231184/bt_result.rds"
+  },
+  "pit": {
+    "code_scan": "detect_lookahead",
+    "status": "CLEAN",
+    "factor_engine_path": "02_Infrastructure/alpha_search/fe_factor_combo.R",
+    "note": "AlphaSearch stops before backtest when detect_lookahead reports violations."
+  },
+  "backtest_contract": {
+    "status": "OK",
+    "run_id": "ASBT_20260613_043037_231184",
+    "metric_type": "backtested",
+    "bt_result_path": "stage_artifacts/alpha_search/20260613_043037_231184/bt_result.rds",
+    "output_dir": "stage_artifacts/alpha_search/20260613_043037_231184",
+    "integrity_status": "WARNING",
+    "audit_pass": 15,
+    "audit_fail": 0,
+    "audit_warn": 1,
+    "validation_errors": [],
+    "note": "standard Backtest Result Contract saved for every AlphaSearch run; grade/admission remains separate",
+    "return_series": {
+      "status": "OK",
+      "source": "bt_result.period_returns",
+      "csv_path": "stage_artifacts/alpha_search/20260613_043037_231184/03_period_returns.csv",
+      "date_col": "date",
+      "ret_col": "ret_net",
+      "n_obs": 5266,
+      "start_date": "2005-02-03",
+      "end_date": "2026-06-11",
+      "post2008_obs": 4547,
+      "frequency": "daily"
+    }
+  },
+  "verdict": {
+    "grade": "F",
+    "score": 2,
+    "hurdle_pass": false,
+    "hard_fail": false,
+    "fail_reasons": [],
+    "f_grade_reasons": [
+      "FMT-01 Structural MDD: MDD 51.0% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)",
+      "FMT-02 Factor Degeneration: IR -0.49 < -0.1 & 초과CAGR -9.2%p < 0 — KR에서 팩터 방향 역작동 의심",
+      "FMT-08 Regime Overfit: 국면 게이팅 구성 + 초과CAGR -9.2%p < 0 — 회복랠리 상실로 CAGR 훼손 의심",
+      "알파 부재: 정보비율 -0.49로 벤치 대비 기여가 음수/미약",
+      "초과수익 부족: 벤치 대비 -9.2%p"
+    ],
+    "screening": {
+      "screen_pass": false,
+      "screen_route": "NONE",
+      "drawdown_tail_review": true,
+      "note": "탐색 게이트 — 자본/졸업 게이트 아님 (graduation HARD 불변). PIT만 절대."
+    }
+  },
+  "metrics": {
+    "CAGR": 1.56,
+    "AnnVol": 9.83,
+    "Sharpe": 0.159,
+    "Sharpe_m": 0.188,
+    "IR": -0.49,
+    "MDD": 50.98,
+    "Calmar": 0.031,
+    "Turnover_Ann": 163.9,
+    "Top10_Conc": 50,
+    "Rolling3Y_Pos": 33.3,
+    "BM_Corr": 0.442,
+    "ES99_d": 3.49,
+    "ES99_m": 15.76,
+    "GradeA_Corr": null,
+    "Rolling6M_Hit": 10.2,
+    "Worst6M_Ret": -43.38,
+    "MaxConsecNegAlpha": 8,
+    "Rolling12M_Hit": 11.7
+  },
+  "excess_cagr_pct": -9.18,
+  "fmt": [
+    {
+      "code": "FMT-01",
+      "label": "Structural MDD",
+      "reason": "MDD 51.0% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)"
+    },
+    {
+      "code": "FMT-02",
+      "label": "Factor Degeneration",
+      "reason": "IR -0.49 < -0.1 & 초과CAGR -9.2%p < 0 — KR에서 팩터 방향 역작동 의심"
+    },
+    {
+      "code": "FMT-08",
+      "label": "Regime Overfit",
+      "reason": "국면 게이팅 구성 + 초과CAGR -9.2%p < 0 — 회복랠리 상실로 CAGR 훼손 의심"
+    }
+  ],
+  "authoritative": null
+}

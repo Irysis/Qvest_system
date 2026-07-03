@@ -1,0 +1,21 @@
+{
+  "run_id": "ASBT_20260613_071945_247318",
+  "strategy_id": "STR_AS_20260613_071945_247318",
+  "strategy_name": "Sector-Conditional FM — 섹터별로 다른 FM lookback 적용",
+  "strategy_family": "alpha_search",
+  "signal_description": "Sector-Conditional FM — 섹터별로 다른 FM lookback 적용 patched blocked runner into executable PIT-safe AlphaSearch direct implementation patched factors=D01_IdioVol+D02_Beta+Q01_GPA+Q04_Piotroski_F+Q09_CFOA+Q07_Earnings_Stability+V01_BM+V03_CFP+V10_FCF_Yield+V11_Shareholder_Yield+M01_Mom_12_1+M07_IndMom; en",
+  "universe_rule": "ALL + 20d avg trading value >= 2e8 KRW (t-1 PIT)",
+  "rebalance_frequency": "monthly",
+  "signal_date_rule": "month_end_signal",
+  "execution_date_rule": "t_plus_1_first_trading_day",
+  "weighting_method": "equal",
+  "max_position_weight": 0.2,
+  "max_leverage": 1,
+  "cash_rule": "fully_invested_after_floor_shares",
+  "cost_model": "v2.4_delta_15bps",
+  "missing_data_rule": "exclude_na_scores",
+  "risk_controls": "vol_target=0.2500, lookback=60d; dd_brake(entry=0.1200, exit=0.3500); buffer_zone(keep_n=60, entry_n=30)",
+  "lookahead_prevention": "detect_lookahead static scan CLEAN (PIT C1-C15)",
+  "survivorship_bias_control": "RAWDATA PIT membership / time-varying universe filters",
+  "factor_engine_path": "02_Infrastructure/alpha_search/fe_factor_momentum.R"
+}

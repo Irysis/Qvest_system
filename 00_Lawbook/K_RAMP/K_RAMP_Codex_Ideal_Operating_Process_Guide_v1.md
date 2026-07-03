@@ -166,7 +166,7 @@ Rollback plan:
 - <plan>
 ```
 
-For small changes, this can be brief. For architecture changes, this must be written to `docs/adr/ADR-YYYYMMDD-<short-title>.md`.
+For small changes, this can be brief. For architecture changes, this must be written to `00_Lawbook/K_RAMP/adr/ADR-YYYYMMDD-<short-title>.md`.
 
 ## 2.4 Implement
 
@@ -252,7 +252,7 @@ docs/MCODE_POLICY.md
 docs/RISK_MANAGER_POLICY.md
 docs/INVESTOR_AGENT_POLICY.md
 docs/RECURSIVE_DEVELOPMENT_PROTOCOL.md
-docs/adr/ADR-*.md
+00_Lawbook/K_RAMP/adr/ADR-*.md
 outputs/governance/milestone_report_*.md
 ```
 
@@ -395,7 +395,7 @@ K-RAMP/
   data_processed/
   data_synthetic/
   docs/
-  docs/adr/
+  00_Lawbook/K_RAMP/adr/
   python/kramp/
     __init__.py
     data/
@@ -1669,7 +1669,7 @@ Template:
 Path:
 
 ```text
-docs/adr/ADR-YYYYMMDD-<short-title>.md
+00_Lawbook/K_RAMP/adr/ADR-YYYYMMDD-<short-title>.md
 ```
 
 Template:

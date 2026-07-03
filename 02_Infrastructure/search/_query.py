@@ -46,7 +46,9 @@ def load_index(include_examples: bool = False) -> list[dict]:
                 row = json.loads(line)
             except Exception:
                 continue
-            # Default: skip examples/ paths and synthetic year 9999 WTs
+            # Default: skip example-workflow paths and synthetic year 9999 WTs
+            # (examples live at 02_Infrastructure/docs/examples/qvest_workflows/
+            #  since 2026-07-04; substring matches old root-level examples/ too)
             sp = (row.get("source_path") or "")
             wt_id = (row.get("wt_id") or "")
             if not include_examples:
@@ -171,7 +173,7 @@ def main():
     ap.add_argument("--recent", default=None, help="recency filter (24h, 7d, 30d)")
     ap.add_argument("--limit", type=int, default=30, help="max results (default 30)")
     ap.add_argument("--include-examples", action="store_true",
-                    help="include examples/qvest_workflows/ + WT-D9999 synthetic")
+                    help="include 02_Infrastructure/docs/examples/qvest_workflows/ + WT-D9999 synthetic")
     args = ap.parse_args()
 
     if not args.query and not args.type:

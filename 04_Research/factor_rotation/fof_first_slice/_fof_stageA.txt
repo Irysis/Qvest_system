@@ -1,0 +1,26 @@
+================ Stage A — C 포트폴리오블렌딩 vs 신호블렌딩 ================
+실행: 2026-06-30 14:51:41.061089
+
+군별 return 시계열: 11군 × 256월
+
+=== sleeve 클러스터 (K=5) ===
+  S1 <= Accruals, Momentum
+  S2 <= Composite, Quality, Size_Liquidity
+  S3 <= Consensus, Credit, Value
+  S4 <= Growth_Profit
+  S5 <= LowRisk, Reversal
+  HRP λ_s: S1=0.192 / S2=0.180 / S3=0.309 / S4=0.134 / S5=0.185
+  N_s (EW): S1=5 S2=5 S3=5 S4=5 S5=5
+  N_s (HRP): S1=5 S2=4 S3=8 S4=3 S5=5
+
+공통 257개월 (2005-01-31~2026-05-31)
+
+=== arm 실측 (canonical_screen_bt, advisory) ===
+  [integrated      ] port_t=+1.12 (p=0.264) | net_SR=+0.268 | IR=+0.268 | TO=1183%
+  [mixed_EW        ] port_t=-0.43 (p=0.665) | net_SR=-0.103 | IR=-0.103 | TO=1230%
+  [mixed_HRP       ] port_t=-0.34 (p=0.735) | net_SR=-0.080 | IR=-0.080 | TO=1185%
+
+=== 핵심 검정 (paired-NW-t lag3, mixed − integrated) ===
+  mixed_EW  − integrated: t=-2.84 (p=0.005) SR_lift=-0.370
+  mixed_HRP − integrated: t=-2.58 (p=0.010) SR_lift=-0.347
+  → Stage A 판정: CHEAP-KILL (best mixed t=-2.58, SR_lift=-0.347)

@@ -1,0 +1,349 @@
+{
+  "task_id": "WT-D20260629_001",
+  "wt_type": "discovery",
+  "agent": "alpha-research",
+  "as_of_date": "2026-06-29",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe": "KOSPI200_KOSDAQ150_intersection (PIT time-varying membership)",
+  "benchmark": "KOSPI200_total_return",
+  "cost_model_version": "v2.4_kr_retail_15bps",
+  "selection_objective": "icir",
+  "verdict": "FAIL",
+  "verdict_one_line": "오버나잇 상승갭 빈도는 KR에서 원논문(A주 continuation)과 부호가 역전된 약한 reversal 신호이나, (1) cross-sectional rank-IC의 유의성이 극단 tail(소형주 noise)에 의존해 quintile 레벨에서는 비유의(t=-1.02), (2) ~58%가 L39_Overnight_Spread/MaxRet/turnover/IdioVol 클러스터에 spanned, (3) long-only top-N 전 구성에서 portfolio-alpha t 음수(best -1.59) -> graduation HARD(PORT_t>=2.95) 미달. discovery FAIL.",
+  "hypothesis": {
+    "title": "오버나잇 상승갭 빈도 알파 (gap-frequency, arXiv 2606.14386 KR 적용)",
+    "paper_source": "arXiv 2606.14386 (discovery framework, A-share top cross-sectional factor gap_up_ratio_20d, 원논문 ICIR 0.52)",
+    "paper_definition": "gap_up_ratio_20d = (직전 20거래일 중 Open_d > Close_{d-1} 인 날 수) / 20",
+    "paper_mechanism_claim": "반복적 양의 오버나잇 갭 = 정보기반 매수압력 / 호재 과소반응 지속 (attention/demand persistence) -> continuation (positive IC)",
+    "kr_empirical_finding": "KR에서는 부호 역전. 높은 up-gap 빈도 -> 익월 (약한) 언더퍼폼 경향 = overreaction/reversal. 단, 신호의 통계적 유의성이 견고한 monotone 관계가 아니라 극단 tail에 의존 -> long-only 미전이."
+  },
+  "factor_specs": [
+    {
+      "factor_family": "Microstructure_Attention",
+      "proxy": "gapfreqmag_20",
+      "formula": "mean(1{Open_d > Close_{d-1}}, trailing 20 td) * mean(Open_d/Close_{d-1}-1 | gap>0, trailing 20 td)  [상승갭 빈도 x 평균 상승갭 크기]",
+      "lag_rule": "price t-1 close; gap event = Open_d vs Close_{d-1} (둘 다 day d close 시점 known). 신호 window는 sig_date(월말 마지막 거래일)에 종료, forward return은 (sig_date, sig_date+1M] 으로 분리 (C2 통과).",
+      "winsorization": "3std cross-sectional",
+      "neutralization": "none (raw cross-sectional Z)",
+      "economic_rationale": "상승갭 빈도가 누적된 종목 = 단기 attention/demand 과열. KR long-only universe에서는 demand-persistence(continuation)가 아니라 mean-reversion(overreaction 되돌림)이 우세. 부호는 empirical로 결정(reversal).",
+      "redundancy_cluster_id": "overnight_microstructure_volatility (L39/MaxRet/IdioVol/turnover)",
+      "selection_objective_value_rank_ic": -0.03039,
+      "selection_objective_value_icir": -0.2116,
+      "harvey_t_ic_nw_lag3": -3.672,
+      "passes_harvey_bonferroni_n6": true,
+      "weight_theta": 1.0,
+      "references": [
+        "arXiv 2606.14386",
+        "Berkman-Koch-Tuttle-Zhang 2012 (overnight returns/attention)",
+        "Jegadeesh 1990 (short-term reversal)"
+      ],
+      "source": "new_designed"
+    },
+    {
+      "factor_family": "Microstructure_Attention",
+      "proxy": "gapup_20",
+      "formula": "mean(1{Open_d > Close_{d-1}}, trailing 20 td)  [원논문 충실 형태]",
+      "lag_rule": "동일 (gap event known at day d close; window ends sig_date; forward separated)",
+      "winsorization": "3std cross-sectional",
+      "neutralization": "none",
+      "economic_rationale": "원논문 gap_up_ratio_20d 직접 이식. KR에서 약한 reversal 부호. 이산 count/20 이라 21개 값만 가져 decile binning 붕괴(top decile n=206 vs bottom n=11128) -> monotonicity 지표 신뢰 불가, per-month Spearman IC가 authoritative.",
+      "redundancy_cluster_id": "overnight_microstructure_volatility",
+      "selection_objective_value_rank_ic": -0.01424,
+      "selection_objective_value_icir": -0.1266,
+      "harvey_t_ic_nw_lag3": -2.224,
+      "passes_harvey_bonferroni_n6": false,
+      "weight_theta": 0.0,
+      "references": [
+        "arXiv 2606.14386"
+      ],
+      "source": "new_designed"
+    },
+    {
+      "factor_family": "Microstructure_Attention",
+      "proxy": "gapsig_20",
+      "formula": "mean(1{up-gap}) - mean(1{down-gap}), trailing 20 td  [signed net up-gap freq]",
+      "lag_rule": "동일",
+      "winsorization": "3std",
+      "neutralization": "none",
+      "economic_rationale": "상승/하락 갭 빈도의 net. reversal 부호.",
+      "redundancy_cluster_id": "overnight_microstructure_volatility",
+      "selection_objective_value_rank_ic": -0.01635,
+      "selection_objective_value_icir": -0.1484,
+      "harvey_t_ic_nw_lag3": -2.476,
+      "passes_harvey_bonferroni_n6": false,
+      "weight_theta": 0.0,
+      "references": [
+        "arXiv 2606.14386"
+      ],
+      "source": "new_designed"
+    }
+  ],
+  "method_shopping_log": {
+    "alpha_agent": {
+      "candidates_tried": 6,
+      "method_log": [
+        {
+          "name": "gapfreqmag_20",
+          "rank_ic": -0.03039,
+          "icir": -0.2116,
+          "selected": true,
+          "note": "best |IC|, continuous (balanced deciles)"
+        },
+        {
+          "name": "gapsig_20",
+          "rank_ic": -0.01635,
+          "icir": -0.1484,
+          "selected": false
+        },
+        {
+          "name": "gapup_10",
+          "rank_ic": -0.01602,
+          "icir": -0.1581,
+          "selected": false
+        },
+        {
+          "name": "gapup_20",
+          "rank_ic": -0.01424,
+          "icir": -0.1266,
+          "selected": false,
+          "note": "paper-faithful N=20; discrete count -> decile binning unreliable"
+        },
+        {
+          "name": "gapup_60",
+          "rank_ic": -0.01363,
+          "icir": -0.103,
+          "selected": false
+        },
+        {
+          "name": "gapdn_20",
+          "rank_ic": 0.01502,
+          "icir": 0.1477,
+          "selected": false
+        }
+      ],
+      "parallel_exec": false,
+      "selection_type": "chain"
+    }
+  },
+  "diagnostics": {
+    "primary_signal": "gapfreqmag_20 (reversal direction: long LOW)",
+    "n_months": 257,
+    "analysis_period": "2005-01 .. 2026-06",
+    "rank_ic": -0.03039,
+    "icir": -0.2116,
+    "ic_nw_t_lag3": -3.672,
+    "ic_t_naive": -3.393,
+    "harvey_bonferroni_hurdle_n6": 2.78,
+    "ic_passes_harvey": true,
+    "monotonicity_caveat": "decile monotonicity 지표는 gapup_20/gapup_10(이산 count)에서 top-decile n=206/25 등 극단 불균형으로 신뢰 불가(RF-A5). continuous gapfreqmag_20도 quintile L/S spread는 비유의(t=-1.015). per-month Spearman IC가 authoritative diagnostic.",
+    "quintile_LS_low_minus_high_gross_monthly_pct": -0.3362,
+    "quintile_LS_nw_t_lag3": -1.015,
+    "quintile_LS_note": "INFORMATIONAL ONLY (KR no-short, NOT deployable). Q1(low gapfreq)=-0.289%/m, Q5(high)=+0.047%/m. quintile 레벨에서는 부호가 rank-IC와 반대(Q5 약간 우위) + 비유의 -> rank-IC 음수 유의성은 극단 tail noise에 의존함을 확증.",
+    "subperiod_ic_gapfreqmag20": {
+      "P1_2005_2012": -0.03212,
+      "P2_2013_2019": -0.02076,
+      "P3_2020_2026": -0.03874,
+      "subperiod_stability": 1.0
+    },
+    "subperiod_ic_gapup20": {
+      "P1_2005_2012": -0.02053,
+      "P2_2013_2019": -0.02179,
+      "P3_2020_2026": 0.00185,
+      "subperiod_stability": 0.6667
+    },
+    "turnover_annual_canonical": 18.4,
+    "turnover_caveat": "~18.4x/yr >> implementation discipline 11.0/yr (research_philosophy #6). short-window gap signal의 본질적 고회전.",
+    "pit_lookahead_audit": {
+      "offset_0_correct_ic": -0.03038,
+      "offset_minus1_stale_ic": -0.02162,
+      "interpretation": "correct alignment이 stale보다 강하고 smooth decay -> 누수 spike 없음. PASS.",
+      "forward_window": "(sig_date, sig_date+1M] — sig_date 제외 확인 (C2 통과)",
+      "bear_sanity_200810_data_flow": "OK"
+    }
+  },
+  "portfolio_alpha_canonical_screen_bt": {
+    "metric_type": "canonical_screen",
+    "metric_type_note": "canonical_screen_bt() top-N EW long-only, contract build_benchmark_compare NW lag-3 경유 실측. admission-binding 아님(그건 forge build_bt_result). screening/직교 측정용 실측.",
+    "results": [
+      {
+        "label": "gapfreqmag20_REV_low_n20_5e7 (best signal, deployable direction)",
+        "n_months": 257,
+        "portfolio_alpha_t_nw_lag3": -1.587,
+        "p_value": 0.1126,
+        "information_ratio": -0.358,
+        "alpha_annualized_pct": -0.41,
+        "net_sr": -0.358,
+        "mean_active_net_bps_per_month": -51.9,
+        "turnover_annual": 18.36
+      },
+      {
+        "label": "gapfreqmag20_REV_low_n25_5e7",
+        "portfolio_alpha_t_nw_lag3": -1.484,
+        "net_sr": -0.344,
+        "alpha_annualized_pct": -0.08
+      },
+      {
+        "label": "gapfreqmag20_REV_low_n20_2e8 (deployment liq floor)",
+        "portfolio_alpha_t_nw_lag3": -1.577,
+        "net_sr": -0.354,
+        "alpha_annualized_pct": -0.31
+      },
+      {
+        "label": "gapfreqmag20_CONT_high_n20_5e7 (paper continuation direction)",
+        "portfolio_alpha_t_nw_lag3": -0.176,
+        "net_sr": -0.041,
+        "alpha_annualized_pct": -1.12
+      },
+      {
+        "label": "gapup20_REV_low_n20_5e7 (paper-faithful, reversal)",
+        "portfolio_alpha_t_nw_lag3": -1.898,
+        "net_sr": -0.452,
+        "alpha_annualized_pct": -2.8
+      },
+      {
+        "label": "gapup20_REV_low_n25_5e7",
+        "portfolio_alpha_t_nw_lag3": -1.963,
+        "net_sr": -0.479,
+        "alpha_annualized_pct": -3.31
+      },
+      {
+        "label": "gapup20_CONT_high_n20_5e7 (paper claim, long high)",
+        "portfolio_alpha_t_nw_lag3": -0.915,
+        "net_sr": -0.207,
+        "alpha_annualized_pct": -2.67
+      },
+      {
+        "label": "gapsig20_REV_low_n20_5e7",
+        "portfolio_alpha_t_nw_lag3": -1.812,
+        "net_sr": -0.435,
+        "alpha_annualized_pct": -3.13
+      }
+    ],
+    "decisive_observation": "9개 long-only 구성 전부 portfolio-alpha t 음수 + net SR 음수. rank-IC가 유의(NW-t -3.67)해도 reversal 신호력은 SHORT leg(고 gapfreq 종목 underperform)에 있고, KR long-only mandate에서 사용 불가. 'long LOW gapfreq' 포트는 평범한 종목 집합이라 positive selection edge 없음. Cycle 2 교훈(rank-IC t != portfolio-alpha t) + measurement-graduation §6(16/16 long-only PORT_t FAIL) 패턴 재현."
+  },
+  "orthogonality": {
+    "certifier_threshold": "cor < 0.95",
+    "all_pass_cor_lt_095": true,
+    "closest_relatives_gapfreqmag20_mean_xs_spearman": {
+      "L39_Overnight_Spread": -0.534,
+      "L02_Turnover": 0.484,
+      "D05_MaxRet": -0.476,
+      "M22_Max_Return": 0.476,
+      "L35_Reversal_Intensity": -0.448,
+      "D01_IdioVol": -0.427,
+      "M04_Mom_1": 0.211,
+      "M01_Mom_12_1": 0.142,
+      "M11_ST_Reversal": 0.051
+    },
+    "closest_relatives_gapup20_mean_xs_spearman": {
+      "L02_Turnover": 0.36,
+      "L35_Reversal_Intensity": -0.243,
+      "L39_Overnight_Spread": -0.239,
+      "D05_MaxRet": -0.207,
+      "D01_IdioVol": -0.207
+    },
+    "incremental_ic_test": {
+      "raw_ic_gapfreqmag20": -0.03039,
+      "residual_ic_after_L39_only": -0.01283,
+      "residual_ic_nw_t_after_L39_only": -2.442,
+      "residual_ic_after_full_controls": -0.01,
+      "residual_ic_nw_t_after_full_controls": -2.339,
+      "full_controls": [
+        "L39_Overnight_Spread",
+        "M11_ST_Reversal",
+        "M04_Mom_1",
+        "D05_MaxRet",
+        "D01_IdioVol",
+        "L01_Amihud"
+      ],
+      "fraction_spanned_by_L39": 0.58,
+      "fraction_spanned_by_full_cluster": 0.67,
+      "interpretation": "기술적으로 cor<0.95 통과하나, raw IC의 ~58%가 L39(Overnight Spread) 단독에, ~67%가 microstructure/volatility/turnover 클러스터 전체에 spanned. 잔차 IC는 약하게 유의(-0.010, t-2.34)이나 long-only portfolio-alpha 음수 사실을 바꾸지 못함. 2026-06-24 sweep의 'microstructure 10종 직교알파 0' 전례와 정합."
+    }
+  },
+  "alpha_inheritance_cor": 0.0,
+  "alpha_inheritance_note": "discovery WT — parent 없음. 신규 microstructure 신호 설계. inheritance_cor=0 (해당 없음).",
+  "graduation_assessment": {
+    "hard_gate_portfolio_alpha_t_nw_required": 2.95,
+    "hard_gate_portfolio_alpha_t_nw_observed_best": -1.587,
+    "hard_gate_portfolio_alpha_t_nw_PASS": false,
+    "advisory_rank_ic": {
+      "required": 0.04,
+      "observed_abs": 0.0304,
+      "pass": false
+    },
+    "advisory_icir": {
+      "required": 0.2,
+      "observed_abs": 0.2116,
+      "pass_abs": true,
+      "note": "ICIR 부호 음수 + long-only 미전이 -> 의미 없음"
+    },
+    "advisory_subperiod_stability": {
+      "required": 0.5,
+      "observed": 1.0,
+      "pass": true,
+      "note": "IC 부호는 안정적으로 음수이나 long-only edge로 전이 안됨"
+    },
+    "dsr_selection_type": "chain (가설주도 순차개선, n_trials~6 family 변형은 sweep 아님) -> DSR HARD 부적용, 진단용만",
+    "overall": "FAIL — graduation HARD(portfolio_alpha_t_nw >= 2.95) 미달. 모든 long-only 구성 PORT_t 음수."
+  },
+  "red_flags": [
+    {
+      "id": "RF-A5",
+      "severity": "MEDIUM",
+      "detail": "gapup_20/gapup_10 이산 count -> top decile 극단 illiquid 집중(n=206/25). decile monotonicity 지표 무효화. continuous gapfreqmag_20 사용으로 완화하나 quintile spread 비유의로 동일 결론."
+    },
+    {
+      "id": "RF-A4",
+      "severity": "HIGH",
+      "detail": "post-neutralization(cluster control) IC retention = 0.010/0.030 = 33% < 0.5*raw. L39+volatility 클러스터에 대부분 흡수."
+    },
+    {
+      "id": "TURNOVER",
+      "severity": "MEDIUM",
+      "detail": "canonical turnover 18.4x/yr >> 11.0/yr discipline."
+    }
+  ],
+  "challenge_flags": [
+    "KR sign reversal vs A-share paper (continuation -> reversal). 원논문 메커니즘(demand persistence) KR 미성립.",
+    "rank-IC 유의성이 극단 tail(소형주 noise) 의존 — quintile L/S 비유의(t=-1.02).",
+    "long-only top-N 전 구성 portfolio-alpha t 음수 (best -1.59) — graduation HARD 미달.",
+    "~58% L39_Overnight_Spread에 spanned, ~67% microstructure cluster 전체에 spanned.",
+    "alternative_hypotheses_recorded: down-gap freq(gapdn_20 IC +0.015, 동일 약함) / 60d window(더 약함) 모두 deployable edge 없음.",
+    "PIT-C13 violation DISCLOSED: alpha_reversal_score was negated raw z (sign chosen after full-sample IC); align_factor_direction NOT applied. Mitigation: verdict is sign-invariant (continuation direction also fails long-only PORT_t -0.18/-0.92). Score relabeled gapfreq_z_raw (diagnostic)."
+  ],
+  "economic_rationale_summary": "오버나잇 상승갭 빈도는 KR K200/KQ150 long-only에서 alpha source로 부적합. (1) 부호가 원논문 continuation에서 reversal로 역전, (2) cross-sectional 분별력이 견고한 monotone 구조가 아니라 극단 tail에 의존, (3) 정보 대부분이 기존 L39_Overnight_Spread/MaxRet/turnover/IdioVol에 이미 포함, (4) 무엇보다 long-only top-N portfolio-alpha t가 모든 구성에서 음수 — 신호력이 short leg에 갇혀 long-only mandate로 전이되지 않음. discovery FAIL은 유효한 QEPM 결과로 L-code 적립 대상.",
+  "stage_artifacts": {
+    "alpha_scores_parquet": "stage_artifacts/WT-D20260629_001/alpha_scores.parquet (80570 rows, 258 sig_dates 2005-2026; col gapfreq_z_raw = RAW cross-sectional z, metric_type=diagnostic_raw_z. C13 caveat: NOT Z_Score_Aligned, sign-alignment via align_factor_direction NOT applied)",
+    "canonical_screen_results_csv": "scratch_gapfreq/canonical_screen_results.csv",
+    "alpha_validation_json": "stage_artifacts/WT-D20260629_001/alpha_validation.json"
+  },
+  "codex_critic_round": {
+    "stance": "REVISE",
+    "veto_flag": false,
+    "model": "gpt-5.5 xhigh",
+    "ax_008_status": "FAIL",
+    "agree_with_claude": false,
+    "agreement": "Codex agrees with no-graduation/FAIL direction. REVISE is about artifact completeness + diagnostics, NOT the conclusion.",
+    "response_file": "qepm/mailbox/worktask/WT-D20260629_001/codex_critic_response_alpha.json",
+    "challenge_note": "qepm/mailbox/worktask/WT-D20260629_001/challenge_note.md",
+    "concerns_resolution": {
+      "C1_RF_A7_single_sigdate": "ACCEPT (moot: FAIL->no downstream). Diagnostics were on 257m full panel; alpha_scores re-exported multi-date (258 sig_dates).",
+      "C2_C13_sign_flip": "PARTIAL ACCEPT (relabel score to gapfreq_z_raw, remove deployable framing) + REBUTTAL (verdict sign-invariant: 8/8 long-only configs negative incl. continuation -0.18/-0.92). C13 violation logged as challenge_flag.",
+      "C3_DSR_missing": "PARTIAL ACCEPT (DSR diag should have been emitted). REBUTTAL: selection_type=chain -> DSR HARD not applicable per measurement-graduation §3; verdict FAIL regardless.",
+      "C4_longonly_fail": "ACCEPT (this IS the core FAIL basis; full agreement).",
+      "C5_sector_neutral_ICIR": "PARTIAL ACCEPT (relabel RF-A4 to cluster-orthogonalization retention=33%, NOT sector-neutral). REBUTTAL: sector-neutral would not flip negative long-only PORT_t.",
+      "C6_missing_artifacts": "ACCEPT for challenge_note/final/lineage (generated). REBUTTAL: weights.csv/covariance/risk_package/optimization_package are NOT alpha-agent outputs (role boundary) + FAIL->downstream not spawned (moot).",
+      "C7_implementation_discipline": "ACCEPT turnover 18.4x>11x + floor conflict (2e8 also FAIL, PORT_t -1.577). PARTIAL: top-decile ADV not quantified (continuous signal + 2e8 floor already prove illiquidity does not flip verdict)."
+    },
+    "verification_triangulation": "Forge-grade real-computation (canonical_screen_bt via contract) + Codex (no-graduation agree) = 2/2 FAIL. veto=False. AX-008 satisfied for the FAIL conclusion.",
+    "pit_c13_violation_disclosed": true
+  },
+  "ax_compliance": {
+    "ax_007_check": "FAIL (single-sleeve long-only top-N mechanism break; exceptions 4종 not met)",
+    "ax_001_v2": "N/A (not a defensive factor)",
+    "ax_002": "PASS (all metrics via harness real-computation, no process bypass)"
+  },
+  "disposition": "DPL_FEATURE candidate (failed standalone alpha -> DPL input feature per measurement-graduation §5). NOT capital-grade, NOT long-only deployable, NOT a screen-tier OVERLAY/FR candidate (net SR -0.36 fails screening SR>=0.7). Cross-sectional sorting power (rank-IC NW-t -3.67) makes it a legitimate DPL feature only."
+}

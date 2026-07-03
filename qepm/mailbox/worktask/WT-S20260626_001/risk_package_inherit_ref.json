@@ -1,0 +1,60 @@
+{
+  "ref_kind": "risk_package_inherit_ref",
+  "task_id": "WT-S20260626_001",
+  "wt_type": "sizing_only",
+  "agent": "risk-research",
+  "as_of_date": "2026-06-26",
+  "parent_wt": "WT-D20260427_016",
+  "parent_strategy": "STR_1715_WT016_Iter31_GridBestProd",
+  "parent_strategy_path": "04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd",
+  "no_new_sigma": true,
+  "new_covariance_estimation": false,
+  "sigma_inheritance_basis": "Σ inherit per role_card_cert_inheritance.R (sizing_only — risk-research re-estimation 금지). 가설은 오버레이 결합 연산자(곱셈 β_AR×β_R05 → max-cash min(β_AR,β_R05))만 변경하며, 오버레이는 regime-scaling(현금비중) 레이어지 cross-sectional 공분산이 아님 → STR_1715 cross-sectional Σ 불변.",
+  "sigma_change_outside_risk_scope": "오버레이 결합 연산자 변경(곱셈 → max-cash min)은 optimizer/forge 영역의 regime sizing 로직. risk role은 Σ 재추정·shrinkage 재선택·tail 재추정을 일절 수행하지 않음. inherit 참조 + 1개 정성 tradeoff flag만 제공.",
+  "inherited_sigma_reference": {
+    "primary_ref_token": "inherit:STR_1715_WT016_Iter31_GridBestProd:factor_covariance",
+    "secondary_concrete_artifact": {
+      "path": "stage_artifacts/WT_WT-S20260504_001/covariance.parquet",
+      "note": "STR_1715는 production에서 native factor_covariance artifact를 산출하지 않음 (top-N EW long-only sleeve + overlay 구조 — MVO Σ 미사용). 가장 가까운 concrete Σ는 동일 STR_1715 book에 대해 선행 sizing_only WT(WT-S20260504_001)가 LRO-derived로 산출한 18×18 Ledoit-Wolf Σ. 본 WT는 이를 신규 추정 없이 inherit 참조만 함.",
+      "format": "LONG (Ticker_i, Ticker_j, Sigma_ij, sigma_method)",
+      "sigma_method": "ledoit_wolf_shrinkage_constant_correlation",
+      "condition_number": 40.9539,
+      "psd_verified": true,
+      "estimation_window": "2019-05-01 ~ 2026-04-30 (5y daily, 1718 obs)",
+      "weight_basis": "STR_1715 actual production weights 2026-05-01 (cap 0.20, 18 active out of 20)"
+    }
+  },
+  "inherited_tail_reference": {
+    "ref_path": "stage_artifacts/WT_WT-S20260504_001/tail_risk.json",
+    "note": "STR_1715 ACTUAL 268m monthly portfolio NAV 기반 tail (Hill α + EVT-GPD + 8 stress + CDaR). 본 WT는 신규 tail 추정 없이 inherit. ⚠ 오버레이 결합 연산자 변경의 MDD/tail 영향은 forge 실측 A/B에서만 측정됨 (tradeoff flag 참조).",
+    "inherited_values_passthrough": {
+      "var95_monthly": -0.0846,
+      "var99_monthly": -0.1523,
+      "es95_monthly": -0.1289,
+      "es99_monthly": -0.1694,
+      "mdd_observed": -0.4169,
+      "hill_alpha": 2.2537,
+      "cdar95": -0.2952,
+      "mdd_cap_45pct_breach": false,
+      "metric_type": "inherited_from_STR_1715_actual_268m"
+    }
+  },
+  "tradeoff_flag_qualitative": {
+    "id": "RISK-FLAG-MAXCASH-COMOVE",
+    "severity": "advisory_for_forge_AB",
+    "statement": "max-cash 결합 min(β_AR, β_R05)은 두 오버레이가 동시 발화하는 구간에서 곱셈 결합(β_AR×β_R05)보다 디리스크가 약하다 (min cash < compound cash). 따라서 그 동시발화 구간에서 시장 노출과 tail 위험이 곱셈 대비 소폭 증가할 가능성이 있다.",
+    "mechanism_context": "architecture audit B2: M4↔AR overlap P(AR|M4)=91% — AR/R05 동시 발화가 잦은 영역이 존재. 곱셈은 이 구간 디리스크를 compound(이중계상)하고, max-cash는 더 깊은 단일 디리스크만 채택해 compound를 회피. 과방어 드래그 감소가 가설의 의도이나, 동시발화 깊은 크래시 구간에서는 곱셈 대비 방어가 얕아지는 trade-off가 동전의 양면으로 존재.",
+    "verification_owner": "forge",
+    "verification_metric": "A/B realized MDD + 동시발화 구간 drawdown 비교 (곱셈 incumbent vs max-cash). risk role은 수치 추측 금지 — forge 실측이 authoritative.",
+    "no_numeric_estimate": true
+  },
+  "role_boundary_compliance": {
+    "no_alpha_modification": true,
+    "no_weight_proposal": true,
+    "no_overlay_operator_design": true,
+    "scope": "Σ inherit reference + 1 qualitative tradeoff flag only"
+  },
+  "draft_revision": "draft",
+  "created_at": "2026-06-26",
+  "created_by": "risk-research"
+}

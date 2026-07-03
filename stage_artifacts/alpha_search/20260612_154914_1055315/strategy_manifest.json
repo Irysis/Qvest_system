@@ -1,0 +1,96 @@
+{
+  "schema_version": "alpha_search_strategy_manifest_v1",
+  "created_at": "2026-06-12T15:56:29+0900",
+  "mode": "alpha_search",
+  "strategy_id": "STR_AS_20260612_154914_1055315",
+  "strategy_name": "Balanced multi-factor base signal",
+  "strategy_idea": "Defense, consensus, industry momentum, quality, value and price momentum measured as one base score.",
+  "factor_engine_path": "02_Infrastructure/alpha_search/fe_factor_combo.R",
+  "execution": {
+    "universe": "ALL",
+    "universe_n": 248,
+    "n_holdings": 30,
+    "weight_method": "equal",
+    "commission": 0.0015,
+    "bt_result_path": "stage_artifacts/alpha_search/20260612_154914_1055315/bt_result.rds"
+  },
+  "pit": {
+    "code_scan": "detect_lookahead",
+    "status": "CLEAN",
+    "factor_engine_path": "02_Infrastructure/alpha_search/fe_factor_combo.R",
+    "note": "AlphaSearch stops before backtest when detect_lookahead reports violations."
+  },
+  "backtest_contract": {
+    "status": "OK",
+    "run_id": "ASBT_20260612_154914_1055315",
+    "metric_type": "backtested",
+    "bt_result_path": "stage_artifacts/alpha_search/20260612_154914_1055315/bt_result.rds",
+    "output_dir": "stage_artifacts/alpha_search/20260612_154914_1055315",
+    "integrity_status": "WARNING",
+    "audit_pass": 15,
+    "audit_fail": 0,
+    "audit_warn": 1,
+    "validation_errors": [],
+    "note": "standard Backtest Result Contract saved for every AlphaSearch run; grade/admission remains separate"
+  },
+  "verdict": {
+    "grade": "A",
+    "score": 65.8,
+    "hurdle_pass": true,
+    "hard_fail": false,
+    "fail_reasons": [],
+    "f_grade_reasons": [],
+    "screening": {
+      "screen_pass": true,
+      "screen_route": "STANDALONE_TRACK",
+      "drawdown_tail_review": true,
+      "note": "탐색 게이트 — 자본/졸업 게이트 아님 (graduation HARD 불변). PIT만 절대."
+    }
+  },
+  "metrics": {
+    "CAGR": 19.62,
+    "AnnVol": 21.76,
+    "Sharpe": 0.902,
+    "Sharpe_m": 0.87,
+    "IR": 0.65,
+    "MDD": 54.14,
+    "Calmar": 0.362,
+    "Turnover_Ann": 264,
+    "Top10_Conc": 50,
+    "Rolling3Y_Pos": 87.5,
+    "BM_Corr": 0.795,
+    "ES99_d": 5.31,
+    "ES99_m": 18.74,
+    "GradeA_Corr": {},
+    "Rolling6M_Hit": 65.3,
+    "Worst6M_Ret": -41.83,
+    "MaxConsecNegAlpha": 5,
+    "Rolling12M_Hit": 74.9
+  },
+  "excess_cagr_pct": 8.88,
+  "fmt": [
+    {
+      "code": "FMT-01",
+      "label": "Structural MDD",
+      "reason": "MDD 54.1% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)"
+    },
+    {
+      "code": "FMT-04",
+      "label": "Regime Blindness",
+      "reason": "MDD 54.1% > 35% & BM상관 0.80 >= 0.7 — 위기국면 동조 낙폭(국면필터 부재)"
+    },
+    {
+      "code": "FMT-07",
+      "label": "Publication Decay",
+      "reason": "활성SR pre-2017 1.10 -> post-2017 -0.18 — 논문발표 후 알파 소진 패턴"
+    }
+  ],
+  "authoritative": {
+    "status": "OK",
+    "essence_grade": "B",
+    "reasons": "Component: PORT_t>=2.0 & net_IR>0.2; A 미달[OOS_ret -0.19<0.7(band fail),Calmar<0.64]",
+    "metric_type": "backtested",
+    "run_id": "ASBT_20260612_154914_1055315",
+    "bt_result_path": "/mnt/c/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/alpha_search/20260612_154914_1055315/bt_result.rds"
+  }
+}

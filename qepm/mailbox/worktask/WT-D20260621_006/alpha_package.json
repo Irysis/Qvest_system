@@ -1,0 +1,228 @@
+{
+  "task_id": "WT-D20260621_006",
+  "wt_type": "discovery",
+  "agent": "alpha-research",
+  "as_of_date": "2026-06-21",
+  "forecast_horizon": "1M",
+  "hypothesis_title": "Liquidity Improvement Trend Momentum",
+  "selection_objective": "long_only_top20_EW_monthly",
+  "metric_type": "canonical_screen",
+  "alpha_vector": {
+    "A046890": 0.0008,
+    "A047040": 0.0008,
+    "A093370": 0.0008,
+    "A178320": 0.0006,
+    "A036930": 0.0006,
+    "A222080": 0.0006,
+    "A131290": 0.0006,
+    "A048410": 0.0006,
+    "A050890": 0.0006,
+    "A036540": 0.0005,
+    "A032500": 0.0005,
+    "A375500": 0.0005,
+    "A319660": 0.0005,
+    "A383310": 0.0005,
+    "A263750": 0.0004,
+    "A131970": 0.0004,
+    "A032820": 0.0004,
+    "A003030": 0.0004,
+    "A010060": 0.0004,
+    "A417200": 0.0004
+  },
+  "confidence_vector": {
+    "A046890": 1,
+    "A047040": 0.957,
+    "A093370": 0.942,
+    "A178320": 0.79,
+    "A036930": 0.786,
+    "A222080": 0.778,
+    "A131290": 0.76,
+    "A048410": 0.73,
+    "A050890": 0.724,
+    "A036540": 0.681,
+    "A032500": 0.627,
+    "A375500": 0.62,
+    "A319660": 0.589,
+    "A383310": 0.582,
+    "A263750": 0.557,
+    "A131970": 0.541,
+    "A032820": 0.522,
+    "A003030": 0.518,
+    "A010060": 0.516,
+    "A417200": 0.509
+  },
+  "alpha_vector_note": "latest sig_date 2026-06-19, top-20 by cross-sectional z of -slope(log-Amihud,126d), liq>=2e8. alpha_hat = modest score-proportional tilt (alpha-hat only; NO weights/cov — agent_role_guard).",
+  "signal_matrix_ref": "stage_artifacts/WT-D20260621_006/scores_primary.rds (258 months, 2005-01..2026-06)",
+  "factor_specs": [
+    {
+      "factor_family": "liquidity_dynamics",
+      "proxy": "LiquidityImprovementTrend",
+      "formula": "SIGNAL = -OLS_slope( log(winsor(|Ret_d|/(Close_d*Vol_d),1/99)) ~ standardized_time_tau ) over trailing W=126 trading days <= sig_date; higher = liquidity improving (illiquidity falling). Cross-sectional z, winsor +/-3sd.",
+      "lag_rule": "all signal data Date<=sig_date (C1 rolling); liquidity ADV filter t-1 (C10); volume t-1.",
+      "winsorization": "per-ticker-window ILLIQ 1/99; cross-sectional z +/-3sd",
+      "neutralization": "none (raw cross-sectional z; Size orthogonality REPORTED not neutralized)",
+      "economic_rationale": "A name whose price-impact cost is structurally falling becomes investable for liquidity-gated capital (foreign/institutional/pension ADV-floor mandates, index/ETF inclusion screens) and front-runs that flow. Slow-moving, distinct from level-illiquidity premium (already priced) and from return momentum (zero microstructure info).",
+      "weight_theta": 1,
+      "redundancy_cluster_id": "liquidity_amihud_dynamics (vs L01/L09 level, L10/L29 2-point ratio)",
+      "references": [
+        "Amihud 2002 JFM",
+        "Acharya-Pedersen 2005 (liquidity-adjusted CAPM)",
+        "kr-novel-momentum-hunt backlog Tier-A"
+      ]
+    }
+  ],
+  "diagnostics": {
+    "rank_ic": 0.0035,
+    "icir": 0.0319,
+    "harvey_t_stat": 0.585,
+    "harvey_t_note": "rank-IC NW lag-3 t. NOT portfolio-alpha t. Near-zero: cross-sectional ranking power flat across mid-deciles; edge lives in TAILS.",
+    "portfolio_alpha_t_nw_lag3": 1.1122,
+    "portfolio_alpha_t_top25": 1.0702,
+    "net_sr": 0.268,
+    "information_ratio": 0.268,
+    "alpha_annualized": 0.0814,
+    "turnover_traded_bothlegs": 10.591,
+    "turnover_oneway_approx": 5.295,
+    "oos_retention_v2": -0.3254,
+    "calmar": 0.3258,
+    "subperiod_stability": 1,
+    "era_ic": {
+      "e1": 0.0012,
+      "e2": 0.0006,
+      "e3": 0.0087
+    },
+    "icir_recent3y_ratio": 3.683,
+    "monotonicity_decile_spearman": 0.964,
+    "top20_illiquid_share": 0.534,
+    "metric_type": "canonical_screen",
+    "n_months": 257,
+    "ic_sector_neutral": -0.0007,
+    "ic_sn_retention": -0.21,
+    "sector_neutral_note": "RF-A4 (Codex C5): raw IC 0.0035 -> sector-neutral IC -0.0007 (retention -0.21). The trivial signal vanishes/flips under sector-neutralization.",
+    "dsr_psr_vs_zero": 0.8921,
+    "dsr_note": "selection_type=chain -> DSR gate NON-BINDING (measurement-graduation §3). PSR(SR>0)=0.892 reported as diagnostic per Codex C4. Binding gates (PORT_t/oos/calmar) all FAIL."
+  },
+  "decile_concentration": {
+    "note": "CRITICAL (C23/AX-007 lesson). Decile mean ACTIVE return (vs EW universe), 257 months.",
+    "decile_active": {
+      "D1": -0.0048,
+      "D2": -0.0017,
+      "D3": -0.0009,
+      "D4": -0.001,
+      "D5": 0.0001,
+      "D6": 0.0017,
+      "D7": 0.0001,
+      "D8": 0.0017,
+      "D9": 0.0013,
+      "D10": 0.0034
+    },
+    "decile_t": {
+      "D1": -2.478,
+      "D2": -1.172,
+      "D3": -0.627,
+      "D4": -0.654,
+      "D5": 0.058,
+      "D6": 1.165,
+      "D7": 0.061,
+      "D8": 1.191,
+      "D9": 0.781,
+      "D10": 1.473
+    },
+    "D10_active": 0.0034,
+    "D9_active": 0.0013,
+    "D1_active": -0.0048,
+    "D10_minus_D9_gap": 0.0021,
+    "edge_location": "TOP-CONCENTRATED (D10 strongest long decile; top-20 long-only CAN capture it). Distinct from C23 mid-decile.",
+    "interpretation": "Monotonicity 0.964 (highly monotone) but magnitude weak. The single SIGNIFICANT decile is the SHORT leg D1 (active -0.485%, t -2.48: 'deteriorating-liquidity' names underperform). Long leg D10 (+0.342%, t +1.47) is positive but not individually significant -> long-only harvests only the weaker half -> PORT_t 1.11."
+  },
+  "orthogonality": {
+    "note": "Cross-sectional Spearman vs Factor DB factors (load_month_factors, C14/C15), pooled-by-date mean, every-6th-month sample.",
+    "matrix": [
+      {
+        "factor": "L01_Amihud",
+        "mean_corr": -0.023,
+        "mean_abs_corr": 0.129
+      },
+      {
+        "factor": "L03_Volume_Mom",
+        "mean_corr": -0.494,
+        "mean_abs_corr": 0.494
+      },
+      {
+        "factor": "L09_Amihud_20d",
+        "mean_corr": -0.078,
+        "mean_abs_corr": 0.174
+      },
+      {
+        "factor": "L10_Amihud_Ratio",
+        "mean_corr": -0.613,
+        "mean_abs_corr": 0.613
+      },
+      {
+        "factor": "L29_Illiq_Change",
+        "mean_corr": -0.635,
+        "mean_abs_corr": 0.635
+      },
+      {
+        "factor": "M01_Mom_12_1",
+        "mean_corr": 0.233,
+        "mean_abs_corr": 0.243
+      },
+      {
+        "factor": "M08_Residual_Mom",
+        "mean_corr": 0.181,
+        "mean_abs_corr": 0.191
+      }
+    ],
+    "L10_Amihud_Ratio_corr": -0.613,
+    "L29_Illiq_Change_corr": -0.635,
+    "max_abs_corr": 0.635,
+    "clears_L10_L29": false,
+    "redundancy_verdict": "REDUNDANCY RISK — does not clear L10/L29 at 0.40; reclassify as refinement."
+  },
+  "grid_chain": {
+    "selection_type": "chain",
+    "selection_note": "Pre-registered hypothesis-driven chain (NOT sweep). Variant choice by IS-only rank-IC. DSR gate NOT applicable (measurement-graduation §3). PORT_t/oos/calmar are binding.",
+    "n_iterations": 1,
+    "is_rank_ic_by_variant": [
+      {
+        "W": 126,
+        "est": "OLS",
+        "denom": "DolVol",
+        "is_ic": 0.0014,
+        "is_icir": 0.0133,
+        "note": "PRIMARY anchor (from cached scores)"
+      }
+    ],
+    "primary_config": "W=126, OLS-std, recency>=10, frac>=0.60, DolVol, monthly, top_n=20",
+    "grid_note": "IS-only rank-IC per chain protocol. PRIMARY anchor W=126 OLS DolVol: IS rank-IC 0.0014 (icir 0.013, n=154) - essentially zero in-sample too, so chain-selection across windows is moot. Full window/estimator grid (63/126/252 + Theil-Sen/decay) compute-deferred (252d config pathologically slow in single-thread R); NON-BINDING chain-audit field. Anchor retained."
+  },
+  "pit_c15_exception": {
+    "rawdata_carveout": "Signal built from .cache/rawdata.parquet (raw daily OHLCV panel), NOT Factor DB monthly parquet. C15 governs load_month_factors() for Factor DB; raw OHLCV panel is the spec-sanctioned carve-out (backlog data_inputs + pit_notes C15; python-policy §3). Orthogonality factors ARE pulled via load_month_factors (C14 PIT-safe).",
+    "c13_compliance": "No NEGATE/FLIP cross-sectional. The -slope is a within-ticker DEFINITIONAL construction (improvement direction), cross-section uses higher=better z only.",
+    "c14_compliance": "Orthogonality Factor pulls enforce Usable_Date<=sig_date via load_month_factors direction alignment."
+  },
+  "verdict": "REDUNDANT_REFINEMENT_effective_NEGATIVE",
+  "honest_summary": "Liquidity-improvement-trend (-slope of 126d log-Amihud) = REDUNDANT REFINEMENT, effective NEGATIVE. (1) NON-GRADUATING: PORT_t 1.11 (<2.95), oos_retention -0.33 (FAIL), calmar 0.33 (FAIL) - all HARD 3 fail. (2) REDUNDANT: orthogonality FAILS the spec's own L10/L29 gate (|corr| L10 0.613 / L29 0.635 > 0.55 reclassify threshold) - it measures the same illiquidity-CHANGE construct as the existing 2-point Amihud ratios, opposite sign. NOT a new orthogonal axis. (3) NOT EVEN A CLEAN CROSS-SECTIONAL SIGNAL: raw rank-IC 0.0035 (Harvey-t 0.59, flat) and it VANISHES under sector-neutralization (IC_sn -0.0007). Decile note (C23/AX-007 lesson): UNLIKE C23 (mid-decile), this is monotone (0.964) and top-tilted (D10 +0.342%/mo strongest long decile, D10-D9 gap +0.212%) - BUT the only individually-SIGNIFICANT decile is the SHORT leg D1 (t -2.48), unusable long-only, so D10's weak +1.47 tilt is all the long book can harvest. Small-cap tilted (53% below-median ADV). Codex REVISE accepted (verdict downgraded from positive screen-route to redundant-negative). A clean, honestly-reported negative. PIT C13/14/15/9/4 all PASS. One data point in the ongoing momentum-hunt campaign - NOT a structural limit on liquidity-axis signals.",
+  "verdict_history": {
+    "draft": "SCREEN_ROUTE_OVERLAY_FR_RCMA_candidate",
+    "final": "REDUNDANT_REFINEMENT_effective_NEGATIVE",
+    "reason": "Codex C3 ACCEPT: orthogonality FAILS own L10/L29 gate (|corr| 0.61/0.64 > 0.55 reclassify threshold) = refinement not new axis. + C1/C5: near-zero raw IC vanishes under sector-neutralization (IC_sn -0.0007). + non-graduating (PORT_t 1.11)."
+  },
+  "codex_critic_round": {
+    "model": "gpt-5.5-xhigh",
+    "stance": "REVISE",
+    "veto_flag": false,
+    "ax_008": "FAIL",
+    "pit_audit": "C13/C14/C15/C9/C4 all PASS",
+    "concerns_resolution": {
+      "C1_RFA3": "ACCEPT - verdict downgraded, positive framing removed",
+      "C2_AX007": "ACCEPT - faithful finding (significant decile is short leg D1 t-2.48)",
+      "C3_L219_redundancy": "ACCEPT (decisive) - |corr| L10 0.61 / L29 0.64 > 0.55 -> refinement",
+      "C4_RFA6": "PARTIAL - grid_is_ic regenerated; DSR diagnostic added (chain non-binding)",
+      "C5_RFA4": "PARTIAL ACCEPT - sector-neutral IC -0.0007 added (worsens negative); PG2 crowding=risk-stage REBUTTAL",
+      "C6_AX008": "REBUTTAL (risk/opt/weights/cov = role-blocked alpha-stage) + PARTIAL (path lineage documented)"
+    },
+    "challenge_note": "qepm/mailbox/worktask/WT-D20260621_006/challenge_note.md"
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "package_kind": "inherited_alpha_stub",
+  "task_id": "WT-S20260626_001",
+  "wt_type": "sizing_only",
+  "as_of_date": "2026-06-26",
+  "forecast_horizon": "1M",
+  "alpha_vector": "inherit:STR_1715_WT016_Iter31_GridBestProd:base_sleeve_alpha",
+  "alpha_vector_note": "신규 alpha 값 생성·합성 없음. STR_1715 base sleeve alpha를 그대로 inherit 참조. parent alpha scores 원천 = stage_artifacts/WT_D20260426_007/alpha_scores.parquet (WT-D20260427_016 alpha_package.alpha_inheritance.base_source_parquet, 현 디스크 부재 → inherit-token 사용). 실제 alpha 값은 forge가 parent base_source_pkg/parquet에서 로드.",
+  "factor_specs": [
+    {
+      "name": "STR_1701_multi_sleeve_composite",
+      "factor_family": "Multi_Sleeve_Inheritance",
+      "proxy": "STR_1701_base_score",
+      "formula": "score_str1701 (inherited from WT-D20260426_007 parquet, no transform)",
+      "lag_rule": "monthly t-1 (preserved from STR_1701)",
+      "winsorization": "preserved",
+      "neutralization": "preserved",
+      "economic_rationale": "STR_1701 multi-sleeve composite (Core 0.65 Consensus_4F+Q07+M08 / Defense 0.35 Q07+Q25). inherit only — 재발굴 없음.",
+      "weight_theta": 1,
+      "references": ["Iter 5 WT-D20260425_010", "Iter 11 WT-D20260426_004"],
+      "inherited": true,
+      "note": "STR_1715 inherit, no new alpha, 오버레이 결합만 변경. parent factor_specs[0]에서 그대로 끌어옴(재발굴 금지). source=inherited."
+    }
+  ],
+  "diagnostics": {
+    "alpha_inheritance_cor": 1.0,
+    "harvey_t_specs_pass_count": 0,
+    "n_sig_dates": 92,
+    "diagnostics_note": "전부 parent WT-D20260427_016 alpha_package.diagnostics에서 inherit(재계산 없음). harvey_t_specs_pass_count=0 및 n_sig_dates=92는 parent 실측값. 본 sizing_only 단계는 신규 진단 미산출 — 실측 성과는 forge authoritative. 추측·합성 없음.",
+    "parent_diagnostics_ref": {
+      "rank_ic": 0.027,
+      "icir": 0.2009,
+      "harvey_t_stat_pooled": -0.0238,
+      "dsr_post": 0.9716,
+      "note": "parent inherit 참조용(본 WT 산출 아님)"
+    }
+  },
+  "cert_exempt": ["alpha_discovery"],
+  "inherit_only": true,
+  "no_new_alpha": true,
+  "new_discovery": false,
+  "alpha_inheritance": "STR_1715",
+  "alpha_inheritance_cor": 1.0,
+  "parent_wt": "WT-D20260427_016",
+  "parent_strategy": "STR_1715_WT016_Iter31_GridBestProd",
+  "parent_alpha_package_ref": "qepm/mailbox/worktask/WT-D20260427_016/alpha_package.json",
+  "parent_sha": "87662e5d4f92d98ac417a17ed9fdbd0d556c667f2df306e709207e655b724a26",
+  "inherit_ref_file": "alpha_package_inherit_ref.json",
+  "metric_type": "inherited",
+  "performance_disclaimer": "본 단계는 어떤 성과수치도 산출하지 않음. 실측 portfolio-alpha t / SR / IR 는 forge 단계가 authoritative. 추측 성과수치 미기재 (answer-principles + measurement-graduation §1/§2).",
+  "alpha_scope_boundary": "alpha role은 inherit 참조만 수행. Sigma/공분산/weight/오버레이 결합 연산자 변경은 risk/optimizer/forge 영역 — alpha 미접촉.",
+  "change_outside_alpha": "오버레이 결합: risk_weight = beta_AR * beta_R05 (곱셈) → max-cash min(beta_AR, beta_R05) (비-compounding). 가설주도 단일 A/B(chain, not sweep).",
+  "codex_round": "SKIPPED_BY_WAIVER (challenge_note.md::codex_critic_skip_waiver — sizing_only alpha_discovery exempt, 신규 알파 부재)",
+  "created_at": "2026-06-26T00:00:00+0900",
+  "created_by": "alpha-research"
+}

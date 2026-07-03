@@ -1,0 +1,431 @@
+{
+  "date": "20260701",
+  "counts_by_route": {
+    "skip": 18,
+    "risk": 8,
+    "alpha": 1,
+    "regime": 5,
+    "optimizer": 8
+  },
+  "n_factor_candidates": 7,
+  "n_testable_factors": 0,
+  "n_curated_new": 0,
+  "papers": [
+    {
+      "title": "AI Premium",
+      "id": "2606.30583",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": {
+        "name": "AI_Beta",
+        "def": "stock return comovement with an AI-token-consumption factor",
+        "novel": null,
+        "kr_feasible": false,
+        "verdict": "infeasible",
+        "confidence": "high",
+        "reason": "팩터 입력=OpenRouter 독점 AI 토큰소비(alt-data) — KR 산출 불가"
+      },
+      "reason": "AI 토큰소비 알트데이터 기반, KR 범위밖"
+    },
+    {
+      "title": "Strategic Risk Reduction: Self-Protection and Self-Insurance",
+      "id": "2606.30363",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "보험계리(self-protection/self-insurance) VaR 최적화 — 횡단면 종목신호 없음"
+    },
+    {
+      "title": "Hidden Dependence and Aggregate Tail Risk",
+      "id": "2606.30193",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "dependence-uncertainty 하 tail risk aggregation 방법론 — risk-research 꼬리/의존구조 연료"
+    },
+    {
+      "title": "Heads, Not Backbones: Output Heads Dominate Architectures on Fat-Tailed Returns",
+      "id": "2606.30037",
+      "source": "arxiv",
+      "route": "alpha",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "density output head(Gaussian mixture)>point head, fat-tail 예측 — alpha-research ML(uncertainty-aware) 방법론. 단 S&P500 지수레벨·횡단면 팩터 아님(kr_feasible=false, 비-autorun)"
+    },
+    {
+      "title": "Fund2Persona: A Framework for Building and Refining Financial Advisor Personas from Fund Disclosure Data",
+      "id": "2606.29793",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "LLM 어드바이저 페르소나 — KR 범위밖"
+    },
+    {
+      "title": "CLQT: A Closed-Loop, Cost-Aware, Strategy-Consistent Benchmark for Diagnostic Evaluation of LLM Portfolio-Management Agents",
+      "id": "2606.29771",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "LLM 포트매니저 에이전트 벤치마크 — 범위밖"
+    },
+    {
+      "title": "Adaptive AI Delegation under Uncertainty: A Bayesian Governance Policy for Sequential Decision Authority",
+      "id": "2606.29406",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "AI 의사결정권 위임 거버넌스 — 범위밖"
+    },
+    {
+      "title": "Liquidity-Based Audit of Algorithmic Trading Strategies",
+      "id": "2606.29018",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "Roll_Implied_Spread",
+        "def": "2*sqrt(-cov(dP_t,dP_{t-1})) 일별가격 자기공분산 기반 비유동성",
+        "novel": "NO",
+        "kr_feasible": true,
+        "verdict": "redundant",
+        "confidence": "high",
+        "reason": "L08_Roll_Spread 이미 등재(+L11 Kyle_Lambda·L01 Amihud). 유동성 44팩터 포화"
+      },
+      "reason": "알고전략 유동성감사(Roll/Kyle). 팩터는 L08 중복"
+    },
+    {
+      "title": "Balancing Shareholder Value and Financial Stability under a Reduced-Form Liquidation Model",
+      "id": "2606.28706",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "기업 청산/재무안정 reduced-form 모델 — 범위밖"
+    },
+    {
+      "title": "(In)Efficient Market States and Rough Volatility Detected via Grunwald-Letnikov Fractional Derivative",
+      "id": "2606.27932",
+      "source": "arxiv",
+      "route": "regime",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "Hurst_GL",
+        "def": "Grünwald-Letnikov 분수미분 기반 Hurst/rough-vol 시장효율 국면",
+        "novel": null,
+        "kr_feasible": true,
+        "verdict": "redundant",
+        "confidence": "high",
+        "reason": "Hurst 모멘텀 2026-06-21 FALSIFIED(project-kr-momentum-novel-hunt). 재시도 비권장"
+      },
+      "reason": "rough-vol 시장효율 국면탐지 — regime 연료. Hurst 팩터는 기실패"
+    },
+    {
+      "title": "Methods for Uncertainty Representation in Risk Management: A Comparative Review and Decision-Oriented Framework",
+      "id": "2606.27804",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "리스크관리 불확실성 표현 리뷰(370편) — 저정보 리뷰"
+    },
+    {
+      "title": "The Decision Geometry of Covariance Estimation for the Global Minimum-Variance Portfolio under Heavy Tails",
+      "id": "2606.27462",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "공분산 추정오차→GMVP regret 정확식 — optimizer 최소분산 구성 연료(추정오차가 weight·집중도 통해서만 작용)"
+    },
+    {
+      "title": "A sharp order-three obstruction to the aggregation of conditional price-of-risk attribution",
+      "id": "2606.26835",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "조건부 price-of-risk(제곱Sharpe) 귀속 비집계 정리 — attribution 이론(judge/risk)"
+    },
+    {
+      "title": "Data-Driven Duration Management -- Term Structure Forecasting Using Machine Learning",
+      "id": "2606.26815",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "미·유럽 국채 term-structure ML 예측 — 채권 범위밖"
+    },
+    {
+      "title": "Portfolio Optimization for Commodity ETFs under Heavy-Tailed Returns",
+      "id": "2606.26625",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "원자재 ETF heavy-tail 포트옵트 — 원자재 범위밖"
+    },
+    {
+      "title": "Geometrically convex return risk measures on AM-algebras",
+      "id": "2606.26031",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "return risk measure 기하볼록성 — 순수이론"
+    },
+    {
+      "title": "A Two-Stage Decision Support System for Sustainability-Aware Long Short Portfolio Optimization",
+      "id": "2606.25696",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": false,
+      "factor_candidate": {
+        "name": "ESG_TODIMSort",
+        "def": "MEREC 가중 다기준 ESG 랭킹 long/short 분류",
+        "novel": null,
+        "kr_feasible": false,
+        "verdict": "infeasible",
+        "confidence": "med",
+        "reason": "ESG 데이터 KR 부재(알트데이터). 단 다기준 랭킹 구성법은 optimizer 참고"
+      },
+      "reason": "ESG 2단계 다기준 long-short 구성법 — optimizer 연료. ESG팩터 데이터불가"
+    },
+    {
+      "title": "Empirical Confirmation of the Square-Root Law of Market Impact in a U.S. Large-Cap Equity",
+      "id": "2606.24019",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "AAPL ITCH 시장충격 제곱근법칙 — intraday 마이크로구조/단일종목 범위밖"
+    },
+    {
+      "title": "Anatomy of the Market: A Body-Tail Test of Factor Models",
+      "id": "2606.23596",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "BodyTail_Leg",
+        "def": "시총가중 body/tail 분해 leg 멤버십·leg alpha",
+        "novel": null,
+        "kr_feasible": true,
+        "verdict": "uncertain",
+        "confidence": "low",
+        "reason": "팩터모형 검정용 분해 — 종목 횡단면 신호로의 명확한 사상 불명"
+      },
+      "reason": "body-tail 팩터모형 검정 — risk(모형평가) 연료. tail-leg 팩터는 정의 불명확"
+    },
+    {
+      "title": "Continuous Hidden Markov Models for Equity Returns: Heavy-Tail Emission Families and Regime-Conditional Value-at-Risk",
+      "id": "2606.23492",
+      "source": "arxiv",
+      "route": "regime",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "heavy-tail emission 연속 HMM + regime-조건부 VaR — regime 국면탐지 연료"
+    },
+    {
+      "title": "When Staking Rewards Compound: Measuring the Impact of Ethereum's Pectra Upgrade",
+      "id": "2606.23337",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "이더리움 Pectra 스테이킹 — 크립토 범위밖"
+    },
+    {
+      "title": "IPO Finance Agent: Evaluation of LLM Financial Analysts beyond Finance Agent v2, with Automated Rubric Generation -- the Case of the SpaceX (SPCX) IPO",
+      "id": "2606.23032",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "LLM IPO 듀딜리전스 에이전트 — 범위밖"
+    },
+    {
+      "title": "Universal Value-at-Risk superadditivity",
+      "id": "2606.22884",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Universal VaR superadditivity — 순수 위험측도 이론"
+    },
+    {
+      "title": "Leakage-Aware Benchmarking of LLM Forecasting: Real-Time Nowcasts as the Decision-Time Input for Macro Factor Ranking",
+      "id": "2606.22719",
+      "source": "arxiv",
+      "route": "regime",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "leakage-통제 의사결정시점 매크로 nowcast로 equity factor ranking — 매크로→팩터 타이밍(regime/factor-rotation) 연료. PIT-aware 강함"
+    },
+    {
+      "title": "Reinforcement Learning for Risk-Sensitive Investment Management: a Free Energy--Entropy Duality Approach",
+      "id": "2606.20903",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Free-Energy/Entropy 듀얼리티 RL risk-sensitive 벤치마크 배분 — optimizer RL 방법론"
+    },
+    {
+      "title": "Trends, Volatility, Correlations, and Critical Phenomena in Financial Markets",
+      "id": "2606.20145",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "Trend_Strength",
+        "def": "현 추세강도로 미래 vol/correlation 예측(2차다항)",
+        "novel": null,
+        "kr_feasible": true,
+        "verdict": "redundant",
+        "confidence": "high",
+        "reason": "추세=모멘텀(M 32팩터 포화). vol/corr 예측은 risk-model 입력으로만"
+      },
+      "reason": "추세강도→vol/상관 예측 — risk 공분산 입력 연료. 추세팩터는 모멘텀 중복"
+    },
+    {
+      "title": "Which Portfolios? The Construction Dependence of Factor Model Performance",
+      "id": "2606.19550",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "factor-model 성과의 포트 구성(선택·가중·보유·리밸) 의존성 — optimizer/judge 구성민감도 연료"
+    },
+    {
+      "title": "Fitting Accumulated Stock Returns with Tempered Skew t-Distribution",
+      "id": "2606.19318",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "누적수익 tempered skew-t 분포적합 — risk 꼬리분포 연료"
+    },
+    {
+      "title": "Robust Transformer-Based One-Step Stock Index Forecasting via Shifted Data Augmentation",
+      "id": "2606.15701",
+      "source": "arxiv",
+      "route": "regime",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Shifted Data Augmentation transformer 지수 1-step 예측 — 시장타이밍(regime) 방법론(지수레벨)"
+    },
+    {
+      "title": "Belief at Risk: Quantifying Agentic AI Model Risk with LLM-Inferred Bayesian State Filters",
+      "id": "2606.15473",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "agentic AI 모델리스크 Bayesian belief filter — 범위밖"
+    },
+    {
+      "title": "Composite likelihood inference of fractional Gaussian processes with sequentially optimal subset selection",
+      "id": "2606.11962",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "분수 가우시안 합성우도 추정 — 통계이론"
+    },
+    {
+      "title": "Mean-Variance Optimization in Ambiguous Financial Markets with Learning",
+      "id": "2606.11318",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "드리프트 모호성+학습 하 mean-variance(ambiguity-averse) — optimizer 강건 MVO/BL 연료"
+    },
+    {
+      "title": "Benchmarking Deep Time Series Models for Equity Portfolios",
+      "id": "2606.09420",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "15개 deep TS 모델 CRSP 일별 + 비용·제약·turnover 부과 후 사용성 벤치마크(constrained quadratic layer) — optimizer 배포-조정 구성 연료"
+    },
+    {
+      "title": "Addressing Market Regime Changes and Heavy-Tailed Returns in Portfolio Optimization via Bayesian VAR and Elliptical Black-Litterman",
+      "id": "2606.09104",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "BAVAR + Elliptical Black-Litterman(regime+heavy-tail) 배분 — optimizer BL변형 연료"
+    },
+    {
+      "title": "Continuous Cash-Overlay Filters for a Static Growth--Defensive Risk Sleeve: Slow-Tail Compensation, V-Shape Crash Brakes, Walk-Forward Validation, and Max-Cash Combination",
+      "id": "2606.09025",
+      "source": "arxiv",
+      "route": "regime",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "연속 cash-overlay 필터(slow-tail+V-shape crash brake+max-cash combo) growth-defensive sleeve — regime/overlay 연료. ※max-cash combine은 2026-06-26 FALSIFIED(min-combine 우위)"
+    },
+    {
+      "title": "A Structural Matrix Autoregressive Model for the Joint Dynamics of Volume, Volatility, and Returns",
+      "id": "2606.08141",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "Vol_Volume_Return_SMAR",
+        "def": "구조적 행렬AR로 거래량·실현변동성·수익 결합동학 스필오버",
+        "novel": null,
+        "kr_feasible": true,
+        "verdict": "redundant",
+        "confidence": "med",
+        "reason": "거래량/변동성 상호작용 다수 등재(L32 Ret_Vol_Corr·L44 Vol_Ret_Asym·CR02 Volume_Conc·D-vol군)"
+      },
+      "reason": "SMAR 거래량-변동성-수익 스필오버 공분산 — risk 연료. 파생팩터는 중복"
+    },
+    {
+      "title": "Anticipatory Portfolio Optimization",
+      "id": "2606.04258",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "anticipatory(enriched filtration+impact+overfitting geometry) 포트옵트 — optimizer 이론 연료"
+    },
+    {
+      "title": "Deep Learning Forecasting of the U.S. Aggregate Bond Index",
+      "id": "2605.27977",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "미 종합채권지수 DL 예측 — 채권 범위밖"
+    },
+    {
+      "title": "PortBench: A Correlation-Aware, Full-Pipeline Benchmark for LLM-Driven Portfolio Management",
+      "id": "2605.27887",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "PortBench LLM 포트관리 상관-인지 벤치마크 — 범위밖"
+    },
+    {
+      "title": "Forward-Looking Stress Testing Under Macro Scenarios: Stable SVaR Estimation Using a Hybrid GPR-HS Framework with SACS",
+      "id": "2606.07575",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "전향 매크로시나리오 SVaR(GPR-HS) 스트레스테스트 — risk 스트레스 연료"
+    }
+  ]
+}

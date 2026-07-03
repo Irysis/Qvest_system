@@ -236,7 +236,7 @@ cat(sprintf("  Alerts (non-Stable): %d\n", sum(df_hybrid$Regime != "Stable")))
 #──────────────────────────────────────────────────────────────────────────────
 # 7. Save updated results
 #──────────────────────────────────────────────────────────────────────────────
-output_dir <- file.path(PROJECT_ROOT, "research_output", "regime_comparison", "output")
+output_dir <- file.path(PROJECT_ROOT, "outputs", "regime", "output")
 if (!dir.exists(output_dir)) dir.create(output_dir, recursive = TRUE)
 
 # Save as .RData (compatible with existing loaders)

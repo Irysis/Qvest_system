@@ -1,0 +1,61 @@
+{
+  "task_id": "WT-D20260629_002",
+  "verdict": "FAIL",
+  "metric_authority": "canonical_screen_bt portfolio_alpha_t_nw_lag3 (graduation HARD >=2.95)",
+  "candidates": {
+    "A084_OBV20": {
+      "rank_ic": -0.0169,
+      "icir": -0.153,
+      "ic_nw_t_lag3": -2.51,
+      "best_longonly_PORT_t": 0.668,
+      "best_cfg": "sign+1 n25 (long high OBV)",
+      "net_sr": 0.093,
+      "turnover_annual": 16.8,
+      "subperiod_stability": 1,
+      "max_cor_existing": 0.679,
+      "max_cor_vs": "M04_Mom_1"
+    },
+    "A123_PVcorr": {
+      "rank_ic": -0.0315,
+      "icir": -0.343,
+      "ic_nw_t_lag3": -6.21,
+      "best_longonly_PORT_t": 0.09,
+      "best_cfg": "sign-1 n20",
+      "net_sr": null,
+      "max_cor_existing": 0.3
+    },
+    "A039_momVWAP": {
+      "rank_ic": 0.011,
+      "icir": 0.111,
+      "ic_nw_t_lag3": 1.85,
+      "best_longonly_PORT_t": -0.62
+    },
+    "A073_nestPV": {
+      "rank_ic": -0.0015,
+      "icir": -0.02,
+      "ic_nw_t_lag3": -0.29,
+      "best_longonly_PORT_t": 0.06
+    },
+    "A046_MRext": {
+      "rank_ic": -0.0226,
+      "icir": -0.184,
+      "ic_nw_t_lag3": -2.93,
+      "best_longonly_PORT_t": -0.84
+    },
+    "A184_gapcorr": {
+      "rank_ic": 0.0103,
+      "icir": 0.097,
+      "ic_nw_t_lag3": 1.57,
+      "best_longonly_PORT_t": 0.431,
+      "net_sr": 0.055
+    }
+  },
+  "graduation_hard_gate_PORT_t": 2.95,
+  "best_longonly_PORT_t_observed": 0.668,
+  "graduation_PASS": false,
+  "harvey_bonferroni_hurdle_n6": 2.64,
+  "failure_mode": "gap_up_ratio reproduced: strong rank-IC (A123 t=-6.21) lives in short leg, no long-only transfer; positive-leaning candidates (A084 +0.67, A184 +0.43) statistically insignificant (p~0.5-0.8) and far below 2.95.",
+  "pit_audit": "signal window ends sig_date (month-end); forward 1M return separated (C2). adv liquidity t-1 (C10). VWAP proxy=(H+L+C)/3.",
+  "bm_caveat": "benchmark from WT-001 clean monthly series (RAWDATA daily BM_Ret empty per project-rawdata-bmret-empty-factordb-gap). authoritative read = IR/net_SR (alpha_annualized inflated by 2026 BM anomaly).",
+  "alpha181_skew_dropped": "f181_skew20 coverage bug (348 rows) — excluded from candidate set, not in final 6."
+}

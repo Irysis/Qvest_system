@@ -21,8 +21,8 @@
 | **13** Portfolio Heuristics | 직접 구현 (TA scenario updating) | Cross-family blender 시점 (cardinality K, max_w 제약 + heuristic) |
 
 **상세 요약**:
-- `06_Reference/textbook_summaries/FRM_Pfaff_summary.md` (Ch10-12)
-- `06_Reference/textbook_summaries/NMF_Gilli_summary.md` (Ch12-13)
+- `02_Infrastructure/docs/reference_textbooks/FRM_Pfaff_summary.md` (Ch10-12)
+- `02_Infrastructure/docs/reference_textbooks/NMF_Gilli_summary.md` (Ch12-13)
 
 자율 권한 — Optimizer agent는 위 method를 method_shopping에 추가 가능. 4-method 비교 시 (1) 기존 MVO/HRP/CVaR LP/Robust resid + (2) MDP / ERC / Min CDaR / PSO heuristic 등 자유 추가. Selection objective는 R4 P3 정합 (`crowding_adj_ret`/`net_ir`/`to_adj_ret`).
 

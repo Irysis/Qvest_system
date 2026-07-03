@@ -1,0 +1,31 @@
+{
+  "date": "20260629",
+  "n_input": 1,
+  "tier": "tier-2 factor deep-recheck",
+  "promoted": [],
+  "confirmed_infeasible": [
+    {
+      "paper_id": "2606.23596",
+      "title": "Anatomy of the Market: A Body-Tail Test of Factor Models",
+      "source": "arxiv",
+      "author": "Useong Shin (Sogang Univ.)",
+      "factor_hint": "market_body_tail_leg",
+      "verdict": "infeasible",
+      "reason": "model-evaluation diagnostic, no tradable cross-sectional stock signal",
+      "deep_read": "full-text read (arxiv HTML, ~100k chars). 논문은 팩터모델 평가 진단(diagnostic) 방법론이다. CRSP investible market을 누적시가총액(cumulative market cap) 기준 value-weighted body leg(대형)·tail leg(소형)로 분할 → 두 leg의 동적 재결합이 시장수익률을 정확히 복원하도록 고정한 뒤, CAPM/FF3/Carhart/FF5/FF6/q5가 이 size-ranked 분해에 systematic pricing error(leg alpha)를 남기는지 비교. 핵심 발견: q5만 9개 절단비율 전부에서 negative body alpha + positive tail alpha(daily joint rejection) — q5의 nonmarket profitability-growth block(ROE·EG) 탓. matched random split에선 패턴 소멸.",
+      "why_infeasible": [
+        "종목-선택 신호 부재(결정적): 저자 명시 — 'Body-tail legs are not anomaly portfolios sorted on book-to-market, profitability, investment, or momentum; they are size-ranked portfolios from the same investible universe whose value-weighted combination reconstructs the aggregate market return.' leg은 alpha 생성 신호가 아니라 모델 평가용 test asset이다.",
+        "문서화된 alpha = 거래 신호 아님: negative body / positive tail alpha는 *미국 q5 모델의 잔차 pricing error*(모델 오설정 진단)다. 저자 명시 — 'The conclusion is diagnostic and design-specific... not a general failure of the profitability or expected-growth factors' / 'The split is diagnostic — a descriptive chronology, not an out-of-sample test.' 포팅할 수익예측 규칙이 없다.",
+        "유일하게 KR 구성가능한 양 = 누적시총 leg 분할 = 순수 SIZE. long-only 사상(tail leg = 소형주 틸트)도 결국 size에 불과 → S01_Size / L26_Log_MktCap / S02_Float_Size와 redundant이며 논문의 기여도 아님.",
+        "L/S 가드 확인: tail-minus-body의 long leg(tail=소형)을 long-only로 사상해도 size 신호뿐. 'L/S라서'가 아니라 long leg에 신규 신호가 없어 infeasible."
+      ],
+      "in_our_inventory": "partial (size proxies)",
+      "closest_existing": "S01_Size / L26_Log_MktCap / S02_Float_Size (누적시총 leg 분할의 유일 구성가능 신호 = size, 완전 중복)",
+      "longshort_mapping": "tail leg long-only = small-cap tilt = size; no novel long-leg signal",
+      "prior_verdict": "uncertain (tier-1 router v2)",
+      "analogous_to": "2606.07450 (taxonomy/model-restoration paper, 수익신호 부재 — infeasible 반복확정)"
+    }
+  ],
+  "redundant": [],
+  "still_uncertain": []
+}

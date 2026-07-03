@@ -1,0 +1,132 @@
+{
+  "task_id": "WT-D20260630_001",
+  "wt_type": "discovery",
+  "as_of_date": "2026-06-30",
+  "forecast_horizon": "1M",
+  "selection_objective": "rank_ic",
+  "hypothesis_title": "자사주 취득결정 이벤트 알파 (buyback, Ikenberry KR 적용)",
+  "verdict": "FAIL",
+  "verdict_one_line": "방향(buyback 종목이 비-buyback 평균 초과 +0.30%/mo)은 맞으나 통계 비유의(t=1.27)이고, KOSPI200 TR 벤치 대비 long-only top-N basket의 실현 active(PORT_t NW lag-3)는 음수(-0.92 ~ -0.38). intensity 랭킹은 무신호(rank-IC 0.008, t=0.37). recent-only(2023+) 집중 = overfit 위험. KR long-only standalone alpha로 미성립.",
+  "data_provenance": {
+    "buyback_source": ".cache/dart/buyback_decisions_clean.parquet (933 rows, 2015~2026, A-prefix Ticker)",
+    "returns_source": ".cache/RAWDATA.parquet (daily, monthly-aggregated; Ret compounded prod(1+r)-1)",
+    "benchmark_source": ".cache/benchmark.parquet (KOSPI200 TR daily BM_Ret; RAWDATA BM_Ret was ~empty so NOT used for benchmark)",
+    "universe": "KOSPI200 ∪ KOSDAQ150 (RAWDATA K200/KQ150 flags at month-end), liquidity 20d ADV >= 2e8 KRW",
+    "start_date": "2015-01-01 (DART buyback data 한계 — 표준 2005 시작에서 벗어남, 명시)",
+    "n_months_usable": 137,
+    "cost_model": "v2.4_kr_retail_15bps one-way (canonical_screen_bt)"
+  },
+  "korean_date_parsing": "aq_dd '2016년 03월 04일' regex (\\d{4})년 (\\d{1,2})월 (\\d{1,2})일 → Timestamp. 3/933 unparseable (= '-' or blank) dropped.",
+  "aq_mth_filter": {
+    "method": "free-text classification of aq_mth into on_market(include) vs exclude",
+    "include_keywords": "장내, 직접취득/직접 취득, 직접매수, 매수, 취득 (without exclude markers)",
+    "exclude_keywords": "무상(free_gift), 공개매수(tender offer, often delisting), 장외/당사자/계약에 의한/계좌간/상환/전환(off_market RCPS/delisting), 시간외(block trade)",
+    "result": "857 on_market real-buy events of 933 total; excluded 51 off_market + 16 tender + 4 free_gift + 2 block + 3 unknown",
+    "unique_tickers_after_filter": 244
+  },
+  "pit_handling": {
+    "signal_timing": "aq_dd 결정공시일이 속한 월 M의 month-end에 signal known (공시일 = 월 중 발생, EOM M까지 알 수 있음)",
+    "forward_return": "month M+1 realized return (fwd_1m). C2 same-day circular 회피: 신호 EOM(M), 수익 M+1.",
+    "liquidity": "t-1 기준 20d ADV (월말 직전 rolling 20d mean of Close*Vol), C10 준수",
+    "c13": "intensity Z-score는 active set 내 cross-sectional, sign 미반전(Z_Score_Aligned 정신)",
+    "c15": "factor DB 직접 load 미사용. RAWDATA + buyback parquet만 (carve-out 허용 데이터)"
+  },
+  "signal_forms": [
+    {
+      "id": "A",
+      "name": "trailing-12m buyback intensity",
+      "formula": "sum(aqpln_prc_ostk over [M-11, M]) / Size_M (announcement-month-end mktcap)",
+      "rationale": "Ikenberry: 더 큰 자사주 매입 = 더 강한 저평가 시그널. trailing 12m으로 sparse 이벤트 누적.",
+      "rank_ic_among_active": 0.0076,
+      "icir": 0.032,
+      "rank_ic_t": 0.37,
+      "tercile_monotonic": false
+    },
+    {
+      "id": "B",
+      "name": "binary trailing-12m active",
+      "formula": "1 if any on_market buyback event in [M-11, M] else excluded",
+      "rationale": "강도 무관, buyback 발생 자체가 시그널. EW among active.",
+      "active_vs_inactive_spread_per_month": 0.0030,
+      "active_vs_inactive_t": 1.27
+    },
+    {
+      "id": "C",
+      "name": "event-month intensity only",
+      "formula": "aqpln_prc_ostk_M / Size_M (current month only, no accumulation)",
+      "rationale": "이벤트 직후 1개월 drift만 포착",
+      "turnover_annual": 22.2
+    }
+  ],
+  "coverage_statistics": {
+    "method": "trailing-12m accumulation (sparse ~85 events/yr mitigated)",
+    "active_stocks_per_month_mean": 27.2,
+    "active_stocks_per_month_median": 29,
+    "active_stocks_per_month_min": 2,
+    "active_stocks_per_month_max": 40,
+    "months_with_active_ge_20": "111 / 137",
+    "months_with_active_ge_10": "131 / 137",
+    "note": "2015 초반(trailing window 미충전)만 sparse(2~9), 2016+ 대부분 20+. top-20 long basket 대부분 달 형성 가능."
+  },
+  "kill_gate_port_t": {
+    "metric_type": "canonical_screen (canonical_screen_bt, contract build_benchmark_compare NW lag-3)",
+    "note": "admission-binding 아님(forge build_bt_result가 authoritative). screening 실측.",
+    "formA_top20": {"port_t_nw_lag3": -0.927, "p": 0.3542, "IR": -0.205, "net_sr": -0.205, "turnover_annual": 3.08, "mean_active_net_per_month": -0.00548},
+    "formB_top20": {"port_t_nw_lag3": -0.923, "p": 0.3562, "IR": -0.190, "net_sr": -0.190, "turnover_annual": 2.70, "mean_active_net_per_month": -0.00515},
+    "formC_top20": {"port_t_nw_lag3": -0.378, "p": 0.7057, "IR": -0.078, "net_sr": -0.078, "turnover_annual": 22.20, "mean_active_net_per_month": -0.00235},
+    "formA_top25": {"port_t_nw_lag3": -0.922},
+    "formA_top15": {"port_t_nw_lag3": -0.825},
+    "formA_top10": {"port_t_nw_lag3": -0.747},
+    "min_required_hard": 2.95,
+    "kill_gate_result": "FAIL — all forms negative PORT_t. Ikenberry long-leg는 KR 2015-2026 KOSPI200-TR 벤치 대비 미성립."
+  },
+  "raw_vs_active_diagnosis": {
+    "top20_intensity_basket_gross_per_month": 0.0080,
+    "top20_basket_gross_sr": 0.50,
+    "benchmark_kospi200tr_per_month_same_window": 0.0131,
+    "explanation": "buyback basket gross 0.80%/mo는 비-buyback 평균(0.60%/mo)은 초과하나 KOSPI200 TR(1.31%/mo, 2015-2026 메가캡 성장주 견인) 대비 음수 active. buyback 종목이 large-cap value/low-growth로 틸트(corr(active, log Size)=0.119, top size quintile 33.7%) → 벤치 대비 구조적 열위.",
+    "direction_correct_but_insufficient": true
+  },
+  "subperiod_stability": {
+    "active_vs_inactive_spread": {
+      "2015-2018": {"spread_per_month": -0.0007, "t": -0.15},
+      "2019-2022": {"spread_per_month": 0.0017, "t": 0.60},
+      "2023-2026": {"spread_per_month": 0.0086, "t": 1.95}
+    },
+    "instability_flag": "RF-A3 유사 — 효과가 recent(2023+)에만 집중. 전기간 평균 t=1.27은 최근 구간 주도. overfit/regime 위험."
+  },
+  "orthogonality": {
+    "vs_size": "corr(active dummy, log Size) = 0.119 (mild large-cap tilt)",
+    "vs_score_eff_existing_factors": "NOT formally measured — standalone FAIL이라 직교성 후속 미진행(kill-gate 우선). buyback의 large-cap value 틸트는 기존 value/size 팩터와 부분 중복 가능성 시사.",
+    "note": "standalone alpha 미성립으로 admitted 팩터 대비 직교성 비교는 의미 제한적. overlay/screen-tier 후보로 재평가 시 score_eff 잔차화 필요."
+  },
+  "diagnostics": {
+    "rank_ic": 0.0076,
+    "icir": 0.032,
+    "harvey_t_stat_rankic": 0.37,
+    "portfolio_alpha_t_nw_lag3_best": -0.378,
+    "net_of_cost_sr_best": -0.078,
+    "turnover_proxy_best": 3.08,
+    "subperiod_stability": "unstable (recent-only)",
+    "monotonicity": "non-monotonic (tercile T0=0.0083 T1=0.0096 T2=0.0078)"
+  },
+  "method_shopping_log": {
+    "candidates_tried": 3,
+    "method_log": [
+      {"name": "trailing12m_intensity (A)", "port_t": -0.927, "selected": false},
+      {"name": "binary_trailing12m (B)", "port_t": -0.923, "selected": false},
+      {"name": "event_month_intensity (C)", "port_t": -0.378, "selected": false}
+    ],
+    "selection_type": "chain (가설주도 — 단일 anomaly 3 신호형태 진단, sweep 아님). DSR 게이트 advisory."
+  },
+  "challenge_flags": [
+    "RF-A3-like: 효과 recent(2023+)-only 집중, 전기간 비유의",
+    "KILL-GATE FAIL: 모든 신호형태 PORT_t 음수 — long-only KR KOSPI200-TR 벤치 대비 미성립",
+    "intensity 랭킹 무신호 (rank-IC 0.008, tercile non-monotonic) — 강도 차원 사용 불가",
+    "방향은 정확(buyback>non-buyback) but 벤치 대비 음수 = large-cap value 틸트가 메가캡 성장주 벤치에 압도"
+  ],
+  "factor_specs": [],
+  "alpha_vector": {},
+  "confidence_vector": {},
+  "next_step_recommendation": "risk 단계 진행 불가 (standalone alpha 미성립). 후보 재활용 경로: (a) screen-tier DPL_FEATURE — buyback active dummy를 ML 피처로(direction 정보 있음) / (b) value/quality sleeve의 보조 틸트 overlay (standalone 아님). recent-only 효과라 자본 graduation 부적격. L-code 적립(VALIDATED 방향-correct-but-benchmark-dominated)."
+}

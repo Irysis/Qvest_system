@@ -1,0 +1,23 @@
+{
+  "date": "20260619",
+  "autorun": 0,
+  "max_alpha": 2,
+  "candidates": [
+    {
+      "title": "Stock Investment: The p-index Approach",
+      "id": "2606.08569",
+      "source": "arxiv",
+      "route": "alpha",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "p_index_fair_downside_insurance",
+        "def": "종목별 fair-price put-insurance 비용: δ 목표수익을 만기 T(1주~1개월)에 보장하는 1달러당 보험료. K=S0*(1+δ) 유럽형 put의 공정가(Black-Scholes: S, K, r=FRED/ECOS, σ=과거수익 실현변동성, T)로 합성 — 옵션 *시장데이터 불요*. p-ratio efficiency(저평가/고평가)로 종목 랭킹",
+        "novel": true,
+        "kr_feasible": true,
+        "verdict": "testable",
+        "confidence": "medium"
+      },
+      "reason": "p-index = 1달러당 다운사이드 보험료(put 공정가 합성). registry에 put/insurance 팩터 부재(VaR/CVaR/downside와 구별 — 전자는 실현 손실분위, p-index는 forward 옵션공정가). 가격+과거σ+무위험금리로 PIT 합성가능(task 명시 feasible 예시). δ·정규화는 본문 미확인분 medium"
+    }
+  ]
+}

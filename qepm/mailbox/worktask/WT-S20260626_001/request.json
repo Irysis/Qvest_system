@@ -1,0 +1,79 @@
+{
+  "task_id": "WT-S20260626_001",
+  "wt_type": "sizing_only",
+  "pg1_eligibility": "certificate_required",
+  "discovery_of": "STR_1715_WT016_Iter31_GridBestProd",
+  "graduation_criteria": {
+    "description": "Discovery → Deployment 전환 조건. discovery_graduation_gate.sh 강제. v8.x WS2 재설계(2026-05-29): rank-IC 계열은 long-only 실현 alpha와 어긋나(16후보 calibration 실측: rank_ic가 FLOW 거짓탈락+NN/TECH 거짓통과) advisory로 강등, portfolio-alpha t(forge NW lag-3)를 hard로. DSR hard는 sweep형 selection만(2026-06-10 개정 — chain/단일은 advisory). hard 기준은 forge-authoritative 값(alpha-stage proxy 아님)에 적용.",
+    "min_rank_ic": 0.04,
+    "min_rank_ic_rationale": "KR top-universe benchmark. <0.04는 IC 약함. (v8.x severity=advisory — long-only 실현 alpha 미전이)",
+    "min_icir": 0.2,
+    "min_icir_rationale": "Alpha Lab Gate. (v8.x severity=advisory)",
+    "min_subperiod_stability": 0.5,
+    "min_subperiod_stability_rationale": "3개 subperiod 안정성. (v8.x severity=advisory)",
+    "max_drawdown_days": 100,
+    "max_drawdown_days_rationale": "100일 이상 drawdown 지속 시 alpha decay 의심. (severity=advisory)",
+    "min_harvey_t_stat": 3,
+    "min_harvey_t_stat_rationale": "rank-IC Harvey-t. (v8.x severity=advisory — rank-IC t는 portfolio-alpha t와 구분, 후자가 권위)",
+    "min_deflated_sharpe_ratio": 0.5,
+    "min_deflated_sharpe_ratio_rationale": "Bailey-Lopez de Prado DSR — multi-testing 보정 SR. (severity=HARD는 sweep형 selection만 — ML스윕/optimizer서치/앙상블·사전등록 grid. 가설주도 chain/단일검증은 advisory 강등+진단산출. 도훈 mandate 2026-05-31/2026-06-10, measurement-graduation §3)",
+    "min_portfolio_alpha_t_nw": 2.95,
+    "min_portfolio_alpha_t_nw_rationale": "★v8.x 신규 HARD. forge-authoritative 실현 portfolio-alpha t (NW lag-3, forge_package.portfolio_alpha_t_nw_lag3). Harvey-Liu-Zhu 2016 hurdle. rank-IC t 아님. 게이트 핵심 판별(16후보 중 FLOW만 통과=정확).",
+    "severity": {
+      "rank_ic": "advisory",
+      "icir": "advisory",
+      "subperiod_stability": "advisory",
+      "harvey_t_stat": "advisory",
+      "deflated_sharpe_ratio": "hard",
+      "portfolio_alpha_t_nw": "hard"
+    },
+    "severity_rationale": "hard = block(우회불가), advisory = warn(screening). hard 2종(DSR/portfolio_alpha_t_nw)은 forge-authoritative 값에만 적용 — alpha-stage proxy로 graduation 선언 금지(v8.x WS1 정합)."
+  },
+  "theme": null,
+  "hypothesis_title": "Max-Cash 비-compounding 오버레이 결합 (AR x R05 과방어 완화)",
+  "hypothesis_description": "[동기] 현 book STR_1715 오버레이 결합은 곱셈(risk_weight = beta_AR * beta_R05; 부트 admit baseline 0.70*1.00=0.70). 문서화된 결함(architecture audit B2): M4<->AR overlap 91% — 상관 높은 두 오버레이가 동시 발화 시 곱셈이 디리스크를 이중계상(compound)해 중간밴드 과방어 드래그 유발. [가설] 비-compounding 결합 max-cash = risk_weight = min(beta_AR, beta_R05) (= 더 깊은 단일 디리스크만 채택, 곱셈 compound 회피). 상관 높은 오버레이의 과방어를 줄이되 깊은 크래시 방어는 유지한다. [출처] arxiv 2606.09025 'Continuous Cash-Overlay Filters' max-cash 결합 연산자(메커니즘 동기 only — 논문 성과수치는 판정근거 아님, 실측 forge로만 보고). [접근] A/B: incumbent 곱셈 vs max-cash(min) on STR_1715 AR/R05 오버레이. base sleeve/alpha/Sigma는 STR_1715 inherit(신규 알파 없음 = sizing_only). fresh regime_daily_v2(06-26 refresh 완료), 15bps delta cost(v2.4), PIT 유지(AR/R05 모두 lag-1, max는 PIT 보존). [게이트] book-marginal ΔIR>=0.05 + MDD 비악화. 가설주도 단일 A/B(chain, not sweep) → DSR 부적용. governor 정지(자본 수동+도훈). [정직 기대] 오버레이는 SR~1.95로 다년 튜닝됨 — SR 2.5 천장 돌파 아님. 기대값 = 중간밴드 과방어 드래그 소폭 감소 / MDD 개선.",
+  "hypothesis_source": "user_defined",
+  "as_of_date": "2026-06-26",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KOSPI200_KOSDAQ150_intersection",
+    "liquidity_min_won_20d_avg": 200000000,
+    "max_names_total": 500
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d (재무제표 발표 지연)",
+    "fundamental_annual": "annual May (연간 재무제표 5월 리밸런싱)",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement (QuantiWise)",
+    "macro": "t-1 FRED (외부 매크로 lag)",
+    "ic_history": "Usable_Date <= sig_date (Factor DB 강제)"
+  },
+  "cost_model_version": "v2.4_kr_retail_15bps",
+  "current_portfolio": "STR_1631_80_STR_1656_20",
+  "hard_mandate": {
+    "pit_enforcement": "C1-C15 all enforced",
+    "liquidity_floor_won_20d_avg": 50000000,
+    "mandate_restrictions": {
+      "no_short_legal_kr": true,
+      "no_cross_market": true,
+      "kr_domestic_only": true
+    },
+    "long_only_mandate": true
+  },
+  "hard_constraints": {
+    "max_names": 25,
+    "weight_bounds": [
+      0,
+      0.2
+    ],
+    "sector_active_weight_cap": null,
+    "liquidity_min_won_20d_avg": 200000000
+  },
+  "soft_penalties": [],
+  "capacity_limits": {
+    "adv_multiplier": 0.1,
+    "capacity_max_aum_won": 100000000000
+  }
+}

@@ -1,0 +1,119 @@
+{
+  "schema_version": "alpha_search_strategy_manifest_v1",
+  "created_at": "2026-06-13T07:48:27+0900",
+  "mode": "alpha_search",
+  "strategy_id": "STR_AS_20260613_074246_249776",
+  "strategy_name": "NCO Spectral Clustering + RMT Covariance (Garcia-Medina 2023)",
+  "strategy_idea": "NCO Spectral Clustering + RMT Covariance (Garcia-Medina 2023) Forge contract/spec requires code generation before backtest Forge contract/spec requires code generation before backtest",
+  "factor_engine_path": "02_Infrastructure/alpha_search/fe_factor_combo.R",
+  "execution": {
+    "universe": "ALL",
+    "universe_n": 141,
+    "n_holdings": 30,
+    "weight_method": "nco",
+    "commission": 0.0015,
+    "risk_controls": {
+      "vol_target": null,
+      "vol_lookback": 60,
+      "dd_brake": null,
+      "buffer_zone": {
+        "keep_n": 60,
+        "entry_n": 30
+      },
+      "use_default_buffer": true,
+      "cov_method": "gerber_rmt"
+    },
+    "bt_result_path": "stage_artifacts/alpha_search/20260613_074246_249776/bt_result.rds"
+  },
+  "pit": {
+    "code_scan": "detect_lookahead",
+    "status": "CLEAN",
+    "factor_engine_path": "02_Infrastructure/alpha_search/fe_factor_combo.R",
+    "note": "AlphaSearch stops before backtest when detect_lookahead reports violations."
+  },
+  "backtest_contract": {
+    "status": "OK",
+    "run_id": "ASBT_20260613_074246_249776",
+    "metric_type": "backtested",
+    "bt_result_path": "stage_artifacts/alpha_search/20260613_074246_249776/bt_result.rds",
+    "output_dir": "stage_artifacts/alpha_search/20260613_074246_249776",
+    "integrity_status": "WARNING",
+    "audit_pass": 15,
+    "audit_fail": 0,
+    "audit_warn": 1,
+    "validation_errors": [],
+    "note": "standard Backtest Result Contract saved for every AlphaSearch run; grade/admission remains separate",
+    "return_series": {
+      "status": "OK",
+      "source": "bt_result.period_returns",
+      "csv_path": "stage_artifacts/alpha_search/20260613_074246_249776/03_period_returns.csv",
+      "date_col": "date",
+      "ret_col": "ret_net",
+      "n_obs": 5266,
+      "start_date": "2005-02-03",
+      "end_date": "2026-06-11",
+      "post2008_obs": 4547,
+      "frequency": "daily"
+    }
+  },
+  "verdict": {
+    "grade": "B",
+    "score": 27.4,
+    "hurdle_pass": false,
+    "hard_fail": false,
+    "fail_reasons": [],
+    "f_grade_reasons": [],
+    "screening": {
+      "screen_pass": false,
+      "screen_route": "NONE",
+      "drawdown_tail_review": true,
+      "note": "탐색 게이트 — 자본/졸업 게이트 아님 (graduation HARD 불변). PIT만 절대."
+    }
+  },
+  "metrics": {
+    "CAGR": 8.58,
+    "AnnVol": 16.56,
+    "Sharpe": 0.518,
+    "Sharpe_m": 0.564,
+    "IR": -0.162,
+    "MDD": 55,
+    "Calmar": 0.156,
+    "Turnover_Ann": 184.1,
+    "Top10_Conc": 50,
+    "Rolling3Y_Pos": 80.6,
+    "BM_Corr": 0.768,
+    "ES99_d": 4.22,
+    "ES99_m": 16.56,
+    "GradeA_Corr": null,
+    "Rolling6M_Hit": 63.7,
+    "Worst6M_Ret": -42.74,
+    "MaxConsecNegAlpha": 13,
+    "Rolling12M_Hit": 71.5
+  },
+  "excess_cagr_pct": -2.16,
+  "fmt": [
+    {
+      "code": "FMT-01",
+      "label": "Structural MDD",
+      "reason": "MDD 55.0% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)"
+    },
+    {
+      "code": "FMT-02",
+      "label": "Factor Degeneration",
+      "reason": "IR -0.16 < -0.1 & 초과CAGR -2.2%p < 0 — KR에서 팩터 방향 역작동 의심"
+    },
+    {
+      "code": "FMT-04",
+      "label": "Regime Blindness",
+      "reason": "MDD 55.0% > 35% & BM상관 0.77 >= 0.7 — 위기국면 동조 낙폭(국면필터 부재)"
+    }
+  ],
+  "authoritative": {
+    "status": "OK",
+    "essence_grade": "F",
+    "reasons": "non-positive alpha (PORT_t<=0 또는 net_IR<=0)",
+    "metric_type": "backtested",
+    "run_id": "ASBT_20260613_074246_249776",
+    "bt_result_path": "/mnt/c/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/alpha_search/20260613_074246_249776/bt_result.rds"
+  }
+}

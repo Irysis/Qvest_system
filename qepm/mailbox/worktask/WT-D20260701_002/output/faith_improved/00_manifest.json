@@ -1,0 +1,22 @@
+{
+  "run_id": "WT-D20260701_002_ret_faith",
+  "strategy_id": "STR_1715_AR_on_M4_R05_overlay_PG2_PAPER4_FAITHFUL",
+  "strategy_version": "v1.0_dossier",
+  "run_datetime": "2026-07-01T12:49:01+09:00",
+  "start_date": "2004-02-02",
+  "end_date": "2026-06-01",
+  "frequency": "monthly",
+  "rebalance_rule": "month_first_biz_day (realized month t)",
+  "universe_id": "KOSPI200_KOSDAQ150",
+  "benchmark_ids": "KOSPI200_total_return",
+  "transaction_cost_bps": 15,
+  "slippage_bps": 0,
+  "risk_free_rate_source": "0",
+  "data_snapshot_id": "snapshot_20260701",
+  "code_version": "run_forge_dossier_v1",
+  "created_by_agent": "forge",
+  "integrity_status": "WARNING",
+  "honest_caveats": "MECHANISM_GENERIC=개선 오버레이 메커니즘은 generic 비대칭 추세추종(하락추세 방어) — 논문4(Safari-Schmidhuber) 고유 아님. plain-TS-mom도 계약SR 1.97(개선의 ~93%). || PROXY_PROMOTION=proxy 재구성(python ar_faithful_v3) 월수익 시리즈를 forge full build_bt_result로 official(backtested) 승격. || DSR_MULTIPLE_TESTING=다변형(T=8/16/32/64 + regime map + combine) 탐색 → DSR 다중검정 haircut 여지. 단 사전약정 논문계수가 placebo+oos_retention 통과. || GFC2008_AR_SUPERIOR=2008 GFC 구간낙폭은 현행 AR(-9.3%)이 개선 충실(-17.5%) 우위. 충실은 추세 de-risk지 systemic-crash 탐지 아님. || PURE_MEASUREMENT=forge는 주어진 ret_faith/ret_book를 계약으로 측정만 함. 오버레이 β/수익경로/alpha/weight 재해석 없음.",
+  "measurement_note": "monthly period_returns direct-fed; nav=cumprod(1+ret); benchmark=KOSPI monthly. holdings=NULL (scalar overlay). proxy->backtested promotion.",
+  "frequency_mislabel_detected": false
+}

@@ -1,0 +1,30 @@
+#!/usr/bin/env Rscript
+# Generated direct AlphaSearch runner for STR_1049
+args0 <- commandArgs(FALSE)
+file_arg <- grep("^--file=", args0, value = TRUE)
+this_file <- if (length(file_arg)) sub("^--file=", "", file_arg[[1]]) else tryCatch(sys.frame(1)$ofile, error = function(e) "")
+root <- if (nzchar(this_file)) normalizePath(file.path(dirname(this_file), "../../../.."), winslash = "/", mustWork = FALSE) else ""
+if (!nzchar(root) || !file.exists(file.path(root, "02_Infrastructure", "config.R"))) root <- normalizePath(getwd(), winslash = "/", mustWork = TRUE)
+setwd(root)
+Sys.setenv(CLAUDE_PROJECT_DIR = root, QM_ROOT = root)
+Sys.setenv(FACTOR_NAMES = "D01_IdioVol,D02_Beta,M07_IndMom,Q04_Piotroski_F,V03_CFP")
+Sys.setenv(FACTOR_WEIGHTS = "1,1,1,1,1")
+Sys.setenv(FACTOR_MIN_COUNT = "5")
+source("02_Infrastructure/alpha_search/run_alpha_search.R")
+res <- run_alpha_search(
+  strategy_name = "STR_1049 — STR_1036에 vol_target=0.13 overlay 추가. 현재 ann_vol 15.75%를 13%로 억제. SR 1.284→1.5 기대.",
+  strategy_idea = "STR_1049 — STR_1036에 vol_target=0.13 overlay 추가. 현재 ann_vol 15.75%를 13%로 억제. SR 1.284→1.5 기대. Forge contract/spec requires code generation before backtest Forge contract/spec requires code generation before backtest",
+  factor_engine_path = "02_Infrastructure/alpha_search/fe_factor_combo.R",
+  n_holdings = 30L,
+  weight_method = "equal",
+  universe = "ALL",
+  send_telegram = TRUE,
+  tg_dry_run = FALSE,
+  factor_analysis = TRUE,
+  vol_target = 0.130000,
+  vol_lookback = 60L,
+  use_default_buffer = TRUE
+)
+saveRDS(res, "/mnt/c/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/batch_434/20260612_codegen_direct_409/STR_1049_result.rds")
+cat(sprintf("[codegen-runner] DONE %s grade=%s score=%s -> %s\n",
+            "STR_1049", res$grade %||% NA_character_, res$score %||% NA_real_, "/mnt/c/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/batch_434/20260612_codegen_direct_409/STR_1049_result.rds"))

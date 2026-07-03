@@ -1,0 +1,47 @@
+{
+  "task_id": "WT-D20260621_010",
+  "hypothesis": "Buyback Decision Drift Event Time (C27) — DART tsstkAqDecsn event-gated intensity",
+  "verdict": "CLEAN_NEGATIVE_REJECT",
+  "metric_type": "canonical_screen",
+  "selection_type": "chain",
+  "data": {
+    "source": "DART tsstkAqDecsn (NEW collector data_collector_dart_buyback.R)",
+    "events": 933, "tickers": 278,
+    "date_range": ["2015-01-13", "2026-06-17"],
+    "data_floor": "2015 (no pre-2015 API coverage; does not claim 2005 mandate)",
+    "cohort_breadth_per_month": {"median": 30, "p10": 17, "p90": 38, "min": 2, "max": 43},
+    "method_direct_share": 0.92,
+    "method_note": "tsstkAqDecsn is the direct-acquisition endpoint; 0 explicit 신탁 (trust uses separate tsstkAqTrctrCcDecsn). method_mult lever near-moot."
+  },
+  "primary_config": "DRIFT_M=12, HALF_LIFE=6, intensity=ln(1+amount/Size), method=direct/primary, top_n=20",
+  "headline_metrics": {
+    "n_months": 137,
+    "portfolio_alpha_t_nw_lag3": -1.1787,
+    "portfolio_alpha_t_pvalue": 0.2385,
+    "net_sr": -0.4284,
+    "information_ratio": -0.4284,
+    "mean_active_net_monthly": -0.00556,
+    "alpha_annualized": -0.0057,
+    "turnover_annual": 3.248
+  },
+  "advisory_metrics": {
+    "rank_ic": 0.0149, "icir": 0.2559, "harvey_t_ic_nw3": 3.3113,
+    "interpretation": "harvey_t 'significant' but PERVERSE (ranks worst performers high) — AX-007/C23 trap. port_t authoritative and negative."
+  },
+  "concentration_tests": {
+    "D10_mean_active_monthly": -0.0165, "D10_nw_t": -2.760,
+    "D10_minus_D9_gap_nw_t": -1.790,
+    "event_vs_market_mean_active": -0.0043, "event_vs_market_nw_t": -0.876,
+    "size_gt_median_top20_nw_t": -0.859,
+    "verdict": "Event gate makes steep extreme top but in WRONG direction. D10 worst. Ikenberry base case flat-to-negative. Not a microcap artifact."
+  },
+  "grid_robustness": {"n_cells": 29, "pct_port_t_positive": 0.0, "max_port_t": -0.745},
+  "era_breakdown": {
+    "pre2018": {"sr": -0.090}, "2018-2022": {"sr": -0.045}, "2023+": {"sr": -0.921}
+  },
+  "orthogonality_ff_active_basis": {"max_abs_corr": 0.158, "binding": "WML", "novelty": "UNVERIFIED — cross-sectional net-payout/C23 checks not run"},
+  "graduation_gates": {"port_t_2.95": "FAIL", "oos_retention_0.7": "FAIL(undefined-negative)", "calmar_0.64": "FAIL(0.20)", "dsr": "EXEMPT(chain)"},
+  "pit": {"c14_audit": "PASS (c14_usable_audit.parquet — all 138 dates max(Usable_Date)<=Date)", "c2": "PASS (Usable=rcept+1td)", "c15": "documented_spec_sanctioned (new DART channel)"},
+  "codex_critic": {"stance": "APPROVE_CONDITIONAL", "concerns_resolved": "C1-C4 ACCEPT, C5 PARTIAL"},
+  "chain_conclusion": "WT_009 fresh-month +0.42%/mo drift does NOT generalize to event-time DART decision drift. Likely a quarterly-panel artifact (Period_Date+45d clustering coinciding with earnings momentum), not genuine buyback-announcement drift. Buyback-decision concept deprioritized."
+}

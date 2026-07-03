@@ -1,0 +1,23 @@
+{
+  "l_code": "L-RAMP-20260620_184509",
+  "strategy_id": "RAMP_BOOK_LOOKAHEAD_CORRECTION_20260620",
+  "grade": "F",
+  "core_reference": "PIT CORRECTION: book-absorb 25-stock 'beats'(book_momcons 3.05, base 6.73) were 1-month LOOK-AHEAD(book score shift+1); PIT-safe shift+0=2.54 matches realized book; NO clean PIT 25-stock beat of book; retract RAMP_03B",
+  "lesson_text": "★중대 PIT 정정: 옵션2 book-흡수 '25종목 beat'(book_momcons pt 3.05)와 construction(book_base 6.73)은 LOOK-AHEAD 오염이었다. book score panel(alpha_scores_str1715_268m.parquet, decision_date=월초)을 ny(=signalmonth+1)로 정렬해 사용 = 미래 1개월 score로 예측. shift 검증: pt가 미래로 단조증가(shift-1:1.94·shift0:2.54·shift+1:6.73·shift+2:9.70)=look-ahead 시그니처. ★shift+0(2.54)이 실현 배포book(164mo 2.64)과 일치 → shift+0=PIT정확, shift+1=1개월 look-ahead 확정. PIT-클린(shift0) 재측정: book_base 2.54·book+0.4mom 2.74(oos −0.01 book부분 decay)·momentum 2.04(oos 0.71 robust). ★결론: PIT-클린 25종목으로 배포Book(256mo 5.01/164mo 2.64) 깨끗이 넘는 포트 없음. book+mom은 근소우위(2.74>2.64)나 OOS decay. 진짜 Book초과는 31종목 결합(carrier+모멘텀sleeve, PIT클린)뿐=25위반. RAMP_03B beat 주장 철회. 교훈: 외부 score panel은 PIT 정렬을 shift-test로 반드시 검증(실현수익과 일치 여부)·미래 shift 단조증가=look-ahead.",
+  "tags": "RAMP",
+  "created_at": "2026-06-20",
+  "research_mode": "ramp",
+  "created_by": "emit:ramp",
+  "metric_type": "backtested",
+  "construction_type": "chain",
+  "mechanism_hypothesis": "",
+  "book_base_pit": 2.54,
+  "book_base_lookahead": 6.73,
+  "book_momcons_lookahead": 3.05,
+  "momentum_pit": 2.04,
+  "momentum_oos_ret": 0.71,
+  "book_plus_mom_pit": 2.74,
+  "deployed_book_164": 2.64,
+  "deployed_book_256": 5.01,
+  "shift_plus2": 9.7
+}

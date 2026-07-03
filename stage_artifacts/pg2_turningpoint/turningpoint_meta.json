@@ -1,0 +1,57 @@
+{
+  "date": "2026-07-02",
+  "round": "turningpoint-faithful",
+  "paper": "Breaking Bad Trends (Goulding-Harvey-Mazzoleni FAJ 2024, P167) eqs 4,7,8,9,10; Momentum Turning Points (Garg-Goulding-Harvey-Mazzoleni JFE 2023, P158)",
+  "estimator": {
+    "states": "eq4: sign(x_slow>=0)&(x_fast>=0)=Bull; slow>=0&fast<0=Correction; both<0=Bear; slow<0&fast>=0=Rebound",
+    "signals": "eq1/2: x_slow=mean(prev 12 monthly rets), x_fast=mean(prev 2). arithmetic mean, no vol-scaling of signal (paper p246-249).",
+    "mixing": "Appendix C eq8/9/10: a_Co=0.5*(1-(1/C)*AVG[r|Co]/AVG[r2|Co]); a_Re=0.5*(1-(1/C)*AVG[r|Re]/AVG[r2|Re]); C=FREQ[Bu]/FREQ[BuBe]*AVG[r|Bu]/AVG[r2|BuBe]-FREQ[Be]/FREQ[BuBe]*AVG[r|Be]/AVG[r2|BuBe]",
+    "r_definition": "r = raw monthly market return realized in the state-s month (state observable at month-start, harvested during month). AVG/FREQ over strictly-prior months.",
+    "update_freq_months": 30,
+    "min_phase_obs": 12,
+    "clip": "[0,1]",
+    "shrinkage": "structural: estimator centered at 0.5, deviation ∝ signal/noise (AVG[r]/AVG[r2]); no separate multiplier (paper Appendix C)"
+  },
+  "longonly_adaptation": {
+    "principle": "paper blended trend = L/S position; long-only 사상: signal-space pos∈[-1,1] → β_tp∈[FLOOR,1] linear squash (연속 speed-blend 보존). β_tp>0 상향 노출, ≤0 floor.",
+    "pos_dyn": "Bull=+1; Bear=-1; Correction=1-2*a_co; Rebound=2*a_re-1 (mixing weight 그대로)",
+    "squash": "β=FLOOR+(1-FLOOR)*(pos+1)/2, FLOOR=0.40",
+    "freq_match_variant": "병행: pos_dyn을 beta_AR 분포에 freq-match 이산화 (배포 노출분포 매칭)"
+  },
+  "clean_timing": "신호월 m → realized_ym = m+2 (배포 prev-month-end 컨벤션, R3 정합)",
+  "lag_stress": "β_tp에 +1M 추가 lag(m→m+3) → SR·paired-NW-t 붕괴 측정 (동월누출 판별)",
+  "cost": "|Δβ_tp|×15bps delta (contract, self-synth 금지)",
+  "selection_type": "sweep",
+  "n_trials_cumulative": 37,
+  "metric_type": "backtested (panel-overlay, R3와 동일 계보; 절대수치 후속감사 caveat 상속)",
+  "success_criteria": {
+    "crit1_clean_significant": {
+      "rule": "dynamic paired NW-t vs NOL4 > 2",
+      "value": -3.9,
+      "pass": false
+    },
+    "crit2_lag1_survive": {
+      "rule": "lag1 NW-t > 2 AND >= clean-0.5",
+      "value": -4.46,
+      "pass": false
+    },
+    "crit3_book_marginal": "ΔIR≥0.05 — governor/book context, 별도(성과 유의 실패 시 무의미)"
+  },
+  "verdict": "FAIL — W1 오버레이 KR 최종사망 (dynamic 충실판 포함)",
+  "contract": {
+    "benchmark": "KOSPI200 (pinned, monthly return_ym-aligned)",
+    "NOL4_base": {
+      "PORT_t": 6.13,
+      "IR": 1.326,
+      "Alpha": 0.3151,
+      "Beta": 0.656
+    },
+    "NOL4_x_tp_dynamic": {
+      "PORT_t": 4.966,
+      "IR": 1.05,
+      "Alpha": 0.2638,
+      "Beta": 0.592
+    },
+    "dIR_dynamic_minus_base": -0.2763
+  }
+}

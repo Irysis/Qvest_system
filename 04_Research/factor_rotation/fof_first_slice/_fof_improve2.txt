@@ -1,0 +1,22 @@
+================ 승자 결합 + K robustness + 유의성 ================
+실행 2026-06-30 17:12:20.65202
+
+=== (1) top-K robustness (otherwise base; K=팩터수) ===
+  [BASE(K=316)           ] SR=1.18 MDD=36.6% calmar=1.05 | pt_full=+3.46 pt_18p=+2.46 oos=0.71
+  [topK50                ] SR=1.03 MDD=34.4% calmar=1.23 | pt_full=+2.91 pt_18p=+2.22 oos=0.83
+  [topK75                ] SR=1.12 MDD=35.9% calmar=1.26 | pt_full=+3.24 pt_18p=+2.30 oos=0.75
+  [topK100               ] SR=1.20 MDD=36.1% calmar=1.26 | pt_full=+3.67 pt_18p=+2.63 oos=0.86
+  [topK125               ] SR=1.19 MDD=37.8% calmar=1.08 | pt_full=+3.63 pt_18p=+2.54 oos=0.79
+  [topK150               ] SR=1.18 MDD=37.2% calmar=1.05 | pt_full=+3.61 pt_18p=+2.51 oos=0.83
+  [topK200               ] SR=1.20 MDD=36.6% calmar=1.08 | pt_full=+3.57 pt_18p=+2.46 oos=0.79
+
+=== (2) 승자 결합 ===
+  [topK100               ] SR=1.20 MDD=36.1% calmar=1.26 | pt_full=+3.67 pt_18p=+2.63 oos=0.86
+  [topK100+liq1e8        ] SR=1.20 MDD=32.8% calmar=1.37 | pt_full=+3.65 pt_18p=+2.64 oos=0.86
+  [topK100+shrink        ] SR=1.20 MDD=35.2% calmar=1.26 | pt_full=+3.72 pt_18p=+2.62 oos=0.84
+  [topK100+shrink+liq1e8 ] SR=1.20 MDD=32.4% calmar=1.36 | pt_full=+3.72 pt_18p=+2.62 oos=0.84
+  [topK100+ewma+liq1e8   ] SR=1.11 MDD=34.8% calmar=1.05 | pt_full=+3.44 pt_18p=+2.27 oos=0.71
+
+=== (3) paired-NW-t: (best combo − BASE) 월별 active 차 유의성 ===
+  topK100+shrink+liq1e8 vs BASE: 월평균 Δactive=+0.400% | paired-NW-t=+1.95 (t>2=유의개선)
+  2018+ 한정: Δactive=+0.643% paired-NW-t=+1.77

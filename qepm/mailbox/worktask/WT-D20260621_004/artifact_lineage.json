@@ -1,0 +1,22 @@
+{
+  "task_id": "WT-D20260621_004",
+  "package_type": "alpha_package",
+  "method_selected": "QA = z_flow - beta_lagged*z_priceresp (6-cell LB x flow sweep, anchor FI42), canonical_screen_bt real-measurement",
+  "input_file_paths": [
+    ".cache/rawdata.parquet (Date,Ticker,Close,Vol,Size,Ret,K200,KQ150)",
+    ".cache/investor_stock/investor_wide.parquet (Foreign,Institutional,Individual)",
+    ".cache/benchmark.parquet (KOSPI200 TR BM_Ret)"
+  ],
+  "data_access_note": "investor/rawdata .cache direct-load = approved C15 carve-out (spec pit_notes + CLAUDE.md C15). No Factor DB monthly proxy used (flow+price only). M01/INV01/INV02/INV13/Size reconstructed inline from same raw inputs for orthogonality.",
+  "build_scripts": [
+    "stage_artifacts/WT-D20260621_004/build_qa.R",
+    "stage_artifacts/WT-D20260621_004/eval_qa.R",
+    "stage_artifacts/WT-D20260621_004/eval_qa_revise.R (post-Codex controlled baselines)"
+  ],
+  "output_artifacts": [
+    "stage_artifacts/WT-D20260621_004/alpha_scores.parquet",
+    "stage_artifacts/WT-D20260621_004/qa_eval_results.json",
+    "stage_artifacts/WT-D20260621_004/qa_revise_results.json"
+  ],
+  "codex_round": {"stance": "REVISE", "challenge_note": "challenge_note.md", "disposition": "4 ACCEPT / 1 PARTIAL+REBUTTAL / 1 ACCEPT-softened"}
+}

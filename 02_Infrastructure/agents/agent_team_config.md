@@ -127,7 +127,7 @@
 - **역할**: 9종 텔레그램 브리핑 생성 전담
 - **담당 업무**:
   - 모닝/세션종료/주간/온디맨드/마일스톤/실패경고/데이터완료/프로덕션점검/리서치진행률
-  - research_output, qepm registry, .cache 데이터 종합
+  - outputs(구 research_output, 2026-07-04 이동), qepm registry, .cache 데이터 종합
   - telegram_notify.R → tg_send(msg) 호출
 - **출력**: 4096자 이내 한국어 존댓말 텔레그램 메시지
 - **제약**: 읽기 전용 (전략/인프라 수정 금지, 텔레그램 발송만)

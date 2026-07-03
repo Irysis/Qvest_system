@@ -52,7 +52,9 @@ suppressPackageStartupMessages({
 })
 
 # ---- Paths & constants -----------------------------------------------
-PROJECT_ROOT <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+# [fix 2026-06-17] env 기반으로 (run_all.R 패턴 동일) — /mnt/c 하드코딩은 OneDrive 머신서 실패
+PROJECT_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR",
+                  Sys.getenv("QM_ROOT", "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"))
 WT_ID <- "WT-D20260430_001"
 WT_DIR <- file.path(PROJECT_ROOT, "qepm/mailbox/worktask", WT_ID)
 ART_DIR <- file.path(WT_DIR, "stage_artifacts")
@@ -61,9 +63,9 @@ STR1715_OUTPUT <- file.path(PROJECT_ROOT,
 
 dir.create(ART_DIR, showWarnings = FALSE, recursive = TRUE)
 
-# AS_OF_DATE — last data date (already PIT-safe in upstream)
-# v7.2.1 patch (2026-05-02 도훈): extend to 2026-05-30 for 5월 운용 forward
-AS_OF_DATE <- as.Date("2026-05-30")
+# AS_OF_DATE — 표시용 라벨만 (line 81 print 외 미사용; 실제 스케줄 범위는 03_period_returns가 결정).
+# 동적화 2026-06-18: 하드코딩(2026-05-30) 제거 → PG2_AS_OF env(orchestrator 설정) 우선, 없으면 시스템일.
+AS_OF_DATE <- as.Date(Sys.getenv("PG2_AS_OF", as.character(Sys.Date())))
 
 # Hyperparameters (NO grid sweep — single spec, prevents method shopping)
 ROLL_WINDOW_MONTHS <- 36L         # alpha decay fit window (36 mo Cesa-Bianchi style)
@@ -416,15 +418,27 @@ run_engine <- function() {
   ret_dt <- load_str1715_returns()
   ret_dt[, YM := format(Date, "%Y-%m")]
 
+  # ── Forward-row (roll-forward): 현재 리밸 sig_date를 grid에 추가 (오버레이 최신화) ──
+  #   오버레이는 t-1 lag 계산 → forward 행 overlay는 ≤직전월 신호로 산출(ret_net=NA). PIT 유지.
+  .as_of <- suppressWarnings(as.Date(Sys.getenv("PG2_AS_OF", NA)))
+  if (!is.na(.as_of) && .as_of > max(ret_dt$Date, na.rm = TRUE)) {
+    .fwd <- copy(ret_dt[.N]); .fwd[, `:=`(Date = .as_of, ret_net = NA_real_, YM = format(.as_of, "%Y-%m"))]
+    ret_dt <- rbind(ret_dt, .fwd, fill = TRUE)
+    cat(sprintf("[forward-row] sig_date %s appended (ret_net=NA; overlay from <=prior via t-1 lag)\n", as.character(.as_of)))
+  }
+
   cat("\n[engine] === Stage 2: Load 3-Layer macro regime ===\n")
   reg_dt <- load_macro_regime()
 
   cat("\n[engine] === Stage 3: BOCPD recursive on STR_1715 (FULL HISTORY) ===\n")
   # Compute BOCPD on full history (causal: posterior at t uses 1..t only)
-  bocpd_full <- bocpd_recursive(ret_dt$ret_net)
-  ret_dt[, bocpd_change_prob := bocpd_full$change_prob]
-  ret_dt[, bocpd_short_run_mass := bocpd_full$short_run_mass]
-  ret_dt[, bocpd_expected_runlen := bocpd_full$expected_runlen]
+  # BOCPD on valid(non-NA) returns; forward 행은 bocpd=NA이나 lag=직전월(t-1 shift로 확보)
+  .valid <- which(!is.na(ret_dt$ret_net))
+  bocpd_full <- bocpd_recursive(ret_dt$ret_net[.valid])
+  ret_dt[, `:=`(bocpd_change_prob = NA_real_, bocpd_short_run_mass = NA_real_, bocpd_expected_runlen = NA_real_)]
+  ret_dt[.valid, `:=`(bocpd_change_prob = bocpd_full$change_prob,
+                      bocpd_short_run_mass = bocpd_full$short_run_mass,
+                      bocpd_expected_runlen = bocpd_full$expected_runlen)]
   # PIT lag: at sig_date t, decision uses BOCPD posterior at t-1
   ret_dt[, bocpd_change_prob_lag := shift(bocpd_change_prob, 1L, type = "lag")]
   ret_dt[, bocpd_short_run_mass_lag := shift(bocpd_short_run_mass, 1L, type = "lag")]
@@ -860,6 +874,12 @@ main <- function() {
   arrow::write_parquet(out, out_path)
   cat(sprintf("\n[save] alpha_scores.parquet: %d rows, %d cols → %s\n",
               nrow(out), ncol(out), out_path))
+
+  # roll-forward: m4_extended.csv 재생성 (frozen 정적파일 → downstream이 forward 행 소비)
+  .m4ext <- file.path(PROJECT_ROOT, "stage_artifacts", "WT-D20260430_001_m4_extended.csv")
+  data.table::fwrite(out[, .(Date, weight_str1715, weight_cash)], .m4ext)
+  cat(sprintf("[save] m4_extended.csv 재생성: %d rows (last %s) → %s\n",
+              nrow(out), as.character(max(out$Date)), .m4ext))
 
   # Validate vs baselines
   ret_full <- load_str1715_returns()

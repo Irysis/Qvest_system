@@ -1,0 +1,21 @@
+{
+  "run_id": "ASBT_20260613_094806_265984",
+  "strategy_id": "STR_AS_20260613_094806_265984",
+  "strategy_name": "국면 조건부 슬리브 배분 — v7.1 MRS에 따라 3-sleeve(STR_1037+STR_943+STR_898) 가중을 동적으로 조절. RISK_ON: Consensus heavy(50%), CRISIS: Defense heavy(60%)",
+  "strategy_family": "alpha_search",
+  "signal_description": "국면 조건부 슬리브 배분 — v7.1 MRS에 따라 3-sleeve(STR_1037+STR_943+STR_898) 가중을 동적으로 조절. RISK_ON: Consensus heavy(50%), CRISIS: Defense heavy(60%) Forge contract/spec requires code generation before backtest Forge contract/spec requires code generation before backtest",
+  "universe_rule": "ALL + 20d avg trading value >= 2e8 KRW (t-1 PIT)",
+  "rebalance_frequency": "monthly",
+  "signal_date_rule": "month_end_signal",
+  "execution_date_rule": "t_plus_1_first_trading_day",
+  "weighting_method": "equal",
+  "max_position_weight": 0.2,
+  "max_leverage": 1,
+  "cash_rule": "fully_invested_after_floor_shares",
+  "cost_model": "v2.4_delta_15bps",
+  "missing_data_rule": "exclude_na_scores",
+  "risk_controls": "buffer_zone(keep_n=60, entry_n=30)",
+  "lookahead_prevention": "detect_lookahead static scan CLEAN (PIT C1-C15)",
+  "survivorship_bias_control": "RAWDATA PIT membership / time-varying universe filters",
+  "factor_engine_path": "02_Infrastructure/alpha_search/fe_factor_combo.R"
+}

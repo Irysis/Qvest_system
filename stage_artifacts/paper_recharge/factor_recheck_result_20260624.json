@@ -1,0 +1,38 @@
+{
+  "date": "20260624",
+  "tier": 2,
+  "n_input": 2,
+  "promoted": [],
+  "confirmed_infeasible": [
+    {
+      "paper_id": "2606.07450",
+      "title": "Information Networks of Stock Prices",
+      "factor_hint": "price_network_centrality",
+      "verdict": "infeasible",
+      "prior_verdicts": "20260619 infeasible / 20260620 infeasible / 20260621 infeasible (tier-2 full-text) / 20260623 infeasible (4회차) — 본 재검 5회차, 불변 확정",
+      "novel_vs_registry": true,
+      "closest_existing": "none — registry 373종에 network/centrality/graph/eigen/cluster/MST 메커니즘 0건. novelty 있으나 수익신호 부재로 무의미.",
+      "reason": "논문은 인도네시아 거래소 150종(2015-2025) 가격상관 네트워크의 community detection이 *공식 섹터 분류(sector taxonomy)*를 얼마나 복원하는지를 AMI로 평가하는 구조 연구. 종목 수준 횡단면 *수익예측* 신호(centrality→IC→포트) 자체가 논문에 없음. factor_hint 'price_network_centrality'를 수익팩터로 만들려면 논문 미기술 신호를 날조해야 함 → batch_434 가드(좁게) 적용. 메커니즘이 수익신호가 아니므로 충실 재구성 대상도 아님.",
+      "verification": "20260621 tier-2 subagent full-text verbatim(Abstract/Conclusion/§3 Data/§4 Results) 확인분 + 20260623 registry grep 재확정. 본일 추가 PDF 재독 미수행 — verdict는 '논문에 수익신호 부재'라는 논문 자체 속성에 의존하며 4회 full-text 확인으로 settle됨(answer-principles: 검증불변 작업 회피)."
+    },
+    {
+      "paper_id": "2606.04576",
+      "title": "ReSGA: A Large Tail Risk Model for Learning Value-at-Risk and Expected Shortfall",
+      "factor_hint": "resga_predicted_ES_sort",
+      "factor_name": "size_enhanced_left_side_momentum (Eq.11 size x tail-risk interaction)",
+      "verdict": "infeasible",
+      "infeasible_kind": "empirically_resolved_dead (충실 재구성·실측 완료 — 추가 재검/재큐 불요, 재큐 금지)",
+      "prior_verdicts": "20260619 infeasible / 20260620 redundant / 20260621 testable(승격) → alpha_search_queue 추가 → 양방향 백테 완료 → QUARANTINE / 20260623 infeasible(empirically_resolved_dead)",
+      "novel_vs_registry": "interaction novel=true / base ES-sort novel=false (R03_CVaR_95·D47_CVaR_5pct·D25_Left_Tail_Beta 등 tail 17종 redundant)",
+      "reason": "06-21 testable 승격 후 alpha_search_queue_consumer가 Eq.(11) size×tail-risk을 충실 양방향 백테 완료(auto_verify_2606.04576.json, factor_engine_resga_2606_04576.R, PIT detect_lookahead CLEAN). KR서 양방향 모두 사멸: (a) POS(논문 미국 부호, 대형주×고꼬리위험 long) = essence F, portfolio_alpha_t_nw_lag3 -2.81(유의 underperform), net_IR -0.62, calmar 0.10, MDD 52.7%. (b) NEG(소형주×고꼬리위험 long) = screen_pass=FALSE, MDD 74.6%, IR 0.05, TO 110%/yr. gate_decision=QUARANTINE(robustness+fidelity fail, fail-closed). 충실 재구성·날조 아님이나 실현 alpha 음(-) → testable 재승격 시 known-dead 백테 재실행(낭비). 논문 자체가 '미국 P1-매수 부호는 아시아(중·일)서 역전' 명시한 바와 정합.",
+      "caveats_resolved": "06-21 승격 caveat(성능 미실측·long-only 약화·부호 시장의존)가 실측으로 전부 confirm: long-only 약화→POS PORT_t -2.81, 부호 시장의존→KR 양방향 미통과. base ES-sort는 여전히 redundant.",
+      "verification": "auto_verify_2606.04576.json(gate QUARANTINE, port_t -2.813) + 20260621 tier-2 full-text(197k chars). PDF 재독 미수행 — 백테가 이미 settle한 verdict는 PDF로 못 바꿈."
+    }
+  ],
+  "redundant": [],
+  "still_uncertain": [],
+  "queue_added": false,
+  "queue_file_created": false,
+  "runner_bug_fixed": "★ROOT CAUSE 수리 완료. factor_deep_recheck_run.sh L27 dedup 버그: `set(json.load(...).get('processed',[]))`가 processed[](=dict 리스트)에 set() 적용 → TypeError(unhashable dict) → bare except가 삼켜 done=빈set → done-제외 영구 무작동. 5일 연속(06-19/20/21/23/24) 동일 2 paper_id 재유입 + queue date:null(`if False` placeholder)의 동일 원인. 수리: processed[].paper_id 추출(string-tolerant) + date=TODAY 전달(argv[3]). 실측 검증: 수리 후 done={2606.04576, 2606.07450} 정확 추출, 양 paper_id 모두 excluded=True → 차회 실행 n=0 skip 예상.",
+  "notes": "입력 2건 모두 전일까지 해소된 후보의 runner-bug 재유입(이번엔 근본수리까지 완료). 신규 승격 0. 2606.07450=수익신호 부재 infeasible 확정(5회차). 2606.04576=양방향 백테 QUARANTINE empirically_resolved_dead, 재큐 금지. PDF 재독은 settle된 verdict 불변이라 미수행(검증불변 작업 회피, 날조·과장 없음). alpha_search_queue 미생성(promoted 0)."
+}

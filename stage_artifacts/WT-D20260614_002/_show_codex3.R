@@ -1,0 +1,5 @@
+library(jsonlite)
+x<-fromJSON("qepm/mailbox/worktask/WT-D20260614_002/codex_critic_response_risk_v3.json",simplifyVector=FALSE)
+cat("STANCE:",x$stance,"\n\n=== critical_concerns ===\n")
+for(c in x$critical_concerns) cat(sprintf("[%s %s] %s\n", c$id, c$severity, substr(c$description,1,300)))
+cat("\n=== unresolved_disputes ===\n"); for(d in x$unresolved_disputes) cat(" -",substr(d,1,200),"\n")

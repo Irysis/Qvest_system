@@ -1,0 +1,115 @@
+{
+  "schema_version": "alpha_search_strategy_manifest_v1",
+  "created_at": "2026-06-12T21:09:59+0900",
+  "mode": "alpha_search",
+  "strategy_id": "STR_AS_20260612_210503_177070",
+  "strategy_name": "STR_1036 DD Brake 완화: DD_med 4%→8%, DD_short 2%→5%",
+  "strategy_idea": "STR_1036 DD Brake 완화: DD_med 4%→8%, DD_short 2%→5% Forge contract/spec requires code generation before backtest Forge contract/spec requires code generation before backtest",
+  "factor_engine_path": "02_Infrastructure/alpha_search/fe_factor_combo.R",
+  "execution": {
+    "universe": "ALL",
+    "universe_n": 160,
+    "n_holdings": 30,
+    "weight_method": "equal",
+    "commission": 0.0015,
+    "risk_controls": {
+      "vol_target": null,
+      "vol_lookback": 60,
+      "dd_brake": {
+        "entry_pct": 0.08,
+        "exit_pct": 0.18
+      },
+      "buffer_zone": {
+        "keep_n": 60,
+        "entry_n": 30
+      },
+      "use_default_buffer": true,
+      "cov_method": "sample"
+    },
+    "bt_result_path": "stage_artifacts/alpha_search/20260612_210503_177070/bt_result.rds"
+  },
+  "pit": {
+    "code_scan": "detect_lookahead",
+    "status": "CLEAN",
+    "factor_engine_path": "02_Infrastructure/alpha_search/fe_factor_combo.R",
+    "note": "AlphaSearch stops before backtest when detect_lookahead reports violations."
+  },
+  "backtest_contract": {
+    "status": "OK",
+    "run_id": "ASBT_20260612_210503_177070",
+    "metric_type": "backtested",
+    "bt_result_path": "stage_artifacts/alpha_search/20260612_210503_177070/bt_result.rds",
+    "output_dir": "stage_artifacts/alpha_search/20260612_210503_177070",
+    "integrity_status": "WARNING",
+    "audit_pass": 15,
+    "audit_fail": 0,
+    "audit_warn": 1,
+    "validation_errors": [],
+    "note": "standard Backtest Result Contract saved for every AlphaSearch run; grade/admission remains separate",
+    "return_series": {
+      "status": "OK",
+      "source": "bt_result.period_returns",
+      "csv_path": "stage_artifacts/alpha_search/20260612_210503_177070/03_period_returns.csv",
+      "date_col": "date",
+      "ret_col": "ret_net",
+      "n_obs": 5266,
+      "start_date": "2005-02-03",
+      "end_date": "2026-06-11",
+      "post2008_obs": 4547,
+      "frequency": "daily"
+    }
+  },
+  "verdict": {
+    "grade": "F",
+    "score": 13.3,
+    "hurdle_pass": false,
+    "hard_fail": false,
+    "fail_reasons": [],
+    "f_grade_reasons": [
+      "FMT-02 Factor Degeneration: IR -0.42 < -0.1 & 초과CAGR -8.1%p < 0 — KR에서 팩터 방향 역작동 의심",
+      "FMT-07 Publication Decay: alpha_trend ratio(최근3Y/전체 SR) 0.00 <= 0.3 — 후반부 알파 붕괴",
+      "알파 부재: 정보비율 -0.42로 벤치 대비 기여가 음수/미약",
+      "초과수익 부족: 벤치 대비 -8.1%p"
+    ],
+    "screening": {
+      "screen_pass": false,
+      "screen_route": "NONE",
+      "drawdown_tail_review": false,
+      "note": "탐색 게이트 — 자본/졸업 게이트 아님 (graduation HARD 불변). PIT만 절대."
+    }
+  },
+  "metrics": {
+    "CAGR": 2.6,
+    "AnnVol": 7.6,
+    "Sharpe": 0.343,
+    "Sharpe_m": 0.313,
+    "IR": -0.419,
+    "MDD": 20.92,
+    "Calmar": 0.124,
+    "Turnover_Ann": 146.9,
+    "Top10_Conc": 50,
+    "Rolling3Y_Pos": 66.7,
+    "BM_Corr": 0.365,
+    "ES99_d": 2.75,
+    "ES99_m": 10.05,
+    "GradeA_Corr": null,
+    "Rolling6M_Hit": 11,
+    "Worst6M_Ret": -15.45,
+    "MaxConsecNegAlpha": 8,
+    "Rolling12M_Hit": 12.6
+  },
+  "excess_cagr_pct": -8.14,
+  "fmt": [
+    {
+      "code": "FMT-02",
+      "label": "Factor Degeneration",
+      "reason": "IR -0.42 < -0.1 & 초과CAGR -8.1%p < 0 — KR에서 팩터 방향 역작동 의심"
+    },
+    {
+      "code": "FMT-07",
+      "label": "Publication Decay",
+      "reason": "alpha_trend ratio(최근3Y/전체 SR) 0.00 <= 0.3 — 후반부 알파 붕괴"
+    }
+  ],
+  "authoritative": null
+}

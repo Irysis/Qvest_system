@@ -1,0 +1,40 @@
+{
+  "date": "2026-07-02",
+  "round": "turningpoint-VANILLA (naked base, single overlay)",
+  "논점": "track1은 turning-point를 NOL4 위 stacking해 드래그로 사망. 본 테스트는 모든 오버레이 제거(NAKED=ret_orig) 위 turning-point 단독 오버레이 → R05×m4와 대체 경쟁 공정측정",
+  "paper": "Breaking Bad Trends (Goulding-Harvey-Mazzoleni FAJ 2024, P167) eqs 4,7,8,9,10 (estimator track1 재사용, 불변)",
+  "base_change": "track1 base=beta_R05*m4 (NOL4) → vanilla base=1.0 (NAKED=ret_orig). β_tp 산출 로직 동일.",
+  "variants": ["NAKED", "NAKED_x_tp_static", "NAKED_x_tp_dynamic", "NAKED_x_faith", "NOL4", "NAKED_x_AR"],
+  "clean_timing": "turning-point 신호월 m → realized_ym = m+2 (배포 prev-month-end 컨벤션)",
+  "cost": "|Δ노출|×15bps delta (NAKED는 노출 상수 → 비용 0)",
+  "metric_type": "backtested (panel-overlay; track1과 동일 계보)",
+  "selection_type": "chain (가설주도 대체검정 — track1 sweep과 별개 단일 대체 질문)",
+  "crisis_windows": {
+    "GFC": ["2008-06", "2009-03"],
+    "COVID": ["2020-02", "2020-05"],
+    "Y2022": ["2022-01", "2022-12"],
+    "Y2026": ["2026-01", "2026-06"]
+  },
+  "Q1_tp_beats_NAKED": {
+    "rule": "dynamic vs NAKED: SR↑ AND MDD↓ AND paired NW-t>2",
+    "SR_dyn": 1.604,
+    "SR_naked": 1.678,
+    "MDD_dyn": 0.3034,
+    "MDD_naked": 0.4074,
+    "nw_t_vs_NAKED": -3.01,
+    "pass": false
+  },
+  "Q2_tp_beats_NOL4": {
+    "rule": "dynamic vs NOL4(챔피언): SR↑ (유의=NW-t>2)",
+    "SR_dyn": 1.604,
+    "SR_nol4": 1.897,
+    "MDD_dyn": 0.3034,
+    "MDD_nol4": 0.2329,
+    "nw_t_vs_NOL4": -2.88,
+    "beats": false,
+    "significant": false
+  },
+  "best_variant": "NAKED_x_faith",
+  "best_SR": 1.988,
+  "verdict": "turning-point 단독이 NOL4에 미달 — R05×m4가 최선 단독 오버레이 재확인, turning-point 최종사망"
+}

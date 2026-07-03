@@ -1,0 +1,93 @@
+{
+  "schema_version": "alpha_search_strategy_manifest_v1",
+  "created_at": "2026-06-12T15:01:14+0900",
+  "mode": "alpha_search",
+  "strategy_id": "STR_AS_20260612_145116_771108",
+  "strategy_name": "Short-Term Reversal Base Signal",
+  "strategy_idea": "1F Reversal + BRK Overlay — 9번째 1F+BRK",
+  "factor_engine_path": "02_Infrastructure/alpha_search/fe_streversal.R",
+  "execution": {
+    "universe": "ALL",
+    "universe_n": 1464,
+    "n_holdings": 20,
+    "weight_method": "equal",
+    "commission": 0.0015,
+    "bt_result_path": "stage_artifacts/alpha_search/20260612_145116_771108/bt_result.rds"
+  },
+  "verdict": {
+    "grade": "F",
+    "score": 0,
+    "hurdle_pass": false,
+    "hard_fail": true,
+    "fail_reasons": [
+      "Structural drawdown (MDD>=70%, 45%+ days>=25%, max_underwater>=252d): MDD 100.0%, 45%+ episodes=12/15, max_underwater=4481/252"
+    ],
+    "f_grade_reasons": [
+      "게이트 사유: Structural drawdown (MDD>=70%, 45%+ days>=25%, max_underwater>=252d): MDD 100.0%, 45%+ episodes=12/15, max_underwater=4481/252",
+      "FMT-01 Structural MDD: MDD 100.0% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)",
+      "FMT-02 Factor Degeneration: IR -0.51 < -0.1 & 초과CAGR -34.9%p < 0 — KR에서 팩터 방향 역작동 의심",
+      "알파 부재: 정보비율 -0.51로 벤치 대비 기여가 음수/미약",
+      "초과수익 부족: 벤치 대비 -34.9%p"
+    ],
+    "screening": {
+      "screen_pass": false,
+      "screen_route": "NONE",
+      "drawdown_tail_review": false,
+      "note": "탐색 게이트 — 자본/졸업 게이트 아님 (graduation HARD 불변). PIT만 절대."
+    }
+  },
+  "metrics": {
+    "CAGR": -24.15,
+    "AnnVol": 70.22,
+    "Sharpe": -0.344,
+    "Sharpe_m": -0.199,
+    "IR": -0.512,
+    "MDD": 99.96,
+    "Calmar": -0.242,
+    "Turnover_Ann": 1061,
+    "Top10_Conc": 50,
+    "Rolling3Y_Pos": 5.6,
+    "BM_Corr": 0.245,
+    "ES99_d": 10.71,
+    "ES99_m": 39.2,
+    "GradeA_Corr": null,
+    "Rolling6M_Hit": 26.9,
+    "Worst6M_Ret": -76.63,
+    "MaxConsecNegAlpha": 14,
+    "Rolling12M_Hit": 15.9
+  },
+  "excess_cagr_pct": -34.89,
+  "fmt": [
+    {
+      "code": "FMT-01",
+      "label": "Structural MDD",
+      "reason": "MDD 100.0% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)"
+    },
+    {
+      "code": "FMT-02",
+      "label": "Factor Degeneration",
+      "reason": "IR -0.51 < -0.1 & 초과CAGR -34.9%p < 0 — KR에서 팩터 방향 역작동 의심"
+    }
+  ],
+  "authoritative": null,
+  "pit": {
+    "code_scan": "detect_lookahead",
+    "status": "CLEAN",
+    "factor_engine_path": "02_Infrastructure/alpha_search/fe_streversal.R",
+    "violations": [],
+    "note": "Backfill re-ran code-level PIT scan on the current factor_engine_path."
+  },
+  "backtest_contract": {
+    "status": "OK",
+    "run_id": "ASBT_20260612_145116_771108",
+    "metric_type": "backtested",
+    "bt_result_path": "stage_artifacts/alpha_search/20260612_145116_771108/bt_result.rds",
+    "output_dir": "stage_artifacts/alpha_search/20260612_145116_771108",
+    "integrity_status": "WARNING",
+    "audit_pass": 15,
+    "audit_fail": 0,
+    "audit_warn": 1,
+    "validation_errors": [],
+    "note": "standard Backtest Result Contract backfilled without Telegram"
+  }
+}

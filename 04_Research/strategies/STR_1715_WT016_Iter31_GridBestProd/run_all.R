@@ -732,7 +732,17 @@ cat("\n[11] PG2 BLEND — V31 80% + STR_1656 20% vs baseline 1.4625 (CRITICAL)\n
 PG2_BASELINE_SR <- 1.4625
 
 # Load STR_1656 NAV → monthly returns
+# [fix 2026-06-17] STR_1656 nav 미존재 시 step 11 전체 스킵 — 코어 백테/period_returns 동기화(1134) 보호
 str1656_nav_path <- file.path(BASE_DIR, "04_Research/strategies/STR_1656_MLRA/output/nav_S1_A.csv")
+blend_sr <- NA_real_; delta_vs_baseline <- NA_real_; pg2_recommend <- "SKIP_NO_STR1656"
+if (!file.exists(str1656_nav_path)) {
+  cat("  [11] STR_1656 nav 미존재 — PG2 블렌드 비교만 스킵 (코어 백테/동기화 영향 없음)\n")
+  # 하류(charts 886 / csv 975 / report 1021)가 참조하는 blend 객체 빈 stub
+  panel_blend <- data.table(YM=character(0), v31=numeric(0), str1656=numeric(0), blend_ret=numeric(0))
+  str1656_monthly <- data.table(Date_eom=as.Date(character(0)), NAV_eom=numeric(0),
+                                 Ret_m=numeric(0), cum=numeric(0), YM=character(0))
+  pg2_promote <- FALSE; pg2_probe <- FALSE
+} else {
 str1656_daily <- fread(str1656_nav_path)
 str1656_daily[, Date := as.Date(Date)]
 setorder(str1656_daily, Date)
@@ -799,6 +809,7 @@ if (file.exists(iter18_monthly_path)) {
                 perf_iter18_blend_sp$sr %||% NA, perf_iter18_blend_sp$n_months))
   }
 }
+}  # [fix 2026-06-17] end STR_1656 blend guard (file.exists)
 
 # ─────────────────────────────────────────────────────────
 # 12. AX-001 v2 — 4-metric direct evaluation
@@ -865,6 +876,7 @@ cat(sprintf("\n  AX-001 v2 result: %d/4 PASS\n", ax001_pass_count))
 # 13. Charts (equity_curve + annual_returns)
 # ─────────────────────────────────────────────────────────
 cat("\n[13] Chart generation\n")
+tryCatch({  # [fix 2026-06-17] 차트(PNG)는 비핵심 — 실패해도 period_returns 동기화(아래) 보호
 
 # equity_curve — V31 vs Iter11 vs Blend vs STR_1656
 bm[, YM := format(Date, "%Y-%m")]
@@ -950,6 +962,7 @@ g2 <- ggplot(ann_long, aes(x=Year, y=Ann_Ret*100, fill=Strategy)) +
 ggsave(file.path(OUT_DIR, "annual_returns.png"), g2, width=14, height=7, dpi=150)
 ggsave(file.path(BT_DIR, "annual_returns.png"),  g2, width=14, height=7, dpi=150)
 cat("  annual_returns.png saved\n")
+}, error = function(e) cat(sprintf("  [13] 차트 생성 스킵(비핵심): %s\n", conditionMessage(e))))
 
 # ─────────────────────────────────────────────────────────
 # 14. Save CSVs

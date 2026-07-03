@@ -173,20 +173,39 @@ PLAN.md v0.5 §5.4 Tier 4 mandate 결과 정리:
 | Tertiary | B1 CNN paper-faithful (paper reproduce documented) |
 | Drop | B5 NGBoost (a-b5 ρ=0.84 너무 비슷), F Conformal (b1-f ρ=0.98 자명) |
 
-### D.3 Forward-looking macro 시도 (Session 85+ 진행 중)
+### D.3 Forward-looking macro 시도 (2026-06-26 COMPLETED — NULL, paradigm limit 확정)
 
-**진행 중**: `scripts/331_b1_macro_features.py` — paper baseline + 5 alt + 6 macro features (Term_Spread, VIX, Chi_Fin_Cond, StL_Fin_Stress, Init_Claims, KRW_USD_logret) 8 combos × 6 windows = 48 trainings.
+**완주**: 멈춰있던 `scripts/331_b1_macro_features.py` 완주 + 2가지 보강 (도훈 mandate 2026-06-26 "새 데이터원 허용").
 
-**ETA**: ~1-2h (background 진행).
+**3-run 구조** (산출물 절대경로):
+1. `scripts/331_b1_macro_features.py` (config `b1_macro.yaml`, paper window 2001-2020) → `03_models/b1_macro_features/macro_features_summary.json`. **결함 발견**: paper window date_end=2020-11-30 + walk-forward test=504 때문에 **COVID 2020-02-19가 test fold 밖으로 떨어져 평가 불가** (직전 세션이 멈춘 채로 못 본 부분). Lehman은 train 기간. → 유일하게 평가된 게 Euro Crisis 2011(-1.9%, 약세도 아님).
+2. **확장 window** (`config/b1_macro_ext.yaml`, date_end=2024-12-31 → COVID가 test fold 안으로) → `03_models/b1_macro_features_ext/macro_features_summary.json`. **COVID 최초 평가 가능**.
+3. **신규 leading 데이터원** (`scripts/332_fetch_leading_macro.py` + `scripts/333_b1_leading_macro.py`) → `03_models/b1_leading_macro/leading_macro_summary.json` + `multiseed_h21.json`. 331의 macro가 전부 *동행(coincident)* 미국 지표였던 한계를 직격: full-history *선행* 신용/금융여건 6종 추가.
 
-**기대**:
-- macro effect Δ CRPS positive (alt data -2~-8% 뒤집기)
-- COVID-class event P(-10%) > 5% (현 1.0%에서 향상)
-- Bear early warning lift
+**신규 forward-looking leading 데이터원 (332, .cache/fred_leading_macro.parquet, 8671/8671 full coverage)**:
+- `Credit_Baa10Y` (Moody's Baa−10Y, 1953~, GZ-style 선행 신용스프레드)
+- `YC_10Y3M` (10Y−3M, Estrella 선호 침체 예측 yield curve, T10Y2Y보다 우수)
+- `NFCI_Credit` / `NFCI_Leverage` / `NFCI_Risk` (Chicago Fed NFCI 서브, 1971~ weekly)
+- `StL_Fin_Stress4` (St.Louis Fed FSI 현행 vintage, 1993~ weekly)
+- ⚠ **ICE-BofA OAS (BAMLH0A0HYM2/BBB) = 공용 FRED API 2023-06-26부터만** 제공(ICE 라이선스) → 백테 window 불가, 정직 제외. KR 고유(VKOSPI/put-call/외인플로우)는 캐시 부재 또는 2017+ coverage(v2 panel k200_implied) 또는 cross-sectional(daily index 분포예측 부적합) → full-window 가용 최강 선행원 = FRED leading credit/NFCI.
 
-**결과 따라 Plan v0.6 finalize**:
-- macro positive → Plan v0.6 macro 통합 mandate
-- macro negative or null → distributional paradigm limit 확정, 다른 paradigm pivot
+**결과 (h=21, 월간 — bear catch에 유의미한 horizon)**:
+
+| feature set | CRPS (seed 0) | CRPS (5-seed mean±sd) | COVID P(-10%) | COVID 백분위 (모델 자체 분포 내) |
+|---|---|---|---|---|
+| paper_only | 4.640 | **4.48 ± 0.15** | 2.10% (seed0) | **70.7 ± 20.3** |
+| **with_leading** ★ | 4.531 (−2.3%) | **7.16 ± 4.29** | 5.37 ± 0.98% | **75.3 ± 13.9** |
+| with_macro_old (동행, 331 set) | 6.324 (+36%) | — | 0.65% | 35.1 (worse) |
+| with_all_macro | 6.433 (+39%) | — | 0.75% | — |
+
+**판정 — NULL (3중 근거)**:
+1. **CRPS 개선은 seed 환상**: with_leading seed-0 −2.3%는 운. 5-seed CRPS 7.16±4.29(한 seed 15.7)로 baseline 4.48±0.15보다 *훨씬 나쁘고* 불안정. R17(skewed-t single-seed instability) 재확인.
+2. **COVID 사전 감지 = discrimination 실패가 핵심**: with_leading가 COVID P(-10%)를 2.1%→5.4%로 올린 듯 보이나, **모델의 평소 P(-10%)도 0.85%→3.19%로 같이 부풀음**(분포 전역 fat-tail화). COVID의 *자체 분포 내 백분위*는 70.7→75.3으로 **통계적 무차별**(±20 변동 내), q95 경보선 근처도 못 감. Euro Crisis(-1.9% 약세도 아님)도 P(-10%) 0.25%→5.55%로 같이 뜀 = 표적성 0.
+3. **데이터-레벨 메커니즘 확정**: PIT 검증 결과 NFCI/credit 선행지표 자체가 **COVID 직전 경보 무발생** (2020-02-19 NFCI_Credit −0.016 = 완화적, +0.057 spike는 2020-02-21에야). COVID는 **신용시장이 미가격한 외생 비-금융 충격** → 선행 금융여건 신호에 사전정보 부재. price-only가 못 본 *선행* 약세정보를 forward-macro도 **담고 있지 않음**(존재하지 않음).
+
+**→ paradigm limit 확정**: distributional forecasting은 변동성 측정 도구로 유효하나 (forward bear *catch*는) backward price든 forward macro든 **사전 식별 불가**. v0.6 결정규칙대로 **macro null → distributional paradigm limit 확정**.
+
+**PIT 검증**: 모든 외부 series `.shift(1)` t-1 lag(발표 시차) + ffill, feature window=rows[i-seq_len, i)(엄격 과거), target=ret_fwd(미래 label). COVID 예보일 same-day leak 없음 실측 확인. walk-forward train_min 2008 only.
 
 ### D.4 Regime-Switching paradigm 시도 (Session 85+ 진행 중)
 

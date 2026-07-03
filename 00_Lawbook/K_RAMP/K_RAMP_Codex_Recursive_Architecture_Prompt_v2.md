@@ -1610,7 +1610,7 @@ Required artifacts:
 outputs/governance/architecture_gap_log.md
 outputs/governance/evaluation_history.parquet
 outputs/governance/roadmap_status.json
-docs/adr/*.md for major changes
+00_Lawbook/K_RAMP/adr/*.md for major changes
 ```
 
 Required loop:
@@ -2240,7 +2240,7 @@ When multiple improvements are possible, choose in this priority order:
 For each major decision, create:
 
 ```text
-docs/adr/YYYYMMDD-short-title.md
+00_Lawbook/K_RAMP/adr/YYYYMMDD-short-title.md
 ```
 
 ADR template:

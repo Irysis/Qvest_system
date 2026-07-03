@@ -1,0 +1,36 @@
+{
+  "date": "20260620",
+  "tier": 2,
+  "n_input": 2,
+  "promoted": [],
+  "confirmed_infeasible": [
+    {
+      "paper_id": "2606.07450",
+      "title": "Information Networks of Stock Prices",
+      "factor_hint": "price_network_centrality",
+      "verdict": "infeasible",
+      "already_processed": "20260619",
+      "novel_vs_registry": true,
+      "closest_existing": "none (registry has no network/centrality/graph/eigen factor — grep 0 hits)",
+      "reason": "재확인(abstract 대조): 논문의 평가목적 = 'sectoral classification precision' + 'recovering conventional sectoral taxonomy' + 'hidden economic sub-structures(commodity regime cohesion)' (인도네시아 시장, 2015-2025, 24 config: Pearson/MI-bin/MI-kNN × MST/PMFG × 4 community decoder). 종목 수준 횡단면 수익예측 신호 전무 — centrality는 구조특성으로만 언급되고 IC/포트/수익 테스트 부재. 종목신호 자체가 없으므로 centrality→return alpha 합성 = 논문 미기술 신호 날조(batch_434 가드). novelty는 있으나(registry에 network 팩터 0건) 충실재구성 대상이 아님(별개가설 차용은 재구성 아님).",
+      "verification": "abstract(2606.07450) 직접 대조로 20260619 deep-read 정확성 확인 — hallucination 아님. 핵심결론 일치(섹터 taxonomy 복원이 목적, 수익신호 없음)."
+    }
+  ],
+  "redundant": [
+    {
+      "paper_id": "2606.04576",
+      "title": "ReSGA: A Large Tail Risk Model for Learning Value-at-Risk and Expected Shortfall",
+      "factor_hint": "resga_predicted_ES_sort",
+      "verdict": "redundant",
+      "already_processed": "20260619 (verdict infeasible; 본 재검에서 redundant로 정밀화)",
+      "novel_vs_registry": false,
+      "closest_existing": "D08_Tail_Beta / D25_Left_Tail_Beta / D47_CVaR_5pct / D48_VaR_5pct / D49_VaR_1pct / R01_VaR_95 / R03_CVaR_95 / R05_Tail_Risk (+ R02/R04/R07/R08/D45)",
+      "reason": "롱숏 논문이나 도훈 mandate 2026-06-19 따라 long leg 사상 평가: 전략 = 매월말 예측 ES 오름차순 정렬해 저tail-risk decile(P1) 매수 = 저꼬리위험 방어형 tilt. 이 '모델무관 분리가능 신호(tail-risk 정렬)'는 registry tail/VaR/CVaR 13종과 메커니즘 중복 → redundant(long leg 신호는 존재하나 우리 인벤토리 복제). 논문의 진짜 기여(novel)는 ReSGA(수백만 파라미터+153 char+retrieval/self-grouping)의 우월한 ES 예측 — abstract가 'forecast advantages translate into economic gains' + 'driven by data complexity'로 알파를 모델품질에 귀속. 경량 ES 프록시 대체는 논문이 명시적으로 열위라 한 것이라 충실재구성 불가(non-faithful). 따라서 충실재현분=redundant, novel분=infeasible-to-reproduce → 미승격.",
+      "longshort_note": "L/S라서 기각이 아님 — long leg(저ES decile) 사상 후에도 방어형·중복(AX-005 영역)이라 redundant로 판정. 부호 시장의존(논문: 중·일 +, 영/호/캐 분산)으로 KR prior 약함도 부가.",
+      "verification": "abstract(2606.04576) 직접 대조로 20260619 deep-read 정확성 확인('long-short decile … size-enhanced left-side momentum', 153 char, millions params, data complexity 귀속 일치). registry grep로 8종 tail 팩터 존재 확인."
+    }
+  ],
+  "still_uncertain": [],
+  "runner_bug": "factor_recheck_queue_20260620.json = factor_recheck_queue_20260619.json과 동일(같은 2 paper_id). 두 건 모두 이미 factor_recheck_done.json에 20260619/infeasible로 등재됨에도 오늘 큐에 재포함 — 큐 빌더의 done-제외(dedup) 로직 미작동. 새 입력 0건이 정상이었어야 함. done 파일은 정확(중복 append 안 함). 후속: runner 큐생성 시 factor_recheck_done.json processed[].paper_id 대조 제외 필요.",
+  "notes": "신규 처리 0건. 입력 2건 모두 전일(20260619) tier-2 deep-read 완료분의 중복 재유입. 재유입분을 abstract 직접 대조로 재검증(verdict 불변, 단 2606.04576은 L/S long-leg 사상 mandate에 맞춰 infeasible→redundant로 정밀화). promoted 0 → alpha_search_queue 변경 없음. done 중복 append 없음. 날조·과장 없이 정직 보고."
+}

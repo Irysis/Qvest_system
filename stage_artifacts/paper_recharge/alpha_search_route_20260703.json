@@ -1,0 +1,436 @@
+{
+ "date": "20260703",
+ "router_version": "paper_router_v2",
+ "sources_summary": {
+  "arxiv_candidates_total": 38,
+  "arxiv_new_today": 5,
+  "arxiv_carried_prior": 33,
+  "carried_note": "33/38 re-surfaced from prior routing days (180-day recency window). Carried papers retain their original route (idempotent) and are NOT re-dispatched; prior mode_queues already consumed them. Only the 5 new ids are queued today.",
+  "curated_total_in_csv": 15,
+  "curated_new_today": 0,
+  "curated_note": "All 15 curated institutional papers already processed (curated_routed.json last_run 20260702). No new curated PDFs to fetch."
+ },
+ "counts_by_route": {
+  "alpha": 0,
+  "optimizer": 6,
+  "risk": 10,
+  "regime": 6,
+  "skip": 16
+ },
+ "new_today": {
+  "ids": [
+   "2606.30779",
+   "2606.31122",
+   "2606.31469",
+   "2606.31475",
+   "2607.00475"
+  ],
+  "by_route": {
+   "optimizer": [
+    "2607.00475"
+   ],
+   "risk": [
+    "2606.31122"
+   ],
+   "regime": [
+    "2606.31475"
+   ],
+   "skip": [
+    "2606.31469",
+    "2606.30779"
+   ],
+   "alpha": []
+  }
+ },
+ "n_factor_candidates": 0,
+ "n_factor_testable": 0,
+ "factor_mining_note": "STEP2 overlay applied to all 5 new sources + re-checked carried. Zero novel KR-feasible cross-sectional factors. Nearest misses honestly logged: (33) SMAR volume-systematicity = uncertain (no return-predictive cross-sectional signal shown; vol/volume factors already in DB); (15) Hurst/roughness = settled-fail in KR; (20) body/tail = capitalization/size (redundant); (2/6) ESG/AI-premium = alt-data infeasible. batch_434 guard: no synthetic/fallback signal fabricated.",
+ "alpha_autorun": {
+  "AUTORUN": 1,
+  "MAX_ALPHA": 2,
+  "n_run": 0,
+  "reason": "No source qualifies as alpha-search candidate ((route=alpha AND kr_feasible) OR factor.verdict=testable). Today's batch is entirely optimizer/risk/regime methodology + LLM/crypto/insurance/bond skips; no cross-sectional per-stock equity selection signal. Honest null, no fabrication (batch_434 guard)."
+ },
+ "papers": [
+  {
+   "title": "End-to-End Parametric Portfolio Policies for Cross-Asset Futures Timing: When Do AI Models Beat Simple Rules?",
+   "id": "2607.00475",
+   "source": "arxiv",
+   "status": "new",
+   "route": "optimizer",
+   "kr_feasible": true,
+   "factor_candidate": null,
+   "reason": "End-to-end differentiable-Sharpe policy mapping market states to weights on CME futures. Cross-asset FUTURES universe (out of KR equity scope), but the METHOD = parametric portfolio policy / DPL-style weight learning -> optimizer-research A/B vs risk-parity/TSMOM. research_philosophy(4) Direct Portfolio Learning fuel. No per-stock equity factor (futures)."
+  },
+  {
+   "title": "Real-time identification of the onset of financial rogue waves",
+   "id": "2606.31475",
+   "source": "arxiv",
+   "status": "new",
+   "route": "regime",
+   "kr_feasible": true,
+   "factor_candidate": null,
+   "reason": "Real-time detection of financial rogue waves (extreme onset). Regime/crisis-onset DETECTION method -> regime overlay research. Note predictive crisis-ONSET timing is settled-null in KR (predictive-crisis-timer); routed as analysis-flag (coincident detection), not a new timing bet. No per-stock signal."
+  },
+  {
+   "title": "Same Firms, Different Verdicts: ESG Rating Choice and the Measurement of Greenwashing",
+   "id": "2606.31469",
+   "source": "arxiv",
+   "status": "new",
+   "route": "skip",
+   "kr_feasible": false,
+   "factor_candidate": null,
+   "reason": "ESG rating divergence / greenwashing measurement across rating providers. Requires multi-provider ESG rating panels = alt-data absent from KR RAWDATA/factor_db (crossmarket/alt-data ban). No PIT-feasible per-stock factor. skip."
+  },
+  {
+   "title": "Regime-Conditional Distributional Comparison of Trading Strategies: A GAMLSS/ZAGA Framework Applied to the S&P 500",
+   "id": "2606.31251",
+   "source": "arxiv",
+   "status": "carried",
+   "route": "regime",
+   "kr_feasible": true,
+   "factor_candidate": null,
+   "reason": "GAMLSS/ZAGA regime-conditional distributional comparison of a poly-SVM vs buy-and-hold on S&P500 index. Index-level 2-strategy evaluation methodology -> regime (RCMA / measurement-graduation regime-conditional discipline). No cross-sectional per-stock signal."
+  },
+  {
+   "title": "Generating Plausible Stress Scenarios via Large Deviations",
+   "id": "2606.31122",
+   "source": "arxiv",
+   "status": "new",
+   "route": "risk",
+   "kr_feasible": true,
+   "factor_candidate": null,
+   "reason": "Generating plausible stress scenarios via large-deviations theory -> risk-research stress/scenario methodology. Scenario generator, not a selection signal."
+  },
+  {
+   "title": "Pareto Efficient Insurance with Multiple Policyholders, Multiple Insurers, and Multiple Indemnity Environments",
+   "id": "2606.30779",
+   "source": "arxiv",
+   "status": "new",
+   "route": "skip",
+   "kr_feasible": false,
+   "factor_candidate": null,
+   "reason": "Pareto-efficient insurance with multiple policyholders/insurers/indemnity envs. Actuarial/insurance theory, out of KR equity scope. skip."
+  },
+  {
+   "title": "AI Premium",
+   "id": "2606.30583",
+   "source": "arxiv",
+   "status": "carried",
+   "route": "skip",
+   "kr_feasible": false,
+   "factor_candidate": null,
+   "reason": "AI Premium cross-sectional exposure to AI. Requires firm-level AI-exposure text/labels = alt-data, not in KR factor_db. econ.GN. infeasible/skip."
+  },
+  {
+   "title": "Strategic Risk Reduction: Self-Protection and Self-Insurance",
+   "id": "2606.30363",
+   "source": "arxiv",
+   "status": "carried",
+   "route": "skip",
+   "kr_feasible": false,
+   "factor_candidate": null,
+   "reason": "Self-protection vs self-insurance decision theory (risk reduction). Insurance/decision theory, no equity selection signal. skip."
+  },
+  {
+   "title": "Hidden Dependence and Aggregate Tail Risk",
+   "id": "2606.30193",
+   "source": "arxiv",
+   "status": "carried",
+   "route": "risk",
+   "kr_feasible": true,
+   "factor_candidate": null,
+   "reason": "Hidden dependence and aggregate tail risk under dependence uncertainty (credit-risk application). Distributionally-robust tail aggregation -> risk-research (tail/dependence). No per-stock signal."
+  },
+  {
+   "title": "Heads, Not Backbones: Output Heads Dominate Architectures on Fat-Tailed Returns",
+   "id": "2606.30037",
+   "source": "arxiv",
+   "status": "carried",
+   "route": "risk",
+   "kr_feasible": true,
+   "factor_candidate": null,
+   "reason": "Output-head (point vs Gaussian vs mixture density) dominates backbone for fat-tailed return forecasting (S&P monthly, walk-forward). Uncertainty-aware/density forecasting methodology -> risk-research (distributional/tail modeling; also informs alpha ML uncertainty head). No specific cross-sectional factor."
+  },
+  {
+   "title": "Fund2Persona: A Framework for Building and Refining Financial Advisor Personas from Fund Disclosure Data",
+   "id": "2606.29793",
+   "source": "arxiv",
+   "status": "carried",
+   "route": "skip",
+   "kr_feasible": false,
+   "factor_candidate": null,
+   "reason": "Fund2Persona: LLM personas from fund disclosure. LLM/agent tooling. skip."
+  },
+  {
+   "title": "CLQT: A Closed-Loop, Cost-Aware, Strategy-Consistent Benchmark for Diagnostic Evaluation of LLM Portfolio-Management Agents",
+   "id": "2606.29771",
+   "source": "arxiv",
+   "status": "carried",
+   "route": "skip",
+   "kr_feasible": false,
+   "factor_candidate": null,
+   "reason": "CLQT: LLM portfolio-management agent benchmark. LLM benchmark. skip."
+  },
+  {
+   "title": "Adaptive AI Delegation under Uncertainty: A Bayesian Governance Policy for Sequential Decision Authority",
+   "id": "2606.29406",
+   "source": "arxiv",
+   "status": "carried",
+   "route": "skip",
+   "kr_feasible": false,
+   "factor_candidate": null,
+   "reason": "Bayesian governance policy for AI delegation authority. AI-governance theory. skip."
+  },
+  {
+   "title": "Liquidity-Based Audit of Algorithmic Trading Strategies",
+   "id": "2606.29018",
+   "source": "arxiv",
+   "status": "carried",
+   "route": "skip",
+   "kr_feasible": false,
+   "factor_candidate": null,
+   "reason": "Liquidity-based audit of algo-trading strategies (microstructure/execution). HFT/microstructure. skip."
+  },
+  {
+   "title": "Balancing Shareholder Value and Financial Stability under a Reduced-Form Liquidation Model",
+   "id": "2606.28706",
+   "source": "arxiv",
+   "status": "carried",
+   "route": "skip",
+   "kr_feasible": false,
+   "factor_candidate": null,
+   "reason": "Shareholder value vs financial stability under reduced-form liquidation. Corporate-finance/MF. skip."
+  },
+  {
+   "title": "(In)Efficient Market States and Rough Volatility Detected via Grunwald-Letnikov Fractional Derivative",
+   "id": "2606.27932",
+   "source": "arxiv",
+   "status": "carried",
+   "route": "regime",
+   "kr_feasible": true,
+   "factor_candidate": null,
+   "reason": "Grunwald-Letnikov fractional-derivative KS test for rough volatility / (in)efficient market states; Hurst estimator on RV and index prices. Regime/efficiency-state detection -> regime. Per-stock Hurst signals settled-fail in KR (kr-momentum-novel-hunt Hurst FALSIFIED); index/RV-level here -> no fresh factor."
+  },
+  {
+   "title": "Methods for Uncertainty Representation in Risk Management: A Comparative Review and Decision-Oriented Framework",
+   "id": "2606.27804",
+   "source": "arxiv",
+   "status": "carried",
+   "route": "risk",
+   "kr_feasible": true,
+   "factor_candidate": null,
+   "reason": "Comparative review + decision framework for uncertainty representation in risk management. Risk methodology survey -> risk-research. No signal."
+  },
+  {
+   "title": "The Decision Geometry of Covariance Estimation for the Global Minimum-Variance Portfolio under Heavy Tails",
+   "id": "2606.27462",
+   "source": "arxiv",
+   "status": "carried",
+   "route": "risk",
+   "kr_feasible": true,
+   "factor_candidate": null,
+   "reason": "Decision-geometry / regret identity for covariance estimation in GMV under heavy tails. Directly a covariance-estimator evaluation -> risk-research (Sigma estimation) with optimizer relevance (GMV). Strong risk methodology fuel."
+  },
+  {
+   "title": "A Two-Stage Decision Support System for Sustainability-Aware Long Short Portfolio Optimization",
+   "id": "2606.25696",
+   "source": "arxiv",
+   "status": "carried",
+   "route": "optimizer",
+   "kr_feasible": true,
+   "factor_candidate": null,
+   "reason": "Two-stage decision-support for sustainability-aware long-short portfolio optimization. Weight-construction method -> optimizer-research (long-leg mapping, ESG aside). Optimizer route."
+  },
+  {
+   "title": "Empirical Confirmation of the Square-Root Law of Market Impact in a U.S. Large-Cap Equity",
+   "id": "2606.24019",
+   "source": "arxiv",
+   "status": "carried",
+   "route": "skip",
+   "kr_feasible": false,
+   "factor_candidate": null,
+   "reason": "Empirical confirmation of square-root market-impact law (US large-cap). Microstructure/impact. skip (execution scope, no route)."
+  },
+  {
+   "title": "Anatomy of the Market: A Body-Tail Test of Factor Models",
+   "id": "2606.23596",
+   "source": "arxiv",
+   "status": "carried",
+   "route": "risk",
+   "kr_feasible": true,
+   "factor_candidate": null,
+   "reason": "Body-Tail test of factor models: decompose market into cap-ranked body/tail legs, test spanning (q5/FF3/FF5). Factor-MODEL consistency methodology -> risk-research. Body/tail split = capitalization (existing size axis) -> no NOVEL per-stock factor."
+  },
+  {
+   "title": "Continuous Hidden Markov Models for Equity Returns: Heavy-Tail Emission Families and Regime-Conditional Value-at-Risk",
+   "id": "2606.23492",
+   "source": "arxiv",
+   "status": "carried",
+   "route": "regime",
+   "kr_feasible": true,
+   "factor_candidate": null,
+   "reason": "Continuous HMM for equity returns with heavy-tail emissions + regime-conditional VaR (SPY walk-forward). Regime model + synthetic generator -> regime (regime detection) / risk (VaR). Routed regime. No cross-sectional selection factor."
+  },
+  {
+   "title": "When Staking Rewards Compound: Measuring the Impact of Ethereum's Pectra Upgrade",
+   "id": "2606.23337",
+   "source": "arxiv",
+   "status": "carried",
+   "route": "skip",
+   "kr_feasible": false,
+   "factor_candidate": null,
+   "reason": "Ethereum Pectra staking rewards. Crypto. skip."
+  },
+  {
+   "title": "IPO Finance Agent: Benchmark of LLM Financial Analysts Beyond Finance Agent v2, with Automated Rubric Generation, on the SpaceX (SPCX) IPO",
+   "id": "2606.23032",
+   "source": "arxiv",
+   "status": "carried",
+   "route": "skip",
+   "kr_feasible": false,
+   "factor_candidate": null,
+   "reason": "IPO Finance LLM analyst benchmark. LLM benchmark. skip."
+  },
+  {
+   "title": "Leakage-Aware Benchmarking of LLM Forecasting: Real-Time Nowcasts as the Decision-Time Input for Macro Factor Ranking",
+   "id": "2606.22719",
+   "source": "arxiv",
+   "status": "carried",
+   "route": "skip",
+   "kr_feasible": false,
+   "factor_candidate": null,
+   "reason": "Leakage-aware benchmarking of LLM macro nowcasts for factor ranking. LLM forecasting benchmark. skip."
+  },
+  {
+   "title": "Reinforcement Learning for Risk-Sensitive Investment Management: a Free Energy--Entropy Duality Approach",
+   "id": "2606.20903",
+   "source": "arxiv",
+   "status": "carried",
+   "route": "optimizer",
+   "kr_feasible": true,
+   "factor_candidate": null,
+   "reason": "RL for risk-sensitive investment via free-energy/entropy duality. Weight/allocation RL method -> optimizer-research. Optimizer route."
+  },
+  {
+   "title": "Which Portfolios? The Construction Dependence of Factor Model Performance",
+   "id": "2606.19550",
+   "source": "arxiv",
+   "status": "carried",
+   "route": "risk",
+   "kr_feasible": true,
+   "factor_candidate": null,
+   "reason": "Construction-dependence of factor-model performance (random test-asset portfolios, weighting/holding/rebalance). Factor-model EVALUATION methodology -> risk-research. No selection factor."
+  },
+  {
+   "title": "Fitting Accumulated Stock Returns with Tempered Skew t-Distribution",
+   "id": "2606.19318",
+   "source": "arxiv",
+   "status": "carried",
+   "route": "risk",
+   "kr_feasible": true,
+   "factor_candidate": null,
+   "reason": "Tempered skew-t fit to accumulated stock returns. Tail-distribution modeling -> risk-research (tail). No cross-sectional signal."
+  },
+  {
+   "title": "Robust Transformer-Based One-Step Stock Index Forecasting via Shifted Data Augmentation",
+   "id": "2606.15701",
+   "source": "arxiv",
+   "status": "carried",
+   "route": "regime",
+   "kr_feasible": true,
+   "factor_candidate": null,
+   "reason": "Robust Transformer one-step stock-INDEX forecasting (VN30, S&P) with shifted data augmentation. Index-level timing forecast -> regime (overlay timing). Index level, not cross-sectional."
+  },
+  {
+   "title": "Belief at Risk: Quantifying Agentic AI Model Risk with LLM-Inferred Bayesian State Filters",
+   "id": "2606.15473",
+   "source": "arxiv",
+   "status": "carried",
+   "route": "skip",
+   "kr_feasible": false,
+   "factor_candidate": null,
+   "reason": "Belief-at-Risk: agentic-AI model risk via LLM Bayesian state filters. LLM/AI risk. skip."
+  },
+  {
+   "title": "Mean-Variance Optimization in Ambiguous Financial Markets with Learning",
+   "id": "2606.11318",
+   "source": "arxiv",
+   "status": "carried",
+   "route": "optimizer",
+   "kr_feasible": true,
+   "factor_candidate": null,
+   "reason": "Mean-variance optimization in ambiguous markets with learning. Robust MVO weight method -> optimizer-research."
+  },
+  {
+   "title": "Addressing Market Regime Changes and Heavy-Tailed Returns in Portfolio Optimization via Bayesian VAR and Elliptical Black-Litterman",
+   "id": "2606.09104",
+   "source": "arxiv",
+   "status": "carried",
+   "route": "optimizer",
+   "kr_feasible": true,
+   "factor_candidate": null,
+   "reason": "BAVAR-BLED: Bayesian-VAR + elliptical Black-Litterman + TD3, regime-aware fat-tailed allocation. Weight-construction (BL) + regime -> optimizer-research (alpha-fixed A/B). Optimizer route."
+  },
+  {
+   "title": "Continuous Cash-Overlay Filters for a Static Growth--Defensive Risk Sleeve: Slow-Tail Compensation, V-Shape Crash Brakes, Walk-Forward Validation, and Max-Cash Combination",
+   "id": "2606.09025",
+   "source": "arxiv",
+   "status": "carried",
+   "route": "regime",
+   "kr_feasible": true,
+   "factor_candidate": null,
+   "reason": "Continuous cash-overlay filters (slow-tail + V-shape crash-brake) with max-cash combination on a static growth-defensive sleeve. Overlay/timing -> regime. NOTE max-cash overlay combination settled-FALSIFIED in KR (maxcash-overlay-combine-falsified); routed regime as analysis-flag only, not re-tested."
+  },
+  {
+   "title": "A Structural Matrix Autoregressive Model for the Joint Dynamics of Volume, Volatility, and Returns",
+   "id": "2606.08141",
+   "source": "arxiv",
+   "status": "carried",
+   "route": "risk",
+   "kr_feasible": true,
+   "factor_candidate": null,
+   "reason": "Structural Matrix-AR for joint volume/volatility/return dynamics (DJIA); finds volatility drives volume (MDH). Structural dependence model -> risk-research. Possible volume-systematicity per-stock signal is UNCERTAIN (paper shows no return-predictive cross-sectional signal; volume/vol factors already in DB) -> not testable, no fabrication."
+  },
+  {
+   "title": "Anticipatory Portfolio Optimization",
+   "id": "2606.04258",
+   "source": "arxiv",
+   "status": "carried",
+   "route": "optimizer",
+   "kr_feasible": true,
+   "factor_candidate": null,
+   "reason": "Anticipatory portfolio optimization. Forward-looking weight method -> optimizer-research."
+  },
+  {
+   "title": "Deep Learning Forecasting of the U.S. Aggregate Bond Index",
+   "id": "2605.27977",
+   "source": "arxiv",
+   "status": "carried",
+   "route": "skip",
+   "kr_feasible": false,
+   "factor_candidate": null,
+   "reason": "Deep-learning forecast of US aggregate BOND index. Bonds/fixed-income. skip."
+  },
+  {
+   "title": "PortBench: A Correlation-Aware, Full-Pipeline Benchmark for LLM-Driven Portfolio Management",
+   "id": "2605.27887",
+   "source": "arxiv",
+   "status": "carried",
+   "route": "skip",
+   "kr_feasible": false,
+   "factor_candidate": null,
+   "reason": "PortBench: correlation-aware LLM portfolio-management benchmark. LLM benchmark. skip."
+  },
+  {
+   "title": "Forward-Looking Stress Testing Under Macro Scenarios: Stable SVaR Estimation Using a Hybrid GPR-HS Framework with SACS",
+   "id": "2606.07575",
+   "source": "arxiv",
+   "status": "carried",
+   "route": "risk",
+   "kr_feasible": true,
+   "factor_candidate": null,
+   "reason": "Forward-looking macro stress testing, stable SVaR via hybrid GPR-HS. Risk stress-testing methodology -> risk-research."
+  }
+ ]
+}

@@ -1,0 +1,30 @@
+============== caveat 4종 정밀 + DSR ==============
+실행 2026-07-01 08:38:04.799525
+
+[① 절대 standalone] n=189 net SR=1.178 CAGR=+38.6% MDD=36.6% calmar=1.05
+  → SR 1.18 ≪ 목표 2.5. active-알파 게이트는 통과하나 standalone 시스템 아님(whitepaper §6.1 확인).
+
+[④ DSR — sweep 판정시 게이트 ≥0.5 HARD]
+  monthly SR=0.3400 n=189 skew=0.48 kurt=3.75  Var(SR_trials)=0.00166 (sensitivity 9격자)
+  N=10  trials → DSR=1.000  PASS
+  N=19  trials → DSR=1.000  PASS
+  N=30  trials → DSR=1.000  PASS
+  N=50  trials → DSR=1.000  PASS
+  N=100 trials → DSR=1.000  PASS
+  ※ sweep 분류 근거: optimizer 10종(argmax absSR=Tilt) + sensitivity 9격자(argmax-pass=BASE) = 열거 argmax-pick.
+    chain 면제 불가: 변형선택이 OOS(2018+ port_t·oos_retention) 반복조회 기반(§3 chain 요건 ② IS-only 위반).
+  → DSR(sweep)는 N≈19+ 에서 게이트 의존적. whitepaper §7 caveat 5(DSR 미판정) = sweep이면 미충족 리스크.
+
+[③ IC-lookback 의존] sensitivity 실측(파일):
+  BASE   SR=1.18 pt_full=3.46 pt_18p=2.46 oos=0.71
+  ic6    SR=0.94 pt_full=2.47 pt_18p=0.93 oos=0.17
+  ic24   SR=0.83 pt_full=1.51 pt_18p=0.58 oos=-0.52
+  → 12m만 게이트 통과(ic6 oos0.17·ic24 oos-0.52 둘다 FAIL). 12m은 팩터모멘텀 문헌표준이나 단일 lookback 의존 = robustness 취약(과적합 신호 아님이나 fragile).
+
+[② MDD] standalone MDD=36.6% > 25% 제약. structural-drawdown 규약: KR 2005+ BM 자체 MDD 54.5% → hard-fail 아님(tail_review). 단 배포 제약 위반.
+
+================ caveat 종합 ================
+  ① 절대SR 1.18: active-알파지 standalone 2.5 아님 — 미해소(본질)
+  ② MDD 36.6%: tail_review(hard-fail 아님)이나 25% 초과 — 오버레이 무력(R10)
+  ③ IC-lookback 12m 의존: PIT청정(STALE 양수)이나 단일 lookback fragile — 미해소
+  ④ DSR: sweep 분류 → N≈19+ 게이트 의존. 미산정이었음(이제 산정). chain 면제 불가(OOS-informed 선택)

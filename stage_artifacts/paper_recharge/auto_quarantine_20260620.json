@@ -1,0 +1,35 @@
+[
+  {
+    "paper_id": "2606.08569",
+    "paper_title": "Stock Investment: The p-index Approach (Xie, Nie, Chang 2026; q-fin.PM)",
+    "strategy_name": "STR_AS_PINDEX_2606_08569",
+    "gate_decision": "QUARANTINE",
+    "gate_failed_layers": "robustness,fidelity",
+    "gate_rule": "PIT hard + contract&robustness&fidelity all PASS (unattended 4/4, fail-closed)",
+    "layers": { "pit_pass": true, "contract_pass": true, "robustness_pass": false, "fidelity_pass": false },
+    "primary_run_pre_committed": {
+      "direction": "LOW (long low p-index = low downside-insurance cost). Single hypothesis pre-committed (no A/B sweep).",
+      "grade": "C", "excess_cagr": -8.15, "ir": -0.631, "mdd_pct": 56.74,
+      "sharpe_er_contract": 0.281, "sharpe_proxy_hurdle": 0.199,
+      "portfolio_alpha_t_nw_lag3": -2.757, "portfolio_alpha_t_pvalue": 0.0058,
+      "ff3_regression_alpha_t": -1.6, "alpha_annualized_pct": -3.53,
+      "oos_retention_proxy": 1.313, "fmt_codes": ["FMT-01", "FMT-02", "FMT-04"],
+      "measured_source": "bt_result contract (metric_type=backtested, PerformanceAnalytics) — 06_metrics.csv + 07_benchmark_compare.csv, 5272 daily obs 2005-2026",
+      "key_measured_fact": "net-active alpha t (NW lag-3) = -2.76 (p=0.0058) SIGNIFICANTLY NEGATIVE — realized long portfolio underperforms BM with statistical significance, far below the +2.95 graduation hurdle."
+    },
+    "secondary_direction_observed": {
+      "direction": "HIGH (long high p-index). Observed from a concurrent stray run (terminated); NOT part of this gate's pre-committed decision — recorded only as evidence that neither long-only direction yields KR alpha.",
+      "grade": "F", "mdd_pct": 66.7, "oos_retention": 0.26
+    },
+    "robustness_reason": "FALSE (fail-closed): authoritative essence (essence_score PORT_t NW lag-3 / OOS) was NOT computed — grade C did not trigger the authoritative remeasurement ladder (no screen_pass route). Only proxy oos=1.31 exists, which is hollow retention for a Sharpe-0.20 / negative-IR (-0.62) series. No authoritative robustness evidence => L3 FALSE.",
+    "fidelity_reason": "FALSE (independent L4 verifier, confidence low): (1) SOURCE UNVERIFIABLE — paper full text/PDF unretrievable in-env (jina HTTP 402 / arxiv-mcp no pdf extra / paper-search empty), so eq.6-9 closed forms and the Table-2 direction prior could NOT be confirmed against source. (2) SIGNAL-DEFINITION MISMATCH — the engine implements a RAW p-index LEVEL cross-sectional sort (long low-p-index), which is NOT one of the paper's named tested alphas (the 2x2 of efficient/inefficient x momentum/contrarian RELATIVE strategies). It is a derived proxy, not a replication of the paper's actual strategies. (3) KR DIRECTION EXTRAPOLATED — paper's favorable direction is market-UNSTABLE (China SSE50 efficient-contrarian / US SP500 efficient-momentum) with NO Korea result; LOW was pre-committed on an unverifiable economic prior.",
+    "fidelity_clean": "NO batch_434 fabrication (Score=-p_index genuinely matches the 'long low p-index' label; coherent discounted risk-neutral European-put-per-dollar; no placeholder/arbitrary-combo/'requires code generation'). PIT CLEAN. KR-FEASIBLE construct (BM + stock OHLC only; no option-market/alt/cross-market data).",
+    "conclusion": "Paper's self-reported cross-market sign instability (SSE contrarian vs SP500 momentum) is reproduced in KR: NEITHER long-only direction yields KR alpha (LOW IR -0.62 / HIGH grade-F). Quarantined for human review. To revisit faithfully: replicate the paper's actual 2x2 efficient/inefficient (p-ratio) x momentum/contrarian strategies (not a raw level sort) and determine the KR direction empirically with proper selection accounting; obtain the full PDF for equation-level fidelity.",
+    "lcode_action": "L-code l_code_STR_AS_20260620_104101_36900.json REMOVED per QUARANTINE policy (L-code 적립 금지) — it attributed a VALIDATED_HARD_FAIL to 'the p-index paper' while L4 found the engine is not a faithful replication of the paper's named strategies (mislabel risk). Negative knowledge preserved in this quarantine entry for human review.",
+    "verify_json": "stage_artifacts/paper_recharge/auto_verify_2606.08569.json",
+    "engine_path": "02_Infrastructure/alpha_search/factor_engine_pindex_2606_08569.R",
+    "out_dir": "stage_artifacts/alpha_search/20260620_104101_36900",
+    "quarantined_at": "2026-06-20",
+    "consolidation_note": "Single authoritative entry. A concurrent actor independently ran both directions and also reached QUARANTINE (its non-canonical auto_verify_2606_08569.json removed). This consolidated record corrects that actor's '충실구현 확인' claim per the mandated independent L4 verifier (fidelity FALSE)."
+  }
+]

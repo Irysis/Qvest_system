@@ -1,0 +1,81 @@
+{
+  "task": "W3 DART insider feasibility cheap-kill screen (24m ready data)",
+  "framing": "NOT graduation. 24m single-regime. Judges backfill-worthiness only (coverage/sign/orthogonality).",
+  "data": {
+    "insider_file": ".cache/dart/insider_trades_clean.parquet",
+    "insider_rows": 9790,
+    "insider_tickers": 280,
+    "rcept_range": "2024-03-22..2026-03-20",
+    "score_eff_source": "stage_artifacts/WT_D20260425_010/alpha_scores.parquet (STR_1715 base score_eff, pre-overlay)",
+    "n_grid_months": 25
+  },
+  "direction_check": {
+    "field": "sp_stock_lmp_irds_cnt (증감수량)",
+    "encoding": "signed character with thousands-commas; POSITIVE=매수(buy), NEGATIVE=매도(sell). Sign IS direction (no separate direction field).",
+    "n_buy": 8376,
+    "n_sell": 1244,
+    "n_zero": 170,
+    "note": "irds_rate(지분율변화) can disagree in sign with irds_cnt(수량변화) due to total-share changes; irds_cnt is authoritative direction key."
+  },
+  "pit": {
+    "rule": "rcept_dt(공시일) strictly < label date D; trailing 90 calendar days. score_eff panel Ret_1m[D] = return of month starting one label AFTER D => any rcept_dt<D is >1M pre-return-window (conservative, C11/C14 clean).",
+    "ret1m_convention": "Ret_1m[label D] == realized return over period [D_next, D_next2) (verified vs RAWDATA daily compounding)."
+  },
+  "G1_coverage": {
+    "mean": 0.3606,
+    "median": 0.3571,
+    "gate": 0.4,
+    "pass": false,
+    "sensitivity_steady_state_2024_07_plus": {
+      "cov_any_median": 0.359,
+      "cov_any_last12m_median": 0.375,
+      "cov_netbuy_median": 0.243,
+      "cov_cluster_ge2_median": 0.146,
+      "netbuy_pool_size_mean": 93,
+      "netbuy_pool_size_min": 66,
+      "cluster_ge2_pool_size_mean": 59,
+      "cluster_ge2_pool_size_min": 36,
+      "portfolio_feasibility": "25-stock long-only book buildable EVERY month: net-buy pool min=66, cluster(>=2) pool min=36, both > 25. H_1686 40%-of-universe gate is nominally missed but that gate over-counts (any-trade incl. sells); the decision-relevant net-buy/cluster pool is amply large.",
+      "ramp_in_note": "First 3 months (2024-04/05/06) have low coverage (11-36%) purely because trailing-90d window cannot reach before data start 2024-03-22; not a true sparsity signal."
+    }
+  },
+  "G2_ic": {
+    "net_mean_ic": 0.0455,
+    "net_ic_t": 3.344,
+    "cluster_mean_ic": 0.0808,
+    "cluster_ic_t": 4.8689,
+    "n_months": 24,
+    "gate": "mean>0 & t>1",
+    "pass": true
+  },
+  "G3_orthogonality": {
+    "pooled_pearson": -0.0159,
+    "pooled_spearman": 0.0034,
+    "mean_perdate": -0.0177,
+    "gate": "|cor|<0.30",
+    "pass": true
+  },
+  "G4_reference": {
+    "sharpe_port": 1.4832,
+    "cagr_port": 0.5335,
+    "sharpe_bm": 1.1827,
+    "cagr_bm": 0.3245,
+    "active_mean_m": 0.0147,
+    "active_t": 1.6876,
+    "n_months": 24,
+    "avg_holdings": 18.0417
+  },
+  "diagnostics": {
+    "holder_split": "officer vs major_shareholder available (isu_main_shrholdr)",
+    "routine_filter": "IMPOSSIBLE on 24m (needs 3y insider history) — backfill prerequisite"
+  },
+  "verdict": "GO (backfill-worthy)",
+  "verdict_rationale": "G2 net-buy IC +0.0455 t=3.34 (cluster +0.0808 t=4.87) = clear positive KR insider edge. G3 pooled cor -0.016 with STR_1715 score_eff = fully orthogonal (independent channel confirmed, W3 raison d'etre holds). G1 raw any-trade coverage 35.7% median (<40% H_1686 gate) BUT decision-relevant net-buy pool (min 66) and cluster pool (min 36) both exceed the 25-stock portfolio need every month, so the sub-40% headline is not a portfolio-feasibility kill. G4 reference top-20 net-buy EW: CAGR 53% Sharpe 1.48 vs universe-EW 32%/1.18, active t=1.69 (positive direction; NOT a verdict, 24m single-regime). All three cheap-kill criteria (coverage adequate for portfolio, positive sign, orthogonal) met -> the ~2-week 2005~2024 DART API historical backfill is worth undertaking.",
+  "post_backfill_validation_todo": [
+    "Cohen-Malloy-Pomorski routine/opportunistic filter (needs >=3y per-insider history) — the single biggest untested lever; 24m cannot do this.",
+    "IC/PORT_t across multiple regimes (2008 GFC, 2011, 2018, 2020, 2022) — 24m is single NORMAL-dominant regime; sign could be regime-specific.",
+    "Full graduation gates on backfilled series: portfolio_alpha_t_nw>=2.95, oos_retention>=0.7, calmar>=0.64 via canonical_screen_bt/build_bt_result (this screen used raw Ret_1m EW, NOT contract build).",
+    "book-marginal DeltaIR>=0.05 vs incumbent STR_1715 book (orthogonality is necessary not sufficient — see [[learning-gate-calibration-longonly]]).",
+    "officer vs major-shareholder (10%주주) split IC — 국민연금 institutional 10%-holder sells are mechanical rebalancing noise, likely dilute; officer-only buy signal may be cleaner."
+  ]
+}

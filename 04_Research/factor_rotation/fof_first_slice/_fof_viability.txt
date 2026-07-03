@@ -1,0 +1,30 @@
+================ FoF viability map + causal viability 배분 ================
+실행: 2026-06-30 13:44:37.913894
+경제군 11: Accruals, Composite, Consensus, Credit, Growth_Profit, LowRisk, Momentum, Quality, Reversal, Size_Liquidity, Value
+월별 group IC 산출: 256개월 (2005-01-31 ~ 2026-04-30)
+
+=== 11군 viability map (rank-IC, metric_type=proxy/advisory) ===
+  Accruals         full=+0.0030 (NW-t +0.78) | rec60=-0.0017 | rec36=-0.0031 | n=256
+  Composite        full=+0.0101 (NW-t +2.64) | rec60=+0.0043 | rec36=+0.0044 | n=256
+  Consensus        full=+0.0261 (NW-t +5.84) | rec60=+0.0214 | rec36=+0.0278 | n=256
+  Credit           full=+0.0102 (NW-t +2.15) | rec60=+0.0127 | rec36=+0.0143 | n=256
+  Growth_Profit    full=+0.0013 (NW-t +0.33) | rec60=+0.0163 | rec36=+0.0158 | n=256
+  LowRisk          full=-0.0034 (NW-t -0.54) | rec60=+0.0219 | rec36=+0.0273 | n=256
+  Momentum         full=+0.0399 (NW-t +8.04) | rec60=+0.0416 | rec36=+0.0444 | n=256
+  Quality          full=+0.0172 (NW-t +3.96) | rec60=+0.0010 | rec36=+0.0004 | n=256
+  Reversal         full=+0.0060 (NW-t +1.46) | rec60=+0.0195 | rec36=+0.0278 | n=256
+  Size_Liquidity   full=+0.0129 (NW-t +2.95) | rec60=+0.0095 | rec36=+0.0045 | n=256
+  Value            full=+0.0259 (NW-t +5.09) | rec60=+0.0060 | rec36=+0.0087 | n=256
+  → 최근36m 살아있는 순: Momentum > Consensus > Reversal > LowRisk > Growth_Profit > Credit > Value > Size_Liquidity > Composite > Quality > Accruals
+
+causal viability 가중: trailing 36m IC, max(V,0) 정규화. 유효월=220 (PIT trailing-only)
+공통 signal_date 220개월 (2008-01-31 ~ 2026-04-30, viability 36m 워밍업 후)
+
+=== arm 실측 (metric_type=canonical_screen advisory) ===
+  [A0 flat(baseline)     ] port_t=+0.73 (p=0.465) | net_SR=+0.190 | IR=+0.190 | TO=1201%
+  [A0m mom-centric(static)] port_t=+0.73 (p=0.465) | net_SR=+0.187 | IR=+0.187 | TO=1493%
+  [V viability(causal IC)] port_t=+0.75 (p=0.452) | net_SR=+0.194 | IR=+0.194 | TO=1280%
+
+=== 핵심 검정 (paired-NW-t lag3) ===
+  viability(V) − flat(A0):           t=+0.19 (p=0.849) → 살아있는 팩터 배분이 flat 초과? NO/약
+  viability(V) − 정적mom-centric(A0m): t=-0.03 (p=0.976) → 데이터구동이 hand-pick 초과? NO/약

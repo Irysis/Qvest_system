@@ -40,22 +40,24 @@ mk_xts <- function(v, lab) xts(v, order.by = as.Date(paste0(lab, "-01")))
 ann_sr <- function(x) as.numeric(Return.annualized(x, scale = 12)) /
                       as.numeric(StdDev.annualized(x, scale = 12))
 
-# audit window = first 255 labels (2004-02..2025-04), values from production audit.json.
-# audit.json convention (reverse-engineered, confirmed by MDD exact match):
-#   CAGR = arithmetic mean*12, Vol = sd*sqrt(12), Sharpe = mean/sd*sqrt(12).
-# checksum uses the audit's own convention (transcription check only, not a perf claim).
-w255 <- bk[1:255]
+# audit window identified by grid-search (_win_diag.R): the LAST 255 labels
+# (2005-02..2026-04). Convention = geometric CAGR (Return.annualized) / StdDev.annualized
+# / their ratio. Reproduces audit.json L4 0.3868/0.2212/1.7486/MDD 0.2481 and
+# V2 0.4150/1.9536 exactly. First 12 labels (2004-02..2005-01) = pre-window ramp
+# (overlays inactive), retained in file but outside the audited book window.
+w255 <- bk[(.N - 254):.N]
+stopifnot(w255$realized_ym[1] == "2005-02", w255$realized_ym[255] == "2026-04")
 x_l4  <- mk_xts(w255$ret_L4_baseline, w255$realized_ym)
 x_v2  <- mk_xts(w255$ret_L5_V2,       w255$realized_ym)
-sr_arith <- function(v) mean(v) / sd(v) * sqrt(12)
 chk <- data.table(
-  metric   = c("L4_SR_arith", "L4_MDD", "V2_SR_arith", "V2_MDD", "V2_CAGR_arith"),
-  computed = c(sr_arith(w255$ret_L4_baseline), as.numeric(maxDrawdown(x_l4)),
-               sr_arith(w255$ret_L5_V2), as.numeric(maxDrawdown(x_v2)),
-               mean(w255$ret_L5_V2) * 12),
-  audit    = c(1.7486, 0.2481, 1.9536, 0.2481, 0.4150))
+  metric   = c("L4_CAGR", "L4_SR", "L4_MDD", "V2_CAGR", "V2_SR", "V2_MDD"),
+  computed = c(as.numeric(Return.annualized(x_l4, scale = 12)), ann_sr(x_l4),
+               as.numeric(maxDrawdown(x_l4)),
+               as.numeric(Return.annualized(x_v2, scale = 12)), ann_sr(x_v2),
+               as.numeric(maxDrawdown(x_v2))),
+  audit    = c(0.3868, 1.7486, 0.2481, 0.4150, 1.9536, 0.2481))
 chk[, diff := computed - audit]
-cat("== transcription checksum (255m audit window, audit arithmetic convention) ==\n")
+cat("== transcription checksum (audit 255m window = labels 2005-02..2026-04, geometric) ==\n")
 print(chk, digits = 5)
 stopifnot(all(abs(chk$diff) < 0.005))
 cat("checksum PASS (copy faithful to production audit baselines)\n\n")

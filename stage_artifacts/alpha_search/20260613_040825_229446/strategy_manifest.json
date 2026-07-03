@@ -1,0 +1,115 @@
+{
+  "schema_version": "alpha_search_strategy_manifest_v1",
+  "created_at": "2026-06-13T04:14:11+0900",
+  "mode": "alpha_search",
+  "strategy_id": "STR_AS_20260613_040825_229446",
+  "strategy_name": "[진단] 국면 시그널 상호작용 — 2축 쌍별 AND vs OR 비교",
+  "strategy_idea": "[진단] 국면 시그널 상호작용 — 2축 쌍별 AND vs OR 비교 patched blocked runner into executable PIT-safe AlphaSearch direct implementation patched factors=D01_IdioVol+D02_Beta; engine=combo; min_count=2; n=30; weight=equal; cov=sample; runner=/mnt/c/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/batch_434/20260612_codegen_direct_409/runners/RC_57_regime_interact.R PATCHED_DIRECT_COMBO_FROM_PATCHED_DIRECT_COMBO_FROM_DIRECT_CODE_REQUIRED_DIAGNOSTIC",
+  "factor_engine_path": "02_Infrastructure/alpha_search/fe_factor_combo.R",
+  "execution": {
+    "universe": "ALL",
+    "universe_n": 304,
+    "n_holdings": 30,
+    "weight_method": "equal",
+    "commission": 0.0015,
+    "risk_controls": {
+      "vol_target": null,
+      "vol_lookback": 60,
+      "dd_brake": {
+        "entry_pct": 0.12,
+        "exit_pct": 0.35
+      },
+      "buffer_zone": {
+        "keep_n": 60,
+        "entry_n": 30
+      },
+      "use_default_buffer": true,
+      "cov_method": "sample"
+    },
+    "bt_result_path": "stage_artifacts/alpha_search/20260613_040825_229446/bt_result.rds"
+  },
+  "pit": {
+    "code_scan": "detect_lookahead",
+    "status": "CLEAN",
+    "factor_engine_path": "02_Infrastructure/alpha_search/fe_factor_combo.R",
+    "note": "AlphaSearch stops before backtest when detect_lookahead reports violations."
+  },
+  "backtest_contract": {
+    "status": "OK",
+    "run_id": "ASBT_20260613_040825_229446",
+    "metric_type": "backtested",
+    "bt_result_path": "stage_artifacts/alpha_search/20260613_040825_229446/bt_result.rds",
+    "output_dir": "stage_artifacts/alpha_search/20260613_040825_229446",
+    "integrity_status": "WARNING",
+    "audit_pass": 15,
+    "audit_fail": 0,
+    "audit_warn": 1,
+    "validation_errors": [],
+    "note": "standard Backtest Result Contract saved for every AlphaSearch run; grade/admission remains separate",
+    "return_series": {
+      "status": "OK",
+      "source": "bt_result.period_returns",
+      "csv_path": "stage_artifacts/alpha_search/20260613_040825_229446/03_period_returns.csv",
+      "date_col": "date",
+      "ret_col": "ret_net",
+      "n_obs": 5266,
+      "start_date": "2005-02-03",
+      "end_date": "2026-06-11",
+      "post2008_obs": 4547,
+      "frequency": "daily"
+    }
+  },
+  "verdict": {
+    "grade": "F",
+    "score": 10.3,
+    "hurdle_pass": false,
+    "hard_fail": false,
+    "fail_reasons": [],
+    "f_grade_reasons": [
+      "FMT-02 Factor Degeneration: IR -0.36 < -0.1 & 초과CAGR -6.3%p < 0 — KR에서 팩터 방향 역작동 의심",
+      "FMT-08 Regime Overfit: 국면 게이팅 구성 + 초과CAGR -6.3%p < 0 — 회복랠리 상실로 CAGR 훼손 의심",
+      "알파 부재: 정보비율 -0.36로 벤치 대비 기여가 음수/미약",
+      "초과수익 부족: 벤치 대비 -6.3%p"
+    ],
+    "screening": {
+      "screen_pass": false,
+      "screen_route": "NONE",
+      "drawdown_tail_review": false,
+      "note": "탐색 게이트 — 자본/졸업 게이트 아님 (graduation HARD 불변). PIT만 절대."
+    }
+  },
+  "metrics": {
+    "CAGR": 4.46,
+    "AnnVol": 9.93,
+    "Sharpe": 0.45,
+    "Sharpe_m": 0.446,
+    "IR": -0.362,
+    "MDD": 35.86,
+    "Calmar": 0.124,
+    "Turnover_Ann": 68.8,
+    "Top10_Conc": 50,
+    "Rolling3Y_Pos": 48.6,
+    "BM_Corr": 0.563,
+    "ES99_d": 2.54,
+    "ES99_m": 10.05,
+    "GradeA_Corr": null,
+    "Rolling6M_Hit": 58.8,
+    "Worst6M_Ret": -25.84,
+    "MaxConsecNegAlpha": 6,
+    "Rolling12M_Hit": 62.3
+  },
+  "excess_cagr_pct": -6.28,
+  "fmt": [
+    {
+      "code": "FMT-02",
+      "label": "Factor Degeneration",
+      "reason": "IR -0.36 < -0.1 & 초과CAGR -6.3%p < 0 — KR에서 팩터 방향 역작동 의심"
+    },
+    {
+      "code": "FMT-08",
+      "label": "Regime Overfit",
+      "reason": "국면 게이팅 구성 + 초과CAGR -6.3%p < 0 — 회복랠리 상실로 CAGR 훼손 의심"
+    }
+  ],
+  "authoritative": null
+}

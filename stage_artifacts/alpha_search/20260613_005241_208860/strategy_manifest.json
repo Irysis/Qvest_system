@@ -1,0 +1,117 @@
+{
+  "schema_version": "alpha_search_strategy_manifest_v1",
+  "created_at": "2026-06-13T00:57:29+0900",
+  "mode": "alpha_search",
+  "strategy_id": "STR_AS_20260613_005241_208860",
+  "strategy_name": "[진단] 앙상블 Ablation — 5전략 중 1전략씩 제거 시 앙상블 SR 변화",
+  "strategy_idea": "[진단] 앙상블 Ablation — 5전략 중 1전략씩 제거 시 앙상블 SR 변화 diagnostic/sweep spec; code or target artifacts must be prepared diagnostic/sweep spec; code or target artifacts must be prepared",
+  "factor_engine_path": "02_Infrastructure/alpha_search/fe_factor_combo.R",
+  "execution": {
+    "universe": "ALL",
+    "universe_n": 159,
+    "n_holdings": 30,
+    "weight_method": "equal",
+    "commission": 0.0015,
+    "risk_controls": {
+      "vol_target": null,
+      "vol_lookback": 60,
+      "dd_brake": null,
+      "buffer_zone": {
+        "keep_n": 60,
+        "entry_n": 30
+      },
+      "use_default_buffer": true,
+      "cov_method": "sample"
+    },
+    "bt_result_path": "stage_artifacts/alpha_search/20260613_005241_208860/bt_result.rds"
+  },
+  "pit": {
+    "code_scan": "detect_lookahead",
+    "status": "CLEAN",
+    "factor_engine_path": "02_Infrastructure/alpha_search/fe_factor_combo.R",
+    "note": "AlphaSearch stops before backtest when detect_lookahead reports violations."
+  },
+  "backtest_contract": {
+    "status": "OK",
+    "run_id": "ASBT_20260613_005241_208860",
+    "metric_type": "backtested",
+    "bt_result_path": "stage_artifacts/alpha_search/20260613_005241_208860/bt_result.rds",
+    "output_dir": "stage_artifacts/alpha_search/20260613_005241_208860",
+    "integrity_status": "WARNING",
+    "audit_pass": 15,
+    "audit_fail": 0,
+    "audit_warn": 1,
+    "validation_errors": [],
+    "note": "standard Backtest Result Contract saved for every AlphaSearch run; grade/admission remains separate",
+    "return_series": {
+      "status": "OK",
+      "source": "bt_result.period_returns",
+      "csv_path": "stage_artifacts/alpha_search/20260613_005241_208860/03_period_returns.csv",
+      "date_col": "date",
+      "ret_col": "ret_net",
+      "n_obs": 5266,
+      "start_date": "2005-02-03",
+      "end_date": "2026-06-11",
+      "post2008_obs": 4547,
+      "frequency": "daily"
+    }
+  },
+  "verdict": {
+    "grade": "C",
+    "score": 39.3,
+    "hurdle_pass": false,
+    "hard_fail": false,
+    "fail_reasons": [],
+    "f_grade_reasons": [],
+    "screening": {
+      "screen_pass": false,
+      "screen_route": "NONE",
+      "drawdown_tail_review": true,
+      "note": "탐색 게이트 — 자본/졸업 게이트 아님 (graduation HARD 불변). PIT만 절대."
+    }
+  },
+  "metrics": {
+    "CAGR": 10.94,
+    "AnnVol": 20.29,
+    "Sharpe": 0.539,
+    "Sharpe_m": 0.604,
+    "IR": 0.017,
+    "MDD": 51.76,
+    "Calmar": 0.211,
+    "Turnover_Ann": 132.2,
+    "Top10_Conc": 50,
+    "Rolling3Y_Pos": 73.6,
+    "BM_Corr": 0.828,
+    "ES99_d": 5.29,
+    "ES99_m": 18.84,
+    "GradeA_Corr": null,
+    "Rolling6M_Hit": 62.4,
+    "Worst6M_Ret": -44.28,
+    "MaxConsecNegAlpha": 6,
+    "Rolling12M_Hit": 64.9
+  },
+  "excess_cagr_pct": 0.2,
+  "fmt": [
+    {
+      "code": "FMT-01",
+      "label": "Structural MDD",
+      "reason": "MDD 51.8% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)"
+    },
+    {
+      "code": "FMT-03",
+      "label": "Ensemble Dilution",
+      "reason": "앙상블/블렌드 구성 + grade C — 결합 시 강점 희석 의심 (키워드 기반 heuristic)"
+    },
+    {
+      "code": "FMT-04",
+      "label": "Regime Blindness",
+      "reason": "MDD 51.8% > 35% & BM상관 0.83 >= 0.7 — 위기국면 동조 낙폭(국면필터 부재)"
+    },
+    {
+      "code": "FMT-07",
+      "label": "Publication Decay",
+      "reason": "활성SR pre-2017 0.62 -> post-2017 -0.72 — 논문발표 후 알파 소진 패턴"
+    }
+  ],
+  "authoritative": null
+}

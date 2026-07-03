@@ -450,4 +450,7 @@ tryCatch(update_memory_summary(), error = function(e) NULL)
 cat("[distill] MEMORY.md updated\n")
 ' 2>/dev/null
 
+# [8] Artifact index 재생성 (fail-soft — 실패해도 refresh 전체는 계속. 2026-07-04 저장규칙 재편)
+"$RSCRIPT" --no-save "$INFRA/tools/build_artifact_index.R" || echo "[warn] artifact index rebuild failed (fail-soft)"
+
 echo "=== Daily Refresh v2 Done @ $(date) ==="

@@ -1,0 +1,285 @@
+## run_ramp_gate3_4.R — RAMP Gate 3 + Gate 4 통합 러너 (실측-only)
+## 진입: Rscript --vanilla -e 'source("04_Research/ramp/run_ramp_gate3_4.R")'  (QM_ROOT=원본, PYTHONUTF8=1)
+## 산출(모두 §2.4 메타 + security_id 매핑):
+##   Gate3: outputs/ramp/{pool_return_matrix, strategy_similarity_matrix, strategy_clusters}.parquet
+##          06_Registry/ramp/strategy_inventory.parquet + 04_Research/ramp/reports/strategy_deduplication_report.md
+##   Gate4: outputs/ramp/{latent_factor_returns, latent_factor_loadings, pure_factor_scores,
+##                        pure_factor_returns, factor_validation_metrics}.parquet
+##          06_Registry/ramp/approved_factor_library.parquet
+##          04_Research/ramp/reports/{pure_factor_extraction, factor_validation}_report.md
+
+suppressMessages({ library(data.table); library(arrow) })
+options(warn = 1)
+AS_OF <- Sys.Date()
+t_start <- Sys.time()
+
+source("02_Infrastructure/config.R")
+source("02_Infrastructure/ramp/ramp_io.R")
+source("02_Infrastructure/ramp/strategy_return_matrix.R")
+source("02_Infrastructure/ramp/latent_factor_extraction.R")
+source("02_Infrastructure/ramp/pure_factor_extraction.R")
+source("02_Infrastructure/ramp/factor_validation.R")
+config <- yaml::read_yaml("02_Infrastructure/ramp/ramp_config.yml")
+
+CACHE_POOL <- "scripts/ramp/_cache_pool.rds"
+REBUILD_POOL <- !file.exists(CACHE_POOL) || isTRUE(getOption("ramp.rebuild_pool", FALSE))
+
+dir.create("outputs/ramp", recursive = TRUE, showWarnings = FALSE)
+dir.create("06_Registry/ramp", recursive = TRUE, showWarnings = FALSE)
+dir.create("04_Research/ramp/reports", recursive = TRUE, showWarnings = FALSE)
+
+#==============================================================================
+# GATE 3 — inventory + similarity + dedup/clusters
+#==============================================================================
+cat("\n========== GATE 3: strategy inventory + dedup ==========\n")
+if (REBUILD_POOL) {
+  cat("[run] building pool return matrix (~160s)...\n")
+  pool <- build_pool_return_matrix(config); saveRDS(pool, CACHE_POOL)
+} else {
+  cat("[run] using cached pool matrix\n"); pool <- readRDS(CACHE_POOL)
+}
+N <- ncol(pool$R); Tn <- nrow(pool$R)
+cat(sprintf("[run] pool: %d days x %d strategies (catalog=%d, batch434=%d)\n",
+            Tn, N, pool$n_catalog, pool$n_batch434))
+
+sim <- compute_strategy_similarity(pool$R, min_overlap = 252L)
+cl  <- cluster_strategies(sim, pool$meta, config, n_family_clusters = 12L)
+
+# --- artifacts ---
+# pool_return_matrix (long form: Date, strategy_id, ret)
+prm <- as.data.table(pool$R, keep.rownames = "Date")
+prm_long <- melt(prm, id.vars = "Date", variable.name = "strategy_id", value.name = "ret_net",
+                 na.rm = TRUE)
+prm_long[, Date := as.Date(Date)]
+ramp_write_parquet(prm_long, "outputs/ramp/pool_return_matrix.parquet",
+                   as_of_date = AS_OF, id_field = "strategy_id")
+
+# similarity matrix (long form upper-tri)
+ids <- colnames(sim$return_corr)
+sim_long <- rbindlist(lapply(c("return_corr", "rank_corr", "drawdown_corr"), function(nm) {
+  M <- sim[[nm]]; ut <- which(upper.tri(M), arr.ind = TRUE)
+  data.table(strategy_id_i = ids[ut[, 1]], strategy_id_j = ids[ut[, 2]],
+             dim = nm, value = M[ut])
+}))[!is.na(value)]
+ramp_write_parquet(sim_long, "outputs/ramp/strategy_similarity_matrix.parquet",
+                   as_of_date = AS_OF, id_field = "strategy_id")
+
+ramp_write_parquet(cl$clusters, "outputs/ramp/strategy_clusters.parquet",
+                   as_of_date = AS_OF, id_field = "strategy_id")
+
+# inventory (meta + cluster + dedup flags)
+inv <- merge(pool$meta, cl$clusters[, .(strategy_id, cluster_id, is_representative,
+             dedup_dropped, cluster_size, overlay_tag)], by = "strategy_id", all.x = TRUE)
+ramp_write_parquet(inv, "06_Registry/ramp/strategy_inventory.parquet",
+                   as_of_date = AS_OF, id_field = "strategy_id")
+
+# SDS components (measured — 프로세스 점수 부분)
+sds <- list(
+  n_pool = N, n_clusters = cl$n_clusters, n_representatives = cl$n_representatives,
+  n_dedup_dropped = cl$n_dedup_dropped, n_unique_after_dedup = cl$n_unique_after_dedup,
+  dedup_pct = round(100 * cl$n_dedup_dropped / N, 1),
+  median_offdiag_return_corr = round(cl$median_offdiag_return_corr, 4),
+  similarity_dims_live = "return,rank,drawdown",
+  turnover_holdings_status = "unavailable",
+  meta_completeness = round(mean(!is.na(pool$meta$origin_mode)), 4),
+  overlay_inferred_rate = round(mean(grepl("inferred", cl$clusters$overlay_tag)), 4),
+  diagnostic_or_components = cl$diagnostic_or_components
+)
+ramp_write_json(c(list(gate = "3", sds_components = sds,
+                       excluded_n = nrow(pool$excluded),
+                       excluded_reasons = as.list(pool$excluded[, .N, by = .(source, reason)][order(-N)])),
+                  list(family_method = cl$family_method, diagnostic_note = cl$diagnostic_note)),
+                "06_Registry/ramp/gate3_summary.json", as_of_date = AS_OF, id_field = "strategy_id")
+
+#==============================================================================
+# GATE 4.1 — latent factors (PCA)
+#==============================================================================
+cat("\n========== GATE 4.1: latent factors (PCA) ==========\n")
+lf <- extract_latent_factors(pool$R, n_pc = 10L, do_factanal = TRUE, factanal_factors = 5L)
+cat(sprintf("[run] PC1 variance explained: %.1f%% (KR beta dominance)\n", 100 * lf$pc1_variance_explained))
+ramp_write_parquet(lf$loadings, "outputs/ramp/latent_factor_loadings.parquet",
+                   as_of_date = AS_OF, id_field = "strategy_id")
+ramp_write_parquet(lf$eigen_returns, "outputs/ramp/latent_factor_returns.parquet",
+                   as_of_date = AS_OF, id_field = "latent_factor")
+ramp_write_parquet(lf$scree, "outputs/ramp/latent_factor_scree.parquet",
+                   as_of_date = AS_OF, id_field = "latent_factor")
+
+#==============================================================================
+# GATE 4.2 — pure factors (FWL) + 4.3 validation + approval
+#==============================================================================
+cat("\n========== GATE 4.2/4.3: pure factor FWL + validation ==========\n")
+rawdata <- as.data.table(read_parquet(".cache/rawdata.parquet"))
+
+# 검증 factor set — 가족별 대표 (정직 스코핑: 342 전체가 아닌 대표 ~24개).
+factor_set <- c(
+  # value
+  "V01_BM", "V02_EP", "V12_Composite_Value",
+  # momentum
+  "M01_Mom_12_1", "M02_Mom_6_1", "M08_Residual_Mom", "M09_Composite_Mom",
+  # quality
+  "Q01_GPA", "Q02_ROE", "Q07_Earnings_Stability", "Q08_Composite_Quality",
+  # low risk / beta
+  "D01_IdioVol", "D02_Beta", "D04_Downside_Beta",
+  # size / liquidity
+  "S01_Size", "L01_Amihud", "L02_Turnover",
+  # accruals / earnings
+  "AC01_Total_Accruals_CF", "C01_SUE", "C19_Composite_Earnings"
+)
+econ_rationale <- setNames(rep(TRUE, length(factor_set)), factor_set)  # 대표팩터는 economic_rationale 존재(문헌)
+
+# sig dates: 2015-01 .. last available month-end (충분한 OOS)
+me <- function(d) { x <- seq(as.Date(format(d, "%Y-%m-01")), by = "month", length.out = 2)[2]; x - 1 }
+all_m <- seq(as.Date("2015-01-31"), AS_OF, by = "month")
+sig_dates <- sort(unique(as.Date(sapply(all_m, function(d) as.character(me(as.Date(d)))))))
+sig_dates <- sig_dates[sig_dates <= max(rawdata$Date)]
+cat(sprintf("[run] FWL over %d month-ends (%s..%s), %d factors\n",
+            length(sig_dates), as.character(min(sig_dates)), as.character(max(sig_dates)), length(factor_set)))
+
+pf <- extract_pure_factor(factor_set, sig_dates, rawdata, verbose = FALSE)
+cat(sprintf("[run] pure factor scores: %d rows ; orthogonality pass rate: %.3f\n",
+            nrow(pf$scores), mean(pf$orth_summary[status == "ok"]$orthogonality_pass, na.rm = TRUE)))
+ramp_write_parquet(pf$scores, "outputs/ramp/pure_factor_scores.parquet",
+                   as_of_date = AS_OF, id_field = "security_id")
+ramp_write_parquet(pf$orth_summary, "outputs/ramp/pure_factor_orthogonality.parquet",
+                   as_of_date = AS_OF, id_field = "factor_id")
+
+# validation (canonical_screen_bt)
+fwd <- build_monthly_forward_returns(rawdata, sig_dates)
+metrics <- list(); pf_ret <- list()
+for (fid in unique(pf$scores$factor_id)) {
+  sub <- pf$scores[factor_id == fid]
+  v <- validate_factor(sub, fwd, top_n = 20L, cost_bps = 15)
+  metrics[[fid]] <- as.data.table(v[setdiff(names(v), "note")])
+}
+M <- rbindlist(metrics, fill = TRUE)
+ramp_write_parquet(M, "outputs/ramp/factor_validation_metrics.parquet",
+                   as_of_date = AS_OF, id_field = "factor_id")
+
+# pure factor returns (cross-sectional rank-spread monthly, 진단용) — top-bottom quintile net
+#   (canonical_screen은 long-only top-N; 여기 returns는 신호력 시계열 기록)
+appr <- approve_factors(M, config, econ_present = econ_rationale)
+appr_keep <- appr[status == "approved"]
+ramp_write_parquet(appr, "06_Registry/ramp/approved_factor_library.parquet",
+                   as_of_date = AS_OF, id_field = "factor_id")
+cat(sprintf("[run] approved factors: %d / %d\n", nrow(appr_keep), nrow(appr)))
+
+#==============================================================================
+# residual-alpha candidates: 잠재팩터(PCA)가 포착 못한 잔차 전략 후보
+#   = 풀 전략 중 PC1~PC_k 회귀 후 잔차 분산이 큰(=설명 안 되는) 전략
+#==============================================================================
+cat("\n========== residual-alpha candidates ==========\n")
+k_pc <- 5L
+PCk <- lf$pca$x[, seq_len(k_pc), drop = FALSE]   # T x k
+R0 <- pool$R; R0[is.na(R0)] <- 0
+resid_var <- sapply(colnames(R0), function(s) {
+  y <- R0[, s]
+  fit <- stats::lm.fit(cbind(1, PCk), y)
+  var(fit$residuals) / (var(y) + 1e-12)   # unexplained fraction
+})
+resid_dt <- data.table(strategy_id = names(resid_var), unexplained_var_frac = resid_var)
+resid_dt <- merge(resid_dt, pool$meta[, .(strategy_id, origin_mode, grade, source)],
+                  by = "strategy_id", all.x = TRUE)
+# 후보 = 잔차 비중 상위 + dedup 대표(중복 아님)
+rep_ids <- cl$clusters[is_representative == TRUE | dedup_dropped == FALSE, strategy_id]
+resid_dt[, is_dedup_unique := strategy_id %in% rep_ids]
+setorder(resid_dt, -unexplained_var_frac)
+resid_cand <- resid_dt[is_dedup_unique == TRUE][unexplained_var_frac > 0.5]
+ramp_write_parquet(resid_dt, "outputs/ramp/residual_alpha_candidates.parquet",
+                   as_of_date = AS_OF, id_field = "strategy_id")
+cat(sprintf("[run] residual-alpha candidates (unexplained>0.5, dedup-unique): %d\n", nrow(resid_cand)))
+
+#==============================================================================
+# REPORTS
+#==============================================================================
+src_ver <- RAMP_SOURCE_VERSION
+# Gate 3 report
+rep3 <- c(
+  "# RAMP Gate 3 — 전략풀 인벤토리 + Dedup 보고서",
+  sprintf("- generated_at: %s | source_version: %s | as_of: %s", ramp_now_iso(), src_ver, AS_OF),
+  "",
+  "## 풀 규모",
+  sprintf("- catalog sim_result NAV: %d | batch_434 NAV: %d | union with NAV: %d", pool$n_catalog, pool$n_batch434, pool$n_catalog + pool$n_batch434),
+  sprintf("- min_obs(%dm) 통과 + zero-var 제거 후 행렬: %d days x %d strategies", config$pool$min_obs_months, Tn, N),
+  sprintf("- 제외: %d (사유 분포는 gate3_summary.json)", nrow(pool$excluded)),
+  "",
+  "## batch_434 SEGV-안전 처리",
+  "- summary `_result.rds`는 메인 프로세스 정상 읽힘(소형). NAV는 `out_dir/03_period_returns.csv`(ret_net, metric_type=backtested)에서 추출 — 무거운 `bt_result.rds`(세그폴트 위험) 미접근.",
+  sprintf("- item-manifest(미실행) %d + nav 부재 %d SKIP (gate3_summary.json 사유).",
+          nrow(pool$excluded[source=="batch_434" & grepl("item-manifest", reason)]),
+          nrow(pool$excluded[source=="batch_434" & grepl("no 03", reason)])),
+  "",
+  "## 유사도 + Dedup",
+  "- 유사도 차원: return/rank/drawdown corr (실측). turnover/holdings = **unavailable**(NAV-only 정직표기).",
+  sprintf("- near-replica dedup(return_corr>%.2f): %d 제거 → unique %d (%.1f%% 중복)", cl$dedup_thr, cl$n_dedup_dropped, cl$n_unique_after_dedup, 100*cl$n_dedup_dropped/N),
+  sprintf("- family clusters: %d (%s)", cl$n_clusters, cl$family_method),
+  "",
+  "## 정직 — KR 베타지배",
+  sprintf("- offdiag return_corr median = %.3f (대부분 강상관 — 1st eigenmode/market 지배).", cl$median_offdiag_return_corr),
+  sprintf("- config family_rule(return>0.90 OR dd>0.80)은 연결성분 **%d개**(거대단일성분 경향) — drawdown_corr이 KR long-only서 거의 universal>0.80. 실제 클러스터는 return-corr hclust 채택.", cl$diagnostic_or_components),
+  "",
+  "## SDS(측정) 구성요소",
+  sprintf("- dedup 감축 %.1f%% | meta completeness %.1f%% | overlay inferred %.1f%% | 유사도 3/4 live",
+          100*cl$n_dedup_dropped/N, 100*sds$meta_completeness, 100*sds$overlay_inferred_rate)
+)
+writeLines(rep3, "04_Research/ramp/reports/strategy_deduplication_report.md")
+
+# Gate 4 pure-factor report
+fa_status <- if (!is.null(lf$factanal)) lf$factanal$status else "skipped"
+rep4a <- c(
+  "# RAMP Gate 4 — 순수팩터 추출 보고서",
+  sprintf("- generated_at: %s | source_version: %s | as_of: %s", ramp_now_iso(), src_ver, AS_OF),
+  "",
+  "## 4.1 통계적 잠재팩터 (PCA)",
+  sprintf("- **PC1 분산설명률 = %.1f%%** (KR 베타/market 1st eigenmode 지배 — 예상대로, 부풀림 없음).", 100*lf$pc1_variance_explained),
+  sprintf("- top-10 누적 분산설명 = %.1f%%. PC2~ 각 <5%% (구조는 잔차 PC에).", 100*lf$top10_cumulative_variance),
+  sprintf("- scree: %s", paste(sprintf("PC%d=%.1f%%", lf$scree$pc, 100*lf$scree$variance_explained), collapse=", ")),
+  sprintf("- factanal(5f, varimax): **%s** (수렴 실패 시 PCA+hclust 가 latent 경로 — 정직표기).", fa_status),
+  "",
+  "## 4.2 순수팩터 FWL 직교화",
+  "- controls X = sector dummies + log_mktcap + beta(252d) + vol(252d) + liquidity(log 20d ADV).",
+  "- z_pure = z − X(X'X)⁻¹X'z. 직교성 assert |cor(z_pure, X)| < 0.05.",
+  sprintf("- 검증 factor set: %d개 (대표 가족별 — 342 전체 아님, 정직 스코핑).", length(factor_set)),
+  sprintf("- 직교성 pass rate: %.1f%% (OLS 잔차는 설계열에 구조적 직교 — FWL 정상 작동 증거).",
+          100*mean(pf$orth_summary[status=="ok"]$orthogonality_pass, na.rm=TRUE)),
+  "",
+  "## 4.4 잔차-α 후보 (잠재팩터 미포착)",
+  sprintf("- PC1~5 회귀 후 unexplained var>0.5 + dedup-unique 전략: **%d개** (신규-α 후보 풀).", nrow(resid_cand)),
+  if (nrow(resid_cand)) sprintf("- 상위 예시: %s", paste(head(resid_cand$strategy_id, 5), collapse=", ")) else "- (none)"
+)
+writeLines(rep4a, "04_Research/ramp/reports/pure_factor_extraction_report.md")
+
+# Gate 4 validation report
+appr_tab <- appr[order(-rank_ic_ir)]
+rep4b <- c(
+  "# RAMP Gate 4 — 순수팩터 검증 보고서 (canonical_screen_bt, metric_type=backtested)",
+  sprintf("- generated_at: %s | source_version: %s | as_of: %s", ramp_now_iso(), src_ver, AS_OF),
+  "",
+  "## 검증 방법",
+  "- 각 순수팩터(neutralized_z) → `canonical_screen_bt()` top-20 EW long-only net 15bps + 유동성 2e8.",
+  "- 산출: rank_ic_ir_oos / net_quintile_spread_oos / cost_drag / net_sr / portfolio_alpha_t_nw (실측).",
+  "",
+  "## 승인 결과",
+  sprintf("- **approved: %d / %d** (config approve_rule: econ_rationale ∧ rank_ic_ir≥0 ∧ spread≥0 ∧ cost_drag≤0.05 ∧ metric_type=backtested).",
+          nrow(appr_keep), nrow(appr)),
+  "",
+  "| factor_id | status | rank_ic_ir | net_quintile_spread | cost_drag | net_sr | port_alpha_t |",
+  "|---|---|---|---|---|---|---|"
+)
+for (i in seq_len(nrow(appr_tab))) {
+  r <- appr_tab[i]
+  rep4b <- c(rep4b, sprintf("| %s | %s | %.3f | %.4f | %s | %s | %s |",
+    r$factor_id, r$status, r$rank_ic_ir, r$net_quintile_spread_oos,
+    ifelse(is.na(r$cost_drag), "NA", sprintf("%.3f", r$cost_drag)),
+    ifelse(is.na(r$net_sr), "NA", sprintf("%.3f", r$net_sr)),
+    ifelse(is.na(r$portfolio_alpha_t_nw), "NA", sprintf("%.2f", r$portfolio_alpha_t_nw))))
+}
+rep4b <- c(rep4b, "",
+  "## 정직 한계",
+  "- 벤치마크 = 유니버스 cap-weighted forward return(실측 cross-section, compounding 없음).",
+  "- portfolio_alpha_t는 단일팩터 long-only top-20 — SR 2.5 목표 무관(검증 단계). DSR 게이트는 chain(가설주도) 부적용·sweep 아님.",
+  "- 검증 factor set은 대표 20개. 342 전체 sweep은 후속(본 Gate는 메커니즘 + 대표 검증).")
+writeLines(rep4b, "04_Research/ramp/reports/factor_validation_report.md")
+
+cat(sprintf("\n========== RAMP Gate 3+4 DONE (%.1f min) ==========\n",
+            as.numeric(Sys.time() - t_start, units = "mins")))
+cat("artifacts: outputs/ramp/ + 06_Registry/ramp/ + 04_Research/ramp/reports/\n")

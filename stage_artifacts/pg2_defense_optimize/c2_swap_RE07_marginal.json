@@ -1,0 +1,149 @@
+{
+  "candidate": "c2_swap_RE07",
+  "spec": {
+    "factors": ["Q07_Earnings_Stability", "M08_Residual_Mom", "RE07_Crisis_Beta"],
+    "weighting": "EW 1/3 each (theta_defense-matched)"
+  },
+  "mechanism": "Q25_Ohlson_O (drawdown-rank100 weakest) -> RE07_Crisis_Beta (episode hit100%)",
+  "authoritative_denominator": "pinned_ic (convention-matched to deployed book IC-sign freeze)",
+  "pinned_caches": ["RAWDATA_pin20260703.parquet", "benchmark_pin20260703.parquet"],
+  "equivalence_gate": {
+    "ic_base_SR": 1.8196,
+    "want_SR": 1.8196,
+    "ic_base_PORT_t": 5.465814,
+    "want_PORT_t": 5.4658,
+    "pass": true
+  },
+  "candidate_ic": {
+    "SR": 1.926,
+    "MDD": 0.202216,
+    "calmar": 2.114535,
+    "CAGR": 0.427593,
+    "PORT_t": 4.58025,
+    "IR": 1.094037,
+    "oos_retention": [0.297, 0.309, 0.221],
+    "n": 269
+  },
+  "recon_baseline_ic": {
+    "SR": 1.8196,
+    "MDD": 0.234004,
+    "calmar": 1.802096,
+    "CAGR": 0.421698,
+    "PORT_t": 5.465814,
+    "IR": 1.242147,
+    "oos_retention": [0.441, 0.459, 0.451],
+    "n": 269
+  },
+  "marginal_vs_recon_ic": {
+    "d_ir": -0.14811,
+    "d_sr": 0.1064,
+    "d_mdd": -0.031788,
+    "d_port_t": -0.885564,
+    "d_calmar": 0.312439
+  },
+  "d_ir_vs_recon": -0.14811,
+  "d_sr_vs_recon": 0.1064,
+  "d_mdd_vs_recon": -0.031788,
+  "oos_retention_v2_median_cand": 0.297,
+  "mean_episode_active_cand": 0.274909,
+  "mean_episode_active_base": 0.268366,
+  "paired_t_monthly": 0.100728,
+  "paired_p_monthly": 0.919841,
+  "paired_n": 269,
+  "candidate_regdir": {
+    "SR": 1.926,
+    "MDD": 0.202216,
+    "calmar": 2.114535,
+    "CAGR": 0.427593,
+    "PORT_t": 4.58025,
+    "IR": 1.094037,
+    "oos_retention": [0.297, 0.309, 0.221],
+    "n": 269
+  },
+  "recon_baseline_regdir": {
+    "SR": 1.7741,
+    "MDD": 0.226252,
+    "calmar": 1.974579,
+    "CAGR": 0.446752,
+    "PORT_t": 5.190188,
+    "IR": 1.208323,
+    "oos_retention": [0.469, 0.499, 0.352],
+    "n": 269
+  },
+  "marginal_vs_recon_regdir": {
+    "d_ir": -0.114285,
+    "d_sr": 0.1519,
+    "d_mdd": -0.024036,
+    "d_port_t": -0.609938,
+    "d_calmar": 0.139956
+  },
+  "episodes_ic": [
+    {
+      "episode": "Aug_2024",
+      "active_base": 0.447112,
+      "active_cand": 0.3879,
+      "d_active": -0.059212
+    },
+    {
+      "episode": "Bear_2021_22",
+      "active_base": 0.570892,
+      "active_cand": 0.456514,
+      "d_active": -0.114378
+    },
+    {
+      "episode": "COVID_2020",
+      "active_base": -0.119876,
+      "active_cand": -0.12021,
+      "d_active": -0.000334
+    },
+    {
+      "episode": "China_Oil_2015_16",
+      "active_base": 0.889869,
+      "active_cand": 1.367162,
+      "d_active": 0.477294
+    },
+    {
+      "episode": "DD_2005-03",
+      "active_base": -0.014512,
+      "active_cand": -0.029025,
+      "d_active": -0.014513
+    },
+    {
+      "episode": "DD_2026-02",
+      "active_base": 0.022372,
+      "active_cand": -0.085691,
+      "d_active": -0.108063
+    },
+    {
+      "episode": "Euro_2011",
+      "active_base": 0.434021,
+      "active_cand": 0.453492,
+      "d_active": 0.019471
+    },
+    {
+      "episode": "GFC_2008_2007-12",
+      "active_base": -0.035165,
+      "active_cand": -0.017766,
+      "d_active": 0.017399
+    },
+    {
+      "episode": "GFC_2008_2009-01",
+      "active_base": 0.282892,
+      "active_cand": 0.308923,
+      "d_active": 0.02603
+    },
+    {
+      "episode": "Q4_2018",
+      "active_base": 0.392286,
+      "active_cand": 0.208661,
+      "d_active": -0.183625
+    },
+    {
+      "episode": "Rate_2023",
+      "active_base": 0.082139,
+      "active_cand": 0.094035,
+      "d_active": 0.011896
+    }
+  ],
+  "n_re07_sig_dates": 257
+}

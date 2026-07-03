@@ -1,0 +1,112 @@
+{
+  "schema_version": "alpha_search_strategy_manifest_v1",
+  "created_at": "2026-06-12T21:22:49+0900",
+  "mode": "alpha_search",
+  "strategy_id": "STR_AS_20260612_211709_179340",
+  "strategy_name": "Quality+Reversal Composite(STR_1095) + BRK overlay → Grade A 승격",
+  "strategy_idea": "Quality+Reversal Composite(STR_1095) + BRK overlay → Grade A 승격 Forge contract/spec requires code generation before backtest Forge contract/spec requires code generation before backtest",
+  "factor_engine_path": "02_Infrastructure/alpha_search/fe_factor_combo.R",
+  "execution": {
+    "universe": "ALL",
+    "universe_n": 289,
+    "n_holdings": 30,
+    "weight_method": "equal",
+    "commission": 0.0015,
+    "risk_controls": {
+      "vol_target": 0.034,
+      "vol_lookback": 60,
+      "dd_brake": {
+        "entry_pct": 0.35,
+        "exit_pct": 0.45
+      },
+      "buffer_zone": {
+        "keep_n": 60,
+        "entry_n": 30
+      },
+      "use_default_buffer": true,
+      "cov_method": "sample"
+    },
+    "bt_result_path": "stage_artifacts/alpha_search/20260612_211709_179340/bt_result.rds"
+  },
+  "pit": {
+    "code_scan": "detect_lookahead",
+    "status": "CLEAN",
+    "factor_engine_path": "02_Infrastructure/alpha_search/fe_factor_combo.R",
+    "note": "AlphaSearch stops before backtest when detect_lookahead reports violations."
+  },
+  "backtest_contract": {
+    "status": "OK",
+    "run_id": "ASBT_20260612_211709_179340",
+    "metric_type": "backtested",
+    "bt_result_path": "stage_artifacts/alpha_search/20260612_211709_179340/bt_result.rds",
+    "output_dir": "stage_artifacts/alpha_search/20260612_211709_179340",
+    "integrity_status": "WARNING",
+    "audit_pass": 15,
+    "audit_fail": 0,
+    "audit_warn": 1,
+    "validation_errors": [],
+    "note": "standard Backtest Result Contract saved for every AlphaSearch run; grade/admission remains separate",
+    "return_series": {
+      "status": "OK",
+      "source": "bt_result.period_returns",
+      "csv_path": "stage_artifacts/alpha_search/20260612_211709_179340/03_period_returns.csv",
+      "date_col": "date",
+      "ret_col": "ret_net",
+      "n_obs": 5266,
+      "start_date": "2005-02-03",
+      "end_date": "2026-06-11",
+      "post2008_obs": 4547,
+      "frequency": "daily"
+    }
+  },
+  "verdict": {
+    "grade": "A_DEF",
+    "score": 17.7,
+    "hurdle_pass": false,
+    "hard_fail": false,
+    "fail_reasons": [],
+    "f_grade_reasons": [],
+    "screening": {
+      "screen_pass": false,
+      "screen_route": "NONE",
+      "drawdown_tail_review": false,
+      "note": "탐색 게이트 — 자본/졸업 게이트 아님 (graduation HARD 불변). PIT만 절대."
+    }
+  },
+  "metrics": {
+    "CAGR": 5.99,
+    "AnnVol": 8.14,
+    "Sharpe": 0.736,
+    "Sharpe_m": 0.688,
+    "IR": -0.292,
+    "MDD": 26.83,
+    "Calmar": 0.223,
+    "Turnover_Ann": 143.6,
+    "Top10_Conc": 50,
+    "Rolling3Y_Pos": 70.8,
+    "BM_Corr": 0.699,
+    "ES99_d": 1.92,
+    "ES99_m": 8.01,
+    "GradeA_Corr": null,
+    "Rolling6M_Hit": 63.3,
+    "Worst6M_Ret": -15.51,
+    "MaxConsecNegAlpha": 8,
+    "Rolling12M_Hit": 65.7
+  },
+  "excess_cagr_pct": -4.75,
+  "fmt": [
+    {
+      "code": "FMT-02",
+      "label": "Factor Degeneration",
+      "reason": "IR -0.29 < -0.1 & 초과CAGR -4.8%p < 0 — KR에서 팩터 방향 역작동 의심"
+    }
+  ],
+  "authoritative": {
+    "status": "OK",
+    "essence_grade": "F",
+    "reasons": "non-positive alpha (PORT_t<=0 또는 net_IR<=0)",
+    "metric_type": "backtested",
+    "run_id": "ASBT_20260612_211709_179340",
+    "bt_result_path": "/mnt/c/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/alpha_search/20260612_211709_179340/bt_result.rds"
+  }
+}

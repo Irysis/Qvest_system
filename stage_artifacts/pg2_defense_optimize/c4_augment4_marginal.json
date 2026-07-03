@@ -1,0 +1,167 @@
+{
+  "candidate": "c4_augment4",
+  "factors": ["Q07_Earnings_Stability", "M08_Residual_Mom", "Q25_Ohlson_O", "RE07_Crisis_Beta"],
+  "candidate_construction": "Q07/M08/Q25/RE07_Crisis_Beta EW 1/4 (augment, no removal). def_z: winsor_z(2.5s) each aligned Z -> EW(1/4 each) -> x-sec z per sig_date. score_eff=0.65*score_core_z(stored)+0.35*def_z.",
+  "mechanism": "crash-specialist augmentation without removal",
+  "authoritative_arm": "ic",
+  "authoritative_marginal_denominator": "pinned_ic (convention-matched to deployed frozen alpha_scores, IC-sign direction, min_ic_months=12L)",
+  "pinned_cache": ["RAWDATA_pin20260703.parquet", "benchmark_pin20260703.parquet"],
+  "carrier_note": "Segfault-safe key-join carrier override (native-materialized cols). Reproduces original logical-scan semantics EXACTLY: cur|ic recon SR=1.8196 PORT_t=5.4658 IR=1.2421 MDD=0.234 defz_cor_stored=0.8487 all match prompt pinned_ic to 4dp; cur|regdir SR=1.7741 PORT_t=5.1902 match prompt pinned_regdir. Original harness carrier hit a flaky Windows arrow+data.table logical-scan segfault (repeated raw[Date>=x] on 13.9M-row table); key-join replacement + full column materialization is stable. Both arms use identical override so recon drift cancels.",
+  "oos_convention": "v2 anchored 3-split median {55/65/75}",
+  "candidate_ic": {
+    "SR": 1.9765,
+    "MDD": 0.2198,
+    "calmar": 1.924101,
+    "CAGR": 0.422918,
+    "PORT_t": 4.764786,
+    "IR": 1.128362,
+    "oos_retention_v2_median": 0.291,
+    "oos_splits": [0.303, 0.291, 0.26],
+    "n_periods": 269,
+    "mean_episode_active": 0.285565,
+    "defz_cor_to_stored": 0.692844
+  },
+  "recon_baseline_ic": {
+    "SR": 1.8196,
+    "MDD": 0.234004,
+    "calmar": 1.802096,
+    "CAGR": 0.421698,
+    "PORT_t": 5.465814,
+    "IR": 1.242147,
+    "oos_retention_v2_median": 0.451,
+    "oos_splits": [0.441, 0.459, 0.451],
+    "n_periods": 269,
+    "mean_episode_active": 0.268366,
+    "defz_cor_to_stored": 0.84867
+  },
+  "marginal_ic": {
+    "d_ir": -0.113785,
+    "d_sr": 0.1569,
+    "d_mdd": -0.014204,
+    "d_port_t": -0.701028,
+    "d_calmar": 0.122004,
+    "d_cagr": 0.00122,
+    "d_oos": -0.16
+  },
+  "candidate_regdir": {
+    "SR": 1.8935,
+    "MDD": 0.222905,
+    "calmar": 1.97775,
+    "CAGR": 0.440851,
+    "PORT_t": 4.617189,
+    "IR": 1.12338,
+    "oos_retention_v2_median": 0.366,
+    "n_periods": 269,
+    "mean_episode_active": 0.273033,
+    "defz_cor_to_stored": 0.44436
+  },
+  "recon_baseline_regdir": {
+    "SR": 1.7741,
+    "MDD": 0.226252,
+    "calmar": 1.974579,
+    "CAGR": 0.446752,
+    "PORT_t": 5.190188,
+    "IR": 1.208323,
+    "oos_retention_v2_median": 0.469,
+    "n_periods": 269,
+    "mean_episode_active": 0.243224,
+    "defz_cor_to_stored": 0.470307
+  },
+  "marginal_regdir": {
+    "d_ir": -0.084943,
+    "d_sr": 0.1194,
+    "d_mdd": -0.003346,
+    "d_port_t": -0.572999,
+    "d_calmar": 0.003171,
+    "d_cagr": -0.005901,
+    "d_oos": -0.103
+  },
+  "episodes_ic": [
+    {
+      "episode": "DD_2005-03",
+      "base_active": -0.014512,
+      "cand_active": -0.048219,
+      "d_active": -0.033707
+    },
+    {
+      "episode": "GFC_2008_2007-12",
+      "base_active": -0.035165,
+      "cand_active": -0.011623,
+      "d_active": 0.023542
+    },
+    {
+      "episode": "GFC_2008_2009-01",
+      "base_active": 0.282892,
+      "cand_active": 0.339698,
+      "d_active": 0.056805
+    },
+    {
+      "episode": "Euro_2011",
+      "base_active": 0.434021,
+      "cand_active": 0.482032,
+      "d_active": 0.048011
+    },
+    {
+      "episode": "China_Oil_2015_16",
+      "base_active": 0.889869,
+      "cand_active": 1.290529,
+      "d_active": 0.40066
+    },
+    {
+      "episode": "Q4_2018",
+      "base_active": 0.392286,
+      "cand_active": 0.382318,
+      "d_active": -0.009968
+    },
+    {
+      "episode": "COVID_2020",
+      "base_active": -0.119876,
+      "cand_active": -0.100536,
+      "d_active": 0.01934
+    },
+    {
+      "episode": "Bear_2021_22",
+      "base_active": 0.570892,
+      "cand_active": 0.463281,
+      "d_active": -0.107611
+    },
+    {
+      "episode": "Rate_2023",
+      "base_active": 0.082139,
+      "cand_active": 0.045753,
+      "d_active": -0.036385
+    },
+    {
+      "episode": "Aug_2024",
+      "base_active": 0.447112,
+      "cand_active": 0.381212,
+      "d_active": -0.065901
+    },
+    {
+      "episode": "DD_2026-02",
+      "base_active": 0.022372,
+      "cand_active": -0.083226,
+      "d_active": -0.105598
+    }
+  ],
+  "paired_t_monthly": {
+    "mean_diff": -0.000247,
+    "t": -0.176425,
+    "p": 0.860093,
+    "n": 269
+  },
+  "reproduction_check": {
+    "cur_ic_SR": 1.8196,
+    "prompt_cur_ic_SR": 1.8196,
+    "cur_ic_PORT_t": 5.465814,
+    "prompt_cur_ic_PORT_t": 5.4658,
+    "cur_ic_defzcor": 0.84867,
+    "prompt_cur_ic_defzcor": 0.8487,
+    "cur_regdir_SR": 1.7741,
+    "prompt_cur_regdir_SR": 1.7741,
+    "cur_regdir_PORT_t": 5.190188,
+    "prompt_cur_regdir_PORT_t": 5.1902,
+    "verdict": "exact match to prompt recon baseline on both arms -> carrier override validated"
+  },
+  "interpretation": "c4_augment4 (add RE07_Crisis_Beta): PORT_t (authoritative net-active t) FALLS -0.70 (5.47->4.76) and IR FALLS -0.11; SR rises +0.16 and MDD improves -0.014 and calmar +0.12, but the paired monthly diff is insignificant (t=-0.18, p=0.86). The SR/MDD cosmetics come from RE07's crash-beta tilt (China_Oil_2015 episode +0.40, GFC +0.06) but it DILUTES realized net-active alpha (PORT_t/IR down) and WORSENS oos_retention (-0.16, both arms). Net: augmentation does NOT clear the authoritative PORT_t/IR bar; marginal NEGATIVE on the decision metrics. Consistent with prior low prior (overlay already saturates crisis-cash)."
+}

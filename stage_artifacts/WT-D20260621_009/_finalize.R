@@ -1,0 +1,11 @@
+suppressMessages({library(data.table)})
+r <- readRDS("stage_artifacts/WT-D20260621_009/results.rds")
+cat("base PORT_t:", r$base$portfolio_alpha_t_nw_lag3, " IR:", r$base$information_ratio,
+    " net_sr:", r$base$net_sr, " turnover:", r$base$turnover_annual, "\n")
+cat("base15 PORT_t:", r$base15$portfolio_alpha_t_nw_lag3, "\n")
+cat("calmar:", r$calmar, " mdd:", r$mdd, " cagr_active:", r$cagr_active, "\n")
+cat("oos_retention:", r$oos_retention, "\n")
+cat("rank_ic:", r$rank_ic, " icir:", r$icir, " harvey_t:", r$harvey_t, " sub_stab:", r$sub_stab,"\n")
+cat("D10_PORT_t:", r$d10_PORT_t, " gap_t:", r$gap_t, " mono:", r$mono, "\n")
+cat("median n_active:", median(r$gate_stats$n_active), " mo<25:", sum(r$gate_stats$n_active<25),"\n")
+print(r$spike)

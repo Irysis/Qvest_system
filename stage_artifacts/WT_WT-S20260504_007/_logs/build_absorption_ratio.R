@@ -19,7 +19,9 @@ suppressPackageStartupMessages({
 cat("=== WT-S20260504_007 Absorption Ratio Risk Overlay ===\n")
 cat("Start: ", format(Sys.time()), "\n\n")
 
-PROJECT_ROOT <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+# [fix 2026-06-17] env 기반 (run_all 패턴) — /mnt/c 하드코딩은 OneDrive 머신서 실패
+PROJECT_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR",
+                  Sys.getenv("QM_ROOT", "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"))
 WT_ID <- "WT-S20260504_007"
 STAGE_DIR <- file.path(PROJECT_ROOT, "stage_artifacts", paste0("WT_", WT_ID))
 LOG_DIR <- file.path(STAGE_DIR, "_logs")
@@ -35,6 +37,14 @@ pr <- as.data.table(read.csv(
 ))
 pr[, date := as.Date(date)]
 str1715_dates <- pr$date  # 268 monthly rebalance dates
+
+# ── Forward-row (roll-forward): 현재 리밸 sig_date를 AR 스케줄에 추가 ──
+#   AR_t는 window < t (≤직전종가) 계산이라 07-01 β는 ≤06-30 일별수익으로 산출됨. PIT 유지.
+.as_of <- suppressWarnings(as.Date(Sys.getenv("PG2_AS_OF", NA)))
+if (!is.na(.as_of) && .as_of > max(str1715_dates)) {
+  str1715_dates <- sort(c(str1715_dates, .as_of))
+  cat(sprintf("[forward-row] AR sig_date %s appended (window <t = <=prior close)\n", as.character(.as_of)))
+}
 cat(sprintf("[Step 1] STR_1715 268m schedule: %s to %s (%d months)\n",
             min(str1715_dates), max(str1715_dates), length(str1715_dates)))
 
@@ -49,7 +59,7 @@ raw[, Date := as.Date(Date)]
 # Universe: KOSPI200 ∪ KOSDAQ150
 # Window=504 days needs ~2y warmup → start 2002-01-01
 universe_start <- as.Date("2002-01-01")
-universe_end   <- max(str1715_dates)  # 2026-05-01
+universe_end   <- max(str1715_dates)  # 데이터-구동 (= 03_period_returns 최신 리밸일; 하드코딩 아님)
 
 uni <- raw[
   (K200 == 1 | KQ150 == 1) &

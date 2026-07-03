@@ -1,0 +1,613 @@
+{
+  "task_id": "WT-D20260614_002",
+  "wt_type": "discovery",
+  "as_of_date": "2026-06-14",
+  "signal_date": "2026-05-31",
+  "forecast_horizon": "1M",
+  "hypothesis_title": "QEPM409-CORE_COMPOSITE: 10-factor EW composite (cluster12 RC_16 de-contaminated)",
+  "recipe": {
+    "factors": [
+      "D01_IdioVol",
+      "D02_Beta",
+      "M07_IndMom",
+      "M01_Mom_12_1",
+      "M05_Trended_Mom",
+      "Q01_GPA",
+      "Q04_Piotroski_F",
+      "Q09_CFOA",
+      "Q07_Earnings_Stability",
+      "V01_BM"
+    ],
+    "axes": {
+      "defense": [
+        "D01_IdioVol",
+        "D02_Beta"
+      ],
+      "momentum": [
+        "M07_IndMom",
+        "M01_Mom_12_1",
+        "M05_Trended_Mom"
+      ],
+      "quality": [
+        "Q01_GPA",
+        "Q04_Piotroski_F",
+        "Q09_CFOA",
+        "Q07_Earnings_Stability"
+      ],
+      "value": "V01_BM"
+    },
+    "combination": "equal-weight z-score composite",
+    "n_holdings_recipe": 30,
+    "rebalance": "monthly",
+    "universe": "KOSPI200 union KOSDAQ150 (KR_top342, PIT time-varying), 2005-01~",
+    "label_contamination_note": "409-batch label 'Dispersion x Vol' = codegen contamination [[project-batch434-codegen-contamination]]. TRUE signal = FACTOR_NAMES of runner. This WT uses de-contaminated recipe as authoritative alpha definition."
+  },
+  "selection_objective": "icir",
+  "alpha_vector": {
+    "A000660": 0.2081,
+    "A319660": 0.1946,
+    "A322000": 0.1929,
+    "A042700": 0.189,
+    "A458870": 0.1889,
+    "A005930": 0.184,
+    "A036930": 0.1781,
+    "A131970": 0.1714,
+    "A267260": 0.1586,
+    "A403870": 0.1584,
+    "A058610": 0.1583,
+    "A084370": 0.1567,
+    "A082920": 0.1552,
+    "A115390": 0.1546,
+    "A048260": 0.1537,
+    "A131290": 0.1519,
+    "A095340": 0.1502,
+    "A440110": 0.1486,
+    "A033100": 0.146,
+    "A240810": 0.1425,
+    "A065420": 0.1393,
+    "A085370": 0.1386,
+    "A287410": 0.138,
+    "A100840": 0.1378,
+    "A054940": 0.1366,
+    "A298040": 0.1363,
+    "A001060": 0.1356,
+    "A348210": 0.1345,
+    "A049770": 0.1326,
+    "A065570": 0.1326,
+    "A166090": 0.1309,
+    "A009150": 0.13,
+    "A331920": 0.129,
+    "A065690": 0.1277,
+    "A030530": 0.1275,
+    "A005390": 0.1275,
+    "A024060": 0.1261,
+    "A083650": 0.1248,
+    "A079970": 0.1248,
+    "A103590": 0.1239,
+    "A475830": 0.123,
+    "A950110": 0.1229,
+    "A095610": 0.1226,
+    "A000990": 0.1216,
+    "A357780": 0.1215,
+    "A154040": 0.1204,
+    "A278470": 0.1201,
+    "A183300": 0.1197,
+    "A038500": 0.119,
+    "A014530": 0.1178,
+    "A040160": 0.1175,
+    "A066570": 0.1173,
+    "A011070": 0.117,
+    "A033640": 0.1168,
+    "A005610": 0.1163,
+    "A036170": 0.116,
+    "A089890": 0.116,
+    "A101490": 0.1148,
+    "A101390": 0.1143,
+    "A221800": 0.1141
+  },
+  "confidence_vector": {
+    "A000660": 0.544,
+    "A319660": 0.544,
+    "A322000": 0.34,
+    "A042700": 0.544,
+    "A458870": 0.34,
+    "A005930": 0.544,
+    "A036930": 0.544,
+    "A131970": 0.548,
+    "A267260": 0.554,
+    "A403870": 0.554,
+    "A058610": 0.554,
+    "A084370": 0.555,
+    "A082920": 0.556,
+    "A115390": 0.348,
+    "A048260": 0.348,
+    "A131290": 0.558,
+    "A095340": 0.559,
+    "A440110": 0.35,
+    "A033100": 0.561,
+    "A240810": 0.562,
+    "A065420": 0.564,
+    "A085370": 0.353,
+    "A287410": 0.353,
+    "A100840": 0.565,
+    "A054940": 0.566,
+    "A298040": 0.566,
+    "A001060": 0.566,
+    "A348210": 0.567,
+    "A049770": 0.355,
+    "A065570": 0.568,
+    "A166090": 0.568,
+    "A009150": 0.569,
+    "A331920": 0.409,
+    "A065690": 0.57,
+    "A030530": 0.57,
+    "A005390": 0.356,
+    "A024060": 0.571,
+    "A083650": 0.572,
+    "A079970": 0.572,
+    "A103590": 0.572,
+    "A475830": 0.358,
+    "A950110": 0.358,
+    "A095610": 0.573,
+    "A000990": 0.573,
+    "A357780": 0.573,
+    "A154040": 0.574,
+    "A278470": 0.574,
+    "A183300": 0.574,
+    "A038500": 0.575,
+    "A014530": 0.575,
+    "A040160": 0.575,
+    "A066570": 0.575,
+    "A011070": 0.576,
+    "A033640": 0.576,
+    "A005610": 0.576,
+    "A036170": 0.576,
+    "A089890": 0.576,
+    "A101490": 0.577,
+    "A101390": 0.577,
+    "A221800": 0.415
+  },
+  "alpha_scores_full_ref": "stage_artifacts/WT-D20260614_002/alpha_scores.parquet (2554 names)",
+  "n_names_scored": 2554,
+  "factor_specs": [
+    {
+      "factor_id": "D01_IdioVol",
+      "factor_family": "defense",
+      "axis": "defense",
+      "direction": "lower_better",
+      "lag_rule": "daily, Date<=sig_d (252d idio vol)",
+      "winsorization": "3std (builder-level)",
+      "standardization": "cross-sectional Z-score, direction-aligned (Z_Score_Aligned, higher=better)",
+      "neutralization": "raw (no sector/size neutralization in this composite)",
+      "combination": "equal-weight (theta=0.10 each, 1/10)",
+      "weight_theta": 0.1,
+      "icir_expanding_pit": 0.853,
+      "mean_ic_expanding_pit": 0.1042,
+      "ic_n_months": 240,
+      "economic_rationale": "저변동성 이상현상 — 고유변동성 낮은 종목 위험조정 초과수익 (Ang 2006; KR evidence_tier A). 방어축 주력.",
+      "selection_objective": "icir",
+      "source": "db_existing",
+      "load_path": "load_month_factors() [C15-compliant]"
+    },
+    {
+      "factor_id": "D02_Beta",
+      "factor_family": "defense",
+      "axis": "defense",
+      "direction": "lower_better",
+      "lag_rule": "daily, Date<=sig_d (252d beta)",
+      "winsorization": "3std (builder-level)",
+      "standardization": "cross-sectional Z-score, direction-aligned (Z_Score_Aligned, higher=better)",
+      "neutralization": "raw (no sector/size neutralization in this composite)",
+      "combination": "equal-weight (theta=0.10 each, 1/10)",
+      "weight_theta": 0.1,
+      "icir_expanding_pit": 0.104,
+      "mean_ic_expanding_pit": 0.0153,
+      "ic_n_months": 240,
+      "economic_rationale": "저베타 이상현상 (BAB) — 레버리지 제약 하 저베타 알파 (Frazzini-Pedersen 2014). KR top-univ ICIR 약함(0.10).",
+      "selection_objective": "icir",
+      "source": "db_existing",
+      "load_path": "load_month_factors() [C15-compliant]"
+    },
+    {
+      "factor_id": "M07_IndMom",
+      "factor_family": "momentum",
+      "axis": "momentum",
+      "direction": "higher_better",
+      "lag_rule": "daily, Date<=sig_d (industry 12-1 mom)",
+      "winsorization": "3std (builder-level)",
+      "standardization": "cross-sectional Z-score, direction-aligned (Z_Score_Aligned, higher=better)",
+      "neutralization": "raw (no sector/size neutralization in this composite)",
+      "combination": "equal-weight (theta=0.10 each, 1/10)",
+      "weight_theta": 0.1,
+      "icir_expanding_pit": 0.111,
+      "mean_ic_expanding_pit": 0.0102,
+      "ic_n_months": 240,
+      "economic_rationale": "산업 모멘텀 — 섹터 수익 지속성 (Moskowitz-Grinblatt 1999). KR ICIR 약함(0.11).",
+      "selection_objective": "icir",
+      "source": "db_existing",
+      "load_path": "load_month_factors() [C15-compliant]"
+    },
+    {
+      "factor_id": "M01_Mom_12_1",
+      "factor_family": "momentum",
+      "axis": "momentum",
+      "direction": "higher_better",
+      "lag_rule": "daily, Date<=sig_d (12-1 price mom)",
+      "winsorization": "3std (builder-level)",
+      "standardization": "cross-sectional Z-score, direction-aligned (Z_Score_Aligned, higher=better)",
+      "neutralization": "raw (no sector/size neutralization in this composite)",
+      "combination": "equal-weight (theta=0.10 each, 1/10)",
+      "weight_theta": 0.1,
+      "icir_expanding_pit": 0.135,
+      "mean_ic_expanding_pit": 0.0139,
+      "ic_n_months": 240,
+      "economic_rationale": "12-1 가격 모멘텀 (Jegadeesh-Titman 1993). KR top-univ 약함(ICIR 0.14, 잘 알려진 KR momentum 취약).",
+      "selection_objective": "icir",
+      "source": "db_existing",
+      "load_path": "load_month_factors() [C15-compliant]"
+    },
+    {
+      "factor_id": "M05_Trended_Mom",
+      "factor_family": "momentum",
+      "axis": "momentum",
+      "direction": "higher_better",
+      "lag_rule": "daily, Date<=sig_d (trended mom)",
+      "winsorization": "3std (builder-level)",
+      "standardization": "cross-sectional Z-score, direction-aligned (Z_Score_Aligned, higher=better)",
+      "neutralization": "raw (no sector/size neutralization in this composite)",
+      "combination": "equal-weight (theta=0.10 each, 1/10)",
+      "weight_theta": 0.1,
+      "icir_expanding_pit": 0.119,
+      "mean_ic_expanding_pit": 0.0122,
+      "ic_n_months": 240,
+      "economic_rationale": "추세 모멘텀 — 추세강도 가중 모멘텀. KR ICIR 약함(0.12).",
+      "selection_objective": "icir",
+      "source": "db_existing",
+      "load_path": "load_month_factors() [C15-compliant]"
+    },
+    {
+      "factor_id": "Q01_GPA",
+      "factor_family": "quality",
+      "axis": "quality",
+      "direction": "higher_better",
+      "lag_rule": "quarterly 45d / annual May",
+      "winsorization": "3std (builder-level)",
+      "standardization": "cross-sectional Z-score, direction-aligned (Z_Score_Aligned, higher=better)",
+      "neutralization": "raw (no sector/size neutralization in this composite)",
+      "combination": "equal-weight (theta=0.10 each, 1/10)",
+      "weight_theta": 0.1,
+      "icir_expanding_pit": 0.539,
+      "mean_ic_expanding_pit": 0.0392,
+      "ic_n_months": 240,
+      "economic_rationale": "총자산이익률(GPA) — Novy-Marx 2013 gross profitability. 퀄리티축, KR tier A.",
+      "selection_objective": "icir",
+      "source": "db_existing",
+      "load_path": "load_month_factors() [C15-compliant]"
+    },
+    {
+      "factor_id": "Q04_Piotroski_F",
+      "factor_family": "quality",
+      "axis": "quality",
+      "direction": "higher_better",
+      "lag_rule": "quarterly 45d / annual May",
+      "winsorization": "3std (builder-level)",
+      "standardization": "cross-sectional Z-score, direction-aligned (Z_Score_Aligned, higher=better)",
+      "neutralization": "raw (no sector/size neutralization in this composite)",
+      "combination": "equal-weight (theta=0.10 each, 1/10)",
+      "weight_theta": 0.1,
+      "icir_expanding_pit": 0.96,
+      "mean_ic_expanding_pit": 0.0514,
+      "ic_n_months": 240,
+      "economic_rationale": "Piotroski F-score — 재무건전성 9지표 (Piotroski 2000). KR ICIR 최강(0.96).",
+      "selection_objective": "icir",
+      "source": "db_existing",
+      "load_path": "load_month_factors() [C15-compliant]"
+    },
+    {
+      "factor_id": "Q09_CFOA",
+      "factor_family": "quality",
+      "axis": "quality",
+      "direction": "higher_better",
+      "lag_rule": "quarterly 45d / annual May",
+      "winsorization": "3std (builder-level)",
+      "standardization": "cross-sectional Z-score, direction-aligned (Z_Score_Aligned, higher=better)",
+      "neutralization": "raw (no sector/size neutralization in this composite)",
+      "combination": "equal-weight (theta=0.10 each, 1/10)",
+      "weight_theta": 0.1,
+      "icir_expanding_pit": 0.69,
+      "mean_ic_expanding_pit": 0.031,
+      "ic_n_months": 240,
+      "economic_rationale": "영업현금흐름/자산 — 현금흐름 질. 퀄리티축 ICIR 0.69.",
+      "selection_objective": "icir",
+      "source": "db_existing",
+      "load_path": "load_month_factors() [C15-compliant]"
+    },
+    {
+      "factor_id": "Q07_Earnings_Stability",
+      "factor_family": "quality",
+      "axis": "quality",
+      "direction": "higher_better",
+      "lag_rule": "annual May (multi-yr earnings var)",
+      "winsorization": "3std (builder-level)",
+      "standardization": "cross-sectional Z-score, direction-aligned (Z_Score_Aligned, higher=better)",
+      "neutralization": "raw (no sector/size neutralization in this composite)",
+      "combination": "equal-weight (theta=0.10 each, 1/10)",
+      "weight_theta": 0.1,
+      "icir_expanding_pit": 0.772,
+      "mean_ic_expanding_pit": 0.0532,
+      "ic_n_months": 240,
+      "economic_rationale": "이익 안정성 — 이익 변동성 역수. 방어적 퀄리티, ICIR 0.77.",
+      "selection_objective": "icir",
+      "source": "db_existing",
+      "load_path": "load_month_factors() [C15-compliant]"
+    },
+    {
+      "factor_id": "V01_BM",
+      "factor_family": "value",
+      "axis": "value",
+      "direction": "higher_better",
+      "lag_rule": "quarterly 45d / annual May",
+      "winsorization": "3std (builder-level)",
+      "standardization": "cross-sectional Z-score, direction-aligned (Z_Score_Aligned, higher=better)",
+      "neutralization": "raw (no sector/size neutralization in this composite)",
+      "combination": "equal-weight (theta=0.10 each, 1/10)",
+      "weight_theta": 0.1,
+      "icir_expanding_pit": 0.58,
+      "mean_ic_expanding_pit": 0.058,
+      "ic_n_months": 240,
+      "economic_rationale": "장부가/시가 (B/M) — value premium (Fama-French 1993). 밸류축, KR tier A, ICIR 0.58.",
+      "selection_objective": "icir",
+      "source": "db_existing",
+      "load_path": "load_month_factors() [C15-compliant]"
+    }
+  ],
+  "diagnostics": {
+    "rank_ic": 0.0384,
+    "rank_ic_sd": 0.1717,
+    "icir": 0.224,
+    "ic_hit_rate": 0.633,
+    "ic_n_months": 256,
+    "harvey_t_rank_ic_naive": 3.58,
+    "harvey_t_rank_ic_haircut066": 2.363,
+    "subperiod_ic": {
+      "2005_2013": 0.0509,
+      "2014_2019": 0.025,
+      "2020_2026": 0.0334
+    },
+    "subperiod_stability": 1,
+    "monotonicity_note": "decile monotonicity not recomputed; composite IC>0 rate 63.3% (analysis_report)",
+    "turnover_proxy_annual": 1.216,
+    "fm_nw_t": 2.086,
+    "fm_score_lambda": 0.0029,
+    "ff3_alpha_annual": 0.0865,
+    "ff3_alpha_t": 2.613,
+    "carhart4_alpha_annual": 0.0454,
+    "carhart4_alpha_t": 1.789,
+    "ff5_alpha_annual": 0.0774,
+    "ff5_alpha_t": 2.318,
+    "metric_type_rank_ic": "canonical_screen",
+    "metric_type_portfolio_alpha": "backtested_forge_authoritative"
+  },
+  "portfolio_authoritative": {
+    "source": "stage_artifacts/alpha_search/20260613_021015_217222 (RC_16 de-contaminated runner, build_bt_result+essence_score)",
+    "metric_type": "backtested",
+    "net_sharpe": 0.848,
+    "net_ir": 0.393,
+    "portfolio_alpha_t_nw_lag3": 1.694,
+    "portfolio_alpha_t_pvalue": 0.09,
+    "alpha_annualized": 0.0861,
+    "beta_to_bm": 0.776,
+    "bm_correlation": 0.754,
+    "cagr": 0.172,
+    "mdd": 0.484,
+    "calmar": 0.356,
+    "oos_retention": -0.516,
+    "dsr": {},
+    "dsr_gate_applied": false,
+    "selection_type": "chain",
+    "essence_grade": "C",
+    "up_capture": 0.805,
+    "down_capture": 0.726,
+    "skewness": -0.295,
+    "kurtosis": 5.97,
+    "note": "portfolio_alpha_t_nw_lag3=1.694 << 2.95 HARD graduation gate. rank-IC harvey-t(naive 3.58) MISLEADS vs realized 1.69 — Cycle 2 교훈 정합."
+  },
+  "incumbent_overlap": {
+    "incumbent": "STR_1715_AR_on_M4_R05_overlay_PG2 (deployed variant L5_V4_R05_adaptive, book IR 1.5754, 100% weight)",
+    "basis_note": "active = total_net - KOSPI200_TR. corr computed on 255 common months 2005-02~2026-04.",
+    "corr_total_net": 0.0344,
+    "corr_active_vs_bm": 0.2654,
+    "corr_total_net_vs_L4_precedent": 0.0178,
+    "corr_active_vs_L4_precedent": 0.2654,
+    "rolling36m_active_corr": {
+      "min": -0.065,
+      "median": 0.209,
+      "max": 0.538
+    },
+    "subperiod_active_corr": {
+      "2005_2013": 0.218,
+      "2014_2019": 0.285,
+      "2020_2026": 0.293
+    },
+    "core_monthly_cagr": 0.171,
+    "core_monthly_sr": 0.838,
+    "incumbent_monthly_cagr": 0.31,
+    "incumbent_monthly_sr": 1.606,
+    "request_claim_corr_core": 1,
+    "measured_correction": "★REFUTES request premise. Measured active corr = 0.265 (NOT 1.0). corr_core 1.00 in 409-batch = self-referential/contaminated metric (corr to batch's OWN core-composite reference family = near-self). Parallels FR-Cycle3 self-correction [[project-fr-cycle3-batch434-nogo]] (book 대비 total-basis 0.08 artifact vs active-basis 0.42~0.49).",
+    "book_marginal_implication": "standalone book-marginal ΔIR NOT structurally ~0. active corr 0.265 << 0.95 cor-cap → real diversification potential. governor/optimizer 판정 입력: 'CORE는 incumbent와 다른 스트림'. 단, standalone SR 0.85 << incumbent 1.61이므로 100%-weight admit은 여전히 불가 — 가치는 blend marginal IR에서 발생."
+  },
+  "redundancy_cluster_id": "cluster12_RC_16_disp_vol_dual",
+  "cost_model_version": "v2.4_kr_retail_15bps",
+  "cost_aware_note": "net-of-cost 15bps already in authoritative metrics (delta-based v2.4). gross alpha annual ~8.6%+cost; net IR 0.393, net SR 0.848. TO 121.6%/yr → ~18bps/yr drag.",
+  "weaknesses_carry": [
+    "MDD 48.4% structural (방어팩터 포함에도)",
+    "standalone net SR 0.848 << 2.5 목표",
+    "portfolio_alpha_t 1.694 << 2.95 HARD graduation gate (DSR gate N/A=chain)",
+    "oos_retention -0.516 (<0.5 FAIL) = post-2017 publication decay",
+    "incumbent active corr 0.265 (NOT 1.0 as claimed) — diversification 있으나 standalone SR 열위로 100% admit 불가",
+    "★ablation 입증: momentum 3팩터(M01/M05/M07) 기여 ~0(noise), value 1팩터 한계 음(-). 10팩터 EW = 비효율 — compact DQV6/quality-core가 동등 IC. Factor-Zoo 축소 권고.",
+    "top-30 중 36%가 K200uKQ150 외(AS-mode 'ALL' 누출) — QEPM deployment universe restrict 필요"
+  ],
+  "honest_value_statement": "신규 alpha mechanism 아님. 본 WT의 정직한 가치 = (1) 'corr_core 1.00' 오염 반박(active 0.265) (2) 알파 실질 동인 = defense(D01 IdioVol)+quality(Q04 Piotroski), momentum 4팩터는 노이즈 (3) standalone 자본 부적격(PORT_t 1.69, oos -0.52) 확정 — risk/optimizer가 overlay/risk-budget로 risk-adjusted 개선 가능한지가 다음 판정. [REVISE 추가] ablation으로 mechanism 정량 확정: quality 지배(drop -72%)/momentum noise(drop 무변). → 차기 권고: (a) momentum 제거한 compact defense-quality core 재구성 후 portfolio_alpha_t 재측정 (b) incumbent active corr 0.265 활용 blend marginal IR을 optimizer가 판정 (c) overlay로 MDD 48%->? 축소 가능성. 본 alpha 자체는 standalone 자본 부적격 확정이되, '동일 스트림(corr 1.0)' 전제는 반박됨(0.265).",
+  "method_shopping_log": {
+    "alpha_agent": {
+      "candidates_tried": 1,
+      "selection_type": "chain",
+      "method_log": [
+        {
+          "name": "CORE_COMPOSITE_10f_EW",
+          "rank_ic": 0.0384,
+          "icir": 0.224,
+          "selected": true,
+          "note": "pre-discovered cluster12 RC_16 de-contaminated; not a fresh search"
+        }
+      ],
+      "parallel_exec": false,
+      "n_workers": 1
+    }
+  },
+  "challenge_flags": [
+    {
+      "id": "RF-A1",
+      "severity": "MEDIUM",
+      "note": "rank-IC harvey-t haircut(0.66)=2.36 < 3.0 advisory gate; naive 3.58 inflated by composite. portfolio_alpha_t 1.69 << 2.95 HARD."
+    },
+    {
+      "id": "FMT-07",
+      "severity": "HIGH",
+      "note": "Publication decay: active SR pre-2017 0.96 -> post-2017 -0.40. oos_retention -0.516 (<0.5 무조건 FAIL band). graduation/자본 tier 불가."
+    },
+    {
+      "id": "FMT-01",
+      "severity": "HIGH",
+      "note": "Structural MDD 48.4% (>45%). 방어 2팩터(D01/D02) 포함에도 위기 동반급락. risk/optimizer overlay 없이는 자본 부적격."
+    },
+    {
+      "id": "FMT-04",
+      "severity": "MEDIUM",
+      "note": "Regime blindness: MDD 48% & BM corr 0.75. 국면필터 부재 — overlay candidate(screen_route)."
+    },
+    {
+      "id": "AXIS-MOM-WEAK",
+      "severity": "MEDIUM",
+      "note": "모멘텀 3팩터(M01/M05/M07) ICIR 0.11~0.14 + D02_Beta 0.10 매우 약함. Carhart-4 alpha t=1.79(무의미) — 알파의 momentum 기여 거의 없음. EW 10팩터 중 4팩터가 노이즈 희석(Factor Zoo 축소 관점: 6팩터 defense+quality+value가 실질). REVISE 후보: 4약팩터 제거 ablation 권고."
+    },
+    {
+      "id": "PREMISE-CORR",
+      "severity": "HIGH",
+      "note": "★request 'corr_core 1.00' 실측 반박: active corr 0.265. 본 WT 핵심 정정. incumbent와 동일 스트림 아님."
+    }
+  ],
+  "research_philosophy_compliance": {
+    "p1_factor_zoo": "10팩터 중 6팩터(defense+quality+value)가 ICIR>0.5, momentum 4팩터 약함 — ablation 권고. redundancy_cluster_id 명시.",
+    "p2_cost_aware": "모든 SR/IR net-of-cost 15bps. gross-only 보고 없음.",
+    "p3_uncertainty": "rank-IC harvey-t 분포 3 subperiod + naive/haircut 2축. portfolio_alpha_t와 명시 구분(1.69 vs naive 3.58)."
+  },
+  "revision_diagnostics": {
+    "codex_round": "REVISE -> addressed",
+    "walk_forward_ic_panel": {
+      "ref": "stage_artifacts/WT-D20260614_002/alpha_ic_panel_walkforward.parquet",
+      "n_months": 256,
+      "range": ["200501", "202604"],
+      "columns": "ym, n, FULL, best_Q04, best_D01, DQV6, drop_defense, drop_momentum, drop_quality, drop_value",
+      "note": "★C1 closure: per-sig-date monthly IC panel 2005-01~2026-04 (256 months), NOT single snapshot. Recomputed in-universe (K200uKQ150) with PIT forward returns."
+    },
+    "leave_one_family_ablation": {
+      "basis": "in-universe sector-raw monthly Spearman IC, 256 months",
+      "sets": {
+        "FULL": {
+          "meanIC": 0.0265,
+          "ICIR": 5.178,
+          "t": 82.84
+        },
+        "best_Q04": {
+          "meanIC": 0.0221,
+          "ICIR": 8.07,
+          "t": 129.12
+        },
+        "best_D01": {
+          "meanIC": 0.0239,
+          "ICIR": 4.442,
+          "t": 71.08
+        },
+        "DQV6": {
+          "meanIC": 0.0262,
+          "ICIR": 6.32,
+          "t": 101.13
+        },
+        "drop_defense": {
+          "meanIC": 0.0231,
+          "ICIR": 4.277,
+          "t": 68.42
+        },
+        "drop_momentum": {
+          "meanIC": 0.0262,
+          "ICIR": 6.32,
+          "t": 101.13
+        },
+        "drop_quality": {
+          "meanIC": 0.0074,
+          "ICIR": 1.129,
+          "t": 18.06
+        },
+        "drop_value": {
+          "meanIC": 0.031,
+          "ICIR": 5.96,
+          "t": 95.36
+        }
+      },
+      "interpretation": "★C3/RF-A2 closure: drop_quality meanIC 0.0074 (-72% vs FULL 0.0265) = quality는 알파의 지배 동인. drop_momentum meanIC 0.0262 ~= FULL 0.0265 = 모멘텀 3팩터(M01/M05/M07)는 noise(기여 ~0). DQV6(defense+quality+value 6팩터) 0.0262 ~= FULL 0.0265 → 10팩터 EW가 compact 6팩터 core를 IC로 능가하지 못함. drop_value 0.0310 > FULL → value(V01_BM)도 한계 음(-). 결론: Factor-Zoo 축소(research_philosophy ①) — momentum 3팩터 제거, value 1팩터 재검토 권고. 단 ablation은 IC-basis이고 portfolio_alpha_t/MDD는 미재측정 — risk/optimizer가 compact core로 재구성 시 검증 필요."
+    },
+    "sector_neutral_ic": {
+      "mean_ic": 0.0211,
+      "icir": 4.244,
+      "retention_vs_raw": 0.794,
+      "verdict": "★C6/RF-A4 closure: 섹터중립 IC retention 79.4% (>>30% threshold). 알파는 섹터 베팅이 아닌 종목선택력. PASS."
+    },
+    "universe_liquidity_audit": {
+      "top30_in_k200_kq150_frac": 0.64,
+      "top30_in_k200_kq150_n": 16,
+      "verdict": "★C4/RF-A5 partial: top-30 @2026-05 중 16/30(64%)만 K200uKQ150. AS-mode universe='ALL'이 mid/small ~36% 누출. QEPM deployment는 in-universe 제약 필요(risk/optimizer가 enforce). alpha_scores.parquet에 in_univ 미부착 — full top-universe score는 의도(Optimizer가 제외), 단 deployment screen은 K200uKQ150 restrict 의무."
+    },
+    "n_holdings_reconciliation": "recipe n=30 (AS-mode screening, max_position 0.20). QEPM deployment max_names=25 hard (헌법). Alpha는 top-universe 전수 score 생성(역할), 25-cap enforce는 Optimizer 단계. 불일치 아님 — 역할 분리."
+  },
+  "codex_concern_disposition": {
+    "C1_single_snapshot": {
+      "classification": "ACCEPT",
+      "action": "alpha_ic_panel_walkforward.parquet 256-month panel 생성 (revision_diagnostics.walk_forward_ic_panel). alpha_scores.parquet은 as_of 의사결정 snapshot(정상)이나 검증용 walk-forward panel 별도 첨부."
+    },
+    "C2_not_graduation_ready": {
+      "classification": "REBUTTAL_AGREE",
+      "action": "동의 — package가 이미 STANDALONE_GRADUATION_FAIL 명시(verdict + weaknesses_carry). Codex가 자체 finding 재진술. 수정 불요. 단, 이는 alpha-research 역할상 '실패 정직보고'이지 '약신호 promote'가 아님(AX-000 정합)."
+    },
+    "C3_weak_mechanism": {
+      "classification": "ACCEPT",
+      "action": "leave-one-family ablation 실행: quality 지배(drop시 -72%), momentum noise(drop시 무변), DQV6~=FULL. mechanism 정량 입증 + Factor-Zoo 축소 권고 추가."
+    },
+    "C4_universe_not_closed": {
+      "classification": "PARTIAL",
+      "action": "universe audit 첨부: top30 64% in-univ. n=30 vs 25 = 역할분리(Optimizer enforce). deployment restrict 의무 명시. alpha top-universe 전수 score는 의도된 역할(Charter hard_constraints_awareness)."
+    },
+    "C5_path_to_value_no_weights": {
+      "classification": "REBUTTAL",
+      "action": "★역할경계 — weights.csv/covariance.parquet/risk_package/optimization_package는 risk/optimizer agent 산출물이며 alpha-research에 hook-금지(agent_role_guard, strict_prohibitions 1~3). alpha가 이를 생성하면 위반. 'overlay/blend marginal IR로 가치 가능'은 미래작업 가설 라벨(measurement-graduation §3 screen_route 정의된 mechanism)이지 alpha 산출 주장 아님. AX-008 triangulation은 forge/judge 단계 책임."
+    },
+    "C6_no_neutral_test": {
+      "classification": "ACCEPT",
+      "action": "sector-neutral IC retention 79.4% 산출(PASS). size-neutral은 mcap 단일 control로 sector-neutral과 高중복 → sector-neutral로 대표(보수적). crowding은 risk-research 영역(중복 산출 금지)."
+    },
+    "rationalization_self_audit": {
+      "flagged": ["screen_route candidate", "OVERLAY_CANDIDATE / DPL_FEATURE", "blend marginal IR", "real diversification potential", "Conservative: use authoritative net_ir"],
+      "disposition": "self-check: 'screen_route'/'OVERLAY_CANDIDATE'/'DPL_FEATURE'는 measurement-graduation §3에 정의된 라우팅 mechanism(자의적 합리화 아님, 헌법 인용). 'real diversification potential'은 measured active corr 0.265(정량)로 뒷받침 — 회피표현 아님. ★단 'Conservative: use authoritative net_ir'(alpha 스케일링)은 soft self-rationalization 소지 인정 → alpha_vector는 Grinold IC*sigma*z 스케일이며 net_ir은 검증 참조용일 뿐, alpha 절대수준은 calibration 가정(IC_MEAN 0.0384, sigma 0.12)임을 명시. 절대 alpha 수준은 진단 보조이지 admission 수치 아님(admission=forge portfolio_alpha_t 1.694)."
+    }
+  },
+  "codex_round_status": {
+    "stance": "REVISE",
+    "resolved": true,
+    "resolution": "6 concerns: 3 ACCEPT(C1/C3/C6 추가산출)+1 PARTIAL(C4)+2 REBUTTAL(C2 자체finding재진술/C5 역할경계). rationalization self-audit 1건 보완(alpha scale calibration 명시).",
+    "response_ref": "qepm/mailbox/worktask/WT-D20260614_002/codex_critic_response_alpha.json",
+    "challenge_note_ref": "qepm/mailbox/worktask/WT-D20260614_002/alpha_challenge_note.md"
+  },
+  "finalized_at": "2026-06-14 09:09:02.643752"
+}

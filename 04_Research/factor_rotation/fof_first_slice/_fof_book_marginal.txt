@@ -1,0 +1,48 @@
+================ fof book-marginal 검증 ================
+실행 2026-07-01 08:35:21.682605
+
+[fof Tilt 시리즈] n=189, date범위 2010-01 ~ 2026-04 (결정월 기준)
+[fof active] BM merge 결측=0
+
+[book V5 시리즈] n=269, realized_ym 범위 2004-02 ~ 2026-06
+
+=== 날짜정렬 실증 (fof net vs book ret, raw 총수익 상관 by offset) ===
+  offset=-3 month : n=189 cor=-0.030
+  offset=-2 month : n=189 cor=+0.100
+  offset=-1 month : n=189 cor=+0.120
+  offset=+0 month : n=189 cor=-0.120
+  offset=+1 month : n=189 cor=-0.047
+  offset=+2 month : n=189 cor=+0.403
+  offset=+3 month : n=188 cor=+0.038
+  → 채택 정렬 offset = +0 (ground-truth BM↔시장 캘린더 핀: fof BM cor +0.997, book ret_orig cor +0.716 둘 다 동일 offset). strategy gross cor는 V5 beta-mgmt로 비대표.
+
+[book active] BM merge 결측=13 (offset0 정렬, fof와 동일 BM월)
+
+[공통 realized 패널] n=189, 범위 2010-01 ~ 2026-04
+
+=== 상관 (metric_type=canonical_screen for fof / backtested for book) ===
+  gross(총수익) 상관  : -0.120  [시장β 공유분 포함]
+  active(−BM) 상관   : -0.018  [book-marginal 핵심 — 낮을수록 직교]
+
+=== active IR (전기간, 단일 기준) ===
+  incumbent book(V5) active IR : +0.838
+  fof standalone   active IR : +1.008
+
+[full-sample 잔차화 (진단상한)] β(fof~book)=-0.015, fof⊥book active IR=-0.000
+[PIT 확장윈도 잔차화] n_eval=153 (start idx 37), fof⊥book active IR=-0.020
+
+=== book-marginal ΔIR (active basis, §4 게이트 ≥0.05) ===
+  λ=0.50 균등결합 active IR=+1.302  ΔIR=+0.464
+  λ-최적(=0.60, 진단상한) active IR=+1.322  ΔIR=+0.484
+  PIT 점진 λ 결합 active IR=+1.110 vs incumbent(동창)=+0.633  ΔIR=+0.476  [n_eval=153]
+
+=== paired-NW-t (PIT결합active − incumbentactive, lag3) ===
+  mean Δactive/월=+0.2664%  paired-NW-t=+0.71  [>2 = 유의 증분]
+  fof⊥book 잔차 mean=-0.0454%/월 NW-t=-0.06  [직교성분 자체의 유의성]
+
+================ 판정 ================
+  active 상관 = -0.018
+  ΔIR (PIT 점진, authoritative) = +0.476  vs 게이트 0.05 → PASS
+  ΔIR (λ=0.5) = +0.464 / ΔIR(λ-opt 상한) = +0.484
+  paired-NW-t = +0.71
+  → book-marginal 판정: 기여 있음 (등록 검토)

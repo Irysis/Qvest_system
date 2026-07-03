@@ -1,0 +1,16 @@
+======== Build1: S2 + S-base 절대지표 ========
+실행 2026-07-03 09:50:29.579304
+
+=== S2 가지치기: 316 → 163 (sign-stable) | 생존가중 분포: 롱점유 중앙 0.42 ===
+  숏의존 팩터(생존<0.4) 수=155, 롱우위(>0.6) 수=120
+
+=== S-base 절대지표 (Kelly 사영, 레짐 OFF vs ON) ===
+  [S-base 레짐OFF(α_select)] absSR=0.93 Sortino=1.17 CAGR=+23.0% MDD=45.7% Calmar=0.50 CDaR=40.1% avg_inv=1.00
+  [S-base 레짐ON(+α_defense)] absSR=0.91 Sortino=1.12 CAGR=+18.4% MDD=43.6% Calmar=0.42 CDaR=38.3% avg_inv=0.82
+
+=== S2 ablation (레짐OFF, 절대지표) ===
+  [full316 no-surv       ] absSR=1.08 Sortino=1.30 CAGR=+26.2% MDD=36.4% Calmar=0.72 CDaR=26.2% avg_inv=1.00
+  [pruned no-surv        ] absSR=0.89 Sortino=1.03 CAGR=+20.1% MDD=36.0% Calmar=0.56 CDaR=29.2% avg_inv=1.00
+  [pruned+surv           ] absSR=0.93 Sortino=1.17 CAGR=+23.0% MDD=45.7% Calmar=0.50 CDaR=40.1% avg_inv=1.00
+
+  → 레짐 ON이 MDD/Calmar 개선하면 α_defense 실재(H2). Calmar 0.50→0.42, MDD 45.7→43.6

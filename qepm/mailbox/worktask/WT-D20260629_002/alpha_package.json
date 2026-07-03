@@ -1,0 +1,427 @@
+{
+  "task_id": "WT-D20260629_002",
+  "wt_type": "discovery",
+  "agent": "alpha-research",
+  "as_of_date": "2026-06-29",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe": "KOSPI200_KOSDAQ150_intersection (PIT time-varying K200|KQ150 flags, AdminStock/TradingHalt excluded)",
+  "benchmark": "KOSPI200_total_return",
+  "cost_model_version": "v2.4_kr_retail_15bps",
+  "selection_objective": "icir",
+  "verdict": "FAIL",
+  "verdict_one_line": "arXiv 2601.06499의 LASSO-생존 Alpha191 가격-거래량 복합팩터 6종을 KR K200/KQ150 long-only로 재구성한 결과, graduation HARD 게이트(portfolio-alpha t_NW lag3 >= 2.95)를 통과한 후보 0건. 최강 long-only PORT_t = +0.67 (A084 20일 누적OBV, p=0.50 비유의). gap_up_ratio(WT-001) failure-mode 재현 — cross-sectional rank-IC가 강한 후보(A123 ic_nw_t=-6.21)는 신호력이 short leg에 갇혀 long-only 미전이, long-only로 양(+)인 후보(A084/A184)는 통계적 비유의. 논문 'information aggregation이 turnover 문제 해소' 주장도 KR 월간 리밸에서 미성립(회전율 ~17x/yr >> 11.0/yr discipline). discovery FAIL.",
+  "hypothesis": {
+    "title": "LASSO-생존 Alpha191 가격-거래량 복합팩터 (arXiv 2601.06499 KR 적용)",
+    "paper_source": "arXiv 2601.06499 (Du-Walter-Ulrich 2026). Alpha191(Guotai-Junan) 중 151 펀더멘털 통제 double-selection LASSO에서 t>2.0 생존한 17개 가격-거래량 복합팩터. 핵심 메커니즘 = information aggregation (NW t가 1d->21d horizon서 증가 = 느린감쇠 행동프리미엄 -> 월간 리밸 생존).",
+    "kr_empirical_finding": "표적 6종(A084 OBV20 / A123 PV-corr rank / A039 momentum-VWAP divergence / A073 nested-decay PV corr / A046 multi-period MR ratio / A184 delayed price-gap corr) 모두 long-only top-N에서 graduation 미달. 강 rank-IC 후보(A123/A046/A084)는 short-leg 의존, 약 양(+) PORT_t 후보(A084 +0.67/A184 +0.43)는 비유의. KR long-only mandate에서 이 가격-거래량 복합팩터군의 alpha는 추출 불가."
+  },
+  "factor_specs": [
+    {
+      "factor_family": "PriceVolume_Compound",
+      "proxy": "A084_obv20",
+      "formula": "SUM( sign(Close_d - Close_{d-1}) * Vol_d , trailing 20 td )  [Alpha084 20일 누적 On-Balance Volume; up-day +Vol, down-day -Vol, flat 0]",
+      "lag_rule": "price t-1 close; OBV window는 sig_date(월말 마지막 거래일) 종료, forward 1M return = (sig_date, sig_date+1M] 분리(C2). adv 유동성 t-1(C10).",
+      "winsorization": "3std cross-sectional (0.3%/99.7% clip)",
+      "neutralization": "none (raw cross-sectional Z, 부호 정렬: high OBV = long = 논문 accumulation 방향)",
+      "economic_rationale": "방향성 거래량 누적 = 매집/유동성 수요 footprint. 논문 A주에서 t=3.68 생존. KR에서는 long high-OBV PORT_t +0.67(비유의)로 미전이. cross-sectional rank-IC는 음수(-0.017, ic_nw_t=-2.51)로 오히려 high-OBV가 익월 약하게 underperform — 신호력이 short leg(고OBV 극단 종목 되돌림)에 위치, 1M 모멘텀과 0.68 공선.",
+      "redundancy_cluster_id": "shortterm_momentum_signed_volume (M04_Mom_1 cor 0.68 / M22_MaxRet 0.31 / D05_MaxRet 0.28 / M11_ST_Reversal 0.27)",
+      "selection_objective_value_rank_ic": -0.0169,
+      "selection_objective_value_icir": -0.153,
+      "harvey_t_ic_nw_lag3": -2.51,
+      "passes_harvey_bonferroni_n6": false,
+      "best_longonly_port_t_nw_lag3": 0.668,
+      "best_longonly_cfg": "sign+1 (long high OBV) top25 liq5e7",
+      "best_longonly_net_sr": 0.093,
+      "weight_theta": 0.0,
+      "references": [
+        "arXiv 2601.06499",
+        "Granville 1963 (OBV)",
+        "Jegadeesh-Titman 1993 (momentum)"
+      ],
+      "source": "new_designed"
+    },
+    {
+      "factor_family": "PriceVolume_Compound",
+      "proxy": "A123_pvcorr_rank",
+      "formula": "RANK( CORR( (High+Low)/2, Vol, 10 ) )  [Alpha123 가격중간값-거래량 rolling 상관 cross-sec rank; 정확 lag 일부 mangled -> robust 단순화]",
+      "lag_rule": "동일 (window ends sig_date; forward separated)",
+      "winsorization": "cross-sectional rank (0~1)",
+      "neutralization": "none",
+      "economic_rationale": "가격-거래량 동조(demand confirmation). KR rank-IC 가장 강함(-0.032, ic_nw_t=-6.21, Harvey-Bonferroni n6 통과)이나 long-only PORT_t 최대 +0.09(비유의). gap_up_ratio 패턴: rank-IC 강해도 short leg 갇힘.",
+      "redundancy_cluster_id": "shortterm_momentum_signed_volume",
+      "selection_objective_value_rank_ic": -0.0315,
+      "selection_objective_value_icir": -0.343,
+      "harvey_t_ic_nw_lag3": -6.21,
+      "passes_harvey_bonferroni_n6": true,
+      "best_longonly_port_t_nw_lag3": 0.09,
+      "best_longonly_cfg": "sign-1 top20 liq5e7",
+      "weight_theta": 0.0,
+      "references": [
+        "arXiv 2601.06499"
+      ],
+      "source": "new_designed"
+    },
+    {
+      "factor_family": "PriceVolume_Compound",
+      "proxy": "A039_momVWAP_divergence",
+      "formula": "( RANK(DECAYLINEAR(DELTA(Close,2),8)) - RANK(DECAYLINEAR(CORR(VWAP*0.3+Open*0.7, SUM(MEAN(Vol,180),37), 14), 12)) ) * -1  [Alpha039 decay-adjusted momentum-VWAP divergence; VWAP=(H+L+C)/3 proxy]",
+      "lag_rule": "동일",
+      "winsorization": "cross-sectional rank components",
+      "neutralization": "none",
+      "economic_rationale": "단기 모멘텀과 VWAP-거래량 상관의 괴리. rank-IC +0.011(ic_nw_t=+1.85, 비유의). long-only PORT_t -0.62. KR 미작동.",
+      "redundancy_cluster_id": "momentum_vwap_divergence",
+      "selection_objective_value_rank_ic": 0.011,
+      "selection_objective_value_icir": 0.111,
+      "harvey_t_ic_nw_lag3": 1.85,
+      "passes_harvey_bonferroni_n6": false,
+      "best_longonly_port_t_nw_lag3": -0.62,
+      "weight_theta": 0.0,
+      "references": [
+        "arXiv 2601.06499"
+      ],
+      "source": "new_designed"
+    },
+    {
+      "factor_family": "PriceVolume_Compound",
+      "proxy": "A073_nested_decay_pvcorr",
+      "formula": "TSRANK(DECAYLINEAR(DECAYLINEAR(CORR(Close,Vol,10),5),3),5) - RANK(DECAYLINEAR(CORR(VWAP, MEAN(Vol,30),4),3))  [Alpha073 중첩 감쇠 가격-거래량 상관]",
+      "lag_rule": "동일",
+      "winsorization": "cross-sectional rank components",
+      "neutralization": "none",
+      "economic_rationale": "저노이즈(중첩감쇠) 가격-거래량 상관 구조. rank-IC -0.0015(ic_nw_t=-0.29, 무의미). long-only PORT_t 최대 +0.06. 신호 없음.",
+      "redundancy_cluster_id": "pricevolume_corr_smoothed",
+      "selection_objective_value_rank_ic": -0.0015,
+      "selection_objective_value_icir": -0.02,
+      "harvey_t_ic_nw_lag3": -0.29,
+      "passes_harvey_bonferroni_n6": false,
+      "best_longonly_port_t_nw_lag3": 0.06,
+      "weight_theta": 0.0,
+      "references": [
+        "arXiv 2601.06499"
+      ],
+      "source": "new_designed"
+    },
+    {
+      "factor_family": "PriceVolume_Compound_MeanReversion",
+      "proxy": "A046_multiperiod_mr",
+      "formula": "(Close - MEAN(Close,20)) / STD(Close,20)  [Alpha046 multi-period mean-reversion extension proxy; price extension from 20d mean]",
+      "lag_rule": "동일",
+      "winsorization": "3std",
+      "neutralization": "none",
+      "economic_rationale": "가격 과확장 -> 되돌림(reversal). rank-IC -0.023(ic_nw_t=-2.93). reversal 신호력이 short leg(고확장 종목 되돌림)에 위치. long-only PORT_t 최대 -0.84(양 방향 모두 음수). KR long-only 미전이.",
+      "redundancy_cluster_id": "shortterm_reversal_extension",
+      "selection_objective_value_rank_ic": -0.0226,
+      "selection_objective_value_icir": -0.184,
+      "harvey_t_ic_nw_lag3": -2.93,
+      "passes_harvey_bonferroni_n6": true,
+      "best_longonly_port_t_nw_lag3": -0.84,
+      "weight_theta": 0.0,
+      "references": [
+        "arXiv 2601.06499",
+        "Jegadeesh 1990 (short-term reversal)"
+      ],
+      "source": "new_designed"
+    },
+    {
+      "factor_family": "PriceVolume_Compound",
+      "proxy": "A184_delayed_gap_corr",
+      "formula": "RANK( CORR( DELAY(Open-Close,1), Close, 200 ) ) + RANK( Open-Close )  [Alpha184 지연 price-gap 상관]",
+      "lag_rule": "동일 (200td 장기 상관)",
+      "winsorization": "cross-sectional rank components",
+      "neutralization": "none",
+      "economic_rationale": "지연 open-close 갭과 종가의 장기 상관. rank-IC +0.010(ic_nw_t=+1.57, 비유의). long-only PORT_t +0.43(p=0.67, 비유의). KR 미작동.",
+      "redundancy_cluster_id": "gap_price_correlation",
+      "selection_objective_value_rank_ic": 0.0103,
+      "selection_objective_value_icir": 0.097,
+      "harvey_t_ic_nw_lag3": 1.57,
+      "passes_harvey_bonferroni_n6": false,
+      "best_longonly_port_t_nw_lag3": 0.431,
+      "best_longonly_net_sr": 0.055,
+      "weight_theta": 0.0,
+      "references": [
+        "arXiv 2601.06499"
+      ],
+      "source": "new_designed"
+    }
+  ],
+  "method_shopping_log": {
+    "alpha_agent": {
+      "candidates_tried": 6,
+      "method_log": [
+        {
+          "name": "A084_OBV20",
+          "rank_ic": -0.0169,
+          "icir": -0.153,
+          "best_longonly_port_t": 0.668,
+          "selected": "best_longonly (still FAIL)"
+        },
+        {
+          "name": "A123_PVcorr",
+          "rank_ic": -0.0315,
+          "icir": -0.343,
+          "best_longonly_port_t": 0.09,
+          "selected": false
+        },
+        {
+          "name": "A039_momVWAP",
+          "rank_ic": 0.011,
+          "icir": 0.111,
+          "best_longonly_port_t": -0.62,
+          "selected": false
+        },
+        {
+          "name": "A073_nestPV",
+          "rank_ic": -0.0015,
+          "icir": -0.02,
+          "best_longonly_port_t": 0.06,
+          "selected": false
+        },
+        {
+          "name": "A046_MRext",
+          "rank_ic": -0.0226,
+          "icir": -0.184,
+          "best_longonly_port_t": -0.84,
+          "selected": false
+        },
+        {
+          "name": "A184_gapcorr",
+          "rank_ic": 0.0103,
+          "icir": 0.097,
+          "best_longonly_port_t": 0.431,
+          "selected": false
+        }
+      ],
+      "parallel_exec": true,
+      "n_workers": 7,
+      "selection_type": "chain",
+      "note": "6 candidates (<=5 권장 초과 1; batch_434 가드 준수 — 17 생존자 중 경제적으로 구별되는 6종만 충실 재구성, 합성 금지). f181_skew20(Alpha181)은 coverage bug(348 rows)로 후보군 제외 — selection 아님."
+    }
+  },
+  "diagnostics": {
+    "n_months": 257,
+    "analysis_period": "2005-01 .. 2026-06",
+    "best_candidate": "A084_OBV20 (long-only PORT_t +0.67, sign+1 top25)",
+    "strongest_rank_ic_candidate": "A123_PVcorr (rank_ic -0.0315, ic_nw_t -6.21)",
+    "rank_ic_vs_portfolio_alpha_divergence": "결정적 — A123 cross-sectional rank-IC NW-t = -6.21(매우 유의)이나 long-only PORT_t 최대 +0.09(무의미). A084 rank-IC -0.017이나 long-only(반대부호) PORT_t +0.67. rank-IC t != portfolio-alpha t(Cycle 2 교훈) + gap_up_ratio(WT-001) 재현.",
+    "harvey_bonferroni_hurdle_n6": 2.64,
+    "harvey_pass_rank_ic": [
+      "A123_PVcorr (|t|=6.21)",
+      "A046_MRext (|t|=2.93)"
+    ],
+    "subperiod_ic_A084": {
+      "P1_2005_2012": -0.01,
+      "P2_2013_2019": -0.0082,
+      "P3_2020_2026": -0.0351,
+      "subperiod_stability": 1.0,
+      "note": "IC 부호 안정적 음수이나 long-only edge 미전이"
+    },
+    "subperiod_ic_A184": {
+      "P1_2005_2012": 0.017,
+      "P2_2013_2019": -0.0061,
+      "P3_2020_2026": 0.0199,
+      "subperiod_stability": 0.67
+    },
+    "turnover_annual_canonical": 16.8,
+    "turnover_caveat": "best candidate A084 ~16.8x/yr, 전 후보 ~17-18x/yr >> 11.0/yr implementation discipline(research_philosophy #6). 논문의 'information aggregation -> turnover 해소' 주장이 KR 월간 리밸 + 25종 long-only top-N에서 미성립.",
+    "pit_lookahead_audit": {
+      "signal_window": "trailing, ends sig_date (월말 마지막 거래일)",
+      "forward_window": "(sig_date, sig_date+1M] — sig_date 제외 (C2 통과)",
+      "liquidity_lag": "adv20 t-1 (C10)",
+      "vwap_proxy": "(High+Low+Close)/3 — RAWDATA에 VWAP 없음",
+      "ret_definition": "Close/DELAY(Close,1)-1",
+      "interpretation": "PASS — 모든 신호 window가 sig_date 종료, forward return 분리. 극단 Ret_1m 아티팩트 0건(in_univ).",
+      "benchmark_caveat": "RAWDATA 일간 BM_Ret 비어있음(project-rawdata-bmret-empty-factordb-gap) -> WT-001 정제 월간 BM 시계열 사용(lead 1M = forward). authoritative read = IR/net_SR. alpha_annualized(+15%)는 2026 BM 이상치로 inflated, 인용 주의.",
+      "c15_scope_rebuttal": "[Codex C2] pit.md C15는 Factor DB parquet 직접 load 금지(load_month_factors 경유)이며 RAWDATA가 아님. RAWDATA(.cache/RAWDATA.parquet) 가공은 WT 명시 허용. Factor DB 접근(orthogonality)은 load_month_factors() 경유. C15 PASS.",
+      "c13_status": "caveat (PARTIAL ACCEPT) — empirical 부호 양방향 평가(align_factor_direction 미적용). 단 verdict sign-invariant(24 구성 양/음 전부 graduation 미달) -> C13 우려(가짜 양 alpha 생성) 무효."
+    },
+    "dsr_diagnostic": {
+      "n_trials": 24,
+      "best_net_sr_annualized": 0.093,
+      "expected_max_sr_under_null": 0.197,
+      "dsr": 0.315,
+      "verdict": "FAIL (<0.5)",
+      "note": "6 후보 x 2 부호 x 2 종목수. Codex C3 수용 — chain 라벨 대신 DSR 실측."
+    },
+    "sector_neutral_icir_A084": {
+      "icir_raw": -0.153,
+      "icir_sector_neutral": -0.226,
+      "retention": 1.48,
+      "rf_a4_true_def_triggered": false,
+      "note": "Codex C6 수용 — RF-A4(sector-neutral ICIR 50%+ drop) 미발동, retention 1.48(강화). 0.68 momentum 공선은 별개 redundancy(RF-A4 아님)."
+    },
+    "recent3y_vs_full_icir_A084": {
+      "icir_full": -0.153,
+      "icir_recent_3y": -0.27,
+      "ratio": 1.77,
+      "rf_a3_triggered": true,
+      "note": "RF-A3 HIGH (최근 IC 더 강함). FAIL 후보엔 non-deployability 재확인."
+    }
+  },
+  "portfolio_alpha_canonical_screen_bt": {
+    "metric_type": "canonical_screen",
+    "metric_type_note": "canonical_screen_bt() top-N EW long-only, contract build_benchmark_compare NW lag-3 경유 실측. admission-binding 아님(forge build_bt_result가 authoritative). screening/kill-gate 측정용 실측.",
+    "kill_gate_protocol": "각 후보 양(+1)/음(-1) 부호 x top20/top25 x liq{5e7,2e8} 전수. PORT_t<0 또는 <<2.95 = kill.",
+    "results_best_per_candidate": [
+      {
+        "candidate": "A084_OBV20",
+        "cfg": "sign+1 top25 liq5e7",
+        "portfolio_alpha_t_nw_lag3": 0.668,
+        "p_value": 0.504,
+        "information_ratio": 0.093,
+        "net_sr": 0.093,
+        "turnover_annual": 16.8
+      },
+      {
+        "candidate": "A084_OBV20",
+        "cfg": "sign+1 top20 liq2e8 (deploy floor)",
+        "portfolio_alpha_t_nw_lag3": 0.541,
+        "net_sr": 0.075,
+        "turnover_annual": 17.1
+      },
+      {
+        "candidate": "A184_gapcorr",
+        "cfg": "sign+1 top20 liq5e7",
+        "portfolio_alpha_t_nw_lag3": 0.431,
+        "p_value": 0.667,
+        "net_sr": 0.055,
+        "turnover_annual": 18.0
+      },
+      {
+        "candidate": "A123_PVcorr",
+        "cfg": "sign-1 top20 liq5e7",
+        "portfolio_alpha_t_nw_lag3": 0.09,
+        "net_sr": null
+      },
+      {
+        "candidate": "A073_nestPV",
+        "cfg": "sign-1 top25 liq5e7",
+        "portfolio_alpha_t_nw_lag3": 0.06
+      },
+      {
+        "candidate": "A039_momVWAP",
+        "cfg": "sign+1 top20 liq5e7",
+        "portfolio_alpha_t_nw_lag3": -0.62
+      },
+      {
+        "candidate": "A046_MRext",
+        "cfg": "sign-1 top25 liq5e7",
+        "portfolio_alpha_t_nw_lag3": -0.84
+      }
+    ],
+    "decisive_observation": "6 후보 x 2부호 x 2종목수 = 24 long-only 구성 중 PORT_t >= 2.95 = 0건. 최대 +0.67(A084, p=0.50). 강 rank-IC 후보(A123 ic_nw_t -6.21, A046 -2.93)는 long-only PORT_t ~0 또는 음수 = 신호력이 short leg 갇힘(KR no-short로 사용불가). 양(+) PORT_t 후보(A084/A184)는 비유의 + 1M 모멘텀 공선. measurement-graduation §6 '직교 != 수익, 16/16 long-only PORT_t FAIL' 패턴 + WT-001 gap_up_ratio failure-mode 재현.",
+    "liq_2e8_floor_note": "[Codex C5 수용] deployment floor 2e8에서도 A084 sign+1 top20 PORT_t=+0.541(5e7과 동일), net SR 0.075 — illiquidity가 verdict 안 뒤집음. 5e7=request universe floor, 2e8=헌법 deployment floor, 양쪽 FAIL."
+  },
+  "orthogonality": {
+    "certifier_threshold": "cor < 0.95",
+    "method": "cross-sectional Spearman cor vs factor DB existing factors, 74 sampled sig_dates 2008-2026",
+    "all_pass_cor_lt_095": true,
+    "A084_closest_relatives": {
+      "M04_Mom_1": -0.679,
+      "M22_Max_Return": -0.306,
+      "D05_MaxRet": -0.279,
+      "M11_ST_Reversal": -0.271,
+      "L02_Turnover": -0.184,
+      "L39_Overnight_Spread": -0.083
+    },
+    "A123_closest_relatives": {
+      "M04_Mom_1": -0.3,
+      "M11_ST_Reversal": -0.289,
+      "M22_Max_Return": -0.212,
+      "D05_MaxRet": -0.2,
+      "L02_Turnover": -0.165
+    },
+    "interpretation": "기술적으로 cor<0.95 통과. 그러나 A084(best candidate)는 1M 모멘텀(M04_Mom_1)과 |cor|=0.68 = ~46% 공선(signed-volume이 up-day 모멘텀과 동조, 당연). A123는 더 직교(max 0.30)이나 long-only edge 0. 직교성이 있어도 long-only portfolio-alpha 음수/비유의 사실을 바꾸지 못함(measurement-graduation §6). 주: 우리 T04_OBV는 현 factor DB 컬럼 부재로 직접 비교 불가했으나 A084 OBV는 1M 모멘텀에 spanned."
+  },
+  "alpha_inheritance_cor": 0.0,
+  "alpha_inheritance_note": "discovery WT — parent 없음. 신규 Alpha191 가격-거래량 복합팩터군 설계. inheritance_cor=0(해당 없음).",
+  "graduation_assessment": {
+    "hard_gate_portfolio_alpha_t_nw_required": 2.95,
+    "hard_gate_portfolio_alpha_t_nw_observed_best": 0.668,
+    "hard_gate_portfolio_alpha_t_nw_PASS": false,
+    "hard_gate_dsr": "DSR=0.315 < 0.5 (N=24 configs, best net SR 0.093 < expected-max-under-null 0.197, Bailey-Lopez de Prado). DSR도 FAIL — chain 면제 표현 폐기, sweep로 취급해도 통과 못함.",
+    "advisory_rank_ic": {
+      "required": 0.04,
+      "observed_best_abs": 0.0315,
+      "pass": false
+    },
+    "advisory_icir": {
+      "required": 0.2,
+      "observed_best_abs": 0.343,
+      "pass_abs": true,
+      "note": "A123 |icir|=0.34이나 long-only 미전이 -> 의미 없음"
+    },
+    "advisory_subperiod_stability": {
+      "required": 0.5,
+      "A084_observed": 1.0,
+      "pass": true,
+      "note": "IC 부호 안정적이나 long-only edge로 전이 안됨"
+    },
+    "overall": "FAIL — graduation HARD(portfolio_alpha_t_nw >= 2.95) 미달. 24 long-only 구성 중 최대 +0.67(비유의)."
+  },
+  "red_flags": [
+    {
+      "id": "RF-A4",
+      "severity": "HIGH",
+      "detail": "[정정: Codex C6] RF-A4(true def=sector-neutral ICIR 50%+ drop)는 미발동(A084 sector-neutral ICIR retention 1.48). best candidate A084의 1M 모멘텀 0.68 공선은 redundancy_cluster 우려(별개)."
+    },
+    {
+      "id": "TURNOVER",
+      "severity": "MEDIUM",
+      "detail": "canonical turnover 16.8~18.0x/yr >> 11.0/yr discipline. 논문 'information aggregation -> turnover 해소' 주장 KR 미성립."
+    },
+    {
+      "id": "RANK_IC_PORT_DIVERGENCE",
+      "severity": "HIGH",
+      "detail": "강 rank-IC 후보(A123 ic_nw_t=-6.21)가 long-only PORT_t ~0. gap_up_ratio(WT-001) failure-mode 재현 — 신호력이 short leg에 갇힘."
+    },
+    {
+      "id": "RF-A3",
+      "severity": "HIGH",
+      "detail": "A084 recent-3Y/full ICIR ratio 1.77 > 1.5. 최근 IC 강화 — regime/overfit 의심. FAIL 후보라 non-deployability 재확인."
+    }
+  ],
+  "challenge_flags": [
+    "graduation HARD(PORT_t>=2.95) 미달 — 24 long-only 구성 최대 +0.67(p=0.50, 비유의).",
+    "rank-IC 강 후보(A123 t=-6.21, A046 t=-2.93)는 long-only PORT_t ~0 또는 음수 = short leg 갇힘. KR no-short mandate로 사용불가.",
+    "양(+) PORT_t 후보(A084/A184)는 비유의 + best(A084) 1M 모멘텀 0.68 공선.",
+    "논문 information-aggregation 주장(turnover 해소) KR 월간 리밸 미성립 (회전율 16.8~18x/yr).",
+    "Alpha181(benchmark-relative skewness) coverage bug(348 rows)로 후보 제외 — 6종 분석은 충실 재구성된 가격-거래량 복합팩터에 한정.",
+    "benchmark: RAWDATA 일간 BM_Ret 결측 -> WT-001 정제 월간 BM 사용. IR/net_SR authoritative, alpha_annualized는 2026 BM 이상치 inflated.",
+    "PIT-C13: 후보 부호는 empirical 양/음 양방향 모두 평가(kill-gate). align_factor_direction 미적용이나 verdict는 sign-invariant(어느 부호도 graduation 미달)."
+  ],
+  "economic_rationale_summary": "arXiv 2601.06499의 double-selection LASSO 생존 Alpha191 가격-거래량 복합팩터는 A주 long-short t>2.0이나, KR K200/KQ150 long-only로 이식 시 alpha source 부적합. (1) cross-sectional 분별력이 강한 후보(A123/A046)는 신호력이 short leg(과확장/고PV-corr 종목 되돌림)에 갇혀 long-only로 전이 안됨, (2) long-only로 양(+)인 후보(A084 OBV/A184 gap-corr)는 통계적 비유의(p~0.5-0.8), (3) best candidate(A084)는 1M 모멘텀에 0.68 공선, (4) 논문 핵심 메커니즘 information-aggregation의 turnover 해소 효과가 KR 월간 25종 long-only top-N에서 미성립(회전율 ~17x/yr). discovery FAIL은 유효한 QEPM 결과로 L-code 적립 대상. disposition: A084/A123는 cross-sectional sorting power가 있어 DPL_FEATURE 후보(failed standalone alpha -> DPL 입력 피처, measurement-graduation §5).",
+  "confidence_vector_note": "verdict=FAIL이므로 deployable confidence_vector 미산출(graduation 미달, downstream risk/optimizer 미spawn). alpha_scores.parquet에 A084 cross-sectional z(metric_type=diagnostic_z_aligned) 진단용 export.",
+  "disposition": "DPL_FEATURE candidate (A084 OBV20 + A123 PV-corr: cross-sectional sorting power 있으나 long-only standalone FAIL -> DPL 입력 피처). NOT capital-grade, NOT long-only deployable, NOT screen-tier OVERLAY/FR candidate (net SR 0.09 << screening 0.7).",
+  "ax_compliance": {
+    "ax_007_check": "FAIL (single-sleeve long-only top-N mechanism break; 예외 4종 미충족)",
+    "ax_001_v2": "N/A (방어형 팩터 아님)",
+    "ax_002": "PASS (모든 수치 canonical_screen_bt harness real-computation, proxy 손계산 없음, 프로세스 우회 없음)"
+  },
+  "stage_artifacts": {
+    "alpha_scores_parquet": "stage_artifacts/WT-D20260629_002/alpha_scores.parquet (80254 rows, 258 sig_dates; col a084_obv20_z = winsorized cross-sectional z of A084 OBV20, metric_type=diagnostic_z_aligned)",
+    "alpha_validation_json": "stage_artifacts/WT-D20260629_002/alpha_validation.json"
+  },
+  "codex_critic_round": {
+    "stance": "REVISE",
+    "veto_flag": false,
+    "model": "gpt-5.5 xhigh",
+    "ax_008_status": "FAIL (artifact completeness, NOT conclusion)",
+    "agree_with_claude": true,
+    "agreement": "Codex agrees with FAIL/no-graduation. REVISE = artifact/diagnostic completeness only.",
+    "response_file": "qepm/mailbox/worktask/WT-D20260629_002/codex_critic_response_alpha.json",
+    "challenge_note": "qepm/mailbox/worktask/WT-D20260629_002/challenge_note.md",
+    "concerns_resolution": {
+      "C1_no_capital_grade_alpha": "ACCEPT (core FAIL basis, full agreement, AX-007 FAIL)",
+      "C2_lineage_C15": "REBUTTAL (C15=Factor DB scope only, RAWDATA OK per WT + pit.md:35) + PARTIAL (build scripts preserved, run_all.R는 forge 영역 moot)",
+      "C3_DSR": "ACCEPT — DSR=0.315 실측(<0.5 FAIL), chain 면제 표현 폐기",
+      "C4_C13_sign": "PARTIAL (disclose caveat) + REBUTTAL (verdict sign-invariant, 24 configs 양/음 전부 FAIL)",
+      "C5_liquidity_2e8": "PARTIAL + REBUTTAL (2e8 floor PORT_t +0.541 이미 산출, verdict 불변)",
+      "C6_RF_A4_sector_neutral": "ACCEPT 정정 — sector-neutral ICIR retention 1.48(RF-A4 미발동), 0.68 momentum은 별개 redundancy",
+      "C7_triangulation_artifacts": "ACCEPT (explicit in lineage) + REBUTTAL (risk/opt/weights는 role boundary, FAIL->moot)"
+    },
+    "escalation_check": "HIGH concerns=2(<5), AX hard FAIL=1 AX-007(<3), no PIT-C1 lockbox 위반, stance!=REJECT -> Q-Lead auto-escalate 미발동",
+    "verification_triangulation": "Forge-grade real-computation(canonical_screen_bt via contract) + Codex(FAIL agree) = 2/2 FAIL. veto=false. AX-008 satisfied for FAIL conclusion.",
+    "rationalization_self_check": "Codex 지적 'chain DSR 면제' -> DSR 실측으로 대체(수용). 'benchmark substituted' -> active-basis라 PORT_t robust(정직 disclosure). 'advisory downgrade' -> measurement-graduation §3 헌법 정의 인용."
+  }
+}

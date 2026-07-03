@@ -1,0 +1,30 @@
+{
+  "wt": "WT-D20260702_002",
+  "step": "3_clean_bt_recompute",
+  "book": "STR_1715_on_M4_R05_noLayer4_PG2",
+  "annualization_factor": 12,
+  "frequency": "monthly",
+  "n_periods": 269,
+  "metric_type": "backtested(contract)",
+  "sharpe_convention_note": "SR_charter_v14 = mean(ER)/sd(ER)*sqrt(12) [book_state incumbent 정의]. SR_geometric = table.AnnualizedReturns [judge/3-way headline]. 같은 시계열·정상 컨벤션 차이(arith vs geo).",
+  "metrics": {
+    "SR_charter_v14_arith": 1.7042,
+    "SR_geometric_table": 1.8977,
+    "CAGR": 0.4522,
+    "MDD": 0.2329,
+    "Calmar": 1.9413,
+    "PORT_t_NW_lag3": 6.2143,
+    "IR": 1.416,
+    "alpha_ann": 0.3093,
+    "beta": 0.7056
+  },
+  "judge_reference": {
+    "SR_headline_geometric": 1.898,
+    "CAGR": 0.4526,
+    "MDD": 0.2329,
+    "Calmar": 1.943,
+    "PORT_t": 6.214
+  },
+  "judge_parity_pass": true,
+  "rds_bug_note": "bt_result_C_noL4.rds 06_metrics는 annualization=252 버그(CAGR/Calmar 폭주). 본 재계산은 factor=12 정확."
+}

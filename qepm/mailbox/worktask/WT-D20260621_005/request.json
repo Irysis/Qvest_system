@@ -1,0 +1,79 @@
+{
+  "task_id": "WT-D20260621_005",
+  "wt_type": "discovery",
+  "pg1_eligibility": "certificate_required",
+  "discovery_of": null,
+  "graduation_criteria": {
+    "description": "Discovery → Deployment 전환 조건. discovery_graduation_gate.sh 강제. v8.x WS2 재설계(2026-05-29): rank-IC 계열은 long-only 실현 alpha와 어긋나(16후보 calibration 실측: rank_ic가 FLOW 거짓탈락+NN/TECH 거짓통과) advisory로 강등, portfolio-alpha t(forge NW lag-3)를 hard로. DSR hard는 sweep형 selection만(2026-06-10 개정 — chain/단일은 advisory). hard 기준은 forge-authoritative 값(alpha-stage proxy 아님)에 적용.",
+    "min_rank_ic": 0.04,
+    "min_rank_ic_rationale": "KR top-universe benchmark. <0.04는 IC 약함. (v8.x severity=advisory — long-only 실현 alpha 미전이)",
+    "min_icir": 0.2,
+    "min_icir_rationale": "Alpha Lab Gate. (v8.x severity=advisory)",
+    "min_subperiod_stability": 0.5,
+    "min_subperiod_stability_rationale": "3개 subperiod 안정성. (v8.x severity=advisory)",
+    "max_drawdown_days": 100,
+    "max_drawdown_days_rationale": "100일 이상 drawdown 지속 시 alpha decay 의심. (severity=advisory)",
+    "min_harvey_t_stat": 3,
+    "min_harvey_t_stat_rationale": "rank-IC Harvey-t. (v8.x severity=advisory — rank-IC t는 portfolio-alpha t와 구분, 후자가 권위)",
+    "min_deflated_sharpe_ratio": 0.5,
+    "min_deflated_sharpe_ratio_rationale": "Bailey-Lopez de Prado DSR — multi-testing 보정 SR. (severity=HARD는 sweep형 selection만 — ML스윕/optimizer서치/앙상블·사전등록 grid. 가설주도 chain/단일검증은 advisory 강등+진단산출. 도훈 mandate 2026-05-31/2026-06-10, measurement-graduation §3)",
+    "min_portfolio_alpha_t_nw": 2.95,
+    "min_portfolio_alpha_t_nw_rationale": "★v8.x 신규 HARD. forge-authoritative 실현 portfolio-alpha t (NW lag-3, forge_package.portfolio_alpha_t_nw_lag3). Harvey-Liu-Zhu 2016 hurdle. rank-IC t 아님. 게이트 핵심 판별(16후보 중 FLOW만 통과=정확).",
+    "severity": {
+      "rank_ic": "advisory",
+      "icir": "advisory",
+      "subperiod_stability": "advisory",
+      "harvey_t_stat": "advisory",
+      "deflated_sharpe_ratio": "hard",
+      "portfolio_alpha_t_nw": "hard"
+    },
+    "severity_rationale": "hard = block(우회불가), advisory = warn(screening). hard 2종(DSR/portfolio_alpha_t_nw)은 forge-authoritative 값에만 적용 — alpha-stage proxy로 graduation 선언 금지(v8.x WS1 정합)."
+  },
+  "theme": null,
+  "hypothesis_title": "OtherCorp Strategic Accumulation Momentum",
+  "hypothesis_description": "FROM momentum-hunt backlog (kr-novel-momentum-hunt) Tier-A. NON-return-derived. MOST NOVEL of the set — taps a COMPLETELY UNUSED data channel. FULL build-ready spec at stage_artifacts/momentum_hunt/backlog.json -> specs[name='Strategic-Corporate (OtherCorp) Accumulation']. READ IT and follow build_steps.\n\nCONCEPT: OtherCorp (기타법인) daily NetBuy accumulation momentum. signal = frollsum(OtherCorp NetBuy, ~40d)/Size + persistence, with a sparsity floor (~49%). OtherCorp is consumed by ZERO existing INV factor (INV01-13 use only Foreign/Institutional/Individual) -> orthogonality by construction (untapped non-return channel).\n\nMECHANISM: 기타법인 net-buying = chaebol affiliate cross-holdings, treasury-share (자사주) buybacks, control consolidation = insider-adjacent conviction (buyback-anomaly lineage). A fundamentally DIFFERENT cohort from institutional trading flow.\n\nWHY NOW / AXIS PIVOT: WT-D20260621_003 (C21) + WT-D20260621_004 (C22) both found Foreign+Institutional net-buy LEVEL has NO forward edge (even mildly inverse) in KR top-20 long-only, raw AND price-residualized. OtherCorp is a DIFFERENT investor channel (corporate/insider-adjacent, not institutional trading) -> the flow-LEVEL finding does NOT apply; this tests whether a different cohort's accumulation carries edge. (Per AX-000 amended, the prior 2 negatives are data points/priorities, NOT a limit.)\n\nHONEST RISK (per spec + AX-000 amended): (1) 49% sparsity floor -> many small/mid names route to NA, reducing breadth (proposer-flagged) -> may thin the top-N or bias toward names with OtherCorp activity. (2) OtherCorp may be a different cohort but still have no forward edge in long-only top-20 (the long-only translation problem, AX-007). Graduation NOT presumed; real-but-non-graduating -> screen-route (OVERLAY/FR/DPL). A clean negative is success; one data point, never a structural limit.\n\nORTHOGONALITY: prove vs INV01-13 (Foreign/Inst/Individual flow factors — OtherCorp should be near-zero corr, confirming untapped channel) + M01 + Size (small-cap bias check). target |corr|<0.5 vs flow family.\n\nPIT/CONSTRAINTS: OtherCorp NetBuy Date<sig_date strict (C2); frollsum align=right pre-sig_date (C1); Size t-1; cross-sectional z per sig_date (no full-sample); sparsity floor handling must not leak future (C7); C13 Z_Score_Aligned; C14; C15. long-only ONLY; KR; max 25; [0,0.20]; 15bps; prod liquidity 2e8. real-computation (canonical_screen_bt) ONLY; Codex Critic Round mandatory. investor data .cache/investor_stock/investor_wide.parquet (OtherCorp column); rawdata BM_Ret empty -> .cache/benchmark.parquet. R segfault guard.",
+  "hypothesis_source": "user_defined",
+  "as_of_date": "2026-06-21",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KOSPI200_KOSDAQ150_intersection",
+    "liquidity_min_won_20d_avg": 50000000,
+    "max_names_total": 500
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d (재무제표 발표 지연)",
+    "fundamental_annual": "annual May (연간 재무제표 5월 리밸런싱)",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement (QuantiWise)",
+    "macro": "t-1 FRED (외부 매크로 lag)",
+    "ic_history": "Usable_Date <= sig_date (Factor DB 강제)"
+  },
+  "cost_model_version": "v2.4_kr_retail_15bps",
+  "current_portfolio": "STR_1631_80_STR_1656_20",
+  "hard_mandate": {
+    "pit_enforcement": "C1-C15 all enforced",
+    "liquidity_floor_won_20d_avg": 50000000,
+    "mandate_restrictions": {
+      "no_short_legal_kr": true,
+      "no_cross_market": true,
+      "kr_domestic_only": true
+    },
+    "long_only_mandate": "configurable"
+  },
+  "hard_constraints": {
+    "max_names": null,
+    "weight_bounds": [
+      0,
+      1
+    ],
+    "sector_active_weight_cap": null,
+    "liquidity_min_won_20d_avg": 50000000
+  },
+  "soft_penalties": [],
+  "capacity_limits": {
+    "adv_multiplier": 0.1,
+    "capacity_max_aum_won": 100000000000
+  }
+}

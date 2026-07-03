@@ -1,0 +1,20 @@
+================ 기존 구조 내 성능개선 레버 실측 ================
+실행 2026-06-30 17:06:58.997145
+
+=== 단일레버 격리 (베이스 대비) | SR/MDD/calmar/pt_full/pt_18p/oos ===
+  [BASE        ] SR=1.18 MDD=36.6% calmar=1.05 | pt_full=+3.46 pt_18p=+2.46 oos=0.71
+  [A1_icir     ] SR=1.05 MDD=35.6% calmar=0.87 | pt_full=+3.20 pt_18p=+1.80 oos=0.30
+  [A2_ewma6    ] SR=1.12 MDD=33.0% calmar=1.08 | pt_full=+3.43 pt_18p=+2.29 oos=0.64
+  [A3_ens_lb   ] SR=1.04 MDD=33.9% calmar=0.93 | pt_full=+3.14 pt_18p=+2.11 oos=0.51
+  [A4_topK100  ] SR=1.20 MDD=36.1% calmar=1.26 | pt_full=+3.67 pt_18p=+2.63 oos=0.86
+  [A4_topK50   ] SR=1.03 MDD=34.4% calmar=1.23 | pt_full=+2.91 pt_18p=+2.22 oos=0.83
+  [A5_shrink   ] SR=1.18 MDD=31.2% calmar=1.19 | pt_full=+3.57 pt_18p=+2.50 oos=0.69
+  [A6_signstab ] SR=1.17 MDD=28.6% calmar=1.26 | pt_full=+3.30 pt_18p=+2.04 oos=0.46
+  [B1_winsor   ] SR=1.07 MDD=36.1% calmar=0.77 | pt_full=+3.03 pt_18p=+1.57 oos=0.29
+  [B2_sizeneut ] SR=1.18 MDD=35.9% calmar=1.08 | pt_full=+3.51 pt_18p=+2.49 oos=0.72
+  [C1_nco      ] SR=1.16 MDD=32.0% calmar=0.90 | pt_full=+3.06 pt_18p=+1.24 oos=0.15
+  [C2_invvol   ] SR=1.15 MDD=36.4% calmar=0.85 | pt_full=+3.39 pt_18p=+2.21 oos=0.48
+  [C3_lam3     ] SR=1.14 MDD=36.7% calmar=1.24 | pt_full=+3.29 pt_18p=+2.60 oos=0.90
+  [D1_liq1e8   ] SR=1.19 MDD=30.7% calmar=1.27 | pt_full=+3.47 pt_18p=+2.45 oos=0.73
+
+  베이스: SR=1.18 MDD=36.6 pt_full=3.46 oos=0.71. SR개선 top: A4_topK100(1.2), D1_liq1e8(1.19), BASE(1.18). MDD개선 top: A6_signstab(28.6), D1_liq1e8(30.7), A5_shrink(31.2).

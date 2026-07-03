@@ -1,0 +1,23 @@
+================ FoF 기저 진단 + 공정 재시험 ================
+실행: 2026-06-30 13:26:06.027821
+
+pure_factor_scores: 24482346행, 신호컬럼 z/neutralized_z, 팩터군 11
+경제군 11: Accruals, Composite, Consensus, Credit, Growth_Profit, LowRisk, Momentum, Quality, Reversal, Size_Liquidity, Value
+공통 signal_date 257개월 (2005-01-31 ~ 2026-05-31)
+
+=== 6-arm 실측 (signal × weight, metric_type=canonical_screen advisory) ===
+  [A0  neutralized + flat        ] port_t=+1.10 (p=0.272) | net_SR=+0.262 | IR=+0.262 | TO=1182%
+  [A0m neutralized + mom-centric ] port_t=+1.32 (p=0.188) | net_SR=+0.311 | IR=+0.311 | TO=1505%
+  [B0  neutralized + mom-tilt    ] port_t=+0.96 (p=0.336) | net_SR=+0.216 | IR=+0.216 | TO=1278%
+  [A1  z + flat                  ] port_t=-0.73 (p=0.467) | net_SR=-0.171 | IR=-0.171 | TO=971%
+  [A1m z + mom-centric           ] port_t=+1.85 (p=0.064) | net_SR=+0.388 | IR=+0.388 | TO=1405%
+  [B1  z + mom-tilt              ] port_t=+0.64 (p=0.522) | net_SR=+0.140 | IR=+0.140 | TO=1014%
+
+=== 분해 (port_t, neutralized 신호 고정 = 부호정렬 confound 없음) ===
+  희석 penalty (flat→mom-centric): A0 +1.10 → A0m +1.32  (Δ=+0.22) ★
+  동적타이밍 vs 정적집중: 정적 A0m +1.32 vs 동적 B0 +0.96  (Δ=-0.35)
+  신호 z 민감도 (flat): A0(neut) +1.10 vs A1(z) -0.73  [⚠ z 부호정렬 미검증 — 참고만]
+
+=== 핵심 검정 (paired-NW-t lag3) ===
+  동적 mom-tilt(B0) − 정적 mom-centric(A0m): t=-0.89 (p=0.375) → 타이밍이 정적집중 초과? NO(timing 무가치)
+  동적 mom-tilt(B0) − flat(A0): t=-0.41 (p=0.681) → 타이밍이 dilution탈출? 미미

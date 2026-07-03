@@ -21,7 +21,7 @@
 # Usage:
 #   Rscript build_index.R                       # default rebuild
 #   Rscript build_index.R --dry-run             # warning summary only, no write
-#   Rscript build_index.R --include-examples    # include examples/qvest_workflows/
+#   Rscript build_index.R --include-examples    # include 02_Infrastructure/docs/examples/qvest_workflows/
 #
 # Plan: v7-1-cheerful-balloon.md Sprint 1.1
 #==============================================================================

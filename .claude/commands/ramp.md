@@ -25,4 +25,4 @@ description: RAMP 모드 — 기존 전략풀(~800 NAV)에서 순수팩터 추�
 
 **제약(절대)**: 실측-only(자체합성 금지) · PIT C1~C15 · long-only/Σw=1/25종/[0,0.20]/15bps · no hard switch · **Qvest_Codex 경로 참조 금지** · 자본 게이트 governor 수동(도훈 confirm). 위반 = AX-002.
 
-**진입점 스크립트**: `04_Research/ramp/run_ramp.R` (단일) 또는 debug-first `scripts/ramp/debug_one_*.R`.
+**진입점 스크립트**: `04_Research/ramp/run_ramp.R` (단일) 또는 debug-first `02_Infrastructure/ramp/debug/debug_one_*.R`.

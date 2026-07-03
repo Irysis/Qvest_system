@@ -1,0 +1,33 @@
+{
+  "task_id": "WT-D20260630_001",
+  "hypothesis": "KR share-buyback announcement event alpha (Ikenberry, long-leg)",
+  "verdict": "FAIL",
+  "metric_type": "canonical_screen",
+  "graduation_gate_check": {
+    "min_portfolio_alpha_t_nw": {"required_hard": 2.95, "achieved_1m_best": -0.378, "achieved_12m_EW_best": 2.17, "pass": false},
+    "min_rank_ic": {"required_advisory": 0.04, "achieved": 0.0076, "pass": false},
+    "min_icir": {"required_advisory": 0.20, "achieved": 0.032, "pass": false},
+    "min_harvey_t_rankic": {"required_advisory": 3.0, "achieved": 0.37, "pass": false},
+    "subperiod_stability": {"required_advisory": 0.50, "status": "unstable_recent_only", "pass": false}
+  },
+  "kill_gate_1m": {
+    "benchmark": "KOSPI200_total_return",
+    "formA_port_t": -0.927, "formB_port_t": -0.923, "formC_port_t": -0.378,
+    "result": "FAIL (all negative)"
+  },
+  "benchmark_horizon_matrix": {
+    "1M":  {"K200TR_NWt": -1.00, "EWuniv_NWt": 0.56},
+    "3M":  {"K200TR_NWt": -0.88, "EWuniv_NWt": 0.51},
+    "6M":  {"K200TR_NWt": -0.66, "EWuniv_NWt": 1.37},
+    "12M": {"K200TR_NWt": -0.39, "EWuniv_NWt": 2.17}
+  },
+  "coverage": {"mean_active_per_month": 27.2, "months_active_ge_20": "111/137"},
+  "pit": "C2-safe (Size_M = EOM(M) known at formation; fwd = M+1). C10 liquidity t-1. C13/C15 ok.",
+  "codex_round": {"stance": "REVISE", "high_concerns_tested": ["benchmark", "horizon"], "verdict_unchanged_for_capital": true},
+  "recommendation": "screen-tier (DPL_FEATURE / regime overlay). NOT capital-graduation. risk-stage not eligible.",
+  "files": {
+    "alpha_scores": "stage_artifacts/WT_WT-D20260630_001/alpha_scores.parquet",
+    "alpha_package": "qepm/mailbox/worktask/WT-D20260630_001/alpha_package.json",
+    "challenge_note": "qepm/mailbox/worktask/WT-D20260630_001/challenge_note.md"
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "task_id": "WT-D20260621_001",
+  "wt_type": "discovery",
+  "pg1_eligibility": "certificate_required",
+  "discovery_of": null,
+  "graduation_criteria": {
+    "description": "Discovery → Deployment 전환 조건. discovery_graduation_gate.sh 강제. v8.x WS2 재설계(2026-05-29): rank-IC 계열은 long-only 실현 alpha와 어긋나(16후보 calibration 실측: rank_ic가 FLOW 거짓탈락+NN/TECH 거짓통과) advisory로 강등, portfolio-alpha t(forge NW lag-3)를 hard로. DSR hard는 sweep형 selection만(2026-06-10 개정 — chain/단일은 advisory). hard 기준은 forge-authoritative 값(alpha-stage proxy 아님)에 적용.",
+    "min_rank_ic": 0.04,
+    "min_rank_ic_rationale": "KR top-universe benchmark. <0.04는 IC 약함. (v8.x severity=advisory — long-only 실현 alpha 미전이)",
+    "min_icir": 0.2,
+    "min_icir_rationale": "Alpha Lab Gate. (v8.x severity=advisory)",
+    "min_subperiod_stability": 0.5,
+    "min_subperiod_stability_rationale": "3개 subperiod 안정성. (v8.x severity=advisory)",
+    "max_drawdown_days": 100,
+    "max_drawdown_days_rationale": "100일 이상 drawdown 지속 시 alpha decay 의심. (severity=advisory)",
+    "min_harvey_t_stat": 3,
+    "min_harvey_t_stat_rationale": "rank-IC Harvey-t. (v8.x severity=advisory — rank-IC t는 portfolio-alpha t와 구분, 후자가 권위)",
+    "min_deflated_sharpe_ratio": 0.5,
+    "min_deflated_sharpe_ratio_rationale": "Bailey-Lopez de Prado DSR — multi-testing 보정 SR. (severity=HARD는 sweep형 selection만 — ML스윕/optimizer서치/앙상블·사전등록 grid. 가설주도 chain/단일검증은 advisory 강등+진단산출. 도훈 mandate 2026-05-31/2026-06-10, measurement-graduation §3)",
+    "min_portfolio_alpha_t_nw": 2.95,
+    "min_portfolio_alpha_t_nw_rationale": "★v8.x 신규 HARD. forge-authoritative 실현 portfolio-alpha t (NW lag-3, forge_package.portfolio_alpha_t_nw_lag3). Harvey-Liu-Zhu 2016 hurdle. rank-IC t 아님. 게이트 핵심 판별(16후보 중 FLOW만 통과=정확).",
+    "severity": {
+      "rank_ic": "advisory",
+      "icir": "advisory",
+      "subperiod_stability": "advisory",
+      "harvey_t_stat": "advisory",
+      "deflated_sharpe_ratio": "hard",
+      "portfolio_alpha_t_nw": "hard"
+    },
+    "severity_rationale": "hard = block(우회불가), advisory = warn(screening). hard 2종(DSR/portfolio_alpha_t_nw)은 forge-authoritative 값에만 적용 — alpha-stage proxy로 graduation 선언 금지(v8.x WS1 정합)."
+  },
+  "theme": null,
+  "hypothesis_title": "Hurst-Conditioned Persistence-Quality Momentum",
+  "hypothesis_description": "FRESH CONCEPT (borrowed from fractal geometry / chaos theory -- Mandelbrot & H.E. Hurst, R/S analysis from hydrology; estimated via DFA, Peng et al. 1994). Confirmed ABSENT from factor_registry.json (373 factors) and from all prior research artifacts -- mathematically distinct from the already-falsified frog-in-the-pan / information-discreteness factor (WT-D20260529_002): self-similarity / long-range dependence of the return path, NOT up/down-day discreteness.\n\nMECHANISM: Classical momentum (M01 12-1) implicitly assumes the recent trend persists. Persistence is heterogeneous across names. The Hurst exponent H measures long-memory of the price path: H>0.5 = persistent/self-similar (trend likely to continue), H~0.5 = random walk, H<0.5 = anti-persistent (mean-reverting, momentum likely to reverse). Thesis: momentum signal quality is conditional on path persistence; low-H names are where momentum dilutes and where momentum CRASHES originate (anti-persistent rebounds, Daniel-Moskowitz 2016).\n\nCONSTRUCTION (alpha-research chooses & A/B tests the operationalization autonomously): candidate forms = (a) H-scaled momentum: signal = momentum_12_1 * g(H) with high-H amplified / low-H damped; (b) H-gated regime split: take momentum in high-H names, take reversal (or flat) in low-H names; (c) pure H cross-sectional factor as baseline. Estimator: rolling-window H (default ~252d, also test 126d/504d) via DFA (robust to non-stationary drift) cross-checked with R/S. Compare against M01/M08/M13 to prove orthogonality (target |corr|<0.6 vs existing momentum cluster) and incremental signal.\n\nEXPECTED_ROLE: core / offensive momentum-quality alpha with native momentum-crash mitigation (low-H = crash candidates filtered/down-weighted). Aims to lift the realized portfolio-alpha of momentum above its empirical KR ceiling, not to be a defensive sleeve.\n\nWHY_NOW: (1) PG0 gap vector sleeve_needs=core_alpha, target SR 2.5 / CAGR 16 / MDD 25, regime NEUTRAL. (2) Our own KR finding: momentum is the only standalone factor with positive OOS retention in the 25-stock long-only box, BUT its portfolio-alpha t sits at a ceiling (~2.2) below the graduation HARD gate (PORT_t>=2.95). Separating persistent-trend momentum from mean-reverting noise directly targets that ceiling rather than adding another diluting variant. (3) Momentum crashes occur in anti-persistent rebound regimes; low-H detection is a native, per-name crash filter complementary to our RAMP_04 momentum-crash overlay.\n\nPIT / CONSTRAINTS: rolling/expanding window only, all lookbacks Date<=sig_date (C1); DFA detrending must NOT use full-sample (C1/C7); Z_Score_Aligned cross-sectional (C13); compute from rawdata (Close/Ret) via the standard compute_momentum.R pattern, load via load_month_factors (C15). Universe KOSPI200 u KOSDAQ150, long-only, max 25 names, weight bounds [0,0.20], 15bps delta cost, liquidity 20d ADTV>=2e8.\n\nHONEST RISK (AX-000 reporting): AX-007 applies -- single-sleeve long-only top-25 may break the cross-sectional-signal -> portfolio-alpha translation even if rank-IC is strong. Graduation to capital is NOT presumed. A real-but-non-graduating signal is a valid outcome and routes to screening-tier consumption (OVERLAY_CANDIDATE / FR_RCMA / DPL_FEATURE) per measurement-graduation 2-tier. Measurement is real-computation only (canonical_screen_bt / build_bt_result); proxy hand-calc graduation is forbidden.",
+  "hypothesis_source": "user_defined",
+  "as_of_date": "2026-06-21",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KOSPI200_KOSDAQ150_intersection",
+    "liquidity_min_won_20d_avg": 50000000,
+    "max_names_total": 500
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d (재무제표 발표 지연)",
+    "fundamental_annual": "annual May (연간 재무제표 5월 리밸런싱)",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement (QuantiWise)",
+    "macro": "t-1 FRED (외부 매크로 lag)",
+    "ic_history": "Usable_Date <= sig_date (Factor DB 강제)"
+  },
+  "cost_model_version": "v2.4_kr_retail_15bps",
+  "current_portfolio": "STR_1631_80_STR_1656_20",
+  "hard_mandate": {
+    "pit_enforcement": "C1-C15 all enforced",
+    "liquidity_floor_won_20d_avg": 50000000,
+    "mandate_restrictions": {
+      "no_short_legal_kr": true,
+      "no_cross_market": true,
+      "kr_domestic_only": true
+    },
+    "long_only_mandate": "configurable"
+  },
+  "hard_constraints": {
+    "max_names": null,
+    "weight_bounds": [
+      0,
+      1
+    ],
+    "sector_active_weight_cap": null,
+    "liquidity_min_won_20d_avg": 50000000
+  },
+  "soft_penalties": [],
+  "capacity_limits": {
+    "adv_multiplier": 0.1,
+    "capacity_max_aum_won": 100000000000
+  }
+}

@@ -1,0 +1,109 @@
+{
+  "wt_id": "WT-D20260702_002",
+  "title": "PG2 Layer4 3-way 재심 (clean-timing) — faith_clean vs AR vs no-Layer4",
+  "judge": "QEPM Judge (Opus 4.8)",
+  "date": "2026-07-02",
+  "adjudication_scope": "증거-only 3-way 처분 권고. 자본/book_state 결정은 governor(도훈 수동) — 본 verdict는 권고까지.",
+  "metric_type": "backtested(contract)",
+  "authoritative_source": "3 rds (period_returns$ret_net + benchmark_compare) — Judge 독립 재검증 완료",
+
+  "independent_reverification": {
+    "note": "forge CSV/background를 재확인 없이 인용하지 않음. 아래는 Judge가 rds에서 직접 재계산한 값.",
+    "SR":            {"A_faith_clean": 1.779, "B_AR": 1.837, "C_noL4": 1.898, "match_csv": true},
+    "CAGR":          {"A_faith_clean": 0.3851, "B_AR": 0.3863, "C_noL4": 0.4526, "match_csv": true},
+    "MDD":           {"A_faith_clean": 0.2300, "B_AR": 0.2329, "C_noL4": 0.2329, "match_csv": true},
+    "Calmar":        {"A_faith_clean": 1.674, "B_AR": 1.659, "C_noL4": 1.943, "match_csv": true},
+    "PORT_t_NW_lag3":{"A_faith_clean": 4.671, "B_AR": 4.498, "C_noL4": 6.214, "source": "contract benchmark_compare"},
+    "paired_NW_t":   {"C_minus_B": 3.105, "C_minus_A": 4.083, "csv_reported": "3.11 / 4.08", "match": true},
+    "oos_retention_ACTIVE": {"A_faith_clean": 0.295, "B_AR": 0.349, "C_noL4": 0.534,
+      "definition": "measurement-graduation §3 = active(-BM) Sharpe OOS/IS anchored-median {55/65/75}",
+      "note": "forge CSV oos_v2(1.073 등)는 TOTAL return에 산식 적용 — graduation 게이트엔 부적절. 순위 C>B>A는 두 정의 모두 보존."},
+    "sanity_B_AR_vs_record": {"max_abs_diff": 4.441e-16, "verdict": "PASS (panel ret_L5_AR 정확 일치)"},
+    "C_noL4_reconstruct":    {"max_abs_diff": 1.11e-16, "verdict": "PASS"}
+  },
+
+  "gates": {
+    "A_PIT": {
+      "status": "PASS",
+      "authority": "Judge 고유권한 — 코드+데이터 직접 검증",
+      "evidence": {
+        "clean_faith_timing": "S(EOM m) -> realized_ym m+2. signal source EOM vs return-window anchor_date gap_days: min 30 / median 33 / 269-of-269 rows gap>0 (신호가 윈도우 개시 전 확정). concurrent(구 admit) 정렬은 269/269 rows gap -30~-21 (누설) — 대조 확인.",
+        "benchmark_S_recon": "trailing frollmean/frollapply(252) + causal EWMA(acc recursion) + causal phi window. CF{a,d,e,f} 하드코딩(paper#4 frozen) = in-sample fit 없음. C1 PASS.",
+        "layer_lineage": "beta_R05(5 discrete)/m4(17)/beta_AR(3) = 상위 게이팅 스칼라, ret_orig(고정 STR_1715 포트)에 곱셈. AR/m4/R05 원래 클린(빌더 shift(1) 라벨 오프셋 정확).",
+        "C13_C15": "본 WT은 factor engine 미실행(panel-lineage) — C13/C15 직접 대상 아님. benchmark parquet(1990-2026)가 panel(2004-2026) 완전 span."
+      }
+    },
+    "B_isolation": {
+      "status": "PASS",
+      "evidence": "lockbox 비-judge 접근 0(본 WT). selection=감사지정 3-way 고정(argmax 탐색 없음). 승자 C_noL4는 sweep 산물의 *제거* 방향 — 다중검정 우려 반대."
+    },
+    "C_net_alpha": {
+      "status": "PASS (전 변형)",
+      "PORT_t_hurdle": "Harvey-Liu-Zhu t>=2.95. A=4.67 / B=4.50 / C=6.21 모두 통과. C 최고.",
+      "net_IR": "A=4.96 / B=4.94 / C=6.49 (>0.2 전부). 승자 C 최고.",
+      "note": "PORT_t/net_IR = forge-authoritative(NW lag-3, contract). rank-IC 계열 미적용(advisory)."
+    },
+    "D_crowding": {"status": "N/A", "reason": "scalar overlay 재심 — crowding stress 대상 아님(STR_1715 base가 이미 admitted book)."},
+    "E_concentration": {"status": "N/A", "reason": "panel-lineage(고정 종목 포트 위 스칼라). max_w/HHI는 STR_1715 base 소관."},
+    "F_drift": {
+      "status": "CONDITIONAL",
+      "oos_is_ratio_ACTIVE": {"C_noL4": 0.534},
+      "verdict": "active oos_retention 0.534 = [0.5,0.7) band_fail. >=0.7 자동PASS 미충족. 3-way 처분엔 무관(순위 강건)이나 C의 자동 자본졸업은 불가 — band 2/3 escalation 필요(governor 소관).",
+      "correction": "forge CSV oos 1.073(total-return)은 graduation 게이트 부적절값. 정정."
+    }
+  },
+
+  "measurement_integrity": {
+    "sanity_check": "PASS (B_AR ≡ ret_L5_AR 4.44e-16)",
+    "cost_convention": "per-layer canonical(|dL4|+|dR05|x15bps). |dE| 민감도 SR A=1.787/B=1.839/C=1.897 — convention 무관 순위 불변. m4 delta 비과금 3-way 동일적용(상대비교 무영향).",
+    "benchmark_alignment": "현행 IKS200 수리본, backward anchor-window. bench 1990-2026 span PASS.",
+    "audit": {
+      "forge_state": "PENDING (build_bt_result placeholder nrow=0 — forge가 audit_bt_result 미호출)",
+      "judge_executed": "PASS=10 FAIL=0 WARN=6 integrity=WARNING CRITICAL=0 (Judge 직접 실행)",
+      "warn_detail": "6 WARN 전부 holdings/entry_date/factor_engine_path 부재 → 자동검증 skip(panel-lineage 필연). lookahead 자동 WARN은 Judge 수동 PIT(gap_days)로 커버.",
+      "blocking": false
+    },
+    "infra_bugs_flagged": [
+      "metrics 테이블 annualization_factor=252를 monthly에 적용 → CAGR 2524 / Calmar 10838 / Sharpe 7.46 버그값. essence_score가 이 값을 읽음(inflate라 게이트 관대측 통과). 정상 재계산 CAGR 0.453 / Calmar 1.943. build_bt_result 수리 필요(verdict 무변).",
+      "meta.json pat_row 추출 실패(key col 'metric' vs 'metric_name') → port_alpha_t_nw3='NA' 오기록. 실제 계약값 A4.67/B4.50/C6.21 정상 존재."
+    ]
+  },
+
+  "statistics": {
+    "prespecified_3way": true,
+    "selection_type": "prespecified (감사지정 고정 3후보, argmax 없음)",
+    "dsr_gate": "부적용 — 승자 C_noL4는 sweep 제거방향(1가설). faith(A) 부활 시나리오에만 선행 n=31 sweep DSR 재고 필요.",
+    "paired_significance": "C_noL4 vs B_AR NW-t=3.11(p<0.01) / vs A_faith NW-t=4.08(p<0.001). 통계적으로 명확 우위."
+  },
+
+  "self_adversarial_ax008": {
+    "challenges_raised": 7,
+    "classification": {"REBUTTAL": ["W2_tail_defense", "W3_clean_timing", "W6_audit"],
+                       "PARTIAL": ["W1_lineage", "W4_oos_metric", "W5_annualization_bug", "W7_multiple_testing"],
+                       "ACCEPT": []},
+    "verdict_overturning_weaknesses": 0,
+    "ax_hard_fail": 0,
+    "pit_c1_violation": 0,
+    "qlead_escalate_triggered": false,
+    "note": "REBUTTAL 3(실측/코드 기각) + PARTIAL 4(전부 verdict 무변, 헤드라인 정정·인프라 flag). challenge_note.md 기록.",
+    "triangulation": "AX-008 3-source: (1) Forge 산출(원본) (2) Self-Adversarial(본 라운드, PASS) (3) Architect(미소집 — 인프라 진단 아님). 2/3 필수 중 Forge+Self-Adversarial 2건 PASS 충족."
+  },
+
+  "verdict": {
+    "ranking": "C_noL4 > B_AR > A_faith_clean (모든 지표·양 oos 정의 일관)",
+    "recommendation": "REMOVE_LAYER4 (C_noL4)",
+    "rationale": [
+      "clean-timing 공정 3-way에서 Layer4 제거(C)가 SR 1.898 / Calmar 1.943 / PORT_t 6.21로 AR·faith 모두 유의 지배(NW-t +3.11 / +4.08).",
+      "Layer4의 위기 방어 이득은 실측상 고립월 <=2.6pp이고 binding MDD(2006-02, ~23%)엔 무차별 — 방어는 R05×m4가 담당. faith/AR는 회복·확장년(2009 +42pp, 2020 +37pp for C over B)에서 drag만 유발.",
+      "구 admit 근거(1.675->1.875)는 concurrent look-ahead 오염 확정 — clean 비교선 faith가 오히려 최하위. 오염 시정 후 faith 우위는 소멸."
+    ],
+    "capital_caveats": [
+      "본 verdict는 3-way 상대 처분 권고 — 자본/book_state는 governor(도훈 수동).",
+      "C_noL4의 active oos_retention=0.534(band_fail): 자동 자본졸업 불가. 신호 순위는 강건하나 절대 graduation은 2/3 escalation(trailing PORT_t>0 / placebo p<0.05 / book-marginal ΔSR>0 ∧ |cor|<0.30) 또는 governor 판단 필요.",
+      "governor due-diligence 권고: (a) 종목레벨 재실행 1회로 panel-lineage 상호작용 확인 (b) build_bt_result annualization 버그 수리 후 essence 재판정 (c) live monitoring drift 조항으로 미래 tail 상시 감시."
+    ]
+  },
+
+  "disposition": "EVIDENCE_ACCEPTED / RECOMMEND_REMOVE_LAYER4 / GOVERNOR_MANUAL",
+  "residual_objections": "verdict 뒤집는 잔존 반대 없음. graduation-tier 헤드라인 정정(oos 0.534) + 인프라 버그 2건은 flag로 surface(3-way 처분 무영향)."
+}

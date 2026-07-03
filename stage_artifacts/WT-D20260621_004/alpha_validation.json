@@ -1,0 +1,19 @@
+{
+  "task_id": "WT-D20260621_004",
+  "hypothesis": "C22_Quiet_Accumulation_Flow_Price_Divergence",
+  "metric_type": "canonical_screen",
+  "engine": "canonical_screen_bt",
+  "universe": "KOSPI200_UNION_KOSDAQ150",
+  "date_range": ["2005-01-31", "2026-04-30"],
+  "n_months_anchor": 195,
+  "cost_model": "v2.4_kr_retail_15bps",
+  "anchor": {"tag": "FI42", "PORT_t_nw_lag3": -1.428, "net_sr": -0.360, "rank_ic": -0.0123, "icir": -0.168, "harvey_t": -2.421, "oos_retention_v2": -14.39, "calmar_approx": -0.078, "turnover_annual": 13.49},
+  "grid_PORT_t": {"FI21": -0.942, "FI42": -1.428, "FI63": -1.410, "F21": 0.083, "F42": -1.055, "F63": -0.652},
+  "controlled_residualization_delta_QA_minus_RAW": {"FI21": 0.459, "FI42": -0.507, "FI63": -1.141, "F21": 0.236, "F42": -0.463, "F63": -0.287},
+  "diagnostics": {"subperiod_icir_3split": [-0.262, -0.253, -0.028], "subperiod_stability": 1.0, "dsr_n6_sweep": 0.0147, "decile_monotonicity": -0.903},
+  "orthogonality_active_rho": {"M01": 0.517, "INV01": 0.611, "INV02": 0.684, "INV13": 0.544, "Size": 0.065},
+  "orthogonality_score_rho": {"M01": 0.092, "INV01": 0.373, "INV02": 0.418, "INV13": 0.177, "Size": 0.013},
+  "graduation_gates": {"port_t_nw": {"value": -1.428, "hard": 2.95, "pass": false}, "oos_retention_v2": {"value": -14.39, "hard": 0.7, "pass": false}, "calmar_approx": {"value": -0.078, "hard": 0.64, "pass": false}, "dsr_sweep": {"value": 0.0147, "hard": 0.5, "pass": false}},
+  "verdict": "CLEAN_NEGATIVE — no standalone forward edge, robustly mildly anti-predictive. price-residualization mixed/never material. screen_route=NONE. ONE data point in ongoing campaign, NOT a structural limit.",
+  "codex_round": {"stance": "REVISE", "resolved": true, "challenge_note": "challenge_note.md"}
+}

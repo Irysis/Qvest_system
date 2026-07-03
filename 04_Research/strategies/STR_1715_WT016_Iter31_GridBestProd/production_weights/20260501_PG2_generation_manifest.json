@@ -1,0 +1,52 @@
+{
+  "task": "STR_1715 PG2 6월 forward production weights (5월 시그널 기반, cap_0.20)",
+  "generated_at": "2026-06-17 11:41:32.453149",
+  "as_of_date": "2026-05-01",
+  "decision_for": "2026-06 운용",
+  "mandate_cap": "cap_0.20",
+  "admitted_book": {
+    "n_admitted": 1,
+    "strategy": "STR_1715_AR_on_M4_R05_overlay_PG2",
+    "structure": "single-sleeve (STR_1715 base 20종목) + M4/AR/R05 overlay scalars. 4-sleeve Hybrid 70/15/15는 2026-06-02 retired.",
+    "incumbent_ir": 1.5754
+  },
+  "recipe": {
+    "layer_a_alpha": "Iter5 multi-sleeve composite: score_eff = 0.65*score_core_z + 0.35*score_defense_z (검증 max|diff|=0.0)",
+    "core_sleeve": "C01_SUE,C02_EPS_Chg_1m,C04_ESBR,C06_TP_Gap (IC-weighted theta)",
+    "defense_sleeve": "Q07_Earnings_Stability,M08_Residual_Mom,Q25_Ohlson_O",
+    "layer_b_weighting": "Iter31 .linear_tilt_to_penalty_qd_v2(lambda=1.5, phi=3, ub=0.20) — z-score tilt over top-20, cap_0.20 iterative",
+    "layer_c_overlay": "M4 outer: weight_str1715=1.0 weight_cash=0.0 (passthrough, May 디리스크 없음)"
+  },
+  "alpha_source": {
+    "file": "stage_artifacts/WT_D20260425_010/alpha_scores.parquet (재구성: 05_Production admit 268m + may2026 May-01 row)",
+    "may_01_origin": "qepm/mailbox/worktask/WT-P20260429_002/forge_may2026/alpha_scores_may2026.parquet (2026-06-08 생성)",
+    "n_eligible_may": 348,
+    "n_after_liquidity": 348,
+    "n_picked": 20,
+    "regime": "CAUTION"
+  },
+  "pit": {
+    "c10_liquidity_window": "2026-04-01 ~ 2026-04-30 (< 2026-05-01 strict)",
+    "alpha_ret1m": "all NA (no forward leak)",
+    "m4_overlay": "t-1 lag columns",
+    "verdict": "PASS"
+  },
+  "outputs": {
+    "alpha_sleeve_standalone": "20260501_weights_cap_0p20.csv / _holdings_log_ / _capacity_check_",
+    "pg2_4sleeve_book": "20260501_PG2_4sleeve_book_cap_0p20.csv (0.5/0.25/0.2/0.05)"
+  },
+  "validation": {
+    "sum_w_alpha_sleeve": 1,
+    "max_alpha_sleeve": 0.2,
+    "sum_w_pg2_book": 1,
+    "max_single_pg2": 0.2,
+    "sleeve_proportions": "0.50/0.25/0.20/0.05 EXACT"
+  },
+  "honest_limitations": {
+    "data_regression": "리프레시된 factor_db_202605 (2026-06-10 rebuild)는 4개 Core 팩터(C01/C02/C04/C06) + 23개 consensus-derived 팩터 전부 결손. 202604/202606엔 정상 존재. => 현 캐시로는 May-01 Core sleeve 신규 재산출 불가.",
+    "alpha_provenance": "May-01 alpha는 2026-06-08 생성분 사용(당시 202605에 Core 존재). 동일 canonical 레시피·PIT-safe(sig_date 05-01, PIT_REF 04-30).",
+    "theta_caveat": "may2026 theta_core(C04=0.2945 flat)가 admit April theta_core(C04=0.45)와 상이. raw May Core Z-score 소실로 canonical theta 재적용 불가.",
+    "sleeve_weighting_note": "0512 H1 배포의 flat within-sleeve 가중(top 0.068)은 generate_forward_weights_str1715 출력과 불일치 — 현 v2.0 production 레시피(steep tilt, top 0.20)가 SOT(manifest production_layer_b). 4-sleeve book은 현 SOT 레시피로 구성.",
+    "governor": "book_state.json 미수정 (자본 게이트 정지 — 도훈+Q-Lead 수동 confirm 대기)"
+  }
+}

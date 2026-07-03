@@ -1,0 +1,43 @@
+[
+  {
+    "paper_id": "2606.04576",
+    "paper_title": "ReSGA: A Large Tail Risk Model for Learning Value-at-Risk and Expected Shortfall (arXiv 2606.04576)",
+    "factor_name": "size_enhanced_left_side_momentum",
+    "gate_decision": "QUARANTINE",
+    "gate_failed_layers": "robustness,fidelity",
+    "gate_rule": "PIT hard + contract&robustness&fidelity all PASS (unattended 4/4, fail-closed)",
+    "layers": { "pit_pass": true, "contract_pass": true, "robustness_pass": false, "fidelity_pass": false },
+    "implementation": "Eq.(11) size x tail-risk interaction faithfully implemented: alpha_{i,t} = (logCap - cross-sectional mean logCap) * (1 - exp(ES_hat)); ES_hat = mean of bottom-5% of trailing 252 trading-day daily returns (historical CVaR_95, negative; same convention as registry R03_CVaR_95 pre-negate input). Demean over K200 union KQ150 PIT membership intersect liquidity-pass per month-end. long-only top-25 EW, monthly, 2005-2026, 15bps. NO batch_434 fabrication: computed signal == factor def; L/S short-leg dropped per KR long-only rule.",
+    "directions_tested": {
+      "POS": {
+        "label": "Score=+alpha (big x high-tail long = paper US P1 'too-big-to-fail' buy side)",
+        "strategy_id": "STR_AS_20260621_082546_2116",
+        "proxy_grade": "B", "proxy_score": 42.7, "excess_cagr_pct": -6.01,
+        "authoritative_remeasure": true, "essence_grade": "F",
+        "net_sharpe": 0.351, "net_ir": -0.621,
+        "portfolio_alpha_t_nw_lag3": -2.813, "oos_retention": "NA",
+        "mdd_pct": 52.7, "calmar": 0.104, "cagr_pct": 5.5,
+        "integrity_status": "WARNING",
+        "key_measured_fact": "Realized long portfolio significantly UNDERperforms KOSPI200: net-active PORT_t(NW lag-3) = -2.81 (net_IR -0.62), far below the +2.95 graduation hurdle. Big x high-tail-risk does not pay in KR long-only."
+      },
+      "NEG": {
+        "label": "Score=-alpha (small x high-tail long, reversed sign)",
+        "strategy_id": "STR_AS_20260621_083320_75236",
+        "proxy_grade": "F", "proxy_score": 6.2, "excess_cagr_pct": 1.1,
+        "authoritative_remeasure": false, "screen_pass": false, "screen_route": "NONE",
+        "cagr_pct": 12.64, "sharpe": 0.412, "ir": 0.051, "mdd_pct": 74.59, "turnover_ann_pct": 110.4,
+        "fmt_codes": ["FMT-01", "FMT-04", "FMT-07"],
+        "key_measured_fact": "Marginal +1.1%p excess CAGR but IR ~0.05 (no real alpha) and catastrophic MDD 74.6% -> screen_pass=FALSE, so no authoritative remeasure (PORT_t/oos not computed). Driven by small-cap tail blow-ups (e.g. EuDebt_2011 +105% alpha) -> not deployable."
+      }
+    },
+    "robustness_reason": "FALSE (fail-closed): POS reached the authoritative remeasure ladder but essence=F with PORT_t(NW lag-3) = -2.81 (strongly negative realized alpha) and oos_retention=NA (not computable). NEG failed screening (screen_pass=FALSE) so never reached the remeasure gate -> no authoritative oos/placebo evidence. Neither faithful direction provides L3 evidence (oos_retention>=0.5 AND placebo not-FAIL).",
+    "fidelity_reason": "FALSE (recorded fail-closed): independent L4 verifier (claude -p) was NOT run because the gate is fail-closed and already QUARANTINE on robustness for BOTH faithful directions, so L4 could not change the outcome. This records 'not independently verified', not a fidelity defect. The implementation IS a direct, faithful reconstruction of Eq.(11) as specified in the queue factor_candidate.def (unlike the 2606.08569 case which implemented a derived proxy).",
+    "conclusion": "ReSGA's size x left-tail interaction signal does NOT yield a deployable long-only KR alpha in either direction. POS (paper's US P1-buy sign) significantly UNDERperforms (PORT_t -2.81) -- consistent with the paper's own note that the favorable sign reverses outside the US (China/Japan); the reversed NEG sign only produces a marginal, high-MDD (74.6%), IR~0 series that fails screening. KR (an Asian market) reproduces the paper's documented sign instability with no profitable long-only direction. Quarantined for human review.",
+    "lcode_action": "Auto-generated mode-local L-codes REMOVED per QUARANTINE policy (L-code 적립 금지): l_code_STR_AS_20260621_082546_2116.json (POS) + l_code_STR_AS_20260621_083320_75236.json (NEG). Negative knowledge preserved in this quarantine entry. Candidate for kr-inverse-pattern-miner (faithfully-implemented size x tail interaction = KR hard-fail both directions).",
+    "verify_json": "stage_artifacts/paper_recharge/auto_verify_2606.04576.json",
+    "engine_path": "02_Infrastructure/alpha_search/factor_engine_resga_2606_04576.R",
+    "out_dir_pos": "stage_artifacts/alpha_search/20260621_082546_2116",
+    "out_dir_neg": "stage_artifacts/alpha_search/20260621_083320_75236",
+    "quarantined_at": "2026-06-21"
+  }
+]

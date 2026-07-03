@@ -1,0 +1,104 @@
+{
+  "task_id": "WT-S20260626_001",
+  "agent": "judge",
+  "package_kind": "judge_verdict_draft",
+  "as_of_date": "2026-06-26",
+  "wt_kind": "sizing_only",
+  "selection_type": "chain",
+  "hypothesis": "Replace incumbent overlay-combine product(beta_AR x beta_R05) with max-cash min(beta_AR,beta_R05) to relieve M4<->AR 91% overlap over-defense drag (architecture-audit B2).",
+  "verdict": "JUDGE_FAILED",
+  "disposition": "REJECT max-cash arm; RETAIN incumbent product-combine overlay.",
+  "verdict_basis": "Adjudicator (not source). Judge independently recomputed all A/B headlines from ab_panel_full.csv to 4dp (machine-eps formula parity, metric parity). max-cash is uniformly DOMINATED by incumbent on every measured axis; book-marginal dIR is NEGATIVE (-0.0224), failing the >=0.05 gate by a wide margin and in the wrong sign. The over-defense-drag hypothesis is FALSIFIED by realized A/B.",
+
+  "independent_recompute": {
+    "judge_recompute_done": true,
+    "method": "Read ab_panel_full.csv; reverify combine formulas + reconstruct arm returns from primitives + PerformanceAnalytics metrics + NW lag-3 PORT_t. NOT trusting forge ret_inc/ret_mc columns.",
+    "formula_parity": {
+      "rw_inc_vs_m4_bAR_bR05_maxabs": 3.9e-16,
+      "rw_mc_vs_m4_min_maxabs": 2.2e-16,
+      "ret_recon_vs_panel_col_maxabs": 5.1e-16
+    },
+    "metric_parity_with_forge": "EXACT to 4dp (SR 1.8389/1.7867, net_IR 0.6640/0.6416, MDD -0.2329/-0.2329, PORTt 4.6295/4.5691, dIR -0.0224, dSR -0.0522, dPORTt -0.0604).",
+    "cofiring_parity": "EXACT (inc cumret +4.83% / mc -2.50%; inc seg MDD -17.13% / mc -23.58%; n=32; regimes BULL4/CAUTION9/CRISIS2/NORMAL17)."
+  },
+
+  "gates": {
+    "A_PIT": {
+      "status": "PASS",
+      "evidence": "All overlay risk-weights (m4, beta_AR, beta_R05) are t-1 lagged (shift(1)); risk_weight(t) from end-of-(t-1) info applied to month-t base ret_orig. Combine-operator change product->min is ORDER-PRESERVING on PIT-lagged inputs (min(PIT,PIT)=PIT) -> introduces no new look-ahead. Base sleeve = STR_1715 frozen production ret_net (C1/C2/C9/C13/C14 inherited, admitted SR 1.9536). bt_result audit: point_in_time_checked PASS, lookahead_bias_checked PASS, survivorship_bias_checked PASS. Independently verified: all betas in [0,1], so min>=product (max-cash holds MORE risk in co-firing) -> monotone, no sign flip.",
+      "hard_fail": false
+    },
+    "B_isolation": {
+      "status": "PASS",
+      "evidence": "Pure-function: judge re-md5'd all 4 packages at adjudication time -> identical to forge-recorded start/end hashes (alpha b574..ae / risk 03e3..3a / opt d694..77 / weights b173..b6). No target_weights/alpha/cov mutation. sizing_only single-change A/B; both arms share identical frozen base sleeve + identical data/cost. Lockbox: scope does NOT apply to forge per lockbox-scope.md (forge measures full window 2004-02..2026-06); both arms same full window. lockbox_access_count_non_judge=0 (overlay re-weight, no lockbox read)."
+    },
+    "C_net_alpha_gt_cost": {
+      "status": "PASS_BOTH_ARMS_but_max_cash_WORSE",
+      "evidence": "PORT_t (forge-authoritative NW lag-3): incumbent 4.6295, max-cash 4.5691 -- BOTH exceed Harvey-Liu-Zhu 2.95 hurdle. net_IR incumbent 0.6640, max-cash 0.6416 -- both > 0.3. So both arms clear absolute Gate C. BUT max-cash is strictly worse: dPORTt -0.0604, dIR -0.0224. cost is NOT the driver: cash-leg turnover LOWER for max-cash (96.3% vs 113.1%); the negative delta is a worse-gross-exposure-timing effect (holding risk through co-firing stress), not a cost effect. ret_gross-cost==ret_net exact (cost_decomposition PASS).",
+      "note": "Gate C is an absolute admit hurdle (both pass). The A/B disposition is decided at the book-marginal gate, not Gate C."
+    },
+    "D_crowding": {
+      "status": "N/A_INHERITED",
+      "evidence": "sizing_only WT; crowding/style structure inherited from parent STR_1715 (admitted). No new selection introduced by combine-operator change. Risk package md5-frozen (inherited)."
+    },
+    "E_concentration": {
+      "status": "PASS",
+      "evidence": "weights.csv (Codex + architect verified): 20 equity names + CASH per month, equity max weight 0.20 (== hard cap), no negative weights, sums (incl CASH) == 1. Inherited from STR_1715. max_w<=0.20 satisfied. No new concentration risk from scalar cash/risky split.",
+      "hard_fail_if_violated": "would be hard_fail=TRUE; not violated."
+    },
+    "F_drift": {
+      "status": "PASS_INHERITED",
+      "evidence": "sizing_only; oos/is structure inherited from STR_1715 frozen pipeline (admitted). This WT is an A/B of a single overlay operator over the full identical window for both arms; no new train/test split introduced. Per-regime SR diagnostic present (regime_decomposition.png)."
+    }
+  },
+
+  "book_marginal_gate": {
+    "rule": "measurement-graduation.md S4: standalone ADMIT then dIR (new_book_ir - incumbent_book_ir) >= 0.05 AND MDD non-worsening.",
+    "observed_dIR": -0.0224,
+    "gate_dIR_ge_0p05": "FAIL",
+    "gate_dIR_sign": "NEGATIVE (wrong direction -- max-cash REDUCES book IR)",
+    "dMDD_global": 0.0,
+    "gate_MDD_non_worsening": "PASS_TIE_BUT_UNINFORMATIVE",
+    "mdd_tie_caveat": "Global MDD identical (-0.2329) ONLY because the book's deepest drawdown falls OUTSIDE the 32 co-firing window. The TIE is uninformative for the defense question. The TRUE defense cost is in-window: co-firing segment MDD -23.58% (max-cash) vs -17.13% (incumbent) = 6.45pp WORSE; GFC core (2008-09..2009-03) -9.24% vs -4.59% = 4.65pp WORSE. So even on the risk axis max-cash is worse where it matters.",
+    "overall": "FAIL"
+  },
+
+  "dsr_applicability": {
+    "selection_type": "chain",
+    "rationale": "sizing_only single pre-specified combine-operator change (n_trials=2: incumbent baseline vs the one mandated max-cash arm). NOT a sweep (no argmax over an enumerated grid; max-cash was the WT's pre-specified target, not max-SR-selected). Per measurement-graduation.md S3, DSR HARD gate applies to sweep-form selection only -> DSR-exempt here. Moot regardless: the disposition is REJECT (max-cash uniformly dominated), so no overfit-selection risk exists.",
+    "dsr_gate": "NOT_APPLICABLE"
+  },
+
+  "essence_score_note": {
+    "applied": false,
+    "reason": "essence_score grade (A/B/C/F) governs ADMISSION of a candidate strategy. This WT is a REJECT of a sizing variant of an ALREADY-ADMITTED book (STR_1715, SR 1.9536). No new admission is requested. The operative gate is book-marginal dIR (S4), which FAILS. Incumbent retains its existing grade unchanged. essence_score on max-cash would only confirm it is worse than incumbent on the authoritative axes already measured (PORT_t, oos via inherited, calmar 1.6421<1.6608)."
+  },
+
+  "forge_conclusion_validation": {
+    "forge_claim": "compound de-risk (product) is net-PROTECTIVE in co-firing months, not drag; co-firing = genuine crisis (GFC 13/32, 2022 6, COVID 2).",
+    "judge_assessment": "VALIDATED. Independent recompute confirms: (1) max-cash holds +1.27pp mean more risky exposure across co-firing months and earns -2.50% cumulative there vs incumbent +4.83% (7.33pp gap). (2) Co-firing months are predominantly stress (GFC 2008-09 + 2009 = 13 of 32; 2022 K-bear = ~6; COVID = 2). (3) Therefore the M4xAR 'over-defense double-count' was risk-REDUCING in a return-improving way, NOT a drag. The architecture-audit B2 hypothesis (91% overlap = over-defense cost) is FALSIFIED by realized A/B. Forge's honesty mandate (FAIL reported honestly, no PASS rationalization) is consistent with AX-000 reframe."
+  },
+
+  "ax_008_triangulation": {
+    "source_1_forge": "PASS (measurement, audit FAIL=0, hashes match, REJECT-recommended on dIR<0.05 negative)",
+    "source_2_codex_forge_critic": "REVISE no-veto -- core A/B AGREED (credible, max-cash worse, hashes match, formulas verified). Concerns (reproducibility paths/charts/5-spec/DSR) dispositioned: artifacts added (C1/C2/C4), waivers documented (C3 DSR chain-exempt + FF5/6 KR-absent, C5 C15 inapplicable to overlay).",
+    "source_3_architect": "PASS -- 6-lens independent recompute reproducing every headline to 4dp.",
+    "judge_role": "adjudicator (not a source). Independently re-derived all headlines + re-md5'd packages + audited bt_result 16-check. Tally 2/3 PASS -> AX-008 SATISFIED.",
+    "ax_008_status": "SATISFIED"
+  },
+
+  "self_synthesis_check": {
+    "status": "PASS",
+    "evidence": "Metrics via PerformanceAnalytics standard funcs (table.AnnualizedReturns/maxDrawdown/CalmarRatio/SortinoRatio) + lm+NeweyWest for PORT_t. cumprod used ONLY for NAV-path display + co-firing/GFC segment-cumulative diagnostics (NOT portfolio-metric synthesis). BM monthly = compound of daily KOSPI200 (index aggregation). Judge recompute parity (machine-eps) confirms no 0.8*r1+0.2*r2 / prod(1+r) self-synthesis of portfolio metrics. metric_type label = backtested (audit estimated_metrics_separated PASS)."
+  },
+
+  "codex_critic_round": {
+    "status": "PENDING_AT_DRAFT",
+    "note": "judge_verdict_draft -> run_codex_qepm_critic.sh (role=judge) -> codex_critic_response_judge.json -> finalize"
+  },
+
+  "next_state": "JUDGE_FAILED",
+  "recommendation_to_governor": "No admission. Incumbent STR_1715_AR_on_M4_R05_overlay (product-combine) retained as book. max-cash combine-operator REJECTED. Architecture-audit B2 over-defense-drag hypothesis FALSIFIED -- do not re-attempt min-combine as a defense relief; the product compounding is net-protective in co-firing crises.",
+  "created_at": "2026-06-26",
+  "created_by": "judge"
+}

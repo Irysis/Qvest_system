@@ -1,0 +1,155 @@
+{
+  "agent_id": "codex_qepm_critic",
+  "role": "alpha_critic",
+  "model": "gpt-5.5",
+  "timestamp": "2026-06-29T23:13:34+09:00",
+  "task_id": "WT-D20260629_002",
+  "stance": "REVISE",
+  "veto_flag": false,
+  "stance_rationale": "I agree with the draft's FAIL disposition and zero-weight conclusion, but the package is not finalizable as-is because PIT-C13/C15, RF-A6, RF-A4, and RF-A5 evidence gaps remain. The conclusion is conservative, but the audit trail and checklist coverage need revision before final alpha_package.json.",
+  "ic_diagnostics_audit": {
+    "rank_ic": {
+      "value": -0.0315,
+      "pass": false
+    },
+    "icir": {
+      "value": 0.343,
+      "pass": true
+    },
+    "harvey_t": {
+      "value": 6.21,
+      "pass": true
+    },
+    "sub_stability": {
+      "value": 1.0,
+      "pass": true,
+      "rf_a1_flag": false
+    },
+    "dsr": {
+      "value": null,
+      "pass": false
+    }
+  },
+  "time_series_alpha_audit": {
+    "n_sig_dates": 258,
+    "date_range": [
+      "2005-01-31",
+      "2026-06-29"
+    ],
+    "single_snapshot_risk": "LOW",
+    "rf_a7_flag": false,
+    "comment": "alpha_scores.parquet at stage_artifacts/WT-D20260629_002 has 80254 rows, 258 monthly sig_dates, no future dates beyond 2026-06-29, and no duplicate sig_date/Ticker pairs. User-specified canonical qepm/stage_artifacts paths were absent."
+  },
+  "ax_axiom_compliance": {
+    "ax_003_check": "N/A",
+    "ax_004_check": "N/A",
+    "ax_005_check": "N/A",
+    "ax_007_check": "FAIL"
+  },
+  "pit_c1_c15_audit": [
+    {
+      "check": "C13",
+      "status": "FAIL",
+      "evidence": "Draft uses empirical +/- kill-gate language and exports diagnostic_z_aligned for A084, but does not prove standard Z_Score_Aligned-only construction; C13 forbids NEGATE_FACTORS/FLIP_SIGN style empirical direction selection."
+    },
+    {
+      "check": "C14",
+      "status": "PASS",
+      "evidence": "No IC-history signal input appears in the selected price-volume diagnostic; request states Usable_Date <= sig_date for IC history. Code-level proof is still missing because factor_engine_proposal.R/run_all.R were absent."
+    },
+    {
+      "check": "C15",
+      "status": "FAIL",
+      "evidence": "factor_engine_proposal.R and run_all.R were absent, while artifact_lineage references .cache/RAWDATA.parquet and scratch_gapfreq/panel_with_fwd.rds. load_month_factors() compliance and no direct parquet loading cannot be verified."
+    },
+    {
+      "check": "C9",
+      "status": "PASS",
+      "evidence": "No DD, volatility, or regime overlay is used in this alpha draft."
+    },
+    {
+      "check": "C4",
+      "status": "PASS",
+      "evidence": "The tested signals are price-volume based; no fundamental statement timing is used. Request-level lag rules specify quarterly 45d and annual May where fundamentals apply."
+    }
+  ],
+  "critical_concerns": [
+    {
+      "id": "C1",
+      "severity": "HIGH",
+      "description": "Capital-grade long-only alpha is absent: best observed portfolio-alpha t_NW lag3 is 0.668 versus the 2.95 hard gate, and strong rank-IC candidates appear trapped in the short leg. The draft correctly fails the idea, but this must remain a hard no-graduation conclusion.",
+      "ax_cite": "AX-007"
+    },
+    {
+      "id": "C2",
+      "severity": "HIGH",
+      "description": "The reproduction and lineage path is incomplete: factor_engine_proposal.R and run_all.R are missing, user-specified qepm/stage_artifacts locations are absent, and direct parquet/RDS lineage prevents independent verification of loader discipline.",
+      "ax_cite": "PIT-C15"
+    },
+    {
+      "id": "C3",
+      "severity": "MEDIUM",
+      "description": "Multiple-testing control is under-evidenced. Six candidates plus sign, N, and liquidity variants produce 24 long-only configurations, but DSR is null and waived as selection_type=chain; rank-IC Harvey/Bonferroni n6 does not cover the portfolio screen.",
+      "ax_cite": "RF-A6"
+    },
+    {
+      "id": "C4",
+      "severity": "MEDIUM",
+      "description": "C13 is not cleanly demonstrated. The package says empirical positive and negative directions were both evaluated, while the prompt requires Z_Score_Aligned-only handling and bans manual sign flipping. The FAIL outcome is sign-invariant, but the final package should not label this as a strict PIT pass without code proof.",
+      "ax_cite": "PIT-C13"
+    },
+    {
+      "id": "C5",
+      "severity": "MEDIUM",
+      "description": "Liquidity evidence is incomplete. The best reported configuration uses liq5e7, below the base hard liquidity floor of 20d TV >= 2e8 KRW; the liq2e8 variant is reported only secondarily and top-decile liquidity distribution is not shown.",
+      "ax_cite": "RF-A5"
+    },
+    {
+      "id": "C6",
+      "severity": "MEDIUM",
+      "description": "RF-A4 is mis-mapped. The draft flags A084's 0.68 correlation with 1M momentum, but the role checklist defines RF-A4 as a 50%+ ICIR drop after sector neutralization. Sector-neutral ICIR is not reported.",
+      "ax_cite": "RF-A4"
+    },
+    {
+      "id": "C7",
+      "severity": "LOW",
+      "description": "Verification triangulation is incomplete: no final alpha_package, risk_package, optimization_package, weights.csv, covariance.parquet, or challenge note exists. This is explainable because the alpha draft fails, but the absence should be explicit in final lineage.",
+      "ax_cite": "AX-008"
+    }
+  ],
+  "supporting_arguments": [
+    "The draft's FAIL verdict is directionally correct: all reported long-only portfolio configurations fall far below t_NW lag3 >= 2.95, with best PORT_t only 0.668.",
+    "RF-A7 is not triggered for alpha_scores: the file contains 258 sig_dates from 2005-01-31 through 2026-06-29 with time-varying ticker coverage.",
+    "weight_theta is 0 for all six candidates, and the draft states no deployable confidence_vector or downstream optimizer spawn, reducing silent-promotion risk.",
+    "The gap_up_ratio-style failure mode is coherently identified: strong rank-IC does not transfer into KR long-only portfolio alpha."
+  ],
+  "unresolved_disputes": [
+    "weights.csv and covariance.parquet were not present, so schedule, PSD, and condition-number checks requested by the user could not be performed.",
+    "The actual alpha_scores path is stage_artifacts/WT-D20260629_002, while both user-specified stage artifact dirs were absent.",
+    "RF-A2, RF-A3, RF-A4, RF-A5, monotonicity, and top-decile liquidity diagnostics are not fully reported; they are nonbinding for a FAIL verdict but incomplete for the alpha checklist.",
+    "Alpha181 was dropped for a coverage bug, but no challenge_note or infeasibility note currently documents that exclusion."
+  ],
+  "weakest_assumption": "The weakest assumption is that narrative PIT/lineage assertions are sufficient to mark the alpha audit as clean, even though the reproduction code is absent and PIT-C13/C15-compliant construction is not independently demonstrated.",
+  "rebuttal_required": [
+    "Provide factor_engine_proposal.R or run_all.R, or remove the reproduction_command that points to an absent file.",
+    "Prove C13 and C15 compliance with code-level evidence, especially Z_Score_Aligned-only handling and approved loader usage.",
+    "Report DSR or a formal RF-A6 waiver that covers the 24 portfolio configurations, not only rank-IC n6.",
+    "Add sector-neutral ICIR, recent-3Y versus full ICIR, monotonicity, and top-decile liquidity at the 2e8 KRW floor.",
+    "Keep the alpha conclusion as FAIL with weight_theta=0 unless a forge-authoritative long-only portfolio-alpha t_NW lag3 >= 2.95 is produced."
+  ],
+  "rationalization_red_flags": [
+    "Detected: selection_type=chain -> DSR HARD 부적용",
+    "Detected: authoritative read = IR/net_SR while benchmark series was substituted from WT-001 and alpha_annualized is described as inflated",
+    "Detected: advisory downgrading of rank_ic/harvey_t/DSR language around a multi-configuration search"
+  ],
+  "verification_triangulation": {
+    "ax_008_status": "FAIL",
+    "agree_with_claude": true,
+    "additional_perspective": "I agree with Claude's FAIL disposition, but not with treating the artifact trail and PIT checklist as complete. At least one additional independent source or reproducible code artifact is needed before finalization."
+  },
+  "alpha_specific_questions": [
+    "Can Alpha provide code-level proof that A084/A123 signals are built from PIT trailing inputs and C15-compliant loaders rather than ad hoc direct parquet/RDS reads?",
+    "If A123's t=-6.21 is short-leg-only and long-only PORT_t is 0.09, what validation justifies retaining it even as a DPL_FEATURE candidate?",
+    "Can Alpha report sector-neutral ICIR drop, recent-3Y/full ICIR ratio, top-decile liquidity at 2e8 KRW, monotonicity, and DSR or a formal RF-A6 waiver?"
+  ]
+}

@@ -1,0 +1,29 @@
+# v3 macro features ablation — EXTENDED window so COVID 2020-02-19 lands in a test fold.
+# Original b1_macro.yaml ends 2020-11-30 → COVID falls in dropped tail (cannot be evaluated).
+# This config extends date_end to 2024-12-31 so the post-COVID block forms a full
+# 504-obs walk-forward test window AND 2020-02-19 accrues its 21d forward return.
+# Run 2026-06-26 (forward-macro thread resume, 도훈 mandate).
+
+training:
+  sequence_length: 3
+  batch_size: 64
+  optimizer: adam
+  learning_rate: 0.003
+  clipnorm: 1.0
+  epochs: 300
+  early_stopping_patience: 5
+
+walk_forward:
+  train_min: 2008
+  test_window: 504
+
+data:
+  benchmark: kospi
+  bm_path: ".cache/benchmark.parquet"
+  alt_features_path: "04_Research/decision_framework/bearish_forecast_v2_alt_data/outputs/01_data/feature_panel_v1_alt.parquet"
+  fred_path: ".cache/fred_macro_wide.parquet"
+  krw_usd_path: ".cache/ecos_krw_usd.parquet"
+  date_start: "2001-04-06"
+  date_end: "2024-12-31"
+  horizons: [1, 21]
+  percent_scale: true

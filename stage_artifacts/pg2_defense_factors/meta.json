@@ -1,0 +1,84 @@
+{
+  "analysis": "PG2 defense factor contribution (Q07/M08/Q25) — canonical PORT_t escalation of 06-30 IC forensic",
+  "date": "2026-07-03",
+  "data_panel": "04_Research/pg2_forensics/intermediate/factor_panel_7f.parquet (268 months 2004-01~2026-04)",
+  "method": {
+    "port_t": "canonical_screen_bt (top20 EW long-only, 15bps one-way, NW lag-3, contract build_benchmark_compare)",
+    "benchmark": "IKS200 KOSPI200 total return, forward-aligned (beta-scan verified offset0 beta=0.917); vintage 2026-07-03 IKS200-fix, anchors matched (2026-03 -20.2%, 2026-05 +35.3%, 2026-06 +2.1%)",
+    "basis": "reconstructed defense sleeve from panel Z_Score_Aligned per-date re-z of EW mean; production score_eff = real book anchor (PORT_t 2.881); BOOK_recon PORT_t 2.509 internally-consistent LOO reference",
+    "pit": "C13 Z_Score_Aligned only; C14/C15 via load_month_factors upstream; regime/score at Date t, Ret_1m forward t+1; benchmark forward-aligned"
+  },
+  "key_results": {
+    "book_prod_port_t": 2.881,
+    "book_recon_port_t": 2.509,
+    "loo_delta_vs_recon": {
+      "remove_Q07": {
+        "d_port_t": -0.007,
+        "d_mdd_pp": 1.9,
+        "note": "PORT_t neutral, MDD worsens — defensive not alpha"
+      },
+      "remove_M08": {
+        "d_port_t": 0.269,
+        "d_mdd_pp": 3.7,
+        "note": "removal RAISES PORT_t (M08 alpha drag) but worsens MDD — diversification/protection not alpha"
+      },
+      "remove_Q25": {
+        "d_port_t": -0.117,
+        "d_mdd_pp": 1.8,
+        "note": "removal HURTS PORT_t — Q25 contributes realized alpha AND protection, NOT dead"
+      },
+      "remove_ALL_defense": {
+        "d_port_t": -0.115,
+        "d_mdd_pp": 3.6,
+        "d_calmar": -0.051,
+        "note": "defense sleeve nets positive PORT_t + meaningful MDD reduction"
+      }
+    },
+    "defensive_character": {
+      "Q07": {
+        "beta": 0.687,
+        "down_active": 0.0133,
+        "down_t": 4.13,
+        "up_active": -0.0136,
+        "verdict": "GENUINELY DEFENSIVE (countercyclical, lowest beta)"
+      },
+      "M08": {
+        "beta": 0.937,
+        "down_active": 0.0064,
+        "down_t": 1.23,
+        "up_active": 0.0055,
+        "verdict": "NOT DEFENSIVE (symmetric all-weather momentum; label-only defense)"
+      },
+      "Q25": {
+        "beta": 0.733,
+        "down_active": 0.0154,
+        "down_t": 4.42,
+        "up_active": -0.0123,
+        "verdict": "STRONGEST DEFENSIVE (best down-market protection despite dead recent IC)"
+      }
+    },
+    "orthogonality": {
+      "score_level_DEF_vs_CORE_spearman_median": 0.112,
+      "active_level_DEF_vs_CORE_cor": 0.575,
+      "note": "near-orthogonal at signal level (0.11); active cor 0.58 inflated by shared long-only market beta (measurement-graduation §6). M08 dominates DEF active variance (0.841)."
+    },
+    "recent_2021plus": {
+      "note": "ALL sleeves incl CORE went negative PORT_t in 2021+ (cohort-wide decay, not defense-specific). Q07 high recent IC 0.050 but PORT_t -1.225 (IC/PORT divergence). Q25 IC dead (-0.002) matches 06-30.",
+      "Q07_ic_recent": 0.0503,
+      "Q07_port_t_recent": -1.225,
+      "Q25_ic_recent": -0.0018,
+      "Q25_port_t_recent": -1.891,
+      "CORE_port_t_recent": -1.023
+    },
+    "overlay": {
+      "stress_months_n": 18,
+      "crisis_n": 3,
+      "note": "regime-conditional (CRISIS/CAUTION) DEF-CORE increment n.s. (sparse). Down-BM basis (n=113): defense protects but DEF-CORE increment +0.0018 n.s. — core also leans defensive. Overlay(m4xR05) and defense sleeve both de-risk in stress; overlap present but overlay operates via cash, defense via name selection."
+    }
+  },
+  "conclusion_vs_0630_IC": {
+    "Q07_primary": "PARTIAL — Q07 is the primary DEFENSIVE factor (down-t 4.13) but NOT the primary ALPHA (LOO d_port_t -0.007 neutral). IC-strength did not translate to realized alpha.",
+    "Q25_tiebreak": "OVERTURNED (upgrade) — Q25 is NOT mere tie-break; LOO removal HURTS PORT_t (-0.117) and it has the STRONGEST down-market protection (t 4.42). Its dead IC understated its portfolio value.",
+    "M08_diversification": "CONFIRMED — M08 is diversification/alpha not defense; removal RAISES PORT_t (+0.269) yet worsens MDD. Symmetric (down-t 1.23 n.s.). Weakest defensive claim."
+  }
+}

@@ -1,0 +1,15 @@
+================ buffering + score 앙상블 ================
+실행 2026-06-30 17:29:19.645699
+
+=== ① turnover buffering (base = flat316 tilt, buffering 없음) ===
+  [BASE(no buffer)     ] SR=1.11 MDD=38.3 calmar=0.86 | pt_full=+3.16 pt_18p=+2.29 oos=0.66 | TO=117%
+  [rank-buffer 30      ] SR=1.12 MDD=38.1 calmar=0.87 | pt_full=+3.19 pt_18p=+2.30 oos=0.65 | TO=114% | Δvs base t=+0.67
+  [rank-buffer 35      ] SR=1.12 MDD=38.6 calmar=0.87 | pt_full=+3.21 pt_18p=+2.36 oos=0.67 | TO=112% | Δvs base t=+1.68
+  [rank-buffer 40      ] SR=1.13 MDD=37.7 calmar=0.89 | pt_full=+3.25 pt_18p=+2.39 oos=0.66 | TO=111% | Δvs base t=+1.91
+  [wband 0.5%          ] SR=1.11 MDD=38.4 calmar=0.86 | pt_full=+3.17 pt_18p=+2.30 oos=0.66 | TO=116% | Δvs base t=+0.20
+  [wband 1.0%          ] SR=1.12 MDD=38.6 calmar=0.86 | pt_full=+3.19 pt_18p=+2.32 oos=0.66 | TO=115% | Δvs base t=+0.42
+  [buf35+wband0.5%     ] SR=1.12 MDD=38.8 calmar=0.86 | pt_full=+3.21 pt_18p=+2.37 oos=0.67 | TO=111% | Δvs base t=+1.46
+
+=== ② score-method 앙상블 rank-avg{flat,topK150,shrink} ===
+  [ENSEMBLE            ] SR=0.95 MDD=36.4 calmar=0.59 | pt_full=+2.31 pt_18p=+0.70 oos=-0.06 | TO=99% | Δvs base t=-2.75
+  [ENSEMBLE+buf35      ] SR=0.97 MDD=35.2 calmar=0.62 | pt_full=+2.32 pt_18p=+0.63 oos=-0.11 | TO=86% | Δvs base t=-2.69

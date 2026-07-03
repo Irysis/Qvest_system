@@ -36,7 +36,7 @@ compute_ccs <- function(ramp_state = list()) {
   score_or_nya("ACS", TRUE, .coverage(acs_paths))
   # DGS: 거버넌스 문서
   dgs_paths <- c("00_Lawbook/K_RAMP/K_RAMP_Codex_Recursive_Architecture_Prompt_v2.md",
-                 "docs/adr/ADR-ramp-0001-native-rebuild.md", "docs/adr/ADR-ramp-0002-deviation-register.md",
+                 "00_Lawbook/K_RAMP/adr/ADR-ramp-0001-native-rebuild.md", "00_Lawbook/K_RAMP/adr/ADR-ramp-0002-deviation-register.md",
                  "04_Research/ramp/reports/architecture_gap_log.md")
   score_or_nya("DGS", TRUE, .coverage(dgs_paths))
   # BDS: PIT/lookahead 방어(존재로 근사 — 실측은 ramp_data_validation 통과율)
@@ -56,7 +56,7 @@ compute_ccs <- function(ramp_state = list()) {
   if (gate < 4) nya <- c(nya, "RDDS")
   for (nm in c("CCS2","RMCS","IAES")) if (gate < 7) nya <- c(nya, nm)
   # RS: 재현성(seed/config/테스트)
-  rs_val <- .coverage(c("02_Infrastructure/ramp/ramp_config.yml", "tests/ramp"))
+  rs_val <- .coverage(c("02_Infrastructure/ramp/ramp_config.yml", "08_Tests/ramp"))
   score_or_nya("RS", TRUE, rs_val)
   # RIDS: axiom 파이프라인 준수
   rids_val <- ramp_state$rids %||% (if (dir.exists("qepm/memory/axioms/active/modes/ramp")) 70 else NA_real_)

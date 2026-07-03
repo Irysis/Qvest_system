@@ -1,0 +1,148 @@
+{
+  "task_id": "WT-D20260621_003",
+  "hypothesis": "C21_Flow_Confirmed_Revision",
+  "metric_type": "canonical_screen",
+  "engine": "canonical_screen_bt",
+  "n_months": 255,
+  "cost_model": "v2.4_kr_retail_15bps",
+  "universe": "KOSPI200_UNION_KOSDAQ150",
+  "date_range": ["2005-01-31", "2026-04-30"],
+  "anchor": {
+    "variant": "G",
+    "flow_window": "20d",
+    "revision_leg": "blend",
+    "top_n": 20,
+    "metric_type": "canonical_screen",
+    "PORT_t_nw_lag3": 0.938881,
+    "PORT_t_pvalue": 0.347792,
+    "information_ratio": 0.210081,
+    "net_sr": 0.210081,
+    "alpha_annualized": 0.031564,
+    "turnover_annual": 18.042188,
+    "n_months": 255,
+    "oos_retention_v2": -0.672115,
+    "calmar_approx": 0.047946
+  },
+  "variants": {
+    "P": {
+      "PORT_t": -0.146514,
+      "net_sr": -0.031505
+    },
+    "S": {
+      "PORT_t": 0.960064,
+      "net_sr": 0.214851
+    }
+  },
+  "marginals": {
+    "M_revOnly": {
+      "PORT_t": 2.794662,
+      "net_sr": 0.56268
+    },
+    "M_flowOnly": {
+      "PORT_t": -0.637539,
+      "net_sr": -0.132757
+    },
+    "M_linadd": {
+      "PORT_t": 0.042287,
+      "net_sr": 0.009268
+    }
+  },
+  "incrementality": {
+    "rho_active_vs_linadd": 0.851817,
+    "rho_score_spearman": 0.573481,
+    "delta_PORT_t": 0.896594,
+    "delta_net_SR": 0.200813,
+    "verdict": "INTERACTION_NOT_ADDITIVE"
+  },
+  "orthogonality": {
+    "score_rho": {
+      "INV08": 0.026525,
+      "C19": 0.358395,
+      "INV10": 0.335108,
+      "C02": 0.508084,
+      "C04": 0.324553
+    },
+    "active_rho": {
+      "INV08": 0.491305,
+      "C19": 0.50852,
+      "INV10": 0.605051
+    },
+    "target_PORT_t": {
+      "INV08": 0.149666,
+      "INV10": -2.762007,
+      "C19": 2.294843
+    }
+  },
+  "sector_neutral_robustness": {
+    "G_interaction": {
+      "icir_raw": 0.1544,
+      "icir_sn": 0.0202,
+      "harvey_t_raw": 2.466,
+      "harvey_t_sn": 0.322,
+      "verdict": "SPURIOUS_sector_driven"
+    },
+    "M_revOnly": {
+      "icir_raw": 0.3363,
+      "icir_sn": 0.1919,
+      "harvey_t_raw": 5.37,
+      "harvey_t_sn": 3.064,
+      "port_t_raw": 2.795,
+      "port_t_sn": 1.741,
+      "verdict": "SURVIVES_weakened"
+    }
+  },
+  "rank_ic_diagnostics": {
+    "M_revOnly": {
+      "rank_ic": 0.0301,
+      "icir": 0.3363,
+      "harvey_t": 5.37
+    },
+    "G": {
+      "rank_ic": 0.0131,
+      "icir": 0.1544,
+      "harvey_t": 2.466
+    },
+    "M_flowOnly": {
+      "rank_ic": -0.0151,
+      "icir": -0.1516,
+      "harvey_t": -2.422
+    }
+  },
+  "graduation_gates": {
+    "port_t_nw": {
+      "value": 0.939,
+      "hard": 2.95,
+      "pass": false
+    },
+    "oos_retention_v2": {
+      "value": -0.672,
+      "hard": 0.7,
+      "pass": false
+    },
+    "calmar_approx": {
+      "value": 0.048,
+      "hard": 0.64,
+      "pass": false
+    }
+  },
+  "pit_lineage": {
+    "C1": "cross-sectional z per sig_date, no full-sample",
+    "C2": "score Date<=t; forward Ret_1m compounded (t,t+1M] in returns_dt",
+    "C4": "consensus PIT at publish, Date<=sig_date",
+    "C10": "ADV 20d mean(Close*Vol) t-1 (adv20_lag1), liq 2e8",
+    "C13": "Z_Score_Aligned, no NEGATE/FLIP",
+    "C14": "all inputs Date<=sig_date; usable_date filter applied via roll_asof last-on-or-before",
+    "C15": "raw consensus/investor cache = approved direct-load (compute_consensus/investor path); ortho targets recomputed_from_cache (factor_db_daily stale) freshness-labeled"
+  },
+  "codex_round": {
+    "stance": "REVISE",
+    "veto": false,
+    "model": "gpt-5.5",
+    "concerns_resolved": ["C1_artifacts_emitted", "C2_flow_timing_immune_negative_leg", "C3_AX007_rejection_recorded", "C4_sector_neutral_run_confirms_G_spurious", "C5_C15_freshness_labeled", "C6_no_graduation_claim", "C7_routing_downgraded_to_diagnostic"]
+  },
+  "verdict": {
+    "graduation_candidate": false,
+    "screen_route": "none_for_interaction; revision_marginal=diagnostic_pending_book_marginal",
+    "selection_type": "chain"
+  }
+}

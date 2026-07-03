@@ -1,0 +1,10 @@
+{
+  "run_id": "P0_book100_2xwin_20260626130910",
+  "strategy_name": "P0_book100_2xwin",
+  "lookahead_prevention": "forecast_regime[ym==m] = NEXT-month prediction emitted at m-1 from <=m-1 data (Regime Forecaster v1 walk-forward); applied to return-month m directly, no extra shift. ETF daily returns compounded within month (no cross-month leak). Beginning-of-period weights via Return.portfolio.",
+  "survivorship_bias_control": "N/A — two-instrument sleeve (book NAV + single ETF); no cross-sectional universe selection. ETF series are realized listed prices.",
+  "description": "Predictive-gate inverse-ETF hedge: ret_h2x, w_h=0.00, gated=TRUE, win>=2016-09, ex-2026",
+  "universe": "STR_1715_AR_on_M4_R05_overlay_PG2 (book) + KODEX inverse sleeve",
+  "rebalance": "monthly",
+  "pit_checklist_reference": "C1-C15 (.claude/rules/pit.md); C5 overlay t-1 satisfied by forecast emit-at-m-1; C9 dd-lag N/A (no DD overlay here)."
+}

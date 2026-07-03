@@ -1,0 +1,26 @@
+{
+  "ref_kind": "alpha_package_inherit_ref",
+  "task_id": "WT-S20260626_001",
+  "wt_type": "sizing_only",
+  "parent_wt": "WT-D20260427_016",
+  "parent_strategy": "STR_1715_WT016_Iter31_GridBestProd",
+  "parent_strategy_path": "04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd",
+  "parent_alpha_package_path": "qepm/mailbox/worktask/WT-D20260427_016/alpha_package.json",
+  "parent_sha": "87662e5d4f92d98ac417a17ed9fdbd0d556c667f2df306e709207e655b724a26",
+  "base_sleeve": {
+    "base_strategy": "STR_1701 (Iter 11 PG2 active 80% — multi-sleeve composite) inherited into STR_1715",
+    "base_source_pkg": "qepm/mailbox/worktask/WT-D20260426_004/alpha_package.json",
+    "base_source_parquet": "stage_artifacts/WT_D20260426_007/alpha_scores.parquet",
+    "selection_objective": "icir"
+  },
+  "inherit_certs": ["alpha_discovery", "sr_provenance", "schedule_fidelity", "forge_package_validated"],
+  "cert_exempt": ["alpha_discovery"],
+  "no_new_alpha": true,
+  "new_discovery": false,
+  "alpha_engine_unchanged": true,
+  "alpha_inheritance_cor": 1.0,
+  "change_summary": "STR_1715 base sleeve alpha/alpha_vector/factor_specs 그대로 사용. 변경 사항은 오버레이 결합 연산자(risk_weight = beta_AR * beta_R05 곱셈 → max-cash min(beta_AR, beta_R05) 비-compounding)뿐 — 이는 risk/optimizer/forge 영역이며 alpha 영역 변경 아님. 신규 팩터/가설/factor discovery 일절 없음.",
+  "out_of_alpha_scope": "오버레이 결합 연산자 변경(곱셈 → max-cash min)은 sizing/overlay 영역. alpha role은 Sigma/공분산/weight/오버레이 결합을 건드리지 않음.",
+  "created_at": "2026-06-26T00:00:00+0900",
+  "created_by": "alpha-research"
+}

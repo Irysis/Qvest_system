@@ -1,0 +1,99 @@
+{
+  "schema_version": "alpha_search_strategy_manifest_v1",
+  "created_at": "2026-06-12T13:53:00+0900",
+  "mode": "alpha_search",
+  "strategy_id": "STR_AS_20260612_134025_400588",
+  "strategy_name": "Analyst Co-Coverage Lead-Lag Momentum",
+  "strategy_idea": "애널리스트 공동커버리지 리드-래그 모멘텀 (Graph ML 없이 단순 구현)",
+  "factor_engine_path": "02_Infrastructure/alpha_search/fe_leadlag_network.R",
+  "execution": {
+    "universe": "ALL",
+    "universe_n": 1415,
+    "n_holdings": 20,
+    "weight_method": "equal",
+    "commission": 0.0015,
+    "bt_result_path": "stage_artifacts/alpha_search/20260612_134025_400588/bt_result.rds"
+  },
+  "verdict": {
+    "grade": "F",
+    "score": 17.7,
+    "hurdle_pass": false,
+    "hard_fail": true,
+    "fail_reasons": [
+      "Turnover 1144% > 1100%",
+      "Structural drawdown (MDD>=70%, 45%+ days>=25%, max_underwater>=252d): MDD 98.6%, 45%+ episodes=4/15, max_underwater=4441/252"
+    ],
+    "f_grade_reasons": [
+      "게이트 사유: Turnover 1144% > 1100% | Structural drawdown (MDD>=70%, 45%+ days>=25%, max_underwater>=252d): MDD 98.6%, 45%+ episodes=4/15, max_underwater=4441/252",
+      "FMT-01 Structural MDD: MDD 98.6% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)",
+      "FMT-02 Factor Degeneration: IR -0.81 < -0.1 & 초과CAGR -24.7%p < 0 — KR에서 팩터 방향 역작동 의심",
+      "FMT-05 Turnover Toxicity: 연환산 회전율 1144% > 1,100% — 15bps 비용이 알파 소진",
+      "알파 부재: 정보비율 -0.81로 벤치 대비 기여가 음수/미약"
+    ],
+    "screening": {
+      "screen_pass": false,
+      "screen_route": "NONE",
+      "drawdown_tail_review": false,
+      "note": "탐색 게이트 — 자본/졸업 게이트 아님 (graduation HARD 불변). PIT만 절대."
+    }
+  },
+  "metrics": {
+    "CAGR": -14,
+    "AnnVol": 34.61,
+    "Sharpe": -0.405,
+    "Sharpe_m": -0.261,
+    "IR": -0.81,
+    "MDD": 98.62,
+    "Calmar": -0.142,
+    "Turnover_Ann": 1143.6,
+    "Top10_Conc": 50,
+    "Rolling3Y_Pos": 19.4,
+    "BM_Corr": 0.484,
+    "ES99_d": 8.42,
+    "ES99_m": 26.25,
+    "GradeA_Corr": null,
+    "Rolling6M_Hit": 40.8,
+    "Worst6M_Ret": -63.32,
+    "MaxConsecNegAlpha": 14,
+    "Rolling12M_Hit": 31.8
+  },
+  "excess_cagr_pct": -24.74,
+  "fmt": [
+    {
+      "code": "FMT-01",
+      "label": "Structural MDD",
+      "reason": "MDD 98.6% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)"
+    },
+    {
+      "code": "FMT-02",
+      "label": "Factor Degeneration",
+      "reason": "IR -0.81 < -0.1 & 초과CAGR -24.7%p < 0 — KR에서 팩터 방향 역작동 의심"
+    },
+    {
+      "code": "FMT-05",
+      "label": "Turnover Toxicity",
+      "reason": "연환산 회전율 1144% > 1,100% — 15bps 비용이 알파 소진"
+    }
+  ],
+  "authoritative": null,
+  "pit": {
+    "code_scan": "detect_lookahead",
+    "status": "CLEAN",
+    "factor_engine_path": "02_Infrastructure/alpha_search/fe_leadlag_network.R",
+    "violations": [],
+    "note": "Backfill re-ran code-level PIT scan on the current factor_engine_path."
+  },
+  "backtest_contract": {
+    "status": "OK",
+    "run_id": "ASBT_20260612_134025_400588",
+    "metric_type": "backtested",
+    "bt_result_path": "stage_artifacts/alpha_search/20260612_134025_400588/bt_result.rds",
+    "output_dir": "stage_artifacts/alpha_search/20260612_134025_400588",
+    "integrity_status": "WARNING",
+    "audit_pass": 15,
+    "audit_fail": 0,
+    "audit_warn": 1,
+    "validation_errors": [],
+    "note": "standard Backtest Result Contract backfilled without Telegram"
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "task_id": "WT-D20260614_002",
+  "validated_at": "2026-06-14 08:52:18.969766",
+  "pit_compliance": {
+    "c1_c15": "all factors via load_month_factors() (C15) + Z_Score_Aligned IC-dir PIT Usable_Date<=sig (C14) + quarterly/annual lag (C4)",
+    "status": "PASS"
+  },
+  "graduation_gate": {
+    "portfolio_alpha_t_nw": {
+      "value": 1.694,
+      "threshold": 2.95,
+      "severity": "hard",
+      "verdict": "FAIL"
+    },
+    "dsr": {
+      "value": {},
+      "threshold": 0.5,
+      "severity": "hard_sweep_only",
+      "applied": false,
+      "selection_type": "chain",
+      "verdict": "N/A"
+    },
+    "oos_retention": {
+      "value": -0.516,
+      "threshold": 0.7,
+      "band_fail": 0.5,
+      "verdict": "FAIL_HARD"
+    },
+    "calmar": {
+      "value": 0.356,
+      "threshold": 0.64,
+      "severity": "hard",
+      "verdict": "FAIL"
+    },
+    "rank_ic": {
+      "value": 0.0384,
+      "threshold": 0.04,
+      "severity": "advisory",
+      "verdict": "MARGINAL_FAIL"
+    },
+    "icir": {
+      "value": 0.224,
+      "threshold": 0.2,
+      "severity": "advisory",
+      "verdict": "PASS"
+    },
+    "harvey_t": {
+      "value_naive": 3.58,
+      "value_haircut": 2.36,
+      "threshold": 3,
+      "severity": "advisory",
+      "verdict": "MARGINAL"
+    },
+    "subperiod_stability": {
+      "value": 1,
+      "threshold": 0.5,
+      "severity": "advisory",
+      "verdict": "PASS"
+    }
+  },
+  "screening_tier": {
+    "screen_pass": false,
+    "reason": "oos_retention -0.516 + structural MDD; but SR 0.848>=0.7 신호력 존재 → screen_route candidate",
+    "screen_route": "OVERLAY_CANDIDATE / DPL_FEATURE (incumbent active corr 0.265 → blend marginal 가치)"
+  },
+  "universe_comparison": {
+    "note": "KR_top342 default used. ICIR 0.224 not <0.15 attenuation 영역 → v2 KR_TOP500_FREEFLOAT mandate 미발동. (L-227 trigger 불충족)",
+    "v2_run": false
+  },
+  "axiom_check": {
+    "ax001_v2": "D01/D02 defense 포함 — 조건부 평가 대상이나 standalone 전기간 SR으로 판정 안 함(crisis_alpha 별도). N/A standalone admit.",
+    "ax002": "모든 수치 harness/contract 경유 실측. proxy graduation 선언 없음.",
+    "ax004": "quality multi-axis composite(Q01/Q04/Q07/Q09) — single-signal 아님, AX-004 EXCLUSION 정합."
+  },
+  "verdict": "STANDALONE_GRADUATION_FAIL (PORT_t 1.69 / oos -0.52 / calmar 0.36). screening 신호력 존재 → risk/optimizer overlay 개선 + blend marginal IR 판정으로 진행.",
+  "revision_added": {
+    "walk_forward_panel_months": 256,
+    "sector_neutral_ic_retention": 0.794,
+    "sector_neutral_verdict": "PASS (79.4% >> 30% RF-A4)",
+    "ablation_drop_quality_meanic": 0.0074,
+    "ablation_drop_momentum_meanic": 0.0262,
+    "ablation_full_meanic": 0.0265,
+    "ablation_dqv6_meanic": 0.0262,
+    "ablation_verdict": "momentum 3f = noise(drop 무변), quality 지배(drop -72%). compact DQV6 ~= FULL. Factor-Zoo 축소 권고.",
+    "top30_in_universe_frac": 0.64,
+    "universe_verdict": "64% in K200uKQ150 — deployment restrict 필요(Optimizer)"
+  },
+  "codex_round": {
+    "stance": "REVISE",
+    "resolved": true,
+    "disposition": "3 ACCEPT + 1 PARTIAL + 2 REBUTTAL + 1 self-audit",
+    "note_ref": "alpha_challenge_note.md"
+  }
+}

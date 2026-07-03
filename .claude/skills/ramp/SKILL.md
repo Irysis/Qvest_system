@@ -52,5 +52,5 @@ proxy 손계산 금지 → canonical_screen_bt/build_bt_result. **CCS 13-score**
 완료조건 8: 파일생성/수정 · 테스트실행 · 실패명시 · 점수영향 · 문서갱신 · 게이트통과여부 · promote/revert판단 · 다음증분. 응답 전 self-check 8문(현 gate/무엇만듦/테스트/결과정직/점수/위반없음/문서/다음게이트).
 
 ## 참조 · 실행
-- 진입: `04_Research/ramp/run_ramp.R` 또는 `scripts/ramp/debug_one_*.R`. 환경: QM_ROOT=원본·PYTHONUTF8=1·R PATH.
+- 진입: `04_Research/ramp/run_ramp.R` 또는 `02_Infrastructure/ramp/debug/debug_one_*.R`. 환경: QM_ROOT=원본·PYTHONUTF8=1·R PATH.
 - 빌드플랜: `C:/Users/99922/.claude/plans/misty-imagining-feather.md`. 구현상태(정직): Phase 1(스캐폴드+Gate2~5) — 나머지 후속.

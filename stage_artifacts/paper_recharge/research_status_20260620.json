@@ -1,0 +1,50 @@
+{
+  "date": "20260620",
+  "schema": "paper_research_dispatch_v1",
+  "note": "라우터 큐 → 리서치 액션 배선. optimizer=Σ배터리 ΔIR게이트 자동, risk/regime=수동 flag. 자본 admit 없음(governor 정지).",
+  "actions": {
+    "optimizer": {
+      "n": 7,
+      "papers": [
+        "Which Portfolios? The Construction Dependence of Factor Model Performance",
+        "A Declining CVaR Glidepath Framework for Target-Date Fund Design with an Application to the Chilean Pension System",
+        "Two Sides of Schur Damping: High-Dimensional Pseudo-Likelihoods and Portfolio Allocation",
+        "Mean-Variance Optimization in Ambiguous Financial Markets with Learning",
+        "Benchmarking Deep Time Series Models for Equity Portfolios",
+        "Addressing Market Regime Changes and Heavy-Tailed Returns in Portfolio Optimization via Bayesian VAR and Elliptical Black-Litterman",
+        "Anticipatory Portfolio Optimization"
+      ],
+      "verdict": {
+        "book_ir": 1.209,
+        "best_method": "EW",
+        "best_ir": 1.106,
+        "delta_ir": -0.103,
+        "gate": 0.05,
+        "beats_book": false,
+        "verdict": "가중 레버 아님: book IR 1.209 최고(최선 타방법 EW 1.106, ΔIR=-0.103, 게이트 0.05 미달) → 채택 0"
+      }
+    },
+    "risk": {
+      "n": 8,
+      "papers": [
+        "Trends, Volatility, Correlations, and Critical Phenomena in Financial Markets",
+        "Fitting Accumulated Stock Returns with Tempered Skew t-Distribution",
+        "Conformal Prediction Intervals with Tail-Specific Guarantees",
+        "Reverse Stress Testing for Multivariate Scenarios: A Conditional Framework for Stressed Time Series",
+        "A Structural Matrix Autoregressive Model for the Joint Dynamics of Volume, Volatility, and Returns",
+        "Information Networks of Stock Prices",
+        "ReSGA: A Large Tail Risk Model for Learning Value-at-Risk and Expected Shortfall",
+        "Forward-Looking Stress Testing Under Macro Scenarios: Stable SVaR Estimation Using a Hybrid GPR-HS Framework with SACS"
+      ],
+      "action": "risk-research stress/Σ 모듈 후보 — 수동 분석(자동 method 추출 불가)"
+    },
+    "regime": {
+      "n": 2,
+      "papers": [
+        "Robust Transformer-Based One-Step Stock Index Forecasting via Shifted Data Augmentation",
+        "Continuous Cash-Overlay Filters for a Static Growth--Defensive Risk Sleeve: Slow-Tail Compensation, V-Shape Crash Brakes, Walk-Forward Validation, and Max-Cash Combination"
+      ],
+      "action": "H2 오버레이 후보 — candidate timing signal 추출 필요(자동 불가, 수동)"
+    }
+  }
+}

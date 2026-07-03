@@ -1,0 +1,15 @@
+{
+  "item_id": "MF_CC1_SCORE_WEIGHTED",
+  "strategy_name": "Score-Weighted 포트폴리오 — EW 대신 composite score 비례 가중",
+  "status": "NOT_BACKTESTED",
+  "execution_class": "BUILD_THEN_RUN",
+  "direct_status": "DIRECT_CODE_REQUIRED_UNMAPPED_SPEC",
+  "reason": "No explicit Factor DB mapping or supported direct harness implementation was found.",
+  "spec_excerpt": "Score-Weighted 포트폴리오 — EW 대신 composite score 비례 가중 MF_CC1_SCORE_WEIGHTED multifactor_construction exploit Forge contract/spec requires code generation before backtest Forge contract/spec requires code generation before backtest MF_CC1 multifactor_construction 30 EW(1/30)는 모든 종목에 동일 확신. Score-weighted는 composite score 높은 종목에 더 많이 투자. 확신도 반영 → alpha 극대화. L-14 EW>IVOL 교훈은 단일팩터 기준 — 멀티팩터 composite에서는 score-weighted가 우위일 수 있음. 1. MF_A1 composite score 계산 → Top 30 선정 2. 가중 w_i = score_i / sum(score_top30), max_w = 10% 3. 월간 리밸런싱 + BZ(45/30) A linear score weight (score / sum) 0.1 B softmax weight (exp(score/T) / sum) 1 0.1 C rank weight (inverse rank / sum) 0.1 DD_med only + regime_engine_daily.R + VT 0.25 MF_A1(EW)과 동일 종목, 가중만 다름 → 순수 가중 효과 측정",
+  "validation": {
+    "parse_ok": true,
+    "pit_status": "NOT_RUN",
+    "contract_status": "NO_SYNTHETIC_PROXY"
+  },
+  "created_at": "2026-06-12T22:26:21+0900"
+}

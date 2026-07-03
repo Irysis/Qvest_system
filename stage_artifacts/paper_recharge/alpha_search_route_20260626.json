@@ -1,0 +1,399 @@
+{
+  "date": "20260626",
+  "autorun": 0,
+  "max_alpha": 2,
+  "router": "Q-Lead inline (paper_router_prompt v2 STEP1+2, headless 미사용)",
+  "counts_by_route": {
+    "alpha": 3,
+    "optimizer": 8,
+    "risk": 8,
+    "regime": 3,
+    "skip": 12
+  },
+  "n_papers": 34,
+  "n_arxiv": 34,
+  "n_curated": 0,
+  "n_new_routed": 14,
+  "n_reused_from_0620": 20,
+  "n_factor_candidates": 0,
+  "n_factor_flags_total": 4,
+  "factor_candidates_all": [
+    {
+      "id": "2606.23596",
+      "name": "market_body_tail_leg",
+      "verdict": "uncertain",
+      "route": "risk"
+    },
+    {
+      "id": "2606.22719",
+      "name": "llm_nowcast_factor_rank",
+      "verdict": "infeasible",
+      "route": "alpha"
+    },
+    {
+      "id": "2606.08586",
+      "name": "xsec_topological_anomaly_score",
+      "verdict": "infeasible",
+      "route": "alpha"
+    },
+    {
+      "id": "2605.25894",
+      "name": "ea_day_multimodal_direction",
+      "verdict": "infeasible",
+      "route": "alpha"
+    }
+  ],
+  "new_paper_ids": [
+    "2606.26031",
+    "2606.25696",
+    "2606.25007",
+    "2606.24019",
+    "2606.23596",
+    "2606.23492",
+    "2606.23367",
+    "2606.23337",
+    "2606.23032",
+    "2606.22884",
+    "2606.22719",
+    "2606.22162",
+    "2606.21515",
+    "2606.20903"
+  ],
+  "note": "신규 14편(06-21~26, id>2606.20485) 새 라우팅 + 20편 06-20 재사용. testable 신규=0(신선 KR 횡단면 알파 희귀). p_index/ReSGA는 이미 처리·QUAR(done).",
+  "papers": [
+    {
+      "title": "Geometrically convex return risk measures on AM-algebras",
+      "id": "2606.26031",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "기하볼록 수익위험측도 on AM-대수 — 위험측도 공리론(추상 함수해석). 종목신호·구성법 아님"
+    },
+    {
+      "title": "A Two-Stage Decision Support System for Sustainability-Aware Long Short Portfolio Optimization",
+      "id": "2606.25696",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "2단계 ESG long-short 포트최적화(TODIMSort+MEREC 다기준가중) — 포트 구성/가중법. ESG=alt-data라 팩터불가, 가중방법론만 연료"
+    },
+    {
+      "title": "Multi-Stream Temporal Fusion for Financial Fraud Detection",
+      "id": "2606.25007",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "디지털뱅킹 사기탐지(멀티스트림 트랜잭션 Transformer) — 범위밖"
+    },
+    {
+      "title": "Empirical Confirmation of the Square-Root Law of Market Impact in a U.S. Large-Cap Equity",
+      "id": "2606.24019",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "시장충격 square-root law (AAPL ITCH tick, 0.5B events) — 마이크로구조/intraday. 범위밖"
+    },
+    {
+      "title": "Anatomy of the Market: A Body-Tail Test of Factor Models",
+      "id": "2606.23596",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": false,
+      "factor_candidate": {
+        "name": "market_body_tail_leg",
+        "def": "시장포트를 동적 가치가중 body/tail leg로 분해(SDF 가격오차 vs maxSharpe)",
+        "novel": true,
+        "kr_feasible": false,
+        "verdict": "uncertain",
+        "confidence": "low"
+      },
+      "reason": "시장 body/tail 분해 팩터모델 검정(SDF·Sharpe·CRSP) — 자산가격/팩터구조. body/tail은 시장수준 분해라 per-stock 횡단면신호 아님(uncertain)"
+    },
+    {
+      "title": "Continuous Hidden Markov Models for Equity Returns: Heavy-Tail Emission Families and Regime-Conditional Value-at-Risk",
+      "id": "2606.23492",
+      "source": "arxiv",
+      "route": "regime",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "연속 HMM 주식수익 heavy-tail emission family + regime-conditional — 국면탐지/합성수익 생성기"
+    },
+    {
+      "title": "Asymmetry PRISM: A CPU/GPU Portfolio Optimization Engine for Deadline-Bounded Institutional Rebalancing",
+      "id": "2606.23367",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Asymmetry PRISM CPU/GPU 포트최적화 엔진(turnover/exposure/exclusion/tax 제약, deadline-bounded 리밸) — 최적화 엔진/구현"
+    },
+    {
+      "title": "When Staking Rewards Compound: Measuring the Impact of Ethereum's Pectra Upgrade",
+      "id": "2606.23337",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "이더리움 Pectra 업그레이드 스테이킹 보상 복리 — 크립토. 범위밖"
+    },
+    {
+      "title": "IPO Finance Agent: Evaluation of LLM Financial Analysts beyond Finance Agent v2, with Automated Rubric Generation -- the Case of the SpaceX (SPCX) IPO",
+      "id": "2606.23032",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "IPO Finance Agent — LLM 금융분석 에이전트 평가(Finance Agent v2 이후). LLM 벤치/에이전트. 범위밖"
+    },
+    {
+      "title": "Universal Value-at-Risk superadditivity",
+      "id": "2606.22884",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Universal VaR superadditivity — 중꼬리 손실서 VaR 초가법성(모든 확률수준). 위험집계 방법론(리스크모델 주의)"
+    },
+    {
+      "title": "Leakage-Aware Benchmarking of LLM Forecasting: Real-Time Nowcasts as the Decision-Time Input for Macro Factor Ranking",
+      "id": "2606.22719",
+      "source": "arxiv",
+      "route": "alpha",
+      "kr_feasible": false,
+      "factor_candidate": {
+        "name": "llm_nowcast_factor_rank",
+        "def": "결정시점 real-time nowcast를 입력으로 leakage-controlled equity factor ranking(7B RAG LLM)",
+        "novel": false,
+        "kr_feasible": false,
+        "verdict": "infeasible",
+        "confidence": "medium"
+      },
+      "reason": "Leakage-aware LLM 예측 벤치 + 결정시점 nowcast로 equity factor ranking — PIT 팩터랭킹 개념(우리 PIT규율과 정합). 신호=LLM/매크로nowcast라 alt-data, kr_feasible 불가"
+    },
+    {
+      "title": "Temporal Coarse-Graining of Multi-Sector Default Count Data Generates Posterior-Implied Copulas",
+      "id": "2606.22162",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "다섹터 부도카운트 시간 조대화(coarse-graining) → posterior 내재 코퓰라 — 의존구조/코퓰라 모델(credit 소스 주의, 방법론만)"
+    },
+    {
+      "title": "A Censored Transformed Model for Proportional Outcomes with Boundary Mass and an Application to Loss Given Default Modeling",
+      "id": "2606.21515",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "ZOC-TN 경계질량 비례응답 검열변환모델(0/1 mass) — 통계방법(recovery/LGD류 적용). 종목 횡단면신호 아님"
+    },
+    {
+      "title": "Reinforcement Learning for Risk-Sensitive Investment Management: a Free Energy--Entropy Duality Approach",
+      "id": "2606.20903",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "위험민감 투자관리 RL(자유에너지-엔트로피 쌍대성, 벤치마크 자산배분) — RL 배분 방법론"
+    },
+    {
+      "title": "Optimal Order of Multi-Agent and General Many-Body Systems",
+      "id": "2606.20485",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "멀티에이전트/다체계 일반이론(power·response 함수→거시질서). 종목신호·포트구성법 아님 [06-20 재사용]"
+    },
+    {
+      "title": "Trends, Volatility, Correlations, and Critical Phenomena in Financial Markets",
+      "id": "2606.20145",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "현재 추세강도로 미래 변동성·상관 예측(2차다항) — 공분산/리스크 forecasting. 추세=모멘텀 기존팩터 중복이라 신규팩터 아님 [06-20 재사용]"
+    },
+    {
+      "title": "How to spot outliers: an Ensemble Anomaly Detection Framework",
+      "id": "2606.20079",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "투자은행 리스크계산 무결성 실시간 이상탐지(EQAF) — 운영리스크/데이터품질, 포트 risk model 아님 [06-20 재사용]"
+    },
+    {
+      "title": "Which Portfolios? The Construction Dependence of Factor Model Performance",
+      "id": "2606.19550",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "팩터모델 성과가 test-asset 구성(선택·가중·보유·리밸)에 의존 — 포트 구성/가중 discipline. optimizer 구성민감도 소스 [06-20 재사용]"
+    },
+    {
+      "title": "Fitting Accumulated Stock Returns with Tempered Skew t-Distribution",
+      "id": "2606.19318",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "S&P 다일누적수익 tempered Skew-t 적합 — 꼬리분포 모델링(횡단면 종목신호 아님) [06-20 재사용]"
+    },
+    {
+      "title": "Robust Transformer-Based One-Step Stock Index Forecasting via Shifted Data Augmentation",
+      "id": "2606.15701",
+      "source": "arxiv",
+      "route": "regime",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Transformer 1-step 지수 예측(VN30/S&P) + SDA 증강 — 지수레벨 타이밍 소스(저확신, 배포룰 아님) [06-20 재사용]"
+    },
+    {
+      "title": "Belief at Risk: Quantifying Agentic AI Model Risk with LLM-Inferred Bayesian State Filters",
+      "id": "2606.15473",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "LLM-추론 베이지안 상태필터로 Agentic AI 리스크 정량화 — LLM 에이전트 [06-20 재사용]"
+    },
+    {
+      "title": "Composite likelihood inference of fractional Gaussian processes with sequentially optimal subset selection",
+      "id": "2606.11962",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "fractional Gaussian 합성우도 추정 + Godambe 부분집합 설계 — 추정이론(직접 포트응용 부재) [06-20 재사용]"
+    },
+    {
+      "title": "Mean-Variance Optimization in Ambiguous Financial Markets with Learning",
+      "id": "2606.11318",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "drift 모호성+학습 하 평균-분산 최적화 — robust/ambiguity MVO(optimizer) [06-20 재사용]"
+    },
+    {
+      "title": "Benchmarking Deep Time Series Models for Equity Portfolios",
+      "id": "2606.09420",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "15개 딥/통계 TS 모델 equity 벤치 + 제약 quadratic 포트 layer + deployment-adjusted acceptability — 단일알파 아님, 구현/optimizer discipline [06-20 재사용]"
+    },
+    {
+      "title": "Reverse Stress Testing for Multivariate Scenarios: A Conditional Framework for Stressed Time Series",
+      "id": "2606.09274",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "단일 외생충격→다변량 스트레스 시나리오 역설계(reverse stress test) — risk 스트레스 [06-20 재사용]"
+    },
+    {
+      "title": "Addressing Market Regime Changes and Heavy-Tailed Returns in Portfolio Optimization via Bayesian VAR and Elliptical Black-Litterman",
+      "id": "2606.09104",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "BAVAR-BLED(베이지안VAR+타원형 Black-Litterman) TD3 DRL 배분, regime/heavy-tail 대응 — 배분방법(optimizer) [06-20 재사용]"
+    },
+    {
+      "title": "Continuous Cash-Overlay Filters for a Static Growth--Defensive Risk Sleeve: Slow-Tail Compensation, V-Shape Crash Brakes, Walk-Forward Validation, and Max-Cash Combination",
+      "id": "2606.09025",
+      "source": "arxiv",
+      "route": "regime",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "성장-방어 슬리브 위 연속 현금-오버레이(slow-tail+V-shape 크래시 브레이크, walk-forward) — 오버레이/타이밍(regime) [06-20 재사용]"
+    },
+    {
+      "title": "Cross-sectional topological anomaly scores and intraday return predictability in the S&P 500: A BallMapper, decoder-conditional VAE, and Function-on-Function regression approach",
+      "id": "2606.08586",
+      "source": "arxiv",
+      "route": "alpha",
+      "kr_feasible": false,
+      "factor_candidate": {
+        "name": "xsec_topological_anomaly_score",
+        "def": "종목별 intraday bar Takens delay 임베딩→BallMapper 그래프→decoder-conditional VAE 점수(시장+peer 조건부 위상 이상치)",
+        "novel": true,
+        "kr_feasible": false,
+        "verdict": "infeasible",
+        "confidence": "medium"
+      },
+      "reason": "횡단면 위상 이상치 점수 intraday 수익예측(S&P 10종목) — 횡단면이나 intraday tick/Takens 임베딩 필수 → KR 일별 RAWDATA로 불가 [06-20 재사용]"
+    },
+    {
+      "title": "A Structural Matrix Autoregressive Model for the Joint Dynamics of Volume, Volatility, and Returns",
+      "id": "2606.08141",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Structural Matrix AR(SMAR): 수익·실현변동성·거래량 공동동학+횡단면의존(MDH 식별) — 공동위험/spillover 구조모델(risk) [06-20 재사용]"
+    },
+    {
+      "title": "Anticipatory Portfolio Optimization",
+      "id": "2606.04258",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Anticipatory 포트 최적화: enlarged filtration/horizon forecast/market impact enriched 최적화 + 과적합 분리 — optimizer 이론 [06-20 재사용]"
+    },
+    {
+      "title": "Deep Learning Forecasting of the U.S. Aggregate Bond Index",
+      "id": "2605.27977",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "미국 종합채권지수 딥러닝 예측(fractional differencing) — 채권/고정수익(KR 미적용) [06-20 재사용]"
+    },
+    {
+      "title": "PortBench: A Correlation-Aware, Full-Pipeline Benchmark for LLM-Driven Portfolio Management",
+      "id": "2605.27887",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "PortBench: 상관인지 LLM 포트관리 벤치마크 — LLM 벤치/데이터셋 [06-20 재사용]"
+    },
+    {
+      "title": "Forward-Looking Stress Testing Under Macro Scenarios: Stable SVaR Estimation Using a Hybrid GPR-HS Framework with SACS",
+      "id": "2606.07575",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "거시시나리오 forward-looking 스트레스(SVaR, GPR-HS+SACS) — risk 스트레스 [06-20 재사용]"
+    },
+    {
+      "title": "Predicting Stock Price Direction on Earnings Announcement Days using Multi-modal Deep Learning",
+      "id": "2605.25894",
+      "source": "arxiv",
+      "route": "alpha",
+      "kr_feasible": false,
+      "factor_candidate": {
+        "name": "ea_day_multimodal_direction",
+        "def": "실적발표일 방향예측 멀티모달: FinBERT 뉴스감성+펀더멘털+기술지표. 뉴스감성=alt-data(금지), 잔여신호=기존 V/Q/T 중복",
+        "novel": true,
+        "kr_feasible": false,
+        "verdict": "infeasible",
+        "confidence": "medium"
+      },
+      "reason": "실적발표일 주가방향 멀티모달 DL(FinBERT 뉴스감성+15 fundamentals+3 technical) — 횡단면 종목방향이나 핵심 novelty=뉴스감성(대체데이터 금지). 비감성부는 fundamentals/technical 중복 [06-20 재사용]"
+    }
+  ]
+}

@@ -1,0 +1,1594 @@
+{
+  "cnn_sstd_h1_paper_only": {
+    "config": {
+      "arch": "cnn",
+      "dist": "skewed_t",
+      "horizon": 1,
+      "feature_set": "paper_only"
+    },
+    "n_features": 2,
+    "feature_names": [
+      "log_ret",
+      "gkyz_252"
+    ],
+    "n_test_total": 2520,
+    "crps_pooled": 0.5506611466407776,
+    "nll_pooled": 1.3698999881744385,
+    "var_05_backtest_pooled": {
+      "kupiec_uc": {
+        "test_stat": 8.93058682655169,
+        "p_value": 0.002804342312360819,
+        "pass_at_005": false,
+        "n_breaches": 160,
+        "n_total": 2520,
+        "pi_hat": 0.06349206349206349,
+        "alpha_target": 0.05
+      },
+      "christoffersen_ind": {
+        "test_stat": 20.75831794630085,
+        "p_value": 5.210476731631886e-06,
+        "pass_at_005": false,
+        "pi_01": 0.05680373039423484,
+        "pi_11": 0.1625,
+        "transition_counts": {
+          "n00": 2225,
+          "n01": 134,
+          "n10": 134,
+          "n11": 26
+        }
+      },
+      "christoffersen_cc": {
+        "test_stat": 29.68890477285254,
+        "p_value": 3.573849350901881e-07,
+        "pass_at_005": false,
+        "uc": {
+          "test_stat": 8.93058682655169,
+          "p_value": 0.002804342312360819,
+          "pass_at_005": false,
+          "n_breaches": 160,
+          "n_total": 2520,
+          "pi_hat": 0.06349206349206349,
+          "alpha_target": 0.05
+        },
+        "ind": {
+          "test_stat": 20.75831794630085,
+          "p_value": 5.210476731631886e-06,
+          "pass_at_005": false,
+          "pi_01": 0.05680373039423484,
+          "pi_11": 0.1625,
+          "transition_counts": {
+            "n00": 2225,
+            "n01": 134,
+            "n10": 134,
+            "n11": 26
+          }
+        }
+      }
+    },
+    "var_01_backtest_pooled": {
+      "kupiec_uc": {
+        "test_stat": 10.243799325315848,
+        "p_value": 0.0013714482228207592,
+        "pass_at_005": false,
+        "n_breaches": 11,
+        "n_total": 2520,
+        "pi_hat": 0.004365079365079365,
+        "alpha_target": 0.01
+      },
+      "christoffersen_ind": {
+        "test_stat": 0.09649153743447414,
+        "p_value": 0.7560812564499328,
+        "pass_at_005": true,
+        "pi_01": 0.0043859649122807015,
+        "pi_11": 0.0,
+        "transition_counts": {
+          "n00": 2497,
+          "n01": 11,
+          "n10": 11,
+          "n11": 0
+        }
+      },
+      "christoffersen_cc": {
+        "test_stat": 10.340290862750322,
+        "p_value": 0.005683742164671268,
+        "pass_at_005": false,
+        "uc": {
+          "test_stat": 10.243799325315848,
+          "p_value": 0.0013714482228207592,
+          "pass_at_005": false,
+          "n_breaches": 11,
+          "n_total": 2520,
+          "pi_hat": 0.004365079365079365,
+          "alpha_target": 0.01
+        },
+        "ind": {
+          "test_stat": 0.09649153743447414,
+          "p_value": 0.7560812564499328,
+          "pass_at_005": true,
+          "pi_01": 0.0043859649122807015,
+          "pi_11": 0.0,
+          "transition_counts": {
+            "n00": 2497,
+            "n01": 11,
+            "n10": 11,
+            "n11": 0
+          }
+        }
+      }
+    },
+    "pit_chi_square_pooled": {
+      "test_stat": 347.6507936507936,
+      "p_value": 0.0,
+      "pass_at_005": false,
+      "n_bins": 10,
+      "observed_counts": [
+        372,
+        378,
+        334,
+        265,
+        208,
+        188,
+        299,
+        239,
+        175,
+        62
+      ],
+      "expected_per_bin": 252.0
+    },
+    "window_metrics": [
+      {
+        "window_idx": 0,
+        "crps_mean": 0.6294214129447937,
+        "n_obs": 504,
+        "best_val_loss": 1.9405012130737305,
+        "var_05_kupiec_pass": true
+      },
+      {
+        "window_idx": 1,
+        "crps_mean": 0.7059475183486938,
+        "n_obs": 504,
+        "best_val_loss": 1.783876657485962,
+        "var_05_kupiec_pass": true
+      },
+      {
+        "window_idx": 2,
+        "crps_mean": 0.494524747133255,
+        "n_obs": 504,
+        "best_val_loss": 1.580655813217163,
+        "var_05_kupiec_pass": false
+      },
+      {
+        "window_idx": 3,
+        "crps_mean": 0.4301639199256897,
+        "n_obs": 504,
+        "best_val_loss": 1.3894039392471313,
+        "var_05_kupiec_pass": true
+      },
+      {
+        "window_idx": 4,
+        "crps_mean": 0.4932481348514557,
+        "n_obs": 504,
+        "best_val_loss": 1.231448769569397,
+        "var_05_kupiec_pass": false
+      }
+    ],
+    "bear_date_evaluations": {
+      "Lehman_GFC_2008-09-15": {
+        "in_test_set": false
+      },
+      "Euro_Crisis_2011-08-08": {
+        "in_test_set": true,
+        "forecast_date": "2011-08-08",
+        "y_actual": -3.7107887268066406,
+        "p_minus_5pct": 0.0055,
+        "p_minus_7pct": 0.0025,
+        "p_minus_10pct": 0.001
+      },
+      "COVID_2020-02-19": {
+        "in_test_set": false
+      }
+    },
+    "bear_probabilities_summary": {
+      "p_minus_5pct_mean": 0.0075599206349206355,
+      "p_minus_5pct_max": 0.0635,
+      "p_minus_10pct_mean": 0.0024069444444444446,
+      "p_minus_10pct_max": 0.031
+    }
+  },
+  "cnn_sstd_h1_with_alt": {
+    "config": {
+      "arch": "cnn",
+      "dist": "skewed_t",
+      "horizon": 1,
+      "feature_set": "with_alt"
+    },
+    "n_features": 2,
+    "feature_names": [
+      "log_ret",
+      "gkyz_252"
+    ],
+    "n_test_total": 2520,
+    "crps_pooled": 0.5506611466407776,
+    "nll_pooled": 1.3698999881744385,
+    "var_05_backtest_pooled": {
+      "kupiec_uc": {
+        "test_stat": 8.93058682655169,
+        "p_value": 0.002804342312360819,
+        "pass_at_005": false,
+        "n_breaches": 160,
+        "n_total": 2520,
+        "pi_hat": 0.06349206349206349,
+        "alpha_target": 0.05
+      },
+      "christoffersen_ind": {
+        "test_stat": 20.75831794630085,
+        "p_value": 5.210476731631886e-06,
+        "pass_at_005": false,
+        "pi_01": 0.05680373039423484,
+        "pi_11": 0.1625,
+        "transition_counts": {
+          "n00": 2225,
+          "n01": 134,
+          "n10": 134,
+          "n11": 26
+        }
+      },
+      "christoffersen_cc": {
+        "test_stat": 29.68890477285254,
+        "p_value": 3.573849350901881e-07,
+        "pass_at_005": false,
+        "uc": {
+          "test_stat": 8.93058682655169,
+          "p_value": 0.002804342312360819,
+          "pass_at_005": false,
+          "n_breaches": 160,
+          "n_total": 2520,
+          "pi_hat": 0.06349206349206349,
+          "alpha_target": 0.05
+        },
+        "ind": {
+          "test_stat": 20.75831794630085,
+          "p_value": 5.210476731631886e-06,
+          "pass_at_005": false,
+          "pi_01": 0.05680373039423484,
+          "pi_11": 0.1625,
+          "transition_counts": {
+            "n00": 2225,
+            "n01": 134,
+            "n10": 134,
+            "n11": 26
+          }
+        }
+      }
+    },
+    "var_01_backtest_pooled": {
+      "kupiec_uc": {
+        "test_stat": 10.243799325315848,
+        "p_value": 0.0013714482228207592,
+        "pass_at_005": false,
+        "n_breaches": 11,
+        "n_total": 2520,
+        "pi_hat": 0.004365079365079365,
+        "alpha_target": 0.01
+      },
+      "christoffersen_ind": {
+        "test_stat": 0.09649153743447414,
+        "p_value": 0.7560812564499328,
+        "pass_at_005": true,
+        "pi_01": 0.0043859649122807015,
+        "pi_11": 0.0,
+        "transition_counts": {
+          "n00": 2497,
+          "n01": 11,
+          "n10": 11,
+          "n11": 0
+        }
+      },
+      "christoffersen_cc": {
+        "test_stat": 10.340290862750322,
+        "p_value": 0.005683742164671268,
+        "pass_at_005": false,
+        "uc": {
+          "test_stat": 10.243799325315848,
+          "p_value": 0.0013714482228207592,
+          "pass_at_005": false,
+          "n_breaches": 11,
+          "n_total": 2520,
+          "pi_hat": 0.004365079365079365,
+          "alpha_target": 0.01
+        },
+        "ind": {
+          "test_stat": 0.09649153743447414,
+          "p_value": 0.7560812564499328,
+          "pass_at_005": true,
+          "pi_01": 0.0043859649122807015,
+          "pi_11": 0.0,
+          "transition_counts": {
+            "n00": 2497,
+            "n01": 11,
+            "n10": 11,
+            "n11": 0
+          }
+        }
+      }
+    },
+    "pit_chi_square_pooled": {
+      "test_stat": 347.6507936507936,
+      "p_value": 0.0,
+      "pass_at_005": false,
+      "n_bins": 10,
+      "observed_counts": [
+        372,
+        378,
+        334,
+        265,
+        208,
+        188,
+        299,
+        239,
+        175,
+        62
+      ],
+      "expected_per_bin": 252.0
+    },
+    "window_metrics": [
+      {
+        "window_idx": 0,
+        "crps_mean": 0.6294214129447937,
+        "n_obs": 504,
+        "best_val_loss": 1.9405012130737305,
+        "var_05_kupiec_pass": true
+      },
+      {
+        "window_idx": 1,
+        "crps_mean": 0.7059475183486938,
+        "n_obs": 504,
+        "best_val_loss": 1.783876657485962,
+        "var_05_kupiec_pass": true
+      },
+      {
+        "window_idx": 2,
+        "crps_mean": 0.494524747133255,
+        "n_obs": 504,
+        "best_val_loss": 1.580655813217163,
+        "var_05_kupiec_pass": false
+      },
+      {
+        "window_idx": 3,
+        "crps_mean": 0.4301639199256897,
+        "n_obs": 504,
+        "best_val_loss": 1.3894039392471313,
+        "var_05_kupiec_pass": true
+      },
+      {
+        "window_idx": 4,
+        "crps_mean": 0.4932481348514557,
+        "n_obs": 504,
+        "best_val_loss": 1.231448769569397,
+        "var_05_kupiec_pass": false
+      }
+    ],
+    "bear_date_evaluations": {
+      "Lehman_GFC_2008-09-15": {
+        "in_test_set": false
+      },
+      "Euro_Crisis_2011-08-08": {
+        "in_test_set": true,
+        "forecast_date": "2011-08-08",
+        "y_actual": -3.7107887268066406,
+        "p_minus_5pct": 0.0055,
+        "p_minus_7pct": 0.0025,
+        "p_minus_10pct": 0.001
+      },
+      "COVID_2020-02-19": {
+        "in_test_set": false
+      }
+    },
+    "bear_probabilities_summary": {
+      "p_minus_5pct_mean": 0.0075599206349206355,
+      "p_minus_5pct_max": 0.0635,
+      "p_minus_10pct_mean": 0.0024069444444444446,
+      "p_minus_10pct_max": 0.031
+    }
+  },
+  "cnn_sstd_h1_with_macro": {
+    "config": {
+      "arch": "cnn",
+      "dist": "skewed_t",
+      "horizon": 1,
+      "feature_set": "with_macro"
+    },
+    "n_features": 8,
+    "feature_names": [
+      "log_ret",
+      "gkyz_252",
+      "Term_Spread",
+      "VIX",
+      "Chi_Fin_Cond",
+      "StL_Fin_Stress",
+      "Init_Claims",
+      "KRW_USD_logret"
+    ],
+    "n_test_total": 2520,
+    "crps_pooled": 0.6992558836936951,
+    "nll_pooled": 1.6375911235809326,
+    "var_05_backtest_pooled": {
+      "kupiec_uc": {
+        "test_stat": 5.585564490558454,
+        "p_value": 0.018109095851033374,
+        "pass_at_005": false,
+        "n_breaches": 101,
+        "n_total": 2520,
+        "pi_hat": 0.04007936507936508,
+        "alpha_target": 0.05
+      },
+      "christoffersen_ind": {
+        "test_stat": 14.164104897261268,
+        "p_value": 0.00016753635252719778,
+        "pass_at_005": false,
+        "pi_01": 0.036393713813068655,
+        "pi_11": 0.12871287128712872,
+        "transition_counts": {
+          "n00": 2330,
+          "n01": 88,
+          "n10": 88,
+          "n11": 13
+        }
+      },
+      "christoffersen_cc": {
+        "test_stat": 19.749669387819722,
+        "p_value": 5.145336503131759e-05,
+        "pass_at_005": false,
+        "uc": {
+          "test_stat": 5.585564490558454,
+          "p_value": 0.018109095851033374,
+          "pass_at_005": false,
+          "n_breaches": 101,
+          "n_total": 2520,
+          "pi_hat": 0.04007936507936508,
+          "alpha_target": 0.05
+        },
+        "ind": {
+          "test_stat": 14.164104897261268,
+          "p_value": 0.00016753635252719778,
+          "pass_at_005": false,
+          "pi_01": 0.036393713813068655,
+          "pi_11": 0.12871287128712872,
+          "transition_counts": {
+            "n00": 2330,
+            "n01": 88,
+            "n10": 88,
+            "n11": 13
+          }
+        }
+      }
+    },
+    "var_01_backtest_pooled": {
+      "kupiec_uc": {
+        "test_stat": 36.480291824078655,
+        "p_value": 1.5421769417045539e-09,
+        "pass_at_005": false,
+        "n_breaches": 2,
+        "n_total": 2520,
+        "pi_hat": 0.0007936507936507937,
+        "alpha_target": 0.01
+      },
+      "christoffersen_ind": {
+        "test_stat": 0.0031783873030732934,
+        "p_value": 0.9550413295529043,
+        "pass_at_005": true,
+        "pi_01": 0.0007945967421533572,
+        "pi_11": 0.0,
+        "transition_counts": {
+          "n00": 2515,
+          "n01": 2,
+          "n10": 2,
+          "n11": 0
+        }
+      },
+      "christoffersen_cc": {
+        "test_stat": 36.48347021138173,
+        "p_value": 1.1959557233431894e-08,
+        "pass_at_005": false,
+        "uc": {
+          "test_stat": 36.480291824078655,
+          "p_value": 1.5421769417045539e-09,
+          "pass_at_005": false,
+          "n_breaches": 2,
+          "n_total": 2520,
+          "pi_hat": 0.0007936507936507937,
+          "alpha_target": 0.01
+        },
+        "ind": {
+          "test_stat": 0.0031783873030732934,
+          "p_value": 0.9550413295529043,
+          "pass_at_005": true,
+          "pi_01": 0.0007945967421533572,
+          "pi_11": 0.0,
+          "transition_counts": {
+            "n00": 2515,
+            "n01": 2,
+            "n10": 2,
+            "n11": 0
+          }
+        }
+      }
+    },
+    "pit_chi_square_pooled": {
+      "test_stat": 1067.7539682539684,
+      "p_value": 0.0,
+      "pass_at_005": false,
+      "n_bins": 10,
+      "observed_counts": [
+        402,
+        616,
+        397,
+        232,
+        163,
+        137,
+        228,
+        183,
+        143,
+        19
+      ],
+      "expected_per_bin": 252.0
+    },
+    "window_metrics": [
+      {
+        "window_idx": 0,
+        "crps_mean": 0.747048020362854,
+        "n_obs": 504,
+        "best_val_loss": 2.053898811340332,
+        "var_05_kupiec_pass": false
+      },
+      {
+        "window_idx": 1,
+        "crps_mean": 0.8017503023147583,
+        "n_obs": 504,
+        "best_val_loss": 1.9862425327301025,
+        "var_05_kupiec_pass": false
+      },
+      {
+        "window_idx": 2,
+        "crps_mean": 0.7338151335716248,
+        "n_obs": 504,
+        "best_val_loss": 1.7060168981552124,
+        "var_05_kupiec_pass": true
+      },
+      {
+        "window_idx": 3,
+        "crps_mean": 0.5871814489364624,
+        "n_obs": 504,
+        "best_val_loss": 1.537860631942749,
+        "var_05_kupiec_pass": true
+      },
+      {
+        "window_idx": 4,
+        "crps_mean": 0.6264844536781311,
+        "n_obs": 504,
+        "best_val_loss": 1.4311802387237549,
+        "var_05_kupiec_pass": false
+      }
+    ],
+    "bear_date_evaluations": {
+      "Lehman_GFC_2008-09-15": {
+        "in_test_set": false
+      },
+      "Euro_Crisis_2011-08-08": {
+        "in_test_set": true,
+        "forecast_date": "2011-08-08",
+        "y_actual": -3.7107887268066406,
+        "p_minus_5pct": 0.042,
+        "p_minus_7pct": 0.033,
+        "p_minus_10pct": 0.026
+      },
+      "COVID_2020-02-19": {
+        "in_test_set": false
+      }
+    },
+    "bear_probabilities_summary": {
+      "p_minus_5pct_mean": 0.022977777777777778,
+      "p_minus_5pct_max": 0.0755,
+      "p_minus_10pct_mean": 0.010697222222222223,
+      "p_minus_10pct_max": 0.0455
+    }
+  },
+  "cnn_sstd_h1_with_alt_macro": {
+    "config": {
+      "arch": "cnn",
+      "dist": "skewed_t",
+      "horizon": 1,
+      "feature_set": "with_alt_macro"
+    },
+    "n_features": 8,
+    "feature_names": [
+      "log_ret",
+      "gkyz_252",
+      "Term_Spread",
+      "VIX",
+      "Chi_Fin_Cond",
+      "StL_Fin_Stress",
+      "Init_Claims",
+      "KRW_USD_logret"
+    ],
+    "n_test_total": 2520,
+    "crps_pooled": 0.6992558836936951,
+    "nll_pooled": 1.6375911235809326,
+    "var_05_backtest_pooled": {
+      "kupiec_uc": {
+        "test_stat": 5.585564490558454,
+        "p_value": 0.018109095851033374,
+        "pass_at_005": false,
+        "n_breaches": 101,
+        "n_total": 2520,
+        "pi_hat": 0.04007936507936508,
+        "alpha_target": 0.05
+      },
+      "christoffersen_ind": {
+        "test_stat": 14.164104897261268,
+        "p_value": 0.00016753635252719778,
+        "pass_at_005": false,
+        "pi_01": 0.036393713813068655,
+        "pi_11": 0.12871287128712872,
+        "transition_counts": {
+          "n00": 2330,
+          "n01": 88,
+          "n10": 88,
+          "n11": 13
+        }
+      },
+      "christoffersen_cc": {
+        "test_stat": 19.749669387819722,
+        "p_value": 5.145336503131759e-05,
+        "pass_at_005": false,
+        "uc": {
+          "test_stat": 5.585564490558454,
+          "p_value": 0.018109095851033374,
+          "pass_at_005": false,
+          "n_breaches": 101,
+          "n_total": 2520,
+          "pi_hat": 0.04007936507936508,
+          "alpha_target": 0.05
+        },
+        "ind": {
+          "test_stat": 14.164104897261268,
+          "p_value": 0.00016753635252719778,
+          "pass_at_005": false,
+          "pi_01": 0.036393713813068655,
+          "pi_11": 0.12871287128712872,
+          "transition_counts": {
+            "n00": 2330,
+            "n01": 88,
+            "n10": 88,
+            "n11": 13
+          }
+        }
+      }
+    },
+    "var_01_backtest_pooled": {
+      "kupiec_uc": {
+        "test_stat": 36.480291824078655,
+        "p_value": 1.5421769417045539e-09,
+        "pass_at_005": false,
+        "n_breaches": 2,
+        "n_total": 2520,
+        "pi_hat": 0.0007936507936507937,
+        "alpha_target": 0.01
+      },
+      "christoffersen_ind": {
+        "test_stat": 0.0031783873030732934,
+        "p_value": 0.9550413295529043,
+        "pass_at_005": true,
+        "pi_01": 0.0007945967421533572,
+        "pi_11": 0.0,
+        "transition_counts": {
+          "n00": 2515,
+          "n01": 2,
+          "n10": 2,
+          "n11": 0
+        }
+      },
+      "christoffersen_cc": {
+        "test_stat": 36.48347021138173,
+        "p_value": 1.1959557233431894e-08,
+        "pass_at_005": false,
+        "uc": {
+          "test_stat": 36.480291824078655,
+          "p_value": 1.5421769417045539e-09,
+          "pass_at_005": false,
+          "n_breaches": 2,
+          "n_total": 2520,
+          "pi_hat": 0.0007936507936507937,
+          "alpha_target": 0.01
+        },
+        "ind": {
+          "test_stat": 0.0031783873030732934,
+          "p_value": 0.9550413295529043,
+          "pass_at_005": true,
+          "pi_01": 0.0007945967421533572,
+          "pi_11": 0.0,
+          "transition_counts": {
+            "n00": 2515,
+            "n01": 2,
+            "n10": 2,
+            "n11": 0
+          }
+        }
+      }
+    },
+    "pit_chi_square_pooled": {
+      "test_stat": 1067.7539682539684,
+      "p_value": 0.0,
+      "pass_at_005": false,
+      "n_bins": 10,
+      "observed_counts": [
+        402,
+        616,
+        397,
+        232,
+        163,
+        137,
+        228,
+        183,
+        143,
+        19
+      ],
+      "expected_per_bin": 252.0
+    },
+    "window_metrics": [
+      {
+        "window_idx": 0,
+        "crps_mean": 0.747048020362854,
+        "n_obs": 504,
+        "best_val_loss": 2.053898811340332,
+        "var_05_kupiec_pass": false
+      },
+      {
+        "window_idx": 1,
+        "crps_mean": 0.8017503023147583,
+        "n_obs": 504,
+        "best_val_loss": 1.9862425327301025,
+        "var_05_kupiec_pass": false
+      },
+      {
+        "window_idx": 2,
+        "crps_mean": 0.7338151335716248,
+        "n_obs": 504,
+        "best_val_loss": 1.7060168981552124,
+        "var_05_kupiec_pass": true
+      },
+      {
+        "window_idx": 3,
+        "crps_mean": 0.5871814489364624,
+        "n_obs": 504,
+        "best_val_loss": 1.537860631942749,
+        "var_05_kupiec_pass": true
+      },
+      {
+        "window_idx": 4,
+        "crps_mean": 0.6264844536781311,
+        "n_obs": 504,
+        "best_val_loss": 1.4311802387237549,
+        "var_05_kupiec_pass": false
+      }
+    ],
+    "bear_date_evaluations": {
+      "Lehman_GFC_2008-09-15": {
+        "in_test_set": false
+      },
+      "Euro_Crisis_2011-08-08": {
+        "in_test_set": true,
+        "forecast_date": "2011-08-08",
+        "y_actual": -3.7107887268066406,
+        "p_minus_5pct": 0.042,
+        "p_minus_7pct": 0.033,
+        "p_minus_10pct": 0.026
+      },
+      "COVID_2020-02-19": {
+        "in_test_set": false
+      }
+    },
+    "bear_probabilities_summary": {
+      "p_minus_5pct_mean": 0.022977777777777778,
+      "p_minus_5pct_max": 0.0755,
+      "p_minus_10pct_mean": 0.010697222222222223,
+      "p_minus_10pct_max": 0.0455
+    }
+  },
+  "cnn_sstd_h21_paper_only": {
+    "config": {
+      "arch": "cnn",
+      "dist": "skewed_t",
+      "horizon": 21,
+      "feature_set": "paper_only"
+    },
+    "n_features": 2,
+    "feature_names": [
+      "log_ret",
+      "gkyz_252"
+    ],
+    "n_test_total": 2520,
+    "crps_pooled": 4.895961761474609,
+    "nll_pooled": 3.2250053882598877,
+    "var_05_backtest_pooled": {
+      "kupiec_uc": {
+        "test_stat": 5303.111478621048,
+        "p_value": 0.0,
+        "pass_at_005": false,
+        "n_breaches": 1441,
+        "n_total": 2520,
+        "pi_hat": 0.5718253968253968,
+        "alpha_target": 0.05
+      },
+      "christoffersen_ind": {
+        "test_stat": 1734.5201243385407,
+        "p_value": 0.0,
+        "pass_at_005": false,
+        "pi_01": 0.12511584800741427,
+        "pi_11": 0.9069444444444444,
+        "transition_counts": {
+          "n00": 944,
+          "n01": 135,
+          "n10": 134,
+          "n11": 1306
+        }
+      },
+      "christoffersen_cc": {
+        "test_stat": 7037.631602959589,
+        "p_value": 0.0,
+        "pass_at_005": false,
+        "uc": {
+          "test_stat": 5303.111478621048,
+          "p_value": 0.0,
+          "pass_at_005": false,
+          "n_breaches": 1441,
+          "n_total": 2520,
+          "pi_hat": 0.5718253968253968,
+          "alpha_target": 0.05
+        },
+        "ind": {
+          "test_stat": 1734.5201243385407,
+          "p_value": 0.0,
+          "pass_at_005": false,
+          "pi_01": 0.12511584800741427,
+          "pi_11": 0.9069444444444444,
+          "transition_counts": {
+            "n00": 944,
+            "n01": 135,
+            "n10": 134,
+            "n11": 1306
+          }
+        }
+      }
+    },
+    "var_01_backtest_pooled": {
+      "kupiec_uc": {
+        "test_stat": 1083.923183071197,
+        "p_value": 0.0,
+        "pass_at_005": false,
+        "n_breaches": 322,
+        "n_total": 2520,
+        "pi_hat": 0.12777777777777777,
+        "alpha_target": 0.01
+      },
+      "christoffersen_ind": {
+        "test_stat": 842.9772110117287,
+        "p_value": 0.0,
+        "pass_at_005": false,
+        "pi_01": 0.03823395539371871,
+        "pi_11": 0.7391304347826086,
+        "transition_counts": {
+          "n00": 2113,
+          "n01": 84,
+          "n10": 84,
+          "n11": 238
+        }
+      },
+      "christoffersen_cc": {
+        "test_stat": 1926.9003940829257,
+        "p_value": 0.0,
+        "pass_at_005": false,
+        "uc": {
+          "test_stat": 1083.923183071197,
+          "p_value": 0.0,
+          "pass_at_005": false,
+          "n_breaches": 322,
+          "n_total": 2520,
+          "pi_hat": 0.12777777777777777,
+          "alpha_target": 0.01
+        },
+        "ind": {
+          "test_stat": 842.9772110117287,
+          "p_value": 0.0,
+          "pass_at_005": false,
+          "pi_01": 0.03823395539371871,
+          "pi_11": 0.7391304347826086,
+          "transition_counts": {
+            "n00": 2113,
+            "n01": 84,
+            "n10": 84,
+            "n11": 238
+          }
+        }
+      }
+    },
+    "pit_chi_square_pooled": {
+      "test_stat": 10546.626984126984,
+      "p_value": 0.0,
+      "pass_at_005": false,
+      "n_bins": 10,
+      "observed_counts": [
+        1787,
+        247,
+        103,
+        76,
+        56,
+        45,
+        28,
+        107,
+        68,
+        3
+      ],
+      "expected_per_bin": 252.0
+    },
+    "window_metrics": [
+      {
+        "window_idx": 0,
+        "crps_mean": 3.466221332550049,
+        "n_obs": 504,
+        "best_val_loss": 3.52250075340271,
+        "var_05_kupiec_pass": false
+      },
+      {
+        "window_idx": 1,
+        "crps_mean": 4.436065673828125,
+        "n_obs": 504,
+        "best_val_loss": 3.3505051136016846,
+        "var_05_kupiec_pass": false
+      },
+      {
+        "window_idx": 2,
+        "crps_mean": 5.605208396911621,
+        "n_obs": 504,
+        "best_val_loss": 3.1161744594573975,
+        "var_05_kupiec_pass": false
+      },
+      {
+        "window_idx": 3,
+        "crps_mean": 5.254427433013916,
+        "n_obs": 504,
+        "best_val_loss": 3.217036724090576,
+        "var_05_kupiec_pass": false
+      },
+      {
+        "window_idx": 4,
+        "crps_mean": 5.717885494232178,
+        "n_obs": 504,
+        "best_val_loss": 3.1332662105560303,
+        "var_05_kupiec_pass": false
+      }
+    ],
+    "bear_date_evaluations": {
+      "Lehman_GFC_2008-09-15": {
+        "in_test_set": false
+      },
+      "Euro_Crisis_2011-08-08": {
+        "in_test_set": true,
+        "forecast_date": "2011-08-08",
+        "y_actual": -1.9439377784729004,
+        "p_minus_5pct": 0.011,
+        "p_minus_7pct": 0.0065,
+        "p_minus_10pct": 0.0025
+      },
+      "COVID_2020-02-19": {
+        "in_test_set": false
+      }
+    },
+    "bear_probabilities_summary": {
+      "p_minus_5pct_mean": 0.012266666666666669,
+      "p_minus_5pct_max": 0.1405,
+      "p_minus_10pct_mean": 0.005259126984126984,
+      "p_minus_10pct_max": 0.0365
+    }
+  },
+  "cnn_sstd_h21_with_alt": {
+    "config": {
+      "arch": "cnn",
+      "dist": "skewed_t",
+      "horizon": 21,
+      "feature_set": "with_alt"
+    },
+    "n_features": 2,
+    "feature_names": [
+      "log_ret",
+      "gkyz_252"
+    ],
+    "n_test_total": 2520,
+    "crps_pooled": 4.895961761474609,
+    "nll_pooled": 3.2250053882598877,
+    "var_05_backtest_pooled": {
+      "kupiec_uc": {
+        "test_stat": 5303.111478621048,
+        "p_value": 0.0,
+        "pass_at_005": false,
+        "n_breaches": 1441,
+        "n_total": 2520,
+        "pi_hat": 0.5718253968253968,
+        "alpha_target": 0.05
+      },
+      "christoffersen_ind": {
+        "test_stat": 1734.5201243385407,
+        "p_value": 0.0,
+        "pass_at_005": false,
+        "pi_01": 0.12511584800741427,
+        "pi_11": 0.9069444444444444,
+        "transition_counts": {
+          "n00": 944,
+          "n01": 135,
+          "n10": 134,
+          "n11": 1306
+        }
+      },
+      "christoffersen_cc": {
+        "test_stat": 7037.631602959589,
+        "p_value": 0.0,
+        "pass_at_005": false,
+        "uc": {
+          "test_stat": 5303.111478621048,
+          "p_value": 0.0,
+          "pass_at_005": false,
+          "n_breaches": 1441,
+          "n_total": 2520,
+          "pi_hat": 0.5718253968253968,
+          "alpha_target": 0.05
+        },
+        "ind": {
+          "test_stat": 1734.5201243385407,
+          "p_value": 0.0,
+          "pass_at_005": false,
+          "pi_01": 0.12511584800741427,
+          "pi_11": 0.9069444444444444,
+          "transition_counts": {
+            "n00": 944,
+            "n01": 135,
+            "n10": 134,
+            "n11": 1306
+          }
+        }
+      }
+    },
+    "var_01_backtest_pooled": {
+      "kupiec_uc": {
+        "test_stat": 1083.923183071197,
+        "p_value": 0.0,
+        "pass_at_005": false,
+        "n_breaches": 322,
+        "n_total": 2520,
+        "pi_hat": 0.12777777777777777,
+        "alpha_target": 0.01
+      },
+      "christoffersen_ind": {
+        "test_stat": 842.9772110117287,
+        "p_value": 0.0,
+        "pass_at_005": false,
+        "pi_01": 0.03823395539371871,
+        "pi_11": 0.7391304347826086,
+        "transition_counts": {
+          "n00": 2113,
+          "n01": 84,
+          "n10": 84,
+          "n11": 238
+        }
+      },
+      "christoffersen_cc": {
+        "test_stat": 1926.9003940829257,
+        "p_value": 0.0,
+        "pass_at_005": false,
+        "uc": {
+          "test_stat": 1083.923183071197,
+          "p_value": 0.0,
+          "pass_at_005": false,
+          "n_breaches": 322,
+          "n_total": 2520,
+          "pi_hat": 0.12777777777777777,
+          "alpha_target": 0.01
+        },
+        "ind": {
+          "test_stat": 842.9772110117287,
+          "p_value": 0.0,
+          "pass_at_005": false,
+          "pi_01": 0.03823395539371871,
+          "pi_11": 0.7391304347826086,
+          "transition_counts": {
+            "n00": 2113,
+            "n01": 84,
+            "n10": 84,
+            "n11": 238
+          }
+        }
+      }
+    },
+    "pit_chi_square_pooled": {
+      "test_stat": 10546.626984126984,
+      "p_value": 0.0,
+      "pass_at_005": false,
+      "n_bins": 10,
+      "observed_counts": [
+        1787,
+        247,
+        103,
+        76,
+        56,
+        45,
+        28,
+        107,
+        68,
+        3
+      ],
+      "expected_per_bin": 252.0
+    },
+    "window_metrics": [
+      {
+        "window_idx": 0,
+        "crps_mean": 3.466221332550049,
+        "n_obs": 504,
+        "best_val_loss": 3.52250075340271,
+        "var_05_kupiec_pass": false
+      },
+      {
+        "window_idx": 1,
+        "crps_mean": 4.436065673828125,
+        "n_obs": 504,
+        "best_val_loss": 3.3505051136016846,
+        "var_05_kupiec_pass": false
+      },
+      {
+        "window_idx": 2,
+        "crps_mean": 5.605208396911621,
+        "n_obs": 504,
+        "best_val_loss": 3.1161744594573975,
+        "var_05_kupiec_pass": false
+      },
+      {
+        "window_idx": 3,
+        "crps_mean": 5.254427433013916,
+        "n_obs": 504,
+        "best_val_loss": 3.217036724090576,
+        "var_05_kupiec_pass": false
+      },
+      {
+        "window_idx": 4,
+        "crps_mean": 5.717885494232178,
+        "n_obs": 504,
+        "best_val_loss": 3.1332662105560303,
+        "var_05_kupiec_pass": false
+      }
+    ],
+    "bear_date_evaluations": {
+      "Lehman_GFC_2008-09-15": {
+        "in_test_set": false
+      },
+      "Euro_Crisis_2011-08-08": {
+        "in_test_set": true,
+        "forecast_date": "2011-08-08",
+        "y_actual": -1.9439377784729004,
+        "p_minus_5pct": 0.011,
+        "p_minus_7pct": 0.0065,
+        "p_minus_10pct": 0.0025
+      },
+      "COVID_2020-02-19": {
+        "in_test_set": false
+      }
+    },
+    "bear_probabilities_summary": {
+      "p_minus_5pct_mean": 0.012266666666666669,
+      "p_minus_5pct_max": 0.1405,
+      "p_minus_10pct_mean": 0.005259126984126984,
+      "p_minus_10pct_max": 0.0365
+    }
+  },
+  "cnn_sstd_h21_with_macro": {
+    "config": {
+      "arch": "cnn",
+      "dist": "skewed_t",
+      "horizon": 21,
+      "feature_set": "with_macro"
+    },
+    "n_features": 8,
+    "feature_names": [
+      "log_ret",
+      "gkyz_252",
+      "Term_Spread",
+      "VIX",
+      "Chi_Fin_Cond",
+      "StL_Fin_Stress",
+      "Init_Claims",
+      "KRW_USD_logret"
+    ],
+    "n_test_total": 2520,
+    "crps_pooled": 5.413627624511719,
+    "nll_pooled": 3.604163646697998,
+    "var_05_backtest_pooled": {
+      "kupiec_uc": {
+        "test_stat": 2001.648649464525,
+        "p_value": 0.0,
+        "pass_at_005": false,
+        "n_breaches": 841,
+        "n_total": 2520,
+        "pi_hat": 0.3337301587301587,
+        "alpha_target": 0.05
+      },
+      "christoffersen_ind": {
+        "test_stat": 2287.489881718868,
+        "p_value": 0.0,
+        "pass_at_005": false,
+        "pi_01": 0.03396901072705602,
+        "pi_11": 0.9310344827586207,
+        "transition_counts": {
+          "n00": 1621,
+          "n01": 57,
+          "n10": 58,
+          "n11": 783
+        }
+      },
+      "christoffersen_cc": {
+        "test_stat": 4289.138531183393,
+        "p_value": 0.0,
+        "pass_at_005": false,
+        "uc": {
+          "test_stat": 2001.648649464525,
+          "p_value": 0.0,
+          "pass_at_005": false,
+          "n_breaches": 841,
+          "n_total": 2520,
+          "pi_hat": 0.3337301587301587,
+          "alpha_target": 0.05
+        },
+        "ind": {
+          "test_stat": 2287.489881718868,
+          "p_value": 0.0,
+          "pass_at_005": false,
+          "pi_01": 0.03396901072705602,
+          "pi_11": 0.9310344827586207,
+          "transition_counts": {
+            "n00": 1621,
+            "n01": 57,
+            "n10": 58,
+            "n11": 783
+          }
+        }
+      }
+    },
+    "var_01_backtest_pooled": {
+      "kupiec_uc": {
+        "test_stat": 952.4813198676509,
+        "p_value": 0.0,
+        "pass_at_005": false,
+        "n_breaches": 297,
+        "n_total": 2520,
+        "pi_hat": 0.11785714285714285,
+        "alpha_target": 0.01
+      },
+      "christoffersen_ind": {
+        "test_stat": 1116.1884196837634,
+        "p_value": 0.0,
+        "pass_at_005": false,
+        "pi_01": 0.020702070207020702,
+        "pi_11": 0.8417508417508418,
+        "transition_counts": {
+          "n00": 2176,
+          "n01": 46,
+          "n10": 47,
+          "n11": 250
+        }
+      },
+      "christoffersen_cc": {
+        "test_stat": 2068.6697395514143,
+        "p_value": 0.0,
+        "pass_at_005": false,
+        "uc": {
+          "test_stat": 952.4813198676509,
+          "p_value": 0.0,
+          "pass_at_005": false,
+          "n_breaches": 297,
+          "n_total": 2520,
+          "pi_hat": 0.11785714285714285,
+          "alpha_target": 0.01
+        },
+        "ind": {
+          "test_stat": 1116.1884196837634,
+          "p_value": 0.0,
+          "pass_at_005": false,
+          "pi_01": 0.020702070207020702,
+          "pi_11": 0.8417508417508418,
+          "transition_counts": {
+            "n00": 2176,
+            "n01": 46,
+            "n10": 47,
+            "n11": 250
+          }
+        }
+      }
+    },
+    "pit_chi_square_pooled": {
+      "test_stat": 6583.15873015873,
+      "p_value": 0.0,
+      "pass_at_005": false,
+      "n_bins": 10,
+      "observed_counts": [
+        1402,
+        503,
+        136,
+        52,
+        22,
+        25,
+        27,
+        62,
+        201,
+        90
+      ],
+      "expected_per_bin": 252.0
+    },
+    "window_metrics": [
+      {
+        "window_idx": 0,
+        "crps_mean": 6.270145416259766,
+        "n_obs": 504,
+        "best_val_loss": 3.96457839012146,
+        "var_05_kupiec_pass": false
+      },
+      {
+        "window_idx": 1,
+        "crps_mean": 4.143858432769775,
+        "n_obs": 504,
+        "best_val_loss": 3.8625504970550537,
+        "var_05_kupiec_pass": false
+      },
+      {
+        "window_idx": 2,
+        "crps_mean": 8.13684368133545,
+        "n_obs": 504,
+        "best_val_loss": 3.310957908630371,
+        "var_05_kupiec_pass": false
+      },
+      {
+        "window_idx": 3,
+        "crps_mean": 2.963103771209717,
+        "n_obs": 504,
+        "best_val_loss": 3.3684284687042236,
+        "var_05_kupiec_pass": false
+      },
+      {
+        "window_idx": 4,
+        "crps_mean": 5.554189205169678,
+        "n_obs": 504,
+        "best_val_loss": 3.1340134143829346,
+        "var_05_kupiec_pass": false
+      }
+    ],
+    "bear_date_evaluations": {
+      "Lehman_GFC_2008-09-15": {
+        "in_test_set": false
+      },
+      "Euro_Crisis_2011-08-08": {
+        "in_test_set": true,
+        "forecast_date": "2011-08-08",
+        "y_actual": -1.9439377784729004,
+        "p_minus_5pct": 0.0845,
+        "p_minus_7pct": 0.075,
+        "p_minus_10pct": 0.065
+      },
+      "COVID_2020-02-19": {
+        "in_test_set": false
+      }
+    },
+    "bear_probabilities_summary": {
+      "p_minus_5pct_mean": 0.044752579365079356,
+      "p_minus_5pct_max": 0.1205,
+      "p_minus_10pct_mean": 0.03135079365079365,
+      "p_minus_10pct_max": 0.1025
+    }
+  },
+  "cnn_sstd_h21_with_alt_macro": {
+    "config": {
+      "arch": "cnn",
+      "dist": "skewed_t",
+      "horizon": 21,
+      "feature_set": "with_alt_macro"
+    },
+    "n_features": 8,
+    "feature_names": [
+      "log_ret",
+      "gkyz_252",
+      "Term_Spread",
+      "VIX",
+      "Chi_Fin_Cond",
+      "StL_Fin_Stress",
+      "Init_Claims",
+      "KRW_USD_logret"
+    ],
+    "n_test_total": 2520,
+    "crps_pooled": 5.413627624511719,
+    "nll_pooled": 3.604163646697998,
+    "var_05_backtest_pooled": {
+      "kupiec_uc": {
+        "test_stat": 2001.648649464525,
+        "p_value": 0.0,
+        "pass_at_005": false,
+        "n_breaches": 841,
+        "n_total": 2520,
+        "pi_hat": 0.3337301587301587,
+        "alpha_target": 0.05
+      },
+      "christoffersen_ind": {
+        "test_stat": 2287.489881718868,
+        "p_value": 0.0,
+        "pass_at_005": false,
+        "pi_01": 0.03396901072705602,
+        "pi_11": 0.9310344827586207,
+        "transition_counts": {
+          "n00": 1621,
+          "n01": 57,
+          "n10": 58,
+          "n11": 783
+        }
+      },
+      "christoffersen_cc": {
+        "test_stat": 4289.138531183393,
+        "p_value": 0.0,
+        "pass_at_005": false,
+        "uc": {
+          "test_stat": 2001.648649464525,
+          "p_value": 0.0,
+          "pass_at_005": false,
+          "n_breaches": 841,
+          "n_total": 2520,
+          "pi_hat": 0.3337301587301587,
+          "alpha_target": 0.05
+        },
+        "ind": {
+          "test_stat": 2287.489881718868,
+          "p_value": 0.0,
+          "pass_at_005": false,
+          "pi_01": 0.03396901072705602,
+          "pi_11": 0.9310344827586207,
+          "transition_counts": {
+            "n00": 1621,
+            "n01": 57,
+            "n10": 58,
+            "n11": 783
+          }
+        }
+      }
+    },
+    "var_01_backtest_pooled": {
+      "kupiec_uc": {
+        "test_stat": 952.4813198676509,
+        "p_value": 0.0,
+        "pass_at_005": false,
+        "n_breaches": 297,
+        "n_total": 2520,
+        "pi_hat": 0.11785714285714285,
+        "alpha_target": 0.01
+      },
+      "christoffersen_ind": {
+        "test_stat": 1116.1884196837634,
+        "p_value": 0.0,
+        "pass_at_005": false,
+        "pi_01": 0.020702070207020702,
+        "pi_11": 0.8417508417508418,
+        "transition_counts": {
+          "n00": 2176,
+          "n01": 46,
+          "n10": 47,
+          "n11": 250
+        }
+      },
+      "christoffersen_cc": {
+        "test_stat": 2068.6697395514143,
+        "p_value": 0.0,
+        "pass_at_005": false,
+        "uc": {
+          "test_stat": 952.4813198676509,
+          "p_value": 0.0,
+          "pass_at_005": false,
+          "n_breaches": 297,
+          "n_total": 2520,
+          "pi_hat": 0.11785714285714285,
+          "alpha_target": 0.01
+        },
+        "ind": {
+          "test_stat": 1116.1884196837634,
+          "p_value": 0.0,
+          "pass_at_005": false,
+          "pi_01": 0.020702070207020702,
+          "pi_11": 0.8417508417508418,
+          "transition_counts": {
+            "n00": 2176,
+            "n01": 46,
+            "n10": 47,
+            "n11": 250
+          }
+        }
+      }
+    },
+    "pit_chi_square_pooled": {
+      "test_stat": 6583.15873015873,
+      "p_value": 0.0,
+      "pass_at_005": false,
+      "n_bins": 10,
+      "observed_counts": [
+        1402,
+        503,
+        136,
+        52,
+        22,
+        25,
+        27,
+        62,
+        201,
+        90
+      ],
+      "expected_per_bin": 252.0
+    },
+    "window_metrics": [
+      {
+        "window_idx": 0,
+        "crps_mean": 6.270145416259766,
+        "n_obs": 504,
+        "best_val_loss": 3.96457839012146,
+        "var_05_kupiec_pass": false
+      },
+      {
+        "window_idx": 1,
+        "crps_mean": 4.143858432769775,
+        "n_obs": 504,
+        "best_val_loss": 3.8625504970550537,
+        "var_05_kupiec_pass": false
+      },
+      {
+        "window_idx": 2,
+        "crps_mean": 8.13684368133545,
+        "n_obs": 504,
+        "best_val_loss": 3.310957908630371,
+        "var_05_kupiec_pass": false
+      },
+      {
+        "window_idx": 3,
+        "crps_mean": 2.963103771209717,
+        "n_obs": 504,
+        "best_val_loss": 3.3684284687042236,
+        "var_05_kupiec_pass": false
+      },
+      {
+        "window_idx": 4,
+        "crps_mean": 5.554189205169678,
+        "n_obs": 504,
+        "best_val_loss": 3.1340134143829346,
+        "var_05_kupiec_pass": false
+      }
+    ],
+    "bear_date_evaluations": {
+      "Lehman_GFC_2008-09-15": {
+        "in_test_set": false
+      },
+      "Euro_Crisis_2011-08-08": {
+        "in_test_set": true,
+        "forecast_date": "2011-08-08",
+        "y_actual": -1.9439377784729004,
+        "p_minus_5pct": 0.0845,
+        "p_minus_7pct": 0.075,
+        "p_minus_10pct": 0.065
+      },
+      "COVID_2020-02-19": {
+        "in_test_set": false
+      }
+    },
+    "bear_probabilities_summary": {
+      "p_minus_5pct_mean": 0.044752579365079356,
+      "p_minus_5pct_max": 0.1205,
+      "p_minus_10pct_mean": 0.03135079365079365,
+      "p_minus_10pct_max": 0.1025
+    }
+  }
+}

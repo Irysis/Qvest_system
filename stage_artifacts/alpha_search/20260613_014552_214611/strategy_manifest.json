@@ -1,0 +1,115 @@
+{
+  "schema_version": "alpha_search_strategy_manifest_v1",
+  "created_at": "2026-06-13T01:51:19+0900",
+  "mode": "alpha_search",
+  "strategy_id": "STR_AS_20260613_014552_214611",
+  "strategy_name": "Expanding IC 가중 — 전체 기간 누적 IC로 팩터 가중 (장기 안정)",
+  "strategy_idea": "Expanding IC 가중 — 전체 기간 누적 IC로 팩터 가중 (장기 안정) Forge contract/spec requires code generation before backtest Forge contract/spec requires code generation before backtest",
+  "factor_engine_path": "02_Infrastructure/alpha_search/fe_factor_combo.R",
+  "execution": {
+    "universe": "ALL",
+    "universe_n": 305,
+    "n_holdings": 30,
+    "weight_method": "equal",
+    "commission": 0.0015,
+    "risk_controls": {
+      "vol_target": null,
+      "vol_lookback": 60,
+      "dd_brake": null,
+      "buffer_zone": {
+        "keep_n": 60,
+        "entry_n": 30
+      },
+      "use_default_buffer": true,
+      "cov_method": "sample"
+    },
+    "bt_result_path": "stage_artifacts/alpha_search/20260613_014552_214611/bt_result.rds"
+  },
+  "pit": {
+    "code_scan": "detect_lookahead",
+    "status": "CLEAN",
+    "factor_engine_path": "02_Infrastructure/alpha_search/fe_factor_combo.R",
+    "note": "AlphaSearch stops before backtest when detect_lookahead reports violations."
+  },
+  "backtest_contract": {
+    "status": "OK",
+    "run_id": "ASBT_20260613_014552_214611",
+    "metric_type": "backtested",
+    "bt_result_path": "stage_artifacts/alpha_search/20260613_014552_214611/bt_result.rds",
+    "output_dir": "stage_artifacts/alpha_search/20260613_014552_214611",
+    "integrity_status": "WARNING",
+    "audit_pass": 15,
+    "audit_fail": 0,
+    "audit_warn": 1,
+    "validation_errors": [],
+    "note": "standard Backtest Result Contract saved for every AlphaSearch run; grade/admission remains separate",
+    "return_series": {
+      "status": "OK",
+      "source": "bt_result.period_returns",
+      "csv_path": "stage_artifacts/alpha_search/20260613_014552_214611/03_period_returns.csv",
+      "date_col": "date",
+      "ret_col": "ret_net",
+      "n_obs": 5266,
+      "start_date": "2005-02-03",
+      "end_date": "2026-06-11",
+      "post2008_obs": 4547,
+      "frequency": "daily"
+    }
+  },
+  "verdict": {
+    "grade": "F",
+    "score": 19.6,
+    "hurdle_pass": false,
+    "hard_fail": true,
+    "fail_reasons": [
+      "Structural drawdown (55%+ episodes>=6, max_underwater>=252d): MDD 63.6%, 45%+ episodes=14/15, max_underwater=661/252"
+    ],
+    "f_grade_reasons": [
+      "게이트 사유: Structural drawdown (55%+ episodes>=6, max_underwater>=252d): MDD 63.6%, 45%+ episodes=14/15, max_underwater=661/252",
+      "FMT-01 Structural MDD: MDD 63.6% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)",
+      "FMT-04 Regime Blindness: MDD 63.6% > 35% & BM상관 0.79 >= 0.7 — 위기국면 동조 낙폭(국면필터 부재)",
+      "알파 부재: 정보비율 -0.07로 벤치 대비 기여가 음수/미약",
+      "초과수익 부족: 벤치 대비 -1.1%p"
+    ],
+    "screening": {
+      "screen_pass": false,
+      "screen_route": "NONE",
+      "drawdown_tail_review": false,
+      "note": "탐색 게이트 — 자본/졸업 게이트 아님 (graduation HARD 불변). PIT만 절대."
+    }
+  },
+  "metrics": {
+    "CAGR": 9.62,
+    "AnnVol": 27.53,
+    "Sharpe": 0.349,
+    "Sharpe_m": 0.468,
+    "IR": -0.066,
+    "MDD": 63.6,
+    "Calmar": 0.151,
+    "Turnover_Ann": 920.7,
+    "Top10_Conc": 50,
+    "Rolling3Y_Pos": 58.3,
+    "BM_Corr": 0.791,
+    "ES99_d": 6.94,
+    "ES99_m": 24.22,
+    "GradeA_Corr": null,
+    "Rolling6M_Hit": 59.2,
+    "Worst6M_Ret": -53.85,
+    "MaxConsecNegAlpha": 6,
+    "Rolling12M_Hit": 63.6
+  },
+  "excess_cagr_pct": -1.12,
+  "fmt": [
+    {
+      "code": "FMT-01",
+      "label": "Structural MDD",
+      "reason": "MDD 63.6% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)"
+    },
+    {
+      "code": "FMT-04",
+      "label": "Regime Blindness",
+      "reason": "MDD 63.6% > 35% & BM상관 0.79 >= 0.7 — 위기국면 동조 낙폭(국면필터 부재)"
+    }
+  ],
+  "authoritative": null
+}

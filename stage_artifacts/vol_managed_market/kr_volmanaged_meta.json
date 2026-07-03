@@ -1,0 +1,12 @@
+{
+  "generated": "2026-07-02 19:17:23.003245",
+  "data_source": "stage_artifacts/pg2_offense_overlay/benchmark_pinned_20260702.parquet",
+  "bm_sample": "1990-01 -> 2026-06",
+  "n_months_full": 438,
+  "n_months_managed": 437,
+  "method": "Moreira-Muir JF2017 eq.1/eq.2: beta_vol=c/RV^2_{t-1}, RV=demeaned sum sq daily ret; PIT t-1 lag",
+  "cost_model": "delta-based |Dbeta_vol|*15bps one-way (v2.4 style)",
+  "rf": "0 (Qvest total-return convention; book uses risk_free_ret=0). Caveat: MM use excess ret.",
+  "perf_engine": "PerformanceAnalytics table.AnnualizedReturns/maxDrawdown; NW lag-3 spanning alpha",
+  "book_base": "05_Production/.../period_returns_layer5_faith.csv :: ret_orig (clean NOL4), ret_L5_faith (faith overlay)"
+}

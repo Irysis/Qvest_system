@@ -1,0 +1,54 @@
+{
+  "date": "20260621",
+  "tier": 2,
+  "n_input": 2,
+  "promoted": [
+    {
+      "paper_id": "2606.04576",
+      "title": "ReSGA: A Large Tail Risk Model for Learning Value-at-Risk and Expected Shortfall",
+      "factor_name": "size_enhanced_left_side_momentum",
+      "factor_hint_original": "resga_predicted_ES_sort",
+      "verdict": "testable",
+      "confidence": "medium",
+      "prior_verdicts": "20260619 infeasible / 20260620 redundant — 본 tier-2 재독에서 Eq.(11) 메커니즘 정밀화로 testable 승격(아래 근거)",
+      "novel_vs_registry": "interaction novel=true / base-ES-sort novel=false",
+      "closest_existing": "R03_CVaR_95(=음의 5% Expected Shortfall, 실현 ES) + Log Market Cap + D47_CVaR_5pct/R01_VaR_95/D25_Left_Tail_Beta 등 tail 13종. 그러나 이들은 모두 standalone — size×tail-risk *상호작용* 항은 registry 부재.",
+      "impl_sketch": {
+        "signal": "size-enhanced left-side momentum (논문 Eq.11). alpha_{i,t} = (logCap_{i,t-1} - mean_t logCap) * (1 - exp(ES_hat_{i,t})), ES_hat<0 (꼬리손실 심각도 proxy 1-exp(ES)∈(0,1)).",
+        "es_forecast": "ES_hat = 실현 5% Expected Shortfall = 직전 252d 일별수익 하위 5% 평균(음수). 우리 R03_CVaR_95/D47의 pre-negate 입력과 동일 — 별도 모델 불요. 논문 scaling 분석이 'data complexity not model complexity' + Table6에서 Linear/GARCH ES forecaster로도 FF5 α 유의(Linear SR 0.673, α p=0.030)임을 입증 → 경량 실현-ES 재구성이 충실재현(날조 아님). 로버스트로 GARCH-EVT ES 옵션 추가 가능.",
+        "size_term": "logCap_{i,t-1} 횡단면 평균차감(t-1 PIT, C5).",
+        "long_only_map": "롱숏 H–L(P1 매수 / P10 공매)을 long leg만 사상(헌법 long-only, λ∈[0,1]). long leg = P1 = 최고 alpha decile = '대형주 × 심한 꼬리위험'(too-big-to-fail 매수측). top-25 / top-quintile EW 또는 essence canonical_screen_bt 경유.",
+        "direction": "empirical 양방향 필수 — 논문 transfer-learning이 미국 P1-매수 부호가 중국·일본서 역전(고-신호=고수익)이라 명시. KR prior 약함 → alpha 고/저 long leg 양쪽 검증.",
+        "constraints": "KOSPI200∪KQ150 / 15bps / ≤25종목 / LIQ_THRESHOLD 2e8 / 월간 리밸. PIT C1~C15(특히 C5 t-1, C10 유동성 t-1).",
+        "variants_to_test": [
+          "V1: size-enhanced interaction alpha (Eq.11) — *신규·승격 대상*",
+          "V2(대조군): raw-ES sort P1(저꼬리위험 매수) — registry R03와 중복(redundant), 신규성 검증용 베이스라인으로만"
+        ]
+      },
+      "caveats": [
+        "long-only는 short leg(P10) 상실 — 미국 H–L SR~0.79의 상당분이 P9/P10 공매에서 발생하므로 실현 long-only 신호는 현저히 약함(논문 P1 SR gross~0.71-0.91, 미국·가치가중).",
+        "base ES sort 부분은 redundant(R03_CVaR_95 등 13종) — 승격분은 오직 size×tail-risk 상호작용.",
+        "long leg=대형주×고꼬리위험 = 저위험 방어 tilt가 *아님*(too-big-to-fail) → AX-005(KR defense standalone 실패) 영역과 구별됨. 단 부호 시장의존으로 KR 양방향 실측 필요.",
+        "성능 수치는 미실측(논문값은 미국·가치가중·gross). graduation HARD 3종 미적용 — alpha-search 백테 실측 후 판정."
+      ],
+      "verification": "subagent full-text read(2606.04576 197k chars 100%) + abstract 직접 대조. Eq.(11)·Table5/6·scaling 분석 verbatim 추출(날조 아님). registry grep로 tail/VaR/CVaR 13종 + Log Market Cap 확인, 상호작용 항 부재 확인."
+    }
+  ],
+  "confirmed_infeasible": [
+    {
+      "paper_id": "2606.07450",
+      "title": "Information Networks of Stock Prices",
+      "factor_hint": "price_network_centrality",
+      "verdict": "infeasible",
+      "prior_verdicts": "20260619 infeasible / 20260620 infeasible — 본 재독에서 full-text 확인, 불변",
+      "novel_vs_registry": true,
+      "closest_existing": "none (registry 373종에 network/centrality/graph/eigen 팩터 0건)",
+      "reason": "Full-text 정독(인도네시아 거래소 150종, 2015-2025, 97 rolling window×24 config: Pearson/MI-adaptive-bin/MI-kNN × MST/PMFG × 4 community decoder). 평가지표 = AMI(Adjusted Mutual Information) vs *섹터 분류* 일치도 — 즉 community detection이 공식 sector taxonomy를 얼마나 복원하는가. 종목 수준 횡단면 *수익예측* 신호 전무: centrality는 산출조차 안 됨(AMI/community-size/ΔI residual만), 포트·IC·수익 테스트 부재. factor_hint 'price_network_centrality'를 수익팩터로 만들려면 논문이 *기술하지 않은* 신호 날조 → batch_434 가드 적용. novelty 있으나(network 팩터 0건) 충실재구성 대상 아님.",
+      "verification": "full-text(2606.07450) verbatim — Abstract/Conclusion/Data(§3)/Results(§4) 모두 taxonomy 복원·residual information 진단이 목적, 수익신호 없음 확인."
+    }
+  ],
+  "redundant": [],
+  "still_uncertain": [],
+  "runner_bug": "3일 연속 동일 2 paper_id(2606.07450/2606.04576) 재유입. 둘 다 factor_recheck_done.json에 20260619/infeasible로 등재됨에도 factor_recheck_queue_20260621.json(date:null)에 또 포함 — 큐 빌더의 done-제외(dedup) 미작동(20260620 result에서도 동일 지적). 정상이면 신규 입력 0건이어야 함. 후속: 큐 생성 시 done.processed[].paper_id 대조 제외 의무.",
+  "notes": "입력 2건은 전일 처리분 재유입이나, 2606.04576은 tier-2 full-text 재독으로 Eq.(11) size×tail-risk 상호작용이 (a)registry 부재 신규 (b)논문 자체 scaling 분석상 경량 ES forecaster로 충실재구성 가능 — 두 근거로 20260620 'redundant'→'testable' 정밀 승격. base ES sort 부분은 여전히 redundant(분리 명시). 2606.07450은 수익신호 부재로 infeasible 확정(불변). promoted 1 → alpha_search_queue_20260621.json 추가. 날조·과장 없이 정직 보고(성능 미실측·long-only 약화·부호 시장의존 caveat 명시)."
+}

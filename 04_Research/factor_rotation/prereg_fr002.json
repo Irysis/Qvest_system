@@ -1,0 +1,38 @@
+{
+  "fr_id": "FR_002",
+  "title": "Factor Rotation FR_002 — batch_434 consumption, deduped RCMA ensemble",
+  "prereg_frozen_at": "2026-06-13",
+  "cycle": "Cycle3 (batch_434 산출물 소비)",
+  "motivation": "batch_434 alpha-search 430건 채점 후 자동흐름이 module_catalog fr_eligible 180 + RCMA admitted 16로 편입. FR_001 자동재빌드 = grade C / OOS_retention -0.146. FR_002 = (1) codegen 정확중복 dedup (2) authoritative 재측정 (3) book-marginal ΔIR 진단.",
+  "design": {
+    "pool_source": "06_Registry/module_performance.json (192) -> walk-forward RCMA admitted union per regime",
+    "dedup": {
+      "rule": "exact-dup |cor|>0.999 cluster당 대표 1개(higher SR) 유지, 나머지 제외",
+      "excluded": ["STR_AS_20260612_132740_321992"],
+      "kept_representative": "STR_AS_20260612_123546_52003",
+      "rationale": "codegen 폴백으로 두 스펙이 동일 포트(NAV diff=0)로 수렴 — dispatcher inverse-vol/IR 가중 이중계상 오염 방지",
+      "scan_artifact": ".cache/fr_cycle3_snapshot/dedup_drop_list.txt"
+    },
+    "dispatcher": "module_dispatcher compute_regime_module_weights (rp inverse-vol + IR shrink, lambda/tau/k0 국면불변 고정 — FR_001 동일)",
+    "regime_source": "unified_regime_signal_daily Category (t-1 lag, baseline)",
+    "weighting": "IS-only walk-forward, RCMA membership annual refit (compute_rcma asof=prior month-end)",
+    "return_synthesis": "PerformanceAnalytics::Return.portfolio (monthly rebalance, no self-synthesis)",
+    "cost": "15bps regime-transition turnover only",
+    "arms": ["FR_002 RCMA-weighted ensemble (primary)", "EW baseline (placebo proxy)", "FR_001 incumbent (comparison)"]
+  },
+  "selection_type": "chain",
+  "selection_type_note": "FR_002 = FR_001의 단일 수정(정확중복 dedup) — argmax/threshold-pick 아님(가설주도 1수정). DSR 수치는 진단용 산출(essence_score 내부 N_TRIALS=n_modules+5는 앙상블 다중검정 보수상향, 게이트 적용은 sweep 한정 규칙 정합). measurement-graduation 2026-06-10 정합.",
+  "n_trials_prior": 17,
+  "gates": {
+    "HARD": {"portfolio_alpha_t_nw": 2.95, "oos_retention": 0.7, "calmar": 0.64},
+    "DSR": "0.5 (sweep만 HARD; FR_002 chain이라 진단 산출)",
+    "secondary": {"edge_vs_ew": ">0", "placebo_p": "<0.05", "turnover": "<=11.0/yr"}
+  },
+  "book_marginal": {
+    "incumbent": "STR_1715_AR_on_M4_R05_overlay_PG2 (book L5, active vs KOSPI200)",
+    "metric": "ΔIR = combined_book_ir - incumbent_book_ir, threshold >=0.05 (measurement-graduation §4)",
+    "note": "Phase 1 진단: admitted 모듈군 vs book cor~0.08 (book=베타타이밍 overlay라 직교). FR 앙상블 sleeve가 다각화 ΔIR 주는지 측정.",
+    "governance": "진단까지만. book_state 쓰기 = Q-Lead + 도훈 수동 confirm (governor 정지)"
+  },
+  "governance": "governor 정지. FR_002 게이트 통과해도 book_state 자동 쓰기 금지. WT-id 미사용."
+}

@@ -1,0 +1,10 @@
+suppressMessages(library(data.table))
+art <- "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/alpha_search/20260612_124658_77279"
+ic <- fread(file.path(art, "analysis_ic.csv")); fmb <- fread(file.path(art, "analysis_fmb.csv"))
+w <- function(x, l) cat(sprintf("%-26s n=%d mean %+0.4f t %+0.2f\n", l, length(x), mean(x), mean(x)/sd(x)*sqrt(length(x))))
+w(tail(ic$IC, 60), "IC recent 60m")
+w(ic[Signal_Date >= as.Date("2017-01-01") & Signal_Date < as.Date("2025-01-01")]$IC, "IC 2017-2024 (ex-meltup)")
+w(ic[Signal_Date >= as.Date("2025-01-01")]$IC, "IC 2025-26 meltup")
+w(fmb[Signal_Date >= as.Date("2017-01-01") & Signal_Date < as.Date("2025-01-01")]$Lambda_Score, "FM lambda 2017-2024")
+w(fmb[Signal_Date >= as.Date("2025-01-01")]$Lambda_Score, "FM lambda 2025-26")
+w(fmb[Signal_Date >= as.Date("2017-01-01")]$Lambda_Size, "FM Size lambda post-2017")

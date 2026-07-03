@@ -1,0 +1,5 @@
+library(jsonlite)
+x<-fromJSON("qepm/mailbox/worktask/WT-D20260614_002/codex_critic_response_risk_v4.json",simplifyVector=FALSE)
+cat("STANCE:",x$stance,"\n\nstance_rationale:",substr(x$stance_rationale,1,500),"\n\n")
+cat("=== pit_audit ===\n"); for(p in x$pit_c1_c15_audit) cat(sprintf("[%s %s] %s\n",p$check,p$status,substr(p$evidence,1,220)))
+cat("\n=== critical_concerns ===\n"); for(c in x$critical_concerns) cat(sprintf("[%s %s] %s\n",c$id,c$severity,substr(c$description,1,260)))

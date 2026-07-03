@@ -1,0 +1,19 @@
+**FAIL** — `fidelity_pass=false` (confidence: low). p-index computation is a *genuine* put-insurance construct (no batch_434 fabrication — Score=-p_index honestly matches the label, PIT-clean, KR-feasible from OHLC only), BUT the engine implements a raw p-index *level* sort rather than the paper's named efficient/inefficient × momentum/contrarian strategies, the LOW direction is an unverifiable extrapolation for a market the paper never tested (paper direction is market-unstable: China=contrarian, US=momentum, no KR), and the full text was unretrievable (arxiv/paper-search/jina all failed) so eq.6-9 and Table 2 could not be confirmed → fail-closed.
+
+---
+
+Verdict recorded in `auto_verify_2606.08569.json` (L1–L3 fields preserved; added `fidelity_pass`, `fidelity_confidence`, `fidelity_checked_by`, `fidelity_issues`, plus `fidelity_clean_dimensions` and `fidelity_retrieval_attempts` for audit).
+
+**Why FAIL despite a clean engine** (the distinction matters — this is *not* a batch_434 contamination flag):
+
+| Checklist | Result |
+|---|---|
+| #1 Signal definition/sign | **FAIL** — level-sort ≠ paper's named efficient/inefficient×mom/contrarian strategies; eq.6-9 unverifiable (source unretrievable) |
+| #2 No fallback/synthesis | **CLEAN** — `Score=-p_index` matches label; algebra reduces to a real RN put price `(1-π)/(1+r)·(K-S0d)/K`; no placeholder; HIGH-leg sweep terminated |
+| #3 Universe/rebal/period | **PASS** — harness `run_alpha_search.R:149-159` enforces K200∪KQ150 PIT membership, top-N, 2e8 liq, monthly, 2005~ |
+| #4 PIT | **PASS** — month-end within-month OHLC signal, held t+1, no full-sample/scale/fwd_ret/NEGATE; detect_lookahead CLEAN |
+| #5 KR feasibility | **PASS (construct)** — OHLC-only, no option/alt/cross-market data |
+
+The decisive failures: **(a)** source genuinely unverifiable (I exhausted arxiv-mcp, paper-search, and jina — all dead), and **(b)** the implemented signal is a *derived proxy* (p-index level long-low), not a replication of any strategy the paper actually tested, with a direction (LOW) extrapolated to a market (KR) the paper gives no result for. Per fail-closed, that mandates `false`. The honest empirical outcome (LOW underperforms BM −8.15%p, IR −0.62) is consistent with the direction lacking paper grounding.
+
+One governance note for the auto-pipeline: this is a *fidelity* fail, not a contamination fail — the engine is honest and clean, it simply isn't a faithful replication of the paper's tested alphas under an unreadable source. If you later retrieve the PDF (the `[pdf]` extra for arxiv-mcp or a topped-up jina key would do it), the eq.6-9 / Table 2 check could be re-run to potentially lift confidence — but the named-strategy mismatch and the no-KR-direction problem would remain regardless.

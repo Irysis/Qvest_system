@@ -1,0 +1,107 @@
+{
+  "task_id": "WT-D20260614_001",
+  "as_of_date": "2026-06-12",
+  "basis": "value-4 sleeve total monthly gross return (257m)",
+  "mdd_total": -0.4821,
+  "mdd_total_date": "2008-09-30",
+  "mdd_active": -0.6567,
+  "longest_underwater_months": 52,
+  "time_underwater_pct": 0.802,
+  "drawdown_episodes": {
+    "ge_30pct": 2,
+    "ge_45pct": 1,
+    "ge_55pct": 0
+  },
+  "monthly_VaR": {
+    "hist_VaR95": -0.084,
+    "hist_ES95": -0.133,
+    "hist_VaR99": -0.1462,
+    "hist_ES99": -0.2049,
+    "cornish_fisher_VaR95": -0.0951,
+    "cornish_fisher_VaR99": -0.1828,
+    "gpd_VaR99": -0.1596,
+    "gpd_ES99": -0.2197,
+    "gpd_xi": 0.157,
+    "hill_alpha": 2.18,
+    "gpd_n_exceedances": 26,
+    "gpd_threshold": 0.0612
+  },
+  "evt_note": "fExtremes unavailable; self-contained POT-GPD (MoM shape/scale) + Hill index. xi=0.16 -> mildly heavy left tail; Hill alpha 2.18 finite-variance regime.",
+  "cvar_cap_check": {
+    "cvar95_monthly_es": 0.133,
+    "cvar_cap_monthly": 0.025,
+    "breach": true,
+    "breach_multiple": 5.3,
+    "infeasibility_note": "Unconstrained sleeve ES95 13.3%/month breaches the 2.5% monthly CVaR cap by ~5.3x. RISK FLAGS this as an infeasibility for capital admission. Optimizer (not risk) must impose a CVaR/risk-budget constraint to satisfy the cap; absent that, the sleeve is infeasible under the tail mandate. Breach is monthly-vol-driven, not single-scenario (worst stress window GFC -15.8% < 25%)."
+  },
+  "stress": {
+    "GFC_2008": {
+      "scenario": "GFC_2008",
+      "sleeve_total_return": -0.158,
+      "sleeve_active_return": 0.1996,
+      "bm_return": -0.2891,
+      "n_months": 9,
+      "coverage": "OK"
+    },
+    "EuDebt_2011": {
+      "scenario": "EuDebt_2011",
+      "sleeve_total_return": 0.1225,
+      "sleeve_active_return": 0.2102,
+      "bm_return": -0.0732,
+      "n_months": 8,
+      "coverage": "OK"
+    },
+    "China_2015": {
+      "scenario": "China_2015",
+      "sleeve_total_return": -0.0317,
+      "sleeve_active_return": -0.0021,
+      "bm_return": -0.0283,
+      "n_months": 9,
+      "coverage": "OK"
+    },
+    "COVID_2020": {
+      "scenario": "COVID_2020",
+      "sleeve_total_return": -0.046,
+      "sleeve_active_return": 0.0756,
+      "bm_return": -0.0996,
+      "n_months": 3,
+      "coverage": "OK"
+    },
+    "RateHike_2022": {
+      "scenario": "RateHike_2022",
+      "sleeve_total_return": -0.0379,
+      "sleeve_active_return": 0.044,
+      "bm_return": -0.0693,
+      "n_months": 10,
+      "coverage": "OK"
+    },
+    "KR_Bear_2018": {
+      "scenario": "KR_Bear_2018",
+      "sleeve_total_return": -0.0768,
+      "sleeve_active_return": 0.079,
+      "bm_return": -0.1408,
+      "n_months": 12,
+      "coverage": "OK"
+    },
+    "Brexit_2016": {
+      "scenario": "Brexit_2016",
+      "sleeve_total_return": 0.0181,
+      "sleeve_active_return": -0.0179,
+      "bm_return": 0.0369,
+      "n_months": 3,
+      "coverage": "OK"
+    },
+    "Volmageddon_2018": {
+      "scenario": "Volmageddon_2018",
+      "sleeve_total_return": -0.0252,
+      "sleeve_active_return": 0.0065,
+      "bm_return": -0.0293,
+      "n_months": 3,
+      "coverage": "OK"
+    }
+  },
+  "worst_stress_scenario": "GFC_2008",
+  "beta_to_bm_total": 0.797,
+  "beta_to_bm_active": -0.203,
+  "market_down_5_implied": -0.0398
+}

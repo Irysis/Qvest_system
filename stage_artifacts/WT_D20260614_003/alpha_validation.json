@@ -1,0 +1,158 @@
+{
+  "task_id": "WT-D20260614_003",
+  "graduation_check": {
+    "rank_ic": {
+      "value": 0.0342,
+      "threshold": 0.04,
+      "severity": "advisory",
+      "pass": false
+    },
+    "icir": {
+      "value": 0.317,
+      "threshold": 0.2,
+      "severity": "advisory",
+      "pass": true
+    },
+    "subperiod_stability": {
+      "value": 1,
+      "threshold": 0.5,
+      "severity": "advisory",
+      "pass": true
+    },
+    "harvey_t_rank_ic": {
+      "value": 5.12,
+      "threshold": 3,
+      "severity": "advisory",
+      "pass": true
+    },
+    "portfolio_alpha_t_nw": {
+      "value": 0.577,
+      "threshold": 2.95,
+      "severity": "hard",
+      "pass": false,
+      "note": "canonical-screen proxy; FAILS standalone."
+    },
+    "dsr_selection_corrected": {
+      "value_n1": 0.651,
+      "value_n23": 0.058,
+      "value_n409": 0.005,
+      "threshold": 0.5,
+      "severity": "hard_sweep",
+      "pass": false,
+      "note": "selection multiplicity (cluster23/409-batch) — fails."
+    }
+  },
+  "defense_check_ax001_v2": {
+    "alpha_type_claimed": "defense_factor",
+    "alpha_type_final": "screening_tier_quality_lead",
+    "axiom": "AX-001_v2",
+    "evaluation_axes": 3,
+    "defense_thesis": "WITHDRAWN (post-Codex)",
+    "axis_1_crisis_alpha": {
+      "crisis_months_n": 127,
+      "concurrent_label": {
+        "crisis_alpha_mean": 0.0193,
+        "hit": 0.583,
+        "note": "concurrent same-month regime label = DIAGNOSTIC ATTRIBUTION only, not tradeable (Codex C9)."
+      },
+      "t1_lagged_label": {
+        "crisis_alpha_mean": -0.0044,
+        "hit": 0.46,
+        "note": "t-1 lagged (PIT-correct, decision-time) crisis_alpha = -0.44%/mo, hit 46%."
+      },
+      "verdict": "FAIL (PIT-correct). Positive concurrent crisis_alpha was a same-month-labeling artifact; t-1 lagged is NEGATIVE."
+    },
+    "axis_2_mdd_complement": {
+      "sleeve_net_mdd": -0.522,
+      "benchmark_mdd": -0.485,
+      "cor_vs_benchmark": -0.027,
+      "cor_active_vs_incumbent_STR1715": 0.415,
+      "note": "CORRECTED (Codex C6/L-219): draft claimed low-cor diversifier on BENCHMARK basis (-0.027). Correct basis = ACTIVE cor vs incumbent STR_1715 = 0.42 (> 0.30 Seq-Admission). Shares ~42% active variance with incumbent.",
+      "verdict": "FAIL — standalone MDD worse than BM AND active cor 0.42 (not a diversifier)."
+    },
+    "axis_3_bad_normal_ic_ratio": {
+      "ic_bad": 0.0251,
+      "ic_normal": 0.0431,
+      "ratio": 0.583,
+      "threshold": 1.5,
+      "verdict": "FAIL (0.58 < 1.5) — ranking power weakens in crisis."
+    },
+    "ax001_v2_summary": "DEFENSE THESIS WITHDRAWN. All 3 axes FAIL under PIT-correct measurement. NOT a defense_factor, NOT a cross-family diversifier (active cor 0.42). Screening-tier quality lead only. Recommend NO defense-sleeve admission on current evidence."
+  },
+  "pit_chain": {
+    "c4_c14_chain": ["fundamental_dart_quarterly.parquet carries Factor_Date (publication-lagged usable date)", "factor_registry lag_rule (all 4) = 'Factor_Date <= sig_date'", "compute_quality.R snapshots Date <= sig_d only", "load_month_factors() = C15-safe connector boundary (no direct parquet load)", "align_factor_direction uses Usable_Date <= sig_date for IC direction"],
+    "c9_note": "Selection (score) is strictly t-1/PIT. Concurrent regime labeling was DIAGNOSTIC attribution only; t-1 lagged regime reported for tradeable verdict. No look-ahead in the alpha signal itself.",
+    "c13_c15": "PASS (Codex agrees). No NEGATE/FLIP; Z_Score_Aligned only; connector-routed.",
+    "audit_gap": "Factor_Date lineage not persisted into alpha_scores.parquet — upstream-verified, not output-auditable."
+  },
+  "universe_comparison": {
+    "KR_top342": {
+      "universe": "KR_top342",
+      "liq_min": 200000000,
+      "cost_bps": 15,
+      "n_months": 258,
+      "rank_ic": 0.0342,
+      "icir": 0.317,
+      "portfolio_alpha_t_nw_lag3": 0.577,
+      "information_ratio": 0.084,
+      "net_sr": 0.084,
+      "turnover_annual": 3.94,
+      "alpha_annualized": 0.1616
+    },
+    "KR_TOP500_FREEFLOAT": {
+      "universe": "KR_TOP500_FREEFLOAT",
+      "liq_min": 200000000,
+      "cost_bps": 20,
+      "n_months": 258,
+      "rank_ic": 0.0536,
+      "icir": 0.59,
+      "portfolio_alpha_t_nw_lag3": -0.065,
+      "information_ratio": -0.01,
+      "net_sr": -0.01,
+      "turnover_annual": 4.58,
+      "alpha_annualized": 0.132
+    },
+    "mandate": {
+      "trigger": "weak IR (<0.15) per L-227",
+      "note": "cost: top342=15bps, FREEFLOAT=20bps per mandate"
+    },
+    "interpretation": "L-227 mandate (weak IR trigger): broader FREEFLOAT IMPROVES rank-IC (0.034->0.054) and ICIR (0.32->0.59) — top342 IC was universe-restricted. BUT portfolio_alpha_t gets WORSE (0.58->-0.07) and IR negative. Cross-sectional rank gains do NOT translate to long-only top-30 portfolio alpha (Cycle 2 lesson: rank-IC t != portfolio-alpha t)."
+  },
+  "codex_supplements": {
+    "rf_a2_single_vs_composite": {
+      "single": {
+        "Q01_GPA": [0.0167, 0.1322],
+        "Q04_Piotroski_F": [0.0306, 0.362],
+        "Q09_CFOA": [0.0243, 0.2615],
+        "Q07_Earnings_Stability": [0.0288, 0.2679]
+      },
+      "composite_rank_ic": 0.0349,
+      "composite_icir": 0.326,
+      "best_single_icir": 0.362,
+      "composite_improve_pct": -10,
+      "verdict": "composite improvement <5% (RF-A2 FLAG)"
+    },
+    "rf_a4_sector_neutral": {
+      "raw_ic": 0.0349,
+      "sector_neutral_ic": 0.0294,
+      "retention_pct": 84.2,
+      "sn_icir": 0.388,
+      "verdict": "sector-neutral IC retains >=50% (RF-A4 PASS)"
+    },
+    "l219_str1715_corr": {
+      "n": 257,
+      "cor_total": -0.027,
+      "cor_active": 0.415,
+      "threshold_active": 0.3,
+      "baseline_409_corr_core": 0.87,
+      "verdict": "active cor 0.42 — NOT a low-cor diversifier on active basis"
+    },
+    "rf_a6_dsr_multiplicity": {
+      "dsr_n1": 0.651,
+      "dsr_n23_cluster": 0.058,
+      "dsr_n409_batch": 0.005,
+      "verdict": "DSR fails under cluster multiplicity"
+    }
+  },
+  "verdict": "SCREENING-TIER. FAILS graduation HARD (portfolio_alpha_t 0.577 + DSR-selection). Defense WITHDRAWN. NO standalone graduation / NO defense-sleeve admission on current evidence. AX-001 v2: not applicable (all axes FAIL)."
+}

@@ -1,0 +1,51 @@
+================ FoF 첫 슬라이스 — B×C 메타-포트 cheap-kill probe ================
+실행: 2026-06-30 12:59:39.994882
+
+=== shumulvey 22 family → fam_of 11 경제군 매핑 ===
+  Value            <= Value
+  Momentum         <= Momentum, ResidMom, SUE
+  Quality          <= Quality, GPA, EarnStab
+  LowRisk          <= LowVol, LowBeta, TailRisk
+  Size_Liquidity   <= Size, Liquidity
+  Reversal         <= Reversal
+  Growth_Profit    <= Growth, Investment, Issuance
+  Accruals         <= Accrual
+  Consensus        <= Consensus, ForeignFlow, SmartMoney, Crowding
+  Credit/Composite <= (shumulvey 원천 부재 — momentum 타이밍 미적용, ARM-B서 정적 EW)
+  [매핑 gap] shumulvey Market=벤치(제외). 미사용 shumulvey: (없음 — Market 외 21개 전부 매핑)
+
+=== 1) 종목 스코어: pure_factor_scores → 11 경제군 group_z ===
+  경제군: Accruals, Composite, Consensus, Credit, Growth_Profit, LowRisk, Momentum, Quality, Reversal, Size_Liquidity, Value
+  signal_date 월수: 257 (2005-01-31 ~ 2026-05-31)
+
+=== 2) family 12-1m momentum (shumulvey 월말 집계, PIT trailing) ===
+  shumulvey 월수: 270 (2004-01-30 ~ 2026-06-17) | momentum family: 21개
+  12-1m 정의: trailing log-return 누적 [t-12 .. t-2] (skip_recent=1, 최근 1개월 제외 = 표준)
+
+=== 3) ARM 가중 결정 ===
+  ARM-A (static): W_g = 1/11 (전기간 EW across 11군)
+  ARM-B (momentum): W_g ∝ max(z_g,0), 9-momentum군 + gap 2군 중립. 유효 월수=258
+
+=== 4) 종목 score 패널 — 공통 signal_date 257개월 (2005-01-31 ~ 2026-05-31) ===
+
+=== 5) canonical_screen_bt 실측 (metric_type=canonical_screen, screening advisory) ===
+  [ARM-A static] n_months=256 | net_SR=+0.262 | port_t_NWlag3=+1.10 (p=0.272) | IR=+0.262 | turnover_ann=1182%
+  [ARM-B momentum] n_months=256 | net_SR=+0.216 | port_t_NWlag3=+0.96 (p=0.336) | IR=+0.216 | turnover_ann=1278%
+
+=== 6) paired NW-t(lag-3) — d_t = ARM_B_active − ARM_A_active ===
+  n(paired months) = 256
+  mean(d) [월별 active diff] = -0.00066 (-0.0657%/월)
+  paired NW-t(lag-3) = -0.411 (p=0.681)
+  net active SR lift (B−A) = -0.046
+  port_t lift (B−A) = -0.14
+
+=== 7) PIT look-ahead 가드: momentum lag toggle (skip_recent 1=clean vs 0=오염) ===
+  ARM-B clean (skip=1, t-12..t-2): port_t=+0.96 net_SR=+0.216
+  ARM-B toggle(skip=0, t-12..t-1): port_t=+0.73 net_SR=+0.160
+  해석: 둘 다 trailing-only(미래월 0개 사용). skip=0은 직전월 포함(더 fast, reversal 노출↑)이나 여전히 PIT-clean.
+        t월 수익을 신호에 넣는 진짜 look-ahead는 본 설계상 불가(canonical forward Ret_1m은 신호 아닌 실현).
+
+=== 8) cheap-kill 판정 ===
+  규칙: KILL = (SR lift<0) OR (paired-t<1) | EXPAND = (SR lift>0) AND (paired-t>2)
+  SR lift=-0.046, paired-t=-0.411 → 판정: KILL
+  → factor-momentum-timing 무효력. 확대(full 316/crowding/value spread) 착수 금지. screen-tier.

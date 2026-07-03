@@ -19,7 +19,7 @@ PROJECT_ROOT <- tryCatch({
   dirname(dirname(d))
 }, error = function(e) getwd())
 
-out_dir <- file.path(PROJECT_ROOT, "research_output", "regime_comparison", "output")
+out_dir <- file.path(PROJECT_ROOT, "outputs", "regime", "output")
 dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 
 #==============================================================================

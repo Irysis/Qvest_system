@@ -1,0 +1,190 @@
+{
+  "task_id": "WT-S20260626_001",
+  "as_of_date": "2026-06-26",
+  "package_kind": "optimization_package",
+  "wt_type": "sizing_only",
+  "agent": "optimizer-research",
+  "draft_revision": "final",
+  "parent_wt": "WT-D20260427_016",
+  "parent_strategy": "STR_1715_WT016_Iter31_GridBestProd",
+
+  "method_selected": "max_cash_overlay_combine_min",
+  "method_selected_note": "Single change vs incumbent production: AR x R05 overlay combine operator product -> min (max-cash, non-compounding). risk_weight_AR_R05(t) = min(beta_AR(t), beta_R05(t)) replaces beta_AR(t) x beta_R05(t). M4 BOCPD overlay (m4_weight_lag) kept multiplicative in BOTH arms (orthogonal to AR/R05 combine; A/B isolates the single change). base sleeve selection / EW-Iter31-tilt / each beta's own derivation = STR_1715 forward_weights.R unchanged. NOT MVO/HRP/CVaR/ERC weight-search -- regime cash-scaling combine-operator design (sizing_only); Sigma inherited and NOT MVO-consumed (STR_1715 = EW top-N + regime overlay).",
+
+  "selection_objective": "to_adj_ret",
+  "selection_objective_note": "sizing_only single-change A/B (chain, not sweep -> DSR n/a). Arm NOT selected by optimizer-stage net_ir max (forge authoritative for realized net_ir/SR/MDD). Framing = turnover-adjusted active return: max-cash removes compound over-defense drag while turnover does NOT increase (see turnover_analysis: cash-leg turnover LOWER than incumbent; base churn identical). Raw-Sharpe-max not used.",
+
+  "expected_tracking_error": 0.0512,
+  "expected_tracking_error_metric_type": "estimated_low_confidence",
+  "expected_tracking_error_basis": "ex-ante sqrt(w' Sigma w) * sqrt(12) on inherited 18x18 LW Sigma (covariance.parquet, 2026-05-01 holdings basis), best-overlap month 2026-03 (15/18 names). DESCRIPTIVE / NON-DECISION-GRADE (Codex C3 accepted): Sigma overlaps the 269-month schedule poorly (mean 1.75 names, 5/269 dates with overlap>=10, 2026-06=4/18) because inherited Sigma is fixed to a single 2026-05 holdings snapshot. Realized TE = forge-authoritative. Label = estimated_low_confidence.",
+  "expected_tracking_error_overlap_diagnostic": {
+    "sigma_universe_n": 18,
+    "mean_overlap_names": 1.75,
+    "median_overlap_names": 1,
+    "dates_overlap_ge_10": 5,
+    "dates_total": 269,
+    "latest_2026_06_overlap": 4,
+    "decision_grade": false
+  },
+  "expected_tracking_error_divergence_month_check": {
+    "month": "2023-06",
+    "maxcash_arm_te_ann": 0.0150,
+    "incumbent_mult_arm_te_ann": 0.0127,
+    "note": "AR&R05 co-firing month: max-cash holds more risk (invested 0.560 vs mult 0.476) -> higher ex-ante TE (1.50% vs 1.27%). Mechanism-consistent."
+  },
+
+  "combine_spec": {
+    "incumbent_operator": "invested(t) = m4_weight_lag(t) * beta_AR(t) * beta_R05(t)  [AR x R05 = product]",
+    "maxcash_operator":   "invested(t) = m4_weight_lag(t) * min(beta_AR(t), beta_R05(t))  [AR x R05 = min, non-compounding]",
+    "weights_csv_formula": "weight(t,i) = base_EW_tilt(t,i) * invested_maxcash(t); cash(t) = 1 - invested_maxcash(t)",
+    "beta_AR_source": "period_returns_layer5.csv::beta_threshold_lag (PIT lag-1, {0.4,0.7,1.0}) -- absorption-ratio threshold beta",
+    "beta_R05_source": "period_returns_layer5.csv::beta_R05_V5 (PIT lag-1, {0.3,0.5,0.7,0.85,1.0}) -- production-admit V5 regime x R05_z interaction",
+    "m4_source": "period_returns_layer5.csv::m4_weight_lag (PIT lag-1, continuous) -- M4 BOCPD, kept multiplicative in both arms",
+    "base_sleeve_source": "stage_artifacts/WT_D20260425_010/alpha_scores.parquet::score_eff -> liq top-20 -> Iter31 linear tilt (lambda=1.5, cap 0.20). Unchanged.",
+    "pit": "min of two t-1 lagged betas is PIT (min of two PIT values is PIT). No look-ahead from operator change.",
+    "ar_r05_divergence": "min != product only when BOTH beta_AR<1 AND beta_R05<1 (co-firing): 32/269 months. Otherwise identical."
+  },
+
+  "turnover_analysis": {
+    "metric_type": "estimated",
+    "basis": "delta-based v2.4, 15bps one-way, full 269-month schedule incl CASH leg",
+    "one_way_annual_turnover": 6.8532,
+    "one_way_annual_turnover_pct": "685.3%",
+    "round_trip_annual_turnover_pct": "1370.6%",
+    "hurdle_gate_basis": "one-way engine Turnover_Pct annualized (hurdle_gate.R D002 sums per-rebalance Turnover_Pct)",
+    "hurdle_cap_pct": 1100,
+    "turnover_pass": true,
+    "turnover_pass_note": "685.3% one-way < 1100% cap (margin -414pp). Round-trip 1370.6% reported for cost-accounting honesty (Charter x2 convention); the hurdle cap applies to the one-way engine basis.",
+    "decomposition": {
+      "base_sleeve_stock_churn_oneway_pct": "784.1%",
+      "base_sleeve_note": "COMMON to both arms -- inherent STR_1715 top-20 monthly re-selection. Hidden in production (04_holdings.csv collapses base sleeve to 1 pseudo-asset -> reported turnover 0), but the 15bps churn cost is baked into STR_1715 ret_net.",
+      "cash_leg_turnover_maxcash_pct": "96.3%",
+      "cash_leg_turnover_incumbent_pct": "113.1%",
+      "conclusion": "max-cash cash-leg turnover LOWER than incumbent (min less violent than product). The combine change does NOT raise turnover; it marginally lowers it. RF-O2/RF-O10 not triggered by the change."
+    }
+  },
+  "estimated_cost": 0.02056,
+  "estimated_cost_note": "annual, 15bps delta v2.4 (2.06%/yr). estimated label. Realized cost in forge backtest.",
+
+  "incumbent_vs_maxcash_summary": {
+    "n_months_total": 269,
+    "n_months_combine_diverges": 32,
+    "n_months_identical": 237,
+    "mean_cash_reduction_in_divergence_months": 0.1066,
+    "invested_maxcash_range": [0.227, 1.000],
+    "invested_mult_range": [0.091, 1.000],
+    "interpretation": "In 32 co-firing months max-cash holds on average 10.66pp MORE risky exposure (less cash) than the multiplicative incumbent -- removing the double-counted (compound) de-risk flagged by architecture audit B2 (M4<->AR overlap 91%). product drives invested as low as 0.091 (deep compound de-risk); min floors deeper single de-risk only (0.227). In 237 months arms are byte-identical (one beta=1.0).",
+    "directional_caveat": "max-cash is LESS defensive in co-firing months. Net effect (over-defense drag removed vs weaker deep co-crisis defense) is UNKNOWN at optimizer stage -- forge A/B realized MDD/CVaR/IR authoritative. No performance guess."
+  },
+
+  "weights_csv_ref": "qepm/mailbox/worktask/WT-S20260626_001/weights.csv",
+  "weights_csv_stage_ref": "stage_artifacts/WT_WT_S20260626_001/weights.csv",
+  "weights_csv_schema": "as_of_date, ticker, weight, method_selected, Name, Sector (role-schema, Codex C1 accepted -- mailbox copy + schema cols added)",
+  "combine_schedule_ref": "stage_artifacts/WT_WT_S20260626_001/overlay_combine_schedule.csv",
+  "target_weights_ref": "weights.csv = max-cash arm only. Incumbent (product) arm = STR_1715 production, already held. Forge A/B-backtests both arms.",
+
+  "constraint_verification": {
+    "max_names": 25,
+    "observed_max_n_equity": 20,
+    "long_only": true,
+    "observed_min_weight": 0.0,
+    "weight_bounds": [0, 0.20],
+    "observed_max_risky_weight": 0.2000,
+    "sum_weights_equals_1_with_cash": true,
+    "observed_max_abs_sum_deviation": 9.83e-09,
+    "RF_O5_n_le_25": "PASS (20<=25)",
+    "RF_O6_sum_eq_1": "PASS (|dev|<1e-8)",
+    "RF_O7_bounds": "PASS (all in [0,0.20], all>=0)",
+    "turnover_one_way_le_1100pct": "PASS (685.3%)"
+  },
+
+  "schedule_fidelity": {
+    "weights_csv_unique_dates_count": 269,
+    "alpha_sig_dates_count": 92,
+    "alpha_sig_dates_count_actual_parquet": 270,
+    "schedule_density_ratio": 2.924,
+    "schedule_density_ratio_vs_actual_parquet": 0.996,
+    "schedule_density_mandate": ">=0.95",
+    "schedule_density_pass": true,
+    "infeasibility_report": null,
+    "schedule_skip_justified": null,
+    "note": "269 unique monthly dates (2004-02..2026-06), 1:1 with production layer5 overlay schedule. Either denominator -> ratio >= 0.95. No schedule skip; min operator introduces no turnover-penalty skip (Charter 9 not triggered)."
+  },
+
+  "method_shopping_log": {
+    "optimizer_agent": {
+      "candidates_tried": 2,
+      "note": "sizing_only single-change A/B (chain, not sweep). DSR n/a. WT mandate = exactly ONE combine-operator change. No MVO/HRP/CVaR/ERC search (Sigma inherited, not MVO-consumed).",
+      "method_log": [
+        {"name": "incumbent_product (m4 * beta_AR * beta_R05)", "role": "A-arm baseline (STR_1715 production)", "selected": false},
+        {"name": "max_cash_overlay_combine_min (m4 * min(beta_AR,beta_R05))", "role": "B-arm (this WT)", "selected": true, "selection_reason": "WT hypothesis target -- removes architecture-audit-B2 compound over-defense. Realized superiority TBD by forge."}
+      ]
+    }
+  },
+
+  "deploy_cutoff": "open-ended",
+  "deploy_cutoff_note": "weights.csv covers full PIT schedule 2004-02..2026-06 (train through deploy, frozen extension to latest sig_date 2026-06). Forge can measure OOS on any sub-window.",
+
+  "binding_constraints": [],
+  "infeasibility_report": null,
+
+  "required_downstream_outputs": {
+    "forge": "A/B realized net_IR, SR, MDD, CVaR, co-firing-month (32) drawdown, GFC stress, beta_port (overlay-OFF vs blended) for incumbent-product vs max-cash. Gate = book-marginal dIR >= 0.05 + MDD non-worsening.",
+    "governor": "TDC vs PG2 book + replacement-vs-integration (within-strategy combine swap, not new sleeve)."
+  },
+
+  "explanation": {
+    "design": "Replace AR x R05 compound de-risk with non-compounding max-cash (min). Single operator change; everything else STR_1715-inherited.",
+    "top_overweights": "Same name set as STR_1715 base sleeve (score_eff top-20 per month) -- selection unchanged. Only cash/risky split changes (in 32 co-firing months).",
+    "main_tradeoffs": [
+      "Removes 91%-overlap (M4<->AR) double-de-risk compounding -> less over-defense drag (hypothesis intent).",
+      "Less defensive in genuine co-firing crisis (risk: weaker deep co-crash defense; but min still applies the deeper single de-risk) -- forge MDD/CVaR A/B authoritative.",
+      "No extra name turnover (selection identical); cash-leg turnover LOWER than incumbent."
+    ]
+  },
+
+  "role_boundary_compliance": {
+    "no_alpha_reinterpretation": true,
+    "no_sigma_reestimation": true,
+    "no_full_backtest_run": true,
+    "scope": "max-cash arm weight time series + ex-ante TE (descriptive) + turnover/cost (estimated). Realized A/B = forge.",
+    "note": "alpha_vector and Sigma untouched; base sleeve regenerated via STR_1715 forward_weights.R tilt logic verbatim (no new alpha)."
+  },
+
+  "codex_round": {
+    "status": "COMPLETED",
+    "model": "gpt-5.5_xhigh",
+    "stance": "REVISE",
+    "veto_flag": false,
+    "response_ref": "codex_critic_response_optimizer.json",
+    "challenge_note_ref": "optimizer_challenge_note.md",
+    "disposition": "REVISE accepted: C1 (weights.csv role-schema + mailbox copy written), C2 (package-native turnover 685.3% one-way <1100% PASS + cost 2.06% + decomposition showing max-cash turnover <= incumbent), C3 (TE downgraded to estimated_low_confidence + overlap diagnostic), C6 (challenge_note). C4 PARTIAL (CRISIS min-operator policy documented; realized CVaR/MDD = forge). C5 REBUTTAL (beta_port = forge backtest; TDC-vs-PG2 = governor admission; out of optimizer scope). No hard-constraint violation -> no Q-Lead escalate.",
+    "classification_summary": {"ACCEPT": 3, "ACCEPT_PARTIAL": 1, "PARTIAL": 1, "REBUTTAL": 1}
+  },
+
+  "axiom_assertions": {
+    "AX_002_process_honesty": "No realized performance number produced. Weights = mechanical product of inherited base sleeve x PIT overlay schedule with one operator changed. ex-ante TE labeled estimated_low_confidence; turnover/cost labeled estimated. Turnover decomposition surfaces that the 685% is inherent base-sleeve churn (both arms), not introduced by this change. forge authoritative for realized.",
+    "AX_001_v2_conditional_metric": "Codex AX-001 FAIL = pre-forge expected (no realized CRISIS/CAUTION SR series at optimizer stage). Conditional metric evaluated by forge/judge.",
+    "AX_008_tally_entry": {"source": "optimizer-research (Source 1 of 3)", "stance": "final", "concerns_documented_in": "optimizer_challenge_note.md", "triangulation_completes_at": "judge (with forge+codex evidence)"}
+  },
+
+  "state_machine_path": {
+    "current_stage": "RISK_DONE -> OPTIMIZER_DONE (ready)",
+    "next": "FORGE (A/B incumbent-product vs max-cash arm)"
+  },
+
+  "outputs": {
+    "files_written": [
+      "optimization_package.json (this, schema-valid)",
+      "optimization_package_draft.json (pre-codex)",
+      "weights.csv (mailbox + stage, role-schema)",
+      "stage_artifacts/WT_WT_S20260626_001/overlay_combine_schedule.csv",
+      "optimizer_challenge_note.md",
+      "codex_critic_response_optimizer.json"
+    ]
+  },
+
+  "created_at": "2026-06-26",
+  "created_by": "optimizer-research",
+  "promoted_to_final_at": "2026-06-26"
+}

@@ -1,0 +1,65 @@
+{
+  "role": "codex_alpha_critic",
+  "stance": "REVISE",
+  "veto_flag": null,
+  "critical_concerns": [
+    {
+      "id": "C1_BENCHMARK_MISMATCH",
+      "severity": "HIGH",
+      "concern": "The FAIL verdict is too benchmark-dependent. The basket spans KOSPI200 union KOSDAQ150, but the kill-gate active return is measured only versus KOSPI200-TR. The draft itself says the buyback top20 basket earned +0.80% gross per month and buyback-active names beat non-buyback names by +0.30% per month (t=1.27), while the KOSPI200-TR benchmark earned +1.31% per month. That means the negative active return of about -0.55% per month for form A is largely a benchmark-relative mega-cap-growth drag, not necessarily absence of stock-level buyback alpha.",
+      "suggested_action": "Rerun the same canonical screen against at least three benchmarks: equal-weight eligible universe, cap-weight KOSPI200 union KOSDAQ150, and a KOSPI/KOSDAQ blended benchmark matching the eligible universe. Report whether form A/B/C PORT_t remains negative under each. Keep the current FAIL only as 'FAIL versus KOSPI200-TR standalone benchmark'."
+    },
+    {
+      "id": "C2_HORIZON_MISMATCH",
+      "severity": "HIGH",
+      "concern": "The tested forecast horizon is 1M, but the Ikenberry-Lakonishok-Vermaelen anomaly is normally a post-announcement drift measured over much longer horizons. The draft tested trailing-12m intensity, binary trailing-12m, and event-month intensity, but all are evaluated on M+1 return. A 1-month horizon may be a poor test of a multi-month or multi-year repurchase signal. The weak 1M results, such as form A PORT_t=-0.927 and rank-IC=0.0076 (t=0.37), do not rule out an accumulate-and-hold effect.",
+      "suggested_action": "Test 3M, 6M, 12M, and 24M holding variants with overlapping-return HAC or calendar-time portfolios. Include event-time cumulative abnormal returns and a rolling active basket to see whether the gross +0.80% per month basket return compounds or decays."
+    },
+    {
+      "id": "C3_DECISION_NOT_EXECUTION",
+      "severity": "MEDIUM",
+      "concern": "The dataset uses buyback decision announcements, not actual execution or completion. In Korea, announced repurchase plans may be partially executed, delayed, cancelled, or mechanically disclosed without strong price-support intent. This can dilute the long leg. The draft's signal denominator uses planned amount over Size_M, but planned amount is not the same as realized buyback pressure.",
+      "suggested_action": "Where DART execution or completion disclosures are available, compare decision-only, execution-confirmed, high-completion-ratio, and no-execution subsets. At minimum, label this as a test of announced buyback intent, not realized repurchase demand."
+    },
+    {
+      "id": "C4_PIT_DENOMINATOR_SIZE_M",
+      "severity": "MEDIUM",
+      "concern": "The aq_dd to EOM(M) signal to M+1 return timing is broadly PIT-safe, because the portfolio is formed after announcement month and traded on next-month returns. However, using announcement-month-end market cap as the intensity denominator can still contaminate ranking with post-announcement price movement inside month M. This is not classic look-ahead into M+1, but it can embed event-month reaction and C4-style contemporaneous normalization.",
+      "suggested_action": "Recompute intensity using previous month-end market cap, announcement-date-minus-1 market cap if available, and planned KRW amount scaled by lagged ADV. Verify whether rank-IC=0.0076 and form A PORT_t=-0.927 are stable."
+    },
+    {
+      "id": "C5_TEXT_FILTER_VALIDATION",
+      "severity": "MEDIUM",
+      "concern": "The free-text aq_mth filter is plausible but not yet auditable enough for a decisive FAIL. It retains 857 of 933 events and excludes 51 off-market, 16 tender, 4 free-gift, 2 block, and 3 unknown events. If the keyword rules drop genuine open-market repurchases or include mechanically different acquisition types, the signal will be diluted. The include rule also appears broad: 매수/취득 without an exclude marker may admit ambiguous events.",
+      "suggested_action": "Manually audit a stratified sample of included and excluded disclosures, especially large planned amounts and negative-return cases. Report false include and false exclude rates. Also rerun a strict filter requiring explicit 장내 or 직접취득 language and a broad filter including ambiguous 취득 cases."
+    },
+    {
+      "id": "C6_RECENT_ONLY_SIGNAL",
+      "severity": "MEDIUM",
+      "concern": "The draft correctly flags instability, but the implication should be sharpened. Active-vs-inactive spread is negative in 2015-2018 (-0.07% per month, t=-0.15), weak in 2019-2022 (+0.17% per month, t=0.60), and only meaningful in 2023-2026 (+0.86% per month, t=1.95). This supports 'not robust across full sample', but it also suggests a plausible regime-dependent alpha after Korean corporate-value-up/buyback policy changes rather than pure overfit.",
+      "suggested_action": "Do not discard without a pre-specified regime test. Run a policy-regime or governance-reform dummy interaction, but require OOS validation because the 2023-2026 sample is short."
+    },
+    {
+      "id": "C7_AX000_METHOD_BREADTH",
+      "severity": "LOW",
+      "concern": "Only three signal forms were tested. The negative kill-gate is meaningful, but AX-000 cautions against declaring a dead-end after a small set of variants when obvious first-order variants remain untested: benchmark-neutralization, longer holding, lagged denominator, execution confirmation, and regime split.",
+      "suggested_action": "Change the verdict wording from broad FAIL to 'FAIL current 1M KOSPI200-TR standalone screen; revise required before killing hypothesis family'."
+    }
+  ],
+  "supporting_arguments": [
+    "The current screen does support rejection of the exact tested implementation: all three signal forms have negative portfolio-alpha t-statistics versus KOSPI200-TR: form A -0.927, form B -0.923, and form C -0.378, all far below the hard threshold of 2.95.",
+    "The intensity signal itself is weak at 1M: rank-IC is only 0.0076 with t=0.37, ICIR=0.032, and terciles are non-monotonic. This argues against planned-size intensity as currently specified.",
+    "The draft's own raw diagnosis shows direction is not wholly wrong: buyback-active stocks outperform non-buyback stocks by +0.30% per month, though insignificant at t=1.27.",
+    "The long basket has positive absolute performance: top20 intensity basket gross return is +0.80% per month with gross SR 0.50. The reported FAIL is driven by underperforming a strong KOSPI200-TR benchmark at +1.31% per month.",
+    "Coverage is acceptable for a sparse event strategy: trailing-12m active stocks average 27.2 per month, median 29, and 111 of 137 months have at least 20 active stocks. The result is not simply due to too few names, though early 2015 sparsity remains a caveat."
+  ],
+  "kill_scenarios": [
+    "If form A/B/C remain negative versus equal-weight eligible universe, cap-weight KOSPI200 union KOSDAQ150, and a KOSPI/KOSDAQ blended benchmark, the benchmark-mismatch objection is largely killed.",
+    "If 3M, 6M, 12M, and 24M calendar-time holding portfolios also fail after costs and HAC adjustment, the Ikenberry horizon objection is killed.",
+    "If lagged market cap denominators and announcement-date-minus-1 denominators produce the same weak rank-IC near 0.008 and negative active PORT_t, the Size_M PIT concern is killed.",
+    "If strict and broad aq_mth filters both produce negative benchmark-relative results and no material active-vs-inactive improvement, the text-classification concern is killed.",
+    "If execution-confirmed or high-completion events fail similarly, the decision-versus-completion dilution concern is killed.",
+    "If the 2023-2026 +0.86% per month spread disappears in a forward OOS or after neutralizing size/value/growth exposure, the regime-alpha salvage case is killed."
+  ],
+  "weakest_assumption": "The weakest assumption is that KOSPI200-TR is the correct binding benchmark for a KOSPI200 union KOSDAQ150 buyback basket. Given the draft's numbers, the strategy can be directionally positive versus non-buyback stocks and positive in gross absolute return while still failing against a mega-cap-growth-led KOSPI200-TR benchmark."
+}

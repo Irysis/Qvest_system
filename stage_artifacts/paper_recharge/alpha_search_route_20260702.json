@@ -1,0 +1,134 @@
+{
+  "date": "20260702",
+  "router_version": "paper_router_v2",
+  "sources_summary": {
+    "arxiv_candidates_total": 9,
+    "arxiv_new_today": 1,
+    "arxiv_carried_from_20260701": 8,
+    "curated_total_in_csv": 15,
+    "curated_new_today": 0,
+    "note": "Today's mcp_discovery re-surfaced 8/9 papers already routed on 20260701 (180-day recency window). Only 2606.31251 is genuinely new. Carried papers retain their 20260701 route (idempotent); they are NOT re-dispatched (yesterday's mode_queue already consumed them)."
+  },
+  "counts_by_route": {
+    "alpha": 0,
+    "optimizer": 2,
+    "risk": 1,
+    "regime": 2,
+    "skip": 4
+  },
+  "n_factor_candidates": 0,
+  "n_factor_testable": 0,
+  "alpha_autorun": {
+    "AUTORUN": 1,
+    "MAX_ALPHA": 2,
+    "n_run": 0,
+    "reason": "No new source qualifies as alpha-search candidate ((route=alpha AND kr_feasible) OR factor.verdict=testable). The single new paper (2606.31251) is an index-level strategy-evaluation methodology with no cross-sectional per-stock signal. batch_434 guard: no synthetic/fallback signal fabricated."
+  },
+  "papers": [
+    {
+      "title": "Regime-Conditional Distributional Comparison of Trading Strategies: A GAMLSS/ZAGA Framework Applied to the S&P 500",
+      "id": "2606.31251",
+      "source": "arxiv",
+      "status": "new",
+      "route": "regime",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Strategy-EVALUATION methodology: compares SVMP vs buy-and-hold on the S&P 500 index via GAMLSS/ZAGA, conditioning on regime covariates (realised volatility + cumulative market momentum). Index-level, 2-strategy comparison — no per-stock cross-sectional signal to extract, so no factor candidate. Routed to regime as the closest Qvest consumer (regime-conditional performance evaluation — relevant to factor-rotation RCMA and measurement-graduation regime-conditional analysis). Analysis-flag only, not an A/B signal."
+    },
+    {
+      "title": "AI Premium",
+      "id": "2606.30583",
+      "source": "arxiv",
+      "status": "carried_from_20260701",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": {
+        "name": "AI_Beta",
+        "def": "Firm-level beta to an AI factor built from realized AI token/dollar/user consumption growth (OpenRouter proprietary dataset); high-AI-beta firms earn higher subsequent returns.",
+        "novel": true,
+        "kr_feasible": false,
+        "verdict": "infeasible",
+        "confidence": "high"
+      },
+      "reason": "Requires proprietary AI-consumption (OpenRouter token) alt-data unavailable for KR; paper itself reports the premium is ABSENT in emerging markets including China. Alt-data + EM-absent → skip."
+    },
+    {
+      "title": "A Two-Stage Decision Support System for Sustainability-Aware Long Short Portfolio Optimization",
+      "id": "2606.25696",
+      "source": "arxiv",
+      "status": "carried_from_20260701",
+      "route": "optimizer",
+      "kr_feasible": false,
+      "factor_candidate": {
+        "name": "ESG_TODIMSort_score",
+        "def": "Multi-criteria ESG asset ranking via TODIMSort with MEREC-derived criterion weights.",
+        "novel": true,
+        "kr_feasible": false,
+        "verdict": "infeasible",
+        "confidence": "medium",
+        "note": "L/S paper — long leg would be evaluable long-only IF the ESG inputs existed, but KR ESG data is absent in our DB. Rejected on the SEPARATE ground of missing input data, not because it is L/S."
+      },
+      "reason": "Route value = optimizer methodology (Omega-ratio maximization via adaptive particle-swarm solver + projection repair under budget/bound/leverage). Factor infeasible (KR ESG data absent). optimizer queue = alpha-fixed A/B candidate (solver methodology)."
+    },
+    {
+      "title": "When Staking Rewards Compound: Measuring the Impact of Ethereum's Pectra Upgrade",
+      "id": "2606.23337",
+      "source": "arxiv",
+      "status": "carried_from_20260701",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Crypto / Ethereum staking — outside KR equity scope."
+    },
+    {
+      "title": "IPO Finance Agent: Benchmark of LLM Financial Analysts Beyond Finance Agent v2",
+      "id": "2606.23032",
+      "source": "arxiv",
+      "status": "carried_from_20260701",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "LLM agent benchmark / IPO due-diligence retrieval — no cross-sectional equity signal."
+    },
+    {
+      "title": "Which Portfolios? The Construction Dependence of Factor Model Performance",
+      "id": "2606.19550",
+      "source": "arxiv",
+      "status": "carried_from_20260701",
+      "route": "optimizer",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Factor-model evaluation methodology: test-asset construction (selection/weighting/holding/rebalancing, incl. dynamic weight management) materially shifts model rankings. Route optimizer as a construction-discipline caution (weighting/rebalance is a design choice); no per-stock factor to extract."
+    },
+    {
+      "title": "Fitting Accumulated Stock Returns with Tempered Skew t-Distribution",
+      "id": "2606.19318",
+      "source": "arxiv",
+      "status": "carried_from_20260701",
+      "route": "risk",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Tail/distribution modeling of multi-day index returns (capped-Inverse-Gamma stochastic vol -> tempered Skew-t). Risk-model input (tail/ES). Already prototyped 20260701 (skewt_19318_results.json). No cross-sectional factor."
+    },
+    {
+      "title": "Robust Transformer-Based One-Step Stock Index Forecasting via Shifted Data Augmentation",
+      "id": "2606.15701",
+      "source": "arxiv",
+      "status": "carried_from_20260701",
+      "route": "regime",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Single-index (VN30/S&P500) one-step forecasting benchmark — index-level, no cross-section. Route regime as a potential market-timing/overlay input (analysis flag only)."
+    },
+    {
+      "title": "Composite likelihood inference of fractional Gaussian processes with sequentially optimal subset selection",
+      "id": "2606.11962",
+      "source": "arxiv",
+      "status": "carried_from_20260701",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Pure statistical estimation methodology (fBm/fGn Godambe-information subset selection) applied to a single volatility series. No cross-sectional equity signal; Hurst/fractional momentum already FALSIFIED (2026-06-21). Skip (theory)."
+    }
+  ]
+}

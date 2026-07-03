@@ -1,0 +1,130 @@
+{
+  "task_id": "WT-D20260621_007",
+  "as_of_date": "2026-06-21",
+  "forecast_horizon": "1M",
+  "hypothesis_title": "Signed Flow Run-Length Momentum (M36)",
+  "agent_role": "alpha-research",
+  "wt_type": "discovery",
+  "selection_objective": "rank_ic",
+  "metric_type": "canonical_screen",
+  "verdict": "MEANINGFUL_NEGATIVE_SCREEN_ROUTE",
+  "verdict_one_line": "Construction is genuinely novel (distinct from INV09, monthly-median Spearman -0.33 < 0.5 target) but the long-only top-N tradeable leg fails decisively (PORT_t -1.28, rank-IC -0.031 Harvey-t -5.38). The real signal is INVERTED and SHORT-LEG/CONTRARIAN-only: sustained smart-money BUY streaks underperform; SELL streaks subsequently rebound (bottom-20 gross active SR 0.45, t 2.09). KR no-short cannot harvest it. Hypothesized execution-program continuation mechanism is rejected by the data (mean-reversion, not momentum). Screen-route only.",
+
+  "alpha_vector_note": "Long-only alpha-hat over KOSPI200 u KOSDAQ150 (PRIMARY MAG_RUN z-score) saved to stage_artifacts/WT-D20260621_007/alpha_scores.parquet (79,039 rows, 254 sig_dates 2005-01..2026-03). Cross-sectional z per sig_date. Since the signal is negative-IC and the long leg has no edge, this alpha_vector is NOT recommended for any long-only sizing; it is retained for screen-route / DPL-feature consideration (the inverted/contrarian content may be a useful feature, not a standalone long signal).",
+  "signal_matrix_ref": "stage_artifacts/WT-D20260621_007/alpha_scores.parquet",
+
+  "factor_specs": [
+    {
+      "factor_family": "InvestorFlow_Structure",
+      "proxy": "M36_SignedFlowRun (MAG_RUN primary)",
+      "formula": "smart_t = Foreign_t + Institutional_t (daily net-buy KRW); s_t = sign(smart_t) with |smart_t|<1e8 KRW => 0 (noise floor); RunLen_t = signed consecutive same-sign streak ending at t (zero day breaks streak), clipped to [-10,+10]; MAG_RUN score = RunLen_t * (AvgAbsFlowInRun / Size_{t-1}); cross-section winsor(1,99) + z-score per sig_date (C13 Z_Score_Aligned).",
+      "lag_rule": "investor flow Date < sig_date strict (C2, T+1 lag); Size t-1 latest; ADV t-1 20d",
+      "winsorization": "1/99 cross-sectional then z-score",
+      "neutralization": "none (cross-sectional z only)",
+      "economic_rationale": "HYPOTHESIZED (and REJECTED by data): a sustained one-directional informed (Foreign+Institutional) net-buy streak proxies a multi-day execution PROGRAM not completable in one day due to market impact, predicting continued same-direction pressure. NON-return-derived (flow identity), distinct from INV09 sign-count fraction which is blind to consecutiveness (10 alternating days = INV09 0.5 but RunLen ~1). EMPIRICAL FINDING: the forward relation is the OPPOSITE of continuation -- long buy-streaks mean-revert (rank-IC -0.031, t -5.38); the harvestable content is contrarian on sell-streaks (un-shortable in KR).",
+      "weight_theta": 1.0,
+      "is_return_derived": false,
+      "redundancy_cluster_id": "investor_flow_structure_runlength",
+      "references": ["Yan-Zhang 2009 (institutional trade persistence)", "Choe-Kho-Stulz 2005 RFS", "Daniel-Moskowitz 2016 (momentum crashes / reversal)"]
+    }
+  ],
+
+  "construction_grid": {
+    "selection_type": "chain",
+    "selection_type_rationale": "Hypothesis-driven sequential build, 1 concept; variant/eps/run_cap/top_n chosen by IS-mechanism reasoning. Per measurement-graduation §3 DSR gate not applicable (chain, not sweep). All 6 configs reported transparently; the IS-recommended primary (MAG_RUN/cap10/eps1e8/z/n20) was the entry point and is reported as authoritative; no OOS-driven cherry-picking (all configs agree on the negative direction).",
+    "configs_tested": [
+      {"tag": "MAG_cap10_eps1e8_z_n20_PRIMARY", "variant": "MAG_RUN", "run_cap": 10, "eps_krw": 1e8, "transform": "z", "top_n": 20, "port_t": -1.28, "ir": -0.263, "net_sr_active": -0.263, "turnover_annual": 20.52, "alpha_ann": -0.0386},
+      {"tag": "RAW_cap10_eps1e8_z_n20", "variant": "RAW_RUN", "run_cap": 10, "eps_krw": 1e8, "transform": "z", "top_n": 20, "port_t": -3.03, "ir": -0.586, "turnover_annual": 20.98, "alpha_ann": -0.0567},
+      {"tag": "NET_cap10_eps1e8_z_n20", "variant": "NET_RUN", "run_cap": 10, "eps_krw": 1e8, "transform": "z", "top_n": 20, "port_t": -1.28, "ir": -0.263, "turnover_annual": 20.52, "alpha_ann": -0.0386},
+      {"tag": "MAG_cap10_eps1e8_z_n15", "variant": "MAG_RUN", "top_n": 15, "port_t": -0.67, "ir": -0.136, "turnover_annual": 21.18, "alpha_ann": -0.0220},
+      {"tag": "MAG_cap10_eps1e8_z_n25", "variant": "MAG_RUN", "top_n": 25, "port_t": -1.34, "ir": -0.271, "turnover_annual": 20.02, "alpha_ann": -0.0372},
+      {"tag": "MAG_cap10_eps1e8_rank_n20", "variant": "MAG_RUN", "transform": "rank", "top_n": 20, "port_t": -1.28, "ir": -0.262, "turnover_annual": 20.52, "alpha_ann": -0.0385}
+    ],
+    "grid_note": "Every config is negative PORT_t with ~2000% annual turnover (>>1100% screening ceiling). RAW_RUN is worst (-3.03), magnitude/net weighting (MAG/NET) only dampens the negative; NET_RUN == MAG_RUN top-20 selection (same ranking dominated by RunLen sign x magnitude). top_n 15<20<25 does not rescue. Direction is robust to all knobs -> not a tuning artifact."
+  },
+
+  "orthogonality": {
+    "method": "monthly-median Spearman (authoritative per measurement-graduation §6), PRIMARY MAG_RUN raw z-score vs C13 Z_Score_Aligned comparator factors (load_month_factors, C14/C15 PIT-safe), 254 sig_dates",
+    "make_or_break_inv09": {
+      "factor": "INV09_Flow_Persistence",
+      "median_spearman": -0.330,
+      "mean_spearman": -0.260,
+      "target": "|corr| < 0.5",
+      "result": "PASS_DISTINCT",
+      "interpretation": "M36 run-length is genuinely DISTINCT from INV09 sign-count (|0.33| < 0.5). The correlation is NEGATIVE because INV09 is IC-direction-aligned (flipped to higher=better) while raw MAG_RUN is positively oriented; the two carry oppositely-signed cross-sectional information. M36 is NOT INV09 relabeled -- the novelty claim holds. (Caveat: distinctness is established; but distinctness bought nothing, since the long leg has no edge.)"
+    },
+    "all_comparators_median_spearman": {
+      "INV01_Foreign_NetBuy_20d": 0.189,
+      "INV03_Inst_NetBuy_20d": 0.081,
+      "M01_Mom_12_1": 0.038,
+      "M24_Sector_Rel_Mom": 0.016,
+      "INV08_Foreign_Inst_Agreement": 0.013,
+      "M08_Residual_Mom": 0.006,
+      "INV10_Smart_Money_Flow": -0.308,
+      "INV09_Flow_Persistence": -0.330
+    },
+    "targets_met": "ALL targets met: INV09 |0.33|<0.5; INV01/INV03 |.|<0.6; INV08/INV10 |.|<0.6; M01/M08/M24 |.|<0.3. Confirms M36 is a distinct flow-STRUCTURE construct, not return-derived (M01/M08/M24 ~0) and not a raw flow-level proxy (INV01 only 0.19)."
+  },
+
+  "decile_concentration": {
+    "lesson_ref": "C23/C24 -- rank-IC alone insufficient; report decile spread + top-decile significance",
+    "profile_active_return_monthly": {
+      "D1": {"active": 0.0045, "t": 1.74}, "D2": {"active": 0.0063, "t": 2.98},
+      "D3": {"active": 0.0034, "t": 1.57}, "D4": {"active": 0.0055, "t": 2.22},
+      "D5": {"active": 0.0073, "t": 2.80}, "D6": {"active": 0.0003, "t": 0.13},
+      "D7": {"active": 0.0002, "t": 0.09}, "D8": {"active": -0.0013, "t": -0.58},
+      "D9": {"active": -0.0036, "t": -1.67}, "D10": {"active": -0.0014, "t": -0.58}
+    },
+    "d10_d9_active_gap": 0.0022,
+    "d10_d1_spread": -0.0059,
+    "top_decile_active_t": -0.58,
+    "shape": "MONOTONE-DECREASING then flat. Edge concentrated in BOTTOM/LOW deciles (D1-D5 positive, t up to 2.98); TOP decile (D10, long buy-streaks) NOT significant and slightly negative (t -0.58). This is the OPPOSITE of top-concentrated.",
+    "classification": "SHORT-LEG / CONTRARIAN-only (worse than C24: here the long leg is actively flat-to-harmful, not merely weak). The harvestable signal is a contrarian bet on sustained SELL streaks (bottom-20 gross active SR 0.45, t 2.09, diagnostic pre-cost) which KR no-short mandate forbids.",
+    "tradeable_long_only": false
+  },
+
+  "diagnostics": {
+    "rank_ic": -0.0307,
+    "rank_ic_note": "NEGATIVE and significant (Harvey-t -5.38). High MAG_RUN predicts LOWER forward 1M return -> hypothesized continuation REJECTED, mean-reversion confirmed.",
+    "icir": -0.333,
+    "harvey_t_stat": -5.38,
+    "harvey_t_note": "rank-IC NW-lag3 t; ADVISORY per measurement-graduation §3 (not graduation-binding). Strongly significant but WRONG SIGN for a long-only momentum factor.",
+    "n_months": 254,
+    "portfolio_alpha_t_nw_lag3": -1.28,
+    "portfolio_alpha_t_note": "PRIMARY MAG_RUN canonical_screen NW lag-3. metric_type=canonical_screen (screening, NOT admission-binding -- forge build_bt_result authoritative). FAILS graduation HARD >=2.95 decisively (negative).",
+    "net_sr_active": -0.263,
+    "turnover_annual": 20.52,
+    "turnover_note": "~2052% annual -- run-length restarts on every sign flip -> jumpy month-to-month -> far above the 1100% KR long-only screening ceiling. Honest-risk #4 materialized.",
+    "oos_retention": "NA (IS active SR <= 0 at all anchored splits 55/65/75 -> retention undefined; signal is negative in-sample, no OOS retention to measure)",
+    "calmar": 0.045,
+    "calmar_note": "CAGR 0.032 / MDD 0.704 net -> 0.045, fails HARD >=0.64 decisively.",
+    "monotonicity": "monotone in the WRONG direction (D1>D10 in active return)",
+    "subperiod_stability": "negative direction stable across configs and deciles (robust negative, not a regime artifact)"
+  },
+
+  "graduation_gate_summary": {
+    "portfolio_alpha_t_nw": {"value": -1.28, "hard_threshold": 2.95, "pass": false, "severity": "hard"},
+    "deflated_sharpe_ratio": {"value": "n/a", "note": "chain selection_type -> DSR gate not applicable (measurement-graduation §3); moot given negative PORT_t", "severity": "hard_sweep_only"},
+    "oos_retention": {"value": "NA (negative IS)", "hard_threshold": 0.7, "pass": false},
+    "calmar": {"value": 0.045, "hard_threshold": 0.64, "pass": false},
+    "rank_ic": {"value": -0.0307, "advisory_threshold": 0.04, "pass": false, "severity": "advisory"},
+    "overall": "FAIL all graduation HARD gates. NOT a graduation candidate."
+  },
+
+  "challenge_flags": [
+    {"id": "RF-FLOW-NEG-IC", "severity": "HIGH", "note": "rank-IC NEGATIVE (-0.031, Harvey-t -5.38): construction direction is wrong for long-only momentum. Hypothesized execution-program continuation mechanism REJECTED; data shows flow-streak mean-reversion."},
+    {"id": "RF-SHORTLEG", "severity": "HIGH", "note": "Edge is short-leg/contrarian only (bottom-20 gross active SR 0.45 t 2.09); top decile (long buy-streak) t -0.58. KR no-short cannot harvest. Same failure class as C24, sharper."},
+    {"id": "RF-TURNOVER", "severity": "MEDIUM", "note": "Annual turnover ~2052% (>>1100% ceiling); sign-flip restarts make score jumpy. Even an inverted long-only version would be cost-crushed."},
+    {"id": "RF-A5", "severity": "LOW", "note": "early-sample KOSDAQ150 investor coverage sparse (burn-in mitigated; 254 months 2005+ low-info at very start)."}
+  ],
+
+  "screen_route_recommendation": {
+    "route": "DPL_FEATURE (and possibly FR contrarian-overlay diagnostic)",
+    "rationale": "The signal is REAL (Harvey-t -5.38, decile monotone) but INVERTED and un-shortable as a standalone long-only sleeve. As a DPL input feature, an end-to-end learner could exploit the negative loading (down-weight sustained-buy-streak names) without needing a short leg. NOT for capital admission. is_return_derived=false recorded so RAMP/FR orthogonality accounting does not double-count with momentum.",
+    "do_not_promote": true
+  },
+
+  "honest_reporting": {
+    "ax000_amended": "A clean, faithfully-reported negative IS success. M36 is one data point in the ongoing momentum-hunt campaign; this is NOT a structural limit. The campaign finding sharpens: flow LEVEL (C21/C22) had no edge; flow STRUCTURE (M36 run-length) has a real but INVERTED + un-harvestable edge. Distinctness from INV09 was proven (the novelty test passed) -- but distinctness did not translate to a tradeable long-only alpha. Mechanism learning: KR smart-money buy-streaks mean-revert at the 1M horizon (consistent with Daniel-Moskowitz momentum-crash/reversal intuition on the buying side), they do not continue."
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "strategy": "STR_1715_AR_on_M4_R05_overlay_PG2",
+  "as_of": "2026-07-01",
+  "recompute": "2026-06-17",
+  "formula": "w_str1715 × m4_scalar × β_AR × β_R05_V5(regime,R05_z)",
+  "overlays": {
+    "m4_scalar": {
+      "value": 0.826,
+      "date": "2026-07-01",
+      "source": "M4 BOCPD schedule (신선)"
+    },
+    "beta_AR": {
+      "value": 0.4,
+      "date": "2026-07-01",
+      "source": "absorption ratio→beta_threshold (신선)"
+    },
+    "beta_R05_V5": {
+      "value": 0.3,
+      "regime": "CRISIS",
+      "R05_z_avg": -0.4327,
+      "q20_past": 0.1817,
+      "variant": "V5 (생산 admit)"
+    }
+  },
+  "invested": 0.0991,
+  "cash_pct": 0.9009,
+  "n_equity": 20,
+  "pit": {
+    "no_future_reference": true,
+    "data_cutoff": "prev month-end",
+    "basis": "self-contained: 스케줄/factor_db 직접 read"
+  },
+  "governance": {
+    "book_state": "UNCHANGED (governor 정지)",
+    "telegram": "NOT sent",
+    "production_readonly": true
+  }
+}

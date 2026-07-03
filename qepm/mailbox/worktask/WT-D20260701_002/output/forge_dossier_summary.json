@@ -1,0 +1,88 @@
+{
+  "wt_id": "WT-D20260701_002",
+  "agent": "forge",
+  "measurement": "capital-grade dossier (contract official)",
+  "period": {
+    "start": "2004-02-02",
+    "end": "2026-06-01",
+    "n_months": 269
+  },
+  "improved_faith": {
+    "Sharpe": 1.8747,
+    "CAGR": 0.4408,
+    "Ann_Vol": 0.209,
+    "MDD": 0.2121,
+    "Calmar": 2.0786,
+    "Sortino": 5.0588,
+    "Portfolio_Alpha_t_NW_lag3": 6.0936,
+    "Portfolio_Alpha_t_pvalue": 1.1042e-09,
+    "Information_Ratio": 0.9256,
+    "Alpha_Annualized": 0.3803,
+    "Beta_to_BM": 0.0913,
+    "Correlation": 0.095,
+    "Hit_vs_BM": 0.658
+  },
+  "current_book": {
+    "Sharpe": 1.6747,
+    "CAGR": 0.3859,
+    "Ann_Vol": 0.2103,
+    "MDD": 0.2329,
+    "Calmar": 1.6567,
+    "Sortino": 3.9053,
+    "Portfolio_Alpha_t_NW_lag3": 4.7193,
+    "Portfolio_Alpha_t_pvalue": 2.3663e-06,
+    "Information_Ratio": 0.7635,
+    "Alpha_Annualized": 0.3471,
+    "Beta_to_BM": 0.041,
+    "Correlation": 0.0424,
+    "Hit_vs_BM": 0.6283
+  },
+  "delta": {
+    "Sharpe": 0.2,
+    "CAGR": 0.0549,
+    "Ann_Vol": -0.0014,
+    "MDD": -0.0209,
+    "Calmar": 0.4218,
+    "Sortino": 1.1535,
+    "Portfolio_Alpha_t_NW_lag3": 1.3743,
+    "Portfolio_Alpha_t_pvalue": -2.3652e-06,
+    "Information_Ratio": 0.1621,
+    "Alpha_Annualized": 0.0332,
+    "Beta_to_BM": 0.0503,
+    "Correlation": 0.0526,
+    "Hit_vs_BM": 0.0297
+  },
+  "paired_nw_t_improved_minus_current": 2.0359,
+  "integrity": {
+    "faith": "WARNING",
+    "book": "WARNING"
+  },
+  "metric_type": {
+    "faith": "backtested",
+    "book": "backtested"
+  },
+  "register": {
+    "faith_blocked": false,
+    "book_blocked": false
+  },
+  "honest_caveats": ["MECHANISM_GENERIC=개선 오버레이 메커니즘은 generic 비대칭 추세추종(하락추세 방어) — 논문4(Safari-Schmidhuber) 고유 아님. plain-TS-mom도 계약SR 1.97(개선의 ~93%).", "PROXY_PROMOTION=proxy 재구성(python ar_faithful_v3) 월수익 시리즈를 forge full build_bt_result로 official(backtested) 승격.", "DSR_MULTIPLE_TESTING=다변형(T=8/16/32/64 + regime map + combine) 탐색 → DSR 다중검정 haircut 여지. 단 사전약정 논문계수가 placebo+oos_retention 통과.", "GFC2008_AR_SUPERIOR=2008 GFC 구간낙폭은 현행 AR(-9.3%)이 개선 충실(-17.5%) 우위. 충실은 추세 de-risk지 systemic-crash 탐지 아님.", "PURE_MEASUREMENT=forge는 주어진 ret_faith/ret_book를 계약으로 측정만 함. 오버레이 β/수익경로/alpha/weight 재해석 없음."],
+  "sharpe_reconciliation": {
+    "note": "두 Sharpe 정의 차이(자체합성 아님, 둘 다 표준). 계약 build_metrics는 arithmetic mean-ER Sharpe(Charter v1.4 §12, graduation-authoritative). verify/book원본 run_layer5는 table.AnnualizedReturns[3,1] geometric Sharpe.",
+    "contract_arithmetic_meanER": {
+      "faith": 1.8747,
+      "book": 1.6747,
+      "delta": 0.2
+    },
+    "verify_geometric_tableAnn": {
+      "faith": 2.1112,
+      "book": 1.8365,
+      "delta": 0.2747
+    },
+    "direction": "개선>현행 두 정의 모두 일관. delta +0.20(계약) / +0.27(geometric)."
+  },
+  "vs_dossier_input_verify": {
+    "note": "dossier_input verify: faith SR 2.111 / book SR 1.837 (=geometric). 계약 official(arithmetic mean-ER)은 faith 1.875 / book 1.675 — graduation Gate 권위.",
+    "faith_sr_verify_geometric": 2.111,
+    "book_sr_verify_geometric": 1.837
+  }
+}

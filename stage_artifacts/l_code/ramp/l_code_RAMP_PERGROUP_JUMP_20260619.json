@@ -1,0 +1,18 @@
+{
+  "l_code": "L-RAMP-20260619_141402",
+  "strategy_id": "RAMP_PERGROUP_JUMP_20260619",
+  "grade": "B",
+  "core_reference": "RAMP new regime engine Shu-Mulvey 2024 per-group jump (fails: KR decay vs cyclical assumption)",
+  "lesson_text": "새 국면엔진 설계(최신페이퍼 Shu-Mulvey 2024 arXiv 2410.14841 per-factor Sparse Jump Model): 각 군 IC시계열에 2-state jump model 적용해 군별 P(working) 추정→군 타이밍. 결과: pt 0.62 ≪ Cascade단독 2.85(시장국면 최고)로 대실패. 원인=Shu-Mulvey는 팩터국면 *순환*(bull↔bear) 가정인데 KR팩터는 *순환아닌 decay*(2017+일방)→per-group jump가 Momentum/Value 최근IC낮음을 'bear국면'으로 오분류 down-weight(실은 영구decay)+약군 Size_Liq up-weight=틀린선택. 함의: 어떤 국면엔진도 최근 팩터성과로 타이밍하면 decay쫓아 실패. 장기구조 조건화(Cascade)만 작동. cutting-edge 페이퍼로도 KR decay벽 못넘음.",
+  "tags": "RAMP",
+  "created_at": "2026-06-19",
+  "research_mode": "ramp",
+  "created_by": "emit:ramp",
+  "metric_type": "backtested",
+  "construction_type": "chain",
+  "mechanism_hypothesis": "",
+  "pergroup_jump_pt": 0.62,
+  "cascade_pt": 2.85,
+  "momentum_pworking": 0.16,
+  "value_pworking": 0.16
+}

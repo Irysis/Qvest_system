@@ -1,0 +1,285 @@
+{
+  "task_id": "WT-D20260621_011",
+  "as_of_date": "2026-06-21",
+  "forecast_horizon": "1M",
+  "wt_type": "discovery",
+  "hypothesis_title": "Index Inclusion Frontrun Drift",
+  "verdict": "NEGATIVE_VALIDATED",
+  "verdict_summary": "KR index-inclusion drift is NEGATIVE under PIT (effective-date panel). 0/72 PIT-valid configs positive; freshest cohort (age 0-2) most negative (-0.9 to -1.5%/mo); placebo indistinguishable; era 2015-2026 pt=-1.49 (inverted, not just decayed); momentum corr 0.80 (re-packaging). Frontrun window unobservable (announcement dates absent). NOT graduable; NOT a viable overlay/sleeve (negative+lumpy). Honest finding: even the cleanest EXOGENOUS mechanical-demand event does not translate to KR long-only top-25 — the index effect runs up BEFORE the (unobservable) effective date and mean-reverts after.",
+  "screen_route": "NONE",
+  "screen_route_note": "Not OVERLAY/FR/DPL candidate: portfolio-alpha t negative across all windows AND momentum-redundant (corr 0.80) AND lumpy. A DPL feature must carry residual signal; this carries negative, momentum-collinear, mean-reverting signal. L-code VALIDATED_HARD_FAIL.",
+  "selection_objective": "subperiod_stability",
+  "alpha_vector": {
+    "A000670": 0.0166,
+    "A002030": 0.4126,
+    "A006040": 0.0202,
+    "A007340": 0.0119,
+    "A007660": 0.1178,
+    "A014620": 0.007,
+    "A017960": 0.0056,
+    "A032820": -0.1677,
+    "A033500": 0.007,
+    "A034230": 0.2181,
+    "A036620": 0.2332,
+    "A050890": -0.0078,
+    "A052400": 0.1718,
+    "A056080": 0.1135,
+    "A059090": 0.1667,
+    "A060370": 0.2403,
+    "A062040": 0.1295,
+    "A064400": 0.2234,
+    "A071320": 0.0138,
+    "A071970": 0.2239,
+    "A079370": 0.004,
+    "A082740": 0.2422,
+    "A083650": 0.1031,
+    "A101730": 0.0217,
+    "A108490": 0.1374,
+    "A161580": 0.0065,
+    "A211050": 0.2882,
+    "A214430": 0.1714,
+    "A226950": 0.0986,
+    "A251970": 0.3055,
+    "A268280": 0.0271,
+    "A304100": 0.165,
+    "A307950": 0.2739,
+    "A323280": 0.0051,
+    "A347850": 0.1287,
+    "A388720": 0.2115,
+    "A443060": 0.0167,
+    "A466100": 0.1404
+  },
+  "confidence_vector": {
+    "A000670": 0.15,
+    "A002030": 0.15,
+    "A006040": 0.15,
+    "A007340": 0.15,
+    "A007660": 0.15,
+    "A014620": 0.15,
+    "A017960": 0.15,
+    "A032820": 0.15,
+    "A033500": 0.15,
+    "A034230": 0.15,
+    "A036620": 0.15,
+    "A050890": 0.15,
+    "A052400": 0.15,
+    "A056080": 0.15,
+    "A059090": 0.15,
+    "A060370": 0.15,
+    "A062040": 0.15,
+    "A064400": 0.15,
+    "A071320": 0.15,
+    "A071970": 0.15,
+    "A079370": 0.15,
+    "A082740": 0.15,
+    "A083650": 0.15,
+    "A101730": 0.15,
+    "A108490": 0.15,
+    "A161580": 0.15,
+    "A211050": 0.15,
+    "A214430": 0.15,
+    "A226950": 0.15,
+    "A251970": 0.15,
+    "A268280": 0.15,
+    "A304100": 0.15,
+    "A307950": 0.15,
+    "A323280": 0.15,
+    "A347850": 0.15,
+    "A388720": 0.15,
+    "A443060": 0.15,
+    "A466100": 0.15
+  },
+  "signal_matrix_ref": "stage_artifacts/WT-D20260621_011/alpha_scores.parquet",
+  "factor_specs": [
+    {
+      "factor_family": "EventDriven_IndexInclusion",
+      "proxy": "freshness_decay x passive_footprint (Size/ADV)",
+      "formula": "score = exp(-age/tau) * (1 + lambda*footprint); footprint = xs_zscore(log(w_idx/ADV21)); w_idx=Size/sum(Size); eligible iff age in [A_lag,A_max] & member(K200uKQ150) & not(Admin/Halt/Unfaithful)",
+      "lag_rule": "membership EFFECTIVE-date panel, A_lag=1 (effective+1M) for PIT-safety; Size/ADV from t-1 month-end",
+      "winsorization": "none (footprint xs-zscore)",
+      "neutralization": "none (raw event sleeve)",
+      "economic_rationale": "Index addition = forced passive + benchmark-tracker buying = mechanical price pressure (Shleifer 1986 downward-sloping demand; Chen-Noronha-Singal 2004 index effect). Exogenous threshold-crossing event (committee-driven), decoupled from good-news/run-up mean-reversion confound. AX-007 buy-side escape.",
+      "weight_theta": 1,
+      "references": ["Shleifer 1986 JF", "Chen-Noronha-Singal 2004 JF", "Harris-Gurel 1986"]
+    }
+  ],
+  "diagnostics": {
+    "metric_type": "canonical_screen",
+    "metric_type_note": "canonical_screen_bt() -> contract build_benchmark_compare (NW lag-3). admission binding은 forge build_bt_result. proxy 손계산 없음.",
+    "selection_type": "sweep",
+    "n_trials": 144,
+    "n_trials_note": "2(A_lag)x4(A_max)x3(tau)x3(lambda)x2(top_n)=144 explicit grid -> sweep. DSR HARD 적용 대상이나 0/72 PIT-valid이 pt>0이라 무의미(모두 음수).",
+    "portfolio_alpha_t_nw_lag3_IS": -0.282,
+    "portfolio_alpha_t_nw_lag3_HOLDOUT": -1.033,
+    "portfolio_alpha_t_nw_lag3_FULL": -0.885,
+    "portfolio_alpha_t_nw_lag3_PLACEBO": -0.738,
+    "net_sr_full": -0.123,
+    "information_ratio_full": -0.123,
+    "turnover_annual": 5.11,
+    "calmar_full": 0.023,
+    "mdd_full": 0.663,
+    "cagr_full": 0.015,
+    "rank_ic": null,
+    "rank_ic_note": "본 알파는 binary 이벤트 sleeve(연속 score는 freshness-decay) — cross-sectional rank-IC 대신 decile term-structure + portfolio-alpha t를 권위 진단으로 사용(measurement-graduation §2).",
+    "decile_D10_mean_active": -0.0018,
+    "decile_D10_t_nw": -0.45,
+    "decile_D10_D9_gap_mean": -0.0028,
+    "decile_monotonicity_note": "단조성 없음 — D10(가장 fresh/high-footprint inclusion)가 -0.18%/mo로 최하위. top-concentration 역전.",
+    "pit_valid_configs_pt_positive": 0,
+    "pit_valid_configs_total": 72,
+    "era_2005_2014_pt": 0.179,
+    "era_2015_2026_pt": -1.492,
+    "cohort_breadth_mean": 21.9,
+    "cohort_breadth_median": 19,
+    "cohort_months_under_25": 155,
+    "cohort_months_total": 254
+  },
+  "age_term_structure": [
+    {
+      "age": 0,
+      "mean_active": -0.0091,
+      "t_nw": -0.855,
+      "n": 643
+    },
+    {
+      "age": 1,
+      "mean_active": -0.014,
+      "t_nw": -1.488,
+      "n": 642
+    },
+    {
+      "age": 2,
+      "mean_active": -0.0146,
+      "t_nw": -1.63,
+      "n": 632
+    },
+    {
+      "age": 3,
+      "mean_active": -0.0044,
+      "t_nw": -0.379,
+      "n": 635
+    },
+    {
+      "age": 4,
+      "mean_active": 0.0102,
+      "t_nw": 1.158,
+      "n": 604
+    },
+    {
+      "age": 5,
+      "mean_active": -0.0065,
+      "t_nw": -0.855,
+      "n": 605
+    },
+    {
+      "age": 6,
+      "mean_active": -0.0126,
+      "t_nw": -1.265,
+      "n": 589
+    },
+    {
+      "age": 7,
+      "mean_active": 0.0016,
+      "t_nw": 0.19,
+      "n": 624
+    },
+    {
+      "age": 8,
+      "mean_active": -0.0081,
+      "t_nw": -0.893,
+      "n": 619
+    },
+    {
+      "age": 9,
+      "mean_active": 0.0134,
+      "t_nw": 1.432,
+      "n": 619
+    },
+    {
+      "age": 10,
+      "mean_active": -0.0001,
+      "t_nw": -0.01,
+      "n": 603
+    },
+    {
+      "age": 11,
+      "mean_active": -0.0173,
+      "t_nw": -2.226,
+      "n": 601
+    },
+    {
+      "age": 12,
+      "mean_active": -0.0039,
+      "t_nw": -0.379,
+      "n": 562
+    }
+  ],
+  "orthogonality": [
+    {
+      "factor": "momentum_12_1",
+      "corr_active": 0.798,
+      "target": 0.35,
+      "pass": false,
+      "basis": "active(-BM)"
+    },
+    {
+      "factor": "size_SMB",
+      "corr_active": 0.048,
+      "target": 0.3,
+      "pass": true,
+      "basis": "active(-BM)"
+    },
+    {
+      "factor": "st_reversal",
+      "corr_active": 0.672,
+      "target": 0.3,
+      "pass": false,
+      "basis": "active(-BM)"
+    }
+  ],
+  "pit_handling": {
+    "panel_date_semantics": "EFFECTIVE-date only (monthly month-end membership state in us_k200/us_kq150.parquet). 640 K200 + 342 KQ150 0->1 transitions. Inclusions cluster Jun(205)/Dec(42) = KRX semi-annual rebalance.",
+    "pit_valid_window": "A_lag=1 (hold from effective+1M). This is the ONLY config cited for the verdict.",
+    "pit_borderline_window": "A_lag=0 (effective month) = sensitivity-only (assumes announcement known at effective-21d). Also negative (best -0.121). NOT used for verdict.",
+    "frontrun_window": "UNAVAILABLE — announcement dates absent from data. Pre-effective frontrun alpha (the genuinely profitable window per literature) cannot be tested without fabricating look-ahead. Explicitly NOT manufactured.",
+    "checks": "C1 (xs zscore per month, IS-only grid select), C2/C5 (score uses m-1 observables, forward return from m+1), C10 (liq adv t-1 21d), C13 (score>=0 always), C14/C15 (RAWDATA+membership carve-out, no Factor DB factor)."
+  },
+  "challenge_flags": [
+    {
+      "id": "RF-NEG-1",
+      "severity": "HIGH",
+      "note": "0/72 PIT-valid(A_lag=1) configs have positive portfolio-alpha t. Best PIT-valid IS pt=-0.282, Holdout pt=-1.033, Full pt=-0.885. KR index-inclusion drift is NEGATIVE at/after the effective date."
+    },
+    {
+      "id": "RF-PIT-1",
+      "severity": "HIGH",
+      "note": "Membership panel is EFFECTIVE-date only (month-end state). The frontrun alpha lives BEFORE effective (announcement ~2-4wk prior) and is UNOBSERVABLE in this data. A_lag=0 (borderline, announcement-assumed) is sensitivity-only and ALSO negative (best -0.121). No frontrun window was manufactured from effective-date flags."
+    },
+    {
+      "id": "RF-PLACEBO-1",
+      "severity": "HIGH",
+      "note": "Placebo (inclusion months shifted +6) Full pt=-0.738, indistinguishable from real config -0.885. No catalyst-specific signal exists to destroy."
+    },
+    {
+      "id": "RF-ORTHO-MOM",
+      "severity": "MEDIUM",
+      "note": "corr_active vs momentum(12-1)=0.798 (FAIL<0.35): inclusion sleeve is largely momentum re-packaging (included names ran up before inclusion). corr vs ST-reversal=0.672 (newly-included names mean-revert). Size corr=0.048 PASS (NOT a size-beta artifact)."
+    },
+    {
+      "id": "RF-LUMPY-1",
+      "severity": "MEDIUM",
+      "note": "Cohort breadth mean 21.9/median 19 names; 155/254 months (61%) have <25 eligible -> book chronically under-filled & lumpy (inclusions cluster Jun=205/Dec=42). A_max=3 (purest catalyst)=8.8 names/mo, turnover ~11x."
+    }
+  ],
+  "method_shopping_log": {
+    "candidates_tried": 1,
+    "method_log": [
+      {
+        "name": "IndexInclusion_freshness_footprint",
+        "selected": true,
+        "note": "single hypothesis, grid is hyperparameter sweep not method shopping"
+      }
+    ]
+  },
+  "data_inputs": [".cache/universe_support/us_k200.parquet", ".cache/universe_support/us_kq150.parquet", ".cache/RAWDATA.parquet", ".cache/benchmark.parquet"]
+}

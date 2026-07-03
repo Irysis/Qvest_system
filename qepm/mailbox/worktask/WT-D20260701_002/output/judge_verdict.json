@@ -1,0 +1,117 @@
+{
+  "wt_id": "WT-D20260701_002",
+  "agent": "judge",
+  "verdict_type": "overlay_layer_swap (book-marginal, NOT new alpha)",
+  "adjudicated_at": "2026-07-01",
+  "subject": "STR_1715_AR_on_M4_R05_overlay_PG2 — β_AR(absorption ratio) 층 1개를 논문4 충실 예측변동성 추세 오버레이로 교체",
+  "authoritative_grade_note": "이건 신규 알파가 아니라 기존 book의 오버레이 층 교체. 권위 게이트 = paired-NW-t(개선분) + diff oos_retention(개선분) + net>cost + PIT. standalone PORT_t/DSR은 부분 N/A(오버레이는 book-vs-KOSPI, 둘 다 高).",
+
+  "gates": {
+    "G1_PIT_C1_C15": {
+      "result": "PASS",
+      "evidence": [
+        "신호구성(scripts/ar_faithful_v3.py) 독립 감사: mu/sd=rolling(252,min_periods=120) → C1 clean(full-sample 없음). sig2=EWMA forward-only 누적(line16-18) causal. phi[t]=dot(w,rhat[t-Nmax:t+1]) 당일까지 causal.",
+        "C2 same-day 회피: lagmap(line24-26)이 월말값을 *다음달*로 매핑 → 신호결정 t-1 EOM, 적용 t. 확장백분위 exp_pct(line28-33) p=x[:i] 엄격 과거(현재 i 제외).",
+        "C9 관점: 오버레이 β는 확장 과거백분위(과거만) → dd-lag류 same-day 사용 없음.",
+        "★핵심 감사: 채택안(논문계수 0.13+0.79σ²−0.17ϕ+0.09ϕ²)은 forward-shifted 타깃 ry2(line19, r̂²_{t+1})를 사용 안 함. ry2는 (B) KR-fit 회귀변형의 LHS에만 등장 — 채택 변형과 무관.",
+        "audit CSV: point_in_time_checked=PASS, lookahead_bias_checked=PASS, cost_decomposition max|diff|=0.00e+00.",
+        "WARN 3건(c15_factor_db_load_path / lookahead_detector_self_scan / t_plus_1_cadence)은 holdings=NULL(scalar overlay) + manifest$factor_engine_path 부재 유래 skip — book 원본 run_layer5와 동일 패턴, PIT violation 아님."
+      ],
+      "residual": "신호는 python 재구성(proxy→forge official 승격). C15 factor_engine_path self-scan은 skip(경로부재) — 오버레이가 factor DB 직접 load 안 하므로(KOSPI benchmark.parquet만) C15 실질 무관."
+    },
+
+    "G2_measurement_integrity": {
+      "result": "PASS",
+      "evidence": [
+        "metric_type=backtested (faith·book 둘 다), is_official=TRUE, input_source=period_returns/nav.",
+        "calculation_method 전부 PerformanceAnalytics 표준(Return.cumulative / maxDrawdown / SortinoRatio / table.Drawdowns) — 자체합성 없음.",
+        "WARN 4건(rebalance turnover NA / T+1 cadence / C15 path / lookahead self-scan)은 전부 holdings=NULL(scalar overlay, holdings.csv 헤더-only) 유래 정상 — book 원본 run_layer5 동일 패턴. Critical/FAIL 0.",
+        "★독립 재계산(judge, .venv_qvest_ml): book SR 1.678 / faith SR 1.878 / ΔSR +0.20 / paired-NW-t +2.04 / diff oos_retention 1.10 — forge 값과 일치. Sharpe reconcile: arith(계약) 1.675/1.875 vs geo(verify) 1.837/2.111 둘 다 표준·방향일관."
+      ]
+    },
+
+    "G3_graduation_overlay_basis": {
+      "result": "PASS",
+      "evidence": [
+        "paired-NW-t(개선−현행) = +2.04 (독립재계산 일치, 유의) — 개선분이 통계적으로 실재.",
+        "diff oos_retention(개선분, anchored 3-split median) = 1.10 ≥ 0.7 HARD (독립재계산 일치). faith-standalone oos_retention 1.07.",
+        "calmar(faith) = 2.081 ≥ 0.64 HARD. MDD 21.2% (< 45% structural / < 25% 목표).",
+        "placebo(신호 시간셔플) SR 1.575 < book 1.678 → 엣지 소멸 = real 타이밍(과적합 아님).",
+        "호라이즌 T=8/16/32/64 전부 paired-t +1.9~2.4 유의 = cherry-pick cliff 아님.",
+        "holdout 사전등록: Sharpe 예측구간 봉인(holdout_paper4_ret_faith.json, block bootstrap). 소모전 재판정 대상."
+      ],
+      "note": "standalone PORT_t는 faith 6.09 / book 4.72(둘 다 book-vs-KOSPI, 高) — 게이트 판별력 없음(오버레이 특성). 권위는 개선분 paired-t + diff oos_retention."
+    },
+
+    "G4_DSR_multiple_testing": {
+      "result": "PASS_WITH_HAIRCUT (advisory, not blocking)",
+      "selection_type": "chain (사전약정 앵커) — NOT sweep-argmax",
+      "evidence": [
+        "measurement-graduation §3: DSR HARD는 sweep(열거집합 argmax/threshold-pick)만. chain(가설주도·사전약정)은 advisory+진단산출.",
+        "★결정적: 채택안 = T=16 논문 *원계수* = pre-registered 외부 앵커. sweep argmax는 오히려 trend-only T=16(ΔSR +0.330,t+3.08)/faith T=8(+0.254)로 *더 좋음* — 연구자가 best를 안 고르고 논문앵커 채택 = chain signature.",
+        "chain 자격: (a) mechanism 진단 기록 ✓ (b) 호라이즌 전대역 유의(임의 cliff 아님) ✓ (c) placebo/holdout 사전등록 ✓.",
+        "게다가 book-marginal 오버레이 교체 → standalone DSR 개념이 부적합(권위=개선분 paired-t)."
+      ],
+      "haircut_requirement": "다변형 탐색(T4종+regime map+combine+trend-only) 존재 → DSR haircut 여지를 dossier에 정직 기재함(caveat #4). governor는 이 haircut을 인지하되 blocking 사유 아님."
+    },
+
+    "G5_net_gt_cost": {
+      "result": "PASS",
+      "evidence": [
+        "cost_model v2.4_kr_retail_15bps delta-based: |Δβ_overlay|*15bps + |Δβ_R05|*15bps 반영(ret_of line44/ret 경로).",
+        "audit cost_decomposition: ret_gross − cost_ret == ret_net (max|diff|=0.00e+00, 269 obs).",
+        "비용 반영 후에도 개선 유의(paired-t +2.04, ΔSR +0.20 net)."
+      ]
+    },
+
+    "G6_isolation": {
+      "result": "N/A",
+      "reason": "lockbox selection isolation은 정규 리서치 alpha/risk/optimizer 단계 대상. 본 건은 book 오버레이 층 교체(holdings 불변, 신규 selection 없음). 검증기간 전기간 walk-forward(오버레이 β=확장 과거백분위)."
+    },
+    "G7_crowding": {
+      "result": "N/A",
+      "reason": "오버레이는 holding 불변(scalar de-risk) → crowding stress 대상 변화 없음. underlying STR_1715 holding은 기존 admit 상태 유지."
+    },
+    "G8_concentration": {
+      "result": "N/A",
+      "reason": "holdings 불변(scalar overlay). max_w 0.20/HHI/25종 제약은 underlying book(변화없음)에서 이미 만족. 오버레이는 전체 β 스케일만 조정."
+    },
+    "G9_drift_tolerance": {
+      "result": "PASS",
+      "evidence": "diff oos_retention 1.10 ≥ 0.7. faith-standalone oos_retention 1.07. IS/OOS 개선분 안정."
+    }
+  },
+
+  "honest_verification_reflected": {
+    "attribution_correction": "메커니즘 = generic 비대칭 추세추종(하락추세 de-risk). tsmom SR 1.771 = faith 1.878의 94% (독립재계산 확인). ★논문4(Safari-Schmidhuber) 고유 알파로 귀속 금지. 정직판정 = 'AR층보다 나은 추세-de-risk 오버레이'. verdict는 이 attribution을 채택.",
+    "proxy_promotion": "proxy(python ar_faithful_v3) → forge full build_bt_result official(backtested) 승격 확인. metric_type=backtested 유효.",
+    "gfc_tail_regression": "2008 GFC 구간 DD: book(AR) 9.3% vs faith 17.5% (독립재계산 확인). 개선은 추세 de-risk지 systemic-crash 탐지 아님. ★단 전기간 MDD는 faith가 낮음(21.2 vs 23.3%) — AR 우위는 GFC 단일 에피소드 국한. combine-min(GFC DD 6.6% 유지)은 OOS 불안정으로 정당 폐기. 조건부 tradeoff(AX-001 v2), strict domination 아님 → admission 저해요인 아니되 governor+도훈 결정용 residual risk로 surface 의무."
+  },
+
+  "ax008_triangulation": {
+    "forge": "PASS (contract 측정, metric_type=backtested, audit Critical 0)",
+    "self_adversarial": "PARTIAL-PASS (challenge_note.md, 조건부)",
+    "architect": "N/A (오버레이 교체, 인프라 변경 없음 — 미소집)",
+    "result": "2-source PASS (Forge + Self-Adversarial) — AX-008 satisfied"
+  },
+
+  "self_adversarial_classification": "PARTIAL",
+
+  "verdict": "JUDGE_PASSED",
+  "admission_ready": true,
+  "admission_ready_conditions": [
+    "attribution = generic 추세 de-risk 오버레이(논문4 고유 아님)로 기록 — governor dossier에 반영.",
+    "DSR haircut 여지 인지(chain 판정으로 blocking 아니되 정직 기재 유지).",
+    "★GFC systemic-crash tail 회귀(faith 17.5% > AR 9.3%)를 governor+도훈 자본결정용 residual risk로 명시 surface. AR 대비 crisis 특화 방어력 하향은 조건부 tradeoff."
+  ],
+  "residual_risks": [
+    "GFC-type systemic crash에서 AR층 대비 tail 방어 약화(국한 에피소드, 전기간 MDD는 개선).",
+    "개선분이 generic trend(tsmom) 대비 얇음(+6%) — 논문4 계수의 marginal 기여는 작음. 오버레이 가치는 'AR보다 나은 trend de-risk'에 있음.",
+    "book-marginal ΔIR 판정은 governor pg1_admission_with_book_context 영역(본 verdict 범위 밖). IR 개선 +0.162(0.764→0.926) 관측되나 book-context ΔIR≥0.05 최종 확인은 governor."
+  ],
+  "escalation": {
+    "q_lead_auto_escalate": false,
+    "reason": "AX hard-fail 0 / PIT C1 hard 위반 0 / HIGH≥5 아님. self-adversarial PARTIAL(조건부 통과)."
+  },
+  "handoff_to_governor": "admission-ready = TRUE (조건 3건 부착). governor는 pg1 book-marginal ΔIR 확인 + GFC residual risk를 도훈 수동결정에 surface. ★judge는 governor admit/book_state 미개입(도훈 수동 영역)."
+}

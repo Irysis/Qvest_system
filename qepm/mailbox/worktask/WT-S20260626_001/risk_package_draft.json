@@ -1,0 +1,104 @@
+{
+  "task_id": "WT-S20260626_001",
+  "as_of_date": "2026-06-26",
+  "package_kind": "risk_package",
+  "wt_type": "sizing_only",
+  "wt_kind": "recommendation_only",
+  "agent": "risk-research",
+  "draft_revision": "draft",
+  "parent_wt": "WT-D20260427_016",
+  "parent_strategy": "STR_1715_WT016_Iter31_GridBestProd",
+  "factor_covariance_ref": "inherit:STR_1715_WT016_Iter31_GridBestProd:factor_covariance",
+  "factor_covariance_ref_note": "STR_1715 cross-sectional Σ inherit 참조 (신규 추정 없음). STR_1715는 production에서 native factor_covariance artifact를 산출하지 않으므로(top-N EW long-only sleeve + overlay 구조) inherit-token을 primary ref로 사용. concrete 18×18 Ledoit-Wolf Σ가 필요하면 동일 book에 대한 선행 sizing_only WT 산출물 stage_artifacts/WT_WT-S20260504_001/covariance.parquet 참조 (secondary, risk_package_inherit_ref.json에 기록). 가설(오버레이 결합 연산자 변경)은 regime-scaling 레이어이며 cross-sectional 공분산을 바꾸지 않음.",
+  "sigma_method": "INHERITED (no new estimation; parent reference = ledoit_wolf_shrinkage_constant_correlation from WT-S20260504_001 concrete artifact)",
+  "no_new_sigma": true,
+  "new_covariance_estimation": false,
+  "selection_objective": "condition_number",
+  "selection_objective_note": "신규 Σ 선택 없음 — inherit. enum 충족용으로 parent 선택 기준(condition_number) 명시. method shopping 미수행 (sizing_only Σ inherit).",
+  "risk_summary": {
+    "inherited_from": "STR_1715_WT016_Iter31_GridBestProd",
+    "metric_type": "inherited",
+    "top_common_risks": [
+      "Market / KOSPI200 (TDC_lower 0.65, style_cor 0.745) — inherited",
+      "Sector Semi+IT_HW family saturation 56% (L-219 ELEVATED) — inherited",
+      "Latent PC dominant (universe mean LFC 0.140; portfolio point LFC ~0.036) — inherited"
+    ],
+    "crowding_flags": [
+      "L219 Semi+IT_HW 56% concentration in active book (ELEVATED, not breach) — inherited from STR_1715"
+    ],
+    "liquidity_flags": [],
+    "stress_tests_inherited": {
+      "var95_monthly": -0.0846,
+      "es95_monthly": -0.1289,
+      "mdd_observed": -0.4169,
+      "gfc_2008_cum_ret": -0.3864,
+      "mdd_cap_45pct_breach": false,
+      "metric_type": "inherited_from_STR_1715_actual_268m_NAV"
+    },
+    "tradeoff_flag_maxcash": "max-cash 결합 min(β_AR,β_R05)은 AR·R05 동시발화 구간에서 곱셈 결합보다 디리스크가 약함(min cash < compound cash) → 그 구간 시장노출·tail 약간↑ 가능. 곱셈 과방어 드래그 감소(가설 의도)와 동시발화 깊은 크래시 방어 약화가 trade-off. 검증=forge 실측 A/B의 MDD/동시발화 drawdown (risk role 수치 추측 금지).",
+    "no_numeric_perf_estimate": "본 sizing_only risk 단계는 어떤 성과/위험 수치도 신규 추정하지 않음. 위 inherited 값은 STR_1715 실측(WT-S20260504_001)이며, 오버레이 변경의 위험 영향은 forge A/B authoritative."
+  },
+  "diagnostics": {
+    "inherited": true,
+    "metric_type": "inherited",
+    "condition_number_inherited": 40.9539,
+    "psd_verified_inherited": true,
+    "shrinkage_used_inherited": true,
+    "shrinkage_method_inherited": "ledoit_wolf_constant_correlation",
+    "shrinkage_intensity_lw_inherited": 0.0491,
+    "min_eigenvalue_inherited": 0.0002,
+    "factor_correlation_warnings": [],
+    "tdc_summary_inherited": {
+      "MKT_kospi200_lower5pct": 0.6522
+    },
+    "regime_correlation_ref_inherited": "stage_artifacts/WT_WT-S20260504_001/regime_correlation.parquet",
+    "tail_risk_ref_inherited": "stage_artifacts/WT_WT-S20260504_001/tail_risk.json",
+    "no_new_diagnostic_computed": "sizing_only Σ inherit — 신규 진단 미산출. 위 값은 전부 STR_1715 선행 실측 inherit. 추측 없음.",
+    "overlay_change_diagnostic_owner": "forge (max-cash A/B realized MDD/tail). risk role은 정성 tradeoff flag만 제공."
+  },
+  "tail_risk": {
+    "inherited": true,
+    "ref_path": "stage_artifacts/WT_WT-S20260504_001/tail_risk.json",
+    "var95_monthly": -0.0846,
+    "es95_monthly": -0.1289,
+    "hill_alpha": 2.2537,
+    "cdar95": -0.2952,
+    "mdd_observed": -0.4169,
+    "metric_type": "inherited_from_STR_1715_actual_268m"
+  },
+  "crowding_diagnostic": {
+    "inherited": true,
+    "L219_family": "Semi+IT_HW 56% (ELEVATED)",
+    "universe_mean_LFC": 0.1404,
+    "portfolio_point_LFC_2026_05": 0.0357,
+    "metric_type": "inherited_from_STR_1715"
+  },
+  "challenge_flags": [
+    "RF-R5 TDC_MKT_HIGH: lower-tail dependence with KOSPI200 = 0.65 (inherited, not new)",
+    "RF-R3 L219_FAMILY_SATURATION: Semi+IT_HW 56% (inherited ELEVATED, not breach)",
+    "TRADEOFF-MAXCASH: max-cash 결합은 AR·R05 동시발화 구간에서 곱셈 대비 디리스크 약화 가능 (forge A/B MDD로 검증 요망 — 정성 flag, 수치 미추정)"
+  ],
+  "role_boundary_compliance": {
+    "no_alpha_modification": true,
+    "no_weight_proposal": true,
+    "no_overlay_operator_design": true,
+    "scope": "Σ inherit reference + 1 qualitative tradeoff flag only"
+  },
+  "axiom_assertions": {
+    "AX_002_process_honesty": "신규 Σ 추정/성과수치 0건. inherited 값은 STR_1715 실측(WT-S20260504_001). 추측·합성 없음. metric_type=inherited 라벨 부착.",
+    "AX_008_tally_entry": {
+      "source": "risk-research (Source of 3)",
+      "stance": "draft (pending Codex Round — sizing_only inherit, waiver 가능)"
+    }
+  },
+  "codex_round_status": "pending_draft (sizing_only Σ inherit — waiver 적용 가능, optimizer/forge로 이관 가능)",
+  "schema_required_fields_check": {
+    "task_id": true,
+    "as_of_date": true,
+    "factor_covariance_ref": true,
+    "risk_summary": true,
+    "diagnostics": true
+  },
+  "created_at": "2026-06-26",
+  "created_by": "risk-research"
+}

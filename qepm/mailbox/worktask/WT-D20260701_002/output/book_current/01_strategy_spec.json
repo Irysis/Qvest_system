@@ -1,0 +1,21 @@
+{
+  "run_id": "WT-D20260701_002_ret_book",
+  "strategy_id": "STR_1715_AR_on_M4_R05_overlay_PG2_CURRENT_AR",
+  "strategy_name": "PG2 overlay 현행(AR absorption ratio)",
+  "strategy_family": "overlay_pg2_str1715",
+  "signal_description": "STR_1715_AR_on_M4_R05_overlay_PG2 sequential scalar overlay. ret = beta_R05_V5 x beta_overlay x m4_weight_lag x ret_orig - Dbeta_overlay*15bps - Dbeta_R05*15bps. 현행=beta_AR(absorption ratio) / 개선=논문4 충실 예측변동성(sigma2_t+1=0.13+0.79 sigma2_t-0.17 phi_t+0.09 phi2_t) 확장백분위 -> {0.4,0.7,1.0} 계단.",
+  "universe_rule": "KOSPI200 U KOSDAQ150 (STR_1715 admit lineage, holdings 불변)",
+  "rebalance_frequency": "monthly",
+  "signal_date_rule": "sig_date t-1 EOM (phi/sigma2 KOSPI benchmark.parquet <=t-1, 월말 lag-1, 확장백분위 과거만)",
+  "execution_date_rule": "month_first_biz_day (realized month t)",
+  "weighting_method": "Iter31 production linear_tilt baked in PR ret_net (scalar overlay only, NOT EW)",
+  "max_position_weight": 0.2,
+  "max_leverage": 1,
+  "cash_rule": "scalar de-risk (beta<1 -> implicit cash), no explicit cash sleeve",
+  "cost_model": "v2.4_kr_retail_15bps delta-based: |Dbeta_overlay|*15bps + |Dbeta_R05|*15bps on top of PR ret_net",
+  "missing_data_rule": "beta default 1.0 pre-warmup / expanding past-only quantile NA->1.0",
+  "risk_controls": "AX-001 v2 conditional defense (CRISIS/CAUTION), max 25 names, long-only, Sw=1",
+  "lookahead_prevention": "PIT C1_C5_C11_C13_C14: signal phi/sigma2 KOSPI <=t-1, beta decision t-1 EOM applied to t (shift(1)), expanding past-only percentile. 입력 시리즈 python 재구성 PIT (dossier_input.md 참조). look-ahead 재검=신호 lag t-1 확인.",
+  "survivorship_bias_control": "STR_1715 admit lineage universe (survivorship-aware factor DB)",
+  "honest_caveats": "MECHANISM_GENERIC=개선 오버레이 메커니즘은 generic 비대칭 추세추종(하락추세 방어) — 논문4(Safari-Schmidhuber) 고유 아님. plain-TS-mom도 계약SR 1.97(개선의 ~93%). || PROXY_PROMOTION=proxy 재구성(python ar_faithful_v3) 월수익 시리즈를 forge full build_bt_result로 official(backtested) 승격. || DSR_MULTIPLE_TESTING=다변형(T=8/16/32/64 + regime map + combine) 탐색 → DSR 다중검정 haircut 여지. 단 사전약정 논문계수가 placebo+oos_retention 통과. || GFC2008_AR_SUPERIOR=2008 GFC 구간낙폭은 현행 AR(-9.3%)이 개선 충실(-17.5%) 우위. 충실은 추세 de-risk지 systemic-crash 탐지 아님. || PURE_MEASUREMENT=forge는 주어진 ret_faith/ret_book를 계약으로 측정만 함. 오버레이 β/수익경로/alpha/weight 재해석 없음."
+}

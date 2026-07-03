@@ -1,0 +1,91 @@
+{
+  "task": "PG2 core alpha (STR_1715 score_eff) composite re-research — authoritative PORT_t battery (not IC)",
+  "date": "2026-07-03",
+  "agent": "alpha-research",
+  "mode": "QEPM alpha (composite re-composition, no risk/weight/optimizer)",
+  "premise": "06-30 forensic (b1_*) refuted core-shrink/def-reweight/consensus-strengthen — but ALL its numbers were rank-IC/advisory, PORT_t unmeasured. This battery escalates those + 3 new axes to canonical_screen PORT_t.",
+  "metric_type": "canonical_screen",
+  "metric_type_note": "canonical_screen_bt (contract build_benchmark_compare, NW lag-3). NOT admission-binding; forge build_bt_result authoritative. No graduation/admit declared — governor 정지.",
+  "selection_type": {
+    "B_split_sweep": "sweep (enumerated core-weight grid {0.45..1.0}) -> DSR reported",
+    "B_q07heavy / B_def_dropQ25 / B_coreEW": "chain (single hypothesis re-composition of 06-30 IC candidates)",
+    "C_horizon": "chain (single mechanism: 3M-horizon earnings blend into core selection)",
+    "D_nonlinear": "NOT RUN (see decision_D)",
+    "E_decay": "chain (IS-only expanding recent-IC weighting)"
+  },
+  "n_trials": 12,
+  "data_infra": {
+    "panel": "04_Research/pg2_forensics/intermediate/factor_panel_7f.parquet (b1 forensic reuse — 7 factor Z_Score_Aligned, Ret_1m forward PIT-safe, sleeve scores, regime_state; 268 score dates 2004-01..2026-04, 267 with returns)",
+    "benchmark": "05_Production/.../2-3.STR_1715_on_M4_R05_noLayer4_PG2/04_backtest_results/05_benchmark_returns.csv (KOSPI200 total return, vintage-pinned to incumbent book)",
+    "benchmark_alignment": "score Date t realized-month = month(t)+1; incumbent bm 'date' = anchor = realized_month+1, so eff_month = bm.date %m-% months(1). Validated by market-proxy beta scan: offset -1 => beta 0.827 cor 0.813 (only sensible align).",
+    "liquidity": "stage_artifacts/pg2_w2_earnings3m/panel_signals.parquet adv_lag1 (t-1 ADV, C10). liq_min 2e8.",
+    "horizon_signal": "COMP_ALL from pg2_w2_earnings3m (3M-horizon earnings composite, IC-t 8.45). ym-join to panel (fwd_ret_1m vs Ret_1m cor 0.997).",
+    "base_sanity": "A_base_65_35 canonical PORT_t 3.582 reproduces b1 ordering (blend>core>defense). incumbent book IR recomputed 1.416 == manifest (end-to-end pipeline validated)."
+  },
+  "pit": "C13 Z_Score_Aligned only (load_month_factors panel). C14 consensus Usable_Date <= sig_date (connector-enforced in panel build). C15 load_month_factors (no direct parquet). Clean timing: score@month-end(t), return=month(t)+1 forward. Decay-weights: expanding recent-24m IC shift(1) IS-only. by-group: cross-sectional z via by=Date column, no global-vector broadcast.",
+  "incumbent_baseline": {
+    "book": "STR_1715_on_M4_R05_noLayer4_PG2",
+    "book_IR_net_active": 1.416,
+    "book_SR_geo": 1.897,
+    "book_PORT_t_NW_lag3": 6.214,
+    "book_MDD": 0.233,
+    "note": "book = L1 composite alpha + M4 regime + R05 + cash overlay. This research operates on L1 composite only."
+  },
+  "battery_results_canonical": {
+    "A_base_65_35":   {"PORT_t": 3.582, "net_SR": 0.722, "IR": 0.722, "TO": 12.35, "alpha_ann": 0.1374, "role": "baseline"},
+    "B_split_75":     {"PORT_t": 3.691, "net_SR": 0.769, "IR": 0.769, "TO": 13.0,  "paired_NWt_vs_base": 0.976, "active_cor": 0.962, "PORT_t_2021": 0.35, "role": "only variant > base, but paired-t insignificant"},
+    "B_q07heavy_def": {"PORT_t": 3.143, "net_SR": 0.633, "IR": 0.633, "TO": 13.2,  "paired_NWt_vs_base": -1.356, "verdict": "06-30 IC-favored candidate REFUTED in PORT_t (worse than base)"},
+    "B_def_dropQ25":  {"PORT_t": 3.132, "net_SR": 0.668, "IR": 0.668, "paired_NWt_vs_base": -0.860},
+    "B_split_55":     {"PORT_t": 3.025, "net_SR": 0.628, "IR": 0.628, "paired_NWt_vs_base": -0.932},
+    "B_coreEW_def35": {"PORT_t": 2.381, "net_SR": 0.537, "IR": 0.537, "verdict": "core IC-weighting (production) beats core EW — validates existing theta"},
+    "C_horizon30":    {"PORT_t": 3.260, "net_SR": 0.673, "IR": 0.673, "paired_NWt_vs_base": -0.175, "verdict": "3M-horizon blend does NOT lift core in-stack"},
+    "C_horizon50":    {"PORT_t": 3.119, "net_SR": 0.661, "IR": 0.661, "paired_NWt_vs_base": -0.177},
+    "C_pure3m_core":  {"PORT_t": 2.482, "net_SR": 0.565, "IR": 0.565, "verdict": "pure 3M-horizon worse than 1M core"},
+    "E_decay_core":   {"PORT_t": 1.852, "net_SR": 0.434, "IR": 0.434, "verdict": "decay-weighting DESTROYS signal (over-concentrates on C04)"}
+  },
+  "adversarial_split_sweep": {
+    "note": "fine core-weight sweep 0.45..1.0 (def=1-w). IR shows a FLAT plateau ~0.76 across w in [0.70,0.80], NOT a sharp optimum. base 0.65=IR0.72 sits just below plateau.",
+    "IR_by_core_w": {"0.45":0.614,"0.50":0.602,"0.55":0.628,"0.60":0.698,"0.65":0.722,"0.70":0.763,"0.75":0.769,"0.80":0.764,"0.85":0.744,"0.90":0.700,"0.95":0.623,"1.00":0.589},
+    "DSR_split_sweep_N3": 1.000,
+    "DSR_note": "DSR high because SR0 (expected-max under null) ~0.06 << realized 0.77 — but this reflects the composite being a strong signal, NOT that the 0.75-vs-0.65 delta is real. DSR is on absolute SR, not the marginal tilt."
+  },
+  "adversarial_robustness_B_split_75": {
+    "lag1_stress": {"PORT_t_base": 3.691, "PORT_t_lag1": 2.284, "IR_lag1": 0.530, "interp": "heavy timing sensitivity = earnings-signal fast decay (w2 정합), not lookahead"},
+    "top25": {"base_top25_IR": 0.707, "split75_top25_IR": 0.729, "delta": 0.022, "interp": "tilt survives top-25 but shrinks"},
+    "subperiod_IR": {
+      "2004_2014": {"base": 1.429, "split75": 1.428, "dIR": -0.0006},
+      "2015_2026": {"base": 0.091, "split75": 0.191, "dIR": 0.1007},
+      "interp": "ENTIRE tilt-gain is 2015-2026, where base IR is ~0 (earnings decay). +0.10 IR on a ~0 base in a SE±0.6 regime = noise-level, not a durable lever."
+    }
+  },
+  "book_marginal": {
+    "alpha_level_dIR_B_split_75": 0.0475,
+    "alpha_level_note": "standalone top-20 alpha IR 0.722->0.769. Near 0.05 threshold BUT paired NW-t only 0.976 (insignificant) — the +0.0475 is within noise.",
+    "proxy_book_dIR_B_split_75": -0.0175,
+    "proxy_book_note": "Applying incumbent overlay cash-gate to the (variant-base) alpha delta: book IR delta = -0.0175 (NEGATIVE, on 267m overlap). The tilt does NOT survive the M4/R05/cash overlay. FAILS book-marginal >=0.05.",
+    "verdict": "NO variant clears book-marginal ΔIR >= 0.05."
+  },
+  "decision_D": {
+    "axis": "6-factor shallow nonlinear (HGB/interactions)",
+    "status": "NOT RUN — deferred with rationale",
+    "rationale": "Every linear variant that beats base (only B_split_75) fails at book-marginal AND paired-t. A 6-7 factor tree would be searched over the SAME 267m/decayed-recent panel; Phase-0 (373f HGB) already showed nonlinear recombination deflates to screen-tier under seed/book-marginal, and the recent-2021 collapse is cohort-wide (data, not model form). Nonlinear cannot manufacture recent alpha that the raw factors lack. Running it risks a sweep-DSR-binding overfit for no expected book lever. Honest deferral, not omission — re-open only if a new recent-alpha factor is added to the panel."
+  },
+  "gates_verdict": {
+    "PORT_t_vs_base_paired_NWt": "FAIL — no variant significantly beats base (max t 0.976)",
+    "book_marginal_dIR_0.05": "FAIL — best proxy-book ΔIR -0.0175",
+    "active_cor": "all variants 0.75-0.96 vs base (not orthogonal — same core span)",
+    "recent_2021_survival": "FAIL (cohort-wide) — all variants PORT_t_2021 <= 0.54, most ~0/negative",
+    "DSR_sweep": "N/A to marginal (absolute SR strong, tilt delta not)"
+  },
+  "ic_refuted_verdict": "06-30 IC-refuted candidates DIE in PORT_t too (NOT reversed). q07heavy PORT_t 3.14 < base 3.58 (paired-t -1.36); core-EW < core-IC-wt (validates production theta); IC->PORT_t promotion does NOT overturn — it CONFIRMS the refutations and adds that the ONE IC-neutral tilt (split_75) is also noise-level.",
+  "new_axes_verdict": "horizon-blend: negative (3M does not lift 1M core in-stack). nonlinear: deferred (no expected lever, overfit risk). decay-weighting: strongly negative (destroys signal). NONE produces book-marginal GO.",
+  "final_verdict": "CORE COMPOSITE SETTLED — ceiling re-confirmed. The 0.65/0.35 blend sits on a broad flat IR plateau; the only variant nominally above it (0.75 core) is statistically indistinguishable (paired-t 0.976), driven entirely by a noise-level +0.10 IR in the decayed 2015+ regime, and turns NEGATIVE through the overlay (book ΔIR -0.0175). No implementation lever in the core re-composition. Consistent with book ceiling ~1.1 (25-name KR) and earnings cohort-wide decay 2015+.",
+  "artifacts": {
+    "linear_results": "battery_linear_results.csv",
+    "gates": "battery_gates.csv",
+    "book_marginal": "book_marginal_alpha_ir.csv",
+    "adversarial_sweep": "adversarial_split_sweep.csv",
+    "best_variant_rds": "best_B_split_75_canonical.rds",
+    "challenge_note": "challenge_note.md"
+  }
+}

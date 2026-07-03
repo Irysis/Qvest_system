@@ -246,6 +246,8 @@ SPEC_APPROVED → ALPHA_DONE → RISK_DONE → OPTIMIZER_DONE
 
 ### 6.3 Examples — 3 표준 WT (`examples/qvest_workflows/`)
 
+> (2026-07-04 이동: `02_Infrastructure/docs/examples/qvest_workflows/` — 본 문서는 read-only retain SOT, 경로 사실만 병기)
+
 - `01_discovery_happy_path` (3 cert ISSUED)
 - `02_cert_fail_passive_deny` (alpha NOT_ISSUED + lifecycle 진행 + governor REJECTED)
 - `03_*` (배포 lifecycle)

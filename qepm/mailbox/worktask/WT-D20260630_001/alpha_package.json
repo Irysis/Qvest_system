@@ -1,0 +1,131 @@
+{
+  "task_id": "WT-D20260630_001",
+  "wt_type": "discovery",
+  "as_of_date": "2026-06-30",
+  "forecast_horizon": "1M",
+  "selection_objective": "rank_ic",
+  "hypothesis_title": "자사주 취득결정 이벤트 알파 (buyback, Ikenberry KR 적용)",
+  "verdict": "FAIL",
+  "verdict_grade": "FAIL_at_mandated_spec / screen-tier candidate",
+  "verdict_one_line": "mandated spec(1M horizon, KOSPI200-TR 벤치, long-only standalone, PORT_t HARD 2.95) 기준 FAIL — 모든 신호형태 PORT_t 음수(-0.93~-0.38). 단 Ikenberry 다년 drift는 KR에 실재: EW-univ 벤치 대비 horizon이 길수록 active 증가(1M t0.56 → 12M t2.17, +4.84%/yr), 그러나 (a)mandated KOSPI200-TR 대비는 전 horizon 음수, (b)12M t2.17도 HARD 2.95 미달, (c)2023+ buyback-policy 국면 집중. risk 단계 진행 불가 — screen-tier(DPL feature/regime overlay) 후보.",
+  "next_step_risk_eligible": false,
+  "data_provenance": {
+    "buyback_source": ".cache/dart/buyback_decisions_clean.parquet (933 rows, 2015~2026, A-prefix Ticker; venv pyarrow로 읽음, R 세그폴트 회피)",
+    "returns_source": ".cache/RAWDATA.parquet (daily, monthly-aggregated prod(1+Ret)-1; arrow set_cpu_count(1) + col_select)",
+    "benchmark_source": ".cache/benchmark.parquet (KOSPI200 TR daily BM_Ret; RAWDATA BM_Ret ~empty라 미사용). EW-univ 벤치는 자체 산출(eligible 종목 월별 EW).",
+    "universe": "KOSPI200 ∪ KOSDAQ150 (RAWDATA K200/KQ150 flags), liquidity 20d ADV >= 2e8 KRW",
+    "start_date": "2015-01-01 (DART buyback 데이터 한계 — 표준 2005 시작 벗어남, 명시)",
+    "n_months_usable_1m": 137,
+    "cost_model": "v2.4_kr_retail_15bps one-way (canonical_screen_bt, contract build_benchmark_compare NW lag-3)"
+  },
+  "korean_date_parsing": "aq_dd '2016년 03월 04일' regex (\\d{4})년 (\\d{1,2})월 (\\d{1,2})일 → Timestamp. 3/933 unparseable('-'/blank) dropped.",
+  "aq_mth_filter": {
+    "method": "free-text classification of aq_mth (실매수 only)",
+    "include": "장내 / 직접취득 / 직접매수 / 매수 / 취득 (without exclude markers)",
+    "exclude": "무상(free_gift 4) / 공개매수(tender 16, 상장폐지多) / 장외·당사자·계약·계좌간·상환·전환(off_market 51, RCPS/delisting) / 시간외(block 2)",
+    "result": "857 on_market real-buy events of 933; unique tickers 244",
+    "bias_direction": "포함 측이 inclusive — 오분류는 null 방향 노이즈만 추가, false FAIL 생성 불가 (challenge_note C5)"
+  },
+  "pit_handling": {
+    "signal_timing": "aq_dd 공시일이 속한 월 M의 month-end에 신호 known (공시 = 월중, EOM M까지 known). intensity 분모 Size_M = EOM(M) 시총 = PIT-safe(C2 무위반).",
+    "forward_return": "month M+1 (1M) 및 누적 3/6/12M. C2 same-day circular 회피.",
+    "liquidity": "t-1 20d ADV (rolling 20d mean Close*Vol), C10 준수",
+    "c13": "intensity Z-score active set 내 cross-sectional, sign 미반전",
+    "c15": "factor DB 직접 load 미사용 (RAWDATA + buyback parquet carve-out)"
+  },
+  "signal_forms": [
+    {"id": "A", "name": "trailing-12m buyback intensity", "formula": "sum(aqpln_prc_ostk over [M-11,M]) / Size_M", "rank_ic_among_active": 0.0076, "icir": 0.032, "rank_ic_t": 0.37, "tercile_monotonic": false},
+    {"id": "B", "name": "binary trailing-12m active (EW among active)", "active_vs_inactive_spread_1m": 0.0030, "active_vs_inactive_t": 1.27},
+    {"id": "C", "name": "event-month intensity only", "turnover_annual": 22.2}
+  ],
+  "coverage_statistics": {
+    "method": "trailing-12m accumulation (sparse ~85 events/yr 완화)",
+    "active_stocks_per_month_mean": 27.2,
+    "active_stocks_per_month_median": 29,
+    "active_stocks_per_month_min": 2,
+    "active_stocks_per_month_max": 40,
+    "months_with_active_ge_20": "111 / 137",
+    "months_with_active_ge_10": "131 / 137",
+    "note": "top-20 long basket 대부분 달 형성 가능. 2015 초반(window 미충전)만 sparse(2~9)."
+  },
+  "kill_gate_port_t_1m": {
+    "metric_type": "canonical_screen (canonical_screen_bt, contract NW lag-3). admission-binding 아님(forge build_bt_result authoritative).",
+    "benchmark": "KOSPI200_total_return (mandated)",
+    "formA_top20": {"port_t_nw_lag3": -0.927, "p": 0.3542, "IR": -0.205, "net_sr": -0.205, "turnover_annual": 3.08, "mean_active_net_per_month": -0.00548},
+    "formB_top20": {"port_t_nw_lag3": -0.923, "net_sr": -0.190},
+    "formC_top20": {"port_t_nw_lag3": -0.378, "net_sr": -0.078},
+    "formA_top25": {"port_t_nw_lag3": -0.922},
+    "formA_top15": {"port_t_nw_lag3": -0.825},
+    "formA_top10": {"port_t_nw_lag3": -0.747},
+    "min_required_hard": 2.95,
+    "kill_gate_result": "FAIL — all forms negative at 1M vs KOSPI200-TR."
+  },
+  "benchmark_horizon_matrix": {
+    "note": "Codex HIGH 반론 C1(벤치)+C2(horizon) ACCEPT 후 실측. top-20 intensity basket, active mean annualized + NW HAC t(lag=horizon+2). EW-univ 벤치 = eligible 종목 월별 EW(0.71%/mo) vs KOSPI200-TR(1.31%/mo).",
+    "1M":  {"vs_K200TR_ann": -0.0588, "vs_K200TR_NWt": -1.00, "vs_EWuniv_ann": 0.0166, "vs_EWuniv_NWt": 0.56, "N": 137},
+    "3M":  {"vs_K200TR_ann": -0.0520, "vs_K200TR_NWt": -0.88, "vs_EWuniv_ann": 0.0153, "vs_EWuniv_NWt": 0.51, "N": 135},
+    "6M":  {"vs_K200TR_ann": -0.0353, "vs_K200TR_NWt": -0.66, "vs_EWuniv_ann": 0.0303, "vs_EWuniv_NWt": 1.37, "N": 132},
+    "12M": {"vs_K200TR_ann": -0.0137, "vs_K200TR_NWt": -0.39, "vs_EWuniv_ann": 0.0484, "vs_EWuniv_NWt": 2.17, "N": 126},
+    "interpretation": "Ikenberry 다년 drift signature 실재 — EW 벤치 대비 horizon↑일수록 active↑ (0.56→2.17). 단 (a)mandated K200-TR 대비 전 horizon 음수, (b)최고치 12M EW t2.17 < HARD 2.95, (c)recent-only(아래)."
+  },
+  "subperiod_stability_12m_EWactive": {
+    "2015-2018": -0.0039,
+    "2019-2022": 0.0455,
+    "2023-2026": 0.1370,
+    "instability_flag": "RF-A3 — 효과 2023+ buyback/value-up 국면 집중. n(2023+)=30 short. regime-alpha vs overfit 미판별(pre-specified forward OOS 필요)."
+  },
+  "raw_vs_active_diagnosis": {
+    "top20_intensity_basket_gross_per_month": 0.0080,
+    "top20_basket_gross_sr": 0.50,
+    "benchmark_kospi200tr_per_month": 0.0131,
+    "benchmark_ewuniv_per_month": 0.0071,
+    "explanation": "basket gross 0.80%/mo는 비-buyback 평균(0.60%)·EW-univ(0.71%) 초과 but KOSPI200-TR(1.31%) 미달. buyback 종목 large-cap value 틸트(corr(active, log Size)=0.119, top size quintile 33.7%)가 2015-2026 메가캡 성장주 벤치에 압도.",
+    "direction_correct_but_benchmark_dominated": true
+  },
+  "orthogonality": {
+    "vs_size": "corr(active dummy, log Size) = 0.119 (mild large-cap tilt)",
+    "vs_value_quality": "정식 score_eff 잔차화 미수행(standalone FAIL이라 kill-gate 우선). large-cap value 틸트가 기존 value/size 팩터와 부분중복 가능성. screen-tier 재평가 시 잔차화 필요.",
+    "note": "standalone 미성립으로 admitted 팩터 직교성 비교 의미 제한적."
+  },
+  "diagnostics": {
+    "rank_ic": 0.0076,
+    "icir": 0.032,
+    "harvey_t_stat_rankic": 0.37,
+    "portfolio_alpha_t_nw_lag3_1m_best": -0.378,
+    "portfolio_alpha_t_nw_12m_EW_best": 2.17,
+    "net_of_cost_sr_1m_best": -0.078,
+    "turnover_proxy_best": 3.08,
+    "subperiod_stability": "unstable (recent-only)",
+    "monotonicity": "non-monotonic (tercile 0.0083/0.0096/0.0078)"
+  },
+  "method_shopping_log": {
+    "candidates_tried": 3,
+    "method_log": [
+      {"name": "trailing12m_intensity (A)", "port_t_1m": -0.927, "selected": false},
+      {"name": "binary_trailing12m (B)", "port_t_1m": -0.923, "selected": false},
+      {"name": "event_month_intensity (C)", "port_t_1m": -0.378, "selected": false}
+    ],
+    "selection_type": "chain (가설주도 단일 anomaly 3 신호형태 진단, sweep 아님). DSR 게이트 advisory.",
+    "post_codex_additional_tests": "C1 EW-univ 벤치 + C2 multi-horizon(3/6/12M) — 진단·verdict 정밀화 용도(추가 후보 선택 아님)."
+  },
+  "challenge_flags": [
+    "KILL-GATE FAIL: 모든 신호형태 1M PORT_t 음수 vs mandated KOSPI200-TR",
+    "RF-A3: 효과 2023+ 집중 (12M EW 2015-18 -0.4% → 2023-26 +13.7%)",
+    "intensity 랭킹 무신호 (rank-IC 0.008, tercile non-monotonic)",
+    "Ikenberry 다년 drift 실재(12M EW t2.17) but HARD 2.95 미달 + mandated 벤치 대비 음수",
+    "codex-round infra(run_codex_qepm_critic.sh + role prompts) archived — Q-Lead 복구 필요"
+  ],
+  "codex_round": {
+    "stance": "REVISE",
+    "n_concerns": 7,
+    "high_concerns_accepted_and_tested": ["C1_BENCHMARK_MISMATCH", "C2_HORIZON_MISMATCH"],
+    "resolution_file": "challenge_note.md",
+    "response_file": "codex_critic_response_alpha.json",
+    "model": "gpt-5.5 xhigh (codex exec direct — helper archived)",
+    "outcome": "verdict precision 강화(blanket FAIL → FAIL at mandated 1M/K200-TR spec + screen-tier 후보). 핵심 FAIL 불변(HARD 미달·mandated 벤치 음수·recent-only)."
+  },
+  "factor_specs": [],
+  "alpha_vector": {},
+  "confidence_vector": {},
+  "next_step_recommendation": "risk 단계 진행 불가(standalone alpha 미성립). 후보 재활용: (a) screen-tier DPL_FEATURE — buyback active dummy(direction 정보有)를 ML 피처로 / (b) value/quality sleeve 보조 틸트 overlay(standalone 아님) / (c) regime-conditional(value-up 국면) 12M holding overlay — 단 pre-specified forward OOS 필수. recent-only·HARD 미달로 자본 graduation 부적격. L-code 적립: VALIDATED 'direction-correct-but-benchmark-dominated, Ikenberry 12M-EW drift 실재하나 mandated K200-TR/1M spec FAIL + recent-regime 집중'."
+}

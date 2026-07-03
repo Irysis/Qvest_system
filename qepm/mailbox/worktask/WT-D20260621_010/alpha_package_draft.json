@@ -1,0 +1,129 @@
+{
+  "task_id": "WT-D20260621_010",
+  "as_of_date": "2026-06-21",
+  "forecast_horizon": "1M",
+  "wt_type": "discovery",
+  "selection_type": "chain",
+  "selection_objective": "rank_ic",
+  "metric_type": "canonical_screen",
+  "metric_type_note": "All performance numbers via 02_Infrastructure/contracts/canonical_screen_bt.R (build_benchmark_compare, NW lag-3). NOT admission-binding (that is forge build_bt_result). No proxy hand-calc / prod(1+r) anywhere.",
+  "verdict": "CLEAN_NEGATIVE — REJECT for graduation. NOT a screen/overlay candidate either: signal is robustly negative (0/29 grid cells port_t>0), and the extreme top (D10 largest direct buybacks) is the WORST decile (NW-t −2.76). The WT_009 fresh-month +0.42%/mo finding does NOT generalize to event-time decision drift.",
+  "hypothesis_title": "Buyback Decision Drift Event Time (C27)",
+  "economic_rationale": "Ikenberry (1995) post-buyback-announcement underreaction drift, constructed as an EVENT-TIME continuous signal via DART tsstkAqDecsn (board treasury-acquisition DECISIONS). Hypothesis: hold announcing firms in a post-decision drift window, ranked by buyback intensity (planned_amount/Size, direct-method). EMPIRICAL RESULT: the KR buyback-decision catalyst has NO positive post-disclosure drift at the decision level (event-vs-market −0.43%/mo, NW-t −0.88) and the intensity tilt is PERVERSE (largest buybacks underperform, D10 −1.78%/mo). The drift is salient/mandatory disclosure (efficiently priced by announcement day) and recent (2023+ Value-up) buyback-decision firms behave as already-run-up names that mean-revert.",
+  "redundancy_cluster_id": "shareholder_return_event_buyback",
+  "alpha_vector": {},
+  "confidence_vector": {},
+  "alpha_vector_note": "Empty — clean negative. No positive-alpha vector emitted; the event-gated score has negative realized portfolio alpha across the full grid. Per-firm-month scores persisted to stage_artifacts/WT_D20260621_010/alpha_scores.parquet for audit/DPL-feature consideration (NOT a long signal as-is; sign is structurally negative).",
+  "signal_matrix_ref": "stage_artifacts/WT_D20260621_010/alpha_scores.parquet",
+  "factor_specs": [
+    {
+      "factor_family": "ShareholderReturn_EventDriven",
+      "proxy": "Buyback_Decision_Drift_Intensity",
+      "formula": "score = event_active(t) * method_mult * ln(1 + planned_amount/Size_{t-1}) * exp(-elapsed_months/HALF_LIFE); event_active=1 if firm has DART tsstkAqDecsn decision with Usable_Date<=t and t in [Usable_Date, Usable_Date+DRIFT_M months]",
+      "lag_rule": "rcept_dt PIT announcement; Usable_Date = rcept_date + 1 trading day (C2)",
+      "winsorization": "none (per-date frank variant tested)",
+      "neutralization": "none (long-only top-N EW)",
+      "economic_rationale": "Ikenberry buyback underreaction drift, event-time. EMPIRICALLY NEGATIVE in KR.",
+      "weight_theta": 0.0,
+      "references": ["Ikenberry-Lakonishok-Vermaelen 1995"],
+      "pit_c15_exception": "documented_spec_sanctioned",
+      "pit_c15_note": "Buyback DECISIONS are a NEW raw DART channel (tsstkAqDecsn) absent from Factor DB — routed via dedicated .cache/dart/buyback_decisions.parquet, identical documented carve-out to C23_OtherCorp/fe_disclosure_meta. Orthogonality covariates pulled via standard factor sources."
+    }
+  ],
+  "diagnostics": {
+    "metric_type": "canonical_screen",
+    "primary_config": "DRIFT_M=12, HALF_LIFE=6, method_mult=[direct 1.0/ambiguous 0.8], intensity=ln(1+amount/Size), top_n=20",
+    "n_months": 137,
+    "portfolio_alpha_t_nw_lag3": -1.1787,
+    "portfolio_alpha_t_pvalue": 0.2385,
+    "portfolio_alpha_t_note": "AUTHORITATIVE gate metric (forge-grade build_benchmark_compare path). Far below 2.95 HARD; sign NEGATIVE.",
+    "information_ratio": -0.4284,
+    "net_sr": -0.4284,
+    "alpha_annualized": -0.0057,
+    "mean_active_net_monthly": -0.00556,
+    "turnover_annual": 3.248,
+    "turnover_note": "LOW (3.25/yr), NOT high — the 12m drift window persists names so monthly rotation is modest. The failure is NOT a turnover-cost problem (the WT_009 make-or-break hypothesis): the gross signal is itself negative.",
+    "rank_ic": 0.0149,
+    "icir": 0.2559,
+    "harvey_t_ic_nw3": 3.3113,
+    "rank_ic_note": "ADVISORY ONLY. harvey_t 3.31 looks 'significant' but is a cross-sectional rank artifact — exactly the C23 trap (clean rank-IC, port_t negative). The IC is significant because the score reliably ranks the WORST performers high (perverse). port_t is authoritative and negative.",
+    "monotonicity": "NON-MONOTONE / PERVERSE",
+    "subperiod_stability": "negative in all eras; worst 2023+"
+  },
+  "concentration_tests": {
+    "purpose": "Make-or-break vs C23 flat-top: does the binary event gate make the extreme top STEEP in the right direction?",
+    "decile_profile_within_event_mean_active_monthly": {
+      "D1": -0.0038, "D2": 0.0020, "D3": -0.0112, "D4": -0.0059, "D5": 0.0050,
+      "D6": -0.0135, "D7": -0.0124, "D8": -0.0060, "D9": -0.0029, "D10": -0.0178
+    },
+    "decile_verdict": "PERVERSE: the event gate DID make a steep extreme top, but in the WRONG direction. D10 (largest direct-method buybacks) is the single WORST decile.",
+    "D10_mean_active_monthly": -0.0165,
+    "D10_nw_t": -2.760,
+    "D10_minus_D9_gap": -0.0147,
+    "D10_minus_D9_nw_t": -1.790,
+    "event_vs_market_all_event_firms_ew_mean_active": -0.0043,
+    "event_vs_market_nw_t": -0.876,
+    "event_vs_market_verdict": "The Ikenberry base case (pure announcement drift, all event firms EW) is FLAT-to-NEGATIVE in KR. The catalyst itself has no positive post-decision drift — full stop (honest_risk primary failure mode realized).",
+    "size_gt_median_top20_mean_active": -0.0035,
+    "size_gt_median_nw_t": -0.859,
+    "size_verdict": "NOT a micro-cap artifact — negative survives (does not flip positive) in liquid large names. Real (negative) effect, not noise."
+  },
+  "drift_window_decay": {
+    "note": "K (DRIFT_M) in {6,9,12,18} all negative; no window rescues it. port_t: K6 −1.24..−1.34, K9 −1.05..−1.51, K12 −1.02..−1.18, K18 −1.04..−1.26. No decay-to-positive at any horizon — the drift is absent, not merely short-lived."
+  },
+  "grid_robustness": {
+    "n_cells": 29,
+    "pct_port_t_positive": 0.0,
+    "max_port_t": -0.745,
+    "primary_rank_pct": 0.52,
+    "verdict": "0/29 cells positive across DRIFT_M × HALF_LIFE × intensity transform × method × top_n. Robustly negative; not a config-selection failure."
+  },
+  "orthogonality": {
+    "basis": "active (strategy net active monthly return) vs FF5+WML factor RETURN series (kr_factor_returns_v2)",
+    "metric_type": "active_return_correlation",
+    "corr_MKT": -0.129, "corr_SMB": -0.113, "corr_HML": -0.046, "corr_WML": 0.158,
+    "corr_RMW": -0.150, "corr_CMA": 0.149,
+    "max_abs_corr": 0.158,
+    "verdict": "GENUINELY ORTHOGONAL (max |corr| 0.16 vs WML, all <0.40/0.35 targets). A novel channel — but a novel channel with NEGATIVE edge. Novelty=5 confirmed, but realized alpha is negative, so it is not a tradeable new axis.",
+    "ortho_caveat": "Orthogonality measured at active-return-series level (not cross-sectional score-vs-factor-score). The net-payout-yield redundancy check (the spec's single most important orthogonality test) could not be run at the cross-sectional factor-score level because no cached net-payout-yield score was loaded; the FF-factor-return orthogonality is the available proxy. This does not change the verdict (signal is negative regardless of novelty)."
+  },
+  "era_breakdown": {
+    "pre2018": {"n": 36, "mean_active": -0.0010, "sr": -0.090},
+    "2018-2022": {"n": 60, "mean_active": -0.0004, "sr": -0.045},
+    "2023+": {"n": 41, "mean_active": -0.0171, "sr": -0.921},
+    "verdict": "The negative is overwhelmingly a 2023+ Value-up-surge phenomenon (SR −0.92). Pre-2023 is flat (no positive drift either). KR buyback-decision firms 2023+ behave as crowded/run-up names that mean-revert post-disclosure."
+  },
+  "graduation_gates": {
+    "portfolio_alpha_t_nw_hard_2.95": "FAIL (−1.18)",
+    "oos_retention_hard_0.7": "N/A (SR negative -> retention undefined; FAIL by construction)",
+    "calmar_hard_0.64": "FAIL (0.20 — driven by positive raw NAV CAGR 7.9% but that is pure market beta, not active alpha; active is negative)",
+    "dsr_sweep_only": "EXEMPT (selection_type=chain, single pre-registered primary)",
+    "verdict": "REJECT. Not graduation-eligible. Not screen/overlay-eligible (negative, not lumpy-positive)."
+  },
+  "data_provenance": {
+    "dart_extraction": "SUCCESS — new collector 02_Infrastructure/data/data_collector_dart_buyback.R (tsstkAqDecsn, targeted per-corp_code over 954 K200∪KQ150 corp_codes). 933 decision events, 278 tickers, 2015-01-13 ~ 2026-06-17.",
+    "data_floor": "2015 (API returned nothing pre-2015 despite bgn_de=2010 — honest floor; does NOT claim 2005 mandate coverage).",
+    "events_per_year": "50-120, continuous (not quarterly-clustered) — the construction premise held.",
+    "cohort_breadth_per_month": "median 30, p10 17, p90 38, min 2, max 43 (DRIFT_M=12). Ample for top-20 in most months; min-2 months are early 2015.",
+    "method_distribution": "861/933 (92%) direct 장내매수, 72 ambiguous, 0 explicit 신탁. method_mult is near-constant here (tsstkAqDecsn is the direct-acquisition endpoint; trust uses separate tsstkAqTrctrCcDecsn). The trust-vs-direct lever is therefore moot for this dataset.",
+    "amount_parse_sanity": "planned_amount median 5.0조 KRW, range 5천만~7조, no unit ambiguity detected; intensity ratio distribution healthy."
+  },
+  "challenge_flags": [
+    {"id": "RF-NEG-1", "severity": "INFO", "note": "Clean negative reported faithfully (AX-000 amended). Primary honest_risk failure mode (catalyst priced by announcement day / value-trap buybacks) is REALIZED."},
+    {"id": "RF-PERVERSE", "severity": "HIGH", "note": "rank-IC harvey_t 3.31 is POSITIVE-looking but PERVERSE — the score ranks worst-performers high. Do NOT cite rank-IC as evidence of signal; port_t (−1.18) and D10 NW-t (−2.76) are authoritative."},
+    {"id": "RF-CHAIN", "severity": "INFO", "note": "WT_009 chain motivation INVALIDATED at decision level: the +0.42%/mo fresh-month drift (from quarterly stock_buyback panel) does NOT replicate in event-time DART decisions. Likely the WT_009 fresh-month effect was a quarterly-panel artifact (period_date+45d clustering coinciding with earnings momentum), not a genuine buyback-announcement drift."},
+    {"id": "RF-ORTHO-INCOMPLETE", "severity": "LOW", "note": "Net-payout-yield cross-sectional redundancy check not run (no cached score); FF-return orthogonality used as proxy. Verdict unaffected (signal negative regardless)."}
+  ],
+  "method_shopping_log": {
+    "alpha_agent": {
+      "selection_type": "chain",
+      "candidates_tried": 1,
+      "n_grid_cells_diagnostic": 29,
+      "dsr_status": "exempt (chain, single pre-registered primary config; grid is robustness surface not argmax-selected)",
+      "method_log": [
+        {"name": "Buyback_Decision_Drift_event_gated_intensity", "primary_config": "DRIFT_M=12/HL=6/ln/direct/top20", "port_t": -1.18, "selected": "rejected (negative)"}
+      ]
+    }
+  },
+  "next_route": "REJECT — clean negative. Recommend campaign deprioritize the buyback-decision-drift concept (both WT_009 quarterly-carry FLAT-top and WT_010 event-time NEGATIVE-top now closed). The shareholder-return event axis in KR 2023+ is value-trap-contaminated. Suggest the momentum-hunt backlog pivot to a NON-shareholder-return discrete catalyst (e.g. C29 index-inclusion frontrun, exogenous and not value-trap-prone)."
+}

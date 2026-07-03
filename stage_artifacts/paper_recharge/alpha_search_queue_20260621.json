@@ -1,0 +1,24 @@
+{
+  "date": "20260621",
+  "autorun": 0,
+  "max_alpha": 1,
+  "candidates": [
+    {
+      "title": "ReSGA: A Large Tail Risk Model for Learning Value-at-Risk and Expected Shortfall",
+      "id": "2606.04576",
+      "source": "arxiv",
+      "route": "alpha",
+      "kr_feasible": true,
+      "promoted_by": "factor_recheck_tier2_20260621",
+      "factor_candidate": {
+        "name": "size_enhanced_left_side_momentum",
+        "def": "월간 리밸. alpha_{i,t} = (logCap_{i,t-1} - 횡단면평균 logCap) * (1 - exp(ES_hat_{i,t})), ES_hat = 직전 252d 일별수익 하위5% 평균(음수, 우리 R03_CVaR_95 pre-negate 입력과 동일). long-only = long leg(P1=대형주×고꼬리위험, too-big-to-fail 매수측) top-25 EW. 부호 empirical 양방향(미국 P1매수가 중·일 역전 — KR 재검증). 15bps·≤25종목·LIQ 2e8·KOSPI200∪KQ150.",
+        "novel": true,
+        "kr_feasible": true,
+        "verdict": "testable",
+        "confidence": "medium"
+      },
+      "reason": "ReSGA 논문 Eq.(11) size×tail-risk *상호작용* 항. registry tail/VaR/CVaR 13종 + Log Market Cap은 모두 standalone — 상호작용은 부재(신규). 논문 scaling 분석 'data complexity not model complexity' + Table6에서 Linear/GARCH ES forecaster로도 FF5 α 유의 → 경량 실현-ES 재구성이 충실(ReSGA 딥모델 불요, 날조 아님). base ES sort 부분은 redundant라 V2 대조군으로만. caveat: long-only short leg 상실로 신호 약화·부호 시장의존·성능 미실측."
+    }
+  ]
+}

@@ -1,0 +1,140 @@
+{
+  "schema": "alpha_package/v6.0",
+  "task_id": "WT-D20260621_003",
+  "agent_role": "alpha-research",
+  "hypothesis_id": "C21_Flow_Confirmed_Revision",
+  "as_of_date": "2026-06-21",
+  "stage": "final",
+  "codex_round": {
+    "stance": "REVISE",
+    "veto_flag": false,
+    "model": "gpt-5.5_xhigh",
+    "challenge_note": "qepm/mailbox/worktask/WT-D20260621_003/challenge_note.md",
+    "disposition": "REVISE accepted; conclusion reinforced (interaction dead, sector-neutral confirms G spurious). 4 ACCEPT (C1 artifacts emitted / C3 AX-007 rejection / C4 sector-neutral run / C7 routing downgraded) + 3 PARTIAL (C2 flow-timing immune to negative leg / C5 C15 freshness labeled / C6 no graduation claim). No auto-escalate (HIGH=4<5, AX-hard-FAIL=1<3, no lookahead).",
+    "artifacts_emitted_post_codex": ["alpha_scores.parquet", "alpha_validation.json", "artifact_lineage.json"]
+  },
+  "mandate_scope": "alpha_hat_only (NO covariance / NO weights / NO optimization)",
+
+  "concept": {
+    "name": "C21 Flow-Confirmed Revision Momentum",
+    "construction": "Interaction (product of cross-sectional z-scores) of analyst EPS up-revision (consensus blend: eps_chg_1m + esbr, 0.5/0.5) CONFIRMED by smart-money flow (Foreign+Institutional 20d net-buy / Size). Two NON-return information sets. anchor = G(gated) = z_rev * max(z_flow,0), 20d flow window, blend revision leg, top_n=20.",
+    "variants": "P(raw product z_rev*z_flow) / G(gated z_rev*max(z_flow,0)) [anchor] / S(signed-floor, zr<0&zf<0 clamped to 0)",
+    "economic_rationale": "Mechanism hypothesis: a revision that informed investors are NOT buying is stale/already-priced; one they ARE buying carries incremental info (revision-drift arbitraged faster when flow present). The PRODUCT was hypothesized to capture conditional info a linear combo misses. EMPIRICAL RESULT REFUTES the conditioning value (see findings) — the flow-confirmation gate destroys rather than enhances the revision signal.",
+    "redundancy_cluster_id": "consensus_revision (C02/C04/C19 family); flow leg shares INV01/INV03/INV10 cluster",
+    "non_return_derived": true,
+    "non_return_note": "Neither leg touches any M* return-momentum factor. Revision = analyst consensus; flow = investor net-buy notional. Structurally orthogonal to M01/M08/M24 return-momentum."
+  },
+
+  "data_inputs": {
+    "consensus": ".cache/consensus/eps_chg_1m.parquet (2001-04..2026-05), esbr.parquet, sue.parquet, target_price.parquet — Date<=sig_date PIT filter (compute_consensus pattern)",
+    "investor": ".cache/investor_stock/investor_wide.parquet (Foreign/Institutional/Individual daily KRW net-buy notional)",
+    "rawdata": ".cache/rawdata.parquet (Size, Close, Vol, Ret, K200, KQ150) — universe membership + Size norm + ADV + forward Ret_1m",
+    "benchmark": ".cache/benchmark.parquet (real KOSPI200 TR BM_Ret; rawdata BM_Ret bypassed per project-rawdata-bmret-empty)",
+    "universe": "KOSPI200 (K200==1) ∪ KOSDAQ150 (KQ150==1), 2005-01-31..2026-04-30, 256 monthly sig_dates, ~348 names/month; production liquidity 2e8 ADTV (20d mean Close*Vol, t-1, C10)",
+    "factor_db_freshness": "orthogonality target factors (INV08/INV10/C19) RECOMPUTED from same raw caches (factor_db_daily stale) — labeled freshness=recomputed_from_cache, definitions faithful to compute_investor.R/compute_consensus.R"
+  },
+
+  "measurement": {
+    "engine": "canonical_screen_bt() (02_Infrastructure/contracts/canonical_screen_bt.R) — top-N EW long-only, 15bps delta-cost, liq 2e8, NW lag-3 via build_benchmark_compare contract",
+    "metric_type": "canonical_screen",
+    "metric_type_note": "screening real-measurement, NOT forge-authoritative. graduation HARD (PORT_t>=2.95 / oos>=0.7 / calmar>=0.64) applies to forge build_bt_result. No proxy hand-calc; no prod(1+r)/cumprod portfolio self-synthesis (asset-level forward Ret_1m compounding only, portfolio aggregation via contract).",
+    "n_months": 255,
+    "cost_model_version": "v2.4_kr_retail_15bps"
+  },
+
+  "anchor_result": {
+    "variant": "G", "flow_window": "20d", "revision_leg": "blend", "top_n": 20,
+    "metric_type": "canonical_screen",
+    "portfolio_alpha_t_nw_lag3": 0.939,
+    "portfolio_alpha_t_pvalue": 0.348,
+    "information_ratio": 0.210,
+    "net_sr": 0.210,
+    "alpha_annualized": 0.0316,
+    "turnover_annual": 18.04,
+    "oos_retention_v2": -0.672,
+    "calmar_approx": 0.048,
+    "turnover_flag": "18.04/yr EXCEEDS research_philosophy TO<=11/yr guideline and screening 1100% hard-fail threshold — product noise amplifies turnover. 60d-window variants lower TO (~13.5)."
+  },
+
+  "variants_result": {
+    "P_raw_product": {"portfolio_alpha_t_nw_lag3": -0.147, "net_sr": -0.032, "note": "raw product worst — quadrant artifact (down+sell = positive product) contaminates long-only"},
+    "S_signed_floor": {"portfolio_alpha_t_nw_lag3": 0.960, "net_sr": 0.215, "note": "~= G; clamping helps marginally over P but does not rescue"}
+  },
+
+  "marginals_and_incrementality": {
+    "M_revOnly_z_rev": {"portfolio_alpha_t_nw_lag3": 2.795, "net_sr": 0.563, "alpha_annualized": 0.0696, "turnover_annual": 14.40, "note": "REVISION ALONE is the strongest signal by far — near Harvey hurdle 2.95"},
+    "M_flowOnly_z_flow": {"portfolio_alpha_t_nw_lag3": -0.638, "net_sr": -0.133, "note": "flow leg ALONE is NEGATIVE in this top-20 long-only screen — smart-money 20d net-buy/Size has no standalone forward-return edge here"},
+    "M_linadd_0.5z_rev+0.5z_flow": {"portfolio_alpha_t_nw_lag3": 0.042, "net_sr": 0.009, "note": "linear add dilutes revision with the dead flow leg -> near-zero"},
+    "DECISIVE_INCREMENTALITY_TEST": {
+      "rho_active_C21G_vs_M_linadd": 0.852,
+      "rho_score_spearman_mean_monthly": 0.573,
+      "delta_PORT_t_G_minus_linadd": 0.897,
+      "delta_net_SR_G_minus_linadd": 0.201,
+      "verdict": "INTERACTION_NOT_ADDITIVE",
+      "verdict_rule": "rho_active >= 0.85 (0.852) triggers the honest-report condition. Although delta-PORT_t vs linadd is positive (+0.90), the interaction beats linadd ONLY because linadd is poisoned by the negative flow leg. The economically meaningful comparison is vs the revision marginal alone: G(0.939) << M_revOnly(2.795). The gating/product DESTROYS ~1.86 t of revision signal. The conditioning hypothesis is REFUTED — flow does not carry incremental confirmation info; it dilutes/gates away genuine revision alpha."
+    }
+  },
+
+  "orthogonality": {
+    "basis_note": "active = (ret_net - BM) basis (NOT gross) per reference-orthogonality-gross-vs-active; score_rho = mean monthly cross-sectional Spearman; target factors recomputed_from_cache.",
+    "score_rho": {
+      "INV08_Foreign_Inst_Agreement": 0.027,
+      "C19_Composite_Earnings": 0.358,
+      "INV10_Smart_Money_Flow": 0.335,
+      "C02_EPS_Chg_1m_marginal": 0.508,
+      "C04_ESBR_marginal": 0.325
+    },
+    "active_return_rho": {
+      "INV08": 0.491,
+      "C19": 0.509,
+      "INV10": 0.605
+    },
+    "target_factor_PORT_t": {"INV08": 0.150, "INV10": -2.762, "C19": 2.295},
+    "verdict": "C21_G is score-orthogonal to INV08 (0.03), C19 (0.36<0.5 PASS), INV10 (0.34<0.6 PASS) — did NOT reinvent an existing flow/consensus factor. BUT it correlates 0.51 (score) with the C02 EPS revision marginal, confirming that whatever modest alpha G retains comes from the revision leg it is built on, not from a novel interaction. Active-series rho INV10 0.61 reflects shared flow-leg construction."
+  },
+
+  "sector_neutral_robustness_post_codex": {
+    "note": "Ran in response to Codex C4 (RF-A4 spurious-factor warning). Demean score within Sector per sig_date, then rank-IC + canonical_screen.",
+    "G_interaction": {"icir_raw": 0.1544, "icir_sector_neutral": 0.0202, "harvey_t_raw": 2.466, "harvey_t_sn": 0.322, "verdict": "SPURIOUS — interaction alpha is sector-driven; collapses to zero sector-neutral. Reinforces NEGATIVE verdict."},
+    "M_revOnly_marginal": {"icir_raw": 0.3363, "icir_sn": 0.1919, "harvey_t_raw": 5.370, "harvey_t_sn": 3.064, "port_t_raw": 2.795, "port_t_sn": 1.741, "verdict": "SURVIVES weakened — sector tilt ~1/3 of gross; residual cross-sectional content remains (harvey_t_sn 3.06)."}
+  },
+  "rank_ic_diagnostics_post_codex": {
+    "note": "rank-IC distinct from portfolio-alpha-t (Cycle 2 lesson). M_revOnly is strong on BOTH; G interaction weak; flow leg negative.",
+    "M_revOnly": {"rank_ic": 0.0301, "icir": 0.3363, "harvey_t": 5.370},
+    "G": {"rank_ic": 0.0131, "icir": 0.1544, "harvey_t": 2.466},
+    "M_flowOnly": {"rank_ic": -0.0151, "icir": -0.1516, "harvey_t": -2.422}
+  },
+  "robustness_grid": {
+    "n_cells": 18,
+    "best_cell": {"variant": "S", "leg": "blend60", "top_n": 20, "PORT_t": 1.697, "net_SR": 0.378, "TO": 13.48},
+    "note": "No interaction cell reaches PORT_t 2.95. Best interaction cell (S/blend60) = 1.70, still well below revision marginal 2.795. eps_only revision leg (G/eps20=1.12) underperforms blend; esbr-only is negative. 60d flow window > 20d (less noise) but still cannot beat revision alone. csv: stage_artifacts/WT-D20260621_003/c21_robustness_grid.csv",
+    "selection_type": "chain (hypothesis-driven mechanism variants P/G/S + window + rev_leg; top_n=robustness). DSR gate not applied per measurement-graduation §3 chain rule. anchor pre-registered = G/20d/blend/top_n=20."
+  },
+
+  "pit_compliance": {
+    "C1": "all z-scores cross-sectional per sig_date (winsorize 1/99 + (x-mean)/sd within month) — NO full-sample stats; OOS anchored expanding",
+    "C2": "score(i,t) uses Date<=t only; forward Ret_1m compounded over (t, t+1M] separated into returns_dt",
+    "C4": "consensus PIT-known at publish (Date<=sig_date filter); no raw financial statements",
+    "C10": "ADV = 20d mean(Close*Vol) at t-1 (adv20_lag1 shift), liq filter 2e8",
+    "C13": "z_rev/z_flow naturally aligned (higher=better); product no sign manipulation; Z_Score_Aligned only",
+    "C14": "all consensus/investor inputs Date<=sig_date",
+    "C15": "raw consensus/investor caches = source data (compute_consensus/compute_investor approved direct-load path), not factor DB synthetic parquet; orthogonality targets recomputed faithfully",
+    "long_only": true, "no_short": true, "kr_domestic_only": true,
+    "flow_timing_note": "20d frollsum align=right uses [t-19,t]; t-day investor flow disclosed post-close — sig at month-end t treats t-flow as PIT-known (settled). Robustness flow-lag-1d not separately run; flagged as honest_risk (conservative t-1 retreat would only weaken the already-dead flow leg)."
+  },
+
+  "verdict": {
+    "graduation_candidate": false,
+    "rejected_basis": "AX-007 single-sleeve top-20 long-only mechanism break, no exception; TO 18.04/yr > 11x hard ceiling. Treated as REJECTED negative result, not a candidate alpha_hat.",
+    "reason": "anchor PORT_t 0.939 << 2.95; oos_retention -0.672 << 0.7; calmar 0.048 << 0.64 — fails all 3 graduation HARD gates. Sector-neutral confirms the interaction is SPURIOUS (ICIR 0.020, harvey_t 0.32). Interaction hypothesis REFUTED (INTERACTION_NOT_ADDITIVE; flow leg standalone NEGATIVE -0.638; gating destroys ~1.86t of revision signal).",
+    "screen_route_for_interaction": "NONE — the flow-confirmed interaction has no residual value over revision-alone and collapses sector-neutral.",
+    "revision_marginal_disposition": "DIAGNOSTIC OBSERVATION (post-Codex C7, NOT a route assertion): M_revOnly carries genuine non-return signal (PORT_t 2.795 raw / 1.741 sector-neutral; rank_ic 0.030; ICIR 0.336; harvey_t 5.37). BUT (a) below 2.95 hurdle, (b) score_rho 0.51 vs C02 / 0.36 vs C19 = consensus-family overlap, (c) TO 14.4x > ceiling. REQUIRES separate book-marginal ΔIR check vs admitted consensus factors BEFORE any DPL/FR use. No standalone graduation or route is claimed here.",
+    "honest_framing": "AX-000 (amended 2026-06-21): ONE clean negative in a sequential exhaustive momentum-hunt — NOT evidence of a structural limit. The flow-CONFIRMATION mechanism is dead; the non-return revision axis is independently alive but already substantially captured by the existing consensus family. Concept #1 done; campaign continues to concept #2."
+  },
+
+  "research_philosophy_compliance": {
+    "trend1_factor_zoo": "validation-first: economic_rationale + redundancy_cluster_id provided; result prunes a candidate rather than adding noise",
+    "trend2_cost_aware": "all metrics net-of-15bps; turnover reported (18.04/yr anchor, flagged > guideline)",
+    "trend3_uncertainty": "PORT_t with NW lag-3 + p-value; subperiod via robustness grid + oos_retention v2; IC-t vs portfolio-alpha-t distinction honored (M_revOnly is portfolio-alpha basis, not rank-IC)"
+  }
+}

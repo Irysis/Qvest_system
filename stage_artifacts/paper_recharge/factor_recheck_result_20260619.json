@@ -1,0 +1,33 @@
+{
+  "date": "20260619",
+  "tier": 2,
+  "n_input": 2,
+  "promoted": [],
+  "confirmed_infeasible": [
+    {
+      "paper_id": "2606.07450",
+      "title": "Information Networks of Stock Prices",
+      "factor_hint": "price_network_centrality",
+      "verdict": "infeasible",
+      "novel_vs_registry": true,
+      "closest_existing": "none (registry has no network/centrality factor)",
+      "reason_full_read": "전문 정독 결과 논문에 종목 수준 수익예측 신호가 전혀 없음. 평가지표는 (a) 섹터 분류 정확도 = Adjusted Mutual Information(AMI) vs 공식 섹터라벨, (b) 종목-쌍(pair) 수준 잔차정보 ΔI = I_emp − I_Gaussian. 24개 구성(Pearson/MI-binning/MI-kNN × MST/PMFG × 4 community decoder)을 인도네시아 150종목·97 rolling window(300d/25d shift)로 비교하며, 결론은 'Pearson|MST|Infomap이 섹터 taxonomy 복원에 가장 robust, MI-PMFG는 잔차정보 진단렌즈'. 종목별 centrality를 횡단면 수익 예측자로 계산·검증한 부분이 전무(centrality는 본문에서 구조적 특성으로 지나가듯 언급될 뿐 IC/포트/수익 테스트 없음).",
+      "kr_feasible_mechanically": true,
+      "infeasible_reason": "메커니즘 자체(rolling corr/MI net → MST/PMFG → node centrality)는 KR 일별 RAWDATA로 산출 가능하나, '논문이 기술하지 않은 수익예측 신호(centrality alpha)'를 합성하는 것 = batch_434 가드 해당(날조). 논문에 종목신호 자체가 부재 → infeasible. (centrality 프리미엄은 별개 문헌 아이디어이며 본 논문 재구성과 무관 — 충실재구성 ≠ 별개가설 차용)"
+    },
+    {
+      "paper_id": "2606.04576",
+      "title": "ReSGA: A Large Tail Risk Model for Learning Value-at-Risk and Expected Shortfall",
+      "factor_hint": "resga_predicted_ES_sort",
+      "verdict": "infeasible",
+      "novel_vs_registry": false,
+      "closest_existing": "D08_Tail_Beta / D25_Left_Tail_Beta / D45_Downside_Dev / D47_CVaR_5pct / D48_VaR_5pct / D49_VaR_1pct / R01_VaR_95 / R02_VaR_99 / R03_CVaR_95 / R04_CVaR_99 / R05_Tail_Risk / R07_Downside_Dev / R08_Semi_Variance",
+      "reason_full_read": "전문 정독: 거래신호 = Atilgan et al.(2020) 'left-side momentum' — 매월말 예측 VaR/ES 내림차순 정렬해 10분위(P1 저위험~P10 고위험), 시총가중, 월간 리밸, H–L = buy P1 sell P10(long-short). 'size-enhanced' 변형은 예측 ES와 firm size를 결합('too big to fail': 대형주 고 ES에 강매수). 그러나 논문의 경제적 기여는 ReSGA 모델 자체(수백만 파라미터 retrieval-enhanced self-grouping autoencoder, 153 firm char, 월간 US 1926–2023)의 우월한 ES 예측에 귀속됨 — 'ReSGA가 모든 경쟁모델 중 최고 경제성과, econometric 모델은 열위'를 명시. 따라서 단순 ES 추정으로 대체 시 충실재구성 아님(논문 주장 = 모델 품질이 알파를 만든다).",
+      "kr_feasible_mechanically": false,
+      "infeasible_reason": "① ReSGA(수백만 파라미터+153 char+retrieval/self-grouping) 충실 재구성 비현실적이며, 경량 ES 프록시 대체는 논문이 명시적으로 열위라 한 것이라 misrepresentation(non-faithful). ② 거래구조가 long-short(롱온리 헌법 위배, 2026-06-11 도훈 mandate). ③ 분리가능한 모델무관 신호(tail-risk 정렬 left-side momentum)는 registry tail/VaR/CVaR 팩터 13종(D08/D25/D47-49/R01-05/CVaR/Downside)과 중복 = redundant이며 long leg(저tail-risk decile)는 방어형 tilt로 AX-005 영역. ④ 부호 시장의존(논문: 중국·일본 +, 영/호/캐 극단분산) — KR 미검증 약한 prior. → 충실재구성 불가 + 중복 + 롱숏으로 infeasible."
+    }
+  ],
+  "redundant": [],
+  "still_uncertain": [],
+  "notes": "tier-2 심층 재검 2건 모두 전문 정독 후 확정 기각. promoted 0건(재현율 회복 대상 없음 — 두 후보 모두 논문이 종목 수익신호를 제공하지 않거나(centrality) 신호가 모델에 종속+중복+롱숏(ReSGA)). 날조·과장 없이 정직 보고."
+}

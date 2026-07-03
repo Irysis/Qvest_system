@@ -1,0 +1,17 @@
+{
+  "wt_id": "WT-D20260702_002",
+  "decision": "REMOVE_LAYER4",
+  "decided_by": "도훈 (2026-07-02)",
+  "basis": "forge 3-way(클린) + judge RECOMMEND_REMOVE + deepdive + deep-research 수렴. C_noL4 SR 1.898/Calmar 1.943/PORT_t 6.21 유의지배(vs faith_clean +4.08, vs AR +3.11). Layer4 방어=조건부·희소(위기 19/269월)·MDD기여~0·위기 비일관. 제거 book active oos band escalation 3/3(PORT_t 6.21). 외부문헌: vol-managed 부정 prior(구조불안정 2.37 breaks)가 scalar-vol overlay 제거 뒷받침.",
+  "resulting_book": "STR_1715 × m4 × β_R05 (R05×m4 only, FaithTrend/AR Layer4 제거)",
+  "status": "DECISION_FINAL / EXECUTION_PENDING_PREREQ",
+  "execution_sequence_prereq": [
+    "1. build_bt_result 월간 연율화 버그 수리 (chip task_b2ebfb2f) → essence 재판정 (게이트 정합)",
+    "2. 종목레벨 재실행 1회 — scalar-overlay 계보(ret_orig×scalar) → 실제 홀딩(invested weight) 레벨에서 제거 재현 확인. 제거 시 노출 +17.6%p 실현되는지 forward_weights_R05(β_faith 미적용) 경로로.",
+    "3. governor book_state 갱신 (수동, book_state.json: Layer4 제거 반영) + live_track holdout 재등록 + monitoring drift",
+    "4. 05_Production 반영은 promote 절차 경유 (직접수정 금지)"
+  ],
+  "risk_ack": "제거 = 방어모드→강세베팅 즉시 전환(라이브 노출 +17.6%p). 조정 시 대가(단 R05×m4 수준, naked 아님). 연 SR +0.12 개선의 대가로 조정보험 상실 — 도훈 시장관 하 수용.",
+  "governor": "manual",
+  "ax008": "2/3 (Forge + Self-Adversarial), judge PASS"
+}

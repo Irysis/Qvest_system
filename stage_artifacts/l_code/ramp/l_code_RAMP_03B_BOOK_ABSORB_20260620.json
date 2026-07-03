@@ -1,0 +1,23 @@
+{
+  "l_code": "L-RAMP-20260620_171915",
+  "strategy_id": "RAMP_03B_BOOK_ABSORB_20260620",
+  "grade": "A",
+  "core_reference": "OPT2 book-absorb: 25-stock book_momcons(BOOK+mom+cons regime-IC) pt 3.05net > deployed book 2.64gross + oos_ret 0.66>0.37, 25-compliant beat; finding: overlay HURT book over 2009+(base 4.87 vs deployed 2.64)",
+  "lesson_text": "도훈 옵션2(Book을 factor로 흡수 재최적화, 25종목준수). ★전제정정: 직전 '31종목 결합 Book초과'는 25종목 위반(book20∪sleeve25=평균 31, 21~44)이었고 25준수 압축(merged-25 pt1.23·split-budget 1.69) 둘다 Book 못넘음 — decorrelation은 >25종목 요구. ★옵션2 해결: Book score_eff를 예측월(ny) PIT정렬해 factor BOOK 추가, 8-comp grid(64config) 재탐색. (1) **오버레이 발견**: book base(score_eff top-25 오버레이無) pt 4.87/SR1.61/calmar1.27인데 배포book(오버레이有) 2.64(같은164mo) — 오버레이가 2009+ 상승장서 mean active 깎음(현금디리스크). (2) **★25종목 준수 beat**: book_momcons(BOOK+모멘텀6+컨센서스2를 regime=vol IC가중 shrink8 단일top-25) pt **3.05(net) > 배포book 2.64(gross)** 보수적우위 + oos_ret **0.66 > book 0.37** OOS-robust + SR1.19/calmar1.04. 단일25종목=헌법준수. book_only(4.87)가 더높으나 그건 book base 재현(오버레이뺀것). book+내factor 결합은 full-pt 깎이나 OOS-robustness↑(0.34→0.66). CAVEAT: book=gross/mine=net(netting시 book pt~2.3-2.4·SR~1.2)·sweep64경미·n=164mo(book 256mo는 5.01). 자본=도훈수동. 코드 run_search2_book.R.",
+  "tags": "RAMP",
+  "created_at": "2026-06-20",
+  "research_mode": "ramp",
+  "created_by": "emit:ramp",
+  "metric_type": "backtested",
+  "construction_type": "chain",
+  "mechanism_hypothesis": "",
+  "book_only_pt": 4.87,
+  "book_momcons_pt": 3.05,
+  "book_momcons_oos_ret": 0.66,
+  "book_momcons_SR": 1.19,
+  "deployed_book_pt_164mo": 2.64,
+  "deployed_book_oos_164mo": 0.37,
+  "merged25_fail_pt": 1.23,
+  "split25_fail_pt": 1.69,
+  "combo31_violates": 31
+}

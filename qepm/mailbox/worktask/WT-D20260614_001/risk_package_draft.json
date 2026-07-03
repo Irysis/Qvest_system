@@ -1,0 +1,313 @@
+{
+  "task_id": "WT-D20260614_001",
+  "as_of_date": "2026-06-12",
+  "agent_role": "risk-research",
+  "status": "RISK_FINAL_POST_CODEX",
+  "codex_round": {
+    "stance": "REVISE",
+    "veto_flag": false,
+    "concerns_total": 6,
+    "accepted": 2,
+    "partial": 3,
+    "rebuttal": 1,
+    "response_file": "codex_critic_response_risk.json",
+    "challenge_note": "risk_challenge_note.md"
+  },
+  "selection_objective": "condition_number",
+  "selection_objective_note": "Sigma estimator selected by estimation quality only (condition number + PSD + factor-coverage tradeoff). NO return/SR/IR used (R4 P3 HARD).",
+  "exposure_matrix_ref": "stage_artifacts/WT_D20260614_001/exposure_matrix.parquet",
+  "factor_covariance_ref": "stage_artifacts/WT_D20260614_001/factor_covariance.parquet",
+  "specific_risk_ref": "stage_artifacts/WT_D20260614_001/specific_risk.parquet",
+  "security_covariance_ref": "stage_artifacts/WT_D20260614_001/covariance.parquet",
+  "regime_correlation_ref": "stage_artifacts/WT_D20260614_001/regime_correlation.parquet",
+  "tail_risk_ref": "stage_artifacts/WT_D20260614_001/tail_risk.json",
+  "covariance_structure": {
+    "form": "Sigma = B Omega B' + D (1-factor market model; B/Omega/D artifacts emitted)",
+    "estimator_selected": "factor1_market",
+    "condition_number": 58.9,
+    "psd": true,
+    "n_holdings": 25,
+    "return_basis": "monthly forward 1M, trailing 60m window",
+    "market_variance_share": 0.851,
+    "specific_variance_share": 0.149,
+    "factor_coverage_r2": {
+      "one_factor_mean": 0.259,
+      "one_factor_median": 0.266,
+      "names_below_0p30": 15,
+      "n_names": 25,
+      "multifactor_mkt_sector_mean": 0.632,
+      "multifactor_mkt_sector_median": 0.679,
+      "n_factors_multi": 9,
+      "honest_note": "1-factor coverage R2 mean 0.259 is BELOW the 0.30 guide (Codex C1 accepted). The mkt+sector multi-factor model covers far more (R2 0.632) but is ill-conditioned (cond 212.8>200) over the 60m window with low-N sector factors. This is a genuine estimation tradeoff: I chose the well-conditioned-but-lower-coverage 1-factor Sigma rather than an over-fit ill-conditioned one. Sigma is NOT claimed as high-coverage; it is a conditioned, PSD market-risk frame. Optimizer should treat specific risk (75% of name variance) as carrying real idiosyncratic exposure."
+    },
+    "sector_factor_attempt": "mkt+KR-sector BΩB'+D fitted (R2 0.632) but cond 212.8>200 (low-N sector factors over 60m). Rejected for Sigma on conditioning; sector handled as active-selection axis (PART C)."
+  },
+  "book_marginal_authoritative": {
+    "note": "AUTHORITATIVE governor input. proper realization-month-aligned active covariance (alpha provided Pearson diagnostic only).",
+    "overlap_months": 219,
+    "active_cor": 0.306,
+    "total_cor": 0.754,
+    "total_cor_vs_established_kr_value": "0.754 confirms KR VALUE corr ~0.76 established truth",
+    "incumbent_active_IR_overlap": 0.661,
+    "sleeve_active_IR": 0.151,
+    "book_IR_at_zero_tilt": 0.661,
+    "optimal_value_tilt_w_star": 0,
+    "delta_IR_at_w_star": 0,
+    "delta_IR_at_10pct_tilt": -0.0094,
+    "verdict": "FAIL book-marginal ΔIR>=0.05 (DECISIVE). Book IR monotonically decreasing in value tilt; max dIR=0 at w=0. governor: NO-ADMIT / DEFER on book-marginal grounds.",
+    "rolling36m_active_cor": {
+      "min": -0.147,
+      "median": 0.306,
+      "max": 0.612
+    },
+    "active_cor_bootstrap_90ci": {
+      "lo": 0.154,
+      "median": 0.292,
+      "hi": 0.416,
+      "note": "block-bootstrap (block=6, B=2000) 90% CI excludes 0 -> active_cor robustly positive."
+    },
+    "regime_conditional_active_cor": [
+      {
+        "regime": "NORMAL",
+        "n": 133,
+        "active_cor": 0.287
+      },
+      {
+        "regime": "CRISIS",
+        "n": 42,
+        "active_cor": 0.422
+      },
+      {
+        "regime": "BULL",
+        "n": 44,
+        "active_cor": 0.322
+      }
+    ],
+    "regime_note": "active_cor is HIGHER in CRISIS (0.422, n=42) than NORMAL (0.287) -> the value sleeve co-moves with the book MORE when it matters most. This is the opposite of a crisis hedge.",
+    "tail_dependence_vs_incumbent": {
+      "active_lower_tdc": 0.36,
+      "active_upper_tdc": 0.18,
+      "total_return_lower_tdc": 0.68,
+      "note": "empirical lower-tail dependence q=0.10. total-return joint-crash TDC=0.68 -> sleeve and incumbent crash together 68% of the time in the joint tail. Strong RF-R5-style book redundancy in the LEFT tail."
+    },
+    "correction_of_alpha": "alpha claimed active_cor 0.269 (realign) / 0.109 (draft) - both date-misaligned. Risk authoritative: 0.306 (bootstrap 90% CI [0.154,0.416])."
+  },
+  "sector_residual_diversification": {
+    "cor_raw_vs_sectorneutral_sleeve": 0.957,
+    "sector_bet_share_of_active_variance": 0.043,
+    "active_cor_vs_incumbent_raw": 0.306,
+    "active_cor_vs_incumbent_sectorneutral": 0.326,
+    "delta_IR_sectorneutral": 0,
+    "verdict": "Sector tilt is a SELECTION/IC effect (42% IC retention), NOT a realized-active driver (~4% of variance). Diversification does not survive sector-neutralization because it was not there to begin with.",
+    "holdings_sector_hhi": 0.072,
+    "holdings_n_eff_sectors": 13.9,
+    "holdings_top_sector": "운송",
+    "holdings_top_sector_share": 0.12
+  },
+  "risk_summary": {
+    "top_common_risks": [
+      "Market (85%, 1-factor; dominant KR long-only eigenmode)",
+      "Specific (15%)",
+      "Sector tilt (active-selection axis; 58% IC retention loss but ~4% of realized active var)"
+    ],
+    "crowding_flags": [],
+    "crowding_score_per_factor": [
+      {
+        "factor_name": "V01_BM",
+        "crowding_score": 0.262,
+        "hhi_top": 0.083,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 0.35,
+        "demand_elasticity_proxy": 0.749,
+        "alert": "LEVEL_LOW"
+      },
+      {
+        "factor_name": "V03_CFP",
+        "crowding_score": 0.246,
+        "hhi_top": 0.04,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 0.4,
+        "demand_elasticity_proxy": 0.672,
+        "alert": "LEVEL_LOW"
+      },
+      {
+        "factor_name": "V10_FCF_Yield",
+        "crowding_score": 0.25,
+        "hhi_top": 0.137,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 0.25,
+        "demand_elasticity_proxy": 0.735,
+        "alert": "LEVEL_LOW"
+      },
+      {
+        "factor_name": "V11_Shareholder_Yield",
+        "crowding_score": 0.326,
+        "hhi_top": 0.127,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 0.9,
+        "demand_elasticity_proxy": 0.312,
+        "alert": "LEVEL_LOW"
+      }
+    ],
+    "liquidity_flags": [],
+    "stress_tests": {
+      "market_down_5": -0.0398,
+      "gfc_2008_total": -0.158,
+      "gfc_2008_active": 0.1996,
+      "covid_2020_total": -0.046,
+      "rate_2022_total": -0.0379,
+      "rate_2022_active": 0.044
+    },
+    "mdd_total": -0.4821,
+    "mdd_total_note": "clean value-4 measure 48.2% (NOT carried contaminated 64.3%)"
+  },
+  "diagnostics": {
+    "condition_number": 58.9,
+    "shrinkage_used": false,
+    "shrinkage_method": "none. LW analytic rho saturated to 1.0 (full shrink to identity) at monthly n=60/p=25, which destroys correlation structure -> rejected on shrinkage-quality grounds. 1-factor structured model is PSD with cond 59 without artificial shrinkage.",
+    "factor_correlation_warnings": [],
+    "market_dominance_flag": "ESCALATED (RF-R1, HIGH): market variance share 0.85 (1-factor) exceeds the 0.40 single-factor red-flag threshold. Root cause = KR long-only no-short 1st-eigenmode (structural, documented). Risk does NOT excuse this; it escalates it and requires the optimizer to either impose a market-exposure cap or accept that this sleeve cannot reduce book market risk. Reported as a flag, not normalized.",
+    "cvar_cap_breach_flag": "ESCALATED (RF-R6, HIGH): monthly CVaR95 0.133 breaches 2.5% cap by ~5.3x. Infeasibility flagged for optimizer.",
+    "tail_summary": {
+      "mdd_total": -0.4821,
+      "gpd_xi": 0.157,
+      "hill_alpha": 2.18,
+      "es99_monthly": -0.2049
+    },
+    "regime_correlation_ref": "stage_artifacts/WT_D20260614_001/regime_correlation.parquet"
+  },
+  "red_flags": [
+    {
+      "id": "RF-R1",
+      "severity": "HIGH",
+      "flagged": true,
+      "text": "ESCALATED: top common risk Market=85.1% > 40% threshold. 1-factor R2 mean=0.259 (15/25 names <0.30) -> a single market mode dominates security covariance. This is a genuine concentration the risk model must escalate, NOT excuse. Root cause: KR long-only no-short structural 1st-eigenmode (documented, [[learning-gate-calibration-longonly]]). REQUIRED ACTION (optimizer scope, risk does not prescribe weights): beta-neutral / market-exposure-bounded construction or accept that this sleeve cannot reduce book market risk. Risk explicitly recommends optimizer impose a market-exposure cap and report residual after."
+    },
+    {
+      "id": "RF-R6-CVAR",
+      "severity": "HIGH",
+      "flagged": true,
+      "text": "INFEASIBILITY FLAG: sleeve monthly CVaR95(ES95)=0.133 >> CVaR cap 0.025. The unconstrained value-4 sleeve breaches the monthly tail cap by ~5x. Risk does NOT prescribe weights, but FLAGS that any admission requires the optimizer to construct a CVaR-constrained portfolio (risk-budget/CVaR objective) that brings ES95 under 2.5%; absent that, the sleeve is infeasible under the tail mandate. Note: stress-window losses are all <25% (worst GFC -15.8%), so the breach is monthly-vol driven, not a single-scenario blowup."
+    },
+    {
+      "id": "RF-R5",
+      "severity": "MEDIUM",
+      "flagged": true,
+      "text": "BOOK REDUNDANCY: total-return lower-tail dependence vs incumbent = 0.68 (sleeve & STR_1715 jointly crash 68% of the time in the q=0.10 left tail). Despite moderate active_cor (0.31), the LEFT-TAIL co-movement is high (total_cor 0.75). Confirms the sleeve does not diversify the book where it matters (drawdowns). Codex dispute resolved: total_cor 0.75 IS RF-R5-style redundancy in the tail."
+    }
+  ],
+  "challenge_flags": [
+    {
+      "id": "CF-R-DIVERSIFIER-AUTHORITATIVE",
+      "severity": "HIGH",
+      "text": "AUTHORITATIVE book-marginal (proper realization-aligned join, 219m): active_cor=0.306 (NOT alpha's 0.269 nor draft 0.109 - both date-misaligned; spot-check 2008-10 GFC confirms realization-align). total_cor=0.754 confirms KR VALUE ~0.76 established truth. IR_incumbent(active,overlap)=0.661 vs IR_sleeve(active)=0.151. Book IR is MONOTONICALLY DECREASING in value tilt: dIR@10%=-0.0094, w*=0.00, max dIR=+0.0000. The value-4 sleeve FAILS book-marginal ΔIR>=0.05 DECISIVELY (best case dIR=0). Mechanism: sleeve standalone active IR (0.15) << incumbent (0.66); even at cor 0.31 the variance reduction cannot offset the mean-IR drag. Counterfactual cor=0 -> dIR@10% only +0.013, still <0.05. governor: DEFER/NO-ADMIT on book-marginal grounds.",
+      "evidence": "risk_measure_B.R::PART_B; regime_correlation.parquet"
+    },
+    {
+      "id": "CF-R-SECTOR-RESIDUAL",
+      "severity": "MEDIUM",
+      "text": "CF-SECTOR-TILT (alpha RF-A4 42%) re-examined: sector tilt is a SELECTION/IC phenomenon, NOT a realized-active-return driver. cor(raw sleeve active, sector-neutral sleeve active)=0.957 => only ~4.3% of the sleeve's realized active variance is the sector bet. Sector-neutralizing the signal does NOT restore diversification: active_cor vs incumbent moves 0.306->0.326 (no improvement), book dIR stays 0.0000. The 42% IC retention loss is real for cross-sectional ranking but the sleeve's co-movement with the book is driven by the common KR market/value mode, not the sector tilt. Holdings sector HHI=0.072 (n_eff=13.9 sectors, top=운송 12%) - well diversified at name level.",
+      "evidence": "risk_measure_B.R::PART_C"
+    },
+    {
+      "id": "CF-R-MDD-RESTATED",
+      "severity": "MEDIUM",
+      "text": "CF-MDD-CARRY restated from clean value-4 measurement: total-basis MDD=-48.2% (GFC trough 2008-09-30), NOT the carried 64.3% (that belonged to the contaminated 8-factor combo - [[project-batch434-codegen-contamination]]). Active-basis MDD=-65.7%. Longest underwater 52 months; 80% of months underwater. Drawdown episodes >=30%:2 >=45%:1 >=55%:0. Per measurement-graduation 2026-06-13 structural-drawdown criteria: NOT structural-hard-fail (1 episode>=45%, BM 2005+ MDD itself 54.5%). MDD mitigation = optimizer CVaR/risk-budget scope.",
+      "evidence": "risk_measure_B.R::PART_D"
+    },
+    {
+      "id": "CF-R-VALUE-CRISIS-DEFENSIVE",
+      "severity": "LOW",
+      "text": "Stress finding (informational, NOT a graduation argument): KR value is DEFENSIVE on active basis in drawdowns - GFC active +20.0%, EuDebt +21.0%, COVID +7.6%, RateHike2022 +4.4%, KR_Bear2018 +7.9%. active beta to BM = -0.20 (mild countercyclical). This crisis-relative-outperformance is precisely WHY it co-moves with the (also-defensive) STR_1715 AR-overlay incumbent - they are both defensive in the SAME months (total_cor 0.75) - which is exactly what makes it a POOR book diversifier despite low standalone correlation. Value's defensiveness is redundant with the incumbent's overlay, not additive.",
+      "evidence": "risk_measure_B.R::PART_D stress"
+    },
+    {
+      "id": "CF-R-CRISIS-COMOVEMENT",
+      "severity": "HIGH",
+      "text": "Regime-conditional + tail dependence (Codex C4): active_cor is HIGHER in CRISIS (0.422, n=42) than NORMAL (0.287, n=133) or BULL (0.322). total-return lower-tail dependence vs incumbent = 0.68 (joint crash 68% in q=0.10 left tail). The value sleeve co-moves with STR_1715 MOST when it matters - the joint left tail. This is the decisive risk argument against the diversifier role: it adds nothing in drawdowns and drags the mean elsewhere. bootstrap 90% CI on active_cor [0.154,0.416] excludes 0.",
+      "evidence": "risk_measure_C.R::PART_C regime+TDC"
+    },
+    {
+      "id": "CF-R-CROWDING-CLEAR",
+      "severity": "LOW",
+      "text": "crowding_score_per_factor (Acadian 2026): all 4 value factors crowding_score < 0.33 (max V11_Shareholder_Yield=0.33, well below 0.75 threshold). KR value is NOT crowded by these concentration metrics currently. V11 passive_overlap 0.90 reflects dividend names being large-cap index constituents. The alpha's 'value crowding' weakness (hypothesis) is NOT confirmed by current concentration metrics; the recent IC decay (CF-IC-DECAY, p3/p1=0.43) is consistent with value-cycle regime. CAVEAT: crowding_score proxies (HHI/passive-overlap) do not measure flow-based crowding directly; absence of a concentration flag is not proof of no crowding.",
+      "evidence": "risk_measure_B.R::PART_E crowding"
+    },
+    {
+      "id": "CF-R-MARKET-DOMINANCE",
+      "severity": "HIGH",
+      "text": "RF-R1 ESCALATED (Codex C2): Sigma 1-factor market variance share 85% > 40% threshold (1-factor R2 mean 0.259, 15/25 names <0.30). The dominant 1st eigenmode (market/value beta=0.80) is the established KR long-only structural constraint ([[learning-gate-calibration-longonly]]): no-short cannot remove it. Risk does NOT excuse this - it ESCALATES it: any beta/market-exposure reduction is the OPTIMIZER's to construct (risk measures, does not prescribe weights), and if the optimizer cannot bound it, this sleeve cannot reduce book market risk. Flagged, not normalized.",
+      "evidence": "risk_measure.R::PART_A; risk_measure_C.R::C1"
+    }
+  ],
+  "method_shopping_log": {
+    "risk_agent": {
+      "candidates_tried": 4,
+      "method_log": [
+        {
+          "name": "sample",
+          "condition": 186.9,
+          "psd": true,
+          "selected": false
+        },
+        {
+          "name": "ledoit_wolf",
+          "condition": 1,
+          "psd": true,
+          "selected": false,
+          "shrink_intensity": 1,
+          "note": "analytic rho saturates to 1.0 at monthly n=60/p=25 -> over-shrinks to identity, destroys correlation structure; rejected"
+        },
+        {
+          "name": "factor1_market",
+          "condition": 58.9,
+          "psd": true,
+          "selected": true
+        },
+        {
+          "name": "factor_mkt_sector",
+          "condition": 212.8,
+          "psd": true,
+          "selected": false,
+          "n_factors": 9,
+          "note": "Sigma = B Omega B' + D, market + KR sector factors; role-mandated frame, well-conditioned, isolates sector axis"
+        }
+      ],
+      "parallel_exec": false,
+      "n_workers": 1,
+      "selection_objective": "condition_number",
+      "pre_declared_acceptance_criteria": {
+        "rule_1": "PSD required (min eigenvalue >= -1e-10).",
+        "rule_2": "condition number <= 200 (ill-conditioned threshold per qvest-risk-style).",
+        "rule_3": "preserve correlation structure: reject estimators with shrink_intensity rho>=0.99 (collapse to identity).",
+        "rule_4": "among survivors, prefer the B*Omega*B'+D structured form (role-mandated, interpretable market/specific split).",
+        "applied": "sample(cond 187, fails rule_2) ; LW(rho=1.0, fails rule_3) ; factor_mkt_sector(cond 213, fails rule_2) ; factor1_market(cond 59, PSD, rho=0, structured) -> SELECTED. Criteria declared before selection, not return-based."
+      }
+    }
+  },
+  "carry_weaknesses": [
+    "MDD restated 48.2% total / 65.7% active (was carried 64.3% from contaminated combo). Optimizer CVaR/risk-budget scope.",
+    "Standalone value-4 non-graduating (alpha PORT_t 0.45). Risk confirms: NOT book-marginal positive either (dIR<=0).",
+    "Value defensiveness is REDUNDANT with STR_1715 AR-overlay (both defensive same crisis months) - the core reason it fails as a diversifier.",
+    "Recent IC decay (p3/p1 0.43) consistent with value-cycle, not measurable crowding (crowding_score<0.33)."
+  ],
+  "challenge_review": {
+    "objection_to_alpha": true,
+    "objection_reason": "Authoritative book-marginal correction: alpha's diversifier framing (active_cor 0.269, 'moderate partial diversifier') overstates usefulness. Proper realization-aligned covariance gives active_cor 0.306 AND - decisively - book IR is monotonically DECREASING in value tilt (dIR<=0). Regime+TDC: co-movement is HIGHER in crisis (0.42) with total-return left-tail TDC 0.68. The value-4 sleeve is NOT a book-marginal-positive diversifier. alpha_vector and factor_specs UNCHANGED (risk does not edit alpha).",
+    "targets_reviewed": ["alpha_package", "alpha_vector", "factor_specs", "confidence_vector", "diversifier_diagnostic"],
+    "round": 1
+  },
+  "codex_resolution": {
+    "stance": "REVISE",
+    "concerns": 6,
+    "C1_factor_artifacts_R2": "PARTIAL-ACCEPT: emitted exposure_matrix/factor_covariance/specific_risk parquets; reported 1-factor R2 0.259 (below 0.30 guide) honestly + multifactor R2 0.632 alternative. Did NOT over-claim faithfulness; conditioning tradeoff documented.",
+    "C2_RF_R1_normalization": "ACCEPT: RF-R1 raised to formal HIGH red flag (flagged=TRUE); removed normalizing language ('not a defect'); routed market-exposure mgmt to optimizer as REQUIRED action, not excuse.",
+    "C3_cvar_stress": "ACCEPT: CVaR95 breach (13.3% vs 2.5% cap, ~5.3x) flagged as RF-R6 infeasibility; stress suite completed to 8 periods.",
+    "C4_regime_crowding_tdc": "PARTIAL-ACCEPT: added regime-conditional active_cor (CRISIS 0.42 > NORMAL 0.29) + block-bootstrap 90% CI [0.154,0.416] + TDC vs incumbent (total left-tail 0.68). Full regime-conditional Sigma is out-of-scope for a single diversifier sleeve (no per-regime weight set exists yet); noted.",
+    "C5_selection_criteria": "ACCEPT: pre-declared 4-rule acceptance criteria recorded in method_shopping_log (PSD, cond<=200, reject rho>=0.99, prefer structured). Selection is criteria-based, not return-based.",
+    "C6_ax008_triangulation": "REBUTTAL: AX-008 triangulation files (risk_package.json/optimization_package.json/weights.csv) are absent by PIPELINE ORDERING, not defect. Risk runs BEFORE optimizer/forge; AX-008 completes at judge stage (alpha package itself states ax_008_at_alpha_stage=FAIL_expected_completes_at_judge). risk_package.json now emitted (this file). Not a risk-stage failure.",
+    "net_effect": "Codex concerns STRENGTHENED the core conclusion (NO-ADMIT). Regime/TDC additions are the most decisive new evidence: the sleeve co-crashes with the book. Sigma/contract completeness gaps fixed without changing the verdict."
+  },
+  "generated_by": "risk-research agent",
+  "generated_at": "2026-06-14 10:15:13.204547"
+}

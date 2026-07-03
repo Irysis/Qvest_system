@@ -14,8 +14,8 @@
 | **8** Modelling Volatility | `rugarch::ugarchspec/ugarchfit` (sGARCH/eGARCH/gjrGARCH) | regime-conditional vol / DCC-GARCH dynamic correlation |
 | **9** Modelling Dependence (Copula) | `copula::tCopula/claytonCopula/gumbelCopula`, `pobs`, `fitCopula` | Tail Dependence (TDC) parametric fit, Student-t / Clayton 비교 |
 
-**상세 요약**: `06_Reference/textbook_summaries/FRM_Pfaff_summary.md`
-**필요 packages**: `06_Reference/textbook_summaries/FRM_R_packages_required.md`
+**상세 요약**: `02_Infrastructure/docs/reference_textbooks/FRM_Pfaff_summary.md`
+**필요 packages**: `02_Infrastructure/docs/reference_textbooks/FRM_R_packages_required.md`
 
 자율 권한 — Risk agent는 위 챕터의 method를 본 시스템에 적합하게 적용. 기존 Ledoit-Wolf shrinkage / Joe-Clayton empirical TDC 외에 EVT GPD / GARCH conditional vol / parametric copula 추가 검증 가능.
 

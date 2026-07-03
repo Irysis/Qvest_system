@@ -1,0 +1,109 @@
+{
+  "date": "2026-07-02T18:18:56",
+  "task": "PG2 강화 P1 — earnings@3M lead 정제(신호 3종 + 보유밴드) 신호구성부",
+  "roadmap": "04_Research/pg2_reinforcement_roadmap_20260702.md P1",
+  "honesty_label": "브로커(개인 애널리스트)-레벨 데이터 없음 → 3 신호 전부 컨센서스-레벨 충실 사상. 투자의견(recommendation) 원시트 미보유 → S3에서 ESBR(상향 breadth)을 추천계열 대리로 사용(명시).",
+  "signals": {
+    "S1_innovrev": "혁신 리비전 분리(Gleason-Lee 2003 + JBFA): (a)EPS리비전 시리얼 streak(부호×연속길이) + (b)리비전 크기 innovation z(trailing 12개월 dispersion 대비). herding 제거.",
+    "S2_tpsect": "TP implied return 섹터내 상대화(Da-Schaumburg 2011): C06_TP_Gap Z_Sector(WICS 섹터중립 z, PIT 스냅샷).",
+    "S3_consensus": "3-신호 합의(2012 JPM): EPS리비전(C03)×ESBR추천대리(C04)×TP리비전(C07) 동방향 합의 count×강도.",
+    "band": "Blitz et al FAJ 2023 보유밴드 — R 측정단(canonical_screen_bt+band weight)에서 A/B."
+  },
+  "streak_window_months": 6,
+  "dispersion_window_months": 12,
+  "baseline_members": [
+    "C01_SUE__z",
+    "C02_EPS_Chg_1m__z",
+    "C04_ESBR__z",
+    "C05_ESCR__z",
+    "C06_TP_Gap__z",
+    "C19_Composite_Earnings__z"
+  ],
+  "pit_notes": "신호@ym말 스냅샷(≤t), streak/dispersion trailing(shift(1) rolling), forward 1M=ym+1, ADV t-1, 유니버스 K200|KQ150 시변. lag1 스트레스열 동시 산출.",
+  "ic_diagnostics_1m_forward": {
+    "BASE_earn3m": {
+      "n": 257,
+      "ic_mean": 0.0457,
+      "icir": 1.42,
+      "t_full": 6.59,
+      "hit": 0.67,
+      "t_2010_15": 1.88,
+      "t_2016_20": 2.56,
+      "t_2021_26": 4.51
+    },
+    "S1_innovrev": {
+      "n": 253,
+      "ic_mean": 0.0282,
+      "icir": 1.14,
+      "t_full": 5.25,
+      "hit": 0.66,
+      "t_2010_15": 3.59,
+      "t_2016_20": 1.68,
+      "t_2021_26": 1.71
+    },
+    "S2_tpsect": {
+      "n": 257,
+      "ic_mean": 0.0293,
+      "icir": 1.08,
+      "t_full": 5.02,
+      "hit": 0.63,
+      "t_2010_15": 2.02,
+      "t_2016_20": 1.03,
+      "t_2021_26": 2.99
+    },
+    "S3_consensus": {
+      "n": 257,
+      "ic_mean": 0.0363,
+      "icir": 1.23,
+      "t_full": 5.68,
+      "hit": 0.66,
+      "t_2010_15": 4.1,
+      "t_2016_20": -0.12,
+      "t_2021_26": 3.07
+    },
+    "COMP_S1": {
+      "n": 257,
+      "ic_mean": 0.0411,
+      "icir": 1.58,
+      "t_full": 7.32,
+      "hit": 0.64,
+      "t_2010_15": 3.55,
+      "t_2016_20": 2.37,
+      "t_2021_26": 4.13
+    },
+    "COMP_S2": {
+      "n": 257,
+      "ic_mean": 0.0477,
+      "icir": 1.48,
+      "t_full": 6.87,
+      "hit": 0.65,
+      "t_2010_15": 2.04,
+      "t_2016_20": 2.55,
+      "t_2021_26": 4.51
+    },
+    "COMP_S3": {
+      "n": 257,
+      "ic_mean": 0.0488,
+      "icir": 1.59,
+      "t_full": 7.35,
+      "hit": 0.67,
+      "t_2010_15": 3.69,
+      "t_2016_20": 1.79,
+      "t_2021_26": 4.46
+    },
+    "COMP_ALL": {
+      "n": 257,
+      "ic_mean": 0.0475,
+      "icir": 1.83,
+      "t_full": 8.45,
+      "hit": 0.69,
+      "t_2010_15": 5.37,
+      "t_2016_20": 2.12,
+      "t_2021_26": 3.82
+    }
+  },
+  "n_months": 258,
+  "n_rows": 78123,
+  "selection_type": "chain",
+  "note": "IC는 진단 전용. 헤드라인 SR/CAGR/MDD/PORT_t는 R canonical_screen_bt(계약)에서 산출."
+}

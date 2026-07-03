@@ -1,0 +1,97 @@
+{
+  "task": "PG2 core composite — 373-factor Factor DB pipeline search to its LIMIT (book-marginal core-integration frame)",
+  "date": "2026-07-03",
+  "agent": "alpha-research",
+  "mode": "QEPM alpha (DB-wide discovery, core-integration book-marginal — NO risk/weight/optimizer)",
+  "directive": "도훈 2026-07-02: 'DB 파이프라인 한계까지 파본건가'. 직전 7f battery는 현 7팩터 재조합만 봄(과소). 이번은 327 DB factor 전수 + core-보완 프레임(orthogonal + 2021+) + core-integration book-marginal.",
+  "frame_shift_vs_prior": "Prior 7f battery judged standalone PORT_t on re-weighting the 7 CORE factors only. THIS run: (1) scanned all 327 DB factors direction-aligned, (2) NEW core-complementary filter (active-orthogonal to score_eff AND recent 2021+ positive), (3) core-INTEGRATION book-marginal (add/swap DB factor into score_eff -> canonical PORT_t + overlay book ΔIR), (4) IS/OOS holdout of the whole sweep. The book-marginal-core-integration frame was previously UNMEASURED.",
+  "metric_type": "proxy (scan/sweep, EW top-25 + inline 15bps NW lag-3) + canonical_screen (survivor confirm, R canonical_screen_bt contract). book-marginal = overlay-gated active-basis (§6). NOT admission-binding; forge authoritative; governor 정지 — no graduation/admit declared.",
+  "selection_type": "sweep (327-factor enumeration -> argmax book_dIR). DSR + placebo + IS/OOS holdout + seed(42) mandatory.",
+  "n_trials": {"per_factor_scan": 324, "integration_combos_factor_x_w": 654, "phaseC_canonical_survivors": 8, "adversarial_placebo_draws": 900},
+  "pit": "C13 registry direction applied at read (pre-C13 Z * direction). C14 consensus Usable_Date<=sig (panel build). C15 load_month_factors panel (no direct parquet). Clean timing: score@month-end(t), F1=fwd month(t+1). by-group z via groupby('ym').transform (no global-vector broadcast). RAWDATA col_select + single-thread (segfault-safe). Rscript via .R file source (no -e Korean).",
+  "incumbent": {
+    "book": "STR_1715_on_M4_R05_noLayer4_PG2",
+    "book_IR_net_active": 1.416,
+    "core_alpha": "score_eff (7-factor composite C01/C02/C04/C06/Q07/M08/Q25 IC-weighted)",
+    "core_standalone_top25_full_PORT_t": 1.42,
+    "core_standalone_top25_recent_2021_PORT_t": -1.17,
+    "core_recent_IC_decay": "full-period score_eff->F1 IC t=5.45 -> 2021+ t=0.99 (cohort-wide earnings/quality decay)"
+  },
+  "coverage": {
+    "db_factors_scanned": 324,
+    "categories_covered": 14,
+    "categories": ["value","quality","growth","momentum","defense","accrual","liquidity","consensus","risk","crowding","investor_flow","leverage","size","regime"],
+    "integration_combos_tested": 654,
+    "vs_prior_7f_battery": "prior = 7 factors re-weight only (7 combos). this = 327 factors x 2 weights integration + per-factor scan (654+324). ~90x broader factor coverage."
+  },
+  "phaseA_scan_core_complementary": {
+    "filter": "orthogonal (|active_cor_vs_core|<0.30) AND recent 2021+ PORT_t > 0",
+    "n_pass": 0,
+    "reason": "STRUCTURAL EMPTY SET. (a) min active_cor across ALL 324 factors = 0.328 (long-only KR top-25 market-β floor, §6) -> |cor|<0.30 unreachable. (b) only 6/324 factors have recent PORT_t>0 (max +0.34); ALL 6 are momentum/risk/defense with cor 0.57-0.71 (same span as core). The orthogonal cluster (defense/beta, cor 0.33-0.45) is UNIFORMLY negative alpha (full & recent). '직교 ∧ recent-positive' intersection is structurally empty — §6 '직교 ≠ 수익' confirmed DB-wide (not just M-code level).",
+    "standalone_recent_2021_graveyard": "0/324 factors have recent PORT_t>0.5 (median -1.25). Entire factor space fails recent standalone — cohort-wide decay, not core-specific."
+  },
+  "phaseB_C_core_integration": {
+    "method": "relaxed to achievable orthogonality (cor<0.55 union recent>0 = 29 candidates); add Z_factor to score_eff at w{0.25,0.5,1.0}; canonical PORT_t + overlay book ΔIR.",
+    "top_survivors_full_period": {
+      "D09_Dimson_Beta_w0.5": {"canon_full_PORT_t": 2.45, "d_full": 1.04, "canon_recent_PORT_t": -0.71, "proxy_book_dIR": 0.1585},
+      "M05_Trended_Mom_w1.0": {"canon_full_PORT_t": 2.06, "d_full": 0.64, "canon_recent_PORT_t": -0.20, "proxy_book_dIR": 0.1437},
+      "M17_Low_52w_w0.5": {"canon_full_PORT_t": 1.97, "d_full": 0.55, "canon_recent_PORT_t": -0.02, "proxy_book_dIR": 0.1281}
+    },
+    "apparent_result": "several DB-factor integrations show proxy book ΔIR +0.13 to +0.16 (>> 0.05 threshold) on FULL-period selection — a DIFFERENT result from the 7f battery (best there -0.0175). BUT this is a full-period-selected number and fails the multiple-testing / holdout gates below."
+  },
+  "phaseD_adversarial": {
+    "placebo_single_comparison": "D09 99.7 pctile, M17 100.0, M05 98.7 vs 300 random single-factor adds — passes single-test but MISLEADING (sweep, not single test)",
+    "DSR_sweep_Gumbel": "best book_dIR +0.1585 WITHIN E[max of 327 null] = +0.284. Sweep-adjusted: does NOT clear multiple-testing.",
+    "lag1_stress": "M17 +0.128->-0.003 (fast-decay/fragile), M05 +0.144->+0.078 (halves), D09 +0.159->+0.133 (robust)",
+    "subperiod": "NO candidate positive across all 3 eras (D09 neg 2010-15, M05 neg 2016-20, M17 neg 2016-20) — regime-specific",
+    "double_count_vs_overlay": "corr(delta, overlay invested-frac) -0.12 to -0.19 (overlay slightly down-weights the delta when largest — small negative)"
+  },
+  "phaseE_full_sweep": {
+    "n": 654,
+    "sweep_max_book_dIR": 0.178,
+    "n_ge_0.10": 18,
+    "frac_ge_0.10": 0.03,
+    "n_ge_0.05": 38,
+    "frac_ge_0.05": 0.06,
+    "top30_category_spread": "7 value, 7 growth, 6 momentum, 3 defense, 2 consensus, 2 crowding, 1 quality/risk/liq — INCOHERENT grab-bag = noise-mining signature (a real lever would concentrate one family in the tail).",
+    "survivor_ranks": "D09 rank 4/654, M05 5/654, M17 8/654 — NOT special, sit in a broad 18-38 factor noise cluster."
+  },
+  "phaseF_oos_holdout_DECISIVE": {
+    "method": "select best-w by book_dIR on IS (2010-2018), MEASURE that (factor,w) on OOS (2019-2026). 327 factors.",
+    "is_oos_book_dIR_spearman": -0.042,
+    "is_oos_p": 0.453,
+    "interpretation": "ZERO cross-factor IS->OOS correlation. A factor's book-marginal in training carries NO information for holdout = sweep-selection noise, NOT durable lever.",
+    "is_top_decile_mean_oos": -0.088,
+    "is_top_decile_note": "selecting on IS ACTIVELY HURTS OOS (mean IS +0.143 -> mean OOS -0.088).",
+    "survivor_contamination": "D09/M05/M17 (full-period 'survivors') have IS_dIR +0.017/-0.111/-0.216 (near-zero/negative) — they only looked good by cherry-picking the recent(=OOS) regime in a full-period sweep = OOS contamination.",
+    "n_durable_both_halves_005": 7,
+    "durable_note": "7/327 = 2.1% pass both-halves >=0.05 (Q04_Piotroski, IN03_RD_to_Market, V20_SP, L42_Vol_Skewness, V14_EBIT_EV, V15_NetDebt_Adj_EP, V01_BM) — at the single-test false-positive floor, no coherent mechanism, and undermined by the overall IS->OOS rho=0 (survivors of a zero-signal lottery)."
+  },
+  "new_factor_check": {
+    "run": false,
+    "rationale": "0/324 DB factors have recent 2021+ standalone PORT_t>0.5 (max +0.34, median -1.25) across ALL 16 economic families. A hand-crafted new raw factor would fall into an already-covered family and face identical cohort-wide decay. No untested economic axis remains at raw level. Forcing a trial would violate '억지 금지, 명확한 것만' — reasoned no-op, not omission. Re-open only if a genuinely new information source (e.g. DART insider backfill, per memory) is added — that is a non-return axis outside this return-factor DB."
+  },
+  "gates_verdict": {
+    "core_complementary_orthogonal_AND_recent": "FAIL — structurally empty (§6 market-β floor)",
+    "book_marginal_dIR_0.05_full_period": "APPARENT PASS (+0.13-0.16) but IS ARTIFACT (see holdout)",
+    "DSR_sweep": "FAIL — best within expected-max-under-null",
+    "IS_OOS_holdout": "FAIL — rho=-0.04, IS-top decays to OOS -0.088",
+    "recent_2021_standalone": "FAIL cohort-wide — 0/324 > 0.5"
+  },
+  "final_verdict": "CORE SETTLED — DB-wide, both standalone AND book-marginal-core-integration. The 373-factor pipeline was searched to its limit under the previously-untested core-integration frame. (1) No factor is both orthogonal-to-core AND recent-positive (structural, §6). (2) Full-period core-integration APPEARS to yield +0.13-0.16 book ΔIR for ~18 factors, but this is a SWEEP ARTIFACT: incoherent category spread, within multiple-testing null, and — decisively — IS->OOS book_dIR correlation is ZERO (rho=-0.04) with IS-top decaying to OOS -0.088. The full-period 'survivors' (D09/M05/M17) are OOS-contaminated cherry-picks. (3) No new raw factor is justified — the recent-regime graveyard is universal across all 16 families. This is the definitive both-sides (standalone + book-marginal) DB-limit confirmation the prior 7f battery could not provide. Consistent with book ceiling ~1.1 (25-name KR) + cohort-wide 2015/2021+ decay + §6 '직교 ≠ 수익'.",
+  "artifacts": {
+    "scan_perfactor": "scan_perfactor.csv",
+    "scan_candidates": "scan_candidates.json",
+    "phaseB_candidates": "phaseB_candidates.csv",
+    "phaseB_integration_proxy": "phaseB_integration_proxy.csv",
+    "phaseB_survivors": "phaseB_survivors.json",
+    "phaseC_canonical_bookmarginal": "phaseC_canonical_bookmarginal.csv",
+    "phaseC_result": "phaseC_result.json",
+    "phaseD_adversarial": "phaseD_adversarial.json",
+    "phaseE_full_sweep": "phaseE_full_sweep.csv",
+    "phaseE_result": "phaseE_result.json",
+    "phaseF_oos_holdout": "phaseF_oos_holdout.csv",
+    "phaseF_result": "phaseF_result.json",
+    "challenge_note": "challenge_note.md"
+  }
+}

@@ -1,0 +1,238 @@
+{
+  "date": "20260618",
+  "schema": "paper_style_router_v1",
+  "source": "stage_artifacts/paper_recharge/mcp_discovery_20260618.json",
+  "n_candidates": 31,
+  "counts_by_route": {
+    "alpha_search": 4,
+    "optimizer": 4,
+    "risk": 4,
+    "regime": 2,
+    "skip": 17
+  },
+  "kr_feasible_by_route": {
+    "alpha_search": 0,
+    "optimizer": 2,
+    "risk": 1,
+    "regime": 0
+  },
+  "papers": [
+    {
+      "title": "Benchmarking Deep Time Series Models for Equity Portfolios",
+      "arxiv_id": "2606.09420",
+      "route": "alpha_search",
+      "kr_feasible": false,
+      "reason": "단일 구현 신호 부재 — 15개 딥/통계 아키텍처 벤치마크이며 저자 스스로 'standalone trading-strategy 아님'·20bps서 net Sharpe 음수 명시. 복제할 단일 알파 없음."
+    },
+    {
+      "title": "PandaAI: A Practical Agent for Neuro-symbolic Data Analysis in Quantitative Finance",
+      "arxiv_id": "2606.06823",
+      "route": "alpha_search",
+      "kr_feasible": false,
+      "reason": "fine-tuned 도메인 LLM 에이전트가 CSI300서 알파 생성 — 재현 가능한 결정적 신호 수식 없음(LLM 클로즈드루프). 합성 폴백 위험 → 비구현."
+    },
+    {
+      "title": "Stock Investment: The p-index Approach",
+      "arxiv_id": "2606.08569",
+      "route": "alpha_search",
+      "kr_feasible": false,
+      "reason": "신호(p-index)가 유럽형 풋옵션 가격으로 구성 — KR 개별주 옵션 비유동/부재. 모멘텀·컨트라리안만 떼면 논문 복제 아님(batch_434 가드)."
+    },
+    {
+      "title": "Predicting Stock Price Direction on Earnings Announcement Days using Multi-modal Deep Learning",
+      "arxiv_id": "2605.25894",
+      "route": "alpha_search",
+      "kr_feasible": false,
+      "reason": "FinBERT 뉴스 감성(대체데이터 금지) 필수 + 실적발표일 방향성 이벤트 — 월간 top-25 횡단면 아님. 헌법 alt-data 제약 위반."
+    },
+    {
+      "title": "Two Sides of Schur Damping: High-Dimensional Pseudo-Likelihoods and Portfolio Allocation",
+      "arxiv_id": "2606.14798",
+      "route": "optimizer",
+      "kr_feasible": true,
+      "reason": "Σ Schur-complement reliability shrinkage가 HRP↔min-var 한 파라미터 보간 = Ledoit-Wolf 강도. 선택신호 없음 → α̂ 고정 A/B(weight 방법론) 대상."
+    },
+    {
+      "title": "The Mathematics of Heuristic Portfolio Optimization (HPO)",
+      "arxiv_id": "2606.12612",
+      "route": "optimizer",
+      "kr_feasible": true,
+      "reason": "EW/IV/RP/HRP/RA-HRP의 implied-return closed-form 최적성 — 가중 규칙군. 선택신호 없음 → α̂ 고정 A/B 대상."
+    },
+    {
+      "title": "Mean-Variance Optimization in Ambiguous Financial Markets with Learning",
+      "arxiv_id": "2606.11318",
+      "route": "optimizer",
+      "kr_feasible": false,
+      "reason": "연속시간 Black-Scholes 다자산 MVO 이론(ambiguity aversion) — 월간 이산 가중 레시피로 직접 구현 불가."
+    },
+    {
+      "title": "Anticipatory Portfolio Optimization",
+      "arxiv_id": "2606.04258",
+      "route": "optimizer",
+      "kr_feasible": false,
+      "reason": "결정이론적 LQG 분해(정보/예측/임팩트) — 구체 weight 산출 레시피 없는 이론 프레임."
+    },
+    {
+      "title": "Conformal Prediction Intervals with Tail-Specific Guarantees",
+      "arxiv_id": "2606.18199",
+      "route": "risk",
+      "kr_feasible": false,
+      "reason": "tail-specific conformal 예측구간 — 베이스 예측기 + conformal 인프라 필요, Σ/리스크모델로 직접 소비 불가(방법론 레이어)."
+    },
+    {
+      "title": "Reverse Stress Testing for Multivariate Scenarios",
+      "arxiv_id": "2606.09274",
+      "route": "risk",
+      "kr_feasible": true,
+      "reason": "단일 외생 충격→경험적 의존구조 정합 다변량 스트레스 시나리오 복원(모수/준모수/비모수 3종). KR 수익률로 stress 모듈 적용 가능."
+    },
+    {
+      "title": "ReSGA: A Large Tail Risk Model for Learning Value-at-Risk and Expected Shortfall",
+      "arxiv_id": "2606.04576",
+      "route": "risk",
+      "kr_feasible": false,
+      "reason": "수백만 파라미터 autoencoder + 153 firm char + US 1926~ + long-short decile. KR 데이터/제약(long-only)·규모 부정합."
+    },
+    {
+      "title": "Forward-Looking Stress Testing Under Macro Scenarios (SVaR GPR-HS with SACS)",
+      "arxiv_id": "2606.07575",
+      "route": "risk",
+      "kr_feasible": false,
+      "reason": "규제(CCAR/ICAAP) SVaR + 매크로 시나리오(서아시아전쟁/기후/AI버블) — KR 횡단면 리스크모델로 부적합."
+    },
+    {
+      "title": "Addressing Market Regime Changes and Heavy-Tailed Returns via Bayesian VAR and Elliptical Black-Litterman (BAVAR-BLED)",
+      "arxiv_id": "2606.09104",
+      "route": "regime",
+      "kr_feasible": false,
+      "reason": "TD3 DRL + transformer view/CNN risk-aversion, 29 DJIA 자산 배분. KR 월간 long-only top-25 횡단면과 구조 부정합."
+    },
+    {
+      "title": "Continuous Cash-Overlay Filters for a Static Growth-Defensive Risk Sleeve",
+      "arxiv_id": "2606.09025",
+      "route": "regime",
+      "kr_feasible": false,
+      "reason": "오버레이/크래시브레이크 개념은 유관하나 입력이 US 매크로(VIX/credit/rate-path) + US ETF 바스켓. 대체데이터·크로스마켓 제약."
+    },
+    {
+      "title": "Fitting Accumulated Stock Returns with Tempered Skew t-Distribution",
+      "arxiv_id": "2606.19318",
+      "route": "skip",
+      "kr_feasible": false,
+      "reason": "S&P500 다일수익 분포 적합(이론) — 종목선택 신호 없음."
+    },
+    {
+      "title": "The Gini-Bayes Connection: The CAP Slope as Bayes' Theorem",
+      "arxiv_id": "2606.18545",
+      "route": "skip",
+      "kr_feasible": false,
+      "reason": "신용 PD 스코어 보정(CAP/Gini) — 주식 횡단면 무관."
+    },
+    {
+      "title": "Model Validation of Agentic AI Systems: A POMDP-Based Framework",
+      "arxiv_id": "2606.17383",
+      "route": "skip",
+      "kr_feasible": false,
+      "reason": "에이전틱 AI 모델리스크 검증 프레임워크 — 구현 전략 아님."
+    },
+    {
+      "title": "Sharpe Ratio and Return-VaR Ratio Maximization for Option Portfolios",
+      "arxiv_id": "2606.17032",
+      "route": "skip",
+      "kr_feasible": false,
+      "reason": "옵션 포트폴리오 — 파생, KR 범위밖."
+    },
+    {
+      "title": "Robust Transformer-Based One-Step Stock Index Forecasting",
+      "arxiv_id": "2606.15701",
+      "route": "skip",
+      "kr_feasible": false,
+      "reason": "지수 레벨 1-step 예측 — 횡단면 종목선택 아님."
+    },
+    {
+      "title": "Belief at Risk: Quantifying Agentic AI Model Risk with LLM-Inferred Bayesian State Filters",
+      "arxiv_id": "2606.15473",
+      "route": "skip",
+      "kr_feasible": false,
+      "reason": "에이전틱 AI 리스크 정량화 프레임워크 — 구현 전략 아님."
+    },
+    {
+      "title": "PHINN: Persistent Homology Inspired Neural Network for Rare-Event Time Series Generation",
+      "arxiv_id": "2606.15452",
+      "route": "skip",
+      "kr_feasible": false,
+      "reason": "희귀이벤트 시계열 생성(생성모델) — 종목선택/배분 신호 아님."
+    },
+    {
+      "title": "Discovery under Hypothesis Redundancy: A Geometric Theory of Discovery Bottlenecks",
+      "arxiv_id": "2606.14386",
+      "route": "skip",
+      "kr_feasible": false,
+      "reason": "발견 시스템 메타이론(LLM 탐색) — 직접 알파 아님."
+    },
+    {
+      "title": "CFOs Meet LLMs",
+      "arxiv_id": "2606.13812",
+      "route": "skip",
+      "kr_feasible": false,
+      "reason": "LLM이 CFO 설문 응답 복제(센티먼트) — KR 구현 신호 없음."
+    },
+    {
+      "title": "A Declining CVaR Glidepath Framework for Target-Date Fund Design",
+      "arxiv_id": "2606.13618",
+      "route": "skip",
+      "kr_feasible": false,
+      "reason": "TDF 자산군 글라이드패스(칠레 연금) — 개별주 횡단면 아님."
+    },
+    {
+      "title": "Composite likelihood inference of fractional Gaussian processes",
+      "arxiv_id": "2606.11962",
+      "route": "skip",
+      "kr_feasible": false,
+      "reason": "분수 가우시안 추정 이론(변동성 계열) — 종목선택 신호 없음."
+    },
+    {
+      "title": "Scenario Generation for Time Series and Curves (Bootstrap)",
+      "arxiv_id": "2606.11859",
+      "route": "skip",
+      "kr_feasible": false,
+      "reason": "금리 커브 시나리오 생성(준모수 부트스트랩) — 채권/FI, KR 주식 범위밖."
+    },
+    {
+      "title": "Cross-sectional topological anomaly scores and intraday return predictability in the S&P 500",
+      "arxiv_id": "2606.08586",
+      "route": "skip",
+      "kr_feasible": false,
+      "reason": "인트라데이(분봉) 토폴로지 이상치 — 마이크로구조/고빈도, 월간 횡단면 아님."
+    },
+    {
+      "title": "A Structural Matrix Autoregressive Model for Volume, Volatility, and Returns",
+      "arxiv_id": "2606.08141",
+      "route": "skip",
+      "kr_feasible": false,
+      "reason": "DJIA 스필오버 계량모델(SMAR) — 종목선택 신호 없음."
+    },
+    {
+      "title": "Information Networks of Stock Prices",
+      "arxiv_id": "2606.07450",
+      "route": "skip",
+      "kr_feasible": false,
+      "reason": "인도네시아 시장 상관 네트워크(MST/PMFG) — 구조분석, 선택신호 아님."
+    },
+    {
+      "title": "Deep Learning Forecasting of the U.S. Aggregate Bond Index",
+      "arxiv_id": "2605.27977",
+      "route": "skip",
+      "kr_feasible": false,
+      "reason": "美 채권지수 예측 — 채권, KR 주식 범위밖."
+    },
+    {
+      "title": "PortBench: A Correlation-Aware, Full-Pipeline Benchmark for LLM-Driven Portfolio Management",
+      "arxiv_id": "2605.27887",
+      "route": "skip",
+      "kr_feasible": false,
+      "reason": "LLM PM 벤치마크 — 평가도구, 구현 전략 아님."
+    }
+  ]
+}

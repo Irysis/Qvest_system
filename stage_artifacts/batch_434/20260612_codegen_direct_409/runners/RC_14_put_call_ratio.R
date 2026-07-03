@@ -1,0 +1,18 @@
+#!/usr/bin/env Rscript
+suppressPackageStartupMessages(library(jsonlite))
+result_path <- "/mnt/c/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/batch_434/20260612_codegen_direct_409/RC_14_put_call_ratio_result.rds"
+dir.create(dirname(result_path), recursive = TRUE, showWarnings = FALSE)
+res <- list(
+  item_id = "RC_14_put_call_ratio",
+  strategy_name = "Put/Call Ratio 팩터 전환 — KOSPI200 옵션 PCR로 극단 심리 감지",
+  status = "NOT_BACKTESTED",
+  execution_class = "BUILD_THEN_RUN",
+  direct_status = "DATA_REQUIRED_NO_BACKTEST",
+  reason = "Required external/non-cached data is unavailable. No synthetic backtest created.",
+  spec_excerpt = "Put/Call Ratio 팩터 전환 — KOSPI200 옵션 PCR로 극단 심리 감지 RC_14_put_call_ratio regime_conditional explore Forge contract/spec requires code generation before backtest Forge contract/spec requires code generation before backtest RC_14 regime_conditional 30 Put/Call ratio 극단 = 시장 심리 극단. PCR 극고(공포 과다) → 역발상 공격. PCR 극저(낙관 과다) → 방어. z(KOSPI200 옵션 put volume / call volume, 20d MA, expanding 252d, t-1) z(PCR) > 1.5 Momentum 30% + Consensus 25% + Value 20% + Others 25% (역발상) z(PCR) < -1.0 Defense 40% + Quality 25% + Others 35% (방어) MF_A1 Core KRX 옵션 거래량 데이터 (수집 가능 여부 확인 필요) DD_med only + regime_engine_daily.R + VT 0.25",
+  validation = list(parse_ok = TRUE, pit_status = "NOT_RUN", contract_status = "NO_SYNTHETIC_PROXY"),
+  created_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
+)
+saveRDS(res, result_path)
+write_json(res, sub("\\.rds$", ".json", result_path), auto_unbox = TRUE, pretty = TRUE, na = "null")
+cat("[codegen-runner] NOT_BACKTESTED RC_14_put_call_ratio: DATA_REQUIRED_NO_BACKTEST\\n")

@@ -1,0 +1,21 @@
+{
+  "l_code": "L-RAMP-20260619_180008",
+  "strategy_id": "RAMP01_ENHANCE_DIR12_20260619",
+  "grade": "C",
+  "core_reference": "RAMP 25-stock ceiling ~2.85 is ALPHA-limit not regime-limit; Shu-Mulvey index-magic doesnt transfer to stock-level(D1 fail 0.83); next lever=ML/DPL alpha not regime",
+  "lesson_text": "도훈 'direction 1,2 해보고 대안도': 25종목 RAMP_01 강화 시도, 둘 다 천장확인. ★Direction1(Shu-Mulvey 국면방법을 RAMP_01 11 pure그룹 active수익에 multi-feature 월간SJM rolling re-tune→per-group view→그룹가중→top-25): FAIL pt 0.83 < 참조 static_trailIC 1.00, calmar 0.30, TO~13(회전폭증=뷰flip). 인덱스배분 Shu-Mulvey 마법(pt 7.72)은 종목레벨 전이 불가 재확인(per-group-jump 0.62와 동일). Direction2(RAMP_01 regime 강화): bake-off 기측정 = AR+MSM 2.73→Cascade 2.85, 여전히 2.95 미달. ★핵심진단: 25종목 group-blend pt 천장 ~2.85는 *regime 한계가 아니라 ALPHA 한계* — 모든 regime(AR+MSM2.73·Cascade2.85·Shu-Mulvey그룹0.83·per-group-jump0.62) ≤2.85. regime 엔지니어링 소진. 2.95 돌파 레버=better alpha(ML 종목스코어·DPL end-to-end 25종목 net Sharpe 직접최적화), NOT regime. 대안: ① DPL(dpl_ramp.py 파일럿, 팩터+regime 피처→25종목 weights end-to-end) ② ML 종목스코어(xgb/lgbm 팩터패널) ③ RAMP_01+Cascade(~2.85) 배포 screen-tier 수용.",
+  "tags": "RAMP",
+  "created_at": "2026-06-19",
+  "research_mode": "ramp",
+  "created_by": "emit:ramp",
+  "metric_type": "backtested",
+  "construction_type": "chain",
+  "mechanism_hypothesis": "",
+  "d1_shumulvey_group_pt": 0.83,
+  "d1_static_ref_pt": 1,
+  "d1_blend_pt": 0.17,
+  "d2_cascade_pt": 2.85,
+  "ramp01_armsm_pt": 2.73,
+  "stock25_ceiling_pt": 2.85,
+  "pergroup_jump_pt": 0.62
+}

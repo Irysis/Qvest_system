@@ -144,6 +144,7 @@ Qvest 시스템 전체 구동. bootstrap.sh 실행 → 플러그인 리로드 �
 - Stage artifacts: `stage_artifacts/WT_{ID}/`
 - Memory: `C:/Users/99922/.claude/projects/C--Users-99922-OneDrive-Quant-Module-Moltbot/memory/MEMORY.md`
 - Env (User scope 영구): `QM_ROOT` + `QVEST_PY` + `~/.Renviron` 동일값 (경로 이전 시 이 3곳 + config.R 후보만 갱신)
+- 산출물 저장 위치 규칙 (저장 4원칙 + 루트 13항목 고정 + retention): `02_Infrastructure/docs/rules/artifact-storage.md`
 
 ---
 
@@ -241,7 +242,7 @@ cd qepm && Rscript -e 'source("scripts/hybrid_mode.R")'
 
 **코어 6 (`.claude/rules/` — 매 세션 autoload)**: `pit.md` (C1~C15) · `axioms.md` (AX-000~008) · `answer-principles.md` (8원칙+5금지) · `backtest-contract.md` (bt_result 10-component) · `measurement-graduation.md` (게이트 2계층+HARD) · `python-policy.md` (R/Python 1급)
 
-**확장 9 (`02_Infrastructure/docs/rules/` — 해당 작업 시 on-demand Read, 효력 동일. v8.2 codex-round.md = DEPRECATED 스텁)**:
+**확장 10 (`02_Infrastructure/docs/rules/` — 해당 작업 시 on-demand Read, 효력 동일. v8.2 codex-round.md = DEPRECATED 스텁)**:
 
 | Rule | 로드 시점 |
 |---|---|
@@ -252,6 +253,7 @@ cd qepm && Rscript -e 'source("scripts/hybrid_mode.R")'
 | `factor-db.md` | factor DB 직접 작업 시 |
 | `data_table_shift_convention.md` | shift/forward label 작성 시 (pit.md C-체크 연계) |
 | `artifact-naming.md` | WT 핸드오프 파일 생성 시 |
+| `artifact-storage.md` | 산출물 저장 위치 판단 시 |
 | `caching.md` | 토큰/캐시 운영 판단 시 |
 | `research_philosophy.md` | 분기 review 시 (본문 SOT는 docs/qvest_research_philosophy.md) |
 

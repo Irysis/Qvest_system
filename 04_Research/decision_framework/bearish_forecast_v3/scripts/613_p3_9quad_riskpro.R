@@ -10,6 +10,20 @@
 #   - 하단: 현재 cell historical stats + recommended action box
 #==============================================================================
 
+# ── UTF-8 locale 가드 (2026-06-25) ───────────────────────────────────────────
+# 스케줄러(Task Scheduler)는 LC_ALL/LANG=C 로 Rscript 를 띄운다. 이 스크립트의 한글
+#   리터럴(zone명 "위기" 등)은 UTF-8 바이트로 보존되나, C locale 에선 ragg 렌더 백엔드가
+#   이를 UTF-8 로 해석하지 못해 폰트가 있어도 □(tofu)로 깨진다(실측: C 실행=tofu / UTF-8=정상).
+#   런타임 LC_CTYPE 를 UTF-8 로 강제하면 "unknown"-encoding UTF-8 바이트가 정상 매핑된다.
+local({
+  if (grepl("utf-?8", Sys.getlocale("LC_CTYPE"), ignore.case = TRUE)) return(invisible())
+  for (loc in c("English_United States.utf8", "Korean_Korea.utf8",
+                "English_United States.1252", "C.UTF-8", "en_US.UTF-8")) {
+    if (nzchar(suppressWarnings(tryCatch(Sys.setlocale("LC_CTYPE", loc),
+                                         error = function(e) "")))) break
+  }
+})
+
 suppressPackageStartupMessages({
   library(arrow)
   library(data.table)
@@ -19,6 +33,23 @@ suppressPackageStartupMessages({
   library(patchwork)
 })
 
+# ── 한글 폰트 (Malgun Gothic) — ragg/systemfonts 경유 렌더 (2026-06-25) ──────
+# 미설정 시 ggplot 기본 sans(Arial)에 한글 글리프가 없어 모든 한글이 □(tofu)로 깨진다(실측:
+#   9-Quadrant zone명·NOW/ACTION 라벨·하단 cell 통계 전부 tofu). ggsave 백엔드(ragg)는
+#   systemfonts 로 폰트 해석 → family 명을 Malgun Gothic 으로 지정하면 정상 렌더.
+# geom_text/geom_label/annotate 는 theme base_family 를 상속하지 않으므로 geom default 도 강제.
+.KOR_FONT <- "Malgun Gothic"
+{
+  .fams <- tryCatch(unique(systemfonts::system_fonts()$family), error = function(e) character(0))
+  if (length(.fams) && !(.KOR_FONT %in% .fams)) {
+    .alt <- .fams[grepl("Malgun|Nanum|Gulim|Dotum|Batang|AppleGothic|Gothic A", .fams, ignore.case = TRUE)]
+    if (length(.alt)) .KOR_FONT <- .alt[1]
+  }
+}
+update_geom_defaults("text",  list(family = .KOR_FONT))
+update_geom_defaults("label", list(family = .KOR_FONT))
+cat(sprintf("[riskpro] 한글 폰트 family = %s\n", .KOR_FONT))
+
 PROJECT_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
 args <- commandArgs(trailingOnly = TRUE)
 src_path <- if (length(args) >= 1) args[1] else file.path(
@@ -27,11 +58,12 @@ src_path <- if (length(args) >= 1) args[1] else file.path(
   "04_Research/decision_framework/bearish_forecast_v3/03_models/daily_predictions/P3_daily.parquet"
 )
 
-SIGMA_LOW  <- 1.0
-SIGMA_HIGH <- 1.8
+# σ 임계 SIGMA_LOW/SIGMA_HIGH 와 XLIM 은 데이터 구동(아래 P3 load 후 terciles) — 고정 1.0/1.8 은
+#   σ 스케일 드리프트로 S_Low 행(잠재폭발/평온/안정강세)이 항상 0관측(현 σ min 1.11)→하단 셀
+#   수익/변동 'n/a' 로 표시되던 버그 수리(2026-06-29 도훈).
 LAM_BEAR   <- -0.10
 LAM_BULL   <-  0.10
-XLIM <- c(0, 5); YLIM <- c(-0.5, 0.5)
+YLIM <- c(-0.5, 0.5)
 
 # ── 1. Load P3 ──────────────────────────────────────────────────────────────
 dat <- as.data.table(read_parquet(src_path))
@@ -49,6 +81,20 @@ if (file.exists(daily_path)) {
     setorder(dat, Date)
   }
 }
+
+# ── σ 분위 구동 임계 (2026-06-29 도훈) ───────────────────────────────────────
+# 고정 1.0/1.8 은 P3 σ 스케일(현 분포 ~1.1~5.4, median 2.9)에 미달 → 90/99 가 S_High 한 행에 몰리고
+#   S_Low 행(잠재폭발/평온/안정강세)은 관측 0 → 하단 셀 수익/변동이 'n/a'. 경험분포 terciles 로 전환해
+#   3개 σ 국면이 항상 채워지게 한다(λ 는 절대 임계 −0.10/+0.10 유지 — 이미 3행 모두 관측).
+.sig_q <- as.numeric(stats::quantile(dat$sigma, c(1/3, 2/3), na.rm = TRUE))
+SIGMA_LOW  <- round(.sig_q[1], 2)
+SIGMA_HIGH <- round(.sig_q[2], 2)
+if (!is.finite(SIGMA_LOW) || !is.finite(SIGMA_HIGH) || SIGMA_LOW >= SIGMA_HIGH) {
+  SIGMA_LOW <- 1.0; SIGMA_HIGH <- 1.8   # degenerate fallback (구 고정값)
+}
+XLIM <- c(0, max(5, ceiling(max(dat$sigma, na.rm = TRUE))))
+cat(sprintf("[riskpro] σ tercile 임계: S_Low<%.2f | S_Mid | S_High>=%.2f (XLIM up=%.1f)\n",
+            SIGMA_LOW, SIGMA_HIGH, XLIM[2]))
 
 dat[, sigma_bin := cut(sigma, breaks=c(-Inf, SIGMA_LOW, SIGMA_HIGH, Inf),
                        labels=c("S_Low","S_Mid","S_High"), right=FALSE)]
@@ -108,7 +154,7 @@ tbl2 <- merge(all_grid, tbl, by=c("sigma_bin","lam_bin"), all.x=TRUE)
 tbl2[, key := paste(as.character(sigma_bin), as.character(lam_bin), sep="_")]
 tbl2[, zone := sapply(key, function(k) zone_map[[k]]$zone)]
 tbl2[, fill := sapply(key, function(k) zone_map[[k]]$fill)]
-sigma_centers <- c(S_Low=(0+SIGMA_LOW)/2, S_Mid=(SIGMA_LOW+SIGMA_HIGH)/2, S_High=(SIGMA_HIGH+5)/2)
+sigma_centers <- c(S_Low=(0+SIGMA_LOW)/2, S_Mid=(SIGMA_LOW+SIGMA_HIGH)/2, S_High=(SIGMA_HIGH+XLIM[2])/2)
 lam_centers <- c(L_Bear=(-0.5+LAM_BEAR)/2, L_Neutral=(LAM_BEAR+LAM_BULL)/2, L_Bull=(LAM_BULL+0.5)/2)
 tbl2[, x := sigma_centers[as.character(sigma_bin)]]
 tbl2[, y := lam_centers[as.character(lam_bin)]]
@@ -191,7 +237,7 @@ p_main <- ggplot() +
                         ifelse(is.na(now_stats$breach_10pct[1]), "—", sprintf("%.1f%%", now_stats$breach_10pct[1]*100))),
        x=expression(bold("σ (변동성, %)")*"  (calm" %<-% "" %->% "stress)"),
        y=expression(bold("λ (비대칭)")*"  (bear" %<-% "" %->% "bull)")) +
-  theme_minimal(base_size=11) +
+  theme_minimal(base_size=11, base_family=.KOR_FONT) +
   theme(plot.title=element_text(face="bold", size=13),
         plot.subtitle=element_text(size=10, face="bold", color="gray30"),
         panel.grid.major=element_line(color="gray90", linewidth=0.3),
@@ -214,7 +260,7 @@ p_radar <- ggplot(radar_df, aes(x = axis, y = norm, group = 1)) +
                      labels = c("low", "mid", "high")) +
   labs(title = "4D Risk Radar",
        subtitle = "z-score (3=risk↑)") +
-  theme_minimal(base_size = 9) +
+  theme_minimal(base_size = 9, base_family = .KOR_FONT) +
   theme(plot.title = element_text(face = "bold", size = 10, hjust = 0.5),
         plot.subtitle = element_text(size = 8, hjust = 0.5, color = "gray30"),
         axis.text.x = element_text(face = "bold", size = 8),
@@ -235,7 +281,7 @@ p_var <- ggplot(trail60, aes(idx, var_05)) +
   geom_hline(yintercept=median(trail60$var_05), linetype="dashed", color="gray50", alpha=0.6) +
   labs(title="VaR 5% (60d)", y="VaR (%)", x=NULL) +
   scale_y_reverse(labels=function(x) sprintf("%.1f", x)) +  # y축 역순(도훈 2026-06-01): 손실 클수록(더 음수) 위로
-  theme_minimal(base_size=9) +
+  theme_minimal(base_size=9, base_family=.KOR_FONT) +
   theme(plot.title=element_text(face="bold", size=10),
         axis.text.x=element_blank(),
         panel.grid.minor=element_blank())
@@ -247,7 +293,7 @@ p_bear <- ggplot(trail60, aes(idx, breach_5pct_show)) +
   geom_point(data=tail(trail60,1), aes(idx, breach_5pct_show), shape=21, fill="#FDD835", color="#424242", size=3) +
   labs(title="P(-5% 폭락) (60d, %)", y="확률 (%)", x=NULL) +
   scale_y_continuous(labels=function(x) sprintf("%.2f", x)) +
-  theme_minimal(base_size=9) +
+  theme_minimal(base_size=9, base_family=.KOR_FONT) +
   theme(plot.title=element_text(face="bold", size=10),
         axis.text.x=element_blank(),
         panel.grid.minor=element_blank())
@@ -260,42 +306,63 @@ p_rs <- ggplot(trail60, aes(idx, risk_score)) +
   geom_hline(yintercept=c(2, 3, 4), linetype="dotted", color="gray60", alpha=0.5) +
   labs(title="Risk Score (60d)", y="Score (1~5)", x="(60d ago) ⟵ trail ⟶ (today)") +
   scale_y_continuous(limits=c(1, 5), breaks=1:5) +
-  theme_minimal(base_size=9) +
+  theme_minimal(base_size=9, base_family=.KOR_FONT) +
   theme(plot.title=element_text(face="bold", size=10),
         axis.text.x=element_blank(),
         panel.grid.minor=element_blank())
 
-# ── 4. Cell stats table (bottom strip) ──────────────────────────────────────
+# ── 4. Cell stats (bottom strip) — 가독성·직관성 개선 (2026-06-26 도훈) ──────
+#   변경: ① pastel fill + 진한 글씨(red-on-red 가독성 붕괴 해소) ② 존명을 타일 안에
+#   넣어 축 라벨 연결 불필요 ③ 현재 국면 = 두꺼운 금색 테두리 + ★ + 빨강 글씨로 한눈에
+#   ④ 위험순(왼=위험·오=양호) 정렬로 직관화 ⑤ 하단 subtitle = 현재 상황 1줄 평문 요약.
 all_cell_stats <- tbl2[!is.na(zone), .(zone, n, avg_fwd22, vol_fwd22, breach_5pct, breach_10pct)]
-all_cell_stats[, breach_5_pct  := sprintf("%.1f%%", breach_5pct*100)]
-all_cell_stats[, breach_10_pct := sprintf("%.1f%%", breach_10pct*100)]
-all_cell_stats[, avg_fwd22_str := ifelse(is.na(avg_fwd22), "—", sprintf("%+.2f%%", avg_fwd22))]
-all_cell_stats[, vol_fwd22_str := ifelse(is.na(vol_fwd22), "—", sprintf("%.2f%%", vol_fwd22))]
-# 각 셀: 수익률(r_t = avg fwd22) + 변동성(σ = sd of fwd22). t는 아래첨자(plotmath parse). (도훈 2026-06-01)
 all_cell_stats[, avg_pm := ifelse(is.na(avg_fwd22), "n/a", sprintf("%+.2f%%", avg_fwd22))]
-all_cell_stats[, vol_pm := ifelse(is.na(vol_fwd22), "n/a", sprintf("%.2f%%", vol_fwd22))]
-all_cell_stats[, cell_lbl := sprintf('atop(r[t]*" %s", sigma*" %s")', avg_pm, vol_pm)]
-all_cell_stats[, zone_n := sprintf("%s (n=%s)", zone, ifelse(is.na(n), "0", as.character(n)))]
+all_cell_stats[, vol_pm := ifelse(is.na(vol_fwd22), "n/a", sprintf("%.1f%%", vol_fwd22))]
+all_cell_stats[, n_str  := ifelse(is.na(n), "0", as.character(n))]
 all_cell_stats[, is_now := (zone == now_zone)]
+# 위험순 정렬: 평균 수익 낮은(위험)→높은(양호) = 왼→오. 관측 없는 셀(NA)은 오른쪽 끝.
+setorder(all_cell_stats, avg_fwd22, na.last = TRUE)
+all_cell_stats[, zone_f   := factor(zone, levels = zone)]
+all_cell_stats[, zone_lbl := ifelse(is_now, paste0("★ ", zone), zone)]
 
-p_stats <- ggplot(all_cell_stats, aes(x=zone_n, y="cell")) +
-  geom_tile(aes(fill=avg_fwd22), color="white", linewidth=0.8) +
-  geom_text(aes(label=cell_lbl, color=is_now), parse=TRUE, fontface="bold", size=3.2, lineheight=0.9) +
-  scale_color_manual(values=c("FALSE"="gray30", "TRUE"="#B71C1C"), guide="none") +
-  scale_fill_gradient2(low="#D32F2F", mid="#FFF9C4", high="#388E3C", midpoint=0,
-                        guide="none", na.value="gray80") +
-  labs(title="Cell historical Fwd22 — 수익률(rt) + 변동성(σ=sd) [현 cell 빨강]", y=NULL, x=NULL) +
-  theme_minimal(base_size=9) +
-  theme(plot.title=element_text(face="bold", size=10),
-        axis.text.x=element_text(angle=20, hjust=1, size=8, face="bold"),
-        axis.text.y=element_blank(),
-        panel.grid=element_blank())
+p_stats <- ggplot(all_cell_stats, aes(x = zone_f, y = 1)) +
+  geom_tile(aes(fill = avg_fwd22), width = 0.95, height = 1.1,
+            alpha = 0.55, color = "white", linewidth = 0.7) +
+  # 현재 국면 셀 강조 — 두꺼운 금색 테두리
+  geom_tile(data = all_cell_stats[is_now == TRUE], aes(x = zone_f, y = 1),
+            width = 0.95, height = 1.1, fill = NA, color = "#F9A825", linewidth = 3.2) +
+  # 존명 (상단, 현재=빨강 굵게)
+  geom_text(aes(label = zone_lbl, y = 1.34, color = is_now),
+            fontface = "bold", size = 3.5) +
+  scale_color_manual(values = c(`FALSE` = "#1A1A1A", `TRUE` = "#B71C1C"), guide = "none") +
+  # 수익(평균) — 진한 글씨
+  geom_text(aes(label = sprintf("수익 %s", avg_pm), y = 0.98),
+            fontface = "bold", size = 3.2, color = "#263238") +
+  # 변동 + n (하단)
+  geom_text(aes(label = sprintf("변동 %s · n=%s", vol_pm, n_str), y = 0.66),
+            size = 2.8, color = "#546E7A") +
+  scale_fill_gradient2(low = "#E53935", mid = "#FFF59D", high = "#2E7D32", midpoint = 0,
+                       guide = "none", na.value = "gray85") +
+  coord_cartesian(ylim = c(0.40, 1.58), clip = "off") +
+  labs(title = "과거 유사 국면 → 향후 22일 성과 (수익=평균·변동=표준편차)   ◀ 향후수익 낮음   높음 ▶",
+       subtitle = sprintf("★ 현재 '%s' (Risk %.1f/5) — 향후22일 평균 %s · 폭락(-10%%) %s   →   %s",
+                          now_zone, latest$risk_score,
+                          ifelse(is.na(now_stats$avg_fwd22[1]), "n/a", sprintf("%+.2f%%", now_stats$avg_fwd22[1])),
+                          ifelse(is.na(now_stats$breach_10pct[1]), "n/a", sprintf("%.0f%%", now_stats$breach_10pct[1]*100)),
+                          now_action),
+       y = NULL, x = NULL) +
+  theme_minimal(base_size = 9, base_family = .KOR_FONT) +
+  theme(plot.title = element_text(face = "bold", size = 11),
+        plot.subtitle = element_text(face = "bold", size = 11, color = "#B71C1C"),
+        axis.text = element_blank(),
+        axis.ticks = element_blank(),
+        panel.grid = element_blank())
 
 # ── 5. Layout (patchwork) — radar 제거 (도훈 mandate 2026-05-27) ───────────
 right_col <- p_var / p_bear / p_rs + plot_layout(heights = c(1, 1, 1))
 layout <- (
   (p_main | right_col) + plot_layout(widths = c(2.5, 1))
-) / p_stats + plot_layout(heights = c(3.5, 1))
+) / p_stats + plot_layout(heights = c(3.2, 1.35))
 
 out_dir <- file.path(
   PROJECT_ROOT,
@@ -304,7 +371,7 @@ out_dir <- file.path(
 )
 if (!dir.exists(out_dir)) dir.create(out_dir, recursive=TRUE, showWarnings=FALSE)
 out_path <- file.path(out_dir, "p3_9quad_riskpro.png")
-ggsave(out_path, layout, width=14, height=9, dpi=140)
+ggsave(out_path, layout, width=14, height=9.6, dpi=140)
 cat(sprintf("[riskpro] saved → %s\n", out_path))
 cat(sprintf("[riskpro] NOW: %s | Risk Score: %.2f/5 | Action: %s\n",
             now_zone, latest$risk_score, now_action))

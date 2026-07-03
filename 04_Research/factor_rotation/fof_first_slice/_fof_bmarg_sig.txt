@@ -1,0 +1,21 @@
+============== ΔIR 유의성 / diversification 아티팩트 판별 ==============
+실행 2026-07-01 08:36:49.191196
+n=189, 2010-01~2026-04
+
+incumbent book IR=0.838  fof IR=1.008  cor_active=-0.018
+관측 ΔIR: λ-opt=0.484, λ=0.5=0.464
+
+[①ΔIR(λ=0.5) block-bootstrap B=2000] median=0.463  95%CI=[0.131, 0.803]
+  (CI는 ΔIR 추정 불확실성일 뿐 — 아티팩트 여부는 ②로 판별)
+
+[②동일-IR 무상관 노이즈 sleeve, B=2000] ΔIR(λ=0.5) median=0.454  95%CI=[0.373, 0.554]
+  관측 fof ΔIR(=0.464)이 노이즈 분포의 58.6 백분위. 
+  → 노이즈 베이스라인이 ΔIR median 0.454을 *그냥* 생성. fof ΔIR이 노이즈 95pctCI와 겹치면 = diversification 아티팩트.
+  노이즈 95%CI [0.373,0.554] 안에 fof ΔIR 0.464 포함? TRUE → ★아티팩트(diversification 산술) — 직교알파 기여 아님
+
+[③paired-NW-t 결합−incumbent active, lag3] mean=+0.2664%/월 t=+0.71  → 비유의(<2)
+
+================ 결론 ================
+  active 상관 -0.018 (직교) · ΔIR(λ.5) 0.464 · ΔIR 노이즈-베이스라인 median 0.454
+  paired-NW-t 0.71 (비유의) · 노이즈구별 불가(아티팩트)
+  ★최종: ΔIR=diversification 아티팩트 + paired-t 비유의 → 직교하나 *기여 미입증*. screen-tier

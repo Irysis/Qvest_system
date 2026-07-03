@@ -8,7 +8,9 @@ suppressPackageStartupMessages({
   library(jsonlite)
 })
 
-PROJ <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+# [fix 2026-06-17] env 기반 (run_all 패턴)
+PROJ <- Sys.getenv("CLAUDE_PROJECT_DIR",
+          Sys.getenv("QM_ROOT", "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"))
 WT_ID <- "WT-S20260504_007"
 SA1 <- file.path(PROJ, "stage_artifacts", paste0("WT_", WT_ID))   # canonical
 SA2 <- file.path(PROJ, "stage_artifacts", "WT_WT_S20260504_007")  # mirror
@@ -94,11 +96,15 @@ write_overlay_csv(w_baseline, file.path(out_dir, "w_overlay_baseline_S1.csv"))
 
 cat("Sleeve-level overlay CSVs written.\n")
 
-# ---- Stock-level deploy snapshot (live 2026-05-01 cycle for 3 variants) ----
-# Per WT mandate — "deploy_cutoff = today / open-ended". Provide the actionable
-# stock-level weights for the 2026-05-01 deploy date applying β_t at that date.
-
-beta_deploy <- beta_filled[date == as.Date("2026-05-01")]
+# ---- Stock-level deploy snapshot (최신 deploy date, 3 variants) ----
+# Per WT mandate — "deploy_cutoff = today / open-ended". 동적화 2026-06-18: 하드코딩 2026-05-01 제거.
+# DEPLOY_DATE = PG2_AS_OF env(있고 스케줄에 존재 시) 우선, 없으면 beta_filled 최신일. 항상 1행 보장.
+DEPLOY_DATE <- {
+  e <- suppressWarnings(as.Date(Sys.getenv("PG2_AS_OF", NA)))
+  if (!is.na(e) && e %in% beta_filled$date) e else max(beta_filled$date)
+}
+DEPLOY_TAG <- format(DEPLOY_DATE, "%Y%m%d")
+beta_deploy <- beta_filled[date == DEPLOY_DATE]
 stopifnot(nrow(beta_deploy) == 1)
 
 build_stock_snapshot <- function(beta_val, variant_name) {
@@ -107,15 +113,15 @@ build_stock_snapshot <- function(beta_val, variant_name) {
   cash_w <- 1 - sum(scaled$Weight_Final)
   out <- rbind(
     data.table(
-      Date = as.Date("2026-05-01"),
-      Date_YYYYMMDD = "20260501",
+      Date = DEPLOY_DATE,
+      Date_YYYYMMDD = DEPLOY_TAG,
       Ticker = scaled$Ticker,
       Weight = scaled$Weight_Final,
       Variant = variant_name
     ),
     data.table(
-      Date = as.Date("2026-05-01"),
-      Date_YYYYMMDD = "20260501",
+      Date = DEPLOY_DATE,
+      Date_YYYYMMDD = DEPLOY_TAG,
       Ticker = "CASH",
       Weight = cash_w,
       Variant = variant_name
@@ -130,10 +136,11 @@ deploy_sig   <- build_stock_snapshot(beta_deploy$beta_sigmoid,   "sigmoid_smooth
 deploy_base  <- build_stock_snapshot(1.0,                         "baseline_no_overlay")
 
 deploy_all <- rbind(deploy_lin, deploy_thr, deploy_sig, deploy_base)
-fwrite(deploy_all, file.path(out_dir, "deploy_snapshot_20260501_all_variants.csv"))
+DEPLOY_SNAP_FN <- sprintf("deploy_snapshot_%s_all_variants.csv", DEPLOY_TAG)
+fwrite(deploy_all, file.path(out_dir, DEPLOY_SNAP_FN))
 
-cat(sprintf("Deploy snapshot 2026-05-01: linear β=%.4f thresh β=%.4f sigmoid β=%.4f\n",
-            beta_deploy$beta_linear, beta_deploy$beta_threshold, beta_deploy$beta_sigmoid))
+cat(sprintf("Deploy snapshot %s: linear β=%.4f thresh β=%.4f sigmoid β=%.4f\n",
+            as.character(DEPLOY_DATE), beta_deploy$beta_linear, beta_deploy$beta_threshold, beta_deploy$beta_sigmoid))
 
 # ---- alpha_invariance_audit.json ---------------------------------------
 # rank corr per month per variant: by mathematical guarantee, β > 0 ⇒ rank corr = 1
@@ -279,15 +286,15 @@ write(toJSON(infeas, auto_unbox = TRUE, pretty = TRUE),
       file.path(out_dir, "infeasibility_report.json"))
 
 # ---- Schedule fidelity check (Charter §9 mandate) ------------------------
-# alpha_package is inherited stub; schedule_fidelity uses risk_package n_months_computed=268
-# weights.csv unique_dates: should be 268 (matches sig_dates from risk side, full range)
-
+# 동적화 2026-06-18: 하드코딩 268(5월 시점 월수) 제거 → EXPECTED_N = 스케줄 월수(nrow(beta_filled)).
+# weights.csv unique_dates는 스케줄 전 범위(EXPECTED_N)와 일치해야 함.
+EXPECTED_N <- nrow(beta_filled)
 uniq_dates <- length(unique(w_linear$Date))
-schedule_density <- uniq_dates / 268
-cat(sprintf("Schedule fidelity: unique_dates=%d / 268 = %.4f\n",
-            uniq_dates, schedule_density))
+schedule_density <- uniq_dates / EXPECTED_N
+cat(sprintf("Schedule fidelity: unique_dates=%d / %d = %.4f\n",
+            uniq_dates, EXPECTED_N, schedule_density))
 
-stopifnot(uniq_dates == 268)
+stopifnot(uniq_dates == EXPECTED_N)
 stopifnot(schedule_density >= 0.95)
 
 # ---- Mirror to WT_WT_S20260504_007 (with-underscore variant) -------------
@@ -296,7 +303,7 @@ mirror_files <- list.files(SA1, full.names = FALSE, recursive = FALSE)
 new_files <- c(
   "w_overlay_linear.csv", "w_overlay_threshold.csv",
   "w_overlay_sigmoid.csv", "w_overlay_baseline_S1.csv",
-  "deploy_snapshot_20260501_all_variants.csv",
+  DEPLOY_SNAP_FN,
   "alpha_invariance_audit.json", "overlay_schedule.csv",
   "turnover_decomposition.json", "infeasibility_report.json"
 )
@@ -312,9 +319,9 @@ cat("Mirror complete: SA2 mirror up to date.\n")
 cat("\n========== OPTIMIZER OVERLAY EMISSION SUMMARY ==========\n")
 cat(sprintf("Months processed:           %d\n", nrow(beta_filled)))
 cat(sprintf("Warmup β=NA filled:         %d (β=1.0 default)\n", n_warmup_filled))
-cat(sprintf("Schedule density:           %.4f (= %d / 268, ≥0.95 PASS)\n",
-            schedule_density, uniq_dates))
-cat(sprintf("STR_1715 active stocks:     %d (snapshot 2026-05-01)\n", n_active_snapshot))
+cat(sprintf("Schedule density:           %.4f (= %d / %d, ≥0.95 PASS)\n",
+            schedule_density, uniq_dates, EXPECTED_N))
+cat(sprintf("STR_1715 active stocks:     %d (snapshot %s)\n", n_active_snapshot, as.character(DEPLOY_DATE)))
 cat(sprintf("Σw_STR1715 active:          %.6f (allocated; 0%% cash at β=1)\n", sum_w_str1715))
 cat("\nlinear_band β stats:\n")
 cat(sprintf("  mean=%.4f, n_zero=%d, n_full(=1)=%d\n",
@@ -332,7 +339,7 @@ cat(sprintf("  mean=%.4f, β_min=%.4f, β_max=%.4f\n",
             mean(beta_filled$beta_sigmoid),
             min(beta_filled$beta_sigmoid),
             max(beta_filled$beta_sigmoid)))
-cat("\nDeploy snapshot 2026-05-01:\n")
+cat(sprintf("\nDeploy snapshot %s:\n", as.character(DEPLOY_DATE)))
 cat(sprintf("  linear_band:    β=%.4f → cash=%.4f\n",
             beta_deploy$beta_linear, 1-beta_deploy$beta_linear))
 cat(sprintf("  threshold_step: β=%.4f → cash=%.4f\n",

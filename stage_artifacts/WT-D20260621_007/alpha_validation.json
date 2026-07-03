@@ -1,0 +1,75 @@
+{
+  "task_id": "WT-D20260621_007",
+  "factor": "M36_SignedFlowRun",
+  "metric_type": "canonical_screen",
+  "n_sig_dates": 254,
+  "sample": "2005-01-31 .. 2026-02-27 (254 scored monthly sig_dates with forward returns; terminal 2026-03-31 excluded, no forward window)",
+  "pit_checks": {
+    "C1_no_full_sample": "PASS -- cross-section z per sig_date; run-length causal left-to-right; rank-IC reported as mean of monthly cross-sections",
+    "C2_no_same_day": "PASS -- run-length and Size snapshot use Date < sig_date strict (verified: scores labeled at sig_date built from prior data; forward return window strictly after sig_date; terminal sig_date has 0 forward-return rows)",
+    "C10_liquidity_t_minus_1": "PASS -- 20d ADV from Date < sig_date",
+    "C13_Z_Score_Aligned": "PASS -- long-streak score positively oriented by construction; no NEGATE/FLIP; comparators loaded via load_month_factors aligned",
+    "C14_usable_date": "PASS -- comparator factors via load_month_factors (PIT-safe IC direction, Usable_Date<=sig_date)",
+    "C15_canonical_path": "PASS -- investor sidecar via audited compute_investor.R loader pattern; comparators via load_month_factors; canonical_screen_bt for the screen",
+    "lookahead_detector": "structural: no forward-looking window functions used; all frollsum/run-encoding align=right; forward-return window built explicitly as (sig_date, next_sig_date]"
+  },
+  "canonical_screen_primary": {
+    "config": "MAG_RUN, run_cap=10, eps_krw=1e8, transform=z, top_n=20",
+    "portfolio_alpha_t_nw_lag3": -1.28,
+    "information_ratio": -0.263,
+    "net_sr_active": -0.263,
+    "alpha_annualized": -0.0386,
+    "turnover_annual": 20.52,
+    "n_months": 254
+  },
+  "orthogonality_monthly_median_spearman": {
+    "INV09_Flow_Persistence": -0.33,
+    "INV01_Foreign_NetBuy_20d": 0.189,
+    "INV03_Inst_NetBuy_20d": 0.081,
+    "INV08_Foreign_Inst_Agreement": 0.013,
+    "INV10_Smart_Money_Flow": -0.308,
+    "M01_Mom_12_1": 0.038,
+    "M08_Residual_Mom": 0.006,
+    "M24_Sector_Rel_Mom": 0.016
+  },
+  "decile_concentration": {
+    "top_decile_D10_active": -0.0014,
+    "top_decile_D10_active_t": -0.58,
+    "D10_D9_active_gap": 0.0022,
+    "D10_D1_spread": -0.0059,
+    "shape": "monotone-decreasing then flat; edge in bottom deciles; long leg not tradeable"
+  },
+  "diagnostics": {
+    "rank_ic": -0.0307,
+    "icir": -0.333,
+    "harvey_t_nw3": -5.38,
+    "oos_retention": "NA (negative IS active SR)",
+    "calmar": 0.045,
+    "cagr_net": 0.032,
+    "mdd_net": 0.704,
+    "rank_ic_sector_size_neutral": -0.0276,
+    "icir_sector_size_neutral": -0.454,
+    "neutral_ic_retention": 0.896
+  },
+  "contrarian_diagnostic": {
+    "bottom20_sellstreak_gross_active_sr": 0.453,
+    "bottom20_t": 2.09,
+    "note": "GROSS pre-cost diagnostic -- confirms the harvestable signal is contrarian on sell-streaks, un-shortable in KR"
+  },
+  "verdict": "MEANINGFUL_NEGATIVE_SCREEN_ROUTE",
+  "graduation_candidate": false,
+  "novelty_test_inv09": "PASS_DISTINCT (|0.33| < 0.5)",
+  "artifacts": {
+    "alpha_scores": "stage_artifacts/WT-D20260621_007/alpha_scores.parquet",
+    "orthogonality_csv": "stage_artifacts/WT-D20260621_007/orthogonality.csv",
+    "decile_profile_csv": "stage_artifacts/WT-D20260621_007/decile_profile.csv",
+    "build_script": "stage_artifacts/WT-D20260621_007/build_m36.R",
+    "audit_script": "stage_artifacts/WT-D20260621_007/audit_m36.R"
+  },
+  "codex_round": {
+    "stance": "REVISE",
+    "veto": false,
+    "verdict_unchanged": true,
+    "challenge_note": "alpha_challenge_note.md"
+  }
+}

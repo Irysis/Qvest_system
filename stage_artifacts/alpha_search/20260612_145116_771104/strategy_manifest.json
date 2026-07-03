@@ -1,0 +1,96 @@
+{
+  "schema_version": "alpha_search_strategy_manifest_v1",
+  "created_at": "2026-06-12T15:02:39+0900",
+  "mode": "alpha_search",
+  "strategy_id": "STR_AS_20260612_145116_771104",
+  "strategy_name": "Residual Momentum Base Signal",
+  "strategy_idea": "Residual Momentum — FF3 잔차의 12m-1m 모멘텀",
+  "factor_engine_path": "02_Infrastructure/alpha_search/fe_residmom.R",
+  "execution": {
+    "universe": "ALL",
+    "universe_n": 1246,
+    "n_holdings": 20,
+    "weight_method": "equal",
+    "commission": 0.0015,
+    "bt_result_path": "stage_artifacts/alpha_search/20260612_145116_771104/bt_result.rds"
+  },
+  "verdict": {
+    "grade": "F",
+    "score": 4.2,
+    "hurdle_pass": false,
+    "hard_fail": false,
+    "fail_reasons": [],
+    "f_grade_reasons": [
+      "FMT-01 Structural MDD: MDD 69.7% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)",
+      "FMT-02 Factor Degeneration: IR -0.24 < -0.1 & 초과CAGR -3.8%p < 0 — KR에서 팩터 방향 역작동 의심",
+      "FMT-04 Regime Blindness: MDD 69.7% > 35% & BM상관 0.76 >= 0.7 — 위기국면 동조 낙폭(국면필터 부재)",
+      "알파 부재: 정보비율 -0.24로 벤치 대비 기여가 음수/미약",
+      "초과수익 부족: 벤치 대비 -3.8%p"
+    ],
+    "screening": {
+      "screen_pass": false,
+      "screen_route": "NONE",
+      "drawdown_tail_review": true,
+      "note": "탐색 게이트 — 자본/졸업 게이트 아님 (graduation HARD 불변). PIT만 절대."
+    }
+  },
+  "metrics": {
+    "CAGR": 5.86,
+    "AnnVol": 23.82,
+    "Sharpe": 0.246,
+    "Sharpe_m": 0.352,
+    "IR": -0.241,
+    "MDD": 69.65,
+    "Calmar": 0.084,
+    "Turnover_Ann": 424.8,
+    "Top10_Conc": 50,
+    "Rolling3Y_Pos": 71.2,
+    "BM_Corr": 0.759,
+    "ES99_d": 6.8,
+    "ES99_m": 23.54,
+    "GradeA_Corr": null,
+    "Rolling6M_Hit": 57,
+    "Worst6M_Ret": -54.73,
+    "MaxConsecNegAlpha": 7,
+    "Rolling12M_Hit": 62.2
+  },
+  "excess_cagr_pct": -3.8,
+  "fmt": [
+    {
+      "code": "FMT-01",
+      "label": "Structural MDD",
+      "reason": "MDD 69.7% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)"
+    },
+    {
+      "code": "FMT-02",
+      "label": "Factor Degeneration",
+      "reason": "IR -0.24 < -0.1 & 초과CAGR -3.8%p < 0 — KR에서 팩터 방향 역작동 의심"
+    },
+    {
+      "code": "FMT-04",
+      "label": "Regime Blindness",
+      "reason": "MDD 69.7% > 35% & BM상관 0.76 >= 0.7 — 위기국면 동조 낙폭(국면필터 부재)"
+    }
+  ],
+  "authoritative": null,
+  "pit": {
+    "code_scan": "detect_lookahead",
+    "status": "CLEAN",
+    "factor_engine_path": "02_Infrastructure/alpha_search/fe_residmom.R",
+    "violations": [],
+    "note": "Backfill re-ran code-level PIT scan on the current factor_engine_path."
+  },
+  "backtest_contract": {
+    "status": "OK",
+    "run_id": "ASBT_20260612_145116_771104",
+    "metric_type": "backtested",
+    "bt_result_path": "stage_artifacts/alpha_search/20260612_145116_771104/bt_result.rds",
+    "output_dir": "stage_artifacts/alpha_search/20260612_145116_771104",
+    "integrity_status": "WARNING",
+    "audit_pass": 15,
+    "audit_fail": 0,
+    "audit_warn": 1,
+    "validation_errors": [],
+    "note": "standard Backtest Result Contract backfilled without Telegram"
+  }
+}

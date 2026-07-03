@@ -1,0 +1,119 @@
+{
+  "schema_version": "alpha_search_strategy_manifest_v1",
+  "created_at": "2026-06-12T21:46:04+0900",
+  "mode": "alpha_search",
+  "strategy_id": "STR_AS_20260612_214031_183614",
+  "strategy_name": "Regime CondWeight Binary (Crisis 70/20/10 vs Normal 40/35/25)",
+  "strategy_idea": "Regime CondWeight Binary (Crisis 70/20/10 vs Normal 40/35/25) Forge contract/spec requires code generation before backtest Forge contract/spec requires code generation before backtest",
+  "factor_engine_path": "02_Infrastructure/alpha_search/fe_factor_combo.R",
+  "execution": {
+    "universe": "ALL",
+    "universe_n": 142,
+    "n_holdings": 30,
+    "weight_method": "equal",
+    "commission": 0.0015,
+    "risk_controls": {
+      "vol_target": null,
+      "vol_lookback": 60,
+      "dd_brake": null,
+      "buffer_zone": {
+        "keep_n": 60,
+        "entry_n": 30
+      },
+      "use_default_buffer": true,
+      "cov_method": "sample"
+    },
+    "bt_result_path": "stage_artifacts/alpha_search/20260612_214031_183614/bt_result.rds"
+  },
+  "pit": {
+    "code_scan": "detect_lookahead",
+    "status": "CLEAN",
+    "factor_engine_path": "02_Infrastructure/alpha_search/fe_factor_combo.R",
+    "note": "AlphaSearch stops before backtest when detect_lookahead reports violations."
+  },
+  "backtest_contract": {
+    "status": "OK",
+    "run_id": "ASBT_20260612_214031_183614",
+    "metric_type": "backtested",
+    "bt_result_path": "stage_artifacts/alpha_search/20260612_214031_183614/bt_result.rds",
+    "output_dir": "stage_artifacts/alpha_search/20260612_214031_183614",
+    "integrity_status": "WARNING",
+    "audit_pass": 15,
+    "audit_fail": 0,
+    "audit_warn": 1,
+    "validation_errors": [],
+    "note": "standard Backtest Result Contract saved for every AlphaSearch run; grade/admission remains separate",
+    "return_series": {
+      "status": "OK",
+      "source": "bt_result.period_returns",
+      "csv_path": "stage_artifacts/alpha_search/20260612_214031_183614/03_period_returns.csv",
+      "date_col": "date",
+      "ret_col": "ret_net",
+      "n_obs": 5266,
+      "start_date": "2005-02-03",
+      "end_date": "2026-06-11",
+      "post2008_obs": 4547,
+      "frequency": "daily"
+    }
+  },
+  "verdict": {
+    "grade": "B",
+    "score": 51.1,
+    "hurdle_pass": true,
+    "hard_fail": false,
+    "fail_reasons": [],
+    "f_grade_reasons": [],
+    "screening": {
+      "screen_pass": true,
+      "screen_route": "STANDALONE_TRACK",
+      "drawdown_tail_review": true,
+      "note": "탐색 게이트 — 자본/졸업 게이트 아님 (graduation HARD 불변). PIT만 절대."
+    }
+  },
+  "metrics": {
+    "CAGR": 14.01,
+    "AnnVol": 21.68,
+    "Sharpe": 0.646,
+    "Sharpe_m": 0.68,
+    "IR": 0.264,
+    "MDD": 57.18,
+    "Calmar": 0.245,
+    "Turnover_Ann": 198.5,
+    "Top10_Conc": 50,
+    "Rolling3Y_Pos": 84.7,
+    "BM_Corr": 0.831,
+    "ES99_d": 5.36,
+    "ES99_m": 19.85,
+    "GradeA_Corr": null,
+    "Rolling6M_Hit": 62.4,
+    "Worst6M_Ret": -50.08,
+    "MaxConsecNegAlpha": 10,
+    "Rolling12M_Hit": 68.6
+  },
+  "excess_cagr_pct": 3.27,
+  "fmt": [
+    {
+      "code": "FMT-01",
+      "label": "Structural MDD",
+      "reason": "MDD 57.2% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)"
+    },
+    {
+      "code": "FMT-04",
+      "label": "Regime Blindness",
+      "reason": "MDD 57.2% > 35% & BM상관 0.83 >= 0.7 — 위기국면 동조 낙폭(국면필터 부재)"
+    },
+    {
+      "code": "FMT-07",
+      "label": "Publication Decay",
+      "reason": "활성SR pre-2017 0.68 -> post-2017 -0.32 — 논문발표 후 알파 소진 패턴"
+    }
+  ],
+  "authoritative": {
+    "status": "OK",
+    "essence_grade": "C",
+    "reasons": "Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)",
+    "metric_type": "backtested",
+    "run_id": "ASBT_20260612_214031_183614",
+    "bt_result_path": "/mnt/c/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/alpha_search/20260612_214031_183614/bt_result.rds"
+  }
+}

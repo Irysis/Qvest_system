@@ -1,0 +1,180 @@
+{
+  "task_id": "WT-D20260621_009",
+  "as_of_date": "2026-06-21",
+  "forecast_horizon": "1M",
+  "wt_type": "discovery",
+  "hypothesis_title": "Buyback Yield Confirmed Momentum",
+  "metric_type": "canonical_screen",
+  "metric_type_note": "canonical_screen_bt -> build_benchmark_compare (NW lag-3). Screening-grade, NOT forge-authoritative. Capital admission requires forge build_bt_result. Numbers here are so far below every threshold that a forge build would not change the verdict.",
+  "selection_type": "single",
+  "selection_objective": "rank_ic",
+  "verdict": "SCREEN_ROUTE",
+  "verdict_detail": "DECISIVE CLEAN NEGATIVE for the deployable (monthly-carry, M03-gated top-25) construction. This is the campaign's FIRST top-concentration-DESIGNED concept, and the make-or-break decile test FAILS: the extreme top (D10) is flat/inverted, NOT top-concentrated. The AX-007 wall (real signal stranded short/mid-decile, top cannot harvest) HOLDS for this construction. SCREEN_ROUTE is NOT alpha approval — it routes ONE real but post-hoc sub-signal (fresh-disclosure-month drift) to a separate event-driven hypothesis WT + DPL feature, not to capital. Per AX-000 (amended 2026-06-21), a clean negative reported faithfully IS success. NO structural-limit / dead-end declaration is made — the disclosure-drift channel is a live follow-up hypothesis.",
+  "alpha_vector_ref": "stage_artifacts/WT-D20260621_009/alpha_scores.parquet",
+  "confidence_vector_note": "Cross-sectional rank-IC = -0.0002 raw / 0.0043 sector-neutral (ICIR 0.022) => effectively zero deployable predictive confidence for the monthly-carry confirmed-buyback score. No deployable per-name confidence vector is emitted because the signal does not pass screening. Confidence is meaningful ONLY in the fresh-disclosure cohort (see spike_survival), which is a NEW-HYPOTHESIS candidate, not admission evidence.",
+  "factor_specs": [
+    {
+      "factor_family": "Event/CorporateAction",
+      "proxy": "BuybackYield_Confirmed = clip(TTM_4Q buyback KRW / MktCap, 0, 0.5) * 1{M03 > cross-sectional median}",
+      "formula": "score_i = clip(SBB_ttm_i / Size_i, 0, 0.5) * (M03_i > median_t(M03)); SBB_ttm = rolling 4Q trailing sum of .cache/stock_buyback.parquet Value; M03 = Close(t)/Close(t-3m)-1",
+      "lag_rule": "buyback Factor_Date = Period_Date + 45d (C4, asof Factor_Date <= sig_date); price t-1; forward Ret_1m (C2); liquidity adv20 lagged to t-1 (C10, fixed post-Codex)",
+      "winsorization": "clip BuybackYield to [0,0.5]",
+      "neutralization": "Size-normalized (yield basis); cross-sectional median gate per month (C1). Sector-neutral IC also computed (RF-A4): 0.0043 (no rescue).",
+      "economic_rationale": "Buyback = costly credible insider commitment + mechanical demand bid + Ikenberry post-announcement underreaction drift; M03 gate intended to filter defensive value-trap buybacks. Buy-side only (designed to escape the AX-007 no-short trap). EMPIRICAL RESULT: the drift is real but exists ONLY in the fresh-disclosure month (+0.42%/mo) and is diluted to zero by the 3-month quarterly carry (carry months -0.28%/mo); the M03 gate does NOT improve and slightly harms (base PORT_t 0.044 < ungated 0.353).",
+      "weight_theta": 1.0,
+      "references": ["Ikenberry-Lakonishok-Vermaelen 1995 JFE (open-market repurchase drift)", "Peyer-Vermaelen 2009 RFS", "KR Value-up Program 2023+"],
+      "redundancy_cluster_id": "event_buyback_drift (NEW; no M* factor uses buyback; active corr vs WML momentum -0.073 confirms non-redundant)"
+    }
+  ],
+  "diagnostics": {
+    "metric_type": "canonical_screen",
+    "rank_ic": -0.0002,
+    "rank_ic_sector_neutral": 0.0043,
+    "icir": -0.001,
+    "icir_sector_neutral": 0.022,
+    "harvey_t_stat_rank_ic": -0.016,
+    "subperiod_stability": 0.667,
+    "subperiod_ic": {"P1_2005_2012": -0.0115, "P2_2013_2019": 0.0139, "P3_2020_2026": 0.0015},
+    "portfolio_alpha_t_nw_lag3_base_top25": 0.044,
+    "portfolio_alpha_t_nw_lag3_base_top15": 0.165,
+    "information_ratio_base_top25": 0.012,
+    "net_sr_base_top25": 0.012,
+    "alpha_annualized_base_top25": 0.0349,
+    "turnover_annual_base_top25": 8.88,
+    "oos_retention": -1.24,
+    "oos_retention_splits": [-0.887, -1.242, -1.684],
+    "calmar": -0.018,
+    "mdd": 0.705,
+    "monotonicity_decile": 0.479,
+    "n_months": 257,
+    "ic_t_vs_portfolio_alpha_t_note": "rank-IC t (-0.016) and portfolio-alpha t (0.044) both near zero and AGREE: no signal. No divergence to reconcile (unlike Cycle 2)."
+  },
+  "decile_test": {
+    "status": "FAILED — make-or-break: top NOT concentrated, flat/inverted",
+    "procedure": "per-month drop score==0, decile-rank confirmed score over active subset (median 47 active names/mo), forward 1M EW net active (decile - BM). D10/D9 PORT_t via canonical_screen_bt on the decile-as-portfolio (contract-grade); D10-D9 gap NW lag-3 via sandwich::NeweyWest.",
+    "decile_annualized_active": {"D1": -0.033, "D2": 0.010, "D3": -0.020, "D4": 0.035, "D5": -0.042, "D6": -0.026, "D7": 0.017, "D8": 0.036, "D9": 0.037, "D10": -0.007},
+    "monotonicity_spearman": 0.479,
+    "D10_PORT_t_nw_lag3": -0.305,
+    "D10_IR": -0.076,
+    "D10_minus_D9_gap_mean": -0.00262,
+    "D10_minus_D9_gap_nw_t": -0.485,
+    "interpretation": "D10 (highest buyback-yield-confirmed) earns -0.7% annualized active (flat/negative). D9 (+3.7%) > D10. D10-D9 gap is NEGATIVE and insignificant (t=-0.49). The extreme top does NOT add beyond merely-high; concentration is anti-helpful (top-15 PORT_t 0.165 > top-25 0.044 is a small concentration tilt but both ~zero and far below 2.0). honest_risk #1 (TOP-GOES-FLAT: KR buybacks are defensive value-trap survivors) is REALIZED. The decile profile is non-monotone noise (spearman 0.48), not a usable signal."
+  },
+  "spike_survival": {
+    "status": "THE ONE REAL SUB-SIGNAL — but post-hoc; NEW-HYPOTHESIS candidate only, NOT admission evidence (per Codex C3 / RF-A6)",
+    "fresh_disclosure_month_active": 0.00418,
+    "fresh_n": 633,
+    "carry_months_2_3_active": -0.00275,
+    "carry_n": 668,
+    "caveat": "This split was inspected AFTER seeing the failed monthly-carry result (post-hoc). It has NO portfolio-level NW t-stat, NO transaction-cost-adjusted backtest, NO holdout/lockbox split. It is suitable ONLY as a new hypothesis to be tested prospectively in a fresh event-driven WT (1-month holding of the fresh-disclosure cohort), NOT as evidence for any DPL/overlay admission now.",
+    "interpretation": "Within D10, active return is concentrated in the fresh-disclosure month (+0.42%/mo, ~+5%/yr) and turns negative in carry months 2-3 (-0.28%/mo). The Ikenberry drift appears real but SHORT-LIVED (~1 month); the monthly quarterly-carry construction averages the positive fresh pop with negative carry months => net zero. honest_risk #4 (quarterly-carry dilution) is the mechanism of failure."
+  },
+  "ablations": {
+    "gate_helps": false,
+    "base_confirmed_M03_top25_PORT_t": 0.044,
+    "ungated_top25_PORT_t": 0.353,
+    "raw_unnormalized_top25_PORT_t": -0.304,
+    "M06_gate_top25_PORT_t": 0.608,
+    "M12_gate_top25_PORT_t": 0.797,
+    "TTM_2Q_top25_PORT_t": 0.033,
+    "TTM_8Q_top25_PORT_t": 0.686,
+    "interpretation": "(i) The M03 confirm gate HURTS: ungated PORT_t (0.353) > M03-gated base (0.044). The 'confirmed' label adds nothing for M03; per spec orthogonality_targets the M03 gate should be dropped. (ii) Size-normalization MATTERS: raw KRW (un-normalized) PORT_t = -0.304 (worst), confirming SBB/Size yield is the correct construction (raw re-ranks toward large absolute-buyback large-caps). (iii) Longer-momentum gates monotonically improve (M03 0.044 < M06 0.608 < M12 0.797) and longer TTM (8Q 0.686) helps — but ALL variants remain far below 2.0 screening / 2.95 graduation. No variant is graduate-able. These are IS-only DIAGNOSTIC variants, NOT a sweep picking a winner for graduation (selection_type='single').",
+    "gate_fill_frequency": {
+      "median_n_active_per_month": 47,
+      "months_n_active_below_25": 4,
+      "months_n_active_below_15": 0,
+      "total_months": 257,
+      "interpretation": "Gate over-thinning (honest_risk #2) is NOT the failure cause: median 47 active names/mo, only 4/257 months below 25 (ungated fill rarely triggered). The failure is genuine flatness, not a thinning artifact."
+    }
+  },
+  "orthogonality": {
+    "basis": "active (-BM) net return series, monthly, n=255 (kr_factor_returns_v2)",
+    "corr_WML_momentum": -0.073,
+    "corr_HML_value": 0.011,
+    "corr_SMB_size": 0.205,
+    "corr_MKT": 0.017,
+    "corr_RMW": -0.097,
+    "corr_CMA": 0.043,
+    "corr_vs_unconfirmed_buyback_screen": 0.798,
+    "targets": {"momentum_max": 0.40, "value_max": 0.35, "size_max": 0.35},
+    "interpretation": "PASSES all orthogonality targets on active basis: |corr| vs momentum 0.073 (<<0.40 — NOT repackaged momentum; the M03 gate did NOT re-introduce momentum-beta, honest_risk #3 not realized), vs value 0.011 (<<0.35 — buyback-specific not value-beta), vs size 0.205 (<0.35). The signal is genuinely buyback-specific and orthogonal to the M* family — but orthogonal AND with no alpha (measurement-graduation §6: orthogonal != return; PORT_t is binding and it fails). corr 0.80 vs unconfirmed confirms the gate adds no incremental value."
+  },
+  "liquidity_distribution_D10": {
+    "note": "RF-A5 — is the top a micro-cap/illiquid basket?",
+    "adv20_p10_p50_p90": [7.17e8, 4.36e9, 2.20e10],
+    "size_p10_p50_p90": [1.48e11, 5.11e11, 3.91e12],
+    "frac_adv_below_5e8": 0.07,
+    "interpretation": "D10 is NOT a micro-cap basket: median 20d ADV 4.36e9 (>> 2e8 floor), median market cap 5.11e11 (large-cap), only 7% of D10 names below 5e8 ADV. honest_risk #5 (size-norm artifact) mitigated. The flatness is a genuine return phenomenon, not an illiquidity/micro-cap artifact."
+  },
+  "dsr_note": "selection_type='single' (one hypothesis-driven alpha, n_trials~1; ablations are IS-only diagnostic variants, NOT a sweep). DSR gate does NOT apply (measurement-graduation §3). Overfit defense = oos_retention (-1.24, FAIL <0.5) + holdout. Moot: signal has no IS alpha to overfit.",
+  "graduation_assessment": {
+    "portfolio_alpha_t_nw_2.95_HARD": "FAIL (base 0.044, best variant M12 0.797; D10 -0.305)",
+    "oos_retention_0.7_HARD": "FAIL (-1.24; IS active Sharpe itself ~0)",
+    "calmar_0.64_HARD": "FAIL (-0.018; MDD 70%, negative active CAGR)",
+    "decile_make_or_break": "FAIL (D10 flat/inverted, D10-D9 gap t=-0.49)",
+    "rank_ic_0.04_advisory": "FAIL (-0.0002 raw / 0.0043 sector-neutral)",
+    "ax_007": "FAIL (single-sleeve top-25 long-only, signal not top-concentrated; mechanism break holds)",
+    "conclusion": "NOT a graduate-candidate. Clean, decisive negative on the deployable construction across all variants."
+  },
+  "screen_route_recommendation": {
+    "route": "NEW event-driven hypothesis WT (fresh-disclosure cohort) + DPL_FEATURE",
+    "rationale": "1. The fresh-disclosure-month drift (+0.42%/mo, orthogonal to M*/value/size) is a real, short-lived event signal worth (a) a fresh prospective event-driven WT that trades ONLY the fresh-disclosure cohort with 1-month holding (isolates the +5%/yr fresh pop from the -3.3%/yr carry drag) and (b) carrying as a DPL input feature (research_philosophy ④). 2. This is explicitly POST-HOC and NOT validated at portfolio level (no NW t-stat / cost-adjusted bt / holdout) — it is a hypothesis, not current admission evidence (Codex C3). The monthly-carry confirmed-buyback form tested here is NOT a capital candidate."
+  },
+  "honest_risks_realized": {
+    "1_TOP_GOES_FLAT": "REALIZED (primary failure). D10 flat/inverted, D10-D9 gap negative.",
+    "2_GATE_OVER_THINNING": "NOT realized — median 47 active/mo, fill rarely triggered.",
+    "3_MOMENTUM_REDUNDANCY": "NOT realized — active corr vs momentum 0.073, genuinely orthogonal.",
+    "4_QUARTERLY_CARRY_DILUTION": "REALIZED (mechanism of failure) — fresh +0.42% vs carry -0.28%.",
+    "5_SIZE_NORM_ARTIFACT": "Mitigated — D10 median ADV 4.36e9, median cap 5.11e11; not a micro-cap basket.",
+    "6_SPARSE_EVENT": "NOT a problem — median 47 active names/mo over 257 months, floor never <15.",
+    "8_TURNOVER": "PASS — turnover_annual 8.88x < 11x cap."
+  },
+  "challenge_flags": [
+    {"id": "DECILE_TOP_FLAT", "severity": "HIGH", "detail": "Make-or-break decile test FAILED: D10 PORT_t -0.305, D10-D9 gap t -0.485, monotonicity 0.479. The campaign's first top-concentration-DESIGNED concept still does NOT show a top-concentrated graduating signal in monthly-carry form. AX-007 wall holds."},
+    {"id": "GATE_ADDS_NOTHING", "severity": "MEDIUM", "detail": "M03 confirm gate lowers PORT_t (0.044) below ungated (0.353). Per spec, gate should be dropped; the 'confirmed' label is not earned for M03."},
+    {"id": "REAL_FRESH_DRIFT_DILUTED", "severity": "INFO", "detail": "Fresh-disclosure-month drift +0.42%/mo is real and orthogonal but post-hoc and diluted to zero by monthly carry. Route to a fresh event-driven WT + DPL feature, NOT capital."}
+  ],
+  "method_shopping_log": {
+    "candidates_tried": 1,
+    "selection_type": "single",
+    "method_log": [
+      {"name": "BuybackYield_Confirmed_M03_TTM4Q_top25", "rank_ic": -0.0002, "PORT_t": 0.044, "selected": true, "note": "single hypothesis; ablations are IS-only diagnostics not graduation candidates"}
+    ],
+    "parallel_exec": false
+  },
+  "pit_compliance": {
+    "C1": "PASS — all medians/ranks/clips per-month cross-section only (no pooled)",
+    "C2": "PASS — score at sig_date(t) -> forward Ret_1m (t+1), never same-month",
+    "C4": "PASS — buyback Factor_Date = Period_Date+45d, asof Factor_Date<=sig_date enforced",
+    "C6": "PASS — RAWDATA K200/KQ150 PIT membership flags per Date; buyback panel includes dead names (3558 tickers)",
+    "C10": "PASS (fixed post-Codex) — adv20 = 20d mean(Vol*Close) LAGGED to t-1 (shift 1) before liq_dt; sig-date own volume excluded from the filter. Verdict unchanged after fix.",
+    "C13": "PASS — BuybackYield naturally signed, no NEGATE/FLIP",
+    "C14": "PASS — Factor_Date<=sig_date asof filter",
+    "C15": "N/A — new raw signal (stock_buyback + RAWDATA), not a Factor DB factor; no load_month_factors path exists (permitted for new-signal construction)",
+    "benchmark_note": "RAWDATA.BM_Ret is ~99.9% NA (confirmed empirically) -> used .cache/benchmark.parquet (KOSPI200 TR), forward-month compounded, aligned to sig_date forward month."
+  },
+  "real_computation_attestation": "All performance numbers via canonical_screen_bt() -> build_benchmark_compare() (NW lag-3). NO proxy hand-calc, NO prod(1+r)/cumprod self-synthesis. metric_type=canonical_screen labeled throughout. Decile/D10/D9 PORT_t via the same contract function (decile-as-portfolio). D10-D9 gap NW-t via sandwich::NeweyWest(lag=3).",
+  "codex_critic_round": {
+    "stance": "REVISE",
+    "model": "gpt-5.5 xhigh",
+    "veto_flag": false,
+    "resolutions": {
+      "C1_AX007_HIGH": "ACCEPT — verdict tightened: SCREEN_ROUTE explicitly NOT alpha approval; AX-007 FAIL stated in graduation_assessment.",
+      "C2_PIT_C10_HIGH": "ACCEPT (code fixed) — adv20 now lagged to t-1 (shift 1L) before the liquidity filter. Re-ran: verdict unchanged (base PORT_t 0.015->0.044, D10 -0.40->-0.31, all still far below thresholds).",
+      "C3_RF_A6_freshdrift_MEDIUM": "PARTIAL ACCEPT — spike_survival downgraded explicitly to post-hoc NEW-HYPOTHESIS candidate (no portfolio t-stat/cost/holdout); removed any implication it is current DPL/overlay admission evidence.",
+      "C4_RF_A4_sector_neutral_MEDIUM": "ACCEPT — sector-neutral rank-IC emitted: 0.0043 (ICIR 0.022). Confirms no rescue; RF-A4 now verifiable.",
+      "C5_AX008_triangulation_MEDIUM": "PARTIAL ACCEPT / SCOPE — artifact_lineage recorded (record_package_lineage). forge build_bt_result / risk-Sigma / optimizer-weights / covariance.parquet are OUT OF ALPHA-AGENT SCOPE (agent_role_guard hard-blocks weights/cov); they are downstream-agent deliverables. Since the alpha is decisively non-deployable, no downstream pipeline is triggered (Q-Lead decision). RF-A5 D10 liquidity distribution added (not a micro-cap basket)."
+    }
+  },
+  "artifacts": {
+    "alpha_scores": "stage_artifacts/WT-D20260621_009/alpha_scores.parquet",
+    "variant_summary": "stage_artifacts/WT-D20260621_009/variant_summary.csv",
+    "decile_profile": "stage_artifacts/WT-D20260621_009/decile_profile.csv",
+    "spike_survival": "stage_artifacts/WT-D20260621_009/spike_survival.csv",
+    "gate_fill_frequency": "stage_artifacts/WT-D20260621_009/gate_fill_frequency.csv",
+    "results_rds": "stage_artifacts/WT-D20260621_009/results.rds",
+    "build_script": "stage_artifacts/WT-D20260621_009/build_alpha.R",
+    "codex_critic": "qepm/mailbox/worktask/WT-D20260621_009/codex_critic_response_alpha.json",
+    "challenge_note": "qepm/mailbox/worktask/WT-D20260621_009/challenge_note.md"
+  }
+}

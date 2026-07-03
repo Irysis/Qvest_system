@@ -1,0 +1,196 @@
+{
+  "task_id": "WT-S20260626_001",
+  "as_of_date": "2026-06-26",
+  "package_kind": "forge_package",
+  "agent": "forge",
+  "parent_wt": "WT-D20260427_016",
+  "parent_strategy": "STR_1715_WT016_Iter31_GridBestProd",
+  "incumbent_production_book": "STR_1715_AR_on_M4_R05_overlay (PG2 admit SR 1.9536)",
+
+  "method": "weights.csv_overlay_riskweight_NAV_reconstruction_AB_monthly_continuous",
+  "method_note": "sizing_only single-change A/B. Both arms: port_ret(t) = risk_weight(t) * base_sleeve_ret_orig(t) + (1-risk_weight(t))*cash(0) - |Delta risk_weight|*15bps. base_sleeve_ret_orig = STR_1715 production ret_net (Iter31 linear-tilt baked, score_eff top-20 PIT) = IDENTICAL both arms. Arm A risk_weight = m4 * beta_AR * beta_R05 (product/incumbent). Arm B risk_weight = m4 * min(beta_AR, beta_R05) (max-cash/min). All betas t-1 lagged (PIT). 269 monthly dates 2004-02..2026-06, 1:1 with production layer5 schedule (schedule_density 1:1). 237/269 months byte-identical; 32 co-firing months (beta_AR<1 AND beta_R05<1) diverge. NO setorder/head top-N re-selection of holdings (Schedule Fidelity Mandate: base sleeve selection unchanged, only cash/risky scalar split changes). NO ProductionSchedule[N]m fabrication.",
+
+  "metric_type": "backtested",
+  "measurement_basis": "PerformanceAnalytics standard funcs only (table.AnnualizedReturns / maxDrawdown / CalmarRatio / SortinoRatio). NeweyWest lag-3 (sandwich) for portfolio_alpha_t. NO prod(1+r)/cumprod self-synthesis of portfolio returns; cumprod used ONLY for NAV path display + co-firing/GFC segment cumulative diagnostics (BM monthly = compound of daily KOSPI200 BM_Ret = index aggregation, not portfolio synthesis).",
+
+  "arm_A_incumbent_product": {
+    "label": "incumbent_product (m4 * beta_AR * beta_R05)",
+    "n_months": 269,
+    "SR": 1.8389,
+    "CAGR": 0.3868,
+    "Vol": 0.2103,
+    "MDD": -0.2329,
+    "Calmar": 1.6608,
+    "Sortino": 1.1291,
+    "net_IR": 0.6640,
+    "TE": 0.2961,
+    "portfolio_alpha_t_nw_lag3": 4.6295,
+    "active_cagr_vs_kospi200": 0.1966
+  },
+
+  "arm_B_maxcash_min": {
+    "label": "max_cash_overlay_combine_min (m4 * min(beta_AR, beta_R05))",
+    "n_months": 269,
+    "SR": 1.7867,
+    "CAGR": 0.3825,
+    "Vol": 0.2141,
+    "MDD": -0.2329,
+    "Calmar": 1.6421,
+    "Sortino": 1.0691,
+    "net_IR": 0.6416,
+    "TE": 0.2997,
+    "portfolio_alpha_t_nw_lag3": 4.5691,
+    "active_cagr_vs_kospi200": 0.1923
+  },
+
+  "delta_maxcash_minus_incumbent": {
+    "dSR": -0.0522,
+    "dCAGR": -0.0043,
+    "dMDD": 0.0000,
+    "dIR": -0.0224,
+    "dCalmar": -0.0187,
+    "dPORTt": -0.0604,
+    "dMDD_note": "Both arms MDD = -0.2329 (identical to 4 dp). The book's deepest drawdown does NOT fall in a co-firing window, so the combine-operator change leaves global MDD unchanged. max-cash is LESS defensive only WITHIN the 32 co-firing months (see co_firing_concentrated)."
+  },
+
+  "verdict_vs_book_marginal_gate": {
+    "gate_dIR_ge_0p05": "FAIL",
+    "observed_dIR": -0.0224,
+    "gate_MDD_non_worsening": "PASS_TIE (dMDD=0.0000, global MDD unchanged)",
+    "overall": "max-cash arm does NOT meet book-marginal dIR>=0.05; observed dIR is NEGATIVE (-0.0224). On every measured dimension (SR, IR, CAGR, Calmar, Sortino, PORT_t) max-cash is WORSE than the incumbent product overlay. Recommendation surfaced to judge: REJECT/DEFER the combine-operator change; incumbent product overlay retained. Honest measurement -- the over-defense-drag hypothesis (architecture-audit B2, M4<->AR 91% overlap) is FALSIFIED: the compound de-risk in co-firing months was net protective, not drag."
+  },
+
+  "co_firing_concentrated_32m": {
+    "n_cofiring": 32,
+    "cofiring_regimes": {"BULL": 4, "NORMAL": 17, "CAUTION": 9, "CRISIS": 2},
+    "incumbent_cum_ret_over_cofiring": 0.0483,
+    "maxcash_cum_ret_over_cofiring": -0.0250,
+    "cofiring_cum_ret_advantage_incumbent_pp": 7.33,
+    "incumbent_mean_monthly_cofiring": 0.00223,
+    "maxcash_mean_monthly_cofiring": 0.00047,
+    "incumbent_segment_mdd": -0.1713,
+    "maxcash_segment_mdd": -0.2358,
+    "segment_mdd_advantage_incumbent_pp": 6.45,
+    "incumbent_worst_cofiring_month": {"ym": "2022-07", "ret": -0.0708},
+    "maxcash_worst_cofiring_month": {"ym": "2022-07", "ret": -0.1007},
+    "interpretation": "max-cash holds +10.66pp MORE risky exposure on average in co-firing months. Because co-firing months are predominantly drawdown/stress episodes (2008-2009 GFC = 13 of 32; 2022 K-bear = 6; COVID 2020 = 2), the extra exposure HURTS: max-cash earns -2.50% cumulative over the 32 months vs +4.83% for incumbent (a 7.33pp gap), and its segment MDD is 6.45pp deeper (-23.58% vs -17.13%). The single change isolates exactly this: where product double-counts de-risk (M4 x AR overlap), that double-count was risk-REDUCING in a way that improved realized risk-adjusted return, not a drag."
+  },
+
+  "gfc_stress_2008_09_to_2009_03": {
+    "window": "2008-09..2009-03 (7 months)",
+    "incumbent_cum": -0.0336,
+    "maxcash_cum": -0.0924,
+    "incumbent_mdd": -0.0459,
+    "maxcash_mdd": -0.0924,
+    "interpretation": "Deep-co-crisis defense: incumbent product loses only -3.36% cumulative / -4.59% MDD across the GFC core; max-cash (less defensive) loses -9.24% / -9.24%. This is the clearest evidence the product compounding is protective in genuine co-firing crises."
+  },
+
+  "sr_provenance": {
+    "sr_realized_share_based": 1.7867,
+    "sr_realized_share_based_note": "max-cash arm (Arm B = this WT's new arm). Basis = scalar risk-weight applied to STR_1715 frozen base sleeve monthly ret_net (production weighting). Base sleeve is collapsed to 1 pseudo-asset in production 04_holdings.csv (cash_weight=0 convention), so this is NOT a names-level daily share-based reconstruction -- it is monthly continuous overlay-reweighted return aggregation on the production sleeve. Labeled honestly below.",
+    "sr_factor_engine_continuous": 1.7867,
+    "sr_factor_engine_continuous_note": "Same number as sr_realized_share_based here BECAUSE the measurement basis is monthly continuous aggregation of the production ret_net sleeve (not an idealized factor-engine continuous-return alternative). No divergence between bases for this WT -- there is only one basis (overlay scalar x frozen sleeve monthly ret_net + 15bps cash-leg cost). Reported in this field for schema completeness.",
+    "sr_lockbox_daily_harness": null,
+    "sr_lockbox_daily_harness_note": "Not run -- overlay-only re-weight of a frozen base sleeve; lockbox/SIGNAL_CUTOFF scope does not apply to forge (lockbox-scope.md). Both arms measured over identical full window 2004-02..2026-06.",
+    "measurement_basis_primary": "forge_realized_share_based",
+    "measurement_basis_primary_caveat": "Enum-forced value per schema. ACCURATE LABEL: monthly_continuous_overlay_reweighted_aggregation_on_frozen_production_sleeve. The frozen sleeve's own 784%/yr stock churn 15bps cost is already baked into base ret_orig (both arms identical); the only forge-added cost is the cash-leg |Delta risk_weight| x 15bps (arm-differentiating). Cash leg earns 0% (production layer5 convention, risk_free_ret==0 in source) -- used for BOTH arms to keep the A/B apples-to-apples and consistent with the incumbent production NAV vintage. divergence_factor_engine_vs_realized_pp = 0.00 (single basis).",
+    "divergence_factor_engine_vs_realized_pp": 0.0,
+    "vs_factor_engine": {"diagnosis": "NEGLIGIBLE", "note": "single measurement basis; no factor-engine vs realized split for an overlay-only re-weight."}
+  },
+
+  "cost_model": {
+    "cost_model_version": "v2.4_kr_retail_15bps",
+    "base_sleeve_churn_oneway_pct": "784.1% (COMMON both arms, baked in STR_1715 ret_net)",
+    "cash_leg_incremental_cost_basis": "|Delta risk_weight(t)| x 15bps one-way, per arm",
+    "cash_leg_turnover_incumbent_pct": "113.1% (optimizer estimate); cash-leg cost realized in arm A return path",
+    "cash_leg_turnover_maxcash_pct": "96.3% (optimizer estimate); LOWER than incumbent (min less violent than product)",
+    "note": "max-cash cash-leg turnover is LOWER than incumbent, so the change does NOT raise cost. The negative dIR is purely a worse-gross-exposure-timing effect (holding risk in co-firing stress), not a cost effect."
+  },
+
+  "schedule_fidelity": {
+    "weights_csv_unique_dates_count": 269,
+    "alpha_sig_dates_count": 92,
+    "alpha_sig_dates_count_inherited_optimizer_claim": 270,
+    "alpha_lineage_note": "alpha lineage INHERITED from parent STR_1715 (alpha_package.json md5 frozen, hash-unchanged). The 270 figure is the optimizer package's schedule_fidelity measurement, NOT an independent forge file-read (Pure Function: forge does not open alpha_scores.parquet). sizing_only WT changes only cash/risky scalar split; no new selection. PIT-C6/C12/C14 = parent STR_1715 frozen pipeline (admitted SR 1.9536).",
+    "schedule_density_ratio": 2.924,
+    "schedule_density_ratio_vs_actual_parquet": 0.996,
+    "schedule_density_pass": true,
+    "fidelity_note": "Both arms use the production layer5 schedule (269 monthly dates) as-is. Holdings (base sleeve top-20 score_eff selection) IDENTICAL both arms and unchanged from STR_1715. NO alpha_scores.parquet setorder+head top-N re-selection drove holdings. NO fabricated monthly schedule. ProductionSchedule label NOT used."
+  },
+
+  "pure_function_compliance": {
+    "pure_function_violation": false,
+    "three_package_md5_start": {
+      "alpha_package.json": "b5744781ee904e8aba580aa5fa7d68ae",
+      "risk_package.json": "03e39a6ae5e4147619a3cd40e3768e3a",
+      "optimization_package.json": "d694710dee5c6d305bef6cf0b98d1a77",
+      "weights.csv": "b17339450133eadec8b6d8b4d8de03e6"
+    },
+    "three_package_md5_end": {
+      "alpha_package.json": "b5744781ee904e8aba580aa5fa7d68ae",
+      "risk_package.json": "03e39a6ae5e4147619a3cd40e3768e3a",
+      "optimization_package.json": "d694710dee5c6d305bef6cf0b98d1a77",
+      "weights.csv": "b17339450133eadec8b6d8b4d8de03e6"
+    },
+    "hash_match": true,
+    "note": "All 4 hashes identical start vs end. No target_weights reinterpretation, no alpha_vector mutation, no covariance recompute. Forge re-applied the optimizer's weights.csv max-cash risk_weight and the incumbent product risk_weight (both reconstructed from overlay_combine_schedule.csv, formula-verified: invested_mult=m4*bAR*bR05, invested_maxcash=m4*min(bAR,bR05), 269/269 exact)."
+  },
+
+  "audit": {
+    "build_bt_result_10_component": true,
+    "audit_bt_result_checks": "16 checks | PASS=13 FAIL=0 WARN=3 | integrity=WARNING",
+    "warn_3_benign": ["rebalance_path_executed (holdings absent -> turnover NA: expected, overlay-only re-weight)", "c15_factor_db_load_path (no factor_engine path: overlay re-weights frozen sleeve, not a factor build)", "lookahead_detector_self_scan (skip: no factor_engine_path)"],
+    "fail_0_note": "PIT metadata FAIL cleared by declaring strategy_spec$lookahead_prevention + survivorship_bias_control (overlay t-1 lag provenance documented). Re-run identical numbers (metadata-only change).",
+    "integrity_status": "WARNING (no FAIL; WARNs are structural for overlay-only re-weight, not measurement-validity issues)"
+  },
+
+  "codex_round": {
+    "status": "COMPLETED",
+    "model": "gpt-5.5",
+    "stance": "REVISE",
+    "veto_flag": false,
+    "response_ref": "codex_critic_response_forge.json",
+    "disposition_ref": "forge_codex_disposition.md",
+    "disposition_summary": "REVISE accepted C1/C2/C4 (run scripts copied to stage dir; alpha-parquet claim softened to inherited; 4 charts generated). REBUTTAL C3/C5: DSR n/a (selection_type=chain, sizing_only single change n_trials=2, not sweep -- measurement-graduation S3); FF5/FF6 absent in KR infra (portfolio_alpha_t_nw_lag3 = authoritative judge Gate C); C15/lookahead self-scan inapplicable to overlay-only re-weight (no factor_engine path -- forge re-weights frozen sleeve, does not build factors). C6 resolved: Architect PASS post-codex -> AX-008 2/3. Codex core finding AGREES (A/B credible, max-cash worse, hashes match, formulas verified). No hard-constraint violation -> no Q-Lead escalate.",
+    "classification": {"ACCEPT": 2, "ACCEPT_PARTIAL": 1, "REBUTTAL": 2, "RESOLVED_POST_RUN": 1}
+  },
+
+  "oos_charts": {
+    "equity_curve_png": "stage_artifacts/WT_WT_S20260626_001/output/equity_curve.png (both arms + KOSPI200, co-firing months marked)",
+    "annual_returns_png": "stage_artifacts/WT_WT_S20260626_001/output/annual_returns.png",
+    "oos_zoom_chart_png": "stage_artifacts/WT_WT_S20260626_001/output/oos_zoom_chart.png (recent 5Y 2021-07..2026-06)",
+    "regime_decomposition_png": "stage_artifacts/WT_WT_S20260626_001/output/regime_decomposition.png (SR per regime per arm)",
+    "lockbox_note": "lockbox/SIGNAL_CUTOFF scope does NOT apply to forge (lockbox-scope.md); full window 2004-02..2026-06 incl post-2024 frozen extension. No truncation marker by design.",
+    "regime_sr_observation": "Per-regime SR (CRISIS): incumbent -5.23 vs max-cash -4.28; (CAUTION) -2.30 vs -2.14 -- max-cash slightly less negative WITHIN these buckets because they are dominated by the 237 identical months. The NET realized hit to max-cash comes from co-firing months cutting across regimes (NORMAL=17 of 32) where extra exposure caught 2008-09/2022 stress. Honest nuance: not a clean per-regime story; the realized aggregate (dIR -0.0224, dSR -0.0522) is authoritative."
+  },
+
+  "reproducibility": {
+    "run_script": "stage_artifacts/WT_WT_S20260626_001/run_forge_ab_maxcash.R",
+    "chart_script": "stage_artifacts/WT_WT_S20260626_001/run_forge_charts.R",
+    "canonical_artifact_dir": "stage_artifacts/WT_WT_S20260626_001 (double WT_ prefix = {ID} state-machine quirk, all underscores -- this is the ONLY valid dir; qepm/stage_artifacts/* and WT_S20260626_001 never existed by design)",
+    "panel": "stage_artifacts/WT_WT_S20260626_001/ab_panel_full.csv (269 rows, ret_inc/ret_mc/rw_inc/rw_mc/bm_ret/regime per month -- full independent recompute basis)"
+  },
+
+  "ax_008_triangulation": {
+    "source_1_forge": "PASS -- measurement complete, audit FAIL=0, hashes match, max-cash REJECT-recommended on dIR<0.05 (negative -0.0224). Honest: hypothesis falsified.",
+    "source_2_codex": "REVISE (no veto). Core A/B AGREED (credible, max-cash worse, hashes match, formulas verified, same-period consistent). Concerns dispositioned in forge_codex_disposition.md (artifacts added; DSR/FF5-6/C15 rebutted).",
+    "source_3_architect": "PASS -- all 6 lenses (pure-function / schedule-fidelity / self-synthesis / apples-to-apples / PIT / honesty) with INDEPENDENT recompute reproducing every headline to 4dp.",
+    "tally": "2/3 PASS (Forge + Architect); Codex REVISE-no-veto. AX-008 SATISFIED.",
+    "tally_completes_at": "judge (final adjudication of waivers)"
+  },
+
+  "artifacts": {
+    "bt_result_rds": "stage_artifacts/WT_WT_S20260626_001/bt_result.rds (max-cash arm = WT's new arm)",
+    "bt_result_both_arms_rds": "stage_artifacts/WT_WT_S20260626_001/bt_result_both_arms.rds",
+    "bt_result_rds_mailbox": "qepm/mailbox/worktask/WT-S20260626_001/bt_result.rds",
+    "ab_panel_full_csv": "stage_artifacts/WT_WT_S20260626_001/ab_panel_full.csv",
+    "ab_results_json": "stage_artifacts/WT_WT_S20260626_001/ab_results.json",
+    "run_script": "scratchpad/forge_ab_maxcash.R (PerformanceAnalytics standard funcs)"
+  },
+
+  "honesty_mandate": "max-cash is WORSE than incumbent on all metrics. The 'remove compound over-defense drag' hypothesis is FALSIFIED by realized A/B: the M4<->AR product compounding was net-PROTECTIVE in the 32 co-firing months (predominantly GFC/2022/COVID stress), not a drag. No performance guess, no paper-value transfer -- every number is a fresh PerformanceAnalytics backtest over identical data/base/cost for both arms.",
+
+  "state_machine_path": {"current_stage": "OPTIMIZER_DONE -> FORGE_DONE (ready)", "next": "JUDGE (Gate A-F + book-marginal dIR + AX-008 tally)"},
+  "created_at": "2026-06-26",
+  "created_by": "forge"
+}

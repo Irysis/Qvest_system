@@ -1,0 +1,97 @@
+{
+  "schema_version": "alpha_search_strategy_manifest_v1",
+  "created_at": "2026-06-12T14:50:43+0900",
+  "mode": "alpha_search",
+  "strategy_id": "STR_AS_20260612_143810_686287",
+  "strategy_name": "1F IndMom + MRS12/25 — MRS 12/25 시리즈 3번째",
+  "strategy_idea": "1F IndMom + MRS12/25 — MRS 12/25 시리즈 3번째",
+  "factor_engine_path": "02_Infrastructure/alpha_search/fe_single.R",
+  "execution": {
+    "universe": "ALL",
+    "universe_n": 305,
+    "n_holdings": 20,
+    "weight_method": "equal",
+    "commission": 0.0015,
+    "bt_result_path": "stage_artifacts/alpha_search/20260612_143810_686287/bt_result.rds"
+  },
+  "verdict": {
+    "grade": "F",
+    "score": 38.6,
+    "hurdle_pass": false,
+    "hard_fail": true,
+    "fail_reasons": [
+      "Structural drawdown (55%+ episodes>=6): MDD 65.5%, 45%+ episodes=13/15, max_underwater=121/252"
+    ],
+    "f_grade_reasons": [
+      "게이트 사유: Structural drawdown (55%+ episodes>=6): MDD 65.5%, 45%+ episodes=13/15, max_underwater=121/252",
+      "FMT-01 Structural MDD: MDD 65.5% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)",
+      "FMT-04 Regime Blindness: MDD 65.5% > 35% & BM상관 0.74 >= 0.7 — 위기국면 동조 낙폭(국면필터 부재)",
+      "FMT-07 Publication Decay: 활성SR pre-2017 0.62 -> post-2017 -0.43 — 논문발표 후 알파 소진 패턴"
+    ],
+    "screening": {
+      "screen_pass": false,
+      "screen_route": "NONE",
+      "drawdown_tail_review": false,
+      "note": "탐색 게이트 — 자본/졸업 게이트 아님 (graduation HARD 불변). PIT만 절대."
+    }
+  },
+  "metrics": {
+    "CAGR": 13.29,
+    "AnnVol": 28.33,
+    "Sharpe": 0.469,
+    "Sharpe_m": 0.553,
+    "IR": 0.134,
+    "MDD": 65.49,
+    "Calmar": 0.203,
+    "Turnover_Ann": 190.2,
+    "Top10_Conc": 50,
+    "Rolling3Y_Pos": 72.2,
+    "BM_Corr": 0.74,
+    "ES99_d": 6.83,
+    "ES99_m": 25.22,
+    "GradeA_Corr": null,
+    "Rolling6M_Hit": 60,
+    "Worst6M_Ret": -52.32,
+    "MaxConsecNegAlpha": 5,
+    "Rolling12M_Hit": 64
+  },
+  "excess_cagr_pct": 2.55,
+  "fmt": [
+    {
+      "code": "FMT-01",
+      "label": "Structural MDD",
+      "reason": "MDD 65.5% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)"
+    },
+    {
+      "code": "FMT-04",
+      "label": "Regime Blindness",
+      "reason": "MDD 65.5% > 35% & BM상관 0.74 >= 0.7 — 위기국면 동조 낙폭(국면필터 부재)"
+    },
+    {
+      "code": "FMT-07",
+      "label": "Publication Decay",
+      "reason": "활성SR pre-2017 0.62 -> post-2017 -0.43 — 논문발표 후 알파 소진 패턴"
+    }
+  ],
+  "authoritative": null,
+  "pit": {
+    "code_scan": "detect_lookahead",
+    "status": "CLEAN",
+    "factor_engine_path": "02_Infrastructure/alpha_search/fe_single.R",
+    "violations": [],
+    "note": "Backfill re-ran code-level PIT scan on the current factor_engine_path."
+  },
+  "backtest_contract": {
+    "status": "OK",
+    "run_id": "ASBT_20260612_143810_686287",
+    "metric_type": "backtested",
+    "bt_result_path": "stage_artifacts/alpha_search/20260612_143810_686287/bt_result.rds",
+    "output_dir": "stage_artifacts/alpha_search/20260612_143810_686287",
+    "integrity_status": "WARNING",
+    "audit_pass": 15,
+    "audit_fail": 0,
+    "audit_warn": 1,
+    "validation_errors": [],
+    "note": "standard Backtest Result Contract backfilled without Telegram"
+  }
+}

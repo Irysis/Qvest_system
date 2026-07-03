@@ -1,0 +1,112 @@
+{
+  "schema_version": "alpha_search_strategy_manifest_v1",
+  "created_at": "2026-06-13T06:17:58+0900",
+  "mode": "alpha_search",
+  "strategy_id": "STR_AS_20260613_061241_240078",
+  "strategy_name": "팩터별 목표 변동성 — 각 팩터 기여 변동성을 개별 목표로 관리",
+  "strategy_idea": "팩터별 목표 변동성 — 각 팩터 기여 변동성을 개별 목표로 관리 Forge contract/spec requires code generation before backtest Forge contract/spec requires code generation before backtest",
+  "factor_engine_path": "02_Infrastructure/alpha_search/fe_factor_combo.R",
+  "execution": {
+    "universe": "ALL",
+    "universe_n": 141,
+    "n_holdings": 30,
+    "weight_method": "equal",
+    "commission": 0.0015,
+    "risk_controls": {
+      "vol_target": 0.25,
+      "vol_lookback": 60,
+      "dd_brake": null,
+      "buffer_zone": {
+        "keep_n": 60,
+        "entry_n": 30
+      },
+      "use_default_buffer": true,
+      "cov_method": "sample"
+    },
+    "bt_result_path": "stage_artifacts/alpha_search/20260613_061241_240078/bt_result.rds"
+  },
+  "pit": {
+    "code_scan": "detect_lookahead",
+    "status": "CLEAN",
+    "factor_engine_path": "02_Infrastructure/alpha_search/fe_factor_combo.R",
+    "note": "AlphaSearch stops before backtest when detect_lookahead reports violations."
+  },
+  "backtest_contract": {
+    "status": "OK",
+    "run_id": "ASBT_20260613_061241_240078",
+    "metric_type": "backtested",
+    "bt_result_path": "stage_artifacts/alpha_search/20260613_061241_240078/bt_result.rds",
+    "output_dir": "stage_artifacts/alpha_search/20260613_061241_240078",
+    "integrity_status": "WARNING",
+    "audit_pass": 15,
+    "audit_fail": 0,
+    "audit_warn": 1,
+    "validation_errors": [],
+    "note": "standard Backtest Result Contract saved for every AlphaSearch run; grade/admission remains separate",
+    "return_series": {
+      "status": "OK",
+      "source": "bt_result.period_returns",
+      "csv_path": "stage_artifacts/alpha_search/20260613_061241_240078/03_period_returns.csv",
+      "date_col": "date",
+      "ret_col": "ret_net",
+      "n_obs": 5266,
+      "start_date": "2005-02-03",
+      "end_date": "2026-06-11",
+      "post2008_obs": 4547,
+      "frequency": "daily"
+    }
+  },
+  "verdict": {
+    "grade": "C",
+    "score": 24.4,
+    "hurdle_pass": false,
+    "hard_fail": false,
+    "fail_reasons": [],
+    "f_grade_reasons": [],
+    "screening": {
+      "screen_pass": false,
+      "screen_route": "NONE",
+      "drawdown_tail_review": true,
+      "note": "탐색 게이트 — 자본/졸업 게이트 아님 (graduation HARD 불변). PIT만 절대."
+    }
+  },
+  "metrics": {
+    "CAGR": 7.6,
+    "AnnVol": 17.77,
+    "Sharpe": 0.428,
+    "Sharpe_m": 0.483,
+    "IR": -0.235,
+    "MDD": 54.55,
+    "Calmar": 0.139,
+    "Turnover_Ann": 165.2,
+    "Top10_Conc": 50,
+    "Rolling3Y_Pos": 80.6,
+    "BM_Corr": 0.773,
+    "ES99_d": 4.54,
+    "ES99_m": 17.72,
+    "GradeA_Corr": null,
+    "Rolling6M_Hit": 60.8,
+    "Worst6M_Ret": -46.15,
+    "MaxConsecNegAlpha": 7,
+    "Rolling12M_Hit": 67.4
+  },
+  "excess_cagr_pct": -3.14,
+  "fmt": [
+    {
+      "code": "FMT-01",
+      "label": "Structural MDD",
+      "reason": "MDD 54.5% > 45% — 선택 종목군의 위기 동반급락(구조적 꼬리위험)"
+    },
+    {
+      "code": "FMT-02",
+      "label": "Factor Degeneration",
+      "reason": "IR -0.23 < -0.1 & 초과CAGR -3.1%p < 0 — KR에서 팩터 방향 역작동 의심"
+    },
+    {
+      "code": "FMT-04",
+      "label": "Regime Blindness",
+      "reason": "MDD 54.5% > 35% & BM상관 0.77 >= 0.7 — 위기국면 동조 낙폭(국면필터 부재)"
+    }
+  ],
+  "authoritative": null
+}

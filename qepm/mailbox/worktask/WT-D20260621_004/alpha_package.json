@@ -1,0 +1,137 @@
+{
+  "schema": "alpha_package_v1",
+  "task_id": "WT-D20260621_004",
+  "agent_role": "alpha-research",
+  "hypothesis_id": "C22_Quiet_Accumulation_Flow_Price_Divergence",
+  "as_of_date": "2026-06-21",
+  "stage": "final",
+  "codex_round": "complete",
+  "codex_stance": "REVISE",
+  "codex_disposition": "4 ACCEPT-fixed (C1 scores.parquet, C3 controlled raw-flow baseline, C4 subperiod/DSR/monotonicity, C5 lineage+challenge_note), 1 PARTIAL+REBUTTAL (C2 PIT-C2 convention documented / PIT-C15 carve-out cited), 1 ACCEPT-softened (C6 DPL route -> NONE). See challenge_note.md.",
+  "mandate_scope": "alpha-hat ONLY. No covariance/weights/optimization. canonical_screen_bt real-computation. Concept #2 of sequential exhaustive momentum-hunt campaign (follow-up to C21).",
+  "concept": {
+    "name": "Quiet Accumulation (Flow-Price Divergence)",
+    "definition": "QA_t(i) = z_flow_t(i) - beta_t * z_priceresp_t(i); beta_t = expanding no-intercept OLS LAGGED (INV13 accumulator, burn-in 60m). flow leg = frollsum(Foreign(+Inst), LB)/Size (smart-money net-buy, NON-return). price-response leg = frollsum(Ret, LB) SUBTRACTED. Signal = flow NOT explained by contemporaneous price move = 'quiet accumulation'. QA high = LONG.",
+    "grid": "LB in {21,42,63}d x flow in {F+Inst, Foreign-only}, top_n=20, burn-in 60m. Anchor = FI42 (LB42/F+Inst).",
+    "economic_rationale": "Llorente-Michaely-Saar-Wang (2002) informed-trading lineage: smart-money net buying NOT accompanied by a contemporaneous price move signals inelastic informed demand not yet impounded. Residualizing the price-response leg isolates the 'unexplained' flow component, structurally orthogonalizing against price momentum (M01). Tests whether KR foreign/institutional flow carries forward edge ONCE the price confound is removed.",
+    "redundancy_cluster_id": "investor_flow_residual (INV13 accumulator family; microstructure flow-price-divergence M39 neighborhood)",
+    "novelty_self_report": "concept published (Llorente et al.); KR long-only top-20 construction is the fresh part. novelty=3. Overlaps M39/FPD and INV13."
+  },
+  "measurement": {
+    "engine": "canonical_screen_bt",
+    "metric_type": "canonical_screen",
+    "metric_type_note": "top-N EW long-only contract-grade (build_benchmark_compare, NW lag-3). admission-binding is forge; this is screening/orthogonality real-measurement.",
+    "n_months": 195,
+    "n_months_note": "195 after 60m burn-in trim (256 sig_dates - burn-in). raw-flow baselines run full 255m.",
+    "universe": "KOSPI200_UNION_KOSDAQ150 (time-point membership)",
+    "date_range": ["2005-01-31", "2026-04-30"],
+    "cost_model": "v2.4_kr_retail_15bps",
+    "liquidity_floor_won_20d_avg": 200000000
+  },
+  "anchor_result": {
+    "tag": "FI42",
+    "PORT_t_nw_lag3": -1.428,
+    "PORT_t_pvalue": 0.153,
+    "information_ratio": -0.360,
+    "net_sr": -0.360,
+    "alpha_annualized": -0.0466,
+    "turnover_annual": 13.49,
+    "rank_ic": -0.0123,
+    "icir": -0.168,
+    "harvey_t_rank_ic": -2.421,
+    "oos_retention_v2": -14.39,
+    "calmar_approx": -0.078,
+    "metric_type": "canonical_screen"
+  },
+  "grid_result": {
+    "FI21": {"PORT_t": -0.942, "net_sr": -0.218, "TO": 18.69},
+    "FI42": {"PORT_t": -1.428, "net_sr": -0.360, "TO": 13.49},
+    "FI63": {"PORT_t": -1.410, "net_sr": -0.343, "TO": 10.87},
+    "F21":  {"PORT_t":  0.083, "net_sr":  0.020, "TO": 18.21},
+    "F42":  {"PORT_t": -1.055, "net_sr": -0.290, "TO": 13.16},
+    "F63":  {"PORT_t": -0.652, "net_sr": -0.174, "TO": 10.57},
+    "summary": "All 6 cells PORT_t in [-1.43, +0.08]. None approaches HARD 2.95. Best cell F21 ~ 0 (no edge). F+Inst cells systematically MORE negative than Foreign-only — Institutional leg adds anti-signal (passive/index flow contamination, Inst coverage 0.668).",
+    "selection_type": "sweep (6-cell enumerate); DSR gate applies but moot (no cell positive)."
+  },
+  "does_price_residualization_help": {
+    "question": "Does subtracting the price-response leg help vs RAW flow level? (CONTROLLED same-WT same-window same-flow baseline, per Codex C3)",
+    "method": "eval_qa_revise.R: recomputed RAW-FLOW (flowsum/Size z-score, NO price removal) for ALL 6 cells using identical snapshots/window/period; delta = QA PORT_t - RAW PORT_t.",
+    "controlled_comparison_delta_QA_minus_RAW": {
+      "FI21": {"QA": -0.942, "RAW": -1.401, "delta": 0.459},
+      "FI42": {"QA": -1.428, "RAW": -0.921, "delta": -0.507},
+      "FI63": {"QA": -1.410, "RAW": -0.270, "delta": -1.141},
+      "F21":  {"QA":  0.083, "RAW": -0.153, "delta": 0.236},
+      "F42":  {"QA": -1.055, "RAW": -0.592, "delta": -0.463},
+      "F63":  {"QA": -0.652, "RAW": -0.366, "delta": -0.287}
+    },
+    "external_reference_C21_M_flowOnly_F_Inst_20d": -0.638,
+    "verdict_corrected": "NO, and NOT systematically — price-residualization is MIXED, never material. Controlled: QA improves vs raw in 2/6 cells (both 21d short-window, +0.24/+0.46) and HURTS in 4/6 (-0.29 to -1.14, worse at longer windows). In NO cell does residualization move the signal toward positive/graduating territory. Both raw flow AND price-removed QA are null-to-negative. The price-removal hypothesis is FALSIFIED as a rescue: flow carries NO hidden forward edge masked by price in KR top-20 long-only. [DRAFT CORRECTION per Codex C3: draft claimed blanket 'HURTS' on an uncontrolled external baseline; controlled truth is 'mixed, never enough to matter'.]"
+  },
+  "diagnostics_post_codex": {
+    "subperiod_icir_3split": [-0.262, -0.253, -0.028],
+    "subperiod_stability_frac_same_sign": 1.0,
+    "subperiod_note": "All three subperiods negative ICIR, stability 1.0 — robustly mildly ANTI-predictive, NOT noise (draft 'within noise' RETRACTED per Codex).",
+    "dsr_n_trials_6_sweep": 0.0147,
+    "dsr_gate": "HARD>=0.5 (sweep) — FAIL (0.015).",
+    "decile_returns_low_to_high_QA": [0.0174, 0.0124, 0.0095, 0.0096, 0.0111, 0.0068, 0.0068, 0.0086, 0.0064, 0.0065],
+    "decile_monotonicity_spearman": -0.903,
+    "decile_note": "Strongly INVERSE: low-QA decile earns 1.74%/mo, high-QA 0.65%/mo. High 'quiet accumulation' names systematically UNDERperform — the cleanest characterization of the negative."
+  },
+  "orthogonality_active_basis": {
+    "M01_12_1": {"active_rho": 0.517, "score_rho": 0.092, "target": "|active|<=0.30, anti-corr expected", "pass_active": false, "note": "Anti-corr NOT observed at active level (+0.52). Despite SUBTRACTING price leg, the long top-20 QA portfolio co-moves with momentum portfolio — both share the KR market-beta-~0.99 floor (memory S6). score-level rho low (0.09) but active-return rho high: the orthogonalization works cross-sectionally but evaporates in the realized long-only active series (market component dominates)."},
+    "INV01_Foreign21": {"active_rho": 0.611, "score_rho": 0.373, "target": "|.|<=0.55", "pass_active": false},
+    "INV02_Foreign63": {"active_rho": 0.684, "score_rho": 0.418, "target": "|.|<=0.55", "pass_active": false},
+    "INV13_accumulator": {"active_rho": 0.544, "score_rho": 0.177, "target": "|.|<=0.50", "pass_active": false, "note": "QA is NOT just INV13 relabeled at score level (rho 0.18); but active-return rho 0.54 (~ at threshold) — same market floor."},
+    "Size": {"active_rho": 0.065, "score_rho": 0.013, "target": "|.|<=0.40", "pass": true, "note": "No small-cap accumulation bias — Size orthogonality clean."},
+    "interpretation": "Score-level orthogonalization succeeds (low score_rho vs M01/INV13), confirming the construction does what it claims cross-sectionally. But active-return correlations are all 0.51-0.68 because KR long-only top-20 portfolios share the ~0.99 market beta floor — the residualization removes a cross-sectional confound but cannot remove the shared market component in a long-only realized series. This is the spec honest_risk #1 made manifest: 'orthogonal != profitable' and 'price-removal strips market component.'"
+  },
+  "vs_INV13_base_accumulator": {
+    "question": "Does QA do better than INV13 (which itself did not graduate, 16/16 PORT_t FAIL cohort)?",
+    "answer": "NO. QA does not improve on INV13. QA anchor PORT_t -1.43 vs the INV13-cohort failures (all < 0). Price-residualization neither rescues the flow signal nor produces a distinct profitable residual. QA score_rho vs INV13 = 0.18 (distinct construction, NOT relabeled), but both share the same null/negative forward edge. Confirms 'orthogonal != profitable' at one more data point."
+  },
+  "pit_compliance": {
+    "C1": "beta = expanding no-intercept OLS LAGGED cumulative state only (prev SxY/Sxx, n>=60); cross-sectional z per sig_date self mean/sd; NO full-sample stats.",
+    "C2": "investor Date < sig_date STRICT (roll_asof <); Size t-1 (usnap at t, adv20_lag1); price LB window ends <= sig_date close (known at t); forward Ret_1m compounded over (t, t+1M].",
+    "C3": "leg measurement window != forward application window.",
+    "C4": "no fundamentals used (flow+price only).",
+    "C10": "ADV = 20d mean(Close*Vol) shifted t-1 (adv20_lag1), liq_min 2e8.",
+    "C13": "z_safe_winsorize (Z_Score_Aligned); residual subtraction is defined orthogonalization, NOT NEGATE/FLIP.",
+    "C14": "all inputs Date <= sig_date.",
+    "C15": "investor/rawdata .cache direct-load (approved); benchmark from .cache/benchmark.parquet (real KOSPI200 TR); rawdata BM_Ret empty NOT used.",
+    "lookahead_audit": "burn-in 60m enforced; accumulator updated AFTER residual computed (lagged guarantee); no full-sample leakage."
+  },
+  "graduation_gates": {
+    "port_t_nw": {"value": -1.428, "hard": 2.95, "pass": false},
+    "oos_retention_v2": {"value": -14.39, "hard": 0.7, "pass": false},
+    "calmar_approx": {"value": -0.078, "hard": 0.64, "pass": false},
+    "all_pass": false
+  },
+  "screening_tier": {
+    "screen_pass": false,
+    "rationale": "No PIT violation, but no signal force: best cell net_SR ~0.02, rank_ic -0.012, all cell PORT_t <= 0.08, decile monotonicity -0.903. Fails screen_pass.",
+    "screen_route": "NONE [downgraded from DPL_FEATURE per Codex C6]. The signal is a clean negative with strongly inverse monotonicity and negative subperiod ICIR — there is NO positive-direction evidence to justify DPL/overlay retention (AX-007 ML-sizing exception is necessary not sufficient; no interaction/nonlinear evidence supplied). Residual retained ONLY as a raw research artifact (alpha_scores.parquet), no graduation/overlay/DPL claim. The inverse effect (avoid high-quiet-accumulation names) is a separate hypothesis not claimed here."
+  },
+  "verdict": {
+    "classification": "CLEAN_NEGATIVE",
+    "graduate_candidate": false,
+    "summary": "Quiet Accumulation (flow minus price-response) has NO standalone forward edge in KR top-20 long-only; robustly mildly ANTI-predictive (anchor PORT_t -1.43, rank_ic -0.012, subperiod ICIR all negative, decile monotonicity -0.903). CONTROLLED comparison: price-residualization is MIXED vs raw flow (helps 2/6 short-window cells, hurts 4/6), never moving toward graduating territory — both raw flow AND QA are null-to-negative. Confirms C21's 'flow level has no edge' AND extends it: removing the price confound does not unmask hidden flow alpha. Score-level orthogonalization succeeds but active-return orthogonality fails (shared KR market-beta floor). 'orthogonal != profitable' at one more data point.",
+    "campaign_note": "This is ONE data point in an ongoing exhaustive momentum-hunt campaign. NOT a structural limit (AX-000 amended forbids declaring limits). The 'flow-level' axis (raw + price-residualized) is now well-characterized as null in KR top-20 long-only; the campaign continues to other non-return-derived concepts.",
+    "honest_reporting": "A clean negative reported faithfully IS success (AX-000 amended 2026-06-21)."
+  },
+  "research_philosophy_compliance": {
+    "P1_factor_zoo": "Validation > Discovery: rejected a published concept on KR data rather than adding it. economic_rationale + redundancy_cluster documented.",
+    "P2_cost_aware": "All PORT_t/SR net-of-15bps. turnover 10.6-18.7/yr (within 11.0/yr only for LB63 cells; FI42 anchor 13.5 over the soft target).",
+    "P3_uncertainty": "rank-IC harvey_t (NW lag-3) reported; subperiod via oos_retention_v2 3-split. PORT_t distinct from rank-IC t (both negative here, consistent)."
+  },
+  "selection_objective": "rank_ic",
+  "method_shopping_log": {
+    "candidates_tried": 6,
+    "note": "6-cell grid (LB x flow), all enumerated and reported (no cherry-pick). selection_type=sweep.",
+    "parallel_exec": false
+  },
+  "challenge_flags": [
+    {"id": "RF-A-NEGATIVE-IC", "severity": "INFO", "note": "rank_ic negative (-0.012) — signal mildly anti-predictive, not just null. Within noise (harvey_t -2.42, p 0.15 on PORT_t)."},
+    {"id": "RF-ACTIVE-ORTHO-FAIL", "severity": "MEDIUM", "note": "Active-basis orthogonality vs M01/INV01/INV02/INV13 all 0.51-0.68 (targets missed) despite low score_rho — KR market-beta floor dominates long-only active series. Expected per honest_risk #1."},
+    {"id": "RF-INST-CONTAMINATION", "severity": "INFO", "note": "F+Inst cells systematically worse than Foreign-only (FI42 -1.43 vs F42 -1.05; F21 ~0 best). Institutional leg adds anti-signal (passive/index flow). Consistent with C21."}
+  ]
+}

@@ -1,0 +1,163 @@
+{
+  "agent_id": "codex_qepm_critic",
+  "role": "alpha_critic",
+  "model": "gpt-5.5",
+  "timestamp": "2026-06-29T22:28:22+09:00",
+  "task_id": "WT-D20260629_001",
+  "stance": "REVISE",
+  "veto_flag": false,
+  "stance_rationale": "The draft's headline FAIL/no-graduation conclusion is directionally right, but the package cannot be approved as an alpha artifact because RF-A7 time-series validation, PIT-C13 sign alignment, DSR/multi-testing evidence, and lineage artifacts are incomplete or failing.",
+  "ic_diagnostics_audit": {
+    "rank_ic": {
+      "value": -0.03039,
+      "pass": false
+    },
+    "icir": {
+      "value": -0.2116,
+      "pass": false
+    },
+    "harvey_t": {
+      "value": -3.672,
+      "pass": false
+    },
+    "sub_stability": {
+      "value": 1.0,
+      "pass": true,
+      "rf_a1_flag": false
+    },
+    "dsr": {
+      "value": null,
+      "pass": false
+    }
+  },
+  "time_series_alpha_audit": {
+    "n_sig_dates": 1,
+    "date_range": [
+      "2026-06-29",
+      "2026-06-29"
+    ],
+    "single_snapshot_risk": "HIGH",
+    "rf_a7_flag": true,
+    "comment": "Only stage_artifacts/WT-D20260629_001/alpha_scores.parquet exists: 348 rows, 348 tickers, one sig_date. The required qepm/stage_artifacts/WT_WT-D20260629_001 path and stage_artifacts/WT_D20260629_001 path were missing."
+  },
+  "ax_axiom_compliance": {
+    "ax_003_check": "N/A",
+    "ax_004_check": "N/A",
+    "ax_005_check": "N/A",
+    "ax_007_check": "FAIL"
+  },
+  "pit_c1_c15_audit": [
+    {
+      "check": "C1",
+      "status": "FAIL",
+      "evidence": "KR reversal direction appears selected from the full 2005-2026 IC result rather than from a rolling/expanding pre-registered sign rule."
+    },
+    {
+      "check": "C13",
+      "status": "FAIL",
+      "evidence": "alpha_scores.parquet contains z_gapfreqmag_20 and alpha_reversal_score, where the score is the negated raw z-score; no Z_Score_Aligned or rolling sign-alignment proof is provided."
+    },
+    {
+      "check": "C14",
+      "status": "PASS",
+      "evidence": "No fundamental or IC-history factor is used in the score artifact; package states price gap events are known by signal close and forward returns exclude sig_date."
+    },
+    {
+      "check": "C15",
+      "status": "FAIL",
+      "evidence": "No factor_engine_proposal.R or artifact_lineage.json is present, and the available alpha_scores artifact is a direct stage parquet rather than a documented load_month_factors() lineage."
+    },
+    {
+      "check": "C9",
+      "status": "PASS",
+      "evidence": "No regime, drawdown, volatility, or overlay timing rule is present."
+    },
+    {
+      "check": "C4",
+      "status": "PASS",
+      "evidence": "No financial statement inputs are used."
+    }
+  ],
+  "critical_concerns": [
+    {
+      "id": "C1",
+      "severity": "HIGH",
+      "description": "RF-A7 is triggered: the only available alpha_scores.parquet has one sig_date, so the mandatory multi-date walk-forward alpha contract is not verified and Iter 4 single-snapshot risk remains live.",
+      "ax_cite": "RF-A7; PIT-C1; AX-002"
+    },
+    {
+      "id": "C2",
+      "severity": "HIGH",
+      "description": "The draft converts a paper continuation hypothesis into a KR reversal score after observing negative full-sample IC; without pre-registered or rolling sign alignment, this is a prohibited sign flip.",
+      "ax_cite": "PIT-C13; AX-002; RF-A6"
+    },
+    {
+      "id": "C3",
+      "severity": "HIGH",
+      "description": "DSR is missing and the package rationalizes DSR HARD as not applicable/advisory despite six tried variants; 5-spec multi-testing reporting is also absent.",
+      "ax_cite": "RF-A6; AX-008"
+    },
+    {
+      "id": "C4",
+      "severity": "HIGH",
+      "description": "Long-only translation fails: abs(rank_IC)=0.0304 is below the 0.04 KR threshold and every reported top-N long-only portfolio-alpha t is negative, best -1.587 versus the 2.95 hurdle.",
+      "ax_cite": "AX-007; L-484"
+    },
+    {
+      "id": "C5",
+      "severity": "MEDIUM",
+      "description": "RF-A4 is not actually sector-neutral evidence: neutralization is 'none', only cluster controls are shown, and residual IC retains just 33% of raw after microstructure controls.",
+      "ax_cite": "RF-A4; AX-008"
+    },
+    {
+      "id": "C6",
+      "severity": "MEDIUM",
+      "description": "Required corroborating artifacts are missing: weights.csv, covariance.parquet, challenge_note, artifact_lineage, alpha_package final, risk_package, and optimization_package were not present, so schedule, PSD/condition, and No Silent Override checks cannot be triangulated.",
+      "ax_cite": "AX-008; RF-A7"
+    },
+    {
+      "id": "C7",
+      "severity": "MEDIUM",
+      "description": "Implementation discipline fails or is unresolved: reported turnover is 18.4x/year above the 11x hard discipline, RF-A5 illiquidity is noted but not historically measured, and the 5e7 liquidity floor conflicts with the base 2e8 hard floor.",
+      "ax_cite": "RF-A5; AX-008"
+    }
+  ],
+  "supporting_arguments": [
+    "The draft correctly records a FAIL verdict rather than trying to graduate the signal.",
+    "The method log discloses six tried gap variants and the best reported long-only portfolio-alpha t remains negative.",
+    "The orthogonality section quantifies that roughly 58% of raw IC is spanned by L39 and roughly 67% by the microstructure/volatility/turnover cluster.",
+    "Basic price timing claims do not show obvious same-day forward-return leakage, but lineage is insufficient for final approval."
+  ],
+  "unresolved_disputes": [
+    "Was the reversal sign pre-registered before KR testing, or chosen after full-sample evidence?",
+    "Do historical multi-sig-date alpha_scores and weights exist outside the specified paths?",
+    "Is DSR waiver formally approved for this discovery task, despite the role prompt requiring DSR >= 0.50?",
+    "Where is the sector-neutral ICIR audit distinct from microstructure cluster residualization?"
+  ],
+  "weakest_assumption": "The single weakest claim is that a full-sample negative rank-IC on raw gap frequency can be safely converted into a deployable KR reversal alpha score without PIT sign-selection leakage, even though long-only portfolio-alpha is negative.",
+  "rebuttal_required": [
+    "Provide alpha_scores.parquet with at least 60 monthly sig_dates and matching walk-forward score recomputation.",
+    "Replace alpha_reversal_score with a PIT-compliant Z_Score_Aligned construction or prove reversal direction was pre-registered and rolling.",
+    "Compute DSR and 5-spec multi-testing diagnostics, or attach an explicit approved waiver.",
+    "Add artifact_lineage.json and challenge_note.md, and reconcile missing required stage directories.",
+    "Provide sector-neutral ICIR, historical top-decile liquidity, turnover, weights.csv schedule, and covariance PSD/condition audits."
+  ],
+  "rationalization_red_flags": [
+    "per-month Spearman IC가 authoritative diagnostic",
+    "INFORMATIONAL ONLY",
+    "DSR HARD 부적용",
+    "admission-binding 아님",
+    "chain ... DSR HARD 부적용",
+    "cor<0.95 통과하나"
+  ],
+  "verification_triangulation": {
+    "ax_008_status": "FAIL",
+    "agree_with_claude": false,
+    "additional_perspective": "I agree with the no-graduation direction, but not with approving the package artifact: the score file and diagnostics are insufficient and potentially unsafe for downstream QEPM stages."
+  },
+  "alpha_specific_questions": [
+    "Can this factor show t_NW > 2.95 in a PIT walk-forward long-only portfolio, not merely negative raw rank-IC?",
+    "Is the reversal score free of future leakage and full-sample sign selection under PIT-C13?",
+    "Are AX-007 exceptions satisfied, or is this still a single-sleeve long-only top-N signal mechanism that should remain failed?"
+  ]
+}

@@ -1,0 +1,25 @@
+======== 메타특성 → forward 팩터-IC 예측력 진단 ========
+실행 2026-07-03 08:13:11.475642
+
+=== 단변량: z_meta → forward 팩터-IC (월별 횡단 slope의 시계열 평균 + NW-t) ===
+  (부호+ = 그 메타 높을수록 다음달 IC 높음 → up-weight 정당. |t|>2 = 유의)
+  m_icmean   mean_slope=+0.00597  t=+4.55  ↑유의
+  m_slope    mean_slope=+0.00018  t=+0.12  ·무의
+  m_icvol    mean_slope=+0.00021  t=+0.46  ·무의
+  m_ichit    mean_slope=+0.00475  t=+4.37  ↑유의
+  m_persist  mean_slope=+0.00327  t=+3.02  ↑유의
+  m_fammean  mean_slope=+0.00348  t=+6.06  ↑유의
+  m_crowd    mean_slope=+0.00220  t=+1.35  ·무의
+  m_skew     mean_slope=-0.00100  t=-1.03  ·무의
+
+=== 다변량 (base m_icmean 통제하 각 메타의 *증분* 예측력) ===
+  m_icmean   증분 slope=+0.00539  t=+3.65  유의
+  m_slope    증분 slope=-0.00196  t=-1.53  ·
+  m_icvol    증분 slope=+0.00022  t=+0.56  ·
+  m_ichit    증분 slope=-0.00033  t=-0.44  ·
+  m_persist  증분 slope=+0.00073  t=+1.02  ·
+  m_fammean  증분 slope=+0.00134  t=+3.24  유의
+  m_crowd    증분 slope=+0.00180  t=+1.21  ·
+  m_skew     증분 slope=-0.00025  t=-0.38  ·
+
+  → base(m_icmean) 대비 *증분* 유의한 메타만 배선가치. crowd/skew 부호도 여기서 확정.

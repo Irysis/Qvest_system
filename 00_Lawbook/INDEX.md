@@ -107,7 +107,7 @@ SPEC_APPROVED → ALPHA_DONE → RISK_DONE → OPTIMIZER_DONE → FORGE_DONE
 
 ## 7. Examples + Tests
 
-- `examples/qvest_workflows/` — 3 표준 WT (Sprint 4) — discovery happy / cert_fail / pit_violation
+- `02_Infrastructure/docs/examples/qvest_workflows/` — 3 표준 WT (Sprint 4) — discovery happy / cert_fail / pit_violation (구 `examples/`, 2026-07-04 이동)
 - `08_Tests/hooks/run_all_hooks.sh` — 30 hook dry-run
 - `08_Tests/integration/test_execution_path_unified.R` — wt_advance + cert parity 7/7
 - `08_Tests/integration/test_wt_lifecycle_e2e.R` — 4 시나리오 12/12
