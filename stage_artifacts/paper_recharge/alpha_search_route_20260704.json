@@ -1,0 +1,77 @@
+{
+ "date": "20260704",
+ "router_version": "paper_router_v2",
+ "sources_summary": {
+  "arxiv_candidates_total": 33,
+  "arxiv_new_today": 2,
+  "arxiv_carried_prior": 31,
+  "carried_note": "31/33 re-surfaced from prior routing days (180-day recency window; routed 20260618..20260703). Carried papers retain their original route (idempotent) and are NOT re-dispatched; prior mode_queues already consumed them. Only the 2 new ids are routed/queued today.",
+  "curated_total_in_csv": 15,
+  "curated_new_today": 0,
+  "curated_note": "All 15 curated institutional PDFs already processed (curated_routed.json last_run 20260703, new_this_run 0). No new curated sources to fetch."
+ },
+ "counts_by_route": {
+  "alpha": 1,
+  "optimizer": 0,
+  "risk": 1,
+  "regime": 0,
+  "skip": 0,
+  "_note": "counts_by_route reflects the 2 NEW ids only. Carried 31 retain prior-day routes (see prior route files)."
+ },
+ "new_today": {
+  "ids": [
+   "2607.01377",
+   "2607.01765"
+  ],
+  "by_route": {
+   "alpha": ["2607.01377"],
+   "risk": ["2607.01765"],
+   "optimizer": [],
+   "regime": [],
+   "skip": []
+  }
+ },
+ "n_factor_candidates": 2,
+ "n_factor_testable": 0,
+ "factor_mining_note": "STEP2 overlay applied to both new sources. Zero novel KR-feasible testable factors. (2607.01377) all three signal forms already saturated in the 373-factor DB: Kyle-lambda/Amihud-illiquidity -> 'Amihud Illiquidity','Amihud Ratio','Amihud Illiquidity (20-day)'; volume-volatility -> 'Turnover Volatility','Volume Variance Ratio'; signed order flow (daily proxy) -> 'On-Balance Volume (21d)','Volume-Return Asymmetry','Return-Volume Correlation'. The genuine signed-order-flow estimator needs tick/order-by-order microstructure data absent from KR daily RAWDATA (infeasible at fidelity; the daily proxies are redundant). verdict=redundant. (2607.01765) is a factor-MODEL evaluation diagnostic (cap-axis integral of pricing errors along cap-rank subspace) -> no per-stock cross-sectional selection signal; cap-axis relates to size which is already in DB. verdict=null/infeasible-as-signal. batch_434 guard: no synthetic/fallback factor fabricated to fill the MAX_ALPHA=2 quota.",
+ "alpha_autorun": {
+  "AUTORUN": 1,
+  "MAX_ALPHA": 2,
+  "n_run": 0,
+  "reason": "No new source qualifies as an alpha-search autorun candidate ((route=alpha AND kr_feasible) OR factor.verdict=testable). 2607.01377 is genuinely cross-sectional (route=alpha) but kr_feasible=false at fidelity (order-flow microstructure) and its daily proxies are all redundant with existing DB factors; 2607.01765 has no per-stock signal. Honest null; no fabrication (batch_434 guard).",
+  "deferred_hypothesis_note": "2607.01377 motivates a SIGN hypothesis on EXISTING factors (volume-volatility negative-return-predictive: 'Turnover Volatility'/'Volume Variance Ratio' short side; signed-flow 1M-ahead continuation via 'On-Balance Volume'). This is standard alpha-search on existing factors, not novel-factor mining. Low prior EV in KR long-only (liquidity/volume single-factor long-only historically 16/16-style FAIL, ceiling ~1.1 SR). Logged for optional future alpha-search, not autorun."
+ },
+ "papers": [
+  {
+   "title": "Liquidity Premium and Investment Horizons",
+   "id": "2607.01377",
+   "source": "arxiv",
+   "status": "new",
+   "route": "alpha",
+   "kr_feasible": false,
+   "factor_candidate": {
+    "name": "signed_order_flow / volume_volatility / kyle_lambda",
+    "def": "signed order flow (sign-weighted dollar volume, 1M) predicting contemporaneous+1M-ahead returns; volume-volatility (std of volume) predicting LOWER subsequent returns; Kyle (1985) lambda price-impact ~ Amihud-style ratio.",
+    "novel": false,
+    "kr_feasible": false,
+    "verdict": "redundant",
+    "confidence": "high"
+   },
+   "reason": "Fama-MacBeth cross-sectional return predictability from order-flow-based liquidity signals (Irene Aldridge, CRSP 2020-2025). Primary nature = cross-sectional equity selection -> route=alpha. BUT: (a) genuine signed-order-flow/Kyle-lambda estimators need order-by-order microstructure (tick) data absent from KR daily RAWDATA -> kr_feasible=false at fidelity; (b) all three daily-data proxy forms are already in the 373-factor DB (Amihud x3, Turnover Volatility, Volume Variance Ratio, On-Balance Volume, Volume-Return Asymmetry, Return-Volume Correlation) -> verdict=redundant. No autorun; no fabrication."
+  },
+  {
+   "title": "A Cap-Axis Integral Diagnostic of Factor Models",
+   "id": "2607.01765",
+   "source": "arxiv",
+   "status": "new",
+   "route": "risk",
+   "kr_feasible": true,
+   "factor_candidate": null,
+   "reason": "A diagnostic for factor-MODEL evaluation (Useong Shin): lifts pricing errors into a bridge-alpha curve along the market-cap rank axis; cap-axis norm distinct from Sharpe gain and size exposure across 154 factors. This is a factor-model/pricing-error DIAGNOSTIC (risk-research: factor-model validation / residual-alpha auditing), not a portfolio weighting method and not a per-stock selection signal. No extractable novel cross-sectional factor (cap-axis <- size, already in DB). Routed risk as analysis-flag."
+  },
+  {
+   "_carried_": "31 prior-routed ids retain their route from prior route files (idempotent, not re-dispatched)",
+   "ids": ["2607.00475","2606.31475","2606.31469","2606.31251","2606.31122","2606.30779","2606.30583","2606.30363","2606.30037","2606.29793","2606.29771","2606.29406","2606.29018","2606.28706","2606.27932","2606.25696","2606.24019","2606.23492","2606.23337","2606.23032","2606.19550","2606.19318","2606.15473","2606.11318","2606.09104","2606.09025","2606.08141","2606.04258","2605.27977","2605.27887","2606.07575"]
+  }
+ ]
+}
