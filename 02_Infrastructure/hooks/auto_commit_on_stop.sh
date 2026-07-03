@@ -1,4 +1,11 @@
 #!/usr/bin/env bash
+# (v8.2.1 HOOK-P0-1) bare python3 → $QVEST_PY_BIN (Windows Store 스텁 fail-open 방지)
+if [ -z "${QVEST_PY_BIN:-}" ]; then
+  QVEST_PY_BIN="${QVEST_PY:-}"; QVEST_PY_BIN="${QVEST_PY_BIN//\//}"
+  { [ -n "$QVEST_PY_BIN" ] && [ -x "$QVEST_PY_BIN" ]; } || QVEST_PY_BIN="/c/Users/99922/OneDrive/Quant_Module_Moltbot/.venv_qvest_ml/Scripts/python.exe"
+  [ -x "$QVEST_PY_BIN" ] || QVEST_PY_BIN="$(command -v python.exe 2>/dev/null || echo python3)"
+  export QVEST_PY_BIN
+fi
 #==============================================================================
 # auto_commit_on_stop.sh — Claude Code Stop event hook
 #
@@ -65,7 +72,7 @@ if [ "$TOKEN_HITS" -gt 0 ] || [ "$GENERIC_HITS" -gt 0 ] || [ "$ENV_INCLUDED" -eq
   MSG="[WARN] [auto-commit] Secret 탐지로 자동 commit 중단."
   MSG+=" token=$TOKEN_HITS generic=$GENERIC_HITS env=$ENV_INCLUDED."
   MSG+=" /tmp/auto_commit.log 확인 후 수동 정리 필요."
-  MSG_ESC=$(printf '%s' "$MSG" | python3 -c "import sys,json; s=sys.stdin.buffer.read().decode('utf-8','replace'); print(json.dumps(''.join(ch if not(0xD800<=ord(ch)<=0xDFFF) else '?' for ch in s)))")
+  MSG_ESC=$(printf '%s' "$MSG" | "$QVEST_PY_BIN" -c "import sys,json; s=sys.stdin.buffer.read().decode('utf-8','replace'); print(json.dumps(''.join(ch if not(0xD800<=ord(ch)<=0xDFFF) else '?' for ch in s)))")
   echo "{\"hookSpecificOutput\":{\"hookEventName\":\"Stop\",\"additionalContext\":$MSG_ESC}}"
   exit 0
 fi
@@ -120,7 +127,7 @@ if [ $? -eq 0 ]; then
   HASH=$(git rev-parse --short HEAD)
   echo "$TS AUTO_COMMIT $HASH staged=$STAGED${PARTIAL_NOTE}" >> "$LOG"
   MSG="[OK] [auto-commit] $HASH - $STAGED files committed. Push는 milestone/cron으로 자동.${PARTIAL_NOTE}"
-  MSG_ESC=$(printf '%s' "$MSG" | python3 -c "import sys,json; s=sys.stdin.buffer.read().decode('utf-8','replace'); print(json.dumps(''.join(ch if not(0xD800<=ord(ch)<=0xDFFF) else '?' for ch in s)))")
+  MSG_ESC=$(printf '%s' "$MSG" | "$QVEST_PY_BIN" -c "import sys,json; s=sys.stdin.buffer.read().decode('utf-8','replace'); print(json.dumps(''.join(ch if not(0xD800<=ord(ch)<=0xDFFF) else '?' for ch in s)))")
   echo "{\"hookSpecificOutput\":{\"hookEventName\":\"Stop\",\"additionalContext\":$MSG_ESC}}"
 else
   # 실패도 로그 + 마커에 남김 (HYG-01) — 조용한 실패 방지. Telegram 배선은 후속.

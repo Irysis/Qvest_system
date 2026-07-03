@@ -1,4 +1,11 @@
 #!/usr/bin/env bash
+# (v8.2.1 HOOK-P0-1) bare python3 → $QVEST_PY_BIN (Windows Store 스텁 fail-open 방지)
+if [ -z "${QVEST_PY_BIN:-}" ]; then
+  QVEST_PY_BIN="${QVEST_PY:-}"; QVEST_PY_BIN="${QVEST_PY_BIN//\//}"
+  { [ -n "$QVEST_PY_BIN" ] && [ -x "$QVEST_PY_BIN" ]; } || QVEST_PY_BIN="/c/Users/99922/OneDrive/Quant_Module_Moltbot/.venv_qvest_ml/Scripts/python.exe"
+  [ -x "$QVEST_PY_BIN" ] || QVEST_PY_BIN="$(command -v python.exe 2>/dev/null || echo python3)"
+  export QVEST_PY_BIN
+fi
 # alpha_discovery_certifier.sh — v7.0 Sprint 1 router 위임 (single source)
 #
 # v6.4 (147 LoC inline Python) → v7.0 router 위임 (~50 LoC).
@@ -19,8 +26,8 @@ PROJ_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 CERT_EVAL="$PROJ_DIR/02_Infrastructure/hooks/qvest_cert_eval.py"
 
 INPUT=$(cat)
-TOOL=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_name",""))' 2>/dev/null || echo "")
-FILE_PATH=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
+TOOL=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_name",""))' 2>/dev/null || echo "")
+FILE_PATH=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
 
 if [[ "$TOOL" != "Write" && "$TOOL" != "Edit" ]]; then echo '{}'; exit 0; fi
 if [[ ! "$FILE_PATH" =~ alpha_package\.json$ ]]; then echo '{}'; exit 0; fi
@@ -39,7 +46,7 @@ fi
 REQ_PATH="$WT_DIR/request.json"
 WT_TYPE="discovery"
 if [[ -f "$REQ_PATH" ]]; then
-  WT_TYPE=$(python3 -c "import json; print(json.load(open('$REQ_PATH')).get('wt_type','discovery'))" 2>/dev/null || echo "discovery")
+  WT_TYPE=$("$QVEST_PY_BIN" -c "import json; print(json.load(open('$REQ_PATH')).get('wt_type','discovery'))" 2>/dev/null || echo "discovery")
 fi
 if [[ "$WT_TYPE" == "sizing_only" || "$WT_TYPE" == "hyperparameter_sweep" ]]; then
   echo "[$(date -Iseconds)] $WT_TYPE WT — cert skip (Role Card)" >> "$LOG"
@@ -48,8 +55,8 @@ if [[ "$WT_TYPE" == "sizing_only" || "$WT_TYPE" == "hyperparameter_sweep" ]]; th
 fi
 
 # v7.0: qvest_cert_eval.py issue 위임
-RESULT=$(python3 "$CERT_EVAL" issue alpha_discovery "$FILE_PATH" "$CERT_PATH" "alpha_discovery_certifier.sh v7.0" 2>>"$LOG" || echo '{"issued":false,"reason":"cert_eval_error"}')
-ISSUED=$(printf '%s' "$RESULT" | python3 -c 'import json,sys; print(str(json.load(sys.stdin).get("issued",False)).lower())' 2>/dev/null || echo "false")
+RESULT=$("$QVEST_PY_BIN" "$CERT_EVAL" issue alpha_discovery "$FILE_PATH" "$CERT_PATH" "alpha_discovery_certifier.sh v7.0" 2>>"$LOG" || echo '{"issued":false,"reason":"cert_eval_error"}')
+ISSUED=$(printf '%s' "$RESULT" | "$QVEST_PY_BIN" -c 'import json,sys; print(str(json.load(sys.stdin).get("issued",False)).lower())' 2>/dev/null || echo "false")
 
 echo "[$(date -Iseconds)] WT_DIR=$WT_DIR issued=$ISSUED" >> "$LOG"
 

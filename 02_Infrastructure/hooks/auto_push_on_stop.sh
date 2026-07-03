@@ -1,4 +1,11 @@
 #!/usr/bin/env bash
+# (v8.2.1 HOOK-P0-1) bare python3 → $QVEST_PY_BIN (Windows Store 스텁 fail-open 방지)
+if [ -z "${QVEST_PY_BIN:-}" ]; then
+  QVEST_PY_BIN="${QVEST_PY:-}"; QVEST_PY_BIN="${QVEST_PY_BIN//\//}"
+  { [ -n "$QVEST_PY_BIN" ] && [ -x "$QVEST_PY_BIN" ]; } || QVEST_PY_BIN="/c/Users/99922/OneDrive/Quant_Module_Moltbot/.venv_qvest_ml/Scripts/python.exe"
+  [ -x "$QVEST_PY_BIN" ] || QVEST_PY_BIN="$(command -v python.exe 2>/dev/null || echo python3)"
+  export QVEST_PY_BIN
+fi
 #==============================================================================
 # auto_push_on_stop.sh — Claude Code Stop event hook (v7.2.1-boot 신규)
 #
@@ -101,6 +108,6 @@ else
   echo "$TS TAGS_PUSH_FAIL" >> "$LOG"
 fi
 
-MSG_ESC=$(printf '%s' "$MSG" | python3 -c "import sys,json; s=sys.stdin.buffer.read().decode('utf-8','replace'); print(json.dumps(''.join(ch if not(0xD800<=ord(ch)<=0xDFFF) else '?' for ch in s)))")
+MSG_ESC=$(printf '%s' "$MSG" | "$QVEST_PY_BIN" -c "import sys,json; s=sys.stdin.buffer.read().decode('utf-8','replace'); print(json.dumps(''.join(ch if not(0xD800<=ord(ch)<=0xDFFF) else '?' for ch in s)))")
 echo "{\"hookSpecificOutput\":{\"hookEventName\":\"Stop\",\"additionalContext\":$MSG_ESC}}"
 exit 0

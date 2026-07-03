@@ -1,4 +1,11 @@
 #!/bin/bash
+# (v8.2.1 HOOK-P0-1) bare python3 → $QVEST_PY_BIN (Windows Store 스텁 fail-open 방지)
+if [ -z "${QVEST_PY_BIN:-}" ]; then
+  QVEST_PY_BIN="${QVEST_PY:-}"; QVEST_PY_BIN="${QVEST_PY_BIN//\//}"
+  { [ -n "$QVEST_PY_BIN" ] && [ -x "$QVEST_PY_BIN" ]; } || QVEST_PY_BIN="/c/Users/99922/OneDrive/Quant_Module_Moltbot/.venv_qvest_ml/Scripts/python.exe"
+  [ -x "$QVEST_PY_BIN" ] || QVEST_PY_BIN="$(command -v python.exe 2>/dev/null || echo python3)"
+  export QVEST_PY_BIN
+fi
 #==============================================================================
 # trail_consistency_checker.sh — PostToolUse[Write] Hook (v55 Tier 3.1)
 #
@@ -12,7 +19,7 @@ trap 'echo "{}"; exit 0' ERR
 INPUT=$(cat)
 LOG="/tmp/trail_consistency.log"
 
-FILE=$(printf '%s' "$INPUT" | python3 -c "
+FILE=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c "
 import sys, json
 try:
     d = json.load(sys.stdin)
@@ -24,7 +31,7 @@ except: print('')
 
 case "$FILE" in
   *stage_artifacts/s1_construction_*.json|*stage_artifacts/s2_profile_*.json|*stage_artifacts/s3_orthogonality_*.json|*stage_artifacts/s4_*.json|*stage_artifacts/s5_*.json|*stage_artifacts/s6_*.json)
-    CHECK=$(python3 <<PYEOF
+    CHECK=$("$QVEST_PY_BIN" <<PYEOF
 import json, os, glob, sys
 
 try:

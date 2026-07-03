@@ -1,4 +1,11 @@
 #!/usr/bin/env bash
+# (v8.2.1 HOOK-P0-1) bare python3 → $QVEST_PY_BIN (Windows Store 스텁 fail-open 방지)
+if [ -z "${QVEST_PY_BIN:-}" ]; then
+  QVEST_PY_BIN="${QVEST_PY:-}"; QVEST_PY_BIN="${QVEST_PY_BIN//\//}"
+  { [ -n "$QVEST_PY_BIN" ] && [ -x "$QVEST_PY_BIN" ]; } || QVEST_PY_BIN="/c/Users/99922/OneDrive/Quant_Module_Moltbot/.venv_qvest_ml/Scripts/python.exe"
+  [ -x "$QVEST_PY_BIN" ] || QVEST_PY_BIN="$(command -v python.exe 2>/dev/null || echo python3)"
+  export QVEST_PY_BIN
+fi
 #==============================================================================
 # s0_enforcer.sh — Dispatcher (Phase C3.5 split of s0_debate_enforcer.sh)
 #
@@ -14,7 +21,7 @@ trap 'echo "{}"; exit 0' ERR
 INPUT=$(cat)
 
 # tool_input.file_path 파싱
-FILE_PATH=$(printf '%s' "$INPUT" | python3 -c "
+FILE_PATH=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c "
 import sys, json
 try:
     d = json.load(sys.stdin)
@@ -37,7 +44,7 @@ DIR=$(ls -d /c/Users/99922/OneDrive/Quant_Module_Moltbot /mnt/c/Users/99922/OneD
 export QVEST_PROJECT_ROOT="$DIR"
 
 # HYP_ID 추출 (파일명 → H_[A-Za-z0-9]+(_[A-Za-z0-9]+)* 패턴)
-HYP_ID=$(basename "$FILE_PATH" | python3 -c "
+HYP_ID=$(basename "$FILE_PATH" | "$QVEST_PY_BIN" -c "
 import sys, re
 name = sys.stdin.read().strip()
 stem = name.rsplit('.', 1)[0]
@@ -46,7 +53,7 @@ print(m.group(1) if m else 'unknown')
 " 2>/dev/null || echo "unknown")
 
 # state_machine 호출 (stdin = 원본 INPUT 재주입)
-RESULT=$(printf '%s' "$INPUT" | python3 "$SCRIPT_DIR/state_machine.py" "$DTYPE" "$HYP_ID" 2>>/tmp/s0_debate_enforcer.log)
+RESULT=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" "$SCRIPT_DIR/state_machine.py" "$DTYPE" "$HYP_ID" 2>>/tmp/s0_debate_enforcer.log)
 
 if [ -z "$RESULT" ]; then
   echo '{}'
@@ -54,7 +61,7 @@ if [ -z "$RESULT" ]; then
 fi
 
 # 결과 파싱: hook_decision + telegram 배열 + post_actions
-HOOK_DECISION=$(printf '%s' "$RESULT" | python3 -c "
+HOOK_DECISION=$(printf '%s' "$RESULT" | "$QVEST_PY_BIN" -c "
 import sys, json
 try:
     d = json.loads(sys.stdin.read())
@@ -64,7 +71,7 @@ except Exception: print('{}')
 
 # Telegram 메시지 배열 → 순차 발송 (background)
 source "$SCRIPT_DIR/telegram_async.sh"
-printf '%s' "$RESULT" | python3 -c "
+printf '%s' "$RESULT" | "$QVEST_PY_BIN" -c "
 import sys, json
 try:
     d = json.loads(sys.stdin.read())
@@ -85,7 +92,7 @@ except Exception: pass
 done
 
 # Post-actions 처리
-POST_ACTIONS_JSON=$(printf '%s' "$RESULT" | python3 -c "
+POST_ACTIONS_JSON=$(printf '%s' "$RESULT" | "$QVEST_PY_BIN" -c "
 import sys, json
 try:
     d = json.loads(sys.stdin.read())
@@ -96,7 +103,7 @@ except Exception: print('[]')
 
 if [ "$POST_ACTIONS_JSON" != "[]" ]; then
   # 각 action 실행
-  printf '%s' "$POST_ACTIONS_JSON" | python3 -c "
+  printf '%s' "$POST_ACTIONS_JSON" | "$QVEST_PY_BIN" -c "
 import sys, json
 for a in json.loads(sys.stdin.read()):
     t = a.get('type', '')

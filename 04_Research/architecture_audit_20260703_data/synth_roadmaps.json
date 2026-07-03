@@ -1,0 +1,249 @@
+{
+ "roadmap_mechanical": [
+  {
+   "priority": 1,
+   "action": "수리 착수 전 git milestone 수동 분할 커밋(.claude/ + 02_Infrastructure/ + 00_Lawbook/ + qepm/memory/ + 06_Registry JSON 선별 스테이징으로 3주치 헌법·게이트 변경 확보) → auto_commit_on_stop.sh:77 abort를 '코어 경로 선별 커밋 + 나머지 skip'으로 강등 + abort 시 Telegram alert 배선 → .gitignore에 '!qepm/registry/backtest_registry.csv' 예외 추가",
+   "files": [
+    "02_Infrastructure/hooks/auto_commit_on_stop.sh",
+    ".gitignore"
+   ],
+   "source_findings": [
+    "HYG-01",
+    "HYG-05"
+   ]
+  },
+  {
+   "priority": 2,
+   "action": "RAWDATA BM_Ret 손상 수리: `python 02_Infrastructure/data/build_index_cache.py --update-rawdata` 실행 → factor_db_202607 재빌드(M08 등 59팩터 복구) → 값-무결성 가드 신설: cache_freshness_audit.R에 값-sanity 섹션(RAWDATA |BM_Ret|>0.15 건수·K200/KQ150 존재·benchmark parity, 위반 시 CRITICAL) + rawdata_sanitize.R core_cols에 K200/KQ150 등 Layer2 7컬럼 추가 + BM_Ret merge 직후 stopifnot(max abs<0.2) + cache_registry.json에 값 선언 필드",
+   "files": [
+    "02_Infrastructure/data/cache_freshness_audit.R",
+    "02_Infrastructure/data/rawdata_sanitize.R",
+    "02_Infrastructure/data/cache_registry.json"
+   ],
+   "source_findings": [
+    "DATA-P0-1",
+    "DATA-P1-2",
+    "DATA-P1-3"
+   ]
+  },
+  {
+   "priority": 3,
+   "action": "훅 계층 일괄 소생: _shared_parse.sh에 PY 절대경로 fallback(QVEST_PY → .venv_qvest_ml/Scripts/python.exe) 1회 구현 + hooks/ 내 bare python3 직접호출 훅 전수 치환(axiom_enforcement_hook.sh·axiom_context_inject.sh·safety_guard.sh 등, discovery_graduation_gate.sh는 항목 4에서 처리) + selection_contamination_detector.sh:32·lockbox_audit_trail.sh:19의 `ps -o ppid=`→`$PPID` 이식 + WT regex `WT-[DP]`→wt_type-aware `[DPSH]` 확장 → 수리 후 bootstrap 카나리아 + hook_e2e_battery 재검증(잔여 FAIL 허용 금지)",
+   "files": [
+    "02_Infrastructure/hooks/_shared_parse.sh",
+    "02_Infrastructure/hooks/axiom_enforcement_hook.sh",
+    "02_Infrastructure/hooks/axiom_context_inject.sh",
+    "02_Infrastructure/hooks/safety_guard.sh",
+    "02_Infrastructure/hooks/selection_contamination_detector.sh",
+    "02_Infrastructure/hooks/lockbox_audit_trail.sh",
+    "02_Infrastructure/hooks/worktask_sequence_enforcer.sh"
+   ],
+   "source_findings": [
+    "HOOK-P0-1",
+    "AXM-02",
+    "AGT-01",
+    "AGT-05",
+    "HOOK-P1-2"
+   ]
+  },
+  {
+   "priority": 4,
+   "action": "discovery_graduation_gate.sh 전면 완성(단일 파일 1회 수정): python3→QVEST_PY 절대경로 + hard_fail에 oos_retention<0.7·calmar<0.64 fail-closed 추가(PORT_t 처리와 동일 패턴, 미산출=block) + is_sweep인데 DSR None이면 block + constraint_defaults.json tier_graduation에 min_oos_retention=0.7·min_calmar=0.64 severity hard 등재 → should-block selftest로 확인",
+   "files": [
+    "02_Infrastructure/hooks/discovery_graduation_gate.sh",
+    "02_Infrastructure/worktask/constraint_defaults.json"
+   ],
+   "source_findings": [
+    "CAP-P0-1",
+    "MC-01",
+    "HOOK-P0-3",
+    "MC-04"
+   ]
+  },
+  {
+   "priority": 5,
+   "action": "v8.2 Codex 잔재 sweep 완결: dispatch-orchestrator.md·ramp-orchestrator.md frontmatter에서 qvest-codex-round 제거 + Codex Round 절을 judge.md:97-98 Self-Adversarial 문안으로 교체, strategy-implementer.md:38-39 정정, workflow 2종(.js)의 'Codex Round 5단계 의무' 문자열 교체 + stale 주석 수정, promote_global.R:7,:23 codex→self_adversarial rename, role_permissions.json:104 문구 교체, python-policy.md §5 'Codex Round 보강' 현실화, qlead_spawn_template.md v8.2 기준 재작성 또는 DEPRECATED 스탬프",
+   "files": [
+    ".claude/agents/dispatch-orchestrator.md",
+    ".claude/agents/ramp-orchestrator.md",
+    ".claude/agents/strategy-implementer.md",
+    ".claude/workflows/qvest-dossier-pipeline.js",
+    ".claude/workflows/qvest-multi-track.js",
+    "02_Infrastructure/axiom/promote_global.R",
+    "02_Infrastructure/hooks/policies/role_permissions.json",
+    ".claude/rules/python-policy.md",
+    "02_Infrastructure/prompts/qlead_spawn_template.md"
+   ],
+   "source_findings": [
+    "GOV-02",
+    "GOV-03",
+    "GOV-04",
+    "GOV-05",
+    "AGT-02",
+    "AGT-03",
+    "GOV-10"
+   ]
+  },
+  {
+   "priority": 6,
+   "action": "Axiom 승격 배관 수리: promote.R:27 .MODE_PREFIX에 ramp=\"RAMP\" 추가(hard crash 해소) + External hurdle을 이미 실값 465건 보유한 oos_retention/oos_effect_vs_is 기반으로 재정의, cluster_extractor.py:277 oos_months 하드코딩 None을 실값 매핑으로 교체, axiom-engine.md를 4-mode(AS/QPM/FR/RAMP) + INV-5 Codex→Self-Adversarial로 갱신 → 수리 후 pending 후보에 promote.R 1회 구동해 승격 첫 사례 또는 잔여 hurdle 진단 확보",
+   "files": [
+    "02_Infrastructure/axiom/promote.R",
+    "02_Infrastructure/axiom/cluster_extractor.py",
+    "02_Infrastructure/docs/rules/axiom-engine.md"
+   ],
+   "source_findings": [
+    "GOV-06",
+    "AXM-01",
+    "AXM-06",
+    "AXM-08",
+    "GOV-01"
+   ]
+  },
+  {
+   "priority": 7,
+   "action": "run_alpha_search.R 국소 수리 묶음: :1388 book_state 경로를 qepm/mailbox/governor/book_state.json으로 수정(incumbent 공백 버그 1줄) + 이미 산출 중인 placebo/lag-stress 검증 결과를 L-code metrics의 falsification_attempts로 emit 배선(항목 6 승격 깔때기의 공급측) + selection_type=chain 하드코딩에 iteration 근거 기록 필드 추가",
+   "files": [
+    "02_Infrastructure/alpha_search/run_alpha_search.R"
+   ],
+   "source_findings": [
+    "CAP-P0-2",
+    "AXM-01",
+    "MC-04"
+   ]
+  },
+  {
+   "priority": 8,
+   "action": "계약 등재 강화: registry_writer.R:60 block 조건을 integrity %in% c('FAIL','PENDING') + NA로 확장(audit 사실상 의무화), backtest_contract_audit.sh를 strategy_id-scoped rds 검사 + 미발견 시 fail-closed로 수정 + TARGET_PATTERN/자체합성 regex에 .py 및 Python idiom(np.prod(1+r)·.cumprod()·(w*r).sum) 추가, answer_principles_grep.sh 동일 .py 확장",
+   "files": [
+    "02_Infrastructure/contracts/registry_writer.R",
+    "02_Infrastructure/hooks/backtest_contract_audit.sh",
+    "02_Infrastructure/hooks/answer_principles_grep.sh"
+   ],
+   "source_findings": [
+    "MC-02",
+    "HOOK-P1-3",
+    "GOV-05"
+   ]
+  },
+  {
+   "priority": 9,
+   "action": "모듈 소비 신뢰 수리: build_module_performance.R 로드 루프에 tools::md5sum(sim_path) vs catalog module_hash 대조(불일치=skip+quarantine 로그) 추가 + module_catalog.json의 batch_434 오염 엔트리(PATCHED_DIRECT_COMBO/UNMAPPED_SPEC 접미사 16건+관련) 일괄 label_contaminated=true + executed_signal 분리 기록 스크립트(수치는 실측이므로 보존, 라벨만 정정)",
+   "files": [
+    "02_Infrastructure/regime/build_module_performance.R",
+    "06_Registry/module_catalog.json"
+   ],
+   "source_findings": [
+    "CAP-P1-2",
+    "AS-01",
+    "CAP-P2-3",
+    "SC-04"
+   ]
+  },
+  {
+   "priority": 10,
+   "action": "PIT 사각 정직화+축소: pit-validation.md의 'forge_code_guard 자동 차단' 허위 문구 즉시 정정(존재하지 않는 방어선 신뢰가 최악) + lookahead_detector.R에 .py 패턴 포트(shift(-H)·pct_change 방향·merge_asof direction·full-sample fit→transform 등 regex 이식, 대상 확장자에 .py 추가)",
+   "files": [
+    ".claude/skills/pit-validation.md",
+    "02_Infrastructure/validation/lookahead_detector.R"
+   ],
+   "source_findings": [
+    "DATA-P0-2",
+    "DATA-P1-4"
+   ]
+  },
+  {
+   "priority": 11,
+   "action": "agent 정의 stale 동기화: judge.md:56,58을 measurement-graduation §3 selection-operator 현행 문안 + essence_score selection_type 파라미터 명시로 교체, optimizer-research.md:76 max_names>20→25, blender.md:51 20→25, governor.md/judge.md 헤더의 모델 표기(Sonnet 4.6/Opus 4.7) 삭제",
+   "files": [
+    ".claude/agents/judge.md",
+    ".claude/agents/optimizer-research.md",
+    ".claude/agents/blender.md",
+    ".claude/agents/governor.md"
+   ],
+   "source_findings": [
+    "AGT-04",
+    "AGT-06",
+    "AGT-09"
+   ]
+  },
+  {
+   "priority": 12,
+   "action": "위생 일괄: NA/qepm/research/results/TO1099 → canonical 이관 후 NA/ 삭제 + hybrid_mode.R:29 후보에 OneDrive canonical 추가 + NA 시 stop() 가드, 루트 Hashtable 상태 3파일 최신본을 .cache/qw_refresh_state.json으로 이관 후 삭제 + qw_refresh.ps1 Save-State에 .json 경로 가드, 루트 셸사고 파일('(no'·'1)'·'max'·'surface'·supp_out.txt·Rplots.pdf) 삭제",
+   "files": [
+    "qepm/scripts/hybrid_mode.R",
+    "02_Infrastructure/ops/qw_refresh.ps1"
+   ],
+   "source_findings": [
+    "HYG-02",
+    "HYG-03",
+    "HYG-08"
+   ]
+  }
+ ],
+ "roadmap_governance": [
+  {
+   "priority": 1,
+   "proposal": "강제 계층의 헌법-현실 정합 원칙 결정: ① 게이트급 훅(graduation/safety/contract) 한정 fail-closed 전환(ERR trap 시 block + 로그, harness.md '전 훅 fail-open' 원칙 개정) ② agent marker 방식 공식 폐기 후 lockbox를 fail-closed(식별 불능=deny) 또는 문서 정직화(CLAUDE.md·pit.md의 'Hook L3 자동 차단' 주장을 실커버리지 경계로 정정) ③ QVEST_SKIP_* 우회 사용 시 git-tracked 감사로그 의무",
+   "rationale": "AX-002('하네스 내 성과만 유효')의 자기 위반 상태 해소. 훅이 못 막는 것을 막는다고 주장하는 것이 python3 사고 3일 방치의 근본 원인 — 강제와 서사 중 하나는 반드시 움직여야 하며 이는 헌법 변경(위반=AX-002 동급 문서들 개정)이라 도훈 confirm 필수 (HOOK-P0-1/P0-2, HOOK-P2-1, AGT-01, MC-07, HOOK-P1-1)"
+  },
+  {
+   "priority": 2,
+   "proposal": "자가발전 승격 요건 개정 승인: Falsification 축을 alpha-search 기산출 placebo/lag-stress 자동 기록으로, External 축을 oos_retention 실값 기반으로 재정의(현행 요건은 데이터 모델상 영구 불충족) + pending candidates 15건 주간 confirm 큐 1회 처리 + methodology_active.md mandate를 실존 SOT(l_code 디렉터리+corpus)로 개정(파일 자체가 repo에 부재 — 미검증이나 확인 시 헌법 문구 수정 필요)",
+   "rationale": "헌법 정체성('각 모드 자가발전')이 4주째 산출 0인 이유가 게으름이 아니라 구조적 도달불가 — 요건 완화가 아닌 측정 가능한 요건으로의 교체이며 승격 기준 변경은 도훈 confirm 사안 (GOV-01, AXM-01, AXM-05, AXM-07)"
+  },
+  {
+   "priority": 3,
+   "proposal": "book-marginal ΔIR 컨벤션 단일화: recon NAV 기반 net-active IR 단일 기준을 book_state.json convention 필드로 명문화 + .pg_book_ir가 mailbox 3-package 대신 module_catalog sim_result를 소비하는 어댑터 승인 (현재 gross 1.575/net-active 1.416/geo-active 1.755 3개 혼재 — admission마다 0.05 문턱의 의미가 다름)",
+   "rationale": "§4 자본 게이트의 재현성·비교가능성 복구. codified 게이트가 alpha_search 262건 후보에게 구조적 작동불능인 상태에서 수동 판정의 기준 통일은 자본 판단 직결이라 도훈 결정 필요 (CAP-P0-2, CAP-P1-4)"
+  },
+  {
+   "priority": 4,
+   "proposal": "SR 2.5 목표의 도달 경로 명시: 목표 자체는 유지(AX-000 정합)하되 §6 레버 3종별 마일스톤(overlay 정교화 잔여 EV / 잔차-직교 sleeve PORT_t 통과 조건 / 비-return 원천)을 헌법에 병기 + gap vector sleeve_needs를 실증-열린 방향 enum으로 재정의(core_alpha standalone은 16/16 FAIL posterior 라벨과 함께 강등) + bootstrap에 gap vector staleness 검사",
+   "rationale": "실증 천장 ~1.1과 목표 2.5 사이 격차를 시스템이 어떻게 메울지에 대한 명시적 지도가 없어 조향 신호가 죽은 방향을 가리키는 중 — 목표는 도훈 mandate 사안이므로 조정이 아닌 '경로 명시'로 상정 (SC-01, SC-06)"
+  },
+  {
+   "priority": 5,
+   "proposal": "vintage pinning 규약 명문화: measurement-graduation.md에 'HARD 게이트·다중라운드 A/B 산출은 pinned snapshot 기준, pin tag를 산출물에 기록' 1개 조항 추가 + pin_cache/read_pinned 헬퍼 표준화",
+   "rationale": "07-02 실사고(benchmark 재생성→graduation 경계 판정 반전)가 입증한 재현성 결함인데 방어책이 메모리 노트+수동 복사에 의존 — 헌법(Level 0 룰) 조항 추가라 confirm 필요 (DATA-P1-1)"
+  },
+  {
+   "priority": 6,
+   "proposal": ".cache를 로컬 디스크(C:\\qm_cache)로 이동 + OneDrive 쪽 junction(mklink /J) — config.R 무수정 투명 적용, pin/backup만 OneDrive 명시 복사",
+   "rationale": "OneDrive 기인 실측 사고 3건(mmap 1224 halt·페이징 timeout·read HANG)이 전부 per-script 패치로만 대응됨 — 대용량 백테 처리량과 세션 소모를 구조적으로 해소하는 인프라 결정 (DATA-P1-5, HYG-08)"
+  },
+  {
+   "priority": 7,
+   "proposal": "6-agent 미들 스테이지(risk+optimizer) 병합 또는 dossier-pipeline 기본경로 승격 검토 — 확신도 낮음(미검증 overflow): 최근 full run 06-26이 마지막이고 HRP frontier 실측이 '20종 single-cluster book에서 위험기반 배분은 알파 희석'을 시사하나, 실사용률 붕괴 주장 자체는 검증 안 됨",
+   "rationale": "고정비(opus xhigh spawn×6 + 이중 산출)와 한계 정보가치의 재평가 — Multi-Agent Summary 헌법 변경이므로 실사용 데이터 확인 후 도훈 결정 (AGT-08 — unverified, 확신도 낮음 표기)"
+  }
+ ],
+ "roadmap_research": [
+  {
+   "priority": 1,
+   "direction": "DART insider 백필 즉시 착수 + 팩터화 병행 — 백필 실행(체크포인트 0파일, mandate 후 3일간 시작도 안 됨) + fe_insider_*.R 스켈레톤을 fe_buyback_drift.R 패턴으로 선작성(net insider buying ratio·cluster buying, 공시일 PIT lag) + 백필 커버리지를 morning brief 1줄 노출",
+   "rationale": "논문풀 95% 소진·327팩터 post-2017 감쇠가 실증된 상태에서 유일하게 새 정보를 담은 고유 수집 원천 — 시스템 스스로 최우선 지목(06-29, 07-02 W3)했으나 완료 강제장치가 없어 표류 중. 현 시점 발굴 EV 최고 (SC-05)"
+  },
+  {
+   "priority": 2,
+   "direction": "OVERLAY_CANDIDATE 소비 배관 실측 — idle 상태인 auto_regime_overlay_ab.R 하네스에 screen_route 라벨 큐를 배선하고 LH(smartbeta loser-harvest)→overlay A/B를 첫 케이스로 실측(clean-timing +1 lag 스트레스 의무). 단 KR 시장타이밍은 4중 settled-negative이므로 기대치는 낮게 — cheap-kill 우선",
+   "rationale": "2-tier 게이트 개혁의 존재 이유(신호 실재하나 MDD로 죽은 후보의 재활용)가 라벨 단계에서 끊겨 알파 회수 효과 0 — 하네스는 이미 존재하고 배선만 없어 한계비용이 낮음. 07-03 메모리에 이미 최우선 큐로 등재된 항목의 실행 (CAP-P1-1, SC-03, SC-04)"
+  },
+  {
+   "priority": 3,
+   "direction": "graduation-근접 후보(PORT_t 2.2~2.5 대역 3~4건) oos 실패 사유 일괄 라벨링 — §3 규정대로 overfit-pattern vs cohort-decay 분리 후 decay는 screen_route 재배정",
+   "rationale": "공급 0/191의 사인 규명 없이는 공급측 투자 방향을 정할 수 없음 — 실패가 전략 고유 과적합이면 발굴 프로세스 문제, cohort decay면 표현공간 문제로 처방이 정반대 (CAP-P1-5)"
+  },
+  {
+   "priority": 4,
+   "direction": "FR/RAMP 신규 정교화 동결 유지 — '첫 graduation 통과자 발생'을 해제 트리거로 명시. 소비층 리서치 예산을 공급측(1~3번)으로 전량 재배분",
+   "rationale": "3개월 졸업 0인 상태에서 배합 계층 고도화는 한계 EV 0에 수렴 — 이미 사실상 동결 상태(06-13/18 이후)이므로 이를 명시적 정책으로 고정해 회귀 방지 (CAP-P1-5)"
+  },
+  {
+   "priority": 5,
+   "direction": "논문 연료 재충전: 라우터 소스에 SSRN/저널 아카이브(RFS·JF·JFE) 배치 스캔 1회성 백필 추가 — 확신도 중간(AS-09 미검증): 'QEPM 95% 소진'은 자체 컬렉션 기준이지 문헌 전체가 아니며, 최근 라우팅 alpha 수율 0/38은 소스 고갈 신호",
+   "rationale": "발굴 기계는 잘 도는데 투입이 arXiv 신간+carried 재부상에 의존 — KR-특화·비-return 데이터원 우선 등 수집 방향은 도훈 confirm 사안 (AS-09 — unverified, 확신도 낮음 표기)"
+  }
+ ],
+ "cold_assessment": "도훈님, 결론부터 말씀드리면 — 이 시스템은 지금 상태로도 '가짜 알파에 속지 않는 능력'은 상위권이지만, '알파를 찾아내는 능력'은 그 절반에 한참 못 미치고, 그 격차의 대부분은 리서치 실력이 아니라 배관 문제입니다. 측정 코어(PORT_t·oos v2·holdout falsification)와 정직 라벨·격리 계층, 그리고 도훈님의 수동 confirm — 이 세 개가 지난 석 달간 실제로 사고를 막아온 전부이고, 헌법이 주장하는 자동 강제 계층은 대부분 죽어 있었습니다. python3 스텁 하나로 하드블록 훅 42/57이 fail-open이고, 05_Production 보호와 자본 졸업 게이트에 차단 payload를 넣어도 통과하며, 역할경계 훅은 애초에 한 번도 발화한 적이 없습니다. 더 나쁜 건 v8.2 검증 라인에 'python3 환경 FAIL'이 기록된 채 방치됐다는 점 — 문서와 현실의 드리프트가 이 정도로 만연하면 다음 사고도 시스템이 아니라 사람이 발견하게 됩니다. 실제로 지금 이 순간 RAWDATA BM_Ret에 +581% 손상값이 살아 있고 7월 factor DB가 이미 그걸 먹어 라이브 북의 M08이 결측된 상태인데, 신선도만 보는 감시는 이걸 'FRESH'로 판정하고 있습니다. 자가발전 엔진도 마찬가지입니다 — 4주간 승격 0건은 게으름이 아니라 Falsification·External 축이 데이터 모델상 영구 불충족이고 RAMP는 승격 시도 시 크래시가 확정된 구조적 문제라, 594건의 L-code가 매주 헛도는 트레드밀이며 실질 학습은 전부 MEMORY.md 수동 관리가 떠받치고 있습니다. 그리고 발굴 관점에서 가장 아픈 지점: 게이트는 3중 4중인데 '무엇을 시도할지'를 정하는 계층이 없어서, stale gap vector가 실증 사망한 방향(core_alpha standalone)을 조향하고, 스스로 최우선이라 지목한 DART insider는 3일째 백필이 시작도 안 됐으며, 졸업 0/191인 상태에서 투자는 배합 계층에 몰려 있었습니다. 즉 근본 문제는 두 개입니다 — 첫째, 강제·학습·전달의 '자동'이 전부 종이 위에 있어 시스템 신뢰가 도훈님 개인의 정직성과 기억력에 과적합돼 있다는 것, 둘째, 발굴 확률을 실제로 올리는 한계 투자처(새 데이터 원천·overlay 소비 배관·근접 후보 사후분석)가 비어 있다는 것. 다만 이건 재설계감이 아니라 수리감입니다 — 이번 세션의 기계 수리 12건(커밋 확보→데이터 수리→훅 소생→게이트 완성)으로 신뢰 기반의 상당 부분이 복구되고, 그 다음은 리서치 예산을 소비층에서 공급측으로 돌리는 결정의 문제입니다. SR 2.5는 현 레버 구성으로는 도달 경로가 정의돼 있지 않으니, 목표를 내리자는 게 아니라 레버별 마일스톤을 명시해 조향 신호부터 살리는 걸 권합니다. 종합 4.5점 — 기각 기계로는 7점, 발굴 기계로는 3점이고, 그 사이를 메우는 건 코드 몇 백 줄과 우선순위 재배분이지 새 아키텍처가 아닙니다."
+}

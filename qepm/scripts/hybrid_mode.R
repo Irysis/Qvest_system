@@ -26,13 +26,21 @@ suppressPackageStartupMessages({
 QEPM_BASE <- (function() {
   cand <- c(
     Sys.getenv("QM_ROOT", unset = ""),
-    "G:/Quant_Module_Moltbot",                          # Windows-native (2026-06-03)
+    "C:/Users/99922/OneDrive/Quant_Module_Moltbot",     # OneDrive canonical (도훈 mandate 2026-06-10)
+    "/mnt/c/Users/99922/OneDrive/Quant_Module_Moltbot", # WSL OneDrive canonical
+    "G:/Quant_Module_Moltbot",                          # Windows-native (2026-06-03, legacy)
     "/mnt/g/Quant_Module_Moltbot",                      # WSL G:\
     "/mnt/c/Users/User/OneDrive/\xeb\xb0\x94\xed\x83\x95 \xed\x99\x94\xeb\xa9\xb4/Quant_Module_Moltbot",
     "/mnt/c/Users/99922/OneDrive/\xeb\xb0\x94\xed\x83\x95 \xed\x99\x94\xeb\xa9\xb4/Quant_Module_Moltbot"
   )
   cand <- cand[nzchar(cand)]
-  cand[dir.exists(cand)][1]
+  base <- cand[dir.exists(cand)][1]
+  # HYG-03 가드 (2026-07-03): 경로 해석 실패 시 NA가 file.path()에 흘러들어
+  # 루트에 'NA/qepm/...' 디렉토리를 만드는 사고 실증 (TO1099) — fail-loud.
+  if (is.na(base)) {
+    stop("[hybrid_mode] QEPM_BASE 해석 실패 — 후보 경로 전부 부재. QM_ROOT env 설정 필요.")
+  }
+  base
 })()
 
 cat(sprintf("[hybrid_mode] Loaded — Qvest hybrid_commit() Charter v1.4 정합 (2026-04-29).\n"))
@@ -44,7 +52,7 @@ cat(sprintf("[hybrid_mode] Loaded — Qvest hybrid_commit() Charter v1.4 정합 
                           "추정", "예상되는", "아마")
 
 check_estimation_filter <- function(text) {
-  if (is.null(text) || length(text) == 0) return(TRUE)  # OK
+  if (is.null(text) || length(text) == 0) return(list(pass = TRUE))  # OK
   text_lower <- tolower(paste(text, collapse = " "))
   for (pat in .estimation_patterns) {
     if (grepl(pat, text_lower, fixed = TRUE)) {
@@ -82,7 +90,7 @@ hybrid_commit <- function(strategy_name,
                           role = "core_alpha",
                           lessons = character(),
                           measurement_basis = "forge_realized_share_based",
-                          send_telegram = TRUE,
+                          send_telegram = FALSE,
                           force = FALSE,
                           verbose = TRUE) {
 
@@ -275,6 +283,8 @@ hybrid_commit <- function(strategy_name,
   } else if (verbose) cat("  [6] L-code skip (no lessons or path missing)\n")
 
   # ═══ Step 7: Telegram brief ═══
+  # 기본 OFF. hybrid_commit은 내부 기록 이벤트라, 사용자 알림은 각 모드의
+  # 결과 브리프(alpha-search/QEPM/factor-rotation)가 담당한다.
   if (isTRUE(send_telegram)) {
     tg_path <- file.path(QEPM_BASE, "02_Infrastructure/telegram/telegram_notify.R")
     if (file.exists(tg_path)) {
@@ -321,6 +331,10 @@ hybrid_status <- function() {
   invisible(list(registry = reg_n, evidence = evid_n))
 }
 
-`%||%` <- function(a, b) if (!is.null(a) && !is.na(a)) a else b
+`%||%` <- function(a, b) {
+  if (is.null(a) || length(a) == 0L) return(b)
+  if (length(a) == 1L && is.atomic(a) && is.na(a)) return(b)
+  a
+}
 
 cat("  Functions: hybrid_commit / hybrid_status / check_estimation_filter / check_measurement_basis\n")

@@ -93,7 +93,7 @@ if echo "$AGENT_NAME_LC" | grep -qE "judge.*s6"; then
 
   # ─── v53 S2.6: Fast-Track 차단 — mutation_tracker.json 기반 S5 Rule 검증 ───
   if [ -f "$TRACKER" ] && [ -n "$STRATEGY_ID" ]; then
-    FT_CHECK=$(python3 -c "
+    FT_CHECK=$("$QVEST_PY_BIN" -c "
 import json
 try:
     t = json.load(open('$TRACKER'))
@@ -205,7 +205,7 @@ if [ "$IS_FORGE_S5" -eq 1 ]; then
 
   # ─── v53 S2.6: Research Slate A/B/C/D 완성도 검증 ───
   if [ -n "$STRATEGY_ID" ] && [ -f "$TRACKER" ]; then
-    SLATE_CHECK=$(python3 -c "
+    SLATE_CHECK=$("$QVEST_PY_BIN" -c "
 import json
 try:
     t = json.load(open('$TRACKER'))
@@ -263,7 +263,7 @@ if [ -d "$ACTIVE_DIR" ]; then
   fi
 
   if [ "$NEED_REGEN" -eq 1 ]; then
-    python3 -c "
+    "$QVEST_PY_BIN" -c "
 import json, os, glob
 lines = []
 for f in sorted(glob.glob(os.path.join('$ACTIVE_DIR', 'AX-*.json'))):
@@ -300,7 +300,7 @@ fi
 if echo "$AGENT_NAME_LC" | grep -q "scout"; then
   SIG="$DIR/.cache/axiom_signals.json"
   if [ -f "$SIG" ]; then
-    HINT=$(python3 -c "
+    HINT=$("$QVEST_PY_BIN" -c "
 import json
 try:
     d = json.load(open('$SIG'))
@@ -321,7 +321,7 @@ except Exception:
 
 ${HINT}"
       fi
-      HINT_ESC=$(printf '%s' "$COMBINED" | python3 -c "import sys,json; s=sys.stdin.buffer.read().decode('utf-8','replace'); print(json.dumps(''.join(ch if not(0xD800<=ord(ch)<=0xDFFF) else '?' for ch in s)))")
+      HINT_ESC=$(printf '%s' "$COMBINED" | "$QVEST_PY_BIN" -c "import sys,json; s=sys.stdin.buffer.read().decode('utf-8','replace'); print(json.dumps(''.join(ch if not(0xD800<=ord(ch)<=0xDFFF) else '?' for ch in s)))")
       echo "{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"additionalContext\":$HINT_ESC}}"
       exit 0
     fi
@@ -330,7 +330,7 @@ fi
 
 # ─── 4. Axiom 단독 주입 (Scout 이외 에이전트) ────────────────────────
 if [ -n "$AXIOM_CONTEXT" ]; then
-  HINT_ESC=$(printf '%s' "$AXIOM_CONTEXT" | python3 -c "import sys,json; s=sys.stdin.buffer.read().decode('utf-8','replace'); print(json.dumps(''.join(ch if not(0xD800<=ord(ch)<=0xDFFF) else '?' for ch in s)))")
+  HINT_ESC=$(printf '%s' "$AXIOM_CONTEXT" | "$QVEST_PY_BIN" -c "import sys,json; s=sys.stdin.buffer.read().decode('utf-8','replace'); print(json.dumps(''.join(ch if not(0xD800<=ord(ch)<=0xDFFF) else '?' for ch in s)))")
   echo "{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"additionalContext\":$HINT_ESC}}"
   exit 0
 fi

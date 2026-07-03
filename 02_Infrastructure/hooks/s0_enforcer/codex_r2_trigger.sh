@@ -1,4 +1,11 @@
 #!/usr/bin/env bash
+# (v8.2.1 HOOK-P0-1) bare python3 → $QVEST_PY_BIN (Windows Store 스텁 fail-open 방지)
+if [ -z "${QVEST_PY_BIN:-}" ]; then
+  QVEST_PY_BIN="${QVEST_PY:-}"; QVEST_PY_BIN="${QVEST_PY_BIN//\//}"
+  { [ -n "$QVEST_PY_BIN" ] && [ -x "$QVEST_PY_BIN" ]; } || QVEST_PY_BIN="/c/Users/99922/OneDrive/Quant_Module_Moltbot/.venv_qvest_ml/Scripts/python.exe"
+  [ -x "$QVEST_PY_BIN" ] || QVEST_PY_BIN="$(command -v python.exe 2>/dev/null || echo python3)"
+  export QVEST_PY_BIN
+fi
 # codex_r2_trigger.sh — R1_COMPLETE 시 Codex R2 Verify 백그라운드 스폰 (Phase C3.5 split)
 #
 # 사용: bash codex_r2_trigger.sh <HYP_ID> <ARTIFACTS_DIR>
@@ -30,7 +37,7 @@ if [ -f "$TRANSCRIPT_FILE" ]; then
   TRANSCRIPT_JSON=$(cat "$TRANSCRIPT_FILE")
 else
   # Transcript 미생성 시 R1 파일 병합
-  TRANSCRIPT_JSON=$(ARTIFACTS_DIR="$ARTIFACTS_DIR" HYP_ID="$HYP_ID" python3 -c "
+  TRANSCRIPT_JSON=$(ARTIFACTS_DIR="$ARTIFACTS_DIR" HYP_ID="$HYP_ID" "$QVEST_PY_BIN" -c "
 import os, json, glob
 adir = os.environ['ARTIFACTS_DIR']; hyp = os.environ['HYP_ID']
 out = {'hypothesis_id': hyp, 'round': 'R1', 'debaters': []}

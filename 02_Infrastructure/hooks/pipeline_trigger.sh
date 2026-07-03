@@ -47,9 +47,9 @@ fi
 
 # Dispatcher 호출 (단일 python 프로세스)
 if [ -n "$CHANGED" ]; then
-  python3 "$SCRIPT_DIR/pipeline/stage_dispatch.py" "$PROJECT_ROOT" "$CHANGED" 2>>/tmp/pipeline_trigger.log || true
+  "$QVEST_PY_BIN" "$SCRIPT_DIR/pipeline/stage_dispatch.py" "$PROJECT_ROOT" "$CHANGED" 2>>/tmp/pipeline_trigger.log || true
 else
-  python3 "$SCRIPT_DIR/pipeline/stage_dispatch.py" "$PROJECT_ROOT" 2>>/tmp/pipeline_trigger.log || true
+  "$QVEST_PY_BIN" "$SCRIPT_DIR/pipeline/stage_dispatch.py" "$PROJECT_ROOT" 2>>/tmp/pipeline_trigger.log || true
 fi
 
 echo '{}'

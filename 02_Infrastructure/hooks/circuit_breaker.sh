@@ -1,4 +1,11 @@
 #!/bin/bash
+# (v8.2.1 HOOK-P0-1) bare python3 → $QVEST_PY_BIN (Windows Store 스텁 fail-open 방지)
+if [ -z "${QVEST_PY_BIN:-}" ]; then
+  QVEST_PY_BIN="${QVEST_PY:-}"; QVEST_PY_BIN="${QVEST_PY_BIN//\//}"
+  { [ -n "$QVEST_PY_BIN" ] && [ -x "$QVEST_PY_BIN" ]; } || QVEST_PY_BIN="/c/Users/99922/OneDrive/Quant_Module_Moltbot/.venv_qvest_ml/Scripts/python.exe"
+  [ -x "$QVEST_PY_BIN" ] || QVEST_PY_BIN="$(command -v python.exe 2>/dev/null || echo python3)"
+  export QVEST_PY_BIN
+fi
 #==============================================================================
 # Circuit Breaker — PostToolUse[Bash] Hook (v52 하네스)
 # 동일 전략 3회 연속 Rscript 실패 시 자동 차단.
@@ -11,7 +18,7 @@ INPUT=$(cat)
 MAX_FAIL=3
 
 # Bash command + output 추출
-PARSED=$(printf '%s' "$INPUT" | python3 -c "
+PARSED=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c "
 import sys, json
 try:
     d = json.load(sys.stdin)

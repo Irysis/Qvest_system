@@ -1,4 +1,11 @@
 #!/bin/bash
+# (v8.2.1 HOOK-P0-1) bare python3 → $QVEST_PY_BIN (Windows Store 스텁 fail-open 방지)
+if [ -z "${QVEST_PY_BIN:-}" ]; then
+  QVEST_PY_BIN="${QVEST_PY:-}"; QVEST_PY_BIN="${QVEST_PY_BIN//\//}"
+  { [ -n "$QVEST_PY_BIN" ] && [ -x "$QVEST_PY_BIN" ]; } || QVEST_PY_BIN="/c/Users/99922/OneDrive/Quant_Module_Moltbot/.venv_qvest_ml/Scripts/python.exe"
+  [ -x "$QVEST_PY_BIN" ] || QVEST_PY_BIN="$(command -v python.exe 2>/dev/null || echo python3)"
+  export QVEST_PY_BIN
+fi
 #==============================================================================
 # cash_sleeve_validator.sh — PostToolUse[Write] Hook (v55 Tier 3.1)
 #
@@ -12,7 +19,7 @@ trap 'echo "{}"; exit 0' ERR
 export PYTHONUTF8=1  # (v8.1.2) additionalContext lone surrogate(API 400) 방지
 
 INPUT=$(cat)
-FILE=$(printf '%s' "$INPUT" | python3 -c "
+FILE=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c "
 import sys, json
 try:
     d = json.load(sys.stdin)
@@ -27,7 +34,7 @@ LOG="/tmp/cash_sleeve_validator.log"
 # Cash sleeve 관련 파일만 처리
 case "$FILE" in
   *STR_CASH_*hurdle_result.json|*cash_allocation_*.json|*s0_record_*cash*.json)
-    V55_CHECK=$(python3 <<PYEOF
+    V55_CHECK=$("$QVEST_PY_BIN" <<PYEOF
 import json, sys
 try:
     with open('$FILE') as f: d = json.load(f)
@@ -71,7 +78,7 @@ PYEOF
 
     if [ "$V55_STATUS" = "BLOCK" ]; then
       echo "$(date +%H:%M:%S) CASH_VALIDATOR BLOCK: $FILE — $V55_MSG" >> "$LOG"
-      CTX=$(printf '%s' "[Cash Sleeve Validator] ${V55_MSG}. admission_rule_v352 §1.4 참조." | python3 -c "import sys,json; s=sys.stdin.buffer.read().decode('utf-8','replace'); print(json.dumps(''.join(ch if not(0xD800<=ord(ch)<=0xDFFF) else '?' for ch in s)))")
+      CTX=$(printf '%s' "[Cash Sleeve Validator] ${V55_MSG}. admission_rule_v352 §1.4 참조." | "$QVEST_PY_BIN" -c "import sys,json; s=sys.stdin.buffer.read().decode('utf-8','replace'); print(json.dumps(''.join(ch if not(0xD800<=ord(ch)<=0xDFFF) else '?' for ch in s)))")
       echo "{\"decision\":\"block\",\"reason\":${CTX}}"
       exit 0
     fi

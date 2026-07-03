@@ -1,4 +1,11 @@
 #!/usr/bin/env bash
+# (v8.2.1 HOOK-P0-1) bare python3 → $QVEST_PY_BIN (Windows Store 스텁 fail-open 방지)
+if [ -z "${QVEST_PY_BIN:-}" ]; then
+  QVEST_PY_BIN="${QVEST_PY:-}"; QVEST_PY_BIN="${QVEST_PY_BIN//\//}"
+  { [ -n "$QVEST_PY_BIN" ] && [ -x "$QVEST_PY_BIN" ]; } || QVEST_PY_BIN="/c/Users/99922/OneDrive/Quant_Module_Moltbot/.venv_qvest_ml/Scripts/python.exe"
+  [ -x "$QVEST_PY_BIN" ] || QVEST_PY_BIN="$(command -v python.exe 2>/dev/null || echo python3)"
+  export QVEST_PY_BIN
+fi
 #==============================================================================
 # telegram_direct_call_guard.sh — L3 hard block (v3 — env var fix)
 #
@@ -29,8 +36,8 @@ export PYTHONUTF8=1  # (v8.1.2) 인코딩 사고 방지 — harness.md "Hook std
 
 INPUT=$(cat)
 
-TOOL=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; sys.stdout.reconfigure(encoding="utf-8",errors="replace"); d=json.loads(sys.stdin.buffer.read().decode("utf-8","replace")); print(d.get("tool_name",""))' 2>/dev/null || echo "")
-COMMAND=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; sys.stdout.reconfigure(encoding="utf-8",errors="replace"); d=json.loads(sys.stdin.buffer.read().decode("utf-8","replace")); print(d.get("tool_input",{}).get("command",""))' 2>/dev/null || echo "")
+TOOL=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; sys.stdout.reconfigure(encoding="utf-8",errors="replace"); d=json.loads(sys.stdin.buffer.read().decode("utf-8","replace")); print(d.get("tool_name",""))' 2>/dev/null || echo "")
+COMMAND=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; sys.stdout.reconfigure(encoding="utf-8",errors="replace"); d=json.loads(sys.stdin.buffer.read().decode("utf-8","replace")); print(d.get("tool_input",{}).get("command",""))' 2>/dev/null || echo "")
 
 # Only Bash tool
 if [ "$TOOL" != "Bash" ]; then
@@ -39,7 +46,7 @@ if [ "$TOOL" != "Bash" ]; then
 fi
 
 # Use env var to pass COMMAND (heredoc + pipe stdin collision fix)
-DECISION=$(TG_GUARD_CMD="$COMMAND" python3 <<'PYEOF'
+DECISION=$(TG_GUARD_CMD="$COMMAND" "$QVEST_PY_BIN" <<'PYEOF'
 import re, sys, json, os
 
 cmd = os.environ.get("TG_GUARD_CMD", "")

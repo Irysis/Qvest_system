@@ -1,4 +1,11 @@
 #!/usr/bin/env bash
+# (v8.2.1 HOOK-P0-1) bare python3 → $QVEST_PY_BIN (Windows Store 스텁 fail-open 방지)
+if [ -z "${QVEST_PY_BIN:-}" ]; then
+  QVEST_PY_BIN="${QVEST_PY:-}"; QVEST_PY_BIN="${QVEST_PY_BIN//\//}"
+  { [ -n "$QVEST_PY_BIN" ] && [ -x "$QVEST_PY_BIN" ]; } || QVEST_PY_BIN="/c/Users/99922/OneDrive/Quant_Module_Moltbot/.venv_qvest_ml/Scripts/python.exe"
+  [ -x "$QVEST_PY_BIN" ] || QVEST_PY_BIN="$(command -v python.exe 2>/dev/null || echo python3)"
+  export QVEST_PY_BIN
+fi
 # sr_provenance_check.sh — v1.2 SR Provenance Certifier (Positive Hook + 1 Hard Block)
 #
 # Charter §8/§9/§10 Measurement Basis Disclosure + SoT for SR + Certification.
@@ -19,13 +26,13 @@ FILE_PATH=""
 trap 'echo "[$(date -Iseconds)] HOOK_ERR_TRAP file=${FILE_PATH:-unknown} line=${LINENO:-?}" >> "$LOG"; echo "{}"; exit 0' ERR
 
 INPUT=$(cat)
-TOOL=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_name",""))' 2>/dev/null || echo "")
-FILE_PATH=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
+TOOL=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_name",""))' 2>/dev/null || echo "")
+FILE_PATH=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
 
 if [[ "$TOOL" != "Write" && "$TOOL" != "Edit" ]]; then echo '{}'; exit 0; fi
 if [[ -z "$FILE_PATH" ]]; then echo '{}'; exit 0; fi
 
-CONTENT=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("content","") or d.get("tool_input",{}).get("new_string",""))' 2>/dev/null || echo "")
+CONTENT=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("content","") or d.get("tool_input",{}).get("new_string",""))' 2>/dev/null || echo "")
 
 WARN_MSGS=()
 
@@ -53,7 +60,7 @@ if [[ "$FILE_PATH" =~ forge_package(_phase[0-9]+)?\.json$ ]]; then
     CERT_PATH="$WT_DIR/sr_provenance_certificate.json"
     if [[ ! -f "$CERT_PATH" ]]; then
       PROJ_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
-      python3 "$PROJ_DIR/02_Infrastructure/hooks/qvest_cert_eval.py" \
+      "$QVEST_PY_BIN" "$PROJ_DIR/02_Infrastructure/hooks/qvest_cert_eval.py" \
         issue sr_provenance "$FILE_PATH" "$CERT_PATH" \
         "sr_provenance_check.sh v7.0 (router 위임)" >>/tmp/sr_provenance_certifier.log 2>&1 || true
     fi

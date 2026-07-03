@@ -1,4 +1,11 @@
 #!/usr/bin/env bash
+# (v8.2.1 HOOK-P0-1) bare python3 → $QVEST_PY_BIN (Windows Store 스텁 fail-open 방지)
+if [ -z "${QVEST_PY_BIN:-}" ]; then
+  QVEST_PY_BIN="${QVEST_PY:-}"; QVEST_PY_BIN="${QVEST_PY_BIN//\//}"
+  { [ -n "$QVEST_PY_BIN" ] && [ -x "$QVEST_PY_BIN" ]; } || QVEST_PY_BIN="/c/Users/99922/OneDrive/Quant_Module_Moltbot/.venv_qvest_ml/Scripts/python.exe"
+  [ -x "$QVEST_PY_BIN" ] || QVEST_PY_BIN="$(command -v python.exe 2>/dev/null || echo python3)"
+  export QVEST_PY_BIN
+fi
 # lineage_recorder.sh — Artifact lineage 자동 기록 (Level 2)
 # v6.1 R11 P7 Lineage
 #
@@ -10,7 +17,7 @@ set -euo pipefail
 trap 'exit 0' ERR
 
 INPUT=$(cat)
-FILE_PATH=$(echo "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
+FILE_PATH=$(echo "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
 
 case "$FILE_PATH" in
   */alpha_package.json|*/risk_package.json|*/optimization_package.json|*/execution_package.json)
@@ -32,7 +39,7 @@ case "$FILE_PATH" in
     TS=$(date -Iseconds)
 
     # Append (atomic-ish via python merge)
-    python3 <<PYEOF
+    "$QVEST_PY_BIN" <<PYEOF
 import json, os
 lineage_path = r'''$LINEAGE'''
 wt_id = "$WT_ID"

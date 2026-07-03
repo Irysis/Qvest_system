@@ -1,4 +1,11 @@
 #!/usr/bin/env bash
+# (v8.2.1 HOOK-P0-1) bare python3 → $QVEST_PY_BIN (Windows Store 스텁 fail-open 방지)
+if [ -z "${QVEST_PY_BIN:-}" ]; then
+  QVEST_PY_BIN="${QVEST_PY:-}"; QVEST_PY_BIN="${QVEST_PY_BIN//\//}"
+  { [ -n "$QVEST_PY_BIN" ] && [ -x "$QVEST_PY_BIN" ]; } || QVEST_PY_BIN="/c/Users/99922/OneDrive/Quant_Module_Moltbot/.venv_qvest_ml/Scripts/python.exe"
+  [ -x "$QVEST_PY_BIN" ] || QVEST_PY_BIN="$(command -v python.exe 2>/dev/null || echo python3)"
+  export QVEST_PY_BIN
+fi
 # schedule_fidelity_check.sh — v1.2 Schedule Fidelity Certifier (Positive Hook + 1 Hard Block)
 #
 # Charter §9/§10 Schedule Fidelity Mandate.
@@ -18,13 +25,13 @@ FILE_PATH=""
 trap 'echo "[$(date -Iseconds)] HOOK_ERR_TRAP file=${FILE_PATH:-unknown} line=${LINENO:-?}" >> "$LOG"; echo "{}"; exit 0' ERR
 
 INPUT=$(cat)
-TOOL=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_name",""))' 2>/dev/null || echo "")
-FILE_PATH=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
+TOOL=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_name",""))' 2>/dev/null || echo "")
+FILE_PATH=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
 
 if [[ "$TOOL" != "Write" && "$TOOL" != "Edit" ]]; then echo '{}'; exit 0; fi
 if [[ -z "$FILE_PATH" ]]; then echo '{}'; exit 0; fi
 
-CONTENT=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("content","") or d.get("tool_input",{}).get("new_string",""))' 2>/dev/null || echo "")
+CONTENT=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("content","") or d.get("tool_input",{}).get("new_string",""))' 2>/dev/null || echo "")
 
 WARN_MSGS=()
 
@@ -37,16 +44,16 @@ if [[ "$FILE_PATH" =~ optimization_package\.json$ ]]; then
 
   if [[ -f "$WEIGHTS_CSV" && -f "$ALPHA_PKG" && ! -f "$CERT_PATH" ]]; then
     WEIGHTS_DATES=$(awk -F',' 'NR>1 {print $1}' "$WEIGHTS_CSV" 2>/dev/null | sort -u | wc -l)
-    SIG_DATES=$(python3 -c "import json; d=json.load(open('$ALPHA_PKG')); diag=d.get('diagnostics',{}); print(diag.get('sig_dates_count', diag.get('n_sig_dates', d.get('alpha_summary',{}).get('n_sig_dates', d.get('n_sig_dates', 0)))))" 2>/dev/null || echo "0")
+    SIG_DATES=$("$QVEST_PY_BIN" -c "import json; d=json.load(open('$ALPHA_PKG')); diag=d.get('diagnostics',{}); print(diag.get('sig_dates_count', diag.get('n_sig_dates', d.get('alpha_summary',{}).get('n_sig_dates', d.get('n_sig_dates', 0)))))" 2>/dev/null || echo "0")
 
     if [[ $SIG_DATES -gt 0 && $WEIGHTS_DATES -gt 0 ]]; then
-      RATIO=$(python3 -c "print(round($WEIGHTS_DATES / $SIG_DATES, 3))" 2>/dev/null || echo "0")
-      RATIO_X100=$(python3 -c "print(int($WEIGHTS_DATES / $SIG_DATES * 100))" 2>/dev/null || echo "0")
+      RATIO=$("$QVEST_PY_BIN" -c "print(round($WEIGHTS_DATES / $SIG_DATES, 3))" 2>/dev/null || echo "0")
+      RATIO_X100=$("$QVEST_PY_BIN" -c "print(int($WEIGHTS_DATES / $SIG_DATES * 100))" 2>/dev/null || echo "0")
       HAS_INFEASIBILITY=$(echo "$CONTENT" | grep -cE 'infeasibility_report|schedule_skip_justified|tophi_penalty_skip' || true)
 
       # Positive certifier (v1.2 Charter §10): density ≥ 0.95 OR infeasibility 명시 → 발급
       if [[ $RATIO_X100 -ge 95 ]] || [[ $HAS_INFEASIBILITY -gt 0 ]]; then
-        python3 <<PYEOF 2>>/tmp/schedule_fidelity_certifier.log || true
+        "$QVEST_PY_BIN" <<PYEOF 2>>/tmp/schedule_fidelity_certifier.log || true
 import json, datetime
 cert = {
     "issued": True,

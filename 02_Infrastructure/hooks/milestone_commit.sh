@@ -1,4 +1,11 @@
 #!/usr/bin/env bash
+# (v8.2.1 HOOK-P0-1) bare python3 → $QVEST_PY_BIN (Windows Store 스텁 fail-open 방지)
+if [ -z "${QVEST_PY_BIN:-}" ]; then
+  QVEST_PY_BIN="${QVEST_PY:-}"; QVEST_PY_BIN="${QVEST_PY_BIN//\//}"
+  { [ -n "$QVEST_PY_BIN" ] && [ -x "$QVEST_PY_BIN" ]; } || QVEST_PY_BIN="/c/Users/99922/OneDrive/Quant_Module_Moltbot/.venv_qvest_ml/Scripts/python.exe"
+  [ -x "$QVEST_PY_BIN" ] || QVEST_PY_BIN="$(command -v python.exe 2>/dev/null || echo python3)"
+  export QVEST_PY_BIN
+fi
 #==============================================================================
 # milestone_commit.sh — PostToolUse[Write] Hook
 #
@@ -40,7 +47,7 @@ cd "$PROJECT" || { echo '{}'; exit 0; }
 git rev-parse --git-dir >/dev/null 2>&1 || { echo '{}'; exit 0; }
 
 # 파일 경로 추출 (v8.1.2: bytes 경유 UTF-8 명시)
-FILE=$(printf '%s' "$INPUT" | python3 -c "
+FILE=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c "
 import sys, json
 sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 try:
@@ -66,7 +73,7 @@ case "$FILE" in
     fi
     MILESTONE="AX_PROMOTE"
     # (v8.1.2) 경로는 argv 전달 + encoding 명시 — 소스 보간 open('$FILE')은 quote 포함 경로에서 주입형
-    STMT=$(python3 -c "
+    STMT=$("$QVEST_PY_BIN" -c "
 import json, sys
 sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 try:
@@ -79,7 +86,7 @@ except: print('')" "$FILE" 2>/dev/null)
     ;;
   */stage_artifacts/s7_disposition_*.json|stage_artifacts/s7_disposition_*.json)
     # Grade A/A_NOVEL/A_DEF만
-    GRADE=$(python3 -c "
+    GRADE=$("$QVEST_PY_BIN" -c "
 import json, sys
 try:
     d = json.load(open(sys.argv[1], encoding='utf-8'))
@@ -102,7 +109,7 @@ except: print('')" "$FILE" 2>/dev/null)
     PUSH_IMMEDIATE=1
     ;;
   */stage_artifacts/l_code_STR_*.json|stage_artifacts/l_code_STR_*.json)
-    LC=$(python3 -c "
+    LC=$("$QVEST_PY_BIN" -c "
 import json, sys
 try:
     d = json.load(open(sys.argv[1], encoding='utf-8'))
@@ -184,7 +191,7 @@ if [ $? -eq 0 ]; then
 
   MSG="[OK] [milestone] $MILESTONE $HASH - $STAGED files"
   [ "$PUSH_IMMEDIATE" -eq 1 ] && MSG+=" (push 진행 중)"
-  MSG_ESC=$(printf '%s' "$MSG" | python3 -c "import sys,json; s=sys.stdin.buffer.read().decode('utf-8','replace'); print(json.dumps(''.join(ch if not(0xD800<=ord(ch)<=0xDFFF) else '?' for ch in s)))")
+  MSG_ESC=$(printf '%s' "$MSG" | "$QVEST_PY_BIN" -c "import sys,json; s=sys.stdin.buffer.read().decode('utf-8','replace'); print(json.dumps(''.join(ch if not(0xD800<=ord(ch)<=0xDFFF) else '?' for ch in s)))")
   echo "{\"hookSpecificOutput\":{\"hookEventName\":\"PostToolUse\",\"additionalContext\":$MSG_ESC}}"
 else
   echo "$TS COMMIT_FAILED $MILESTONE" >> "$LOG"

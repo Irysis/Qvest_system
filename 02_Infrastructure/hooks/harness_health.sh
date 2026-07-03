@@ -1,4 +1,11 @@
 #!/bin/bash
+# (v8.2.1 HOOK-P0-1) bare python3 → $QVEST_PY_BIN (Windows Store 스텁 fail-open 방지)
+if [ -z "${QVEST_PY_BIN:-}" ]; then
+  QVEST_PY_BIN="${QVEST_PY:-}"; QVEST_PY_BIN="${QVEST_PY_BIN//\//}"
+  { [ -n "$QVEST_PY_BIN" ] && [ -x "$QVEST_PY_BIN" ]; } || QVEST_PY_BIN="/c/Users/99922/OneDrive/Quant_Module_Moltbot/.venv_qvest_ml/Scripts/python.exe"
+  [ -x "$QVEST_PY_BIN" ] || QVEST_PY_BIN="$(command -v python.exe 2>/dev/null || echo python3)"
+  export QVEST_PY_BIN
+fi
 #==============================================================================
 # Harness Health Check — v8.1 (v6.1 kernel absorbed)
 # 모든 Hook 정상 작동 여부 검증. /qvest 부트스트랩에서 호출.
@@ -114,7 +121,7 @@ done
 
 # settings.json Hook 등록 확인
 if [ -f "$SETTINGS" ]; then
-  REG_COUNT=$(python3 -c "
+  REG_COUNT=$("$QVEST_PY_BIN" -c "
 import json
 with open('$SETTINGS') as f:
     d = json.load(f)

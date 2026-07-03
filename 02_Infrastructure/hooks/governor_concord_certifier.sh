@@ -1,4 +1,11 @@
 #!/usr/bin/env bash
+# (v8.2.1 HOOK-P0-1) bare python3 → $QVEST_PY_BIN (Windows Store 스텁 fail-open 방지)
+if [ -z "${QVEST_PY_BIN:-}" ]; then
+  QVEST_PY_BIN="${QVEST_PY:-}"; QVEST_PY_BIN="${QVEST_PY_BIN//\//}"
+  { [ -n "$QVEST_PY_BIN" ] && [ -x "$QVEST_PY_BIN" ]; } || QVEST_PY_BIN="/c/Users/99922/OneDrive/Quant_Module_Moltbot/.venv_qvest_ml/Scripts/python.exe"
+  [ -x "$QVEST_PY_BIN" ] || QVEST_PY_BIN="$(command -v python.exe 2>/dev/null || echo python3)"
+  export QVEST_PY_BIN
+fi
 # governor_concord_certifier.sh — v1.2 Governor Concord Certifier (Positive Hook + 1 Hard Block)
 #
 # Charter §10 Governor Concord Certification System.
@@ -19,8 +26,8 @@ set -euo pipefail
 trap 'echo "{}"; exit 0' ERR
 
 INPUT=$(cat)
-TOOL=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_name",""))' 2>/dev/null || echo "")
-FILE_PATH=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
+TOOL=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_name",""))' 2>/dev/null || echo "")
+FILE_PATH=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
 
 if [[ "$TOOL" != "Write" && "$TOOL" != "Edit" ]]; then echo '{}'; exit 0; fi
 if [[ ! "$FILE_PATH" =~ book_state\.json$ ]]; then echo '{}'; exit 0; fi
@@ -42,7 +49,7 @@ if [[ -z "$WT_ROOT" ]] || [[ ! -d "$WT_ROOT" ]]; then
 fi
 LOG="/tmp/governor_concord_certifier.log"
 
-VERDICT=$(python3 <<PYEOF 2>>"$LOG"
+VERDICT=$("$QVEST_PY_BIN" <<PYEOF 2>>"$LOG"
 import json, os, glob, datetime, sys
 
 try:

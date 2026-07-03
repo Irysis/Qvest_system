@@ -1,4 +1,11 @@
 #!/usr/bin/env bash
+# (v8.2.1 HOOK-P0-1) bare python3 → $QVEST_PY_BIN (Windows Store 스텁 fail-open 방지)
+if [ -z "${QVEST_PY_BIN:-}" ]; then
+  QVEST_PY_BIN="${QVEST_PY:-}"; QVEST_PY_BIN="${QVEST_PY_BIN//\//}"
+  { [ -n "$QVEST_PY_BIN" ] && [ -x "$QVEST_PY_BIN" ]; } || QVEST_PY_BIN="/c/Users/99922/OneDrive/Quant_Module_Moltbot/.venv_qvest_ml/Scripts/python.exe"
+  [ -x "$QVEST_PY_BIN" ] || QVEST_PY_BIN="$(command -v python.exe 2>/dev/null || echo python3)"
+  export QVEST_PY_BIN
+fi
 # agent_stop_continuity_check.sh — Tier 5 agent stop incomplete escalate (L2)
 #
 # 이벤트: SubagentStop (Stop event 변형)
@@ -9,9 +16,9 @@ set -euo pipefail
 trap 'echo "{}"; exit 0' ERR
 
 INPUT=$(cat)
-EVENT=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("hook_event_name",""))' 2>/dev/null || echo "")
-AGENT_ID=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("agent_id","") or d.get("subagent_id",""))' 2>/dev/null || echo "")
-AGENT_NAME=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("agent_name","") or d.get("subagent_type",""))' 2>/dev/null || echo "")
+EVENT=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; d=json.load(sys.stdin); print(d.get("hook_event_name",""))' 2>/dev/null || echo "")
+AGENT_ID=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; d=json.load(sys.stdin); print(d.get("agent_id","") or d.get("subagent_id",""))' 2>/dev/null || echo "")
+AGENT_NAME=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; d=json.load(sys.stdin); print(d.get("agent_name","") or d.get("subagent_type",""))' 2>/dev/null || echo "")
 
 # Only act on stop events
 if [[ "$EVENT" != "SubagentStop" && "$EVENT" != "Stop" ]]; then

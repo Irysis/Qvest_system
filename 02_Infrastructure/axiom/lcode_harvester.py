@@ -228,8 +228,12 @@ def harvest(project_dir: str) -> dict:
         }
         # v8.1 트랙C+D: 학습/실측 필드 pass-through (있을 때만 — 없는 구 L-code는 그대로 = 정직성).
         # cluster_extractor가 mechanism_draft/oos_validation_draft/falsification_draft 실값 매핑에 사용.
+        # v8.2.1 (2026-07-03 아키텍처 감사 AXM-06/GOV-01): oos_months·oos_effect_vs_is는 External 축,
+        # portfolio_alpha_t는 promote_global essence 게이트(weakest_t)와 promote.R Rigor 축이 소비 —
+        # 미전달 시 global 승격이 구조적으로 불가하던 갭 봉합.
         for opt in ("mechanism_hypothesis", "data_supported_conclusion", "next_probe",
-                    "fmt_codes", "oos_retention", "falsification_attempts", "authoritative"):
+                    "fmt_codes", "oos_retention", "falsification_attempts", "authoritative",
+                    "oos_months", "oos_effect_vs_is", "portfolio_alpha_t"):
             v = data.get(opt)
             if v not in (None, "", [], {}):
                 entry[opt] = v

@@ -1,0 +1,519 @@
+{
+  "summary": "감사 확정 발견사항의 mechanical 수리 — 10개 파일-비충돌 그룹 병렬 실행 + 사후 검증",
+  "agentCount": 12,
+  "logs": [
+    "10개 수리 그룹 병렬 실행 (파일 비충돌 확인됨)",
+    "[fix:hooks-resurrect] failed: You've hit your monthly spend limit · raise it at claude.ai/settings/usage",
+    "[fix:data-integrity] failed: You've hit your monthly spend limit · raise it at claude.ai/settings/usage",
+    "[fix:module-trust] failed: You've hit your monthly spend limit · raise it at claude.ai/settings/usage",
+    "[fix:axiom-pipeline] failed: You've hit your monthly spend limit · raise it at claude.ai/settings/usage",
+    "수리 완료: 6/10 그룹 (6 done, 0 partial)",
+    "[validate:syntax] failed: You've hit your monthly spend limit · raise it at claude.ai/settings/usage",
+    "[validate:hooks-battery] failed: You've hit your monthly spend limit · raise it at claude.ai/settings/usage"
+  ],
+  "result": {
+    "fixResults": [
+      {
+        "key": "graduation-gate",
+        "status": "done",
+        "changes": [
+          {
+            "file": "02_Infrastructure/hooks/discovery_graduation_gate.sh",
+            "summary": "v8.2.1 게이트 완성: (1) bare python3 3개 호출 전부 제거 — 해석 체인 QVEST_PY(우선) → .venv_qvest_ml/Scripts/python.exe → Python312 절대경로, 전부 부재 시 WT-P*/request.json write만 grep 기반 fail-closed block(그 외 allow, 전체 Write 마비 방지). (2) HARD 게이트 oos_retention 추가 — forge_package.oos_retention만 읽음(alpha diag fallback 없음, PORT_t와 동일 forge-authoritative 패턴): 미산출=block(fail-closed) / <0.5 무조건 block / [0.5,0.7) band=non-block+stderr WARN(보강증거 2/3 요구 메시지, 판정 권위=essence_score.R) / ≥0.7 pass. (3) HARD 게이트 calmar≥0.64 추가 — 동일 패턴(미산출=block). (4) is_sweep=true인데 DSR 미산출이면 block(MC-04). (5) 통과 시 advisory warn을 stderr로 기록(침묵 통과 방지). 문턱 3종(2.95/0.7/0.64)은 measurement-graduation §3 값 그대로, criteria override 키(min_oos_retention/min_calmar)만 허용."
+          },
+          {
+            "file": "02_Infrastructure/worktask/constraint_defaults.json",
+            "summary": "tier_graduation에 min_oos_retention=0.7·min_calmar=0.64 + rationale(§3 band/anchored 3분할 v2/16%÷25% 도출 명시) 등재. severity에 oos_retention=hard·calmar=hard 추가(hard 4종), severity_rationale에 DSR sweep-한정·oos band 규정 반영. version v2.4→v2.5 + _changelog v2.5 항목(기존 스키마 관례 준수, '문턱값 신설 아닌 기존 룰 문서값 배선' 명기)."
+          }
+        ],
+        "verifications": [
+          "bash -n discovery_graduation_gate.sh → BASH_SYNTAX_OK",
+          "constraint_defaults.json → venv python json.load 파싱 OK",
+          "should-block 실측 (a): forge oos_retention=0.4 → block, reason 'oos_retention 0.400<0.50 (무조건 FAIL — §3 band 하한)'",
+          "should-block 실측 (b): calmar=0.5 → block, reason 'calmar 0.500<0.64'",
+          "should-allow 실측 (c): pa_t 3.5 / oos 0.8 / calmar 0.9, selection=chain → {} allow",
+          "추가 실측 (d): selection=sweep + DSR 미산출 → block 'sweep은 DSR HARD (fail-closed)' (MC-04)",
+          "추가 실측 (e): oos=0.6 band → {} allow + stderr WARN '보강증거 2/3 조건부 PASS 필요' (룰 §3 band 정합)",
+          "추가 실측 (f): forge oos 키 부재 → block fail-closed (PORT_t 미산출 처리와 동일 패턴)",
+          "추가 실측 (g): 비대상 file_path → {} (기존 회귀 없음)",
+          "QVEST_PY 명시 설정 상태 재실행 → pass-case {} allow (env 우선 경로 동작 확인)",
+          "grep python3: 파일 내 잔존은 주석 2줄뿐 — bare 호출 0건"
+        ],
+        "deferred": [
+          "oos band [0.5,0.7) 보강증거 2/3 자동판정은 훅에 미구현 — 룰 §3이 판정 권위를 essence_score.R로 규정(trailing PORT_t/placebo/book-marginal은 훅이 접근 불가한 산출물). 지시대로 warn+보강증거 요구 메시지(stderr)로 구현, non-block.",
+          "DSR 값의 alpha diagnostics fallback(diag.dsr)은 기존 동작 보존 — 제거 시 기존 통과 케이스를 깨뜨릴 수 있어 보수적으로 유지(oos/calmar 신규 게이트는 처음부터 forge-only로 엄격 적용).",
+          "python 실행기 전부 부재 시 비대상 write는 fail-open allow 유지 — file_path 파싱 자체가 python 의존이라 전면 block은 모든 Write 마비. WT-P*/request.json 문자열 매치 시에만 fail-closed block으로 절충.",
+          "thr 포맷 f-string이 criteria에 비수치 문턱이 들어오면 ERR trap fail-open되는 기존 패턴(PORT_t부터 존재)은 미수정 — 스코프 밖 구조 변경이라 보류."
+        ],
+        "notes": "문턱값은 전부 measurement-graduation.md §3 기존값(2.95/0.7/0.64, band 하한 0.5) 그대로 배선 — 신규 창작 없음. 테스트 픽스처는 스크래치패드(gate_test/)에만 생성, 실제 qepm/mailbox 미접촉. 커밋하지 않음(메인 일괄 커밋 대기). 참고: audit 문서 04_Research/architecture_audit_20260703.md line 162의 지시 항목 4개(CAP-P0-1/MC-01/HOOK-P0-3/MC-04) 전부 반영 확인."
+      },
+      {
+        "key": "docs-sync",
+        "status": "done",
+        "changes": [
+          {
+            "file": ".claude/agents/dispatch-orchestrator.md",
+            "summary": "frontmatter skills에서 삭제된 qvest-codex-round 제거 + description 'Codex Critic Round 적용'→'Self-Adversarial Challenge 적용(v8.2)' + Codex Critic Round 절을 judge.md:97-98 현행 문안(finalize 직전 자체 적대검증, 약점 ≥3건→ACCEPT/PARTIAL/REBUTTAL→challenge_note.md) 기반 Self-Adversarial Challenge 절로 교체"
+          },
+          {
+            "file": ".claude/agents/ramp-orchestrator.md",
+            "summary": "frontmatter skills에서 qvest-codex-round 제거 + description 'Codex Round 적용'→'Self-Adversarial Challenge 적용(v8.2)' + Codex Critic Round 절을 Self-Adversarial Challenge 절로 교체. 'Codex'=Q-Lead+에이전트 역할명 용례(line 9)와 Qvest_Codex 경로 금지(line 31)는 잔재 아님으로 보존(codex-round.md 잔존 예외 절 정합)"
+          },
+          {
+            "file": ".claude/agents/strategy-implementer.md",
+            "summary": "'## Codex Round / Judge가 Codex 유지' 절을 '## Self-Adversarial Challenge (v8.2 — Codex Round 대체)'로 정정 (implementer 생략 + Judge 의무 유지 논리는 보존)"
+          },
+          {
+            "file": ".claude/agents/judge.md",
+            "summary": "① 헤더/frontmatter의 구 모델 표기 'Opus 4.7 유지'·'(Opus 4.7)' 삭제(세션 모델 상속) ② Grade 산정의 DSR 구절을 measurement-graduation.md §3 현행으로 교체 — 'n_trials>1에서만' 휴리스틱 폐기 → selection operator 기준(sweep형 selection만 HARD, chain 자격요건 3종 + 1논문/1알파 부적용, DSR 진단산출 유지)"
+          },
+          {
+            "file": ".claude/agents/governor.md",
+            "summary": "헤더 구 모델 표기 '(Sonnet 4.6)' 삭제"
+          },
+          {
+            "file": ".claude/agents/optimizer-research.md",
+            "summary": "Self-Adversarial ACCEPT(mandatory) 기준의 stale 'max_names>20' → 'max_names>25 (도훈 mandate 2026-05-29 20→25)' (frontmatter/Hard Constraints는 이미 25)"
+          },
+          {
+            "file": ".claude/agents/blender.md",
+            "summary": "'종목수 20개 제약 (v53 신규, CLAUDE.md L-484)' → '종목수 25개 제약 (도훈 mandate 2026-05-29 20→25, CLAUDE.md Production Constraints)'"
+          },
+          {
+            "file": ".claude/workflows/qvest-dossier-pipeline.js",
+            "summary": "프롬프트 문자열/주석만 수정(로직 무변경): ① line 23 주석에서 codex_round_pre_enforcer를 발동 목록에서 분리(v8.2 등록 해제 표기) ② GUARD의 'Codex Round 5단계 의무'→Self-Adversarial Challenge 의무 ③ OPT_SCHEMA description ≤20→≤25 ④ Stage-2 프롬프트 '종목 합산 ≤20'→≤25 (GUARD의 'max 25 names'와 내부 모순 해소)"
+          },
+          {
+            "file": ".claude/workflows/qvest-multi-track.js",
+            "summary": "프롬프트 문자열/주석만 수정: ① line 34 주석 'PIT/role/codex hook'→codex hook 등록 해제 표기 ② track 프롬프트 'Codex Round 5단계 의무'→Self-Adversarial Challenge 의무 ③ '20 names'→'25 names (도훈 mandate 20→25)'"
+          },
+          {
+            "file": "02_Infrastructure/hooks/policies/role_permissions.json",
+            "summary": "forge.ax_008_triangulation 값 'Forge + Codex + Architect 2/3 PASS'→'Forge + Self-Adversarial(메인 Opus 4.8 자체 적대검증, v8.2 Codex 대체) + Architect 2/3 PASS'. 키 이름은 유지 — qvest_hook_router.py가 role_permissions를 통째 로드(line 78/145/375)하며 해당 키를 개별 참조하는 코드 없음을 grep으로 확인"
+          },
+          {
+            "file": ".claude/rules/python-policy.md",
+            "summary": "§5 제목 '(Phase 3에서 .py 확장 예정)'→'(.py 확장 적용됨)' + TARGET_PATTERN .py '추가 예정'→'포함(2026-07-03 배선)' + '그 전까지 Codex Round로 보강'→'hook 미커버 영역은 본 rule + Self-Adversarial Challenge(v8.2)로 보강'. Change log 1줄 추가"
+          },
+          {
+            "file": "02_Infrastructure/prompts/qlead_spawn_template.md",
+            "summary": "상단에 DEPRECATED 스탬프 블록 추가(v8.2 Codex Round 폐지 + 현행 참조 qvest-worktask SKILL·codex-round.md 스텁·agents/*.md Self-Adversarial 절 안내 + 본문은 L-269/L-270 이력 보존용). 본문 전면 재작성은 지시대로 하지 않음"
+          }
+        ],
+        "verifications": [
+          "role_permissions.json: venv python json.load 파싱 PASS ('JSON OK')",
+          "workflow .js 2종: node v24.16.0 — 파일 원형은 top-level return/await를 쓰는 workflow DSL이라 직접 --check는 원래부터 불가(수정과 무관한 구조). async function wrap 후 node --input-type=module --check 양쪽 모두 PASS (WRAP-OK)",
+          "stale 재grep 0건: 담당 12개 파일에서 max_names>20 / '20 names' / ≤20 / 종목수 20 / Opus 4.7 / Sonnet 4.6 / qvest-codex-round / 구 DSR(n_trials>1에서만 추가 게이트) 전부 무히트",
+          "잔존 'Codex' 히트 전수 검토: v8.2 대체 이력 표기(모든 'Codex Critic Round 대체' 헤더), 텔레그램 v6.5 용어 retain 목록의 고유명사 Codex, RAMP 'Codex'=역할명, Qvest_Codex 경로 금지 — 모두 02_Infrastructure/docs/rules/codex-round.md의 '잔존 예외' 절(S0/RAMP Codex, 감사추적 보존)과 정합하는 의도적 보존분",
+          "ax_008_triangulation 키 참조 grep: 읽는 코드 없음(qvest_hook_router.py는 JSON 전체 로드만) → 값만 교체·키 유지"
+        ],
+        "deferred": [
+          "judge.md·governor.md frontmatter의 `model: opus`는 유지 — 지시된 삭제 대상은 '구 모델 표기(Sonnet 4.6/Opus 4.7 등)'이며, `model: opus`는 stale 표기가 아니라 현행 generic alias. 삭제 시 spawn 시 모델 선택 동작이 바뀔 수 있어 보수적으로 헤더 텍스트의 구 모델 표기만 삭제 (공통규칙 7)",
+          "dispatch-orchestrator.md line 22 5-step 게이트의 'DSR≥0.5 HARD' 표기는 보존 — run_wf_ensemble(앙상블/파라미터 grid)은 §3 현행 기준으로도 sweep형 selection에 해당할 소지가 커 HARD 적용이 오히려 정합일 수 있음. 담당 지시(judge.md DSR만) 범위 밖이라 미수정, 필요 시 별도 판단 권고",
+          "qlead_spawn_template.md 본문의 Codex Round 5단계 절차·훅 참조는 삭제하지 않음 — '전면 재작성 금지, DEPRECATED 스탬프 + 현행 참조 안내만' 지시 준수 (L-269/L-270 감사추적 이력 보존)",
+          "python-policy.md §5 '.py 확장 적용됨' 표기는 같은 세션 타 그룹의 실제 배선 완료를 전제 — 해당 그룹 작업이 롤백되면 이 문구도 '예정'으로 되돌려야 함 (지시에 따른 기재, 훅 스크립트 자체는 스코프 밖이라 미검증)",
+          "role_permissions.json의 codex_round_contract 언급이 남은 문서(qvest_v6_4_sot.md·qvest_v7_2_1_sot.md 등 read-only retain SOT)는 스코프 밖 파일이라 미수정"
+        ],
+        "notes": "v8.2 Codex 잔재 sweep + agent stale 동기화 그룹(GOV-02~05, GOV-10, AGT-02/03/04/06/09) 완료. 담당 12개 파일만 수정, 커밋 없음(메인 일괄). Self-Adversarial 교체 문안은 judge.md:97-98 현행 문안 + codex-round.md DEPRECATED 스텁 규약(약점 ≥3건 → ACCEPT/PARTIAL/REBUTTAL → challenge_note.md)에 일치시킴. RAMP의 'Codex=Claude Code' 역할명 용례는 헌법 예외 조항대로 보존."
+      },
+      {
+        "key": "alpha-search-fix",
+        "status": "done",
+        "changes": [
+          {
+            "file": "02_Infrastructure/alpha_search/run_alpha_search.R",
+            "summary": "(1) CAP-P0-2: .recommend_pg_admission의 book_state 경로를 file.path(PROJECT_ROOT, 'book_state.json')(항상 부재)에서 실존 확인된 정본 qepm/mailbox/governor/book_state.json으로 수정. 기존 fallback(빈 book list(admitted_ids=list()))은 보존하되 부재 시 WARN 로그를 추가해 침묵 제거. (2) AXM-01 공급측: .write_lcode에 falsification_attempts 필드(문자열 list, lcode_schema.R r7 Falsification 축 / cluster_extractor._draft_falsification 및 lcode_harvester passthrough와 호환) 신설 — 이미 산출 중인 반증형 결과만 배선: PIT detect_lookahead CLEAN, DSR(hg$verdict$statistical_defense, 값·significant·n_trials), IS65/OOS35 oos_retention(hurdle D062 proxy), FMT-07 pre/post-2017 서브기간 분해 판정, 권위측정(essence v2) oos_retention/DSR/hard_fail. 신규 계산 없음, 미산출 값은 미기재. (3) MC-04: .chain_qualification_record() helper 신설 후 selection_type='chain' 하드코딩 3지점(register_module meta :378 / .authoritative_remeasure 결과(authoritative_remeasure.json) / lcode$authoritative)에 chain_qualification 추가 필드 배선 — measurement-graduation §3 요건(①변경사유 기록=TRUE(L-code mechanism/next_probe) ②IS-only 변형선택=단일실행 비해당·cross-run은 호출자 책임 ③holdout 미조회)을 구조적 사실만 정직 기록. 기존 스키마 필드는 전부 불변(추가만)."
+          }
+        ],
+        "verifications": [
+          "Rscript parse 검사: parse() 36 top-level expressions OK (구문 오류 없음)",
+          "book_state 실존·구조 확인: qepm/mailbox/governor/book_state.json 존재, incumbent_book_ir=1.416, admitted_ids 1건(STR_1715_on_M4_R05_noLayer4_PG2) — pg1_admission_with_book_context가 읽는 admitted_ids/incumbent_book_ir 키와 정합 (portfolio_governor.R :651~662 대조)",
+          ".chain_qualification_record() 단독 실행 + toJSON 직렬화 PASS (auto_unbox 정상, 문자열 값이라 NA/null 스키마 리스크 없음)",
+          "falsification_attempts 조립 로직 소규모 재현 실행: full-case 5건 생성 PASS + minimal-case(sdef/fmt/auth 부재 시 PIT 1건만, 미산출 미기재) PASS + list-of-strings JSON 직렬화 확인 — cluster_extractor._draft_falsification(문자열 list 집계) 및 lcode_harvester.py :232 passthrough와 호환 확인",
+          "validate_lcode 호환: 추가 필드는 필수필드/bound 검사에 영향 없음 (lcode_schema.R 전체 판독으로 확인)"
+        ],
+        "deferred": [
+          "placebo/lag-stress '기존 산출값' 배선 중 placebo·lag-stress 자체: 전수 grep 결과 현 alpha_search 파이프라인 어디에서도 미산출 (statistical_defense.R에 bootstrap_placebo_test/placebo_random_signal 함수는 존재하나 호출부 0건, hurdle_gate statistical_defense는 DSR/n_trials만, essence_score placebo_p는 외부 escalation_evidence 입력 전용) — 감사 전제와 실코드 불일치. '새 계산 추가 금지' mandate에 따라 placebo/lag-stress 신규 계산은 하지 않았고, 실제 산출 중인 반증형 5종(PIT scan/DSR/OOS retention/FMT-07 서브기간/essence 재검)만 배선. placebo/lag-stress 계산 추가는 별도 스코프 (statistical_defense.R 함수 호출 배선 = 무거운 재시뮬레이션 n_placebo=100 부작용 있어 설계 판단 필요).",
+          "전체 run_alpha_search() E2E 실행: 지시대로 미실행 (무거움 + 텔레그램 발송 부작용). 수정 지점 로직은 소규모 재현 실행으로 대체 검증.",
+          "book_state 경로를 config.R 상수로 승격: config.R은 스코프 밖 파일이라 미수행 — 로컬 경로 수정만."
+        ],
+        "notes": "수정 4지점 라인: book_state 경로 :1387~1392 / register_module meta chain_qualification :379 / .chain_qualification_record 정의 :1102~1119 / auth 결과 chain_qualification :1190 / lcode falsification_attempts 조립 :1301~1327 + 필드 :1338, lcode$authoritative :1359. 검증 스크립트는 scratchpad(verify_ras_fix.R)에 보존. 커밋 안 함 (메인 일괄 커밋)."
+      },
+      {
+        "key": "contract-enforce",
+        "status": "done",
+        "changes": [
+          {
+            "file": "02_Infrastructure/contracts/registry_writer.R",
+            "summary": "L3 block 조건 확장: integrity_status가 FAIL 외에 PENDING·NA·결측·빈값이어도 등재 차단 (하드차단 — 사전 grep/레지스트리 조사로 legit PENDING 등재 경로 부재 확인: 실 레지스트리 PASS 11/WARNING 9/수동 INVALIDATED 2건뿐, build_manifest.R:146이 PENDING 초기화 후 audit_bt_result.R:437-443이 PASS/WARNING/FAIL로만 갱신 → PENDING 등재 = audit 우회). 차단 메시지에 상태 라벨 + 해소 방법 명시."
+          },
+          {
+            "file": "02_Infrastructure/hooks/backtest_contract_audit.sh",
+            "summary": "TARGET_PATTERN에 \\.py$ 추가 + Python 자체합성 idiom L3 block 신설: np.prod(1+r) / (1+r).cumprod() / (w*r).sum() / .prod()-1 / 0.x*rN. dispatch_measurement_gate.sh의 기존 R 패턴(prod(1+r)/cumprod)과 동일한 $INPUT grep 구조. .py는 synth-scan 전용 경로로 분리해 registry integrity(rds) 체크에 오적용되지 않도록 함. bare python/python3 호출 이 파일에 없음(Rscript만) — 치환 불필요."
+          },
+          {
+            "file": "02_Infrastructure/hooks/answer_principles_grep.sh",
+            "summary": "NONSIMPLE_PATTERN에 \\.py$ 추가 (python-policy.md §5 이행) + .py 대상 자체합성 idiom soft alert(log-only) 추가. Level 2 soft 유지 — block 격상 없음, exit 0 항상 유지."
+          }
+        ],
+        "verifications": [
+          "bash -n backtest_contract_audit.sh + answer_principles_grep.sh → SYNTAX_OK",
+          "Rscript parse(registry_writer.R) → PARSE_OK",
+          "실측 (a): np.prod(1+r)/(1+r).cumprod()/(w*r).sum() 포함 .py Write payload → backtest_contract_audit.sh가 {\"decision\":\"block\", reason=python-policy §4} 발화 + /tmp/backtest_contract_audit.log에 L3 BLOCK 기록; answer_principles_grep.sh는 {} 반환(soft) + /tmp/answer_principles.log에 PY SELF-SYNTHESIS SUSPECTED 경고 기록",
+          "실측 (b): 정상 .py(solve_weights) payload → 두 훅 모두 {} allow, 로그에 synth-scan clean 기록. 부수 확인: 수정된 훅이 병렬 에이전트의 실제 .py Write(check_fdb_202607.py)에 이미 발화해 정상 allow — 회귀 없음",
+          "registry_writer 기능 테스트(temp registry, 실 레지스트리 미접촉): FAIL/PENDING/NA/빈값 4케이스 전부 blocked=TRUE, PASS/WARNING 2케이스 정상 등재(최종 2행) → ALL_BLOCK_TESTS_PASS. stopifnot 전 통과",
+          "사전 조사: qepm/registry/backtest_registry.csv integrity_status 분포 = PASS 11 / WARNING 9 / INVALIDATED_FABRICATION_L249 2 (PENDING/NA 0건) → 하드차단이 기존 파이프라인 비파괴임을 확인"
+        ],
+        "deferred": [
+          "registry_writer.R의 미지 상태값(예: INVALIDATED_* 등 수동 라벨)에 대한 차단은 미도입 — 실 레지스트리에 수동 INVALIDATED 라벨이 존재해 allowlist(PASS/WARNING만 허용) 방식은 기존 수동 워크플로를 깨뜨릴 수 있어 보수적으로 denylist(FAIL/PENDING/결측)만 확장 (공통규칙 7)",
+          "backtest_contract_audit.sh의 R(.R) 파일 자체합성 스캔 추가는 스코프 밖 — 감사 항목이 .py 커버리지 한정이고 R 패턴은 dispatch_measurement_gate.sh(타 그룹 파일 가능성)가 이미 담당",
+          "python-policy.md §5 본문의 'Phase 3 예정' 문구 갱신은 미수행 — .claude/rules/python-policy.md가 담당 파일 목록 밖 (메인에서 후속 갱신 권장)"
+        ],
+        "notes": "PY_SYNTH_PATTERN은 두 훅에 동일 regex로 배치: 'np\\\\.prod\\\\( *1 *\\\\+|\\\\( *1 *\\\\+ *[A-Za-z_][A-Za-z0-9_.]* *\\\\)\\\\.cumprod\\\\(|\\\\( *w *\\\\* *r *\\\\)\\\\.sum\\\\(|\\\\.prod\\\\( *\\\\) *- *1|0\\\\.[0-9]+ *\\\\* *r[0-9]'. backtest_contract_audit=hard block(기존 L3 성격 유지), answer_principles_grep=soft log(기존 Level 2 유지)로 이중 배선. (w*r).sum() 패턴은 변수명 w/r 한정이라 일반 수학 코드 오탐 위험 낮음. 테스트 산출물은 scratchpad에만 존재, 실 레지스트리/로그 외 프로젝트 파일 미접촉. 커밋 안 함(메인 일괄)."
+      },
+      {
+        "key": "pit-honesty",
+        "status": "done",
+        "changes": [
+          {
+            "file": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/skills/pit-validation.md",
+            "summary": "존재하지 않는 방어선 주장 2건 정직화. (1) 'forge_code_guard.sh가 Rscript 실행 직전 자동 차단' → 실체 확인 결과 forge_code_guard.sh는 2026-05-16 DEPRECATED(_archive_v55 Tier 1 cleanup 삭제, 00_Lawbook/DEPRECATION.md L16 + docs/rules/harness.md L31/L117 근거), settings.json에는 doc 주석(L52)에만 잔존·미등록, pit_v3_daemon.sh는 FS retain이나 호출자 부재로 배선 끊김 — 섹션을 'PIT Engine v3 — 수동 게이트(자동 차단 아님)'로 재작성하고 실제 자동 방어선 표(factor_rotation_pit_guard/axiom_enforcement_hook/backtest_contract_audit/selection_contamination_detector — settings.json 등록 실측)로 대체, 정적 스캔은 백테 전 수동 실행 의무 명시. frontmatter description 동일 정정. (2) 동일 결함류인 'artifact_validator.sh 자동 스캔 + .p2b_violation 자동 격리' 주장도 stale 확인(artifact_validator ARCHIVED, 후속 worktask_artifact_validator는 phrase 스캔 없음) — 실제 활성 탐지 = rationalization_detector.sh(PostToolUse, challenge_note/verdict/admission 한정, warn soft) + answer_principles_grep.sh(soft alert)로 정정, 금지 표현 11종과 AX-002 동급 규율은 유지."
+          },
+          {
+            "file": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/02_Infrastructure/validation/lookahead_detector.R",
+            "summary": ".py 지원 추가(DATA-P1-4). detect_lookahead()에 파일확장 dispatch(is_python) + PY_* 패턴 블록 9종 이식(기존 R 패턴 구조·심각도 라벨 준수): PY_C7_NEG_SHIFT(shift(-N)/periods=-N, validate_label_direction context 예외) · PY_C10_PCT_CHANGE_FWD(pct_change(-N)) · PY_C7_FWD_FEATURE(fwd_ret+rank/sort_values/qcut, R C7b 등가) · PY_C2_MERGE_ASOF_FWD(direction='forward'/'nearest') · PY_C1_FULLSAMPLE_FIT(fit_transform/scaler.fit 전체표본, train/split/expanding/walk-forward context 예외) · PY_C1_FULLSAMPLE_ZSCORE(.mean()+.std() signal context) · PY_C9_BFILL · PY_C5_ROLLING_CENTER(center=True) · PY_C12_FULLSAMPLE_OPT(best_sharpe 등 R C12 등가). detect_lookahead_dir() 스캔 패턴 \\.R$ → \\.(R|py)$. 기존 R 검사 경로·반환 구조 무변경. detect_gate15_infra_pit는 C17/C18이 R connector 전용이라 .R-only 유지."
+          }
+        ],
+        "verifications": [
+          "forge_code_guard 실체 확인: Glob 02_Infrastructure/hooks/*guard* → forge_code_guard.sh 부재. .claude/settings.json grep → L52 doc 주석만(등록 hook 아님). 00_Lawbook/DEPRECATION.md L16 + 02_Infrastructure/docs/rules/harness.md L31/L117 → 'DEPRECATED 2026-05-16, _archive_v55 삭제, backtest_contract_audit로 대체' 확정. pit_v3_daemon.sh 헤더 실독 → 호출자=forge_code_guard 명시(배선 끊김).",
+          "artifact_validator 실체 확인: settings.json은 worktask_artifact_validator.sh만 등록, 후자에 phrase 스캔 없음(grep 0건). p2b/phrase 스캔 실 소재 = rationalization_detector.sh(내용 실독: warn+3회 escalate, rename 격리 없음) + answer_principles_grep.sh — 둘 다 settings.json 등록 확인.",
+          "R parse 검사: Rscript parse(lookahead_detector.R) → PARSE OK.",
+          "기능 실측 (a) fixture_bad.py(shift(-1)/merge_asof forward/fit_transform/pct_change(-21)/bfill) → 5건 탐지(PY_C7_NEG_SHIFT, PY_C2_MERGE_ASOF_FWD, PY_C1_FULLSAMPLE_FIT, PY_C10_PCT_CHANGE_FWD, PY_C9_BFILL). (b) fixture_good.py(shift(1)/backward/walk-forward 내 scaler.fit/ffill) → CLEAN. (c) 기존 .R 회귀: fixture_bad.R(full-sample sd, fwd_ret rank) → C1+C7b 2건 탐지, fixture_good.R → CLEAN. ALL PASS.",
+          "실파일 노이즈 스모크: 02_Infrastructure/ml_pipeline/*.py 5개(_panel_peek/_venv_check/ca_core/causal_apt/dpl_baselines) 스캔 → 전부 n=0 (false-positive 노이즈 없음)."
+        ],
+        "deferred": [
+          "forge_code_guard 대체 자동 차단선(예: PreToolUse[Bash]에서 Rscript run_all.R 감지 시 pit_engine_v3 자동 호출 hook) 신설 — settings.json·신규 hook 파일은 스코프 밖(다른 그룹 병렬 수정 중 + hook 등록은 판단 갈리는 변경). 현 수리는 문서 정직화까지.",
+          "settings.json L52의 stale doc 주석('forge_code_guard <100ms' 언급) 정리 — settings.json 스코프 밖.",
+          "pit_engine_v3.R scan_static이 .py 파일을 수집 대상에 포함하는지의 배선 확장 — pit_engine_v3.R 스코프 밖(detect_lookahead 자체는 .py 지원하므로 경로만 넘기면 작동).",
+          "Python 문자열/docstring 내부 패턴 오탐 가능성 — 정적 heuristic 한계로 미해결(기존 R 스캐너와 동일한 라인 단위 접근 유지, 실파일 5개 스모크에서 오탐 0건)."
+        ],
+        "notes": "감사 배경 확증: forge_code_guard '자동 차단'은 2026-05-16 이후 존재하지 않는 방어선이었음 — 같은 파일의 artifact_validator '.p2b_violation 자동 격리' 주장도 동일 결함류라 함께 정정(둘 다 실측 근거 기재). lookahead .py 포트는 기존 반환 구조·R 경로 무변경이라 pit_engine_v3/Gate15 등 기존 소비자 회귀 없음."
+      },
+      {
+        "key": "hygiene-ops",
+        "status": "done",
+        "changes": [
+          {
+            "file": "02_Infrastructure/hooks/auto_commit_on_stop.sh",
+            "summary": "HYG-01: NEW_COUNT>100 '전체 abort+reset' 분기를 코어 경로(.claude/ 02_Infrastructure/ 00_Lawbook/ qepm/memory/ 06_Registry/ CLAUDE.md) 선별 스테이징 커밋 + 나머지 skip으로 강등. PARTIAL_NOTE가 로그/훅 메시지에 표시되고, TOO_MANY_NEW·COMMIT_FAILED 모두 /tmp/auto_commit.log + 마커 파일 /tmp/auto_commit_abort_marker.txt에 기록. trap ERR(비-0 즉시 exit) 환경 고려해 신규 명령 전부 || true 가드. 헤더 주석 동기화."
+          },
+          {
+            "file": ".gitignore",
+            "summary": "HYG-02: '!qepm/registry/backtest_registry.csv' 예외 추가 (*.csv:17에 ignore되던 것 git check-ignore로 확인). HYG-08: '.trash_*/ ' 격리소 패턴 추가."
+          },
+          {
+            "file": "qepm/scripts/hybrid_mode.R",
+            "summary": "HYG-03: QEPM_BASE 후보에 OneDrive canonical(C:/Users/99922/OneDrive/... + /mnt/c WSL 변형) 최우선 추가, 해석 실패 시 stop() fail-loud 가드 (NA가 file.path()로 흘러 루트 NA/ 디렉토리 생성하던 사고의 근본 원인 — TO1099로 실증됨)."
+          },
+          {
+            "file": "02_Infrastructure/ops/qw_refresh.ps1",
+            "summary": "HYG-05: Save-State에 경로 가드 — $STATE가 비었거나 .json이 아니면 $ROOT\\.cache\\qw_refresh_state.json으로 fallback, 디렉토리 자동생성, Set-Content -LiteralPath 사용. 루트에 stringified-hashtable 파일명으로 떨어지던 사고 재발 차단."
+          },
+          {
+            "file": ".cache/qw_refresh_state.json",
+            "summary": "루트 Hashtable 상태파일 3종의 내용을 키별 최신본으로 병합 이관 (Benchmark/OHLCVS ymd=20260630, Investor_Act/Consensus ymd=20260701) — 4키 모두 보존, 유실 없음."
+          },
+          {
+            "file": ".trash_20260703/",
+            "summary": "루트 쓰레기 이동(rm 아님): '(no'·'max'·'surface'(전부 0바이트 빈 파일), '1)'(K200 편입 진단출력 218B), supp_out.txt(PCDM decile 진단출력), Rplots.pdf(R 기본 plot device 산물, 재생성 가능), Hashtable 상태파일 3종(내용은 .cache로 이관 완료). NA/는 실데이터 TO1099 3개 json을 canonical qepm/research/results/TO1099/로 먼저 이관 후 빈 껍데기만 .trash로."
+          },
+          {
+            "file": "qepm/research/results/TO1099/",
+            "summary": "NA/qepm/research/results/TO1099의 _manifest.json·hurdle_result.json·verification_result.json 3개를 canonical 위치로 이관 (canonical에 TO1099 기존 부재 확인 후 이동, 덮어쓰기 없음)."
+          }
+        ],
+        "verifications": [
+          "bash -n auto_commit_on_stop.sh → 구문 OK",
+          "선별 스테이징 분기 임시 git repo 시뮬레이션: 신규 114개 → reset → 코어 4파일만 staged·commit 성공, junk untracked 잔존 (로직 그대로 복제 실행, 실제 repo 미커밋)",
+          "git check-ignore -v qepm/registry/backtest_registry.csv → 매치 룰이 .gitignore:76 '!...' 예외로 전환 + git add -n 'add' 확인 (파일 현존, 예외 전 *.csv:17 ignore였음)",
+          "git status에 .trash_20260703/ 미등장 (.trash_*/ ignore 동작 확인)",
+          "Rscript parse+source hybrid_mode.R → PARSE_OK, QEPM_BASE=C:/Users/99922/OneDrive/Quant_Module_Moltbot, BASE_RESOLVE_OK",
+          "PowerShell Parser::ParseFile qw_refresh.ps1 → PS_PARSE_OK (실행 없이 구문만)",
+          "Save-State 격리 기능검증: 정상 경로 쓰기 STATE_WRITE_OK + JSON roundtrip, $STATE를 해시테이블로 오염시킨 사고 재현 시나리오에서 .cache fallback 저장 + 루트 오염파일 미생성 확인",
+          "병합 .cache/qw_refresh_state.json → python json.load PASS (4키: Benchmark/OHLCVS/Investor_Act/Consensus)"
+        ],
+        "deferred": [
+          "auto-commit abort/실패의 Telegram 알림 배선 — 지시대로 로그(/tmp/auto_commit.log) + 마커 파일(/tmp/auto_commit_abort_marker.txt)까지만 구현. tg_agent_brief() 진입점 규약(Hook 차단 정책) 정합 작업이 별도로 필요.",
+          "루트 Hashtable 파일이 생긴 정확한 실행 경로 특정 — 현행 qw_refresh.ps1:110은 문법상 정상이라 과거 변형/오염 세션 산물로 추정(파일명 '@{Benchmark=...}'=PSCustomObject 문자열화, 'System.Collections.Hashtable'=Hashtable 문자열화와 정합). 재발은 신규 가드가 차단하므로 원인 고고학은 중단.",
+          "qw_refresh.ps1 실기능(E2E) 검증 — QuantiWise 로그인/Excel COM이 필요해 실행 불가. Save-State만 격리 기능검증으로 대체.",
+          "auto_commit 훅의 실제 Stop 이벤트 E2E — 실행하면 실제 repo에 커밋이 발생해 '커밋 금지' 지시와 충돌. 임시 repo 시뮬레이션으로 대체.",
+          "기존 973회 abort로 누적된 미커밋 변경분의 실제 커밋 — 메인이 일괄 커밋 담당이므로 staging/commit 미수행."
+        ],
+        "notes": "추가 관찰 2건 (스코프 밖, 수정 안 함): ① NEW_COUNT>100 selective 경로에서 SKIPPED 카운트는 git porcelain의 untracked 디렉토리 축약(junkdir/=1건) 기준이라 파일 수보다 과소표시될 수 있음 — 로그용 참고치로 충분. ② backtest_registry.csv는 현재 untracked 상태이며 예외 추가로 다음 일괄 커밋 때 자동 편입됨. NA/ 사고 원인은 hybrid_mode.R의 QEPM_BASE=NA (2026-06-12 세션, G:드라이브 부재+QM_ROOT 미설정 환경) — stop() 가드로 근본 차단."
+      }
+    ],
+    "validation": []
+  },
+  "workflowProgress": [
+    {
+      "type": "workflow_phase",
+      "index": 1,
+      "title": "Fix"
+    },
+    {
+      "type": "workflow_phase",
+      "index": 2,
+      "title": "Validate"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 1,
+      "label": "fix:hooks-resurrect",
+      "phaseIndex": 1,
+      "phaseTitle": "Fix",
+      "agentId": "ac6ffc7c456db3848",
+      "model": "claude-fable-5",
+      "state": "error",
+      "startedAt": 1783078485052,
+      "queuedAt": 1783078485029,
+      "attempt": 1,
+      "lastToolName": "Bash",
+      "lastToolSummary": "cd /c/Users/99922/OneDrive/Quant_Module_Moltbot/02_Infrastr…",
+      "promptPreview": "[Qvest 아키텍처 강화 — 수리 실행 에이전트]\n프로젝트 루트: C:/Users/99922/OneDrive/Quant_Module_Moltbot (Windows, Git Bash 경로 /c/Users/99922/OneDrive/Quant_Module_Moltbot)\n전제: 방금 10영역 아키텍처 감사에서 60건 발견이 적대검증을 통과했고, 너는 그중 한 그룹의 수리 담당이다. 수리 전 git milestone 커밋은 이미 완료됨 — 안심하고 수정하되 커밋은 하지 마라 (메인이 일괄 커밋).\n공통 규칙:\n1. 지정된 파일만 수정. 다른 그룹이 다른 파일을 병렬 수정 중이므로 스코프 밖 파일 수정 절대 금지 (읽기는 자유).\n2. 수정 전 대상 파일 전체 Read 의무. 기존 코드 스타일·주석 밀도 준수.\n…",
+      "lastProgressAt": 1783078995400,
+      "error": "You've hit your monthly spend limit · raise it at claude.ai/settings/usage",
+      "tokens": 110311,
+      "toolCalls": 33,
+      "durationMs": 510348
+    },
+    {
+      "type": "workflow_agent",
+      "index": 2,
+      "label": "fix:graduation-gate",
+      "phaseIndex": 1,
+      "phaseTitle": "Fix",
+      "agentId": "a214383ccbf92b89f",
+      "model": "claude-fable-5",
+      "state": "done",
+      "startedAt": 1783078485053,
+      "queuedAt": 1783078485029,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "done",
+      "promptPreview": "[Qvest 아키텍처 강화 — 수리 실행 에이전트]\n프로젝트 루트: C:/Users/99922/OneDrive/Quant_Module_Moltbot (Windows, Git Bash 경로 /c/Users/99922/OneDrive/Quant_Module_Moltbot)\n전제: 방금 10영역 아키텍처 감사에서 60건 발견이 적대검증을 통과했고, 너는 그중 한 그룹의 수리 담당이다. 수리 전 git milestone 커밋은 이미 완료됨 — 안심하고 수정하되 커밋은 하지 마라 (메인이 일괄 커밋).\n공통 규칙:\n1. 지정된 파일만 수정. 다른 그룹이 다른 파일을 병렬 수정 중이므로 스코프 밖 파일 수정 절대 금지 (읽기는 자유).\n2. 수정 전 대상 파일 전체 Read 의무. 기존 코드 스타일·주석 밀도 준수.\n…",
+      "lastProgressAt": 1783078909713,
+      "tokens": 112450,
+      "toolCalls": 22,
+      "durationMs": 424659,
+      "resultPreview": "{\"status\":\"done\",\"changes\":[{\"file\":\"02_Infrastructure/hooks/discovery_graduation_gate.sh\",\"summary\":\"v8.2.1 게이트 완성: (1) bare python3 3개 호출 전부 제거 — 해석 체인 QVEST_PY(우선) → .venv_qvest_ml/Scripts/python.exe → Python312 절대경로, 전부 부재 시 WT-P*/request.json write만 grep 기반 fail-closed block(그 외 allow, 전체 Write 마비 방지). (2) HARD 게이트 oos_retention 추가 — forge_package.oos_retention만 읽음(alpha diag fallback 없음, POR…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 3,
+      "label": "fix:data-integrity",
+      "phaseIndex": 1,
+      "phaseTitle": "Fix",
+      "agentId": "a5100ec93d0faa664",
+      "model": "claude-fable-5",
+      "state": "error",
+      "startedAt": 1783078485054,
+      "queuedAt": 1783078485029,
+      "attempt": 1,
+      "lastToolName": "Write",
+      "lastToolSummary": "C:\\Users\\99922\\AppData\\Local\\Temp\\claude\\C--Users-99922-One…",
+      "promptPreview": "[Qvest 아키텍처 강화 — 수리 실행 에이전트]\n프로젝트 루트: C:/Users/99922/OneDrive/Quant_Module_Moltbot (Windows, Git Bash 경로 /c/Users/99922/OneDrive/Quant_Module_Moltbot)\n전제: 방금 10영역 아키텍처 감사에서 60건 발견이 적대검증을 통과했고, 너는 그중 한 그룹의 수리 담당이다. 수리 전 git milestone 커밋은 이미 완료됨 — 안심하고 수정하되 커밋은 하지 마라 (메인이 일괄 커밋).\n공통 규칙:\n1. 지정된 파일만 수정. 다른 그룹이 다른 파일을 병렬 수정 중이므로 스코프 밖 파일 수정 절대 금지 (읽기는 자유).\n2. 수정 전 대상 파일 전체 Read 의무. 기존 코드 스타일·주석 밀도 준수.\n…",
+      "lastProgressAt": 1783079003209,
+      "error": "You've hit your monthly spend limit · raise it at claude.ai/settings/usage",
+      "tokens": 130827,
+      "toolCalls": 24,
+      "durationMs": 518154
+    },
+    {
+      "type": "workflow_agent",
+      "index": 4,
+      "label": "fix:docs-sync",
+      "phaseIndex": 1,
+      "phaseTitle": "Fix",
+      "agentId": "a738e467dc284671f",
+      "model": "claude-fable-5",
+      "state": "done",
+      "startedAt": 1783078485055,
+      "queuedAt": 1783078485029,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "done",
+      "promptPreview": "[Qvest 아키텍처 강화 — 수리 실행 에이전트]\n프로젝트 루트: C:/Users/99922/OneDrive/Quant_Module_Moltbot (Windows, Git Bash 경로 /c/Users/99922/OneDrive/Quant_Module_Moltbot)\n전제: 방금 10영역 아키텍처 감사에서 60건 발견이 적대검증을 통과했고, 너는 그중 한 그룹의 수리 담당이다. 수리 전 git milestone 커밋은 이미 완료됨 — 안심하고 수정하되 커밋은 하지 마라 (메인이 일괄 커밋).\n공통 규칙:\n1. 지정된 파일만 수정. 다른 그룹이 다른 파일을 병렬 수정 중이므로 스코프 밖 파일 수정 절대 금지 (읽기는 자유).\n2. 수정 전 대상 파일 전체 Read 의무. 기존 코드 스타일·주석 밀도 준수.\n…",
+      "lastProgressAt": 1783078869278,
+      "tokens": 137031,
+      "toolCalls": 44,
+      "durationMs": 384222,
+      "resultPreview": "{\"status\":\"done\",\"changes\":[{\"file\":\".claude/agents/dispatch-orchestrator.md\",\"summary\":\"frontmatter skills에서 삭제된 qvest-codex-round 제거 + description 'Codex Critic Round 적용'→'Self-Adversarial Challenge 적용(v8.2)' + Codex Critic Round 절을 judge.md:97-98 현행 문안(finalize 직전 자체 적대검증, 약점 ≥3건→ACCEPT/PARTIAL/REBUTTAL→challenge_note.md) 기반 Self-Adversarial Challenge 절로 교체\"},{\"file\":\".claude/agents/ramp-orches…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 5,
+      "label": "fix:axiom-pipeline",
+      "phaseIndex": 1,
+      "phaseTitle": "Fix",
+      "agentId": "aa4eeaaa5b19be535",
+      "model": "claude-fable-5",
+      "state": "error",
+      "startedAt": 1783078485057,
+      "queuedAt": 1783078485029,
+      "attempt": 1,
+      "lastToolName": "Write",
+      "lastToolSummary": "C:\\Users\\99922\\AppData\\Local\\Temp\\claude\\C--Users-99922-One…",
+      "promptPreview": "[Qvest 아키텍처 강화 — 수리 실행 에이전트]\n프로젝트 루트: C:/Users/99922/OneDrive/Quant_Module_Moltbot (Windows, Git Bash 경로 /c/Users/99922/OneDrive/Quant_Module_Moltbot)\n전제: 방금 10영역 아키텍처 감사에서 60건 발견이 적대검증을 통과했고, 너는 그중 한 그룹의 수리 담당이다. 수리 전 git milestone 커밋은 이미 완료됨 — 안심하고 수정하되 커밋은 하지 마라 (메인이 일괄 커밋).\n공통 규칙:\n1. 지정된 파일만 수정. 다른 그룹이 다른 파일을 병렬 수정 중이므로 스코프 밖 파일 수정 절대 금지 (읽기는 자유).\n2. 수정 전 대상 파일 전체 Read 의무. 기존 코드 스타일·주석 밀도 준수.\n…",
+      "lastProgressAt": 1783079038293,
+      "error": "You've hit your monthly spend limit · raise it at claude.ai/settings/usage",
+      "tokens": 144440,
+      "toolCalls": 30,
+      "durationMs": 553236
+    },
+    {
+      "type": "workflow_agent",
+      "index": 6,
+      "label": "fix:alpha-search-fix",
+      "phaseIndex": 1,
+      "phaseTitle": "Fix",
+      "agentId": "a4d66556a5b023e51",
+      "model": "claude-fable-5",
+      "state": "done",
+      "startedAt": 1783078485058,
+      "queuedAt": 1783078485029,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "done",
+      "promptPreview": "[Qvest 아키텍처 강화 — 수리 실행 에이전트]\n프로젝트 루트: C:/Users/99922/OneDrive/Quant_Module_Moltbot (Windows, Git Bash 경로 /c/Users/99922/OneDrive/Quant_Module_Moltbot)\n전제: 방금 10영역 아키텍처 감사에서 60건 발견이 적대검증을 통과했고, 너는 그중 한 그룹의 수리 담당이다. 수리 전 git milestone 커밋은 이미 완료됨 — 안심하고 수정하되 커밋은 하지 마라 (메인이 일괄 커밋).\n공통 규칙:\n1. 지정된 파일만 수정. 다른 그룹이 다른 파일을 병렬 수정 중이므로 스코프 밖 파일 수정 절대 금지 (읽기는 자유).\n2. 수정 전 대상 파일 전체 Read 의무. 기존 코드 스타일·주석 밀도 준수.\n…",
+      "lastProgressAt": 1783078984351,
+      "tokens": 151956,
+      "toolCalls": 32,
+      "durationMs": 499293,
+      "resultPreview": "{\"status\":\"done\",\"changes\":[{\"file\":\"02_Infrastructure/alpha_search/run_alpha_search.R\",\"summary\":\"(1) CAP-P0-2: .recommend_pg_admission의 book_state 경로를 file.path(PROJECT_ROOT, 'book_state.json')(항상 부재)에서 실존 확인된 정본 qepm/mailbox/governor/book_state.json으로 수정. 기존 fallback(빈 book list(admitted_ids=list()))은 보존하되 부재 시 WARN 로그를 추가해 침묵 제거. (2) AXM-01 공급측: .write_lcode에 falsification_attempts 필드(문자열 list…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 7,
+      "label": "fix:contract-enforce",
+      "phaseIndex": 1,
+      "phaseTitle": "Fix",
+      "agentId": "a18ddbe51b1a31b2f",
+      "model": "claude-fable-5",
+      "state": "done",
+      "startedAt": 1783078485059,
+      "queuedAt": 1783078485030,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "done",
+      "promptPreview": "[Qvest 아키텍처 강화 — 수리 실행 에이전트]\n프로젝트 루트: C:/Users/99922/OneDrive/Quant_Module_Moltbot (Windows, Git Bash 경로 /c/Users/99922/OneDrive/Quant_Module_Moltbot)\n전제: 방금 10영역 아키텍처 감사에서 60건 발견이 적대검증을 통과했고, 너는 그중 한 그룹의 수리 담당이다. 수리 전 git milestone 커밋은 이미 완료됨 — 안심하고 수정하되 커밋은 하지 마라 (메인이 일괄 커밋).\n공통 규칙:\n1. 지정된 파일만 수정. 다른 그룹이 다른 파일을 병렬 수정 중이므로 스코프 밖 파일 수정 절대 금지 (읽기는 자유).\n2. 수정 전 대상 파일 전체 Read 의무. 기존 코드 스타일·주석 밀도 준수.\n…",
+      "lastProgressAt": 1783078787324,
+      "tokens": 99534,
+      "toolCalls": 20,
+      "durationMs": 302265,
+      "resultPreview": "{\"status\":\"done\",\"changes\":[{\"file\":\"02_Infrastructure/contracts/registry_writer.R\",\"summary\":\"L3 block 조건 확장: integrity_status가 FAIL 외에 PENDING·NA·결측·빈값이어도 등재 차단 (하드차단 — 사전 grep/레지스트리 조사로 legit PENDING 등재 경로 부재 확인: 실 레지스트리 PASS 11/WARNING 9/수동 INVALIDATED 2건뿐, build_manifest.R:146이 PENDING 초기화 후 audit_bt_result.R:437-443이 PASS/WARNING/FAIL로만 갱신 → PENDING 등재 = audit 우회). 차단 메시지에 상태 라벨 + 해소 방법 명시.\"…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 8,
+      "label": "fix:module-trust",
+      "phaseIndex": 1,
+      "phaseTitle": "Fix",
+      "agentId": "ac2de89be364dabc1",
+      "model": "claude-fable-5",
+      "state": "error",
+      "startedAt": 1783078485060,
+      "queuedAt": 1783078485030,
+      "attempt": 1,
+      "lastToolName": "Write",
+      "lastToolSummary": "C:\\Users\\99922\\AppData\\Local\\Temp\\claude\\C--Users-99922-One…",
+      "promptPreview": "[Qvest 아키텍처 강화 — 수리 실행 에이전트]\n프로젝트 루트: C:/Users/99922/OneDrive/Quant_Module_Moltbot (Windows, Git Bash 경로 /c/Users/99922/OneDrive/Quant_Module_Moltbot)\n전제: 방금 10영역 아키텍처 감사에서 60건 발견이 적대검증을 통과했고, 너는 그중 한 그룹의 수리 담당이다. 수리 전 git milestone 커밋은 이미 완료됨 — 안심하고 수정하되 커밋은 하지 마라 (메인이 일괄 커밋).\n공통 규칙:\n1. 지정된 파일만 수정. 다른 그룹이 다른 파일을 병렬 수정 중이므로 스코프 밖 파일 수정 절대 금지 (읽기는 자유).\n2. 수정 전 대상 파일 전체 Read 의무. 기존 코드 스타일·주석 밀도 준수.\n…",
+      "lastProgressAt": 1783079012557,
+      "error": "You've hit your monthly spend limit · raise it at claude.ai/settings/usage",
+      "tokens": 109321,
+      "toolCalls": 27,
+      "durationMs": 527497
+    },
+    {
+      "type": "workflow_agent",
+      "index": 9,
+      "label": "fix:pit-honesty",
+      "phaseIndex": 1,
+      "phaseTitle": "Fix",
+      "agentId": "a6f118536a8ace959",
+      "model": "claude-fable-5",
+      "state": "done",
+      "startedAt": 1783078485060,
+      "queuedAt": 1783078485030,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "done",
+      "promptPreview": "[Qvest 아키텍처 강화 — 수리 실행 에이전트]\n프로젝트 루트: C:/Users/99922/OneDrive/Quant_Module_Moltbot (Windows, Git Bash 경로 /c/Users/99922/OneDrive/Quant_Module_Moltbot)\n전제: 방금 10영역 아키텍처 감사에서 60건 발견이 적대검증을 통과했고, 너는 그중 한 그룹의 수리 담당이다. 수리 전 git milestone 커밋은 이미 완료됨 — 안심하고 수정하되 커밋은 하지 마라 (메인이 일괄 커밋).\n공통 규칙:\n1. 지정된 파일만 수정. 다른 그룹이 다른 파일을 병렬 수정 중이므로 스코프 밖 파일 수정 절대 금지 (읽기는 자유).\n2. 수정 전 대상 파일 전체 Read 의무. 기존 코드 스타일·주석 밀도 준수.\n…",
+      "lastProgressAt": 1783079038960,
+      "tokens": 117435,
+      "toolCalls": 30,
+      "durationMs": 553900,
+      "resultPreview": "{\"status\":\"done\",\"changes\":[{\"file\":\"C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/skills/pit-validation.md\",\"summary\":\"존재하지 않는 방어선 주장 2건 정직화. (1) 'forge_code_guard.sh가 Rscript 실행 직전 자동 차단' → 실체 확인 결과 forge_code_guard.sh는 2026-05-16 DEPRECATED(_archive_v55 Tier 1 cleanup 삭제, 00_Lawbook/DEPRECATION.md L16 + docs/rules/harness.md L31/L117 근거), settings.json에는 doc 주석(L52)에만 잔존·미등록, pit_v3_daem…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 10,
+      "label": "fix:hygiene-ops",
+      "phaseIndex": 1,
+      "phaseTitle": "Fix",
+      "agentId": "a8155cd7e2f0a7fdc",
+      "model": "claude-fable-5",
+      "state": "done",
+      "startedAt": 1783078485062,
+      "queuedAt": 1783078485030,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "done",
+      "promptPreview": "[Qvest 아키텍처 강화 — 수리 실행 에이전트]\n프로젝트 루트: C:/Users/99922/OneDrive/Quant_Module_Moltbot (Windows, Git Bash 경로 /c/Users/99922/OneDrive/Quant_Module_Moltbot)\n전제: 방금 10영역 아키텍처 감사에서 60건 발견이 적대검증을 통과했고, 너는 그중 한 그룹의 수리 담당이다. 수리 전 git milestone 커밋은 이미 완료됨 — 안심하고 수정하되 커밋은 하지 마라 (메인이 일괄 커밋).\n공통 규칙:\n1. 지정된 파일만 수정. 다른 그룹이 다른 파일을 병렬 수정 중이므로 스코프 밖 파일 수정 절대 금지 (읽기는 자유).\n2. 수정 전 대상 파일 전체 Read 의무. 기존 코드 스타일·주석 밀도 준수.\n…",
+      "lastProgressAt": 1783079038717,
+      "tokens": 124360,
+      "toolCalls": 27,
+      "durationMs": 553655,
+      "resultPreview": "{\"status\":\"done\",\"changes\":[{\"file\":\"02_Infrastructure/hooks/auto_commit_on_stop.sh\",\"summary\":\"HYG-01: NEW_COUNT>100 '전체 abort+reset' 분기를 코어 경로(.claude/ 02_Infrastructure/ 00_Lawbook/ qepm/memory/ 06_Registry/ CLAUDE.md) 선별 스테이징 커밋 + 나머지 skip으로 강등. PARTIAL_NOTE가 로그/훅 메시지에 표시되고, TOO_MANY_NEW·COMMIT_FAILED 모두 /tmp/auto_commit.log + 마커 파일 /tmp/auto_commit_abort_marker.txt에 기록. trap ERR(비-0 즉시 exit) …"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 11,
+      "label": "validate:hooks-battery",
+      "phaseIndex": 2,
+      "phaseTitle": "Validate",
+      "agentId": "a9d00ade4e28d7451",
+      "model": "claude-fable-5",
+      "state": "error",
+      "startedAt": 1783079038994,
+      "queuedAt": 1783079038969,
+      "attempt": 1,
+      "promptPreview": "[Qvest 아키텍처 강화 — 수리 실행 에이전트]\n프로젝트 루트: C:/Users/99922/OneDrive/Quant_Module_Moltbot (Windows, Git Bash 경로 /c/Users/99922/OneDrive/Quant_Module_Moltbot)\n전제: 방금 10영역 아키텍처 감사에서 60건 발견이 적대검증을 통과했고, 너는 그중 한 그룹의 수리 담당이다. 수리 전 git milestone 커밋은 이미 완료됨 — 안심하고 수정하되 커밋은 하지 마라 (메인이 일괄 커밋).\n공통 규칙:\n1. 지정된 파일만 수정. 다른 그룹이 다른 파일을 병렬 수정 중이므로 스코프 밖 파일 수정 절대 금지 (읽기는 자유).\n2. 수정 전 대상 파일 전체 Read 의무. 기존 코드 스타일·주석 밀도 준수.\n…",
+      "lastProgressAt": 1783079039792,
+      "error": "You've hit your monthly spend limit · raise it at claude.ai/settings/usage",
+      "tokens": 0,
+      "toolCalls": 0,
+      "durationMs": 798
+    },
+    {
+      "type": "workflow_agent",
+      "index": 12,
+      "label": "validate:syntax",
+      "phaseIndex": 2,
+      "phaseTitle": "Validate",
+      "agentId": "a7ef7a7b382eab229",
+      "model": "claude-fable-5",
+      "state": "error",
+      "startedAt": 1783079038995,
+      "queuedAt": 1783079038969,
+      "attempt": 1,
+      "promptPreview": "[Qvest 아키텍처 강화 — 수리 실행 에이전트]\n프로젝트 루트: C:/Users/99922/OneDrive/Quant_Module_Moltbot (Windows, Git Bash 경로 /c/Users/99922/OneDrive/Quant_Module_Moltbot)\n전제: 방금 10영역 아키텍처 감사에서 60건 발견이 적대검증을 통과했고, 너는 그중 한 그룹의 수리 담당이다. 수리 전 git milestone 커밋은 이미 완료됨 — 안심하고 수정하되 커밋은 하지 마라 (메인이 일괄 커밋).\n공통 규칙:\n1. 지정된 파일만 수정. 다른 그룹이 다른 파일을 병렬 수정 중이므로 스코프 밖 파일 수정 절대 금지 (읽기는 자유).\n2. 수정 전 대상 파일 전체 Read 의무. 기존 코드 스타일·주석 밀도 준수.\n…",
+      "lastProgressAt": 1783079039559,
+      "error": "You've hit your monthly spend limit · raise it at claude.ai/settings/usage",
+      "tokens": 0,
+      "toolCalls": 0,
+      "durationMs": 563
+    }
+  ],
+  "totalTokens": 1237665,
+  "totalToolCalls": 289
+}

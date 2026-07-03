@@ -1,4 +1,11 @@
 #!/bin/bash
+# (v8.2.1 HOOK-P0-1) bare python3 → $QVEST_PY_BIN (Windows Store 스텁 fail-open 방지)
+if [ -z "${QVEST_PY_BIN:-}" ]; then
+  QVEST_PY_BIN="${QVEST_PY:-}"; QVEST_PY_BIN="${QVEST_PY_BIN//\//}"
+  { [ -n "$QVEST_PY_BIN" ] && [ -x "$QVEST_PY_BIN" ]; } || QVEST_PY_BIN="/c/Users/99922/OneDrive/Quant_Module_Moltbot/.venv_qvest_ml/Scripts/python.exe"
+  [ -x "$QVEST_PY_BIN" ] || QVEST_PY_BIN="$(command -v python.exe 2>/dev/null || echo python3)"
+  export QVEST_PY_BIN
+fi
 
 trap 'echo "{}"; exit 0' ERR  # Phase C3 전수 강제
 #==============================================================================
@@ -9,7 +16,7 @@ trap 'echo "{}"; exit 0' ERR  # Phase C3 전수 강제
 source "$(dirname "${BASH_SOURCE[0]:-$0}")/resolve_project.sh"
 
 INPUT=$(cat)
-AGENT=$(printf '%s' "$INPUT" | python3 -c "
+AGENT=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c "
 import sys, json
 d = json.load(sys.stdin)
 print(d.get('teammate_name', d.get('agent_name', '')))

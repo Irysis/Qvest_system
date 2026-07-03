@@ -1,4 +1,11 @@
 #!/usr/bin/env bash
+# (v8.2.1 HOOK-P0-1) bare python3 → $QVEST_PY_BIN (Windows Store 스텁 fail-open 방지)
+if [ -z "${QVEST_PY_BIN:-}" ]; then
+  QVEST_PY_BIN="${QVEST_PY:-}"; QVEST_PY_BIN="${QVEST_PY_BIN//\//}"
+  { [ -n "$QVEST_PY_BIN" ] && [ -x "$QVEST_PY_BIN" ]; } || QVEST_PY_BIN="/c/Users/99922/OneDrive/Quant_Module_Moltbot/.venv_qvest_ml/Scripts/python.exe"
+  [ -x "$QVEST_PY_BIN" ] || QVEST_PY_BIN="$(command -v python.exe 2>/dev/null || echo python3)"
+  export QVEST_PY_BIN
+fi
 #==============================================================================
 # performance_realmeasure_gate.sh — Stop hook (성과 실측 강제)
 # 도훈 mandate 2026-06-17: 성과 수치(YTD/Sharpe/CAGR/MDD/수익률 + 숫자%)를 응답에
@@ -11,14 +18,14 @@ set -uo pipefail
 trap 'echo "{}"; exit 0' ERR
 
 INPUT=$(cat)
-EVENT=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("hook_event_name",""))' 2>/dev/null || echo "")
+EVENT=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; print(json.load(sys.stdin).get("hook_event_name",""))' 2>/dev/null || echo "")
 if [ "$EVENT" != "Stop" ]; then echo '{}'; exit 0; fi
-ACTIVE=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("stop_hook_active",False))' 2>/dev/null || echo "False")
+ACTIVE=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; print(json.load(sys.stdin).get("stop_hook_active",False))' 2>/dev/null || echo "False")
 if [ "$ACTIVE" = "True" ]; then echo '{}'; exit 0; fi
-TP=$(printf '%s' "$INPUT" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("transcript_path",""))' 2>/dev/null || echo "")
+TP=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; print(json.load(sys.stdin).get("transcript_path",""))' 2>/dev/null || echo "")
 if [ -z "$TP" ] || [ ! -f "$TP" ]; then echo '{}'; exit 0; fi
 
-python3 - "$TP" <<'PY' 2>/dev/null || echo '{}'
+"$QVEST_PY_BIN" - "$TP" <<'PY' 2>/dev/null || echo '{}'
 import json, sys, re
 tp = sys.argv[1]
 lines = []

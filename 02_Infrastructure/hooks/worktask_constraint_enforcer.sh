@@ -1,4 +1,11 @@
 #!/usr/bin/env bash
+# (v8.2.1 HOOK-P0-1) bare python3 → $QVEST_PY_BIN (Windows Store 스텁 fail-open 방지)
+if [ -z "${QVEST_PY_BIN:-}" ]; then
+  QVEST_PY_BIN="${QVEST_PY:-}"; QVEST_PY_BIN="${QVEST_PY_BIN//\//}"
+  { [ -n "$QVEST_PY_BIN" ] && [ -x "$QVEST_PY_BIN" ]; } || QVEST_PY_BIN="/c/Users/99922/OneDrive/Quant_Module_Moltbot/.venv_qvest_ml/Scripts/python.exe"
+  [ -x "$QVEST_PY_BIN" ] || QVEST_PY_BIN="$(command -v python.exe 2>/dev/null || echo python3)"
+  export QVEST_PY_BIN
+fi
 # worktask_constraint_enforcer.sh — Hard Constraints 강제 (Level 3 hard block)
 # v6.1 R1+R13: wt_type 분기 (Discovery = SOFT 면제, Deployment = 전부 강제)
 #
@@ -18,14 +25,14 @@ trap 'echo "{}"; exit 0' ERR
 export PYTHONUTF8=1  # (v8.1.2) 인코딩 사고 방지 — harness.md "Hook stdout JSON 규율"
 
 INPUT=$(cat)
-FILE_PATH=$(echo "$INPUT" | python3 -c 'import json,sys; sys.stdout.reconfigure(encoding="utf-8",errors="replace"); d=json.loads(sys.stdin.buffer.read().decode("utf-8","replace")); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
-CONTENT=$(echo "$INPUT" | python3 -c 'import json,sys; sys.stdout.reconfigure(encoding="utf-8",errors="replace"); d=json.loads(sys.stdin.buffer.read().decode("utf-8","replace")); print(d.get("tool_input",{}).get("content",""))' 2>/dev/null || echo "")
+FILE_PATH=$(echo "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; sys.stdout.reconfigure(encoding="utf-8",errors="replace"); d=json.loads(sys.stdin.buffer.read().decode("utf-8","replace")); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
+CONTENT=$(echo "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; sys.stdout.reconfigure(encoding="utf-8",errors="replace"); d=json.loads(sys.stdin.buffer.read().decode("utf-8","replace")); print(d.get("tool_input",{}).get("content",""))' 2>/dev/null || echo "")
 
 case "$FILE_PATH" in
   */optimization_package.json)
     # (v8.1.2) content/fp는 env 경유 + heredoc 인용 — 소스 보간('''$CONTENT''')은 triple-quote/
     # backslash content에서 python 소스가 깨져 ERR trap '{}' fail-open (Tier-3 게이트 침묵 무력화)
-    WTE_CONTENT="$CONTENT" WTE_FP="$FILE_PATH" python3 <<'PYEOF'
+    WTE_CONTENT="$CONTENT" WTE_FP="$FILE_PATH" "$QVEST_PY_BIN" <<'PYEOF'
 import json, os, re, sys
 
 content = os.environ.get("WTE_CONTENT", "")

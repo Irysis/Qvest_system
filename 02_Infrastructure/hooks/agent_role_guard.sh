@@ -1,4 +1,11 @@
 #!/usr/bin/env bash
+# (v8.2.1 HOOK-P0-1) bare python3 → $QVEST_PY_BIN (Windows Store 스텁 fail-open 방지)
+if [ -z "${QVEST_PY_BIN:-}" ]; then
+  QVEST_PY_BIN="${QVEST_PY:-}"; QVEST_PY_BIN="${QVEST_PY_BIN//\//}"
+  { [ -n "$QVEST_PY_BIN" ] && [ -x "$QVEST_PY_BIN" ]; } || QVEST_PY_BIN="/c/Users/99922/OneDrive/Quant_Module_Moltbot/.venv_qvest_ml/Scripts/python.exe"
+  [ -x "$QVEST_PY_BIN" ] || QVEST_PY_BIN="$(command -v python.exe 2>/dev/null || echo python3)"
+  export QVEST_PY_BIN
+fi
 # agent_role_guard.sh — QEPM 3-Agent 역할 경계 강제 (Level 3 hard block)
 # supersedes: forge_code_guard.sh (archived 2026-04-23)
 #
@@ -25,7 +32,7 @@ export PYTHONUTF8=1  # (v8.1.2) 인코딩 사고 방지 — harness.md "Hook std
 
 # stdin JSON 파싱 (v8.1.2: bytes 경유 UTF-8 명시 — locale 의존 제거)
 INPUT=$(cat)
-FILE_PATH=$(echo "$INPUT" | python3 -c 'import json,sys; sys.stdout.reconfigure(encoding="utf-8",errors="replace"); d=json.loads(sys.stdin.buffer.read().decode("utf-8","replace")); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
+FILE_PATH=$(echo "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; sys.stdout.reconfigure(encoding="utf-8",errors="replace"); d=json.loads(sys.stdin.buffer.read().decode("utf-8","replace")); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
 
 # Agent 식별 (환경변수 또는 agent_id marker file)
 # Claude Code teammate system에서 agent name은 env var CLAUDE_AGENT_NAME 또는 process context로 식별
