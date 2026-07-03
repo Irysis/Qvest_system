@@ -2,9 +2,13 @@
 # Lookahead Detector — 미래참조 자동 검출 (C1~C9)
 # run_all.R 실행 전 자동 스캔. 위반 시 실행 차단.
 #
+# 2026-07-03 (DATA-P1-4): .py 지원 추가 — Python 리서치(1급 언어, python-policy.md)
+#   PIT 자동탐지 사각 해소. PY_* 패턴 블록 (shift(-N) / merge_asof forward /
+#   full-sample fit-transform / bfill / centered rolling 등).
+#
 # Usage:
 #   source("02_Infrastructure/lookahead_detector.R")
-#   result <- detect_lookahead("path/to/run_all.R")
+#   result <- detect_lookahead("path/to/run_all.R")   # .R 또는 .py
 #   if (!result$clean) stop("Lookahead detected!")
 #==============================================================================
 
@@ -17,6 +21,9 @@ detect_lookahead <- function(run_all_path, verbose = TRUE) {
   lines <- readLines(run_all_path, warn = FALSE)
   n_lines <- length(lines)
   violations <- list()
+
+  # File-type dispatch: .py → Python idiom scan / else → R scan (기존 경로 유지)
+  is_python <- grepl("\\.py$", run_all_path, ignore.case = TRUE)
 
   # Helper: get context window (surrounding lines as single string)
   get_context <- function(i, window = 5) {
@@ -41,6 +48,96 @@ detect_lookahead <- function(run_all_path, verbose = TRUE) {
 
     # Skip comments and empty lines
     if (grepl("^\\s*#", line) || nchar(line_trimmed) == 0) next
+
+    # =========================================================================
+    # PY_* block: Python lookahead idioms (.py 파일 전용 — 2026-07-03 DATA-P1-4)
+    # R 패턴과 동일 구조 (check code + line + msg). .py이면 이 블록만 실행.
+    # =========================================================================
+    if (is_python) {
+
+      # PY_C7_NEG_SHIFT: negative shift pulls future rows to present.
+      # df.shift(-1) / .shift(periods=-3) / groupby().shift(-N)
+      # 예외: forward label 구성으로 validate_label_direction() 검증이 context에
+      # 명시된 경우만 (python-policy.md — forward label은 검증 의무와 함께 허용).
+      if (grepl("\\.shift\\(\\s*-\\s*\\d|shift\\(\\s*periods\\s*=\\s*-\\s*\\d", line)) {
+        ctx <- get_context(i, 10)
+        if (!grepl("validate_label_direction", ctx)) {
+          add_violation("PY_C7_NEG_SHIFT", i, line_trimmed,
+            "Negative shift(-N) pulls FUTURE values to current row — direct lookahead. Forward labels must pass validate_label_direction() (python-policy.md); features must use shift(+N).")
+        }
+      }
+
+      # PY_C10_PCT_CHANGE_FWD: pct_change with negative periods = forward return
+      if (grepl("pct_change\\(\\s*-\\s*\\d|pct_change\\(\\s*periods\\s*=\\s*-\\s*\\d", line)) {
+        add_violation("PY_C10_PCT_CHANGE_FWD", i, line_trimmed,
+          "pct_change(-N) computes FORWARD return — direct lookahead if used as feature/signal.")
+      }
+
+      # PY_C7_FWD_FEATURE: ranking/sorting on forward/future return columns
+      # (R C7b 등가)
+      if (grepl("(fwd_ret|future_ret|next_ret|ret_fwd)", line, ignore.case = TRUE) &&
+          grepl("(rank|sort_values|qcut|argsort|nlargest|nsmallest)", line, ignore.case = TRUE)) {
+        add_violation("PY_C7_FWD_FEATURE", i, line_trimmed,
+          "Ranking/sorting on forward/future returns detected. This is a direct lookahead (R C7b equivalent).")
+      }
+
+      # PY_C2_MERGE_ASOF_FWD: merge_asof direction='forward'/'nearest' joins
+      # future rows onto current timestamp
+      if (grepl("merge_asof", line) &&
+          grepl("direction\\s*=\\s*['\"](forward|nearest)['\"]", line)) {
+        add_violation("PY_C2_MERGE_ASOF_FWD", i, line_trimmed,
+          "merge_asof(direction='forward'/'nearest') joins FUTURE rows. Use direction='backward' (default) for PIT.")
+      }
+
+      # PY_C1_FULLSAMPLE_FIT: scaler/transformer fit on full sample then applied
+      # to history (fit-then-transform leak). rolling/expanding/train-split
+      # context가 없으면 warn.
+      if (grepl("fit_transform\\(|\\.fit\\(", line)) {
+        ctx <- get_context(i, 10)
+        is_scaler_ctx <- grepl("[Ss]caler|StandardScaler|MinMaxScaler|RobustScaler|QuantileTransformer|PCA|normalize", ctx)
+        has_pit_ctx   <- grepl("train|split|expanding|rolling|walk.?forward|fold|\\bcv\\b|purg", ctx, ignore.case = TRUE)
+        if ((grepl("fit_transform\\(", line) || is_scaler_ctx) && !has_pit_ctx) {
+          add_violation("PY_C1_FULLSAMPLE_FIT", i, line_trimmed,
+            "Full-sample fit/fit_transform without train-split or expanding/rolling context — global stats leak into past rows (R C7a scale() equivalent). Fit on train window only, transform forward.")
+        }
+      }
+
+      # PY_C1_FULLSAMPLE_ZSCORE: (x - x.mean()) / x.std() on full column in
+      # signal context, without rolling/expanding/date-groupby
+      if (grepl("\\.mean\\(\\)", line) && grepl("\\.std\\(\\)", line)) {
+        ctx <- get_context(i)
+        if (grepl("Score|signal|weight|z_|zscore|rank", ctx, ignore.case = TRUE) &&
+            !grepl("rolling|expanding|groupby\\([^)]*([Dd]ate|ym|month)", ctx)) {
+          add_violation("PY_C1_FULLSAMPLE_ZSCORE", i, line_trimmed,
+            "z-score using full-column .mean()/.std() in signal context — full-sample stats (C1). Use rolling/expanding window or per-date cross-sectional groupby.")
+        }
+      }
+
+      # PY_C9_BFILL: backward fill propagates future values backward
+      if (grepl("\\.bfill\\(|method\\s*=\\s*['\"](bfill|backfill)['\"]|fillna\\([^)]*['\"](bfill|backfill)['\"]", line)) {
+        add_violation("PY_C9_BFILL", i, line_trimmed,
+          "Backward fill (bfill) propagates FUTURE values to earlier rows. Use ffill for PIT-safe imputation.")
+      }
+
+      # PY_C5_ROLLING_CENTER: centered rolling window includes future observations
+      if (grepl("rolling\\([^)]*center\\s*=\\s*True", line)) {
+        add_violation("PY_C5_ROLLING_CENTER", i, line_trimmed,
+          "rolling(center=True) window includes FUTURE observations. Use trailing window (center=False, default).")
+      }
+
+      # PY_C12_FULLSAMPLE_OPT: full-sample parameter optimization
+      # (R C12와 동일 패턴 — 언어 무관 문자열)
+      py_c12_patterns <- c("best_sharpe", "best_blend", "best_score.*=",
+                           "grid.*sharpe", "if.*sr.*>.*best", "if.*sharpe.*>.*best")
+      for (pat in py_c12_patterns) {
+        if (grepl(pat, line_trimmed, ignore.case = TRUE)) {
+          add_violation("PY_C12_FULLSAMPLE_OPT", i, line_trimmed,
+            "Full-sample parameter optimization detected. Use expanding-window or pre-commit ratio.")
+        }
+      }
+
+      next  # .py: R 전용 패턴은 건너뜀
+    }
 
     # =========================================================================
     # C1: Full-sample statistics — sd/mean/var on full vector without rolling
@@ -369,9 +466,9 @@ detect_lookahead <- function(run_all_path, verbose = TRUE) {
        n_lines = n_lines, n_violations = length(violations))
 }
 
-# Convenience: scan all R files in a strategy directory
+# Convenience: scan all R + Python files in a strategy directory
 detect_lookahead_dir <- function(strategy_dir, verbose = TRUE) {
-  r_files <- list.files(strategy_dir, pattern = "\\.R$", full.names = TRUE,
+  r_files <- list.files(strategy_dir, pattern = "\\.(R|py)$", full.names = TRUE,
                         recursive = FALSE)
   all_violations <- list()
   total <- 0L

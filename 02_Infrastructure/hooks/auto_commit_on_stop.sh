@@ -8,7 +8,8 @@
 # 동작:
 #   1. secret 스캔 (Telegram token / API key / .env staging)
 #   2. git add -A (gitignore 자동 적용)
-#   3. 신규 파일 >100개면 abort (실수 방지)
+#   3. 신규 파일 >100개면 코어 경로만 선별 커밋 + 나머지 skip (HYG-01 2026-07-03,
+#      구 전체-abort가 973회 연속 abort 유발 → 강등. 마커: /tmp/auto_commit_abort_marker.txt)
 #   4. commit with [auto-commit] prefix + timestamp
 #
 # 로그: /tmp/auto_commit.log
@@ -72,15 +73,25 @@ fi
 # ─── Staging (gitignore 자동 적용) ──────────────────────────────────
 git add -A 2>>"$LOG"
 
-# 신규 파일 과다 abort (실수 방지)
+# 신규 파일 과다 시: 전체 abort → 코어 경로 선별 커밋으로 강등 (HYG-01, 2026-07-03)
+# 구 동작(전체 reset + abort)이 973회 연속 abort를 만들어 세션 변경분이 영영 미커밋되던 결함 수리.
+# 코어 경로(.claude/ 02_Infrastructure/ 00_Lawbook/ qepm/memory/ 06_Registry/ CLAUDE.md)만 스테이징,
+# 나머지 대량 신규 파일은 skip + 로그/마커 기록 (Telegram 배선은 후속 — 로그+마커까지만).
 NEW_COUNT=$(git diff --cached --name-status 2>/dev/null | awk '$1=="A"' | wc -l)
+PARTIAL_NOTE=""
 if [ "$NEW_COUNT" -gt 100 ]; then
-  echo "$TS TOO_MANY_NEW ($NEW_COUNT) — abort + reset" >> "$LOG"
-  git reset HEAD -- . 2>>"$LOG"
-  MSG="[WARN] [auto-commit] 신규 파일 $NEW_COUNT개 (>100) - 실수 방지로 abort. 수동 검토 후 커밋 필요."
-  MSG_ESC=$(printf '%s' "$MSG" | python3 -c "import sys,json; s=sys.stdin.buffer.read().decode('utf-8','replace'); print(json.dumps(''.join(ch if not(0xD800<=ord(ch)<=0xDFFF) else '?' for ch in s)))")
-  echo "{\"hookSpecificOutput\":{\"hookEventName\":\"Stop\",\"additionalContext\":$MSG_ESC}}"
-  exit 0
+  echo "$TS TOO_MANY_NEW ($NEW_COUNT) — core-path selective staging fallback" >> "$LOG"
+  git reset HEAD -- . 2>>"$LOG" || true
+  CORE_PATHS=".claude 02_Infrastructure 00_Lawbook qepm/memory 06_Registry CLAUDE.md"
+  for p in $CORE_PATHS; do
+    if [ -e "$p" ]; then git add -- "$p" 2>>"$LOG" || true; fi
+  done
+  SKIPPED=$(git status --porcelain 2>/dev/null | grep -c '^??' || true)
+  SKIPPED=${SKIPPED//[^0-9]/}; SKIPPED=${SKIPPED:-0}
+  echo "$TS CORE_ONLY_STAGED new=$NEW_COUNT untracked_skipped=$SKIPPED" >> "$LOG"
+  printf '%s TOO_MANY_NEW=%s untracked_skipped=%s (core-path selective commit)\n' \
+    "$TS" "$NEW_COUNT" "$SKIPPED" > /tmp/auto_commit_abort_marker.txt 2>/dev/null || true
+  PARTIAL_NOTE=" [PARTIAL: 신규 ${NEW_COUNT}개>100 — 코어 경로만 커밋, untracked ${SKIPPED}건 skip]"
 fi
 
 STAGED=$(git diff --cached --name-only 2>/dev/null | wc -l)
@@ -107,13 +118,16 @@ COMMIT_EOF
 
 if [ $? -eq 0 ]; then
   HASH=$(git rev-parse --short HEAD)
-  echo "$TS AUTO_COMMIT $HASH staged=$STAGED" >> "$LOG"
-  MSG="[OK] [auto-commit] $HASH - $STAGED files committed. Push는 milestone/cron으로 자동."
+  echo "$TS AUTO_COMMIT $HASH staged=$STAGED${PARTIAL_NOTE}" >> "$LOG"
+  MSG="[OK] [auto-commit] $HASH - $STAGED files committed. Push는 milestone/cron으로 자동.${PARTIAL_NOTE}"
   MSG_ESC=$(printf '%s' "$MSG" | python3 -c "import sys,json; s=sys.stdin.buffer.read().decode('utf-8','replace'); print(json.dumps(''.join(ch if not(0xD800<=ord(ch)<=0xDFFF) else '?' for ch in s)))")
   echo "{\"hookSpecificOutput\":{\"hookEventName\":\"Stop\",\"additionalContext\":$MSG_ESC}}"
 else
-  echo "$TS COMMIT_FAILED" >> "$LOG"
-  cat /tmp/auto_commit_last.log >> "$LOG"
+  # 실패도 로그 + 마커에 남김 (HYG-01) — 조용한 실패 방지. Telegram 배선은 후속.
+  echo "$TS COMMIT_FAILED${PARTIAL_NOTE}" >> "$LOG"
+  cat /tmp/auto_commit_last.log >> "$LOG" 2>/dev/null || true
+  printf '%s COMMIT_FAILED%s (detail: /tmp/auto_commit_last.log)\n' "$TS" "$PARTIAL_NOTE" \
+    > /tmp/auto_commit_abort_marker.txt 2>/dev/null || true
   echo '{}'
 fi
 exit 0

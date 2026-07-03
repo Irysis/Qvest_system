@@ -4,7 +4,7 @@
 #   (1) INV-1: supporting L-code 전부 metric_type=backtested (아니면 blocked: needs backtest)
 #   (2) cross-mode 독립성: 출처 모드 ≥ 2 (다른 모드에서도 재확인 — 같은 편향 공유 아님)
 #   (3) essence_score §3 HARD: weakest portfolio_alpha_t ≥ 2.95 (measurement-graduation §3)
-#   (4) INV-5/AX-008: Forge(essence) + Codex + Architect 중 2-source PASS
+#   (4) INV-5/AX-008: Forge(essence) + Self-Adversarial(v8.2 — Codex Round 대체) + Architect 중 2-source PASS
 # silent-proceed 금지 — 미충족(특히 proxy)은 blocked 반환.
 #
 # Usage: Rscript promote_global.R <modes/<m>/AX-XX-001.json> [<더 묶을 mode-local> ...]
@@ -20,7 +20,12 @@ local({
 Sys.unsetenv("PROMOTE_SOURCED")
 
 promote_to_global <- function(mode_local_paths,
-                              verification = list(forge = FALSE, codex = FALSE, architect = FALSE)) {
+                              verification = list(forge = FALSE, self_adversarial = FALSE, architect = FALSE)) {
+  # back-compat: 구 필드명 codex → self_adversarial (v8.2 AX-008 치환, 2026-07-03)
+  if (!is.null(verification$codex) && is.null(verification$self_adversarial)) {
+    verification$self_adversarial <- verification$codex
+    verification$codex <- NULL
+  }
   root <- .px_root()
   corpus <- fromJSON(file.path(root, ".cache", "lcode_corpus.json"), simplifyVector = FALSE)
   axioms <- lapply(mode_local_paths, function(p) fromJSON(p, simplifyVector = FALSE))

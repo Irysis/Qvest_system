@@ -107,7 +107,17 @@ function Stop-DialogWatcher { Get-Job -Name QWDlg -EA SilentlyContinue | Stop-Jo
 
 # ---- state (idempotent) ----
 function Load-State { $h=@{}; if (Test-Path $STATE) { try { $o=Get-Content $STATE -Raw | ConvertFrom-Json; foreach($p in $o.psobject.Properties){ $h[$p.Name]=$p.Value } } catch {} }; return $h }
-function Save-State($s) { ($s | ConvertTo-Json -Depth 5) | Set-Content -Path $STATE -Encoding UTF8 }
+function Save-State($s) {
+  # HYG-05 guard (2026-07-03): past runs dropped state into repo ROOT with a
+  # stringified-hashtable filename (e.g. 'System.Collections.Hashtable') when the
+  # path variable did not resolve to the .json path. Enforce literal .json path
+  # under $ROOT\.cache and ensure the directory exists before writing.
+  $path = "$STATE"
+  if (-not $path -or $path -notlike "*.json") { $path = Join-Path $ROOT ".cache\qw_refresh_state.json" }
+  $dir = Split-Path -Parent $path
+  if ($dir -and -not (Test-Path $dir)) { New-Item -ItemType Directory -Force -Path $dir | Out-Null }
+  ($s | ConvertTo-Json -Depth 5) | Set-Content -LiteralPath $path -Encoding UTF8
+}
 function Is-Done($state,$name,$target) { return ($state.ContainsKey($name) -and "$($state[$name].ymd)" -eq "$target") }
 function Mark-Done($state,$name,$target) { $state[$name]=@{ ymd="$target"; ts=(Get-Date -Format s) }; Save-State $state }
 

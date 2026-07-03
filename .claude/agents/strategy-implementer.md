@@ -35,8 +35,8 @@ model: opus
 ## 핸드오프 → lean-forge
 sim 산출물(holdings 비중 + asset 일별수익 또는 sim_result) + 전략 스펙(strategy_spec list) 를 lean-forge에 전달. lean-forge가 `build_bt_result`(monthly af=12) + `Return.portfolio` + `essence_score` 로 등급 산출.
 
-## Codex Round
-implementer는 Codex Round 생략(설계만, 측정 분리로 firewall). Judge가 Codex 유지.
+## Self-Adversarial Challenge (v8.2 — Codex Round 대체)
+implementer는 Self-Adversarial Challenge 생략(설계만, 측정 분리로 firewall). Judge가 Self-Adversarial Challenge 의무 유지(v8.2 — 외부 Codex Round 제거, 메인 Opus 4.8 자체 적대검증 대체).
 
 ## 참조
 - SOT: `02_Infrastructure/docs/qvest_dual_mode_design.md`

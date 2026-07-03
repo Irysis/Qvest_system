@@ -55,11 +55,18 @@ register_bt_result <- function(bt_result, path = REGISTRY_PATH,
                                  block_on_fail = TRUE) {
   init_registry(path)
 
-  # L3 hard block: critical FAIL 또는 integrity_status FAIL 시 차단
+  # L3 hard block: integrity_status가 audit-완료 상태가 아니면 차단
+  #   FAIL          — audit critical FAIL
+  #   PENDING       — build_manifest 초기값 = audit_bt_result() 미실행 (감사 GOV-05)
+  #   NA/결측/빈값  — manifest 손상 또는 미기록
+  # (audit_bt_result가 부여하는 상태는 PASS/WARNING/FAIL — PENDING 등재는 audit 우회)
   integrity <- bt_result$manifest$integrity_status[1]
-  if (block_on_fail && integrity == "FAIL") {
-    msg <- sprintf("[registry_writer L3 BLOCK] %s integrity=FAIL — registry 등재 차단",
-                   bt_result$manifest$strategy_id[1])
+  integrity_missing <- is.null(integrity) || length(integrity) == 0 ||
+    is.na(integrity) || !nzchar(as.character(integrity))
+  if (block_on_fail && (integrity_missing || integrity %in% c("FAIL", "PENDING"))) {
+    label <- if (integrity_missing) "MISSING/NA" else as.character(integrity)
+    msg <- sprintf("[registry_writer L3 BLOCK] %s integrity=%s — registry 등재 차단 (audit_bt_result() 실행 후 PASS/WARNING만 등재 가능)",
+                   bt_result$manifest$strategy_id[1], label)
     cat(msg, "\n")
     return(invisible(list(blocked = TRUE, reason = msg)))
   }

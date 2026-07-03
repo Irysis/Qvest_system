@@ -376,6 +376,7 @@ run_alpha_search <- function(strategy_name,
       role = NA_character_,
       meta = list(strategy_idea = strategy_idea, score = score,
                   selection_type = "chain",
+                  chain_qualification = .chain_qualification_record(),  # §3 chain 자격요건 기록 (추가 필드)
                   proxy_grade = grade,
                   f_grade_reasons = f_grade_reasons,
                   fmt_codes = vapply(fmt_hits, function(x) x$code, ""),
@@ -1098,6 +1099,24 @@ run_alpha_search <- function(strategy_name,
   })
 }
 
+# ---- chain 자격요건 기록 (measurement-graduation §3 — selection_type="chain" 하드코딩 근거) ----
+#   run_alpha_search 1회 호출 = 1가설 1전략 단일 실행 (열거집합 argmax/threshold-pick 없음 = sweep 아님).
+#   §3 chain 요건 ①(iteration별 변경사유 1줄) ②(IS-only 변형선택) ③(holdout 최종 1회)은
+#   반복 체인(호출 반복) 레벨 규약 — 단일 실행 스크립트는 ②③을 스스로 검증할 수 없으므로
+#   구조적 사실만 정직 기록하고 cross-run 준수 책임을 호출자(리서치 세션)로 명시한다.
+#   기존 출력 스키마를 깨뜨리지 않는 추가 필드 (MC-04 수리 2026-07-03).
+.chain_qualification_record <- function() {
+  list(
+    selection_operator      = "none_single_run",            # 단일 실행 — sweep 선택 연산자 부재
+    iteration_reason_logged = TRUE,                          # L-code mechanism_hypothesis/next_probe에 변경사유 기록
+    is_only_selection       = "not_applicable_single_run",   # 실행 내 변형선택 없음 — cross-run IS-only 규약은 호출자 책임
+    holdout_single_view     = "not_queried_by_this_script",  # 본 스크립트는 holdout 미조회
+    note = paste0("run_alpha_search 1회=1가설 1전략 단일 실행(sweep 아님). ",
+                  "반복 개선 체인의 IS-only 변형선택·holdout 1회 규약 준수는 호출자 책임 ",
+                  "(measurement-graduation §3 chain 자격요건 — 미충족 시 sweep 재분류 대상).")
+  )
+}
+
 # =============================================================================
 # 권위측정 사다리: proxy(hurdle B 이상 또는 screening_pass) → 계약 실측 재측정 (build_bt_result + essence_score)
 # =============================================================================
@@ -1166,6 +1185,7 @@ run_alpha_search <- function(strategy_name,
       essence       = es$essence,                      # PORT_t NW lag-3 / OOS retention / DSR 등
       dsr_gate_applied = es$dsr_gate_applied,
       selection_type   = "chain",
+      chain_qualification = .chain_qualification_record(),  # §3 chain 자격요건 기록 (추가 필드)
       hard_fail        = es$hard_fail,
       reasons          = es$reasons,
       contract = list(
@@ -1279,6 +1299,33 @@ run_alpha_search <- function(strategy_name,
     sprintf("근접 탈락(종합 %.0f점) — 최약 축 보강(파라미터 아닌 구성 변경) 후 1회 재검증. 반복 sweep 시 n_trials 누적 신고.", .as_num(hg$score))
   }
 
+  # ---- falsification_attempts (r7 Falsification 축 — AXM-01 공급측 배선, 2026-07-03) ----
+  #   이미 산출된 반증형 검증 결과의 전달만 (신규 계산 금지). placebo/lag-stress는 현
+  #   alpha_search 파이프라인 미산출 — 미산출 값은 기재하지 않는다 (가짜 데이터 생성 금지,
+  #   cluster_extractor._draft_falsification이 실기록만 집계). 형식: 문자열 list.
+  sdef_lc <- tryCatch(hg$verdict$statistical_defense, error = function(e) NULL) %||% list()
+  fals <- character(0)
+  # PIT 정적스캔 — detect_lookahead 위반 시 run 자체가 중단되므로 emit 시점엔 항상 CLEAN
+  fals <- c(fals, "PIT 정적스캔(detect_lookahead) CLEAN — 위반 시 백테 중단 정책으로 emit 시점 통과 보장")
+  dsr_lc <- .as_num(sdef_lc$dsr)
+  if (is.finite(dsr_lc))
+    fals <- c(fals, sprintf("DSR(다중검정 반증) %.3f, significant=%s, n_trials=%s — chain은 게이트 부적용(진단 산출)",
+                            dsr_lc, isTRUE(sdef_lc$dsr_significant),
+                            as.character(sdef_lc$n_trials %||% NA)))
+  if (is.finite(oos_retention))
+    fals <- c(fals, sprintf("IS65/OOS35 활성SR retention %.2f (hurdle D062, proxy) — 과적합 반증 시도", oos_retention))
+  f7 <- Filter(function(x) identical(x$code %||% "", "FMT-07"), fmt)
+  if (length(f7))
+    fals <- c(fals, sprintf("서브기간 분해(pre/post-2017) 반증: %s", .clip_msg(f7[[1]]$reason %||% "", 150L)))
+  if (auth_ok) {
+    a_oos <- .as_num(auth$essence$oos_retention)
+    a_dsr <- .as_num(auth$essence$dsr)
+    fals <- c(fals, sprintf("계약 실측 재검(essence v2, backtested): oos_retention %s / DSR %s / hard_fail=%s",
+                            ifelse(is.finite(a_oos), sprintf("%.2f", a_oos), "NA"),
+                            ifelse(is.finite(a_dsr), sprintf("%.2f", a_dsr), "NA"),
+                            paste(as.character(auth$hard_fail %||% "NA"), collapse = ",")))
+  }
+
   # v8.0 입력 품질 게이트 (lcode_schema.R) — garbage corpus 진입 차단 (안전핀 #1)
   schema_src <- file.path(.AS_INFRA, "axiom", "lcode_schema.R")
   if (file.exists(schema_src)) source(schema_src, local = TRUE)
@@ -1305,7 +1352,8 @@ run_alpha_search <- function(strategy_name,
     data_supported_conclusion = data_supported_conclusion,
     next_probe                = next_probe,
     fmt_codes                 = as.list(fmt_codes),     # 빈 list = 판정 없음 (정직)
-    oos_retention             = oos_retention           # IS65/OOS35 SR retention (hurdle D062, proxy)
+    oos_retention             = oos_retention,          # IS65/OOS35 SR retention (hurdle D062, proxy)
+    falsification_attempts    = as.list(fals)           # r7 Falsification 축 — 기존 산출 반증형 검증만 배선
   )
   # ---- 권위측정 사다리 결과 라벨 (트랙C): 계약 실측 성공 시 backtested로 승격 ----
   #   INV-1: proxy는 mode-local 한정 — 실측(backtested) 라벨은 build_bt_result+essence_score
@@ -1326,6 +1374,7 @@ run_alpha_search <- function(strategy_name,
       dsr                       = .as_num(auth$essence$dsr),
       audit_integrity           = auth$contract$integrity_status,
       selection_type            = "chain",
+      chain_qualification       = .chain_qualification_record(),  # §3 chain 자격요건 기록 (추가 필드)
       source                    = "authoritative_remeasure.json"
     )
   }
@@ -1385,7 +1434,11 @@ run_alpha_search <- function(strategy_name,
   `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
   rec <- tryCatch({
     pg0 <- pg0_gap_review(portfolio_id)
-    bs  <- file.path(PROJECT_ROOT, "book_state.json")
+    # book_state.json 정본 소재 = qepm/mailbox/governor/ (CAP-P0-2 수리 2026-07-03:
+    #   기존 PROJECT_ROOT 직하 참조는 항상 부재 → incumbent_book_ir 공백 → ΔIR 기준선 소실).
+    bs  <- file.path(PROJECT_ROOT, "qepm", "mailbox", "governor", "book_state.json")
+    if (!file.exists(bs))
+      cat(sprintf("[AlphaSearch][PG] WARN: book_state.json 부재 (%s) — incumbent 빈 book으로 대체 (ΔIR 기준선 없음, 침묵 금지 고지)\n", bs))
     incumbent <- if (file.exists(bs)) fromJSON(bs, simplifyVector = FALSE) else list(admitted_ids = list())
     pg1_admission_with_book_context(portfolio_id, strategy_id, "core_alpha", pg0, incumbent)
   }, error = function(e) { cat("[AlphaSearch][PG] 권고 산출 실패:", conditionMessage(e), "\n"); NULL })

@@ -32,10 +32,10 @@
 - **포트폴리오 수익률 *구성* 도 R 경유 (도훈 mandate 2026-05-31, 안 A)**: 포트 수익률은 R `Return.portfolio()`(PerformanceAnalytics, weight drift·rebalance 정확)로 구성. **Python은 비중(weights) + asset 수익까지만 산출해 R 브릿지로 넘기고, 사전 구성된 포트 수익률 시계열을 손계산(`(w*r).sum()` 등)으로 만들지 말 것.** Python-native portfolio lib(vectorbt/bt 등) 미도입 — R 브릿지 단일 경로 유지(도입 시 R Return.portfolio와 known-case parity 검증 의무).
 - `bt_result` audit (`audit_bt_result`) + registry (`register_bt_result`)는 R 경유 단일 경로 유지 → metric_type 라벨·audit_status 일관성 보장.
 
-## 5. Hook 강제 (Phase 3에서 .py 확장 예정)
+## 5. Hook 강제 (.py 확장 적용됨)
 
-- `answer_principles_grep.sh` + `backtest_contract_audit.sh` TARGET_PATTERN에 `.py` 추가 (자체합성·회피표현 탐지를 Python까지 — v8.0 Phase 3 harness 배치에서 적용).
-- 그 전까지는 본 rule + Codex Round로 보강 (warn-level).
+- `answer_principles_grep.sh` + `backtest_contract_audit.sh` TARGET_PATTERN에 `.py` 포함 (자체합성·회피표현 탐지를 Python까지 — 2026-07-03 아키텍처 수리에서 배선 적용).
+- hook 미커버 영역은 본 rule + Self-Adversarial Challenge(v8.2 — Codex Round 제거·대체, `02_Infrastructure/docs/rules/codex-round.md`)로 보강 (warn-level).
 
 ## 6. 위반 시
 PIT/자체합성/lockbox 위반은 **언어 무관 AX-002 동급**. 즉시 중단 → 결과 무효 → 재실행.
@@ -46,4 +46,5 @@ PIT/자체합성/lockbox 위반은 **언어 무관 AX-002 동급**. 즉시 중�
 - `02_Infrastructure/docs/qvest_v8_0_upgrade_plan.md` WS1
 
 ## Change log
+- 2026-07-03: §5 갱신 — hook `.py` 확장 적용됨으로 반영 + "Codex Round로 보강" 문구를 Self-Adversarial Challenge(v8.2)로 교체.
 - 2026-05-29 v8.0 Phase 2: 신규 작성. "R only" 폐지 + R/Python 동등 허용 + 가드레일(PIT/계약/bridge). 도훈 mandate.

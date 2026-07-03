@@ -24,7 +24,16 @@ suppressPackageStartupMessages({ library(jsonlite); library(data.table) })
 
 .MODE_PREFIX <- c(alpha_search = "AS", alpha_research = "AR", qepm_legacy = "QPM",
                   judge_gate = "JG", governor_admission = "GV",
-                  factor_rotation = "FR", regime_research = "RR")
+                  factor_rotation = "FR", regime_research = "RR",
+                  ramp = "RAMP")  # 2026-07-03: RAMP 4번째 모드 (lcode_emit/.LCODE_MODE_PREFIX·lcode_schema와 정합)
+
+# crash-safe prefix 조회 — named vector `[[`는 missing name에 hard error라
+# `%||% "GEN"` 폴백이 실행되지 않던 결함(예: research_mode="qepm"/"global") 교정.
+.mode_prefix <- function(mode) {
+  if (is.null(mode) || !length(mode) || is.na(mode[1])) return("GEN")
+  p <- unname(.MODE_PREFIX[as.character(mode)[1]])
+  if (is.na(p)) "GEN" else p
+}
 
 .HURDLE <- list(
   indep_min_constructions = 2L, indep_min_constructions_neg = 3L,  # INV-7 negative 상향
@@ -141,6 +150,8 @@ promote_to_axiom <- function(candidate_path, threshold = 0.80, auto_inject = NUL
   corpus <- fromJSON(cp, simplifyVector = FALSE)
 
   mode <- candidate$research_mode %||% "qepm_legacy"
+  if (!(mode %in% names(.MODE_PREFIX)))
+    cat(sprintf("[promote][WARN] research_mode='%s'는 .MODE_PREFIX 미등재 — prefix 'GEN' 폴백 (lcode_schema LCODE_VALID_MODES 정합 확인 필요)\n", mode))
   cand_metric <- candidate$metric_type %||% "estimated"
   tier <- "mode_local"
   type <- candidate$type %||% "empirical"
@@ -193,7 +204,7 @@ promote_to_axiom <- function(candidate_path, threshold = 0.80, auto_inject = NUL
     nums <- as.integer(sub("AX-(\\d+)\\.json", "\\1", files)); nums <- nums[!is.na(nums)]
     return(if (!length(nums)) "AX-003" else sprintf("AX-%03d", max(nums) + 1L))
   }
-  prefix <- .MODE_PREFIX[[mode]] %||% "GEN"
+  prefix <- .mode_prefix(mode)
   md <- file.path(active_dir, "modes", mode)
   files <- if (dir.exists(md)) list.files(md, pattern = sprintf("^AX-%s-\\d+\\.json$", prefix)) else character(0)
   nums <- as.integer(sub(sprintf("AX-%s-(\\d+)\\.json", prefix), "\\1", files)); nums <- nums[!is.na(nums)]
@@ -260,14 +271,18 @@ promote_to_axiom <- function(candidate_path, threshold = 0.80, auto_inject = NUL
   # 이미 있으면 skip
   ids <- vapply(sot$axioms, function(a) a$axiom_id %||% "", character(1))
   if (ax_id %in% ids) return(invisible())
+  # global tier(promote_global.R 경유)는 modes/ 하위가 아닌 active/ 직속 — 경로/namespace 분기
+  is_global <- identical(mode, "global")
+  ns <- if (is_global) "GLOBAL" else .mode_prefix(mode)
   sot$axioms[[length(sot$axioms) + 1]] <- list(axiom_id = ax_id, name = ax_id,
     documented_active = FALSE,
-    active_json_path = sprintf("qepm/memory/axioms/active/modes/%s/%s.json", mode, ax_id),
-    namespace = .MODE_PREFIX[[mode]] %||% "GEN", axiom_class = axiom$axiom_class %||% "methodological",
+    active_json_path = if (is_global) sprintf("qepm/memory/axioms/active/%s.json", ax_id)
+                       else sprintf("qepm/memory/axioms/active/modes/%s/%s.json", mode, ax_id),
+    namespace = ns, axiom_class = axiom$axiom_class %||% "methodological",
     authority = "high", review_policy = "quarterly", enforcement_mode = "documented",
-    sync_status = "MODE_LOCAL", cache_core_present = FALSE)
+    sync_status = if (is_global) "GLOBAL" else "MODE_LOCAL", cache_core_present = FALSE)
   write_json(sot, sp, pretty = TRUE, auto_unbox = TRUE, null = "null")
-  cat(sprintf("[promote] sot_map += %s (namespace=%s)\n", ax_id, .MODE_PREFIX[[mode]] %||% "GEN"))
+  cat(sprintf("[promote] sot_map += %s (namespace=%s)\n", ax_id, ns))
 }
 
 .update_lcode_back_links <- function(candidate, ax_filename) {

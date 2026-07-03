@@ -8,9 +8,13 @@
 # 차단 대상 (audit_status != PASS 시 deny):
 #   - qepm/registry/backtest_registry.csv 등재 시도
 #   - methodology_active.md L-code 등재 시도 (백테스트 metric 인용 시)
+#   - .py 백테스트 자체합성 idiom (python-policy.md §5, v8.x Phase 3 이행)
 #
 # 작동:
-#   1. file_path가 backtest_registry.csv 또는 methodology_*.md 일 때만 작동
+#   1. file_path가 backtest_registry.csv / methodology_*.md / *.py 일 때만 작동
+#   1b. *.py 는 자체합성 idiom (np.prod(1+r) / (1+r).cumprod() / (w*r).sum()
+#       / .prod()-1) 감지 시 deny (L3 block) — dispatch_measurement_gate.sh
+#       R 패턴(prod(1+r)/cumprod)과 동일 구조의 $INPUT grep
 #   2. 동일 strategy의 bt_result.rds에서 audit$integrity_status 확인
 #   3. integrity == "FAIL" 이면 deny (L3 block)
 #   4. 그 외는 allow
@@ -34,10 +38,26 @@ FILE_PATH=$(echo "$INPUT" | grep -oE '"file_path"[[:space:]]*:[[:space:]]*"[^"]*
 
 [ -z "$FILE_PATH" ] && { echo '{}'; exit 0; }
 
-# 차단 대상 패턴
-TARGET_PATTERN='(backtest_registry\.csv$|methodology_(active|memory)\.md$|metrics_official\.csv$)'
+# 차단 대상 패턴 (.py = python-policy.md §5 자체합성 커버리지)
+TARGET_PATTERN='(backtest_registry\.csv$|methodology_(active|memory)\.md$|metrics_official\.csv$|\.py$)'
 
 if ! echo "$FILE_PATH" | grep -qE "$TARGET_PATTERN"; then
+  echo '{}'; exit 0
+fi
+
+# .py 자체합성 idiom L3 block (python-policy.md §4 금지 목록)
+# 구조 = dispatch_measurement_gate.sh R 패턴(prod(1+r)/cumprod)과 동일 ($INPUT grep)
+if echo "$FILE_PATH" | grep -qE '\.py$'; then
+  PY_SYNTH_PATTERN='np\.prod\( *1 *\+|\( *1 *\+ *[A-Za-z_][A-Za-z0-9_.]* *\)\.cumprod\(|\( *w *\* *r *\)\.sum\(|\.prod\( *\) *- *1|0\.[0-9]+ *\* *r[0-9]'
+  if echo "$INPUT" | grep -qE "$PY_SYNTH_PATTERN"; then
+    echo "[$TS] L3 BLOCK — Python 자체합성 idiom 감지 ($FILE_PATH)" >> "$LOG"
+    cat <<EOF
+{"decision": "block", "reason": "python-policy.md §4 — Python backtest 자체합성 금지 (np.prod(1+r) / (1+r).cumprod() / (w*r).sum() / .prod()-1). Return.portfolio R bridge + build_bt_result 경유만 허용. Reference: .claude/rules/python-policy.md / backtest-contract.md"}
+EOF
+    exit 0
+  fi
+  # .py 는 자체합성 스캔만 수행 — registry/methodology integrity 체크 비대상
+  echo "[$TS] allow — .py synth-scan clean ($FILE_PATH)" >> "$LOG"
   echo '{}'; exit 0
 fi
 

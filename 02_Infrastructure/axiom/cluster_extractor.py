@@ -257,9 +257,23 @@ def _draft_mechanism(cluster: dict) -> dict:
             "causal_plausibility": None}  # plausibility 판정은 promote.R/human — 자동 생성 금지
 
 
+def _median(xs: list[float]) -> float:
+    xs = sorted(xs)
+    n = len(xs)
+    return xs[n // 2] if n % 2 else (xs[n // 2 - 1] + xs[n // 2]) / 2
+
+
 def _draft_oos(cluster: dict) -> dict:
-    """멤버 oos_retention(IS65/OOS35 SR retention) 실값 median → oos_validation_draft."""
+    """멤버 oos_retention(IS65/OOS35 SR retention) 실값 median → oos_validation_draft.
+
+    oos_months: 하드코딩 None → L-code 실값(oos_months 필드) median 매핑 (2026-07-03 수리).
+    corpus 실측 survey(2026-07-03): oos_retention 651건 보유 / oos_months 0건 —
+    실값이 없는 멤버뿐이면 종전대로 None 유지(추정 생성 금지, External 축은 미충족으로 남음).
+    생산자(lcode_emit/run_alpha_search)가 oos_months 적립 시작 시 자동으로 흐른다
+    (선행조건: lcode_harvester pass-through 목록에 oos_months 추가 필요).
+    """
     vals: list[float] = []
+    months: list[float] = []
     for m in cluster["members"]:
         try:
             v = float(m.get("oos_retention"))
@@ -267,16 +281,23 @@ def _draft_oos(cluster: dict) -> dict:
                 vals.append(v)
         except (TypeError, ValueError):
             pass
+        try:
+            mo = float(m.get("oos_months"))
+            if mo == mo and mo > 0:  # NaN/비양수 guard
+                months.append(mo)
+        except (TypeError, ValueError):
+            pass
+    oos_months = round(_median(months), 1) if months else None
     if not vals:
-        return {"oos_months": None, "oos_effect_vs_is": None,
+        return {"oos_months": oos_months, "oos_effect_vs_is": None,
                 "note": "promote.R r4_regime_payoff / essence_score 경유 확정"}
-    vals.sort()
-    n = len(vals)
-    med = vals[n // 2] if n % 2 else (vals[n // 2 - 1] + vals[n // 2]) / 2
+    med = _median(vals)
     return {
-        "oos_months": None,  # L-code에 월수 미기록 — 추정 생성 금지(promote.R에서 확정)
+        "oos_months": oos_months,
         "oos_effect_vs_is": round(med, 3),
-        "note": f"L-code oos_retention 실값 {n}건 median (IS65/OOS35 활성SR retention) — promote.R essence_score 경유 재확정",
+        "note": (f"L-code oos_retention 실값 {len(vals)}건 median (IS65/OOS35 활성SR retention)"
+                 + (f" + oos_months 실값 {len(months)}건 median" if months else " — oos_months 실값 무 → None 유지")
+                 + " — promote.R essence_score 경유 재확정"),
     }
 
 

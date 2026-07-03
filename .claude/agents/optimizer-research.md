@@ -73,7 +73,7 @@ finalize 직전, optimization_package를 스스로 적대적으로 검증한다 
 finalize 직전 스스로 devil's advocate가 되어 약점 ≥3건 제기 후 분류·처리.
 
 1. **자율 분류** (각 self-concern):
-   - **ACCEPT (mandatory)**: Hard Constraint 위반 (RF-O5/O6/O7 — max_names>20, max_w>0.20, Σw≠1), turnover>1,100%, RF-O9 single-snapshot, infeasibility silent override
+   - **ACCEPT (mandatory)**: Hard Constraint 위반 (RF-O5/O6/O7 — max_names>25 (도훈 mandate 2026-05-29 20→25), max_w>0.20, Σw≠1), turnover>1,100%, RF-O9 single-snapshot, infeasibility silent override
    - **PARTIAL**: 부분 인정 + 보완
    - **REBUTTAL**: 학술 + L-code + 정량 data 3축 근거 필요
 

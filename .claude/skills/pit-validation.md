@@ -1,6 +1,6 @@
 ---
 name: pit-validation
-description: "PIT 규칙 적용 — C1~C15, pit_engine_v3 blocking_gate, 금지 합리화 표현 격리(P2-B), detect_lookahead. forge_code_guard가 Rscript 실행 직전 자동 차단."
+description: "PIT 규칙 적용 — C1~C15, pit_engine_v3 blocking_gate(수동 호출), 합리화 표현 탐지, detect_lookahead(.R + .py). ⚠ 자동 차단 훅(forge_code_guard)은 2026-05-16 DEPRECATED — 정적 스캔은 백테 전 수동 실행 의무."
 ---
 ## PIT (Point-in-Time) Enforcement
 
@@ -19,17 +19,24 @@ description: "PIT 규칙 적용 — C1~C15, pit_engine_v3 blocking_gate, 금지 
 | C15 | Factor DB: load_month_factors() 경유 | |
 | C16 | 조합 폭발 금지 (grid search iter≥50 penalty) | |
 
-### PIT Engine v3 자동 차단 (v53 Sprint 2.1 + Sprint 3 P0-A)
+### PIT Engine v3 — 수동 게이트 (자동 차단 아님 — 2026-07-03 정정)
 
-`forge_code_guard.sh` (PreToolUse[Bash])가 `Rscript ... run_all.R` 실행 직전 자동 호출.
+⚠️ **구 문구 "`forge_code_guard.sh`가 Rscript 실행 직전 자동 차단"은 사실이 아니다.**
+- `forge_code_guard.sh`는 **2026-05-16 DEPRECATED** (`_archive_v55/` Tier 1 cleanup 삭제 — `00_Lawbook/DEPRECATION.md`, `02_Infrastructure/docs/rules/harness.md` Hook 정합 audit). `.claude/settings.json`에 미등록 (doc 주석에만 잔존).
+- `pit_v3_daemon.sh`는 FS retain이나 호출자(forge_code_guard)가 사라져 **배선 끊김** (harness.md: "헬퍼/비-hook" 분류).
+- 따라서 **PIT Engine v3 blocking_gate는 현재 수동 호출로만 작동한다.** 백테 실행 전 forge/Q-Lead가 아래 수동 호출을 직접 실행할 의무.
 
-**작동**:
-1. Codex PIT Review flag (`/tmp/codex_pit_approved_<STR>.flag`) 확인 → 없으면 block
-2. run_all.R + factor_engine.R 내용 md5 해시 기반 캐시 (`/tmp/pit_v3_clean_<STR>_<hash>.flag`)
-3. 캐시 없으면 `pit_engine_v3$blocking_gate(strategy_dir, levels=c("static","ast"))` 호출
-4. CLEAN 아니면 **block** + 상위 5개 위반 reason 포함
+**실제 자동 방어선 (settings.json 등록 hook — 이것이 전부)**:
+| Hook | 이벤트 | 검사 내용 |
+|------|--------|-----------|
+| `factor_rotation_pit_guard.sh` | PreToolUse | FR 모드 Cycle50 shift / `prod`·`cumprod` 자체합성 (advisory) |
+| `axiom_enforcement_hook.sh` | PreToolUse[W/E] | AX-001 일부 block, AX-002~005 advisory |
+| `backtest_contract_audit.sh` | PreToolUse[Write] | registry/L-code 등재 시 `audit_status=FAIL` 차단 |
+| `selection_contamination_detector.sh` | PreToolUse | 정규 리서치 lockbox 차단 |
 
-**수동 호출**:
+위 hook들은 **run_all.R의 lookahead 코드 자체를 실행 직전에 스캔하지 않는다** — 정적 스캔(detect_lookahead / pit_engine_v3 / pit_ast_scanner)은 수동 실행이 유일한 경로.
+
+**수동 호출 (백테 전 의무)**:
 ```r
 source("02_Infrastructure/validation/pit_engine_v3.R")
 r <- pit_engine_v3$blocking_gate("04_Research/strategies/STR_XXX",
@@ -38,36 +45,37 @@ r <- pit_engine_v3$blocking_gate("04_Research/strategies/STR_XXX",
 # r$clean / r$severity (CLEAN / SUSPICIOUS / VIOLATION) / r$violations / r$reports
 ```
 
-**우회 env**: `QVEST_SKIP_PIT_V3=1` (긴급 시만, 로그 남음).
+**우회 env**: `QVEST_SKIP_PIT_V3=1` (긴급 시만, 로그 남음 — 수동 게이트 경로에만 유효).
 
 **4개 스캐너**:
-- `scan_static` — 정규식 기반 (lookahead_detector.R)
+- `scan_static` — 정규식 기반 (lookahead_detector.R — .R + .py 지원, 2026-07-03)
 - `scan_ast` — R AST 분석 (pit_ast_scanner.R)
-- `scan_intent` — Codex LLM 의도 해석 (pit_intent_scanner.R, opt-in)
+- `scan_intent` — Codex LLM 의도 해석 (pit_intent_scanner.R, opt-in — v8.2 Codex 제거로 사실상 휴면)
 - `scan_runtime` — FACTORS vs PLOG Exec_Date 비교
 
-### 금지 합리화 표현 (P2-B 자동 격리)
+### 금지 합리화 표현 탐지 (2026-07-03 정정 — 자동 격리 아님)
 
-`artifact_validator.sh`가 `stage_artifacts/*.json` Write 시 자동 스캔.
+⚠️ 구 문구 "`artifact_validator.sh`가 자동 스캔 + `.p2b_violation` 자동 격리(rename)"는 stale — `artifact_validator.sh`는 ARCHIVED(`_archive_v55/`, worktask_artifact_validator로 rename됐으나 후자는 phrase 스캔을 하지 않음). 자동 rename 격리 메커니즘은 현재 없다.
 
-**금지 표현 11종**:
+**실제 활성 탐지 (둘 다 soft — block 아님)**:
+- `rationalization_detector.sh` (PostToolUse[Write/Edit]) — challenge_note / verdict / admission 파일 한정, KR/EN phrase 라이브러리 매칭 → warn (3회+ escalate)
+- `answer_principles_grep.sh` (PostToolUse) — 회피 표현 soft alert
+
+**금지 표현 (규율은 유지 — 탐지가 soft일 뿐 위반은 AX-002 동급)**:
 "영향 미미", "관행적 허용", "보수적이면 괜찮다", "대부분 결과 동일",
 "이미 반영되어 있었을 것", "백테스트 기간이 충분히 길어서 상쇄",
 "실무적으로 유의미", "이 정도면 괜찮다",
 "대체로 동일", "무시할 수 있는", "무시 가능한 수준"
 
-**탐지 시**:
-- 파일을 `<path>.p2b_violation`으로 격리 (자동 rename)
-- Write hook block 리턴 → Claude가 증거 기반 재작성 요구받음
-
-**복구**: `.p2b_violation` 접미사 제거 후 재작성. 증거(숫자/테스트/논문) 기반 문장으로.
+**탐지 시**: warn 수신 즉시 증거(숫자/테스트/논문) 기반 문장으로 재작성. hook이 막아주지 않으므로 자기 규율이 1차 방어선.
 
 ### 기타 자동 검출
 
 ```r
 source("02_Infrastructure/validation/lookahead_detector.R")
-# C1~C11 패턴 자동 스캔
+# C1~C11 패턴 자동 스캔 (.R) + PY_* 패턴 (.py — shift(-N)/merge_asof forward/full-sample fit 등)
 detect_lookahead("04_Research/strategies/STR_XXX/run_all.R")
+detect_lookahead("02_Infrastructure/ml_pipeline/some_model.py")
 
 source("02_Infrastructure/validation/pit_ast_scanner.R")
 pit_ast_scan("04_Research/strategies/STR_XXX")  # AST 기반 간접 호출 탐지

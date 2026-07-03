@@ -20,8 +20,10 @@
 set -euo pipefail
 trap 'echo "{}"; exit 0' ERR
 
+# (v8.2.1 HOOK-P0-1) bare python3 = Windows Store 스텁 → 하드블록이 fail-open 되던 결함 수리.
+# 공용 파서(_shared_parse.sh) 경유: FILE_PATH + QVEST_PY_BIN export.
 INPUT=$(cat)
-FILE_PATH=$(echo "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
+source "$(dirname "${BASH_SOURCE[0]:-$0}")/_shared_parse.sh"
 
 FP_LOWER=$(echo "$FILE_PATH" | tr '[:upper:]' '[:lower:]')
 
@@ -29,7 +31,9 @@ FP_LOWER=$(echo "$FILE_PATH" | tr '[:upper:]' '[:lower:]')
 case "$FP_LOWER" in
   *lockbox*|*stage_artifacts/wt*/lockbox*)
     # Agent 식별
-    PARENT_PID=$(ps -o ppid= -p $$ 2>/dev/null | tr -d ' ' || echo "0")
+    # (v8.2.1 AGT-01) Git Bash ps는 -o 미지원 → 한 번도 발화 못함. $PPID(현 셸의 부모 PID)로
+    # 이식 — 기존 `ps -o ppid= -p $$` 와 의미 동일.
+    PARENT_PID="${PPID:-0}"
     MARKER="/tmp/qvest_current_agent_${PARENT_PID}"
     AGENT_NAME=""
     if [[ -f "$MARKER" ]]; then
@@ -40,7 +44,8 @@ case "$FP_LOWER" in
       judge*|forge*|monitoring*|execution*)
         # Judge / Forge / Monitoring / Execution 허용 (운용·트래킹 단계, lockbox 폐기 정합)
         # 도훈 mandate 2026-05-09: 전기간 백테 / 성과 트래킹 = lockbox 폐기
-        WT_ID=$(echo "$FILE_PATH" | grep -oE 'WT-[DP][0-9]{8}_[0-9]{3}|WT[0-9]{8}_[0-9]{3}' | head -1 || echo "unknown")
+        # (v8.2.1 HOOK-P1-2) WT-[DP] → WT-[DPSH]: 실제 mailbox 분포 D/S/P/H 반영 (audit log 파일명용)
+        WT_ID=$(echo "$FILE_PATH" | grep -oE 'WT-[DPSH][0-9]{8}_[0-9]{3}|WT[0-9]{8}_[0-9]{3}' | head -1 || echo "unknown")
         echo "$(date -Iseconds) | $AGENT_NAME | $FILE_PATH" >> "/tmp/qvest_lockbox_access_${WT_ID}.log"
         echo "{}"
         ;;

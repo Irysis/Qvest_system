@@ -18,11 +18,18 @@ trap 'echo "{}"; exit 0' ERR
 
 INPUT=$(cat)
 
-SUBAGENT_TYPE=$(echo "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("subagent_type",""))' 2>/dev/null || echo "")
-PROMPT=$(echo "$INPUT" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("prompt",""))' 2>/dev/null || echo "")
+# (v8.2.1 HOOK-P0-1) bare python3 = Windows Store 스텁 → 순차 강제가 fail-open 되던 결함 수리.
+# 공용 해석기만 source (자체 full-prompt 파싱 유지 — _shared_parse의 prompt는 1500자 preview라
+# WT ID/패턴이 잘릴 수 있어 대체하지 않음).
+QVEST_PARSE_RESOLVE_ONLY=1; source "$(dirname "${BASH_SOURCE[0]:-$0}")/_shared_parse.sh"; unset QVEST_PARSE_RESOLVE_ONLY
+
+SUBAGENT_TYPE=$(echo "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("subagent_type",""))' 2>/dev/null || echo "")
+PROMPT=$(echo "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("prompt",""))' 2>/dev/null || echo "")
 
 # WT ID 추출 (v6.1 WT-D/WT-P + legacy WT 모두 지원)
-WT_ID=$(echo "$PROMPT" | grep -oE 'WT-[DP][0-9]{8}_[0-9]{3}|WT[0-9]{8}_[0-9]{3}' | head -1 || echo "")
+# (v8.2.1 HOOK-P1-2) WT-[DP] → WT-[DPSH]: 실제 mailbox 분포(D 136 / S 11 / P 7 / H 2) 반영 —
+# WT-S*/WT-H* prompt가 legacy allow로 새던 갭 봉합. WT-D* execution 차단 분기(하단)는 불변.
+WT_ID=$(echo "$PROMPT" | grep -oE 'WT-[DPSH][0-9]{8}_[0-9]{3}|WT[0-9]{8}_[0-9]{3}' | head -1 || echo "")
 PROJECT_ROOT="${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$(ls -d /c/Users/99922/OneDrive/Quant_Module_Moltbot /mnt/c/Users/99922/OneDrive/Quant_Module_Moltbot /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot 2>/dev/null | head -1)}}"
 WT_DIR="$PROJECT_ROOT/qepm/mailbox/worktask/$WT_ID"
 
@@ -33,7 +40,7 @@ if [[ "$SUBAGENT_TYPE" == "monitoring" ]]; then
     echo "{\"decision\":\"block\",\"reason\":\"R9 Monitoring: book_state.json 없음. Governor admission 후 생성 대기.\"}"
     exit 0
   fi
-  N=$(python3 -c "import json; d=json.load(open('$BOOK_STATE')); print(len(d.get('admitted_ids',[])))" 2>/dev/null || echo "0")
+  N=$("$QVEST_PY_BIN" -c "import json; d=json.load(open('$BOOK_STATE')); print(len(d.get('admitted_ids',[])))" 2>/dev/null || echo "0")
   if [[ "$N" == "0" ]]; then
     echo "{\"decision\":\"block\",\"reason\":\"R9 Monitoring: admitted_ids 비어있음. 감시할 WT 없음.\"}"
     exit 0
@@ -88,13 +95,13 @@ case "$SUBAGENT_TYPE" in
     fi
     check_prerequisite "optimization_package.json" "Optimizer Agent 산출물"
     # infeasibility_report null 체크
-    INFEAS=$(python3 -c "import json; d=json.load(open('$WT_DIR/optimization_package.json')); print(d.get('infeasibility_report') or 'null')" 2>/dev/null || echo "null")
+    INFEAS=$("$QVEST_PY_BIN" -c "import json; d=json.load(open('$WT_DIR/optimization_package.json')); print(d.get('infeasibility_report') or 'null')" 2>/dev/null || echo "null")
     if [[ "$INFEAS" != "null" && "$INFEAS" != "None" ]]; then
       echo "{\"decision\":\"block\",\"reason\":\"R8 Execution: optimization_package.infeasibility_report != null. WT abort 후 재검토.\"}"
       exit 0
     fi
     # Judge 통과 확인 (deployment WT는 JUDGE_PASSED + GOVERNOR_ADMITTED 후만 execution)
-    PHASE=$(python3 -c "import json; print(json.load(open('$WT_DIR/status.json')).get('current_phase',''))" 2>/dev/null || echo "")
+    PHASE=$("$QVEST_PY_BIN" -c "import json; print(json.load(open('$WT_DIR/status.json')).get('current_phase',''))" 2>/dev/null || echo "")
     if [[ "$PHASE" != "GOVERNOR_ADMITTED" && "$PHASE" != "EXECUTION_PENDING" ]]; then
       echo "{\"decision\":\"block\",\"reason\":\"R8 Execution: phase=$PHASE. GOVERNOR_ADMITTED 이후만 execution 허용.\"}"
       exit 0

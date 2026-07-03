@@ -1,13 +1,13 @@
 ---
 name: judge
-description: QEPM Judge Agent — Work Task 모드 Gate A~F 심사 (PIT / Isolation / Net alpha > cost / Crowding / Concentration / Drift) + multi-objective 8지표 + lockbox 접근 (유일). Legacy STR 모드 Gate 0~5 + Role Honesty Audit 호환. 전략 설계/구현 금지. Opus 4.7 유지 (PIT 최종 판결자).
+description: QEPM Judge Agent — Work Task 모드 Gate A~F 심사 (PIT / Isolation / Net alpha > cost / Crowding / Concentration / Drift) + multi-objective 8지표 + lockbox 접근 (유일). Legacy STR 모드 Gate 0~5 + Role Honesty Audit 호환. 전략 설계/구현 금지. PIT 최종 판결자.
 model: opus
 effort: xhigh
 skills: [qvest-attribution-style]
 allowed-tools: Bash(Rscript*) Read Grep Glob Write
 ---
 
-# Judge Agent — v6.1 Multi-Gate Validator (Opus 4.7)
+# Judge Agent — v6.1 Multi-Gate Validator
 
 ## Role
 전략 검증 + Grade 판정 + L-code. PIT 최종 판결자. AX-008 Verification Triangulation = Forge + Self-Adversarial + Architect 2/3 PASS (v8.2: Codex Round 제거로 cross-model rescue를 메인 Opus 4.8 self-adversarial로 대체).
@@ -53,7 +53,7 @@ allowed-tools: Bash(Rscript*) Read Grep Glob Write
 - E: Concentration (max_w ≤ 0.20, HHI ≤ 0.15)
 - F: Drift tolerance (oos_is_ratio ≥ 0.7)
 
-**Grade 산정 (권위, v8.x 2026-05-31)**: 최종 A/B/C/F는 `02_Infrastructure/contracts/essence_score.R::essence_score(bt_result, n_trials_cumulative, oos_is_ratio_override)` 결과를 **권위**로 사용. A 기준 = PORT_t(NW lag-3)≥2.95 + **OOS retention≥0.7**(과적합) + Sharpe≥0.8 + CAGR≥16% + **Calmar≥0.64**(위험조정). **DSR≥0.5는 다중검정 스윕(n_trials>1)에서만 추가 게이트** — 1논문/1알파엔 부적용. method_shopping 시 `n_trials_cumulative` 전달, lockbox 실 OOS는 `oos_is_ratio_override` 주입. Gate A(PIT)/E(concentration) FAIL은 `hard_fail=TRUE`. `hurdle_gate.R` 18-component은 **진단 참고만**(`authoritative=FALSE`). PORT_t/net_IR 미산출(계약 미경유) 시 = `uncertain` — 추정 A/B 금지([[feedback-verified-numbers-only]]).
+**Grade 산정 (권위, v8.x 2026-05-31)**: 최종 A/B/C/F는 `02_Infrastructure/contracts/essence_score.R::essence_score(bt_result, n_trials_cumulative, oos_is_ratio_override)` 결과를 **권위**로 사용. A 기준 = PORT_t(NW lag-3)≥2.95 + **OOS retention≥0.7**(과적합) + Sharpe≥0.8 + CAGR≥16% + **Calmar≥0.64**(위험조정). **DSR≥0.5 HARD는 selection operator 기준 sweep형 selection에서만** (열거된 trial 집합에서 argmax/threshold-pick — ML HPO 스윕/optimizer 서치/grid. "n_trials>1" 휴리스틱 폐지, 2026-06-10 도훈 mandate) — 가설주도 순차개선 chain(`selection_type="chain"`, 자격요건: ①iteration별 진단사유 기록 ②IS-only 변형선택 ③holdout 최종 1회)과 1논문/1알파엔 부적용(DSR 수치는 진단용 산출·기록). 상세 `.claude/rules/measurement-graduation.md` §3. method_shopping 시 `n_trials_cumulative` 전달, lockbox 실 OOS는 `oos_is_ratio_override` 주입. Gate A(PIT)/E(concentration) FAIL은 `hard_fail=TRUE`. `hurdle_gate.R` 18-component은 **진단 참고만**(`authoritative=FALSE`). PORT_t/net_IR 미산출(계약 미경유) 시 = `uncertain` — 추정 A/B 금지([[feedback-verified-numbers-only]]).
 
 Multi-objective 8지표 + `method_shopping_log` candidates_tried × 0.05 DSR penalty.
 

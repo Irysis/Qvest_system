@@ -65,6 +65,27 @@ eligible_paths <- character()
     identical(e$metric_type %||% NA_character_, "backtested") &&
     isTRUE((e$contract %||% list())$contract_pass)
 }
+# ★ frozen 신뢰 검증 (감사 CAP-P1-2): catalog module_hash ↔ 실제 sim_result.rds md5 대조.
+#   불일치 = frozen 보장 파기(자기신고 방지) → 해당 모듈 skip + quarantine 로그 append.
+#   hash 부재(구세대/legacy) = 'hash_missing' WARN만, skip하지 않음 (소급 차단은 governance 사안).
+#   파일 부재는 기존 .add_eligible의 file.exists 처리에 위임 (여기서 mismatch로 오판하지 않음).
+HASH_QUARANTINE_LOG <- file.path(PROJ, "06_Registry/module_hash_quarantine.log")
+.verify_module_hash <- function(id, sim_path, expected) {
+  if (is.na(sim_path) || !file.exists(sim_path)) return(TRUE)
+  expected <- as.character(expected %||% NA_character_)
+  if (is.na(expected) || !nzchar(expected)) {
+    cat(sprintf("[build_module_performance] WARN hash_missing: %s — module_hash 없는 구세대 엔트리 (skip 안 함)\n", id))
+    return(TRUE)
+  }
+  actual <- unname(tools::md5sum(sim_path))
+  if (identical(expected, as.character(actual))) return(TRUE)
+  cat(sprintf("[build_module_performance] WARN hash_mismatch → SKIP: %s (catalog=%s actual=%s) — frozen 위반 의심, quarantine 로그 기록\n",
+              id, expected, actual))
+  try(cat(sprintf("%s | HASH_MISMATCH | %s | catalog=%s | actual=%s | %s\n",
+                  format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), id, expected, actual, sim_path),
+          file = HASH_QUARANTINE_LOG, append = TRUE), silent = TRUE)
+  FALSE
+}
 .rel_path <- function(path) {
   p <- normalizePath(path, winslash="/", mustWork=FALSE)
   root <- normalizePath(PROJ, winslash="/", mustWork=FALSE)
@@ -74,7 +95,9 @@ gac <- tryCatch(as.data.table(fromJSON(file.path(PROJ,"04_Research/grade_a_catal
 if(!is.null(gac) && nrow(gac)) for(i in seq_len(nrow(gac))) {
   .attach(gac$strategy_id[i], gac$grade[i], if("role" %in% names(gac)) gac$role[i] else NA, "qepm")
   if(identical(as.character(gac$grade[i]), "A")) {
-    .add_eligible(gac$strategy_id[i], .find_sim(gac$strategy_id[i]), gac$grade[i],
+    sim_path <- .find_sim(gac$strategy_id[i])
+    .verify_module_hash(gac$strategy_id[i], sim_path, NULL)   # legacy = hash 계약 부재 → hash_missing WARN만
+    .add_eligible(gac$strategy_id[i], sim_path, gac$grade[i],
                   if("role" %in% names(gac)) gac$role[i] else NA, "qepm",
                   "legacy_qepm_grade_a")
   }
@@ -83,7 +106,9 @@ mc <- tryCatch(fromJSON(file.path(PROJ,"06_Registry/module_catalog.json"), simpl
 if(!is.null(mc)) for(id in names(mc)) {
   .attach(id, mc[[id]]$grade, mc[[id]]$role, mc[[id]]$origin_mode)
   if(.is_fr_eligible(mc[[id]])) {
-    .add_eligible(id, file.path(PROJ, mc[[id]]$sim_result_path), mc[[id]]$grade,
+    sim_path <- file.path(PROJ, mc[[id]]$sim_result_path)
+    if(!.verify_module_hash(id, sim_path, mc[[id]]$module_hash)) next   # ★ hash 불일치 = frozen 파기 → skip
+    .add_eligible(id, sim_path, mc[[id]]$grade,
                   mc[[id]]$role, mc[[id]]$origin_mode, "contract_fr_eligible")
   }
 }
@@ -153,7 +178,7 @@ res <- list(schema_version="v3.0", generated=as.character(Sys.Date()),
             generated_by="Factor Rotation Mode (build_module_performance.R — FR input-floor allowlist)",
             regime_source="unified_regime_signal_daily.parquet Category (t-1 lag PIT)",
             regimes=regimes, metric_type="backtested_realized (sim_result NAV, 실측-only)",
-            note="FR input floor: module_catalog fr_eligible=true(contract_pass+backtested+frozen+hash/build_version) plus legacy QEPM grade_a_catalog A migration exception. Broad scan only with QVEST_FR_ALLOW_BROAD_SCAN=1. grade=정보용 attach, 사용여부=RCMA.",
+            note="FR input floor: module_catalog fr_eligible=true(contract_pass+backtested+frozen+hash/build_version) plus legacy QEPM grade_a_catalog A migration exception. module_hash는 등재값 신뢰가 아닌 실제 md5 대조로 검증(불일치=skip+quarantine log, CAP-P1-2). Broad scan only with QVEST_FR_ALLOW_BROAD_SCAN=1. grade=정보용 attach, 사용여부=RCMA.",
             n_modules=kept, modules=out)
 dir.create(file.path(PROJ,"06_Registry"), showWarnings=FALSE)
 write_json(res, file.path(PROJ,"06_Registry/module_performance.json"), auto_unbox=TRUE, pretty=TRUE, na="null", digits=4)

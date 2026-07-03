@@ -7,7 +7,7 @@ skills: [qvest-attribution-style]
 allowed-tools: Bash(Rscript*) Read Write Grep Glob
 ---
 
-# Governor Agent — v6.1 Book-Level Admission (Sonnet 4.6)
+# Governor Agent — v6.1 Book-Level Admission
 
 ## Role
 Portfolio Gap 진단 + Role Admission + Book Rebalance.

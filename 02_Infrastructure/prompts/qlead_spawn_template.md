@@ -1,5 +1,9 @@
 # Q-Lead Agent Spawn Prompt Template
 
+> **⚠️ DEPRECATED (v8.2, 2026-07-03 스탬프)** — 본 template의 "v6.0 Codex Critic Round 5단계" 흐름은 v8.2에서 폐지됨 (도훈 mandate 2026-06-30: 외부 Codex Round 제거 → 각 agent의 Self-Adversarial Challenge로 대체, 훅 `codex_round_pre_enforcer`/`codex_round_auto_trigger` 등록 해제·archive).
+> **현행 절차**: `.claude/skills/qvest-worktask/SKILL.md` (spawn orchestration) + `02_Infrastructure/docs/rules/codex-round.md` (DEPRECATED 스텁 = Self-Adversarial 대체 규약) + `.claude/agents/*.md` 각 role의 "Self-Adversarial Challenge" 절.
+> 아래 본문은 이력 보존용 (L-269/L-270 감사추적) — 신규 spawn에 사용 금지.
+
 **버전**: v1.0 (2026-05-01 Session 75 발행, L-269 책임)
 **목적**: Q-Lead가 alpha-research / risk-research / optimizer-research / forge / judge / governor agent spawn 시 의무 흐름 명시. **v6.0 Codex Critic Round 의무 누락 방지**.
 

@@ -31,14 +31,14 @@ const ALPHA_SCHEMA = {
 phase('Alpha Tracks')
 log(`${wt}: ${tracks.length} track 병렬 alpha-research (lockbox ${cutoff})`)
 
-// 병렬 fan-out — 각 track 독립 alpha-research (PIT/role/codex hook은 spawn agent에 그대로 발동)
+// 병렬 fan-out — 각 track 독립 alpha-research (PIT/role hook은 spawn agent에 그대로 발동. v8.2: codex hook 등록 해제)
 const results = await parallel(tracks.map((t) => () =>
   agent(
     `WT ${wt} Track ${t.tag} — alpha-research. ${t.prompt}\n` +
-    `제약: PIT lockbox ${cutoff} strict / 20 names / [0,0.20] / Σw=1 / 15bps / AX-007 회피.\n` +
+    `제약: PIT lockbox ${cutoff} strict / 25 names (도훈 mandate 2026-05-29 20→25) / [0,0.20] / Σw=1 / 15bps / AX-007 회피.\n` +
     `qvest-alpha-style 적용: economic_rationale + net-of-cost loss + μ̃ uncertainty + IC t-stat≠portfolio-alpha t 구분.\n` +
     `[AX 전제 — workflow agent엔 axiom_context_inject hook 미발동, 본 프롬프트가 명시] AX-002 PIT 정직성(우회=미래참조) / AX-001 v2 crisis 조건부 평가 / AX-007 multi-sleeve 예외 / AX-000 입증된 한계는 정직 보고. 전문 .claude/rules/axioms.md.\n` +
-    `Codex Round 5단계 의무. 산출: stage_artifacts/WT_${wt.replace(/-/g,'_')}_${t.tag}/ + alpha_package_${t.tag}.json.`,
+    `Self-Adversarial Challenge 의무(v8.2 — Codex Round 대체): finalize 직전 약점 ≥3건 자가 제기 → challenge_note.md 기록 → final. 산출: stage_artifacts/WT_${wt.replace(/-/g,'_')}_${t.tag}/ + alpha_package_${t.tag}.json.`,
     { label: `alpha:${t.tag}`, phase: 'Alpha Tracks', agentType: 'alpha-research', schema: ALPHA_SCHEMA }
   )
 )).then((r) => r.filter(Boolean))

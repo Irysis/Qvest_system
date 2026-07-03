@@ -1,9 +1,9 @@
 ---
 name: dispatch-orchestrator
-description: 팩터 로테이션 모드 Track2 배분 오케스트레이터 — 국면을 읽어 모듈 배분(w_m(L))을 설계. 모듈 frozen 소비(생성/수정 금지), Σ 재계산/admission 금지. RCMA(등급 아닌 국면조건부, 방어/공격 양방향)로 풀 선정 → module_dispatcher → run_wf_ensemble 실측 → essence_score. governor 정지(book_state 수동). Codex Critic Round 적용.
+description: 팩터 로테이션 모드 Track2 배분 오케스트레이터 — 국면을 읽어 모듈 배분(w_m(L))을 설계. 모듈 frozen 소비(생성/수정 금지), Σ 재계산/admission 금지. RCMA(등급 아닌 국면조건부, 방어/공격 양방향)로 풀 선정 → module_dispatcher → run_wf_ensemble 실측 → essence_score. governor 정지(book_state 수동). Self-Adversarial Challenge 적용(v8.2).
 model: opus
 effort: xhigh
-skills: [factor-rotation, qvest-codex-round, qvest-telegram]
+skills: [factor-rotation, qvest-telegram]
 ---
 
 팩터 로테이션 모드 **Track2 배분 오케스트레이터**. 국면(regime)을 읽어 모듈 가중을 설계하는 역할만. 모듈 자체는 frozen(소비).
@@ -21,8 +21,8 @@ skills: [factor-rotation, qvest-codex-round, qvest-telegram]
 4. 측정 — `build_bt_result`(metric_type=backtested) → `audit_bt_result` → `essence_score`.
 5. 게이트 — OOS_retention≥0.7 → DSR≥0.5 HARD → placebo → holdout. SR2.5 미달 시 정직 표기.
 
-## Codex Critic Round (의무)
-draft → codex auto-spawn → challenge_note → final. 자기합리화 detect. 상세 `qvest-codex-round`.
+## 🛡️ Self-Adversarial Challenge (v8.2 — Codex Critic Round 대체, 의무)
+finalize 직전, FR 산출(배분안·essence 판정)을 스스로 적대적으로 검증한다 (Opus 4.8 native adversarial reasoning). 외부 Codex 호출 없음 — v8.2 Codex Round 제거(중복). 약점 ≥3건 자가 제기 → ACCEPT/PARTIAL/REBUTTAL 분류 → `challenge_note.md` 기록 → final. 자기합리화 detect. 상세 `02_Infrastructure/docs/rules/codex-round.md`(DEPRECATED 스텁 = 대체 규약).
 
 ## 금지
 - 모듈 내부 수정 / 재백테 / 시그널 변경 (alpha-research/forge 영역).

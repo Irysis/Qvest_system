@@ -20,12 +20,12 @@ const incumbentNote = (args && args.incumbent_note) || 'STR_1715(consensus revis
 const stageDir = `stage_artifacts/WT_${wt.replace(/-/g, '_')}_${tag}`
 
 // 공통 가드 prefix — workflow agent엔 Agent-matcher hook(axiom_context_inject) 미발동 → AX 명시.
-// Write/Bash hook(sequence_enforcer / codex_round_pre_enforcer / constraint_enforcer / backtest_contract_audit)은 정상 발동.
+// Write/Bash hook(sequence_enforcer / constraint_enforcer / backtest_contract_audit)은 정상 발동. (v8.2: codex_round_pre_enforcer 등록 해제 — Codex Round 폐지)
 const GUARD =
   `[전제] WT ${wt} candidate=${tag}. canonical handoff 이름 사용(alpha_package.json/risk_package.json/optimization_package.json/forge_package.json/judge_verdict.json — artifact-naming 정책).\n` +
   `제약: PIT lockbox ${cutoff()} strict / **long-only weights≥0 (도훈 mandate 2026-05-29 온리-롱 전용)** / max 25 names (도훈 mandate 20→25) / [0,0.20] / Σw=1 / 유동성 2e8 / 15bps / **회전율 hard cap 11.0/yr** / 백테스트 자체합성 금지(PerformanceAnalytics/R-bridge).\n` +
   `[AX 전제 — workflow agent hook 미발동, 명시] AX-002 PIT 정직(우회=미래참조) / AX-001 v2 crisis 조건부 / AX-005 KR defense low-vol single-sleeve long-only 실패 / AX-007 multi-sleeve 예외 / AX-008 Verification Triangulation / AX-000 입증된 한계 정직보고. 전문 .claude/rules/axioms.md.\n` +
-  `Codex Round 5단계 의무(draft→codex→challenge_note→final). No Silent Override — 제약 완화/도달불가/충돌은 infeasibility_report로 surface(침묵 default 금지).\n` +
+  `Self-Adversarial Challenge 의무(v8.2 — Codex Round 대체): finalize 직전 약점 ≥3건 자가 제기 → ACCEPT/PARTIAL/REBUTTAL 분류 → challenge_note.md 기록 → final. No Silent Override — 제약 완화/도달불가/충돌은 infeasibility_report로 surface(침묵 default 금지).\n` +
   `완료 시 tg_agent_brief 텔레그램 brief(한글 컨텍스트 첫섹션, 핵심kv 정량결과만, 약어 한글풀이, tg_send 직접금지).`
 
 function cutoff() { return (args && args.cutoff) || '2023-12-22' }
@@ -39,7 +39,7 @@ const OPT_SCHEMA = { type: 'object', required: ['method_selected', 'n_names', 't
   method_selected: { type: 'string' }, n_names: { type: 'number' }, turnover_yr: { type: 'number' },
   net_sharpe: { type: 'number' }, book_ir: { type: 'number' }, sr_2_5_reachable: { type: 'boolean' },
   sr_overlay_assumed: { type: 'number', description: 'overlay 적용 가정 시 추정 SR' },
-  constraints_ok: { type: 'boolean', description: 'long-only/≤20/Σw=1/[0,0.20]/TO≤11 전부 충족' },
+  constraints_ok: { type: 'boolean', description: 'long-only/≤25/Σw=1/[0,0.20]/TO≤11 전부 충족' },
   blocking: { type: 'boolean' }, infeasibility: { type: 'array', items: { type: 'string' } }, summary: { type: 'string' } } }
 const FORGE_SCHEMA = { type: 'object', required: ['sharpe', 'cagr', 'mdd', 'bt_audit_status', 'summary'], properties: {
   sharpe: { type: 'number' }, cagr: { type: 'number' }, mdd: { type: 'number' }, turnover_yr: { type: 'number' },
@@ -72,7 +72,7 @@ const opt = await agent(
   `${GUARD}\noptimizer-research. 입력 alpha_package.json + risk_package.json + ${stageDir}/covariance.parquet.\n` +
   `weight 방법 자율비교(≥3, **long-only만** — long-short 금지). multi-sleeve blend(${incumbentNote})로 book 기여 정량화. ` +
   `**SR 2.5 도달 판단은 ${overlaySR ? 'PG2 리스크 오버레이(AR_on_M4) 적용 가정' : 'clean realized-monthly'} 기준으로 추정**(직교성은 vanilla 1715). 도달 불가 시 AX-000 정직보고+infeasibility. ` +
-  `종목 합산 ≤20(슬리브 조합 시에도). portfolio CVaR 상한 설정.\n` +
+  `종목 합산 ≤25(슬리브 조합 시에도 — 도훈 mandate 2026-05-29 20→25). portfolio CVaR 상한 설정.\n` +
   `산출물: qepm/mailbox/worktask/${wt}/optimization_package.json(+draft+challenge_note_optimizer.md) + ${stageDir}/weights.csv.`,
   { label: `opt:${tag}`, phase: 'Optimizer', agentType: 'optimizer-research', schema: OPT_SCHEMA })
 if (!opt || opt.blocking) return failDossier('Optimizer', opt)

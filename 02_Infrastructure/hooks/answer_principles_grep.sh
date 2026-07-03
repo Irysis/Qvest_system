@@ -13,6 +13,7 @@
 #   - pg0_gap_vector_*.json / book_state.json / governance_log.json
 #   - 4way_summary.json / monthly_comparison_summary.json
 #   - common_charter.md / lawbook (00_Lawbook/) / _shared_prefix.md
+#   - *.py (python-policy.md §5 — 회피표현 + 자체합성 idiom soft alert)
 #
 # 회피 표현 grep (검증 증거 없이 사용 시 위반):
 #   가정: 유사하므로/동일하므로/거의 같다/대략/근사
@@ -54,11 +55,21 @@ FILE_PATH=$(echo "$INPUT" | grep -oE '"file_path"[[:space:]]*:[[:space:]]*"[^"]*
 [ -z "$FILE_PATH" ] && { echo '{}'; exit 0; }
 [ ! -f "$FILE_PATH" ] && { echo '{}'; exit 0; }
 
-# 비단순 산출물 패턴 매칭
-NONSIMPLE_PATTERN='(methodology_.*\.md|l_code_.*\.json|alpha_package\.json|risk_package\.json|optimization_package\.json|forge_package\.json|judge_verdict\.json|governor_admission\.json|pg0_gap_vector.*\.json|book_state\.json|governance_log\.json|4way_summary\.json|monthly_comparison.*\.json|common_charter\.md|00_Lawbook/.*\.md|_shared_prefix\.md|MEMORY\.md)'
+# 비단순 산출물 패턴 매칭 (.py = python-policy.md §5 커버리지)
+NONSIMPLE_PATTERN='(methodology_.*\.md|l_code_.*\.json|alpha_package\.json|risk_package\.json|optimization_package\.json|forge_package\.json|judge_verdict\.json|governor_admission\.json|pg0_gap_vector.*\.json|book_state\.json|governance_log\.json|4way_summary\.json|monthly_comparison.*\.json|common_charter\.md|00_Lawbook/.*\.md|_shared_prefix\.md|MEMORY\.md|\.py$)'
 
 if ! echo "$FILE_PATH" | grep -qE "$NONSIMPLE_PATTERN"; then
   echo '{}'; exit 0
+fi
+
+# .py 자체합성 idiom soft alert (python-policy.md §4 — R prod(1+r)/cumprod 동등)
+# Level 2 soft 유지 — log only, block 없음 (block은 backtest_contract_audit.sh 담당)
+if echo "$FILE_PATH" | grep -qE '\.py$'; then
+  PY_SYNTH_PATTERN='np\.prod\( *1 *\+|\( *1 *\+ *[A-Za-z_][A-Za-z0-9_.]* *\)\.cumprod\(|\( *w *\* *r *\)\.sum\(|\.prod\( *\) *- *1|0\.[0-9]+ *\* *r[0-9]'
+  if grep -qE "$PY_SYNTH_PATTERN" "$FILE_PATH" 2>/dev/null; then
+    echo "[$TS] ⚠️  PY SELF-SYNTHESIS SUSPECTED (soft) — $FILE_PATH" >> "$LOG"
+    echo "[$TS]    python-policy.md §4: np.prod(1+r)/(1+r).cumprod()/(w*r).sum()/.prod()-1 금지" >> "$LOG"
+  fi
 fi
 
 # 회피 표현 grep (한국어 + 영어)
