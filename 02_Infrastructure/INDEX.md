@@ -76,7 +76,7 @@
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
 | `attribution/` | research_philosophy ⑦ Attribution 모듈 — Brinson 분해 + Carhart 4팩터 귀속(분기 트리거) | active | 2026-06-07 | 16KB |
-| `report_templates/` | 전략 보고서 Rmd 템플릿(KR/EN) + report_style.css — LLM 보고 생성기의 렌더링 소재 | active | 2026-06-07 | 79KB |
+| `report_templates/` | report_base.Rmd + report_style.css — LLM 보고 생성기(report_agent_llm.R) 렌더링 소재 (구 KR/EN 템플릿 2건은 참조 0으로 2026-07-04 스윕 삭제, cleanup_manifest_20260704) | active | 2026-07-04 | 40KB |
 | `reports/` | 보고 생성기 4건 — mrs_dashboard.R(모니터링 대시보드)·report_agent_llm.R·report_charts·report_narrative | active | 2026-06-10 | 67KB |
 
 ## 공리엔진 (1)
@@ -168,7 +168,7 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `risk/` | 리스크 측정 도구 — textbook_methods/(EVT 엔진 등 교과서 구현, WT에서 실사용) + 루스 3건(cash_drag/ml_overfitting/regime_switching_cost — 참조 0 ad-hoc 측정) | active | 2026-06-07 | 25KB |
+| `risk/` | 리스크 측정 도구 — textbook_methods/(EVT 엔진 등 교과서 구현, WT에서 실사용). 루스 3건(cash_drag/ml_overfitting/regime_switching_cost)은 참조 0으로 2026-07-04 스윕 삭제(cleanup_manifest_20260704) | active | 2026-07-04 | 13KB |
 
 ## 검증 (2)
 
