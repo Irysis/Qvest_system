@@ -1,8 +1,8 @@
-# Qvest v6.4 WorkTask Artifact Contract
+# Qvest v8.1 WorkTask Artifact Contract
 
 **버전**: v1.0 (2026-05-01 Session 75 Sprint 1 Phase 3)
 **JSON SOT**: `02_Infrastructure/worktask/artifact_contract.json`
-**Active SOT**: `02_Infrastructure/docs/qvest_v6_4_sot.md`
+**Active SOT**: `02_Infrastructure/docs/qvest_v8_1_sot.md` + `02_Infrastructure/docs/qvest_modes_sot.md`
 
 ## 목적
 
@@ -43,16 +43,17 @@ WT_ID prefix:
 
 ⭐ **drift 주의**: optimizer agent role과 file name 불일치 — agent role은 `optimizer-research`이지만 file은 `optimization_package` (canonical). `optimizer_package.json` 사용 시 Hook 미발동 (deprecated).
 
-## 3. Codex Critic Round Files
+## 3. Self-Adversarial Challenge Files (v8.2 — Codex Round 제거)
+
+**v8.2 (2026)**: 외부 Codex Critic Round 폐지. 메인 에이전트(Opus 4.8)가 각 role 산출 시 **자체 적대검증(Self-Adversarial Challenge)** 을 수행하고 그 기록을 `challenge_note.md`에 남긴다. 구 `codex_critic_response_{role}.json` artifact는 더 이상 생성하지 않는다.
 
 | 항목 | Path |
 |---|---|
-| Codex response | `qepm/mailbox/worktask/{WT_ID}/codex_critic_response_{role}.json` |
-| Challenge note | `qepm/mailbox/worktask/{WT_ID}/challenge_note.md` |
+| Challenge note (self-adversarial record) | `qepm/mailbox/worktask/{WT_ID}/challenge_note.md` |
 
 `role` ∈ `{alpha, risk, optimizer, forge, judge, governor}`.
 
-**Drift existing**: 일부 cycle에서 `risk_challenge_note.md` / `optimizer_challenge_note.md` 등 role-specific name 사용. **Phase 6 결정**: role-specific → canonical `challenge_note.md` 집계 vs role-specific retain. (현재 unresolved.)
+**Drift existing**: 일부 (구) cycle에서 `risk_challenge_note.md` / `optimizer_challenge_note.md` 등 role-specific name 사용 (역사적). **권장**: role-specific → canonical `challenge_note.md` 집계. 신규 WT는 canonical 사용.
 
 ## 4. Certificate Files (5 cert)
 
@@ -142,11 +143,11 @@ WT_ID prefix:
 | `judge_package.json` | `judge_verdict.json` |
 | `governor_package.json` | `governor_admission.json` |
 
-**미해결 (Phase 6 결정 보류)**:
+**Self-adversarial challenge note 명명 (v8.2)**:
 
 | 패턴 | 해결 방향 |
 |---|---|
-| `challenge_note.md` vs `risk_challenge_note.md` etc | role-specific → canonical 집계 vs role-specific retain |
+| `challenge_note.md` vs `risk_challenge_note.md` etc | canonical `challenge_note.md` (self-adversarial record) 집계. role-specific은 역사적 drift |
 
 **Scan command**:
 ```bash
@@ -165,11 +166,12 @@ grep -rE 'optimizer_package|judge_package|governor_package' \
 ## 11. 변경 이력
 
 - **v1.0** — 2026-05-01 Session 75 Sprint 1 Phase 3 — 신규 발행. drift 4건 해결 + 1건 Phase 6 보류. Phase 4/7/8 import 의무 명시.
+- **v8.2** — 2026 — 외부 Codex Critic Round 제거 정합. Section 3 `Codex Critic Round Files` → `Self-Adversarial Challenge Files` reframe (구 `codex_critic_response_{role}.json` artifact 폐지, `challenge_note.md` = self-adversarial record 유지). JSON `codex_critic_round_files` → `self_adversarial_files`. AX-008 source = Forge + Self-Adversarial + Architect (2/3 불변). 참조에서 deprecated `codex-round.md` 제거. Section 7 `ARCHIVED_REJECTED_BY_CODEX`는 과거 artifact 기록값이라 enum 유지(historical).
 
 ## 참조
 
 - `02_Infrastructure/worktask/artifact_contract.json` (JSON SOT)
-- `02_Infrastructure/docs/qvest_v6_4_sot.md` Section 3.5 (Active Path 의무 자산 위치)
+- `02_Infrastructure/docs/qvest_v8_1_sot.md` + `02_Infrastructure/docs/qvest_modes_sot.md` (Active Path 의무 자산 위치)
 - `.claude/skills/qvest-worktask/SKILL.md` Section 2~5
-- `02_Infrastructure/docs/rules/codex-round.md`
-- L-269 (Codex Round 우회 사례) / L-270 (Bayesian validation + drift evidence)
+- AX-008 (Verification Triangulation: Forge + Self-Adversarial + Architect 2/3) — `.claude/rules/axioms.md`
+- L-270 (Bayesian validation + drift evidence)

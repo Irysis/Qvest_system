@@ -4,7 +4,7 @@
 # 목적: 머신이 07:10 cron 시각에 꺼져 있어도(늦게 부팅) 그날 1회 모닝 파이프라인을 실행한다.
 #   - once-per-day 락: @reboot 트리거 + 정시 cron 둘 다 등록해도 하루 1회만 실행.
 #   - 머신이 07:10 이후 부팅 → @reboot가 catch (정시 cron은 이미 지나 미발화) → 그래도 실행됨.
-#   - 순서: morning_briefing.sh (데이터 refresh + P3 brief, B-게이트 적용) → mrs_daily_briefing.sh (레짐 brief).
+#   - 순서: paper_recharge_daily.sh (논문풀 first-run 보강) → morning_briefing.sh → mrs_daily_briefing.sh.
 #   - 기존 3개 morning cron(07:10 P3 / 07:30 레짐 / 00:03 refresh)을 본 러너 하나로 통합.
 #
 # crontab (morning_run.sh 단일 진입):
@@ -21,11 +21,11 @@ DOW=$(date +%u)   # 1=Mon .. 7=Sun
 {
   echo "================ morning_run @ $(date) (trigger=${TRIGGER}) ================"
 
-  # 1) 주말 skip (KR 영업일만)
-  if [ "$DOW" -ge 6 ]; then
-    echo "weekend (dow=$DOW) — skip"
-    exit 0
-  fi
+  # 1) 논문적재 파이프라인은 매일, 브리핑·데이터refresh는 평일만 (도훈 mandate 2026-06-19).
+  #    주말엔 paper_recharge/router/tier-2/dispatch만 돌고 morning_briefing/mrs_daily는 skip.
+  IS_WEEKEND=0
+  [ "$DOW" -ge 6 ] && IS_WEEKEND=1
+  [ "$IS_WEEKEND" = "1" ] && echo "weekend (dow=$DOW) — 논문 파이프라인만 실행, 브리핑 skip"
 
   # 2) once-per-day 락 (atomic). 이미 오늘 실행됐으면 skip → @reboot+cron 중복 방지
   if ! ( set -o noclobber; echo "$$ @ $(date) trigger=$TRIGGER" > "$LOCK" ) 2>/dev/null; then
@@ -37,13 +37,59 @@ DOW=$(date +%u)   # 1=Mon .. 7=Sun
 
   cd "$BASE" || { echo "BASE not found: $BASE"; exit 1; }
 
-  echo "[1/2] morning_briefing.sh (데이터 refresh + P3 brief)"
-  bash "$BASE/02_Infrastructure/ops/morning_briefing.sh" >> /tmp/qm_morning.log 2>&1
-  echo "      morning_briefing exit=$?"
+  echo "[0/3] paper_recharge_daily.sh (논문풀 first-run 보강)"
+  if [ "${QVEST_PAPER_RECHARGE_SKIP:-0}" != "1" ] && [ -f "$BASE/02_Infrastructure/ops/paper_recharge_daily.sh" ]; then
+    bash "$BASE/02_Infrastructure/ops/paper_recharge_daily.sh" >> /tmp/qm_paper_recharge_morning.log 2>&1
+    echo "      paper_recharge exit=$?"
+  else
+    echo "      paper_recharge skip (disabled or missing)"
+  fi
 
-  echo "[2/2] mrs_daily_briefing.sh (레짐 brief)"
-  bash "$BASE/02_Infrastructure/ops/mrs_daily_briefing.sh" >> /tmp/qm_mrs_daily.log 2>&1
-  echo "      mrs_daily exit=$?"
+  echo "[0.5/3] paper_router_run.sh (논문 스타일 라우팅 + alpha-search 자동분기, 도훈 mandate 2026-06-18 옵션1)"
+  if [ -f "$BASE/02_Infrastructure/ops/paper_router_run.sh" ]; then
+    # 내부 게이트: QVEST_PAPER_ROUTER_ENABLE=1 + 당일 신규 다운로드>0 일 때만 헤드리스 claude 라우터 실행.
+    bash "$BASE/02_Infrastructure/ops/paper_router_run.sh" >> /tmp/qm_paper_router.log 2>&1
+    echo "      paper_router exit=$?"
+  else
+    echo "      paper_router skip (missing)"
+  fi
+
+  echo "[0.55/3] factor_deep_recheck_run.sh (2축 tier-2: tier-1 uncertain 더미 심층 재검 → testable 승격, 도훈 mandate 2026-06-19)"
+  if [ "${QVEST_FACTOR_RECHECK_ENABLE:-0}" = "1" ] && [ -f "$BASE/02_Infrastructure/ops/factor_deep_recheck_run.sh" ]; then
+    bash "$BASE/02_Infrastructure/ops/factor_deep_recheck_run.sh" >> /tmp/qm_factor_recheck.log 2>&1
+    echo "      factor_recheck exit=$?"
+  else
+    echo "      factor_recheck skip (QVEST_FACTOR_RECHECK_ENABLE!=1 or missing)"
+  fi
+
+  echo "[0.56/3] alpha_search_queue_run.sh (팩터추출 → alpha-search 모드 가동: 큐 testable 자동 백테 + 5층 게이트, 도훈 mandate 2026-06-19)"
+  if [ "${QVEST_ALPHA_QUEUE_ENABLE:-0}" = "1" ] && [ -f "$BASE/02_Infrastructure/ops/alpha_search_queue_run.sh" ]; then
+    bash "$BASE/02_Infrastructure/ops/alpha_search_queue_run.sh" >> /tmp/qm_alpha_queue.log 2>&1
+    echo "      alpha_queue exit=$?"
+  else
+    echo "      alpha_queue skip (QVEST_ALPHA_QUEUE_ENABLE!=1 or missing)"
+  fi
+
+  echo "[0.6/3] paper_research_dispatch.R (라우터 큐 → 리서치 액션: optimizer Σ-A/B 자동 + risk/regime flag, 도훈 mandate 2026-06-18)"
+  if [ "${QVEST_PAPER_DISPATCH_ENABLE:-0}" = "1" ] && [ -f "$BASE/02_Infrastructure/ops/paper_research_dispatch.R" ]; then
+    OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ARROW_NUM_THREADS=1 R_DATATABLE_NUM_THREADS=1 \
+      Rscript "$BASE/02_Infrastructure/ops/paper_research_dispatch.R" >> /tmp/qm_paper_dispatch.log 2>&1
+    echo "      paper_dispatch exit=$?"
+  else
+    echo "      paper_dispatch skip (QVEST_PAPER_DISPATCH_ENABLE!=1 or missing)"
+  fi
+
+  if [ "$IS_WEEKEND" = "1" ]; then
+    echo "[1-2/3] 주말 — morning_briefing/mrs_daily(브리핑·데이터refresh·P3·regime) skip (논문 파이프라인만 매일)"
+  else
+    echo "[1/3] morning_briefing.sh (데이터 refresh + P3 brief)"
+    bash "$BASE/02_Infrastructure/ops/morning_briefing.sh" >> /tmp/qm_morning.log 2>&1
+    echo "      morning_briefing exit=$?"
+
+    echo "[2/3] mrs_daily_briefing.sh (레짐 brief)"
+    bash "$BASE/02_Infrastructure/ops/mrs_daily_briefing.sh" >> /tmp/qm_mrs_daily.log 2>&1
+    echo "      mrs_daily exit=$?"
+  fi
 
   echo "================ morning_run done @ $(date) ================"
 } >> "$LOG" 2>&1

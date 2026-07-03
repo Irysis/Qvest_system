@@ -1,15 +1,30 @@
 #!/usr/bin/env Rscript
 # =============================================================================
 # build_module_performance.R — Factor Rotation Mode (Track2 데이터 레이어).
-# ★ 광역 모듈 유니버스(04_Research/strategies/*/sim_result.rds 전수, 등급 게이트 없음)를
-#   regime Category로 분할 → per-regime IR/Sharpe/MDD/n → 06_Registry/module_performance.json.
-# 등급은 정보용 attach만(grade_a_catalog ∪ module_catalog ∪ best-effort). 사용여부는
-#   국면조건부 admission(RCMA: regime_module_admission.R)이 판단 — overall 등급 게이트 폐지
-#   (도훈 mandate 2026-06-05: Grade-A만 쓰지 말 것. 하위등급도 국면 specialist면 차용).
+# ★ FR 입력 floor를 통과한 모듈 allowlist만 regime Category로 분할
+#   → per-regime IR/Sharpe/MDD/n → 06_Registry/module_performance.json.
+# 등급은 정보용 attach만. 사용여부는 input floor 통과 후 국면조건부 admission(RCMA)이 판단한다.
+# 기본 소비원:
+#   1) module_catalog.json fr_eligible=true + metric_type=backtested + contract_pass
+#   2) legacy QEPM grade_a_catalog A 모듈(마이그레이션 예외)
+# 광역 scan은 QVEST_FR_ALLOW_BROAD_SCAN=1일 때만 진단용으로 허용한다.
 # PIT: regime t-1 lag(어제 국면 → 오늘 수익 귀속, C5). 실측-only(자체합성 無).
 # =============================================================================
 suppressPackageStartupMessages({ library(data.table); library(arrow); library(jsonlite); library(xts) })
-PROJ <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")); setwd(PROJ)
+.find_root <- function() {
+  cand <- c(Sys.getenv("CLAUDE_PROJECT_DIR", unset = ""),
+            Sys.getenv("QM_ROOT", unset = ""),
+            getwd(),
+            "C:/Users/99922/OneDrive/Quant_Module_Moltbot",
+            "/mnt/c/Users/99922/OneDrive/Quant_Module_Moltbot")
+  for (p in cand[nzchar(cand)]) {
+    p <- normalizePath(p, winslash = "/", mustWork = FALSE)
+    if (dir.exists(file.path(p, "02_Infrastructure")) &&
+        dir.exists(file.path(p, "04_Research"))) return(p)
+  }
+  stop("[build_module_performance] project root not found. Set CLAUDE_PROJECT_DIR or QM_ROOT.")
+}
+PROJ <- .find_root(); setwd(PROJ)
 `%||%` <- function(a,b) if(is.null(a)||length(a)==0||(length(a)==1&&is.na(a))) b else a
 ANN <- 252
 # freq-aware Sharpe/IR: annf=252(daily)/12(monthly). 월간 DPL 등 비-일간 모듈 정합(도훈 2026-06-05).
@@ -22,24 +37,72 @@ RG <- RG[!is.na(Category), .(Date=as.Date(Date), Category)]
 setorder(RG, Date); RG[, regime_lag := shift(Category, 1L)]
 RG <- RG[!is.na(regime_lag), .(Date, regime=regime_lag)]
 
-# 2. 등급 LUT (정보용 attach — ★ 게이트 아님). grade_a_catalog(QEPM A) ∪ module_catalog(register_module)
+# 2. 등급 LUT + FR allowlist. 등급은 정보용, allowlist는 입력계약 기준.
 grade_lut <- new.env()
+eligible_lut <- new.env()
+eligible_paths <- character()
 .attach <- function(id, grade, role, origin) if(nzchar(id) && is.null(grade_lut[[id]]))
   assign(id, list(grade=grade %||% NA, role=role %||% NA, origin=origin %||% NA), envir=grade_lut)
+.find_sim <- function(strategy_id) {
+  cand <- unique(c(
+    file.path(PROJ, "04_Research", "strategies", strategy_id, "sim_result.rds"),
+    Sys.glob(file.path(PROJ, "04_Research", "strategies", paste0(strategy_id, "*"), "sim_result.rds"))
+  ))
+  cand[file.exists(cand)][1] %||% NA_character_
+}
+.add_eligible <- function(id, sim_path, grade, role, origin, trust_status) {
+  if(!nzchar(id) || is.na(sim_path) || !file.exists(sim_path)) return(invisible(FALSE))
+  meta <- list(grade=grade %||% NA, role=role %||% NA, origin=origin %||% NA,
+               trust_status=trust_status %||% "unknown")
+  assign(id, meta, envir=eligible_lut)
+  assign(basename(dirname(sim_path)), meta, envir=eligible_lut)
+  .attach(id, grade, role, origin)
+  eligible_paths <<- c(eligible_paths, normalizePath(sim_path, winslash="/", mustWork=FALSE))
+  invisible(TRUE)
+}
+.is_fr_eligible <- function(e) {
+  isTRUE(e$fr_eligible) &&
+    identical(e$metric_type %||% NA_character_, "backtested") &&
+    isTRUE((e$contract %||% list())$contract_pass)
+}
+.rel_path <- function(path) {
+  p <- normalizePath(path, winslash="/", mustWork=FALSE)
+  root <- normalizePath(PROJ, winslash="/", mustWork=FALSE)
+  sub(paste0("^", gsub("([][{}()+*^$.|?\\\\-])", "\\\\\\1", root), "/?"), "", p)
+}
 gac <- tryCatch(as.data.table(fromJSON(file.path(PROJ,"04_Research/grade_a_catalog.json"))$strategies), error=function(e) NULL)
-if(!is.null(gac) && nrow(gac)) for(i in seq_len(nrow(gac)))
+if(!is.null(gac) && nrow(gac)) for(i in seq_len(nrow(gac))) {
   .attach(gac$strategy_id[i], gac$grade[i], if("role" %in% names(gac)) gac$role[i] else NA, "qepm")
+  if(identical(as.character(gac$grade[i]), "A")) {
+    .add_eligible(gac$strategy_id[i], .find_sim(gac$strategy_id[i]), gac$grade[i],
+                  if("role" %in% names(gac)) gac$role[i] else NA, "qepm",
+                  "legacy_qepm_grade_a")
+  }
+}
 mc <- tryCatch(fromJSON(file.path(PROJ,"06_Registry/module_catalog.json"), simplifyVector=FALSE)$modules, error=function(e) NULL)
-if(!is.null(mc)) for(id in names(mc)) .attach(id, mc[[id]]$grade, mc[[id]]$role, mc[[id]]$origin_mode)
+if(!is.null(mc)) for(id in names(mc)) {
+  .attach(id, mc[[id]]$grade, mc[[id]]$role, mc[[id]]$origin_mode)
+  if(.is_fr_eligible(mc[[id]])) {
+    .add_eligible(id, file.path(PROJ, mc[[id]]$sim_result_path), mc[[id]]$grade,
+                  mc[[id]]$role, mc[[id]]$origin_mode, "contract_fr_eligible")
+  }
+}
 lookup_meta <- function(dirn){
+  if(!is.null(eligible_lut[[dirn]])) return(eligible_lut[[dirn]])
   if(!is.null(grade_lut[[dirn]])) return(grade_lut[[dirn]])
   ids <- ls(grade_lut); hit <- ids[vapply(ids, function(x) startsWith(dirn, x), logical(1))]  # STR_944 ⊂ STR_944_oc_sue
   if(length(hit)) return(grade_lut[[hit[which.max(nchar(hit))]]])
-  list(grade="ungraded", role=NA, origin="qepm")
+  list(grade="ungraded", role=NA, origin="unknown", trust_status="unlisted")
 }
 
-# 3. ★ 광역 scan (04_Research/strategies/*/sim_result.rds 전수) + per-regime 실측
-sim_files <- Sys.glob(file.path(PROJ, "04_Research/strategies", "*", "sim_result.rds"))
+# 3. FR allowlist scan + per-regime 실측
+if(identical(Sys.getenv("QVEST_FR_ALLOW_BROAD_SCAN", "0"), "1")) {
+  sim_files <- Sys.glob(file.path(PROJ, "04_Research/strategies", "*", "sim_result.rds"))
+  cat("[build_module_performance] WARN: QVEST_FR_ALLOW_BROAD_SCAN=1 — broad scan diagnostic mode\n")
+} else {
+  sim_files <- unique(eligible_paths)
+}
+if(!length(sim_files)) stop("[build_module_performance] no FR-eligible modules. Check module_catalog contracts or grade_a_catalog.")
 # 메모리 가드(E3): FR_MAX_MODULES>0 시 최근 수정순 상한 (대규모 유니버스 OOM 회피). 0=무제한.
 .maxmod <- suppressWarnings(as.integer(Sys.getenv("FR_MAX_MODULES", "0")))
 if (!is.na(.maxmod) && .maxmod > 0L && length(sim_files) > .maxmod) {
@@ -78,18 +141,19 @@ for(f in sim_files){
       mdd=round(mdd(sub$ret),3), mean_ann=round(mean(sub$ret,na.rm=TRUE)*annf,4)) }
   out[[dirn]] <- list(
     source_strategy_id = dirn, grade = meta$grade %||% "ungraded", role = meta$role %||% NA,
-    origin_mode = meta$origin %||% "qepm", freq = freq,
-    sim_result_path = sub("^.*Quant_Module_Moltbot/","",f),
+    origin_mode = meta$origin %||% "unknown", trust_status = meta$trust_status %||% "unlisted",
+    freq = freq,
+    sim_result_path = .rel_path(f),
     full_sharpe = round(sr(d$ret,annf),3), full_ir = round(sr(d$active,annf),3),
     n_days = nrow(d), date_range = c(as.character(min(d$Date)), as.character(max(d$Date))),
     per_regime = per)
   kept <- kept + 1
 }
-res <- list(schema_version="v2.0", generated=as.character(Sys.Date()),
-            generated_by="Factor Rotation Mode (build_module_performance.R — 광역·등급무관)",
+res <- list(schema_version="v3.0", generated=as.character(Sys.Date()),
+            generated_by="Factor Rotation Mode (build_module_performance.R — FR input-floor allowlist)",
             regime_source="unified_regime_signal_daily.parquet Category (t-1 lag PIT)",
             regimes=regimes, metric_type="backtested_realized (sim_result NAV, 실측-only)",
-            note="광역 유니버스(04_Research/strategies/* 전수). grade=정보용 attach. 사용여부=RCMA(regime_module_admission). overall 등급 게이트 폐지(도훈 2026-06-05).",
+            note="FR input floor: module_catalog fr_eligible=true(contract_pass+backtested+frozen+hash/build_version) plus legacy QEPM grade_a_catalog A migration exception. Broad scan only with QVEST_FR_ALLOW_BROAD_SCAN=1. grade=정보용 attach, 사용여부=RCMA.",
             n_modules=kept, modules=out)
 dir.create(file.path(PROJ,"06_Registry"), showWarnings=FALSE)
 write_json(res, file.path(PROJ,"06_Registry/module_performance.json"), auto_unbox=TRUE, pretty=TRUE, na="null", digits=4)

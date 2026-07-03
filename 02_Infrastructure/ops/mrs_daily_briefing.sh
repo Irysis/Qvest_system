@@ -24,6 +24,13 @@ fi
 
 cd "$DIR"
 
+# [분리 보호 2026-06-17 도훈] 상속된 QM_ROOT/CLAUDE_PROJECT_DIR가 별개 시스템(Qvest_Codex 등)을
+#   가리키면 .tg_load_env()(CLAUDE_PROJECT_DIR→QM_ROOT 순)와 config.R가 잘못된 .env/캐시/차트 경로로
+#   해석되어 원본 차트 미갱신 + 발송 채널 오염이 발생한다. 글로브로 확정한 원본 DIR로 강제 고정한다.
+export QM_ROOT="$DIR"
+export CLAUDE_PROJECT_DIR="$DIR"
+export PYTHONUTF8=1
+
 # 선행 cache 전제 체크 — 일간 regime signal 우선
 REGIME_DAILY="$DIR/.cache/unified_regime_signal_daily.parquet"
 REGIME_MONTHLY="$DIR/.cache/unified_regime_signal.parquet"
@@ -35,42 +42,10 @@ fi
 
 echo "$TS [mrs_daily] start briefing v2.8" >> "$LOG"
 
-Rscript -e '
-  PROJECT_ROOT <- Sys.getenv("QM_ROOT", unset = "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
-  CACHE_DIR <- file.path(PROJECT_ROOT, ".cache")
-  setwd(PROJECT_ROOT)
-  source("02_Infrastructure/config.R")
-  source("02_Infrastructure/telegram/telegram_notify.R")
-  # [④ freshness 게이트 2026-06-01 도훈] morning_briefing이 쓴 manifest 기준 — 레짐 컴포넌트 stale이면
-  #   발송 보류 + 알림 (P3와 동일 원칙: partial-stale 송출 차단).
-  .gate_ok <- TRUE; .stale <- character(0); .asof <- "?"
-  .mpath <- "qepm/observability/morning_freshness_latest.json"
-  if (file.exists(.mpath)) {
-    .m <- tryCatch(jsonlite::fromJSON(.mpath, simplifyVector = FALSE), error = function(e) NULL)
-    if (!is.null(.m)) {
-      if (!is.null(.m$as_of)) .asof <- as.character(.m$as_of)
-      if (!is.null(.m$audits)) {
-        .rc <- c("regime_daily", "msm_daily", "ktri_v3_signals")
-        for (.a in .m$audits) {
-          if (!is.null(.a$name) && .a$name %in% .rc && isTRUE(.a$status %in% c("STALE", "MISSING"))) {
-            .gate_ok <- FALSE; .stale <- c(.stale, sprintf("%s(%s)", .a$name, .a$status))
-          }
-        }
-      }
-    }
-  }
-  if (!.gate_ok) {
-    .msg <- sprintf("⚠️ 레짐 브리핑 보류 — 컴포넌트 stale: %s (as_of=%s). regime 데이터 점검 요.",
-                    paste(.stale, collapse = ", "), .asof)
-    cat(sprintf("[mrs_daily] STALE-GATE BLOCK: %s\n", .msg))
-    tryCatch(tg_send(.msg), error = function(e) cat("[mrs_daily] stale alert fail\n"))
-  } else tryCatch({
-    tg_regime_briefing()
-    cat("[mrs_daily] briefing sent OK\n")
-  }, error = function(e) {
-    cat(sprintf("[mrs_daily] ERR: %s\n", conditionMessage(e)))
-  })
-' >> "$LOG" 2>&1
+# [외부화 2026-06-18 Q] 기존 멀티라인 `Rscript -e '...'` 블록은 Windows Git Bash 에서 첫 줄만
+#   실행되는 함정(실증 확인)으로 레짐 브리핑 로직 전체가 no-op 되고 있었다(차트 미재생·발송 부재).
+#   morning_steps/mrs_regime_send.R 로 분리 + 단일줄 source 호출로 회피(전 줄 실행 + UTF-8 정상).
+Rscript --no-save -e 'source("02_Infrastructure/ops/morning_steps/mrs_regime_send.R")' >> "$LOG" 2>&1
 
 echo "$TS [mrs_daily] done" >> "$LOG"
 exit 0

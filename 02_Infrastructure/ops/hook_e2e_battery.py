@@ -98,18 +98,7 @@ def main():
         "file_path": "qepm/mailbox/worktask/WT-P20990101_001/optimization_package.json", "content": evil}})
     case("wt_constraint.block_evil_quotes", *judge(out, "block"))
 
-    # ── codex_round_pre_enforcer: draft 부재 = block / draft+critic 존재 = allow
-    shutil.rmtree(TMP_WT, ignore_errors=True)
-    os.makedirs(TMP_WT, exist_ok=True)
-    out = run_hook("codex_round_pre_enforcer.sh", {"tool_name": "Write", "tool_input": {
-        "file_path": f"{TMP_WT}/alpha_package.json", "content": KR}})
-    case("codex_pre.block_no_draft", *judge(out, "block"))
-    open(f"{TMP_WT}/alpha_package_draft.json", "w", encoding="utf-8").write("{}")
-    open(f"{TMP_WT}/codex_critic_response_alpha.json", "w", encoding="utf-8").write(
-        json.dumps({"stance": "REVIEWED", "의견": KR}, ensure_ascii=False))
-    out = run_hook("codex_round_pre_enforcer.sh", {"tool_name": "Write", "tool_input": {
-        "file_path": f"{TMP_WT}/alpha_package.json", "content": KR}})
-    case("codex_pre.allow_with_round", *judge(out, "allow"))
+    # ── codex_round_pre_enforcer: REMOVED v8.2 (Codex Critic Round 폐지 — self-adversarial in-agent)
 
     # ── telegram_direct_call_guard: tg_send 직접 = deny / tg_agent_brief = allow
     out = run_hook("telegram_direct_call_guard.sh", {"tool_name": "Bash", "tool_input": {

@@ -1,10 +1,28 @@
 #!/bin/bash
 #==============================================================================
-# Harness Health Check — v6.1 (2026-04-24)
+# Harness Health Check — v8.1 (v6.1 kernel absorbed)
 # 모든 Hook 정상 작동 여부 검증. /qvest 부트스트랩에서 호출.
 #==============================================================================
 
-DIR=$(ls -d /c/Users/99922/OneDrive/Quant_Module_Moltbot /mnt/c/Users/99922/OneDrive/Quant_Module_Moltbot /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot /mnt/c/Users/*/OneDrive/바탕\ 화면/Quant_Module_Moltbot 2>/dev/null | head -1)
+is_qvest_root() {
+  [ -n "$1" ] && [ -d "$1/02_Infrastructure/hooks" ] && [ -f "$1/.claude/settings.json" ]
+}
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
+DIR=""
+for cand in "$CLAUDE_PROJECT_DIR" "$QM_ROOT" "$PWD" "$SCRIPT_DIR/../.."; do
+  if is_qvest_root "$cand"; then
+    DIR="$(cd "$cand" && pwd -P)"
+    break
+  fi
+done
+if [ -z "$DIR" ]; then
+  cur="$PWD"
+  while [ "$cur" != "/" ]; do
+    if is_qvest_root "$cur"; then DIR="$(cd "$cur" && pwd -P)"; break; fi
+    cur="$(dirname "$cur")"
+  done
+fi
 if [ -z "$DIR" ]; then echo "[HARNESS] PROJECT_ROOT not found"; exit 1; fi
 
 HOOKS_DIR="$DIR/02_Infrastructure/hooks"
@@ -13,7 +31,7 @@ FAIL=0
 TOTAL=0
 PASS=0
 
-echo "=== Harness Health Check (v6.1) ==="
+echo "=== Harness Health Check (v8.1) ==="
 
 # v7.0/v7.1 Required Hooks (v55 legacy archived to _archive_v55/, v7.1-lite Sprint 0.3 동기화)
 # v55 legacy 제거: role_taxonomy_admission_gate.sh + cash_sleeve_validator.sh

@@ -452,8 +452,17 @@ build_metrics <- function(nav_tbl, period_returns_tbl, holdings_tbl,
     if (!is.na(avg_to)) {
       add_metric("exposure", "Average_Turnover", avg_to, "ratio",
                  "period_returns", "mean(turnover) — turnover from holdings L1/2")
-      add_metric("exposure", "Annualized_Turnover", avg_to * annualization_factor,
-                 "ratio", "period_returns", "mean(turnover) * annualization_factor")
+      # turnover는 리밸런스 행에만 값이 있는 sparse 시리즈일 수 있어
+      # mean × annualization_factor는 행 빈도(일별)를 리밸런스 빈도로 오인한다.
+      # 총회전 / 경과연수는 행 밀도 규약(일별 sparse / 월별 dense)과 무관하게 동일.
+      n_years <- as.numeric(difftime(max(period_returns_tbl$date),
+                                     min(period_returns_tbl$date),
+                                     units = "days")) / 365.25
+      ann_to <- if (is.finite(n_years) && n_years > 0) {
+        sum(period_returns_tbl$turnover, na.rm = TRUE) / n_years
+      } else NA_real_
+      add_metric("exposure", "Annualized_Turnover", ann_to,
+                 "ratio", "period_returns", "sum(turnover) / years_elapsed")
     }
   }
   if (!is.null(holdings_tbl) && nrow(holdings_tbl) > 0 &&

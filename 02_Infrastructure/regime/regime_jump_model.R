@@ -36,7 +36,21 @@
 # =============================================================================
 suppressPackageStartupMessages({ library(data.table); library(arrow) })
 
-if (!exists("PROJECT_ROOT")) PROJECT_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
+.qvest_root <- function() {
+  candidates <- unique(c(Sys.getenv("CLAUDE_PROJECT_DIR", ""), Sys.getenv("QM_ROOT", ""), getwd()))
+  is_root <- function(p) nzchar(p) && dir.exists(p) && file.exists(file.path(p, "02_Infrastructure/config.R"))
+  for (p in candidates) if (is_root(p)) return(normalizePath(p, winslash = "/", mustWork = TRUE))
+  cur <- normalizePath(getwd(), winslash = "/", mustWork = TRUE)
+  repeat {
+    if (is_root(cur)) return(cur)
+    parent <- dirname(cur)
+    if (identical(parent, cur)) break
+    cur <- parent
+  }
+  stop("[regime_jump_model] project root not found. Set CLAUDE_PROJECT_DIR or QM_ROOT.")
+}
+
+if (!exists("PROJECT_ROOT")) PROJECT_ROOT <- .qvest_root()
 if (!exists("CACHE_DIR"))    CACHE_DIR    <- file.path(PROJECT_ROOT, ".cache")
 JM_CACHE <- file.path(CACHE_DIR, "regime_jump_daily.parquet")
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0 || all(is.na(a))) b else a

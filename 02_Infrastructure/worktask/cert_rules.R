@@ -1,5 +1,5 @@
 #==============================================================================
-# cert_rules.R — Qvest v6.4 Certificate Rules Single Source
+# cert_rules.R — Qvest v8.1 Certificate Rules Single Source
 # 02_Infrastructure/worktask/cert_rules.R
 #
 # Phase 7 (Sprint 2) — hook auto-cert + Layer 2 backfill 동일 eligibility.
@@ -22,10 +22,27 @@ suppressPackageStartupMessages({
   library(jsonlite)
 })
 
-PROJ_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", unset = "")
-if (PROJ_ROOT == "" || !dir.exists(PROJ_ROOT)) {
-  PROJ_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
+.qvest_find_root <- function() {
+  cand <- c(Sys.getenv("CLAUDE_PROJECT_DIR", unset = ""),
+            Sys.getenv("QM_ROOT", unset = ""),
+            getwd())
+  for (p in cand[nzchar(cand)]) {
+    p <- normalizePath(p, winslash = "/", mustWork = FALSE)
+    if (dir.exists(file.path(p, "02_Infrastructure")) &&
+        dir.exists(file.path(p, "qepm"))) return(p)
+  }
+  here <- normalizePath(getwd(), winslash = "/", mustWork = FALSE)
+  repeat {
+    if (dir.exists(file.path(here, "02_Infrastructure")) &&
+        dir.exists(file.path(here, "qepm"))) return(here)
+    parent <- dirname(here)
+    if (identical(parent, here)) break
+    here <- parent
+  }
+  stop("[cert_rules] project root not found. Set CLAUDE_PROJECT_DIR or QM_ROOT.")
 }
+
+PROJ_ROOT <- .qvest_find_root()
 
 CR_POLICY_PATH <- file.path(PROJ_ROOT,
                             "02_Infrastructure/hooks/policies/cert_rules.json")
@@ -456,7 +473,7 @@ cr_get_role_card <- function(wt_type) {
 # ─────────────────────────────────────────────────────────────────
 
 qvest_cert_rules_selftest <- function() {
-  cat("=== Qvest v6.4 Cert Rules Selftest ===\n")
+  cat("=== Qvest v8.1 Cert Rules Selftest ===\n")
 
   policy <- tryCatch(cr_load_policy(force_reload = TRUE),
                      error = function(e) {

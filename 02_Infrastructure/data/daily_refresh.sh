@@ -255,13 +255,18 @@ run_r '
     error = function(e) cat(sprintf("Regime signal (daily) skipped: %s\n", e$message)))
 '
 
-# ─── ECOS KRW/USD (도훈 audit 2026-05-15 — daily_refresh 호출 누락 fix) ──────
+# ─── ECOS KRW/USD + Bond rates (도훈 audit 2026-05-15 KRW + 2026-06-17 bond 누락 fix) ──
+#   bond rates(국고채/회사채/CD/CPI 7 series)는 ecos_fetch_bond_rates()가 따로 존재하나
+#   daily_refresh가 호출하지 않아 ecos_bond_rates.parquet 30일 stale(05-18) 방치됨.
+#   소비처: regime_forecaster_v3.R / sharpe_standard.R / bearish_forecast. 호출 추가.
 cd "$INFRA"
 run_r '
   source("config.R")
   source("data/data_collector_ecos.R")
   tryCatch(ecos_fetch_krw(),
     error = function(e) cat(sprintf("ECOS KRW skipped: %s\n", e$message)))
+  tryCatch(ecos_fetch_bond_rates(),
+    error = function(e) cat(sprintf("ECOS bond rates skipped: %s\n", e$message)))
 '
 
 # ─── Cache Freshness Audit (도훈 mandate 2026-05-15 영구 보호망 L3) ─────────

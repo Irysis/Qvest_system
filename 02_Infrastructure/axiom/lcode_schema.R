@@ -17,7 +17,8 @@ LCODE_VALID_GRADES       <- c("A", "A_NOVEL", "A_DEF", "A_CONDITIONAL", "B", "C"
 LCODE_VALID_METRIC_TYPES <- c("proxy", "estimated", "backtested", "unavailable")
 LCODE_VALID_MODES        <- c("alpha_search", "alpha_research", "qepm_legacy",
                               "judge_gate", "governor_admission",
-                              "factor_rotation", "regime_research")
+                              "factor_rotation", "regime_research",
+                              "ramp")  # 2026-06-18: RAMP 자가발전 4번째 모드 (lcode_emit RAMP prefix와 정합)
 
 # construction_type 간이 추론 (Independence 축용 — name/idea 키워드 기반)
 infer_construction_type <- function(name = "", idea = "") {

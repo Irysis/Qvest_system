@@ -57,6 +57,13 @@ run_analysis <- function(sim, FACTORS, RAWDATA, BM_DT,
   hold_log  <- sim$HOLDINGS_LOG
 
   report <- list()
+  all_dates <- sort(unique(RAWDATA$Date))
+  raw_cols <- intersect(c("Date", "Ticker", "Ret", "Size", "Vol", "Close"), names(RAWDATA))
+  raw_tickers <- unique(FACTORS$Ticker)
+  RAWDATA <- RAWDATA[Ticker %in% raw_tickers, ..raw_cols]
+  data.table::setindexv(RAWDATA, c("Ticker", "Date"))
+  data.table::setindexv(RAWDATA, c("Date", "Ticker"))
+  gc(verbose = FALSE)
 
   # ── 1. Factor IC / ICIR ──────────────────────────────────────────────────
   # IC = rank correlation between Score and next-period return
@@ -66,7 +73,6 @@ run_analysis <- function(sim, FACTORS, RAWDATA, BM_DT,
   for (i in seq_along(signal_dates)) {
     sig_d <- signal_dates[i]
     # Find execution date (next month's first trading day)
-    all_dates <- sort(unique(RAWDATA$Date))
     exec_d <- all_dates[all_dates > sig_d][1]
     if (is.na(exec_d)) next
 
@@ -107,7 +113,7 @@ run_analysis <- function(sim, FACTORS, RAWDATA, BM_DT,
   # ── 1B. Fama-MacBeth Cross-Sectional Regression ─────────────────────────
   # Ret_forward ~ Score + ln(Size) + Ret_12m, with Newey-West t-stats
   fmb_rows <- list()
-  all_dates_fmb <- sort(unique(RAWDATA$Date))
+  all_dates_fmb <- all_dates
 
   for (i in seq_along(signal_dates)) {
     sig_d <- signal_dates[i]

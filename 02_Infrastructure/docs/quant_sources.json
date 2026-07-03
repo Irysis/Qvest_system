@@ -6,18 +6,30 @@
     "description": "arxiv MCP로 정기 검색할 주제 (논문 수집 메인)",
     "queries": [
       "idiosyncratic volatility anomaly low risk stock returns",
-      "earnings revision momentum analyst consensus factor",
-      "quantitative equity portfolio factor model emerging market",
-      "regime switching dynamic asset allocation macro factor",
+      "earnings revision momentum analyst consensus stock",
+      "cross-sectional stock return predictability firm characteristic",
+      "value quality profitability factor stock returns",
       "factor investing machine learning stock selection",
       "post-earnings announcement drift SUE PEAD",
-      "sector momentum industry rotation timing",
-      "drawdown control risk parity portfolio construction",
-      "anomaly replication out-of-sample decay"
+      "short-term reversal momentum cross-section equity",
+      "accruals investment asset growth anomaly stock",
+      "regime switching factor timing equity rotation"
     ],
+    "_queries_note": "2026-06-18 Q: 횡단면 주식 위주로 재초점(8 equity + 1 regime). 구 '...risk parity portfolio construction'·'sector rotation timing'·'emerging market portfolio' 등 방법/매크로 puller 제거 — optimizer/risk 방법론은 cross-list로만 유입(router가 분기). 수집 수율↑ 목적.",
     "categories": ["q-fin.PM", "q-fin.ST", "q-fin.RM", "q-fin.GN"],
     "max_results_per_query": 10,
     "recency_days": 180
+  },
+
+  "notable_authors": {
+    "description": "저명저자 = 트리아지 랭킹 신호 (2026-06-18 Q, 별도 수집 아님 — 키워드 MCP가 이미 저명저자 on-topic 논문을 q-fin+recency로 수집하므로 중복 수집 폐기). 신규 논문 alpha-search 후보 채점 시 저자가 이 리스트에 있으면 가점. 활성 리스트 = seed ∪ 다운로드 저자빈도 자동 리프레시(stage_artifacts/paper_recharge/notable_authors.json, count>=refresh_min_count). 시드 = 부트스트랩 앵커.",
+    "seed": [
+      "Marcos Lopez de Prado", "Bryan Kelly", "Dacheng Xiu", "Markus Pelger",
+      "Stefan Nagel", "Ralph Koijen", "Serhiy Kozak", "Svetlana Bryzgalova",
+      "Guanhao Feng", "Lasse Heje Pedersen", "Tobias Moskowitz", "Andrew Y. Chen"
+    ],
+    "max_authors": 24,
+    "refresh_min_count": 3
   },
 
   "blog_sources": {

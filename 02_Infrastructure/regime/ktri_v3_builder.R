@@ -31,8 +31,22 @@ suppressPackageStartupMessages({
   library(arrow)
 })
 
+.qvest_root <- function() {
+  candidates <- unique(c(Sys.getenv("CLAUDE_PROJECT_DIR", ""), Sys.getenv("QM_ROOT", ""), getwd()))
+  is_root <- function(p) nzchar(p) && dir.exists(p) && file.exists(file.path(p, "02_Infrastructure/config.R"))
+  for (p in candidates) if (is_root(p)) return(normalizePath(p, winslash = "/", mustWork = TRUE))
+  cur <- normalizePath(getwd(), winslash = "/", mustWork = TRUE)
+  repeat {
+    if (is_root(cur)) return(cur)
+    parent <- dirname(cur)
+    if (identical(parent, cur)) break
+    cur <- parent
+  }
+  stop("[ktri_v3_builder] project root not found. Set CLAUDE_PROJECT_DIR or QM_ROOT.")
+}
+
 if (!exists("PROJECT_ROOT")) {
-  PROJECT_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
+  PROJECT_ROOT <- .qvest_root()
 }
 if (!exists("CACHE_DIR")) CACHE_DIR <- file.path(PROJECT_ROOT, ".cache")
 

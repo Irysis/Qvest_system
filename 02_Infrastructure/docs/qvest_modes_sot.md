@@ -1,4 +1,4 @@
-# Qvest 3-Mode Architecture SOT — 각 모드가 각자 평가·자가발전
+# Qvest 4-Mode Architecture SOT — 각 모드가 각자 평가·자가발전 (RAMP 추가 2026-06-17)
 
 **버전**: v0.3 (도훈 vision 정합) · 2026-06-05
 **상태**: 헌법개정. CLAUDE.md §8 적용 대상.
@@ -14,15 +14,16 @@
 
 ---
 
-## 1. 3-Mode = 리서치 라이프사이클 (생산 → 소비)
+## 1. 4-Mode = 리서치 라이프사이클 (생산 → 소비)
 
-Lane1(QEPM)·Lane2(alpha-search) = 모듈 *생산*. Lane3(factor-rotation) = 졸업 모듈 *소비*·조립. 서로 다른 입력·질문·산출을 갖는 별개 활동(병렬 rigor-tier 아님).
+Lane1(QEPM)·Lane2(alpha-search) = 모듈 *생산*. Lane3(factor-rotation)·Lane4(**RAMP**) = 졸업 모듈/전략풀 *소비*·조립. 서로 다른 입력·질문·산출을 갖는 별개 활동(병렬 rigor-tier 아님). RAMP는 풀 전체에서 순수팩터를 추출(통계 잠재팩터+FWL)해 거버넌스-우선 팩터배분 운용체계를 만드는 거버넌스 meta-layer.
 
 | 모드 | 질문 | 입력 → 산출 | **자기 평가체계** | **자기 자가발전** | 진입 |
 |---|---|---|---|---|---|
 | ① **QEPM** | 최적비중·편입 값어치? | 신호-only 알파 → 편입전략 | 6-게이트 graduation (PIT + portfolio-α t…) | `AX-QPM-*` axioms | `/qvest`·`/worktask` |
 | ② **Alpha-Searching** | 이 논문 알파 먹히나? | 자기완결 논문 → screen + L-code | IC·hurdle 스크린 (proxy 라벨) | `AX-AS-*` axioms | `/alpha-search` |
 | ③ **Factor-Rotation** | 국면 따라 어떻게 섞나? | frozen 졸업 모듈 → 합성 `FR_XXXX` | Track1 국면판별 + Track2 배분 OOS edge | `AX-FR-*` axioms | `/factor-rotation` |
+| ④ **RAMP** (K-RAMP) | 풀에서 순수팩터 뽑아 어떻게 배분하나? | 기존 전략풀(~800 NAV) → 순수팩터→팩터군→M-code→배분 `RAMP_XXXX` | Gate 0~11 + **CCS 13-score**(아키텍처/프로세스) + essence(성과) | `AX-RAMP-*` axioms (backtested 티어) | `/ramp` |
 
 **공통(불변)**: long-only·Σw=1·w∈[0,0.20]·max 25·LIQ 2e8·15bps·TO≤11/yr·PIT C1~C15.
 
@@ -63,13 +64,14 @@ Lane1(QEPM)·Lane2(alpha-search) = 모듈 *생산*. Lane3(factor-rotation) = 졸
 ---
 
 ## 5. 분리 불변식 (namespace)
-- ID prefix: QEPM `WT_*` / alpha-search `STR_AS_*` / factor-rotation `FR_*`. 교차·`WT_WT_` 금지.
+- ID prefix: QEPM `WT_*` / alpha-search `STR_AS_*` / factor-rotation `FR_*` / **RAMP `RAMP_*`(운용체계)·`MCODE_M0~M4`·`PF_*`(순수팩터)·`FG_*`(팩터군)**. 교차·`WT_WT_` 금지.
 - 모드별 artifact root `stage_artifacts/<mode>/`. 공유 레지스트리에 `mode` 필드. alpha-search backlog를 `qepm/registry/` 밖으로(후속).
 
 ---
 
 ## 6. FR 입력(소비) 규칙
 - **floor = `contract_pass`(계약 실측) + frozen + `source_contract_id`/`module_hash`/`build_version` 검증.** RCMA가 그 위에서 국면조건부 **grade-무관** 선정(walk-forward asof — 2026-06-05 fix).
+- `register_module()`은 floor 미충족 산출을 `stage_artifacts/module_quarantine/` + `06_Registry/module_quarantine.json`에 보존한다. `build_module_performance.R`는 기본적으로 `module_catalog.fr_eligible=true` allowlist와 legacy QEPM Grade-A migration 예외만 소비한다. 광역 scan은 `QVEST_FR_ALLOW_BROAD_SCAN=1` 진단 모드에서만 허용.
 - **RCMA = pool 선정 ≠ 자본편입.** 출력 `strategy_type=composite_allocator`·`eligible_for_alpha_registry=false`·별도 `factor_rotation_registry.json`.
 
 ---
@@ -92,5 +94,6 @@ skill §11 / `axiom_sot_map.json` 헤더 stale 정정 · FR L-code emit 개시(A
 
 ## Change log
 - 2026-06-05 v0.3: **도훈 vision 전환** — 단일 권위 spine 폐기 → **per-mode 자율(각자 평가+자가발전)**. 공유=정직라벨+자본게이트 2개. axiom 엔진 v8.0(검증)을 자가발전 백본으로 명시. Codex 통일 처방 override(유효지적만 흡수).
+- 2026-06-12 v0.3a: FR input floor 실행 보강 — 계약 미충족 모듈 quarantine, `build_module_performance` allowlist 소비, alpha-search/ML/DPL proxy의 FR pool 직접 진입 차단.
 - 2026-06-05 v0.2: Codex R2 반영 단일 권위 spine — 도훈 vision과 배치 → v0.3 폐기.
 - 2026-06-05 v0.1: 초안(3-mode 정의). Codex R1 MAJOR_REVISION.

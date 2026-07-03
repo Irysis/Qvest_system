@@ -169,7 +169,12 @@ ecos_fetch_bond_rates <- function(start_date = "20010101", end_date = NULL) {
   result <- rbindlist(all_data)
   setorder(result, Series, Date)
   dir.create(dirname(ECOS_BOND_CACHE), recursive = TRUE, showWarnings = FALSE)
-  write_parquet(result, ECOS_BOND_CACHE)
+  # [fix 2026-06-17] Windows arrow mmap(error 1224) 회피 — 동일 경로 mmap holder가 있어도
+  # write 가능하도록 temp-rename (KRX/consensus 동일 패턴, OneDrive+arrow 플레이키 대응)
+  .bond_tmp <- paste0(ECOS_BOND_CACHE, ".tmp")
+  write_parquet(result, .bond_tmp)
+  if (file.exists(ECOS_BOND_CACHE)) file.remove(ECOS_BOND_CACHE)
+  file.rename(.bond_tmp, ECOS_BOND_CACHE)
   cat(sprintf("[ecos_bond] Cache saved: %s (%d rows, %d series)\n",
               ECOS_BOND_CACHE, nrow(result), length(unique(result$Series))))
   result

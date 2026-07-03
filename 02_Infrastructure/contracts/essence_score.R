@@ -21,7 +21,8 @@
 # essence_score(bt_result, n_trials_cumulative = NULL, hard_fail = NULL, ..., selection_type = NULL)
 #   bt_result : build_bt_result() 10-component (계약). 필수: metrics, benchmark_compare.
 #   n_trials_cumulative : DSR 산출용 누적 시행수 (기록 의무 유지 — 게이트 적용 여부와 별개).
-#   hard_fail : 외부 주입(judge). NULL이면 MDD>mdd_hard로 추론.
+#   hard_fail : 외부 주입(judge). NULL이면 MDD 깊이 단독이 아니라
+#               drawdown episode 빈도/지속성으로 구조적 hard fail 추론.
 #   selection_type : "sweep"(게이트 강제) / "chain"(가설주도 순차개선 — 게이트 면제) /
 #                    NULL(legacy: n_trials>1 휴리스틱 유지, 기존 sweep caller 호환).
 #   oos_stat_version : "v2"(기본, 2026-06-10 도훈 mandate C1) = anchored 3분할{55/65/75} retention 중앙값
@@ -55,6 +56,133 @@ suppressPackageStartupMessages({ library(data.table) })
 
 .rn <- function(x, d = 3) if (is.null(x) || !is.finite(x)) NA_real_ else round(as.numeric(x), d)
 
+.essence_drawdown_profile <- function(bt_result, mdd,
+                                      severe = 0.45, extreme = 0.55,
+                                      catastrophic = 0.70,
+                                      severe_hard_count = 15L,
+                                      extreme_hard_count = 6L,
+                                      severe_period_hard_frac = 0.25,
+                                      severe_max_hard_periods = 252L) {
+  pr_n <- tryCatch(nrow(as.data.table(bt_result$period_returns)), error = function(e) NA_integer_)
+  pr <- tryCatch(as.data.table(bt_result$period_returns), error = function(e) NULL)
+  if (!is.null(pr) && nrow(pr) > 0 && "ret_net" %in% names(pr)) {
+    ret <- suppressWarnings(as.numeric(pr$ret_net))
+    ret[!is.finite(ret)] <- 0
+    nav <- cumprod(1 + pmax(ret, -0.9999))
+    dd_path <- nav / cummax(nav) - 1
+    .episodes <- function(th) {
+      flag <- is.finite(dd_path) & dd_path <= -th
+      if (!any(flag)) return(list(count = 0L, total = 0L, max = 0L, frac = 0))
+      rr <- rle(flag)
+      lens <- rr$lengths[rr$values]
+      list(
+        count = length(lens),
+        total = sum(lens),
+        max = max(lens),
+        frac = sum(lens) / length(dd_path)
+      )
+    }
+    ep_severe <- .episodes(severe)
+    ep_extreme <- .episodes(extreme)
+    mdd_path <- abs(min(dd_path, na.rm = TRUE))
+    mdd_eff <- if (is.finite(mdd)) mdd else mdd_path
+    structural <- isTRUE(is.finite(mdd_eff) && (
+      mdd_eff >= catastrophic ||
+        ep_severe$count >= severe_hard_count ||
+        ep_extreme$count >= extreme_hard_count ||
+        (is.finite(ep_severe$frac) && ep_severe$frac >= severe_period_hard_frac)
+    ))
+
+    return(list(
+      severe_count = as.integer(ep_severe$count),
+      extreme_count = as.integer(ep_extreme$count),
+      severe_total_periods = as.integer(ep_severe$total),
+      severe_max_periods = as.integer(ep_severe$max),
+      severe_period_frac = ep_severe$frac,
+      catastrophic_threshold = catastrophic,
+      severe_hard_count = severe_hard_count,
+      extreme_hard_count = extreme_hard_count,
+      severe_period_hard_frac = severe_period_hard_frac,
+      severe_max_hard_periods = severe_max_hard_periods,
+      tail_review = isTRUE(is.finite(mdd_eff) && mdd_eff > severe && !structural),
+      structural_hard_fail = structural,
+      reason = if (structural) {
+        "repeated/sample-dominant severe drawdown"
+      } else if (isTRUE(ep_severe$max >= severe_max_hard_periods)) {
+        "single long severe-drawdown episode; review, not hard fail"
+      } else {
+        "tail review or normal drawdown"
+      }
+    ))
+  }
+
+  dd <- tryCatch(as.data.table(bt_result$drawdowns), error = function(e) NULL)
+  if (is.null(dd) || nrow(dd) == 0 || !"drawdown_depth" %in% names(dd)) {
+    structural <- isTRUE(is.finite(mdd) && mdd >= catastrophic)
+    return(list(
+      severe_count = 0L, extreme_count = 0L,
+      severe_total_periods = 0L, severe_max_periods = 0L,
+      severe_period_frac = NA_real_,
+      catastrophic_threshold = catastrophic,
+      severe_hard_count = severe_hard_count,
+      extreme_hard_count = extreme_hard_count,
+      severe_period_hard_frac = severe_period_hard_frac,
+      severe_max_hard_periods = severe_max_hard_periods,
+      tail_review = isTRUE(is.finite(mdd) && mdd > severe && !structural),
+      structural_hard_fail = structural,
+      reason = "drawdowns table missing; catastrophic MDD only"
+    ))
+  }
+
+  depth <- abs(suppressWarnings(as.numeric(dd$drawdown_depth)))
+  len_col <- if ("total_underwater_period" %in% names(dd)) {
+    "total_underwater_period"
+  } else if ("drawdown_length" %in% names(dd)) {
+    "drawdown_length"
+  } else {
+    NA_character_
+  }
+  len <- if (!is.na(len_col)) suppressWarnings(as.numeric(dd[[len_col]])) else rep(NA_real_, length(depth))
+  if (length(len) != length(depth)) len <- rep(NA_real_, length(depth))
+  len[!is.finite(len)] <- 0
+  severe_idx <- is.finite(depth) & depth >= severe
+  extreme_idx <- is.finite(depth) & depth >= extreme
+  severe_count <- sum(severe_idx)
+  extreme_count <- sum(extreme_idx)
+  severe_total <- sum(len[severe_idx], na.rm = TRUE)
+  severe_max <- if (any(severe_idx)) max(len[severe_idx], na.rm = TRUE) else 0
+  severe_frac <- if (is.finite(pr_n) && pr_n > 0) severe_total / pr_n else NA_real_
+
+  structural <- isTRUE(is.finite(mdd) && (
+    mdd >= catastrophic ||
+      severe_count >= severe_hard_count ||
+      extreme_count >= extreme_hard_count ||
+      (is.finite(severe_frac) && severe_frac >= severe_period_hard_frac)
+  ))
+
+  list(
+    severe_count = as.integer(severe_count),
+    extreme_count = as.integer(extreme_count),
+    severe_total_periods = as.integer(severe_total),
+    severe_max_periods = as.integer(severe_max),
+    severe_period_frac = severe_frac,
+    catastrophic_threshold = catastrophic,
+    severe_hard_count = severe_hard_count,
+    extreme_hard_count = extreme_hard_count,
+    severe_period_hard_frac = severe_period_hard_frac,
+    severe_max_hard_periods = severe_max_hard_periods,
+    tail_review = isTRUE(is.finite(mdd) && mdd > severe && !structural),
+    structural_hard_fail = structural,
+    reason = if (structural) {
+      "repeated/sample-dominant severe drawdown"
+    } else if (isTRUE(severe_max >= severe_max_hard_periods)) {
+      "single long recovery severe drawdown; review, not hard fail"
+    } else {
+      "tail review or normal drawdown"
+    }
+  )
+}
+
 essence_score <- function(bt_result, n_trials_cumulative = NULL,
                           hard_fail = NULL, mdd_hard = 0.45,
                           oos_is_ratio_override = NULL, calmar_min = 0.64,
@@ -83,6 +211,7 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
   calmar <- getm("Calmar")
   net_ir <- getbc("Information_Ratio")
   port_t <- getbc("Portfolio_Alpha_t_NW_lag3")
+  dd_profile <- .essence_drawdown_profile(bt_result, mdd, severe = mdd_hard)
 
   # --- 활성(alpha) 시계열: OOS retention(과적합, DSR 대체) + DSR(스윕 한정) ---
   af <- suppressWarnings(as.numeric(M[["annualization_factor"]][1]))
@@ -130,8 +259,10 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
   # judge lockbox 실 OOS 비율 주입 시 우선 (65/35 fallback 대체)
   if (!is.null(oos_is_ratio_override) && is.finite(oos_is_ratio_override)) oos_retention <- oos_is_ratio_override
 
-  # --- hard_fail: 외부(judge) 주입 우선, 없으면 MDD 한도로 추론 ---
-  if (is.null(hard_fail)) hard_fail <- isTRUE(is.finite(mdd) && mdd > mdd_hard)
+  # --- hard_fail: 외부(judge) 주입 우선. 없으면 MDD 깊이 단독이 아니라 빈도/표본 점유율로 추론 ---
+  # 단발/소수 시장 동반 폭락과 장기 회복 지연은 tail_review로 남기고,
+  # repeated severe drawdown / sample-dominant severe drawdown만 hard fail.
+  if (is.null(hard_fail)) hard_fail <- isTRUE(dd_profile$structural_hard_fail)
 
   # --- C1 borderline band [0.5, 0.7): 보강증거 2/3 충족 시 조건부 통과 (2026-06-10 도훈 mandate) ---
   #   retention >= 0.7 단독 PASS(불변) / < 0.5 무조건 FAIL(증거 무관) / band는 escalation 2/3.
@@ -171,15 +302,19 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
     reasons <- "PORT_t/net_IR 미산출(계약 미경유) — 추정 등급 금지"
   } else if (hard_fail) {
     grade <- "F"
-    reasons <- sprintf("hard_fail (MDD %.1f%% > %.0f%% 또는 외부주입)", mdd * 100, mdd_hard * 100)
+    reasons <- sprintf("hard_fail drawdown structure (MDD %.1f%%, %.0f%%+ episodes=%d, %.0f%%+ episodes=%d, max_underwater=%d periods)",
+                       mdd * 100, mdd_hard * 100, dd_profile$severe_count,
+                       max(0.55, mdd_hard + 0.10) * 100, dd_profile$extreme_count,
+                       dd_profile$severe_max_periods)
   } else if (port_t <= 0 || net_ir <= 0) {
     grade <- "F"
     reasons <- "non-positive alpha (PORT_t<=0 또는 net_IR<=0)"
   } else if (a_core && dsr_ok) {
     grade <- "A"
-    reasons <- sprintf("Standalone: PORT_t>=2.95 & OOS_ret %s & Sharpe>=0.8 & CAGR>=16%% & Calmar>=%.2f%s",
+    reasons <- sprintf("Standalone: PORT_t>=2.95 & OOS_ret %s & Sharpe>=0.8 & CAGR>=16%% & Calmar>=%.2f%s%s",
                        if (identical(oos_band_status, "band_escalated")) "band[0.5,0.7) escalated 2/3" else ">=0.7",
-                       calmar_min, if (is_sweep) " & DSR>=0.5(sweep)" else "")
+                       calmar_min, if (is_sweep) " & DSR>=0.5(sweep)" else "",
+                       if (isTRUE(dd_profile$tail_review)) " & drawdown_tail_review" else "")
   } else if (port_t >= 2.0 && net_ir > 0.2) {
     grade <- "B"
     miss <- c(if (!oos_ok) sprintf("OOS_ret %s<0.7(band %s)",
@@ -207,7 +342,21 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
       dsr                        = .rn(dsr),
       mdd                        = .rn(mdd),
       calmar                     = .rn(calmar),
-      cagr                       = .rn(cagr)
+      cagr                       = .rn(cagr),
+      drawdown_profile           = list(
+        severe45_count = dd_profile$severe_count,
+        severe55_count = dd_profile$extreme_count,
+        severe45_total_periods = dd_profile$severe_total_periods,
+        severe45_max_periods = dd_profile$severe_max_periods,
+        severe45_period_frac = .rn(dd_profile$severe_period_frac, 4),
+        catastrophic_mdd_threshold = dd_profile$catastrophic_threshold,
+        severe45_hard_count = dd_profile$severe_hard_count,
+        severe55_hard_count = dd_profile$extreme_hard_count,
+        severe45_period_hard_frac = .rn(dd_profile$severe_period_hard_frac, 4),
+        severe45_max_hard_periods = dd_profile$severe_max_hard_periods,
+        tail_review = isTRUE(dd_profile$tail_review),
+        structural_hard_fail = isTRUE(dd_profile$structural_hard_fail)
+      )
     ),
     hard_fail = hard_fail,
     n_trials_cumulative = n_trials_cumulative,

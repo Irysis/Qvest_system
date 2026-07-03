@@ -34,8 +34,10 @@ cat(sprintf("[valmom] monthly months=%d range=%s..%s\n", nrow(vm_act), min(vm_ac
 s1715_dir <- file.path(PROJ, "04_Research/strategies/STR_1715_WT016_Iter31_GridBestProd/output")
 pr  <- fread(file.path(s1715_dir, "03_period_returns.csv"))
 bch <- fread(file.path(s1715_dir, "05_benchmark_returns.csv"))
-pr[,  ym := format(as.Date(date), "%Y-%m")]
-bch[, ym := format(as.Date(date), "%Y-%m")]
+# STR_1715 계약 CSV 라벨 규약: 차월 첫 거래일 = 전월 실현 수익 — 후보(월말 라벨)와
+# cross-merge 시 1개월 당겨 정렬. 정정(2026-06-13): 수리 이전 cor 산출은 과소치.
+pr[,  ym := format(as.Date(format(as.Date(date), "%Y-%m-01")) - 1L, "%Y-%m")]
+bch[, ym := format(as.Date(format(as.Date(date), "%Y-%m-01")) - 1L, "%Y-%m")]
 s1715 <- merge(pr[, .(ym, str = ret_net)], bch[, .(ym, bm = benchmark_ret)], by = "ym")
 s1715[, active := str - bm]
 cat(sprintf("[STR_1715] monthly months=%d range=%s..%s\n", nrow(s1715), min(s1715$ym), max(s1715$ym)))

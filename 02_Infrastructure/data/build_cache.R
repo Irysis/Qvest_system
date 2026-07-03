@@ -31,23 +31,25 @@ cat("=== Parquet Cache Builder (v2 — Universe 독립) ===\n\n")
 # Universe는 krx_update_universe.R + apply_universe_mapping.R에서 별도 관리.
 # build_cache.R은 OHLCVS 수정주가 + Benchmark만 담당.
 
-# ─── 1. Benchmark ───────────────────────────────────────────────────────────
-
-cat("[1/3] Benchmark...\n")
-BM_price <- read.xlsx(file.path(RAWDATA_PATH, "Benchmark_price.xlsx"),
-                       sheet = 1, startRow = 8,
-                       skipEmptyCols = TRUE, na.strings = "NA")
-BM_price_xts <- QT_to_xts(BM_price)
-BM_DT <- as.data.table(BM_price_xts[, "IKS200"])
-setnames(BM_DT, c("index", "IKS200"), c("Date", "BM_Close"))
+# ─── 1. Benchmark(코스피200=IKS200) + Indices — Python 빌더 경유 ──────────────
+# 2026-07-02 도훈 mandate: 기존 R 경로(read.xlsx startRow=8 + QT_to_xts + [,"IKS200"])가
+# Benchmark_price.xlsx에 지수 컬럼이 대폭 추가되며 IKS001(코스피 전체, 수천대)을 잘못 선택,
+# benchmark.parquet에 코스피200이 아닌 코스피 전체가 들어가는 버그 발견(북 벤치 전체 오염).
+# build_index_cache.py가 Code 행을 명시 매칭해 정확한 IKS200 추출 + 전 18지수 indices.parquet
+# 생성. sanity 가드(benchmark.parquet == indices.parquet$kospi200)로 재발 차단.
+cat("[1/3] Benchmark(코스피200) + Indices — build_index_cache.py...\n")
+PYEXE <- Sys.getenv("QVEST_PY", file.path(PROJECT_ROOT, ".venv_qvest_ml/Scripts/python.exe"))
+rc <- system2(PYEXE, args = shQuote(file.path(FUNC_PATH, "data/build_index_cache.py")),
+              env = paste0("QM_ROOT=", PROJECT_ROOT))
+if (rc != 0) stop("[build_cache] build_index_cache.py 실패 (rc=", rc, ") — 벤치 미갱신")
+BM_DT  <- as.data.table(read_parquet(file.path(CACHE_DIR, "benchmark.parquet")))
+IDX_DT <- as.data.table(read_parquet(file.path(CACHE_DIR, "indices.parquet")))
+if (abs(tail(BM_DT$BM_Close, 1) - tail(IDX_DT$kospi200, 1)) > 1e-6)
+  stop("[build_cache] benchmark sanity FAIL: benchmark.parquet != kospi200 (코스피 전체 오선택 의심)")
 BM_DT[, Date := as.Date(Date)]
-BM_DT[, BM_Ret := BM_Close / shift(BM_Close) - 1]
-setkey(BM_DT, Date)
-
-write_parquet(BM_DT, file.path(CACHE_DIR, "benchmark.parquet"))
-cat(sprintf("  > Benchmark: %d rows saved\n", nrow(BM_DT)))
-rm(BM_price, BM_price_xts)
-gc()
+cat(sprintf("  > Benchmark(코스피200): %d rows | 최근 %.1f | Indices %d지수\n",
+            nrow(BM_DT), tail(BM_DT$BM_Close, 1), ncol(IDX_DT) - 1L))
+rm(IDX_DT); gc()
 
 # ─── 3. OHLCVS (시트 1장씩 → 개별 Parquet) ─────────────────────────────────
 

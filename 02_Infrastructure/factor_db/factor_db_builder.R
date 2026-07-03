@@ -326,7 +326,8 @@ cat("[factor_db_builder] Loaded. FACTOR_DB_DIR:", FACTOR_DB_DIR, "\n")
     crowding         = "compute_crowding.R",
     growth           = "compute_growth.R",
     investor         = "compute_investor.R",
-    xlsx_fund        = "xlsx_factor_calculator.R"
+    xlsx_fund        = "xlsx_factor_calculator.R",
+    custom           = "compute_custom_factors.R"
   )
   func_name_map <- list(
     value            = "compute_value",
@@ -343,7 +344,8 @@ cat("[factor_db_builder] Loaded. FACTOR_DB_DIR:", FACTOR_DB_DIR, "\n")
     crowding         = "compute_crowding",
     growth           = "compute_growth",
     investor         = "compute_investor",
-    xlsx_fund        = "compute_xlsx_fundamentals"
+    xlsx_fund        = "compute_xlsx_fundamentals",
+    custom           = "compute_custom_factors"
   )
 
   .fdb_env$module_funcs <- list()
@@ -622,7 +624,8 @@ if (!force && file.exists(out_path)) {
     liquidity = "compute_liquidity.R", accrual = "compute_accrual.R",
     risk = "compute_risk.R", regime = "compute_regime.R",
     crowding = "compute_crowding.R", growth = "compute_growth.R",
-    investor = "compute_investor.R", xlsx_fund = "xlsx_factor_calculator.R"
+    investor = "compute_investor.R", xlsx_fund = "xlsx_factor_calculator.R",
+    custom = "custom_factors"
   )
 
   for (nm in names(.fdb_env$module_funcs)) {
@@ -838,6 +841,84 @@ build_factor_db_monthly <- function(start_date = format(ANALYSIS_START_DATE, "%Y
   .write_build_hash()
 
   invisible(month_ends)
+}
+
+
+#==============================================================================
+# 2-A2. backfill_custom_factor() — SCOPED backfill (신규 custom 팩터만)
+#
+# 온보딩 효율화: custom_factors.json 로 선언한 신규 팩터를 기존 월별 parquet에
+# "컬럼 추가"만 한다. 나머지 276개 팩터는 재계산하지 않음(~수초/월 vs 전면 ~3분/월).
+# add_factor() 직후 이력 확보용. 복잡(전용 compute_*) 팩터는 build_factor_db_monthly(force).
+#==============================================================================
+
+#' @param id  단일 factor id, 또는 NULL(=custom_factors.json 의 모든 custom 팩터)
+#' @param start_date/end_date  YYYY-MM 범위(NULL=전체 캐시). @param force  존재해도 재계산
+#' @return invisibly 처리 요약 리스트
+#' @export
+backfill_custom_factor <- function(id = NULL, start_date = NULL, end_date = NULL, force = FALSE) {
+  .load_base_data(); .preload_modules()
+  if (!"custom" %in% names(.fdb_env$module_funcs)) stop("[backfill] custom 모듈 미로드 (compute_custom_factors.R 확인)")
+  cf <- .fdb_env$module_funcs[["custom"]]
+
+  files <- list.files(FACTOR_DB_DIR, pattern = "^factor_db_\\d{6}\\.parquet$", full.names = TRUE)
+  if (!length(files)) stop("[backfill] 월별 parquet 없음: ", FACTOR_DB_DIR)
+  yms <- sub("^factor_db_(\\d{6})\\.parquet$", "\\1", basename(files))
+  if (!is.null(start_date)) files <- files[yms >= format(as.Date(start_date), "%Y%m")]
+  if (!is.null(end_date))   files <- files[sub("^factor_db_(\\d{6})\\.parquet$","\\1",basename(files)) <= format(as.Date(end_date), "%Y%m")]
+  files <- sort(files)
+  cat(sprintf("[backfill_custom_factor] id=%s, %d개 월별 parquet 대상 (force=%s)\n",
+              if (is.null(id)) "ALL custom" else id, length(files), force))
+
+  n_done <- 0L; n_skip <- 0L; n_empty <- 0L; n_err <- 0L; t0 <- Sys.time()
+  for (pq in files) {
+    ym <- sub("^factor_db_(\\d{6})\\.parquet$", "\\1", basename(pq))
+    existing <- tryCatch(as.data.table(read_parquet(pq)), error = function(e) NULL)
+    if (is.null(existing) || !"Date" %in% names(existing) || nrow(existing) == 0) { n_err <- n_err + 1L; next }
+    sig_d <- as.Date(existing$Date[1])
+
+    status <- tryCatch({
+      RAWDATA_sliced <- .fdb_env$RAWDATA[Date <= sig_d & Date >= (sig_d - 1400L)]
+      setkey(RAWDATA_sliced, Date, Ticker)
+      raw <- cf(RAWDATA = RAWDATA_sliced, sig_date = sig_d,
+                FUND = .fdb_env$FUND, CONSENSUS = .fdb_env$CONSENSUS)
+      raw <- if (is.null(raw)) NULL else as.data.table(raw)
+      if (!is.null(id) && !is.null(raw)) raw <- raw[Factor_Name == id]
+      if (is.null(raw) || nrow(raw) == 0) { "empty" } else {
+        target_ids <- unique(raw$Factor_Name)
+        # idempotent: 이미 있고 force=FALSE면 해당 id만 스킵
+        if (!force) target_ids <- setdiff(target_ids, unique(existing$Factor_Name))
+        if (!length(target_ids)) { "skip" } else {
+          raw <- raw[Factor_Name %in% target_ids]
+          snap <- .pit_rawdata(sig_d); sector_map <- snap[, .(Ticker, Sector)]
+          std <- .standardize_factors(raw, sector_map)
+          std[, Date := sig_d]
+          keep <- intersect(names(existing), names(std))
+          std2 <- std[, ..keep]
+          merged <- rbindlist(list(existing[!Factor_Name %in% target_ids], std2),
+                              use.names = TRUE, fill = TRUE)
+          setcolorder(merged, names(existing))
+          tmp <- paste0(pq, ".tmp")
+          write_parquet(merged, tmp)          # arrow write → tmp만 (mmap 1224 회피)
+          gc()                                # read mmap 해제 (Windows 파일락)
+          file.copy(tmp, pq, overwrite = TRUE); file.remove(tmp)  # base-R overwrite
+          "done"
+        }
+      }
+    }, error = function(e) { cat(sprintf("  [ERR %s] %s\n", ym, conditionMessage(e))); "err" })
+
+    if (status == "done") n_done <- n_done + 1L
+    else if (status %in% c("skip")) n_skip <- n_skip + 1L
+    else if (status == "empty") n_empty <- n_empty + 1L
+    else n_err <- n_err + 1L
+    if ((n_done + n_skip + n_empty + n_err) %% 24L == 0L)
+      cat(sprintf("  ...%s  done=%d skip=%d empty=%d err=%d (%.0fs)\n",
+                  ym, n_done, n_skip, n_empty, n_err, as.numeric(difftime(Sys.time(), t0, units="secs"))))
+  }
+  cat(sprintf("[backfill_custom_factor] 완료: done=%d skip=%d empty=%d err=%d / %.1f min\n",
+              n_done, n_skip, n_empty, n_err, as.numeric(difftime(Sys.time(), t0, units="mins"))))
+  if (n_done > 0L) .write_build_hash()
+  invisible(list(done = n_done, skip = n_skip, empty = n_empty, err = n_err))
 }
 
 

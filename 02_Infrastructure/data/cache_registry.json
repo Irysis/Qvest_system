@@ -240,13 +240,13 @@
       "path": ".cache/factor_db_daily/",
       "producer": "02_Infrastructure/factor_db/factor_db_daily_incremental.R",
       "entry_fn": "(orchestrated)",
-      "schedule": "daily",
+      "schedule": "on_demand",
       "file_pattern": "^fdb_daily_[0-9]{6}\\.parquet$",
       "date_col": "Date",
-      "max_lag_days": 5,
+      "max_lag_days": 45,
       "depends_on": [".cache/RAWDATA.parquet"],
       "tier": 2,
-      "_note": "일간 Factor DB 디렉토리 (1파일=1개월 wide). freshness=최신 파일 max(Date), 기대 ~3거래일(달력 5일). 갱신은 daily_refresh [6b] — update_daily_fdb_current()는 phase6+7+8 전체 재빌드(전파일 삭제, 수시간)라 QVEST_FDB_DAILY_AUTOREBUILD=1 명시 시에만 실행 (기본 stale WARN만). 2026-06-10 P1 등재"
+      "_note": "일간 Factor DB 디렉토리 (1파일=1개월 wide, ML 피처원). ★on-demand 캐시: 갱신=update_daily_fdb_current()가 phase6+7+8 전체 1990~ 재빌드(전파일 삭제, 수시간, 인크리멘털 stub)라 cron 자동실행 금지 — QVEST_FDB_DAILY_AUTOREBUILD=1 명시 시에만(기본 OFF). 따라서 완료월 기준 자연 lag ~30-40일이 정상. SLA=45d(2026-06-26 5→45 정정: 구 5d는 on-demand 캐시에 daily SLA 오설정 → 영구 CRITICAL false alarm, 노트의 'WARN만' 의도와도 모순). >45d=재빌드 한 달+ 지연 WARN, >90d=CRITICAL. 수동 갱신: QVEST_FDB_DAILY_AUTOREBUILD=1 후 daily_refresh [6b] 또는 update_daily_fdb_current() 직접. 2026-06-10 P1 등재, 2026-06-26 SLA 정정"
     },
     {
       "path": ".cache/factor_db/factor_ic_monthly.parquet",

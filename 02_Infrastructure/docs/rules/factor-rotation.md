@@ -11,8 +11,9 @@
 
 ## 2. 모듈 적재 계약 (표준화, 언어무관)
 
-- 모든 모드 산출물은 **`register_module()`**(`02_Infrastructure/contracts/register_module.R`) 경유 FR-소비 표준형: `04_Research/strategies/{id}/sim_result.rds`(`$DAILY_NAV_DT[Date,Strategy_Ret]`+`$bm_xts`) + `06_Registry/module_catalog.json`. **등급무관 등재**.
-- `build_module_performance.R` = grade_a_catalog ∪ module_catalog ∪ 04_Research/strategies/* 전수, **validity 필터(MDD≤90%·|일간ret|≤50%)**. QEPM=native, alpha-search=register_module 경유.
+- 모든 모드 산출물은 **`register_module()`**(`02_Infrastructure/contracts/register_module.R`) 경유 표준화. 단 FR-소비 표준형은 `contract_pass=true` + `metric_type=backtested` + `frozen=true` + `source_contract_id/module_hash/build_version/cost_model_version`가 있어야 한다.
+- floor 통과: `04_Research/strategies/{id}/sim_result.rds` + `06_Registry/module_catalog.json(fr_eligible=true)`. floor 미충족: `stage_artifacts/module_quarantine/{id}/sim_result.rds` + `06_Registry/module_quarantine.json` 보존, FR 소비 금지.
+- `build_module_performance.R` = `module_catalog.fr_eligible=true` allowlist ∪ legacy QEPM `grade_a_catalog` A migration exception. 광역 `04_Research/strategies/*` 전수 scan은 `QVEST_FR_ALLOW_BROAD_SCAN=1` 진단 모드에서만 허용한다.
 
 ## 3. ★ 모듈 풀 admission = RCMA (overall 등급 아님, 양방향 대칭)
 
@@ -44,3 +45,4 @@
 
 ## Change log
 - 2026-06-05: 신규. 모드정의·2트랙·모듈 적재 계약·RCMA(등급무관 양방향)·실측 게이트·governor 정지. 도훈 mandate 4건.
+- 2026-06-12: FR input floor 실행 보강. proxy/미동결/무hash 모듈은 quarantine으로 분리하고, 기본 성능 빌더는 allowlist만 소비.

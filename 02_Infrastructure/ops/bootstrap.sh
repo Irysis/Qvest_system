@@ -58,7 +58,7 @@ case "${QVEST_BOOT_SANITIZED:-}" in
   *)      echo "[boot] WARN: utf8_output_guard INACTIVE (python3/guard 부재 또는 외부 QVEST_BOOT_SANITIZED 선점) — 이모지 포함 출력 시 API 400 위험" ;;
 esac
 
-echo "=== Qvest v8.1 부트스트랩 (Opus 4.8 Native · 3-Mode) ==="
+echo "=== Qvest v8.1 부트스트랩 (Opus 4.8 Native · 4-Mode +RAMP) ==="
 
 # 1. (제거됨 v8.0 2026-05-29) tmux rc telegram inbound listener — outbound tg_agent_brief()는
 #    영향 없음. inbound 명령 listener 불필요 판단(도훈). 필요 시 persistent_remote_control.sh 수동 기동.
@@ -79,6 +79,14 @@ fi
 #    utf8 guard 파이프를 cleanup 종료까지 물고 있는 문제(du -sh 수 분 소요 가능) 방지.
 bash "$PROJECT/02_Infrastructure/ops/cleanup.sh" --execute >/tmp/qm_cleanup_boot.log 2>&1 &
 echo "[boot] Cleanup 백그라운드 (log=/tmp/qm_cleanup_boot.log)"
+
+# 3b. Alpha Search 논문풀 일일 적재 (첫 실행 1회, 백그라운드)
+#     고정 시각 의존 대신 bootstrap/morning_run 양쪽에서 동일 daily stamp를 공유한다.
+PAPER_RECHARGE_SH="$PROJECT/02_Infrastructure/ops/paper_recharge_daily.sh"
+if [ "${QVEST_PAPER_RECHARGE_SKIP:-0}" != "1" ] && [ -f "$PAPER_RECHARGE_SH" ]; then
+  bash "$PAPER_RECHARGE_SH" >/tmp/qm_paper_recharge_boot.log 2>&1 &
+  echo "[boot] paper_recharge_daily 백그라운드 (log=/tmp/qm_paper_recharge_boot.log)"
+fi
 
 # 4. Memory Knowledge Health Gate (v7.2.1 — hard 6 + warning 6)
 #    Foreground: hard fail 즉시 표시. axiom SOT 3축 cross-check (sot_map↔active JSON↔.claude/rules/axioms.md)
@@ -293,16 +301,19 @@ AX_DOCUMENTED_MODE="?"
 AX_BLOCK_MODE="?"
 AX_ADVISORY_MODE="?"
 if [ -f "$AX_SOT_MAP" ]; then
-  AX_DOC_ACTIVE=$(python3 -c "import json; d=json.load(open('$AX_SOT_MAP')); print(sum(1 for a in d.get('axioms',[]) if a.get('documented_active')))" 2>/dev/null || echo "?")
-  AX_DOCUMENTED_MODE=$(python3 -c "import json; d=json.load(open('$AX_SOT_MAP')); print(sum(1 for a in d.get('axioms',[]) if a.get('documented_active') and a.get('enforcement_mode')=='documented'))" 2>/dev/null || echo "?")
-  AX_BLOCK_MODE=$(python3 -c "import json; d=json.load(open('$AX_SOT_MAP')); print(sum(1 for a in d.get('axioms',[]) if a.get('documented_active') and a.get('enforcement_mode')=='block'))" 2>/dev/null || echo "?")
-  AX_ADVISORY_MODE=$(python3 -c "import json; d=json.load(open('$AX_SOT_MAP')); print(sum(1 for a in d.get('axioms',[]) if a.get('documented_active') and a.get('enforcement_mode')=='advisory'))" 2>/dev/null || echo "?")
+  # (v8.1.3 fix) 경로를 env-var로 전달 — 백슬래시 Windows $PROJECT를 python3 -c 문자열에 직접 박으면
+  #  open('C:\Users\...')의 \U가 unicodeescape SyntaxError → 침묵 '?'. DataFresh와 동일한 env 패턴.
+  AX_COUNTS=$(AX_SOT_MAP="$AX_SOT_MAP" python3 -c 'import json,os; d=json.load(open(os.environ["AX_SOT_MAP"],encoding="utf-8")); ax=[a for a in (d.get("axioms",[]) or []) if a.get("documented_active")]; m=lambda mode: sum(1 for a in ax if a.get("enforcement_mode")==mode); print(len(ax), m("documented"), m("block"), m("advisory"))' 2>/dev/null || echo "")
+  if [ -n "$AX_COUNTS" ]; then
+    read -r AX_DOC_ACTIVE AX_DOCUMENTED_MODE AX_BLOCK_MODE AX_ADVISORY_MODE <<< "$AX_COUNTS"
+  fi
 fi
 # .cache/axiom_core.json STALE 표시 (derived cache, NOT SOT)
 AX_CACHE_PATH="$PROJECT/.cache/axiom_core.json"
 AX_CACHE_STATUS="MISSING"
 if [ -f "$AX_CACHE_PATH" ]; then
-  AX_CACHE_COUNT=$(python3 -c "import json; d=json.load(open('$AX_CACHE_PATH')); print(len(d.get('axioms',[])))" 2>/dev/null || echo "?")
+  # (v8.1.3 fix) env-var 전달 — 백슬래시 경로 unicodeescape SyntaxError 회피 (위 AX_SOT_MAP 동일 사유)
+  AX_CACHE_COUNT=$(AX_CACHE_PATH="$AX_CACHE_PATH" python3 -c 'import json,os; print(len(json.load(open(os.environ["AX_CACHE_PATH"],encoding="utf-8")).get("axioms",[])))' 2>/dev/null || echo "?")
   if [ "$AX_CACHE_COUNT" = "$AX_DOC_ACTIVE" ]; then
     AX_CACHE_STATUS="FULL ($AX_CACHE_COUNT)"
   else
@@ -367,23 +378,102 @@ PYEOF
 )
 fi
 
+# 8f. (v8.1.3) 페이퍼 적재 리서치풀 인지 — paper_recharge→router→dispatch 산출물 요약.
+#      Step 3b paper_recharge가 적재한 *신규 리서치풀*(라우팅 분포 / alpha-search 대기 testable /
+#      optimizer·risk·regime QEPM 연료 / dispatch 소비여부 / 수집>라우팅 미반영)을 부팅 상태에
+#      노출. --mark로 직전 부팅 대비 NEW 여부 판정 후 인지 마커 갱신. fail-soft(부팅 무중단).
+RP_READER="$PROJECT/02_Infrastructure/ops/research_pool_status.py"
+RESEARCH_POOL=""
+if [ -f "$RP_READER" ] && python3 -c 'import sys' >/dev/null 2>&1; then
+  RESEARCH_POOL=$(QM_ROOT="$CLAUDE_PROJECT_DIR" python3 "$RP_READER" --mark 2>/dev/null || true)
+fi
+
+# 8g. (v8.1.3) 데이터 freshness 인지 — cache_freshness_audit(daily_refresh Step 5 백그라운드)가
+#      산출한 qepm/observability/cache_freshness_latest.json(mtime+내부 max(Date) lag, OK/WARN/CRITICAL)을
+#      부팅에 노출. boot이 지금까지 audit을 돌리기만 하고 결과를 안 읽던 갭. advisory(부팅 무중단) —
+#      핵심 연구캐시(rawdata/benchmark/regime) stale은 별도 강조(성과수치 산출 전 갱신 의무).
+FRESH_JSON="$PROJECT/qepm/observability/cache_freshness_latest.json"
+DATA_FRESH=""
+if [ -f "$FRESH_JSON" ] && python3 -c 'import sys' >/dev/null 2>&1; then
+  DATA_FRESH=$(FRESH_JSON="$FRESH_JSON" python3 <<'PYEOF' 2>/dev/null
+import json, os
+try:
+    d = json.load(open(os.environ.get('FRESH_JSON',''), encoding='utf-8'))
+    s = d.get('summary', {}) or {}
+    res = d.get('results', []) or []
+    ran = (d.get('ran_at') or '')[:16].replace('T', ' ')
+    crit = [r.get('path') for r in res if r.get('severity') == 'CRITICAL']
+    KEY = {'.cache/rawdata.parquet', '.cache/RAWDATA.parquet', '.cache/benchmark.parquet',
+           '.cache/regime_daily_v2.parquet', '.cache/unified_regime_signal.parquet'}
+    key_stale = [r.get('path') for r in res
+                 if r.get('path') in KEY and r.get('severity') in ('WARN', 'CRITICAL')]
+    line = "DataFresh:  %s · OK %s / WARN %s / CRITICAL %s" % (
+        ran or '?', s.get('OK', '?'), s.get('WARN', '?'), s.get('CRITICAL', '?'))
+    if crit:
+        line += " — crit: " + ", ".join((os.path.basename(c.rstrip('/')) or c) for c in crit[:4])
+    print(line)
+    if key_stale:
+        print("  WARN: 핵심 연구캐시 stale — " + ", ".join(os.path.basename(c) for c in key_stale)
+              + " (성과수치 산출 전 갱신 의무 — performance-real-code-only)")
+    else:
+        print("  핵심 연구캐시(rawdata/benchmark/regime): FRESH")
+except Exception as e:
+    print("DataFresh:  SKIP (parse %s)" % type(e).__name__)
+PYEOF
+)
+fi
+
+# 8h. (v8.1.3) 모닝 파이프라인 ran-today 인지 — morning_run.sh once-per-day 락 확인.
+#      스케줄러 silent 무발화(예: mrs_daily 멀티라인 -e 트랩) 조기감지. advisory.
+MR_LOCK="/tmp/qm_morning_run_$(date +%Y%m%d).lock"
+if [ -f "$MR_LOCK" ]; then
+  MR_T=$(stat -c %y "$MR_LOCK" 2>/dev/null | cut -d'.' -f1 | cut -d' ' -f2)
+  MORNING_STATUS="MorningRun:  $(date +%Y-%m-%d) 실행됨 (${MR_T:-?}) — paper/router/dispatch + 평일 brief/regime"
+else
+  MORNING_STATUS="MorningRun:  $(date +%Y-%m-%d) 미실행 (오늘 lock 부재 — 스케줄러 미발화/미도래. 수동: bash 02_Infrastructure/ops/morning_run.sh manual)"
+fi
+
+# 8i. (v8.1.4) 부팅 상태-라인 스모크 가드 — 하단 상태 라인을 산출하는 모든 리더를 실행 +
+#      inline-path( python3 -c "...$PROJECT..." ) 정적 린트. 새 상태 라인이 이 머신에서 검증 없이
+#      출고돼 사용자가 부팅 때 발견하던 회귀(class A 백슬래시 -c unicodeescape '?' / class B JSON
+#      스키마드리프트 SKIP)를 *추가 시점*에 차단. advisory(loud, BOOT_FAILS 비계상 — 상태 표시는
+#      시스템 게이트가 아님). 스크립트는 pre-commit/CI 게이트로도 사용 가능(exit=FAIL 개수).
+SMOKE_STATUS=""
+SMOKE_SCRIPT="$PROJECT/02_Infrastructure/ops/boot_status_smoke.py"
+if [ -f "$SMOKE_SCRIPT" ] && python3 -c 'import sys' >/dev/null 2>&1; then
+  SMOKE_STATUS=$(QM_ROOT="$CLAUDE_PROJECT_DIR" python3 "$(cygpath -m "$SMOKE_SCRIPT" 2>/dev/null || echo "$SMOKE_SCRIPT")" "$CLAUDE_PROJECT_DIR" 2>&1 | tail -1 || true)
+fi
+
 echo ""
 if [ "${BOOT_FAILS:-0}" -gt 0 ]; then
   echo "=== 부트스트랩 DEGRADED — ${BOOT_FAILS}개 게이트 실패 (위 ERROR 라인 확인, '완료' 아님) ==="
 else
-  echo "=== 부트스트랩 완료 (Qvest v8.1 — Opus 4.8 Native · 3-Mode · 실측 거버넌스) ==="
+  echo "=== 부트스트랩 완료 (Qvest v8.1 — Opus 4.8 Native · 4-Mode +RAMP · 실측 거버넌스) ==="
 fi
 if [ -n "$PG2_INFO" ]; then
   echo "$PG2_INFO"
 fi
-echo "v8.1:       3-Mode 헌법(alpha-search 논문복제·K200∪KQ150·2005 / factor-rotation Lane3 / Axiom r7 복원) / 실측 거버넌스(measurement-graduation) / register_module 자동흐름"
+echo "v8.1:       4-Mode 헌법(alpha-search 논문복제·K200∪KQ150·2005 / factor-rotation Lane3 / RAMP 팩터배분 Gate0~11 / Axiom r7 복원) / 실측 거버넌스(measurement-graduation) / register_module 자동흐름"
 echo "v8.0 base:  R+Python 1급 / SR목표 2.5 / agent effort(judge·gov xhigh) / axiom_context_inject / qvest-*-style skill"
+echo "Modes:      ① QEPM(/worktask) ② alpha-search ③ factor-rotation ④ RAMP(/ramp · Gate0~11·CCS 13-score · governor 정지/자본 수동) — CLAUDE.md 4-Mode 헌법(RAMP 2026-06-17)"
 echo "Skills:     $(ls "$PROJECT"/.claude/skills/*/SKILL.md 2>/dev/null | wc -l)개 (worktask/alpha/risk/optimizer + qvest-*-style 4종)"
 echo "Hooks:      settings.json 등록 (harness_health 결과 위 참조)"
 echo "WT Active:  $WT_ACTIVE건"
 echo "Inbox:      alpha=$ALPHA_T risk=$RISK_T optimizer=$OPT_T forge=$FORGE_T judge=$JUDGE_T governor=$GOV_T"
 echo "Axioms:     active=$AX_ACTIVE candidates=$AX_CAND (sot_map documented=$AX_DOC_ACTIVE: documented=$AX_DOCUMENTED_MODE / block=$AX_BLOCK_MODE / advisory=$AX_ADVISORY_MODE)"
 echo "Cache_core: $AX_CACHE_STATUS"
+if [ -n "$RESEARCH_POOL" ]; then
+  echo "$RESEARCH_POOL"
+else
+  echo "ResearchPool: SKIP (research_pool_status.py 부재 또는 python3 미가용)"
+fi
+if [ -n "$DATA_FRESH" ]; then
+  echo "$DATA_FRESH"
+else
+  echo "DataFresh:  SKIP (cache_freshness_latest.json 부재 — daily_refresh 후 표시)"
+fi
+[ -n "$MORNING_STATUS" ] && echo "$MORNING_STATUS"
+[ -n "$SMOKE_STATUS" ] && echo "$SMOKE_STATUS"
 command -v free >/dev/null 2>&1 && free -m | awk '/Mem:/ {printf "RAM:        %.0f%%\n", $3/$2*100}' || true
 # (Remote tmux rc 라인 제거 v8.0 — inbound listener 폐지)
 echo ""

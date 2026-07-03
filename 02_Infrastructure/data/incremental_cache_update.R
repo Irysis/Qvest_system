@@ -69,11 +69,18 @@ incremental_rawdata <- function() {
       combined <- rbindlist(list(new_raw, api_only), use.names = TRUE, fill = TRUE)
       combined <- unique(combined, by = c("Date", "Ticker"))
       setorder(combined, Date, Ticker)
-      write_parquet(combined, RAWDATA_CACHE)
+      # [fix 2026-06-17] Windows arrow mmap(error 1224) — read_parquet(RAWDATA_CACHE) mmap
+      # 해제 후 temp-rename (동일 경로 read→write halt 회피, krx_build_rawdata 동일 패턴)
+      rm(old_raw, new_raw, api_only); gc(verbose = FALSE)
+      .raw_tmp <- paste0(RAWDATA_CACHE, ".tmp")
+      write_parquet(combined, .raw_tmp)
+      if (file.exists(RAWDATA_CACHE)) file.remove(RAWDATA_CACHE)
+      file.rename(.raw_tmp, RAWDATA_CACHE)
       cat(sprintf("[incr] API data restored: +%d rows (dates > %s)\n",
                   nrow(api_only), xlsx_max))
+    } else {
+      rm(old_raw, new_raw, api_only); gc(verbose = FALSE)
     }
-    rm(old_raw, new_raw, api_only); gc(verbose = FALSE)
   }
 
   invisible(TRUE)

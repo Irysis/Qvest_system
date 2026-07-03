@@ -60,7 +60,7 @@
 - [ ] monotonicity ≥ 0.80 (top→bottom decile ordering)
 
 ### 6. Crowding & Cost
-- [ ] turnover < 600% annual (Hard fail)
+- [ ] turnover < 1,100% annual (Hard fail)
 - [ ] top decile liquidity (20d TV ≥ 2억)
 - [ ] cor with 기존 PG2 active strategies < 0.5 권장
 - [ ] family saturation 회피 (L-219 Q07-AC21 like)

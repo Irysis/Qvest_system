@@ -49,14 +49,16 @@ if (!dir.exists(DART_CACHE_DIR)) dir.create(DART_CACHE_DIR, recursive = TRUE)
 }
 
 #' Fetch insider disclosure list for a given date range
-#' Uses list.json with pblntf_ty=E (지분공시)
+#' Uses list.json with pblntf_ty=D (지분공시 — 임원·주요주주 특정증권 소유상황 포함)
+#' ⚠ 버그수리 2026-06-30: 기존 "E"(=기타공시)는 insider 공시를 전혀 포함하지 않음(probe 실측 page1 insider 0).
+#'   올바른 지분공시 = "D"(probe 실측 page1 임원·주요주주특정증권 42~76건).
 .fetch_insider_list <- function(api_key, bgn_de, end_de, page_no = 1, page_count = 100) {
   url <- "https://opendart.fss.or.kr/api/list.json"
   resp <- GET(url, query = list(
     crtfc_key = api_key,
     bgn_de    = bgn_de,
     end_de    = end_de,
-    pblntf_ty = "E",
+    pblntf_ty = "D",
     page_no   = page_no,
     page_count = page_count
   ))

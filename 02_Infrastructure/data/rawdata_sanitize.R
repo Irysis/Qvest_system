@@ -186,8 +186,17 @@ sanitize_rawdata <- function(dry_run = FALSE) {
     raw <- raw[, ..keep]
     setorder(raw, Date, Ticker)
 
-    write_parquet(raw, RAWDATA_CACHE)
-    write_parquet(bm, BM_CACHE)
+    # [fix 2026-06-17] Windows arrow mmap(error 1224) — raw/bm가 각 source(RAWDATA_CACHE/
+    # BM_CACHE)를 mmap한 채라 동일 경로 write_parquet halt 회피, temp-rename.
+    # (raw/bm는 검증 요약·반환에 쓰이므로 rm 불가 — rename만으로 inode 교체)
+    .raw_tmp <- paste0(RAWDATA_CACHE, ".tmp")
+    write_parquet(raw, .raw_tmp)
+    if (file.exists(RAWDATA_CACHE)) file.remove(RAWDATA_CACHE)
+    file.rename(.raw_tmp, RAWDATA_CACHE)
+    .bm_tmp <- paste0(BM_CACHE, ".tmp")
+    write_parquet(bm, .bm_tmp)
+    if (file.exists(BM_CACHE)) file.remove(BM_CACHE)
+    file.rename(.bm_tmp, BM_CACHE)
     cat(sprintf("  RAWDATA 저장: %s rows\n", format(nrow(raw), big.mark=",")))
     cat(sprintf("  Benchmark 저장: %d rows\n", nrow(bm)))
   }

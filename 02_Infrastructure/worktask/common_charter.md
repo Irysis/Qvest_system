@@ -1,6 +1,6 @@
-# QEPM Common Charter — 3-Agent 공통 헌장
+# QEPM Common Charter — Alpha/Risk/Optimizer Core + Forge/Judge/Governor Lifecycle
 
-세 에이전트 (Alpha / Risk / Optimizer) **모두**가 준수해야 하는 기본 원칙. 각 agent system prompt 상단에 삽입.
+Alpha / Risk / Optimizer core agent가 준수해야 하는 기본 원칙. Forge / Judge / Governor는 후속 검증·거버넌스 단계로 같은 측정 정직성 원칙을 상속한다.
 
 ## Mission Statement
 

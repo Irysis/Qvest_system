@@ -7,7 +7,20 @@
 ## ============================================================================
 suppressMessages({ library(jsonlite) })
 `%||%` <- function(a,b) if(is.null(a)||length(a)==0||(length(a)==1&&is.na(a))) b else a
-.FRR_ROOT <- function() if(exists("PROJECT_ROOT")) get("PROJECT_ROOT") else Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT","G:/Quant_Module_Moltbot"))
+.FRR_ROOT <- function() {
+  if (exists("PROJECT_ROOT", inherits = TRUE)) return(get("PROJECT_ROOT", inherits = TRUE))
+  candidates <- unique(c(Sys.getenv("CLAUDE_PROJECT_DIR", ""), Sys.getenv("QM_ROOT", ""), getwd()))
+  is_root <- function(p) nzchar(p) && dir.exists(p) && file.exists(file.path(p, "02_Infrastructure/config.R"))
+  for (p in candidates) if (is_root(p)) return(normalizePath(p, winslash = "/", mustWork = TRUE))
+  cur <- normalizePath(getwd(), winslash = "/", mustWork = TRUE)
+  repeat {
+    if (is_root(cur)) return(cur)
+    parent <- dirname(cur)
+    if (identical(parent, cur)) break
+    cur <- parent
+  }
+  stop("[factor_rotation_registry] project root not found. Set CLAUDE_PROJECT_DIR or QM_ROOT.")
+}
 FR_REGISTRY_PATH <- file.path(.FRR_ROOT(), "06_Registry", "factor_rotation_registry.json")
 
 #' Register an FR operational system into the FR registry.

@@ -216,7 +216,13 @@ incremental_consensus <- function() {
         orig_dt <- orig_dt[!Date %in% unique(new_rows$Date)]
         combined <- rbind(orig_dt, new_rows, fill = TRUE)
         setorder(combined, Date)
-        write_parquet(combined, orig_file)
+        # [2026-06-17 fix] Windows arrow mmap-on-write 잠금(error 1224) 회피:
+        #   read_parquet(orig)의 mmap을 rm+gc로 해제 후, temp 파일에 쓰고 rename으로 원자 교체.
+        rm(orig_dt); gc()
+        .tmp_out <- paste0(orig_file, ".tmp")
+        write_parquet(combined, .tmp_out)
+        if (file.exists(orig_file)) file.remove(orig_file)
+        file.rename(.tmp_out, orig_file)
         cat(sprintf("  %s: +%d rows (max: %s)\n", metric, nrow(new_rows), max(combined$Date)))
       }
     }

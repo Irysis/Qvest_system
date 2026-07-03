@@ -351,7 +351,13 @@ naver_merge_rawdata <- function(snapshot = NULL) {
   combined <- rbind(old_raw, new_rows, fill = TRUE, ignore.attr = TRUE)
   combined <- unique(combined, by = c("Date", "Ticker"))
   setorder(combined, Date, Ticker)
-  write_parquet(combined, RAWDATA_CACHE)
+  # [fix 2026-06-17] Windows arrow mmap(error 1224) — old_raw가 RAWDATA_CACHE를 mmap한 채라
+  # 동일 경로 write_parquet halt 회피, mmap 해제 후 temp-rename (old_raw는 write 이후 미사용).
+  rm(old_raw); gc(verbose = FALSE)
+  .raw_tmp <- paste0(RAWDATA_CACHE, ".tmp")
+  write_parquet(combined, .raw_tmp)
+  if (file.exists(RAWDATA_CACHE)) file.remove(RAWDATA_CACHE)
+  file.rename(.raw_tmp, RAWDATA_CACHE)
 
   cat(sprintf("[naver_merge] RAWDATA: +%d rows | %s ~ %s | total %d\n",
               nrow(new_rows), min(combined$Date), max(combined$Date), nrow(combined)))

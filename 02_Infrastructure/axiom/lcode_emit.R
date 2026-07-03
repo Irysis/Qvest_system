@@ -12,7 +12,8 @@
 
 .LCODE_MODE_PREFIX <- c(alpha_search = "AS", alpha_research = "AR", qepm_legacy = "QPM",
                         judge_gate = "JG", governor_admission = "GV",
-                        factor_rotation = "FR", regime_research = "RR")
+                        factor_rotation = "FR", regime_research = "RR",
+                        ramp = "RAMP")
 
 # 핵심 진입점. metrics = list(cagr_pct=, sharpe=, mdd_pct=, excess_cagr=, portfolio_alpha_t=, ...)
 emit_lcode <- function(mode, strategy_id, grade, lesson_text,
@@ -82,6 +83,14 @@ emit_fr_lcode <- function(strategy_id, grade, lesson_text,
                           metric_type = "backtested", ...) {
   track <- match.arg(track)
   emit_lcode(mode = track, strategy_id = strategy_id, grade = grade,
+             lesson_text = lesson_text, metric_type = metric_type, ...)
+}
+
+# ── RAMP 편의 wrapper: Gate별 교훈(순수팩터 생존/사멸, 잠재팩터 구조, M-code 국면적합, 잔차-α) ──
+# RAMP modecode=RAMP, 티어=backtested(canonical_screen_bt/build_bt_result) → INV-1상 global 승격 자격.
+emit_ramp_lcode <- function(strategy_id, grade, lesson_text,
+                            metric_type = "backtested", ...) {
+  emit_lcode(mode = "ramp", strategy_id = strategy_id, grade = grade,
              lesson_text = lesson_text, metric_type = metric_type, ...)
 }
 

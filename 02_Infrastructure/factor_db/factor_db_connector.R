@@ -10,7 +10,7 @@
 #   — 신규 등재 2건(AC14_Discretionary_Accruals, XF_Q06_Op_Margin)에만 시범 도입.
 #
 # Functions:
-#   load_month_factors(sig_date, coverage_min)
+#   load_month_factors(sig_date, coverage_min, factor_names)
 #   compute_rolling_ic_all(sig_date, min_months, max_months)
 #   group_factors_by_family(registry)
 #   align_factor_direction(factor_dt, registry)
@@ -24,8 +24,14 @@
 suppressPackageStartupMessages({
   library(data.table)
   library(arrow)
+  library(dplyr)
   library(jsonlite)
 })
+
+if (!exists("%||%", mode = "function")) {
+  `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L ||
+                              (length(a) == 1L && is.na(a))) b else a
+}
 
 # ---- Paths ----
 .fdc_self_dir <- tryCatch(
@@ -74,6 +80,7 @@ FACTOR_REG_PATH <- file.path(FACTOR_DB_DIR, "factor_registry.json")
 
 # ---- IC history (cached) ----
 .fdc_ic_hist <- NULL
+.fdc_ic_dir_cache <- new.env(parent = emptyenv())
 
 .load_ic_history <- function() {
   if (!is.null(.fdc_ic_hist)) return(.fdc_ic_hist)
@@ -93,6 +100,77 @@ FACTOR_REG_PATH <- file.path(FACTOR_DB_DIR, "factor_registry.json")
   .fdc_ic_hist
 }
 
+.ic_direction_cache_path <- function(sig_d, min_ic_months) {
+  info <- tryCatch(file.info(FACTOR_IC_MONTHLY_PATH), error = function(e) NULL)
+  stamp <- "noic"
+  size_tag <- "0"
+  if (!is.null(info) && nrow(info) > 0 && !is.na(info$mtime[1])) {
+    stamp <- format(as.POSIXct(info$mtime[1]), "%Y%m%d%H%M%S")
+    size_tag <- as.character(info$size[1] %||% 0)
+  }
+  cache_dir <- file.path(FACTOR_DB_DIR, "ic_direction_cache_v1")
+  dir.create(cache_dir, recursive = TRUE, showWarnings = FALSE)
+  file.path(
+    cache_dir,
+    sprintf("ic_dir_%s_m%d_%s_%s.rds",
+            format(as.Date(sig_d), "%Y%m%d"), as.integer(min_ic_months),
+            stamp, size_tag)
+  )
+}
+
+.load_ic_direction_cached <- function(sig_d, min_ic_months = 36L) {
+  sig_d <- as.Date(sig_d)
+  cache_key <- sprintf("%s_m%d", format(sig_d, "%Y%m%d"), as.integer(min_ic_months))
+  if (exists(cache_key, envir = .fdc_ic_dir_cache, inherits = FALSE)) {
+    return(get(cache_key, envir = .fdc_ic_dir_cache, inherits = FALSE))
+  }
+
+  cache_path <- .ic_direction_cache_path(sig_d, min_ic_months)
+  if (file.exists(cache_path)) {
+    cached <- tryCatch(readRDS(cache_path), error = function(e) NULL)
+    if (is.data.table(cached) && all(c("Factor_Name", "ic_sign") %in% names(cached))) {
+      assign(cache_key, cached, envir = .fdc_ic_dir_cache)
+      return(cached)
+    }
+  }
+
+  ic_hist <- tryCatch(.load_ic_history(), error = function(e) NULL)
+  if (is.null(ic_hist) || nrow(ic_hist) == 0) return(NULL)
+
+  if ("Usable_Date" %in% names(ic_hist)) {
+    ic_avail <- ic_hist[Usable_Date <= sig_d]
+  } else {
+    cat("[WARN] align_factor_direction: factor_ic_monthly.parquet missing Usable_Date. Using Date < sig_d (legacy).\n")
+    ic_avail <- ic_hist[Date < sig_d]
+  }
+  if (nrow(ic_avail) == 0) return(NULL)
+
+  ic_dir <- ic_avail[, {
+    n <- .N
+    if (n >= min_ic_months) {
+      m <- mean(IC, na.rm = TRUE)
+      list(Mean_IC = m, ic_sign = fifelse(m >= 0, 1L, -1L), N_IC = n)
+    } else {
+      list(Mean_IC = NA_real_, ic_sign = NA_integer_, N_IC = n)
+    }
+  }, by = Factor_Name]
+
+  tmp <- sprintf("%s.%s.tmp", cache_path, Sys.getpid())
+  tryCatch({
+    saveRDS(ic_dir, tmp)
+    if (!file.rename(tmp, cache_path) && !file.exists(cache_path)) {
+      file.copy(tmp, cache_path, overwrite = FALSE)
+    }
+    if (file.exists(tmp)) unlink(tmp)
+  }, error = function(e) {
+    if (file.exists(tmp)) unlink(tmp)
+    NULL
+  })
+
+  assign(cache_key, ic_dir, envir = .fdc_ic_dir_cache)
+  ic_dir
+}
+
 
 #==============================================================================
 # 1. load_month_factors()
@@ -101,8 +179,12 @@ FACTOR_REG_PATH <- file.path(FACTOR_DB_DIR, "factor_registry.json")
 #' Load factor DB for a signal date with coverage filter + direction alignment.
 #' @param sig_date Date or character. Signal date (monthly)
 #' @param coverage_min Numeric. Min coverage fraction to include factor (0-1)
+#' @param factor_names Optional character vector. If supplied, only these factor
+#'   names are direction-aligned and returned. This preserves C15 because the
+#'   caller still uses the PIT-safe connector rather than reading parquet
+#'   directly.
 #' @return data.table: Ticker, Factor_Name, Z_Score_Aligned (higher=better)
-load_month_factors <- function(sig_date, coverage_min = 0.05) {
+load_month_factors <- function(sig_date, coverage_min = 0.05, factor_names = NULL) {
   sig_d <- as.Date(sig_date)
   ym_tag <- format(sig_d, "%Y%m")
   fpath <- file.path(FACTOR_DB_DIR, paste0("factor_db_", ym_tag, ".parquet"))
@@ -117,12 +199,29 @@ load_month_factors <- function(sig_date, coverage_min = 0.05) {
     fpath <- file.path(FACTOR_DB_DIR, paste0("factor_db_", closest, ".parquet"))
   }
 
-  # v2.1: col_select — only columns needed downstream (Coverage filter + direction
-  # alignment). Date/Raw_Value/Z_Sector/Rank_Pct unused here → IO/메모리 절감.
-  dt <- as.data.table(read_parquet(
-    fpath,
-    col_select = c("Ticker", "Factor_Name", "Z_Score", "Coverage")
-  ))
+  if (!is.null(factor_names)) {
+    factor_names <- unique(as.character(factor_names))
+    factor_names <- factor_names[nzchar(factor_names)]
+  }
+
+  # v2.2: when caller requests specific factors, push the Factor_Name filter
+  # through Arrow before collect(). This keeps the PIT-safe connector boundary
+  # while avoiding full monthly factor DB materialization for combo runners.
+  dt <- if (!is.null(factor_names) && length(factor_names)) {
+    as.data.table(
+      open_dataset(fpath, format = "parquet") %>%
+        select(Ticker, Factor_Name, Z_Score, Coverage) %>%
+        filter(Factor_Name %in% factor_names) %>%
+        collect()
+    )
+  } else {
+    # v2.1: col_select — only columns needed downstream (Coverage filter + direction
+    # alignment). Date/Raw_Value/Z_Sector/Rank_Pct unused here → IO/메모리 절감.
+    as.data.table(read_parquet(
+      fpath,
+      col_select = c("Ticker", "Factor_Name", "Z_Score", "Coverage")
+    ))
+  }
 
   # Coverage filter: exclude factors with too few stocks.
   # v2.1: N_Covered = Coverage & !is.na(Z_Score) — 시장레벨 dead 팩터(RE*/MA05-07/
@@ -196,36 +295,13 @@ align_factor_direction <- function(factor_dt, registry, sig_date = NULL, min_ic_
 
   if (!is.null(sig_date)) {
     sig_d <- as.Date(sig_date)
-    ic_hist <- tryCatch(.load_ic_history(), error = function(e) NULL)
-
-    if (!is.null(ic_hist) && nrow(ic_hist) > 0) {
-      # PIT ENFORCED: Usable_Date <= sig_date (identical to compute_rolling_ic_all line 222-224)
-      if ("Usable_Date" %in% names(ic_hist)) {
-        ic_avail <- ic_hist[Usable_Date <= sig_d]
-      } else {
-        # Legacy fallback: Date < sig_d (excludes current month, 1-month safety)
-        cat("[WARN] align_factor_direction: factor_ic_monthly.parquet missing Usable_Date. Using Date < sig_d (legacy).\n")
-        ic_avail <- ic_hist[Date < sig_d]
-      }
-
-      if (nrow(ic_avail) > 0) {
-        # Expanding window mean IC per factor, with min_ic_months burn-in
-        ic_dir <- ic_avail[, {
-          n <- .N
-          if (n >= min_ic_months) {
-            m <- mean(IC, na.rm = TRUE)
-            list(Mean_IC = m, ic_sign = fifelse(m >= 0, 1L, -1L), N_IC = n)
-          } else {
-            # Insufficient IC history: mark for registry fallback
-            list(Mean_IC = NA_real_, ic_sign = NA_integer_, N_IC = n)
-          }
-        }, by = Factor_Name]
-        # v2.1: 구 로그(IC-history 전체 기준 카운트) 제거 — 로드된 팩터 기준
-        # 집계로 대체 (merge 이후 하단). IC-history에 아예 없는 팩터(구 73건)가
-        # 로그에 비가시화되던 문제 해소.
-        cat(sprintf("[align_factor_direction] PIT-safe: sig_date=%s | min_months=%d\n",
-                    sig_d, min_ic_months))
-      }
+    ic_dir <- .load_ic_direction_cached(sig_d, min_ic_months)
+    if (!is.null(ic_dir) && nrow(ic_dir) > 0) {
+      # v2.1: 구 로그(IC-history 전체 기준 카운트) 제거 — 로드된 팩터 기준
+      # 집계로 대체 (merge 이후 하단). IC-history에 아예 없는 팩터(구 73건)가
+      # 로그에 비가시화되던 문제 해소.
+      cat(sprintf("[align_factor_direction] PIT-safe: sig_date=%s | min_months=%d\n",
+                  sig_d, min_ic_months))
     }
   } else {
     # No sig_date: registry-only mode (backward compatible, PIT-safe by construction)

@@ -1,0 +1,96 @@
+# ramp_config.yml — RAMP 모드 설정 (config-first, 가이드 §16.2)
+# 모든 임계값은 여기. 하드코딩 금지. 위반=AX-002.
+schema_version: "v1.0"
+generated_for: "RAMP (K-RAMP) — Korea Regime-Aware Multi-Factor Portfolio"
+separation:
+  forbid_path_substring: "Qvest_Codex"   # 어떤 RAMP 산출물도 이 경로 참조 금지
+  forbid_agents_md: true                  # AGENTS.md 도입 금지
+
+pool:
+  module_catalog: "06_Registry/module_catalog.json"
+  include_batch_434: true                 # 도훈 mandate 2026-06-17 (라벨무관, NAV 실측)
+  batch_434_glob: "stage_artifacts/batch_434/**/*_result.rds"
+  robust_rds_read: true                   # vanilla readRDS 세그폴트 → data.table/xts 로드 후 읽기
+  min_obs_months: 36                       # 행렬 편입 최소 관측
+  dedup_return_corr: 0.95                  # 근복제 축약 임계
+
+gate3_similarity:
+  dims: [return_correlation, rank_correlation, drawdown_correlation, turnover_similarity]
+  holdings_dims_status: "unavailable"     # NAV-only → 정직표기
+  family_rule: "return_correlation>0.90 OR drawdown_correlation>0.80"
+  sds_pass: 80
+
+gate4_pure_factor:
+  latent_method: ["pca", "factanal", "hclust"]   # 통계적 잠재팩터 1차
+  pc_report_variance: true                        # PC1 분산설명률 보고(베타지배 예상)
+  fwl_controls: [sector, log_mktcap, beta, vol, liquidity]
+  fwl_orthogonality_assert: 0.05                  # |cor(z_pure, X)| < 0.05
+  validation_via: "canonical_screen_bt"           # 실측-only
+  approve_rule:
+    economic_rationale_present: true
+    rank_ic_ir_oos_min: 0.0
+    net_quintile_spread_oos_min: 0.0
+    cost_drag_max: 0.05
+    corr_with_existing_group_max: 0.70
+  pfis_pass: 85
+  rdds_pass: 80
+  residual_alpha_candidate: true                  # 잠재팩터 미포착 잔차 = 신규-α 후보
+
+gate5_grouping:
+  distance_weights: {w_return: 0.6, w_signal: 0.0, w_holdings: 0.0, w_exposure: 0.2, w_drawdown: 0.2}  # w_signal/holdings unavailable at PC level → 0
+  canonical_groups: [Value, Quality, Momentum, LowRisk, Size_Liquidity, Reversal, Growth_Profitability, Dividend, Composite]
+  label_after_clustering: true                    # 통계 클러스터 후 경제라벨(강제편입 금지)
+  label_r2_min: 0.30                              # PC≈style 라벨 최소 회귀 R² (미만=unlabeled 신규-α)
+  label_beta_dominance: 0.50                      # 단일 style이 std-beta 지배해야 단독 라벨(미만=+mixed)
+  exclude_pc1: true                               # PC1=market/beta → 배분/라벨 입력 제외
+  hclust_cut_height: 0.7
+  style_proxies: {value: V01_BM, momentum: M01_Mom_12_1, quality: Q01_GPA, lowvol: D01_IdioVol, size: S01_Size, liquidity: L01_Amihud}
+
+gate5_regime:                                     # 국면조건부 매트릭스 (soft, no hard switch)
+  min_eff_n: 60                                   # Kish effective-N 하한(미만→grand-mean 수축)
+  regimes: [crisis, neutral, risk_on]
+  shrink_target: grand_mean
+
+regime:
+  soft_prob_source: "02_Infrastructure/regime/regime_engine_daily.R"   # 9축 MRS
+  daily_cache: ".cache/unified_regime_signal_daily.parquet"
+  hard_switch: false                              # §3.5 절대 금지
+  rho_low_fallback: "M0"                           # confidence 낮으면 baseline 수렴
+
+cost:
+  model_version: "v2.4_kr_retail_15bps"
+  one_way_bps: 15
+  liq_threshold_won_20d: 200000000
+  report_levels: [gross, net]                     # net_before_impact/net_after_impact/capacity_adj = PARTIAL (ADR-0002)
+
+constraints:                                       # 헌법 Production Constraints
+  max_names: 25
+  long_only: true
+  weight_bounds: [0.0, 0.20]
+  sum_weights: 1.0
+  turnover_annual_hard_fail: 11.0
+
+mcode_roles:
+  M0: {role: baseline, factor_groups: [Composite]}
+  M1: {role: defensive, factor_groups: [Quality, LowRisk, Value]}
+  M2: {role: offensive, factor_groups: [Momentum, Growth_Profitability]}
+  M3: {role: recovery, factor_groups: [Value, Reversal, Size_Liquidity]}
+  M4: {role: neutral_core, factor_groups: [Composite, Quality, Momentum]}
+
+ccs:
+  thresholds: {ccs_min: 90, core_min: 85, lookahead_defense: 100, pit_defense_min: 90}
+  required_artifacts_file: "02_Infrastructure/ramp/ramp_required_artifacts.json"
+
+output_meta:                                       # §2.4 모든 산출 의무 필드
+  required_fields: [as_of_date, generated_at, source_version]
+  id_field: security_id                            # Ticker 매핑 문서화
+
+axiom:
+  modecode: "RAMP"
+  tier: "backtested"                               # global 승격 자격 (alpha_search proxy와 구분)
+  mode_dir: "qepm/memory/axioms/active/modes/ramp"
+
+governance:
+  capital_gate: "manual"                           # governor 정지, 도훈 confirm
+  factor_states: [research, candidate, approved, quarantined, retired]
+  mcode_states: [research, candidate, approved, quarantined, retired]

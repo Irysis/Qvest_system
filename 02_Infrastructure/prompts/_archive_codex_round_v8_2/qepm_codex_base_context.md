@@ -37,7 +37,7 @@ Claude의 echo chamber에 빠지지 않는 외부 시각 + KR market QEPM 도메
 | Universe | KOSPI200 ∪ KOSDAQ150 |
 | Liquidity | 20d TV ≥ 2e8원 |
 | Cost | 15bps one-way |
-| Turnover | < 600% annual hard |
+| Turnover | < 1,100% annual hard |
 | MDD | < 45% hard fail (Hurdle Gate) |
 | PIT | C1~C15 모두 |
 
@@ -59,7 +59,7 @@ Claude의 echo chamber에 빠지지 않는 외부 시각 + KR market QEPM 도메
 - **C15**: Factor DB load_month_factors() 경유 (parquet 직접 로드 금지)
 
 ## AX 공리 (모든 critique 의무 인용)
-- **AX-000** [IMMUTABLE]: 한계란 없다. 불가능은 없다. 모든 목표는 달성 가능하다.
+- **AX-000** [IMMUTABLE]: 한계는 대개 법칙이 아니라 방법의 한계. 3~4회 실패로 한계/dead-end 단정 금지; 모든 수단 소진 또는 도훈 중단 지시까지 탐색 계속. 실측·정직 보고는 유지(탐색 중단 근거 아님).
 - **AX-001 v2** [IMMUTABLE]: 방어형 팩터는 조건부 평가 (crisis_alpha + Core 대비 MDD 완화 + bad/normal IC ratio). 전기간 SR 기준 적용 금지.
 - **AX-002** [IMMUTABLE]: 프로세스 우회 = 판단의 미래참조 = C1 위반 동급. 하네스 내 성과만 유효.
 - **AX-003** [empirical]: KR value family EP_STANDALONE+LOW_TURNOVER 실패 (L-132/135).

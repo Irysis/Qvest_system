@@ -272,7 +272,10 @@ get_next_trading_day <- function(date) {
 last_confirmed_trading_day <- function() {
   cal <- .load_calendar()
   now <- Sys.time()
-  today <- as.Date(now)
+  # ★TZ 버그 수정(2026-06-19): as.Date(now)는 기본 UTC 변환이라 09시(KST) 이전엔 전일로 롤백
+  #   → today가 하루 일찍 잡혀 last_confirmed가 T-2 반환 → RAWDATA/KTRI/regime 매일 1일 stale.
+  #   format(now,"%Y-%m-%d")는 로컬 tz(=hour 계산과 동일) 사용해 정합.
+  today <- as.Date(format(now, "%Y-%m-%d"))
   hour <- as.integer(format(now, "%H"))
 
   if (hour >= 16 && today %in% cal$Date) {

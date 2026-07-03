@@ -234,7 +234,14 @@ krx_update_universe <- function(
   combined <- rbind(uni, new_uni)
   combined <- unique(combined, by = c("Date", "Ticker"))
   setkey(combined, Ticker, Date)
-  write_parquet(combined, UNIVERSE_CACHE)
+  # [fix 2026-06-17] Windows arrow mmap(error 1224) — uni가 UNIVERSE_CACHE를 mmap한 채라
+  # 동일 경로 write_parquet halt 회피, mmap 해제 후 temp-rename (uni는 write 이후 미사용;
+  # new_uni/new_rows_list는 요약 출력에 쓰이므로 보존).
+  rm(uni); gc(verbose = FALSE)
+  .uni_tmp <- paste0(UNIVERSE_CACHE, ".tmp")
+  write_parquet(combined, .uni_tmp)
+  if (file.exists(UNIVERSE_CACHE)) file.remove(UNIVERSE_CACHE)
+  file.rename(.uni_tmp, UNIVERSE_CACHE)
 
   cat(sprintf("\n[universe_update] === 완료 ===\n"))
   cat(sprintf("  추가: %d rows (%d months)\n", nrow(new_uni), length(new_rows_list)))

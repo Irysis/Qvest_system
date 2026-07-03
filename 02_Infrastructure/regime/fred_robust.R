@@ -34,14 +34,28 @@
 # 실행 시 Telegram 발송 금지 (briefing은 별도).
 #==============================================================================
 
+.qvest_root <- function() {
+  candidates <- unique(c(Sys.getenv("CLAUDE_PROJECT_DIR", ""), Sys.getenv("QM_ROOT", ""), getwd()))
+  is_root <- function(p) nzchar(p) && dir.exists(p) && file.exists(file.path(p, "02_Infrastructure/config.R"))
+  for (p in candidates) if (is_root(p)) return(normalizePath(p, winslash = "/", mustWork = TRUE))
+  cur <- normalizePath(getwd(), winslash = "/", mustWork = TRUE)
+  repeat {
+    if (is_root(cur)) return(cur)
+    parent <- dirname(cur)
+    if (identical(parent, cur)) break
+    cur <- parent
+  }
+  stop("[fred_robust] project root not found. Set CLAUDE_PROJECT_DIR or QM_ROOT.")
+}
+
 if (!exists("PROJECT_ROOT")) {
   .config_path <- tryCatch({
     .here <- dirname(sys.frame(1)$ofile)
     file.path(dirname(.here), "config.R")
   }, error = function(e) {
-    file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")),
-              "02_Infrastructure", "config.R")
+    file.path(.qvest_root(), "02_Infrastructure", "config.R")
   })
+  if (!file.exists(.config_path)) .config_path <- file.path(.qvest_root(), "02_Infrastructure", "config.R")
   source(.config_path)
 }
 

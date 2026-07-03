@@ -5,9 +5,23 @@
 
 suppressMessages({library(data.table)})
 
+.qvest_registry_root <- function() {
+  if (exists("PROJECT_ROOT", inherits = TRUE)) return(get("PROJECT_ROOT", inherits = TRUE))
+  candidates <- unique(c(Sys.getenv("CLAUDE_PROJECT_DIR", ""), Sys.getenv("QM_ROOT", ""), getwd()))
+  is_root <- function(p) nzchar(p) && dir.exists(p) && file.exists(file.path(p, "02_Infrastructure/config.R"))
+  for (p in candidates) if (is_root(p)) return(normalizePath(p, winslash = "/", mustWork = TRUE))
+  cur <- normalizePath(getwd(), winslash = "/", mustWork = TRUE)
+  repeat {
+    if (is_root(cur)) return(cur)
+    parent <- dirname(cur)
+    if (identical(parent, cur)) break
+    cur <- parent
+  }
+  stop("[registry_writer] project root not found. Set CLAUDE_PROJECT_DIR or QM_ROOT.")
+}
+
 REGISTRY_PATH <- file.path(
-  ifelse(exists("PROJECT_ROOT"), PROJECT_ROOT,
-         Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))),
+  .qvest_registry_root(),
   "qepm/registry/backtest_registry.csv"
 )
 

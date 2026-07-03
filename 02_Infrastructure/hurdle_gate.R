@@ -137,6 +137,91 @@ if (!.hg_rcpp_loaded) {
 
 cat("[hurdle_gate] Loaded.\n")
 
+# 한국 long-only alpha-search에서는 overlay 없이 한두 번의 시장 동반 폭락을 맞는 것이
+# 흔하다. 따라서 MDD 깊이만으로 즉시 F 처리하지 않고, 심각 drawdown의 빈도/지속성을
+# 함께 본다. 구조적으로 반복 붕괴하는 경우만 hard fail로 승격한다.
+.drawdown_frequency_profile <- function(ret_xts, bm_xts = NULL,
+                                        severe = 0.45, extreme = 0.55,
+                                        catastrophic = 0.70,
+                                        severe_hard_count = 15L,
+                                        extreme_hard_count = 6L,
+                                        severe_day_hard_frac = 0.25,
+                                        severe_max_hard_days = 252L) {
+  r <- as.numeric(ret_xts)
+  r <- r[is.finite(r)]
+  n <- length(r)
+  if (n == 0L) {
+    return(list(
+      mdd = NA_real_, severe_count = 0L, extreme_count = 0L,
+      catastrophic = FALSE, severe_total_days = 0L, severe_max_days = 0L,
+      severe_day_frac = NA_real_, underwater20_frac = NA_real_,
+      crash_frequency_score = NA_real_, tail_review = FALSE,
+      structural_hard_fail = FALSE,
+      catastrophic_threshold = catastrophic,
+      severe_hard_count = severe_hard_count,
+      extreme_hard_count = extreme_hard_count,
+      severe_day_hard_frac = severe_day_hard_frac,
+      severe_max_hard_days = severe_max_hard_days
+    ))
+  }
+  nav <- cumprod(1 + pmax(r, -0.9999))
+  dd <- nav / cummax(nav) - 1
+  mdd <- abs(min(dd, na.rm = TRUE))
+
+  .episodes <- function(th) {
+    flag <- is.finite(dd) & dd <= -th
+    if (!any(flag)) return(list(count = 0L, total_days = 0L, max_days = 0L))
+    rr <- rle(flag)
+    lens <- rr$lengths[rr$values]
+    list(count = length(lens), total_days = sum(lens), max_days = max(lens))
+  }
+  e35 <- .episodes(0.35)
+  e45 <- .episodes(severe)
+  e55 <- .episodes(extreme)
+  uw20 <- mean(is.finite(dd) & dd <= -0.20)
+
+  # 빈도 점수: 2026-06-12 KR baseline 기준 보정.
+  # 2005+ BM 45%+ episodes=8, K200/KQ150 EW=6, strategy-output q75=5/q90=14.
+  # 따라서 3회는 시장 평균권도 벌점화해 과징벌이므로, hard fail은 q90 초과권부터 적용한다.
+  freq_score <- 10 -
+    min(6, e35$count) * 0.35 -
+    min(severe_hard_count, e45$count) * 0.30 -
+    min(extreme_hard_count, e55$count) * 0.65 -
+    min(0.5, uw20) * 4.00
+  freq_score <- max(0, min(10, freq_score))
+
+  structural_hard_fail <- isTRUE(
+    is.finite(mdd) && (
+      mdd >= catastrophic ||
+        e45$count >= severe_hard_count ||
+        e55$count >= extreme_hard_count ||
+        (n > 0L && e45$total_days / n >= severe_day_hard_frac) ||
+        e45$max_days >= severe_max_hard_days
+    )
+  )
+  tail_review <- isTRUE(is.finite(mdd) && mdd > severe && !structural_hard_fail)
+
+  list(
+    mdd = mdd,
+    severe35_count = e35$count,
+    severe_count = e45$count,
+    extreme_count = e55$count,
+    catastrophic = isTRUE(is.finite(mdd) && mdd >= catastrophic),
+    severe_total_days = e45$total_days,
+    severe_max_days = e45$max_days,
+    severe_day_frac = if (n > 0L) e45$total_days / n else NA_real_,
+    underwater20_frac = uw20,
+    crash_frequency_score = freq_score,
+    catastrophic_threshold = catastrophic,
+    severe_hard_count = severe_hard_count,
+    extreme_hard_count = extreme_hard_count,
+    severe_day_hard_frac = severe_day_hard_frac,
+    severe_max_hard_days = severe_max_hard_days,
+    tail_review = tail_review,
+    structural_hard_fail = structural_hard_fail
+  )
+}
+
 #==============================================================================
 # Auto Lesson Generation (memory cycle Phase 1)
 #==============================================================================
@@ -198,11 +283,13 @@ cat("[hurdle_gate] Loaded.\n")
 run_hurdle_gate <- function(sim_result,
                              FACTORS = NULL,
                              strategy_name = "Unknown",
+                             catalog_strategy_id = NULL,
                              strategy_file = NULL,
                              output_dir = NULL,
                              ff5_result = NULL,
                              strict_mode = as.logical(Sys.getenv("QVEST_STRICT_MODE", "TRUE"))) {
 
+  turnover_hard_fail_pct <- 1100
   strat_xts <- sim_result$strategy_xts
   bm_xts    <- sim_result$bm_xts
   NAV_DT    <- sim_result$DAILY_NAV_DT
@@ -270,7 +357,7 @@ run_hurdle_gate <- function(sim_result,
   # HARD FAIL CHECKS
   # ==========================================================================
 
-  # --- D002: Annualized turnover > 600% ---
+  # --- D002: Annualized turnover > 1,100% ---
   n_rebal <- nrow(PLOG)
   n_years <- as.numeric(difftime(max(NAV_DT$Date), min(NAV_DT$Date),
                                   units = "days")) / 365.25
@@ -281,11 +368,14 @@ run_hurdle_gate <- function(sim_result,
     ann_turnover <- if (n_years > 0) (n_rebal / n_years) * 100 else 0
   }
 
-  if (ann_turnover > 600) {
+  if (ann_turnover > turnover_hard_fail_pct) {
     hard_fail <- TRUE
-    fail_reasons <- c(fail_reasons, sprintf("Turnover %.0f%% > 600%%", ann_turnover))
+    fail_reasons <- c(fail_reasons,
+                       sprintf("Turnover %.0f%% > %.0f%%", ann_turnover, turnover_hard_fail_pct))
     diagnostics <- c(diagnostics, list(list(
-      code = "D002", msg = sprintf("Excessive turnover: %.0f%%", ann_turnover)
+      code = "D002",
+      msg = sprintf("Excessive turnover: %.0f%% > %.0f%%",
+                    ann_turnover, turnover_hard_fail_pct)
     )))
   }
 
@@ -311,14 +401,52 @@ run_hurdle_gate <- function(sim_result,
     )))
   }
 
-  # --- D004: Max Drawdown > -45% ---
-  mdd <- as.numeric(maxDrawdown(strat_xts))
-  if (mdd > 0.45) {
+  # --- D004: Drawdown structure ---
+  dd_profile <- .drawdown_frequency_profile(strat_xts, bm_xts)
+  mdd <- as.numeric(dd_profile$mdd)
+  if (is.finite(mdd) && mdd > 0.45 && isTRUE(dd_profile$structural_hard_fail)) {
+    dd_hard_causes <- character(0)
+    if (isTRUE(dd_profile$catastrophic)) {
+      dd_hard_causes <- c(dd_hard_causes,
+                          sprintf("MDD>=%.0f%%", dd_profile$catastrophic_threshold * 100))
+    }
+    if (dd_profile$severe_count >= dd_profile$severe_hard_count) {
+      dd_hard_causes <- c(dd_hard_causes,
+                          sprintf("45%%+ episodes>=%d", dd_profile$severe_hard_count))
+    }
+    if (dd_profile$extreme_count >= dd_profile$extreme_hard_count) {
+      dd_hard_causes <- c(dd_hard_causes,
+                          sprintf("55%%+ episodes>=%d", dd_profile$extreme_hard_count))
+    }
+    if (is.finite(dd_profile$severe_day_frac) &&
+        dd_profile$severe_day_frac >= dd_profile$severe_day_hard_frac) {
+      dd_hard_causes <- c(dd_hard_causes,
+                          sprintf("45%%+ days>=%.0f%%", dd_profile$severe_day_hard_frac * 100))
+    }
+    if (dd_profile$severe_max_days >= dd_profile$severe_max_hard_days) {
+      dd_hard_causes <- c(dd_hard_causes,
+                          sprintf("max_underwater>=%dd", dd_profile$severe_max_hard_days))
+    }
+    if (!length(dd_hard_causes)) dd_hard_causes <- "threshold exceeded"
     hard_fail <- TRUE
     fail_reasons <- c(fail_reasons,
-                       sprintf("MDD %.1f%% > 45%%", mdd * 100))
+                       sprintf("Structural drawdown (%s): MDD %.1f%%, 45%%+ episodes=%d/%d, max_underwater=%d/%d",
+                               paste(dd_hard_causes, collapse = ", "),
+                               mdd * 100, dd_profile$severe_count, dd_profile$severe_hard_count,
+                               dd_profile$severe_max_days, dd_profile$severe_max_hard_days))
     diagnostics <- c(diagnostics, list(list(
-      code = "D004", msg = sprintf("Excessive drawdown: %.1f%%", mdd * 100)
+      code = "D004",
+      msg = sprintf("Structural drawdown hard fail: MDD %.1f%%, 45%%+ episodes=%d/%d, 55%%+ episodes=%d/%d, 45%%+ days=%d",
+                    mdd * 100, dd_profile$severe_count, dd_profile$severe_hard_count,
+                    dd_profile$extreme_count, dd_profile$extreme_hard_count,
+                    dd_profile$severe_total_days)
+    )))
+  } else if (is.finite(mdd) && mdd > 0.45) {
+    diagnostics <- c(diagnostics, list(list(
+      code = "D004",
+      msg = sprintf("Tail-review drawdown: MDD %.1f%% but not structural hard fail (45%%+ episodes=%d/%d, max_underwater=%dd)",
+                    mdd * 100, dd_profile$severe_count, dd_profile$severe_hard_count,
+                    dd_profile$severe_max_days)
     )))
   }
 
@@ -405,15 +533,26 @@ run_hurdle_gate <- function(sim_result,
     code = "D014", msg = sprintf("Calmar: %.3f (%.1f/10 pts)", calmar, calmar_score)
   )))
 
-  # --- D031: MDD penalty (0-10 pts, lower is better, wider range) ---
-  # Widened range: MDD up to 55% can still score, vs old 45% ceiling
-  mdd_score <- min(10, max(0, (0.55 - mdd) / 0.45 * 10))
+  # --- D031: Drawdown depth/frequency score (0-10 pts, higher is better) ---
+  # MDD depth still matters, but repeated/severe underwater episodes carry more information
+  # than a single Korea-market crash with no overlay.
+  mdd_depth_score <- min(10, max(0, (0.65 - mdd) / 0.55 * 10))
+  mdd_freq_score  <- dd_profile$crash_frequency_score
+  mdd_score <- 0.45 * mdd_depth_score + 0.55 * mdd_freq_score
   score_components$mdd <- list(
     score = round(mdd_score, 1), max = 10,
-    value = round(mdd * 100, 2), code = "D031"
+    value = round(mdd * 100, 2), code = "D031",
+    depth_score = round(mdd_depth_score, 1),
+    frequency_score = round(mdd_freq_score, 1),
+    severe45_count = dd_profile$severe_count,
+    severe55_count = dd_profile$extreme_count,
+    severe45_max_days = dd_profile$severe_max_days,
+    tail_review = isTRUE(dd_profile$tail_review)
   )
   diagnostics <- c(diagnostics, list(list(
-    code = "D031", msg = sprintf("MDD: %.2f%% (%.1f/10 pts)", mdd * 100, mdd_score)
+    code = "D031",
+    msg = sprintf("Drawdown: MDD %.2f%%, 45%%+ episodes=%d, freq_score=%.1f, blended=%.1f/10",
+                  mdd * 100, dd_profile$severe_count, mdd_freq_score, mdd_score)
   )))
 
   # --- D041: 3-year rolling Sharpe > 0 ratio (0-10 pts) — reduced from 15 ---
@@ -1162,15 +1301,17 @@ run_hurdle_gate <- function(sim_result,
   # F (Fail)        : 부적합
   # ==========================================================================
   max_axis <- max(unlist(axes))
+  mdd_b_ok <- isTRUE(is.finite(mdd) && mdd <= 0.50) || isTRUE(dd_profile$tail_review)
+  mdd_c_ok <- isTRUE(is.finite(mdd) && mdd <= 0.60) || isTRUE(dd_profile$tail_review)
 
   # v2.1 grade (preserved for backward compat)
   grade_v21 <- if (!hard_fail && total_score_v21 >= 40 && ann_ret >= 0.16 && sharpe >= 0.8) {
     "A"
   } else if (!hard_fail && total_score_v21 >= 40) {
     "B"
-  } else if (mdd <= 0.50 && sharpe >= 0.3 && total_score_v21 >= 25 && max_axis >= 50) {
+  } else if (!hard_fail && mdd_b_ok && sharpe >= 0.3 && total_score_v21 >= 25 && max_axis >= 50) {
     "B"
-  } else if (mdd <= 0.55 && total_score_v21 >= 15 && max_axis >= 30) {
+  } else if (!hard_fail && mdd_c_ok && total_score_v21 >= 15 && max_axis >= 30) {
     "C"
   } else {
     "F"
@@ -1264,9 +1405,9 @@ run_hurdle_gate <- function(sim_result,
       "A_NOVEL"  # v2.2: independent alpha with portfolio diversification value
     } else if (!hard_fail && total_score >= 40) {
       "B"  # PASS but below 16% CAGR target — strong Component
-    } else if (mdd <= 0.50 && sharpe >= 0.3 && total_score >= 25 && max_axis >= 50) {
+    } else if (!hard_fail && mdd_b_ok && sharpe >= 0.3 && total_score >= 25 && max_axis >= 50) {
       "B"  # Near-PASS with clear axis strength (relaxed MDD/TO)
-    } else if (mdd <= 0.55 && total_score >= 15 && max_axis >= 30) {
+    } else if (!hard_fail && mdd_c_ok && total_score >= 15 && max_axis >= 30) {
       "C"  # Ensemble-only: some merit but not standalone/component
     } else {
       "F"
@@ -1430,8 +1571,8 @@ run_hurdle_gate <- function(sim_result,
     "STANDALONE_TRACK"  # 기존 등급 경로가 이미 소화
   } else {
     .routes <- character(0)
-    if (mdd > 0.45)         .routes <- c(.routes, "OVERLAY_CANDIDATE")  # MDD가 죽인 신호 — overlay/regime 결합 후보
-    if (ann_turnover > 600) .routes <- c(.routes, "DPL_FEATURE")        # 고회전 신호 — 직접운용 불가, 피처로
+    if (mdd > 0.45 || isTRUE(dd_profile$tail_review)) .routes <- c(.routes, "OVERLAY_CANDIDATE")  # MDD가 죽인 신호 — overlay/regime 결합 후보
+    if (ann_turnover > turnover_hard_fail_pct) .routes <- c(.routes, "DPL_FEATURE")  # 고회전 신호 — 직접운용 불가, 피처로
     .routes <- c(.routes, "FR_RCMA")                                    # 국면조건부 소비는 항상 후보 (등급무관 등재)
     paste(unique(.routes), collapse = "|")
   }
@@ -1453,6 +1594,7 @@ run_hurdle_gate <- function(sim_result,
     screening   = list(
       screen_pass  = screen_pass,
       screen_route = screen_route,
+      drawdown_tail_review = isTRUE(dd_profile$tail_review),
       note = "탐색 게이트 — 자본/졸업 게이트 아님 (graduation HARD 불변). PIT만 절대."
     ),
     strategy    = strategy_name,
@@ -1504,6 +1646,22 @@ run_hurdle_gate <- function(sim_result,
       Worst6M_Ret   = round(worst_6m_ret * 100, 2),
       MaxConsecNegAlpha = max_consec_neg_alpha,
       Rolling12M_Hit = round(rolling_12m_hit * 100, 1)
+    ),
+    drawdown_profile = list(
+      severe35_count = dd_profile$severe35_count,
+      severe45_count = dd_profile$severe_count,
+      severe55_count = dd_profile$extreme_count,
+      severe45_total_days = dd_profile$severe_total_days,
+      severe45_max_days = dd_profile$severe_max_days,
+      severe45_day_frac = round(dd_profile$severe_day_frac, 4),
+      severe45_hard_count = dd_profile$severe_hard_count,
+      severe55_hard_count = dd_profile$extreme_hard_count,
+      severe45_day_hard_frac = dd_profile$severe_day_hard_frac,
+      severe45_max_hard_days = dd_profile$severe_max_hard_days,
+      underwater20_frac = round(dd_profile$underwater20_frac, 4),
+      crash_frequency_score = round(dd_profile$crash_frequency_score, 2),
+      tail_review = isTRUE(dd_profile$tail_review),
+      structural_hard_fail = isTRUE(dd_profile$structural_hard_fail)
     ),
     statistical_defense = list(
       dsr             = dsr_value,
@@ -1624,28 +1782,64 @@ run_hurdle_gate <- function(sim_result,
   if (grade == "A" && !is.null(output_dir)) {
     tryCatch({
       catalog_path <- file.path(PROJECT_ROOT, "04_Research", "grade_a_catalog.json")
-      catalog <- if (file.exists(catalog_path)) {
+      catalog_id <- catalog_strategy_id %||% strategy_name
+      raw_catalog <- if (file.exists(catalog_path)) {
         jsonlite::fromJSON(catalog_path, simplifyVector = FALSE)
       } else list()
 
-      existing_ids <- vapply(catalog, function(x) x$strategy_id %||% "", character(1))
-      if (!strategy_name %in% existing_ids) {
+      if (!is.null(raw_catalog$strategies)) {
+        catalog <- raw_catalog
+        strategies <- catalog$strategies %||% list()
+      } else {
+        # Legacy compatibility: older catalog files were a plain list of entries.
+        catalog <- list(
+          schema_version = "legacy_wrapped_by_hurdle_gate",
+          last_updated = NULL,
+          n_strategies = 0L,
+          grade_counts = list(A = 0L),
+          strategies = if (length(raw_catalog)) raw_catalog else list()
+        )
+        strategies <- catalog$strategies
+      }
+
+      existing_ids <- vapply(strategies, function(x) {
+        if (is.list(x)) x$strategy_id %||% "" else ""
+      }, character(1))
+      if (!catalog_id %in% existing_ids) {
         m <- verdict$metrics %||% list()
         entry <- list(
-          strategy_id = strategy_name,
+          strategy_id = catalog_id,
+          strategy_name = strategy_name,
+          grade = grade,
+          grade_v21 = grade,
           score = round(total_score, 1),
           cagr = round(as.numeric(m$CAGR %||% 0), 2),
           sharpe = round(as.numeric(m$Sharpe %||% 0), 3),
           mdd = round(as.numeric(m$MDD %||% 0), 2),
           calmar = round(as.numeric(m$Calmar %||% 0), 3),
           role = role,
-          timestamp = format(Sys.time(), "%Y-%m-%dT%H:%M:%S"),
+          family = detected_family %||% NULL,
+          novelty_bonus = novelty_bonus %||% 0,
+          source = if (file.exists(file.path(output_dir, "hurdle_result.json"))) {
+            sub(paste0("^", gsub("([][{}()+*^$.|?\\\\-])", "\\\\\\1", PROJECT_ROOT), "/?"),
+                "", normalizePath(file.path(output_dir, "hurdle_result.json"), winslash = "/", mustWork = FALSE))
+          } else NULL,
+          source_mtime = if (file.exists(file.path(output_dir, "hurdle_result.json"))) {
+            format(file.info(file.path(output_dir, "hurdle_result.json"))$mtime, "%Y-%m-%dT%H:%M:%S%z")
+          } else NULL,
+          timestamp = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
           output_dir = output_dir
         )
-        catalog <- c(catalog, list(entry))
+        strategies <- c(strategies, list(entry))
+        catalog$strategies <- strategies
+        catalog$last_updated <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
+        catalog$n_strategies <- length(strategies)
+        catalog$grade_counts <- as.list(table(vapply(strategies, function(x) {
+          if (is.list(x)) x$grade %||% "A" else "A"
+        }, character(1))))
         jsonlite::write_json(catalog, catalog_path, auto_unbox = TRUE, pretty = TRUE)
         cat(sprintf("[hurdle_gate] Grade A catalog: %d entries (+1 %s)\n",
-                    length(catalog), strategy_name))
+                    length(strategies), catalog_id))
       }
     }, error = function(e) cat(sprintf("[grade_a_catalog] %s\n", conditionMessage(e))))
   }

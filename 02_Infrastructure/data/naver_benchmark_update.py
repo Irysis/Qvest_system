@@ -61,9 +61,11 @@ def fetch_naver_kospi(start_yyyymmdd: str, end_yyyymmdd: str, symbol: str = 'KOS
 def patch_benchmark_parquet(start_date: str = '2026-04-01',
                               end_date: str | None = None,
                               backup: bool = True) -> dict:
-    """Patch benchmark.parquet with Naver-verified KOSPI 종합 data.
+    """Patch benchmark.parquet with Naver-verified KOSPI200 (KPI200) data.
 
     Replaces existing rows from start_date onward.
+    2026-07-02 도훈 mandate: symbol 'KOSPI'(코스피 종합) → 'KPI200'(코스피200) 정정.
+    북 벤치는 코스피200이어야 함 (기존 종합은 버그, IKS200과 스케일 6.75× 불일치).
     """
     if end_date is None:
         end_date = datetime.now().strftime('%Y-%m-%d')
@@ -72,8 +74,8 @@ def patch_benchmark_parquet(start_date: str = '2026-04-01',
     start_yyyymmdd = pd.to_datetime(start_date).strftime('%Y%m%d')
     end_yyyymmdd = pd.to_datetime(end_date).strftime('%Y%m%d')
     print(f'[naver_benchmark_update] Fetching {start_yyyymmdd} ~ {end_yyyymmdd} from Naver...')
-    naver = fetch_naver_kospi(start_yyyymmdd, end_yyyymmdd, symbol='KOSPI')
-    print(f'  Naver returned {len(naver)} rows, latest={naver.Date.max().date()}')
+    naver = fetch_naver_kospi(start_yyyymmdd, end_yyyymmdd, symbol='KPI200')  # ★코스피200 (구 'KOSPI' 종합 버그)
+    print(f'  Naver returned {len(naver)} rows (KPI200/코스피200), latest={naver.Date.max().date()}')
 
     if backup:
         ts = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -91,6 +93,10 @@ def patch_benchmark_parquet(start_date: str = '2026-04-01',
     combined = pd.concat([bm_pre, naver_post], ignore_index=True)
     combined = combined.drop_duplicates(subset='Date', keep='last').sort_values('Date').reset_index(drop=True)
     combined['BM_Ret'] = combined['BM_Close'].pct_change().fillna(0.0)
+    # sanity 가드: 코스피 종합(수천대) 오심볼 회귀 차단 — 코스피200은 수백~천대
+    recent_max = combined[combined.Date >= cutoff]['BM_Close'].max()
+    if recent_max > 3000:
+        raise RuntimeError(f"[naver_benchmark] 벤치 sanity FAIL: 최근 {recent_max:.0f} — 코스피200 아닌 코스피 종합 의심 (symbol=KPI200 확인)")
     combined.to_parquet(BM_PATH)
 
     return {

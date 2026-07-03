@@ -7,7 +7,20 @@
 # 산출: 판별력 보고 + best 축의 월별 regime 라벨 → run_wf_ensemble가 사용.
 # =============================================================================
 suppressPackageStartupMessages({ library(data.table); library(arrow); library(jsonlite) })
-PROJ <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")); setwd(PROJ)
+.qvest_root <- function() {
+  candidates <- unique(c(Sys.getenv("CLAUDE_PROJECT_DIR", ""), Sys.getenv("QM_ROOT", ""), getwd()))
+  is_root <- function(p) nzchar(p) && dir.exists(p) && file.exists(file.path(p, "02_Infrastructure/config.R"))
+  for (p in candidates) if (is_root(p)) return(normalizePath(p, winslash = "/", mustWork = TRUE))
+  cur <- normalizePath(getwd(), winslash = "/", mustWork = TRUE)
+  repeat {
+    if (is_root(cur)) return(cur)
+    parent <- dirname(cur)
+    if (identical(parent, cur)) break
+    cur <- parent
+  }
+  stop("[regime_engine_research] project root not found. Set CLAUDE_PROJECT_DIR or QM_ROOT.")
+}
+PROJ <- .qvest_root(); setwd(PROJ)
 `%||%`<-function(a,b) if(is.null(a)||length(a)==0||all(is.na(a)))b else a
 ANN <- 252; sr <- function(r){r<-r[is.finite(r)];if(length(r)<20||sd(r)==0)NA else mean(r)/sd(r)*sqrt(ANN)}
 

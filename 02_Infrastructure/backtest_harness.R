@@ -45,6 +45,16 @@ Sys.setenv(TZ = "Asia/Seoul")
 # Load QT_to_xts utility
 source(file.path(FUNC_PATH, "F1. QT_to_xts.r"))
 
+# Advanced weight methods used by run_monthly_simulation() branches
+# (NCO, CVaR, MaxDiv, robust MV, entropy, Kelly, etc.). Keep this as a
+# best-effort load so core equal/ivol/HRP paths remain available if the
+# optional implementation file has an issue.
+tryCatch(
+  source(file.path(PORTFOLIO_DIR, "advanced_weights.R"), local = FALSE),
+  error = function(e) cat("[backtest_harness] advanced_weights.R load skipped:",
+                          conditionMessage(e), "\n")
+)
+
 # ─── Rcpp 가중 엔진 로드 (weight_engine.cpp) ────────────────────────────────
 # 컴파일 성공 시 .USE_RCPP_WEIGHT_ENGINE = TRUE → gerber/rmt/hrp/crisis_consec
 # 컴파일 실패 시 R fallback 자동 적용

@@ -9,7 +9,20 @@
 #   다항로짓 없음 → 빠름. PIT trailing-only(전이행렬 1..t, feature t 월말값 → t+1 예측).
 # =============================================================================
 suppressPackageStartupMessages({ library(data.table); library(arrow); library(jsonlite) })
-PROJ <- Sys.getenv("CLAUDE_PROJECT_DIR", "G:/Quant_Module_Moltbot"); setwd(PROJ)
+.qvest_root <- function() {
+  candidates <- unique(c(Sys.getenv("CLAUDE_PROJECT_DIR", ""), Sys.getenv("QM_ROOT", ""), getwd()))
+  is_root <- function(p) nzchar(p) && dir.exists(p) && file.exists(file.path(p, "02_Infrastructure/config.R"))
+  for (p in candidates) if (is_root(p)) return(normalizePath(p, winslash = "/", mustWork = TRUE))
+  cur <- normalizePath(getwd(), winslash = "/", mustWork = TRUE)
+  repeat {
+    if (is_root(cur)) return(cur)
+    parent <- dirname(cur)
+    if (identical(parent, cur)) break
+    cur <- parent
+  }
+  stop("[regime_forecaster_v1tune] project root not found. Set CLAUDE_PROJECT_DIR or QM_ROOT.")
+}
+PROJ <- .qvest_root(); setwd(PROJ)
 `%||%` <- function(a,b) if(is.null(a)||length(a)==0||all(is.na(a))) b else a
 MIN_IS <- 100L
 regimes <- c("RISK_ON","NEUTRAL","CAUTION","CRISIS","RISK_OFF")

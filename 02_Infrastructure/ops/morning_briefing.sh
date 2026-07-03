@@ -16,93 +16,28 @@ INFRA="$BASE/02_Infrastructure"
 
 # 1. KRX 데이터 최신화
 echo "[1/5] KRX Data Update..."
-cd "$INFRA"
-Rscript --no-save -e '
-  source("config.R")
-  source("data/krx_data_collector.R")
-  source("data/krx_build_rawdata.R")
-  gap <- krx_detect_gap()
-  cat(sprintf("Gap: %s → %s (%d days)\n", gap$last_rawdata_date, gap$end, gap$n_calendar_days))
-  if (gap$n_calendar_days > 0) {
-    krx_run_pipeline()
-  } else {
-    cat("RAWDATA already up to date.\n")
-  }
-'
-
-# 1.5 Naver T+0 보완 (KRX T+1 gap이 남아있으면 Naver로 채움)
-echo "[1.5/5] Naver T+0 Supplement..."
-cd "$INFRA"
-Rscript --no-save -e '
-  source("config.R")
-  source("data/naver_data_collector.R")
-  tryCatch({
-    naver_run_pipeline()
-  }, error = function(e) cat(sprintf("Naver pipeline skipped: %s\n", e$message)))
-'
-
-# 2. Arrow + KTRI 연장
-echo "[2/5] Arrow + KTRI..."
-cd "$INFRA"
-Rscript --no-save -e '
-  source("config.R")
-  source("data/krx_data_collector.R")
-  source("data/krx_arrow_pipeline.R")
-  tryCatch({
-    krx_extend_arrow()
-    cat("Arrow extension complete.\n")
-  }, error = function(e) cat(sprintf("Arrow extension skipped: %s\n", e$message)))
-'
 cd "$BASE"
-# KTRI v3 signal rebuild — silent fail (04_Regime_Engine/KTRI_v3_reinforced.R 소실) 해소
-# 2026-05-13 도훈 mandate: "매일 아침 제대로 최신화된 모닝 국면 브리핑 구조적 자동 해결"
-# 정식 builder: 02_Infrastructure/regime/ktri_v3_builder.R::build_ktri_v3_safe()
-# 출력: 04_Research/regime_comparison/output/ktri_v3_signals.csv (regime_signal L3 source)
-Rscript --no-save -e '
-  setwd("'"$BASE"'")
-  source("02_Infrastructure/config.R")
-  source("02_Infrastructure/regime/ktri_v3_builder.R")
-  tryCatch({
-    out_path <- build_ktri_v3_safe()
-    cat(sprintf("KTRI v3 signals regenerated: %s\n", out_path))
-  }, error = function(e) cat(sprintf("KTRI v3 build FAILED: %s\n", e$message)))
-  # ktri_indices.parquet 자동 update (도훈 mandate 2026-05-28: KRX API 07:10 시점 가용)
-  # daily_refresh 03:00 시점 KRX 5/d 미가용 fallback
-  source("02_Infrastructure/data/ktri_index_collector.R")
-  tryCatch({
-    ktri_update_indices()
-    cat("ktri_indices.parquet updated\n")
-  }, error = function(e) cat(sprintf("ktri_update_indices FAILED: %s\n", e$message)))
-'
+Rscript --no-save -e 'source("02_Infrastructure/ops/morning_steps/krx_update.R")'
+
+# 1.5 Naver T+0 보완 (KRX T+1 발행지연 gap을 Naver로 채움)
+# ★외부화 2026-06-19(도훈): 기존 인라인 멀티라인 -e가 첫 줄 invisible(NULL)만 실행되는 no-op 트랩이라
+#   naver_run_pipeline()이 한 번도 안 돌았음 → 단일줄 source로 수리.
+echo "[1.5/5] Naver T+0 Supplement..."
+cd "$BASE"
+Rscript --no-save -e 'source("02_Infrastructure/ops/morning_steps/naver_supplement.R")'
+
+# 2. Arrow + KTRI 연장 (외부화 2026-06-19 — 동일 no-op 트랩 수리)
+echo "[2/5] Arrow + KTRI..."
+cd "$BASE"
+Rscript --no-save -e 'source("02_Infrastructure/ops/morning_steps/arrow_extend.R")'
+cd "$BASE"
+# KTRI v3 signal rebuild + ktri_indices update (외부화 2026-06-13)
+Rscript --no-save -e 'source("02_Infrastructure/ops/morning_steps/ktri_rebuild.R")'
 
 # 3. FRED + Regime Signal 업데이트 (monthly + daily 모두 build)
 echo "[3/5] FRED + Regime Signal..."
-cd "$INFRA"
-Rscript --no-save -e '
-  source("config.R")
-  # FRED robust fetch (22 series with retry/graceful)
-  if (file.exists("regime/fred_robust.R")) {
-    source("regime/fred_robust.R")
-    tryCatch(fred_robust_fetch_all(), error = function(e)
-      cat(sprintf("FRED robust skipped: %s\n", e$message)))
-  } else if (file.exists("data/data_collector_fred.R")) {
-    source("data/data_collector_fred.R")
-    tryCatch(fred_fetch_all(), error = function(e)
-      cat(sprintf("FRED update skipped: %s\n", e$message)))
-  }
-  # yfinance supplement — FRED 우선 정책 (NA cell 만 yfinance 로 채움)
-  # 다음 cron 에서 FRED publish 되면 자동으로 FRED 값으로 교체
-  if (file.exists("regime/fred_supplement_yfinance.R")) {
-    source("regime/fred_supplement_yfinance.R")
-    tryCatch(supplement_fred_with_yfinance(lookback_days = 7L), error = function(e)
-      cat(sprintf("FRED yfinance supplement skipped: %s\n", e$message)))
-  }
-  source("regime/regime_signal.R")
-  tryCatch(build_regime_signal_table(daily = FALSE), error = function(e)
-    cat(sprintf("Regime signal monthly skipped: %s\n", e$message)))
-  tryCatch(build_regime_signal_table(daily = TRUE), error = function(e)
-    cat(sprintf("Regime signal daily skipped: %s\n", e$message)))
-'
+cd "$BASE"
+Rscript --no-save -e 'source("02_Infrastructure/ops/morning_steps/fred_regime.R")'
 
 # 4. 레짐 브리핑 발송 — 제거됨 (2026-05-13 도훈 mandate, 2-fire 해소)
 # mrs_daily_briefing.sh (07:30) 가 tg_regime_briefing() 단일 송신 담당.
@@ -115,157 +50,26 @@ echo "[4/5] Regime briefing — skipped (mrs_daily_briefing.sh 07:30 SOT)"
 # 구조: daily_refresh.sh 03:00 primary → morning_briefing.sh 07:10 self-heal layer
 echo "[4.5/5] Self-healing refit (stale detection + auto-refit)..."
 cd "$BASE"
-Rscript --no-save -e '
-  setwd("'"$BASE"'")
-  source("02_Infrastructure/config.R")
-  suppressPackageStartupMessages({library(data.table); library(arrow)})
-  today <- Sys.Date()
-
-  is_stale <- function(path, col, max_lag) {
-    if (!file.exists(path)) return(TRUE)
-    dt <- tryCatch(as.data.table(read_parquet(path)), error = function(e) NULL)
-    if (is.null(dt) || !col %in% names(dt)) return(TRUE)
-    last_d <- max(as.Date(dt[[col]]), na.rm = TRUE)
-    as.integer(today - last_d) > max_lag
-  }
-
-  # [v8.0 fix 2026-05-29] RAWDATA(입력) freshness 선검증 — stale면 Naver refresh 먼저.
-  # (기존 결함: downstream MSM refit이 stale RAWDATA로 돌아 stale 브리핑 산출 + 최종 audit 거짓 FRESH)
-  rawdata_stale <- is_stale(RAWDATA_CACHE, "Date", 1L)
-  if (rawdata_stale) {
-    cat("  RAWDATA STALE → Naver refresh 선행 (downstream refit이 stale 입력으로 도는 것 방지)\n")
-    tryCatch({
-      source("02_Infrastructure/data/naver_data_collector.R")
-      naver_run_pipeline()
-      cat(sprintf("  RAWDATA Naver refresh PASS (max=%s)\n",
-                  max(as.Date(as.data.table(read_parquet(RAWDATA_CACHE))$Date), na.rm = TRUE)))
-    }, error = function(e)
-      cat(sprintf("  [ALERT] RAWDATA refresh FAIL: %s — refit이 stale 입력으로 진행됨\n", e$message)))
-  } else {
-    cat("  RAWDATA FRESH (refit 입력 정상)\n")
-  }
-
-  # MSM (hybrid + daily 양쪽 stale 시 msm_update.R 단일 호출로 동시 갱신)
-  msm_daily_stale <- is_stale(".cache/msm_daily_latest.parquet", "Date", 1L)
-  msm_hybrid_stale <- is_stale(".cache/msm_hybrid_latest.parquet", "Date", 1L)
-  unified_stale <- is_stale(".cache/unified_regime_signal.parquet", "Date", 1L)
-  msm_refit_succeeded <- FALSE
-  if (msm_daily_stale || msm_hybrid_stale) {
-    cat(sprintf("  MSM STALE (daily=%s, hybrid=%s) → auto-refit via msm_update.R\n",
-                msm_daily_stale, msm_hybrid_stale))
-    tryCatch({
-      source("02_Infrastructure/backtest_harness.R")
-      source("04_Research/regime_comparison/msm_update.R")
-      cat("  MSM REFIT PASS (hybrid + daily 양쪽 갱신)\n")
-      msm_refit_succeeded <- TRUE
-    }, error = function(e) {
-      cat(sprintf("  MSM msm_update.R FAIL: %s — fallback msm_daily_refit\n", e$message))
-      tryCatch({
-        source("02_Infrastructure/regime/msm_daily_refit.R")
-        compute_hmm_daily_signal()
-        cat("  MSM fallback REFIT PASS (daily only)\n")
-        msm_refit_succeeded <<- TRUE
-      }, error = function(e2) {
-        cat(sprintf("  MSM fallback FAIL: %s\n", e2$message))
-      })
-    })
-  } else {
-    cat("  MSM FRESH (daily + hybrid 모두, auto-refit skipped)\n")
-  }
-
-  # build_regime_signal_table — MSM refit 후 또는 unified stale 시 monthly + daily 양쪽 재build
-  # (tg_regime_briefing 차트 = unified_regime_signal (monthly) + _daily 양쪽 읽음)
-  unified_daily_stale <- is_stale(".cache/unified_regime_signal_daily.parquet", "Date", 1L)
-  if (msm_refit_succeeded || unified_stale || unified_daily_stale) {
-    cat("  → build_regime_signal_table() 재실행 (monthly + daily 양쪽)\n")
-    tryCatch({
-      source("02_Infrastructure/regime/regime_signal.R")
-      build_regime_signal_table()
-      build_regime_signal_table(daily = TRUE)
-      cat("  unified_regime_signal REBUILD PASS (monthly + daily)\n")
-    }, error = function(e) {
-      cat(sprintf("  unified_regime_signal REBUILD FAIL: %s\n", e$message))
-    })
-  }
-'
+Rscript --no-save -e 'source("02_Infrastructure/ops/morning_steps/self_heal.R")'
 
 # 5. Freshness audit — 모든 source 최신 거래일 검증 + stale 시 Telegram alert
 # 2026-05-13 도훈 mandate: 구조적 자동 검증 (silent fail 방지)
 echo "[5/5] Freshness audit..."
 cd "$BASE"
-Rscript --no-save -e '
-  setwd("'"$BASE"'")
-  source("02_Infrastructure/config.R")
-  suppressPackageStartupMessages({library(data.table); library(arrow); library(jsonlite)})
-  today <- Sys.Date()
-  # as_of = 직전 거래일 (benchmark KOSPI200 max). calendar today 대신 이걸 기준으로 lag 계산 → 월요일/연휴 오탐 제거 (도훈 2026-06-01 ①)
-  as_of <- tryCatch(max(as.Date(as.data.table(read_parquet(".cache/benchmark.parquet"))$Date), na.rm = TRUE), error = function(e) today)
-  if (length(as_of) != 1 || is.na(as_of) || as_of > today) as_of <- today
-  # 평일 거래일 lag tolerance (KR market):
-  #   MSM/KTRI v3/Regime signal daily: <=1 trading day
-  #   FRED: <=2 trading day
-  #   KTRI sub-indices: <=2 trading day (KRX API 1d lag)
-  audits <- list()
-  check_freshness <- function(name, path, col, max_lag_days) {
-    if (!file.exists(path)) return(list(name=name, status="MISSING", path=path))
-    dt <- tryCatch(as.data.table(read_parquet(path)), error = function(e) NULL)
-    if (is.null(dt)) {
-      csv_try <- tryCatch(fread(path), error = function(e) NULL)
-      if (!is.null(csv_try)) dt <- csv_try
-    }
-    if (is.null(dt) || !col %in% names(dt)) return(list(name=name, status="PARSE_FAIL", path=path))
-    last_d <- max(as.Date(dt[[col]]), na.rm = TRUE)
-    lag_d <- as.integer(as_of - last_d)
-    status <- if (lag_d <= max_lag_days) "FRESH" else "STALE"
-    list(name=name, status=status, last_date=as.character(last_d), lag_days=lag_d, max_lag=max_lag_days)
-  }
-  audits$msm_daily       <- check_freshness("msm_daily",       ".cache/msm_daily_latest.parquet",        "Date", 3)
-  audits$msm_hybrid      <- check_freshness("msm_hybrid",      ".cache/msm_hybrid_latest.parquet",       "Date", 3)
-  audits$fred            <- check_freshness("fred",            ".cache/fred_macro.parquet",              "Date", 4)
-  audits$ktri_indices    <- check_freshness("ktri_indices",    ".cache/ktri_indices.parquet",            "Date", 3)
-  audits$ktri_v3_signals <- check_freshness("ktri_v3_signals", "04_Research/regime_comparison/output/ktri_v3_signals.csv", "DATE", 3)
-  audits$regime_daily    <- check_freshness("regime_daily",    ".cache/unified_regime_signal_daily.parquet", "Date", 3)
-  audits$benchmark       <- check_freshness("benchmark",       ".cache/benchmark.parquet",               "Date", 2)  # KOSPI200 종가 (도훈 mandate 2026-05-28)
-  audits$p3_forecast     <- check_freshness("p3_forecast",     "04_Research/decision_framework/bearish_forecast_v3/03_models/daily_predictions/P3_daily.parquet", "Date", 3)  # P3 forecast (도훈 mandate 2026-06-01, 601 stale 감지)
-  cat("=== Freshness Audit ===\n")
-  stale_items <- c()
-  for (a in audits) {
-    cat(sprintf("  %-18s [%s] last=%s lag=%dd (max %dd)\n",
-      a$name, a$status, a$last_date %||% "n/a", a$lag_days %||% -1L, a$max_lag %||% -1L))
-    if (isTRUE(a$status == "STALE") || isTRUE(a$status == "MISSING")) {
-      stale_items <- c(stale_items, sprintf("%s(%s,lag=%dd)", a$name, a$status, a$lag_days %||% -1L))
-    }
-  }
-  audit_path <- "qepm/observability/morning_freshness_latest.json"
-  dir.create(dirname(audit_path), recursive = TRUE, showWarnings = FALSE)
-  write_json(list(ran_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
-                   as_of = as.character(as_of),
-                   audits = audits,
-                   stale_count = length(stale_items),
-                   stale_items = if (length(stale_items) > 0) I(as.character(stale_items)) else list()),
-              audit_path, pretty = TRUE, auto_unbox = TRUE, null = "null")
-  cat(sprintf("Audit saved: %s\n", audit_path))
-  # Stale 시 Telegram alert (mrs_daily 의 07:30 brief 전에)
-  if (length(stale_items) > 0) {
-    cat(sprintf("\n⚠️ STALE detected (%d items): %s\n", length(stale_items),
-        paste(stale_items, collapse=", ")))
-    source("02_Infrastructure/telegram/telegram_notify.R")
-    # plain text (Markdown 파싱 오류 회피, 도훈 mandate 2026-05-28)
-    msg <- sprintf("🚨 Morning Freshness Audit — %d stale\n\n%s\n\nbrief 07:30 송신 전 점검 필요",
-                    length(stale_items),
-                    paste(sprintf("- %s", stale_items), collapse="\n"))
-    tryCatch(tg_send(msg), error = function(e)
-      cat(sprintf("Telegram alert failed: %s\n", e$message)))
-  } else {
-    cat("\n✅ All sources FRESH — brief 07:30 발송 OK\n")
-  }
-'
+# 외부 .R 파일로 분리 (2026-06-13): 인라인 -e 의 한글/이모지(⚠️🚨✅→) 리터럴이 bash→Windows-R
+# 코드페이지 변환에서 깨져 "Execution halted"로 JSON 미작성되던 문제 해소. 파일은 UTF-8 정상 read.
+Rscript --no-save -e 'source("02_Infrastructure/ops/morning_steps/freshness_audit.R")'
 
 echo "=== Morning Briefing Done @ $(date) ==="
 
 # Step 3: Production strategy daily NAV report
 # NOTE: sleeve_save_helper.R 제거됨. daily_portfolio_nav.R만으로 동작.
 Rscript -e 'source("02_Infrastructure/config.R"); source("02_Infrastructure/backtest_harness.R"); source("02_Infrastructure/portfolio/daily_portfolio_nav.R"); tryCatch(daily_nav_report("STR_905"), error=function(e) cat("[NAV] Skip:", e$message, "\n"))' >> /tmp/qm_morning.log 2>&1
+
+# Step 3b: noLayer4 PG2 book 데일리 mark-to-market (현 운용북 데일리 성과, 도훈 지시 2026-07-03 Layer4 제거 전환)
+#   구 FaithTrend(Layer4) 호출은 mark_nolayer4_daily.R로 대체 (Layer4 제거 → noLayer4 book). 구 스크립트는 rollback 보존(deprecated).
+echo "[3b] noLayer4 book 데일리 mark-to-market..."
+QM_ROOT="$BASE" Rscript --no-save "$BASE/02_Infrastructure/monitoring/mark_nolayer4_daily.R" >> /tmp/qm_morning.log 2>&1 || echo "[nolayer4-daily] skip (홀딩 미산출 or 데이터 대기)"
 
 # ──────────────────────────────────────────────────────────────────────────────
 # Step 6: P3 (v3-fast Hansen, hparam-tuned) bearish forecast — daily inference + brief + 텔레그램 발송
@@ -323,57 +127,9 @@ print(f'[y_actual backfill] {n_filled} rows filled')
   # 6b'. Risk Pro 9-Quadrant 강화 대시보드 (도훈 mandate 2026-05-27)
   cd "$BASE"
   Rscript "$BASE/04_Research/decision_framework/bearish_forecast_v3/scripts/613_p3_9quad_riskpro.R" 2>&1 | tail -2 || true
-  # 6c. 텔레그램 발송 (latest brief)
+  # 6c. 텔레그램 발송 (latest brief) — 외부화 2026-06-13 (한글/이모지 인라인 -e 깨짐 해소)
   cd "$BASE"
-  Rscript --no-save -e '
-    setwd("'"$BASE"'")
-    source("02_Infrastructure/telegram/telegram_notify.R")
-    brief_root <- "04_Research/decision_framework/bearish_forecast_v3/03_models/morning_brief"
-    sub_dirs <- list.dirs(brief_root, recursive = FALSE)
-    if (length(sub_dirs) == 0) {
-      cat("[P2 brief] no brief dir found\n")
-    } else {
-      latest <- sort(sub_dirs, decreasing = TRUE)[1]
-      # [B-gate 2026-06-01 도훈 mandate] freshness: 최신 brief dir 날짜가 직전 거래일(benchmark max Date)보다
-      #   과거면 stale → stale brief 송출 보류 + 알림으로 대체 (조용한 stale 송출 차단).
-      brief_date <- suppressWarnings(as.Date(basename(latest)))
-      bm_max <- tryCatch(as.Date(max(as.data.frame(arrow::read_parquet(".cache/benchmark.parquet", col_select = "Date"))$Date, na.rm = TRUE)),
-                         error = function(e) as.Date(NA))
-      is_stale <- is.na(brief_date) || (!is.na(bm_max) && brief_date < bm_max)
-    }
-    if (length(sub_dirs) > 0 && is_stale) {
-      msg <- sprintf("⚠️ 모닝브리핑 정체 — 최신 brief %s 가 직전 거래일 %s 보다 과거. P3 inference/brief 생성 정체 의심. stale brief 송출 보류 (601_daily_inference 점검 요).",
-                     as.character(brief_date), as.character(bm_max))
-      cat(sprintf("[P2 brief] STALE-GATE BLOCK: %s\n", msg))
-      tryCatch(tg_send(msg), error = function(e) cat(sprintf("[P2 brief] stale alert fail: %s\n", e$message)))
-    } else if (length(sub_dirs) > 0) {
-      cat(sprintf("[P2 brief] sending from %s (fresh: brief %s >= bm %s)\n", latest, as.character(brief_date), as.character(bm_max)))
-      brief_md <- file.path(latest, "brief.md")
-      dist_png <- file.path(latest, "dist.png")
-      trend_png <- file.path(latest, "trend.png")
-      if (file.exists(brief_md)) {
-        body <- paste(readLines(brief_md, encoding="UTF-8"), collapse="\n")
-        # Telegram message limit 4096 chars — truncate if needed
-        if (nchar(body) > 3900) body <- paste0(substr(body, 1, 3900), "\n...(truncated)")
-        tryCatch(tg_send(body, parse_mode = "Markdown"),
-                 error = function(e) cat(sprintf("[P2 brief] tg_send fail: %s\n", e$message)))
-      }
-      if (file.exists(dist_png)) {
-        tryCatch(tg_send_photo(dist_png, caption = "P2 - 오늘 분포 forecast"),
-                 error = function(e) cat(sprintf("[P2 brief] tg_send_photo dist fail: %s\n", e$message)))
-      }
-      if (file.exists(trend_png)) {
-        tryCatch(tg_send_photo(trend_png, caption = "P2 - 22일 추세"),
-                 error = function(e) cat(sprintf("[P2 brief] tg_send_photo trend fail: %s\n", e$message)))
-      }
-      riskpro_png <- file.path(latest, "p3_9quad_riskpro.png")
-      if (file.exists(riskpro_png)) {
-        tryCatch(tg_send_photo(riskpro_png, caption = "P3 Risk Manager Pro Dashboard"),
-                 error = function(e) cat(sprintf("[P2 brief] tg_send_photo riskpro fail: %s\n", e$message)))
-      }
-      cat("[P2 brief] done\n")
-    }
-  ' >> /tmp/qm_morning.log 2>&1
+  Rscript --no-save -e 'source("02_Infrastructure/ops/morning_steps/p3_brief_send.R")' >> /tmp/qm_morning.log 2>&1
 else
   echo "[6/6] SKIP — venv or v3 dir missing"
 fi

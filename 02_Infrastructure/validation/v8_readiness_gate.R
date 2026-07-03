@@ -100,7 +100,7 @@ check_hook_dryrun <- function(project_root, no_write = FALSE) {
   results_path <- file.path(project_root, "08_Tests/hooks/results.json")
   hook_runner <- file.path(project_root, "08_Tests/hooks/run_all_hooks.sh")
   if (!file.exists(hook_runner)) {
-    return(mk_check("hook_dryrun", "Hook dry-run 30/30",
+    return(mk_check("hook_dryrun", "Hook dry-run 17/17",
                     "FAIL", "run_all_hooks.sh 부재"))
   }
   if (no_write) {
@@ -108,38 +108,38 @@ check_hook_dryrun <- function(project_root, no_write = FALSE) {
       data <- tryCatch(fromJSON(results_path, simplifyVector = TRUE),
                         error = function(e) NULL)
       if (!is.null(data) && is.numeric(data$total_fail) &&
-          data$total_fail == 0 && (data$total_pass %||% 0) >= 30) {
-        return(mk_check("hook_dryrun", "Hook dry-run 30/30",
+          data$total_fail == 0 && (data$total_pass %||% 0) >= 17) {
+        return(mk_check("hook_dryrun", "Hook dry-run 17/17",
                         "PASS",
                         sprintf("cached results.json: %d/%d (no_write — re-run skip)",
                                 data$total_pass, data$total_pass + data$total_fail),
                         results_path))
       }
     }
-    return(mk_check("hook_dryrun", "Hook dry-run 30/30",
+    return(mk_check("hook_dryrun", "Hook dry-run 17/17",
                     "WARN", "no_write — runner skip + cached results 검증 불충분"))
   }
   out <- run_cmd("bash", c(hook_runner), timeout_sec = 120L)
   if (!file.exists(results_path)) {
-    return(mk_check("hook_dryrun", "Hook dry-run 30/30",
+    return(mk_check("hook_dryrun", "Hook dry-run 17/17",
                     "FAIL", "results.json 생성 실패"))
   }
   data <- tryCatch(fromJSON(results_path, simplifyVector = TRUE),
                     error = function(e) NULL)
   if (is.null(data)) {
-    return(mk_check("hook_dryrun", "Hook dry-run 30/30",
+    return(mk_check("hook_dryrun", "Hook dry-run 17/17",
                     "FAIL", "results.json parse 실패", results_path))
   }
   total_pass <- data$total_pass %||% 0
   total_fail <- data$total_fail %||% -1
-  if (total_fail == 0 && total_pass >= 30) {
-    return(mk_check("hook_dryrun", "Hook dry-run 30/30",
+  if (total_fail == 0 && total_pass >= 17) {
+    return(mk_check("hook_dryrun", "Hook dry-run 17/17",
                     "PASS", sprintf("%d pass / 0 fail", total_pass),
                     results_path))
   }
-  mk_check("hook_dryrun", "Hook dry-run 30/30",
+  mk_check("hook_dryrun", "Hook dry-run 17/17",
            "FAIL",
-           sprintf("%d pass / %d fail (요구: fail=0, pass>=30)",
+           sprintf("%d pass / %d fail (요구: fail=0, pass>=17 — v8.2 codex_round_gate 제거)",
                    total_pass, total_fail),
            results_path)
 }

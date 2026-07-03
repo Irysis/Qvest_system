@@ -1,9 +1,11 @@
 {
   "$schema": "qvest-v6.4/state_transitions.json",
-  "version": "1.0",
+  "version": "1.1",
   "issued_at": "2026-05-01T15:30:00+0900",
   "issued_by": "Q-Lead Session 75 v6.4 Sprint 2 Phase 4",
-  "description": "WorkTask phase 전이 single source. state_machine.R + qvest_hook_router.py가 본 policy import. 임의 phase jump waiver 없이 불가.",
+  "revised_at": "2026-06-30T00:00:00+0900",
+  "revised_by": "Q-Lead v8.2 — Codex Critic Round 제거 (Opus 4.8 자체 적대검증으로 대체)",
+  "description": "WorkTask phase 전이 single source. state_machine.R + qvest_hook_router.py가 본 policy import. 임의 phase jump waiver 없이 불가. v8.2: codex_critic_response_{role}.json required 제거 + AX-008 triangulation source codex→self_adversarial 치환.",
 
   "phases": [
     "SPEC_APPROVED",
@@ -30,20 +32,18 @@
       "actor_role": "risk-research",
       "required_artifacts": [
         "alpha_package.json",
-        "challenge_note.md (or alpha-specific)",
-        "codex_critic_response_alpha.json"
+        "challenge_note.md (self-adversarial decision record)"
       ],
       "optional_artifacts": ["alpha_discovery_certificate.json"],
       "skip_cert_with_waiver": true,
-      "waiver_field": "challenge_note.md::codex_critic_skip_waiver"
+      "waiver_field": "challenge_note.md::cert_critical_skip_waiver"
     },
     "RISK_DONE": {
       "allowed_next": ["OPTIMIZER_DONE", "ABORTED", "ALPHA_RISK_HELD"],
       "actor_role": "optimizer-research",
       "required_artifacts": [
         "risk_package.json",
-        "challenge_note.md (or risk-specific)",
-        "codex_critic_response_risk.json",
+        "challenge_note.md (self-adversarial decision record)",
         "stage_artifacts/WT_{ID}/covariance.parquet"
       ]
     },
@@ -53,8 +53,7 @@
       "required_artifacts": [
         "optimization_package.json",
         "weights.csv",
-        "challenge_note.md (or optimizer-specific)",
-        "codex_critic_response_optimizer.json"
+        "challenge_note.md (self-adversarial decision record)"
       ],
       "optional_artifacts": ["schedule_fidelity_certificate.json"]
     },
@@ -63,12 +62,11 @@
       "actor_role": "judge",
       "required_artifacts": [
         "forge_package.json",
-        "challenge_note.md (or forge-specific)",
-        "codex_critic_response_forge.json",
+        "challenge_note.md (self-adversarial decision record)",
         "stage_artifacts/WT_{ID}/bt_result.rds"
       ],
       "ax_008_triangulation_required": true,
-      "ax_008_sources": ["forge", "codex", "architect"],
+      "ax_008_sources": ["forge", "self_adversarial", "architect"],
       "ax_008_pass_threshold": 2,
       "optional_artifacts": [
         "sr_provenance_certificate.json",
@@ -80,8 +78,7 @@
       "actor_role": "governor",
       "required_artifacts": [
         "judge_verdict.json",
-        "challenge_note.md (or judge-specific)",
-        "codex_critic_response_judge.json"
+        "challenge_note.md (self-adversarial decision record)"
       ]
     },
     "JUDGE_FAILED": {
@@ -97,8 +94,7 @@
       "actor_role": "governor",
       "required_artifacts": [
         "governor_admission.json",
-        "challenge_note.md (or governor-specific)",
-        "codex_critic_response_governor.json"
+        "challenge_note.md (self-adversarial decision record)"
       ],
       "side_effect": "qepm/mailbox/governor/book_state.json admit (governor_concord_certificate auto-trigger)"
     },
@@ -121,7 +117,7 @@
   "auxiliary_phases": {
     "description": "보조 phase — Q-Lead override / 보류 / archive 시 사용",
     "phases": [
-      "ARCHIVED_REJECTED_BY_CODEX",
+      "ARCHIVED_REJECTED_BY_VERIFICATION",
       "ABORTED_CERT_DENIED_HONEST",
       "ALPHA_RISK_DONE_HELD_*",
       "ALPHA_DONE_QLEAD_OVERRIDE_BORDERLINE_ACCEPT"
@@ -132,7 +128,7 @@
   "waiver_protocol": {
     "description": "임의 phase jump 또는 cert 부재 admission 시 waiver",
     "where": "challenge_note.md (or status.json::override_caveats)",
-    "field_name": "codex_critic_skip_waiver OR cert_critical_skip_waiver OR phase_jump_waiver",
+    "field_name": "cert_critical_skip_waiver OR phase_jump_waiver",
     "required": [
       "사유 명시 (≥ 50 chars)",
       "도훈 override 인용 OR Q-Lead urgent 명시",

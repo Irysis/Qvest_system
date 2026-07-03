@@ -24,7 +24,7 @@
 | RF-O10 | Method shopping cherry-pick (SR 1위만 선택, cost-adjusted 무시) | R4 P3 위반 | HIGH |
 | RF-O11 | confidence-aware MVO 미적용 (alpha SubStab 약한데 평등 confidence) | RF-A1 답변 누락 | MEDIUM |
 | RF-O12 | Heavy-tail 환경 MVO 단독 (Hill α < 1) | 잘못된 분포 가정 | HIGH |
-| RF-O13 | Turnover > 600% annual | Hard fail | CRITICAL |
+| RF-O13 | Turnover > 1,100% annual | Hard fail | CRITICAL |
 
 ## QEPM Optimizer 핵심 검증 항목
 
@@ -33,7 +33,7 @@
 - [ ] **0 ≤ w_i ≤ 0.20** for all i
 - [ ] **Σw = 1.0** (absolute, abs(error) < 1e-6)
 - [ ] **w_i ≥ 0** (long-only)
-- [ ] turnover < 600% annual
+- [ ] turnover < 1,100% annual
 - [ ] liquidity (top decile TV ≥ 2억) 충족
 - [ ] cost 15bps one-way 내재화
 

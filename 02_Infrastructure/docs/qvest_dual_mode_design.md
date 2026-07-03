@@ -14,7 +14,7 @@
 
 ## 1. 동기 (비용 비대칭)
 
-- 정석 QEPM 1회 = 6 agent × Codex Round(각 9~15분) + challenge_note + 5 cert + admission. 후보 하나에 막대한 비용.
+- 정석 QEPM 1회 = 6 agent × Self-Adversarial Challenge(v8.2 — Codex Round 제거, Opus 4.8 자체 적대검증) + challenge_note + 5 cert + admission. 후보 하나에 막대한 비용.
 - 실증: standalone alpha 16/16 FAIL ([[learning-gate-calibration-longonly]] / [[reference-alpha-trends-2024-2026]]). 자기완결 논문 전략은 risk/opt 통합이 불필요한데도 6-agent 전부 거치는 게 낭비.
 - funnel 맹아 존재(`reference_creative_alpha_idea_bank` cheap-test + creative funnel 커밋). 본 설계 = **자기완결 논문전략을 위한 lean authoritative lane** 명문화.
 
@@ -30,7 +30,7 @@
 | 백테 | **전기간 실측, `build_bt_result` 계약 경유** (§3) | forge `build_bt_result` |
 | 에이전트 | **implementer → lean-forge → Judge → Governor** (risk/opt agent SKIP) | alpha→risk→optimizer→forge→judge→governor |
 | PIT | **2중** — code-stage(#1) + Judge(#2) | code + Judge |
-| Codex Round | **Judge만** (구현 agent는 선택) | 6 role 전부 |
+| Self-Adversarial Challenge (v8.2 — Codex Round 제거, Opus 4.8 자체 적대검증) | **Judge만** (구현 agent는 선택) | 6 role 전부 |
 | 권위 | **authoritative (계약 경유 backtested)** | authoritative |
 | admission | Governor (수동 + 도훈 confirm) | Governor (동일) |
 | 산출물 위치 | `stage_artifacts/alpha_search/{idea_id}/` → 승격 시 canonical 복사 | `qepm/mailbox/worktask/{WT_ID}/` |
@@ -101,7 +101,7 @@ Lane1/Lane2는 **모듈을 생산**. **Lane3 = 그 모듈 풀을 국면(regime) 
 implementer(신설): 논문 → 전략스펙(signal + 논문비중 + 유니버스 + 리밸) → PIT#1
    → lean-forge: optimized run_all.R (optimized-backtest 스킬) + Return.portfolio + build_bt_result 계약 백테
    → essence_score 등급
-   → Judge: PIT#2 + Gate A~F (Codex Round 유지) + 경량 crowding/concentration 인라인(갭1)
+   → Judge: PIT#2 + Gate A~F (Self-Adversarial Challenge — v8.2 Codex Round 제거, Opus 4.8 자체 적대검증) + 경량 crowding/concentration 인라인(갭1)
    → [pass] 승격 → Governor
 ```
 
@@ -159,7 +159,7 @@ implementer(신설): 논문 → 전략스펙(signal + 논문비중 + 유니버�
 1. **implementer role 신설** (`.claude/agents/strategy-implementer.md`) — 논문→전략스펙(signal+논문비중+유니버스+리밸)+PIT#1. precondition(비중방법론 명시) 분기. `agent_role_guard`에 **lean-mode weight 작성 예외** 등록(optimizer 부재 → weight 충돌 상대 없음).
 2. **lean-forge 모드** — forge가 자기완결 전략을 `optimized-backtest` 스킬로 run_all.R + `Return.portfolio` + `build_bt_result` 실행(3-package 통합 없이). → essence_score 등급.
 3. **`/alpha-search` entrypoint** skill — idea_id 입력 → implementer → lean-forge → essence_score fast-lane.
-4. Judge 적응 — alpha_search `bt_result` 입력 수용 + 경량 crowding/concentration 인라인(갭1) + Gate A PIT#2 (Codex 유지).
+4. Judge 적응 — alpha_search `bt_result` 입력 수용 + 경량 crowding/concentration 인라인(갭1) + Gate A PIT#2 (Self-Adversarial Challenge — v8.2 Codex Round 제거, Opus 4.8 자체 적대검증).
 5. Governor 적응 — alpha_search 승격분 PG entry + book-marginal ΔIR(수익률 기반) + S5-on-reject 라우팅.
 6. S5 Mutation 경로 — 기각 전략 → full QEPM 강화 (risk/opt/overlay 투입).
 7. `alpha_search_wall.sh` hook + settings.json 등록 (격리 네임스페이스 → registry/book 차단).
@@ -171,7 +171,7 @@ implementer(신설): 논문 → 전략스펙(signal + 논문비중 + 유니버�
 ## 10. 결정 (2026-05-31 잠금)
 
 - **갭1** ✅: Judge 경량 crowding/concentration 인라인 + Governor book-marginal 유지 + full risk/tail은 S5-on-reject 회수.
-- **Codex Round** ✅: implementer 생략(설계만 — lean-forge 측정 분리로 firewall 확보) / **Judge 유지**(무결성).
+- **Self-Adversarial Challenge** (v8.2 — Codex Round 제거, Opus 4.8 자체 적대검증) ✅: implementer 생략(설계만 — lean-forge 측정 분리로 firewall 확보) / **Judge 유지**(무결성 — 메인 에이전트 자체 적대검증).
 - **승격 veto** ✅: 별도 hold 없음 — **Governor admission이 이미 수동+도훈 confirm**(비가역 자본게이트)이라 그것이 human checkpoint. 승격은 events.jsonl+telegram 로깅만.
 - **command** ✅: `/alpha-search` **독립 command**.
 - **batch 동시성** ✅: build_bt_result ~8GB/건 → **동시 ≤ 2**(OOM 교훈).
@@ -179,6 +179,7 @@ implementer(신설): 논문 → 전략스펙(signal + 논문비중 + 유니버�
 ---
 
 ## 11. Change log
+- 2026-06-30 v8.2 정합화: QEPM 외부 Codex Critic Round 완전 제거(도훈 mandate) — 본 SOT의 라이브 서술을 **Self-Adversarial Challenge**(메인 에이전트 Opus 4.8 자체 적대검증)로 reframe. 영향 라인: §1 동기(비용), §2 lane 비교표, §5 lean lane Judge 흐름, §9 구현목록 #4 Judge 적응, §10 결정 항목. 3-source triangulation(AX-008)은 Forge + Self-Adversarial + Architect 2/3로 불변. 과거 dated 이력(v0.1~v0.3)은 수정 없이 보존.
 - 2026-05-31 v0.3 DRAFT: 아키텍처 정정 — "forge 스킵" → **risk/opt agent만 스킵, forge는 lean 모드 유지**(Forge 전용 optimized-backtest 코딩 스킬 소유). **implementer role 신설**(설계) ≠ lean-forge(측정) firewall(AX-008). 등급=essence_score, 포트수익률 구성=Return.portfolio(R 브릿지, 언어무관). §10 결정 5건 잠금. 스코어 체계(essence_score)·스킬 계약정합은 구현 완료(커밋 30547ef/f898fd6).
 - 2026-05-30 v0.2 DRAFT: 도훈 재설계 반영 — lean lane이 전기간 백테 실측(계약경유) + EW의무폐기/논문비중 + (구)forge 스킵 + Judge부터 + PIT 2중 + Governor부터 편입 + S5 기각-강화 루프. 권위 기전을 advisory→contract-backed로 전환. 갭2건 명시. (v0.3에서 forge 스킵 정정.)
 - 2026-05-30 v0.1 DRAFT: 초안 (advisory-only triage). v0.2로 대체.

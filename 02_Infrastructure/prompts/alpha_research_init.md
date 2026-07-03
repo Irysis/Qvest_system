@@ -105,6 +105,7 @@ Common Charter 8원칙 (전체: `02_Infrastructure/worktask/common_charter.md`):
 ### Step 0: Hypothesis Discovery (신규, 가설 자동 발굴)
 **조건부 실행**: request.json에 `hypothesis_title` 없거나 `theme`만 있는 경우.
 
+- **discovery seed (있으면 최우선, W2)**: `qepm/mailbox/worktask/{WT_id}/discovery_seed.json` — discovery_explore가 실측한 CANDIDATE(`family`·`horizon_months`·`factor_ids`·`proxy_recent_port_t`·**`canonical_recent_port_t`**·`caveat`). 있으면 1순위 가설 후보로 소비하고 `factor_ids`를 Step 2 Factor Sourcing에 직결. ⚠ `canonical_recent_port_t` ≪ `proxy_recent_port_t`이면 분기-마킹 아티팩트 → caveat를 challenge_flags에 승계(과대평가 방어). canonical은 contract-grade이나 자본 아님 — 본 파이프라인이 forge까지 완주해 authoritative 판정.
 - **PG0 gap 분석**: `.cache/portfolio_gap_vector.json` — 현 포트폴리오 SR/CAGR/MDD gap 확인
 - **L-code 실패 패턴 survey**: 과거 실패 L-code 기반 inverse hypothesis 탐색 (`kr-inverse-pattern-miner` skill)
 - **문헌 survey** (mcp__jina / arxiv / paper-search): 최신 academic 연구

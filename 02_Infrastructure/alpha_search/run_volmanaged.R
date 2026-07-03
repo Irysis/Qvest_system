@@ -18,12 +18,29 @@
 
 suppressWarnings(suppressMessages({ library(data.table); library(xts); library(jsonlite) }))
 
+.VM_FIND_ROOT <- function() {
+  candidates <- unique(c(Sys.getenv("CLAUDE_PROJECT_DIR", ""), Sys.getenv("QM_ROOT", ""), getwd()))
+  is_root <- function(p) nzchar(p) && dir.exists(p) && file.exists(file.path(p, "02_Infrastructure/config.R"))
+  for (p in candidates) if (is_root(p)) return(normalizePath(p, winslash = "/", mustWork = TRUE))
+  cur <- normalizePath(getwd(), winslash = "/", mustWork = TRUE)
+  repeat {
+    if (is_root(cur)) return(cur)
+    parent <- dirname(cur)
+    if (identical(parent, cur)) break
+    cur <- parent
+  }
+  stop("[run_volmanaged] project root not found. Set CLAUDE_PROJECT_DIR or QM_ROOT.")
+}
+.VM_PROJECT_ROOT <- .VM_FIND_ROOT()
 .VM_INFRA <- local({
   cand <- Sys.getenv("QVEST_INFRA_DIR", "")
   if (nzchar(cand) && file.exists(file.path(cand, "config.R"))) return(cand)
-  file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")), "02_Infrastructure")
+  file.path(.VM_PROJECT_ROOT, "02_Infrastructure")
 })
 source(file.path(.VM_INFRA, "config.R"))
+if (!exists("PROJECT_ROOT", inherits = TRUE)) PROJECT_ROOT <- .VM_PROJECT_ROOT
+if (!nzchar(Sys.getenv("CLAUDE_PROJECT_DIR", ""))) Sys.setenv(CLAUDE_PROJECT_DIR = PROJECT_ROOT)
+if (!nzchar(Sys.getenv("QM_ROOT", ""))) Sys.setenv(QM_ROOT = PROJECT_ROOT)
 source(file.path(.VM_INFRA, "backtest_harness.R"))
 source(file.path(TELEGRAM_DIR, "telegram_notify.R"))
 source(file.path(.VM_INFRA, "hurdle_gate.R"))

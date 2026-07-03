@@ -1,5 +1,5 @@
 #==============================================================================
-# state_machine.R — Qvest v6.4 WorkTask State Machine
+# state_machine.R — Qvest v8.1 WorkTask State Machine
 # 02_Infrastructure/worktask/state_machine.R
 #
 # Phase 5 (Sprint 2) — wt_advance() transition table 강제.
@@ -20,10 +20,27 @@ suppressPackageStartupMessages({
   library(jsonlite)
 })
 
-PROJ_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", unset = "")
-if (PROJ_ROOT == "" || !dir.exists(PROJ_ROOT)) {
-  PROJ_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
+.qvest_find_root <- function() {
+  cand <- c(Sys.getenv("CLAUDE_PROJECT_DIR", unset = ""),
+            Sys.getenv("QM_ROOT", unset = ""),
+            getwd())
+  for (p in cand[nzchar(cand)]) {
+    p <- normalizePath(p, winslash = "/", mustWork = FALSE)
+    if (dir.exists(file.path(p, "02_Infrastructure")) &&
+        dir.exists(file.path(p, "qepm"))) return(p)
+  }
+  here <- normalizePath(getwd(), winslash = "/", mustWork = FALSE)
+  repeat {
+    if (dir.exists(file.path(here, "02_Infrastructure")) &&
+        dir.exists(file.path(here, "qepm"))) return(here)
+    parent <- dirname(here)
+    if (identical(parent, here)) break
+    here <- parent
+  }
+  stop("[state_machine] project root not found. Set CLAUDE_PROJECT_DIR or QM_ROOT.")
 }
+
+PROJ_ROOT <- .qvest_find_root()
 
 SM_POLICY_PATH <- file.path(PROJ_ROOT, "02_Infrastructure/hooks/policies/state_transitions.json")
 WT_MAILBOX <- file.path(PROJ_ROOT, "qepm/mailbox/worktask")
@@ -226,12 +243,18 @@ sm_validate_artifacts_schema <- function(wt_id, phase) {
   if (!file.exists(router)) {
     return(list(skipped = TRUE, valid = NA, reason = "router not found"))
   }
+  # CLAUDE_PROJECT_DIR는 system2(env=)로 넘기지 않는다 — Windows R에서 env 문자열이
+  # python3 인자로 삽입돼 "can't open file" status 2 발생(모든 advance false-block). Sys.setenv로 전달.
+  .old_cpd <- Sys.getenv("CLAUDE_PROJECT_DIR", unset = NA)
+  Sys.setenv(CLAUDE_PROJECT_DIR = PROJ_ROOT)
+  on.exit({
+    if (is.na(.old_cpd)) Sys.unsetenv("CLAUDE_PROJECT_DIR") else Sys.setenv(CLAUDE_PROJECT_DIR = .old_cpd)
+  }, add = TRUE)
   out <- tryCatch(
     system2("python3",
             args = c(shQuote(router), "validate-schema",
                      "--schema", spec$schema,
                      "--package", shQuote(art_path)),
-            env = sprintf("CLAUDE_PROJECT_DIR=%s", shQuote(PROJ_ROOT)),
             stdout = TRUE, stderr = TRUE),
     error = function(e) NULL
   )
@@ -257,7 +280,7 @@ sm_validate_artifacts_schema <- function(wt_id, phase) {
 `%||%` <- function(a, b) if (is.null(a)) b else a
 
 qvest_state_machine_selftest <- function() {
-  cat("=== Qvest v6.4 State Machine Selftest ===\n")
+  cat("=== Qvest v8.1 State Machine Selftest ===\n")
 
   # Test 1: Policy load
   policy <- tryCatch(sm_load_policy(force_reload = TRUE),

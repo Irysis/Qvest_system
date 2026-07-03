@@ -212,6 +212,12 @@ krx_merge_rawdata <- function() {
   if (!is.null(bm_new) && nrow(bm_new) > 0) {
     # Get previous BM_Close for first day's return
     old_bm <- as.data.table(read_parquet(BM_CACHE))
+    # [fix 2026-06-17] benchmark.parquet Date가 [1pre] naver_benchmark_update.py에서
+    # POSIXct(09:00:00)로 기록되며, bm_new/new_rows의 Date(as.Date)와 class가 달라
+    # line 223 merge / line 228 rbind이 "Class attribute on column 1" halt → KRX 전체
+    # 파이프라인 abort → RAWDATA가 매일 06-12에서 동결되던 회귀버그. 양쪽 Date로 정규화.
+    if (inherits(old_bm$Date, "POSIXt") || !inherits(old_bm$Date, "Date"))
+      old_bm[, Date := as.Date(Date)]
     last_bm_close <- old_bm[Date == max(Date)]$BM_Close[1]
 
     bm_new[, BM_Ret := BM_Close / shift(BM_Close) - 1]
@@ -229,7 +235,13 @@ krx_merge_rawdata <- function() {
     old_bm_ext <- unique(old_bm_ext, by = "Date")
     setorder(old_bm_ext, Date)
     setkey(old_bm_ext, Date)
-    write_parquet(old_bm_ext, BM_CACHE)
+    # [fix 2026-06-17] Windows arrow mmap(error 1224): read_parquet(BM_CACHE)가 파일을
+    # mmap한 채라 동일 경로 write_parquet이 실패 → mmap 해제 후 temp-rename (consensus 동일 패턴)
+    rm(old_bm); gc(verbose = FALSE)
+    .bm_tmp <- paste0(BM_CACHE, ".tmp")
+    write_parquet(old_bm_ext, .bm_tmp)
+    if (file.exists(BM_CACHE)) file.remove(BM_CACHE)
+    file.rename(.bm_tmp, BM_CACHE)
     cat(sprintf("[krx_merge] Benchmark updated: %s ~ %s\n",
                 min(old_bm_ext$Date), max(old_bm_ext$Date)))
   } else {
@@ -273,11 +285,19 @@ krx_merge_rawdata <- function() {
   setcolorder(new_rows, rawdata_cols)
 
   # Append to existing RAWDATA
-  combined <- rbind(old_raw, new_rows, fill = TRUE)
+  # ignore.attr=TRUE: 무신규 데이터일(주말/휴장, new 0 tickers) 컬럼 class-attr 불일치로
+  # rbindlist halt 나던 것 방지 (값은 동일 날짜형, attr만 상이; 아래 unique/setorder가 정합). 2026-06-13
+  combined <- rbind(old_raw, new_rows, fill = TRUE, ignore.attr = TRUE)
   combined <- unique(combined, by = c("Date", "Ticker"))
   setorder(combined, Date, Ticker)
 
-  write_parquet(combined, RAWDATA_CACHE)
+  # [fix 2026-06-17] Windows arrow mmap(error 1224): read_parquet(RAWDATA_CACHE) mmap
+  # 해제 후 temp-rename. (구 직접 write_parquet은 동일 경로 mmap halt — benchmark와 동일)
+  rm(old_raw); gc(verbose = FALSE)
+  .raw_tmp <- paste0(RAWDATA_CACHE, ".tmp")
+  write_parquet(combined, .raw_tmp)
+  if (file.exists(RAWDATA_CACHE)) file.remove(RAWDATA_CACHE)
+  file.rename(.raw_tmp, RAWDATA_CACHE)
 
   cat(sprintf("[krx_merge] RAWDATA extended: +%d rows | now %s ~ %s | %d total\n",
               nrow(new_rows), min(combined$Date), max(combined$Date), nrow(combined)))

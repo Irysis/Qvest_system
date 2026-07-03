@@ -11,7 +11,7 @@
 ## Judge 영역 Red Flag (RF-J)
 | ID | 패턴 | 검증 |
 |---|---|---|
-| RF-J1 | Hard fail (MDD>45% / TO>600%) 발견 못함 | Hurdle Gate enforcement 누락 |
+| RF-J1 | Hard fail (structural MDD / TO>1,100%) 발견 못함 | Hurdle Gate enforcement 누락 |
 | RF-J2 | Harvey gate 적용 시 multi-testing penalty 누락 | DSR 산출 없음 |
 | RF-J3 | Lockbox 침범 (signal_date < lockbox_start) 못 잡음 | C1 lockbox enforcement |
 | RF-J4 | Role Honesty Audit silent override (Defense_SA degenerate 인정 안 함) | AX-001 v2 위반 |

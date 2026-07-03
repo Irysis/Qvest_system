@@ -3,7 +3,7 @@
 qvest_hook_router.py — Qvest v6.4 Hook Kernel Router
 
 목적:
-- 4 policy JSON (state_transitions / role_permissions / codex_round_contract / cert_rules) 단일 진입점
+- 3 policy JSON (state_transitions / role_permissions / cert_rules) 단일 진입점 (v8.2: codex_round_contract 제거 — Codex Round 폐지)
 - 신규/변경 hook이 정규식 중복 보유 안 함 (policy import)
 - $CLAUDE_PROJECT_DIR 우선 사용 (Claude Code 공식 방식)
 
@@ -75,7 +75,7 @@ POLICIES_DIR = PROJECT_ROOT / "02_Infrastructure" / "hooks" / "policies"
 _policy_cache = {}
 
 def load_policy(name: str) -> dict:
-    """Load policy JSON with cache. name ∈ {state_transitions, role_permissions, codex_round_contract, cert_rules}."""
+    """Load policy JSON with cache. name ∈ {state_transitions, role_permissions, cert_rules}. (v8.2: codex_round_contract 제거)"""
     if name in _policy_cache:
         return _policy_cache[name]
     path = POLICIES_DIR / f"{name}.json"
@@ -196,7 +196,8 @@ def check_cert_eligibility(cert_name: str, package_path: str) -> dict:
 # ─────────────────────────────────────────────────────────────────
 
 def check_codex_round_complete(wt_id: str, role: str) -> Tuple[bool, str]:
-    """Verify draft + critic_response present. Returns (complete, reason)."""
+    """v8.2: Codex Critic Round 제거(Opus 4.8 자체 적대검증으로 대체). 항상 complete 반환(passthrough — 잔여 호출자 무차단)."""
+    return True, "codex round removed v8.2 — self-adversarial in-agent (AX-008)"
     wt_dir = PROJECT_ROOT / "qepm" / "mailbox" / "worktask" / wt_id
     if not wt_dir.is_dir():
         return False, f"WT dir not found: {wt_id}"
@@ -371,7 +372,7 @@ def main():
     elif cmd == "selftest":
         # Selftest: load all 4 policies + classify few patterns
         loaded = []
-        for name in ["state_transitions", "role_permissions", "codex_round_contract", "cert_rules"]:
+        for name in ["state_transitions", "role_permissions", "cert_rules"]:
             try:
                 load_policy(name)
                 loaded.append(name)

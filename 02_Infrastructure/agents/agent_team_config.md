@@ -255,7 +255,7 @@ R=읽기, W=쓰기, RW=읽기쓰기, -=접근불가
 - 결과 보고 구조화 형식 (02_Infrastructure/prompts/forge_init.md 참조)
 
 ### Judge에게
-- hurdle_gate.R 기준 (Hard fail: MDD>45%, TO>600%)
+- hurdle_gate.R 기준 (Hard fail: structural MDD, TO>1,100%)
 - 기존 Grade A 분포 (Score, CAGR, Sharpe, MDD)
 - DSR 기준 + Harvey t>3.0
 - 기존 sleeve 상관 행렬

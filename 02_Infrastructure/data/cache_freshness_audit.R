@@ -152,8 +152,12 @@ cache_freshness_audit <- function(telegram_alert = TRUE,
     all_paths <- paste0(".cache/", all_files)
     orphans <- setdiff(all_paths, registered_paths)
     # Filter out known research/temp file patterns
-    orphans <- orphans[!grepl("^\\.cache/(scout_|wt_|hr_v2|crisis_defense|stress_|factor_correlation|factor_overlap|factor_ic_|conditional_ic_|update_file_)",
+    # 2026-06-26: 스크래치/임시 제외 강화 — 리서치 세션이 만드는 `_`-접두 임시 .rds/.csv,
+    #   timestamp 백업(_YYYYMMDD_HHMMSS), *_corrupt_*, backfill audit 등은 데이터 소스가 아니라
+    #   ephemeral → orphan 노이즈(WARN 118 중 ~110이 이것). `_`-접두 = ephemeral 컨벤션으로 제외.
+    orphans <- orphans[!grepl("^\\.cache/(_|scout_|wt_|hr_v2|crisis_defense|stress_|factor_correlation|factor_overlap|factor_ic_|conditional_ic_|update_file_)",
                                 orphans)]
+    orphans <- orphans[!grepl("(_corrupt|_backup_|_[0-9]{8}_[0-9]{6}|backfill_v8_audit)", orphans)]
     for (o in orphans) {
       results[[o]] <- list(
         path = o, tier = NA, schedule = NA,
@@ -210,19 +214,34 @@ cache_freshness_audit <- function(telegram_alert = TRUE,
     }
   }
 
-  if (telegram_alert && (by_sev$WARN + by_sev$CRITICAL > 0)) {
+  # ─── 알림 트리거 = 등록 캐시의 실제 stale/missing 만 (2026-06-26) ───────────
+  # orphan(registry 미등재)은 데이터 노후가 아니라 registry 위생 이슈 → JSON 로그·콘솔엔 남기되
+  #   "Cache Freshness Alert"(데이터 신선도 경보) 트리거에서는 제외. orphan 노이즈로 실질
+  #   stale(예: factor_db_daily)이 묻히던 문제 해소. orphan 건수는 footnote 로만 통지.
+  is_orphan <- function(r) isTRUE(r$status == "ORPHAN") || !isTRUE(r$registered)
+  alert_items <- Filter(function(r) r$severity %in% c("WARN", "CRITICAL") && !is_orphan(r), results)
+  n_orphan    <- sum(vapply(results, function(r) isTRUE(r$status == "ORPHAN"), logical(1)))
+  alert_crit  <- sum(vapply(alert_items, function(r) r$severity == "CRITICAL", logical(1)))
+  alert_warn  <- sum(vapply(alert_items, function(r) r$severity == "WARN", logical(1)))
+
+  if (telegram_alert && length(alert_items) > 0) {
     tryCatch({
       source(file.path(PROJECT_ROOT, "02_Infrastructure/telegram/telegram_notify.R"))
-      crit_list <- sapply(Filter(function(r) r$severity == "CRITICAL", results),
-                           function(r) sprintf("- %s (lag=%s)", r$path, r$lag_used %||% "n/a"))
-      warn_list <- sapply(Filter(function(r) r$severity == "WARN", results),
-                           function(r) sprintf("- %s (lag=%s)", r$path, r$lag_used %||% "n/a"))
-      msg <- sprintf("🚨 *Cache Freshness Alert*\n\nCRITICAL %d / WARN %d\n\n*Critical:*\n%s\n\n*Warn:*\n%s",
-                      by_sev$CRITICAL, by_sev$WARN,
+      crit_list <- sapply(Filter(function(r) r$severity == "CRITICAL", alert_items),
+                           function(r) sprintf("- %s (lag=%s, max=%s)", r$path, r$lag_used %||% "n/a", r$max_lag_days %||% "n/a"))
+      warn_list <- sapply(Filter(function(r) r$severity == "WARN", alert_items),
+                           function(r) sprintf("- %s (lag=%s, max=%s)", r$path, r$lag_used %||% "n/a", r$max_lag_days %||% "n/a"))
+      orphan_note <- if (n_orphan > 0)
+        sprintf("\n\n_(orphan %d건은 registry 미등재 — 로그만, 알림 제외)_", n_orphan) else ""
+      msg <- sprintf("🚨 *Cache Freshness Alert*\n\nCRITICAL %d / WARN %d (등록 캐시 stale 기준)\n\n*Critical:*\n%s\n\n*Warn:*\n%s%s",
+                      alert_crit, alert_warn,
                       if (length(crit_list) > 0) paste(head(crit_list, 10), collapse = "\n") else "(none)",
-                      if (length(warn_list) > 0) paste(head(warn_list, 10), collapse = "\n") else "(none)")
+                      if (length(warn_list) > 0) paste(head(warn_list, 10), collapse = "\n") else "(none)",
+                      orphan_note)
       tg_send(msg, parse_mode = "Markdown")
     }, error = function(e) cat(sprintf("Telegram alert failed: %s\n", e$message)))
+  } else if (telegram_alert) {
+    cat(sprintf("[cache_freshness] 등록 캐시 전부 fresh — 알림 생략 (orphan %d건은 로그만)\n", n_orphan))
   }
 
   invisible(audit)

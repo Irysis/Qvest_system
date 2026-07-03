@@ -97,7 +97,12 @@ apply_universe_mapping <- function() {
 
   # ── 저장 ──────────────────────────────────────────────────────────────────
   setorder(raw, Date, Ticker)
-  write_parquet(raw, RAWDATA_CACHE)
+  # [fix 2026-06-17] Windows arrow mmap(error 1224) — raw가 RAWDATA_CACHE를 mmap한 채라
+  # 동일 경로 write_parquet halt 회피, temp-rename (raw는 invisibly 반환되므로 rm 불가).
+  .raw_tmp <- paste0(RAWDATA_CACHE, ".tmp")
+  write_parquet(raw, .raw_tmp)
+  if (file.exists(RAWDATA_CACHE)) file.remove(RAWDATA_CACHE)
+  file.rename(.raw_tmp, RAWDATA_CACHE)
   cat(sprintf("[mapping] RAWDATA updated: %s rows | %s ~ %s\n",
               format(nrow(raw), big.mark = ","),
               min(raw$Date), max(raw$Date)))

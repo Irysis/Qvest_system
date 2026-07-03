@@ -5,7 +5,7 @@
 <!-- 본 파일 변경 = prefix cache invalidation. 변경은 axiom 승격/폐기 시점만 허용. -->
 
 <axioms level="0" immutable="true">
-- **AX-000**: 한계는 대개 법칙이 아니라 방법의 한계다. 모든 목표는 충분한 엄밀함·창의성·반복으로 달성 가능하다는 전제로 임한다. 단, 실증·PIT·수리로 입증된 한계는 부정할 대상이 아니라 정직히 보고할 발견이며, 포기는 가용한 모든 방법을 소진한 뒤에만 정당하다.
+- **AX-000**: 한계는 대개 법칙이 아니라 방법의 한계다. 모든 목표는 충분한 엄밀함·창의성·반복으로 달성 가능하다는 전제로 임한다. 소수(3~4회)의 실험 실패를 '구조적 한계'나 'dead-end'로 단정하는 것을 금지하며, 탐색은 가용한 모든 수단(개념 발산·다른 데이터원·다른 구조·ML·수리·물리)을 소진하거나 도훈이 중단을 지시할 때까지 계속한다. 실증·PIT·수리로 얻은 결과는 정직히 보고하되(성공 위장·추측 금지), 그 자체가 탐색 중단의 근거가 되지 않는다.
 - **AX-001 v2**: 방어형 팩터(ticker-level defense factor)는 조건부 성과로 평가한다. 전기간 SR/CAGR/MDD 기준 적용 금지 (Grade F 오판). 평가축 3건: 위기 구간 crisis_alpha + Core 대비 MDD 완화 + bad/normal IC ratio. multi-sleeve 조건부 비중.
 - **AX-001 v2.1** [META-ALLOCATION-EXEMPT, 2026-04-30 Judge motion + L-256]: meta-allocation alpha (weight schedule type — 종목 ranking 아닌 비중 overlay)는 v2의 3 axis 중 Axis 1 (crisis_alpha event count) + Axis 3 (bad/normal IC ratio) **SCOPE_MISMATCH**. 평가축 4건: (1) crisis_alpha conditional (overlay 발동 시점만, 횟수 무관) / (2) MDD complement (Core 대비 전기간 절감 양수) / (3) **CRISIS regime vol reduction** (bootstrap CI 통계 유의) / (4) Tail risk metrics (Hill α / VaR_99 / ES_99 / CDaR_95 Core 우월). AX-002 process honesty: future amendment를 현재 verdict의 PASS 조건 사용 금지 — Governor 단계 portfolio level 재평가에서만 적용. 근거: WT-D20260430_001 첫 사례.
 - **AX-002**: 하네스 내 성과만 유효하다. 프로세스 우회 = 판단의 미래참조 = C1 위반 동급.
@@ -13,7 +13,7 @@
 - **AX-004** [methodological/negative] market=KR, family=quality_profitability: GP·Cash-profitability single-signal long-only 구조적 실패. EXCLUSION: multi-axis quality composite(Novy-Marx GP + Piotroski + Ohlson + Q07) + multi-sleeve 내 Q07 defense sleeve는 scope 밖. 근거 L-133/134/139.
 - **AX-005 v1.2** [methodological/negative] market=KR, family=defense, universe=top20_long_only: low-beta/Q07+D25/multi-source 4-axis composite 모두 구조적 실패. ICIR 0.74~0.94 강해도 MDD 77~94%. EXCLUSION은 necessary not sufficient (Gate13 signal-portfolio translation PASS 동시 충족 필수). 근거 L-136/140/165/166.
 - **AX-007** [methodological/negative] roles=[defense, core_secondary], structure=single_sleeve_long_only_top20: signal-portfolio translation 메커니즘 단절. 예외 4종(multi-sleeve / long-short / 50+ 분산 / ML sizing + regime-conditional + AX-001 v2 crisis_alpha≥4/6). 근거 L-160/165/166.
-- **AX-008** [methodological/process]: Verification Triangulation Mandate — Forge self-check 단독 검증 불충분. Forge + Codex + Architect 3-source 중 최소 2-source PASS 필수. Gate0 확장. 근거 L-159/167/168.
+- **AX-008** [methodological/process]: Verification Triangulation Mandate — Forge self-check 단독 검증 불충분. Forge + Self-Adversarial(메인 Opus 4.8 자체 적대검증) + Architect 3-source 중 최소 2-source PASS 필수. Gate0 확장. (v8.2: Codex Round 제거 → Codex source를 self-adversarial로 치환, 3-source 2/3 불변) 근거 L-159/167/168.
 
 계층: AX-code(Lv0 공리) > PIT C1-C15(Lv1) > L-code(Lv2 교훈) > Signals(Lv3 가변). 위반 = 즉시 중단.
 </axioms>

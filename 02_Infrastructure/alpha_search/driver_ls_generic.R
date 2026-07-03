@@ -37,7 +37,22 @@ suppressPackageStartupMessages({
 # 견고한 %||% — sourced 파일이 취약버전으로 덮을 수 있어 선정의 후 최종 복원(section 7).
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
 
-PROJ <- Sys.getenv("CLAUDE_PROJECT_DIR", "G:/Quant_Module_Moltbot")
+.qvest_root <- function() {
+  candidates <- unique(c(Sys.getenv("CLAUDE_PROJECT_DIR", ""), Sys.getenv("QM_ROOT", ""), getwd()))
+  is_root <- function(p) nzchar(p) && dir.exists(p) && file.exists(file.path(p, "02_Infrastructure/config.R"))
+  for (p in candidates) if (is_root(p)) return(normalizePath(p, winslash = "/", mustWork = TRUE))
+  cur <- normalizePath(getwd(), winslash = "/", mustWork = TRUE)
+  repeat {
+    if (is_root(cur)) return(cur)
+    parent <- dirname(cur)
+    if (identical(parent, cur)) break
+    cur <- parent
+  }
+  stop("[driver_ls] project root not found. Set CLAUDE_PROJECT_DIR or QM_ROOT.")
+}
+PROJ <- .qvest_root()
+if (!nzchar(Sys.getenv("CLAUDE_PROJECT_DIR", ""))) Sys.setenv(CLAUDE_PROJECT_DIR = PROJ)
+if (!nzchar(Sys.getenv("QM_ROOT", ""))) Sys.setenv(QM_ROOT = PROJ)
 INFRA <- file.path(PROJ, "02_Infrastructure")
 source(file.path(INFRA, "config.R"))
 source(file.path(INFRA, "backtest_harness.R"))                 # load_rawdata, get_execution_date

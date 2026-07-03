@@ -5,6 +5,21 @@
 
 suppressMessages({library(data.table); library(jsonlite)})
 
+.qvest_contract_root <- function() {
+  if (exists("PROJECT_ROOT", inherits = TRUE)) return(get("PROJECT_ROOT", inherits = TRUE))
+  candidates <- unique(c(Sys.getenv("CLAUDE_PROJECT_DIR", ""), Sys.getenv("QM_ROOT", ""), getwd()))
+  is_root <- function(p) nzchar(p) && dir.exists(p) && file.exists(file.path(p, "02_Infrastructure/config.R"))
+  for (p in candidates) if (is_root(p)) return(normalizePath(p, winslash = "/", mustWork = TRUE))
+  cur <- normalizePath(getwd(), winslash = "/", mustWork = TRUE)
+  repeat {
+    if (is_root(cur)) return(cur)
+    parent <- dirname(cur)
+    if (identical(parent, cur)) break
+    cur <- parent
+  }
+  stop("[save_bt_result] project root not found. Set CLAUDE_PROJECT_DIR or QM_ROOT.")
+}
+
 #' Save complete bt_result to standardized output directory
 #' @param bt_result list (10 components)
 #' @param output_dir 출력 디렉토리 (예: "04_Research/strategies/STR_XXX/output")
@@ -64,7 +79,7 @@ save_bt_result <- function(bt_result, output_dir, save_xlsx = TRUE) {
         contracts_dir <- if (exists("PROJECT_ROOT")) {
           file.path(PROJECT_ROOT, "02_Infrastructure/contracts")
         } else {
-          file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")), "02_Infrastructure/contracts")
+          file.path(.qvest_contract_root(), "02_Infrastructure/contracts")
         }
         source(file.path(contracts_dir, "excel_report_writer.R"))
       }

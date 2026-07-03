@@ -23,19 +23,21 @@ v8.1은 v8.0(Opus 4.8-Native · Polyglot) 위에서 **① 3개 리서치 모드�
 
 ### 2.2 factor-rotation (Lane3 — 모듈 국면배합 meta-layer, 모듈 *소비*)
 - 모듈을 생산하지 않고 국면 조건부로 배합. STR_XXXX 모듈(부품) → FR_XXXX 운용체계.
-- 1모드 2트랙(Track1 레짐엔진 + Track2 배분). `register_module` 공용계약(등급무관) + **RCMA 6기준**(국면조건부 양방향: 방어형 CRISIS + 공격형 확장) + `run_factor_rotation` 신선도 자동인식.
+- 1모드 2트랙(Track1 레짐엔진 + Track2 배분). `register_module` 공용계약(**계약 floor 필수, 등급은 무관**) + **RCMA 6기준**(국면조건부 양방향: 방어형 CRISIS + 공격형 확장) + `run_factor_rotation` 신선도 자동인식.
 - governor 정지(book_state 수동).
 
 ### 2.3 QEPM (Lane1 — 6-에이전트 풀파이프라인, 모듈 *생산*)
-- alpha→risk→optimizer→forge→judge→governor. Codex Critic Round 의무.
+- alpha→risk→optimizer→forge→judge→governor. Self-Adversarial Challenge 의무(v8.2 — Codex Round 제거, Opus 4.8 자체 적대검증).
 
 ### 2.4 모드 간 연결 (E2E 4축 배선 닫힘)
 ```
-생산(alpha-search·QEPM·ML·DPL) → register_module → 04_Research/strategies/{id}/sim_result.rds
-  → build_module_performance.R(광역 80+, 등급게이트 폐지) → RCMA → factor-rotation 소비 → FR_XXXX
+생산(alpha-search·QEPM·ML·DPL) → register_module
+  ├─ 계약 미충족(proxy/미동결/무hash) → stage_artifacts/module_quarantine/{id}/sim_result.rds
+  └─ contract_pass+backtested+frozen+source/hash/build/cost → 04_Research/strategies/{id}/sim_result.rds
+      → build_module_performance.R(FR input-floor allowlist) → RCMA → factor-rotation 소비 → FR_XXXX
 자본 게이트(book_state confirm + 실주문) = 2버튼만 수동
 ```
-- ML/DPL 다리: `register_research_module.R` + `register_research_outputs.R`(run_ml_cycle.py 호출).
+- ML/DPL 다리: `register_research_module.R` + `register_research_outputs.R`(run_ml_cycle.py 호출). 계약 manifest 없는 ML/DPL 산출은 quarantine 보존만 가능하고 FR pool에는 진입하지 않는다.
 
 ---
 
@@ -96,4 +98,5 @@ v8.1은 v8.0(Opus 4.8-Native · Polyglot) 위에서 **① 3개 리서치 모드�
 - 메모리: `project-qvest-e2e-validation` · `feedback-alpha-search-paper-replication` · `project-axiom-engine-v8-renewal` · `project-factor-rotation-mode-build`
 
 ## Change log
+- 2026-06-30 v8.2: QEPM Codex Critic Round 제거 — §2.3 "Codex Critic Round 의무" → "Self-Adversarial Challenge 의무"(Opus 4.8 자체 적대검증, 외부 codex auto-spawn 폐지·중복). AX-008 3-source 2/3 불변(Codex→Self-Adversarial 치환). S0 Debate codex·RAMP Codex(역할명)·텔레그램 용어집은 별개 시스템으로 보존.
 - 2026-06-05 v8.1.0: 신규 발행. 3-Mode 헌법 + r7 복원 + 실측 거버넌스 + 모듈 자동흐름 + KR 데이터 한계 reference.

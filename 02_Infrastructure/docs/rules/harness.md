@@ -1,7 +1,7 @@
 # Harness Engineering (Level 0)
 
 **원칙**: 모든 프로세스 규칙은 프롬프트가 아닌 Hook으로 강제. "엄밀함은 사라지지 않고 이동한다."
-**v6.4 진화**: Phase 4 `qvest_hook_router.py` + 4 policy JSON 단일 진입 (Sprint 2 후 전환). 본 rule은 v6.3.3 (router 도입 전) 17~18 hook 구조 + v6.4 router 후 매핑.
+**v8.1 active**: v6.4 hook router/4 policy JSON 구조를 흡수하고, 현재 SOT는 `qvest_v8_1_sot.md` + `qvest_modes_sot.md` 기준으로 해석한다.
 
 ## Tier 1 (전역 hard block)
 
@@ -9,7 +9,7 @@
 |---|---|---|
 | safety_guard | PreToolUse[W/E/B] | 05_Production / 01_Literature 보호 |
 | axiom_enforcement_hook | PreToolUse[W/E] | AX-code 공리 위반 (AX-001/002 warn+context, 나머지 block) |
-| **codex_round_pre_enforcer** ⭐ v6.3.3 | PreToolUse[W/E] | final package 직접 작성 block (`{role}_package.json`) |
+| ~~codex_round_pre_enforcer~~ | ❌ **DEPRECATED 2026-06-30 (v8.2)** — QEPM Codex Critic Round 제거(Opus 4.8 자체 적대검증으로 대체). 스크립트 `_archive_codex_round_v8_2/`로 이동 · settings.json 미등록. final package 직접 작성 차단은 worktask_sequence_enforcer가 phase 전이로 cover |
 | sr_provenance_check (Pre) | PreToolUse[W/E] | `ProductionSchedule[N]m` fabrication label hard block |
 
 ## Tier 2 (Agent)
@@ -26,7 +26,7 @@
 
 | Hook | 강제 대상 |
 |---|---|
-| worktask_constraint_enforcer | 20종 + bounds [0, 0.20] + Σw=1 + long-only |
+| worktask_constraint_enforcer | 25종 + bounds [0, 0.20] + Σw=1 + long-only |
 | worktask_spec_validator | request.json schema (task_id format / universe / cost_model_version) |
 | ~~forge_code_guard~~ | ❌ **DEPRECATED 2026-05-16** (`_archive_v55/` 삭제 — Tier 1 cleanup. OPT-1~11 강제는 axiom_enforcement_hook + worktask_spec_validator로 대체) |
 | backtest_contract_audit | Backtest Result Contract v1.0 audit |
@@ -60,11 +60,14 @@
 | worktask_artifact_validator | `forge_package_validated_certificate.json` (8-field) |
 | governor_concord_certifier | `governor_concord_certificate.json` (book_state↔admission match) |
 
-## Tier 6 (Codex Round)
+## Tier 6 (Self-Adversarial Challenge — v8.2: Codex Round 제거)
 
-| Hook | 강제 대상 |
+QEPM Codex Critic Round(외부 codex auto-spawn)는 **2026-06-30 v8.2에서 폐지**. 메인 에이전트(Opus 4.8)가 자체 적대검증(Self-Adversarial Challenge)을 수행하므로 별도 hook 강제 없음. 적대검증 기록은 `challenge_note.md`(self-adversarial record)로 산출.
+
+| Hook | 상태 |
 |---|---|
-| **codex_round_auto_trigger** ⭐ v6.0 | PostToolUse[W/E] `_draft.json` async background spawn |
+| ~~codex_round_auto_trigger~~ | ❌ **DEPRECATED 2026-06-30 (v8.2)** — `_draft.json` async background codex spawn 폐지. 스크립트 `_archive_codex_round_v8_2/` 이동 · settings.json 미등록. (S0 Debate codex / RAMP Codex는 별개 시스템 — 영향 없음) |
+| ~~codex_round_subagent_stop~~ | ❌ **DEPRECATED 2026-06-30 (v8.2)** — 동일 archive · 미등록 |
 
 ## 기타 (Stop / FileChanged / Teammate)
 
@@ -92,10 +95,10 @@
 
 ## v6.4 진화 (Sprint 2 Phase 4)
 
-신규 `qvest_hook_router.py` 단일 진입 + 4 policy JSON:
+신규 `qvest_hook_router.py` 단일 진입 + policy JSON:
 - `02_Infrastructure/hooks/policies/state_transitions.json` (WT phase 전이)
 - `02_Infrastructure/hooks/policies/role_permissions.json` (agent 역할 경계)
-- `02_Infrastructure/hooks/policies/codex_round_contract.json` (Codex Round 의무)
+- ~~`02_Infrastructure/hooks/policies/codex_round_contract.json`~~ — ❌ **DEPRECATED 2026-06-30 (v8.2)** QEPM Codex Round 폐지로 `_archive_codex_round_v8_2/` 이동
 - `02_Infrastructure/hooks/policies/cert_rules.json` (5 cert eligibility)
 
 → 각 hook이 정규식 중복 보유 안 함, 동일 policy JSON 참조.
@@ -104,8 +107,9 @@
 
 - `02_Infrastructure/hooks/*.sh` (현재 55개 — Phase 1/2 hooks 신규 5건 포함)
 - ~~`02_Infrastructure/hooks/_archive_v55/`~~ (Tier 1 cleanup 2026-05-16 삭제 — legacy v55 hooks 6건 영구 폐기)
-- `.claude/settings.json` Hook 등록 (47 distinct .sh — v8.1.2 2026-06-11 기준, 아래 정합 절 참조)
-- `02_Infrastructure/docs/qvest_v6_4_sot.md` Section 5 (Hook + Cert + Codex Round Matrix)
+- `.claude/settings.json` Hook 등록 (47 distinct .sh — v8.1.2 2026-06-11 기준, 아래 정합 절 참조. **v8.2 2026-06-30: codex_round_pre_enforcer + codex_round_auto_trigger 2건 등록 해제 → 45 distinct .sh**)
+- `02_Infrastructure/docs/qvest_v8_1_sot.md` + `02_Infrastructure/docs/qvest_modes_sot.md` (active SOT)
+- `02_Infrastructure/docs/qvest_v6_4_sot.md` Section 5 (historical Hook + Cert Matrix. QEPM Codex Round 절은 v8.2에서 폐지 — 현재 미적용, 사료용)
 
 ## Hook 정합 audit (2026-05-16)
 
@@ -131,6 +135,15 @@
 - **안전한 경로 (오탐 방지)**: bash가 스크립트 파일 내 한글 literal을 **직접 echo**하는 것은 안전 (python text 레이어 없음 — Node가 UTF-8로 정상 디코딩). Bash tool의 일반 커맨드 CP949 출력도 Node lossy decode가 U+FFFD로 안전 처리 (400 원인 아님 — 가독성만 손실, safe_run.sh 권장).
 - **환경 영구화**: `setx PYTHONUTF8 1` 적용(2026-06-11, user env) — Claude Code 재시작 후 모든 hook/python에 전파. hook 내 export는 재시작 전에도 유효한 2중 방어.
 - **오염 세션 복구**: lone surrogate가 박힌 transcript는 해당 세션 영구 400. 복구 = jsonl 백업 후 string 값 내 surrogate → '?' 스크럽 (06-11 8개 세션 실시, `*.surrogate_bak` 보존).
+
+## v8.2 정합 (2026-06-30 — QEPM Codex Critic Round 제거, 도훈 mandate)
+
+- **폐지 근거**: 메인 에이전트가 Opus 4.8로 자체 적대검증(Self-Adversarial Challenge)을 수행 → 외부 Codex Critic Round 중복. QEPM 파이프라인에서 완전 제거.
+- **등록 해제 (2건, settings.json)**: `codex_round_pre_enforcer`(구 Tier 1) / `codex_round_auto_trigger`(구 Tier 6). → settings.json distinct .sh 47 → **45**.
+- **archive 이동**: `codex_round_pre_enforcer.sh` / `codex_round_auto_trigger.sh` / `codex_round_subagent_stop.sh` / `run_codex_qepm_critic.sh` / `policies/codex_round_contract.json` / `prompts/codex_*_critic_prompt.md` 7종 → `02_Infrastructure/hooks/_archive_codex_round_v8_2/` · `prompts/_archive_codex_round_v8_2/`.
+- **AX-008 정합**: Verification Triangulation 3-source = Forge + **Self-Adversarial** + Architect (구 Codex 치환). 2/3 PASS 규칙 불변.
+- **artifact**: `codex_critic_response_{role}.json` 명세 폐기 → `challenge_note.md`(self-adversarial record). state_transitions.json `codex_critic_response` required 제거.
+- **보존(별개 시스템 — 영향 없음)**: S0 Debate codex(codex_critic / r2_codex_verdict / s0_enforcer) · RAMP "Codex"(K_RAMP Q-Lead+agents 역할명) · enabledPlugins `codex@openai-codex`(S0/RAMP codex CLI 사용) · 텔레그램 용어집 do-not-translate "Codex".
 
 ## v8.1.2 정합 (2026-06-11 — 등록 드리프트 전수 대조, 도훈 confirm)
 

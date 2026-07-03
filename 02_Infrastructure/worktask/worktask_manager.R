@@ -201,7 +201,7 @@ wt_create <- function(hypothesis_title = NULL,
   }
   cat(sprintf("  Universe: %s\n", universe))
   cat(sprintf("  Constraints tier: %s\n",
-              if (wt_type == "discovery") "HARD mandate only (SOFT 면제, breadth 허용)" else "HARD + SOFT (20종/20%%/15bps 전부 강제)"))
+              if (wt_type == "discovery") "HARD mandate only (SOFT 면제, breadth 허용)" else "HARD + SOFT (25종/20%%/15bps 전부 강제)"))
   cat(sprintf("  Current phase: SPEC_APPROVED (Alpha Agent 대기)\n"))
 
   invisible(task_id)

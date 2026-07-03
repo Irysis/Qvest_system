@@ -292,7 +292,13 @@ dart_fetch_all <- function(years = 2018:2025,
       if (!is.null(existing)) {
         batch <- rbindlist(list(existing, batch), fill = TRUE)
       }
-      write_parquet(batch, DART_RAW_CACHE)
+      # [fix 2026-06-17] Windows arrow mmap(error 1224) — existing이 DART_RAW_CACHE를
+      # mmap한 채라 동일 경로 write_parquet halt 회피, temp-rename. (existing은 이후
+      # checkpoint·최종저장에 반복 참조되므로 rm 불가 — rename으로 inode 교체)
+      .dart_tmp <- paste0(DART_RAW_CACHE, ".tmp")
+      write_parquet(batch, .dart_tmp)
+      if (file.exists(DART_RAW_CACHE)) file.remove(DART_RAW_CACHE)
+      file.rename(.dart_tmp, DART_RAW_CACHE)
     }
 
     # Rate limit (DART: ~100/min → 0.7초 간격)
@@ -305,7 +311,12 @@ dart_fetch_all <- function(years = 2018:2025,
     if (!is.null(existing)) {
       all_data <- rbindlist(list(existing, all_data), fill = TRUE)
     }
-    write_parquet(all_data, DART_RAW_CACHE)
+    # [fix 2026-06-17] Windows arrow mmap(error 1224) — existing이 DART_RAW_CACHE를 mmap한
+    # 채라 동일 경로 write_parquet halt 회피, temp-rename (checkpoint와 동일).
+    .dart_tmp <- paste0(DART_RAW_CACHE, ".tmp")
+    write_parquet(all_data, .dart_tmp)
+    if (file.exists(DART_RAW_CACHE)) file.remove(DART_RAW_CACHE)
+    file.rename(.dart_tmp, DART_RAW_CACHE)
     cat(sprintf("\n[dart] DONE. Total records: %d | Success: %d | Empty: %d | Fail: %d\n",
                 nrow(all_data), n_success, n_empty, n_fail))
     cat(sprintf("[dart] Saved to: %s\n", DART_RAW_CACHE))

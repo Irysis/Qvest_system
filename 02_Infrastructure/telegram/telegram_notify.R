@@ -23,6 +23,27 @@
 suppressPackageStartupMessages(library(httr))
 suppressPackageStartupMessages(library(jsonlite))
 
+# ─── UTF-8 locale 가드 (이모지/한글 보존, 2026-06-25) ─────────────────────────
+# 근본원인: 스케줄러(Task Scheduler)가 LC_ALL/LANG=C(또는 C.UTF-8→Windows 미지원→C 폴백)로
+#   Rscript 를 띄우면, 본문 이모지(byte 리터럴 "\xf0\x9f...")가 jsonlite(httr encode="json")
+#   직렬화에서 바이트별 Latin 오해석되어 파괴된다(실측: C locale toJSON("📊")→"p\n").
+#   또한 tg_send_rich 의 [가-힣] PCRE gsub 가 C locale 에서 컴파일 실패한다([[project-telegram-locale-pcre-korean]]).
+# 수리: 모듈 로드 시 LC_CTYPE 를 UTF-8 locale 로 강제(세션 지속). 이미 UTF-8 이면 no-op.
+.tg_ensure_utf8_ctype <- function() {
+  if (grepl("utf-?8", Sys.getlocale("LC_CTYPE"), ignore.case = TRUE)) return(invisible(TRUE))
+  for (loc in c("English_United States.utf8", "Korean_Korea.utf8",
+                "English_United States.1252", "C.UTF-8", "en_US.UTF-8")) {
+    r <- suppressWarnings(tryCatch(Sys.setlocale("LC_CTYPE", loc), error = function(e) ""))
+    if (nzchar(r)) {
+      cat(sprintf("[telegram_notify] LC_CTYPE 강제 → %s (이모지/한글 보존)\n", r))
+      return(invisible(TRUE))
+    }
+  }
+  cat("[telegram_notify] WARN UTF-8 locale 설정 실패 — 이모지 깨질 수 있음\n")
+  invisible(FALSE)
+}
+.tg_ensure_utf8_ctype()
+
 # ─── Credentials (.env 로드, hardcoded 금지 — 2026-04-17 rotation) ───────────
 .tg_load_env <- function() {
   candidates <- c(
@@ -194,8 +215,82 @@ if (!nzchar(.TG_TOKEN) || !nzchar(.TG_CHAT_ID)) {
 }
 
 # ─── Core send function ───────────────────────────────────────────────────────
+.tg_serial_enabled <- function() {
+  tolower(Sys.getenv("QVEST_TG_SERIAL_LOCK", "true")) %in% c("1", "true", "yes")
+}
+
+.tg_lock_held <- function() identical(Sys.getenv("QVEST_TG_LOCK_HELD", ""), "1")
+
+.tg_lock_root <- function() {
+  root <- if (exists("PROJECT_ROOT")) get("PROJECT_ROOT") else Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", ""))
+  if (nzchar(root) && dir.exists(root)) normalizePath(root, winslash = "/", mustWork = FALSE) else tempdir()
+}
+
+tg_with_serial_lock <- function(scope = "telegram_global", expr,
+                                timeout_sec = 900,
+                                stale_sec = 1800,
+                                owner = NULL) {
+  expr <- substitute(expr)
+  env <- parent.frame()
+  if (!.tg_serial_enabled() || .tg_lock_held()) return(eval(expr, env))
+
+  lock_root <- file.path(.tg_lock_root(), "stage_artifacts", "telegram_locks")
+  lock_dir <- file.path(lock_root, "global_send.lock")
+  dir.create(lock_root, recursive = TRUE, showWarnings = FALSE)
+
+  started <- Sys.time()
+  acquired <- FALSE
+  repeat {
+    acquired <- dir.create(lock_dir, showWarnings = FALSE)
+    if (isTRUE(acquired)) {
+      meta <- c(
+        sprintf("scope=%s", scope %||% "telegram_global"),
+        sprintf("owner=%s", owner %||% "unknown"),
+        sprintf("pid=%s", Sys.getpid()),
+        sprintf("started=%s", format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"))
+      )
+      try(writeLines(meta, file.path(lock_dir, "owner.txt")), silent = TRUE)
+      break
+    }
+
+    info <- suppressWarnings(file.info(lock_dir))
+    if (nrow(info) == 1L && !is.na(info$mtime)) {
+      age <- as.numeric(difftime(Sys.time(), info$mtime, units = "secs"))
+      if (is.finite(age) && age > stale_sec) {
+        cat(sprintf("[tg_serial_lock] stale lock removed (age %.0fs)\n", age))
+        unlink(lock_dir, recursive = TRUE, force = TRUE)
+        next
+      }
+    }
+
+    waited <- as.numeric(difftime(Sys.time(), started, units = "secs"))
+    if (is.finite(waited) && waited > timeout_sec) {
+      cat(sprintf("[tg_serial_lock] timeout after %.0fs — sending without serial lock\n", waited))
+      return(eval(expr, env))
+    }
+    Sys.sleep(runif(1L, 0.4, 1.2))
+  }
+
+  old_held <- Sys.getenv("QVEST_TG_LOCK_HELD", unset = NA_character_)
+  Sys.setenv(QVEST_TG_LOCK_HELD = "1")
+  on.exit({
+    if (is.na(old_held)) Sys.unsetenv("QVEST_TG_LOCK_HELD") else Sys.setenv(QVEST_TG_LOCK_HELD = old_held)
+    if (isTRUE(acquired)) unlink(lock_dir, recursive = TRUE, force = TRUE)
+  }, add = TRUE)
+  eval(expr, env)
+}
+
 tg_send <- function(msg, parse_mode = "", silent = FALSE,
                      validate_emoji = TRUE, emoji_min = 1L) {
+  .tg_ensure_utf8_ctype()  # 발송 직전 재보증 (중간 locale 리셋 방어; UTF-8이면 no-op)
+  if (.tg_serial_enabled() && !.tg_lock_held()) {
+    return(tg_with_serial_lock(
+      scope = "tg_send",
+      owner = substr(gsub("\\s+", " ", as.character(msg %||% "")), 1L, 80L),
+      tg_send(msg, parse_mode = parse_mode, silent = silent,
+              validate_emoji = validate_emoji, emoji_min = emoji_min)
+    ))
+  }
   # 2026-04-23: 기본 parse_mode "" (plain). HTML은 <, > 기호로 parse error 유발.
   # 2026-04-24: validate_emoji — 이모지 0개 감지 시 warning log (Judge/Risk 누락 방지)
   if (validate_emoji) {
@@ -852,7 +947,34 @@ tg_agent_brief <- function(agent,
                              # ─── v6 SOT (2026-05-07) — SKILL.md §5/§6 동기화 ───
                              decode_jargon = TRUE,
                              decode_mode = "inline_first",  # inline_first / footer / off
-                             smart_break = TRUE) {
+                             smart_break = TRUE,
+                             # 페이퍼 적재 브리핑 전용 요건 완화 (도훈 mandate 2026-06-18):
+                             #   bullet 길이(BULLET_ITEM_MAX)·영어 약어 가드·kv 값 길이·kv 영어비율 면제
+                             #   (영어 논문 제목 등 고유 콘텐츠 허용). 기본 FALSE = 기존 한글 규율·길이 제한 유지
+                             #   (타 에이전트 영향 0). 구조 안전망(4096 byte 가드·skeleton 가드)은 relaxed여도 유지.
+                             relaxed = FALSE) {
+  if (!isTRUE(dry_run) && .tg_serial_enabled() && !.tg_lock_held()) {
+    return(tg_with_serial_lock(
+      scope = sprintf("tg_agent_brief_%s", agent),
+      owner = sprintf("%s · %s", agent, substr(title, 1L, 80L)),
+      tg_agent_brief(
+        agent = agent,
+        title = title,
+        sections = sections,
+        as_of = as_of,
+        charts = charts,
+        footer = footer,
+        emoji_min = emoji_min,
+        dry_run = dry_run,
+        force = force,
+        lock_scope = lock_scope,
+        decode_jargon = decode_jargon,
+        decode_mode = decode_mode,
+        smart_break = smart_break,
+        relaxed = relaxed
+      )
+    ))
+  }
 
   # ── 0. Single-Dispatch lock (2026-04-24 v2, 물리적 강제) ─────────────────────
   # 같은 agent + title prefix 중복 호출 차단. Forge 2번 발송 사례 방지.
@@ -995,35 +1117,39 @@ tg_agent_brief <- function(agent,
                         heading, .TG_CONFIG$BULLET_MIN, length(items)))
         }
         item_chars <- as.character(items)
-        # v6.1 SOT — BULLET_ITEM_MAX 강제 (모바일 한 줄)
-        too_long <- which(nchar(item_chars) > .TG_CONFIG$BULLET_ITEM_MAX)
-        if (length(too_long) > 0) {
-          stop(sprintf("[tg_agent_brief] 'bullet' section heading='%s' items %s > %d 자 max. 분할 또는 축약 의무.",
-                        heading, paste(too_long, collapse=","), .TG_CONFIG$BULLET_ITEM_MAX))
+        # relaxed=TRUE (페이퍼 적재 브리핑) → bullet 길이·영어약어 가드 면제 (영어 논문 제목 허용).
+        if (!isTRUE(relaxed)) {
+          # v6.1 SOT — BULLET_ITEM_MAX 강제 (모바일 한 줄)
+          too_long <- which(nchar(item_chars) > .TG_CONFIG$BULLET_ITEM_MAX)
+          if (length(too_long) > 0) {
+            stop(sprintf("[tg_agent_brief] 'bullet' section heading='%s' items %s > %d 자 max. 분할 또는 축약 의무.",
+                          heading, paste(too_long, collapse=","), .TG_CONFIG$BULLET_ITEM_MAX))
+          }
+          # v6.3 SOT — bullet 안 영어 약어 라벨 금지 (예: AX-007, RF-A3, STR_055, C13)
+          # v6.5 (2026-05-15) — 통상 영어 표기 OK
+          # v6.6 (2026-05-27) — 도훈 mandate: quant 고유명사 whitelist 확장 (.QUANT_WHITELIST)
+          abbrev_pattern <- "\\b[A-Z]{2,5}[-_]?[A-Z0-9]{1,5}\\b"
+          exempt_pattern <- paste0(
+            "WT[-_][DPSH]?[0-9_]{4,15}|WT_[0-9]+",
+            # 학술 저자-연도 (e.g., "Asness 2013", "Frazzini-Pedersen 2014")
+            "|[A-Z][a-z]{2,}(?:[- ][A-Z][a-z]+)*\\s+(?:19|20)[0-9]{2}",
+            # Quant 고유명사 whitelist (v6.6)
+            "|", .QUANT_WHITELIST_PATTERN
+          )
+          bad_idx <- which(vapply(item_chars, function(it) {
+            # 1) 면제 패턴 먼저 마스킹
+            masked <- gsub(exempt_pattern, "_EXEMPT_", it, perl = TRUE)
+            # 2) 잔여에서 약어 검사
+            matches <- regmatches(masked, gregexpr(abbrev_pattern, masked))[[1]]
+            length(matches) >= 2
+          }, logical(1)))
+          if (length(bad_idx) > 0) {
+            stop(sprintf("[tg_agent_brief] 'bullet' section heading='%s' items %s 영어 약어 ≥2건 (예: AX-/RF-/STR_/C13). v6.3 SOT: 한글 풀어 쓰기 의무. 학술 인용/WT 식별자/agent name 면제.",
+                          heading, paste(bad_idx, collapse=",")))
+          }
         }
-        # v6.3 SOT — bullet 안 영어 약어 라벨 금지 (예: AX-007, RF-A3, STR_055, C13)
-        # v6.5 (2026-05-15) — 통상 영어 표기 OK
-        # v6.6 (2026-05-27) — 도훈 mandate: quant 고유명사 whitelist 확장 (.QUANT_WHITELIST)
-        abbrev_pattern <- "\\b[A-Z]{2,5}[-_]?[A-Z0-9]{1,5}\\b"
-        exempt_pattern <- paste0(
-          "WT[-_][DPSH]?[0-9_]{4,15}|WT_[0-9]+",
-          # 학술 저자-연도 (e.g., "Asness 2013", "Frazzini-Pedersen 2014")
-          "|[A-Z][a-z]{2,}(?:[- ][A-Z][a-z]+)*\\s+(?:19|20)[0-9]{2}",
-          # Quant 고유명사 whitelist (v6.6)
-          "|", .QUANT_WHITELIST_PATTERN
-        )
-        bad_idx <- which(vapply(item_chars, function(it) {
-          # 1) 면제 패턴 먼저 마스킹
-          masked <- gsub(exempt_pattern, "_EXEMPT_", it, perl = TRUE)
-          # 2) 잔여에서 약어 검사
-          matches <- regmatches(masked, gregexpr(abbrev_pattern, masked))[[1]]
-          length(matches) >= 2
-        }, logical(1)))
-        if (length(bad_idx) > 0) {
-          stop(sprintf("[tg_agent_brief] 'bullet' section heading='%s' items %s 영어 약어 ≥2건 (예: AX-/RF-/STR_/C13). v6.3 SOT: 한글 풀어 쓰기 의무. 학술 인용/WT 식별자/agent name 면제.",
-                        heading, paste(bad_idx, collapse=",")))
-        }
-        paste0("  • ", tg_html_escape(item_chars), collapse = "\n")
+        # relaxed(페이퍼 적재 브리핑) → 항목 사이 빈 줄 삽입(긴 영어 제목 모바일 가독, 도훈 2026-06-18). 일반은 단일 줄바꿈.
+        paste0("  • ", tg_html_escape(item_chars), collapse = if (isTRUE(relaxed)) "\n\n" else "\n")
       },
       "kv" = {
         kv <- s$kv
@@ -1035,31 +1161,34 @@ tg_agent_brief <- function(agent,
           stop(sprintf("[tg_agent_brief] 'kv' section heading='%s' requires length(kv) >= %d (got %d).",
                         heading, .TG_CONFIG$KV_MIN, length(kv)))
         }
-        # v6.1 SOT — KV_VALUE_MAX 강제
         kv_vals <- vapply(kv, as.character, character(1))
-        too_long <- which(nchar(kv_vals) > .TG_CONFIG$KV_VALUE_MAX)
-        if (length(too_long) > 0) {
-          stop(sprintf("[tg_agent_brief] 'kv' section heading='%s' values %s > %d 자 max. 축약 의무.",
-                        heading, paste(names(kv)[too_long], collapse=","), .TG_CONFIG$KV_VALUE_MAX))
-        }
-        # v6.3 SOT (2026-05-08) — kv key 한글 비율 강제
-        # v6.5 (2026-05-15) — 통상 quant 용어 면제
-        # v6.6 (2026-05-27) — 도훈 mandate: quant 고유명사 whitelist 확장 (.QUANT_WHITELIST)
-        kv_keys <- names(kv)
-        academic_cite_pattern <- "[A-Z][a-z]{2,}(?:[- ][A-Z][a-z]+)*\\s+(?:19|20)[0-9]{2}"
-        ascii_heavy <- vapply(kv_keys, function(k) {
-          # 학술 인용 + quant whitelist 매칭 시 마스킹 후 비율 측정
-          masked <- gsub(academic_cite_pattern, "", k, perl = TRUE)
-          masked <- gsub(.QUANT_WHITELIST_PATTERN, "", masked, perl = TRUE)
-          n_total <- nchar(masked)
-          n_ascii_alpha <- length(regmatches(masked, gregexpr("[A-Za-z]", masked))[[1]])
-          if (n_total == 0) return(FALSE)
-          # v6.6 (2026-05-27) — 도훈 mandate: 임계 0.4 → 0.6 완화 (고유명사 OK)
-          (n_ascii_alpha / n_total) > 0.6
-        }, logical(1))
-        if (any(ascii_heavy)) {
-          stop(sprintf("[tg_agent_brief] 'kv' section heading='%s' keys %s 영어 비율 > 40%%. v6.3 SOT: 한글 정통 용어 의무 (예: '샤프지수' / '정보계수' / '회전율'). 학술 인용 (Asness 2013 / Frazzini-Pedersen 2014)은 면제.",
-                        heading, paste(kv_keys[ascii_heavy], collapse=" / ")))
+        # relaxed=TRUE (페이퍼 적재 브리핑) → kv 값 길이·키 영어비율 가드 면제.
+        if (!isTRUE(relaxed)) {
+          # v6.1 SOT — KV_VALUE_MAX 강제
+          too_long <- which(nchar(kv_vals) > .TG_CONFIG$KV_VALUE_MAX)
+          if (length(too_long) > 0) {
+            stop(sprintf("[tg_agent_brief] 'kv' section heading='%s' values %s > %d 자 max. 축약 의무.",
+                          heading, paste(names(kv)[too_long], collapse=","), .TG_CONFIG$KV_VALUE_MAX))
+          }
+          # v6.3 SOT (2026-05-08) — kv key 한글 비율 강제
+          # v6.5 (2026-05-15) — 통상 quant 용어 면제
+          # v6.6 (2026-05-27) — 도훈 mandate: quant 고유명사 whitelist 확장 (.QUANT_WHITELIST)
+          kv_keys <- names(kv)
+          academic_cite_pattern <- "[A-Z][a-z]{2,}(?:[- ][A-Z][a-z]+)*\\s+(?:19|20)[0-9]{2}"
+          ascii_heavy <- vapply(kv_keys, function(k) {
+            # 학술 인용 + quant whitelist 매칭 시 마스킹 후 비율 측정
+            masked <- gsub(academic_cite_pattern, "", k, perl = TRUE)
+            masked <- gsub(.QUANT_WHITELIST_PATTERN, "", masked, perl = TRUE)
+            n_total <- nchar(masked)
+            n_ascii_alpha <- length(regmatches(masked, gregexpr("[A-Za-z]", masked))[[1]])
+            if (n_total == 0) return(FALSE)
+            # v6.6 (2026-05-27) — 도훈 mandate: 임계 0.4 → 0.6 완화 (고유명사 OK)
+            (n_ascii_alpha / n_total) > 0.6
+          }, logical(1))
+          if (any(ascii_heavy)) {
+            stop(sprintf("[tg_agent_brief] 'kv' section heading='%s' keys %s 영어 비율 > 40%%. v6.3 SOT: 한글 정통 용어 의무 (예: '샤프지수' / '정보계수' / '회전율'). 학술 인용 (Asness 2013 / Frazzini-Pedersen 2014)은 면제.",
+                          heading, paste(kv_keys[ascii_heavy], collapse=" / ")))
+          }
         }
         kv_lines <- vapply(seq_along(kv), function(i) {
           sprintf("  • <b>%s</b>: %s",
@@ -1197,6 +1326,13 @@ tg_agent_brief <- function(agent,
 
 # ─── Photo / Document send ────────────────────────────────────────────────────
 tg_send_photo <- function(image_path, caption = "", parse_mode = "") {
+  if (.tg_serial_enabled() && !.tg_lock_held()) {
+    return(tg_with_serial_lock(
+      scope = "tg_send_photo",
+      owner = sprintf("photo:%s", basename(image_path %||% "")),
+      tg_send_photo(image_path, caption = caption, parse_mode = parse_mode)
+    ))
+  }
   if (!file.exists(image_path)) {
     cat(sprintf("[tg] Photo not found: %s\n", image_path))
     return(invisible(NULL))
@@ -1220,6 +1356,13 @@ tg_send_photo <- function(image_path, caption = "", parse_mode = "") {
 }
 
 tg_send_document <- function(file_path, caption = "") {
+  if (.tg_serial_enabled() && !.tg_lock_held()) {
+    return(tg_with_serial_lock(
+      scope = "tg_send_document",
+      owner = sprintf("document:%s", basename(file_path %||% "")),
+      tg_send_document(file_path, caption = caption)
+    ))
+  }
   if (!file.exists(file_path)) return(invisible(NULL))
   tryCatch({
     resp <- POST(

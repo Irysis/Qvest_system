@@ -44,7 +44,10 @@ local({
 canonical_screen_bt <- function(scores_dt, returns_dt, bench_dt,
                                  top_n = 20L, cost_bps_oneway = 15,
                                  liq_dt = NULL, liq_min = 2e8,
-                                 run_id = "canonical_screen", strategy_id = "canonical_screen") {
+                                 run_id = "canonical_screen", strategy_id = "canonical_screen",
+                                 periods_per_year = 12L) {
+  # periods_per_year: 리밸/마킹 빈도 (월간=12 기본. 분기 리밸·분기수익 측정=4).
+  #   3개월-horizon 신호를 분기 리밸 sleeve로 운용 시 4가 자연 cadence — 월간 마킹 강제 아님.
   stopifnot(all(c("Date","Ticker","score") %in% names(scores_dt)))
   stopifnot(all(c("Date","Ticker","Ret_1m") %in% names(returns_dt)))
   stopifnot(all(c("Date","BM_Ret") %in% names(bench_dt)))
@@ -99,14 +102,14 @@ canonical_screen_bt <- function(scores_dt, returns_dt, bench_dt,
   # contract-grade: build_benchmark_compare (= forge와 동일 함수, NW t 포함)
   bc <- build_benchmark_compare(period_returns_tbl, benchmark_returns_tbl,
                                  run_id = run_id, strategy_id = strategy_id,
-                                 annualization_factor = 12)
+                                 annualization_factor = periods_per_year)
   getbc <- function(nm) {
     v <- bc[metric_name == nm, active_value]
     if (length(v) == 0) NA_real_ else as.numeric(v[1])
   }
   active <- pr$ret_net - pr$benchmark_ret
-  net_sr <- mean(active) / stats::sd(active) * sqrt(12)
-  turnover_annual <- mean(port$traded, na.rm = TRUE) * 12
+  net_sr <- mean(active) / stats::sd(active) * sqrt(periods_per_year)
+  turnover_annual <- mean(port$traded, na.rm = TRUE) * periods_per_year
 
   list(
     metric_type = "canonical_screen",
@@ -120,7 +123,8 @@ canonical_screen_bt <- function(scores_dt, returns_dt, bench_dt,
     net_sr = net_sr,
     mean_active_net = mean(active),
     turnover_annual = turnover_annual,
-    benchmark_compare = bc
+    benchmark_compare = bc,
+    period_returns = pr   # [2026-06-18 additive] 월별 시계열(date·ret_net·benchmark_ret) — 오버레이 등 후처리용
   )
 }
 

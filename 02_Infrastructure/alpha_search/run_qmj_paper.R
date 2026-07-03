@@ -18,7 +18,20 @@
 # =============================================================================
 suppressWarnings(suppressMessages({ library(data.table); library(jsonlite); library(xts); library(PerformanceAnalytics) }))
 
-.AS_INFRA <- file.path(Sys.getenv("CLAUDE_PROJECT_DIR", "G:/Quant_Module_Moltbot"), "02_Infrastructure")
+.AS_ROOT <- local({
+  candidates <- unique(c(Sys.getenv("CLAUDE_PROJECT_DIR", ""), Sys.getenv("QM_ROOT", ""), getwd()))
+  is_root <- function(p) nzchar(p) && dir.exists(p) && file.exists(file.path(p, "02_Infrastructure/config.R"))
+  for (p in candidates) if (is_root(p)) return(normalizePath(p, winslash = "/", mustWork = TRUE))
+  cur <- normalizePath(getwd(), winslash = "/", mustWork = TRUE)
+  repeat {
+    if (is_root(cur)) return(cur)
+    parent <- dirname(cur)
+    if (identical(parent, cur)) break
+    cur <- parent
+  }
+  stop("[run_qmj_paper] project root not found. Set CLAUDE_PROJECT_DIR or QM_ROOT.")
+})
+.AS_INFRA <- file.path(.AS_ROOT, "02_Infrastructure")
 source(file.path(.AS_INFRA, "alpha_search", "run_alpha_search.R"))  # 엔진 + 내부 헬퍼 전부 로드
 
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
@@ -183,13 +196,16 @@ run_qmj_paper <- function(strategy_name = "Quality Minus Junk (AFP 2019)",
 
   # STR_1715 월간 ret_net 상관
   cor_1715 <- NA_real_; n_overlap_1715 <- 0L
-  bt1715 <- file.path(Sys.getenv("CLAUDE_PROJECT_DIR", "G:/Quant_Module_Moltbot"),
+  bt1715 <- file.path(.AS_ROOT,
                       "04_Research", "strategies", "STR_1715_WT016_Iter31_GridBestProd",
                       "output", "bt_result.rds")
   if (file.exists(bt1715)) {
     pr <- as.data.table(readRDS(bt1715)$period_returns)
     if (all(c("date","ret_net") %in% names(pr))) {
-      pr[, ym := format(as.Date(date), "%Y-%m")]
+      # STR_1715 period_returns 라벨 규약: 차월 첫 거래일 = 전월 실현 수익.
+      # m_xts(apply.monthly, 월말 라벨)와 ym merge 시 1개월 당겨 실현 월로 정렬.
+      # 정정(2026-06-13): 본 정렬 수리 이전 산출물의 cor_str1715(~0.05대)는 과소치.
+      pr[, ym := format(as.Date(format(as.Date(date), "%Y-%m-01")) - 1L, "%Y-%m")]
       qm <- data.table(date = index(m_xts), r = as.numeric(coredata(m_xts)))
       qm[, ym := format(date, "%Y-%m")]
       mg <- merge(qm[, .(ym, r_qmj = r)], pr[, .(ym, r_1715 = ret_net)], by = "ym")

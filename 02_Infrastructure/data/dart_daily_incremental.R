@@ -91,7 +91,13 @@ dart_daily_incremental <- function(current_year = as.integer(format(Sys.Date(), 
         merged_dt <- unique(merged_dt, by = key_cols)
       }
 
-      write_parquet(merged_dt, INSIDER_CACHE_PATH)
+      # [fix 2026-06-17] Windows arrow mmap(error 1224) — existing_dt/current_year_dt가
+      # INSIDER_CACHE_PATH를 mmap한 채라 동일 경로 write_parquet halt 회피, temp-rename.
+      # (existing_dt는 아래 로그에 nrow 참조되므로 rm 불가 — rename으로 inode 교체)
+      .ins_tmp <- paste0(INSIDER_CACHE_PATH, ".tmp")
+      write_parquet(merged_dt, .ins_tmp)
+      if (file.exists(INSIDER_CACHE_PATH)) file.remove(INSIDER_CACHE_PATH)
+      file.rename(.ins_tmp, INSIDER_CACHE_PATH)
       cat(sprintf("  Merged saved: %s records (was %s)\n",
                   format(nrow(merged_dt), big.mark=","),
                   format(nrow(existing_dt), big.mark=",")))

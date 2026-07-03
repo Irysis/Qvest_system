@@ -1,0 +1,15 @@
+# [2/5-b] KTRI v3 signal rebuild + ktri_indices update (morning_briefing 외부화 2026-06-13)
+# 정식 builder: 02_Infrastructure/regime/ktri_v3_builder.R::build_ktri_v3_safe()
+# 출력: 04_Research/regime_comparison/output/ktri_v3_signals.csv (regime_signal L3 source)
+source("02_Infrastructure/ops/morning_steps/_root.R")
+source("02_Infrastructure/regime/ktri_v3_builder.R")
+tryCatch({
+  out_path <- build_ktri_v3_safe()
+  cat(sprintf("KTRI v3 signals regenerated: %s\n", out_path))
+}, error = function(e) cat(sprintf("KTRI v3 build FAILED: %s\n", e$message)))
+# ktri_indices.parquet 자동 update (KRX API 07:10 시점 가용; daily_refresh 03:00 미가용 fallback)
+source("02_Infrastructure/data/ktri_index_collector.R")
+tryCatch({
+  ktri_update_indices()
+  cat("ktri_indices.parquet updated\n")
+}, error = function(e) cat(sprintf("ktri_update_indices FAILED: %s\n", e$message)))

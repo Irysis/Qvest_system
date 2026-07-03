@@ -1,10 +1,10 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "qvest-v6.4/artifact_contract.json",
-  "title": "Qvest v6.4 WorkTask Artifact Contract",
+  "$id": "qvest-v8.1/artifact_contract.json",
+  "title": "Qvest v8.1 WorkTask Artifact Contract",
   "version": "1.0",
   "issued_at": "2026-05-01T15:00:00+0900",
-  "issued_by": "Q-Lead Session 75 v6.4 Sprint 1 Phase 3",
+  "issued_by": "Q-Lead Session 75 v6.4 Sprint 1 Phase 3; v8.1 absorbed 2026-06-12",
   "description": "WT artifact 위치 + 파일명 단일 contract. hook/agent/schema/docs가 동일 path/name 참조. Phase 4 hook router policy + Phase 7 cert rules R가 본 contract 자동 import.",
 
   "canonical_paths": {
@@ -96,19 +96,18 @@
     }
   },
 
-  "codex_critic_round_files": {
-    "response_pattern": "codex_critic_response_{role}.json",
-    "response_path": "qepm/mailbox/worktask/{WT_ID}/codex_critic_response_{role}.json",
+  "self_adversarial_files": {
+    "v8_2_note": "v8.2 (2026): 외부 Codex Critic Round 제거. 메인 에이전트(Opus 4.8)가 각 role 산출 시 자체 적대검증(Self-Adversarial Challenge)을 수행하고 그 기록을 challenge_note.md에 남긴다. 구 codex_critic_response_{role}.json artifact는 폐지 (생성 안 함).",
     "roles": ["alpha", "risk", "optimizer", "forge", "judge", "governor"],
     "challenge_note": {
       "canonical_name": "challenge_note.md",
       "path": "qepm/mailbox/worktask/{WT_ID}/challenge_note.md",
-      "purpose": "All role challenge_note 통합 단일 파일 OR role-specific challenge_note_{role}.md (Phase 6 결정 권장)",
+      "purpose": "Self-adversarial challenge record — 각 role 산출 시 메인 에이전트가 수행한 자체 적대검증 결과 통합 단일 파일 OR role-specific challenge_note_{role}.md",
       "drift_alternates_existing": [
         "risk_challenge_note.md (WT-D20260501_003 사례)",
         "optimizer_challenge_note.md (WT-D20260501_001 사례)"
       ],
-      "drift_resolution_phase_6": "Phase 6 Codex Round v6.4 lifecycle 정합 시 role-specific {role}_challenge_note.md → canonical challenge_note.md 집계 결정"
+      "drift_resolution": "role-specific {role}_challenge_note.md → canonical challenge_note.md 집계 권장 (역사적 drift, 신규 WT는 canonical 사용)"
     }
   },
 
@@ -247,7 +246,7 @@
       "optimization_package_draft.json vs optimizer_package_draft.json — canonical: optimization_package",
       "judge_package.json vs judge_verdict.json — canonical: judge_verdict",
       "governor_package.json vs governor_admission.json — canonical: governor_admission",
-      "challenge_note.md vs role_challenge_note.md (예: risk_challenge_note.md) — Phase 6에서 결정"
+      "challenge_note.md vs role_challenge_note.md (예: risk_challenge_note.md) — canonical: challenge_note.md (self-adversarial record)"
     ],
     "scan_command": "grep -rE 'optimizer_package|judge_package|governor_package' .claude/agents/ 02_Infrastructure/hooks/ 02_Infrastructure/prompts/"
   }

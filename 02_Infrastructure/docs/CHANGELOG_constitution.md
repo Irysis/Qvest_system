@@ -7,6 +7,7 @@
 
 | Release | 일자 | 핵심 |
 |---|---|---|
+| ✅ **v8.2** | 2026-06-30 | Codex Critic Round 제거 — Opus 4.8 자체 적대검증(self-adversarial challenge)으로 중복, AX-008 Codex→Self-Adversarial 치환(3-source 2/3 불변). QEPM 5단계 draft→codex→challenge_note→final → in-agent self-adversarial. 자산 archive(`_archive_codex_round_v8_2/`) + `qvest-codex-round` skill DELETED. S0 Debate codex·RAMP Codex·codex CLI 플러그인은 별개 유지. |
 | ✅ **v8.1.1** | 2026-06-10 | 완벽 수리 + P2 구조 개편. OneDrive canonical 단일화(도훈 mandate) · hook 47/47 부활 · Python/arrow/codex 체인 복구 · env 3중 안전망(QM_ROOT/QVEST_PY/.Renviron) · 헌법모순 일소(max25/TO11 전 계층) · 게이트 2계층(screening tier 신설) · rules autoload 16→6 다이어트 · axiom harvest 백필(corpus 95). |
 | ✅ **v8.1.0** | 2026-06-05 | 3-Mode 헌법(각자 평가·자가발전) + 실측-only 거버넌스 + register_module 자동흐름 + Axiom r7 복원. |
 | ✅ **v8.0.0** | 2026-05-29 | R+Python 1급 · SR 2.5 · measurement-graduation(WS1/2/3) · agent effort · Dynamic Workflow. |
@@ -26,6 +27,7 @@
 
 ## 변경 이력 (상세)
 
+- **v8.2** — 2026-06-30 — Codex Critic Round 제거 (도훈 mandate). QEPM 파이프라인 외부 Codex 적대검증을 폐지하고 메인 에이전트 Opus 4.8 자체 적대검증(self-adversarial challenge)으로 통합 — 중복 제거. AX-008 Verification Triangulation의 source를 `Forge + Codex + Architect` → `Forge + Self-Adversarial + Architect`로 치환(3-source 중 2/3 PASS 불변). 연계: settings.json 훅 3개 등록 제거 · state_transitions.json `codex_critic_response` required 제거 · 6 agent 정의 self-adversarial 전환 · `qvest-codex-round` skill DELETED · 스크립트/프롬프트 archive(`02_Infrastructure/hooks/_archive_codex_round_v8_2/` · `02_Infrastructure/prompts/_archive_codex_round_v8_2/`) · `codex-round.md` = DEPRECATED 스텁. **유지(별개 시스템)**: S0 Debate codex · RAMP "Codex"(역할명) · enabledPlugins `codex@openai-codex`(S0/RAMP codex CLI). inventory SOT: `00_Lawbook/DEPRECATION.md`.
 - **v8.1.1** — 2026-06-10 — 완벽 수리(아키텍처 전수 감사 → hook 전멸·메모리 단절·인터프리터 전멸 복구) + P2 구조 개편(게이트 2계층 / rules 다이어트 / 측정 사다리 / axiom 3축 충전 / MCP 재구축). 커밋 95ad9513 · 93da0bbf 외.
 - **v8.1.0** — 2026-06-05 — 3-Mode 헌법 승격 + alpha-search 표준(논문 완전 복제·K200∪KQ150·2005~) + bootstrap 패치.
 - **v8.0.0** — 2026-05-29 — Axiom 엔진 리뉴얼(r7 복원) + 측정 무결성 + Graduation 허들 재설계.

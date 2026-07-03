@@ -93,7 +93,7 @@ elif "judge_lockbox_audit" in fp_lower:
     pkg_type = "judge_lockbox_audit"
 elif "judge_verdict" in fp_lower or "gate_results" in pkg or "verdict" in pkg and "gate" in str(pkg):
     required = ["task_id", "verdict"]
-    optional_v62 = ["gate_results", "lockbox_audit_ref", "codex_round_response_ref", "role_honesty_audit"]
+    optional_v62 = ["gate_results", "lockbox_audit_ref", "role_honesty_audit"]
     pkg_type = "judge_verdict"
 elif "governor_admission" in fp_lower or "scenario_identified" in pkg:
     required = ["task_id", "verdict"]
