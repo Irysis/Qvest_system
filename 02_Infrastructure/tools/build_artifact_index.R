@@ -300,6 +300,11 @@ if (!is.null(descs)) {
                      "(daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀."),
               format(Sys.time(), "%Y-%m-%d %H:%M"), registry_zone), "")
 
+    # (2026-07-04) stale 필터: 디스크 실존 파일 0건인 큐레이션 키는 표에서 제외
+    # (삭제된 항목의 잔상이 INDEX에 남는 것 방지) — 키 정리를 위해 말미에 목록만.
+    stale <- Filter(function(it) it$n_files == 0, items)
+    items <- Filter(function(it) it$n_files > 0, items)
+
     live <- Filter(function(it) it$status != "dead", items)
     dead <- Filter(function(it) it$status == "dead", items)
     for (ct in unique(vapply(live, `[[`, "", "category"))) {
@@ -328,6 +333,11 @@ if (!is.null(descs)) {
                   if (n && is.finite(mx)) fmt_date(mx) else "-",
                   if (n) fmt_size(wd$size[mask]) else "0B")
         }, ""), "")
+    }
+    if (length(stale)) {
+      lines <- c(lines,
+        sprintf("## stale 큐레이션 키 (%d) — 디스크 부재, index_descriptions.json에서 제거 권장", length(stale)), "",
+        vapply(stale, function(it) sprintf("- `%s`", md_esc(it$disp)), ""), "")
     }
     p <- file.path(zp, "INDEX.md")
     con <- file(p, open = "w", encoding = "UTF-8")
@@ -404,7 +414,7 @@ lines <- c(
   zone_row(z_stage,    "실험 런 원본 (WT·legacy S0~S7·L-code·agent 산출)", "`reports/` + 최근 WT 디렉토리"),
   zone_row(z_outputs,  "파이프라인 canonical 데이터 (최신본)",              "`outputs/ramp/` (RAMP 순수팩터·팩터군 parquet)"),
   zone_row(z_registry, "기계가독 상태·큐·인덱스 (JSON)",                    "`module_catalog.json` / `hypothesis_index.json`"),
-  zone_row(z_research, "사람용 리서치 보고서·분석 (토픽별)",                "`architecture_audit_*` / `pg2_forensics/`"),
+  zone_row(z_research, "사람용 리서치 보고서·분석 (토픽별)",                "`01_reports/` / `pg2_forensics/`"),
   if (!is.null(z_wt)) sprintf("| `qepm/mailbox/worktask/` | QEPM WT 핸드오프 mailbox (불변 기록) | %d WT | - | %s (`%s`) | 최근 WT의 `output/` |",
                               z_wt$n_worktasks, z_wt$latest[[1]]$mtime, z_wt$latest[[1]]$name),
   "",
@@ -421,7 +431,7 @@ lines <- c(
   "## 자주 찾는 것",
   "",
   "- **현 book 성과 (noLayer4 PG2)** → `qepm/mailbox/worktask/WT-D20260702_002/output/`",
-  "- **감사 보고서** → `04_Research/architecture_audit_*`",
+  "- **감사 보고서** → `04_Research/01_reports/architecture_audit_*`",
   sprintf("- **가설 이력** → `%s/hypothesis_index.json`", registry_zone),
   sprintf("- **모듈 풀** → `%s/module_catalog.json` (격리분 `module_quarantine.json`)", registry_zone),
   "- **RAMP canonical** → `outputs/ramp/`",

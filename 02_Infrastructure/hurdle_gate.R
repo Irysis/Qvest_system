@@ -318,16 +318,29 @@ run_hurdle_gate <- function(sim_result,
 
   # --- D000: PIT Enforcement — factor signals must precede execution ---
   if (!is.null(FACTORS) && nrow(PLOG) > 0) {
-    factor_dates <- sort(unique(FACTORS$Date))
-    exec_dates   <- sort(unique(PLOG$Exec_Date))
-    # Each factor date should be < its corresponding exec date
-    n_pit_violations <- 0L
-    for (fd in factor_dates) {
-      # Exec date = next month's first trading day
-      matched_exec <- exec_dates[exec_dates > fd]
-      if (length(matched_exec) > 0 && min(matched_exec) < fd) {
-        n_pit_violations <- n_pit_violations + 1L
+    # (v8.2.1 2026-07-04 수리) 구 로직은 exec_dates[exec_dates > fd] 필터 후 min(.) < fd
+    # 비교여서 위반 카운트가 구조적으로 0 (회귀 스위트 H6가 노출한 결함 — look-ahead가
+    # 스크리닝을 통과). PLOG 행 단위 Signal_Date/Exec_Date 직접 대조로 교체:
+    # 집행일이 신호일과 같거나 앞서면 위반 (C2 same-day / C5 t-1 lag 규약).
+    if (all(c("Signal_Date", "Exec_Date") %in% names(PLOG))) {
+      # (1) 행 단위: 집행이 신호와 같은 날이거나 앞서면 위반 (C2 same-day / C5 t-1)
+      n_pit_violations <- sum(as.Date(PLOG$Exec_Date) <= as.Date(PLOG$Signal_Date),
+                              na.rm = TRUE)
+      # (2) 팩터 시점축: k번째 팩터 스냅샷 날짜가 k번째 집행일과 같거나 이후면
+      #     집행에 미래 데이터 사용 (월간 리밸 순서 정렬 대응 — H6 픽스처 계열)
+      fdx   <- sort(unique(as.Date(FACTORS$Date)))
+      exe_v <- sort(as.Date(PLOG$Exec_Date))
+      m <- min(length(fdx), length(exe_v))
+      if (m > 0) {
+        n_pit_violations <- n_pit_violations +
+          sum(fdx[seq_len(m)] >= exe_v[seq_len(m)], na.rm = TRUE)
       }
+    } else {
+      n_pit_violations <- 0L
+      diagnostics <- c(diagnostics, list(list(
+        code = "D000a",
+        msg  = "PIT check SKIP — PLOG lacks Signal_Date/Exec_Date columns (판정 불가)"
+      )))
     }
     if (n_pit_violations > 0) {
       hard_fail <- TRUE

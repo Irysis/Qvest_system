@@ -1,6 +1,6 @@
 # 08_Tests INDEX
 
-> 자동 생성 2026-07-04 04:47 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
+> 자동 생성 2026-07-04 05:16 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
 
 ## 계약 (1)
 
@@ -28,11 +28,20 @@
 |---|---|---|---|---|
 | `baseline/` | v6.4.0 기준선 스냅샷(v6_4_0_baseline.json, Session 76 Sprint 0 preflight) + hook 의존성 감사 기록 — 비교 기준 결과 기록물 | report | 2026-07-03 | 18KB |
 
-## 정리 후보 (status=dead) (3)
+## 정리 후보 (status=dead) (1)
 
 | 항목 | 정체 | 카테고리 | 최근 | 크기 |
 |---|---|---|---|---|
-| `e2e/` | Phase 8 QEPM E2E 12시나리오(v53 skills/qepm-* 플러그인 대상) — 대상 skills/ 디렉토리 자체가 소멸해 실행 불가 | 훅 | - | - |
 | `portfolio/test_optimizer_breadth.R` | mean_variance_optimizer 종목폭(breadth) 단발 테스트 — 대상 코드는 현존하나 참조 0 + 구 머신 경로 하드코딩 | 훅 | 2026-06-07 | 10KB |
-| `benchmark_factor_db_optimizations.R` | Factor DB Rcpp 최적화(43초→5초) 전후 정합성 검증용 일회성 벤치마크 — 최적화 완료로 용도 소멸 | 훅 | - | - |
+
+## 미분류 (1) — index_descriptions.json에 추가하세요
+
+| 항목 | 정체 | status | 최근 | 크기 |
+|---|---|---|---|---|
+| `README.md` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-03 | 1KB |
+
+## stale 큐레이션 키 (2) — 디스크 부재, index_descriptions.json에서 제거 권장
+
+- `e2e/`
+- `benchmark_factor_db_optimizations.R`
 

@@ -1,6 +1,6 @@
 # 06_Registry INDEX
 
-> 자동 생성 2026-07-04 04:47 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
+> 자동 생성 2026-07-04 05:16 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
 
 ## 데이터 (9)
 
@@ -8,7 +8,7 @@
 |---|---|---|---|---|
 | `index_descriptions.json` | 존별 INDEX 큐레이션 DB (본 파일 — 사람 수동 보완, build_artifact_index.R이 소비해 INDEX.md 4개 생성) | active | 2026-07-03 | 39KB |
 | `hygiene_report.json` | 일간 파일위생 감사 리포트 (ops/artifact_hygiene_audit.R 산출 — 자동정리 삭제 기록 + artifact-storage.md 위반 감지) | active | 2026-07-03 | 2KB |
-| `artifact_index.json` | build_artifact_index.R이 daily_refresh 말미 자동 재생성하는 전체 산출물 기계가독 인덱스 | active | 2026-07-03 | 283KB |
+| `artifact_index.json` | build_artifact_index.R이 daily_refresh 말미 자동 재생성하는 전체 산출물 기계가독 인덱스 | active | 2026-07-03 | 267KB |
 | `book_carrier/` | PG2 book 수익 캐리어(carrier_STR_1715_*) + H1/H1b/H2 오버레이·가중 A/B 실측 결과 저장소 | active | 2026-06-18 | 727KB |
 | `idea_registry.json` | 구 S0 아이디어 소싱 레지스트리 — telegram_notify.R이 아직 참조하나 갱신은 06-08 정지 | legacy | 2026-06-07 | 40KB |
 | `live_track/STR_1715_on_M4_R05_noLayer4_PG2/` | 현행 PG2 book(noLayer4) 라이브 페이퍼트래킹 — daily_nav/paper_nav/holdout_interval, TaskScheduler 월간 소비 | active | 2026-07-03 | 68KB |
@@ -59,18 +59,17 @@
 |---|---|---|---|---|
 | `ramp/` | RAMP 모드 레지스트리 존 — approved_factor_library.parquet(102 승인팩터)·CCS 13-score·Gate3/5 summary·ramp_registry·roadmap_status (07-04 갱신 중) | active | 2026-07-03 | 116KB |
 
-## 정리 후보 (status=dead) (4)
-
-| 항목 | 정체 | 카테고리 | 최근 | 크기 |
-|---|---|---|---|---|
-| `briefing_config.json` | 구 자동 브리핑/논문 검색토픽 로테이션 설정 — 현행 morning_briefing.sh 등 어떤 코드도 읽지 않음 | 데이터 | - | - |
-| `factor_rotation_registry.json.pre_c2ab_backup` | FR 레지스트리의 c2ab 변경 전(06-08) 수동 백업본 — 코드 소비 없음 | 데이터 | - | - |
-| `module_performance.FULL_B.json` | module_performance.json의 06-13 시점 스냅샷 백업 — 현본과 byte-identical 확인 | 데이터 | - | - |
-| `strategy_registry.json.backup_phaseE_20260425_220537` | strategy_registry의 2026-04-25 Phase E 이전 백업본 — 코드 소비 없음 | 데이터 | - | - |
-
-## 미분류 (1) — index_descriptions.json에 추가하세요
+## 미분류 (2) — index_descriptions.json에 추가하세요
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
 | `cleanup_manifest_20260704.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-03 | 7KB |
+| `README.md` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-03 | 1KB |
+
+## stale 큐레이션 키 (4) — 디스크 부재, index_descriptions.json에서 제거 권장
+
+- `briefing_config.json`
+- `factor_rotation_registry.json.pre_c2ab_backup`
+- `module_performance.FULL_B.json`
+- `strategy_registry.json.backup_phaseE_20260425_220537`
 

@@ -39,6 +39,8 @@ CHANGELOG.md  CLAUDE.md   (+ ARTIFACTS.md 대시보드)
 - `05_Production/`, `01_Literature/` = NEVER modify (헌법 Safety Rules).
 - 루트에 `_tmp/`, `results/`, `data2/` 류를 만드는 순간 위반 — 4원칙 중 하나로 분류하라.
 
+**네이밍 컨벤션 (2026-07-04 재편 신설)**: 신규 최상위 디렉토리는 `NN_명칭`(넘버링 접두 + 명확한 영문명) + 폴더 내 README 1줄 의무 — 폴더명만 봐도 내용 파악 가능해야 한다. `04_Research` 신규 토픽 산출은 최상위 평면 나열 금지 — `01_reports/`(보고서·감사·검토·로드맵과 그 데이터) 또는 `02_experiments/`(실험 산출) 하위 우선 배치. 최상위 토픽 디렉토리 신설은 실행코드가 경로를 참조하는 활성 존일 때만.
+
 ## §3 02_Infrastructure = 코드 전용
 
 - `02_Infrastructure/`에는 **재사용 코드·설정·문서만**. 산출물(결과 json/parquet/로그)·1회용 스크립트 저장 금지.
@@ -81,12 +83,17 @@ CHANGELOG.md  CLAUDE.md   (+ ARTIFACTS.md 대시보드)
 | `examples/` | `02_Infrastructure/docs/examples/` | qvest_workflows 예제 3종 | **이동 완료 2026-07-04** (git mv. 참조 갱신: search/_query.py·qvest_search·build_index.R 주석/help, qvest-kernel-ci.yml schema_validate ex_root, 00_Lawbook/INDEX.md, examples README replay 경로, v7_2_1 SOT 병기 1줄) |
 | `research_output/regime_comparison/` | `outputs/regime/` (확정 설계 — 원칙 ② canonical 데이터. 내부 `output/` 하위 유지) | MSM 일간 RData (DailyRefresh 활성 산출) | **이동 완료 2026-07-04** (untracked mv — *.RData gitignore. 코드 갱신: msm_update.R:239 output_dir·ktri_validation.R:22 out_dir → `outputs/regime/output`. daily_refresh.sh는 msm_update.R source 경로 불변. 빈 research_output/ 제거) |
 | `06_Reference/textbook_summaries/` | `02_Infrastructure/docs/reference_textbooks/` (확정 설계 — 1단 평탄화) | 교과서 요약 6편 | **이동 완료 2026-07-04** (git mv. 참조 갱신: prompts/optimizer_research_init.md·risk_research_init.md + Phase5_PoC_validation.md 자기참조. 빈 06_Reference/ 제거) |
+| `04_Research/{audits, monitoring, regime_system, hypothesis_scan, pg2_offense_overlay, paper_collection, architecture_audit_20260703_data}/` + 루스 보고서 md 12개(architecture_audit_20260703.md·proposal_review_pg2_roadmap·STR_930_935 설계 4·FUNDAMENTAL 3·paper_inbox/paper_research_latest·v6_architecture.png) | `04_Research/01_reports/` (동명 유지) | 보고서·감사·검토 문서와 그 데이터 (실행코드 인바운드 참조 0 재grep 확인) | **이동 완료 2026-07-04** (git mv. architecture_audit_20260703.md:231 데이터 링크 자기갱신) |
+| `04_Research/{dvaa_dvfs_revalidation, asset_allocation, factor_db, defense_2022_recon, strategy_distill, multi_sleeve_analysis, ml_research, ml_overnight_output, ml_elastic_net_output, ml_xgboost_pilot_output}/` | `04_Research/02_experiments/` (동명 유지) | 실험 토픽 산출 (참조 0 재grep 확인. ml_xgboost_pilot_output은 전량 gitignored — 물리 mv) | **이동 완료 2026-07-04** (git mv) |
+| `04_Research/` S-stage 스크립트 22개(run_batch_s3*·run_s3_*·s0_*·s3_*) + run_dart_strategies.sh + factor_scan.R/factor_scan_results.csv + Scout 산출 2개(SCOUT_HYPOTHESES_SR2_SESSION38.md·scout_factor_vitality_scan_session45.txt) + v5x 결과 CSV 4개(rescore_v22_*·residual_alpha_*) | `04_Research/90_legacy/` (동명 유지) | v55/S0-S7·Scout 시대 legacy 러너·산출 격리 보존 (삭제 아님, 참조 0 재grep 확인) | **이동 완료 2026-07-04** (tracked git mv·ignored mv) |
 
 부기: 작성 시점 워킹트리에서 registry 디렉토리가 `07_Registry/`로 관측됨(untracked) — 재편 최종 구조는 `06_Registry/`이며 정규화는 메인 세션이 확정한다.
 
 부기 2 (2026-07-04 RAMP 3디렉토리 이동 — 의도적 미갱신 구경로 잔존): ① `CHANGELOG.md:236-237` (`tests/baseline/*` 언급 — 릴리스 이력 불변) ② `04_Research/architecture_audit_20260703_data/confirmed_findings.json` (감사 증거 기록 불변) ③ `04_Research/ramp/run_ramp_gate3_4.R.bak_pre_fullsweep_105537` (백업 스냅샷 — 활성본 `run_ramp_gate3_4.R`만 갱신) ④ `stage_artifacts/`·`qepm/` 내부 전체 (§6). 이들 안의 구경로는 본 §7 표로 해석.
 
 부기 3 (2026-07-04 산출물·참고자료 3건 이동 — 의도적 미갱신 구경로 잔존): ① **legacy v55/S0-S7 스크립트의 `research_output/strategies/`·`research_output/regime_analysis/` 등 참조** (`04_Research/factor_scan.R`·`run_batch_s3.R`·`s3_batch_runner.R`·`s3_complex_runner.R`·`run_dart_strategies.sh`·`regime_analysis/*.R`·`strategies/batch_g12_*`·`rc_batch_runner.sh`·`_batch_s2_icir.R`·`STR_1621/1622 run_s3_orth.R`) — 참조 대상 디렉토리가 이동 이전부터 부재(dead path)·legacy 격리 대상이라 코드 미수정. 재실행 시 본 표+저장 4원칙에 맞게 경로 재지정 필요. ② `07_Registry/paper_registry.json`·`strategy_registry.json`의 `research_output/...` path 필드 — 과거 등록 기록(불변), 본 표로 해석. ③ 05_Production `production_config.json:11`의 `research_output/strategies/...` — NEVER-touch 경계(도훈 수동 갱신 대상). ④ `CHANGELOG.md:130` `examples/qvest_workflows/` — 릴리스 이력 불변. ⑤ 04_Research 과거 보고서·paper_notes·bearish_forecast plan 문서 내 `research_output` 언급 — 사람용 기록 불변. ⑥ `qepm/mailbox/worktask/WT-D20260501_003/` 내 `06_Reference/...` 언급 3건 — frozen WT 기록 불변. ⑦ examples fixture 내부 `examples/qvest_workflows/` 자기서술(challenge_note.md 3건) — synthetic WT 아티팩트 보존(README replay 경로만 갱신). ⑧ `04_Research/strategies/batch_g12_runner_v2.sh:9` 구머신 절대경로(`/mnt/c/Users/User/...`) — 이동 前부터 dead, legacy 보존. ⑨ `qepm/config/config.yaml:19,21` `paths.research_output`/`strategies` 키 — qepm 내부 NEVER-touch + 참조 대상(`research_output/strategies/`)이 이동 前부터 부재(dead key, qepm/R 소비자 grep 0건). qepm 정비 시 본 표 기준 정리 대상.
+
+부기 4 (2026-07-04 04_Research 내부 재편 — 의도적 미갱신 구경로 잔존): ① `06_Registry/cleanup_manifest_20260704.json:181` (`04_Research/defense_2022_recon` 언급 — 정리 이력 기록 불변) ② `qepm/mailbox/governor/outbox/day_5_pg1_admission_consolidated_5_candidates_20260419.json:163` (`04_Research/s3_h1693_orthogonality_measure.R` — frozen mailbox 기록, §6) ③ `04_Research/01_reports/architecture_audit_20260703_data/fix_results_partial_run1.json` 내 `04_Research/architecture_audit_20260703.md` 자기서술 (감사 증거 불변) ④ 본 문서 부기 2·3의 구경로 언급 (작성 시점 기록). 최상위 유지 확정(실행코드 참조 실재): `briefings/`(config.R:54 BRIEFING_OUTPUT)·`regime_analysis/`(telegram_notify.R:2027 writer) — ref-table 0은 동적 경로 구성 미탐지였음. 참조 루스 파일 유지 5건: grade_a_catalog.json(10파일)·lessons_sent.json·strategy_postmortem.md(telegram_notify.R:1543-1544)·pg2_reinforcement_roadmap_20260702.md(pg2_w2_* 3건)·paper_ensemble_hypotheses.md(fe_varratio.R:4).
 
 ## §8 집행 (2026-07-04 파일위생 mandate — 신규 파일 자동 정리 체계)
 
@@ -101,5 +108,6 @@ CHANGELOG.md  CLAUDE.md   (+ ARTIFACTS.md 대시보드)
 - `CLAUDE.md` Key Paths / Safety Rules · `.claude/rules/backtest-contract.md`(save_bt_result 산출 위치) · `02_Infrastructure/docs/rules/artifact-naming.md`(파일명 규약 — 본 문서는 *위치*, 그쪽은 *이름*) · `02_Infrastructure/contracts/registry_writer.R`
 
 ## Change log
+- 2026-07-04: 04_Research 내부 재편 — §2 네이밍 컨벤션 조항 신설(NN_명칭+README 1줄, 신규 토픽은 01_reports/02_experiments 하위 우선) + §7 이동 로그 3행(01_reports/02_experiments/90_legacy) + 부기 4. index_descriptions.json 키 27건 remap + 1건 분할.
 - 2026-07-04: §8 집행 신설 — artifact_placement_guard.sh(advisory 훅) + artifact_hygiene_audit.R(일간 자동정리·리포트) + daily_refresh [7.9] 배선 (파일위생 mandate).
 - 2026-07-04: 신설 (구조 재편 mandate — 저장 4원칙 + 루트 고정 + 인프라 코드전용 + Retention + 인덱스 + 이동 로그).

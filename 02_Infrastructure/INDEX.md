@@ -1,6 +1,6 @@
 # 02_Infrastructure INDEX
 
-> 자동 생성 2026-07-04 04:47 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
+> 자동 생성 2026-07-04 05:16 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
 
 ## 데이터 (3)
 
@@ -37,7 +37,7 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `hurdle_gate.R` | Screening tier 게이트 권위 구현(83KB — D002 turnover 1100%·D004 structural drawdown·verdict$screening·screen_route 라우팅) | active | 2026-06-12 | 81KB |
+| `hurdle_gate.R` | Screening tier 게이트 권위 구현(83KB — D002 turnover 1100%·D004 structural drawdown·verdict$screening·screen_route 라우팅) | active | 2026-07-03 | 83KB |
 
 ## 성능 (2)
 
@@ -57,13 +57,7 @@
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
 | `R/` | hook_batch_runner.R 단일 파일 — 훅 R 로직을 세션 1회 source로 통합하는 배치 래퍼(Block C 토큰/spawn 최적화) | active | 2026-07-03 | 13KB |
-| `hooks/` | 하네스 강제 계층 64건 — qvest_hook_router.py + 47 훅(axiom_enforcement·graduation gate·backtest audit) + _archive_v55/_archive_4_6 격리분 | active | 2026-07-03 | 445KB |
-
-## 모드-QEPM(구 v53) (1)
-
-| 항목 | 정체 | status | 최근 | 크기 |
-|---|---|---|---|---|
-| `agents/` | agent_team_config.md 1건 — 2026-03-15 v53 TeamCreate 시대(Scout/Reporter/Briefing) 멀티에이전트 팀 구성 문서. 현행 역할 SOT는 .claude/agents/*.md + CLAUDE.md 표 | legacy | - | - |
+| `hooks/` | 하네스 강제 계층 64건 — qvest_hook_router.py + 47 훅(axiom_enforcement·graduation gate·backtest audit) + _archive_v55/_archive_4_6 격리분 | active | 2026-07-03 | 448KB |
 
 ## 모드-alpha-search (1)
 
@@ -102,7 +96,7 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `docs/` | 설계 SOT·확장 룰·CHANGELOG 계층 — qvest_v8_1_sot.md(Active SOT)·rules/ 확장 9·legacy_boundary·reference_textbooks | active | 2026-07-03 | 272KB |
+| `docs/` | 설계 SOT·확장 룰·CHANGELOG 계층 — qvest_v8_1_sot.md(Active SOT)·rules/ 확장 9·legacy_boundary·reference_textbooks | active | 2026-07-03 | 275KB |
 
 ## 측정 (1)
 
@@ -177,11 +171,16 @@
 | `sanity_checks/` | bear_date_audit.R 단일 — forward label 방향 PIT 의무 감사(Cycle 50 lookahead 재발 방지 게이트) | active | 2026-06-07 | 12KB |
 | `validation/` | 검증 계층 26건 — pit_enforcement.R·lookahead_detector.R(PIT Level 0 구현)·v8_readiness_gate.R·preflight_check·stage_artifact_schemas | active | 2026-07-03 | 307KB |
 
-## 정리 후보 (status=dead) (3)
+## 미분류 (1) — index_descriptions.json에 추가하세요
 
-| 항목 | 정체 | 카테고리 | 최근 | 크기 |
+| 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `experiment_contract.R` | 구 Lawbook v1.4.2 Ch.14 실험 사전등록 계약(가설·config·예측을 백테 전 불변 기록) — 구 프로세스 유물 | 계약(구) | - | - |
-| `strategy_template.R` | v53 Forge용 {{PLACEHOLDER}} run_all.R 자동생성 템플릿 — 현행 worktask/run_all_template.R로 대체됨 | 모드-QEPM(구 v53) | - | - |
-| `04_Research/` | 중첩 이상 구조 — weekly_research_collect.sh가 PROJECT_ROOT 오설정 상태로 실행돼 생긴 logs/ 주간 리서치 로그 5건(2026-04-26~06-07)만 존재 | 이상구조 | - | - |
+| `README.md` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-03 | 1KB |
+
+## stale 큐레이션 키 (4) — 디스크 부재, index_descriptions.json에서 제거 권장
+
+- `experiment_contract.R`
+- `strategy_template.R`
+- `04_Research/`
+- `agents/`
 

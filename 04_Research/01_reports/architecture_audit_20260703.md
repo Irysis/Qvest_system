@@ -228,7 +228,7 @@ FR/RAMP 오케스트레이터와 workflow 2종이 삭제된 skill·폐지된 Cod
 ## 진행 상태 / 재개 가이드 (2026-07-03 22:53 기준, 세션 1ba51a8d)
 
 ### 완료
-- [x] **감사 완료**: 10영역 71-agent 감사, 발견 60건 전수 적대검증 통과 (반증 0). 기계가독 원본: `04_Research/architecture_audit_20260703_data/confirmed_findings.json` + `synth_roadmaps.json`
+- [x] **감사 완료**: 10영역 71-agent 감사, 발견 60건 전수 적대검증 통과 (반증 0). 기계가독 원본: `04_Research/01_reports/architecture_audit_20260703_data/confirmed_findings.json` + `synth_roadmaps.json`
 - [x] **Milestone 커밋 3건 + push**: `0ee02018`(헌법·에이전트·스킬) / `918dcbc0`(인프라·계약·훅) / `861782f3`(axiom·레지스트리) → origin/main 반영 완료. 3주치 무보호 변경 해소.
 - [x] **Mechanical 수리 6/10 그룹** (상세: `_data/fix_results_partial_run1.json`):
   - `graduation-gate`: discovery_graduation_gate.sh에 oos_retention·calmar HARD fail-closed + sweep-DSR block 배선, constraint_defaults.json v2.5. should-block 7종 실측 PASS.
