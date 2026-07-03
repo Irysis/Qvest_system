@@ -17,7 +17,21 @@
 #   - discovery_of 참조된 Discovery WT의 alpha_package가 graduation_criteria 미충족
 
 set -euo pipefail
-trap 'echo "{}"; exit 0' ERR
+# (v8.2.1 2026-07-03 감사 HOOK-P2-1/MC-07, 도훈 confirm) ERR trap fail-closed 정합:
+#   구 trap은 무조건 '{}' fail-open — 내부 오류 시 graduation HARD 게이트 침묵 통과 여지.
+#   python-missing 분기(아래)와 동일 절충으로 교체: graduation 대상(WT-P*/request.json)이
+#   payload에 잡히면 block, 아니면 allow.
+_gate_fail_closed() {
+  local hay="${FILE_PATH:-}"
+  [ -n "$hay" ] || hay="${INPUT:-}"
+  if printf '%s' "$hay" | grep -q 'WT-P' && printf '%s' "$hay" | grep -q 'request\.json'; then
+    echo '{"decision": "block", "reason": "discovery_graduation_gate: hook 내부 오류 — graduation 검증 불가 (fail-closed)"}'
+  else
+    echo '{}'
+  fi
+  exit 0
+}
+trap '_gate_fail_closed' ERR
 # (v8.1.2 2026-06-11) python text 레이어 인코딩 사고 방지 — stdin은 buffer 경유 UTF-8 명시 디코딩,
 # stdout은 UTF-8 reconfigure. (cp949 환경에서 한글 content가 가드를 침묵 무력화하던 문제)
 export PYTHONUTF8=1
@@ -41,6 +55,10 @@ fi
 INPUT=$(cat)
 FILE_PATH=$(echo "$INPUT" | "$PY" -c 'import json,sys; sys.stdout.reconfigure(encoding="utf-8",errors="replace"); d=json.loads(sys.stdin.buffer.read().decode("utf-8","replace")); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
 CONTENT=$(echo "$INPUT" | "$PY" -c 'import json,sys; sys.stdout.reconfigure(encoding="utf-8",errors="replace"); d=json.loads(sys.stdin.buffer.read().decode("utf-8","replace")); print(d.get("tool_input",{}).get("content",""))' 2>/dev/null || echo "")
+
+# stdin 파싱 판별불능(FILE_PATH 공백 = python 파서 실패 — PreToolUse[Write]는
+# file_path 상시 존재) → fail-closed 판정 (v8.2.1 감사 HOOK-P2-1)
+[ -n "$FILE_PATH" ] || _gate_fail_closed
 
 # Deployment WT request.json만 검증
 case "$FILE_PATH" in

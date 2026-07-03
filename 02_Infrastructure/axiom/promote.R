@@ -40,7 +40,14 @@ suppressPackageStartupMessages({ library(jsonlite); library(data.table) })
   indep_min_direction = 0.8,
   rigor_backtested_port_t = 2.95, rigor_neg_frac_fail = 0.8,
   fals_min_attempts = 1L, fals_min_retained = 0.5,
-  ext_min_oos_months = 3, ext_min_oos_vs_is = 0.5
+  # External 재정의 (2026-07-03 도훈 confirm, 감사 GOV-01/AXM-01):
+  #   구 hurdle(oos_months>=3 AND oos_effect_vs_is>=0.5)의 oos_months는 L-code corpus 실값 0건
+  #   = 영구 불충족(측정 불가능 지표). oos_retention은 corpus 457/594건 실값 보유 —
+  #   '요건 완화가 아니라 측정 불가능 지표의 측정 가능 지표 교체'.
+  #   문턱 0.5 = 구 vs_is 0.5 개념 유지 + measurement-graduation.md §3
+  #   'oos_retention < 0.5 무조건 FAIL' 하한과 정합 (창작 수치 아님).
+  ext_min_oos_retention = 0.5,
+  ext_min_oos_months = 3  # 가산 증거로 강등 — 실값 존재+충족 시 score 가산만, hurdle 무관
 )
 
 .lc_get <- function(corpus, lc, field, default = NULL) {
@@ -110,16 +117,38 @@ suppressPackageStartupMessages({ library(jsonlite); library(data.table) })
        reason = sprintf("active attempts=%d none_falsified=%s retained_ok=%s", n, none_falsified, retained_ok))
 }
 
-# ── 축 4: External (OOS) ──
-.axis_external <- function(candidate) {
+# ── 축 4: External (OOS — 2026-07-03 재정의, 도훈 confirm / 감사 GOV-01·AXM-01) ──
+# hurdle = supporting L-code corpus의 oos_retention 실값 존재 AND cluster median >= 0.5.
+#   - 1차 소스: corpus 직접 조회(supporting_l_codes → oos_retention).
+#   - 폴백: corpus 실값 0건이면 candidate$oos_validation_draft$oos_effect_vs_is
+#     (cluster_extractor._draft_oos가 oos_retention median을 이 필드에 기록).
+#   - oos_months는 hurdle에서 강등 — 실값 존재 ∧ >= ext_min_oos_months 시 score +0.2 가산 증거만.
+.axis_external <- function(candidate, corpus) {
+  sup <- unique(as.character(candidate$supporting_l_codes %||% character(0)))
+  rets <- suppressWarnings(as.numeric(vapply(sup, function(lc) {
+    v <- .lc_get(corpus, lc, "oos_retention", NA)
+    if (is.null(v) || !length(v)) NA_character_ else as.character(v[[1]]) }, character(1))))
+  rets_real <- rets[!is.na(rets)]
+  n_real <- length(rets_real)
+  src <- "corpus"
   o <- candidate$oos_validation_draft %||% list()
+  if (!n_real) {  # 폴백: extractor가 기록한 oos_retention median (oos_effect_vs_is 필드)
+    v_draft <- suppressWarnings(as.numeric(o$oos_effect_vs_is %||% NA))
+    if (!is.na(v_draft)) { rets_real <- v_draft; n_real <- 1L; src <- "draft" }
+  }
+  med <- if (n_real) stats::median(rets_real) else NA_real_
   m <- suppressWarnings(as.numeric(o$oos_months %||% NA))
-  v <- suppressWarnings(as.numeric(o$oos_effect_vs_is %||% NA))
-  score <- min(1.0, (if (!is.na(m) && m >= 3) 0.5 else 0) + (if (!is.na(v) && v >= 0.5) 0.5 else 0))
+  months_bonus <- (!is.na(m) && m >= .HURDLE$ext_min_oos_months)
+  score <- min(1.0, (if (n_real >= 1) 0.4 else 0) +
+                    (if (!is.na(med) && med >= .HURDLE$ext_min_oos_retention) 0.4 else 0) +
+                    (if (months_bonus) 0.2 else 0))
   list(score = round(score, 3),
-       hurdle_pass = (!is.na(m) && m >= .HURDLE$ext_min_oos_months && !is.na(v) && v >= .HURDLE$ext_min_oos_vs_is),
-       oos_months = m, oos_vs_is = v,
-       reason = sprintf("OOS months=%s vs_is=%s", if (is.na(m)) "NA" else m, if (is.na(v)) "NA" else v))
+       hurdle_pass = (n_real >= 1 && !is.na(med) && med >= .HURDLE$ext_min_oos_retention),
+       n_oos_retention_real = n_real, oos_retention_median = if (is.na(med)) NA_real_ else round(med, 3),
+       oos_retention_source = src, oos_months = m, oos_months_bonus = months_bonus,
+       reason = sprintf("oos_retention real n=%d/%d (src=%s) median=%s (min %.2f) | months=%s bonus=%s",
+         n_real, length(sup), src, if (is.na(med)) "NA" else sprintf("%.3f", med),
+         .HURDLE$ext_min_oos_retention, if (is.na(m)) "NA" else m, months_bonus))
 }
 
 # ── 축 5: Mechanism ──
@@ -160,7 +189,7 @@ promote_to_axiom <- function(candidate_path, threshold = 0.80, auto_inject = NUL
   I <- .axis_independence(candidate, corpus)
   R <- .axis_rigor(candidate, corpus, tier)
   Fx <- .axis_falsification(candidate)
-  E <- .axis_external(candidate)
+  E <- .axis_external(candidate, corpus)
   M <- .axis_mechanism(candidate)
 
   w <- .weights(type)

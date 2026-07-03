@@ -171,6 +171,22 @@ else
   echo "[boot] WARN: kr_factor_returns_v2 부재 — FF 알파/residual momentum 전략 불가"
 fi
 
+# 4f. (감사 SC-01/SC-06, 2026-07-03) Gap vector 신선도 — WARN-only (블록 아님).
+#     stale = 부재 / mtime 30일+ / n_strategies=0 (콜드스타트 잔재).
+#     재생성: Rscript로 02_Infrastructure/portfolio/gap_vector_steering.R source 후 steer_gap_vector()
+GAPV="$PROJECT/.cache/portfolio_gap_vector.json"
+if [ ! -f "$GAPV" ]; then
+  echo "[boot] WARN: portfolio_gap_vector.json 부재 — 탐색 조향 신호 없음 (gap_vector_steering.R::steer_gap_vector() 재생성 권장)"
+else
+  GAPV_AGE=$(( ($(date +%s) - $(stat -c %Y "$GAPV" 2>/dev/null || echo 0)) / 86400 ))
+  GAPV_N0=$(grep -c '"n_strategies"[[:space:]]*:[[:space:]]*0' "$GAPV" 2>/dev/null || true)
+  if [ "$GAPV_AGE" -gt 30 ] || [ "${GAPV_N0:-0}" -gt 0 ]; then
+    echo "[boot] WARN: portfolio_gap_vector.json STALE (age ${GAPV_AGE}d$([ "${GAPV_N0:-0}" -gt 0 ] && echo ' + n_strategies=0')) — gap_vector_steering.R::steer_gap_vector() 재생성 권장"
+  else
+    echo "[boot] Gap vector: OK (age ${GAPV_AGE}d)"
+  fi
+fi
+
 # 5. 데이터 리프레시 (백그라운드 — xlsx 증분 + KRX/FRED/ECOS)
 REFRESH_LOG="/tmp/qm_boot_refresh_$(date +%Y%m%d_%H%M).log"
 (cd "$PROJECT/02_Infrastructure" && bash "$PROJECT/02_Infrastructure/data/daily_refresh.sh") > "$REFRESH_LOG" 2>&1 &

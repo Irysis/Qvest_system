@@ -46,6 +46,22 @@ suppressPackageStartupMessages({
   RISK_ON  = list(defense = -0.05, core_alpha = +0.10, diversifier = -0.05)
 )
 
+# ── §4 book-marginal ΔIR 단일 컨벤션 (도훈 confirm 2026-07-03, 감사 CAP-P0-2/CAP-P1-4) ──
+# net_active_recon_v1 = recon NAV 월수익(net, 비용 반영) − BM(KOSPI200) 월수익 active 시계열의
+#   mean(active)/sd(active)*sqrt(12) — contract build_benchmark_compare(annualization_factor=12)
+#   Information_Ratio와 동일 산식. gross IR / geometric-active IR(PerfA InformationRatio)은
+#   본 게이트에 사용 금지 (book_state.json::ir_convention 선언과 정합).
+.PG_IR_CONVENTION     <- "net_active_recon_v1"
+.PG_MODULE_CATALOG    <- file.path(PROJECT_ROOT, "06_Registry", "module_catalog.json")
+.PG_BOOK_STATE_PATH   <- file.path(PROJECT_ROOT, "qepm", "mailbox", "governor", "book_state.json")
+.PG_BENCHMARK_PARQUET <- file.path(CACHE_DIR, "benchmark.parquet")  # 2026-07-02 IKS200 정정본
+
+# `%||%`는 종래 세션 환경(contract/book_optimizer sourcing)에 의존 — 본 파일 단독 source 시
+# 미정의 즉사 방어. contract(backtest_result_contract.R L679)와 동일 semantics, 미존재 시에만 정의.
+if (!exists("%||%")) {
+  `%||%` <- function(a, b) if (!is.null(a) && length(a) > 0 && !all(is.na(a))) a else b
+}
+
 # ─── Internal Helpers ────────────────────────────────────────────────────────
 
 #' Ensure directory exists (recursive, silent)
@@ -575,7 +591,10 @@ pg1_admission <- function(portfolio_id, candidate_id, validated_role, pg0_artifa
       source(bo_path, local = FALSE)
     }
 
-    pkgs <- load_admitted_packages(wt_ids)
+    # 경로버그 수정 (2026-07-03, 감사 CAP-P1-4): load_admitted_packages 기본 wt_root가
+    # 상대경로("qepm/mailbox/worktask")라 cwd != PROJECT_ROOT에서 3-package 탐색 전멸 → 절대경로 명시.
+    pkgs <- load_admitted_packages(wt_ids,
+                                   wt_root = file.path(PROJECT_ROOT, "qepm", "mailbox", "worktask"))
     n_loaded <- length(pkgs)
     if (n_loaded == 0) {
       return(list(book_ir = NA_real_, n_loaded = 0L, infeasible = TRUE,
@@ -594,6 +613,228 @@ pg1_admission <- function(portfolio_id, candidate_id, validated_role, pg0_artifa
     warning("[pg1_book] book IR computation failed: ", e$message)
     list(book_ir = NA_real_, n_loaded = 0L, infeasible = TRUE,
          reason = "book_optimize_error", error = e$message)
+  })
+}
+
+
+#' Load canonical book_state.json (절대경로 고정 — cwd 무관, 감사 CAP-P1-4 경로버그 방어).
+#' 읽기 전용 helper. book_state 쓰기(admit)는 자동화 금지 (§4 — Q-Lead + 도훈 수동 confirm).
+pg_load_book_state <- function(path = .PG_BOOK_STATE_PATH) {
+  if (!file.exists(path)) stop("[pg_load_book_state] book_state.json not found: ", path)
+  fromJSON(path, simplifyVector = FALSE)
+}
+
+
+#' Canonical KOSPI200 벤치마크 월수익 (.cache/benchmark.parquet — 2026-07-02 IKS200 정정본).
+#' apply.monthly(Return.cumulative) 표준함수 recon (자체합성 금지 준수).
+#' @return list(bm_m = data.table(ym, ret) 또는 NULL, source)
+.pg_bm_monthly_returns <- function(parquet_path = .PG_BENCHMARK_PARQUET) {
+  out <- tryCatch({
+    if (!requireNamespace("arrow", quietly = TRUE)) stop("arrow unavailable")
+    if (!file.exists(parquet_path)) stop("benchmark.parquet not found: ", parquet_path)
+    suppressPackageStartupMessages({ library(xts); library(PerformanceAnalytics) })
+    b <- as.data.table(arrow::read_parquet(parquet_path))
+    if (!all(c("Date", "BM_Ret") %in% names(b))) stop("benchmark.parquet missing Date/BM_Ret")
+    b <- b[is.finite(BM_Ret)][order(Date)]
+    bx <- apply.monthly(xts(b$BM_Ret, order.by = as.Date(b$Date)), Return.cumulative)
+    list(bm_m = data.table(ym = format(as.Date(index(bx)), "%Y-%m"), ret = as.numeric(bx)),
+         source = sprintf("canonical_benchmark_parquet:%s", parquet_path))
+  }, error = function(e) NULL)
+  if (!is.null(out)) return(out)
+  list(bm_m = NULL, source = "unresolved")
+}
+
+
+#' Resolve a sleeve's monthly net return series (module_catalog / live_track 어댑터).
+#'
+#' mailbox 3-package가 없는 모듈(alpha_search register_module 산출 등)을 recon IR에
+#' 공급하기 위한 시계열 해상. 해상 순서:
+#'   ① module_catalog.json entry의 sim_result_path (register_module 계약 산출)
+#'   ② 04_Research/strategies/{id}/sim_result.rds 직접 (catalog 미등재 대비)
+#'   ③ 06_Registry/live_track/{id}/live_book_series.csv (라이브 book 월간 recon net, ret_net)
+#' 일간 sim_result는 apply.monthly(Return.cumulative)로 월간 재구성 (PerfA 표준함수만 —
+#' backtest-contract 자체합성 금지 준수). 주의: sim 마지막 월은 데이터 종료일까지의
+#' 부분월일 수 있음 (artifact의 n_months/period로 감사 가능).
+#'
+#' @return list(ret_m = data.table(ym, ret) 또는 NULL, bm_m = 동일 또는 NULL, source)
+.pg_sleeve_monthly_returns <- function(sleeve_id, catalog_path = .PG_MODULE_CATALOG) {
+  none <- list(ret_m = NULL, bm_m = NULL, source = "unresolved")
+  sleeve_id <- as.character(sleeve_id)[1]
+  if (is.na(sleeve_id) || !nzchar(sleeve_id)) return(none)
+
+  # ── ①/② sim_result.rds ──
+  sim_path <- NULL
+  src_tag <- NULL
+  if (file.exists(catalog_path)) {
+    catj <- tryCatch(fromJSON(catalog_path, simplifyVector = FALSE), error = function(e) NULL)
+    entry <- if (!is.null(catj) && !is.null(catj$modules)) catj$modules[[sleeve_id]] else NULL
+    if (!is.null(entry) && !is.null(entry$sim_result_path)) {
+      p <- file.path(PROJECT_ROOT, entry$sim_result_path)
+      if (file.exists(p)) {
+        sim_path <- p
+        src_tag <- sprintf("module_catalog(metric_type=%s)",
+                           as.character(entry$metric_type %||% "unlabeled"))
+      }
+    }
+  }
+  if (is.null(sim_path)) {
+    p <- file.path(STRATEGY_OUTPUT, sleeve_id, "sim_result.rds")
+    if (file.exists(p)) { sim_path <- p; src_tag <- "strategies_dir_sim_result" }
+  }
+  if (!is.null(sim_path)) {
+    out <- tryCatch({
+      suppressPackageStartupMessages({ library(xts); library(PerformanceAnalytics) })
+      sim <- readRDS(sim_path)
+      d <- as.data.table(sim$DAILY_NAV_DT)
+      if (!all(c("Date", "Strategy_Ret") %in% names(d)))
+        stop("DAILY_NAV_DT missing Date/Strategy_Ret")
+      d[, Date := as.Date(Date)]
+      d <- d[is.finite(Strategy_Ret)][order(Date)]
+      sm <- apply.monthly(xts(d$Strategy_Ret, order.by = d$Date), Return.cumulative)
+      ret_m <- data.table(ym = format(as.Date(index(sm)), "%Y-%m"), ret = as.numeric(sm))
+      bm_m <- NULL
+      if (!is.null(sim$bm_xts)) {
+        bmx <- apply.monthly(sim$bm_xts[, 1], Return.cumulative)
+        bm_m <- data.table(ym = format(as.Date(index(bmx)), "%Y-%m"), ret = as.numeric(bmx))
+      }
+      list(ret_m = ret_m, bm_m = bm_m, source = sprintf("%s:%s", src_tag, sim_path))
+    }, error = function(e) NULL)
+    if (!is.null(out)) return(out)
+  }
+
+  # ── ③ live_track 월간 recon 시리즈 (라이브 book — 예: STR_1715_on_M4_R05_noLayer4_PG2) ──
+  # 월 키 = return_ym (수익 발생 달력월 — 2026-07-02 정정 라벨). realized_ym/date 앵커는
+  # 달력월보다 1개월 앞 라벨(패널 라벨결함, [[reference-book-benchmark-alignment-realized-ym]])이라
+  # 달력월 BM과 lag0 merge 시 오정렬(β 0.083 vs 정렬 시 0.651 실측 2026-07-03). return_ym 부재
+  # 구버전 시리즈는 realized_ym-1개월 시프트로 동일 정렬 (소스 라벨에 명시).
+  lt <- file.path(PROJECT_ROOT, "06_Registry", "live_track", sleeve_id, "live_book_series.csv")
+  if (file.exists(lt)) {
+    out <- tryCatch({
+      s <- fread(lt)
+      if (!("ret_net" %in% names(s))) stop("live_book_series missing ret_net")
+      if ("return_ym" %in% names(s)) {
+        ret_m <- s[is.finite(ret_net), .(ym = as.character(return_ym), ret = as.numeric(ret_net))]
+        key_tag <- "key=return_ym"
+      } else if ("realized_ym" %in% names(s)) {
+        d0 <- as.Date(paste0(as.character(s$realized_ym), "-01"))
+        ym_cal <- vapply(d0, function(x) format(seq(x, by = "-1 month", length.out = 2)[2], "%Y-%m"),
+                         character(1))
+        ret_m <- data.table(ym = ym_cal, ret = as.numeric(s$ret_net))[is.finite(ret)]
+        key_tag <- "key=realized_ym_minus_1m(구버전 — return_ym 부재)"
+      } else stop("live_book_series missing return_ym/realized_ym")
+      list(ret_m = unique(ret_m, by = "ym"), bm_m = NULL,
+           source = sprintf("live_track(%s):%s", key_tag, lt))
+    }, error = function(e) NULL)
+    if (!is.null(out)) return(out)
+  }
+  none
+}
+
+
+#' Book-level recon IR — §4 단일 컨벤션 net_active_recon_v1 산출기.
+#'
+#' sleeve 월수익들을 PerformanceAnalytics::Return.portfolio(월 리밸)로 결합해 book 월수익을
+#' 재구성하고, contract build_benchmark_compare(annualization_factor=12)의 Information_Ratio
+#' (= mean(active)/sd(active)*sqrt(12), active = book net − BM)를 계산한다.
+#' measurement-graduation §1 real-computation: 수익 합성/IR 모두 표준함수·contract 경유.
+#'
+#' @param sleeve_ids Character vector: book 구성 sleeve ids (incumbent + candidate).
+#' @param weights Numeric or NULL: sleeve 결합비중 (sleeve_ids 순서, 합 1, >=0).
+#'   NULL = equal-weight — book_optimize의 equal_weight_fallback 컨벤션 준용 (별도 최적화
+#'   아님, artifact에 라벨 기록. QP 비중이 필요하면 mailbox 3-package 경로 사용).
+#' @param min_common_months Integer: 공통 월 최소 표본. 기본 60은 register_module의
+#'   "유효 수익 관측 < 60 = 표본 부족" floor 준용 (신규 문턱 창작 아님).
+#' @return list(book_ir, ir_convention, n_months, period, sources, bm_source,
+#'   weights_used, combination, port_alpha_t_nw3, reason)
+.pg_book_ir_recon <- function(sleeve_ids, weights = NULL,
+                              catalog_path = .PG_MODULE_CATALOG,
+                              min_common_months = 60L) {
+  fail <- function(reason, sources = NULL) list(
+    book_ir = NA_real_, ir_convention = .PG_IR_CONVENTION, n_months = 0L,
+    period = NULL, sources = sources, bm_source = NA_character_,
+    weights_used = NULL, combination = NA_character_,
+    port_alpha_t_nw3 = NA_real_, reason = reason)
+
+  sleeve_ids <- unique(as.character(sleeve_ids))
+  sleeve_ids <- sleeve_ids[!is.na(sleeve_ids) & nzchar(sleeve_ids)]
+  if (length(sleeve_ids) == 0) return(fail("no_sleeve_ids"))
+
+  tryCatch({
+    suppressPackageStartupMessages({ library(xts); library(PerformanceAnalytics) })
+    res <- lapply(sleeve_ids, .pg_sleeve_monthly_returns, catalog_path = catalog_path)
+    names(res) <- sleeve_ids
+    sources <- vapply(res, function(r) r$source, character(1))
+    unresolved <- sleeve_ids[vapply(res, function(r) is.null(r$ret_m), logical(1))]
+    if (length(unresolved) > 0)
+      return(fail(sprintf("unresolved sleeve return series: %s",
+                          paste(unresolved, collapse = ", ")), as.list(sources)))
+
+    # BM: ① canonical benchmark.parquet(IKS200 정정본) 우선 ② sleeve 내장 bm_xts fallback
+    #   (2026-07-02 이전 등재 모듈 bm_xts는 IKS001 코스피전체 버그 소지 — fallback 시 라벨로 명시)
+    bm <- .pg_bm_monthly_returns()
+    bm_m <- bm$bm_m
+    bm_source <- bm$source
+    if (is.null(bm_m)) {
+      bm_idx <- which(vapply(res, function(r) !is.null(r$bm_m), logical(1)))
+      if (length(bm_idx) == 0)
+        return(fail("no benchmark series (canonical parquet + sleeve bm_xts 모두 부재)",
+                    as.list(sources)))
+      bm_m <- res[[bm_idx[1]]]$bm_m
+      bm_source <- sprintf("sleeve_bm_xts_fallback:%s (pre-2026-07-02 IKS001 bug 소지 — 검증 필요)",
+                           sleeve_ids[bm_idx[1]])
+    }
+
+    common <- Reduce(intersect, lapply(res, function(r) r$ret_m$ym))
+    common <- sort(intersect(common, bm_m$ym))
+    if (length(common) < min_common_months)
+      return(fail(sprintf("insufficient common months: %d < %d",
+                          length(common), min_common_months), as.list(sources)))
+
+    dts <- as.Date(paste0(common, "-01"))
+    Rmat <- do.call(merge, lapply(res, function(r) {
+      xts(r$ret_m$ret[match(common, r$ret_m$ym)], order.by = dts)
+    }))
+    colnames(Rmat) <- sleeve_ids
+
+    if (is.null(weights)) weights <- rep(1 / length(sleeve_ids), length(sleeve_ids))
+    weights <- as.numeric(weights)
+    if (length(weights) != length(sleeve_ids) || any(!is.finite(weights)) ||
+        abs(sum(weights) - 1) > 1e-8 || any(weights < 0))
+      return(fail("invalid combination weights (length/sum/sign)", as.list(sources)))
+
+    # 수익 결합 = Return.portfolio only (python-policy/answer-principles 자체 가중합성 금지)
+    book_x <- if (length(sleeve_ids) == 1) Rmat[, 1] else
+      Return.portfolio(Rmat, weights = weights, rebalance_on = "months", geometric = TRUE)
+
+    if (!exists("build_benchmark_compare", envir = .GlobalEnv)) {
+      source(file.path(dirname(.pg_root), "contracts", "backtest_result_contract.R"),
+             local = FALSE)
+    }
+    pr <- data.table(date = as.Date(index(book_x)),
+                     ret_net = as.numeric(book_x[, 1]),
+                     frequency = "monthly")
+    bt <- data.table(date = dts,
+                     benchmark_ret = bm_m$ret[match(common, bm_m$ym)],
+                     benchmark_id = bm_source)
+    cmp <- build_benchmark_compare(pr, bt, run_id = "pg1_book_recon",
+                                   strategy_id = paste(sleeve_ids, collapse = "+"),
+                                   annualization_factor = 12)
+    ir <- as.numeric(cmp[metric_name == "Information_Ratio", active_value])
+    pa <- as.numeric(cmp[metric_name == "Portfolio_Alpha_t_NW_lag3", active_value])
+    ok <- length(ir) == 1 && is.finite(ir)
+    list(book_ir = if (ok) ir else NA_real_,
+         ir_convention = .PG_IR_CONVENTION,
+         n_months = length(common),
+         period = c(min(common), max(common)),
+         sources = as.list(sources),
+         bm_source = bm_source,
+         weights_used = as.list(setNames(weights, sleeve_ids)),
+         combination = "Return.portfolio(monthly_rebalance)_equal_weight_unless_specified",
+         port_alpha_t_nw3 = if (length(pa) == 1) pa else NA_real_,
+         reason = if (ok) NA_character_ else "IR_not_finite")
+  }, error = function(e) {
+    warning("[pg1_book_recon] failed: ", e$message)
+    fail(paste0("recon_error: ", e$message))
   })
 }
 
@@ -621,29 +862,39 @@ pg1_admission <- function(portfolio_id, candidate_id, validated_role, pg0_artifa
 #' @param candidate_id Character: strategy/WT id under evaluation.
 #' @param validated_role Character: role from S4.
 #' @param pg0_artifact List: output of pg0_gap_review().
-#' @param incumbent_book_state List: parsed book_state.json. Must carry
-#'   admitted_ids (or incumbent_admitted_ids); incumbent_book_ir is read if
-#'   present, else recomputed from the incumbent ids.
+#' @param incumbent_book_state List: parsed book_state.json (pg_load_book_state() 권장 —
+#'   절대경로 canonical). Must carry admitted_ids (or incumbent_admitted_ids);
+#'   incumbent_book_ir is read if present, else recomputed from the incumbent ids.
 #' @param marginal_ir_threshold Numeric: required book-marginal IR gain (default 0.05).
+#' @param book_combination_weights Numeric or NULL: recon 어댑터의 sleeve 결합비중
+#'   (c(incumbent_ids, candidate_id) 순서, 합 1). NULL = equal-weight
+#'   (book_optimize equal_weight_fallback 컨벤션 준용 — artifact에 라벨 기록).
 #' @return List: pg1_admission artifact + book-context fields.
 pg1_admission_with_book_context <- function(portfolio_id, candidate_id,
                                             validated_role, pg0_artifact,
                                             incumbent_book_state,
                                             marginal_ir_threshold = 0.05,
-                                            artifact_type = "STR") {
+                                            artifact_type = "STR",
+                                            book_combination_weights = NULL) {
   # artifact_type ∈ {STR, FR}: FR(factor rotation 운용체계)도 STR과 동일 book-marginal ΔIR 경로로
   #   admit 평가. book sleeve = STR(단일모듈) 또는 FR(1 sleeve). 도훈 2026-06-05. book_state 쓰기=수동.
+  # ΔIR 단일 컨벤션 (도훈 confirm 2026-07-03, CAP-P0-2): net_active_recon_v1.
+  #   new/incumbent IR의 basis가 혼재(gross/geo/exante)하면 ADMIT 인증 불가 → DEFER.
 
   # ── Step 1: standalone admission (do NOT modify pg1_admission) ──────────────
   artifact <- pg1_admission(portfolio_id, candidate_id, validated_role, pg0_artifact)
   artifact$artifact_type <- artifact_type
+  artifact$ir_convention <- .PG_IR_CONVENTION
 
   # REJECT short-circuits: book context cannot rescue a rejected sleeve.
   if (identical(artifact$decision, "REJECT")) {
-    artifact$book_delta_ir     <- NA_real_
-    artifact$new_book_ir       <- NA_real_
-    artifact$incumbent_book_ir <- NA_real_
-    artifact$book_context_note <- "standalone REJECT — book-marginal check skipped"
+    artifact$book_delta_ir           <- NA_real_
+    artifact$new_book_ir             <- NA_real_
+    artifact$incumbent_book_ir       <- NA_real_
+    artifact$new_book_ir_basis       <- NA_character_
+    artifact$incumbent_book_ir_basis <- NA_character_
+    artifact$ir_basis_consistent     <- NA
+    artifact$book_context_note       <- "standalone REJECT — book-marginal check skipped"
     return(artifact)
   }
 
@@ -653,42 +904,90 @@ pg1_admission_with_book_context <- function(portfolio_id, candidate_id,
   incumbent_ids <- unlist(incumbent_ids, use.names = FALSE)
 
   # incumbent_book_ir: prefer the stored baseline; recompute only if absent.
+  # basis 라벨 = book_state.json::incumbent_ir_basis / ir_convention 선언 필드 (2026-07-03 신설).
   incumbent_book_ir <- suppressWarnings(
     as.numeric(incumbent_book_state$incumbent_book_ir %||% NA_real_)
   )
-  if (length(incumbent_book_ir) != 1 || is.na(incumbent_book_ir)) {
+  incumbent_ir_basis <- NA_character_
+  if (length(incumbent_book_ir) == 1 && !is.na(incumbent_book_ir)) {
+    incumbent_ir_basis <- as.character(
+      incumbent_book_state$incumbent_ir_basis %||%
+      incumbent_book_state$ir_convention %||% "unlabeled")[1]
+  } else {
     inc <- .pg_book_ir(incumbent_ids)
     incumbent_book_ir <- inc$book_ir
+    if (length(incumbent_book_ir) == 1 && !is.na(incumbent_book_ir)) {
+      incumbent_ir_basis <- "book_optimize_qp_exante"
+    } else {
+      inc_recon <- .pg_book_ir_recon(incumbent_ids)
+      incumbent_book_ir <- inc_recon$book_ir
+      if (!is.na(incumbent_book_ir)) incumbent_ir_basis <- inc_recon$ir_convention
+    }
   }
 
+  # 후보-증강 book IR — fallback 순서 (도훈 confirm 2026-07-03):
+  #   ① mailbox 3-package 경로 (기존 book_optimize QP — 보존)
+  #   ② module_catalog/live_track recon 어댑터 (.pg_book_ir_recon —
+  #      alpha_search register_module 산출 등 mailbox 미보유 모듈 대응)
   new_book <- .pg_book_ir(c(incumbent_ids, candidate_id))
   new_book_ir <- new_book$book_ir
+  new_book_ir_basis <- if (length(new_book_ir) == 1 && !is.na(new_book_ir))
+    "book_optimize_qp_exante" else NA_character_
+  recon <- NULL
+  if (is.na(new_book_ir)) {
+    recon <- .pg_book_ir_recon(c(incumbent_ids, candidate_id),
+                               weights = book_combination_weights)
+    if (!is.na(recon$book_ir)) {
+      new_book_ir       <- recon$book_ir
+      new_book_ir_basis <- recon$ir_convention
+    }
+  }
 
-  # ── Step 3: book-marginal decision ──────────────────────────────────────────
+  # ── Step 3: book-marginal decision (ΔIR 단일 컨벤션 강제) ───────────────────
+  .basis_short <- function(x) {
+    x <- as.character(x %||% NA_character_)[1]
+    if (is.na(x)) NA_character_ else sub("\\s.*$", "", x)
+  }
   delta_ir <- NA_real_
+  basis_consistent <- NA
   if (!is.na(new_book_ir) && !is.na(incumbent_book_ir)) {
     delta_ir <- new_book_ir - incumbent_book_ir
+    both_recon <- grepl(.PG_IR_CONVENTION, new_book_ir_basis %||% "", fixed = TRUE) &&
+                  grepl(.PG_IR_CONVENTION, incumbent_ir_basis %||% "", fixed = TRUE)
+    basis_consistent <- both_recon ||
+      identical(.basis_short(new_book_ir_basis), .basis_short(incumbent_ir_basis))
   }
 
   if (is.na(delta_ir)) {
-    # IR uncomputable (missing packages / infeasible QP) → cannot certify gain.
+    # IR uncomputable (missing packages / infeasible QP / recon unresolved) → cannot certify gain.
     if (artifact$decision == "ADMIT") artifact$decision <- "DEFER"
     artifact$rationale <- c(
       if (identical(artifact$rationale, "All checks passed")) character(0) else artifact$rationale,
-      sprintf("book-marginal IR uncomputable (new=%s, incumbent=%s) — DEFER pending book packages",
+      sprintf("book-marginal IR uncomputable (new=%s, incumbent=%s) — DEFER pending book packages/recon series",
               ifelse(is.na(new_book_ir), "NA", sprintf("%.3f", new_book_ir)),
               ifelse(is.na(incumbent_book_ir), "NA", sprintf("%.3f", incumbent_book_ir)))
+    )
+  } else if (!isTRUE(basis_consistent)) {
+    # gross/geo/exante 혼재 ΔIR로 ADMIT 인증 금지 (CAP-P0-2 — 컨벤션 혼용이 감사 지적의 원인)
+    if (artifact$decision == "ADMIT") artifact$decision <- "DEFER"
+    artifact$rationale <- c(
+      if (identical(artifact$rationale, "All checks passed")) character(0) else artifact$rationale,
+      sprintf("book-marginal ΔIR basis mismatch (new=%s vs incumbent=%s) — %s 단일 컨벤션 미충족, ADMIT 인증 불가",
+              .basis_short(new_book_ir_basis), .basis_short(incumbent_ir_basis),
+              .PG_IR_CONVENTION)
     )
   } else if (artifact$decision == "ADMIT" && delta_ir < marginal_ir_threshold) {
     artifact$decision  <- "DEFER"
     artifact$rationale <- c(
       if (identical(artifact$rationale, "All checks passed")) character(0) else artifact$rationale,
-      sprintf("book-marginal IR gain %.3f < %.2f", delta_ir, marginal_ir_threshold)
+      sprintf("book-marginal IR gain %.3f < %.2f (basis=%s)",
+              delta_ir, marginal_ir_threshold, .basis_short(new_book_ir_basis))
     )
   } else if (artifact$decision == "ADMIT") {
     artifact$rationale <- c(
       if (identical(artifact$rationale, "All checks passed")) "All checks passed" else artifact$rationale,
-      sprintf("book-marginal IR gain %.3f >= %.2f", delta_ir, marginal_ir_threshold)
+      sprintf("book-marginal IR gain %.3f >= %.2f (basis=%s)",
+              delta_ir, marginal_ir_threshold, .basis_short(new_book_ir_basis))
     )
   }
   # If standalone already DEFER, keep DEFER; book gain is informational only.
@@ -696,14 +995,32 @@ pg1_admission_with_book_context <- function(portfolio_id, candidate_id,
   if (length(artifact$rationale) == 0) artifact$rationale <- "All checks passed"
 
   # ── Step 4: append book-context fields ──────────────────────────────────────
-  artifact$book_delta_ir          <- delta_ir
-  artifact$new_book_ir            <- new_book_ir
-  artifact$incumbent_book_ir      <- incumbent_book_ir
-  artifact$marginal_ir_threshold  <- marginal_ir_threshold
-  artifact$book_context_note      <- sprintf(
-    "incumbent_ids=[%s] + candidate=%s | n_loaded_new=%d infeasible_new=%s",
+  artifact$book_delta_ir           <- delta_ir
+  artifact$new_book_ir             <- new_book_ir
+  artifact$incumbent_book_ir       <- incumbent_book_ir
+  artifact$new_book_ir_basis       <- new_book_ir_basis
+  artifact$incumbent_book_ir_basis <- incumbent_ir_basis
+  artifact$ir_basis_consistent     <- basis_consistent
+  artifact$marginal_ir_threshold   <- marginal_ir_threshold
+  if (!is.null(recon)) {
+    artifact$book_recon_adapter <- list(
+      sources          = recon$sources,
+      bm_source        = recon$bm_source,
+      n_months         = recon$n_months,
+      period           = recon$period,
+      combination      = recon$combination,
+      weights_used     = recon$weights_used,
+      port_alpha_t_nw3 = recon$port_alpha_t_nw3,
+      reason           = recon$reason
+    )
+  }
+  artifact$book_context_note       <- sprintf(
+    "incumbent_ids=[%s] + candidate=%s | mailbox n_loaded=%d infeasible=%s | recon_adapter=%s",
     paste(incumbent_ids, collapse = ", "), candidate_id,
-    new_book$n_loaded, isTRUE(new_book$infeasible)
+    new_book$n_loaded, isTRUE(new_book$infeasible),
+    if (is.null(recon)) "unused"
+    else if (!is.na(recon$book_ir)) sprintf("used(n_months=%d)", recon$n_months)
+    else sprintf("failed(%s)", recon$reason)
   )
 
   # Re-persist the augmented artifact (overwrites the standalone pg1 artifact).
@@ -1237,6 +1554,9 @@ pg_update_candidates <- function(portfolio_id) {
 cat("[portfolio_governor] Loaded (v", .PG_VERSION, "). Functions:\n", sep = "")
 cat("  pg0_gap_review()       — PG0: Portfolio gap diagnosis + cold start\n")
 cat("  pg1_admission()        — PG1: Candidate admission (anti-pattern/LOO/role)\n")
+cat("  pg1_admission_with_book_context() — PG1 book-marginal ΔIR (net_active_recon_v1 단일 컨벤션;\n")
+cat("                           mailbox 3-package 우선 → module_catalog/live_track recon 어댑터)\n")
+cat("  pg_load_book_state()   — canonical book_state.json 로드 (절대경로, 읽기 전용)\n")
 cat("  pg2_allocation()       — PG2: Sleeve assembly & regime-adjusted allocation\n")
 cat("  pg3_monitor()          — PG3: Live monitoring (drift/regime/MDD alerts)\n")
 cat("  pg_cold_start()        — Cold start protocol (Phase 0/1/2+)\n")

@@ -1,0 +1,62 @@
+[ramp_io.R] Loaded — ramp_write_parquet/ramp_write_json (§2.4 meta enforced)
+[latent_factor_extraction.R] Loaded — extract_latent_factors() (PCA/factanal, PC1 var 보고)
+[ramp_io.R] Loaded — ramp_write_parquet/ramp_write_json (§2.4 meta enforced)
+[config.R] PROJECT_ROOT: C:\Users\99922\OneDrive\Quant_Module_Moltbot
+[factor_db_connector] Loaded. Functions: load_month_factors(), compute_rolling_ic_all(),
+  group_factors_by_family(), align_factor_direction()
+[pure_factor_extraction.R] Loaded — build_fwl_controls / fwl_orthogonalize / extract_pure_factor (FWL z_pure)
+[ramp_io.R] Loaded — ramp_write_parquet/ramp_write_json (§2.4 meta enforced)
+[canonical_screen_bt.R] Loaded — canonical_screen_bt() (v8.x WS1 real-computation helper)
+[factor_validation.R] Loaded — build_monthly_forward_returns / validate_factor / approve_factors
+===== Gate 4.1 latent factors (PCA) =====
+PC1 variance explained: 76.0%  (KR 베타지배 진단)
+scree (top 10):
+       pc       sdev variance_explained cumulative_variance
+    <int>      <num>              <num>               <num>
+ 1:     1 0.24161795        0.759852648           0.7598526
+ 2:     2 0.06160276        0.049393677           0.8092463
+ 3:     3 0.05614342        0.041026901           0.8502732
+ 4:     4 0.04542231        0.026854024           0.8771273
+ 5:     5 0.03368611        0.014769732           0.8918970
+ 6:     6 0.02833473        0.010449827           0.9023468
+ 7:     7 0.02565241        0.008565002           0.9109118
+ 8:     8 0.02341641        0.007136935           0.9180487
+ 9:     9 0.02036395        0.005397530           0.9234463
+10:    10 0.01960776        0.005004111           0.9284504
+factanal status: failed 
+
+===== Gate 4.2 pure factor FWL =====
+rawdata range: 1990-01-04 .. 2026-06-12  nrow: 13954035 
+[align_factor_direction] PIT-safe: sig_date=2024-01-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=6 / registry-fallback=0 / default-fallback=0 (n_factors=6)
+[pure_factor] 2024-01-31: 6 factors orthogonalized
+[align_factor_direction] PIT-safe: sig_date=2024-02-29 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=6 / registry-fallback=0 / default-fallback=0 (n_factors=6)
+[pure_factor] 2024-02-29: 6 factors orthogonalized
+[align_factor_direction] PIT-safe: sig_date=2024-03-31 | min_months=36
+[align_factor_direction] loaded-factor direction: IC-inferred=6 / registry-fallback=0 / default-fallback=0 (n_factors=6)
+[pure_factor] 2024-03-31: 6 factors orthogonalized
+pure factor score rows: 6169 ; factors seen: D02_Beta,L01_Amihud,M01_Mom_12_1,Q01_GPA,S01_Size,V02_EP
+orthogonality summary (FWL working evidence |cor(z_pure,X)|<0.05):
+       factor_id status     n max_orth_cor sec_r2 orthogonality_pass
+          <char> <char> <int>        <num>  <num>             <lgcl>
+ 1:     D02_Beta     ok   349            0      0               TRUE
+ 2:   L01_Amihud     ok   349            0      0               TRUE
+ 3: M01_Mom_12_1     ok   347            0      0               TRUE
+ 4:      Q01_GPA     ok   333            0      0               TRUE
+ 5:     S01_Size     ok   350            0      0               TRUE
+ 6:       V02_EP     ok   327            0      0               TRUE
+ 7:     D02_Beta     ok   349            0      0               TRUE
+ 8:   L01_Amihud     ok   349            0      0               TRUE
+ 9: M01_Mom_12_1     ok   349            0      0               TRUE
+10:      Q01_GPA     ok   333            0      0               TRUE
+11:     S01_Size     ok   350            0      0               TRUE
+12:       V02_EP     ok   327            0      0               TRUE
+13:     D02_Beta     ok   349            0      0               TRUE
+14:   L01_Amihud     ok   349            0      0               TRUE
+15: M01_Mom_12_1     ok   349            0      0               TRUE
+16:      Q01_GPA     ok   333            0      0               TRUE
+17:     S01_Size     ok   350            0      0               TRUE
+18:       V02_EP     ok   327            0      0               TRUE
+
+[gate4 debug] elapsed: 14.8 sec

@@ -25,10 +25,12 @@
 - **게이트 2계층 (2026-06-10 도훈 mandate P2 — 계층 분리이지 완화 아님)**:
   - **Screening tier (탐색 게이트)**: `hurdle_gate.R` `verdict$screening` — 알파 *신호력*만 평가(`screen_pass` = no-PIT ∧ [SR≥0.7∧CAGR≥12% 또는 score≥40∧SR≥0.5]). MDD·turnover 등 *구조* 사유로 grade C/F여도 신호가 실재하면 `screen_route`(OVERLAY_CANDIDATE / FR_RCMA / DPL_FEATURE)로 후속 소비 경로 라우팅. 근거: alpha-search 탈락 66/66이 MDD>45% 단일 사유(β≈0.8 맨몸 채점 — overlay가 시스템 입증 MDD 레버인데 모듈 단계에서 선기각하는 구조 모순). **PIT 위반만 계층 무관 절대 기각.**
   - **Graduation/자본 tier (불변)**: 위 HARD 3종(PORT_t 2.95·oos_retention 0.7·calmar 0.64) + §4 book-marginal — screening pass는 이 계층에 어떤 면제도 주지 않음. screening은 "버릴 후보"와 "다른 방식으로 쓸 후보"를 구분하는 라벨일 뿐.
+- **훅 배선 완료 (2026-07-03 도훈 confirm, 아키텍처 감사)**: `discovery_graduation_gate.sh`가 HARD 3종(PORT_t·oos_retention·calmar)을 fail-closed 실차단 + sweep-DSR 미산출 block.
 
 ## §4 Admission = book-marginal (standalone 졸업 아님)
 - `portfolio_governor.R::pg1_admission_with_book_context()`: standalone ADMIT 후 **ΔIR = new_book_ir − incumbent_book_ir ≥ 0.05** 충족 시에만 ADMIT(미달 DEFER). `book_optimizer.R` book_information_ratio/book_update 재사용. baseline = `book_state.json::incumbent_book_ir`.
 - **governor admit(book_state 쓰기)은 자동화 금지** — 비가역 자본 게이트, Q-Lead + 도훈 수동 confirm. (dossier 워크플로우는 risk→judge까지만 자동, governor 정지.)
+- **ΔIR 단일 컨벤션 (2026-07-03 도훈 confirm, 아키텍처 감사)**: book-marginal ΔIR의 IR = **recon NAV 기반 net-active IR**(`ir_convention=net_active_recon_v1`, `book_state.json` 선언 필드) 단일 기준. gross/geo 수치는 비교 인용 시 basis 라벨 의무.
 
 ## §5 DPL = 구성 레이어 (알파는 피처)
 - 실패한 standalone 알파는 폐기 아닌 **DPL(Direct Portfolio Learning) 입력 피처**. DPL: features→weights end-to-end(미분가능 convex layer, long-only/Σw=1/[0,0.20]/15bps native, net Sharpe 직접 최적화). research_philosophy ④. 알파 리서치 = DPL 연료. (pilot 진행 — `02_Infrastructure/ml_pipeline/dpl_portfolio.py`, weight_method_registry "DPL".)
@@ -38,6 +40,9 @@
 - **직교 ≠ 수익**: standalone long-only 16/16 admission FAIL의 사유는 상관이 아니라 **PORT_t(실현 net active)**(BAB port_t −2.02 등). 잔차-직교라도 PORT_t는 별개 게이트 → **"직교 ∧ PORT_t 통과" 동시 충족분만 book 실질 기여**. [[learning-gate-calibration-longonly]]
 - **SR 2.5 레버**: ① overlay(β/regime timing, 주역·유일한 long-only β 레버) ② **잔차-직교 sleeve 스태킹(한계 아닌 실질 — 단 PORT_t 통과분만; 미해결: RAMP 18후보 PORT_t 검증 필요)** ③ DPL(직접 SR 최적화) ④ uncertainty 선택. ⚠ 구 "새 직교 sleeve 사냥=한계 효익(IR/MDD)만"은 gross 상관 과대평가 기반 → 정정.
 
+## §7 Vintage Pinning (2026-07-03 도훈 confirm, 아키텍처 감사)
+- **HARD 게이트 판정·다중라운드 A/B 산출은 `pin_cache`(`02_Infrastructure/data/pin_cache.R`)로 고정된 스냅샷 기준**으로 수행하고, **pin tag를 산출물에 기록**한다. 근거: 세션 중 캐시 재생성이 판정 tipping 유발 실사고 ([[project-cache-vintage-pinning]] — benchmark 재생성으로 F5 SR 2.224→2.161).
+
 ## 참조
 - `.claude/rules/backtest-contract.md`(10-component) / `pit.md` / `research_philosophy.md`(④⑤⑥) / `answer-principles.md`(자체합성 금지)
 - `02_Infrastructure/contracts/{backtest_result_contract,canonical_screen_bt,registry_writer}.R` · `hooks/discovery_graduation_gate.sh` · `portfolio/portfolio_governor.R`
@@ -45,6 +50,7 @@
 - SOT: `02_Infrastructure/docs/qvest_v8_0_upgrade_plan.md`
 
 ## Change log
+- 2026-07-03 (도훈 confirm, 아키텍처 감사): §3 훅 배선 완료 명시(`discovery_graduation_gate` HARD 3종 fail-closed 실차단 + sweep-DSR 미산출 block) + §4 ΔIR 단일 컨벤션(`ir_convention=net_active_recon_v1`, recon NAV 기반 net-active IR + gross/geo basis 라벨 의무) + §7 vintage pinning 신설(`pin_cache` 스냅샷 고정 + pin tag 기록).
 - 2026-06-18 (실측·4축 적대감사): **RAMP 전주기(2005-2026, 257월 균일 12/년) M-code graduation 재도전 — 졸업 불가·screen-tier 확정.** ① 추출 블로커 수리: rawdata 풀로드 세그폴트 3중버그(`read_parquet` col_select 누락=2.5GB 풀컬럼 / `gc()` per-iter=OneDrive 페이징 timeout / **`arrow::set_io_thread_count(1)`=parquet read HANG**) → 102 승인팩터 264월 실측 가능. ② 정제 11개 직교 경제군(군간 |cor| mean 0.10). ③ M_regdd(국면-IC 가중) 게이트(`run_ramp_graduation.R`): **pt_capwt(계약-authoritative cap-w KOSPI200)=+2.37 ✗ / pt_EWuni(factor-neutral 진단)=+3.66 / oos_retention=0.15 ✗ / calmar=0.37 ✗ / DSR=3.24**. cap-w 기준 substantive HARD 3종 전부 미달. ④ 적대감사 4축(look-ahead/oos산식/벤치/해석) **no verdict-change**: asof 토글 test로 look-ahead 부재 입증(prod 3.66 vs full-sample-IC 4.38 = 코드가 ~0.72t 제거), oos 0.15=실제 cohort-wide 2017+ decay(§3 decay-pattern), EW-uni 헤드라인은 KR 소형주틸트로 cap-w 대비 ~+1.3t 낙관. → **§6 "직교 ≠ 수익" 원칙 M-code 레벨 확증**(11군 직교하나 결합 PORT_t(cap-w) 미통과). **"미해결: RAMP sleeve PORT_t 통과 여부"(아래 06-18 §6 entry) 해소 = M-code 조합은 cap-w PORT_t 미통과**. 후속(verdict 무관): RAMP graduation 게이트가 EW-uni 라벨인데 §2 계약은 cap-w authoritative — 거버넌스 일관성 정렬 필요 + DSR이 PSR t-stat 오표기(Bailey-LdP 확률 아님). 산출: `outputs/ramp/{pure_factor_scores(257월),factor_group_scores}.parquet` · L-code `L-RAMP-20260618_173717`(backtested).
 - 2026-06-18 (도훈 confirm): §6 measurement 정정 (gross→active basis + β 혼동 폐기). 근거: `_ortho_audit.R` 267m 실측 — long-only 패밀리 시장β≈0.99(core 0.993·def 0.981·blend 0.987, 구 "β-0.04 시장중립"은 학술 long-short β 오인) + gross 상관 0.789(core↔def)이 active(−BM) 기준 0.452로 급락(b1은 `variant_return_correlation_gross` 단일 basis만 산출). RAMP Gate4(PC1=시장 0.76, FWL 잔차화 → 잔차-α 후보 18, PC2~10 style 군집)와 정합. "수익률직교 구조적 불가"→"시장성분 직교불가·잔차 직교가능"으로, "새 직교 sleeve=한계효익"→"PORT_t 통과분은 실질"로 정정. **유지: long-only β≈1 바닥 + 수익성 게이트(16/16 PORT_t FAIL은 상관 아닌 수익 문제) 불변.** 미해결(RAMP 본진): 잔차-직교 sleeve의 PORT_t 통과 여부 = 18후보 active-basis 검증.
 - 2026-06-13 (도훈 confirm): Codex 2026-06-12 changeset의 screening 게이트 변경 3건 소급 승인 — ① turnover hard fail 600%→**1,100%** (`hurdle_gate.R` D002/FMT-05, research_philosophy "TO≤11.0/yr" 2026-05-29 mandate 동기화) ② **MDD>45% 단독 hard fail 폐지 → structural drawdown** (MDD≥70% / 45%+ 에피소드≥15회 / 55%+ ≥6회 / 점유≥25% / 최장 수중≥252d만 hard fail, 비구조적 45%+는 tail_review 라벨. `hurdle_gate.R` D004 + `essence_score.R` hard_fail 기본추론. 근거: `stage_artifacts/reports/drawdown_frequency_kr_baseline_20260612.md` — 2005+ BM 자체 MDD 54.5%) ③ soft-deployment weight_bounds [0,0.15]→**[0,0.20]** (`constraint_defaults.json` v2.4, 헌법 hard cap 동기화). **Graduation HARD 3종(PORT_t 2.95·oos_retention 0.7·calmar 0.64)은 불변** — 본 3건은 screening tier 한정.

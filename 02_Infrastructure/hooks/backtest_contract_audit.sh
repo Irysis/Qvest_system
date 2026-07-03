@@ -19,22 +19,45 @@
 #   3. integrity == "FAIL" 이면 deny (L3 block)
 #   4. 그 외는 allow
 #
-# 우회: QVEST_SKIP_BACKTEST_CONTRACT_AUDIT=1
+# 우회: QVEST_SKIP_BACKTEST_CONTRACT_AUDIT=1 (사용 시 06_Registry/hook_skip_audit.log append 의무 —
+#        append 실패 시 skip 미인정, 정상 게이트 로직으로 계속. v8.2.1 감사)
 # 로그: /tmp/backtest_contract_audit.log
 #==============================================================================
 
-trap 'echo "{}"; exit 0' ERR
+# (v8.2.1 2026-07-03 감사 HOOK-P2-1/MC-07, 도훈 confirm) 게이트급 fail-closed:
+#   내부 오류(ERR trap) 시 무조건 '{}' allow 대신, 게이트 보호 대상
+#   (backtest_registry.csv / methodology_active|memory.md / metrics_official.csv)
+#   경로가 payload에 잡히면 block. .py 자체합성 스캔은 코드 파일 일반 대상이라
+#   오류 시 fail-open 유지(전체 .py Write 마비 방지 — 정상 경로 스캔 로직은 불변).
+_gate_fail_closed() {
+  local hay="${FILE_PATH:-}"
+  [ -n "$hay" ] || hay="${INPUT:-}"
+  if printf '%s' "$hay" | grep -qE 'backtest_registry\.csv|methodology_(active|memory)\.md|metrics_official\.csv'; then
+    echo '{"decision": "block", "reason": "backtest_contract_audit: hook 내부 오류 — registry/methodology 등재 검증 불가 (fail-closed). Reference: .claude/rules/backtest-contract.md"}'
+  else
+    echo '{}'
+  fi
+  exit 0
+}
+trap '_gate_fail_closed' ERR
 set -u
 
 INPUT=$(cat 2>/dev/null || echo '{}')
 LOG="/tmp/backtest_contract_audit.log"
 TS="$(date '+%Y-%m-%d %H:%M:%S')"
-
-if [ "${QVEST_SKIP_BACKTEST_CONTRACT_AUDIT:-0}" = "1" ]; then
-  echo '{}'; exit 0
-fi
+PROJECT="${CLAUDE_PROJECT_DIR:-${QM_ROOT:-/c/Users/99922/OneDrive/Quant_Module_Moltbot}}"
 
 FILE_PATH=$(echo "$INPUT" | grep -oE '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"file_path"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/')
+
+# (v8.2.1 감사) QVEST_SKIP 우회 사용 시 감사 로그 append 의무화 (UTC시각|훅명|SKIP변수|file_path)
+if [ "${QVEST_SKIP_BACKTEST_CONTRACT_AUDIT:-0}" = "1" ]; then
+  SKIP_LOG="$PROJECT/06_Registry/hook_skip_audit.log"
+  if echo "$(date -u '+%Y-%m-%dT%H:%M:%SZ')|backtest_contract_audit.sh|QVEST_SKIP_BACKTEST_CONTRACT_AUDIT|${FILE_PATH:-}" >> "$SKIP_LOG" 2>/dev/null; then
+    echo '{}'; exit 0
+  fi
+  # 감사 로그 기록 실패 → skip 미인정 (감사 불가 우회 금지), 정상 게이트 로직으로 계속
+  echo "[$TS] WARN — skip 요청됐으나 hook_skip_audit.log append 실패, skip 미인정" >> "$LOG"
+fi
 
 [ -z "$FILE_PATH" ] && { echo '{}'; exit 0; }
 
@@ -61,8 +84,7 @@ EOF
   echo '{}'; exit 0
 fi
 
-# 가장 최근 bt_result.rds 검색 — strategy_id 추정
-PROJECT="${CLAUDE_PROJECT_DIR:-${QM_ROOT:-/c/Users/99922/OneDrive/Quant_Module_Moltbot}}"
+# 가장 최근 bt_result.rds 검색 — strategy_id 추정 (PROJECT는 상단 정의)
 LATEST_RDS=$(find "$PROJECT/04_Research/strategies" -name "bt_result.rds" -mmin -60 2>/dev/null | head -1)
 
 if [ -z "$LATEST_RDS" ]; then

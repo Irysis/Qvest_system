@@ -65,6 +65,7 @@
 - alpha / risk / optimizer / opt_ → block (정규 리서치 lockbox 차단)
 - judge / forge / monitoring / execution → allow + audit log
 - Q-Lead / unidentified → allow
+- ⚠ **실커버리지 (2026-07-03 도훈 confirm, 아키텍처 감사)**: 본 훅과 역할경계 훅(`agent_role_guard`)은 agent marker(`/tmp/qvest_current_agent_{pid}`) 존재 시에만 발화하며, marker 자동 기록 메커니즘은 부재 — marker 미존재 시 allow. 실제 방어선 = R 계약(essence_score/registry_writer) + 게이트급 훅(safety_guard·backtest_contract_audit·legacy_write_block·discovery_graduation_gate) + 수동 confirm.
 
 ## V6 Gap-Directed 가설
 

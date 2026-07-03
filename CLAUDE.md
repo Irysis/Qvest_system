@@ -110,6 +110,8 @@ Qvest 시스템 전체 구동. bootstrap.sh 실행 → 플러그인 리로드 �
 
 ### 제2목표: SR 2.5+ / CAGR 16%+ / MDD <25% (SR 2.0→2.5 상향, 2026-05-29 도훈 mandate — KR 구조적 상승 반영)
 
+도달 경로 (2026-07-03 도훈 confirm, 아키텍처 감사 — measurement-graduation §6 정합): ① overlay 정교화(주레버, 실증 유일) ② 잔차-직교 sleeve 스태킹(PORT_t 통과분만) ③ 비-return 신규 원천(DART insider 등). 신규 standalone 팩터 사냥은 16/16 FAIL posterior로 최후순위.
+
 ### 제약 (방침)
 
 - 기존 인프라 극한 활용 (Factor DB / DART / FRED / ECOS / QuantiWise)
@@ -199,7 +201,7 @@ Qvest 시스템 전체 구동. bootstrap.sh 실행 → 플러그인 리로드 �
 - ✅ WT 생성 + 6 agent spawn orchestration
 - ❌ 직접 Rscript 실행 / 백테 / factor_engine 수정 → Forge / Alpha agent 위임
 - ❌ weight 결정 / 공분산 계산 → Optimizer / Risk agent 위임
-- ❌ Alpha/Risk/Opt 경계 침범 (Hook L3 자동 차단)
+- ❌ Alpha/Risk/Opt 경계 침범 (역할경계·lockbox 훅은 agent marker 존재 시에만 발화 — marker 자동 기록 메커니즘 부재. 실제 방어선 = R 계약(essence_score/registry_writer) + 게이트급 훅 + 수동 confirm. 2026-07-03 도훈 confirm, 아키텍처 감사)
 
 ---
 
@@ -277,5 +279,5 @@ v53 TeamCreate 패턴은 v8.1에서 Agent tool spawn으로 대체됨. TeammateId
 
 **SOT 분리 (2026-06-10 P2 다이어트)**: 버전 연혁·릴리스 상세는 `02_Infrastructure/docs/CHANGELOG_constitution.md` — CLAUDE.md는 현행 헌법만 담는다.
 - 현행: **v8.2** (2026-06-30 도훈 mandate — Codex Critic Round 제거, Opus 4.8 자체 적대검증 대체. 훅 3개 archive · AX-008 Codex→Self-Adversarial 3-source 2/3 불변 · state_transitions codex required 제거 · qvest-codex-round skill 삭제 · codex-round.md DEPRECATED. 별개 S0/RAMP Codex 유지)
-- 이전: **v8.1.1** (2026-06-10 완벽 수리 + P2 구조 개편 — hook 47/47 부활 · OneDrive canonical · 게이트 2계층 · rules autoload 6 코어)
+- 이전: **v8.1.1** (2026-06-10 완벽 수리 + P2 구조 개편 — hook 47/47 부활(당시 기준) · OneDrive canonical · 게이트 2계층 · rules autoload 6 코어). **현행 hook 등록 = settings.json 45 distinct .sh** (v8.2 codex 2건 해제 반영, 2026-07-03 실측 — `harness.md` 정합)
 - 최근 검증: (v8.2) router selftest PASS · hook_e2e_battery 10/11(codex 케이스 제거, 잔여 FAIL=python3 환경) · health HARD-fail 0 (2026-06-30) / (v8.1.1) hook 차단 4종 실증 · readiness pass 12/fail 0 · bootstrap BOOT_FAILS=0 (2026-06-10)

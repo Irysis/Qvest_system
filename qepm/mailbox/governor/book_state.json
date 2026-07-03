@@ -1,6 +1,8 @@
 {
- "updated_at": "2026-06-02T00:00:00+09:00",
- "updated_by": "Q-Lead Opus 4.8 — R05 PG2 단일 sleeve 재확인 + Hybrid stale flag 폐기 정정 (도훈 mandate 2026-06-02). admitted_ids/book_weights 변동 없음(이미 R05 100%).",
+ "updated_at": "2026-07-02T19:30:00+09:00",
+ "updated_by": "governor LAYER4 REMOVAL 이행 (WT-D20260702_002, 도훈 FINAL 승인 2026-07-02, 비가역 자본게이트 manual confirm) — Layer4(FaithTrend/β_faith 오버레이) 제거. book: STR_1715_FaithTrend_on_M4_R05_overlay_PG2 → STR_1715_on_M4_R05_noLayer4_PG2 (=STR_1715×m4×β_R05, Layer4 없음). Replacement 룰 적용(오버레이 층 제거, Sequential Admission 부적용). 증거 clean 3-way(WT-D20260702_002): C_noL4 SR 1.898(geo)/Calmar 1.943/CAGR 0.4526/PORT_t 6.21이 faith(1.779)·AR(1.836) 유의지배(paired NW-t +4.08/+3.11). judge RECOMMEND_REMOVE_LAYER4 + AX-008 2/3(Forge+Self-Adversarial). book-marginal ΔIR: faith geo-active 1.21→noL4 geo-active 1.755(Δ+0.545≥0.05) PASS. active oos_retention 0.534 band_fail이나 removal 맥락 + band escalation 3/3(trailing PORT_t 1.84·full 6.21·removal-Δ NW-t 4.08) + 도훈 manual. 라이브(2026-07 AS_OF) 노출 9.91%→24.78%(+14.87%p, faith β 제거로 현금 90.09%→75.22%). 상세 event_WT_D20260702_002_layer4_removal.",
+ "updated_at_prior_pre_layer4_removal": "2026-07-02T14:25:49+09:00",
+ "updated_by_prior_pre_layer4_removal": "Q-Lead book_state 기록 정정 (도훈 confirm 2026-07-02) — 벤치마크 근본버그 수정 반영. benchmark.parquet 코스피전체(IKS001)→코스피200(IKS200) + panel realized_ym 1개월-앞 라벨결함 정정(return_ym 추가+가드). net-active IR 0.926(버그)→1.21 · SR 1.875→2.109 · β 0.09→0.51 · PORT_t 5.52. ★편입/book_weights/7월 실투 포지션 전부 불변 — 자본 재편성 없는 순수 기록 정정. 상세 event_benchmark_correction_20260702.",
  "updated_at_prior_pre_WT_D20260517_005": "2026-05-17T22:45:00+09:00",
  "updated_by_prior_pre_WT_D20260517_005": "governor_WT_D20260517_004_defer_pending_real_pit_data_rework_no_mutation_audit_trail_append",
  "updated_at_prior_pd25_revoke": "2026-05-12T08:40:00+09:00",
@@ -19,20 +21,32 @@
   "no_new_backtest_executed": true,
   "no_weight_or_admission_change": true
  },
- "schema_version": "v2.3_post_WT_H20260513_001_R05_LAYER5_OVERLAY_ADMIT",
- "schema_version_prior": "v2.2_post_WT_D20260512_002_RE_CERTIFY_SINGLE_SLEEVE_LAYER4_L277_L278_LINEAGE_RECOVERY",
+ "schema_version": "v2.5_post_WT_D20260702_002_LAYER4_REMOVAL",
+ "schema_version_prior": "v2.4_post_WT_D20260701_002_FAITHTREND_LAYER4_OVERLAY_ADMIT",
+ "schema_version_prior_pre_v2_4": "v2.2_post_WT_D20260512_002_RE_CERTIFY_SINGLE_SLEEVE_LAYER4_L277_L278_LINEAGE_RECOVERY",
  "schema_version_unchanged_post_WT_D20260515_002": "v2.3_RETAIN — WT-D20260515_002 REJECT verdict + no_mutation. See event_WT_D20260515_002_blend_reject_no_mutation block for audit trail.",
  "n_admitted": 1,
  "admitted_ids": [
-  "STR_1715_AR_on_M4_R05_overlay_PG2"
+  "STR_1715_on_M4_R05_noLayer4_PG2"
  ],
  "book_weights": {
-  "STR_1715_AR_on_M4_R05_overlay_PG2": 1.0
+  "STR_1715_on_M4_R05_noLayer4_PG2": 1.0
  },
  "incumbent_admitted_ids": [
-  "STR_1715_AR_on_M4_R05_overlay_PG2"
+  "STR_1715_on_M4_R05_noLayer4_PG2"
  ],
- "incumbent_book_ir": 1.5754,
+ "admitted_ids_prior_pre_layer4_removal": [
+  "STR_1715_FaithTrend_on_M4_R05_overlay_PG2"
+ ],
+ "book_weights_prior_pre_layer4_removal": {
+  "STR_1715_FaithTrend_on_M4_R05_overlay_PG2": 1.0
+ },
+ "incumbent_book_ir": 1.416,
+ "ir_convention": "net_active_recon_v1",
+ "ir_convention_note": "§4 book-marginal ΔIR≥0.05 게이트 단일 컨벤션 (도훈 confirm 2026-07-03, 감사 CAP-P0-2/CAP-P1-4): recon NAV 월수익(ret_net, 비용 net) − BM(KOSPI200) 월수익의 active 시계열에 대해 mean(active)/sd(active)*sqrt(12) — contract build_benchmark_compare(annualization_factor=12) Information_Ratio와 동일 산식. gross IR(1.5754)·geometric-active IR(PerfA InformationRatio 1.755)은 본 게이트 사용 금지(진단·이력 라벨로만 보존).",
+ "incumbent_ir_basis": "net_active_recon_v1 — 실측 확인: 1.416 = Active_Return_Mean 0.0224016 / Tracking_Error 0.18984 * sqrt(12) (WT-D20260702_002/output/07_benchmark_compare_noL4_clean_ann12.csv Information_Ratio row 1.41602608097397, build_benchmark_compare contract 산출, 269개월 monthly net vs KOSPI200). 현 값이 선언 컨벤션과 일치 — 값 무변경.",
+ "incumbent_book_ir_prior_pre_layer4_removal": 1.5754,
+ "incumbent_book_ir_layer4_removal_note": "noLayer4 book(STR_1715×m4×β_R05) net-active IR vs KOSPI200 = 1.416 (contract convention: mean(active)/sd(active)*sqrt(12), book_state incumbent 정의와 동일 산식). geometric-active(PerfA InformationRatio)로는 1.755. Step3 clean 재계산(annualization=12, judge 정합 PASS: SR_geo 1.898·CAGR 0.4526·MDD 0.2329·Calmar 1.943·PORT_t 6.214). ★decision-file cited IR 1.326은 어떤 convention으로도 재현 불가(provenance 불명) → 실측 1.416을 authoritative로 기록(검증 안 된 인용 미기록, answer-principles). book-marginal 비교(동일 geo convention): faith 1.21 → noL4 1.755, ΔIR +0.545 ≥ 0.05 PASS. 산출: qepm/mailbox/worktask/WT-D20260702_002/output/step3_clean_recompute_meta.json.",
  "incumbent_book_ir_provenance": {
   "added_by": "WS3 book-marginal admission enforcement (v8.x, 2026-05-29)",
   "purpose": "Baseline IR for pg1_admission_with_book_context book-marginal gain check (delta_ir = new_book_ir - incumbent_book_ir >= 0.05).",
@@ -40,7 +54,8 @@
   "note": "STR_1715_AR_on_M4_R05_overlay_PG2 has no 3-package mailbox dir, so book_optimize() cannot recompute from packages; this stored baseline is authoritative for the incumbent. Candidate WTs carrying full alpha/risk/optimization packages are scored via book_optimize() augmented book IR.",
   "snapshot_of_admitted_ids_at_init": [
    "STR_1715_AR_on_M4_R05_overlay_PG2"
-  ]
+  ],
+  "update_20260702_layer4_removal": "top-level incumbent_book_ir 1.5754(base gross Charter §12) → 1.416(noLayer4 net-active contract convention). Layer4 제거로 book이 STR_1715×m4×β_R05로 변경. 1.416은 WT-D20260702_002 Step3 clean 계약 재계산(annualization=12) net-active IR. 이 baseline은 향후 book-marginal admission gate(ΔIR≥0.05)의 incumbent 기준. init 시 1.5754는 base gross(오버레이 전) 기준이었으므로 removal 후 net-active로 재정의됨."
  },
  "research_foundation_candidate_registry_pd34": {
   "candidate_id": "C_SOFTMAX_KR_EQUITY_COMPOSITE_PG2_RESEARCH_FOUNDATION_CANDIDATE_PD30",
@@ -329,10 +344,19 @@
    "superseded_by": "STR_1715_AR_on_M4_R05_overlay_PG2"
   }
  },
- "schedule_logic_version": "M4_TRADE_WAR_FIX_BOCPD_DECAY_BL_tri_pillar + AR_threshold_step_overlay_layered_sequentially (β_t · r_PG2_M4)",
+ "schedule_logic_version": "M4_TRADE_WAR_FIX_BOCPD_DECAY_BL_tri_pillar + R05_V5_tail_overlay (β_R05 · m4 · r_STR1715) — LAYER4 REMOVED (β_faith/β_AR 미적용, WT-D20260702_002)",
+ "schedule_logic_version_prior_pre_layer4_removal": "M4_TRADE_WAR_FIX_BOCPD_DECAY_BL_tri_pillar + FaithTrend_layer4_overlay + R05_layer5 (v2.4) / AR_threshold_step_overlay (v2.3)",
  "schedule_logic_upgrade_evidence_path": "qepm/mailbox/worktask/WT-D20260430_001/judge_ready/weights.csv (267 monthly grid) + qepm/stage_artifacts/WT_WT-D20260430_001/weights.csv (mirror) + qepm/mailbox/worktask/WT-S20260504_007/weights.csv (4 variants × 268 dates × 19 rows) + qepm/mailbox/worktask/WT-S20260504_007/03_period_returns.csv (M4-blended PG2 ret_net for AR overlay base)",
+ "layer4_overlay_active": {
+  "active": false,
+  "removed_by": "WT-D20260702_002 REMOVE_LAYER4 (도훈 FINAL 2026-07-02)",
+  "removed_layers": "β_faith(FaithTrend/paper#4, v2.4) 및 그 전임 β_AR(absorption ratio, v2.3)",
+  "reason": "clean 3-way 재심에서 Layer4 제거(C_noL4)가 SR/Calmar/PORT_t 유의지배(paired NW-t +3.11/+4.08). Layer4 방어=조건부·희소(위기 19/269월)·binding MDD(2006-02 ~23%)에 무차별. 방어는 β_R05×m4가 전담. faith/AR는 회복·확장년 drag.",
+  "note": "구 ar_overlay_active 블록(하단)은 감사이력 보존용 retain(active 아님). 현 book 오버레이 = β_R05_V5(regime tail) + m4(schedule)만."
+ },
  "ar_overlay_active": {
-  "active": true,
+  "active": false,
+  "deactivated_by_layer4_removal": "WT-D20260702_002 (2026-07-02). 본 블록은 v2.3 AR Layer4 감사이력 — Layer4 전면 제거로 비활성. active=false.",
   "wt_promotion_id": "WT-P20260504_001",
   "wt_research_id": "WT-S20260504_007",
   "lro_sha_frozen": "ad3d44417b526c3d82dde8724cb971ba973f2e418fc36ada7795d687c809cb18",
@@ -1970,5 +1994,171 @@
   "integrity_caveat_preserved": "DSR_N5_Z +1.448(admit basis) BUT DSR_N37_Z post-hoc -3.5961(음수) — R05 V2는 hyperparameter_sweep 출신이라 다중검정(N37) 보정 시 유의성 음수. measurement-graduation §3 정합. codex stance REVISE(veto아님), AX-008 2/3. 도훈 mandate로 promotion 진행하되 본 caveat 명시 retain.",
   "hybrid_disposition": "RETIRED (active→False; 실질 revoke 2026-05-18)",
   "reversible": "backup qepm/mailbox/governor/book_state.backup_20260602_pre_R05_PG2.json"
+ },
+ "updated_at_prior_pre_faithtrend_admit": "2026-06-02T00:00:00+09:00",
+ "updated_by_prior_pre_faithtrend_admit": "Q-Lead Opus 4.8 — R05 PG2 단일 sleeve 재확인 + Hybrid stale flag 폐기 정정 (도훈 mandate 2026-06-02). admitted_ids/book_weights 변동 없음(이미 R05 100%).",
+ "schema_version_prior_pre_v2_4": "v2.3_post_WT_H20260513_001_R05_LAYER5_OVERLAY_ADMIT",
+ "admitted_ids_prior_pre_faithtrend": [
+  "STR_1715_AR_on_M4_R05_overlay_PG2"
+ ],
+ "book_weights_prior_pre_faithtrend": {
+  "STR_1715_AR_on_M4_R05_overlay_PG2": 1.0
+ },
+ "incumbent_book_ir_faithtrend_note": "STR_1715 base gross IR 1.5754 불변(동일 alpha/M4/R05 base). FaithTrend 오버레이 net-active IR vs KOSPI200 = 1.21 (2026-07-02 정정 — 구 기록 0.926은 벤치가 코스피 전체(IKS001) 오선택 + realized_ym lag0 오정렬 이중버그값. 정정: 진짜 코스피200(IKS200) + return_ym(진짜 수익월) 정렬. β 0.506·SR 2.109·PORT_t_NW3 5.52·p 8e-8·하락포착 0.01). 구 버그값은 event_benchmark_correction_20260702 참조.",
+ "event_WT_D20260701_002_faithtrend_admit": {
+  "event": "GOVERNOR_ADMIT_FAITHTREND_OVERLAY_REPLACE_AR",
+  "admit_date": "2026-07-01",
+  "admit_authority": "도훈 manual confirm (비가역 자본 게이트, governor 정지 상태에서 도훈 수동 승인)",
+  "from_book": "STR_1715_AR_on_M4_R05_overlay_PG2",
+  "to_book": "STR_1715_FaithTrend_on_M4_R05_overlay_PG2",
+  "production_slots": {
+   "new_active": "2-2.STR_1715_FaithTrend_on_M4_R05_overlay_PG2",
+   "retained_rollback": "2-1.STR_1715_AR_on_M4_R05_overlay_PG2"
+  },
+  "change": "Layer 4 오버레이만 교체: β_AR(absorption ratio Kritzman-Page 2011) → β_faith(paper#4 Safari-Schmidhuber arXiv 2606.20145 충실). Layer 1+2(STR_1715 alpha)/Layer 3(M4)/Layer 5(R05) 동일.",
+  "formula": "w_final = w_str1715 * m4_scalar * beta_faith * beta_R05(regime)",
+  "verification_WT_D20260701_002": {
+   "forge_contract_269m": {
+    "metric_type": "backtested",
+    "Sharpe_arith": "1.675→1.875",
+    "Sharpe_geo": "1.837→2.111",
+    "MDD": "-23.3%→-21.2%",
+    "Calmar": "1.66→2.08",
+    "Portfolio_Alpha_t_NW_lag3": "4.72→6.09",
+    "IR": "0.764→0.926"
+   },
+   "validation_270m_through_0630": {
+    "Sharpe_geo": 2.103,
+    "paired_NW_t_vs_AR": 2.036,
+    "oos_retention": 1.1,
+    "holdout": [
+     0.7,
+     3.2
+    ]
+   },
+   "judge_verdict": "JUDGE_PASSED, admission_ready=TRUE (조건 3건)",
+   "gates": "PIT C1~C15 PASS(look-ahead 0) / 측정무결성 PASS / graduation PASS / DSR chain(haircut advisory) / net>cost PASS",
+   "AX_008": "2/3 PASS (Forge 계약 + Judge 독립재계산 완전일치, Architect N/A 인프라변경없음)"
+  },
+  "honest_caveats": [
+   "메커니즘=generic 비대칭 추세 de-risk (plain-TS-mom 93%). 논문 고유 알파 아님.",
+   "2026 강세장 tradeoff: 개선 더 방어→2026 YTD +65% vs 현행 +85% (지수 +101%). 강세국면 단기 하회 (도훈 confirm 인지).",
+   "DSR haircut 여지(chain). 2008 GFC는 AR 우위(단일 에피소드, -9.3% vs -17.5%)."
+  ],
+  "dossier_paths": {
+   "forge": "qepm/mailbox/worktask/WT-D20260701_002/output/forge_dossier_summary.json",
+   "judge": "qepm/mailbox/worktask/WT-D20260701_002/output/judge_verdict.json",
+   "book_dir": "05_Production/2.Factor_Model/2-2.STR_1715_FaithTrend_on_M4_R05_overlay_PG2",
+   "reproduce": "01_reproducible_code/run_layer5_faith_overlay.R"
+  },
+  "backup": ".cache/discovery/admit_backup_20260701/book_state.json.PREADMIT.bak",
+  "followup": "live paper-tracking 별도 실행 예정"
+ },
+ "updated_at_prior_pre_benchmark_correction_20260702": "2026-07-01T14:00:00+09:00",
+ "updated_by_prior_pre_benchmark_correction_20260702": "governor ADMIT — STR_1715_AR_on_M4_R05_overlay_PG2 → STR_1715_FaithTrend_on_M4_R05_overlay_PG2 교체 (2-1 AR층 → paper#4 Safari-Schmidhuber 충실 추세-변동성 오버레이). 도훈 수동 confirm 2026-07-01 (비가역 자본 게이트, Q-Lead+도훈 2단 확인). 검증 WT-D20260701_002: forge 계약 SR 1.675→1.875 · PORT_t 4.72→6.09 · paired-NW-t +2.04 · oos_retention 1.10 · judge JUDGE_PASSED admission_ready · AX-008 2/3(forge+judge 독립재계산 완전일치). 270m(~2026-06-30) 확장검증 verdict 불변. 2026 강세장 tradeoff 인지(개선 더 방어→YTD +65% vs 현행 +85%, 도훈 명시 confirm). 구 2-1 slot rollback 보존.",
+ "incumbent_book_ir_faithtrend_note_prior_bug_20260702": "STR_1715 base gross IR 1.5754 불변(동일 alpha/M4/R05 base). FaithTrend 오버레이 net-active IR vs KOSPI200 = 0.926 (forge WT-D20260701_002, 구 AR 0.764 대비 +0.162). book-marginal 향후 기준은 base gross 유지.",
+ "event_benchmark_correction_20260702": {
+  "event": "BOOK_STATE_METRIC_CORRECTION_KOSPI200_BENCHMARK_AND_PANEL_LABEL_FIX",
+  "corrected_at": "2026-07-02T14:25:49+09:00",
+  "authority": "도훈 confirm 2026-07-02 (AskUserQuestion: 정정 지표로 기록 갱신)",
+  "root_cause_1": "benchmark.parquet가 IKS200(코스피200) 아닌 IKS001(코스피 전체) 담고 있던 버그(build_cache QT_to_xts 컬럼 오선택 + naver_benchmark symbol=KOSPI 종합). 도훈이 코스피200 실값 제시로 발각.",
+  "root_cause_2": "panel realized_ym=리밸 기록월=진짜수익월+1 (백테 리밸일 정산 관행). β-scan: return_ym(offset-1) β0.81 vs realized_ym(offset0) β0.09.",
+  "metrics_before_bug": {
+   "net_active_IR": 0.926,
+   "SR": 1.875,
+   "beta": 0.091
+  },
+  "metrics_after_fix": {
+   "net_active_IR": 1.21,
+   "SR": 2.109,
+   "beta": 0.506,
+   "alpha_ann": 0.317,
+   "PORT_t_NW3": 5.52,
+   "pvalue": 8.2e-08,
+   "down_capture": 0.01,
+   "up_capture": 1.12
+  },
+  "code_fixes": [
+   "benchmark.parquet→IKS200",
+   "naver_benchmark_update.py→KPI200+가드",
+   "RAWDATA BM_Ret 재생성",
+   "indices.parquet 18지수",
+   "panel_alignment_guard.R(return_ym+β가드 ABORT)",
+   "aligned_metrics.R",
+   "build_index_cache.py",
+   "생성부 3개 배선"
+  ],
+  "beta_faith_self_correction": "KOSPI200 β_faith 배포판 확정: backtest 2개월 1.0→0.7(SR↑ 방향). 7월 forward β_faith 0.40 양벤치 동일→실투 불변.",
+  "position_unchanged": "admitted_ids·book_weights·incumbent_book_ir(1.5754 base gross)·7월 홀딩(현금 90.088%·삼성전자 등 20종목) 전부 불변. 자본 재편성 0.",
+  "verification": "E2E: 생성부 라이브 실행 시 panel_guard+aligned_metrics 런타임 작동 확인. 성과 byte-identical(라벨수정 ret_orig Δ=0)."
+ },
+ "event_WT_D20260702_002_layer4_removal": {
+  "event": "GOVERNOR_REMOVE_LAYER4_FAITHTREND_OVERLAY",
+  "removal_date": "2026-07-02",
+  "removal_authority": "도훈 FINAL 승인 2026-07-02 (비가역 자본 게이트, governor 정지 상태에서 도훈 수동 confirm 완료). governor는 이행 executor.",
+  "decision_file": "qepm/mailbox/worktask/WT-D20260702_002/layer4_removal_decision.json (REMOVE_LAYER4)",
+  "from_book": "STR_1715_FaithTrend_on_M4_R05_overlay_PG2",
+  "to_book": "STR_1715_on_M4_R05_noLayer4_PG2",
+  "change": "Layer4 오버레이(β_faith, 및 그 전임 β_AR) 제거. w_final = w_str1715 * m4_scalar * beta_R05(regime). Layer1+2(STR_1715 alpha) / Layer3(M4) / Layer5(R05 tail) 동일 유지.",
+  "admission_rule": "Replacement (기존 active book의 오버레이 층 제거 — 직접 SR/CAGR/MDD/Calmar/Harvey PORT_t 비교 + paired NW-t). Sequential Admission TDC/Pareto 게이트 부적용(신규 sleeve add 아님).",
+  "evidence_clean_3way_WT_D20260702_002": {
+   "metric_type": "backtested(contract)",
+   "timing": "clean (faith 신호 S(EOM m)→realized_ym m+2, 배포 forward_weights와 동일). 구 admit 근거(concurrent)는 look-ahead 오염 확정.",
+   "C_noL4": {"SR_geo": 1.898, "SR_arith_charter12": 1.704, "CAGR": 0.4526, "MDD": 0.2329, "Calmar": 1.943, "PORT_t_NW_lag3": 6.214},
+   "A_faith_clean": {"SR_geo": 1.779, "Calmar": 1.674, "PORT_t_NW_lag3": 4.671},
+   "B_AR": {"SR_geo": 1.836, "Calmar": 1.659, "PORT_t_NW_lag3": 4.498},
+   "paired_NW_t": {"C_vs_B_AR": 3.11, "C_vs_A_faith": 4.08},
+   "dominance": "C_noL4가 faith·AR 모두 전지표·양 oos 정의 일관 유의지배"
+  },
+  "book_marginal_gate": {
+   "rule": "ΔIR = new_book_ir − incumbent_book_ir ≥ 0.05 (동일 convention 비교)",
+   "faith_incumbent_geo_active_IR": 1.21,
+   "noL4_new_geo_active_IR": 1.755,
+   "delta_ir": 0.545,
+   "verdict": "PASS (Δ+0.545 ≥ 0.05). arith convention으로도 base gross 1.5754→noL4 net-active 1.416 재정의."
+  },
+  "graduation_band_note": {
+   "active_oos_retention": 0.534,
+   "band": "[0.5, 0.7) band_fail — 자동 자본졸업 불가(measurement-graduation §3)",
+   "escalation_2of3_required": "충족(3/3): ev1 trailing-60m active PORT_t 1.839(>0) / ev_full 전기간 active PORT_t 6.214 / ev3 removal-Δ NW-t 4.083(>0=제거가 유의 개선)",
+   "resolution": "removal 맥락(신규 자본투입 아님, 이미 admitted base의 열위 층 제거) + escalation 3/3 + 도훈 manual capital gate → verdict 무변. 자동 DEFER 아님."
+  },
+  "clean_recompute_step3": {
+   "annualization_factor": 12,
+   "frequency": "monthly",
+   "n_periods": 269,
+   "rds_bug_avoided": "bt_result_C_noL4.rds 06_metrics는 annualization=252 버그(CAGR 2524·Calmar 10838). 본 재계산 factor=12로 회피 → judge 확정값 완전정합(SR_geo 1.898·CAGR 0.4526·MDD 0.2329·Calmar 1.943·PORT_t 6.214 PASS). 근본수리 별도 chip task_b2ebfb2f.",
+   "meta_path": "qepm/mailbox/worktask/WT-D20260702_002/output/step3_clean_recompute_meta.json",
+   "clean_rds": "qepm/mailbox/worktask/WT-D20260702_002/output/bt_result_C_noL4_CLEAN_ann12.rds"
+  },
+  "live_exposure_change": {
+   "as_of": "2026-07-01",
+   "regime": "CRISIS",
+   "faith_invested": 0.0991,
+   "faith_cash": 0.9009,
+   "noL4_invested": 0.2478,
+   "noL4_cash": 0.7522,
+   "delta_exposure_pp": 14.87,
+   "note": "faith β=0.4 제거로 invested = m4(0.826)×β_R05(0.30) = 24.78%(현금 75.22%). deepdive의 +17.6%p는 recent-12m 평균 참조치, 본 값은 당월(2026-07) 종목레벨 실산출. β_R05=0.3(CRISIS)은 R05×m4 방어 여전 작동 — 방어는 Layer4 아닌 R05×m4가 담당(결정 thesis 정합).",
+   "holdings_file": "qepm/mailbox/worktask/WT-D20260702_002/output/20260701_noLayer4_weights_cap_0p20.csv",
+   "n_equity": 20
+  },
+  "risk_ack": "제거 = 방어모드→강세베팅 상대 전환(당월 라이브 노출 +14.87%p). 조정 시 대가(단 R05×m4 수준, naked 아님 — MDD 23.3% 유지). 연 SR +0.12(geo) 개선의 대가로 조정보험 일부 상실 — 도훈 시장관 하 수용.",
+  "ax008": "2/3 PASS (Forge 3-way 산출 + Self-Adversarial governor_challenge_note.md, verdict-overturning 0). judge RECOMMEND_REMOVE_LAYER4(adjudicator). Architect N/A(인프라 변경 없음).",
+  "dossier_paths": {
+   "decision": "qepm/mailbox/worktask/WT-D20260702_002/layer4_removal_decision.json",
+   "judge": "qepm/mailbox/worktask/WT-D20260702_002/output/judge_verdict.json",
+   "forge_3way": "qepm/mailbox/worktask/WT-D20260702_002/output/layer4_retrial_comparison.csv",
+   "deepdive": "qepm/mailbox/worktask/WT-D20260702_002/output/deepdive_meta.json",
+   "self_adversarial": "qepm/mailbox/worktask/WT-D20260702_002/governor_challenge_note.md",
+   "forward_generator_noL4": "qepm/mailbox/worktask/WT-D20260702_002/forward_weights_R05_noLayer4.R",
+   "clean_recompute": "qepm/mailbox/worktask/WT-D20260702_002/recompute_bt_noLayer4_clean.R"
+  },
+  "backup": "qepm/mailbox/governor/book_state_backup_pre_layer4_removal_20260702.json",
+  "production_status": "MATERIALIZED (2026-07-02) — 05_Production 슬롯 2-3.STR_1715_on_M4_R05_noLayer4_PG2 정식 생성(도훈 FINAL + coordinator promote 지시). 01~05 서브디렉토리 완비, 04_backtest_results 10-component 클린(annualization=12, audit PASS=13/FAIL=0/WARN=3). 2-1/2-2 무변경(2-2 _SUPERSEDED 마커만 추가). 실투 2버튼 중 실계좌 주문만 도훈 수동 잔여.",
+  "production_status_prior": "STAGING (promote 지시 전) — 상세 PROMOTE_FLAG_05production.md",
+  "production_slot": "05_Production/2.Factor_Model/2-3.STR_1715_on_M4_R05_noLayer4_PG2",
+  "rollback_slots": ["2-2.STR_1715_FaithTrend_on_M4_R05_overlay_PG2 (faith, superseded 보존)", "2-1.STR_1715_AR_on_M4_R05_overlay_PG2 (AR, 보존)"],
+  "followup": "live_track holdout 재등록 완료(구 faith supersede) + monitoring drift baseline 갱신 완료 + 05_Production 슬롯 2-3 materialize 완료. 잔여=실계좌 주문(도훈 수동)."
  }
 }

@@ -248,9 +248,24 @@ FR/RAMP 오케스트레이터와 workflow 2종이 삭제된 skill·폐지된 Cod
 - [x] 사후 검증: 구문검사 전 파일 PASS / bootstrap 카나리아 BOOT_FAILS 0 / router selftest OK / should-block 3종(graduation·05_Production·AX-001) 실측 block.
 - [x] 최종 커밋 + push (아래 참조).
 
+### 완료 (3차분 — Governance·Research, 2026-07-04 00:00, 도훈 "개선 진행" confirm, wf_bb20b21b-17c)
+- [x] **Gov① 게이트급 훅 fail-closed**: 4훅(safety_guard·backtest_contract_audit·legacy_write_block·discovery_graduation_gate) ERR/판별불능 시 보호대상 write는 block. 실측 26/26 PASS(사보타주 케이스 포함), battery 11/11 무회귀. QVEST_SKIP 사용 시 hook_skip_audit.log 의무.
+- [x] **Gov② Axiom External 축 재정의**: oos_months(corpus 0건, 영구 불충족) → oos_retention 실값 median≥0.5. 재진단 15건: External 0/15→1/15 실측정 전환. 잔여 병목 = Falsification(생산자 적립 대기)·Independence(1/15)·Mechanism(4/15).
+- [x] **Gov③ ΔIR 컨벤션 단일화**: net_active_recon_v1 선언(book_state 라벨 3필드만 추가, 수치 무변경 — incumbent 1.416이 이미 해당 컨벤션과 일치 실측 확인). pg1에 module_catalog 어댑터 + basis 혼재 시 DEFER 강제. admit 자동화 불변 금지.
+- [x] **Gov④ 조향 신호 수리**: gap_vector_steering.R 신설 + 재생성(n_strategies 0→1, 현 book 실측 SR gap +0.602) + sleeve_needs enum 재정의(core_alpha_standalone=closed '16/16 FAIL' posterior) + bootstrap staleness WARN.
+- [x] **Gov⑤ vintage pinning 코드화**: pin_cache.R (pin/read_pinned/list_pins + md5 manifest), E2E PASS.
+- [x] **Gov⑥ .cache 로컬 이동**: C:\qm_cache + junction — OneDrive mmap/페이징/HANG 3사고 계열 구조 해소. junction 경유 parquet read 실측 OK.
+- [x] **Gov 문서면**: harness.md fail-closed 원칙 / pit.md·CLAUDE.md 'L3 자동차단' 정직화 / measurement-graduation §3 훅배선 추기·§4 ΔIR 컨벤션·pinning 조항 / CLAUDE.md SR2.5 레버별 마일스톤 병기.
+- [x] **Gov⑦ 6-agent 검토 (권고서만, 결정=도훈)**: 실측 — 미들 스테이지 06-14 이후 fresh 실행 0·opt 패키지 42% forge 미도달·wall-clock 43% 점유·시스템 스스로 inherit_ref 우회 진화. **권고 = (C) dossier-pipeline 기본경로 승격 + sizing_only 한정 (B) 병합. (A) 현행유지는 실측 비지지.** 반론 4건 병기.
+- [x] **R② OVERLAY_CANDIDATE 소비 배관 + LH 첫 케이스 실측**: 큐 17건 실적재(라벨만 있고 소비 0이던 후보 실재 확인). LH A/B(weighted_screen, 276개월, lag1 스트레스): regime-category 오버레이 = **KILL**(PORT_t 3.703→2.857·전지표 악화·lag1서 MDD 완화 소멸) / vol-target = lag1-robust MDD 레버(−45.8%→lag1 −30.7%, calmar 0.784)이나 **PORT_t 2.334<2.95·oos 0.539<0.7 = screen-tier**(+오버레이 회전비용 미과금 caveat). book-marginal·비용 반영 재측정은 후속.
+- [반전] **R① DART insider = BLOCKED (중요 발견)**: 백필 스크립트 line 71 elestock 호출이 항상 실패(파라미터 결함) + elestock API는 rolling ~23개월만 반환(probe 실측: 삼성전자 2024-08~) → **2005~2024 역사백필은 elestock로 불가 확정**. 그대로 돌리면 230개월 전부 가짜 done 체크포인트 + 수만 API콜 소진이었음 — 미착수가 정답. 배선(스케줄태스크·상태파일)은 완성·Disabled 대기. **도훈 결정 필요: (a) document.xml 원문파서 신규개발(유일 역사경로, 개발량 큼) vs (b) rolling 24m+forward 적립으로 축소.**
+
 ### 남은 것 (다음 세션)
-- [ ] **Governance 7건 도훈 confirm** (로드맵 B) — ① 게이트급 훅 fail-closed 원칙 ② axiom 승격요건(Falsification·External 축) 측정가능 재정의 ③ ΔIR 컨벤션 단일화 ④ SR 2.5 레버별 마일스톤 ⑤ vintage pinning 헌법화 ⑥ .cache 로컬디스크+junction ⑦ 6-agent 미들 병합 검토.
-- [ ] Falsification 축 생산자 배선 마무리 — run_alpha_search falsification_attempts emit은 배선됨(1차분), 신규 런 적립 후 promote.R 재진단으로 첫 승격 확인.
-- [ ] Research 로드맵 C: DART insider 백필 착수(최우선) / OVERLAY_CANDIDATE 소비 배관(LH 첫 케이스) / graduation-근접 후보 oos 실패 사유 라벨링.
-- [ ] 7월 QuantiWise 인제스트 후 factor_db 잔여 17팩터 자동 해소 확인.
+- [ ] **[도훈 결정] DART insider 경로**: document.xml 파서 개발 vs rolling 24m 축소 (위 3차분 참조 — 07-02 W3 결론과 동일 갈림길 재확정).
+- [ ] **[도훈 결정] 6-agent 권고 (C)+조건부(B)** 채택 여부.
+- [ ] voltgt-LH 후속: 오버레이 회전비용(|Δexposure|×15bps) 반영 재측정 + book-marginal ΔIR (§4 net_active_recon_v1).
+- [ ] graduation-근접 후보 oos 실패 사유 라벨링 (로드맵 C-3).
+- [ ] Falsification 생산자: 신규 alpha-search 런 적립 후 promote.R 재진단 (첫 승격 확인). Independence/Mechanism 축 개선은 후속.
+- [ ] 7월 QuantiWise 인제스트 후 factor_db 잔여 17팩터 해소 확인. pin/backup의 OneDrive 명시 복사 규약(로컬 .cache 이동 후속).
+- [ ] pg0_gap_review 말미 steer_gap_vector() 자동 호출 1줄 (재실행 시 구 enum 덮어씀 방지).
 

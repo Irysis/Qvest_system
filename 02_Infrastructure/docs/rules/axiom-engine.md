@@ -31,7 +31,7 @@ L-code(모드별 적립) → harvest → cluster(mode-partition) → CAND
 | Independence | distinct construction ≥ 2 (negative ≥ 3) + direction ≥ 0.8 | strategy_id 착시 폐기 |
 | Rigor | backtested: weakest port_t ≥ 2.95 / negative: backtested frac_fail ≥ 0.8 | proxy=mode-local 관대 |
 | Falsification | 적극 반증 attempts ≥ 1 + none_falsified + retained ≥ 0.5 | negative +0.5 폐기 |
-| External | OOS ≥ 3m + vs_is ≥ 0.5 | |
+| External | supporting L-code oos_retention 실값 존재 + cluster median ≥ 0.5 | 2026-07-03 재정의(GOV-01). 문턱 0.5 = measurement-graduation §3 '<0.5 무조건 FAIL' 하한 정합. oos_months는 가산 증거로 강등(실값 ≥3m 시 score +0.2, hurdle 무관). corpus 실값 0건 시 draft oos_effect_vs_is(=extractor oos_retention median) 폴백 |
 | Mechanism | economic_explanation present + type ≠ unknown | |
 
 ## 4. 파일
@@ -48,5 +48,6 @@ L-code(모드별 적립) → harvest → cluster(mode-partition) → CAND
 - 기존 AX-003/004/005/007 = provisional(N=2~3 잠정, 재도전 대상). 추측 폐기 금지 — 엔진 asymmetric 재검증 경유.
 
 ## Change log
+- 2026-07-03 (도훈 confirm, 감사 GOV-01): External 축 측정가능 재정의 — hurdle을 oos_months(corpus 실값 0건 = 영구 불충족) 기반에서 **oos_retention 실값 존재 ∧ cluster median ≥ 0.5**(corpus 457/594건 실값)로 교체. '요건 완화가 아니라 측정 불가능 지표의 측정 가능 지표 교체'. 문턱 0.5는 구 vs_is 0.5 개념 유지 + measurement-graduation §3 '<0.5 무조건 FAIL' 하한 정합. oos_months는 가산 증거로 강등. (`promote.R .HURDLE/.axis_external`)
 - 2026-07-03 현행화 (승격 배관 수리 — hurdle 정의 불변): ① 3-mode → **4-mode**(AS/QPM/FR/**RAMP**, 2026-06-17 RAMP 모드 추가 반영 — `promote.R::.MODE_PREFIX`에 ramp 등재로 RAMP 승격 crash 해소) ② INV-5 Codex → **Self-Adversarial**(v8.2 AX-008 치환, `promote_global.R` verification 필드명 `codex`→`self_adversarial`, 구 필드명 back-compat 유지) ③ cluster_extractor `oos_months` 하드코딩 None → L-code 실값 매핑(실값 없으면 None 유지 — 요건 완화 없음).
 - 2026-06-05 v8.0: 신규. r7 복원 + 3-mode 2-tier + INV-1~7 + 안전망. E2E 10/10 PASS.

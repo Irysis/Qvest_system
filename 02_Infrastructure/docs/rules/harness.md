@@ -89,9 +89,15 @@ QEPM Codex Critic Round(외부 codex auto-spawn)는 **2026-06-30 v8.2에서 폐�
 
 ## ERR trap 필수
 
-모든 command Hook에 `trap 'echo "{}"; exit 0' ERR`.
+모든 command Hook에 `trap 'echo "{}"; exit 0' ERR`. (게이트급 4종은 아래 "Fail-open / Fail-closed 원칙" 예외 적용.)
 
 **중요 (v8.0 2026-05-29 정정)**: allow/no-op 출력은 **`{}`** (빈 객체 = 통과). 구 패턴 `{"decision":"allow"}`는 **무효** — 현 Claude Code hook 스키마에서 `decision` 유효값은 `approve`/`block`뿐이라 `"allow"`는 "Invalid input at (root)" 검증오류(회색 노이즈) 유발. 차단은 `{"decision":"block","reason":...}` 또는 `{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":...}}`. 전 hook 147건 일괄 정정 완료.
+
+## Fail-open / Fail-closed 원칙 (2026-07-03 도훈 confirm, 아키텍처 감사)
+
+- **기본 = fail-open**: hook 내부 오류(파싱 실패·의존성 부재 등)는 ERR trap `{}`로 통과 — 인프라 장애가 리서치 흐름을 막지 않는다.
+- **게이트급 4종 예외 = fail-closed**: `safety_guard` · `backtest_contract_audit` · `legacy_write_block` · `discovery_graduation_gate`는 **내부 오류 시 보호대상 경로 write에 한해 block** (오류 = 침묵 통과가 아니라 차단). 근거: discovery_graduation_gate cp949 read 실패 → graduation HARD 침묵 우회 가능 상태였던 실사고 (위 "fail-closed 의무" 절, 06-11 수리).
+- **QVEST_SKIP_* 감사 의무**: `QVEST_SKIP_*` 환경변수로 hook을 우회할 때는 사용 내역(변수명·시각·사유)을 `06_Registry/hook_skip_audit.log`에 기록 의무.
 
 ## v6.4 진화 (Sprint 2 Phase 4)
 
