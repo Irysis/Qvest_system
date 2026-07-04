@@ -1,0 +1,84 @@
+{
+  "wt_id": "WT-AXENGINE-E2E_20260705",
+  "agent": "alpha-research",
+  "task": "Axiom-engine E2E: does activated Distilled 탐색지도(DIST-QPM-003) actually shape the research path?",
+  "metric_type_primary": "canonical_screen",
+  "knowledge_consumed": {
+    "lookup_quality": "DIST-QPM-003 (DISTILLED_NEG, quality_profitability) + DIST-QPM-002/006 (COND) hits returned",
+    "lookup_value": "DIST-AR-001, DIST-QPM-003 (NEG) + DIST-AS-003/JG-001/RAMP-004/006 (COND) + AX-003 (value EP standalone fail)",
+    "frontier_selected": "DIST-QPM-003 frontier(b): value/quality spread reversion 국면조건부 activation",
+    "forbidden_avoided": "quality_profitability 단독/단순-composite long-only (DIST-QPM-003 failed path); value EP standalone (AX-003)"
+  },
+  "economic_rationale": "conditional_ic_matrix.csv shows quality factors carry ic_bad > ic_good (Q01_GPA 0.044 vs 0.020, Q08 0.032 vs 0.013, Q17 0.045 vs 0.043) — rank-IC concentrates in stress. Hypothesis (frontier b): activate multi-axis quality tilt only in reversion regimes {CRISIS,CAUTION}, value otherwise, to capture the premium the standalone all-regime book diluted. RESULT: mechanism falsified at long-only realization level.",
+  "redundancy_cluster_id": "quality_profitability / cluster_key ac01076e5fa9 (DIST-QPM-003)",
+  "variants": {
+    "V0": {
+      "metric_type": "canonical_screen",
+      "n_months": 258,
+      "top_n": 25,
+      "portfolio_alpha_t_nw_lag3": -2.6716,
+      "portfolio_alpha_t_pvalue": 0.0075,
+      "information_ratio": -0.641,
+      "net_sr": -0.641,
+      "alpha_annualized": -0.0129,
+      "turnover_annual": 2.9671
+    },
+    "V1": {
+      "metric_type": "canonical_screen",
+      "n_months": 258,
+      "top_n": 25,
+      "portfolio_alpha_t_nw_lag3": -2.6121,
+      "portfolio_alpha_t_pvalue": 0.009,
+      "information_ratio": -0.6206,
+      "net_sr": -0.6206,
+      "alpha_annualized": -0.0076,
+      "turnover_annual": 6.6737
+    },
+    "V1b": {
+      "metric_type": "canonical_screen",
+      "n_months": 258,
+      "top_n": 25,
+      "portfolio_alpha_t_nw_lag3": -2.5904,
+      "portfolio_alpha_t_pvalue": 0.0096,
+      "information_ratio": -0.6143,
+      "net_sr": -0.6143,
+      "alpha_annualized": -0.0063,
+      "turnover_annual": 7.2074
+    },
+    "V2": {
+      "metric_type": "canonical_screen",
+      "n_months": 258,
+      "top_n": 25,
+      "portfolio_alpha_t_nw_lag3": -2.6309,
+      "portfolio_alpha_t_pvalue": 0.0085,
+      "information_ratio": -0.6249,
+      "net_sr": -0.6249,
+      "alpha_annualized": -0.0086,
+      "turnover_annual": 6.7886
+    }
+  },
+  "primary_candidate": {
+    "id": "V1_regime_cond_qualIn_crisis_caution",
+    "portfolio_alpha_t_nw_lag3": -2.6121,
+    "information_ratio": -0.6206,
+    "net_sr": -0.6206,
+    "turnover_annual": 6.6737,
+    "n_months": 258,
+    "period": "2005-01 .. 2026-06 (258 months forward-return)",
+    "top_n": 25,
+    "verdict": "FAIL — PORT_t negative (-2.61), does not approach +2.95 HARD gate; frontier(b) mechanism falsified"
+  },
+  "rank_ic_vs_portfolio_alpha": {
+    "rank_ic_qual": 0.0362,
+    "rank_icir_qual": 1.355,
+    "rank_ic_val": 0.0284,
+    "portfolio_alpha_t_qual_standalone": -2.6716,
+    "note": "rank-IC positive (+0.036, ICIR 1.36) but portfolio-alpha t negative (-2.67): Cycle-2 divergence confirmed at regime level. Cross-sectional rank power does NOT translate to long-only top-25 realized active alpha vs cap-weighted KOSPI200."
+  },
+  "ax001_v2": {
+    "crisis_active_ann": -0.7818,
+    "crisis_t": -1.757,
+    "note": "Quality WORST in CRISIS (-78%/yr active) — opposite of conditional_ic_matrix ic_bad prediction. AX-001 v2 defensive-conditional evaluation FAILS: quality composite is not a crisis specialist in realized long-only terms."
+  },
+  "boundary": "alpha-only. No covariance/weight/optimization. envelope: 25 names, long-only, 15bps, K200 U KQ150."
+}

@@ -1,0 +1,100 @@
+{
+  "wt_id": "WT-AXENGINE-E2E_20260705",
+  "primary_purpose": "Axiom-engine E2E: activated Distilled 탐색지도가 실제 리서치 경로를 형성하는가?",
+  "knowledge_consumption_evidence": {
+    "hypothesis_index_lookup_executed": true,
+    "lookup_quality_top_hits": ["DIST-QPM-003 (DISTILLED_NEG)", "DIST-QPM-002 (COND)", "DIST-QPM-006 (COND)", "DIST-AS-003 (COND)"],
+    "lookup_value_top_hits": ["DIST-AR-001 (NEG)", "DIST-QPM-003 (NEG)", "DIST-AS-003 (COND)", "DIST-JG-001 (COND)"],
+    "dist_qpm_003_retry_policy_cited": "탐색됨(경로 F 기록) -> 프론티어(미탐색): [multi-axis quality composite as multi-sleeve Q07; value/quality spread reversion 국면조건부; DART 현금흐름 품질 보정; canonical 재측정 라벨승급] -> 부활 트리거: spread(value/quality spread >=0.90) / regime(CRISIS,CAUTION). 봉투 안 차별점 명시 시 진행 가능(INV-7 provisional).",
+    "path_shaping_statement": "지식이 없었다면 naive하게 quality_profitability 단독 long-only(DIST-QPM-003 failed path, PORT_t -2.67)를 그대로 재실행했을 것. DIST-QPM-003의 frontier(b) '국면조건부 activation' + live_trigger가 지정한 monitored_source(unified_regime_signal.parquet Category, conditional_ic_matrix.csv)를 착수점으로 삼아 regime-conditional quality/value 변형을 구현했다."
+  },
+  "implemented_frontier": {
+    "frontier_id": "DIST-QPM-003 frontier(b): value/quality spread reversion 국면조건부 activation",
+    "construction": "score = qual_z if Category in {CRISIS,CAUTION} else val_z. multi-axis quality composite (8 axes: GPA/ROE/ROIC/CashProf/Piotroski/EarnPersist/CFOA/AltmanZ, >=3 required). value composite (EP/BM/CFP/FCF/ShareholderYield).",
+    "envelope_compliance": "25 names, long-only, 15bps one-way, K200 U KQ150, LIQ 2e8, C13 Z_Score_Aligned, C15 load_month_factors",
+    "forbidden_paths_avoided": ["quality_profitability standalone/simple-composite long-only (DIST-QPM-003)", "value EP standalone long-only (AX-003)"]
+  },
+  "canonical_screen_results": {
+    "V0": {
+      "metric_type": "canonical_screen",
+      "n_months": 258,
+      "top_n": 25,
+      "portfolio_alpha_t_nw_lag3": -2.6716,
+      "portfolio_alpha_t_pvalue": 0.0075,
+      "information_ratio": -0.641,
+      "net_sr": -0.641,
+      "alpha_annualized": -0.0129,
+      "turnover_annual": 2.9671
+    },
+    "V1": {
+      "metric_type": "canonical_screen",
+      "n_months": 258,
+      "top_n": 25,
+      "portfolio_alpha_t_nw_lag3": -2.6121,
+      "portfolio_alpha_t_pvalue": 0.009,
+      "information_ratio": -0.6206,
+      "net_sr": -0.6206,
+      "alpha_annualized": -0.0076,
+      "turnover_annual": 6.6737
+    },
+    "V1b": {
+      "metric_type": "canonical_screen",
+      "n_months": 258,
+      "top_n": 25,
+      "portfolio_alpha_t_nw_lag3": -2.5904,
+      "portfolio_alpha_t_pvalue": 0.0096,
+      "information_ratio": -0.6143,
+      "net_sr": -0.6143,
+      "alpha_annualized": -0.0063,
+      "turnover_annual": 7.2074
+    },
+    "V2": {
+      "metric_type": "canonical_screen",
+      "n_months": 258,
+      "top_n": 25,
+      "portfolio_alpha_t_nw_lag3": -2.6309,
+      "portfolio_alpha_t_pvalue": 0.0085,
+      "information_ratio": -0.6249,
+      "net_sr": -0.6249,
+      "alpha_annualized": -0.0086,
+      "turnover_annual": 6.7886
+    }
+  },
+  "headline": {
+    "best_candidate": "V1_regime_cond (frontier b)",
+    "portfolio_alpha_t_nw_lag3": -2.6121,
+    "metric_type": "canonical_screen",
+    "period": "2005-01..2026-06 (258 months)",
+    "n_names": 25,
+    "hard_gate_port_t": 2.95,
+    "verdict": "FAIL — all variants PORT_t in [-2.65,-2.59] vs cap-weighted KOSPI200; frontier(b) mechanism FALSIFIED at long-only realization"
+  },
+  "mechanism_finding": {
+    "rank_ic_qual": 0.0362,
+    "rank_icir": 1.355,
+    "portfolio_alpha_t_qual": -2.6716,
+    "regime_realized_active_ann": {
+      "CAUTION": 0.0713,
+      "RISK_ON": -0.0876,
+      "NEUTRAL": -0.2654,
+      "CRISIS": -0.7818
+    },
+    "era_split_active_ann": {
+      "pre2017": -0.0823,
+      "post2017": -0.2144
+    },
+    "interpretation": "conditional_ic_matrix ic_bad>ic_good (rank-IC) does NOT translate to positive long-only realized active. Quality WORST in CRISIS (-78%/yr). 2017+ growth-leadership regime break (DIST-QPM-003 statement) reproduced: pre2017 -8.2% -> post2017 -21.4% active. Confirms measurement-graduation §6 '직교/rank-IC != 수익' at regime level + Cycle-2 'rank-IC t != portfolio-alpha t'."
+  },
+  "e2e_verdict": {
+    "knowledge_shaped_research": true,
+    "evidence": "DIST-QPM-003 frontier(b) + live_trigger monitored_sources directly determined the construction (regime-conditional using unified_regime_signal.Category + conditional_ic_matrix). The forbidden failed path was explicitly NOT re-run. The distilled negative did not block (INV-7 provisional) but redirected to a differentiated frontier — the intended behavior.",
+    "alpha_verdict": "candidate FAIL (honest, AX-000)",
+    "next_frontier_sharpened": ["frontier(b) as 'activate quality in CRISIS/CAUTION' is now FALSIFIED — do not retry this exact activation (add to DISTILLED_NEG failure-ledger for DIST-QPM-003).", "CAUTION-only was the sole non-negative regime (+7.1%, n=13) — sub-signal, not capitalizable standalone; candidate for multi-sleeve component only if a defensive sleeve needs a CAUTION tilt.", "remaining DIST-QPM-003 frontiers UNTESTED: (a) multi-axis quality as Q07 multi-sleeve component (AX-004 EXCLUSION), (c) DART 현금흐름 품질 보정 non-return data. These are the live next steps.", "mechanism_evidence_must_be_realized=true: future regime-conditional 착수는 rank-IC(conditional_ic_matrix) 아닌 regime별 realized long-only active로 근거해야 함."]
+  },
+  "self_adversarial": {
+    "concerns_raised": 3,
+    "high_severity": 2,
+    "escalation_triggered": false,
+    "note": "see challenge_note.md. Concern1 regime-lookahead PARTIAL(verdict-robust, negative result immune to optimism bias). Concern2 ACCEPT (mechanism 착수 논리 결함 — rank-IC misread as realized). Concern3 PARTIAL/REBUTTAL (signal has cross-sectional power vs EW-uni +3.3% gross, but cap-w authoritative -> capital FAIL; basis 완화 레버 금지 per AX-000 corollary)."
+  }
+}
