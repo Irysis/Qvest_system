@@ -13,6 +13,20 @@
 - **②Distilled** = 클러스터 통합 지식 (`qepm/memory/axioms/distilled/DIST-<MODE>-NNN.json` + `06_Registry/distilled_knowledge.json` 통합 인덱스). **검색(hypothesis_index)·주입(axiom_context_inject/strategic_truths)·negative failure-ledger의 소비 단위.** CAND 골격(supporting_l_codes/scope/mechanism/polarity/metric_type) 상속 + `statement_refined`(사람이 읽는 1~2문장). lifecycle: `pending_5axis`(초안) → `distilled`(/cleaner 세션 LLM 정제 — 무인 정제 금지, INV-6) → `promoted` | `expired`. 재생성 멱등: cluster_key(sorted supporting sha1) 매칭 — draft만 갱신, dist_id/status/statement_refined 절대 보존.
 - **③Law** = axiom (`active/` + `active/modes/<mode>/`). 엄선 승격 — 5축 boolean-AND hurdle·INV-1~7·AX-008 2/3 전부 불변. 자동 승격은 documented까지(INV-2), hook block은 주간 도훈 confirm만.
 
+## §0.1 메커니즘 비-ossification 원리 (Level 0 — 도훈 mandate 2026-07-04)
+
+**대전제**: "딱 한 번 작동하는 하드코딩된 멍청이가 아닌, 유동적으로 작동하며 발전하는 아키텍처." 이 엔진이 관리하는 것(지식)뿐 아니라 **관리하는 메커니즘 자체(방화벽·트리거·게이트·판정 규칙)도 지식과 동일한 학습 루프의 대상**이다. 하드코딩 규칙을 얼려두는 것("하드코딩된 멍청이")은 아키텍처 위반이다 — 규칙은 살아있는 코퍼스처럼 케이스로 발전한다.
+
+구현 원칙 5항 (INV-7 제약 방화벽·자동초안 적대검증·검색/주입 프레이밍 판정에 공통 적용):
+
+1. **의미(semantic) 우선 — 판정은 정규식이 아니라 LLM 판단으로.** 제약-귀속/완화-레버 색출, frontier 생성, 과장·근거 체크는 임의 표현·영어·미묘한 프레이밍을 일반화해야 하므로 **의미 판단이 primary**다. 고정 문자열 grep은 판정의 근거가 아니다.
+2. **결정론적 규칙 = backstop 전용.** 정규식/enum/키워드 매칭은 비-LLM 경로(hook·배치 스캔)를 위한 **backstop**이며 **비-소진적(non-exhaustive)임을 명시**한다 — primary 판정이 아니다. backstop이 놓친 것을 primary(LLM)가 잡고, 그 반대도 성립.
+3. **케이스 축적으로 자기발전.** 잡은 위반/생성한 frontier 사례를 라이브러리에 append → 다음 판정이 few-shot로 소비 → **잡을수록 똑똑해진다**(corpus 학습 루프와 동형). 판정 규칙은 정적 스펙이 아니라 성장하는 예시집합.
+4. **트리거·신호원 = 열린 스키마(등록형).** INV-7 `live_trigger`의 type(regime/spread/data/time…)·모니터 신호원은 **고정 enum이 아니라 등록형 열린 스키마**다. 새 신호원(예: DART insider, 신규 spread)을 enum 개정 없이 등록 가능.
+5. **이 메커니즘들도 Cleaner 리뷰 대상.** 방화벽·트리거·판정 규칙·backstop 목록 자체를 주간 `/cleaner` 세션이 리뷰(과교정·노이즈·stale 규칙 색출) — 메커니즘도 증류·정정·만료의 대상. 메커니즘을 성역화하지 않는다.
+
+**정합**: 본 원리는 §2 INV-7(제약 방화벽 = 의미판단 기반·케이스 학습) / §3c 소비 3배선(검색·주입 프레이밍 = 의미 우선) / §3e 주간 사이클(Cleaner 리뷰 확장 대상에 메커니즘 포함)에 배선된다. INV-1~7·AX-008 2/3·5축 hurdle 수치·active AX 의미론은 본 원리로 **변경되지 않는다**(안전 불변식은 backstop이 아니라 Law — §2 절대 불변).
+
 ## §1. 파이프라인
 
 ```
