@@ -445,7 +445,11 @@ build_hypothesis_index <- function(root = QM_ROOT, out_path = HI_INDEX_PATH,
   if (file.exists(lc_path)) {
     lc <- tryCatch(fromJSON(lc_path, simplifyVector = FALSE), error = function(e) NULL)
     for (e in (lc$lcodes %||% list())) {
-      pe <- tryCatch(.hi_parse_lcode(e), error = function(err) NULL)
+      pe <- tryCatch(.hi_parse_lcode(e), error = function(err) {
+        message(sprintf("[hypothesis_index][WARN] lcode parse 실패 skip: %s (%s)",
+                        e$l_code %||% e$strategy_id %||% "?", conditionMessage(err)))
+        NULL
+      })
       if (add_entry(pe)) cov$lcode_indexed <- cov$lcode_indexed + 1L
       else cov$lcode_skipped <- cov$lcode_skipped + 1L
     }

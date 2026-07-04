@@ -49,7 +49,8 @@ DIST 초안 lifecycle이 반자동화됨:
 ```
 pending_5axis → [자동초안 에이전트 + 적대검증] → proposed(주입 안 됨) → [도훈 승인] → distilled(주입 가능) → promoted | expired
 ```
-- **자동초안(허용)**: `weekly_cleaner_sweep`(기계 스윕) 또는 본 세션 에이전트가 pending_5axis → proposed 로 `statement_refined` 초안 + `adversarial_verdict`(적대검증)를 작성. **초안 수치·결론은 supporting L-code 실측 결론만** — 창작 금지.
+- **★자동화 경계 (정직 — 무인 완주 아님)**: 무인 기계 스윕(`weekly_cleaner_sweep`, 토 09:00)은 **harvest→cluster→promote 진단 + 후보 현황 집계까지만** 수행하고 `status:"awaiting_distill"`로 멈춘다. pending_5axis → proposed 자동초안(`statement_refined` + `adversarial_verdict` 작성)은 **본 /cleaner 세션 에이전트**가 수행한다(스윕 스크립트는 `draft_proposed`를 호출하지 않음). proposed → distilled 활성화(주입 스트림 개방)는 **도훈 배치 승인**이 필수다. 즉 "스윕이 무인으로 증류를 완주한다"는 문구는 오류 — 스윕은 재료를 쌓을 뿐, 초안은 세션, 활성화는 승인.
+- **자동초안(허용)**: 본 /cleaner 세션 에이전트가 pending_5axis → proposed 로 `statement_refined` 초안 + `adversarial_verdict`(적대검증)를 작성. **초안 수치·결론은 supporting L-code 실측 결론만** — 창작 금지.
 - **자동초안 적대검증 5체크 (a~e — 초안 승인 전 의무)**:
   - (a) **과장**: 헤드라인 수치가 게이트/재현/deflate 반영 없이 낙관적인가? envelope-상대 정직 서술로 강등.
   - (b) **근거**: 결론이 supporting L-code 실측에 실제로 뒷받침되는가? (proxy를 backtested로 오라벨 금지).
