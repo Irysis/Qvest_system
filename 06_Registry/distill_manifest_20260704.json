@@ -1,0 +1,82 @@
+{
+  "manifest": "G1 과거 리서치 잔재 대증류 (도훈 mandate — 무아카이브 삭제 + L-code 적립)",
+  "generated_at": "2026-07-04",
+  "agent": "distill-cleaner-G1",
+  "policy": "L-code 적립(또는 기존 커버 확인) 후 무아카이브 삭제. 실행코드 참조 1건이라도 있으면 보존+deferred.",
+  "total_bytes_recovered": 121179636,
+  "deleted": [
+    {
+      "path": "04_Research/02_experiments/asset_allocation/inverse_hedge_phase1/ + inverse_hedge_phase1b/",
+      "conclusion": "인버스 ETF 헤지 전면 REJECT — static 출혈(CAGR -2.16~-6.43pp, MDD 불변: 바인딩 DD가 ETF상장 前), predictive gate Calmar 개선은 2020-03 단일 에피소드 아티팩트(leave-COVID-out P3b 2.899<P0 2.927, paired t=-1.20). settled-negative.",
+      "lcode_id": "L-RR-20260704_114303 (신규, backtested, grade F)",
+      "prior_coverage": "memory project-inverse-etf-hedge-phase1-reject (06-26) — L-code corpus에는 미적립이었음",
+      "bytes": 4410384
+    },
+    {
+      "path": "04_Research/02_experiments/factor_db/ (census_v3_targeted)",
+      "conclusion": "census v3 val_rd_wc 정식 계약 재검 A/B 모두 grade F hard_fail (A: PORT_t 1.547·oos_retention -0.608·MDD 65.7% / B: PORT_t 0.397) — 구 census anchor(B, port_t 2.3) 재현 실패. census 스크리닝 수치는 계약 재검 없이 graduation 인용 금지.",
+      "lcode_id": "L-AR-20260704_114303 (신규, backtested, grade F)",
+      "prior_coverage": "corpus/hypothesis_index/memory 미적립 (01_reports/hypothesis_scan md에 텍스트 언급만)",
+      "bytes": 23928213
+    },
+    {
+      "path": "04_Research/02_experiments/ml_research/ + ml_overnight_output/ + ml_elastic_net_output/ + ml_xgboost_pilot_output/",
+      "conclusion": "Session 57 ML 랭킹 베이스라인 — XGB OOS IC 0.0669/ICIR 0.72, 4모델 앙상블 IC 0.0713로 순위력 실재하나 long-only top-N 직번역 전 모델 MDD -57~-83% hard fail. regime family gain 22.7% 지배, 위기 IC 음전환.",
+      "lcode_id": "L-QPM-20260704_114303 (신규, proxy, grade F)",
+      "prior_coverage": "미적립 (corpus xgb 히트는 06-13 alpha-search 별건). AX-007 signal->portfolio 단절 계열 보강 증거",
+      "bytes": 92381602
+    },
+    {
+      "path": "04_Research/02_experiments/multi_sleeve_analysis/",
+      "conclusion": "3-sleeve risk parity SR 1.09 vs 최고 단일 sleeve 1.10, sleeve 상관 0.995 — 분산효익 0 (v5x 시대).",
+      "lcode_id": "기존 커버 — AX-007 + L-150(5-sleeve 구조적 실패) + L-QPM-20260606-001(multi-sleeve SR2.5 실패) + measurement-graduation §6 gross-상관 진실",
+      "bytes": 370841
+    },
+    {
+      "path": "04_Research/02_experiments/defense_2022_recon/",
+      "conclusion": "2022 방어국면 lensB 스타일 재구성 — metric_type=proxy 진단 전용 스크립트+로그, 독립 결론 없음 (06-13 게이트 변경 3건의 배경 진단 계열).",
+      "lcode_id": "기존 커버 — memory feedback-gate-relaxation-confirm-2026-06-13 + project-defense-factor-db-survey-settled(07-03) + stage_artifacts/reports/drawdown_frequency_kr_baseline_20260612.md(보존)",
+      "bytes": 26932
+    },
+    {
+      "path": "04_Research/02_experiments/strategy_distill/",
+      "conclusion": "2026-03-24 Grade A 286건->18 lineage 증류 + 미사용 245팩터 한계기여 스크리닝(63 pass, ΔIC 0.005) — 04_Research/grade_a_catalog.json(보존)과 중복, 스크리닝은 06-24 직교탐색 null(327팩터 t>2=0)로 대체.",
+      "lcode_id": "기존 커버 — 04_Research/grade_a_catalog.json 잔존 + memory project-pg2-orthogonal-alpha-search",
+      "bytes": 61664
+    }
+  ],
+  "preserved_deferred": [
+    {
+      "path": "04_Research/02_experiments/dvaa_dvfs_revalidation/ + asset_allocation/dvaa_dvfs_enhancement_research_2026-06-13.md",
+      "reason": "삭제 부적격 — 05_Production 실계좌 전략(DVAA_DVFS_ETF.R)의 critical 결함 2건+제안 16건이 도훈 confirm 대기 중이며, 보고서가 revalidation 폴더를 수리 실험 전용 워크스페이스로 명시. 결정 종결 후 재증류 대상.",
+      "action_deferred": "도훈 confirm 후: 결정 반영 -> L-code 적립 -> 삭제 재검토"
+    },
+    {
+      "path": "04_Research/decision_framework/bearish_forecast_v1/",
+      "reason": "삭제 부적격 — 활성 v2 파이프라인 실행코드가 참조: bearish_forecast_v2_alt_data/scripts/00_pit_manifest_loader.R L109(config feature_lag_table.csv 기본경로), tests/test_pit_manifest_loader.R L18/L102. v2는 bootstrap.sh L136·bear_date_audit.R·dpl_c1/c2_pit_audit.R·v3 config가 소비하는 활성 체인.",
+      "action_deferred": "v2 loader의 v1 경로 의존을 v2 내부로 이전(경로 repoint)한 뒤에만 v1 삭제 가능 — 활성 파이프라인 수정이라 메인 세션 판단 필요"
+    },
+    {
+      "path": "04_Research/decision_framework/bearish_forecast_v2_alt_data/",
+      "reason": "스코프 (b) 후보였으나 삭제 절대 부적격 — targets_full.parquet를 bootstrap.sh·bear_date_audit.R(최근 실행 2026-07-03)·triple_monitor.sh·dpl_c1/c2_pit_audit.R·v3 configs(b1_*.yaml)가 직접 소비. v3(활성)의 데이터 상류.",
+      "action_deferred": "없음 (활성 의존 지속되는 한 보존)"
+    },
+    {
+      "path": "04_Research 최상위 유지 토픽 (composition_search/korea_research/regime_analysis/pg2_schur_weight/worktask_scratch 등) — 스코프 (c)",
+      "reason": "보수적 보존 — composition_search=measurement-graduation v8.x 실증 근거, pg2_schur_weight=frontier_hrp 7모듈 RAMP 재사용 예정(memory 07-03), regime/=RAMP 국면엔진 원데이터, korea_research·regime_analysis는 legacy/dead 라벨이나 이번 mandate 확증 범위 밖. 판단 갈림 -> 보존+deferred 원칙 적용.",
+      "action_deferred": "차기 증류 라운드에서 개별 정체·결론 파악 후 처리"
+    }
+  ],
+  "lcode_verification": {
+    "harvester": "02_Infrastructure/axiom/lcode_harvester.py 재구동 — corpus n_lcodes 594 -> 597 (+3, 신규 3건 전부 유입 확인)",
+    "ingested": ["L-RR-20260704_114303 (regime_research/backtested/F)", "L-QPM-20260704_114303 (qepm_legacy/proxy/F)", "L-AR-20260704_114303 (alpha_research/backtested/F)"],
+    "emit_path": "stage_artifacts/l_code/{regime_research,qepm_legacy,alpha_research}/",
+    "validate_lcode": "3/3 PASS (BLOCKED/WARN 0)"
+  },
+  "index_updates": {
+    "06_Registry/index_descriptions.json": "삭제 키 8건 + stale 키 2건(ml_linear_baseline_output+ml_logistic_output / defense_2022_scan — 둘 다 디스크 부재) 제거, asset_allocation 키 role 갱신",
+    "04_Research/INDEX.md": "삭제 디렉토리 행 8건 제거, asset_allocation·02_experiments 행 갱신"
+  },
+  "methodology_active_md": "리포지토리 전체 glob 결과 부재 — L-code 등재 생략, 본 manifest로 보고 (mandate 지침)",
+  "residual_reference_note": "02_Infrastructure/hooks/artifact_placement_guard.sh의 RESEARCH_LEGACY_TOPICS 화이트리스트에 구 토픽명 잔존 — 소비성 참조 아님(경고 억제용 이름 목록, hook 주석 스스로 '이동 시 제거' 명시). hook 수정은 스코프 밖이라 메인에 이관. stage_artifacts 내 s0 기록·01_reports md의 텍스트 언급은 역사 기록(절대 보존 영역)으로 잔존 정당."
+}

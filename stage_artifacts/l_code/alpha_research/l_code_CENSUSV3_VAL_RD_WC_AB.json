@@ -1,0 +1,17 @@
+{
+  "l_code": "L-AR-20260704_114303",
+  "strategy_id": "CENSUSV3_VAL_RD_WC_AB",
+  "grade": "F",
+  "core_reference": "04_Research/02_experiments/factor_db/census_v3_targeted/val_rd_wc_formal_{A,B}.json (2026-06-11, 삭제 전 증류)",
+  "lesson_text": "Factor DB census v3 targeted의 val_rd_wc 후보를 정식 계약(run_monthly_simulation daily NAV + build_bt_result)으로 재검: A/B 변형 모두 grade F hard_fail. A: PORT_t(NW lag3) 1.547, net_SR 0.677, oos_retention -0.608(splits -0.427/-0.608/-0.852), MDD 65.7%, calmar 0.222. B: PORT_t 0.397, net_SR 0.509, oos_retention -1.496, MDD 65.4%. 구 census anchor(grade B, port_t 2.3, MDD 38.1%, pre-winsorize 구 엔진)가 계약 재검서 재현 실패(grade 2단 하락) — census/스크리닝 수치는 계약 실측 재검 없이 graduation 인용 금지(proxy->forge deflate 패턴, measurement-graduation E2E와 동일 기제).",
+  "tags": "FACTOR_DB;CENSUS;PROXY_DEFLATE",
+  "created_at": "2026-07-04",
+  "research_mode": "alpha_research",
+  "created_by": "emit:alpha_research",
+  "metric_type": "backtested",
+  "construction_type": "single_factor_long_only",
+  "mechanism_hypothesis": "구 census 엔진(pre-winsorize)의 측정 파이프 낙관 편향 — 동일 신호가 계약 엔진 실측서 PORT_t 2.3->1.55, MDD 38->66%로 deflate",
+  "cagr_pct": 14.6,
+  "sharpe": 0.677,
+  "mdd_pct": 65.7
+}

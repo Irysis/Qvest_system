@@ -1,0 +1,17 @@
+{
+  "l_code": "L-QPM-20260704_114303",
+  "strategy_id": "ML_BASELINE_S57_2026_04",
+  "grade": "F",
+  "core_reference": "04_Research/02_experiments/ml_research/ml_research_summary.md + ml_overnight_output/final_comparison.json (2026-04-09, 삭제 전 증류)",
+  "lesson_text": "KR 300팩터 월간 ML 랭킹 베이스라인(Session 57): XGBoost walk-forward OOS IC 0.0669/ICIR 0.7206(2008-02~2026-04, 209개월), 4모델 오버나잇(ridge/enet/xgb/rf) 앙상블 IC 0.0713/ICIR 0.714로 횡단면 순위력은 실재. 그러나 long-only top-N 직번역은 전 모델 MDD 파탄: XGB pilot MDD -57.24%(SR 0.923, CAGR 23.71%), 오버나잇 4모델+앙상블 MDD -72%~-83%(SR<=0.79). Feature gain은 regime family(RE02_Vol_Regime_Pctile 11.6%, RE03_Mkt_Drawdown 7.3%) 22.7% 지배, 위기 IC 음전환(COVID -0.151). ElasticNet 팩터선별: 300중 87개 15%+ 빈도(위기기 60-90개 vs 평시 0-30개로 선택 불안정). -> rank-IC 실재 != 포트 자격: ML 랭킹도 signal->portfolio 직번역 단절(AX-007 계열)과 MDD 게이트를 못 넘음.",
+  "tags": "ML_BASELINE;XGBOOST;RANK_IC_VS_PORT",
+  "created_at": "2026-07-04",
+  "research_mode": "qepm_legacy",
+  "created_by": "emit:qepm_legacy",
+  "metric_type": "proxy",
+  "construction_type": "ml_sizing",
+  "mechanism_hypothesis": "횡단면 순위력(IC)이 long-only 소수종목 포트의 시장베타·테일 리스크를 통제하지 못함 — regime 팩터 gain 지배 = 모델이 사실상 시장국면을 학습, 위기서 IC 음전환",
+  "cagr_pct": 23.71,
+  "sharpe": 0.923,
+  "mdd_pct": 57.24
+}

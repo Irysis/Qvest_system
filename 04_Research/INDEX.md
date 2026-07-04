@@ -1,6 +1,6 @@
 # 04_Research INDEX
 
-> 자동 생성 2026-07-04 05:16 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
+> 자동 생성 2026-07-04 11:51 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
 
 <details><summary><b>strategy-legacy</b> (3)</summary>
 
@@ -16,7 +16,7 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `decision_framework/` | bearish forecast v1~v3(예측 국면) + cross_section_distribution(DPL 피처 parquet) + smart_beta_regime·factor_untapped — 부팅·모닝브리핑·DPL 감사가 소비하는 활성 존 (409MB, 대부분 cross_section outputs 382MB) | active | 2026-07-02 | 406.4MB |
+| `decision_framework/` | bearish forecast v1~v3(예측 국면) + cross_section_distribution(DPL 피처 parquet) + smart_beta_regime·factor_untapped — 부팅·모닝브리핑·DPL 감사가 소비하는 활성 존 (409MB, 대부분 cross_section outputs 382MB) | active | 2026-07-02 | 406.3MB |
 | `regime_comparison/` | KTRI/MSM 국면엔진 비교·검증·브리핑 발송 스크립트 — 일일 스케줄러(daily_refresh·모닝브리핑 ktri_rebuild)가 소비 중 | active | 2026-07-03 | 1.3MB |
 
 </details>
@@ -33,7 +33,7 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `ramp/` | RAMP 모드 Gate3~6 실행 스크립트(run_ramp_gate*.R) + reports(Shu-Mulvey 충실복제·순수팩터 추출 보고 등) — /ramp 모드 활성 산출 존 | active | 2026-07-03 | 137KB |
+| `ramp/` | RAMP 모드 Gate3~6 실행 스크립트(run_ramp_gate*.R) + reports(Shu-Mulvey 충실복제·순수팩터 추출 보고 등) — /ramp 모드 활성 산출 존 | active | 2026-07-03 | 121KB |
 | `regime/` | RAMP용 국면엔진 33개 인벤토리 + bakeoff 실측(06-19) — [[project-ramp-regime-engines]]의 원 데이터 | report | 2026-06-19 | 44KB |
 
 </details>
@@ -91,23 +91,16 @@
 
 </details>
 
-<details><summary><b>experiment</b> (13)</summary>
+<details><summary><b>experiment</b> (6)</summary>
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
 | `composition_search/` | 16-cycle 조합탐색 실측 산출(cycle1/1b/1c/2 × track B/D/F/O/P/S/V/W + trackW 적대검증) — measurement-graduation v8.x 재설계의 실증 근거 (117MB) | report | 2026-06-12 | 115.4MB |
 | `02_experiments/dvaa_dvfs_revalidation/` | DVFS/DVAA vol-target·paradigm 재측정 실험(rds/xlsx, 06-17) — critical 2건 발견, 도훈 confirm 대기 상태 | report | 2026-06-16 | 3.3MB |
-| `02_experiments/asset_allocation/` | 인버스 ETF 헤지 Phase1/1b 실측(REJECT settled, 06-26) + DVAA/DVFS 강화 리서치 노트(06-13) | report | 2026-06-26 | 4.2MB |
-| `02_experiments/factor_db/` | Factor DB census v3 targeted 전수조사 — 커버리지 sweep·probe (24MB) | report | 2026-06-11 | 22.8MB |
-| `02_experiments/defense_2022_recon/` | 2022 방어 국면 lensB 스타일 재구성 실험(스크립트+로그, 06-12) | report | 2026-06-12 | 26KB |
-| `02_experiments/strategy_distill/` | Grade A 증류(grade_a_distill.json) + 한계기여 스크리닝(marginal_screening) 실험 | report | 2026-06-07 | 60KB |
-| `02_experiments/multi_sleeve_analysis/` | 멀티슬리브 조합 분석 실험(run_analysis.R + output, v5x~v6 시대) — AX-007 예외 4종 검토 계열 | report | 2026-06-07 | 362KB |
+| `02_experiments/asset_allocation/` | DVAA/DVFS 강화 리서치 노트(06-13, 도훈 confirm 대기)만 잔존 — 인버스 ETF 헤지 Phase1/1b는 L-RR-20260704_114303 적립 후 삭제(2026-07-04 G1 증류) | report | 2026-06-13 | 29KB |
 | `korea_research/` | 한국시장 리서치 배치 G1/G2/G7/RQ1~10 시리즈 출력(Gerber 공분산 등, v5x 시대) — 29MB | legacy | 2026-06-07 | 28.1MB |
-| `02_experiments/ml_research/` | ML 베이스라인 리서치(linear/logistic/elastic-net/xgboost) 스크립트 + ml_research_summary.md 종합 보고 | report | 2026-06-07 | 2.3MB |
-| `02_experiments/ml_overnight_output/` | overnight ML 배치 결과(ridge/xgb/logit NAV·IC summary, 84MB) — ML 베이스라인 실측 원 데이터 | report | 2026-06-07 | 83.6MB |
-| `02_experiments/ml_elastic_net_output/` | elastic net 팩터선택 빈도 결과(csv+log) | report | 2026-06-07 | 28KB |
 | `90_legacy/factor_scan.R + factor_scan_results.csv` | 초기 팩터 전수 스캔 스크립트와 결과(49KB) — artifact-storage 룰이 예시로 참조 | legacy | 2026-06-07 | 6KB |
-| `02_experiments/` | [재편 2026-07-04] 연구 실험 토픽 산출 카테고리 (ML 배치·재검증·census 등 실행코드 참조 0 확인분) | active | 2026-07-03 | 118.9MB |
+| `02_experiments/` | [재편 2026-07-04] 연구 실험 토픽 산출 카테고리 (ML 배치·재검증·census 등 실행코드 참조 0 확인분) | active | 2026-07-03 | 3.4MB |
 
 </details>
 
@@ -176,19 +169,16 @@
 
 </details>
 
-## 정리 후보 (status=dead) (2)
+## 정리 후보 (status=dead) (1)
 
 | 항목 | 정체 | 카테고리 | 최근 | 크기 |
 |---|---|---|---|---|
-| `02_experiments/ml_xgboost_pilot_output/` | XGBoost 파일럿 연도별 모델 바이너리(.rds 2018~2025, 2.3MB) — 결과 csv 없이 모델만 잔존 | experiment | 2026-06-07 | 2.2MB |
 | `regime_analysis/` | 구 국면 시각화 png(KTRI 9quad·3layer·MRS daily) + threshold 튜닝 스크립트(v5x 시대) | dead | 2026-07-02 | 665KB |
 
-## stale 큐레이션 키 (16) — 디스크 부재, index_descriptions.json에서 제거 권장
+## stale 큐레이션 키 (14) — 디스크 부재, index_descriptions.json에서 제거 권장
 
 - `logs/`
-- `ml_linear_baseline_output/ + ml_logistic_output/`
 - `briefings/`
-- `defense_2022_scan/`
 - `worktasks/`
 - `stage_artifacts/`
 - `nav_tracking/`

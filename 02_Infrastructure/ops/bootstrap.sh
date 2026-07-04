@@ -187,6 +187,13 @@ else
   fi
 fi
 
+# 4g. (2026-07-04 Cleaner) 주간 증류 대기 마커 — weekly_cleaner_sweep(토 09:00 무인 기계 스윕)가
+#     남긴 cleaner_pending.json(awaiting_distill) 감지 시 /cleaner 증류 안내. WARN-only.
+CLEANER_PENDING="$PROJECT/.cache/cleaner_pending.json"
+if [ -f "$CLEANER_PENDING" ] && grep -q '"status"[[:space:]]*:[[:space:]]*"awaiting_distill"' "$CLEANER_PENDING"; then
+  echo "[boot] WARN: [cleaner] 주간 증류 대기 (cleaner_pending.json awaiting_distill) — /cleaner 실행 (기계 스윕 완료·엑기스 증류/L-code 적립/잔재 삭제 미완)"
+fi
+
 # 5. 데이터 리프레시 (백그라운드 — xlsx 증분 + KRX/FRED/ECOS)
 REFRESH_LOG="/tmp/qm_boot_refresh_$(date +%Y%m%d_%H%M).log"
 (cd "$PROJECT/02_Infrastructure" && bash "$PROJECT/02_Infrastructure/data/daily_refresh.sh") > "$REFRESH_LOG" 2>&1 &

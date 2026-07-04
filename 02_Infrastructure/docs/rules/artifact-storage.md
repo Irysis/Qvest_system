@@ -107,6 +107,7 @@ CHANGELOG.md  CLAUDE.md   (+ ARTIFACTS.md 대시보드)
 
 1. **훅 (advisory — 쓰기 시점 1선)**: `02_Infrastructure/hooks/artifact_placement_guard.sh` (PreToolUse Write/Edit, `hooks/policies/router_dispatch.json` 등록, soft_fail). 감지 3종 — (a) 루트 직하 무허가 신규 항목(§2) (b) 02_Infrastructure `_` 접두 신규 파일(§3) (c) results/output 명명 산출물성 파일의 4대 존 밖 신규 생성(§1). **additionalContext 경고만 — block 금지** (의도된 예외는 그대로 진행 가능).
 2. **일간 감사 (자동정리 + 리포트 — 2선)**: `02_Infrastructure/ops/artifact_hygiene_audit.R` (daily_refresh.sh [7.9], index 재생성 직전, fail-soft). *자동 정리 실삭제*: OS temp의 `qm_`/`qvest_` 접두 로그 90일+(§4) · `.cache/scratch/` 30일+(§4) · 청소 허용 존(02_Infrastructure/04_Research 비-strategies/outputs/.cache/08_Tests) 내 빈 디렉토리. 모든 삭제는 `06_Registry/hygiene_report.json` + `.cache/hygiene_manifest.log`에 기록. *감지·경고만(삭제 안 함)*: 루트 무허가 항목 / 인프라 `_` 파일 / 4대 존 밖 산출물성 데이터 파일 / `index_descriptions.json` 미등재 최상위 항목 → 위반 시 stderr `[hygiene][WARN]` (텔레그램 직접 발송 금지 — daily_refresh 로그로 노출). dry-run: `QVEST_HYGIENE_DRY=1`.
+3. **주간 Cleaner (기계 스윕 무인 + 증류 세션 — 3선, 2026-07-04 신설)**: `02_Infrastructure/ops/weekly_cleaner_sweep.R` (Task Scheduler `Qvest_WeeklyCleaner`, 매주 **토 09:00** + StartWhenAvailable — 꺼짐 시 다음 부팅에 실행. 진입 bat: `ops/scheduler/Qvest_WeeklyCleaner.bat`, 로그 `.cache/scheduler_logs/weekly_cleaner.log`). *무인 기계 스윕*: 위 2선 일간 감사 재사용 호출 + 주간 공격 정리(`.cache` 루트 `_` 접두 스크래치 **7일+**·OS temp `qm_`/`qvest_` 로그 **30일+**, keep-list 보호 유지) + 주간 리서치 인벤토리(stage_artifacts 7일 신규·hypothesis_index 델타·신규 L-code·git log)를 `.cache/cleaner_pending.json`(`status:"awaiting_distill"`)에 기록 + 텔레그램 알림(tg_agent_brief, fail-soft). *LLM 증류는 무인 아님* — bootstrap이 pending 마커 감지 WARN을 띄우고, 다음 세션에서 `/cleaner` 스킬(`.claude/skills/cleaner/SKILL.md`)이 주간 엑기스 → `04_Research/01_reports/weekly/weekly_digest_YYYYMMDD.md`(실측만) + 미적립 학습 L-code 발행 + 참조0 검증 후 잔재 무아카이브 삭제(`06_Registry/distill_manifest_YYYYMMDD.json` 기록) + 마커 소거를 수행. dry-run: `QVEST_CLEANER_DRY=1` / 텔레그램 억제: `QVEST_CLEANER_NO_TG=1`.
 
 이력: 2026-07-04 6월-동결 스윕 — 죽은 코드·중복·캐시 일괄 정리(untracked 데이터는 `C:/qm_archive/20260704/` 경유, git-tracked는 git rm으로 이력 보존) + 본 집행 체계 가동 (첫 실행: 빈 디렉토리 421건 정리, 실측 2026-07-04).
 
@@ -114,6 +115,7 @@ CHANGELOG.md  CLAUDE.md   (+ ARTIFACTS.md 대시보드)
 - `CLAUDE.md` Key Paths / Safety Rules · `.claude/rules/backtest-contract.md`(save_bt_result 산출 위치) · `02_Infrastructure/docs/rules/artifact-naming.md`(파일명 규약 — 본 문서는 *위치*, 그쪽은 *이름*) · `02_Infrastructure/contracts/registry_writer.R`
 
 ## Change log
+- 2026-07-04: §8 3선 신설 — 주간 Cleaner (weekly_cleaner_sweep.R 무인 기계 스윕 토 09:00 StartWhenAvailable + /cleaner 스킬 증류 세션 + bootstrap pending 마커 WARN). 도훈 mandate "정크 삭제 + 위클리 리서치 엑기스 추출·탑재".
 - 2026-07-04: 04_Research 내부 재편 — §2 네이밍 컨벤션 조항 신설(NN_명칭+README 1줄, 신규 토픽은 01_reports/02_experiments 하위 우선) + §7 이동 로그 3행(01_reports/02_experiments/90_legacy) + 부기 4. index_descriptions.json 키 27건 remap + 1건 분할.
 - 2026-07-04: §8 집행 신설 — artifact_placement_guard.sh(advisory 훅) + artifact_hygiene_audit.R(일간 자동정리·리포트) + daily_refresh [7.9] 배선 (파일위생 mandate).
 - 2026-07-04: 신설 (구조 재편 mandate — 저장 4원칙 + 루트 고정 + 인프라 코드전용 + Retention + 인덱스 + 이동 로그).
