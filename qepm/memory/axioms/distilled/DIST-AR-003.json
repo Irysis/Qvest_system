@@ -123,5 +123,25 @@
   "constraint_firewall": {
     "mode": "backstop_passed",
     "checked_at": "2026-07-04"
-  }
+  },
+  "revival_spec": [
+    {
+      "signal_id": "wall_clock_date",
+      "condition": "x >= as.Date('2026-10-02')",
+      "from_trigger": "expiry",
+      "status": "active"
+    },
+    {
+      "signal_id": "dart_insider_present",
+      "condition": "x == TRUE",
+      "from_trigger": "data",
+      "status": "pending"
+    },
+    {
+      "signal_id": "regime_category",
+      "condition": "x %in% c('CRISIS','CAUTION')",
+      "from_trigger": "regime",
+      "status": "active"
+    }
+  ]
 }

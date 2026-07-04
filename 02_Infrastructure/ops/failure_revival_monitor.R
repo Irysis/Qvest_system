@@ -139,8 +139,10 @@ suppressWarnings(suppressMessages({
 # condition은 로드값을 'x'로 참조하는 비교/논리 표현식. 임의 함수 호출 차단.
 .rev_eval_condition <- function(condition, x) {
   if (is.null(condition) || !nzchar(condition)) return(list(fired = FALSE, note = "condition 없음"))
-  # 허용 토큰만: x, 숫자/문자 리터럴, 비교/논리 연산, as.Date, Sys.Date, 백분위 소수, 괄호.
-  allow_fns <- c("as.Date", "Sys.Date", "as.numeric", "as.character")
+  # 허용 토큰만: x, 숫자/문자 리터럴, 비교/논리 연산(%in% 포함), as.Date, Sys.Date, 백분위 소수, 괄호.
+  #   c() = 순수 벡터 생성자(부작용 無) — regime set-membership 'x %in% c(...)' 관용구 지원(2026-07-05
+  #   배선: draft_proposed 자동생성이 regime condition을 c(...)로 emit하는데 whitelist 누락 시 미발화).
+  allow_fns <- c("c", "as.Date", "Sys.Date", "as.numeric", "as.character")
   # 위험 패턴 차단: system/file/source/<-/(정의되지 않은 함수 호출).
   bad <- "system|file\\.|readLines|source\\(|eval\\(|parse\\(|<-|`|\\$|::|library|require|unlink|write"
   if (grepl(bad, condition)) return(list(fired = FALSE, note = "condition 안전 위반 — 차단"))

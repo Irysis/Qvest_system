@@ -59,8 +59,9 @@ derive_value_quality_spread <- function(root = .vqs_root(),
                                         min_names = 30L,
                                         out_path = NULL,
                                         verbose = TRUE) {
-  # OneDrive/Windows arrow HANG 가드([[project-ramp-fullcycle-graduation]]).
-  suppressWarnings(tryCatch(arrow::set_io_thread_count(1L), error = function(e) NULL))
+  # ★arrow 스레드: set_io_thread_count(1L) 금지 — 커넥터의 open_dataset()%>%collect() 경로가
+  #   단일 IO 스레드에서 HANG(실측: 1개월 >400s vs 기본 8스레드 0.2s). RAMP의 read_parquet HANG
+  #   가드는 다른 연산이라 여기 부적용. 기본 멀티스레드 유지.
 
   # C15: 커넥터 경유 factor DB 접근.
   conn <- file.path(root, "02_Infrastructure", "factor_db", "factor_db_connector.R")

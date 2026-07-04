@@ -1,6 +1,6 @@
 {
   "schema_version": "distilled_knowledge_v1",
-  "generated_at": "2026-07-05T00:45:23+0900",
+  "generated_at": "2026-07-05T01:46:17+0900",
   "note": "Axiom 엔진 ②Distilled 계층 통합 인덱스. lifecycle: pending_5axis→[자동초안+적대검증]→proposed→[도훈 배치승인]→distilled→promoted|expired. INV-6(2026-07-04 재정의: 무인 활성화 금지): 주입/truths 소비는 status=distilled만 — proposed·pending_5axis 초안 텍스트 주입 금지(안전속성 보존).",
   "n_entries": 17,
   "n_distilled": 0,
@@ -37,7 +37,26 @@
           "monitored_source": "06_Registry 신규 데이터원 등재(DART insider 등)"
         }
       ],
-      "revival_spec": [],
+      "revival_spec": [
+        {
+          "signal_id": "wall_clock_date",
+          "condition": "x >= as.Date('2026-10-02')",
+          "from_trigger": "expiry",
+          "status": "active"
+        },
+        {
+          "signal_id": "regime_category",
+          "condition": "x %in% c('CRISIS','CAUTION')",
+          "from_trigger": "regime",
+          "status": "active"
+        },
+        {
+          "signal_id": "dart_insider_present",
+          "condition": "x == TRUE",
+          "from_trigger": "data",
+          "status": "pending"
+        }
+      ],
       "constraint_firewall": {
         "mode": "backstop_passed",
         "checked_at": "2026-07-04"
@@ -88,7 +107,26 @@
           "monitored_source": ".cache/unified_regime_signal.parquet + macro_regime.parquet"
         }
       ],
-      "revival_spec": [],
+      "revival_spec": [
+        {
+          "signal_id": "wall_clock_date",
+          "condition": "x >= as.Date('2026-10-02')",
+          "from_trigger": "expiry",
+          "status": "active"
+        },
+        {
+          "signal_id": "dart_insider_present",
+          "condition": "x == TRUE",
+          "from_trigger": "data",
+          "status": "pending"
+        },
+        {
+          "signal_id": "regime_category",
+          "condition": "x %in% c('CRISIS','CAUTION')",
+          "from_trigger": "regime",
+          "status": "active"
+        }
+      ],
       "constraint_firewall": {
         "mode": "backstop_passed",
         "checked_at": "2026-07-04"
@@ -1040,7 +1078,26 @@
           "monitored_source": ".cache/unified_regime_signal.parquet + macro_regime.parquet"
         }
       ],
-      "revival_spec": [],
+      "revival_spec": [
+        {
+          "signal_id": "wall_clock_date",
+          "condition": "x >= as.Date('2026-10-02')",
+          "from_trigger": "expiry",
+          "status": "active"
+        },
+        {
+          "signal_id": "value_quality_spread",
+          "condition": "x >= 0.90",
+          "from_trigger": "spread",
+          "status": "active"
+        },
+        {
+          "signal_id": "regime_category",
+          "condition": "x %in% c('CRISIS','CAUTION')",
+          "from_trigger": "regime",
+          "status": "active"
+        }
+      ],
       "constraint_firewall": {
         "mode": "backstop_passed",
         "checked_at": "2026-07-04"
@@ -1092,7 +1149,20 @@
           "monitored_source": "distilled.R expiry sweep"
         }
       ],
-      "revival_spec": [],
+      "revival_spec": [
+        {
+          "signal_id": "wall_clock_date",
+          "condition": "x >= as.Date('2026-10-02')",
+          "from_trigger": "expiry",
+          "status": "active"
+        },
+        {
+          "signal_id": "dart_insider_present",
+          "condition": "x == TRUE",
+          "from_trigger": "data",
+          "status": "pending"
+        }
+      ],
       "constraint_firewall": {
         "mode": "backstop_passed",
         "checked_at": "2026-07-04"
