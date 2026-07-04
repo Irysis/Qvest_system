@@ -122,6 +122,23 @@ emit_lcode <- function(mode, strategy_id, grade, lesson_text,
   if (!is.null(selection_type))         lcode$selection_type <- selection_type
   if (!is.null(record_type))            lcode$record_type <- record_type
 
+  # P0#5 emit 방화벽 backstop 게이트 — 제약-귀속/완화-레버 위반 오염표식 부착 (emit 비차단)
+  if (exists("check_constraint_firewall", mode = "function")) {
+    fw_text <- paste(c(lesson_text, mechanism_hypothesis,
+                       lcode$next_probe %||% metrics[["next_probe"]] %||% NULL),
+                     collapse = " \n ")
+    fw <- tryCatch(check_constraint_firewall(fw_text, mode = "backstop"),
+                   error = function(e) NULL)
+    if (!is.null(fw) && isFALSE(fw$pass)) {
+      lcode$firewall_violation <- TRUE
+      lcode$firewall_note <- paste(vapply(fw$violations, function(v)
+        sprintf("[%s] %s", v$pattern_class %||% "?", v$matched %||% ""), character(1)),
+        collapse = "; ")
+      cat(sprintf("[emit_lcode][WARN][firewall] %s: 제약 방화벽 backstop 위반 감지 (firewall_violation=TRUE, emit 비차단·오염표식) — %s\n",
+                  l_code, lcode$firewall_note))
+    }
+  }
+
   # normalize (grade alias / qepm→qepm_legacy / construction↔selection 분리)
   if (exists("normalize_lcode", mode = "function")) {
     nz <- normalize_lcode(lcode)
