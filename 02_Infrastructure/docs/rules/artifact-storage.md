@@ -47,12 +47,18 @@ CHANGELOG.md  CLAUDE.md   (+ ARTIFACTS.md 대시보드)
 - 스크래치(임시 파일·중간 덤프)는 **`.cache/scratch/`**(2026-07-04 기준 미생성 — 최초 사용 시 생성) 또는 세션 scratchpad 디렉토리만 사용.
 - `_` 접두 1회용 디버그 스크립트(`_probe_*.R`, `_vfy_*.R`, `_debug_*.txt` 류)는 인프라 디렉토리에 두지 않는다 — 실험 소속이면 `stage_artifacts/<mode>/<run_id>/`, 순수 스크래치면 `.cache/scratch/`. (기존 잔존분은 2026-07-04 재편에서 일괄 정리 — 신규 생성분부터 본 규칙 hard.)
 
+### §3.1 리서치 모드 중간 산출물 (RAMP / QEPM / alpha-search)
+- **canonical(모드 최종 산출)은 `outputs/<mode>/`** (예: RAMP 순수팩터·팩터군 = `outputs/ramp/*.parquet`). 이것만이 "이 모드의 결과"이며 보존 대상.
+- **모드 실행 중간 체크포인트(`_ramp*.rds`·게이트 사이 `.rds`·진행 로그 `_*.txt`)는 재생성 가능한 스크래치** — canonical이 아니다. 신규 리서치 모드 스크립트는 이를 **`.cache/scratch/<mode>/`**에 쓸 것(권장). 기존 RAMP 스크립트는 `.cache/` 루트에 `_` 접두로 직접 쓰는데(개조 전까지), 이 잔존분은 §4 Retention의 `.cache/` 루트 `_` 스크래치 규칙으로 **일간 위생 감사가 30일+ 자동 삭제**한다(`artifact_hygiene_audit.R` (a2b), 2026-07-04 배선). 활성 상태 파일(`_` 미접두: `update_file_last_processed.rds`·`lcode_corpus.json` 등)은 접두 규칙상 자동 보호.
+- 근거: 2026-07-04 RAMP 체크포인트가 `.cache/` 루트에 98.7MB 무제한 누적된 사례(`_search_cache.rds` 93MB 등) — canonical(`outputs/ramp/`)은 별도 보존이라 스크래치 삭제·재생성이 안전함을 확인.
+
 ## §4 Retention (보존 기한)
 
 | 대상 | 기한 | 처리 |
 |---|---|---|
 | 실행 로그 (파이프라인/훅/스케줄러 로그) | **90일** | 기한 경과분 삭제 |
 | `.cache/scratch/` | **30일** | 기한 경과분 삭제 |
+| `.cache/` 루트 `_` 접두 스크래치 (`.rds`·`.txt`·`.out`·`.log`·`.R`) | **30일** | 리서치 모드 중간 체크포인트 — 자동 삭제 (§3.1, keep-list 제외) |
 | superseded canonical 데이터 (`outputs/` 구본) | **격리 후 30일** | 즉시 삭제 금지 — `.cache/superseded/<날짜>/`로 격리 후 30일 뒤 삭제 |
 | `stage_artifacts/` 런 기록 | 무기한 | 삭제·이동 금지 (감사 증거) |
 | `06_Registry/` | 무기한 | writer 함수 경유 갱신만 |

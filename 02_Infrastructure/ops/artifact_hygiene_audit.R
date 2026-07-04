@@ -99,6 +99,29 @@ if (dir.exists(scratch)) {
 }
 
 # =============================================================================
+# (a2b) .cache/ 루트 `_` 접두 리서치-모드 스크래치 30일+ 삭제
+#   (2026-07-04 RAMP 갭 봉합) RAMP 등 리서치 모드가 .cache 루트에 직접 쓰는
+#   `_ramp*.rds`·`_*.txt`·`_*.out` 중간 체크포인트는 재생성 가능(canonical=outputs/<mode>/).
+#   활성 운영 파일은 `_` 접두를 쓰지 않으므로 접두 규칙이 곧 안전 필터.
+#   그래도 만일에 대비해 keep-list 명시 보호.
+# =============================================================================
+CACHE_ROOT_KEEP <- c("update_file_last_processed.rds", "lens2_liq_sweep.rds")
+cache_root <- file.path(root, ".cache")
+if (dir.exists(cache_root)) {
+  rf <- list.files(cache_root, pattern = "^_.*\\.(rds|txt|out|log|R)$",
+                   full.names = TRUE, all.files = TRUE, no.. = TRUE)
+  rf <- rf[!(basename(rf) %in% CACHE_ROOT_KEEP)]
+  if (length(rf)) {
+    age <- suppressWarnings(as.numeric(difftime(now, file.info(rf)$mtime, units = "days")))
+    old <- rf[!is.na(age) & age > SCRATCH_RETENTION_DAYS]
+    for (f in old) {
+      ok <- if (DRY) TRUE else isTRUE(suppressWarnings(file.remove(f)))
+      if (ok) { deleted$scratch <- c(deleted$scratch, f); log_deletion("cache_root_scratch30d", f) }
+    }
+  }
+}
+
+# =============================================================================
 # (a3) 빈 디렉토리 삭제 — 청소 허용 존 한정. 보존 구역(05_Production/01_Literature/
 #   stage_artifacts/qepm/06_Registry/.git/04_Research/strategies) 절대 제외.
 #   deepest-first 순회로 연쇄 빈 부모까지 1-pass 정리.
