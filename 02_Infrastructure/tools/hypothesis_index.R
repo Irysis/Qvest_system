@@ -442,7 +442,14 @@ build_hypothesis_index <- function(root = QM_ROOT, out_path = HI_INDEX_PATH,
     dk <- tryCatch(fromJSON(dk_path, simplifyVector = FALSE), error = function(e) NULL)
     for (e in (dk$entries %||% list())) {
       if (identical(e$status %||% "", "expired")) { cov$distilled_skipped <- cov$distilled_skipped + 1L; next }
-      pe <- tryCatch(.hi_parse_distilled(e), error = function(err) NULL)
+      # ★silent-drop 가시화 (P0#1 동반): parse 예외를 조용히 NULL로 삼키지 않는다.
+      #   실패 시 stderr WARN(dist_id + 사유) + 최소필드 엔트리로라도 포함(완전 드롭 금지).
+      pe <- tryCatch(.hi_parse_distilled(e), error = function(err) {
+        did <- e$dist_id %||% "(no dist_id)"
+        message(sprintf("[hypothesis_index][WARN] distilled parse 실패 → 최소필드 포함: %s (%s)",
+                        did, conditionMessage(err)))
+        .hi_min_distilled_entry(e, conditionMessage(err))
+      })
       if (add_entry(pe)) cov$distilled_indexed <- cov$distilled_indexed + 1L
       else cov$distilled_skipped <- cov$distilled_skipped + 1L
     }

@@ -11,7 +11,7 @@ Qvest 제3 리서치 모드. **신규 알파를 찾지 않고**, 이미 생산�
 
 FR 리서치(레짐엔진 변형·배분정책·RCMA 재설계) 착수 **전에** 기존 지식과 대조한다:
 
-1. **hypothesis_index 조회**: `Rscript 02_Infrastructure/tools/hypothesis_index.R lookup <keyword> [keyword...]` (예: `lookup regime rotation`, `lookup rare_mode`). 동일 서명 기존 시도가 있으면 기존 결과(verdict·grade·key_metrics)를 인용하고 **차별점을 명시해야만 진행 가능**.
+1. **hypothesis_index 조회**: 먼저 `Rscript 02_Infrastructure/tools/hypothesis_index.R build`로 재빌드(stale 방지) 후 `Rscript 02_Infrastructure/tools/hypothesis_index.R lookup <keyword>` (예: `lookup regime`, `lookup allocation`). **단일 패밀리어로 넓게 조회 후 좁힐 것** — 다어(`regime rotation`)는 AND 매칭이라 결과가 과도하게 좁아져 진짜 히트를 놓친다. 동의어 자동확장(F1: 한영/축약/동의어)이 이미 걸려 있으니 단일어로 넓게 잡는다. 동일 서명 기존 시도가 있으면 기존 결과(verdict·grade·key_metrics)를 인용하고 **차별점을 명시해야만 진행 가능**.
 2. **모드 L-code grade F 스캔**: `stage_artifacts/l_code/{factor_rotation,regime_research,ramp}/` 하위 grade F/FAIL 엔트리(failure-ledger) 확인 — FR은 RAMP와 같은 모듈-소비 계열이라 ramp 실패도 교차 참조.
 3. **히트 시**: FAIL/KILL 결과와 겹치는 설계는 차별점(무엇이 달라져 결과가 달라질 것인지) 명시 없인 진행 금지 — INV-7 재도전 사유를 산출물(연구노트/FR result json)에 기록. hit/miss 사실을 결과 보고에 1줄 기록.
 

@@ -40,10 +40,13 @@ SPEC_APPROVED
 가설 intake **전에** 반드시 `06_Registry/hypothesis_index.json`을 조회한다 ("이미 시도됨" 판정을 LLM 메모리에 맡기지 말 것 — 687회+ 실험 인덱싱됨):
 
 ```bash
+# lookup 전 build 1회 권장 (stale 방지 — 최근 실험이 미인덱싱일 수 있음)
+Rscript 02_Infrastructure/tools/hypothesis_index.R build
 Rscript 02_Infrastructure/tools/hypothesis_index.R lookup <keyword> [keyword...]
-# 예: Rscript 02_Infrastructure/tools/hypothesis_index.R lookup residual momentum
+# 예: Rscript 02_Infrastructure/tools/hypothesis_index.R lookup momentum
 ```
 
+- **넓게 조회 후 좁힐 것**: 단일 패밀리어(`momentum`·`value`·`quality`)로 먼저 조회한다. 다어(`residual momentum`)는 AND 매칭이라 결과가 과도하게 좁아져 진짜 히트를 놓친다 — 동의어 자동확장(F1: 한영/축약/동의어)이 이미 걸려 있으니 단일어로 넓게 잡고, 필요하면 결과 안에서 좁힌다.
 - **동일 서명(`family|signal_group|universe|structure`) 기존 시도가 있으면**: 기존 결과(verdict·grade·key_metrics·source_paths)를 인용하고, **이번 가설의 차별점을 명시해야만 진행 가능**. 차별점 없는 동일 재실험 금지 (단순 재확인은 도훈 지시 시만).
 - **verdict가 FAIL/KILL인 히트는 차별점 명시 없인 진행 금지** — 재도전 시 INV-7 재도전 사유(무엇이 달라져 결과가 달라질 것으로 보는지)를 WT `hypothesis_description`에 기록.
 - hit 없으면 그대로 진행. 조회 사실(키워드 + hit/miss)을 결과 보고에 1줄 기록.
