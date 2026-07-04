@@ -18,6 +18,7 @@
 ```
 L-code(모드별 emit v2 — 승격축 필드 포함) → harvest(v2: grade normalize + family 15군 + ID guard)
    → cluster(mode-partition, polarity 정규화) → CAND + DIST 초안(②) + distilled_knowledge.json
+   → [자동초안+적대검증] proposed → [도훈 배치승인] distilled(주입) ┐
    → promote(mode-local AX-<MODE>-NNN) → promote_global(AX-NNN) → inject
         ↘ 미달 CAND = review_log(AX-PENDING, same-day dedup) + DIST 초안 유지(폐기 없음)
         ↘ review(NARROW/deprecate) · rollback · weekly_report · run_axiom_weekly 진단
@@ -33,7 +34,7 @@ L-code(모드별 emit v2 — 승격축 필드 포함) → harvest(v2: grade norm
 - **INV-3 안전망 실작동**: 롤백 = 마커 블록 삭제(simulated diff 금지). 주간 리포트 = proxy/global 전건 human-review 플래그.
 - **INV-4 r7 5축 무결성**: 승격 = 5축 각 min-hurdle 동시 충족(boolean AND). weighted는 랭킹용.
 - **INV-5 AX-008**: 자동 global 승격 = Forge+Self-Adversarial+Architect **2/3** verification (v8.2 — Codex Round 제거, Opus 자체 적대검증 치환. 2/3 불변).
-- **INV-6 statement 정제**: cluster 초안 텍스트 active화 금지. **distilled도 동일 원칙** — `statement_refined`는 /cleaner 세션에서만 작성(무인 정제 금지), status=`distilled`(정제 완료)만 주입/truths/enforcement 소비. `pending_5axis` 초안 텍스트 주입 금지.
+- **INV-6 무인 활성화 금지** (2026-07-04 도훈 재정의 — 구 "무인 정제 금지"에서 이동): cluster 초안 텍스트 active화 금지. **초안 작성은 자동화 허용, 활성화는 도훈 배치승인 게이트 필수.** `statement_refined` 초안은 적대검증 붙여 자동 작성 가능(`draft_proposed`, status=`proposed`) — 단 이 상태는 **주입 안 됨**. 활성화(status=`distilled` — 주입/truths/enforcement 소비 시작)는 도훈 배치승인(`approve_proposed`) 필수. 주입 3배선은 **status=`distilled`만** 소비 — `proposed`·`pending_5axis` 초안 텍스트 주입 금지(안전속성 보존). lifecycle: `pending_5axis` → [자동초안+적대검증] → `proposed`(주입 안 됨) → [도훈 배치승인] → `distilled`(주입 가능) → `promoted`|`expired`. /cleaner 수동 정제 직행 경로(`refine_distilled`)는 retain.
 - **INV-7 negative asymmetry**: negative = **provisional failure-ledger**(불변 법칙 아님). positive보다 높은 burden(construction≥3) + expiry + 재도전 트리거. distilled negative의 '재시도 금지' 라벨도 provisional — `retry_condition` 충족 + 차별점 명시 + 재도전 사유 기록 시 재시도 가능.
 
 ## §3. 5축 (r7 — `promote.R`. 수치 전부 불변)
@@ -82,7 +83,7 @@ L-code(모드별 emit v2 — 승격축 필드 포함) → harvest(v2: grade norm
 (모드 스크립트·SKILL 문서 배선 집행 = mode-wiring 그룹. 본 표는 규약 SOT.)
 
 공통층 소비 3배선 (engine-core 구현 완료):
-1. **주입**: `hooks/axiom_context_inject.sh` — active 공리 + strategic_truths + **distilled negative/conditional top-5**(status=distilled만, INV-6). 합산 상한 **2500자** (우선순위: truths > distilled > axiom body 축약).
+1. **주입**: `hooks/axiom_context_inject.sh` — active 공리 + strategic_truths + **distilled negative/conditional top-5**(status=distilled만, INV-6 — `proposed`·`pending_5axis` 초안 주입 금지). 합산 상한 **2500자** (우선순위: truths > distilled > axiom body 축약).
 2. **검색**: `tools/hypothesis_index.R` — 원천 4계층째 distilled 인덱스. verdict = `DISTILLED_NEG`/`DISTILLED_COND`/`DISTILLED_POS`. negative는 lookup 결과에 `retry_policy`('재시도 금지/조건' — INV-7 provisional) 라벨 표출. expired는 인덱스 제외.
 3. **truths**: `prompts/strategic_truths.md` `<!-- DISTILLED_START/END -->` generated 블록 — **수동 큐레이션 본문 절대 보존**(블록 밖 수정 금지 · 블록 안 수동 수정 금지=재생성 시 소실). 갱신: `distilled.R::update_strategic_truths_distilled_block()` (refine/expire 시 자동). inject는 이 블록을 제거하고 distilled 인덱스에서 직접 주입(이중 주입 방지).
 
@@ -123,6 +124,7 @@ R-side helper: `02_Infrastructure/axiom/distilled.R` — `lookup_distilled()` / 
 - b434 규약: CL-B434 fallback 통합 L-code의 '미검증 잔존 가설 백로그'는 **어떤 개별 가설의 기각 증거로도 인용 금지** (AX-000 — 미검증→기각 둔갑 방지가 failure-ledger 신뢰의 전제).
 
 ## Change log
+- 2026-07-04 (INV-6 재정의 — 도훈 confirm "옵션 B: 자동초안+배치승인 + 모닝브리핑 승인대상 노출"): INV-6 "무인 *정제* 금지" → "무인 *활성화* 금지". lifecycle에 `proposed` 상태 삽입(`pending_5axis`→[자동초안+적대검증]→`proposed`→[도훈 배치승인]→`distilled`). distilled.R 신규 `draft_proposed`(status=proposed, 주입 안 됨)/`approve_proposed`(proposed→distilled 사람 게이트)/`list_proposed`(모닝브리핑·다이제스트 소비) + `lookup_distilled` distilled-only 필터(proposed 누출 차단). 주입 3배선 status=distilled만 소비(안전속성 보존). INV-1~5·INV-7·AX-008 2/3·5축 hurdle·active AX JSON 전부 불변. quarantined_evidence 6건 초안 대상 제외(가드 재사용).
 - 2026-07-04 v2 (엔진 재설계 — 도훈 mandate, engine-core): §0 3층 산출물 모델(Ledger/Distilled/Law) 신설 + ②Distilled 계층 구현(DIST-<MODE>-NNN + distilled_knowledge.json + distilled.R helper + cluster_extractor CAND→DIST 초안·polarity 정규화 왜곡 수리) + 소비 3배선(inject distilled top-5 ≤2500자 / hypothesis_index 4계층 DISTILLED_* + retry_policy / strategic_truths generated 블록) + emit 스키마 v2(§3b — required_for_promotion 계층·grade enum A/B/C/F+legacy alias·record_type·canonical_screen·selection_type 분리·ID 채번 가드; WARN-only, BLOCK 미도입) + harvester v2(grade normalize plan 소비·FAMILY 15군 확장 unknown 146→8·record_type·ID collision) + promote 국소수리 3건(§3 — falsification 문자열 crash-safe / conditional direction_consistency 조건 축 내 재정의(0.8 불변·confirm 플래그) / review_log same-day dedup) + 주간 단일 진입 run_axiom_weekly.R(§3e — near_miss·failing_axis_histogram 진단). **5축 hurdle 수치·INV-1~7·AX-008 2/3·active axiom 8건 의미론 전부 불변.** E2E: 완비 emit 1건 → 5축 PPPPP 실증(sandbox) / 17 CAND 재실행 crash 0 / inject 2295≤2500자.
 - 2026-07-03 (도훈 confirm, 감사 GOV-01): External 축 측정가능 재정의 — hurdle을 oos_months(corpus 실값 0건 = 영구 불충족) 기반에서 **oos_retention 실값 존재 ∧ cluster median ≥ 0.5**(corpus 457/594건 실값)로 교체. '요건 완화가 아니라 측정 불가능 지표의 측정 가능 지표 교체'. 문턱 0.5는 구 vs_is 0.5 개념 유지 + measurement-graduation §3 '<0.5 무조건 FAIL' 하한 정합. oos_months는 가산 증거로 강등. (`promote.R .HURDLE/.axis_external`)
 - 2026-07-03 현행화 (승격 배관 수리 — hurdle 정의 불변): ① 3-mode → **4-mode**(AS/QPM/FR/**RAMP**) ② INV-5 Codex → **Self-Adversarial**(v8.2 AX-008 치환) ③ cluster_extractor `oos_months` 하드코딩 None → L-code 실값 매핑.

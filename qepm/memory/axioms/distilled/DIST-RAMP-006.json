@@ -3,9 +3,9 @@
   "dist_id": "DIST-RAMP-006",
   "cluster_key": "0d1162acffef",
   "candidate_id": "CAND_20260704_ramp_value_conditional_L-RAMP-20260618_131316B_L-RAMP-20260619_140656_L-RAMP-20260619_150531",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
+  "status": "proposed",
+  "statement_refined": "KR 시장에서 value/국면-조건부 팩터배분은 배포 제약(25종목 long-only)에서 실현 PORT_t 천장이 ~2.85로, 모든 regime 변형(AR+MSM 2.73·Cascade 2.85·Shu-Mulvey 그룹 0.83)이 이 이하다 — 이는 국면엔진 한계가 아니라 알파 자체 한계(2017+ cohort decay로 OOS 음수 도처 + long-only β≈0.99 시장성분 불가피). 졸업 수준(pt 2.95+)은 Shu-Mulvey 인덱스/ETF-배분 형태(인과 워크포워드 pt_capwt 7.72·oos 0.54밴드 3/3, 단 MINY=5 GFC-훈련 의존·cap-w 5bps vs KR 15bps idealized)에서만 도달하며, 25종목 종목선택으로 전이하면 엣지 소멸(4접근 전부 음수 PORT_t) — 천장-초과 유일 레버는 overlay-on-tuned-base다.",
+  "retry_condition": "재도전 대상: (1) >25종목 분산 허용 시 — 직교성이 active(−BM) basis에 실재하므로(core↔def 0.45) 종목수 확대가 decorrelation 실현 경로일 수 있음. (2) 2017+ decay를 견디는 신규 알파원 확보 시 — 비-return 정보원·ML 종목스코어(xgb/lgbm 팩터패널)·DPL end-to-end 25종목 net Sharpe 직접최적화. 금지: 인덱스-배분 졸업수치(pt 7.72)를 25종목 배포로 재시도(L-RAMP-20260619_173504 전이소멸 실증) — MINY=5 GFC-훈련 의존·cap-w 5bps idealized라는 차별점 해소 없이는 재도전 불가(INV-7).",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
@@ -81,5 +81,9 @@
     "defects_hit": "DEF-03/11 (RAMP_03B 멤버 한정 — 철회 클래스 직접)",
     "report": "04_Research/01_reports/knowledge_provenance_audit_20260704.md",
     "remeasure_plan": "RAMP_03B book 비교를 06-24 정렬 규약(anchor_date merge+shift(1)+β-스캔 offset 검증)으로 재산출 — 유지 시만 멤버 잔존, 아니면 drop 후 클러스터 재발행"
-  }
+  },
+  "adversarial_verdict": "CLEAN",
+  "drafted_at": "2026-07-04T19:05:55+0900",
+  "drafted_by": "auto_inv6_agent",
+  "adversarial_note": "CLEAN(정제문 기준). 3반증 통과: (a) 과장無 — '~2.85 천장'·'2017+ decay OOS 음수'·'pt 7.72 인덱스형만·25종목 전이소멸'은 전부 supporting 실측(L-140656/180008/193015·L-152736·L-173504) 직접인용, '구조적 불가' 격상 없이 조건부 천장+명시 레버(overlay)+재도전조건으로 기술. (b) 모든 주장 특정 L-code 근거有. (c) AX-000 위반無 — retry_condition에 재도전 경로 명시. ★승인 주의(RECHECK_QUEUED 잔존): 멤버 L-RAMP-20260620_171915(RAMP_03B, grade A)는 evidence_audit_20260704가 DEF-03/11(realized_ym 오정렬 철회클래스)로 quarantine-flag한 상태 — 본 statement는 그 'book_momcons pt 3.05 > 배포Book' 주장을 의도적으로 배제(천장/decay는 타 멤버 근거). DEF-01(벤치 IKS001 오염)은 negative 판정을 강화만 하므로 본 조건부/negative 결론 전복 불가. promote(승격) 시에는 RAMP_03B 재실측 또는 drop 후 클러스터 재발행 필요 — 본 draft는 proposed(비활성)이라 허용."
 }

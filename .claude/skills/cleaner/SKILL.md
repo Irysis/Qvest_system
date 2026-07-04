@@ -42,7 +42,17 @@ pending 파일이 없으면: "증류 대기 없음" 보고 후 종료 (기계 �
 **axiom 후보 현황 (의무 절 — 2026-07-04 주간 axiom 사이클 Cleaner 통합)**:
 - 기계 스윕 step [3.5]가 harvester→cluster_extractor→promote 진단을 돌리고 pending의 `axiom_candidates` 섹션(`n_pending` / `failing_axis_histogram` / `near_miss`)을 채운다 (정규 경로 — 구 `axiom_weekly.sh`는 수동/보조 retain).
 - digest에 **axiom 후보 현황 절 포함**: pending 건수 + 실패 축 히스토그램(어느 축 결측이 승격을 막는지) + near-miss 목록.
-- **near-miss statement 정제**: 1축만 미달인 후보는 statement 초안(INV-6 `[초안]`)을 정제해 **distilled 지식으로 승격 제안 — 도훈 confirm 건별** (자동 승격 금지. promote 재실행은 confirm 후). 실패 축이 입력 결측(mechanism/falsification 등)이면 해당 emit 지점 보강을 후속으로 기록.
+- **near-miss statement 정제**: 1축만 미달인 후보는 statement 초안(INV-6 `[초안]`)을 정제해 **distilled 지식으로 승격 제안 — 도훈 confirm 건별** (자동 활성화 금지. promote 재실행은 confirm 후). 실패 축이 입력 결측(mechanism/falsification 등)이면 해당 emit 지점 보강을 후속으로 기록.
+
+**★ INV-6 자동초안 흐름 (2026-07-04 도훈 confirm — "무인 정제 금지" → "무인 *활성화* 금지" 재정의)**:
+DIST 초안 lifecycle이 반자동화됨:
+```
+pending_5axis → [자동초안 에이전트 + 적대검증] → proposed(주입 안 됨) → [도훈 승인] → distilled(주입 가능) → promoted | expired
+```
+- **자동초안(허용)**: `weekly_cleaner_sweep`(기계 스윕) 또는 본 세션 에이전트가 pending_5axis → proposed 로 `statement_refined` 초안 + `adversarial_verdict`(적대검증)를 작성. **초안 수치·결론은 supporting L-code 실측 결론만** — 창작 금지.
+- **노출(모닝브리핑)**: `02_Infrastructure/ops/morning_steps/axiom_approval_queue.R`(스텝 [5b/5])가 status=proposed 목록을 사람이 읽는 요약(dist_id·statement 1줄·적대검증·supporting L-code 수·만료)으로 매일 노출.
+- **활성화(도훈 승인 게이트, 무인 금지)**: 도훈이 `Rscript -e 'source("02_Infrastructure/axiom/distilled.R"); approve_proposed(c("DIST-..."))'` 로 배치 승인 → status=proposed → distilled 전환 시에만 주입 3배선(inject/hypothesis_index/strategic_truths)이 소비. **proposed·pending_5axis 초안은 절대 주입 안 됨**(INV-6 안전속성 보존).
+- **불변**: 주입 3배선은 status=distilled만 소비. active AX JSON 무변경(DIST 계층 작업). `quarantined_evidence`(현 6건, 07-04 증거계보 감사 TAINTED)는 초안·정제·활성화 대상 제외.
 
 ### ③ 엑기스 적립 (L-code + 메모리)
 
@@ -66,7 +76,8 @@ pending 파일이 없으면: "증류 대기 없음" 보고 후 종료 (기계 �
 
 ## §2 금지·주의
 
-- **증류 자동화 금지** — 본 스킬은 항상 대화 세션에서 실행 (④ 삭제 판단은 LLM+도훈 감독 하).
+- **증류(digest·삭제 판단) 자동화 금지** — 본 스킬은 항상 대화 세션에서 실행 (④ 삭제 판단은 LLM+도훈 감독 하).
+- **DIST 초안 무인 *활성화* 금지 (INV-6 재정의 2026-07-04)** — 자동초안(pending→proposed)+적대검증은 허용되나, proposed → distilled 활성화(주입 스트림 개방)는 **도훈 배치 승인 게이트 필수**. 본 스킬의 axiom 역할 = ① 자동초안 검토/재정제 ② 도훈 승인 대행 실행(`approve_proposed`) — 무인 활성화 아님. proposed·pending 초안은 주입되지 않는다.
 - digest에 proxy/추정 수치를 실측처럼 기재 금지 (answer-principles 회피표현 grep 대상).
 - `stage_artifacts/` 내부는 인벤토리 소스일 뿐 — 어떤 파일도 이동·수정·삭제 금지 (§6 불변 런 기록).
 - 커밋은 메인 세션 규율에 따름 (본 스킬이 임의 커밋하지 않음).

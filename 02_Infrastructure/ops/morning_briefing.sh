@@ -62,6 +62,13 @@ Rscript --no-save -e 'source("02_Infrastructure/ops/morning_steps/freshness_audi
 
 echo "=== Morning Briefing Done @ $(date) ==="
 
+# Step 5b: Axiom(DIST) 승인 대기 노출 (INV-6 재정의 2026-07-04 — 무인 활성화 금지)
+#   자동초안+적대검증 완료된 status=proposed DIST 초안을 사람이 읽는 요약으로 노출(읽기 전용).
+#   활성화(distilled 전환)는 도훈 배치 승인 게이트. fail-soft(|| true).
+echo "[5b/5] Axiom 승인 대기 노출..."
+cd "$BASE"
+Rscript --no-save -e 'source("02_Infrastructure/ops/morning_steps/axiom_approval_queue.R")' || true
+
 # Step 3: Production strategy daily NAV report
 # NOTE: sleeve_save_helper.R 제거됨. daily_portfolio_nav.R만으로 동작.
 Rscript -e 'source("02_Infrastructure/config.R"); source("02_Infrastructure/backtest_harness.R"); source("02_Infrastructure/portfolio/daily_portfolio_nav.R"); tryCatch(daily_nav_report("STR_905"), error=function(e) cat("[NAV] Skip:", e$message, "\n"))' >> /tmp/qm_morning.log 2>&1
