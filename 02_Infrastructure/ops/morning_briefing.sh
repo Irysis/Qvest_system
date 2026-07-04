@@ -62,6 +62,13 @@ Rscript --no-save -e 'source("02_Infrastructure/ops/morning_steps/freshness_audi
 
 echo "=== Morning Briefing Done @ $(date) ==="
 
+# Step 5a2: 부활 신호원 신선화 — value_quality_spread deriver (구현 C, 2026-07-05)
+#   실패지식 재부상 모니터(step 5b가 소비)가 참조하는 value_quality_spread(V02_EP dispersion)
+#   parquet 을 리밸 이전에 최신화(지속가능). 외부 .R source(인라인 한글 -e 금지). fail-soft(|| true).
+echo "[5a2/5] 부활 신호원 신선화 (value_quality_spread deriver)..."
+cd "$BASE"
+Rscript --no-save -e 'source("02_Infrastructure/ops/derive_value_quality_spread.R")' || true
+
 # Step 5b: Axiom(DIST) 승인 대기 노출 (INV-6 재정의 2026-07-04 — 무인 활성화 금지)
 #   자동초안+적대검증 완료된 status=proposed DIST 초안을 사람이 읽는 요약으로 노출(읽기 전용).
 #   활성화(distilled 전환)는 도훈 배치 승인 게이트. fail-soft(|| true).

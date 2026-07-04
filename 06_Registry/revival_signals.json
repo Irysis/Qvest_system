@@ -45,17 +45,23 @@
       "description": "시간 신호원. 예 condition: 'x >= as.Date(\"2027-01-01\")' — 만료/재검토 시각 도달.",
       "registered_at": "2026-07-04",
       "status": "active"
+    },
+    {
+      "signal_id": "value_quality_spread",
+      "kind": "parquet_percentile",
+      "source_path": ".cache/value_quality_spread.parquet",
+      "value_col": "spread",
+      "sort_col": "Date",
+      "window": 60,
+      "extractor": "V02_EP(Earnings-to-Price) 월간 횡단면 IQR(P75-P25) of Z_Score_Aligned = 밸류 dispersion proxy. trailing 60m 대비 백분위(monitor parquet_percentile 로더가 mean(series<=cur) 산출 → 0~1). deriver: 02_Infrastructure/ops/derive_value_quality_spread.R (C15 load_month_factors 경유, PIT-safe within-month dispersion).",
+      "description": "밸류 dispersion 신호원. 예 condition: 'x >= 0.90' — 상위10% dispersion(극단 cheap-expensive 갭) 도달 = AX-003 EP_STANDALONE 실패의 spread-reversion 재부상 트리거. 계약 §3 type=spread 자동생성 매핑의 실제 resolvable 신호(구 pending 스텁 대체).",
+      "registered_at": "2026-07-05",
+      "status": "active"
     }
   ],
   "not_yet_registered": {
-    "note": "아래는 계획서 §G가 언급했으나 신호원 실측 후 등록 여부를 결정할 후보. 실측 결과 산출원이 있으면 signals[]에 등록, 없으면 미등록(추후 add — 열린 스키마이므로 이 파일에 항목 추가만 하면 monitor가 자동 소비).",
+    "note": "아래는 계획서 §G가 언급했으나 신호원 실측 후 등록 여부를 결정할 후보. 실측 결과 산출원이 있으면 signals[]에 등록, 없으면 미등록(추후 add — 열린 스키마이므로 이 파일에 항목 추가만 하면 monitor가 자동 소비). [2026-07-05 승격] 구 후보 'value_spread_percentile' → deriver(derive_value_quality_spread.R, V02_EP IQR)로 실측 신호원 확보하여 signals[]에 'value_quality_spread'(parquet_percentile, .cache/value_quality_spread.parquet) ACTIVE 등록 완료.",
     "candidates": [
-      {
-        "signal_id": "value_spread_percentile",
-        "intended_kind": "parquet_percentile",
-        "reason_unregistered": "value spread 극단 백분위를 산출하는 canonical 시계열 신호원 파일을 이번 슬라이스에서 확정 못함(reference-kr-value-factor-decay 메모리는 'spread 사상최대'라 언급하나 실측 parquet 산출원 미확인). 산출원 확정 시 등록: {kind:parquet_percentile, source_path:<spread series>, value_col:<spread>}. value 계열 실패지식(EP-단독 F 등)의 spread-reversion 재부상 트리거로 쓸 것.",
-        "candidate_since": "2026-07-04"
-      },
       {
         "signal_id": "dart_insider_availability",
         "intended_kind": "json_field",

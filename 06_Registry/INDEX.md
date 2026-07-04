@@ -1,14 +1,14 @@
 # 06_Registry INDEX
 
-> 자동 생성 2026-07-04 11:51 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
+> 자동 생성 2026-07-05 01:05 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
 
 ## 데이터 (9)
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
 | `index_descriptions.json` | 존별 INDEX 큐레이션 DB (본 파일 — 사람 수동 보완, build_artifact_index.R이 소비해 INDEX.md 4개 생성) | active | 2026-07-04 | 38KB |
-| `hygiene_report.json` | 일간 파일위생 감사 리포트 (ops/artifact_hygiene_audit.R 산출 — 자동정리 삭제 기록 + artifact-storage.md 위반 감지) | active | 2026-07-04 | 2KB |
-| `artifact_index.json` | build_artifact_index.R이 daily_refresh 말미 자동 재생성하는 전체 산출물 기계가독 인덱스 | active | 2026-07-03 | 267KB |
+| `hygiene_report.json` | 일간 파일위생 감사 리포트 (ops/artifact_hygiene_audit.R 산출 — 자동정리 삭제 기록 + artifact-storage.md 위반 감지) | active | 2026-07-04 | 3KB |
+| `artifact_index.json` | build_artifact_index.R이 daily_refresh 말미 자동 재생성하는 전체 산출물 기계가독 인덱스 | active | 2026-07-04 | 268KB |
 | `book_carrier/` | PG2 book 수익 캐리어(carrier_STR_1715_*) + H1/H1b/H2 오버레이·가중 A/B 실측 결과 저장소 | active | 2026-06-18 | 727KB |
 | `idea_registry.json` | 구 S0 아이디어 소싱 레지스트리 — telegram_notify.R이 아직 참조하나 갱신은 06-08 정지 | legacy | 2026-06-07 | 40KB |
 | `live_track/STR_1715_on_M4_R05_noLayer4_PG2/` | 현행 PG2 book(noLayer4) 라이브 페이퍼트래킹 — daily_nav/paper_nav/holdout_interval, TaskScheduler 월간 소비 | active | 2026-07-03 | 68KB |
@@ -36,7 +36,7 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `hypothesis_index.json` | alpha-search 가설/검증 이력 인덱스(중복 가설 방지용) — 07-04 갱신 중 | active | 2026-07-03 | 471KB |
+| `hypothesis_index.json` | alpha-search 가설/검증 이력 인덱스(중복 가설 방지용) — 07-04 갱신 중 | active | 2026-07-04 | 446KB |
 | `paper_registry.json` | 논문 리서치 파이프라인 레지스트리(수집→라우터→alpha-search 큐) — 07-03 갱신 | active | 2026-07-03 | 240KB |
 
 ## 모드-FR (3)
@@ -59,14 +59,22 @@
 |---|---|---|---|---|
 | `ramp/` | RAMP 모드 레지스트리 존 — approved_factor_library.parquet(102 승인팩터)·CCS 13-score·Gate3/5 summary·ramp_registry·roadmap_status (07-04 갱신 중) | active | 2026-07-03 | 116KB |
 
-## 미분류 (4) — index_descriptions.json에 추가하세요
+## 미분류 (12) — index_descriptions.json에 추가하세요
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
+| `axiom_recert_queue_20260704.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-04 | 7KB |
 | `cache_cleanup_manifest_20260704.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-04 | 16KB |
 | `cleanup_manifest_20260704.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-03 | 7KB |
 | `distill_manifest_20260704.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-04 | 7KB |
+| `distilled_knowledge.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-04 | 73KB |
+| `firewall_cases.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-04 | 16KB |
+| `knowledge_recheck_queue.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-04 | 7KB |
+| `lcode_distill_execution_20260704.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-04 | 1.0MB |
+| `lcode_distill_manifest_20260704.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-04 | 8KB |
+| `lcode_distill_plan_20260704.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-04 | 726KB |
 | `README.md` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-03 | 1KB |
+| `revival_signals.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-04 | 5KB |
 
 ## stale 큐레이션 키 (4) — 디스크 부재, index_descriptions.json에서 제거 권장
 

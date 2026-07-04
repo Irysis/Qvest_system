@@ -72,7 +72,8 @@ rebuild_distilled_index <- function(root = .dist_root(), verbose = TRUE) {
       adversarial_verdict = d$adversarial_verdict,
       expiry = d$expiry,
       frontier = d$frontier %||% list(),           # INV-7: 미탐색 인접 경로(원리2)
-      live_trigger = d$live_trigger %||% list(),    # INV-7: 부활 조건(원리4, 열린 스키마)
+      live_trigger = d$live_trigger %||% list(),    # INV-7: 부활 조건(원리4, 열린 스키마) — 사람용 표시
+      revival_spec = d$revival_spec %||% list(),    # 기계용 부활 spec(구현 B) — monitor 소비
       constraint_firewall = d$constraint_firewall,  # 방화벽 판정 기록(원리3)
       supporting_l_codes = d$supporting_l_codes %||% list(),
       n_supporting = length(d$supporting_l_codes %||% list()),
@@ -142,6 +143,106 @@ lookup_distilled <- function(keywords, root = .dist_root(), max_rows = 20L,
   list(path = f, dist = fromJSON(f, simplifyVector = FALSE))
 }
 
+# ══ revival_spec 자동생성 (구현 B, 2026-07-05) ═══════════════════════════════
+# 사람용 live_trigger(배열, {type,condition,monitored_source})는 표시용 — 절대 변경 금지.
+# revival_spec(신규 optional)은 기계용 배열 — failure_revival_monitor.R가 소비:
+#   각 원소 = {signal_id, condition, from_trigger, status('active'|'pending')}.
+#   condition = 로드된 신호 현재값을 'x'로 참조하는 R 비교식.
+# 신호명부(06_Registry/revival_signals.json)에 참조 signal_id가 없으면 pending 스텁 자동
+#   append(자기증식) + 해당 spec 원소 status='pending' — 조용한 소실 금지(가시화).
+
+.dist_revival_signals_path <- function(root = .dist_root())
+  file.path(root, "06_Registry", "revival_signals.json")
+
+# monitored_source 문자열에서 데이터원 slug 추출(type=data용). 알파벳/숫자/언더스코어만.
+.dist_slug_from_source <- function(src) {
+  s <- tolower(src %||% "")
+  if (grepl("dart", s) && grepl("insider", s)) return("dart_insider_present")
+  # generic: 첫 의미있는 토큰(괄호 안 예시 우선)에서 slug 생성.
+  m <- regmatches(s, regexpr("[a-z][a-z0-9_]+", s))
+  slug <- if (length(m) && nzchar(m)) m else "new_datasource"
+  paste0(slug, "_present")
+}
+
+# 신호명부에 signal_id 없으면 pending 스텁 append(자기증식). 반환: TRUE=명부 존재(active)
+# / FALSE=미등록이라 pending 스텁 추가함. registered_path 인자로 temp 명부 테스트 지원.
+.dist_ensure_signal_registered <- function(signal_id, hint = list(),
+                                           registry_path = .dist_revival_signals_path()) {
+  if (is.null(signal_id) || !nzchar(signal_id)) return(TRUE)  # signal_id 없음 → 검증 대상 아님
+  if (!file.exists(registry_path)) return(FALSE)              # 명부 부재 → 확정 불가, pending 취급
+  reg <- tryCatch(fromJSON(registry_path, simplifyVector = FALSE), error = function(e) NULL)
+  if (is.null(reg)) return(FALSE)
+  sigs <- reg$signals %||% list()
+  for (s in sigs) if (identical(s$signal_id %||% "", signal_id)) {
+    # 이미 등록 — active면 TRUE, pending이면 FALSE(스텁 존재하되 미가동).
+    return(identical(s$status %||% "active", "active"))
+  }
+  # 미등록 → pending 스텁 자동 append(자기증식 · 가시화).
+  stub <- list(
+    signal_id = signal_id,
+    kind = hint$kind %||% "file_exists",
+    source_path = hint$source_path %||% NULL,
+    value_col = hint$value_col %||% NULL,
+    sort_col = hint$sort_col %||% NULL,
+    status = "pending",
+    note = hint$note %||% sprintf(
+      "auto-stub by distilled.R .dist_author_revival_spec (%s). 신호원 실측·확정 후 status='active'로 승격.",
+      format(Sys.Date())))
+  reg$signals <- c(sigs, list(stub))
+  write_json(reg, registry_path, pretty = TRUE, auto_unbox = TRUE, null = "null")
+  FALSE
+}
+
+# live_trigger(배열) + expiry → revival_spec 배열 생성(계약 §3 매핑).
+#   registry_path 인자 = temp 명부 테스트/프로덕션 오염 회피용.
+.dist_author_revival_spec <- function(d, registry_path = .dist_revival_signals_path()) {
+  spec <- list()
+  add <- function(signal_id, condition, from_trigger, hint = list()) {
+    ok <- .dist_ensure_signal_registered(signal_id, hint, registry_path)
+    spec[[length(spec) + 1L]] <<- list(
+      signal_id = signal_id, condition = condition,
+      from_trigger = from_trigger, status = if (ok) "active" else "pending")
+  }
+
+  # (1) 항상(보편 바닥): expiry 있으면 wall_clock_date 원소.
+  exp0 <- d$expiry %||% NA
+  if (!is.na(exp0) && nzchar(as.character(exp0))) {
+    add("wall_clock_date", sprintf("x >= as.Date('%s')", exp0), "expiry",
+        hint = list(kind = "time_now"))
+  }
+
+  # (2) live_trigger 각 원소 type별 매핑.
+  lt <- d$live_trigger
+  if (is.list(lt) && !is.null(lt) && length(lt)) {
+    # 단일객체형({type,...})과 배열형 모두 수용 — 배열로 정규화.
+    elems <- if (!is.null(lt$type)) list(lt) else lt
+    for (el in elems) {
+      typ <- tolower(el$type %||% "")
+      if (identical(typ, "regime")) {
+        # regime 정찰 결과(정찰-only, 실측 방향 확정): daily Category ∈ {CRISIS,CAUTION}.
+        add("regime_category", "x %in% c('CRISIS','CAUTION')", "regime",
+            hint = list(kind = "parquet_last",
+                        source_path = ".cache/unified_regime_signal_daily.parquet",
+                        value_col = "Category", sort_col = "Date",
+                        note = "일별 통합 국면 Category. CRISIS/CAUTION = 위험 국면 진입."))
+      } else if (identical(typ, "spread")) {
+        add("value_quality_spread", "x >= 0.90", "spread",
+            hint = list(kind = "parquet_percentile",
+                        note = "value/quality spread 백분위. 상위 10%(x>=0.90) = 극단 spread reversion 재부상."))
+      } else if (identical(typ, "data")) {
+        slug <- .dist_slug_from_source(el$monitored_source %||% "")
+        add(slug, "x == TRUE", "data",
+            hint = list(kind = "file_exists",
+                        note = sprintf("신규 데이터원 가용 플래그(monitored_source: %s).",
+                                       substr(el$monitored_source %||% "", 1, 80))))
+      }
+      # type=time → expiry 바닥과 중복 → skip.
+    }
+  }
+  spec
+}
+
+
 # ── quarantine 차단 가드 (draft/refine 공용) ──
 .dist_block_quarantined <- function(d) {
   if (identical(d$status, "quarantined_evidence"))
@@ -190,6 +291,12 @@ draft_proposed <- function(dist_id, statement_refined, retry_condition = NULL,
   if (!is.null(expiry)) d$expiry <- expiry
   if (!is.null(frontier)) d$frontier <- frontier                # INV-7 필수(negative)
   if (!is.null(live_trigger)) d$live_trigger <- live_trigger    # INV-7 필수(negative)
+
+  # ── revival_spec 자동생성 (구현 B) ──
+  # 사람용 live_trigger는 위에서 그대로 보존 · 기계용 revival_spec을 파생 추가(계약 §3).
+  # 미등록 참조 signal_id는 명부에 pending 스텁 자동 append(자기증식) + spec 원소 pending.
+  d$revival_spec <- .dist_author_revival_spec(d)
+
   # negative polarity인데 필수 필드 결측 시 경고(하드 stop 아님 — 초안 반복 허용)
   if (identical(d$polarity, "negative")) {
     miss <- c(if (is.null(d$frontier)) "frontier", if (is.null(d$live_trigger)) "live_trigger",
@@ -197,6 +304,9 @@ draft_proposed <- function(dist_id, statement_refined, retry_condition = NULL,
     if (length(miss))
       warning(sprintf("[distilled] %s negative 초안 INV-7 필수 필드 결측: %s — 승인 전 보강 권고",
                       dist_id, paste(miss, collapse = ", ")))
+    # revival operability(정보성): live_trigger는 있으나 기계 revival_spec이 비면 자동감시 미배선.
+    if (!is.null(d$live_trigger) && length(d$revival_spec %||% list()) == 0L)
+      warning(sprintf("[distilled] %s negative: live_trigger는 있으나 revival_spec 자동생성 0건 — 자동 재부상 미배선(expiry 부활만). type 매핑 확인 권고", dist_id))
   }
   d$constraint_firewall <- list(mode = "backstop_passed", checked_at = format(Sys.Date()))
   d$status <- "proposed"                 # ← 활성화 아님(주입 미소비)

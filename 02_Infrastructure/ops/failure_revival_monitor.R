@@ -79,6 +79,14 @@ suppressWarnings(suppressMessages({
     return(list(ok = TRUE, value = Sys.Date(), note = "wall clock"))
   }
   sp <- spec$source_path %||% NA
+  # file_exists: source_path 파일 존재 여부를 value=TRUE/FALSE로 반환(데이터 도착 트리거용).
+  #   부재 자체가 유효한 신호값(FALSE) — 다른 kind와 달리 파일 없음이 ok=FALSE(로드 실패)가 아니다.
+  if (identical(kind, "file_exists")) {
+    if (is.na(sp) || !nzchar(sp)) return(list(ok = FALSE, value = NULL, note = "source_path 없음(file_exists)"))
+    path <- if (grepl("^([A-Za-z]:|/|\\\\)", sp)) sp else file.path(root, sp)
+    ex <- file.exists(path)
+    return(list(ok = TRUE, value = ex, note = sprintf("file_exists(%s)=%s", sp, ex)))
+  }
   if (is.na(sp) || !nzchar(sp)) return(list(ok = FALSE, value = NULL, note = "source_path 없음"))
   path <- if (grepl("^([A-Za-z]:|/|\\\\)", sp)) sp else file.path(root, sp)
   if (!file.exists(path)) return(list(ok = FALSE, value = NULL, note = sprintf("source 파일 없음: %s", sp)))
@@ -161,20 +169,46 @@ suppressWarnings(suppressMessages({
     if (!(st %in% c("distilled", "proposed"))) next
     if (!identical(d$polarity %||% "", "negative")) next
     lt <- d$live_trigger
-    # (2026-07-05 감사) 기계평가 가능한 {signal_id, condition} 단일객체형만 machine-spec으로 인정.
-    #   실제 DIST 다수는 live_trigger가 배열-산문형(원소 키=type/condition/monitored_source, signal_id 없음)이라
-    #   조건이 산문("성장주 우위 국면 반전 시")이라 기계평가 불가 → has_machine_spec=FALSE로 표식(가시화).
+
+    # ── revival_spec (신규 machine 소스, 2026-07-05 구현 A) ────────────────────
+    #   revival_spec = 배열. 각 원소 = {signal_id, condition, from_trigger, status('active'|'pending')}.
+    #   draft_proposed가 live_trigger(산문)+expiry로 자동생성한다(병렬 작업 — 이 monitor는 소비만).
+    #   revival_spec이 있으면 그것을 machine 소스로 사용. 없으면 하위호환 단일객체 live_trigger 경로.
+    #   ★ live_trigger(산문 배열/객체)는 절대 변경하지 않는다 — inject/search 표시용으로 그대로 둔다.
+    rspec_raw <- d$revival_spec
+    rspec <- list()
+    if (!is.null(rspec_raw)) {
+      # jsonlite simplifyVector=FALSE → list of lists. 단일객체가 아닌 배열만 정상.
+      elems <- if (is.list(rspec_raw) && !is.null(rspec_raw$signal_id)) list(rspec_raw) else rspec_raw
+      for (el in elems) {
+        if (!is.list(el)) next
+        esid  <- el$signal_id %||% NA
+        econd <- el$condition %||% NA
+        est   <- el$status %||% "active"
+        eft   <- el$from_trigger %||% NA
+        if (is.na(esid) || !nzchar(esid)) next   # signal_id 없는 원소 무효
+        rspec[[length(rspec) + 1L]] <- list(
+          signal_id = esid, condition = econd, status = est, from_trigger = eft)
+      }
+    }
+    has_rspec <- length(rspec) > 0L
+
+    # ── 하위호환: 단일객체 live_trigger {signal_id, condition} (revival_spec 부재 시만 사용) ──
+    #   (2026-07-05 감사) 실제 DIST 다수는 live_trigger가 배열-산문형(원소 키=type/condition/monitored_source,
+    #   signal_id 없음)이라 기계평가 불가 → has_machine_spec=FALSE로 표식(가시화).
     #   단 expiry 기반 시간 부활(만료 도달=재검토)은 live_trigger 형태 무관하게 아래 run에서 작동.
     sid  <- if (is.list(lt) && !is.null(lt$signal_id)) (lt$signal_id %||% NA) else NA
     cond <- if (is.list(lt) && !is.null(lt$condition)) (lt$condition %||% NA) else NA
-    has_machine <- !(is.na(sid) || !nzchar(sid) || is.na(cond) || !nzchar(cond))
+    has_machine <- has_rspec || !(is.na(sid) || !nzchar(sid) || is.na(cond) || !nzchar(cond))
     exp0 <- d$expiry %||% NA
-    if (is.null(lt) && is.na(exp0)) next   # 부활 근거(트리거/만료) 전무 → skip
+    if (is.null(lt) && !has_rspec && is.na(exp0)) next   # 부활 근거(트리거/spec/만료) 전무 → skip
     out[[length(out) + 1L]] <- list(
       dist_id = d$dist_id %||% basename(f),
       status = st,
       signal_id = sid,
       condition = cond,
+      revival_spec = rspec,
+      has_revival_spec = has_rspec,
       has_machine_spec = has_machine,
       has_live_trigger = !is.null(lt),
       frontier = d$frontier %||% NULL,
@@ -190,19 +224,31 @@ revival_monitor_run <- function(root = .rev_root(), write_flags = TRUE, verbose 
     reg   <- .rev_load_registry(root)
     dists <- .rev_collect_dists(root)
     fired <- list()
-    checked <- 0L; skipped_no_signal <- 0L; needs_machine <- 0L
+    checked <- 0L; skipped_no_signal <- 0L; needs_machine <- 0L; n_pending <- 0L
 
     # 신호값 캐시(같은 signal_id 재로드 방지).
     val_cache <- list()
+    .get_val <- function(sid) {
+      if (is.null(val_cache[[sid]])) val_cache[[sid]] <<- .rev_extract_value(reg[[sid]], root)
+      val_cache[[sid]]
+    }
 
     for (dc in dists) {
       fr <- dc$frontier
       fr_txt <- if (is.null(fr)) "(frontier 미기록)" else paste(unlist(fr), collapse = " | ")
       stmt <- substr(gsub("[\r\n]+", " ", dc$statement), 1, 200)
 
-      # (A) expiry 기반 보편 부활 — prose/기계 트리거 배선 여부와 무관하게, 만료 도달 시 재검토 재부상.
+      # revival_spec에 from_trigger='expiry' 원소가 있으면 expiry는 그 경로로 일원화(중복발화 방지).
+      #   없을 때만 아래 (A) 직접 expiry 폴백 발화가 작동.
+      rspec <- dc$revival_spec %||% list()
+      has_rspec_expiry <- FALSE
+      if (length(rspec)) {
+        for (el in rspec) if (identical(el$from_trigger %||% "", "expiry")) { has_rspec_expiry <- TRUE; break }
+      }
+
+      # (A) expiry 기반 보편 부활(폴백) — revival_spec에 expiry 원소가 없을 때만 직접 발화.
       #   모든 negative DIST가 갖는 기계필드(expiry)를 직접 평가 → 산문 파싱 없이 확실히 작동.
-      if (!is.na(dc$expiry)) {
+      if (!is.na(dc$expiry) && !has_rspec_expiry) {
         ed <- tryCatch(as.Date(dc$expiry), error = function(e) NA)
         if (!is.na(ed) && Sys.Date() >= ed) {
           fired[[length(fired) + 1L]] <- list(
@@ -211,11 +257,40 @@ revival_monitor_run <- function(root = .rev_root(), write_flags = TRUE, verbose 
             current_value = format(Sys.Date()), frontier = fr_txt, statement = stmt,
             expiry = as.character(dc$expiry),
             note = "expiry 도달 → 재검토 시점(휴면 실패 재부상)",
+            source = "expiry_direct",
             detected_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"))
         }
       }
 
-      # (B) 기계 {signal_id, condition} 트리거. 산문-배열형은 기계spec 부재로 가시화(조용한 소실 금지).
+      # (B1) revival_spec 배열 소비(신규 machine 경로, 2026-07-05 구현 A) ─────────
+      #   각 원소 signal_id → 명부 resolve → 값 로드 → condition eval → 발화.
+      #   status='pending' 원소는 skip하되 n_pending 카운트+로그로 가시화(조용한 소실 금지).
+      if (length(rspec)) {
+        for (el in rspec) {
+          if (identical(el$status %||% "active", "pending")) { n_pending <- n_pending + 1L; next }
+          esid  <- el$signal_id
+          econd <- el$condition %||% NA
+          checked <- checked + 1L
+          if (is.null(reg[[esid]])) { skipped_no_signal <- skipped_no_signal + 1L; next }  # 미등록 → skip
+          if (is.na(econd) || !nzchar(econd)) next   # condition 없는 원소 무발화
+          ext <- .get_val(esid)
+          if (!isTRUE(ext$ok)) next   # 신호원 로드 실패 → fail-soft skip
+          ev <- .rev_eval_condition(econd, ext$value)
+          if (isTRUE(ev$fired)) {
+            fired[[length(fired) + 1L]] <- list(
+              dist_id = dc$dist_id, status = dc$status, signal_id = esid,
+              condition = econd, from_trigger = el$from_trigger %||% NA,
+              current_value = format(ext$value), frontier = fr_txt, statement = stmt,
+              expiry = as.character(dc$expiry), note = ev$note,
+              source = "revival_spec",
+              detected_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"))
+          }
+        }
+        next   # revival_spec이 machine 소스 — 하위호환 단일 live_trigger 경로 건너뜀
+      }
+
+      # (B2) 하위호환: 단일객체 live_trigger {signal_id, condition} (revival_spec 부재 시만).
+      #   산문-배열형은 기계spec 부재로 가시화(조용한 소실 금지).
       if (!isTRUE(dc$has_machine_spec)) {
         if (isTRUE(dc$has_live_trigger)) needs_machine <- needs_machine + 1L
         next
@@ -223,8 +298,7 @@ revival_monitor_run <- function(root = .rev_root(), write_flags = TRUE, verbose 
       checked <- checked + 1L
       sid <- dc$signal_id
       if (is.null(reg[[sid]])) { skipped_no_signal <- skipped_no_signal + 1L; next }  # 미등록 → skip
-      if (is.null(val_cache[[sid]])) val_cache[[sid]] <- .rev_extract_value(reg[[sid]], root)
-      ext <- val_cache[[sid]]
+      ext <- .get_val(sid)
       if (!isTRUE(ext$ok)) next   # 신호원 로드 실패 → 조용히 skip(fail-soft)
       ev <- .rev_eval_condition(dc$condition, ext$value)
       if (isTRUE(ev$fired)) {
@@ -238,6 +312,7 @@ revival_monitor_run <- function(root = .rev_root(), write_flags = TRUE, verbose 
           statement = stmt,
           expiry = as.character(dc$expiry),
           note = ev$note,
+          source = "live_trigger_legacy",
           detected_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"))
       }
     }
@@ -245,12 +320,14 @@ revival_monitor_run <- function(root = .rev_root(), write_flags = TRUE, verbose 
     payload <- list(
       schema_version = "failure_revival_flags_v1",
       generated_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
-      note = paste0("failure_revival_monitor.R 산출 — distilled/proposed negative DIST의 expiry + live_trigger를 ",
+      note = paste0("failure_revival_monitor.R 산출 — distilled/proposed negative DIST의 expiry + revival_spec/live_trigger를 ",
                     "revival_signals 레지스트리 경유 평가한 발화 목록. 발화 = 봉투 안 frontier 재도전 시점 도달. ",
-                    "n_needs_machine_spec = live_trigger가 산문-배열형이라 기계 revival_spec(signal_id+condition) 미배선 건수."),
+                    "n_needs_machine_spec = live_trigger가 산문-배열형이며 revival_spec 미생성이라 기계 spec 미배선 건수. ",
+                    "n_pending_spec = revival_spec 원소 중 참조 signal_id가 명부 pending 스텁이라 감시 미배선 건수."),
       n_dists_with_trigger = checked,
       n_skipped_unregistered = skipped_no_signal,
       n_needs_machine_spec = needs_machine,
+      n_pending_spec = n_pending,
       n_fired = length(fired),
       fired = fired)
 
@@ -261,10 +338,12 @@ revival_monitor_run <- function(root = .rev_root(), write_flags = TRUE, verbose 
     }
 
     if (verbose) {
-      cat(sprintf("[revival-monitor] 기계트리거 %d건 검사 · 미등록신호 skip %d · 산문트리거(기계spec 부재) %d · 발화 %d건\n",
-                  checked, skipped_no_signal, needs_machine, length(fired)))
+      cat(sprintf("[revival-monitor] 기계트리거 %d건 검사 · 미등록신호 skip %d · pending spec %d · 산문트리거(기계spec 부재) %d · 발화 %d건\n",
+                  checked, skipped_no_signal, n_pending, needs_machine, length(fired)))
       if (needs_machine > 0L)
-        cat(sprintf("      ⚠ %d개 negative DIST의 live_trigger가 산문-배열형(기계 revival_spec 부재) — 자동감시 미배선(expiry 부활만 작동). 브리지 필요.\n", needs_machine))
+        cat(sprintf("      ⚠ %d개 negative DIST의 live_trigger가 산문-배열형(revival_spec 미생성) — 자동감시 미배선(expiry 부활만 작동). draft_proposed 자동생성 필요.\n", needs_machine))
+      if (n_pending > 0L)
+        cat(sprintf("      ⚠ revival_spec 원소 %d개가 pending(참조 signal_id 명부 미확정 스텁) — 신호원 확정 시 자동 활성화.\n", n_pending))
       for (fd in fired) {
         cat(sprintf("  · %s [%s] signal=%s cond='%s' (현재 %s) → 재도전 권고\n",
                     fd$dist_id, fd$status, fd$signal_id, fd$condition, fd$current_value))
