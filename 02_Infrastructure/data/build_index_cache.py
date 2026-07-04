@@ -69,11 +69,14 @@ def main(update_rawdata=False):
     _write_parquet(df, cols, os.path.join(CACHE, "indices.parquet"))
     print("  indices.parquet 작성")
 
-    # 2) benchmark.parquet (코스피200 = book 벤치) — 최초 1회 백업
+    # 2) benchmark.parquet (코스피200 = book 벤치)
+    #   (2026-07-04) IKS001→IKS200 마이그레이션 완료·검증 → 일회성 폐기-백업 블록 무효화.
+    #   백업본은 캐시 정리 시 삭제됨. 재백업이 필요하면 QVEST_IKS_MIGRATION=1로 실행.
     bmk = os.path.join(CACHE, "benchmark.parquet")
-    bak = os.path.join(CACHE, "benchmark_IKS001_WRONG_backup_20260702.parquet")
-    if os.path.exists(bmk) and not os.path.exists(bak):
-        shutil.copy(bmk, bak); print(f"  기존(잘못된 IKS001) 백업: {os.path.basename(bak)}")
+    if os.environ.get("QVEST_IKS_MIGRATION") == "1":
+        bak = os.path.join(CACHE, "benchmark_IKS001_WRONG_backup_20260702.parquet")
+        if os.path.exists(bmk) and not os.path.exists(bak):
+            shutil.copy(bmk, bak); print(f"  기존(잘못된 IKS001) 백업: {os.path.basename(bak)}")
     bm = df[["Date", "kospi200"]].dropna(subset=["kospi200"]).copy()
     bm.columns = ["Date", "BM_Close"]
     bm["BM_Ret"] = bm["BM_Close"] / bm["BM_Close"].shift(1) - 1
@@ -83,9 +86,11 @@ def main(update_rawdata=False):
     # 3) (옵션) RAWDATA.parquet BM_Ret 재생성
     if update_rawdata:
         raw_path = os.path.join(CACHE, "RAWDATA.parquet")
-        raw_bak = os.path.join(CACHE, "rawdata_pre_kospi200bench_20260702.parquet")
-        if not os.path.exists(raw_bak):
-            shutil.copy(raw_path, raw_bak); print(f"  RAWDATA 백업: {os.path.basename(raw_bak)}")
+        # (2026-07-04) 위와 동일 — 일회성 폐기-백업 무효화(마이그레이션 완료). 재백업은 QVEST_IKS_MIGRATION=1.
+        if os.environ.get("QVEST_IKS_MIGRATION") == "1":
+            raw_bak = os.path.join(CACHE, "rawdata_pre_kospi200bench_20260702.parquet")
+            if not os.path.exists(raw_bak):
+                shutil.copy(raw_path, raw_bak); print(f"  RAWDATA 백업: {os.path.basename(raw_bak)}")
         raw = pq.read_table(raw_path).to_pandas()
         raw["Date"] = pd.to_datetime(raw["Date"]).dt.date
         bmr = bm[["Date", "BM_Ret"]].rename(columns={"BM_Ret": "BM_Ret_new"})
