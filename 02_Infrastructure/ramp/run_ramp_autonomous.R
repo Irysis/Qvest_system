@@ -89,8 +89,13 @@ for(i in seq_len(nrow(R))) w(sprintf("  %-22s net_sr=%+.3f port_t=%+.2f TO=%.1f"
 best <- R[1]
 w(sprintf("\n[Best] %s net_sr=%+.3f port_t=%+.2f", best$model, best$net_sr, best$port_t))
 improved <- best$model %in% c("M_regime_datadriven","M_regime_dd+smooth") && best$net_sr > R[model=="M_smooth",net_sr]
+## [2026-07-04 P0#6 caller migrate] emit v2 필수 인자 추가 — construction_type/selection_type.
+##   자율 iteration = regime-IC 가중 팩터군 국면조건부 결합 = construction "composite".
+##   best를 R[order(-net_sr)][1]로 pick(열거 model config argmax) = selection "sweep" (§3 selection operator).
 ramp_document(strategy_id=sprintf("RAMP_AUTO_%s", format(Sys.Date(),"%Y%m%d")),
   grade=ifelse(best$net_sr>0,"B","C"),
+  construction_type="composite",   # controlled vocab (lcode_schema v2)
+  selection_type="sweep",          # 열거 regime/smooth config which.max pick
   lesson_text=sprintf("자율 iteration: best=%s net_sr=%+.3f port_t=%+.2f. 데이터구동 regime(%s) vs smooth(%+.3f). %s",
     best$model, best$net_sr, best$port_t, R[model=="M_regime_datadriven",sprintf("%+.3f",net_sr)],
     R[model=="M_smooth",net_sr], ifelse(improved,"데이터구동 regime 개선✓","regime 미개선")),
