@@ -554,6 +554,22 @@ def _write_distilled_index(dist_dir: str, index_path: str) -> int:
     return len(entries)
 
 
+def _singleton_cluster(lc: dict) -> dict:
+    """단독 L-code를 1-member cluster 구조로 래핑 (콜드스타트 경로 — P1 2026-07-04).
+
+    신규 모드의 최초 단일 L-code는 min_size=2 요건 때문에 클러스터에 못 들어가
+    CAND/DIST가 영구 미생성 → 실패지식 소비 불가. 단독분도 pending_5axis 초안으로
+    만들어 소비 가능하게 한다. 승격 자격(5축 INV-4)은 promote.R에서 그대로 걸리므로
+    단독이라 독립성축(r7 n_eff)이 미달이면 pending에 머문다 — 초안 생성만 허용.
+    """
+    return {
+        "cluster_index": -1,
+        "size": 1,
+        "l_codes": [lc["l_code"]],
+        "members": [lc],
+    }
+
+
 def build_candidates(corpus: dict, out_dir: str) -> list[str]:
     lcodes = corpus.get("lcodes", [])
     if not lcodes:
@@ -568,8 +584,16 @@ def build_candidates(corpus: dict, out_dir: str) -> list[str]:
 
     new_cands: list = []
     for mode, mode_lcodes in by_mode.items():
-        for cl in cluster_lcodes(mode_lcodes):
+        clusters = cluster_lcodes(mode_lcodes)
+        clustered_ids = {lid for cl in clusters for lid in cl["l_codes"]}
+        for cl in clusters:
             new_cands.append(_build_one_candidate(cl, mode, today))
+        # 콜드스타트(P1): 클러스터에 못 들어간 단독 L-code도 pending_5axis 초안으로.
+        #   기존 클러스터링은 무변경 — 단독분만 추가. (superset dedup이 이후 진짜
+        #   클러스터가 형성되면 subset singleton을 자동 대체한다.)
+        for lc in mode_lcodes:
+            if lc.get("l_code") and lc["l_code"] not in clustered_ids:
+                new_cands.append(_build_one_candidate(_singleton_cluster(lc), mode, today))
 
     return _write_with_superset_dedup(new_cands, out_dir)
 
