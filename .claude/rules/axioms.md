@@ -37,7 +37,7 @@ mode-local `AX-<MODE>-NNN` (`active/modes/<mode>/`, MODE=AS/QPM/FR) + global `AX
 
 - **AX-003** [empirical, DEMOTED→Distilled]: market=KR, family=value, EP_STANDALONE+LOW_TURNOVER 실패. L-132/135. → Ledger + 부활신호 `value_quality_spread`(V02_EP 분산 백분위, 극단 시 재도전). DIST 카드 authoring 후속.
 - **AX-004** [methodological, DEMOTED→Distilled]: market=KR, family=quality_profitability, single-signal long-only 구조적 실패. EXCLUSION: multi-axis quality composite + multi-sleeve 내 Q07. L-133/134/139. → **DIST-QPM-003**.
-- **AX-005 v1.2** [methodological, DEMOTED→Distilled]: market=KR, family=defense, universe=top20_long_only, low-beta/Q07+D25/4-axis composite 실패. EXCLUSION은 necessary not sufficient. L-136/140/165/166. → **DIST-AR-001**.
+- **AX-005 v1.2** [methodological, DEMOTED→Distilled]: market=KR, family=defense, universe=top20_long_only, low-beta/Q07+D25/4-axis composite 실패. EXCLUSION은 necessary not sufficient. L-136/140 (구 문서의 L-165/166 병기는 **오귀속 — 실제 AX-007 signal-portfolio translation family**, 2026-07-05 정정). → **DIST-AR-001**.
 - **AX-007** [methodological, DEMOTED→Distilled]: roles=[defense, core_secondary], structure=single_sleeve_long_only_top20, signal-portfolio translation 메커니즘 단절. 예외 4종 (multi-sleeve / long-short / 50+ 분산 / ML sizing). L-160/165/166. → **DIST-AR-003**(AX-007 명시).
 
 ## Hook 강제 (v7.2.1+ enforcement_mode 기준)
