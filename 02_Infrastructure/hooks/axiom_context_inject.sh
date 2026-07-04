@@ -95,6 +95,7 @@ axis = ('[문제의 고정 축 — 변수 아님, 이 안에서 풀 것]' + chr(
 # ②Distilled negative/conditional top-K (K=5, 정제 완료분만 — INV-6)
 #   (E+F 2026-07-04) '이건 실패' 톤 → '탐색됨 + 봉투 안 프론티어' 지도-프레임 톤.
 dist = ''
+dist_min = ''
 try:
     di = json.load(open(os.environ.get('DI', ''), encoding='utf-8'))
     picks = [e for e in di.get('entries', [])
@@ -107,22 +108,80 @@ try:
         tag = '탐색됨→프론티어(INV-7 봉투 안 차별점 시 진행)' if e.get('polarity') == 'negative' else '조건부'
         lines.append(f\"  - {e.get('dist_id')} [{tag}]: {(e.get('statement_refined') or '')[:110]}\")
     if lines:
-        dist = '[Distilled 탐색지도 — 가설 착수 전 대조: 판결 아닌 방향(프론티어) 표시]' + chr(10) + chr(10).join(lines)
+        _dhdr = '[Distilled 탐색지도 — 가설 착수 전 대조: 판결 아닌 방향(프론티어) 표시]'
+        dist = _dhdr + chr(10) + chr(10).join(lines)
         if len(dist) > 700:
             dist = dist[:700] + '…'
+        # (P1 2026-07-04 감사 잔여 finding) 실패지식 예산 바닥: 최상위 1건은 예산 압박 시에도
+        #   소비면에 남긴다. dist 나머지(2~5)는 기존대로 truths에 양보하되, top-1은 truths보다 늦게 버림.
+        dist_min = _dhdr + chr(10) + lines[0]
+        if len(dist_min) > 260:
+            dist_min = dist_min[:260] + '…'
 except Exception:
     dist = ''
+    dist_min = ''
 MAX = 2500
-tail = ((chr(10)*2) + axis) + ((chr(10)*2) + truths if truths else '') + ((chr(10)*2) + dist if dist else '')
-if len(hdr) + len(body) + len(tail) + 4 > MAX:
-    budget = max(0, MAX - len(hdr) - len(tail) - 60)
+# (P0#4 2026-07-04 감사) 절단불가 코어 보호. 우선순위:
+#   [hdr + 제약 문제-축(axis) + 코어 공리(AX-000/002/008 + 모든 negative AX-003/004/005/007)] = 불변
+#   > distilled top-K(감축 대상) > truths > positive/method 공리 body(축약 대상).
+# 기존 버그: body 전체를 균일 라인절단 → 성실히 채운 negative 코어 공리가 tail에 밀려 조용히 소실.
+# 코어 라인 식별 = 렌더된 body 라인의 자기라벨('/negative]') 또는 코어 ID(AX-000/002/008).
+import re as _re
+def _is_core(ln):
+    if '/negative]' in ln:            # AX-003/004/005/007 (실패지식 = 절단불가)
+        return True
+    return bool(_re.match(r'\s*-\s*AX-00[028]\b', ln))  # AX-000/002/008 코어
+_body_lines = body.splitlines()
+_core_lines = [ln for ln in _body_lines if _is_core(ln)]
+_soft_lines = [ln for ln in _body_lines if not _is_core(ln)]
+core_block = chr(10).join(_core_lines)
+# 코어 공리 + 제약축은 항상 산다. dist/truths/soft body는 남는 예산 안에서만.
+# fixed = 절대 감축 불가(hdr + axis + core). axis는 tail의 첫 요소.
+fixed_len = len(hdr) + 1 + len(core_block) + (len(chr(10)*2) + len(axis))
+def _assemble(soft_lines, dist_s, truths_s):
+    parts = [hdr]
+    b = core_block
+    if soft_lines:
+        b = b + chr(10) + chr(10).join(soft_lines) if b else chr(10).join(soft_lines)
+    t = (chr(10)*2) + axis
+    if truths_s:
+        t += (chr(10)*2) + truths_s
+    if dist_s:
+        t += (chr(10)*2) + dist_s
+    return parts[0] + chr(10) + b + t
+full = _assemble(_soft_lines, dist, truths)
+if len(full) + 4 > MAX:
+    # 1단계: soft body 라인을 예산 내로 절단 (코어/axis/dist/truths는 아직 유지)
+    reserve = len(chr(10)*2) + len(axis) + \
+              (len(chr(10)*2) + len(truths) if truths else 0) + \
+              (len(chr(10)*2) + len(dist) if dist else 0)
+    budget = max(0, MAX - fixed_len - reserve - 60)
     kept, used = [], 0
-    for ln in body.splitlines():
+    for ln in _soft_lines:
         if used + len(ln) + 1 > budget:
             break
         kept.append(ln); used += len(ln) + 1
-    body = chr(10).join(kept) + chr(10) + '  → (축약) 전문: .claude/rules/axioms.md'
-ctx = (hdr + chr(10) + body + tail)[:MAX]
+    if len(kept) < len(_soft_lines):
+        kept.append('  → (축약) 전문: .claude/rules/axioms.md')
+    _dist2, _truths2 = dist, truths
+    cand = _assemble(kept, _dist2, _truths2)
+    # 2단계: 초과 시 실패지식(distilled)에 예산 바닥(reserved floor) 부여.
+    #   2a) dist를 top-1(dist_min)로 축소 (나머지 2~5건은 truths에 양보)
+    #   2b) 그래도 초과면 truths 감축
+    #   2c) 그래도 초과면 dist_min까지 포기 (최후)
+    #   → 최상위 실패지식 탐색지도 1건은 truths보다 늦게 버려져 소비면 도달 보장.
+    if len(cand) + 4 > MAX and _dist2 and dist_min and _dist2 != dist_min:
+        _dist2 = dist_min
+        cand = _assemble(kept, _dist2, _truths2)
+    if len(cand) + 4 > MAX and _truths2:
+        _truths2 = ''
+        cand = _assemble(kept, _dist2, _truths2)
+    if len(cand) + 4 > MAX and _dist2:
+        _dist2 = ''
+        cand = _assemble(kept, _dist2, _truths2)
+    # 3단계: 극단(코어+axis만으로 초과) — 코어는 절대 자르지 않고 hard cap만 적용(코어 우선 보존).
+    full = cand
+ctx = full[:MAX]
 ctx = ''.join(ch if not (0xD800 <= ord(ch) <= 0xDFFF) else '?' for ch in ctx)
 print(json.dumps(ctx))
 ")

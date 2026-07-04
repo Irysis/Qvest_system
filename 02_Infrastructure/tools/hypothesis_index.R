@@ -515,48 +515,156 @@ build_hypothesis_index <- function(root = QM_ROOT, out_path = HI_INDEX_PATH,
 }
 
 # --------------------------------------------------------------------
+# ★P0#3 쿼리측 정규화 (2026-07-04 감사): build 시점에만 쓰던 SIGNAL/FAMILY_PATTERNS를
+#   조회 쿼리 키워드에도 적용. 쿼리 한 토큰이 어느 패밀리/시그널 패턴에 매치되면
+#   그 canonical 별칭명을 haystack 매치 후보로 함께 추가 → 동의어/한영/축약 흡수.
+#   패턴 사전이 없거나 매치 안 되면 최소 별칭맵으로 폴백 확장.
+#   확장 결과는 "OR" 후보 집합(한 원 토큰 → {원토큰, 별칭...} 중 하나만 매치돼도 그 토큰 충족).
+# --------------------------------------------------------------------
+HI_QUERY_ALIAS <- list(
+  value      = c("value", "가치", "밸류", "ep", "per", "pbr", "bm", "저평가"),
+  momentum   = c("momentum", "모멘텀", "추세", "trend", "mom"),
+  reversal   = c("reversal", "리버설", "반전", "contrarian", "역추세", "loser"),
+  defense    = c("defense", "defensive", "방어", "low-beta", "lowbeta", "저베타", "lowvol", "저변동", "min-vol"),
+  regime     = c("regime", "국면", "overlay", "오버레이", "timing", "타이밍"),
+  quality    = c("quality", "퀄리티", "품질", "qmj"),
+  profitability = c("profitability", "수익성", "roe", "roa", "마진"),
+  earnings   = c("earnings", "어닝", "이익", "실적", "sue", "revision", "리비전"),
+  flow       = c("flow", "수급", "외국인", "기관", "insider", "내부자", "공매도", "short"),
+  size       = c("size", "소형주", "small-cap", "smallcap"),
+  liquidity  = c("liquidity", "유동성", "amihud", "illiquid"),
+  ml         = c("ml", "머신러닝", "딥러닝", "xgboost", "lightgbm", "hgb", "ipca", "sdf", "ensemble", "앙상블"),
+  dividend   = c("dividend", "배당", "주주환원", "buyback", "자사주", "shareholder")
+)
+
+# 원 토큰 하나를 {원토큰} ∪ {패턴 매치된 canonical 명} ∪ {별칭맵 상호 별칭}으로 확장.
+# 반환: 소문자 문자열 벡터(중복 제거). haystack에 이 중 하나라도 부분매치되면 그 토큰 충족.
+.hi_expand_kw <- function(kw) {
+  kw <- tolower(trimws(kw))
+  out <- kw
+  # (a) SIGNAL/FAMILY 패턴 사전이 로드돼 있으면 canonical 명 추가
+  if (exists("SIGNAL_PATTERNS")) {
+    for (nm in names(SIGNAL_PATTERNS)) {
+      if (grepl(SIGNAL_PATTERNS[[nm]], kw, ignore.case = TRUE, perl = TRUE)) out <- c(out, nm)
+    }
+  }
+  if (exists("FAMILY_PATTERNS")) {
+    for (nm in names(FAMILY_PATTERNS)) {
+      if (grepl(FAMILY_PATTERNS[[nm]], kw, ignore.case = TRUE, perl = TRUE)) out <- c(out, nm)
+    }
+  }
+  # (b) 별칭맵: kw가 어느 별칭군에 속하면 그 군 전체를 후보로 추가(상호 확장)
+  for (grp in names(HI_QUERY_ALIAS)) {
+    al <- HI_QUERY_ALIAS[[grp]]
+    if (kw %in% al || any(vapply(al, function(a) grepl(a, kw, fixed = TRUE), logical(1)))) {
+      out <- c(out, grp, al)
+    }
+  }
+  unique(out[nzchar(out)])
+}
+
+# stale 검사: distilled_knowledge.json / module_catalog.json / lcode_corpus.json mtime이
+# hypothesis_index.json mtime보다 최신이면 인덱스가 뒤처짐 → 경고.
+.hi_stale_check <- function(index_path, root = QM_ROOT) {
+  if (!file.exists(index_path)) return(invisible(NULL))
+  idx_mt <- file.info(index_path)$mtime
+  srcs <- c("06_Registry/distilled_knowledge.json",
+            "06_Registry/module_catalog.json",
+            ".cache/lcode_corpus.json")
+  stale <- character(0)
+  for (s in srcs) {
+    p <- file.path(root, s)
+    if (file.exists(p) && file.info(p)$mtime > idx_mt) stale <- c(stale, s)
+  }
+  if (length(stale)) {
+    message(sprintf("[hypothesis_index][경고] 인덱스 stale — 다음 원천이 인덱스보다 최신: %s. build 권장 (Rscript 02_Infrastructure/tools/hypothesis_index.R build)",
+                    paste(stale, collapse = ", ")))
+  }
+  invisible(stale)
+}
+
+# 엔트리 → 조회 결과 1행. (P2: distilled_status 컬럼 노출)
+.hi_row <- function(e) {
+  km <- e$key_metrics %||% list()
+  data.frame(
+    strategy_id = e$strategy_id,
+    signature = e$hypothesis_signature,
+    title = substr(e$title, 1, 80),
+    verdict = e$verdict,
+    grade = as.character(e$grade %||% NA_character_),
+    # P2: consumer가 미승인 초안(proposed) vs 승인(distilled/5축통과)을 구분
+    distilled_status = as.character(e$distilled_status %||% ""),
+    sharpe = .hi_num(km$sharpe) %||% NA_real_,
+    port_t = .hi_num(km$portfolio_alpha_t) %||% NA_real_,
+    # ②Distilled negative failure-ledger: 지도-프레임 라벨(탐색됨→프론티어→트리거, INV-7 provisional)
+    retry_policy = as.character(e$retry_policy %||% ""),
+    date = e$date %||% "",
+    source = paste(e$source_types %||% "", collapse = ","),
+    stringsAsFactors = FALSE
+  )
+}
+
+# 한 엔트리가 키워드 집합을 (AND) 충족하는가.
+#   각 원 키워드는 확장 후보 집합 중 하나라도 haystack에 부분매치되면 충족(OR).
+#   전 키워드가 충족돼야 엔트리 매치(AND).
+.hi_entry_matches <- function(e, kw_expansions) {
+  hay <- tolower(paste(e$hypothesis_signature, e$title, e$verdict,
+                       e$grade %||% "", e$strategy_id))
+  all(vapply(kw_expansions, function(cands)
+    any(vapply(cands, function(k) grepl(k, hay, fixed = TRUE), logical(1))),
+    logical(1)))
+}
+
+# --------------------------------------------------------------------
 # 조회: lookup_hypothesis(keywords)
-#   keywords: 문자 벡터 또는 공백구분 문자열. 전 키워드 AND 매치
-#   (signature + title + verdict + grade + strategy_id 텍스트에 대해
-#    대소문자 무시 부분매치). 반환: data.frame (date 내림차순).
+#   keywords: 문자 벡터 또는 공백구분 문자열. 전 키워드 AND 매치(각 키워드는 별칭 OR 확장).
+#   (signature + title + verdict + grade + strategy_id 텍스트에 대해 대소문자 무시 부분매치)
+#   반환: data.frame (distilled 우선 → date 내림차순).
+#   ★P0#2: N어 AND가 0건이면 마지막 키워드 단독 재조회 + 배너.
+#   ★P0#3: 각 키워드는 SIGNAL/FAMILY 패턴 + 별칭맵으로 확장(동의어/한영/축약 흡수).
+#   ★P1: stale 검사(원천 mtime > 인덱스 mtime 시 경고).
 # --------------------------------------------------------------------
 lookup_hypothesis <- function(keywords, index_path = HI_INDEX_PATH,
                               max_rows = 30L) {
   if (!file.exists(index_path)) {
     stop("hypothesis_index.json not found — run build_hypothesis_index() first: ", index_path)
   }
+  .hi_stale_check(index_path)                      # P1 stale 경고
   idx <- fromJSON(index_path, simplifyVector = FALSE)
   kws <- tolower(unlist(strsplit(paste(keywords, collapse = " "), "\\s+")))
   kws <- kws[nzchar(kws)]
   if (length(kws) == 0) stop("empty keywords")
-  rows <- list()
-  for (e in idx$entries) {
-    hay <- tolower(paste(e$hypothesis_signature, e$title, e$verdict,
-                         e$grade %||% "", e$strategy_id))
-    if (all(vapply(kws, function(k) grepl(k, hay, fixed = TRUE), logical(1)))) {
-      km <- e$key_metrics %||% list()
-      rows[[length(rows) + 1L]] <- data.frame(
-        strategy_id = e$strategy_id,
-        signature = e$hypothesis_signature,
-        title = substr(e$title, 1, 80),
-        verdict = e$verdict,
-        grade = as.character(e$grade %||% NA_character_),
-        sharpe = .hi_num(km$sharpe) %||% NA_real_,
-        port_t = .hi_num(km$portfolio_alpha_t) %||% NA_real_,
-        # ②Distilled negative failure-ledger: 지도-프레임 라벨(탐색됨→프론티어→트리거, INV-7 provisional)
-        retry_policy = as.character(e$retry_policy %||% ""),
-        date = e$date %||% "",
-        source = paste(e$source_types %||% "", collapse = ","),
-        stringsAsFactors = FALSE
-      )
+
+  # 각 키워드 별칭 확장(P0#3)
+  kw_exp <- lapply(kws, .hi_expand_kw)
+
+  collect <- function(expansions) {
+    rows <- list()
+    for (e in idx$entries) {
+      if (.hi_entry_matches(e, expansions)) rows[[length(rows) + 1L]] <- .hi_row(e)
     }
+    rows
   }
+
+  rows <- collect(kw_exp)
+
+  # ★P0#2 다어 폴백: N어 AND 0건이면 마지막 키워드 단독 재조회
+  if (length(rows) == 0 && length(kws) > 1) {
+    last_kw <- kws[length(kws)]
+    message(sprintf("[경고] %d어 AND 0건 → 단일어 폴백('%s')", length(kws), last_kw))
+    rows <- collect(list(.hi_expand_kw(last_kw)))
+  }
+
   if (length(rows) == 0) {
     message("[hypothesis_index] no prior attempt matched: ", paste(kws, collapse = " "))
     return(invisible(data.frame()))
   }
   df <- do.call(rbind, rows)
-  df <- df[order(df$date, decreasing = TRUE), , drop = FALSE]
+  # distilled 계층 우선 노출(폴백 배너 상황에서도), 그 다음 date 내림차순.
+  # dist_rank 0 = distilled(먼저), 1 = 그 외. date는 문자열 역순.
+  dist_rank <- ifelse(grepl("^DISTILLED", df$verdict), 0L, 1L)
+  ord <- order(dist_rank, -xtfrm(df$date))
+  df <- df[ord, , drop = FALSE]
   rownames(df) <- NULL
   head(df, max_rows)
 }
