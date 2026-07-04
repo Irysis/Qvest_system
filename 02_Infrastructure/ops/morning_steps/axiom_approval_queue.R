@@ -83,6 +83,49 @@ suppressWarnings(suppressMessages(tryCatch({
     cat("  (승인 시 status=proposed → distilled 전환 = 주입/hypothesis_index/strategic_truths 소비 활성화)\n")
   }
 
+  # ── 재부상 섹션 (anti-ossification): live_trigger 충족 실패지식 재도전 시점 노출 ──
+  # 계획서 G(2026-07-04). failure_revival_monitor.R를 소비 — distilled/proposed negative의
+  #   live_trigger를 revival_signals 레지스트리 경유로 평가한 발화 목록.
+  #   모니터를 여기서 1회 실행(fresh)한 뒤 산출(.cache/failure_revival_flags.json)을 렌더.
+  #   fail-soft: 모니터/파일 실패는 이 섹션만 조용히 건너뛴다.
+  tryCatch({
+    old_opt <- getOption("rev_no_autorun", FALSE)
+    options(rev_no_autorun = TRUE)   # source 시 이중 자동실행 억제 — 아래서 명시 호출.
+    on.exit(options(rev_no_autorun = old_opt), add = TRUE)
+    withCallingHandlers(
+      suppressMessages(source("02_Infrastructure/ops/failure_revival_monitor.R", local = TRUE)),
+      message = function(m) invokeRestart("muffleMessage"))
+    flags_path <- file.path(".cache", "failure_revival_flags.json")
+    fired <- list()
+    if (exists("revival_monitor_run", mode = "function")) {
+      pay <- tryCatch(revival_monitor_run(write_flags = TRUE, verbose = FALSE),
+                      error = function(e) NULL)
+      if (!is.null(pay)) fired <- pay$fired %||% list()
+    } else if (file.exists(flags_path)) {
+      pay <- tryCatch(jsonlite::fromJSON(flags_path, simplifyVector = FALSE), error = function(e) NULL)
+      if (!is.null(pay)) fired <- pay$fired %||% list()
+    }
+    nf <- length(fired)
+    if (nf == 0) {
+      cat("\n[재도전 시점 도달 0건] — 휴면 실패지식 live_trigger 미충족(재부상 없음)\n")
+    } else {
+      cat(sprintf("\n[재도전 시점 도달 %d건] — 봉투 안 frontier 재도전 권고 (실패는 생성적, 원리4)\n", nf))
+      for (fd in fired) {
+        did  <- fget(fd, "dist_id", "?")
+        sid  <- fget(fd, "signal_id", "?")
+        cond <- fget(fd, "condition", "?")
+        cur  <- fget(fd, "current_value", "?")
+        fr   <- fget(fd, "frontier", "(frontier 미기록)")
+        cat(sprintf("  · %s: [트리거 %s '%s' 충족 (현재 %s)] → 봉투 안 재도전 권고\n",
+                    as.character(did), as.character(sid), as.character(cond), as.character(cur)))
+        cat(sprintf("      frontier(미탐색 인접): %s\n", as.character(fr)))
+      }
+      cat("  (재부상 ≠ 자동 재실행. 도훈/Q 판단으로 봉투 안 차별점 명시 후 진행 — 제약 완화 레버 금지)\n")
+    }
+  }, error = function(e) {
+    cat(sprintf("[재도전 시점] 재부상 섹션 실패(fail-soft): %s\n", conditionMessage(e)))
+  })
+
 }, error = function(e) {
   cat(sprintf("[axiom-approval] 스텝 실패(fail-soft): %s\n", conditionMessage(e)))
 })))

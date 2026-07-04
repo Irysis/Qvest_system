@@ -1,0 +1,270 @@
+{
+  "schema_version": "firewall_cases_v1",
+  "generated_at": "2026-07-04",
+  "note": "제약 방화벽 케이스 라이브러리 (그룹 C+D). ★판정은 정규식 매칭이 primary가 아니다 — 의미판단(LLM, semantic 모드)이 primary이고, 아래 cases는 그 판단을 돕는 few-shot 예시집이다. 씨앗 케이스는 '예시일 뿐' — 씨앗에 없는 임의 패러프레이즈·영어·미묘한 프레이밍도 semantic 모드는 원리로 일반화해 판정한다. 잡은 위반은 append_firewall_case()로 이 라이브러리에 축적되고, 다음 판정이 few-shot로 소비 → 잡을수록 똑똑해진다(corpus 학습 루프와 동형). base_signals의 정규식은 semantic 모드의 근거가 아니라 backstop 모드(비-LLM 경로)의 비-소진적 1차 필터일 뿐.",
+  "principle": "고정 제약 7종 + PIT C1~C15는 배포 현실이 정의한 '문제의 고정 축'이다(변수 아님). 실패를 이 제약에 *귀속*(예: 'long-only라서 실패')하거나 제약 *완화*를 레버로 제시(예: '>25종 분산하면', 'short 허용하면', '유동성 낮추면')하는 것 = 위반(REJECT → envelope-상대로 재작성). AX-000 따름정리: 제약은 게임의 법칙 — 창의 부담은 방법(envelope-안 레버)에 진다. ★허용(위반 아님): '이 봉투 *안에서* 이 경로는 천장'식 정직한 envelope-상대 서술, '미해결로 열어둠'(AX-000), envelope-안 레버(overlay·잔차 sleeve·비-return 데이터·DPL·regime-conditional·multi-sleeve·composite·ML sizing) 제시.",
+  "base_signals": {
+    "note": "고정 제약 7종 + PIT — 실패 원인/완화 레버로 삼으면 위반. 아래 term은 backstop 모드용 힌트 어휘(비-소진적). semantic 모드는 이 목록에 없는 표현도 의미로 일반화한다.",
+    "fixed_constraints": [
+      {
+        "id": "C1",
+        "name": "종목수 max 25",
+        "backstop_terms": [
+          "종목수",
+          "25종",
+          "max 25",
+          "n_stocks",
+          "num_holdings"
+        ]
+      },
+      {
+        "id": "C2",
+        "name": "유동성 20일 평균 거래대금 ≥ 2e8 KRW",
+        "backstop_terms": [
+          "유동성",
+          "거래대금",
+          "liquidity",
+          "2e8",
+          "2억"
+        ]
+      },
+      {
+        "id": "C3",
+        "name": "Long-only (weights ≥ 0)",
+        "backstop_terms": [
+          "long-only",
+          "롱온리",
+          "롱 온리",
+          "공매도",
+          "short",
+          "숏"
+        ]
+      },
+      {
+        "id": "C4",
+        "name": "Weight bounds [0, 0.20]",
+        "backstop_terms": [
+          "weight bound",
+          "비중 상한",
+          "비중 한도",
+          "[0, 0.2",
+          "0.20 cap"
+        ]
+      },
+      {
+        "id": "C5",
+        "name": "Sum(w) = 1",
+        "backstop_terms": [
+          "sum w",
+          "Σw",
+          "비중 합",
+          "fully invested"
+        ]
+      },
+      {
+        "id": "C6",
+        "name": "Universe KOSPI200 ∪ KOSDAQ150",
+        "backstop_terms": [
+          "유니버스",
+          "universe",
+          "kospi200",
+          "k200",
+          "kosdaq150",
+          "kq150",
+          "코스피200",
+          "코스닥150",
+          "전종목"
+        ]
+      },
+      {
+        "id": "C7",
+        "name": "Transaction cost 15bps one-way (v2.4 delta)",
+        "backstop_terms": [
+          "거래비용",
+          "transaction cost",
+          "15bps",
+          "회전비용",
+          "비용 모델"
+        ]
+      },
+      {
+        "id": "PIT",
+        "name": "PIT C1~C15 (미래참조 금지)",
+        "backstop_terms": [
+          "pit",
+          "미래참조",
+          "look-ahead",
+          "lookahead"
+        ]
+      }
+    ],
+    "envelope_levers": {
+      "note": "envelope-안 레버 화이트리스트 — 이것만 정당한 프론티어(탐색축). 이 어휘의 존재는 방화벽 통과 방향 신호.",
+      "terms": [
+        "overlay",
+        "오버레이",
+        "잔차 sleeve",
+        "residual sleeve",
+        "비-return",
+        "non-return",
+        "대체 데이터",
+        "alternative data",
+        "dart",
+        "insider",
+        "dpl",
+        "direct portfolio",
+        "regime-conditional",
+        "국면 조건부",
+        "국면 배분",
+        "국면 인지",
+        "multi-sleeve",
+        "다 sleeve",
+        "멀티 sleeve",
+        "composite",
+        "컴포지트",
+        "복합 팩터",
+        "ml sizing",
+        "ml 비중",
+        "머신러닝 sizing",
+        "uncertainty"
+      ]
+    }
+  },
+  "cases": [
+    {
+      "verdict": "violation",
+      "violation_class": "attribution",
+      "caught_text": "EP-단독 전략이 long-only라서 실패했다. 공매도가 불가능해 short leg 알파를 못 담는다.",
+      "why_violation": "실패를 long-only 제약에 직접 귀속. long-only는 문제의 고정 축이지 실패 원인이 아니다 — 실제 실패 경로는 'EP-단독이 value premium 약화 + quality mix 부재로 이 시기 F'.",
+      "reframed_to": "EP-단독 long-only top-25 경로는 value premium 약화 + quality mix 부재로 이 시기 F(envelope-상대 사실). 프론티어: value+quality composite / regime-conditional value activation / spread-reversion(비-return spread 신호).",
+      "added_at": "2026-07-04",
+      "seed": true
+    },
+    {
+      "verdict": "violation",
+      "violation_class": "attribution",
+      "caught_text": "25종 종목수 제약 때문에 분산이 안 되어 MDD가 커졌다.",
+      "why_violation": "MDD를 종목수≤25 제약에 귀속. ≤25종은 배포 현실이 정의한 고정 축 — MDD 완화 부담은 방법(overlay·잔차 sleeve)에 진다.",
+      "reframed_to": "이 경로는 top-25 envelope 안에서 MDD가 크다(envelope-상대 사실). 프론티어: regime overlay로 하락 국면 현금 전환 / 잔차-직교 sleeve 스태킹으로 잔차 분산.",
+      "added_at": "2026-07-04",
+      "seed": true
+    },
+    {
+      "verdict": "violation",
+      "violation_class": "relaxation",
+      "caught_text": "SR 천장 ~1.1, 돌파는 >25종 분산 또는 short 허용뿐이다.",
+      "why_violation": "제약 완화(>25종, short 허용)를 유일한 돌파 레버로 제시. 제약을 푸는 것은 게임을 이기는 게 아니라 바꾸는 것. envelope-안 레버(overlay·잔차 sleeve·DPL)가 실제 SR 레버.",
+      "reframed_to": "SR 천장 ~1.1은 single-sleeve 팩터선택의 envelope-안 천장. 돌파 레버(전부 envelope-안): overlay(β/regime timing) / 잔차-직교 sleeve 스태킹(PORT_t 통과분만) / DPL 직접 SR 최적화 / uncertainty 선택.",
+      "added_at": "2026-07-04",
+      "seed": true
+    },
+    {
+      "verdict": "violation",
+      "violation_class": "relaxation",
+      "caught_text": "유동성 기준을 낮추면 소형주 프리미엄을 담을 수 있다.",
+      "why_violation": "유동성 2e8 완화를 레버로 제시. 유동성 문턱은 실투 가능성이 정의한 고정 축 — 이를 낮추는 것은 배포 불가능한 전략을 배포 가능한 척하는 것.",
+      "reframed_to": "유동성 2e8 envelope 안에서 소형주 프리미엄 노출은 제한적(사실). 프론티어: 유동성 통과 종목 중 잔차 사이즈 틸트 / regime-conditional 사이즈 activation.",
+      "added_at": "2026-07-04",
+      "seed": true
+    },
+    {
+      "verdict": "pass",
+      "violation_class": "none",
+      "caught_text": "이 봉투 안에서 single-factor long-only top-25는 PORT_t 2.0이 천장이다. 제약은 문제의 고정 축. 다른 방법 소진 시 미해결로 열어둔다.",
+      "why_violation": "위반 아님 — envelope-상대 정직 서술 + 제약을 '문제의 축'으로 올바로 취급 + 미해결 열어둠(AX-000). 제약을 원인/레버로 삼지 않음. 통과.",
+      "reframed_to": null,
+      "added_at": "2026-07-04",
+      "seed": true
+    },
+    {
+      "verdict": "pass",
+      "violation_class": "none",
+      "caught_text": "이 경로는 standalone에서 약하나, overlay와 regime-conditional 배분·잔차 sleeve 스태킹으로 프론티어가 열린다.",
+      "why_violation": "위반 아님 — 실패를 envelope-안 레버(overlay·regime-conditional·잔차 sleeve) 상대 프론티어로 전환. 정확히 원하는 형태. 통과.",
+      "reframed_to": null,
+      "added_at": "2026-07-04",
+      "seed": true
+    },
+    {
+      "verdict": "violation",
+      "violation_class": "relaxation",
+      "caught_text": "KR 25종 long-only 팩터선택 SR 천장 ~1.1. 돌파는 overlay 재튜닝 또는 >25종 분산뿐.",
+      "why_violation": "SR 천장 돌파 레버로 '>25종 분산'(종목수≤25 제약 완화)을 제시. 종목수 25는 배포 현실이 정의한 문제의 고정 축 — 이를 늘리는 것은 게임을 이기는 게 아니라 바꾸는 것. injection 표면(strategic_truths)에 있어 모든 agent 리서치를 편향. 실제 SR 레버는 envelope-안(overlay·잔차 sleeve·비-return·DPL).",
+      "reframed_to": "KR 25종 long-only 팩터선택 SR 천장 ~1.0-1.1(envelope-상대 사실). 돌파 레버(전부 envelope-안): overlay 재튜닝 / 잔차-직교 sleeve 스태킹(PORT_t 통과분만) / 비-return 원천 / DPL. '>25종 분산'은 out-of-scope 제약축.",
+      "added_at": "2026-07-04",
+      "seed": false
+    },
+    {
+      "verdict": "violation",
+      "violation_class": "relaxation",
+      "caught_text": "완전압도는 팩터선택 밖 — Book overlay 재튜닝 또는 >25종목 decorrelation(무상관) 결합에서만.",
+      "why_violation": "위험조정 우위 실현 레버로 '>25종목 무상관 결합'을 제시 = 종목수 제약 완화-레버. 잔차 직교(decorrelation) 자체는 envelope-안 잔차 sleeve 스태킹으로 실현할 수 있는데, 이를 '종목수 확대'로 사려는 프레이밍이 오염. active(−BM) basis 잔차 직교는 25종 봉투 안에서 sleeve 스태킹으로 접근.",
+      "reframed_to": "위험조정 우위는 envelope-안 레버(overlay 타이밍 / 잔차-직교 sleeve 스태킹 PORT_t 통과분 / DPL)에서 실현. decorrelation은 종목수 확대가 아니라 봉투 안 잔차 sleeve로 산다.",
+      "added_at": "2026-07-04",
+      "seed": false
+    },
+    {
+      "verdict": "violation",
+      "violation_class": "relaxation",
+      "caught_text": "재도전 대상: (1) >25종목 분산 허용 시 — 직교성이 active(−BM) basis에 실재하므로 종목수 확대가 decorrelation 실현 경로일 수 있음.",
+      "why_violation": "실패 지식의 retry_condition에 '>25종목 분산 허용'을 재도전 레버로 명시 = 제약 완화를 탐색축으로 제시. active-basis 직교가 실재한다는 것은 사실이나, 그 실현 경로를 '종목수 확대'로 지목하면 문제의 고정 축을 변수로 취급하는 것. 실현 경로는 envelope-안 잔차-직교 sleeve 스태킹.",
+      "reframed_to": "재도전 대상: active(−BM) basis 잔차 직교가 실재하므로(core↔def 0.45), 25종 envelope 안에서 잔차-직교 sleeve 스태킹으로 decorrelation을 실현하고 PORT_t 통과분만 book 기여시키는 경로. (종목수 확대 아님.)",
+      "added_at": "2026-07-04",
+      "seed": false
+    },
+    {
+      "verdict": "violation",
+      "violation_class": "relaxation",
+      "caught_text": "재도전 조건 ③ multi-sleeve/long-short 구조(short-leg/mid-decile 신호는 top-N long-only 구조에서만 비매매).",
+      "why_violation": "실패 지식 retry에 'long-short 구조'를 재도전 레버로 제시 = long-only(고정 제약 #3) 완화. short-leg 신호가 존재한다는 진단은 사실이나, 그 신호를 사는 경로로 long-short를 지목하면 문제의 고정 축을 변수화. envelope-안 경로 = DPL feature(박스 밖 소비)·multi-sleeve long-leg·screen-route.",
+      "reframed_to": "재도전: short-leg/mid-decile 신호는 long-only top-N이 구조적으로 비매매 — 이를 envelope-안에서 쓰는 경로는 DPL 입력 피처(screen-route C23/C27)·multi-sleeve long-leg 편입. (long-short는 out-of-envelope.)",
+      "added_at": "2026-07-04",
+      "seed": false
+    },
+    {
+      "verdict": "violation",
+      "violation_class": "relaxation",
+      "caught_text": "retry (2) multi-sleeve(다sleeve/long-short long-leg) 또는 position-level 오버레이 결합 = naked long-only 한정 규칙이므로 재도전 대상.",
+      "why_violation": "long-short long-leg은 long leg만 취하면 long-only envelope 안이나(허용), 표현이 long-short 구조를 레버로 읽히게 애매. envelope-안 명확화 = multi-sleeve long-leg / long-short 논문의 long leg만(lambda in [0,1])로 못박아야 제약 완화 오독 방지.",
+      "reframed_to": "retry (2): multi-sleeve long-leg 편입 또는 position-level 오버레이 결합(naked long-only 한정 규칙 밖). long-short 논문 차용 시 long leg만(공매도 out-of-envelope).",
+      "added_at": "2026-07-04",
+      "seed": false
+    },
+    {
+      "verdict": "violation",
+      "violation_class": "relaxation",
+      "caught_text": "retry (1) contrarian을 legacy estimated 단일팩터 long-only가 아닌 실측 + multi-sleeve 또는 long-short leg로 재측정.",
+      "why_violation": "long-short leg 재도전 레버 = long-only(고정 제약 #3) 완화로 오독 가능. envelope-안 = multi-sleeve long-leg / long-short 논문 차용 시 long leg만(lambda in [0,1]).",
+      "reframed_to": "retry (1): contrarian을 실측(canonical_screen_bt) + multi-sleeve long-leg로 재측정 (long-short 차용 시 long leg만, 공매도 out-of-envelope).",
+      "added_at": "2026-07-04",
+      "seed": false
+    },
+    {
+      "verdict": "violation",
+      "violation_class": "relaxation",
+      "caught_text": "retry ③ long-short 또는 신규 직교 데이터원으로 EP/accrual 신호 재구성.",
+      "why_violation": "long-short를 재도전 레버로 병렬 제시 = long-only(고정 제약 #3) 완화. envelope-안 대체 = composite/multi-sleeve long-leg·신규 직교 비-return 데이터원.",
+      "reframed_to": "retry ③ composite/multi-sleeve long-leg 편입 또는 신규 직교 비-return 데이터원으로 EP/accrual 재구성 (long-short는 out-of-envelope).",
+      "added_at": "2026-07-04",
+      "seed": false
+    },
+    {
+      "verdict": "pass",
+      "violation_class": "none",
+      "caught_text": "천장-초과 유일 레버는 overlay-on-tuned-base다.",
+      "why_violation": "위반 아님(pass 사례로 축적) — 천장 초과 레버를 envelope-안(overlay-on-tuned-base)으로 정직하게 지목. 제약 완화 아님. RAMP-006이 relaxation과 envelope-안 서술을 한 statement에 섞고 있어, envelope-안 부분은 pass 예시로 학습.",
+      "reframed_to": null,
+      "added_at": "2026-07-04",
+      "seed": false
+    },
+    {
+      "verdict": "violation",
+      "violation_class": "relaxation",
+      "caught_text": "공매도만 되면 풀릴 문제다.",
+      "why_violation": "제약 해지(공매도 허용 = long-only 완화)를 가정법 '만 되면 풀릴'로 유일 해결 레버로 제시. long-only는 문제의 고정 축 — 이를 푸는 것은 게임을 이기는 게 아니라 바꾸는 것. 조건부-완화 관용구('<제약>만 되면 풀린다')는 자연스러운 완화-레버 표현이라 backstop 패턴에도 추가(자기발전). 실제 short-leg 신호는 envelope-안(DPL 입력 피처·multi-sleeve long-leg)에서 소비.",
+      "reframed_to": "이 경로의 short-leg/mid-decile 신호는 long-only top-N이 구조적으로 비매매(envelope-상대 사실). envelope-안 소비 경로: DPL 입력 피처(screen-route) / multi-sleeve long-leg 편입. (공매도 허용은 out-of-envelope.)",
+      "added_at": "2026-07-04",
+      "seed": true
+    }
+  ]
+}

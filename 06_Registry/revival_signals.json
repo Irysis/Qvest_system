@@ -1,0 +1,67 @@
+{
+  "schema_version": "revival_signals_v1",
+  "generated_at": "2026-07-04",
+  "note": "실패 지식 재부상(anti-ossification) live 트리거의 신호원 레지스트리. 계획서 G(2026-07-04) — failure_knowledge_architecture_plan_20260704.md.",
+  "design_mandate": "★이것은 씨앗(seed)이다. 트리거 type을 코드에 하드코딩하지 않는다 — 새 신호원은 여기에 signal 하나를 등록만 하면 failure_revival_monitor.R가 자동 소비한다(코드 수정 불필요). 열린 스키마(등록형): 고정 enum 금지. distilled/proposed negative DIST의 live_trigger.signal_id가 이 레지스트리의 signal_id와 매칭되면 그 extractor로 현재값을 로드하고 condition을 대조한다. 매칭 없으면 graceful skip(신호원 미등록 = 추후 add). 이 레지스트리 자체도 주간 Cleaner 리뷰 대상.",
+  "extractor_contract": {
+    "purpose": "monitor가 하드코딩 type switch 없이 신호 현재값을 로드하는 방법을 선언적으로 기술. monitor는 kind만 보고 generic 로더를 태운다(신규 kind는 monitor에 loader 1개 추가로 확장, but 개별 signal_id 추가엔 코드 불필요).",
+    "kinds": {
+      "parquet_last": "parquet 파일의 최종 행(정렬 후 last)에서 value_col 값을 뽑는다. 필드: source_path, value_col, [sort_col](기본 Date/date/YM 자동추론), [filter_col+filter_val].",
+      "parquet_percentile": "parquet 파일 value_col의 전체 시계열 대비 현재(마지막) 값의 백분위(0~1)를 산출. 필드: source_path, value_col, [window](rolling N개월, 없으면 전체).",
+      "json_field": "JSON 파일의 dotted-path 필드 값을 뽑는다. 필드: source_path, field_path(예: 'gap.sharpe_gap').",
+      "time_now": "현재 날짜(Sys.Date()). expiry/time-based 트리거용. source_path 불필요 — condition에서 as_of 문자열과 비교."
+    },
+    "condition_language": "live_trigger.condition은 로드된 현재값을 'x'로 참조하는 안전한 R 표현식 문자열(비교/논리/백분위만). 예: 'x >= 0.9', 'x == \"CRISIS\"', 'x >= as.Date(\"2027-01-01\")'. monitor가 화이트리스트 파서로 평가(임의 코드 실행 금지). condition 없으면 미발화."
+  },
+  "signals": [
+    {
+      "signal_id": "regime_category",
+      "kind": "parquet_last",
+      "source_path": ".cache/unified_regime_signal_daily.parquet",
+      "value_col": "Category",
+      "sort_col": "Date",
+      "extractor": "일별 통합 국면신호의 최신 Category (RISK_ON/NEUTRAL/CAUTION/RISK_OFF/CRISIS). 국면-트리거 실패지식(정상장 drag로 F였던 방어 sleeve를 CRISIS 진입 시 재부상 등)의 조건 대조원.",
+      "description": "국면 신호원. 예 condition: 'x == \"CRISIS\"' — 위기 국면 진입 시 방어형 재도전 시점 도달.",
+      "registered_at": "2026-07-04",
+      "status": "active"
+    },
+    {
+      "signal_id": "regime_score",
+      "kind": "parquet_last",
+      "source_path": ".cache/unified_regime_signal_daily.parquet",
+      "value_col": "Regime_Score_smooth",
+      "sort_col": "Date",
+      "extractor": "일별 통합 국면 점수(smooth). 연속형 국면 트리거용(임계 통과).",
+      "description": "국면 연속점수. 예 condition: 'x <= 50' — 위험구간 진입.",
+      "registered_at": "2026-07-04",
+      "status": "active"
+    },
+    {
+      "signal_id": "wall_clock_date",
+      "kind": "time_now",
+      "source_path": null,
+      "value_col": null,
+      "extractor": "현재 날짜(Sys.Date()). expiry 도달/재도전 시각 트리거용. condition에서 as.Date 비교.",
+      "description": "시간 신호원. 예 condition: 'x >= as.Date(\"2027-01-01\")' — 만료/재검토 시각 도달.",
+      "registered_at": "2026-07-04",
+      "status": "active"
+    }
+  ],
+  "not_yet_registered": {
+    "note": "아래는 계획서 §G가 언급했으나 신호원 실측 후 등록 여부를 결정할 후보. 실측 결과 산출원이 있으면 signals[]에 등록, 없으면 미등록(추후 add — 열린 스키마이므로 이 파일에 항목 추가만 하면 monitor가 자동 소비).",
+    "candidates": [
+      {
+        "signal_id": "value_spread_percentile",
+        "intended_kind": "parquet_percentile",
+        "reason_unregistered": "value spread 극단 백분위를 산출하는 canonical 시계열 신호원 파일을 이번 슬라이스에서 확정 못함(reference-kr-value-factor-decay 메모리는 'spread 사상최대'라 언급하나 실측 parquet 산출원 미확인). 산출원 확정 시 등록: {kind:parquet_percentile, source_path:<spread series>, value_col:<spread>}. value 계열 실패지식(EP-단독 F 등)의 spread-reversion 재부상 트리거로 쓸 것.",
+        "candidate_since": "2026-07-04"
+      },
+      {
+        "signal_id": "dart_insider_availability",
+        "intended_kind": "json_field",
+        "reason_unregistered": "DART insider 등 신규 데이터원 가용 플래그(비-return datasource 확보 시 관련 실패지식 재부상). 데이터원 상태 레지스트리 확정 후 등록.",
+        "candidate_since": "2026-07-04"
+      }
+    ]
+  }
+}

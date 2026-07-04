@@ -21,7 +21,11 @@
 #   load_distilled_index()                          — 인덱스 로드
 #   lookup_distilled(keywords)                      — 키워드 AND 부분매치 조회 (status=distilled만 노출)
 #   draft_proposed(dist_id, statement_refined, retry_condition=, adversarial_verdict=,
-#                  expiry=, drafted_by="auto")       — 자동초안 → status=proposed (주입 안 됨)
+#                  expiry=, frontier=, live_trigger=, drafted_by="auto")
+#                                                   — 자동초안 → status=proposed (주입 안 됨)
+#     ★INV-7 negative 필수 필드: expiry + live_trigger + frontier. 방화벽 판정은 초안
+#       에이전트(LLM)가 load_firewall_context()로 semantic 수행 후 위반 시 재작성해 넘긴다.
+#       draft_proposed는 통과분만 받되, backstop(비-소진적) 가드가 명백 위반을 stop.
 #   approve_proposed(dist_ids, approved_by="dohoon") — proposed → distilled (사람 승인 게이트)
 #   list_proposed()                                 — status=proposed 목록 (모닝브리핑·다이제스트 소비)
 #   refine_distilled(dist_id, statement_refined, retry_condition=, refined_by=)
@@ -67,6 +71,9 @@ rebuild_distilled_index <- function(root = .dist_root(), verbose = TRUE) {
       retry_condition = d$retry_condition,
       adversarial_verdict = d$adversarial_verdict,
       expiry = d$expiry,
+      frontier = d$frontier %||% list(),           # INV-7: 미탐색 인접 경로(원리2)
+      live_trigger = d$live_trigger %||% list(),    # INV-7: 부활 조건(원리4, 열린 스키마)
+      constraint_firewall = d$constraint_firewall,  # 방화벽 판정 기록(원리3)
       supporting_l_codes = d$supporting_l_codes %||% list(),
       n_supporting = length(d$supporting_l_codes %||% list()),
       candidate_id = d$candidate_id, cluster_key = d$cluster_key,
@@ -149,6 +156,7 @@ lookup_distilled <- function(keywords, root = .dist_root(), max_rows = 20L,
 #   활성화(distilled)가 아니므로 주입/truths 소비 대상 아님. 도훈 approve_proposed 게이트 필요.
 draft_proposed <- function(dist_id, statement_refined, retry_condition = NULL,
                            adversarial_verdict = NULL, expiry = NULL,
+                           frontier = NULL, live_trigger = NULL,
                            drafted_by = "auto", root = .dist_root()) {
   stopifnot(nzchar(statement_refined))
   if (grepl("\\[.*초안.*\\]|확정 필요", statement_refined))
@@ -158,10 +166,39 @@ draft_proposed <- function(dist_id, statement_refined, retry_condition = NULL,
   if (identical(d$status, "promoted")) stop("이미 promoted — 초안 불가(불변)")
   if (identical(d$status, "distilled")) stop("이미 distilled(활성화) — draft_proposed 부적용")
   .dist_block_quarantined(d)   # quarantined_evidence 6건 초안 대상 제외
+
+  # ── INV-7 제약 방화벽 backstop 가드 (원리3) ──
+  # semantic 판정은 초안 에이전트(LLM)가 load_firewall_context로 이미 수행했어야 한다.
+  # 여기 backstop은 *비-소진적* 최종 가드 — 명백한 제약-귀속/완화-레버가 초안에 남아 있으면
+  # stop해 오염 주입을 원천 차단. (semantic이 primary, 이건 마지막 그물.)
+  fw_path <- file.path(root, "02_Infrastructure", "axiom", "constraint_firewall.R")
+  if (file.exists(fw_path)) {
+    local({ source(fw_path, local = TRUE)
+      fw_txt <- paste(c(statement_refined, retry_condition %||% "",
+                        unlist(frontier %||% list())), collapse = " \n ")
+      r <- check_constraint_firewall(fw_txt, mode = "backstop", root = root)
+      if (isFALSE(r$pass))
+        stop("INV-7 제약 방화벽 backstop REJECT — 초안이 고정 제약을 원인 귀속하거나 ",
+             "완화 레버로 제시. envelope-상대로 재작성 후 재제출.\n  ", r$suggestion,
+             "\n  (semantic 판정은 초안 에이전트가 load_firewall_context로 선수행하는 것이 정칙)")
+    })
+  }
+
   d$statement_refined <- statement_refined
   if (!is.null(retry_condition)) d$retry_condition <- retry_condition
   if (!is.null(adversarial_verdict)) d$adversarial_verdict <- adversarial_verdict
   if (!is.null(expiry)) d$expiry <- expiry
+  if (!is.null(frontier)) d$frontier <- frontier                # INV-7 필수(negative)
+  if (!is.null(live_trigger)) d$live_trigger <- live_trigger    # INV-7 필수(negative)
+  # negative polarity인데 필수 필드 결측 시 경고(하드 stop 아님 — 초안 반복 허용)
+  if (identical(d$polarity, "negative")) {
+    miss <- c(if (is.null(d$frontier)) "frontier", if (is.null(d$live_trigger)) "live_trigger",
+              if (is.null(d$expiry)) "expiry")
+    if (length(miss))
+      warning(sprintf("[distilled] %s negative 초안 INV-7 필수 필드 결측: %s — 승인 전 보강 권고",
+                      dist_id, paste(miss, collapse = ", ")))
+  }
+  d$constraint_firewall <- list(mode = "backstop_passed", checked_at = format(Sys.Date()))
   d$status <- "proposed"                 # ← 활성화 아님(주입 미소비)
   d$drafted_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
   d$drafted_by <- drafted_by
@@ -214,6 +251,8 @@ list_proposed <- function(root = .dist_root()) {
       adversarial_verdict = as.character(e$adversarial_verdict %||% NA_character_),
       n_support = e$n_supporting %||% 0L,
       expiry = as.character(e$expiry %||% NA_character_),
+      has_frontier = length(e$frontier %||% list()) > 0,       # INV-7 필수 필드 충족 여부
+      has_live_trigger = length(e$live_trigger %||% list()) > 0,
       drafted_at = as.character(e$drafted_at %||% NA_character_),
       stringsAsFactors = FALSE)
   }

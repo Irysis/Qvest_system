@@ -4,8 +4,8 @@
   "cluster_key": "ac01076e5fa9",
   "candidate_id": "CAND_20260704_qepm_legacy_quality_profitability_negative_L-133_L-134_L-139",
   "status": "proposed",
-  "statement_refined": "KR quality_profitability 단독/단순-composite long-only는 estimated 성과 기준 반복 실패 — supporting 4전략 모두 OOS에서 alpha 소멸(profitability fortress OOS retention 0.24·recent-3Y SR 0.135, growth-stability composite retention -0.001, cash-based profitability SR -0.232·MDD 94%, low-beta BAB retention -0.35~-0.02). 메커니즘: 2020년대 성장주 outperformance로 profitability/low-beta 프리미엄 구조적 약화 + KR DART 현금흐름 데이터 품질 저하. estimated 라벨 — canonical/backtested 재측정 아님.",
-  "retry_condition": "재도전 대상(INV-7 provisional). 재시도 자격: (a) single-signal이 아닌 multi-axis quality composite를 multi-sleeve 내 성분(예: Q07)으로 배치 — AX-004 EXCLUSION 경로 / (b) profitability 프리미엄 reversion을 뒷받침하는 신규 데이터원 또는 국면조건(value/quality spread reversion 실측) / (c) estimated가 아닌 canonical_screen/backtested 재측정으로 supporting 결론 재확인. 차별점 명시 + IS-only 선택 protocol 없이는 재시도 금지.",
+  "statement_refined": "KR quality_profitability 단독/단순-composite long-only는 estimated 성과 기준 반복 실패 — supporting 4전략 모두 OOS에서 alpha 소멸(profitability fortress OOS retention 0.24·recent-3Y SR 0.135, growth-stability composite retention -0.001, cash-based profitability SR -0.232·MDD 94%, low-beta BAB retention -0.35~-0.02). 메커니즘: 2020년대 성장주 outperformance로 profitability/low-beta 프리미엄 구조적 약화 + KR DART 현금흐름 데이터 품질 저하. estimated 라벨 — canonical/backtested 재측정 아님. = 이 envelope 안에서 quality_profitability 단독/단순-composite 경로가 이 국면(2020년대 성장주 우위)에 약함.",
+  "retry_condition": "재도전 대상(INV-7 provisional). 재시도 자격: (a) single-signal이 아닌 multi-axis quality composite를 multi-sleeve 내 성분(예: Q07)으로 배치 — AX-004 EXCLUSION 경로 / (b) profitability 프리미엄 reversion을 뒷받침하는 신규 비-return 데이터원 또는 국면조건(value/quality spread reversion 실측) / (c) estimated가 아닌 canonical_screen/backtested 재측정으로 supporting 결론 재확인. 차별점 명시 + IS-only 선택 protocol 없이는 재시도 금지.",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
@@ -74,6 +74,29 @@
     "report": "04_Research/01_reports/knowledge_provenance_audit_20260704.md"
   },
   "adversarial_verdict": "CLEAN",
-  "drafted_at": "2026-07-04T19:05:27+0900",
-  "drafted_by": "auto_inv6_subagent"
+  "drafted_at": "2026-07-04T21:58:17+0900",
+  "drafted_by": "audit_groupH_20260704",
+  "expiry": "2026-10-02",
+  "frontier": [
+    "multi-axis quality composite를 multi-sleeve 성분(Q07)으로 배치 — AX-004 EXCLUSION 경로",
+    "value/quality spread reversion 국면조건부 activation — 성장주 우위 국면 역전 시 profitability 프리미엄 재부상 포착",
+    "profitability reversion을 뒷받침하는 신규 비-return 데이터원(DART 현금흐름 품질 보정)",
+    "canonical_screen/backtested 재측정으로 estimated 결론 재확인(라벨 승급)"
+  ],
+  "live_trigger": [
+    {
+      "type": "spread",
+      "condition": "value/quality spread 극단 백분위(reversion 신호) 도달 시 profitability 프리미엄 재부상 재검",
+      "monitored_source": ".cache/conditional_ic_matrix.csv (value/quality spread 백분위)"
+    },
+    {
+      "type": "regime",
+      "condition": "성장주 우위 국면(2020년대) 반전 signal 시 재측정",
+      "monitored_source": ".cache/unified_regime_signal.parquet + macro_regime.parquet"
+    }
+  ],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-07-04"
+  }
 }

@@ -1,6 +1,6 @@
 {
   "schema_version": "distilled_knowledge_v1",
-  "generated_at": "2026-07-04T19:12:35+0900",
+  "generated_at": "2026-07-04T22:01:32+0900",
   "note": "Axiom 엔진 ②Distilled 계층 통합 인덱스. lifecycle: pending_5axis→[자동초안+적대검증]→proposed→[도훈 배치승인]→distilled→promoted|expired. INV-6(2026-07-04 재정의: 무인 활성화 금지): 주입/truths 소비는 status=distilled만 — proposed·pending_5axis 초안 텍스트 주입 금지(안전속성 보존).",
   "n_entries": 17,
   "n_distilled": 0,
@@ -14,11 +14,33 @@
       "polarity": "negative",
       "metric_type": "estimated",
       "status": "proposed",
-      "statement_refined": "KR defense-family Q07+Accounting-Beta(D29) composite 30종목 long-only standalone은 자본 sleeve로 부적합 — 낙폭방어 자체는 양호(MDD 11.94%)하나 정상장 opportunity-cost drag로 CAGR 2.93%가 최소 기회비용(무위험2%+인플레3%=5%)에 미달, Grade C(L-143; 선행 Q07+D25 L-140과 동일 drag 패턴). 별개로 Q24 Altman-Z는 KR 급락구간에서 역방향 작용(stress_icir -0.695, 40개 stress월 중 25%만 양수, crisis_ratio -2.89) — Altman '안전' 종목이 오히려 underperform해 defense anchor로 부적합(L-144, US distress-premium과 괴리). [근거 L-code 2건 실측(drag 1·reversal 1)이라 이질 패턴 — L-145는 즉시 axiom 통합 아닌 축별 분리·quarterly review 권고. metric_type=estimated 레거시 창 · 전기간 아닌 에피소드-lens 재측정 시 방어력 재평가 필요(AX-001 v2)]",
+      "statement_refined": "KR defense-family Q07+Accounting-Beta(D29) composite 30종목 long-only standalone은 자본 sleeve로 부적합 — 낙폭방어 자체는 양호(MDD 11.94%)하나 정상장 opportunity-cost drag로 CAGR 2.93%가 최소 기회비용(무위험2%+인플레3%=5%)에 미달, Grade C(L-143; 선행 Q07+D25 L-140과 동일 drag 패턴). 별개로 Q24 Altman-Z는 KR 급락구간에서 역방향 작용(stress_icir -0.695, 40개 stress월 중 25%만 양수, crisis_ratio -2.89) — Altman '안전' 종목이 오히려 underperform해 defense anchor로 부적합(L-144, US distress-premium과 괴리). = 이 envelope(long-only top-25) 안에서 Accounting-Beta 계열 standalone defense 경로가 drag(정상장)·reversal(급락장) 두 기전으로 약함. [근거 L-code 2건 실측(drag 1·reversal 1) 이질 패턴 — L-145 즉시 axiom 통합 아닌 축별 분리·quarterly review 권고. metric_type=estimated 레거시 창 — 에피소드-lens 재측정 시 방어력 재평가 필요(AX-001 v2)]",
       "statement_draft": "[실증 실패 규칙 초안] family=defense, tags=DEFENSE_LOW_CAGR,Q07_D29_COMBO,POTENTIAL_AX005_EXTENSION, supporting=3건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
-      "retry_condition": "drag 패턴(L-136/143): Q07을 비-Accounting-Beta 계열(tail-risk D47_CVaR/D48_VaR) cross-family composite로 재구성하거나 regime-conditional activation(정상장 weight 최소·위기만 강화)으로 재도전 / reversal 패턴(L-144): Q25_Ohlson_O(stress_icir +0.659)·R16_Calmar(+2.655) 등 순방향 distress metric으로 대체 / 공통: multi-sleeve 내 임베딩·신규 데이터원 확보 시, 또는 estimated→backtested(canonical_screen_bt) 에피소드-lens 재측정으로 재도전. standalone Accounting-Beta defense sleeve 반복은 차별점 명시 없이 금지(INV-7 provisional).",
+      "retry_condition": "drag 패턴(L-136/143): Q07을 비-Accounting-Beta 계열(tail-risk D47_CVaR/D48_VaR) cross-family composite로 재구성하거나 regime-conditional activation(정상장 weight 최소·위기만 강화)으로 재도전 / reversal 패턴(L-144): Q25_Ohlson_O(stress_icir +0.659)·R16_Calmar(+2.655) 등 순방향 distress metric으로 대체 / 공통: multi-sleeve 내 임베딩·신규 비-return 데이터원 확보 시, 또는 estimated→backtested(canonical_screen_bt) 에피소드-lens 재측정으로 재도전. standalone Accounting-Beta defense sleeve 반복은 차별점 명시 없이 금지(INV-7 provisional).",
       "adversarial_verdict": "REVISED",
-      "expiry": null,
+      "expiry": "2026-10-02",
+      "frontier": [
+        "Q07을 tail-risk 계열(D47_CVaR/D48_VaR)과 cross-family composite로 재구성 (Accounting-Beta 단일 축 이탈)",
+        "regime-conditional defense activation — 정상장 weight 최소, CRISIS 국면만 강화 (drag 기전 회피)",
+        "reversal 기전 순방향 대체: Q25_Ohlson_O·R16_Calmar 등 KR에서 순방향인 distress metric으로 anchor 교체",
+        "multi-sleeve 내 보조 defense sleeve로 임베딩 (standalone 아님) + 에피소드-lens(AX-001 v2) 재측정"
+      ],
+      "live_trigger": [
+        {
+          "type": "regime",
+          "condition": "CRISIS/급락 국면 진입 시 — 에피소드-lens 방어력 재평가 트리거(AX-001 v2 조건부 재평가)",
+          "monitored_source": ".cache/unified_regime_signal.parquet + macro_regime.parquet"
+        },
+        {
+          "type": "data",
+          "condition": "tail-risk/distress 신규 데이터원 등재 시 cross-family composite 재도전",
+          "monitored_source": "06_Registry 신규 데이터원 등재(DART insider 등)"
+        }
+      ],
+      "constraint_firewall": {
+        "mode": "backstop_passed",
+        "checked_at": "2026-07-04"
+      },
       "supporting_l_codes": [
         "L-143",
         "L-144",
@@ -30,7 +52,7 @@
       "promoted_to_axiom": null,
       "created_at": "2026-07-04T04:03:45+00:00",
       "refined_at": null,
-      "drafted_at": "2026-07-04T19:06:05+0900",
+      "drafted_at": "2026-07-04T21:55:16+0900",
       "approved_at": null,
       "source_file": "DIST-AR-001.json"
     },
@@ -42,11 +64,33 @@
       "polarity": "negative",
       "metric_type": "backtested",
       "status": "proposed",
-      "statement_refined": "KR long-only top-N(D10 박스): momentum family 12건(return-derived + flow/event catalyst) 모두 PORT_t<2.95로 자본급 미전이. 두 실측 기전 — ① return-derived 모멘텀은 기존 M01/M08/M24에 이미 spanned(PCDM M01 0.91 공선·gapfreq raw IC 58~67% 흡수·Hurst/overnight 무신호), ② flow/event catalyst는 cross-sectional 신호(일부 직교, Harvey-t 최대 3.38)가 short-leg/mid-decile에 존재해 top-25 박스가 못 잡는 AX-007 translation break(C23 D10≈D9·C25 monotone-decreasing·C27 top-flat·C27b/C29 top 평균회귀). 폐기 아님 — C23/C27은 screen-route(DPL_FEATURE/FR-RCMA) 조건부 후보.",
+      "statement_refined": "KR long-only top-N(D10 박스): momentum family 12건(return-derived + flow/event catalyst) 모두 PORT_t<2.95로 자본급 미전이. 두 실측 기전 — ① return-derived 모멘텀은 기존 M01/M08/M24에 이미 spanned(PCDM M01 0.91 공선·gapfreq raw IC 58~67% 흡수·Hurst/overnight 무신호), ② flow/event catalyst는 cross-sectional 신호(일부 직교, Harvey-t 최대 3.38)가 short-leg/mid-decile에 존재해 long-only top-25 박스가 구조적으로 비매매(AX-007 translation break: C23 D10≈D9·C25 monotone-decreasing·C27 top-flat·C27b/C29 top 평균회귀). 폐기 아님 — C23/C27은 screen-route(DPL_FEATURE/FR-RCMA) 조건부 후보로 envelope 안에서 소비.",
       "statement_draft": "[실증 실패 규칙 초안] family=momentum, tags=MOMENTUM,KR_LONGONLY,NON_RETURN, supporting=12건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
-      "retry_condition": "재도전 조건(INV-7/AX-000): ① event-time fresh-cohort 구성(C27 실측: Ikenberry 자사주 드리프트 +0.42%/mo가 REAL이나 ~1개월 단명 → 분기 monthly-carry가 희석, DART event-log 연속 fresh 구성 시 재검) — 단 C27b가 event-time DART로 이미 REJECT(net PORT_t -1.18) 확인됨 ② DPL 입력 피처로 재활용(screen-route 후보 C23/C27, long-only 박스 밖 소비) ③ multi-sleeve/long-short 구조(short-leg/mid-decile 신호는 top-N long-only 구조에서만 비매매). return-derived 축(PCDM/Hurst/overnight/gapfreq)은 spanning 확정으로 동일 구성 재시도 저-EV.",
+      "retry_condition": "재도전 조건(INV-7/AX-000): ① event-time fresh-cohort 구성(C27 실측: Ikenberry 자사주 드리프트 +0.42%/mo가 REAL이나 ~1개월 단명 → 분기 monthly-carry가 희석, DART event-log 연속 fresh 구성 시 재검) — 단 C27b가 event-time DART로 이미 REJECT(net PORT_t -1.18) 확인됨 ② DPL 입력 피처로 재활용(screen-route 후보 C23/C27, long-only 박스가 비매매하는 mid-decile 신호를 DPL이 end-to-end로 소비) ③ multi-sleeve long-leg 편입(top-N standalone 아님). return-derived 축(PCDM/Hurst/overnight/gapfreq)은 spanning 확정으로 동일 구성 재시도 저-EV.",
       "adversarial_verdict": "CLEAN",
-      "expiry": null,
+      "expiry": "2026-10-02",
+      "frontier": [
+        "C23/C27 flow catalyst를 DPL 입력 피처로 (long-only 박스가 비매매하는 mid-decile 신호를 end-to-end weight 학습에 흡수)",
+        "event-time fresh-cohort: DART event-log 연속 fresh 구성으로 자사주 드리프트 ~1개월 단명 신호를 carry-희석 없이 포착",
+        "multi-sleeve long-leg 편입 — catalyst 직교 신호(Harvey-t 3.38)를 core sleeve와 병렬 배치",
+        "FR-RCMA screen-route: 국면조건부 모듈 배합에서 flow catalyst를 CRISIS/확장 specialist로 소비"
+      ],
+      "live_trigger": [
+        {
+          "type": "data",
+          "condition": "DART event-log(자사주/insider) fresh-cohort 데이터원 연속 갱신 확보 시 C27 event-time 재검",
+          "monitored_source": "06_Registry 신규 데이터원 등재(DART insider 등)"
+        },
+        {
+          "type": "regime",
+          "condition": "모멘텀 국면 회복(unified_regime 확장 signal) 시 return-derived 축 재측정",
+          "monitored_source": ".cache/unified_regime_signal.parquet + macro_regime.parquet"
+        }
+      ],
+      "constraint_firewall": {
+        "mode": "backstop_passed",
+        "checked_at": "2026-07-04"
+      },
       "supporting_l_codes": [
         "L-AR-20260621_105345",
         "L-AR-20260621_105345B",
@@ -67,7 +111,7 @@
       "promoted_to_axiom": null,
       "created_at": "2026-07-04T04:09:16+00:00",
       "refined_at": null,
-      "drafted_at": "2026-07-04T19:05:19+0900",
+      "drafted_at": "2026-07-04T21:55:16+0900",
       "approved_at": null,
       "source_file": "DIST-AR-003.json"
     },
@@ -84,6 +128,9 @@
       "retry_condition": null,
       "adversarial_verdict": null,
       "expiry": null,
+      "frontier": [],
+      "live_trigger": [],
+      "constraint_firewall": null,
       "supporting_l_codes": [
         "L-AS-20260621_082546_2116",
         "L-AS-20260621_083320_75236"
@@ -111,6 +158,9 @@
       "retry_condition": null,
       "adversarial_verdict": null,
       "expiry": null,
+      "frontier": [],
+      "live_trigger": [],
+      "constraint_firewall": null,
       "supporting_l_codes": [
         "L-AS-20260602_165334",
         "L-AS-20260602_171023",
@@ -638,11 +688,32 @@
       "polarity": "conditional",
       "metric_type": "proxy",
       "status": "proposed",
-      "statement_refined": "KR alpha-search fast-validation 후보군(momentum 중심 + value/quality/defense/ML 혼재, 134 L-code, VALIDATED_HARD_FAIL)은 proxy 라벨상 grade A/B(예: CAGR 19.6%·Sharpe 0.90)로 보이나 계약 실측(essence PORT_t NW lag-3)으로 재측정하면 자본 자격 미달이다: 재측정된 41건 중 PORT_t 최대 2.52·중앙값 0.58로 자본 문턱 2.95를 통과한 건이 0건이고 essence 등급이 F/C로 붕괴하며 OOS retention이 IS 대비 -0.19로 감쇠한다. = alpha-search fast-validation의 proxy 등급/PG편입-권고 라벨은 자본 관련성의 근거가 아니다.",
+      "statement_refined": "KR alpha-search fast-validation 후보군(momentum 중심 + value/quality/defense/ML 혼재, 134 L-code, VALIDATED_HARD_FAIL)은 proxy 라벨상 grade A/B(예: CAGR 19.6%·Sharpe 0.90)로 보이나 계약 실측(essence PORT_t NW lag-3)으로 재측정하면 자본 자격 미달: 재측정된 41건 중 PORT_t 최대 2.52·중앙값 0.58로 자본 문턱 2.95를 통과한 건이 0건이고 essence 등급이 F/C로 붕괴하며 OOS retention이 IS 대비 -0.19로 감쇠. = alpha-search fast-validation의 proxy 등급/PG편입-권고 라벨은 자본 관련성의 근거가 아니다 (측정 정직성 명제 — 특정 방향/제약 귀속 아님).",
       "statement_draft": "[방법론 조건부 규칙 초안] family=momentum, tags=ALPHA_SEARCH,FAST_VALIDATION,VALIDATED_HARD_FAIL, supporting=134건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
-      "retry_condition": "(1) 후보 재측정 시 계약 실측(canonical_screen_bt / build_bt_result, PORT_t NW lag-3)로 PORT_t>=2.95를 통과하는 개별 멤버가 나오면 그 멤버 한정 재도전. (2) 2017+ 감쇠는 시간-cohort 특성이므로(BSC vol-managed WML pre-2017 t=3.56 -> post-2017 t=0.18) KR 모멘텀 알파의 최근 국면이 회복되면 재검. (3) standalone long-only가 아닌 소비 경로(overlay / multi-sleeve / DPL feature)로 재사용은 이 규칙의 대상 아님 — 게이트는 standalone 자본 자격에만 적용.",
+      "retry_condition": "(1) 후보 재측정 시 계약 실측(canonical_screen_bt / build_bt_result, PORT_t NW lag-3)로 PORT_t>=2.95를 통과하는 개별 멤버가 나오면 그 멤버 한정 재도전. (2) 2017+ 감쇠는 시간-cohort 특성이므로(BSC vol-managed WML pre-2017 t=3.56 -> post-2017 t=0.18) KR 모멘텀 알파의 최근 국면이 회복되면 재검. (3) standalone long-only가 아닌 envelope-안 소비 경로(overlay / multi-sleeve long-leg / DPL feature)로 재사용은 이 규칙의 대상 아님 — 게이트는 standalone 자본 자격에만 적용.",
       "adversarial_verdict": "CLEAN",
-      "expiry": null,
+      "expiry": "2026-10-02",
+      "frontier": [
+        "proxy 등급 상위 후보를 계약 실측(canonical_screen_bt)으로 개별 재측정 — PORT_t>=2.95 통과 멤버만 별도 승격 경로",
+        "감쇠 견디는 후보를 overlay/DPL feature로 소비 (standalone 자본 게이트 우회 아닌 다른 표현공간)",
+        "essence PORT_t와 proxy 등급의 괴리가 큰 후보군을 라벨-교정 대상으로 우선 재측정(측정 인프라 개선)"
+      ],
+      "live_trigger": [
+        {
+          "type": "regime",
+          "condition": "KR 모멘텀 최근 국면 회복(unified_regime 확장 signal) 시 41건 재측정 재개",
+          "monitored_source": ".cache/unified_regime_signal.parquet + macro_regime.parquet"
+        },
+        {
+          "type": "time",
+          "condition": "expiry 2026-10-02 도달 시 재검토",
+          "monitored_source": "distilled.R expiry sweep"
+        }
+      ],
+      "constraint_firewall": {
+        "mode": "backstop_passed",
+        "checked_at": "2026-07-04"
+      },
       "supporting_l_codes": [
         "L-AS-20260602_165334",
         "L-AS-20260602_171933",
@@ -785,7 +856,7 @@
       "promoted_to_axiom": null,
       "created_at": "2026-07-04T04:09:16+00:00",
       "refined_at": null,
-      "drafted_at": "2026-07-04T19:06:13+0900",
+      "drafted_at": "2026-07-04T21:55:16+0900",
       "approved_at": null,
       "source_file": "DIST-AS-003.json"
     },
@@ -797,11 +868,33 @@
       "polarity": "conditional",
       "metric_type": "estimated",
       "status": "proposed",
-      "statement_refined": "KR judge-gate 재검증(v3 Pass 2, metric_type=estimated) 결과, 대량 sweep/앙상블 전략이 PG 편입 자격을 세 가지 구조 사유로 반복 상실했다: (1) 재현성 — parent BASE_DIR(STR_770_phase2_cross 등) 유실로 run_all.R 재현 불가, (2) 중복 — byte-identical triplicate(STR_1060=1070=1085) 및 daily corr 0.957~0.997 near-clone family가 실질 book 비중을 배증, (3) attribution 정직성 — Def-sleeve 실측 기여 0.01pp인데 22.54pp를 Def에 오귀속(실제는 overlay 기여). 교훈: admission은 독립전략 평가가 아닌 portfolio-construction 문제이며, pairwise corr + 위기시 TDC(≤0.4) + 재현성 + 역할정직성 사전관문이 필수다. 단, 이 cluster의 기존 통과/탈락 판정에 쓰인 Harvey rank-IC t>3.0 HARD와 N>20 룰은 현행 헌법에서 각각 ADVISORY 강등·25종 상향으로 폐기/변경되어, 판정 극성은 현행 essence_score(PORT_t forge-authoritative) 재측정 전까지 미확정이다.",
+      "statement_refined": "KR judge-gate 재검증(v3 Pass 2, metric_type=estimated) 결과, 대량 sweep/앙상블 전략이 PG 편입 자격을 세 구조 사유로 반복 상실: (1) 재현성 — parent BASE_DIR(STR_770_phase2_cross 등) 유실로 run_all.R 재현 불가, (2) 중복 — byte-identical triplicate(STR_1060=1070=1085) 및 daily corr 0.957~0.997 near-clone family가 실질 book 비중을 배증, (3) attribution 정직성 — Def-sleeve 실측 기여 0.01pp인데 22.54pp를 Def에 오귀속(실제는 overlay 기여). 교훈: admission은 독립전략 평가가 아닌 portfolio-construction 문제이며, pairwise corr + 위기시 TDC(<=0.4) + 재현성 + 역할정직성 사전관문이 필수. 단 이 cluster의 기존 통과/탈락 판정에 쓰인 Harvey rank-IC t>3.0 HARD와 N>20 룰은 현행 헌법에서 각각 ADVISORY 강등·25종 상향으로 변경되어, 판정 극성은 현행 essence_score(PORT_t forge-authoritative) 재측정 전까지 미확정.",
       "statement_draft": "[실증 조건부 규칙 초안] family=value, tags=BASE_DIR_MISSING,N_OVER_20,HARVEY_T3_FAIL, supporting=9건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
-      "retry_condition": "재도전(재확증) 조건: 대표 L-149 계열 1건을 현행 essence_score(PORT_t forge-authoritative, NW lag-3) 기준으로 재판정해 polarity가 유지되는 process-rule만 promote. 판정에 쓰인 구 기기(Harvey rank-IC HARD, N>20)는 §3 ADVISORY·25종으로 폐기되었으므로 재측정 없이 재사용 금지. 재현성/중복/역할정직성 축(구 기기 비의존)은 데이터 재확보 시 그대로 유효하나, Harvey-t/N-cap 축은 재측정 필수. L-153은 MERGE-삭제 ID로 근거 제외.",
+      "retry_condition": "재도전(재확증) 조건: 대표 L-149 계열 1건을 현행 essence_score(PORT_t forge-authoritative, NW lag-3) 기준으로 재판정해 polarity가 유지되는 process-rule만 promote. 판정에 쓰인 구 기기(Harvey rank-IC HARD, N>20)는 §3 ADVISORY·25종으로 변경되었으므로 재측정 없이 재사용 금지. 재현성/중복/역할정직성 축(구 기기 비의존)은 데이터 재확보 시 그대로 유효하나, Harvey-t/N-cap 축은 재측정 필수. L-153은 MERGE-삭제 ID로 근거 제외.",
       "adversarial_verdict": "NEEDS_HUMAN",
-      "expiry": null,
+      "expiry": "2026-10-02",
+      "frontier": [
+        "admission 사전관문 3축(pairwise corr + 위기 TDC<=0.4 + 재현성/역할정직성)을 governor pg1 코드로 operationalize",
+        "byte-identical/near-clone(daily corr>0.95) family 자동 dedup 게이트 — book 비중 배증 방지",
+        "attribution 정직성 검사: sleeve 실측 기여(실제 overlay vs 명목 sleeve) 분해를 admission dossier에 필수화",
+        "L-149 계열 현행 essence_score 재측정으로 process-rule polarity 재확증"
+      ],
+      "live_trigger": [
+        {
+          "type": "time",
+          "condition": "expiry 2026-10-02 도달 시 재검토",
+          "monitored_source": "distilled.R expiry sweep"
+        },
+        {
+          "type": "data",
+          "condition": "parent BASE_DIR 데이터 재확보 시 재현성 축 재검 + essence_score 재측정",
+          "monitored_source": "06_Registry 신규 데이터원 등재(DART insider 등)"
+        }
+      ],
+      "constraint_firewall": {
+        "mode": "backstop_passed",
+        "checked_at": "2026-07-04"
+      },
       "supporting_l_codes": [
         "L-149",
         "L-150",
@@ -819,7 +912,7 @@
       "promoted_to_axiom": null,
       "created_at": "2026-07-04T04:03:45+00:00",
       "refined_at": null,
-      "drafted_at": "2026-07-04T19:05:15+0900",
+      "drafted_at": "2026-07-04T21:58:17+0900",
       "approved_at": null,
       "source_file": "DIST-JG-001.json"
     },
@@ -836,6 +929,9 @@
       "retry_condition": null,
       "adversarial_verdict": null,
       "expiry": null,
+      "frontier": [],
+      "live_trigger": [],
+      "constraint_firewall": null,
       "supporting_l_codes": [
         "L-131",
         "L-160"
@@ -858,11 +954,33 @@
       "polarity": "conditional",
       "metric_type": "estimated",
       "status": "proposed",
-      "statement_refined": "KR quality_earnings 팩터는 횡단면 IC/ICIR이 강해도(L-160 IC 0.22·ICIR 1.88·FM t 16.9, L-165 ICIR 0.74~0.94) standalone·naked long-only top-20 구성에서 MDD hard-fail로 포트폴리오 번역에 실패한다(L-137 61.9%·L-138 67.7%·L-160 67~95%·L-165 77~95%·L-166 58~67%, 다수 stress 0/3). 방어 역할은 특히 팩터타이밍/블렌딩만으로는 부족하며(L-130: 팩터 국면블렌딩 MDD 48→30% vs 포지션 오버레이 25%로 열위), multi-sleeve/오버레이 결합 구조는 본 규칙 범위 밖이다(L-141·L-165·L-166 exclusion). [metric_type=estimated — 레거시 창(flat 비용·구벤치), 미재실측]",
+      "statement_refined": "KR quality_earnings 팩터는 횡단면 IC/ICIR이 강해도(L-160 IC 0.22·ICIR 1.88·FM t 16.9, L-165 ICIR 0.74~0.94) standalone·naked long-only top-20 구성에서 MDD hard-fail로 포트폴리오 번역에 실패(L-137 61.9%·L-138 67.7%·L-160 67~95%·L-165 77~95%·L-166 58~67%, 다수 stress 0/3). 방어 역할은 특히 팩터타이밍/블렌딩만으로는 부족(L-130: 팩터 국면블렌딩 MDD 48->30% vs 포지션 오버레이 25%로 열위)하며, multi-sleeve/오버레이 결합 구조는 본 규칙 범위 밖(L-141·L-165·L-166 exclusion). = 이 envelope(naked long-only top-20) 안에서 quality_earnings 단독 번역이 MDD로 실패. [metric_type=estimated — 레거시 창(flat 비용·구벤치), 미재실측]",
       "statement_draft": "[방법론 조건부 규칙 초안] family=quality_earnings, tags=HARD_FAIL_MDD,DFA_OVERLAY,ANCHOR_INFERIOR, supporting=8건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
-      "retry_condition": "(1) v2.4 delta-cost + canonical KOSPI200 벤치 하 대표전략 canonical_screen_bt 재실측(evidence_audit_20260704 remeasure_plan) — estimated→backtested 승급 전제; (2) multi-sleeve(다sleeve/long-short long-leg) 또는 position-level 오버레이 결합 = naked long-only 한정 규칙이므로 재도전 대상; (3) IC-Return coupling gate(SR/ICIR>=0.3)+signal-direction 명확화(binary Z-flip/F-score)+sector-neutral 중 2개+ 채택 시 재실행(L-160 rev8-B 조건).",
+      "retry_condition": "(1) v2.4 delta-cost + canonical KOSPI200 벤치 하 대표전략 canonical_screen_bt 재실측(evidence_audit_20260704 remeasure_plan) — estimated->backtested 승급 전제; (2) multi-sleeve long-leg 편입 또는 position-level 오버레이 결합 = naked long-only 한정 규칙 밖이므로 재도전 대상(long-short 논문 차용 시 long leg만, 공매도 out-of-envelope); (3) IC-Return coupling gate(SR/ICIR>=0.3)+signal-direction 명확화(binary Z-flip/F-score)+sector-neutral 중 2개+ 채택 시 재실행(L-160 rev8-B 조건).",
       "adversarial_verdict": "CLEAN",
-      "expiry": null,
+      "expiry": "2026-10-02",
+      "frontier": [
+        "position-level regime overlay 결합 — 팩터-국면블렌딩(MDD 48->30%)보다 우월한 포지션 오버레이(25%)로 MDD 번역",
+        "multi-sleeve long-leg 편입 (naked standalone 아님) — quality_earnings를 core sleeve 보조 성분으로",
+        "IC-Return coupling gate + binary Z-flip/F-score signal-direction + sector-neutral 중 2+ 결합(L-160 rev8-B)",
+        "v2.4 delta-cost + canonical 벤치 재실측으로 estimated->backtested 승급 후 MDD structural 재판정(§3 drawdown 계층)"
+      ],
+      "live_trigger": [
+        {
+          "type": "regime",
+          "condition": "고변동/CRISIS 국면 진입 시 position overlay 결합 변형 우선 재검(MDD 번역 레버)",
+          "monitored_source": ".cache/unified_regime_signal.parquet + macro_regime.parquet"
+        },
+        {
+          "type": "time",
+          "condition": "expiry 2026-10-02 도달 시 재검토",
+          "monitored_source": "distilled.R expiry sweep"
+        }
+      ],
+      "constraint_firewall": {
+        "mode": "backstop_passed",
+        "checked_at": "2026-07-04"
+      },
       "supporting_l_codes": [
         "L-130",
         "L-137",
@@ -879,7 +997,7 @@
       "promoted_to_axiom": null,
       "created_at": "2026-07-04T04:03:45+00:00",
       "refined_at": null,
-      "drafted_at": "2026-07-04T19:05:23+0900",
+      "drafted_at": "2026-07-04T21:58:17+0900",
       "approved_at": null,
       "source_file": "DIST-QPM-002.json"
     },
@@ -891,11 +1009,33 @@
       "polarity": "negative",
       "metric_type": "estimated",
       "status": "proposed",
-      "statement_refined": "KR quality_profitability 단독/단순-composite long-only는 estimated 성과 기준 반복 실패 — supporting 4전략 모두 OOS에서 alpha 소멸(profitability fortress OOS retention 0.24·recent-3Y SR 0.135, growth-stability composite retention -0.001, cash-based profitability SR -0.232·MDD 94%, low-beta BAB retention -0.35~-0.02). 메커니즘: 2020년대 성장주 outperformance로 profitability/low-beta 프리미엄 구조적 약화 + KR DART 현금흐름 데이터 품질 저하. estimated 라벨 — canonical/backtested 재측정 아님.",
+      "statement_refined": "KR quality_profitability 단독/단순-composite long-only는 estimated 성과 기준 반복 실패 — supporting 4전략 모두 OOS에서 alpha 소멸(profitability fortress OOS retention 0.24·recent-3Y SR 0.135, growth-stability composite retention -0.001, cash-based profitability SR -0.232·MDD 94%, low-beta BAB retention -0.35~-0.02). 메커니즘: 2020년대 성장주 outperformance로 profitability/low-beta 프리미엄 구조적 약화 + KR DART 현금흐름 데이터 품질 저하. estimated 라벨 — canonical/backtested 재측정 아님. = 이 envelope 안에서 quality_profitability 단독/단순-composite 경로가 이 국면(2020년대 성장주 우위)에 약함.",
       "statement_draft": "[방법론 실패 규칙 초안] family=quality_profitability, tags=HARD_FAIL_MDD,QUALITY_FAIL,OOS_COLLAPSE, supporting=4건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
-      "retry_condition": "재도전 대상(INV-7 provisional). 재시도 자격: (a) single-signal이 아닌 multi-axis quality composite를 multi-sleeve 내 성분(예: Q07)으로 배치 — AX-004 EXCLUSION 경로 / (b) profitability 프리미엄 reversion을 뒷받침하는 신규 데이터원 또는 국면조건(value/quality spread reversion 실측) / (c) estimated가 아닌 canonical_screen/backtested 재측정으로 supporting 결론 재확인. 차별점 명시 + IS-only 선택 protocol 없이는 재시도 금지.",
+      "retry_condition": "재도전 대상(INV-7 provisional). 재시도 자격: (a) single-signal이 아닌 multi-axis quality composite를 multi-sleeve 내 성분(예: Q07)으로 배치 — AX-004 EXCLUSION 경로 / (b) profitability 프리미엄 reversion을 뒷받침하는 신규 비-return 데이터원 또는 국면조건(value/quality spread reversion 실측) / (c) estimated가 아닌 canonical_screen/backtested 재측정으로 supporting 결론 재확인. 차별점 명시 + IS-only 선택 protocol 없이는 재시도 금지.",
       "adversarial_verdict": "CLEAN",
-      "expiry": null,
+      "expiry": "2026-10-02",
+      "frontier": [
+        "multi-axis quality composite를 multi-sleeve 성분(Q07)으로 배치 — AX-004 EXCLUSION 경로",
+        "value/quality spread reversion 국면조건부 activation — 성장주 우위 국면 역전 시 profitability 프리미엄 재부상 포착",
+        "profitability reversion을 뒷받침하는 신규 비-return 데이터원(DART 현금흐름 품질 보정)",
+        "canonical_screen/backtested 재측정으로 estimated 결론 재확인(라벨 승급)"
+      ],
+      "live_trigger": [
+        {
+          "type": "spread",
+          "condition": "value/quality spread 극단 백분위(reversion 신호) 도달 시 profitability 프리미엄 재부상 재검",
+          "monitored_source": ".cache/conditional_ic_matrix.csv (value/quality spread 백분위)"
+        },
+        {
+          "type": "regime",
+          "condition": "성장주 우위 국면(2020년대) 반전 signal 시 재측정",
+          "monitored_source": ".cache/unified_regime_signal.parquet + macro_regime.parquet"
+        }
+      ],
+      "constraint_firewall": {
+        "mode": "backstop_passed",
+        "checked_at": "2026-07-04"
+      },
       "supporting_l_codes": [
         "L-133",
         "L-134",
@@ -908,7 +1048,7 @@
       "promoted_to_axiom": null,
       "created_at": "2026-07-04T04:03:45+00:00",
       "refined_at": null,
-      "drafted_at": "2026-07-04T19:05:27+0900",
+      "drafted_at": "2026-07-04T21:58:17+0900",
       "approved_at": null,
       "source_file": "DIST-QPM-003.json"
     },
@@ -920,11 +1060,33 @@
       "polarity": "negative",
       "metric_type": "estimated",
       "status": "proposed",
-      "statement_refined": "KR 개인투자자 순매수 contrarian(역발상) 단일팩터 long-only 신호는 알파 부재 (L-131/STR_1674 estimated: SR 0.157·MDD 65.6%·IR -0.283). 미국 retail-contrarian(Barber 2009) 효과가 한국의 높은 개인 비중(30%+)·약한 정보비대칭으로 미이전. '외국인-개인 divergence' 재구성도 탈출구가 아님 — 수식상 -z_individual 항을 공유해 원 신호와 cross-sectional 상관 0.897(L-160A/H_1685 algebraic identity)인 hidden clone. [근거 정직라벨: L-131 metric_type=estimated 레거시 창, n=1 · L-160A는 성과실패 아닌 process/수리 명제]",
+      "statement_refined": "KR 개인투자자 순매수 contrarian(역발상) 단일팩터 long-only 신호는 알파 부재 (L-131/STR_1674 estimated: SR 0.157·MDD 65.6%·IR -0.283). 미국 retail-contrarian(Barber 2009) 효과가 한국의 높은 개인 비중(30%+)·약한 정보비대칭으로 미이전. 외국인-개인 divergence 재구성도 탈출구가 아님 — 수식상 -z_individual 항을 공유해 원 신호와 cross-sectional 상관 0.897(L-160A/H_1685 algebraic identity)인 hidden clone. = 이 envelope 안에서 개인-flow 파생 단일팩터 경로가 알파 부재 + 재구성 변형도 대수적 clone. [근거 정직라벨: L-131 metric_type=estimated 레거시 창, n=1 · L-160A는 성과실패 아닌 process/수리 명제]",
       "statement_draft": "[실증 실패 규칙 초안] family=behavioral, tags=BEHAVIORAL_FAIL,CONTRARIAN_FLOW,KOREAN_MARKET_LIMIT, supporting=2건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
-      "retry_condition": "재도전 대상(INV-7 provisional): (1) contrarian을 legacy estimated 단일팩터 long-only가 아닌 실측(canonical_screen_bt/build_bt_result) + multi-sleeve 또는 long-short leg로 재측정, (2) 개인-flow(-z_individual)와 algebraic 공유 항이 없는 진짜 독립 정보원(예: DART insider, 외국인/기관 flow를 -z_individual 차분이 아닌 독립 측정)으로 재설계 — L-160A 사전 algebraic decomposition 체크 통과 필수, (3) horizon/국면 조건부(3MA 외 다른 lag·regime) 변형. 미충족 + 차별점 명시 없이는 재시도 금지(단, 불변 기각 아님).",
+      "retry_condition": "재도전 대상(INV-7 provisional): (1) contrarian을 legacy estimated 단일팩터 long-only가 아닌 실측(canonical_screen_bt/build_bt_result) + multi-sleeve long-leg로 재측정(long-short 차용 시 long leg만, 공매도 out-of-envelope), (2) 개인-flow(-z_individual)와 algebraic 공유 항이 없는 진짜 독립 비-return 정보원(예: DART insider, 외국인/기관 flow를 -z_individual 차분이 아닌 독립 측정)으로 재설계 — L-160A 사전 algebraic decomposition 체크 통과 필수, (3) horizon/국면 조건부(3MA 외 다른 lag·regime) 변형. 미충족 + 차별점 명시 없이는 재시도 금지(단, 불변 기각 아님).",
       "adversarial_verdict": "CLEAN",
-      "expiry": null,
+      "expiry": "2026-10-02",
+      "frontier": [
+        "DART insider 등 개인-flow와 algebraic 독립인 진짜 신규 비-return 정보원으로 재설계 (registry 0건 신규 원천)",
+        "외국인/기관 flow를 -z_individual 차분이 아닌 독립 측정으로 구성(hidden-clone 회피, L-160A decomposition 사전체크)",
+        "horizon/regime 조건부 변형(3MA 외 lag·국면조건부 activation)",
+        "multi-sleeve long-leg 편입 + canonical_screen 실측 재측정(estimated->backtested)"
+      ],
+      "live_trigger": [
+        {
+          "type": "data",
+          "condition": "DART insider 등 개인-flow 독립 비-return 데이터원 등재 시 재설계 재도전",
+          "monitored_source": "06_Registry 신규 데이터원 등재(DART insider 등)"
+        },
+        {
+          "type": "time",
+          "condition": "expiry 2026-10-02 도달 시 재검토",
+          "monitored_source": "distilled.R expiry sweep"
+        }
+      ],
+      "constraint_firewall": {
+        "mode": "backstop_passed",
+        "checked_at": "2026-07-04"
+      },
       "supporting_l_codes": [
         "L-131",
         "L-160A"
@@ -935,7 +1097,7 @@
       "promoted_to_axiom": null,
       "created_at": "2026-07-04T04:09:16+00:00",
       "refined_at": null,
-      "drafted_at": "2026-07-04T19:05:20+0900",
+      "drafted_at": "2026-07-04T21:58:17+0900",
       "approved_at": null,
       "source_file": "DIST-QPM-005.json"
     },
@@ -947,11 +1109,33 @@
       "polarity": "conditional",
       "metric_type": "estimated",
       "status": "proposed",
-      "statement_refined": "KR value/quality 팩터의 single-signal long-only 구현은 실패한다 — EP 단독(L-132: V02 CAGR -1.71%/SR -0.265, turnover 3.3%로 rebalancing alpha 부재, 저PER 가치함정)과 sector-neutral accrual(L-135: OOS retention 0.12·MDD 64.7%, 섹터중립이 오히려 alpha 희석)이 각각 backtested/estimated Grade F. 메커니즘: KR value premium 약화 + 단일 팩터가 cross-sectional ranking power를 long-only top-N으로 전이 못함. value/accrual 신호는 composite/multi-sleeve 내 보조 팩터로만 유효하다.",
+      "statement_refined": "KR value/quality 팩터의 single-signal long-only 구현은 실패 — EP 단독(L-132: V02 CAGR -1.71%/SR -0.265, turnover 3.3%로 rebalancing alpha 부재, 저PER 가치함정)과 sector-neutral accrual(L-135: OOS retention 0.12·MDD 64.7%, 섹터중립이 오히려 alpha 희석)이 각각 backtested/estimated Grade F. 메커니즘: KR value premium 약화 + 단일 팩터가 cross-sectional ranking power를 long-only top-N으로 전이 못함. = 이 envelope 안에서 value/accrual single-signal 경로가 이 국면에 약함 — composite/multi-sleeve 내 보조 팩터로만 유효.",
       "statement_draft": "[방법론 조건부 규칙 초안] family=value, tags=VALUE_FAIL,CATALOG_INTEGRITY,QEPM, supporting=9건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
-      "retry_condition": "① value spread mean-reversion 실측(현재 사상 최대 spread, reversion 미검증 — reference-kr-value-factor-decay) ② composite/multi-sleeve 내 편입(standalone 아닌) ③ long-short 또는 신규 직교 데이터원으로 EP/accrual 신호 재구성. INV-7 provisional: 위 차별점 명시 없이 KR value single-signal long-only 재시도 금지.",
+      "retry_condition": "① value spread mean-reversion 실측(현재 사상 최대 spread, reversion 미검증 — reference-kr-value-factor-decay) ② composite/multi-sleeve long-leg 내 편입(standalone 아닌) ③ 신규 직교 비-return 데이터원으로 EP/accrual 신호 재구성 (long-short는 out-of-envelope — 공매도 제약축). INV-7 provisional: 위 차별점 명시 없이 KR value single-signal long-only 재시도 금지.",
       "adversarial_verdict": "CLEAN",
-      "expiry": null,
+      "expiry": "2026-10-02",
+      "frontier": [
+        "value spread mean-reversion 실측 — 현재 사상 최대 spread에서 reversion 트리거 시 value activation",
+        "composite/multi-sleeve long-leg 내 value/accrual 보조 성분 편입(standalone 아님)",
+        "신규 직교 비-return 데이터원으로 EP/accrual 재구성(단일 팩터 ranking power 전이 실패 회피)",
+        "regime-conditional value — value 프리미엄 회복 국면에서만 weight 강화"
+      ],
+      "live_trigger": [
+        {
+          "type": "spread",
+          "condition": "value spread 극단 백분위(사상 최대 근처 reversion 신호) 도달 시 value activation 재검 — reference-kr-value-factor-decay",
+          "monitored_source": ".cache/conditional_ic_matrix.csv (value/quality spread 백분위)"
+        },
+        {
+          "type": "regime",
+          "condition": "value 프리미엄 회복 국면 signal 시 재측정",
+          "monitored_source": ".cache/unified_regime_signal.parquet + macro_regime.parquet"
+        }
+      ],
+      "constraint_firewall": {
+        "mode": "backstop_passed",
+        "checked_at": "2026-07-04"
+      },
       "supporting_l_codes": [
         "L-132",
         "L-135",
@@ -969,7 +1153,7 @@
       "promoted_to_axiom": null,
       "created_at": "2026-07-04T04:09:16+00:00",
       "refined_at": null,
-      "drafted_at": "2026-07-04T19:04:46+0900",
+      "drafted_at": "2026-07-04T21:58:17+0900",
       "approved_at": null,
       "source_file": "DIST-QPM-006.json"
     },
@@ -986,6 +1170,9 @@
       "retry_condition": null,
       "adversarial_verdict": null,
       "expiry": null,
+      "frontier": [],
+      "live_trigger": [],
+      "constraint_firewall": null,
       "supporting_l_codes": [
         "L-RAMP-20260618_131316",
         "L-RAMP-20260618_131800",
@@ -1015,6 +1202,9 @@
       "retry_condition": null,
       "adversarial_verdict": null,
       "expiry": null,
+      "frontier": [],
+      "live_trigger": [],
+      "constraint_firewall": null,
       "supporting_l_codes": [
         "L-RAMP-20260619_132312",
         "L-RAMP-20260619_141402",
@@ -1043,11 +1233,33 @@
       "polarity": "conditional",
       "metric_type": "backtested",
       "status": "proposed",
-      "statement_refined": "KR RAMP 국면조건부 팩터배합에서 국면가중은 경제 선험룰이 아니라 데이터-구동 소프트 멤버십이어야 유효하다(순진한 CRISIS 방어군 증액 고정룰 net_sr -0.151<-0.037 역효과 / Absorption Ratio soft 3-state 배선 pt_capwt 1.81->2.49 / AR+MSM 분기 pt 2.73 / Shu-Mulvey SJM+BL placebo real IR 1.30 vs -0.31 p<0.001로 타이밍 알파 실재). 단 이 실재 알파는 자본 졸업에 미달한다: 최선 변형도 oos_retention이 2017+ cohort decay로 0.7 미만(AR+MSM -0.02, Shu-Mulvey 0.31/0.42)이고 long-only beta~1 구조적 MDD로 calmar<0.64라, HARD 3종 동시 통과가 안 되는 screen-tier 지식이다(Shu-Mulvey만 pt2.95+calmar0.64 2종 통과, oos만 미달).",
+      "statement_refined": "KR RAMP 국면조건부 팩터배합에서 국면가중은 경제 선험룰이 아니라 데이터-구동 소프트 멤버십이어야 유효하다(순진한 CRISIS 방어군 증액 고정룰 net_sr -0.151<-0.037 역효과 / Absorption Ratio soft 3-state 배선 pt_capwt 1.81->2.49 / AR+MSM 분기 pt 2.73 / Shu-Mulvey SJM+BL placebo real IR 1.30 vs -0.31 p<0.001로 타이밍 알파 실재). 단 이 실재 알파는 자본 졸업에 미달: 최선 변형도 oos_retention이 2017+ cohort decay로 0.7 미만(AR+MSM -0.02, Shu-Mulvey 0.31/0.42)이고 long-only beta~1 구조적 MDD로 calmar<0.64라, HARD 3종 동시 통과가 안 되는 screen-tier 지식(Shu-Mulvey만 pt2.95+calmar0.64 2종 통과, oos만 미달). = 이 envelope 안에서 데이터-구동 국면가중은 타이밍 알파가 실재하나 2017+ decay가 자본 졸업을 막는다.",
       "statement_draft": "[방법론 조건부 규칙 초안] family=overlay_regime, tags=R,A,M, supporting=13건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
-      "retry_condition": "① 2017+ cohort decay를 상쇄하는 신규 정보원/윈도우 확장(예: full-cycle 2005~ 재측정으로 위기빈도 확보 — L-RAMP-20260618_134000 창의존 명시) 또는 오버레이 허용 체제(RAMP 밖 다sleeve/book)에서 재도전, ② 신규 데이터-구동 국면축(AR/SJM 외)이 기존과 직교하며 oos_retention>=0.7을 붙일 때. 역가설(kr-inverse-pattern-miner) 미실측 — 재도전 시 falsification 축 보강 필요. INV-7 provisional: 차별점 명시 없인 동일 국면-틸트 재시도 금지.",
+      "retry_condition": "① 2017+ cohort decay를 상쇄하는 신규 비-return 정보원/윈도우 확장(예: full-cycle 2005~ 재측정으로 위기빈도 확보 — L-RAMP-20260618_134000 창의존 명시) 또는 오버레이 허용 체제(RAMP 밖 다sleeve/book overlay)에서 재도전, ② 신규 데이터-구동 국면축(AR/SJM 외)이 기존과 직교하며 oos_retention>=0.7을 붙일 때. 역가설(kr-inverse-pattern-miner) 미실측 — 재도전 시 falsification 축 보강 필요. INV-7 provisional: 차별점 명시 없인 동일 국면-틸트 재시도 금지.",
       "adversarial_verdict": "CLEAN",
-      "expiry": null,
+      "expiry": "2026-10-02",
+      "frontier": [
+        "full-cycle 2005~ 재측정으로 위기빈도 확보 — 2017+ decay가 cohort-특성인지 구조인지 분리",
+        "AR/SJM와 직교하는 신규 데이터-구동 국면축 발굴 (oos_retention>=0.7 붙일 새 regime signal)",
+        "RAMP 밖 book overlay 체제에서 데이터-구동 국면가중 재도전 (multi-sleeve book 소비)",
+        "역가설(kr-inverse-pattern-miner) 실측으로 falsification 축 보강 — 국면-틸트 방향 검증"
+      ],
+      "live_trigger": [
+        {
+          "type": "regime",
+          "condition": "신규 CRISIS 에피소드 발생 시 full-cycle 위기빈도 갱신 — 2017+ decay vs 구조 분리 재측정",
+          "monitored_source": ".cache/unified_regime_signal.parquet + macro_regime.parquet"
+        },
+        {
+          "type": "data",
+          "condition": "AR/SJM 외 신규 국면 데이터원 등재 시 직교 국면축 재도전",
+          "monitored_source": "06_Registry 신규 데이터원 등재(DART insider 등)"
+        }
+      ],
+      "constraint_firewall": {
+        "mode": "backstop_passed",
+        "checked_at": "2026-07-04"
+      },
       "supporting_l_codes": [
         "L-RAMP-20260618_131316",
         "L-RAMP-20260618_134000",
@@ -1069,7 +1281,7 @@
       "promoted_to_axiom": null,
       "created_at": "2026-07-04T04:03:45+00:00",
       "refined_at": null,
-      "drafted_at": "2026-07-04T19:08:00+0900",
+      "drafted_at": "2026-07-04T22:01:02+0900",
       "approved_at": null,
       "source_file": "DIST-RAMP-003.json"
     },
@@ -1086,6 +1298,9 @@
       "retry_condition": null,
       "adversarial_verdict": null,
       "expiry": null,
+      "frontier": [],
+      "live_trigger": [],
+      "constraint_firewall": null,
       "supporting_l_codes": [
         "L-RAMP-20260618_131316",
         "L-RAMP-20260619_140656",
@@ -1115,11 +1330,32 @@
       "polarity": "positive",
       "metric_type": "backtested",
       "status": "proposed",
-      "statement_refined": "RAMP infra/process: 11개 저상관(pairwise cor 0.11) 직교 약신호군을 EW로 조합하고 회전제어(13.1→7.8x)를 걸면, 개별군이 전부 음의 net_sr(-0.18~-0.85)여도 조합 long-only net_sr이 +0.083(port_t +0.21)로 break-even을 넘는다 — 직교군 분산효익 실증. 단 이 조합은 자본 졸업이 아니다: graduation 최선(M_regdd)이 port_t 3.66이나 oos_retention 0.15·calmar 0.37로 HARD 게이트(0.7/0.64) 미달 — screen-tier 확정.",
+      "statement_refined": "RAMP infra/process: 11개 저상관(pairwise cor 0.11) 직교 약신호군을 EW로 조합하고 회전제어(13.1->7.8x)를 걸면, 개별군이 전부 음의 net_sr(-0.18~-0.85)여도 조합 long-only net_sr이 +0.083(port_t +0.21)로 break-even을 넘는다 — 직교군 분산효익 실증(모두 25종 long-only envelope 안 EW 조합). 단 이 조합은 자본 졸업이 아니다: graduation 최선(M_regdd)이 port_t 3.66이나 oos_retention 0.15·calmar 0.37로 HARD 게이트(0.7/0.64) 미달 — screen-tier 확정.",
       "statement_draft": "[실증 성공 규칙 초안] family=infra_process, tags=R,A,M, supporting=3건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
-      "retry_condition": "process 규칙(직교조합+회전제어가 음→양 전환)은 실증 확립분이라 재도전 아님(도구로 재사용). 자본 졸업 재도전 조건: 조합 M-code의 oos_retention(현 0.15)이 신규 국면가중·데이터원·다sleeve 스태킹으로 0.7 이상(또는 band 0.5~0.7 + 보강증거 2/3), calmar(현 0.37)가 0.64 이상에 도달할 때만. 현 M_regdd/M0 조합은 이 두 HARD 미달을 우회하는 차별점 명시 없인 동일 M-code 졸업 재시도 금지.",
+      "retry_condition": "process 규칙(직교조합+회전제어가 음->양 전환)은 실증 확립분이라 재도전 아님(envelope-안 도구로 재사용). 자본 졸업 재도전 조건: 조합 M-code의 oos_retention(현 0.15)이 신규 국면가중·비-return 데이터원·다sleeve 스태킹으로 0.7 이상(또는 band 0.5~0.7 + 보강증거 2/3), calmar(현 0.37)가 0.64 이상에 도달할 때만. 현 M_regdd/M0 조합은 이 두 HARD 미달을 우회하는 차별점 명시 없인 동일 M-code 졸업 재시도 금지.",
       "adversarial_verdict": "REVISED",
-      "expiry": null,
+      "expiry": "2026-10-02",
+      "frontier": [
+        "직교조합+회전제어 도구를 새 M-code 군에 재적용(process 확립분 재사용) — envelope-안 잔차-직교 sleeve 스태킹 실현 경로",
+        "oos_retention(0.15) 개선: 신규 국면가중·비-return 데이터원·다sleeve 스태킹으로 2017+ decay 상쇄",
+        "calmar(0.37) 개선: regime overlay 결합으로 MDD 번역 (직교 조합에 하락국면 디리스크 얹기)"
+      ],
+      "live_trigger": [
+        {
+          "type": "data",
+          "condition": "신규 저상관 약신호군(비-return) 등재 시 직교조합 도구 재적용",
+          "monitored_source": "06_Registry 신규 데이터원 등재(DART insider 등)"
+        },
+        {
+          "type": "time",
+          "condition": "expiry 2026-10-02 도달 시 재검토",
+          "monitored_source": "distilled.R expiry sweep"
+        }
+      ],
+      "constraint_firewall": {
+        "mode": "backstop_passed",
+        "checked_at": "2026-07-04"
+      },
       "supporting_l_codes": [
         "L-RAMP-20260618_131316C",
         "L-RAMP-20260618_131800",
@@ -1131,7 +1367,7 @@
       "promoted_to_axiom": null,
       "created_at": "2026-07-04T04:09:16+00:00",
       "refined_at": null,
-      "drafted_at": "2026-07-04T19:06:09+0900",
+      "drafted_at": "2026-07-04T22:01:02+0900",
       "approved_at": null,
       "source_file": "DIST-RAMP-005.json"
     },
@@ -1143,11 +1379,34 @@
       "polarity": "conditional",
       "metric_type": "backtested",
       "status": "proposed",
-      "statement_refined": "KR 시장에서 value/국면-조건부 팩터배분은 배포 제약(25종목 long-only)에서 실현 PORT_t 천장이 ~2.85로, 모든 regime 변형(AR+MSM 2.73·Cascade 2.85·Shu-Mulvey 그룹 0.83)이 이 이하다 — 이는 국면엔진 한계가 아니라 알파 자체 한계(2017+ cohort decay로 OOS 음수 도처 + long-only β≈0.99 시장성분 불가피). 졸업 수준(pt 2.95+)은 Shu-Mulvey 인덱스/ETF-배분 형태(인과 워크포워드 pt_capwt 7.72·oos 0.54밴드 3/3, 단 MINY=5 GFC-훈련 의존·cap-w 5bps vs KR 15bps idealized)에서만 도달하며, 25종목 종목선택으로 전이하면 엣지 소멸(4접근 전부 음수 PORT_t) — 천장-초과 유일 레버는 overlay-on-tuned-base다.",
+      "statement_refined": "KR 시장에서 value/국면-조건부 팩터배분은 배포 envelope(25종 long-only)에서 실현 PORT_t 천장이 ~2.85로, 모든 regime 변형(AR+MSM 2.73·Cascade 2.85·Shu-Mulvey 그룹 0.83)이 이 이하다 — 이는 국면엔진 한계가 아니라 알파 자체 한계(2017+ cohort decay로 OOS 음수 도처 + long-only β≈0.99 시장성분 불가피). 졸업 수준(pt 2.95+)은 Shu-Mulvey 인덱스/ETF-배분 형태(인과 워크포워드 pt_capwt 7.72·oos 0.54밴드 3/3, 단 MINY=5 GFC-훈련 의존·cap-w 5bps vs KR 15bps idealized)에서만 도달하며, 25종 종목선택으로 전이하면 엣지 소멸(4접근 전부 음수 PORT_t). = 이 envelope 안에서 천장-초과 유일 레버는 overlay-on-tuned-base다 (잔차-직교 sleeve 스태킹·DPL은 envelope-안 후속 레버 — 미검증).",
       "statement_draft": "[실증 조건부 규칙 초안] family=value, tags=R,A,M, supporting=9건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
-      "retry_condition": "재도전 대상: (1) >25종목 분산 허용 시 — 직교성이 active(−BM) basis에 실재하므로(core↔def 0.45) 종목수 확대가 decorrelation 실현 경로일 수 있음. (2) 2017+ decay를 견디는 신규 알파원 확보 시 — 비-return 정보원·ML 종목스코어(xgb/lgbm 팩터패널)·DPL end-to-end 25종목 net Sharpe 직접최적화. 금지: 인덱스-배분 졸업수치(pt 7.72)를 25종목 배포로 재시도(L-RAMP-20260619_173504 전이소멸 실증) — MINY=5 GFC-훈련 의존·cap-w 5bps idealized라는 차별점 해소 없이는 재도전 불가(INV-7).",
+      "retry_condition": "재도전 대상(전부 envelope-안): (1) active(−BM) basis 잔차 직교가 실재하므로(core↔def 0.45), 25종 envelope 안에서 잔차-직교 sleeve 스태킹으로 decorrelation을 실현하고 PORT_t 통과분만 book 기여시키는 경로 — decorrelation은 봉투 안 잔차 sleeve로 실현하는 것(제약 밖 out-of-scope 아님). (2) 2017+ decay를 견디는 신규 알파원 확보 — 비-return 정보원·ML 종목스코어(xgb/lgbm 팩터패널)·DPL end-to-end 25종 net Sharpe 직접최적화. 금지: 인덱스-배분 졸업수치(pt 7.72)를 25종 배포로 재시도(L-RAMP-20260619_173504 전이소멸 실증) — MINY=5 GFC-훈련 의존·cap-w 5bps idealized라는 차별점 해소 없이는 재도전 불가(INV-7).",
       "adversarial_verdict": "CLEAN",
-      "expiry": null,
+      "expiry": "2026-10-02",
+      "frontier": [
+        "25종 envelope 안 잔차-직교 sleeve 스태킹으로 active-basis decorrelation 실현 (PORT_t 통과분만 book 기여)",
+        "DPL end-to-end 25종 net Sharpe 직접최적화 — 국면배분 엣지를 종목선택 전이손실 없이 학습",
+        "ML 종목스코어(xgb/lgbm 팩터패널)로 2017+ decay 견디는 비선형 재조합",
+        "비-return 정보원으로 value/국면 신호 보강 (return-derived cohort decay 회피)",
+        "overlay-on-tuned-base 재튜닝 — 천장-초과 실증 레버(유일한 long-only β 레버)"
+      ],
+      "live_trigger": [
+        {
+          "type": "regime",
+          "condition": "value/국면 알파 최근 국면 회복(unified_regime signal) 시 25종 배분 재측정",
+          "monitored_source": ".cache/unified_regime_signal.parquet + macro_regime.parquet"
+        },
+        {
+          "type": "data",
+          "condition": "비-return 정보원 또는 ML 팩터패널 신규 등재 시 2017+ decay 상쇄 재도전",
+          "monitored_source": "06_Registry 신규 데이터원 등재(DART insider 등)"
+        }
+      ],
+      "constraint_firewall": {
+        "mode": "backstop_passed",
+        "checked_at": "2026-07-04"
+      },
       "supporting_l_codes": [
         "L-RAMP-20260618_131316B",
         "L-RAMP-20260619_140656",
@@ -1165,7 +1424,7 @@
       "promoted_to_axiom": null,
       "created_at": "2026-07-04T04:09:16+00:00",
       "refined_at": null,
-      "drafted_at": "2026-07-04T19:05:55+0900",
+      "drafted_at": "2026-07-04T22:01:03+0900",
       "approved_at": null,
       "source_file": "DIST-RAMP-006.json"
     }

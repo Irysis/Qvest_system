@@ -4,8 +4,8 @@
   "cluster_key": "83829f9f7b50",
   "candidate_id": "CAND_20260704_qepm_legacy_value_conditional_L-132_L-135_L-142",
   "status": "proposed",
-  "statement_refined": "KR value/quality 팩터의 single-signal long-only 구현은 실패한다 — EP 단독(L-132: V02 CAGR -1.71%/SR -0.265, turnover 3.3%로 rebalancing alpha 부재, 저PER 가치함정)과 sector-neutral accrual(L-135: OOS retention 0.12·MDD 64.7%, 섹터중립이 오히려 alpha 희석)이 각각 backtested/estimated Grade F. 메커니즘: KR value premium 약화 + 단일 팩터가 cross-sectional ranking power를 long-only top-N으로 전이 못함. value/accrual 신호는 composite/multi-sleeve 내 보조 팩터로만 유효하다.",
-  "retry_condition": "① value spread mean-reversion 실측(현재 사상 최대 spread, reversion 미검증 — reference-kr-value-factor-decay) ② composite/multi-sleeve 내 편입(standalone 아닌) ③ long-short 또는 신규 직교 데이터원으로 EP/accrual 신호 재구성. INV-7 provisional: 위 차별점 명시 없이 KR value single-signal long-only 재시도 금지.",
+  "statement_refined": "KR value/quality 팩터의 single-signal long-only 구현은 실패 — EP 단독(L-132: V02 CAGR -1.71%/SR -0.265, turnover 3.3%로 rebalancing alpha 부재, 저PER 가치함정)과 sector-neutral accrual(L-135: OOS retention 0.12·MDD 64.7%, 섹터중립이 오히려 alpha 희석)이 각각 backtested/estimated Grade F. 메커니즘: KR value premium 약화 + 단일 팩터가 cross-sectional ranking power를 long-only top-N으로 전이 못함. = 이 envelope 안에서 value/accrual single-signal 경로가 이 국면에 약함 — composite/multi-sleeve 내 보조 팩터로만 유효.",
+  "retry_condition": "① value spread mean-reversion 실측(현재 사상 최대 spread, reversion 미검증 — reference-kr-value-factor-decay) ② composite/multi-sleeve long-leg 내 편입(standalone 아닌) ③ 신규 직교 비-return 데이터원으로 EP/accrual 신호 재구성 (long-short는 out-of-envelope — 공매도 제약축). INV-7 provisional: 위 차별점 명시 없이 KR value single-signal long-only 재시도 금지.",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
@@ -86,6 +86,29 @@
     "report": "04_Research/01_reports/knowledge_provenance_audit_20260704.md"
   },
   "adversarial_verdict": "CLEAN",
-  "drafted_at": "2026-07-04T19:04:46+0900",
-  "drafted_by": "auto_inv6_agent"
+  "drafted_at": "2026-07-04T21:58:17+0900",
+  "drafted_by": "audit_groupH_20260704",
+  "expiry": "2026-10-02",
+  "frontier": [
+    "value spread mean-reversion 실측 — 현재 사상 최대 spread에서 reversion 트리거 시 value activation",
+    "composite/multi-sleeve long-leg 내 value/accrual 보조 성분 편입(standalone 아님)",
+    "신규 직교 비-return 데이터원으로 EP/accrual 재구성(단일 팩터 ranking power 전이 실패 회피)",
+    "regime-conditional value — value 프리미엄 회복 국면에서만 weight 강화"
+  ],
+  "live_trigger": [
+    {
+      "type": "spread",
+      "condition": "value spread 극단 백분위(사상 최대 근처 reversion 신호) 도달 시 value activation 재검 — reference-kr-value-factor-decay",
+      "monitored_source": ".cache/conditional_ic_matrix.csv (value/quality spread 백분위)"
+    },
+    {
+      "type": "regime",
+      "condition": "value 프리미엄 회복 국면 signal 시 재측정",
+      "monitored_source": ".cache/unified_regime_signal.parquet + macro_regime.parquet"
+    }
+  ],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-07-04"
+  }
 }
