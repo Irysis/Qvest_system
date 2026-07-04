@@ -65,6 +65,13 @@ emit_lcode <- function(mode, strategy_id, grade, lesson_text,
             Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
   schema_src <- file.path(root, "02_Infrastructure", "axiom", "lcode_schema.R")
   if (file.exists(schema_src)) source(schema_src, local = TRUE)
+  # P0#5 emit 방화벽 backstop (그룹 F3): 제약-귀속/완화-레버 위반이 원장에 오염표식 없이
+  # 유입되던 갭 배선. constraint_firewall.R는 그룹 밖 — source만. backstop 모드(결정론
+  # 1차 필터, 비-소진적)로 lesson_text/mechanism_hypothesis/next_probe를 검사. ★emit은
+  # 막지 않는다(원장 정직 기록 유지) — firewall_violation=TRUE 플래그 + WARN만 부착해
+  # 원시 조회에도 오염 표식이 따라가게 한다.
+  fw_src <- file.path(root, "02_Infrastructure", "axiom", "constraint_firewall.R")
+  if (file.exists(fw_src)) source(fw_src, local = TRUE)
 
   # back-compat: 1급 인자 미전달 + metrics 자유목록에 있으면 승격 (1급 인자가 우선)
   .pick <- function(arg, key) arg %||% metrics[[key]]
