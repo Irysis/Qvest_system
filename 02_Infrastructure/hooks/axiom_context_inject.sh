@@ -128,9 +128,11 @@ MAX = 2500
 # 코어 라인 식별 = 렌더된 body 라인의 자기라벨('/negative]') 또는 코어 ID(AX-000/002/008).
 import re as _re
 def _is_core(ln):
-    if '/negative]' in ln:            # AX-003/004/005/007 (실패지식 = 절단불가)
+    if '/negative]' in ln:            # distilled negative가 body에 오면 절단불가
         return True
-    return bool(_re.match(r'\s*-\s*AX-00[028]\b', ln))  # AX-000/002/008 코어
+    # (2026-07-05) 모든 active 공리 라인 = core. AX-003/004/005/007 Distilled 강등 후
+    #   active Law는 AX-000/001/002/008 4건뿐 — 전부 절단불가(구 AX-00[028]은 AX-001 IMMUTABLE 누락 버그).
+    return bool(_re.match(r'\s*-\s*AX-\d', ln))
 _body_lines = body.splitlines()
 _core_lines = [ln for ln in _body_lines if _is_core(ln)]
 _soft_lines = [ln for ln in _body_lines if not _is_core(ln)]

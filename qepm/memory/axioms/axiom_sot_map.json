@@ -50,41 +50,53 @@
     {
       "axiom_id": "AX-003",
       "name": "KR value EP_STANDALONE 실패",
-      "documented_active": true,
-      "active_json_path": "qepm/memory/axioms/active/AX-003.json",
+      "documented_active": false,
+      "active_json_path": "qepm/memory/axioms/deprecated/AX-003_demoted_to_distilled_20260705.json",
       "axiom_class": "empirical",
       "authority": "high",
       "review_policy": "quarterly",
       "enforcement_mode": "advisory",
       "sync_status": "DOCUMENTED_OK_CACHE_STALE",
       "cache_core_present": false,
-      "note": "active JSON ↔ .claude/rules/axioms.md 일치. derived cache 누락 (Sprint 1 후 regenerate)."
+      "note": "active JSON ↔ .claude/rules/axioms.md 일치. derived cache 누락 (Sprint 1 후 regenerate).",
+      "demoted_to": "distilled",
+      "demoted_at": "2026-07-05",
+      "demoted_reason": "INV-7: negative = Distilled 탐색지도(Law 아님). 도훈 지시 active DEMOTE.",
+      "distilled_ref": "ledger:L-132/L-135 + revival signal value_quality_spread (DIST 카드 authoring 후속)"
     },
     {
       "axiom_id": "AX-004",
       "name": "KR quality_profitability single-signal long-only 실패",
-      "documented_active": true,
-      "active_json_path": "qepm/memory/axioms/active/AX-004.json",
+      "documented_active": false,
+      "active_json_path": "qepm/memory/axioms/deprecated/AX-004_demoted_to_distilled_20260705.json",
       "axiom_class": "methodological",
       "authority": "high",
       "review_policy": "quarterly",
       "enforcement_mode": "advisory",
       "sync_status": "DOCUMENTED_OK_CACHE_STALE",
       "cache_core_present": false,
-      "note": "derived cache 누락."
+      "note": "derived cache 누락.",
+      "demoted_to": "distilled",
+      "demoted_at": "2026-07-05",
+      "demoted_reason": "INV-7: negative = Distilled 탐색지도(Law 아님). 도훈 지시 active DEMOTE.",
+      "distilled_ref": "DIST-QPM-003 (quality_profitability)"
     },
     {
       "axiom_id": "AX-005",
       "name": "KR defense top20 long-only 실패",
-      "documented_active": true,
-      "active_json_path": "qepm/memory/axioms/active/AX-005.json",
+      "documented_active": false,
+      "active_json_path": "qepm/memory/axioms/deprecated/AX-005_demoted_to_distilled_20260705.json",
       "axiom_class": "methodological",
       "authority": "high",
       "review_policy": "quarterly",
       "enforcement_mode": "advisory",
       "sync_status": "FULL",
       "cache_core_present": true,
-      "version": "v1.2"
+      "version": "v1.2",
+      "demoted_to": "distilled",
+      "demoted_at": "2026-07-05",
+      "demoted_reason": "INV-7: negative = Distilled 탐색지도(Law 아님). 도훈 지시 active DEMOTE.",
+      "distilled_ref": "DIST-AR-001 (defense Q07+D29)"
     },
     {
       "axiom_id": "AX-006",
@@ -107,8 +119,8 @@
     {
       "axiom_id": "AX-007",
       "name": "Single-sleeve top20 mechanism break",
-      "documented_active": true,
-      "active_json_path": "qepm/memory/axioms/active/AX-007.json",
+      "documented_active": false,
+      "active_json_path": "qepm/memory/axioms/deprecated/AX-007_demoted_to_distilled_20260705.json",
       "axiom_class": "methodological",
       "authority": "high",
       "review_policy": "quarterly",
@@ -119,7 +131,11 @@
       "candidate_evidence_paths": [
         "qepm/memory/axioms/candidates/CAND_20260419_signal_portfolio_translation_failure_L-160_L-165_PENDING_2of3.json"
       ],
-      "note": "v7.2.1 Sprint 1에서 JSON SOT materialize. 신규 hook hard-block regex 도입 X. v7.3에서 advisory→block 검토."
+      "note": "v7.2.1 Sprint 1에서 JSON SOT materialize. 신규 hook hard-block regex 도입 X. v7.3에서 advisory→block 검토.",
+      "demoted_to": "distilled",
+      "demoted_at": "2026-07-05",
+      "demoted_reason": "INV-7: negative = Distilled 탐색지도(Law 아님). 도훈 지시 active DEMOTE.",
+      "distilled_ref": "DIST-AR-003 (momentum top-N translation break, AX-007 명시)"
     },
     {
       "axiom_id": "AX-008",
@@ -137,7 +153,7 @@
     }
   ],
   "summary": {
-    "total_documented_active": 8,
+    "total_documented_active": 4,
     "total_json_active_pre_sprint1": 6,
     "total_json_active_post_sprint1": 8,
     "candidate_only": [
@@ -155,7 +171,22 @@
       "verified": "AX-001 위반 payload dynamic block + AX-004 advisory warn + 정상 payload allow 실측"
     },
     "cache_core_sync_status": "STALE_PRE_SPRINT1 — bootstrap regenerate 후 FULL",
-    "cache_core_authority": "derived_cache (NOT SOT)"
+    "cache_core_authority": "derived_cache (NOT SOT)",
+    "demoted_to_distilled_20260705": {
+      "ids": [
+        "AX-003",
+        "AX-004",
+        "AX-005",
+        "AX-007"
+      ],
+      "note": "INV-7 negative=Distilled. AX-001(process)만 Law 잔존 + AX-000/002/008. 지식 보존: Ledger + deprecated archive + DIST 등가물(004/005/007) + AX-003 부활신호.",
+      "law_remaining": [
+        "AX-000",
+        "AX-001",
+        "AX-002",
+        "AX-008"
+      ]
+    }
   },
   "next_actions": [
     "Sprint 1: AX-007.json + AX-008.json materialize (enforcement_mode=documented)",

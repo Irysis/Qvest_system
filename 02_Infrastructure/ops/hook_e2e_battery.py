@@ -128,8 +128,9 @@ def main():
     out = run_hook("milestone_commit.sh", {"tool_name": "Write", "tool_input": {
         "file_path": "04_Research/not_a_milestone.txt", "content": KR}})
     case("milestone.early_exit", *judge(out, "allow"))
-    # STMT 추출 스닉펫 동작 (한글 statement) — AX-003 실파일
-    ax = "qepm/memory/axioms/active/AX-003.json"
+    # STMT 추출 스닉펫 동작 (한글 statement) — AX-008 실파일
+    #   (2026-07-05) 구 AX-003은 Distilled 강등으로 active 제거 → 잔존 active Law 중 'statement' 필드 보유한 AX-008로 교체.
+    ax = "qepm/memory/axioms/active/AX-008.json"
     if os.path.exists(ax):
         p = subprocess.run(["python3", "-c",
             "import json,sys\n"

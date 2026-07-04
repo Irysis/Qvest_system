@@ -10,10 +10,11 @@
 <!-- 과거 이 블록이 본문을 정적 임베드 → 훅 additionalContext와 이중 주입 → 예산(2500자) 낭비+중복.  -->
 <!-- 따라서 본 블록은 이제 *참조 스텁*: ID·계층·polarity 인덱스만 남기고 본문은 훅 단일 출처로 통일. -->
 <!-- 문서-권위(hard-fail SOT)는 여전히 `.claude/rules/axioms.md` ↔ active/*.json (sot_map). -->
-활성 공리(본문 = 훅 주입, 여기선 인덱스만):
+활성 공리(본문 = 훅 주입, 여기선 인덱스만). **active Law 4건**:
 - **AX-000** [IMMUTABLE] · **AX-001 v2** [conditional-defense] · **AX-001 v2.1** [META-ALLOCATION-EXEMPT] · **AX-002** [IMMUTABLE]
-- **AX-003** [empirical/negative] · **AX-004** [methodological/negative] · **AX-005 v1.2** [methodological/negative] · **AX-007** [methodological/negative]
 - **AX-008** [process] Verification Triangulation (Forge + Self-Adversarial + Architect 2/3)
+
+**Distilled 강등(2026-07-05, INV-7 — Law 아닌 탐색지도)**: ~~AX-003 value~~ · ~~AX-004 quality~~ · ~~AX-005 defense~~ · ~~AX-007 translation-break~~ → DIST 카드/Ledger(`hypothesis_index` 검색·`revival_spec` 부활). active enforcement 대상 아님.
 
 본문·근거 L-code·mode-local AX는 훅 주입(additionalContext) + `.claude/rules/axioms.md`(문서 SOT) 참조.
 계층: AX-code(Lv0 공리) > PIT C1-C15(Lv1) > L-code(Lv2 교훈) > Signals(Lv3 가변). 위반 = 즉시 중단.
