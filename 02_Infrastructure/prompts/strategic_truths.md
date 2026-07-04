@@ -2,7 +2,7 @@
   - KR 알파 cohort-wide post-2017 감쇠 — 최근 구간이 바인딩 제약 (§3 decay-pattern / project-discovery-substrate-phase0)
   - KR 25종 long-only 팩터선택 SR 천장 ~1.0-1.1 (envelope-상대 사실). 돌파 레버(전부 envelope-안): overlay 재튜닝 · 잔차-직교 sleeve 스태킹(PORT_t 통과분만) · 비-return 원천 · DPL. ※ ">25종 분산"은 제약 밖(out-of-scope) — 문제의 고정 축이지 레버 아님 (reference-kr-sr-ceiling-overlay / 방화벽 2026-07-04)
   - standalone long-only 16/16 admission FAIL — 사유는 상관 아닌 PORT_t(실현 net active) (§6)
-  - 직교 ≠ 수익: long-only β≈0.99, gross 상관 0.78~0.81이나 active(−BM) 상관 0.45. 잔차-직교라도 PORT_t는 별개 게이트 — "직교 ∧ PORT_t 통과" 동시 충족분만 book 기여 (§6 / reference-orthogonality-gross-vs-active)
+  - 직교 ≠ 수익: long-only β≈0.92(교정벤치 IKS200), gross 상관 0.78~0.81이나 active(−BM) 상관 0.53. 잔차-직교라도 PORT_t는 별개 게이트 — "직교 ∧ PORT_t 통과" 동시 충족분만 book 기여 (§6 / reference-orthogonality-gross-vs-active)
   - KR long-only 시장타이밍(vol/trend/turning-point/vol-managed) 4중 부정 — regime-cash(R05×m4) 이상 가치 無 (project-pg2-offense-overlay-settled)
   - settled-negative 재시도 금지: DPL(project-dpl-vs-pg2-settled) · 예측 위기 ONSET(project-predictive-crisis-timer-forward-macro-null) · max-cash 오버레이 결합(project-maxcash-overlay-combine-falsified) · 인버스 ETF 헤지(project-inverse-etf-hedge-phase1-reject) · KNS/SDF·전종목 확장(project-kns-shrinking-cross-section)
   - SR 2.5 레버 = overlay(유일한 long-only β 레버) · 잔차-직교 sleeve 스태킹(PORT_t 통과분만) · 비-return 원천 탐색 (§6 / project-paper-pool-qepm-exhaustion)
