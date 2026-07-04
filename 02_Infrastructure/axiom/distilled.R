@@ -331,7 +331,9 @@ update_strategic_truths_distilled_block <- function(root = .dist_root(), max_ite
   }
   if (length(picks) > max_items) picks <- picks[seq_len(max_items)]
   body <- vapply(picks, function(e) {
-    pol <- if (identical(e$polarity, "negative")) "재시도금지(INV-7 조건부)" else "조건부"
+    # (2026-07-05 감사) head-word를 inject/search 2면과 동일 지도-프레임으로 정렬.
+    #   구 "재시도금지(INV-7 조건부)"는 유일하게 금지 어휘라 truths면에서만 낙인 톤 회귀 → 폐기.
+    pol <- if (identical(e$polarity, "negative")) "탐색됨·재도전 대상(INV-7 조건부)" else "조건부(INV-7)"
     sprintf("  - [%s/%s] %s (%s, L-code %d건)", e$dist_id, pol, e$statement_refined,
             e$research_mode %||% "?", e$n_supporting %||% 0L)
   }, character(1))
