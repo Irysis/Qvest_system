@@ -1,0 +1,98 @@
+{
+  "schema_version": "knowledge_recheck_queue_v1",
+  "generated_at": "2026-07-04",
+  "source_audit": "knowledge_provenance_audit_20260704",
+  "report": "04_Research/01_reports/knowledge_provenance_audit_20260704.md",
+  "note": "지식 증거계보 감사(2026-07-04) RECHECK_QUEUED 판정 큐. 각 entry는 promote/정제 진입 전 remeasure_plan 이행 의무. TAINTED 6건은 본 큐가 아닌 quarantined_evidence(DIST status) — 도훈 confirm 후 expire/분리 재정제. promote.R 5축은 measurement-instrument 결함을 자동 탐지하지 못함(AS-002 507건이 5축 이전까지 통과해 온 것이 실증) — 본 감사 verdict를 promote 전 필터로 소비할 것.",
+  "entries": [
+    {
+      "id": "DIST-JG-001",
+      "layer": "distilled",
+      "verdict": "RECHECK_QUEUED",
+      "reason": "측정기기 자체가 현 헌법에서 폐기/강등 — harvey_t(rank-IC) HARD는 §3서 ADVISORY 강등(16후보 calibration서 거짓통과·거짓탈락 실증 = 기기가 잘못된 판정을 생산함이 입증된 케이스), N>20 룰은 25종 상향. polarity가 구 게이트 의미론에 의존하고 재확증 0건 + MERGE-삭제 ID 1건 포함. S3 편향 방향 논리로도 구제 불가(rank-IC 판정은 벤치 편향과 별개 축의 기기 결함).",
+      "defects_hit": "구 게이트 의미론 (DEF 등록 외 — rank-IC HARD 거짓판정 실증)",
+      "remeasure_plan": "대표 L-149 계열 1건을 현행 essence_score(PORT_t forge-authoritative) 기준 재판정 후 polarity 유지분만 promote",
+      "gate": "재판정 전 promote 금지",
+      "status": "queued"
+    },
+    {
+      "id": "DIST-QPM-002",
+      "layer": "distilled",
+      "verdict": "RECHECK_QUEUED",
+      "reason": "레거시 창(flat 비용 DEF-02 + 구벤치 + estimated) 8건 전건 재실측 0. negative/MDD-구조 결론은 S3 편향 방향상 보존측 '개연'이나 — MDD·turnover 민감 결론은 비용모델 축(DEF-02: TO<3x 과대과금) 영향이 벤치 축과 달리 양방향이라 S3 논리로 일괄 구제 불가. protected 3건(axiom 원본)은 byte 보존 유지.",
+      "defects_hit": "DEF-01/02/06/07",
+      "remeasure_plan": "대표 전략 1건(저회전 계열 우선 — flat 과대과금 의심 최대) canonical_screen_bt+v2.4 재검 후 클러스터 판정",
+      "gate": "대표 1건 재검 전 클러스터 promote 금지 (protected 3건 byte 보존 유지)",
+      "status": "queued"
+    },
+    {
+      "id": "DIST-RAMP-006",
+      "layer": "distilled",
+      "verdict": "RECHECK_QUEUED",
+      "reason": "ID는 수리됐으나 멤버 RAMP_03B_BOOK_ABSORB(grade A)의 'book_momcons pt 3.05>배포Book' 주장이 06-24 철회 클래스(DEF-03 realized_ym 오정렬 + DEF-11 score_eff lag — '신호자체가 Book것') — 06-24 정정이 그 PIT정렬 전제 자체를 반박했고 정정 이후 재실측 L-code 미발행(0/8). grade A 멤버라 오염 시 영향 최대 — 해당 멤버 제외 또는 재실측 전 promote 금지. Shu-Mulvey 성분은 documented CAVEAT로 별도 생존 가능.",
+      "defects_hit": "DEF-03/11 (RAMP_03B 멤버 한정 — 철회 클래스 직접)",
+      "remeasure_plan": "RAMP_03B book 비교를 06-24 정렬 규약(anchor_date merge+shift(1)+β-스캔 offset 검증)으로 재산출 — 유지 시만 멤버 잔존, 아니면 drop 후 클러스터 재발행",
+      "gate": "RAMP_03B 멤버 재실측 또는 drop 전 promote 금지",
+      "status": "queued"
+    },
+    {
+      "id": "CAND-active-17",
+      "layer": "candidates",
+      "verdict": "RECHECK_QUEUED",
+      "reason": "DIST 1:1 대응이라 판정 상속 — TAINTED 짝 CAND 6건 promote 큐 제외가 선결. promote.R 5축은 measurement-instrument 결함(b434/벤치/score-lag)을 자동 탐지 못함 (AS-002 507건이 5축 이전까지 통과해 온 것이 증거) — 본 감사 verdict를 promote 전 필터로 주입해야 안전.",
+      "defects_hit": "DEF-05 (필터 사각 실증)",
+      "remeasure_plan": "promote 큐에서 TAINTED 짝 6건 제외 → 잔존 CAND에 본 감사 verdict(특히 JG-001·QPM-002·RAMP-006 RECHECK) 필드 부가 후 5축 진입",
+      "excluded_candidates": [
+        {
+          "dist_id": "DIST-AS-001",
+          "candidate_id": "CAND_20260620_alpha_search_unknown_positive_L-AS-20260621_082546_2116_L-AS-20260621_083320_75236",
+          "why": "계보 단절 + module_quarantine 기반 + 5축 3연속 FAIL"
+        },
+        {
+          "dist_id": "DIST-AS-002",
+          "candidate_id": "CAND_20260704_alpha_search_momentum_conditional_L-AS-20260602_165334_L-AS-20260602_171023_L-AS-20260602_171933",
+          "why": "DEF-05 b434 오염분 72% + stale ID 380건 — DIST-AS-003이 정정본"
+        },
+        {
+          "dist_id": "DIST-QPM-001",
+          "candidate_id": "CAND_20260704_qepm_legacy_behavioral_negative_L-131_L-160",
+          "why": "L-160 ID 재발급 오링크 — DIST-QPM-005가 정정본"
+        },
+        {
+          "dist_id": "DIST-RAMP-001",
+          "candidate_id": "CAND_20260704_ramp_infra_process_positive_L-RAMP-20260618_131316_L-RAMP-20260618_131800_L-RAMP-20260618_175207",
+          "why": "bare 131316 stale ID — DIST-RAMP-005가 승계"
+        },
+        {
+          "dist_id": "DIST-RAMP-002",
+          "candidate_id": "CAND_20260704_ramp_momentum_conditional_L-RAMP-20260619_132312_L-RAMP-20260619_141402_L-RAMP-20260620_103109",
+          "why": "06-24 철회 클래스(DEF-03/11) 혼재 — momentum-standalone 성분 분리 재정제 필요"
+        },
+        {
+          "dist_id": "DIST-RAMP-004",
+          "candidate_id": "CAND_20260704_ramp_value_conditional_L-RAMP-20260618_131316_L-RAMP-20260619_140656_L-RAMP-20260619_150531",
+          "why": "bare 131316 stale ID — DIST-RAMP-006이 정정본"
+        }
+      ],
+      "gate": "제외 6건 도훈 confirm 후 잔존 11건만 5축 진입",
+      "status": "queued"
+    }
+  ],
+  "followups_non_blocking": [
+    {
+      "target": "T4 (§6 직교 수치)",
+      "action": "measurement-graduation.md §6 수치 3곳 교정치 갱신(β 0.99→0.92 · active cor 0.45→0.53, gross 0.789 불변) — 도훈 confirm 후",
+      "basis": "스팟 S1 재측정 (verdict SOUND_REVERIFIED — 결론 불변, 수치만 구-벤치 산물)"
+    },
+    {
+      "target": "T7② 잔차-직교 sleeve 레버",
+      "action": "재측정 아닌 최초 실증 — RAMP 18후보 active-basis PORT_t 검증 (기존 미해결 큐)",
+      "basis": "PORT_t 통과 사례 0건 + S1 교정치로 직교 여지 소폭 축소(0.526>0.452)"
+    },
+    {
+      "target": "DEF-08 연율화 가드 / DEF-09 RAWDATA BM_Ret 07-01 손상",
+      "action": "잔여 미수리 기기 2점 수리 — 별도 트랙",
+      "basis": "감사 confirm 큐 ③"
+    }
+  ]
+}

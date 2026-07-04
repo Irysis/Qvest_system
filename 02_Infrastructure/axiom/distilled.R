@@ -127,6 +127,10 @@ refine_distilled <- function(dist_id, statement_refined, retry_condition = NULL,
   x <- .dist_load_one(dist_id, root)
   d <- x$dist
   if (identical(d$status, "promoted")) stop("이미 promoted — 정제 불가(불변)")
+  if (identical(d$status, "quarantined_evidence"))
+    stop("evidence_audit_20260704: quarantined_evidence — 정제 대상 제외 ",
+         "(TAINTED_RETRACT_CANDIDATE. 도훈 confirm 후 expire 또는 분리 재정제. ",
+         "근거: 04_Research/01_reports/knowledge_provenance_audit_20260704.md)")
   d$statement_refined <- statement_refined
   if (!is.null(retry_condition)) d$retry_condition <- retry_condition
   d$status <- "distilled"

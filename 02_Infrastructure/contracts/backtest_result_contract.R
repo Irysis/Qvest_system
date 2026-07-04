@@ -357,6 +357,19 @@ build_benchmark_returns <- function(sim_result, benchmark_id = "KOSPI200",
 build_metrics <- function(nav_tbl, period_returns_tbl, holdings_tbl,
                            run_id, strategy_id,
                            frequency = "daily", annualization_factor = 252) {
+  # (2026-07-04 DEF-08 수리 — 지식계보 감사) frequency와 annualization_factor의
+  # 결합 가드: monthly 수익에 기본값 252가 적용되면 Sharpe ×4.58, CAGR/Calmar ×62
+  # 부풀림(합성 실측). 실오염 1건(WT-D20260702_002 layer4 retrial) 발생 이력.
+  # 빈도-함의 factor와 불일치 시 fail-loud — 조용한 자동보정 금지(계약 원칙).
+  .FREQ_IMPLIED_ANN <- c(daily = 252, weekly = 52, monthly = 12)
+  if (frequency %in% names(.FREQ_IMPLIED_ANN) &&
+      annualization_factor != .FREQ_IMPLIED_ANN[[frequency]]) {
+    stop(sprintf(
+      paste0("[build_metrics][DEF-08] annualization_factor=%s가 frequency='%s'의 ",
+             "함의값 %s와 불일치 — 연율화 부풀림 방지 가드. frequency에 맞는 ",
+             "factor를 명시하세요 (monthly=12, weekly=52, daily=252)."),
+      annualization_factor, frequency, .FREQ_IMPLIED_ANN[[frequency]]))
+  }
   ret_xts <- xts(period_returns_tbl$ret_net, order.by = period_returns_tbl$date)
   rf_xts  <- xts(period_returns_tbl$risk_free_ret, order.by = period_returns_tbl$date)
   excess_xts <- ret_xts - rf_xts
@@ -707,6 +720,12 @@ build_bt_result <- function(sim_result, strategy_spec,
                              universe_id = "KR_TOP342",
                              code_version = "run_all_v1",
                              created_by_agent = "Q-Lead") {
+  # (2026-07-04 DEF-08) factor 미명시 시 frequency에서 자동 유도 — monthly에 기본값
+  # 252가 흘러들던 결함 봉합. 명시값이 빈도와 불일치하면 build_metrics 가드가 stop.
+  if (missing(annualization_factor)) {
+    .fia <- c(daily = 252, weekly = 52, monthly = 12)
+    if (frequency %in% names(.fia)) annualization_factor <- .fia[[frequency]]
+  }
 
   cat(sprintf("[build_bt_result] %s | run_id=%s | freq=%s\n",
               strategy_id, run_id, frequency))

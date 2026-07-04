@@ -3,7 +3,7 @@
   "dist_id": "DIST-RAMP-002",
   "cluster_key": "8aa341656d48",
   "candidate_id": "CAND_20260704_ramp_momentum_conditional_L-RAMP-20260619_132312_L-RAMP-20260619_141402_L-RAMP-20260620_103109",
-  "status": "pending_5axis",
+  "status": "quarantined_evidence",
   "statement_refined": null,
   "retry_condition": null,
   "refined_at": null,
@@ -70,5 +70,16 @@
     "oos_effect_vs_is": null,
     "note": "promote.R r4_regime_payoff / essence_score 경유 확정"
   },
-  "cluster_members_count": 8
+  "cluster_members_count": 8,
+  "evidence_audit_20260704": {
+    "audit_id": "knowledge_provenance_audit_20260704",
+    "audited_at": "2026-07-04",
+    "verdict": "TAINTED_RETRACT_CANDIDATE",
+    "reason": "Book-상대 성분(RAMP_03/03C 'Book 초과')이 DEF-11(score_eff 1개월 지연)+DEF-03(realized_ym 오정렬) 결함 창 측정이며 해당 클래스는 06-24 공식 철회 완료 — 철회된 주장과 유효 주장(momentum-standalone 256월 0.88 재실측분)이 같은 클러스터에 혼재해 그대로 promote 불가. momentum-standalone 성분만 분리 재정제 후 신규 클러스터로.",
+    "defects_hit": "DEF-03/11 (Book-비교 성분 직접 — 결론 전복 이미 확정된 철회 클래스)",
+    "report": "04_Research/01_reports/knowledge_provenance_audit_20260704.md"
+  },
+  "status_before_audit": "pending_5axis",
+  "quarantined_at": "2026-07-04",
+  "quarantine_reason": "evidence_audit_20260704 TAINTED_RETRACT_CANDIDATE — 정제(/cleaner)·promote 대상 제외. 도훈 confirm 후 expire 또는 분리 재정제."
 }

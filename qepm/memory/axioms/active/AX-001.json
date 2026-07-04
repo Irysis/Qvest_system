@@ -47,11 +47,32 @@
   "enforcement_mode": "block",
   "enforcement_hook": {
     "mode": "block",
-    "applies_to_files": ["(hurdle_result|s6_judge|s7_).*\\.json"],
-    "regex": ["defense|defence", "\"grade\".*\"F\""],
-    "require": ["crisis", "stress", "conditional", "bad_normal", "regime"],
+    "applies_to_files": [
+      "(hurdle_result|s6_judge|s7_).*\\.json"
+    ],
+    "regex": [
+      "defense|defence",
+      "\"grade\".*\"F\""
+    ],
+    "require": [
+      "crisis",
+      "stress",
+      "conditional",
+      "bad_normal",
+      "regime"
+    ],
     "reason": "Defense 전략을 전기간 SR만으로 Grade F 판정 금지. 위기 구간 alpha + Core 대비 MDD + bad/normal IC ratio 조건부 평가 필수",
     "semantics": "regex 전부 매치(AND) AND require 중 0개 존재 시 발화 — legacy 하드코딩(axiom_enforcement_hook.sh AX-001 절)과 동일 의미론",
     "backfilled": "2026-07-04 AXM-03 — legacy 하드코딩 패턴에서 도출, 신규 금지사항 없음. enforcement_mode block은 .claude/rules/axioms.md Hook 강제 절 + axiom_sot_map.json 기왕 문서화(일부 패턴 hard-block 실증)와 정렬"
+  },
+  "evidence_audit_20260704": {
+    "audit_id": "knowledge_provenance_audit_20260704",
+    "audited_at": "2026-07-04",
+    "verdict": "SOUND_REVERIFIED",
+    "reason": "공리 본체는 07-03 방어팩터 DB 170종 전수조사(교정 IKS200 벤치+v2.4 delta+winsorize 후)가 '전기간 PORT_t 기각=AX-001 위반 프레이밍'을 실측 입증하며 강하게 재확증. v2.1 meta-allocation amendment 증거만 레거시 창(flat 비용+pre-winsorize+D000) 단일 WT — 단 overlay 유효성은 06-18~07-02 클린 오버레이 실측군과 정합이라 경미. amendment 원증거에 레거시-창 라벨 부가 권고.",
+    "defects_hit": "DEF-02/06/07 (v2.1 amendment 한정, 경미)",
+    "semantics_changed": false,
+    "report": "04_Research/01_reports/knowledge_provenance_audit_20260704.md",
+    "note": "메타 기록 전용 — 공리 의미론(text/canonical_statement/grade/enforcement) 무변경 (감사 지시 ③)"
   }
 }

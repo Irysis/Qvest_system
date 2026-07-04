@@ -232,12 +232,32 @@ audit_bt_result <- function(bt_result) {
                 "Sharpe,Sortino,Calmar,CAGR",
                 "critical")
     } else {
-      add_check("frequency",
-                "frequency_cadence_consistency",
-                "PASS",
-                sprintf("declared freq='%s' consistent with median date_diff=%.1f days",
-                        declared_freq %||% "?", med_diff),
-                "", "low")
+      # (2026-07-04 DEF-08 사각 봉합) 라벨-간격은 정합해도 선언 annualization_factor가
+      # 빈도-함의값과 다르면 동일한 부풀림 발생 (monthly 데이터+monthly 라벨+factor 252
+      # = 구 Check 11 PASS였던 실오염 케이스). 함의값 대조를 추가.
+      freq_implied_ann <- switch(tolower(declared_freq %||% ""),
+        "daily" = 252, "weekly" = 52, "monthly" = 12, "quarterly" = 4, NA_real_)
+      if (!is.na(freq_implied_ann) && !is.na(declared_ann) &&
+          declared_ann != freq_implied_ann) {
+        add_check("frequency",
+                  "frequency_cadence_consistency",
+                  "FAIL",
+                  sprintf(
+                    "DEF-08 VIOLATION: freq='%s' 함의 factor=%s인데 선언 factor=%s — Sharpe 부풀림 ~%.2fx (CAGR/Calmar는 지수적). AX-002.",
+                    declared_freq, freq_implied_ann, declared_ann,
+                    sqrt(declared_ann / freq_implied_ann)),
+                  "Sharpe,Sortino,Calmar,CAGR,AnnVol,IR",
+                  "critical")
+        freq_mislabel_detected <- TRUE
+      } else {
+        add_check("frequency",
+                  "frequency_cadence_consistency",
+                  "PASS",
+                  sprintf("declared freq='%s' consistent with median date_diff=%.1f days (ann=%s)",
+                          declared_freq %||% "?", med_diff,
+                          ifelse(is.na(declared_ann), "?", as.character(declared_ann))),
+                  "", "low")
+      }
     }
   } else {
     add_check("frequency",

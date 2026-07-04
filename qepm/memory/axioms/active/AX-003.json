@@ -74,9 +74,17 @@
   "enforcement_mode": "advisory",
   "enforcement_hook": {
     "mode": "advisory",
-    "applies_to_files": ["(04_Research|qepm|stage_artifacts)"],
-    "regex": ["EP[ _-]?STANDALONE"],
-    "require": ["blend", "overlay", "multi[ _-]?factor"],
+    "applies_to_files": [
+      "(04_Research|qepm|stage_artifacts)"
+    ],
+    "regex": [
+      "EP[ _-]?STANDALONE"
+    ],
+    "require": [
+      "blend",
+      "overlay",
+      "multi[ _-]?factor"
+    ],
     "reason": "[AX-003] KR value EP_STANDALONE 잠정 실패 (L-132/135, provisional failure-ledger). multi-factor blend·overlay는 scope 밖 — 재도전 시 역가설 근거 명시 권장",
     "semantics": "regex 전부 매치(AND) AND require(scope 밖 exclusion 표지) 중 0개 존재 시 warn — advisory (차단 아님)",
     "backfilled": "2026-07-04 AXM-03 — 문서 위반정의(EP_STANDALONE construction 라벨)에서 도출, 신규 금지사항 없음. enforcement_mode advisory는 .claude/rules/axioms.md Hook 강제 절 + axiom_sot_map.json과 정렬"
@@ -84,5 +92,15 @@
   "epistemic_status": "provisional",
   "retry_trigger": "새 construction/ML/regime/multi-sleeve 출현 시 kr-inverse-pattern-miner 역가설 재도전",
   "evidence_strength_note": "N=2 supporting L-code 기반 — 구조적 불가 단정 아닌 잠정 실패기록(INV-7). 기존 EXCLUSION = 재도전 트리거.",
-  "text": "KR value factor(EP/accrual) standalone long-only는 잠정적으로 Grade F — 최근 10년 value premium 약화 + 단독 구현 시 quality/growth mix 부재. 단 N=2 전략(STR_1654/1663) 기반 provisional: multi-factor blend·overlay는 scope 밖이며, 새 construction/regime 출현 시 재도전(역가설) 대상."
+  "text": "KR value factor(EP/accrual) standalone long-only는 잠정적으로 Grade F — 최근 10년 value premium 약화 + 단독 구현 시 quality/growth mix 부재. 단 N=2 전략(STR_1654/1663) 기반 provisional: multi-factor blend·overlay는 scope 밖이며, 새 construction/regime 출현 시 재도전(역가설) 대상.",
+  "evidence_audit_20260704": {
+    "audit_id": "knowledge_provenance_audit_20260704",
+    "audited_at": "2026-07-04",
+    "verdict": "SOUND_REVERIFIED",
+    "reason": "원측정은 레거시 창(flat 비용·pre-winsorize·D000)이나 Grade F 근거가 절대지표(CAGR −1.71%/SR −0.265/OOS 0.12)로 벤치 비구속 + S3 실측상 구 기기는 관대 방향이라 negative 보수-안전. 재확증: 06-24 value 24/24 감쇠(winsorize 후) + 07-03 KNS value-경로 자본급 실패(전면 교정 기기). provisional 라벨·reversion 재도전 트리거 정직 유지.",
+    "defects_hit": "DEF-02/06/07 (verdict 비전복 — S2/S3 편향방향 실측으로 확인)",
+    "semantics_changed": false,
+    "report": "04_Research/01_reports/knowledge_provenance_audit_20260704.md",
+    "note": "메타 기록 전용 — 공리 의미론(text/canonical_statement/grade/enforcement) 무변경 (감사 지시 ③)"
+  }
 }

@@ -3,7 +3,7 @@
   "dist_id": "DIST-AS-002",
   "cluster_key": "9053df8e65f9",
   "candidate_id": "CAND_20260704_alpha_search_momentum_conditional_L-AS-20260602_165334_L-AS-20260602_171023_L-AS-20260602_171933",
-  "status": "pending_5axis",
+  "status": "quarantined_evidence",
   "statement_refined": null,
   "retry_condition": null,
   "refined_at": null,
@@ -1080,5 +1080,16 @@
     "oos_effect_vs_is": 0.0,
     "note": "L-code oos_retention 실값 444건 median (IS65/OOS35 활성SR retention) — oos_months 실값 무 → None 유지 — promote.R essence_score 경유 재확정"
   },
-  "cluster_members_count": 507
+  "cluster_members_count": 507,
+  "evidence_audit_20260704": {
+    "audit_id": "knowledge_provenance_audit_20260704",
+    "audited_at": "2026-07-04",
+    "verdict": "TAINTED_RETRACT_CANDIDATE",
+    "reason": "supporting 72%(366/507)가 DEF-05 b434 오염분이고 그중 272건은 L-AS-B434-DISTILL-001 본문의 '개별 가설 기각 증거 인용 금지' 명시 마킹과 정면 충돌 + 380건은 07-04 distill로 삭제된 stale ID. 04:09 재생성판(DIST-AS-003)이 정정본 — 본 판은 철회.",
+    "defects_hit": "DEF-05 (직접 — 라벨≠실행신호 오귀속 인용)",
+    "report": "04_Research/01_reports/knowledge_provenance_audit_20260704.md"
+  },
+  "status_before_audit": "pending_5axis",
+  "quarantined_at": "2026-07-04",
+  "quarantine_reason": "evidence_audit_20260704 TAINTED_RETRACT_CANDIDATE — 정제(/cleaner)·promote 대상 제외. 도훈 confirm 후 expire 또는 분리 재정제."
 }
