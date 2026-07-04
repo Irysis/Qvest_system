@@ -460,7 +460,11 @@ build_hypothesis_index <- function(root = QM_ROOT, out_path = HI_INDEX_PATH,
   if (file.exists(mc_path)) {
     mc <- tryCatch(fromJSON(mc_path, simplifyVector = FALSE), error = function(e) NULL)
     for (e in (mc$modules %||% list())) {
-      pe <- tryCatch(.hi_parse_module(e), error = function(err) NULL)
+      pe <- tryCatch(.hi_parse_module(e), error = function(err) {
+        message(sprintf("[hypothesis_index][WARN] module parse 실패 skip: %s (%s)",
+                        e$strategy_id %||% "?", conditionMessage(err)))
+        NULL
+      })
       if (add_entry(pe)) cov$module_indexed <- cov$module_indexed + 1L
       else cov$module_skipped <- cov$module_skipped + 1L
     }
