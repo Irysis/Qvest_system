@@ -126,6 +126,19 @@ FAMILY_PATTERNS <- list(
 # --------------------------------------------------------------------
 .hi_lc <- function(x) tolower(paste(x, collapse = " "))
 
+# ★P0#1 배열-안전 문자열화: JSON 필드가 list / character(N) / NULL 어느 형태든
+#   단일 문자열로 정규화. 빈 요소·NA 제거 후 "; "로 결합. 빈/NULL → "".
+#   이 함수를 거치면 후속 nzchar()가 항상 length-1 논리값을 반환 → if() 안전.
+.hi_join <- function(x, sep = "; ") {
+  if (is.null(x)) return("")
+  v <- unlist(x, use.names = FALSE)
+  if (length(v) == 0) return("")
+  v <- as.character(v)
+  v <- v[!is.na(v) & nzchar(trimws(v))]
+  if (length(v) == 0) return("")
+  paste(v, collapse = sep)
+}
+
 .hi_slug <- function(x) {
   s <- tolower(gsub("[^A-Za-z0-9가-힣]+", "_", x))
   s <- gsub("^_+|_+$", "", s)
@@ -289,12 +302,19 @@ FAMILY_PATTERNS <- list(
   #   지도-프레임(탐색됨 → 프론티어 → 부활 트리거)으로 전환. DISTILLED_NEG verdict는 유지하되
   #   문안은 "봉투 안 차별점 명시 시 진행 가능"을 명시 (INV-7 provisional = 불변 기각 아님).
   #   frontier/live_trigger 필드가 인덱스에 있으면 표출, 없으면 retry_condition을 프론티어로 폴백.
+  #
+  # ★P0#1 배열-안전 (2026-07-04 감사): frontier/live_trigger는 JSON 배열(list/character N)일
+  #   수 있다. 구코드 `e$frontier %||% ...` + `if(nzchar(frontier))`는 배열 유입 시
+  #   nzchar()가 길이-N 논리벡터를 반환 → if()가 "condition has length > 1"로 예외 →
+  #   상위 tryCatch가 silent drop → 성실히 채운(frontier 배열이 긴) 엔트리일수록 드롭되는
+  #   역설. 해결: unlist+collapse로 스칼라 문자열화한 뒤 nzchar()로 판정. if()에 벡터 유입 차단.
+  #   `.hi_join()`은 length 0/1/N 모두 단일 문자열로 정규화(빈/NULL → "").
   retry <- if (identical(pol, "negative")) {
-    frontier <- e$frontier %||% e$retry_condition %||% ""
-    live_trig <- e$live_trigger %||% e$expiry %||% ""
+    fr_str   <- .hi_join(e$frontier);     if (!nzchar(fr_str))   fr_str   <- .hi_join(e$retry_condition)
+    trig_str <- .hi_join(e$live_trigger); if (!nzchar(trig_str)) trig_str <- .hi_join(e$expiry)
     parts <- "탐색됨(경로 F 기록)."
-    if (nzchar(frontier)) parts <- paste0(parts, sprintf(" 프론티어(미탐색): %s", frontier))
-    if (nzchar(live_trig)) parts <- paste0(parts, sprintf(" 부활 트리거: %s", live_trig))
+    if (nzchar(fr_str))   parts <- paste0(parts, sprintf(" 프론티어(미탐색): %s", fr_str))
+    if (nzchar(trig_str)) parts <- paste0(parts, sprintf(" 부활 트리거: %s", trig_str))
     paste0(parts, " 봉투 안 차별점 명시 시 진행 가능(INV-7 provisional — 불변 기각 아님).")
   } else NULL
   fam <- e$family %||% NA_character_
