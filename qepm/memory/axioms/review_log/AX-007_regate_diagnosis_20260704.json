@@ -1,0 +1,50 @@
+{
+  "review_id": "AX-007_regate_diagnosis_20260704",
+  "task": "R-AX-007 — re-run repaired 5-axis promote gate on AX-007 (read-only diagnosis)",
+  "reviewed_at": "2026-07-04",
+  "axiom": "AX-007",
+  "polarity": "negative",
+  "tier_evaluated": "mode_local",
+  "type": "empirical (methodological weights: I0.15 R0.20 F0.30 E0.15 M0.20)",
+  "active_json_untouched": true,
+  "note": "READ-ONLY. promote.R sourced with PROMOTE_SOURCED=1; .axis_* called directly; .promote_to_active NEVER invoked. active/AX-007.json semantics unchanged.",
+  "cand_reality": "No clean AX-007 CAND exists. Present behavioral CANDs (L-131_L-160, L-131_L-160A) have n_sup=2 and mix L-131 behavioral into the AX-007 defense/single-sleeve lineage. Reconstructed cluster from cited L-160/165/166.",
+  "reconstructed_cluster": {
+    "L-160": {"grade": "F", "construction": "value", "content": "H_1682 Distress(Q25)+Calmar(R16) 60/40 composite ICIR 1.879 -> 4-variant sweep all Hard-Fail MDD 94.66"},
+    "L-165": {"grade": "F", "construction": "low_vol", "content": "Multi-Source Defense Anchor M08+C19+Q07+R16 4-axis regime-smoothed ICIR 0.74-0.94 -> V1-V4 all fail MDD 77-95%"},
+    "L-166": {"grade": null, "construction": "single_factor_long_only", "content": "STR_1687 sector-neutralized Q07+SUE 2-axis Hard-Fail MDD 58-67%. grade=null in corpus."}
+  },
+  "gate_result": {
+    "variant_A_bare_L160_165_166": {"weighted": 0.384, "passed": false,
+      "independence": {"score": 0.87, "hurdle": false, "reason": "3 distinct constructions (min 3 met) BUT direction_consistency=0.67<0.80 — L-166 grade=null breaks grade-majority"},
+      "rigor": {"score": 0.67, "hurdle": false, "reason": "frac_fail=0.67<0.80 (2 of 3 F/C; L-166 null not counted as fail)"},
+      "falsification": {"score": 0.0, "hurdle": false, "reason": "attempts=[] in skeleton"},
+      "external": {"score": 0.0, "hurdle": false, "reason": "oos_retention real n=0/3 — cluster L-codes are legacy estimated, carry NO oos_retention"},
+      "mechanism": {"score": 0.0, "hurdle": false, "reason": "mechanism_draft empty in skeleton"}
+    },
+    "variant_C_provisioned_mech_and_falsification": {"weighted": 0.683, "passed": false,
+      "falsification": {"score": 1.0, "hurdle": true, "reason": "3 survived attempts from L-160/165/166 lineage"},
+      "mechanism": {"score": 1.0, "hurdle": true, "reason": "structural_construction_limit + high plausibility from corpus lesson_text"},
+      "still_failing": ["independence(dir_consistency 0.67)", "rigor(frac_fail 0.67)", "external(oos n=0)"]
+    }
+  },
+  "binding_blockers": [
+    "EXTERNAL (structural, unresolvable from corpus): zero cluster L-codes carry a real oos_retention. All are legacy estimated (pre-winsorize/flat-cost D000 window). Passable ONLY via draft-fabricated oos_effect_vs_is — forbidden. Requires a genuine backtested re-measurement of a single-sleeve top20 defense strategy producing oos_retention >= 0.5, which does not exist and would (given the failure thesis) likely be < 0.5 anyway.",
+    "INDEPENDENCE direction_consistency: L-166 grade=null yields 0.67. Fixable by swapping to a graded F-code (tested: L-160/L-165/L-140 -> consistency 1.00 PASS), but L-140 is quality-family, diluting the defense/single-sleeve lineage fidelity.",
+    "RIGOR (mode_local negative): frac_fail 0.67 < 0.80 for same L-166 null-grade reason."
+  ],
+  "verdict": "AX-007 does NOT re-pass the repaired 5-axis gate. Max achievable weighted = 0.683 (variant C) < 0.80 threshold, and 3 of 5 hurdles fail. External is a hard structural wall (no oos_retention in corpus for this lineage). Consistent with active/AX-007 remaining epistemic_status=provisional, enforcement=documented. No promotion. No strengthening to global/block.",
+  "reinforcement_available_in_corpus_not_in_cluster": [
+    {"l_code": "L-136", "grade": "C", "construction": "single_factor_long_only", "relevance": "Q07+D25 defense combo top20 long-only — direct AX-007 lineage. Adding it moves frac_fail 0.67->0.75 (still <0.80) but drops direction_consistency to 0.50 (4th grade adds C). Net: does NOT help hurdles."},
+    {"l_code": "L-140", "grade": "F", "construction": "quality", "relevance": "graded-F, would fix direction_consistency to 1.00 if it replaced L-166, but quality-family off the defense lineage."},
+    {"l_code": "L-165/L-160", "note": "already in cluster."}
+  ],
+  "corpus_facts": {
+    "n_lcodes": 219,
+    "real_oos_retention": 92,
+    "real_port_t": 17,
+    "backtested": 94,
+    "defense_translation_negatives_with_real_oos_retention": "4, ALL off-lineage (L-AR othercorp flow -3.94; L-AS value/single-factor proxy -0.036/0.173) — none are single-sleeve top20 defense translation evidence and all have oos_retention <= 0.17."
+  },
+  "recommendation": "Keep AX-007 provisional/documented as-is (no change). To ever re-graduate it would require RE-MEASURING one of the L-160/165/166-style single-sleeve top20 defense strategies through canonical_screen_bt/build_bt_result to emit a real oos_retention, plus re-clustering with 3 graded-F same-lineage constructions. Corroborating recent evidence (KNS value-path fail 07-03, superfactor all oos<0.7 07-03, defense-DB survey 07-03, SR ceiling ~1.1) reinforces the THESIS but lives in RAMP/superfactor L-codes with different scope, not admissible as AX-007 supporting L-codes without re-scoping."
+}

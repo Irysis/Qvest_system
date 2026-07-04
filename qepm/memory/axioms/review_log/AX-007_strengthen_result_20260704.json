@@ -1,0 +1,45 @@
+{
+  "review_id": "AX-007_strengthen_result_20260704",
+  "task": "S-AX-007 — evidence strengthening + re-gate + self-adversarial (follow-up to AX-007_regate_diagnosis_20260704)",
+  "reviewed_at": "2026-07-04",
+  "axiom": "AX-007",
+  "polarity": "negative",
+  "tier_evaluated": "mode_local",
+  "type": "empirical (weights I0.25 R0.25 F0.20 E0.20 M0.10)",
+  "active_json_untouched": true,
+  "write_targets": ["candidates/CAND_20260704_qepm_legacy_defense_negative_L-160_L-165_L-166.json (NEW clean CAND)", "review_log/ (this file)"],
+  "note": "READ-ONLY gate eval (PROMOTE_SOURCED=1, .axis_* called directly, .promote_to_active NEVER invoked). active/AX-007.json semantics unchanged. CAND cluster is candidates/, write-permitted.",
+
+  "strengthening_performed": {
+    "action": "Created a correctly-scoped clean AX-007 CAND (L-160/165/166 defense lineage; L-131 behavioral EXCLUDED as off-lineage) and provisioned mechanism_draft + falsification_draft from corpus-real lesson_text.",
+    "mechanism_source": "L-160/165 lesson_text ('factor quality != portfolio quality', Q25 direction-ambiguous, no short leg) — structural_construction_limit, causal_plausibility=high.",
+    "falsification_source": "3 survived attempts extracted from L-160/165/166 (4-axis regime-smoothed / sector-neutral 2-axis / 60-40 composite ICIR 1.879) — each an attempt to build a passing single-sleeve top20 defense sleeve, each Hard-Fail MDD."
+  },
+
+  "gate_delta": {
+    "before_bare": {"weighted": 0.384, "independence": 0.87, "rigor": 0.67, "falsification": 0.00, "external": 0.00, "mechanism": 0.00, "passed": false},
+    "after_strengthen": {"weighted": 0.683, "independence": 0.87, "rigor": 0.67, "falsification": 1.00, "external": 0.00, "mechanism": 1.00, "passed": false},
+    "axis_moves": {"falsification": "0.00 FAIL -> 1.00 PASS", "mechanism": "0.00 FAIL -> 1.00 PASS", "weighted": "0.384 -> 0.683 (+0.299)", "independence/rigor/external": "UNCHANGED, still FAIL"}
+  },
+
+  "adversarial_self_challenge": {
+    "a_construction_independence": "The only reinforcement that would fix independence (dir_consistency 0.67->1.00) and rigor (frac_fail 0.67->1.00) is L-AR-20260629_225254 (construction=single_sleeve_long_only_topN, backtested, grade F). REJECTED: it is an alpha_research-mode MOMENTUM/microstructure overnight-gap continuation factor (arXiv 2606.14386), roles != [defense], failure mechanism = short-leg spanning, NOT the defense IC-return decoupling of L-160/165/166. Admitting it = distinct-thesis dilution + cross-mode (AR into QPM) contamination.",
+    "b_frac_fail_selection_bias": "negative frac_fail is by-design a failure-count ratio (INV-7 asymmetric burden). frac_fail 0.67 is NOT sampling bias — it is the honest corpus grade distribution (L-160 F, L-165 F, L-166 null-not-F). Inflating it to 0.80+ requires either a graded-F swap of L-166 (no same-lineage graded-F defense code exists in corpus) or admitting off-lineage codes (rejected). Refusing to force it = correct.",
+    "c_circular_reference": "L-QPM-20260607-001 (structural_limit, backtested) explicitly cites AX-003/004/005/007 as evidence of the SR-2.5 ceiling. REJECTED as supporting L-code precisely to avoid circularity — an axiom citing a meta-L-code that itself cites the axiom. Kept out of cluster.",
+    "d_b434_stale": "Core cluster L-160/165/166 verified CLEAN: research_mode=qepm_legacy, real stage_artifacts files (l_code_L_160_STR_1683 / STR_1685 / L_166_ANTI_pattern_STR_1687), mtime 2026-06-07, no b434/batch_434 tags. Polarity label 'negative' CORRECT.",
+    "three_weaknesses_self_raised": [
+      "(1) The provisioned falsification attempts are 're-labelings' of the same three cluster L-codes as 'survived attempts', not genuinely independent adversarial trials — legitimate under the negative-axiom framing (each was an attempt to falsify the failure thesis and failed to), but the falsification axis PASS is softer than a positive axiom's would be.",
+      "(2) External is non-remediable from corpus without new computation — the axiom's evidence is entirely legacy-estimated. This is the true binding wall; falsification+mechanism PASS is cosmetic to the final verdict.",
+      "(3) L-166 grade=null is a data-quality gap, not a substantive finding — its lesson_text is empty in corpus. The axiom leans on a member whose grade was never materialized, which is why both independence and rigor sit one member short of the hurdle."
+    ]
+  },
+
+  "verdict": "FAIL_INSUFFICIENT_EVIDENCE",
+  "binding_axis": "external (oos_retention real n=0/3; structural, non-remediable from corpus) — also independence(dir_consistency 0.67) and rigor(frac_fail 0.67) fail on the L-166 null-grade root, but external is the hard wall.",
+  "max_legitimate_weighted": 0.683,
+  "threshold": 0.80,
+  "hurdles_failing": 3,
+  "active_axiom_action": "NONE. Keep AX-007 epistemic_status=provisional, enforcement_mode=documented UNCHANGED. Consistent with INV-7 (provisional failure-ledger) and INV-2 (no auto block/strengthen without Dohoon confirm).",
+  "regraduation_path": "Requires (i) a genuine backtested re-measurement (canonical_screen_bt / build_bt_result) of a single-sleeve top20 DEFENSE strategy emitting a real oos_retention >= 0.5 (which, given the failure thesis, would likely be < 0.5), AND (ii) re-clustering L-166 with a graded-F same-lineage defense construction. Neither exists in corpus today.",
+  "cross_axiom_note_ax003": "SEPARATE (flagged, not acted): the regenerated AX-003 value CAND is labeled polarity=conditional while active/AX-003.json is negative — a polarity-label mismatch that belongs to the AX-003 re-gate, out of scope for S-AX-007."
+}

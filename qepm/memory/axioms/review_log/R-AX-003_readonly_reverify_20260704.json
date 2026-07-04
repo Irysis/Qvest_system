@@ -1,0 +1,63 @@
+{
+  "review_id": "R-AX-003_readonly_reverify_20260704",
+  "axiom": "AX-003",
+  "axiom_polarity_active": "negative",
+  "cand_polarity_strengthened": "negative",
+  "session": "S-AX-003 recert readonly (promote.R .axis_* 직접호출, promote_to_axiom 미호출)",
+  "active_json_untouched": true,
+  "candidate_id": "CAND_20260704_qepm_legacy_value_conditional_L-132_L-135_L-142",
+  "weighted_score": 0.82,
+  "threshold": 0.8,
+  "all_hurdles_pass": false,
+  "passed": false,
+  "failing_hurdles": ["independence", "external"],
+  "axes": {
+    "independence": {
+      "score": 0.6,
+      "hurdle_pass": false,
+      "n_constructions": 1,
+      "direction_consistency": 0.833,
+      "direction_consistency_definition": "overall_grade_majority",
+      "reason": "1 distinct constructions (min 3), direction_consistency=0.83 [overall]"
+    },
+    "rigor": {
+      "score": 1,
+      "hurdle_pass": true,
+      "n_backtested": 0,
+      "reason": "negative frac_fail[mode_local]=1.00 (n_backtested=0)"
+    },
+    "falsification": {
+      "score": 1,
+      "hurdle_pass": true,
+      "n_attempts": 3,
+      "n_unstructured": 0,
+      "reason": "active attempts=3 (unstructured=0) none_falsified=TRUE retained_ok=TRUE"
+    },
+    "external": {
+      "score": 0.6,
+      "hurdle_pass": false,
+      "n_oos_retention_real": 1,
+      "oos_retention_median": 0.12,
+      "oos_retention_source": "draft",
+      "oos_months": 12,
+      "oos_months_bonus": true,
+      "reason": "oos_retention real n=1/6 (src=draft) median=0.120 (min 0.50) | months=12 bonus=TRUE"
+    },
+    "mechanism": {
+      "score": 1,
+      "hurdle_pass": true,
+      "mechanism_type": "market_structural",
+      "reason": "expl=present type=market_structural"
+    }
+  },
+  "baseline_weighted": 0.23,
+  "baseline_failing": ["falsification", "external", "mechanism"],
+  "verdict": "FAIL_INSUFFICIENT_EVIDENCE + GATE_GAP",
+  "gate_gaps": {
+    "gap1_independence": "family-scoped negative 공리는 증거가 정의상 단일 construction(value) — negative min 3 distinct constructions 구조적 도달불가. 명목 다양성은 인프라·비-value 오염이었음.",
+    "gap2_external": "ext_min_oos_retention>=0.5는 positive(신호 OOS 생존) 의미론. negative 공리에선 저-retention(L-135 0.12)이 실패 재현=확증인데 hurdle이 반전 미대응."
+  },
+  "evidence_gaps": "06-24 value 24/24 감쇠 · 07-03 KNS value-경로 자본급 실패 = MEMORY만 존재, corpus L-code 미탑재. 정식 backtested/canonical_screen L-code 발행 후에만 External 결집 가능(창작 금지).",
+  "strengthening": "오염 제거(L-142/148/161/161A/162A/QPM×2) + clean value 4건 추가 + mechanism/falsification active 전파 + polarity conditional→negative 교정. active/ 무변경(INV-2).",
+  "logged_at": "2026-07-04 16:45:05"
+}

@@ -1,0 +1,83 @@
+{
+  "review_id": "R-AX-004_gate_rediagnosis_20260704",
+  "task": "AX-004 게이트 재통과 진단 (read-only, 수리된 promote.R 5축)",
+  "axiom": "AX-004",
+  "polarity": "negative",
+  "type": "methodological",
+  "reviewed_at": "2026-07-04",
+  "harness": "scratchpad/rax004_harness.R (PROMOTE_SOURCED=1, .axis_* 직접 호출, promote_to_axiom 미호출, active/ write 0건)",
+  "corpus": ".cache/lcode_corpus.json (219 lcodes, v2)",
+  "polarity_label_check": "AX-004=negative, CAND=negative — 정합 (AX-003 conditional 오류 무관)",
+  "config_1_cand_as_is": {
+    "supporting": ["L-133", "L-134", "L-139", "L-140"],
+    "weighted": 0.335,
+    "all_hurdles": false,
+    "axes": {
+      "independence": {"score": 0.9, "hurdle": false, "reason": "3 constr (min 3 neg) 충족하나 direction_consistency=0.75 < 0.8 (grades F/F/C/F)"},
+      "rigor": {"score": 1.0, "hurdle": true, "reason": "negative frac_fail[mode_local]=1.00 (n_backtested=0, estimated 전부 F/C)"},
+      "falsification": {"score": 0.0, "hurdle": false, "reason": "attempts=0 (CAND draft 비어있음)"},
+      "external": {"score": 0.0, "hurdle": false, "reason": "corpus oos_retention 실값 0/4 + draft oos null"},
+      "mechanism": {"score": 0.0, "hurdle": false, "reason": "economic_explanation MISSING (CAND draft null)"}
+    },
+    "verdict": "FAIL — CAND는 자동추출 bare draft. mech/fals/oos 미충전 = 4/5 hurdle FAIL"
+  },
+  "config_2_active_refed": {
+    "note": "active AX-004.json의 populated mechanism/falsification(3 structured attempts)/oos_validation을 draft로 주입해 재평가",
+    "supporting": ["L-133", "L-134", "L-139"],
+    "weighted": 0.92,
+    "all_hurdles": false,
+    "axes": {
+      "independence": {"score": 0.867, "hurdle": false, "reason": "direction_consistency=0.67 (F/F/C = 2/3) < 0.8"},
+      "rigor": {"score": 1.0, "hurdle": true},
+      "falsification": {"score": 1.0, "hurdle": true, "reason": "3 structured attempts, effect_retained 채워짐"},
+      "external": {"score": 0.6, "hurdle": false, "reason": "draft oos_effect_vs_is=0.08 < 0.5 (median 0.080)"},
+      "mechanism": {"score": 1.0, "hurdle": true, "reason": "market_structural, high"}
+    },
+    "verdict": "FAIL on 2 축 — Independence(0.67<0.8) + External(0.08<0.5). weighted 0.92는 통과선이나 INV-4 boolean-AND가 차단"
+  },
+  "config_3_reinforced_backtested": {
+    "note": "backtested quality codes(real neg oos)로 클러스터 교체 시뮬레이션",
+    "supporting": ["L-AS-20260613_074936_250687", "L-AS-20260612_154048_969566", "L-AS-20260612_154048_969567"],
+    "weighted": 0.71,
+    "all_hurdles": false,
+    "axes": {
+      "independence": {"score": 0.8, "hurdle": false, "reason": "2 distinct constr(quality,value) < 3 (neg 상향)"},
+      "rigor": {"score": 0.0, "hurdle": false, "reason": "★corpus grade=B(near-miss raw)라 frac_fail=0. 실제 재측정 essence C/F이나 corpus grade 필드가 raw B → negative frac_fail 붕괴"},
+      "falsification": {"score": 1.0, "hurdle": true},
+      "external": {"score": 0.6, "hurdle": false, "reason": "★oos median=-0.958 (negative 확증 증거인데) < 0.5 hurdle → polarity-inverted 차단"},
+      "mechanism": {"score": 1.0, "hurdle": true}
+    },
+    "verdict": "FAIL — backtested 증거를 넣어도 External hurdle이 polarity-blind라 오히려 강한 negative 증거가 차단됨 + corpus grade=raw B 오염"
+  },
+  "blockers_classified": {
+    "B1_cand_underspec": "CAND는 자동추출 bare draft — mechanism/falsification/oos_validation 미충전. active AX-004에는 전부 존재. cluster_extractor가 active 공리 본문을 draft로 backfill하지 않는 파이프라인 갭 (config_1 vs config_2).",
+    "B2_independence_direction_consistency": "direction_consistency 정의(전체 grade 최빈비율)가 negative 클러스터에 부적합. F/F/C(2/3=0.67) 또는 F/F/C/F(3/4=0.75) 모두 <0.8. negative 클러스터는 'grade 다양성'이 아니라 'fail 방향 일치'(전부 loss=F/C)로 봐야 하나, C와 F를 다른 grade로 세어 최빈비율을 깎음. corpus construction_type 오라벨(L-133=ml_sizing, L-139=momentum)도 겹침 — axiom 본문의 GP/cash/GSCD와 불일치.",
+    "B3_external_polarity_inversion": "External hurdle = median(oos_retention) >= 0.5, polarity-blind. negative 공리의 supporting 증거는 정의상 oos collapse(retention<0.5)이므로, 증거가 강할수록(oos median -0.958) hurdle이 더 확실히 FAIL. positive 게이트 산식을 negative에 그대로 적용한 구조 결함. (config_3에서 실증: 진짜 backtested negative 증거가 External을 통과 못 함.)",
+    "B4_rigor_corpus_grade_raw": "corpus grade 필드가 raw 등급(near-miss B)이라, 재측정 essence C/F인 backtested quality 코드가 negative frac_fail 산식에서 'win(B)'으로 집계 → frac_fail=0. corpus에 essence_grade/re-measured grade 필드 부재."
+  },
+  "conclusion": "AX-004는 수리된 5축 게이트를 어느 구성으로도 통과 못 함. 단 이는 문턱 미달(진짜 반증)이 아니라 (a) CAND draft 미충전(B1) (b) negative-polarity 축 산식 2건의 구조 결함(B2 direction_consistency·B3 External inversion·B4 grade raw)의 합산. 문턱 완화·수치 창작 없이 강화 가능한 경로는 evidence_gap 참조. INV-2 준수: active/ 무변경.",
+  "invariants_respected": ["active/ AX JSON write 0건", "문턱·INV-1~7 불변", "corpus 실측만 인용", "review_log write만"],
+  "strengthening_S-AX-004": {
+    "task": "S-AX-004 증거 강화 + 재평가 + 적대검증 (candidates/ write만, active/ 무변경)",
+    "strengthened_at": "2026-07-04",
+    "changes_to_cand": [
+      "B1 draft backfill: mechanism/falsification/oos_validation draft를 active AX-004 실측(2026-04 promote 본문)으로 미러링 — 창작 아님, 이미 active에 존재하는 값 재사용. mech/fals hurdle 회복.",
+      "L-140 제거: STR_1642_lowbeta_3f = low-beta/BAB(promoted_to_axiom=AX-005), quality_profitability 아님 — 소속 오류 교정(gaming 아님).",
+      "backtested 3건 결집: L-AS-...250687(GPA+PiotroskiF, essence C, oos -0.958) / ...969566(Piotroski-only, essence C, oos -0.719) / ...969567(composite quality, essence F, oos -1.014). real backtested negative OOS 실탄."
+    ],
+    "measured_configs": {
+      "config_A_3estimated_drafts": {"weighted": 0.920, "hurdles_fail": ["independence(dc 0.67)", "external(oos draft 0.080)"]},
+      "config_B_add_3backtested": {"weighted": 0.840, "hurdles_fail": ["independence(dc 0.50)", "rigor(frac_fail 0.50)", "external(median -0.958)"]},
+      "written_cand_final": {"weighted": 0.840, "hurdles_pass": {"independence": false, "rigor": false, "falsification": true, "external": false, "mechanism": true}}
+    },
+    "key_finding": "★backtested negative 증거를 추가할수록 게이트 점수가 낮아짐(0.920→0.840). Rigor(corpus grade=raw B → backtested를 win으로 오집계, B4), External(median -0.958이 hurdle 0.5 미달, negative 확증인데 차단 = B3 polarity inversion), Independence(grade 다양성 희석, B2). = negative-polarity 축 산식 3건이 positive 논리 적용 = 구조결함(GATE_GAP).",
+    "adversarial_self_challenge_AX008": {
+      "a_independence_genuine": "PARTIAL — 3 backtested strategy_id distinct + core_reference distinct(GPA+PiotroskiF baseline / Piotroski-only / GP+CFOA+Piotroski+ROE+accrual composite)이나 3건 모두 Piotroski F를 구성요소로 포함 = 완전 orthogonal quality axis 아님(construction overlap 존재). 약점으로 명시.",
+      "b_failure_bias": "PASS — corpus 28 quality-related 코드 grade 분포 A2/B4/C6/F13. grade A(L-130 factor-timing, L-141 axiom-meta)는 둘 다 standalone quality 아님(scope-excluded). grade B backtested 4건 전부 essence F/C. passing KR quality standalone long-only counter-example 부재. 오히려 essence-F인 L-AS-...321995(Piotroski F 4번째)를 미포함 = 실패편향 표집 아님(실패 하나를 뺐지 성공을 뺀 게 아님).",
+      "c_circular": "PASS — supporting 6건 전부 독립 strategy 실측(STR_1657/1655/1626 + 3 STR_AS). axiom 자기 근거(L-141 meta) 미인용.",
+      "d_b434_stale": "PASS — b434/distill 미포함, strategy_id 6건 distinct, L-AS 3건 2026-06(원본 2026-04 대비 최신 재확증)."
+    },
+    "verdict": "GATE_GAP — 정당 강화(B1 완료 + L-140 제거 + backtested 3건 결집) 후에도 negative-polarity 축 산식/스키마 3건(B2 direction_consistency·B3 External median inversion·B4 corpus grade raw)이 이 유형 negative를 통과시키지 못함. 문턱 완화·수치 창작 없음. 산식 정정(INV-2 도훈 confirm 사항)이 선행돼야 재승격 가능. active AX-004(구 게이트 weighted 0.892)는 무변경 — INV-7 provisional 라벨이 갭 정직 커버.",
+    "invariants_respected": ["active/ AX-004.json write 0건(git status clean 확인)", "문턱 0.8·INV-1~7 불변", "corpus 실측만(창작 0)", "candidates/ + review_log write만"]
+  }
+}

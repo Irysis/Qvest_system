@@ -1,0 +1,81 @@
+{
+  "queue_id": "axiom_recert_queue_20260704",
+  "created_at": "2026-07-04",
+  "mandate": "도훈 — 수리된 승격절차(promote.R polarity-aware 5축)로 AX-003/004/007 전면 재검토·승격",
+  "governance": "INV-2 — active/ AX JSON 강제수준·의미론 자동 변경 금지. 본 큐는 도훈 confirm 대기 항목. Q-Lead read-only 평가만 수행(promote_to_axiom 미호출). 승인 전 active/ 무변경.",
+  "threshold": 0.8,
+  "gate": "promote.R 수리판 (negative: Independence min 3 construction / Rigor frac_fail>=0.8 / External oos_retention median>=0.5 / Falsification / Mechanism). INV-4 boolean-AND all-hurdles.",
+  "verify": {
+    "active_semantics_diff": "0 — AX 8건 canonical_statement/grade/level HEAD 대비 무변경 (recert_20260704 메타 필드만 추가, semantics_changed:false)",
+    "cand_parse": "3/3 OK",
+    "hook_e2e_battery": "11/11 PASS (pre + post 재확인)",
+    "harvester_rerun": "n=219 promoted=12 exit 0 — 파손 0"
+  },
+  "confirm_queue": [
+    {
+      "axiom": "AX-003",
+      "axiom_desc": "KR value factor(EP/accrual) standalone long-only = Grade F",
+      "polarity": "negative",
+      "epistemic_status": "provisional (INV-7 failure-ledger)",
+      "current_enforcement": "advisory",
+      "gate_baseline_weighted": 0.23,
+      "gate_strengthened_weighted": 0.82,
+      "all_hurdles_pass": false,
+      "failing_hurdles": ["independence", "external"],
+      "verdict": "GATE_GAP",
+      "recommendation": "provisional/advisory 유지 (강제 격상·문턱 통과 아님)",
+      "rationale": "정당 강화(오염 7건 제거 + clean value 4건 결집 + polarity conditional→negative 교정)로 weighted 0.82>0.8 도달했으나, (GAP#1) family-scoped negative는 증거가 정의상 단일 construction(value)이라 Independence 3-construction 구조적 도달불가 + (GAP#2) External oos_retention hurdle이 positive 의미론(신호 OOS 생존)이라 negative 확증(저-retention 0.12)을 반전 미대응. INV-4 boolean-AND 차단. 문턱완화·창작 없음.",
+      "recommended_action": "산식 정정(External polarity-aware · Independence family-scoped negative 완화) 도훈 confirm 후 재게이트. 또는 evidence 결집: 06-24 value 24/24 감쇠·07-03 KNS value-경로 실패를 정식 backtested/canonical_screen L-code로 발행(현재 MEMORY만·corpus 미탑재).",
+      "strengthened_candidate": "qepm/memory/axioms/candidates/CAND_20260704_qepm_legacy_value_conditional_L-132_L-135_L-142.json",
+      "review_log": "qepm/memory/axioms/review_log/R-AX-003_readonly_reverify_20260704.json",
+      "active_json_untouched": true
+    },
+    {
+      "axiom": "AX-004",
+      "axiom_desc": "KR quality_profitability single-signal long-only = 구조적 F",
+      "polarity": "negative",
+      "epistemic_status": "provisional (INV-7 failure-ledger)",
+      "current_enforcement": "advisory",
+      "gate_baseline_weighted": 0.335,
+      "gate_strengthened_weighted": 0.84,
+      "gate_configs_measured": {"config_A_3estimated_drafts": 0.92, "config_B_add_3backtested": 0.84},
+      "all_hurdles_pass": false,
+      "failing_hurdles": ["independence", "rigor", "external"],
+      "verdict": "GATE_GAP",
+      "recommendation": "provisional/advisory 유지 (강제 격상·문턱 통과 아님)",
+      "rationale": "정당 강화(B1 draft backfill + L-140 소속오류 제거 + backtested 3건 결집) 후에도 negative-polarity 축 산식 3건 구조결함이 차단: B2 Independence direction_consistency(F/F/C=0.67, grade 다양성 오적용) · B3 External median(oos_retention)>=0.5 polarity 반전(강한 negative -0.958일수록 FAIL) · B4 Rigor corpus grade=raw B 오집계. ★backtested negative 실탄 추가가 점수를 낮춤(0.92→0.84) = 산식 결함 실증. 적대검증: Independence PARTIAL(3 core_ref distinct이나 전부 Piotroski F 공유=overlap, 명시), 나머지 PASS.",
+      "recommended_action": "negative-polarity 축 산식 3건(B2 win/loss 재정의 · B3 median<=0.5 극성반전 · B4 authoritative.essence_grade 반영) 정정 도훈 confirm 후 재게이트. 증거는 이미 강해짐 — 산식이 병목.",
+      "strengthened_candidate": "qepm/memory/axioms/candidates/CAND_20260704_qepm_legacy_quality_profitability_negative_L-133_L-134_L-139.json",
+      "review_log": "qepm/memory/axioms/review_log/R-AX-004_gate_rediagnosis_20260704.json",
+      "active_json_untouched": true
+    },
+    {
+      "axiom": "AX-007",
+      "axiom_desc": "single_sleeve long-only top20 신호→포트 번역 단절 (defense/core_secondary)",
+      "polarity": "negative",
+      "epistemic_status": "provisional (INV-7 failure-ledger)",
+      "current_enforcement": "documented",
+      "gate_baseline_weighted": 0.384,
+      "gate_strengthened_weighted": 0.683,
+      "all_hurdles_pass": false,
+      "failing_hurdles": ["independence", "rigor", "external"],
+      "binding_axis": "external (oos_retention real n=0/3 — 코퍼스 재계산 불가, 구조적 미해소 벽)",
+      "verdict": "FAIL_INSUFFICIENT_EVIDENCE",
+      "recommendation": "provisional/documented 유지 — 증거 부족으로 재승격 불가 + 추가 리서치 트리거",
+      "rationale": "clean defense CAND(L-160/165/166, L-131 behavioral 제외) 생성 + mechanism/falsification corpus-real 결집으로 falsification/mechanism 0.00→1.00 PASS(weighted 0.384→0.683). 그러나 External(oos_retention real n=0/3)은 legacy estimated L-code라 코퍼스에서 재계산 불가한 진짜 벽. 게이밍용 부적격 L-code(L-AR topN cross-mode INV-1 / L-136 consistency 0.67→0.50 악화 / L-140 off-lineage) 명시 거부 — 최대 정당달성 0.683<0.8.",
+      "recommended_action": "추가 리서치 트리거: (i) single-sleeve top20 DEFENSE 전략 backtested 재측정(canonical_screen_bt/build_bt_result)으로 real oos_retention 발행(실패 thesis상 <0.5 예상) + (ii) L-166 graded-F same-lineage defense construction 재클러스터. 둘 다 corpus에 부재. 부수: KNS/superfactor/DPL recent corroboration은 thesis 강화하나 scope 이질로 supporting 편입 불가.",
+      "strengthened_candidate": "qepm/memory/axioms/candidates/CAND_20260704_qepm_legacy_defense_negative_L-160_L-165_L-166.json",
+      "review_log": "qepm/memory/axioms/review_log/AX-007_strengthen_result_20260704.json",
+      "active_json_untouched": true
+    }
+  ],
+  "cross_cutting_finding": {
+    "summary": "수리된 게이트가 polarity-aware를 표방하나 negative-polarity 축 산식 3건이 여전히 positive 논리를 적용 — 세 공리 모두 '증거 부족 탈락'이 아니라 'GATE_GAP'(AX-003/004) 또는 '코퍼스 재계산 불가 벽'(AX-007 External).",
+    "recommended_gate_repairs_priority": [
+      "1. External polarity 반전: negative는 median(oos_retention)<=0.5(collapse 확증)를 PASS로",
+      "2. Independence family-scoped negative 완화 또는 win/loss 이분 재정의(전부 loss=100% 방향일치)",
+      "3. Rigor corpus grade 필드 → authoritative.essence_grade 반영(raw near-miss B → 재측정 C/F)"
+    ],
+    "invariant_note": "위 3건은 문턱 완화가 아니라 산식 정정 — INV-2에 따라 도훈 confirm 사항. Q-Lead 자동 적용 금지."
+  }
+}
