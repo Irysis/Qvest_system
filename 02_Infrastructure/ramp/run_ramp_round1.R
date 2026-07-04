@@ -58,7 +58,11 @@ b<-R[1]; prev<-0.110
 w(sprintf("\n[Best] %s net_sr=%+.3f port_t=%+.2f oos=%+.3f | 직전best +0.110 대비 %s",b$model,b$net_sr,b$port_t,b$oos_sr,ifelse(b$net_sr>prev,"개선✓","미달")))
 sig<-!is.na(b$port_t)&&b$port_t>1.96&&!is.na(b$oos_sr)&&b$oos_sr>0
 w(sprintf("[유의 판정] port_t>1.96 ∧ OOS_sr>0 = %s", ifelse(sig,"★유의 달성","미달 — 계속")))
+## [2026-07-04 P0#6 caller migrate] emit v2 필수 인자 추가 — construction_type/selection_type.
+##   Round1 = 팩터군 선택/컨비션/IC가중 결합 = construction "composite".
+##   best를 R[order(-net_sr)][1]로 pick(열거 변형 argmax) = selection "sweep" (§3 selection operator).
 ramp_document(strategy_id=sprintf("RAMP_ROUND1_%s",format(Sys.Date(),"%Y%m%d")),grade=ifelse(b$net_sr>0,"B","C"),
+  construction_type="composite", selection_type="sweep",
   lesson_text=sprintf("Round1 고레버리지: best=%s net_sr=%+.3f port_t=%+.2f oos=%+.3f (직전 +0.110). 군선택(drag4 제거)/컨비션/IC가중 시험. %s",b$model,b$net_sr,b$port_t,b$oos_sr,ifelse(sig,"유의달성","미유의 계속")),
   metrics=list(best=b$model,net_sr=b$net_sr,port_t=b$port_t,oos_sr=b$oos_sr),core_reference="RAMP autonomous Round1")
 saveRDS(R,".cache/_ramp_round1.rds"); close(log); cat("ROUND1_DONE\n")
