@@ -79,7 +79,7 @@ QM_ROOT="$BASE" Rscript --no-save "$BASE/02_Infrastructure/monitoring/mark_nolay
 echo "[6/6] P2 bearish forecast brief..."
 P2_BF_DIR="$BASE/04_Research/decision_framework/bearish_forecast_v3"
 P2_PY=""
-for _c in "$BASE/.venv_dpl/Scripts/python.exe" "$BASE/.venv_dpl/bin/python" "$BASE/.venv_qvest_ml/Scripts/python.exe" "$BASE/.venv_qvest_ml/bin/python"; do
+for _c in "$BASE/.venv_qvest_ml/Scripts/python.exe" "$BASE/.venv_qvest_ml/bin/python"; do
   [ -x "$_c" ] && P2_PY="$_c" && break
 done
 if [[ -x "$P2_PY" && -d "$P2_BF_DIR" ]]; then
