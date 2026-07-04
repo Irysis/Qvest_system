@@ -335,6 +335,32 @@ FAMILY_PATTERNS <- list(
   )
 }
 
+# ★최소필드 폴백 엔트리 (P0#1 silent-drop 방지): .hi_parse_distilled가 예외로 실패해도
+#   완전 드롭하지 않고 최소한의 식별 정보로 인덱스에 남긴다. verdict는 polarity 기반 보존,
+#   retry_policy에 파싱실패 사유를 명시해 consumer가 원본 재확인하도록 유도.
+.hi_min_distilled_entry <- function(e, err_msg = "") {
+  pol <- e$polarity %||% "unknown"
+  verdict <- switch(pol, negative = "DISTILLED_NEG", conditional = "DISTILLED_COND",
+                    positive = "DISTILLED_POS", "DISTILLED")
+  stmt <- .hi_join(e$statement_refined) ; if (!nzchar(stmt)) stmt <- .hi_join(e$statement_draft)
+  did  <- e$dist_id %||% paste0("DIST_", substr(stmt, 1, 20))
+  fam  <- e$family %||% "other"
+  if (is.null(fam) || is.na(fam) || fam %in% c("unknown", "")) fam <- "other"
+  list(
+    strategy_id = did,
+    hypothesis_signature = .hi_signature(fam, .hi_slug(stmt), "unknown", "distilled"),
+    title = paste0(did, ": ", substr(stmt, 1, 60)),
+    verdict = verdict,
+    grade = NA_character_,
+    key_metrics = list(),
+    retry_policy = paste0("[파싱실패 — 원본 distilled_knowledge.json 확인 요망] ", err_msg),
+    distilled_status = e$status %||% "pending_5axis",
+    source_paths = "06_Registry/distilled_knowledge.json",
+    source_types = "distilled_knowledge",
+    date = substr(as.character(e$refined_at %||% e$created_at %||% ""), 1, 10)
+  )
+}
+
 .hi_parse_module <- function(e) {
   meta  <- e$meta %||% list()
   idea  <- meta$strategy_idea %||% ""
