@@ -76,8 +76,13 @@ w("기준 M0_EW net_sr=-0.042, TO=13.2. 회전제어/국면이 이를 넘기는�
 ## Document: 이번 iteration 최고 모델을 L-code로 자동 적립 (자가발전)
 .best <- R[which.max(net_sr)]
 if(!is.na(.best$net_sr)){
+  ## [2026-07-04 P0#6 caller migrate] emit v2 필수 인자 추가 — construction_type/selection_type.
+  ##   Gate6 = 직교 약신호 M-code(팩터군)의 국면조건부 회전제어 결합 = construction "composite".
+  ##   최고 모델을 which.max(net_sr)로 pick(열거 config argmax) = selection "sweep" (§3 selection operator).
   ramp_document(strategy_id=sprintf("RAMP_GATE6_BEST_%s", format(Sys.Date(),"%Y%m%d")),
                 grade=ifelse(.best$net_sr>0,"B","C"),
+                construction_type="composite",   # controlled vocab (lcode_schema v2) — 상세는 mechanism_hypothesis
+                selection_type="sweep",          # 열거 M-code config which.max pick
                 lesson_text=sprintf("Gate6 iteration: 최고=%s net_sr=%+.3f port_t=%+.2f TO=%.1f (기준 M0_EW −0.04). 회전제어=핵심레버.",
                                     .best$model, .best$net_sr, .best$port_t, .best$to),
                 metrics=list(best_model=.best$model, net_sr=.best$net_sr, port_t=.best$port_t, turnover=.best$to),
