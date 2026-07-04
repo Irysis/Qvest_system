@@ -5,12 +5,16 @@
 # 구조를 파일 인덱스로 대체. alpha-search Step 0 이전 조회 의무
 # (.claude/skills/alpha-search/SKILL.md 참조).
 #
-# 원천 3계층:
+# 원천 4계층 (2026-07-04 엔진 재설계 — distilled 추가):
 #   (a) stage_artifacts/alpha_search/*/strategy_manifest.json  (완주 run)
 #       + strategy_manifest 부재 시 hurdle_result.json fallback (초기 run)
 #       + 둘 다 없는 빈 디렉터리는 중단 run으로 스킵 (사유 기록)
 #   (b) .cache/lcode_corpus.json                               (L-code 594건+)
 #   (c) 06_Registry/module_catalog.json                        (등록 모듈 265건+)
+#   (d) 06_Registry/distilled_knowledge.json                   (②Distilled 클러스터 통합 지식)
+#       verdict = DISTILLED_NEG / DISTILLED_COND / DISTILLED_POS.
+#       negative는 lookup 결과에 retry_policy('재시도 금지/조건' — INV-7 provisional) 라벨 표출:
+#       반복기록 N건보다 대표 1건 + 회차 이력이 가설 시점 pull 대조에 정밀.
 #
 # 산출: 06_Registry/hypothesis_index.json
 #
@@ -271,6 +275,37 @@ FAMILY_PATTERNS <- list(
   )
 }
 
+.hi_parse_distilled <- function(e) {
+  stmt  <- e$statement_refined %||% e$statement_draft %||% ""
+  refined <- !is.null(e$statement_refined) && nzchar(e$statement_refined %||% "")
+  title <- paste0(e$dist_id %||% "", ": ", if (refined) stmt else paste0("[초안] ", stmt))
+  text  <- .hi_lc(c(e$family %||% "", stmt, paste(unlist(e$supporting_l_codes), collapse = " ")))
+  pol   <- e$polarity %||% "unknown"
+  verdict <- switch(pol, negative = "DISTILLED_NEG", conditional = "DISTILLED_COND",
+                    positive = "DISTILLED_POS", "DISTILLED")
+  retry <- if (identical(pol, "negative")) {
+    rc <- e$retry_condition %||% ""
+    if (nzchar(rc)) sprintf("재시도 조건: %s", rc)
+    else "재시도 금지(INV-7 provisional — 차별점 명시 + 재도전 사유 기록 없인 진행 금지)"
+  } else NULL
+  fam <- e$family %||% NA_character_
+  if (is.null(fam) || is.na(fam) || fam %in% c("unknown", "")) fam <- .hi_infer_family(text)
+  list(
+    strategy_id = e$dist_id %||% paste0("DIST_", substr(stmt, 1, 20)),
+    hypothesis_signature = .hi_signature(
+      fam, .hi_infer_signal_group(text, stmt), "unknown", "distilled"),
+    title = title,
+    verdict = verdict,
+    grade = NA_character_,
+    key_metrics = list(),
+    retry_policy = retry,
+    distilled_status = e$status %||% "pending_5axis",
+    source_paths = "06_Registry/distilled_knowledge.json",
+    source_types = "distilled_knowledge",
+    date = substr(as.character(e$refined_at %||% e$created_at %||% ""), 1, 10)
+  )
+}
+
 .hi_parse_module <- function(e) {
   meta  <- e$meta %||% list()
   idea  <- meta$strategy_idea %||% ""
@@ -320,7 +355,8 @@ build_hypothesis_index <- function(root = QM_ROOT, out_path = HI_INDEX_PATH,
   cov <- list(alpha_search_manifest = 0L, alpha_search_hurdle_fallback = 0L,
               alpha_search_skipped_empty = 0L, alpha_search_parse_fail = 0L,
               lcode_indexed = 0L, lcode_skipped = 0L,
-              module_indexed = 0L, module_skipped = 0L)
+              module_indexed = 0L, module_skipped = 0L,
+              distilled_indexed = 0L, distilled_skipped = 0L)
 
   add_entry <- function(e) {
     if (is.null(e)) return(FALSE)
@@ -371,6 +407,18 @@ build_hypothesis_index <- function(root = QM_ROOT, out_path = HI_INDEX_PATH,
     }
   }
 
+  # --- (d) distilled knowledge (②Distilled — 2026-07-04) ---
+  dk_path <- file.path(root, "06_Registry/distilled_knowledge.json")
+  if (file.exists(dk_path)) {
+    dk <- tryCatch(fromJSON(dk_path, simplifyVector = FALSE), error = function(e) NULL)
+    for (e in (dk$entries %||% list())) {
+      if (identical(e$status %||% "", "expired")) { cov$distilled_skipped <- cov$distilled_skipped + 1L; next }
+      pe <- tryCatch(.hi_parse_distilled(e), error = function(err) NULL)
+      if (add_entry(pe)) cov$distilled_indexed <- cov$distilled_indexed + 1L
+      else cov$distilled_skipped <- cov$distilled_skipped + 1L
+    }
+  }
+
   out <- list(
     schema_version = "hypothesis_index_v1",
     generated_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
@@ -388,9 +436,10 @@ build_hypothesis_index <- function(root = QM_ROOT, out_path = HI_INDEX_PATH,
     cat(sprintf("  manifest=%d hurdle_fallback=%d skipped_empty=%d parse_fail=%d\n",
                 cov$alpha_search_manifest, cov$alpha_search_hurdle_fallback,
                 cov$alpha_search_skipped_empty, cov$alpha_search_parse_fail))
-    cat(sprintf("  lcode=%d (skip %d)  module=%d (skip %d)\n",
+    cat(sprintf("  lcode=%d (skip %d)  module=%d (skip %d)  distilled=%d (skip %d)\n",
                 cov$lcode_indexed, cov$lcode_skipped,
-                cov$module_indexed, cov$module_skipped))
+                cov$module_indexed, cov$module_skipped,
+                cov$distilled_indexed, cov$distilled_skipped))
   }
   invisible(out)
 }
@@ -424,6 +473,8 @@ lookup_hypothesis <- function(keywords, index_path = HI_INDEX_PATH,
         grade = as.character(e$grade %||% NA_character_),
         sharpe = .hi_num(km$sharpe) %||% NA_real_,
         port_t = .hi_num(km$portfolio_alpha_t) %||% NA_real_,
+        # ②Distilled negative failure-ledger: 재시도 금지/조건 라벨 (INV-7 provisional)
+        retry_policy = as.character(e$retry_policy %||% ""),
         date = e$date %||% "",
         source = paste(e$source_types %||% "", collapse = ","),
         stringsAsFactors = FALSE

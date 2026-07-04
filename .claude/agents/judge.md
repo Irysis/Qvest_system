@@ -56,7 +56,33 @@ allowed-tools: Bash(Rscript*) Read Grep Glob Write
 
 Multi-objective 8지표 + `method_shopping_log` candidates_tried × 0.05 DSR penalty.
 
-## Legacy STR 모드
+## L-code 발행 (의무 — QEPM 모드 emit 지점, 2026-07-04 G-mode-wiring)
+
+essence_score Grade 확정 **직후**(judge_verdict finalize 전), 결과를 지식 원장에 적립한다. QEPM 모드의 emit 1지점 = 여기(PASS/FAIL 무관 — 실패도 원장).
+
+```r
+source("02_Infrastructure/axiom/lcode_emit.R")
+lc_path <- emit_qepm_lcode(
+  strategy_id = "{WT_id}", grade = "{essence Grade}",   # A/B/C/F — essence_score 권위값 그대로
+  source      = "judge_gate",
+  metric_type = "backtested",                            # forge 계약 경유 실측만 이 라벨 (INV-1)
+  lesson_text = "{판정 요지 — 무엇이 통과/탈락했고 지배 요인이 무엇인지, 실측 수치 인용}",
+  # ---- emit v2 승격축 1급 인자 (emit 시점에 채운다 — 결측이 승격 도달불가의 주원인) ----
+  mechanism_hypothesis = "{경제 메커니즘 1줄 — r7 Mechanism 축 입력, 보일러플레이트 금지}",
+  construction_type    = "{lcode_schema LCODE_VALID_CONSTRUCTION_TYPES 내 실값}",
+  portfolio_alpha_t    = {forge_package.portfolio_alpha_t_nw_lag3},
+  oos_retention        = {essence oos_retention},
+  selection_type       = "{chain|sweep|single — measurement-graduation §3 selection operator}",
+  falsification_attempts = list(  # 실제 수행분만 — 미수행 값 기재 금지. 구조체 [{test,result,effect_retained}]
+    list(test = "{placebo/lag-stress/self-adversarial 등}", result = "{survived|falsified|weakened}",
+         effect_retained = {실값 or NA})),
+  metrics = list(sharpe = {net_sharpe}, mdd_pct = {MDD%}, cagr_pct = {CAGR%})
+)
+```
+
+- **산출 경로를 `judge_verdict.json`에 `l_code_path` 필드로 기록** (governor 전이 체크리스트가 존재 확인).
+- 수치는 forge-authoritative/essence 실측값만 (proxy 손계산 금지 — measurement-graduation §1·§2). falsification은 **실제 수행한 반증만** 기록 (Falsification 축 결측이 승격 도달불가의 주원인이었음 — 가짜 기록 금지).
+- **governor DEFER/REJECT 시**: 동일 함수 재사용 — `emit_qepm_lcode(..., source = "governor_admission")` (별도 코드 0줄, 모드 prefix GV 자동).
 Gate 0~5 + Role Honesty Audit 6종 + Gate 16~18.
 
 ## Telegram

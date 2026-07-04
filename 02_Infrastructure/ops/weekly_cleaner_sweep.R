@@ -14,6 +14,10 @@
 #   [3] 주간 리서치 인벤토리 수집:
 #       stage_artifacts 지난 7일 신규 엔트리 / hypothesis_index 델타 / 신규 L-code /
 #       git log --since 요약
+#   [3.5] 주간 axiom 사이클 (2026-07-04 — Cleaner 통합이 정규 경로, axiom_weekly.sh 대체):
+#       lcode_harvester → cluster_extractor → promote 진단(candidate 순회, INV-4 hurdle)
+#       + cleaner_pending.json에 axiom_candidates 섹션{n_pending, failing_axis_histogram, near_miss}
+#       (engine-core 스크립트 호출만 — 중복 구현 금지. DRY 시 promote 생략·현황 집계만)
 #   [4] .cache/cleaner_pending.json 기록
 #       {week_of, sweep_deleted_n, inventory, status:"awaiting_distill"}
 #       → bootstrap.sh가 마커 감지해 "/cleaner 실행" WARN 노출 (증류는 세션에서)
@@ -245,6 +249,94 @@ run_step("inv_git_log", {
 })
 
 # =============================================================================
+# [3.5] 주간 axiom 사이클 — harvester → cluster_extractor → promote 진단 (2026-07-04)
+#       Cleaner 통합이 정규 경로 (axiom_weekly.sh 본문 retain — 헤더 참조).
+#       engine-core 스크립트 호출만 (fail-soft run_step 규약). DRY 시 promote 생략.
+# =============================================================================
+axiom_candidates_summary <- NULL
+run_step("axiom_weekly_cycle", {
+  ax_dir <- file.path(root, "02_Infrastructure", "axiom")
+  # bare python 금지 — venv(qvest_ml) 우선, QVEST_PY 환경변수로 override
+  py <- Sys.getenv("QVEST_PY", file.path(root, ".venv_qvest_ml", "Scripts", "python.exe"))
+  if (!file.exists(py)) py <- "python"  # 최후 폴백 (환경 미프로비저닝 시 fail-soft로 기록됨)
+  Sys.setenv(CLAUDE_PROJECT_DIR = root, PYTHONUTF8 = "1")
+  if (DRY) {
+    # dry-run = axiom state 무변경 (corpus/candidates/review_log 미기록) — 집계 스텝만 수행
+    cat("  | [axiom] harvester/cluster/promote 생략 (dry-run — axiom state 무변경)\n")
+  } else {
+    for (scr in c("lcode_harvester.py", "cluster_extractor.py")) {
+      sp <- file.path(ax_dir, scr)
+      if (!file.exists(sp)) stop(sprintf("%s 부재", scr))
+      out <- suppressWarnings(system2(py, shQuote(sp), stdout = TRUE, stderr = TRUE))
+      st <- attr(out, "status")
+      cat(sprintf("  | [axiom] %s → %s\n", scr, if (is.null(st) || st == 0) "OK" else sprintf("exit=%s", st)))
+      if (!is.null(st) && st != 0) stop(sprintf("%s exit=%s: %s", scr, st, paste(tail(out, 3), collapse = " | ")))
+    }
+    # promote 진단: pending candidate 순회 (INV-4 5축 hurdle — 미달은 review_log/AX-PENDING 기록)
+    cands <- list.files(file.path(root, "qepm", "memory", "axioms", "candidates"),
+                        pattern = "^CAND_.*\\.json$", full.names = TRUE)
+    promote_r <- file.path(ax_dir, "promote.R")
+    for (cand in cands) {
+      out <- suppressWarnings(system2("Rscript", c(shQuote(promote_r), shQuote(cand)),
+                                      stdout = TRUE, stderr = TRUE))
+      hit <- grep("\\[promote\\].*(PASS|FAIL)", out, value = TRUE)
+      cat(sprintf("  | [axiom] promote %s: %s\n", basename(cand),
+                  if (length(hit)) hit[1] else "출력 미확인 (fail-soft)"))
+    }
+  }
+  invisible(TRUE)
+})
+
+# axiom 후보 현황 집계 (n_pending / failing_axis_histogram / near_miss) — 다이제스트 입력.
+#   failing 축 데이터 = promote.R review_log(AX-PENDING_*.json failing_hurdles) 실기록만 소비.
+run_step("axiom_candidates_summary", {
+  cand_dir <- file.path(root, "qepm", "memory", "axioms", "candidates")
+  active_dir <- file.path(root, "qepm", "memory", "axioms", "active")
+  rl_dir <- file.path(root, "qepm", "memory", "axioms", "review_log")
+  cand_fs <- list.files(cand_dir, pattern = "^CAND_.*\\.json$", full.names = TRUE)
+  # 이미 승격된 candidate 제외 (active axiom promotion$source_candidate 대조)
+  promoted_ids <- character(0)
+  for (af in list.files(active_dir, pattern = "^AX-.*\\.json$", full.names = TRUE, recursive = TRUE)) {
+    aj <- tryCatch(fromJSON(af, simplifyVector = FALSE), error = function(e) NULL)
+    sc <- aj$promotion$source_candidate %||% NULL
+    if (!is.null(sc)) promoted_ids <- c(promoted_ids, as.character(sc))
+  }
+  hist_tab <- list(); near_miss <- list(); n_pending <- 0L
+  for (cf in cand_fs) {
+    cj <- tryCatch(fromJSON(cf, simplifyVector = FALSE), error = function(e) NULL)
+    if (is.null(cj)) next
+    cid <- cj$candidate_id %||% sub("\\.json$", "", basename(cf))
+    if (cid %in% promoted_ids) next
+    n_pending <- n_pending + 1L
+    # 해당 candidate의 최신 AX-PENDING 리뷰(failing_hurdles) — promote 실기록만
+    rls <- list.files(rl_dir, pattern = paste0("^AX-PENDING_", gsub("([][{}()+*^$|\\\\?.])", "\\\\\\1", cid), "_"),
+                      full.names = TRUE)
+    if (!length(rls)) next
+    rl <- tryCatch(fromJSON(rls[order(rls, decreasing = TRUE)][1], simplifyVector = FALSE),
+                   error = function(e) NULL)
+    if (is.null(rl)) next
+    failing <- unlist(rl$failing_hurdles %||% list())
+    for (ax in failing) hist_tab[[ax]] <- (hist_tab[[ax]] %||% 0L) + 1L
+    if (length(failing) == 1L)
+      near_miss[[length(near_miss) + 1L]] <- list(
+        candidate_id = cid, failing_axis = failing[1],
+        weighted_score = rl$weighted_score %||% NA,
+        statement_draft = substr(as.character(cj$statement_draft %||% ""), 1, 160))
+  }
+  axiom_candidates_summary <- list(
+    n_candidates_total = length(cand_fs),
+    n_pending = n_pending,
+    failing_axis_histogram = hist_tab,
+    near_miss = near_miss,
+    source = "promote.R review_log(AX-PENDING failing_hurdles) 실기록 집계 — 리뷰 없는 candidate는 histogram 미포함(정직)",
+    note = if (DRY) "dry-run — promote 미실행, 기존 review_log 스냅샷 집계" else "step 3.5 promote 진단 직후 집계")
+  cat(sprintf("[cleaner] axiom 후보 현황: total=%d pending=%d near_miss=%d (failing axes: %s)\n",
+              length(cand_fs), n_pending, length(near_miss),
+              if (length(hist_tab)) paste(sprintf("%s=%d", names(hist_tab), unlist(hist_tab)), collapse = " ") else "리뷰기록 없음"))
+  invisible(TRUE)
+})
+
+# =============================================================================
 # [4] cleaner_pending.json 기록 — /cleaner 증류 세션이 소비, bootstrap이 마커 감지
 # =============================================================================
 sweep_deleted_n <- length(weekly_deleted$cache_scratch) + length(weekly_deleted$temp_logs) +
@@ -266,9 +358,10 @@ run_step("write_pending", {
       manifest                    = ".cache/hygiene_manifest.log"
     ),
     inventory     = inventory,
+    axiom_candidates = axiom_candidates_summary,   # [3.5] 주간 axiom 사이클 후보 현황 (n_pending/failing_axis_histogram/near_miss)
     step_status   = step_status,
     status        = "awaiting_distill",
-    next_action   = "/cleaner 스킬 (다음 세션) — 주간 엑기스 증류 + L-code 적립 + 잔재 무아카이브 삭제"
+    next_action   = "/cleaner 스킬 (다음 세션) — 주간 엑기스 증류 + L-code 적립 + axiom 후보 현황 검토(near-miss 정제) + 잔재 무아카이브 삭제"
   )
   write_json(pending, pending_path, auto_unbox = TRUE, pretty = TRUE,
              null = "null", na = "null")
@@ -298,6 +391,9 @@ if (Sys.getenv("QVEST_CLEANER_NO_TG", "0") != "1") {
       list(type = "bullet", heading = "이번 주 인벤토리", items = c(
         sprintf("실험 신규 엔트리 %d건 (stage_artifacts 7일)", n_sa),
         sprintf("신규 교훈 L-code %d건", n_lc),
+        sprintf("axiom 후보 대기 %s건 (near-miss %s건 — /cleaner에서 정제)",
+                as.character(axiom_candidates_summary$n_pending %||% "?"),
+                as.character(length(axiom_candidates_summary$near_miss %||% list()))),
         sprintf("커밋 %d건 (git log 7일)", n_gc),
         sprintf("삭제 기록: .cache/hygiene_manifest.log (%s)",
                 if (DRY) "dry-run — 실삭제 없음" else "실삭제")

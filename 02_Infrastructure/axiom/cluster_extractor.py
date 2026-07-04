@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import argparse
 import glob
+import hashlib
 import json
 import os
 import re
@@ -136,9 +137,33 @@ def _classify_type(cluster: dict) -> str:
     return "empirical"
 
 
+# v2 (2026-07-04): grade 정규화 alias — corpus가 이미 정규화(A/B/C/F)돼 있지만,
+# 구 corpus/직접 호출 back-compat용 로컬 정규화 (lcode_harvester._DEFAULT_GRADE_MAP 축약판).
+_GRADE_NORM = {
+    "A": "A", "A_NOVEL": "A", "A_DEF": "A", "A_CONDITIONAL": "A",
+    "A_CONDITIONAL_REAFFIRMED": "A", "B": "B", "B_ARCHIVE": "B",
+    "C": "C", "F": "F", "REJECT": "F",
+}
+
+
 def _polarity(cluster: dict) -> str:
-    """Infer axiom polarity from grade distribution."""
-    grades = [m.get("grade") for m in cluster["members"]]
+    """Infer axiom polarity from grade distribution.
+
+    v2 수리 (2026-07-04, 비표준 grade 정규화 왜곡): 구 구현은 비표준 grade
+    (REJECT/PROCESS_RULE/... 23종)가 A/C/F 어느 쪽에도 안 걸려 클러스터가
+    'positive'로 오분류되는 왜곡. → ① grade 정규화(REJECT→F 등) ② record_type ≠
+    performance(process/infra/summary) 멤버는 성과 증거가 아니므로 polarity 집계 제외
+    ③ 성과 grade가 하나도 없으면 'unknown' (positive 오귀속 금지).
+    """
+    grades = []
+    for m in cluster["members"]:
+        if (m.get("record_type") or "performance") != "performance":
+            continue
+        g = _GRADE_NORM.get(str(m.get("grade") or ""))
+        if g:
+            grades.append(g)
+    if not grades:
+        return "unknown"  # 성과 증거 無 — positive 폴백 금지 (구 왜곡 수리)
     gc = Counter(grades)
     has_a = gc.get("A", 0) >= 1
     only_fail = gc.get("F", 0) + gc.get("C", 0) == len(grades) and not has_a
@@ -158,7 +183,8 @@ def _draft_statement(cluster: dict, cand_type: str, polarity: str) -> str:
         all_tags.update(m.get("tags") or [])
     top_tags = [t for t, _ in all_tags.most_common(3)]
 
-    prefix = {"negative": "실패 규칙", "conditional": "조건부 규칙", "positive": "성공 규칙"}[polarity]
+    prefix = {"negative": "실패 규칙", "conditional": "조건부 규칙",
+              "positive": "성공 규칙"}.get(polarity, "규칙(성과증거 미분류)")
     type_str = "실증" if cand_type == "empirical" else "방법론"
     return (
         f"[{type_str} {prefix} 초안] family={fam}, tags={','.join(top_tags)}, "
@@ -378,6 +404,156 @@ def _write_with_superset_dedup(new_cands: list, out_dir: str) -> list[str]:
     return written
 
 
+# ══════════════════════════════════════════════════════════════════════
+# ②Distilled 계층 (2026-07-04 엔진 재설계 — 3층 산출물 모델의 소비 단위)
+#   CAND가 5축 미달이어도 폐기하지 않고 DIST 초안으로 유지한다.
+#   qepm/memory/axioms/distilled/DIST-<MODE>-NNN.json + 06_Registry/distilled_knowledge.json
+#   lifecycle: pending_5axis(초안) → distilled(/cleaner 세션 LLM 정제 — 무인 정제 금지,
+#   INV-6: statement_refined는 /cleaner에서만 작성·정제 전 텍스트 주입 금지) → promoted | expired.
+#   재생성 멱등성: cluster_key(=sorted supporting_l_codes sha1)로 기존 DIST와 매칭 —
+#   draft 필드만 갱신, dist_id/status/statement_refined/refined_at은 절대 보존.
+# ══════════════════════════════════════════════════════════════════════
+
+DIST_MODE_PREFIX = {
+    "alpha_search": "AS", "alpha_research": "AR", "qepm_legacy": "QPM",
+    "judge_gate": "JG", "governor_admission": "GV",
+    "factor_rotation": "FR", "regime_research": "RR", "ramp": "RAMP",
+}
+
+
+def _cluster_key(l_codes: list[str]) -> str:
+    return hashlib.sha1("|".join(sorted(set(l_codes))).encode("utf-8")).hexdigest()[:12]
+
+
+def _next_dist_id(dist_dir: str, mode: str, taken: set[str]) -> str:
+    prefix = DIST_MODE_PREFIX.get(mode, "GEN")
+    nums = []
+    for f in glob.glob(os.path.join(dist_dir, f"DIST-{prefix}-*.json")):
+        m = re.match(rf"DIST-{prefix}-(\d+)\.json$", os.path.basename(f))
+        if m:
+            nums.append(int(m.group(1)))
+    n = (max(nums) + 1) if nums else 1
+    while f"DIST-{prefix}-{n:03d}" in taken:
+        n += 1
+    return f"DIST-{prefix}-{n:03d}"
+
+
+_DIST_DRAFT_FIELDS = (
+    "research_mode", "metric_type", "type", "polarity", "statement_draft",
+    "supporting_l_codes", "scope_draft", "evidence_draft", "falsification_draft",
+    "mechanism_draft", "oos_validation_draft", "cluster_members_count",
+)
+
+
+def build_distilled(cand_dir: str, dist_dir: str, index_path: str) -> tuple[int, int]:
+    """pending CAND 전건 → DIST 초안 생성/갱신 + 통합 인덱스 재작성. 반환 (n_new, n_updated)."""
+    os.makedirs(dist_dir, exist_ok=True)
+    now = datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+    existing: dict[str, tuple[str, dict]] = {}  # cluster_key -> (path, dist)
+    taken_ids: set[str] = set()
+    for f in glob.glob(os.path.join(dist_dir, "DIST-*.json")):
+        d = _load(f)
+        if isinstance(d, dict) and d.get("cluster_key"):
+            existing[d["cluster_key"]] = (f, d)
+            taken_ids.add(d.get("dist_id") or "")
+
+    n_new = n_upd = 0
+    for cf in sorted(glob.glob(os.path.join(cand_dir, "CAND_*.json"))):
+        cand = _load(cf)
+        if not isinstance(cand, dict):
+            continue
+        sup = cand.get("supporting_l_codes") or []
+        if not sup:
+            continue
+        key = _cluster_key(sup)
+        if key in existing:
+            path, dist = existing[key]
+            for fld in _DIST_DRAFT_FIELDS:  # draft만 갱신 — 정제/상태 필드 절대 보존
+                if fld in cand:
+                    dist[fld] = cand[fld]
+            dist["candidate_id"] = cand.get("candidate_id")
+            dist["updated_at"] = now
+            n_upd += 1
+        else:
+            mode = cand.get("research_mode") or "unknown"
+            dist_id = _next_dist_id(dist_dir, mode, taken_ids)
+            taken_ids.add(dist_id)
+            dist = {
+                "schema_version": "distilled_v1",
+                "dist_id": dist_id,
+                "cluster_key": key,
+                "candidate_id": cand.get("candidate_id"),
+                # lifecycle: pending_5axis → distilled(/cleaner 정제) → promoted | expired
+                "status": "pending_5axis",
+                "statement_refined": None,   # INV-6: /cleaner 세션에서만 작성 (무인 정제 금지)
+                "retry_condition": None,     # negative: INV-7 재도전 조건 (/cleaner 기록)
+                "refined_at": None, "refined_by": None,
+                "promoted_to_axiom": None,
+                "created_at": now, "updated_at": now,
+            }
+            for fld in _DIST_DRAFT_FIELDS:
+                if fld in cand:
+                    dist[fld] = cand[fld]
+            path = os.path.join(dist_dir, f"{dist_id}.json")
+            existing[key] = (path, dist)
+            n_new += 1
+        with open(path, "w", encoding="utf-8") as fh:
+            json.dump(dist, fh, indent=2, ensure_ascii=False)
+
+    _write_distilled_index(dist_dir, index_path)
+    return n_new, n_upd
+
+
+def _write_distilled_index(dist_dir: str, index_path: str) -> int:
+    """06_Registry/distilled_knowledge.json 통합 인덱스 (소비 3배선의 단일 조회면).
+
+    consumers: hooks/axiom_context_inject.sh(주입 — status=distilled·negative/conditional만)
+             / tools/hypothesis_index.R(검색 — DISTILLED_* verdict)
+             / 02_Infrastructure/axiom/distilled.R(truths 블록·정제 helper).
+    """
+    entries = []
+    for f in sorted(glob.glob(os.path.join(dist_dir, "DIST-*.json"))):
+        d = _load(f)
+        if not isinstance(d, dict):
+            continue
+        fam = (d.get("scope_draft") or {}).get("factor_family")
+        entries.append({
+            "dist_id": d.get("dist_id"),
+            "research_mode": d.get("research_mode"),
+            "family": fam,
+            "type": d.get("type"),
+            "polarity": d.get("polarity"),
+            "metric_type": d.get("metric_type"),
+            "status": d.get("status"),
+            "statement_refined": d.get("statement_refined"),
+            "statement_draft": d.get("statement_draft"),
+            "retry_condition": d.get("retry_condition"),
+            "supporting_l_codes": d.get("supporting_l_codes") or [],
+            "n_supporting": len(d.get("supporting_l_codes") or []),
+            "candidate_id": d.get("candidate_id"),
+            "cluster_key": d.get("cluster_key"),
+            "promoted_to_axiom": d.get("promoted_to_axiom"),
+            "created_at": d.get("created_at"),
+            "refined_at": d.get("refined_at"),
+            "source_file": os.path.basename(f),
+        })
+    out = {
+        "schema_version": "distilled_knowledge_v1",
+        "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "note": ("Axiom 엔진 ②Distilled 계층 통합 인덱스. lifecycle: pending_5axis→"
+                 "distilled(/cleaner 정제)→promoted|expired. INV-6: status=distilled"
+                 "(statement_refined 존재)만 주입/truths 소비 — pending_5axis 초안 텍스트 주입 금지."),
+        "n_entries": len(entries),
+        "n_distilled": sum(1 for e in entries if e["status"] == "distilled"),
+        "entries": entries,
+    }
+    os.makedirs(os.path.dirname(index_path), exist_ok=True)
+    with open(index_path, "w", encoding="utf-8") as fh:
+        json.dump(out, fh, indent=2, ensure_ascii=False)
+    return len(entries)
+
+
 def build_candidates(corpus: dict, out_dir: str) -> list[str]:
     lcodes = corpus.get("lcodes", [])
     if not lcodes:
@@ -421,6 +597,12 @@ def main() -> int:
     print(f"[cluster_extractor] {len(written)} candidate(s) written to {out_dir}")
     for p in written:
         print(f"  - {os.path.basename(p)}")
+
+    # ②Distilled 계층 (2026-07-04): CAND 전건 → DIST 초안 생성/갱신 + 통합 인덱스
+    dist_dir = os.path.join(args.project_dir, "qepm", "memory", "axioms", "distilled")
+    index_path = os.path.join(args.project_dir, "06_Registry", "distilled_knowledge.json")
+    n_new, n_upd = build_distilled(out_dir, dist_dir, index_path)
+    print(f"[cluster_extractor] distilled: {n_new} new / {n_upd} updated → {index_path}")
     return 0
 
 

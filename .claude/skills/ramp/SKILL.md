@@ -13,9 +13,9 @@ description: RAMP 모드 운영매뉴얼(K-RAMP 가이드북 = 재귀 자가발�
 ## 2. 작업 루프 = Axiom 엔진 (가이드 §2, 룰 §6)
 모든 비단순 task: `Observe → Diagnose → Propose → Implement → Test → Score → Document → Promote/Revert/Quarantine`.
 - Observe = `axiom_context_inject`(active 공리 주입) + repo/현 gate 검사.
-- Diagnose = failure-ledger(negative AX, INV-7) + gap_log → 기실패 가설 재시험 회피.
+- Diagnose = failure-ledger(negative AX, INV-7) + gap_log → 기실패 가설 재시험 회피. **타 모드 교차조회 의무(2026-07-04)**: `ramp_observe(xmode_keywords=c(...))` — `06_Registry/hypothesis_index.json`에서 AS/QEPM/FR verdict∈{FAIL,KILL}를 키워드 교차조회(`$xmode_fails`) — 히트 시 차별점 없인 동일 재실험 금지(INV-7 재도전 사유 기록).
 - Test = canonical_screen_bt/build_bt_result(backtested). Score = essence_score(성과) + ccs_evaluator(프로세스).
-- Document = `axiom/lcode_emit.R`(mode=ramp) + ADR + gap_log. Promote = L-code→AX-RAMP→(도훈 confirm)→global.
+- Document = `ramp_loop.R::ramp_document()`(mode=ramp, emit v2 — **construction_type·selection_type 필수 인자**, default 'chain' 폐지. graduation 러너는 실측 pt_capwt/oos_retention/calmar 자동 전달) + ADR + gap_log. Promote = L-code→AX-RAMP→(도훈 confirm)→global.
 
 ## 3. 입력 = 기존 전략풀 (~800 NAV)
 계약등록 264 + 전략 NAV 349 + **batch_434 result rds ~459**(robust 읽기: data.table/xts 로드, vanilla readRDS 세그폴트). 풀은 **회의 대상**(라벨≠신호·중복) — NAV만 신뢰, 라벨 추론만. dedup(return-corr>0.95) 후 사용.

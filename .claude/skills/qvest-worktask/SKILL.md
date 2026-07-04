@@ -35,6 +35,21 @@ SPEC_APPROVED
 
 ## 2. WT 생성
 
+### ★ 생성 전 — 가설 중복실험 인덱스 조회 의무 (2026-07-04 G-mode-wiring, alpha-search Step 0 문안 이식)
+
+가설 intake **전에** 반드시 `06_Registry/hypothesis_index.json`을 조회한다 ("이미 시도됨" 판정을 LLM 메모리에 맡기지 말 것 — 687회+ 실험 인덱싱됨):
+
+```bash
+Rscript 02_Infrastructure/tools/hypothesis_index.R lookup <keyword> [keyword...]
+# 예: Rscript 02_Infrastructure/tools/hypothesis_index.R lookup residual momentum
+```
+
+- **동일 서명(`family|signal_group|universe|structure`) 기존 시도가 있으면**: 기존 결과(verdict·grade·key_metrics·source_paths)를 인용하고, **이번 가설의 차별점을 명시해야만 진행 가능**. 차별점 없는 동일 재실험 금지 (단순 재확인은 도훈 지시 시만).
+- **verdict가 FAIL/KILL인 히트는 차별점 명시 없인 진행 금지** — 재도전 시 INV-7 재도전 사유(무엇이 달라져 결과가 달라질 것으로 보는지)를 WT `hypothesis_description`에 기록.
+- hit 없으면 그대로 진행. 조회 사실(키워드 + hit/miss)을 결과 보고에 1줄 기록.
+- 인덱스가 stale하면(새 실험 다수 후) `Rscript 02_Infrastructure/tools/hypothesis_index.R build`로 재빌드.
+- 서명 정규화 규칙·원천 3계층(stage_artifacts manifest/hurdle + lcode_corpus + module_catalog)은 `02_Infrastructure/tools/hypothesis_index.R` 헤더 참조.
+
 ```r
 source("02_Infrastructure/worktask/worktask_manager.R")
 wt_id <- wt_create(
@@ -104,8 +119,11 @@ Agent(subagent_type="forge", prompt="WT{id} Integrate 3-agent packages → backt
 ```
 Agent(subagent_type="judge", prompt="WT{id} S6 cascade Gate 0~18")
   → judge_verdict_draft.json → self-adversarial challenge → judge_verdict.json
+  → L-code 발행(의무): emit_qepm_lcode(source="judge_gate") → judge_verdict.json에 l_code_path 기록
   → JUDGE_PASSED / JUDGE_FAILED
 ```
+
+**judge→governor 전이 체크**: `judge_verdict.json`에 `l_code_path` 존재 (L-code 발행 의무 — `.claude/agents/judge.md` "L-code 발행" 절). 부재 시 전이 보류·judge에 발행 요청.
 
 ### Step 6: governor
 
@@ -171,6 +189,13 @@ wt_check_graduation("WT-D20260501_NNN")  # cert 발급 상태 검사
 
 - **WT 간 병렬 허용** (WT001 + WT002 동시 진행 가능)
 - **WT 내부 순차 강제** (`worktask_sequence_enforcer.sh` Hook)
+
+## 지식 절차 (QEPM 모드 — Axiom 엔진 배선, 2026-07-04)
+
+- **조회 의무 (consume)**: WT 생성 전 hypothesis_index lookup (§2 상단 블록). FAIL/KILL 히트 시 차별점 없인 진행 금지 + INV-7 재도전 사유 기록.
+- **emit 시점 (1지점)**: judge가 essence Grade 확정 직후 `emit_qepm_lcode(source="judge_gate", metric_type="backtested")` — 상세·필수필드(mechanism 1줄 + port_t/oos_retention/sharpe/mdd + falsification 실기록)는 `.claude/agents/judge.md` "L-code 발행" 절. 산출 경로 = `judge_verdict.json::l_code_path`.
+- **governor DEFER/REJECT**: 동일 함수 `source="governor_admission"` 재사용 (코드 0줄).
+- 필수필드 결측(mechanism/metric_type/oos/falsification)이 승격 축 도달불가의 주원인 — emit 시점에 채운다 (문턱 완화 아님).
 
 ## 참조
 

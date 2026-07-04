@@ -7,6 +7,14 @@ description: 팩터 로테이션 모드 — QEPM/alpha-search가 생산한 전�
 
 Qvest 제3 리서치 모드. **신규 알파를 찾지 않고**, 이미 생산된 전략 모듈들을 **국면 조건부로 배합**해 합성 운용체계(`FR_XXXX`)를 만든다. alpha-search(논문 1편 검증)·QEPM(6-에이전트 풀파이프라인)과 별개의 독립 트랙(meta-layer).
 
+## Step 0 — 지식 대조 (의무, 2026-07-04 G-mode-wiring)
+
+FR 리서치(레짐엔진 변형·배분정책·RCMA 재설계) 착수 **전에** 기존 지식과 대조한다:
+
+1. **hypothesis_index 조회**: `Rscript 02_Infrastructure/tools/hypothesis_index.R lookup <keyword> [keyword...]` (예: `lookup regime rotation`, `lookup rare_mode`). 동일 서명 기존 시도가 있으면 기존 결과(verdict·grade·key_metrics)를 인용하고 **차별점을 명시해야만 진행 가능**.
+2. **모드 L-code grade F 스캔**: `stage_artifacts/l_code/{factor_rotation,regime_research,ramp}/` 하위 grade F/FAIL 엔트리(failure-ledger) 확인 — FR은 RAMP와 같은 모듈-소비 계열이라 ramp 실패도 교차 참조.
+3. **히트 시**: FAIL/KILL 결과와 겹치는 설계는 차별점(무엇이 달라져 결과가 달라질 것인지) 명시 없인 진행 금지 — INV-7 재도전 사유를 산출물(연구노트/FR result json)에 기록. hit/miss 사실을 결과 보고에 1줄 기록.
+
 ## 1. 목적 (왜 만들었나)
 
 도훈 비전: **전략 = 모듈. Governor가 다양한 모듈을 국면에 적재적소 투입해 수익률을 극대화하는 의사결정 체계.**
@@ -66,6 +74,7 @@ admitted = ①∧②∧③∧④. m이 ≥1 regime admitted면 풀 진입. `run_
 - **Track1** — `regime_engine_research.R`(축 t-1 → 판별력 검증 → 채택) · `regime_forecaster.R`(다음국면 사전예측 — 후속).
 - **Track2** — `module_performance.json`(per-regime 실측) → `module_dispatcher.R`(`compute_regime_module_weights`: 국면조건부 rp inverse-vol + IR shrink 블렌드, λ/τ/k0 **국면불변 고정**) → `run_wf_ensemble.R`(anchored walk-forward, IS-only 가중, 모듈 frozen, forward 적용, 국면전환 turnover만 15bps).
 - **측정**: 모듈 NAV 가중합 → 월간 → `build_bt_result`(PerformanceAnalytics 표준함수만, metric_type=backtested) → `audit_bt_result`(11 checks) → `essence_score`.
+- **L-code 발행 (FR 모드 emit 1지점)**: `run_wf_ensemble.R`이 FR 레지스트리 등재 직후 `emit_fr_lcode()`(mode=factor_rotation, metric_type=backtested — grade/sharpe/port_t/oos/calmar/dsr + admitted pool + edge_vs_ew)를 자동 호출 → `stage_artifacts/l_code/factor_rotation/`.
 
 ## 7. ★ Track1 = 학술 기반 리서치 (국면 정의·예측 강화)
 
@@ -103,7 +112,7 @@ Track1은 **각종 학술논문·헤지펀드 페이퍼를 참고해 국면 정�
 ## 11. 구현 상태 (정직)
 
 - **빌드 완료**: Track2 전부(`module_dispatcher`/`run_wf_ensemble`/`build_module_performance` 광역화) · Track1 판별검증(`regime_engine_research`) · **Track1 SJM PoC(`regime_jump_model.R` — SOTA jump model, churn 33→7%, crisis 신속탐지·신호품질↑·앙상블SR 로버스트이득 無)** · **공용 `register_module`** · **RCMA `regime_module_admission`** · FR_001(grade C 실측).
-- **미빌드(후속)**: `regime_forecaster.R`(T1-B 예측 — 지표는 §8 정의) · `/factor-rotation` command · `dispatch-orchestrator` agent · `02_Infrastructure/docs/rules/factor-rotation.md` · 3 hooks · `factor_rotation_registry.json` · L-code mode 태깅 · CLAUDE.md 3-mode 명문화 · QEPM의 register_module 일원화. → **현재는 직접 스크립트 실행**(Q-Lead).
+- **미빌드(후속)**: `regime_forecaster.R`(T1-B 예측 — 지표는 §8 정의) · `/factor-rotation` command · `dispatch-orchestrator` agent · `02_Infrastructure/docs/rules/factor-rotation.md` · 3 hooks · `factor_rotation_registry.json` · CLAUDE.md 3-mode 명문화 · QEPM의 register_module 일원화. (L-code mode 태깅 = 빌드 완료 — §6 emit 지점, 2026-07-04.) → **현재는 직접 스크립트 실행**(Q-Lead).
 
 ## 12. 참조 · 실행 메모
 

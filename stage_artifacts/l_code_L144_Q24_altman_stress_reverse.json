@@ -2,7 +2,6 @@
   "l_code": "L-144",
   "strategy_id": "Q24_Altman_Z_factor_empirical_discovery",
   "title": "Q24_Altman_Z stress 구간 역방향 작용 — defense factor로서 무력 empirical 실증",
-  "grade": "N/A (factor-level discovery)",
   "core_reference": "Altman (1968 JoF) 'Financial Ratios, Discriminant Analysis and the Prediction of Corporate Bankruptcy' + Campbell, Hilscher & Szilagyi (2008 JF) 'In Search of Distress Risk' + Dichev (1998 JF) 'Is the Risk of Bankruptcy a Systematic Risk?'",
   "lesson_text": "Q24_Altman_Z (1968 Altman discriminant analysis 기반 bankruptcy prediction) 팩터의 한국시장 cross-section 실증에서 **stress 6대 급락 구간 역방향 작용** 확정. stress_icir -0.695, stress_pct_pos 0.25 (40 stress months 중 25%만 양수), crisis_ratio -2.89. 즉 Z-score 높은 (Altman 기준 '안전') 종목이 급락 시 오히려 underperform. Defense factor 용도로 구조적 부적합. 이는 Campbell-Hilscher-Szilagyi (2008) 'distress risk premium' 연구와 한국시장 결과 괴리 — 미국 원논문은 distress risk가 positive cross-section premium (high distress → low return, avoid 시 alpha)이나 한국에서는 급락 시 Altman metric이 **역방향**. L-104 STR_1624 (Q24+V05+L04 defense 조합, MDD 61% Grade F) 실패의 핵심 원인 중 하나로 재해석 가능 — 기존에는 V05 AX-003 위반 + multi-factor 혼탁으로만 해석했으나, Q24 자체의 stress 역방향이 defense 역할 실패의 독립 원인. 향후 Defense anchor 설계 시 Q24 단독 또는 composite 포함 금지. 대안: Q25_Ohlson_O (stress_icir +0.659, stress_pct_pos 0.80) 또는 cross-family (R16_Calmar stress_icir +2.655) 사용.",
   "empirical_evidence": {
@@ -14,14 +13,14 @@
       "stress_icir": -0.695,
       "stress_n_months": 40,
       "stress_pct_positive": 0.25,
-      "normal_ic_mean": -0.0220,
+      "normal_ic_mean": -0.022,
       "normal_icir": -0.182,
       "crisis_premium": -0.0415,
       "crisis_ratio": -2.89
     },
     "conditional_ic_4regime": {
       "source": ".cache/conditional_ic_matrix.csv",
-      "ic_all": -0.0140,
+      "ic_all": -0.014,
       "ic_bad_4regime": 0.0134,
       "ic_good_4regime": -0.0201,
       "note": "4-regime bad IC 양수(+0.013)와 6대 stress IC -0.063의 괴리는 L-120 교훈(stress vs 4-regime 정의 차이)의 대표 사례. Defense 평가에는 stress 기준이 적합."
@@ -83,5 +82,7 @@
   },
   "created_at": "2026-04-17",
   "created_by": "Scout",
-  "q_lead_directive": "Q24 역방향 발견의 L-code화 지시 (2026-04-17, H_1682 승인 메시지 내)"
+  "q_lead_directive": "Q24 역방향 발견의 L-code화 지시 (2026-04-17, H_1682 승인 메시지 내)",
+  "grade_raw": "N/A (factor-level discovery)",
+  "record_type": "process"
 }

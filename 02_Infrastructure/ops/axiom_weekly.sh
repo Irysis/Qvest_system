@@ -1,8 +1,14 @@
 #!/usr/bin/env bash
-# v8.0: 3-mode 2-tier axiom pipeline (weekly cron)
+# ★ 2026-07-04: 주간 axiom 사이클의 정규 경로 = Cleaner 통합 —
+#   weekly_cleaner_sweep.R step [3.5] (토 09:00 Task Scheduler Qvest_WeeklyCleaner)이
+#   harvester → cluster_extractor → promote 진단을 실행하고 cleaner_pending.json에
+#   axiom_candidates 현황(n_pending/failing_axis_histogram/near_miss)을 기록,
+#   다이제스트는 /cleaner 스킬이 수행한다. 본 스크립트는 수동/보조 실행용 retain
+#   (weekly_report 포함 — cron 등록은 권장하지 않음, 이중 실행 방지).
+#
+# v8.0: 3-mode 2-tier axiom pipeline (weekly)
 #   harvester → cluster_extractor → mode-local promote(INV-4 hurdle) → weekly_report(INV-3)
 #   global 승격은 자동 X (cross-mode + backtested + AX-008 2/3 — promote_global.R 수동/조건부).
-#   crontab 권장: 0 3 * * 1 bash /g/Quant_Module_Moltbot/02_Infrastructure/ops/axiom_weekly.sh
 set -u
 DIR=$(ls -d /c/Users/99922/OneDrive/Quant_Module_Moltbot /mnt/c/Users/99922/OneDrive/Quant_Module_Moltbot /g/Quant_Module_Moltbot /mnt/g/Quant_Module_Moltbot 2>/dev/null | head -1)
 [ -z "$DIR" ] && DIR="G:/Quant_Module_Moltbot"

@@ -55,20 +55,48 @@ suppressPackageStartupMessages({ library(jsonlite); library(data.table) })
   if (length(idx)) corpus$lcodes[[idx[1]]][[field]] %||% default else default
 }
 
+# grade → 방향(win/loss) 정규화 (conditional direction_consistency 재정의용)
+.grade_direction <- function(g) {
+  g <- toupper(as.character(g %||% ""))
+  if (g %in% c("A", "B") || startsWith(g, "A_") || g == "B_ARCHIVE") return("win")
+  if (g %in% c("C", "F", "REJECT")) return("loss")
+  NA_character_
+}
+
 # ── 축 1: Independence (r7 — construction 다양성, strategy_id 착시 폐기) ──
+# direction_consistency (2026-07-04 국소수리 ②, 문턱 0.8 불변 — 도훈 confirm 대상 항목):
+#   - positive/negative: 종전과 동일 = 전체 grade 최빈 비율.
+#   - conditional: '전체 grade 일치'는 정의상 conditional(성공+실패 혼재)과 모순 → 영구 미달.
+#     재정의 = '조건 축 내 일관성': win군(A/B)·loss군(C/F) 각각의 내부 grade 일관성의 min.
+#     (조건부 규칙의 증거 품질 = 각 조건 가지 안에서 방향이 일관되는가.)
 .axis_independence <- function(candidate, corpus) {
   sup <- candidate$supporting_l_codes %||% character(0)
   polarity <- candidate$polarity %||% "unknown"
   constructions <- vapply(sup, function(lc) .lc_get(corpus, lc, "construction_type", "unknown"), character(1))
-  grades <- vapply(sup, function(lc) .lc_get(corpus, lc, "grade", "?"), character(1))
+  grades <- vapply(sup, function(lc) as.character(.lc_get(corpus, lc, "grade", "?") %||% "?"), character(1))
   n_constr <- length(unique(constructions))
-  consistency <- if (length(grades)) max(table(grades)) / length(grades) else 0
+  dc_def <- "overall_grade_majority"
+  if (identical(polarity, "conditional")) {
+    dirs <- vapply(grades, .grade_direction, character(1))
+    grp_cons <- c()
+    for (d in c("win", "loss")) {
+      gg <- grades[!is.na(dirs) & dirs == d]
+      if (length(gg)) grp_cons <- c(grp_cons, max(table(gg)) / length(gg))
+    }
+    consistency <- if (length(grp_cons)) min(grp_cons) else 0
+    dc_def <- "within_condition_axis (2026-07-04 재정의 — 주간 리포트 도훈 confirm 대상)"
+  } else {
+    consistency <- if (length(grades)) max(table(grades)) / length(grades) else 0
+  }
   min_c <- if (polarity == "negative") .HURDLE$indep_min_constructions_neg else .HURDLE$indep_min_constructions
   score <- min(1.0, (n_constr / max(min_c, 1)) * 0.6 + (if (consistency >= 0.8) 0.4 else consistency * 0.4))
   list(score = round(score, 3),
        hurdle_pass = (n_constr >= min_c && consistency >= .HURDLE$indep_min_direction),
        n_constructions = n_constr, direction_consistency = round(consistency, 3),
-       reason = sprintf("%d distinct constructions (min %d), direction_consistency=%.2f", n_constr, min_c, consistency))
+       direction_consistency_definition = dc_def,
+       reason = sprintf("%d distinct constructions (min %d), direction_consistency=%.2f [%s]",
+                        n_constr, min_c, consistency,
+                        if (identical(polarity, "conditional")) "within-condition-axis" else "overall"))
 }
 
 # ── 축 2: Rigor (r7 — metric_type 게이트; INV-1) ──
@@ -103,18 +131,28 @@ suppressPackageStartupMessages({ library(jsonlite); library(data.table) })
 }
 
 # ── 축 3: Falsification (r7 — 적극 반증; negative auto +0.5 폐기) ──
+# 2026-07-04 국소수리 ① (crash-safe): attempts에 문자열(비구조체) 기록 수용.
+#   구 코드: 문자열 a에 a$result 접근 = "$ operator is invalid for atomic vectors" crash
+#   → mode-wiring 배선 가동(문자열 falsification 적립분) 즉시 터질 latent 결함(A2-F2②).
+#   보수 처리: 문자열 = n 카운트만 (none_falsified 판정 근거 없음 → TRUE 유지,
+#   retained_ok 판정 불가 → 구조체 분만 평가). 구조체 [{test,result,effect_retained}] 권장.
 .axis_falsification <- function(candidate) {
-  attempts <- candidate$falsification_draft$attempts %||% list()
-  n <- length(attempts)
-  retained_ok <- if (n) all(vapply(attempts, function(a)
+  attempts_raw <- candidate$falsification_draft$attempts %||% list()
+  if (is.character(attempts_raw)) attempts_raw <- as.list(attempts_raw)  # 최상위 chr vector 수용
+  structured <- Filter(function(a) is.list(a), attempts_raw)
+  n_string <- length(attempts_raw) - length(structured)
+  n <- length(attempts_raw)
+  retained_ok <- if (length(structured)) all(vapply(structured, function(a)
     (a$result %||% "") != "survived" || (suppressWarnings(as.numeric(a$effect_retained %||% 0)) >= .HURDLE$fals_min_retained),
     logical(1))) else TRUE
-  none_falsified <- !any(vapply(attempts, function(a) identical(a$result %||% "", "falsified"), logical(1)))
+  none_falsified <- !any(vapply(structured, function(a) identical(a$result %||% "", "falsified"), logical(1)))
   score <- min(1.0, (if (n >= 1) 0.5 else 0) + (if (n >= 3) 0.3 else 0) + (if (retained_ok && n >= 1) 0.2 else 0))
   list(score = round(score, 3),
        hurdle_pass = (n >= .HURDLE$fals_min_attempts && none_falsified && retained_ok),
-       n_attempts = n,
-       reason = sprintf("active attempts=%d none_falsified=%s retained_ok=%s", n, none_falsified, retained_ok))
+       n_attempts = n, n_unstructured = n_string,
+       reason = sprintf("active attempts=%d (unstructured=%d) none_falsified=%s retained_ok=%s%s",
+                        n, n_string, none_falsified, retained_ok,
+                        if (n_string) " [문자열 기록 — 구조체 전환 권장]" else ""))
 }
 
 # ── 축 4: External (OOS — 2026-07-03 재정의, 도훈 confirm / 감사 GOV-01·AXM-01) ──
@@ -326,17 +364,25 @@ promote_to_axiom <- function(candidate_path, threshold = 0.80, auto_inject = NUL
   }
 }
 
+# 2026-07-04 국소수리 ③: same-day 동일 candidate_id dedup — 파일명을 시분초 대신
+# 날짜 기반으로 고정(최신본 overwrite) + 구 시분초-suffix 동일자 파일 제거.
+# 근거: 07-03 주간 실행 시 15 CAND × 2회 = review_log 중복 오염 진행형.
 .log_partial <- function(candidate, report) {
   root <- .px_root(); ld <- file.path(root, "qepm", "memory", "axioms", "review_log")
   dir.create(ld, recursive = TRUE, showWarnings = FALSE)
-  ts <- format(Sys.time(), "%Y%m%d_%H%M%S")
-  op <- file.path(ld, sprintf("AX-PENDING_%s_%s.json", candidate$candidate_id, ts))
+  day <- format(Sys.Date(), "%Y%m%d")
+  op <- file.path(ld, sprintf("AX-PENDING_%s_%s.json", candidate$candidate_id, day))
+  # 구 규약(시분초 suffix) 동일자 파일 정리 — 최신본 1건만 유지 (regex 대신 prefix 고정매치)
+  all_logs <- list.files(ld, pattern = "^AX-PENDING_.*\\.json$", full.names = FALSE)
+  prefix <- sprintf("AX-PENDING_%s_%s_", candidate$candidate_id, day)
+  stale <- all_logs[startsWith(all_logs, prefix) & grepl("_\\d{6}\\.json$", all_logs)]
+  for (s in stale) try(unlink(file.path(ld, s)), silent = TRUE)
   failing <- names(report$hurdle_pass)[!unlist(report$hurdle_pass)]
   write_json(list(candidate_id = candidate$candidate_id, mode = report$mode,
     weighted_score = report$weighted_score, threshold = report$threshold,
     all_hurdles_pass = report$all_hurdles_pass, failing_hurdles = failing, axes = report$axes,
     logged_at = format(Sys.time(), "%Y-%m-%d %H:%M:%S"),
-    note = "INV-4: 5축 min-hurdle 동시 충족 필요. 실패 축 보강 후 재시도."),
+    note = "INV-4: 5축 min-hurdle 동시 충족 필요. 실패 축 보강 후 재시도. (same-day dedup: 최신본 overwrite)"),
     op, pretty = TRUE, auto_unbox = TRUE, null = "null")
   cat(sprintf("[promote] 부분통과(hurdle 미달: %s) → %s\n", paste(failing, collapse = ","), op)); op
 }

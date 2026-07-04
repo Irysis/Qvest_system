@@ -2,19 +2,16 @@
   "l_code": "L-163",
   "title": "Defense poison_pill_quantified_threshold — stress_icir × weight >= -0.05 rule (L-144 Q24 확장)",
   "status": "ACTIVE (team-lead Option α 확정 2026-04-18T19:00+09:00)",
-  "grade": "PROCESS_RULE (Defense composite admission operational rule)",
   "scope": "defense family + quality_profitability family (Q24 cross-appearance). Stage 2 STAGE_2_ACTIVE 발효 즉시 enforcement.",
   "core_reference": "L-144 (Q24 Altman_Z stress_icir -0.695 원본 evidence) + L-146 (overlay completion rule) + AX-005 (KR defense standalone 구조적 실패) + Risk Mgr 3rd round VERDICT B1 (Q24 poison pill WARNING) + Scout H_1689 v3 handoff kit Q24-exclude variant_1 설계",
   "scout_initiator": "Scout H_1689 v3 handoff kit",
   "judge_approver": "Judge (team-lead Option α 수용 후 공식 발행)",
   "team_lead_directive_timestamp": "2026-04-18T19:00+09:00 (team-lead Option α 확정)",
-
   "core_rule": {
     "formula": "각 factor별: stress_icir × weight >= -0.05",
     "enforcement": "위반 탐지 시 weight 10% 이하 축소 OR 완전 제외 → Gate 11 CONDITIONAL_BLOCK + Q24-exclude variant 의무화",
     "operator_level": "composite 구성 단계 (Forge S1 factor weight 설계 시) + Judge S6 Gate 11 variant comparison 사전 검증"
   },
-
   "evidence": {
     "q24_altman_z_case": {
       "factor": "Q24_Altman_Z",
@@ -28,9 +25,7 @@
       "source_document": "Scout H_1689 v3 handoff kit + Risk Mgr 3rd round VERDICT B1"
     }
   },
-
   "lesson_text": "Defense family composite 구성 시 각 factor의 stress_icir × weight 곱이 -0.05 이하로 떨어지면 조건부 차단. L-144 Q24 Altman_Z stress_icir -0.695 evidence의 정량화. Q24의 25% weight 경우 -0.174로 threshold 5배 초과 → Gate 11 CONDITIONAL_BLOCK 자동 발동 + Q24-exclude 3-axis variant (GPA + Piotroski_F + Ohlson_O) 의무 승격. 본 rule은 (a) Risk Mgr VERDICT B1 Q24 poison pill WARNING operational 공식화, (b) L-144 single-factor evidence를 composite weight 결정 rule로 승격, (c) Gate 11 variant comparison에 정량 기준 통합, (d) Defense family Stage 2 Gate 12 hard_block mandatory와 함께 작동. 교훈: stress_icir negative factor를 composite에 포함할 때 weight 제한은 '경험칙'이 아닌 '정량 한도' — stress_icir × weight >= -0.05 가 실무 적용 기준. L-146 overlay rule 계승 (ML/composite signals도 동일 원리). 향후 확장: CVaR-based weight penalty + regime-conditional threshold (v3.6 Gate 17 candidate).",
-
   "tags": [
     "POISON_PILL_QUANTIFIED",
     "STRESS_ICIR_WEIGHT_THRESHOLD",
@@ -43,11 +38,9 @@
     "SCOUT_INITIATOR_JUDGE_APPROVER_MODEL",
     "STAGE_2_ACTIVE_ENFORCEMENT"
   ],
-
   "created_at": "2026-04-18T19:05+09:00",
   "session": 67,
   "judge_agent_id": "judge",
-
   "relation_to_existing_codes": {
     "l_144_q24_single_factor": {
       "relation": "direct_ancestor — L-144 single-factor evidence를 composite rule로 정량화 승격",
@@ -72,16 +65,19 @@
       "rationale": "Scout H_1689 handoff kit poison_pill threshold가 더 urgent operational rule로 L-163 번호 우선 점유"
     }
   },
-
-  "supporting_l_codes": ["L-144", "L-146", "AX-005"],
-  "related_l_codes": ["L-160 Defense IC-Return decoupling (families.json v1.1 cross-reference)"],
-
+  "supporting_l_codes": [
+    "L-144",
+    "L-146",
+    "AX-005"
+  ],
+  "related_l_codes": [
+    "L-160 Defense IC-Return decoupling (families.json v1.1 cross-reference)"
+  ],
   "evidence_files": [
     "qepm/mailbox/scout/outbox/handoff_kit_H_1689_v3.json (Scout initiator)",
     "qepm/mailbox/judge/outbox/risk_mgr_3rd_verdict_integration_20260418.json (Risk Mgr VERDICT B1)",
     "qepm/memory/registry/families.json v1.1 (Defense family poison_pill_factors section)"
   ],
-
   "gate_11_enforcement_integration": {
     "trigger": "Defense family composite + Q24 or other poison_pill_factor 포함 시",
     "check_procedure": "Forge S1 factor weight 설계 시 + Judge S6 Gate 11 variant comparison 사전:\n  1. 각 factor stress_icir 조회 (families.json poison_pill_factors section)\n  2. weight × stress_icir 계산\n  3. < -0.05 위반 탐지 시 Gate 11 CONDITIONAL_BLOCK + Q24-exclude variant 의무 승격\n  4. 위반 없으면 Gate 11 PASS → 다음 variant 검증 진행",
@@ -89,32 +85,29 @@
     "exemption": "stress_icir positive or non-Defense family",
     "v3_5_gate_11_v3_5_ruleset_integration": "Admission Rule v3.5 gate_11_variant_comparison에 poison_pill_quantified_threshold sub-rule 추가 (Scout handoff kit v2 schema에서 자동 조회)"
   },
-
   "followup_scout": [
     "families.json v1.1 → v1.2 minor update: L-code mapping scope 정정 (L-163 = defense_composite_design active, L-164 = factor_engine standardization pending)",
     "handoff kit v2 schema에 poison_pill_audit_report 필드 추가 (향후 신규 Defense 가설 설계 시 자동 점검)"
   ],
-
   "followup_forge": [
     "Defense family S1 factor weight 설계 시 poison_pill_factors stress_icir 사전 조회 mandatory",
     "factor_engine.R composite weight 로직에 stress_icir × weight >= -0.05 assertion 추가",
     "H_1689 v3 variant_1 (Q24-exclude 3-axis) S1 실행 시 본 rule PASS evidence 공식 축적"
   ],
-
   "followup_judge": [
     "Gate 11 variant_comparison enforcement 체크리스트에 poison_pill_threshold 사전 자동 점검 통합 (Forge variant_comparison.csv 수신 시 automatic validation)",
     "S6 triage checklist에 families.json poison_pill_factors section 참조 의무 추가",
     "v3.6 Gate 17 candidate (regime-conditional poison_pill threshold) 설계 검토"
   ],
-
   "followup_governor": [
     "rev8-A-revised_v2 Scenario C composition 재검증: H_1689 Q01+Q04+Q25 (Q24-exclude) 3-axis 채택 확정 + poison_pill rule L-163 cross-reference",
     "Phase_1 PG1 admission 시 Defense family 가설에 대해 L-163 sanity check 의무화"
   ],
-
   "ax_candidate_linkage": {
     "status": "NOT_ELIGIBLE (operational rule — L-code 교훈 수준으로 충분)",
     "rationale": "L-163은 defense family operational rule. AX 승격은 factor-level structural failure 또는 process-level integrity 원칙이 대상. poison_pill threshold는 Gate 11 enforcement sub-rule로 적합.",
     "related_ax_cand_no_direct_linkage": "AX-005 (Defense standalone failure)의 operational complement"
-  }
+  },
+  "grade_raw": "PROCESS_RULE (Defense composite admission operational rule)",
+  "record_type": "process"
 }

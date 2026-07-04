@@ -64,8 +64,13 @@ esac
 # (A6 2026-07-04, 감사 SC-02) 확립 전략 진실(strategic_truths.md) 추가 주입.
 #   합산 상한 2500자 — 초과 시 truths 우선 보존 + axiom 요약 라인 단위 축약.
 #   파일 부재/공백 시 기존 axiom-only 주입과 동일 (회귀 없음).
+# (v2 2026-07-04 엔진 재설계) ②Distilled negative/conditional top-K 추가 주입.
+#   우선순위: truths > distilled > axiom body(축약 대상). 합산 상한 2500자 불변.
+#   소비 대상 = status=distilled(statement_refined 존재)만 — INV-6: pending_5axis
+#   초안 텍스트 주입 금지. 인덱스 부재/정제 0건 시 기존 주입과 동일 (회귀 없음).
 TRUTHS_FILE="$DIR/02_Infrastructure/prompts/strategic_truths.md"
-ESC=$(printf '%s' "$HEADER" | CB="$CACHE_BODY" TF="$TRUTHS_FILE" "$QVEST_PY_BIN" -c "
+DIST_INDEX="$DIR/06_Registry/distilled_knowledge.json"
+ESC=$(printf '%s' "$HEADER" | CB="$CACHE_BODY" TF="$TRUTHS_FILE" DI="$DIST_INDEX" "$QVEST_PY_BIN" -c "
 import json, os, sys
 def rd(p):
     try:
@@ -75,16 +80,41 @@ def rd(p):
 hdr = sys.stdin.buffer.read().decode('utf-8', 'replace')
 body = rd(os.environ.get('CB', ''))
 truths = rd(os.environ.get('TF', ''))
+# truths 파일 안의 DISTILLED generated 블록은 여기서 별도 주입하므로 제거 (이중 주입 방지)
+if truths and '<!-- DISTILLED_START' in truths:
+    pre, _, rest = truths.partition('<!-- DISTILLED_START')
+    _, _, post = rest.partition('<!-- DISTILLED_END -->')
+    truths = (pre.rstrip() + post).strip()
+# ②Distilled negative/conditional top-K (K=5, 정제 완료분만 — INV-6)
+dist = ''
+try:
+    di = json.load(open(os.environ.get('DI', ''), encoding='utf-8'))
+    picks = [e for e in di.get('entries', [])
+             if e.get('status') == 'distilled'
+             and e.get('polarity') in ('negative', 'conditional')
+             and (e.get('statement_refined') or '').strip()]
+    picks.sort(key=lambda e: e.get('refined_at') or '', reverse=True)
+    lines = []
+    for e in picks[:5]:
+        tag = '재시도금지(INV-7조건부)' if e.get('polarity') == 'negative' else '조건부'
+        lines.append(f\"  - {e.get('dist_id')} [{tag}]: {(e.get('statement_refined') or '')[:110]}\")
+    if lines:
+        dist = '[Distilled 실패원장 — 가설 착수 전 대조 의무]' + chr(10) + chr(10).join(lines)
+        if len(dist) > 700:
+            dist = dist[:700] + '…'
+except Exception:
+    dist = ''
 MAX = 2500
-if truths and len(hdr) + len(body) + len(truths) + 4 > MAX:
-    budget = max(0, MAX - len(hdr) - len(truths) - 60)
+tail = ((chr(10)*2) + truths if truths else '') + ((chr(10)*2) + dist if dist else '')
+if len(hdr) + len(body) + len(tail) + 4 > MAX:
+    budget = max(0, MAX - len(hdr) - len(tail) - 60)
     kept, used = [], 0
     for ln in body.splitlines():
         if used + len(ln) + 1 > budget:
             break
         kept.append(ln); used += len(ln) + 1
     body = chr(10).join(kept) + chr(10) + '  → (축약) 전문: .claude/rules/axioms.md'
-ctx = hdr + chr(10) + body + ((chr(10)*2) + truths if truths else '')
+ctx = (hdr + chr(10) + body + tail)[:MAX]
 ctx = ''.join(ch if not (0xD800 <= ord(ch) <= 0xDFFF) else '?' for ch in ctx)
 print(json.dumps(ctx))
 ")

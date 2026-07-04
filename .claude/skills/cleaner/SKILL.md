@@ -39,6 +39,11 @@ pending 파일이 없으면: "증류 대기 없음" 보고 후 종료 (기계 �
 - **실측만** (measurement-graduation §1): 수치는 해당 런의 실제 기록 파일에서 인용, `metric_type` 라벨 병기. **추정·재구성 금지** ([[feedback-performance-real-code-only]]).
 - 각 실험: 가설 1줄 / 결론(PASS·FAIL·screen-tier 등) / 핵심 수치(출처 파일 경로) / 후속 여부.
 
+**axiom 후보 현황 (의무 절 — 2026-07-04 주간 axiom 사이클 Cleaner 통합)**:
+- 기계 스윕 step [3.5]가 harvester→cluster_extractor→promote 진단을 돌리고 pending의 `axiom_candidates` 섹션(`n_pending` / `failing_axis_histogram` / `near_miss`)을 채운다 (정규 경로 — 구 `axiom_weekly.sh`는 수동/보조 retain).
+- digest에 **axiom 후보 현황 절 포함**: pending 건수 + 실패 축 히스토그램(어느 축 결측이 승격을 막는지) + near-miss 목록.
+- **near-miss statement 정제**: 1축만 미달인 후보는 statement 초안(INV-6 `[초안]`)을 정제해 **distilled 지식으로 승격 제안 — 도훈 confirm 건별** (자동 승격 금지. promote 재실행은 confirm 후). 실패 축이 입력 결측(mechanism/falsification 등)이면 해당 emit 지점 보강을 후속으로 기록.
+
 ### ③ 엑기스 적립 (L-code + 메모리)
 
 - digest 작성 중 발견한 **미적립 학습**(L-code 없는 유의미한 교훈)은 `02_Infrastructure/axiom/lcode_emit.R::emit_lcode()`로 발행 (모드별 prefix 자동, `metric_type` 정직 라벨 — proxy 결과에 backtested 금지).

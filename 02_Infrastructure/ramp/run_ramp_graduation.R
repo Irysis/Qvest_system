@@ -87,7 +87,25 @@ for(i in seq_len(nrow(R))){r<-R[i]
   p<-c(port_t=isTRUE(r$port_t_capwt>=2.95),oos=isTRUE(r$oos_retention>=0.7),cal=isTRUE(r$calmar>=0.64),dsr=isTRUE(r$dsr>=0.5))
   w(sprintf("  [%s] %s → %s", r$model, paste(names(p),ifelse(p,"✓","✗"),collapse=" "), ifelse(all(p),"★GRADUATION","미달")))}
 b<-R[which.max(port_t)]
-ramp_document(strategy_id=sprintf("RAMP_GRADUATION_%s",format(Sys.Date(),"%Y%m%d")),grade=ifelse(!is.na(b$port_t)&&b$port_t>=2.95,"A","B"),
-  lesson_text=sprintf("Graduation 시도: best=%s port_t=%.2f oos_reten=%.2f calmar=%.2f DSR=%.2f (vs EW-uni). 게이트 HARD(2.95/0.7/0.64/0.5) 판정.",b$model,b$port_t,b$oos_retention,b$calmar,b$dsr),
-  metrics=list(port_t=b$port_t,oos_retention=b$oos_retention,calmar=b$calmar,dsr=b$dsr),core_reference="RAMP graduation gate eval")
+## [2026-07-04 G-mode-wiring] emit v2 정비: 실측치(pt_capwt/oos_retention/calmar) 자동 전달 +
+##   construction_type/selection_type 필수 인자(ramp_loop.R v2). grade 근거 = port_t_capwt
+##   (§2 계약-authoritative — 2026-06-18 감사 "EW-uni 라벨 vs cap-w authoritative 정렬 필요" 해소.
+##    문턱 2.95는 기존 HARD 그대로, 판정 컬럼만 authoritative로 교체).
+## selection_type="sweep": N_TRIALS=14 열거 config + which.max pick = §3 selection operator (DSR 게이트 적용 경계).
+ramp_document(strategy_id=sprintf("RAMP_GRADUATION_%s",format(Sys.Date(),"%Y%m%d")),
+  grade=ifelse(!is.na(b$port_t_capwt)&&b$port_t_capwt>=2.95,"A","B"),
+  lesson_text=sprintf("Graduation 시도: best=%s pt_capwt=%.2f(authoritative) pt_EWuni=%.2f(진단) oos_reten=%.2f calmar=%.2f DSR=%.2f. 게이트 HARD(capwt 2.95/0.7/0.64/0.5) 판정.",
+    b$model,b$port_t_capwt,b$port_t,b$oos_retention,b$calmar,b$dsr),
+  construction_type="composite",   # controlled vocab (lcode_schema v2) — 상세 구성은 mechanism_hypothesis에
+  selection_type="sweep",
+  mechanism_hypothesis="국면조건부 IC 가중 팩터군 결합 — 국면별 팩터 예측력 차등을 배분 가중에 반영 (M_regdd)",
+  metrics=list(portfolio_alpha_t=b$port_t_capwt, port_t=b$port_t, port_t_capwt=b$port_t_capwt,
+               oos_retention=b$oos_retention, calmar=b$calmar, dsr=b$dsr, turnover=b$turnover,
+               n_trials=N_TRIALS),
+  falsification_attempts=if(is.finite(b$oos_retention)) list(list(
+    test="OOS retention v2 (anchored 3-split {55/65/75} 중앙값, 과적합 반증)",
+    result=if(b$oos_retention>=0.5) "survived" else "falsified",   # §3 하한 0.5 (measurement-graduation)
+    effect_retained=round(b$oos_retention,3),
+    detail=sprintf("retention %.3f (gate 0.7 / 하한 0.5)", b$oos_retention))) else NULL,
+  core_reference="RAMP graduation gate eval (run_ramp_graduation.R)")
 saveRDS(R,".cache/_ramp_grad.rds"); close(con); cat("GRAD_DONE\n")

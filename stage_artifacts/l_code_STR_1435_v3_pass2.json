@@ -1,11 +1,19 @@
 {
   "strategy_id": "STR_1435",
   "l_code": "L-150",
-  "grade": "REJECT",
+  "grade": "F",
   "core_reference": "Sloan accrual + Novy-Marx GP + L-442 Regime Engine v7.1 PIT rule + QEPM §8 Alpha Lab Gate + QEPM §10 Harvey t>3.0",
   "lesson_text": "5-sleeve 구조는 겉으로는 다각화처럼 보이지만 재검증 시 세 가지 구조적 실패를 드러낸다. 첫째, sub-sleeve의 하나라도 PIT 위반(STR_1435의 defense_sleeve + consgate_pure FRED no-lag)이면 최종 전략 전체가 PIT FAIL이다. 둘째, BASE_DIR(STR_770_phase2_cross)가 유실되면 run_all.R이 재현 불가능하다. 셋째, 5 × 6 유니언은 최대 30종목으로 v53 N<=20 규칙을 위반한다. 더 결정적으로 역할 정직성 audit에서 declared=diversifier / s3=core_alpha / s4=core_alpha / detected_family=defense의 네 가지 라벨이 충돌 — 5-sleeve 복합은 본질적으로 core_alpha이지 diversifier가 아니다. parent STR_1417과 s3_max_return_corr=0.994인 점이 이를 확인시킨다. 교훈: 멀티슬리브는 sub-engine 각각이 PIT clean + 재현 가능 + 유니언 크기 <= 20 세 조건 모두 충족해야 하며, 역할 라벨은 s3/s4 실증 결과를 따른다.",
-  "tags": ["MULTISLEEVE_PIT_CASCADE", "BASE_DIR_MISSING", "N_OVER_20", "ROLE_MISMATCH", "CLONE_OF_PARENT", "HARVEY_T3_FAIL"],
+  "tags": [
+    "MULTISLEEVE_PIT_CASCADE",
+    "BASE_DIR_MISSING",
+    "N_OVER_20",
+    "ROLE_MISMATCH",
+    "CLONE_OF_PARENT",
+    "HARVEY_T3_FAIL"
+  ],
   "created_at": "2026-04-17",
   "session": 66,
-  "source": "Judge sweep v3 Pass 2 Tier 1"
+  "source": "Judge sweep v3 Pass 2 Tier 1",
+  "grade_raw": "REJECT"
 }

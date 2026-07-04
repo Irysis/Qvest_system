@@ -8,7 +8,7 @@ QEPM Work Task는 1 가설 = 1 QEPM Full Pipeline (Alpha → Risk → Optimizer 
 
 ## Subcommands
 
-- `/worktask create "{hypothesis}"` — 신규 WT 생성 + request.json 발행
+- `/worktask create "{hypothesis}"` — 신규 WT 생성 + request.json 발행. **생성 전 hypothesis_index 조회 의무**: `Rscript 02_Infrastructure/tools/hypothesis_index.R lookup <keyword>...` — FAIL/KILL 히트 시 차별점 명시 없인 진행 금지(INV-7 재도전 사유 기록). 상세: `.claude/skills/qvest-worktask/SKILL.md` §2
 - `/worktask status {WT_id}` — 현 단계 + package 존재 확인
 - `/worktask list` — 진행 중 WT 목록
 - `/worktask advance {WT_id} {new_phase}` — 단계 수동 전이

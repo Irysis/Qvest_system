@@ -257,6 +257,48 @@ if(REGIME_SOURCE != "forecast"){
     register_fr_result(fr, regime_engine_version="unified_regime_signal_daily Category(t-1) + walk-forward RCMA") },
     error=function(e) cat("[run_wf_ensemble] FR registry 생략:", conditionMessage(e), "\n"))
 } else cat("[run_wf_ensemble] forecast A/B 변형 — FR registry 등재 생략(baseline FR_001 보존)\n")
+# ── FR L-code 발행 (2026-07-04 G-mode-wiring — FR 모드 emit 1지점, 레지스트리 등재 직후) ──
+#   es 객체 스코프 내 실측치만 전달(metric_type=backtested). fail-soft — emit 실패가 러너를 죽이지 않음.
+#   forecast A/B 변형도 strategy_id=FR_ID로 구분 적립 (실험 교훈도 지식 — 레지스트리 미등재와 별개).
+tryCatch({
+  source(file.path(PROJ,"02_Infrastructure/axiom/lcode_emit.R"))
+  .fr_edge_ew <- if(is.finite(es$essence$net_sharpe%||%NA) && is.finite(ew_sr)) (es$essence$net_sharpe - ew_sr) else NA_real_
+  # falsification 구조체 [{test,result,effect_retained}] — 이미 산출된 반증형 검증의 전달만 (신규 계산 금지)
+  .fr_fals <- list()
+  if(is.finite(oos_ret))
+    .fr_fals[[length(.fr_fals)+1]] <- list(test="OOS retention (essence 3-split, 과적합 반증)",
+      result=if(oos_ret >= 0.5) "survived" else "falsified",   # §3 하한 0.5 (measurement-graduation — 창작 아님)
+      effect_retained=round(oos_ret,3), detail=sprintf("retention %.3f (gate 0.7, 하한 0.5)", oos_ret))
+  if(is.finite(.fr_edge_ew))
+    .fr_fals[[length(.fr_fals)+1]] <- list(test="EW baseline 대비 edge (placebo proxy)",
+      result="diagnostic", effect_retained=NA,
+      detail=sprintf("net_SR %.3f vs EW %.3f (edge %+.3f) — 유의검정 아님(진단)", es$essence$net_sharpe%||%NA, ew_sr, .fr_edge_ew))
+  emit_fr_lcode(
+    strategy_id = FR_ID, grade = es$grade,
+    lesson_text = sprintf(
+      "%s regime rotation 앙상블 실측(essence %s): net_SR=%.3f PORT_t(NW lag-3)=%.2f DSR=%s Calmar=%.2f CAGR=%.1f%% MDD=%.1f%% | oos_retention=%s | admitted pool %d모듈(%s) | edge_vs_ew=%s (EW baseline SR %.3f).",
+      FR_ID, es$grade, es$essence$net_sharpe%||%NA, es$essence$portfolio_alpha_t_nw_lag3%||%NA,
+      as.character(round(es$essence$dsr,3)), es$essence$calmar%||%NA,
+      (es$essence$cagr%||%NA)*100, (es$essence$mdd%||%NA)*100,
+      if(is.finite(oos_ret)) sprintf("%.3f", oos_ret) else "unstable",
+      length(all_used_mods), paste(head(all_used_mods,8), collapse=","),
+      if(is.finite(.fr_edge_ew)) sprintf("%+.3f", .fr_edge_ew) else "NA", ew_sr),
+    track = "factor_rotation",
+    construction_type = "regime_rotation",
+    mechanism_hypothesis = "국면조건부 모듈 배분(RCMA admitted union + rp/IR shrink dispatcher) — 모듈별 약점 국면 회피로 앙상블 위험조정수익 개선 가설",
+    core_reference = "run_wf_ensemble.R (walk-forward RCMA + Return.portfolio)",
+    # emit v2 1급 인자 (승격축)
+    portfolio_alpha_t = es$essence$portfolio_alpha_t_nw_lag3%||%NA,
+    oos_retention = if(is.finite(oos_ret)) round(oos_ret,3) else NULL,
+    falsification_attempts = if(length(.fr_fals)) .fr_fals else NULL,
+    selection_type = "chain",   # 단일 config 러너(baseline/forecast A/B) — sweep argmax-pick 아님 (§3)
+    metrics = list(
+      cagr_pct = round((es$essence$cagr%||%NA)*100,2), sharpe = es$essence$net_sharpe%||%NA,
+      mdd_pct = round(abs(es$essence$mdd%||%NA)*100,2),
+      calmar = es$essence$calmar%||%NA, dsr = es$essence$dsr%||%NA,
+      ew_baseline_sr = round(ew_sr,3), edge_vs_ew = if(is.finite(.fr_edge_ew)) round(.fr_edge_ew,3) else NA_real_,
+      n_modules = length(all_used_mods), n_trials = N_TRIALS))
+}, error=function(e) cat("[run_wf_ensemble] FR L-code emit 생략(fail-soft):", conditionMessage(e), "\n"))
 
 cat("\n==== FR_001 (regime rotation 앙상블) — 실측 [v3: Return.portfolio + WF RCMA + breadth gate + oos guard] ====\n")
 cat(sprintf("grade=%s  net_Sharpe=%.3f  PORT_t=%.3f  DSR=%s  Calmar=%.2f  CAGR=%.1f%%  MDD=%.1f%%\n",

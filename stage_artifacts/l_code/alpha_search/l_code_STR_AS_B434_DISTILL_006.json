@@ -1,0 +1,156 @@
+{
+  "l_code": "L-AS-B434-DISTILL-006",
+  "strategy_id": "STR_AS_B434_DISTILL_006",
+  "grade": "C",
+  "core_reference": "batch_434 오염 증류 CL-B434-006 (n=6) — lcode_distill_plan_20260704 / 메모리 project-batch434-codegen-contamination. executed_signal: V01_BM+V03_CFP+V10_FCF_Yield+V11_Shareholder_Yield engine=fm",
+  "lesson_text": "batch_434 patched-direct 실행 콤보 서명 통합 증류 (6건): 실행신호 = V01_BM+V03_CFP+V10_FCF_Yield+V11_Shareholder_Yield engine=fm. 가설 라벨은 실행신호와 불일치([label-suspect] — 폴백/패치 콤보 오귀속, merge_history에 보존). 콤보 실측: 대표 proxy only; proxy 범위 CAGR {'n': 6, 'min': 10.15, 'median': 14.41, 'max': 15.86}, Sharpe {'n': 6, 'min': 0.65, 'median': 0.664, 'max': 0.676}. 개별 가설 기각 증거로 인용 금지 — 콤보 서명 단위 결론만 유효 (project-batch434-codegen-contamination).",
+  "tags": [
+    "ALPHA_SEARCH",
+    "BATCH434",
+    "DISTILLED",
+    "LABEL_CONTAMINATION"
+  ],
+  "created_at": "2026-07-04",
+  "research_mode": "alpha_search",
+  "created_by": "emit:alpha_search",
+  "metric_type": "proxy",
+  "construction_type": "composite",
+  "mechanism_hypothesis": "라벨-실행 불일치: codegen 폴백/패치가 가설 무관 표준 팩터콤보를 실행 — 콤보 자체의 net active는 authoritative 재실측 기준 자본 문턱(PORT_t 2.95) 미달.",
+  "lcode_schema_version": 2,
+  "distilled_from_cluster": "CL-B434-006",
+  "distill_plan": "06_Registry/lcode_distill_plan_20260704.json",
+  "distill_date": "2026-07-04",
+  "n_merged": 6,
+  "executed_signal": "V01_BM+V03_CFP+V10_FCF_Yield+V11_Shareholder_Yield engine=fm",
+  "merged_l_codes": [
+    "L-AS-20260613_014544_214460",
+    "L-AS-20260613_014823_214817",
+    "L-AS-20260613_015158_215246",
+    "L-AS-20260613_015437_215566",
+    "L-AS-20260613_023443_219857",
+    "L-AS-20260613_033215_226468"
+  ],
+  "proxy_metric_ranges": {
+    "cagr_pct": {
+      "n": 6,
+      "min": 10.15,
+      "median": 14.41,
+      "max": 15.86
+    },
+    "sharpe": {
+      "n": 6,
+      "min": 0.65,
+      "median": 0.664,
+      "max": 0.676
+    },
+    "mdd_pct": {
+      "n": 6,
+      "min": 52.67,
+      "median": 64.305,
+      "max": 64.31
+    },
+    "excess_cagr": {
+      "n": 6,
+      "min": -0.59,
+      "median": 3.67,
+      "max": 5.12
+    },
+    "oos_retention": {
+      "n": 6,
+      "min": 0.149,
+      "median": 0.181,
+      "max": 0.258
+    }
+  },
+  "authoritative_summary": {
+    "n_with_authoritative": 0,
+    "essence_grade_distribution": {},
+    "portfolio_alpha_t_nw_lag3": {},
+    "source": "authoritative_remeasure.json (essence 재실측, backtested)"
+  },
+  "representative_source": {
+    "l_code": "L-AS-20260613_023443_219857",
+    "file": "stage_artifacts/l_code/alpha_search/l_code_STR_AS_20260613_023443_219857.json"
+  },
+  "merge_history": [
+    {
+      "l_code": "L-AS-20260613_014544_214460",
+      "strategy_id": "STR_AS_20260613_014544_214460",
+      "hypothesis_label": "[label-suspect] Regime + ML + Traditional Trio — 3 패러다임 score 합산",
+      "grade_raw": "C",
+      "created_at": "2026-06-13",
+      "cagr_pct": 14.41,
+      "sharpe": 0.664,
+      "excess_cagr": 3.67,
+      "essence_grade": {},
+      "portfolio_alpha_t_nw_lag3": {}
+    },
+    {
+      "l_code": "L-AS-20260613_014823_214817",
+      "strategy_id": "STR_AS_20260613_014823_214817",
+      "hypothesis_label": "[label-suspect] 다중 호라이즌 FM — 1m/3m/6m/12m trailing SR 앙상블 가중",
+      "grade_raw": "C",
+      "created_at": "2026-06-13",
+      "cagr_pct": 10.15,
+      "sharpe": 0.65,
+      "excess_cagr": -0.59,
+      "essence_grade": {},
+      "portfolio_alpha_t_nw_lag3": {}
+    },
+    {
+      "l_code": "L-AS-20260613_015158_215246",
+      "strategy_id": "STR_AS_20260613_015158_215246",
+      "hypothesis_label": "[label-suspect] Dynamic FM Ensemble — 3m/6m/12m FM 결과를 국면별로 자동 선택",
+      "grade_raw": "C",
+      "created_at": "2026-06-13",
+      "cagr_pct": 14.41,
+      "sharpe": 0.664,
+      "excess_cagr": 3.67,
+      "essence_grade": {},
+      "portfolio_alpha_t_nw_lag3": {}
+    },
+    {
+      "l_code": "L-AS-20260613_015437_215566",
+      "strategy_id": "STR_AS_20260613_015437_215566",
+      "hypothesis_label": "[label-suspect] [진단] No FM Baseline — 7F EW 고정가중 (FM 없음, MF_A1 = 대조군)",
+      "grade_raw": "C",
+      "created_at": "2026-06-13",
+      "cagr_pct": 14.41,
+      "sharpe": 0.664,
+      "excess_cagr": 3.67,
+      "essence_grade": {},
+      "portfolio_alpha_t_nw_lag3": {}
+    },
+    {
+      "l_code": "L-AS-20260613_023443_219857",
+      "strategy_id": "STR_AS_20260613_023443_219857",
+      "hypothesis_label": "[label-suspect] Traditional + ML 블렌드 — MF_A1(전통) 50% + SF_47(ML) 50% score 합산",
+      "grade_raw": "C",
+      "created_at": "2026-06-13",
+      "cagr_pct": 15.37,
+      "sharpe": 0.664,
+      "excess_cagr": 4.63,
+      "essence_grade": {},
+      "portfolio_alpha_t_nw_lag3": {}
+    },
+    {
+      "l_code": "L-AS-20260613_033215_226468",
+      "strategy_id": "STR_AS_20260613_033215_226468",
+      "hypothesis_label": "[label-suspect] Paradigm Rotation — 전통/ML/국면 3패러다임 중 OOS 최강 1개 선택",
+      "grade_raw": "C",
+      "created_at": "2026-06-13",
+      "cagr_pct": 15.86,
+      "sharpe": 0.676,
+      "excess_cagr": 5.12,
+      "essence_grade": {},
+      "portfolio_alpha_t_nw_lag3": {}
+    }
+  ],
+  "cagr_pct": 15.37,
+  "sharpe": 0.664,
+  "mdd_pct": 64.3,
+  "excess_cagr": 4.63,
+  "oos_retention": 0.241,
+  "selection_type": "sweep",
+  "record_type": "performance"
+}

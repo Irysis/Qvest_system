@@ -1,0 +1,85 @@
+{
+  "schema_version": "v54_ax_p0_mode",
+  "candidate_id": "CAND_20260704_alpha_research_momentum_negative_L-AR-20260621_105345_L-AR-20260621_105345B_L-AR-20260621_161747",
+  "research_mode": "alpha_research",
+  "metric_type": "backtested",
+  "type": "empirical",
+  "polarity": "negative",
+  "statement_draft": "[실증 실패 규칙 초안] family=momentum, tags=MOMENTUM,KR_LONGONLY,NON_RETURN, supporting=12건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
+  "supporting_l_codes": [
+    "L-AR-20260621_105345",
+    "L-AR-20260621_105345B",
+    "L-AR-20260621_161747",
+    "L-AR-20260621_163658",
+    "L-AR-20260621_172656",
+    "L-AR-20260621_180336",
+    "L-AR-20260621_192350",
+    "L-AR-20260621_201229",
+    "L-AR-20260621_213456",
+    "L-AR-20260621_220827",
+    "L-AR-20260629_225254",
+    "L-AR-20260704_114303"
+  ],
+  "scope_draft": {
+    "market": "KR",
+    "factor_family": "momentum",
+    "regime": null,
+    "construction_types": null
+  },
+  "evidence_draft": {
+    "independent_l_codes": 12,
+    "independent_strategies": 12,
+    "strategies": [
+      "C23_OTHERCORP_ACCUM_WT-D20260621_005",
+      "HURST_MOM_WT-D20260621_001",
+      "C27_BUYBACK_YIELD_CONFIRMED_WT-D20260621_009",
+      "C25_SIGNEDFLOWRUN_WT-D20260621_007",
+      "C29_INDEX_INCLUSION_FRONTRUN_WT-D20260621_011",
+      "C26_OVERNIGHT_MOM_WT-D20260621_008",
+      "WT-D20260629_001_gapfreq",
+      "CENSUSV3_VAL_RD_WC_AB",
+      "C24_LIQ_IMPROVE_WT-D20260621_006",
+      "PCDM_WT-D20260621_002",
+      "C27b_BUYBACK_DECISION_DRIFT_WT-D20260621_010",
+      "C22_QUIET_ACCUM_WT-D20260621_004"
+    ],
+    "effect_direction_consistency": null,
+    "note": "evidence_draft — promote.R 5축 검증에서 hurdle_result/grade_a_catalog 교차검증으로 확정",
+    "n_eff_signatures": 12,
+    "independent_constructions": 12,
+    "constructions": [
+      "amihud_slope_liquidity_trend",
+      "buyback_decision_drift_eventtime_dart",
+      "buyback_yield_momentum_confirmed_carry",
+      "flow_price_divergence_residual",
+      "index_inclusion_frontrun_drift",
+      "momentum_quality_conditioning",
+      "othercorp_strategic_accumulation",
+      "overnight_intraday_decomposition",
+      "peer_relative_residual_momentum",
+      "signed_flow_run_length",
+      "single_factor_long_only",
+      "single_sleeve_long_only_topN"
+    ],
+    "metric_types": [
+      "backtested"
+    ]
+  },
+  "falsification_draft": {
+    "attempts": [],
+    "note": "promote.R 5축(r7 적극 반증)에서 kr-inverse-pattern-miner 역가설 + role_honesty로 채움"
+  },
+  "mechanism_draft": {
+    "economic_explanation": "buyback yield (insider commitment) + M03 confirm -> post-announcement drift (PARTIAL: drift REAL but 1-month event-time, monthly carry dilutes to zero -> event-time construction needed) (멤버 가설 12건 — promote.R에서 일치성 재검증)",
+    "mechanism_type": "friction",
+    "causal_plausibility": null
+  },
+  "oos_validation_draft": {
+    "oos_months": null,
+    "oos_effect_vs_is": -2.59,
+    "note": "L-code oos_retention 실값 4건 median (IS65/OOS35 활성SR retention) — oos_months 실값 무 → None 유지 — promote.R essence_score 경유 재확정"
+  },
+  "cluster_members_count": 12,
+  "status": "pending_5axis",
+  "created_at": "2026-07-04T04:26:21+00:00"
+}

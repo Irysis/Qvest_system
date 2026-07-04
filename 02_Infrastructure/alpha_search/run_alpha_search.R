@@ -1304,26 +1304,49 @@ run_alpha_search <- function(strategy_name,
   #   alpha_search 파이프라인 미산출 — 미산출 값은 기재하지 않는다 (가짜 데이터 생성 금지,
   #   cluster_extractor._draft_falsification이 실기록만 집계). 형식: 문자열 list.
   sdef_lc <- tryCatch(hg$verdict$statistical_defense, error = function(e) NULL) %||% list()
-  fals <- character(0)
+  # [2026-07-04 G-mode-wiring] 구조체 형식 전환: character 벡터 → [{test, result, effect_retained}].
+  #   promote.R .axis_falsification 소비 규약 정합: result = 정확 토큰 {survived|falsified|diagnostic}
+  #   (identical(result,"falsified") / result!="survived" 정확매칭 — 서술은 detail 필드에 분리),
+  #   survived는 effect_retained 수치 필수(%||% 0 처리로 결측 시 hurdle 보수 FAIL),
+  #   effect_retained = 효과 잔존 비율 실값(결측 시 NA — 수치 창작 금지). 그 외 기배선 유지.
+  .fals_entry <- function(test, result, effect_retained = NA_real_, detail = "")
+    list(test = test, result = result, effect_retained = effect_retained, detail = detail)
+  fals <- list()
   # PIT 정적스캔 — detect_lookahead 위반 시 run 자체가 중단되므로 emit 시점엔 항상 CLEAN
-  fals <- c(fals, "PIT 정적스캔(detect_lookahead) CLEAN — 위반 시 백테 중단 정책으로 emit 시점 통과 보장")
+  #   (효과 제거 0 = 잔존 1.0 — 스캔 통과의 정의이지 성과 수치 아님)
+  fals[[length(fals) + 1L]] <- .fals_entry(
+    "PIT 정적스캔(detect_lookahead)", "survived", 1.0,
+    "CLEAN — 위반 시 백테 중단 정책으로 emit 시점 통과 보장")
   dsr_lc <- .as_num(sdef_lc$dsr)
   if (is.finite(dsr_lc))
-    fals <- c(fals, sprintf("DSR(다중검정 반증) %.3f, significant=%s, n_trials=%s — chain은 게이트 부적용(진단 산출)",
-                            dsr_lc, isTRUE(sdef_lc$dsr_significant),
-                            as.character(sdef_lc$n_trials %||% NA)))
+    fals[[length(fals) + 1L]] <- .fals_entry(
+      "DSR(다중검정 반증)", "diagnostic", NA_real_,
+      sprintf("DSR %.3f, significant=%s, n_trials=%s — chain은 게이트 부적용(진단 산출)",
+              dsr_lc, isTRUE(sdef_lc$dsr_significant), as.character(sdef_lc$n_trials %||% NA)))
   if (is.finite(oos_retention))
-    fals <- c(fals, sprintf("IS65/OOS35 활성SR retention %.2f (hurdle D062, proxy) — 과적합 반증 시도", oos_retention))
+    fals[[length(fals) + 1L]] <- .fals_entry(
+      "IS65/OOS35 활성SR retention (hurdle D062, proxy) — 과적합 반증 시도",
+      # §3 하한 0.5(<0.5 무조건 FAIL) 기준 판정 — promote.R fals_min_retained 0.5와 동일 규약 (창작 아님)
+      if (oos_retention >= 0.5) "survived" else "falsified",
+      round(oos_retention, 3),
+      sprintf("retention %.2f (measurement-graduation §3 하한 0.5 기준)", oos_retention))
   f7 <- Filter(function(x) identical(x$code %||% "", "FMT-07"), fmt)
   if (length(f7))
-    fals <- c(fals, sprintf("서브기간 분해(pre/post-2017) 반증: %s", .clip_msg(f7[[1]]$reason %||% "", 150L)))
+    fals[[length(fals) + 1L]] <- .fals_entry(
+      "서브기간 분해(pre/post-2017)", "falsified", NA_real_,
+      sprintf("후반부 알파 붕괴: %s", .clip_msg(f7[[1]]$reason %||% "", 150L)))
   if (auth_ok) {
     a_oos <- .as_num(auth$essence$oos_retention)
     a_dsr <- .as_num(auth$essence$dsr)
-    fals <- c(fals, sprintf("계약 실측 재검(essence v2, backtested): oos_retention %s / DSR %s / hard_fail=%s",
-                            ifelse(is.finite(a_oos), sprintf("%.2f", a_oos), "NA"),
-                            ifelse(is.finite(a_dsr), sprintf("%.2f", a_dsr), "NA"),
-                            paste(as.character(auth$hard_fail %||% "NA"), collapse = ",")))
+    a_hf  <- isTRUE(any(as.logical(unlist(auth$hard_fail %||% list())), na.rm = TRUE))
+    fals[[length(fals) + 1L]] <- .fals_entry(
+      "계약 실측 재검(essence v2, backtested)",
+      if (a_hf) "falsified" else if (is.finite(a_oos)) "survived" else "diagnostic",
+      if (is.finite(a_oos)) round(a_oos, 3) else NA_real_,
+      sprintf("oos_retention %s / DSR %s / hard_fail=%s",
+              ifelse(is.finite(a_oos), sprintf("%.2f", a_oos), "NA"),
+              ifelse(is.finite(a_dsr), sprintf("%.2f", a_dsr), "NA"),
+              paste(as.character(auth$hard_fail %||% "NA"), collapse = ",")))
   }
 
   # v8.0 입력 품질 게이트 (lcode_schema.R) — garbage corpus 진입 차단 (안전핀 #1)
@@ -1353,7 +1376,7 @@ run_alpha_search <- function(strategy_name,
     next_probe                = next_probe,
     fmt_codes                 = as.list(fmt_codes),     # 빈 list = 판정 없음 (정직)
     oos_retention             = oos_retention,          # IS65/OOS35 SR retention (hurdle D062, proxy)
-    falsification_attempts    = as.list(fals)           # r7 Falsification 축 — 기존 산출 반증형 검증만 배선
+    falsification_attempts    = fals                    # r7 Falsification 축 — 구조체 [{test,result,effect_retained}] (2026-07-04)
   )
   # ---- 권위측정 사다리 결과 라벨 (트랙C): 계약 실측 성공 시 backtested로 승격 ----
   #   INV-1: proxy는 mode-local 한정 — 실측(backtested) 라벨은 build_bt_result+essence_score

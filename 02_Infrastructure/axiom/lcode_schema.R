@@ -1,28 +1,136 @@
-# lcode_schema.R — L-code 입력 품질 게이트 (v8.0 Phase 1, 3-mode axiom 엔진)
+# lcode_schema.R — L-code 입력 품질 게이트 v2 (2026-07-04 엔진 재설계, 3층 산출물 모델)
 #
 # validate_lcode(): 신규 L-code 적립 시점에 필수필드 + sanity bound를 검증한다.
 #   위반(hard error) 시 호출부가 write를 차단 → garbage(예: -2028.7%p bm 정렬버그,
 #   한 줄 템플릿) corpus 진입을 막는다. = 자동 승격 파이프라인 안전핀 #1 (INV-1 전제).
+#
+# v2 (2026-07-04 — 도훈 mandate "emit이 축을 채우게"):
+#   승격 0의 인과 = 문턱이 아니라 emit 입력 결측(falsification 0/598 · portfolio_alpha_t
+#   98% 결측). 따라서 required_for_promotion 계층을 신설한다 — 문턱·INV 일절 불변.
+#
+#   [base required — hard error, v1과 동일 + record_type 조건부]
+#     l_code / strategy_id / lesson_text / research_mode / metric_type
+#     grade: record_type=performance(기본)일 때만 필수. enum A/B/C/F 강제
+#            (legacy alias는 수용 + WARN + normalize_lcode()가 canonical로 정규화).
+#   [required_for_promotion — 승격축 입력. strict=TRUE(promotion 시점)면 error,
+#    strict=FALSE(emit 시점, 기본)면 WARN + missing_promotion_fields 반환.
+#    emit BLOCK 승격은 2사이클 관찰 후 도훈 confirm — 지금 미도입]
+#     mechanism_hypothesis  — Mechanism 축. 보일러플레이트("unknown"/"TBD"/공란) 불인정
+#     metric_type           — Rigor 축 (base required와 동일 필드, canonical_screen 추가)
+#     construction_type     — Independence 축. controlled vocab. selection_type 값
+#                             (chain/sweep)은 거부 → selection_type 별도 필드로 분리
+#   [recommended — 결측 시 WARN]
+#     falsification_attempts — Falsification 축. 구조체 list [{test, result∈{survived,
+#                              falsified,weakened}, effect_retained}] 권장. 문자열도
+#                              수용하되 WARN (promote.R .axis_falsification 보수 처리)
+#     oos_retention (+oos_months) — External 축
+#     metric_type=backtested 시 portfolio_alpha_t / oos_retention 결측 WARN
+#
+# 하위호환: 구 L-code(스키마 v1, lcode_schema_version 필드 부재)는 읽기/재검증 시
+#   strict=FALSE로 통과 (required_for_promotion은 WARN까지만). 정직 원장 보존.
 #
 # r7 정합 필드(00_Lawbook/Axiom_아키텍처/r7_axiom_design.md):
 #   construction_type   — Independence 축(같은 construction = 상관 1건)
 #   mechanism_hypothesis — Mechanism 축(경제적 설명, 없으면 unknown)
 #   falsification_attempts — Falsification 축(적극 반증 기록)
 #
-# 참조: .claude/rules/measurement-graduation.md(metric_type) / data_table_shift_convention.md.
+# 참조: .claude/rules/measurement-graduation.md(metric_type) /
+#       docs/rules/axiom-engine.md(§emit 필수·권장 필드표) /
+#       06_Registry/lcode_distill_plan_20260704.json(grade_normalization_map SOT).
 
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0L || (length(a) == 1L && is.na(a))) b else a
 
-LCODE_VALID_GRADES       <- c("A", "A_NOVEL", "A_DEF", "A_CONDITIONAL", "B", "C", "F")
-LCODE_VALID_METRIC_TYPES <- c("proxy", "estimated", "backtested", "unavailable")
-LCODE_VALID_MODES        <- c("alpha_search", "alpha_research", "qepm_legacy",
-                              "judge_gate", "governor_admission",
-                              "factor_rotation", "regime_research",
-                              "ramp")  # 2026-06-18: RAMP 자가발전 4번째 모드 (lcode_emit RAMP prefix와 정합)
+LCODE_SCHEMA_VERSION <- 2L
+
+# ── grade: canonical enum + legacy alias (distill plan grade_normalization_map과 동일) ──
+LCODE_VALID_GRADES <- c("A", "B", "C", "F")
+LCODE_GRADE_ALIASES <- c(
+  # 성과등급 alias → canonical
+  "A_NOVEL" = "A", "A_DEF" = "A", "A_CONDITIONAL" = "A", "A_CONDITIONAL_REAFFIRMED" = "A",
+  "B_ARCHIVE" = "B", "REJECT" = "F"
+)
+# 비성과(PROCESS) legacy grade → record_type으로 이동 (grade 아님)
+LCODE_PROCESS_GRADE_MAP <- c(
+  "INFRASTRUCTURE" = "infra", "INFRASTRUCTURE_CRITICAL" = "infra",
+  "INFRASTRUCTURE_PROCESS" = "infra",
+  "METHODOLOGY" = "process", "PROCESS_INTEGRITY_RULE" = "process",
+  "ROLE_HONESTY_RULE" = "process", "SR_CEILING_FINDING" = "process",
+  "PROCESS_RULE (Defense composite admission operational rule)" = "process",
+  "PROCESS_RULE (infra bug pattern)" = "process",
+  "N/A (factor-level discovery)" = "process",
+  "N/A (axiom-level discovery synthesis)" = "process",
+  "TIER2_SUMMARY" = "summary", "TIER3_SUMMARY" = "summary"
+)
+
+LCODE_VALID_RECORD_TYPES <- c("performance", "process", "infra", "summary")
+
+# canonical_screen 추가 (measurement-graduation §1 정합 — canonical_screen_bt 실측 라벨)
+LCODE_VALID_METRIC_TYPES <- c("proxy", "estimated", "canonical_screen", "backtested", "unavailable")
+
+LCODE_VALID_MODES <- c("alpha_search", "alpha_research", "qepm_legacy",
+                       "judge_gate", "governor_admission",
+                       "factor_rotation", "regime_research",
+                       "ramp")  # 2026-06-18: RAMP 자가발전 4번째 모드 (lcode_emit RAMP prefix와 정합)
+# research_mode normalize 규칙 (promote GEN 폴백 봉합, A2-F8②)
+LCODE_MODE_ALIASES <- c("qepm" = "qepm_legacy")
+
+# selection_type — measurement-graduation §3 selection operator (construction과 별개 축)
+LCODE_VALID_SELECTION_TYPES <- c("chain", "sweep", "single")
+
+# construction_type controlled vocab (r7 Independence 축; corpus 실측 값 + 스펙 확장 포함)
+LCODE_VALID_CONSTRUCTION_TYPES <- c(
+  "momentum", "reversal", "value", "quality", "low_vol", "dividend", "size",
+  "liquidity", "flow", "consensus", "earnings_event", "seasonality",
+  "ml_sizing", "overlay_regime", "multi_sleeve", "long_short",
+  "single_factor_long_only", "single_sleeve_long_only_topN",
+  "volatility_timing_overlay", "dynamic_timing_overlay", "hedge_overlay",
+  "regime_rotation", "structural_limit", "composite", "event_time"
+)
+
+# ── 정규화: legacy 값 → v2 canonical. validate 이전에 emit/재검증 경로가 호출 ──
+#   반환: list(lcode=정규화본, notes=chr 정규화 내역)
+normalize_lcode <- function(lcode) {
+  notes <- character(0)
+
+  # research_mode qepm → qepm_legacy
+  rm0 <- as.character(lcode[["research_mode"]] %||% "")
+  if (nzchar(rm0) && rm0 %in% names(LCODE_MODE_ALIASES)) {
+    lcode$research_mode <- unname(LCODE_MODE_ALIASES[rm0])
+    notes <- c(notes, sprintf("research_mode '%s'→'%s' normalize", rm0, lcode$research_mode))
+  }
+
+  # grade legacy alias / PROCESS-class → record_type 분리
+  g0 <- as.character(lcode[["grade"]] %||% "")
+  if (nzchar(g0) && !(g0 %in% LCODE_VALID_GRADES)) {
+    if (g0 %in% names(LCODE_GRADE_ALIASES)) {
+      lcode$grade_raw <- g0
+      lcode$grade <- unname(LCODE_GRADE_ALIASES[g0])
+      notes <- c(notes, sprintf("grade legacy alias '%s'→'%s'", g0, lcode$grade))
+    } else if (g0 %in% names(LCODE_PROCESS_GRADE_MAP)) {
+      lcode$grade_raw <- g0
+      lcode$grade <- NULL
+      if (!nzchar(as.character(lcode[["record_type"]] %||% "")))
+        lcode$record_type <- unname(LCODE_PROCESS_GRADE_MAP[g0])
+      notes <- c(notes, sprintf("비성과 grade '%s' → record_type='%s' 이동 (grade 제거)", g0, lcode$record_type))
+    }
+  }
+  if (!nzchar(as.character(lcode[["record_type"]] %||% ""))) lcode$record_type <- "performance"
+
+  # construction_type에 selection_type 값이 들어온 경우 → 별도 필드 분리
+  ct <- as.character(lcode[["construction_type"]] %||% "")
+  if (nzchar(ct) && ct %in% LCODE_VALID_SELECTION_TYPES) {
+    if (!nzchar(as.character(lcode[["selection_type"]] %||% ""))) lcode$selection_type <- ct
+    lcode$construction_type <- ""
+    notes <- c(notes, sprintf("construction_type='%s'는 selection_type 값 → selection_type으로 이동 (construction 결측 처리)", ct))
+  }
+
+  list(lcode = lcode, notes = notes)
+}
 
 # construction_type 간이 추론 (Independence 축용 — name/idea 키워드 기반)
 infer_construction_type <- function(name = "", idea = "") {
   s <- tolower(paste(name %||% "", idea %||% ""))
+  if (grepl("overlay|오버레이|regime|국면|vol.?target|타이밍|timing|절대모멘텀", s)) return("overlay_regime")
   if (grepl("모멘텀|momentum|12-1|6-1|추세|trend", s))           return("momentum")
   if (grepl("revers|52[- ]?주\\s*(저|low)|mean.?rev|단기반전", s)) return("reversal")
   if (grepl("ml|xgb|lightgbm|딥러닝|신경망|ensemble|앙상블|rl\\b", s)) return("ml_sizing")
@@ -34,27 +142,80 @@ infer_construction_type <- function(name = "", idea = "") {
   return("single_factor_long_only")
 }
 
-# 반환: list(valid=TRUE/FALSE, errors=chr, warnings=chr)
-validate_lcode <- function(lcode) {
-  errors <- character(0); warnings <- character(0)
+# mechanism 보일러플레이트 판정 (r7 Mechanism 축 — 있는 척 금지)
+.is_boilerplate_mechanism <- function(x) {
+  s <- trimws(tolower(as.character(x %||% "")))
+  if (!nzchar(s)) return(TRUE)
+  if (s %in% c("unknown", "n/a", "na", "none", "null", "tbd", "없음", "미정", "-")) return(TRUE)
+  nchar(s) < 10  # 10자 미만 = 경제적 설명으로 불인정
+}
 
-  req <- c("l_code", "strategy_id", "grade", "lesson_text", "research_mode", "metric_type")
+# falsification_attempts 형태 판정: "structured" / "string" / "empty" / "invalid"
+.fals_shape <- function(fa) {
+  if (is.null(fa) || (is.character(fa) && !any(nzchar(fa))) || (is.list(fa) && !length(fa))) return("empty")
+  if (is.character(fa)) return("string")
+  if (is.list(fa)) {
+    shapes <- vapply(fa, function(a) {
+      if (is.list(a) && !is.null(a$test) && !is.null(a$result)) "structured"
+      else if (is.character(a) && length(a) == 1L && nzchar(a)) "string"
+      else "invalid"
+    }, character(1))
+    if (all(shapes == "structured")) return("structured")
+    if (any(shapes == "invalid")) return("invalid")
+    return("string")  # 혼재 포함 — 문자열 포함분은 WARN
+  }
+  "invalid"
+}
+
+# ── 메인 검증 ──
+# strict = FALSE (기본, emit 시점): required_for_promotion 결측 = WARN.
+# strict = TRUE  (promotion 시점): required_for_promotion 결측 = error.
+# 반환: list(valid, errors, warnings, promotion_ready, missing_promotion_fields)
+validate_lcode <- function(lcode, strict = FALSE) {
+  errors <- character(0); warnings <- character(0)
+  missing_promo <- character(0)
+
+  rt <- as.character(lcode[["record_type"]] %||% "performance")
+  if (!(rt %in% LCODE_VALID_RECORD_TYPES))
+    errors <- c(errors, sprintf("record_type='%s' 비표준 (허용: %s)", rt, paste(LCODE_VALID_RECORD_TYPES, collapse = "/")))
+
+  req <- c("l_code", "strategy_id", "lesson_text", "research_mode", "metric_type")
+  if (rt == "performance") req <- c(req, "grade")
   for (f in req) {
     v <- lcode[[f]]
     if (is.null(v) || (is.character(v) && !nzchar(v)))
       errors <- c(errors, sprintf("필수 필드 누락/공란: %s", f))
   }
 
-  g  <- lcode$grade %||% ""
-  mt <- lcode$metric_type %||% ""
-  rm <- lcode$research_mode %||% ""
-  if (nzchar(g)  && !(g  %in% LCODE_VALID_GRADES))
-    errors <- c(errors, sprintf("grade='%s' 비표준 (허용: %s)", g, paste(LCODE_VALID_GRADES, collapse = "/")))
+  # grade enum (A/B/C/F 강제; legacy alias 수용 + WARN — normalize_lcode 경유 권장)
+  g <- as.character(lcode[["grade"]] %||% "")
+  if (nzchar(g) && !(g %in% LCODE_VALID_GRADES)) {
+    if (g %in% names(LCODE_GRADE_ALIASES)) {
+      warnings <- c(warnings, sprintf("grade='%s' legacy alias — canonical '%s' 권장 (normalize_lcode 적용)", g, LCODE_GRADE_ALIASES[g]))
+    } else if (g %in% names(LCODE_PROCESS_GRADE_MAP)) {
+      warnings <- c(warnings, sprintf("grade='%s'는 비성과 기록 — record_type='%s' + grade 제거 권장 (normalize_lcode 적용)", g, LCODE_PROCESS_GRADE_MAP[g]))
+    } else {
+      errors <- c(errors, sprintf("grade='%s' 비표준 (허용: %s + legacy alias)", g, paste(LCODE_VALID_GRADES, collapse = "/")))
+    }
+  }
+
+  mt <- as.character(lcode$metric_type %||% "")
+  rm_ <- as.character(lcode[["research_mode"]] %||% "")
   if (nzchar(mt) && !(mt %in% LCODE_VALID_METRIC_TYPES))
     errors <- c(errors, sprintf("metric_type='%s' 비표준 (허용: %s)", mt, paste(LCODE_VALID_METRIC_TYPES, collapse = "/")))
-  if (nzchar(rm) && !(rm %in% LCODE_VALID_MODES))
-    errors <- c(errors, sprintf("research_mode='%s' 비표준", rm))
+  if (nzchar(rm_) && !(rm_ %in% LCODE_VALID_MODES)) {
+    if (rm_ %in% names(LCODE_MODE_ALIASES)) {
+      warnings <- c(warnings, sprintf("research_mode='%s' → '%s' normalize 권장", rm_, LCODE_MODE_ALIASES[rm_]))
+    } else {
+      errors <- c(errors, sprintf("research_mode='%s' 비표준", rm_))
+    }
+  }
 
+  st <- as.character(lcode[["selection_type"]] %||% "")
+  if (nzchar(st) && !(st %in% LCODE_VALID_SELECTION_TYPES))
+    warnings <- c(warnings, sprintf("selection_type='%s' 비표준 (허용: %s)", st, paste(LCODE_VALID_SELECTION_TYPES, collapse = "/")))
+
+  # sanity bounds (v1과 동일 — 불변)
   .num <- function(x) { y <- suppressWarnings(as.numeric(x %||% NA)); if (length(y)) y[1] else NA_real_ }
   cagr <- .num(lcode$cagr_pct %||% lcode$cagr)
   shp  <- .num(lcode$sharpe)
@@ -69,23 +230,90 @@ validate_lcode <- function(lcode) {
   if (!is.na(exc) && abs(exc) > 1000)
     errors <- c(errors, sprintf("excess_cagr=%+.0f%%p |.|>1000 → 벤치 정렬버그(-2028%%p 류)", exc))
 
-  if (!nzchar(lcode$construction_type %||% ""))
-    warnings <- c(warnings, "construction_type 누락 → r7 Independence 축 'unknown'(승격 약화)")
-  if (g %in% c("A", "A_NOVEL", "A_DEF") && !is.na(cagr) && cagr < 16)
-    warnings <- c(warnings, sprintf("grade=%s인데 cagr=%.1f%%<16%% — essence_score A 기준 불일치", g, cagr))
+  # ── required_for_promotion 계층 (performance 기록 대상; process/infra/summary는 면제) ──
+  if (rt == "performance") {
+    # mechanism_hypothesis — 필수 (보일러플레이트 불인정)
+    if (.is_boilerplate_mechanism(lcode[["mechanism_hypothesis"]]))
+      missing_promo <- c(missing_promo, "mechanism_hypothesis")
+    # construction_type — 필수 + controlled vocab
+    ct <- as.character(lcode[["construction_type"]] %||% "")
+    if (!nzchar(ct)) {
+      missing_promo <- c(missing_promo, "construction_type")
+    } else if (ct %in% LCODE_VALID_SELECTION_TYPES) {
+      missing_promo <- c(missing_promo, "construction_type")
+      warnings <- c(warnings, sprintf("construction_type='%s'는 selection_type 값 — selection_type 필드로 분리 필수 (normalize_lcode 적용)", ct))
+    } else if (!(ct %in% LCODE_VALID_CONSTRUCTION_TYPES)) {
+      warnings <- c(warnings, sprintf("construction_type='%s' controlled vocab 밖 — 신규 유형이면 LCODE_VALID_CONSTRUCTION_TYPES 등재 검토", ct))
+    }
+    # falsification_attempts — 권장 (구조체 권장, 문자열 WARN)
+    fs <- .fals_shape(lcode[["falsification_attempts"]])
+    if (fs == "empty") {
+      warnings <- c(warnings, "falsification_attempts 결측 — Falsification 축 도달 불가 (구조체 [{test,result,effect_retained}] 권장)")
+    } else if (fs == "string") {
+      warnings <- c(warnings, "falsification_attempts 문자열 기록 — 구조체 [{test,result∈{survived,falsified,weakened},effect_retained}] 권장 (promote.R은 n 카운트 보수 처리)")
+    } else if (fs == "invalid") {
+      warnings <- c(warnings, "falsification_attempts 형식 불량 — 구조체 [{test,result,effect_retained}] 또는 문자열만 허용")
+    }
+    # oos_retention — 권장
+    if (is.na(.num(lcode[["oos_retention"]])))
+      warnings <- c(warnings, "oos_retention 결측 — External 축 도달 불가 (essence_score oos_stat v2 산출치 전달 권장)")
+    # backtested/canonical_screen인데 portfolio_alpha_t 결측 → WARN
+    if (mt %in% c("backtested", "canonical_screen")) {
+      if (is.na(.num(lcode[["portfolio_alpha_t"]])))
+        warnings <- c(warnings, sprintf("metric_type=%s인데 portfolio_alpha_t 결측 — Rigor 축(global weakest_t 2.95) 도달 불가", mt))
+      if (is.na(.num(lcode[["oos_retention"]])))
+        warnings <- c(warnings, sprintf("metric_type=%s인데 oos_retention 결측 — External 축 도달 불가", mt))
+    }
+  }
 
-  list(valid = length(errors) == 0L, errors = errors, warnings = warnings)
+  if (length(missing_promo)) {
+    msg <- sprintf("required_for_promotion 결측: %s — 승격축 도달 불가 (emit BLOCK 승격은 2사이클 후 도훈 confirm, 지금은 WARN)",
+                   paste(missing_promo, collapse = ", "))
+    if (isTRUE(strict)) errors <- c(errors, msg) else warnings <- c(warnings, msg)
+  }
+
+  list(valid = length(errors) == 0L, errors = errors, warnings = warnings,
+       promotion_ready = length(missing_promo) == 0L,
+       missing_promotion_fields = missing_promo)
 }
 
 # selftest (Rscript lcode_schema.R 직접 실행 시)
 if (sys.nframe() == 0L && !interactive()) {
-  ok <- validate_lcode(list(l_code = "L-AS-X", strategy_id = "STR_AS_X", grade = "F",
-    lesson_text = "t", research_mode = "alpha_search", metric_type = "proxy",
-    construction_type = "momentum", cagr_pct = -20.7, sharpe = -0.57, mdd_pct = 30, excess_cagr = -2.1))
+  # 1) v2 완전체 — valid + promotion_ready
+  full <- validate_lcode(list(l_code = "L-AS-X", strategy_id = "STR_AS_X", grade = "F",
+    lesson_text = "t", research_mode = "alpha_search", metric_type = "canonical_screen",
+    construction_type = "momentum",
+    mechanism_hypothesis = "KR 단기 모멘텀은 수급 주도 과잉반응으로 net 음수",
+    falsification_attempts = list(list(test = "placebo shuffle", result = "survived", effect_retained = 0.8)),
+    oos_retention = 0.62, portfolio_alpha_t = 1.2,
+    cagr_pct = -20.7, sharpe = -0.57, mdd_pct = 30, excess_cagr = -2.1))
+  # 2) sanity 폭발 — invalid (v1 회귀)
   bad <- validate_lcode(list(l_code = "L-AS-Y", strategy_id = "STR_AS_Y", grade = "F",
     lesson_text = "t", research_mode = "alpha_search", metric_type = "proxy", excess_cagr = -2028.7))
-  cat(sprintf("[lcode_schema selftest] ok.valid=%s bad.valid=%s (expect TRUE FALSE)\n", ok$valid, bad$valid))
-  cat("  bad.errors:", paste(bad$errors, collapse = " | "), "\n")
-  stopifnot(isTRUE(ok$valid), !isTRUE(bad$valid))
-  cat("  PASS\n")
+  # 3) 구 L-code (v1 스키마, 승격축 전무) — valid(하위호환) + promotion_ready=FALSE + WARN
+  legacy <- validate_lcode(list(l_code = "L-132", strategy_id = "STR_1622", grade = "F",
+    lesson_text = "t", research_mode = "qepm_legacy", metric_type = "estimated"))
+  # 4) strict(promotion 시점) — 같은 legacy가 invalid
+  legacy_strict <- validate_lcode(list(l_code = "L-132", strategy_id = "STR_1622", grade = "F",
+    lesson_text = "t", research_mode = "qepm_legacy", metric_type = "estimated"), strict = TRUE)
+  # 5) legacy grade alias + qepm 모드 + chain construction → normalize
+  nz <- normalize_lcode(list(l_code = "L-Q", strategy_id = "S", grade = "A_DEF",
+    lesson_text = "t", research_mode = "qepm", metric_type = "backtested",
+    construction_type = "chain"))
+  v5 <- validate_lcode(nz$lcode)
+  # 6) 비성과 legacy grade → record_type 이동
+  np <- normalize_lcode(list(l_code = "L-P", strategy_id = "S2", grade = "INFRASTRUCTURE_CRITICAL",
+    lesson_text = "hook bug", research_mode = "qepm_legacy", metric_type = "unavailable"))
+  v6 <- validate_lcode(np$lcode)
+
+  cat(sprintf("[lcode_schema v2 selftest] full=%s/%s bad=%s legacy=%s/%s strict=%s norm5=%s(%s/%s) norm6=%s(rt=%s)\n",
+    full$valid, full$promotion_ready, bad$valid, legacy$valid, legacy$promotion_ready,
+    legacy_strict$valid, v5$valid, nz$lcode$grade, nz$lcode$selection_type, v6$valid, np$lcode$record_type))
+  stopifnot(isTRUE(full$valid), isTRUE(full$promotion_ready),
+            !isTRUE(bad$valid),
+            isTRUE(legacy$valid), !isTRUE(legacy$promotion_ready), length(legacy$warnings) > 0,
+            !isTRUE(legacy_strict$valid),
+            isTRUE(v5$valid), identical(nz$lcode$grade, "A"), identical(nz$lcode$selection_type, "chain"),
+            isTRUE(v6$valid), identical(np$lcode$record_type, "infra"), is.null(np$lcode[["grade"]]))
+  cat("  PASS (6 cases)\n")
 }

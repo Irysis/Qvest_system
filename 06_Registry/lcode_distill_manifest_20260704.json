@@ -1,0 +1,250 @@
+{
+ "manifest_id": "lcode_distill_manifest_20260704",
+ "created_at": "2026-07-04T04:07:46+00:00",
+ "plan": "06_Registry/lcode_distill_plan_20260704.json",
+ "execution_log": "06_Registry/lcode_distill_execution_20260704.json (가역성: 삭제 387건 + 수정 42건 원문 백업 포함)",
+ "before_after": {
+  "ledger_files": {
+   "before": 599,
+   "after": 220,
+   "math": "599 - 385(MERGE) - 2(DELETE) + 8(B434 통합 신규) = 220"
+  },
+  "corpus_n_lcodes": {
+   "before": 597,
+   "after": 219,
+   "note": "±1 갭 동일 원인(STR_1682 l_code 필드 부재, KEEP 무변경) — before 597=598-1, after 219=220-1"
+  },
+  "corpus_promoted": {
+   "after": 12
+  },
+  "ledger_grade_norm_before": {
+   "C": {
+    "KEEP": 28,
+    "DELETE": 1,
+    "MERGE": 172
+   },
+   "B": {
+    "KEEP": 52,
+    "MERGE": 127
+   },
+   "F": {
+    "KEEP": 99,
+    "MERGE": 78
+   },
+   "A": {
+    "KEEP": 17,
+    "MERGE": 8
+   },
+   "PROCESS": {
+    "KEEP": 15,
+    "DELETE": 1
+   },
+   "UNKNOWN": {
+    "KEEP": 1
+   }
+  },
+  "corpus_grade_after": {
+   "A": 17,
+   "F": 100,
+   "C": 34,
+   "(record_type=process)": 8,
+   "B": 52,
+   "(record_type=summary)": 2,
+   "(record_type=infra)": 5,
+   "(record_type=performance)": 1
+  },
+  "corpus_family_after": {
+   "momentum": 85,
+   "value": 50,
+   "quality_earnings": 18,
+   "defense": 12,
+   "overlay_regime": 12,
+   "ml_complexity": 9,
+   "quality_profitability": 7,
+   "unknown": 7,
+   "behavioral": 5,
+   "infra_process": 5,
+   "consensus": 2,
+   "low_vol": 2,
+   "earnings_event": 2,
+   "quality": 1,
+   "liquidity": 1,
+   "dividend": 1
+  }
+ },
+ "dispositions_executed": {
+  "KEEP": {
+   "n": 212,
+   "unchanged": 167,
+   "family_or_grade_normalized": 39,
+   "id_reassigned": 6,
+   "note": "protected 13건은 정규화 skip(byte 보존). REASSIGN 1건(L-160A)은 protected였으나 도훈 mandate로 ID만 재발급(필드-레벨 diff 검증)."
+  },
+  "DELETE": {
+   "n": 2,
+   "files": [
+    "stage_artifacts/l_code/alpha_search/_quarantined_removed/l_code_STR_AS_20260620_104101_36900.json (quarantine 마감)",
+    "stage_artifacts/l_code_L158_gate8_early_warning.json (JSON 파손 + v53 폐지 인프라 전용 — 수리 필요 시 execution log 원문 백업에서 복원 가능)"
+   ]
+  },
+  "MERGE": {
+   "n": 385,
+   "b434_clusters": 8,
+   "b434_deleted": 357,
+   "organic_clusters_absorbed": 20,
+   "organic_deleted": 28,
+   "cl028_note": "CL028은 멤버 2건(L-134/L-139) 모두 active axiom 인용 KEEP — 흡수/삭제 없음"
+  }
+ },
+ "unified_lcodes": [
+  {
+   "cluster_id": "CL-B434-001",
+   "l_code": "L-AS-B434-DISTILL-001",
+   "file": "stage_artifacts/l_code/alpha_search/l_code_STR_AS_B434_DISTILL_001.json",
+   "grade": "C",
+   "metric_type": "backtested",
+   "n_merged": 272,
+   "portfolio_alpha_t": 0.149
+  },
+  {
+   "cluster_id": "CL-B434-002",
+   "l_code": "L-AS-B434-DISTILL-002",
+   "file": "stage_artifacts/l_code/alpha_search/l_code_STR_AS_B434_DISTILL_002.json",
+   "grade": "F",
+   "metric_type": "backtested",
+   "n_merged": 38,
+   "portfolio_alpha_t": -0.658
+  },
+  {
+   "cluster_id": "CL-B434-003",
+   "l_code": "L-AS-B434-DISTILL-003",
+   "file": "stage_artifacts/l_code/alpha_search/l_code_STR_AS_B434_DISTILL_003.json",
+   "grade": "C",
+   "metric_type": "backtested",
+   "n_merged": 18,
+   "portfolio_alpha_t": 1.67
+  },
+  {
+   "cluster_id": "CL-B434-004",
+   "l_code": "L-AS-B434-DISTILL-004",
+   "file": "stage_artifacts/l_code/alpha_search/l_code_STR_AS_B434_DISTILL_004.json",
+   "grade": "C",
+   "metric_type": "backtested",
+   "n_merged": 10,
+   "portfolio_alpha_t": 0.955
+  },
+  {
+   "cluster_id": "CL-B434-005",
+   "l_code": "L-AS-B434-DISTILL-005",
+   "file": "stage_artifacts/l_code/alpha_search/l_code_STR_AS_B434_DISTILL_005.json",
+   "grade": "F",
+   "metric_type": "backtested",
+   "n_merged": 6,
+   "portfolio_alpha_t": -2.375
+  },
+  {
+   "cluster_id": "CL-B434-006",
+   "l_code": "L-AS-B434-DISTILL-006",
+   "file": "stage_artifacts/l_code/alpha_search/l_code_STR_AS_B434_DISTILL_006.json",
+   "grade": "C",
+   "metric_type": "proxy",
+   "n_merged": 6,
+   "portfolio_alpha_t": null
+  },
+  {
+   "cluster_id": "CL-B434-008",
+   "l_code": "L-AS-B434-DISTILL-008",
+   "file": "stage_artifacts/l_code/alpha_search/l_code_STR_AS_B434_DISTILL_008.json",
+   "grade": "C",
+   "metric_type": "backtested",
+   "n_merged": 5,
+   "portfolio_alpha_t": 0.751
+  },
+  {
+   "cluster_id": "CL-B434-023",
+   "l_code": "L-AS-B434-DISTILL-023",
+   "file": "stage_artifacts/l_code/alpha_search/l_code_STR_AS_B434_DISTILL_023.json",
+   "grade": "C",
+   "metric_type": "proxy",
+   "n_merged": 2,
+   "portfolio_alpha_t": null
+  }
+ ],
+ "id_reassignments": [
+  {
+   "file": "stage_artifacts/l_code_L160_algebraic_identity_verification.json",
+   "old": "L-160",
+   "new": "L-160A"
+  },
+  {
+   "file": "stage_artifacts/l_code_L161_codex_infra_redundancy.json",
+   "old": "L-161",
+   "new": "L-161A"
+  },
+  {
+   "file": "stage_artifacts/l_code_STR_1684_infra_L_162.json",
+   "old": "L-162",
+   "new": "L-162A"
+  },
+  {
+   "file": "stage_artifacts/l_code/alpha_research/l_code_HURST_MOM_WT-D20260621_001.json",
+   "old": "L-AR-20260621_105345",
+   "new": "L-AR-20260621_105345B"
+  },
+  {
+   "file": "stage_artifacts/l_code/ramp/l_code_RAMP_FULLSWEEP_20260618.json",
+   "old": "L-RAMP-20260618_131316",
+   "new": "L-RAMP-20260618_131316B"
+  },
+  {
+   "file": "stage_artifacts/l_code/ramp/l_code_RAMP_M0_COMBINE_20260618.json",
+   "old": "L-RAMP-20260618_131316",
+   "new": "L-RAMP-20260618_131316C"
+  }
+ ],
+ "inbound_citation_fixes": [
+  {
+   "file": "stage_artifacts/l_code_L162_linear_composite_dominance.json",
+   "inbound_citation_fixes": [
+    "L-160 algebraic identity",
+    "L-160 (algebraic identity)"
+   ]
+  }
+ ],
+ "verification": {
+  "remaining_files": 220,
+  "all_json_parse": true,
+  "l_code_duplicates": [],
+  "corpus_n": 219,
+  "corpus_promoted": 12,
+  "axiom_backlinks": {
+   "L-132": true,
+   "L-135": true,
+   "L-133": true,
+   "L-134": true,
+   "L-139": true,
+   "L-136": true,
+   "L-140": true,
+   "L-160": true,
+   "L-165": true,
+   "L-166": true,
+   "L-159": true,
+   "L-167": true,
+   "L-168": false
+  },
+  "axiom_backlink_note": "L-168만 미해소 — 기존(집행 전에도 부재) 갭: AX-008의 L-168은 l_code 파일이 아닌 architect/judge artifact(stage_artifacts/architect_l168_infra_fix_design.json 등)에만 존재. 본 집행과 무관.",
+  "hypothesis_index": {
+   "entries": 677,
+   "lcode_indexed": 219,
+   "lcode_skipped": 0,
+   "parse_fail": 0
+  },
+  "emit_gate": "8/8 emit_lcode(lcode_emit.R) 경유 + validate_lcode PASS (proxy-only 2건은 falsification 결측 WARN — 정직 라벨)"
+ },
+ "diff_guard": "13건 중 12건 byte 불변. 유일 변경 = l_code_L160_algebraic_identity_verification.json — 도훈 mandate REASSIGN_ID(canonical L-160 = STR_1683 sweep hard-fail 본, AX-007 인용 의미론과 일치). 필드-레벨 diff 검증: 변경=l_code(L-160→L-160A), 추가=id_reassigned_from/id_reassign_reason, 그 외 전 필드 byte 동일. canonical 본(l_code_L_160_STR_1683.json)은 byte 불변 — active axiom 의미론 절대보존 충족.",
+ "regeneration": {
+  "corpus": ".cache/lcode_corpus.json (lcode_harvester.py, .venv_qvest_ml python) — n=219, 코드 수정 없음",
+  "hypothesis_index": "06_Registry/hypothesis_index.json (Rscript hypothesis_index.R build) — entries 677, lcode 219/skip 0/parse_fail 0",
+  "note": "engine-core harvester v2 병합 후 최종 확정 재생성 1회 필요 시 동일 호출로 멱등 재실행 가능"
+ }
+}

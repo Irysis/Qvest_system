@@ -1,12 +1,20 @@
 {
   "strategy_id": "H_1687",
   "l_code": "L-162",
-  "grade": "INFRASTRUCTURE",
-  "core_reference": "H_1687 Debate REVISE 50 + Quant R2 IQR/percentile rank measurements + L-160 algebraic identity 확장 + Avramov (2013) distress × momentum interaction mechanism",
-  "lesson_text": "2-factor linear z-score blend (50/50)은 표준편차 불균형 시 dominant factor 단일 수렴 구조적 위험. H_1687 Q25×M01 50/50 linear composite 실측: IQR normalize 상관 0.716 / percentile rank 상관 0.596 → M01 (momentum) 단일 수렴으로 Avramov 2013 distress × momentum interaction mechanism 포착 실패. 원인: z-score standardization이 sd를 동일 1로 맞추더라도 tail behavior + cross-sectional variance 동조성 불균형 시 선형 blend가 high-variance factor 방향으로 기울어짐. 교훈: (1) Linear composite는 sd ratio 0.8~1.25 균형 범위에서만 사용 가능, (2) 대안 방법 우선 고려 — (a) gated double-sort sign(A < pct30) AND sign(B > pct70) intersection (두 factor 조건 모두 만족하는 교집합), (b) rank-based signed blend (rank(A) - rank(B) 또는 rank(A)*rank(B)), (c) IC-weighted dynamic (monthly IC 역가중), (3) Scout handoff kit 단계에서 linear_composite_variance_ratio + predicted_dominance_factor 필드 의무화, (4) interaction hypothesis는 multiplicative 또는 gated 형태로 원래 mechanism 반영해야 하며 단순 linear addition은 개별 factor signal의 단순 평균 효과만 생성. 실무 적용: factor blending 설계 시 sd(A)/sd(B) 측정 → 0.8 미만 또는 1.25 초과 시 dominance 발생 경고 → gated/rank/IC-weighted 대안 채택. L-160 (algebraic identity)과 쌍으로 factor construction process의 structural safety net 완성.",
-  "tags": ["METHODOLOGY", "FACTOR_CONSTRUCTION", "LINEAR_COMPOSITE_FAILURE", "DOMINANCE_RISK", "SD_RATIO_PRECHECK", "GATED_DOUBLE_SORT_ALTERNATIVE"],
+  "core_reference": "H_1687 Debate REVISE 50 + Quant R2 IQR/percentile rank measurements + L-160A(구 L-160) algebraic identity 확장 + Avramov (2013) distress × momentum interaction mechanism",
+  "lesson_text": "2-factor linear z-score blend (50/50)은 표준편차 불균형 시 dominant factor 단일 수렴 구조적 위험. H_1687 Q25×M01 50/50 linear composite 실측: IQR normalize 상관 0.716 / percentile rank 상관 0.596 → M01 (momentum) 단일 수렴으로 Avramov 2013 distress × momentum interaction mechanism 포착 실패. 원인: z-score standardization이 sd를 동일 1로 맞추더라도 tail behavior + cross-sectional variance 동조성 불균형 시 선형 blend가 high-variance factor 방향으로 기울어짐. 교훈: (1) Linear composite는 sd ratio 0.8~1.25 균형 범위에서만 사용 가능, (2) 대안 방법 우선 고려 — (a) gated double-sort sign(A < pct30) AND sign(B > pct70) intersection (두 factor 조건 모두 만족하는 교집합), (b) rank-based signed blend (rank(A) - rank(B) 또는 rank(A)*rank(B)), (c) IC-weighted dynamic (monthly IC 역가중), (3) Scout handoff kit 단계에서 linear_composite_variance_ratio + predicted_dominance_factor 필드 의무화, (4) interaction hypothesis는 multiplicative 또는 gated 형태로 원래 mechanism 반영해야 하며 단순 linear addition은 개별 factor signal의 단순 평균 효과만 생성. 실무 적용: factor blending 설계 시 sd(A)/sd(B) 측정 → 0.8 미만 또는 1.25 초과 시 dominance 발생 경고 → gated/rank/IC-weighted 대안 채택. L-160A(구 L-160) (algebraic identity)과 쌍으로 factor construction process의 structural safety net 완성.",
+  "tags": [
+    "METHODOLOGY",
+    "FACTOR_CONSTRUCTION",
+    "LINEAR_COMPOSITE_FAILURE",
+    "DOMINANCE_RISK",
+    "SD_RATIO_PRECHECK",
+    "GATED_DOUBLE_SORT_ALTERNATIVE"
+  ],
   "upgrade_path": "Admission Rule v3.7 Gate 15 (Linear Dominance Pre-check) — Scout handoff kit 단계 sd ratio + linear composite variance ratio 측정 의무화",
   "created_at": "2026-04-18",
   "session": 67,
-  "source": "H_1687 REVISE 50 VERDICT + Quant R2 IQR/percentile rank measurements"
+  "source": "H_1687 REVISE 50 VERDICT + Quant R2 IQR/percentile rank measurements",
+  "grade_raw": "INFRASTRUCTURE",
+  "record_type": "infra"
 }
