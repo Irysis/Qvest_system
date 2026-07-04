@@ -141,3 +141,22 @@ negative 공리는 **필요하다 — 단 Law에서가 아니라 Distilled에서
 ---
 
 **감사 규율 준수 확인**: active/ AX JSON 무변경(계층 재배치는 confirm 대기) · 수치·결론 창작 없음(전건 파일·corpus·INV 원문 실측) · bare python 미사용(venv 경유) · Rscript -e 한글 미사용 · 커밋 없음.
+
+---
+## 부록: AX-005 전용 진단 (2026-07-04 보완 — 파이프라인 실패분 재실행)
+
+메타 종합이 "payload 부재 → 구조 확장판정 DEMOTE 6.5"로만 걸어둔 AX-005를 전용 실측으로 채움 (AX-003 형식).
+
+| 항목 | 실측 |
+|---|---|
+| necessity_score | **6.5 / 10** (전용 실측이 메타 확장판정 지지) |
+| layer_recommendation | **DEMOTE_TO_DISTILLED** (AX-003과 구조 동형: negative·provisional·advisory·N=2·expiry 부재·founding L-140 corpus 라이브) |
+| is_real | **YES** — founding(STR_1642/1662)은 레거시 창(flat비용·구벤치·pre-winsorize)이나 07-03 방어DB 170종 전수(교정 기기)가 "KR long-only 크래시방어 팩터 부재 170/170·방어=오버레이만" 독립 재확인 + BAB port_t −2.02. S3 편향상 교정 시 더 나빠질 뿐 전복 불가. **단 채점 프레이밍은 전기간→에피소드-lens 시정 필요(AX-001 v2 정합)** |
+| 재시도 이력 | defense 방향 corpus **92건**(REGISTERED 22/MARGINAL 20/FAIL 20/PASS 14/SCREEN 12), standalone PASS 반례 0(유일 PASS=multi-sleeve=EXCLUSION 밖) |
+| reattempt_trigger | 이미 완비 — active retry_trigger + canonical EXCLUSION(multi-sleeve/long-short) 이중. AX-000 정합 우수 |
+| DIST 목적지 | **DIST-AR-001**(defense, L-143/144/145) — ⚠ 메타-audit이 DIST-QPM-002(quality_earnings)로 오지목한 것 정정 |
+| adversarial(내리면 손실) | 003과 동일 사실상 0 — advisory라 실차단 없음, 검색 반복방지는 L-140 corpus 담당, 실시간 주입만 DIST-AR-001 정제 전까지 축소 |
+
+### ★부수 발견 (문서 정합 이슈 — confirm 시 정정 권고)
+1. **L-165/166 cross-attribution 오류**: CLAUDE.md·.claude/rules/axioms.md·AX-005 enforcement_hook reason이 "L-136/140/165/166" 인용하나 AX-005 JSON supporting=L-136/140뿐. L-165/166은 **AX-007 founding 소속**. 문서가 AX-007 L-code를 AX-005에 오병기.
+2. **DIST 목적지 정정**: 메타 §3.2/confirm_queue #5가 AX-005·007을 DIST-QPM-002(quality_earnings)로 지목 → AX-005 정본=DIST-AR-001(defense).
