@@ -13,7 +13,9 @@
 #   (c) 06_Registry/module_catalog.json                        (등록 모듈 265건+)
 #   (d) 06_Registry/distilled_knowledge.json                   (②Distilled 클러스터 통합 지식)
 #       verdict = DISTILLED_NEG / DISTILLED_COND / DISTILLED_POS.
-#       negative는 lookup 결과에 retry_policy('재시도 금지/조건' — INV-7 provisional) 라벨 표출:
+#       negative는 lookup 결과에 retry_policy를 지도-프레임(탐색됨 → 프론티어(미탐색) →
+#       부활 트리거 → 봉투 안 차별점 명시 시 진행 가능; INV-7 provisional = 불변 기각 아님)으로
+#       표출. frontier/live_trigger 필드 있으면 표출, 없으면 retry_condition/expiry 폴백.
 #       반복기록 N건보다 대표 1건 + 회차 이력이 가설 시점 pull 대조에 정밀.
 #
 # 산출: 06_Registry/hypothesis_index.json
@@ -283,10 +285,17 @@ FAMILY_PATTERNS <- list(
   pol   <- e$polarity %||% "unknown"
   verdict <- switch(pol, negative = "DISTILLED_NEG", conditional = "DISTILLED_COND",
                     positive = "DISTILLED_POS", "DISTILLED")
+  # (E+F 2026-07-04 실패지식 프레이밍 전환) negative lookup 반환을 "재시도 금지"가 아닌
+  #   지도-프레임(탐색됨 → 프론티어 → 부활 트리거)으로 전환. DISTILLED_NEG verdict는 유지하되
+  #   문안은 "봉투 안 차별점 명시 시 진행 가능"을 명시 (INV-7 provisional = 불변 기각 아님).
+  #   frontier/live_trigger 필드가 인덱스에 있으면 표출, 없으면 retry_condition을 프론티어로 폴백.
   retry <- if (identical(pol, "negative")) {
-    rc <- e$retry_condition %||% ""
-    if (nzchar(rc)) sprintf("재시도 조건: %s", rc)
-    else "재시도 금지(INV-7 provisional — 차별점 명시 + 재도전 사유 기록 없인 진행 금지)"
+    frontier <- e$frontier %||% e$retry_condition %||% ""
+    live_trig <- e$live_trigger %||% e$expiry %||% ""
+    parts <- "탐색됨(경로 F 기록)."
+    if (nzchar(frontier)) parts <- paste0(parts, sprintf(" 프론티어(미탐색): %s", frontier))
+    if (nzchar(live_trig)) parts <- paste0(parts, sprintf(" 부활 트리거: %s", live_trig))
+    paste0(parts, " 봉투 안 차별점 명시 시 진행 가능(INV-7 provisional — 불변 기각 아님).")
   } else NULL
   fam <- e$family %||% NA_character_
   if (is.null(fam) || is.na(fam) || fam %in% c("unknown", "")) fam <- .hi_infer_family(text)
@@ -473,7 +482,7 @@ lookup_hypothesis <- function(keywords, index_path = HI_INDEX_PATH,
         grade = as.character(e$grade %||% NA_character_),
         sharpe = .hi_num(km$sharpe) %||% NA_real_,
         port_t = .hi_num(km$portfolio_alpha_t) %||% NA_real_,
-        # ②Distilled negative failure-ledger: 재시도 금지/조건 라벨 (INV-7 provisional)
+        # ②Distilled negative failure-ledger: 지도-프레임 라벨(탐색됨→프론티어→트리거, INV-7 provisional)
         retry_policy = as.character(e$retry_policy %||% ""),
         date = e$date %||% "",
         source = paste(e$source_types %||% "", collapse = ","),
