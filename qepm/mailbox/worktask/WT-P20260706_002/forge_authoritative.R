@@ -152,9 +152,10 @@ build_authoritative <- function(K, anch_w, fill, tag){
                         frequency="monthly", annualization_factor=12,
                         universe_id="KOSPI200_KOSDAQ150", code_version="forge_authoritative_WT-P20260706_002",
                         created_by_agent="forge")
-  au <- audit_bt_result(bt)
-  bt$audit <- au$audit_tbl
-  list(bt=bt, audit=au, bk=bk)
+  bt <- audit_bt_result(bt)   # returns bt_result with $audit populated + manifest$integrity_status
+  integrity <- bt$manifest$integrity_status[1]
+  crit <- nrow(bt$audit[severity=="critical" & status=="FAIL"])
+  list(bt=bt, audit=list(integrity=integrity, critical_fail_count=crit), bk=bk)
 }
 gv_bt <- function(bt, name){ v<-bt$benchmark_compare[metric_name==name, active_value]; if(length(v)) as.numeric(v[1]) else NA_real_ }
 gm_bt <- function(bt, name){ v<-bt$metrics[metric_name==name, metric_value]; if(length(v)) as.numeric(v[1]) else NA_real_ }
