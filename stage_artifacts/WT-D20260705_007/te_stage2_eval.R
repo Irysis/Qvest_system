@@ -6,10 +6,12 @@
 # 입력: te_netsink_raw.rds (Date,Ticker,Score) + pinned RAWDATA/BM.
 # =============================================================================
 suppressWarnings(suppressMessages({
-  library(data.table); library(arrow); library(jsonlite)
+  library(data.table); library(arrow); library(dplyr); library(jsonlite)
 }))
-data.table::setDTthreads(1L)
-try(arrow::set_cpu_count(1L), silent = TRUE)
+data.table::setDTthreads(2L)
+try(arrow::set_cpu_count(2L), silent = TRUE)
+.flog <- function(...) { cat(sprintf(...), file = stderr()); flush(stderr()) }
+`%||%` <- function(a,b) if (is.null(a)||length(a)==0||(length(a)==1&&is.na(a))) b else a
 
 PROJ  <- "C:/Users/99922/OneDrive/Quant_Module_Moltbot"
 CACHE <- file.path(PROJ, ".cache")
@@ -22,11 +24,13 @@ setDT(FAC); FAC[, Date := as.Date(Date)]
 cat(sprintf("[s2] raw signal rows=%d dates=%d\n", nrow(FAC), uniqueN(FAC$Date)))
 
 # ---- RAWDATA (중립화 특성 + forward 1M 수익) ----
-RAWDATA <- as.data.table(read_parquet(
-  file.path(CACHE, "RAWDATA_pin20260703.parquet"),
-  col_select = c("Date","Ticker","K200","KQ150","Sector_Lv2","Size","Close","Vol","Ret")))
+RAWDATA <- open_dataset(file.path(CACHE, "RAWDATA_pin20260703.parquet")) %>%
+  filter(Date >= as.Date("2003-06-01")) %>%
+  select(Date, Ticker, K200, KQ150, Sector_Lv2, Size, Close, Vol, Ret) %>%
+  collect() %>% as.data.table()
 RAWDATA[, Date := as.Date(Date)]
 setorder(RAWDATA, Ticker, Date)
+.flog("[s2] RAWDATA rows=%d\n", nrow(RAWDATA))
 RAWDATA[, TradingValue := Close * Vol]
 RAWDATA[, AvgTV20 := frollmean(TradingValue, 20L, align = "right"), by = Ticker]
 
