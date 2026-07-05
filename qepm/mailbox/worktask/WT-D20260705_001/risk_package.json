@@ -10,7 +10,11 @@
   "specific_risk_ref": "stage_artifacts/WT-D20260705_001/specific_risk.parquet",
   "security_covariance_ref": "stage_artifacts/WT-D20260705_001/covariance.parquet",
   "risk_summary": {
-    "top_common_risks": ["Market (79%)", "Size/SMB (1.5% var, beta 0.33)", "Sector: battery-theme 24% + semiconductor 16%"],
+    "top_common_risks": [
+      "Market (79%)",
+      "Size/SMB (1.5% var, beta 0.33)",
+      "Sector: battery-theme 24% + semiconductor 16%"
+    ],
     "portfolio_ann_vol": 0.3477,
     "ew_market_beta": 0.9726,
     "market_var_share": 0.7908,
@@ -135,16 +139,37 @@
       "id": "RF-R4",
       "severity": "OK",
       "metric": "market_down_5(parametric beta*-5pct)=-4.86%; COVID2020(cov84)=-24.1% vs bm-16.8%; RateHike2022(cov92)=-14.3% vs bm-24.0%",
-      "note": "Parametric market -5pct loss -4.86pct (RF-R4 -8pct not breached). GFC/Euro/COVID coverage<85 = UNRELIABLE (partial-listing artifact, not hard-fail). Only reliable window RateHike2022 (cov92): -14.3 vs bm -24.0 = strong defense. COVID (cov84, borderline): -24.1 vs bm -16.8 = underperform (high-beta growth clustering)."
+      "note": "Parametric market -5pct loss -4.86pct (RF-R4 -8pct not breached). GFC/Euro/COVID coverage<85 = UNRELIABLE (partial-listing artifact, not hard-fail). Only reliable window RateHike2022 (cov92): -14.3 vs bm -24.0 = strong defense. COVID (cov84, borderline): -24.1 vs bm -16.8 = underperform (high-beta growth clustering). [challenge-strengthened] Historical crisis evidence is effectively a SINGLE high-coverage observation (RateHike2022). COVID borderline reading (port -24.1 vs bm -16.8, underperform) is the cautionary datapoint and is kept visible; high-beta growth cluster amplifies drawdowns. RF-R4 OK verdict rests on coverage-independent parametric market_down_5 (-4.86), not on the low-coverage historical replays."
     },
     {
       "id": "RF-R5",
       "severity": "LOW",
       "metric": "style R2=72.1% (MKT var share 73%); style-alpha(FF5+WML intercept) monthly=0.78% t=2.61; TDC>=0.30 pairs=40",
-      "note": "FF5+WML: MKT b1.12(t22.9), SMB b0.33(t3.14 small tilt), RMW b0.56, WML b-0.01(no momentum re-exposure), HML -0.19(n.s.). After style removal alpha intercept +0.78pct/mo t2.61 significant = genuine alpha (not repackaged style). But TDC>=0.30 pairs=40 (SK Hynix-Samsung 1.00) = high tail co-movement. corr>0.8 pairs are style factors (MKT/SMB) not stock-level."
+      "note": "FF5+WML: MKT b1.12(t22.9), SMB b0.33(t3.14 small tilt), RMW b0.56, WML b-0.01(no momentum re-exposure), HML -0.19(n.s.). After style removal alpha intercept +0.78pct/mo t2.61 significant = genuine alpha (not repackaged style). But TDC>=0.30 pairs=40 (SK Hynix-Samsung 1.00) = high tail co-movement. corr>0.8 pairs are style factors (MKT/SMB) not stock-level. [challenge-strengthened] TDC=40 pairs>=0.30 (tail clustering) belongs to concentration+tail axes not style; regime bear-lift +0.098 (bull 0.264->bear 0.362) confirms diversification decays in crises. Style-alpha t=2.61 is FULL-PERIOD (224m 2007+) FF5+WML intercept, dominated by pre-2018 regime; it is NOT a graduation signal and does NOT override the alpha agent SCREEN_TIER_FAIL (port_t 1.41; post-2018 -0.29, post-2022 -0.76)."
     }
   ],
-  "challenge_flags": [],
+  "challenge_flags": [
+    {
+      "id": "SIGMA_SHORT_WINDOW",
+      "severity": "MEDIUM",
+      "note": "complete-case n=16 (LG CNS 2025-02 IPO binding); LW delta=0.81 shrinkage-dominated. Pairwise off-diagonals use full co-listed history but LG CNS / EcoPro Materials pairwise correlations are low-confidence."
+    },
+    {
+      "id": "STRESS_SINGLE_OBS",
+      "severity": "MEDIUM",
+      "note": "Only RateHike2022 has coverage>=85. Historical crisis stress = effectively single observation. Parametric market_down_5 -4.86 is coverage-independent."
+    },
+    {
+      "id": "TAIL_CLUSTERING",
+      "severity": "MEDIUM",
+      "note": "40 TDC pairs>=0.30, SK Hynix-Samsung 1.00, bear-lift +0.098. Joint tail risk material; EVT 1% ES -26.5 prices it."
+    },
+    {
+      "id": "STYLE_ALPHA_NOT_GRADUATION",
+      "severity": "INFO",
+      "note": "FF5+WML intercept t=2.61 is full-period, NOT a re-judgment of alpha. No silent override of SCREEN_TIER_FAIL."
+    }
+  ],
   "challenge_note_ref": "qepm/mailbox/worktask/WT-D20260705_001/risk_challenge_note.md",
   "boundary_attestation": "Sigma + tail + stress + crowding + style only. alpha_vector unchanged. no weight proposed. RF exposure bounds deferred to optimizer scope (measure/recommend only)."
 }
