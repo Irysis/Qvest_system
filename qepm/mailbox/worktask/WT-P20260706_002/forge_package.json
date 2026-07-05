@@ -1,0 +1,146 @@
+{
+  "task_id": "WT-P20260706_002",
+  "as_of_date": "2026-07-06",
+  "method": "weights.csv_direct_NAV_reconstruction — mega-cap top-2 anchor(@0.20 cap each, size PIT) + non-anchor score_eff fill(A=EW / B=production LinearTilt λ1.5 φ3.0); monthly rebalance; 15bps v2.4 delta cost; build_bt_result 10-component authoritative",
+  "agent": "forge",
+  "wt_type": "deployment",
+  "discovery_of": "STR_1715_on_M4_R05_noLayer4_PG2",
+  "hypothesis_title": "mega-cap 앵커 구성 forge-authoritative 검증 + book-marginal ΔIR (screening 4.76 → capital-grade)",
+
+  "vintage_pin": {
+    "pin_tag": "pin20260703",
+    "rawdata_pin": "C:/qm_cache/RAWDATA_pin20260703.parquet (not directly consumed — production alpha panel + pinned benchmark used)",
+    "benchmark_pin_md5": "6722b788985cf920b3916a732fdbfd74",
+    "benchmark_pin_path": "stage_artifacts/pg2_overlay_gate_composition_20260705/pinned_cache/benchmark.parquet",
+    "alpha_panel_md5_start_eq_end": "dd0ac2933410522134aa6c5314757327",
+    "size_mom_panel_md5_start_eq_end": "1c32c63f9344783fbd26a6eee10d854c",
+    "pure_function_hash_integrity": "PASS — 3 input md5 identical at start and end of run"
+  },
+
+  "sr_realized_share_based": 0.930,
+  "sr_realized_share_based_note": "C2_B LinearTilt (production-faithful) monthly Sharpe (net, Charter §12 ER-based, ann=12). C2_A EW-fill Sharpe=0.903. This is total-return Sharpe of the standalone anchor book (pre-overlay). Deployment-context (m4×R05 overlay) SR = 1.051 (see backtest_summary.deployment_overlay).",
+  "sr_factor_engine_continuous": null,
+  "sr_lockbox_daily_harness": null,
+  "measurement_basis_primary": "forge_realized_share_based",
+
+  "portfolio_alpha_t_nw_lag3": 4.535,
+  "portfolio_alpha_t_nw_lag3_note": "AUTHORITATIVE — C2_B LinearTilt, build_benchmark_compare Portfolio_Alpha_t_NW_lag3 vs cap-weighted KOSPI200. A(EW-fill)=4.761. Both clear Harvey-Liu-Zhu 2.95 hurdle. NOT deflated from screening (screening C2 reproduced exactly at 4.761).",
+
+  "metric_type": "backtested",
+  "audit_status": "WARNING",
+  "audit_integrity_detail": "build_bt_result 10-component + audit_bt_result: 16 checks, PASS=12 FAIL=0 WARN=4. Zero critical FAIL → metrics remain official (is_official=TRUE, metric_type=backtested). 4 WARN advisory: lookahead_bias/survivorship/c15_load_path/self_scan (composition-lever on production panel — PIT handled at alpha source + validated via lag1 test). PIT point_in_time check PASS after lookahead_prevention spec declared.",
+
+  "weights_csv_unique_dates_count": 267,
+  "alpha_sig_dates_count": 267,
+  "schedule_density_ratio": 1.0,
+  "schedule_density_pass": true,
+  "pure_function_violation": false,
+  "pure_function_note": "run_all logic uses production alpha_scores_r05_panel score_eff as-is (no re-selection); anchor rule = published C2 spec (size top-2 @0.20cap); no schedule fabrication. Every rebalance date = one alpha sig_date. Charter §9 compliant.",
+
+  "reproduction_crosscheck": {
+    "goal": "independently reproduce discovery C2 screening PORT_t ~4.76 · post2017_t ~2.615",
+    "C2_repro_PORT_t": 4.761,
+    "C2_repro_IR": 0.991,
+    "C2_repro_oos_ret": 0.550,
+    "C2_repro_post2017_t": 2.615,
+    "discovery_claimed_PORT_t": 4.76,
+    "discovery_claimed_post2017_t": 2.615,
+    "verdict": "EXACT_REPRODUCTION — screening numbers match discovery to 3 decimals. Sweet-spot K=2 confirmed (C1 post2017=0.965, C3=1.106, C2=2.615). No deflation at screening level.",
+    "C0_no_anchor_PORT_t": 3.780,
+    "C0_no_anchor_post2017_t": 0.407,
+    "anchor_lever_delta_post2017_t": "0.407 → 2.615 (6.4x) confirms cap-w benchmark artifact hypothesis"
+  },
+
+  "ab_fill_comparison": {
+    "note": "재구성근사 해소 — A=EW-fill(discovery) vs B=production LinearTilt λ1.5 φ3.0 (STR_1715 실제 가중). Both authoritative build_bt_result.",
+    "A_EWfill":     {"PORT_t": 4.761, "IR": 0.991, "Sharpe": 0.903, "CAGR": 0.200, "MDD": 0.368, "Calmar": 0.543, "oos_ret": 0.550, "post2017_t": 2.615},
+    "B_LinearTilt": {"PORT_t": 4.535, "IR": 0.989, "Sharpe": 0.930, "CAGR": 0.217, "MDD": 0.380, "Calmar": 0.571, "oos_ret": 0.894, "post2017_t": 3.049},
+    "verdict": "B (production-faithful) HOLDS and is even STRONGER on oos_ret (0.894 vs 0.550) and post2017_t (3.049 vs 2.615). PORT_t marginally lower (4.535 vs 4.761) but both >>2.95. The anchor lever is NOT an EW-fill artifact — it survives production LinearTilt weighting. This resolves discovery caveat #3."
+  },
+
+  "graduation_hard_gates_standalone": {
+    "basis": "C2_B LinearTilt (production-faithful), standalone anchor book vs cap-weighted KOSPI200, forge-authoritative build_bt_result",
+    "PORT_t_2.95": {"value": 4.535, "pass": true},
+    "oos_retention_0.7": {"value": 0.894, "pass": true, "note": "3-split {55/65/75} median. B PASSES outright (≥0.7). A(EW-fill)=0.550 band."},
+    "calmar_0.64": {"value": 0.571, "pass": false, "note": "CAGR 0.217 / MDD 0.380 = 0.571 < 0.64. Both A(0.543) and B(0.571) FAIL calmar. Anchoring dilutes alpha CAGR (C0 baseline calmar 0.659 PASS) — the 40% mega-cap allocation is lower-alpha-per-unit-risk than the earnings sleeve it displaces."},
+    "standalone_verdict": "PARTIAL — PORT_t PASS, oos PASS (B), calmar FAIL. Standalone the anchor book does NOT clear all 3 HARD gates (calmar shortfall)."
+  },
+
+  "book_marginal": {
+    "note": "★DECISIVE gate — spec goal #4. Deployment context = (anchor base) × actual m4 × R05 overlay, vs REAL incumbent net_active_recon_v1 IR=1.416.",
+    "ir_convention": "net_active_recon_v1 = mean(active)/sd(active)*sqrt(12) vs cap-weighted KOSPI200",
+    "incumbent_book_ir": 1.416,
+    "anchored_overlay_ir": 0.928,
+    "delta_ir_vs_incumbent": -0.488,
+    "delta_ir_gate_0.05_pass": false,
+    "base_recon_overlay_ir": 0.839,
+    "delta_ir_anchored_vs_base_recon": 0.089,
+    "anchored_vs_base_recon_paired_nw_t": -1.522,
+    "measurement_caveat": "★HONESTY FLAG: my overlay-context reconstruction of the incumbent (base_recon+overlay) reaches IR only 0.839, ~0.58 below book_state's recorded 1.416. This means my overlay reconstruction is IMPERFECT (align cor 0.821, overlay-scalar cor 0.962 — not exact). So the absolute IR levels in my overlay path are on a DIFFERENT (lower) basis than book_state 1.416. Two readings, both unfavorable to the candidate: (i) direct vs incumbent 1.416 → ΔIR −0.488 FAIL; (ii) apples-to-apples within my overlay basis (anchored 0.928 vs base_recon 0.839) → ΔIR +0.089 but paired NW-t=−1.522 (NOT statistically significant, anchor does not dominate). Neither reading clears the spec gate honestly: (i) fails outright, (ii) is non-significant marginal improvement.",
+    "verdict": "FAIL — book-marginal gate NOT cleared. Under overlay deployment context the anchor construction's IR (0.928) is far below incumbent 1.416, and even the apples-to-apples marginal (+0.089) is statistically insignificant (paired NW-t −1.522)."
+  },
+
+  "oos_conditional_band": {
+    "note": "spec goal #5 — B(LinearTilt) oos_ret=0.894 PASSES outright (≥0.7) so band-escalation N/A for B. A(EW-fill) oos=0.550 is in band [0.5,0.7) — documented below for A.",
+    "A_EWfill_band_evidence": {
+      "band_status": "[0.5,0.7) — requires 2/3 supporting evidence",
+      "e1_trailing_2017plus_PORT_t_gt0": {"value": 2.615, "pass": true},
+      "e2_placebo_p_lt_0.05": {"value": 0.0, "pass": true, "note": "random-fill 40 draws null mean 0.319, alpha 4.761, p=0.000 (>7 SD)"},
+      "e3_book_marginal_dIR_gt0_and_cor_lt0.30": {"value": -0.488, "pass": false, "note": "book-marginal FAILS vs incumbent → e3 NOT satisfied"},
+      "band_2of3": "2/3 satisfied (e1+e2 PASS, e3 FAIL) → A would conditionally pass oos band IF standalone. But moot — book-marginal (which IS e3) is the binding deployment gate and it fails."
+    }
+  },
+
+  "adversarial": {
+    "alpha_edge_full_vs_bottom": 5.602,
+    "alpha_edge_2017plus_vs_bottom": 2.306,
+    "placebo_random_fill_p": 0.0,
+    "placebo_null_mean": 0.319,
+    "placebo_null_sd": 0.624,
+    "lag1_PIT_PORT_t": 3.783,
+    "lag1_verdict": "GRACEFUL — lag1 (alpha delayed 1 month) PORT_t 3.78 (vs 4.535 undelayed) degrades gracefully, no collapse/reversal → no month-of contamination. PIT sound.",
+    "verdict": "Alpha edge is real and robust (edge +5.60 full / +2.31 post-2017 vs anti-alpha bottom-fill; placebo p=0; lag1 graceful). The SIGNAL is genuine — the failure is purely deployment book-marginal (IR vs incumbent), not signal validity."
+  },
+
+  "concentration_risk": {
+    "note": "spec goal #6 — honest quantification of 40% mega-cap concentration.",
+    "mean_anchor_weight": 0.40,
+    "max_anchor_weight": 0.40,
+    "mean_top1_weight": 0.20,
+    "mean_HHI": 0.10,
+    "mean_effective_N": 10.0,
+    "stress_2anchor_minus20pct_1month_impact": -0.08,
+    "interpretation": "40% pinned to Samsung Electronics + SK Hynix. Effective N=10 (vs 20 nominal names) — HHI 0.10 = half the diversification of EW-20. Stress: both anchors −20% in one month directly costs −8.0% at book level (before non-anchor offset). This is a structural mega-cap-regime bet: the very source of post-2017 outperformance (tracking cap-w benchmark via mega-caps) is also a single-regime concentration risk — if KR mega-cap semi leadership reverses (see reference-kr-2025-megacap-semi-regime), the anchor becomes a drag. MDD 0.380 (candidate) vs incumbent — elevated vs C0 baseline MDD 0.392, roughly comparable, so concentration does not blow out tail MDD in-sample, but the −8% one-month tail on simultaneous anchor crash is a real, undiversifiable exposure not present in incumbent."
+  },
+
+  "backtest_summary": {
+    "full_period": {"n_months": 267, "period": "~2004-2026", "basis": "C2_B LinearTilt vs cap-w KOSPI200"},
+    "standalone_anchor_book": {"PORT_t": 4.535, "IR": 0.989, "Sharpe": 0.930, "CAGR": 0.217, "MDD": 0.380, "Calmar": 0.571, "oos_ret": 0.894, "post2017_t": 3.049},
+    "deployment_overlay": {"note": "(anchor base EW-fill) × m4 × R05", "SR": 1.051, "CAGR": 0.217, "MDD": 0.230, "Calmar": 0.942, "IR": 0.928, "PORT_t": 4.836, "oos": 0.535, "post2017_t": 2.926},
+    "incumbent_reference": {"IR": 1.416, "note": "book_state net_active_recon_v1; my overlay reconstruction reaches only 0.839 (imperfect align cor 0.821)"}
+  },
+
+  "verdict": {
+    "milestone": false,
+    "capital_grade": false,
+    "recommendation": "SCREEN_TIER_RETAIN + DEFER capital-grade. Do NOT recommend judge→governor for admission.",
+    "reasoning": [
+      "1. Reproduction EXACT (PORT_t 4.761, post2017_t 2.615) — discovery is real, not a measurement error.",
+      "2. Authoritative build_bt_result PASS (audit FAIL=0, metric_type=backtested). PORT_t 4.535 (B) survives — NO deflation like FLOW 3.55→2.35 precedent. Screening→authoritative held.",
+      "3. A/B resolved: production LinearTilt (B) is STRONGER (oos 0.894, post2017 3.049) — not an EW-fill artifact.",
+      "4. ★BUT book-marginal FAILS: ΔIR vs incumbent 1.416 = −0.488 (deployment overlay IR only 0.928). Even apples-to-apples marginal (+0.089) is statistically insignificant (paired NW-t −1.522).",
+      "5. Standalone calmar 0.571 < 0.64 FAIL (anchoring dilutes alpha CAGR).",
+      "6. Concentration: 40% mega-cap = effN 10, single-regime bet, −8% simultaneous-crash tail.",
+      "CONCLUSION: The anchor lever produces a genuine, PIT-clean, benchmark-tracking signal (real discovery), but as a DEPLOYMENT book it does NOT clear the marginal bar against the current incumbent (which already achieves IR 1.416). The candidate's overlay-context IR 0.928 is materially below incumbent. This is a construction that helps a LOW-alpha diversified book track the cap-w benchmark, but the incumbent STR_1715×m4×R05 is already a higher-IR book that the anchor construction does not improve. Honest outcome: valuable measured knowledge (cap-w benchmark artifact confirmed authoritative + anchor lever real), but not capital-grade for THIS book."
+    ]
+  },
+
+  "ax_008": {
+    "source_1_forge": "build_bt_result 10-component authoritative (this package)",
+    "source_2_self_adversarial": "challenge_note.md (5-axis: concentration / vintage / overlay-interaction / EW-vs-LinearTilt / PIT-lag1)",
+    "sources_pass": "2-source (Forge + Self-Adversarial). Architect not invoked (deployment-track, no infra change).",
+    "consensus": "Both sources converge: signal real, deployment book-marginal fails."
+  },
+
+  "governor_note": "governor 정지 — book_state 절대 미변경. Forge 산출 = forge_package + verdict까지. 자본 게이트 = 도훈 수동 confirm. 본 forge verdict는 capital-grade 아님 → judge/governor 진행 권고 안 함."
+}
