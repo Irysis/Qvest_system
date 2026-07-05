@@ -38,9 +38,17 @@ source(file.path(ROOT, "02_Infrastructure/factor_db/factor_db_connector.R"))
 OUT <- file.path(ROOT, "stage_artifacts/probe_longside_harvest_20260705/panel")
 dir.create(OUT, showWarnings = FALSE, recursive = TRUE)
 
+# local scratch (avoids OneDrive mmap segfault on big parquet reads — memory: windows-arrow-mmap-1224)
+SCRATCH <- Sys.getenv("RAW_SCRATCH",
+  "C:/Users/99922/AppData/Local/Temp/claude/C--Users-99922-OneDrive-Quant-Module-Moltbot/6e7896b7-f58a-4b11-919b-7ed026e20793/scratchpad/rawcopy")
+raw_path  <- file.path(SCRATCH, "RAWDATA.parquet")
+cons_dir  <- file.path(SCRATCH, "consensus")
+if (!file.exists(raw_path)) raw_path <- ".cache/RAWDATA.parquet"
+if (!dir.exists(cons_dir))  cons_dir <- ".cache/consensus"
+
 # ---- 1. RAWDATA daily -> monthly month-end panel ----
-cat("[panel] loading RAWDATA...\n")
-rd <- as.data.table(read_parquet(".cache/RAWDATA.parquet"))
+cat("[panel] loading RAWDATA from", raw_path, "...\n")
+rd <- as.data.table(read_parquet(raw_path))
 rd <- rd[, .(Date, Ticker, K200, KQ150, Close, Vol, Ret, BM_Ret,
              Size, AdminStock, TradingHalt, UnfaithfulDisc)]
 rd[, Date := as.Date(Date)]
@@ -115,13 +123,13 @@ cat("[panel] building consensus signals (as-of PIT)...\n")
 me_close <- me[in_univ == TRUE & ym %in% months, .(Ticker, ym, Close, Size)]
 
 # A1: target-price implied upside = TP_asof / Close_t - 1
-tp <- asof_monthly(".cache/consensus/target_price.parquet", "tp")
+tp <- asof_monthly(file.path(cons_dir, "target_price.parquet"), "tp")
 tp <- merge(tp, me_close[, .(Ticker, ym, Close)], by = c("Ticker","ym"))
 tp[, tp_upside := tp / Close - 1]
 tp <- tp[is.finite(tp_upside) & tp > 0]   # need a valid positive TP
 
 # A2: dividend growth / initiation from dps_1y (forward 1y DPS estimate, as-of)
-dps <- asof_monthly(".cache/consensus/dps_1y.parquet", "dps")
+dps <- asof_monthly(file.path(cons_dir, "dps_1y.parquet"), "dps")
 setorder(dps, Ticker, ym)
 # 12-month-prior DPS estimate (same ticker, 12 months back in the monthly grid)
 dps[, dps_lag12 := shift(dps, 12), by = Ticker]
