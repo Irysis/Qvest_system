@@ -36,7 +36,7 @@ roll <- roll[trail != 0]
 # ── 2. 월간 수익/벤치/유동성 패널 ──
 rd <- as.data.table(open_dataset(".cache/RAWDATA.parquet") |>
         (\(d) dplyr::select(d, Date, Ticker, Close, Vol))() |> (\(d) dplyr::collect(d))())
-rd[, Date := as.Date(Date)]; rd[Date <= as.Date("2026-06-30")]; rd[, ym := format(Date,"%Y%m")]
+rd[, Date := as.Date(Date)]; rd <- rd[Date <= as.Date("2026-06-30")]; rd[, ym := format(Date,"%Y%m")]
 rd[, tv := Close * Vol]
 mon <- rd[, .(mc=last(Close[is.finite(Close)]), adv=mean(tv[is.finite(tv)], na.rm=TRUE)), by=.(Ticker, ym)][is.finite(mc)]
 setorder(mon, Ticker, ym); mon[, ret_fwd := shift(mc,-1)/mc - 1, by=Ticker]
