@@ -87,10 +87,12 @@ PG("[PG] recon SR=%.4f Calmar=%.4f MDD=%.4f", base_m$SR, base_m$Calmar, base_m$M
 cands <- list(
   A5_MSM_crisisprob = build_tailcut(stress_MSM),
   A3_condvoltarget  = NULL,  # placeholder (built below)
-  DDctrl_CPPI       = build_tailcut(stress_DD),
-  JumpProb          = if(mean(is.finite(jp$v))>0.5) build_tailcut(stress_JMP) else NULL,
+  DDctrl_linear     = build_linear(stress_DD),                                    # own-drawdown, persistent
+  DDctrl_tailcut    = build_tailcut(epct(stress_DD)),                             # own-drawdown, percentile
+  BearProb_lag      = if(mean(is.finite(jp$v))>0.5) build_tailcut(stress_JMP) else NULL,  # jump-model, pre-lagged
+  RegScore_smooth   = build_tailcut(stress_RSM),                                  # smoothed regime (less whipsaw)
   MSMxR05_combined  = build_tailcut(stress_CMB),
-  R05only_softref   = build_tailcut(stress_R05)   # soft version of the base signal itself
+  R05only_softref   = build_tailcut(stress_R05)
 )
 ## A3 conditional vol-target (risk-off only), avg-matched
 so<-p$ret_orig; sig<-rep(NA_real_,n); for(i in 13:n) sig[i]<-sd(so[(i-12):(i-1)]); sig[!is.finite(sig)]<-median(sig,na.rm=TRUE)
