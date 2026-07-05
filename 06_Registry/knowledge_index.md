@@ -1,6 +1,6 @@
 # Knowledge Index — 순차 뷰 (안정 ID 불변 · 활성 집합 1..N 자동)
 
-생성: 2026-07-05T18:15:15+0900 · `build_knowledge_index.R` · **안정 ID(AX-003/L-132/DIST-*)는 provenance 앵커 = 영구 불변**. 순번(#)은 현재 활성 집합의 위치일 뿐 — 증류/강등되면 뷰에서 자동 제외되어 항상 1..N 연속(구멍 없음). 빠진 것도 아카이브+검색+부활로 보존.
+생성: 2026-07-05T18:16:46+0900 · `build_knowledge_index.R` · **안정 ID(AX-003/L-132/DIST-*)는 provenance 앵커 = 영구 불변**. 순번(#)은 현재 활성 집합의 위치일 뿐 — 증류/강등되면 뷰에서 자동 제외되어 항상 1..N 연속(구멍 없음). 빠진 것도 아카이브+검색+부활로 보존.
 
 ## Active Law (4)
 
@@ -288,7 +288,7 @@
 
 ## 강등/아카이브 (뷰 제외 · 참조 영구 보존, 4)
 
-- **AX-003** → INV-7 negative=Distilled 탐색지도. active Law에서 강등(도훈 지시). 지식 보존: ledger:L…
+- **AX-003** → INV-7 negative=Distilled 탐색지도. active Law에서 강등(도훈 지시). 지식 보존: DIST-QPM…
 - **AX-004** → INV-7 negative=Distilled 탐색지도. active Law에서 강등(도훈 지시). 지식 보존: DIST-QPM…
 - **AX-005** → INV-7 negative=Distilled 탐색지도. active Law에서 강등(도훈 지시). 지식 보존: DIST-AR-…
 - **AX-007** → INV-7 negative=Distilled 탐색지도. active Law에서 강등(도훈 지시). 지식 보존: DIST-AR-…

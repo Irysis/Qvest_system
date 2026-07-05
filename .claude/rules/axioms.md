@@ -35,7 +35,7 @@ mode-local `AX-<MODE>-NNN` (`active/modes/<mode>/`, MODE=AS/QPM/FR) + global `AX
 
 **negative 공리는 Law가 아니라 Distilled 탐색지도**(INV-7). 아래 4건은 active Law에서 강등 — active/에서 제거, `deprecated/AX-*_demoted_to_distilled_20260705.json` 아카이브. **지식은 손실 아님**: Ledger(L-code, `hypothesis_index` 검색) + deprecated 아카이브 + DIST 등가물 + 부활신호로 보존, **재도전 대상**(부활 조건 충족 시 시스템이 먼저 un-bury). 방향(family) 판결 아닌 경로(구성)-scoped 실패로만 소비.
 
-- **AX-003** [empirical, DEMOTED→Distilled]: market=KR, family=value, EP_STANDALONE+LOW_TURNOVER 실패. L-132/135. → Ledger + 부활신호 `value_quality_spread`(V02_EP 분산 백분위, 극단 시 재도전). DIST 카드 authoring 후속.
+- **AX-003** [empirical, DEMOTED→Distilled]: market=KR, family=value, EP_STANDALONE+LOW_TURNOVER 실패. L-132/135. → **DIST-QPM-006** (value/quality single-signal long-only 실패, supporting L-132/135 = AX-003 정확 커버, EP 단독·turnover 3.3% rebalancing alpha 부재 서술) + 부활신호 `value_quality_spread`(극단 시 재도전). (2026-07-05 정정: 앞서 "DIST 부재"로 오기록 → QPM-006 커버 확인)
 - **AX-004** [methodological, DEMOTED→Distilled]: market=KR, family=quality_profitability, single-signal long-only 구조적 실패. EXCLUSION: multi-axis quality composite + multi-sleeve 내 Q07. L-133/134/139. → **DIST-QPM-003**.
 - **AX-005 v1.2** [methodological, DEMOTED→Distilled]: market=KR, family=defense, universe=top20_long_only, low-beta/Q07+D25/4-axis composite 실패. EXCLUSION은 necessary not sufficient. L-136/140 (구 문서의 L-165/166 병기는 **오귀속 — 실제 AX-007 signal-portfolio translation family**, 2026-07-05 정정). → **DIST-AR-001**.
 - **AX-007** [methodological, DEMOTED→Distilled]: roles=[defense, core_secondary], structure=single_sleeve_long_only_top20, signal-portfolio translation 메커니즘 단절. 예외 4종 (multi-sleeve / long-short / 50+ 분산 / ML sizing). L-160/165/166. → **DIST-AR-003**(AX-007 명시).
