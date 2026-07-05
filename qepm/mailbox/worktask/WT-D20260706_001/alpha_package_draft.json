@@ -1,0 +1,111 @@
+{
+  "task_id": "WT-D20260706_001",
+  "wt_type": "discovery",
+  "as_of_date": "2026-07-06",
+  "forecast_horizon": "1M",
+  "selection_objective": "portfolio_alpha_t_nw",
+  "role_note": "본 WT는 신규 신호 사냥이 아니라 mega-cap 앵커 *구성*의 screening-tier 재현+진단. α̂(fill 신호)는 검증된 score_eff selection을 상속. 구성(앵커) A/B는 alpha 검증 증거(canonical top-N)로 제시하며 authoritative 최종판정은 forge 영역.",
+  "alpha_inheritance": {
+    "source": "STR_1715_AR_on_M4_R05_overlay_PG2 (score_eff)",
+    "definition": "Multi-sleeve composite selection: 4F Consensus (Core sleeve) + Q07/M08/Q25 (Defense sleeve), 2-sleeve blend. STR_1701 lineage cor 1.0 (Iter5 composite).",
+    "panel_ref": "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/02_holdings_universe/alpha_scores_r05_panel.parquet",
+    "alpha_inheritance_cor": 1.0,
+    "new_signal_hunted": false,
+    "note": "score_eff는 fill 종목(18종) selection 신호로 그대로 상속. 신규 팩터 설계 없음. 이 WT의 novel 기여는 신호가 아니라 top-2 mega-cap 앵커 *구성 레버*."
+  },
+  "megacap_gap_diagnosis": {
+    "thesis": "post-2017 IC->PORT_t 벽의 상당부분 = cap-weighted mega-cap 벤치 아티팩트. 삼성전자(A005930)+SK하이닉스(A000660) 지배 지수를 분산북(20%cap)이 못 따라감.",
+    "same_alpha_capw_bench": {"PORT_t": 3.780, "oos_ret": -0.017, "post2017_t": 0.407, "verdict": "cap-w 대비 post-2017 붕괴"},
+    "same_alpha_ew_bench":  {"PORT_t": 4.635, "oos_ret": 0.574, "post2017_t": 2.040, "verdict": "EW 대비 생존"},
+    "interpretation": "동일 score_eff 알파가 벤치를 EW로 바꾸면 post-2017 survive → 벽은 알파 소멸이 아니라 cap-w mega-cap gap. 재현 확증(발견과 일치).",
+    "anchor_identity_confirmed": "top-2 size(t-1) = A005930(삼성전자)/A000660(SK하이닉스) — 최근 12개월 전부 확인",
+    "bench_top2_actual_share": {"mean_60m": 0.268, "max_60m": 0.402, "anchor_design_cap": 0.400},
+    "metric_type": "canonical_screen"
+  },
+  "screening_ab_reproduction": {
+    "measurement": "build_benchmark_compare 실측 (NW lag-3), metric_type=canonical_screen. capw KOSPI200 benchmark (ann. 10.35%, IKS200 정합 — IKS001 아님). 앵커/fill selection·비중 t-1 size_lag PIT.",
+    "table": [
+      {"tag": "C0_base_noanchor", "PORT_t": 3.780, "IR": 0.818, "net_sr": 0.818, "oos_ret": -0.017, "post2017_t": 0.407, "turnover_annual": 12.35},
+      {"tag": "C1_anchor1_0.20",  "PORT_t": 4.509, "IR": 0.968, "net_sr": 0.968, "oos_ret": 0.096,  "post2017_t": 0.965, "turnover_annual": 10.10},
+      {"tag": "C2_anchor2_0.20",  "PORT_t": 4.751, "IR": 1.021, "net_sr": 1.021, "oos_ret": 0.526,  "post2017_t": 2.585, "turnover_annual": 7.95},
+      {"tag": "C3_anchor3_0.20",  "PORT_t": 3.569, "IR": 0.718, "net_sr": 0.718, "oos_ret": 0.349,  "post2017_t": 2.050, "turnover_annual": 6.16}
+    ],
+    "reproduction_verdict": "발견값(C2 PORT_t 4.76/post2017 2.615/oos 0.55) 강건 재현 (재현 4.751/2.585/0.526, PIT size_lag 적용 미세차). C2(anchor2)가 지배 구성. post2017_t 0.407->2.585 (6.35x).",
+    "discovery_flag_note": "★HARD 게이트 관점: C2 oos_ret 0.526 < 0.7 = band[0.5,0.7) 조건부 영역 (단독 PASS 아님). PORT_t 4.751 > 2.95는 통과. 최종 자본 판정은 forge-authoritative + governor 영역."
+  },
+  "band_conditional_pass_evidence": {
+    "context": "measurement-graduation §3 band[0.5,0.7) 보강증거 2/3 (screening proxy — forge-authoritative 값에서 재판정 필요)",
+    "oos_ret_v2_3split": {"s55": 0.404, "s65": 0.526, "s75": 0.584, "median": 0.526},
+    "evidence_1_trailing_subwindow_port_t": {"m60": 1.751, "m48": 1.457, "m36": 2.466, "all_positive": true},
+    "evidence_2_placebo_p": {"value": 0.0000, "ndraw": 150, "pass": true},
+    "evidence_3_delta_sr": {"net_sr_anchored": 1.021, "net_sr_base": 0.905, "delta": 0.116, "positive": true},
+    "count": "3/3 충족 (≥2 필요)",
+    "caveat": "★screening proxy만. book-marginal은 governor가 배포북(overlay 적용) + incumbent 대비로 판정. paired-active NW-t=-1.923 (아래 challenge 참조)."
+  },
+  "adversarial_verification": {
+    "q1_alpha_edge_vs_benchhugging": {
+      "alpha_fill_full": 4.751, "bottom_fill_full": -0.961, "edge_full": 5.712,
+      "alpha_fill_2017": 2.585, "bottom_fill_2017": 0.733, "edge_2017": 1.852,
+      "verdict": "alpha-fill이 bottom-fill(anti-alpha) 대비 full +5.71 / 2017+ +1.85 우월 → 앵커는 mega-cap beta만 harvest하는 벤치허깅 아님. fill selection(score_eff)의 실제 알파 기여 확인. 단 2017+ edge(+1.85)가 full(+5.71)보다 축소 = 최근 알파 기여 약화."
+    },
+    "q3_lag1_pit": {"alpha": 4.751, "lagalpha": 3.653, "verdict": "1개월 지연 시 graceful degrade (4.75->3.65, 붕괴 아님) → PIT 누출 없음"},
+    "q2_placebo": {"null_mean": 0.334, "null_sd": 0.418, "alpha": 4.751, "p": 0.0000, "ndraw": 150, "verdict": "random-fill 150 draw 대비 p=0 → fill selection 유의 (앵커 고정, fill만 랜덤화한 clean null)"}
+  },
+  "factor_specs": [
+    {
+      "factor_family": "Composite_Multi_Sleeve (inherited)",
+      "proxy": "score_eff (4F Consensus + Q07 + M08 + Q25, 2-sleeve)",
+      "formula": "STR_1715 Iter5 multi-sleeve composite selection score (Core 4F Consensus sleeve + Defense Q07/M08/Q25 sleeve blend)",
+      "lag_rule": "month-start label / prior-month underlying (lockbox release, live)",
+      "winsorization": "inherited (STR_1715 pipeline)",
+      "neutralization": "inherited",
+      "economic_rationale": "검증된 earnings/quality/defense 복합 selection. 18개 fill 종목을 고르는 상속 신호. 신규 팩터 아님.",
+      "weight_theta": 1.0,
+      "role": "fill_signal",
+      "references": ["STR_1701/1715 lineage", "Fama-French 4F consensus", "Q07 quality / M08 residual momentum / Q25 defense"]
+    },
+    {
+      "factor_family": "Mega_Cap_Anchor (construction lever, NOT signal)",
+      "proxy": "size (시가총액) top-2, t-1",
+      "formula": "size_lag rank top-2 (=삼성전자 A005930, SK하이닉스 A000660) each @ 20% cap; remaining 18 names = score_eff top-fill EW",
+      "lag_rule": "t-1 size (C10 정합, 미래참조 방지)",
+      "winsorization": "none (rank selection)",
+      "neutralization": "none",
+      "economic_rationale": "cap-weighted 벤치를 mega-cap top-2가 지배 → 분산북의 구조적 저비중 갭이 post-2017 PORT_t 붕괴의 상당부분. top-2를 20%cap 앵커로 갭 부분충족. 알파 신호가 아니라 벤치-정합 구성 레버.",
+      "weight_theta": "0.20 x 2 = 0.40 anchored",
+      "role": "construction_anchor",
+      "references": ["project-megacap-anchor-construction-discovery", "reference-kr-2025-megacap-semi-regime"]
+    }
+  ],
+  "diagnostics": {
+    "rank_ic": null,
+    "rank_ic_note": "본 WT는 신규 신호 발굴 아님 — rank-IC는 상속 score_eff에서 이미 검증됨. selection_objective=portfolio_alpha_t_nw (구성 검증).",
+    "portfolio_alpha_t_nw_lag3_C2_anchored": 4.751,
+    "portfolio_alpha_t_nw_lag3_C0_base": 3.780,
+    "post2017_t_C2": 2.585,
+    "oos_retention_C2": 0.526,
+    "net_sr_C2": 1.021,
+    "turnover_proxy_annual_C2": 7.95,
+    "ic_vs_portfolio_alpha_distinction": "이 WT는 rank-IC가 아니라 portfolio-alpha t 축. 앵커 구성이 portfolio-alpha t를 6.4x 개선하는 것이 핵심 (rank-IC는 selection 신호에 이미 반영)."
+  },
+  "confidence_vector_note": "종목별 confidence는 fill 18종에 score_eff 기반 상속 (앵커 2종은 confidence=1.0 벤치-정합 고정). optimizer가 소비.",
+  "challenge_flags": [
+    {"id": "CF-1", "severity": "HIGH", "flag": "oos_ret 0.526 < 0.7 HARD 미달 (band[0.5,0.7) 조건부). screening proxy 증거 3/3이나 forge-authoritative 값에서 재판정 필수."},
+    {"id": "CF-2", "severity": "HIGH", "flag": "paired-active NW-t(anchored vs base)= -1.923 음수. anchored SR/PORT_t는 높으나 월별 active-diff는 base 대비 일관 우월 아님 → 개선이 특정 국면(mega-cap 강세기) 집중. governor book-marginal ΔIR에서 tension 재현 가능."},
+    {"id": "CF-3", "severity": "HIGH", "flag": "40% 단일 2종목 집중 = 배포 집중 리스크. 벤치 실제 top-2 share mean 26.8%(max 40.2%)를 앵커 40%가 초과하는 국면 존재. risk agent 집중 거버넌스 대상."},
+    {"id": "CF-4", "severity": "MEDIUM", "flag": "screening은 EW-fill 근사 + 재구성 selection. production STR_1715는 LinearTilt λ1.5·유동성·TOphi·overlay. forge에서 production selection+앵커로 4.76 유지 여부가 milestone 관건."},
+    {"id": "CF-5", "severity": "MEDIUM", "flag": "2017+ alpha-edge(+1.85)가 full(+5.71)보다 축소. 최근 fill selection의 알파 기여 약화 — 앵커 beta 의존도가 최근 국면에서 증가 가능성 (reference-kr-2025-megacap-semi-regime 정합)."}
+  ],
+  "handoff_recommendations": {
+    "to_risk": "top-2 40% 집중 covariance/beta 진단 + mega-cap regime beta(반도체 집중레짐) + stress(2종 동시 하락) + crowding. 앵커 40% vs 벤치 실share 26.8% tracking.",
+    "to_optimizer": "앵커 구성 형식화: K=2 20%cap이 A/B에서 지배(K=1/3 열위). cap-proportional vs 20% flat cap vs regime-conditional 앵커 비교. fill=score_eff top-18 EW vs LinearTilt.",
+    "to_forge": "★핵심 milestone 게이트: production STR_1715 selection(LinearTilt λ1.5)+앵커로 build_bt_result authoritative 재측정. screening 4.751/2.585/0.526이 production forge서 유지되는지. HARD 3종(PORT_t 2.95/oos 0.7/calmar 0.64) 배포북 기준.",
+    "to_governor": "정지 (mega-cap 40% 집중 = 자본 결정, 도훈 수동). book-marginal ΔIR vs incumbent(no_faith IR ~1.416). paired-active NW-t 음수 tension 확인."
+  },
+  "next_verification_points": [
+    "forge: production selection+앵커 build_bt_result에서 PORT_t 4.76 유지 vs 붕괴 (=벤치허깅/집중아티팩트 반증)",
+    "forge: oos_retention forge-authoritative 값이 band[0.5,0.7) 유지되는지 (screening 0.526)",
+    "forge: calmar >= 0.64 (screening 미측정 — forge 산출)",
+    "governor: book-marginal ΔIR >= 0.05 vs incumbent (paired-active NW-t 음수가 여기서 문제되는지)"
+  ]
+}
