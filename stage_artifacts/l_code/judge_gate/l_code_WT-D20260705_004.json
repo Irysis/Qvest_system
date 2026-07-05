@@ -1,0 +1,53 @@
+{
+  "l_code": "L-JG-20260705_200604",
+  "strategy_id": "WT-D20260705_004",
+  "grade": "C",
+  "core_reference": "measurement-graduation §6 transition-wall; project-superfactor-4method-program; project-dart-insider-exec-nonreturn-frontier",
+  "lesson_text": "KR deployment 봉투(K200 union KQ150, 25종, long-only, 월간)에서 uncertainty-aware alpha_hat 예측(NGBoost Normal + MAPIE conformal, calibrated sigma_hat corr +0.207)과 신뢰기반 selection/sizing(risk-adj mu/sigma, conformal-band, shrink, robust-box, BL-shrink, resampled/Michaud)이 IC->PORT_t 전이를 개선하지 못함. forge-authoritative full PORT_t 0.970(<2.95), recent2017 -0.725(음), SR 0.813, CAGR 17.56%, MDD -41.5%, Calmar 0.418(<0.64), oos_retention -0.604(<0.5). baseline point-ranking A(0.970)가 4변형 중 최강, delta_PORT_t full -0.404. optimizer 레벨서 EW(1/N, sigma·Sigma 둘다 무시)가 9방법x2설계x24hyperparam 중 단일 최강 (DeMiguel-Garlappi-Uppal 2009). 전이 벽이 selection AND sizing 양 레벨서 uncertainty 차원에 robust. EW = 25종 broad KR alpha의 개선불가 blind 천장. Variant C 양수는 0/196월 25종구성 = 생존편향 아티팩트로 제외.",
+  "tags": ["QEPM", "JUDGE_GATE", "UNCERTAINTY_AWARE", "TRANSITION_WALL", "NEGATIVE", "KR_POST2017_DECAY"],
+  "created_at": "2026-07-05",
+  "research_mode": "judge_gate",
+  "created_by": "emit:judge_gate",
+  "metric_type": "backtested",
+  "construction_type": "composite",
+  "mechanism_hypothesis": "예측 불확실성(sigma_hat)이 크로스섹션 순위력(IC)은 있으나 long-only top-25 실현 active로 전이되지 않는 unreliable 종목을 걸러 PORT_t를 회복시킨다는 가설 — 반증됨. sigma_hat이 calibrated(+0.207)임에도 selection/sizing이 baseline을 못 이김 = 병목은 sigma 품질이 아니라 KR post-2017 IC->PORT_t 전이 벽 자체(신호계열·horizon·sizing 무관).",
+  "lcode_schema_version": 2,
+  "sharpe": 0.813,
+  "mdd_pct": 41.5,
+  "cagr_pct": 17.56,
+  "calmar": 0.418,
+  "net_ir": 0.279,
+  "port_t_recent2017": -0.7248,
+  "falsification_attempts": [
+    {
+      "test": "like-for-like variant sweep (A point vs B mu/sigma vs D shrink, 196/112m)",
+      "result": "falsified",
+      "effect_retained": -0.404
+    },
+    {
+      "test": "optimizer aware-vs-blind (9 methods x D1/D2 designs, common-subsample paired)",
+      "result": "falsified",
+      "effect_retained": -0.1605
+    },
+    {
+      "test": "24-cell adversarial hyperparam grid (lambda/kappa/gamma) argmax check",
+      "result": "falsified",
+      "effect_retained": -1.0122
+    },
+    {
+      "test": "PIT look-ahead signature (mu_hat IC 0.031 <= score_eff mean IC 0.036, strict expanding window)",
+      "result": "survived",
+      "effect_retained": null
+    },
+    {
+      "test": "sigma_hat calibration (within-month corr(sigma, |realized active|))",
+      "result": "survived",
+      "effect_retained": 0.207
+    }
+  ],
+  "oos_retention": -0.604,
+  "oos_months": 112,
+  "portfolio_alpha_t": 0.9698,
+  "selection_type": "chain",
+  "record_type": "performance"
+}
