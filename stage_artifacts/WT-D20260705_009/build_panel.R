@@ -85,7 +85,7 @@ FEATURES <- c(
   "Q08_Composite_Quality","Q07_Earnings_Stability","Q01_GPA","Q02_ROE",
   "M09_Composite_Mom","M08_Residual_Mom","M14_RiskAdj_Mom","M12_LR_Reversal",
   "V12_Composite_Value","V02_EP","V10_FCF_Yield",
-  "R01_Beta","R05_IdioVol","L01_Amihud","M11_ST_Reversal"
+  "R11_Systematic_Risk","R12_Idiosyncratic_Risk","L01_Amihud","M11_ST_Reversal"
 )
 
 months <- sort(unique(returns_monthly$Date))

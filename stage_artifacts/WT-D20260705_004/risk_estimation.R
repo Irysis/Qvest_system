@@ -207,21 +207,23 @@ saveRDS(list(Sigma_monthly = Sigma_pd, tickers = colnames(Sigma_pd),
 
 # ---- 6. Common-risk decomposition (market + sector) -----------------
 # Market factor = benchmark monthly return aligned to estimation months.
-est_ym <- rownames(mat_est)
-bm_map <- bm_m[match(est_ym, ym)]$bm_ret
+p_est   <- ncol(mat_w)                     # names actually in Sigma (may differ from 40)
+est_ym  <- rownames(mat_est)
+bm_map  <- bm_m[match(est_ym, ym)]$bm_ret
 # beta per name via OLS on benchmark (trailing, C1)
-betas <- rep(NA_real_, ncol(mat_w)); names(betas) <- colnames(mat_w)
+betas <- rep(NA_real_, p_est); names(betas) <- colnames(mat_w)
 var_bm <- var(bm_map, na.rm = TRUE)
-for (j in seq_len(ncol(mat_w))) {
+for (j in seq_len(p_est)) {
   betas[j] <- if (var_bm > 0) cov(mat_w[, j], bm_map, use = "complete.obs") / var_bm else NA
 }
-# Variance share of market factor: for equal-weight proxy portfolio of the 39 names
-w_eq <- rep(1/p, p)
-port_var <- as.numeric(t(w_eq) %*% Sigma_pd %*% w_eq)
-mkt_var  <- (as.numeric(t(w_eq) %*% betas))^2 * var_bm
-mkt_share <- mkt_var / port_var
-cat(sprintf("[risk] EW-proxy port monthly var=%.6f; market-factor share=%.3f; mean beta=%.3f\n",
-            port_var, mkt_share, mean(betas, na.rm = TRUE)))
+# Variance share of market factor for an EQUAL-WEIGHT proxy portfolio of the Sigma names.
+w_eq       <- rep(1/p_est, p_est)          # length aligns with Sigma_pd / betas
+port_var   <- as.numeric(t(w_eq) %*% Sigma_pd %*% w_eq)
+port_beta  <- sum(w_eq * betas, na.rm = TRUE)
+mkt_var    <- (port_beta^2) * var_bm
+mkt_share  <- mkt_var / port_var           # fraction of EW-proxy variance from market factor
+cat(sprintf("[risk] EW-proxy port monthly var=%.6f; port beta=%.3f; market-factor var share=%.3f; mean beta=%.3f\n",
+            port_var, port_beta, mkt_share, mean(betas, na.rm = TRUE)))
 
 # Sector concentration (HHI) of the 39-name universe
 sec_map <- unique(rd[Ticker %in% tickers & !is.na(Sector), .(Ticker, Sector)])
