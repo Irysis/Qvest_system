@@ -14,11 +14,12 @@
 # 데이터: pin RAWDATA_pin20260703 (graduation vintage 고정).
 # =============================================================================
 suppressWarnings(suppressMessages({
-  library(data.table); library(arrow); library(jsonlite)
+  library(data.table); library(arrow); library(dplyr); library(jsonlite)
 }))
-data.table::setDTthreads(1L)  # 세그폴트 방지 (single-thread)
-try(arrow::set_cpu_count(1L), silent = TRUE)  # arrow mmap 1224 버그 회피 (io_thread_count는 건드리지 않음 — HANG)
-options(error = function() { traceback(2); quit(status = 3) })
+data.table::setDTthreads(2L)
+try(arrow::set_cpu_count(2L), silent = TRUE)
+.flog <- function(...) { cat(sprintf(...), file = stderr()); flush(stderr()) }
+options(error = function() { .flog("[te] ERROR — traceback:\n"); traceback(2); quit(status = 3) })
 
 PROJ <- "C:/Users/99922/OneDrive/Quant_Module_Moltbot"
 CACHE <- file.path(PROJ, ".cache")

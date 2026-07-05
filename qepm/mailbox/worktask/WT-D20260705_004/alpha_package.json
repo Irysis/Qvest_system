@@ -1,0 +1,251 @@
+{
+  "task_id": "WT-D20260705_004",
+  "wt_type": "discovery",
+  "as_of_date": "2026-04-30",
+  "as_of_forecast_month": "2026-04",
+  "forecast_horizon": "1M",
+  "selection_objective": "rank_ic",
+  "alpha_mean_source": "score_eff (established multi-factor composite, rank-IC 0.042 / ICIR 0.34 / 256m)",
+  "method": "NGBoost(Normal) probabilistic forecast + MAPIE SplitConformal (expanding-window PIT) over established score_eff mean; 4 selection/sizing variants on identical mu_hat mean",
+  "alpha_vector": {
+    "A025980": 0.027309,
+    "A066970": 0.020805,
+    "A240810": 0.019536,
+    "A098460": 0.016201,
+    "A000660": 0.016084,
+    "A078340": 0.015947,
+    "A095340": 0.013829,
+    "A009830": 0.013342,
+    "A058470": 0.012649,
+    "A218410": 0.012078,
+    "A015750": 0.011977,
+    "A005930": 0.011784,
+    "A084370": 0.011639,
+    "A053030": 0.011581,
+    "A319660": 0.011259,
+    "A189300": 0.010905,
+    "A278470": 0.010748,
+    "A071970": 0.010566,
+    "A131970": 0.010212,
+    "A032500": 0.010156,
+    "A039030": 0.010041,
+    "A050890": 0.009984,
+    "A009420": 0.009443,
+    "A073240": 0.009364,
+    "A010120": 0.008563,
+    "A083650": 0.008422,
+    "A247540": 0.0082,
+    "A001680": 0.007716,
+    "A000720": 0.007428,
+    "A034020": 0.007426,
+    "A006400": 0.007343,
+    "A010950": 0.007006,
+    "A000240": 0.006949,
+    "A028260": 0.006757,
+    "A034230": 0.006603,
+    "A082740": 0.006547,
+    "A112040": 0.006543,
+    "A403870": 0.00654,
+    "A006730": 0.0064,
+    "A272290": 0.005678
+  },
+  "confidence_vector": {
+    "A025980": 0.3548,
+    "A066970": 0.4959,
+    "A240810": 0.4885,
+    "A098460": 0.5014,
+    "A000660": 0.7015,
+    "A078340": 0.7441,
+    "A095340": 0.4899,
+    "A009830": 0.5728,
+    "A058470": 0.6938,
+    "A218410": 0.4597,
+    "A015750": 0.8237,
+    "A005930": 0.8172,
+    "A084370": 0.5147,
+    "A053030": 0.7145,
+    "A319660": 0.5901,
+    "A189300": 0.4192,
+    "A278470": 0.5465,
+    "A071970": 0.6834,
+    "A131970": 0.4879,
+    "A032500": 0.4559,
+    "A039030": 0.6165,
+    "A050890": 0.6102,
+    "A009420": 0.5736,
+    "A073240": 0.9596,
+    "A010120": 0.3092,
+    "A083650": 0.4604,
+    "A247540": 0.7181,
+    "A001680": 0.9223,
+    "A000720": 0.6506,
+    "A034020": 0.6116,
+    "A006400": 0.7475,
+    "A010950": 0.7185,
+    "A000240": 0.7672,
+    "A028260": 0.8803,
+    "A034230": 0.7736,
+    "A082740": 0.6813,
+    "A112040": 0.6134,
+    "A403870": 0.7396,
+    "A006730": 0.7299,
+    "A272290": 0.7671
+  },
+  "signal_matrix_ref": "stage_artifacts/WT-D20260705_004/alpha_scores.parquet",
+  "forecast_uncertainty_note": "confidence_vector = 1 - cross-sectional-normalized sigma_hat (NGBoost predictive std). forecast_uncertainty is NOT return covariance Sigma (risk agent). weight undecided (optimizer).",
+  "factor_specs": [
+    {
+      "factor_family": "Composite (established)",
+      "proxy": "score_eff",
+      "formula": "pre-registered multi-factor composite (value/quality/momentum/flow/defense)",
+      "lag_rule": "monthly sig_date; fundamentals quarterly 45d",
+      "winsorization": "cross-sectional z",
+      "neutralization": "cross-sectional demean (active target)",
+      "economic_rationale": "established composite with real cross-sectional IC (0.042); reused as alpha_hat MEAN, no new signal per WT mandate (transition-wall probe not signal hunt)",
+      "weight_theta": 1.0,
+      "references": [
+        "Harvey-Liu-Zhu 2016",
+        "internal score_eff registry"
+      ]
+    },
+    {
+      "factor_family": "ForecastUncertainty (new dimension)",
+      "proxy": "sigma_hat (NGBoost Normal.scale)",
+      "formula": "NGBoost natural-gradient predictive std, expanding window train months[:t]",
+      "lag_rule": "PIT expanding, 60m burn-in, retrain/6m",
+      "winsorization": "n/a",
+      "neutralization": "n/a",
+      "economic_rationale": "per-name predictive uncertainty; calibrated (within-month corr(sigma_hat,|realized active|)=+0.207). NOT covariance. research_philosophy #3 first operationalization",
+      "weight_theta": 0.0,
+      "references": [
+        "Duan NGBoost 2020",
+        "Angelopoulos-Bates conformal 2023",
+        "Liao-Ma-Neuhierl-Schilling 2025 RFS"
+      ]
+    }
+  ],
+  "diagnostics": {
+    "rank_ic": 0.031,
+    "icir": 0.303,
+    "harvey_t_stat": 4.11,
+    "rank_ic_recent2017": 0.0198,
+    "portfolio_alpha_t_nw_lag3_baseline": 0.9698,
+    "sigma_calibration_corr": 0.2074,
+    "sigma_calibration_note": "within-month spearman corr(sigma_hat, |realized active return|); positive = calibrated",
+    "lookahead_check": "PASS - PIT mu_hat rank-IC 0.031 <= score_eff mean IC 0.036 (no inflation); train window strictly months[:t]",
+    "n_forecast_months": 196,
+    "turnover_annual_baseline": 12.2767
+  },
+  "variant_comparison": [
+    {
+      "variant": "A_baseline",
+      "label": "A: point mu_hat top-25 (baseline)",
+      "metric_type": "canonical_screen",
+      "full_port_t_nw3": 0.9698,
+      "full_IR": 0.2794,
+      "full_net_sr": 0.2794,
+      "full_turnover_annual": 12.2767,
+      "full_n_months": 196,
+      "recent2017_port_t_nw3": -0.7248,
+      "recent2017_n_months": 112,
+      "rank_ic_full": 0.031
+    },
+    {
+      "variant": "B_risk_adj",
+      "label": "B: mu_hat/sigma_hat top-25 (risk-adjusted)",
+      "metric_type": "canonical_screen",
+      "full_port_t_nw3": 0.3784,
+      "full_IR": 0.1094,
+      "full_net_sr": 0.1094,
+      "full_turnover_annual": 12.7665,
+      "full_n_months": 196,
+      "recent2017_port_t_nw3": -1.6456,
+      "recent2017_n_months": 112,
+      "rank_ic_full": 0.0302
+    },
+    {
+      "variant": "C_confband",
+      "label": "C: conformal-lb>0 then top-25 (confidence-band)",
+      "metric_type": "canonical_screen",
+      "full_port_t_nw3": 0.5249,
+      "full_IR": 0.2493,
+      "full_net_sr": 0.2493,
+      "full_turnover_annual": 17.7143,
+      "full_n_months": 35,
+      "recent2017_port_t_nw3": 0.5275,
+      "recent2017_n_months": 9,
+      "rank_ic_full": -0.0
+    },
+    {
+      "variant": "D_shrunk",
+      "label": "D: mu_hat*(1-lambda*sigma_norm) top-25 (uncertainty-shrunk)",
+      "metric_type": "canonical_screen",
+      "full_port_t_nw3": 0.5655,
+      "full_IR": 0.1624,
+      "full_net_sr": 0.1624,
+      "full_turnover_annual": 12.6098,
+      "full_n_months": 196,
+      "recent2017_port_t_nw3": -1.1964,
+      "recent2017_n_months": 112,
+      "rank_ic_full": 0.0309
+    }
+  ],
+  "delta_port_t": {
+    "definition": "best like-for-like uncertainty variant (B/D, 196/112 months) minus A. C EXCLUDED (degenerate: 0/196 months had >=25 conformal-eligible names).",
+    "delta_full": -0.4043,
+    "delta_recent2017": -0.4716,
+    "verdict": "FAIL",
+    "verdict_detail": "delta_full=-0.4043 (<0), delta_recent=-0.4716; no variant near 2.95 gate. Uncertainty-aware selection/sizing does NOT recover IC->PORT_t transition - neutral-to-harmful like-for-like. Transition wall robust to sizing/selection dimension."
+  },
+  "challenge_flags": [
+    {
+      "id": "CF-1",
+      "severity": "HIGH",
+      "resolved": true,
+      "flag": "Variant C (confidence-band) degenerate - 0/196 months formed >=25-name portfolio (conformal 1M-active 68% lower bound almost never >0). C positive PORT_t = conditional-sampling survivorship artifact, excluded from verdict."
+    },
+    {
+      "id": "CF-2",
+      "severity": "INFO",
+      "resolved": true,
+      "flag": "sigma_hat calibrated (+0.207 vs |realized active|) yet selection/sizing on it fails to beat baseline -> failure is transition wall itself, not sigma quality."
+    },
+    {
+      "id": "CF-3",
+      "severity": "INFO",
+      "resolved": true,
+      "flag": "single probabilistic estimator (NGBoost) + single conformal (MAPIE); low residual EV given calibrated-sigma failure."
+    }
+  ],
+  "method_shopping_log": {
+    "alpha_agent": {
+      "candidates_tried": 4,
+      "parallel_exec": false,
+      "method_log": [
+        {
+          "name": "A_baseline",
+          "port_t_full": 0.9698,
+          "selected": false
+        },
+        {
+          "name": "B_risk_adj",
+          "port_t_full": 0.3784,
+          "selected": false
+        },
+        {
+          "name": "C_confband",
+          "port_t_full": 0.5249,
+          "selected": false,
+          "note": "degenerate"
+        },
+        {
+          "name": "D_shrunk",
+          "port_t_full": 0.5655,
+          "selected": false
+        }
+      ]
+    }
+  },
+  "selection_type": "chain",
+  "self_adversarial_challenge": "challenge_note.md - 4 concerns (2 HIGH: C survivorship ACCEPT, look-ahead REBUTTAL; 2 MEDIUM). no escalate trigger."
+}

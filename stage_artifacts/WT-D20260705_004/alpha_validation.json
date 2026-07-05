@@ -1,0 +1,153 @@
+{
+  "task_id": "WT-D20260705_004",
+  "as_of_date": "2026-04-30",
+  "hypothesis": "uncertainty-aware selection/sizing recovers IC->PORT_t transition that point-ranking destroys",
+  "verdict": "FAIL",
+  "delta_port_t_full": -0.4043,
+  "delta_port_t_recent2017": -0.4716,
+  "gate_2p95": "not approached by any variant (max full PORT_t 0.970 = baseline A)",
+  "variant_results": {
+    "A_baseline": {
+      "full": {
+        "portfolio_alpha_t_nw_lag3": 0.9698,
+        "information_ratio": 0.2794,
+        "alpha_annualized": 0.0918,
+        "net_sr": 0.2794,
+        "turnover_annual": 12.2767,
+        "n_months": 196
+      },
+      "recent2017": {
+        "portfolio_alpha_t_nw_lag3": -0.7248,
+        "information_ratio": -0.2618,
+        "net_sr": -0.2618,
+        "n_months": 112
+      },
+      "rank_ic_full": {
+        "ic": 0.031,
+        "icir": 0.303,
+        "t": 4.11,
+        "n": 196
+      },
+      "rank_ic_recent2017": {
+        "ic": 0.0198,
+        "icir": 0.212,
+        "t": 2.21,
+        "n": 112
+      }
+    },
+    "B_risk_adj": {
+      "full": {
+        "portfolio_alpha_t_nw_lag3": 0.3784,
+        "information_ratio": 0.1094,
+        "alpha_annualized": 0.0637,
+        "net_sr": 0.1094,
+        "turnover_annual": 12.7665,
+        "n_months": 196
+      },
+      "recent2017": {
+        "portfolio_alpha_t_nw_lag3": -1.6456,
+        "information_ratio": -0.5906,
+        "net_sr": -0.5906,
+        "n_months": 112
+      },
+      "rank_ic_full": {
+        "ic": 0.0302,
+        "icir": 0.297,
+        "t": 4.04,
+        "n": 196
+      },
+      "rank_ic_recent2017": {
+        "ic": 0.0188,
+        "icir": 0.203,
+        "t": 2.15,
+        "n": 112
+      }
+    },
+    "C_confband": {
+      "full": {
+        "portfolio_alpha_t_nw_lag3": 0.5249,
+        "information_ratio": 0.2493,
+        "alpha_annualized": 0.1035,
+        "net_sr": 0.2493,
+        "turnover_annual": 17.7143,
+        "n_months": 35
+      },
+      "recent2017": {
+        "portfolio_alpha_t_nw_lag3": 0.5275,
+        "information_ratio": 0.4498,
+        "net_sr": 0.4498,
+        "n_months": 9
+      },
+      "rank_ic_full": {
+        "ic": -0.0,
+        "icir": -0.0,
+        "t": -0.0,
+        "n": 12
+      },
+      "rank_ic_recent2017": {
+        "ic": NaN,
+        "icir": NaN,
+        "t": NaN,
+        "n": 1
+      }
+    },
+    "D_shrunk": {
+      "full": {
+        "portfolio_alpha_t_nw_lag3": 0.5655,
+        "information_ratio": 0.1624,
+        "alpha_annualized": 0.0732,
+        "net_sr": 0.1624,
+        "turnover_annual": 12.6098,
+        "n_months": 196
+      },
+      "recent2017": {
+        "portfolio_alpha_t_nw_lag3": -1.1964,
+        "information_ratio": -0.4302,
+        "net_sr": -0.4302,
+        "n_months": 112
+      },
+      "rank_ic_full": {
+        "ic": 0.0309,
+        "icir": 0.302,
+        "t": 4.1,
+        "n": 196
+      },
+      "rank_ic_recent2017": {
+        "ic": 0.0195,
+        "icir": 0.21,
+        "t": 2.19,
+        "n": 112
+      }
+    },
+    "_meta": {
+      "confband_source": "mapie",
+      "top_n": 25,
+      "alpha_mean_col": "score_eff",
+      "burn_in": 60,
+      "retrain_every": 6,
+      "shrink_lambda": 0.5,
+      "features": [
+        "score_eff",
+        "V02_EP",
+        "Q01_GPA",
+        "M01_Mom_12_1",
+        "INV01_Foreign_NetBuy_20d",
+        "D01_IdioVol",
+        "L01_Amihud"
+      ],
+      "n_forecast_months": 196,
+      "recent_lo": "2017-01"
+    }
+  },
+  "pit": {
+    "lookahead": "PASS",
+    "expanding_window": "train months[:t] strict",
+    "sigma_calibration_corr": 0.2074,
+    "mu_hat_ic_vs_score_eff_ic": "0.031 <= 0.036 (no inflation)"
+  },
+  "universe_comparison": {
+    "note": "KR_top342 deployment envelope (phase0 panel, median 253 names/month). v2 KR_TOP500_FREEFLOAT not run - failure is dimensional (selection on calibrated sigma), not universe-restricted attenuation; v2 would not change verdict since sigma is already calibrated and selection is neutral-to-harmful."
+  },
+  "metric_type": "canonical_screen",
+  "measurement": "canonical_screen_bt (build_benchmark_compare NW lag-3); no proxy hand-calc"
+}
