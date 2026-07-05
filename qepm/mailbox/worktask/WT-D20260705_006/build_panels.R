@@ -11,8 +11,13 @@ RAWDATA <- as.data.table(read_parquet(file.path(LOCAL,"RAWDATA.parquet")))
 BM_DT   <- as.data.table(read_parquet(file.path(LOCAL,"benchmark.parquet")))
 cat("CK1 loaded RAWDATA rows=", nrow(RAWDATA), "\n"); flush.console()
 if (!inherits(RAWDATA$Date,"Date")) RAWDATA[, Date := as.Date(Date)]
-rd <- RAWDATA[, .(Date, Ticker, Close, Vol, K200, KQ150)]
+# restrict to study window + 2-month daily buffer for 20d rolling window (memory-safe)
+# AND to tickers that were EVER in K200/KQ150 (universe candidates only) — shrinks 10M->~2M
+ever_univ <- unique(RAWDATA[Date >= as.Date("2004-10-01") & (K200==TRUE | KQ150==TRUE), Ticker])
+rd <- RAWDATA[Date >= as.Date("2004-10-01") & Ticker %in% ever_univ,
+              .(Date, Ticker, Close, Vol, K200, KQ150)]
 rm(RAWDATA); gc(FALSE)
+cat("CK1b filtered rd rows=", nrow(rd), " ever_univ tickers=", length(ever_univ), "\n"); flush.console()
 setorder(rd, Ticker, Date)
 rd[, ym := format(Date, "%Y-%m")]
 me_dates <- sort(rd[, .(Date=max(Date)), by=ym]$Date)

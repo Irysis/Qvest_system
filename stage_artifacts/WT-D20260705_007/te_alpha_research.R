@@ -117,8 +117,15 @@ rm(.W, .Wlong); gc(verbose = FALSE)
 }
 
 cat(sprintf("[te] computing net-sink over %d sig_dates...\n", length(.sig_dates)))
+# RAWDATA는 이후 불필요 (TE는 .Wmat/.snap만 사용) → 메모리 해제
+rm(RAWDATA); gc(verbose = FALSE)
+.flog("[te] RAWDATA freed. starting TE loop...\n")
+.t0 <- Sys.time()
 .sig_list <- vector("list", length(.sig_dates)); .k <- 0L
 for (.ti in seq_along(.sig_dates)) {
+  if (.ti %% 12L == 1L)
+    .flog("[te] loop %d/%d (%s) elapsed=%.0fs k=%d\n", .ti, length(.sig_dates),
+          as.character(.sig_dates[.ti]), as.numeric(difftime(Sys.time(), .t0, units="secs")), .k)
   t <- .sig_dates[.ti]; ti <- match(t, .wdates)
   if (is.na(ti) || ti < .TE_WINDOW) next
   lo <- ti - .TE_WINDOW + 1L; Rt <- .Wmat[lo:ti, , drop = FALSE]
@@ -165,4 +172,5 @@ cat(sprintf("[te] net-sink raw: rows=%d dates=%d tickers=%d\n",
             nrow(FACTORS), uniqueN(FACTORS$Date), uniqueN(FACTORS$Ticker)))
 
 saveRDS(FACTORS, file.path(OUT, "te_netsink_raw.rds"))
+.flog("[te] saved raw signal. rows=%d dates=%d\n", nrow(FACTORS), uniqueN(FACTORS$Date))
 cat("[te] saved raw signal.\n")

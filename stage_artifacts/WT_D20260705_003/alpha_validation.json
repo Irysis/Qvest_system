@@ -1,0 +1,90 @@
+{
+  "task_id": "WT-D20260705_003",
+  "as_of_date": "2026-07-05",
+  "authoritative_window": "2005-01 to 2024-12 (benchmark.parquet + RAWDATA BM_Ret both corrupted 2025+; 2025-2026 unmeasurable)",
+  "benchmark_corruption_flag": "KOSPI200 monthly returns implausible 2025+ (e.g. 202601 +26.8%, 202605 +35.3%; close 605->1299). Both bench sources affected. Infra issue, not this WT.",
+  "primary_signal": "z_composite = EW(z_fwd_opyield, z_fwd_eyield, z_fwd_syield)",
+  "rank_ic_diagnostics": {
+    "signal": ["fwd_eyield", "fwd_opmargin", "tp_implied", "fwd_roe", "fwd_syield", "fwd_opyield"],
+    "n": [313, 313, 292, 282, 313, 313],
+    "mean_ic": [0.041136, 0.009781, 0.032901, 0.00297, 0.035227, 0.043159],
+    "icir": [0.278841, 0.083372, 0.256103, 0.025842, 0.207123, 0.287498],
+    "harvey_t": [4.933207, 1.475005, 4.376297, 0.433958, 3.664378, 5.086353],
+    "ic_p1": [0.018909, 0.015587, 0.021495, 0.014467, 0.000366, 0.011671],
+    "ic_p2": [0.016262, -0.003994, 0.021953, -0.016643, 0.019411, 0.018647],
+    "ic_p3": [0.056899, 0.015476, 0.032345, 0.007441, 0.059339, 0.064534],
+    "ic_post2017": [0.041604, 0.014549, 0.029981, 0.004684, 0.038668, 0.045527]
+  },
+  "canonical_screen": {
+    "metric_type": "canonical_screen",
+    "note": "top-25 EW long-only, 15bps delta v2.4, liq>=2e8, clean bench <=2024-12. NOT admission-binding (forge build_bt_result authoritative).",
+    "z_composite": {
+      "portfolio_alpha_t_nw_lag3": 3.509,
+      "information_ratio": 0.684,
+      "net_sr": 0.684,
+      "alpha_annualized": 0.1088,
+      "turnover_annual": 4.23,
+      "n_months": 297,
+      "net_cagr": 0.1617,
+      "mdd": 0.5866,
+      "calmar": 0.276,
+      "oos_retention": 0.253
+    }
+  },
+  "subperiod_port_t_net_active": {
+    "full_clean_2005_2024": 3.509,
+    "p_2005_2016": 3.24,
+    "p_2017_2024_clean": 0.25,
+    "p_2020_2024_clean": 1.63,
+    "note_2017plus_with_corrupted_bench": "-1.13 (artifact of corrupted 2025+ BM; DO NOT USE)"
+  },
+  "orthogonality_str1715": {
+    "signal": ["z_composite", "fwd_opyield", "fwd_syield", "fwd_eyield", "tp_implied"],
+    "active_cor_str1715": [-0.074608, -0.053282, -0.062443, -0.086879, -0.116337],
+    "gross_cor_str1715": [-0.052208, -0.036282, -0.041859, -0.060207, -0.094624],
+    "n_overlap": [269, 269, 269, 269, 269]
+  },
+  "book_marginal_delta_ir": {
+    "incumbent_book_ir": 1.416,
+    "incumbent_ir_on_overlap": 1.378,
+    "blend_w020_full": {
+      "ir": 1.465,
+      "delta_ir": 0.087,
+      "note": "PASS >0.05 but ENTIRELY 2005-2016 driven"
+    },
+    "blend_w020_2017_2024": {
+      "ir": 1.125,
+      "delta_ir": -0.008,
+      "note": "NEGATIVE in modern regime — composite hurts book forward"
+    }
+  },
+  "value_size_overlap": {
+    "top25_mean_log10size": 11.772,
+    "universe_mean_log10size": 12.012,
+    "tilt": "SMALL",
+    "interpretation": "forward-value + small-cap tilt; AX-003 (KR value 24/24 decay) + microcap liquidity premium (2010-21 strong, 2022+ dead) signature reproduced"
+  },
+  "graduation_gate": {
+    "portfolio_alpha_t_nw": {
+      "value": 3.509,
+      "bar": 2.95,
+      "verdict": "PASS (clean full-sample, backward-fit dominated)"
+    },
+    "oos_retention": {
+      "value": 0.253,
+      "bar": 0.7,
+      "verdict": "HARD FAIL (<0.5 = 무조건 FAIL)"
+    },
+    "calmar": {
+      "value": 0.276,
+      "bar": 0.64,
+      "verdict": "HARD FAIL"
+    },
+    "dsr_applicable": false,
+    "dsr_note": "chain (hypothesis-driven, n_trials 1 primary composite; 6 signals as diagnostic family not sweep-selection)"
+  },
+  "verdict": "SCREEN-TIER / FAIL for capital admission",
+  "verdict_rationale": "rank-IC signal power real (Harvey-t 5.09) but (a) realized top-25 PORT_t decays post-2017, (b) oos_retention 0.25 << 0.7 auto-fail, (c) calmar 0.28 << 0.64, (d) book-marginal delta-IR negative in modern regime (-0.008), (e) forward-value + small-cap tilt = AX-003 decay reproduced at forward-level.",
+  "screen_route": "DPL_FEATURE",
+  "next_step": "Do NOT proceed to risk-research for standalone/book admission. rank-IC power (Ht 5.09, post2017 IC +0.046) is genuine cross-sectional info -> viable only as DPL input feature (measurement-graduation §5). The IC->PORT_t transition wall (measurement-graduation §6) is confirmed for forward-LEVEL consensus signals, generalizing the finding across all 6 return-derived superfactors + consensus-change signals + now forward-levels."
+}

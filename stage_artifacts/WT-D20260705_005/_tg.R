@@ -2,30 +2,32 @@ source("02_Infrastructure/telegram/telegram_notify.R")
 tg_agent_brief(
   agent="Alpha",
   title="WT-D20260705_005 ALPHA_DONE — RAMP 잔차-직교 sleeve 개별 배포 스크리닝 = 0/11 통과",
+  as_of="2026-07-05",
   sections=list(
-    list(type="kv", title="판정 요약", data=list(
-      "개별 sleeve"="11개 직교 경제군 (Consensus/Value/Momentum/…)",
-      "유니버스"="K200∪KQ150 top-25 EW long-only, 15bps",
-      "HARD 통과(PORT_t≥2.95)"="0/11",
-      "screen-tier(≥1.5)"="2/11 (Consensus 2.16 · Value 1.57)",
-      "verdict"="FAIL_NO_SURVIVOR"
+    list(emoji="📊", heading="판정 요약", type="kv", kv=list(
+      "개별 슬리브 수"="11개 직교 경제군",
+      "유니버스"="코스피200·코스닥150 상위25 등가중",
+      "졸업 통과(포트알파t≥2.95)"="0개 / 11개",
+      "선별통과(≥1.5)"="2개 / 11개 (컨센서스·밸류)",
+      "최종 판정"="통과 후보 없음"
     )),
-    list(type="kv", title="핵심 지표 (cap-w authoritative)", data=list(
-      "max PORT_t (NW lag-3)"="+2.16 (Consensus)",
-      "rank-IC 최강"="Momentum 0.040 / Harvey-t 8.09 → but PORT_t 0.51 (전이 벽)",
-      "oos_retention"="11/11 음수 (전원)",
-      "post-2017 t"="11/11 음수 → cohort decay 벽",
-      "DSR(진단, best)"="0.77 (신호 실재 ≠ 배포 alpha)"
+    list(emoji="🔬", heading="핵심 지표 (시총가중 기준)", type="kv", kv=list(
+      "최대 포트알파t (NW lag3)"="+2.16 (컨센서스)",
+      "정보계수 최강"="모멘텀 0.040 / 다중검정t 8.09",
+      "그러나 모멘텀 포트알파t"="0.51 (신호→수익 전이 벽)",
+      "표본외 유지율"="11개 전원 음수",
+      "2017년 이후 t값"="11개 전원 음수 (구간 감쇠)"
     )),
-    list(type="bullet", title="Challenge Flags", items=c(
-      "HIGH: request '18후보' 모델 ≠ 실제 아티팩트 → 실제 11 직교 sleeve로 정정 수행 (AX-000 정직)",
-      "HIGH: 전 11 sleeve oos+post2017 음수 = cohort-wide decay(overfit 아님)",
-      "PIT: look-ahead 부재(FWL per-date), C14/C15/C10 PASS"
+    list(emoji="🚩", heading="주의 신호", type="bullet", items=c(
+      "높음: 요청서의 18후보 모델이 실제 아티팩트와 불일치, 실제 11개 직교 슬리브로 정정 수행 (정직 원칙)",
+      "높음: 11개 슬리브 전원 표본외·2017년이후 음수 = 구간 전반 감쇠 (과적합 아님)",
+      "미래참조 부재 확인 (직교화 월별 횡단), 유동성·시차 검증 통과"
     )),
-    list(type="bullet", title="다음 단계 / 결론", items=c(
-      "measurement-graduation §6 미해결('RAMP 잔차 sleeve 개별 PORT_t 검증') = CLOSED-negative",
-      "survivors 0 → Risk/Optimizer로 넘길 α̂ 없음, multi-sleeve 스택·ΔIR moot",
-      "개별 배포 스크리닝도 IC→PORT_t 전이 벽 (결합 M-code 2.37·composite falsification과 동일 posterior)"
+    list(emoji="➡️", heading="결론 / 다음 단계", type="bullet", items=c(
+      "게이트 규정 6절 미해결 항목 음성 종결",
+      "통과 후보 없음, 리스크·옵티마이저 넘길 재료 없음, 다중슬리브 스택 무의미",
+      "개별 배포 선별도 신호에서 실현수익으로의 전이 벽 (결합 모형 2.37과 동일 결론)"
     ))
-  )
+  ),
+  footer="통과 후보 없음 — 파이프라인 종료 권고 (리스크 단계 불요)"
 )
