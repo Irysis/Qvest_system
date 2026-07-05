@@ -58,7 +58,7 @@ for i,t in enumerate(dates):
     ytr=winsor(tr['Ret_1m'].astype(float).values)
     # refit on schedule (expanding window each refit)
     if (i - last_fit_idx) >= REFIT_EVERY or model is None:
-        learner=DecisionTreeRegressor(criterion='friedman_mse',max_depth=4,min_samples_leaf=200)
+        learner=DecisionTreeRegressor(criterion='squared_error',max_depth=4,min_samples_leaf=200)
         model=NGBRegressor(Dist=Normal, Base=learner, n_estimators=300,
                            learning_rate=0.02, natural_gradient=True,
                            minibatch_frac=0.6, col_sample=0.8, verbose=False,
@@ -77,8 +77,9 @@ for i,t in enumerate(dates):
                       'regime_state':cur['regime_state'].values})
     rows.append(sub)
     if i % 20 == 0:
-        print(f"[{i}/{n_dates}] {t.date()} train_m={n_train_months} n_cur={len(cur)} "
-              f"mu~{np.mean(mu):+.4f} sd~{np.mean(sd):.4f}",flush=True)
+        with open(OUT+"progress.txt","a") as pf:
+            pf.write(f"[{i}/{n_dates}] {t.date()} train_m={n_train_months} n_cur={len(cur)} "
+                     f"mu~{np.mean(mu):+.4f} sd~{np.mean(sd):.4f}\n")
 
 res=pd.concat(rows,ignore_index=True)
 # confidence = inverse predicted variance (higher = more predictable per model)
