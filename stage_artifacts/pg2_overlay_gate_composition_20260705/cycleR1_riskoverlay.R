@@ -39,15 +39,25 @@ load_pit <- function(file, cols){ urs<-as.data.table(read_parquet(file.path(WD,"
   cc<-intersect(cols,names(urs))[1]; if(is.na(cc)) return(list(v=rep(NA,n),col=NA))
   urs[,Date:=as.Date(Date)]; setorder(urs,Date); urs<-urs[is.finite(get(cc))]
   v<-rep(NA_real_,n); for(i in 1:n){ pv<-urs[Date<p$anchor_date[i]]; if(nrow(pv)>0) v[i]<-tail(pv[[cc]],1) }; list(v=v,col=cc) }
-a5 <- load_pit("unified_regime_signal_daily.parquet", c("MSM_Crisis_Prob","Regime_Score_smooth","Regime_Score"))
+a5 <- load_pit("unified_regime_signal_daily.parquet", c("MSM_Crisis_Prob"))
 stress_MSM <- epct(a5$v); PG("[PG] A5 col=%s", a5$col)
-jp <- load_pit("regime_jump_daily.parquet", c("jump_prob","Jump_Prob","prob","crisis_prob","Regime_Score"))
+## Bear_Prob_lag: jump-model bear prob, ALREADY LAGGED (PIT-clean by construction)
+jp <- load_pit("regime_jump_daily.parquet", c("Bear_Prob_lag","Bear_Prob"))
 stress_JMP <- epct(jp$v); PG("[PG] jump col=%s finite=%.2f", jp$col, mean(is.finite(jp$v)))
-## DD-control: underlying ret_orig running drawdown, LAGGED (C9 PIT)
+## Regime_Score_smooth: smoothed regime score (less whipsaw)
+rsm <- load_pit("unified_regime_signal_daily.parquet", c("Regime_Score_smooth"))
+sgn_rsm <- sign(cor(p$beta_R05, epct(rsm$v), use="complete.obs")); u_rsm<-epct(rsm$v)
+stress_RSM <- if(sgn_rsm>=0)(1-u_rsm) else u_rsm; PG("[PG] RSM col=%s sgn=%d", rsm$col, sgn_rsm)
+## DD-control: underlying ret_orig running drawdown, LAGGED (C9 PIT) — persistent/slow signal
 nav_o <- cumprod(1+p$ret_orig); peak<-cummax(nav_o); dd <- 1 - nav_o/peak; dd_lag <- c(0, dd[-n])
-stress_DD <- dd_lag / max(dd_lag)          ## [0,1], high = deep drawdown (lagged)
+stress_DD <- dd_lag                        ## raw lagged drawdown (linear rule below)
 ## combined MSM x R05 (max stress = union of both risk signals)
 stress_CMB <- pmax(stress_R05, stress_MSM)
+## avg-matched LINEAR de-risk builder (for persistent signals like DD)
+build_linear <- function(sv, tgt=mean_beta_base, floor=FLOOR){
+  f<-function(k) mean(pmax(floor, 1 - k*sv)) - tgt
+  k<-tryCatch(uniroot(f,c(0,200))$root,error=function(e)NA); if(is.na(k)) return(rep(NA,length(sv)))
+  pmax(floor, 1 - k*sv) }
 
 ## ---- avg-exposure-matched tail-cut builder ----
 build_tailcut <- function(sv, tgt=mean_beta_base, floor=FLOOR, gamma=2){
@@ -63,11 +73,13 @@ risk_metrics <- function(ret_vec, tag){
   cvar95<- -as.numeric(quantile(ret_vec,0.05)); cvar99<- -as.numeric(quantile(ret_vec,0.01))
   ## max DD duration (months underwater)
   nav<-cumprod(1+ret_vec); pk<-cummax(nav); uw<-nav<pk*0.9999; rl<-rle(uw); mdur<-if(any(rl$values)) max(rl$lengths[rl$values]) else 0
-  ## regime-conditional Sharpe (AX-001)
-  rs<-function(rg){ idx<-p$regime==rg; if(sum(idx)<5) return(NA_real_); mean(ret_vec[idx])/sd(ret_vec[idx])*sqrt(12) }
+  ## regime-conditional (AX-001): risk-off = CAUTION+CRISIS (19mo); mean ret + cumret in risk-off
+  roff_idx <- p$regime %in% c("CAUTION","CRISIS")
+  ro_mean <- mean(ret_vec[roff_idx]); ro_cum <- prod(1+ret_vec[roff_idx])-1
+  ro_worst <- min(ret_vec[roff_idx])
   data.table(tag=tag, SR=sr, CAGR=cagr, MDD=mdd, Calmar=calmar, Sortino=sortino,
     CVaR95=cvar95, CVaR99=cvar99, maxDDdur=mdur,
-    SR_BULL=rs("BULL"), SR_NORMAL=rs("NORMAL"), SR_CAUTION=rs("CAUTION"), SR_CRISIS=rs("CRISIS")) }
+    riskoff_mean=ro_mean, riskoff_cum=ro_cum, riskoff_worst=ro_worst) }
 
 base_m <- risk_metrics(p$ret_base, "BASE_no_faith")
 PG("[PG] recon SR=%.4f Calmar=%.4f MDD=%.4f", base_m$SR, base_m$Calmar, base_m$MDD)
