@@ -1,0 +1,180 @@
+{
+  "task_id": "WT-D20260705_001",
+  "metric_type": "canonical_screen",
+  "generated": "2026-07-05 11:40:38.127344",
+  "deployment_universe": {
+    "note": "★ 배포 유니버스 (K200∪KQ150). WT mandate 대상. metric_type=canonical_screen.",
+    "rank_ic": 0.0332,
+    "icir": 1.16,
+    "rank_ic_t_nw_lag3": 4.41,
+    "subperiod_stability": 1,
+    "placebo_percentile": 1,
+    "placebo_p": 0,
+    "harvey_liu_zhu": {
+      "n_tests": 18,
+      "p_raw": 0.0000105,
+      "p_bonferroni": 0.000188,
+      "hurdle_t": 3,
+      "note": "rank-IC t는 HLZ hurdle(t>3) 및 Bonferroni(18 tests) 통과. 단 아래 portfolio_alpha_t가 authoritative."
+    },
+    "portfolio_alpha_t_nw_lag3": 1.41,
+    "information_ratio": 0.37,
+    "net_sr": 0.37,
+    "calmar": 0.49,
+    "mdd": 0.371,
+    "cagr": 0.18,
+    "turnover_annual": 12.57,
+    "subperiod_port_t": {
+      "pre2018": 3.19,
+      "post2018": -0.29,
+      "post2022": -0.76
+    },
+    "oos_retention": -0.2,
+    "per_seed_port_t": {
+      "canonical": 0.89,
+      "canonical_s1": 1.21,
+      "canonical_s2": 0.65,
+      "canonical_s3": 1.81,
+      "canonical_s4": -0.22
+    },
+    "per_seed_oos": {
+      "canonical": -0.44,
+      "canonical_s1": -0.35,
+      "canonical_s2": -0.6,
+      "canonical_s3": -0.16,
+      "canonical_s4": -1.56
+    },
+    "turnover_smoothed_3m": {
+      "port_t": 1.93,
+      "turnover_annual": 6.87,
+      "note": "3M-EMA 스무딩 시 turnover 1257%→687%(cap 통과) AND port_t 1.41→1.93 상승. 단 여전히 <2.95."
+    }
+  },
+  "mechanism_universe": {
+    "note": "★ broad universe (전종목 adv≥2e8, median ~1438). 메커니즘이 실제 사는 곳 — 배포 아님(참고).",
+    "rank_ic": 0.0852,
+    "icir": 4.08,
+    "rank_ic_t_nw_lag3": 13.42,
+    "subperiod_stability": 1,
+    "placebo_percentile": 1,
+    "placebo_p": 0,
+    "harvey_liu_zhu": {
+      "n_tests": 18,
+      "p_bonferroni": 8.42e-40
+    },
+    "portfolio_alpha_t_nw_lag3": 6.06,
+    "information_ratio": 1.39,
+    "net_sr": 1.39,
+    "calmar": 1.75,
+    "mdd": 0.245,
+    "cagr": 0.428,
+    "turnover_annual": 16.85,
+    "subperiod_port_t": {
+      "pre2018": 5.86,
+      "post2018": 2.54,
+      "post2022": 0.77
+    },
+    "oos_retention": 0.3,
+    "per_seed_port_t": {
+      "allliq": 5.21,
+      "allliq_s1": 3.66,
+      "allliq_s2": 4.21,
+      "allliq_s3": 5.16,
+      "allliq_s4": 4.38
+    },
+    "per_seed_2022": {
+      "allliq": 0.86,
+      "allliq_s1": -1.05,
+      "allliq_s2": 0.01,
+      "allliq_s3": 0.22,
+      "allliq_s4": -0.01
+    }
+  },
+  "graduation": {
+    "verdict": "SCREEN_TIER_FAIL (배포 유니버스)",
+    "portfolio_alpha_t_nw": 1.41,
+    "gate": 2.95,
+    "pass": false,
+    "oos_retention": -0.2,
+    "oos_gate": 0.7,
+    "oos_pass": false,
+    "calmar": 0.49,
+    "calmar_gate": 0.64,
+    "calmar_pass": false,
+    "turnover_cap_violation": true,
+    "note": "배포 유니버스(K200∪KQ150)서 HARD 3종(PORT_t 2.95·oos 0.7·calmar 0.64) 전부 미달. rank-IC/ICIR/placebo는 advisory-통과하나 long-only 실현 portfolio-alpha 미전이(Cycle-2 divergence: rank-IC t 4.41 vs port_t 1.41). seed-ensemble이 port_t 0.87(seed평균)→1.41로 개선하나 gate 못넘음. broad universe(allliq)선 port_t 6.06이나 배포 유니버스 아님·oos 0.30<0.7. → 자본급 아님. screen-tier 라우팅 후보: DPL feature / factor-rotation RCMA input."
+  },
+  "seed_stability": {
+    "canonical_port_t": {
+      "canonical": 0.89,
+      "canonical_s1": 1.21,
+      "canonical_s2": 0.65,
+      "canonical_s3": 1.81,
+      "canonical_s4": -0.22
+    },
+    "allliq_port_t": {
+      "allliq": 5.21,
+      "allliq_s1": 3.66,
+      "allliq_s2": 4.21,
+      "allliq_s3": 5.16,
+      "allliq_s4": 4.38
+    },
+    "canonical_oos": {
+      "canonical": -0.44,
+      "canonical_s1": -0.35,
+      "canonical_s2": -0.6,
+      "canonical_s3": -0.16,
+      "canonical_s4": -1.56
+    },
+    "allliq_2022": {
+      "allliq": 0.86,
+      "allliq_s1": -1.05,
+      "allliq_s2": 0.01,
+      "allliq_s3": 0.22,
+      "allliq_s4": -0.01
+    },
+    "note": "5-seed 각 canonical_screen_bt. ensemble = 점수평균 재측정."
+  },
+  "challenge_flags": [
+    {
+      "id": "RF-A3_recent_overfit",
+      "severity": "RESOLVED",
+      "note": "recent(2022+) ICIR NOT > overall*1.5 — 반대로 감쇠(E3 IC 0.030 < E1 0.056). 최근 과적합 아님. 단 post-2018 port_t 음수(−0.29)=최근 실현알파 약화."
+    },
+    {
+      "id": "RF-A5_top_decile_illiquid",
+      "severity": "CLEAN",
+      "note": "canonical top-25 min adv ₩2.1bn ≫ 2e8 floor. 대형주(SK하이닉스/삼성전자 등). illiquid tail 없음."
+    },
+    {
+      "id": "SEED_INSTABILITY",
+      "severity": "HIGH",
+      "note": "canonical per-seed port_t {0.89,1.21,0.65,1.81,-0.22} range[-0.22,1.81]. seed4 음수. ensemble 완화하나 단일-seed 신뢰불가. AX 재현성 위험."
+    },
+    {
+      "id": "POST2022_DECAY",
+      "severity": "HIGH",
+      "note": "canonical 2022+ port_t=−0.76, allliq 2022+ ensemble +0.77이나 per-seed {0.86,-1.05,0.01,0.22,-0.01} 평균~0. post-2017 cohort decay(KR 구조, 6방법 공통)."
+    },
+    {
+      "id": "TURNOVER_CAP",
+      "severity": "MEDIUM",
+      "note": "canonical raw turnover 1257% > 1100% cap. 3M-smoothing으로 687%+port_t↑ 가능(구현 권고). allliq 1685% smoothing 후에도 1191%."
+    },
+    {
+      "id": "UNIVERSE_MECHANISM_MISMATCH",
+      "severity": "HIGH",
+      "note": "메커니즘(상대위치 알파)은 broad universe(port_t 6.06)서 강하나 배포 유니버스(K200∪KQ150 port_t 1.41)서 약. 대형주엔 peer-dispersion 부족."
+    },
+    {
+      "id": "BENCHMARK_ALIGNMENT_FIX",
+      "severity": "RESOLVED",
+      "note": "★ad-hoc kns_master_bench.parquet은 1개월 early-shift(clean[t]==master[t+1], corr=1.00)로 active-return 오염. 본 검증은 .cache/benchmark.parquet clean IKS200을 signal-month→realization(t+1) 정렬 재구성. lag0 vs 정렬 toggle로 look-ahead 부재 확인(정렬 port_t 1.41 vs lag0 1.01)."
+    },
+    {
+      "id": "RANKIC_VS_PORTALPHA_DIVERGENCE",
+      "severity": "MEDIUM",
+      "note": "rank-IC t(canonical 4.41, allliq 13.42) ≫ portfolio-alpha t(1.41, 6.06). judge는 portfolio-alpha t authoritative. rank-IC 강세를 alpha 강세로 오독 금지."
+    }
+  ]
+}
