@@ -157,12 +157,12 @@ for (nm in names(candidates)) {
     longside_t_full = lens_f$long_t, shortside_t_full = lens_f$short_t,
     longside_ann = lens_f$long_mean_ann, shortside_ann = lens_f$short_mean_ann,
     longside_t_rec = lens_r$long_t, shortside_t_rec = lens_r$short_t,
-    beta = br$beta, beta_resid_alpha_t = br$resid_alpha_t,
+    beta = br$beta, capm_alpha_ann = br$capm_alpha_ann, capm_alpha_t = br$capm_alpha_t,
     med_size_ratio = st$med_size_ratio
   )
-  cat(sprintf("[%s] full PORT_t=%.3f rec2017=%.3f | LONG_t=%.3f SHORT_t=%.3f | beta=%.2f resid_t=%.3f | sizeR=%.2f\n",
+  cat(sprintf("[%s] full PORT_t=%.3f rec2017=%.3f | LONG_t=%.3f SHORT_t=%.3f | beta=%.2f CAPMa_t=%.3f | sizeR=%.2f\n",
       nm, full$portfolio_alpha_t_nw_lag3, rec$portfolio_alpha_t_nw_lag3,
-      lens_f$long_t, lens_f$short_t, br$beta, br$resid_alpha_t, st$med_size_ratio))
+      lens_f$long_t, lens_f$short_t, br$beta, br$capm_alpha_t, st$med_size_ratio))
 }
 
 # ================================================================================
@@ -246,12 +246,12 @@ for (nm in c("ic_composite","ls_composite")) {
     longside_t_full = lens_f$long_t, shortside_t_full = lens_f$short_t,
     longside_ann = lens_f$long_mean_ann, shortside_ann = lens_f$short_mean_ann,
     longside_t_rec = lens_r$long_t, shortside_t_rec = lens_r$short_t,
-    beta = br$beta, beta_resid_alpha_t = br$resid_alpha_t,
+    beta = br$beta, capm_alpha_ann = br$capm_alpha_ann, capm_alpha_t = br$capm_alpha_t,
     med_size_ratio = st$med_size_ratio
   )
-  cat(sprintf("[%s] full PORT_t=%.3f rec2017=%.3f | LONG_t=%.3f SHORT_t=%.3f | beta=%.2f resid_t=%.3f | sizeR=%.2f\n",
+  cat(sprintf("[%s] full PORT_t=%.3f rec2017=%.3f | LONG_t=%.3f SHORT_t=%.3f | beta=%.2f CAPMa_t=%.3f | sizeR=%.2f\n",
       nm, full$portfolio_alpha_t_nw_lag3, rec$portfolio_alpha_t_nw_lag3,
-      lens_f$long_t, lens_f$short_t, br$beta, br$resid_alpha_t, st$med_size_ratio))
+      lens_f$long_t, lens_f$short_t, br$beta, br$capm_alpha_t, st$med_size_ratio))
 }
 
 res_dt <- rbindlist(results, fill = TRUE)
