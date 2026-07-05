@@ -4,10 +4,10 @@
   "cluster_key": "ac01076e5fa9",
   "candidate_id": "CAND_20260704_qepm_legacy_quality_profitability_negative_L-133_L-134_L-139",
   "status": "distilled",
-  "statement_refined": "KR quality_profitability 단독/단순-composite long-only는 estimated 성과 기준 반복 실패 — supporting 4전략 모두 OOS에서 alpha 소멸(profitability fortress OOS retention 0.24·recent-3Y SR 0.135, growth-stability composite retention -0.001, cash-based profitability SR -0.232·MDD 94%, low-beta BAB retention -0.35~-0.02). 메커니즘: 2020년대 성장주 outperformance로 profitability/low-beta 프리미엄 구조적 약화 + KR DART 현금흐름 데이터 품질 저하. estimated 라벨 — canonical/backtested 재측정 아님. = 이 envelope 안에서 quality_profitability 단독/단순-composite 경로가 이 국면(2020년대 성장주 우위)에 약함.",
-  "retry_condition": "재도전 대상(INV-7 provisional). 재시도 자격: (a) single-signal이 아닌 multi-axis quality composite를 multi-sleeve 내 성분(예: Q07)으로 배치 — AX-004 EXCLUSION 경로 / (b) profitability 프리미엄 reversion을 뒷받침하는 신규 비-return 데이터원 또는 국면조건(value/quality spread reversion 실측) / (c) estimated가 아닌 canonical_screen/backtested 재측정으로 supporting 결론 재확인. 차별점 명시 + IS-only 선택 protocol 없이는 재시도 금지.",
-  "refined_at": "2026-07-04T21:58:17+0900",
-  "refined_by": {},
+  "statement_refined": "KR quality_profitability 단독/단순-composite long-only는 estimated 성과 기준 반복 실패 — supporting 4전략 모두 OOS에서 alpha 소멸(profitability fortress OOS retention 0.24·recent-3Y SR 0.135, growth-stability composite retention -0.001, cash-based profitability SR -0.232·MDD 94%, low-beta BAB retention -0.35~-0.02). 메커니즘: 2020년대 성장주 outperformance로 profitability/low-beta 프리미엄 구조적 약화 + KR DART 현금흐름 데이터 품질 저하. estimated 라벨 — canonical/backtested 재측정 아님. = 이 envelope 안에서 quality_profitability 단독/단순-composite 경로가 이 국면(2020년대 성장주 우위)에 약함. ★2026-07-05 frontier(b)[value/quality spread reversion 국면조건부 activation]은 backtested 반증(L-QPM-20260705_180939, canonical_screen 258m·25종 PORT_t -2.61·post2017 active -21.4%): rank-IC +0.036 양이나 realized long-only active 음(conditional_ic_matrix rank-IC != realized alpha). 경로(b) 종결, 잔여 (a)(c).",
+  "retry_condition": "재도전 대상(INV-7 provisional). ★frontier(b) 국면조건부 activation은 backtested 반증 완료(L-QPM-20260705_180939) — 재실행 금지, 다음 근거는 rank-IC 아닌 regime별 realized active. 잔여 재시도 자격: (a) single-signal 아닌 multi-axis quality composite를 multi-sleeve 성분(Q07)으로 배치 — AX-004 EXCLUSION 경로 / (c) profitability reversion 뒷받침 신규 비-return 데이터원(DART 현금흐름 품질) / 공통: canonical/backtested 재측정으로 estimated 결론 재확인(라벨 승급).",
+  "refined_at": "2026-07-05T18:14:07+0900",
+  "refined_by": "e2e_loop_closure_20260705",
   "promoted_to_axiom": {},
   "created_at": "2026-07-04T04:03:45+00:00",
   "updated_at": "2026-07-05",
@@ -20,7 +20,8 @@
     "L-133",
     "L-134",
     "L-139",
-    "L-140"
+    "L-140",
+    "L-QPM-20260705_180939"
   ],
   "scope_draft": {
     "market": "KR",
@@ -175,8 +176,8 @@
       "l_code": "L-QPM-20260705_105130",
       "port_t": 0.8385,
       "oos_retention": -0.5532,
-      "calmar": 0.360112,
-      "post2017_port_t": -0.535117,
+      "calmar": 0.3601,
+      "post2017_port_t": -0.5351,
       "metric_type": "canonical_screen",
       "note": "159m top-25 EW long-only. HARD 3종 전부 FAIL. regime-conditional이 static baseline 대비 raw PORT_t level +1.41/+0.87 상승했으나 AX-008 verify.md sec3 paired NW-t 1.77/0.97 (<2.0) INSIGNIFICANT — mechanism이 방향성은 있으나 통계적으로 유의한 edge 아님. look-ahead ABSENT(lag1 1.02 rise·asof-toggle L1 0.41 vs oracle·oracle 자체 unprofitable). DECAY WALL(artifact/leak 아님). §6 '직교≠수익'+SR ceiling ~1.1 meta-composite 레벨 재확증. 이 return-derived family 재조합 경로(정적/국면조건부 공히) 재시도 금지 — 신규 차별 mechanism 없이는 INV-7.",
       "recorded_at": "2026-07-05"
@@ -186,7 +187,10 @@
   "new_frontier_20260705": {
     "recorded_by": "axiom_engine_research_20260705 (L-QPM-20260705_105130)",
     "narrowed": "return-derived cross-family 재조합(정적 composite + 국면조건부 activation 공히) = KR post-2017 감쇠 우회 불가 확정. superfactor 5-static + regime-conditional meta-composite 둘 다 소진.",
-    "next": ["DPL (direct portfolio learning, features→weights, net-SR 직접 최적화 — 실패한 standalone 알파를 피처로 재활용, measurement-graduation §5)", "non-return DART insider/cashflow-quality (elestock document.xml 파서 미착수, BLOCKED 해제 시)"],
+    "next": [
+      "DPL (direct portfolio learning, features→weights, net-SR 직접 최적화 — 실패한 standalone 알파를 피처로 재활용, measurement-graduation §5)",
+      "non-return DART insider/cashflow-quality (elestock document.xml 파서 미착수, BLOCKED 해제 시)"
+    ],
     "not_axiom_candidate": "negative provisional (INV-7 failure-ledger). PORT_t 0.84 < 2.95 → axiom candidate 경로 아님. 재시도금지는 '동일 return-derived 재조합' 한정, 차별 mechanism(DPL/비-return) 있으면 revival 대상."
   }
 }

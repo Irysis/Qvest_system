@@ -1,6 +1,6 @@
 # Knowledge Index — 순차 뷰 (안정 ID 불변 · 활성 집합 1..N 자동)
 
-생성: 2026-07-05T18:14:03+0900 · `build_knowledge_index.R` · **안정 ID(AX-003/L-132/DIST-*)는 provenance 앵커 = 영구 불변**. 순번(#)은 현재 활성 집합의 위치일 뿐 — 증류/강등되면 뷰에서 자동 제외되어 항상 1..N 연속(구멍 없음). 빠진 것도 아카이브+검색+부활로 보존.
+생성: 2026-07-05T18:14:17+0900 · `build_knowledge_index.R` · **안정 ID(AX-003/L-132/DIST-*)는 provenance 앵커 = 영구 불변**. 순번(#)은 현재 활성 집합의 위치일 뿐 — 증류/강등되면 뷰에서 자동 제외되어 항상 1..N 연속(구멍 없음). 빠진 것도 아카이브+검색+부활로 보존.
 
 ## Active Law (4)
 
@@ -19,7 +19,7 @@
 | 2 | DIST-AR-003 | negative | KR long-only top-N(D10 박스): momentum family 12건(return-derived + flow/event catalyst) 모두 PORT_t<2.95… | 12 |
 | 3 | DIST-AS-003 | conditional | KR alpha-search fast-validation 후보군(momentum 중심 + value/quality/defense/ML 혼재, 134 L-code, VALIDATED… | 134 |
 | 4 | DIST-QPM-002 | conditional | KR quality_earnings 팩터는 횡단면 IC/ICIR이 강해도(L-160 IC 0.22·ICIR 1.88·FM t 16.9, L-165 ICIR 0.74~0.94) st… | 8 |
-| 5 | DIST-QPM-003 | negative | KR quality_profitability 단독/단순-composite long-only는 estimated 성과 기준 반복 실패 — supporting 4전략 모두 OOS에서 … | 4 |
+| 5 | DIST-QPM-003 | negative | KR quality_profitability 단독/단순-composite long-only는 estimated 성과 기준 반복 실패 — supporting 4전략 모두 OOS에서 … | 5 |
 | 6 | DIST-QPM-005 | negative | KR 개인투자자 순매수 contrarian(역발상) 단일팩터 long-only 신호는 알파 부재 (L-131/STR_1674 estimated: SR 0.157·MDD 65.6%·… | 2 |
 | 7 | DIST-QPM-006 | conditional | KR value/quality 팩터의 single-signal long-only 구현은 실패 — EP 단독(L-132: V02 CAGR -1.71%/SR -0.265, turnov… | 9 |
 | 8 | DIST-RAMP-003 | conditional | KR RAMP 국면조건부 팩터배합에서 국면가중은 경제 선험룰이 아니라 데이터-구동 소프트 멤버십이어야 유효하다(순진한 CRISIS 방어군 증액 고정룰 net_sr -0.151<-0… | 13 |
