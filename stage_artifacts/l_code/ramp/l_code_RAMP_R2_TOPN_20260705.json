@@ -1,0 +1,41 @@
+{
+  "l_code": "L-RAMP-20260705_191446",
+  "strategy_id": "RAMP_R2_TOPN_20260705",
+  "grade": "B",
+  "core_reference": "run_ramp_r2_topn.R + outputs/ramp/r2_topn_verdict_20260705.json",
+  "lesson_text": "RAMP R2 Track A top-N 민감도(N∈{15,20,25}, 15bps 고정, envelope-안) — R1 음성 재확인. N축소가 IS PORT_t 부풀림(N15 Consensus 3.18·N20 stack_EW 3.54 raw)이나 **자본급 통과 0**: N20 3.54=39-trial sweep argmax 선택편향(구성고정 2.59), 양쪽 oos_retention≈0·calmar<0.64 HARD 미달. **top-N축은 자본급 2.95 벽 못 넘음**. 비용 15bps·N≤25 고정(방화벽 준수, 완화 안 함). metric_type=canonical_screen.",
+  "tags": ["RAMP", "R2", "top_n_sensitivity", "config_scoped", "cohort_decay_2017"],
+  "created_at": "2026-07-05",
+  "research_mode": "ramp",
+  "created_by": "emit:ramp",
+  "metric_type": "canonical_screen",
+  "construction_type": "composite",
+  "mechanism_hypothesis": "종목수 축소(N15/20)는 in-sample 집중도로 IS PORT_t를 증폭하나 OOS retention 무개선(N15 oos 0.06·N25 −0.19) — 집중≠OOS강건. cap-w 실패는 2017+ decay + 2025-26 초대형주(반도체) 집중레짐 얽힘(diversified top-25이 삼성·하이닉스 지배 cap-w 벤치 구조적 열위, reference-kr-2025-megacap-semi-regime).",
+  "lcode_schema_version": 2,
+  "pt_N15_Consensus_raw": 3.18,
+  "pt_N20_stack_raw": 3.54,
+  "pt_N20_stack_fixed": 2.59,
+  "pt_N25_stack": 2.54,
+  "n_survivors_gradpass": 0,
+  "n_trials": 39,
+  "oos_N15_Consensus": 0.06,
+  "mega_cap_regime_entangled": true,
+  "falsification_attempts": [
+    {
+      "test": "선택편향 제거 (N별 재선정 vs 구성고정 스택)",
+      "result": "falsified",
+      "effect_retained": 0,
+      "detail": "N20 stack raw 3.54는 39-trial sweep argmax(N별 상위4 재선정). 구성고정 시 2.59(-0.95pp) → 독립 실현신호 아님"
+    },
+    {
+      "test": "oos_retention·calmar HARD (IS 초과분)",
+      "result": "falsified",
+      "effect_retained": 0,
+      "detail": "N15 Consensus 3.18·N20 stack 3.54 raw 초과분 모두 oos_retention≈0·calmar<0.64 미달. IS 부풀림, OOS 무개선"
+    }
+  ],
+  "oos_retention": -0.01,
+  "portfolio_alpha_t": 2.59,
+  "selection_type": "sweep",
+  "record_type": "performance"
+}

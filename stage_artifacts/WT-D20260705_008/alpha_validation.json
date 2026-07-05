@@ -1,0 +1,35 @@
+{
+  "task_id": "WT-D20260705_008",
+  "verdict": "CLEAN_NEGATIVE",
+  "metric_type": "canonical_screen",
+  "universe": "KOSPI200_KOSDAQ150",
+  "benchmark": "KOSPI200_total_return",
+  "n_months": 258,
+  "cost_bps_oneway": 15,
+  "cost_model_version": "v2.4_kr_retail_15bps",
+  "hard_gates": {
+    "portfolio_alpha_t_nw": {
+      "value": 0.094,
+      "threshold": 2.95,
+      "pass": false,
+      "basis": "canonical_screen (forge authoritative)"
+    },
+    "note": "oos_retention/calmar/DSR not computed to forge-grade; verdict is negative at PORT_t gate -> no graduation."
+  },
+  "selection_type": "chain",
+  "is_only_tuning": true,
+  "is_oos_cut": "2017-01-01",
+  "pit": {
+    "c1_c15": "enforced via load_month_factors (C15) + forward-shift returns + t-1 liq (C10)",
+    "lookahead": "IS-only tau selection audited; OOS single-look"
+  },
+  "universe_comparison": {
+    "note": "v2 universe not triggered: verdict negative at base K200∪KQ150; ICIR attenuation not the diagnosis (regime decay is). v2 comparison not required."
+  },
+  "reproduction": {
+    "phase1": "scratchpad/phase1_panels_axes.R (panels + 4 axes + individual screen)",
+    "phase2": "scratchpad/phase2_control_hypothesis.R (control + AND-gate IS-tune + OOS)",
+    "phase3": "scratchpad/phase3_diagnostics.R (pure intersection + decile + confound)",
+    "phase4": "scratchpad/phase4_adversarial.R (axis-swap + placebo + split-sensitivity)"
+  }
+}

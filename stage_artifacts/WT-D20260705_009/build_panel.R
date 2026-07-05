@@ -46,13 +46,16 @@ rd[, ym := as.Date(cut(Date, "month"))]
 # per (Ticker, month): month-end close, universe membership at month-end, 20d ADV ending month-end
 # daily traded value = Close * Vol (KRW notional proxy)
 rd[, dvalue := Close * Vol]
-
-# month-end record per ticker-month = last trading day of month
-me <- rd[, .SD[.N], by = .(Ticker, ym)]   # last row in month
-# 20d trailing ADV ending at month-end (rolling mean of dvalue, 20 obs) — compute per ticker
+# 20d trailing ADV ending each day (rolling mean of dvalue, 20 obs) — vectorized per ticker
 rd[, adv20 := frollmean(dvalue, 20, align = "right"), by = Ticker]
-adv_me <- rd[, .SD[.N, .(Ticker, ym, adv20)], by = .(Ticker, ym)]
-me <- merge(me, adv_me[, .(Ticker, ym, adv20_me = adv20)], by = c("Ticker","ym"), all.x = TRUE)
+
+# month-end record per ticker-month = last trading day of month (VECTORIZED, no .SD[.N])
+# rd already sorted by (Ticker, Date). Mark last row within each (Ticker, ym) group.
+rd[, .grp := .GRP, by = .(Ticker, ym)]
+is_last <- rd[, .I[.N], by = .grp]$V1        # row indices of last obs per ticker-month
+me <- rd[is_last]                             # month-end rows (carries adv20 at month-end)
+me[, adv20_me := adv20]
+rd[, .grp := NULL]
 
 # monthly simple return from month-end close_{t-1} to close_t (per ticker)
 setorder(me, Ticker, ym)
