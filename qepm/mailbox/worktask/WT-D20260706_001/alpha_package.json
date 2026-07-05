@@ -107,5 +107,50 @@
     "forge: oos_retention forge-authoritative 값이 band[0.5,0.7) 유지되는지 (screening 0.526)",
     "forge: calmar >= 0.64 (screening 미측정 — forge 산출)",
     "governor: book-marginal ΔIR >= 0.05 vs incumbent (paired-active NW-t 음수가 여기서 문제되는지)"
-  ]
+  ],
+  "self_adversarial_challenge": {
+    "method": "v8.2 Opus 4.8 native adversarial (외부 Codex 없음). challenge_note.md 참조.",
+    "probe_measurements": {
+      "CH_C2_specificity": {
+        "arbitrary_top2_cap34_anchor_port_t": 1.404,
+        "samsung_hynix_anchor_port_t": 4.751,
+        "base_port_t": 3.780,
+        "verdict": "임의 대형주(3~4위 cap) 앵커로는 개선 안 됨(1.404). 효과는 벤치 지배 top-2에 특정적 → mega-cap gap 메커니즘 확증(임의 beta harvest 아님). 동시에 2종목 특정 의존=집중 리스크 근거."
+      },
+      "CH_C3_capproportional": {
+        "capprop_anchor_port_t": 5.200,
+        "flat20_anchor_port_t": 4.751,
+        "verdict": "cap-proportional 동적 앵커가 20%flat보다 PORT_t 높음(5.200>4.751). optimizer 탐색 강력 권고 — 40%flat이 최적이라 단정 안 함."
+      },
+      "CH_C1_paired_t_regime_decomposition": {
+        "seg_2004_2016": {"paired_diff_mean": -0.0074, "nw_t": -3.696, "base_active": 0.0164, "anchored_active": 0.0090},
+        "seg_2017_2020": {"paired_diff_mean": 0.0027, "nw_t": 0.649, "base_active": 0.0039, "anchored_active": 0.0067},
+        "seg_2021_2026": {"paired_diff_mean": 0.0057, "nw_t": 1.268, "base_active": -0.0003, "anchored_active": 0.0054},
+        "verdict": "paired-active NW-t 음수(-1.923) 규명: pre-2017엔 base(순수알파) 우월(앵커 불필요, NW-t -3.70), post-2017엔 anchored 우월(base 2021+ active 사멸). 앵커는 조건부(post-2017) 레버. thesis 정합."
+      },
+      "CH_C1b_sr_vs_excess": {
+        "anchored_active_sd": 0.0262, "base_active_sd": 0.0433,
+        "anchored_active_mean": 0.0077, "base_active_mean": 0.0102,
+        "verdict": "앵커 SR/PORT_t 상승은 초과수익 증대(base mean 0.0102 > anchored 0.0077)가 아니라 tracking-vol 축소(sd 0.0433->0.0262, 분모)에서 상당부분. 정직한 명제 = post-2017 우월 + tracking-vol 축소."
+      }
+    },
+    "concern_dispositions": {
+      "concern1_benchhugging": "REBUTTAL (특정성 1.404 vs 4.751 + alpha-edge +5.71 + placebo p=0). 잔여 beta harvest 성분 CF-5로 명시.",
+      "concern2_paired_t_negative": "PARTIAL (음수 인정+규명 — pre-2017 base 우월 + tracking-vol 축소. thesis 정합. governor에 surface).",
+      "concern3_concentration_40pct": "ACCEPT (40% 2종 집중 = risk/governor 영역 이관. cap-proportional로 완화 여지).",
+      "concern4_screening_vs_production": "PARTIAL (forge milestone 게이트 이관).",
+      "concern5_self_rationalization": "PASS (금지어 미사용. oos 0.526 band 미달 명시, 합리화 안 함)."
+    },
+    "escalation": {
+      "high_severity_count": 3, "trigger_threshold": 5, "escalate": false,
+      "ax_hard_fail": 0, "pit_c1_violation": false,
+      "verdict": "재현 성공 + thesis 강건 + 3 caveat 정직 surface. risk->optimizer->forge 진행 권고. milestone은 forge-authoritative."
+    }
+  },
+  "verification_triangulation_ax008": {
+    "self_adversarial": "PASS (challenge_note.md + probe 실측)",
+    "forge": "pending (Q-Lead orchestration)",
+    "architect": "pending (온디맨드)",
+    "note": "3-source 중 self 1개 완료. 2/3 PASS는 forge 완주 시 확정."
+  }
 }
