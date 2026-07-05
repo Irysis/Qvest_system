@@ -1,0 +1,40 @@
+{
+  "task_id": "WT-D20260706_001",
+  "as_of_date": "2026-07-06",
+  "measurement": "build_benchmark_compare NW lag-3, metric_type=canonical_screen (proxy 손계산 없음)",
+  "benchmark": "capw KOSPI200 (ann 10.35%, IKS200 정합 — IKS001 아님)",
+  "reproduction": {
+    "discovery_C2_port_t": 4.761,
+    "reproduced_C2_port_t": 4.751,
+    "discovery_C2_post2017_t": 2.615,
+    "reproduced_C2_post2017_t": 2.585,
+    "discovery_C2_oos": 0.55,
+    "reproduced_C2_oos": 0.526,
+    "verdict": "발견값 강건 재현 (PIT size_lag t-1 적용 미세차)"
+  },
+  "hard_gate_status": {
+    "port_t": {
+      "value": 4.751,
+      "threshold": 2.95,
+      "pass": true,
+      "severity": "hard"
+    },
+    "oos_retention": {
+      "value": 0.526,
+      "threshold": 0.7,
+      "pass": false,
+      "band": "[0.5,0.7)",
+      "conditional_evidence": "3/3 screening proxy",
+      "severity": "hard"
+    },
+    "calmar": {
+      "value": null,
+      "note": "forge-authoritative 산출 대기",
+      "severity": "hard"
+    },
+    "note": "screening-tier — forge-authoritative 재판정 필수. 최종 milestone은 forge."
+  },
+  "universe_comparison": {
+    "note": "v2 universe 비교는 미적용 (본 WT는 구성 검증, universe attenuation 진단 아님). KR_top342 default."
+  }
+}
