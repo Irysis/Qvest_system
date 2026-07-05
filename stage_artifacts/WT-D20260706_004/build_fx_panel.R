@@ -60,9 +60,11 @@ setorder(fx_tr, Date)
 fx_tr[, dlkrw := log(krw) - log(shift(krw, 1))]
 fx_tr <- fx_tr[, .(Date, krw, dlkrw)]
 
+cat("[fxpanel] fx_tr/mkt built, merging...\n"); flush.console()
 rd <- merge(rd, fx_tr, by = "Date", all.x = TRUE)
 rd <- merge(rd, mkt,  by = "Date", all.x = TRUE)
 setorder(rd, Ticker, Date)
+cat("[fxpanel] merged fx+mkt\n"); flush.console()
 
 # ---- 3. month key + month-end rows + adv20 + monthly forward return ----
 rd[, ym := as.Date(cut(Date, "month"))]
