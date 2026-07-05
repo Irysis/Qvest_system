@@ -385,9 +385,13 @@ try:
             # 현 book = STR_1715 × m4 × β_R05 (Layer4 β-overlay 제거) — 지표는 layer4_removal 이벤트 C_noL4
             l4ev = {}
             for k, v in d.items():
-                if 'layer4_removal' in k and isinstance(v, dict):
+                if k.startswith('event_') and 'layer4_removal' in k and isinstance(v, dict):
                     l4ev = v; break
-            m2 = ((l4ev.get('metrics') or {}).get('C_noL4') or {})
+            # C_noL4 지표는 evidence_clean_3way_* sub-dict 안 — 키명 무관 robust 탐색
+            m2 = {}
+            for kk, vv in l4ev.items():
+                if isinstance(vv, dict) and isinstance(vv.get('C_noL4'), dict):
+                    m2 = vv['C_noL4']; break
             sr = m2.get('SR_geo'); cagr = m2.get('CAGR'); mdd = m2.get('MDD')
             calmar = m2.get('Calmar'); port_t = m2.get('PORT_t_NW_lag3')
             risk_pct = round(1.0 * beta_r05 * 100); cash_pct = 100 - risk_pct

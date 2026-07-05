@@ -8,7 +8,9 @@
 배포점수 s=gate·score → canonical top-25 EW 계약. 세션 재시작: 새 아키텍처가 KR 벽(post-2017 감쇠·마이크로캡) 넘나 검증.
 """
 import os, sys, numpy as np, pandas as pd, torch, torch.nn as nn
-torch.manual_seed(0); np.random.seed(0)
+SEED=int(sys.argv[2]) if len(sys.argv)>2 else 0
+torch.manual_seed(SEED); np.random.seed(SEED)
+SUF=f"_s{SEED}" if SEED!=0 else ""
 def Lg(*a): print(*a,flush=True)
 R="C:/Users/99922/OneDrive/Quant_Module_Moltbot"; os.environ.setdefault("QM_ROOT",R)
 sys.path.insert(0,R+"/02_Infrastructure/discovery")
@@ -91,7 +93,7 @@ for m in range(min_hist,T):
         sc,ga=net(torch.from_numpy(Z[ms]),torch.zeros(len(ms),dtype=torch.int64),1); gate=hc_gate(ga,False)
         s=(gate*(sc-sc.mean())).numpy()
     for tk,a in zip(tkv[ms],s): rows.append((ym2date(mm),tk,float(a)))
-d=pd.DataFrame(rows,columns=["Date","Ticker","score"]); d.to_parquet(OUT+f"/scores_XATTN_{MODE}.parquet",index=False)
+d=pd.DataFrame(rows,columns=["Date","Ticker","score"]); d.to_parquet(OUT+f"/scores_XATTN_{MODE}{SUF}.parquet",index=False)
 d2=d.copy(); d2["ym"]=pd.to_datetime(d2.Date).dt.to_period("M").astype(str); ics=[]
 for ym,g in d2.groupby("ym"):
     ms=ymv==ym; y=pd.Series(F1[ms],index=tkv[ms]); c=pd.concat([g.set_index("Ticker")["score"],y],axis=1).dropna()
