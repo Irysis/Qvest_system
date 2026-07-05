@@ -1,0 +1,78 @@
+{
+  "schema": "axiom_engine_research_v1",
+  "wt": "axiom_engine_research_20260705",
+  "generated_at": "2026-07-05",
+  "hypothesis_id": "cross-family regime-conditional composite (5-card convergence)",
+  "metric_type": "canonical_screen",
+  "universe": "K200 UNION KQ150, top-25 EW long-only, LIQ 2e8 t-1",
+  "period": "2005-01-31 .. 2026-06-30 (159 months measured)",
+  "selection_type": "chain",
+  "families": {
+    "value": ["V02_EP", "V01_BM", "V12_Composite_Value"],
+    "quality": ["Q08_Composite_Quality", "Q02_ROE", "Q07_Earnings_Stability", "Q04_Piotroski_F"],
+    "momentum": ["M08_Residual_Mom", "M01_Mom_12_1"],
+    "tail_defense": ["D48_VaR_5pct", "D45_Downside_Dev", "D47_CVaR_5pct"]
+  },
+  "regime_conditional": {
+    "port_t": 0.83848,
+    "IR": 0.253703,
+    "net_sr": 0.253703,
+    "mdd": 0.471291,
+    "calmar": 0.360112,
+    "cagr": 0.169718,
+    "oos_retention": -0.553171,
+    "turnover_annual": 10.049811,
+    "post2017_port_t": -0.535117,
+    "post2017_n": 62,
+    "full_active_t": 0.83848,
+    "n_months": 159
+  },
+  "static_icw_baseline": {
+    "port_t": -0.573108,
+    "net_sr": -0.140619,
+    "calmar": 0.165339,
+    "oos_retention": -1.515813,
+    "post2017_port_t": -2.129079
+  },
+  "static_ew_baseline": {
+    "port_t": -0.03553,
+    "net_sr": -0.009026,
+    "calmar": 0.241718,
+    "oos_retention": -1.061529,
+    "post2017_port_t": -2.171049
+  },
+  "lag1_stress": {
+    "port_t": 1.018165,
+    "net_sr": 0.305757,
+    "concurrent_leak": true,
+    "note": "lag1 = regime label + IC availability extra 1M lag. large drop under lag1 => concurrent leak suspicion."
+  },
+  "delta_vs_static_icw": 1.411588,
+  "delta_vs_static_ew": 0.87401,
+  "regime_decomp": {
+    "regime": ["CRISIS", "RISK_ON", "CAUTION", "NEUTRAL"],
+    "n": [5, 127, 10, 17],
+    "mean_active": [0.018924, 0.008606, 0.000783, -0.033547],
+    "sr": [1.548985, 0.655883, 0.04009, -1.348596]
+  },
+  "era_breakdown": {
+    "era": ["pre2018", "2018-2022", "2023+"],
+    "n": [97, 36, 26],
+    "mean_active": [0.00917, 0.006663, -0.019394],
+    "sr": [0.626104, 0.856833, -0.825055]
+  },
+  "mean_regime_cond_weights": {
+    "value": 0.1946,
+    "quality": 0.3936,
+    "momentum": 0.4017,
+    "tail_defense": 0.0101
+  },
+  "graduation": {
+    "verdict": "FAIL",
+    "port_t_pass": false,
+    "oos_pass": false,
+    "calmar_pass": false,
+    "gates": "PORT_t>=2.95 AND oos_retention>=0.7 (v2 55/65/75 median) AND calmar>=0.64"
+  },
+  "pit_notes": ["regime label t-1 shift (C5): Cat_l1 = Category at month-end t-1.", "regime-conditional IC = expanding-window, same-regime past months only, forward-return realized before rebalance (m+1<=j-1). C1.", "value spread-reversion gate = expanding same-regime IC recovering-state (no full-sample conditional_ic_matrix.csv -> C1 clean).", "forward Ret_1m = month-end t -> next month-end close (C2, no same-month).", "benchmark = .cache/benchmark.parquet IKS200 forward-month TR; RAWDATA.BM_Ret avoided (corrupted).", "lag1 stress variant measured for concurrent-leak audit (FaithTrend lesson)."]
+}
