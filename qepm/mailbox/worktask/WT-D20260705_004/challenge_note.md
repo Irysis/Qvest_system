@@ -162,3 +162,34 @@ Hard Constraint 위반 0 (max_names 25 ✓, max_w 0.04 ✓, Σw=1 ✓, turnover 
 
 ## Bottom line
 Uncertainty-aware optimization은 robust-portfolio-optimization 레벨서 REJECTED — alpha-stage crude-selection REJECTION과 동형. IC→PORT_t 전이 벽은 selection AND sizing **양 레벨** 모두서 uncertainty 차원에 robust. capital-grade는 off the table(baseline 0.97 ≪ 2.95); clean finding = σ̂는 돕지도, 빠진 재료도 아님. EW(1/N)가 25종 broad KR alpha의 개선불가 blind 천장.
+
+---
+
+# FORGE Self-Adversarial Challenge (AX-008 Forge source) — WT-D20260705_004
+
+**Role**: Pure function 통합. 3-package(alpha/risk/optimization) read-only. weights.csv as-is → authoritative build_bt_result + build_benchmark_compare (NW lag-3). Hash 시작/완료 6/6 identical (무수정 실증).
+
+**Authoritative 산출**: full PORT_t = **0.9698** (n=196), recent2017 = **−0.7248** (n=112). SR(abs net)=0.813, CAGR=17.56%, MDD=−41.5%, IR=0.279, turnover=12.28/yr.
+
+## CF-F1 — [fabrication risk] weighted_screen_bt와 build_bt_result가 같은 값을 내는 게 "동어반복(circular)"이라 authoritative가 아니지 않나?
+**REBUTTAL**: 둘 다 최종적으로 `build_benchmark_compare`(계약 단일 primitive, NW lag-3)를 통과하므로 PORT_t 동일은 설계상 당연 — 이건 결함이 아니라 **contract-path 일관성 실증**이다. 중요한 건 build_bt_result가 **독립 경로로 재구성한 sim_result(strategy_xts/NAV/holdings)**에서 period_returns를 build_period_returns로 다시 만들고 그 위에서 benchmark_compare를 산출했다는 것 — bt_result_port_t(0.96983829)가 weighted_screen(0.96983829)과 divergence 8.9e-16(부동소수 오차)로 일치 = 두 독립 구성이 수렴. authoritative 자격 = "표준 계약함수(build_benchmark_compare) + metric_type=backtested + audit PASS"이지 "novel 값"이 아니다. **ACCEPT as authoritative.**
+
+## CF-F2 — [measurement basis 약점] recent2017 n=112가 weights sig_date 카운트인데 벤치-overlap 후 실제 사용 월수와 어긋날 여지?
+**진단**: weights.csv 2017+ unique dates = 112. optimizer EW recent2017 = −0.7248 (동일 정의)와 내 −0.72483573가 **4dp+ 정확 일치** → recent-period 정의·overlap·비용이 optimizer와 동형임이 역산 확인됨. bm_fwd forward-shift로 마지막 월 1개가 NA drop될 수 있으나 anchor 일치가 그 영향까지 흡수. **residual risk = 0 (재현 정합).** 라벨: n=112는 sig_date 기준으로 forge_package에 명시(오해 방지).
+
+## CF-F3 — [schedule fidelity] weights.csv 196m를 다른 schedule로 재생성하거나 alpha_scores top-N 재선택으로 holdings 바꾸지 않았나?
+**REBUTTAL**: run_forge_authoritative.R는 weights.csv(Date,Ticker,weight)를 `fread` 후 **그대로** Wdt로 사용. alpha_scores.parquet은 오직 **returns(F1)** 공급용(진단 아닌 실측 입력) — holdings 결정에 개입 없음. schedule density 196/196=1.0, HOLDINGS_LOG = weights.csv 원본. hurdle method 라벨에 fabrication schedule label 없음. **Schedule Fidelity Mandate 준수, violation=false.**
+
+## CF-F4 — [비용 basis] 15bps delta 비용이 build_bt_result gross/net과 weighted_screen 사이 일관?
+**진단**: weighted_screen ret_net = port_gross − traded×15bps/1e4 (delta, |Δw| 절대값). build_bt_result용 NAV_gross는 동일 traded 벡터로 cost 되돌려 재구성(ret_gross=ret_net+cost). audit `cost_decomposition_consistency`=PASS, `t_plus_1_cadence_consistency`=PASS. turnover 12.28/yr = optimizer 보고치 일치. **일관.**
+
+## CF-F5 — [해석 약점] full 0.97이 recent 음수면 "감쇠"인가 "노이즈"인가 — authoritative가 방향을 과대주장?
+**정직**: forge는 판정자가 아님(그건 judge). forge는 수치만 확정: full +0.97(비유의, <2.95), recent2017 −0.72(음). recent 음전은 §6 KR post-2017 감쇠 패턴과 정합(6-슈퍼팩터 공통, [[project-superfactor-4method-program]])이나 이 WT는 uncertainty-aware 검증이지 감쇠 원인규명 아님 — forge_package는 "IC→PORT_t 전이 벽 confirmed"만 verdict_reason에 기록(optimizer FAIL 결론 재확인), 감쇠 mechanism 단정 없음.
+
+## Verification Triangulation (AX-008, 3-source ≥2/3)
+- **Forge (본 산출)**: authoritative build_benchmark_compare full 0.9698 / recent −0.7248, audit PASS=12/FAIL=0. **PASS**.
+- **Self-Adversarial (본 절)**: CF-F1~F5 전부 REBUTTAL/재현정합, escalate 0. **PASS**.
+- Architect: 비호출(capital-grade off table, mechanical 산출). 2/3 충족.
+
+## Bottom line (forge)
+Authoritative PORT_t **0.9698 full / −0.7248 recent2017** — optimizer estimated와 divergence NEGLIGIBLE(3.8e-5pp, 4dp 반올림). Hash 6/6 무수정. Graduation HARD PORT_t≥2.95 = **FAIL** (capital-grade off the table, 예상대로). uncertainty-aware thesis가 selection+sizing 양 레벨서 refute됨을 forge 실측이 확정. PASS/FAIL 정직: **측정 PASS(계약충족·audit clean) / 졸업 FAIL(정직)**.

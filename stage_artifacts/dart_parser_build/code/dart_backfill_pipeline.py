@@ -175,12 +175,14 @@ def process_month(bud, key, ym, uni_cc, cc2sc):
         if raw is None:
             records.append({"rcept_no": lr["rcept_no"], "rcept_dt": lr["rcept_dt"],
                             "corp_code": lr["corp_code"], "ok": False,
-                            "parse_flags": [f"fetch_{status}"]})
+                            "parse_flags": json.dumps([f"fetch_{status}"], ensure_ascii=False)})
             continue
         rec = parse_document(lr["rcept_no"], raw, rcept_dt=lr["rcept_dt"], corp_code=lr["corp_code"])
         if rec.get("ok"):
             rec["stock_code"] = rec.get("stock_code") or cc2sc.get(lr["corp_code"])
-            rec["parse_flags"] = json.dumps(rec.get("parse_flags", []), ensure_ascii=False)
+        # parse_flags 항상 json 문자열로 통일 (ok=str / 실패=list 혼재 → pyarrow ArrowTypeError 방지)
+        pf = rec.get("parse_flags", [])
+        rec["parse_flags"] = pf if isinstance(pf, str) else json.dumps(pf, ensure_ascii=False)
         records.append(rec)
     return records, partial
 

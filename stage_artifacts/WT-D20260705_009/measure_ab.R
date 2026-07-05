@@ -24,6 +24,15 @@ ret  <- norm_date(as.data.table(read_parquet(file.path(PANEL, "returns_monthly.p
 bench<- norm_date(as.data.table(read_parquet(file.path(PANEL, "benchmark_monthly.parquet"))))
 uf   <- norm_date(as.data.table(read_parquet(file.path(PANEL, "universe_flags.parquet"))))
 
+# CRITICAL (universe alignment fix): NGBoost forecasts ALL factor-DB tickers (~3345), but the
+# mandate universe is K200 U KQ150. returns_monthly/universe_flags are restricted to in_univ.
+# Selection MUST be within-universe: inner-join forecast scores to the universe panel (Date,Ticker)
+# so top-25 is drawn only from investable in-universe names. (Bug caught in reconciliation:
+# 87.7% of selected rows were non-universe -> return-zeroed -> gross collapsed. Fixed here.)
+fc <- merge(fc, uf[, .(Date, Ticker)], by = c("Date","Ticker"))  # inner: keep only in-univ (Date,Ticker)
+cat(sprintf("[measure_ab] forecast rows after universe restriction: %d (tickers=%d, months=%d)\n",
+    nrow(fc), uniqueN(fc$Ticker), uniqueN(fc$Date)))
+
 # liquidity filter table (Date,Ticker,adv) at signal month t (t-1 ADV proxy = trailing 20d ending month-end)
 liq <- uf[, .(Date, Ticker, adv = adv20)]
 

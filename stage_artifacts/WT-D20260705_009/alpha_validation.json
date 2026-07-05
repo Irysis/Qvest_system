@@ -1,0 +1,82 @@
+{
+  "task_id": "WT-D20260705_009",
+  "wt_type": "discovery",
+  "as_of_date": "2026-06-01",
+  "metric_type": "canonical_screen",
+  "metric_type_note": "canonical_screen_bt (contract build_benchmark_compare, NW lag-3). NOT forge build_bt_result (that is authoritative for capital admission). Screening/mechanism-location grade.",
+  "universe": {
+    "label": "KOSPI200_KOSDAQ150_intersection",
+    "in_universe_tickers": 777,
+    "liquidity_min_won_20d_avg": 50000000,
+    "top_n": 25,
+    "cost_bps_oneway": 15,
+    "note": "NGBoost forecasts all 3345 factor-DB tickers; SELECTION restricted to in-universe (K200 U KQ150) via inner-join. First-pass measurement bug (87.7% non-universe rows return-zeroed) caught in reconciliation and corrected."
+  },
+  "period": {"full": "2010-02..2026-06 (197 months)", "post2017": "2017-01..2026-06 (114 months)",
+             "note": "Forecasts start 2010-02 (60-month min expanding-train window from 2005-01 factor panel)."},
+
+  "base_composite": {
+    "description": "KNOWN-GOOD base = EW cross-sectional aligned-Z composite of 14 validated KR factors (quality/momentum/value/low-risk/liquidity). Distinct from prior weak-base uncertainty attempts (lottery/fscore+momentum).",
+    "factors": ["Q08_Composite_Quality","Q07_Earnings_Stability","Q01_GPA","Q02_ROE","M09_Composite_Mom","M08_Residual_Mom","M14_RiskAdj_Mom","M12_LR_Reversal","V12_Composite_Value","V02_EP","V10_FCF_Yield","R11_Systematic_Risk","R12_Idiosyncratic_Risk","L01_Amihud","M11_ST_Reversal"],
+    "n_factors_loaded": 14,
+    "rank_ic_full": {"mean": 0.0510, "icir_monthly": 0.392, "t": 6.30, "n_months": 258},
+    "rank_ic_post2017": {"mean": 0.0584, "t": 4.87, "n_months": 114},
+    "verdict": "Base is genuinely known-good: strong positive rank-IC BOTH periods (full t=6.3, post2017 t=4.87). The transfer-wall question is meaningful precisely because cross-sectional IC is strong."
+  },
+
+  "forecast_uncertainty_method": {
+    "method": "NGBoost (Normal), expanding-window walk-forward",
+    "retrain_cadence_months": 12,
+    "min_train_months": 60,
+    "n_estimators": 300, "learning_rate": 0.03, "seed": 0,
+    "base_learner": "DecisionTree depth=3 min_leaf=200",
+    "outputs": "per-stock mu_hat (mean forecast = Arm A alpha) + sigma_hat (predictive SD = forecast uncertainty)",
+    "pit": "Strict expanding: month t model trained only on rows month<=t-2 (forward label fully realized before t). No look-ahead (C1/C7). Label winsorized 1/99 train-only.",
+    "sigma_hat_is_forecast_uncertainty_not_return_cov": "sigma_hat is NGBoost predictive SD per stock (forecast confidence), NOT a return covariance Sigma. Role boundary respected: no Sigma / weights produced.",
+    "sigma_hat_stats": {"mean": 0.1313, "sd": 0.0311, "min": 0.0469, "max": 0.3024, "spread_ratio": 6.4},
+    "mu_hat_stats": {"mean": 0.0102, "sd": 0.0194}
+  },
+
+  "AB_core": {
+    "arm_A_raw": "top-25 by mu_hat",
+    "arm_B_riskadj": "top-25 by mu_hat/sigma_hat (forecast information ratio)",
+    "holdings_overlap_pct": 55.0,
+    "mechanism_check": {
+      "univ_mean_sigma": 0.1178, "armA_mean_sigma": 0.1267, "armB_mean_sigma": 0.1085,
+      "verdict": "Mechanism WORKS as designed: Arm B systematically selects lower-forecast-uncertainty names (0.109 vs 0.127). But armB mean fwd ret 0.0118 <= armA 0.0125 -> lower sigma did not buy higher realized return."
+    },
+    "full": {
+      "ArmA": {"port_t_nw": 0.196, "IR": 0.050, "net_sr": 0.050, "alpha_ann": 0.045, "turnover_annual": 14.38},
+      "ArmB": {"port_t_nw": 0.008, "IR": 0.002, "net_sr": 0.002, "alpha_ann": 0.039, "turnover_annual": 13.56},
+      "paired_BminusA": {"delta_sr": -0.048, "mean_diff_ann": -0.009, "nw_t_mean_diff": -0.42}
+    },
+    "post2017": {
+      "ArmA": {"port_t_nw": -1.377, "IR": -0.421, "net_sr": -0.421, "alpha_ann": -0.026, "turnover_annual": 15.04},
+      "ArmB": {"port_t_nw": -1.155, "IR": -0.392, "net_sr": -0.392, "alpha_ann": -0.009, "turnover_annual": 13.85},
+      "paired_BminusA": {"delta_sr": 0.029, "mean_diff_ann": 0.013, "nw_t_mean_diff": 0.45}
+    }
+  },
+
+  "transfer_wall_diagnosis": {
+    "rank_ic_vs_port_t": "NGBoost mu_hat in-univ rank-IC full t=3.38 / post2017 t=2.47 (positive, significant), yet top-25 long-only PORT_t is ~0 (full) and -1.4 (post2017). Textbook IC->PORT_t transfer failure.",
+    "quintile_monotonicity": {"Q1":0.0053,"Q2":0.0108,"Q3":0.0067,"Q4":0.0082,"Q5":0.0111,
+      "note": "Non-monotonic. Top quintile only marginally beats bottom; ordering power in the top/long region is weak and noisy."},
+    "top_half_ic": {"mean": 0.0135, "t": 1.89, "note": "rank-IC restricted to top-half (long-only relevant region) is insignificant (t=1.89) vs full-universe t=3.38 -> the IC is carried largely by the short-side/bottom which long-only cannot harvest."},
+    "gross_vs_net": {"armA_gross_active_ann": 0.031, "armA_gross_t": 0.66, "armA_net_active_ann": 0.009, "armA_net_t": 0.19,
+      "note": "Even GROSS (pre-cost) top-25 active t<1 (0.66). Turnover 14x/yr x 15bps ~2.2%/yr further erodes. Edge is null before costs even matter."}
+  },
+
+  "verdict": {
+    "mechanism_has_bite": false,
+    "wall_is_selection_or_decay": "REAL DECAY (top-region ordering), NOT selection-into-noise",
+    "rationale": "(1) Uncertainty conditioning worked mechanically (Arm B tilted to low-sigma) but produced NO significant PORT_t improvement (full dSR -0.048 t=-0.42; post2017 dSR +0.029 t=+0.45 -- both insignificant, opposite signs). (2) The binding constraint is not high-uncertainty over-selection: even top-half rank-IC is insignificant (t=1.89) and GROSS top-25 active t=0.66. The forecast has strong FULL-universe IC (short-side driven) but no long-only top-region ordering edge. sigma_hat is not the axis where the signal dies.",
+    "honest_negative": "Valuable negative per AX-000: the wall's nature is regularity-of-decay in the long-region + short-side-carried IC, generalizing measurement-graduation section6 'orthogonal != profit' / 'IC != PORT_t' to the uncertainty-conditioning lever. Uncertainty selection is not a transfer-wall lever for KR long-only."
+  },
+
+  "graduation_gate_check": {
+    "note": "canonical_screen (not forge-authoritative). Diagnostic only.",
+    "port_t_nw_full": 0.196, "gate_port_t_2_95": false,
+    "port_t_nw_post2017": -1.377, "gate_post2017": false,
+    "conclusion": "FAILS graduation HARD (PORT_t>=2.95) by a wide margin in both arms/periods. No capital path. screen_route = NOT even OVERLAY_CANDIDATE (no residual long edge)."
+  }
+}
