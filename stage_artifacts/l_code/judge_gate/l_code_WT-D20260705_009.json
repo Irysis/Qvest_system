@@ -1,0 +1,71 @@
+{
+  "l_code": "L-JG-20260705_201906",
+  "strategy_id": "WT-D20260705_009",
+  "grade": "F",
+  "core_reference": "",
+  "lesson_text": "Uncertainty-conditioned selection (mu_hat/sigma_hat from NGBoost Normal predictive dist over 14 aligned-Z KR factors) is NOT a lever for the KR long-only IC->PORT_t transfer wall. On a genuinely known-good base (rank-IC t=6.30 full / 4.87 post2017), sigma_hat conditioning WORKS mechanically (Arm B selected mean sigma 0.109 < Arm A 0.127 < universe 0.118) but produced ZERO realized PORT_t improvement: top-25 EW long-only canonical PORT_t(NW lag-3) = ArmA 0.196/ArmB 0.008 (full) and ArmA -1.377/ArmB -1.155 (post2017); paired NW-t of the B-A active diff = -0.42 (full) / +0.45 (post2017), both insignificant with opposite signs. The binding wall is REAL top-region decay + short-side-carried IC, NOT selection-into-noise: full-universe rank-IC t=3.38 but top-half (long-only-relevant) rank-IC t=1.89 (insignificant), and GROSS (pre-cost) top-25 active t=0.66 -> no long edge before costs even matter. Robust to base choice: raw EW composite (t=6.30) directly measured hits the SAME wall (ArmA -0.87/-1.83). Generalizes measurement-graduation section6 'IC != PORT_t' / 'orthogonal != profit' to the UNCERTAINTY-CONDITIONING axis: sigma_hat is not the axis where the KR long-only signal dies. screen_route=NONE (net_sharpe 0.48<0.7 fails screening gate; not even OVERLAY_CANDIDATE since there is no residual long edge to overlay). No capital path. Honest negative (AX-000).",
+  "tags": ["QEPM", "DISCOVERY", "NEGATIVE", "transfer_wall", "uncertainty_conditioning", "ic_neq_portt", "kr_longonly"],
+  "created_at": "2026-07-05",
+  "research_mode": "judge_gate",
+  "created_by": "emit:judge_gate",
+  "metric_type": "backtested",
+  "construction_type": "ml_sizing",
+  "mechanism_hypothesis": "Down-weighting high-forecast-uncertainty (high sigma_hat) names should improve IC->PORT_t transfer by avoiding noisy top-region picks. FALSIFIED: mechanism fires (low-sigma tilt achieved) but realized long-only alpha unchanged because the KR IC is carried by the un-harvestable short side, not by top-region ordering.",
+  "lcode_schema_version": 2,
+  "sharpe": 0.481,
+  "mdd_pct": 52.7,
+  "cagr_pct": 10.9,
+  "calmar": 0.207,
+  "port_t_full_armA": 0.196,
+  "port_t_full_armB": 0.008,
+  "port_t_post2017_armA": -1.377,
+  "port_t_post2017_armB": -1.155,
+  "gross_top25_active_t": 0.66,
+  "top_half_rank_ic_t": 1.89,
+  "base_rank_ic_t_full": 6.3,
+  "base_rank_ic_t_post2017": 4.87,
+  "metric_type_label": "canonical_screen",
+  "screen_route": "NONE",
+  "inv7_retry_conditions": "multi_sleeve_long_leg | non_return_sigma_source | short_harvestable_structure (long-short paper long-leg only)",
+  "falsification_attempts": [
+    {
+      "test": "paired NW-t(lag3) of ArmB-ArmA active diff, full period",
+      "result": "falsified",
+      "effect_retained": -0.42
+    },
+    {
+      "test": "paired NW-t(lag3) of ArmB-ArmA active diff, post2017",
+      "result": "weakened",
+      "effect_retained": 0.45
+    },
+    {
+      "test": "raw known-good composite (rank-IC t=6.30) direct top-25 long-only base (NGBoost-attenuation control)",
+      "result": "survived",
+      "effect_retained": -0.87
+    },
+    {
+      "test": "sigma_hat vs log_ADV correlation (liquidity/size-proxy confound control)",
+      "result": "survived",
+      "effect_retained": 0.082
+    },
+    {
+      "test": "top-half rank-IC t (long-only-relevant region) vs full-universe t=3.38",
+      "result": "falsified",
+      "effect_retained": 1.89
+    },
+    {
+      "test": "GROSS (pre-cost) top-25 active t (edge-before-costs control)",
+      "result": "falsified",
+      "effect_retained": 0.66
+    },
+    {
+      "test": "universe inner-join fix (87.7%-zeroing bug), full re-measurement on 777 in-univ tickers",
+      "result": "survived",
+      "effect_retained": null
+    }
+  ],
+  "oos_retention": -0.925,
+  "portfolio_alpha_t": -1.377,
+  "selection_type": "single",
+  "record_type": "performance"
+}

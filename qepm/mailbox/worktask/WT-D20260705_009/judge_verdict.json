@@ -1,0 +1,124 @@
+{
+  "task_id": "WT-D20260705_009",
+  "wt_type": "discovery",
+  "adjudicated_at": "2026-07-05T20:20:00+0900",
+  "adjudicator": "judge (Opus 4.8 native)",
+  "verdict": "JUDGE_FAILED",
+  "disposition_recommendation": "close (ABORT) — governor 미경유, admit 대상 無",
+  "metric_type": "canonical_screen",
+  "metric_type_note": "canonical_screen_bt (contract build_benchmark_compare, NW lag-3) is THE authoritative backtest for this negative-close. No positive alpha exists to hand to forge for optimization/sizing; canonical top-25 EW long-only = honest deployment baseline matching 25-name/long-only/Sigma_w=1 envelope. forge/risk/optimizer/governor intentionally skipped per documented Q-Lead waiver (No Silent Override).",
+
+  "qlead_waiver": {
+    "recorded": true,
+    "skipped_stages": ["risk-research", "optimizer-research", "forge", "governor"],
+    "rationale": "No positive alpha (top-25 EW canonical PORT_t ~0 full / -1.4 post2017, GROSS active t=0.66) -> no sizing/optimization target. Alpha canonical_screen measurement is authoritative for the disposition. governor unnecessary (no admit target).",
+    "charter_ref": "Charter §8 No Silent Override — waiver documented in judge_verdict + status."
+  },
+
+  "pit_audit": {
+    "result": "PASS — no look-ahead, no PIT violation across C1-C15",
+    "c1_c7_lookahead": "PASS. NGBoost strict expanding walk-forward (ngboost_forecast.py): train_cutoff=months[i-2], tr=df[Date<=cutoff & Ret_1m realized]. Month-t model never sees month>=t; forward label of training rows fully realized before t. Retrain cadence 12m still strictly past. Label winsorized 1/99 TRAIN-ONLY.",
+    "c14_ic_usable_date": "PASS. Factor DB via load_month_factors (C13/C15 aligned-Z). Cross-sectional within-month Z, no cross-month leakage.",
+    "c15_factor_db_connector": "PASS. base 14 factors via load_month_factors connector (not raw parquet).",
+    "canonical_screen_usage": "PASS. measure_ab.R routes period returns through canonical_screen_bt -> build_benchmark_compare (contract, NW lag-3). No proxy hand-calc; no prod(1+r)/cumprod self-synthesis. measurement-graduation §1 satisfied.",
+    "universe_correction": "VERIFIED EFFECTIVE. CF-5 bug (forecast universe 3345 superset of returns universe -> 87.7% selected-return zeroing) self-caught in reconciliation. Fix (measure_ab.R L32): inner-join forecast to universe_flags(Date,Ticker) BEFORE selection. Post-fix: 777 in-univ tickers, 68227 rows, 0% zeroing. Corrected gross diag (+3%/yr active t=0.66) reconciles independently. Current numbers = corrected universe.",
+    "metric_type_label": "PASS. All decision numbers labeled metric_type=canonical_screen; correctly NOT claimed as forge-authoritative (screening/mechanism-location grade). No unlabeled 'backtested' claim.",
+    "python_language_boundary": "PASS (python-policy §4). Python (NGBoost) produces per-stock mu/sigma ONLY; portfolio construction + PORT_t measurement in R via canonical_screen_bt. No portfolio return synthesis in Python.",
+    "lockbox": "N/A — discovery negative-close, no lockbox access; walk-forward is OOS-by-construction."
+  },
+
+  "essence_grade": {
+    "authority": "02_Infrastructure/contracts/essence_score.R (rendered on canonical_screen ArmA cells)",
+    "full_period_armA": {
+      "grade": "C",
+      "note": "grade C is nominal only — escapes F (port_t>0 & net_IR>0 marginally) but FAILS ALL THREE HARD graduation gates by wide margin. 'C' = ensemble/blend value only, NO standalone/capital value.",
+      "port_t_nw_lag3": 0.196,
+      "hard_gate_port_t_2_95": "FAIL (0.196 << 2.95)",
+      "hard_gate_oos_retention_0_70": "FAIL (-0.925 << 0.70; active-alpha OOS negative)",
+      "hard_gate_calmar_0_64": "FAIL (0.207 << 0.64)",
+      "net_sharpe": 0.481, "cagr": 0.109, "mdd": 0.527
+    },
+    "post2017_armA": {
+      "grade": "F",
+      "note": "deployment-relevant regime. non-positive alpha (PORT_t=-1.377<=0).",
+      "port_t_nw_lag3": -1.377,
+      "reasons": "non-positive alpha (PORT_t<=0)"
+    },
+    "binding_grade": "F (deployment-relevant post-2017 = non-positive alpha; full-period nominal C fails all HARD gates). GRADUATION FAIL.",
+    "arm_b_no_rescue": "ArmB (mu_hat/sigma_hat) does NOT improve: full PORT_t 0.008, post2017 -1.155. paired NW-t(diff) -0.42 full / +0.45 post2017 (both insignificant, opposite signs)."
+  },
+
+  "screen_route": {
+    "route": "NONE",
+    "verified": true,
+    "verification": "hurdle_gate.R screen_pass = !PIT_violated && ((sharpe>=0.7 && CAGR>=0.12) || (score>=40 && sharpe>=0.5)). ArmA net_sharpe=0.481 (<0.7 AND <0.5), CAGR=0.109 (<0.12). BOTH branches FAIL -> screen_pass=FALSE -> screen_route=NONE.",
+    "not_overlay_candidate": "CONFIRMED. OVERLAY_CANDIDATE is for MDD-killed REAL signals (structural fail masking real edge). Here there is NO realized long edge to overlay: gross top-25 active t=0.66, top-half rank-IC t=1.89 (insignificant), net_sharpe 0.48. Alpha's 'not even OVERLAY_CANDIDATE' claim is correct.",
+    "not_dpl_feature": "turnover 14.4x/yr < 1100% hard-fail threshold, so not turnover-routed; but no residual signal to feed DPL either. Route = NONE (no capital or consumption path)."
+  },
+
+  "transfer_wall_finding": {
+    "wall_nature": "REAL top-region decay + short-side-carried IC (NOT selection-into-noise, NOT NGBoost attenuation artifact)",
+    "evidence": {
+      "full_univ_rank_ic_t": 3.38,
+      "top_half_rank_ic_t": 1.89,
+      "gross_top25_active_t": 0.66,
+      "raw_composite_base_robustness": "raw EW composite (rank-IC t=6.30) direct top-25 long-only ALSO negative: -0.87 full / -1.83 post2017 (adv_rawbase.txt). Wall robust to base choice.",
+      "mechanism_fired_but_inert": "sigma_hat conditioning worked (ArmB sigma 0.109 < ArmA 0.127 < univ 0.118) but no PORT_t bite.",
+      "sigma_not_liquidity": "cor(sigma_hat, log_ADV)=+0.082 (genuine forecast-confidence tilt, not liq/size proxy)."
+    },
+    "generalization": "Extends measurement-graduation §6 'IC != PORT_t' / 'orthogonal != profit' to the UNCERTAINTY-CONDITIONING axis. sigma_hat is not the axis where the KR long-only signal dies."
+  },
+
+  "inv7_retry_conditions": {
+    "note": "Path-scoped closure (this construction), NOT family dead-end (AX-000/INV-7 compliant). Uncertainty-conditioned long-only single-sleeve on return-derived sigma_hat is falsified. Re-try requires a differentiating condition:",
+    "conditions": [
+      "(a) uncertainty-tilt embedded in a MULTI-SLEEVE long-leg (not standalone single-sleeve top-25)",
+      "(b) NON-RETURN sigma_hat source (forecast confidence from an independent origin, not return-derived features)",
+      "(c) SHORT-HARVESTABLE structure (long-short paper long-leg only) — since KR IC is short-side-carried"
+    ],
+    "forbidden": "Standalone uncertainty-conditioned long-only re-try WITHOUT a stated differentiator = redundant re-run of a falsified path."
+  },
+
+  "self_adversarial_challenge": {
+    "performed": true,
+    "version": "v8.2 (Opus 4.8 native, no external Codex)",
+    "concerns_raised": 4,
+    "high": 1,
+    "rebuttal": 3,
+    "partial": 1,
+    "accept": 0,
+    "escalation_triggered": false,
+    "verdict_after_challenge": "REINFORCED (unchanged)",
+    "note": "SA-1 (canonical vs forge-authoritative) REBUTTED — PORT_t is contract-computed, FAIL on real number; SA-2 (AX-001 v2) REBUTTED — offense/selection thesis, not defensive; SA-3 (post2017 underpower) PARTIAL — caveat recorded, cannot lift -1.16 to 2.95; SA-4 (bug residual) REBUTTED — verified corrected. challenge_note: judge_challenge_note.md."
+  },
+
+  "ax008_triangulation": {
+    "sources_required": "2 of 3",
+    "forge_measurement": "PASS (canonical_screen_bt contract = Forge-equivalent build_benchmark_compare, NW lag-3)",
+    "architect": "not spawned (negative-close, no infra question)",
+    "self_adversarial": "PASS (verdict reinforced)",
+    "satisfied": "2/3 (Forge-equivalent measurement + Self-Adversarial)"
+  },
+
+  "l_code_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/l_code/judge_gate/l_code_WT-D20260705_009.json",
+  "l_code_id": "L-JG-20260705_201906",
+  "l_code_promotion_axes": {
+    "mechanism_hypothesis": "present",
+    "portfolio_alpha_t": -1.377,
+    "oos_retention": -0.925,
+    "falsification_attempts": 7,
+    "construction_type": "ml_sizing",
+    "selection_type": "single",
+    "metric_type": "backtested",
+    "firewall_violation": false,
+    "promotion_ready": true
+  },
+
+  "disposition": {
+    "wt_advance": "TERMINAL — close/ABORT",
+    "governor_handoff": false,
+    "book_state_change": "NONE (no admit target)",
+    "incumbent_retain": true,
+    "capital_path": "NONE"
+  }
+}

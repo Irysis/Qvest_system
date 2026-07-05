@@ -21,12 +21,12 @@ faccols=[c for c in panel.columns if c not in
 yms=sorted(panel["sig_ym"].unique())
 BURN="2009-12"   # first prediction month = first ym > burn-in (>=5yr history)
 start_idx=next(i for i,m in enumerate(yms) if m> BURN)
-REFIT_EVERY=1    # refit each month (expanding). Model is cheap enough with capped trees.
+REFIT_EVERY=3    # refit quarterly. Predictions between refits use the last strictly-past model (PIT-safe: model never sees future).
 
 def winsor(a,lo=-0.5,hi=0.5):  # cap extreme forward returns for stable NLL fit (does not touch sign/rank)
     return np.clip(a,lo,hi)
 
-base_learner=DecisionTreeRegressor(criterion="friedman_mse",max_depth=3,min_samples_leaf=200)
+base_learner=DecisionTreeRegressor(criterion="friedman_mse",max_depth=3,min_samples_leaf=300)
 preds=[]
 model=None
 for i in range(start_idx,len(yms)):
@@ -38,8 +38,8 @@ for i in range(start_idx,len(yms)):
     Xtr=tr[faccols].values.astype(np.float64); ytr=winsor(tr["ret_fwd"].values.astype(np.float64))
     Xte=te[faccols].values.astype(np.float64)
     if (i==start_idx) or ((i-start_idx)%REFIT_EVERY==0):
-        model=NGBRegressor(Dist=Normal,Base=base_learner,n_estimators=200,learning_rate=0.02,
-                           minibatch_frac=0.5,natural_gradient=True,verbose=False,random_state=42)
+        model=NGBRegressor(Dist=Normal,Base=base_learner,n_estimators=120,learning_rate=0.03,
+                           minibatch_frac=0.3,natural_gradient=True,verbose=False,random_state=42)
         model.fit(Xtr,ytr)
     dist=model.pred_dist(Xte)
     mu=dist.loc; sigma=dist.scale
@@ -48,8 +48,8 @@ for i in range(start_idx,len(yms)):
     out["pred_mean"]=mu
     out["pred_var"]=var
     preds.append(out)
-    if (i-start_idx)%12==0:
-        print(f"[{m}] train={len(tr)} test={len(te)} mu_sd={np.std(mu):.4f} var_med={np.median(var):.5f}",file=sys.stderr)
+    if (i-start_idx)%6==0:
+        print(f"[{m}] train={len(tr)} test={len(te)} mu_sd={np.std(mu):.4f} var_med={np.median(var):.5f}",file=sys.stderr,flush=True)
 
 P=pd.concat(preds,ignore_index=True)
 # confidence = inverse predictive variance, cross-sectionally standardized per month for comparability

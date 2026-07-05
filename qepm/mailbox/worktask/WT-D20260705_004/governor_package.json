@@ -1,0 +1,75 @@
+{
+  "task_id": "WT-D20260705_004",
+  "agent": "governor",
+  "as_of_date": "2026-04-30",
+  "verdict": "GOVERNOR_REJECTED",
+  "verdict_tier": "graduation_capital",
+  "created": "2026-07-05 20:20:00",
+  "input_provenance": {
+    "judge_package": "qepm/mailbox/worktask/WT-D20260705_004/judge_package.json (JUDGE_FAILED / graduation_capital / grade C)",
+    "forge_package": "qepm/mailbox/worktask/WT-D20260705_004/forge_package.json (authoritative PORT_t)",
+    "book_state": "qepm/mailbox/governor/book_state.json (incumbent STR_1715_on_M4_R05_noLayer4_PG2)",
+    "authoritative_metric_type": "backtested (forge build_bt_result + build_benchmark_compare, NW lag-3)"
+  },
+  "pg0_gap_assessment": {
+    "target_sharpe": 2.5,
+    "incumbent_book_sharpe_geo": 1.898,
+    "sharpe_gap": 0.602,
+    "gap_note": "incumbent book SR_geo 1.898 → target 2.5, gap +0.602. 본 WT는 이 gap을 미충족 (standalone SR 0.813, PORT_t 0.970).",
+    "wt_contribution_to_gap": "negative — delta_PORT_t = -0.404 full / -0.472 recent (uncertainty selection/sizing 차원 기여도 음). gap 축소 없음."
+  },
+  "pg1_individual_admission": {
+    "verdict": "REJECT",
+    "rule_applied": "standalone graduation gate (measurement-graduation §3 HARD 3종)",
+    "graduation_hard_gates": {
+      "portfolio_alpha_t_nw_2p95": {"value": 0.9698, "threshold": 2.95, "pass": false, "authoritative": "forge_package.portfolio_alpha_t_nw_lag3, NW lag-3 net active"},
+      "oos_retention_0p7": {"value": -0.604, "threshold": 0.7, "pass": false, "note": "<0.5 무조건 FAIL (band escalation 불가)"},
+      "calmar_0p64": {"value": 0.418, "threshold": 0.64, "pass": false},
+      "hard_gates_passed": "0/3 substantive HARD"
+    },
+    "reject_reason": "graduation HARD 3종 전부 미달 = standalone 졸업 불가. recent2017 PORT_t -0.7248 음전(cohort-wide 2017+ decay-pattern). IC->PORT_t 전이 벽에서 uncertainty-aware thesis refuted at selection AND sizing.",
+    "book_marginal_status": "MOOT — standalone ADMIT 전제 미충족으로 book-marginal ΔIR 게이트(§4) 진입 불가. pg1_admission_with_book_context는 standalone ADMIT 후에만 ΔIR≥0.05 검사. standalone REJECT라 book-marginal 계산 자체가 정의되지 않음.",
+    "replacement_vs_sequential_admission_note": "본 WT 본질 = incumbent(score_eff composite) 위 uncertainty 차원 추가(Sequential Admission 성격). 단 standalone graduation HARD 3/3 미달이 압도적 → Replacement 룰(직접 SR/CAGR/MDD/Harvey 비교)로도 REJECT(PORT_t 0.97 << 2.95, SR 0.813), Sequential Admission 룰(book-marginal)로도 진입 불가. 룰-불변 REJECT (Iter 5식 미스매치 부재 — 룰 선택이 verdict를 바꾸지 않음)."
+  },
+  "pg2_book_rebalance": {
+    "verdict": "N_A",
+    "reason": "admit 대상 아님(PG1 REJECT). book_optimizer 미호출. cross-WT cov + crowding + redundancy QP 미실행."
+  },
+  "pg3_live_drift": {
+    "verdict": "N_A",
+    "reason": "admit 대상 아님. live_track 미등록."
+  },
+  "book_state_mutation": {
+    "mutated": false,
+    "write_calls_to_book_state": 0,
+    "before_sha256": "fef4718d162605f722f36d47203f24f5f9a3c26f877e70f2369da1b22244b8c0",
+    "after_sha256": "fef4718d162605f722f36d47203f24f5f9a3c26f877e70f2369da1b22244b8c0",
+    "hash_match": true,
+    "no_mutation_proof": "REJECT verdict = book_state 쓰기 없음. incumbent STR_1715_on_M4_R05_noLayer4_PG2 그대로 retain (n_admitted=1, book_weights 100%, incumbent_book_ir 1.416 불변). measurement-graduation §4: governor admit(book write)은 비가역 자본게이트 = 수동+도훈 confirm 필요 — 단 REJECT는 애초 write 대상 아님. before==after 해시 실증으로 무변경 확정."
+  },
+  "incumbent_retained": {
+    "admitted_ids": ["STR_1715_on_M4_R05_noLayer4_PG2"],
+    "book_weights": {"STR_1715_on_M4_R05_noLayer4_PG2": 1.0},
+    "incumbent_book_ir": 1.416,
+    "ir_convention": "net_active_recon_v1",
+    "note": "★judge_package.disposition(line118)의 incumbent 표기 'STR_1631_80_STR_1656_20'은 stale/오기 — 실제 book_state.json admitted_ids는 STR_1715_on_M4_R05_noLayer4_PG2. governor는 authoritative book_state 기준으로 판정. verdict(REJECT/무변경)에는 영향 없음."
+  },
+  "self_adversarial_challenge": {
+    "file": "governor_challenge_note.md",
+    "mode": "lightweight (REJECT = 자본 비가역 아님)",
+    "concerns": 3,
+    "high": 0,
+    "classification": "C1 REBUTTAL(Replacement vs Sequential Admission 룰-불변 REJECT, Iter5 미스매치 부재) / C2 ACCEPT verdict불변(single-axis rank-IC advisory, PORT_t authoritative FAIL, Lockbox probe 예외 미해당) / C3 ACCEPT(book_state 무변경 해시 실증 이행)",
+    "escalate": false,
+    "escalate_reason": "HIGH 0 (<5) / AX hard FAIL 0 / 룰 미스매치 실체 없음. Q-Lead escalate 트리거 미해당."
+  },
+  "ax008_note": "governor는 adjudicator(source 아님). judge 단계 AX-008 2/3 PASS(Forge + Self-Adversarial) 확인. capital-grade off table이므로 architect 미호출 정상.",
+  "disposition": "GOVERNOR_REJECTED. incumbent STR_1715_on_M4_R05_noLayer4_PG2 retain. book_state 무변경(before==after). WT lifecycle terminal 종결.",
+  "wt_advance": {
+    "from": "JUDGE_DONE",
+    "to": "GOVERNOR_REJECTED",
+    "terminal": true,
+    "status_final": "GOVERNOR_REJECTED / COMPLETED"
+  },
+  "next_step": "wt_advance terminal. status.json → GOVERNOR_REJECTED/COMPLETED. Q-Lead telegram 보고(PG1 REJECT + book_state 무변경 실증 + WT 종결). 후속 frontier(judge L-code directional_note 정합): overlay / 잔차sleeve / 비-return DART. return-derived selection/sizing(uncertainty 차원)은 전이 벽에 robust FAIL — 재시도 저EV."
+}
