@@ -5,7 +5,8 @@
 #      before t. Ret_1m at Date d covers (d, d+1M]; realized at d+1M. To predict at t we
 #      train on rows with Date <= t - 2 months (their forward window closes by t-1 < t).
 # Self-synthesis: none. This produces only confidence scores; portfolio recon/oos done in R.
-import os, json, sys
+import os, json, sys, warnings
+warnings.filterwarnings("ignore")
 import numpy as np, pandas as pd
 from dateutil.relativedelta import relativedelta
 
