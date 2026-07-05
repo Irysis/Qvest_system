@@ -128,8 +128,8 @@ merged = pd.merge_asof(elig, sig, left_on="ym_int", right_on="usable_ym_int",
 # Simpler robustness: div_paid scaled by lagged mcap is noisy; primary=div_yoy. keep div_paid for reference.
 merged["payout_yield_proxy"] = merged["div_paid"] / (merged["Size"]*1.0)  # div_paid vs current mcap (reference only)
 
-scores = merged.merge(ym2date, on="ym")
-scores = scores[["Date","Ticker","div_yoy","div_initiate","div_payer","payout_yield_proxy",
+# merged already carries the eom 'Date' from elig (month-end snapshot); no re-merge needed
+scores = merged[["Date","Ticker","div_yoy","div_initiate","div_payer","payout_yield_proxy",
                  "div_paid","bsns_year","mcap_rank","Size","tier"]].copy()
 # keep only rows where the firm has a usable annual signal (payer info known)
 scores = scores[scores["div_payer"].notna()].copy()
