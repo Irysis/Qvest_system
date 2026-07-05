@@ -2,36 +2,34 @@
   "l_code": "L-QPM-20260705_102041",
   "strategy_id": "WT-AXENGINE-E2E_frontier_b_regimecond",
   "grade": "F",
-  "core_reference": "DIST-QPM-003 frontier(b); WT-AXENGINE-E2E_20260705; DIST-QPM-003.json",
-  "lesson_text": "DIST-QPM-003 frontier(b) '국면조건부 quality activation' 실측 반증(FALSIFIED). regime-conditional(score=qual_z if Category in {CRISIS,CAUTION} else val_z) top-25 long-only canonical_screen 258m(2005-01..2026-06) PORT_t: V1(regime-cond) -2.61 / V0(naive quality) -2.67 — 전 변형 [-2.65,-2.59] 음(vs cap-w KOSPI200). rank-IC qual +0.036(ICIR 1.355)이 realized long-only active로 이전 안 됨(measurement-graduation §6). quality가 CRISIS서 최악(-78.2%/yr), CAUTION만 +7.1%(n=13 sub-signal). 2017+ 성장주 우위 국면단절 재현(pre2017 active -8.2% -> post2017 -21.4%). -> frontier(b) 이 정확한 activation은 재시도 금지. 잔여 미탐색: (a) multi-axis quality를 Q07 multi-sleeve 성분(AX-004 EXCLUSION), (c) DART 현금흐름 비-return. Self-Adversarial C2 자가포착(rank-IC를 realized로 오독).",
+  "core_reference": "DIST-QPM-003 frontier(b); WT-AXENGINE-E2E_20260705",
+  "lesson_text": "DIST-QPM-003 frontier(b) '국면조건부 quality activation' 실측 반증(FALSIFIED). regime-conditional(score=qual_z if Category in {CRISIS,CAUTION} else val_z) top-25 long-only canonical_screen 258m(2005-01..2026-06) PORT_t: V1 -2.61 / V0(naive) -2.67 / 전 변형 [-2.65,-2.59] 음 (vs cap-w KOSPI200). rank-IC qual +0.036 realized active로 이전 실패. quality가 CRISIS서 최악(-78.2%/yr), CAUTION만 +7.1%(n=13). 2017+ 성장주 우위 국면단절 재현(pre2017 -8.2% -> post2017 -21.4%). -> frontier(b) 이 activation 재시도 금지. 잔여: (a) multi-axis quality Q07 multi-sleeve(AX-004 EXCLUSION), (c) DART 현금흐름 비-return. Self-Adversarial C2 자가포착(rank-IC를 realized로 오독).",
   "tags": ["QUALITY_FAIL", "REGIME_CONDITIONAL_FAIL", "DISTILLED_NEG_LEDGER", "DIST-QPM-003", "AX-000_honest"],
   "created_at": "2026-07-05",
   "research_mode": "qepm_legacy",
   "created_by": "emit:qepm_legacy",
   "metric_type": "canonical_screen",
-  "construction_type": "regime_conditional",
-  "mechanism_hypothesis": "value/quality spread reversion 국면조건부 activation — quality를 CRISIS/CAUTION 국면에서 활성화하면 성장주 우위 국면 밖에서 profitability 프리미엄을 포착할 수 있다는 가설. 실측 기각: 국면별 realized active가 CRISIS -78.2% / NEUTRAL -26.5% / RISK_ON -8.8% / CAUTION +7.1%(n=13) — quality는 방어국면서 오히려 최악.",
+  "construction_type": "composite",
+  "mechanism_hypothesis": "value/quality spread reversion 국면조건부 activation: quality를 CRISIS/CAUTION에서 활성화하면 성장주 우위 국면 밖에서 profitability 프리미엄을 포착한다는 가설. 실측 기각 — regime별 realized long-only active: CRISIS -78.2%/yr, NEUTRAL -26.5%, RISK_ON -8.8%, CAUTION만 +7.1%(n=13). quality는 방어국면서 오히려 최악. rank-IC +0.036(ICIR 1.355)이 realized active로 이전 안 됨(§6).",
   "lcode_schema_version": 2,
   "falsification_attempts": [
     {
       "test": "regime-conditional quality tilt (CRISIS/CAUTION qual_z else val_z) top-25 long-only canonical_screen 258m vs cap-w KOSPI200",
       "result": "falsified",
-      "effect_retained": 0,
-      "port_t": -2.6121
+      "effect_retained": 0
     },
     {
-      "test": "rank-IC cross-sectional vs realized long-only active",
+      "test": "rank-IC cross-sectional (+0.036, ICIR 1.355) vs realized long-only active",
       "result": "falsified",
-      "effect_retained": 0,
-      "note": "rank-IC qual +0.0362 (ICIR 1.355) 양이나 realized active 음 — rank-IC != portfolio-alpha (measurement-graduation §6)"
+      "effect_retained": 0
     },
     {
       "test": "regime lookahead asof-toggle (negative verdict robustness)",
       "result": "survived",
-      "effect_retained": 1,
-      "note": "음의 결과가 look-ahead에 robust — self-adversarial C1 PARTIAL(verdict-robust). 판정 신뢰"
+      "effect_retained": 1
     }
   ],
+  "oos_months": 258,
   "portfolio_alpha_t": -2.6121,
   "selection_type": "chain",
   "record_type": "performance"

@@ -31,10 +31,11 @@ tg_agent_brief(
   lock_scope = sprintf("paper_router_%s", TODAY),
   sections = list(
     list(type = "summary", emoji = "\U0001F4DA",
-         body = paste0(
-           "arxiv 33편 소스 배분 - alpha 1 / optimizer 5 / risk 8 / regime 5 / skip 14. ",
-           "팩터후보 testable 0건 (2건 flag했으나 factor_registry 중복). ",
-           "curated 신규 0건(15편 기처리). AUTORUN=0 - 큐만 적재, 자동 백테 없음.")),
+         body = "arxiv 33편 배분: alpha1/opt5/risk8/regime5/skip14. testable 팩터 0(2건 중복). curated 신규 0. AUTORUN=0 큐만."),
+    list(type = "kv", emoji = "\U0001F4CA", heading = "배분 요약",
+         kv = list("소스" = "arxiv 33 + curated 0신규",
+                   "route" = "alpha1 opt5 risk8 regime5 skip14",
+                   "testable 팩터" = "0 (redundant 2)")),
     list(type = "bullet", emoji = "\U0001F9EC", heading = "발굴 팩터 (route 무관, 2건 전부 redundant)",
          items = factor_items),
     list(type = "bullet", emoji = "⚙️", heading = "Optimizer 큐 (α̂ 고정 A/B)",
