@@ -1,0 +1,28 @@
+{
+  "variant": "qual_q07",
+  "purpose": "Stage1 construct+standalone measurement + honest reconciliation vs E2E V0 (-2.67 claim)",
+  "authoritative_result": {
+    "envelope": "K200 U KQ150, top-25 EW long-only, LIQ 2e8 t-1, 15bps one-way, bench ym-join to RAWDATA month-end",
+    "metric_type": "canonical_screen",
+    "n_months": 258,
+    "portfolio_alpha_t_nw_lag3": 0.2747,
+    "portfolio_alpha_t_pvalue": 0.7836,
+    "information_ratio": 0.0707,
+    "net_sr": 0.0707,
+    "turnover_annual": 4.333,
+    "alpha_annualized": 0.0733,
+    "verdict": "FAIL (weak positive, far below +2.95 HARD; non-capitalizable standalone). AX-004 directionally consistent."
+  },
+  "e2e_v0_reported": {"n_months": 258, "port_t": -2.6716, "IR": -0.641, "turnover_annual": 2.9671, "alpha_annualized": -0.0129},
+  "reconciliation_scan": {
+    "no_universe_filter__bench_exact_date":  {"n": 256, "port_t": -1.1150, "IR": -0.2627, "turnover": 3.250, "alpha_ann": 0.0376},
+    "no_universe_filter__bench_ym_join":     {"n": 258, "port_t": -1.2839, "IR": -0.3210, "turnover": 3.250, "alpha_ann": 0.0379},
+    "k200ukq150__bench_exact_date":          {"n": 256, "port_t":  0.6065, "IR":  0.1459, "turnover": 4.333, "alpha_ann": 0.0747},
+    "k200ukq150__bench_ym_join":             {"n": 258, "port_t":  0.2747, "IR":  0.0707, "turnover": 4.333, "alpha_ann": 0.0733}
+  },
+  "reconciliation_verdict": "E2E V0 -2.6716 NOT reproducible from shipped alpha_scores.parquet qual_z under any of 4 constitutional constructions (range -1.28 .. +0.27). E2E V0 turnover 2.9671 does not match any (mine 3.25 no-filter / 4.33 filtered) => E2E V0 score construction differs from the shipped qual_z (likely coarser load_month_factors composite or different holdings-stability path). Reported transparently; the constitutionally-correct standalone measurement is +0.27 PORT_t. Both agree on the load-bearing verdict: standalone multi-axis quality long-only carries NO capitalizable realized alpha (nowhere near +2.95).",
+  "caution_regime_active_ann": -0.1704,
+  "caution_regime_n": 13,
+  "caution_note": "Under index-universe pure-quality standalone, CAUTION is NEGATIVE (-17.0%/yr, n=13). This differs from E2E's regime-conditional strategy split (CAUTION +7.1%): E2E's +7.1% was measured on the blended regime-conditional construction, not pure standalone quality within K200uKQ150. Standalone quality has no positive regime cell in the constitutional envelope.",
+  "governance": "governor 정지 — canonical_screen measurement only, no book_state write."
+}

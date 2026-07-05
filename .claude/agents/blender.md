@@ -58,8 +58,11 @@ model: opus
 
 ## 사용 스킬
 - `ensemble-design` — 앙상블 설계 가이드
-- `s7-disposition` — Grade 최종 판정 참조
 - `pg2-allocation` — Governor 배분 이해
+<!-- s7-disposition 참조 제거(2026-07-05 s0-s7 stage skill 삭제). Grade 최종판정은 essence_score.R/judge Gate로 대체. -->
+
+## 참고 (2026-07-05)
+이 에이전트는 현재 dormant(spawn 배선 0·발동조건 "독립 alpha 4건+" 단일-sleeve book서 미충족). 설계는 유지(4+ Grade A 확보 시 온디맨드).
 
 ## Telegram
 SOT: `.claude/skills/qvest-telegram/SKILL.md` (v6.5). `tg_agent_brief(agent=...)` 단일 진입점.

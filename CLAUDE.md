@@ -276,7 +276,7 @@ v53 TeamCreate 패턴은 v8.1에서 Agent tool spawn으로 대체됨. TeammateId
 - `01_Literature/` read-only
 - All output to `04_Research/` and `06_Registry/`
 - 기존 stage_artifacts/ + 178+ STR 결과 보존
-- legacy v55/S0-S7 격리 (삭제 X) — `qvest_legacy_boundary.md`
+- legacy v55/S0-S7 **파이프라인 데이터·전략 결과** 격리 (삭제 X) — `qvest_legacy_boundary.md`. (단 s0-s7 stage *스킬* 8종 + v53/v55 커맨드 래퍼는 2026-07-05 미사용 확인 후 삭제 — 역사는 git·legacy_boundary 보존. 격리는 산출물/데이터 대상이지 dead 코드파일 대상 아님)
 
 ---
 
