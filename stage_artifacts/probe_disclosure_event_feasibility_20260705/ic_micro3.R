@@ -3,7 +3,7 @@
 suppressPackageStartupMessages({library(data.table); library(arrow)})
 setDTthreads(1)
 OUT <- "stage_artifacts/probe_disclosure_event_feasibility_20260705"
-fs <- list.files(file.path(OUT,"months"), pattern="\.csv$", full.names=TRUE)
+fs <- list.files(file.path(OUT,"months"), pattern="csv$", full.names=TRUE)
 ev <- rbindlist(lapply(fs, fread, colClasses=list(character=c("stock_code","corp_code","rcept_dt","rcept_no"))), fill=TRUE)
 ev[, stock_code := sprintf("%06d", as.integer(stock_code))]
 ev[, Ticker := paste0("A", stock_code)]
