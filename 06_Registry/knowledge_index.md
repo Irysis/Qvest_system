@@ -1,6 +1,6 @@
 # Knowledge Index — 순차 뷰 (안정 ID 불변 · 활성 집합 1..N 자동)
 
-생성: 2026-07-05T11:08:46+0900 · `build_knowledge_index.R` · **안정 ID(AX-003/L-132/DIST-*)는 provenance 앵커 = 영구 불변**. 순번(#)은 현재 활성 집합의 위치일 뿐 — 증류/강등되면 뷰에서 자동 제외되어 항상 1..N 연속(구멍 없음). 빠진 것도 아카이브+검색+부활로 보존.
+생성: 2026-07-05T18:14:03+0900 · `build_knowledge_index.R` · **안정 ID(AX-003/L-132/DIST-*)는 provenance 앵커 = 영구 불변**. 순번(#)은 현재 활성 집합의 위치일 뿐 — 증류/강등되면 뷰에서 자동 제외되어 항상 1..N 연속(구멍 없음). 빠진 것도 아카이브+검색+부활로 보존.
 
 ## Active Law (4)
 
@@ -26,7 +26,7 @@
 | 9 | DIST-RAMP-005 | positive | RAMP infra/process: 11개 저상관(pairwise cor 0.11) 직교 약신호군을 EW로 조합하고 회전제어(13.1->7.8x)를 걸면, 개별군이 전부 음의 ne… | 3 |
 | 10 | DIST-RAMP-006 | conditional | KR 시장에서 value/국면-조건부 팩터배분은 배포 envelope(25종 long-only)에서 실현 PORT_t 천장이 ~2.85로, 모든 regime 변형(AR+MSM 2.… | 9 |
 
-## L-code 코퍼스 — 모드별 순차 (총 222 · 글로벌 연속 #)
+## L-code 코퍼스 — 모드별 순차 (총 225 · 글로벌 연속 #)
 
 안정 ID(L-...)는 불변. 아래 #는 활성 코퍼스 내 위치(모드 그룹 · 글로벌 연속).
 
@@ -205,83 +205,86 @@
 | 158 | L-155 | value | A | STR_1679v2 Full Gate 0~6 rehearing은 team-lead의 'Def contrib 22.55pp' 주장이 잘못된 attribution임을… |
 | 159 | L-156 | value | ? | Admission Rule v3.0 Gate 8 (Pairwise TDC ≤ 0.4)는 신규 admission뿐만 아니라 기존 admitted portfolio … |
 | 160 | L-159 | value | METHODOLOGY | Residual OLS regressor 추가는 결과 signal의 variance explanatory 강화 → residual alpha 희석 trade-of… |
+| 161 | L-JG-20260705_123317 | value | B | Cross-Sectional Attention super-factor (5-seed set-attention, 327 factor-DB chars, net-act… |
 
 ### qepm_legacy
 
 | # | L-code | family | grade | 요지 |
 |---|--------|--------|-------|------|
-| 161 | L-130 | quality_earnings | A | DFA(Dynamic Factor Allocation)는 MRS 국면별 방어팩터(Q07/Q03/D29) 블렌딩으로 Base MDD를 48.2%에서 30.2%로 축… |
-| 162 | L-131 | behavioral | F | 개인투자자 순매수 contrarian(역발상) 3MA 시그널은 한국시장에서 alpha source 부재. SR 0.157, MDD 65.6%, IR -0.283.… |
-| 163 | L-132 | value | F | V02 EP(Earnings/Price) 단독 diversifier는 CAGR -1.71%, SR -0.265로 완전 실패. Turnover 3.3%는 시그널이 … |
-| 164 | L-133 | quality_profitability | F | Cash-Based Profitability Quality(CBPQ)은 MDD 94.0%, SR -0.232로 치명적 실패. Ball et al.(2016)의 현… |
-| 165 | L-134 | quality_profitability | F | Growth Stability Composite Diversifier는 OOS retention -0.001(IS SR 0.60 → OOS SR 0.00)로 전형… |
-| 166 | L-135 | value | F | Sector Neutral Accrual은 OOS retention 0.12(IS 0.575→OOS 0.071)로 과적합. MDD 64.7%. Sloan(1996… |
-| 167 | L-136 | defense | C | D25(Accounting Beta)+Q07(Earnings Stability) defense는 MDD 10.2%로 방어 목적에는 부합하나 CAGR 2.59%로 … |
-| 168 | L-137 | quality_earnings | F | Piotroski+RetAutocorr는 score 45.4(hard fail 없으면 Grade A급)에 OOS retention 0.89, stress 3/3,… |
-| 169 | L-138 | quality_earnings | F | EV Accrual Quality Defense는 defense 역할로 설계했으나 stress 0/3 outperform으로 방어 기능 완전 부재. MDD 67.… |
-| 170 | L-139 | quality_profitability | C | Profitability Fortress는 IS에서 SR 1.044이지만 OOS retention 0.24 + recent 3Y SR 0.135로 심각한 alph… |
-| 171 | L-140 | quality_profitability | F | LowBeta 3F(VDplus/Diversifier 두 버전 모두)는 OOS에서 alpha 완전 소멸(retention -0.35/-0.02). Recent 3… |
-| 172 | L-141 | quality_earnings | A | Axiom 승격 시 scope 제한 필수 교훈. v1 승격(AX-004/005 weighted 0.89) 완료했으나 Q-Lead가 scope 과광 우려 제기 → … |
-| 173 | L-142 | value | A | Grade A 34건 catalog recheck 결과: hurdle-level JUDGE_PASS_A 25건 + JUDGE_PASS_LOWER 2건 + JUDG… |
-| 174 | L-148 | value | A | NO_JUDGE sweep v2 (34건 전수 PIT C1-C15 + hurdle 재검증) 결과 3-way 분류: PASS 11 / AMBIGUOUS_PIT_MI… |
-| 175 | L-160 | quality_earnings | F | H_1682 Distress(Q25) + Calmar(R16) 60/40 composite signal 품질 IC 0.2207 / ICIR 1.879 / FM t… |
-| 176 | L-160A | behavioral | INFRASTRUCTURE | 2-party flow divergence 또는 cross-channel difference 가설 설계 시 수식 수준 algebraic identity 사전 검증… |
-| 177 | L-161 | value | F | H_1688 Residual Momentum Carhart 1997 + Blitz-Huij-Martens 2011 정통 설계 구현에도 Grade F (MDD 86… |
-| 178 | L-161A | value | ? | Codex Critic Bash script (run_codex_critic.sh)가 codex-companion 응답 실패 시 S0 Debate 5인 합의 프로… |
-| 179 | L-162 | momentum | ? | 2-factor linear z-score blend (50/50)은 표준편차 불균형 시 dominant factor 단일 수렴 구조적 위험. H_1687 Q25… |
-| 180 | L-162A | value | ? | Forge v2 STR_1684 factor_engine.R 실행 중 'Date.x/Date.y merge 충돌' 에러 발견. 원인: data.table rbin… |
-| 181 | L-163 | quality_earnings | ? | Defense family composite 구성 시 각 factor의 stress_icir × weight 곱이 -0.05 이하로 떨어지면 조건부 차단. L-1… |
-| 182 | L-165 | quality_earnings | F | Multi-Source Defense Anchor (M08+C19+Q07+R16 4-axis regime-smoothed composite)는 signal lev… |
-| 183 | L-166 | quality_earnings | ? |  |
-| 184 | L-167 | infra_process | INFRASTRUCTURE_PROCESS | Forge self-check process는 PIT 위반(C1~C15) 및 s0_record 명세 전달 실패를 체계적으로 탐지하지 못하는 구조적 한계를 4건 누… |
-| 185 | L-QPM-20260606-001 | value | F | KR long-only 단일+multi-sleeve+국면 overlay로 SR 2.5 돌파 실패 (full QEPM 5-agent alpha/risk/optimi… |
-| 186 | L-QPM-20260607-001 | value | ? | KR long-only SR 2.5 목표는 현 universe(KOSPI200∪KQ150)·제약(max25 / 15bps / TO<=11 / no-short / … |
-| 187 | L-QPM-20260704_114303 | ml_complexity | F | KR 300팩터 월간 ML 랭킹 베이스라인(Session 57): XGBoost walk-forward OOS IC 0.0669/ICIR 0.7206(2008-0… |
-| 188 | L-QPM-20260705_102041 | overlay_regime | F | DIST-QPM-003 frontier(b) '국면조건부 quality activation' 실측 반증(FALSIFIED). regime-conditional(s… |
-| 189 | L-QPM-20260705_105130 | defense | F | cross-family regime-conditional composite (value/multi-axis-quality/residual-momentum/tail… |
-| 190 | L-QPM-20260705_110752 | quality_earnings | F | DIST-QPM-003 frontier(a) 'multi-axis quality를 multi-sleeve Q07 성분으로 배치'(AX-004 EXCLUSION e… |
+| 162 | L-130 | quality_earnings | A | DFA(Dynamic Factor Allocation)는 MRS 국면별 방어팩터(Q07/Q03/D29) 블렌딩으로 Base MDD를 48.2%에서 30.2%로 축… |
+| 163 | L-131 | behavioral | F | 개인투자자 순매수 contrarian(역발상) 3MA 시그널은 한국시장에서 alpha source 부재. SR 0.157, MDD 65.6%, IR -0.283.… |
+| 164 | L-132 | value | F | V02 EP(Earnings/Price) 단독 diversifier는 CAGR -1.71%, SR -0.265로 완전 실패. Turnover 3.3%는 시그널이 … |
+| 165 | L-133 | quality_profitability | F | Cash-Based Profitability Quality(CBPQ)은 MDD 94.0%, SR -0.232로 치명적 실패. Ball et al.(2016)의 현… |
+| 166 | L-134 | quality_profitability | F | Growth Stability Composite Diversifier는 OOS retention -0.001(IS SR 0.60 → OOS SR 0.00)로 전형… |
+| 167 | L-135 | value | F | Sector Neutral Accrual은 OOS retention 0.12(IS 0.575→OOS 0.071)로 과적합. MDD 64.7%. Sloan(1996… |
+| 168 | L-136 | defense | C | D25(Accounting Beta)+Q07(Earnings Stability) defense는 MDD 10.2%로 방어 목적에는 부합하나 CAGR 2.59%로 … |
+| 169 | L-137 | quality_earnings | F | Piotroski+RetAutocorr는 score 45.4(hard fail 없으면 Grade A급)에 OOS retention 0.89, stress 3/3,… |
+| 170 | L-138 | quality_earnings | F | EV Accrual Quality Defense는 defense 역할로 설계했으나 stress 0/3 outperform으로 방어 기능 완전 부재. MDD 67.… |
+| 171 | L-139 | quality_profitability | C | Profitability Fortress는 IS에서 SR 1.044이지만 OOS retention 0.24 + recent 3Y SR 0.135로 심각한 alph… |
+| 172 | L-140 | quality_profitability | F | LowBeta 3F(VDplus/Diversifier 두 버전 모두)는 OOS에서 alpha 완전 소멸(retention -0.35/-0.02). Recent 3… |
+| 173 | L-141 | quality_earnings | A | Axiom 승격 시 scope 제한 필수 교훈. v1 승격(AX-004/005 weighted 0.89) 완료했으나 Q-Lead가 scope 과광 우려 제기 → … |
+| 174 | L-142 | value | A | Grade A 34건 catalog recheck 결과: hurdle-level JUDGE_PASS_A 25건 + JUDGE_PASS_LOWER 2건 + JUDG… |
+| 175 | L-148 | value | A | NO_JUDGE sweep v2 (34건 전수 PIT C1-C15 + hurdle 재검증) 결과 3-way 분류: PASS 11 / AMBIGUOUS_PIT_MI… |
+| 176 | L-160 | quality_earnings | F | H_1682 Distress(Q25) + Calmar(R16) 60/40 composite signal 품질 IC 0.2207 / ICIR 1.879 / FM t… |
+| 177 | L-160A | behavioral | INFRASTRUCTURE | 2-party flow divergence 또는 cross-channel difference 가설 설계 시 수식 수준 algebraic identity 사전 검증… |
+| 178 | L-161 | value | F | H_1688 Residual Momentum Carhart 1997 + Blitz-Huij-Martens 2011 정통 설계 구현에도 Grade F (MDD 86… |
+| 179 | L-161A | value | ? | Codex Critic Bash script (run_codex_critic.sh)가 codex-companion 응답 실패 시 S0 Debate 5인 합의 프로… |
+| 180 | L-162 | momentum | ? | 2-factor linear z-score blend (50/50)은 표준편차 불균형 시 dominant factor 단일 수렴 구조적 위험. H_1687 Q25… |
+| 181 | L-162A | value | ? | Forge v2 STR_1684 factor_engine.R 실행 중 'Date.x/Date.y merge 충돌' 에러 발견. 원인: data.table rbin… |
+| 182 | L-163 | quality_earnings | ? | Defense family composite 구성 시 각 factor의 stress_icir × weight 곱이 -0.05 이하로 떨어지면 조건부 차단. L-1… |
+| 183 | L-165 | quality_earnings | F | Multi-Source Defense Anchor (M08+C19+Q07+R16 4-axis regime-smoothed composite)는 signal lev… |
+| 184 | L-166 | quality_earnings | ? |  |
+| 185 | L-167 | infra_process | INFRASTRUCTURE_PROCESS | Forge self-check process는 PIT 위반(C1~C15) 및 s0_record 명세 전달 실패를 체계적으로 탐지하지 못하는 구조적 한계를 4건 누… |
+| 186 | L-QPM-20260606-001 | value | F | KR long-only 단일+multi-sleeve+국면 overlay로 SR 2.5 돌파 실패 (full QEPM 5-agent alpha/risk/optimi… |
+| 187 | L-QPM-20260607-001 | value | ? | KR long-only SR 2.5 목표는 현 universe(KOSPI200∪KQ150)·제약(max25 / 15bps / TO<=11 / no-short / … |
+| 188 | L-QPM-20260704_114303 | ml_complexity | F | KR 300팩터 월간 ML 랭킹 베이스라인(Session 57): XGBoost walk-forward OOS IC 0.0669/ICIR 0.7206(2008-0… |
+| 189 | L-QPM-20260705_102041 | overlay_regime | F | DIST-QPM-003 frontier(b) '국면조건부 quality activation' 실측 반증(FALSIFIED). regime-conditional(s… |
+| 190 | L-QPM-20260705_105130 | defense | F | cross-family regime-conditional composite (value/multi-axis-quality/residual-momentum/tail… |
+| 191 | L-QPM-20260705_110752 | quality_earnings | F | DIST-QPM-003 frontier(a) 'multi-axis quality를 multi-sleeve Q07 성분으로 배치'(AX-004 EXCLUSION e… |
+| 192 | L-QPM-20260705_180719 | value | F | WT-D20260705_002 QEPM 자율발굴 CLEAN_NEGATIVE — SR-gap(+0.602) residual-orthogonal sleeve는 fac… |
+| 193 | L-QPM-20260705_180939 | quality_earnings | F | KR quality_profitability의 DIST-QPM-003 frontier(b)[value/quality spread reversion 국면조건부 ac… |
 
 ### ramp
 
 | # | L-code | family | grade | 요지 |
 |---|--------|--------|-------|------|
-| 191 | L-RAMP-20260618_131316 | overlay_regime | F | [failure-ledger/INV-7] 순진한 국면틸트(CAUTION/CRISIS서 방어군 1.5x·공격군 0.5x 고정룰) 역효과: net_sr −0.151 … |
-| 192 | L-RAMP-20260618_131316B | value | C | factor_db 316 전수 sweep + 풀 479 PCA: standalone long-only PORT_t>1 인 단일팩터 0/316. 직교성은 gross… |
-| 193 | L-RAMP-20260618_131316C | infra_process | B | 11 직교 약신호군 EW 조합 + 회전제어(13.1→7.8x) → long-only net_sr +0.083(양수), port_t +0.21. 개별군 전부 음수(… |
-| 194 | L-RAMP-20260618_131800 | infra_process | B | Gate6 iteration: 최고=M0_smooth net_sr=+0.083 port_t=+0.21 TO=7.8 (기준 M0_EW −0.04). 회전제어=핵심레… |
-| 195 | L-RAMP-20260618_134000 | overlay_regime | C | regime-cash 오버레이(CRISIS 0.3/CAUTION 0.6)를 M_regime_dd에 얹으니 net_sr +0.110→−0.105 악화. 원인=측정창… |
-| 196 | L-RAMP-20260618_140528 | ? | B | Round1 고레버리지: best=H3_regdd_conviction net_sr=+0.110 port_t=+0.26 oos=-1.067 (직전 +0.110). … |
-| 197 | L-RAMP-20260618_142650 | overlay_regime | A | ★유의 달성: RAMP M-code(11직교군+데이터구동 regime, top-25 long-only net) port_t(NW)=2.39 vs EW-univer… |
-| 198 | L-RAMP-20260618_175207 | infra_process | A | Graduation 시도: best=M_regdd port_t=3.66 oos_reten=0.15 calmar=0.37 DSR=3.24 (vs EW-uni). 게… |
-| 199 | L-RAMP-20260619_070753 | overlay_regime | B | 가이드북 Gate6-8 정식구현(역할 M0-M4 + drift 플래그 + 인베스터 레짐배분). Gate9: INVESTOR OOS active IR -0.192 … |
-| 200 | L-RAMP-20260619_081702 | overlay_regime | B | 팩터군 보강(2005-2026 전체 316팩터). equal-weight 316=희석 붕괴(pt 0.82) → IC-가중 composite가 해소: oos_ret… |
-| 201 | L-RAMP-20260619_103729 | overlay_regime | A | 미배선 Absorption Ratio(Kritzman 2010, 횡단면 상관 top15 고유값 분산비=시장동조화) 엔진을 RAMP에 배선. 헌법 §3.5 정합 s… |
-| 202 | L-RAMP-20260619_105903 | ? | A | 자율 자가발전: AR-soft 배선 위 {AR/AR+MSM}×{monthly/quarterly} 4변형. best=AR+MSM_quarterly pt_capwt … |
-| 203 | L-RAMP-20260619_132312 | momentum | A | 국면엔진 리서치풀 14개(인프라7:Cascade/AR/MSM/MRS9/Jump/Forecaster/hard4 + 신규리서치4:Trend/RealizedVol/Dr… |
-| 204 | L-RAMP-20260619_135237 | overlay_regime | B | 제약완화(도훈): active-only 제약 풀고 Gate8 soft 타이밍(Cascade Category 노출스케줄 1.0/0.7/0.4, 헌법 Σa≤1 허용·… |
-| 205 | L-RAMP-20260619_140656 | ml_complexity | B | 국면엔진 강화 3종 전부 Cascade 단독(pt 2.85) 미달: 순진앙상블 2.61·스마트앙상블(트레일링IR가중) 2.65·multi-axis 경제분업 2.7… |
-| 206 | L-RAMP-20260619_141402 | momentum | B | 새 국면엔진 설계(최신페이퍼 Shu-Mulvey 2024 arXiv 2410.14841 per-factor Sparse Jump Model): 각 군 IC시계열에… |
-| 207 | L-RAMP-20260619_144257 | overlay_regime | B | Shu-Mulvey 2024(arXiv 2410.14841) 충실구현(도훈 '모든 제약 해지'). 7 롱온리 스타일팩터 인덱스(Market+Value/Size/M… |
-| 208 | L-RAMP-20260619_150531 | value | B | Shu-Mulvey 옵션1(인덱스 2003~확장, 2008 GFC 테스트포함)+옵션2(per-factor λ/κ CV튜닝, online filter는 월간 las… |
-| 209 | L-RAMP-20260619_151835 | value | C | ★정정: 앞선 'Shu-Mulvey 조건부졸업 oos 0.52'는 sweep-부풀림 아티팩트였음. 도훈 '더 튜닝할 여지?'에 답해 논문 본래 메커니즘(rolli… |
-| 210 | L-RAMP-20260619_152736 | ml_complexity | A | ★★최종 정정(도훈 '파라미터 튜닝 적절했다' 2회 + '맘대로 마감 마라'): 직전 de-bias 'screen-tier' 결론은 내 오판이었다. grid-en… |
-| 211 | L-RAMP-20260619_173504 | value | F | ★중대발견(도훈 '25종목 제약 넣어서 진행'): RAMP_02(Shu-Mulvey)는 25종목 제약에서 엣지 소멸=배포불가. BL 21팩터 인덱스비중→횡단면 종… |
-| 212 | L-RAMP-20260619_180008 | ml_complexity | C | 도훈 'direction 1,2 해보고 대안도': 25종목 RAMP_01 강화 시도, 둘 다 천장확인. ★Direction1(Shu-Mulvey 국면방법을 RAM… |
-| 213 | L-RAMP-20260619_193015 | value | F | 도훈 'DPL 해보고 RAMP_02 로직 돌파법 최대추론'. 추론: RAMP_02 엣지=broad base 작은tilt timing, 25종목=집중 → compo… |
-| 214 | L-RAMP-20260620_103109 | momentum | B | ★새 접근 성공(도훈 '기존 틀말고 새 접근'): 25종목서 OOS 양수+calmar 통과하는 첫 배포가능 전략. ★결정적 발견(alpha OOS probe): … |
-| 215 | L-RAMP-20260620_104415 | momentum | B | ★도훈 교정 검증(국면조건부 다차원 블렌딩 > 정적 모멘텀-중심): 내 'momentum이 유일 생존알파' 프레임은 *무조건부 OOS*만 본 좁은 시각. Valu… |
-| 216 | L-RAMP-20260620_132802 | overlay_regime | C | 도훈 'FWL+국면엔진 개발진행'. ★내 'FWL이 최대 미사용 레버' 단언 측정이 반박(과신 정정). blanket FWL(전팩터 size중립화)=Size팩터(… |
-| 217 | L-RAMP-20260620_161507 | momentum | A | ★도훈 goal 달성: 정직 실측으로 현 Book 초과 포트 발굴. 8-구성요소 grid(3024 config, 공유캐시 병렬) 탐색→robust 승자 selec… |
-| 218 | L-RAMP-20260620_171915 | value | A | 도훈 옵션2(Book을 factor로 흡수 재최적화, 25종목준수). ★전제정정: 직전 '31종목 결합 Book초과'는 25종목 위반(book20∪sleeve25… |
-| 219 | L-RAMP-20260620_184509 | momentum | F | ★중대 PIT 정정: 옵션2 book-흡수 '25종목 beat'(book_momcons pt 3.05)와 construction(book_base 6.73)은 L… |
-| 220 | L-RAMP-20260620_184815 | momentum | A | ★PIT-클린 25종목 Book 돌파 회복(구성요소 g=cap-weight 강화, look-ahead 제거 후). book score(shift0 PIT-veri… |
-| 221 | L-RAMP-20260620_185554 | momentum | A | ★8-구성요소 전수 강화 종합(도훈 goal '25종목 BOOK 성과돌파', PIT-클린). 각 레버 결과: z(raw best, FWL refuted)·R국면(… |
+| 194 | L-RAMP-20260618_131316 | overlay_regime | F | [failure-ledger/INV-7] 순진한 국면틸트(CAUTION/CRISIS서 방어군 1.5x·공격군 0.5x 고정룰) 역효과: net_sr −0.151 … |
+| 195 | L-RAMP-20260618_131316B | value | C | factor_db 316 전수 sweep + 풀 479 PCA: standalone long-only PORT_t>1 인 단일팩터 0/316. 직교성은 gross… |
+| 196 | L-RAMP-20260618_131316C | infra_process | B | 11 직교 약신호군 EW 조합 + 회전제어(13.1→7.8x) → long-only net_sr +0.083(양수), port_t +0.21. 개별군 전부 음수(… |
+| 197 | L-RAMP-20260618_131800 | infra_process | B | Gate6 iteration: 최고=M0_smooth net_sr=+0.083 port_t=+0.21 TO=7.8 (기준 M0_EW −0.04). 회전제어=핵심레… |
+| 198 | L-RAMP-20260618_134000 | overlay_regime | C | regime-cash 오버레이(CRISIS 0.3/CAUTION 0.6)를 M_regime_dd에 얹으니 net_sr +0.110→−0.105 악화. 원인=측정창… |
+| 199 | L-RAMP-20260618_140528 | ? | B | Round1 고레버리지: best=H3_regdd_conviction net_sr=+0.110 port_t=+0.26 oos=-1.067 (직전 +0.110). … |
+| 200 | L-RAMP-20260618_142650 | overlay_regime | A | ★유의 달성: RAMP M-code(11직교군+데이터구동 regime, top-25 long-only net) port_t(NW)=2.39 vs EW-univer… |
+| 201 | L-RAMP-20260618_175207 | infra_process | A | Graduation 시도: best=M_regdd port_t=3.66 oos_reten=0.15 calmar=0.37 DSR=3.24 (vs EW-uni). 게… |
+| 202 | L-RAMP-20260619_070753 | overlay_regime | B | 가이드북 Gate6-8 정식구현(역할 M0-M4 + drift 플래그 + 인베스터 레짐배분). Gate9: INVESTOR OOS active IR -0.192 … |
+| 203 | L-RAMP-20260619_081702 | overlay_regime | B | 팩터군 보강(2005-2026 전체 316팩터). equal-weight 316=희석 붕괴(pt 0.82) → IC-가중 composite가 해소: oos_ret… |
+| 204 | L-RAMP-20260619_103729 | overlay_regime | A | 미배선 Absorption Ratio(Kritzman 2010, 횡단면 상관 top15 고유값 분산비=시장동조화) 엔진을 RAMP에 배선. 헌법 §3.5 정합 s… |
+| 205 | L-RAMP-20260619_105903 | ? | A | 자율 자가발전: AR-soft 배선 위 {AR/AR+MSM}×{monthly/quarterly} 4변형. best=AR+MSM_quarterly pt_capwt … |
+| 206 | L-RAMP-20260619_132312 | momentum | A | 국면엔진 리서치풀 14개(인프라7:Cascade/AR/MSM/MRS9/Jump/Forecaster/hard4 + 신규리서치4:Trend/RealizedVol/Dr… |
+| 207 | L-RAMP-20260619_135237 | overlay_regime | B | 제약완화(도훈): active-only 제약 풀고 Gate8 soft 타이밍(Cascade Category 노출스케줄 1.0/0.7/0.4, 헌법 Σa≤1 허용·… |
+| 208 | L-RAMP-20260619_140656 | ml_complexity | B | 국면엔진 강화 3종 전부 Cascade 단독(pt 2.85) 미달: 순진앙상블 2.61·스마트앙상블(트레일링IR가중) 2.65·multi-axis 경제분업 2.7… |
+| 209 | L-RAMP-20260619_141402 | momentum | B | 새 국면엔진 설계(최신페이퍼 Shu-Mulvey 2024 arXiv 2410.14841 per-factor Sparse Jump Model): 각 군 IC시계열에… |
+| 210 | L-RAMP-20260619_144257 | overlay_regime | B | Shu-Mulvey 2024(arXiv 2410.14841) 충실구현(도훈 '모든 제약 해지'). 7 롱온리 스타일팩터 인덱스(Market+Value/Size/M… |
+| 211 | L-RAMP-20260619_150531 | value | B | Shu-Mulvey 옵션1(인덱스 2003~확장, 2008 GFC 테스트포함)+옵션2(per-factor λ/κ CV튜닝, online filter는 월간 las… |
+| 212 | L-RAMP-20260619_151835 | value | C | ★정정: 앞선 'Shu-Mulvey 조건부졸업 oos 0.52'는 sweep-부풀림 아티팩트였음. 도훈 '더 튜닝할 여지?'에 답해 논문 본래 메커니즘(rolli… |
+| 213 | L-RAMP-20260619_152736 | ml_complexity | A | ★★최종 정정(도훈 '파라미터 튜닝 적절했다' 2회 + '맘대로 마감 마라'): 직전 de-bias 'screen-tier' 결론은 내 오판이었다. grid-en… |
+| 214 | L-RAMP-20260619_173504 | value | F | ★중대발견(도훈 '25종목 제약 넣어서 진행'): RAMP_02(Shu-Mulvey)는 25종목 제약에서 엣지 소멸=배포불가. BL 21팩터 인덱스비중→횡단면 종… |
+| 215 | L-RAMP-20260619_180008 | ml_complexity | C | 도훈 'direction 1,2 해보고 대안도': 25종목 RAMP_01 강화 시도, 둘 다 천장확인. ★Direction1(Shu-Mulvey 국면방법을 RAM… |
+| 216 | L-RAMP-20260619_193015 | value | F | 도훈 'DPL 해보고 RAMP_02 로직 돌파법 최대추론'. 추론: RAMP_02 엣지=broad base 작은tilt timing, 25종목=집중 → compo… |
+| 217 | L-RAMP-20260620_103109 | momentum | B | ★새 접근 성공(도훈 '기존 틀말고 새 접근'): 25종목서 OOS 양수+calmar 통과하는 첫 배포가능 전략. ★결정적 발견(alpha OOS probe): … |
+| 218 | L-RAMP-20260620_104415 | momentum | B | ★도훈 교정 검증(국면조건부 다차원 블렌딩 > 정적 모멘텀-중심): 내 'momentum이 유일 생존알파' 프레임은 *무조건부 OOS*만 본 좁은 시각. Valu… |
+| 219 | L-RAMP-20260620_132802 | overlay_regime | C | 도훈 'FWL+국면엔진 개발진행'. ★내 'FWL이 최대 미사용 레버' 단언 측정이 반박(과신 정정). blanket FWL(전팩터 size중립화)=Size팩터(… |
+| 220 | L-RAMP-20260620_161507 | momentum | A | ★도훈 goal 달성: 정직 실측으로 현 Book 초과 포트 발굴. 8-구성요소 grid(3024 config, 공유캐시 병렬) 탐색→robust 승자 selec… |
+| 221 | L-RAMP-20260620_171915 | value | A | 도훈 옵션2(Book을 factor로 흡수 재최적화, 25종목준수). ★전제정정: 직전 '31종목 결합 Book초과'는 25종목 위반(book20∪sleeve25… |
+| 222 | L-RAMP-20260620_184509 | momentum | F | ★중대 PIT 정정: 옵션2 book-흡수 '25종목 beat'(book_momcons pt 3.05)와 construction(book_base 6.73)은 L… |
+| 223 | L-RAMP-20260620_184815 | momentum | A | ★PIT-클린 25종목 Book 돌파 회복(구성요소 g=cap-weight 강화, look-ahead 제거 후). book score(shift0 PIT-veri… |
+| 224 | L-RAMP-20260620_185554 | momentum | A | ★8-구성요소 전수 강화 종합(도훈 goal '25종목 BOOK 성과돌파', PIT-클린). 각 레버 결과: z(raw best, FWL refuted)·R국면(… |
 
 ### regime_research
 
 | # | L-code | family | grade | 요지 |
 |---|--------|--------|-------|------|
-| 222 | L-RR-20260704_114303 | overlay_regime | F | KR book(STR_1715_AR_on_M4_R05_overlay_PG2) 인버스 ETF(-1x 114800/-2x 252670) 헤지 슬리브 전면 REJECT… |
+| 225 | L-RR-20260704_114303 | overlay_regime | F | KR book(STR_1715_AR_on_M4_R05_overlay_PG2) 인버스 ETF(-1x 114800/-2x 252670) 헤지 슬리브 전면 REJECT… |
 
 ## 강등/아카이브 (뷰 제외 · 참조 영구 보존, 4)
 
