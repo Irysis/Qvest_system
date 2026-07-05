@@ -1,0 +1,71 @@
+{
+  "task": "PG2 초과 알파 사냥 토대 — (1) PG2 recon-baseline 확립 (2) score_eff 직교 sleeve 후보 발굴",
+  "as_of": "2026-07-05",
+  "discipline": {
+    "measurement": "실측-only (canonical_screen_bt/build_benchmark_compare 경유, prod(1+r) 손계산 금지). base recon = extract_book_carrier.R run_all.R verbatim 엔진.",
+    "pit": "C1~C15. 유동성 t-1 ADV(C10). Z_Score C13-aligned(부호전환 없음). BM window (start_d,end_d] 복리(realized_ym 미스정렬 회피).",
+    "pinned_cache": [".cache/RAWDATA_pin20260703.parquet", ".cache/benchmark_pin20260703.parquet(IKS200)"],
+    "segfault_guard": "taskkill + setDTthreads(1) + arrow io 단일 + col_select. Rscript -e 한글 미사용(.R source)."
+  },
+
+  "pg2_recon_baseline": {
+    "book_id": "STR_1715_on_M4_R05_noLayer4_PG2",
+    "structure": "STR_1715 score_eff top-20 linear_tilt × 오버레이(m4 × β_R05, noLayer4)",
+    "incumbent_book_ir_target": 1.416,
+    "incumbent_ir_convention": "net_active_recon_v1 = mean(active)/sd(active)*sqrt(12), active = ret_net − BM(KOSPI200)",
+    "recon_book_ir": 1.4238,
+    "recon_vs_target_drift": 0.0078,
+    "recon_drift_note": "0.008 drift는 pinned-cache 재현오차. recon-vs-recon marginal(동일 pinned cache) 기준에선 drift 상쇄 — 후보 스태킹은 base_book_gross만 블렌드별 재산출·동일 오버레이 재적용 → net. eval_book(base_z, sleeve_z, blend_w) harness 로 marginal 산출.",
+    "base_gross_sr_ann": 1.592,
+    "n_months": 270,
+    "harness_ready": true,
+    "harness_paths": {
+      "harness": "stage_artifacts/beat_pg2_ortho_sleeve_20260705/harness.R",
+      "functions": "build_pg2_baseline() / eval_book(base_z, sleeve_z, blend_w) / recon_book_gross() / canon_active_fast(scores, grid, top_n) / precompute_grid(sig_dates)",
+      "baseline_rds": "stage_artifacts/beat_pg2_ortho_sleeve_20260705/pg2_baseline.rds",
+      "book_active_series": "stage_artifacts/beat_pg2_ortho_sleeve_20260705/pg2_net_active_series.csv",
+      "eval_candidates": "stage_artifacts/beat_pg2_ortho_sleeve_20260705/eval_candidates.R",
+      "all_scan_csv": "stage_artifacts/beat_pg2_ortho_sleeve_20260705/all_candidates_scan.csv",
+      "orthogonal_positive_csv": "stage_artifacts/beat_pg2_ortho_sleeve_20260705/orthogonal_positive_candidates.csv"
+    },
+    "pg2_reproduced_verified": true
+  },
+
+  "orthogonal_criteria": {
+    "active_cor": "< 0.30 vs score_eff-book net active(−BM)",
+    "standalone_port_t": "> 1.0 (canonical top-25 EW long-only, NW lag-3, 15bps)",
+    "success_bar_for_sleeve": "book-marginal ΔIR ≥ 0.05 AND paired NW-t ≥ 2.0 vs PG2 (본 발굴 단계에선 미평가 — 다음 스태킹 단계)"
+  },
+
+  "scan_summary": {
+    "total_candidates_scanned": 329,
+    "sources": ["XATTN(WT_D20260705_001 score/alpha_active_hat)", "factor_db 327 factors (Z_Score, 2005-01+ 257월)", "RAMP residual — 아래 note"],
+    "orthogonal_and_positive_count": 24,
+    "KEY_HONEST_FINDING": "329개 후보 전부 active_cor < 0.30 (최대 0.220 = XATTN). cor≥0.30로 배제된 positive 후보 0건 → 직교성 필터는 비-binding. 실질 selector = PORT_t>1.0 (24/329 통과). 이는 §6 통찰(long-only 팩터 sleeve의 active(−BM) 상관은 시장성분 제거 후 낮음)의 재확인 — book active와 개별 팩터 active는 거의 직교.",
+    "family_breakdown_of_24": {"Value": 13, "Earnings/Estimate(C)": 5, "XATTN": 2, "Momentum-rev(M27)": 1, "Quality(Q04)": 1, "Size(S01)": 1, "Investment(IN03)": 1}
+  },
+
+  "top_orthogonal_positive_candidates": [
+    {"rank": 1, "code": "V15_NetDebt_Adj_EP", "family": "value", "active_cor": 0.010, "standalone_port_t": 3.03, "net_sr": 0.52, "n": 257},
+    {"rank": 2, "code": "V02_EP", "family": "value", "active_cor": 0.019, "standalone_port_t": 2.90, "net_sr": 0.48, "n": 257, "caveat": "AX-003 EP_STANDALONE+LOW_TURNOVER 실패 이력 — 본 top-25 EW 전기간 PORT_t는 구조/기간 상이. subperiod 필수."},
+    {"rank": 3, "code": "V24_Residual_Income", "family": "value", "active_cor": 0.008, "standalone_port_t": 2.80, "net_sr": 0.44, "n": 257},
+    {"rank": 4, "code": "M27_Analyst_Rev_Mom", "family": "estimate_revision", "active_cor": 0.064, "standalone_port_t": 2.67, "net_sr": 0.51, "n": 257, "note": "earnings-revision family — [[project-earnings-revision-3m-horizon-lead]]와 정합(최근 강건 후보군)."},
+    {"rank": 5, "code": "C02_EPS_Chg_1m", "family": "earnings", "active_cor": 0.053, "standalone_port_t": 2.58, "net_sr": 0.50, "n": 257},
+    {"rank": 6, "code": "V14_EBIT_EV", "family": "value", "active_cor": 0.025, "standalone_port_t": 2.36, "net_sr": 0.43, "n": 257},
+    {"rank": 7, "code": "C07_TP_Mom", "family": "earnings", "active_cor": 0.026, "standalone_port_t": 1.83, "net_sr": 0.45, "n": 257},
+    {"rank": 8, "code": "Q04_Piotroski_F", "family": "quality", "active_cor": 0.033, "standalone_port_t": 1.74, "net_sr": 0.38, "n": 257},
+    {"rank": 9, "code": "XATTN_score", "family": "cross_sectional_attention", "active_cor": 0.220, "standalone_port_t": 1.53, "net_sr": 0.36, "n": 195, "note": "가장 경제적으로 직교(비-팩터 구조, cor 최고이나 여전히 <0.30). alpha_active_hat도 동일 랭킹 산출."}
+  ],
+
+  "value_family_decay_caveat": {
+    "flag": "상위 24 중 13개가 Value. 그러나 [[reference-kr-value-factor-decay]]: KR V01~24 post-2015 감쇠 실증. 전기간(2005-2026) PORT_t는 pre-2015 강세를 포함해 최근 감쇠를 마스킹할 수 있음.",
+    "required_next_step": "스태킹 전 subperiod(pre-2015 vs 2015+) PORT_t + oos_retention 확인 의무 — value 후보는 발굴됐으나 최근 유효성 미검증. earnings/estimate(C·M27) 후보가 최근성 측면 우선(earnings@3M lead 정합)."
+  },
+
+  "ramp_residual_note": {
+    "status": "직접 스태킹용 per-stock sleeve 아님 — 별도 취급",
+    "detail": "outputs/ramp/residual_alpha_characterized.parquet(25건, Gate4 PC2~10 '18후보') 및 latent_factor_loadings는 strategy-NAV 공간 클러스터(strategy_id + PC loading)라 canonical top-25 sleeve로 직접 스코어링 불가. outputs/ramp/pure_factor_scores.parquet(24.6M rows, security_id별 neutralized_z)는 per-stock이나 factor_id가 factor_db와 동일 316팩터의 FWL(시장/PC1 잔차화) 버전 — 본 스캔의 raw Z_Score 버전과 팩터 패밀리 중복. 잔차화 변형은 후속(스태킹 단계)서 상위 후보 한정 spot-check 권고(neutralized_z가 이미 낮은 cor를 더 낮출 수 있으나 PORT_t는 별개)."
+  },
+
+  "verdict": "직교+양수 후보 24건 실재(정직 보고 — 없지 않음). 단 (a) 직교성은 비-binding(모든 팩터가 book active와 거의 직교), 실질 판별자는 PORT_t. (b) 상위는 Value 편중이며 KR value 감쇠·AX-003 caveat로 최근 유효성 미검증 → subperiod 확인 전 자본급 아님. (c) 다음 단계 = eval_book()으로 상위 후보(우선순위: earnings/estimate C02·M27·C07 + XATTN, 이후 value) score_eff에 스태킹 → book-marginal ΔIR≥0.05 AND paired NW-t≥2.0 실측."
+}
