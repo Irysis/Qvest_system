@@ -373,25 +373,41 @@ try:
     if r05_state.get('active') is True:
         layers.append('R05 Tail-Risk')
     n_layer = len(layers) + 1  # +1 for STR_1715 alpha base
-    # Beta values (admit baseline: NORMAL regime, middle β_AR rule q70~q90)
-    beta_ar = 0.7
+    # Layer4 removal 감지 (WT-D20260702_002): β overlay(AR/faith) 제거 여부
+    aid0 = admitted[0] if admitted else ''
+    layer4_removed = ('LAYER4 REMOVED' in sched) or ('noLayer4' in aid0)
     beta_r05 = float((r05_state.get('beta_r05_params') or {}).get('NORMAL', 1.0))
-    risk_pct = round(1.0 * beta_ar * beta_r05 * 100)
-    cash_pct = 100 - risk_pct
-    # Admit metrics
-    m = r05_log.get('admit_basis_metrics') or {}
-    sr = m.get('SR_admit_255m')
-    mdd = m.get('MDD_pct_255m')
-    cagr = m.get('CAGR_pct_255m')
     lines = []
     if admitted:
-        aid = admitted[0]
-        w_pct = round(float(weights.get(aid, 0)) * 100)
-        lines.append(f'PG2 admit:  {aid} ({w_pct}%, {updated}~)')
-        lines.append(f'PG2 layer:  {n_layer}-Layer ({" + ".join(layers)})')
-        if sr is not None and mdd is not None and cagr is not None:
-            lines.append(f'PG2 regime: m4=NORMAL × β_AR={beta_ar:.2f} × β_R05={beta_r05:.2f} = {risk_pct}% risk + {cash_pct}% cash (admit baseline)')
-            lines.append(f'PG2 admit:  SR {sr:.4f} / MDD {mdd:.2f}% / CAGR {cagr:.2f}% (255m PerfA)')
+        w_pct = round(float(weights.get(aid0, 0)) * 100)
+        lines.append(f'PG2 admit:  {aid0} ({w_pct}%, {updated}~)')
+        if layer4_removed:
+            # 현 book = STR_1715 × m4 × β_R05 (Layer4 β-overlay 제거) — 지표는 layer4_removal 이벤트 C_noL4
+            l4ev = {}
+            for k, v in d.items():
+                if 'layer4_removal' in k and isinstance(v, dict):
+                    l4ev = v; break
+            m2 = ((l4ev.get('metrics') or {}).get('C_noL4') or {})
+            sr = m2.get('SR_geo'); cagr = m2.get('CAGR'); mdd = m2.get('MDD')
+            calmar = m2.get('Calmar'); port_t = m2.get('PORT_t_NW_lag3')
+            risk_pct = round(1.0 * beta_r05 * 100); cash_pct = 100 - risk_pct
+            lines.append('PG2 layer:  STR_1715 alpha × M4 BOCPD × R05 Tail-Risk (Layer4 β-overlay REMOVED, WT-D20260702_002)')
+            lines.append(f'PG2 regime: m4=NORMAL × β_R05={beta_r05:.2f} = {risk_pct}% risk + {cash_pct}% cash (admit baseline, noLayer4)')
+            if sr is not None and cagr is not None and mdd is not None:
+                extra = ''
+                if calmar is not None: extra += f' / Calmar {calmar:.3f}'
+                if port_t is not None: extra += f' / PORT_t {port_t:.2f}'
+                lines.append(f'PG2 admit:  SR_geo {sr:.4f} / MDD -{mdd*100:.2f}% / CAGR {cagr*100:.2f}%{extra} (269m clean, stored admit-baseline)')
+        else:
+            # legacy Layer4 book (β overlay 활성) — 구 admit_basis_metrics 경로
+            beta_ar = 0.7
+            risk_pct = round(1.0 * beta_ar * beta_r05 * 100); cash_pct = 100 - risk_pct
+            m = r05_log.get('admit_basis_metrics') or {}
+            sr = m.get('SR_admit_255m'); mdd = m.get('MDD_pct_255m'); cagr = m.get('CAGR_pct_255m')
+            lines.append(f'PG2 layer:  {n_layer}-Layer ({" + ".join(layers)})')
+            if sr is not None and mdd is not None and cagr is not None:
+                lines.append(f'PG2 regime: m4=NORMAL × β_AR={beta_ar:.2f} × β_R05={beta_r05:.2f} = {risk_pct}% risk + {cash_pct}% cash (admit baseline)')
+                lines.append(f'PG2 admit:  SR {sr:.4f} / MDD {mdd:.2f}% / CAGR {cagr:.2f}% (255m PerfA, stored admit-baseline)')
     else:
         lines.append('PG2 admit:  NONE (book_state.admitted_ids empty)')
     print('\n'.join(lines))
