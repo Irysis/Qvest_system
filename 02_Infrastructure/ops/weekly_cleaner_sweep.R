@@ -287,6 +287,16 @@ run_step("axiom_weekly_cycle", {
   invisible(TRUE)
 })
 
+# [3.6] 지식 순차 인덱스 재생성 (2026-07-05 도훈 — "1부터 차례대로·증류돼도 구멍 없이")
+#   안정 ID 불변, 활성 집합(Law/Distilled/L-code)을 1..N 뷰로 갱신. blast radius 0.
+#   axiom 사이클 직후 실행 → 증류/강등 반영된 최신 활성 집합으로 재생성.
+run_step("knowledge_index", {
+  options(ki_no_autorun = TRUE)
+  source(file.path(root, "02_Infrastructure", "ops", "build_knowledge_index.R"))
+  build_knowledge_index(root = root)
+  invisible(TRUE)
+})
+
 # axiom 후보 현황 집계 (n_pending / failing_axis_histogram / near_miss) — 다이제스트 입력.
 #   failing 축 데이터 = promote.R review_log(AX-PENDING_*.json failing_hurdles) 실기록만 소비.
 run_step("axiom_candidates_summary", {

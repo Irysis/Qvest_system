@@ -467,6 +467,14 @@ if [ -f "$SMOKE_SCRIPT" ] && python3 -c 'import sys' >/dev/null 2>&1; then
   SMOKE_STATUS=$(QM_ROOT="$CLAUDE_PROJECT_DIR" python3 "$(cygpath -m "$SMOKE_SCRIPT" 2>/dev/null || echo "$SMOKE_SCRIPT")" "$CLAUDE_PROJECT_DIR" 2>&1 | tail -1 || true)
 fi
 
+# 지식 순차 인덱스 재생성 (2026-07-05 도훈 — 안정 ID 불변, 활성 집합 1..N 뷰). fail-soft.
+#   lcode_corpus 백그라운드 regen 이후 실행되도록 부트 말미 배치. 산출: 06_Registry/knowledge_index.{md,json}
+KI_R="$PROJECT/02_Infrastructure/ops/build_knowledge_index.R"
+if [ -f "$KI_R" ]; then
+  KI_OUT=$(cd "$PROJECT" && Rscript "$KI_R" 2>&1 | grep -oE '\[knowledge-index\].*' | tail -1 || true)
+  [ -n "$KI_OUT" ] && echo "[boot] $KI_OUT"
+fi
+
 echo ""
 if [ "${BOOT_FAILS:-0}" -gt 0 ]; then
   echo "=== 부트스트랩 DEGRADED — ${BOOT_FAILS}개 게이트 실패 (위 ERROR 라인 확인, '완료' 아님) ==="
