@@ -30,13 +30,15 @@ RAW_PIN <- file.path(CACHE, "RAWDATA_pin20260703.parquet")
 BM_PIN  <- file.path(CACHE, "benchmark_pin20260703.parquet")
 stopifnot(file.exists(RAW_PIN), file.exists(BM_PIN))
 
-cat("[te] loading pinned RAWDATA...\n")
-RAWDATA <- as.data.table(read_parquet(
-  RAW_PIN,
-  col_select = c("Date","Ticker","K200","KQ150","Sector","Sector_Lv2",
-                 "Size","Close","Vol","Ret","Market")))
+.flog("[te] loading pinned RAWDATA (open_dataset pushdown 2003+)...\n")
+# ★ open_dataset+collect (read_parquet col_select은 OneDrive mmap crash 유발) + Date>=2003 pushdown
+RAWDATA <- open_dataset(RAW_PIN) %>%
+  filter(Date >= as.Date("2003-06-01")) %>%
+  select(Date, Ticker, K200, KQ150, Sector, Sector_Lv2, Size, Close, Vol, Ret) %>%
+  collect() %>% as.data.table()
 RAWDATA[, Date := as.Date(Date)]
 setorder(RAWDATA, Ticker, Date)
+.flog("[te] RAWDATA loaded rows=%d\n", nrow(RAWDATA))
 
 BM_DT <- as.data.table(read_parquet(BM_PIN))
 BM_DT[, Date := as.Date(Date)]
