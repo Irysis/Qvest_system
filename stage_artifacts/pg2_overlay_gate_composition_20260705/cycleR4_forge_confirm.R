@@ -40,15 +40,22 @@ cmet<-function(rv,tag){ pr<-data.table(run_id="R4",strategy_id=tag,date=p$anchor
     PORT_t=gv(bc,"Portfolio_Alpha_t_NW_lag3","strategy_value"),IR=gv(bc,"Information_Ratio","active_value"),
     active=rv-br$benchmark_ret) }
 
+gate_match<-function(sv,tgt=mbeta,floorL=FLOOR,gamma=2){f<-function(t){x<-pmax(0,(sv-t)/(1-t+1e-9));mean(1-(1-floorL)*pmin(1,x)^gamma)-tgt}
+  t<-tryCatch(uniroot(f,c(0,0.999))$root,error=function(e)NA);if(is.na(t))return(rep(NA,length(sv)));x<-pmax(0,(sv-t)/(1-t+1e-9));1-(1-floorL)*pmin(1,x)^gamma}
+betaL1<-gate_match(s_BEAR, mbeta)                                    # BearProb 대체, 노출매칭(same avg defense)
+betaL2m<-{b<-p$beta_R05*gate(s_BEAR); pmin(1,b*mbeta/mean(b))}       # R05×Bear, 노출을 base로 rescale
 betaL2<-pmin(1,pmax(FLOOR*0.9,p$beta_R05*gate(s_BEAR)))
 betaL3<-pmin(1,pmax(FLOOR*0.9,p$beta_R05*gate(s_BEAR)*gate(s_MSM)))
-B <-cmet(p$ret_base,"L0_base");  L2<-cmet(apply_beta(betaL2),"L2_R05xBear"); L3<-cmet(apply_beta(betaL3),"L3_R05xBearxMSM")
+B <-cmet(p$ret_base,"L0_base")
+L1<-cmet(apply_beta(betaL1),"L1_bear_replace_match"); L2m<-cmet(apply_beta(betaL2m),"L2_R05xBear_match")
+L2<-cmet(apply_beta(betaL2),"L2_R05xBear"); L3<-cmet(apply_beta(betaL3),"L3_R05xBearxMSM")
 PG("[PG] RECON base: SR=%.4f Calmar=%.4f MDD=%.4f PORT_t=%.3f IR=%.4f (target ~1.895/1.94/0.233/6.21/1.416)", B$SR,B$Calmar,B$MDD,B$PORT_t,B$IR)
 
 ## book-marginal: ΔIR + paired NW-t of active diff
 nw<-function(d,lag=3){d<-d[is.finite(d)];nn<-length(d);mu<-mean(d);dm<-d-mu;g0<-sum(dm^2)/nn;gs<-0;for(L in 1:lag){w<-1-L/(lag+1);gs<-gs+2*w*sum(dm[(L+1):nn]*dm[1:(nn-L)])/nn};mu/sqrt((g0+gs)/nn)}
-for(C in list(L2,L3)){ dIR<-C$IR-B$IR; pt<-nw(C$active-B$active)
-  PG("[PG] %s: SR=%.3f Calmar=%.3f MDD=%.4f PORT_t=%.3f IR=%.3f | ΔIR=%.4f(≥0.05) active-paired_t=%.3f", C$tag,C$SR,C$Calmar,C$MDD,C$PORT_t,C$IR,dIR,pt) }
+for(C in list(L1,L2m,L2,L3)){ dIR<-C$IR-B$IR; pt<-nw(C$active-B$active)
+  PG("[PG] %-22s SR=%.3f Calmar=%.3f MDD=%.4f PORT_t=%.3f IR=%.3f | ΔIR=%+.4f active-paired_t=%.3f", C$tag,C$SR,C$Calmar,C$MDD,C$PORT_t,C$IR,dIR,pt) }
+PG("[PG] avg exposure: L1=%.3f L2m=%.3f L2=%.3f L3=%.3f base=%.3f", mean(betaL1),mean(betaL2m),mean(betaL2),mean(betaL3),mbeta)
 
 ## DSR: deflated Sharpe given sweep. trial SRs from R1+R3 (실제 탐색한 config들)
 trial_SR <- c(1.895,1.876,1.709,1.682,2.049,1.878,1.823,1.733, 2.049,2.102,2.092,2.020,2.124,1.909,2.054)  # per-annum

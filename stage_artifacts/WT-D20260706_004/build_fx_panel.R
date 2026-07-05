@@ -67,15 +67,17 @@ setorder(rd, Ticker, Date)
 cat("[fxpanel] merged fx+mkt\n"); flush.console()
 
 # ---- 3. month key + month-end rows + adv20 + monthly forward return ----
+cat("[fxpanel] month key + adv20...\n"); flush.console()
 rd[, ym := as.Date(cut(Date, "month"))]
 rd[, dvalue := Close * Vol]
 rd[, adv20 := frollmean(dvalue, 20, align = "right"), by = Ticker]
+cat("[fxpanel] adv20 done; extracting month-end rows...\n"); flush.console()
 
-# month-end row indices per ticker-month (vectorized)
-rd[, .grp := .GRP, by = .(Ticker, ym)]
-is_last <- rd[, .I[.N], by = .grp]$V1
+# month-end row indices per ticker-month (vectorized, no .GRP blowup)
+setorder(rd, Ticker, ym, Date)
+is_last <- rd[, .I[.N], by = .(Ticker, ym)]$V1
 me <- rd[is_last]
-rd[, .grp := NULL]
+cat("[fxpanel] month-end rows:", nrow(me), "\n"); flush.console()
 
 setorder(me, Ticker, ym)
 me[, close_prev := shift(Close, 1), by = Ticker]

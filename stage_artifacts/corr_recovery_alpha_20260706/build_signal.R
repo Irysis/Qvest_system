@@ -52,22 +52,16 @@ raw[, corr60 := roll_corr(Ret, BM_Ret, 60L), by = Ticker]
 #  - recovery = corr20_peak63 - corr20   (how far corr has come DOWN from recent peak; >0 = de-correlating)
 #  - spike = corr20_peak63 - corr60      (magnitude of the spike vs baseline)
 #  - recovery_frac = recovery / (spike + eps)  (fraction of the spike already unwound = SPEED)
-cat("[3] Recovery-speed features...\n"); flush.console()
-# fast trailing rolling max over 63d (monotonic-deque style via cummax on blocks is complex;
-# use frollapply only on month-end? No -- we need it daily. Use efficient Rcpp-free rolling max:
-# split by ticker, apply a vectorized rolling max with runner-free approach.
+cat("[3] Recovery-speed features (RcppRoll::roll_max trailing 63d)...\n"); flush.console()
+suppressMessages(library(RcppRoll))
+# trailing (right-aligned) rolling max over 63d, per ticker. NA-safe: leading rows -> NA.
 roll_max <- function(x, w) {
-  n <- length(x); out <- rep(NA_real_, n)
-  if (n == 0) return(out)
-  # deque of indices with decreasing values
-  dq <- integer(0)
-  for (i in seq_len(n)) {
-    while (length(dq) && x[dq[length(dq)]] <= x[i]) dq <- dq[-length(dq)]
-    dq <- c(dq, i)
-    if (dq[1] <= i - w) dq <- dq[-1]
-    if (i >= w) out[i] <- x[dq[1]]
-  }
-  out
+  n <- length(x)
+  if (n < w) return(rep(NA_real_, n))
+  rm <- RcppRoll::roll_max(x, n = w, align = "right", fill = NA_real_, na.rm = TRUE)
+  # rm has length n with leading (w-1) NA; where entire window is NA, roll_max returns -Inf -> guard
+  rm[!is.finite(rm)] <- NA_real_
+  rm
 }
 raw[, corr20_peak63 := roll_max(corr20, 63L), by = Ticker]
 eps <- 0.05
