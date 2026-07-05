@@ -27,11 +27,17 @@ dir.create(OUT, showWarnings = FALSE, recursive = TRUE)
 LIQ_MIN <- 2e8   # headline canonical liquidity floor (헌법 2e8). request.json 5e7은 WT-scoped 하한이나 canonical은 2e8 사용.
 
 # ---- 1. RAWDATA daily ----
-cat("[fxpanel] loading RAWDATA...\n")
-rd <- as.data.table(read_parquet(".cache/RAWDATA.parquet"))
+cat("[fxpanel] loading RAWDATA...\n"); flush.console()
+RAW_SCRATCH <- Sys.getenv("RAW_SCRATCH", "")
+raw_path <- if (nzchar(RAW_SCRATCH) && file.exists(file.path(RAW_SCRATCH, "RAWDATA.parquet")))
+              file.path(RAW_SCRATCH, "RAWDATA.parquet") else ".cache/RAWDATA.parquet"
+cat("[fxpanel] raw_path =", raw_path, "\n"); flush.console()
+rd <- as.data.table(read_parquet(raw_path))
+cat("[fxpanel] rd loaded:", nrow(rd), "rows\n"); flush.console()
 rd <- rd[, .(Date, Ticker, K200, KQ150, Close, Vol, Size, Ret, BM_Ret)]
 rd[, Date := as.Date(Date)]
 setorder(rd, Ticker, Date)
+cat("[fxpanel] rd sorted\n"); flush.console()
 
 # ---- 2. KRW/USD daily -> daily log change, merge to trading calendar ----
 fx <- as.data.table(read_parquet(".cache/ecos_krw_usd.parquet"))
