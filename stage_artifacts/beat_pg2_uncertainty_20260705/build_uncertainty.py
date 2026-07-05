@@ -88,6 +88,8 @@ res['Date']=pd.to_datetime(res['Date'])
 res['sig_date']=res['Date']
 out=res[['sig_date','Ticker','pred_mean','pred_var','confidence','score_eff','Ret_1m','regime_state']].copy()
 out.to_parquet(OUT+"uncertainty_scores.parquet",index=False)
+with open(OUT+"progress.txt","a") as pf:
+    pf.write(f"DONE rows={len(out)} dates={out['sig_date'].nunique()}\n")
 print("WROTE uncertainty_scores.parquet rows=",len(out),
       "dates=",out['sig_date'].nunique(),
       "range=",out['sig_date'].min().date(),out['sig_date'].max().date(),flush=True)
