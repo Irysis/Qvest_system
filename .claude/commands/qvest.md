@@ -49,7 +49,7 @@ bash 02_Infrastructure/ops/bootstrap.sh
 - 신규 4종: `worktask` / `alpha-research` / `risk-research` / `optimizer-research`
 - 통합: `qvest-telegram` v6 SOT (구 `telegram-protocol` deprecate) / `simplify` 3-agent 인식
 - 유지: `pit-validation` / `factor-db-access` / `axiom-io` / `kr-inverse-pattern-miner` / `commit-commands` / `codex` 등
-- 폐기: `s0-idea-sourcing` / `s0-debate` / `s1~s5` stage skill (archive)
+- 삭제됨 (2026-07-05): `s0-idea-sourcing`~`s7-disposition` stage skill 8종 (v55 S0-S7 파이프라인, 미사용 레거시 정리 — 역사는 git·`qvest_legacy_boundary.md` 보존)
 
 **Hooks 5-Tier 방어선 (v6.31 Charter v1.2 Positive Hook 패러다임)**:
 - Tier 1 (전역 hard block — system integrity 위협 영역만): `safety_guard`, `axiom_enforcement_hook`, `sr_provenance_check` (`ProductionSchedule[N]m` fabrication label hard block), `schedule_fidelity_check` (run_all.R fabrication hard block), `governor_concord_certifier` (admission graduation 우회 hard block)

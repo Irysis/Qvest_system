@@ -22,8 +22,6 @@ declare -a FILES=(
   "02_Infrastructure/prompts/codex_critic_prompt.md"
   "02_Infrastructure/prompts/codex_s5_review_prompt.md"
   "02_Infrastructure/prompts/pit_intent_scan_prompt.md"
-  ".claude/skills/s0-debate/SKILL.md"
-  ".claude/skills/s0-idea-sourcing.md"
   ".claude/commands/qvest.md"
 )
 
