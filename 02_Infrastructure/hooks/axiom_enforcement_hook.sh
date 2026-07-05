@@ -11,9 +11,10 @@ trap 'echo "{}"; exit 0' ERR  # Phase C3 전수 강제
 #   스키마: {mode: block|advisory|documented, regex: [AND 전부매치],
 #            require: [OR — 하나라도 존재 시 예외], applies_to_files: [...], reason}
 #   mode=block → decision block / advisory → additionalContext warn / documented → 스킵.
-#   의미론 SOT (.claude/rules/axioms.md "Hook 강제" 절, 변경 없음):
-#     AX-000 documented / AX-001 block / AX-002 advisory /
-#     AX-003 AX-004 AX-005 advisory / AX-007 AX-008 documented
+#   의미론 SOT (.claude/rules/axioms.md "Hook 강제" 절):
+#     AX-000 documented / AX-001 block / AX-002 advisory / AX-008 documented
+#     (구 AX-003/004/005/007 advisory/documented → 2026-07-05 Distilled 강등, active enforcement 대상 아님.
+#      코드는 active/ 동적 loop라 강등 파일 부재로 자동 미발화 — deprecated/로 이동됨.)
 #   legacy 하드코딩 절(AX-001/AX-002)은 python 부재 시 fallback으로 유지.
 #==============================================================================
 

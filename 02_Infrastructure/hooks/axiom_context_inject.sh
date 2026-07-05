@@ -122,7 +122,7 @@ except Exception:
     dist_min = ''
 MAX = 2500
 # (P0#4 2026-07-04 감사) 절단불가 코어 보호. 우선순위:
-#   [hdr + 제약 문제-축(axis) + 코어 공리(AX-000/002/008 + 모든 negative AX-003/004/005/007)] = 불변
+#   [hdr + 제약 문제-축(axis) + 코어 공리(active Law AX-000/001/002/008)] = 불변  (구 negative AX-003/004/005/007은 2026-07-05 Distilled 강등 — active 아님)
 #   > distilled top-K(감축 대상) > truths > positive/method 공리 body(축약 대상).
 # 기존 버그: body 전체를 균일 라인절단 → 성실히 채운 negative 코어 공리가 tail에 밀려 조용히 소실.
 # 코어 라인 식별 = 렌더된 body 라인의 자기라벨('/negative]') 또는 코어 ID(AX-000/002/008).

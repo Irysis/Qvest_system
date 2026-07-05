@@ -467,6 +467,15 @@ if [ -f "$SMOKE_SCRIPT" ] && python3 -c 'import sys' >/dev/null 2>&1; then
   SMOKE_STATUS=$(QM_ROOT="$CLAUDE_PROJECT_DIR" python3 "$(cygpath -m "$SMOKE_SCRIPT" 2>/dev/null || echo "$SMOKE_SCRIPT")" "$CLAUDE_PROJECT_DIR" 2>&1 | tail -1 || true)
 fi
 
+# hypothesis_index 재빌드 (2026-07-05) — 검색면 자동 정합. bootstrap이 lcode_corpus는 매 세션
+#   무조건 regen하나 hypothesis_index는 안 해 다음 세션 첫 조회부터 stale 배너 상시 발화하던 갭 수리.
+#   .R 파일 경유 CLI(한글 -e 아님). lcode_corpus 백그라운드 job 이후 실행되도록 부트 말미 배치. fail-soft.
+HI_R="$PROJECT/02_Infrastructure/tools/hypothesis_index.R"
+if [ -f "$HI_R" ]; then
+  HI_OUT=$(cd "$PROJECT" && Rscript "$HI_R" build 2>&1 | grep -oE '\[hypothesis_index\].*entries.*' | tail -1 || true)
+  [ -n "$HI_OUT" ] && echo "[boot] hypothesis_index rebuilt: $HI_OUT"
+fi
+
 # 지식 순차 인덱스 재생성 (2026-07-05 도훈 — 안정 ID 불변, 활성 집합 1..N 뷰). fail-soft.
 #   lcode_corpus 백그라운드 regen 이후 실행되도록 부트 말미 배치. 산출: 06_Registry/knowledge_index.{md,json}
 KI_R="$PROJECT/02_Infrastructure/ops/build_knowledge_index.R"
