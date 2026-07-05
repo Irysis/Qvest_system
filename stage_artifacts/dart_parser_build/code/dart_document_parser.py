@@ -188,13 +188,22 @@ def parse_document(rcept_no, raw_bytes, rcept_dt=None, corp_code=None):
     except Exception as e:
         return {"rcept_no": rcept_no, "parse_flags": [f"decode_fail:{type(e).__name__}"], "ok": False}
 
-    # 문서 유형 확인 — 임원ㆍ주요주주 특정증권 소유상황보고서인지
+    # 문서 유형 확인 — 임원ㆍ주요주주 소유상황보고서인지 (form-version robust)
+    #   신규(2007+): "임원ㆍ주요주주 특정증권등 소유상황보고서"  (특정증권)
+    #   구(2005~06): "임원ㆍ주요주주소유주식보고서"              (소유주식, 특정증권 용어 이전)
+    #   둘 다 동일 ACODE(MDF_STK_SUM 등) 구조 사용 → 용어만 다름.
     docname = ""
     dm = re.search(r"<DOCUMENT-NAME[^>]*>(.*?)</DOCUMENT-NAME>", txt, re.S)
     if dm:
         docname = _strip_tags(dm.group(1))
-    if "특정증권" not in docname and "특정증권" not in txt[:2000]:
+    head = docname + txt[:2000]
+    is_insider_doc = ("특정증권" in head) or ("소유주식" in head) or \
+                     ("소유상황" in head and "임원" in head) or \
+                     ('ACODE="00634"' in txt) or ('ACODE="MDF_STK_SUM"' in txt)
+    if not is_insider_doc:
         return {"rcept_no": rcept_no, "parse_flags": ["not_insider_ownership_report"], "ok": False}
+    if "특정증권" not in head and "소유주식" in head:
+        flags.append("old_form_owned_stock_terminology")
 
     fv = re.search(r"<FORMULA-VERSION[^>]*>([^<]+)</FORMULA-VERSION>", txt)
     formula_version = fv.group(1).strip() if fv else None
