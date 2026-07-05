@@ -1,0 +1,130 @@
+{
+  "schema": "axiom_engine_consume_v1",
+  "generated_at": "2026-07-05",
+  "wt": "axiom_engine_research_20260705",
+  "common_discipline": "실측-only · PIT C1~C15 · look-ahead 방어(레짐 t-1 C5 · 국면조건부 IC/weight expanding-window C1 · 동월 concurrent 금지 · lag1 스트레스 의무) · 자체합성 금지(canonical_screen_bt/build_benchmark_compare 경유) · 벤치=.cache/benchmark.parquet(IKS200) · Rscript .R source(한글 -e 금지) · 세그폴트 방어(setDTthreads(1)·arrow::set_io_thread_count(1)·col_select).",
+
+  "e2e_refutation_emitted": {
+    "status": "ALREADY_ON_DISK_AND_CALLABLE_CONFIRMED",
+    "l_code": "L-QPM-20260705_102041",
+    "path": "stage_artifacts/l_code/qepm_legacy/l_code_WT-AXENGINE-E2E_frontier_b_regimecond.json",
+    "mode": "qepm_legacy",
+    "grade": "F",
+    "metric_type": "canonical_screen",
+    "polarity": "negative",
+    "portfolio_alpha_t": -2.6121,
+    "portfolio_alpha_t_naive_V0": -2.67,
+    "oos_months": 258,
+    "selection_type": "chain",
+    "frontier_narrowed": "DIST-QPM-003 frontier(b) 'value/quality spread reversion 국면조건부 activation (CRISIS/CAUTION quality tilt)' = FALSIFIED. 이 정확한 activation 재시도 금지(INV-7 provisional). CAUTION-only(+7.1%, n=13)는 방어 sleeve CAUTION-tilt 성분 후보로만 잔존.",
+    "consumed_into": "DIST-QPM-003.falsification_draft.attempts[0] + DIST-QPM-003.falsified_frontiers[0] (frontier_index 2)",
+    "emit_verification": "Phase 1 재시도: emit_lcode(mode='qepm_legacy', grade='F', metric_type='canonical_screen', l_code='L-QPM-20260705_102041', portfolio_alpha_t=-2.6121, dry_run=TRUE) 호출 성공 — EMIT_CALLABLE:TRUE. dry_run으로 기존 consumed 원장 미덮어씀(멱등). WARN: oos_retention 결측(canonical_screen는 essence_score v2 별도 산출 — negative F 판정엔 무영향).",
+    "note": "직전 E2E(WT-AXENGINE-E2E_20260705)가 이미 emit·consume 완료. 본 단계는 ledger 적립을 재확인(비차단)하고 다음 frontier로 진행."
+  },
+
+  "consumes_cards": [
+    {"dist_id": "DIST-QPM-003", "family": "quality_profitability", "polarity": "negative",
+     "frontier_taken": "frontier[0] multi-axis quality composite를 multi-sleeve 성분(Q07)으로 (AX-004 EXCLUSION)",
+     "frontier_falsified": "frontier[2] value/quality spread reversion 국면조건부 activation (E2E L-QPM-20260705_102041)",
+     "retry_gate": "single-signal 아닌 multi-axis quality composite를 multi-sleeve 내 성분 + IS-only 선택 protocol"},
+    {"dist_id": "DIST-QPM-002", "family": "quality_earnings", "polarity": "conditional",
+     "frontier_taken": "frontier[0] position-level regime overlay 결합(팩터-국면블렌딩보다 우월) + frontier[1] multi-sleeve long-leg 편입",
+     "retry_gate": "naked long-only top-20 밖 = multi-sleeve long-leg 또는 position overlay 결합이면 재도전 대상"},
+    {"dist_id": "DIST-QPM-006", "family": "value", "polarity": "conditional",
+     "frontier_taken": "frontier[1] composite/multi-sleeve long-leg 내 value 보조 성분 + frontier[3] regime-conditional value(프리미엄 회복 국면만 강화)",
+     "retry_gate": "standalone 아닌 composite/multi-sleeve 편입 + value spread reversion 조건. single-signal long-only 재시도 금지(INV-7)"},
+    {"dist_id": "DIST-AR-001", "family": "defense", "polarity": "negative",
+     "frontier_taken": "frontier[0] Q07을 tail-risk(D47_CVaR/D48_VaR) cross-family composite로 + frontier[1] regime-conditional defense activation(정상장 weight 최소, CRISIS만 강화) + frontier[3] multi-sleeve 임베딩",
+     "retry_gate": "standalone Accounting-Beta(D29) defense 금지. cross-family tail-risk 재구성 + 에피소드-lens(AX-001 v2)"},
+    {"dist_id": "DIST-AR-003", "family": "momentum", "polarity": "negative",
+     "frontier_taken": "frontier[2] multi-sleeve long-leg 편입(M01/M08 residual, top-N standalone 아님)",
+     "frontier_deferred": "frontier[0]/frontier[1] DART event-time·DPL feature = DART blocked·DPL 별도 pilot(본 구성 제외)",
+     "retry_gate": "return-derived 축은 M01/M08/M24에 spanned 확정 → 동일 구성 저-EV. multi-sleeve long-leg 편입만 잔여."}
+  ],
+
+  "chosen_frontier": {
+    "name": "cross-family regime-conditional composite (multi-sleeve, regime별 활성화)",
+    "convergence_evidence": "5개 카드 전부 retry_condition/frontier가 동일 지점으로 수렴 — (i) single-family standalone은 전부 실패(DISTILLED_NEG), (ii) multi-sleeve/cross-family composite로 편입 + (iii) regime-conditional activation이 공통 재시도 자격. 단일 family가 아니라 family들을 국면별로 활성화하는 meta-composite가 5-카드 수렴점.",
+    "top_frontier": true,
+    "why_top": "각 카드가 자기 family를 홀로 쓰지 말고(single-signal 금지) 다른 family와 국면조건부로 결합하라고 지목. cross-family composite는 이 5개 지목의 교집합이자 각 family의 개별 약점(value premium 약화·quality 성장주 국면 감쇠·defense drag·momentum spanning)을 국면별 활성화로 상호 보완하는 유일 구조."
+  },
+
+  "hypothesis": "KR long-only top-25에서 단일 family standalone은 전부 자본급 미전이(§6 직교≠수익·post-2017 감쇠)이나, 4개 orthogonal-ish family(value·multi-axis quality·residual momentum·tail-defense)를 t-1 레짐신호로 국면별 기대IC 가중해 결합하면(RISK_ON=momentum+value, NEUTRAL=quality+momentum, CAUTION/CRISIS=tail-defense+quality) 정적 composite(superfactor 5방법이 post-2017 전멸)와 달리 감쇠 국면을 우회해 PORT_t≥2.95를 달성할 수 있다. 사전확률 낮음(KR post-2017 cohort decay 벽 인지) — regime-conditional activation이 그 벽을 우회하는지에 대한 명시적 bet.",
+
+  "construction_spec": {
+    "universe": "K200 ∪ KQ150 (.cache/universe_support/, 월별 멤버십 t-1 PIT). LIQ_THRESHOLD 20일평균 거래대금 ≥ 2e8 KRW(t-1). top-25 EW long-only.",
+    "period": "2005-01 .. 2026-06 (258월)",
+    "data_sources": {
+      "factors": ".cache/factor_db/factor_db_YYYYMM.parquet (load_month_factors C15 경유, Factor_Name long format, Z_Score C13-aligned + Z_Sector sector-neutral)",
+      "regime": ".cache/unified_regime_signal.parquet + .cache/macro_regime.parquet (Category ∈ {RISK_ON, NEUTRAL, CAUTION, CRISIS}, t-1 shift C5)",
+      "value_quality_spread": ".cache/conditional_ic_matrix.csv (value/quality spread 백분위 — value activation 조건)",
+      "benchmark": ".cache/benchmark.parquet (IKS200 cap-w KOSPI200; realized_ym 정렬 β-check 후 merge)"
+    },
+    "families": {
+      "value": {
+        "components": ["V02_EP", "V01_BM", "V12_Composite_Value"],
+        "combine": "Z_Score EW 평균 (family score = mean(z))",
+        "spread_gate": "conditional_ic_matrix value/quality spread 백분위 ≥ 0.70(expanding-window 산출)일 때만 value family 가중 활성 — reversion 조건. DIST-QPM-006 frontier[0]/[3] 정합.",
+        "cards": ["DIST-QPM-006"]
+      },
+      "quality": {
+        "components": ["Q08_Composite_Quality", "Q02_ROE", "Q07_Earnings_Stability", "Q04_Piotroski_F"],
+        "combine": "multi-axis quality composite = mean(z) — single-signal 아님(AX-004 EXCLUSION 명시). profitability + earnings-stability + F-score 3축.",
+        "cards": ["DIST-QPM-003", "DIST-QPM-002"]
+      },
+      "momentum": {
+        "components": ["M01_Mom_12_1", "M08_Residual_Mom"],
+        "combine": "residual momentum 우선 = mean(z(M08), z(M01)). return-derived spanning 회피 위해 M08 residual 중심.",
+        "cards": ["DIST-AR-003"]
+      },
+      "tail_defense": {
+        "components": ["D48_VaR_5pct", "D45_Downside_Dev", "D47_CVaR_5pct"],
+        "combine": "tail-risk cross-family composite = mean(z) — Accounting-Beta(D29) 배제(DIST-AR-001 reversal 기전 회피). low tail-risk = high score(부호 정렬 Z_Score_Aligned, C13).",
+        "activation": "CRISIS/CAUTION 국면에서만 강화(정상장 weight 최소) — drag 기전 회피(DIST-AR-001 frontier[1]).",
+        "cards": ["DIST-AR-001"]
+      }
+    },
+    "regime_signal": {
+      "source": ".cache/unified_regime_signal.parquet (Category) + macro_regime.parquet (보조)",
+      "pit": "레짐 라벨 t-1 shift (C5) — 리밸 시점 t의 배분은 t-1 이하 정보로만 결정. 동월 concurrent 절대 금지(FaithTrend look-ahead 재발 방지).",
+      "categories": ["RISK_ON", "NEUTRAL", "CAUTION", "CRISIS"]
+    },
+    "weighting_formula": {
+      "principle": "각 family를 expanding-window regime-conditional 기대IC로 가중. look-ahead 금지 = 국면 g의 기대IC는 리밸 시점 t까지의 expanding window 내 '같은 국면 g'였던 과거 월들의 realized IC만으로 산출(C1). full-sample IC 금지.",
+      "step1_family_score": "각 종목 i에 대해 family f의 score s_{i,f} = mean(Z_Score of components in f) (quality/momentum/tail는 Z_Score_Aligned).",
+      "step2_regime_conditional_IC": "리밸 t, 현재 국면 g(t)=t-1 레짐. 각 family f에 대해 w_{f,g} = max(0, expanding_mean(IC_{f, month m} : m<t AND regime(m-1)=g(t))). expanding-window·국면조건부·롤링만(C1). value family는 spread_gate 미충족 시 w=0.",
+      "step3_composite_score": "종목 점수 S_i = Σ_f w_{f,g(t)} · s_{i,f} (국면별 활성 family 가중 결합). 정규화 Σ_f w=1.",
+      "step4_selection": "S_i 상위 top-25 EW long-only. Σw=1, weight [0,0.20] native(EW top-25 = 0.04 each).",
+      "anti_lookahead_notes": [
+        "IC는 realized forward-1M return과 t-1 signal의 rank correlation, Usable_Date ≤ sig_date (C14).",
+        "regime(m-1)=g(t) 매칭 = 국면조건부 IC를 동월 concurrent 없이 과거 same-regime 월로만 학습.",
+        "value spread_gate 백분위도 expanding-window quantile (full-sample quantile 금지)."
+      ]
+    },
+    "measurement": {
+      "engine": "02_Infrastructure/contracts/canonical_screen_bt.R::canonical_screen_bt() — top-25 EW long-only, PORT_t NW lag-3, 15bps delta-cost(v2.4), build_benchmark_compare 경유 실측. 자체합성(prod(1+r)/cumprod) 금지.",
+      "benchmark": "cap-w KOSPI200 (.cache/benchmark.parquet IKS200), realized_ym 정렬 β-check(lag offset -3..+3 β스캔으로 정렬 확인).",
+      "graduation_gates": "PORT_t ≥ 2.95 (HARD) · oos_retention ≥ 0.7 (essence_score.R v2, 3분할 중앙값) · calmar ≥ 0.64 (HARD).",
+      "lag1_stress": "국면조건부 신호 lag1 스트레스 의무 — regime·IC weight를 추가 1개월 lag 적용한 변형도 실측해 concurrent 누출 없음 확인(FaithTrend 교훈).",
+      "selection_type": "chain (가설주도 순차개선 1구성 — DSR 게이트 부적용, IS-only 변형선택 protocol, holdout 최종 1회)."
+    }
+  },
+
+  "differentiator": "① 정적 composite와의 차별: superfactor 5방법(정적 결합)이 post-2017 성장주 우위로 전멸했으나, 본 구성은 family 가중을 t-1 국면조건부 expanding-IC로 동적 활성화 → 각 family의 국면-특정 강점만 소비(감쇠 국면 우회 시도). ② single-signal 금지선 회피: 어느 family도 단독 아님 — 4-family cross-family composite(각 family는 multi-axis 내부 결합). quality는 multi-axis(AX-004 EXCLUSION), defense는 tail-risk cross-family(D29 배제). ③ E2E frontier(b) 반증과의 차별: 반증된 것은 'quality를 CRISIS/CAUTION에 단독 tilt'(2-family value↔quality 이분 스위치)였고, quality가 CRISIS서 최악(-78.2%)이라 실패. 본 구성은 CRISIS를 quality가 아닌 tail-defense가 담당(quality는 NEUTRAL 활성), 그 실측 realized-regime-IC 방향을 그대로 반영 → 반증에서 배운 regime→family 매핑을 교정 적용. ④ IC 가중이 realized(rank-IC가 아닌 국면조건부 realized IC) 기반이라, E2E가 자가포착한 'rank-IC를 realized로 오독'(Self-Adversarial C2) 재발 방지.",
+
+  "forbidden_avoided": [
+    {"forbidden": "single-signal long-only", "avoided_by": "4-family cross-family composite, 각 family 내부도 multi-axis(quality 4성분·value 3성분·defense 3성분). 어느 축도 단독 아님."},
+    {"forbidden": "naked standalone top-N", "avoided_by": "multi-sleeve(국면별 family 활성) 구조 + regime-conditional 가중. standalone family top-N 없음."},
+    {"forbidden": "전기간 lens 방어평가", "avoided_by": "tail-defense는 CRISIS/CAUTION 에피소드-lens 활성(AX-001 v2 조건부 평가), 전기간 SR 기준 미적용. regime-conditional IC 자체가 국면-lens."},
+    {"forbidden": "E2E 반증된 frontier(b) 재시도", "avoided_by": "반증된 'quality CRISIS/CAUTION 단독 tilt' 미반복 — CRISIS=tail-defense, quality=NEUTRAL로 realized-regime-IC 방향 교정. 반증 결과를 regime→family 매핑에 반영."}
+  ],
+
+  "retry_qualification": {
+    "differentiation_from_DISTILLED_NEG": "DISTILLED_NEG(single-signal·naked standalone·전기간 lens 방어)의 재시도 자격 요건(차별점 명시 + IS-only 선택 protocol)을 모두 충족: (a) single-family standalone 아닌 4-family cross-family composite, (b) regime-conditional dynamic activation(정적 composite 아님), (c) IS-only 변형선택(selection_type=chain), (d) E2E 반증 결과를 regime→family 매핑에 반영한 교정 구성.",
+    "is_only_protocol": "family 가중·spread_gate·regime 매핑 튜닝은 IS-only. OOS/holdout은 최종판 1회만. lag1 스트레스로 concurrent 누출 검증.",
+    "prior": "KR post-2017 cohort decay 벽으로 사전확률 낮음(§6 직교≠수익·SR 천장 ~1.1). regime-conditional activation이 감쇠 우회하는지에 대한 명시적 bet — 성공 시 감쇠 국면 우회 증명, 실패 시 'cross-family regime-conditional도 KR post-2017 감쇠 우회 불가' ledger 적립(다음 frontier=DPL/비-return DART).",
+    "next_step_owner": "Phase 3 (QEPM 모드 alpha-research → risk → optimizer → forge canonical_screen_bt 실측 → judge graduation gate)"
+  },
+
+  "note": "직전 E2E가 emit·consume 완료(L-QPM-20260705_102041 on disk, DIST-QPM-003 consumed). 본 산출은 (1) E2E 반증 ledger 재확인(emit callable 확인, dry_run 멱등) + (2) 5-카드 수렴 frontier=cross-family regime-conditional composite 선정 + construction_spec 확정. 모든 성분 팩터 runnable-now 확인(factor_db_202606.parquet 335 factors, V/Q/M/D 계열 존재, Z_Score+Z_Sector). DART insider 제외(blocked). 실측은 Phase 3 canonical_screen_bt로. 정직: 사전확률 낮음 인지, regime-conditional bet 명확."
+}
