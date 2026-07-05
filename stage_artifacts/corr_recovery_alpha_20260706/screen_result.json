@@ -1,0 +1,61 @@
+{
+  "signal_definition": {
+    "lane": "post-crash correlation-recovery dynamics (cross-sectional selection, NOT market timing)",
+    "construction": "per-ticker rolling stock-market corr (20d, 60d) from daily Ret vs BM_Ret; corr20_peak63=trailing 63d max of corr20 (recent panic spike); recovery=peak-corr20; spike=peak-corr60; recovery_frac=recovery/(max(spike,0)+0.05) = fraction of correlation spike already unwound (=de-correlation SPEED). Primary signal corr_recov_resid = cross-sectional residual of recovery_frac on corr20 (abs corr level controlled => NOT low-beta/low-vol).",
+    "PIT": "all features use daily Ret up to & incl month-end t (sig_date); forward = month t+1 realized return; rolling windows (C1); universe K200|KQ150 membership at t; no concurrent-month use.",
+    "hypothesis": "fast de-correlation (high recovery_frac) = idiosyncratic/resilient stocks -> excess return (sign to be read from IC)."
+  },
+  "panel": {
+    "rows": 82818,
+    "months": 270,
+    "tickers": 852,
+    "ym_first": 200401,
+    "ym_last": 202606
+  },
+  "rank_ic": {
+    "raw_recovery_frac": {
+      "n": 270,
+      "mean_ic": -0.011871,
+      "t": -2.046286,
+      "icir": -0.124533
+    },
+    "resid_corr_recov": {
+      "n": 270,
+      "mean_ic": 0.011528,
+      "t": 1.696768,
+      "icir": 0.103262
+    },
+    "raw_2017plus": {
+      "n": 114,
+      "mean_ic": -0.005784,
+      "t": -0.566085,
+      "icir": -0.053019
+    },
+    "resid_2017plus": {
+      "n": 114,
+      "mean_ic": 0.03433,
+      "t": 3.54295,
+      "icir": 0.331828
+    },
+    "primary_signal": "recovery_frac"
+  },
+  "orthogonality_score_eff": {
+    "pooled": -0.076434,
+    "mean_monthly": -0.069492,
+    "n_overlap_rows": 61799,
+    "threshold": 0.4
+  },
+  "gate": {
+    "primary_signal": "recovery_frac",
+    "pass_rankIC_t2": true,
+    "t_value": -2.046286,
+    "pass_ortho_lt04": true,
+    "ortho": -0.076434,
+    "pass_2017_sign_held": false,
+    "sign_full": -1,
+    "sign_2017": -1,
+    "t_2017": -0.566085,
+    "VERDICT": "FAIL",
+    "note": "signal absent/weak -> STOP (honest)"
+  }
+}

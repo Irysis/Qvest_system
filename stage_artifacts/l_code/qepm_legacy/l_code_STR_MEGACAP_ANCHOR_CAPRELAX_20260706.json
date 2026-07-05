@@ -1,0 +1,44 @@
+{
+  "l_code": "L-QPM-20260706_083113",
+  "strategy_id": "STR_MEGACAP_ANCHOR_CAPRELAX_20260706",
+  "grade": "F",
+  "core_reference": "stage_artifacts/pg2_overlay_gate_composition_20260705/cycle5-12*.R; [[project-megacap-anchor-construction-discovery]]",
+  "lesson_text": "KR long-only 20종 book(STR_1715, K200 union KQ150): mega-cap 앵커 구성(top-2 by size 20pct-cap + 알파fill)은 production-fidelity(carrier vs bt ret_orig cor 1.0000, offset1 exact) 재측정서 book에 return-additive 아님. (A) production book 자체가 이미 강함: BASE PORT_t 6.272 oos 0.553 calmar 1.922 — 앞선 07-05 '앵커가 벽 뚫음'은 저-fidelity LinearTilt 재구성(C0 PORT_t 3.83, cor 0.84)이 baseline 과소평가한 아티팩트. (B) 앵커는 벤치허깅(tracking-error 축소)이지 잔차알파 추가 아님. (C) 개별종목 20pct-cap 해제 실측(도훈 지시 탐색): book-marginal dIR(ovl0.5 baseline 대비)이 캡 지점 0.20서 +0.071로 최고, 풀수록 단조 악화(0.25=-0.019 / 0.30=-0.141 / 0.35=-0.275) = 단일명 집중이 벤치추종 이득보다 위험을 더 키움. 즉 20pct-cap은 binding 제약 아니며 해제는 성과 개선 안 함(제약이 실패 원인 아님, INV-7 방화벽). (D) 앵커가 실제로는 'selected 중 top-2'라 삼성 28pct월만 앵커 = 벤치 지배 mega-cap 강제편입 의도 미구현.",
+  "tags": ["MEGACAP_ANCHOR", "CAP_RELAX_TESTED_NEGATIVE", "BENCHMARK_HUGGING", "CAP_WEIGHTED_BENCH_ARTIFACT_DIAGNOSIS", "FORGE_FORCE_ANCHOR_UNTESTED"],
+  "created_at": "2026-07-06",
+  "research_mode": "qepm_legacy",
+  "created_by": "emit:qepm_legacy",
+  "metric_type": "canonical_screen",
+  "construction_type": "megacap_anchor_construction",
+  "mechanism_hypothesis": "메커니즘: post-2017 감쇠에 cap-weighted 벤치 아티팩트 성분 존재(동일 알파 EW벤치 대비 oos 생존) — 이 진단은 확립된 부수발견이자 발판(신규 알파 기각 전 EW-bench oos 확인 규율). 그러나 그 아티팩트를 mega-cap 앵커로 공략하면 벤치허깅으로 tracking-error만 줄 뿐 총수익/잔차알파 미추가. 20%cap+ 집중은 위험(단일명 semis 동반급락) > 벤치추종이득.",
+  "lcode_schema_version": 2,
+  "falsification_attempts": [
+    {
+      "test": "production-fidelity 재측정(carrier vs bt ret_orig)",
+      "result": "falsified",
+      "effect_retained": {
+        "note": "cor 1.0로 검증한 BASE PORT_t 6.27가 재구성 4.76 대체 — 앵커 marginal 소멸(6.69 vs 6.66)"
+      }
+    },
+    {
+      "test": "개별종목 캡 sweep(0.20→0.35) book-marginal ΔIR",
+      "result": "falsified",
+      "effect_retained": {
+        "note": "ΔIR 단조 하락 +0.071→-0.275 = 캡 해제 무익"
+      }
+    },
+    {
+      "test": "앵커 종목 식별 감사(top-2 among selected)",
+      "result": "weakened",
+      "effect_retained": {
+        "note": "삼성 selected 28%월만 = 벤치 mega-cap 앵커 의도 미구현, 정식 force-anchor는 forge 재실행 필요(미검)"
+      }
+    }
+  ],
+  "oos_retention": 0.7358,
+  "portfolio_alpha_t": 6.6996,
+  "selection_type": "chain",
+  "firewall_violation": true,
+  "firewall_note": "[attribution] 제약이 실패",
+  "record_type": "performance"
+}

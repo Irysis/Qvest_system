@@ -7,16 +7,17 @@ res <- fread(file.path(ROOT, "stage_artifacts/pg2_overlay_gate_composition_20260
 base_ovl <- res[tag=="BASE_prod+ovl0.5"]; a20 <- res[tag=="A2_w0.20_ovl0.5"]
 a25 <- res[tag=="A2_w0.25_ovl0.5"]; a30 <- res[tag=="A2_w0.30_ovl0.5"]; a35 <- res[tag=="A2_w0.35_ovl0.5"]
 
-lesson <- sprintf(paste0(
-  "KR long-only 20종 book(STR_1715, K200∪KQ150): mega-cap 앵커 구성(top-2 by size 20%cap+알파fill)은 ",
-  "production-fidelity(carrier vs bt ret_orig cor 1.0000·offset1 exact) 재측정서 book에 return-additive 아님. ",
-  "(A) production book 자체가 이미 강함: BASE PORT_t %.2f·oos %.3f·calmar %.3f — 앞선 07-05 '앵커가 벽 뚫음'은 저-fidelity ",
-  "LinearTilt 재구성(C0 PORT_t 3.83, cor 0.84)이 baseline 과소평가한 아티팩트. (B) 앵커는 벤치허깅(tracking-error 축소)이지 알파 추가 아님. ",
-  "(C) 개별종목 20%%캡 해제 실측(도훈 지시 탐색): book-marginal ΔIR(ovl0.5 baseline 대비)이 캡 지점 0.20서 +%.3f로 최고, ",
-  "풀수록 단조 악화(0.25 %+.3f / 0.30 %+.3f / 0.35 %+.3f) = 단일명 집중이 벤치추종 이득보다 위험을 더 키움. ",
-  "즉 20%%캡은 binding 제약 아니며 해제는 성과 개선 안 함(제약이 실패 원인 아님, INV-7 방화벽). ",
-  "(D) 앵커가 실제로는 'selected 중 top-2'라 삼성 28%%월만 앵커 = 벤치 지배 mega-cap 강제편입 의도 미구현."),
-  base_ovl$PORT_t, base_ovl$oos_ret, base_ovl$calmar, a20$dIR_vs_base, a25$dIR_vs_base, a30$dIR_vs_base, a35$dIR_vs_base)
+rr <- function(x) format(round(as.numeric(x),3), nsmall=3)
+lesson <- paste0(
+  "KR long-only 20종 book(STR_1715, K200 union KQ150): mega-cap 앵커 구성(top-2 by size 20pct-cap + 알파fill)은 ",
+  "production-fidelity(carrier vs bt ret_orig cor 1.0000, offset1 exact) 재측정서 book에 return-additive 아님. ",
+  "(A) production book 자체가 이미 강함: BASE PORT_t ", rr(base_ovl$PORT_t), " oos ", rr(base_ovl$oos_ret), " calmar ", rr(base_ovl$calmar),
+  " — 앞선 07-05 '앵커가 벽 뚫음'은 저-fidelity LinearTilt 재구성(C0 PORT_t 3.83, cor 0.84)이 baseline 과소평가한 아티팩트. ",
+  "(B) 앵커는 벤치허깅(tracking-error 축소)이지 잔차알파 추가 아님. ",
+  "(C) 개별종목 20pct-cap 해제 실측(도훈 지시 탐색): book-marginal dIR(ovl0.5 baseline 대비)이 캡 지점 0.20서 +", rr(a20$dIR_vs_base), "로 최고, ",
+  "풀수록 단조 악화(0.25=", rr(a25$dIR_vs_base), " / 0.30=", rr(a30$dIR_vs_base), " / 0.35=", rr(a35$dIR_vs_base), ") = 단일명 집중이 벤치추종 이득보다 위험을 더 키움. ",
+  "즉 20pct-cap은 binding 제약 아니며 해제는 성과 개선 안 함(제약이 실패 원인 아님, INV-7 방화벽). ",
+  "(D) 앵커가 실제로는 'selected 중 top-2'라 삼성 28pct월만 앵커 = 벤치 지배 mega-cap 강제편입 의도 미구현.")
 
 mech <- paste0(
   "메커니즘: post-2017 감쇠에 cap-weighted 벤치 아티팩트 성분 존재(동일 알파 EW벤치 대비 oos 생존) — 이 진단은 확립된 부수발견이자 ",
