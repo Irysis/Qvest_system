@@ -54,21 +54,35 @@ RAWDATA[, LiqPass := !is.na(AvgTV20) & shift(AvgTV20, 1L) >= 2e8, by = Ticker]  
 .TE_MIN_OBS <- 200L
 .TE_MIN_SEC <- 5L
 
+.flog <- function(...) { cat(sprintf(...), file = stderr()); flush(stderr()) }
 RAWDATA[, ym := format(Date, "%Y-%m")]
 .month_ends <- sort(RAWDATA[, .(Date = max(Date)), by = ym]$Date)
 # 시그널은 2005~ (252d burn-in 위해 엔진은 전체 데이터 사용, FACTORS만 필터)
-.sig_dates <- .month_ends[.month_ends >= as.Date("2004-01-01")]  # burn-in 여유
-
-# 일간수익 wide (Date x Ticker)
-.W <- dcast(RAWDATA[, .(Date, Ticker, Ret)], Date ~ Ticker, value.var = "Ret")
-.wdates <- .W$Date; .W[, Date := NULL]
-.Wmat <- as.matrix(.W); .wtk <- colnames(.Wmat); rm(.W); gc(verbose = FALSE)
+.sig_dates <- .month_ends[.month_ends >= as.Date("2005-01-01")]  # 신호 시작
+.flog("[te] sig_dates: %d (%s ~ %s)\n", length(.sig_dates),
+      as.character(min(.sig_dates)), as.character(max(.sig_dates)))
 
 # universe snapshot: sig_date 시점 LiqPass + 섹터 + 시총 (PIT)
 .snap <- RAWDATA[Date %in% .sig_dates & LiqPass == TRUE & is.finite(Size) & Size > 0 &
                    !is.na(Sector_Lv2) & nzchar(Sector_Lv2),
                  .(Date, Ticker, Size, Sector = Sector_Lv2)]
 setkey(.snap, Date)
+.flog("[te] snapshot rows=%d unique tickers=%d\n", nrow(.snap), uniqueN(.snap$Ticker))
+
+# ★메모리 절감: wide 행렬은 (a) 스냅샷에 등장하는 티커만 (b) 2003~ 날짜만.
+#   전체(1990~, 수천 티커)를 dense 캐스트하면 3GB+ → OneDrive 페이징 crash.
+.univ_tk <- unique(.snap$Ticker)
+.min_date <- as.Date("2003-06-01")   # 252d burn-in 여유 (2005-01 신호 위해 2004 초까지 필요)
+.Wlong <- RAWDATA[Ticker %in% .univ_tk & Date >= .min_date & is.finite(Ret),
+                  .(Date, Ticker, Ret)]
+.flog("[te] wide-long rows=%d tickers=%d dates=%d\n", nrow(.Wlong),
+      uniqueN(.Wlong$Ticker), uniqueN(.Wlong$Date))
+.W <- dcast(.Wlong, Date ~ Ticker, value.var = "Ret")
+.wdates <- .W$Date; .W[, Date := NULL]
+.Wmat <- as.matrix(.W); .wtk <- colnames(.Wmat)
+rm(.W, .Wlong); gc(verbose = FALSE)
+.flog("[te] Wmat dim=%dx%d (%.0f MB)\n", nrow(.Wmat), ncol(.Wmat),
+      as.numeric(object.size(.Wmat))/1e6)
 
 .discretize <- function(x, nbin) {
   ok <- is.finite(x)
