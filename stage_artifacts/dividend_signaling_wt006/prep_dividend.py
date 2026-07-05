@@ -119,9 +119,9 @@ elig["tier"] = elig["mcap_rank"].apply(tier)
 sig = panel.copy()
 sig["usable_ym_int"] = sig["usable_ym"].astype(int)
 sig = sig[["Ticker","usable_ym_int","div_yoy","div_initiate","div_payer","div_paid","bsns_year"]].copy()
-# asof merge per ticker
-elig = elig.sort_values(["Ticker","ym_int"])
-sig  = sig.sort_values(["Ticker","usable_ym_int"])
+# asof merge per ticker — merge_asof requires the on-key globally sorted
+elig = elig.sort_values(["ym_int","Ticker"]).reset_index(drop=True)
+sig  = sig.sort_values(["usable_ym_int","Ticker"]).reset_index(drop=True)
 merged = pd.merge_asof(elig, sig, left_on="ym_int", right_on="usable_ym_int",
                        by="Ticker", direction="backward")
 # payout-intensity YoY variant: div_paid / Size, but Size is current-month cap (PIT ok as scaling), YoY of ratio.
