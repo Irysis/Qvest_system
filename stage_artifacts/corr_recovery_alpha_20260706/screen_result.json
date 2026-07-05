@@ -57,5 +57,11 @@
     "t_2017": -0.566085,
     "VERDICT": "FAIL",
     "note": "signal absent/weak -> STOP (honest)"
+  },
+  "adversarial_note": {
+    "sign_instability": "RAW recovery_frac and RESID corr_recov carry OPPOSITE full-period IC signs (raw -0.0119 / resid +0.0115). This is a sign-flip under abs-corr-level residualization = unstable mechanism, not a robust edge.",
+    "cherry_pick_trap": "The only |t|>=2 result besides raw-full is RESID-2017plus (t=3.54). But its full-period t=1.70 fails the |t|>=2 bar; claiming PASS from the 2017+ subsample alone = subsample-mining. Gate rule (strongest full-period |t| as primary + full AND 2017+ persistence) correctly refuses it.",
+    "raw_decays": "RAW passes full-period |t|>=2 and orthogonality but decays to noise post-2017 (t=-0.57), i.e. the KR post-2017 IC->PORT_t transition wall applies to this novel lane too.",
+    "conclusion": "No robust, sign-stable, recent-holding cross-sectional signal. Honest STOP before Canonical/PORT_t."
   }
 }
