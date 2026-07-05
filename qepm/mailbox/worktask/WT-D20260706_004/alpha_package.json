@@ -1,0 +1,63 @@
+{
+  "task_id": "WT-D20260706_004",
+  "as_of_date": "2026-07-01",
+  "forecast_horizon": "1M",
+  "wt_type": "discovery",
+  "verdict": "KILL_FALSIFIED",
+  "metric_type": "canonical_screen",
+  "selection_objective": "rank_ic",
+  "hypothesis": "종목별 rolling KRW/USD 2-factor beta(export-sensitivity) 국면조건부(원약세 regime) 수출노출 alpha",
+  "economic_rationale": "KR 수출주도: 원약세(KRW/USD up)는 수출주 달러매출 번역+경쟁력 수혜. 원약세 regime에서 고-FX-beta 틸트.",
+  "redundancy_cluster_id": "macro_fx_linkage_return_derived",
+  "alpha_vector": {},
+  "confidence_vector": {},
+  "factor_specs": [
+    {
+      "factor_family": "Macro-FX-linkage",
+      "proxy": "rolling 120d 2-factor beta on KRW/USD dlog (mkt-orthogonalized)",
+      "formula": "OLS: r_i,d = a + b_mkt*mkt_d + b_fx*dlog(KRW/USD)_d over trailing 120 trading days ending month-end t; score = b_fx",
+      "lag_rule": "daily t-1 close for returns; KRW/USD spot@t (C11 contemporaneous); regime = KRW vs trailing 12m MA <= t",
+      "winsorization": "none (raw beta; cross-sectional rank via canonical top-N)",
+      "neutralization": "market-beta (2-factor OLS orthogonalizes market)",
+      "economic_rationale": "export earnings translation to KRW weakness",
+      "weight_theta": 0,
+      "references": ["Adler-Dumas 1984 exposure regression", "KR export-market macro linkage (hypothesis-level)"]
+    }
+  ],
+  "diagnostics": {
+    "rank_ic": 0.0058,
+    "rank_ic_t": 0.867,
+    "icir": 0.054,
+    "metric_type": "canonical_screen",
+    "portfolio_alpha_t_full_capw": -0.429,
+    "portfolio_alpha_t_post2017_capw": -2.371,
+    "portfolio_alpha_t_regime_weak_capw": -0.94,
+    "portfolio_alpha_t_regime_strong_capw": 0.356,
+    "portfolio_alpha_t_full_ew": -0.642,
+    "portfolio_alpha_t_post2017_ew": -1.531,
+    "inverse_full_capw_port_t": 0.278,
+    "turnover_annual": 9.409,
+    "megacap_top25_share": 0.032,
+    "top25_median_size_pctile": 45.3
+  },
+  "challenge_flags": [
+    {
+      "id": "RF-KILL",
+      "severity": "HIGH",
+      "note": "graduation HARD 3종 전부 미달: best PORT_t +0.356 <<2.95. 원약세 regime PORT_t -0.940(메커니즘 반대). post2017 -2.371."
+    },
+    {
+      "id": "RF-A1",
+      "severity": "HIGH",
+      "note": "rank-IC 0.0058 t=0.87 subperiod 방향력 부재"
+    },
+    {
+      "id": "megacap_check",
+      "severity": "INFO",
+      "note": "top-25 mega-cap share 3.2%, median size pctile 45.3%(중형) — mega-cap 재포착 아님. cap-w/EW 양쪽 음 → 벤치 아티팩트 아닌 진짜 신호 부재."
+    }
+  ],
+  "survivors": [],
+  "next_step": "none — honest kill; no handoff to Risk/Optimizer",
+  "self_adversarial_challenge": "challenge_note.md (5 concern: mega-cap재포착[RULED OUT] / FX-beta look-ahead[CLEAN] / regime look-ahead[CLEAN] / rank-IC 오독[분리보고] / regime 표본[충분,반증강화])"
+}
