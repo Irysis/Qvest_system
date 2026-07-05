@@ -153,8 +153,7 @@ cat(sprintf("  ortho pooled=%.3f  mean-monthly=%.3f  n_overlap_rows=%d\n", ortho
 
 # ---- Gate decision ----
 # Primary signal = residual (corr level controlled). PASS: |t|>=2 AND |ortho|<0.4 AND 2017+ sign held.
-best <- if (abs(st_resid$t) >= abs(st_raw$t)) list(name="corr_recov_resid", st=st_resid, st17=st_resid_2017)
-        else list(name="recovery_frac", st=st_raw, st17=st_raw_2017)
+best <- if (abs(st_resid$t) >= abs(st_raw$t)) { list(name="corr_recov_resid", st=st_resid, st17=st_resid_2017) } else { list(name="recovery_frac", st=st_raw, st17=st_raw_2017) }
 sign_full <- sign(best$st$mean_ic); sign_17 <- sign(best$st17$mean_ic)
 pass_t     <- abs(best$st$t) >= 2
 pass_ortho <- abs(ortho_pool) < 0.4
