@@ -1,0 +1,19 @@
+{
+  "variant": "qual_q07",
+  "stage": "stage2_bookmarginal",
+  "status": "FAILED_TO_RUN",
+  "reason": "ALIGNMENT_FAIL: book(contract benchmark) vs sleeve active carry incompatible realized-month calendar conventions; max|cor| at book-position offset +2 (0.4119) not 0 (0.1139).",
+  "align_offset_months": 2,
+  "align_cor_at_offset": 0.4119,
+  "align_cor_at_offset0": 0.1139,
+  "localization": {
+    "book_bench_vs_clean_bench_peak_offset": -1,
+    "book_bench_vs_clean_bench_peak_cor": 0.9465,
+    "sleeve_vs_clean_bench_peak_offset": 1,
+    "sleeve_vs_clean_bench_peak_cor": -0.5034,
+    "interpretation": "Book contract benchmark_ret leads clean benchmark by 1 month (documented realized_ym vs bench-date lag). Sleeve active labeled at +1 vs clean bench month-end aggregation. Net book<->sleeve mismatch = +2 positional. Naive ΔIR would pair wrong calendar months = spurious marginal value."
+  },
+  "incumbent_book_ir": 1.416,
+  "gate": "ABORTED — ΔIR not computed on misaligned series (AX-002 integrity).",
+  "governor": "정지 — no book_state write."
+}
