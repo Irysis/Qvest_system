@@ -1,0 +1,21 @@
+{
+  "run_id": "WT-D20260705_001_XATTN_forge_20260705_122405",
+  "strategy_id": "XATTN_5seed_CrossSecAttn",
+  "strategy_name": "Cross-Sectional Attention Super-Factor (5-seed ensemble)",
+  "strategy_family": "CrossSectionalAttention_Composite",
+  "signal_description": "Monthly self-attention over N names; rep=[h, ctx, h-ctx]; 5-seed ensemble; canonical top-25",
+  "universe_rule": "KOSPI200 union KOSDAQ150 intersection (canonical deployment)",
+  "rebalance_frequency": "monthly",
+  "signal_date_rule": "month_end_signal",
+  "execution_date_rule": "month_end_signal_t_plus_1_first_biz",
+  "weighting_method": "AlphaProp_buffer (optimizer; max(alpha,0) box[0,0.20] + buffer-zone turnover)",
+  "max_position_weight": 0.2,
+  "max_leverage": 1,
+  "cash_rule": "fully_invested_sum_w_1",
+  "cost_model": "v2.4_kr_retail_15bps",
+  "missing_data_rule": "asset_no_window_data_zero_return",
+  "risk_controls": "25 names hard, long-only, weight[0,0.20], Sw=1, Ledoit-Wolf Sigma cond=74",
+  "lookahead_prevention": "PIT C1-C15; factor-DB PIT (quarterly 45d/annual May/price t-1); rolling 96m refit; benchmark signal-month->realization(t+1) alignment",
+  "survivorship_bias_control": "canonical universe membership PIT; delisted retained in RAWDATA",
+  "cost_model_version": "v2.4_kr_retail_15bps"
+}

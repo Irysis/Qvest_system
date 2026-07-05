@@ -1,0 +1,104 @@
+{
+  "task_id": "WT-D20260705_001",
+  "agent": "forge_integration_v6.1_pure_function",
+  "as_of_date": "2026-07-05",
+  "strategy_id": "XATTN_5seed_CrossSecAttn",
+  "method": "weights.csv_as_is | Return.portfolio composition | build_bt_result contract | monthly ann=12",
+  "universe": "KOSPI200_KOSDAQ150_intersection",
+  "benchmark": "KOSPI200_total_return_clean_IKS200",
+  "metric_type": "backtested",
+  "sr_realized_share_based": 0.622,
+  "sr_factor_engine_continuous": {},
+  "sr_lockbox_daily_harness": {},
+  "measurement_basis_primary": "forge_realized_share_based",
+  "portfolio_alpha_t_nw_lag3": 2.3616,
+  "portfolio_alpha_p": 0.0182,
+  "net_ir": 0.622,
+  "net_sr_active": 0.622,
+  "tracking_error": 0.1483,
+  "alpha_annualized": 0.1104,
+  "beta_to_benchmark": 0.8668,
+  "net_sharpe": 0.9258,
+  "cagr": 0.2184,
+  "mdd": 0.3765,
+  "calmar": 0.5802,
+  "ann_vol": 0.2467,
+  "turnover_annual": 10.911,
+  "turnover_annual_convention": "delta: mean(sum|w_t-w_{t-1}|)*12 (matches optimizer 10.911)",
+  "turnover_annual_oneway": 5.455,
+  "oos_retention": 0.0372,
+  "oos_splits": [
+    0.037,
+    0.079,
+    -0.129
+  ],
+  "subperiod_port_t": {
+    "pre2018": 3.499,
+    "post2018": 0.409,
+    "post2022": -0.307
+  },
+  "optimizer_claim_net_port_t": 2.633,
+  "divergence_factor_engine_vs_realized_pp": -0.2714,
+  "vs_optimizer": {
+    "optimizer_net_port_t": 2.633,
+    "forge_realized_port_t": 2.3616,
+    "divergence_pp": -0.2714,
+    "diagnosis": "MINOR_DRIFT"
+  },
+  "ew_baseline_same_period": {
+    "port_t": 1.5672,
+    "net_ir": 0.4171,
+    "delta_port_t": 0.7944,
+    "delta_net_ir": 0.2049
+  },
+  "graduation_gate": {
+    "port_t_gate": 2.95,
+    "port_t": 2.3616,
+    "port_t_pass": false,
+    "oos_gate": 0.7,
+    "oos_retention": 0.0372,
+    "oos_pass": false,
+    "calmar_gate": 0.64,
+    "calmar": 0.5802,
+    "calmar_pass": false,
+    "all_pass": false,
+    "verdict": "SCREEN_TIER_FAIL"
+  },
+  "schedule_fidelity": {
+    "weights_used_as_is": true,
+    "density": 1,
+    "no_alpha_scores_reselection": true,
+    "no_schedule_fabrication": true
+  },
+  "audit_status": "WARNING",
+  "audit_fail_count": 0,
+  "audit_critical_fail_count": 0,
+  "pure_function_violation": false,
+  "hash_audit": {
+    "start": {
+      "alpha_pkg": "df6a28c4e7435abd292e7491faf40246",
+      "risk_pkg": "dd11f91be9220ae8b439123ea056516c",
+      "opt_pkg": "720ff18e3ced20bd7707d3a36c284076",
+      "weights": "ea06a43cad5b93db7411c7f9f4ab9a13",
+      "cov": "a36109a918aa929708a710a8ca3ff5a8"
+    },
+    "end": {
+      "alpha_pkg": "df6a28c4e7435abd292e7491faf40246",
+      "risk_pkg": "dd11f91be9220ae8b439123ea056516c",
+      "opt_pkg": "720ff18e3ced20bd7707d3a36c284076",
+      "weights": "ea06a43cad5b93db7411c7f9f4ab9a13",
+      "cov": "a36109a918aa929708a710a8ca3ff5a8"
+    },
+    "integrity_pass": true
+  },
+  "output_paths": {
+    "bt_result_rds": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260705_001/backtest_result/bt_result.rds",
+    "equity_curve": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260705_001/output/equity_curve.png",
+    "annual_returns": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260705_001/output/annual_returns.png",
+    "oos_zoom": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260705_001/output/oos_zoom_chart.png"
+  },
+  "cost_model_version": "v2.4_kr_retail_15bps",
+  "generated_at": "2026-07-05 12:24:06.986946",
+  "challenge_note_ref": "qepm/mailbox/worktask/WT-D20260705_001/forge_challenge_note.md",
+  "boundary_attestation": "3-package READ-ONLY (Pure function v6.1 R12). target_weights/alpha_vector/covariance unmodified. hash_integrity PASS start->end. weights.csv used as-is (schedule fidelity)."
+}
