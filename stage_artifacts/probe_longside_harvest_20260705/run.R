@@ -85,17 +85,19 @@ lens_quantile <- function(scores_dt, q = 5L, from = NULL) {
        n = nrow(lb))
 }
 
-# BETA-RESIDUAL control: is top-25 net-active just a beta tilt? Regress port net-active on
-#   benchmark excess; report alpha NW-t of residual. Uses canonical port period_returns.
+# BETA-ARTIFACT control: is the top-25 net-active alpha just a market-beta tilt?
+#   CAPM regression ret_net ~ benchmark_ret. The INTERCEPT is the beta-neutral monthly alpha
+#   (removes the (beta-1)*BM_Ret drift embedded in raw net-active). Report intercept's NW(lag3)
+#   HAC t-stat computed directly from the alpha series a_t = ret_net_t - beta*benchmark_ret_t
+#   (a_t has the intercept as its mean; NW-t of a_t = HAC t of the CAPM alpha).
 beta_resid_t <- function(canon_res) {
   pr <- canon_res$period_returns
-  if (is.null(pr) || nrow(pr) < 12) return(list(beta = NA, resid_t = NA))
-  # net-active series already; regress port ret_net on benchmark_ret to get beta, residual = ret_net - beta*bench
+  if (is.null(pr) || nrow(pr) < 12) return(list(beta = NA, capm_alpha_ann = NA, capm_alpha_t = NA))
   fit <- stats::lm(ret_net ~ benchmark_ret, data = pr)
-  b <- as.numeric(coef(fit)["benchmark_ret"])
-  resid_active <- pr$ret_net - b * pr$benchmark_ret      # beta-neutralized (intercept in NW-t)
-  list(beta = b, resid_t = .nw_t_mean(resid_active - mean(pr$benchmark_ret)*0, 3L),
-       resid_alpha_t = .nw_t_mean(residuals(fit), 3L))
+  b   <- as.numeric(coef(fit)["benchmark_ret"])
+  a0  <- as.numeric(coef(fit)["(Intercept)"])            # monthly beta-neutral alpha
+  a_series <- pr$ret_net - b * pr$benchmark_ret          # mean(a_series) == a0
+  list(beta = b, capm_alpha_ann = a0 * PPY, capm_alpha_t = .nw_t_mean(a_series, 3L))
 }
 
 # PLACEBO: random score, same universe/liquidity, top-25 canonical, PORT_t distribution
