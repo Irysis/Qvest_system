@@ -123,17 +123,28 @@ roll_fx_beta <- function(dt_tk, win = 120L, min_obs = 80L) {
   rbindlist(out)
 }
 
-tickers <- unique(rd$Ticker)
-cat("[fxpanel] tickers:", length(tickers), "\n")
-beta_list <- vector("list", length(tickers))
-for (j in seq_along(tickers)) {
-  tk <- tickers[j]
-  dt_tk <- rd[Ticker == tk, .(Date, ym, dret, mkt_ret, dlkrw)]
+# Restrict to tickers that are EVER in universe (K200 or KQ150) — avoids computing betas for 3898 names.
+univ_tickers <- unique(me[in_univ == TRUE, Ticker])
+cat("[fxpanel] universe tickers (ever K200|KQ150):", length(univ_tickers), "\n"); flush.console()
+
+# split once (avoids O(n^2) repeated Ticker== filtering on 13.9M rows)
+rd_sub <- rd[Ticker %in% univ_tickers, .(Ticker, Date, ym, dret, mkt_ret, dlkrw)]
+setorder(rd_sub, Ticker, Date)
+cat("[fxpanel] rd_sub:", nrow(rd_sub), "rows; splitting by ticker...\n"); flush.console()
+rd_split <- split(rd_sub, by = "Ticker", keep.by = FALSE)
+rm(rd_sub); gc()
+cat("[fxpanel] split into", length(rd_split), "ticker frames\n"); flush.console()
+
+beta_list <- vector("list", length(rd_split))
+nm <- names(rd_split)
+for (j in seq_along(rd_split)) {
+  dt_tk <- rd_split[[j]]
   if (nrow(dt_tk) < 100L) next
   b <- roll_fx_beta(dt_tk, win = WINDOWS[1])
-  if (!is.null(b) && nrow(b) > 0) { b[, Ticker := tk]; beta_list[[j]] <- b }
-  if (j %% 100 == 0) cat("  ", j, "/", length(tickers), "\n")
+  if (!is.null(b) && nrow(b) > 0) { b[, Ticker := nm[j]]; beta_list[[j]] <- b }
+  if (j %% 100 == 0) { cat("  ", j, "/", length(rd_split), "\n"); flush.console() }
 }
+rm(rd_split); gc()
 betas <- rbindlist(beta_list, fill = TRUE)
 cat("[fxpanel] beta rows:", nrow(betas), " months:", uniqueN(betas$ym), "\n")
 
