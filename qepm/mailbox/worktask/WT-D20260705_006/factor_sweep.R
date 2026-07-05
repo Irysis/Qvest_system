@@ -18,6 +18,13 @@ MOM <- "M04_Mom_1"; MOM_ALT <- "M01_Mom_12_1"
 want <- unique(c(CONS, MOM, MOM_ALT))
 
 sig_dates <- me_dates[me_dates >= FDB_MIN & me_dates <= max(bp$bench_dt$Date)]
+# resume support: load already-collected months
+PARTIAL <- file.path(STA,"FAC_partial.rds")
+done_dates <- as.Date(character(0))
+if (file.exists(PARTIAL)) {
+  prev <- readRDS(PARTIAL); done_dates <- unique(prev$Date)
+  cat("[resume] already have", length(done_dates), "months\n")
+}
 flist <- vector("list", length(sig_dates)); t0 <- Sys.time()
 read_month <- function(d) {   # retry wrapper for OneDrive flakiness
   for (a in 1:3) {
