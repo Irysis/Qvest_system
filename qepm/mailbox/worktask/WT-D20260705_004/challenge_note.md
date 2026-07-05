@@ -59,3 +59,53 @@
 
 ## 회피표현 자기검사
 "미미/관행/보수적이면 OK" 미사용. C 양수를 "개선"으로 포장 안 함(생존편향 명시). 실측 수치·n_months 근거만.
+
+---
+---
+
+# Self-Adversarial Challenge — WT-D20260705_004 (Risk Research)
+
+**Agent**: risk-research (QEPM Opus 4.8 self-adversarial, v8.2 — AX-008 3-source 중 1개)
+**Date**: 2026-07-05
+**Finalize 직전 자체 적대검증**. Σ 추정의 약점 자가제기 → ACCEPT/PARTIAL/REBUTTAL. Charter §8 No Silent Override.
+
+## 산출물 요약 (검증 대상)
+- Σ = 40-name 배포 유니버스 **월간** 공분산, Ledoit-Wolf constant-correlation shrinkage(δ=0.451), cond **98.7**, PSD=TRUE.
+- 추정 window = 242월(2006-02 .. 2026-03, ≥60% 커버리지), PIT Date≤2026-04-30(C1).
+- market var share 0.681 / port β 0.777 / PC1 0.213 / specific share 0.832 / sector HHI 0.114.
+- tail Hill α=2.58, ES99=4.69%; stress covid −14.0%/rate2022 −23.0%(reliable), GFC/EuDebt/China UNRELIABLE(partial listing).
+- crowding score_eff 0.271 / uncertainty 0.145 (< 0.75, flag 없음).
+
+## Concern R1 [HIGH] — 최초 estimator 선택이 degenerate identity Σ를 골랐음 (자기결함)
+**적대 제기**: 첫 실행에서 min-condition-number 목적이 LW를 cond=1.0(scaled identity)로 선택 — off-diag 상관 전부 소거된 **무의미 Σ**. 이대로 optimizer에 넘겼다면 robust-opt 테스트가 "모든 종목 독립·동일위험" 가정 위에서 돌아 thesis 검증이 무효였을 것.
+**진단**: 원인 = `hrp_core` LW 폐형이 tiny monthly-return 스케일에서 ρ→1 수치붕괴(진단: sample cor mean offdiag 0.189·cond 39.5는 건강 → 붕괴는 estimator 버그이지 데이터 아님). 수정: (a) 표준 Ledoit-Wolf 2004 **constant-correlation target** 자체구현(δ=0.451, 정상), (b) **degeneracy guard** 추가 — meanOffdiagCor < 0.5×sample 또는 cond<2 estimator는 조건수 무관 배제.
+**분류: ACCEPT (자기 반증·수정 완료)**. min-cond 목적이 over-shrinkage를 보상하는 함정을 정확히 포착. 최종 Σ는 sample 상관구조(0.191)를 보존(LW 0.189)하며 cond 98.7<500.
+**근거**: method_log[sample cond 120/offdiag 0.191, ledoit_wolf cond 98.7/offdiag 0.189/δ0.451/degenerate FALSE, gerber_rmt cond 353.8]. 수정 전 LW cond 1.0/PC1 0.025 → 수정 후 cond 98.7/PC1 0.213.
+
+## Concern R2 [MEDIUM] — 17% NA-fill(mean-impute)이 상관을 눌러 위험 과소평가?
+**적대 제기**: 추정행렬 NA 17%를 column-mean으로 채움 — 신규상장 종목의 결측월에 상수(평균) 주입은 그 구간 분산·상관을 0쪽으로 눌러 idio-vol 과소·상관 과소 유발 가능. optimizer가 위험을 낙관.
+**진단**: (a) mean-impute는 해당 셀을 잔차 0으로 만들어 **분산을 낮추는 방향** — 즉 보수적이지 않고 낙관적. 단 (b) LW δ=0.451 shrinkage가 constant-corr target(0.189)로 끌어 과소상관을 부분 보정. (c) 정량: NA 종목은 2010+ 상장분에 집중, 242월 중 대부분 실측월 보유(median 266월 실측). 40종 중 최소 25월 실측(min col_cov=25)은 소수. (d) full-window vs recent-60m 상관구조 robustness = **0.78 상관** — mean-fill이 구조를 왜곡했다면 이 정합이 깨졌을 것.
+**분류: PARTIAL**. mean-fill이 낙관 방향 편의를 넣는 것은 사실이나, LW shrinkage + 높은 실측 커버리지 + robustness 0.78이 왜곡을 제한적으로 유지. 개선 여지: EM/pairwise-complete 또는 신규종목 window-truncation. **capital-grade off the table**인 probe에서 clean-enough Σ로 충분(과잉엔지니어링 회피). risk_summary에 na_fill_rate=0.170 명시로 optimizer가 인지.
+**자기합리화 검사**: "보수적이면 OK" 미사용 — 오히려 낙관 편의임을 명시. 실측(robustness 0.78·δ0.451)이 근거.
+
+## Concern R3 [MEDIUM] — 20년 full-window가 2008 vintage 공동움직임을 현재에 혼입(regime-mixing)?
+**적대 제기**: 2006-2026 전기간 Σ는 GFC·EuroDebt 고상관 국면과 최근 저상관 국면을 평균 — 현재(2026) 리밸 결정에 stale co-movement 주입. C1 위반은 아니나 estimation-relevance 문제.
+**진단**: expanding-window는 PIT-safe(C1 충족·look-ahead 없음). regime-mixing은 정확성 우려이지 위반 아님. 정량: full offdiag 0.189 vs recent-60m 0.250 — 최근이 **더 높음**. 즉 full-window는 최근 상관을 **과소**평가(다시 낙관 방향). 이를 상쇄하려 regime-conditional 진단 별도 산출: crisis avg corr 0.131 vs normal 0.139(월간, 벤치 하위20% tercile) + regime_correlation.parquet 제공 → optimizer가 crisis-aware 원하면 소비 가능.
+**분류: REBUTTAL (근거有)**. full-window Σ는 PIT-정당(C1)하며 robustness 0.78로 안정. 최근 상관 과소분은 regime_correlation 진단으로 명시 전달 — silent override 아님. 학술: expanding-window 표준(Pfaff FRM Ch8). L-code: [[reference-book-benchmark-alignment-realized-ym]] 정합(월간 정렬). 3축: (C1 expanding) + (robustness 0.78) + (regime 진단 별도 제공).
+
+## Concern R4 [INFO] — market var share 0.681 > 0.40 (RF-R1) = 진짜 리스크인가 아티팩트인가
+**적대 제기**: top common risk(market) 68% > 40% RF-R1 HIGH — Σ 오추정?
+**진단**: KR long-only 40종의 market β 평균 0.777, PC1 0.213(상관 기준)은 **구조적**(시장성분 지배는 measurement-graduation §6 확립된 진실 — long-only β≈0.92, gross 상관 0.78). RF-R1은 KR long-only의 알려진 특성이지 추정오류 아님. exposure bound는 optimizer scope(위임).
+**분류: REBUTTAL**. RF-R1 flag는 정직히 등재하되 "structural KR long-only, not estimation error"로 라벨. §6 정합.
+
+## Escalate trigger 점검
+- HIGH 1건(R1, 수정완료) / MEDIUM 2 / INFO 1 — HIGH<5 / AX hard FAIL 0 / PIT C1 위반 0 / **Σ PD violation 없음**(PSD=TRUE, cond 98.7) → **자동 escalate 불요**. Q-Lead 정상 핸드오프.
+
+## 처리 결과 (반영)
+1. degenerate LW 선택 버그 수정 — 표준 constant-corr LW + degeneracy guard. 최종 Σ cond 98.7·PSD·상관보존.
+2. na_fill_rate 0.170 + regime_correlation.parquet를 risk_package에 명시(낙관편의·regime-mixing을 optimizer에 투명 전달).
+3. RF-R1(market 68%)은 structural KR long-only 라벨로 등재(추정오류 아님).
+4. Σ + tail + stress + crowding 진단만 산출. alpha·weight 불변(경계 준수).
+
+## 회피표현 자기검사
+"미미/관행/보수적이면 OK" 미사용. mean-fill을 낙관편의로 명시(보수 위장 안 함). 실측(cond 98.7·δ0.451·robustness 0.78·offdiag 0.189) 근거만.

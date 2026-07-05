@@ -24,5 +24,27 @@
     "stack_EW_pt": 2.538,
     "stack_InvVol_pt": 2.459
   },
-  "delta_vs_linear_best": -1.1197
+  "delta_vs_linear_best": -1.1197,
+  "window_matched_comparison": {
+    "note": "R1 linear 2.538 \uc740 2005+ \uc804\uae30\uac04; ML\uc740 2010-02+ 195m(5yr train \ud544\uc694). \ub3d9\uc77c \uc708\ub3c4\uc6b0 \uc7ac\uce21\uc815.",
+    "linear_stackEW_ML_window_pt_capwt": 1.473,
+    "ml_lgbm_pt_capwt": 1.418,
+    "delta_ml_minus_linear_same_window": -0.055,
+    "verdict_same_window": "ML \u2248 linear (tie, \u0394=-0.055) \u2014 \ube44\uc120\ud615\u00b7\uad6d\uba74\uc870\uac74\ubd80 \uac1c\uc120 \uc5c6\uc74c"
+  },
+  "lag1_stress_comparison": {
+    "linear_full_delta": -0.542,
+    "linear_full_base": 2.538,
+    "linear_full_lag1": 1.996,
+    "ml_delta": -1.499,
+    "ml_base": 1.418,
+    "ml_lag1": -0.081,
+    "interpretation": "ML lag1 \uae09\ub77d(\u0394-1.50)>linear(\u0394-0.54): ML \uc2e0\ud638 \uc6d4-\ud2b9\uc774\uc131/\uc800\uc9c0\uc18d. \ud558\ub4dc \ub204\ucd9c \uc544\ub2d8(window-matched linear\uac00 base \uc218\uc900 \ud655\uc778)\uc774\ub098 \uc9c0\uc18d\uc131 \uc5f4\uc704=\uacfc\uc801\ud569 \uc9d5\ud6c4."
+  },
+  "pit_provenance": {
+    "regime_features": "ar_z, cpz(msm) \ubaa8\ub450 expanding-window(1:i) z-score = PIT-safe(run_ramp_ar_regime.R L44, ramp_wire_canonical.R L31)",
+    "regime_lag": "t-1 shift(1) \uc801\uc6a9, \ub3d9\uc6d4\ub204\ucd9c \uc5c6\uc74c",
+    "minor_caveat": "msm cp NA-impute=full-sample mean(\ucd08\uae30\ud589\ub9cc) \u2014 cosmetic, lag1 \ud6c4 \ubb34\uc601\ud5a5",
+    "target": "forward Ret_1m t->t+1, \ub3d9\uc6d4 features\uc640 \ubd84\ub9ac"
+  }
 }
