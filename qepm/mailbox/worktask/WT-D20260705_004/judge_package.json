@@ -1,0 +1,130 @@
+{
+  "task_id": "WT-D20260705_004",
+  "agent": "judge",
+  "as_of_date": "2026-04-30",
+  "verdict": "JUDGE_FAILED",
+  "verdict_tier": "graduation_capital",
+  "grade_authoritative": "C",
+  "grade_source": "02_Infrastructure/contracts/essence_score.R (selection_type=chain, n_trials_cumulative=16)",
+  "grade_hard_fail": false,
+  "grade_hard_fail_note": "essence hard_fail=FALSE는 구조적 drawdown/PIT hard 부재만 의미. graduation FAIL은 HARD threshold 게이트(PORT_t/oos_retention/calmar) 미달 경로.",
+  "metric_type_adjudicated": "backtested",
+  "authoritative_metrics": {
+    "portfolio_alpha_t_nw_lag3_full": 0.9698,
+    "portfolio_alpha_t_nw_lag3_recent2017": -0.7248,
+    "portfolio_alpha_t_pvalue_full": 0.3321,
+    "net_sharpe": 0.813,
+    "net_ir": 0.279,
+    "cagr": 0.1756,
+    "mdd": -0.4154,
+    "calmar": 0.418,
+    "oos_retention_v2": -0.604,
+    "dsr": 0.266,
+    "turnover_annual": 12.28,
+    "n_months_full": 196,
+    "n_months_recent2017": 112,
+    "source": "forge_package.json + essence_score.R on bt_result.rds"
+  },
+  "gate_verdicts": {
+    "A_PIT": {
+      "status": "PASS",
+      "detail": "expanding-window train months[:t] 60m burn-in strict. PIT μ̂ rank-IC 0.031 <= score_eff mean IC 0.036 = no inflation (누출 시 IC가 mean 상회해야 하나 이하). σ̂ calibrated (within-month corr(σ̂,|realized active|)=+0.207). forge path: weights.csv as-is + F1 forward-1M returns + bm_fwd forward-shifted benchmark(C5) + no same-day circular. bt_audit PIT PASS(point_in_time_checked). C1~C15 위반 0. lockbox 접근(judge 유일).",
+      "pit_warns": "bt_audit 3 WARN(C1-C15 명시적 reference 부재 / survivorship_control 필드 부재 / c15 factor_engine_path skip) = 문서화 gap이지 integrity FAIL 아님. lookahead 실체 검증은 μ̂ IC 비-부풀림 + strict window로 triangulated PASS."
+    },
+    "B_Isolation": {
+      "status": "PASS",
+      "detail": "lockbox_access_count_non_judge=0(selection_contamination_detector). alpha=α̂+σ̂만, risk=Σ만, optimizer=weights만. optimizer validity anchor로 baseline A 정확 재현(full 0.9698/recent -0.7248, 4dp). forge hash 6/6 무수정. test isolation 유지."
+    },
+    "C_NetAlpha": {
+      "status": "FAIL",
+      "detail": "forge-authoritative PORT_t 0.970 < 2.95 HARD (Harvey-Liu-Zhu 2016). p-value 0.332 (비유의). net_IR 0.279 > 0.2 통과이나 PORT_t HARD 미달로 Gate C FAIL. recent2017 PORT_t -0.725(음). delta_PORT_t(uncertainty best like-for-like B/D − A) = -0.404 full / -0.472 recent = neutral-to-harmful.",
+      "authoritative_index": "forge_package.portfolio_alpha_t_nw_lag3 (NW lag-3, build_benchmark_compare). rank-IC t(4.11)는 advisory — long-only 실현 alpha 미전이."
+    },
+    "D_Crowding": {
+      "status": "PASS_NA",
+      "detail": "crowding score_eff 0.271 / forecast_uncertainty 0.145 (< 0.75, flag 없음). survival 스트레스 무관(capital-grade off table). Gate C FAIL로 crowding 판정 moot이나 crowding_flags 빈 것 확인."
+    },
+    "E_Concentration": {
+      "status": "PASS",
+      "detail": "25종 (max_names_le_25=TRUE). max_w 0.04 <= 0.20. Σw=1. sector_hhi 0.114. long-only. weight bounds [0,0.04] within [0,0.20]. E 전부 통과."
+    },
+    "F_Drift": {
+      "status": "FAIL",
+      "detail": "oos_is_ratio(oos_retention v2 anchored 3분할 중앙값) = -0.604 < 0.7. 실제 <0.5 = 무조건 FAIL(measurement-graduation §3, band escalation 불가). recent2017 -0.725 음전 = cohort-wide 2017+ decay-pattern(overfit 아님). drift tolerance 미달."
+    }
+  },
+  "graduation_hard_gates": {
+    "portfolio_alpha_t_nw_2p95": {"value": 0.9698, "threshold": 2.95, "pass": false},
+    "oos_retention_0p7": {"value": -0.604, "threshold": 0.7, "pass": false, "note": "<0.5 무조건 FAIL"},
+    "calmar_0p64": {"value": 0.418, "threshold": 0.64, "pass": false},
+    "dsr_0p5": {"value": 0.266, "threshold": 0.5, "pass": "advisory", "note": "selection_type=chain → DSR HARD 부적용(sweep 아님). 진단산출만."},
+    "hard_gates_passed": "1/3 substantive HARD (Sharpe 0.813 + CAGR 17.56%만 legacy Grade A 임계 통과; PORT_t/oos_retention/calmar 3종 미달)"
+  },
+  "two_tier_gate_verdict": {
+    "graduation_capital_tier": "FAIL",
+    "graduation_reason": "HARD 3종(PORT_t 2.95 / oos_retention 0.7 / calmar 0.64) 미달. recent2017 음. capital-grade 아님.",
+    "screening_tier": {
+      "screen_pass": true,
+      "screen_pass_criteria": "SR 0.813>=0.7 AND CAGR 17.56%>=12% AND no-PIT-violation",
+      "decay_pattern": "decay (cohort-wide 2017+ — recent2017 PORT_t -0.725, §3 decay-pattern not overfit)",
+      "screen_route": "NONE_new — signal력은 기저 composite(score_eff, 이미 등록/알려진 신호)에 귀속. 본 WT novelty(uncertainty selection/sizing 차원)는 delta_PORT_t<0 = FAIL. 신규 module 라우팅 없음(중복 방지).",
+      "attribution_note": "screen_pass=TRUE는 incumbent score_eff의 alpha이지 uncertainty 차원의 기여 아님. WT 기여도 = negative."
+    }
+  },
+  "role_honesty_audit": {
+    "alpha_boundary": "PASS — α̂ mean + σ̂만, Σ/weight 미침범",
+    "risk_boundary": "PASS — Σ+tail+stress+crowding만, alpha/weight 불변",
+    "optimizer_boundary": "PASS — weights(EW)만, alpha/risk 재해석 없음, validity anchor 4dp 재현",
+    "forge_boundary": "PASS — pure function, hash 6/6 무수정, weights.csv as-is",
+    "challenge_notes_real": "PASS — 4-agent(alpha/risk/optimizer/forge) 자가반증 실재. alpha C 생존편향 ACCEPT+look-ahead REBUTTAL(3축), risk R1 자가결함 ACCEPT+수정, optimizer 24-cell overfit 코너 REBUTTAL, forge CF-F1~F5",
+    "metric_type_honesty": "PASS — alpha/opt=canonical/weighted_screen(estimated), forge=backtested(authoritative), proxy 손계산 0"
+  },
+  "lockbox_extension_audit": {
+    "oos_measured": true,
+    "oos_window": "recent2017 (112m, 2017-01..2026-04) = deployment-analog OOS",
+    "oos_authoritative_port_t": -0.7248,
+    "frozen_weights_extension_equiv": "recent2017 = frozen weights buy-and-hold OOS extension 동형(forge/monitoring lockbox 폐기, lockbox-scope.md)",
+    "oos_chart_complete": true,
+    "oos_chart_note": "equity_curve.png + oos_zoom_chart.png 둘 다 2010-2026 연속(strategy line 끊김 없음). OOS_CHART_INCOMPLETE flag 불요.",
+    "mandate_discharged": true
+  },
+  "self_adversarial_challenge": {
+    "file": "judge_challenge_note.md",
+    "concerns": 5,
+    "high": 2,
+    "classification": "J1 REBUTTAL(AX-001 v2 오적용 없음) / J2 ACCEPT(C 생존편향, verdict 불변) / J3 REBUTTAL(grid-max selection artifact) / J4 REBUTTAL(OOS 측정 discharge) / J5 PARTIAL(screen_pass base 귀속)",
+    "escalate": false,
+    "escalate_reason": "HIGH 2 (<5) / AX hard FAIL 0 / PIT C1 violation 0"
+  },
+  "ax008_triangulation": {
+    "forge": "PASS (authoritative 0.9698/-0.7248, audit 12/0)",
+    "self_adversarial": "PASS (J1-J5, escalate 0)",
+    "architect": "not_called (capital-grade off table, mechanical)",
+    "verdict": "2/3 PASS 충족"
+  },
+  "axiom_emit": {
+    "l_code": "L-JG-20260705_200604",
+    "l_code_path": "stage_artifacts/l_code/judge_gate/l_code_WT-D20260705_004.json",
+    "research_mode": "judge_gate",
+    "metric_type": "backtested",
+    "record_type": "performance",
+    "grade": "C",
+    "construction_type": "composite",
+    "selection_type": "chain",
+    "promotion_axes_populated": ["mechanism_hypothesis", "portfolio_alpha_t=0.9698", "oos_retention=-0.604", "selection_type=chain", "falsification_attempts(5: 3 falsified + 2 survived)"],
+    "knowledge": "KR deployment 봉투에서 uncertainty-aware α̂ 예측(calibrated σ̂ +0.207)과 신뢰기반 selection/sizing이 IC→PORT_t 전이를 개선 못함. EW(1/N)가 25종 broad KR alpha의 개선불가 blind 천장(DeMiguel-Garlappi-Uppal). 전이 벽이 selection AND sizing 양 레벨서 uncertainty 차원에 robust. §6 '직교≠수익'·전이 벽 지식에 uncertainty 차원 확증 추가.",
+    "directional_note": "재시도금지 라벨 아님 — 전이 벽은 sizing/uncertainty 무관 견고, frontier는 overlay·잔차sleeve·비-return."
+  },
+  "disposition": "GOVERNOR 미인계 불요 예상(graduation FAIL). incumbent(STR_1631_80_STR_1656_20) retain. book_state 무변경. governor는 판정 확인만.",
+  "hard_constraints_verified": {
+    "n_names": 25,
+    "max_names_le_25": true,
+    "long_only": true,
+    "weight_bounds_ok": true,
+    "sum_w": 1,
+    "turnover_annual": 12.28,
+    "turnover_within_cap": true
+  },
+  "next_step": "wt_advance JUDGE_DONE → governor(판정 확인, ADMIT 불요). Q-Lead telegram 보고(gate별 pass/fail + screen 라벨 + L-code + Role Honesty).",
+  "created": "2026-07-05 20:10:00"
+}
