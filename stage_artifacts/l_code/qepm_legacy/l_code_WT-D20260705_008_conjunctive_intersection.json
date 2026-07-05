@@ -1,0 +1,53 @@
+{
+  "l_code": "L-QPM-20260705_192441",
+  "strategy_id": "WT-D20260705_008_conjunctive_intersection",
+  "grade": "F",
+  "core_reference": "WT-D20260705_008 alpha_package.json + challenge_note.md (self-adversarial 6 concern resolved); AX-007 translation break re-attribution",
+  "lesson_text": "WT-D20260705_008 QEPM 자율발굴 CLEAN_NEGATIVE — 조건부 교집합(AND-gate conjunctive intersection) 선택은 decile 비단조 벽을 돌파하지 못함(FALSIFIED). canonical_screen 258m top-25 EW long-only 15bps NW lag-3: 개별 near-orthogonal 약신호 4축(value 1.90·momentum 1.17·quality −0.94·lowrisk −2.11, 상호 |Spearman|≤0.148) → 가산 CONTROL Z-평균 full PORT_t 0.18(IS 2.22→OOS −1.72) → HYPOTHESIS AND-gate(tau*=0.60) full 0.094(IS 3.44→OOS −2.27, 가산보다 OOS 더 나쁨). ★결정적 재진단: 벽은 top-decile confound/selection 벽이 아니라 SIGNAL-DECAY 벽. full-period deciles는 이미 대략 단조(Spearman 0.82, D10−D1 70~81bps); 비단조는 OOS에서만 발현(monotonicity→0.03)하고 全 decile(D10 포함) OOS 심한 음(−56~−139bps/월). 즉 어느 decile에도 없는 OOS edge를 conjunctive 선택으로 복원 불가. confound-cancellation은 기계적으로 달성(교집합 cross-axis 백분위 분산 0.108 vs 개별 top-quintile ~0.30)됐으나 placebo(동일크기 랜덤 balanced 20 draws) OOS −1.56±0.87과 real −2.27이 구분 불가 → confound는 binding constraint 아님. 강건: 축교체(Q07+BAB) IS+/OOS− 동일 재현·OOS-split(2015/2017/2019) 全 IS>0/OOS<0 구조적·median adv 3.05e9(≥2e8, micro-cap 붕괴 아님). → 06-11 verdict의 '조건부(conditional) 조합=미답'은 이제 반증으로 해소. 선택구조(가산 vs 조건부)는 SR 레버 아님. 재시도 금지: 가산·단일·수익파생 축의 AND-gate 교집합. 잔여 envelope 레버 = 비-return 신규원천 / overlay / DPL.",
+  "tags": [
+    "QEPM_DISCOVERY",
+    "CLEAN_NEGATIVE",
+    "CONJUNCTIVE_INTERSECTION_FAIL",
+    "SIGNAL_DECAY",
+    "SELECTION_STRUCTURE_NOT_LEVER",
+    "AX-000_honest"
+  ],
+  "created_at": "2026-07-05",
+  "research_mode": "qepm_legacy",
+  "created_by": "emit:qepm_legacy",
+  "metric_type": "canonical_screen",
+  "construction_type": "composite",
+  "mechanism_hypothesis": "각 신호 top decile의 신호별 confound(value=distress·mom=crowding·quality=priced-in·lowrisk=저수익)를 AND-교집합으로 상쇄하면 realized active 복원된다는 가설 → 반증. 실제 벽은 confound가 아니라 post-2017 全-decile signal-decay라 conjunctive selection이 복원할 edge 자체가 부재(AX-007 translation break의 재-귀속: selection 벽 아닌 signal 벽).",
+  "lcode_schema_version": 2,
+  "falsification_attempts": [
+    {
+      "test": "gate-only pure intersection EW (tau sweep)",
+      "result": "falsified",
+      "note": "全 tau IS+ (t 2.6~3.3) → OOS− (t −1.7~−2.6), full ~0. 교집합 자체에 OOS edge 없음"
+    },
+    {
+      "test": "AND-gate top-25 fill tau*=0.60 canonical_screen 258m",
+      "result": "falsified",
+      "port_t": 0.094,
+      "note": "full 0.094·IS 3.44·OOS −2.27; 가산 control(0.18/2.22/−1.72)보다 OOS 더 나쁨"
+    },
+    {
+      "test": "decile realized-alpha profile (개별/가산/교집합)",
+      "result": "falsified",
+      "note": "full deciles 이미 ~단조(Spearman 0.82); 비단조는 OOS-only + 全 decile(D10 포함) OOS −56~−139bps/월 = signal-decay"
+    },
+    {
+      "test": "confound-cancellation vs placebo (20 random balanced draws)",
+      "result": "falsified",
+      "note": "기계적 상쇄 달성(cross-axis var 0.108 vs 0.30) but real OOS −2.27 vs placebo −1.56±0.87 = 구분불가, confound not binding"
+    },
+    {
+      "test": "축교체(Q07+BAB) + OOS-split(2015/2017/2019) 강건성",
+      "result": "falsified",
+      "note": "全 IS+/OOS− 재현 = 구조적, median adv 3.05e9(≥2e8) micro-cap 붕괴 아님"
+    }
+  ],
+  "portfolio_alpha_t": 0.094,
+  "selection_type": "chain",
+  "record_type": "performance"
+}

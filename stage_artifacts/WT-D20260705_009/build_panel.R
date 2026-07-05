@@ -34,9 +34,15 @@ dir.create(OUT, showWarnings = FALSE, recursive = TRUE)
 LIQ_MIN <- 5e7   # request.json universe_definition.liquidity_min_won_20d_avg = 5e7 (WT-scoped)
 
 # ---- 1. RAWDATA (daily) -> monthly universe + forward returns ----
+# NOTE: arrow read_parquet(col_select=...) HANGS on this build (io-thread bug). Read full then subset.
+# Read from local scratch copy if present (avoids OneDrive mmap issues), else .cache.
 cat("[panel] loading RAWDATA...\n")
-rd <- as.data.table(read_parquet(".cache/RAWDATA.parquet",
-      col_select = c("Date","Ticker","K200","KQ150","Close","Vol","Ret","BM_Ret")))
+RAW_SCRATCH <- Sys.getenv("RAW_SCRATCH", "")
+raw_path <- if (nzchar(RAW_SCRATCH) && file.exists(file.path(RAW_SCRATCH, "RAWDATA.parquet")))
+              file.path(RAW_SCRATCH, "RAWDATA.parquet") else ".cache/RAWDATA.parquet"
+cat("[panel] raw_path =", raw_path, "\n")
+rd <- as.data.table(read_parquet(raw_path))
+rd <- rd[, .(Date, Ticker, K200, KQ150, Close, Vol, Ret, BM_Ret)]
 rd[, Date := as.Date(Date)]
 setorder(rd, Ticker, Date)
 

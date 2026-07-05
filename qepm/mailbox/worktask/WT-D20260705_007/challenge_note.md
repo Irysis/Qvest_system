@@ -25,10 +25,12 @@ canonical_screen_bt(metric_type=canonical_screen) 첫 PORT_t 실측:
 ## Concern 2 [HIGH] — 1M horizon 미스매치: TE는 저주파 정보전파인데 1M 리밸이 신호를 놓쳤을 가능성
 **약점**: net-sink(느린 정보반영)는 반영에 수개월 걸릴 수 있는데 1M forward로만 측정하면 decay 이전에 신호가 안 잡혀 거짓 null. WT 강화축 (b) multi-horizon.
 
-**분류: PARTIAL → 보완 실측** (3M decay-matched 추가 검증)
-- 3M quarterly cadence(non-overlapping)로 resid/raw top20/25 재측정 (te_3m_horizon.json). [결과 삽입 — 아래 §부록]
-- 만약 3M도 PORT_t 음/null이면 horizon 미스매치 반론 기각. 3M에서 유의미 양(+)이면 판정 재검토.
-- **선험적 근거(부분 인정)**: subperiod에서 pre2017 +0.98이 존재하므로 "완전 신호 부재"는 과단정 위험 — horizon·regime 조건부 여지는 열어둠. 단 pre2017 +0.98도 t<2로 비유의 + 2017+ 붕괴로 net FALSIFIED.
+**분류: PARTIAL → REBUTTAL (3M 실측으로 반론 기각)**
+- 3M quarterly cadence(non-overlapping) 재측정 (te_3m_horizon.json, n=86분기):
+  - **resid_top20 PORT_t = +0.021 (IR 0.006)** = 사실상 0 — horizon 늘려도 신호 부활 없음.
+  - **raw_top20 PORT_t = −0.41** = 여전히 음.
+- 1M(−1.05)이든 3M(+0.02)이든 exploitable alpha 부재. **horizon 미스매치 반론 기각.** decay-matched holding도 신호를 살리지 못함 → 신호 자체가 없음이 확정.
+- pre2017 +0.98(t<2 비유의)은 1M-only regime artifact이며 3M·전기간 어디서도 자본급 아님.
 
 ## Concern 3 [MEDIUM] — pre-2017 +0.98을 "regime-conditional 살아있는 신호"로 과대해석할 유혹
 **약점**: pre2017 PORT_t +0.98을 근거로 "regime-conditional overlay로 살릴 수 있다"고 결론내면 self-rationalization("일부 기간은 됨").

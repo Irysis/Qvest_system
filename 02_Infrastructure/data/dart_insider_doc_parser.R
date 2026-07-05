@@ -35,9 +35,10 @@ suppressPackageStartupMessages({
 })
 
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0 || (length(a) == 1 && is.na(a))) b else a
-# Hangul syllable range via unicode escapes (locale/encoding-independent — a raw
-# "[가-힣]" literal in source can compile to a broken byte range under non-UTF-8 locales)
-.HANGUL <- "[가-힣]"
+# Hangul syllable-block range [AC00-D7A3], built via intToUtf8 so it is independent
+# of how this source file was decoded (a raw "[가-힣]" literal can compile to a broken
+# byte-range under a non-UTF-8 source locale -> regcomp 'Invalid character range').
+.HANGUL <- paste0("[", intToUtf8(0xAC00), "-", intToUtf8(0xD7A3), "]")
 
 #------------------------------------------------------------------------------
 # .dart_fetch_doc: fetch document.xml (ZIP) and return path to extracted .xml
@@ -269,35 +270,56 @@ suppressPackageStartupMessages({
     if (is.na(dt_idx)) next
     trade_date <- .parse_date_kr(cells[dt_idx])
 
-    # After date: 종류, 변동전, 증감, 변동후, 단가, 비고 (positional)
+    # After date the layout is POSITIONALLY fixed:
+    #   종류 | 변동전 | 증감 | 변동후 | 단가 | 비고
+    # Dash ('-') / empty placeholders MUST stay in-slot (NA), NOT be compacted —
+    # compacting shifts 변동후/단가 into 변동전 when 변동전='-' (bug found 2026-07-05).
     tail_cells <- cells[(dt_idx + 1):length(cells)]
-    security_type <- if (length(tail_cells) >= 1) tail_cells[1] else NA_character_
+    slot <- function(i) if (length(tail_cells) >= i) tail_cells[i] else NA_character_
+    is_dash <- function(s) is.na(s) || !nzchar(s) || grepl("^[‐-―−-]+$", s)
 
-    # numeric cells among remaining (변동전 / 증감 / 변동후 / 단가)
-    remain <- if (length(tail_cells) >= 2) tail_cells[2:length(tail_cells)] else character(0)
-    nums <- suppressWarnings(vapply(remain, .num, numeric(1), USE.NAMES = FALSE))
-    # keep positions; qty_before, qty_change, qty_after, price are first 4 numerics
-    num_vals <- nums[!is.na(nums)]
-    qty_before <- if (length(num_vals) >= 1) num_vals[1] else NA_real_
-    qty_change <- if (length(num_vals) >= 2) num_vals[2] else NA_real_
-    qty_after  <- if (length(num_vals) >= 3) num_vals[3] else NA_real_
-    price      <- if (length(num_vals) >= 4) num_vals[4] else NA_real_
+    security_type <- { s <- slot(1); if (is_dash(s)) NA_character_ else s }
+    qty_before <- { s <- slot(2); if (is_dash(s)) NA_real_ else .num(s) }
+    qty_change_raw <- { s <- slot(3); if (is_dash(s)) NA_real_ else .num(s) }
+    qty_after  <- { s <- slot(4); if (is_dash(s)) NA_real_ else .num(s) }
+    price      <- { s <- slot(5); if (is_dash(s)) NA_real_ else .num(s) }
+    note_cell  <- { s <- slot(6); if (is_dash(s)) NA_character_ else s }
 
-    # note = last non-numeric cell (비고), if distinct
-    note_cell <- NA_character_
-    nonnum_tail <- remain[is.na(suppressWarnings(vapply(remain, .num, numeric(1), USE.NAMES = FALSE)))]
-    if (length(nonnum_tail)) note_cell <- tail(nonnum_tail, 1)
+    # Robustness guard: if 종류 slot is itself numeric (some old formats omit 종류
+    # when only one security type), shift right by one.
+    if (!is.na(security_type) && !is.na(suppressWarnings(.num(security_type))) &&
+        grepl("^[0-9,.−-]+$", gsub("\\s","",security_type))) {
+      qty_before <- if (is_dash(slot(1))) NA_real_ else .num(slot(1))
+      qty_change_raw <- if (is_dash(slot(2))) NA_real_ else .num(slot(2))
+      qty_after  <- if (is_dash(slot(3))) NA_real_ else .num(slot(3))
+      price      <- if (is_dash(slot(4))) NA_real_ else .num(slot(4))
+      note_cell  <- if (is_dash(slot(5))) NA_character_ else slot(5)
+      security_type <- NA_character_
+    }
+    qty_change <- qty_change_raw
 
-    # SIGN: 보고사유 (+)/(-) authoritative; else keep 증감's own sign
+    # SIGN direction: prefer explicit (+)/(-) marker in 보고사유; else the reason
+    # keyword; else fall back to 변동후-변동전 arithmetic; else 증감's own sign.
     sign_from_reason <- NA_integer_
-    if (grepl("\\(\\+\\)", reason) || grepl("매수|취득|신규|증여|수증|무상|배정|행사|전환", reason)) sign_from_reason <- 1L
-    if (grepl("\\(\\-\\)|\\(－\\)", reason) || grepl("매도|처분", reason)) sign_from_reason <- -1L
+    if (grepl("\\(\\+\\)", reason) || grepl("매수|취득|신규|증여|수증|무상|배정|행사|전환|상장", reason)) sign_from_reason <- 1L
+    if (grepl("\\(-\\)|\\(－\\)|\\(−\\)", reason) || grepl("매도|처분|퇴임|변제|감소", reason)) sign_from_reason <- -1L
+
     signed_change <- qty_change
     if (!is.na(qty_change)) {
       if (!is.na(sign_from_reason)) {
         signed_change <- abs(qty_change) * sign_from_reason
+      } else if (!is.na(qty_before) && !is.na(qty_after)) {
+        # arithmetic direction when reason is ambiguous (기타/회사분할 등)
+        arith <- qty_after - qty_before
+        if (sign(arith) != 0) signed_change <- abs(qty_change) * sign(arith)
       }
-      # else: leave qty_change as-is (already signed in new format)
+      # else: leave as-is (new format 증감 already signed)
+    }
+
+    # reconciliation: 변동전 + 증감 == 변동후 (when all present)
+    recon_ok <- NA
+    if (!is.na(qty_before) && !is.na(signed_change) && !is.na(qty_after)) {
+      recon_ok <- abs((qty_before + signed_change) - qty_after) < 1
     }
 
     parsed[[length(parsed) + 1L]] <- data.table(
@@ -308,6 +330,7 @@ suppressPackageStartupMessages({
       qty_change = signed_change,
       qty_after = qty_after,
       price = price,
+      recon_ok = recon_ok,
       note = note_cell
     )
   }
@@ -328,7 +351,7 @@ parse_insider_doc <- function(rcept_no, KEY, tmpdir = tempdir(), keep_files = FA
       officer_title = NA_character_, major_holder_type = NA_character_, relation = NA_character_,
       `변동일` = as.Date(NA), report_reason = NA_character_, security_type = NA_character_,
       qty_before = NA_real_, qty_change = NA_real_, qty_after = NA_real_, price = NA_real_,
-      note = NA_character_, filing_date = NA_character_,
+      recon_ok = NA, note = NA_character_, filing_date = NA_character_,
       parse_status = status, parse_note = note
     )
   }
@@ -391,7 +414,7 @@ parse_insider_doc <- function(rcept_no, KEY, tmpdir = tempdir(), keep_files = FA
   setcolorder(out, c("rcept_no","corp_name","corp_code","reporter_name","reporter_class",
                      "is_officer","is_major_holder","officer_title","major_holder_type","relation",
                      "변동일","report_reason","security_type","qty_before","qty_change","qty_after",
-                     "price","note","filing_date","parse_status","parse_note"))
+                     "price","recon_ok","note","filing_date","parse_status","parse_note"))
   out[]
 }
 

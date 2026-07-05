@@ -19,6 +19,9 @@ KEY   <- sub("^DART_API_KEY=", "", env[grepl("^DART_API_KEY=", env)][1])
 CKDIR <- file.path(ROOT, ".cache/dart/insider_backfill"); dir.create(CKDIR, recursive = TRUE, showWarnings = FALSE)
 uni   <- fread(file.path(ROOT, ".cache/dart/universe_corpcodes.csv"), colClasses = "character")
 UNI_CC <- unique(uni$corp_code)
+# [2026-07-05] document.xml 원문 파서 (elestock.json 최근2년 cap 우회 — 2005~ 역사 전구간).
+#   ★encoding="UTF-8" 필수(누락 시 전량 FAIL). parse_insider_doc(rcept_no, KEY)가 GET 자체수행.
+source(file.path(ROOT, "02_Infrastructure/data/dart_insider_doc_parser.R"), encoding = "UTF-8")
 DELAY <- 0.75
 DAILY_BUDGET <- as.integer(Sys.getenv("DART_DAILY_BUDGET", "7000"))
 START <- Sys.getenv("BF_START", "2005-01"); END <- Sys.getenv("BF_END", "2024-02")
@@ -68,18 +71,22 @@ for (ym in months) {
   rows <- list(); partial <- FALSE
   for (i in seq_len(nrow(ins))) {
     if (calls >= DAILY_BUDGET) { partial <- TRUE; break }
-    e  <- api_get("https://opendart.fss.or.kr/api/elestock.json", list(crtfc_key = KEY, rcept_no = ins$rcept_no[i]))
-    ep <- parse_resp(e)
-    if (!is.null(ep) && !is.null(ep$status) && ep$status == "020") { halted <- TRUE; partial <- TRUE; break }
-    if (!is.null(ep) && !is.null(ep$status) && ep$status == "000" && !is.null(ep$list) && length(ep$list) > 0) {
-      ed <- as.data.table(ep$list)
-      ed[, rcept_no := ins$rcept_no[i]]; ed[, rcept_dt := ins$rcept_dt[i]]; ed[, corp_code := ins$corp_code[i]]
-      rows[[length(rows) + 1L]] <- ed
+    calls <- calls + 1L
+    # elestock.json(최근2년 cap) → document.xml 원문 파서(역사 전구간). parse_insider_doc가 GET 자체수행.
+    pr <- tryCatch(parse_insider_doc(ins$rcept_no[i], KEY), error = function(e) NULL)
+    Sys.sleep(DELAY)
+    if (!is.null(pr) && "note" %in% names(pr) &&
+        any(grepl("020|rate|http_fail_(429|503)", as.character(pr$note)), na.rm = TRUE)) {
+      cat("[bf] DART rate-limit/http halt — stop\n"); halted <- TRUE; partial <- TRUE; break
+    }
+    if (!is.null(pr) && nrow(pr) > 0) {
+      pr[, rcept_dt := ins$rcept_dt[i]]; pr[, ym := ym]
+      rows[[length(rows) + 1L]] <- pr
     }
   }
   if (partial) { cat(sprintf("[bf] %s partial (budget/halt at report %d/%d) — skip checkpoint, redo next run\n", ym, i, nrow(ins))); break }
 
-  out <- if (length(rows)) rbindlist(rows, fill = TRUE) else data.table(ym = ym, note = "no_elestock_detail")
+  out <- if (length(rows)) rbindlist(rows, fill = TRUE) else data.table(ym = ym, note = "no_insider_trades")
   fwrite(out, ck)
   cat(sprintf("[bf] %s done: %d reports, %d rows (calls=%d)\n", ym, nrow(ins), if (length(rows)) nrow(out) else 0L, calls))
 }

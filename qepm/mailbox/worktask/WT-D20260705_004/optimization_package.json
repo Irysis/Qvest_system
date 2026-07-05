@@ -1,0 +1,314 @@
+{
+  "task_id": "WT-D20260705_004",
+  "as_of_date": "2026-04-30",
+  "agent": "optimizer-research",
+  "probe_context": "uncertainty-aware transition-wall probe, SIZING/robust-optimization level (decisive final test). capital-grade off the table (baseline 0.97 << 2.95).",
+  "core_question": "does uncertainty-AWARE robust portfolio optimization beat uncertainty-BLIND on realized PORT_t?",
+  "verdict": "FAIL",
+  "verdict_detail": "AWARE does NOT beat BLIND in any design/subsample. EW (1/N, ignores sigma_hat AND Sigma) is single strongest (DeMiguel-Garlappi-Uppal 2009). Transition wall robust to uncertainty dimension at BOTH selection (alpha) and sizing (optimizer).",
+  "validity_anchor": {
+    "check": "EW-of-top25 via weighted_screen_bt reproduces alpha baseline A exactly",
+    "repro_full_port_t": 0.9698,
+    "repro_recent_port_t": -0.7248,
+    "alpha_reported_full": 0.9698,
+    "alpha_reported_recent": -0.7248,
+    "match": "4dp exact"
+  },
+  "experiment_design": {
+    "D1_sizing": "fixed name set = top-25 by mu_hat (identical to baseline A); methods differ ONLY in weighting -> isolates sizing",
+    "D2_selection_size": "pool top-40 by mu_hat; optimizer selects+sizes 25 names",
+    "blind_methods": [
+      "EW",
+      "MVO",
+      "HRP",
+      "ERC",
+      "MINVAR"
+    ],
+    "aware_methods": [
+      "ROBUST_BOX(Tutuncu-Konig box, worst-case mu=mu-kappa*sigma_hat)",
+      "EST_PENALTY(diag risk += gamma*sigma_hat^2)",
+      "BL_SHRINK(mu shrunk toward xsec mean prop to sigma_norm)",
+      "RESAMPLED(Michaud: mu~N(mu,sigma^2) resample-avg weights)"
+    ],
+    "covariance": "trailing-window (<=120m, PIT months<t) Ledoit-Wolf constant-corr shrink (delta=0.3) of F1; risk-agent LW estimator applied walk-forward",
+    "lambda": 5,
+    "kappa": 1,
+    "gamma": "=lambda",
+    "metric": "contract-grade weighted_screen_bt, NW lag-3, metric_type=weighted_screen (estimated; forge authoritative). NO proxy hand-calc."
+  },
+  "aware_vs_blind_verdict": {
+    "D1_sizing_fixed_nameset": {
+      "blind_best_method": "EW",
+      "blind_best_full_port_t": 0.9698,
+      "aware_best_method": "ROBUST_BOX",
+      "aware_best_full_port_t": 0.4649,
+      "delta_port_t_full": -0.505,
+      "delta_port_t_recent": -0.2837,
+      "note": "EW runs 196m, risk-methods 172m (cov burn-in)"
+    },
+    "D1_sizing_common172m": {
+      "blind_best_method": "EW",
+      "blind_best_full_port_t": 0.6254,
+      "aware_best_method": "ROBUST_BOX",
+      "aware_best_full_port_t": 0.4649,
+      "delta_port_t_full": -0.1605,
+      "delta_port_t_recent": -0.2837,
+      "n_common": 172,
+      "note": "like-for-like paired (removes 196-vs-172 confound)"
+    },
+    "D2_selection_size_common166m": {
+      "blind_best_method": "EW",
+      "blind_best_full_port_t": 0.3946,
+      "aware_best_method": "BL_SHRINK",
+      "aware_best_full_port_t": 0.2371,
+      "delta_port_t_full": -0.1576,
+      "delta_port_t_recent": -0.2269,
+      "n_common": 166
+    },
+    "headline_delta_port_t": -0.1605,
+    "headline_verdict": "AWARE does NOT win (like-for-like common-sample D1). Doubly robust: same result at D2 (-0.158) and full-period (-0.505)."
+  },
+  "adversarial_hyperparam_scan": {
+    "grid": "24-cell {lambda in 2,5,10,20} x {kappa in 0.5,1,2 ; gamma in lambda,2*lambda}, D1 common 172m",
+    "aware_grid_max_full": 0.6686,
+    "blind_max_incl_ew_full": 0.5825,
+    "grid_max_cell": "ROBUST_BOX lambda=2,kappa=2",
+    "grid_max_recent2017": -1.0122,
+    "interpretation": "AWARE grid-max (0.6686) exceeds blind-EW-covered (0.5825) by +0.086 BUT is argmax-of-24 (selection/overfit), recent2017 deeply negative (-1.01) so reverses OOS, never beats true baseline-A EW 0.9698, and the winning corner = heavy shrinkage ~ EW-mimic. NOT a tuning-robust advantage. Pre-registered comparison stands: AWARE loses.",
+    "selection_type_note": "deliverable is pre-registered EW (chain, not sweep); this scan is a self-adversarial DIAGNOSTIC only, reported as such."
+  },
+  "method_selected": "EW_top25 (BLIND best = baseline A; == alpha point mu_hat top-25)",
+  "selection_objective": "net_ir",
+  "selection_rationale": "Uncertainty-aware sizing/selection tested across 4 aware methods x 2 designs x 24 hyperparams and REJECTED (does not beat blind). Among ALL methods, EW (1/N) is the single strongest realized PORT_t (DeMiguel-Garlappi-Uppal 2009: sizing dilutes 25-name broad alpha). Optimizer delivers the blind best = EW top-25.",
+  "target_weights": {
+    "A025980": 0.04,
+    "A066970": 0.04,
+    "A240810": 0.04,
+    "A098460": 0.04,
+    "A000660": 0.04,
+    "A078340": 0.04,
+    "A095340": 0.04,
+    "A009830": 0.04,
+    "A058470": 0.04,
+    "A218410": 0.04,
+    "A015750": 0.04,
+    "A005930": 0.04,
+    "A084370": 0.04,
+    "A053030": 0.04,
+    "A319660": 0.04,
+    "A189300": 0.04,
+    "A278470": 0.04,
+    "A071970": 0.04,
+    "A131970": 0.04,
+    "A032500": 0.04,
+    "A039030": 0.04,
+    "A050890": 0.04,
+    "A009420": 0.04,
+    "A073240": 0.04,
+    "A010120": 0.04
+  },
+  "method_comparison": {
+    "EW": {
+      "group": "BLIND",
+      "full_port_t": 0.9698,
+      "net_ir": 0.2794,
+      "net_sr": 0.2794,
+      "turnover_annual": 12.28,
+      "recent2017_port_t": -0.7248,
+      "n_months": 196,
+      "unique_dates": 196
+    },
+    "HRP": {
+      "group": "BLIND",
+      "full_port_t": 0.5089,
+      "net_ir": 0.1609,
+      "net_sr": 0.1609,
+      "turnover_annual": 13.76,
+      "recent2017_port_t": -0.7918,
+      "n_months": 172,
+      "unique_dates": 172
+    },
+    "ROBUST_BOX": {
+      "group": "AWARE",
+      "full_port_t": 0.4649,
+      "net_ir": 0.1387,
+      "net_sr": 0.1387,
+      "turnover_annual": 15.7,
+      "recent2017_port_t": -1.0085,
+      "n_months": 172,
+      "unique_dates": 172
+    },
+    "RESAMPLED": {
+      "group": "AWARE",
+      "full_port_t": 0.3298,
+      "net_ir": 0.1022,
+      "net_sr": 0.1022,
+      "turnover_annual": 13.59,
+      "recent2017_port_t": -0.5827,
+      "n_months": 172,
+      "unique_dates": 172
+    },
+    "ERC": {
+      "group": "BLIND",
+      "full_port_t": 0.3042,
+      "net_ir": 0.0948,
+      "net_sr": 0.0948,
+      "turnover_annual": 13.21,
+      "recent2017_port_t": -0.9298,
+      "n_months": 172,
+      "unique_dates": 172
+    },
+    "MINVAR": {
+      "group": "BLIND",
+      "full_port_t": 0.2344,
+      "net_ir": 0.0738,
+      "net_sr": 0.0738,
+      "turnover_annual": 15.1,
+      "recent2017_port_t": -1.1874,
+      "n_months": 172,
+      "unique_dates": 172
+    },
+    "BL_SHRINK": {
+      "group": "AWARE",
+      "full_port_t": 0.1341,
+      "net_ir": 0.0415,
+      "net_sr": 0.0415,
+      "turnover_annual": 15.69,
+      "recent2017_port_t": -0.8937,
+      "n_months": 172,
+      "unique_dates": 172
+    },
+    "EST_PENALTY": {
+      "group": "AWARE",
+      "full_port_t": 0.0346,
+      "net_ir": 0.0108,
+      "net_sr": 0.0108,
+      "turnover_annual": 15.22,
+      "recent2017_port_t": -1.0631,
+      "n_months": 172,
+      "unique_dates": 172
+    },
+    "MVO": {
+      "group": "BLIND",
+      "full_port_t": -0.0295,
+      "net_ir": -0.0092,
+      "net_sr": -0.0092,
+      "turnover_annual": 16.21,
+      "recent2017_port_t": -1.2663,
+      "n_months": 172,
+      "unique_dates": 172
+    }
+  },
+  "hard_constraints_check": {
+    "n_names": 25,
+    "max_names_le_25": true,
+    "sum_w": 1,
+    "sum_w_eq_1": true,
+    "max_weight": 0.04,
+    "weight_bounds_ok": true,
+    "long_only": true,
+    "turnover_annual": 12.28,
+    "turnover_within_cap_1100pct": true,
+    "liquidity": "in-panel (alpha universe pre-filtered K200 union KQ150, liq floor)"
+  },
+  "schedule": {
+    "weights_csv_unique_dates": 196,
+    "alpha_sig_dates": 196,
+    "schedule_density_ratio": 1,
+    "density_ge_0p95": true,
+    "note": "deliverable EW covers 196/196 sig_dates = 1.0000 (fully dense)."
+  },
+  "infeasibility_report": {
+    "deliverable_feasible": true,
+    "aware_schedule_note": "AWARE risk-based methods cover only 172/196 sig_dates (density 0.878 < 0.95) by construction: trailing-covariance requires >=24m PIT burn-in, dropping 2010-2011. This is DOCUMENTED not silently skipped. AWARE weights are A/B diagnostics, not the deliverable; deliverable (EW) is fully dense (196/196). No hard-constraint relaxation performed.",
+    "no_silent_override": true
+  },
+  "binding_constraints": [],
+  "expected_active_return": 0.0918,
+  "expected_information_ratio": 0.2794,
+  "expected_active_return_note": "from EW full-period (annualized alpha 0.0918, net IR 0.2794). NOT capital-grade (0.97 << 2.95).",
+  "explanation": {
+    "top_overweights": "EW: all 25 equal at 0.04 (no overweights by design)",
+    "main_finding": "uncertainty-aware optimization neither helps nor is the missing ingredient; EW is the un-improvable blind ceiling for 25-name broad KR alpha",
+    "tradeoffs": "every risk/uncertainty-based sizing method dilutes the alpha vs EW (1/N result)"
+  },
+  "metric_type": "weighted_screen",
+  "metric_type_note": "optimizer-level = estimated. forge build_bt_result is authoritative. production_grade=false.",
+  "production_grade": false,
+  "method_shopping_log": {
+    "optimizer_agent": {
+      "candidates_tried": 9,
+      "parallel_exec": false,
+      "method_log": [
+        {
+          "name": "EW",
+          "group": "BLIND",
+          "full_port_t": 0.9698,
+          "net_ir": 0.2794,
+          "selected": true
+        },
+        {
+          "name": "HRP",
+          "group": "BLIND",
+          "full_port_t": 0.5089,
+          "net_ir": 0.1609,
+          "selected": false
+        },
+        {
+          "name": "ROBUST_BOX",
+          "group": "AWARE",
+          "full_port_t": 0.4649,
+          "net_ir": 0.1387,
+          "selected": false
+        },
+        {
+          "name": "RESAMPLED",
+          "group": "AWARE",
+          "full_port_t": 0.3298,
+          "net_ir": 0.1022,
+          "selected": false
+        },
+        {
+          "name": "ERC",
+          "group": "BLIND",
+          "full_port_t": 0.3042,
+          "net_ir": 0.0948,
+          "selected": false
+        },
+        {
+          "name": "MINVAR",
+          "group": "BLIND",
+          "full_port_t": 0.2344,
+          "net_ir": 0.0738,
+          "selected": false
+        },
+        {
+          "name": "BL_SHRINK",
+          "group": "AWARE",
+          "full_port_t": 0.1341,
+          "net_ir": 0.0415,
+          "selected": false
+        },
+        {
+          "name": "EST_PENALTY",
+          "group": "AWARE",
+          "full_port_t": 0.0346,
+          "net_ir": 0.0108,
+          "selected": false
+        },
+        {
+          "name": "MVO",
+          "group": "BLIND",
+          "full_port_t": -0.0295,
+          "net_ir": -0.0092,
+          "selected": false
+        }
+      ]
+    }
+  },
+  "selection_type": "chain",
+  "self_adversarial_challenge": "challenge_note.md (Optimizer section) - 5 concerns: CF-O1 grid-max selection-artifact REBUTTAL, CF-O2 blind-strength REBUTTAL, CF-O3 common-subsample ACCEPT+fixed, CF-O4 sigma-4channel REBUTTAL, CF-O5 schedule INFO. no escalate.",
+  "next_step": "Forge integrate weights.csv + alpha_scores.parquet + covariance.parquet -> run_all.R backtest (authoritative). Expected: confirm ~EW baseline (0.97 full, negative recent), FAIL graduation gate (PORT_t 2.95). This WT closes the uncertainty-aware thesis at BOTH selection and sizing levels.",
+  "expected_tracking_error": 0.180974,
+  "expected_tracking_error_note": "EW annualized active-return SD (net). IR 0.2794 = alpha/TE. metric_type=weighted_screen (estimated)."
+}

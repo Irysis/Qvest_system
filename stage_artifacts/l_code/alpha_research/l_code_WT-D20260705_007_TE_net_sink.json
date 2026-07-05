@@ -1,0 +1,40 @@
+{
+  "l_code": "L-AR-20260705_193300",
+  "strategy_id": "WT-D20260705_007_TE_net_sink",
+  "grade": "F",
+  "core_reference": "information-theory TE; §6 transfer-wall; STR_AS_TE 2026-06-12",
+  "lesson_text": "WT-D20260705_007 Transfer Entropy 정보흐름 net-sink — 정식 QEPM 엔벨로프(K200 U KQ150) 첫 canonical PORT_t. FALSIFIED: PORT_t 전변형 음~0 (raw top20 -0.93 / resid top20 -1.05 / resid top25 -0.73 / reverse -1.28 / 3M resid +0.02). 핵심: raw 약한 음 rank-IC(-0.006 t=-1.58)가 size/vol/sector 중립화 후 noise(-0.001 t=-0.27)로 붕괴 => 원신호=confound 부산물, 순수 TE 잔차엔 alpha 부재. 부기간 pre2017 +0.98(비유의) -> 2017+ -2.01 -> 2022+ -1.81 (cohort decay). 선행 STR_AS_TE(2026-06-12)는 port_t=NA(lean hurdle만) — 본 WT가 전이벽 게이트를 TE에 첫 적용. 재시도금지(정보이론 net-sink standalone). 잔여 저EV: cross-stock in-degree centrality / non-return event TE.",
+  "tags": ["transfer_entropy", "information_flow", "net_sink", "FALSIFIED", "transfer_wall", "cohort_decay_2017", "INV7_first_port_t"],
+  "created_at": "2026-07-05",
+  "research_mode": "alpha_research",
+  "created_by": "emit:alpha_research",
+  "metric_type": "canonical_screen",
+  "construction_type": "information_theory_net_sink_cross_sectional",
+  "mechanism_hypothesis": "net TE 유입>유출(느린 정보반영) 종목 예측가능 drift long — 중립화 후 잔차신호 소멸로 반증",
+  "lcode_schema_version": 2,
+  "falsification_attempts": [
+    {
+      "test": "size/vol/sector/beta/liq 중립화",
+      "result": "falsified",
+      "effect_retained": "rank-IC -0.006 -> -0.001 noise"
+    },
+    {
+      "test": "estimator 방향 reverse(-score)",
+      "result": "falsified",
+      "effect_retained": "PORT_t -1.28"
+    },
+    {
+      "test": "horizon 3M (decay-matched)",
+      "result": "falsified",
+      "effect_retained": "PORT_t +0.02"
+    },
+    {
+      "test": "top-N 20/25 breadth",
+      "result": "falsified",
+      "effect_retained": "전부 음"
+    }
+  ],
+  "portfolio_alpha_t": -0.93,
+  "selection_type": "chain",
+  "record_type": "performance"
+}

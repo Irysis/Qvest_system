@@ -109,3 +109,56 @@
 
 ## 회피표현 자기검사
 "미미/관행/보수적이면 OK" 미사용. mean-fill을 낙관편의로 명시(보수 위장 안 함). 실측(cond 98.7·δ0.451·robustness 0.78·offdiag 0.189) 근거만.
+
+---
+---
+
+# Self-Adversarial Challenge — WT-D20260705_004 (Optimizer Research)
+
+**Agent**: optimizer-research (QEPM Opus 4.8 self-adversarial, v8.2 — AX-008 3-source 중 1개)
+**Date**: 2026-07-05
+**핵심 질문**: uncertainty-AWARE robust portfolio optimization이 uncertainty-BLIND를 실현 PORT_t로 이기는가?
+**판정: AWARE does NOT win** — thesis를 sizing/robust-optimization 레벨에서 완전 반증 (alpha-stage crude-selection 반증과 동형).
+
+## Validity anchor (pre-flight, 필수)
+- EW-of-top25를 `weighted_screen_bt`(contract, NW lag-3)로 돌려 **alpha baseline A를 정확 재현**: full 0.9698 / recent2017 −0.7248 (alpha 보고 0.9698 / −0.7248, 4dp 일치). 벤치 forward-alignment + contract 파이프라인 검증됨. proxy 손계산 0 — 모든 PORT_t는 `build_benchmark_compare` 경유. metric_type=weighted_screen (estimated; forge authoritative).
+
+## Primary result (pre-registered 단일 λ=5, κ=1, γ=λ — cherry-pick 없음)
+| design | BLIND best | AWARE best | ΔPORT_t full | ΔPORT_t recent |
+|---|---|---|---|---|
+| D1 sizing (fixed top-25 names; EW 196m / risk 172m) | EW 0.9698 | ROBUST_BOX 0.4649 | **−0.5050** | −0.2837 |
+| D1 sizing (common 172m, like-for-like) | EW 0.6254 | ROBUST_BOX 0.4649 | **−0.1605** | −0.2837 |
+| D2 select+size (pool top-40, common 166m) | EW 0.3946 | BL_SHRINK 0.2371 | **−0.1576** | −0.2269 |
+
+EW(σ̂·Σ 둘 다 무시)가 모든 design에서 단일 최강 — DeMiguel-Garlappi-Uppal 2009 1/N: 25종 broad alpha에서 sizing은 희석. BLIND risk-based(MVO/HRP/ERC/minvar) AND AWARE(robust-box/est-penalty/BL-shrink/resampled) 전부 EW 하회.
+
+## Concern CF-O1 [HIGH] — "AWARE는 단일 나쁜 hyperparameter 탓에 진다; grid 스캔하라." → REBUTTAL (grid-max win은 selection 아티팩트)
+**적대 제기**: λ=5,κ=1 한 점만 봤다. λ·κ·γ 스캔하면 AWARE가 이길 수 있다.
+**진단**: 24-cell grid {λ∈2,5,10,20}×{κ∈0.5,1,2 ; γ∈λ,2λ} D1 common-172m 스캔. **AWARE grid-max = ROBUST_BOX(λ=2,κ=2) full 0.6686 > BLIND-EW(covered) 0.5825, +0.086**.
+그러나: (a) 24-cell argmax = max-selection over trials = overfit (DSR selection-operator 영역); (b) 그 정확 cell의 **recent2017 = −1.0122**, EW recent −0.4261보다 깊이 음 — "승"은 전부 pre-2017이고 OOS서 역전; (c) 크기 +0.086, 2.95 근처 아님; (d) 어떤 AWARE cell도 true baseline-A EW 0.6254/0.9698 못 넘음; (e) κ=2,λ=2 코너 = 강한 worst-case shrinkage ≈ min-var/uniform 쪽으로 밈 — σ̂ 정보를 활용해 이기는 게 아니라 **EW를 닮아서** 이김.
+**분류: REBUTTAL**. tuning-robust 우위 아님. pre-registered 비교(cherry-pick 없음) 유지: AWARE는 BLIND를 못 이김. **자기합리화 검사**: "grid-max가 이겼으니 AWARE 성공"은 selection-bias 자기기만 — 회피. recent −1.01·argmax-of-24가 근거.
+
+## Concern CF-O2 [HIGH] — "BLIND를 약하게 튜닝해 null이 쉬운 것 아닌가?" → REBUTTAL (BLIND best = EW = 튜닝불가 천장)
+**진단**: BLIND 승자는 **EW**(hyperparameter 無, alpha baseline A와 동일·정확 검증). BLIND MVO는 λ∈{2,5,10,20} 스캔서 EW 못 넘음(max MVO 0.0634). 최강 blind 포트(EW=baseline A=0.9698)가 AWARE가 넘어야 할 기준인데 어떤 AWARE 변형/hyperparam도 못 넘음. null은 "약한 blind"가 아니라 "blind 최선 = 개선불가 1/N".
+**분류: REBUTTAL**. 근거: EW 튜닝불가·baseline 정확 재현.
+
+## Concern CF-O3 [MEDIUM] — "trailing-cov burn-in이 초기 24m 탈락 → EW 196 vs risk 172 불공정." → ACCEPT + FIXED
+**진단**: 전 method를 **common 172m(D1)/166m(D2)** 교집합서 재산출. 판정 불변(ΔPORT_t −0.161/−0.158). 196-vs-172 gap이 결과를 만든 게 아님.
+**분류: ACCEPT (수정 완료)**.
+
+## Concern CF-O4 [MEDIUM] — "σ̂가 calibrated(+0.207)인데 AWARE 실패 — σ̂를 잘못 소비?" → REBUTTAL (σ̂ 4채널 정당 소비)
+**진단**: σ̂는 4개 교과서 채널로 진입: worst-case μ̂ shift(robust-box, Tütüncü-König), 대각 위험 inflation(est-penalty), prior shrinkage(BL-shrink), forecast-noise resampling(Michaud). 4개 독립적으로 EW 못 넘음. 단일 채널 오구현 아니라 **per-name 예측 불확실성이 sizing 레벨서 실현-PORT_t edge를 안 가짐** — alpha-stage crude-selection 실패(ΔPORT_t −0.40)와 일관. 전이 벽은 σ̂ 차원에 직교.
+**분류: REBUTTAL**. 4채널 독립 실패가 근거.
+
+## Concern CF-O5 [INFO] — Schedule density / infeasibility (No Silent Override)
+- 납품 weights.csv = BLIND-best EW top-25: **196/196 sig_dates (density 1.0000 ≥ 0.95)**, Σw=1, 25종, w=0.04 ≤ 0.20, long-only, turnover 12.28. PASS.
+- AWARE risk-based method는 **172/196 coverage (0.878 < 0.95)** by construction(trailing-cov ≥24m burn-in 2010-2011). silent skip 아님 — `optimization_package.json.infeasibility_report.aware_schedule_note`에 기록. AWARE weights는 진단(A/B)이지 납품물 아님 → 납품물 자체는 fully dense.
+
+## Escalate trigger 점검
+Hard Constraint 위반 0 (max_names 25 ✓, max_w 0.04 ✓, Σw=1 ✓, turnover 12.28 within cap ✓, long-only ✓). RF-O9 single-snapshot 아님(weights.csv 196-month 시계열). walk-forward schedule 존재. sweep-selection 납품 아님(납품=pre-registered EW; grid 스캔은 진단으로 라벨). → **자동 escalate 불요**.
+
+## 회피표현 자기검사
+"미미/관행/보수적이면 OK" 미사용. grid-max +0.086을 "AWARE 성공"으로 포장 안 함(selection-bias·recent −1.01 명시). ΔPORT_t 부호·크기·n_months·metric_type 실측 근거만.
+
+## Bottom line
+Uncertainty-aware optimization은 robust-portfolio-optimization 레벨서 REJECTED — alpha-stage crude-selection REJECTION과 동형. IC→PORT_t 전이 벽은 selection AND sizing **양 레벨** 모두서 uncertainty 차원에 robust. capital-grade는 off the table(baseline 0.97 ≪ 2.95); clean finding = σ̂는 돕지도, 빠진 재료도 아님. EW(1/N)가 25종 broad KR alpha의 개선불가 blind 천장.
