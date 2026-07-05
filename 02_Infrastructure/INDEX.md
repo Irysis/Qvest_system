@@ -1,13 +1,13 @@
 # 02_Infrastructure INDEX
 
-> 자동 생성 2026-07-05 18:20 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
+> 자동 생성 2026-07-06 07:47 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
 
 ## 데이터 (3)
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
 | `F1. QT_to_xts.r` | 퀀티와이즈 엑셀 시계열을 xts로 변환하는 헬퍼 함수 2종(QT_to_xts / QT_to_xts_macro) — 데이터 인제스트 빌더들의 공용 유틸 | active | 2026-06-07 | 643B |
-| `data/` | 데이터 인제스트/캐시 계층 42건 — build_cache.R·build_index_cache.py·daily_refresh.sh·퀀티와이즈 파서(RAWDATA/benchmark parquet 생산) | active | 2026-07-05 | 497KB |
+| `data/` | 데이터 인제스트/캐시 계층 42건 — build_cache.R·build_index_cache.py·daily_refresh.sh·퀀티와이즈 파서(RAWDATA/benchmark parquet 생산) | active | 2026-07-05 | 517KB |
 | `factor_db/` | Factor DB 계층 43건 — 월간 373팩터 + 일간 팩터 빌더·load_month_factors(C15 유일 진입점)·registry | active | 2026-07-02 | 1.0MB |
 
 ## 백테스트 (3)
@@ -90,7 +90,7 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `discovery/` | 발굴≠생산 substrate(P7) — pre-C13 raw 재조합 HGB 배터리(battery_phase0/round2·gate_phase0·phase1_raw) 발굴 인프라 | active | 2026-07-05 | 158KB |
+| `discovery/` | 발굴≠생산 substrate(P7) — pre-C13 raw 재조합 HGB 배터리(battery_phase0/round2·gate_phase0·phase1_raw) 발굴 인프라 | active | 2026-07-05 | 172KB |
 
 ## 문서 (1)
 
