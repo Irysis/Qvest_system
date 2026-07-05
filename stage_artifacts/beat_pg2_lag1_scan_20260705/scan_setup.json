@@ -1,0 +1,65 @@
+{
+  "meta": {
+    "task": "Track B — orthogonal-sleeve lever formal closure via corrected+lag1 harness",
+    "created": "2026-07-05",
+    "common_discipline": ["real-measurement only", "PIT C1-C15", "lag+1 MANDATORY (sleeve signal t-1-only, extra 1M lag)", "corrected harness = ym+Ticker merge (not raw Date)", "no self-synthesis (Return.portfolio/canonical recon)", "pinned cache RAWDATA_pin20260703 + benchmark_pin20260703", "segfault guards: taskkill/setDTthreads(1)/arrow set_io_thread_count(1)/col_select"],
+    "success_criteria": "lag+1: book-marginal dIR>=0.05 AND paired NW-t>=2.0 AND oos_v2>=0.7"
+  },
+  "harness": {
+    "corrected_base": "stage_artifacts/beat_pg2_ortho_sleeve_20260705/harness.R (buggy ref)  ->  scratchpad/eval_from_cache.R (corrected ym-merge, PIT-verified)",
+    "lag1_harness": "stage_artifacts/beat_pg2_lag1_scan_20260705/eval_lag1.R",
+    "lag1_mechanism": "sleeve ym forward-shifted one BASE-ym step before ym+Ticker merge => month-m book blends sleeve signal from m-1; blended score at sig-date applied to fwd window (start_d,end_d], so sleeve strictly known before window opens (closes C5/C14 concurrency leak)",
+    "lag_param": "env LAG (0=no-lag replication, 1=lag+1 default)",
+    "grid": "scratchpad/grid.rds (259 months, pinned cache, PIT-built: fwd=(start_d,end_d], liq=t-1 20d ADV>=2e8)",
+    "sleeve_cache_pattern": "scratchpad/cache_<CODE>.parquet from .cache/factor_db (Factor_Name+Z_Score, C13 Z_Score_Aligned); RAMP from outputs/ramp/pure_factor_scores.parquet neutralized_z",
+    "blend": "z_book*(1-sleeve_w) + z_sleeve*sleeve_w ; sleeve_w in {0.15,0.30,0.45} (blend_w_base 0.85/0.70/0.55)"
+  },
+  "harness_validation": {
+    "lag0_replication_exact": true,
+    "lag0_C07_bw085": {
+      "book_ir": 1.8267,
+      "paired_nw_t": 8.426,
+      "matches_cache_eval_results": "1.8267 / 8.426 EXACT"
+    },
+    "pg2_recon_book_ir": 1.423755,
+    "pg2_recon_target": 1.4238,
+    "pg2_recon_match": true,
+    "lag1_leak_filter_demonstrated": {
+      "C07_TP_Mom": "no-lag pNWt +8.43->+11.41 collapses to -0.19..-1.14 ; standalone sleeve IR 2.85->0.50 (leak exposed)",
+      "C02_EPS_Chg_1m": "dIR +0.24->+0.003 ; pNWt +4.11->+0.04 (leak exposed)",
+      "M27_Analyst_Rev_Mom": "pNWt collapses, dIR negative (leak exposed)",
+      "Q04_Piotroski_F_control": "slow-lag control lag-insensitive: dIR +0.034->+0.018, pNWt +0.68->+0.20 (test has discriminating power)"
+    }
+  },
+  "candidates": {
+    "a_full_scan": {
+      "n_factor_db": 327,
+      "n_xattn": 2,
+      "n_total": 329,
+      "note": "orthogonal filter non-binding -> run all 329",
+      "codes_factor_db": ["V15_NetDebt_Adj_EP", "V02_EP", "V24_Residual_Income", "M27_Analyst_Rev_Mom", "C02_EPS_Chg_1m", "V14_EBIT_EV", "C07_TP_Mom", "Q04_Piotroski_F", "V20_SP", "V10_FCF_Yield", "V22_FCFF_EV", "C04_ESBR", "V01_BM", "V03_CFP", "C01_SUE", "C09_Earnings_Surprise_Sq", "V18_AM", "S01_Size", "V19_Debt_to_Market", "IN03_RD_to_Market", "V12_Composite_Value", "V09_PEG", "M07_IndMom", "GR06_OCF_Growth", "XF_GD03_OCF_Growth", "L24_Range_per_Vol", "S02_Float_Size", "M25_Earnings_Mom_Streak", "M26_Revenue_Mom", "CR02_Volume_Concentration", "L36_CLV_Stability", "V06_fDY", "M28_OP_Rev_Mom", "C12_Estimate_Dispersion_Proxy", "D55_Vol_Trend", "L09_Amihud_20d", "M06_High_52w", "L06_Zero_Trade_Days", "L20_Trade_Frequency", "V11_Shareholder_Yield", "D60_Leverage", "C08_Coverage", "GR07_Composite_Growth", "GR02_Earnings_Growth", "Q22_Earnings_Growth", "R13_NCSKEW", "L21_Market_Depth", "L04_Bid_Ask_Proxy", "C06_TP_Gap", "L22_Ret_Autocorr", "AC16_BS_vs_CF_Diff", "L25_Amihud_Vol", "SE02_Consensus_Revision", "L33_AbsRet_Vol_Corr", "C03_EPS_Chg_3m", "AC21_CF_to_Accrual_Ratio", "Q32_Interest_Coverage", "D33_Beta_Persistence", "D45_Downside_Dev", "AC22_Accrual_Volatility", "R17_Market_Leverage", "L01_Amihud", "V23_RAFI_Weight", "D50_MaxDrawdown", "R06_MDD", "D51_Ulcer_Index", "GR05_ROE_Growth", "XF_LL02_NetDebt", "Q23_Sustainable_Growth", "Q16_Debt_to_Assets", "R07_Downside_Dev", "XF_GD04_Dividend_Growth", "M14_RiskAdj_Mom", "XF_GD02_OpProfit_Growth", "L35_Reversal_Intensity", "L08_Roll_Spread", "L11_Kyle_Lambda", "C19_Composite_Earnings", "CR10_Convergence_Premium", "L31_Vol_Concentration", "D23_Info_Ratio", "L13_Vol_Variance_Ratio", "D03_RealVol", "Q12_Asset_Turnover", "XF_DU02_AssetTurnover", "R18_Book_Leverage", "Q17_ROIC", "Q15_Debt_to_Equity", "D26_Right_Tail_Beta", "D17_Cokurtosis", "D57_Down_Vol", "M16_Trend_Factor", "XF_PR04_NetInterestMargin", "D49_VaR_1pct", "D52_MinRet", "R08_Semi_Variance", "D41_Vol_of_Vol", "D56_Up_Vol", "R15_Sortino", "D46_Sortino", "D16_Coskewness", "Q01_GPA", "D27_Beta_Stability", "D43_Skewness", "L14_Price_Impact", "C16_EPS_Acceleration", "XF_PR03_TaxRate", "AC10_Pct_Accruals", "L40_VWAP_Spread", "CR08_Volume_Price_Divergence", "D47_CVaR_5pct", "D01_IdioVol", "R12_Idiosyncratic_Risk", "L39_Overnight_Spread", "V17_Payout_Ratio", "D48_VaR_5pct", "INV13_Foreign_Resid_Individual_63d", "D36_RealVol_126d", "D22_Tracking_Error", "L34_Vol_Spike_Ratio", "CR05_Short_Pressure_Proxy", "Q28_Cash_Conversion", "C05_ESCR", "INV12_Supply_Demand_Imbalance", "L19_Price_Delay", "L16_Turnover_Vol", "D35_RealVol_63d", "L26_Log_MktCap", "D40_YangZhang_Vol", "Q13_Fin_Leverage", "XF_PR05_EBITDA_to_Assets", "D37_Parkinson_Vol", "INV13_Foreign_Resid_Individual_126d", "Q07_Earnings_Stability", "Q03_ROA", "Q29_Inventory_Turnover", "V04_fPER", "D38_GarmanKlass_Vol", "M18_RSI", "AC14_Discretionary_Accruals", "XF_EF01_InventoryTurnover", "Q25_Ohlson_O", "L32_Ret_Vol_Corr", "INV06_Inst_Momentum", "D39_RogersSatchell_Vol", "D29_Accounting_Beta", "XF_LL03_CashRatio", "Q10_Gross_Margin", "CR09_Money_Flow_Ratio", "L42_Vol_Skewness", "L44_Vol_Ret_Asymmetry", "M30_Mom_10d", "RE05_LowVol_Beta", "M13_VolAdj_Mom", "D53_Range_Vol", "IN04_Net_Equity_Issuance", "Q20_Net_Equity_Issuance", "R19_Composite_Risk", "Q18_Op_Leverage", "GR04_GPA_Growth", "Q30_Receivables_Turnover", "R16_Calmar", "L17_LOT_Measure", "Q19_Cash_to_Assets", "L12_PS_Gamma", "AC23_Accrual_Persistence", "Q14_Current_Ratio", "XF_LL05_WorkingCapital", "L41_Intraday_Vol_Proxy", "D34_RealVol_21d", "XF_LL04_QuickRatio", "V05_fPBR", "Q27_CapEx_to_Rev", "INV13_Foreign_Resid_Individual_21d", "L07_Zero_Return_Days", "D42_EWMA_Vol", "INV08_Foreign_Inst_Agreement", "MK01_CAPM_Beta", "L18_Eff_Spread_Proxy", "L28_Vol_Mom_63d", "Q31_WC_to_Assets", "Q34_GP_Growth", "XF_GD01_GrossProfit_Growth", "D54_Neg_Ret_Prop", "D05_MaxRet", "AC25_Accrual_Size_Interaction", "TR01_ADX_Proxy", "RE09_Capture_Ratio", "INV11_Foreign_Concentration", "AC17_Accrual_Reversal", "GR03_Asset_Growth", "Q06_Asset_Growth", "SE01_Volatility_Uncertainty", "M11_ST_Reversal", "M29_Mom_5d", "L29_Illiq_Change", "AC20_Payables_Accruals", "M10_Intermediate_Mom", "D15_Cond_Bear_Beta", "L37_Relative_Vol", "IN06_Investment_to_Assets", "AC19_Receivables_Accruals", "M32_Composite_Mom_v2", "D04_Downside_Beta", "M22_Max_Return", "L03_Volume_Mom", "AC05_NOA", "XF_DU03_EquityMultiplier", "Q08_Composite_Quality", "XF_Q06_Op_Margin", "AC12_Inventory_Accruals", "XF_PR01_EBITDA_Margin", "AC08_Financial_Accruals", "RE06_Beta_Asymmetry", "M01_Mom_12_1", "V21_Composite_Equity_Issuance", "D24_Systematic_Risk_Prop", "R11_Systematic_Risk", "D32_Beta_VIX", "M21_Seasonality", "AC13_Abnormal_Accruals", "INV04_Inst_NetBuy_60d", "INV02_Foreign_NetBuy_60d", "Q35_CashBased_OpProf", "AC15_NonDiscretionary_Accruals", "R14_DUVOL", "AC04_NCO_Accruals", "GR01_Revenue_Growth", "Q21_Revenue_Growth", "Q09_CFOA", "IN02_CapEx_to_Revenue", "IN01_CapEx_to_Assets", "XF_EF04_CCC", "INV05_Foreign_Momentum", "M05_Trended_Mom", "R05_Tail_Risk", "L23_Vol_Autocorr", "D25_Left_Tail_Beta", "Q33_Earnings_Persistence", "IN05_Net_Debt_Issuance", "Q11_Net_Margin", "XF_LL01_DebtToCapital", "M24_Sector_Rel_Mom", "D06_Upside_Beta", "XF_RI01_RnD_to_Revenue", "R10_Cokurtosis", "INV09_Flow_Persistence", "AC02_Total_Accruals_BS", "Q26_RnD_Intensity", "AC01_Total_Accruals_CF", "AC11_Accruals_to_Assets", "AC18_Accrual_Quality", "Q05_Accrual", "AC03_WC_Accruals", "AC06_Comprehensive_Accruals", "R04_CVaR_99", "AC24_NOA_Growth", "M09_Composite_Mom", "INV07_Retail_Contrarian", "XF_EF03_DaysReceivable", "CR11_Idiosyncratic_Return", "XF_DU01_NetMargin", "D12_Beta_126d", "INV10_Smart_Money_Flow", "RE07_Crisis_Beta", "XF_RI03_SGA_to_Revenue", "L10_Amihud_Ratio", "D07_Beta_Asymmetry", "D11_FP_Beta", "D02_Beta", "D10_Blume_Adj_Beta", "D18_BAB_Rank", "D31_Relative_Beta", "XF_EF02_DaysPayable", "AC07_Operating_Accruals", "AC09_NNI", "RE04_HighVol_Beta", "XF_PR02_RetainedEarnings_Ratio", "D44_Kurtosis", "D20_EW_Beta_126", "D28_Unlevered_Beta", "L43_Turnover_Change", "Q02_ROE", "L15_Turnover_252d", "TR02_Trend_Consistency", "MA02_CPI_Sensitivity", "XF_RI02_CapEx_proxy", "INV01_Foreign_NetBuy_20d", "M02_Mom_6_1", "D30_FM_Beta_21d", "R09_Coskewness", "INV03_Inst_NetBuy_20d", "MA01_GDP_Sensitivity", "L38_DolVol_Mom", "L05_Dollar_Volume", "D19_EW_Beta_63", "D58_Vol_Asymmetry", "D14_Beta_Change", "CR01_Sector_Comovement", "D09_Dimson_Beta", "D21_CAPM_Alpha", "MA03_Rate_Sensitivity", "M17_Low_52w", "M04_Mom_1", "RE08_Down_Market_Excess", "MA04_YieldCurve_Sensitivity", "M19_MACD", "CR07_Momentum_Crowding", "R02_VaR_99", "D13_Beta_63d", "M20_Keller_Mom", "M08_Residual_Mom", "V07_EV_EBITDA", "L27_Price_Level", "M23_Acceleration", "V16_Tobins_Q", "M03_Mom_3_1", "V08_PSR", "V13_EV_Sales", "Q24_Altman_Z", "R03_CVaR_95", "M15_Mom_3", "R01_VaR_95", "CR04_Ownership_Concentration", "L02_Turnover", "CR06_DTC_Proxy", "L45_Composite_Liquidity"],
+      "codes_xattn": ["XATTN_score", "XATTN_alpha_active_hat"]
+    },
+    "b_earnings_3m_composite": {
+      "name": "EARN3M_composite",
+      "members": ["C01_SUE", "C04_ESBR", "C05_ESCR", "C06_TP_Gap", "C03_EPS_Chg_3m"],
+      "build": "EW z-average of C13-aligned member Z_Scores (all present in factor_db)",
+      "rationale": "H3 earnings@3M horizon LEAD (project-earnings-revision-3m-horizon-lead) — slow horizon, hypothesized leak-resistant under lag+1"
+    },
+    "c_xattn": {
+      "codes": ["XATTN_score", "XATTN_alpha_active_hat"],
+      "source": "stage_artifacts/WT_D20260705_001/alpha_scores.parquet (score + alpha_active_hat)",
+      "dates": 197,
+      "range": "2010-2026"
+    },
+    "d_ramp18_residual": {
+      "source": "outputs/ramp/pure_factor_scores.parquet",
+      "field": "neutralized_z (FWL-residualized per-stock)",
+      "n_factor_ids": 316,
+      "months": 257,
+      "note": "spot top residual factors only; data_available_date==signal_date (no baked lag, lag+1 applies)",
+      "pit": "signal_date=data_available_date=month-end"
+    }
+  },
+  "pg2_recon_IR": 1.423755
+}
