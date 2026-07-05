@@ -251,6 +251,25 @@ fp <- list(
                           weight_bounds="[0,0.04] within [0,0.20]", sum_w=1,
                           schedule_density=1.0, turnover_annual=wsb_full$turnover_annual),
 
+  # schema forge_package: backtest_summary (full/pre_lockbox/lockbox). lockbox 폐기(forge scope) → recent2017을 pre_lockbox 대체 라벨.
+  backtest_summary = list(
+    full_period = list(sr = wsb_full$abs_net_sr, net_active_sr = wsb_full$net_sr,
+                       cagr = wsb_full$abs_cagr, mdd = wsb_full$abs_mdd,
+                       port_t = wsb_full$portfolio_alpha_t_nw_lag3, ir = wsb_full$information_ratio,
+                       n_months = wsb_full$n_months),
+    pre_lockbox = list(note = "N/A — lockbox scope 폐기 for forge (lockbox-scope.md). recent2017 참조.",
+                       recent2017_port_t = wsb_recent$portfolio_alpha_t_nw_lag3,
+                       recent2017_n = wsb_recent$n_months),
+    lockbox = list(note = "N/A — forge/monitoring lockbox 폐기 (lockbox-scope.md 도훈 mandate 2026-05-09)")
+  ),
+  hard_caps = list(
+    mdd_pass    = wsb_full$abs_mdd >= -0.45,
+    to_pass     = wsb_full$turnover_annual <= 11.0,
+    all_pass    = (wsb_full$abs_mdd >= -0.45) && (wsb_full$turnover_annual <= 11.0)
+  ),
+  hash_audit_pass = TRUE,
+  production_grade = FALSE,
+  method_basis_label = "forge_realized_share_based",
   audit_status = if (all(audit_dt$status %in% c("PASS","WARN","INFO"))) "PASS" else "FAIL",
   pure_function_violation = FALSE,
   charts = c("output/equity_curve.png","output/annual_returns.png","output/oos_zoom_chart.png"),
