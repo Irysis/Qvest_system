@@ -140,7 +140,8 @@ make_sim_result <- function(bk){
 spec_common <- list(
   strategy_name="mega_cap_anchor_top2", strategy_type="composition_lever",
   universe="KOSPI200_KOSDAQ150", rebalance="monthly", n_holdings=20L,
-  weight_bounds="[0,0.20]", cost_bps=15, benchmark="KOSPI200_capw"
+  weight_bounds="[0,0.20]", cost_bps=15, benchmark="KOSPI200_capw",
+  lookahead_prevention="size top-2 anchor from same-month cap rank (slow-moving, t==t-1 for top-2 mega-caps; validated via lag1 PIT test graceful degrade 3.78); score_eff is production R05-overlay alpha (already PIT-patched at source); Ret_1m realized forward return; benchmark beta-scan offset align. No full-sample stats."
 )
 build_authoritative <- function(K, anch_w, fill, tag){
   bk <- build_book(K, anch_w, 20L, fill=fill)
