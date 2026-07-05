@@ -72,8 +72,8 @@ PG("[PG] DSR: N_trials=%d sr0(exp max)=%.4f best_sr_pp=%.4f skew=%.2f kurt=%.2f 
 ## subperiod PORT_t (post-2017)
 sub_t<-function(C,from){idx<-p$anchor_date>=as.Date(from);a<-C$active[idx];mu<-mean(a);dm<-a-mu;nn<-length(a);g0<-sum(dm^2)/nn;gs<-0;for(L in 1:3){w<-1-L/4;gs<-gs+2*w*sum(dm[(L+1):nn]*dm[1:(nn-L)])/nn};mu/sqrt((g0+gs)/nn)}
 PG("[PG] post-2017 active-improvement paired_t: L2=%.2f L3=%.2f", sub_t(L2,"2017-01-01"),sub_t(L3,"2017-01-01"))
-res<-rbindlist(list(as.data.table(B[c("tag","SR","CAGR","MDD","Calmar","PORT_t","IR")]),
-  as.data.table(L2[c("tag","SR","CAGR","MDD","Calmar","PORT_t","IR")]),as.data.table(L3[c("tag","SR","CAGR","MDD","Calmar","PORT_t","IR")])))
+pick<-c("tag","SR","CAGR","MDD","Calmar","PORT_t","IR")
+res<-rbindlist(lapply(list(B,L1,L2m,L2,L3), function(C) as.data.table(C[pick])))
 res[, dIR_vs_base := IR - B$IR]
 print(res[, .(tag,SR=round(SR,3),Calmar=round(Calmar,3),MDD=round(MDD,4),PORT_t=round(PORT_t,3),IR=round(IR,3),dIR=round(dIR_vs_base,4))])
 fwrite(res, file.path(WD,"cycleR4_forge_confirm_results.csv"))
