@@ -108,12 +108,12 @@ for(nm in names(cands)){ bv<-cands[[nm]]; if(is.null(bv)||any(!is.finite(bv))){ 
   bv_lag<-shift(bv,1,fill=1.0); rc_lag<-apply_gate(bv_lag); ml<-risk_metrics(rc_lag,paste0(nm,"_lag1"))
   rpt<-nw_t(rc,p$ret_base)
   rows[[length(rows)+1]]<-cbind(mm, data.table(mean_beta=mean(bv), MDD_lag1=ml$MDD, Calmar_lag1=ml$Calmar, ret_paired_t=rpt))
-  PG("[PG] %-18s MDD=%.4f(lag1 %.4f) Calmar=%.3f(lag1 %.3f) SR=%.3f SR_CRISIS=%.2f drag_t=%.2f",
-     nm, mm$MDD, ml$MDD, mm$Calmar, ml$Calmar, mm$SR, mm$SR_CRISIS, rpt) }
+  PG("[PG] %-18s MDD=%.4f(lag1 %.4f) Calmar=%.3f(lag1 %.3f) SR=%.3f roffCum=%.3f drag_t=%.2f",
+     nm, mm$MDD, ml$MDD, mm$Calmar, ml$Calmar, mm$SR, mm$riskoff_cum, rpt) }
 res<-rbindlist(rows,fill=TRUE)
 ## risk-overlay WIN = MDD < base AND lag1 MDD < base (robust) AND Calmar >= base AND drag small
 res[, riskwin := is.finite(MDD)&MDD<base_m$MDD & is.finite(MDD_lag1)&MDD_lag1<base_m$MDD & Calmar>=base_m$Calmar]
 print(res[, .(tag, MDD=round(MDD,4), MDD_lag1=round(MDD_lag1,4), Calmar=round(Calmar,3), Calmar_lag1=round(Calmar_lag1,3),
-              SR=round(SR,3), SR_CRISIS=round(SR_CRISIS,2), CVaR95=round(CVaR95,4), riskwin)])
+              SR=round(SR,3), roffCum=round(riskoff_cum,3), CVaR95=round(CVaR95,4), drag_t=round(ret_paired_t,2), riskwin)])
 fwrite(res, file.path(WD,"cycleR1_riskoverlay_results.csv"))
 PG("[PG] DONE R1. base MDD=%.4f Calmar=%.3f | risk-wins(robust)=%d", base_m$MDD, base_m$Calmar, sum(res$riskwin,na.rm=TRUE))
