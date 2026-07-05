@@ -225,6 +225,19 @@ krx_merge_rawdata <- function() {
       bm_new[1, BM_Ret := BM_Close / last_bm_close - 1]
     }
 
+    # [fix 2026-07-05, 재오염 방지 가드] KOSPI200 일간 |BM_Ret|>0.30은 물리적 불가
+    #   (2020 COVID 최악 일간 ~-8%). krx_compute_bm_ret 독립계산이 canonical benchmark
+    #   (build_index_cache.py)와 스케일 불일치(구 IKS001↔IKS200 등) 시 이상치 발생 →
+    #   RAWDATA + benchmark.parquet(line 234 rbind) 양쪽 오염. NA 처리로 전파 차단
+    #   (→ 하단 sentinel 0 폴백 + canonical benchmark 재동기화가 정정).
+    #   근원 사고: 2026-07-01 BM_Ret 5.39 (last_bm_close가 구 IKS001 스케일).
+    n_insane <- sum(abs(bm_new$BM_Ret) > 0.30, na.rm = TRUE)
+    if (n_insane > 0) {
+      cat(sprintf("[krx_merge][GUARD] |BM_Ret|>0.30 이상치 %d건 (스케일 불일치 의심, 값: %s) → NA 처리, benchmark 전파 차단\n",
+                  n_insane, paste(round(bm_new[abs(BM_Ret) > 0.30]$BM_Ret, 3), collapse = ", ")))
+      bm_new[abs(BM_Ret) > 0.30, BM_Ret := NA_real_]
+    }
+
     # Join BM_Ret to new_rows
     new_rows <- merge(new_rows, bm_new[, .(Date, BM_Ret)], by = "Date", all.x = TRUE,
                       suffixes = c(".old", ""))
