@@ -1,0 +1,228 @@
+{
+  "task_id": "WT-D20260705_003",
+  "wt_type": "discovery",
+  "as_of_date": "2026-07-05",
+  "forecast_horizon": "1M",
+  "selection_objective": "rank_ic",
+  "alpha_vector": {
+    "A036460": 0.03584,
+    "A003380": 0.03256,
+    "A015750": 0.0288,
+    "A071320": 0.02878,
+    "A025980": 0.02827,
+    "A000210": 0.02689,
+    "A003030": 0.02634,
+    "A006040": 0.02518,
+    "A000880": 0.02514,
+    "A097950": 0.02447,
+    "A001040": 0.02403,
+    "A078930": 0.02374,
+    "A073240": 0.02359,
+    "A298020": 0.02263,
+    "A267250": 0.02209,
+    "A001680": 0.02065,
+    "A001450": 0.02044,
+    "A000120": 0.02041,
+    "A015760": 0.02025,
+    "A006650": 0.01795,
+    "A096770": 0.01694,
+    "A139480": 0.01658,
+    "A036830": 0.01646,
+    "A035760": 0.01596,
+    "A010950": 0.01395
+  },
+  "confidence_vector": {
+    "A036460": 1,
+    "A003380": 1,
+    "A015750": 0.924,
+    "A071320": 0.924,
+    "A025980": 0.908,
+    "A000210": 0.863,
+    "A003030": 0.846,
+    "A006040": 0.808,
+    "A000880": 0.807,
+    "A097950": 0.786,
+    "A001040": 0.772,
+    "A078930": 0.762,
+    "A073240": 0.757,
+    "A298020": 0.726,
+    "A267250": 0.709,
+    "A001680": 0.663,
+    "A001450": 0.656,
+    "A000120": 0.655,
+    "A015760": 0.65,
+    "A006650": 0.576,
+    "A096770": 0.544,
+    "A139480": 0.532,
+    "A036830": 0.528,
+    "A035760": 0.512,
+    "A010950": 0.448
+  },
+  "signal_matrix_ref": "stage_artifacts/WT_D20260705_003/alpha_scores.parquet",
+  "factor_specs": [
+    {
+      "factor_family": "Forward Value (analyst-consensus level)",
+      "proxy": "fwd_opyield",
+      "formula": "op_profit_fy1 / market_cap(Size)",
+      "lag_rule": "consensus as-of publish (C14 Usable_Date<=sig_date), t-1 rebal",
+      "winsorization": "3std",
+      "neutralization": "none (sector-neutral variant tested, weaker)",
+      "economic_rationale": "Forward operating-income yield: analyst expected operating profit scaled by market cap. Non-return information source (research_philosophy path 3). Highest rank-IC of family (Harvey-t 5.09, ICIR 0.287, post-2017 IC +0.046 = no rank-IC decay).",
+      "redundancy_cluster_id": "forward_earnings_yield",
+      "weight_theta": 0.333,
+      "references": [
+        "Frankel-Lee 1998",
+        "Da-Warachka 2011"
+      ]
+    },
+    {
+      "factor_family": "Forward Value (analyst-consensus level)",
+      "proxy": "fwd_eyield",
+      "formula": "eps_1y / Close",
+      "lag_rule": "consensus as-of, t-1",
+      "winsorization": "3std",
+      "neutralization": "none",
+      "economic_rationale": "Forward earnings yield (analyst expected E/P). rank-IC Harvey-t 4.93. Forward-value; overlaps trailing E/P family (AX-003).",
+      "redundancy_cluster_id": "forward_earnings_yield",
+      "weight_theta": 0.333,
+      "references": [
+        "Frankel-Lee 1998"
+      ]
+    },
+    {
+      "factor_family": "Forward Value (analyst-consensus level)",
+      "proxy": "fwd_syield",
+      "formula": "revenue_fy1 / market_cap(Size)",
+      "lag_rule": "consensus as-of, t-1",
+      "winsorization": "3std",
+      "neutralization": "none",
+      "economic_rationale": "Forward sales yield (scale-robust value). rank-IC Harvey-t 3.66, lowest turnover 2.99. Distinct info vs opyield (z-cor 0.57).",
+      "redundancy_cluster_id": "forward_sales_yield",
+      "weight_theta": 0.333,
+      "references": [
+        "Barbee-Mukherji-Raines 1996"
+      ]
+    },
+    {
+      "factor_family": "Behavioral (target-implied)",
+      "proxy": "tp_implied",
+      "formula": "target_price / Close - 1",
+      "lag_rule": "consensus as-of, t-1",
+      "winsorization": "3std",
+      "neutralization": "none",
+      "economic_rationale": "Analyst target-implied return. rank-IC Ht 4.38 but REDUNDANT with incumbent STR_1715 core C06_TP_Gap (identical formula). Not adopted into composite.",
+      "redundancy_cluster_id": "incumbent_C06_TP_Gap",
+      "weight_theta": 0,
+      "references": [
+        "Brav-Lehavy 2003"
+      ]
+    },
+    {
+      "factor_family": "Forward Quality (REJECTED)",
+      "proxy": "fwd_opmargin_and_fwd_roe",
+      "formula": "op_profit_fy1/revenue_fy1 ; eps_1y/bps_1y",
+      "lag_rule": "consensus as-of, t-1",
+      "winsorization": "3std",
+      "neutralization": "none",
+      "economic_rationale": "Forward operating margin / forward ROE. rank-IC Harvey-t 1.48 / 0.43 = WEAK. Rejected. Forward variant of trailing-quality (AX-004/DIST-QPM-003 guard) also fails.",
+      "redundancy_cluster_id": "forward_quality",
+      "weight_theta": 0,
+      "references": [
+        "Hou-Xue-Zhang 2015"
+      ]
+    }
+  ],
+  "adopted_composite": {
+    "name": "z_composite",
+    "members": ["z_fwd_opyield", "z_fwd_eyield", "z_fwd_syield"],
+    "method": "equal-weight cross-sectional z",
+    "excluded": ["tp_implied incumbent C06 redundant", "fwd_opmargin/fwd_roe weak"]
+  },
+  "diagnostics": {
+    "rank_ic_composite_lead_opyield": 0.0432,
+    "icir_lead": 0.287,
+    "harvey_t_stat_rank_ic_lead": 5.09,
+    "harvey_t_specs_pass_count": 4,
+    "post2017_rank_ic_lead": 0.0455,
+    "portfolio_alpha_t_nw_lag3_canonical": 3.509,
+    "portfolio_alpha_t_metric_type": "canonical_screen (top-25 EW long-only, clean bench <=2024-12; NOT forge-authoritative)",
+    "portfolio_alpha_t_2017_2024_clean": 0.25,
+    "net_sr_canonical": 0.684,
+    "oos_retention": 0.253,
+    "calmar": 0.276,
+    "turnover_proxy_annual": 4.23,
+    "orthogonality_active_cor_vs_str1715": -0.075,
+    "book_marginal_delta_ir_full": 0.087,
+    "book_marginal_delta_ir_2017_2024": -0.008
+  },
+  "alpha_inheritance_cor": 0,
+  "alpha_inheritance_note": "New mechanism (forward-consensus LEVELS). discovery_of=null. vs incumbent STR_1715 active-cor -0.075 (orthogonal). tp_implied overlaps incumbent C06 but excluded from composite.",
+  "challenge_flags": [
+    {
+      "id": "RF-DECAY",
+      "severity": "HIGH",
+      "desc": "rank-IC stable post-2017 (+0.046) but realized top-25 PORT_t decays to +0.25 (2017-2024 clean). IC->PORT_t transition wall (measurement-graduation section 6)."
+    },
+    {
+      "id": "RF-BENCH-CORRUPT",
+      "severity": "HIGH",
+      "desc": "benchmark.parquet + RAWDATA BM_Ret both corrupted 2025+ (impossible KOSPI200 monthly returns e.g. 202605 +35.3%). Authoritative window capped 2024-12; 2025+ unmeasurable. INFRA issue to Q-Lead."
+    },
+    {
+      "id": "RF-VALUE-REDUX",
+      "severity": "MEDIUM",
+      "desc": "forward-value + small-cap tilt (top25 log10size 11.77 vs univ 12.01). AX-003 KR value decay + microcap liquidity premium signature reproduced at forward level."
+    },
+    {
+      "id": "RF-BOOKMARGINAL-NEG",
+      "severity": "HIGH",
+      "desc": "book-marginal delta-IR +0.087 full-sample PASS but entirely 2005-2016 driven; 2017-2024 delta-IR -0.008 (hurts book in modern regime)."
+    },
+    {
+      "id": "RF-GATE-FAIL",
+      "severity": "HIGH",
+      "desc": "oos_retention 0.253 (<0.5 auto-fail) + calmar 0.276 (<0.64). 2 of 3 HARD graduation gates fail despite full-sample PORT_t +3.51."
+    }
+  ],
+  "method_shopping_log": {
+    "candidates_tried": 6,
+    "method_log": [
+      {
+        "name": "fwd_opyield",
+        "rank_ic": 0.0432,
+        "selected": true
+      },
+      {
+        "name": "fwd_eyield",
+        "rank_ic": 0.0411,
+        "selected": true
+      },
+      {
+        "name": "fwd_syield",
+        "rank_ic": 0.0352,
+        "selected": true
+      },
+      {
+        "name": "tp_implied",
+        "rank_ic": 0.0329,
+        "selected": false
+      },
+      {
+        "name": "fwd_opmargin",
+        "rank_ic": 0.0098,
+        "selected": false
+      },
+      {
+        "name": "fwd_roe",
+        "rank_ic": 0.003,
+        "selected": false
+      }
+    ],
+    "selection_type": "chain",
+    "parallel_exec": false
+  },
+  "verdict": "SCREEN-TIER / FAIL for capital admission",
+  "verdict_rationale": "Genuine cross-sectional rank-IC power (Harvey-t 5.09, post-2017 IC +0.046 = no rank-IC decay) that does NOT translate to realized long-only top-25 portfolio alpha in the modern regime. Full-sample clean PORT_t +3.51 passes 2.95 bar but is backward-fit dominated (2005-2016 t +3.24; 2017-2024 t +0.25). Fails oos_retention (0.253 << 0.7 auto-fail) + calmar (0.276 << 0.64). Book-marginal delta-IR negative in modern regime (-0.008). Signal is forward-value + small-cap tilt = AX-003 KR value decay reproduced at forward level.",
+  "screen_route": "DPL_FEATURE",
+  "next_step": "NOT recommended for risk-research. rank-IC power is genuine non-return cross-sectional info -> use only as DPL input feature (measurement-graduation section 5). Confirms IC->PORT_t transition wall generalizes to forward-consensus LEVELS."
+}

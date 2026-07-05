@@ -37,15 +37,24 @@ read_month <- function(d) {   # retry wrapper for OneDrive flakiness
 }
 for (i in seq_along(sig_dates)) {
   d <- sig_dates[i]
+  if (d %in% done_dates) next
   uni <- univ_dt[.(d), Ticker, nomatch=0L]; if (!length(uni)) next
   fdt <- read_month(d); if (is.null(fdt)) { cat("[miss]", as.character(d), "\n"); next }
   slim <- fdt[Factor_Name %in% want & Ticker %in% uni & is.finite(Z_Score_Aligned),
               .(Ticker, Factor_Name, Z=Z_Score_Aligned)]
   if (nrow(slim)) { slim[, Date := d]; flist[[i]] <- slim }
-  if (i %% 40L == 0L) { cat(sprintf("[factors] %d/%d (%.0fs)\n", i, length(sig_dates),
-    as.numeric(difftime(Sys.time(),t0,units="secs")))); flush.console() }
+  if (i %% 20L == 0L) {   # incremental checkpoint save
+    cur <- rbindlist(Filter(Negate(is.null), flist), use.names=TRUE)
+    if (file.exists(PARTIAL)) cur <- rbindlist(list(readRDS(PARTIAL), cur), use.names=TRUE)
+    saveRDS(unique(cur), PARTIAL, compress=TRUE)
+    flist <- vector("list", length(sig_dates)); done_dates <- unique(cur$Date)
+    cat(sprintf("[ckpt] %d/%d saved %d months (%.0fs)\n", i, length(sig_dates),
+        length(done_dates), as.numeric(difftime(Sys.time(),t0,units="secs")))); flush.console()
+  }
 }
-FAC <- rbindlist(Filter(Negate(is.null), flist), use.names=TRUE)
+cur <- rbindlist(Filter(Negate(is.null), flist), use.names=TRUE)
+if (file.exists(PARTIAL)) cur <- rbindlist(list(readRDS(PARTIAL), if(nrow(cur)) cur else NULL), use.names=TRUE)
+FAC <- unique(cur)
 cat(sprintf("[factors] rows=%d months=%d\n", nrow(FAC), uniqueN(FAC$Date)))
 print(FAC[, .(months=uniqueN(Date), tickers=uniqueN(Ticker), mean_z=round(mean(Z),3)),
            by=Factor_Name][order(Factor_Name)])
