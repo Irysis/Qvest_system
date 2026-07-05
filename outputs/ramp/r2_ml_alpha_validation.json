@@ -1,0 +1,94 @@
+{
+  "task": "RAMP_R2_TrackB_lgbm_regime_conditional",
+  "as_of": "2026-07-05",
+  "role": "alpha-research (RAMP mode mu/signal generation)",
+  "hypothesis": "11 orthogonal \uacbd\uc81c sleeve + regime soft-membership \uc744 lgbm \ube44\uc120\ud615\u00b7\uad6d\uba74\uc870\uac74\ubd80 \uacb0\ud569 \uc2dc \uc120\ud615 select-stack(2.54)\uc744 \ub118\uc5b4 cap-w PORT_t>=2.95 \ub2ec\uc131\ud558\ub098?",
+  "method": {
+    "model": "lightgbm regressor (fixed HP, IS-only)",
+    "features": [
+      "Accruals",
+      "Composite",
+      "Consensus",
+      "Credit",
+      "Growth_Profit",
+      "LowRisk",
+      "Momentum",
+      "Quality",
+      "Reversal",
+      "Size_Liquidity",
+      "Value",
+      "w_risk_on_lag1",
+      "w_neutral_lag1",
+      "w_crisis_lag1",
+      "msm_crisis_prob_lag1",
+      "ar_z_lag1"
+    ],
+    "target": "forward Ret_1m t->t+1",
+    "walk_forward": "expanding, min_train=60m, retrain annual(Dec)",
+    "selection_type": "chain",
+    "n_trials": 1,
+    "lgb_params": {
+      "objective": "regression",
+      "n_estimators": 300,
+      "num_leaves": 31,
+      "max_depth": 5,
+      "learning_rate": 0.03,
+      "min_child_samples": 200,
+      "subsample": 0.8,
+      "subsample_freq": 1,
+      "colsample_bytree": 0.8,
+      "reg_alpha": 1.0,
+      "reg_lambda": 5.0,
+      "n_jobs": 1,
+      "verbose": -1,
+      "random_state": 0
+    }
+  },
+  "diagnostics": {
+    "rank_ic_mean": 0.030097051461178984,
+    "icir": 0.43748028639252906,
+    "rank_ic_post2017": 0.029484957480281317,
+    "note": "rank-IC post2017(0.0295)\u2248full(0.0301) \ube44\uac10\uc1e0 \u2014 \uadf8\ub7ec\ub098 portfolio-alpha t \ub294 \ubcc4\uac1c"
+  },
+  "gate_metrics": {
+    "metric_type": "canonical_screen",
+    "port_t_capwt": 1.4183,
+    "port_t_EWuni": 2.722,
+    "oos_retention": -0.4809,
+    "calmar": 0.4335,
+    "post2017_bm_sr": 0.0922,
+    "net_sr": 0.3946,
+    "turnover": 16.1797,
+    "n_months": 195
+  },
+  "gate_result": {
+    "pt_2.95": "FAIL(1.42)",
+    "oos_0.7": "FAIL(-0.48)",
+    "calmar_0.64": "FAIL(0.43)",
+    "overall": "FAIL"
+  },
+  "window_matched": {
+    "note": "R1 linear 2.538 \uc740 2005+ \uc804\uae30\uac04; ML\uc740 2010-02+ 195m(5yr train \ud544\uc694). \ub3d9\uc77c \uc708\ub3c4\uc6b0 \uc7ac\uce21\uc815.",
+    "linear_stackEW_ML_window_pt_capwt": 1.473,
+    "ml_lgbm_pt_capwt": 1.418,
+    "delta_ml_minus_linear_same_window": -0.055,
+    "verdict_same_window": "ML \u2248 linear (tie, \u0394=-0.055) \u2014 \ube44\uc120\ud615\u00b7\uad6d\uba74\uc870\uac74\ubd80 \uac1c\uc120 \uc5c6\uc74c"
+  },
+  "lag1_stress": {
+    "linear_full_delta": -0.542,
+    "linear_full_base": 2.538,
+    "linear_full_lag1": 1.996,
+    "ml_delta": -1.499,
+    "ml_base": 1.418,
+    "ml_lag1": -0.081,
+    "interpretation": "ML lag1 \uae09\ub77d(\u0394-1.50)>linear(\u0394-0.54): ML \uc2e0\ud638 \uc6d4-\ud2b9\uc774\uc131/\uc800\uc9c0\uc18d. \ud558\ub4dc \ub204\ucd9c \uc544\ub2d8(window-matched linear\uac00 base \uc218\uc900 \ud655\uc778)\uc774\ub098 \uc9c0\uc18d\uc131 \uc5f4\uc704=\uacfc\uc801\ud569 \uc9d5\ud6c4."
+  },
+  "pit": {
+    "regime_features": "ar_z, cpz(msm) \ubaa8\ub450 expanding-window(1:i) z-score = PIT-safe(run_ramp_ar_regime.R L44, ramp_wire_canonical.R L31)",
+    "regime_lag": "t-1 shift(1) \uc801\uc6a9, \ub3d9\uc6d4\ub204\ucd9c \uc5c6\uc74c",
+    "minor_caveat": "msm cp NA-impute=full-sample mean(\ucd08\uae30\ud589\ub9cc) \u2014 cosmetic, lag1 \ud6c4 \ubb34\uc601\ud5a5",
+    "target": "forward Ret_1m t->t+1, \ub3d9\uc6d4 features\uc640 \ubd84\ub9ac"
+  },
+  "challenge_note": "outputs/ramp/r2_ml_challenge_note.md",
+  "verdict": "\ub3d9\uc77c \ubcbd. \ube44\uc120\ud615\u00b7\uad6d\uba74\uc870\uac74\ubd80 lgbm \uc774 \uc120\ud615(window-matched 1.47)\uc744 \ubabb \ub118\uc74c(1.42, tie). \uac8c\uc774\ud2b8 3\uc885 FAIL. post2017 decay \uc18c\ud3ed \uc644\ud654(SR -0.26->+0.09)\uc774\ub098 \ube44\uc720\uc758(NW-t 1.42<2.0)\u00b7\uc790\ubcf8\uae09 \uc544\ub2d8. return-derived \uad6d\uba74\uc870\uac74\ubd80 \uacb0\ud569 = INV-7 DISTILLED_NEG \ud655\uc99d."
+}
