@@ -16,7 +16,6 @@ os.makedirs(OUT, exist_ok=True)
 
 from ngboost import NGBRegressor
 from ngboost.distns import Normal
-from ngboost.learners import default_tree_learner
 from sklearn.tree import DecisionTreeRegressor
 
 # ---- load base panel (PIT-built, C13-aligned scores + forward Ret_1m) ----
