@@ -1,0 +1,47 @@
+{
+  "l_code": "L-AR-20260705_190548",
+  "strategy_id": "WT-D20260705_003_fwd_consensus_level",
+  "grade": "F",
+  "core_reference": "measurement-graduation §6 / DIST-QPM-006 / AX-003 / reference-kr-2025-megacap-semi-regime",
+  "lesson_text": "KR forward-consensus LEVEL yield composite(fwd_opyield=op_profit_fy1/mktcap + fwd_eyield=eps_1y/Close + fwd_syield=revenue_fy1/mktcap, EW z) long-only top-25 = SCREEN-TIER/자본부적격. canonical_screen 전기간 portfolio_alpha_t +3.51이나 2005-2016 지배; 2017-2024 clean +0.25 flat, oos_retention 0.253(무조건 탈락<0.5), calmar 0.276. STR_1715와 직교(active-cor -0.075)이나 modern-regime book-marginal ΔIR -0.008(음) = 직교≠수익. top-25 소형주 틸트(log10size 11.77<12.01) = forward-value 판본으로 KR value-family 감쇠 재현. 핵심: 신호력→실현초과(IC->PORT_t) 전이 벽이 consensus *절대수준*까지 일반화 — return-derived 슈퍼팩터 6방법 + consensus *변화*(revision/coverage)에 이어 consensus *level*도 벽. rank-IC(Harvey-t 5.09, post-2017 IC 감쇠 없음)는 실재 non-return 정보이나 DPL 입력 피처로만 유효. 정정: alpha의 '2025+ 벤치 오염' 주장은 false alarm(실제 초대형주 반도체 랠리, 종목단 교차검증).",
+  "tags": ["forward_consensus", "forward_value", "ic_port_t_wall", "value_decay", "screen_route_dpl", "megacap_regime", "kr"],
+  "created_at": "2026-07-05",
+  "research_mode": "alpha_research",
+  "created_by": "emit:alpha_research",
+  "metric_type": "canonical_screen",
+  "construction_type": "single_sleeve_long_only_top25_ew",
+  "mechanism_hypothesis": "forward analyst-consensus level yield는 forward value/quality proxy — KR에서 2005-2016 강했으나 2017+ cohort 감쇠 + 2025-2026 초대형주 집중 레짐에서 diversified 소형-가치 틸트 포트가 cap-weighted 벤치(삼성/하이닉스 지배)에 구조적 열위. envelope-안 관찰: 신호는 실재하나 top-25 long-only 실현초과로 전이 실패(구성/레짐 문제, 제약 문제 아님).",
+  "lcode_schema_version": 2,
+  "falsification_attempts": [
+    {
+      "test": "clean-window subperiod 2005-2016 vs 2017-2024",
+      "result": "falsified",
+      "effect_retained": "PORT_t +3.24 -> +0.25 flat; real-2025 포함시 음"
+    },
+    {
+      "test": "oos_retention 3-split median",
+      "result": "falsified",
+      "effect_retained": "0.253 << 0.7, <0.5 무조건 탈락"
+    },
+    {
+      "test": "calmar gate",
+      "result": "falsified",
+      "effect_retained": "0.276 << 0.64 (MDD 58.7%)"
+    },
+    {
+      "test": "book-marginal ΔIR vs STR_1715 modern-regime",
+      "result": "falsified",
+      "effect_retained": "-0.008 음 (full +0.087은 2005-2016 산물)"
+    },
+    {
+      "test": "orthogonality vs STR_1715",
+      "result": "survived",
+      "effect_retained": "active-cor -0.075 직교이나 직교≠수익(§6)"
+    }
+  ],
+  "oos_retention": 0.253,
+  "oos_months": 297,
+  "portfolio_alpha_t": 3.509,
+  "selection_type": "chain",
+  "record_type": "performance"
+}
