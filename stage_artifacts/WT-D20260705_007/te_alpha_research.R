@@ -57,7 +57,6 @@ RAWDATA[, LiqPass := !is.na(AvgTV20) & shift(AvgTV20, 1L) >= 2e8, by = Ticker]  
 .TE_MIN_OBS <- 200L
 .TE_MIN_SEC <- 5L
 
-.flog <- function(...) { cat(sprintf(...), file = stderr()); flush(stderr()) }
 RAWDATA[, ym := format(Date, "%Y-%m")]
 .month_ends <- sort(RAWDATA[, .(Date = max(Date)), by = ym]$Date)
 # 시그널은 2005~ (252d burn-in 위해 엔진은 전체 데이터 사용, FACTORS만 필터)
