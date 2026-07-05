@@ -1,0 +1,42 @@
+{
+  "l_code": "L-QPM-20260705_110752",
+  "strategy_id": "frontier_a_quality_Q07_multisleeve",
+  "grade": "F",
+  "core_reference": "DIST-QPM-003 frontier(a); wf_585c31dc-e38; DIST-QPM-003.json",
+  "lesson_text": "DIST-QPM-003 frontier(a) 'multi-axis quality를 multi-sleeve Q07 성분으로 배치'(AX-004 EXCLUSION escape) 실측 = book-marginal NULL. STR_1715 noLayer4 book(incumbent net-active IR 1.416) 위 3변형 canonical_screen_bt(258m, ≤2026-06) + book-marginal ΔIR: qual_q07(quality 단독 composite) standalone PORT_t -1.33 / ΔIR ~0 / cor 0.114 = ARTIFACT; qual_caution(CAUTION 조건부, 13m) standalone PORT_t +0.38(CAUTION active +7.71%/yr but t~0.32 무의미) / ΔIR +0.0008 / cor 0.118 = ARTIFACT(13m sliver로 269m IR 못 움직임); valqual_blend(0.5val+0.5qual) ΔIR -0.0344 / cor 0.381 = CONFIRMED_FAIL(value를 희석·drag). admission 후보 0. 어떤 변형도 ΔIR≥0.05 미달. → frontier(a) quality-as-multi-sleeve escape 자본가치 없음. frontier(b)(국면조건부, E2E FALSIFIED) + frontier(a)(multi-sleeve, 본건 NULL) 합쳐 quality-return-signal escape는 envelope 안에서 소진. 잔여 미탐색 = frontier(c) DART 현금흐름 비-return(elestock BLOCKED). measurement-graduation §6 '직교/rank-IC ≠ 수익' book-marginal 레벨 재확증. 적대검증: 서브에이전트가 잘못된 book 파일(variant_returns_xts pre-overlay) 자가포착→authoritative bt_result_C_noL4로 교체·book IR 1.416 정확재구성 + offset-scan +2m economic lead-lag 판별(버그 아님 입증).",
+  "tags": ["QUALITY_FAIL", "BOOK_MARGINAL_NULL", "MULTISLEEVE_Q07_FAIL", "DISTILLED_NEG_LEDGER", "DIST-QPM-003", "AX-004_EXCLUSION", "AX-000_honest"],
+  "created_at": "2026-07-05",
+  "research_mode": "qepm_legacy",
+  "created_by": "emit:qepm_legacy",
+  "metric_type": "canonical_screen",
+  "construction_type": "quality",
+  "mechanism_hypothesis": "quality가 단독 long-only로는 실패(AX-004)하나 multi-sleeve 성분(Q07)으로는 book에 직교 기여할 수 있다는 가설. 실측 기각: quality realized active가 book(momentum-tilted)과 이미 낮은 상관(0.11~0.38)이나, 기여 magnitude가 0에 수렴 (quality active 대부분 국면 음 + CAUTION만 +7.71% n=13 sliver) → 직교해도 PORT_t/ΔIR 미충족(직교 ∧ 수익 동시 필요).",
+  "lcode_schema_version": 2,
+  "falsification_attempts": [
+    {
+      "test": "qual_q07 (multi-axis quality standalone) canonical_screen 258m",
+      "result": "falsified",
+      "effect_retained": 0,
+      "port_t": -1.33
+    },
+    {
+      "test": "qual_caution (CAUTION 조건부 quality sleeve) book-marginal ΔIR vs STR_1715",
+      "result": "falsified",
+      "effect_retained": 0,
+      "delta_ir": 0.0008,
+      "active_cor": 0.1184,
+      "note": "ARTIFACT — CAUTION +7.71%/yr(n=13) but t~0.32 무의미, 13m sliver로 269m IR 1.416 못 움직임"
+    },
+    {
+      "test": "valqual_blend (value+quality) book-marginal ΔIR",
+      "result": "falsified",
+      "effect_retained": 0,
+      "delta_ir": -0.0344,
+      "active_cor": 0.3811,
+      "note": "CONFIRMED_FAIL — value 희석·drag (val 단독 1.12 → blend 0.36)"
+    }
+  ],
+  "portfolio_alpha_t": -1.33,
+  "selection_type": "chain",
+  "record_type": "performance"
+}
