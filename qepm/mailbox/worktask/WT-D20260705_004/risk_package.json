@@ -1,0 +1,148 @@
+{
+  "task_id": "WT-D20260705_004",
+  "as_of_date": "2026-04-30",
+  "agent": "risk-research",
+  "scope": "covariance + risk diagnostics only (no alpha edit, no weights)",
+  "probe_context": "uncertainty-aware transition-wall probe; capital-grade off the table (alpha selection FAILed dPORT_t -0.40). Sigma provided for legitimate robust-optimization test.",
+  "universe": {
+    "n_names": 40,
+    "source": "alpha_vector deployment universe (K200 union KQ150)"
+  },
+  "exposure_matrix_ref": null,
+  "factor_covariance_ref": null,
+  "specific_risk_ref": "stage_artifacts/WT-D20260705_004/specific_risk.parquet",
+  "security_covariance_ref": "stage_artifacts/WT-D20260705_004/covariance.parquet",
+  "covariance_units": "monthly (native); annualize x12 for reporting. matches monthly rebalance horizon.",
+  "selection_objective": "condition_number",
+  "risk_summary": {
+    "top_common_risks": ["Market (68.1%)", "Sector_반도체 (25.0%)", "PC1_common_mode (21.3%)"],
+    "crowding_flags": [],
+    "crowding_score_per_factor": [
+      {
+        "factor_name": "score_eff_composite",
+        "crowding_score": 0.2714,
+        "hhi_top": 0.4045,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 0.6,
+        "demand_elasticity_proxy": 0
+      },
+      {
+        "factor_name": "forecast_uncertainty",
+        "crowding_score": 0.1454,
+        "hhi_top": 0.0679,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 0.5,
+        "demand_elasticity_proxy": 0
+      }
+    ],
+    "liquidity_flags": [],
+    "stress_tests": {
+      "gfc_2008": {
+        "loss": -0.011,
+        "coverage": 0.675,
+        "note": "UNRELIABLE_coverage_68%"
+      },
+      "eudebt_2011": {
+        "loss": -0.0581,
+        "coverage": 0.75,
+        "note": "UNRELIABLE_coverage_75%"
+      },
+      "china_2015": {
+        "loss": -0.0996,
+        "coverage": 0.825,
+        "note": "UNRELIABLE_coverage_82%"
+      },
+      "covid_2020": {
+        "loss": -0.1403,
+        "coverage": 0.95,
+        "note": "ok"
+      },
+      "ratehike_2022": {
+        "loss": -0.2295,
+        "coverage": 0.975,
+        "note": "ok"
+      },
+      "market_down_5": -0.0389
+    },
+    "concentration": {
+      "sector_hhi": 0.1138,
+      "top_sector": "반도체",
+      "top_sector_share": 0.25,
+      "n_effective_sectors": 8.79
+    },
+    "tail_risk": {
+      "empirical_var_95": 0.0161,
+      "empirical_var_99": 0.033,
+      "empirical_es_95": 0.0266,
+      "empirical_es_99": 0.0469,
+      "hill_alpha": 2.583,
+      "hill_xi": 0.387,
+      "evt_method": "hill_only_fExtremes_unavailable"
+    }
+  },
+  "diagnostics": {
+    "condition_number": 98.74,
+    "shrinkage_used": true,
+    "shrinkage_method": "ledoit_wolf",
+    "estimator_note": "Ledoit-Wolf constant-correlation shrinkage (self-implemented; hrp_core single-param LW collapsed to identity - rejected by degeneracy guard). See challenge_note R1.",
+    "n_months": 242,
+    "p_over_n": 0.165,
+    "na_fill_rate": 0.17,
+    "psd": true,
+    "market_factor_var_share": 0.681,
+    "mean_beta": 0.777,
+    "pc1_variance_share": 0.213,
+    "avg_market_r2": 0.168,
+    "specific_variance_share": 0.832,
+    "factor_correlation_warnings": [],
+    "regime_correlation": {
+      "crisis_avg_pairwise_corr": 0.131,
+      "normal_avg_pairwise_corr": 0.139,
+      "n_crisis": 49,
+      "n_normal": 193,
+      "note": "monthly regime split by benchmark bottom-20% tercile; regime_correlation.parquet has per-name",
+      "regime_correlation_ref": "stage_artifacts/WT-D20260705_004/regime_correlation.parquet"
+    },
+    "method_shopping_log": {
+      "risk_agent": {
+        "candidates_tried": 3,
+        "parallel_exec": false,
+        "method_log": [
+          {
+            "name": "sample",
+            "condition": 119.97,
+            "psd": true,
+            "mean_offdiag_cor": 0.1906,
+            "degenerate": false,
+            "selected": false
+          },
+          {
+            "name": "ledoit_wolf",
+            "condition": 98.74,
+            "psd": true,
+            "mean_offdiag_cor": 0.1885,
+            "degenerate": false,
+            "selected": true
+          },
+          {
+            "name": "gerber_rmt",
+            "condition": 353.84,
+            "psd": true,
+            "mean_offdiag_cor": 0.2884,
+            "degenerate": false,
+            "selected": false
+          }
+        ]
+      }
+    }
+  },
+  "challenge_flags": [
+    {
+      "id": "RF-R1",
+      "severity": "HIGH",
+      "flag": "top_common_risk market var share 68.1% > 40%. STRUCTURAL KR long-only (mean beta 0.777, PC1 21.3%) - not estimation error. exposure bound = optimizer scope."
+    }
+  ],
+  "self_adversarial_challenge": "challenge_note.md (Risk section) - 4 concerns: R1 degenerate-LW ACCEPT+fixed, R2 NA-fill PARTIAL, R3 regime-mixing REBUTTAL, R4 RF-R1 structural REBUTTAL. Sigma PD verified. no escalate.",
+  "selection_type": "chain"
+}
