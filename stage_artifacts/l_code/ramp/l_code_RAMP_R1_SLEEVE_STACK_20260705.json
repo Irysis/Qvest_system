@@ -1,0 +1,62 @@
+{
+  "l_code": "L-RAMP-20260705_184828",
+  "strategy_id": "RAMP_R1_SLEEVE_STACK_20260705",
+  "grade": "B",
+  "core_reference": "run_ramp_r1_sleeve_stack.R + outputs/ramp/r1_summary_20260705.json + verify wqj2nlawr(4렌즈) + Axiom엔진v2 DIST-RAMP-006",
+  "lesson_text": "RAMP R1 잔차-직교 sleeve 스태킹 실측 — DIST-RAMP-006 '미검증' 프론티어 측정(프레임: canonical top-25 EW long-only·15bps·cap-w active vs KOSPI200·2005-2026 256m·24m OOS). 11 직교 경제 sleeve 개별 cap-w PORT_t 전부<2.95(best Consensus 2.07·Value 1.43·Growth 0.81), 선택-스택 EW 2.54/InvVol 2.46, soft-regime overlay 1.77. 4렌즈 적대검증: 측정 CONFIRM 3/4(look-ahead·벤치[cap-w K200∪KQ150 fresh, rawdata.BM_Ret 미사용]·oos통계) + firewall이 framing 교정. §6 절차게이트: survivors(cap-w PORT_t≥2.95)=0 → book-margin 부여 안 됨(book 기여 후보 부재). ★두 실패모드: ① active-return 크기 부족(stack 2.54<2.95) ② oos_retention −0.31·post2017 SR 11/11 음수(2017+ cohort-wide regime instability, 더 심각). ★구조판결 아님(INV-7): sleeve 불완전-직교(β≈0.92·active-corr 0.53), 실패는 이 측정프레임의 크기·안정성 부족(config-scoped). frontier 열림: soft-membership ML 앙상블·cost-optimized top-N sweep(10-20bps)·holdout CV rolling·비-return 원천. 06-18 composite-블렌드(cap-w 2.37)와 다른 구성이나 동일 2017+ decay 벽. live_trigger: 2017+ decay 회복 국면 또는 비-return 데이터원 등재 시 재측정. metric_type=canonical_screen.",
+  "tags": ["RAMP", "R1", "residual_sleeve", "config_scoped", "cohort_decay_2017", "frontier_open"],
+  "created_at": "2026-07-05",
+  "research_mode": "ramp",
+  "created_by": "emit:ramp",
+  "metric_type": "canonical_screen",
+  "construction_type": "composite",
+  "mechanism_hypothesis": "직교 경제 sleeve 개별 신호력(Consensus/Value cap-w PORT_t 양수)은 실재하나 이 측정프레임(top-25 EW·15bps·cap-w active)에서 ① 실현 크기가 2.95 게이트 미달 + ② 2017+ cohort-wide regime instability로 oos 음전환. sleeve는 불완전-직교(β≈0.92·active-corr 0.53)라 '직교성이 수익 불가'가 아니라 특정 프레임의 크기·안정성 부족. soft-regime cap overlay는 상승국면 노출 삭감으로 역효과(pt 2.54→1.77).",
+  "lcode_schema_version": 2,
+  "port_t_capwt_best_individual": 2.07,
+  "port_t_capwt_stack_EW": 2.54,
+  "port_t_capwt_stack_InvVol": 2.46,
+  "port_t_capwt_softRegimeOverlay": 1.77,
+  "oos_retention_stack": -0.31,
+  "calmar_stack": 0.39,
+  "post2017_bm_sr_all_negative": true,
+  "sleeve_beta_approx": 0.92,
+  "active_corr": 0.53,
+  "n_survivors": 0,
+  "n_sleeves": 11,
+  "n_trials": 13,
+  "n_months": 256,
+  "incumbent_book_ir": 1.416,
+  "book_marginal": "N/A_no_survivor",
+  "verify_lenses": "3CONFIRM_1REVISED_framing",
+  "verify_task": "wqj2nlawr",
+  "falsification_attempts": [
+    {
+      "test": "적대검증 look-ahead/PIT (regime overlay t-1 shift · asof_close 유동성 t-1 · group_z PIT)",
+      "result": "survived",
+      "effect_retained": 1,
+      "detail": "음성은 look-ahead로 부풀 수 없음; soft-overlay pt 2.54->1.77 하락이 shift(,1) 작동 증명 (verdict_change=FALSE)"
+    },
+    {
+      "test": "적대검증 벤치 정렬 (cap-w BM provenance · realized_ym · active basis)",
+      "result": "survived",
+      "effect_retained": 1,
+      "detail": "cap-w 벤치는 K200 U KQ150에서 fresh 재계산(rawdata.BM_Ret 미사용) 256:256 0-NA; 게이트 flip에 ~43% boost 필요 (verdict_change=FALSE)"
+    },
+    {
+      "test": "적대검증 oos·통계 (NW lag-3 · oos_retention v2 · post2017 decay · sweep-DSR)",
+      "result": "survived",
+      "effect_retained": 1,
+      "detail": "NW/oos_retention v2 산식 정확(cap-w act_bm 기준); post2017 SR 11/11 음수=cohort-wide decay 실재 (verdict_change=FALSE)"
+    },
+    {
+      "test": "적대검증 firewall·해석 정직성 (INV-7 경로-scoped · frontier · 이중 실패모드)",
+      "result": "weakened",
+      "effect_retained": 0.85,
+      "detail": "측정(survivors=0) 불변이나 framing over-reach 교정: '직교!=수익 구조확정'->config-scoped 크기·안정성 부족(sleeve 불완전직교 beta0.92) + 이중 실패모드(active크기 vs oos decay) 구분 + frontier 명시 (verdict_change=TRUE: framing만)"
+    }
+  ],
+  "oos_retention": -0.31,
+  "portfolio_alpha_t": 2.54,
+  "selection_type": "sweep",
+  "record_type": "performance"
+}
