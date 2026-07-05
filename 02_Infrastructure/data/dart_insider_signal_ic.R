@@ -17,19 +17,18 @@ trades <- raw[!is.na(qty_change) & !is.na(reporter_class)]
 cat("[ic] 총 거래행:", nrow(trades), "| 고유 corp:", length(unique(trades$corp_code)), "\n")
 
 # ── 2. net officer buying 신호 (임원 + 시장거래 only, mechanical 제외) ──
-MECH <- "임원퇴임|퇴임|주식분할|무상증자|합병|분할|상속|증여|주식배당|전환|행사|배정|해임|사임|신규상장"
-MKT  <- "장내|장외|매수|매도|시장"
+# open-market 거래만(장내/장외/시간외) — 매수선택권·유상신주·상여·상속증여 등 non-conviction 제외 (Cohen-Malloy-Pomorski)
+MKT  <- "장내|장외|시간외"
 trades[, qc := as.numeric(qty_change)]; trades[, pr := as.numeric(price)]
-off <- trades[grepl("임원", reporter_class) & grepl(MKT, report_reason %||% "") & !grepl(MECH, report_reason %||% "") &
-              is.finite(qc)]
+off <- trades[grepl("임원", reporter_class) & grepl(MKT, report_reason %||% "") & is.finite(qc)]
 off[, notional := qc * ifelse(is.finite(pr) & pr>0, pr, 0)]  # signed KRW (price 없으면 shares만)
 # 시그널 가용 월 = 필링 접수월(rcept_dt YYYYMMDD → ym). PIT: 접수 시점 공개.
 off[, dt := as.character(rcept_dt %||% filing_date)]
 off[, sig_ym := substr(gsub("[^0-9]","",dt),1,6)]
 off <- off[nchar(sig_ym)==6]
-# corp_code → ticker
+# ★파서 corp_code = 실제 6자리 stock_code → uni.stock_code 로 조인(uni.corp_code는 8자리 DART코드, 불일치)
 uni <- fread(".cache/dart/universe_corpcodes.csv", colClasses="character")
-off <- merge(off, uni[, .(corp_code, ticker)], by="corp_code", all.x=TRUE)
+off <- merge(off, uni[, .(stock_code, ticker)], by.x="corp_code", by.y="stock_code", all.x=TRUE)
 sig <- off[!is.na(ticker), .(net_notional=sum(notional,na.rm=TRUE), net_shares=sum(qc,na.rm=TRUE),
                              n_off=.N, n_buy=sum(qc>0), n_sell=sum(qc<0)), by=.(ticker, sig_ym)]
 cat("[ic] 신호 종목-월:", nrow(sig), "| 순매수(net_notional>0):", sig[net_notional>0,.N],
