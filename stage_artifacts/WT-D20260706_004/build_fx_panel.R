@@ -67,14 +67,19 @@ setorder(rd, Ticker, Date)
 cat("[fxpanel] merged fx+mkt\n"); flush.console()
 
 # ---- 3. month key + month-end rows + adv20 + monthly forward return ----
-cat("[fxpanel] month key + adv20...\n"); flush.console()
-rd[, ym := as.Date(cut(Date, "month"))]
+cat("[fxpanel] month key (fast integer)...\n"); flush.console()
+# FAST ym: avoid cut.Date (segfault-prone on 13.9M rows). Use POSIXlt year/mon once on unique dates.
+ud <- sort(unique(rd$Date))
+lt <- as.POSIXlt(ud)
+ym_map <- data.table(Date = ud, ym = as.Date(sprintf("%04d-%02d-01", lt$year + 1900L, lt$mon + 1L)))
+rd <- merge(rd, ym_map, by = "Date", all.x = TRUE)
+setorder(rd, Ticker, Date)
+cat("[fxpanel] ym done; adv20...\n"); flush.console()
 rd[, dvalue := Close * Vol]
 rd[, adv20 := frollmean(dvalue, 20, align = "right"), by = Ticker]
 cat("[fxpanel] adv20 done; extracting month-end rows...\n"); flush.console()
 
-# month-end row indices per ticker-month (vectorized, no .GRP blowup)
-setorder(rd, Ticker, ym, Date)
+# month-end row indices per ticker-month (vectorized)
 is_last <- rd[, .I[.N], by = .(Ticker, ym)]$V1
 me <- rd[is_last]
 cat("[fxpanel] month-end rows:", nrow(me), "\n"); flush.console()
