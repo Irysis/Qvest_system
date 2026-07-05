@@ -1,0 +1,63 @@
+{
+  "l_code": "L-QPM-20260706_081232",
+  "strategy_id": "WT-P20260706_001_megacap_anchor_forge",
+  "grade": "F",
+  "core_reference": "WT-P20260706_001 forge_package.json (verdict=DE_RATE) + bt_result_megacap_anchor_a.rds(audit 12 PASS) + challenge_note.md; 원발견 stage_artifacts/pg2_overlay_gate_composition_20260705 screening-tier 승격시도",
+  "lesson_text": "WT-P20260706_001 (deployment, forge-authoritative) DE-RATE — mega-cap 앵커 구성은 자본급 배포성 구성 레버가 아니라 벤치-트래킹 분산축소 레버로 재분류. 07-05 screening-tier 발견(mega-cap top-2 삼성+하이닉스 20%cap 앵커 + earnings/quality 알파fill, canonical PORT_t 4.76·oos 0.55)을 forge build_bt_result(Return.portfolio parity cor=1.0, metric_type=backtested)로 재측정: 4변형(K=2@20cap 40%집중 / cap-share 비례 / K=2@15cap 30% / regime-conditional K) 전부 마일스톤 미달. ★막은 게이트=calmar: 전 변형 0.571~0.636 < 0.64 HARD. 앵커가 저알파 mega-cap 40% 고정으로 CAGR을 baseline 0.262→0.217로 낮추면서 MDD는 ~0.38 유지 → 위험조정 탈락. screening canonical_screen_bt는 calmar 미측정이라 이 블로커가 숨어있었음(=BLOCKER 1 forge가 드러냄). ★결정적 메커니즘: 앵커 EDGE(variant a − baseline) full paired_t=−1.69·pre2017 −3.29·post2017 +0.75(t<1) → 앵커는 realized active를 오히려 뺀다. oos 0.366→0.894 개선은 alpha가 아니라 삼성/하이닉스 20%고정이 cap-weighted 벤치와의 tracking-error(분모)를 줄인 기계적 ratio 상승. 집중↓(cap-share/15cap)하면 oos 깨짐(0.65/0.59 band)=집중↔oos는 독립 블로커 아닌 한 메커니즘 양면. book-marginal: overlay ΔIR은 +0.06~0.08(문턱 0.05 초과)이나 paired NW-t 음수(−1.33~−1.92)=IR상승은 alpha추가 아닌 active변동성 축소(분모). incumbent 1.416 재현불가(recon IR 1.013, ret_L5_V5≠ret×ovl cor 0.962)라 절대ΔIR 신뢰불가, basis-invariant paired 신호(음수)가 판정근거. 적대검증: 알파fill vs bottom-fill +5.60·placebo p=0.000·lag1 PIT 4.04 graceful은 全 base 재구성 성질(앵커 귀속 불가). → 발견은 screening-tier로 고정(틀린 발견 아님, forge가 calmar·book-marginal 숨은 게이트 노출). 재시도 금지: mega-cap 앵커/집중 구성으로 배포성 alpha 획득. '분산축소≠alpha'(§6 '직교≠수익'과 동류). 부수 진단: baseline(앵커無 production STR_1715 earnings/quality) forge PORT_t 3.83·calmar 0.668 PASS이나 oos_retention 0.366(<0.5 무조건FAIL)=유일 실패게이트가 post-2017 decay. base 알파는 real(edge+5.60)이나 oos 실패, 구성으로 복원 불가. 잔여 envelope 레버=비-return(DART insider, 데이터-gated).",
+  "tags": [
+    "DEPLOYMENT",
+    "DE_RATE",
+    "MEGACAP_ANCHOR",
+    "VARIANCE_REDUCTION_NOT_ALPHA",
+    "CALMAR_GATE_FAIL",
+    "FORGE_AUTHORITATIVE",
+    "AX-000_honest"
+  ],
+  "created_at": "2026-07-06",
+  "research_mode": "qepm_legacy",
+  "created_by": "emit:qepm_legacy",
+  "metric_type": "backtested",
+  "construction_type": "composite",
+  "mechanism_hypothesis": "mega-cap 앵커(벤치지배 top-2 cap고정+알파fill)가 post-2017 IC→PORT_t 벽(cap-w 벤치 아티팩트)을 뚫어 배포성 alpha를 만든다는 가설 → forge-authoritative 반증. 앵커의 oos 개선은 tracking-error(분모) 축소지 alpha(분자) 추가가 아니며(앵커 edge full_t −1.69), CAGR 희생으로 calmar 탈락. 분산축소≠alpha. base 알파는 real이나 oos decay는 구성으로 복원 불가.",
+  "lcode_schema_version": 2,
+  "falsification_attempts": [
+    {
+      "test": "C2 K=2@20cap forge build_bt_result 268m",
+      "result": "falsified",
+      "port_t": 4.53,
+      "note": "oos 0.894 PASS이나 calmar 0.571<0.64 FAIL, 40% 집중, 앵커 edge full_t −1.69"
+    },
+    {
+      "test": "cap-share 비례 앵커(집중완화)",
+      "result": "falsified",
+      "port_t": 4.57,
+      "note": "집중 0.325로↓이나 oos 0.650 band로 붕괴+calmar 0.620 FAIL=집중↔oos 한 메커니즘"
+    },
+    {
+      "test": "K=2@15cap dose-response",
+      "result": "falsified",
+      "port_t": 4.4,
+      "note": "집중 0.30, oos 0.705이나 calmar 0.609 FAIL"
+    },
+    {
+      "test": "regime-conditional K 앵커",
+      "result": "falsified",
+      "port_t": 4.52,
+      "note": "oos 0.592 band+calmar 0.636 FAIL"
+    },
+    {
+      "test": "book-marginal ΔIR + paired NW-t (앵커북 + m4×R05 overlay)",
+      "result": "falsified",
+      "note": "ΔIR +0.06~0.08>문턱이나 paired NW-t −1.33~−1.92=분산축소 효과지 alpha 아님, active_cor 0.84~0.93≫0.30"
+    },
+    {
+      "test": "적대검증 forge-authoritative (bottom-fill/placebo/lag1)",
+      "result": "passed",
+      "note": "edge +5.60·placebo p=0·lag1 graceful이나 全 base 재구성 성질, 앵커 귀속 불가"
+    }
+  ],
+  "oos_retention": 0.894,
+  "portfolio_alpha_t": 4.53,
+  "selection_type": "chain",
+  "record_type": "performance"
+}
