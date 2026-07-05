@@ -1,0 +1,354 @@
+{
+  "task_id": "WT-D20260705_001",
+  "as_of_date": "2026-07-05",
+  "agent": "optimizer-research",
+  "metric_type": "canonical_screen",
+  "metric_type_note": "net-active vs KOSPI200 total return, NW lag-3, walk-forward 197 dates (2010-01..2026-05). RAWDATA monthly-compounded total returns + corrected IKS200 benchmark. NOT forge-authoritative; admission binding = forge build_bt_result re-measure.",
+  "universe": "KOSPI200_KOSDAQ150_intersection",
+  "benchmark": "KOSPI200_total_return",
+  "selection_objective": "net_ir",
+  "boundary_attestation": "weights only. alpha_vector + confidence_vector + Sigma received read-only, unmodified. No alpha reinterpretation, no Sigma redefinition.",
+  "method_selected": "AlphaProp_buffer",
+  "method_selected_rationale": "Best net_ir (0.607) among MANDATE-COMPLIANT methods. Alpha-proportional sizing w~max(alpha,0) box[0,0.20] HHI 0.045 + buffer-zone turnover control (top-40 inertia 40 pct). Compliant: 25 names, Sw=1, turnover 10.9<11.0, max weight 0.093<0.20, top-25 all large/mid cap >>2e8. MVO_l2_raw scores 2.827 but DISQUALIFIED (breadth<15, HHI 0.12, turnover 15.4) with a 2023-2026 tail-artifact edge.",
+  "target_weights": {
+    "A000660": 0.0754,
+    "A402340": 0.0658,
+    "A005930": 0.0632,
+    "A064350": 0.057,
+    "A000270": 0.0544,
+    "A042660": 0.0513,
+    "A028260": 0.0512,
+    "A329180": 0.05,
+    "A204320": 0.0472,
+    "A267260": 0.0455,
+    "A082740": 0.04,
+    "A010140": 0.0385,
+    "A036540": 0.0365,
+    "A121600": 0.0338,
+    "A006260": 0.0328,
+    "A025900": 0.0312,
+    "A161390": 0.0308,
+    "A009150": 0.0286,
+    "A095610": 0.027,
+    "A218410": 0.0254,
+    "A047050": 0.0242,
+    "A086280": 0.0237,
+    "A131290": 0.0232,
+    "A071970": 0.0221,
+    "A005940": 0.0211
+  },
+  "n_names": 25,
+  "hhi": 0.0456,
+  "sum_weights": 1,
+  "max_weight": 0.0754,
+  "min_names_enforced": true,
+  "hhi_enforced": true,
+  "winsor_applied": false,
+  "turnover_annual": 10.911,
+  "turnover_formula": "delta round-trip: traded_t=sum(|w_t-w_{t-1}|) over ticker union (one-way notional fraction); annual=mean(traded)*12. NOT x12-of-single-period shortcut.",
+  "estimated_cost_annual_bps": 163.7,
+  "net_ir": 0.607,
+  "net_port_t_nw_lag3": 2.633,
+  "net_sr": 0.607,
+  "ew_baseline": {
+    "net_port_t": 1.769,
+    "net_ir": 0.413,
+    "note": "EW top-25 vs KOSPI200. Reconciles with alpha agent reported 1.41 (clean IKS200 vintage); both SCREEN_TIER."
+  },
+  "improvement_over_ew": {
+    "delta_net_port_t": 0.864,
+    "delta_net_ir": 0.194,
+    "note": "AlphaProp+buffer lifts net_port_t +0.86 and net_ir +0.19 over EW. Real but modest; entirely pre-2018 (post-2022 net_port_t ~ -0.01)."
+  },
+  "subperiod_net_port_t": {
+    "recommended": {
+      "pre2018": 3.05,
+      "post2018": 0.49,
+      "post2022": -0.01
+    },
+    "ew": {
+      "pre2018": 2.85,
+      "post2018": 0.18,
+      "post2022": -0.36
+    }
+  },
+  "oos_retention": 0.137,
+  "calmar_active": 0.238,
+  "mdd_active": 0.311,
+  "graduation_verdict": {
+    "gate_portfolio_alpha_t": 2.95,
+    "best_compliant_net_port_t": 2.652,
+    "pass": false,
+    "oos_gate": 0.7,
+    "oos_best": 0.137,
+    "oos_pass": false,
+    "calmar_gate": 0.64,
+    "calmar_best": 0.238,
+    "calmar_pass": false,
+    "verdict": "SCREEN_TIER_FAIL — NO mandate-compliant weighting method crosses t=2.95. Weighting cannot rescue a screen-tier alpha (DGU-2009, measurement-graduation section 6). Recommend DPL-feature / factor-rotation RCMA routing, not capital admission."
+  },
+  "binding_constraints": [
+    "turnover_cap_11.0 (buffer-zone active to satisfy)",
+    "max_names_25 (binding, exactly 25)",
+    "weight_cap_0.20 (non-binding, max 0.093)"
+  ],
+  "infeasibility_report": null,
+  "method_comparison": {
+    "EW": {
+      "net_ir": 0.413,
+      "net_port_t": 1.769,
+      "turnover_annual": 12.482,
+      "avg_hhi": 0.04,
+      "mean_n": 25,
+      "mandate_compliant": true
+    },
+    "AlphaProp": {
+      "net_ir": 0.499,
+      "net_port_t": 2.121,
+      "turnover_annual": 12.842,
+      "avg_hhi": 0.0412,
+      "mean_n": 25,
+      "mandate_compliant": true
+    },
+    "ConfAlphaProp": {
+      "net_ir": 0.479,
+      "net_port_t": 2.052,
+      "turnover_annual": 12.996,
+      "avg_hhi": 0.0417,
+      "mean_n": 25,
+      "mandate_compliant": true
+    },
+    "RankTilt": {
+      "net_ir": 0.6,
+      "net_port_t": 2.57,
+      "turnover_annual": 13.677,
+      "avg_hhi": 0.0523,
+      "mean_n": 25,
+      "mandate_compliant": true
+    },
+    "Softmax": {
+      "net_ir": 0.629,
+      "net_port_t": 2.602,
+      "turnover_annual": 13.377,
+      "avg_hhi": 0.048,
+      "mean_n": 25,
+      "mandate_compliant": true
+    },
+    "HRP": {
+      "net_ir": 0.413,
+      "net_port_t": 1.769,
+      "turnover_annual": 12.482,
+      "avg_hhi": 0.04,
+      "mean_n": 25,
+      "mandate_compliant": true
+    },
+    "ERC": {
+      "net_ir": 0.417,
+      "net_port_t": 1.727,
+      "turnover_annual": 12.958,
+      "avg_hhi": 0.0441,
+      "mean_n": 24.4,
+      "mandate_compliant": true
+    },
+    "MaxDiv": {
+      "net_ir": 0.39,
+      "net_port_t": 1.609,
+      "turnover_annual": 13.48,
+      "avg_hhi": 0.0456,
+      "mean_n": 24.4,
+      "mandate_compliant": true
+    },
+    "MinVar": {
+      "net_ir": 0.414,
+      "net_port_t": 1.567,
+      "turnover_annual": 13.755,
+      "avg_hhi": 0.0616,
+      "mean_n": 23.8,
+      "mandate_compliant": true
+    },
+    "CVaR_inv": {
+      "net_ir": 0.486,
+      "net_port_t": 2.033,
+      "turnover_annual": 13.023,
+      "avg_hhi": 0.046,
+      "mean_n": 24.9,
+      "mandate_compliant": true
+    },
+    "MVO_l2_raw": {
+      "net_ir": 0.737,
+      "net_port_t": 2.827,
+      "turnover_annual": 15.38,
+      "avg_hhi": 0.12,
+      "mean_n": 14.1,
+      "mandate_compliant": false,
+      "disqualified": "breadth median 14 names (<15 in 113/197 mo), HHI 0.12>0.10, turnover 15.4>11.0; edge=2023-2026 concentrated tail artifact (2026 +540bps/mo over 6mo)"
+    },
+    "MVO_l5_raw": {
+      "net_ir": 0.574,
+      "net_port_t": 2.189,
+      "turnover_annual": 14.472,
+      "avg_hhi": 0.0841,
+      "mean_n": 20.9,
+      "mandate_compliant": false,
+      "disqualified": "turnover 14.5>11.0; drifts to min-var, alpha diluted"
+    },
+    "MVO_compliant": {
+      "net_ir": 0.53,
+      "net_port_t": 2.232,
+      "turnover_annual": 13.05,
+      "avg_hhi": 0.0501,
+      "mean_n": 20.2,
+      "mandate_compliant": true,
+      "note": "min_names>=20 + HHI<=0.10 enforced; MVO edge collapses 2.827->2.232"
+    },
+    "MVO_compliant_buffer": {
+      "net_ir": 0.627,
+      "net_port_t": 2.652,
+      "turnover_annual": 10.92,
+      "avg_hhi": 0.047,
+      "mean_n": 24,
+      "mandate_compliant": true
+    },
+    "AlphaProp_buffer": {
+      "net_ir": 0.607,
+      "net_port_t": 2.633,
+      "turnover_annual": 10.911,
+      "avg_hhi": 0.0449,
+      "mean_n": 25,
+      "mandate_compliant": true,
+      "selected": true
+    },
+    "EW_buffer": {
+      "net_ir": 0.511,
+      "net_port_t": 2.207,
+      "turnover_annual": 11.725,
+      "avg_hhi": 0.043,
+      "mean_n": 25,
+      "mandate_compliant": true
+    }
+  },
+  "method_shopping_log": {
+    "candidates_tried": 10,
+    "note": "10 base method families + 5 turnover/compliance variants. parallel_exec=FALSE (QP fast).",
+    "method_log": [
+      {
+        "name": "EW",
+        "net_ir": 0.413,
+        "net_port_t": 1.769,
+        "selected": false
+      },
+      {
+        "name": "AlphaProp",
+        "net_ir": 0.499,
+        "net_port_t": 2.121,
+        "selected": false
+      },
+      {
+        "name": "ConfAlphaProp",
+        "net_ir": 0.479,
+        "net_port_t": 2.052,
+        "selected": false
+      },
+      {
+        "name": "RankTilt",
+        "net_ir": 0.6,
+        "net_port_t": 2.57,
+        "selected": false
+      },
+      {
+        "name": "Softmax",
+        "net_ir": 0.629,
+        "net_port_t": 2.602,
+        "selected": false
+      },
+      {
+        "name": "HRP",
+        "net_ir": 0.413,
+        "net_port_t": 1.769,
+        "selected": false
+      },
+      {
+        "name": "ERC",
+        "net_ir": 0.417,
+        "net_port_t": 1.727,
+        "selected": false
+      },
+      {
+        "name": "MaxDiv",
+        "net_ir": 0.39,
+        "net_port_t": 1.609,
+        "selected": false
+      },
+      {
+        "name": "MinVar",
+        "net_ir": 0.414,
+        "net_port_t": 1.567,
+        "selected": false
+      },
+      {
+        "name": "CVaR_inv",
+        "net_ir": 0.486,
+        "net_port_t": 2.033,
+        "selected": false
+      },
+      {
+        "name": "MVO_l2_raw",
+        "net_ir": 0.737,
+        "net_port_t": 2.827,
+        "selected": false
+      },
+      {
+        "name": "MVO_l5_raw",
+        "net_ir": 0.574,
+        "net_port_t": 2.189,
+        "selected": false
+      },
+      {
+        "name": "MVO_compliant",
+        "net_ir": 0.53,
+        "net_port_t": 2.232,
+        "selected": false
+      },
+      {
+        "name": "MVO_compliant_buffer",
+        "net_ir": 0.627,
+        "net_port_t": 2.652,
+        "selected": false
+      },
+      {
+        "name": "AlphaProp_buffer",
+        "net_ir": 0.607,
+        "net_port_t": 2.633,
+        "selected": true
+      },
+      {
+        "name": "EW_buffer",
+        "net_ir": 0.511,
+        "net_port_t": 2.207,
+        "selected": false
+      }
+    ]
+  },
+  "explanation": {
+    "top_overweights": [null, null, null, null, null],
+    "main_tradeoffs": [
+      "Concentration methods (MVO) score higher on full-period t only by violating breadth/HHI/turnover mandate and betting on a thin 2023-2026 tail.",
+      "Alpha edge is name-SELECTION not sizing (Grinold breadth): EW->AlphaProp tilt gains +0.19 net_ir, entirely pre-2018.",
+      "Buffer-zone turnover control cuts churn 12.8->10.9/yr AND lifts net_ir — implementation-discipline win, not a graduation lever."
+    ]
+  },
+  "rf_flags": [
+    "RF-O1: binding 2-3 (turnover, max_names) — not >=K/2, OK",
+    "RF-O2: mean net active 89 bps/mo vs cost 13.6 bps/mo — net > 2x cost, OK",
+    "RF-O5/O6/O7: NONE — 25 names, Sw=1, [0,0.20], all>=0.",
+    "RF-O9: weights.csv = 197-date walk-forward series, density_ratio 1.00, NO single-snapshot."
+  ],
+  "schedule_density": {
+    "unique_dates": 197,
+    "alpha_sig_dates": 197,
+    "ratio": 1,
+    "pass": true
+  },
+  "challenge_note_ref": "qepm/mailbox/worktask/WT-D20260705_001/optimizer_challenge_note.md",
+  "weights_csv_ref": "stage_artifacts/WT-D20260705_001/weights.csv"
+}
