@@ -192,6 +192,38 @@ canon_active <- function(scores_dt, top_n = 25L) {
   res
 }
 
+# ---- precompute forward returns / BM / liquidity for a fixed monthly sig_date grid (shared across factors) ----
+# sig_dates: vector of month-end trading dates (must exist in raw as >= anchors). Returns list(R, BM, LQ).
+precompute_grid <- function(sig_dates) {
+  load_shared(); raw <- .LOAD$raw
+  sig_dates <- sort(unique(sig_dates))
+  R_list <- vector("list", length(sig_dates)-1L); bm_list <- vector("list", length(sig_dates)-1L)
+  liq_list <- vector("list", length(sig_dates))
+  for (i in seq_along(sig_dates)) {
+    sig <- sig_dates[i]
+    start_d <- min(raw[Date >= sig]$Date); if (length(start_d)==0L||is.na(start_d)) next
+    ld <- raw[Date >= (start_d-30L) & Date < start_d, .(adv = mean(TradingAmt, na.rm=TRUE)), by = Ticker]
+    ld[, Date := sig]; liq_list[[i]] <- ld[, .(Date, Ticker, adv)]
+    if (i < length(sig_dates)) {
+      nxt <- sig_dates[i+1L]
+      end_d <- { z <- min(raw[Date >= nxt]$Date); if (length(z)==0L||is.na(z)) max(raw$Date) else z }
+      pd <- raw[Date > start_d & Date <= end_d, .(ret_fwd = prod(1+Ret, na.rm=TRUE)-1), by = Ticker]
+      pd[, Date := sig]; R_list[[i]] <- pd[, .(Date, Ticker, Ret_1m = ret_fwd)]
+      bm_list[[i]] <- data.table(Date = sig, BM_Ret = bm_month(start_d, end_d))
+    }
+  }
+  list(R = rbindlist(R_list), BM = rbindlist(bm_list), LQ = rbindlist(liq_list))
+}
+
+# fast canonical using precomputed grid. scores_dt: (Date, Ticker, score) on the grid's sig_dates.
+canon_active_fast <- function(scores_dt, grid, top_n = 25L) {
+  S <- as.data.table(scores_dt)[!is.na(score), .(Date, Ticker, score)]
+  S <- S[Date %in% grid$R$Date]
+  if (nrow(S) == 0L) return(NULL)
+  canonical_screen_bt(S, grid$R, grid$BM, top_n = top_n, cost_bps_oneway = 15,
+                      liq_dt = grid$LQ, liq_min = 2e8, run_id = "cand", strategy_id = "cand")
+}
+
 if (identical(Sys.getenv("HARNESS_SELFTEST"), "1")) {
   cat("[harness] self-test: PG2 baseline recon ...\n")
   bl <- build_pg2_baseline()

@@ -11,9 +11,19 @@ OUTDIR <- "stage_artifacts/beat_pg2_ortho_sleeve_20260705"
 bl <- readRDS(file.path(OUTDIR, "pg2_baseline.rds"))
 book_act <- bl$net_active_series[, .(ym, book_active = active)]
 
-# helper: candidate canonical active + cor vs book + PORT_t
+# precompute grids once per date-universe (heavy forward-return/liquidity recomputation shared across all candidates)
+.GRIDS <- new.env()
+get_grid <- function(sig_dates) {
+  key <- paste0("g", length(sig_dates), "_", as.character(min(sig_dates)), "_", as.character(max(sig_dates)))
+  if (is.null(.GRIDS[[key]])) .GRIDS[[key]] <- precompute_grid(sig_dates)
+  .GRIDS[[key]]
+}
+
+# helper: candidate canonical active + cor vs book + PORT_t (uses matching precomputed grid)
 eval_cand <- function(scores_dt, label, family) {
-  res <- tryCatch(canon_active(scores_dt, top_n = 25L), error = function(e) NULL)
+  sd <- sort(unique(as.data.table(scores_dt)[!is.na(score)]$Date))
+  grid <- tryCatch(get_grid(sd), error = function(e) NULL)
+  res <- if (is.null(grid)) NULL else tryCatch(canon_active_fast(scores_dt, grid, top_n = 25L), error = function(e) NULL)
   if (is.null(res) || is.null(res$period_returns) || nrow(res$period_returns) < 24L)
     return(data.table(code = label, family = family, n = if(is.null(res)) 0L else nrow(res$period_returns %||% data.table()),
                       active_cor = NA_real_, standalone_port_t = NA_real_, net_sr = NA_real_, ir = NA_real_))
