@@ -1,0 +1,89 @@
+{
+  "task_id": "WT-P20260706_002",
+  "wt_type": "deployment",
+  "pg1_eligibility": "deployment_track",
+  "discovery_of": "STR_1715_on_M4_R05_noLayer4_PG2",
+  "graduation_criteria": {
+    "description": "Discovery → Deployment 전환 조건. discovery_graduation_gate.sh 강제. v8.x WS2 재설계(2026-05-29): rank-IC 계열은 long-only 실현 alpha와 어긋나(16후보 calibration 실측: rank_ic가 FLOW 거짓탈락+NN/TECH 거짓통과) advisory로 강등, portfolio-alpha t(forge NW lag-3)를 hard로. DSR hard는 sweep형 selection만(2026-06-10 개정 — chain/단일은 advisory). hard 기준은 forge-authoritative 값(alpha-stage proxy 아님)에 적용.",
+    "min_rank_ic": 0.04,
+    "min_rank_ic_rationale": "KR top-universe benchmark. <0.04는 IC 약함. (v8.x severity=advisory — long-only 실현 alpha 미전이)",
+    "min_icir": 0.2,
+    "min_icir_rationale": "Alpha Lab Gate. (v8.x severity=advisory)",
+    "min_subperiod_stability": 0.5,
+    "min_subperiod_stability_rationale": "3개 subperiod 안정성. (v8.x severity=advisory)",
+    "max_drawdown_days": 100,
+    "max_drawdown_days_rationale": "100일 이상 drawdown 지속 시 alpha decay 의심. (severity=advisory)",
+    "min_harvey_t_stat": 3,
+    "min_harvey_t_stat_rationale": "rank-IC Harvey-t. (v8.x severity=advisory — rank-IC t는 portfolio-alpha t와 구분, 후자가 권위)",
+    "min_deflated_sharpe_ratio": 0.5,
+    "min_deflated_sharpe_ratio_rationale": "Bailey-Lopez de Prado DSR — multi-testing 보정 SR. (severity=HARD는 sweep형 selection만 — ML스윕/optimizer서치/앙상블·사전등록 grid. 가설주도 chain/단일검증은 advisory 강등+진단산출. 도훈 mandate 2026-05-31/2026-06-10, measurement-graduation §3)",
+    "min_portfolio_alpha_t_nw": 2.95,
+    "min_portfolio_alpha_t_nw_rationale": "★v8.x 신규 HARD. forge-authoritative 실현 portfolio-alpha t (NW lag-3, forge_package.portfolio_alpha_t_nw_lag3). Harvey-Liu-Zhu 2016 hurdle. rank-IC t 아님. 게이트 핵심 판별(16후보 중 FLOW만 통과=정확).",
+    "min_oos_retention": 0.7,
+    "min_oos_retention_rationale": "★v2.5 HARD 배선(문턱은 measurement-graduation §3 2026-05-31/06-10 기존값). 활성 Sharpe OOS/IS retention — anchored 3분할 {55/65/75} 중앙값(essence_score.R oos_stat_version=v2). ≥0.7 단독 PASS / <0.5 무조건 FAIL / [0.5,0.7) band는 보강증거 2/3 조건부 PASS(판정 권위=essence_score.R, 훅은 warn). forge-authoritative 값에만 적용 — 단일전략 과적합 방어 주책임.",
+    "min_calmar": 0.64,
+    "min_calmar_rationale": "★v2.5 HARD 배선(문턱은 measurement-graduation §3 2026-05-31 기존값). Calmar = CAGR/|MDD| ≥ 0.64 (=16%/25%, 제2목표 CAGR16·MDD25에서 도출한 위험조정 게이트). forge-authoritative 값에만 적용.",
+    "severity": {
+      "rank_ic": "advisory",
+      "icir": "advisory",
+      "subperiod_stability": "advisory",
+      "harvey_t_stat": "advisory",
+      "deflated_sharpe_ratio": "hard",
+      "portfolio_alpha_t_nw": "hard",
+      "oos_retention": "hard",
+      "calmar": "hard"
+    },
+    "severity_rationale": "hard = block(우회불가), advisory = warn(screening). hard 4종(DSR/portfolio_alpha_t_nw/oos_retention/calmar)은 forge-authoritative 값에만 적용 — alpha-stage proxy로 graduation 선언 금지(v8.x WS1 정합). DSR hard는 sweep형 selection 한정, oos_retention은 <0.5 무조건 block + [0.5,0.7) band 조건부(measurement-graduation §3)."
+  },
+  "theme": null,
+  "hypothesis_title": "mega-cap 앵커 구성 forge-authoritative 검증 + book-marginal ΔIR (screening 4.76 -> capital-grade)",
+  "hypothesis_description": "[마일스톤 경로] mega-cap 앵커 구성의 forge-authoritative 검증 — 오늘 유일 배포성 부활(screening 발견)을 자본급으로 전환.\n\n[발견 provenance] 동시세션(2026-07-05 20:12-20:20, stage_artifacts/pg2_overlay_gate_composition_20260705/cycle3_megacap_anchor.R). 진단: post-2017 IC->PORT_t 벽은 상당부분 cap-weighted 벤치 아티팩트(동일 earnings 알파가 cap-w 대비 post2017_t 0.41/oos -0.02이나 EW 대비 2.04/0.57 생존). 레버(C2): 프로덕션 alpha 패널(STR_1715 score_eff)에서 size top-2(삼성전자+SK하이닉스, PIT) 각 20%cap 앵커 + 나머지 18종을 score_eff로 채움. screening 실측(build_benchmark_compare, cap-w KOSPI200): PORT_t 3.78->4.76 · IR 0.82->0.99 · oos -0.02->0.55 · post2017_t 0.41->2.615(6.4x). 적대검증: 알파엣지 vs bottom-fill +5.83(full)/+1.87(2017+) · placebo p=0.000(7SD) · lag1 PIT graceful 3.57. K=2 sweet spot(C1 post2017 0.96·C3 1.11).\n\n[hypothesis_index] megacap/앵커 무히트(오늘 발견) · 대형주=size-rotation FAIL(무관). 신규.\n\n[검증 목표 = 발견의 미해결 캐비앗 해소] (1) screening-tier -> forge build_bt_result 10-component authoritative(metric_type=backtested, audit PASS). (2) 재구성근사 해소: 프로덕션 STR_1715 가중(LinearTilt lambda1.5·유동성필터) 을 non-anchor sleeve에 적용(EW-fill 대비 A/B). (3) 배포맥락: (STR_1715+anchor) x m4 x R05 오버레이 book 구성 후 **book-marginal 실측**. (4) **book-marginal ΔIR = new_book_ir - incumbent 1.416(net_active_recon_v1: mean(active)/sd(active)*sqrt(12) vs KOSPI200) >= 0.05** 판정. (5) oos 0.55 조건부-band[0.5,0.7) 2/3 보강증거 formal 문서화(trailing 2017+ PORT_t>0 · placebo p<0.05 · book-marginal). (6) 40% 2종 집중리스크 정직 계량(mega-cap 레짐역전 대가 · drawdown 기여).\n\n[데이터] 프로덕션 패널 05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/02_holdings_universe/alpha_scores_r05_panel.parquet + 발견 WD panel_size_mom.parquet. vintage: graduation-HARD 판정은 §7 pin(RAWDATA_pin20260703/pinned_cache benchmark) 고정 + pin tag 기록. [정직] 발견은 강함(PORT_t 4.76 screening·adversarial pass)이나 FLOW 3.55->2.35 선례처럼 authoritative에서 deflate 가능 — 어느쪽이든 실측 지식. governor 정지(자본 수동·도훈 confirm).",
+  "hypothesis_source": "user_defined",
+  "as_of_date": "2026-07-06",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KOSPI200_KOSDAQ150_intersection",
+    "liquidity_min_won_20d_avg": 200000000,
+    "max_names_total": 500
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d (재무제표 발표 지연)",
+    "fundamental_annual": "annual May (연간 재무제표 5월 리밸런싱)",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement (QuantiWise)",
+    "macro": "t-1 FRED (외부 매크로 lag)",
+    "ic_history": "Usable_Date <= sig_date (Factor DB 강제)"
+  },
+  "cost_model_version": "v2.4_kr_retail_15bps",
+  "current_portfolio": "STR_1631_80_STR_1656_20",
+  "hard_mandate": {
+    "pit_enforcement": "C1-C15 all enforced",
+    "liquidity_floor_won_20d_avg": 50000000,
+    "mandate_restrictions": {
+      "no_short_legal_kr": true,
+      "no_cross_market": true,
+      "kr_domestic_only": true
+    },
+    "long_only_mandate": true
+  },
+  "hard_constraints": {
+    "max_names": 25,
+    "weight_bounds": [
+      0,
+      0.2
+    ],
+    "sector_active_weight_cap": 0.1,
+    "liquidity_min_won_20d_avg": 200000000
+  },
+  "soft_penalties": {
+    "turnover_cap_annual": 3,
+    "beta_target": 1,
+    "style_exposure_cap": 2
+  },
+  "capacity_limits": {
+    "adv_multiplier": 0.1,
+    "capacity_max_aum_won": 100000000000
+  }
+}
