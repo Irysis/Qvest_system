@@ -8,9 +8,35 @@
     "portfolio": "top-25 EW monthly, 15bps delta",
     "metric_type": "canonical_screen (screening tier — forge authoritative)",
     "active_share_note": "AS vs Size-weighted eligible-universe cap-weight proxy",
-    "prep": "monthly tables via Python (R arrow segfaults on 419MB rawdata); INV-Z reused from prior chunks"
+    "prep": "monthly tables via Python (R arrow segfaults on 419MB rawdata); INV-Z reused from prior chunks",
+    "reconciliation_vs_prior": {
+      "note": "Full PORT_t here (S04 1.368) is LOWER than prior Cycle1 run (2.077). Root cause: today's rebuilt benchmark.parquet now includes the 2026 mega-cap rally (cap-w KOSPI200 monthly +33% Apr, +35% May 2026) which lands as forward returns for sig months 202601..202603. These months did not affect the prior run (its investor/benchmark tail ended 2026-03).",
+      "s04_sig_le_202512": 2.075,
+      "s04_sig_le_202512_reproduces_prior_2.077": true,
+      "s04_sig_le_202506": 2.677,
+      "interpretation": "NOT a bug — real 2026 mega-cap semi regime. Flow book holds ~0% mega-cap (top-2 weight 0.005) so the cap-w benchmark surge on Samsung/Hynix crushed relative return. Same wall the session's mega-cap finding identified. metric_type=canonical_screen (screening tier)."
+    }
   },
-  "results": {
+  "base_9spec_reference_frozen_2026-06-12": {
+    "note": "investor_wide max Date 2026-03-26 UNCHANGED -> base single+composite numbers are the frozen prior fair-trial (prereg FLOW-S01..S09). PORT_t full / 2017+ / oos_ret_median:",
+    "FLOW-S01_foreign60_rev": {"port_t_full": 1.758, "port_t_2017p": 0.688, "oos_ret_med": 0.302, "gate": "FAIL"},
+    "FLOW-S02_inst60_rev": {"port_t_full": 0.204, "port_t_2017p": -0.512, "oos_ret_med": -0.720, "gate": "FAIL"},
+    "FLOW-S03_retail_follow": {"port_t_full": 1.398, "port_t_2017p": 0.118, "oos_ret_med": -0.113, "gate": "FAIL"},
+    "FLOW-S04_composite_5f": {"port_t_full": 2.077, "port_t_2017p": 0.487, "oos_ret_med": 0.147, "gate": "gate_pass_but_oos_FAIL"},
+    "FLOW-S05_smartmoney": {"port_t_full": 0.813, "port_t_2017p": -1.284, "oos_ret_med": -1.037, "gate": "FAIL"},
+    "FLOW-S06_foreign_mom_cont": {"port_t_full": -3.119, "port_t_2017p": -2.492, "oos_ret_med": null, "gate": "FAIL"},
+    "FLOW-S07_foreign_resid63": {"port_t_full": -0.194, "port_t_2017p": -1.063, "oos_ret_med": -2.328, "gate": "FAIL"},
+    "FLOW-S08_foreign_inst_agree": {"port_t_full": -0.175, "port_t_2017p": -1.425, "oos_ret_med": -1.779, "gate": "FAIL"},
+    "FLOW-S09_flow_persistence": {"port_t_full": 0.397, "port_t_2017p": -1.570, "oos_ret_med": -1.241, "gate": "FAIL"}
+  },
+  "verdict": {
+    "outcome": "FLOW/MICROSTRUCTURE NEAR-MISS CLOSED",
+    "milestone_candidate": "NONE",
+    "why": "Best flow signal (S04 composite) full PORT_t 2.08 (frozen basis) collapses post-2017 to 0.49 and fails oos_retention 0.147 << 0.7 (over-fit). No single flow factor exceeds full PORT_t 1.96. With the 2026 mega-cap regime now in-sample, even full PORT_t drops to 1.37. 1-month reversal is FLATLY NEGATIVE (PORT_t -0.89, 2017+ -1.49, oos -3.56). Closet-indexing RULED OUT as the mechanism: active-share ~0.94-0.96 (very high, NOT benchmark-hugging) and top-2 mega-cap weight ~0.005 (book essentially never holds mega-caps); ex-mega-cap re-test barely changes anything (S04 1.42 vs 1.37) confirming the edge is NOT mega-cap-driven. The failure is genuine post-2017 signal decay + over-fit composite, not a closet-index artifact.",
+    "closet_index_paradox": "The flow book is the OPPOSITE of closet-indexing (AS 0.94), which is precisely WHY it loses to the cap-w benchmark in the 2026 mega-cap regime — it is maximally active AWAY from the mega-caps that are driving the index.",
+    "reversal": "1-month cross-sectional reversal does NOT survive: negative every window, worst post-2017.",
+    "decision_grade": true
+  }
     "S04_composite": {
       "port_t_full": 1.368,
       "ir_full": 0.285,
