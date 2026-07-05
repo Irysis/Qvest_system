@@ -37,9 +37,16 @@ for i in range(start_idx,len(yms)):
         continue
     Xtr=tr[faccols].values.astype(np.float64); ytr=winsor(tr["ret_fwd"].values.astype(np.float64))
     Xte=te[faccols].values.astype(np.float64)
+    # PIT-safe training cap: if past panel exceeds CAP rows, random-subsample (all rows are strictly-past;
+    # random subsampling is an unbiased sketch of the past training distribution, introduces no future info).
+    CAP=140000
+    if len(ytr)>CAP:
+        rng=np.random.RandomState(20260705+i)
+        sel=rng.choice(len(ytr),CAP,replace=False)
+        Xtr=Xtr[sel]; ytr=ytr[sel]
     if (i==start_idx) or ((i-start_idx)%REFIT_EVERY==0):
-        model=NGBRegressor(Dist=Normal,Base=base_learner,n_estimators=120,learning_rate=0.03,
-                           minibatch_frac=0.3,natural_gradient=True,verbose=False,random_state=42)
+        model=NGBRegressor(Dist=Normal,Base=base_learner,n_estimators=100,learning_rate=0.03,
+                           minibatch_frac=0.4,natural_gradient=True,verbose=False,random_state=42)
         model.fit(Xtr,ytr)
     dist=model.pred_dist(Xte)
     mu=dist.loc; sigma=dist.scale
