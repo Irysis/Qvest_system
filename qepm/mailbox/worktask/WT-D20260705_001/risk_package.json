@@ -1,0 +1,150 @@
+{
+  "task_id": "WT-D20260705_001",
+  "as_of_date": "2026-06-30",
+  "agent": "risk-research",
+  "metric_type": "risk_estimation",
+  "selection_objective": "condition_number",
+  "universe": "KOSPI200_KOSDAQ150_intersection (deployment top-25 EW canonical)",
+  "exposure_matrix_ref": "stage_artifacts/WT-D20260705_001/exposure_matrix.parquet",
+  "factor_covariance_ref": "stage_artifacts/WT-D20260705_001/covariance.parquet",
+  "specific_risk_ref": "stage_artifacts/WT-D20260705_001/specific_risk.parquet",
+  "security_covariance_ref": "stage_artifacts/WT-D20260705_001/covariance.parquet",
+  "risk_summary": {
+    "top_common_risks": ["Market (79%)", "Size/SMB (1.5% var, beta 0.33)", "Sector: battery-theme 24% + semiconductor 16%"],
+    "portfolio_ann_vol": 0.3477,
+    "ew_market_beta": 0.9726,
+    "market_var_share": 0.7908,
+    "sector_hhi": 0.1168,
+    "n_eff_sectors": 8.56,
+    "battery_theme_cluster_share": 0.24,
+    "crowding_flags": [
+      "crowding_score=0.37 (LOW-MED, mega-cap concentration; passive_overlap=1.0)"
+    ],
+    "crowding_score_per_factor": [
+      {
+        "factor_name": "XATTN_5seed_CrossSecAttn",
+        "crowding_score": 0.3658,
+        "hhi_top": 0.351,
+        "vol_concentration": 0.0419,
+        "passive_overlap_proxy": 1,
+        "demand_elasticity_proxy": 0,
+        "alert": "LEVEL_OK"
+      }
+    ],
+    "liquidity_flags": [
+      "top-25 min adv >> 2e8 floor (all large/mid cap). LG CNS (2025-02) and EcoPro Materials (2023-11) short history constrains Sigma estimation coverage; liquidity itself adequate."
+    ],
+    "stress_tests": {
+      "market_down_5": -0.0486,
+      "gfc_2008": -0.2264,
+      "eurodebt_2011": -0.1296,
+      "covid_2020": -0.2415,
+      "ratehike_2022": -0.1427,
+      "coverage_note": "GFC(60)/Euro(64)/COVID(84) coverage<85 = UNRELIABLE (partial listing); only RateHike2022(92) reliable"
+    },
+    "tail_risk": {
+      "VaR_5_monthly": -0.1114,
+      "CVaR_5_monthly": -0.1593,
+      "VaR_1_monthly": -0.1683,
+      "CVaR_1_monthly": -0.2417,
+      "CF_VaR_5": -0.112,
+      "CF_ES_5": -0.1646,
+      "EVT_GPD_xi": 0.1392,
+      "EVT_VaR_1": -0.194,
+      "EVT_ES_1": -0.2648,
+      "hill_tail_alpha": 1.836,
+      "tdc_pairs_ge_030": 40
+    }
+  },
+  "diagnostics": {
+    "condition_number": 73.99,
+    "condition_number_sample": 599.57,
+    "shrinkage_used": true,
+    "shrinkage_method": "ledoit_wolf_constant_corr_pairwise",
+    "shrinkage_delta": 0.8102,
+    "sigma_psd": true,
+    "sigma_window": "trailing 60m rolling, complete-case n=16 (binding: LG CNS 2025-02 IPO)",
+    "factor_coverage_style_r2": 0.7206,
+    "residual_idio_share": 0.2794,
+    "style_regression": {
+      "MKT_beta": 1.124,
+      "MKT_t": 22.86,
+      "SMB_beta": 0.3264,
+      "SMB_t": 3.14,
+      "HML_beta": -0.1949,
+      "WML_beta": -0.008,
+      "RMW_beta": 0.5621,
+      "CMA_beta": 0.0176,
+      "style_alpha_monthly": 0.0078,
+      "style_alpha_t": 2.61,
+      "r2": 0.7206,
+      "n_months": 224
+    },
+    "regime_correlation": {
+      "all": 0.3041,
+      "bull": 0.264,
+      "bear": 0.3624,
+      "bear_lift": 0.0985
+    },
+    "regime_correlation_ref": "stage_artifacts/WT-D20260705_001/regime_correlation.parquet",
+    "method_shopping_log": {
+      "candidates_tried": 3,
+      "method_log": [
+        {
+          "name": "sample_complete_case",
+          "condition": 599.6,
+          "selected": false,
+          "reason": "p>n singular, cond 600 >500"
+        },
+        {
+          "name": "ledoit_wolf_constant_corr_pairwise",
+          "condition": 74,
+          "selected": true,
+          "reason": "cond 74 PSD, delta 0.81 handles p>n"
+        },
+        {
+          "name": "gerber_rmt",
+          "condition": 1000,
+          "selected": false,
+          "reason": "cond 1000 still ill-conditioned"
+        }
+      ],
+      "parallel_exec": false
+    }
+  },
+  "red_flags": [
+    {
+      "id": "RF-R1",
+      "severity": "MEDIUM",
+      "metric": "max_single_sector=16%; battery-theme cluster(IT가전+화학)=24%; N_eff_sectors=8.6",
+      "note": "Single sector <40% so HHI-basis RF-R1 not hard-triggered. But IT가전(secondary-battery cluster)+화학=battery theme ~24% plus 반도체 16% = growth-theme concentration. Recommend optimizer apply sector active cap (measure/recommend only; weight decision is optimizer scope)."
+    },
+    {
+      "id": "RF-R2",
+      "severity": "HIGH_MITIGATED",
+      "metric": "cond#: sample_cc(n=16)=600 (>500 breach) -> LW(delta=0.81)=74.0 (<500 OK, PSD)",
+      "note": "p=25 > n=16 complete-case (binding: LG CNS listed 2025-02) -> sample Sigma singular cond 600. Ledoit-Wolf pairwise + constant-corr target (delta=0.81 heavy shrink) gives cond 74, PSD. Auto shrinkage re-estimation rule fired and passed. Gerber-RMT cond 1000 rejected."
+    },
+    {
+      "id": "RF-R3",
+      "severity": "LOW",
+      "metric": "crowding_score=0.37 (hhi_top=0.35 cap-w, vol_conc=0.04, passive_overlap=1.00, elasticity=0.00)",
+      "note": "crowding 0.37 < 0.75 = LOW-MED. Driver = mega-cap size concentration (SK Hynix, Samsung Elec). passive_overlap=1.0 (all top-25 in K200 union KQ150 = liquid/crowdable). The cross-sectional attention alpha LEARNS crowding (rationale: contrarian on crowded institutional flow) = anti-crowding by design. Active corr with SMB 0.18, WML -0.08 = not re-exposure to crowded style."
+    },
+    {
+      "id": "RF-R4",
+      "severity": "OK",
+      "metric": "market_down_5(parametric beta*-5pct)=-4.86%; COVID2020(cov84)=-24.1% vs bm-16.8%; RateHike2022(cov92)=-14.3% vs bm-24.0%",
+      "note": "Parametric market -5pct loss -4.86pct (RF-R4 -8pct not breached). GFC/Euro/COVID coverage<85 = UNRELIABLE (partial-listing artifact, not hard-fail). Only reliable window RateHike2022 (cov92): -14.3 vs bm -24.0 = strong defense. COVID (cov84, borderline): -24.1 vs bm -16.8 = underperform (high-beta growth clustering)."
+    },
+    {
+      "id": "RF-R5",
+      "severity": "LOW",
+      "metric": "style R2=72.1% (MKT var share 73%); style-alpha(FF5+WML intercept) monthly=0.78% t=2.61; TDC>=0.30 pairs=40",
+      "note": "FF5+WML: MKT b1.12(t22.9), SMB b0.33(t3.14 small tilt), RMW b0.56, WML b-0.01(no momentum re-exposure), HML -0.19(n.s.). After style removal alpha intercept +0.78pct/mo t2.61 significant = genuine alpha (not repackaged style). But TDC>=0.30 pairs=40 (SK Hynix-Samsung 1.00) = high tail co-movement. corr>0.8 pairs are style factors (MKT/SMB) not stock-level."
+    }
+  ],
+  "challenge_flags": [],
+  "challenge_note_ref": "qepm/mailbox/worktask/WT-D20260705_001/risk_challenge_note.md",
+  "boundary_attestation": "Sigma + tail + stress + crowding + style only. alpha_vector unchanged. no weight proposed. RF exposure bounds deferred to optimizer scope (measure/recommend only)."
+}
