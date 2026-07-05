@@ -24,12 +24,7 @@ declare -a FILES=(
   "02_Infrastructure/prompts/pit_intent_scan_prompt.md"
   ".claude/skills/s0-debate/SKILL.md"
   ".claude/skills/s0-idea-sourcing.md"
-  ".claude/skills/supervisor.md"
   ".claude/commands/qvest.md"
-  ".claude/commands/scout.md"
-  ".claude/commands/forge.md"
-  ".claude/commands/governor.md"
-  ".claude/commands/launch-team.md"
 )
 
 TOTAL_CHARS=0

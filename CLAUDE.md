@@ -227,7 +227,7 @@ cd qepm && Rscript -e 'source("scripts/hybrid_mode.R")'
 | `/worktask` | WorkTask CRUD |
 | `/alpha-search` · `/factor-rotation` · `/ramp` | 모드 진입 (Active Entrypoints 표 참조) |
 | `/qlead` | Q-Lead session dashboard |
-| (legacy retain) | `/forge` `/judge` `/governor` `/launch-team` — v53/v6.4 호환 보존, 신규 사용 금지. `/scout`은 파일 부재로 표에서 제거 (2026-06-10) |
+| (삭제됨 2026-07-05) | `/forge` `/judge` `/governor` `/launch-team` (v53/v55 팀 파이프라인 래퍼) + `/alpha-research` `/optimizer-research` `/risk-research` (QEPM 에이전트 spawn 래퍼) — 미사용 레거시 커맨드 삭제. **동명 AGENT(.claude/agents/)·HOOK·SKILL은 현역 유지**. 역사는 git·DEPRECATION.md·qvest_legacy_boundary.md 보존. `/scout`은 2026-06-10 제거 |
 
 ---
 

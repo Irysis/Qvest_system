@@ -31,18 +31,7 @@ echo "==========================================================================
 # ─── Block A: 모델 라우팅 ───────────────────────────────────────────────
 echo "" | tee -a "$LOG"
 echo "[Block A] 모델 라우팅 검증" | tee -a "$LOG"
-for f in .claude/commands/scout.md .claude/commands/forge.md .claude/commands/governor.md; do
-  if grep -q "^model: sonnet" "$f" 2>/dev/null; then
-    pass "$f frontmatter model: sonnet"
-  else
-    fail "$f frontmatter에 'model: sonnet' 없음"
-  fi
-done
-if grep -q 'model="sonnet"\|model: "sonnet"' .claude/commands/launch-team.md; then
-  pass "launch-team.md Agent() 호출에 model parameter 명시"
-else
-  fail "launch-team.md Agent() 호출에 model 미명시"
-fi
+# (2026-07-05) scout/forge/governor/launch-team 커맨드 삭제됨(레거시 v53/v55 정리) — 해당 모델라우팅 체크 제거.
 if grep -q 'model: "sonnet"\|model: "opus"' .claude/skills/s0-debate/SKILL.md; then
   pass "s0-debate/SKILL.md Agent 스폰에 model parameter 명시"
 else

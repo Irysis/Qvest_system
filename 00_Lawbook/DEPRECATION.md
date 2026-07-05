@@ -53,7 +53,7 @@
 
 | Command | 위치 | Replacement | Notice |
 |---|---|---|---|
-| `/launch-team` | `.claude/commands/launch-team.md` | `/qvest` (v6.4 Codex Round 자동 spawn) | deprecation warning Sprint 5 추가 |
+| `/launch-team` | ~~`.claude/commands/launch-team.md`~~ (DELETED 2026-07-05) | Agent tool spawn (v8.1) | 파일 삭제됨 — 역사는 git·qvest_legacy_boundary.md 보존. forge/judge/governor 커맨드도 동일 삭제(동명 AGENT는 현역) |
 | `/scout` (slash) | `.claude/commands/scout.md` | alpha-research agent (v6.4 Codex Round 의무) | retained for back-compat — warning 추가 |
 
 ## Cron / external dependencies
