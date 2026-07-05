@@ -1,0 +1,134 @@
+{
+  "task_id": "WT-D20260705_001",
+  "agent": "governor",
+  "adjudicated_at": "2026-07-05",
+  "strategy_id": "XATTN_5seed_CrossSecAttn",
+  "wt_type": "discovery",
+  "universe": "KOSPI200_KOSDAQ150_intersection",
+
+  "verdict": "GOVERNOR_REJECTED",
+  "capital_admission": "REJECT",
+  "book_state_written": false,
+  "book_state_write_reason": "JUDGE_FAILED upstream (governor_handoff=false). No book_state mutation. Capital gate is irreversible + requires Q-Lead + 도훈 manual confirm — not invoked because this is a REJECT with zero book change (measurement-graduation §4).",
+  "admission_rule_applied": "Sequential Admission (신규 add candidate vs incumbent book). NOT Replacement — 심사 대상은 기존 active(STR_1715 noLayer4)를 대체하려는 upgrade가 아니라 신규 discovery 알파 add 시나리오. 사용자 명시 본질 = discovery admission. (Replacement vs Sequential Admission 룰 표 참조)",
+
+  "incumbent_book": {
+    "admitted_ids": ["STR_1715_on_M4_R05_noLayer4_PG2"],
+    "book_weights": {"STR_1715_on_M4_R05_noLayer4_PG2": 1.0},
+    "incumbent_book_ir": 1.416,
+    "ir_convention": "net_active_recon_v1 (mean(active)/sd(active)*sqrt(12), contract build_benchmark_compare Information_Ratio)",
+    "sr_geo": 1.898,
+    "source": "qepm/mailbox/governor/book_state.json (v2.5_post_WT_D20260702_002_LAYER4_REMOVAL)"
+  },
+
+  "candidate_metrics_authoritative": {
+    "source": "forge build_bt_result (judge_verdict.json authoritative_metrics, is_official=TRUE)",
+    "portfolio_alpha_t_nw_lag3": 2.3616,
+    "net_ir": 0.622,
+    "net_sharpe": 0.9258,
+    "cagr": 0.2184,
+    "mdd": 0.3765,
+    "calmar": 0.5802,
+    "oos_retention": 0.037,
+    "oos_splits": [0.037, 0.079, -0.129],
+    "turnover_annual_delta": 10.911,
+    "metric_type": "backtested"
+  },
+
+  "PG0_gap_diagnosis": {
+    "stage": "PG0",
+    "gap_vector_source": ".cache/portfolio_gap_vector.json (steered 2026-07-04, profile_source WT-D20260702_002 backtested)",
+    "current_book_profile": {"sharpe": 1.8977, "cagr": 0.4522, "mdd": 0.2329},
+    "target_profile": {"sharpe": 2.5, "cagr": 0.16, "mdd": 0.25},
+    "book_gaps": {"sharpe_gap": 0.602, "cagr_gap": -0.2922, "mdd_gap": -0.0171},
+    "binding_gap": "sharpe_gap +0.602 (SR 1.898 -> target 2.5). CAGR already overshoots target (+0.29pp surplus), MDD 23.29% already inside 25% target (-1.71pp slack). The ONLY open gap is SR uplift.",
+    "candidate_gap_contribution_potential": {
+      "verdict": "STRUCTURALLY_LOW",
+      "rationale_1": "Candidate standalone net_sharpe 0.9258 is far below incumbent book SR 1.898. A candidate weaker than the incumbent can only lift book SR via diversification (low active correlation), NOT via return. Diversification requires the alpha's realized net active to be real and orthogonal (measurement-graduation §6: '직교 ∧ PORT_t 통과' 동시 충족분만 book 실질 기여).",
+      "rationale_2": "Candidate PORT_t 2.362 fails the 2.95 realized-net-active hurdle. Even before crowding/redundancy, the alpha's own realized net active is not statistically distinguishable at capital-grade. Per §6 '직교 ≠ 수익': orthogonality alone contributes nothing; only 'orthogonal AND PORT_t-passing' sleeves add real book value.",
+      "rationale_3": "Alpha edge is entirely pre-2018 (judge subperiod: PORT_t pre-2018 3.50 -> post-2018 0.41 -> post-2022 -0.31; oos_retention 0.037). The gap this book needs to close is FORWARD (deployment-period) SR. A pre-2018-only alpha cannot close a forward SR gap — it degrades in exactly the window that matters.",
+      "matched_sleeve_need": "None of the 4 open sleeve_needs is satisfied. This is a return-derived single-cross-section attention alpha (core_alpha_standalone lane), and that lane is CLOSED (priority 99, posterior 16/16 admission FAIL). It is NOT an overlay (priority 1), NOT a PORT_t-passing residual-orthogonal sleeve (priority 2, gated on PORT_t>=2.95 which it fails), NOT a non-return datasource (priority 3)."
+    },
+    "pg0_conclusion": "Gap contribution potential is structurally low. The candidate is weaker than the incumbent on SR, fails the realized-net-active hurdle, and decays precisely in the forward window where the book's only open gap lives. It does not populate any open sleeve_need. Proceed to PG1 with strong prior toward REJECT."
+  },
+
+  "PG1_individual_admission": {
+    "stage": "PG1",
+    "standalone_admit_gate": "graduation HARD 3종 (measurement-graduation §3): PORT_t_nw >= 2.95 AND oos_retention >= 0.7 AND calmar >= 0.64",
+    "hard_3_evaluation": {
+      "port_t": {"value": 2.3616, "gate": 2.95, "pass": false, "shortfall": -0.588},
+      "oos_retention": {"value": 0.037, "gate": 0.70, "pass": false, "band_status": "fail (<0.5 unconditional, no [0.5,0.7) escalation path)", "shortfall": -0.663},
+      "calmar": {"value": 0.5802, "gate": 0.64, "pass": false, "shortfall": -0.0598},
+      "all_pass": false,
+      "n_failed": 3
+    },
+    "standalone_verdict": "STANDALONE_ADMIT_NOT_REACHED. All 3 graduation HARD gates fail (triple-fail). Not a single-axis borderline miss — every capital-grade gate is missed with material margin (PORT_t -0.59, oos -0.66, calmar -0.06).",
+    "book_marginal_gate": {
+      "gate_definition": "measurement-graduation §4 / portfolio_governor.R::pg1_admission_with_book_context(): standalone ADMIT 통과 후에만 ΔIR = new_book_ir - incumbent_book_ir >= 0.05 평가",
+      "path_status": "NOT_OPENED",
+      "reason": "book-marginal ΔIR gate is CONDITIONAL on standalone ADMIT. Since standalone ADMIT is not reached (§3 HARD triple-fail), the book-marginal path never opens. ΔIR is NOT computed (computing it would be process bypass — admitting via book-marginal what failed standalone graduation).",
+      "delta_ir_computed": false
+    },
+    "pg1_verdict": "REJECT. Standalone ADMIT not reached (graduation HARD 3/3 fail). Book-marginal ΔIR path not opened. No capital admission."
+  },
+
+  "PG2_book_rebalance": {
+    "stage": "PG2",
+    "status": "NOT_INVOKED",
+    "reason": "book_optimizer / cross-WT cov + crowding + redundancy QP + book_update(admitted_wt_ids) are only invoked on ADMIT. This is a REJECT — incumbent book retained unchanged. No admitted_wt_ids added. book_state.json NOT touched.",
+    "book_after": {
+      "admitted_ids": ["STR_1715_on_M4_R05_noLayer4_PG2"],
+      "book_weights": {"STR_1715_on_M4_R05_noLayer4_PG2": 1.0},
+      "unchanged": true
+    }
+  },
+
+  "PG3_live_drift": {
+    "stage": "PG3",
+    "status": "NOT_APPLICABLE",
+    "reason": "PG3 live drift monitoring applies to admitted deployment WTs. Candidate not admitted — no live tracking registration. Incumbent STR_1715 noLayer4 live tracking continues unaffected (separate live_track pipeline, unchanged by this REJECT)."
+  },
+
+  "screen_route_routing": {
+    "governor_disposition": "APPROVE_SCREEN_ROUTE (non-capital, downstream consumption routing only)",
+    "judge_screen_route_eligible": true,
+    "routes": ["DPL_FEATURE", "FR_RCMA"],
+    "route_rationale": {
+      "signal_reality": "Signal is real (rank-IC t 4.41, judge PIT CLEAN, name-SELECTION edge FF5+WML idio 0.28) but does not transfer to realized net active on the deployment top-25 long-only universe (PORT_t 2.36, decays post-2018). This is the measurement-graduation §3 screening-tier profile: signal력 실재하나 자본급 미달.",
+      "DPL_FEATURE": "327-char cross-sectional attention readout as end-to-end DPL input feature (research_philosophy ④). measurement-graduation §5: 실패 standalone 알파 = 폐기 아닌 DPL 입력 피처. NOTE — DPL standalone vs PG2 is settled-negative (memory project-dpl-vs-pg2-settled 2026-06-26); this route is feature-supply only, not a standalone DPL strategy claim.",
+      "FR_RCMA": "factor-rotation RCMA input (regime-conditional consumption). Candidate's alpha is regime/period-specific (pre-2018 strong). RCMA (등급무관 국면조건부) may find conditional value the standalone all-period gate cannot. Consumption is frozen-module, governor 정지 (자본 수동)."
+    },
+    "governor_boundary_note": "screen-route approval is NOT capital admission and NOT a book_state write. It is a routing label authorizing downstream (DPL/FR) modes to CONSUME the frozen artifact. Those modes have their own gates; screen-route grants no graduation/capital exemption (measurement-graduation §3 two-tier: screening pass gives zero exemption to capital tier)."
+  },
+
+  "attribution_feedback_loop": {
+    "note": "research_philosophy ⑦ (qvest-attribution-style): factor/selection/cost/residual decomposition confirmed from judge role_honesty_audit.",
+    "factor_vs_selection": "Alpha edge = name-SELECTION not sizing (Grinold breadth; EW->AlphaProp +0.19 net_ir, entirely pre-2018). NOT factor-exposure-driven redundancy — but the flip side is the pure-selection edge does not transfer forward.",
+    "residual_vs_factor": "FF5+WML r2 0.72, idio 0.28. Not redundant with a single known factor (WML b -0.01 n.s., HML n.s.), so it is not a repackaged classic factor.",
+    "cost": "net active 89bps/mo vs cost 13.6bps/mo (>6x). Cost is not the binding constraint — realized alpha decay is.",
+    "governor_read": "The alpha is genuinely idiosyncratic (not factor-redundant), which is WHY it earns screen-route rather than outright discard. But idiosyncratic-and-decayed ≠ capital-grade. Attribution supports REJECT-capital + APPROVE-screen-route."
+  },
+
+  "self_adversarial_challenge": {
+    "note": "v8.2 — Opus 4.8 native adversarial reasoning, no external Codex. 3 devil's-advocate challenges raised against my own REJECT. Classification per challenge. Full record: governor_challenge_note.md.",
+    "ref": "qepm/mailbox/worktask/WT-D20260705_001/governor_challenge_note.md",
+    "classification_summary": "3 challenges: C1 REBUTTAL (Replacement-rule misclassification risk — rebutted, Sequential correct) / C2 ACCEPT-no-impact (single-axis dominance escape — no single axis dominant, all 3 fail) / C3 ACCEPT-no-impact (book-marginal despite standalone-fail — process-bypass, path correctly closed).",
+    "auto_escalate": false,
+    "auto_escalate_reason": "No admission-rule doubt survives (C1 rebutted with explicit Sequential vs Replacement disambiguation). No single-axis robust-superiority trade-off (C2 — all 3 HARD gates fail materially, no Harvey/DSR single-axis dominance). No structural-unavailability probe case (C3 — book-marginal correctly closed by §4 conditionality, not by DEFERRED-refusal). Verdict robust."
+  },
+
+  "ax008_triangulation": {
+    "note": "AX-008 Verification Triangulation carried by judge (adjudicator). Governor consumes judge verdict.",
+    "forge_source": "PASS (real measurement, hash PASS, honest verdict — judge ax008_triangulation.forge_source)",
+    "self_adversarial_source": "PASS (all agents >=3 self-concerns, converge FAIL, no silent override + governor own 3 challenges)",
+    "architect_source": "ABSTAIN (not spawned — screen-tier FAIL, structure not admission-bound)",
+    "result": "2/3 PASS satisfied. Governor admission consistent with triangulation."
+  },
+
+  "pit_compliance": {
+    "status": "CLEAN (inherited from judge pit_final_verdict)",
+    "governor_pit_check": "No new data access in governor stage. PG0 consumed .cache/portfolio_gap_vector.json (steered, backtested profile source) + book_state.json (incumbent). No look-ahead in admission logic. No book_state write. AX-002 no process bypass (book-marginal path correctly NOT opened)."
+  },
+
+  "final_disposition": "GOVERNOR_REJECTED. Standalone graduation HARD 3/3 fail (PORT_t 2.36<2.95, oos 0.037<0.70, calmar 0.58<0.64). Book-marginal ΔIR path not opened (conditional on standalone ADMIT per §4). Incumbent book STR_1715 noLayer4 (SR 1.898) retained 100%, book_state.json UNCHANGED (no capital gate write — irreversible, requires 도훈 manual confirm which is not invoked for a zero-change REJECT). Screen-route APPROVED for downstream consumption: DPL feature + FR RCMA input (non-capital routing). Honest capital-ineligibility per AX-000 — empirically-established forward-transfer limit, reported honestly, not rationalized to PASS."
+}
