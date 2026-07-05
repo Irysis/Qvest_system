@@ -1,0 +1,45 @@
+{
+  "task_id": "WT-D20260706_003",
+  "agent": "alpha-research",
+  "as_of_date": "2026-07-06",
+  "phase": "PHASE_0_FEASIBILITY",
+  "verdict": "NO_GO",
+  "verdict_summary": "공매도잔고/대차잔고(short interest) 실데이터를 자율(로그인 불필요) 경로로 취득 불가. KRX MDC 공개 데이터 포털이 전면 회원 로그인 게이트로 전환됨(report-specific 아님, universal). KRX Open API 구독 티어는 short-selling(/srt/*) 서비스 그룹 미포함(404). 기존 factor DB/cache/DART/investor 캐시에 short/lending 컬럼 부재. QuantiWise는 도훈 로그인 필요=자율 불가. 가설 자체는 정직/high-value(700 전수 0-coverage virgin)이나 데이터 자율취득 불가로 Phase 1 미진행. 도훈의 인증 자원 필요.",
+  "hypothesis": {
+    "title": "공매도잔고/대차잔고(short interest) 비-return 알파 — feasibility-first",
+    "family": "flow_supply / non-return",
+    "kr_specific_thesis": "무제약 시장에서 short-interest 알파는 short-side(고SI 공매도)에 있어 long-only 미하베스트. KR은 공매도 제약(2020-03~2021-05 부분·2023-11~2025 전면·평시 기관/외국인 한정) → 고-short-demand 종목 과대평가가 차익거래로 해소 안 됨(Miller 1977 divergence-of-opinion + 제약) → long-only가 회피/저비중하면 harvestable 가능성. 이 검정이 WT 핵심이었으나 데이터 미취득으로 미검정.",
+    "academic_support": ["Boehmer-Jones-Zhang 2008 (high short interest -> 음의 미래수익)", "Rapach-Ringgenberg-Zhou 2016 (aggregate short interest = 최강 시장수익 예측변수)", "Miller 1977 (divergence-of-opinion + short constraint -> overvaluation)"],
+    "dedup_status": "CONFIRMED_VIRGIN — hypothesis_index lookup(공매도/short interest/대차잔고/short balance/lending) = 0 prior matches. STR_CR05_Short_Pressure_Proxy는 return/volume 파생 proxy이지 실데이터 아님(무관)."
+  },
+  "feasibility_probes": [
+    {
+      "path": "A. KRX Open API (data-dbg.krx.co.kr /svc/apis)",
+      "auth": "KRX_API_KEY (SET, valid)",
+      "result": "PARTIAL — auth 유효(OHLCV /sto/ksq_bydd_trd HTTP 200 실데이터). 단 short-selling 서비스 그룹 미배선: /srt/sslt_bydd_trd, /srt/ssts_bydd_trd, /srt/sbst_bydd_trd 全 HTTP 404 'API referenced by the path does not exist'. 구독 티어에 short 서비스 그룹 부재.",
+      "obtainable": false
+    },
+    {
+      "path": "B. KRX MDC 공개 데이터 포털 (data.krx.co.kr getJsonData.cmd)",
+      "auth": "none (historically login-free scrape)",
+      "result": "BLOCKED — getJsonData.cmd 全 요청 HTTP 400 'LOGOUT'. 세션 핸드셰이크(JSESSIONID 확보 + Referer + X-Requested-With) 시도해도 동일. loader 페이지 GET이 alert('로그인 또는 회원가입이 필요합니다.') + MDCCOMS001.cmd 리다이렉트. ★login-wall이 universal(단일종목시세 MDCSTAT01501·short 잔고 MDCSTAT30501 동일 차단) — bld/param 문제 아님. GenerateOTP.cmd(CSV 다운로드 경로)도 에러페이지 반환. KRX가 MDC 데이터 포털 전면을 회원 로그인 뒤로 게이팅함(historically 무인증 scrape 경로 사멸).",
+      "obtainable": false
+    },
+    {
+      "path": "C. 기존 factor DB / cache / DART / investor",
+      "auth": "n/a (local)",
+      "result": "ABSENT — factor_db에 short/lending 팩터 부재(공매도 문자열 매치는 axiom/constraint 텍스트뿐). investor_wide.parquet 컬럼 = Foreign/Individual/Institutional/OtherCorp(순매수 flow만, short 없음). krx_data_collector.R 주석에 '공매도' 언급되나 실 함수는 OHLCV/index/info만.",
+      "obtainable": false
+    },
+    {
+      "path": "D. QuantiWise",
+      "auth": "도훈 로그인 필요",
+      "result": "OUT_OF_SCOPE — 자율 취득 불가(로그인 UI 자동화 불가, [[project-quantiwise-refresh-automation]] 선례). NO-GO 사유로만 기록.",
+      "obtainable": false
+    }
+  ],
+  "data_history_depth_note": "취득 성공 시 예상 역사 depth = 공매도 잔고 공시 2016-06~(금융위 규정). 대차잔고는 그보다 길 수 있음. 검정 불가로 실제 depth 미확인.",
+  "envelope_compliance": "envelope-안 확인 — 타 투자자 공매도잔고를 *신호*로 쓰는 것(우리 포트는 long-only 유지, 우리가 short 아님). constraint_firewall 무관.",
+  "next_action_recommended": "도훈 인증 자원 게이트: (1) 최고EV = data.go.kr(공공데이터포털) KRX 공매도 잔고 API 승인 신청 — 승인형 API 키(scrape 아님)라 로그인 UI 불요, 도훈 신청 1회 후 자율 backfill 가능(단 API 존재/depth 미확인 — 신청 전 확인 필요). (2) 대안 = QuantiWise 공매도/대차 export(도훈 로그인). (3) KRX Open API 구독에 short 서비스 그룹 추가 신청. 자율 진행 불가 — 억지 proxy 대체(return/volume 파생)는 실데이터 아니므로 가설 미검정, 금지.",
+  "honesty_note": "NO-GO는 정직한 결과. 가설은 살아있고(virgin·학술적 강력·KR 제약 thesis가 long-side harvestability 요건을 메커니즘으로 충족할 가능성) 데이터만 자율취득 불가. 억지 진행하지 않음(AX-002/answer-principles 정합). 도훈 자원 투입 시 재개할 milestone 후보로 큐잉 권고."
+}

@@ -256,7 +256,47 @@ for (nm in c("ic_composite","ls_composite")) {
 
 res_dt <- rbindlist(results, fill = TRUE)
 fwrite(res_dt, file.path(PROBE, "candidate_results.csv"))
-saveRDS(list(results = res_dt, wt_dt = wt_dt), file.path(PROBE, "phase1_results.rds"))
-cat("\nSAVED candidate_results.csv\n")
+
+# ================================================================================
+# PLACEBO null distribution (top-25 canonical PORT_t under random scores)
+# ================================================================================
+cat("\n[placebo] running 30-seed random-score null (full + recent2017)...\n")
+pl_full <- placebo_port_t(30L)
+pl_rec  <- placebo_port_t(30L, from = REC_FROM)
+placebo <- data.table(
+  window = c("full","recent2017"),
+  mean_t = c(mean(pl_full, na.rm=TRUE), mean(pl_rec, na.rm=TRUE)),
+  sd_t   = c(sd(pl_full,   na.rm=TRUE), sd(pl_rec,   na.rm=TRUE)),
+  q95_t  = c(quantile(pl_full, 0.95, na.rm=TRUE), quantile(pl_rec, 0.95, na.rm=TRUE)),
+  max_t  = c(max(pl_full, na.rm=TRUE), max(pl_rec, na.rm=TRUE))
+)
+fwrite(placebo, file.path(PROBE, "placebo_null.csv"))
+# best candidate vs placebo p-value (fraction of placebo >= best observed full PORT_t)
+best_full <- max(res_dt$full_PORT_t, na.rm = TRUE)
+p_placebo <- mean(pl_full >= best_full, na.rm = TRUE)
+cat(sprintf("[placebo] full null mean_t=%.3f sd=%.3f q95=%.3f | best candidate full_PORT_t=%.3f -> p(placebo>=best)=%.3f\n",
+    mean(pl_full,na.rm=TRUE), sd(pl_full,na.rm=TRUE), quantile(pl_full,0.95,na.rm=TRUE), best_full, p_placebo))
+
+# ================================================================================
+# LAG-1 PIT graceful check (on strongest long-side candidate: tp_upside)
+#   Use t-1 signal to decide month-t portfolio. A true leak shows a cliff drop; graceful = no leak.
+# ================================================================================
+lag1_check <- function(sc) {
+  d <- copy(sc); setorder(d, Ticker, Date)
+  d[, score_lag1 := shift(score, 1L), by = Ticker]
+  d2 <- d[!is.na(score_lag1), .(Date, Ticker, score = score_lag1)]
+  r  <- run_canon(d2, "tp_upside_lag1")
+  r$portfolio_alpha_t_nw_lag3
+}
+tp_lag1_t <- lag1_check(candidates$A1_tp_upside)
+tp_base_t <- res_dt[candidate == "A1_tp_upside", full_PORT_t]
+cat(sprintf("[lag1 PIT] tp_upside base PORT_t=%.3f -> lag1 PORT_t=%.3f (graceful if not a cliff drop)\n",
+    tp_base_t, tp_lag1_t))
+
+saveRDS(list(results = res_dt, wt_dt = wt_dt, placebo_full = pl_full, placebo_rec = pl_rec,
+             tp_lag1_t = tp_lag1_t, tp_base_t = tp_base_t),
+        file.path(PROBE, "phase1_results.rds"))
+cat("\nSAVED candidate_results.csv + placebo_null.csv\n")
 print(res_dt[, .(candidate, full_PORT_t, rec2017_PORT_t, longside_t_full, shortside_t_full,
-                 beta_resid_alpha_t, med_size_ratio)])
+                 capm_alpha_t, med_size_ratio)])
+print(placebo)
