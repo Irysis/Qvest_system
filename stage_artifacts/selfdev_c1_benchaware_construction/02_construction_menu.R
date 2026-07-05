@@ -190,10 +190,6 @@ null_anchor <- function(K, seeds=1:3){
                                                      sprintf("NULL_Anchor%d_s%d",K,s))))
   rr[, lapply(.SD, function(x) if(is.numeric(x)) mean(x, na.rm=TRUE) else x[1]), .SDcols=setdiff(names(rr),"tag")][, tag:=sprintf("V_NULLalpha_Anchor%d_EWfill",K)][]
 }
-null_ew <- function(seeds=1:3){
-  rr <- rbindlist(lapply(seeds, function(s) measure(build_variant("ew", null_alpha=TRUE, seed=s), sprintf("NULL_EW_s%d",s))))
-  rr[, lapply(.SD, function(x) if(is.numeric(x)) mean(x, na.rm=TRUE) else x[1]), .SDcols=setdiff(names(rr),"tag")][, tag:="V_NULLalpha_EW":=NULL][]
-}
 res$VN_NULL_EW        <- { rr <- rbindlist(lapply(1:3, function(s) measure(build_variant("ew", null_alpha=TRUE, seed=s), sprintf("NULL_EW_s%d",s))))
                            agg <- rr[, lapply(.SD, mean, na.rm=TRUE), .SDcols=which(sapply(rr,is.numeric))]; agg[, tag:="VN_NULLalpha_EW_top25"]; setcolorder(agg,"tag"); agg }
 res$VN_NULL_ANCH2     <- null_anchor(2L)
