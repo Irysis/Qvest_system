@@ -29,8 +29,25 @@ reg <- unique(a[,.(ym=format(Date,"%Y-%m"), regime=regime_state)])[,.SD[1], by=y
 gw[, ym := format(signal_date,"%Y-%m")]; gw <- merge(gw, reg, by="ym", all.x=TRUE); gw[is.na(regime), regime:="NORMAL"]
 
 .need <- c("Date","Ticker","Close","K200","KQ150","Vol","Size","Ret","Sector","BM_Ret")
-rawdata <- as.data.table(read_parquet(".cache/rawdata.parquet", col_select=all_of(.need))); rawdata[,Date:=as.Date(Date)]
 sig_dates <- sort(unique(gw$signal_date))
+## [2026-07-05 env-fix / Forge] 두 가지 실행환경 이슈 회피 (구성·게이트·PIT 불변, 산출 BYTE-IDENTICAL):
+##  (1) build_monthly_forward_returns 의 asof_close() 는 sig_date마다 rawdata[Date<=d] 전체스캔
+##      (13.9M행 × ~512회) → R 4.5.2/data.table Windows 반복대량서브셋 간헐 세그폴트(무에러 exit).
+##      각 sig_date의 month-end 거래일 = max(Date<=d)이므로 rawdata를 그 ~257 month-end 행으로만
+##      제한해도 asof_close·fwd 는 동일 (equiv 검증: full vs slim returns_dt/bench_dt max|Δ|=0).
+##  (2) 공유 .cache/rawdata.parquet(419MB, OneDrive) 를 타 세션 R잡이 동시 arrow-I/O 하면 본 세션이
+##      race-세그폴트 → 사전 생성된 로컬 slim RDS(scratchpad, 무경합) 있으면 우선 소비.
+.slim_rds <- Sys.getenv("RAMP_R1_SLIM_RDS", "")
+if (nzchar(.slim_rds) && file.exists(.slim_rds)) {
+  rawdata <- as.data.table(readRDS(.slim_rds)); rawdata[, Date := as.Date(Date)]
+} else {
+  rawdata <- as.data.table(read_parquet(".cache/rawdata.parquet", col_select=all_of(.need))); rawdata[,Date:=as.Date(Date)]
+  .udates <- sort(unique(rawdata$Date))
+  .me <- as.Date(vapply(sig_dates, function(d){ v <- .udates[.udates <= d]
+    if(length(v)) as.character(max(v)) else NA_character_ }, character(1)))
+  .me <- .me[!is.na(.me)]
+  rawdata <- rawdata[Date %in% .me]                  # slim: month-end 거래일만 (결과불변, 세그폴트 회피)
+}
 fwd <- build_monthly_forward_returns(rawdata, sig_dates)
 oos_cut <- sig_dates[length(sig_dates)-23]           # 최근 24m = OOS 꼬리
 post2017 <- as.Date("2017-01-01")

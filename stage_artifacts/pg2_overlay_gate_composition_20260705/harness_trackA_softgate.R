@@ -85,36 +85,61 @@ u[!is.finite(u)] <- 0.5
 stress <- if(sgn>=0) (1-u) else u
 FLOOR <- min(p$beta_R05)
 
-build_soft_linear <- function(stress_vec, target_mean, floor=FLOOR){
-  f <- function(c){ mean(pmin(1, pmax(floor, 1 - c*stress_vec))) - target_mean }
-  cc <- tryCatch(uniroot(f, c(0,5))$root, error=function(e) NA_real_)
-  if(is.na(cc)) rep(NA_real_, length(stress_vec)) else pmin(1, pmax(floor, 1 - cc*stress_vec))
-}
-build_soft_logit <- function(stress_vec, target_mean, floor=FLOOR){
-  s <- (stress_vec - mean(stress_vec,na.rm=TRUE))/(sd(stress_vec,na.rm=TRUE)+1e-9)
-  f <- function(k){ mean(floor + (1-floor)/(1+exp(k*s))) - target_mean }
-  kk <- tryCatch(uniroot(f, c(-8,8))$root, error=function(e) NA_real_)
-  if(is.na(kk)) rep(NA_real_, length(stress_vec)) else floor + (1-floor)/(1+exp(kk*s))
-}
 apply_gate <- function(beta_vec){
   dbeta <- abs(beta_vec - shift(beta_vec, 1, fill=1.0)); beta_vec*p$m4*p$ret_orig - dbeta*COST
 }
-
-beta_A1 <- build_soft_linear(stress, mean_beta_base)
-beta_A2 <- build_soft_logit(stress, mean_beta_base)
-## A3 conditional vol-target (risk-off only)
+## (A1) linear ramp — near-flat at avg-match (baseline-style contrast)
+build_soft_linear <- function(sv, tgt, floor=FLOOR){
+  f <- function(c) mean(pmin(1, pmax(floor, 1 - c*sv))) - tgt
+  cc <- tryCatch(uniroot(f, c(0,20))$root, error=function(e) NA_real_)
+  if(is.na(cc)) rep(NA_real_,length(sv)) else pmin(1, pmax(floor, 1 - cc*sv))
+}
+## (A2/A4) CONVEX tail-cut: beta=1 for stress<θ, convex cut in tail. avg-match via θ.
+##   → keeps normal months at 1.0 (high mean achievable) + cuts hard in tail like bins, but smooth.
+build_tailcut <- function(sv, tgt, floor=FLOOR, gamma=2){
+  f <- function(th){ x <- pmax(0,(sv-th)/(1-th+1e-9)); mean(1-(1-floor)*pmin(1,x)^gamma) - tgt }
+  th <- tryCatch(uniroot(f, c(0,0.999))$root, error=function(e) NA_real_)
+  if(is.na(th)) return(rep(NA_real_,length(sv)))
+  x <- pmax(0,(sv-th)/(1-th+1e-9)); 1-(1-floor)*pmin(1,x)^gamma
+}
+## (A3) conditional vol-target, risk-off only
 so <- p$ret_orig; sig <- rep(NA_real_, n)
 for(i in 13:n) sig[i] <- sd(so[(i-12):(i-1)]); sig[!is.finite(sig)] <- median(sig, na.rm=TRUE)
 risk_off <- p$regime %in% c("CAUTION","CRISIS")
-f_vt <- function(sc){ mean(ifelse(risk_off, pmin(1, pmax(FLOOR, sc/sig)), 1)) - mean_beta_base }
-sc_star <- tryCatch(uniroot(f_vt, c(1e-5,5))$root, error=function(e) NA_real_)
-beta_A3 <- if(is.na(sc_star)) rep(NA_real_,n) else ifelse(risk_off, pmin(1, pmax(FLOOR, sc_star/sig)), 1)
+PG("[PG] risk_off frac=%.3f  sig range [%.3f,%.3f]", mean(risk_off), min(sig), max(sig))
+build_voltarget <- function(tgt){
+  f <- function(sc) mean(ifelse(risk_off, pmin(1, pmax(FLOOR, sc/sig)), 1)) - tgt
+  sc <- tryCatch(uniroot(f, c(1e-6,100))$root, error=function(e) NA_real_)
+  if(is.na(sc)) rep(NA_real_,n) else ifelse(risk_off, pmin(1, pmax(FLOOR, sc/sig)), 1)
+}
+
+## (A5) market crisis-prob signal — MSM_Crisis_Prob from pinned regime cache (PIT: last date < anchor)
+msm_stress <- rep(NA_real_, n)
+tryCatch({
+  urs <- as.data.table(read_parquet(file.path(WD,"pinned_cache/unified_regime_signal_daily.parquet")))
+  cand_col <- intersect(c("MSM_Crisis_Prob","Regime_Score_smooth","Regime_Score"), names(urs))[1]
+  urs[, Date := as.Date(Date)]; setorder(urs, Date)
+  urs <- urs[is.finite(get(cand_col))]
+  for(i in 1:n){ pastv <- urs[Date < p$anchor_date[i]]; if(nrow(pastv)>0) msm_stress[i] <- tail(pastv[[cand_col]],1) }
+  ## normalize to [0,1] expanding percentile (PIT)
+  ms <- msm_stress; up <- rep(NA_real_, n)
+  for(i in 2:n){ pv <- ms[1:(i-1)]; pv <- pv[is.finite(pv)]; if(length(pv)>=6 && is.finite(ms[i])) up[i] <- mean(pv < ms[i]) }
+  up[!is.finite(up)] <- 0.5; msm_stress <<- up
+  PG("[PG] A5 signal=%s loaded, cor(base_beta, msm_stress)=%.3f", cand_col, cor(p$beta_R05, up, use="complete.obs"))
+}, error=function(e) PG("[PG] A5 signal load ERR: %s", conditionMessage(e)))
+
+beta_A1 <- build_soft_linear(stress, mean_beta_base)
+beta_A2 <- build_tailcut(stress, mean_beta_base, gamma=2)
+beta_A3 <- build_voltarget(mean_beta_base)
+beta_A4 <- build_tailcut(stress, mean_beta_base, gamma=3)
+beta_A5 <- if(all(is.finite(msm_stress))) build_tailcut(msm_stress, mean_beta_base, gamma=2) else rep(NA_real_,n)
 smry <- function(b) if(all(is.finite(b))) sprintf("mean=%.3f min=%.2f max=%.2f", mean(b),min(b),max(b)) else "HAS_NA"
-PG("[PG] beta_A1 %s | beta_A2 %s | beta_A3 %s", smry(beta_A1), smry(beta_A2), smry(beta_A3))
+PG("[PG] A1 %s | A2 %s | A3 %s | A4 %s | A5 %s", smry(beta_A1),smry(beta_A2),smry(beta_A3),smry(beta_A4),smry(beta_A5))
 
 ## ---------- 6. evaluate (per-candidate isolated + incremental save) ----------
 rows <- list(cbind(base_m, data.table(mean_beta=mean_beta_base, mean_diff_ann=0, paired_t=NA_real_, lag1_t=NA_real_)))
-cand <- list(A1_softlin_R05z=beta_A1, A2_softlogit_R05z=beta_A2, A3_condvoltarget=beta_A3)
+cand <- list(A1_linramp_R05z=beta_A1, A2_tailcut_R05z_g2=beta_A2, A3_condvoltarget=beta_A3,
+             A4_tailcut_R05z_g3=beta_A4, A5_tailcut_MSMprob=beta_A5)
 for(nm in names(cand)){
   bv <- cand[[nm]]
   if(any(!is.finite(bv))){ PG("[PG] skip %s (build NA)", nm); next }
