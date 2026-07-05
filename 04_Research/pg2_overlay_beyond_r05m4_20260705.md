@@ -63,10 +63,12 @@ PIT trailing-252d β vs KOSPI200 계산(panel_beta.parquet, 167,609행·β[−0.
 
 **§6 핵심질문 결정적 답변**(risk-off CAUTION/CRISIS 18개월 진단): 저β 틸트 risk-off 평균 Δ **−0.29%p**(악화)·**최악10월 base −2.92% vs 저β −3.12%**(현금=0%) → 저β 종목선택은 낙폭 못 줄임. **기계적 원인**: 강한 틸트(κ=1.5)에도 **book β 0.899→0.889 거의 불변** — 선정 25종 earnings/quality 풀의 β 분산이 너무 작아 이름으로 노출관리 불가. **β 바닥 실재·바인딩** = 현금 오버레이(R05×m4)가 대체불가인 기계적 이유. "저β 종목으로 현금 대신 방어" 제안은 이로써 기각.
 
-## 종합 판정
-**게이트 형태 정밀화도, 홀딩스-레벨 국면 구성도 M4×R05를 못 이긴다** — KR long-only envelope에서 실측 확증.
-- 게이트: 하드빈 regime-cash 구조가 near-optimal, 연속화 비이전.
-- 구성(B/C): §6 "직교≠수익, long-only β≈0.92 바닥" 확증 — 이름회전은 위기방어 불가(현금=R05×m4만 유효). 공짜점심 없음(MDD↓는 항상 alpha 희생으로 상쇄).
+## 종합 판정 (16변형 × 4계열, 전부 negative/null — 오버레이 프론티어 airtight 종결)
+**게이트 형태 정밀화도, 홀딩스-레벨 국면 구성도, 진짜 market-β 틸트도 M4×R05를 못 이긴다** — KR long-only envelope에서 실측 확증.
+- 게이트(A): 하드빈 regime-cash 구조가 near-optimal, 연속화 비이전.
+- 구성(B/C): §6 "직교≠수익, long-only β≈0.92 바닥" 확증 — 이름회전은 위기방어 불가.
+- 진짜 β(D): **β 바닥이 기계적으로 바인딩** — 강한 저β 틸트도 book β 0.899→0.889 불변(선정 25종 β분산 작음), risk-off 최악월 저β −3.12% vs 현금 0%. 저β 종목선택은 현금(R05×m4) 대체 불가. **왜 현금 오버레이가 유일한 long-only β 레버인지 기계적 증명.**
+- 공짜점심 없음(MDD↓는 항상 alpha 희생으로 상쇄).
 
 ## 자기 적대검증(AX-008 Self-Adversarial, 2/3: Forge 실측 + Self-Adv)
 ① 재구성 cor 0.828(느슨) — 차분설계로 상쇄, 8 구성변형 uniform-null이 masked-effect 반증 ② 평균매칭 = 순수-shape 통제(비매칭 재튜닝은 DSR sweep·19위기월 과적합, 의도적 배제) ③ 선택레벨 종결 정당(오버레이 monotone scalar, base差≈0→book差≈0) ④ **미검증 잔여**: factor_db per-name 진짜 market-β 틸트(R05_Tail_Risk_Z 프록시 근사에 그침) — §6 prior 강하게 반대이나 기술적 미검증.

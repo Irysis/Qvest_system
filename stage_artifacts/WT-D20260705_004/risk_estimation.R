@@ -279,7 +279,8 @@ regime_dt <- data.table(
 write_parquet(regime_dt, file.path(STAGE, "regime_correlation.parquet"))
 
 # ---- 8. Tail risk (EVT-GPD + empirical VaR/ES) on EW-proxy ----------
-source(file.path(PROJECT_ROOT, "02_Infrastructure/portfolio/tail_risk_engine.R"))
+has_fext <- requireNamespace("fExtremes", quietly = TRUE)
+if (has_fext) source(file.path(PROJECT_ROOT, "02_Infrastructure/portfolio/tail_risk_engine.R"))
 # EW daily proxy return series (for tail estimation need daily granularity)
 day_wide <- dcast(sub, Date ~ Ticker, value.var = "Ret")
 day_mat <- as.matrix(day_wide[, -1, drop = FALSE])
@@ -291,17 +292,28 @@ tail_out$empirical_var_95 <- as.numeric(quantile(-ew_daily, 0.95))
 tail_out$empirical_var_99 <- as.numeric(quantile(-ew_daily, 0.99))
 tail_out$empirical_es_95  <- mean(-ew_daily[-ew_daily >= tail_out$empirical_var_95])
 tail_out$empirical_es_99  <- mean(-ew_daily[-ew_daily >= tail_out$empirical_var_99])
-evt99 <- tryCatch(compute_evt_var(ew_daily, p = 0.99), error = function(e) NULL)
-if (!is.null(evt99)) {
-  tail_out$evt_var_99 <- evt99$var_evt
-  tail_out$evt_es_99  <- evt99$es_evt
-  tail_out$hill_xi    <- evt99$shape_xi
-  tail_out$evt_method <- evt99$method
+# Hill tail-index estimator (self-contained, no fExtremes dependency)
+losses <- sort(-ew_daily[-ew_daily > 0], decreasing = TRUE)
+k <- max(20L, floor(0.05 * length(losses)))       # top 5% of losses as tail
+k <- min(k, length(losses) - 1L)
+hill_alpha <- if (k >= 20) 1 / mean(log(losses[1:k]) - log(losses[k + 1])) else NA_real_
+tail_out$hill_alpha <- hill_alpha                 # tail index alpha (higher = thinner tail)
+tail_out$hill_xi    <- if (!is.na(hill_alpha)) 1 / hill_alpha else NA_real_
+if (has_fext) {
+  evt99 <- tryCatch(compute_evt_var(ew_daily, p = 0.99), error = function(e) NULL)
+  if (!is.null(evt99)) {
+    tail_out$evt_var_99 <- evt99$var_evt
+    tail_out$evt_es_99  <- evt99$es_evt
+    tail_out$evt_shape_xi <- evt99$shape_xi
+    tail_out$evt_method <- evt99$method
+  }
+} else {
+  tail_out$evt_method <- "hill_only_fExtremes_unavailable"
 }
-cat(sprintf("[risk] tail (EW daily proxy): emp VaR95=%.4f VaR99=%.4f ES99=%.4f; EVT VaR99=%.4f xi=%s\n",
+cat(sprintf("[risk] tail (EW daily proxy): emp VaR95=%.4f VaR99=%.4f ES99=%.4f; Hill alpha=%s (xi=%s)\n",
             tail_out$empirical_var_95, tail_out$empirical_var_99, tail_out$empirical_es_99,
-            ifelse(is.null(evt99), NA, tail_out$evt_var_99),
-            ifelse(is.null(evt99), "NA", as.character(round(tail_out$hill_xi,3)))))
+            ifelse(is.na(hill_alpha),"NA",sprintf("%.2f",hill_alpha)),
+            ifelse(is.na(tail_out$hill_xi),"NA",sprintf("%.3f",tail_out$hill_xi))))
 
 # ---- 9. Stress tests (KR crisis windows) ----------------------------
 stress_windows <- list(

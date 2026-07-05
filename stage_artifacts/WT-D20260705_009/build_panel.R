@@ -20,6 +20,12 @@ suppressPackageStartupMessages({
 
 ROOT <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
 setwd(ROOT)
+Sys.setenv(CLAUDE_PROJECT_DIR = ROOT, QM_ROOT = ROOT)
+# pre-define paths so connector doesn't rely on sys.frame(1)$ofile (fails when nested-sourced)
+PROJECT_ROOT <- ROOT
+CACHE_DIR    <- file.path(ROOT, ".cache")
+FACTOR_DB_DIR <- file.path(CACHE_DIR, "factor_db")
+source(file.path(ROOT, "02_Infrastructure/config.R"))
 source(file.path(ROOT, "02_Infrastructure/factor_db/factor_db_connector.R"))
 
 OUT <- file.path(ROOT, "stage_artifacts/WT-D20260705_009/panel")

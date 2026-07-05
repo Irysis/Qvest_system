@@ -1,0 +1,88 @@
+{
+  "n_grid": [15, 20, 25],
+  "cost_bps_oneway": 15,
+  "gate": {
+    "port_t": 2.95,
+    "oos_retention": 0.7,
+    "calmar": 0.64
+  },
+  "raw_portt_pass": [
+    {
+      "top_n": 15,
+      "model": "sleeve_Consensus",
+      "port_t_capwt": 3.1767,
+      "oos_retention": 0.0608,
+      "calmar": 0.5177,
+      "portt_pass": true,
+      "grad_pass": false,
+      "selection_contaminated": false
+    },
+    {
+      "top_n": 20,
+      "model": "stack_EW_topNsel",
+      "port_t_capwt": 3.5427,
+      "oos_retention": -0.0135,
+      "calmar": 0.4663,
+      "portt_pass": true,
+      "grad_pass": false,
+      "selection_contaminated": true
+    }
+  ],
+  "raw_portt_pass_count": 2,
+  "grad_pass": [],
+  "grad_pass_count": 0,
+  "selection_contamination_note": "stack_EW_topNsel = in-sample top-4 argmax (selection operator); N20 3.54는 sweep-max 재보고. 구성고정 R1fixed N20=2.59.",
+  "verdict": "NEGATIVE_unchanged",
+  "verdict_text": "raw PORT_t는 N15 Consensus(3.18)/N20 topNsel(3.54) 2건 초과하나 oos_retention·calmar HARD 전부 미달 + topNsel은 선택연산자 오염 → 자본급 0건. R1 음성 결론(직교≠수익, sleeve-레벨) 불변. top-N 민감도로 결론 안 뒤집힘.",
+  "best_sleeve_by_N": [
+    {
+      "top_n": 15,
+      "model": "sleeve_Consensus",
+      "port_t_capwt": 3.1767,
+      "oos_retention": 0.0608,
+      "calmar": 0.5177
+    },
+    {
+      "top_n": 20,
+      "model": "sleeve_Consensus",
+      "port_t_capwt": 2.3422,
+      "oos_retention": -0.1875,
+      "calmar": 0.4078
+    },
+    {
+      "top_n": 25,
+      "model": "sleeve_Consensus",
+      "port_t_capwt": 2.0746,
+      "oos_retention": -0.1899,
+      "calmar": 0.3817
+    }
+  ],
+  "best_stack_by_N": [
+    {
+      "top_n": 15,
+      "model": "stack_EW_R1fixed",
+      "port_t_capwt": 2.405,
+      "oos_retention": -0.1284,
+      "calmar": 0.3406,
+      "stack_fams": "Consensus,Value,Growth_Profit,Momentum"
+    },
+    {
+      "top_n": 20,
+      "model": "stack_EW_topNsel",
+      "port_t_capwt": 3.5427,
+      "oos_retention": -0.0135,
+      "calmar": 0.4663,
+      "stack_fams": "Consensus,Growth_Profit,Value,Size_Liquidity"
+    },
+    {
+      "top_n": 25,
+      "model": "stack_EW_topNsel",
+      "port_t_capwt": 2.5384,
+      "oos_retention": -0.3136,
+      "calmar": 0.3932,
+      "stack_fams": "Consensus,Value,Growth_Profit,Momentum"
+    }
+  ],
+  "challenge_note": ".cache/_ramp_r2_challenge_note_20260705.md",
+  "vintage_pin": "session_2026-07-05"
+}
