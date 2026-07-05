@@ -250,8 +250,13 @@ sm_validate_artifacts_schema <- function(wt_id, phase) {
   on.exit({
     if (is.na(.old_cpd)) Sys.unsetenv("CLAUDE_PROJECT_DIR") else Sys.setenv(CLAUDE_PROJECT_DIR = .old_cpd)
   }, add = TRUE)
+  # [fix 2026-07-05] bare "python3"는 Windows에서 Store 스텁(status 9009/49)으로 해석돼
+  # 모든 advance를 false-block(스키마 검증 crash) → QEPM 파이프라인 전이 전면 차단.
+  # QVEST_PY(부트 검증된 실인터프리터) 우선 해석 (07-03 훅 QVEST_PY_BIN 수리와 동형).
+  py_bin <- Sys.getenv("QVEST_PY", unset = "")
+  if (!nzchar(py_bin) || !file.exists(py_bin)) py_bin <- "python3"
   out <- tryCatch(
-    system2("python3",
+    system2(py_bin,
             args = c(shQuote(router), "validate-schema",
                      "--schema", spec$schema,
                      "--package", shQuote(art_path)),

@@ -433,8 +433,11 @@ cr_validate_schema <- function(schema_name, package_path) {
   if (!file.exists(package_path)) {
     return(list(valid = FALSE, reason = sprintf("package not found: %s", package_path)))
   }
+  # [fix 2026-07-05] bare "python3" Windows Store 스텁(9009) → QVEST_PY 우선 (state_machine.R 동형)
+  py_bin <- Sys.getenv("QVEST_PY", unset = "")
+  if (!nzchar(py_bin) || !file.exists(py_bin)) py_bin <- "python3"
   out <- tryCatch(
-    system2("python3",
+    system2(py_bin,
             args = c(shQuote(router), "validate-schema",
                      "--schema", schema_name,
                      "--package", shQuote(package_path)),
