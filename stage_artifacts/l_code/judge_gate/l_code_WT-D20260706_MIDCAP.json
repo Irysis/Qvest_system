@@ -1,0 +1,51 @@
+{
+  "l_code": "L-JG-20260706_102102",
+  "strategy_id": "WT-D20260706_MIDCAP",
+  "grade": "B",
+  "core_reference": "",
+  "lesson_text": "cap-tier-localized mid-cap tier-conditional score_eff 알파를 PG2 직교 sleeve로 시도 = FALSIFIED. forge-authoritative PORT_t(NW lag-3)=2.40<2.95 (post-2017 -0.49), oos_v2 retention=-0.231(HARD FAIL<0.7), calmar 0.494<0.64, book-marginal best ΔIR=-0.0074(<0.05 gate, cor sleeve-active vs PG2-active 0.226 but signal cor 0.973). 성공기준 3종(ΔIR≥0.05 ∧ paired-NW-t≥2.0 ∧ oos≥0.7) 全 FAIL. cap-tier trap이 정식 6-agent 파이프라인(risk RF-R1 market 61%/β0.79 + optimizer κ-sweep monotonic trap)으로 CONFIRMED. within-tier(vs EW-univ) 상대 엣지는 실재(post2017 t 1.58)하나 cap-w KOSPI200 벤치 대비 active 전이 실패 — mid-cap 강조가 cap-w active를 오히려 악화(-0.50→-1.26). 배포 top-25는 mid-cap 아닌 small-cap 92%(within-tier z 극단 지배). 직교≠수익 원칙의 tier-restriction 버전.",
+  "tags": "JUDGE_GATE",
+  "created_at": "2026-07-06",
+  "research_mode": "judge_gate",
+  "created_by": "emit:judge_gate",
+  "metric_type": "backtested",
+  "construction_type": "single_factor_long_only",
+  "mechanism_hypothesis": "cap-w 벤치 미스매치: long-only β0.79 바닥에서 mid-cap 상대엣지가 cap-w active로 전이 불가, TE-control은 signal-dead mega-cap 보유를 강제해 trap 재도입",
+  "lcode_schema_version": 2,
+  "sharpe": 0.9112,
+  "mdd_pct": 42.36,
+  "cagr_pct": 21.17,
+  "net_ir": 0.5248,
+  "calmar": 0.4999,
+  "falsification_attempts": [
+    {
+      "test": "lag+1 PIT stress (real IC 0.0435 t5.74 vs lookahead 0.0289)",
+      "result": "survived",
+      "effect_retained": 1
+    },
+    {
+      "test": "placebo shuffled-alpha IC (-0.004 t-0.88)",
+      "result": "survived",
+      "effect_retained": null
+    },
+    {
+      "test": "post2017 vs cap-w KOSPI200 active t",
+      "result": "falsified",
+      "effect_retained": -0.49
+    },
+    {
+      "test": "book-marginal ΔIR vs PG2 (net_active_recon proxy + lag1)",
+      "result": "falsified",
+      "effect_retained": -0.0074
+    },
+    {
+      "test": "optimizer κ cap-w-shrink sweep (TE-control bridge)",
+      "result": "falsified",
+      "effect_retained": -1.13
+    }
+  ],
+  "oos_retention": -0.2309,
+  "portfolio_alpha_t": 2.3998,
+  "selection_type": "chain",
+  "record_type": "performance"
+}
