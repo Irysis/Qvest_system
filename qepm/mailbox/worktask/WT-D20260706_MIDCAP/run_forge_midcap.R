@@ -11,7 +11,6 @@
 suppressMessages({ library(arrow); library(data.table); library(jsonlite); library(xts)
                    library(PerformanceAnalytics); library(zoo) })
 setDTthreads(1); set.seed(20260706L)
-tryCatch(arrow::set_io_thread_count(1L), error=function(e) NULL)
 
 ROOT <- "C:/Users/99922/OneDrive/Quant_Module_Moltbot"
 WT   <- file.path(ROOT,"qepm","mailbox","worktask","WT-D20260706_MIDCAP")
