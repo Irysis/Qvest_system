@@ -1,0 +1,89 @@
+{
+  "task_id": "WT-D20260706_010",
+  "as_of_date": "2026-07-06",
+  "hypothesis": "revenue_forecast_revision_mega_tier_survival",
+  "metric_type_note": "canonical_screen = top-N EW long-only, net 15bps, NW lag-3 (contract build_benchmark_compare). NOT admission-binding (forge authoritative). Whole-universe = KR_top342 (median 342 names/mo, liq applied in panel).",
+  "universe_comparison": {
+    "note": "Panel is KR_top342 (K200 union KQ150, median 342/mo). v2 universe not run - verdict is a broad IC->PORT_t transition wall (post-2017 t 0.38-0.55 whole 2017-26), not a universe-size attenuation; v2 would not rescue a symmetric-signal long-only trap.",
+    "default_universe": "KR_top342"
+  },
+  "pit_revision_precision": {
+    "daily_value_change_rate": 0.397,
+    "fy_roll_boundary": "KR fiscal Dec-end; FY1 rolls ~April. Large jumps(abs>0.15) April=6568 vs ~500 other months. Roll-window(Apr-Jun) mean signed rev +0.123 vs +0.026. HANDLED: rev_clean3 drops roll-crossing windows; rev_wins3 winsorizes +-0.20.",
+    "window_robustness": {
+      "mega_ic_t_post17_1m": 2.54,
+      "mega_ic_t_post17_3m": 2.86,
+      "mega_ic_t_post17_6m": 2.23,
+      "interpretation": "signal survives fresh AND stale windows => NOT a fwd-fill artifact"
+    },
+    "placebo_p_value": 0.01,
+    "placebo_note": "200 within-date shuffles, mega LS_t; real 2.81 vs 95th-pct 1.66"
+  },
+  "canonical_port_t": {
+    "whole_universe": {
+      "naive3_t20": 1.52,
+      "clean3_t20": 1.36,
+      "wins3_t20": 1.58,
+      "clean3_t25": 1.43,
+      "naive3_t25": 1.74,
+      "clean3_t20_subperiod": {
+        "pre2017": 0.88,
+        "post2017": 0.39,
+        "post2022": -0.07
+      }
+    },
+    "mega_inclusive": {
+      "megaTier30_top5": -0.54,
+      "megaTier30_top10": -0.77,
+      "largeCap50_top10": 0,
+      "largeCap50_top20": -0.36,
+      "revPlusSize_top20": -0.09,
+      "megaAnchor2_revfill_top20": 1.21,
+      "note": "all mega-inclusive long-only FAIL; most negative. megaAnchor2=beta closet-index, not signal."
+    },
+    "capw_tilt_diagnostic": {
+      "active_t_full": 1.19,
+      "active_t_post17": 2.38,
+      "active_t_post22": 1.76,
+      "mean_active_ann": 0.0079,
+      "note": "DIAGNOSTIC ONLY (not weight proposal, Alpha role boundary). cap-w top-50 base tilted by revision sign. Mildly additive post-2017 but < 2.95 gate + requires cap-weighting."
+    }
+  },
+  "leg_decomposition": {
+    "mega_long_vs_tierEW_t_post17": 2.71,
+    "mega_short_vs_tierEW_t_post17": -2.69,
+    "interpretation": "edge symmetric; long leg beats tier-EW but cap-w KOSPI200 (Samsung/Hynix-dominated) is harder bar. Short-side inaccessible under no-short KR."
+  },
+  "rank_ic_whole_universe": {
+    "naive3": {
+      "mean_ic": 0.0158,
+      "icir": 0.182,
+      "harvey_t": 2.96,
+      "harvey_t_post17": 1.44
+    },
+    "clean3": {
+      "mean_ic": 0.0148,
+      "icir": 0.172,
+      "harvey_t": 2.42,
+      "harvey_t_post17": 0.66
+    },
+    "wins3": {
+      "mean_ic": 0.016,
+      "icir": 0.184,
+      "harvey_t": 2.99,
+      "harvey_t_post17": 1.47
+    }
+  },
+  "orthogonality": {
+    "vs_STR_1715_score_eff_spearman": 0.165,
+    "note": "low cor => distinct signal (cross-sectionally)"
+  },
+  "earnings_vs_revenue_distinction": {
+    "note": "Prior rough screen: eps_rev MEGA post17 LS_t 0.82 (dead), rev_rev 2.46 (survives). Clean confirms revenue-revision distinct from dead earnings-revision (DIST-QPM-002). Mechanism: mega=semi-export, revenue estimates track demand cycle stickier than earnings.",
+    "earnings_revision_status": "dead (DIST-QPM-002, earnings3m killed)"
+  },
+  "verdict": "FAIL_screen_tier",
+  "verdict_detail": "Genuine roll-clean placebo-surviving cross-sectional mega-tier signal (IC t_post17 ~2.7) that does NOT transmit to deployable long-only top-N (canonical PORT_t 1.36-1.74 whole; -0.77 to +1.21 mega). IC->PORT_t transition wall + LS-vs-long-only trap + cap-w benchmark concentration. Not a mega-tier milestone.",
+  "screen_route": "DPL_FEATURE",
+  "next_step": "(1) revenue-revision as DPL/ML feature (cross-sectional edge real). (2) cap-w-tilt diagnostic (t_post17 2.38) flagged for optimizer/RAMP - weighting territory, NOT alpha. (3) risk agent NOT recommended to proceed to graduation (PORT_t << 2.95)."
+}

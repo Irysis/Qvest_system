@@ -1,0 +1,36 @@
+{
+  "verdict": "FAIL",
+  "pit_lag_months": 1,
+  "n_rows_audited": 812,
+  "checks": [
+    {
+      "check": "A1_usable_after_signal_strict",
+      "pass": true,
+      "detail": "min(usable-sig months)=1 (must be >=1)"
+    },
+    {
+      "check": "A2_date_is_usable_month_begin",
+      "pass": true,
+      "detail": "mismatches=0"
+    },
+    {
+      "check": "A3_lag_equals_pit_lag",
+      "pass": true,
+      "detail": "pit_lag=1; distinct lags=[1]"
+    },
+    {
+      "check": "A4_holding_begins_after_signal_month_end",
+      "pass": true,
+      "detail": "holding-begin Date always >= sig_month end: True (rcept_dt month fully elapsed before holding)"
+    },
+    {
+      "check": "A5_no_anchor_date_antipattern",
+      "pass": false,
+      "detail": "FOUND live antipattern: anchor_assign=False date_lt_anchor=True"
+    }
+  ],
+  "fails": [
+    "A5_no_anchor_date_antipattern"
+  ],
+  "note": "rcept_dt(sig month M) < first-day(usable M+lag). no same-month use. lag1 stress via PIT_LAG env."
+}

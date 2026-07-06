@@ -1,0 +1,71 @@
+{
+  "task_id": "WT-D20260706_009",
+  "as_of_date": "2026-07-06",
+  "metric_type": "canonical_screen",
+  "verdict": "CLEAN_NEGATIVE",
+  "verdict_rationale": "Net-issuance는 실재 횡단면 프리미엄(rank-IC t=4.30, RETIRE 2.04%/월, 직교 0.064)이나 top-25 long-only cap-w PORT_t 全 <2.95(best 0.08). value-up 2024+ cap-w 음(-1.02). thesis(감쇠벽 밖=large-cap-relevant) 반증: cap-w 음 + EW만 양 = small/mid 틸트, mega-cap 앵커 부재. IC->PORT_t 전이 벽 안.",
+  "primary_signal": "NSI_shares (split-adjusted -Δlog shares outstanding TTM 4Q), long net-retirement",
+  "diagnostics": {
+    "rank_ic": 0.0279,
+    "rank_ic_harvey_t": 4.304,
+    "icir": 0.268,
+    "rank_ic_liquid_t": 4.35,
+    "rank_ic_raw_noSplitAdj_t": 4.414,
+    "rank_ic_cei": 0.0131,
+    "rank_ic_cei_t": 2.301,
+    "monotonicity": 0.524,
+    "n_months": 258
+  },
+  "portfolio_alpha_t_canonical": {
+    "note": "canonical_screen_bt top-25 EW long-only 15bps 2e8. NW lag-3. metric_type=canonical_screen (NOT forge-authoritative). HARD gate=portfolio_alpha_t_nw>=2.95 on forge value.",
+    "NSI_shares_FULL_capw": 0.007,
+    "NSI_shares_FULL_ew": 0.082,
+    "NSI_shares_PRE2017_capw": 0.773,
+    "NSI_shares_POST2017_capw": -0.583,
+    "NSI_shares_POST2017_ew": 1.575,
+    "NSI_shares_VALUEUP2024_capw": -1.021,
+    "NSI_shares_VALUEUP2024_ew": 1.917
+  },
+  "large_cap_decomposition": {
+    "LARGE_rank_ic_t": 2.411,
+    "SMALL_rank_ic_t": 4.572,
+    "LARGE_capw_port_t": 0.094,
+    "LARGE_ew_port_t": 0.165,
+    "SMALL_capw_port_t": -0.158,
+    "interpretation": "신호는 SMALL(t=4.57)에서 LARGE(t=2.41)보다 강함 → large-cap-relevant thesis 반증. large-cap top-25 PORT_t dead(0.09~0.17)."
+  },
+  "ew_vs_capw_reframe": {
+    "finding": "POST2017 cap-w PORT_t=-0.58(음) EW=+1.58(양). VALUEUP2024 cap-w=-1.02 EW=+1.92.",
+    "conclusion": "cap-w 음 + EW만 양 = small/mid-vs-megacap 틸트(벤치아티팩트 아님). 신호는 EW-평균 이기나 cap-w 지수 못 이김 = 벽 안. insider 유형(cap-w 생존) 아님."
+  },
+  "subperiod": {
+    "PRE2017_capw_port_t": 0.773,
+    "POST2017_capw_port_t": -0.583,
+    "VALUEUP2024_capw_port_t": -1.021,
+    "trend": "cap-w 기준 PRE +0.77 -> POST -0.58 -> VALUEUP -1.02 단조 하락. value-up이 규율 강화 못함(cap-w)."
+  },
+  "orthogonality": {
+    "nsi_vs_book_alpha_spearman": 0.064,
+    "nsi_vs_book_alpha_pearson": 0.051,
+    "nsi_vs_size_spearman": 0.104,
+    "incumbent_book": "STR_1715 AR (earnings-revision core + defense)",
+    "conclusion": "NSI vs book 0.064 = 고도 직교(재중복 아님, 상속 아님). 그러나 직교!=수익(measurement-graduation §6): PORT_t 미통과."
+  },
+  "split_adjustment": {
+    "split_quarters_flagged_pct": 1.8,
+    "rank_ic_adj_vs_raw": "4.30 vs 4.41 (거의 동일 -> 신호는 split 아닌 실 issuance)",
+    "top25_overlap_adj_raw_pct": 92.1,
+    "cei_crosscheck": "split-proof CEI도 PORT_t 全 음(방향 일치)로 split 아티팩트 배제"
+  },
+  "distribution_caveat": "nsi_shares 72.3% exactly-zero(shares 대부분 불변), 실 retirer 3.8%. RETIRERS-only 스크린도 PORT_t 음. long-short가 자연 표현이나 KR no-short. top-25 이식성 구조적 벽.",
+  "screen_route": "DPL_FEATURE (financing-side 직교 피처, measurement-graduation §5 DPL 연료)",
+  "challenge_flags": [
+    "RF-A4? no (post-neut 미해당)",
+    "EW-only survivor small/mid tilt (ACCEPT)",
+    "signal sparsity 72% zero (ACCEPT)"
+  ],
+  "references": [
+    "Daniel-Titman 2006 (composite equity issuance)",
+    "Pontiff-Woodgate 2008 (net share issuance)"
+  ]
+}
