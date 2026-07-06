@@ -1,25 +1,32 @@
 {
-  "generated_at": "2026-07-06 07:47:46",
+  "generated_at": "2026-07-06 09:17:19",
   "generator": "02_Infrastructure/ops/artifact_hygiene_audit.R",
   "rule_sot": "02_Infrastructure/docs/rules/artifact-storage.md",
-  "dry_run": false,
+  "dry_run": true,
   "retention_days": {
     "logs": 90,
     "scratch": 30
   },
   "cleanup": {
-    "n_deleted": 0,
+    "n_deleted": 4,
     "logs_deleted": [],
     "scratch_deleted": [],
-    "empty_dirs_removed": [],
+    "empty_dirs_removed": [
+      "C:/Users/99922/OneDrive/Quant_Module_Moltbot/02_Infrastructure/docs/reference_textbooks",
+      "C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/briefings",
+      "C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/logs",
+      "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/krx_derivatives"
+    ],
     "manifest": ".cache/hygiene_manifest.log"
   },
-  "n_warnings": 57,
+  "n_warnings": 59,
   "warnings": {
     "root_unauthorized": [
       "OPTIMIZER_DONE",
+      "Rplots.pdf",
       "pit_audit_script.R",
-      "Rplots.pdf"
+      "recon.err",
+      "recon.out"
     ],
     "infra_underscore": [
       "alpha_search/_run_resga_2606_04576.R",
@@ -70,6 +77,7 @@
         "pg2_overlay_beyond_r05m4_20260705.md"
       ],
       "06_Registry": [
+        "README.md",
         "axiom_recert_queue_20260704.json",
         "cache_cleanup_manifest_20260704.json",
         "cleanup_manifest_20260704.json",
@@ -82,7 +90,6 @@
         "lcode_distill_execution_20260704.json",
         "lcode_distill_manifest_20260704.json",
         "lcode_distill_plan_20260704.json",
-        "README.md",
         "revival_signals.json"
       ],
       "08_Tests": [

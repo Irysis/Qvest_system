@@ -5,6 +5,9 @@
 #   axiom_candidates 현황(n_pending/failing_axis_histogram/near_miss)을 기록,
 #   다이제스트는 /cleaner 스킬이 수행한다. 본 스크립트는 수동/보조 실행용 retain
 #   (weekly_report 포함 — cron 등록은 권장하지 않음, 이중 실행 방지).
+# ★2026-07-06 (도훈 confirm — 중복 통합): bootstrap의 자동 실행(구 6b)이 제거되고
+#   bootstrap 7일게이트도 이제 weekly_cleaner_sweep.R(Cleaner)를 실행하도록 통합됨.
+#   → 이 스크립트는 순수 MANUAL/DEBUG 전용 (자동 트리거 0). run_axiom_weekly.R도 동일.
 #
 # v8.0: 3-mode 2-tier axiom pipeline (weekly)
 #   harvester → cluster_extractor → mode-local promote(INV-4 hurdle) → weekly_report(INV-3)

@@ -1,9 +1,13 @@
 # run_axiom_weekly.R — 주간 사이클 단일 진입 (2026-07-04 엔진 재설계 §5)
 #
+# ★2026-07-06 정정(도훈 confirm — 중복 통합): 이 스크립트는 MANUAL/DEBUG 전용이며 자동 트리거 없음.
+#   (구 헤더가 "Cleaner가 이 스크립트를 호출한다"고 적었으나 거짓 — Cleaner step 3.5는
+#    engine-core 스크립트(harvester/cluster/promote)를 *직접* 호출한다. bootstrap도 이제
+#    Cleaner(weekly_cleaner_sweep.R)를 실행하지 이 스크립트를 호출하지 않는다.)
+#   정규 주간경로 = weekly_cleaner_sweep.R step[3.5] (bootstrap 7일게이트 + Qvest_WeeklyCleaner Sat).
+#   이 스크립트/ops/axiom_weekly.sh는 동일 파이프라인의 수동 재현 — 디버그·수동 재실행 시만.
+#
 # harvester → cluster_extractor(+distilled) → promote 전 후보 순회 → 진단 JSON.
-# Cleaner(토 09:00, weekly_cleaner_sweep.R step 3.5 — mode-wiring 배선)가 이 스크립트를
-# 호출하고, 산출 .cache/axiom_weekly_diag.json 의 axiom_candidates 섹션을
-# cleaner_pending.json 다이제스트에 포함한다. ops/axiom_weekly.sh 는 수동 경로 retain.
 #
 # 산출: .cache/axiom_weekly_diag.json
 #   { n_candidates, n_promoted, n_failed, failing_axis_histogram,

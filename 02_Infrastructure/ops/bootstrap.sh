@@ -205,12 +205,15 @@ QVEST_PROJECT_DIR="$PROJECT" \
   python3 "$PROJECT/02_Infrastructure/axiom/lcode_harvester.py" >/tmp/axiom_boot.log 2>&1 &
 echo "[boot] L-code harvester 백그라운드"
 
-# 6b. v8.0 axiom weekly pipeline (지난 weekly_report 7일+ 경과 시 — Windows cron 대체)
-LAST_W=$(ls -t "$PROJECT"/qepm/memory/axioms/review_log/weekly_report_*.json 2>/dev/null | head -1)
-LASTW_T=0; [ -n "$LAST_W" ] && LASTW_T=$(stat -c %Y "$LAST_W" 2>/dev/null || echo 0)
-if [ $(( ($(date +%s) - LASTW_T) / 86400 )) -ge 7 ]; then
-  (cd "$PROJECT" && bash "$PROJECT/02_Infrastructure/ops/axiom_weekly.sh") >/tmp/axiom_weekly_boot.log 2>&1 &
-  echo "[boot] axiom_weekly 파이프라인 백그라운드 (7일+ 경과)"
+# 6b. (2026-07-06 통합, 도훈 confirm) 주간 axiom 사이클 = Cleaner 정규경로로 통일.
+#     bootstrap 7일 게이트(신뢰 트리거)가 canonical weekly_cleaner_sweep.R(hygiene+inventory+
+#     axiom step[3.5]+digest)를 실행. Qvest_WeeklyCleaner Sat task는 백업(공유 cleaner_pending
+#     7일 게이트가 이중실행 방지). 구 axiom_weekly.sh/run_axiom_weekly.R 자동실행 제거 → manual-only.
+LAST_CLEAN="$PROJECT/.cache/cleaner_pending.json"
+LASTC_T=0; [ -f "$LAST_CLEAN" ] && LASTC_T=$(stat -c %Y "$LAST_CLEAN" 2>/dev/null || echo 0)
+if [ $(( ($(date +%s) - LASTC_T) / 86400 )) -ge 7 ]; then
+  (cd "$PROJECT" && PYTHONUTF8=1 LANG=C.UTF-8 LC_ALL=C.UTF-8 Rscript "$PROJECT/02_Infrastructure/ops/weekly_cleaner_sweep.R") >/tmp/cleaner_boot.log 2>&1 &
+  echo "[boot] 주간 Cleaner 사이클(axiom step3.5 포함) 백그라운드 (7일+ 경과 · Sat task 백업)"
 fi
 
 # 7. Hook health check (v8.1.1 — 침묵 삼킴 금지: 빈 결과 = ERROR)
