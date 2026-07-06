@@ -1,0 +1,246 @@
+{
+  "task_id": "WT-D20260706_012",
+  "as_of_date": "2026-07-06",
+  "forecast_horizon": "1M",
+  "wt_type": "discovery",
+  "selection_objective": "rank_ic",
+  "verdict": "NEGATIVE_deployment_falsified__screen_tier_value_only",
+  "escalation_recommendation": "DO_NOT_ESCALATE",
+  "latest_signal_month": "2026-05",
+  "alpha_vector": {
+    "A015750": 0.94,
+    "A347850": 0.8771,
+    "A041190": 0.8482,
+    "A073240": 0.8151,
+    "A088350": 0.794,
+    "A008770": 0.7446,
+    "A319660": 0.7104,
+    "A033100": 0.6783,
+    "A032640": 0.6609,
+    "A018290": 0.6265,
+    "A445680": 0.6258,
+    "A240810": 0.5792,
+    "A032500": 0.5568,
+    "A017670": 0.547,
+    "A030000": 0.5314,
+    "A084370": 0.5256,
+    "A007070": 0.5158,
+    "A403870": 0.5133,
+    "A030200": 0.5048,
+    "A194480": 0.4826,
+    "A062040": 0.479,
+    "A032190": 0.467,
+    "A316140": 0.4535,
+    "A025320": 0.4514,
+    "A003380": 0.4426
+  },
+  "confidence_vector": {
+    "A015750": 0.95,
+    "A347850": 0.95,
+    "A041190": 0.95,
+    "A073240": 0.95,
+    "A088350": 0.95,
+    "A008770": 0.95,
+    "A319660": 0.95,
+    "A033100": 0.945,
+    "A032640": 0.94,
+    "A018290": 0.93,
+    "A445680": 0.93,
+    "A240810": 0.914,
+    "A032500": 0.906,
+    "A017670": 0.902,
+    "A030000": 0.895,
+    "A084370": 0.893,
+    "A007070": 0.889,
+    "A403870": 0.887,
+    "A030200": 0.884,
+    "A194480": 0.873,
+    "A062040": 0.871,
+    "A032190": 0.865,
+    "A316140": 0.859,
+    "A025320": 0.857,
+    "A003380": 0.853
+  },
+  "signal_matrix_ref": "stage_artifacts/WT-D20260706_012/alpha_scores.parquet",
+  "factor_specs": [
+    {
+      "factor_family": "Value",
+      "proxy": "Earnings Yield (E/P)",
+      "formula": "V02_EP (DB, quarterly 45d lag)",
+      "lag_rule": "quarterly 45d",
+      "winsorization": "3std",
+      "neutralization": "none (cross-sectional Z)",
+      "economic_rationale": "cheapness risk-premium; STRONGEST small/mid-tier survivor rank-IC t=6.78 full / 4.10 post2017; only signal with positive within-tier LS (t=2.51)",
+      "weight_theta": 0.111,
+      "references": ["Basu 1977", "Fama-French 1992"]
+    },
+    {
+      "factor_family": "LowVol",
+      "proxy": "Idiosyncratic Vol (neg)",
+      "formula": "D01_IdioVol aligned",
+      "lag_rule": "t-1 price",
+      "winsorization": "3std",
+      "neutralization": "none",
+      "economic_rationale": "low-risk anomaly; rank-IC t=4.22 but LS spread t=-0.86 (IC->PORT_t wall example)",
+      "weight_theta": 0.111,
+      "references": "Ang et al 2006"
+    },
+    {
+      "factor_family": "Quality",
+      "proxy": "Earnings Stability",
+      "formula": "Q07_Earnings_Stability",
+      "lag_rule": "quarterly 45d",
+      "winsorization": "3std",
+      "neutralization": "none",
+      "economic_rationale": "quality survivor small/mid tier rank-IC t=4.23 full / 3.35 post2017",
+      "weight_theta": 0.111,
+      "references": "Sloan 1996"
+    },
+    {
+      "factor_family": "Value",
+      "proxy": "Composite Value",
+      "formula": "V12_Composite_Value",
+      "lag_rule": "quarterly 45d",
+      "winsorization": "3std",
+      "neutralization": "none",
+      "economic_rationale": "composite value survivor post2017 t=1.87",
+      "weight_theta": 0.111,
+      "references": "Asness et al 2013"
+    },
+    {
+      "factor_family": "Quality",
+      "proxy": "Gross Profitability",
+      "formula": "Q01_GPA",
+      "lag_rule": "quarterly 45d",
+      "winsorization": "3std",
+      "neutralization": "none",
+      "economic_rationale": "GPA — decays post2017 in tier (t=0.48); kept for multi-axis diversification",
+      "weight_theta": 0.111,
+      "references": "Novy-Marx 2013"
+    },
+    {
+      "factor_family": "Momentum",
+      "proxy": "Residual Momentum",
+      "formula": "M08_Residual_Mom",
+      "lag_rule": "t-1 price",
+      "winsorization": "3std",
+      "neutralization": "none",
+      "economic_rationale": "residual mom — decayed post2017 (t=0.88)",
+      "weight_theta": 0.111,
+      "references": "Blitz et al 2011"
+    },
+    {
+      "factor_family": "Momentum",
+      "proxy": "12-1 Momentum",
+      "formula": "M01_Mom_12_1",
+      "lag_rule": "t-1 price",
+      "winsorization": "3std",
+      "neutralization": "none",
+      "economic_rationale": "12-1 mom — dead post2017 in tier (t=0.04)",
+      "weight_theta": 0.111,
+      "references": "Jegadeesh-Titman 1993"
+    },
+    {
+      "factor_family": "Liquidity",
+      "proxy": "Amihud Illiquidity",
+      "formula": "L01_Amihud aligned",
+      "lag_rule": "t-1",
+      "winsorization": "3std",
+      "neutralization": "none",
+      "economic_rationale": "illiquidity premium — weak (t=0.72 full)",
+      "weight_theta": 0.111,
+      "references": "Amihud 2002"
+    },
+    {
+      "factor_family": "Quality",
+      "proxy": "Cash-based Op Profitability",
+      "formula": "Q35_CashBased_OpProf",
+      "lag_rule": "quarterly 45d",
+      "winsorization": "3std",
+      "neutralization": "none",
+      "economic_rationale": "NEGATIVE in small/mid tier (t=-1.51); aligned Z included but tier-adverse — flags heterogeneity",
+      "weight_theta": 0.111,
+      "references": "Ball et al 2016"
+    }
+  ],
+  "diagnostics": {
+    "metric_type": "canonical_screen",
+    "composite": "EW 9-factor aligned Z (no per-factor tuning)",
+    "small_mid_tier_rank_ic_best_V02_EP": {
+      "full": 0.0442,
+      "full_t": 6.78,
+      "post2017": 0.0397,
+      "post2017_t": 4.1
+    },
+    "composite_dedicated_best_active_port_t": 0.88,
+    "full_univ_baseline_active_port_t": 1.32,
+    "mega_exclusion_effect": "MONOTONICALLY WORSE (1.32 -> 0.88 -> 0.75) => cap-tier-trap FALSIFIED",
+    "mega_tier_top10_rank_ic": {
+      "ic": 0.1,
+      "t": 3.67,
+      "note": "mega NOT signal-dead"
+    },
+    "within_tier_LS_comp_all_t": 1.54,
+    "within_tier_LS_D01_IdioVol_t": -0.86,
+    "total_return_SR_best": 0.96,
+    "calmar_best": 0.5,
+    "mdd_best": -0.358,
+    "oos_retention_best": -0.54,
+    "active_t_pre2022": 3.55,
+    "active_t_post2022": -1.57,
+    "pit_lag_stress": "lag2(0.27)<lag1(0.75) PASS",
+    "harvey_t_stat_rankic_V02_EP": 6.78,
+    "portfolio_alpha_t_nw_note": "canonical_screen (NOT forge). best 0.88 << 2.95 hurdle. Judge/forge authoritative if escalated (NOT recommended)."
+  },
+  "graduation_gates": {
+    "portfolio_alpha_t_nw": {
+      "threshold": 2.95,
+      "measured": 0.88,
+      "pass": false
+    },
+    "oos_retention": {
+      "threshold": 0.7,
+      "measured": -0.69,
+      "pass": false
+    },
+    "calmar": {
+      "threshold": 0.64,
+      "measured": 0.45,
+      "pass": false
+    },
+    "mdd_lt_25": {
+      "threshold": 0.25,
+      "measured": 0.37,
+      "pass": false
+    },
+    "overall": "FAIL_ALL_HARD"
+  },
+  "alpha_inheritance_cor": 0,
+  "challenge_flags": [
+    "RF-A3-inverse: post-2017 tier IC for D01_IdioVol (0.064) > full (0.051) — but LS spread negative => low-vol IC is short-side driven, not tradeable long-only",
+    "size-beta check: mega exclusion tilts smaller but WORSENS all metrics => no size premium payoff in sample/regime",
+    "regime headwind quantified: active-t pre2022 +3.55 -> post2022 -1.57; small-dedicated worse in BOTH subperiods than full-univ",
+    "premise partial: original 'score_eff LS t3.02 / insider t5.19' signals NOT built as full-history factors; DB multi-axis composite used per WT instruction; failure is at long-only-top25 translation layer (signal-agnostic)",
+    "IC->PORT_t transition wall reconfirmed: strong within-tier rank-IC (V02_EP t6.78) does not yield deployable long-only top-25 alpha vs cap-w BM"
+  ],
+  "method_shopping_log": {
+    "candidates_tried": 3,
+    "method_log": [
+      {
+        "name": "all9_EW_composite_primary",
+        "selected": true
+      },
+      {
+        "name": "alive_only_value_lowvol_stability",
+        "selected": false,
+        "reason": "worse: PORT_t -0.49, MDD -45%"
+      },
+      {
+        "name": "K_cutoffs_10_30_preregistered",
+        "selected": true,
+        "note": "both reported; both < full-univ baseline"
+      }
+    ]
+  },
+  "challenge_note_ref": "qepm/mailbox/worktask/WT-D20260706_012/challenge_note.md"
+}
