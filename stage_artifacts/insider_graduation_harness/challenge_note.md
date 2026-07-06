@@ -70,6 +70,10 @@ officer=0 → 커버리지가 사실상 2009+, 2015-16, 2024 로 파편화. 전�
 - **잔여**: top-25 EW 는 canonical 규약(계약 정합). sparse 이벤트 신호에 event-study(누적초과수익) 가
   더 자연스러울 수 있으나, 졸업 게이트가 top-N long-only PORT_t 기준이므로 계약 정합 위해 EW 유지.
   authoritative 단계(forge)에서 event-weighting 대안 탐색 여지 — 후속 note.
+- **★추가 발견 (turnover)**: 측정 결과 turnover ~1,580%/yr — 스파스 이벤트를 매월 full-rebalance 하기
+  때문. **screening turnover hard-fail 1,100% 초과** → 현 구성은 milestone 자격에서 구현규율(⑥) 사유로
+  탈락. 신호력(PORT_t)과 별개 축. holding-band/decay overlay 로 회전 억제가 후속 필수. INTERIM 리포트 §4 라벨.
+  (이 caveat 는 신호를 죽이지 않지만, 낙관 보고를 막기 위해 명시.)
 
 ## Concern 5 (mandated ⑤) — 부분데이터 과해석
 
