@@ -22,6 +22,13 @@ suppressMessages({ library(data.table); library(arrow); library(jsonlite) })
 ROOT <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
 HARN <- file.path(ROOT, "stage_artifacts", "insider_graduation_harness")
 source(file.path(ROOT, "02_Infrastructure", "contracts", "canonical_screen_bt.R"))
+source(file.path(HARN, "banded_holdings_sim.R"))   # 보유밴드 변형(turnover mitigation)
+
+# 사전등록 밴드폭 (과최적화 금지 — 2종만)
+BAND_SPECS <- list(
+  band_A = list(n_entry = 20L, n_exit = 30L, max_hold = 6L),   # 넓은 버퍼(강 회전억제)
+  band_B = list(n_entry = 25L, n_exit = 35L, max_hold = 3L)    # 좁은 버퍼·짧은 보유
+)
 
 MIN_CONTIG <- as.integer(Sys.getenv("MIN_CONTIG_MONTHS", "60"))
 INCUMBENT_IR <- 1.416   # book_state.json incumbent_book_ir (net_active_recon_v1)

@@ -1,0 +1,96 @@
+{
+  "task_id": "WT-D20260706_013",
+  "as_of_date": "2026-07-06",
+  "signal_month": "2026-07-01",
+  "metric_type": "canonical_screen",
+  "verdict": "CLEAN_NEGATIVE",
+  "verdict_summary": "Intangible-adjusted value does NOT escape the KR large-cap wall. Standard value death (AX-003) reproduced; intangible adjustment barely re-ranks (cross-rank Spearman 0.987), does not tilt value large-cap (signal~size -0.705), and forcing a large-cap/intangible tilt makes post-2017 cap-w PORT_t strictly worse. KR value death is real, not an intangible-mismeasurement artifact.",
+  "headline_signal": "iBM_orgc",
+  "rank_ic_diagnostic": {
+    "stdBM": {
+      "rank_ic": 0.0319,
+      "ic_t": 3.45,
+      "icir": 0.215
+    },
+    "iBM_orgc": {
+      "rank_ic": 0.0285,
+      "ic_t": 3.1,
+      "icir": 0.193
+    },
+    "iBM_full": {
+      "rank_ic": 0.0296,
+      "ic_t": 3.23,
+      "icir": 0.201
+    },
+    "iEP_orgc": {
+      "rank_ic": 0.0329,
+      "ic_t": 4.81,
+      "icir": 0.3
+    },
+    "note": "rank-IC t 3.1-5.3 for value variants BUT portfolio-alpha t (authoritative) fails post-2017 (long-only realized alpha != cross-sectional rank power)"
+  },
+  "portfolio_alpha_t_canonical": {
+    "benchmark": "cap-w float universe (K200∪KQ150)",
+    "CONTROL_stdBM": {
+      "FULL": 1.508,
+      "PRE2017": 3.584,
+      "POST2017": -0.794,
+      "VALUEUP2024": -1.407
+    },
+    "iBM_orgc": {
+      "FULL": 1.605,
+      "PRE2017": 3.789,
+      "POST2017": -0.768,
+      "VALUEUP2024": -1.401
+    },
+    "iBM_full": {
+      "FULL": 1.656,
+      "PRE2017": 3.858,
+      "POST2017": -0.773
+    }
+  },
+  "ew_vs_capw": {
+    "note": "EW benchmark 'survival' is the small-cap tilt, not a wall-escape.",
+    "iBM_orgc_POST2017_capw": -0.768,
+    "iBM_orgc_POST2017_ew": 0.656
+  },
+  "large_cap_decomposition": {
+    "note": "wall-escape판별: intangible adj must strengthen LARGE-cap value. It does not.",
+    "stdBM_LARGE_capw": 0.388,
+    "iBM_orgc_LARGE_capw": 0.077,
+    "iBM_full_LARGE_capw": 0.143,
+    "iBM_orgc_SMALL_capw": 1.482,
+    "verdict": "LARGE-cap intangible value PORT_t ~0.08 (dead); SMALL retains ~1.48. Value stays small-cap."
+  },
+  "reclassification": {
+    "cross_rank_spearman_std_vs_intan": 0.986719,
+    "large_cap_mean_rank_shift": -0.00103,
+    "small_cap_mean_rank_shift": 0.0007,
+    "interpretation": "0.987 cross-rank corr + LARGE-cap rank-shift ≈ -0.001 (NOT positive) => intangible adjustment does NOT reclassify mega-caps cheaper. Wall-escape mechanism absent at its root."
+  },
+  "monotonicity": 0.90303,
+  "signal_size_correlation": -0.705,
+  "quality_orthogonality": {
+    "iBM_orgc_ROE": -0.239,
+    "stdBM_ROE": -0.243,
+    "note": "not quality-in-disguise; genuine value"
+  },
+  "adversarial_tilt_sweep": {
+    "note": "forcing large-cap/intangible tilt worsens POST2017 cap-w PORT_t (monotone wrong direction)",
+    "lam0.5": -0.951,
+    "lam1.0": -1.019,
+    "lam2.0": -1.158,
+    "pure_intan_intensity": -1.415
+  },
+  "data_caveats": {
+    "rd_line_coverage": "RandD separate line collapses post-2016 (has_rd frac post-2017 = 0.17); post-2017 leans on SG&A org-capital + on-balance IntangibleAssets",
+    "metric_type": "canonical_screen (screening-tier; NOT forge-authoritative, NOT admission-binding)"
+  },
+  "intangible_params": {
+    "delta_RD": 0.15,
+    "delta_SGA": 0.2,
+    "theta_SGA": 0.3,
+    "g_steady": 0.1,
+    "source": "Peters-Taylor 2017 canonical defaults (no return-tuning)"
+  }
+}
