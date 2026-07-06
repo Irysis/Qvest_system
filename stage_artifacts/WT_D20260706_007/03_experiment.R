@@ -36,7 +36,7 @@ fwd <- merge(comp, mret[, .(Ticker, ym_key=ym, fwd_mret=mret)],
              by.x=c("Ticker","fwd_ym"), by.y=c("Ticker","ym_key"))
 fwd <- fwd[is.finite(fwd_mret) & ym>=200501L]
 # monthly Date key (use forward month realized) — canonical_screen_bt keys on Date
-ym2date <- function(y) as.IDate(sprintf("%04d-%02d-01", y%/%100, y%%100))
+ym2date <- function(y) as.Date(sprintf("%04d-%02d-01", y%/%100, y%%100))
 fwd[, Date := ym2date(fwd_ym)]   # returns realized in fwd month
 bm2 <- copy(bm); bm2[, Date := ym2date(ym)]; setnames(bm2, "bm", "BM_Ret")
 bm2 <- bm2[, .(Date, BM_Ret)]
@@ -55,7 +55,7 @@ run_variant <- function(score_col, label, dt=fwd){
   sc <- dt[is.finite(get(score_col)), .(Date, Ticker, score=get(score_col))]
   full <- canonical_screen_bt(sc, returns_dt, bm2, top_n=25L, cost_bps_oneway=15)
   # 2017+ subperiod
-  d2017 <- as.IDate("2017-01-01")
+  d2017 <- as.Date("2017-01-01")
   sc17 <- sc[Date>=d2017]; r17 <- returns_dt[Date>=d2017]; b17 <- bm2[Date>=d2017]
   rec <- tryCatch(canonical_screen_bt(sc17, r17, b17, top_n=25L, cost_bps_oneway=15),
                   error=function(e) list(portfolio_alpha_t_nw_lag3=NA, net_sr=NA, n_months=0))
@@ -98,7 +98,7 @@ build_conditional <- function(score_col, thr, label, cont=FALSE){
   nwt <- function(a){ n<-length(a); if(n<12) return(NA_real_); m<-mean(a); ac<-acf(a,lag.max=3,plot=FALSE)$acf[2:4]; s2<-var(a)/n*(1+2*sum((1-(1:3)/n)*ac)); if(!is.finite(s2)||s2<=0) return(NA_real_); m/sqrt(s2) }
   port_t <- nwt(pr$active)
   sr <- mean(pr$active)/sd(pr$active)*sqrt(12)
-  d2017 <- pr[date>=as.IDate("2017-01-01")]
+  d2017 <- pr[date>=as.Date("2017-01-01")]
   port_t17 <- nwt(d2017$active); sr17 <- mean(d2017$active)/sd(d2017$active)*sqrt(12)
   frac_on <- mean(pr$w>0)
   list(label=label, thr=thr, cont=cont, full_port_t=port_t, full_sr=sr,

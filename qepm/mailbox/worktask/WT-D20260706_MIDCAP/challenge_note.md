@@ -79,3 +79,51 @@ Risk = Σ = BΩB'+D (market + market-orthogonalized sector factors), cond=42.4, 
 (3) **RF-R7 MEDIUM — heavy tail** (Hill 1.49, ES99 -16.9%, RateHike -26%): return-selection sleeve라 tail은 비용.
 (4) RF-R3 MEDIUM — passive_overlap 0.96 (capacity/exit-flow risk).
 Risk는 cap-tier trap을 **독립 구조 증거로 확증**(Market 분산 지배 + β 바닥). AX-000: 완결된 measurement.
+
+---
+
+# Self-Adversarial Challenge — Optimizer (WT-D20260706_MIDCAP)
+
+**Agent**: optimizer-research | **Date**: 2026-07-06 | **AX-008 self-adversarial (Opus 4.8 native)**
+
+Optimizer = weights ONLY. alpha_hat(tierEmph_B) + Σ 그대로 소비, 재해석 없음. 핵심 시험: **benchmark-aware/TE-controlled 최적화가 cap-tier trap을 다룰 수 있나.** finalize 직전 자체 적대검증.
+
+## Concerns raised (devil's advocate) + classification
+
+### C-1 [ACCEPT (mandatory)] "best net_IR 방법(alpha_prop)이 turnover cap 위반"
+- 측정: alpha_prop turnover 13.84/yr > 11.0 mandate (round-trip Σ|Δw|×12, 2회 검증). 
+- **분류 ACCEPT**: opt-style Cycle-2 규칙(turnover 위반 method는 IR 높아도 disqualify, silent relaxation 금지) 준수. handoff schedule을 EW(11.41)로 교체. IR 우위(0.556 vs 0.525) 포기.
+
+### C-2 [PARTIAL] "Σ가 as_of 단일 스냅샷 — per-period risk 없이 sizing?"
+- 측정: risk가 단일 스냅샷만 산출. per-period risk penalty를 24m rolling name-vol diagonal로 근사.
+- **분류 PARTIAL**: benchmark-aware 결론은 κ sweep 전 구간에서 robust (post2017 t가 κ에 monotonic −0.13→−1.13) — risk-penalty 형태에 verdict 무의존. 정직 한계 명시.
+
+### C-3 [SATISFIED] "walk-forward 검증 (RF-O9) — weights.csv 시계열?"
+- weights.csv `as_of_date` column, 268 unique dates, schedule_density_ratio=1.0 (≥0.95 mandate). RF-O9 충족. **REBUTTAL 불가 영역이나 처음부터 시계열 schedule로 작성**.
+
+### C-4 [PARTIAL] "book-marginal proxy(50/50 blend)가 실제 book 재최적화 아님"
+- **분류 PARTIAL**: forge/governor(ir_convention=net_active_recon_v1) authoritative. 단 cor 0.973(signal)/0.872(active) + standalone IR 0.556≪1.416 → ΔIR≥0.05 구조적 불가능. proxy ΔIR=−0.011 directionally 결정적.
+
+### C-5 [ACCEPT (finding)] "배포 top-25가 mid-cap이 아니라 small-cap"
+- 측정: as_of(2026-04-01) top-25 tier 배분 = SMALL 92% / MID 8% / MEGA 0% (size_rank median 134). mid-cap 집중 thesis가 거래가능 cut까지 생존 못 함(극단 small-cap within-tier z 지배).
+- **분류 ACCEPT**: 정직 보고. RF-R3(passive 0.96)·AX-003 small-cap-value trap 위험 증폭, negative 강화.
+
+## Benchmark-aware 핵심 시험 (가설의 중심)
+κ(cap-w shrink) sweep = TE-control 레버. κ↑ → TE 단조 하락(0.173→0.150) BUT post-2017 active t 단조 악화(−0.13→−1.13), IR 붕괴(0.556→0.234). **post-2017 양수 해를 주는 κ 없음.** cap-w tracking이 signal-dead mega-cap 보유를 강제 → mid-cap tilt가 탈출하려던 trap 재도입. **optimizer는 cap-tier trap을 bridge 불가.**
+
+## Self-rationalization auto-detection
+"미미/관행적/보수적이면 OK/대부분 동일" 사용: **미사용**. 모든 판정 contract 실측(NW lag-3 port_t·oos_v2·turnover·ΔIR) 기반.
+
+## Escalation check
+- 방출 package Hard-Constraint 위반 없음 (25종·Σw=1·[0,0.04]·long-only).
+- HIGH optimizer-hard-fail <5, RF-O9 single-snapshot 아님(시계열 268).
+- **결론**: escalate 불요. clean documented negative.
+
+## AX-008 triangulation
+- Self-adversarial(본): CONFIRMS negative (전 gate fail, turnover DQ, small-cap drift).
+- Forge: pending (EW schedule authoritative build_bt_result) — expected FAIL.
+- Alpha CF-1..5 + Risk RF-R1: 독립적으로 동일 negative 예측.
+→ pre-forge 이미 2/3 정합, forge가 세 번째.
+
+## Verdict
+HOLD / INFEASIBLE. Guarded prior(cap-tier trap)를 **정식 risk+optimizer 파이프라인이 confirm**(반증 아님). optimizer는 cap-w tracking vs mid-cap alpha(long-only β0.79 바닥서 구조적 대립)를 bridge 불가. Forge/Judge 완료 시 negative knowledge emit. AX-000: 조기 한계단정 아님 — 완결된 measurement.
