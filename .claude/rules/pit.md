@@ -23,7 +23,7 @@
 | C2 | same-day circular reference |
 | C3 | 같은 기간 집계 → 적용 |
 | C4 | 재무제표 lag 위반 (annual 5월, quarterly 45일+) |
-| C5 | overlay signal t-1 기준 위반 |
+| C5 | overlay signal 타이밍 위반 — 신호는 **홀딩월 시작 전** 데이터만 (§ 오버레이 신호 타이밍) |
 | C6 | survivorship bias |
 | C7 | 자동 탐지 패턴 (lookahead_detector.R) |
 | C8 | FM weight same-day 사용 |
@@ -39,6 +39,20 @@
 - 종목수 max 25 (hook 강제, 도훈 mandate 2026-05-29 20→25)
 - 유동성: 20일 평균 거래대금 ≥ 2e8 KRW (`LIQ_THRESHOLD = 2e8`)
 - 슬리브 조합 시에도 최종 portfolio 25명 이하 (e.g., 2-sleeve N_def + N_ind ≤ 25)
+
+## 오버레이 신호 타이밍 (C5 구체화 — 2026-07-06 도훈 지시, 실사고 재발방지)
+
+**사건**: BearProb 오버레이가 신호를 `Date < anchor_date`로 로드했는데 `anchor_date = 홀딩월(return_ym)의 *다음달* 첫 거래일`(실측 간격 ~31일) → **홀딩월 말 정보로 그 홀딩월 수익을 스케일 = ~1개월 동월 look-ahead**(faith 오버레이 버그 재발). 정정 시 Calmar 2.50→1.83·SR 2.10→1.84로 개선 전량 소멸. placebo/OOS/DSR/subperiod 다 통과 → **lag1 스트레스 + strict-PIT A/B만 판별**.
+
+**원칙**: 오버레이 신호는 **홀딩월이 시작되기 전** 데이터로만 계산·적용한다.
+- 홀딩월 = 수익(ret)이 실제로 벌리는 캘린더 월. clean 컷오프 = **first-day-of-holding-month**. 신호는 `Date < 컷오프`만.
+- 패널별 홀딩월: `period_returns_*` → return_ym / `alpha_scores_*` → month(Date)+1 (β-scan offset+1 실증). **anchor_date·realized_ym(라벨)로 컷오프 잡지 말 것.**
+
+**의무 (오버레이 리서치 전 항목)**:
+1. `source("02_Infrastructure/validation/overlay_pit_guard.R")` → `assert_overlay_pit(used_cutoff, holding_start)` **HARD 통과**.
+2. **lag1 스트레스**: 신호 shift(1) 적용판 측정 — base 대비 붕괴하면 동월 누출 의심.
+3. **strict-PIT A/B**: 현재 타이밍 vs `Date < first-day-of-holding-month`. `overlay_lookahead_ab()` 인플레 >5%면 strict 값으로 재판정.
+4. 신규 패널 소비 전 **anchor_date − 홀딩월 간격 확인** + score→forward-ret IC 부호(양수=PIT 방향 정상)로 윈도우 의미 실증.
 
 ## S0/S1 오버레이 금지
 
