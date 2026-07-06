@@ -147,6 +147,15 @@
         ]
       },
       {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/overlay_pit_grep.sh\" 2>>/tmp/overlay_pit_grep.log || true"
+          }
+        ]
+      },
+      {
         "matcher": "Write",
         "hooks": [
           {
