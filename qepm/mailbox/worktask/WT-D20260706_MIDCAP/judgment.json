@@ -1,0 +1,125 @@
+{
+  "wt_id": "WT-D20260706_MIDCAP",
+  "agent": "judge",
+  "mode": "QEPM",
+  "judged": "2026-07-06",
+  "authoritative_grade": "B",
+  "grade_source": "02_Infrastructure/contracts/essence_score.R (metric_type=backtested)",
+  "disposition": "GRADUATION_FAIL / DO_NOT_ADMIT",
+  "verdict": "FAIL",
+
+  "authoritative_metrics": {
+    "portfolio_alpha_t_nw_lag3": 2.39983112,
+    "port_t_source": "bt_benchmark_compare.csv Portfolio_Alpha_t_NW_lag3 == forge_package.portfolio_alpha_t_nw_lag3 == bt_result_port_t (chain verified)",
+    "portfolio_alpha_t_post2017": -0.49212533,
+    "net_ir": 0.52477329,
+    "net_sharpe": 0.91123216,
+    "cagr": 0.21172758,
+    "mdd": -0.42358147,
+    "calmar": 0.4998509,
+    "oos_v2_retention": -0.23093785,
+    "turnover_annual": 11.41432836,
+    "book_marginal_delta_ir_best": -0.00744112,
+    "corr_sleeve_active_vs_pg2_active": 0.22613217,
+    "corr_signal_vs_score_eff": 0.973,
+    "metric_type": "backtested"
+  },
+
+  "gates": {
+    "A_PIT": {
+      "status": "PASS",
+      "detail": "audit_status=PASS. PIT check PASS: sig_date weights(t) + forward-realized Ret_1m(t+1) + forward-shifted cap-w KOSPI200 bench; no same-day circular. tier classification uses Size through month-end(t), score_eff PIT-lagged (C4/C5). lag+1 PIT stress: real IC 0.0435(t5.74) > lookahead IC 0.0289 -> graceful, no leakage (동월누출 없음). WARN only on C1-C15 explicit-reference/survivorship/C15-path documentation (medium, non-critical, no hard violation). placebo shuffled-alpha IC -0.004 null."
+    },
+    "B_selection_test_isolation": {
+      "status": "PASS",
+      "detail": "lockbox_access_count_non_judge=0 (forge lockbox scope 폐기 per lockbox-scope.md; no regular-research lockbox touch). weights.csv 268 dates as-is, no alpha_scores re-selection, schedule_density_ratio=1.0. metric_type=backtested authoritative."
+    },
+    "C_net_alpha_gt_cost": {
+      "status": "FAIL",
+      "detail": "PORT_t(NW lag-3)=2.40 < 2.95 Harvey-Liu-Zhu hurdle. net_IR=0.525 > 0.2 (dep) passes the IR floor, but PORT_t hurdle FAIL is decisive. post-2017 PORT_t=-0.49 (신호 사멸 window). Gate C = (PORT_t>=2.95) AND (net_IR>0.2) => FAIL on PORT_t."
+    },
+    "D_crowding_stress": {
+      "status": "PASS_WITH_FLAGS",
+      "detail": "crowding_score 0.266 (LEVEL_LOW, <0.75). regime corr does not spike in crisis (0.143 vs 0.217). FLAGS: RF-R3 passive_overlap_proxy=0.96 (capacity/exit-flow risk, MEDIUM), RF-R7 heavy tail Hill=1.49 ES99=-16.9% (MEDIUM). Not survival-blocking for judgment (verdict already FAIL on C/F)."
+    },
+    "E_concentration": {
+      "status": "PASS",
+      "detail": "EW top-25, max_w=0.04 <= 0.20, HHI=0.04 <= 0.15. n_names=25 <= 25. sector_hhi=0.122, n_eff_sectors=8.2. RF-R6 반도체 6/25=24% material single-industry tilt but <50%, non-extreme. Concentration gate PASS."
+    },
+    "F_drift_tolerance": {
+      "status": "FAIL",
+      "detail": "oos_v2 retention = -0.231 (median of splits -0.184/-0.231/-0.394) << 0.7 (also <0.5 => 무조건 FAIL, band escalation 불가). full PORT_t 2.40 -> post2017 PORT_t -0.49 = signal collapse, not just drift. HARD FAIL."
+    }
+  },
+
+  "graduation_hard_gates": {
+    "port_t_ge_2.95": {"value": 2.39983112, "pass": false},
+    "oos_retention_ge_0.7": {"value": -0.23093785, "pass": false, "note": "<0.5 unconditional FAIL"},
+    "calmar_ge_0.64": {"value": 0.4998509, "pass": false},
+    "all_hard_pass": false
+  },
+
+  "success_criterion_evaluation": {
+    "book_marginal_delta_ir_ge_0.05": {"value": -0.00744112, "pass": false},
+    "paired_nw_t_ge_2.0": {"value_post2017": -0.49212533, "pass": false},
+    "oos_v2_ge_0.7": {"value": -0.23093785, "pass": false},
+    "overall": "ALL THREE FAIL"
+  },
+
+  "hard_caps": {
+    "n_names_le_25": true,
+    "long_only": true,
+    "sum_w_eq_1": true,
+    "weight_bounds_within_0_0.20": true,
+    "turnover_annual": 11.41432836,
+    "turnover_le_11.0": false,
+    "note": "turnover 11.41 marginally exceeds implementation-discipline 11.0/yr soft cap (< screening hard-fail 1100%); non-decisive given C/F/graduation FAIL."
+  },
+
+  "pit_final_ruling": {
+    "tier_classification_lookahead": "CLEAR — size rank from month-end(t) Size (t-1 relative to forward Ret_1m(t+1)); no forward-size peeking",
+    "size_rank_pit": "CLEAR — Size PIT through month-end(t), within-tier z removes cross-tier size confound",
+    "lag1_same_month_leakage": "CLEAR — lag+1 sleeve결합 ΔIR (-0.0039) ~ unlag ΔIR (-0.0074), no 동월누출 (faith-merge defect absent); real IC(0.0435) > lookahead IC(0.0289) confirms PIT graceful",
+    "ruling": "PIT PASS — no C1-C15 hard violation. Documentation WARNs (C15 path ref, survivorship control field) are non-critical."
+  },
+
+  "oos_chart_audit": {
+    "equity_curve_full_span": "PASS — NAV continuous 2004-01 to 2026-04 (268 months), OOS/post-2017 line unbroken. No OOS_CHART_INCOMPLETE flag.",
+    "charts": ["output/equity_curve.png", "output/annual_returns.png", "output/oos_zoom_chart.png", "output/book_marginal_deltaIR.png"]
+  },
+
+  "lockbox_extension_audit": {
+    "note": "forge/monitoring lockbox scope 폐기 (lockbox-scope.md 도훈 mandate 2026-05-09). walk-forward = OOS by construction; post-2017 (112m) serves as the deployment-OOS proxy window. post-2017 PORT_t=-0.49 measured (not 'unavailable'). No lockbox-unavailable evasion — the binding OOS window is measured and negative."
+  },
+
+  "attribution": {
+    "factor_vs_selection": "alpha is a tier-restriction of the incumbent PG2 score_eff (signal cor 0.973) — REDUNDANT with existing book factor, not orthogonal. Market factor = 61% of portfolio variance (β0.79). Active edge = residual selection net of β, which is post-2017 negative vs cap-w. residual/selection contribution to book is negative (ΔIR -0.0074).",
+    "cost": "turnover 11.41/yr, est cost 1.71%/yr (15bps v2.4). cost-aware net alpha still fails hurdle."
+  },
+
+  "self_adversarial_challenge": {
+    "devils_advocate_concerns": [
+      "C-1 [ACCEPT] essence returned B (component PORT_t>=2.0 & net_IR>0.2 pass) — could a reader misread B as admittable? NO: graduation A-hurdle and all 3 success criteria FAIL; B is component-grade only, disposition is explicit GRADUATION_FAIL/DO_NOT_ADMIT.",
+      "C-2 [ACCEPT] AX-001 v2 defensive conditional metric — does full-period SR/MDD评价 apply? This is a return-selection sleeve (not defensive per risk RF-R7), so standard PORT_t/oos gates apply correctly, not defensive conditional. No AX-001 v2 misapplication.",
+      "C-3 [REBUTTAL-considered] Should Replacement/Sequential Admission TDC threshold apply instead of standalone gate? NO — this is a book-marginal ADD (sleeve to PG2), not a replacement; book-marginal ΔIR>=0.05 is the correct gate and it fails (-0.0074).",
+      "C-4 [ACCEPT] within-tier edge vs EW-univ is real (post2017 t 1.58) — is FAIL premature (AX-000)? NO: mandate benchmark is cap-w KOSPI200; edge exists vs wrong benchmark. Measurement is complete (6-agent pipeline), not premature-limit. Honest negative.",
+      "C-5 [ACCEPT] boundary 11-30 at peak within-tier LS-t (single-run selection) — magnitude boundary-sensitive but directional finding robust; no boundary changes cap-w active to positive."
+    ],
+    "classification": "ACCEPT (verdict stands). No REBUTTAL survives.",
+    "escalation": "HIGH<5, no AX hard-FAIL>=3, no PIT C1 hard violation. auto-escalate NOT triggered.",
+    "triangulation_AX008": "Forge (build_bt_result FAIL) + Self-Adversarial (CONFIRM) + Alpha/Risk/Optimizer independent negative = 3-source convergent. 2/3 PASS satisfied (all confirm negative)."
+  },
+
+  "key_fail_reasons": [
+    "PORT_t(NW lag-3)=2.40 < 2.95 Harvey hurdle; post-2017 PORT_t=-0.49 (signal collapse)",
+    "oos_v2 retention=-0.231 << 0.7 (unconditional HARD FAIL, band escalation 불가)",
+    "calmar 0.494 < 0.64 risk-adjusted hurdle",
+    "book-marginal best ΔIR=-0.0074 << 0.05 gate — NOT orthogonal (signal cor 0.973), tier-restriction of incumbent PG2 alpha",
+    "cap-tier trap CONFIRMED by formal pipeline: mid-cap emphasis WORSENS cap-w active (-0.50 -> -1.26); optimizer κ-sweep monotonic trap; long-only β0.79 floor non-neutralizable"
+  ],
+
+  "l_code_path": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/l_code/judge_gate/l_code_WT-D20260706_MIDCAP.json",
+  "l_code_metric_type": "backtested",
+
+  "handoff_to_governor": "DO_NOT_ADMIT. Negative knowledge emitted. Incumbent PG2 (book IR 1.416) retain. governor book_state write는 정지(수동+도훈). This confirms the cap-tier trap at portfolio level via formal 6-agent pipeline (crude diagnostic project-captier-alpha-localization-20260706 CONFIRMED, not refuted). AX-000 정합: 완결된 측정에 근거한 정직 FAIL, 조기 한계단정 아님."
+}

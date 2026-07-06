@@ -6,7 +6,7 @@ setDTthreads(1L)
 set.seed(20260706L)
 ROOT <- "C:/Users/99922/OneDrive/Quant_Module_Moltbot"
 OUT  <- file.path(ROOT, "stage_artifacts/WT_D20260706_007")
-log <- function(...) { cat(format(Sys.time(),"%H:%M:%S"), sprintf(...), "\n"); flush.console() }
+LOG <- function(...) { cat(format(Sys.time(),"%H:%M:%S"), sprintf(...), "\n"); flush.console() }
 t0 <- Sys.time()
 
 # ---------------------------------------------------------------------------
@@ -20,7 +20,7 @@ mret <- pan$mret[order(Ticker, ym)]                     # Ticker, ym, mret (2004
 bp <- as.data.table(read_parquet(file.path(ROOT,"stage_artifacts/pg2_overlay_gate_composition_20260705/pinned_cache/benchmark.parquet")))
 bp[, Date := as.Date(Date)]; bp[, ym := as.integer(format(Date,"%Y%m"))]
 bmret <- bp[order(Date), .(bm = prod(1+BM_Ret)-1), by=ym][order(ym)]     # clean KOSPI200 monthly
-log("[bench] clean bm months=%d range=%d..%d  recent max=%.3f (sanity)", nrow(bmret), min(bmret$ym), max(bmret$ym), max(tail(bmret$bm,12)))
+LOG("[bench] clean bm months=%d range=%d..%d  recent max=%.3f (sanity)", nrow(bmret), min(bmret$ym), max(bmret$ym), max(tail(bmret$bm,12)))
 
 # --- sector snapshot (PIT: latest <= as_of) ---
 ds <- open_dataset(file.path(ROOT,".cache/RAWDATA.parquet"))
@@ -36,7 +36,7 @@ sec_last[is.na(Sector), Sector := "UNKNOWN"]
 scu <- unique(sc$Ticker)
 retcnt <- mret[Ticker %in% scu & ym>=200501 & ym<=202606, .N, by=Ticker][N>=60]
 est_tickers <- retcnt$Ticker
-log("[universe] score-universe=%d  estimation(>=60m)=%d", length(scu), length(est_tickers))
+LOG("[universe] score-universe=%d  estimation(>=60m)=%d", length(scu), length(est_tickers))
 
 # monthly return wide matrix (rows=ym, cols=ticker) over estimation window
 mr <- mret[Ticker %in% est_tickers & ym>=200501 & ym<=202606]
@@ -118,7 +118,7 @@ for (i in seq_along(est_yms)) {
 }
 ok <- rowSums(is.na(fac_ret)) == 0
 fac_ret_ok <- fac_ret[ok, , drop=FALSE]
-log("[factor-returns] estimated months=%d / %d  factors=%d", nrow(fac_ret_ok), length(est_yms), K)
+LOG("[factor-returns] estimated months=%d / %d  factors=%d", nrow(fac_ret_ok), length(est_yms), K)
 
 # ---------------------------------------------------------------------------
 # 4. Factor covariance Omega (Ledoit-Wolf shrinkage to constant-correlation target)
@@ -148,7 +148,7 @@ Omega <- lw$cov
 Omega_sample <- lw$sample
 cn_omega_sample <- kappa(Omega_sample, exact=TRUE)
 cn_omega <- kappa(Omega, exact=TRUE)
-log("[Omega] LW delta=%.3f  cond(sample)=%.1f  cond(shrunk)=%.1f", lw$delta, cn_omega_sample, cn_omega)
+LOG("[Omega] LW delta=%.3f  cond(sample)=%.1f  cond(shrunk)=%.1f", lw$delta, cn_omega_sample, cn_omega)
 
 # ensure PD
 eg <- eigen(Omega, symmetric=TRUE)
@@ -157,7 +157,7 @@ if (min(eg$values) <= 1e-12) {
   eg$values[eg$values < floor_ev] <- floor_ev
   Omega <- eg$vectors %*% diag(eg$values) %*% t(eg$vectors)
   Omega <- (Omega+t(Omega))/2
-  log("[Omega] eigen-floor applied")
+  LOG("[Omega] eigen-floor applied")
 }
 
 # ---------------------------------------------------------------------------
@@ -171,7 +171,7 @@ sr[is.na(spec_var), spec_var := med_sv]
 # floor specific var to avoid zero
 sv_floor <- quantile(sr$spec_var, 0.02, na.rm=TRUE)
 sr[spec_var < sv_floor, spec_var := sv_floor]
-log("[specific] tickers=%d  median spec sd=%.4f  (monthly)", nrow(sr), sqrt(med_sv))
+LOG("[specific] tickers=%d  median spec sd=%.4f  (monthly)", nrow(sr), sqrt(med_sv))
 
 # ---------------------------------------------------------------------------
 # 6. Current-month exposure matrix B for INVESTABLE universe (as-of 202607 signal)
@@ -212,7 +212,7 @@ B[, "VALUE"]   <- cur_ex$VALUE
 B[, "QUALITY"] <- cur_ex$QUALITY
 B[, "SIZE"]    <- cur_ex$SIZE
 for (s in use_sec) B[, paste0("SEC_",s)] <- as.integer(cur_ex$Sector==s)
-log("[B] investable universe N=%d  factors=%d", Nsec, K)
+LOG("[B] investable universe N=%d  factors=%d", Nsec, K)
 
 # ---------------------------------------------------------------------------
 # 7. Assemble Sigma = B Omega B' + D
@@ -240,9 +240,9 @@ if (cn_sigma > 500) {
   Sigma <- (1-lam)*Sigma + lam*d_target
   cn_sigma <- kappa(Sigma, exact=TRUE)
   shrink_sigma_used <- TRUE
-  log("[Sigma] extra diag-shrink lam=%.2f -> cond=%.1f", lam, cn_sigma)
+  LOG("[Sigma] extra diag-shrink lam=%.2f -> cond=%.1f", lam, cn_sigma)
 }
-log("[Sigma] N=%d  cond=%.1f  min_ev=%.2e  PSD=%s", Nsec, cn_sigma, min(eigen(Sigma,symmetric=TRUE,only.values=TRUE)$values), min(eigen(Sigma,symmetric=TRUE,only.values=TRUE)$values)>0)
+LOG("[Sigma] N=%d  cond=%.1f  min_ev=%.2e  PSD=%s", Nsec, cn_sigma, min(eigen(Sigma,symmetric=TRUE,only.values=TRUE)$values), min(eigen(Sigma,symmetric=TRUE,only.values=TRUE)$values)>0)
 
 # ---------------------------------------------------------------------------
 # 8. Variance decomposition (factor vs specific share) at EW portfolio of investable universe
@@ -262,7 +262,7 @@ mkt_share  <- share["MKT"]
 style_share<- sum(share[style_facs])
 sec_share  <- sum(share[grepl("^SEC_",names(share))])
 spec_share <- spec_var_total / tot_var
-log("[decomp] tot_var=%.5f  MKT=%.1f%% STYLE=%.1f%% SECTOR=%.1f%% SPECIFIC=%.1f%%",
+LOG("[decomp] tot_var=%.5f  MKT=%.1f%% STYLE=%.1f%% SECTOR=%.1f%% SPECIFIC=%.1f%%",
     tot_var, 100*mkt_share, 100*style_share, 100*sec_share, 100*spec_share)
 
 # n_effective + sector HHI on EW proxy
@@ -291,4 +291,4 @@ Odt <- as.data.table(Omega, keep.rownames="factor"); write_parquet(Odt, file.pat
 # specific risk export
 write_parquet(sr[Ticker %in% inv_tickers], file.path(OUT,"specific_risk.parquet"))
 
-log("[DONE step1-8] %.1fs  covariance.parquet rows=%d", as.numeric(difftime(Sys.time(),t0,units="secs")), nrow(covdt))
+LOG("[DONE step1-8] %.1fs  covariance.parquet rows=%d", as.numeric(difftime(Sys.time(),t0,units="secs")), nrow(covdt))
