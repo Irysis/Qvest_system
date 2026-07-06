@@ -202,8 +202,8 @@ echo "[boot] 데이터 리프레시 백그라운드 (PID=$REFRESH_PID, log=$REFR
 
 # 6. v53 Axiom 엔진 주간 갱신 (백그라운드, 빠른 실행)
 QVEST_PROJECT_DIR="$PROJECT" \
-  python3 "$PROJECT/02_Infrastructure/axiom/lcode_harvester.py" >/tmp/axiom_boot.log 2>&1 &
-echo "[boot] L-code harvester 백그라운드"
+  "$QVEST_PY" "$PROJECT/02_Infrastructure/axiom/lcode_harvester.py" >/tmp/axiom_boot.log 2>&1 &
+echo "[boot] L-code harvester 백그라운드 (QVEST_PY — bare python3 stub 회피 2026-07-06)"
 
 # 6b. (2026-07-06 통합, 도훈 confirm) 주간 axiom 사이클 = Cleaner 정규경로로 통일.
 #     bootstrap 7일 게이트(신뢰 트리거)가 canonical weekly_cleaner_sweep.R(hygiene+inventory+
@@ -212,7 +212,7 @@ echo "[boot] L-code harvester 백그라운드"
 LAST_CLEAN="$PROJECT/.cache/cleaner_pending.json"
 LASTC_T=0; [ -f "$LAST_CLEAN" ] && LASTC_T=$(stat -c %Y "$LAST_CLEAN" 2>/dev/null || echo 0)
 if [ $(( ($(date +%s) - LASTC_T) / 86400 )) -ge 7 ]; then
-  (cd "$PROJECT" && PYTHONUTF8=1 LANG=C.UTF-8 LC_ALL=C.UTF-8 Rscript "$PROJECT/02_Infrastructure/ops/weekly_cleaner_sweep.R") >/tmp/cleaner_boot.log 2>&1 &
+  (cd "$PROJECT" && PYTHONUTF8=1 LANG=C.UTF-8 LC_ALL="English_United States.utf8" Rscript "$PROJECT/02_Infrastructure/ops/weekly_cleaner_sweep.R") >/tmp/cleaner_boot.log 2>&1 &
   echo "[boot] 주간 Cleaner 사이클(axiom step3.5 포함) 백그라운드 (7일+ 경과 · Sat task 백업)"
 fi
 
