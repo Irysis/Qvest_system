@@ -73,7 +73,8 @@ banded_holdings_bt <- function(scores_dt, returns_dt, bench_dt,
   last_seen <- setNames(integer(0), character(0))   # 종목별 최근 관측 cal idx
 
   W_list <- list()
-  for (t in months) {
+  for (ti in seq_along(months)) {
+    t <- months[ti]                      # keep Date class (for-loop over Date vector strips class)
     cur <- S[Date == t]
     ci <- cal_idx(t)
     # update last-seen state with this month's fresh filings

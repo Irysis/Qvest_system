@@ -84,7 +84,9 @@ def main():
         r = g["results"].get(key, {})
         return r.get("portfolio_alpha_t_nw_lag3")
 
-    keys = ["krw__contiguous_run", "krw__combined_all", "nflow__contiguous_run", "nflow__combined_all"]
+    # cover ALL result keys (raw + band variants) so band decisions are leak-checked too.
+    keys = sorted(set((gate1["results"].keys() if gate1 else set())) |
+                  set((gate2["results"].keys() if gate2 else set())))
     stress = {}
     for k in keys:
         p1, p2 = pt(gate1, k), pt(gate2, k)
@@ -103,15 +105,16 @@ def main():
     json.dump(stress_out, open(os.path.join(HARN, "reports", "lag_stress_comparison.json"), "w",
                                encoding="utf-8"), ensure_ascii=False, indent=2)
 
-    print("\n=== LAG STRESS (anti-look-ahead) ===")
+    print("\n=== LAG STRESS (anti-look-ahead, raw + band) ===")
     for k, v in stress.items():
-        print(f"  {k:24s} PORT_t lag1={v['port_t_lag1']} lag2={v['port_t_lag2']} "
-              f"leak={v['leakage_suspected']}")
+        p1 = v['port_t_lag1']; p2 = v['port_t_lag2']
+        print(f"  {k:34s} PORT_t lag1={p1 if p1 is None else round(p1,2)} "
+              f"lag2={p2 if p2 is None else round(p2,2)} leak={v['leakage_suspected']}")
     print(f"  verdict: {stress_out['verdict']}")
     print(f"\n[harness] canonical verdict_level = {gate1['verdict_level'] if gate1 else 'NA'} "
           f"(contig {gate1['coverage']['largest_contiguous_run_months'] if gate1 else 'NA'}"
           f"/{gate1['coverage']['min_contig_required'] if gate1 else 'NA'})")
-    print("[harness] DONE. reports/graduation_gate_result.json + lag_stress_comparison.json")
+    print("[harness] DONE. reports/{graduation_gate_result, turnover_comparison, lag_stress_comparison}.json")
 
 
 if __name__ == "__main__":
