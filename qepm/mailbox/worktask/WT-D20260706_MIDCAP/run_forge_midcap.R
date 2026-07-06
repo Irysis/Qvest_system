@@ -37,7 +37,7 @@ bm_m[, Date := as.Date(paste0(ym,"-01"))]
 bm_m[, bm_fwd := shift(bm_ret, type="lead", n=1L)]   # FWD-SHIFT (앵커 검증)
 benchdt <- bm_m[!is.na(bm_fwd), .(Date, BM_Ret=bm_fwd)]
 
-W <- fread(file.path(WT,"weights.csv"))[, .(Date=as.Date(as_of_date), Ticker, w=weight)]
+W <- fread(file.path(SA,"weights.csv"))[, .(Date=as.Date(as_of_date), Ticker, w=weight)]
 Wdt <- W[!is.na(w) & w!=0]
 
 cat(sprintf("[load] weights dates=%d tickers/date~=%.1f | rets rows=%d | bench months=%d\n",
