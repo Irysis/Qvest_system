@@ -105,7 +105,7 @@ me[, dlog_me_12 := logsize - shift(logsize, 12), by = Ticker]   # Δlog market c
 me[, cumret_12 := {
   r <- mret; n <- length(r)
   out <- rep(NA_real_, n)
-  for (i in 13:n) { seg <- r[(i-11):i]; if (all(is.finite(seg))) out[i] <- prod(1+seg)-1 }
+  if (n >= 12L) for (i in 12:n) { seg <- r[(i-11):i]; if (all(is.finite(seg))) out[i] <- prod(1+seg)-1 }
   out
 }, by = Ticker]
 me[, log_cumret_12 := log1p(cumret_12)]

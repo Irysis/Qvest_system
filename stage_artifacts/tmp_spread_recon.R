@@ -1,5 +1,5 @@
 suppressMessages({library(data.table); library(arrow); library(dplyr)})
-setDTthreads(1L); try(arrow::set_io_thread_count(1L), silent=TRUE)
+setDTthreads(1L); 
 ROOT <- "C:/Users/99922/OneDrive/Quant_Module_Moltbot"
 t0 <- Sys.time()
 raw <- as.data.table(read_parquet(file.path(ROOT,".cache/RAWDATA.parquet"),
