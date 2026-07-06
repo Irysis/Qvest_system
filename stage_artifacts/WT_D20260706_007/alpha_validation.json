@@ -1,0 +1,37 @@
+{
+  "task_id": "WT-D20260706_007",
+  "metric_type": "canonical_screen",
+  "metric_type_note": "canonical_screen_bt top-25 EW long-only 15bps NW lag-3. admission-binding 아님(forge authoritative). screening-grade.",
+  "graduation_check": {
+    "portfolio_alpha_t_nw_best": 1.77,
+    "hurdle": 2.95,
+    "pass": false,
+    "rank_ic": 0.0421,
+    "rank_ic_pass": true,
+    "icir": 0.34,
+    "icir_pass": true,
+    "harvey_t": 5.47,
+    "harvey_pass": true,
+    "portfolio_alpha_2017_max": -0.781,
+    "portfolio_2017_pass": false,
+    "verdict": "FAIL — cross-sectional gates pass (rank_ic/icir/harvey) but portfolio-alpha t FAIL (short-side driven). advisory gates green, hard gate red."
+  },
+  "universe_comparison": {
+    "universe": "KR_top342 (K200 or KQ150, adv20>=2e8)",
+    "n_months": 258,
+    "n_tickers_avg": 302,
+    "note": "single universe (default). ICIR strong (0.34) so universe-restriction attenuation not the binding issue — binding issue is long-only harvestability of a short-side signal, invariant to universe size."
+  },
+  "pit_audit": {
+    "expanding_percentile_C1": "PASS (mean(spread[1:i]<=spread[i]))",
+    "lag1_stress": "PASS (spread condition lag-1 does not collapse — concurrent 0.06 vs lag1 0.92, both < unconditional 1.77)",
+    "forward_return_alignment": "signal ym -> return ym+1 (no concurrent)",
+    "liquidity_filter": "t-1 20d ADV >= 2e8 (C10)",
+    "factor_direction": "registry higher_better + connector aligned Z"
+  },
+  "emit": {
+    "cards": ["DIST-QPM-006", "DIST-QPM-003"],
+    "polarity": "supporting_negative",
+    "message": "value/quality spread-reversion conditional activation TESTED and FAILED. DIST-QPM-006 retry_condition 1 (value spread mean-reversion 실측, 사상최대 spread) now MEASURED: reversion is real at spread level but SHORT-SIDE driven -> long-only cannot harvest. Conditioning worsens vs unconditional (placebo p=0.899). Strengthens both cards as supporting (reversion angle exhausted for long-only). NOT a revival."
+  }
+}

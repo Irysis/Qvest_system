@@ -1,0 +1,382 @@
+{
+  "task_id": "WT-D20260706_007",
+  "wt_type": "discovery",
+  "as_of_date": "2026-07-06",
+  "forecast_horizon": "1M",
+  "selection_objective": "rank_ic",
+  "verdict": "FAIL",
+  "verdict_summary": "value/quality spread-reversion conditional activation FAIL. conditional(B/C/D) 전부 unconditional(A) 대비 PORT_t delta 음수. reversion은 spread-level 실재하나 payoff short-side 주도 -> long-only 미하베스트(세션 벽 재확인). best full PORT_t=1.77<2.95 hurdle, 모든 2017+ PORT_t 음수.",
+  "spread_diagnostics": {
+    "definition": "BM(book/price) p80/p20 median ratio, winsor 1-99, expanding percentile (C1)",
+    "current_ym": 202607,
+    "current_spread_ratio": 274.68,
+    "current_expanding_percentile": 1,
+    "current_expanding_z": 6.99,
+    "all_time_max": true,
+    "all_time_max_note": "current spread ratio 274.7 = expanding pctile 1.000 = z +6.99 (역대최대). cheap-quintile BM ~275x expensive-quintile. DIST-QPM-006 retry_condition 1 (사상최대 spread) 확증.",
+    "mean_ratio": 65.55,
+    "cur_over_mean": 4.19
+  },
+  "variant_results": [
+    {
+      "label": "A_uncond_value",
+      "full_port_t": 1.77,
+      "rec2017_port_t": -1.118,
+      "full_sr": 0.413,
+      "rec2017_sr": -0.371,
+      "n": 258,
+      "frac_on": 1
+    },
+    {
+      "label": "A_uncond_quality",
+      "full_port_t": -0.953,
+      "rec2017_port_t": -2.286,
+      "full_sr": -0.235,
+      "rec2017_sr": -0.817,
+      "n": 258,
+      "frac_on": 1
+    },
+    {
+      "label": "A_uncond_valqual",
+      "full_port_t": -0.258,
+      "rec2017_port_t": -2.066,
+      "full_sr": -0.063,
+      "rec2017_sr": -0.743,
+      "n": 258,
+      "frac_on": 1
+    },
+    {
+      "label": "B_cond_value_p80",
+      "full_port_t": 0.06,
+      "rec2017_port_t": -0.879,
+      "full_sr": 0.013,
+      "rec2017_sr": -0.286,
+      "n": 258,
+      "frac_on": 0.33
+    },
+    {
+      "label": "B_cond_valqual_p80",
+      "full_port_t": -0.679,
+      "rec2017_port_t": -1.361,
+      "full_sr": -0.196,
+      "rec2017_sr": -0.578,
+      "n": 258,
+      "frac_on": 0.33
+    },
+    {
+      "label": "B_cond_value_p90",
+      "full_port_t": 0.227,
+      "rec2017_port_t": -0.781,
+      "full_sr": 0.05,
+      "rec2017_sr": -0.24,
+      "n": 258,
+      "frac_on": 0.21
+    },
+    {
+      "label": "C_scaled_value",
+      "full_port_t": 0.497,
+      "rec2017_port_t": -0.994,
+      "full_sr": 0.105,
+      "rec2017_sr": -0.308,
+      "n": 258,
+      "frac_on": 0.62
+    },
+    {
+      "label": "C_scaled_valqual",
+      "full_port_t": -0.773,
+      "rec2017_port_t": -1.587,
+      "full_sr": -0.219,
+      "rec2017_sr": -0.656,
+      "n": 258,
+      "frac_on": 0.62
+    },
+    {
+      "label": "D_cond_quality_p80",
+      "full_port_t": -1.071,
+      "rec2017_port_t": -1.626,
+      "full_sr": -0.307,
+      "rec2017_sr": -0.684,
+      "n": 258,
+      "frac_on": 0.33
+    }
+  ],
+  "longshort_decomposition": {
+    "note": "JUDGMENT LENS: long_side_t = Q5(cheapest) net-active t = HARVESTABLE long-only; short_side_t = neg(Q1 expensive active) = profit only if could short (NOT harvestable). LS_spread_t = academic long-short.",
+    "full_period": [
+      {
+        "variant": "value_full",
+        "n": 258,
+        "long_side_t": 1.12,
+        "long_ann_pct": 5.61,
+        "short_side_t": 1.13,
+        "short_ann_pct": 5.89,
+        "LS_spread_t": 3.26,
+        "LS_ann_pct": 11.49
+      },
+      {
+        "variant": "value_2017",
+        "n": 114,
+        "long_side_t": -1.18,
+        "long_ann_pct": -10.37,
+        "short_side_t": 1.21,
+        "short_ann_pct": 12.63,
+        "LS_spread_t": 0.38,
+        "LS_ann_pct": 2.27
+      },
+      {
+        "variant": "valqual_full",
+        "n": 258,
+        "long_side_t": 0.36,
+        "long_ann_pct": 1.82,
+        "short_side_t": 1.18,
+        "short_ann_pct": 5.48,
+        "LS_spread_t": 2.27,
+        "LS_ann_pct": 7.3
+      },
+      {
+        "variant": "valqual_2017",
+        "n": 114,
+        "long_side_t": -1.56,
+        "long_ann_pct": -12.91,
+        "short_side_t": 1.38,
+        "short_ann_pct": 13.56,
+        "LS_spread_t": 0.14,
+        "LS_ann_pct": 0.64
+      },
+      {
+        "variant": "quality_full",
+        "n": 258,
+        "long_side_t": 0.07,
+        "long_ann_pct": 0.36,
+        "short_side_t": 0.81,
+        "short_ann_pct": 3.76,
+        "LS_spread_t": 1.18,
+        "LS_ann_pct": 4.12
+      },
+      {
+        "variant": "quality_2017",
+        "n": 114,
+        "long_side_t": -1.64,
+        "long_ann_pct": -13.38,
+        "short_side_t": 1.34,
+        "short_ann_pct": 12.65,
+        "LS_spread_t": -0.2,
+        "LS_ann_pct": -0.73
+      }
+    ],
+    "within_extreme_spread_months": [
+      {
+        "variant": "value_ON_p80",
+        "n": 85,
+        "long_side_t": -0.34,
+        "long_ann": -4.18,
+        "short_side_t": 1.71,
+        "short_ann": 21.46,
+        "LS_t": 3.27
+      },
+      {
+        "variant": "valqual_ON_p80",
+        "n": 85,
+        "long_side_t": -0.44,
+        "long_ann": -5.42,
+        "short_side_t": 1.51,
+        "short_ann": 18.54,
+        "LS_t": 2.34
+      },
+      {
+        "variant": "quality_ON_p80",
+        "n": 85,
+        "long_side_t": -0.56,
+        "long_ann": -6.81,
+        "short_side_t": 1.33,
+        "short_ann": 16.5,
+        "LS_t": 1.65
+      }
+    ],
+    "verdict": "reversion payoff is SHORT-SIDE. 2017+ value long_side_t=-1.18 (value trap, cheap stocks fall) vs short_side_t=+1.21. Within extreme-spread months: long_side -0.34 (-4.18pct/yr) vs short_side +1.71 (+21.46pct/yr). Long-only cannot harvest."
+  },
+  "diagnostics": {
+    "rank_ic": 0.0421,
+    "icir": 0.34,
+    "harvey_t_stat": 5.47,
+    "rank_ic_n_months": 258,
+    "rank_ic_vs_portfolio_alpha_t": "rank-IC t=5.47 (STRONG, passes 3.0) BUT portfolio-alpha t=1.77 (FAIL 2.95). Divergence: rank-IC driven by expensive-half (short-side) — cheap-half IC t=2.6 full / 1.07 2017+ (weak). Cycle-2 lesson confirmed.",
+    "subperiod_stability": {
+      "p1_2005_2014_ic_t": 5.04,
+      "p2_2015_2019_ic_t": 1.35,
+      "p3_2020_2026_ic_t": 3.17,
+      "note": "cross-sec IC recovers p3 but long-side portfolio alpha does NOT (short-side driven)"
+    },
+    "portfolio_alpha_t_nw_lag3_best": 1.77,
+    "portfolio_alpha_t_2017_max": -0.781,
+    "placebo_p_spread_timing": 0.899,
+    "placebo_note": "spread-timing NO better than random (p=0.899). real ON-month mean active +0.0005 < random subset +0.0072.",
+    "trap_vs_reversion": "reversion real at spread level (extreme-spread months: 6M spread change -3.8pct, 65pct narrow vs baseline +8.3pct) BUT achieved via short-side (expensive falling), not long-side."
+  },
+  "factor_specs": [
+    {
+      "factor_family": "Value",
+      "proxy": "composite (BM/EP/FCF_Yield/EBIT_EV/SP mean-Z)",
+      "formula": "mean(Z_Score_aligned) across V01_BM,V02_EP,V10_FCF_Yield,V14_EBIT_EV,V20_SP",
+      "lag_rule": "quarterly 45d / annual May",
+      "winsorization": "1-99 on BM raw for spread",
+      "neutralization": "none (cross-sectional Z per month)",
+      "economic_rationale": "risk_premium / value_spread_reversion (Cohen-Polk-Vuolteenaho 2003)",
+      "weight_theta": 1,
+      "references": [
+        "Cohen-Polk-Vuolteenaho 2003 JF The Value Spread",
+        "Asness value timing",
+        "Arnott AQR value-is-cheap"
+      ]
+    },
+    {
+      "factor_family": "Quality",
+      "proxy": "composite (GPA/ROE/CompQ/ROIC mean-Z)",
+      "formula": "mean(Z_Score_aligned) across Q01_GPA,Q02_ROE,Q08_Composite_Quality,Q17_ROIC",
+      "lag_rule": "quarterly 45d",
+      "winsorization": "none",
+      "neutralization": "none",
+      "economic_rationale": "profitability_reversion (DIST-QPM-003 frontier)",
+      "weight_theta": 0,
+      "references": [
+        "Novy-Marx 2013",
+        "Fama-French 2015"
+      ]
+    }
+  ],
+  "spread_condition_spec": {
+    "trigger": "value spread expanding percentile >= threshold (0.80/0.90) or continuous scaled",
+    "live_trigger_current": "spread pctile=1.000 (all-time max) => value tilt would be ON now",
+    "but": "conditioning does NOT improve realized long-only alpha (delta vs unconditional all negative)"
+  },
+  "method_shopping_log": {
+    "alpha_agent": {
+      "candidates_tried": 9,
+      "selection_type": "chain",
+      "method_log": [
+        {
+          "name": "A_uncond_value",
+          "port_t": 1.77,
+          "selected": false
+        },
+        {
+          "name": "A_uncond_quality",
+          "port_t": -0.953,
+          "selected": false
+        },
+        {
+          "name": "A_uncond_valqual",
+          "port_t": -0.258,
+          "selected": false
+        },
+        {
+          "name": "B_cond_value_p80",
+          "port_t": 0.06,
+          "selected": false
+        },
+        {
+          "name": "B_cond_valqual_p80",
+          "port_t": -0.679,
+          "selected": false
+        },
+        {
+          "name": "B_cond_value_p90",
+          "port_t": 0.227,
+          "selected": false
+        },
+        {
+          "name": "C_scaled_value",
+          "port_t": 0.497,
+          "selected": false
+        },
+        {
+          "name": "C_scaled_valqual",
+          "port_t": -0.773,
+          "selected": false
+        },
+        {
+          "name": "D_cond_quality_p80",
+          "port_t": -1.071,
+          "selected": false
+        }
+      ]
+    }
+  },
+  "emit_to_axiom": {
+    "cards": ["DIST-QPM-006", "DIST-QPM-003"],
+    "polarity": "supporting_negative",
+    "message": "value/quality spread-reversion conditional activation TESTED and FAILED. DIST-QPM-006 retry_condition 1 (value spread mean-reversion 실측, 사상최대 spread) now MEASURED: reversion is real at spread level but SHORT-SIDE driven -> long-only cannot harvest. Conditioning worsens vs unconditional (placebo p=0.899). Strengthens both cards as supporting (reversion angle exhausted for long-only). NOT a revival."
+  },
+  "challenge_flags": [
+    {
+      "id": "RF_forward_analog_sparse",
+      "severity": "MEDIUM",
+      "note": "current spread (274.7, pctile 1.000, z+6.99) is all-time max — historical analog for THIS extreme is essentially unique (202512-202607). backtest is weak-form test of extreme-spread months; forward reversion at this exact level is out-of-sample. honestly flagged."
+    },
+    {
+      "id": "RF_short_side_wall",
+      "severity": "HIGH",
+      "note": "reversion payoff short-side driven (2017+ long_side_t -1.18 vs short +1.21) — long-only cannot harvest. session wall (short-side x no-short) NOT bypassed."
+    },
+    {
+      "id": "RF_rank_ic_portfolio_divergence",
+      "severity": "MEDIUM",
+      "note": "rank-IC t=5.47 STRONG but portfolio-alpha t=1.77 — rank-IC driven by expensive-half (short-side). Do NOT graduate on rank-IC."
+    }
+  ],
+  "alpha_vector": [0.02785, 0.02522, 0.02508, 0.01309, 0.01049, 0.01014, 0.00862, 0.00791, 0.00649, 0.00611, 0.00567, 0.00499, 0.00436, 0.00429, 0.00428, 0.00393, 0.0039, 0.00383, 0.00362, 0.00357, 0.00353, 0.00352, 0.00347, 0.00345, 0.0034, 0.00338, 0.00331, 0.00312, 0.00307, 0.00297, 0.00283, 0.0028, 0.00272, 0.00268, 0.00266, 0.00265, 0.00256, 0.00252, 0.00243, 0.0024, 0.00236, 0.00233, 0.00226, 0.00225, 0.00219, 0.00217, 0.0021, 0.0019, 0.00189, 0.00184, 0.00182, 0.00178, 0.00168, 0.00161, 0.00156, 0.00145, 0.00138, 0.00137, 0.00134, 0.00131],
+  "confidence_vector": [0.9, 0.9, 0.9, 0.818, 0.715, 0.701, 0.641, 0.613, 0.557, 0.542, 0.524, 0.497, 0.472, 0.47, 0.469, 0.455, 0.454, 0.451, 0.443, 0.441, 0.44, 0.439, 0.437, 0.436, 0.435, 0.434, 0.431, 0.424, 0.421, 0.418, 0.412, 0.411, 0.408, 0.406, 0.405, 0.405, 0.401, 0.4, 0.396, 0.395, 0.394, 0.392, 0.389, 0.389, 0.387, 0.386, 0.383, 0.375, 0.375, 0.373, 0.372, 0.37, 0.366, 0.364, 0.362, 0.357, 0.354, 0.354, 0.353, 0.352],
+  "alpha_vector_note": "top 60 by value score shown; full top-universe scores in stage_artifacts/WT_D20260706_007/alpha_scores.parquet. NOTE verdict=FAIL — these are current-month value-tilt scores for reference; not recommended for admission.",
+  "current_top_names": [
+    {
+      "ticker": "A015750",
+      "name": "성우하이텍",
+      "val_z": 7.35
+    },
+    {
+      "ticker": "A088350",
+      "name": "한화생명",
+      "val_z": 6.65
+    },
+    {
+      "ticker": "A073240",
+      "name": "금호타이어",
+      "val_z": 6.61
+    },
+    {
+      "ticker": "A028670",
+      "name": "팬오션",
+      "val_z": 3.45
+    },
+    {
+      "ticker": "A041190",
+      "name": "우리기술투자",
+      "val_z": 2.77
+    },
+    {
+      "ticker": "A036460",
+      "name": "한국가스공사",
+      "val_z": 2.67
+    },
+    {
+      "ticker": "A137310",
+      "name": "에스디바이오센서",
+      "val_z": 2.27
+    },
+    {
+      "ticker": "A001680",
+      "name": "대상",
+      "val_z": 2.09
+    },
+    {
+      "ticker": "A101730",
+      "name": "위메이드맥스",
+      "val_z": 1.71
+    },
+    {
+      "ticker": "A069080",
+      "name": "웹젠",
+      "val_z": 1.61
+    }
+  ]
+}
