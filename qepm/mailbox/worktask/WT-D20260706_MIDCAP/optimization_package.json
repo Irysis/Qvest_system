@@ -1,0 +1,114 @@
+{
+  "task_id": "WT-D20260706_MIDCAP",
+  "as_of_date": "2026-04-01",
+  "agent": "optimizer-research",
+  "role_boundary": "weights ONLY. No alpha reinterpretation, no Sigma redefinition. alpha_hat (tierEmph_B) and Sigma consumed as-is.",
+  "selection_objective": "net_ir",
+  "objective_basis": "active (vs cap-w KOSPI200 IKS200). max x'alpha - (lambda/2) x'Sigma x - phi*TC(x), long-only Sigma-w=1.",
+  "verdict": "HOLD / INFEASIBLE_ON_SUCCESS_GATES",
+  "method_selected": "HOLD",
+  "schedule_method_for_forge": "EW_top25 (Implementation-Discipline compliant handoff; NOT a positive recommendation)",
+  "target_weights": {
+    "A006400": 0.04, "A247540": 0.04, "A009830": 0.04, "A285130": 0.04, "A028260": 0.04,
+    "A071970": 0.04, "A078340": 0.04, "A009420": 0.04, "A082740": 0.04, "A002380": 0.04,
+    "A004000": 0.04, "A326030": 0.04, "A192820": 0.04, "A010950": 0.04, "A058470": 0.04,
+    "A098460": 0.04, "A319660": 0.04, "A084370": 0.04, "A375500": 0.04, "A131970": 0.04,
+    "A189300": 0.04, "A383220": 0.04, "A039030": 0.04, "A095340": 0.04, "A403870": 0.04
+  },
+  "n_names": 25,
+  "sum_weights": 1.0,
+  "max_weight": 0.04,
+  "min_weight": 0.04,
+  "hhi": 0.04,
+  "expected_active_return": 0.1107,
+  "expected_tracking_error": 0.163,
+  "expected_information_ratio": 0.525,
+  "turnover": 11.414,
+  "estimated_cost_annual": 0.01712,
+  "binding_constraints": ["market_beta_floor_long_only_0.79", "cap_w_tracking_vs_midcap_alpha_opposition"],
+  "schedule": {
+    "weights_csv_ref": "stage_artifacts/WT_D20260706_MIDCAP/weights.csv",
+    "unique_as_of_dates": 268,
+    "sig_dates_count": 268,
+    "schedule_density_ratio": 1.0,
+    "date_range": "2004-01-01 to 2026-04-01",
+    "walk_forward": true,
+    "as_of_date_column": true
+  },
+  "method_comparison": {
+    "note": "All measured via contract build_benchmark_compare (NW lag-3), metric_type=canonical_screen (screening-tier; forge build_bt_result is authoritative). Full-period + post-2017 (the binding cap-tier-trap window) vs cap-w IKS200.",
+    "EW_top25":        {"port_t": 2.400, "ir": 0.525, "te": 0.163, "net_sr": 0.525, "turnover": 11.41, "post2017_t": -0.489, "oos_v2": -0.231, "to_compliant": false},
+    "alpha_prop":      {"port_t": 2.645, "ir": 0.556, "te": 0.173, "net_sr": 0.556, "turnover": 13.84, "post2017_t": -0.130, "oos_v2": -0.135, "to_compliant": false, "status": "DISQUALIFIED_turnover>11.0"},
+    "megacap_anchor":  {"port_t": 1.715, "ir": 0.376, "te": 0.159, "net_sr": 0.376, "turnover": 13.25, "post2017_t": -0.953, "oos_v2": -0.355, "to_compliant": false},
+    "inv_vol":         {"port_t": 1.627, "ir": 0.377, "te": 0.154, "net_sr": 0.377, "turnover": 11.83, "post2017_t": -1.197, "oos_v2": -0.439, "to_compliant": false},
+    "BMA_kappa0.25":   {"port_t": 2.401, "ir": 0.506, "te": 0.160, "net_sr": 0.506, "turnover": 13.08, "post2017_t": -0.352, "oos_v2": -0.190},
+    "BMA_kappa0.50":   {"port_t": 2.034, "ir": 0.428, "te": 0.153, "net_sr": 0.428, "turnover": 12.39, "post2017_t": -0.617, "oos_v2": -0.269},
+    "BMA_kappa0.75":   {"port_t": 1.597, "ir": 0.336, "te": 0.149, "net_sr": 0.336, "turnover": 11.76, "post2017_t": -0.886, "oos_v2": -0.374},
+    "BMA_kappa1.00":   {"port_t": 1.119, "ir": 0.234, "te": 0.150, "net_sr": 0.234, "turnover": 11.47, "post2017_t": -1.127, "oos_v2": -0.520}
+  },
+  "benchmark_aware_finding": {
+    "lever_tested": "cap-w-shrink kappa (TE-control toward cap-w KOSPI200 tracking)",
+    "result": "MONOTONIC TRAP: as kappa increases (lower TE 0.173->0.150), post-2017 active t degrades monotonically (-0.13 -> -1.13) and IR collapses (0.556 -> 0.234). No kappa yields post-2017 positive active. TE-control vs cap-w forces holding signal-dead mega-cap, reintroducing exactly the cap-tier trap the mid-cap tilt tried to escape. CONFIRMS alpha CF-3 + risk RF-R1 at the optimizer level.",
+    "conclusion": "The optimizer CANNOT bridge the cap-tier trap. mid-cap alpha capture and cap-w tracking are structurally opposed objectives (long-only market beta 0.79 floor, non-neutralizable)."
+  },
+  "book_marginal_proxy": {
+    "note": "50/50 active-return blend proxy (forge/governor authoritative for real ir_convention=net_active_recon_v1). Tests whether tier sleeve ADDS to score_eff base.",
+    "base_scoreEff_active_ir": 0.617,
+    "blend_active_ir": 0.605,
+    "delta_ir": -0.011,
+    "corr_base_active_vs_tier_active": 0.872,
+    "standalone_tier_ir": 0.556,
+    "incumbent_book_ir_PG2": 1.416,
+    "verdict": "delta_ir NEGATIVE (-0.011) << 0.05 gate. Standalone tier IR 0.556 << PG2 1.416. cor(tierEmph_B,score_eff)=0.973 (alpha CF-1): a tier-restriction of the incumbent alpha, not an orthogonal sleeve. book-marginal contribution structurally absent."
+  },
+  "success_gate_evaluation": {
+    "gate_delta_ir_ge_0.05": {"value": -0.011, "pass": false},
+    "gate_paired_nw_t_ge_2.0_post2017": {"value_best": -0.130, "pass": false},
+    "gate_oos_v2_ge_0.7": {"value_best": -0.135, "pass": false},
+    "overall": "ALL THREE FAIL. Guarded prior (cap-tier trap) CONFIRMED by formal pipeline, not refuted."
+  },
+  "as_of_tier_allocation": {
+    "SMALL": {"w": 0.92, "n": 23},
+    "MID": {"w": 0.08, "n": 2},
+    "MEGA": {"w": 0.0, "n": 0},
+    "size_rank_median": 134,
+    "note": "At the as_of snapshot the tierEmph within-tier-z alpha lands 92% in SMALL tier (not MID) — the intended mid-cap concentration does not even materialize at the top-25 cut; extreme small-cap z-scores dominate. Amplifies RF-R3 passive-overlap and AX-003 small-cap-value trap risk. Directional over full panel the edge is mid/small, but the deployable top-25 is small-cap heavy."
+  },
+  "infeasibility_report": {
+    "reason": "No feasible optimizer configuration meets the success criterion. (1) The sleeve is not orthogonal to incumbent PG2 alpha (cor 0.973) so book-marginal delta-IR is negative (-0.011). (2) Post-2017 cap-w active is negative for every method and TE-control monotonically worsens it (cap-tier trap). (3) The best-IR standalone variant (alpha_prop) violates the turnover cap (13.84 > 11.0/yr) and is disqualified. (4) oos_v2 HARD FAIL (<0.5) for all methods.",
+    "violated_gates": ["book_marginal_delta_ir_0.05", "paired_nw_t_2.0", "oos_v2_0.7"],
+    "constraint_relaxation": "NONE performed. This is a documented negative, not a silent override.",
+    "suggested_resolution": "Do not admit. This confirms the cap-tier trap at portfolio level. Escape (if any) requires a benchmark other than cap-w (out of mandate) or a genuinely orthogonal non-return signal, not a tier-restriction of the incumbent."
+  },
+  "explanation": {
+    "top_overweights": ["A006400 (equal-weighted, no active tilt in EW handoff)"],
+    "main_tradeoffs": [
+      "cap-w tracking (low TE) vs mid-cap alpha capture are opposed — kappa sweep shows monotonic trade-off with no positive-post-2017 solution",
+      "turnover cap disqualifies the highest-IR variant",
+      "sleeve redundant with incumbent (cor 0.973) so no book-marginal value"
+    ]
+  },
+  "method_shopping_log": {
+    "candidates_tried": 8,
+    "method_log": [
+      {"name": "EW_top25", "net_ir": 0.525, "selected": "handoff_only"},
+      {"name": "alpha_prop", "net_ir": 0.556, "selected": false, "reason": "turnover 13.84>11.0 DISQUALIFIED"},
+      {"name": "megacap_anchor", "net_ir": 0.376, "selected": false},
+      {"name": "inv_vol", "net_ir": 0.377, "selected": false},
+      {"name": "BMA_kappa0.25", "net_ir": 0.506, "selected": false},
+      {"name": "BMA_kappa0.50", "net_ir": 0.428, "selected": false},
+      {"name": "BMA_kappa0.75", "net_ir": 0.336, "selected": false},
+      {"name": "BMA_kappa1.00", "net_ir": 0.234, "selected": false}
+    ]
+  },
+  "metric_type": "canonical_screen",
+  "metric_type_note": "Screening-tier real-computation via contract build_benchmark_compare (NW lag-3). Forge build_bt_result is authoritative for admission. Screening reality already predicts the negative; formal pipeline confirms.",
+  "self_adversarial_challenge": {
+    "concern_1_turnover": "ACCEPT (mandatory): alpha_prop 13.84/yr violates TO<=11.0. Disqualified per opt-style Cycle-2 rule (no silent relaxation). Handoff schedule switched to EW (11.41).",
+    "concern_2_sigma_single_snapshot": "PARTIAL: only as_of Sigma exists (risk single snapshot); per-period risk penalty approximated by 24m rolling name-vol diagonal. Benchmark-aware conclusion is robust across the full kappa sweep regardless of the risk-penalty form, so the verdict does not hinge on Sigma granularity.",
+    "concern_3_walk_forward_RF_O9": "SATISFIED: weights.csv has as_of_date column, 268 unique dates (density ratio 1.0 >= 0.95).",
+    "concern_4_book_marginal_proxy": "PARTIAL: 50/50 active blend is a proxy not a true book re-optimization; forge/governor authoritative. But cor 0.973 (signal) / 0.872 (active) and standalone IR 0.556<<1.416 make delta-IR>=0.05 structurally implausible; proxy delta -0.011 is directionally decisive.",
+    "concern_5_asof_smallcap_drift": "ACCEPT (finding): the deployable top-25 is 92% SMALL not MID — the mid-cap thesis does not survive to the tradeable cut. Reported honestly; strengthens the negative."
+  },
+  "next": "Forge integrate (weights.csv EW schedule) -> Judge. Expected: judge FAIL (post-2017 negative, oos HARD FAIL, book-marginal negative). Emit negative knowledge: cap-tier-localized tier-restriction of incumbent alpha does NOT bridge cap-w trap via optimizer."
+}
