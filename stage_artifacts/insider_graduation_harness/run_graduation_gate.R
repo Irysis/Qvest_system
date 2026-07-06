@@ -135,6 +135,39 @@ era_def <- list(
 )
 in_era <- function(dt, era) dt[hold_ym >= era[1] & hold_ym <= era[2]]
 
+# turnover gate (screening hard-fail): 1,100%/yr (measurement-graduation 2026-06-13).
+TURNOVER_GATE <- 11.0   # annual traded (1,100%)
+
+# 공용 result entry 빌더 — raw/band 모두 사용. scr 는 canonical_screen_bt 또는 banded_holdings_bt 산출.
+build_entry <- function(scr, vn, en, ric, extra = list()) {
+  pr <- as.data.table(scr$period_returns)
+  oos <- oos_retention_v2(copy(pr))
+  cal <- calmar_from_pr(copy(pr))
+  port_t <- scr$portfolio_alpha_t_nw_lag3
+  ir <- scr$information_ratio
+  delta_ir <- if (is.finite(ir)) ir - INCUMBENT_IR else NA_real_
+  to <- scr$turnover_annual
+  hard_port <- is.finite(port_t) && port_t >= 2.95
+  hard_oos  <- is.finite(oos$retention) && oos$retention >= 0.7
+  hard_cal  <- is.finite(cal$calmar) && cal$calmar >= 0.64
+  to_ok     <- is.finite(to) && to <= TURNOVER_GATE
+  c(list(
+    variant = vn, era = en,
+    n_signal_months = scr$n_months, top_n = scr$top_n,
+    portfolio_alpha_t_nw_lag3 = port_t, portfolio_alpha_t_pvalue = scr$portfolio_alpha_t_pvalue,
+    information_ratio = ir, alpha_annualized = scr$alpha_annualized,
+    net_sr = scr$net_sr, mean_active_net = scr$mean_active_net,
+    turnover_annual = to, turnover_pct = if (is.finite(to)) to * 100 else NA_real_,
+    oos_retention = oos$retention, oos_splits = as.list(oos$splits),
+    calmar = cal$calmar, cagr = cal$cagr, mdd = cal$mdd,
+    book_marginal_delta_ir = delta_ir, incumbent_ir = INCUMBENT_IR,
+    rank_ic_mean = ric$mean_ic, rank_icir = ric$icir, rank_ic_t = ric$t, rank_ic_n = ric$n,
+    hard_gate = list(port_t_ge_2.95 = hard_port, oos_ret_ge_0.7 = hard_oos, calmar_ge_0.64 = hard_cal,
+                     turnover_le_1100pct = to_ok,
+                     all_pass = hard_port && hard_oos && hard_cal && to_ok)
+  ), extra)
+}
+
 variants <- list(krw = "krw", nflow = "nflow")
 results <- list()
 for (vn in names(variants)) {
@@ -142,40 +175,37 @@ for (vn in names(variants)) {
   sdt_all <- panel[, .(Date, Ticker, score = get(vcol), hold_ym)][is.finite(score)]
   for (en in names(era_def)) {
     sdt <- in_era(sdt_all, era_def[[en]])[, .(Date, Ticker, score)]
+    ric <- rank_ic(sdt)
+    # ── RAW (canonical top-25 매월 재선정) ──
     key <- paste0(vn, "__", en)
     scr <- run_screen(sdt, key)
-    ric <- rank_ic(in_era(sdt_all, era_def[[en]])[, .(Date, Ticker, score)])
     if (is.null(scr) || !is.null(scr$error)) {
-      results[[key]] <- list(variant = vn, era = en, n_signal_months = length(unique(sdt$Date)),
-                             error = if (!is.null(scr)) scr$error else "empty",
-                             rank_ic = ric)
-      next
+      results[[key]] <- list(variant = vn, era = en, method = "raw",
+                             n_signal_months = length(unique(sdt$Date)),
+                             error = if (!is.null(scr)) scr$error else "empty", rank_ic = ric)
+    } else {
+      results[[key]] <- build_entry(scr, vn, en, ric, extra = list(method = "raw"))
     }
-    pr <- as.data.table(scr$period_returns)  # date, ret_net, benchmark_ret
-    oos <- oos_retention_v2(copy(pr))
-    cal <- calmar_from_pr(copy(pr))
-    # post-2017 sub-period PORT_t (if any months >= 2017)
-    port_t <- scr$portfolio_alpha_t_nw_lag3
-    ir <- scr$information_ratio
-    delta_ir <- if (is.finite(ir)) ir - INCUMBENT_IR else NA_real_
-    hard_port <- is.finite(port_t) && port_t >= 2.95
-    hard_oos  <- is.finite(oos$retention) && oos$retention >= 0.7
-    hard_cal  <- is.finite(cal$calmar) && cal$calmar >= 0.64
-    results[[key]] <- list(
-      variant = vn, era = en,
-      n_signal_months = scr$n_months, top_n = scr$top_n,
-      portfolio_alpha_t_nw_lag3 = port_t,
-      portfolio_alpha_t_pvalue = scr$portfolio_alpha_t_pvalue,
-      information_ratio = ir, alpha_annualized = scr$alpha_annualized,
-      net_sr = scr$net_sr, mean_active_net = scr$mean_active_net,
-      turnover_annual = scr$turnover_annual,
-      oos_retention = oos$retention, oos_splits = as.list(oos$splits),
-      calmar = cal$calmar, cagr = cal$cagr, mdd = cal$mdd,
-      book_marginal_delta_ir = delta_ir, incumbent_ir = INCUMBENT_IR,
-      rank_ic_mean = ric$mean_ic, rank_icir = ric$icir, rank_ic_t = ric$t, rank_ic_n = ric$n,
-      hard_gate = list(port_t_ge_2.95 = hard_port, oos_ret_ge_0.7 = hard_oos, calmar_ge_0.64 = hard_cal,
-                       all_pass = hard_port && hard_oos && hard_cal)
-    )
+    # ── BAND (hysteresis 보유밴드) — 사전등록 2폭 ──
+    for (bn in names(BAND_SPECS)) {
+      bs <- BAND_SPECS[[bn]]
+      bkey <- paste0(vn, "__", en, "__", bn)
+      bscr <- tryCatch(
+        banded_holdings_bt(scores_dt = sdt, returns_dt = returns_dt, bench_dt = bench_dt,
+                           n_entry = bs$n_entry, n_exit = bs$n_exit, max_hold = bs$max_hold,
+                           top_n = 25L, cost_bps_oneway = 15, liq_dt = liq_dt, liq_min = 2e8,
+                           run_id = paste0("insider_", bkey), strategy_id = paste0("insider_", bkey),
+                           periods_per_year = 12L),
+        error = function(e) list(error = conditionMessage(e)))
+      if (is.null(bscr) || !is.null(bscr$error) || bscr$n_months == 0) {
+        results[[bkey]] <- list(variant = vn, era = en, method = "band", band = bn,
+                                error = if (!is.null(bscr$error)) bscr$error else "no_holdings", rank_ic = ric)
+      } else {
+        results[[bkey]] <- build_entry(bscr, vn, en, ric, extra = list(
+          method = "band", band = bn, n_entry = bs$n_entry, n_exit = bs$n_exit,
+          max_hold = bs$max_hold, avg_holdings = bscr$avg_holdings))
+      }
+    }
   }
 }
 
