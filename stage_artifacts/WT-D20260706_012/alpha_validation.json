@@ -1,0 +1,67 @@
+{
+  "task_id": "WT-D20260706_012",
+  "wt_type": "discovery",
+  "as_of_date": "2026-07-06",
+  "hypothesis": "KR small-cap-dedicated alpha — exclude mega top-K, harvest mid/small tier where alpha lives",
+  "verdict": "NEGATIVE (deployment-level FALSIFIED) + SCREEN-TIER value signal within tier",
+  "metric_type_note": "All performance = canonical_screen (top-25 EW long-only, contract build_benchmark_compare, NW lag-3). NOT forge-authoritative (would need full QEPM). Escalation NOT recommended.",
+  "universe": {
+    "definition": "KOSPI200 ∪ KOSDAQ150 (index members, liquid — NOT true microcaps)",
+    "liquidity_filter": "adv20 >= 2e8 KRW (t-1 PIT, 20d avg trading value)",
+    "kq150_caveat": "KQ150 membership flag exists only from ~2010 (KOSDAQ150 index launched 2015; earliest flag 2010 in RAWDATA). Pre-2010 universe = K200 only (~200 names). Universe expands to ~330-350 from 2010.",
+    "sample": "2009-06 .. 2026-06 (204 months); factor scores computed 2005-01+ but forward monthly returns start 2009-06 in verified _wt705_monthly_ret panel"
+  },
+  "benchmark": "cap-weighted KOSPI200 TR (RAWDATA.BM_Ret, verified corr 1.0 with _wt705_monthly_bm)",
+  "composite_alpha": {
+    "definition": "EW average of 9 candidate factors, each cross-sectionally standardized per month, connector-aligned Z_Score_Aligned (higher=better, PIT-safe expanding-IC direction). NO per-factor tuning, NO full-sample IC selection => avoids overfit/CMA trap.",
+    "factors": ["M01_Mom_12_1","M08_Residual_Mom","Q01_GPA","Q35_CashBased_OpProf","Q07_Earnings_Stability","V02_EP","V12_Composite_Value","D01_IdioVol","L01_Amihud"],
+    "selection_objective": "rank_ic"
+  },
+  "small_mid_tier_rank_ic": {
+    "note": "rank-IC within mid/small tier (exclude mega top-30), Spearman monthly, full 2009-2026 vs pre2017 vs post2017. ALIVE = positive full AND post-2017.",
+    "V02_EP":               {"full_ic": 0.0442, "full_t": 6.78, "post2017_ic": 0.0397, "post2017_t": 4.10, "status": "ALIVE_STRONGEST"},
+    "D01_IdioVol":          {"full_ic": 0.0513, "full_t": 4.22, "post2017_ic": 0.0644, "post2017_t": 3.57, "status": "ALIVE_but_LS_negative"},
+    "Q07_Earnings_Stability":{"full_ic": 0.0287, "full_t": 4.23, "post2017_ic": 0.0314, "post2017_t": 3.35, "status": "ALIVE"},
+    "V12_Composite_Value":  {"full_ic": 0.0273, "full_t": 2.15, "post2017_ic": 0.0343, "post2017_t": 1.87, "status": "ALIVE_weak"},
+    "Q01_GPA":              {"full_ic": 0.0215, "full_t": 2.48, "post2017_ic": 0.0044, "post2017_t": 0.48, "status": "DECAYED"},
+    "M08_Residual_Mom":     {"full_ic": 0.0175, "full_t": 1.97, "post2017_ic": 0.0106, "post2017_t": 0.88, "status": "DECAYED"},
+    "M01_Mom_12_1":         {"full_ic": 0.0111, "full_t": 0.98, "post2017_ic": 0.0006, "post2017_t": 0.04, "status": "DEAD_post2017"},
+    "L01_Amihud":           {"full_ic": 0.0052, "full_t": 0.72, "post2017_ic": 0.0171, "post2017_t": 1.77, "status": "WEAK"},
+    "Q35_CashBased_OpProf": {"full_ic": -0.0094, "full_t": -1.51, "post2017_ic": -0.0032, "post2017_t": -0.38, "status": "NEGATIVE_in_tier"}
+  },
+  "backtest_dedicated_top25": {
+    "metric_type": "canonical_screen",
+    "note": "active PORT_t vs cap-w K200 BM (NW lag-3). Excluding mega top-K makes it MONOTONICALLY WORSE => cap-tier-trap hypothesis FALSIFIED at deployment.",
+    "FULL_UNIV_baseline":       {"active_port_t": 1.32, "IR": 0.35, "total_SR": 0.96, "CAGR": 0.187, "MDD": -0.372, "calmar": 0.50, "oos_retention": -0.54, "active_t_pre2022": 3.55, "active_t_post2022": -1.57, "avg_holding_mcap": 1.1e13, "turnover_ann": 6.97},
+    "SMALL_DEDICATED_excl_top10":{"active_port_t": 0.88, "IR": 0.24, "total_SR": 0.87, "CAGR": 0.168, "MDD": -0.374, "calmar": 0.45, "oos_retention": -0.69, "active_t_pre2022": 3.21, "active_t_post2022": -1.80, "avg_holding_mcap": 2.99e12, "turnover_ann": 7.00},
+    "SMALL_DEDICATED_excl_top30":{"active_port_t": 0.75, "IR": 0.20, "total_SR": 0.83, "CAGR": 0.160, "MDD": -0.358, "calmar": 0.45, "oos_retention": -0.76, "active_t_pre2022": 3.08, "active_t_post2022": -1.93, "avg_holding_mcap": 2.13e12, "turnover_ann": 7.13}
+  },
+  "within_tier_long_short_quintile_spread": {
+    "note": "gross top-vs-bottom quintile EW spread within mid/small tier (excl mega top-30). Reveals IC->realized-return transition wall: positive rank-IC does NOT imply positive LS payoff.",
+    "comp_all_9factor": {"ls_pct_mo": 0.49, "t": 1.54, "pre2022_t": 0.96, "post2022_t": 1.28},
+    "comp_alive_value_lowvol_stability": {"ls_pct_mo": -0.07, "t": -0.17},
+    "V02_EP": {"ls_pct_mo": 0.60, "t": 2.51, "pre2022_t": 2.51, "post2022_t": 0.66},
+    "D01_IdioVol": {"ls_pct_mo": -0.37, "t": -0.86}
+  },
+  "mega_tier_signal_check": {
+    "note": "Composite rank-IC in MEGA tier (top-10 by mcap) vs mid/small. FALSIFIES 'mega is signal-dead' premise.",
+    "mega_top10_ic": 0.1000, "mega_top10_t": 3.67, "n": 204,
+    "mid_small_excl30_ic": 0.0462, "mid_small_excl30_t": 5.34,
+    "interpretation": "Mega tier per-name IC (0.10) is STRONGER than mid/small tier (0.046); mid/small t only higher via breadth. Mega is NOT signal-dead for this composite."
+  },
+  "pit_integrity": {
+    "lag_stress_K30_dedicated": {"lag1_port_t": 0.75, "lag2_port_t": 0.27, "verdict": "PASS — performance DECAYS with extra lag (correct direction), no look-ahead"},
+    "direction_alignment": "connector align_factor_direction PIT-safe expanding IC (Usable_Date <= sig_date, 36m burn-in)",
+    "liquidity_filter": "t-1 20d ADV",
+    "membership": "K200/KQ150 flags at signal month-end (t-1 relative to held month)"
+  },
+  "graduation_gate_status": {
+    "min_portfolio_alpha_t_nw": {"threshold": 2.95, "measured_best": 0.88, "pass": false},
+    "min_oos_retention": {"threshold": 0.7, "measured": -0.69, "pass": false},
+    "min_calmar": {"threshold": 0.64, "measured": 0.45, "pass": false},
+    "mdd_lt_25pct": {"threshold": 0.25, "measured": 0.37, "pass": false},
+    "overall": "FAIL all hard gates. Not milestone-candidate. Not screen-route to deployment. Value signal (V02_EP) is DPL_FEATURE at best."
+  },
+  "size_beta_check": "Excluding mega top-K TILTS smaller but does NOT improve alpha — worse on every metric. The mid/small dedicated portfolio is NOT capturing a genuine within-tier alpha premium in long-only top-25; the small-cap risk-premium tilt is NOT paying in this sample/regime.",
+  "escalation_recommendation": "DO NOT escalate to full QEPM (risk/optimizer/forge). Deployment thesis falsified. V02_EP within-tier value is the only alive standalone signal (screen-tier / DPL feature)."
+}
