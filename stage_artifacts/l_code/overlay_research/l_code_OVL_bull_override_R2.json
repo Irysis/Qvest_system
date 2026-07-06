@@ -1,0 +1,31 @@
+{
+  "l_code": "L-OVL-20260706_100250",
+  "strategy_id": "OVL_bull_override_R2",
+  "grade": "F",
+  "core_reference": "run_overlay_selfdev_r2.R",
+  "lesson_text": "OVL 공격형 bull-override(strict-PIT): 확신강한 상승장서 R05 과보수 노출을 floor로 상향. best=override_thr0.8_fl1.00 SR=1.9021(base 1.8947, Δ+0.0074) lag1 SR=1.884. 전 override base 미달— R05는 상승장서 과보수 아님(override 무익)—수익 추가축도 M4×R05 near-optimal.",
+  "tags": "OVL,AGGRESSIVE_OVERRIDE",
+  "created_at": "2026-07-06",
+  "research_mode": "overlay_research",
+  "created_by": "emit:overlay_research",
+  "metric_type": "backtested",
+  "construction_type": "regime_overlay",
+  "mechanism_hypothesis": "R05가 상승장서 과보수(false-alarm de-risk)면 confirmed-bull override가 upside 회복→SR↑",
+  "lcode_schema_version": 2,
+  "base_sr": 1.8947,
+  "best_sr": 1.9021,
+  "falsification_attempts": [
+    {
+      "test": "lag1 지연",
+      "result": "falsified",
+      "effect_retained": 0
+    },
+    {
+      "test": "strict-PIT vs loose A/B",
+      "result": "survived",
+      "effect_retained": 1
+    }
+  ],
+  "selection_type": "sweep",
+  "record_type": "performance"
+}
