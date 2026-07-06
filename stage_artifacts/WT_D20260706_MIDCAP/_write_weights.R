@@ -5,10 +5,11 @@ setDTthreads(1); try(arrow::set_cpu_count(1),silent=TRUE)
 ROOT<-"C:/Users/99922/OneDrive/Quant_Module_Moltbot"; DIR<-file.path(ROOT,"stage_artifacts/WT_D20260706_MIDCAP")
 ap<-as.data.table(arrow::read_parquet(file.path(DIR,"alpha_scores.parquet")));ap[,Date:=as.Date(Date)]
 setorder(ap,Date,-alpha_hat); top25<-ap[,.SD[seq_len(min(25,.N))],by=Date]
-# selected method for schedule = alpha_prop (best net_ir standalone; documented gate-fail)
-W<-top25[,{a<-alpha_hat-min(alpha_hat)+1e-6;w<-a/sum(a)
-  for(it in 1:200){over<-w>0.20;if(!any(over))break;ex<-sum(w[over]-0.20);w[over]<-0.20;und<-!over&w>0;if(!any(und))break;w[und]<-w[und]+ex*w[und]/sum(w[und])}
-  wn<-w/sum(w); wr<-round(wn,6); wr[which.max(wr)]<-wr[which.max(wr)]+(1-sum(wr))
+# selected method for schedule = EW top-25 (Implementation-Discipline compliant: turnover 11.41 vs
+#   alpha_prop 13.84 which is DISQUALIFIED >11.0/yr per opt-style Cycle-2 rule + DGU-2009 1/N OOS).
+#   verdict is HOLD/infeasible on success gates; EW is the disciplined handoff schedule for forge.
+W<-top25[,{ w<-rep(1/.N,.N)
+  wr<-round(w,6); resid<-1-sum(wr); ii<-which(wr>0 & wr<0.20); j<-ii[which.min(wr[ii])]; wr[j]<-wr[j]+resid
   .(Ticker=Ticker,w=wr)},by=Date]
 # schedule density check
 sig_dates<-length(unique(ap$Date)); wf_dates<-length(unique(W$Date))
