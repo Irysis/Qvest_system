@@ -25,7 +25,7 @@
 .LCODE_MODE_PREFIX <- c(alpha_search = "AS", alpha_research = "AR", qepm_legacy = "QPM",
                         judge_gate = "JG", governor_admission = "GV",
                         factor_rotation = "FR", regime_research = "RR",
-                        ramp = "RAMP")
+                        ramp = "RAMP", overlay_research = "OVL")
 
 # 기존 원장에서 사용 중인 l_code ID 집합 (충돌 가드용 — corpus 캐시 + 원장 파일 스캔)
 .existing_lcode_ids <- function(root) {
