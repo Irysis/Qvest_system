@@ -1,5 +1,5 @@
 {
-  "verdict": "FAIL",
+  "verdict": "PASS",
   "pit_lag_months": 1,
   "n_rows_audited": 812,
   "checks": [
@@ -25,12 +25,10 @@
     },
     {
       "check": "A5_no_anchor_date_antipattern",
-      "pass": false,
-      "detail": "FOUND live antipattern: anchor_assign=False date_lt_anchor=True"
+      "pass": true,
+      "detail": "no live 'anchor_date=' assignment nor 'Date<anchor' comparison in executable code (doc mentions of the forbidden pattern are allowed)"
     }
   ],
-  "fails": [
-    "A5_no_anchor_date_antipattern"
-  ],
+  "fails": [],
   "note": "rcept_dt(sig month M) < first-day(usable M+lag). no same-month use. lag1 stress via PIT_LAG env."
 }
