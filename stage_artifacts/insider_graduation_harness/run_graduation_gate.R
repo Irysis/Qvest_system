@@ -229,12 +229,15 @@ out <- list(
   ),
   incumbent_book_ir = INCUMBENT_IR,
   metric_type = "canonical_screen",
+  turnover_gate_pct = TURNOVER_GATE * 100,
+  band_specs = BAND_SPECS,
   results = results,
   caveats = c(
     "metric_type=canonical_screen (screening-tier, NOT forge-authoritative). 자본판정=forge build_bt_result 이후.",
     "officer reporter_type 는 2009+ 만 신뢰(pre-2009 sparse). 현 커버리지 대부분 갭 → underpowered.",
     "rank-IC ≠ PORT_t. 졸업 binding = PORT_t(NW lag-3).",
     "mechanical 제외 = report n_mechanical==0 (disc_change_qty NULL 이라 report-level 근사).",
+    "band 변형 = hysteresis 보유밴드(turnover mitigation). raw vs band turnover_comparison.json 참조.",
     if (!authoritative) "★ INTERIM: contiguous run < 60월. 게이트 판정은 하네스 작동검증용, verdict 아님." else "graduation judgment valid (contig>=60)."
   )
 )
@@ -242,19 +245,67 @@ out <- list(
 writeLines(toJSON(out, pretty = TRUE, auto_unbox = TRUE, null = "null", na = "null"),
            file.path(HARN, "reports", "graduation_gate_result.json"))
 
-cat("=== DART Officer Net-Buy Graduation Gate ===\n")
+# ── turnover_comparison.json: raw vs band (회전율·PORT_t·calmar 대조) ──
+tc_rows <- list()
+for (vn in names(variants)) for (en in names(era_def)) {
+  raw_k <- paste0(vn, "__", en)
+  rr <- results[[raw_k]]
+  raw_to <- if (!is.null(rr) && is.null(rr$error)) rr$turnover_pct else NA_real_
+  raw_pt <- if (!is.null(rr) && is.null(rr$error)) rr$portfolio_alpha_t_nw_lag3 else NA_real_
+  raw_cal <- if (!is.null(rr) && is.null(rr$error)) rr$calmar else NA_real_
+  for (bn in names(BAND_SPECS)) {
+    bk <- paste0(vn, "__", en, "__", bn)
+    br <- results[[bk]]
+    if (is.null(br) || !is.null(br$error)) next
+    tc_rows[[bk]] <- list(
+      variant = vn, era = en, band = bn,
+      raw_turnover_pct = raw_to, band_turnover_pct = br$turnover_pct,
+      turnover_reduction_x = if (is.finite(raw_to) && is.finite(br$turnover_pct) && br$turnover_pct > 0)
+                               raw_to / br$turnover_pct else NA_real_,
+      band_below_1100pct = is.finite(br$turnover_pct) && br$turnover_pct <= 1100,
+      raw_port_t = raw_pt, band_port_t = br$portfolio_alpha_t_nw_lag3,
+      port_t_retained = is.finite(raw_pt) && is.finite(br$portfolio_alpha_t_nw_lag3) &&
+                        br$portfolio_alpha_t_nw_lag3 >= 0.9 * raw_pt,
+      raw_calmar = raw_cal, band_calmar = br$calmar,
+      avg_holdings = br$avg_holdings
+    )
+  }
+}
+tc_out <- list(
+  test = "raw vs holding-band turnover mitigation",
+  turnover_gate_pct = 1100,
+  interpretation = "밴드가 회전을 1,100% 아래로 낮추면서 PORT_t 를 유지(>=90% raw)하면 성공. 회전만 줄고 PORT_t 죽으면 실패(정직 보고).",
+  comparisons = tc_rows
+)
+writeLines(toJSON(tc_out, pretty = TRUE, auto_unbox = TRUE, null = "null", na = "null"),
+           file.path(HARN, "reports", "turnover_comparison.json"))
+
+cat("=== DART Officer Net-Buy Graduation Gate (raw + holding-band) ===\n")
 cat(sprintf("verdict_level: %s (contiguous run %s / min %d)\n", verdict_level,
             ifelse(is.na(contig), "NA", contig), MIN_CONTIG))
 for (k in names(results)) {
   r <- results[[k]]
-  if (!is.null(r$error)) { cat(sprintf("  %-24s : ERROR %s (n=%s)\n", k, r$error, r$n_signal_months)); next }
-  cat(sprintf("  %-24s : n=%2d PORT_t=%+.2f IR=%+.2f oos=%s calmar=%s | rankIC=%s(t=%s) | HARD=%s\n",
+  if (!is.null(r$error)) { cat(sprintf("  %-32s : ERROR %s\n", k, r$error)); next }
+  cat(sprintf("  %-32s : n=%2d PORT_t=%+.2f IR=%+.2f TO=%5.0f%% oos=%s cal=%s | rankIC=%s | HARD=%s\n",
               k, r$n_signal_months,
               r$portfolio_alpha_t_nw_lag3, r$information_ratio,
+              ifelse(is.finite(r$turnover_pct), r$turnover_pct, NA),
               ifelse(is.finite(r$oos_retention), sprintf("%.2f", r$oos_retention), "NA"),
               ifelse(is.finite(r$calmar), sprintf("%.2f", r$calmar), "NA"),
               ifelse(is.finite(r$rank_ic_mean), sprintf("%+.3f", r$rank_ic_mean), "NA"),
-              ifelse(is.finite(r$rank_ic_t), sprintf("%.2f", r$rank_ic_t), "NA"),
               r$hard_gate$all_pass))
 }
-cat(sprintf("wrote %s\n", file.path(HARN, "reports", "graduation_gate_result.json")))
+cat("\n--- turnover mitigation (raw vs band) ---\n")
+for (k in names(tc_rows)) {
+  v <- tc_rows[[k]]
+  cat(sprintf("  %-32s : TO %5.0f%% -> %5.0f%% (%.1fx) below1100=%s | PORT_t %+.2f -> %+.2f retained=%s | holds=%.1f\n",
+              k, ifelse(is.finite(v$raw_turnover_pct), v$raw_turnover_pct, NA),
+              ifelse(is.finite(v$band_turnover_pct), v$band_turnover_pct, NA),
+              ifelse(is.finite(v$turnover_reduction_x), v$turnover_reduction_x, NA),
+              v$band_below_1100pct,
+              ifelse(is.finite(v$raw_port_t), v$raw_port_t, NA),
+              ifelse(is.finite(v$band_port_t), v$band_port_t, NA),
+              v$port_t_retained,
+              ifelse(is.finite(v$avg_holdings), v$avg_holdings, NA)))
+}
+cat(sprintf("wrote %s + turnover_comparison.json\n", file.path(HARN, "reports", "graduation_gate_result.json")))
