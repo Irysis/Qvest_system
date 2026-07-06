@@ -1,0 +1,28 @@
+{
+  "test": "lag1_stress (PIT_LAG 1 vs 2)",
+  "interpretation": "신호를 1개월 추가 지연했을 때 PORT_t 가 붕괴(양→음)하면 동월 look-ahead 의심. 유지/완만저하 = 누출 없음(graceful degrade).",
+  "per_variant": {
+    "krw__contiguous_run": {
+      "port_t_lag1": 2.4115,
+      "port_t_lag2": 2.4115,
+      "leakage_suspected": false
+    },
+    "krw__combined_all": {
+      "port_t_lag1": 2.2577,
+      "port_t_lag2": 2.2577,
+      "leakage_suspected": false
+    },
+    "nflow__contiguous_run": {
+      "port_t_lag1": 1.236,
+      "port_t_lag2": 1.236,
+      "leakage_suspected": false
+    },
+    "nflow__combined_all": {
+      "port_t_lag1": 1.1367,
+      "port_t_lag2": 1.1367,
+      "leakage_suspected": false
+    }
+  },
+  "any_leakage_suspected": false,
+  "verdict": "NO_LEAKAGE_graceful_degrade"
+}
