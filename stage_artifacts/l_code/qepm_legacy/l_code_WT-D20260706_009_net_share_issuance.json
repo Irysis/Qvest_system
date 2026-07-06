@@ -1,0 +1,50 @@
+{
+  "l_code": "L-QPM-20260706_095231",
+  "strategy_id": "WT-D20260706_009_net_share_issuance",
+  "grade": "F",
+  "core_reference": "WT-D20260706_009 alpha_package.json(verdict=CLEAN_NEGATIVE, inherit_cor 0.064) + challenge_note.md(6 concern, EW-small-tilt+sparsity ACCEPT); Daniel-Titman 2006 Pontiff-Woodgate 2008",
+  "lesson_text": "WT-D20260706_009 QEPM 자율발굴 CLEAN_NEGATIVE — Net Share Issuance(Daniel-Titman 2006·Pontiff-Woodgate 2008, split-adjusted −Δlog(shares) TTM + CEI 교차검증)는 KR에서 실재하는 직교 횡단면 프리미엄이나 top-25 long-only cap-w 배포 벽 안. ★신호는 REAL: RETIRE(소각/감자) 버킷 raw fwd 2.04%/월 vs ISSUE 0.78% vs FLAT 0.95%, rank-IC t=4.30(유동성 필터 후 4.35 microcap 아티팩트 아님·breadth 85 대형주), STR_1715 book과 Spearman 0.064 고도 직교(상속·재중복 아님, 진짜 신규 축). ★그러나 IC→PORT_t 전이 벽 안: canonical_screen top-25 EW long-only cap-w PORT_t FULL 0.007·PRE2017 +0.77·POST2017 −0.58·VALUEUP2024 −1.02(단조붕괴) 全 <2.95. ★핵심 thesis '감쇠벽 탈출=large-cap-relevant(insider 유형)' 반증: LARGE rank-IC t=2.41 < SMALL t=4.57 = 신호가 소형주서 강함(대형주 top-25 PORT_t 0.09~0.17 dead). EW-벤치 대비는 양(POST2017 +1.58·VALUEUP +1.92)이나 cap-w 대비 음 = small/mid-vs-megacap 틸트(mega-cap 앵커 부재라 벤치아티팩트 아닌 실제 소형주 알파). ★구조적 한계: 72.3% 종목 zero-signal(shares 불변)·실 retirer 3.8%뿐 → long-short가 자연 표현인데 KR no-short가 죽임. → measurement-graduation §6 '직교≠수익' + WT-D20260705_009 '벽=top-region/short-side 감쇠' 재확인. financing-side도 벽 안. 재시도 금지: net-issuance/CEI long-only 대형주 배포. screen_route=DPL_FEATURE(직교 financing 피처). value-up era 대형주 소각도 소형주 우위 못 뒤집음.",
+  "tags": [
+    "QEPM_DISCOVERY",
+    "CLEAN_NEGATIVE",
+    "NET_ISSUANCE",
+    "IC_PORT_T_WALL",
+    "SMALL_CAP_CONCENTRATED",
+    "LONG_SHORT_NATURAL",
+    "DPL_FEATURE",
+    "AX-000_honest"
+  ],
+  "created_at": "2026-07-06",
+  "research_mode": "qepm_legacy",
+  "created_by": "emit:qepm_legacy",
+  "metric_type": "canonical_screen",
+  "construction_type": "",
+  "mechanism_hypothesis": "net-issuance(발행주식수 감소=자본배분 규율)가 value-up era 대형주서 large-cap-relevant 알파로 감쇠벽 밖일 것 → 반증. 신호는 실재하는 직교 프리미엄이나 (a) 소형주 집중(LARGE t<SMALL t) (b) long-short-natural(72% zero·3.8% retirer, no-short가 죽임)이라 long-only top-25 cap-w 번역 실패. financing-side도 IC→PORT_t 벽 안(§6, envelope-structural).",
+  "lcode_schema_version": 2,
+  "falsification_attempts": [
+    {
+      "test": "net-issuance top-25 canonical_screen cap-w (2005~ K200∪KQ150)",
+      "result": "falsified",
+      "port_t": 0.007,
+      "note": "FULL 0.007·POST2017 −0.58·VALUEUP2024 −1.02 단조붕괴 <2.95"
+    },
+    {
+      "test": "large-cap vs small-cap 분해 (감쇠벽 탈출 thesis)",
+      "result": "falsified",
+      "note": "LARGE rank-IC t=2.41 < SMALL t=4.57 = 소형주 우위, 대형주 top-25 PORT_t 0.09~0.17 dead, insider 유형 반증"
+    },
+    {
+      "test": "EW-벤치 vs cap-w-벤치 이중측정 (mega-cap 재프레임)",
+      "result": "falsified",
+      "note": "EW 양(POST2017 +1.58) but cap-w 음 = small/mid-vs-megacap 틸트, 벤치아티팩트 아닌 실 소형주 알파"
+    },
+    {
+      "test": "signal reality (bucket spread + orthogonality)",
+      "result": "passed",
+      "note": "RETIRE 2.04%/월 vs FLAT 0.95%, rank-IC t=4.30 REAL·직교 0.064 — 신호는 실재하나 long-only 번역 실패"
+    }
+  ],
+  "portfolio_alpha_t": 0.007,
+  "selection_type": "chain",
+  "record_type": "performance"
+}

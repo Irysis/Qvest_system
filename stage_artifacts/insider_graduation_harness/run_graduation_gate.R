@@ -62,12 +62,10 @@ adv_me <- rd[, .(adv20_me = last(adv20)), by = .(Ticker, ym)]   # 월말 trailin
 ym_begin <- function(ym) as.Date(paste0(ym, "-01"))
 returns_dt <- mret[univ == TRUE, .(Date = ym_begin(ym), Ticker, Ret_1m = mret, hold_ym = ym)]
 
-# liq_dt: 홀딩월 begin 기준, adv = 직전월말(=holding 직전월) trailing-20d ADV (t-1 PIT)
-prev_ym <- function(ym) format(ym_begin(ym) - 1, "%Y-%m")   # first-of-month minus 1 day => prev month
-adv_me[, hold_ym := format(ym_begin(ym) %m+% months(1), "%Y-%m")]  # this month's ADV usable next month
-# (need lubridate for %m+%) — avoid dependency: compute via seq
+# liq_dt: 홀딩월 begin 기준, adv = 직전월말(=holding 직전월) trailing-20d ADV (t-1 PIT).
+#   ADV month M 의 월말 trailing-20d 값 → 홀딩월 M+1 에 사용 가능(누출 없음). no lubridate dep.
 adv_me[, hold_ym := {
-  d <- ym_begin(ym); nd <- as.Date(format(d, "%Y-%m-01")); # first of ADV month
+  nd <- ym_begin(ym)  # first of ADV month
   format(seq(nd, by = "month", length.out = 2)[2], "%Y-%m")  # next month
 }, by = ym]
 liq_dt <- adv_me[, .(Date = ym_begin(hold_ym), Ticker, adv = adv20_me)]

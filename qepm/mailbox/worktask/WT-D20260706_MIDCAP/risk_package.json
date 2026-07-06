@@ -1,0 +1,185 @@
+{
+  "task_id": "WT-D20260706_MIDCAP",
+  "as_of_date": "2026-04-01",
+  "agent": "risk-research",
+  "role_boundary": "Sigma + risk diagnostics ONLY. No alpha modification, no weight proposal. RF-R1 exposure bound = advisory to optimizer.",
+  "selection_objective": "condition_number",
+  "portfolio_scope": "canonical top-25 long (24 modeled; A403870 dropped <60mo history). EW used as risk-decomposition reference, NOT a weight proposal.",
+  "exposure_matrix_ref": "stage_artifacts/WT_D20260706_MIDCAP/exposure_matrix.parquet",
+  "factor_covariance_ref": "stage_artifacts/WT_D20260706_MIDCAP/factor_covariance.parquet",
+  "specific_risk_ref": "stage_artifacts/WT_D20260706_MIDCAP/specific_risk.parquet",
+  "security_covariance_ref": "stage_artifacts/WT_D20260706_MIDCAP/covariance.parquet",
+  "tail_risk_ref": "qepm/mailbox/worktask/WT-D20260706_MIDCAP/tail_risk.json",
+  "risk_summary": {
+    "top_common_risks": ["Market (61%)", "Sector_반도체 (6%)", "Sector_조선 (2%)", "Sector_IT가전 (2%)", "Specific (7%)"],
+    "variance_decomposition": {
+      "factor_share": 0.926,
+      "specific_share": 0.074,
+      "market_var_share": 0.607,
+      "mean_market_beta": 0.788,
+      "beta_range": [0.21, 1.39]
+    },
+    "concentration": {
+      "sector_hhi": 0.122,
+      "n_effective_sectors": 8.2,
+      "n_effective_names_alpha_w": 19.9,
+      "top_sector": "반도체(semiconductor)",
+      "top_sector_count": 6,
+      "sector_counts": {
+        "IT가전": 2,
+        "IT하드웨어": 2,
+        "건강관리": 2,
+        "건설,건축관련": 2,
+        "반도체": 6,
+        "상사,자본재": 1,
+        "소프트웨어": 1,
+        "에너지": 2,
+        "조선": 2,
+        "화장품,의류,완구": 2,
+        "화학": 2
+      }
+    },
+    "crowding_flags": [],
+    "crowding_score_per_factor": [
+      {
+        "factor_name": "tier_conditional_midcap_scoreEff",
+        "crowding_score": 0.266,
+        "hhi_top": 0.086,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 0.96,
+        "demand_elasticity_proxy": 0,
+        "alert": "LEVEL_LOW"
+      }
+    ],
+    "liquidity_flags": [
+      "passive_overlap_proxy=0.96 (index footprint high for mid-cap names; capacity/exit-flow risk)"
+    ],
+    "stress_tests": {
+      "GFC_2008": {
+        "cum": -0.3282,
+        "months": 9,
+        "book_coverage": 0.5,
+        "reliable": false,
+        "note": "UNRELIABLE_partial_listing"
+      },
+      "EuDebt_2011": {
+        "cum": -0.1788,
+        "months": 5,
+        "book_coverage": 0.58,
+        "reliable": false,
+        "note": "UNRELIABLE_partial_listing"
+      },
+      "China_2015": {
+        "cum": -0.1027,
+        "months": 8,
+        "book_coverage": 0.71,
+        "reliable": false,
+        "note": "UNRELIABLE_partial_listing"
+      },
+      "KR_Bear_2018": {
+        "cum": -0.2357,
+        "months": 7,
+        "book_coverage": 0.79,
+        "reliable": false,
+        "note": "UNRELIABLE_partial_listing"
+      },
+      "COVID_2020": {
+        "cum": -0.158,
+        "months": 2,
+        "book_coverage": 0.88,
+        "reliable": true,
+        "note": "ok"
+      },
+      "RateHike_2022": {
+        "cum": -0.2605,
+        "months": 10,
+        "book_coverage": 1,
+        "reliable": true,
+        "note": "ok"
+      },
+      "market_down_5": -0.0394
+    },
+    "regime_correlation": {
+      "all": 0.217,
+      "bull": 0.14,
+      "bear": 0.16,
+      "crisis_worst15": 0.143,
+      "note": "avg pairwise corr does NOT spike in crisis (0.143 vs 0.217 all) — diverse sector mix; but market β=0.79 carries systematic crisis exposure separate from cross-name corr."
+    }
+  },
+  "diagnostics": {
+    "condition_number": 42.36,
+    "psd": true,
+    "shrinkage_used": true,
+    "shrinkage_method": "factor_model_regularization (BΩB'+D) + Ledoit-Wolf fallback available",
+    "covariance_estimator": "factor_model_BOmegaB_D",
+    "factor_coverage_r2": 0.498,
+    "factor_correlation_warnings": [],
+    "regime_correlation_ref": "stage_artifacts/WT_D20260706_MIDCAP/regime_correlation.parquet",
+    "n_names_modeled": 24,
+    "dropped_names": "A403870"
+  },
+  "method_shopping_log": {
+    "candidates_tried": 4,
+    "method_log": {
+      "sample": {
+        "name": "sample",
+        "condition": 128.51,
+        "psd": true,
+        "selected": false
+      },
+      "ledoit_wolf": {
+        "name": "ledoit_wolf",
+        "condition": 1,
+        "psd": true,
+        "selected": false
+      },
+      "gerber_rmt": {
+        "name": "gerber_rmt",
+        "condition": 101.41,
+        "psd": true,
+        "selected": false
+      },
+      "4": {
+        "name": "factor_model_BOmegaB_D",
+        "condition": 42.36,
+        "psd": true,
+        "selected": true
+      }
+    }
+  },
+  "challenge_flags": [
+    {
+      "id": "RF-R1",
+      "severity": "HIGH",
+      "note": "top common risk market = 61% > 40% — Market factor dominates portfolio variance (long-only β≈0.79). Not diversifiable by weights; optimizer cannot neutralize (no short). Confirms cap-w benchmark trap: this book moves with the market, so cap-w active edge depends on stock selection net of β, which alpha shows is post-2017 negative."
+    },
+    {
+      "id": "RF-R3",
+      "severity": "MEDIUM",
+      "note": "passive_overlap_proxy=0.96 HIGH — mid-cap names have large index/passive footprint; crowding_score overall 0.27 (below 0.75 flag). Capacity/exit risk if index flows reverse."
+    },
+    {
+      "id": "RF-R6",
+      "severity": "MEDIUM",
+      "note": "SECTOR CONCENTRATION: 반도체(semiconductor) = 6 of 25 names (24% by count). Sector HHI=0.122, n_eff_sectors=8.2. Mid-cap semi cluster (memory/equipment) = single macro-cyclical bet; crisis co-movement risk. Not extreme (<50%) but material single-industry tilt."
+    },
+    {
+      "id": "RF-R7",
+      "severity": "MEDIUM",
+      "note": "HEAVY TAIL: Hill alpha=1.49 (<2). Monthly ES95=-0.144, ES99=-0.169. Mid-cap tilt amplifies left-tail; RateHike-2022 reliable stress = -26.1%. AX-001v2: this is a return-selection sleeve (not defensive) so tail is a cost, not offset."
+    }
+  ],
+  "challenge_review": {
+    "from_agent": "risk",
+    "objection": true,
+    "targets_reviewed": ["alpha_package", "confidence_vector", "factor_specs"],
+    "to_alpha": "Risk CONFIRMS alpha's own CF-1/CF-2: (1) Market factor = 61% of portfolio variance with β≈0.79 (long-only, non-neutralizable) — the cap-w active edge cannot be recovered by weighting since the book IS the market plus a residual selection tilt that alpha already measured negative post-2017 vs cap-w. (2) Sector: semiconductor 6/25 = concentrated macro-cyclical bet. Risk does NOT modify alpha; these are structural exposure facts for optimizer/judge."
+  },
+  "self_adversarial": {
+    "concern_1_gpd": "ACCEPT-PARTIAL: GPD xi=-1.38 is an artifact of only ~12 monthly exceedances at q90 — unstable. Mitigation: lead with empirical ES95/ES99 (well-defined at n=120), flag EVT confidence LOW. Not used for any gate.",
+    "concern_2_stress_coverage": "ACCEPT: GFC/EuDebt/China2015/KR_Bear2018 have book_coverage<0.85 (mid-cap names not yet listed) — marked UNRELIABLE per skill, NOT hard-failed. Only COVID(0.88) and RateHike2022(1.0) reliable.",
+    "concern_3_cov_window": "REBUTTAL: 24 names complete only 60 months (semi/mid-cap recent listings), so 60-obs sample cov cond=128 is finite and PSD; factor model (cond=42) is preferred as it regularizes via low-rank BΩB'. Both PSD, both <500. Selection = condition_number objective (skill-compliant), not return-based.",
+    "concern_4_market_beta_orthog": "RESOLVED: initial sector-EW factors absorbed market (β→0). Fixed by orthogonalizing sector factors to market before regression → mean β=0.79 (range 0.21-1.39), economically consistent with KR long-only β≈0.92 substrate."
+  }
+}
