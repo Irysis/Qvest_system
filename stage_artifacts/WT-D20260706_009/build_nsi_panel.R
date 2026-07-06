@@ -65,20 +65,11 @@ si[, dlog_4q := log_sh - shift(log_sh, 4), by = Ticker]   # TTM Δlog(shares)
 SPLIT_THRESH <- 0.35   # ~ +42%/-30% single-quarter = almost surely split/bonus (무상증자/액면분할), not SEO
 si[, dlog_1q := log_sh - shift(log_sh, 1), by = Ticker]
 si[, is_split_q := is.finite(dlog_1q) & abs(dlog_1q) > SPLIT_THRESH]
-# rebuild a SPLIT-ADJUSTED log-share series: remove the split jump (carry forward the ratio out)
-adj_series <- function(lg, split) {
-  n <- length(lg); out <- lg; cum_adj <- 0
-  for (i in seq_len(n)) {
-    if (!is.na(split[i]) && split[i]) {
-      # remove this quarter's jump from all subsequent levels
-      jump <- lg[i] - lg[i-1]
-      cum_adj <- cum_adj + jump
-    }
-    out[i] <- lg[i] - cum_adj
-  }
-  out
-}
-si[, log_sh_adj := adj_series(log_sh, is_split_q), by = Ticker]
+# SPLIT-ADJUSTED log-share series (VECTORIZED): remove cumulative split jumps.
+#   cum_adj_t = cumsum of (jump at split quarters up to and including t). log_sh_adj = log_sh - cum_adj.
+si[, jump_removed := fifelse(is.finite(is_split_q) & is_split_q & is.finite(dlog_1q), dlog_1q, 0), by = Ticker]
+si[, cum_adj := cumsum(jump_removed), by = Ticker]
+si[, log_sh_adj := log_sh - cum_adj]
 si[, dlog_4q_adj := log_sh_adj - shift(log_sh_adj, 4), by = Ticker]   # split-adjusted TTM Δlog(shares)
 
 # as-of PIT table: for each ticker keep (Factor_Date, dlog_4q_adj, raw_dlog_4q)
@@ -101,14 +92,13 @@ mm[, nsi_shares_raw := -dlog_4q_raw]
 setorder(me, Ticker, ym)
 me[, logsize := log(Size)]
 me[, dlog_me_12 := logsize - shift(logsize, 12), by = Ticker]   # Δlog market cap over 12 months
-# cumulative 12m return from monthly mret
-me[, cumret_12 := {
-  r <- mret; n <- length(r)
-  out <- rep(NA_real_, n)
-  if (n >= 12L) for (i in 12:n) { seg <- r[(i-11):i]; if (all(is.finite(seg))) out[i] <- prod(1+seg)-1 }
-  out
-}, by = Ticker]
-me[, log_cumret_12 := log1p(cumret_12)]
+# cumulative 12m log-return (VECTORIZED via rolling sum of log(1+mret)).
+#   requires 12 consecutive finite months ending at t. frollsum with na.rm handled by finite-count check.
+me[, lr := log1p(mret)]
+me[, lr_ok := as.integer(is.finite(lr))]
+me[, roll_lr := frollsum(fifelse(is.finite(lr), lr, 0), 12, align = "right"), by = Ticker]
+me[, roll_n  := frollsum(lr_ok, 12, align = "right"), by = Ticker]
+me[, log_cumret_12 := fifelse(is.finite(roll_n) & roll_n == 12L, roll_lr, NA_real_)]
 me[, cei := dlog_me_12 - log_cumret_12]   # issuance part of ME growth (>0 = net issuance)
 cei_dt <- me[in_univ == TRUE & is.finite(cei), .(Ticker, Date = ym, cei)]
 cei_dt[, nsi_cei := -cei]   # higher = net retirement (long)
