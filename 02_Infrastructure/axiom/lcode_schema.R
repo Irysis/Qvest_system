@@ -70,7 +70,8 @@ LCODE_VALID_METRIC_TYPES <- c("proxy", "estimated", "canonical_screen", "backtes
 LCODE_VALID_MODES <- c("alpha_search", "alpha_research", "qepm_legacy",
                        "judge_gate", "governor_admission",
                        "factor_rotation", "regime_research",
-                       "ramp")  # 2026-06-18: RAMP 자가발전 4번째 모드 (lcode_emit RAMP prefix와 정합)
+                       "ramp",              # 2026-06-18: RAMP 자가발전 4번째 모드
+                       "overlay_research")  # 2026-07-06: OVL 오버레이 자가발전 모드 (lcode_emit OVL prefix와 정합)
 # research_mode normalize 규칙 (promote GEN 폴백 봉합, A2-F8②)
 LCODE_MODE_ALIASES <- c("qepm" = "qepm_legacy")
 

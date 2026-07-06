@@ -1,0 +1,33 @@
+{
+  "l_code": "L-OVL-20260706_095844_03",
+  "strategy_id": "OVL_defgate_macro_R1",
+  "grade": "F",
+  "core_reference": "run_overlay_selfdev.R R1",
+  "lesson_text": "OVL defensive 게이트 신호원 family=macro (strict-PIT+가드): 2 신호 [Macro_Risk_Score,StL_Fin_Stress] 테스트, best=StL_Fin_Stress Calmar=1.704 (base 1.940, Δ-0.236, lag1=1.515). 전 신호 base 미달— M4×R05 대체 게이트로 이 envelope서 M4×R05 near-optimal 재확인(비전이).",
+  "tags": "OVL,DEFENSIVE_GATE,SIGNAL_SOURCE",
+  "created_at": "2026-07-06",
+  "research_mode": "overlay_research",
+  "created_by": "emit:overlay_research",
+  "metric_type": "backtested",
+  "construction_type": "regime_overlay",
+  "mechanism_hypothesis": "macro 신호가 M4×R05보다 위기 디리스킹을 더 잘 타이밍하면 Calmar↑; 상관 낮은 tier면 보완",
+  "lcode_schema_version": 2,
+  "base_calmar": 1.9396,
+  "best_calmar": 1.7037,
+  "n_signals": 2,
+  "survivors": 0,
+  "falsification_attempts": [
+    {
+      "test": "strict-PIT vs loose(anchor) A/B",
+      "result": "weakened",
+      "effect_retained": 1
+    },
+    {
+      "test": "lag1 지연 스트레스",
+      "result": "falsified",
+      "effect_retained": 0.5
+    }
+  ],
+  "selection_type": "sweep",
+  "record_type": "performance"
+}

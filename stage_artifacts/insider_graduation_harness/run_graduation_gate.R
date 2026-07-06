@@ -31,46 +31,24 @@ panel <- as.data.table(read_parquet(file.path(HARN, "data", "officer_netbuy_pane
 panel[, Date := as.Date(Date)]                 # usable-month begin
 panel[, hold_ym := format(Date, "%Y-%m")]      # 홀딩월(=usable month)
 
-# ── 2) RAWDATA → 월별 수익/벤치/유동성/유니버스 ──────────────────────────────
-rd <- as.data.table(read_parquet(file.path(ROOT, ".cache", "RAWDATA.parquet"),
-                                 col_select = c("Date","Ticker","Ret","BM_Ret","Close","Vol","K200","KQ150")))
-rd[, Date := as.Date(Date)]
-rd[, ym := format(Date, "%Y-%m")]
-setorder(rd, Ticker, Date)
-
-# 월별 종목수익 = (1+일수익) 누적 - 1 (표준 compounding; PerformanceAnalytics 계열과 정합)
-rd[, lr := log1p(pmax(Ret, -0.99))]
-mret <- rd[, .(mret = expm1(sum(lr, na.rm = TRUE)),
-               K200 = as.integer(any(K200 > 0, na.rm = TRUE)),
-               KQ150 = as.integer(any(KQ150 > 0, na.rm = TRUE)),
-               close_me = last(Close)),
-           by = .(Ticker, ym)]
-mret[, univ := (K200 == 1) | (KQ150 == 1)]
-
-# 벤치: BM_Ret 은 일별 index return(종목 무관 동일) → 날짜별 1행으로 월누적
-bench_d <- unique(rd[, .(Date, ym, BM_Ret)])
-bench_m <- bench_d[, .(BM_Ret = expm1(sum(log1p(pmax(BM_Ret, -0.99)), na.rm = TRUE))), by = ym]
-
-# 유동성: 20일 평균 거래대금(t-1). ADV_daily = Close*Vol. 월말 시점의 trailing-20d 평균을
-#         '그 달' 리밸에 쓰되, 홀딩월 시작 전(=직전월말) 값이어야 PIT(C10). 여기서는
-#         홀딩월 hold_ym 의 유동성필터를 '직전월말 20d ADV'로 근사 (t-1).
-rd[, adv_daily := Close * Vol]
-rd[, adv20 := frollmean(adv_daily, 20, align = "right"), by = Ticker]
-adv_me <- rd[, .(adv20_me = last(adv20)), by = .(Ticker, ym)]   # 월말 trailing-20d ADV
-
-# returns_dt: Date = 홀딩월 begin (신호 Date와 정렬), Ret_1m = 그 홀딩월 실현수익
+# ── 2) 슬림 월별 시장입력 (prep_market_monthly.py 산출 — R arrow RAWDATA halt 회피) ──
+#   무거운 daily→monthly 집계는 Python 에서 수행됨. 여기선 슬림 parquet 3개만 읽는다.
 ym_begin <- function(ym) as.Date(paste0(ym, "-01"))
-returns_dt <- mret[univ == TRUE, .(Date = ym_begin(ym), Ticker, Ret_1m = mret, hold_ym = ym)]
+.reqf <- function(p) { if (!file.exists(p)) stop(sprintf(
+  "missing %s — run: python stage_artifacts/insider_graduation_harness/prep_market_monthly.py", basename(p))); p }
 
-# liq_dt: 홀딩월 begin 기준, adv = 직전월말(=holding 직전월) trailing-20d ADV (t-1 PIT).
-#   ADV month M 의 월말 trailing-20d 값 → 홀딩월 M+1 에 사용 가능(누출 없음). no lubridate dep.
-adv_me[, hold_ym := {
-  nd <- ym_begin(ym)  # first of ADV month
-  format(seq(nd, by = "month", length.out = 2)[2], "%Y-%m")  # next month
-}, by = ym]
-liq_dt <- adv_me[, .(Date = ym_begin(hold_ym), Ticker, adv = adv20_me)]
+returns_dt <- as.data.table(read_parquet(.reqf(file.path(HARN, "data", "market_returns_monthly.parquet"))))
+returns_dt[, Date := as.Date(Date)]
+returns_dt[, hold_ym := format(Date, "%Y-%m")]
+returns_dt <- returns_dt[, .(Date, Ticker, Ret_1m, hold_ym)]
 
-bench_dt <- bench_m[, .(Date = ym_begin(ym), BM_Ret)]
+bench_dt <- as.data.table(read_parquet(.reqf(file.path(HARN, "data", "bench_monthly.parquet"))))
+bench_dt[, Date := as.Date(Date)]
+bench_dt <- bench_dt[, .(Date, BM_Ret)]
+
+liq_dt <- as.data.table(read_parquet(.reqf(file.path(HARN, "data", "liq_monthly.parquet"))))
+liq_dt[, Date := as.Date(Date)]
+liq_dt <- liq_dt[, .(Date, Ticker, adv)]
 
 # ── 3) canonical screen 실행 (시대별 + 변형별) ───────────────────────────────
 run_screen <- function(scores_dt, label) {
@@ -132,11 +110,21 @@ rank_ic <- function(scores_dt) {
        n = length(ics), t = if (s > 0) m/(s/sqrt(length(ics))) else NA_real_)
 }
 
-# eras
+# eras — derive largest contiguous hold_ym run dynamically (not hardcoded).
+hold_months <- sort(unique(panel$hold_ym))
+mp <- as.integer(sub("-", "", hold_months)) # yyyymm int not contiguous-safe; use ordinal
+ord <- as.integer(factor(hold_months, levels =
+  format(seq(as.Date(paste0(min(hold_months), "-01")),
+             as.Date(paste0(max(hold_months), "-01")), by = "month"), "%Y-%m")))
+best_len <- run <- 1L; best_i <- start_i <- 1L
+for (i in 2:length(ord)) {
+  if (ord[i] == ord[i-1] + 1L) { run <- run + 1L; if (run > best_len) { best_len <- run; best_i <- start_i } }
+  else { run <- 1L; start_i <- i }
+}
+contig_range <- c(hold_months[best_i], hold_months[best_i + best_len - 1L])
 era_def <- list(
-  contiguous_2015_16 = c("2015-01","2016-01"),
-  recent_2024        = c("2024-12","2024-12"),
-  combined_all       = c(min(panel$hold_ym), max(panel$hold_ym))
+  contiguous_run = contig_range,                      # 최장 연속 hold_ym 블록
+  combined_all   = c(min(hold_months), max(hold_months))  # 전체(갭 포함, 실측 overlap만)
 )
 in_era <- function(dt, era) dt[hold_ym >= era[1] & hold_ym <= era[2]]
 
