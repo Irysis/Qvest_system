@@ -1,0 +1,137 @@
+{
+  "task_id": "WT-D20260706_MIDCAP",
+  "agent": "forge",
+  "as_of_date": "2026-04-01",
+  "role": "pure_function_integration",
+  "method": "weights.csv_direct_NAV_reconstruction (monthly rebal, EW top-25 optimizer HOLD/INFEASIBLE handoff, as-is)",
+  "measurement_basis_primary": "forge_realized_share_based",
+  "metric_type": "backtested",
+  "cost_model_version": "v2.4_kr_retail_15bps",
+  "benchmark": "cap-w KOSPI200 (IKS200), forward-shifted; optimizer EW_top25 anchor PORT_t 2.40 reproduced",
+  "weights_csv_unique_dates_count": 268,
+  "alpha_sig_dates_count": 268,
+  "schedule_density_ratio": 1,
+  "schedule_density_pass": true,
+  "portfolio_alpha_t_nw_lag3": 2.39983112,
+  "portfolio_alpha_t_nw_lag3_post2017": -0.49212533,
+  "n_months_full": 268,
+  "n_months_post2017": 112,
+  "sr_realized_share_based": 0.52477329,
+  "sr_factor_engine_continuous": null,
+  "sr_lockbox_daily_harness": null,
+  "abs_net_sr": 0.91123216,
+  "abs_cagr": 0.21172758,
+  "abs_mdd": -0.42358147,
+  "calmar": 0.4998509,
+  "information_ratio": 0.52477329,
+  "alpha_annualized": 0.11069019,
+  "turnover_annual": 11.41432836,
+  "oos_v2_retention": -0.23093785,
+  "bt_result_port_t": 2.39983112,
+  "bt_vs_weighted_screen_divergence_pp": -8.8817842e-16,
+  "optimizer_estimated_full": 2.4,
+  "optimizer_estimated_post2017": -0.489,
+  "divergence_factor_engine_vs_realized_pp": -0.00016888,
+  "vs_factor_engine": {
+    "divergence_full_pp": -0.00016888,
+    "divergence_post2017_pp": -0.00312533,
+    "diagnosis": "NEGLIGIBLE",
+    "note": "optimizer canonical_screen EW_top25 == weighted_screen_bt (same contract). forge authoritative = build_bt_result."
+  },
+  "book_marginal": {
+    "convention": "net_active_recon_v1 (mean(active)/sd(active)*sqrt(12) vs cap-w KOSPI200)",
+    "pg2_recon_ir_full": 1.416,
+    "pg2_recon_ir_common_window": 1.59708523,
+    "common_months": 267,
+    "corr_sleeve_active_vs_pg2_active": 0.22613217,
+    "best_sleeve_weight": 0.05,
+    "best_new_book_ir": 1.58964411,
+    "delta_ir_best": -0.00744112,
+    "conservative_w10_new_ir": 1.56844852,
+    "delta_ir_w10": -0.02863671,
+    "lag1_stress": {
+      "inc_ir_lag": 1.59861412,
+      "delta_ir_best_lag": -0.00385244,
+      "note": "sleeve 수익 t+1 지연 결합. lag후 ΔIR가 unlag과 유사하면 동월누출 없음(faith merge 결함 방지)."
+    },
+    "request_cited_baseline": 1.4238,
+    "baseline_note": "request cited 1.4238; forge authoritative reproduction of book_state incumbent = 1.4160 (WT-702 recon C_noL4, exact). 1.4160 사용, 0.0078 차이는 vintage."
+  },
+  "success_gate_evaluation": {
+    "gate_delta_ir_ge_0.05": {
+      "value": -0.00744112,
+      "pass": false
+    },
+    "gate_paired_nw_t_ge_2.0_post2017": {
+      "value": -0.49212533,
+      "pass": false
+    },
+    "gate_oos_v2_ge_0.7": {
+      "value": -0.23093785,
+      "pass": false
+    },
+    "graduation_hard_port_t_2.95": {
+      "value": 2.39983112,
+      "pass": false
+    },
+    "overall": "FAIL"
+  },
+  "hard_constraints": {
+    "n_names": 25,
+    "max_names_le_25": true,
+    "long_only": true,
+    "weight_bounds": "[0,0.04] within [0,0.20]",
+    "sum_w": 1,
+    "schedule_density": 1,
+    "turnover_annual": 11.41432836
+  },
+  "hard_caps": {
+    "mdd_pass": true,
+    "to_pass": false,
+    "all_pass": false
+  },
+  "backtest_summary": {
+    "full_period": {
+      "sr": 0.91123216,
+      "net_active_sr": 0.52477329,
+      "cagr": 0.21172758,
+      "mdd": -0.42358147,
+      "calmar": 0.4998509,
+      "port_t": 2.39983112,
+      "ir": 0.52477329,
+      "n_months": 268
+    },
+    "pre_lockbox": {
+      "note": "N/A — forge lockbox scope 폐기. post2017 참조.",
+      "post2017_port_t": -0.49212533,
+      "post2017_n": 112
+    },
+    "lockbox": {
+      "note": "N/A — forge/monitoring lockbox 폐기 (lockbox-scope.md 도훈 mandate 2026-05-09)"
+    }
+  },
+  "graduation_gate": {
+    "port_t_hard_2p95": false,
+    "port_t_value": 2.39983112,
+    "oos_v2": -0.23093785,
+    "calmar": 0.4998509,
+    "delta_ir_best": -0.00744112,
+    "verdict": "FAIL",
+    "verdict_reason": "full PORT_t 2.40; post2017 PORT_t -0.49 (<2.0); oos_v2 -0.231 (<0.7); book-marginal best ΔIR -0.0074 (gate 0.05). cor(sleeve_active,PG2_active)=0.226 (tier-restriction of incumbent). cap-tier trap CONFIRMED by formal pipeline."
+  },
+  "hash_audit_pass": true,
+  "production_grade": false,
+  "method_basis_label": "forge_realized_share_based",
+  "audit_status": "PASS",
+  "pure_function_violation": false,
+  "charts": ["output/equity_curve.png", "output/annual_returns.png", "output/oos_zoom_chart.png", "output/book_marginal_deltaIR.png"],
+  "self_adversarial_challenge": {
+    "c1_schedule_fidelity": "weights.csv 268 dates as-is; no alpha_scores re-selection; density 1.0. PASS.",
+    "c2_benchmark_alignment": "FWD-SHIFT cap-w KOSPI200 reproduces optimizer EW_top25 anchor (2.40). same-month bench would give 2.33/IR0.30 (wrong). locked FWD-SHIFT.",
+    "c3_book_marginal_proxy": "capital-blend grid on common PG2∩sleeve window is a proxy; governor book_optimize authoritative. cor 0.973 signal / active corr high => ΔIR structurally negative. proxy directionally decisive.",
+    "c4_lag1_leakage": "lag+1 sleeve결합 ΔIR 대조로 동월누출 검사 산출.",
+    "c5_common_window": "book-marginal은 PG2∩sleeve 공통구간(sleeve 268m ∩ PG2 269m)에서 평가; 전기간 PG2 IR 1.416 vs 공통창 IR 별도 보고."
+  },
+  "next_step": "judge Gate A-F. Expected FAIL: post2017 negative, oos HARD FAIL, book-marginal ΔIR<0.05. Emit negative: cap-tier-localized tier-restriction does NOT bridge cap-w trap (formal pipeline confirms crude diagnostic).",
+  "created": "2026-07-06 10:15:39.209309"
+}
