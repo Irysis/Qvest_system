@@ -41,11 +41,12 @@ for(v in vars) cat(sprintf("  %-10s full t=%.2f ic=%.4f n=%d | 2017+ t=%.2f | sp
 # ---- B. standalone canonical dual-basis (primary quality = q_rate24), needs valid history ----
 cat("\n=== B. standalone canonical (score = q_rate24, top-25 EW 15bps) ===\n")
 Pv <- P[has_hist==1]
-scores_dt <- Pv[, .(Date=sdate, Ticker, score=q_rate24)]
-returns_dt<- Pv[, .(Date=sdate, Ticker, Ret_1m)]
-bench_dt  <- unique(merge(Pv[, .(Date=sdate, ym)], bm, by="ym")[, .(Date, BM_Ret)])
-liq_dt    <- Pv[, .(Date=sdate, Ticker, adv)]
-size_dt   <- Pv[, .(Date=sdate, Ticker, size=Size)]
+Pv[, Dt := as.Date(sdate)]   # canonical_screen_bt expects Date (IDate indexing bug)
+scores_dt <- Pv[, .(Date=Dt, Ticker, score=q_rate24)]
+returns_dt<- Pv[, .(Date=Dt, Ticker, Ret_1m)]
+bench_dt  <- unique(merge(Pv[, .(Date=Dt, ym)], bm, by="ym")[, .(Date, BM_Ret)])
+liq_dt    <- Pv[, .(Date=Dt, Ticker, adv)]
+size_dt   <- Pv[, .(Date=Dt, Ticker, size=Size)]
 cs <- tryCatch(canonical_screen_bt(scores_dt, returns_dt, bench_dt, top_n=25L, cost_bps_oneway=15,
         liq_dt=liq_dt, liq_min=5e7, size_dt=size_dt, run_id="ha_rate24", strategy_id="ha_rate24"),
      error=function(e){cat("canon err:",conditionMessage(e),"\n");NULL})

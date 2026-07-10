@@ -1,0 +1,110 @@
+{
+  "task_id": "WT-D20260710_005",
+  "theme": "non-price disclosure-quality signals (DART metadata)",
+  "verdict": "VALIDATED_NEGATIVE",
+  "data_availability": {
+    "H_a_restatement": {
+      "source": "DART OpenAPI list.json (corp-scoped, 348 firms K200uKQ150)",
+      "rows": 506874,
+      "tickers": 348,
+      "date_range": "2005-01-03..2026-07-10",
+      "firms_history_to_2005": 213,
+      "median_filings_per_firm": 950,
+      "restatement_filings": 46149,
+      "restatement_strict_prefix": 44011,
+      "pit": "rcept_dt (public receipt timestamp) <= sig_date; forward t+1; lag1-stress passed",
+      "fetch_quota_events": 0,
+      "note": "insider crawl 무간섭 준수(quota_events=0); heavy month-sweep 회피, corp-scoped memory-safe"
+    },
+    "H_b_badnews": {
+      "source": "RAWDATA existing flags UnfaithfulDisc/AdminStock/TradingHalt (no fetch)",
+      "per_month_avg_in_universe": {
+        "unfaith": 0.09,
+        "admin": 0.19,
+        "halt": 0.85,
+        "anybad": 1.09,
+        "trailing12M": 6.62
+      },
+      "note": "settled per Q-Lead: redundant-by-construction"
+    }
+  },
+  "H_a_measurement": {
+    "rank_ic_advisory": {
+      "q_rate24_full_t": 0.6313,
+      "q_rate24_2017_t": 0.4975,
+      "q_rate12_full_t": 0.7809,
+      "q_cnt24_full_t": 0.614,
+      "q_rates24_strict_full_t": 0.3812,
+      "size_neutral_t": 0.91,
+      "verdict": "null (all |t|<1)"
+    },
+    "standalone_canonical_dual_basis": {
+      "capw_port_t_nw_lag3": 0.4439,
+      "capw_ir": 0.0581,
+      "capw_net_sr": 0.0581,
+      "n_months": 244,
+      "diag_ew_universe_port_t": -1.443,
+      "diag_ew_universe_post2017_t": -1.2706,
+      "verdict": "null/negative (cap-w 0.44, EW -1.44); no standalone alpha"
+    },
+    "book_marginal_exclusion": {
+      "metric": "paired NW-t(lag3) of (excluded_active - base_active) vs STR_1715 score_eff top-25; dIR=net_active IR delta",
+      "ex_q80_topquintile_rate": {
+        "nwt": -1.326,
+        "IS_nwt": -1.657,
+        "OOS_nwt": -0.1475,
+        "dIR": -0.0253,
+        "changed": 241,
+        "verdict": "null (within placebo q95=2.0, emp_p=0.275)"
+      },
+      "ex_any_ge2": {
+        "nwt": -4.5101,
+        "dIR": -0.2779,
+        "verdict": "strongly NEGATIVE (size-proxy)"
+      },
+      "ex_cnt3_ge3": {
+        "nwt": -4.6269,
+        "dIR": -0.251,
+        "verdict": "strongly NEGATIVE; excludes 88.5% of book incl mega-caps"
+      },
+      "lag1_stress": {
+        "ex_q80_lag1_nwt": -1.9826,
+        "note": "negative sign held -> PIT clean, not look-ahead"
+      },
+      "size_neutral_exclusion": {
+        "nwt": -1.28,
+        "IS_nwt": -1.66,
+        "OOS_nwt": 0.34,
+        "verdict": "null/inconsistent -> not a size-masked governance signal"
+      }
+    },
+    "placebo_null": {
+      "n_draws": 200,
+      "q95_abs_nwt": 2.0005,
+      "ex_q80_emp_p": 0.275
+    },
+    "confound_mechanism": {
+      "spearman_cnt_logsize": 0.299,
+      "top25_cnt3_share": 0.885,
+      "top_restaters": ["A005930 Samsung", "A000660 SK Hynix", "A010130 Korea Zinc"],
+      "interpretation": "restatement frequency = disclosure-volume/size proxy (big active firms file+correct more); exclusion removes momentum winners. NOT governance-negative."
+    },
+    "n_trials": 7,
+    "max_abs_t": 4.6269,
+    "selection_type": "hypothesis-family sweep; DSR diagnostic (negative result, nothing to deflate)"
+  },
+  "universe_comparison": {
+    "default": "KR_top342 (K200uKQ150, liq 5e7)",
+    "note": "v2 KR_TOP500 미실행 — 신호 방향 자체가 null/negative라 universe 확장이 구제 불가(size-proxy는 확장 시 오히려 강화)."
+  },
+  "quality_criteria_5": {
+    "non_price": "PASS (DART metadata)",
+    "mechanism_clear": "PASS (restatement->governance thesis, but inverts empirically)",
+    "long_history": "PASS (2005, 213/348 firms)",
+    "pit_clean": "PASS (rcept_dt + lag1)",
+    "low_crowding": "PASS (KR-native, virgin restatement axis)",
+    "overall": "입력 5기준 충족하나 신호(alpha) 부재 — 양질 재료 != 양질 신호"
+  },
+  "final_verdict": "VALIDATED_NEGATIVE: disclosure-quality axis (H-a restatement exclusion + H-b bad-news flags) carries no exploitable cross-sectional alpha in deployable K200uKQ150. H-a exclusion actively harmful (size-proxy). Honest negative map. forge authoritative 미소환(screening FAIL upstream). graduation 선언 없음.",
+  "spawn_recommendation": "H-c/H-d deferred to Q-Lead. Restatement event-time short-window + type-split (실적정정 vs 형식정정) untested (needs document.xml parse = insider-grade heavy wall). Not a family verdict (INV-7)."
+}

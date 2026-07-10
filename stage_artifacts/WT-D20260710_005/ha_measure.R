@@ -30,8 +30,8 @@ cat(sprintf("  rows=%d tickers=%d date=%s..%s restate=%d strict=%d\n",
 
 # data depth per firm
 depth <- D[, .(first_rd=min(rd), n_fil=.N, n_restate=sum(is_restate)), by=Ticker]
-cat(sprintf("  depth: firms w/ first_rd<=2005-12=%d | median first_rd=%s | median n_fil=%d\n",
-  sum(depth$first_rd<=as.IDate("2005-12-31")), as.character(median(depth$first_rd)), median(depth$n_fil)))
+cat(sprintf("  depth: firms w/ first_rd<=2005-12=%d | median first_rd=%s | median n_fil=%.0f\n",
+  as.integer(sum(depth$first_rd<=as.IDate("2005-12-31"))), as.character(as.IDate(median(depth$first_rd))), as.numeric(median(depth$n_fil))))
 saveRDS(D, file.path(OUT,"ha_disc_panel.rds"))
 
 # ---- 2. Monthly signal grid: trailing restatement metrics (PIT rcept_dt<=t) ----
@@ -83,8 +83,10 @@ setkey(raw, Ticker, sdate)
 raw[, tv := as.numeric(Close)*as.numeric(Vol)]
 raw[, adv20 := frollmean(tv, 20, align="right"), by=Ticker]
 me_raw <- raw[raw[, .I[.N], by=.(Ticker,ym)]$V1, .(Ticker, ym, Size=as.numeric(Size), adv=adv20)]
-# monthly benchmark compound
-bm <- raw[, .(BM_Ret = prod(1+BM_Ret, na.rm=TRUE)-1), by=ym]
+# monthly benchmark compound — ONE market return per trading day (BM_Ret duplicated across tickers)
+bmd <- raw[, .(BM_Ret = BM_Ret[1]), by=.(sdate, ym)]
+setorder(bmd, sdate)
+bm <- bmd[, .(BM_Ret = prod(1+BM_Ret, na.rm=TRUE)-1), by=ym]
 
 P <- merge(seff[, .(Ticker, ym, sdate, score_eff, Ret_1m)], G, by=c("Ticker","ym"), all.x=TRUE)
 P <- merge(P, me_raw, by=c("Ticker","ym"), all.x=TRUE)

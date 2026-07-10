@@ -1,0 +1,20 @@
+{
+  "wt_id": "WT-D20260710_005",
+  "registered_at": "2026-07-10T22:52:00+09:00",
+  "note": "Pre-registration of H-a (disclosure restatement quality) analysis BEFORE full-universe results. Fixes primary signal, variant grid (n_trials), null, and PIT rule to prevent post-hoc cherry-picking. Full-data numbers filled by ha_measure_part2.R against ha_results.rds.",
+  "hypothesis": "H-a: frequent restatement (기재정정) filings = poor disclosure quality / weak internal controls -> avoid (exclusion). Direction: quality = -restatement_rate (low restatement = long / keep).",
+  "economic_rationale": "Financial/disclosure restatements signal low reporting quality, governance weakness, earnings management -> subsequent underperformance (Palmrose-Richardson-Scholz 2004 JAE; Hribar-Jenkins 2004 RAS). KR-native, non-price, PIT-clean via DART rcept_dt (receipt timestamp), long history to 2005.",
+  "PIT_rule": "signal at month-end sig_date t uses only filings with rcept_dt <= t (public receipt date); forward return = realized month t+1. No concurrent-month look-ahead. Trailing windows 12M/24M.",
+  "primary_signal": "q_rate24 = -(restatement_count_24M / total_filings_24M), defined only for firms with fil_24>=4 (has_hist).",
+  "primary_book_marginal_form": "ex_q80 = exclude firms with rate_24 >= IS(2005-2018) top-quintile threshold from score_eff top-25 candidate pool.",
+  "selection_type": "hypothesis-family sweep (H-a sub-variants). DSR reported as diagnostic; empirical null from placebo random-exclusion (200 draws).",
+  "variant_grid_n_trials": {
+    "book_marginal": ["ex_q80 (primary, top-quintile IS threshold)", "ex_any (>=2 restatements/24M)", "ex_cnt3 (>=3 restatements/24M)"],
+    "rank_ic_advisory": ["q_rate24", "q_rate12", "q_cnt24", "q_rates24 (strict 기재정정 prefix)"],
+    "total_n_trials": 7
+  },
+  "null_maxt": "max |NW-t| across the 7 variants compared to empirical placebo null q95 (random exclusion matching monthly count). Pre-registered: signal is credible only if primary ex_q80 NW-t exceeds placebo q95 AND survives lag1 stress AND IS-sign held into OOS.",
+  "authority": "canonical PORT_t (cap-w, forge-analogue via canonical_screen_bt) is screening authority for standalone; book-marginal paired NW-t(lag3) + dIR(net_active) is primary lever. rank-IC = advisory only. Graduation authority = forge (not this stage).",
+  "IS_OOS_split": "IS = 2005-01..2018-12 (threshold selection). OOS = 2019-01..2026-07 (validation, viewed once).",
+  "robustness": ["placebo random-exclusion null (200 draws)", "lag1 stress (signal shifted +1M)", "IS/OOS sign persistence", "dual-basis diag (EW-universe + cap-tier)"]
+}
