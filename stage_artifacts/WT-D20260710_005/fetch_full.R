@@ -15,7 +15,7 @@ fetch_corp <- function(corp_code, bgn="20050101", end="20260710", max_pages=400)
              query=list(crtfc_key=key, corp_code=corp_code, bgn_de=bgn, end_de=end,
                         page_no=pg, page_count=100), timeout(30)),
              error=function(e) NULL)
-    Sys.sleep(1.0)
+    Sys.sleep(0.6)
     if (is.null(r)) { quota_err<-quota_err+1L; if(quota_err>=2) return(list(d=NULL,q=TRUE)); next }
     sc <- status_code(r)
     if (sc!=200) { quota_err<-quota_err+1L; if(quota_err>=2) return(list(d=NULL,q=TRUE)); next }
@@ -39,7 +39,9 @@ cat(sprintf("[fetch_full] resume: %d done, %d todo (of %d)\n", length(done), nro
 qhit <- 0L; t0 <- Sys.time()
 for (i in seq_len(nrow(todo))) {
   cc <- todo$corp_code[i]
+  cat(sprintf("[t %s] %d/%d cc=%s ...", format(Sys.time(),"%H:%M:%S"), i, nrow(todo), cc)); flush.console()
   o <- fetch_corp(cc)
+  cat(sprintf(" rows=%s q=%s\n", if(is.null(o$d)) "NA" else nrow(o$d), isTRUE(o$q))); flush.console()
   if (isTRUE(o$q)) {
     qhit <- qhit + 1L
     cat(sprintf("[QUOTA] firm %s quota/rate error (qhit=%d). Pausing 60s to yield to insider.\n", cc, qhit))

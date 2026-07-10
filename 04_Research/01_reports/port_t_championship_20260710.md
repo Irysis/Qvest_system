@@ -53,3 +53,21 @@
 2. **오버레이는 PORT_t를 구조적으로 깎는다**(bare 7.24 → book_L5 5.14, 메커니즘: 현금화가 강세장 active 수익 축소) — "최상급 PORT_t" mandate와 "MDD 방어" 배포책이 목적함수 충돌. bare book의 oos_retention이 유일한 미측정 미지수.
 3. **book 측정치의 vintage 산포가 ±0.8**(5.47~6.27) — 재검증 전 pin_cache 기준선 고정(R1)이 선행돼야 나머지 비교가 유효.
 4. PORT_t-기준 기각이 아니었던 후보 2건(blend 6.218=SR-기각, O3 5.679=절차 정지)이 실질 도전자.
+
+---
+
+# 최종 결론 (2026-07-10 재개 후 재검증 완료 — pin tag fq011_20260710_222924)
+
+**최상급 PORT_t = 현 운용 북 (pinned 6.130). 도전자 전멸.**
+
+| 후보 | 종전 | 재검증 | 판정 |
+|---|---|---|---|
+| bare book | 7.236 (kill 부재) | 6.344 — IKS001 벤치버그 아티팩트 (벤치-격리 4경로 수렴 입증) · oos_v2 0.613 FAIL · MDD 40.7 위반 | 강등 |
+| value blend w=0.15 | 6.218 (+0.22) | dPORT_t -0.067 · paired NW-t -2.946 유의 음 — stale-baseline 아티팩트 | 기각 강화 |
+| production book | 산포 5.47~6.27 | **6.130 (pin 고정)** · oos_v2 0.500 band (247m 창 0.746 병기) | **현직 확정** |
+
+**오버레이 경제학 (첫 정량화)**: PORT_t 비용 +0.214 (paired t 0.767, 비유의) ↔ 구매한 것: MDD 40.7→23.3 (-17.4p) · calmar 1.118→1.943 · abs_SR 1.678→1.897. 순이득 구조 실측 확증.
+
+**메타 규칙 (신설)**: 07-02 IKS200 벤치 수정 이전의 고-PORT_t 기록은 인용 전 재베이스 의무 — 역대 챔피언 2개가 전부 그 버그 산물이었음. Step 0: RAMP_03 = R1 family 중첩 제외 / O3_MIDBAND = 잔여(저순위, base 구판).
+
+L-code: FQ011_CHAMPIONSHIP_REVAL_20260710 · 산출: stage_artifacts/fq011_port_t_championship/
