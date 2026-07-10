@@ -1,0 +1,278 @@
+{
+  "candidate_id": "STR_AS_20260612_223955_191026",
+  "measured_at": "2026-07-10T15:11:39+0900",
+  "metric_type": "backtested_monthly_agg",
+  "tier": "screen_diagnostic",
+  "harness": "02_Infrastructure/regime/overlay_candidate_drain.R (overlay_candidate_ab_lh 규약 generic화)",
+  "adapter": "bt_result_rds",
+  "cost_bps_oneway": 15,
+  "overlay_cost_model": "*_cost = 월별 |Δexposure|×15bps one-way 추가 차감 (cost_model v2.4 delta-based, PG2 recovery-override 규약). 첫 월 Δ=0(fill=첫 exposure).",
+  "pit_guard": {
+    "assert_overlay_pit": "PASS(HARD)",
+    "strict_exposure_identical": true,
+    "strict_ab_inflation": 0,
+    "strict_ab_lookahead_suspected": false,
+    "strict_ab_message": "[overlay_pit_guard] uni_cat abs_SR (current vs strict-PIT): current=0.6135 strict=0.6135 인플레=0.0% → clean"
+  },
+  "note": "screen-tier A/B — 자본게이트 아님. 판정은 paired 증분 NW-t(비율 비교 금지). unified_regime_signal walk-forward 미보증 → lag1 스트레스 의무.",
+  "scenarios": [
+    {
+      "scenario": "bare",
+      "n_months": 257,
+      "abs_SR": 0.623371,
+      "abs_CAGR": 0.154839,
+      "abs_MDD": -0.589796,
+      "IR": 0.318045,
+      "PORT_t": 1.511809,
+      "active_SR": 0.318045,
+      "oos_ret_v2": -0.157645,
+      "calmar": 0.26253,
+      "avg_exposure": 1,
+      "cost_applied": false,
+      "avg_abs_dexp_m": 0,
+      "ov_cost_ann_bps": 0
+    },
+    {
+      "scenario": "uni_cat",
+      "n_months": 257,
+      "abs_SR": 0.613502,
+      "abs_CAGR": 0.145334,
+      "abs_MDD": -0.529932,
+      "IR": 0.247488,
+      "PORT_t": 1.195831,
+      "active_SR": 0.247488,
+      "oos_ret_v2": -0.222744,
+      "calmar": 0.274251,
+      "avg_exposure": 0.95214,
+      "cost_applied": false,
+      "avg_abs_dexp_m": 0.032685,
+      "ov_cost_ann_bps": 5.883268
+    },
+    {
+      "scenario": "uni_cat_cost",
+      "n_months": 257,
+      "abs_SR": 0.611542,
+      "abs_CAGR": 0.144674,
+      "abs_MDD": -0.531278,
+      "IR": 0.244784,
+      "PORT_t": 1.181732,
+      "active_SR": 0.244784,
+      "oos_ret_v2": -0.228944,
+      "calmar": 0.272312,
+      "avg_exposure": 0.95214,
+      "cost_applied": true,
+      "avg_abs_dexp_m": 0.032685,
+      "ov_cost_ann_bps": 5.883268
+    },
+    {
+      "scenario": "uni_cat_lag1",
+      "n_months": 257,
+      "abs_SR": 0.564585,
+      "abs_CAGR": 0.128763,
+      "abs_MDD": -0.541758,
+      "IR": 0.182802,
+      "PORT_t": 0.814256,
+      "active_SR": 0.182802,
+      "oos_ret_v2": -0.716576,
+      "calmar": 0.237676,
+      "avg_exposure": 0.954475,
+      "cost_applied": false,
+      "avg_abs_dexp_m": 0.032685,
+      "ov_cost_ann_bps": 5.883268
+    },
+    {
+      "scenario": "uni_cat_lag1_cost",
+      "n_months": 257,
+      "abs_SR": 0.562675,
+      "abs_CAGR": 0.128124,
+      "abs_MDD": -0.543218,
+      "IR": 0.180039,
+      "PORT_t": 0.801167,
+      "active_SR": 0.180039,
+      "oos_ret_v2": -0.725978,
+      "calmar": 0.235861,
+      "avg_exposure": 0.954475,
+      "cost_applied": true,
+      "avg_abs_dexp_m": 0.032685,
+      "ov_cost_ann_bps": 5.883268
+    },
+    {
+      "scenario": "voltgt",
+      "n_months": 257,
+      "abs_SR": 0.672502,
+      "abs_CAGR": 0.135549,
+      "abs_MDD": -0.373107,
+      "IR": 0.156734,
+      "PORT_t": 0.72273,
+      "active_SR": 0.156734,
+      "oos_ret_v2": -0.851732,
+      "calmar": 0.363299,
+      "avg_exposure": 0.731861,
+      "cost_applied": false,
+      "avg_abs_dexp_m": 0.04276,
+      "ov_cost_ann_bps": 7.696858
+    },
+    {
+      "scenario": "voltgt_cost",
+      "n_months": 257,
+      "abs_SR": 0.669162,
+      "abs_CAGR": 0.134688,
+      "abs_MDD": -0.373939,
+      "IR": 0.152591,
+      "PORT_t": 0.703662,
+      "active_SR": 0.152591,
+      "oos_ret_v2": -0.866171,
+      "calmar": 0.360186,
+      "avg_exposure": 0.731861,
+      "cost_applied": true,
+      "avg_abs_dexp_m": 0.04276,
+      "ov_cost_ann_bps": 7.696858
+    },
+    {
+      "scenario": "voltgt_lag1",
+      "n_months": 257,
+      "abs_SR": 0.715797,
+      "abs_CAGR": 0.148286,
+      "abs_MDD": -0.367889,
+      "IR": 0.22192,
+      "PORT_t": 1.017735,
+      "active_SR": 0.22192,
+      "oos_ret_v2": -0.672443,
+      "calmar": 0.403072,
+      "avg_exposure": 0.73418,
+      "cost_applied": false,
+      "avg_abs_dexp_m": 0.042759,
+      "ov_cost_ann_bps": 7.696594
+    },
+    {
+      "scenario": "voltgt_lag1_cost",
+      "n_months": 257,
+      "abs_SR": 0.712465,
+      "abs_CAGR": 0.147411,
+      "abs_MDD": -0.368775,
+      "IR": 0.217779,
+      "PORT_t": 0.998595,
+      "active_SR": 0.217779,
+      "oos_ret_v2": -0.684618,
+      "calmar": 0.399731,
+      "avg_exposure": 0.73418,
+      "cost_applied": true,
+      "avg_abs_dexp_m": 0.042759,
+      "ov_cost_ann_bps": 7.696594
+    }
+  ],
+  "paired_nw": [
+    {
+      "scenario": "uni_cat",
+      "n": 257,
+      "paired_nw_t_lag3": -1.199167,
+      "mean_d_monthly": -0.001138,
+      "dSR": -0.009868,
+      "dMDD": 0.059864,
+      "d_PORT_t": -0.315979
+    },
+    {
+      "scenario": "uni_cat_cost",
+      "n": 257,
+      "paired_nw_t_lag3": -1.244193,
+      "mean_d_monthly": -0.001187,
+      "dSR": -0.011828,
+      "dMDD": 0.058518,
+      "d_PORT_t": -0.330077
+    },
+    {
+      "scenario": "uni_cat_lag1",
+      "n": 257,
+      "paired_nw_t_lag3": -1.841243,
+      "mean_d_monthly": -0.002302,
+      "dSR": -0.058786,
+      "dMDD": 0.048038,
+      "d_PORT_t": -0.697553
+    },
+    {
+      "scenario": "uni_cat_lag1_cost",
+      "n": 257,
+      "paired_nw_t_lag3": -1.867058,
+      "mean_d_monthly": -0.002351,
+      "dSR": -0.060696,
+      "dMDD": 0.046578,
+      "d_PORT_t": -0.710642
+    },
+    {
+      "scenario": "voltgt",
+      "n": 257,
+      "paired_nw_t_lag3": -1.81723,
+      "mean_d_monthly": -0.003166,
+      "dSR": 0.049132,
+      "dMDD": 0.216689,
+      "d_PORT_t": -0.789079
+    },
+    {
+      "scenario": "voltgt_cost",
+      "n": 257,
+      "paired_nw_t_lag3": -1.852875,
+      "mean_d_monthly": -0.00323,
+      "dSR": 0.045791,
+      "dMDD": 0.215857,
+      "d_PORT_t": -0.808147
+    },
+    {
+      "scenario": "voltgt_lag1",
+      "n": 257,
+      "paired_nw_t_lag3": -1.314431,
+      "mean_d_monthly": -0.002177,
+      "dSR": 0.092426,
+      "dMDD": 0.221907,
+      "d_PORT_t": -0.494074
+    },
+    {
+      "scenario": "voltgt_lag1_cost",
+      "n": 257,
+      "paired_nw_t_lag3": -1.35249,
+      "mean_d_monthly": -0.002241,
+      "dSR": 0.089095,
+      "dMDD": 0.221021,
+      "d_PORT_t": -0.513214
+    }
+  ],
+  "crisis_conditional": [
+    {
+      "crisis": false,
+      "n": 230,
+      "bare_mean": 0.016034,
+      "uni_mean": 0.016034
+    },
+    {
+      "crisis": true,
+      "n": 27,
+      "bare_mean": 0.014835,
+      "uni_mean": 0.004002
+    }
+  ],
+  "lag1_stress": {
+    "uni_cat": {
+      "mdd_improve_base": -0.059864,
+      "mdd_improve_lag1": -0.048038,
+      "dSR_base": -0.009868,
+      "dSR_lag1": -0.058786
+    },
+    "voltgt": {
+      "mdd_improve_base": -0.216689,
+      "mdd_improve_lag1": -0.221907,
+      "dSR_base": 0.049132,
+      "dSR_lag1": 0.092426
+    },
+    "uni_cat_cost": {
+      "mdd_improve_base": -0.058518,
+      "mdd_improve_lag1": -0.046578,
+      "dSR_base": -0.011828,
+      "dSR_lag1": -0.060696
+    },
+    "voltgt_cost": {
+      "mdd_improve_base": -0.215857,
+      "mdd_improve_lag1": -0.221021,
+      "dSR_base": 0.045791,
+      "dSR_lag1": 0.089095
+    }
+  }
+}
