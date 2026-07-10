@@ -1,0 +1,151 @@
+{
+  "spec_sha256": "fe197763d63cff8bbc1b4bab221a4091f1c1c9453f2a826c8e34fc8eece7904e",
+  "run_at": "2026-07-10T15:19:36+0900",
+  "metric_type": "canonical_screen",
+  "n_trials": 2,
+  "pin_tag": "wt004B1_20260710_151936",
+  "panel_md5": "775f40656711b717024b2fe104aaf872",
+  "alignment_beta_scan": {
+    "offset-1": -0.0248,
+    "offset0": -0.0496,
+    "offset1": 0.8585,
+    "offset2": 0.0451
+  },
+  "window": {
+    "IS": "2015-01..2018-12 (Dates; DART crawl 2015+ — mission 2005-2018 window truncated by data availability, pre-declared in spec)",
+    "OOS": "NOT consulted (selection threshold unmet)"
+  },
+  "configs": {
+    "P1": {
+      "band": "21-30",
+      "binding_stock_months_IS": 15,
+      "binding_months_IS": 12,
+      "promoted_tickers": 8,
+      "primary": {
+        "n_months": 48,
+        "mean_diff_monthly": -0.000123,
+        "mean_diff_ann": -0.00147,
+        "paired_nw_t_lag3": -0.46,
+        "n_active_diff_months": 14,
+        "mean_diff_active_only": -0.00042,
+        "ir_A": 0.31392,
+        "ir_B": 0.325382,
+        "d_ir_frame": -0.011462,
+        "tot_sr_A": 0.522503,
+        "tot_sr_B": 0.535251,
+        "mde_t2_monthly": 0.000709,
+        "mde_t2_ann": 0.008506
+      },
+      "lag1": {
+        "paired_nw_t_lag3": 0.441,
+        "mean_diff_ann": 0.00135,
+        "n_active_diff_months": 10
+      },
+      "ext_ab": {
+        "ext_paired_nw_t": -0.295,
+        "ext_mean_diff_ann": -0.000987,
+        "inflation": 0.328605,
+        "lookahead_suspected": true,
+        "message": "[overlay_pit_guard] P1_mean_diff_ann: current=-0.0010 strict=-0.0015 인플레=32.9% → ★LOOK-AHEAD 의심 — strict-PIT 값으로 재판정 필수"
+      }
+    },
+    "P2": {
+      "band": "21-40",
+      "binding_stock_months_IS": 27,
+      "binding_months_IS": 20,
+      "promoted_tickers": 9,
+      "primary": {
+        "n_months": 48,
+        "mean_diff_monthly": 0.000304,
+        "mean_diff_ann": 0.003646,
+        "paired_nw_t_lag3": 0.658,
+        "n_active_diff_months": 23,
+        "mean_diff_active_only": 0.000634,
+        "ir_A": 0.336155,
+        "ir_B": 0.325382,
+        "d_ir_frame": 0.010773,
+        "tot_sr_A": 0.537065,
+        "tot_sr_B": 0.535251,
+        "mde_t2_monthly": 0.001081,
+        "mde_t2_ann": 0.01297
+      },
+      "lag1": {
+        "paired_nw_t_lag3": -1.117,
+        "mean_diff_ann": -0.004448,
+        "n_active_diff_months": 21
+      },
+      "ext_ab": {
+        "ext_paired_nw_t": 1.211,
+        "ext_mean_diff_ann": 0.010335,
+        "inflation": 1.834542,
+        "lookahead_suspected": true,
+        "message": "[overlay_pit_guard] P2_mean_diff_ann: current=0.0103 strict=0.0036 인플레=183.5% → ★LOOK-AHEAD 의심 — strict-PIT 값으로 재판정 필수"
+      }
+    }
+  },
+  "size_matched_control": {
+    "P1": {
+      "available": true,
+      "n_valid_draws": 200,
+      "ctrl_mean_diff_ann": {
+        "mean": 0.000014,
+        "sd": 0.004304,
+        "q05": -0.006587,
+        "q50": -0.000221,
+        "q95": 0.007638
+      },
+      "ctrl_nw_t": {
+        "mean": -0.05624,
+        "q05": -1.5372,
+        "q95": 1.41955
+      },
+      "actual_mean_diff_ann": -0.00147,
+      "actual_nw_t": -0.46,
+      "actual_pctile_mean": 0.38,
+      "actual_pctile_t": 0.355
+    },
+    "P2": {
+      "available": true,
+      "n_valid_draws": 200,
+      "ctrl_mean_diff_ann": {
+        "mean": 0.00163,
+        "sd": 0.006255,
+        "q05": -0.008033,
+        "q50": 0.001199,
+        "q95": 0.012015
+      },
+      "ctrl_nw_t": {
+        "mean": 0.217365,
+        "q05": -1.10735,
+        "q95": 1.57285
+      },
+      "actual_mean_diff_ann": 0.003646,
+      "actual_nw_t": 0.658,
+      "actual_pctile_mean": 0.645,
+      "actual_pctile_t": 0.685
+    }
+  },
+  "selection": {
+    "rule": "max IS paired NW-t >= +2.5 -> OOS once; all < +2.0 -> terminate; [2.0,2.5) near-null terminate",
+    "max_is_t": 0.658,
+    "selected": null
+  },
+  "verdicts_per_config": {
+    "P1": {
+      "config": "P1",
+      "is_t": -0.46,
+      "binding": 15,
+      "power_adequate": false,
+      "verdict": "power-insufficient"
+    },
+    "P2": {
+      "config": "P2",
+      "is_t": 0.658,
+      "binding": 27,
+      "power_adequate": false,
+      "verdict": "power-insufficient"
+    }
+  },
+  "overall_verdict": "power-insufficient",
+  "honest_notes": ["screen/diagnostic tier only — capital-grade claim forbidden (HARD 3종 + forge + governor 별도).", "IR figures are FRAME-LEVEL net-active (canonical top-20 EW, unoverlaid, cap-w BM) — NOT production net_active_recon_v1 NAV recon. Overlay M4xR05 identical in both arms and holdings-independent => monthly diff sign preserved under overlay (magnitude scaled by exposure).", "thin census: 33 firms / ~81 binding stock-months 2015+, of which ~28 in IS 2015-2018 — power cap pre-registered.", "incremental turnover cost is delta-based 15bps/leg inside canonical ret_net for both arms (no proxy).", "Stage A prior: A1-DART event drift 2015+ all buckets mildly negative/insignificant; favorable edge NOT expected — this run completes the measurement honestly (도훈 '컴퓨팅 한계까지')."]
+}

@@ -1,0 +1,153 @@
+{
+ "artifact": "research_ev_map (임무 A1 — corpus 정량 EV 지도)",
+ "generated": "2026-07-10",
+ "inputs": {
+  "lcode_corpus": ".cache/lcode_corpus.json (n_lcodes=256, last_updated 2026-07-10T05:10:57Z)",
+  "distilled_knowledge": "06_Registry/distilled_knowledge.json (44 entries: distilled 10 / proposed 2 / pending_5axis 다수)",
+  "frontier_queue": "06_Registry/alpha_frontier_queue.json (FQ-001~010, updated 2026-07-10)"
+ },
+ "exclusions_and_flags": {
+  "b434_distill_excluded": [
+   "L-AS-B434-DISTILL-001(272건 통합)",
+   "-002(38)",
+   "-003(18)",
+   "-004(10)",
+   "-005(6)",
+   "-006(6)",
+   "-008(5)",
+   "-023(2)"
+  ],
+  "rule": "b434 통합 L-code 8건은 격자 집계에서 제외(개별 가설 기각 증거로 인용 금지 — 실행신호=generic fallback combo, 라벨 오귀속)",
+  "basis_caution": "text-추출 best_port_t 중 EW-uni/벤치-상대/IS-only basis 수치는 cap-w authoritative 아님 — 각 항목에 caveat 병기"
+ },
+ "grid_file": "stage_artifacts/research_ev_map/grid_family_cgroup_metric.json (66 cells, family x construction_group x metric_type[계기])",
+ "rows_file": "stage_artifacts/research_ev_map/lcode_rows_flat.json (256행 flat, b434/label_suspect/p2017_decay/gated 플래그)",
+ "headline_aggregates": {
+  "capital_pass_total": 0,
+  "capital_pass_note": "전 66셀에서 (PORT_t>=2.95 AND oos_retention>=0.7 AND 판정 A/B) 동시충족 0건 — 16/16 admission FAIL·graduation survivors 0과 정합",
+  "post2017_decay_flagged_records": 18,
+  "grade_dist_perf241": {
+   "A": 18,
+   "B": 57,
+   "C": 39,
+   "F": 126
+  },
+  "metric_type_dist": {
+   "backtested": 109,
+   "proxy": 91,
+   "estimated": 37,
+   "canonical_screen": 19
+  }
+ },
+ "dead_classes": [
+  {
+   "class": "D1 횡단 return-파생 single_long_only (전 family)",
+   "n": ">=130 (momentum 64+value 33+quality 계열 19+defense 9+기타; proxy 91건 포함)",
+   "verdict": "포화·전멸. 최고 cap-w 실측 PORT_t 2.58 (L-AS-20260709_074129_30048 Chen-Welch RD-to-Market, oos_retention -0.052 FAIL) / 3.51 (L-AR-20260705_190548 forward-consensus, oos 0.253 auto-FAIL). capital_pass 0",
+   "era": "post-2017 전-decile signal-decay (L-QPM-20260705_192441) + mega-cap 벤치 아티팩트 얽힘 (L-AR-20260710_112721: 벤치-아티팩트 기각은 factor-specific)",
+   "evidence_paths": [
+    ".cache/lcode_corpus.json",
+    "06_Registry/distilled_knowledge.json DIST-QPM-003/006, DIST-AR-001/003"
+   ]
+  },
+  {
+   "class": "D2 시장타이밍/오버레이 초월 (M4xR05 대비)",
+   "n": "overlay_regime x overlay 10 (전부 F) + momentum overlay proxy 2 + hedge/vol-target 각1",
+   "verdict": "4중 최종부정(W1) + 게이트형태/구성/진짜베타 3계열 measured-negative + BearProb 다층곱셈=동월 look-ahead 아티팩트 FALSIFIED. regime-cash M4xR05 near-optimal",
+   "era": "n/a (구조 판정)",
+   "evidence_paths": [
+    "memory project-pg2-offense-overlay-settled",
+    "memory project-riskoverlay-multilayer-bearprob"
+   ]
+  },
+  {
+   "class": "D3 미시구조/flow/정보이론 novel 채널 (micro_novel)",
+   "n": "8 (peer-resid-mom/Hurst/flow-divergence/run-length/overnight/Amihud-slope/TE net-sink/flow x revision)",
+   "verdict": "전부 F/C. best PORT_t 1.65 (L-AR-20260621_105345B Hurst). TE net-sink -0.93~-1.05 (L-AR-20260705_193300). 직교성은 성립하나 신호 부재 — '직교!=수익' 채널-레벨 확증",
+   "era": "2017+ decay 명시 다수",
+   "evidence_paths": [
+    "L-AR-20260621_* 6건",
+    "L-AR-20260705_193300"
+   ]
+  },
+  {
+   "class": "D4 event/occurrence형 비-return-파생 (buyback·index-inclusion·othercorp·rev-forecast)",
+   "n": "5",
+   "verdict": "best 1.74 (L-AR-20260706_095035 revenue-forecast-revision, canonical FAIL screen-tier). buyback drift -1.18, index-inclusion -0.885. occurrence-형은 소진 — magnitude-형(FQ-002)만 미검",
+   "era": "n/a",
+   "evidence_paths": [
+    "L-AR-20260621_201229/213456/220827",
+    "L-AR-20260621_163658",
+    "L-AR-20260706_095035"
+   ]
+  },
+  {
+   "class": "D5 ml_sizing / uncertainty-aware selection·sizing",
+   "n": "15 (value 5 backtested 포함)",
+   "verdict": "2세션 독립 robust FAIL (L-JG-20260705_200604 PORT_t 0.97, oos -0.604; WT-D20260705_009 ArmA/B 0.20/0.01). x-sec attention 5-seed 구조 pt 2.36·oos 0.037 (L-JG-20260705_123317; text상 6.06은 seed-max 비권위). EW=sizing 개선불가 천장",
+   "era": "post-2017 decay 2건 명시",
+   "evidence_paths": [
+    "L-JG-20260705_200604",
+    "L-JG-20260705_123317"
+   ]
+  },
+  {
+   "class": "D6 composite/packaging (mega-cap 앵커·joint packaging·MID-tier composite)",
+   "n": "10",
+   "verdict": "07-10 천장 확정 — joint packaging 승자 H3g IS 3.282 -> OOS -1.634 붕괴 (L-AR-20260710_135913, sweep-DSR 0.457 FAIL); MID 6축 composite cap-w 2.08<2.95 (L-AR-20260710_103312); mega-cap 앵커 = 벤치-트래킹 분산축소 레버로 DE-RATE (L-QPM-20260706_081232, book paired NW-t -1.52)",
+   "era": "post-2017 decay 5건 명시",
+   "evidence_paths": [
+    "L-AR-20260710_135913",
+    "L-AR-20260710_103312",
+    "L-QPM-20260706_081232",
+    "L-QPM-20260706_083113"
+   ]
+  },
+  {
+   "class": "D7 RAMP chain (직교 sleeve 스태킹·국면엔진 배합)",
+   "n": "26 (chain 31 중 perf)",
+   "verdict": "cap-w PORT_t 미통과 일관: M_regdd 2.37/EW-uni 3.66·oos 0.15 (L-RAMP-20260618_175207), R1 스택 best 2.54·11/11 post2017 SR 음수 (L-RAMP-20260705_184828). Shu-Mulvey 7.65~7.72 (L-RAMP-20260619_150531/152736)는 MINY5 의존·idealized IR·25종서 엣지소멸 caveat — 졸업 아님",
+   "era": "cohort-wide 2017+ decay",
+   "evidence_paths": [
+    "L-RAMP-20260618_175207",
+    "L-RAMP-20260705_184828(대응 memory)",
+    "04_Research/ramp/reports/gate_review_r1_sleeve_stack_20260705.md"
+   ]
+  }
+ ],
+ "residual_classes": [
+  {
+   "class": "R1 dual-basis/mid-tier 소비 프레임 (mandate-레벨)",
+   "attempts": "2 (L-AR-20260710_112721 EW-생존자 스크린 — cap-w 기각 8종 중 EW-유리 생존 1종 V02_EP; L-AR-20260710_103312 MID composite cap-w FAIL)",
+   "status": "측정은 최신·부분적 — cap-w envelope 안 재조합은 죽었고, 잔존 분산은 '소비 basis/mandate' 축(FQ-009 dohoon_decision)",
+   "expected_upside": "MID tier(11-30) LS t=3.02 post2017 生 실측(memory project-captier-alpha-localization) + EW-대비 생존 신호 실재 — 단 cap-w 벤치 mandate 하에서는 화폐화 불가가 이미 실측",
+   "wall_avoidance": "벽=벤치-구성 미스매치(알파는 mid-cap에 국소)이므로 신호 재발굴이 아니라 평가/운용 벤치 프레임 결정으로 우회 — 봉투(25종·long-only) 불변, 벤치 정의만 도훈 결정",
+   "required_resource": "도훈 결정 1건 (FQ-009). 데이터·코드 기존재"
+  },
+  {
+   "class": "R2 overlay_candidate_queue 잔여 16건 드레인",
+   "attempts": "0~부분 (FQ-006 open)",
+   "status": "screen_route=OVERLAY_CANDIDATE로 라우팅된 후보들 미소비",
+   "expected_upside": "overlay는 시스템 유일 실증 MDD/SR 레버 계열 — 단 M4xR05 초월 3계열 measured-negative이므로 상방은 '보완 신호' 수준(중저)",
+   "wall_avoidance": "overlay_pit_guard.R HARD + lag1 스트레스 + strict-PIT A/B 의무 (pit.md C5 — 동월 look-ahead 재발방지)",
+   "required_resource": "내부 실측만. 저비용 배치 스크린 가능"
+  },
+  {
+   "class": "R3 revival 발화 3건 재도전 (DIST-AR-001/DIST-AR-003/DIST-QPM-003)",
+   "attempts": "조건부 대기 (FQ-007 open)",
+   "status": "CRISIS 국면 트리거·에피소드-lens(AX-001 v2) 재평가 대기 — estimated 레거시 창을 backtested로 재측정하는 조건부 lane",
+   "expected_upside": "drag/reversal 기전 회피 조합(Q25 Ohlson·R16 Calmar 순방향 distress 등 DIST-AR-001 frontier) — 방어 standalone 재제안이 아닌 frontier-scoped 재측정",
+   "wall_avoidance": "INV-7 경로-scoped: 차별점 명시된 frontier 항목만, standalone 반복 금지",
+   "required_resource": "트리거 발화 시 canonical_screen_bt 재측정"
+  },
+  {
+   "class": "R4 [게이트 lane — 헤드라인 아님] 비-return virgin 4종",
+   "attempts": "0 (공매도잔고 FQ-003 virgin / 담보·질권+감사의견 FQ-004 0-coverage / QW crowding FQ-005 / 계약 magnitude FQ-002)",
+   "status": "전부 외부 게이트: dohoon_data_work(QW export)·dohoon_decision(파서 확장)·parser_gated. insider 역사(FQ-001)는 크롤 진행중·타 세션 소유",
+   "expected_upside": "유일한 hypothesis_index-virgin 분산. 공매도잔고=구조적 mispricing 논거(Miller 1977, KR 공매도제약) + exclusion-소비로 long-only 정합",
+   "wall_avoidance": "비-return 원천=return-파생 소진 벽 밖. 단 IC->PORT_t 전이 벽은 미검증 — canonical PORT_t가 최종 관문(FQ-001 wall_check 명시)",
+   "required_resource": "도훈 데이터 작업/결정 (세션 임의 착수 금지 — consume_rule)"
+  }
+ ],
+ "ev_ranking_note": "내부-실행가능 순위: R1(결정 1건으로 열림, 실측 근거 최강) > R2(저비용 드레인) > R3(트리거 조건부). R4는 잠재 EV 최고(virgin)이나 외부 게이트 — 본 과제 헤드라인 제외(도훈 mandate). 죽은 계급 D1~D7 재제안 금지(INV-7 경로-scoped: 차별점 명시 없는 반복 금지)."
+}

@@ -1,0 +1,58 @@
+{
+  "spec_id": "WT-D20260710_004_B1_PROMOTE",
+  "spec_version": "1.0",
+  "frozen_intent": "Pre-registration of B1 PROMOTE-only monetization branch (2 configs = 2 trials, WT-004 family). VETO arm excluded (dilutive-event data absent + 도훈 회부 pending — this branch is measurable independently). Any metric outside this set is a trial.",
+  "created_by": "alpha-research (subagent, B1-completion mandate '컴퓨팅 한계까지')",
+  "created_date": "2026-07-10",
+  "n_trials_this_branch": 2,
+  "n_trials_family_note": "WT-004 family: Stage A = 0 (no-selection diagnostics), B1 = 2 configs. Cumulative family n_trials = 2.",
+  "book_frame": {
+    "base_book": "score_eff top-20 EW long-only (current deployed book selector frame), liq filter tv20>=2e8 (NA passes, Stage A convention), monthly grid, 15bps one-way delta cost",
+    "engine": "canonical_screen_bt() with explicit-membership indicator scores (score=100-rank for exactly 20 members/Date, top_n=20) — both arms through the identical contract path (build_benchmark_compare, NW lag-3). No proxy hand-calc.",
+    "panel": "stage_artifacts/WT-D20260710_001/panel.rds — md5 MUST equal Stage A 775f40656711b717024b2fe104aaf872 (assert)",
+    "benchmark": "benchmark.parquet monthly compound, forward lead1 (canonical WT-001 convention; holding month = month(Date)+1). Empirical beta-scan offset check recorded before use.",
+    "overlay_note": "M4xR05 overlay/weights/exposure UNCHANGED by design (substitution only). Overlay exposure e_t>=0 is identical in both arms and independent of holdings => monthly active diff under overlay = e_t*(portA-portB): sign-preserving, magnitude-scaled. Primary paired test therefore runs on the unoverlaid book frame; production recon mapping is direction-preserving. IR figures are FRAME-LEVEL net-active (canonical, vs cap-w BM, unoverlaid) — labeled, NOT production net_active_recon_v1 NAV recon."
+  },
+  "configs": [
+    {"config_id": "P1", "band": "score_eff rank 21-30", "event": "DART buyback decision, fresh age<=3 (ev_age_m=(Date-rcept_dt)/30.44 <= 3, rcept_dt<=Date roll join — EXACT Stage A census definition)"},
+    {"config_id": "P2", "band": "score_eff rank 21-40", "event": "same"}
+  ],
+  "substitution_rule": {
+    "per_month": "candidates = band names with fresh buyback, ordered by score rank (best first), take at most K_max=3. Replace the K lowest-ranked incumbents (rank 20, 19, 18). EW 1/20 weights unchanged. No other change.",
+    "K_max": 3,
+    "note": "tie-break substitution only — event has NO selector role outside the boundary band."
+  },
+  "windows": {
+    "IS": "Dates 2015-01-01..2018-12-01",
+    "IS_deviation_note": "Mission window 2005-2018, but DART buyback crawl = 2015-01+ ONLY (Stage A window_limits). Months 2005-2014 would be structural zero-diff (data absence, not decision) and only dilute the test => IS restricted to 2015-2018. Honestly declared here, pre-run.",
+    "OOS": "Dates 2019-01-01..panel end (Ret_1m non-NA). Consulted ONCE, only for the selected config, only if selection threshold met."
+  },
+  "primary_statistic": "paired monthly diff d_t = ret_net(substituted) - ret_net(base) over all IS months (zero months included — event-feasible window), NW-t lag-3 via contract .nw_t_mean. Incremental turnover cost is inside ret_net (delta-based 15bps per leg) — |dExposure|x15bps duty satisfied by construction.",
+  "secondary_statistics": [
+    "active-months-only mean diff (diagnostic)",
+    "dIR_frame = IR(sub) - IR(base), canonical information_ratio (frame-level net-active, basis-labeled)",
+    "total-return SR non-worsening: totSR(sub) >= totSR(base) - 0.02",
+    "annualized mean diff"
+  ],
+  "size_matched_control": {
+    "n_draws": 200,
+    "seed": 20260710,
+    "rule": "Actual promotion schedule decomposed into episodes (ticker x consecutive months). Each draw: per episode, sample one control name from the SAME band at episode-start month, EXCLUDING fresh-buyback names and names already in base top-20 or another active episode; control name is promoted for the exact same months, replacing incumbents by the identical rule (turnover/persistence matched). If a control name enters base top-20 in a later episode month, that month's swap is skipped (logged).",
+    "metric": "distribution of control mean monthly diff + NW-t; actual value percentile. Separates event effect from mechanical band-swap effect (Stage A recommendation)."
+  },
+  "pit_discipline": {
+    "assert": "assert_overlay_pit(used_cutoff=max rcept_dt consumed per month, holding_start=holdings_signal_cutoff(Date)=first day of month(Date)+1) — HARD stop on violation",
+    "lag1_stress": "fresh flag shifted 1 month per ticker (signal computed at Date_{t-1} applied at t); paired diff recomputed. If base result positive and lag1 collapses => same-month leak suspicion => invalid.",
+    "strict_ab": "primary timing rcept_dt<=Date (STRICTER than required). A/B variant 'ext' = rcept_dt <= end-of-month(Date) (< holding month start, still PIT-legal). overlay_lookahead_ab(ext vs primary) reported; primary judgment stays on the stricter <=Date timing (census-consistent)."
+  },
+  "selection_and_verdict_preregistered": {
+    "selection": "if max(IS paired NW-t over P1,P2) >= +2.5 => select that config, consult OOS once. If all < +2.0 => terminate without OOS (KB1). If in [2.0,2.5) => near-null, terminate without OOS (선택문턱 +2.5), no success claim.",
+    "SURVIVOR_CANDIDATE": "selected config AND lag1 retains >=50% of IS effect AND actual >= 95th percentile of control distribution AND OOS paired NW-t >= +2.0 AND dIR_frame >= +0.05 AND total SR non-worsening. (screen/diagnostic tier only — capital-grade claim forbidden; HARD 3종 + forge + governor separate.)",
+    "KILL_NEGATIVE": "any config IS paired NW-t <= -2.0 (measured harm)",
+    "power_insufficient": "if binding substitution stock-months in IS < 30 for a config, clean KILL for the EVENT effect is not claimable for that config; verdict capped at power-insufficient (with MDE reported). Known prior: 2015-2018 binding ~28 stock-months (P2) => this cap will very likely bind. Honest 병기 의무.",
+    "null_band_note": "paired NW-t in 2.2-2.6 = null-band, no success claim (fleet rule)."
+  },
+  "power_report": "MDE at t=2: 2*sd(d_t)/sqrt(n_IS) monthly, annualized; plus n_binding stock-months and n_active diff months per config.",
+  "metric_type": "canonical_screen (screening/diagnostic tier). Not forge-authoritative. Not admission-binding.",
+  "outputs": "qepm/mailbox/worktask/WT-D20260710_004/alpha_b1_promote_results.json + stage_artifacts/WT-D20260710_004/run_b1_promote.R"
+}
