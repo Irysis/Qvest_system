@@ -1,0 +1,58 @@
+{
+  "task_id": "WT-H20260710_001",
+  "wt_type": "hyperparameter_sweep",
+  "preregistered_utc": "2026-07-10",
+  "target": "score_eff = 0.65*z(core) + 0.35*z(def); core={C01_SUE,C02_EPS_Chg_1m,C04_ESBR,C06_TP_Gap}, def={Q07_Earnings_Stability,M08_Residual_Mom,Q25_Ohlson_O}",
+  "incumbent_recipe": "per-factor aligned-Z -> winsor_z(2.5 sigma, clip at mean+-k*sd) -> EW-sum per sleeve -> classic z (.zc) -> blend 0.65/0.35. missing rule = strict (any missing named factor in a sleeve => NA composite for that ticker).",
+  "selection_authority": "canonical_screen_bt portfolio_alpha_t_nw_lag3 (NW lag-3), IS-only 2005..2018-12. rank-IC advisory only.",
+  "primary_metric": "IS canonical PORT_t + paired NW-t(lag3) vs rebuilt-incumbent + delta-IR(net_active_recon).",
+  "vendor_locked_out_of_scope": {
+    "C01_SUE_std_denominator": "QuantiWise-precomputed field CONSENSUS$sue; raw actual/forecast/history std not separately available -> NOT re-formable",
+    "C02_EPS_Chg_horizon": "QuantiWise-precomputed CONSENSUS$eps_chg_1m/3m fields -> underlying horizon not re-formable (only 1m/3m blend available as distinct vendor fields)"
+  },
+  "excluded_reused_axes": ["holding_band","rebalance_freq","top_n","blend_theta_0.65_0.35","value_combination","weighting_methodology","overlay"],
+  "blocks": {
+    "A_common_formation": {
+      "desc": "uniform composite-stage knobs on BOTH sleeves, factor sets + 0.65/0.35 fixed",
+      "winsor_sigma": [2.0, 2.5, 3.0, "Inf"],
+      "standardization": ["classic", "robust_mad"],
+      "missing_rule": ["strict", "tolerant"],
+      "n_cells": 16,
+      "incumbent_cell": "winsor2.5 | classic | strict"
+    },
+    "B_M08_formation": {
+      "desc": "recompute M08 residual momentum from RAWDATA, substitute into def sleeve, else incumbent formation (winsor2.5/classic/strict). a-priori sign +.",
+      "variants": [
+        {"id": "B0_inc_252_21_capm", "lookback": 252, "skip": 21, "resid": "capm_bm", "is_incumbent": true},
+        {"id": "B1_126_21_capm", "lookback": 126, "skip": 21, "resid": "capm_bm"},
+        {"id": "B2_378_21_capm", "lookback": 378, "skip": 21, "resid": "capm_bm"},
+        {"id": "B3_252_0_capm", "lookback": 252, "skip": 0, "resid": "capm_bm"},
+        {"id": "B4_252_21_raw", "lookback": 252, "skip": 21, "resid": "none_raw_mom"}
+      ],
+      "n_new": 4
+    },
+    "C_c04_c06_reformation": {
+      "desc": "recompute C04(ESBR agg window) / C06(TP smoothing) from consensus raw, substitute into core sleeve, else incumbent. a-priori sign +.",
+      "variants": [
+        {"id": "C0_inc", "c04_agg_months": 1, "c06_tp_smooth_days": 1, "is_incumbent": true},
+        {"id": "C1_esbr3m", "c04_agg_months": 3, "c06_tp_smooth_days": 1},
+        {"id": "C2_esbr6m", "c04_agg_months": 6, "c06_tp_smooth_days": 1},
+        {"id": "C3_tp5d", "c04_agg_months": 1, "c06_tp_smooth_days": 5},
+        {"id": "C4_tp21d", "c04_agg_months": 1, "c06_tp_smooth_days": 21},
+        {"id": "C5_esbr3m_tp5d", "c04_agg_months": 3, "c06_tp_smooth_days": 5}
+      ],
+      "n_new": 5
+    }
+  },
+  "n_trials_total_distinct": 25,
+  "dsr_gate": {
+    "type": "sweep",
+    "null_max_t_crude": "sqrt(2*ln(25)) ~= 2.537",
+    "rule": "DSR(Bailey-LdP, sweep) HARD >= 0.5 on winner; PORT_t within null-max band => non-informative"
+  },
+  "oos": {"is_end": "2018-12-01", "oos_rule": "winner only, single pass 2019-01..2026"},
+  "production_fidelity": "winner + rebuilt-incumbent through STR_1715 carrier: top-20, linear_tilt_to_penalty_qd(lambda=1.5, phi=3, lb=0, ub=0.20/0.10 crisis), liq PIT 2e8, paired NW-t on net active. (06-24 valwt lesson: EW-proxy improvement must transfer.)",
+  "cost_model": "v2.4_kr_retail_15bps one-way",
+  "pit": "C1-C15; cross-sectional transforms per sig_date only; M08/C recompute uses Date<=sig_date only; a-priori signs (no data-driven flip).",
+  "success_criterion": "small-but-DSR-surviving AND production-transferring: winner IS PORT_t > incumbent AND OOS not collapsed AND production paired NW-t >= 2.0 AND DSR >= 0.5. Else verdict = 'factor-internal parameters saturated' (map completion)."
+}
