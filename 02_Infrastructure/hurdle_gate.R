@@ -1585,8 +1585,16 @@ run_hurdle_gate <- function(sim_result,
   } else {
     .routes <- character(0)
     if (mdd > 0.45 || isTRUE(dd_profile$tail_review)) .routes <- c(.routes, "OVERLAY_CANDIDATE")  # MDD가 죽인 신호 — overlay/regime 결합 후보
-    if (ann_turnover > turnover_hard_fail_pct) .routes <- c(.routes, "DPL_FEATURE")  # 고회전 신호 — 직접운용 불가, 피처로
-    .routes <- c(.routes, "FR_RCMA")                                    # 국면조건부 소비는 항상 후보 (등급무관 등재)
+    if (ann_turnover > turnover_hard_fail_pct) {
+      # v8.3(2026-07-10): DPL_FEATURE 발급 중단 — DPL settled-negative(2026-06-26, 재제안 금지)
+      #   + 소비자 0(죽은 주소 라벨). 고회전 신호는 직접운용·모듈등록(비용 floor) 불가 —
+      #   신호력 실재 기록용 검토 라벨로만 보존. OVERLAY_CANDIDATE 오염 방지 위해 별도 라벨.
+      .routes <- c(.routes, "TURNOVER_REVIEW")
+    } else {
+      # v8.3(2026-07-10): FR_RCMA 무조건 첨부 폐지(판별력 0) — register_module 계약 floor
+      #   (cost floor: 회전율 hard-fail 이내 = 운용가능 비용구조) 충족 가능 케이스만 첨부.
+      .routes <- c(.routes, "FR_RCMA")
+    }
     paste(unique(.routes), collapse = "|")
   }
   if (screen_pass && grade %in% c("C", "F")) {

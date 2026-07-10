@@ -79,7 +79,7 @@ audit_p3_role_objective <- function(wt_id) {
   packages <- list(
     alpha = list(
       path = file.path(wt_dir, "alpha_package.json"),
-      allowed = c("rank_ic", "icir", "monotonicity", "subperiod_stability")
+      allowed = c("canonical_port_t", "rank_ic", "icir", "monotonicity", "subperiod_stability")  # v8.3 M1 2026-07-10: canonical_port_t 추가 (role_objective_guard.sh·schema.json enum 정합)
     ),
     risk = list(
       path = file.path(wt_dir, "risk_package.json"),

@@ -2,10 +2,17 @@
 
 ## Active Version
 
-**Qvest v8.1.0 — Opus 4.8-Native · 4-Mode 헌법 (RAMP 추가 2026-06-17) · 실측 거버넌스** (2026-06-05)
+**Qvest v8.3 — Opus 4.8-Native · 4-Mode 헌법 · 실측 거버넌스 · 알파 발굴 중심 재편** (2026-07-10)
 
-**계보**: v6.4.0 → v7.0.0 → v7.0.1 → v7.1.0-lite → v7.2.0 → v7.2.1 → v8.0.0 → **v8.1.0** (현재 active)
+**계보**: v6.4.0 → v7.0.0 → v7.0.1 → v7.1.0-lite → v7.2.0 → v7.2.1 → v8.0.0 → v8.1.0 → v8.2 → **v8.3** (현재 active)
 **Branch**: `main` (Qvest active — GitHub default)
+
+**v8.3 핵심 (알파 발굴 중심 재편, 도훈 mandate 2026-07-10)** — SOT `02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md`:
+- **벽-정합 측정**: alpha 단계 선별 1급 지표 = canonical PORT_t(실측, IC는 advisory) — IC→PORT_t 전이 벽 정합. **dual-basis 진단**: cap-w HARD 판정 불변 + 기각 전 EW-유니버스 대비·cap-tier(MEGA/MID) 분해 확인 의무(post-2017 감쇠의 상당부분 = mega-cap 벤치 아티팩트 실측)
+- **상설 프론티어 큐**: `06_Registry/alpha_frontier_queue.json` = "다음에 뭘 시도할지" SOT. 발굴 착수 전 hypothesis_index lookup + 큐 확인·owner 표기 의무. `dohoon_decision` 항목 세션 임의 착수 금지
+- **지식 환류 수리**: hypothesis_index in-flight WT 인덱싱(병렬 중복실행 방지) · 주입면 frontier 현행화(settled-negative 광고 제거) · revival 발화 세션 도달 · screen-tier 회수 배관(dead 라벨 정리)
+- **불변**: Graduation HARD 3종 · cap-w 게이트 권위 · 6-agent(슬림화 재제안 금지) · Production Constraints(INV-7) · governor 수동
+- **텔레그램 v7 동반**: 비전공자 가독 3장치(쉬운 설명 섹션 + 판정 평문 + 자동 용어풀이 footer), 전문용어 유지
 
 **v8.1 핵심** (3-Mode 정립 + 실측-only + 모듈 자동흐름, 도훈 mandate 2026-06-05):
 - **3-Mode 헌법**: alpha-search 제1원칙(**논문 완전 복제** + 유니버스 K200∪KQ150 고정 + 기간 2005~ 고정) · factor-rotation Lane3(모듈 국면배합, RCMA 등급무관 양방향) · Axiom **r7 원전 복원**(5축 boolean-AND + 3-mode 2-tier + INV-1~7)
@@ -16,7 +23,7 @@
 - **v8.0 흡수(retain)**: R+Python 1급 · SR 2.5 · agent effort(judge/gov xhigh) · axiom_context_inject · harness_perf_eval · artifact-naming
 - **미완(후속)**: residual momentum 사이클 register/factor_analysis 디버깅 · WT_WT-* cleanup · axiom global 실가동
 
-**★ Active SOT (단일 진실)**: `02_Infrastructure/docs/qvest_v8_1_sot.md` (v8.1 설계 SOT) + `qvest_v8_0_upgrade_plan.md` (v8.0 base 흡수, retain)
+**★ Active SOT (단일 진실)**: `02_Infrastructure/docs/qvest_v8_1_sot.md` (v8.1 설계 SOT) + `qvest_v8_3_alpha_discovery_sot.md` (v8.3 발굴 재편 SOT) + `qvest_v8_0_upgrade_plan.md` (v8.0 base 흡수, retain)
 **전임 SOT (흡수됨)**: `02_Infrastructure/docs/qvest_v6_4_sot.md` (v6.4 base 흡수, read-only retain)
 **Legacy boundary**: `02_Infrastructure/docs/qvest_legacy_boundary.md` (v55 / S0~S7 격리)
 
@@ -95,7 +102,7 @@ Qvest 시스템 전체 구동. bootstrap.sh 실행 → 플러그인 리로드 �
 - **Measurement Integrity + Graduation 허들 (v8.x)**: `.claude/rules/measurement-graduation.md` ⭐ (위반 = AX-002 동급. 실측 처리(canonical_screen_bt/build_bt_result + metric_type 라벨, proxy 손계산 금지) / portfolio-alpha t = forge-authoritative(NW lag-3) / graduation severity: PORT_t 2.95·DSR hard, rank-IC계열 advisory / admission = book-marginal ΔIR≥0.05 / DPL 구성레이어. E2E: FLOW proxy 3.55→forge 2.35)
 - **Axiom Engine 2-Tier (v8.0)**: `02_Infrastructure/docs/rules/axiom-engine.md` ⭐ (원전 r7 복원 + 3-mode 2-tier(AS proxy→mode-local / QPM·FR backtested→global) + INV-1~7. mode-local AX-&lt;MODE&gt;-NNN / global AX-NNN. negative=provisional failure-ledger. 자동승격=documented·hook block은 주간 confirm. E2E 10/10. 위반=AX-002 동급)
 - **Qvest 답변 원칙 (8원칙 + 5금지)**: `.claude/rules/answer-principles.md` (위반 = AX-002 동급)
-- **Telegram v6 SOT**: `.claude/skills/qvest-telegram/SKILL.md` (단일 규칙. `tg_agent_brief()` 진입점, 약어 풀이 자동, 표준 4섹션 권장)
+- **Telegram v7 SOT**: `.claude/skills/qvest-telegram/SKILL.md` (단일 규칙. `tg_agent_brief()` 진입점, 약어 풀이 + **비전공자 3장치**(쉬운 설명 섹션·판정 평문·자동 용어풀이 footer — 전문용어 유지) 자동, 표준 5섹션 권장)
 - **Caching Discipline**: `02_Infrastructure/docs/rules/caching.md` (Anthropic 5분 TTL, ScheduleWakeup ≤270s)
 - **Harness Engineering (Hooks Tier 1~6)**: `02_Infrastructure/docs/rules/harness.md`
 - **Factor DB + Forge 자원**: `02_Infrastructure/docs/rules/factor-db.md` (C13~C15 + load_month_factors 경유)
@@ -110,7 +117,7 @@ Qvest 시스템 전체 구동. bootstrap.sh 실행 → 플러그인 리로드 �
 
 ### 제2목표: SR 2.5+ / CAGR 16%+ / MDD <25% (SR 2.0→2.5 상향, 2026-05-29 도훈 mandate — KR 구조적 상승 반영)
 
-도달 경로 (2026-07-03 도훈 confirm, 아키텍처 감사 — measurement-graduation §6 정합): ① overlay 정교화(주레버, 실증 유일) ② 잔차-직교 sleeve 스태킹(PORT_t 통과분만) ③ 비-return 신규 원천(DART insider 등). 신규 standalone 팩터 사냥은 16/16 FAIL posterior로 최후순위.
+도달 경로 (2026-07-10 v8.3 재편 갱신 — 실측 순위 재조정. 원 confirm 2026-07-03): ① **비-return 신규 원천**(DART exec-insider 역사·계약금액 magnitude·공매도/대차 등 — 주력, `06_Registry/alpha_frontier_queue.json` FQ-001~005) ② **screen-tier 재고 회수 + EW-대비/cap-tier 재분류**(overlay 큐 16건 드레인 · 벤치-아티팩트 기각 후보 재라우팅, FQ-006~008) ③ overlay 잔여 정교화(실증 유일 β 레버이나 clean 잔여폭 좁음 — 07-05/06 양방향 negative 실측). 잔차-직교 sleeve 스태킹은 07-05 RAMP R1 config-scoped 미달(survivors 0, §6) — 구조판결 아님·frontier 조건부. 신규 standalone return-파생 팩터 사냥은 16/16 FAIL posterior로 최후순위.
 
 ### 제약 (방침)
 
@@ -122,7 +129,7 @@ Qvest 시스템 전체 구동. bootstrap.sh 실행 → 플러그인 리로드 �
 
 ## Production Constraints
 
-> **★이것은 배포 현실이 정의한 문제의 고정 축이다 — 최적화로 없앨 변수가 아니다.** AX-000 따름정리: 이 봉투 *안에서* 풀어라; 제약 완화(>25종·short 허용·유동성 하향 등)를 레버로 제시하는 것은 게임을 이기는 게 아니라 바꾸는 것이다(실패지식 제약 방화벽 — `02_Infrastructure/docs/rules/axiom-engine.md` INV-7). envelope-안 레버(overlay·잔차sleeve·비-return 데이터·DPL·regime-conditional·multi-sleeve·composite·ML sizing)만 프론티어.
+> **★이것은 배포 현실이 정의한 문제의 고정 축이다 — 최적화로 없앨 변수가 아니다.** AX-000 따름정리: 이 봉투 *안에서* 풀어라; 제약 완화(>25종·short 허용·유동성 하향 등)를 레버로 제시하는 것은 게임을 이기는 게 아니라 바꾸는 것이다(실패지식 제약 방화벽 — `02_Infrastructure/docs/rules/axiom-engine.md` INV-7). envelope-안 레버만 프론티어 — 현행(2026-07-10 실측 갱신): ① 비-return 데이터 ② screen-tier 재고 회수(overlay 큐) ③ EW-대비/cap-tier 재분류 ④ overlay 잔여·잔차sleeve(조건부)·multi-sleeve·composite. 구 목록의 **DPL(06-26)·regime-conditional 교차결합(07-05)·ML/uncertainty sizing(07-05 2세션)은 settled-negative 실측 — 레버 아님**(부활신호 발화 시에만 재검토, INV-7).
 
 | 제약 | 값 |
 |---|---|
@@ -283,6 +290,7 @@ v53 TeamCreate 패턴은 v8.1에서 Agent tool spawn으로 대체됨. TeammateId
 ## Release Status + 변경 이력
 
 **SOT 분리 (2026-06-10 P2 다이어트)**: 버전 연혁·릴리스 상세는 `02_Infrastructure/docs/CHANGELOG_constitution.md` — CLAUDE.md는 현행 헌법만 담는다.
-- 현행: **v8.2** (2026-06-30 도훈 mandate — Codex Critic Round 제거, Opus 4.8 자체 적대검증 대체. 훅 3개 archive · AX-008 Codex→Self-Adversarial 3-source 2/3 불변 · state_transitions codex required 제거 · qvest-codex-round skill 삭제 · codex-round.md DEPRECATED. 별개 S0/RAMP Codex 유지)
+- 현행: **v8.3** (2026-07-10 도훈 mandate — 알파 발굴 중심 재편. 5축 조사→F1~F10 진단→M1~M11: alpha 단계 canonical PORT_t 1급화 · dual-basis(EW/cap-tier) 진단 계약화 · 상설 frontier 큐 · hypothesis_index in-flight · 주입면 현행화 · screen-tier 회수 배관 · 인입 경보화 + 텔레그램 v7 비전공자 가독. SOT `qvest_v8_3_alpha_discovery_sot.md`)
+- 이전: **v8.2** (2026-06-30 도훈 mandate — Codex Critic Round 제거, Opus 4.8 자체 적대검증 대체. 훅 3개 archive · AX-008 Codex→Self-Adversarial 3-source 2/3 불변 · state_transitions codex required 제거 · qvest-codex-round skill 삭제 · codex-round.md DEPRECATED. 별개 S0/RAMP Codex 유지)
 - 이전: **v8.1.1** (2026-06-10 완벽 수리 + P2 구조 개편 — hook 47/47 부활(당시 기준) · OneDrive canonical · 게이트 2계층 · rules autoload 6 코어). **현행 hook 등록 = settings.json 45 distinct .sh** (v8.2 codex 2건 해제 반영, 2026-07-03 실측 — `harness.md` 정합)
 - 최근 검증: (v8.2) router selftest PASS · hook_e2e_battery 10/11(codex 케이스 제거, 잔여 FAIL=python3 환경) · health HARD-fail 0 (2026-06-30) / (v8.1.1) hook 차단 4종 실증 · readiness pass 12/fail 0 · bootstrap BOOT_FAILS=0 (2026-06-10)

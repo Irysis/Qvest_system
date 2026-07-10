@@ -5,11 +5,18 @@
 #
 # 게이트(전부 통과해야 실행):
 #   QVEST_PAPER_ROUTER_ENABLE=1  — 라우터 자체 on (기본 0=off, kill-switch)
-#   당일 mcp_discovery_<TODAY>.json 존재 (recharge가 돌았음)
-#   당일 신규 다운로드>0 (또는 QVEST_PAPER_ROUTER_FORCE=1)
+#   당일 mcp_discovery_<TODAY>.json 존재 (recharge가 돌았음) — 단 v3: 백로그만 있어도 실행
+#   당일 신규 다운로드>0 (또는 QVEST_PAPER_ROUTER_FORCE=1, 또는 v3 백로그>0)
 # 옵션:
 #   QVEST_PAPER_ROUTER_AUTORUN=1 — alpha∧feasible 자동 alpha-search 실행 (기본 0=분류·큐·텔레그램만)
 #   QVEST_PAPER_ROUTER_MAX_ALPHA=N — 1일 자동 alpha-search 상한 (기본 2)
+#   QVEST_PAPER_ROUTER_DRYRUN=1  — v3: 대상 산정(백로그 포함)까지만 로그, claude 미호출
+#
+# v3 (2026-07-10, Qvest v8.3 Move M4 — 무인 인입 체인 복구·경보화):
+#   1) 백로그 합류 — 최근 7일 내 downloaded>0인데 alpha_search_route_<D>.json 없는 날짜를
+#      스캔해 BACKLOG_DATES로 라우팅 대상에 합류 (07-08 spend-limit 정지로 17편 좌초 재발 방지).
+#   2) 침묵 정지 경보화 — claude exit≠0(특히 monthly spend limit) 시 .cache/scheduler_alerts/
+#      마커 기록(fail-soft) + tg_agent_brief() 경유 텔레그램. 같은 사유 1일 1회 스로틀.
 set -uo pipefail
 source "$(dirname "${BASH_SOURCE[0]:-$0}")/resolve_project.sh"
 BASE="${BASE:-${PROJECT:-$PWD}}"; PROJECT="${PROJECT:-$BASE}"
@@ -20,11 +27,57 @@ mkdir -p "$(dirname "$LOG")"
 
 log(){ echo "$(date -Iseconds) [router] $*" >> "$LOG"; }
 
+# ── v3 침묵 정지 경보 (fail-soft): 마커 먼저 기록 → tg_agent_brief() 경유 텔레그램 시도.
+#    R 발송 실패해도 마커는 남는다. 같은 (component, reason) 은 1일 1회 스로틀.
+scheduler_alert(){
+  local comp="$1" reason="$2" detail="$3"
+  local adir="$BASE/.cache/scheduler_alerts"; mkdir -p "$adir"
+  local marker="$adir/${comp}_${reason}_${TODAY}.alert"
+  if [ -f "$marker" ]; then log "alert throttle: ${comp}/${reason} 오늘 이미 발보 — skip"; return 0; fi
+  {
+    echo "ts=$(date -Iseconds)"
+    echo "component=$comp"
+    echo "reason=$reason"
+    echo "detail=$detail"
+    echo "log=$LOG"
+  } > "$marker"
+  log "alert marker 기록: $marker"
+  local RS_BIN
+  RS_BIN="$(command -v Rscript || echo '/c/Program Files/R/R-4.5.2/bin/Rscript')"
+  [ -x "$RS_BIN" ] || { log "alert telegram skip: Rscript 없음 (마커는 보존)"; return 0; }
+  local rfile="$adir/_tg_alert_${comp}_${TODAY}.R"
+  cat > "$rfile" <<RS
+suppressWarnings(suppressMessages({
+  root <- Sys.getenv("QM_ROOT", Sys.getenv("CLAUDE_PROJECT_DIR", getwd()))
+  source(file.path(root, "02_Infrastructure", "telegram", "telegram_notify.R"))
+}))
+res <- tryCatch(tg_agent_brief(
+  agent = "Q-Lead",
+  title = "무인 스케줄러 경보 — ${comp}",
+  relaxed = TRUE, force = TRUE,
+  lock_scope = "sched_alert_${comp}_${reason}_${TODAY}",
+  sections = list(
+    list(type = "summary", emoji = "\U0001F6A8",
+         body = "무인 파이프라인 ${comp} 가 ${reason} 사유로 정지했습니다. 수동 확인 필요."),
+    list(type = "bullet", emoji = "\U0001F4A1", heading = "조치 안내",
+         items = c("실패분은 백로그 합류 로직이 다음 성공 런에서 자동 재처리됩니다",
+                   "지출한도 등 외부 원인은 수동 해제가 필요합니다")),
+    list(type = "kv", emoji = "\U0001F4CB", heading = "상세",
+         kv = list("구성요소" = "${comp}",
+                   "사유" = "${reason}",
+                   "내용" = "${detail}",
+                   "로그" = "${LOG}"))
+  )
+), error = function(e) { cat("tg fail:", conditionMessage(e), "\n"); NULL })
+RS
+  LC_ALL='English_United States.utf8' "$RS_BIN" "$rfile" >> "$LOG" 2>&1 \
+    || log "alert telegram 발송 실패 (마커는 보존): $marker"
+}
+
 if [ "${QVEST_PAPER_ROUTER_ENABLE:-0}" != "1" ]; then
   log "disabled (QVEST_PAPER_ROUTER_ENABLE!=1) — skip"; exit 0
 fi
 DISC="$BASE/stage_artifacts/paper_recharge/mcp_discovery_${TODAY}.json"
-[ -f "$DISC" ] || { log "no discovery JSON for $TODAY — skip"; exit 0; }
 STAMP="$BASE/stage_artifacts/paper_recharge/paper_recharge_${TODAY}.done"
 DL=$(grep -oE 'downloaded=[0-9]+' "$STAMP" 2>/dev/null | head -1 | cut -d= -f2)
 DL="${DL:-0}"
@@ -38,10 +91,43 @@ if [ -f "$CURATED_CSV" ]; then
   n_done=$(grep -oE '\.pdf"' "$CURATED_DONE" 2>/dev/null | wc -l)
   [ "$n_csv" -gt "$n_done" ] && curated_pending=1
 fi
-if [ "$DL" -eq 0 ] && [ "$curated_pending" -eq 0 ] && [ "${QVEST_PAPER_ROUTER_FORCE:-0}" != "1" ]; then
-  log "no new arxiv downloads (downloaded=$DL) and no pending curated — skip (QVEST_PAPER_ROUTER_FORCE=1 로 강제)"; exit 0
+# v3(2026-07-10): 백로그 합류 — 최근 7일 내 downloaded>0인데 대응 alpha_search_route_<D>.json이
+#   없는 날짜를 스캔. 실패일(예: 07-08 spend-limit exit=1, 17편) 다운로드분의 영구 좌초 방지.
+#   discovery JSON이 없는 날짜는 라우팅 소스 자체가 없어 제외(로그만).
+BACKLOG_DATES=""
+for i in 1 2 3 4 5 6 7; do
+  D=$(date -d "-${i} day" +%Y%m%d 2>/dev/null) || continue
+  BST="$BASE/stage_artifacts/paper_recharge/paper_recharge_${D}.done"
+  [ -f "$BST" ] || continue
+  bdl=$(grep -oE 'downloaded=[0-9]+' "$BST" 2>/dev/null | head -1 | cut -d= -f2); bdl="${bdl:-0}"
+  [ "$bdl" -gt 0 ] || continue
+  [ -f "$BASE/stage_artifacts/paper_recharge/alpha_search_route_${D}.json" ] && continue
+  if [ ! -f "$BASE/stage_artifacts/paper_recharge/mcp_discovery_${D}.json" ]; then
+    log "backlog $D: downloaded=$bdl 이나 discovery JSON 없음 — 라우팅 불가, 제외"; continue
+  fi
+  BACKLOG_DATES="${BACKLOG_DATES:+$BACKLOG_DATES,}$D"
+  log "backlog 포착: $D (downloaded=$bdl, route JSON 없음) — 이번 라우팅에 합류"
+done
+
+# 당일 discovery 게이트 (v3: 백로그가 있으면 당일 discovery 없어도 백로그만으로 진행)
+if [ ! -f "$DISC" ]; then
+  if [ -n "$BACKLOG_DATES" ]; then
+    log "no discovery JSON for $TODAY — 백로그만으로 진행 (BACKLOG_DATES=$BACKLOG_DATES)"
+  else
+    log "no discovery JSON for $TODAY and no backlog — skip"; exit 0
+  fi
 fi
-log "trigger: downloaded=$DL curated_pending=$curated_pending"
+
+if [ "$DL" -eq 0 ] && [ "$curated_pending" -eq 0 ] && [ -z "$BACKLOG_DATES" ] && [ "${QVEST_PAPER_ROUTER_FORCE:-0}" != "1" ]; then
+  log "no new arxiv downloads (downloaded=$DL), no pending curated, no backlog — skip (QVEST_PAPER_ROUTER_FORCE=1 로 강제)"; exit 0
+fi
+log "trigger: downloaded=$DL curated_pending=$curated_pending backlog=[${BACKLOG_DATES:-none}]"
+
+# v3 dry 모드: 대상 산정(백로그 포함)까지만 검증하고 claude 미호출
+if [ "${QVEST_PAPER_ROUTER_DRYRUN:-0}" = "1" ]; then
+  log "DRYRUN — claude 미호출. 산정 결과: downloaded=$DL curated_pending=$curated_pending backlog=[${BACKLOG_DATES:-none}]"
+  exit 0
+fi
 
 CLAUDE_BIN="$(command -v claude || echo /c/Users/99922/AppData/Roaming/npm/claude)"
 [ -x "$CLAUDE_BIN" ] || { log "claude CLI not found ($CLAUDE_BIN) — skip"; exit 0; }
@@ -50,11 +136,42 @@ PROMPT_FILE="$BASE/02_Infrastructure/ops/paper_router_prompt.md"
 AUTORUN="${QVEST_PAPER_ROUTER_AUTORUN:-0}"
 CAP="${QVEST_PAPER_ROUTER_MAX_ALPHA:-2}"
 
-log "start (downloaded=$DL, AUTORUN=$AUTORUN, MAX_ALPHA=$CAP)"
-HEADER="TODAY=${TODAY}  AUTORUN=${AUTORUN}  MAX_ALPHA=${CAP}"
+log "start (downloaded=$DL, AUTORUN=$AUTORUN, MAX_ALPHA=$CAP, BACKLOG_DATES=${BACKLOG_DATES:-none})"
+HEADER="TODAY=${TODAY}  AUTORUN=${AUTORUN}  MAX_ALPHA=${CAP}  BACKLOG_DATES=${BACKLOG_DATES:-none}"
 # 헤드리스 1-shot. timeout 가드(자동 alpha-search 포함 시 길어질 수 있어 50분).
 timeout 3000 "$CLAUDE_BIN" -p "$(printf '%s\n\n%s\n' "$HEADER" "$(cat "$PROMPT_FILE")")" \
   --dangerously-skip-permissions >> "$LOG" 2>&1
 rc=$?
 log "claude -p exit=$rc"
+# v3 침묵 정지 경보화: 기존엔 실패가 로그에만 남고 exit 0 종료(07-08 spend-limit 5일 침묵 정지).
+if [ "$rc" -ne 0 ]; then
+  reason="exit_${rc}"
+  tail -n 30 "$LOG" 2>/dev/null | grep -qi "spend limit" && reason="spend_limit"
+  scheduler_alert "paper_router" "$reason" "claude -p exit=$rc (downloaded=$DL backlog=${BACKLOG_DATES:-none}) — 실패일 다운로드분은 백로그 스캔이 차기 성공 런에 합류"
+fi
+# v3.1 (2026-07-10 F-4, v8.3 적대검증): exit-0 무산출 백로그 만료 임박 경보.
+#   기존엔 claude가 exit 0인데 route JSON을 안 쓴 백로그 날짜는 7일 고정 창을 지나면
+#   무경보 영구 좌초(경보는 exit≠0에만 발화). 성공 런 직후 각 백로그 날짜의 route JSON
+#   존재를 재확인 — 미생성 + 창 만료까지 <=2일(나이 >=5일)이면 backlog_expiring 경보
+#   (scheduler_alert 스로틀 동일 적용: 같은 reason 1일 1회). claude 미호출 경로
+#   (DRYRUN / 트리거 없음)는 위에서 이미 exit 0 — 이 블록 도달 불가 = 발화 금지 충족.
+if [ "$rc" -eq 0 ] && [ -n "$BACKLOG_DATES" ]; then
+  EXPIRING=""
+  IFS=',' read -ra _bl_arr <<< "$BACKLOG_DATES"
+  for D in "${_bl_arr[@]}"; do
+    [ -n "$D" ] || continue
+    [ -f "$BASE/stage_artifacts/paper_recharge/alpha_search_route_${D}.json" ] && continue
+    ts_d=$(date -d "$D" +%s 2>/dev/null) || { log "backlog 만료검사: date 파싱 실패($D) — skip"; continue; }
+    age_days=$(( ( $(date -d "$TODAY" +%s) - ts_d ) / 86400 ))
+    if [ "$age_days" -ge 5 ]; then
+      EXPIRING="${EXPIRING:+$EXPIRING,}${D}(창이탈까지 $((7 - age_days))d)"
+      log "backlog 만료 임박: $D (age=${age_days}d, 창 이탈까지 $((7 - age_days))d) — claude exit=0 이나 route JSON 미생성"
+    else
+      log "backlog 미처리 잔존: $D (age=${age_days}d) — 차기 런 재합류 예정, 경보 유예"
+    fi
+  done
+  if [ -n "$EXPIRING" ]; then
+    scheduler_alert "paper_router" "backlog_expiring" "claude exit=0 이나 route JSON 미생성 백로그가 7일 창 만료 임박: $EXPIRING — 창 이탈 시 무경보 영구 좌초, 수동 라우팅 또는 창 내 재처리 필요"
+  fi
+fi
 exit 0

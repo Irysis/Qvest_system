@@ -2,7 +2,7 @@
   "schema_version": "distilled_v1",
   "dist_id": "DIST-QPM-003",
   "cluster_key": "ac01076e5fa9",
-  "candidate_id": "CAND_20260704_qepm_legacy_quality_profitability_negative_L-133_L-134_L-139",
+  "candidate_id": "CAND_20260708_qepm_legacy_quality_profitability_negative_L-133_L-134_L-139",
   "status": "distilled",
   "statement_refined": "KR quality_profitability 단독/단순-composite long-only는 estimated 성과 기준 반복 실패 — supporting 4전략 모두 OOS에서 alpha 소멸(profitability fortress OOS retention 0.24·recent-3Y SR 0.135, growth-stability composite retention -0.001, cash-based profitability SR -0.232·MDD 94%, low-beta BAB retention -0.35~-0.02). 메커니즘: 2020년대 성장주 outperformance로 profitability/low-beta 프리미엄 구조적 약화 + KR DART 현금흐름 데이터 품질 저하. estimated 라벨 — canonical/backtested 재측정 아님. = 이 envelope 안에서 quality_profitability 단독/단순-composite 경로가 이 국면(2020년대 성장주 우위)에 약함.",
   "retry_condition": "재도전 대상(INV-7 provisional). 재시도 자격: (a) single-signal이 아닌 multi-axis quality composite를 multi-sleeve 내 성분(예: Q07)으로 배치 — AX-004 EXCLUSION 경로 / (b) profitability 프리미엄 reversion을 뒷받침하는 신규 비-return 데이터원 또는 국면조건(value/quality spread reversion 실측) / (c) estimated가 아닌 canonical_screen/backtested 재측정으로 supporting 결론 재확인. 차별점 명시 + IS-only 선택 protocol 없이는 재시도 금지.",
@@ -10,7 +10,7 @@
   "refined_by": {},
   "promoted_to_axiom": {},
   "created_at": "2026-07-04T04:03:45+00:00",
-  "updated_at": "2026-07-05",
+  "updated_at": "2026-07-08T22:46:54+00:00",
   "research_mode": "qepm_legacy",
   "metric_type": "estimated",
   "type": "methodological",
@@ -25,19 +25,19 @@
   "scope_draft": {
     "market": "KR",
     "factor_family": "quality_profitability",
-    "regime": {},
-    "construction_types": {}
+    "regime": null,
+    "construction_types": null
   },
   "evidence_draft": {
     "independent_l_codes": 4,
     "independent_strategies": 4,
     "strategies": [
-      "STR_1626_profitability_fortress_defense",
       "STR_1657_CBPQ",
+      "STR_1642_lowbeta_3f",
       "STR_1655_GSCD",
-      "STR_1642_lowbeta_3f"
+      "STR_1626_profitability_fortress_defense"
     ],
-    "effect_direction_consistency": {},
+    "effect_direction_consistency": null,
     "note": "evidence_draft — promote.R 5축 검증에서 hurdle_result/grade_a_catalog 교차검증으로 확정",
     "n_eff_signatures": 3,
     "independent_constructions": 3,
@@ -51,40 +51,17 @@
     ]
   },
   "falsification_draft": {
-    "attempts": [
-      {
-        "test": "frontier(b) regime-conditional quality activation (CRISIS/CAUTION tilt) top-25 long-only canonical_screen 258m vs cap-w KOSPI200",
-        "result": "falsified",
-        "portfolio_alpha_t": -2.6121,
-        "metric_type": "canonical_screen",
-        "l_code": "L-QPM-20260705_102041",
-        "wt": "WT-AXENGINE-E2E_20260705",
-        "note": "V1(regime-cond) -2.61 / V0(naive) -2.67; rank-IC +0.036 realized active 음; quality WORST in CRISIS -78.2%/yr; post2017 -21.4% 감쇠 재현",
-        "recorded_at": "2026-07-05"
-      },
-      {
-        "test": "frontier(a) multi-axis quality를 Q07 multi-sleeve 성분으로 배치 — book-marginal ΔIR vs STR_1715 noLayer4 book (3변형)",
-        "result": "falsified",
-        "delta_ir_best": 0.0008,
-        "incumbent_book_ir": 1.416,
-        "admission_candidates": 0,
-        "metric_type": "canonical_screen",
-        "l_code": "L-QPM-20260705_110752",
-        "wf": "wf_585c31dc-e38",
-        "note": "qual_q07 ΔIR~0/ARTIFACT · qual_caution ΔIR+0.0008/ARTIFACT · valqual_blend ΔIR-0.0344/CONFIRMED_FAIL. 어떤 변형도 ΔIR≥0.05 미달. quality-as-multi-sleeve escape 자본가치 없음.",
-        "recorded_at": "2026-07-05"
-      }
-    ],
-    "note": "promote.R 5축(r7 적극 반증)에서 kr-inverse-pattern-miner 역가설 + role_honesty로 채움 | 2026-07-05: frontier(b) 국면조건부 activation E2E 실측 FALSIFIED(L-QPM-20260705_102041)."
+    "attempts": [],
+    "note": "promote.R 5축(r7 적극 반증)에서 kr-inverse-pattern-miner 역가설 + role_honesty로 채움"
   },
   "mechanism_draft": {
-    "economic_explanation": {},
+    "economic_explanation": null,
     "mechanism_type": "unknown",
-    "causal_plausibility": {}
+    "causal_plausibility": null
   },
   "oos_validation_draft": {
-    "oos_months": {},
-    "oos_effect_vs_is": {},
+    "oos_months": null,
+    "oos_effect_vs_is": null,
     "note": "promote.R r4_regime_payoff / essence_score 경유 확정"
   },
   "cluster_members_count": 4,
@@ -186,7 +163,10 @@
   "new_frontier_20260705": {
     "recorded_by": "axiom_engine_research_20260705 (L-QPM-20260705_105130)",
     "narrowed": "return-derived cross-family 재조합(정적 composite + 국면조건부 activation 공히) = KR post-2017 감쇠 우회 불가 확정. superfactor 5-static + regime-conditional meta-composite 둘 다 소진.",
-    "next": ["DPL (direct portfolio learning, features→weights, net-SR 직접 최적화 — 실패한 standalone 알파를 피처로 재활용, measurement-graduation §5)", "non-return DART insider/cashflow-quality (elestock document.xml 파서 미착수, BLOCKED 해제 시)"],
+    "next": [
+      "DPL (direct portfolio learning, features→weights, net-SR 직접 최적화 — 실패한 standalone 알파를 피처로 재활용, measurement-graduation §5)",
+      "non-return DART insider/cashflow-quality (elestock document.xml 파서 미착수, BLOCKED 해제 시)"
+    ],
     "not_axiom_candidate": "negative provisional (INV-7 failure-ledger). PORT_t 0.84 < 2.95 → axiom candidate 경로 아님. 재시도금지는 '동일 return-derived 재조합' 한정, 차별 mechanism(DPL/비-return) 있으면 revival 대상."
   }
 }

@@ -1,0 +1,108 @@
+{
+  "schema_version": "distilled_v1",
+  "dist_id": "DIST-QPM-007",
+  "cluster_key": "48ec61de489a",
+  "candidate_id": "CAND_20260704_qepm_legacy_quality_profitability_negative_L-133_L-134_L-139",
+  "status": "pending_5axis",
+  "statement_refined": null,
+  "retry_condition": null,
+  "refined_at": null,
+  "refined_by": null,
+  "promoted_to_axiom": null,
+  "created_at": "2026-07-08T22:21:56+00:00",
+  "updated_at": "2026-07-08T22:46:54+00:00",
+  "research_mode": "qepm_legacy",
+  "metric_type": "estimated",
+  "type": "methodological",
+  "polarity": "negative",
+  "statement_draft": "[방법론 실패 규칙 초안] family=quality_profitability, market=KR, mode=single_signal_standalone_long_only 구조적 실패. (1) GP as single-factor(Novy-Marx 2013, Piotroski/Ohlson 결합 없음), (2) Cash-based profitability(Ball 2016) DART 현금흐름 의존 단독, (3) growth stability composite IS-only는 모두 OOS 소멸. EXCLUSION: quality overlay in multi-factor blend / 3+ quality axis composite / multi-sleeve 내 Q07 defense sleeve는 scope 밖. (promote.R 5축 검증에서 negative-polarity 축 산식 구조결함 B2/B3/B4 상존 — GATE_GAP 참조)",
+  "supporting_l_codes": [
+    "L-133",
+    "L-134",
+    "L-139",
+    "L-AS-20260613_074936_250687",
+    "L-AS-20260612_154048_969566",
+    "L-AS-20260612_154048_969567"
+  ],
+  "scope_draft": {
+    "market": "KR",
+    "factor_family": "quality_profitability",
+    "regime": null,
+    "mode": "single_signal_standalone_long_only",
+    "construction_types": [
+      "GP_as_single_factor_without_Piotroski_Ohlson_combination",
+      "cash_based_profitability_DART_dependent_single_signal",
+      "growth_stability_composite_IS_only_type"
+    ]
+  },
+  "evidence_draft": {
+    "independent_l_codes": 6,
+    "independent_strategies": 6,
+    "strategies": [
+      "STR_1657_CBPQ",
+      "STR_1655_GSCD",
+      "STR_1626_profitability_fortress_defense",
+      "STR_AS_20260613_074936_250687",
+      "STR_AS_20260612_154048_969566",
+      "STR_AS_20260612_154048_969567"
+    ],
+    "effect_direction_consistency": 1,
+    "note": "6건 전부 KR quality standalone long-only 실패(grade F/C + re-measured essence C/F). 방향 100% 일치(전부 loss). L-133/134/139 = 원측정 estimated(2026-04, 클린) 3 construction. L-AS 3건 = 2026-06 backtested 재측정, real negative OOS retention(-0.958/-0.719/-1.014) 보유 — External/Rigor 실탄. b434 오염 없음(distill/keyword-fallback 미포함), strategy_id 6건 distinct(같은 전략 재측정 아님).",
+    "n_eff_signatures": 6,
+    "independent_constructions": 3,
+    "constructions": [
+      "GP_single_factor",
+      "cash_based_profitability",
+      "growth_stability_composite"
+    ],
+    "constructions_note": "corpus construction_type 오라벨(L-133=ml_sizing, L-139=momentum, L-AS-...969567=value)은 axiom 본문 GP/cash/GSCD·core_reference와 불일치 — 실측 근거는 lesson_text/core_reference. 논리적 distinct construction = 3(GP-single / cash-based / growth-stability-composite).",
+    "metric_types": [
+      "estimated",
+      "backtested"
+    ],
+    "removed_l_codes": {
+      "L-140": "STR_1642_lowbeta_3f는 low-beta/BAB(Frazzini-Pedersen 2014)로 quality_profitability가 아니라 defense·low-beta family. corpus에서 promoted_to_axiom=AX-005로 확정 — AX-004 클러스터에서 scope 정합상 제거(gaming 아님, 소속 오류 교정). evidence_gap 권고 반영."
+    }
+  },
+  "falsification_draft": {
+    "attempts": [
+      {
+        "description": "STR_1655 Growth Stability Composite Diversifier standalone — IS SR 0.60 -> OOS SR 0.00",
+        "result": "reproduced_failure",
+        "effect_retained": 1,
+        "mdd": 0.717
+      },
+      {
+        "description": "STR_1657 Cash-Based Profitability Quality(Ball 2016) standalone — DART 현금흐름 데이터 품질 이슈로 시그널 역방향, MDD 94%",
+        "result": "reproduced_failure",
+        "effect_retained": 1,
+        "mdd": 0.94
+      },
+      {
+        "description": "STR_1626 Profitability Fortress(Novy-Marx 2013) standalone — IS SR 1.044이지만 OOS retention 0.24 + recent 3Y SR 0.135 alpha decay",
+        "result": "reproduced_failure",
+        "effect_retained": 0.76,
+        "mdd": 0.541
+      },
+      {
+        "description": "2026-06 재확증: GPA+PiotroskiF 순수 quality baseline(STR_AS_...250687) backtested — essence C, PORT_t(NW lag-3) 0.67, OOS_ret -0.958. Piotroski-only(...969566) essence C/F, PORT_t 1.37, OOS_ret -0.719. Composite quality(...969567) essence F, PORT_t 0.58, OOS_ret -1.014. 3건 모두 계약등급 실측으로 negative 방향 재현.",
+        "result": "reproduced_failure",
+        "effect_retained": 1
+      }
+    ],
+    "note": "attempts backfilled from active AX-004 falsification(실측, 창작 아님) + 2026-06 backtested 재확증 1건. Supporting 6 = 3 estimated original construction + 3 backtested re-confirmation. reproduced_success_exception=0 (quality overlay/multi-axis composite 성공은 scope 밖)."
+  },
+  "mechanism_draft": {
+    "economic_explanation": "KR quality_profitability standalone long-only의 구조적 실패 3요인: (1) Novy-Marx(2013) GP premium은 2020년대 성장주 랠리로 recent 3Y SR 급격히 약화(STR_1626 0.135). (2) Ball et al.(2016) Cash-Based Profitability는 DART 재무 현금흐름 항목의 가용성·일관성 문제로 시그널 품질 저하(STR_1657 MDD 94%). (3) Growth Stability composite는 IS overfit, OOS 완전 소멸(STR_1655 retention -0.001). 공통 원인: 한국시장에서 quality premium은 standalone long-only로 재현 불가 — value/momentum overlay 또는 멀티팩터 blending 필수(Asness 2019 QMJ는 value와 결합 시 유효). 2026-06 backtested 재확증: 3개 독립 quality 구성 전부 essence C/F + OOS retention 음수(-0.72~-1.01)로 IS 대비 완전 붕괴.",
+    "mechanism_type": "market_structural",
+    "causal_plausibility": "high"
+  },
+  "oos_validation_draft": {
+    "oos_months": 12,
+    "oos_effect_vs_is": 0.08,
+    "oos_retention_backtested_median": -0.958,
+    "calculation_method": "estimated tier(L-133/134/139): simple mean of OOS retention ratios (0.24 + 0.00 + -0.001)/3 = 0.08 (IS-relative). backtested tier(L-AS 3건): corpus oos_retention median = median(-0.958, -0.719, -1.014) = -0.958.",
+    "note": "★negative 공리는 oos collapse(retention 낮음/음수)가 확증 증거. 두 tier 모두 collapse 확인. 단 promote.R External hurdle = median(oos_retention) >= 0.5는 polarity-blind이므로, 강한 negative 증거(-0.958)일수록 hurdle FAIL 확정 = 구조 결함(B3, GATE_GAP)."
+  },
+  "cluster_members_count": 6
+}

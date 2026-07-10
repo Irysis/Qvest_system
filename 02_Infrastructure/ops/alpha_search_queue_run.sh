@@ -15,6 +15,53 @@ SD="$BASE/stage_artifacts/paper_recharge"
 LOG="$BASE/.cache/scheduler_logs/alpha_queue_${TODAY}.log"; mkdir -p "$(dirname "$LOG")"
 log(){ echo "$(date -Iseconds) [alpha_queue] $*" >> "$LOG"; }
 
+# ── v3(2026-07-10) 침묵 정지 경보 (paper_router_run.sh와 동일 패턴, fail-soft):
+#    마커 먼저 기록 → tg_agent_brief() 경유 텔레그램 시도. 같은 (component, reason) 1일 1회 스로틀.
+scheduler_alert(){
+  local comp="$1" reason="$2" detail="$3"
+  local adir="$BASE/.cache/scheduler_alerts"; mkdir -p "$adir"
+  local marker="$adir/${comp}_${reason}_${TODAY}.alert"
+  if [ -f "$marker" ]; then log "alert throttle: ${comp}/${reason} 오늘 이미 발보 — skip"; return 0; fi
+  {
+    echo "ts=$(date -Iseconds)"
+    echo "component=$comp"
+    echo "reason=$reason"
+    echo "detail=$detail"
+    echo "log=$LOG"
+  } > "$marker"
+  log "alert marker 기록: $marker"
+  local RS_BIN
+  RS_BIN="$(command -v Rscript || echo '/c/Program Files/R/R-4.5.2/bin/Rscript')"
+  [ -x "$RS_BIN" ] || { log "alert telegram skip: Rscript 없음 (마커는 보존)"; return 0; }
+  local rfile="$adir/_tg_alert_${comp}_${TODAY}.R"
+  cat > "$rfile" <<RS
+suppressWarnings(suppressMessages({
+  root <- Sys.getenv("QM_ROOT", Sys.getenv("CLAUDE_PROJECT_DIR", getwd()))
+  source(file.path(root, "02_Infrastructure", "telegram", "telegram_notify.R"))
+}))
+res <- tryCatch(tg_agent_brief(
+  agent = "Q-Lead",
+  title = "무인 스케줄러 경보 — ${comp}",
+  relaxed = TRUE, force = TRUE,
+  lock_scope = "sched_alert_${comp}_${reason}_${TODAY}",
+  sections = list(
+    list(type = "summary", emoji = "\U0001F6A8",
+         body = "무인 파이프라인 ${comp} 가 ${reason} 사유로 정지했습니다. 수동 확인 필요."),
+    list(type = "bullet", emoji = "\U0001F4A1", heading = "조치 안내",
+         items = c("큐 pending은 보존되어 다음 성공 런에서 자동 재처리됩니다",
+                   "지출한도 등 외부 원인은 수동 해제가 필요합니다")),
+    list(type = "kv", emoji = "\U0001F4CB", heading = "상세",
+         kv = list("구성요소" = "${comp}",
+                   "사유" = "${reason}",
+                   "내용" = "${detail}",
+                   "로그" = "${LOG}"))
+  )
+), error = function(e) { cat("tg fail:", conditionMessage(e), "\n"); NULL })
+RS
+  LC_ALL='English_United States.utf8' "$RS_BIN" "$rfile" >> "$LOG" 2>&1 \
+    || log "alert telegram 발송 실패 (마커는 보존): $marker"
+}
+
 if [ "${QVEST_ALPHA_QUEUE_ENABLE:-0}" != "1" ]; then log "disabled (QVEST_ALPHA_QUEUE_ENABLE!=1) — skip"; exit 0; fi
 
 # pending 카운트: 큐 candidates + route testable − done
@@ -61,5 +108,12 @@ MAXA="${QVEST_ALPHA_QUEUE_MAX:-2}"
 log "start alpha-search queue (pending=$N, MAX_ALPHA=$MAXA)"
 timeout 3000 "$CLAUDE_BIN" -p "$(printf 'TODAY=%s  MAX_ALPHA=%s\n\n%s\n' "$TODAY" "$MAXA" "$(cat "$PF")")" \
   --dangerously-skip-permissions >> "$LOG" 2>&1
-log "claude -p exit=$?"
+rc=$?
+log "claude -p exit=$rc"
+# v3 침묵 정지 경보화 (paper_router_run.sh와 동일): 실패가 로그에만 남고 exit 0 종료되는 구조 보완.
+if [ "$rc" -ne 0 ]; then
+  reason="exit_${rc}"
+  tail -n 30 "$LOG" 2>/dev/null | grep -qi "spend limit" && reason="spend_limit"
+  scheduler_alert "alpha_queue" "$reason" "claude -p exit=$rc (pending=$N MAX_ALPHA=$MAXA) — 큐 pending은 done 미기록이라 차기 런에서 재소비"
+fi
 exit 0

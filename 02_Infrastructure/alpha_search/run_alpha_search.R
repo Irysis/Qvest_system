@@ -324,7 +324,9 @@ run_alpha_search <- function(strategy_name,
   auth <- NULL
   screening <- hg$verdict$screening %||% list()
   screen_remeasure <- isTRUE(screening$screen_pass) &&
-    grepl("OVERLAY_CANDIDATE|FR_RCMA|DPL_FEATURE", screening$screen_route %||% "")
+    grepl("OVERLAY_CANDIDATE|FR_RCMA|DPL_FEATURE|TURNOVER_REVIEW", screening$screen_route %||% "")
+  # v8.3(2026-07-10): DPL_FEATURE 발급 중단(hurdle_gate) — 고회전 케이스는 TURNOVER_REVIEW로 대체.
+  #   DPL_FEATURE 패턴은 기존 manifest 호환 위해 잔존. FR_RCMA는 이제 조건부(회전율 hard-fail 이내)만.
   if (grade %in% c("A", "A_NOVEL", "A_DEF", "B", "B_DEF") || screen_remeasure) {
     if (screen_remeasure && !(grade %in% c("A", "A_NOVEL", "A_DEF", "B", "B_DEF"))) {
       cat(sprintf("[AlphaSearch] 권위측정 사다리: grade=%s but screening_pass route=%s — 실측 재측정 진행\n",

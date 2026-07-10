@@ -167,9 +167,12 @@
         },
         "diagnostics": {
           "type": "object",
-          "required": ["rank_ic", "alpha_inheritance_cor"],
+          "required": ["rank_ic", "alpha_inheritance_cor", "canonical_port_t_nw_lag3"],
           "properties": {
-            "rank_ic": {"type": "number"},
+            "rank_ic": {"type": "number", "description": "v8.3 M1: advisory 진단으로 강등 (IC→PORT_t 전이 벽 — measurement-graduation §3 rank-IC계열 advisory). 필드는 유지(삭제 아님), 선택 권위는 canonical_port_t_nw_lag3."},
+            "canonical_port_t_nw_lag3": {"type": ["number", "null"], "description": "v8.3 M1: canonical_screen_bt() 실측 portfolio-alpha t (NW lag-3, metric_type=canonical_screen, 표준 top-N EW long-only, contract build_benchmark_compare 경유). alpha 단계 selection 권위 지표. admission authoritative는 forge build_bt_result(=backtested) — 이 값은 스크리닝 실측. null = overlap 부재 등 미산출(사유를 challenge_flags에 기록)."},
+            "canonical_port_t_pvalue": {"type": ["number", "null"], "description": "canonical_screen_bt 동반 산출 p-value"},
+            "canonical_n_months": {"type": ["integer", "null"], "description": "canonical_screen_bt 실측 개월수"},
             "icir": {"type": "number"},
             "monotonicity": {"type": "number"},
             "subperiod_stability": {"type": "number"},
@@ -189,8 +192,8 @@
         },
         "selection_objective": {
           "type": "string",
-          "enum": ["rank_ic", "icir", "monotonicity", "subperiod_stability"],
-          "description": "R4 P3: Alpha Agent는 predictive power만 기준으로 선택. SR/CAGR/MDD 직접 금지."
+          "enum": ["canonical_port_t", "rank_ic", "icir", "monotonicity", "subperiod_stability"],
+          "description": "R4 P3 + v8.3 M1: 권장 = canonical_port_t (canonical_screen_bt 실측 portfolio-alpha t, NW lag-3, metric_type=canonical_screen — measurement-graduation §1 real-computation 경로. IC→PORT_t 전이 벽 대응). IC-계열 4종은 advisory 진단으로 유지. SR/CAGR/MDD *proxy 손계산* 기반 선택 금지 — canonical_screen_bt/build_bt_result 실측 경로만 허용. admission authoritative는 forge(alpha canonical은 스크리닝 실측)."
         },
         "challenge_flags": {
           "type": "array",

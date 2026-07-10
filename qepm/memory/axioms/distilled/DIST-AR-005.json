@@ -1,0 +1,91 @@
+{
+  "schema_version": "distilled_v1",
+  "dist_id": "DIST-AR-005",
+  "cluster_key": "2ced2151a20d",
+  "candidate_id": "CAND_20260708_alpha_research_overlay_regime_negative_L-AR-20260706_083725",
+  "status": "pending_5axis",
+  "statement_refined": null,
+  "retry_condition": null,
+  "refined_at": null,
+  "refined_by": null,
+  "promoted_to_axiom": null,
+  "created_at": "2026-07-08T22:21:56+00:00",
+  "updated_at": "2026-07-08T22:46:54+00:00",
+  "research_mode": "alpha_research",
+  "metric_type": "estimated",
+  "type": "empirical",
+  "polarity": "negative",
+  "statement_draft": "[실증 실패 규칙 초안] family=overlay_regime, tags=VALIDATED_NEGATIVE,CROSS_SECTIONAL,CRASH_DYNAMICS, supporting=1건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
+  "supporting_l_codes": [
+    "L-AR-20260706_083725"
+  ],
+  "scope_draft": {
+    "market": "KR",
+    "factor_family": "overlay_regime",
+    "regime": null,
+    "construction_types": null
+  },
+  "evidence_draft": {
+    "independent_l_codes": 1,
+    "independent_strategies": 1,
+    "strategies": [
+      "AR_corr_recovery_crashdyn_20260706"
+    ],
+    "effect_direction_consistency": null,
+    "note": "evidence_draft — promote.R 5축 검증에서 hurdle_result/grade_a_catalog 교차검증으로 확정",
+    "n_eff_signatures": 1,
+    "independent_constructions": 1,
+    "constructions": [
+      "cross_sectional_selection"
+    ],
+    "metric_types": [
+      "canonical_screen"
+    ]
+  },
+  "falsification_draft": {
+    "attempts": [
+      {
+        "test": "RAW vs RESID full-period IC 부호 대조",
+        "result": "falsified",
+        "effect_retained": 0,
+        "note": "raw -0.0119 / resid +0.0115 부호 반대=abs-corr 잔차화 sign-flip"
+      },
+      {
+        "test": "2017+ subsample sign persistence(gate)",
+        "result": "falsified",
+        "effect_retained": 0,
+        "note": "RAW 2017+ t=-0.57 noise / RESID full t=1.70 미달인데 2017+만 t=3.54=subsample-mining"
+      },
+      {
+        "test": "lag+1 placebo(fwd 1M 추가 shift)",
+        "result": "falsified",
+        "effect_retained": 0,
+        "note": "RESID lead2 t=1.93 ~ lead1 t=1.70 (미감쇠=persistence, clean 1M forward 아님); RAW lead2 t=-0.04 정상감쇠"
+      },
+      {
+        "test": "PIT C1/C5/concurrent 검토(코드 감사)",
+        "result": "survived",
+        "effect_retained": 1,
+        "note": "trailing daily only·forward=next_ym·동월 concurrent 없음=PIT clean(스크린 FAIL은 진짜 신호부재)"
+      },
+      {
+        "test": "직교성 vs score_eff",
+        "result": "survived",
+        "effect_retained": 1,
+        "note": "pooled -0.076<0.4 직교하나 '직교!=수익'(measurement-graduation §6)"
+      }
+    ],
+    "note": "L-code 기록 반증 시도 실값 집계"
+  },
+  "mechanism_draft": {
+    "economic_explanation": "시장 급락 시 종목-시장 corr가 1로 spike, 이후 각 종목의 de-correlation SPEED(회복 빠름=idiosyncratic/resilient)를 절대-corr 통제 후 횡단면 신호로 → 초과수익. 표준 factor-zoo(mom/rev/value/vol/quality)와 직교하는 crash-dynamics mechanics 가설.",
+    "mechanism_type": "unknown",
+    "causal_plausibility": null
+  },
+  "oos_validation_draft": {
+    "oos_months": null,
+    "oos_effect_vs_is": null,
+    "note": "promote.R r4_regime_payoff / essence_score 경유 확정"
+  },
+  "cluster_members_count": 1
+}

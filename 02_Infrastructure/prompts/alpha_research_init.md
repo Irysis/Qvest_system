@@ -151,12 +151,25 @@ Common Charter 8원칙 (전체: `02_Infrastructure/worktask/common_charter.md`):
 - Cross-sectional Z-score (direction align via Z_Score_Aligned C13 or 자체 정의)
 - Neutralization (sector / size / sector+size / beta-neutral 자율)
 
-### Step 4: Signal Diagnostics
+### Step 4: Canonical Screen 실측 + Signal Diagnostics (v8.3 M1, 2026-07-10)
+
+**iteration/후보 선택 권위 = canonical PORT_t (실측). rank-IC 계열은 advisory 진단.**
+근거: IC→PORT_t 전이 벽 — rank-IC가 강해도 top-25 long-only 실현 portfolio-alpha t로 전이되지 않는 경우가 구조적 다수 (QEPM 16/16 admission FAIL의 구조 원인. measurement-graduation §3: rank-IC계열 = ADVISORY).
+
+**4-A. Canonical Screen 실측 (1급 — 선택 기준)**:
+- `source("02_Infrastructure/contracts/canonical_screen_bt.R")` → `canonical_screen_bt(scores_dt, returns_dt, bench_dt, ...)`
+- 산출 소비: `portfolio_alpha_t_nw_lag3` (NW lag-3, `metric_type="canonical_screen"`, 표준 top-N EW long-only, contract `build_benchmark_compare` 경유) → `diagnostics.canonical_port_t_nw_lag3` 기록 (schema 필수 필드)
+- 후보 factor / composite / iteration 간 **선택은 이 값 기준**. proxy 손계산(top-quintile EW + turnover×bps 인라인 근사, `prod(1+r)`/`cumprod` 자체합성) 금지 — measurement-graduation §1 위반 = AX-002 동급.
+- **IS-only 선택 원칙 (chain 자격요건 ② — measurement-graduation §3)**: iteration 중 변형 선택은 train+validation(IS) 구간 canonical PORT_t로만 수행. **OOS 반복조회 금지** (OOS 오염 = oos_retention 게이트 무효화). holdout은 최종판 1회만. iteration별 변경사유 = mechanism 진단 1줄 기록(chain 자격요건 ①).
+- **역할 경계 불변**: canonical_screen_bt는 *스크리닝 실측*이지 포트폴리오 구성이 아님(표준 top-N EW = 고정 규격 — weight 결정 행위 아님). admission authoritative는 forge `build_bt_result()`(=backtested). 공분산 추정 / target weights 제안은 여전히 절대 금지.
+- **Dual-basis 진단 병기 (v8.3 M2, 2026-07-10)**: `canonical_screen_bt()`가 append하는 `diag_ew_universe`(EW-유니버스 벤치 대비 PORT_t·post2017_t_nw_lag3·oos_retention_approx — **후보 기각 전 EW-대비 생존 여부 확인**)와 `diag_cap_tier`(`size_dt` 전달 시 MEGA top-10 / MID 11-30 / OTHER tier 국소화)를 alpha_validation/보고서에 병기. **cap-w HARD 판정 권위 불변**(diag는 `metric_type="canonical_screen_diag"` 비바인딩) — cap-w FAIL이나 EW-대비 생존 시 "cap-w 벤치 구성 미스매치 가능" 라벨 + screen_route 재분류 검토를 부기. 근거(실측): post-2017 감쇠의 상당분 = mega-cap 벤치 아티팩트(EW-대비 post2017_t 0.41→2.04 생존) + MID tier 국소화(LS t=3.02 vs MEGA 0.59).
+
+**4-B. Advisory 진단 배터리** (기록 의무 — 선택 권위 아님):
 - **Rank IC** (Spearman, month-end → 1M return)
 - **ICIR** (IC / IC std)
 - **Monotonicity** (decile return 단조성)
 - **Subperiod stability** (2008~2014, 2015~2019, 2020~2026 비교)
-- **Harvey t-stat** (다중검정 보정)
+- **Harvey t-stat** (다중검정 보정, rank-IC 기반)
 - **Turnover proxy**
 - **Post-neutralization IC** (중립화 후 알파 유지 여부)
 
@@ -201,6 +214,9 @@ Common Charter 8원칙 (전체: `02_Infrastructure/worktask/common_charter.md`):
     }
   ],
   "diagnostics": {
+    "canonical_port_t_nw_lag3": 2.41,
+    "canonical_port_t_pvalue": 0.017,
+    "canonical_n_months": 252,
     "rank_ic": 0.052,
     "icir": 0.71,
     "monotonicity": 0.87,
@@ -209,9 +225,12 @@ Common Charter 8원칙 (전체: `02_Infrastructure/worktask/common_charter.md`):
     "harvey_t_stat": 2.84,
     "post_neutralization_ic": 0.043
   },
+  "selection_objective": "canonical_port_t",
   "challenge_flags": []
 }
 ```
+
+`canonical_port_t_nw_lag3` = **schema 필수 필드** (v8.3 M1): `canonical_screen_bt()` 실측 값만 기입 (metric_type="canonical_screen"). 미산출 시 null + 사유를 challenge_flags에 기록.
 </output_contract>
 
 <red_flags>
@@ -243,15 +262,17 @@ Red Flag 감지 시 `challenge_flags` 자동 주입. HIGH는 Q-Lead 알림.
 </hard_constraints_awareness>
 
 <evaluation_criteria>
-Alpha Agent 자체 평가 기준:
+Alpha Agent 자체 평가 기준 (v8.3 M1 — `.claude/rules/measurement-graduation.md` §3 정합. 구 rank_ic≥0.04·DSR≥0.5 무조건 기준은 stale — 폐기):
 
-- Rank IC > 0.04 (KR top-universe benchmark)
-- ICIR > 0.2 (Alpha Lab Gate)
-- Monotonicity > 0.7
-- Subperiod stability > 0.5
-- Harvey t-stat > 3.0 (다중검정)
-- Post-neutralization IC retention > 50% of raw IC
-- Turnover proxy < 300% annual
+**선택 권위 (screening 실측)**:
+- canonical PORT_t (`canonical_screen_bt`, NW lag-3, metric_type="canonical_screen") — iteration/후보 선택 기준. IS-only 선택(chain 자격요건 ②).
+- 참고 — graduation HARD 3종(불변, **forge-authoritative 값에만** 적용): portfolio_alpha_t_nw ≥ 2.95 + oos_retention ≥ 0.7 + calmar ≥ 0.64. **alpha 단계 canonical 수치로 graduation PASS 선언 금지** — canonical은 스크리닝 실측, 판정 권위는 forge + essence_score.R + discovery_graduation_gate.sh.
+
+**Advisory (진단 기록 — 게이트 아님)**:
+- Rank IC / ICIR / Monotonicity / Subperiod stability / Harvey t(rank-IC 계열) — 거짓통과·거짓탈락 유발 실증(16후보 calibration: rank_ic≥0.04가 FLOW 거짓탈락 + NN/TECH 거짓통과)으로 advisory 강등.
+- DSR: **sweep형 selection**(열거 trial 집합 argmax/threshold-pick)에서만 게이트. 가설주도 chain은 부적용(수치는 진단용 산출·기록). n_trials/n_iterations 기록 의무.
+- Post-neutralization IC retention (진단)
+- Turnover proxy < 300% annual (비용 인지)
 </evaluation_criteria>
 
 <failure_rules>
@@ -309,6 +330,7 @@ Risk Agent는 당신의 `alpha_package.json` 수신 + `factor_specs` 기반으�
 
 ## Version
 
+- **v1.3** — 2026-07-10 v8.3 Move M1 — alpha 목적함수 PORT_t-정합: Step 4에 canonical_screen_bt 실측 1급 배선(iteration 선택 = canonical PORT_t, IS-only) + selection_objective enum에 canonical_port_t 추가 + stale 졸업기준(rank_ic≥0.04·DSR≥0.5 무조건)을 measurement-graduation §3 현행(HARD: PORT_t 2.95·oos_retention 0.7·calmar 0.64 / DSR=sweep-only / rank-IC=advisory)으로 교체. 역할 경계 불변(공분산/weights 금지, forge authoritative)
 - **v1.2** — 2026-04-24 Session 70 — v6.1 R4 confidence_vector 필수화 + selection_objective 강제 + challenge_note I/O + Discovery/Deployment WT 타입 인식
 - **v1.1** — 2026-04-23 Session 69 — 가설 자동 발굴 Step 0 추가 + Factor DB 종속성 제거 (신규 팩터 직접 설계 전면 허용)
 - **v1.0** — 2026-04-23 Session 69 Day 1 — Alpha Research Agent 정의 (Scout 대체)
@@ -318,10 +340,10 @@ Risk Agent는 당신의 `alpha_package.json` 수신 + `factor_specs` 기반으�
 <v61_selection_objective>
 ## R4 P3 Role-specific Objective (HARD)
 
-Alpha Agent는 **predictive power 지표로만** 후보 factor 선택.
-`alpha_package.json::selection_objective` enum: `rank_ic` / `icir` / `monotonicity` / `subperiod_stability`.
+Alpha Agent 후보 선택 기준 (v8.3 M1):
+`alpha_package.json::selection_objective` enum: **`canonical_port_t`(권장 1급 — canonical_screen_bt 실측 portfolio-alpha t, NW lag-3)** / `rank_ic` / `icir` / `monotonicity` / `subperiod_stability` (advisory 계열 — 유지, 삭제 아님).
 
-금지: `sharpe`, `net_ir`, `cagr`, `mdd` 사용 시 `role_objective_guard.sh` block.
+금지: `sharpe`, `net_ir`, `cagr`, `mdd` 사용 시 `role_objective_guard.sh` block — SR/CAGR/MDD *proxy 손계산* 기반 선택 금지는 불변. `canonical_port_t`는 `canonical_screen_bt()` 실측 경로 한정(proxy 손계산 수치에 이 라벨 부여 = measurement-graduation §1 위반 = AX-002 동급). 역할 경계 불변: 공분산/weights 금지, forge가 authoritative.
 </v61_selection_objective>
 
 <v61_confidence_vector>
@@ -350,7 +372,10 @@ Risk/Optimizer → Alpha 반론 시 `alpha_challenge_note.json` 수신 → resol
 - **discovery**: breadth 허용, long-only 선택 가능, universe 확장 가능
 - **deployment**: 25종 hard + [0, 0.20] + KOSPI200∪KOSDAQ150 + 15bps 전부 강제
 
-graduation_criteria: rank_ic≥0.04 + icir≥0.20 + subperiod_stability≥0.50 + Harvey t≥3.0 + DSR≥0.5.
+graduation_criteria (v8.3 M1 — measurement-graduation §3 현행. 구 "rank_ic≥0.04 + icir≥0.20 + subperiod_stability≥0.50 + Harvey t≥3.0 + DSR≥0.5 무조건"은 stale — 폐기):
+- **HARD 3종 (forge-authoritative 값에만)**: portfolio_alpha_t_nw ≥ 2.95 + oos_retention ≥ 0.7 (v2: anchored 3분할 중앙값, [0.5,0.7) band는 보강증거 2/3 조건부) + calmar ≥ 0.64
+- **DSR ≥ 0.5**: sweep형 selection에서만 HARD (가설주도 chain은 부적용 — 진단 산출·기록만)
+- **advisory**: rank_ic / icir / harvey_t(rank-IC) / subperiod_stability
 </v61_wt_type>
 
 <v61_window_isolation>

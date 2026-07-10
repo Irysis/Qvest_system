@@ -529,6 +529,15 @@ def _write_distilled_index(dist_dir: str, index_path: str) -> int:
             "statement_refined": d.get("statement_refined"),
             "statement_draft": d.get("statement_draft"),
             "retry_condition": d.get("retry_condition"),
+            # (M9 2026-07-10) distilled.R::rebuild_distilled_index와 스키마 정합 —
+            # frontier/live_trigger/revival_spec/expiry 등 탐색지도·부활 필드가 주간
+            # 스윕(py 재작성)마다 인덱스에서 소실되던 F9 수리. 카드에 있으면 그대로 통과.
+            "adversarial_verdict": d.get("adversarial_verdict"),
+            "expiry": d.get("expiry"),
+            "frontier": d.get("frontier") or [],           # INV-7: 미탐색 인접 경로(원리2)
+            "live_trigger": d.get("live_trigger") or [],    # INV-7: 부활 조건(원리4) — 사람용 표시
+            "revival_spec": d.get("revival_spec") or [],    # 기계용 부활 spec — monitor 소비
+            "constraint_firewall": d.get("constraint_firewall"),  # 방화벽 판정 기록(원리3)
             "supporting_l_codes": d.get("supporting_l_codes") or [],
             "n_supporting": len(d.get("supporting_l_codes") or []),
             "candidate_id": d.get("candidate_id"),
@@ -536,16 +545,21 @@ def _write_distilled_index(dist_dir: str, index_path: str) -> int:
             "promoted_to_axiom": d.get("promoted_to_axiom"),
             "created_at": d.get("created_at"),
             "refined_at": d.get("refined_at"),
+            "drafted_at": d.get("drafted_at"),
+            "approved_at": d.get("approved_at"),
             "source_file": os.path.basename(f),
         })
     out = {
         "schema_version": "distilled_knowledge_v1",
         "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        # (M9) note도 distilled.R 판과 동일 문안으로 정렬 — R/py 재작성 간 flip-flop 방지
         "note": ("Axiom 엔진 ②Distilled 계층 통합 인덱스. lifecycle: pending_5axis→"
-                 "distilled(/cleaner 정제)→promoted|expired. INV-6: status=distilled"
-                 "(statement_refined 존재)만 주입/truths 소비 — pending_5axis 초안 텍스트 주입 금지."),
+                 "[자동초안+적대검증]→proposed→[도훈 배치승인]→distilled→promoted|expired. "
+                 "INV-6(2026-07-04 재정의: 무인 활성화 금지): 주입/truths 소비는 status=distilled만 "
+                 "— proposed·pending_5axis 초안 텍스트 주입 금지(안전속성 보존)."),
         "n_entries": len(entries),
         "n_distilled": sum(1 for e in entries if e["status"] == "distilled"),
+        "n_proposed": sum(1 for e in entries if e["status"] == "proposed"),
         "entries": entries,
     }
     os.makedirs(os.path.dirname(index_path), exist_ok=True)

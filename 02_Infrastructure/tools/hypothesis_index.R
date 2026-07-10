@@ -5,7 +5,7 @@
 # 구조를 파일 인덱스로 대체. alpha-search Step 0 이전 조회 의무
 # (.claude/skills/alpha-search/SKILL.md 참조).
 #
-# 원천 4계층 (2026-07-04 엔진 재설계 — distilled 추가):
+# 원천 5계층 (2026-07-04 엔진 재설계 — distilled 추가 / 2026-07-10 M6 — in-flight WT 추가):
 #   (a) stage_artifacts/alpha_search/*/strategy_manifest.json  (완주 run)
 #       + strategy_manifest 부재 시 hurdle_result.json fallback (초기 run)
 #       + 둘 다 없는 빈 디렉터리는 중단 run으로 스킵 (사유 기록)
@@ -17,6 +17,15 @@
 #       부활 트리거 → 봉투 안 차별점 명시 시 진행 가능; INV-7 provisional = 불변 기각 아님)으로
 #       표출. frontier/live_trigger 필드 있으면 표출, 없으면 retry_condition/expiry 폴백.
 #       반복기록 N건보다 대표 1건 + 회차 이력이 가설 시점 pull 대조에 정밀.
+#   (e) qepm/mailbox/worktask/*/  진행중(in-flight) WT             (2026-07-10 M6, F6 수리)
+#       request.json(hypothesis_title/theme) + status.json(current_phase) 소비.
+#       terminal phase(TERMINAT/ABORT/ARCHIV/REJECT/KILL/FAIL/NEGATIVE/DEFERRED/
+#       ADMIT/GOVERNOR_DONE/^COMPLETED$)는 스킵 — 완주분은 (a)~(d)가 커버.
+#       verdict = IN_PROGRESS (마지막 파일활동 <= HI_INFLIGHT_FRESH_DAYS=14일)
+#               / INFLIGHT_STALE (non-terminal이나 14일+ 무활동 — 중단 추정, 재개 전 mailbox 확인).
+#       중복 키 규칙: strategy_id = WT task_id. 원천 (e)는 마지막에 합류하므로 동일 id가
+#       (a)~(d)에 이미 있으면 그쪽이 base — .hi_merge가 IN_PROGRESS로 기존 verdict를
+#       덮지 않음(완주 산출물 우선). 완주 후 재빌드 시 (e) 엔트리는 terminal 스킵으로 자연 소멸.
 #
 # 산출: 06_Registry/hypothesis_index.json
 #
@@ -54,6 +63,8 @@
 #   KILL         : lcode tags에 VALIDATED_HARD_FAIL 포함
 #   MARGINAL     : grade C
 #   REGISTERED   : module_catalog 단독 (성과판정 필드 부재)
+#   IN_PROGRESS  : in-flight WT (원천 e, 14일 내 활동) — 병렬 세션 중복실행 방지 마커
+#   INFLIGHT_STALE: in-flight WT non-terminal + 14일+ 무활동 (중단 추정)
 #   <원문 grade> : 위 어디에도 안 걸리는 비표준 grade는 원문 보존
 #
 # ---------------------------------------------------------------------
@@ -384,6 +395,65 @@ FAMILY_PATTERNS <- list(
 }
 
 # --------------------------------------------------------------------
+# (e) in-flight WT 파서 (2026-07-10 M6 — F6 병렬 세션 중복실행 실사고 2건 대응)
+#   반환: NULL(양쪽 json 파싱 실패) / list(terminal=TRUE)(완주·중단 — 스킵 사유) / 엔트리.
+#   phase 정보는 title에 [PHASE]로 임베드 — .hi_row 반환 스키마 불변 유지.
+# --------------------------------------------------------------------
+HI_INFLIGHT_FRESH_DAYS <- 14L
+HI_WT_TERMINAL_REGEX <- "TERMINAT|ABORT|ARCHIV|REJECT|KILL|FAIL|NEGATIVE|DEFERRED|ADMIT|GOVERNOR_DONE|\\bCOMPLETED\\b"
+
+.hi_parse_wt_inflight <- function(wt_dir) {
+  req_p <- file.path(wt_dir, "request.json")
+  st_p  <- file.path(wt_dir, "status.json")
+  req <- if (file.exists(req_p)) tryCatch(fromJSON(req_p, simplifyVector = FALSE), error = function(e) NULL) else NULL
+  st  <- if (file.exists(st_p))  tryCatch(fromJSON(st_p,  simplifyVector = FALSE), error = function(e) NULL) else NULL
+  if (is.null(req) && is.null(st)) return(NULL)
+
+  phase <- toupper(.hi_join(st$current_phase %||% st$phase %||% ""))
+  # terminal 판정은 phase + 단계 verdict 필드 합산 텍스트에 적용 — phase가 ALPHA_DONE처럼
+  # non-terminal이어도 alpha_verdict=CLEAN_NEGATIVE 등으로 사실상 종결된 WT를 걸러낸다.
+  term_txt <- toupper(.hi_join(c(phase, st$alpha_verdict, st$verdict, st$final_verdict)))
+  if (nzchar(term_txt) && grepl(HI_WT_TERMINAL_REGEX, term_txt, perl = TRUE)) {
+    return(list(terminal = TRUE))
+  }
+
+  wt_id <- .hi_join(req$task_id %||% req$wt_id %||% st$task_id %||% "")
+  if (!nzchar(wt_id)) wt_id <- basename(wt_dir)
+
+  title <- .hi_join(req$hypothesis_title)
+  if (!nzchar(title)) title <- .hi_join(req$title)
+  if (!nzchar(title)) title <- .hi_join(req$theme)
+  if (!nzchar(title)) title <- .hi_join(req$hypothesis)
+  if (!nzchar(title)) title <- wt_id
+  desc <- substr(.hi_join(c(req$hypothesis_description, req$theme, req$mandate)), 1, 600)
+  text <- .hi_lc(c(title, desc))
+
+  # 활동 신호 = 디렉터리 내 최신 파일 mtime (status.json updated_at 문자열보다 신뢰)
+  fs <- list.files(wt_dir, full.names = TRUE)
+  mt <- suppressWarnings(max(file.info(fs)$mtime, na.rm = TRUE))
+  age_days <- suppressWarnings(as.numeric(difftime(Sys.time(), mt, units = "days")))
+  fresh <- is.finite(age_days) && age_days <= HI_INFLIGHT_FRESH_DAYS
+
+  uni <- .hi_join((req$universe_definition %||% list())$label)
+  if (!nzchar(uni)) uni <- "unknown"
+  structure_tag <- paste0("wt_", tolower(.hi_join(req$wt_type %||% req$type %||% "unknown")))
+
+  list(
+    strategy_id = wt_id,
+    hypothesis_signature = .hi_signature(
+      .hi_infer_family(text), .hi_infer_signal_group(text, title),
+      uni, structure_tag),
+    title = paste0(wt_id, if (nzchar(phase)) paste0(" [", phase, "]") else "", ": ", title),
+    verdict = if (fresh) "IN_PROGRESS" else "INFLIGHT_STALE",
+    grade = NA_character_,
+    key_metrics = list(),
+    source_paths = sub(paste0("^", QM_ROOT, "/"), "", gsub("\\\\", "/", wt_dir)),
+    source_types = "wt_inflight",
+    date = if (is.finite(age_days)) format(mt, "%Y-%m-%d") else ""
+  )
+}
+
+# --------------------------------------------------------------------
 # 병합: 동일 strategy_id → 1엔트리 (선순위 원천이 기본, 결측만 보충)
 # --------------------------------------------------------------------
 .hi_merge <- function(base, add) {
@@ -411,7 +481,10 @@ build_hypothesis_index <- function(root = QM_ROOT, out_path = HI_INDEX_PATH,
               alpha_search_skipped_empty = 0L, alpha_search_parse_fail = 0L,
               lcode_indexed = 0L, lcode_skipped = 0L,
               module_indexed = 0L, module_skipped = 0L,
-              distilled_indexed = 0L, distilled_skipped = 0L)
+              distilled_indexed = 0L, distilled_skipped = 0L,
+              wt_inflight_indexed = 0L, wt_inflight_skipped_terminal = 0L,
+              wt_inflight_skipped_empty = 0L, wt_inflight_parse_fail = 0L,
+              wt_inflight_merged_completed = 0L)
 
   add_entry <- function(e) {
     if (is.null(e)) return(FALSE)
@@ -489,6 +562,40 @@ build_hypothesis_index <- function(root = QM_ROOT, out_path = HI_INDEX_PATH,
     }
   }
 
+  # --- (e) in-flight WT mailbox (2026-07-10 M6 — 원천 5) ---
+  #   반드시 (a)~(d) 뒤에 합류: 동일 strategy_id 병합 시 완주 산출물이 base가 되어
+  #   IN_PROGRESS가 확정 verdict를 덮지 않는다 (.hi_merge verdict 규칙).
+  wt_root <- file.path(root, "qepm/mailbox/worktask")
+  if (dir.exists(wt_root)) {
+    wdirs <- list.dirs(wt_root, recursive = FALSE)
+    wdirs <- wdirs[!basename(wdirs) %in% c("processed", "integration")]
+    for (d in wdirs) {
+      if (!file.exists(file.path(d, "request.json")) &&
+          !file.exists(file.path(d, "status.json"))) {
+        cov$wt_inflight_skipped_empty <- cov$wt_inflight_skipped_empty + 1L
+        next
+      }
+      pe <- tryCatch(.hi_parse_wt_inflight(d), error = function(err) {
+        message(sprintf("[hypothesis_index][WARN] wt_inflight parse 실패 skip: %s (%s)",
+                        basename(d), conditionMessage(err)))
+        NULL
+      })
+      if (is.null(pe)) { cov$wt_inflight_parse_fail <- cov$wt_inflight_parse_fail + 1L; next }
+      if (isTRUE(pe$terminal)) { cov$wt_inflight_skipped_terminal <- cov$wt_inflight_skipped_terminal + 1L; next }
+      # prefix-병합: 완주 L-code/manifest가 "<WT_ID>_<slug>" 키로 적립되는 관례 →
+      #   bare WT_ID와 키 불일치로 FAIL·IN_PROGRESS가 이중 표출되던 갭. prefix 일치 시
+      #   완주 엔트리에 병합(완주 verdict 보존, source에 wt_inflight 누적).
+      pref <- names(entries)[startsWith(names(entries), paste0(pe$strategy_id, "_"))]
+      if (length(pref)) {
+        entries[[pref[1]]] <- .hi_merge(entries[[pref[1]]], pe)
+        cov$wt_inflight_merged_completed <- cov$wt_inflight_merged_completed + 1L
+        next
+      }
+      if (add_entry(pe)) cov$wt_inflight_indexed <- cov$wt_inflight_indexed + 1L
+      else cov$wt_inflight_parse_fail <- cov$wt_inflight_parse_fail + 1L
+    }
+  }
+
   out <- list(
     schema_version = "hypothesis_index_v1",
     generated_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
@@ -500,7 +607,24 @@ build_hypothesis_index <- function(root = QM_ROOT, out_path = HI_INDEX_PATH,
     entries = unname(entries)
   )
   dir.create(dirname(out_path), showWarnings = FALSE, recursive = TRUE)
-  write_json(out, out_path, auto_unbox = TRUE, pretty = TRUE, null = "null")
+  # (F-1 2026-07-10 v8.3 적대검증) 원자적 쓰기 — 같은 디렉터리 temp + rename 교체.
+  #   구 동작(write_json 직접)은 중단/동시읽기 시 반파일(손상 JSON)을 남기고, 손상 파일은
+  #   mtime이 최신이라 stale 재빌드도 미트리거였음. temp-rename은 이 리포 확립 관행
+  #   ([project-windows-arrow-mmap-1224] OneDrive 특성). Windows file.rename은 대상 존재 시
+  #   실패 → 대상 제거 후 rename, 그래도 실패 시 file.copy(overwrite)+remove 폴백.
+  tmp_path <- file.path(dirname(out_path),
+                        paste0(".", basename(out_path), ".tmp_", Sys.getpid()))
+  write_json(out, tmp_path, auto_unbox = TRUE, pretty = TRUE, null = "null")
+  if (file.exists(out_path)) suppressWarnings(file.remove(out_path))
+  renamed <- suppressWarnings(file.rename(tmp_path, out_path))
+  if (!isTRUE(renamed)) {
+    ok_copy <- suppressWarnings(file.copy(tmp_path, out_path, overwrite = TRUE))
+    suppressWarnings(file.remove(tmp_path))
+    if (!isTRUE(ok_copy)) {
+      stop("[hypothesis_index] 원자적 교체 실패 — temp 기록은 성공했으나 rename/copy 모두 실패: ",
+           tmp_path, " -> ", out_path)
+    }
+  }
   if (verbose) {
     cat(sprintf("[hypothesis_index] %d entries -> %s\n", length(entries), out_path))
     cat(sprintf("  manifest=%d hurdle_fallback=%d skipped_empty=%d parse_fail=%d\n",
@@ -510,6 +634,10 @@ build_hypothesis_index <- function(root = QM_ROOT, out_path = HI_INDEX_PATH,
                 cov$lcode_indexed, cov$lcode_skipped,
                 cov$module_indexed, cov$module_skipped,
                 cov$distilled_indexed, cov$distilled_skipped))
+    cat(sprintf("  wt_inflight=%d (terminal skip %d, empty %d, parse_fail %d, merged_completed %d)\n",
+                cov$wt_inflight_indexed, cov$wt_inflight_skipped_terminal,
+                cov$wt_inflight_skipped_empty, cov$wt_inflight_parse_fail,
+                cov$wt_inflight_merged_completed))
   }
   invisible(out)
 }
@@ -563,9 +691,10 @@ HI_QUERY_ALIAS <- list(
   unique(out[nzchar(out)])
 }
 
-# stale 검사: distilled_knowledge.json / module_catalog.json / lcode_corpus.json mtime이
-# hypothesis_index.json mtime보다 최신이면 인덱스가 뒤처짐 → 경고.
-.hi_stale_check <- function(index_path, root = QM_ROOT) {
+# stale 검사: distilled_knowledge.json / module_catalog.json / lcode_corpus.json /
+# in-flight WT mailbox(request/status.json) mtime이 hypothesis_index.json mtime보다
+# 최신이면 인덱스가 뒤처짐. warn=TRUE면 경고 메시지 (auto-rebuild 경로에선 FALSE로 억제).
+.hi_stale_check <- function(index_path, root = QM_ROOT, warn = TRUE) {
   if (!file.exists(index_path)) return(invisible(NULL))
   idx_mt <- file.info(index_path)$mtime
   srcs <- c("06_Registry/distilled_knowledge.json",
@@ -576,7 +705,13 @@ HI_QUERY_ALIAS <- list(
     p <- file.path(root, s)
     if (file.exists(p) && file.info(p)$mtime > idx_mt) stale <- c(stale, s)
   }
-  if (length(stale)) {
+  # (M6 2026-07-10) in-flight WT 원천 stale 검사 — mailbox의 request/status.json 최신 mtime
+  wt_files <- Sys.glob(file.path(root, "qepm/mailbox/worktask/*", c("status.json", "request.json")))
+  if (length(wt_files)) {
+    wt_mt <- suppressWarnings(max(file.info(wt_files)$mtime, na.rm = TRUE))
+    if (is.finite(wt_mt) && wt_mt > idx_mt) stale <- c(stale, "qepm/mailbox/worktask (in-flight WT)")
+  }
+  if (length(stale) && warn) {
     message(sprintf("[hypothesis_index][경고] 인덱스 stale — 다음 원천이 인덱스보다 최신: %s. build 권장 (Rscript 02_Infrastructure/tools/hypothesis_index.R build)",
                     paste(stale, collapse = ", ")))
   }
@@ -622,15 +757,49 @@ HI_QUERY_ALIAS <- list(
 #   반환: data.frame (distilled 우선 → date 내림차순).
 #   ★P0#2: N어 AND가 0건이면 마지막 키워드 단독 재조회 + 배너.
 #   ★P0#3: 각 키워드는 SIGNAL/FAMILY 패턴 + 별칭맵으로 확장(동의어/한영/축약 흡수).
-#   ★P1: stale 검사(원천 mtime > 인덱스 mtime 시 경고).
+#   ★P1→M6 (2026-07-10): stale 감지 시 경고-only → 인라인 자동 재빌드 (auto_rebuild=TRUE
+#     기본. 전체 빌드 실측 ~2s. 재빌드 실패 시 기존 인덱스로 폴백 + 경고 — lookup은 항상 응답).
 # --------------------------------------------------------------------
 lookup_hypothesis <- function(keywords, index_path = HI_INDEX_PATH,
-                              max_rows = 30L) {
+                              max_rows = 30L, auto_rebuild = TRUE) {
   if (!file.exists(index_path)) {
     stop("hypothesis_index.json not found — run build_hypothesis_index() first: ", index_path)
   }
-  .hi_stale_check(index_path)                      # P1 stale 경고
-  idx <- fromJSON(index_path, simplifyVector = FALSE)
+  stale <- .hi_stale_check(index_path, warn = !auto_rebuild)   # M6: 자동 재빌드 경로선 경고 억제
+  if (auto_rebuild && length(stale)) {
+    message(sprintf("[hypothesis_index] stale 감지(%s) → 인라인 자동 재빌드",
+                    paste(stale, collapse = ", ")))
+    ok <- tryCatch({
+      build_hypothesis_index(out_path = index_path, verbose = FALSE)
+      TRUE
+    }, error = function(e) {
+      message("[hypothesis_index][경고] 인라인 재빌드 실패 — 기존(stale) 인덱스로 진행: ",
+              conditionMessage(e))
+      FALSE
+    })
+    if (isTRUE(ok)) message("[hypothesis_index] 재빌드 완료 — fresh 인덱스로 조회")
+  }
+  # (F-1 2026-07-10 v8.3 적대검증) 손상 인덱스 자가치유 — 손상 파일은 mtime이 최신이라
+  #   위 stale 재빌드가 미트리거. parse 실패 시 강제 재빌드 폴백(재빌드도 실패하면 명시 에러).
+  idx <- tryCatch(fromJSON(index_path, simplifyVector = FALSE), error = function(e) {
+    message("[hypothesis_index][경고] 인덱스 파싱 실패(손상 추정): ", conditionMessage(e),
+            " → 강제 재빌드")
+    ok <- tryCatch({
+      build_hypothesis_index(out_path = index_path, verbose = FALSE)
+      TRUE
+    }, error = function(e2) {
+      message("[hypothesis_index][오류] 강제 재빌드 실패: ", conditionMessage(e2))
+      FALSE
+    })
+    if (!isTRUE(ok)) {
+      stop("hypothesis_index.json 손상 + 강제 재빌드 실패 — 수동 점검 필요: ", index_path,
+           " (원 파싱 오류: ", conditionMessage(e), ")")
+    }
+    tryCatch(fromJSON(index_path, simplifyVector = FALSE), error = function(e3) {
+      stop("hypothesis_index.json 재빌드 직후에도 파싱 실패 — 수동 점검 필요: ", index_path,
+           " (", conditionMessage(e3), ")")
+    })
+  })
   kws <- tolower(unlist(strsplit(paste(keywords, collapse = " "), "\\s+")))
   kws <- kws[nzchar(kws)]
   if (length(kws) == 0) stop("empty keywords")

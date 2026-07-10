@@ -100,7 +100,8 @@ if (!nzchar(.TG_TOKEN) || !nzchar(.TG_CHAT_ID)) {
   SUMMARY_MIN      = 20L,     # summary type 최소 자수 (1줄 헤드라인)
   SUMMARY_MAX      = 100L,    # v6.1 — summary 최대 (200→100 강화, 1줄 의무)
   CODE_MIN         = 20L,     # code body 최소 자수
-  TABLE_NROW_MIN   = 2L       # table nrow 최소
+  TABLE_NROW_MIN   = 2L,      # table nrow 최소
+  GLOSSARY_MAX_BYTES = 900L   # v7 — 자동 용어 풀이 footer 최대 바이트 (SKILL.md §5.5)
 )
 
 `%||%` <- function(a, b) if (!is.null(a)) a else b
@@ -829,6 +830,111 @@ tg_decode_jargon <- function(text, mode = c("inline_first", "footer", "off")) {
   text
 }
 
+# ─── v7 (2026-07-10 도훈 mandate) — 용어 뜻 사전 (SKILL.md §5.5와 1:1 동기화) ───
+# .JARGON_DICT(약어→한글명 변환)와 별개 층위: 한글명/용어 → 쉬운 뜻 + 판정 기준.
+# 비전공자 가독 장치 ③: tg_agent_brief()가 최종 본문 스캔 → 등장 용어만 footer 자동 부착.
+# 변경 시 SKILL.md §5.5 표 먼저 수정하고 본 list 동기화 (역방향 금지).
+# 순서 중요: 구체(긴) 패턴 → 일반(짧은) 패턴. 매치 후 마스킹으로 중첩 재매치 방지.
+.METRIC_MEANING <- list(
+  list(pattern = "다중검정 t값|PORT_t|portfolio[- ]alpha t|포트폴리오 알파 t",
+       term = "다중검정 t값",   meaning = "초과수익이 우연이 아닐 확신도. 2.95 이상이어야 자본 투입 자격"),
+  list(pattern = "표본외 유지율|oos_retention",
+       term = "표본외 유지율",  meaning = "개발 기간 성과가 새 기간에도 유지되는 비율. 0.7 이상 합격"),
+  list(pattern = "표본 외 검증|\\bOOS\\b",
+       term = "표본 외 검증",   meaning = "개발에 쓰지 않은 기간으로 치르는 모의고사"),
+  list(pattern = "디플레이티드 샤프|\\bDSR\\b",
+       term = "디플레이티드 샤프", meaning = "여러 번 시도한 보정을 반영해 깎아서 본 샤프지수"),
+  list(pattern = "샤프지수|\\bSR\\b|\\bSharpe\\b",
+       term = "샤프지수",       meaning = "감수한 출렁임 대비 수익 효율. 1 이상 양호, 2 이상 우수"),
+  list(pattern = "최대낙폭|\\bMDD\\b",
+       term = "최대낙폭",       meaning = "고점에서 저점까지 최대 하락률. 작을수록 안전"),
+  list(pattern = "연복리수익률|\\bCAGR\\b",
+       term = "연복리수익률",   meaning = "매년 평균 몇 %씩 복리로 불었는지"),
+  list(pattern = "정보계수 안정성|\\bICIR\\b",
+       term = "정보계수 안정성", meaning = "예측 적중의 꾸준함 (정보계수 평균 대비 변동)"),
+  list(pattern = "정보계수|\\bIC\\b",
+       term = "정보계수",       meaning = "예측 점수와 실제 수익의 들어맞는 정도. 0.05면 유의미"),
+  list(pattern = "정보비율|\\bIR\\b",
+       term = "정보비율",       meaning = "시장 대비 초과수익의 꾸준함. 0.5 이상 양호"),
+  list(pattern = "칼마|\\bCalmar\\b",
+       term = "칼마",           meaning = "연수익을 최대낙폭으로 나눈 값. 0.64 이상 합격"),
+  list(pattern = "회전율|\\bTurnover\\b|\\bTO\\b",
+       term = "회전율",         meaning = "1년에 포트폴리오를 갈아치우는 비율. 높을수록 거래비용 부담"),
+  list(pattern = "벤치마크|\\bBM\\b",
+       term = "벤치마크",       meaning = "성과 비교 기준이 되는 시장 지수"),
+  list(pattern = "백테스팅|\\bBacktest\\b",
+       term = "백테스팅",       meaning = "과거 데이터로 전략을 모의 운용해 보는 검증"),
+  list(pattern = "미래참조|look[- ]ahead",
+       term = "미래참조",       meaning = "그 시점엔 몰랐을 미래 정보가 섞여 성과가 부풀려지는 오류"),
+  list(pattern = "\\bPIT\\b|시점 정합",
+       term = "PIT",            meaning = "그 시점에 실제로 알 수 있던 정보만 쓰는 원칙 (미래 정보 반입 금지)"),
+  list(pattern = "오버레이|\\boverlay\\b",
+       term = "오버레이",       meaning = "기존 포트폴리오 위에 얹는 보조 장치 (예: 위험 신호 시 현금 확대)"),
+  list(pattern = "알파|\\balpha\\b",
+       term = "알파",           meaning = "시장 평균을 넘어서는 초과수익, 또는 그 원천"),
+  list(pattern = "팩터",
+       term = "팩터",           meaning = "종목을 고르는 기준 신호 (예: 저평가, 이익 개선)"),
+  list(pattern = "graduation|자본 졸업",
+       term = "graduation",     meaning = "실제 자본을 배정받을 자격 심사 통과"),
+  list(pattern = "screen[- _]?tier|스크린 등급",
+       term = "screen-tier",    meaning = "신호는 있으나 자본 투입 기준 미달 — 참고용 보관 등급"),
+  list(pattern = "admission|\\badmit\\b",
+       term = "admission",      meaning = "실제 운용 목록(북) 편입 승인"),
+  list(pattern = "운용 북|\\bbook\\b",
+       term = "운용 북",        meaning = "실제 자본이 배정된 전략 묶음"),
+  list(pattern = "lockbox",
+       term = "lockbox",        meaning = "검증 전 결과를 미리 못 보게 봉인하는 장치"),
+  list(pattern = "long[- ]only|롱온리",
+       term = "long-only",      meaning = "매수만 하는 운용 (공매도 없음)"),
+  list(pattern = "워크포워드|walk[- ]forward",
+       term = "워크포워드",     meaning = "시간 순서대로 한 구간씩 전진하며 검증하는 방식"),
+  list(pattern = "잔차|\\bresidual\\b",
+       term = "잔차",           meaning = "시장·공통 요인으로 설명되고 남은 고유 부분"),
+  list(pattern = "국면|\\bregime\\b",
+       term = "국면",           meaning = "시장의 상태 구분 (예: 강세장 / 위기)"),
+  list(pattern = "유니버스",
+       term = "유니버스",       meaning = "투자 대상으로 허용된 종목 집합"),
+  list(pattern = "교훈 코드|\\bL-[A-Z0-9]",
+       term = "교훈 코드",      meaning = "실험에서 얻은 교훈의 일련번호"),
+  list(pattern = "공분산",
+       term = "공분산",         meaning = "종목들이 함께 움직이는 정도 (분산투자 계산의 재료)"),
+  list(pattern = "플라시보|placebo",
+       term = "플라시보",       meaning = "가짜 신호로 같은 실험을 돌려 진짜 신호와 구별하는 검사"),
+  list(pattern = "t값",
+       term = "t값",            meaning = "결과가 우연이 아닐 확신도. 2 이상이면 통계적으로 의미 있음")
+)
+
+# tg_build_glossary: v7 자동 용어 풀이 footer 빌더 (SKILL.md §5.5 동작 규칙)
+#  - 최종 msg에서 .METRIC_MEANING 패턴 스캔 → 등장 순서대로 수집 (매치 후 마스킹 = 중첩 재매치 방지)
+#  - max_bytes 초과분은 등장 순서 뒤쪽부터 절삭 / 대상 없으면 "" 반환 (에러 아님)
+tg_build_glossary <- function(msg, max_bytes = .TG_CONFIG$GLOSSARY_MAX_BYTES) {
+  if (!is.character(msg) || length(msg) != 1 || !nzchar(msg)) return("")
+  work <- msg
+  found <- list()
+  for (entry in .METRIC_MEANING) {
+    m <- regexpr(entry$pattern, work, perl = TRUE)
+    if (m > 0) {
+      found[[length(found) + 1L]] <- list(term = entry$term,
+                                          meaning = entry$meaning,
+                                          pos = as.integer(m))
+      # 마스킹: 같은 텍스트가 더 일반적인 후속 패턴(예: "t값")에 재매치되는 것 방지
+      work <- gsub(entry$pattern, strrep("░", 3L), work, perl = TRUE)
+    }
+  }
+  if (length(found) == 0) return("")
+  ord <- order(vapply(found, function(x) x$pos, integer(1)))
+  header <- "\U0001F4D6 <b>용어 풀이</b>"
+  out <- header
+  for (i in ord) {
+    line <- sprintf("  • %s = %s", found[[i]]$term, found[[i]]$meaning)
+    cand <- paste(out, line, sep = "\n")
+    if (nchar(cand, type = "bytes") > max_bytes) break
+    out <- cand
+  }
+  if (identical(out, header)) return("")   # 예산 내 항목 0개면 미부착
+  out
+}
+
 # tg_text_smart_break: SKILL.md §2 원칙 6 — 개조식 자동 줄바꿈
 # 마침표/감탄/물음표 + space, 한국어 종결어미, " / ", " → ", "; " 분리.
 # <pre> 블록 보존.
@@ -952,7 +1058,11 @@ tg_agent_brief <- function(agent,
                              #   bullet 길이(BULLET_ITEM_MAX)·영어 약어 가드·kv 값 길이·kv 영어비율 면제
                              #   (영어 논문 제목 등 고유 콘텐츠 허용). 기본 FALSE = 기존 한글 규율·길이 제한 유지
                              #   (타 에이전트 영향 0). 구조 안전망(4096 byte 가드·skeleton 가드)은 relaxed여도 유지.
-                             relaxed = FALSE) {
+                             relaxed = FALSE,
+                             # v7 (2026-07-10 도훈 mandate) — 비전공자 가독 장치 ③:
+                             #   본문 등장 전문용어 자동 스캔 → "📖 용어 풀이" footer 부착 (.METRIC_MEANING, SKILL.md §5.5).
+                             #   기본 TRUE. FALSE는 내부 디버그 발송만.
+                             glossary = TRUE) {
   if (!isTRUE(dry_run) && .tg_serial_enabled() && !.tg_lock_held()) {
     return(tg_with_serial_lock(
       scope = sprintf("tg_agent_brief_%s", agent),
@@ -971,7 +1081,8 @@ tg_agent_brief <- function(agent,
         decode_jargon = decode_jargon,
         decode_mode = decode_mode,
         smart_break = smart_break,
-        relaxed = relaxed
+        relaxed = relaxed,
+        glossary = glossary
       )
     ))
   }
@@ -1219,6 +1330,24 @@ tg_agent_brief <- function(agent,
   # ── 3.5. v6 SOT 약어 풀이 (default inline_first, 첫 등장 1회) ─────────────────
   if (isTRUE(decode_jargon) && decode_mode != "off") {
     msg <- tg_decode_jargon(msg, mode = decode_mode)
+  }
+
+  # ── 3.6. v7 자동 용어 풀이 footer (SKILL.md §5.5 — 비전공자 가독, 도훈 mandate 2026-07-10) ──
+  # 메시지 4096 byte 근접 시 glossary 우선 절삭 (본문 보호).
+  if (isTRUE(glossary)) {
+    .base_bytes <- nchar(msg, type = "bytes")
+    .gl_budget  <- min(.TG_CONFIG$GLOSSARY_MAX_BYTES, max(0L, 3950L - .base_bytes))
+    if (.gl_budget >= 60L) {
+      .gl <- tg_build_glossary(msg, max_bytes = .gl_budget)
+      if (nzchar(.gl)) msg <- paste(msg, .gl, sep = "\n\n")
+    }
+  }
+
+  # v7 원칙 8-② warn-level — "쉬운 설명" 섹션 부재 경고 (기존 자동 caller 비파괴, stop 아님)
+  .has_plain_section <- any(vapply(sections, function(s)
+    grepl("쉬운", s$heading %||% "", fixed = TRUE), logical(1)))
+  if (!.has_plain_section && !isTRUE(relaxed)) {
+    message(sprintf("[tg_agent_brief] v7 WARN agent=%s: '쉬운 설명' 섹션 없음 — SKILL.md 원칙 8-② (에이전트 브리핑은 시도/방법/결과/의미 평문 bullet 의무, warn-level).", agent))
   }
 
   # ── 4. Width/bytes 사전 체크 (Telegram 4096 bytes 제한) ──────────────────────

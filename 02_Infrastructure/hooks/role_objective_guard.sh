@@ -11,7 +11,9 @@ fi
 #
 # 이벤트: PreToolUse[Write] on *_package.json
 # 목적: 각 agent package의 selection_objective 필드 도메인 검증
-#   - Alpha: rank_ic / icir / monotonicity / subperiod_stability 만
+#   - Alpha: canonical_port_t / rank_ic / icir / monotonicity / subperiod_stability 만
+#     (v8.3 M1 2026-07-10: canonical_port_t = canonical_screen_bt 실측 PORT_t NW lag-3 1급 추가.
+#      IC-계열은 advisory 유지. SR/CAGR/MDD proxy 손계산은 여전히 금지)
 #   - Risk: condition_number / stress_robust / crowding / shrinkage_quality 만
 #   - Optimizer: net_ir / to_adj_ret / uncertainty_penalty / crowding_adj_ret 만
 #
@@ -28,7 +30,7 @@ CONTENT=$(echo "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; d=json.load(sys.s
 case "$FILE_PATH" in
   */alpha_package.json)
     pkg_type="alpha"
-    allowed_objectives="rank_ic,icir,monotonicity,subperiod_stability"
+    allowed_objectives="canonical_port_t,rank_ic,icir,monotonicity,subperiod_stability"
     ;;
   */risk_package.json)
     pkg_type="risk"

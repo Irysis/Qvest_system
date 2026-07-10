@@ -70,9 +70,16 @@ esac
 #   초안 텍스트 주입 금지. 인덱스 부재/정제 0건 시 기존 주입과 동일 (회귀 없음).
 # (E+F 2026-07-04 실패지식) 고정 제약 7종 문제-축 블록 무조건 주입(제약 완화=레버 금지, AX-000) +
 #   distilled negative 톤을 '실패' → '탐색됨+프론티어(봉투 안 차별점 시 진행)' 지도-프레임으로 전환.
+# (M7 2026-07-10) ① frontier axis 목록 실측 갱신 — settled-negative 3종(DPL 06-26 ·
+#   regime-conditional 교차결합 07-05 L-QPM-20260705_105130 · ML/uncertainty sizing 07-05
+#   2세션 robust FAIL) 제거, 현행 프론티어(비-return 원천/screen-tier 회수/EW-대비·cap-tier
+#   재분류)로 교체. ② revival flags(.cache/failure_revival_flags.json) 발화분 1-3줄 주입 —
+#   소비면이 모닝브리핑 stdout뿐이던 갭 수리. 절단 우선순위: soft-body → dist→dist_min →
+#   truths → revival → dist_min (dist_min 바닥 로직 불변 — revival은 truths보다 늦게 버림).
 TRUTHS_FILE="$DIR/02_Infrastructure/prompts/strategic_truths.md"
 DIST_INDEX="$DIR/06_Registry/distilled_knowledge.json"
-ESC=$(printf '%s' "$HEADER" | CB="$CACHE_BODY" TF="$TRUTHS_FILE" DI="$DIST_INDEX" "$QVEST_PY_BIN" -c "
+REVIVAL_FLAGS="$DIR/.cache/failure_revival_flags.json"
+ESC=$(printf '%s' "$HEADER" | CB="$CACHE_BODY" TF="$TRUTHS_FILE" DI="$DIST_INDEX" RV="$REVIVAL_FLAGS" "$QVEST_PY_BIN" -c "
 import json, os, sys
 def rd(p):
     try:
@@ -88,10 +95,12 @@ if truths and '<!-- DISTILLED_START' in truths:
     _, _, post = rest.partition('<!-- DISTILLED_END -->')
     truths = (pre.rstrip() + post).strip()
 # (E+F 2026-07-04) 고정 제약 7종 = 불가침 문제-축 블록. 제약 완화는 레버 아님(AX-000).
+# (M7 2026-07-10) 프론티어 목록 실측 갱신 — DPL·regime-conditional 교차결합·ML/uncertainty
+#   sizing은 settled-negative(06-26/07-05)라 제거. 현행 실제 프론티어 3축으로 교체.
 axis = ('[문제의 고정 축 — 변수 아님, 이 안에서 풀 것]' + chr(10) +
         '  long-only(w>=0)·<=25종·K200∪KQ150·15bps(v2.4 delta)·[0,0.20]·Σw=1 + PIT C1~C15.' + chr(10) +
         '  이건 배포 현실이 정의한 문제의 고정 축이다. \"long-only라서/25종이라서 실패\"식 제약-귀속 금지.' + chr(10) +
-        '  봉투 안 레버만 프론티어: overlay·잔차sleeve·비-return 데이터·DPL·regime-conditional·multi-sleeve·composite·ML sizing.')
+        '  봉투 안 레버 프론티어(07-10 실측): ①비-return 원천(DART exec-insider 역사·계약금액 magnitude — document.xml 파서 계열) ②screen-tier 재고 회수(overlay 큐) ③EW-대비/cap-tier 재분류(기각 후보 벤치-아티팩트 재진단). DPL·regime-conditional 교차결합·ML sizing은 settled-negative — 레버 아님.')
 # ②Distilled negative/conditional top-K (K=5, 정제 완료분만 — INV-6)
 #   (E+F 2026-07-04) '이건 실패' 톤 → '탐색됨 + 봉투 안 프론티어' 지도-프레임 톤.
 dist = ''
@@ -120,6 +129,33 @@ try:
 except Exception:
     dist = ''
     dist_min = ''
+# (M7 2026-07-10) revival flags 주입 — failure_revival_monitor 발화분(fired)이 있으면
+#   1-3줄 요약. 파일 부재/빈 fired/파싱실패 = 무주입(회귀 없음). 상한 380자.
+rev = ''
+try:
+    _rvp = os.environ.get('RV', '')
+    if _rvp and os.path.exists(_rvp):
+        _rj = json.load(open(_rvp, encoding='utf-8'))
+        _fired = _rj.get('fired') or []
+        # (F-2 2026-07-10 v8.3 적대검증) settled-negative lane 세그먼트 skip —
+        #   구 동작(split('|')[0] 고정)은 DIST-AR-003 첫 세그먼트가 DPL(settled-negative 06-26)이라
+        #   상단 axis의 'DPL은 settled — 레버 아님'과 자기모순 주입. 첫 non-settled 세그먼트 선택,
+        #   전 세그먼트 settled면 재검토 문구로 대체. 예산(380자·절단 우선순위·dist_min 바닥) 불변.
+        import re as _re_rv
+        _settled_rv = _re_rv.compile(r'DPL|regime.?conditional|ML.?sizing|uncertainty.?sizing', _re_rv.I)
+        _rl = []
+        for x in _fired[:3]:
+            _segs = [s.strip() for s in str(x.get('frontier') or '').split('|') if s.strip()]
+            _fr = next((s for s in _segs if not _settled_rv.search(s)), '')
+            if _segs and not _fr:
+                _fr = 'frontier 항 전부 settled-lane — 카드 원문 재검토 필요'
+            _rl.append(f\"  - {x.get('dist_id')} 발화({x.get('signal_id')}={x.get('current_value')}): {_fr[:70]}\")
+        if _rl:
+            rev = '[부활 발화 — 재도전 시점 도달(failure_revival_flags, 봉투 안 frontier만)]' + chr(10) + chr(10).join(_rl)
+            if len(rev) > 380:
+                rev = rev[:380] + '…'
+except Exception:
+    rev = ''
 MAX = 2500
 # (P0#4 2026-07-04 감사) 절단불가 코어 보호. 우선순위:
 #   [hdr + 제약 문제-축(axis) + 코어 공리(active Law AX-000/001/002/008)] = 불변  (구 negative AX-003/004/005/007은 2026-07-05 Distilled 강등 — active 아님)
@@ -140,7 +176,7 @@ core_block = chr(10).join(_core_lines)
 # 코어 공리 + 제약축은 항상 산다. dist/truths/soft body는 남는 예산 안에서만.
 # fixed = 절대 감축 불가(hdr + axis + core). axis는 tail의 첫 요소.
 fixed_len = len(hdr) + 1 + len(core_block) + (len(chr(10)*2) + len(axis))
-def _assemble(soft_lines, dist_s, truths_s):
+def _assemble(soft_lines, dist_s, truths_s, rev_s):
     parts = [hdr]
     b = core_block
     if soft_lines:
@@ -150,13 +186,16 @@ def _assemble(soft_lines, dist_s, truths_s):
         t += (chr(10)*2) + truths_s
     if dist_s:
         t += (chr(10)*2) + dist_s
+    if rev_s:
+        t += (chr(10)*2) + rev_s
     return parts[0] + chr(10) + b + t
-full = _assemble(_soft_lines, dist, truths)
+full = _assemble(_soft_lines, dist, truths, rev)
 if len(full) + 4 > MAX:
-    # 1단계: soft body 라인을 예산 내로 절단 (코어/axis/dist/truths는 아직 유지)
+    # 1단계: soft body 라인을 예산 내로 절단 (코어/axis/dist/truths/rev는 아직 유지)
     reserve = len(chr(10)*2) + len(axis) + \
               (len(chr(10)*2) + len(truths) if truths else 0) + \
-              (len(chr(10)*2) + len(dist) if dist else 0)
+              (len(chr(10)*2) + len(dist) if dist else 0) + \
+              (len(chr(10)*2) + len(rev) if rev else 0)
     budget = max(0, MAX - fixed_len - reserve - 60)
     kept, used = [], 0
     for ln in _soft_lines:
@@ -165,22 +204,39 @@ if len(full) + 4 > MAX:
         kept.append(ln); used += len(ln) + 1
     if len(kept) < len(_soft_lines):
         kept.append('  → (축약) 전문: .claude/rules/axioms.md')
-    _dist2, _truths2 = dist, truths
-    cand = _assemble(kept, _dist2, _truths2)
+    _dist2, _truths2, _rev2 = dist, truths, rev
+    cand = _assemble(kept, _dist2, _truths2, _rev2)
     # 2단계: 초과 시 실패지식(distilled)에 예산 바닥(reserved floor) 부여.
     #   2a) dist를 top-1(dist_min)로 축소 (나머지 2~5건은 truths에 양보)
     #   2b) 그래도 초과면 truths 감축
-    #   2c) 그래도 초과면 dist_min까지 포기 (최후)
-    #   → 최상위 실패지식 탐색지도 1건은 truths보다 늦게 버려져 소비면 도달 보장.
+    #   2c) 그래도 초과면 revival 포기 (M7 — 발화는 시의성 액션이라 truths보다 늦게 버리되 dist_min보단 먼저)
+    #   2d) 그래도 초과면 dist_min까지 포기 (최후 — 바닥 로직 불변)
+    #   → 최상위 실패지식 탐색지도 1건은 truths/revival보다 늦게 버려져 소비면 도달 보장.
     if len(cand) + 4 > MAX and _dist2 and dist_min and _dist2 != dist_min:
         _dist2 = dist_min
-        cand = _assemble(kept, _dist2, _truths2)
+        cand = _assemble(kept, _dist2, _truths2, _rev2)
     if len(cand) + 4 > MAX and _truths2:
-        _truths2 = ''
-        cand = _assemble(kept, _dist2, _truths2)
+        # (M7 2026-07-10) 전량 포기(구 동작: truths 통째 드롭) 대신 라인 단위 절단 —
+        #   상단 확립사실(최신 3건이 최상단)부터 잔여 예산 내 보존 + 전문 포인터.
+        _others = _assemble(kept, _dist2, '', _rev2)
+        t_budget = MAX - 4 - len(_others) - 2
+        _tail = '  → (전문) 02_Infrastructure/prompts/strategic_truths.md'
+        t_lines = _truths2.splitlines()
+        t_kept, t_used = [], 0
+        for ln in t_lines:
+            if t_used + len(ln) + 1 + len(_tail) + 1 > t_budget:
+                break
+            t_kept.append(ln); t_used += len(ln) + 1
+        if 0 < len(t_kept) < len(t_lines):
+            t_kept.append(_tail)
+        _truths2 = chr(10).join(t_kept) if len(t_kept) > 1 else ''
+        cand = _assemble(kept, _dist2, _truths2, _rev2)
+    if len(cand) + 4 > MAX and _rev2:
+        _rev2 = ''
+        cand = _assemble(kept, _dist2, _truths2, _rev2)
     if len(cand) + 4 > MAX and _dist2:
         _dist2 = ''
-        cand = _assemble(kept, _dist2, _truths2)
+        cand = _assemble(kept, _dist2, _truths2, _rev2)
     # 3단계: 극단(코어+axis만으로 초과) — 코어는 절대 자르지 않고 hard cap만 적용(코어 우선 보존).
     full = cand
 ctx = full[:MAX]

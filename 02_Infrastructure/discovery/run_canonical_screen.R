@@ -19,7 +19,10 @@ res <- tryCatch({
   scores  <- rd("cs_scores.parquet")     # Date, Ticker, score
   returns <- rd("cs_returns.parquet")    # Date, Ticker, Ret_1m (forward 1M)
   bench   <- rd("cs_bench.parquet")      # Date, BM_Ret (forward 1M)
-  canonical_screen_bt(scores, returns, bench, top_n = top_n, cost_bps_oneway = 15, periods_per_year = ppy)
+  # (F-3 2026-07-10) diag_dual_basis=FALSE 명시 — 이 브릿지는 cs_result.json 스칼라 회신 계약
+  #   (구 ~1KB). 진단 2필드(diag_ew_universe/diag_cap_tier)는 여기서 미산출(소비자 없음 + 회신 비대화 방지).
+  canonical_screen_bt(scores, returns, bench, top_n = top_n, cost_bps_oneway = 15,
+                      periods_per_year = ppy, diag_dual_basis = FALSE)
 }, error = function(e) list(error = conditionMessage(e)))
 
 res$benchmark_compare <- NULL; res$period_returns <- NULL   # data.table 필드는 스칼라 회신에서 제외
