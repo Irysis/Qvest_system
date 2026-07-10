@@ -1,0 +1,85 @@
+{
+  "task_id": "WT-D20260710_003",
+  "wt_type": "discovery",
+  "pg1_eligibility": "certificate_required",
+  "discovery_of": null,
+  "graduation_criteria": {
+    "description": "Discovery → Deployment 전환 조건. discovery_graduation_gate.sh 강제. v8.x WS2 재설계(2026-05-29): rank-IC 계열은 long-only 실현 alpha와 어긋나(16후보 calibration 실측: rank_ic가 FLOW 거짓탈락+NN/TECH 거짓통과) advisory로 강등, portfolio-alpha t(forge NW lag-3)를 hard로. DSR hard는 sweep형 selection만(2026-06-10 개정 — chain/단일은 advisory). hard 기준은 forge-authoritative 값(alpha-stage proxy 아님)에 적용.",
+    "min_rank_ic": 0.04,
+    "min_rank_ic_rationale": "KR top-universe benchmark. <0.04는 IC 약함. (v8.x severity=advisory — long-only 실현 alpha 미전이)",
+    "min_icir": 0.2,
+    "min_icir_rationale": "Alpha Lab Gate. (v8.x severity=advisory)",
+    "min_subperiod_stability": 0.5,
+    "min_subperiod_stability_rationale": "3개 subperiod 안정성. (v8.x severity=advisory)",
+    "max_drawdown_days": 100,
+    "max_drawdown_days_rationale": "100일 이상 drawdown 지속 시 alpha decay 의심. (severity=advisory)",
+    "min_harvey_t_stat": 3,
+    "min_harvey_t_stat_rationale": "rank-IC Harvey-t. (v8.x severity=advisory — rank-IC t는 portfolio-alpha t와 구분, 후자가 권위)",
+    "min_deflated_sharpe_ratio": 0.5,
+    "min_deflated_sharpe_ratio_rationale": "Bailey-Lopez de Prado DSR — multi-testing 보정 SR. (severity=HARD는 sweep형 selection만 — ML스윕/optimizer서치/앙상블·사전등록 grid. 가설주도 chain/단일검증은 advisory 강등+진단산출. 도훈 mandate 2026-05-31/2026-06-10, measurement-graduation §3)",
+    "min_portfolio_alpha_t_nw": 2.95,
+    "min_portfolio_alpha_t_nw_rationale": "★v8.x 신규 HARD. forge-authoritative 실현 portfolio-alpha t (NW lag-3, forge_package.portfolio_alpha_t_nw_lag3). Harvey-Liu-Zhu 2016 hurdle. rank-IC t 아님. 게이트 핵심 판별(16후보 중 FLOW만 통과=정확).",
+    "min_oos_retention": 0.7,
+    "min_oos_retention_rationale": "★v2.5 HARD 배선(문턱은 measurement-graduation §3 2026-05-31/06-10 기존값). 활성 Sharpe OOS/IS retention — anchored 3분할 {55/65/75} 중앙값(essence_score.R oos_stat_version=v2). ≥0.7 단독 PASS / <0.5 무조건 FAIL / [0.5,0.7) band는 보강증거 2/3 조건부 PASS(판정 권위=essence_score.R, 훅은 warn). forge-authoritative 값에만 적용 — 단일전략 과적합 방어 주책임.",
+    "min_calmar": 0.64,
+    "min_calmar_rationale": "★v2.5 HARD 배선(문턱은 measurement-graduation §3 2026-05-31 기존값). Calmar = CAGR/|MDD| ≥ 0.64 (=16%/25%, 제2목표 CAGR16·MDD25에서 도출한 위험조정 게이트). forge-authoritative 값에만 적용.",
+    "severity": {
+      "rank_ic": "advisory",
+      "icir": "advisory",
+      "subperiod_stability": "advisory",
+      "harvey_t_stat": "advisory",
+      "deflated_sharpe_ratio": "hard",
+      "portfolio_alpha_t_nw": "hard",
+      "oos_retention": "hard",
+      "calmar": "hard"
+    },
+    "severity_rationale": "hard = block(우회불가), advisory = warn(screening). hard 4종(DSR/portfolio_alpha_t_nw/oos_retention/calmar)은 forge-authoritative 값에만 적용 — alpha-stage proxy로 graduation 선언 금지(v8.x WS1 정합). DSR hard는 sweep형 selection 한정, oos_retention은 <0.5 무조건 block + [0.5,0.7) band 조건부(measurement-graduation §3)."
+  },
+  "theme": "multi-dimensional joint design (universe-strat x factor-design x exposure x weighting x regime-dynamics), IS/OOS + DSR discipline",
+  "hypothesis_title": null,
+  "hypothesis_description": "[동기·mandate] 도훈 2026-07-10: '가설을 다차원 분석으로. 단일 팩터가 PORT_t 높을 것 같은 방향 말고 — 유니버스/팩터설계/팩터노출조절/비중결정방법론/레짐다이나믹 등 공동설계.' 근거: 축별(coordinate-descent) 최적화는 전수 소진(06-24 project-pg2-orthogonal-alpha-search: 팩터327 직교=0·비중HRP/EW/CVaR/ERC 스윕 천장·오버레이/레짐 near-optimal·value결합 6법 탈락). 축 상호작용(joint)은 미탐색.\n[가설 = 다차원] KR long-only 천장(SR~1.0-1.1, cap-w PORT_t<2.95)은 축별 한계의 합이지 joint 한계가 아닐 수 있다. 5축 {① 유니버스 층화(flat top-25 / tier-stratified MEGA·MID·OTHER 내 선택+tier-weighting / liquidity-band / sector-neutral) ② 팩터설계(raw / residual-orthogonal / cross-family composite / tier-specific 팩터) ③ 노출조절(full tilt / size-neutral / sector-neutral / shrink) ④ 비중방법론(EW / alpha-prop / HRP / CVaR / ERC / minvar) ⑤ 레짐다이나믹(static / regime-conditional EXPOSURE=active-share scaling / regime-conditional weighting)}의 상호작용으로 cap-tier 트랩(알파=mid/small·벤치=mega)을 완화하는 config가 있는가.\n[경제적 joint 가설 — 블라인드 그리드 금지, 이걸 우선 탐색] H1 tier-stratified 선택×tier-weighting(mid/small 알파 포착하되 cap-w 크레딧 관리) · H2 CVaR/downside 비중×방어적 팩터설계(비대칭 포착, AX-001 조건부 계기) · H3 regime-conditional EXPOSURE(mega레짐=active축소 closet, 분산레짐=active확대 — 벤치아티팩트 관리이지 팩터재조합 아님, 07-05 killed regime-conditional composite와 구분) · H4 residual-orthogonal 팩터설계×book-marginal 비중(instrument critique: standalone 아닌 ΔIR) · H5 concentration-adaptive 유니버스×liquidity-tier.\n[★데이터마이닝 방지 규율 — joint=최고 overfitting 위험, 이거 없으면 거짓 마일스톤] ① IS=2005-01~2018-12(설계) / OOS=2019-01~2026-06(holdout, 최종 1회만 조회) 분리. ② 모든 config 선택은 IS-only(OOS 반복조회 금지). ③ 시도한 전 config 카운트(n_trials) 기록 → 승자에 DSR(sweep, Bailey-LdP deflated) HARD≥0.5 적용(§3 sweep-type selection). ④ 승자만 OOS holdout 조회(사전등록 예측구간 falsification, holdout_falsification.R). ⑤ 측정: canonical_screen_bt(cap-w authoritative) + diag_ew_universe/diag_cap_tier + book-marginal ΔIR(net_active_recon_v1 vs STR_1715) 병기. ⑥ 승자 placebo(무작위 config)·jackknife-by-subwindow(연속블록, jackknife-by-year 금지 — 06-24 교훈).\n[제약·회피] 봉투 고정(long-only·≤25종·K200∪KQ150·15bps·[0,0.20]·Σw=1·PIT C1~C15). settled-negative 재제안 금지(DPL·uncertainty sizing·regime-conditional 팩터재조합·max-cash·KNS/전종목). 제약을 레버로 제시 금지(INV-7). 유니버스 층화는 K200∪KQ150 *내부* 구조화이지 유니버스 확대 아님.\n[기대 산출] joint config 공간의 DSR-보정 승자(있으면 IS+OOS+book-marginal 전부) 또는 '축별뿐 아니라 joint도 천장' 정직 확정(이 경우 어느 상호작용이 가장 근접했나 지도). 판정 권위=forge cap-w. 승자는 파이프라인 완주.",
+  "hypothesis_source": "alpha_agent_discovered",
+  "as_of_date": "2026-07-10",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KOSPI200_KOSDAQ150_intersection",
+    "liquidity_min_won_20d_avg": 50000000,
+    "max_names_total": 500
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d (재무제표 발표 지연)",
+    "fundamental_annual": "annual May (연간 재무제표 5월 리밸런싱)",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement (QuantiWise)",
+    "macro": "t-1 FRED (외부 매크로 lag)",
+    "ic_history": "Usable_Date <= sig_date (Factor DB 강제)"
+  },
+  "cost_model_version": "v2.4_kr_retail_15bps",
+  "current_portfolio": "STR_1631_80_STR_1656_20",
+  "hard_mandate": {
+    "pit_enforcement": "C1-C15 all enforced",
+    "liquidity_floor_won_20d_avg": 50000000,
+    "mandate_restrictions": {
+      "no_short_legal_kr": true,
+      "no_cross_market": true,
+      "kr_domestic_only": true
+    },
+    "long_only_mandate": "configurable"
+  },
+  "hard_constraints": {
+    "max_names": null,
+    "weight_bounds": [
+      0,
+      1
+    ],
+    "sector_active_weight_cap": null,
+    "liquidity_min_won_20d_avg": 50000000
+  },
+  "soft_penalties": [],
+  "capacity_limits": {
+    "adv_multiplier": 0.1,
+    "capacity_max_aum_won": 100000000000
+  }
+}
