@@ -1,6 +1,6 @@
 # Qvest 산출물 지도 (ARTIFACTS.md)
 
-> 자동 생성 2026-07-06 07:47:56 — 기계가독 원본: `06_Registry/artifact_index.json` · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동)
+> 자동 생성 2026-07-09 01:39:10 — 기계가독 원본: `06_Registry/artifact_index.json` · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동)
 
 **저장 4원칙**: ① `stage_artifacts/<mode>/<run_id>/` 실험 런(불변·이동금지) ② `outputs/<pipeline>/` canonical 데이터(최신본만) ③ `06_Registry/` 기계가독 상태·큐·인덱스 ④ `04_Research/<topic>/` 사람용 보고서
 
@@ -8,13 +8,13 @@
 
 | 존 | 무엇 | 규모 | 크기 | 최근 활동 | 대표 진입점 |
 |---|---|---|---|---|---|
-| `stage_artifacts/` | 실험 런 원본 (WT·legacy S0~S7·L-code·agent 산출) | 776항목 / 24,071파일 | 5.6GB | 2026-07-05 (`axiom_engine_research_20260705`) | `reports/` + 최근 WT 디렉토리 |
-| `outputs/` | 파이프라인 canonical 데이터 (최신본) | 3항목 / 76파일 | 845.1MB | 2026-07-05 (`ramp`) | `outputs/ramp/` (RAMP 순수팩터·팩터군 parquet) |
-| `06_Registry/` | 기계가독 상태·큐·인덱스 (JSON) | 35항목 / 66파일 | 5.5MB | 2026-07-05 (`artifact_index.json`) | `module_catalog.json` / `hypothesis_index.json` |
-| `04_Research/` | 사람용 리서치 보고서·분석 (토픽별) | 27항목 / 6,177파일 | 2.3GB | 2026-07-05 (`01_reports`) | `01_reports/` / `pg2_forensics/` |
-| `qepm/mailbox/worktask/` | QEPM WT 핸드오프 mailbox (불변 기록) | 178 WT | - | 2026-07-05 (`WT-D20260706_002`) | 최근 WT의 `output/` |
+| `stage_artifacts/` | 실험 런 원본 (WT·legacy S0~S7·L-code·agent 산출) | 802항목 / 24,499파일 | 5.7GB | 2026-07-08 (`dart_parser_build`) | `reports/` + 최근 WT 디렉토리 |
+| `outputs/` | 파이프라인 canonical 데이터 (최신본) | 3항목 / 78파일 | 845.5MB | 2026-07-08 (`regime`) | `outputs/ramp/` (RAMP 순수팩터·팩터군 parquet) |
+| `06_Registry/` | 기계가독 상태·큐·인덱스 (JSON) | 35항목 / 66파일 | 5.5MB | 2026-07-08 (`hygiene_report.json`) | `module_catalog.json` / `hypothesis_index.json` |
+| `04_Research/` | 사람용 리서치 보고서·분석 (토픽별) | 27항목 / 6,181파일 | 2.3GB | 2026-07-08 (`decision_framework`) | `01_reports/` / `pg2_forensics/` |
+| `qepm/mailbox/worktask/` | QEPM WT 핸드오프 mailbox (불변 기록) | 191 WT | - | 2026-07-06 (`WT-D20260706_MIDCAP`) | 최근 WT의 `output/` |
 
-`stage_artifacts` mode 구성: legacy_stage_S0_S7 439 · worktask_run 129 · other 85 · agent_artifact 61 · l_code 39 · pg2 13 · report 4 · axiom 3 · alpha_search 2 · ramp 1
+`stage_artifacts` mode 구성: legacy_stage_S0_S7 439 · worktask_run 142 · other 98 · agent_artifact 61 · l_code 39 · pg2 13 · report 4 · axiom 3 · alpha_search 2 · ramp 1
 
 ## 존별 상세 INDEX (큐레이션 병합 — 자동 생성)
 

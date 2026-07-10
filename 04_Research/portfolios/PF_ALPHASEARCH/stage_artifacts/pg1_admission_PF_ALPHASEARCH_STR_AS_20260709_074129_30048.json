@@ -1,0 +1,61 @@
+{
+  "stage": "PG1",
+  "version": "1.0.0",
+  "portfolio_id": "PF_ALPHASEARCH",
+  "candidate_id": "STR_AS_20260709_074129_30048",
+  "validated_role": "core_alpha",
+  "timestamp": "2026-07-09T07:46:55",
+  "decision": "DEFER",
+  "rationale": "book-marginal IR gain -0.335 < 0.05 (basis=net_active_recon_v1)",
+  "checks": {
+    "antipattern": {
+      "pass": true,
+      "severity": "unknown",
+      "patterns_detected": [],
+      "details": [],
+      "error": "antipattern_detector.R not found"
+    },
+    "loo": {
+      "crisis": {},
+      "regime": {},
+      "subperiod": {},
+      "all_pass": true,
+      "skipped": true,
+      "error": "loo_validator.R not found"
+    },
+    "role_honesty": {
+      "honest": true,
+      "declared_role": "core_alpha",
+      "detected_role": "core_alpha",
+      "skipped": true,
+      "error": "role_honesty_audit.R not found"
+    }
+  },
+  "candidate_family": "other",
+  "artifact_type": "STR",
+  "ir_convention": "net_active_recon_v1",
+  "book_delta_ir": -0.3349,
+  "new_book_ir": 1.0811,
+  "incumbent_book_ir": 1.416,
+  "new_book_ir_basis": "net_active_recon_v1",
+  "incumbent_book_ir_basis": "net_active_recon_v1 — 실측 확인: 1.416 = Active_Return_Mean 0.0224016 / Tracking_Error 0.18984 * sqrt(12) (WT-D20260702_002/output/07_benchmark_compare_noL4_clean_ann12.csv Information_Ratio row 1.41602608097397, build_benchmark_compare contract 산출, 269개월 monthly net vs KOSPI200). 현 값이 선언 컨벤션과 일치 — 값 무변경.",
+  "ir_basis_consistent": true,
+  "marginal_ir_threshold": 0.05,
+  "book_recon_adapter": {
+    "sources": {
+      "STR_1715_on_M4_R05_noLayer4_PG2": "live_track(key=return_ym):C:/Users/99922/OneDrive/Quant_Module_Moltbot/06_Registry/live_track/STR_1715_on_M4_R05_noLayer4_PG2/live_book_series.csv",
+      "STR_AS_20260709_074129_30048": "module_catalog(metric_type=backtested):C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/strategies/STR_AS_20260709_074129_30048/sim_result.rds"
+    },
+    "bm_source": "canonical_benchmark_parquet:C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/benchmark.parquet",
+    "n_months": 256,
+    "period": ["2005-02", "2026-05"],
+    "combination": "Return.portfolio(monthly_rebalance)_equal_weight_unless_specified",
+    "weights_used": {
+      "STR_1715_on_M4_R05_noLayer4_PG2": 0.5,
+      "STR_AS_20260709_074129_30048": 0.5
+    },
+    "port_alpha_t_nw3": 4.6406,
+    "reason": null
+  },
+  "book_context_note": "incumbent_ids=[STR_1715_on_M4_R05_noLayer4_PG2] + candidate=STR_AS_20260709_074129_30048 | mailbox n_loaded=0 infeasible=TRUE | recon_adapter=used(n_months=256)"
+}
