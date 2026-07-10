@@ -1,0 +1,95 @@
+{
+  "spec_id": "WT-D20260710_004_stageA",
+  "spec_version": "1.0",
+  "frozen_intent": "Pre-registration of Stage A no-selection diagnostics (0 trial). Any performance metric outside this pre-registered set counts as a trial. No config is selected in Stage A.",
+  "created_by": "alpha-research",
+  "created_intent_date": "2026-07-10",
+  "universe": {
+    "label": "KOSPI200_KOSDAQ150_intersection",
+    "source": "panel.rds (WT-D20260710_001 build_panel.R; base=tier_panel.parquet PIT-validated + load_month_factors augment)",
+    "filter": "in_univ==TRUE & not Admin/Halt (already applied in panel.rds)",
+    "n_months": 268,
+    "date_range": "2004-01-01..2026-04-01",
+    "alignment_precheck": "verify scores restricted to in_univ; per-month tier counts MEGA10/MID20 fixed; A2/A5 tier ranks recomputed within tradeable in_univ per Date"
+  },
+  "returns": {
+    "per_stock": "panel.rds Ret_1m (forward 1M realized, PIT: score at Date t known at t, Ret_1m is forward)",
+    "benchmark": "benchmark.parquet (KOSPI200 total return, BM_Ret daily) -> monthly compound expm1(sum(log1p)) -> forward-shift lead1 to align with grid Date holding month (canonical WT-001 convention)",
+    "cost_bps_oneway": 15
+  },
+  "signal_series": {
+    "score_eff": {"col": "score_eff", "desc": "deployed book composite = 0.65*score_core_z + 0.35*def_z", "cadence": "composite", "window": "2004-2026"},
+    "M08_Residual_Mom": {"col": "M08_Residual_Mom", "family": "momentum", "cadence": "monthly-recomputed(price)", "window": "2004-2026"},
+    "V02_EP": {"col": "V02_EP", "family": "value", "cadence": "quarterly-earnings", "window": "2004-2026"},
+    "DART_buyback": {"source": ".cache/dart/buyback_decisions_clean.parquet", "family": "event_exogenous", "timestamp": "rcept_no first-8 = disclosure date (PIT C4/C11)", "window": "2015-01..2026-06 ONLY (crawl coverage limit — honestly reported)"}
+  },
+  "signal_age_definition": {
+    "factor_series_primary": {
+      "name": "value_innovation_age",
+      "rule": "For a stock's cross-sectional z (zc_<axis>): a REFRESH at month t iff |z_t - z_{t-1}| > tau. Age_t = consecutive months (looking back only, PIT) since last refresh; first appearance => age 0 (fresh). Uses only past/current z, no forward info.",
+      "tau_primary": 0.5,
+      "tau_robustness": 1.0,
+      "note": "score_eff uses its own zc(score_eff); M08/V02 use zc_M08/zc_V02 from panel"
+    },
+    "dart_series": {
+      "name": "event_age",
+      "rule": "age = calendar months since most recent buyback decision disclosure (rcept_dt) with rcept_dt <= sig_date. Stocks with no prior event excluded from event-conditional analysis.",
+      "note": "sparse binary event is not a dense cross-sectional rank signal; A1 for DART reported as event-time forward-active mean by age bucket (event study), not universe rank-IC"
+    },
+    "age_buckets": {"0-1m": "age==0", "1-2m": "age==1", "2-4m": "age in 2..3", "4m+": "age>=4"},
+    "fresh_def": "age<=1 (0-1m or 1-2m)", "stale_def": "age>=4 (4m+)"
+  },
+  "A1": {
+    "name": "signal-age-resolved rank-IC decay curve",
+    "metric": "per series x age_bucket: Spearman rank-IC(score, forward Ret_1m) computed cross-sectionally per month within age bucket (require >=8 names), then mean across months + NW-t(lag3) of monthly IC series",
+    "contrast": "monthly paired IC_fresh(age<=1) - IC_stale(age>=4); mean + NW-t(lag3). Heterogeneity real iff contrast NW-t >= 2.0",
+    "dart_variant": "mean forward net-active return by event age bucket + NW-t; contrast fresh(0-1m) - stale(2-4m)",
+    "metric_type": "canonical_screen",
+    "lag_stress": "recompute at lag1 (score_{t-1} -> Ret_1m_t) as PIT/robustness guard"
+  },
+  "A2": {
+    "name": "holding-age realized active decomposition",
+    "book": "canonical top-25 EW long-only from score_eff (canonical_screen_bt regime, 15bps, liq 2e8)",
+    "holding_age": "months since name entered current top-25 book (tenure)",
+    "metric": "monthly net active contribution split: fresh-held(entered<=2m) vs stale-held(>4m); paired NW-t(lag3) of monthly (fresh_active - stale_active). Dual basis: cap-w benchmark (KOSPI200) AND EW-universe benchmark",
+    "metric_type": "canonical_screen"
+  },
+  "A3": {
+    "name": "cap-tier x age 2-way",
+    "grid": "tier{MEGA(1-10),MID(11-30),OTHER(31+)} x age_bucket; A1 rank-IC per cell (score_eff + M08 + V02) + fresh-alpha localization check",
+    "kill_link": "KA3: fresh-alpha only in OTHER/REST(>50) => time-axis trap reproduced",
+    "metric_type": "canonical_screen"
+  },
+  "A4": {
+    "name": "economics pre-computation",
+    "gross_spread": "fresh-stale monthly gross spread from A1/A2 (annualized)",
+    "cost": "15bps x 2 x incremental turnover implied by fresh-cohort rotation",
+    "b2_expected_ir": "Grinold IR = IC * sqrt(BR); BR = staggered independent bets/yr; compare to 0.63 threshold",
+    "kill_link": "KA4: economics below threshold => B2 blocked",
+    "metric_type": "canonical_screen"
+  },
+  "A5": {
+    "name": "event x book census (counts, not backtest)",
+    "a_veto": "current book holdings x dilutive events (유상증자/CB) binding stock-months; threshold >=40. DATA: 유상증자/CB NOT in crawled DART (only 자기주식취득) => report 미가용",
+    "b_promote": "rank 21-40 boundary band (by score_eff) x fresh buyback event (age<=3m) binding stock-months; threshold >=60. window 2015+",
+    "metric_type": "census_count"
+  },
+  "A6": {
+    "name": "episode 3-regime book active (advisory only, NOT a gate)",
+    "regimes": "drawdown>=10% / recovery / normal (07-03 drawdown-lens on benchmark)",
+    "metric": "score_eff top-25 book net active decomposed by regime",
+    "metric_type": "canonical_screen_advisory"
+  },
+  "kill_criteria_preregistered": {
+    "KA1": "A1 & A2 all-series contrast NW-t < 2.0 => 'signal slow enough for monthly grid; no sampling component' DISTILLED_NEG. (B1 may still enter via A5 census independently.)",
+    "KA3": "fresh-alpha confined to REST(cap rank>50) only => time-axis cap-trap reproduced => terminate",
+    "KA4": "economics below threshold => B2 blocked",
+    "KA5": "census below threshold => B1 backtest 0 => terminate"
+  },
+  "integrity_checks": {
+    "restatement_spotcheck": "same (Date,Ticker) signal must not differ by build time: compare panel.rds zc_M08/zc_V02 vs FRESH load_month_factors(M08,V02) at >=3 spot dates via Spearman rank-cor (expect ~1.0 or ~-1.0; material deviation => restatement flag)",
+    "lag1_stress": "A1 recomputed at lag1",
+    "asof_note": "buyback rcept_dt PIT (disclosure date); factor scores sig_date-known; Ret_1m forward"
+  },
+  "no_selection_assertion": "Stage A selects NO config. All numbers are diagnostic. 0 trials consumed."
+}

@@ -134,12 +134,14 @@ ev <- unique(bb[, .(Ticker, rcept_dt)])[order(Ticker, rcept_dt)]
 # for each panel stock-month, most recent prior event -> age months
 pm <- panel[!is.na(Ret_1m), .(Date, Ticker, Ret_1m, BM_Ret)]
 pm[, active := Ret_1m - BM_Ret]
-# correct latest-prior-event via rolling join (roll=TRUE: latest ev rcept_dt <= Date, per Ticker)
-evj <- ev[, .(Ticker, ev_dt=rcept_dt)]; setkey(evj, Ticker, ev_dt)
+# correct latest-prior-event via rolling join. carry matched event date as SEPARATE col
+# (join-key ev_dt takes query value, so keep matched_ev to recover the real event date).
+evj <- ev[, .(Ticker, ev_dt=rcept_dt, matched_ev=rcept_dt)]; setkey(evj, Ticker, ev_dt)
 pm[, jdt := Date]; setkey(pm, Ticker, jdt)
-rj <- evj[pm, on=.(Ticker, ev_dt=jdt), roll=TRUE]   # each pm row + rolled ev_dt (NA if none prior)
-pm[, ev_dt := rj$ev_dt]
-pm[, ev_age_m := ifelse(is.na(ev_dt), NA_real_, as.numeric(Date - ev_dt)/30.44)]
+rj <- evj[pm, on=.(Ticker, ev_dt=jdt), roll=TRUE]   # pm-ordered; rj$matched_ev = latest ev<=Date (NA if none)
+stopifnot(nrow(rj)==nrow(pm))
+pm[, matched_ev := rj$matched_ev]
+pm[, ev_age_m := ifelse(is.na(matched_ev), NA_real_, as.numeric(Date - matched_ev)/30.44)]
 pm[, jdt := NULL]
 pm_ev <- pm[!is.na(ev_age_m)]
 pm_ev[, ebucket := fifelse(ev_age_m<1,"0-1m", fifelse(ev_age_m<2,"1-2m", fifelse(ev_age_m<4,"2-4m","4m+")))]
