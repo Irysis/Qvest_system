@@ -1,0 +1,65 @@
+{
+  "task_id": "WT-D20260710_003",
+  "as_of_date": "2026-06-01",
+  "forecast_horizon": "1M",
+  "wt_type": "discovery",
+  "verdict": "VALIDATED_NEGATIVE",
+  "alpha_vector": {
+    "A000660": 2.1712, "A005930": 2.1083, "A066570": 2.2391, "A011070": 1.6336, "A004170": 1.8369,
+    "A021240": 1.7852, "A090430": 1.5947, "A032640": 2.485, "A319660": 1.984, "A036570": 2.0975,
+    "A128940": 1.7873, "A051900": 1.995, "A383220": 2.196, "A282330": 2.3945, "A007070": 2.3868,
+    "A000080": 1.6129, "A185750": 1.5558, "A086450": 2.0584, "A033100": 1.8264, "A032500": 1.9665,
+    "A009240": 1.5671, "A053800": 1.801, "A348210": 1.5654, "A215200": 2.1995, "A215000": 2.0706
+  },
+  "alpha_vector_note": "winner(H3g≈flat baseline) as-of 2026-06 composite z-score (higher=선호). SCREEN-TIER only — graduation REJECT. deployment 편성용 아님.",
+  "confidence_vector": {
+    "A000660": 0.826, "A005930": 0.816, "A066570": 0.836, "A011070": 0.745, "A004170": 0.776,
+    "A021240": 0.768, "A090430": 0.739, "A032640": 0.873, "A319660": 0.798, "A036570": 0.815,
+    "A128940": 0.768, "A051900": 0.799, "A383220": 0.829, "A282330": 0.859, "A007070": 0.858,
+    "A000080": 0.742, "A185750": 0.733, "A086450": 0.809, "A033100": 0.774, "A032500": 0.795,
+    "A009240": 0.735, "A053800": 0.770, "A348210": 0.735, "A215200": 0.830, "A215000": 0.811
+  },
+  "signal_matrix_ref": "stage_artifacts/WT-D20260710_003/alpha_scores.parquet",
+  "factor_specs": [
+    {"factor_family": "Value", "proxy": "V02_EP/V10_FCF_Yield/V12_Composite_Value", "formula": "within-family EW of Z_Score_Aligned (load_month_factors, C15)", "lag_rule": "quarterly 45d / annual May", "winsorization": "builder 3std", "neutralization": "none(full)|size(size_neutral)", "economic_rationale": "risk_premium / cheapness — KR value post-2015 감쇠(AX-003 EP_STANDALONE 실패)", "weight_theta": 0.30, "redundancy_cluster_id": "VALUE_KR", "references": ["Fama-French 1993"]},
+    {"factor_family": "Quality", "proxy": "Q01_GPA/Q08_Composite_Quality", "formula": "within-family EW of Z_Score_Aligned", "lag_rule": "quarterly 45d", "winsorization": "3std", "neutralization": "none|size", "economic_rationale": "profitability premium — KR single-signal long-only 실패(AX-004)", "weight_theta": 0.30, "redundancy_cluster_id": "QUALITY_KR", "references": ["Novy-Marx 2013"]},
+    {"factor_family": "Momentum", "proxy": "M08_Residual_Mom/M09_Composite_Mom", "formula": "within-family EW of Z_Score_Aligned", "lag_rule": "t-1 price, 12-1m", "winsorization": "3std", "neutralization": "none|momentum-strip(residual_ortho)", "economic_rationale": "underreaction — KR momentum crowding", "weight_theta": 0.20, "redundancy_cluster_id": "MOM_KR", "references": ["Jegadeesh-Titman 1993"]},
+    {"factor_family": "LowRisk", "proxy": "R12_Idiosyncratic_Risk", "formula": "Z_Score_Aligned (low idio vol = better)", "lag_rule": "t-1", "winsorization": "3std", "neutralization": "none|size", "economic_rationale": "low-risk anomaly — AX-005 defense top20 long-only 실패", "weight_theta": 0.20, "redundancy_cluster_id": "LOWRISK_KR", "references": ["Ang et al 2006"]}
+  ],
+  "diagnostics": {
+    "canonical_port_t_nw_lag3": 1.343,
+    "canonical_port_t_note": "winner FULL cap-w canonical PORT_t (metric_type=canonical_screen, forge-authoritative 아님). IS=3.282 (선택) / OOS=-1.634 (붕괴) — IS/OOS 분리 기록.",
+    "canonical_port_t_is": 3.282,
+    "canonical_port_t_oos": -1.634,
+    "canonical_n_months": 258,
+    "net_sr_full": 0.290,
+    "net_sr_oos": -0.492,
+    "calmar_full": 0.393,
+    "turnover_annual": 5.5,
+    "ew_universe_port_t_oos": -0.870,
+    "cap_tier_weight_share": {"MEGA": 0.06, "MID": 0.08, "OTHER": 0.85},
+    "bm_cor_vs_incumbent": -0.010,
+    "bm_dIR_sleeve15": 0.030,
+    "rank_ic": null,
+    "rank_ic_note": "advisory 계열 미산출 — 본 WT는 canonical PORT_t 1급 선택(measurement-graduation §3). portfolio-alpha t가 권위."
+  },
+  "selection_objective": "canonical_port_t",
+  "method_shopping_log": {
+    "alpha_agent": {
+      "candidates_tried": 26,
+      "candidates_note": "config-level joint sweep(구조 축: universe-strat×factor-design×exposure×weighting×regime). 팩터 fishing 아님 — 고정 8팩터/4family. DSR(sweep, N=26) 적용 완료(0.457 FAIL).",
+      "families_swept": ["BASE(4)", "H1 tier-stratified(12)", "H3 regime-active-share(10)"],
+      "pre_demoted_not_counted": ["H2 cvar×defensive", "H4 residual-ortho×book-marginal", "H5 conc-adaptive"]
+    }
+  },
+  "challenge_flags": [
+    {"id": "JOINT_CEILING", "severity": "HIGH", "note": "축별뿐 아니라 다차원 joint(H1+H3)도 KR long-only 천장 못 넘음. winner OOS port_t -1.634, DSR 0.457<0.5, holdout FALSIFIED, jackknife 3rd-block -1.88."},
+    {"id": "WINNER_BASELINE_EQUIVALENT", "severity": "HIGH", "note": "IS-only winner H3g(3.282)≈flat baseline(3.209); H3 regime near-inert(inverted control=baseline 동일). joint 개선 없음."},
+    {"id": "CAPTIER_TRAP_CONFIRMED", "severity": "MEDIUM", "note": "flat 합성 92% OTHER(소형)틸트. 소형 알파 IS 강(gross-ann+0.20)→OOS 감쇠(+0.04). OOS-안정 config(H1h/H1d)는 mega-hugging near-passive(full<2.95). 양 턱 트랩."},
+    {"id": "OOS_DECAY_HALF_ARTIFACT", "severity": "MEDIUM", "note": "OOS 붕괴 ~절반 cap-w mega 벤치 아티팩트(-2.05→EW-univ -0.87)이나 EW-univ서도 음수 → 순수 아티팩트 아님, 실질 소형주 감쇠 잔존."},
+    {"id": "NO_GRADUATION", "severity": "HIGH", "note": "graduation REJECT. 파이프라인 완주 대상 없음. Risk/Optimizer spawn 불필요(도훈 판단)."}
+  ],
+  "alpha_inheritance_cor": null,
+  "alpha_inheritance_note": "discovery WT — 신규 joint-design mechanism 탐색. 기존 admitted와 bm_cor≈-0.01(직교)이나 standalone 미달로 무의미.",
+  "next_step": "VALIDATED_NEGATIVE 보고 → Q-Lead. graduation 없음. joint-design 공간(H1+H3) 소진 지도 alpha_validation.json에 기록."
+}

@@ -1,0 +1,85 @@
+{
+  "task_id": "WT-D20260710_004",
+  "wt_type": "discovery",
+  "pg1_eligibility": "certificate_required",
+  "discovery_of": null,
+  "graduation_criteria": {
+    "description": "Discovery → Deployment 전환 조건. discovery_graduation_gate.sh 강제. v8.x WS2 재설계(2026-05-29): rank-IC 계열은 long-only 실현 alpha와 어긋나(16후보 calibration 실측: rank_ic가 FLOW 거짓탈락+NN/TECH 거짓통과) advisory로 강등, portfolio-alpha t(forge NW lag-3)를 hard로. DSR hard는 sweep형 selection만(2026-06-10 개정 — chain/단일은 advisory). hard 기준은 forge-authoritative 값(alpha-stage proxy 아님)에 적용.",
+    "min_rank_ic": 0.04,
+    "min_rank_ic_rationale": "KR top-universe benchmark. <0.04는 IC 약함. (v8.x severity=advisory — long-only 실현 alpha 미전이)",
+    "min_icir": 0.2,
+    "min_icir_rationale": "Alpha Lab Gate. (v8.x severity=advisory)",
+    "min_subperiod_stability": 0.5,
+    "min_subperiod_stability_rationale": "3개 subperiod 안정성. (v8.x severity=advisory)",
+    "max_drawdown_days": 100,
+    "max_drawdown_days_rationale": "100일 이상 drawdown 지속 시 alpha decay 의심. (severity=advisory)",
+    "min_harvey_t_stat": 3,
+    "min_harvey_t_stat_rationale": "rank-IC Harvey-t. (v8.x severity=advisory — rank-IC t는 portfolio-alpha t와 구분, 후자가 권위)",
+    "min_deflated_sharpe_ratio": 0.5,
+    "min_deflated_sharpe_ratio_rationale": "Bailey-Lopez de Prado DSR — multi-testing 보정 SR. (severity=HARD는 sweep형 selection만 — ML스윕/optimizer서치/앙상블·사전등록 grid. 가설주도 chain/단일검증은 advisory 강등+진단산출. 도훈 mandate 2026-05-31/2026-06-10, measurement-graduation §3)",
+    "min_portfolio_alpha_t_nw": 2.95,
+    "min_portfolio_alpha_t_nw_rationale": "★v8.x 신규 HARD. forge-authoritative 실현 portfolio-alpha t (NW lag-3, forge_package.portfolio_alpha_t_nw_lag3). Harvey-Liu-Zhu 2016 hurdle. rank-IC t 아님. 게이트 핵심 판별(16후보 중 FLOW만 통과=정확).",
+    "min_oos_retention": 0.7,
+    "min_oos_retention_rationale": "★v2.5 HARD 배선(문턱은 measurement-graduation §3 2026-05-31/06-10 기존값). 활성 Sharpe OOS/IS retention — anchored 3분할 {55/65/75} 중앙값(essence_score.R oos_stat_version=v2). ≥0.7 단독 PASS / <0.5 무조건 FAIL / [0.5,0.7) band는 보강증거 2/3 조건부 PASS(판정 권위=essence_score.R, 훅은 warn). forge-authoritative 값에만 적용 — 단일전략 과적합 방어 주책임.",
+    "min_calmar": 0.64,
+    "min_calmar_rationale": "★v2.5 HARD 배선(문턱은 measurement-graduation §3 2026-05-31 기존값). Calmar = CAGR/|MDD| ≥ 0.64 (=16%/25%, 제2목표 CAGR16·MDD25에서 도출한 위험조정 게이트). forge-authoritative 값에만 적용.",
+    "severity": {
+      "rank_ic": "advisory",
+      "icir": "advisory",
+      "subperiod_stability": "advisory",
+      "harvey_t_stat": "advisory",
+      "deflated_sharpe_ratio": "hard",
+      "portfolio_alpha_t_nw": "hard",
+      "oos_retention": "hard",
+      "calmar": "hard"
+    },
+    "severity_rationale": "hard = block(우회불가), advisory = warn(screening). hard 4종(DSR/portfolio_alpha_t_nw/oos_retention/calmar)은 forge-authoritative 값에만 적용 — alpha-stage proxy로 graduation 선언 금지(v8.x WS1 정합). DSR hard는 sweep형 selection 한정, oos_retention은 <0.5 무조건 block + [0.5,0.7) band 조건부(measurement-graduation §3)."
+  },
+  "theme": "time-structure: signal-age sampling artifact decomposition -> event-boundary book substitution / staggered fresh-cohort",
+  "hypothesis_title": "IC->PORT_t 전이 벽의 시간-샘플링 성분 분해 + 조건부 2경로 monetization (TIMESTRUCT)",
+  "hypothesis_description": "[강화 가설 — 4렌즈 적대평가 + 3인 독립설계 + 종합(wf_eb667bc8) 산출. 현행 5축 joint(WT-D20260710_003 VALIDATED_NEGATIVE 실측 확증) 대체]\n[가설] KR 천장 측정 전부(16/16·06-24 전수·RAMP R1·WT-001/002/003)는 '월말 횡단면 그리드에서 점수 level을 읽고 1개월 보유'라는 단일 시간구조를 공유했다. 전이 벽의 일부는 알파 부재가 아니라 샘플링 아티팩트일 수 있다 — 신호 정보는 갱신 직후(fresh)에 집중되고, 월말 그리드는 위상에 따라 최대 4주 지연 소비 + stale 보유 수개월 carry로 실현 알파를 희석한다(C27 자사주 드리프트 +0.42%/mo·~1개월 단명의 monthly-carry 희석이 원형, DIST-AR-003 부활카드 발화 소비). 신호 나이(signal age)를 1급 차원으로 승격해 이질성 실재를 먼저 판정하고, 실재할 때만 monetize한다.\n[Stage A — 무선택 진단(0 trial, 스펙 hash 동결 후): A1 신호나이-해상 rank-IC 감쇠곡선(score_eff 성분·M08·V02_EP + DART 자사주 외생축; age 0-1m/1-2m/2-4m/4m+; Usable_Date C14; pin_cache pin tag) / A2 canonical top-25 실현 active의 보유-나이 분해(fresh<=2m vs stale>4m paired NW-t, dual basis) / A3 cap-tier x age 2원 분해(트랩의 시간축 재현 선판정) / A4 경제성 선계산(fresh-stale gross 스프레드 vs 2x회전비용 + B2 기대IR>=0.63 선계산) / A5 이벤트x book census(B1: 보유명 x 희석이벤트>=40 stock-months[VETO arm]·rank21-40 x fresh자사주>=60[PROMOTE arm]) / A6 에피소드 3구간 book active 분해(advisory only).\n[B1 — 우선 monetization(<=5 config, census 통과 시)] 이벤트-경계 치환 book 증분: 현 book(score_eff top-20) 알파엔진·가중·노출·오버레이(M4xR05) 전부 불변, 경계 대역(rank 21-40)에서만 비-return DART 이벤트로 tie-break(PROMOTE fresh자사주 2 + VETO 희석이벤트 2[도훈 데이터경계 confirm 조건부] + 결합 1). 1차 계기 = production-fidelity recon-vs-recon book A/B 월간 diff paired NW-t(lag-3, build_bt_result, metric_type=backtested) — 258월 paired 구조라 연IR 0.63 벽 회피하는 유일 통계 경로. 보조: ΔIR(net_active_recon_v1, incumbent 1.416)>=+0.05 + 총수익 SR 비악화(megacap de-rate 방어) + dual-basis. 자본 경로 = deployment WT(Layer4 제거 선례) + governor 수동 + 도훈 confirm.\n[B2 — 후순위 standalone(6 config, B1 종결 후 + A1 이질성 t>=2.0 AND A4 기대IR>=0.63일 때만)] staggered fresh-cohort: 이벤트정의 2(팩터혁신/DART) x 보유 tranche 3(8/13/26주). 1차 계기 = 동일팩터 월말-그리드 짝 baseline 대비 interaction contrast paired NW-t -> 통과분만 HARD 3종 + DSR(n=6) + holdout 1회. WT-003 generalized harness 재사용. Grinold: staggered tranche = 독립 베팅수(BR) 증가 = packaging이 못 하는 IR 상승의 유일한 산식상 경로.\n[Kill 사전등록] KA1 A1/A2 전 계열 contrast NW-t<2.0 = '신호가 월별 그리드로 충분히 느림 — 벽에 샘플링 성분 없음' DISTILLED_NEG 종결(단 B1은 A5 census만으로 독립 진입 가능 — B1 엣지는 이벤트 드리프트) / KA3 신선알파가 REST>50에만 = 트랩의 시간축 재현 종결 / KA4 경제성 미달 = B2 봉쇄 / KA5 census 미달 = B1 백테 0회 종결 / KB1: IS 전 config paired<+2.0 OOS 미조회 종결(선택문턱 +2.5, null max-t n=5~1.79 등재)·lag1 소멸=무효·ΔIR<0.05 DEFER·jackknife 상위2 에피소드 제거 부호반전 kill / KB2 null-band 2.2-2.6 = 비정보 near-miss 성공주장 금지 / 공통: assert_overlay_pit HARD + lag1 + strict-PIT A/B(BearProb 재발방지).\n[검정력 예산] 최악 총 11 config(B1<=5, B2 6). family 경계 사전 선언({B1}{B2} 별도 — 가설공간 상이). 세션 누적 n_trials(WT-003 26 + 본건) L-code emit 시 병기. Stage A는 무선택 진단이라 비과세 — 단 사전등록 지표 외 성과수치 peek는 trial 카운트.\n[차별점 novelty] vs 16/16·전이벽: 벽의 정의역은 '신호를 전 유니버스 selector로 세워 top-25 구성' — B1은 이벤트에 selector 역할 없음(경계 1-2명 치환), B2는 시간축이 자유변수(신호-나이 해상 측정 프로젝트 기록 0건). vs C27b(자사주 event-time standalone REJECT): 단일 이벤트군 standalone top-N이었음 — 본건은 tie-break 한정 + 진단 선행 + 경제성 kill. vs 06-24 book 강화 전패: 전부 return-파생 연속 가중변경 — 본건 비-return sparse 치환·가중/노출/오버레이 불변. vs settled 타이밍류: 현금/스케일 차원 0(Σw=1 상시). vs WT-001/002/003: 공간축 — 본건 시간축(직교).\n[도훈 회부 2건] (i) VETO arm 신규 크롤(piicDecsn/cvbdIsDecsn = 유상증자/CB 결정 이벤트)이 '기존 인프라 DART' 해석에 드는가 — 미승인 시 PROMOTE-only 축소 착수 (ii) B1의 deployment-경로(book 구성변경) 분류 사전 확인 — 신규모듈 재분류 시 standalone 게이트 정의상 불통과로 종결 사전 수용.\n[정직 리스크] C27b prior로 census 기아가 최빈 결과일 수 있음(1일 반증이 설계 의도) / 내생 혁신 타임스탬프 소급 오염이 최대 무결성 리스크(Usable_Date+lag1+strict A/B 방어) / fresh cohort도 2017+ decay 동일 적용 시 null-band 착지 / B1 완전 성공해도 SR 2.5 갭 잔존(본 가설은 기대상방이 아니라 비용당 정보량 선택) / insider 백필 완료 시 우선순위 재역전 사전 인정.",
+  "hypothesis_source": "user_defined",
+  "as_of_date": "2026-07-10",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KOSPI200_KOSDAQ150_intersection",
+    "liquidity_min_won_20d_avg": 50000000,
+    "max_names_total": 500
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d (재무제표 발표 지연)",
+    "fundamental_annual": "annual May (연간 재무제표 5월 리밸런싱)",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement (QuantiWise)",
+    "macro": "t-1 FRED (외부 매크로 lag)",
+    "ic_history": "Usable_Date <= sig_date (Factor DB 강제)"
+  },
+  "cost_model_version": "v2.4_kr_retail_15bps",
+  "current_portfolio": "STR_1631_80_STR_1656_20",
+  "hard_mandate": {
+    "pit_enforcement": "C1-C15 all enforced",
+    "liquidity_floor_won_20d_avg": 50000000,
+    "mandate_restrictions": {
+      "no_short_legal_kr": true,
+      "no_cross_market": true,
+      "kr_domestic_only": true
+    },
+    "long_only_mandate": "configurable"
+  },
+  "hard_constraints": {
+    "max_names": null,
+    "weight_bounds": [
+      0,
+      1
+    ],
+    "sector_active_weight_cap": null,
+    "liquidity_min_won_20d_avg": 50000000
+  },
+  "soft_penalties": [],
+  "capacity_limits": {
+    "adv_multiplier": 0.1,
+    "capacity_max_aum_won": 100000000000
+  }
+}

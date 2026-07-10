@@ -1,0 +1,69 @@
+{
+  "task_id": "WT-D20260710_003",
+  "verdict": "VALIDATED_NEGATIVE",
+  "verdict_summary": "다차원 joint 설계(H1 tier-stratified×tier-weighting + H3 regime-conditional active-share)도 축별 최적화 천장을 넘지 못함. IS-only 선택 winner(H3g≈flat baseline)는 OOS에서 붕괴하고 하드 규율 게이트 3/4 FAIL. 축별뿐 아니라 joint도 천장 — cap-tier 트랩이 joint 상호작용으로 완화되지 않음. 단 벽의 성격은 '순수 벤치 아티팩트'가 아니라 '소형주(OTHER tier) 신호의 실질 post-2019 감쇠 + cap-w 벤치 증폭'으로 정밀 규명됨.",
+  "selection_objective": "canonical_port_t",
+  "measurement": {
+    "harness": "generalized canonical screen — deterministic sizing(EW/alpha_prop/cap_within/tier/regime-blend) routed through contract build_benchmark_compare() (canonical_screen_bt과 동일 함수). EW baseline parity vs canonical_screen_bt Δport_t=0.0000 실증.",
+    "metric_type": "canonical_screen (일반화 weighting variant, non-binding — forge authoritative)",
+    "cost_model_version": "v2.4_kr_retail_15bps (delta-based |Δw|×15bps one-way)",
+    "constraints_honored": "long-only, ≤25 names, weight[0,0.20], Σw=1, K200∪KQ150, liq≥2e8, PIT C1-C15",
+    "universe_note": "K200∪KQ150 내부 구조화(tier 층화)이지 유니버스 확대 아님. 유니버스 정렬 선검증: WT-002 clean panel 재사용(features/returns 동일 유니버스 348종 — 0-fill 드래그 없음)."
+  },
+  "data_mining_discipline": {
+    "is_oos_split": "IS=2005-01~2018-12 (168m) / OOS=2019-01~2026-06 (90m). 신호 Date 기준.",
+    "selection_is_only": true,
+    "selection_rule": "IS canonical PORT_t 최대 (단, IS 양-절반 NW-t>0 robust config 중). OOS 반복조회 없음 — winner_config.json에 IS-lock 시각 기록.",
+    "n_trials": 26,
+    "n_trials_note": "측정한 config만 카운트(baselines 4 + H1 12 + H3 10). 사전강등 H2/H4/H5는 미착수 → 미포함(Q-Lead scope directive).",
+    "dsr_sweep": {"value": 0.457, "hurdle": 0.5, "verdict": "FAIL", "method": "Bailey-Lopez de Prado deflated SR, active series, N=26, sr0_hurdle=0.091 vs sr_monthly=0.084, skew=-1.44 kurt=13.81"},
+    "holdout_1look": {"verdict": "FAIL_FALSIFIED", "is_bootstrap_q05": 0.231, "q95": 1.728, "oos_realized_sr": -0.492, "method": "IS block-bootstrap(block=12) OOS-length Sharpe 사전등록 구간 vs OOS 실측"},
+    "placebo": {"nperm": 200, "null_q95": 0.862, "winner_full_t": 1.343, "p_value": 0.0, "note": "random 25-EW 대비 full-sample 유의(IS 지배) — OOS 붕괴는 placebo가 못 잡음(full-sample). 하드 판별=jackknife+holdout."},
+    "jackknife_continuous_blocks": {"nwt": [2.28, 2.67, -1.88], "all_positive": false, "note": "연속 3블록. 3번째(최근) 블록 -1.88 음수 — jackknife-by-year였다면 놓쳤을 붕괴(06-24 교훈 준수)."}
+  },
+  "winner": {
+    "id": "H3g_flat_thrMed",
+    "winner_is_baseline_equivalent": true,
+    "baseline_equivalence_note": "H3g(3.282) ≈ flat baseline(3.209); H3 regime 변형 4종 3.25~3.28 tie-cluster; inverted control H3h=3.209 정확히 baseline과 동일 → regime active-share 메커니즘 near-inert. winner는 baseline-noise, 별도 discovery 아님.",
+    "is_port_t": 3.282, "oos_port_t": -1.634, "oos_net_sr": -0.492,
+    "full_port_t": 1.343, "full_calmar": 0.393, "full_net_sr": 0.290,
+    "bm_cor_vs_incumbent": -0.010, "bm_dIR_sleeve15": 0.030,
+    "graduation": "REJECT — HARD 3종 FAIL(DSR 0.457<0.5, holdout FALSIFIED, jackknife 3rd-block<0) + OOS port_t<0. forge authoritative 미도달."
+  },
+  "universe_comparison": {
+    "note": "cap-w KOSPI200(판정 권위) vs EW-universe(공정 벤치) dual-basis — OOS 붕괴가 벤치 아티팩트인지 실질 감쇠인지 판별(L-227 mandate + memory megacap-artifact 가설 검정).",
+    "flatEW_composite": {
+      "IS":   {"capw_port_t": 3.209, "ew_universe_port_t": 2.317, "ew_post2017_t": 0.421},
+      "OOS":  {"capw_port_t": -2.052, "ew_universe_port_t": -0.870, "ew_post2017_t": -0.870},
+      "FULL": {"capw_port_t": 0.878, "ew_universe_port_t": 1.318, "ew_post2017_t": -0.684}
+    },
+    "cap_tier_decomposition": {
+      "flat_top25_weight_share": {"MEGA_top10": 0.06, "MID_11_30": 0.08, "OTHER_31plus": 0.85},
+      "gross_ann_contrib": {"IS": {"OTHER": 0.201, "MID": 0.014, "MEGA": 0.002}, "OOS": {"OTHER": 0.040, "MID": 0.002, "MEGA": 0.018}},
+      "interpretation": "flat 합성은 92% OTHER(소형·rank31+)로 틸트. 소형주 알파가 IS 강함(gross-ann +0.20)→OOS 감쇠(+0.04). 벽=소형주 신호의 실질 post-2019 감쇠, cap-w 벤치가 증폭(OOS -2.05)하나 EW-univ에서도 -0.87 음수 → 순수 아티팩트 아님."
+    },
+    "conclusion": "OOS 붕괴의 ~절반은 cap-w mega-cap 벤치 아티팩트(-2.05→-0.87), 나머지 절반은 실질 소형주 신호 감쇠(EW-univ에서도 음수). 공정 벤치만으로는 구제되지 않음."
+  },
+  "interaction_map_closest": {
+    "closest_to_oos_stable": ["H1h_q5_15_5_cap (OOS port_t +1.82, full 1.93)", "H1d_q5_15_5_twMega (OOS +1.07, full 1.37)"],
+    "mechanism": "tier-stratified 선택 + cap-within/mega-heavy weighting = mega tier에 비중 집중 → 벤치-hugging(closet). IS 약(0.80/0.85)·full port_t≪2.95이나 OOS 안 붕괴(오히려 IS<OOS). 이는 알파가 아니라 tracking-error 축소(project-megacap-anchor-construction-discovery 정합).",
+    "structural_tension": "IS-only 선택은 소형주-틸트 스파이크(baseline/H3, IS 3.2)를 고르는데 이는 OOS 붕괴; OOS-안정 config(H1h/H1d)는 near-passive라 IS-only로는 선택 불가(IS 약). = cap-tier 트랩의 양 턱. 소형주 알파는 벤치-저비중이라 cap-w 못 이기고, mega는 signal-dead라 hugging하면 알파 소멸.",
+    "H1_tier_stratification": "mega/mid/other 쿼터 강제는 flat 선택 알파를 희석(전 H1 IS<baseline). 소형주 틸트 제거가 IS 알파를 죽임.",
+    "H3_regime_active_share": "regime-conditional active-share(alpha-tilt↔cap-weight blend, 전액 투자·현금/베타 레이어 없음 → R05×m4 오버레이와 이중 디리스크 아님)는 near-inert. regime 신호가 실질 타이밍 부가 없음(inverted control=baseline 동일)."
+  },
+  "pre_demoted_not_run": {
+    "note": "Q-Lead scope directive 2026-07-10 — 검정력 보존 위해 결과조회 전 사전 강등(family 축소, cherry-pick 아님). n_trials 미포함(미착수).",
+    "H2_cvar_downside_x_defensive": "HRP frontier 7논문 실측 위험기반 배분=알파 희석(LinearTilt 지배)·방어팩터 DB 170종 전수 부재 (project-hrp-frontier / project-defense-factor-db-survey).",
+    "H4_residual_ortho_x_book_marginal": "직교≠수익 확립·RAMP R1 잔차 sleeve survivors 0 (project-ramp-r1-residual-sleeve-stack).",
+    "H5_concentration_adaptive": "메커니즘 미명세 (Q-Lead)."
+  },
+  "artifacts": {
+    "is_results": "stage_artifacts/WT-D20260710_003/is_results.csv",
+    "full_oos_map": "stage_artifacts/WT-D20260710_003/full_oos_map.csv",
+    "finalize": "stage_artifacts/WT-D20260710_003/finalize_results.json",
+    "dual_basis": "stage_artifacts/WT-D20260710_003/dual_basis_captier_diag.json",
+    "alpha_scores": "stage_artifacts/WT-D20260710_003/alpha_scores.parquet",
+    "harness": "stage_artifacts/WT-D20260710_003/02_harness.R"
+  },
+  "self_adversarial_challenge": "challenge_note.md — 5 concerns (2 HIGH/3 MED): ACCEPT winner=baseline-noise, PARTIAL benchmark-artifact(측정=반만 사실), REBUTTAL DSR non-load-bearing, REBUTTAL no-leakage, PARTIAL H1h/H1d=passive. escalate trigger 미발동(HIGH 2<5)."
+}
