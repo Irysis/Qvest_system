@@ -1,0 +1,94 @@
+{
+  "task_id": "WT-H20260710_001",
+  "wt_type": "hyperparameter_sweep",
+  "as_of_date": "2026-07-01",
+  "forecast_horizon": "1M",
+  "role_card": "hyperparameter_sweep — parent alpha mechanism inherited (score_eff 7 factors + 0.65/0.35 core/defense blend); grid over factor-internal FORMATION parameters. alpha_discovery_certificate NOT issued (normal for this wt_type).",
+  "alpha_discovery_certificate": "not_issued_normal",
+  "alpha_inheritance": {
+    "mechanism_inherited": true,
+    "inherited_from": "score_eff = 0.65*z(core{C01_SUE,C02_EPS_Chg_1m,C04_ESBR,C06_TP_Gap}) + 0.35*z(def{Q07_Earnings_Stability,M08_Residual_Mom,Q25_Ohlson_O})",
+    "winner_vs_incumbent_crosssec_cor": 0.784,
+    "note": "cor 0.784 reflects formation-parameter variation within the SAME signal family (not a new mechanism). This is a formation-tuning sweep, not a discovery."
+  },
+  "grid_spec": {
+    "sha256": "6dcd4607cfcdf31bdac5bd230e05942479572672aa1cfa19b0035c72087ca040",
+    "path": "stage_artifacts/WT-H20260710_001/grid_spec.json",
+    "n_trials_distinct": 25,
+    "blocks": {
+      "A_common_formation": "winsor_sigma{2.0,2.5,3.0,Inf} x std{classic,robust_mad} x missing{strict,tolerant} = 16 (incumbent cell = w2.5|classic|strict)",
+      "B_M08_formation": "4 new: lookback{126,378} x skip{0,21} x resid{capm,raw} substituted into def sleeve",
+      "C_c04_c06_reformation": "5 new: C04 ESBR agg{3m,6m} + C06 TP smooth{5d,21d} substituted into core sleeve"
+    },
+    "vendor_locked_untestable": {
+      "C01_SUE_std_denominator": "QuantiWise precomputed CONSENSUS$sue field — raw actual/forecast/history std not held; NOT re-formable",
+      "C02_EPS_Chg_horizon": "QuantiWise precomputed CONSENSUS$eps_chg_1m/3m — underlying horizon not re-formable"
+    }
+  },
+  "selection_objective": "canonical_port_t",
+  "best_of_n": {
+    "winner_by_IS_canonical_port_t": "C5_esbr3m_tp5d",
+    "winner_block": "C (ESBR 3m aggregation + TP-gap 5d median smoothing, substituted into core)",
+    "most_consistent_paired_improver": "A_w2_mad_str (winsor2.0 + robust MAD-z + strict): paired NW-t 1.729 (still < 2.0)"
+  },
+  "incumbent_reference": {
+    "stored_score_eff": {"IS_port_t": 4.806, "OOS_port_t": -0.638, "full_port_t": 2.918, "full_IR": 0.638},
+    "rebuilt_incumbent_same_pipeline": {"IS_port_t": 4.278, "OOS_port_t": -1.060, "full_port_t": 2.147, "parity_crosssec_cor_vs_stored": 0.887}
+  },
+  "diagnostics": {
+    "metric_type": "canonical_screen",
+    "canonical_port_t_nw_lag3_winner_IS": 5.505,
+    "canonical_port_t_nw_lag3_winner_OOS": -0.963,
+    "canonical_port_t_nw_lag3_winner_FULL": 2.312,
+    "canonical_port_t_nw_lag3_incumbent_FULL": 2.918,
+    "paired_nw_t_winner_vs_incumbent_IS": 0.432,
+    "net_sr_winner_IS": 1.299,
+    "turnover_annual_winner": 12.0,
+    "rank_ic_winner": 0.0384,
+    "rank_ic_incumbent": 0.0434,
+    "icir_winner": 0.351,
+    "harvey_t_rank_ic_winner": 5.743,
+    "portfolio_alpha_t_note": "portfolio-alpha t (canonical PORT_t, forge-relevant) and rank-IC t (harvey 5.74) are REPORTED SEPARATELY. Winner rank_ic (0.0384) is LOWER than incumbent (0.0434); IS PORT_t 'win' does not appear on the rank-IC axis => IS best-of-N portfolio-alpha noise.",
+    "subperiod_rank_ic_winner": {"pre2014": 0.0533, "2014_2018": 0.0282, "post2019": 0.0249},
+    "dsr_sweep": 1.000,
+    "dsr_note": "NON-BINDING/miscalibrated — the 25 formation variants are near-collinear (same 7 factors), so effective independent trials ~1 and the max-Sharpe deflation benchmark degenerates (expected_max_SR0=0.146). DSR is NOT the binding gate here. Binding evidence = oos_retention FAIL (OOS PORT_t negative).",
+    "jackknife_IS_drop_year_port_t_range": [4.970, 6.385],
+    "jackknife_note": "IS-stable but OOS collapses — in-sample stability is not out-of-sample validity.",
+    "ax001_v2": "not re-evaluated — sweep varies formation of an existing sleeve; defensive-factor crisis-alpha framework inherited from incumbent book, overlay/regime axes excluded per mandate."
+  },
+  "production_fidelity": {
+    "path": "STR_1715 carrier: top-20, linear_tilt_to_penalty_qd(lambda=1.5, phi=3, lb=0, ub=0.20/0.10 crisis), liq 2e8 PIT, 15bps",
+    "winner_active_sr": 0.959,
+    "stored_incumbent_active_sr": 0.864,
+    "paired_nw_t_winner_vs_stored": 0.790,
+    "dmean_active_bps_vs_stored": 22.8,
+    "paired_nw_t_winner_vs_rebuilt": 1.073,
+    "verdict": "NO significant transfer — paired NW-t 0.790 < 2.0. The small IS/production point-edge is not statistically distinguishable from incumbent."
+  },
+  "verdict": "FACTOR_INTERNAL_FORMATION_SATURATED",
+  "verdict_detail": "No config produces a DSR-surviving, production-transferring improvement over incumbent score_eff. Winner (C5) IS PORT_t 5.505 REVERSES to OOS -0.963 (full-period 2.312 < incumbent 2.918), paired NW-t vs incumbent 0.432 (IS) / 0.790 (production) both << 2.0, and even has LOWER rank-IC than incumbent. OOS collapse is cohort-wide (stored also -0.638) = known post-2017 decay, not winner-specific. Re-formable formation surface (M08 window/skip/residual, C04 agg, C06 smoothing, common winsor/std/missing) is SATURATED. C01_SUE/C02 formation is vendor-locked (untestable, not proven saturated).",
+  "graduation_recommendation": "KEEP incumbent score_eff. No formation change admitted. This is a map-completion negative (as pre-mandated honest expectation).",
+  "alpha_vector_ref": "stage_artifacts/WT-H20260710_001/alpha_scores.parquet (Date,Ticker,score_eff_incumbent,score_winner). Operative alpha = incumbent score_eff (unchanged). as_of 2026-07-01 n=348.",
+  "alpha_vector_incumbent_top10_2026_07": {
+    "A005930": 2.5961, "A000660": 2.4958, "A319660": 2.2408, "A034730": 2.2243,
+    "A095610": 2.0589, "A011070": 2.0025, "A007340": 1.6184, "A023530": 1.6131,
+    "A004170": 1.6105, "A402340": 1.5685
+  },
+  "redundancy_cluster_id": "score_eff_revision_defense_blend (KR earnings-revision core + quality/residual-momentum defense). Winner is intra-cluster formation variant (cor 0.784 vs incumbent).",
+  "economic_rationale": "Core = analyst earnings-revision / SUE / target-price-gap (post-revision drift, sell-side sentiment breadth). Defense = earnings stability + CAPM-residual momentum + Ohlson bankruptcy-avoidance. Formation micro-tuning (winsor clip, robust standardization, missing rule, M08 window/skip/residual set, ESBR aggregation window, TP smoothing) tested for whether refined estimation improves the SAME economic signals — it does not (saturated).",
+  "challenge_flags": [
+    "SATURATION: IS best-of-25 winner reverses OOS (5.505 -> -0.963); full-period underperforms incumbent (2.312 < 2.918).",
+    "PRODUCTION NON-TRANSFER: carrier paired NW-t 0.790 < 2.0 (06-24 valwt lesson holds).",
+    "WINSOR-SIGMA NON-MONOTONIC: Inf(no-clip) tops classic block => noise-fitting signature, no stable formation optimum.",
+    "VENDOR-LOCK: C01_SUE std-denom + C02 horizon (2 of 4 core, 2 of mandate's named targets) not re-formable from held data => untestable, saturation verdict scoped to re-formable surface only.",
+    "PARITY GAP: rebuilt-incumbent (4.278) weaker than stored book (4.806); configs paired vs weaker rebuild (generous) yet still no significance."
+  ],
+  "boundary_compliance": "alpha-only. No covariance / weights / pre-optimization produced. canonical_screen_bt = screening measurement (fixed top-N EW), forge remains authoritative. Selection authority = canonical PORT_t (IS-only). production carrier used STR_1715 verbatim weighting fns for fidelity comparison ONLY (not weight proposals).",
+  "pit_audit": {
+    "C1": "rolling per-sig-date cross-sectional transforms only; no full-sample stats",
+    "C5_overlay": "N/A — overlay axis excluded from sweep",
+    "C10": "liq 2e8 PIT t-30..t-1 in production carrier",
+    "C14": "load_month_factors Usable_Date<=sig_date (core factors)",
+    "C15": "core via load_month_factors connector; M08/C04/C06 recompute uses Date<=sig_date daily only; a-priori signs (no data-driven flip)"
+  }
+}
