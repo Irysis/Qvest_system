@@ -53,6 +53,16 @@ Rscript 02_Infrastructure/tools/hypothesis_index.R lookup <keyword> [keyword...]
 - 인덱스가 stale하면(새 실험 다수 후) `Rscript 02_Infrastructure/tools/hypothesis_index.R build`로 재빌드.
 - 서명 정규화 규칙·원천 3계층(stage_artifacts manifest/hurdle + lcode_corpus + module_catalog)은 `02_Infrastructure/tools/hypothesis_index.R` 헤더 참조.
 
+### ★ Novelty Triage (v8.3.1, 2026-07-10 — WT-D20260710_003 사후 배선. lookup 통과 후 추가 판정)
+
+lookup(중복)·DISTILLED_NEG(경로)는 **검색**이라 "기존 negative들의 기계적 재조합"을 못 거른다 (실사고: 5축 joint packaging이 경로-신규라 통과 → 26 trial 후 4렌즈 패널·실측이 동시 기각 — 기각 근거는 전부 기존 지식이었음, L-AR-20260710_135913). WT 생성 전 `hypothesis_description`에 다음 의무 기재:
+
+1. **신규성 축 선언**: 이 가설이 바꾸는 것이 {**재료**(데이터/신호원), **기전**(경제 메커니즘), **측정 그리드/계기**(시간구조·벤치 basis·paired 구조 등)} 중 무엇인지 명시.
+2. **셋 다 기존과 동일(=순수 재조합/packaging)이면**: 착수 전 **기대 상방 선계산 의무** — 조합의 이론 상한(예: translation loss 회수분)이 게이트 요구 수준(전기간 PORT_t 2.95 ≈ 연IR 0.63)에 닿는지. 못 닿으면 **도훈 confirm 없인 착수 금지** (금지가 아니라 명시적 승인으로 격상 — AX-000 정합).
+3. **sweep형이면 null max-t 대역 사전 등재**: 계획 n_trials 기준 null 하 max-t 기대범위를 스펙에 기록, 그 대역 내 결과 = 비정보적 near-miss (성공 주장 금지).
+
+원칙: 본 triage는 INV-7(negative는 경로-scoped, 방향 일반화 금지)과 충돌하지 않는다 — "재조합 금지"가 아니라 "신규성 선언 + 상한 선계산"이다.
+
 ```r
 source("02_Infrastructure/worktask/worktask_manager.R")
 wt_id <- wt_create(
