@@ -1,7 +1,7 @@
 [확립 전략 진실 — 죽은 방향 재제안 금지. SOT: measurement-graduation.md §6 + 메모리. 2026-07-10 갱신(07-05/06 확립사실 3건 반영)]
   - IC→PORT_t 전이 벽: 횡단면 신호(IC/ICIR)가 실재해도 top-25 long-only 실현 PORT_t로 미전이 — standalone 16/16 admission FAIL, 신호종류·horizon·원천 무관 (§6 / project-dart-insider-exec-nonreturn-frontier)
   - post-2017 감쇠(cohort-wide 실재)의 상당부분 = cap-w mega-cap 벤치 아티팩트: 동일 알파가 EW-벤치 대비 생존(post2017_t 0.41→2.04 실측) — 알파 기각 전 EW-대비 oos 확인 의무 (project-megacap-anchor-construction-discovery)
-  - cap-tier 국소화: 알파는 MID tier(11-30, LS t=3.02)에만 生·MEGA top-10(t=0.59)은 死 — long-only 횡단선택으로 cap-w 탈출 구조 불가 (project-captier-alpha-localization-20260706)
+  - cap-tier 국소화: 알파는 벤치-저비중 소형 끝에 집중·배포 대형주 tier에선 붕괴 — long-only 횡단선택으로 cap-w 탈출 구조 불가. 실측 NW-t(insider `captier_decomp.csv`): REST(>50) long-active +5.19 / 배포권 top-50 +0.53 / MEGA rank-IC +1.01(가격신호 mega는 t≈0.6). ⚠ 구 "MID(11-30) t=3.02"는 미검증 회상(가격신호 score_eff 분해 원본 미소재)이라 철회 — 구조 결론은 불변, 오늘 WT-D20260710_001 MID 다축 cap-w 2.08이 재확증 (project-captier-alpha-localization-20260706 / WT-D20260710_001)
   - KR 25종 long-only 팩터선택 SR 천장 ~1.0-1.1. 돌파 레버(전부 envelope-안): overlay 재튜닝 · 잔차-직교 sleeve(PORT_t 통과분만) · 비-return 원천 (reference-kr-sr-ceiling-overlay — 구 목록의 DPL은 settled-negative 정정 07-10)
   - 직교 ≠ 수익: long-only β≈0.92·active(−BM) 상관 0.53 — "직교 ∧ PORT_t 통과" 동시 충족분만 book 기여 (§6 / reference-orthogonality-gross-vs-active)
   - KR long-only 시장타이밍 4중 부정 — regime-cash(R05×m4) 이상 가치 無 (project-pg2-offense-overlay-settled)

@@ -1,0 +1,85 @@
+{
+  "task_id": "WT-D20260710_002",
+  "wt_type": "discovery",
+  "pg1_eligibility": "certificate_required",
+  "discovery_of": null,
+  "graduation_criteria": {
+    "description": "Discovery → Deployment 전환 조건. discovery_graduation_gate.sh 강제. v8.x WS2 재설계(2026-05-29): rank-IC 계열은 long-only 실현 alpha와 어긋나(16후보 calibration 실측: rank_ic가 FLOW 거짓탈락+NN/TECH 거짓통과) advisory로 강등, portfolio-alpha t(forge NW lag-3)를 hard로. DSR hard는 sweep형 selection만(2026-06-10 개정 — chain/단일은 advisory). hard 기준은 forge-authoritative 값(alpha-stage proxy 아님)에 적용.",
+    "min_rank_ic": 0.04,
+    "min_rank_ic_rationale": "KR top-universe benchmark. <0.04는 IC 약함. (v8.x severity=advisory — long-only 실현 alpha 미전이)",
+    "min_icir": 0.2,
+    "min_icir_rationale": "Alpha Lab Gate. (v8.x severity=advisory)",
+    "min_subperiod_stability": 0.5,
+    "min_subperiod_stability_rationale": "3개 subperiod 안정성. (v8.x severity=advisory)",
+    "max_drawdown_days": 100,
+    "max_drawdown_days_rationale": "100일 이상 drawdown 지속 시 alpha decay 의심. (severity=advisory)",
+    "min_harvey_t_stat": 3,
+    "min_harvey_t_stat_rationale": "rank-IC Harvey-t. (v8.x severity=advisory — rank-IC t는 portfolio-alpha t와 구분, 후자가 권위)",
+    "min_deflated_sharpe_ratio": 0.5,
+    "min_deflated_sharpe_ratio_rationale": "Bailey-Lopez de Prado DSR — multi-testing 보정 SR. (severity=HARD는 sweep형 selection만 — ML스윕/optimizer서치/앙상블·사전등록 grid. 가설주도 chain/단일검증은 advisory 강등+진단산출. 도훈 mandate 2026-05-31/2026-06-10, measurement-graduation §3)",
+    "min_portfolio_alpha_t_nw": 2.95,
+    "min_portfolio_alpha_t_nw_rationale": "★v8.x 신규 HARD. forge-authoritative 실현 portfolio-alpha t (NW lag-3, forge_package.portfolio_alpha_t_nw_lag3). Harvey-Liu-Zhu 2016 hurdle. rank-IC t 아님. 게이트 핵심 판별(16후보 중 FLOW만 통과=정확).",
+    "min_oos_retention": 0.7,
+    "min_oos_retention_rationale": "★v2.5 HARD 배선(문턱은 measurement-graduation §3 2026-05-31/06-10 기존값). 활성 Sharpe OOS/IS retention — anchored 3분할 {55/65/75} 중앙값(essence_score.R oos_stat_version=v2). ≥0.7 단독 PASS / <0.5 무조건 FAIL / [0.5,0.7) band는 보강증거 2/3 조건부 PASS(판정 권위=essence_score.R, 훅은 warn). forge-authoritative 값에만 적용 — 단일전략 과적합 방어 주책임.",
+    "min_calmar": 0.64,
+    "min_calmar_rationale": "★v2.5 HARD 배선(문턱은 measurement-graduation §3 2026-05-31 기존값). Calmar = CAGR/|MDD| ≥ 0.64 (=16%/25%, 제2목표 CAGR16·MDD25에서 도출한 위험조정 게이트). forge-authoritative 값에만 적용.",
+    "severity": {
+      "rank_ic": "advisory",
+      "icir": "advisory",
+      "subperiod_stability": "advisory",
+      "harvey_t_stat": "advisory",
+      "deflated_sharpe_ratio": "hard",
+      "portfolio_alpha_t_nw": "hard",
+      "oos_retention": "hard",
+      "calmar": "hard"
+    },
+    "severity_rationale": "hard = block(우회불가), advisory = warn(screening). hard 4종(DSR/portfolio_alpha_t_nw/oos_retention/calmar)은 forge-authoritative 값에만 적용 — alpha-stage proxy로 graduation 선언 금지(v8.x WS1 정합). DSR hard는 sweep형 selection 한정, oos_retention은 <0.5 무조건 block + [0.5,0.7) band 조건부(measurement-graduation §3)."
+  },
+  "theme": "EW-relative survivor screen of rejected alphas (cap-w benchmark-artifact separation, M2 dual-basis real-pool)",
+  "hypothesis_title": null,
+  "hypothesis_description": "[동기] 자가발전 루프. 확립: post-2017 감쇠의 상당부분은 cap-w mega-cap 벤치 아티팩트이며(동일 알파가 EW-유니버스 대비로는 생존한 사례 실측 post2017_t 0.41→2.04), 알파는 벤치-저비중 tier(mid/소형)에 국소한다. 그렇다면 과거 cap-w 기준으로 기각된 표준 알파 중 일부는 '진짜 죽음'이 아니라 '벤치-구성 미스매치 기각'일 수 있다.\n[가설·INV-7] cap-w canonical PORT_t로 기각(admission FAIL)된 표준 알파를 canonical_screen_bt dual_basis로 재측정하면, cap-w는 FAIL이나 EW-유니버스 basis에서 PORT_t가 통과하는 'EW-생존자' 군이 분리되는가. 분리되면 그것은 벤치-아티팩트 기각(재라우팅 후보: overlay/RAMP/벤치-상대), 아니면 진짜 죽음(true-dead)이다. 차별점: EW-대비 생존자 스크린은 hypothesis_index 미탐색(survivor/ewbench 히트 0) — M2 dual-basis를 실 기각 풀에 처음 적용.\n[접근] alpha-research가 신호력이 실재했으나 cap-w 자본급 미달로 기각된 표준 팩터/composite 5~8종을 clean 소스(factor DB 표준 팩터 + 최근 screen-tier L-code)에서 선정 — batch_434 오염 residual_alpha_candidates 회피. 각각 canonical_screen_bt(diag_dual_basis=TRUE, size_dt 제공)로 cap-w PORT_t와 diag_ew_universe PORT_t/post2017_t/oos_approx를 실측 병기. EW-생존자(cap-w<2.95 AND EW-basis PORT_t 유의) 목록화 + 최강 생존자 특성화.\n[제약·회피] 봉투 고정(long-only·≤25종·K200∪KQ150·15bps·[0,0.20]·Σw=1·PIT C1~C15). 선택 IS-only. settled-negative 재제안 금지(DPL·uncertainty sizing·regime-conditional 교차결합·max-cash overlay·KNS/SDF·전종목). cap-w HARD가 자본 게이트 권위 — EW-생존은 '재라우팅 후보' 라벨이지 자본 졸업 아님. 신규 데이터 취득 불요.\n[기대 산출] 재라우팅 후보 lane 분류(어떤 기각이 아티팩트인가). standalone 편입 주장 금지 — 판정 권위는 forge cap-w.",
+  "hypothesis_source": "alpha_agent_discovered",
+  "as_of_date": "2026-07-10",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KOSPI200_KOSDAQ150_intersection",
+    "liquidity_min_won_20d_avg": 50000000,
+    "max_names_total": 500
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d (재무제표 발표 지연)",
+    "fundamental_annual": "annual May (연간 재무제표 5월 리밸런싱)",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement (QuantiWise)",
+    "macro": "t-1 FRED (외부 매크로 lag)",
+    "ic_history": "Usable_Date <= sig_date (Factor DB 강제)"
+  },
+  "cost_model_version": "v2.4_kr_retail_15bps",
+  "current_portfolio": "STR_1631_80_STR_1656_20",
+  "hard_mandate": {
+    "pit_enforcement": "C1-C15 all enforced",
+    "liquidity_floor_won_20d_avg": 50000000,
+    "mandate_restrictions": {
+      "no_short_legal_kr": true,
+      "no_cross_market": true,
+      "kr_domestic_only": true
+    },
+    "long_only_mandate": "configurable"
+  },
+  "hard_constraints": {
+    "max_names": null,
+    "weight_bounds": [
+      0,
+      1
+    ],
+    "sector_active_weight_cap": null,
+    "liquidity_min_won_20d_avg": 50000000
+  },
+  "soft_penalties": [],
+  "capacity_limits": {
+    "adv_multiplier": 0.1,
+    "capacity_max_aum_won": 100000000000
+  }
+}
