@@ -15,7 +15,11 @@
       "owner": "다른 세션/스케줄태스크 (크롤). 실측은 크롤 2013+ 연속 도달 후",
       "status": "data_gated",
       "next_action": "크롤 진척 확인 → 연속 2013+ 도달 시 04_Research/insider/cmp_signal.py → canonical_screen_bt 예비 실측(officer 분류 2010+ 신뢰)",
-      "source_refs": ["memory: project-dart-insider-historical-parser-built", "memory: next_session_task ★CURRENT FRONT 07-06", "in-flight WT: WT-D20260706_002 (hypothesis_index 등재 — 착수 전 대조)"]
+      "source_refs": [
+        "memory: project-dart-insider-historical-parser-built",
+        "memory: next_session_task ★CURRENT FRONT 07-06",
+        "in-flight WT: WT-D20260706_002 (hypothesis_index 등재 — 착수 전 대조)"
+      ]
     },
     {
       "id": "FQ-002",
@@ -28,20 +32,25 @@
       "owner": null,
       "status": "parser_gated",
       "next_action": "insider 크롤 완료 시 계약금액 추출 병행 → canonical 측정",
-      "source_refs": ["memory: next_session_task 07-06 ★2번째 deferred lead"]
+      "source_refs": [
+        "memory: next_session_task 07-06 ★2번째 deferred lead"
+      ]
     },
     {
       "id": "FQ-003",
       "lane": "non_return",
-      "title": "공매도잔고/대차잔고 (short interest) — 가설 미검정 (취득경로 feasibility는 기실측)",
+      "title": "공매도잔고 short interest (KR 공매도제약 → long-only exclusion 하베스트, virgin)",
       "hypothesis": "공매도·대차잔고는 1급 short-interest 예측변수 — 알파 가설 자체는 미검정",
-      "ev_rationale": "문헌상 1급 예측변수. short-interest는 long-only에서도 exclusion/underweight 신호로 소비 가능. ⚠ feasibility는 WT-D20260706_003이 이미 실측: KRX MDC 포털 무인증 스크레이핑 경로 사멸(로그인 게이트 전환) → NO_GO, 권고 경로 = data.go.kr 승인형 API 신청",
+      "ev_rationale": "★최고 EV 비-return QEPM lane. KR 공매도제약(2023-11~2025 전면금지 등)으로 고-공매도-수요 종목 과대평가가 차익거래로 미해소(Miller 1977) → long-only가 회피/저비중 exclusion 신호로 하베스트 가능(무제약 시장은 short-side라 못 먹음). hypothesis_index virgin(0), envelope-안(타 투자자 short를 신호로, 우리는 long-only 유지). 데이터 depth 공매도잔고공시 2016-06~.",
       "wall_check": "비-return. 단 신호가 short-side 견인이면 long-only 하베스트 제한 벽에 걸릴 수 있음 — exclusion 소비 설계 필요",
-      "data_gate": "data.go.kr 공매도 잔고 API 승인 신청 (스크레이핑 아님 — 사멸 실측) — 도훈 결정",
+      "data_gate": "2026-07-10 재확인: KRX 공식 OPEN API(구 data-dbg.krx.co.kr /srt/* + 신 openapi.krx.co.kr) 둘 다 공매도 서비스 부재(404/미수록). KRX MDC(data.krx.co.kr MDCSTAT300 개별종목 공매도 종합정보)·공매도종합포털은 로그인 게이트. → 실무 경로 = 도훈 로그인 export. 권장: QuantiWise 공매도잔고/대차잔고 export(도훈 이미 QW 사용·기존 인제스트 파이프). 대안: 공매도종합포털 bulk 다운로드.",
       "owner": null,
-      "status": "dohoon_decision",
-      "next_action": "도훈 승인 시 data.go.kr API 신청 → 승인 후 PIT 시차 검증 → canonical 측정",
-      "source_refs": ["memory: next_session_task 07-05 미탐색 프론티어 맵", "result_ref: qepm/mailbox/worktask/WT-D20260706_003/infeasibility_report.json (feasibility NO_GO 실측)"]
+      "status": "dohoon_data_work",
+      "next_action": "도훈 QW 로그인 세션에서 공매도잔고(+대차잔고) K200∪KQ150 2016-06~ export(daily 또는 monthly). 랜딩 시 add_factor 선언→builder→canonical_screen_bt 예비 실측. Q가 온보딩 스캐폴드 사전 준비.",
+      "source_refs": [
+        "memory: next_session_task 07-05 미탐색 프론티어 맵",
+        "result_ref: qepm/mailbox/worktask/WT-D20260706_003/infeasibility_report.json (feasibility NO_GO 실측)"
+      ]
     },
     {
       "id": "FQ-004",
@@ -54,20 +63,25 @@
       "owner": null,
       "status": "dohoon_decision",
       "next_action": "도훈 승인 시 insider 파서 기반 확장 설계",
-      "source_refs": ["memory: next_session_task 07-05 미탐색 프론티어 맵"]
+      "source_refs": [
+        "memory: next_session_task 07-05 미탐색 프론티어 맵"
+      ]
     },
     {
       "id": "FQ-005",
       "lane": "non_return",
       "title": "QuantiWise crowding (신용잔고/대차) 데이터",
       "hypothesis": "crowding 지표(신용/대차)로 과밀 팩터/종목 회피 — 미탐색",
-      "ev_rationale": "research_philosophy ⑤(Crowding) 미충족 lane + 데이터가 기존 계약(QuantiWise) 안에 있음",
+      "ev_rationale": "research_philosophy ⑤(Crowding) 미충족 lane + 데이터가 기존 계약(QuantiWise) 안에 있음 ⚠ FQ-003(공매도잔고)과 동일 QW export 세션에서 신용/대차 함께 취득 권장(1회 로그인으로 crowding+short 동시).",
       "wall_check": "비-return. exclusion/timing 소비면 long-only 정합",
       "data_gate": "QuantiWise 로그인 — 도훈 수동 (자동화는 로그인 UI에서 보류됨 07-01)",
       "owner": null,
       "status": "dohoon_decision",
       "next_action": "도훈 로그인 세션에서 인제스트 → 커버리지 확인",
-      "source_refs": ["memory: project-quantiwise-refresh-automation", "memory: next_session_task 07-05"]
+      "source_refs": [
+        "memory: project-quantiwise-refresh-automation",
+        "memory: next_session_task 07-05"
+      ]
     },
     {
       "id": "FQ-006",
@@ -80,7 +94,10 @@
       "owner": null,
       "status": "open",
       "next_action": "overlay_candidate_ab_lh.R generic화 → 큐 순차 A/B (base 대비 paired NW-t 유의성 기준)",
-      "source_refs": ["06_Registry/overlay_candidate_queue.json", "02_Infrastructure/regime/overlay_candidate_ab_lh.R"]
+      "source_refs": [
+        "06_Registry/overlay_candidate_queue.json",
+        "02_Infrastructure/regime/overlay_candidate_ab_lh.R"
+      ]
     },
     {
       "id": "FQ-007",
@@ -93,7 +110,10 @@
       "owner": null,
       "status": "open",
       "next_action": ".cache/failure_revival_flags.json 발화 내용 → 해당 DIST 카드 frontier 대조 → 차별화된 재도전 가설 수립",
-      "source_refs": [".cache/failure_revival_flags.json", "qepm/memory/axioms/distilled/"]
+      "source_refs": [
+        ".cache/failure_revival_flags.json",
+        "qepm/memory/axioms/distilled/"
+      ]
     },
     {
       "id": "FQ-008",
@@ -103,23 +123,29 @@
       "ev_rationale": "EW-대비 생존 실측 사례(post2017_t 0.41→2.04) — 이 유형이 몇 건인지 전수 미확인. 재분류군은 벤치-상대 구성/overlay/RAMP 소비 경로로 재라우팅 가능",
       "wall_check": "게이트 면제 아님 — cap-w HARD 불변. 목적은 기각 사유의 정밀화와 소비 경로 재배정(발굴이 아니라 회수·재라우팅)",
       "data_gate": "M2(diag 필드) 랜딩 후 feasible",
-      "owner": null,
-      "status": "open",
-      "next_action": "최근 기각 후보(스크린 재고 우선)에 canonical_screen_bt diag 재실행 → EW-생존군 목록화 → 소비 경로 제안",
-      "source_refs": ["memory: project-megacap-anchor-construction-discovery", "memory: project-captier-alpha-localization-20260706"]
+      "owner": "session 2026-07-10 (WT-D20260710_002)",
+      "status": "done_characterized",
+      "next_action": "V02_EP 재라우팅은 RAMP/factor-rotation 모드(QEPM 아님). QEPM 기각-풀 return-derived는 pool-characterized 소진.",
+      "source_refs": [
+        "memory: project-megacap-anchor-construction-discovery",
+        "memory: project-captier-alpha-localization-20260706"
+      ],
+      "result_ref": "L-AR-20260710_112721 — EW-생존자 1종 V02_EP(cap-w 2.52 기각/EW 4.40, OTHER tier 98.6%, EW조차 졸업급 아님 post17 1.73<2.5·oos 0.52). 벤치-아티팩트는 factor-specific(EP 부분/quality true-dead). rank-IC 오도 실증(R12). 재라우팅 후보 = V02_EP → RAMP EW-weight/벤치-상대 sleeve."
     },
     {
       "id": "FQ-009",
       "lane": "mandate",
       "title": "mid-cap 국소 알파 활용 프레임 (도훈 결정)",
       "hypothesis": "알파는 MID tier(11-30)에 국소 생존, MEGA는 signal-dead — 게이트 basis(cap-w)와 알파 서식지의 구조 미스매치를 소비 경로 설계로 풀 것인가",
-      "ev_rationale": "MID LS t=3.02 / MEGA t=0.59 실측. 벤치-상대(배포성) vs 절대수익(SR 2.5) 관점 정리가 선행돼야 후속 리서치 조준 가능",
+      "ev_rationale": "배포권 대형주 tier 엣지 ~t 0.5(captier_decomp.csv top-50 long-active +0.53), 알파는 벤치-저비중 소형 끝에 집중(REST +5.19). 벤치-상대(배포성) vs 절대수익(SR 2.5) 관점 정리가 선행돼야 후속 리서치 조준 가능. ⚠ 구 'MID t=3.02'는 미검증 회상 철회(strategic_truths 07-10 교정)",
       "wall_check": "게이트 변경 제안 아님 — 소비 경로(벤치-상대 구성·overlay·RAMP) 설계 논의",
       "data_gate": "도훈 프레임 결정",
       "owner": null,
       "status": "dohoon_decision",
       "next_action": "도훈과 D3(SOT §5) 논의",
-      "source_refs": ["memory: project-captier-alpha-localization-20260706"]
+      "source_refs": [
+        "memory: project-captier-alpha-localization-20260706"
+      ]
     },
     {
       "id": "FQ-010",
@@ -132,7 +158,10 @@
       "owner": null,
       "status": "dohoon_decision",
       "next_action": "D1 결정 후: 백로그 17편 라우팅 확인 + pg2 큐에 status 필드·소비 기록 writer 추가",
-      "source_refs": ["stage_artifacts/paper_recharge/pg2_reinforcement_queue_20260702.json", ".cache/scheduler_logs/paper_router_20260708.log"]
+      "source_refs": [
+        "stage_artifacts/paper_recharge/pg2_reinforcement_queue_20260702.json",
+        ".cache/scheduler_logs/paper_router_20260708.log"
+      ]
     }
   ]
 }
