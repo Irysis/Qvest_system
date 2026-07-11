@@ -162,6 +162,25 @@ if [ -f "$RAWDATA_PARQUET" ]; then
 else
   echo "[boot] WARN: rawdata.parquet 부재 — alpha-search/backtest stop 위험 (build_cache.R 또는 daily_refresh 선행)"
 fi
+# 4e2. (2026-07-11) 월별 거래일 수 연속성 체크 — rawdata 내부 공백(interior gap) 감지.
+#      기준 = benchmark.parquet (chart-API 실세션 — trading calendar와 독립이라 캘린더
+#      결손에 눈멀지 않음). 실사고: 2026-03-30~04-29 한 달이 QuantiWise 수출 이음매
+#      구멍 + 07-02 리빌드로 소실됐는데 캘린더도 같은 구멍이라 모든 가드 침묵 통과
+#      (2026-04 거래일 = 1일). trailing 13개월에서 rawdata 월별 거래일 < benchmark
+#      월별 거래일이면 WARN (블록 아님 — 성과수치 산출 전 복구 의무).
+#      ⚠ Windows Rscript 멀티라인 -e는 첫 줄만 실행되는 함정 (daily_refresh run_r 참조) — 반드시 단일 라인 유지.
+if [ -f "$RAWDATA_PARQUET" ] && [ -f "$PROJECT/.cache/benchmark.parquet" ]; then
+  CONT_CHECK=$(cd "$PROJECT" && Rscript -e 'suppressMessages({library(arrow); library(data.table)}); rd <- unique(as.Date(as.data.table(read_parquet(".cache/rawdata.parquet", col_select="Date"))$Date)); bm <- unique(as.Date(as.data.table(read_parquet(".cache/benchmark.parquet", col_select="Date"))$Date)); lo <- Sys.Date() - 400; r <- data.table(ym = format(rd[rd >= lo], "%Y-%m"))[, .N, by = ym]; b <- data.table(ym = format(bm[bm >= lo], "%Y-%m"))[, .N, by = ym]; m <- merge(b, r, by = "ym", all.x = TRUE, suffixes = c("_bm", "_rd")); m[is.na(N_rd), N_rd := 0L]; bad <- m[N_rd < N_bm]; if (nrow(bad) > 0) cat("CONTINUITY_FAIL:", paste(sprintf("%s(rawdata=%d/bm=%d)", bad$ym, bad$N_rd, bad$N_bm), collapse = " "), "\n") else cat("CONTINUITY_OK\n")' 2>/dev/null | grep -E 'CONTINUITY_(OK|FAIL)')
+  if echo "$CONT_CHECK" | grep -q "CONTINUITY_OK"; then
+    echo "[boot] 거래일 연속성 (rawdata vs benchmark, 13개월): OK"
+  elif [ -n "$CONT_CHECK" ]; then
+    echo "[boot] ⛔ WARN: rawdata 월별 거래일 결손 감지 — $CONT_CHECK"
+    echo "[boot]    → 내부 공백 의심. build_trading_calendar(force=TRUE) 후 KRX 백필 필요 (실사고: 2026-04 소실, 04_Research/01_reports/rawdata_april_gap_incident_20260711.md 참조)"
+  else
+    echo "[boot] 거래일 연속성 체크: SKIP (R 실행 실패)"
+  fi
+fi
+
 # kr_factor_returns_v2 신선도 (FF3 회귀 의존 — value 2002-08~)
 KRF_V2="$PROJECT/.cache/kr_factor_returns_v2.parquet"
 if [ -f "$KRF_V2" ]; then

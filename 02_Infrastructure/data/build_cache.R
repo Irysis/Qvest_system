@@ -112,8 +112,36 @@ RAWDATA <- BM_DT[, .(Date, BM_Ret)][RAWDATA, on = "Date"]
 RAWDATA <- RAWDATA[!is.na(Ret) & !is.na(BM_Ret)]
 setorder(RAWDATA, Date, Ticker)
 
+# [guard 2026-07-11] 직접 실행 시 API-tail 소실 방어 — 기존 캐시가 신규 빌드보다 뒤
+# 날짜를 보유하면(xlsx 커버리지 < 기존 캐시), 기존 캐시를 백업 후 경고. 표준 경로는
+# incremental_cache_update.R::incremental_rawdata() (Date > xlsx_max 꼬리 자동 복원).
+# 실사고: 2026-07-02 직접 실행 → 03-28 이후 전체가 base xlsx(~03-27) 내용으로 대체,
+# KRX/Naver 실수집 2026-03-30~04-29 소실 (rawdata_april_gap_incident_20260711 참조).
+.rawdata_out <- file.path(CACHE_DIR, "RAWDATA.parquet")
+if (file.exists(.rawdata_out)) {
+  .old_max <- tryCatch(
+    max(as.Date(as.data.table(read_parquet(.rawdata_out, col_select = "Date"))$Date), na.rm = TRUE),
+    error = function(e) as.Date(NA))
+  .new_max <- max(RAWDATA$Date)
+  if (!is.na(.old_max) && .old_max > .new_max) {
+    .guard_bak <- file.path(CACHE_DIR, "RAWDATA_prebuild_bak.parquet")
+    file.copy(.rawdata_out, .guard_bak, overwrite = TRUE)
+    cat(sprintf("⚠️ [guard] 기존 캐시 max(%s) > 신규 빌드 max(%s) — API 수집 꼬리가 이 빌드로 유실됨.\n",
+                .old_max, .new_max))
+    cat(sprintf("   기존 캐시 백업: %s\n", .guard_bak))
+    cat("   → incremental_cache_update.R::incremental_rawdata() 경유가 표준(꼬리 자동 복원).\n")
+    cat("   → 직접 실행했다면 백업에서 Date > 신규 max 구간을 복원한 뒤 사용할 것.\n")
+  }
+  gc(verbose = FALSE)
+}
+
 # 최종 RAWDATA Parquet 저장 (전체 종목, Sector/Name 없음)
-write_parquet(RAWDATA, file.path(CACHE_DIR, "RAWDATA.parquet"))
+# [fix 2026-07-11] 위 guard가 기존 캐시를 read(mmap)하므로 동일 경로 직접 write 시
+# Windows arrow error 1224 위험 — temp-rename 패턴 (krx_build_rawdata 동일)
+.raw_tmp <- paste0(.rawdata_out, ".tmp")
+write_parquet(RAWDATA, .raw_tmp)
+if (file.exists(.rawdata_out)) file.remove(.rawdata_out)
+file.rename(.raw_tmp, .rawdata_out)
 
 cat(sprintf("\n=== Cache Build Complete ===\n"))
 cat(sprintf("RAWDATA: %d rows | %d tickers | %s ~ %s\n",

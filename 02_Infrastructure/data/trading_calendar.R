@@ -165,10 +165,28 @@ build_trading_calendar <- function(force = FALSE, verbose = TRUE) {
     }
   }
 
+  # ─── Layer 2b: QW 커버리지 내부 공백 보충 (2026-07-11 fix — 4월 소실 사고) ──
+  # QuantiWise base/update 수출 커버리지에 이음매 구멍이 생기면(실사고: base ~03-27 +
+  # update 04-30~ → 2026-03-30~04-29가 어느 파일에도 없음) 그 구간 실거래일이 캘린더에서
+  # 통째로 빠져 '비거래일'로 오판된다. 이 캘린더 구멍이 build_cache/incremental_ohlcvs
+  # 리빌드 시 rawdata 4월 한 달 삭제(~72k rows)를 침묵 통과시켰고, interior gap 감지 등
+  # 캘린더 기준 가드 전부의 사각지대가 됐다. benchmark.parquet은 chart-API 실세션
+  # 날짜(2026-06 위기주간 무결 검증)이므로 QW 범위 '내부'의 누락 거래일을 보충한다.
+  bm_interior <- as.Date(character(0))
+  if (length(qw_dates) > 0) {
+    bm_all <- .extract_bm_dates()
+    bm_interior <- bm_all[bm_all > min(qw_dates) & bm_all < qw_max & !bm_all %in% qw_dates]
+    if (verbose && length(bm_interior) > 0) {
+      cat(sprintf("  [Layer 2b][WARN] QW 수출 커버리지 내부 공백 %d일 → benchmark로 보충 (%s ~ %s) — QuantiWise 재수출로 근본 해소 권장\n",
+                  length(bm_interior), min(bm_interior), max(bm_interior)))
+    }
+  }
+
   # ─── Layer 4: 공휴일 manual 제외 ─────────────────────────────────────────
   closures <- .korean_market_closures_manual()
   qw_dates <- setdiff(qw_dates, closures)
   naver_supplement <- setdiff(naver_supplement, closures)
+  bm_interior <- setdiff(bm_interior, closures)
 
   # ─── 통합 + 우선순위 source 라벨링 ───────────────────────────────────────
   if (length(qw_dates) > 0) {
@@ -183,8 +201,13 @@ build_trading_calendar <- function(force = FALSE, verbose = TRUE) {
   } else {
     data.table(Date = as.Date(character(0)), source = character(0))
   }
+  cal_interior <- if (length(bm_interior) > 0) {
+    data.table(Date = as.Date(bm_interior), source = "benchmark_interior")
+  } else {
+    data.table(Date = as.Date(character(0)), source = character(0))
+  }
 
-  cal <- rbind(cal_qw, cal_naver)
+  cal <- rbind(cal_qw, cal_naver, cal_interior)
   setorder(cal, Date)
   cal <- unique(cal, by = "Date")  # QW가 우선 (rbind 순서)
 

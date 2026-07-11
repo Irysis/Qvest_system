@@ -41,7 +41,7 @@ $Only = @($Only | ForEach-Object { "$_" -split ',' } | Where-Object { $_ -ne '' 
 # targets (fast -> slow). cache = parquet used to compute incremental B5 (null = keep existing B5)
 $FILES = @(
   @{ name="Benchmark";        path=(Join-Path $UNIV "Benchmark_price.xlsx");         cache=(Join-Path $ROOT ".cache\benchmark.parquet") }
-  @{ name="OHLCVS";           path=(Join-Path $UPD  "OHLCVS_update.xlsx");           cache=$null }  # RAWDATA는 KRX로 항상 신선 -> 스킵 방지 위해 null(파일 기존 From 유지, B6만 06-30). 4MB라 빠름
+  @{ name="OHLCVS";           path=(Join-Path $UPD  "OHLCVS_update.xlsx");           cache=$null }  # cache=null(스킵 방지). B5는 Get-QwBaseNext(base xlsx max+1)로 설정 — 구 '기존 From 유지'가 base(~03-27)/update(04-30~) 이음매 구멍을 만들어 2026-04 rawdata 소실 사고 유발 (incident 20260711)
   @{ name="Universe_Support"; path=(Join-Path $UPD  "Universe_Support_update.xlsx"); cache=(Join-Path $ROOT ".cache\universe.parquet") }
   @{ name="Investor_Act";     path=(Join-Path $UPD  "Investor_Act_update.xlsx");     cache=(Join-Path $ROOT ".cache\investor_stock\investor_all.parquet") }
   @{ name="Consensus";        path=(Join-Path $UPD  "Consensus_update.xlsx");        cache=(Join-Path $ROOT ".cache\consensus\eps_1y.parquet") }
@@ -131,6 +131,17 @@ function Get-CacheNext($cache) {
   $code="import pyarrow.parquet as pq,pandas as pd" + [char]10 + "print((pd.to_datetime(pq.read_table(r'$cache',columns=['Date']).to_pandas()['Date']).max()+pd.Timedelta(days=1)).strftime('%Y%m%d'))"
   try { $r=(& $PY -c $code 2>$null); return "$r".Trim() } catch { return $null }
 }
+function Get-QwBaseNext {
+  # OHLCVS_update B5 = base OHLCVS.xlsx 마지막 거래일 + 1 (2026-07-11 incident fix).
+  # trading_calendar.parquet의 source=='quantiwise' max = base xlsx 날짜열 max (동치).
+  # 구 동작(B5 미설정 = 파일의 기존 From 유지)은 base와 update 사이 커버리지 구멍을
+  # 방치 — 2026-03-30~04-29가 양쪽 어디에도 없어 rawdata 한 달 소실로 이어짐.
+  # 실패 시 null 반환 = 구 동작 fallback (기존 From 유지).
+  $cal = Join-Path $ROOT ".cache\trading_calendar.parquet"
+  if (-not (Test-Path $cal)) { return $null }
+  $code="import pyarrow.parquet as pq,pandas as pd" + [char]10 + "t=pq.read_table(r'$cal').to_pandas()" + [char]10 + "print((pd.to_datetime(t.loc[t['source']=='quantiwise','Date']).max()+pd.Timedelta(days=1)).strftime('%Y%m%d'))"
+  try { $r=(& $PY -c $code 2>$null); $r="$r".Trim(); if ($r -match '^\d{8}$') { return $r } else { return $null } } catch { return $null }
+}
 
 # ---- session ----
 function QW-Alive {
@@ -167,6 +178,7 @@ function Ensure-Login {
 function Refresh-One($f,$target) {
   if (-not (Test-Path $f.path)) { Write-Host "[$($f.name)] missing, skip"; return "skip" }
   $b5 = Get-CacheNext $f.cache
+  if ($f.name -eq "OHLCVS" -and -not $b5) { $b5 = Get-QwBaseNext }   # 이음매 구멍 방지 (incident 20260711)
   if ($f.cache -and $b5 -and ([long]$b5 -gt [long]$target)) { Write-Host "[$($f.name)] cache already >= target (next $b5 > $target) -> done"; return "ok" }
   Write-Host ("[{0}] refresh start (B5={1} B6=CPD-1TD) {2}" -f $f.name, $(if($b5){$b5}else{'keep'}), (Get-Date -Format HH:mm:ss))
   if ($WhatIf) { return "skip" }

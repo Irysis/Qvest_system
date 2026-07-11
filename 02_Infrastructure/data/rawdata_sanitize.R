@@ -87,6 +87,21 @@ sanitize_rawdata <- function(dry_run = FALSE) {
   non_td <- all_dates[!all_dates %in% cal$Date]
   cat(sprintf("  비거래일 수: %d\n", length(non_td)))
 
+  # [guard 2026-07-11] 캘린더 결손 방어 — benchmark.parquet(chart-API 실세션)에 존재하는
+  # 날짜를 '비거래일'로 지우려 하면 캘린더 구멍 의심 → 즉시 중단. 실사고: QuantiWise
+  # 수출 이음매 구멍(base ~03-27 / update 04-30~)이 캘린더에 전사돼 2026-03-30~04-29
+  # 실데이터 ~72k rows가 '비거래일'로 오판·삭제됨 (rawdata_april_gap_incident_20260711).
+  if (length(non_td) > 0) {
+    bm_sessions <- as.Date(bm$Date)
+    cal_hole <- non_td[non_td %in% bm_sessions]
+    if (length(cal_hole) > 0) {
+      cat(sprintf("  ⛔ 중단: 제거 대상 %d일이 benchmark 실세션 날짜와 충돌 (%s ~ %s)\n",
+                  length(cal_hole), min(cal_hole), max(cal_hole)))
+      cat("     → trading calendar 결손 의심. build_trading_calendar(force=TRUE)로 재빌드 후 재시도.\n")
+      return(invisible(NULL))
+    }
+  }
+
   if (length(non_td) > 0) {
     non_td_rows <- raw[Date %in% non_td, .N]
     cat(sprintf("  제거 대상: %s rows (%.1f%%)\n",

@@ -121,6 +121,27 @@ incremental_ohlcvs <- function() {
   all_long <- all_long[Date %in% cal$Date]
   cat(sprintf("  거래일 필터: %d → %d rows\n", before_n, nrow(all_long)))
 
+  # [guard 2026-07-11] 수출 이음매 검증 — update 최소일이 base 직후 거래일보다 뒤면
+  # base/update 커버리지 사이에 구멍(실사고: base ~03-27 + update 04-30~ → 03-30~04-29
+  # 소실, rawdata_april_gap_incident_20260711). rawdata가 그 구간을 보유하면 WARN만
+  # (본 함수는 update 날짜만 교체하므로 데이터 안전), 미보유면 강한 경고.
+  if (nrow(all_long) > 0) {
+    upd_min <- min(all_long$Date)
+    seam_days <- as.Date(cal[Date > base_max & Date < upd_min]$Date)
+    if (length(seam_days) > 0) {
+      seam_missing <- seam_days[!seam_days %in% unique(raw$Date)]
+      cat(sprintf("  ⚠️ [이음매] base(~%s)와 update(%s~) 사이 거래일 %d일 — QuantiWise 수출 커버리지 구멍.\n",
+                  base_max, upd_min, length(seam_days)))
+      if (length(seam_missing) > 0) {
+        cat(sprintf("  ⛔ [이음매] 그중 %d일은 rawdata에도 부재 (%s ~ %s) — KRX 백필 또는 QuantiWise 재수출(B5=%s) 필요!\n",
+                    length(seam_missing), min(seam_missing), max(seam_missing),
+                    format(base_max + 1, "%Y%m%d")))
+      } else {
+        cat("     rawdata는 해당 구간 보유 (KRX/Naver 수집분) — 데이터 안전. 근본 해소는 QuantiWise 재수출.\n")
+      }
+    }
+  }
+
   # 유효 행만 (Close > 0)
   all_long <- all_long[!is.na(Close) & Close > 0]
 
