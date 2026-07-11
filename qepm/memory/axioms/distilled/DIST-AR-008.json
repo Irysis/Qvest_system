@@ -3,9 +3,9 @@
   "dist_id": "DIST-AR-008",
   "cluster_key": "f4b786ae49c1",
   "candidate_id": "CAND_20260710_alpha_research_quality_profitability_negative_L-AR-20260710_112721",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
+  "status": "proposed",
+  "statement_refined": "cap-w 기각 표준팩터의 dual-basis 재진단에서 EW-유니버스 생존은 factor-specific이다 — 8종 중 V02_EP 1종만 생존(cap-w 2.52 기각 유지 / EW 4.40·OTHER-tier 98.6 국소·벤치-아티팩트 스윙 실재), 퀄리티(Q01/Q08)는 양 basis 음수(true-dead), 모멘텀은 약양 비유의. EW-생존 = 재라우팅 라벨이지 자본 자격 아님(EP도 EW post2017 1.73·ew_oos 0.52로 비졸업). rank-IC 오도 실증(R12 rank-IC 최고인데 실현 양 basis 음) 포함. (L-AR-20260710_112721)",
+  "retry_condition": "V02_EP의 소비는 배분/벤치-상대 프레임에서만 — RAMP EW-weight sleeve(R3-B 진행) 또는 FQ-009/D3 벤치-상대 배포성 결정 후. standalone cap-w 재제출은 diag 신규 근거 없인 금지.",
   "refined_at": null,
   "refined_by": null,
   "promoted_to_axiom": null,
@@ -54,9 +54,37 @@
     "causal_plausibility": null
   },
   "oos_validation_draft": {
-    "oos_months": 258.0,
+    "oos_months": 258,
     "oos_effect_vs_is": 0.52,
     "note": "L-code oos_retention 실값 1건 median (IS65/OOS35 활성SR retention) + oos_months 실값 1건 median — promote.R essence_score 경유 재확정"
   },
-  "cluster_members_count": 1
+  "cluster_members_count": 1,
+  "adversarial_verdict": "5체크: (a)과장 없음 — '생존=자본 아님' 명시 (b)단일 supporting이나 8종 전수 실측 기반 (c)AX-000 정합 — 재라우팅 경로 열림 (d)방화벽 통과 — basis 진단이지 제약-귀속 아님 (e)frontier 실재. 유의: OTHER-tier 98.6 집중 = capacity flag 병기.",
+  "expiry": "2026-10-11",
+  "frontier": [
+    "RAMP EW-weight sleeve 성분(R3-B 진행 중)",
+    "벤치-상대 배포성 구성(FQ-009/D3 도훈 결정 종속)",
+    "OTHER-tier 유동성/capacity 검증(소비 전 필수)"
+  ],
+  "live_trigger": [
+    {
+      "type": "decision",
+      "condition": "FQ-009(mid-cap 활용 프레임) 도훈 결정 시 소비 경로 확정",
+      "monitored_source": "06_Registry/alpha_frontier_queue.json FQ-009 status"
+    }
+  ],
+  "revival_spec": [
+    {
+      "signal_id": "wall_clock_date",
+      "condition": "x >= as.Date('2026-10-11')",
+      "from_trigger": "expiry",
+      "status": "active"
+    }
+  ],
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-07-11"
+  },
+  "drafted_at": "2026-07-11T15:07:02+0900",
+  "drafted_by": "Q-Lead /cleaner W28"
 }
