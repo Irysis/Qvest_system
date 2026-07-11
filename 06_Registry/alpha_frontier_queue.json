@@ -207,15 +207,36 @@
       "wall_check": "선별은 신호 내용을 창출하지 않음(WT-003 '재료가 같으면 조합 무용' 정합) — 사전등록 kill: 전 config paired NW-t < 2.0 시 계열 소진 L-code + DIST 후보",
       "data_gate": "없음 (R4 하네스·팩터 패널 재사용)",
       "owner": "Q-Lead (R5 ramp-orchestrator spawned 2026-07-11)",
-      "status": "in_progress_branch_b",
-      "next_action": "R5 Branch B 실행 중 (StabSel<=3 + mRMR<=3 config, 계열 폐쇄 판정). 완료 시 L-code + DIST 후보 + 텔레그램 판정",
+      "status": "closed_family_exhausted",
+      "next_action": "완료(2026-07-11). 선별-규율 계열 config-scoped 소진 확정 — 후속 착수 없음. 부활신호(선별 기준 realized-PORT_t 정렬) 발화 시에만 재도전(INV-7).",
+      "result": "Branch B 폐쇄 TRUE. R5 6 config(StabSel 3 glmnet LASSO + mRMR 3 corr) 전부 base 대비 paired NW-t < 2.0 (R5 max +0.18, R4 max -2.02) → 3규율(Boruta shadow-null + Stability + Redundancy) x 10 config 전멸. 0/6 graduation. 결정적 기전: 세 규율이 상반된 부분집합 선택(defensive/growth/momentum, 방법쌍 Jaccard 0.18~0.39)했음에도 셋 다 all-11 breadth 못 이김 → 벽=신호내용/breadth, 선별-규율 축 아님. pin OK(fresh base==R4 Δ0). L-RAMP-20260711_184155.",
+      "revival_signal": "선별 기준을 relevance(IC/importance)→realized-PORT_t-정렬로 교체 (3규율 모두 이 축 미검증 = frontier crack). DIST-RAMP 후보(주간 Cleaner 회부).",
       "source_refs": [
         "spec: 04_Research/factor_selection_program/r5_selection_comparison_spec.md",
-        "trigger: RAMP R4 Boruta (task a0d16bfae575aea9a, in_progress)",
+        "trigger: RAMP R4 Boruta (task a0d16bfae575aea9a)",
         "authorization: 도훈 2026-07-11 무지시 자동착수 승인",
-        "r4_result: outputs/ramp/r4_boruta_gates.parquet + L-RAMP-20260711_181539 + challenge_note_r4_boruta_20260711.md"
+        "r4_result: outputs/ramp/r4_boruta_gates.parquet + L-RAMP-20260711_181539 + challenge_note_r4_boruta_20260711.md",
+        "r5_result: outputs/ramp/r5_selection_{gates,paired,summary,prereg}_20260711 + L-RAMP-20260711_184155 + challenge_note_r5_selection_20260711.md",
+        "runner: 02_Infrastructure/ramp/run_ramp_r5_selection.R (config_hash 30b6165dcccfab51)"
       ],
       "branch_decision": "Branch B — R4 arm S: 선별 실효 실재(confirmed 4.4~5.0/11) AND 방향 유의 음(paired NW-t 4/4 음, -2.02~-2.51, kill 발동). L-RAMP-20260711_181539"
+    },
+    {
+      "id": "FQ-014",
+      "lane": "selection_discipline",
+      "title": "R6 Boruta arm P — trailing PORT_t 상위 기질 (도훈 직접 지시 07-11)",
+      "hypothesis": "선별 기질을 11 직교군(rank-relevance 지향) 대신 trailing 배포권 실측 성과(PORT_t-정렬) 상위 팩터 풀로 교체하면 Boruta 선별이 base 대비 개선되는가 — R4 부활신호(PORT_t-정렬 라벨) 발화",
+      "ev_rationale": "R4 실측 기전(Boruta 목적함수 rank-relevance ≠ authoritative PORT_t)의 직접 치료 시도. 정직 prior: factor-of-factors momentum 타이밍 NULL(06-30)·trailing 성과 선별=팩터 모멘텀 계열이라 기대값 보수적. 도훈 직접 지시로 착수(novelty triage: Boruta×trailing-PORT_t-pool 조합 = hypothesis_index 미등재 신규)",
+      "wall_check": "PIT: 전기간 PORT_t 선별 금지 — trailing-only NW-t 순위(C1/C3 방어). IC→PORT_t 전이 벽·팩터 모멘텀 null이 기존 벽",
+      "data_gate": "팩터별 배포권 active 수익 패널(102 승인팩터 × 월) — 기존 산출 재사용 탐색 후 없으면 1회 구축·캐시",
+      "owner": "Q-Lead (R6 ramp-orchestrator)",
+      "status": "in_progress",
+      "next_action": "R6 측정 → 판정 → L-code → FQ-014 갱신 → 텔레그램 차트 보고",
+      "source_refs": [
+        "trigger: 도훈 2026-07-11 'PORT_t 상위 팩터들로 보루타 다시 돌려봐'",
+        "revival: L-RAMP-20260711_181539 challenge_note 부활신호(PORT_t-정렬 선별)",
+        "prior: project-factor-of-factors-scoping (momentum 타이밍 NULL)"
+      ]
     }
   ]
 }
