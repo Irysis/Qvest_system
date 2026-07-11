@@ -1,0 +1,201 @@
+{
+  "spec": "SPEC-1 유휴현금 캐리 + m4 무과금 정정 세트 (계약-grade)",
+  "generated_at": "2026-07-11T16:42:42+09:00",
+  "pin_tag": "spec1_carry_20260711_163733",
+  "pin_files": [
+    {
+      "basename": "period_returns_layer5_faith.csv",
+      "md5": "81d917ef9538c8b92360322ccaca7bbd"
+    },
+    {
+      "basename": "benchmark_pinned_20260702.parquet",
+      "md5": "b5ea5200dca313bad0cc753abdfe5edd"
+    },
+    {
+      "basename": "ecos_bond_rates.parquet",
+      "md5": "613ff48610495c9145dccd8a2de16c9a"
+    },
+    {
+      "basename": "bt_result_C_noL4_CLEAN_ann12.rds",
+      "md5": "d5c1daa076df9e8e2c027cdae2ad0310"
+    }
+  ],
+  "book": "STR_1715_on_M4_R05_noLayer4_PG2",
+  "n_periods": 269,
+  "period": ["2004-02-02", "2026-06-01"],
+  "conventions": {
+    "SR_arith": "Charter v1.4 §12 mean/sd*sqrt(12), rf=0 (캐리는 ret_net 내 수익 — SR 공제 아님)",
+    "SR_geo": "PerformanceAnalytics table.AnnualizedReturns (judge headline)",
+    "IR": "net_active_recon_v1 — contract build_benchmark_compare Information_Ratio (ann=12, vs pinned IKS200)",
+    "PORT_t": "contract Portfolio_Alpha_t_NW_lag3 (NW lag-3, net active)",
+    "cost": "15bps one-way delta-based; V0/V1=|Δβ_R05|(현행), V2/V3=|Δ(β_R05×m4)|(정정)",
+    "carry": "cashfrac × CD91(last-known ≤ anchor_date)/12; 2005-08 이전 Call1D 대체",
+    "metric_type": "backtested(contract) — build_bt_result + audit_bt_result 경유"
+  },
+  "variants": {
+    "V0_judge_vintage_0702": {
+      "SR_arith": 1.70416935,
+      "SR_geo": 1.8977,
+      "CAGR": 0.45216109,
+      "MDD": 0.2329117,
+      "Calmar": 1.9413412,
+      "AnnVol": 0.23851311,
+      "PORT_t": 6.21433443,
+      "IR_net_active_recon_v1": 1.41602608,
+      "TE": 0.18984073,
+      "Beta": 0.70563447,
+      "audit_integrity": "WARNING",
+      "audit_pass": 13,
+      "audit_fail": 0,
+      "audit_warn": 3,
+      "audit_critical_fail": 0
+    },
+    "V0_base": {
+      "SR_arith": 1.70211728,
+      "SR_geo": 1.8947,
+      "CAGR": 0.45129993,
+      "MDD": 0.2329117,
+      "Calmar": 1.93764386,
+      "AnnVol": 0.2384294,
+      "PORT_t": 6.1655881,
+      "IR_net_active_recon_v1": 1.40552575,
+      "TE": 0.19080939,
+      "Beta": 0.70160403,
+      "audit_integrity": "WARNING",
+      "audit_pass": 13,
+      "audit_fail": 0,
+      "audit_warn": 3,
+      "audit_critical_fail": 0
+    },
+    "V1_carry_only": {
+      "SR_arith": 1.71453048,
+      "SR_geo": 1.912,
+      "CAGR": 0.45493557,
+      "MDD": 0.23076873,
+      "Calmar": 1.97139177,
+      "AnnVol": 0.23817056,
+      "PORT_t": 6.23538336,
+      "IR_net_active_recon_v1": 1.41940371,
+      "TE": 0.19071627,
+      "Beta": 0.70073767,
+      "audit_integrity": "WARNING",
+      "audit_pass": 13,
+      "audit_fail": 0,
+      "audit_warn": 3,
+      "audit_critical_fail": 0
+    },
+    "V2_m4cost_only": {
+      "SR_arith": 1.70153777,
+      "SR_geo": 1.8939,
+      "CAGR": 0.45113505,
+      "MDD": 0.2329117,
+      "Calmar": 1.93693592,
+      "AnnVol": 0.23844375,
+      "PORT_t": 6.16274187,
+      "IR_net_active_recon_v1": 1.40518852,
+      "TE": 0.19077422,
+      "Beta": 0.70180386,
+      "audit_integrity": "WARNING",
+      "audit_pass": 13,
+      "audit_fail": 0,
+      "audit_warn": 3,
+      "audit_critical_fail": 0
+    },
+    "V3_set": {
+      "SR_arith": 1.71395018,
+      "SR_geo": 1.9112,
+      "CAGR": 0.45477034,
+      "MDD": 0.23076873,
+      "Calmar": 1.97067578,
+      "AnnVol": 0.23818482,
+      "PORT_t": 6.23253904,
+      "IR_net_active_recon_v1": 1.41906989,
+      "TE": 0.19068097,
+      "Beta": 0.70093749,
+      "audit_integrity": "WARNING",
+      "audit_pass": 13,
+      "audit_fail": 0,
+      "audit_warn": 3,
+      "audit_critical_fail": 0
+    }
+  },
+  "vintage_note": {
+    "comment": "현행 패널 CSV(pin)는 07-02 judge vintage 이후 원천 갱신 — 실질 수정 realized_ym 2026-06 1개월(+미세 노이즈 3건 <3e-6). judge 정합 재현은 07-02 보존 시계열(bt_result_C_noL4_CLEAN_ann12.rds)로 검증, 운용 수치·델타는 현행 vintage(vintage-내부 비교라 오염 없음).",
+    "n_revised_months": 4,
+    "revised_detail_csv": "spec1_vintage_diff.csv",
+    "ir_vintage_effect": -0.01050033
+  },
+  "deltas": {
+    "carry_only_vs_base": {
+      "dSR_arith": 0.01241321,
+      "dSR_geo": 0.0173,
+      "dCAGR": 0.00363563,
+      "dMDD": -0.00214298
+    },
+    "m4cost_only_vs_base": {
+      "dSR_arith": -0.0005795,
+      "dSR_geo": -0.0008,
+      "dCAGR": -0.00016489,
+      "dMDD": 0
+    },
+    "set_vs_base": {
+      "dSR_arith": 0.0118329,
+      "dSR_geo": 0.0165,
+      "dCAGR": 0.0034704,
+      "dMDD": -0.00214298,
+      "dIR": 0.01354414,
+      "dPORT_t": 0.06695094
+    }
+  },
+  "m4_correction_first_measurement": {
+    "sum_abs_dR05": 20.9,
+    "sum_abs_dInv": 22.6000469,
+    "charged_turnover_ann_current": 0.93234201,
+    "charged_turnover_ann_corrected": 1.00818053,
+    "extra_cost_ann_bps": 1.13757785,
+    "dSR_arith": -0.0005795,
+    "dCAGR_pp": -0.01648891
+  },
+  "carry_measurement": {
+    "carry_contribution_ann_pct": 0.25158715,
+    "mean_cashfrac": 0.08415875,
+    "mean_rf_pct": 2.80208178,
+    "n_call1d_fallback_months": 18
+  },
+  "checks": {
+    "v0_judge_parity": true,
+    "carry_repro_pm10pct": {
+      "target": 0.0124,
+      "got": 0.01241321,
+      "pass": true
+    },
+    "set_mdd_under_25": {
+      "mdd": 0.23076873,
+      "pass": true
+    },
+    "set_port_t_hard_2_95": {
+      "port_t": 6.23253904,
+      "pass": true
+    },
+    "audit_no_critical_fail": true
+  },
+  "g3": {
+    "incumbent_book_ir": 1.416,
+    "ir_convention": "net_active_recon_v1",
+    "incumbent_reproduced_on_0702_vintage": 1.41602608,
+    "vintage_effect": -0.01050033,
+    "convention_effect_set": 0.01354414,
+    "set_ir_current_vintage": 1.41906989,
+    "delta_ir_vs_recorded": 0.00306989
+  },
+  "g2_inputs": {
+    "live_as_of": "2026-07-01",
+    "live_regime": "CRISIS",
+    "live_cash": 0.7522,
+    "cd91_latest_pct": 3.02,
+    "cd91_latest_date": "2026-07-10",
+    "monthly_carry_pct_live": 0.18930367
+  },
+  "governance_note": "book_state 변경 없음 — G3는 도훈 confirm 사안. 본 산출은 결정 재료.",
+  "outputs": ["spec1_set_metrics.json", "spec1_panel_variants.csv", "spec1_bt_v0_base.rds", "spec1_bt_v3_set.rds", "g2_carry_table.md", "g3_baseline_note.md"]
+}

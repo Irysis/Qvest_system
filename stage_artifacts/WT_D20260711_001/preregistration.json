@@ -1,0 +1,87 @@
+{
+  "task_id": "WT-D20260711_001",
+  "title": "H-d disclosure TEXT CONTENT (MD&A tone) LLM pilot",
+  "prereg_version": "1.0",
+  "frozen_utc": "2026-07-11",
+  "novelty_axis": "material (raw disclosure TEXT), distinct from WT-D20260710_005 which killed disclosure METADATA (frequency/type = size-proxy confound)",
+  "pilot_status": "power-insufficient by design; NO graduation gate claim permitted (canonical PORT_t not entered). Output = 3-value verdict + scale-up design only.",
+
+  "rubric": {
+    "scale": "integer 1-5 per axis, plus one-line rationale per axis per document",
+    "scorer": "the alpha-research agent itself, in-context; NO external LLM API; excerpt <= 3000 chars per document",
+    "axes": {
+      "tone": {
+        "definition": "Management narrative optimism vs defensiveness. 1 = strongly defensive/negative (emphasis on crisis, losses, deterioration, apologetic framing). 3 = neutral/balanced. 5 = strongly optimistic/confident (emphasis on growth, record results, opportunity, leadership).",
+        "hypothesized_sign_vs_fwd12m_excess_return": "POSITIVE",
+        "mechanism": "Loughran-McDonald 2011: net-positive MD&A tone signals credible managerial confidence -> higher subsequent returns. Sign pre-committed."
+      },
+      "uncertainty": {
+        "definition": "Density of uncertainty/hedging language BEYOND the boilerplate forward-looking disclaimer. 1 = highly definitive/committed statements, few hedges. 3 = moderate. 5 = pervasive uncertainty (risk, volatility, 'may', 'could', unpredictable, contingent) in the substantive narrative.",
+        "hypothesized_sign_vs_fwd12m_excess_return": "NEGATIVE",
+        "mechanism": "Loughran-McDonald uncertainty lexicon predicts negative drift / higher risk; managers hedge when outlook is weak. Sign pre-committed."
+      },
+      "complexity": {
+        "definition": "Linguistic complexity / obfuscation of the substantive narrative. 1 = clear, concise, plain. 3 = moderate. 5 = highly complex/obfuscated (long convoluted sentences, jargon overload, vague circumlocution).",
+        "hypothesized_sign_vs_fwd12m_excess_return": "NEGATIVE",
+        "mechanism": "Li 2008 (readability): managers obscure bad news with complex prose -> lower subsequent performance. Sign pre-committed."
+      }
+    },
+    "composite": {
+      "formula": "composite = (tone) + (6 - uncertainty) + (6 - complexity)   [all axes sign-aligned so HIGHER composite = predicted-BETTER outlook; range 3..15]",
+      "hypothesized_sign_vs_fwd12m_excess_return": "POSITIVE"
+    }
+  },
+
+  "excerpt_extraction_rule": {
+    "source": "DART document.xml of the ANNUAL business report (사업보고서) only",
+    "annual_filter": "report_nm contains '사업보고서' AND NOT any of {기재정정, 첨부정정, 첨부추가, 정정}",
+    "section_anchor": "last occurrence of literal '경영진단 및 분석의견' in tag-stripped plain text (last occ = body, not table-of-contents)",
+    "boilerplate_skip": "within 2500 chars after anchor, locate '개요'; if found start = that position (skips the identical '예측정보에 대한 주의사항' disclaimer); else start = anchor + 400",
+    "excerpt_length_chars": 2800,
+    "rationale": "the '예측정보 주의사항' block is near-identical across all firms; scoring the firm-specific '개요/경영성과' narrative isolates real content."
+  },
+
+  "sampling_protocol": {
+    "universe": "KOSPI200 UNION KOSDAQ150 (rawdata K200==1 OR KQ150==1)",
+    "eligibility_at": "month-end on-or-before the forward-return start date (= first month-end strictly after rcept_dt). Ticker must be K200|KQ150 member at that snapshot AND have 20d-avg trading value proxy (Vol*Close) available.",
+    "candidate_pool": "for every eligible (Ticker, fiscal_year) with a clean 사업보고서 filing whose rcept_dt falls in filing-year window, form one candidate document. fiscal_year in 2014..2022 (filed spring 2015..2023).",
+    "strata": {
+      "cap_tier": "within-universe Size tercile at eligibility snapshot: LARGE (top third), MID (middle), SMALL (bottom third)",
+      "year_bin": ["FILE_2015_2017", "FILE_2018_2020", "FILE_2021_2023"]
+    },
+    "target_n": 45,
+    "cell_target": "3 cap_tier x 3 year_bin = 9 cells x 5 docs = 45 (if a cell is short, deficit reallocated to same cap_tier other year_bins, then globally, deterministically by seed order)",
+    "one_doc_per_ticker": true,
+    "selection_algorithm": "deterministic: set.seed(20260711); within each cell, sample without replacement from that cell's candidate (Ticker,year) list ordered by Ticker then year; fill cell_target; reallocate deficits in fixed cell order [LARGE:bins, MID:bins, SMALL:bins].",
+    "seed": 20260711
+  },
+
+  "pit_and_returns": {
+    "basis_date": "rcept_dt (disclosure receipt date)",
+    "fwd_return_start": "first month-end strictly AFTER rcept_dt",
+    "fwd_horizon_months": 12,
+    "return_construction": "compound monthly Ret over the 12 months (Return.cumulative-style prod is used ONLY for a single-asset holding-period total return, permitted; no portfolio synthesis). fwd12m_total = prod(1+Ret)-1 over the 12 months; fwd12m_bench = prod(1+BM_Ret)-1 same window; fwd12m_excess = fwd12m_total - fwd12m_bench.",
+    "primary_target": "fwd12m_excess (removes cross-year market-level effect since docs span 2015-2023)",
+    "secondary_target": "fwd12m_total (raw)"
+  },
+
+  "measurement": {
+    "statistic": "Spearman rank correlation between each score axis (and composite) and fwd12m_excess (primary) / fwd12m_total (secondary)",
+    "bootstrap": "resample the N scored documents with replacement, 2000 reps, 90% percentile CI on Spearman rho",
+    "size_confound_control": "partial Spearman controlling for log(Size at eligibility snapshot); also report Spearman(score, log Size) to expose any size proxy. WT-005 lesson: metadata was a size proxy; verify TEXT content is not.",
+    "n_trials_family": "pre-registered family = {tone, uncertainty, complexity, composite} x {excess, total} = 8 correlations; primary decision uses the 4 vs-excess correlations. n_trials logged. Small-sample pilot: NO multiple-testing graduation gate applied (verdict is directional triage, not capital)."
+  },
+
+  "verdict_rule_preregistered": {
+    "PROMISING_SCALE_UP": "for at least one of {tone, uncertainty, complexity, composite}: bootstrap 90% CI of Spearman(axis, fwd12m_excess) EXCLUDES 0 AND point-estimate sign MATCHES hypothesized_sign AND survives Size control (partial-corr keeps same sign and does not collapse toward 0 by >50%). Must ship scale-up design incl. sample size, expected cost, expected power.",
+    "WEAK": "no axis meets PROMISING; but >=2 of 4 axes have point-estimate sign matching hypothesis with |rho|>0.10 and are NOT explained by Size confound (i.e. a directional whisper without CI significance).",
+    "DEAD_PRELIM": "neither PROMISING nor WEAK: CIs include 0 AND (signs mostly wrong OR Size confound accounts for any apparent signal)."
+  },
+
+  "discipline": {
+    "blind_scoring": "returns are NOT loaded or computed until AFTER all scores are frozen to disk. Scoring reads excerpts-only file.",
+    "no_proxy_handcalc": "no top-quintile EW / turnover*bps inline; this is a signal-content pilot not a portfolio backtest; single-asset holding-period returns only.",
+    "hash_freeze": "SHA256 of this file computed and recorded before selection/scoring; post-hoc edits = contamination.",
+    "telegram": "PROHIBITED for this WT."
+  }
+}

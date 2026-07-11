@@ -23,10 +23,19 @@
 #==============================================================================
 
 # ─── Bootstrap ───────────────────────────────────────────────────────────────
-.gvs_root <- tryCatch(dirname(sys.frame(1)$ofile), error = function(e) {
-  file.path(Sys.getenv("CLAUDE_PROJECT_DIR",
-                       Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")),
-            "02_Infrastructure/portfolio")
+# .gvs_root 해석 (M10 수리 2026-07-11): sys.frame(1)$ofile은 중첩 source 시(pg0_gap_review
+# A7b가 본 파일을 source하는 경로 포함) 최외곽 호출 스크립트의 디렉토리로 풀린다 —
+# 실측에서 .gvs_proj가 Temp 쪽으로 오해석되어 steered 산출물이 엉뚱한 .cache에 쓰이고
+# 정본 cache는 빌더 콜드스타트로 잔존. 후보 경로가 본 파일을 실제 포함하는지 검증 후
+# 채택, 아니면 env 기반 canonical로 폴백.
+.gvs_root <- local({
+  cand <- tryCatch(dirname(sys.frame(1)$ofile), error = function(e) NULL)
+  fallback <- file.path(Sys.getenv("CLAUDE_PROJECT_DIR",
+                                   Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")),
+                        "02_Infrastructure/portfolio")
+  ok <- is.character(cand) && length(cand) == 1L && nzchar(cand) &&
+    file.exists(file.path(cand, "gap_vector_steering.R"))
+  if (ok) cand else fallback
 })
 .gvs_proj <- normalizePath(file.path(.gvs_root, "..", ".."), winslash = "/", mustWork = FALSE)
 
@@ -37,11 +46,20 @@ suppressPackageStartupMessages({
 if (!exists("%||%")) `%||%` <- function(a, b) if (!is.null(a)) a else b
 
 # ─── Constants ───────────────────────────────────────────────────────────────
-.GVS_VERSION       <- "1.0.0"
+.GVS_VERSION       <- "1.1.0"   # M10 2026-07-11: 실book 연결(book_context/championship) + v8.3 enum 현행화
 .GVS_GAP_PATH      <- file.path(.gvs_proj, ".cache", "portfolio_gap_vector.json")
 .GVS_BOOK_STATE    <- file.path(.gvs_proj, "qepm", "mailbox", "governor", "book_state.json")
 .GVS_MAX_AGE_DAYS  <- 30L
 .GVS_DEFAULT_TARGET <- list(cagr = 0.16, sharpe = 2.5, mdd = 0.25)  # 헌법 제2목표 (SR 2.5, 2026-05-29 도훈 mandate)
+
+# pinned 챔피언십 기준선 (FQ-011, pin_tag=fq011_20260710_222924) — book PORT_t의
+# vintage-pinned 실측 SOT (measurement-graduation §7 vintage pinning 정합).
+# 수치 창작 금지: 파일을 런타임에 읽어 소비만 한다 (부재 시 WARN + 필드 생략).
+.GVS_CHAMPIONSHIP_SRC <- file.path(
+  .gvs_proj, "stage_artifacts", "fq011_port_t_championship", "fq011_summary.json")
+
+# 상설 프론티어 큐 SOT (v8.3 M5): 발굴 착수 전 확인 의무 대상 — 계기판에 포인터 노출.
+.GVS_FRONTIER_QUEUE_REL <- "06_Registry/alpha_frontier_queue.json"
 
 # book_id → 실측 계약 재계산 meta (metric_type=backtested(contract)) 매핑.
 # 수치 창작 금지 원칙: 여기 등재된 실측 산출물만 current_profile 갱신에 소비.
@@ -52,40 +70,52 @@ if (!exists("%||%")) `%||%` <- function(a, b) if (!is.null(a)) a else b
     "output", "step3_clean_recompute_meta.json")
 )
 
-# ─── Steering enum (도훈 confirm 2026-07-03) ─────────────────────────────────
+# ─── Steering enum (v8.3 현행화 2026-07-11 M10 — 원판 도훈 confirm 2026-07-03) ──
 # 실증 기록 기반 탐색 방향. open 방향이 1차 조향 입력, closed는 posterior 라벨과
 # 함께 최후순위 강등 (조향 입력에서 제외되나 기록은 보존 — INV-7 failure-ledger 정합).
+# 서열 근거 = CLAUDE.md 제2목표 도달 경로 (2026-07-10 v8.3 재편, 실측 순위 재조정):
+#   ① 비-return 신규 원천(주력) ② screen-tier 회수 + EW/cap-tier 재분류 ③ overlay 잔여.
+# 구판(07-03: overlay=1순위 '주 레버'·dpl_feature=open)은 07-05/06 실측(overlay 양방향
+# negative·clean 잔여폭 좁음)과 v8.3 DPL_FEATURE 발급 중단(measurement-graduation §5)에
+# 의해 폐기 — 본 파일이 alpha Step 0 조준 계기판 생성기이므로 헌법 현행과 단일화.
 GV_STEERING_DIRECTIONS <- list(
-  overlay_refinement = list(
-    status   = "open",
-    priority = 1L,
-    label    = "오버레이 정교화 (β/regime timing) — 주 레버",
-    evidence = "measurement-graduation §6: SR 2.5 레버 ① overlay = 주역·유일한 long-only β 레버 (KR long-only sleeve β≈0.99 실측)"
-  ),
-  residual_orthogonal_sleeve = list(
-    status    = "open",
-    priority  = 2L,
-    label     = "잔차-직교 sleeve 스태킹",
-    condition = "PORT_t(NW lag-3) ≥ 2.95 통과분만 book 실질 기여 — 직교 ≠ 수익",
-    evidence  = "measurement-graduation §6: active(−BM) 잔차 공간엔 직교 구조 존재 (RAMP Gate4 PC2~10), 단 '직교 ∧ PORT_t 통과' 동시 충족분만 실질"
-  ),
   non_return_datasource = list(
     status   = "open",
+    priority = 1L,
+    label    = "비-return 신규 원천 (DART exec-insider 역사·계약금액 magnitude·공매도/대차 등) — 주력",
+    evidence = "CLAUDE.md 제2목표 경로 ① (v8.3 2026-07-10 실측 갱신) + 06_Registry/alpha_frontier_queue.json FQ-001~005. return-파생 횡단 alpha 소진 실측(memory project-corr-recovery-lane-nondart-exhaustion-20260706)"
+  ),
+  screen_tier_recovery = list(
+    status   = "open",
+    priority = 2L,
+    label    = "screen-tier 재고 회수 + EW-대비/cap-tier 재분류 (overlay 큐 드레인·벤치-아티팩트 기각 후보 재라우팅)",
+    evidence = "CLAUDE.md 제2목표 경로 ② (FQ-006~008) + v8.3 dual-basis 진단: post-2017 감쇠의 상당부분 = mega-cap 벤치 아티팩트 실측 (memory project-megacap-anchor-construction-discovery — EW-유니버스 대비 post2017_t 0.41→2.04 생존)"
+  ),
+  overlay_refinement = list(
+    status   = "open",
     priority = 3L,
-    label    = "비-return 신규 정보원 (DART insider 등)",
-    evidence = "memory project-paper-pool-qepm-exhaustion (2026-06-29): return-계열 논문풀 ~95% 소진, 미탐색 = 비-return (DART 인사이더 백필, registry 0건 신규 정보원)"
+    label    = "overlay 잔여 정교화 (실증 유일 long-only β 레버이나 clean 잔여폭 좁음)",
+    evidence = "CLAUDE.md 제2목표 경로 ③: 07-05/06 clean 재연구 양방향 negative 실측 (defensive 5변형 strict 全 base 열위 + bull-conviction dSR +0.005 — memory project-riskoverlay-multilayer-bearprob / project-pg2-overlay-gate-composition-settled)"
+  ),
+  residual_orthogonal_sleeve = list(
+    status    = "conditional_frontier",
+    priority  = 4L,
+    label     = "잔차-직교 sleeve 스태킹 (RAMP R1 config-scoped 미달 — frontier 조건부)",
+    condition = "PORT_t(NW lag-3) ≥ 2.95 통과분만 book 실질 기여 — 직교 ≠ 수익. 부활 프레임: soft-membership ML 앙상블·cost-optimized top-N·비-return 원천 결합",
+    evidence  = "RAMP R1 실측 2026-07-05 (L-RAMP-20260705_184828): 11 직교 sleeve 개별·선택스택·soft-overlay 전부 cap-w PORT_t<2.95(best 2.54)·survivors 0. 단 구조판결 아님(β≈0.92·active-corr 0.53, INV-7) — measurement-graduation §6 ②"
   ),
   dpl_feature = list(
-    status   = "open_as_composition_layer",
-    priority = 4L,
-    label    = "DPL 구성레이어 입력 피처 (standalone 아님)",
-    evidence = "measurement-graduation §5: 실패 standalone 알파 = 폐기 아닌 DPL 입력 피처. 단 DPL standalone vs PG2는 settled-negative (memory project-dpl-vs-pg2-settled, 2026-06-26) — feature 공급 용도 한정"
+    status    = "closed",
+    priority  = 98L,
+    label     = "DPL 구성레이어/피처 lane (발급 중단)",
+    posterior = "DPL 구현 lane settled-negative (2026-06-26, SR 0.75~0.89 ≪ PG2 1.52 — memory project-dpl-vs-pg2-settled) + screen_route DPL_FEATURE 발급 중단 (v8.3 2026-07-10, measurement-graduation §5 — TURNOVER_REVIEW 대체). 부활신호 발화 시에만 재검토 (INV-7)",
+    evidence  = "measurement-graduation §5 (2026-07-10 정합): 피처 보존 원칙은 유지하되 DPL 구현 재제안 금지"
   ),
   core_alpha_standalone = list(
     status    = "closed",
     priority  = 99L,
     label     = "standalone core_alpha 신규 발굴 (최후순위 강등)",
-    posterior = "16/16 admission FAIL, 2026-07 기준",
+    posterior = "16/16 admission FAIL (2026-07 기준) + 신규 standalone return-파생 팩터 사냥 = 최후순위 (CLAUDE.md 제2목표, 16/16 FAIL posterior)",
     evidence  = "measurement-graduation §6 '직교 ≠ 수익': standalone long-only 16/16 admission FAIL (사유 = PORT_t 실현 net active, BAB port_t -2.02 등)"
   )
 )
@@ -192,6 +222,63 @@ steer_gap_vector <- function(gap_path = .GVS_GAP_PATH,
     mdd_gap    = round(as.numeric(current_profile$mdd)   - as.numeric(target_profile$mdd), 4)  # 양수 = MDD 초과
   )
 
+  # ── 3b. 실book 컨텍스트 (M10 2026-07-11) — book_state 읽기 전용 소비 ──────────
+  # incumbent_book_ir(§4 book-marginal 게이트 기준선) + 라이브 노출을 계기판에 노출.
+  book_context <- NULL
+  if (length(bs) > 0) {
+    # live_exposure_change는 book_state 최상위가 아니라 event 블록(예:
+    # event_WT_D20260702_002_layer4_removal) 내부에 중첩 — 최상위 우선, 없으면 1단계 중첩 탐색.
+    lec <- bs$live_exposure_change %||% NULL
+    if (is.null(lec)) {
+      for (el in bs) {
+        if (is.list(el) && !is.null(el$live_exposure_change)) { lec <- el$live_exposure_change; break }
+      }
+    }
+    book_context <- list(
+      book_id           = book_id,
+      incumbent_book_ir = as.numeric(bs$incumbent_book_ir %||% NA),
+      ir_convention     = bs$ir_convention %||% NA,
+      metric_type       = "backtested",
+      source            = "qepm/mailbox/governor/book_state.json (read-only)"
+    )
+    if (!is.null(lec)) {
+      book_context$live_exposure <- list(
+        as_of    = lec$as_of %||% NA,
+        regime   = lec$regime %||% NA,
+        invested = as.numeric(lec$noL4_invested %||% NA),
+        cash     = as.numeric(lec$noL4_cash %||% NA)
+      )
+    }
+  } else {
+    cat("[gv_steering] WARN: book_state.json 부재/파싱실패 — book_context 생략\n")
+  }
+
+  # ── 3c. pinned 챔피언십 기준선 (FQ-011) — vintage-pinned book PORT_t 실측 ─────
+  championship <- NULL
+  if (file.exists(.GVS_CHAMPIONSHIP_SRC)) {
+    fq <- tryCatch(fromJSON(.GVS_CHAMPIONSHIP_SRC, simplifyVector = FALSE), error = function(e) NULL)
+    r1 <- if (!is.null(fq)) fq$R1_baseline_noLayer4 %||% NULL else NULL
+    if (!is.null(r1)) {
+      championship <- list(
+        tag              = r1$tag %||% "R1_noLayer4_baseline",
+        port_t_nw_lag3   = as.numeric(r1$PORT_t %||% NA),
+        ir_pinned        = as.numeric(r1$IR %||% NA),
+        oos_v2           = as.numeric(r1$oos_v2 %||% NA),
+        post2017_t       = as.numeric(r1$post2017_t %||% NA),
+        calmar           = as.numeric(r1$calmar %||% NA),
+        pin_tag          = fq$pin_tag %||% NA,
+        basis            = fq$basis %||% "cap-w active vs pinned IKS200 (authoritative)",
+        metric_type      = fq$metric_type %||% "backtested",
+        note             = "IR 컨벤션 주의: book_state incumbent_book_ir(net_active_recon_v1, 현행 IKS200 vintage)과 별개 — 본 값은 pinned vintage 산출 (basis 라벨 의무, measurement-graduation §4/§7)",
+        source           = "stage_artifacts/fq011_port_t_championship/fq011_summary.json"
+      )
+    }
+  }
+  if (is.null(championship)) {
+    cat(sprintf("[gv_steering] WARN: 챔피언십 기준선 미소비 (%s 부재/파싱실패) — championship_baseline 생략\n",
+                .GVS_CHAMPIONSHIP_SRC))
+  }
+
   # ── 4. sleeve_needs 조향 재정의 ──────────────────────────────────────────────
   prios <- vapply(GV_STEERING_DIRECTIONS, function(d) d$priority, integer(1))
   open_mask <- vapply(GV_STEERING_DIRECTIONS, function(d) d$status != "closed", logical(1))
@@ -201,13 +288,19 @@ steer_gap_vector <- function(gap_path = .GVS_GAP_PATH,
 
   out <- gv
   out$stage            <- gv$stage %||% "PG0"
-  out$portfolio_id     <- gv$portfolio_id %||% "PF_BOOK"
+  # portfolio_id: 계기판의 대상은 실 운용 북 — 빌더가 어떤 포트id로 호출됐든
+  # (예: PF_ALPHASEARCH 권고 경로) cache 정본은 book 기준으로 라벨 (빌더 원본 보존).
+  out$portfolio_id_builder <- gv$portfolio_id %||% NA
+  out$portfolio_id     <- "PF_BOOK"
   out$n_strategies     <- n_strategies
   out$admitted_ids     <- as.list(admitted_ids)
   out$cold_start_phase <- if (n_strategies == 0L) 0L else if (n_strategies == 1L) 1L else 2L
   out$current_profile  <- current_profile
   out$target_profile   <- target_profile
   out$gap              <- gap
+  out$book_context     <- book_context             # 실book 연결 (M10)
+  out$championship_baseline <- championship        # pinned PORT_t 기준선 (M10)
+  out$frontier_queue   <- .GVS_FRONTIER_QUEUE_REL  # v8.3 M5 상설 큐 포인터 (착수 전 확인 의무)
   out$sleeve_needs     <- as.list(open_dirs)          # 1차 조향 입력 = 실증-열린 방향만
   out$sleeve_needs_raw_builder <- sleeve_needs_raw    # 빌더 원본 보존
   out$sleeve_needs_steering <- GV_STEERING_DIRECTIONS # enum 전체 (closed 포함, evidence/posterior)
@@ -216,7 +309,7 @@ steer_gap_vector <- function(gap_path = .GVS_GAP_PATH,
     steering_version = .GVS_VERSION,
     steered_by       = "gap_vector_steering.R (post-processing layer over pg0_gap_review)",
     profile_source   = profile_source,
-    basis            = "감사 SC-01/SC-06 — sleeve_needs 실증-열린 enum 재정의 (도훈 confirm 2026-07-03)"
+    basis            = "감사 SC-01/SC-06 enum 재정의 (도훈 confirm 2026-07-03) + M10 실book 연결·v8.3 서열 현행화 (2026-07-11, CLAUDE.md 제2목표 경로 ①②③)"
   )
 
   # ── 5. 저장 ─────────────────────────────────────────────────────────────────

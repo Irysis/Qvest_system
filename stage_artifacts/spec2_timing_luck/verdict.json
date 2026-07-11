@@ -1,0 +1,60 @@
+{
+  "spec_id": "SPEC2_TIMING_LUCK_20260711",
+  "spec_sha256": "b6e32887dde9197acd2413af15766adf9e618841fcb0b56bff5689e9f356368e",
+  "measured_at": "2026-07-11 16:43:24 KST",
+  "pin_tags": {
+    "carrier": "fq011_20260710_222924",
+    "rawdata": "spec2_timing_luck_20260711_163751"
+  },
+  "measurement_window_deviation": {
+    "n_rebalances_used": 266,
+    "n_rebalances_carrier": 269,
+    "terminal_date": "2026-03-03",
+    "note": "RAWDATA 공백으로 측정창 절단: 사용 리밸 266/269 (decisions 2004-01-01~2026-02-01), NAV 종점 2026-03-03. 오염 구간 예: 2026-03-03→2026-04-30 거래일 19/캘린더일 58",
+    "reason": "RAWDATA 2026-03-30~04-29 데이터 공백(4월 거래일 04-30 단 하루) — 연속 NAV가 공백을 건널 수 없어 절단. 판정 규칙(사전등록)은 불변"
+  },
+  "common_window": {
+    "from": "2004-01-12",
+    "to": "2026-03-03",
+    "n_days": 5463
+  },
+  "sr_by_offset": {
+    "k0": 1.519289,
+    "k1": 1.479736,
+    "k2": 1.467092,
+    "k3": 1.430088,
+    "k4": 1.374067,
+    "k5": 1.332181
+  },
+  "range_SR": 0.18710751,
+  "threshold": 0.05,
+  "verdict": "RANGE_EXCEEDED_TRANCHE_COMPUTED",
+  "tranche": {
+    "SR": 1.36597355,
+    "CAGR": 0.3766,
+    "MDD": 0.44234982,
+    "note": "채택 여부는 G5 도훈 — 본 측정은 채택 권고 아님"
+  },
+  "turnover_invariance": {
+    "target_delta_identical_by_construction": true,
+    "target_yr": 10.29100684,
+    "realized_drift_yr_by_offset": {
+      "k0": 10.350142,
+      "k1": 10.350206,
+      "k2": 10.350202,
+      "k3": 10.351604,
+      "k4": 10.348113,
+      "k5": 10.343148
+    },
+    "note": "목표비중 offset-불변이므로 target-delta 회전·비용은 6-NAV 동일. drift-기반 실현회전 차이는 진단 병기."
+  },
+  "harness_validation": {
+    "parity_k0_vs_carrier_recon_cor": 1,
+    "parity_max_abs_diff": 7.77156117e-16,
+    "n_months": 266
+  },
+  "metric_type": "backtested",
+  "basis": "absolute NAV (bare carrier, no overlay) — 진단-only",
+  "frame_guard": "timing-luck 완화는 실현 경로 분산 축소 레버 — SR 개선 주장 금지 (사전등록 유지)",
+  "book_impact": "없음 — 진단 측정만, book_state 무변경"
+}

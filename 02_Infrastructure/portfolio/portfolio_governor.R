@@ -20,8 +20,22 @@
 #==============================================================================
 
 # ─── Bootstrap ───────────────────────────────────────────────────────────────
-.pg_root <- tryCatch(dirname(sys.frame(1)$ofile), error = function(e) {
-  file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")), "02_Infrastructure/portfolio")
+# .pg_root 해석 (M10 수리 2026-07-11): sys.frame(1)$ofile은 *중첩 source* 시
+# (예: run_alpha_search.R L61이 본 파일을 source) 최외곽 호출 스크립트의 디렉토리로
+# 풀린다 — 실측 probe에서 ".pg_root=." 재현. 그 결과 gap_vector_steering.R /
+# regime_signal.R 등 lazy-load가 전부 부재 판정(warning-only)되어
+# .cache/portfolio_gap_vector.json이 빌더 콜드스타트(빈 값)로 잔존하는 실사고 발생
+# (2026-07-09 07:46 PF_ALPHASEARCH 산출물). 후보 경로가 실제 본 파일을 포함하는지
+# 검증 후 채택, 아니면 env 기반 canonical로 폴백한다.
+.pg_root <- local({
+  cand <- tryCatch(dirname(sys.frame(1)$ofile), error = function(e) NULL)
+  fallback <- file.path(
+    Sys.getenv("CLAUDE_PROJECT_DIR",
+               Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")),
+    "02_Infrastructure/portfolio")
+  ok <- is.character(cand) && length(cand) == 1L && nzchar(cand) &&
+    file.exists(file.path(cand, "portfolio_governor.R"))
+  if (ok) cand else fallback
 })
 # config.R is one level up from portfolio/
 if (!exists("INFRA_DIR")) {
@@ -57,8 +71,11 @@ suppressPackageStartupMessages({
 # 감사 SC-01/SC-06 (도훈 confirm 2026-07-03): pg0 빌더의 구 enum(core_alpha/defense/
 # diversifier/none)은 steering 레이어가 실증-열린 방향 enum으로 재정의. 소비 코드는
 # 양쪽 vocabulary 모두 처리 (과거 JSON 재독 호환 — 구 라벨도 종래 로직 유지).
-.PG_STEERING_ENUM <- c("overlay_refinement", "residual_orthogonal_sleeve",
-                       "non_return_datasource", "dpl_feature", "core_alpha_standalone")
+.PG_STEERING_ENUM <- c("non_return_datasource", "screen_tier_recovery",
+                       "overlay_refinement", "residual_orthogonal_sleeve",
+                       "dpl_feature", "core_alpha_standalone")
+# (v8.3 현행화 2026-07-11 M10: screen_tier_recovery 추가 + 서열 갱신 —
+#  gap_vector_steering.R::GV_STEERING_DIRECTIONS와 동일 키 유지 의무)
 .PG_MODULE_CATALOG    <- file.path(PROJECT_ROOT, "06_Registry", "module_catalog.json")
 .PG_BOOK_STATE_PATH   <- file.path(PROJECT_ROOT, "qepm", "mailbox", "governor", "book_state.json")
 .PG_BENCHMARK_PARQUET <- file.path(CACHE_DIR, "benchmark.parquet")  # 2026-07-02 IKS200 정정본
