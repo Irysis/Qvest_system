@@ -52,14 +52,38 @@
 | 3 | `data/rawdata_sanitize.R` Step 3 | 제거 대상 '비거래일'이 benchmark 실세션과 충돌하면 **삭제 중단** (캘린더 결손 의심) |
 | 4 | `data/incremental_update_file.R` | base/update 이음매 거래일 감지 → rawdata 보유 시 WARN, 미보유 시 강경고(+재수출 B5 안내). `data/build_cache.R`: 기존 캐시가 신규 빌드보다 최신이면 `RAWDATA_prebuild_bak.parquet` 백업+경고, 최종 저장 temp-rename화(mmap 1224 회피) |
 
-## 잔여 후속 (도훈 판단 필요)
+## 다운스트림 복구 (07-11 완료)
 
-1. **factor_db_202607.parquet (7-3 빌드)**: 구멍 상태에서 빌드 — 4월을 건너뛰는 롤링 계산
-   (모멘텀/변동성 등) 오염 가능. 재빌드 권장: `factor_db_builder.R::update_factor_db_daily()`
-   (현재월 1파일). 202603/202604(6-10 빌드)·202605/202606(07-02 02:51/03:12, 소실 전) = 클린.
-2. **SPEC-2 (stage_artifacts/spec2_timing_luck/)**: 절단된 측정창(266/269, NAV 종점 03-03)으로
-   측정됨 — 복구된 데이터로 재측정 필요. pin `spec2_timing_luck_20260711_163751`는 구멍
-   vintage 보존본이므로 재측정 시 새 pin 필수.
+1. **factor_db_202607.parquet — 재빌드 완료** ✅. 07-03 빌드가 구멍 상태 rawdata를 읽어
+   momentum/vol(260일 일간 lookback이 4월 가로지름) 오염. **정량 실측**(gap본 vs repaired
+   재빌드): M08_Residual_Mom 종목 94.7%가 >1% 변동(median Δ0.130·max 40.3), M01_Mom_12_1
+   92.3%(median Δ0.097), D35_RealVol_63d 95.8% — 거의 전 종목 왜곡. repaired 데이터로
+   sig_date 2026-07-03 재빌드(842,017행, 구멍본 785,866행보다 증가 = 4월 복구로 lookback
+   충족 종목 회복). 오염본 `factor_db_202607_gapcontam_bak_20260711.parquet` 백업.
+   202603/202604(6-10)·202605/202606(07-02 02:51/03:12, 소실 전) = 클린 확인.
+2. **SPEC-2 — 재측정 완료** ✅ (신규 `stage_artifacts/spec2_timing_luck_repaired/`). 원본
+   `spec2_timing_luck/`은 공백-절단 기록으로 보존. repaired rawdata 신규 pin
+   `spec2_timing_luck_repaired_20260711`(md5 323edc95) + 새 spec_id
+   `SPEC2_TIMING_LUCK_20260711R`(설계·판정규칙 전부 원본 동일, 입력만 교정 — p-hacking 아님,
+   손상 입력 교체). 결과는 아래 "SPEC-2 재측정 결과" 절.
+
+### SPEC-2 재측정 결과 (실측, 07-11 17:49)
+
+| 지표 | 원본(공백-절단) | 재측정(repaired) |
+|---|---|---|
+| 사용 리밸 | 266/269 (절단) | **269/269 (절단 없음)** |
+| NAV 종점 | 2026-03-03 | **2026-06-01** |
+| verdict | RANGE_EXCEEDED_TRANCHE_COMPUTED | **동일 (변화 없음)** |
+| range_SR (thr 0.05) | 0.1871 | 0.1914 |
+| SR k0~k5 | 1.519·1.480·1.467·1.430·1.374·1.332 | 1.524·1.485·1.473·1.435·1.377·1.332 |
+| tranche SR/CAGR/MDD | 1.366 / 0.3766 / 0.4423 | 1.368 / **0.3895** / 0.4423 |
+| harness parity (k0 vs recon) | — | cor 0.999997 · max\|diff\| 3.18e-03 (269월) |
+
+→ **데이터 공백은 SPEC-2 결론을 바꾸지 않았다** (verdict 동일, 수치 근사). 절단이 제거돼
+전 269월·2004-01~2026-06 완전창에서 재확인. G5 채택 판정은 여전히 도훈 영역(본 측정 권고 아님).
+
+## 잔여 (도훈 판단/실행 영역)
+
 3. **07-02~07-11 사이 rawdata를 소비한 산출물** (recon/오버레이 forward-row 등): 4월 구간을
    실제로 참조한 것만 영향. ramp_r3 pin(07-11)도 구멍 vintage.
 4. **QuantiWise 재수출**: 다음 `qw_refresh.ps1` 실행이 B5=20260328로 자동 수출 → 4월 구간

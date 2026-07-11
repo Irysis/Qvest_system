@@ -1,0 +1,95 @@
+{
+  "task_id": "WT-D20260711_002",
+  "title": "Phase A — objective readability (obfuscation/complexity) full-corpus + canonical gate",
+  "prereg_version": "1.0",
+  "frozen_utc": "2026-07-11",
+  "chain_parent": "WT-D20260711_001 (pilot L-AR-20260711_165505). Direct chain (sequential scale-up, NOT sweep). Pilot finding: subjective LLM complexity Spearman rho=-0.316 vs fwd12m_excess, CI90 [-0.506,-0.100] excludes 0, survives Size control (partial -0.313). Phase A replaces subjective scoring with OBJECTIVE metrics + full-corpus + canonical PORT_t gate.",
+
+  "objective_metrics_family": {
+    "note": "<=6 base metrics, subjective=0, fully computable+reproducible on tag-stripped plain text of the ANNUAL business-report MD&A section ('경영진단 및 분석의견'). Hash-frozen. Direction = hypothesized sign of the RAW metric vs forward excess return (all obfuscation metrics NEGATIVE per Li 2008).",
+    "text_basis": "DART document.xml, annual 사업보고서 (report_nm contains '사업보고서' AND NOT {정정,첨부}). Section = plain text from last occurrence of '경영진단 및 분석의견' to the next top-level section anchor or +40000 chars (FULL section, NOT the pilot's 2800-char excerpt). Tag-strip rule identical to pilot 02_fetch_excerpts.R::strip_all.",
+    "metrics": {
+      "m1_avg_sentence_len_chars": {
+        "formula": "split section on [.!?] ; a 'sentence' = segment with nchar>=10 AND contains >=1 hangul (excludes pure table-number rows). value = mean(nchar) over qualifying sentences.",
+        "direction_vs_excess": "NEGATIVE",
+        "mechanism": "Li 2008 readability: longer/convoluted sentences bury bad news -> lower subsequent return."
+      },
+      "m2_fog_kr": {
+        "formula": "0.4 * (mean_words_per_qualifying_sentence + 100 * pct_hard_words). word = whitespace token containing >=1 hangul or latin (pure-number tokens excluded). hard_word = word with hangul-run length>=4 OR contains hanja/latin. pct_hard_words = #hard/#words.",
+        "direction_vs_excess": "NEGATIVE",
+        "mechanism": "Gunning-Fog equivalent adapted to KR; higher reading grade = obfuscation."
+      },
+      "m3_hanja_latin_density": {
+        "formula": "(#CJK-hanja chars + #latin-letter chars) / (#hangul + #hanja + #latin content chars).",
+        "direction_vs_excess": "NEGATIVE",
+        "mechanism": "jargon/technical-term overload (Loughran-McDonald complexity strand)."
+      },
+      "m4_numeric_table_density": {
+        "formula": "#digit chars / (#digit + #content chars).",
+        "direction_vs_excess": "NEGATIVE",
+        "exploratory": true,
+        "mechanism": "narrative displaced by table dumps -> lower firm-specific text information. Direction weakly held; flagged exploratory."
+      },
+      "m5_log_mdna_section_length": {
+        "formula": "log(total nchar of full stripped MD&A section).",
+        "direction_vs_excess": "NEGATIVE",
+        "mechanism": "Li 2008 / length-hypothesis: longer disclosure hides bad news -> lower return."
+      },
+      "m6_boilerplate_yoy_ratio": {
+        "formula": "Jaccard similarity of char 5-gram sets between this firm's MD&A section and its OWN prior fiscal-year MD&A section. NA if firm has no prior-year section in corpus.",
+        "direction_vs_excess": "NEGATIVE",
+        "exploratory": true,
+        "mechanism": "Brown-Tucker 2011: low YoY change (high boilerplate) = less informative disclosure. Direction weakly held; flagged exploratory."
+      }
+    },
+    "primary_composite": {
+      "name": "obfuscation_composite",
+      "formula": "per signal-month cross-section: equal-weight mean of cross-sectional z-scores of the 4 DIRECTION-CLEAR metrics {m1_avg_sentence_len, m2_fog_kr, m3_hanja_latin_density, m5_log_mdna_section_length}, each entered with + sign (higher composite = more obfuscated). m4,m6 EXCLUDED from primary composite (exploratory direction). No fitted weights (overfit guard).",
+      "canonical_score": "score_for_long = -obfuscation_composite (top-N = CLEAREST firms = predicted higher return). Exclusion form (book-marginal): drop worst-obfuscation decile.",
+      "primary_decision_metric": "obfuscation_composite (pre-committed). Single metrics + m4/m6 = supporting/exploratory."
+    }
+  },
+
+  "convergent_validity_check": {
+    "what": "Spearman(each objective metric, pilot subjective LLM complexity score) on the 45 pilot docs (WT_D20260711_001). RETURN-BLIND (LLM complexity is not a forward return) -> legitimate return-blind basis for choosing which objective metric best proxies the pilot signal.",
+    "use": "records rationale for final metric selection. If objective composite has LOW convergence with LLM complexity (|rho|<0.2), Phase A is measuring a DIFFERENT signal than the pilot -> report separately (LLM-axis Phase B remains distinct).",
+    "not_a_return_gate": true
+  },
+
+  "pit_signal_construction": {
+    "basis_date": "rcept_dt (annual report receipt).",
+    "active_from": "first month-end strictly AFTER rcept month.",
+    "carry": "signal carried forward monthly until the firm's NEXT annual-report rcept-based signal supersedes it; max carry 13 months (drop if stale > 13m).",
+    "cross_section": "at each month-end t, firms with an active (carried) obfuscation score AND in K200|KQ150 at t AND adv20>=liq_min.",
+    "return_target_ic": "forward 1M return (month t+1), excess vs KOSPI200 TR for rank-IC diagnostics.",
+    "annual_lag_equiv_stress": "since signal is annual (updates once/yr), lag1-month is immaterial; the relevant stress = 1-fiscal-year lag (use prior year's metric) -> report as annual-lag placebo."
+  },
+
+  "measurement": {
+    "ic_series": "monthly cross-sectional Spearman rank-IC (obfuscation_composite vs fwd 1M excess) -> mean IC, ICIR, Newey-West Harvey-t (lag 3).",
+    "canonical": "canonical_screen_bt(scores=-obfuscation_composite, returns=fwd1M, bench=KOSPI200 TR, top_n=25, cost=15bps, liq_min=2e8, diag_dual_basis=TRUE, size_dt=Size panel). PRIMARY = cap-w PORT_t (portfolio_alpha_t_nw_lag3). Dual-basis: diag_ew_universe + diag_cap_tier병기.",
+    "exclusion_overlay": "book-marginal: exclude worst-obfuscation names from current book proxy; paired NW-t of active-return delta. (screening-tier, reported not gated.)",
+    "selection_discipline": "IS = signal file_year 2011-2018 (returns 2011-2019). OOS = file_year 2019-2024 (returns 2019-2025), evaluated ONCE. Composite is equal-weight (no fit) so selection = choice of composite-vs-single, done on IS canonical PORT_t only. OOS single read.",
+    "n_trials": {"family": 7, "detail": "{m1,m2,m3,m4,m5,m6, composite} vs fwd excess = 7 IC/canonical tests. null max-t across the 7 recorded. selection_type = chain (hypothesis-driven scale-up, not sweep). DSR = diagnostic only (not sweep)."}
+  },
+
+  "graduation_prereg": {
+    "primary": "canonical cap-w portfolio_alpha_t_nw_lag3 vs 2.95 (HARD ref; alpha-stage canonical is SCREENING not capital — forge authoritative).",
+    "oos_retention_v2": "anchored 3-split {55/65/75} median of active-SR OOS/IS (diagnostic approx via canonical period_returns).",
+    "null_max_t": "max |Harvey-t| across the 7-metric family; report as multiple-testing context.",
+    "honesty": "if objective composite fails canonical PORT_t but survives EW-universe diag (diag_ew_universe), label 'cap-w bench mismatch' + screen_route re-class; do NOT over-claim."
+  },
+
+  "operational_hard_constraints": {
+    "dart_throttle": ">=0.4s between requests; exp backoff on 429/status020(quota); STOP after 5 consecutive errors.",
+    "insider_crawl_noninterference": "record .cache/dart_backfill_status.json months_done BEFORE (=180, checkpoint 201912) and AFTER my fetch; never touch .cache/dart/insider_backfill/.",
+    "text_cache": "stage_artifacts/WT_D20260711_002/text_cache/ parquet, resumable (skip already-fetched rcept_no). Reuse 45 pilot docs where rcept_no matches.",
+    "rawdata_no_write": "read pinned snapshot only (pin tag wt002_phaseA_20260711); RAWDATA cache write FORBIDDEN. Forward window 2010-2025 excludes 2026-04 gap.",
+    "telegram": "PROHIBITED for this WT."
+  },
+  "discipline": {
+    "hash_freeze": "SHA256 of this file recorded before signal->return merge; post-hoc edits = contamination.",
+    "no_proxy_handcalc": "all PORT_t via canonical_screen_bt (contract build_benchmark_compare). No top-quintile EW / turnover*bps inline; no prod(1+r) portfolio synthesis.",
+    "self_adversarial": "boilerplate/YoY-redundancy contamination check + industry confound spot-check + Size-proxy control (partial vs logSize)."
+  }
+}
