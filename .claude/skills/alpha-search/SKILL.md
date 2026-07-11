@@ -41,6 +41,12 @@ Rscript 02_Infrastructure/tools/hypothesis_index.R lookup <keyword> [keyword...]
 - 인덱스가 stale하면(새 실험 다수 후) `Rscript 02_Infrastructure/tools/hypothesis_index.R build`로 재빌드.
 - 서명 정규화 규칙·원천 3계층(stage_artifacts manifest/hurdle + lcode_corpus + module_catalog)은 `02_Infrastructure/tools/hypothesis_index.R` 헤더 참조.
 
+### ★ 3단 게이트 (v8.3.1 리서치 레벨 v2, 2026-07-11 — lookup에 이어 2·3단 의무)
+
+lookup(1단) 통과 후:
+- **2단 — frontier 큐**: `06_Registry/alpha_frontier_queue.json` 확인 — 착수 대상이 큐에 있으면 owner/status 갱신, `dohoon_decision`/`dohoon_data_work` 항목은 세션 임의 착수 금지.
+- **3단 — EV-지도 셀 판정**: `06_Registry/research_ev_map.json`의 죽은 계급(D1~D7+4: 횡단 return-파생 신규·M4×R05 초월 오버레이·미시구조/flow novel·occurrence 이벤트·ml/uncertainty sizing·composite/packaging·RAMP chain 신규 등 — 예산 0)에 해당하는 가설이면 **novelty triage(qvest-worktask SKILL §2) 2항의 도훈 confirm 없인 착수 금지**.
+
 ## 동작 절차 (4-step)
 
 ### 1. 가설 intake

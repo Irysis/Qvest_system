@@ -63,6 +63,12 @@ lookup(중복)·DISTILLED_NEG(경로)는 **검색**이라 "기존 negative들의
 
 원칙: 본 triage는 INV-7(negative는 경로-scoped, 방향 일반화 금지)과 충돌하지 않는다 — "재조합 금지"가 아니라 "신규성 선언 + 상한 선계산"이다.
 
+### ★ 3단 게이트 (v8.3.1 리서치 레벨 v2, 2026-07-11 — WT 생성 전 순서 고정)
+
+1. **hypothesis_index lookup** (위 절차 — 중복·기실패 대조)
+2. **frontier 큐 확인**: `06_Registry/alpha_frontier_queue.json` — 착수 대상 엔트리의 owner/status 갱신 의무, `dohoon_decision`/`dohoon_data_work` 항목은 세션 임의 착수 금지 (consume_rule 준수)
+3. **EV-지도 셀 판정**: `06_Registry/research_ev_map.json` 죽은 계급(D1~D7+4, 예산 0)에 해당하면 novelty triage 2항의 **도훈 confirm 없인 착수 금지**. 셀 판정 결과(살아있는 lane / 죽은 계급 / virgin)를 `hypothesis_description`에 1줄 기록.
+
 ```r
 source("02_Infrastructure/worktask/worktask_manager.R")
 wt_id <- wt_create(
