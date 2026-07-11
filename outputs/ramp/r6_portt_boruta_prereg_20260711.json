@@ -1,0 +1,46 @@
+{
+  "mode": "RAMP",
+  "round": "R6",
+  "mechanism": "trailing_realized_PORTt_pool_selection + Boruta_within_pool",
+  "revival_signal_of": "R5 selection_summary: relevance->realized-PORT_t (frontier crack)",
+  "substrate": "102 approved factors (Z_Score_Aligned) per-factor top-25 EW long-only net-active panel",
+  "panel": "outputs/ramp/r6_factor_deployzone_active.parquet (102 factors x ~256 months cap-w active)",
+  "selection": "trailing window realized active NW-t(lag3) -> top-K pool (PIT trailing-only)",
+  "arms": {
+    "P_pure": "top-K pool EW rotation",
+    "P_boruta": "Boruta RF+shadow confirmed within pool"
+  },
+  "controls": {
+    "base_all11": "R4/R5 11-family EW composite (pin-checked)",
+    "ctrl_all102": "all-102 individual EW composite (no selection)"
+  },
+  "boruta": {
+    "nmax": 3000,
+    "ntree": 100,
+    "maxRuns": 40,
+    "imp": "RfZ_default",
+    "decide": "Confirmed_only",
+    "seed_base": 6000
+  },
+  "windows": [36, 60],
+  "kpool": [10, 20],
+  "boruta_kpool": 20,
+  "cadence_months": 6,
+  "top_n": 25,
+  "cost_bps_oneway": 15,
+  "liq_min": 200000000,
+  "gate_hard": [2.95, 0.7, 0.64, 0.5],
+  "n_trials_r6": 6,
+  "n_trials_family": 16,
+  "paired_kill_threshold": 2,
+  "selection_type": "sweep",
+  "target_boruta": "within-month z-scored forward 1M return (cross-sectional)",
+  "pit": "panel active = current-month score->realized fwd (PIT-safe); selection trailing-only last W months realized by decision date",
+  "honest_prior": "trailing realized-perf selection = factor momentum; factor-of-factors momentum timing NULL (memory project-factor-of-factors-scoping 06-30)",
+  "vintage_pin": "r4r5_session_20260711 (rawdata current + pure_factor_scores 06-18 z; provenance parity max|d|=0 vs load_month_factors)",
+  "as_of_date": "2026-07-11",
+  "source_version": "RAMP_R6_v1",
+  "security_id": "Ticker (rawdata) -> factor_id z (pure_factor_scores.z=Z_Score_Aligned)",
+  "config_hash": "f6d15ae95a712147",
+  "generated_at": "2026-07-11T19:29:06+0900"
+}

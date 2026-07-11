@@ -1,0 +1,423 @@
+{
+  "prereg": {
+    "mode": "RAMP",
+    "round": "R6",
+    "mechanism": "trailing_realized_PORTt_pool_selection + Boruta_within_pool",
+    "revival_signal_of": "R5 selection_summary: relevance->realized-PORT_t (frontier crack)",
+    "substrate": "102 approved factors (Z_Score_Aligned) per-factor top-25 EW long-only net-active panel",
+    "panel": "outputs/ramp/r6_factor_deployzone_active.parquet (102 factors x ~256 months cap-w active)",
+    "selection": "trailing window realized active NW-t(lag3) -> top-K pool (PIT trailing-only)",
+    "arms": {
+      "P_pure": "top-K pool EW rotation",
+      "P_boruta": "Boruta RF+shadow confirmed within pool"
+    },
+    "controls": {
+      "base_all11": "R4/R5 11-family EW composite (pin-checked)",
+      "ctrl_all102": "all-102 individual EW composite (no selection)"
+    },
+    "boruta": {
+      "nmax": 3000,
+      "ntree": 100,
+      "maxRuns": 40,
+      "imp": "RfZ_default",
+      "decide": "Confirmed_only",
+      "seed_base": 6000
+    },
+    "windows": [36, 60],
+    "kpool": [10, 20],
+    "boruta_kpool": 20,
+    "cadence_months": 6,
+    "top_n": 25,
+    "cost_bps_oneway": 15,
+    "liq_min": 200000000,
+    "gate_hard": [2.95, 0.7, 0.64, 0.5],
+    "n_trials_r6": 6,
+    "n_trials_family": 16,
+    "paired_kill_threshold": 2,
+    "selection_type": "sweep",
+    "target_boruta": "within-month z-scored forward 1M return (cross-sectional)",
+    "pit": "panel active = current-month score->realized fwd (PIT-safe); selection trailing-only last W months realized by decision date",
+    "honest_prior": "trailing realized-perf selection = factor momentum; factor-of-factors momentum timing NULL (memory project-factor-of-factors-scoping 06-30)",
+    "vintage_pin": "r4r5_session_20260711 (rawdata current + pure_factor_scores 06-18 z; provenance parity max|d|=0 vs load_month_factors)",
+    "as_of_date": "2026-07-11",
+    "source_version": "RAMP_R6_v1",
+    "security_id": "Ticker (rawdata) -> factor_id z (pure_factor_scores.z=Z_Score_Aligned)",
+    "config_hash": "f6d15ae95a712147",
+    "generated_at": "2026-07-11T19:29:06+0900"
+  },
+  "config_hash": "f6d15ae95a712147",
+  "meta": {
+    "as_of_date": "2026-07-11",
+    "generated_at": "2026-07-11T19:56:39+0900",
+    "source_version": "RAMP_R6_v1",
+    "security_id": "Ticker->factor_id z (pure_factor_scores.z=Z_Score_Aligned)"
+  },
+  "results": [
+    {
+      "model": "base_all11_W36",
+      "port_t_EWuni": 1.8468,
+      "port_t_capwt": 1.024,
+      "oos_retention": -0.7572,
+      "calmar": 0.2777,
+      "dsr": 0.254,
+      "post2017_bm_sr": -0.5584,
+      "full_bm_sr": 0.2554,
+      "turnover": 11.0596,
+      "n_months": 220
+    },
+    {
+      "model": "ctrl_all102_W36",
+      "port_t_EWuni": 0.7576,
+      "port_t_capwt": 0.2364,
+      "oos_retention": -0.5637,
+      "calmar": 0.2308,
+      "dsr": -0.5678,
+      "post2017_bm_sr": -0.229,
+      "full_bm_sr": 0.0552,
+      "turnover": 10.3964,
+      "n_months": 220
+    },
+    {
+      "model": "base_all11_W60",
+      "port_t_EWuni": 1.1329,
+      "port_t_capwt": 0.4005,
+      "oos_retention": -1.1851,
+      "calmar": 0.262,
+      "dsr": -0.3832,
+      "post2017_bm_sr": -0.5584,
+      "full_bm_sr": 0.1047,
+      "turnover": 11.062,
+      "n_months": 196
+    },
+    {
+      "model": "ctrl_all102_W60",
+      "port_t_EWuni": 0.6788,
+      "port_t_capwt": 0.0481,
+      "oos_retention": -0.7988,
+      "calmar": 0.2438,
+      "dsr": -0.7518,
+      "post2017_bm_sr": -0.229,
+      "full_bm_sr": 0.012,
+      "turnover": 10.2784,
+      "n_months": 196
+    },
+    {
+      "model": "Ppure_W36_K10",
+      "port_t_EWuni": 2.9422,
+      "port_t_capwt": 1.9055,
+      "oos_retention": -0.3753,
+      "calmar": 0.4003,
+      "dsr": 1.3735,
+      "post2017_bm_sr": -0.5448,
+      "full_bm_sr": 0.5304,
+      "turnover": 9.3491,
+      "n_months": 220
+    },
+    {
+      "model": "Ppure_W36_K20",
+      "port_t_EWuni": 3.9191,
+      "port_t_capwt": 2.6124,
+      "oos_retention": -0.0759,
+      "calmar": 0.45,
+      "dsr": 1.9504,
+      "post2017_bm_sr": -0.1052,
+      "full_bm_sr": 0.676,
+      "turnover": 9.2705,
+      "n_months": 220
+    },
+    {
+      "model": "Ppure_W60_K10",
+      "port_t_EWuni": 2.0325,
+      "port_t_capwt": 1.4526,
+      "oos_retention": -0.3548,
+      "calmar": 0.3405,
+      "dsr": 0.8155,
+      "post2017_bm_sr": -0.2391,
+      "full_bm_sr": 0.4097,
+      "turnover": 9.1322,
+      "n_months": 196
+    },
+    {
+      "model": "Ppure_W60_K20",
+      "port_t_EWuni": 3.0754,
+      "port_t_capwt": 1.8376,
+      "oos_retention": -0.3123,
+      "calmar": 0.4677,
+      "dsr": 1.1187,
+      "post2017_bm_sr": -0.2594,
+      "full_bm_sr": 0.5159,
+      "turnover": 9.0882,
+      "n_months": 196
+    },
+    {
+      "model": "Pboruta_W36_K20",
+      "port_t_EWuni": 2.0791,
+      "port_t_capwt": 1.2947,
+      "oos_retention": -0.4255,
+      "calmar": 0.3013,
+      "dsr": 0.5952,
+      "post2017_bm_sr": -0.4534,
+      "full_bm_sr": 0.3304,
+      "turnover": 9.1833,
+      "n_months": 220
+    },
+    {
+      "model": "Pboruta_W60_K20",
+      "port_t_EWuni": 1.0387,
+      "port_t_capwt": 0.3857,
+      "oos_retention": -0.8982,
+      "calmar": 0.2348,
+      "dsr": -0.3715,
+      "post2017_bm_sr": -0.6656,
+      "full_bm_sr": 0.1088,
+      "turnover": 8.9853,
+      "n_months": 196
+    }
+  ],
+  "paired": [
+    {
+      "model": "Ppure_W36_K10",
+      "base": "base_all11_W36",
+      "kind": "trait_repl_vs_base11",
+      "mean_diff_ann": 0.0478,
+      "paired_t": 1.5696,
+      "n": 220
+    },
+    {
+      "model": "Ppure_W36_K20",
+      "base": "base_all11_W36",
+      "kind": "trait_repl_vs_base11",
+      "mean_diff_ann": 0.0704,
+      "paired_t": 2.2534,
+      "n": 220
+    },
+    {
+      "model": "Ppure_W60_K10",
+      "base": "base_all11_W60",
+      "kind": "trait_repl_vs_base11",
+      "mean_diff_ann": 0.0446,
+      "paired_t": 1.2626,
+      "n": 196
+    },
+    {
+      "model": "Ppure_W60_K20",
+      "base": "base_all11_W60",
+      "kind": "trait_repl_vs_base11",
+      "mean_diff_ann": 0.0736,
+      "paired_t": 2.1175,
+      "n": 196
+    },
+    {
+      "model": "Ppure_W36_K10",
+      "base": "ctrl_all102_W36",
+      "kind": "selection_vs_all102",
+      "mean_diff_ann": 0.0739,
+      "paired_t": 2.0622,
+      "n": 220
+    },
+    {
+      "model": "Ppure_W36_K20",
+      "base": "ctrl_all102_W36",
+      "kind": "selection_vs_all102",
+      "mean_diff_ann": 0.0964,
+      "paired_t": 3.0092,
+      "n": 220
+    },
+    {
+      "model": "Ppure_W60_K10",
+      "base": "ctrl_all102_W60",
+      "kind": "selection_vs_all102",
+      "mean_diff_ann": 0.0569,
+      "paired_t": 1.4863,
+      "n": 196
+    },
+    {
+      "model": "Ppure_W60_K20",
+      "base": "ctrl_all102_W60",
+      "kind": "selection_vs_all102",
+      "mean_diff_ann": 0.0859,
+      "paired_t": 2.4272,
+      "n": 196
+    },
+    {
+      "model": "Pboruta_W36_K20",
+      "base": "Ppure_W36_K20",
+      "kind": "boruta_vs_pure",
+      "mean_diff_ann": -0.0481,
+      "paired_t": -2.5768,
+      "n": 220
+    },
+    {
+      "model": "Pboruta_W60_K20",
+      "base": "Ppure_W60_K20",
+      "kind": "boruta_vs_pure",
+      "mean_diff_ann": -0.0682,
+      "paired_t": -3.2477,
+      "n": 196
+    }
+  ],
+  "persistence": {
+    "36": {
+      "W": 36,
+      "n_anchor": 37,
+      "rank_ac_mean": 0.859,
+      "rank_ac_sd": 0.0741,
+      "pool_family_freq": {
+        "Accruals": 0.02,
+        "Composite": 0.023,
+        "Consensus": 0.142,
+        "Credit": 0.019,
+        "Growth_Profit": 0.076,
+        "LowRisk": 0.038,
+        "Macro": 0.015,
+        "Momentum": 0.153,
+        "Quality": 0.023,
+        "Reversal": 0.028,
+        "Size_Liquidity": 0.157,
+        "Value": 0.307
+      }
+    },
+    "60": {
+      "W": 60,
+      "n_anchor": 33,
+      "rank_ac_mean": 0.9181,
+      "rank_ac_sd": 0.0432,
+      "pool_family_freq": {
+        "Accruals": 0.009,
+        "Composite": 0.03,
+        "Consensus": 0.142,
+        "Credit": 0.014,
+        "Growth_Profit": 0.083,
+        "LowRisk": 0.027,
+        "Macro": 0.017,
+        "Momentum": 0.123,
+        "Quality": 0.02,
+        "Reversal": 0.023,
+        "Size_Liquidity": 0.165,
+        "Value": 0.347
+      }
+    }
+  },
+  "per_factor_deployzone_top12": [
+    {
+      "factor_id": "IN03_RD_to_Market",
+      "family": "Growth_Profit",
+      "port_t_full": 2.6167,
+      "net_sr": 0.6249,
+      "post17_sr": -0.015,
+      "n": 256
+    },
+    {
+      "factor_id": "C04_ESBR",
+      "family": "Consensus",
+      "port_t_full": 2.5072,
+      "net_sr": 0.5726,
+      "post17_sr": 0.1568,
+      "n": 256
+    },
+    {
+      "factor_id": "C02_EPS_Chg_1m",
+      "family": "Consensus",
+      "port_t_full": 2.4082,
+      "net_sr": 0.5216,
+      "post17_sr": -0.1341,
+      "n": 256
+    },
+    {
+      "factor_id": "M27_Analyst_Rev_Mom",
+      "family": "Momentum",
+      "port_t_full": 2.3946,
+      "net_sr": 0.5185,
+      "post17_sr": -0.1408,
+      "n": 256
+    },
+    {
+      "factor_id": "V14_EBIT_EV",
+      "family": "Value",
+      "port_t_full": 2.0858,
+      "net_sr": 0.4702,
+      "post17_sr": -0.2312,
+      "n": 256
+    },
+    {
+      "factor_id": "V07_EV_EBITDA",
+      "family": "Value",
+      "port_t_full": 2.0843,
+      "net_sr": 0.4644,
+      "post17_sr": -0.2044,
+      "n": 256
+    },
+    {
+      "factor_id": "V02_EP",
+      "family": "Value",
+      "port_t_full": 2.047,
+      "net_sr": 0.4731,
+      "post17_sr": -0.1991,
+      "n": 256
+    },
+    {
+      "factor_id": "V08_PSR",
+      "family": "Value",
+      "port_t_full": 1.9894,
+      "net_sr": 0.4383,
+      "post17_sr": -0.1555,
+      "n": 256
+    },
+    {
+      "factor_id": "L27_Price_Level",
+      "family": "Size_Liquidity",
+      "port_t_full": 1.9864,
+      "net_sr": 0.4535,
+      "post17_sr": -0.2387,
+      "n": 256
+    },
+    {
+      "factor_id": "V15_NetDebt_Adj_EP",
+      "family": "Value",
+      "port_t_full": 1.9621,
+      "net_sr": 0.4456,
+      "post17_sr": -0.1459,
+      "n": 256
+    },
+    {
+      "factor_id": "V13_EV_Sales",
+      "family": "Value",
+      "port_t_full": 1.8646,
+      "net_sr": 0.4114,
+      "post17_sr": -0.1748,
+      "n": 256
+    },
+    {
+      "factor_id": "V20_SP",
+      "family": "Value",
+      "port_t_full": 1.8646,
+      "net_sr": 0.4114,
+      "post17_sr": -0.1748,
+      "n": 256
+    }
+  ],
+  "pin_ok": true,
+  "pin_delta": 0,
+  "kill_pure": false,
+  "kill_boruta": true,
+  "KILL": false,
+  "max_paired_trait": 2.2534,
+  "max_paired_boruta": -2.5768,
+  "any_graduation": false,
+  "n_trials_r6": 6,
+  "n_trials_family": 16,
+  "n_sig": 257,
+  "date_range": ["2005-01-31", "2026-05-31"],
+  "r4_ref": {
+    "base_W36_EW_pt_capwt": 1.024,
+    "r4_kill": true,
+    "r4_max_paired": -2.02
+  },
+  "r5_ref": {
+    "family_closed": true,
+    "r5_max_paired": 0.18
+  },
+  "families": ["Accruals", "Composite", "Consensus", "Credit", "Growth_Profit", "LowRisk", "Momentum", "Quality", "Reversal", "Size_Liquidity", "Value"],
+  "n_pool_factors": 102,
+  "incumbent_book_ir": 1.416
+}
