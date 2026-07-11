@@ -197,6 +197,23 @@
         "WT-D20260711_001 alpha_package/challenge_note",
         "stage_artifacts/WT_D20260711_001/"
       ]
+    },
+    {
+      "id": "FQ-013",
+      "lane": "selection_discipline",
+      "title": "R5 팩터 선별-규율 비교전 (Stability Selection + mRMR, R4-후속)",
+      "hypothesis": "선별-규율(서브샘플 안정성 / 저중복 최적)이 Boruta와 독립 축에서 로테이션 배분의 cap-w 성과를 개선하는가 — 또는 선별-규율 계열 전체가 신호 내용 벽에 막히는가를 계열 단위로 확정",
+      "ev_rationale": "R4(Boruta) 하네스 재사용으로 한계비용 낮음. 기대값의 정직한 프레임 = 숨은 알파 발굴이 아니라 중복 제거·2017+ 레짐-취약 배제·계열 폐쇄 판정. 도훈 사전 승인(07-11 '결과 보고 별다른 지시 없이 바로 실행') — 스펙 범위 내 무지시 자동 착수",
+      "wall_check": "선별은 신호 내용을 창출하지 않음(WT-003 '재료가 같으면 조합 무용' 정합) — 사전등록 kill: 전 config paired NW-t < 2.0 시 계열 소진 L-code + DIST 후보",
+      "data_gate": "없음 (R4 하네스·팩터 패널 재사용)",
+      "owner": "Q-Lead (R4 완료 알림 트리거)",
+      "status": "armed_await_r4",
+      "next_action": "R4 완료 → arm S 실효 판독 → Branch A(우열 비교) / Branch B(계열 폐쇄) 분기 → ramp-orchestrator spawn. 스펙: 04_Research/factor_selection_program/r5_selection_comparison_spec.md",
+      "source_refs": [
+        "spec: 04_Research/factor_selection_program/r5_selection_comparison_spec.md",
+        "trigger: RAMP R4 Boruta (task a0d16bfae575aea9a, in_progress)",
+        "authorization: 도훈 2026-07-11 무지시 자동착수 승인"
+      ]
     }
   ]
 }
