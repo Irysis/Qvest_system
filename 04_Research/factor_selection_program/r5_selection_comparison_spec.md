@@ -30,6 +30,7 @@ R4(Boruta = shadow-null 선별)의 결과와 무관하게, "선별-규율" 계�
 1. R4 보고에서 arm S 실효 여부 판독 → 분기 결정(§2) — 판독 근거 1줄 기록.
 2. ramp-orchestrator spawn: 본 스펙 경로 + R4 하네스 경로 + 분기 지정 전달. (R4가 하네스 경로를 보고에 명시하도록 이미 지시됨 — 미명시 시 outputs/ramp/ 스캔.)
 3. 완료 시: L-code emit(modecode RAMP) → FQ-013 갱신 → 텔레그램 v7 판정 보고 → 도훈 결정 필요 사항 있으면 분리 표기.
+4. **시각화 의무 (v7.1 원칙 9, 도훈 mandate 07-11)**: 판정 보고에 `tg_chart_pack.R` 차트 첨부 — ① 전 config 비교 `tg_chart_sweep`(hline=2.0 paired 기준선, R4 결과 병기로 계열 전체 서열 1장) ② 최선 config 표준 3종(누적수익·연간수익·낙폭). metrics_note = 계약/게이트 산출값만.
 
 ## 5. 안전 경계 (자동 착수 권한의 한계 — 위반 금지)
 

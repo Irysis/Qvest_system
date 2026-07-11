@@ -36,6 +36,7 @@ description: Qvest 텔레그램 발송의 유일한 규칙(SOT). 양식 / 약어
 | 6 | **이모지 활용** | 메시지당 ≥5개 (`EMOJI_MIN`). 섹션마다 1개 의미 emoji + 강조 emoji |
 | 7 | **개조식 + 줄바꿈** | 한 문장 한 줄. `tg_text_smart_break()`가 마침표·슬래시·화살표·종결어미에서 자동 줄바꿈 |
 | **8 ⭐⭐** | **비전공자 1분 이해 (v7 도입, 도훈 mandate 2026-07-10)** | 전문용어는 **유지**하되 아래 3장치 의무. 퀀트를 모르는 사람이 읽어도 "무엇을 시도했고 → 결과가 어땠고 → 그래서 돈에 뭐가 달라지는지"를 1분 안에 파악 가능해야 함 |
+| **9 ⭐** | **실측 시각화 의무 (v7.1 도입, 도훈 mandate 2026-07-11)** | 실측 수치(백테/canonical/forge/게이트 판정)가 담긴 보고는 **`charts=` 그래프 첨부 의무** — 글만 보내기 금지. 아래 "원칙 9" 절 참조 |
 
 ### 원칙 8 — 비전공자 1분 이해 3장치 (v7 핵심)
 
@@ -61,6 +62,27 @@ list(type = "bullet", emoji = "📖", heading = "쉬운 설명",
        "결과: 수익 신호는 있지만 우연일 가능성을 배제할 수준(t값 2.95)에는 못 미쳤습니다",
        "의미: 실제 돈은 넣지 않고, 다른 전략의 참고 재료로만 씁니다"))
 ```
+
+### 원칙 9 — 실측 시각화 의무 (v7.1, 도훈 mandate 2026-07-11 "글만 오니까 밋밋하고 직관적이지가 않아")
+
+**적용 대상**: 실측 수치가 담긴 모든 보고 — 백테스트 결과(forge/canonical_screen_bt/essence_score), 게이트 판정(HARD 3종·screening), sweep/멀티암 비교(A/B·config 서열), 챔피언십/북 상태. **면제**: 수치 없는 착수 알림·상태 전이·스펙 승인·큐 갱신.
+
+**표준 생성기 (단일 경로)**: `02_Infrastructure/telegram/tg_chart_pack.R`
+| 함수 | 산출 | 용도 |
+|---|---|---|
+| `tg_chart_pack(period_returns, out_dir, title, metrics_note=)` | 표준 3종: ①누적수익(로그) vs BM ②연간수익률 막대 vs BM ③낙폭 수중곡선 | 단일 전략/모듈 실측 보고 |
+| `tg_chart_sweep(labels, values, out_dir, title, hline=, highlight=)` | 비교 가로막대 + 기준선(2.95/2.0) | sweep·멀티암·챔피언십 서열 |
+| `tg_chart_pack_from_bt(bt_result, out_dir)` | 10-component 계약에서 표준 3종 자동 | forge 산출 직결 |
+
+**caller 패턴**:
+```r
+source(file.path(PROJECT_ROOT, "02_Infrastructure/telegram/tg_chart_pack.R"))
+paths <- tg_chart_pack_from_bt(bt_result, out_dir = "stage_artifacts/WT_X",
+                               metrics_note = "PORT_t 2.35 · oos 0.71 (forge)")
+tg_agent_brief(agent = "forge", title = "...", sections = ..., charts = paths)
+```
+
+**규율 3항**: ① 차트 수치 주석(`metrics_note`)은 **계약 산출값만** 전달 — 차트팩 내부는 시각화 전용이며 성과 수치를 계산하지 않는다(자체합성 금지 정합). ② 최소 1장(권장: 단일 전략 = 표준 3종, sweep = 비교 막대 1종 + 승자 표준 3종). ③ PNG는 해당 WT/리서치의 `stage_artifacts/` 산하에 저장(임시 디렉토리 금지 — 재현 감사 대상).
 
 ### 원칙 1 강제 (v6.2 도입 / v7.2.1 retain — 도훈 명시 2026-05-08)
 
@@ -555,6 +577,7 @@ tg_agent_brief(
 
 ## Change log
 
+- **2026-07-11 v7.1 (도훈 mandate — 실측 시각화 의무)**: §2 원칙 9 신설 — 실측 수치 보고 = `charts=` 그래프 첨부 의무("글만 오니까 밋밋하고 직관적이지가 않아"). 표준 생성기 `02_Infrastructure/telegram/tg_chart_pack.R` 신설(표준 3종: 누적수익 로그·연간수익 막대·낙폭 수중곡선 + sweep 비교 가로막대 + bt_result 계약 래퍼). 규율: 차트팩 = 시각화 전용(수치 계산 금지, metrics_note는 계약 산출값만)·PNG는 stage_artifacts/ 보존. 면제 = 수치 없는 착수/상태/스펙 알림. 기존 caller 비파괴(charts= 기존 파라미터 활용).
 - **2026-07-10 v7 (도훈 mandate — 비전공자 가독화, 전문용어 유지)**: 원칙 8 신설(비전공자 1분 이해 3장치 — ①한줄 결론 평문 ②"쉬운 설명" 섹션 의무(R warn-level) ③자동 용어 풀이 footer) + §5.5 용어 뜻 사전(`.METRIC_MEANING`, 뜻+판정기준 40자 내외) + §6 표준 4→5섹션(쉬운 설명 삽입) + 판정 평문 1줄 의무 + `.TG_CONFIG$GLOSSARY_MAX_BYTES=900` + `tg_agent_brief(glossary=TRUE)` 기본 ON. 기존 자동 caller 비파괴(glossary는 자동 부착, 쉬운 설명 부재는 warn만).
 - 2026-06-18 §3.1 `relaxed=TRUE` (페이퍼 적재 브리핑 전용).
 - 2026-05-27 v6.6 quant whitelist 확장 / 2026-05-15 v6.5 통상 영어 허용 / 2026-05-08 v6.1~6.3 모바일 상한 + 한글 규율 / 2026-05-07 v6 SOT 단일화.

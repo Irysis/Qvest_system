@@ -1,0 +1,44 @@
+{
+  "l_code": "L-RAMP-20260711_181539",
+  "strategy_id": "RAMP_R4_BORUTA_20260711",
+  "grade": "F",
+  "core_reference": "run_ramp_r4_boruta.R (config_hash 34413993ed77c0ef); challenge_note_r4_boruta_20260711.md; xmode: L-QPM-20260705_105130·DIST-RAMP-003(regime-conditional settled)",
+  "lesson_text": "RAMP R4 Boruta 팩터-존 축소 배분(정적 arm S) VALIDATED_NEGATIVE(config-scoped): rolling 학습창(36/60m, C1 trailing) Boruta all-relevant(RF+shadow, Confirmed-only, semiannual)로 11 직교 경제군→confirmed(평균 4.4~5.0/11, 전팩터-confirmed 0%=선별 실효 실재) 축소 후 EW/IC 배분. 실측(cap-w authoritative, canonical top-25 15bps): 4/4 config graduation 미달(best boruta_W36_ICW pt_capwt=0.06 oos=-1.13 calmar=0.19 dsr=-0.13), 그리고 base(all-11, window·weight 매칭) 대비 paired NW-t(lag3) 전부 유의 음수(-2.51~-2.02) → Boruta 선별이 개선 아닌 유의 손해. 기전: Boruta가 방어형(LowRisk 1.0·Reversal 1.0·Credit·Quality 과선별)·수익형(Momentum/Growth/Consensus prune)을 골라 방어 틸트→post-2017 열위. = all-relevant 선별의 목적(횡단 rank-relevance=advisory)이 authoritative 게이트(long-only cap-w PORT_t)와 구조적 불일치(IC→PORT_t 전이 벽). base 자체도 미졸업(best pt 1.66)=substrate screen-tier(R1/R2 정합). arm R(국면조건부) 사전등록 KILL로 미착수.",
+  "tags": "RAMP",
+  "created_at": "2026-07-11",
+  "research_mode": "ramp",
+  "created_by": "emit:ramp",
+  "metric_type": "backtested",
+  "construction_type": "composite",
+  "mechanism_hypothesis": "Boruta all-relevant shadow-feature null 통제 선별(어느 팩터군이 무작위 그림자보다 정보 있는가) → factor-zoo 축소 → EW/IC 배분. research_philosophy ① Factor Zoo 축소 operationalize. 신규 기전(hypothesis_index Boruta 0건). 반증: base 대비 개선(paired>=2.0) → 실측 전부 음수로 falsified.",
+  "lcode_schema_version": 2,
+  "port_t_capwt": 0.0633,
+  "calmar": 0.1947,
+  "dsr": -0.1337,
+  "n_trials": 4,
+  "max_paired_t_vs_base": -2.0219,
+  "base_best_pt_capwt": 1.6632,
+  "confirmed_size_mean_W36": 4.973,
+  "confirmed_size_mean_W60": 4.3636,
+  "frac_all_confirmed": 0,
+  "set_turnover_jaccard_W36": 0.3239,
+  "config_hash": "34413993ed77c0ef",
+  "falsification_attempts": [
+    {
+      "test": "paired NW-t(lag3) arm S(Boruta confirmed) − base(all-11) cap-w active, 가중 매칭 4쌍",
+      "result": "falsified",
+      "effect_retained": -2.022,
+      "detail": "개선 가설 반증 — 4쌍 전부 유의 음수(paired_t -2.51~-2.02). Boruta 선별이 base보다 손해."
+    },
+    {
+      "test": "graduation HARD 3종(cap-w PORT_t>=2.95·oos>=0.7·calmar>=0.64) 4 config",
+      "result": "falsified",
+      "effect_retained": 0.063,
+      "detail": "4/4 미달 — best pt_capwt 0.06<<2.95"
+    }
+  ],
+  "oos_retention": -1.1275,
+  "portfolio_alpha_t": 0.0633,
+  "selection_type": "sweep",
+  "record_type": "performance"
+}

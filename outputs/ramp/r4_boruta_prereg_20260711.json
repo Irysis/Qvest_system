@@ -1,0 +1,29 @@
+{
+  "mode": "RAMP",
+  "round": "R4",
+  "mechanism": "Boruta_all_relevant_factor_zoo_reduction",
+  "substrate": "outputs/ramp/factor_group_scores.parquet (11 orthogonal economic families)",
+  "boruta": {
+    "nmax": 3000,
+    "ntree": 100,
+    "maxRuns": 40,
+    "imp": "RfZ_default",
+    "decide": "Confirmed_only",
+    "seed_base": 4000
+  },
+  "windows": [36, 60],
+  "weights": ["EW", "ICW"],
+  "cadence_months": 6,
+  "arm_s_configs": 4,
+  "bases": ["all11_EW", "all11_ICW"],
+  "top_n": 25,
+  "cost_bps_oneway": 15,
+  "liq_min": 200000000,
+  "gate_hard": [2.95, 0.7, 0.64, 0.5],
+  "n_trials_dsr": 4,
+  "paired_kill_threshold": 2,
+  "target": "within-month z-scored forward 1M return (cross-sectional)",
+  "pit": "training window trailing-only (last W sig_dates strictly before rebalance t; fwd realized by t)",
+  "vintage_pin": "session_20260711",
+  "config_hash": "34413993ed77c0ef"
+}
