@@ -206,14 +206,16 @@
       "ev_rationale": "R4(Boruta) 하네스 재사용으로 한계비용 낮음. 기대값의 정직한 프레임 = 숨은 알파 발굴이 아니라 중복 제거·2017+ 레짐-취약 배제·계열 폐쇄 판정. 도훈 사전 승인(07-11 '결과 보고 별다른 지시 없이 바로 실행') — 스펙 범위 내 무지시 자동 착수",
       "wall_check": "선별은 신호 내용을 창출하지 않음(WT-003 '재료가 같으면 조합 무용' 정합) — 사전등록 kill: 전 config paired NW-t < 2.0 시 계열 소진 L-code + DIST 후보",
       "data_gate": "없음 (R4 하네스·팩터 패널 재사용)",
-      "owner": "Q-Lead (R4 완료 알림 트리거)",
-      "status": "armed_await_r4",
-      "next_action": "R4 완료 → arm S 실효 판독 → Branch A(우열 비교) / Branch B(계열 폐쇄) 분기 → ramp-orchestrator spawn. 스펙: 04_Research/factor_selection_program/r5_selection_comparison_spec.md",
+      "owner": "Q-Lead (R5 ramp-orchestrator spawned 2026-07-11)",
+      "status": "in_progress_branch_b",
+      "next_action": "R5 Branch B 실행 중 (StabSel<=3 + mRMR<=3 config, 계열 폐쇄 판정). 완료 시 L-code + DIST 후보 + 텔레그램 판정",
       "source_refs": [
         "spec: 04_Research/factor_selection_program/r5_selection_comparison_spec.md",
         "trigger: RAMP R4 Boruta (task a0d16bfae575aea9a, in_progress)",
-        "authorization: 도훈 2026-07-11 무지시 자동착수 승인"
-      ]
+        "authorization: 도훈 2026-07-11 무지시 자동착수 승인",
+        "r4_result: outputs/ramp/r4_boruta_gates.parquet + L-RAMP-20260711_181539 + challenge_note_r4_boruta_20260711.md"
+      ],
+      "branch_decision": "Branch B — R4 arm S: 선별 실효 실재(confirmed 4.4~5.0/11) AND 방향 유의 음(paired NW-t 4/4 음, -2.02~-2.51, kill 발동). L-RAMP-20260711_181539"
     }
   ]
 }
