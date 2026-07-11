@@ -1,0 +1,323 @@
+{
+  "prereg": {
+    "mode": "RAMP",
+    "round": "R5",
+    "branch": "B_family_closure",
+    "spec": "04_Research/factor_selection_program/r5_selection_comparison_spec.md",
+    "r4_ref": {
+      "lcode": "L-RAMP-20260711_181539",
+      "kill": true,
+      "max_paired_t": -2.02,
+      "base_pt_capwt": {
+        "base_W36_EW": 1.02,
+        "base_W36_ICW": 1.66,
+        "base_W60_EW": 0.4,
+        "base_W60_ICW": 0.42
+      }
+    },
+    "mechanisms": ["stability_selection_glmnet_lasso_complementary_pairs", "mRMR_correlation_based_signed_rankIC_relevance"],
+    "substrate": "outputs/ramp/factor_group_scores.parquet (11 orthogonal economic families)",
+    "stabsel": {
+      "base_selector": "glmnet_lasso_alpha1",
+      "lambda": "cv.glmnet 5fold lambda.1se (min fallback)",
+      "subsample": "complementary_pairs B=50 (=100 subsamples), row-level",
+      "pi_hat": "selection freq at lambda*",
+      "configs": [
+        {
+          "W": 36,
+          "pi": 0.6
+        },
+        {
+          "W": 36,
+          "pi": 0.7
+        },
+        {
+          "W": 60,
+          "pi": 0.6
+        }
+      ],
+      "min_size_fallback": 2
+    },
+    "mrmr": {
+      "relevance": "trailing mean spearman rank-IC (signed)",
+      "redundancy": "mean |pearson cor| among selected",
+      "greedy": "MID (relevance - mean redundancy)",
+      "note": "praznik/infotheo unavailable -> correlation approximation",
+      "configs": [
+        {
+          "W": 36,
+          "k": 4
+        },
+        {
+          "W": 36,
+          "k": 6
+        },
+        {
+          "W": 60,
+          "k": 6
+        }
+      ]
+    },
+    "allocation": "EW on selected families (within-month z composite -> top-25)",
+    "weight_matched_base": "base_W{W}_EW",
+    "windows": [36, 60],
+    "cadence_months": 6,
+    "top_n": 25,
+    "cost_bps_oneway": 15,
+    "liq_min": 200000000,
+    "gate_hard": [2.95, 0.7, 0.64, 0.5],
+    "n_trials_r5": 6,
+    "n_trials_family": 10,
+    "paired_kill_threshold": 2,
+    "target": "within-month z-scored forward 1M return (cross-sectional)",
+    "pit": "training window trailing-only (last W sig_dates strictly before rebalance; fwd realized by t)",
+    "vintage_pin": "r4_session_20260711",
+    "selection_type": "sweep",
+    "as_of_date": "2026-07-11",
+    "generated_at": "2026-07-11T18:33:47+0900",
+    "source_version": "RAMP_R5_v1",
+    "security_id": "Ticker (rawdata) -> family group_z (factor_group_scores)",
+    "config_hash": "30b6165dcccfab51"
+  },
+  "meta": {
+    "as_of_date": "2026-07-11",
+    "generated_at": "2026-07-11T18:34:38+0900",
+    "source_version": "RAMP_R5_v1",
+    "security_id": "Ticker (rawdata) -> family group_z (factor_group_scores)",
+    "config_hash": "30b6165dcccfab51"
+  },
+  "results": [
+    {
+      "model": "base_W36_EW",
+      "port_t_EWuni": 1.8468,
+      "port_t_capwt": 1.024,
+      "oos_retention": -0.7572,
+      "calmar": 0.2777,
+      "dsr": 0.754,
+      "post2017_bm_sr": -0.5584,
+      "full_bm_sr": 0.2554,
+      "turnover": 11.0596,
+      "n_months": 220
+    },
+    {
+      "model": "base_W60_EW",
+      "port_t_EWuni": 1.1329,
+      "port_t_capwt": 0.4005,
+      "oos_retention": -1.1851,
+      "calmar": 0.262,
+      "dsr": 0.1168,
+      "post2017_bm_sr": -0.5584,
+      "full_bm_sr": 0.1047,
+      "turnover": 11.062,
+      "n_months": 196
+    },
+    {
+      "model": "stabsel_W36_pi60",
+      "port_t_EWuni": 0.9096,
+      "port_t_capwt": 0.2636,
+      "oos_retention": -1.2034,
+      "calmar": 0.2063,
+      "dsr": -0.0139,
+      "post2017_bm_sr": -0.8077,
+      "full_bm_sr": 0.0678,
+      "turnover": 12.8444,
+      "n_months": 220
+    },
+    {
+      "model": "stabsel_W36_pi70",
+      "port_t_EWuni": 0.6315,
+      "port_t_capwt": 0.0914,
+      "oos_retention": -1.3348,
+      "calmar": 0.1843,
+      "dsr": -0.2005,
+      "post2017_bm_sr": -0.8477,
+      "full_bm_sr": 0.0234,
+      "turnover": 12.8531,
+      "n_months": 220
+    },
+    {
+      "model": "stabsel_W60_pi60",
+      "port_t_EWuni": 0.6929,
+      "port_t_capwt": 0.0466,
+      "oos_retention": -1.1305,
+      "calmar": 0.2012,
+      "dsr": -0.2498,
+      "post2017_bm_sr": -0.5641,
+      "full_bm_sr": 0.0125,
+      "turnover": 12.1396,
+      "n_months": 196
+    },
+    {
+      "model": "mrmr_W36_k4",
+      "port_t_EWuni": 2.1891,
+      "port_t_capwt": 1.139,
+      "oos_retention": -0.6228,
+      "calmar": 0.2997,
+      "dsr": 0.7573,
+      "post2017_bm_sr": -0.3392,
+      "full_bm_sr": 0.2566,
+      "turnover": 14.0356,
+      "n_months": 220
+    },
+    {
+      "model": "mrmr_W36_k6",
+      "port_t_EWuni": 1.5997,
+      "port_t_capwt": 0.7488,
+      "oos_retention": -0.9388,
+      "calmar": 0.2441,
+      "dsr": 0.4625,
+      "post2017_bm_sr": -0.4733,
+      "full_bm_sr": 0.1816,
+      "turnover": 13.5033,
+      "n_months": 220
+    },
+    {
+      "model": "mrmr_W60_k6",
+      "port_t_EWuni": 1.2378,
+      "port_t_capwt": 0.5099,
+      "oos_retention": -1.1984,
+      "calmar": 0.2677,
+      "dsr": 0.1946,
+      "post2017_bm_sr": -0.4082,
+      "full_bm_sr": 0.1234,
+      "turnover": 13.2367,
+      "n_months": 196
+    }
+  ],
+  "paired": [
+    {
+      "model": "stabsel_W36_pi60",
+      "base": "base_W36_EW",
+      "method": "stabsel",
+      "mean_diff_ann": -0.0245,
+      "paired_t": -1.2058,
+      "n": 220
+    },
+    {
+      "model": "stabsel_W36_pi70",
+      "base": "base_W36_EW",
+      "method": "stabsel",
+      "mean_diff_ann": -0.0311,
+      "paired_t": -1.5176,
+      "n": 220
+    },
+    {
+      "model": "stabsel_W60_pi60",
+      "base": "base_W60_EW",
+      "method": "stabsel",
+      "mean_diff_ann": -0.0121,
+      "paired_t": -0.5732,
+      "n": 196
+    },
+    {
+      "model": "mrmr_W36_k4",
+      "base": "base_W36_EW",
+      "method": "mrmr",
+      "mean_diff_ann": 0.003,
+      "paired_t": 0.1425,
+      "n": 220
+    },
+    {
+      "model": "mrmr_W36_k6",
+      "base": "base_W36_EW",
+      "method": "mrmr",
+      "mean_diff_ann": -0.0065,
+      "paired_t": -0.3325,
+      "n": 220
+    },
+    {
+      "model": "mrmr_W60_k6",
+      "base": "base_W60_EW",
+      "method": "mrmr",
+      "mean_diff_ann": 0.0033,
+      "paired_t": 0.1841,
+      "n": 196
+    }
+  ],
+  "freq_by_method": [
+    {
+      "family": "Accruals",
+      "stabsel_pi60": 0.2432,
+      "mrmr_k6": 0.8108,
+      "boruta_r4": 0.0541
+    },
+    {
+      "family": "Composite",
+      "stabsel_pi60": 0.3784,
+      "mrmr_k6": 0.1351,
+      "boruta_r4": 0.5946
+    },
+    {
+      "family": "Consensus",
+      "stabsel_pi60": 0.6486,
+      "mrmr_k6": 1,
+      "boruta_r4": 0
+    },
+    {
+      "family": "Credit",
+      "stabsel_pi60": 0.4054,
+      "mrmr_k6": 0.2973,
+      "boruta_r4": 0.8378
+    },
+    {
+      "family": "Growth_Profit",
+      "stabsel_pi60": 0.7297,
+      "mrmr_k6": 0.4865,
+      "boruta_r4": 0.0811
+    },
+    {
+      "family": "LowRisk",
+      "stabsel_pi60": 0.2973,
+      "mrmr_k6": 0.0811,
+      "boruta_r4": 0.9459
+    },
+    {
+      "family": "Momentum",
+      "stabsel_pi60": 0.6216,
+      "mrmr_k6": 1,
+      "boruta_r4": 0.0811
+    },
+    {
+      "family": "Quality",
+      "stabsel_pi60": 0.4324,
+      "mrmr_k6": 0.5135,
+      "boruta_r4": 0.7568
+    },
+    {
+      "family": "Reversal",
+      "stabsel_pi60": 0.3784,
+      "mrmr_k6": 0.5946,
+      "boruta_r4": 0.9189
+    },
+    {
+      "family": "Size_Liquidity",
+      "stabsel_pi60": 0.5405,
+      "mrmr_k6": 0.8649,
+      "boruta_r4": 0.1892
+    },
+    {
+      "family": "Value",
+      "stabsel_pi60": 0.5676,
+      "mrmr_k6": 0.2162,
+      "boruta_r4": 0.5135
+    }
+  ],
+  "method_jaccard": {
+    "stabsel_mrmr": 0.3907,
+    "stabsel_boruta": 0.2376,
+    "mrmr_boruta": 0.1758
+  },
+  "r5_max_paired_t": 0.1841,
+  "r5_kill": true,
+  "r4_kill": true,
+  "r4_max_paired_t": -2.02,
+  "family_closed": true,
+  "any_graduation": false,
+  "n_trials_r5": 6,
+  "n_trials_family": 10,
+  "families": ["Accruals", "Composite", "Consensus", "Credit", "Growth_Profit", "LowRisk", "Momentum", "Quality", "Reversal", "Size_Liquidity", "Value"],
+  "n_sig": 257,
+  "date_range": ["2005-01-31", "2026-05-31"],
+  "incumbent_book_ir": 1.416,
+  "pin_ok": true
+}
