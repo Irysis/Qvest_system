@@ -1,12 +1,12 @@
 # 04_Research INDEX
 
-> 자동 생성 2026-07-09 01:39 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
+> 자동 생성 2026-07-11 01:46 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
 
 <details><summary><b>strategy-legacy</b> (3)</summary>
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `strategies/ (STR_* 178+개 패턴 전체)` | QEPM 전 세대 전략 백테스트 결과 저장소(STR_XXX_name 178+) — 헌법·legacy boundary가 명시 보존하는 결과 아카이브 | legacy | 2026-07-03 | 396.3MB |
+| `strategies/ (STR_* 178+개 패턴 전체)` | QEPM 전 세대 전략 백테스트 결과 저장소(STR_XXX_name 178+) — 헌법·legacy boundary가 명시 보존하는 결과 아카이브 | legacy | 2026-07-08 | 396.6MB |
 | `90_legacy/run_dart_strategies.sh` | DART 전략 일괄 실행 셸(v5x 시대) — DART insider 백필은 02_Infrastructure/data로 이관 | legacy | 2026-06-07 | 2KB |
 | `90_legacy/` | [재편 2026-07-04] v55/S0-S7 등 legacy 러너·산출 격리 보존 카테고리 (삭제 아님·신규 사용 금지) | legacy | 2026-07-03 | 391KB |
 
@@ -17,7 +17,7 @@
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
 | `decision_framework/` | bearish forecast v1~v3(예측 국면) + cross_section_distribution(DPL 피처 parquet) + smart_beta_regime·factor_untapped — 부팅·모닝브리핑·DPL 감사가 소비하는 활성 존 (409MB, 대부분 cross_section outputs 382MB) | active | 2026-07-08 | 407.2MB |
-| `regime_comparison/` | KTRI/MSM 국면엔진 비교·검증·브리핑 발송 스크립트 — 일일 스케줄러(daily_refresh·모닝브리핑 ktri_rebuild)가 소비 중 | active | 2026-07-08 | 1.3MB |
+| `regime_comparison/` | KTRI/MSM 국면엔진 비교·검증·브리핑 발송 스크립트 — 일일 스케줄러(daily_refresh·모닝브리핑 ktri_rebuild)가 소비 중 | active | 2026-07-10 | 1.3MB |
 
 </details>
 
@@ -42,7 +42,7 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `grade_a_catalog.json` | Grade A 전략 카탈로그(모듈 등록·성과 빌드의 입력 데이터) — register_module/build_module_performance/milestone hook이 소비 | active | 2026-06-12 | 16KB |
+| `grade_a_catalog.json` | Grade A 전략 카탈로그(모듈 등록·성과 빌드의 입력 데이터) — register_module/build_module_performance/milestone hook이 소비 | active | 2026-07-08 | 17KB |
 
 </details>
 
@@ -91,14 +91,15 @@
 
 </details>
 
-<details><summary><b>experiment</b> (6)</summary>
+<details><summary><b>experiment</b> (7)</summary>
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `composition_search/` | 16-cycle 조합탐색 실측 산출(cycle1/1b/1c/2 × track B/D/F/O/P/S/V/W + trackW 적대검증) — measurement-graduation v8.x 재설계의 실증 근거 (117MB) | report | 2026-06-12 | 115.4MB |
+| `composition_search/` | 16-cycle 조합탐색 실측 산출(cycle1/1b/1c/2 × track B/D/F/O/P/S/V/W + trackW 적대검증) — measurement-graduation v8.x 재설계의 실증 근거 (117MB) | report | 2026-07-10 | 115.4MB |
 | `02_experiments/dvaa_dvfs_revalidation/` | DVFS/DVAA vol-target·paradigm 재측정 실험(rds/xlsx, 06-17) — critical 2건 발견, 도훈 confirm 대기 상태 | report | 2026-06-16 | 3.3MB |
 | `02_experiments/asset_allocation/` | DVAA/DVFS 강화 리서치 노트(06-13, 도훈 confirm 대기)만 잔존 — 인버스 ETF 헤지 Phase1/1b는 L-RR-20260704_114303 적립 후 삭제(2026-07-04 G1 증류) | report | 2026-06-13 | 29KB |
 | `korea_research/` | 한국시장 리서치 배치 G1/G2/G7/RQ1~10 시리즈 출력(Gerber 공분산 등, v5x 시대) — 29MB | legacy | 2026-06-07 | 28.1MB |
+| `portfolios/` | PF_001/PF_ALPHASEARCH/V7_ALLWEATHER_001/V7_M11_REF 포트폴리오 정의(v5x~v7 시대) | legacy | 2026-07-08 | 3KB |
 | `90_legacy/factor_scan.R + factor_scan_results.csv` | 초기 팩터 전수 스캔 스크립트와 결과(49KB) — artifact-storage 룰이 예시로 참조 | legacy | 2026-06-07 | 6KB |
 | `02_experiments/` | [재편 2026-07-04] 연구 실험 토픽 산출 카테고리 (ML 배치·재검증·census 등 실행코드 참조 0 확인분) | active | 2026-07-03 | 3.4MB |
 
@@ -157,7 +158,7 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `01_reports/` | [재편 2026-07-04] 감사·검토·제안·로드맵 보고서와 그 증거 데이터 카테고리 (실행코드 참조 0 확인분 수용) | active | 2026-07-05 | 1.4MB |
+| `01_reports/` | [재편 2026-07-04] 감사·검토·제안·로드맵 보고서와 그 증거 데이터 카테고리 (실행코드 참조 0 확인분 수용) | active | 2026-07-10 | 1.4MB |
 
 </details>
 
@@ -173,23 +174,24 @@
 
 | 항목 | 정체 | 카테고리 | 최근 | 크기 |
 |---|---|---|---|---|
-| `regime_analysis/` | 구 국면 시각화 png(KTRI 9quad·3layer·MRS daily) + threshold 튜닝 스크립트(v5x 시대) | dead | 2026-07-05 | 665KB |
+| `regime_analysis/` | 구 국면 시각화 png(KTRI 9quad·3layer·MRS daily) + threshold 튜닝 스크립트(v5x 시대) | dead | 2026-07-08 | 667KB |
 
-## 미분류 (2) — index_descriptions.json에 추가하세요
+## 미분류 (4) — index_descriptions.json에 추가하세요
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `insider` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-05 | 19KB |
+| `champions_revalidation` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-10 | 8KB |
+| `insider` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-10 | 34KB |
+| `pg2_carry_convention` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-10 | 38KB |
 | `pg2_overlay_beyond_r05m4_20260705.md` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-05 | 7KB |
 
-## stale 큐레이션 키 (14) — 디스크 부재, index_descriptions.json에서 제거 권장
+## stale 큐레이션 키 (13) — 디스크 부재, index_descriptions.json에서 제거 권장
 
 - `logs/`
 - `briefings/`
 - `worktasks/`
 - `stage_artifacts/`
 - `nav_tracking/`
-- `portfolios/`
 - `blog_archive/`
 - `90_legacy/{run_batch_s3*.R ×6, run_s3_*.R ×8, s0_*.R ×2, s3_*.R ×6} (S-stage 스크립트 22개)`
 - `{allocate_12_hypotheses.R, allocate_gap_hypotheses.R, c19_v24_interaction_analysis.R, c19_v24_syn05_analysis.R, crisis_defense_analysis.R, factcheck_defense_hypotheses.R, factcheck_hypothesis.R, factor_correlation_vs_C19.R, factor_db_deep_analysis.R, factor_db_deep_phase2.R, factor_db_fix_impact_audit.R, ml_overnight_research.R, mrs_stress_detection_analysis.R, residual_alpha_analysis.R, risk_m4_m6_analysis.R, risk_validation_rev4.R, risk_validation_rev5.R, pg_run_STR_1656_M05.R, validate_rcpp_speedup.R} (일회성 분석 스크립트 19개)`
