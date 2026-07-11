@@ -1,0 +1,70 @@
+{
+  "task_id": "WT-D20260711_001",
+  "as_of_date": "2026-07-11",
+  "forecast_horizon": "1M",
+  "wt_type": "discovery",
+  "package_kind": "pilot_triage (NOT deployable alpha; power-insufficient by design)",
+
+  "alpha_vector": {},
+  "confidence_vector": {},
+  "alpha_vector_note": "Deliberately empty. This is a <=50-doc power-honest pilot; per pre-registration NO portfolio/alpha_vector is emitted and NO gate claim is permitted. A deployable score requires the Phase-A full-panel canonical screen (see alpha_validation.json scale_up_design).",
+
+  "signal_matrix_ref": "stage_artifacts/WT_D20260711_001/alpha_scores.parquet",
+
+  "factor_specs": [
+    {
+      "factor_family": "DisclosureText_Readability",
+      "proxy": "MD&A complexity/obfuscation score (1-5, LLM-scored in-context)",
+      "formula": "agent rubric score of linguistic complexity of annual-report '경영진단 및 분석의견' excerpt (2800 chars post-boilerplate)",
+      "lag_rule": "rcept_dt basis; forward window = month AFTER rcept month, 12M",
+      "winsorization": "n/a (ordinal 1-5)",
+      "neutralization": "Size-controlled (partial Spearman); confirmed NOT a size proxy",
+      "economic_rationale": "Li (2008) JAE — managers obfuscate bad news with complex prose; higher MD&A complexity predicts lower subsequent performance. Distinct from disclosure-metadata (size proxy, killed WT-005).",
+      "redundancy_cluster_id": "text_readability (novel material axis; no existing KR factor overlaps)",
+      "weight_theta": null,
+      "references": ["Li 2008 JAE readability", "Loughran-McDonald 2011 JF (tone/uncertainty lexicon)"]
+    },
+    {
+      "factor_family": "DisclosureText_Tone",
+      "proxy": "MD&A management-optimism score (1-5)",
+      "economic_rationale": "PRE-REGISTERED sign POSITIVE; realized NEGATIVE (overoptimism-reversal). Secondary lead — flip sign in scale-up.",
+      "weight_theta": null,
+      "references": ["Loughran-McDonald 2011"]
+    }
+  ],
+
+  "diagnostics": {
+    "canonical_port_t_nw_lag3": null,
+    "canonical_port_t_pvalue": null,
+    "canonical_n_months": null,
+    "canonical_null_reason": "Pilot is a cross-sectional rank-correlation triage on 45 docs spanning 2015-2023, NOT a monthly-rebalanced canonical top-N screen. canonical_screen_bt deferred to Phase-A scale-up (prereg forbids gate claim). IC->PORT_t transition wall explicitly unaddressed.",
+    "pilot_spearman_complexity_vs_fwd12m_excess": -0.316,
+    "pilot_spearman_complexity_ci90": [-0.506, -0.100],
+    "pilot_complexity_perm_p": 0.035,
+    "pilot_complexity_partial_given_logSize": -0.313,
+    "pilot_spearman_tone_vs_fwd12m_excess": -0.232,
+    "pilot_spearman_uncertainty_vs_fwd12m_excess": -0.051,
+    "pilot_spearman_composite_vs_fwd12m_excess": 0.014,
+    "rank_ic": null,
+    "icir": null,
+    "harvey_t_stat": null,
+    "n_documents": 45
+  },
+
+  "selection_objective": "canonical_port_t",
+  "selection_objective_note": "canonical_port_t is the intended graduation authority but is null here (pilot did not run canonical_screen_bt). Pilot selection among axes used pre-registered directional rule on fwd12m_excess rank correlation.",
+
+  "verdict": "PROMISING_SCALE_UP",
+  "verdict_tier": "weak/screening-tier research lead",
+
+  "challenge_flags": [
+    "PILOT: power-insufficient by design (n=45); no gate/PORT_t claim permitted (pre-registered upper bound).",
+    "IC->PORT_t transition wall: rank correlation != realized long-only portfolio-alpha t. Not capital-grade.",
+    "COMPLEXITY axis is the signal: rho=-0.316, perm p=0.035, Size/tier/vintage-robust, jackknife-stable, survives Size partial. Meets pre-reg PROMISING rule.",
+    "TONE hypothesis REJECTED in sign (pre-committed +, realized -0.23). Reverse-tone (overoptimism penalty) is a secondary lead (p=0.13).",
+    "Subjective complexity scorer -> scale-up must use OBJECTIVE readability (sentence length / Fog / table-density).",
+    "3/45 extractions hit governance boilerplate (excluded -> complexity strengthens to -0.358)."
+  ],
+
+  "handoff": "NOT for Risk/Optimizer/Forge (pilot, not an admission candidate). Route = Phase-A objective-readability full-panel canonical screen (Q-Lead to schedule). See alpha_validation.json.scale_up_design."
+}

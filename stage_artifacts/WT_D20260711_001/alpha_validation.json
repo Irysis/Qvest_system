@@ -1,0 +1,98 @@
+{
+  "task_id": "WT-D20260711_001",
+  "hypothesis": "H-d: disclosure TEXT CONTENT (annual-report MD&A tone/uncertainty/complexity), LLM-scored, predicts forward 12M excess return. Power-insufficient pilot.",
+  "novelty_axis": "material — raw disclosure TEXT (distinct from WT-D20260710_005 which killed disclosure METADATA = size-proxy confound)",
+  "metric_type": "pilot_rank_correlation (NOT canonical_screen, NOT backtested). Screening-tier research triage only.",
+  "prereg_sha256": "beba7a3cc62c4bfc74f77e2f4495dd9f5618d28febca4f53357cfa503bc00a35",
+  "scores_sha256": "d7b05e812221b9c96c1b0e466cf35144f156a10fab818575e6fdfa730f9e521a",
+  "blind_discipline": "scores frozen to disk BEFORE any return access; scoring read excerpts-only file",
+
+  "sample": {
+    "n_documents": 45,
+    "design": "stratified 3 cap_tier x 3 year_bin = 9 cells x 5 (balanced 5/cell realized)",
+    "universe": "KOSPI200 UNION KOSDAQ150 (rawdata K200|KQ150), Size>0 at (fiscal_year+1)-03 snapshot",
+    "source": "DART document.xml, annual business report (사업보고서), MD&A section '경영진단 및 분석의견'",
+    "fiscal_years": "2014-2022 (filed 2015-2023)",
+    "seed": 20260711,
+    "excerpt_chars": 2800,
+    "low_content_extractions": 3,
+    "low_content_docs": ["D005","D055","D059"]
+  },
+
+  "pit": {
+    "basis": "rcept_dt",
+    "fwd_window": "12 months starting the month AFTER the rcept month (no overlap with pre-disclosure period)",
+    "returns": "monthly compounded (daily Ret clipped to KR price-limit +-0.35 for error hygiene), excess = stock - KOSPI200 TR (BM_Ret) same window",
+    "all_45_have_full_12m": true
+  },
+
+  "rubric_axes_hypotheses": {
+    "tone": "POSITIVE (optimism -> higher return)",
+    "uncertainty": "NEGATIVE (hedging -> lower return)",
+    "complexity": "NEGATIVE (obfuscation -> lower return; Li 2008)",
+    "composite": "POSITIVE (tone + (6-uncertainty) + (6-complexity))"
+  },
+
+  "results_vs_fwd12m_excess_primary": {
+    "note": "Spearman rho, bootstrap 90% CI (2000 reps), permutation p (20000), full N=45",
+    "tone":        {"rho": -0.232, "ci90": [-0.464, 0.013], "perm_p": 0.128, "hyp_sign": "+", "realized_sign": "-", "verdict_axis": "HYPOTHESIS_REJECTED_reverse_lead"},
+    "uncertainty": {"rho": -0.051, "ci90": [-0.295, 0.188], "perm_p": 0.738, "hyp_sign": "-", "realized_sign": "-", "verdict_axis": "NULL"},
+    "complexity":  {"rho": -0.316, "ci90": [-0.506, -0.100], "perm_p": 0.035, "hyp_sign": "-", "realized_sign": "-", "verdict_axis": "PROMISING (CI excl 0, sign match)"},
+    "composite":   {"rho": 0.014, "ci90": [-0.198, 0.239], "perm_p": 0.926, "hyp_sign": "+", "realized_sign": "+", "verdict_axis": "NULL (muddled: tone reverses)"}
+  },
+
+  "size_confound_control": {
+    "note": "WT-005 lesson: verify TEXT signal is not a size proxy",
+    "complexity": {"cor_axis_logSize": 0.046, "raw_rho_excess": -0.316, "partial_rho_excess_given_logSize": -0.313, "partial_ci90": [-0.525, -0.072], "collapse_gt_50pct": false, "conclusion": "complexity is NOT a size proxy; survives Size control"},
+    "tone": {"cor_axis_logSize": 0.275, "partial_rho": -0.188, "note": "tone mildly size-correlated; reverse signal weakens but persists"}
+  },
+
+  "complexity_robustness": {
+    "excl_low_content_n42": {"rho": -0.358, "ci90": [-0.559, -0.144]},
+    "jackknife_rho_range": [-0.357, -0.267],
+    "jackknife_all_same_sign": true,
+    "drop_max_outlier_rho": -0.339,
+    "within_cap_tier": {"LARGE": -0.475, "MID": -0.180, "SMALL": -0.242},
+    "within_year_bin": {"FILE_2015_2017": -0.174, "FILE_2018_2020": -0.428, "FILE_2021_2023": -0.317},
+    "conclusion": "negative in every tier and every vintage; not a size/time artifact; no single obs drives it"
+  },
+
+  "n_trials": {"preregistered_family": 8, "primary_decision_tests": 4, "selection_type": "single_prereg_family (not sweep, not chain)", "multiple_testing": "complexity uncorrected p=0.035; Bonferroni x4 -> ~0.14 (not significant). Pilot waived MT gate per prereg."},
+
+  "verdict": "PROMISING_SCALE_UP",
+  "verdict_tier": "weak-tier / screening-tier research lead (NOT capital-grade, NOT an admitted alpha)",
+  "verdict_basis": "Pre-registered rule met by COMPLEXITY axis: 90% CI excludes 0 (-0.506,-0.100), sign matches hypothesis (negative/obfuscation), survives Size control (partial -0.313, CI excl 0, cor with logSize ~0). Robust across tiers/vintages/jackknife. Secondary: tone hypothesis REJECTED in sign but reverse-tone (overoptimism penalty) is a lead (p=0.13).",
+  "verdict_caveats": [
+    "IC->PORT_t transition wall: rank correlation is NOT realized long-only portfolio-alpha t. No canonical PORT_t claim (prereg forbade).",
+    "Scorer = the agent (subjective complexity); mechanism (obfuscation vs disclosure-type proxy) unresolved at pilot power.",
+    "n=45 underpowered; would not survive strict multiple-testing correction."
+  ],
+
+  "scale_up_design": {
+    "objective": "Confirm complexity->return with objective readability + establish PORT_t transition on a monthly-rebalanced canonical screen",
+    "phase_A_full_panel_objective": {
+      "what": "Compute OBJECTIVE readability (mean sentence length, Fog-equivalent, table-density, nominalization rate) on ALL K200uKQ150 annual-report MD&A, fiscal 2010-2023 (~3000-4000 filings). Free (DART API + R text parsing, no LLM).",
+      "cost": "compute-only; ~1.5s/doc fetch x ~3500 = ~1.5h fetch + R parse; $0 external",
+      "test": "monthly cross-sectional Spearman IC time-series -> ICIR + Newey-West Harvey-t; then canonical_screen_bt(complexity-sorted top-N EW long-only) -> portfolio_alpha_t_nw_lag3 vs 2.95 gate",
+      "power": "full-panel; enables the capital-grade gate the pilot cannot reach"
+    },
+    "phase_B_llm_tone_uncertainty": {
+      "what": "LLM tone/uncertainty on a powered subset (~300) to validate the reverse-tone lead (flip sign: optimism -> lower return)",
+      "sample_size_power": {
+        "detect_rho_0.30_2sided_a0.05_pow0.80": 85,
+        "detect_rho_0.20_2sided_a0.05_pow0.80": 194,
+        "detect_rho_0.20_bonferroni_a0.0125_pow0.80": 274,
+        "recommended_n": 300,
+        "rationale": "observed rho ~0.30 is winner's-curse inflated; power to a conservative true rho=0.20 under multiple-testing correction -> ~275-300"
+      },
+      "cost": "agent in-context scoring ~300 docs x ~1000 tok excerpt ~= 0.3M input tokens; no external API (compute-only). Prefer objective metrics where possible."
+    },
+    "recommended_route": "Phase A first (free, full-power, reaches PORT_t gate). Only if complexity survives canonical PORT_t, run Phase B LLM tone as an orthogonal overlay feature."
+  },
+
+  "universe_comparison": {
+    "note": "L-227 universe v2 mandate applies to ICIR-attenuation diagnosis on canonical screens. This pilot is a rank-correlation triage (not a canonical screen), so v2 KR_TOP500_FREEFLOAT comparison is deferred to Phase A scale-up (where canonical_screen_bt runs). cost_model_version input = v2.4_kr_retail_15bps (request.json), consistent with default KR_top342-class universe."
+  },
+
+  "screen_route": "TEXT_READABILITY_FEATURE -> Phase A objective-readability full-panel canonical screen (not DPL_FEATURE, discontinued v8.3)"
+}
