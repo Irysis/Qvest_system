@@ -85,10 +85,12 @@ for (tk in probes) {
   if (is.na(cc)) { cat(tk, "no corp_code\n"); next }
   lst <- fetch_annual_list(cc, "20180101", "20191231")
   if (!isTRUE(lst$ok)) { cat(tk, "list fail:", lst$note, "\n"); next }
-  cat("\n==== ", tk, cmap[Ticker==tk,corp_name][1], " annual reports found:", nrow(lst$dt), "====\n")
-  print(lst$dt[, .(rcept_no, report_nm, rcept_dt)])
-  # take first annual report
-  rc <- lst$dt$rcept_no[1]
+  cat("\n==== ", tk, cmap[Ticker==tk,corp_name][1], " filings:", nrow(lst$dt), "====\n")
+  # FILTER: only 사업보고서 (annual business report) — exclude 분기/반기 & amendments (기재정정)
+  ann <- lst$dt[grepl("사업보고서", report_nm) & !grepl("기재정정|첨부정정|첨부추가|정정", report_nm)]
+  print(ann[, .(rcept_no, report_nm, rcept_dt)])
+  if (nrow(ann)==0) { cat("  no clean 사업보고서\n"); next }
+  rc <- ann$rcept_no[1]
   doc <- fetch_doc_text(rc)
   if (!isTRUE(doc$ok)) { cat("  doc fail:", doc$note, "\n"); next }
   cat("  doc nchar(raw):", doc$nchar, "\n")
