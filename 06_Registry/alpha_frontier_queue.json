@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
-  "updated": "2026-07-12",
+  "updated": "2026-07-13",
   "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
   "entries": [
     {
@@ -365,6 +365,37 @@
       "source_refs": [
         "audit: 04_Research/01_reports/agrade_rebase_audit_20260712.md",
         "l_code: L-RAMP-20260620_161507 계열"
+      ]
+    },
+    {
+      "id": "FQ-021",
+      "lane": "non_return",
+      "title": "N2 — 공시 가독성 악화(Δm1) 신호: 레벨→변화 축 (Phase A chain 확장)",
+      "hypothesis": "문장길이의 YoY 악화(전년 대비 Δm1)가 레벨(m1)과 독립인 신호인가 — '갑자기 어려워진 공시'=악재 은폐 이벤트 prior(Li 2008 change 문헌). Phase A는 레벨만 측정, 변화 축은 미검증",
+      "ev_rationale": "text_cache 4,490건 재사용 = 데이터 비용 0·DART 쿼터 0. Phase A 교훈 반영(단일지표 primary·합성 금지). 정직 prior: 레벨이 screen-tier라 변화도 보수적 기대",
+      "wall_check": "cap-tier 국소화·전이 벽 동일 적용 — dual-basis 병기. 연차 주기 신호라 이벤트 희소성(연 1회)·검정력 주의",
+      "data_gate": "없음",
+      "owner": "Q-Lead 야간 라운드",
+      "status": "in_progress",
+      "next_action": "사전등록(Δm1 primary, config ≤4) → canonical dual-basis → 판정",
+      "source_refs": [
+        "asset: stage_artifacts/WT_D20260711_002/{text_cache,signal_panel.rds}",
+        "prior: L-AR-20260712_152759"
+      ]
+    },
+    {
+      "id": "FQ-022",
+      "lane": "non_return",
+      "title": "N3 — DART 담보/질권·감사의견 metadata census (FQ-004 본크롤 설계 재료)",
+      "hypothesis": "(측정 아님) 두 virgin 원천의 공시 존재량·기간 커버리지 지도를 list 호출만으로 작성 — 본크롤 설계·비용 산정 재료",
+      "ev_rationale": "list.json 메타만(문서 다운로드 0) = 쿼터 최소. insider 백필과 경쟁 최소화(콜 캡 + 즉시 중단 규약)",
+      "wall_check": "쿼터 경쟁 시 즉시 중단 — insider 크롤(R9 게이트)이 항상 우선",
+      "data_gate": "DART list API (경량)",
+      "owner": "Q-Lead 야간 라운드",
+      "status": "in_progress",
+      "next_action": "census 지도 → FQ-004 본크롤 설계 초안 갱신",
+      "source_refs": [
+        "FQ-004 virgin 0-coverage"
       ]
     }
   ]
