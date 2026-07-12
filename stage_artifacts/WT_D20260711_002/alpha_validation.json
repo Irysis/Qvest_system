@@ -1,0 +1,108 @@
+{
+  "task_id": "WT-D20260711_002",
+  "phase": "Phase A — objective readability full-corpus + canonical gate (chain of WT-D20260711_001 pilot)",
+  "prereg_sha256": "96b7e06d8435af45e01f6d22c8bf747941c7e029e7f89991a30f9337a16d5ba6",
+  "prereg_hash_verified": "OK (unchanged before signal->return merge)",
+  "metric_type": "canonical_screen (alpha-stage screening; NOT forge-authoritative, NOT capital)",
+  "vintage_pin": "wt002_phaseA_20260711 (rawdata pinned; RAWDATA cache write forbidden)",
+
+  "corpus_coverage": {
+    "candidate_pool_ticker_fy": 4866,
+    "unique_tickers_pool": 702,
+    "filings_inventory_unique_ticker_fy": 8147,
+    "docs_fetched_unique_rcept": 4490,
+    "docs_ok_mdna_extracted": 4432,
+    "docs_no_section": 58,
+    "coverage_pct_of_pool": 91.1,
+    "tickers_with_signal": 669,
+    "fiscal_years": "2010-2023 (thin 2010=147/2011=240 due to DART early-year availability; 2012+ ~310-347/yr)",
+    "signal_months": 169,
+    "avg_names_per_month": 294.4,
+    "honesty_note": "434 pool (ticker,fy) unmatched (no clean 사업보고서 in inventory / non-Dec FYE / corp_code gap) + 58 no MD&A section. No imputation; missing dropped."
+  },
+
+  "objective_metrics_defined": 6,
+  "primary_composite": "obfuscation_composite = EW z-mean of {m1 avg_sentence_len, m2 fog_kr, m3 hanja_latin_density, m5 log_section_len}; score_long = -composite",
+
+  "convergent_validity_vs_pilot_LLM_complexity": {
+    "note": "Spearman(objective metric, pilot subjective LLM complexity) on 44 pilot∩fullcorpus docs (return-blind). Tests whether objective metrics measure the same thing as the pilot subjective score.",
+    "n": 44,
+    "composite_vs_llm_complexity": 0.329,
+    "m2_fog_kr": 0.275, "m3_hanja_latin_density": 0.202, "m1_avg_sentence_len": 0.147,
+    "m6_boilerplate_yoy": 0.124, "m5_log_section_len": 0.075, "m4_numeric_table_density": -0.403,
+    "interpretation": "Composite moderately converges with LLM complexity (0.329). BUT the objective dimension best matching the LLM score (m2 fog 0.275 / composite) carries NO return signal, while the return-carrying dimension (m1 sentence length) has only weak LLM convergence (0.147). Objective and subjective complexity are partly measuring different things."
+  },
+
+  "monthly_rank_ic_advisory": {
+    "note": "Spearman rank-IC vs fwd 1M excess, 169 months, Newey-West Harvey-t lag3. ADVISORY (not gate).",
+    "obfuscation_composite": {"mean_ic": -0.0022, "icir": -0.029, "harvey_t": -0.38, "placebo_p": 0.716, "verdict": "NULL"},
+    "m1_avg_sentence_len": {"mean_ic": -0.0155, "icir": -0.224, "harvey_t": -2.80, "placebo_p": 0.008, "verdict": "REAL negative (obfuscation->lower return, matches Li 2008 + pilot direction)"},
+    "m2_fog_kr": {"harvey_t": -0.53}, "m3_hanja_latin_density": {"harvey_t": 0.88},
+    "m4_numeric_table_density": {"harvey_t": -0.32}, "m5_log_section_len": {"harvey_t": 0.54},
+    "m6_boilerplate_yoy": {"harvey_t": -0.70},
+    "null_max_harvey_t_across_7_family": 2.804,
+    "leave_one_out": "dropping m1(z1) flips composite Harvey-t to +0.64 -> m1 is the SOLE signal carrier; m2/m3/m5 dilute it."
+  },
+
+  "canonical_dual_basis": {
+    "spec": "canonical_screen_bt, top_n=25 EW long-only, 15bps one-way, liq_min=2e8, cap-w KOSPI200 TR benchmark (authoritative), diag_dual_basis=TRUE, size_dt provided.",
+    "HARD_gate_ref": {"portfolio_alpha_t_nw": 2.95, "oos_retention": 0.7, "calmar": 0.64, "authority": "forge (this is canonical screening, sub-authoritative)"},
+    "primary_composite": {
+      "capw_port_t_full": 1.37, "capw_pvalue": 0.171, "capw_IR": 0.383, "capw_net_sr": 0.383,
+      "turnover_annual": 1.33, "capw_port_t_IS_pre2019": 1.68, "capw_port_t_OOS_2019on": -0.27,
+      "ew_universe_port_t": 0.47, "ew_universe_post2017_t": -0.26,
+      "verdict": "cap-w PORT_t 1.37 < 2.95 HARD FAIL; EW-universe also weak (0.47) -> NOT a cap-w bench artifact; genuine null."
+    },
+    "best_single_m1_avg_sentence_len": {
+      "capw_port_t_full": 2.35, "capw_IR": 0.662, "capw_net_sr": 0.662, "turnover_annual": 1.26,
+      "capw_port_t_IS_pre2019": 2.80, "capw_port_t_OOS_2019on": 0.18,
+      "ew_universe_port_t": 2.13, "ew_post2017_t": 0.23,
+      "oos_retention_est": "IS 2.80 -> OOS 0.18 => retention ~0.06 (<<0.5 HARD FAIL, post-2017 decay)",
+      "verdict": "cap-w PORT_t 2.35 < 2.95 HARD FAIL. Real but sub-threshold + OOS decay."
+    },
+    "cap_tier_localization": {
+      "note": "clarity-selected top-25 weight shares (universe-wide Size rank): the signal cannot be expressed in benchmark mega/mid tiers.",
+      "composite": {"MEGA_wshare": 0.004, "MID_wshare": 0.028, "OTHER_wshare": 0.960},
+      "m1": {"MEGA_wshare": 0.012, "MID_wshare": 0.028, "OTHER_wshare": 0.960},
+      "interpretation": "~96% small-cap (OTHER). Long-only cross-sectional selection localizes in benchmark-underweight tiers -> cap-w trap (consistent with project-captier-alpha-localization)."
+    }
+  },
+
+  "self_adversarial": {
+    "placebo_composite_p": 0.716,
+    "placebo_m1_p": 0.008,
+    "size_control_m1": {"raw_ic": -0.0155, "partial_ic_given_logSize": -0.0140, "cor_m1_logSize": 0.071, "partial_harvey_t": -2.52, "conclusion": "m1 SURVIVES Size control (cor with logSize ~0.07, partial barely attenuated) — NOT a size proxy. Matches pilot key finding."},
+    "market_split_m1": {"K200_harvey_t": -1.54, "KQ150_harvey_t": -2.20, "conclusion": "negative in both markets, KOSDAQ stronger; not a single-market artifact."},
+    "adv_tercile_m1": {"LO": -1.99, "MID": -1.02, "HI": -1.48, "conclusion": "negative across all liquidity terciles — not a pure micro-liquidity artifact."},
+    "annual_lag12_stress_m1": {"harvey_t": -3.06, "note": "12m-stale signal is EVEN stronger -> slow-moving structural firm-disclosure trait, robust to staleness (no timing/look-ahead dependence)."},
+    "boilerplate_contamination": "m6 (YoY Jaccard) rank-IC Harvey-t -0.70 (weak); excluded from primary composite; does not drive result.",
+    "industry_confound": "spot-checked via K200/KQ150 + adv-tercile; signal persists across cohorts (not a sector proxy at the tested resolution)."
+  },
+
+  "vs_pilot": {
+    "pilot_rho": -0.316,
+    "pilot_design": "45 docs, subjective LLM complexity, 12M forward excess, CI90 [-0.506,-0.100] excl 0, survives Size control (partial -0.313).",
+    "phase_A_result": "Objective composite does NOT replicate (rank-IC ~0, cap-w PORT_t 1.37). Direction CORROBORATED only in the sentence-length dimension (m1: rank-IC -2.80, Size-control survives, persistent), but magnitude sub-threshold (cap-w 2.35<2.95) with OOS decay.",
+    "reconciliation": "The pilot whisper is PARTIALLY real (obfuscation->lower return via longer sentences, Size-independent) but (a) 1M monthly + objective is a harder/different test than 12M + subjective, (b) capital-grade PORT_t not reached, (c) signal localized in small-caps. Bonferroni x7 on m1 rank-IC p~0.005 -> ~0.037 (still <0.05 for rank-IC advisory; PORT_t authoritative and FAILS)."
+  },
+
+  "n_trials": {"family": 7, "selection_type": "chain (hypothesis-driven scale-up, not sweep)", "dsr_gate": "not applicable (chain); DSR diagnostic only", "primary_pre_committed": "obfuscation_composite"},
+
+  "universe_comparison": {
+    "note": "L-227 v2 mandate: composite failed cap-w AND EW-universe basis (0.47) at KR_top342-class universe with liq 2e8. EW-universe diag already provides the size-neutral comparison the v2 mandate targets; a KR_TOP500_FREEFLOAT re-run is not decision-relevant since the signal is null on the primary and sub-threshold+decaying on m1. Deferred (not warranted).",
+    "cost_model_version": "v2.4_kr_retail_15bps (default KR_top342-class; consistent)"
+  },
+
+  "verdict": "FAIL_CANONICAL_HARD_GATE / SCREEN_TIER",
+  "screen_route": "TEXT_READABILITY_FEATURE (m1 avg_sentence_len) -> OVERLAY_CANDIDATE / feature-preservation. NOT capital-grade standalone (single-alpha DSR ceiling + cap-w trap + post-2017 decay).",
+  "alpha_discovery_certificate": "NOT ISSUED (harvey_t_specs_pass_count=0 at |t|>=3 threshold; m1 rank-IC |t|=2.80 <3; canonical PORT_t <2.95). Honest screen-tier fail.",
+  "artifacts": {
+    "signal_panel": "stage_artifacts/WT_D20260711_002/signal_panel.rds",
+    "metrics_cache": "stage_artifacts/WT_D20260711_002/text_cache/*.parquet (4490 docs)",
+    "alpha_scores": "stage_artifacts/WT_D20260711_002/alpha_scores.parquet",
+    "canonical_results": "stage_artifacts/WT_D20260711_002/analysis_results.rds + single_metric_canon.rds",
+    "adversarial": "stage_artifacts/WT_D20260711_002/adversarial_results.rds",
+    "charts": "stage_artifacts/WT_D20260711_002/charts/ (m1_equity_curve.png, m1_annual_returns.png, m1_drawdown.png, family_portt_sweep.png)"
+  },
+  "insider_crawl_noninterference": {"months_done_before": 180, "months_done_after": 180, "rows_before": 179724, "rows_after": 179724, "checkpoint": "201912 unchanged", "conclusion": "insider backfill untouched"}
+}

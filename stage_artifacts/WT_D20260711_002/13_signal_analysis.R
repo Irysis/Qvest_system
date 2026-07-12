@@ -7,6 +7,7 @@ ROOT <- "C:/Users/99922/OneDrive/Quant_Module_Moltbot"
 OUT  <- file.path(ROOT, "stage_artifacts/WT_D20260711_002")
 CACHE <- file.path(OUT, "text_cache")
 source(file.path(OUT, "metrics_lib.R"))
+source(file.path(ROOT, "02_Infrastructure/contracts/backtest_result_contract.R"))
 source(file.path(ROOT, "02_Infrastructure/contracts/canonical_screen_bt.R"))
 set.seed(20260711)
 ym_add <- function(ym, k){ y<-ym%/%100L; m<-ym%%100L; t<-(y*12L+(m-1L))+k; (t%/%12L)*100L+(t%%12L)+1L }
