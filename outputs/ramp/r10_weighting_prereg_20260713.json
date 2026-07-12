@@ -1,0 +1,42 @@
+{
+  "mode": "RAMP",
+  "round": "R10",
+  "fq": "FQ-023",
+  "question": "P-pure(W36_K20) 동일가중(종목 EW × 팩터 EW) → 알파/점수-비례 계열 교체 시 개선?",
+  "base": "Ppure_W36_K20 (종목 EW × 팩터 EW, R6 저장 2.6124 parity 앵커)",
+  "selection_fixed": "R6 sel_traj W36_K20 풀 재사용 (선별 재실행 아님 — WEIGHTING 축만)",
+  "configs": {
+    "W_stock": "종목 가중 = 합의 z-점수 선형 positive-shift 비례 (cap[0,0.20], Σw=1, ≤25) · 팩터 EW",
+    "W_factor": "팩터 합산 가중 = trailing NW-t positive-shift 비례 (PIT 선별시점값) · 종목 EW",
+    "W_both": "W-factor 합성 + W-stock 종목 틸트",
+    "W_stock_sqrt": "점수-비례 완만화 sqrt(positive-shift) · 팩터 EW (강한틸트 FAIL수렴 판별 config4)"
+  },
+  "weighting_spec": {
+    "positive_shift": "p = s - min(s_sel) + floor_frac*range(s_sel); floor_frac=0.25",
+    "linear": "raw = p",
+    "sqrt": "raw = sqrt(p)",
+    "cap": "iterative water-fill cap=0.20, Σw=1",
+    "factor_tilt": "wfac_j = tt_j - min(tt_pool) + floor_frac*range(tt_pool); tt=trailing NW-t at anchor (PIT)"
+  },
+  "gate_hard": [2.95, 0.7, 0.64, 0.5],
+  "primary_criterion": "paired NW-t(cap-w active) vs base >= 2.0 (문턱)",
+  "kill_rule": "전 config paired < 2.0 -> P-pure 비중 축 소진(EW 유지 확정)",
+  "top_n": 25,
+  "cost_bps_oneway": 15,
+  "liq_min": 200000000,
+  "cap": 0.2,
+  "floor_frac": 0.25,
+  "n_trials_r10": 4,
+  "n_trials_lineage": 14,
+  "selection_type": "sweep",
+  "dsr_note": "DSR n_trials=P-pure 계보 누적 14 (R6 6+R7 4+R10 4). selection_type=sweep.",
+  "honest_prior": "EW=통계 sizing 천장(추정오차>신호). 위험기반 sizing settled-negative(제외). 유일 양성=LinearTilt(HRP 단일클러스터).",
+  "xmode_check": "hypothesis_index: STR_1699 Alpha-Tilted/score_tilt catalog 다수 존재하나 P-pure composite 위 미검증 → 중복 아님(INV-7)",
+  "cost_model": "delta-based |Δw|×15bps one-way (weighted_screen_bt 내장 — 가중변형 회전증가 자동 반영)",
+  "vintage_pin": "r6_session_20260711 (sel_traj/pure_factor_scores/factor_group_scores/rawdata; N1 d3 parity Δ=0 확인)",
+  "as_of_date": "2026-07-13",
+  "source_version": "RAMP_R10_v1",
+  "security_id": "Ticker (rawdata) -> factor_id z (pure_factor_scores.z=Z_Score_Aligned)",
+  "config_hash": "1648fada1bd7f4f8",
+  "generated_at": "2026-07-13T08:41:29+0900"
+}
