@@ -57,7 +57,7 @@ lc <- emit_lcode(
   mode = "alpha_research",
   strategy_id = "FQ-017_m1_overlay_drain",
   grade = "F",                         # overlay fails the 2.0 paired-NW-t bar (screen-tier disposition)
-  metric_type = "weighted_screen",
+  metric_type = "canonical_screen",    # contract-grade screen via weighted_screen_bt (canonical_screen_bt generalization); sub-authoritative
   construction_type = "overlay_stock_exclusion_tilt",   # cross-sectional stock-level; NOT overlay_regime
   selection_type = "chain",
   record_type = "performance",
@@ -95,13 +95,13 @@ tg <- tg_agent_brief(
            "방법: 난독 최악 종목을 빼거나(exclusion) 비중을 낮추는(tilt) 오버레이를 계약 백테로 14년치 실측",
            "결과: 4가지 방식 모두 base 대비 통계적 개선이 미미(증분 t값 최대 1.27, 합격선 2.0 미달)",
            "이유: 이 신호는 소형주에 몰려 있어 대형주 book에는 힘이 없고, 소형 book에선 이미 크기효과에 흡수됨")),
-    list(type="kv", emoji="📊", heading="핵심 실측 (base 대비 증분 paired NW-t, lag3, net 15bps)",
+    list(type="kv", emoji="📊", heading="핵심 실측 (기저 대비 증분 t값, 순비용 15bps 차감)",
          kv=list(
-           "LARGE excl (캐리어유사 대형)"="0.75 (+102bps/yr) — 미달",
-           "LARGE tilt (최선안)"="1.27 (+74bps/yr) — 미달, 방향만 양(+)",
-           "BROAD excl (m1 국소 소형)"="0.15 (+7bps/yr) — 사실상 0",
-           "BROAD tilt"="0.88 (+19bps/yr) — 미달",
-           "BROAD base 자체 PORT_t"="1.52 = 소형 size premium(오버레이 아닌 base 몫)")),
+           "대형tier 제외(캐리어유사)"="증분t 0.75 (+102bps/년) — 미달",
+           "대형tier 비중조정(최선안)"="증분t 1.27 (+74bps/년) — 미달, 방향만 양(+)",
+           "소형tier 제외(m1 국소)"="증분t 0.15 (+7bps/년) — 사실상 0",
+           "소형tier 비중조정"="증분t 0.88 (+19bps/년) — 미달",
+           "소형 기저 자체 초과수익t"="1.52 = 소형 크기효과(오버레이 몫 아님)")),
     list(type="bullet", emoji="🛡️", heading="PIT 4종 검증 (07-06 재발방지)",
          items=c(
            "assert_overlay_pit HARD 통과 (신호 컷오프 ≤ 홀딩월 시작, 1개월+ 여유)",
@@ -116,11 +116,11 @@ tg <- tg_agent_brief(
            "정직 prior 확증: 07-10 오버레이 드레인 16/16 미달과 동일 결론(기전은 다르나)")),
     list(type="bullet", emoji="➡️", heading="산출·다음",
          items=c(
-           "산출: stage_artifacts/m1_overlay_drain/ (result.json·scenarios·paired·charts·challenge_note)",
-           "L-code 적립(alpha_research, screen_tier) · FQ-017 status=measured",
-           "다음 frontier: 비-return 원천(insider 등) — m1은 소진, 보존만"))
+           "산출: stage_artifacts/m1_overlay_drain/ (결과·paired·차트·challenge_note)",
+           "L-code 적립(alpha_research) · FQ-017 status=measured",
+           "다음: 비-return 원천(insider 등) — m1은 소진, 보존만"))
   ),
-  charts = charts, kv = NULL, force = TRUE)
+  charts = charts, force = TRUE)
 cat("[tg] ok =", isTRUE(tg$ok), "\n")
 
 writeLines(unlist(lc)[1], file.path(OUT, "lcode_id.txt"))

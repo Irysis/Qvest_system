@@ -69,7 +69,8 @@ tg_chart_pack <- function(period_returns, out_dir, title,
   plot(d, nav_s, type = "l", lwd = 2.4, col = .tgcp_col_str, log = "y", ylim = yl,
        xlab = "", ylab = "누적수익 (로그, 시작=1)", main = paste0(title, " — 누적수익 vs ", bm_label))
   if (has_bm) lines(d, nav_b, lwd = 2, col = .tgcp_col_bm, lty = 2)
-  legend("topleft", legend = c("전략", if (has_bm) bm_label),
+  # graphics:: 명시 — PerformanceAnalytics 로드 시 legend 마스킹 충돌 (FQ-017 실사고)
+  graphics::legend("topleft", legend = c("전략", if (has_bm) bm_label),
          col = c(.tgcp_col_str, if (has_bm) .tgcp_col_bm),
          lwd = c(2.4, if (has_bm) 2), lty = c(1, if (has_bm) 2), bty = "n")
   mtext(sub_note, side = 3, line = 0.2, cex = 0.78, col = "#555555")
@@ -87,7 +88,7 @@ tg_chart_pack <- function(period_returns, out_dir, title,
     barplot(mat, beside = TRUE, names.arg = names(ann_s), col = c(.tgcp_col_str, "#bbbbbb"),
             border = NA, las = 2, cex.names = 0.7, ylab = "연간수익률 (백분율)",
             main = paste0(title, " — 연간수익률 vs ", bm_label))
-    legend("topleft", legend = c("전략", bm_label), fill = c(.tgcp_col_str, "#bbbbbb"), border = NA, bty = "n")
+    graphics::legend("topleft", legend = c("전략", bm_label), fill = c(.tgcp_col_str, "#bbbbbb"), border = NA, bty = "n")
   } else {
     barplot(ann_s * 100, names.arg = names(ann_s),
             col = ifelse(ann_s >= 0, .tgcp_col_pos, .tgcp_col_neg),
@@ -107,7 +108,7 @@ tg_chart_pack <- function(period_returns, out_dir, title,
   polygon(c(d, rev(d)), c(dd_s * 100, rep(0, length(d))), col = grDevices::adjustcolor(.tgcp_col_str, 0.25), border = NA)
   if (has_bm) { dd_b <- nav_b / cummax(nav_b) - 1; lines(d, dd_b * 100, lwd = 1.6, col = .tgcp_col_bm, lty = 2) }
   abline(h = 0, col = "#333333")
-  legend("bottomleft", legend = c("전략", if (has_bm) bm_label),
+  graphics::legend("bottomleft", legend = c("전략", if (has_bm) bm_label),
          col = c(.tgcp_col_str, if (has_bm) .tgcp_col_bm),
          lwd = c(2, if (has_bm) 1.6), lty = c(1, if (has_bm) 2), bty = "n")
   mtext(sub_note, side = 3, line = 0.2, cex = 0.78, col = "#555555")
