@@ -195,8 +195,11 @@ wf("  EW-oos=%.4f band_status=%s", ew_oos, band_status)
 wf("  cap-w authoritative(자본 게이트): PORT_t %.2f>=2.95=%s | oos %.2f>=0.7=%s | calmar %.2f>=0.64=%s -> capital_gate=%s",
    capw_port_t, capw_hard$port_t, capw_oos, capw_hard$oos, e2s$calmar %||% NA, capw_hard$calmar, capital_gate_pass)
 wf("  EW-real(EW-uni>=2.95 ∧ band_escalated)=%s", ew_real_bandpass)
-verdict <- if(ew_real_bandpass) "EW-basis 조건부 band-PASS = D3형(벤치-상대 배포성) 도훈 결정 재료 자격 회복 — 자본 게이트(cap-w authoritative) 통과 아님"
-           else "band FAIL 확정 = EW-real 미달 절차적 완결 (cap-w authoritative FAIL 정합)"
+verdict <- if(ew_real_bandpass) {
+  "EW-basis 조건부 band-PASS = D3형(벤치-상대 배포성) 도훈 결정 재료 자격 회복 — 자본 게이트(cap-w authoritative) 통과 아님"
+} else {
+  "band FAIL 확정 = EW-real 미달 절차적 완결 (cap-w authoritative FAIL 정합)"
+}
 wf("  VERDICT: %s", verdict)
 
 ## ── 저장 ──

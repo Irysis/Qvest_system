@@ -1,0 +1,121 @@
+{
+  "prereg": {
+    "mode": "RAMP",
+    "round": "R8",
+    "fq": "FQ-016",
+    "procedure": "measurement-graduation §3 band [0.5,0.7) escalation on EW-basis oos_retention (R7 E2)",
+    "record_type": "judgment_procedure_completion (NOT a re-sweep; n_trials unchanged from R7 family=20)",
+    "target": "R6 best Ppure_W36_K20 EW-universe active return series (R7 E2 재구성 재사용)",
+    "evidence": {
+      "e1": "trailing-subwindow PORT_t>0 : EW-active 3-split last-third IRf>0 AND nwt(NW lag3)>0",
+      "e2": "placebo p<0.05 : month-shuffle of selection scores -> re-screen -> EW-active PORT_t null (N=60, v3verify convention)",
+      "e3": "book-marginal deltaSR>0 AND |cor|<0.30 : STR_1715 noLayer4 recon net-active(vs KOSPI200) blend"
+    },
+    "rule": "oos in [0.5,0.7) AND sum(e1,e2,e3)>=2 -> band_escalated (conditional PASS). holdout=inadmissible(sealed).",
+    "frame_pass": "EW-basis conditional band-PASS = D3 (benchmark-relative deployability) decision material. NOT capital gate (cap-w authoritative unchanged FAIL).",
+    "frame_fail": "band FAIL = EW-real 미달 procedurally complete.",
+    "incumbent_book": "STR_1715_on_M4_R05_noLayer4_PG2 (book_state incumbent_book_ir=1.416, ir_convention=net_active_recon_v1, KOSPI200, 269m)",
+    "vintage_pin": "R7 frozen Jul-12: candidate series from .cache/_ramp_r7_20260712.rds PR[[capwrepro_W36_K20]] (=R6 Ppure_W36_K20 bit-identical); substrate panel r6_20260711 + rawdata Jul-12",
+    "as_of_date": "2026-07-12",
+    "source_version": "RAMP_R8_v1",
+    "security_id": "Ticker (rawdata) -> factor_id z (pure_factor_scores.z=Z_Score_Aligned)",
+    "config_hash": "c6986525de94c3f6",
+    "generated_at": "2026-07-12T17:51:28+0900"
+  },
+  "config_hash": "c6986525de94c3f6",
+  "meta": {
+    "as_of_date": "2026-07-12",
+    "generated_at": "2026-07-12T17:52:25+0900",
+    "source_version": "RAMP_R8_v1",
+    "security_id": "Ticker->factor_id z (pure_factor_scores.z=Z_Score_Aligned)",
+    "record_type": "judgment_procedure_completion (NOT a re-sweep; n_trials unchanged from R7 family=20)"
+  },
+  "candidate": {
+    "model": "Ppure_W36_K20 (R6 best = R7 E2)",
+    "n_months": 220,
+    "date_range": ["2008-01-31", "2026-04-30"],
+    "ew_port_t": 3.919069,
+    "ew_ir": 0.973162,
+    "ew_oos": 0.506401,
+    "capw_port_t": 2.612386,
+    "capw_oos": -0.075871,
+    "parity_vs_r7": {
+      "ewuni_delta": 0,
+      "ew_oos_delta": 0
+    }
+  },
+  "band": {
+    "oos": 0.506401,
+    "lo": 0.5,
+    "hi": 0.7,
+    "in_band": true,
+    "status": "band_escalated"
+  },
+  "evidence": {
+    "e1": {
+      "pass": true,
+      "last_third_ir": 0.63434,
+      "last_third_t": 1.464705,
+      "thirds_t": [4.200458, 1.715167, 1.464705]
+    },
+    "e2": {
+      "pass": true,
+      "p_placebo": 0,
+      "real_ew_t": 3.919069,
+      "null_mean": -2.378742,
+      "null_sd": 0.782632,
+      "null_p95": -1.369032,
+      "null_max": -1.140804,
+      "n_draws": 60,
+      "n_placebo_req": 60,
+      "real_rescreen_parity_delta": 0
+    },
+    "e3": {
+      "pass": false,
+      "cor_capw_active": 0.324104,
+      "cor_ew_active": -0.126796,
+      "cor_net": 0.638517,
+      "book_ir_full": 1.416026,
+      "book_ir_overlap": 1.465262,
+      "marginal_delta_ir_w05": -0.005189,
+      "blend_table": [
+        {
+          "w": 0.05,
+          "ir_blend": 1.460073,
+          "delta_ir": -0.005189
+        },
+        {
+          "w": 0.1,
+          "ir_blend": 1.451203,
+          "delta_ir": -0.014059
+        },
+        {
+          "w": 0.2,
+          "ir_blend": 1.420062,
+          "delta_ir": -0.045199
+        }
+      ],
+      "align_offset": -2,
+      "align_kospi_cor": 0.937655,
+      "overlap_n": 220,
+      "incumbent": "STR_1715_on_M4_R05_noLayer4_PG2",
+      "incumbent_book_ir_declared": 1.416
+    }
+  },
+  "n_pass": 2,
+  "esc_pass": true,
+  "cap_w_authoritative": {
+    "port_t": 2.612386,
+    "oos": -0.075871,
+    "calmar": 0.450047,
+    "hard": {
+      "port_t": false,
+      "oos": false,
+      "calmar": false
+    },
+    "capital_gate_pass": false
+  },
+  "ew_real_bandpass": true,
+  "verdict": "EW-basis 조건부 band-PASS = D3형(벤치-상대 배포성) 도훈 결정 재료 자격 회복 — 자본 게이트(cap-w authoritative) 통과 아님",
+  "frame": "escalation은 판정 절차(n_trials 불변). D3=도훈 결정 재료이지 자본 아님. 자본 게이트=cap-w authoritative(불변)."
+}
