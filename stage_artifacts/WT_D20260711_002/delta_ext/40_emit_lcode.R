@@ -1,0 +1,28 @@
+# 40_emit_lcode.R — N2/FQ-021 Δm1 change-axis L-code (alpha_research, canonical_screen, chain)
+ROOT <- "C:/Users/99922/OneDrive/Quant_Module_Moltbot"; setwd(ROOT)
+source(file.path(ROOT, "02_Infrastructure/axiom/lcode_emit.R"))
+`%||%` <- function(a,b) if(is.null(a)||length(a)==0||is.na(a)) b else a
+
+res <- emit_lcode(
+  mode = "alpha_research",
+  strategy_id = "WT-D20260711_002-deltaExt",
+  grade = "F",
+  metric_type = "canonical_screen",
+  selection_type = "chain",
+  record_type = "performance",
+  portfolio_alpha_t = 0.766,
+  oos_months = 78,
+  core_reference = "Phase A chain 확장 (레벨→변화 축). prereg_delta.sha256 4bdda5f8 / alpha_validation_delta.json / 부모 L Phase A (m1 레벨 screen-tier)",
+  mechanism_hypothesis = "공시 가독성의 YoY 악화(Δm1=문장길이 전년대비 증가)=악재 은폐 이벤트(Li 2008 change 문헌)라면 음의 forward 초과수익. 레벨(m1)과 독립인 변화 신호인지 잔차 config로 검증",
+  falsification_attempts = "4 config(raw/잔차 × 12m/6m carry) canonical dual-basis / 월간 rank-IC Harvey-t / placebo 월셔플 200draw(c1 p 0.085) / Size partial(cor logSize 0.017, partial t 1.55) / 시장분할(K200 1.49·KQ150 1.10) / EW-uni 병기(-0.61~-0.98 = cap-w 아티팩트 아님) / IS-only 선택 / 사전등록 hash 대조",
+  lesson_text = paste0(
+    "공시 가독성 '변화 축'(Δm1 = 문장길이 전년대비 차이, 동일corp 연속연도 3,657쌍/585종목, text_cache 재사용·DART 0) = NULL. ",
+    "4 config 전부 cap-w PORT_t 미달(c1 raw12m 0.77 / c2 잔차12m 0.64 / c3 raw6m -0.20 / c4 잔차6m -0.38 << 2.95). ",
+    "rank-IC +0.008(양수) = 가설(악화→저수익, 음수)과 방향 역전 + 무의미(Harvey-t 1.85, placebo p 0.085). ",
+    "IS→OOS 전 config 부호반전(c1 1.58→-0.83). EW-유니버스 기준도 약함/음수 → cap-w 벤치 아티팩트 아님(dual-basis 확인). 보유 92% 소형 = Phase A와 동일 cap-tier 국소화. ",
+    "독립성: 잔차 Δ(레벨 통제)가 raw보다 rank-IC 소폭↑(2.26 vs 1.85)이나 여전히 wrong-sign·null → 변화는 레벨의 위장 아닌 '독립이나 null' 차원. 레벨 m1(Phase A Harvey-t -2.80 screen-tier)만 유일 실신호. ",
+    "6m carry(이벤트 집중 검정)가 12m보다 약함 → 월간 해상도에서 빠른 공시직후 드리프트 증거 없음. ",
+    "판정 = FAIL_CANONICAL_HARD_GATE / CHANGE_AXIS_NULL. kill 기준 충족(4/4 미달 ∧ placebo 비유의) → 텍스트 가독성 아크 최종 종결(레벨=OVERLAY_CANDIDATE feature, 변화=settled-negative). 누적 n_trials 11(chain)."),
+  tags = c("text_alpha", "non_return", "change_axis", "null", "cap_tier_trap", "chain", "phase_a_ext")
+)
+cat("[emit] l_code =", res$l_code %||% "?", "\n")
