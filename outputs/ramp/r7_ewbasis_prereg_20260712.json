@@ -1,0 +1,40 @@
+{
+  "mode": "RAMP",
+  "round": "R7",
+  "mechanism": "selection_label_basis_swap: trailing cap-w active NW-t -> EW-universe active NW-t (E1) + R6-best dual-basis/cap-tier reclass (E2)",
+  "revival_signal_of": "R6 잔존 frontier ②: PORT_t-정렬 선별 × EW-basis (project-selection-discipline-arc-r4r5r6)",
+  "substrate": "R6 frozen panel r6_factor_deployzone_active.parquet (102 factors x 256 months: ret_net/benchmark_ret/active_bm)",
+  "e1": {
+    "design": "R6 P-pure와 정확 대칭, trailing 선별 라벨만 EW-uni active로 교체",
+    "ew_active_def": "ret_net(factor top-25 net) - ew(universe EW mean return, K200∪KQ150)",
+    "arms": "Epure_EW_W{36,60}_K{10,20}",
+    "controls": "capw-repro (동일 창/K, R6 cap-w 선별 Jul-12 재계산)",
+    "paired": "E1(EW-sel) vs capw-repro(cap-w-sel) 동일 vintage; secondary: E1 vs R6-stored Ppure"
+  },
+  "e2": {
+    "target": "R6 best Ppure_W36_K20 (cap-w 선별)",
+    "diag": ["EW-uni PORT_t", "EW-basis oos_retention v2", "EW-basis calmar", "cap-tier MEGA/MID/OTHER 분해", "post-2017 EW 재판독"],
+    "frame": "EW-real이면 자본 졸업 아님 — 벤치-상대 배포성 결정(D3형) 재료. cap-w 게이트 authoritative 불변"
+  },
+  "windows": [36, 60],
+  "kpool": [10, 20],
+  "cadence_months": 6,
+  "top_n": 25,
+  "cost_bps_oneway": 15,
+  "liq_min": 200000000,
+  "gate_hard": [2.95, 0.7, 0.64, 0.5],
+  "n_trials_r7": 4,
+  "n_trials_family": 20,
+  "paired_kill_threshold": 2,
+  "kill_rule": "(A) all 4 paired(E1 vs capw-repro) < 2.0 AND (B) no EW-real (EW-uni PORT_t>=2.95 AND EW-oos>=0.7) -> label-basis axis exhausted",
+  "selection": "trailing window realized active NW-t(lag3) -> top-K pool (PIT trailing-only). E1 uses EW-uni active, R6/capw-repro uses cap-w active",
+  "selection_type": "sweep",
+  "pit": "panel active = current-month score->realized fwd (PIT-safe); selection trailing-only last W months realized by decision date",
+  "honest_prior": "R6: realized-PORT_t 기질=RAMP 최강 선별 레버이나 post-2017 substrate decay 전이 벽 binding + cap-w 트랩(알파=벤치-저비중 tier 국소화)",
+  "vintage_pin": "panel frozen r6_20260711 (선별 substrate) + gate rawdata 20260712 (April-gap 백필 후). E1/capw-repro 동일 Jul-12 재계산 → paired 내부정합; pin drift 정량 기록",
+  "as_of_date": "2026-07-12",
+  "source_version": "RAMP_R7_v1",
+  "security_id": "Ticker (rawdata) -> factor_id z (pure_factor_scores.z=Z_Score_Aligned)",
+  "config_hash": "192bc9400eda1ca1",
+  "generated_at": "2026-07-12T16:10:46+0900"
+}

@@ -1,0 +1,56 @@
+## _r7_emit_lcode.R — R7 L-code 적립 (mode=ramp, backtested, performance)
+suppressPackageStartupMessages({library(jsonlite)})
+QM <- "C:/Users/99922/OneDrive/Quant_Module_Moltbot"; Sys.setenv(QM_ROOT=QM); setwd(QM)
+source("02_Infrastructure/ramp/ramp_loop.R")
+`%||%` <- function(a,b) if(is.null(a)||length(a)==0) b else a
+
+lesson <- paste0(
+ "RAMP R7 (FQ-015, R6 잔존 frontier ②): 선별 라벨 basis 교체 실험 — trailing 선별 라벨을 cap-w active NW-t(R6)에서 EW-유니버스 active NW-t로 교체. ",
+ "E1(라벨교체, config 4 대칭): cap-w 최종 개선 부재 — best E1 Epure_EW_W36_K20 cap-w PORT_t=1.99(R6 best 2.61에서 오히려 하락), paired(E1 vs capw-repro 동일 vintage) 4 config 전부 <2.0(max +1.23 W60_K10), EW-real 후보 0(EW-uni>=2.95 ∧ EW-oos>=0.7 충족 없음) → KILL_axis=TRUE(라벨 basis 축 소진). ",
+ "선별 차이 실재하나(K20 Jaccard cap-w∩EW 0.71~0.74, ~27% 상이) Value 집중 불변(0.31/0.35→0.29/0.35) — 라벨 교체가 sticky-Value tilt를 못 바꿈. ",
+ "E2(R6 best Ppure_W36_K20 dual-basis 재분류, characterization): cap-w authoritative HARD 3종 미달 불변(capwt 2.61<2.95·oos -0.08<0.7·calmar 0.45<0.64, DSR 1.75). ",
+ "그러나 post-2017 '감쇠'는 상당분 cap-w 벤치 아티팩트 — cap-w post17 SR=-0.11 vs EW post17 SR=+0.49(EW post17 NW-t=+1.48), EW-basis oos_retention -0.08→0.51 회복, EW-uni PORT_t=3.92(IR 0.97·EW alpha 연 10.4%, canonical diag 독립확증 3.9185·oos 0.506). ",
+ "cap-tier 분해: 보유 OTHER(멤버 cap rank 31+ 소형지수주) 비중 90.6%·gross 기여 86%, MEGA 3.4%·MID 6.0% — 알파=벤치 저비중 tier 국소화 확증(project-captier-alpha-localization). 최근 24m는 MEGA 12%로 소폭 대형화. ",
+ "판정: E1 EW-real=FALSE·EW-oos 0.51<0.7(near 0.5 충족) → 자본 졸업도 D3형 배포성 결정도 미충족 = screen-tier 잔류. ",
+ "메타: 병목은 선별 '라벨 basis'가 아니라 substrate의 cap-tier 국소화(소형지수주 알파) × cap-w 벤치 미스매치 — 라벨 교체는 '어떤 팩터'를 바꾸지 top-25 cap-tier 구성을 못 바꿔 벽 불변. ",
+ "vintage 무오염: capwrepro_W36_K20==R6 Ppure bit-identical(pin Δ=0)·sel_repro 70/0·cap-w BM Jul-12 vs 패널 Jul-11 max|Δ|=0(April-gap 백필이 패널기간 BM 불변). ",
+ "n_trials family=20(R4 4+R5 6+R6 6+R7 4). vintage panel r6_frozen + gate rawdata 20260712."
+)
+
+res <- ramp_document(
+  strategy_id = "RAMP_R7_EWBASIS_20260712",
+  grade = "C",
+  lesson_text = lesson,
+  construction_type = "composite",
+  selection_type = "sweep",
+  mechanism_hypothesis = paste0(
+    "선별 라벨 basis(cap-w active → EW-유니버스 active) 교체로 mega-cap 벤치 드리프트 오염을 제거하면 팩터 횡단효능 ",
+    "순위가 개선되고 cap-w 최종 성과까지 오를 것 = FALSE. 라벨 교체는 선별을 ~27% 바꾸나 top-25 cap-tier 구성(소형 90%)을 ",
+    "못 바꿔 cap-w 벤치 미스매치 벽이 불변. EW-basis서 post-2017 알파는 실재(SR +0.49)이나 EW-oos 0.51<0.7로 D3형 배포성 결정도 미달."),
+  core_reference = "L-RAMP-20260711_200226(R6)·measurement-graduation §6·v8.3 M2 dual-basis·project-captier-alpha-localization·project-selection-discipline-arc-r4r5r6",
+  portfolio_alpha_t = 1.99,
+  oos_retention = -0.15,
+  oos_months = 24,
+  falsification_attempts = 4,
+  metrics = list(
+    round = "R7", experiment = "E1_label_basis_swap + E2_dualbasis_reclass",
+    best_e1_model = "Epure_EW_W36_K20", best_e1_capwt = 1.99, best_e1_ewuni = 2.85, best_e1_oos = -0.15,
+    max_paired_labelswap_vs_capwrepro = 1.23, n_ewreal_candidates = 0,
+    r6_best_capwt = 2.61, r6_best_ewuni = 3.92,
+    e2_capw_capwt = 2.61, e2_capw_oos = -0.08, e2_capw_calmar = 0.45, e2_capw_post17_sr = -0.11,
+    e2_ew_uni_portt = 3.92, e2_ew_oos = 0.51, e2_ew_calmar = 0.58, e2_ew_post17_sr = 0.49, e2_ew_post17_t = 1.48,
+    e2_captier_mega_wshare = 0.034, e2_captier_mid_wshare = 0.060, e2_captier_other_wshare = 0.906,
+    e2_captier_other_contrib_share = 0.86, e2_ew_real = FALSE, e2_ew_real_near = TRUE,
+    sel_k20_jaccard_capw_ew_W36 = 0.71, sel_k20_jaccard_capw_ew_W60 = 0.74,
+    value_share_capw_W36 = 0.31, value_share_ew_W36 = 0.29,
+    KILL_axis = TRUE, condA_all_paired_lt2 = TRUE, condB_no_ewreal = TRUE, graduation = FALSE,
+    vintage_bm_drift_max = 0.0, pin_capwt_delta = 0.0, sel_repro_ok = TRUE,
+    ew_universe = "K200∪KQ150 members (mean 312/mo, PIT membership) — EW(all)==EW(member) Δ0",
+    n_trials_r7 = 4, n_trials_family = 20, n_pool_factors = 102,
+    config_hash_ref = "r7_ewbasis_prereg_20260712.json (config_hash 192bc9400eda1ca1)",
+    verdict = "label_basis_axis_exhausted_KILL; binding=captier_localization_x_capw_bench_mismatch; postdecay_partly_capw_artifact_but_EWoos<0.7 screen_tier"
+  ),
+  dry_run = FALSE
+)
+cat("EMIT_DONE l_code=", res$l_code %||% res$lcode$l_code %||% "?", "\n")
+str(res, max.level=1)
