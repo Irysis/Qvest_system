@@ -1,0 +1,53 @@
+{
+  "task_id": "WT-D20260711_002 :: delta_ext (N2 / FQ-021)",
+  "title": "N2 — disclosure readability WORSENING (Delta m1) : level -> change axis (chain of Phase A)",
+  "prereg_version": "1.0-delta",
+  "frozen_utc": "2026-07-13",
+  "chain_parent": "WT-D20260711_002 Phase A (prereg sha256 96b7e06d...). Phase A finding: LEVEL m1 (avg_sentence_len) is the SOLE return-carrying dimension (rank-IC Harvey-t -2.80, Size-independent, persistent) but sub-threshold (cap-w PORT_t 2.35 < 2.95, OOS decay, ~96% small-cap). Composite NULL (placebo 0.716). This extension tests the CHANGE axis (YoY worsening) which Phase A did NOT measure. selection_type = chain (hypothesis-driven axis extension: level -> change; NOT a sweep/argmax over configs). Change reason: mechanism = Li 2008 CHANGE literature (a sudden readability drop = a bad-news-concealment EVENT, distinct from a chronically-obfuscated firm's LEVEL).",
+
+  "hypothesis": {
+    "statement": "A firm whose annual MD&A becomes SUDDENLY harder to read vs its own prior year (Delta m1 = m1(fy) - m1(fy-1) > 0) is concealing deteriorating fundamentals -> lower subsequent excess return.",
+    "key_scientific_question": "Is the CHANGE (Delta m1) an INDEPENDENT signal beyond the LEVEL (m1)? Phase A established the level carries the signal; the residual config decisively tests whether the change adds orthogonal information.",
+    "honest_prior": "Level is only screen-tier; the change axis is expected conservatively (likely also sub-threshold or null). Publishing a negative is a legitimate outcome that CLOSES the text arc."
+  },
+
+  "signal_definition": {
+    "primary_metric": "delta_m1 = m1_avg_sentence_len_chars(fy) - m1_avg_sentence_len_chars(fy-1), SAME corp, CONSECUTIVE fy pairs only (fy - fy_prev == 1). SINGLE metric (no composite -- Phase A synthesis-dilution lesson: composite killed the m1 signal). Other-metric deltas reported as DIAGNOSTIC only, never composited.",
+    "source": "text_cache/*.parquet (pre-computed corp-year m1 per rcept_no; AGGREGATION of existing metrics, NOT text re-parse). 3657 consecutive-year pairs / 585 tickers / fy 2011-2023 confirmed.",
+    "pit": "active_from = ym_add(rcept_ym, 1L) where rcept_ym = the fy-doc receipt month (identical to Phase A PIT rule). Delta is known at fy-doc filing (both fy and fy-1 reports public). No look-ahead.",
+    "score_for_long": "score = -z(delta_m1). Higher delta_m1 (worsening) -> predicted lower return -> lower long score. Direction = NEGATIVE (matches Phase A level m1 and Li 2008)."
+  },
+
+  "configs": {
+    "count": 4,
+    "axis": "{signal_form: raw_delta_z | residual_delta (delta_m1 residualized cross-sectionally on level m1)} x {carry: 12m | 6m}",
+    "c1_PRIMARY": {"form": "raw_delta_z", "carry_months": 12, "role": "PRE-COMMITTED PRIMARY DECISION CONFIG -- direct test of change axis"},
+    "c2": {"form": "residual_delta", "carry_months": 12, "role": "KEY ROBUSTNESS -- does change add BEYOND level m1? (residualize delta_m1 ~ level_m1 per month)"},
+    "c3": {"form": "raw_delta_z", "carry_months": 6, "role": "event-concentration robustness (Li 2008 change effects may localize near disclosure)"},
+    "c4": {"form": "residual_delta", "carry_months": 6, "role": "event-concentration x independence"},
+    "stale_handling": "ANNUAL signal (updates once/yr). 12m carry = signal fresh for full year until next report. 6m carry = signal DROPPED after 6 months (age>6 -> stale, no cross-section entry) -> tests whether the change effect is concentrated in the 6 months post-filing. Event sparsity noted: ~300 firms/yr -> avg names/month lower than Phase A (many firms lack a fresh consecutive-pair delta). Power caveat recorded."
+  },
+
+  "measurement": {
+    "rank_ic": "monthly cross-sectional Spearman(delta_m1, fwd 1M excess), 169-month window, Newey-West Harvey-t lag3. ADVISORY (not gate). For residual configs, IC computed on the residual score.",
+    "canonical": "canonical_screen_bt(scores=score_for_long, returns=fwd1M, bench=KOSPI200 TR, top_n=25 EW, cost=15bps, liq_min=2e8, diag_dual_basis=TRUE, size_dt=Size). PRIMARY authority = cap-w PORT_t (portfolio_alpha_t_nw_lag3). Dual-basis: diag_ew_universe + diag_cap_tier BOTH reported (cap-tier localization + EW-universe survival check before rejection).",
+    "size_control": "cor(delta_m1, logSize), partial rank-IC given logSize, partial Harvey-t. Confirms delta is not a size proxy.",
+    "placebo": "month-shuffle of signal->return alignment (permute signal labels within cross-section across months), 200 draws, p = frac(|null rank-IC mean| >= |observed|).",
+    "period_split": "IS = Dates < 2019-01-01 ; OOS = Dates >= 2019-01-01, read ONCE. 2017+ decay sub-check via diag post2017_t. IS-only selection discipline (chain req 2): no OOS re-query during config comparison.",
+    "delta_vs_level_test": "paired: does c2 (residual delta) retain any canonical PORT_t after level m1 is removed? If residual PORT_t collapses to ~0 while raw delta echoes level -> the 'change' signal is just the level in disguise (NOT independent)."
+  },
+
+  "graduation_ref": {
+    "HARD_3": {"portfolio_alpha_t_nw": 2.95, "oos_retention": 0.7, "calmar": 0.64, "authority": "forge (canonical here is SCREENING, sub-authoritative)"},
+    "n_trials": {"phase_a_family": 7, "delta_ext": 4, "cumulative": 11, "selection_type": "chain", "dsr": "diagnostic only (chain, not sweep)", "null_max_t": "max |Harvey-t| across delta family reported as multiple-testing context; Bonferroni x11 note on any survivor."}
+  },
+
+  "kill_criterion": "ALL 4 configs FAIL cap-w canonical PORT_t (< 2.95) AND rank-IC placebo non-significant (p >= 0.05 for primary c1) -> CHANGE AXIS EXHAUSTED -> text-readability arc FINAL CLOSE (level=screen-tier feature retained, change=null). Escalate to frontier settle-negative.",
+
+  "discipline": {
+    "hash_freeze": "SHA256 of THIS file recorded before signal->return merge; post-hoc edits = contamination. Original Phase A prereg UNCHANGED.",
+    "no_proxy_handcalc": "all PORT_t via canonical_screen_bt (contract build_benchmark_compare). No top-quintile EW / turnover*bps inline; no prod(1+r) synthesis.",
+    "role_boundary": "alpha-stage: signal/alpha only. NO covariance, NO weights, NO pre-optimization. canonical_screen_bt = fixed-spec screening (not weight decision).",
+    "self_adversarial": "level-vs-change confound (residual config) + Size proxy control + placebo + cap-tier localization + event-sparsity power caveat + market-split. challenge_note_delta.md mandatory."
+  }
+}

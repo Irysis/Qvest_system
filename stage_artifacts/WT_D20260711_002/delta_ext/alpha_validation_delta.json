@@ -1,0 +1,75 @@
+{
+  "task_id": "WT-D20260711_002 :: delta_ext (N2 / FQ-021)",
+  "phase": "Delta m1 change axis (chain of Phase A). alpha-stage canonical screening; NOT forge-authoritative, NOT capital.",
+  "prereg_delta_sha256": "4bdda5f82fcdf70f47eff42dd253033802410f13d2864db7a26abe406cbde926",
+  "prereg_hash_verified": "OK (frozen before signal->return merge; Phase A prereg unchanged)",
+  "metric_type": "canonical_screen",
+  "vintage_pin": "wt002_phaseA_20260711 (reused; RAWDATA cache write forbidden; DART untouched — text_cache aggregation only)",
+  "selection_objective": "canonical_port_t",
+
+  "signal": {
+    "primary_metric": "delta_m1 = m1_avg_sentence_len(fy) - m1_avg_sentence_len(fy-1), same corp consecutive fy, SINGLE metric (no composite)",
+    "source": "text_cache/*.parquet corp-year m1 aggregation (NOT text re-parse)",
+    "doc_level_delta_pairs": 3657, "unique_tickers": 585, "fy_range": "2011-2023",
+    "pit": "active_from = rcept_ym+1 (identical to Phase A). Delta known at fy-doc filing. PIT-safe.",
+    "sign_hypothesis": "worsening (delta>0) -> NEGATIVE forward excess (Li 2008 change lit). score_for_long = -z(delta_m1)."
+  },
+
+  "configs": {
+    "n": 4, "axis": "{raw_delta_z | residual_delta(orthogonalized on level m1)} x {carry 12m | 6m}",
+    "c1_PRIMARY_raw_12m": {
+      "avg_names_month": 262.8, "signal_months": 157,
+      "rank_ic_mean": 0.0079, "icir": 0.132, "rank_ic_harvey_t": 1.853, "rank_ic_nmonths": 157,
+      "capw_port_t_full": 0.766, "capw_pvalue": 0.443, "capw_IR": 0.224, "capw_net_sr": 0.224, "turnover_annual": 2.12,
+      "capw_port_t_IS_pre2019": 1.578, "capw_port_t_OOS_2019on": -0.834,
+      "ew_universe_port_t": -0.610, "ew_universe_post2017_t": -1.396,
+      "cap_tier_wshare": {"MEGA": 0.023, "MID": 0.059, "OTHER": 0.919},
+      "verdict": "cap-w PORT_t 0.766 << 2.95 HARD FAIL. rank-IC POSITIVE (opposite hypothesized negative) + insignificant. OOS sign-flip. EW-universe also weak/negative -> NOT a cap-w bench artifact. genuine null."
+    },
+    "c2_residual_12m": {
+      "rank_ic_mean": 0.0109, "icir": 0.170, "rank_ic_harvey_t": 2.255,
+      "capw_port_t_full": 0.641, "capw_pvalue": 0.521, "capw_IR": 0.187,
+      "capw_port_t_IS_pre2019": 1.198, "capw_port_t_OOS_2019on": -0.504,
+      "ew_universe_port_t": -0.780, "ew_universe_post2017_t": -0.467,
+      "verdict": "cap-w 0.641 FAIL. residual (delta orthogonal to level) marginally HIGHER rank-IC than raw (2.255 vs 1.853) but wrong-signed & < Phase A level 2.80; OOS sign-flip. change is INDEPENDENT-but-NULL, not the level in disguise."
+    },
+    "c3_raw_6m": {
+      "avg_names_month": 246.4, "signal_months": 99,
+      "rank_ic_mean": 0.0005, "rank_ic_harvey_t": 0.070,
+      "capw_port_t_full": -0.201, "capw_port_t_IS_pre2019": 0.511, "capw_port_t_OOS_2019on": -0.795,
+      "turnover_annual": 5.15,
+      "verdict": "cap-w -0.201 FAIL. 6m carry (event-concentration test) is WEAKER, not stronger -> no fast post-filing drift at monthly resolution."
+    },
+    "c4_residual_6m": {
+      "rank_ic_mean": 0.0072, "rank_ic_harvey_t": 1.100,
+      "capw_port_t_full": -0.384, "capw_port_t_IS_pre2019": 0.123, "capw_port_t_OOS_2019on": -0.636,
+      "verdict": "cap-w -0.384 FAIL."
+    }
+  },
+
+  "self_adversarial": {
+    "size_control_c1": {"raw_ic": 0.0079, "raw_harvey_t": 1.853, "partial_ic_given_logSize": 0.0068, "partial_harvey_t": 1.546, "cor_delta_logSize": 0.017, "conclusion": "delta NOT a size proxy (cor 0.017); but signal itself null so moot."},
+    "market_split_c1": {"K200_harvey_t": 1.493, "KQ150_harvey_t": 1.102, "conclusion": "weak/insignificant in both markets."},
+    "placebo_c1": {"obs_mean_ic": 0.0079, "null_sd": 0.0046, "p_two_sided": 0.085, "conclusion": "NOT significant at 0.05."},
+    "independence": {"raw_delta_rankic_Ht": 1.853, "resid_delta_rankic_Ht": 2.255, "conclusion": "change is an independent dimension (does not collapse to level), but null on canonical."},
+    "cap_tier_localization": "92% small-cap (OTHER) same cap-w trap as Phase A level + project-captier-alpha-localization. EW-universe basis also weak -> not a masked cap-w alpha.",
+    "event_sparsity_caveat": "annual signal; 6m-carry weaker than 12m -> no evidence of concentrated post-filing event drift at monthly resolution. Sub-monthly (daily) window not in scope."
+  },
+
+  "n_trials": {"phase_a_family": 7, "delta_ext": 4, "cumulative": 11, "selection_type": "chain", "dsr": "diagnostic only (chain, not sweep)", "null_max_harvey_t_delta_family": 2.255, "phase_a_family_max": 2.804, "note": "no survivor at capital or rank-IC significance; Bonferroni/DSR non-binding."},
+
+  "kill_criterion": {"pre_committed": "ALL 4 configs cap-w PORT_t < 2.95 AND primary c1 placebo p >= 0.05", "met": true, "evidence": "all 4 in [-0.384, 0.766]; c1 placebo p=0.085"},
+
+  "verdict": "FAIL_CANONICAL_HARD_GATE / CHANGE_AXIS_NULL",
+  "delta_vs_level": "Phase A LEVEL m1 = real screen-tier signal (Harvey-t -2.80). CHANGE Delta m1 = independent dimension but NULL (rank-IC insignificant, wrong-signed vs hypothesis, cap-w PORT_t < 1, OOS sign-flip). The change axis adds NO capital-relevant information.",
+  "screen_route": "none (null). Text-readability arc: LEVEL m1 remains OVERLAY_CANDIDATE feature (Phase A); CHANGE axis settled-negative.",
+  "arc_status": "TEXT-READABILITY ARC FINAL CLOSE (level=screen-tier feature; change=null). Frontier FQ-021 -> settle_negative.",
+  "alpha_discovery_certificate": "NOT ISSUED (canonical PORT_t < 2.95, rank-IC |t| < 3, placebo insignificant). Honest change-axis null.",
+  "artifacts": {
+    "prereg": "stage_artifacts/WT_D20260711_002/delta_ext/preregistration_delta.json (+.sha256)",
+    "results": "stage_artifacts/WT_D20260711_002/delta_ext/delta_results.rds",
+    "alpha_scores": "stage_artifacts/WT_D20260711_002/delta_ext/alpha_scores_delta.parquet",
+    "challenge_note": "stage_artifacts/WT_D20260711_002/delta_ext/challenge_note_delta.md",
+    "script": "stage_artifacts/WT_D20260711_002/delta_ext/20_delta_analysis.R"
+  }
+}
