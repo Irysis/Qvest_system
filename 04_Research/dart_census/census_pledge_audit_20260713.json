@@ -14,7 +14,8 @@
   "abort_reason": null,
   "n_status013": 57,
   "started": "2026-07-13 02:40:44",
-  "finished": "2026-07-13 02:55:44"
+  "finished": "2026-07-13 02:55:44",
+  "calls_total_incl_smoke": 1058
  },
  "A_market_grid": [
   {
@@ -786,5 +787,42 @@
     ]
    }
   ]
+ },
+ "E_coverage_verdict": {
+  "pledge_recent": "2024-07+ majorstock 메타로 즉시(문서 0). 2yr: 3,993보고/2,271 ctr>0/1,115 담보·질권 명시, 134/348 corps",
+  "pledge_history": "2005+ D001 연속(시장 6.7k~12.3k/yr)이나 list-레벨 담보 식별 불가 실증 — per-corp D001 list→document.xml 본문 파싱 필요, universe 문서 ~29k건(추정·외삽, 검증 안 됨)",
+  "audit_opinion_structured": "FY2015+ accnutAdtorNmNdAdtOpinion.json으로 문서 0 전량(2010=013 실측, 2023 완비: 의견·강조사항(going-concern)·KAM). rcept_no로 PIT anchoring 가능",
+  "audit_opinion_history": "2005~2014는 사업보고서 첨부 문서 파싱 필요 — F군 별도공시는 상장 유니버스에서 2011+ 붕괴 실증(F군 3,275건/21y, 2022+ 연 1~19건)",
+  "audit_correction": "전수 F001 superseded 연 660~1,476건(비상장 지배). 상장 유니버스 F채널 정정 165건/21y 과소포착 — A군 [기재정정] 병행 필요",
+  "majorstock_window": "majorstock.json = 최근 ~2년 rolling만(전 corps yr_min 2024+, 삼성전자 2024-07-19~2026-07-10) — elestock 2년 cap 동일 제약",
+  "list_3month_limit": "corp_code 없는 list.json 검색기간 최대 3개월(status 100 실측) — 전수 그리드는 분기창 수집"
+ },
+ "F_crawl_design": {
+  "order_rule": "insider 백필(일 7,000콜) 완결 선행 → T1 → T3+T2a → T2b",
+  "T1_audit_structured": {
+   "calls": 3828,
+   "docs": 0,
+   "days": 0.5,
+   "spec": "348 corps x FY2015-2025 x accnutAdtorNmNdAdtOpinion.json(11011), rcept_dt PIT anchor"
+  },
+  "T3_correction_map": {
+   "calls": 400,
+   "docs": 0,
+   "days": 0.1,
+   "spec": "per-corp A001 list [기재정정] 스캔 + F군 정정 165건 병합"
+  },
+  "T2a_pledge_recent": {
+   "calls": 348,
+   "docs": 0,
+   "days": 0.05,
+   "spec": "majorstock rows 본문 보존 재수집(census는 카운트만 저장)"
+  },
+  "T2b_pledge_history": {
+   "calls": 30000,
+   "docs": 29000,
+   "days": 4.5,
+   "spec": "per-corp D001 list(rcept_no ~400-700콜) → document.xml 주요계약/담보 파싱(insider 파서 확장). 문서량은 추정 — list 단계에서 확정"
+  },
+  "gate": "2단 게이트: T1+T3+T2a(4.6k콜, 문서0) 예비 신호 양성일 때만 T2b(문서 4.5일) 지불"
  }
 }
