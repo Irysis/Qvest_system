@@ -1,0 +1,60 @@
+{
+  "fq_id": "FQ-017",
+  "title": "m1 (avg_sentence_len) OVERLAY_CANDIDATE drain — stock-level exclusion/tilt marginal-contribution measurement",
+  "agent": "alpha-research",
+  "prereg_datetime": "2026-07-12",
+  "chain_of": "WT-D20260711_002 Phase A (L-AR-20260712_152759); score_route TEXT_READABILITY_FEATURE (m1) -> OVERLAY_CANDIDATE",
+  "selection_type": "chain (hypothesis-driven consumption of a preserved feature; NOT a sweep). DSR not applicable (screen-tier overlay diagnostic).",
+  "metric_type": "weighted_screen (contract-grade screen diagnostic via weighted_screen_bt); NOT forge-authoritative, NOT capital-grade.",
+
+  "infeasibility_surface_no_silent_override": {
+    "literal_task": "Stock-level m1 exclusion/tilt applied to the incumbent book STR_1715_on_M4_R05_noLayer4_PG2 via overlay_candidate_drain.R (drain_main).",
+    "why_not_directly_feasible": [
+      "F1 carrier per-stock holdings time series UNAVAILABLE: bt_result$holdings has 0 rows; 04_holdings.csv header-only; alpha_scores.parquet is a single month (202504). No materialized (Date,Ticker,w) history for the 20-name book; reconstructing requires re-running the carrier alpha construction (out of alpha-research recon-read-only scope, heavy).",
+      "F2 carrier operates in the m1-dead cap tier: current snapshot holdings are mega/mid-cap (Samsung, SK Hynix, LG Innotek, retail majors) + 75% cash; Phase A cap_tier_localization found m1 signal ~96% small-cap (MEGA_wshare 0.012) -> stock-level m1 exclusion/tilt on this tier is structurally near-null even if holdings were recovered (project-captier-alpha-localization; measurement-graduation §6).",
+      "F3 drain runner overlay mechanism = market-level monthly exposure SCALAR (regime timing, exposure_dt = (Date, exposure)); it cannot express a cross-sectional stock-level exclusion/tilt. Adapter B (bt_result monthly returns) is the only carrier-runnable path and only scales the whole book."
+    ],
+    "chosen_measurement": "Reuse the drain runner's CONTRACT PRIMITIVE (weighted_screen_bt / build_benchmark_compare / .nw_t_mean / drain_oos_v2 / overlay_pit_guard from overlay_candidate_drain.R sourced with QVEST_DRAIN_NORUN=1). Feed m1-modified weight tables (exclusion/tilt) vs base to weighted_screen_bt on dual-tier bases drawn from the m1 signal_panel universe. This is the honest, measurable execution of the OVERLAY_CANDIDATE route (all returns via contract path, no self-synthesis, no new backtest engine). Regime-exposure scenario loop (drain_main) is documented N/A for a cross-sectional signal.",
+    "not_run_and_why": "A market-level aggregate-m1 exposure overlay on the carrier via drain adapter B was considered and REJECTED: aggregating a cross-sectional stock selector into a market-timing scalar has no theoretical link to the carrier's returns (spurious construction, false-positive risk); it measures the wrong object."
+  },
+
+  "data": {
+    "signal_panel": "stage_artifacts/WT_D20260711_002/signal_panel.rds (49755 rows, ym 201104-202506, PIT-verified: active_from=rcept_ym+1, 12m carry, Ret_1m=forward mret(t+1))",
+    "overlay_signal": "z1 = cross-sectional z of m1 (avg_sentence_len) per ym; HIGHER = longer sentences = more obfuscation = WORSE. Phase A leave-one-out: m1/z1 is the SOLE signal carrier (composite dilutes) -> overlay uses z1, not obfuscation_composite.",
+    "universe": "panel names each ym: K200|KQ150, adv20>=2e8 KRW, Size>0, m1-covered.",
+    "returns": "panel Ret_1m (forward), bench = panel BM_Ret (KOSPI200 total return, cap-w)."
+  },
+
+  "bases_dual_tier": {
+    "rationale": "v8.3 M2 dual-basis + cap-tier mandate: reject only after checking where the signal lives.",
+    "LARGE_carrier_analog": "each ym, top-25 by adv20 (liquid large/mid caps ~ carrier tier), EW (w=1/N). Tests carrier-analog consumption. Honest prior: null (m1 dead in this tier).",
+    "BROAD_m1_locus": "each ym, ALL eligible panel names, EW (w=1/n ~294/mo). Tests feature utility where m1 has power (small/mid included)."
+  },
+
+  "consumption_forms": {
+    "exclusion": "drop names with z1 in worst (most-obfuscated) quintile that month (z1 >= monthly 80th pctile); renormalize survivors EW.",
+    "tilt": "w_new proportional to w_base * exp(-kappa * clip(z1,-3,3)), kappa=0.30 (mild down-weight of high-m1); renormalize. exp keeps positivity, long-only preserved."
+  },
+
+  "arms_config_le_6": ["base_LARGE","excl_LARGE","tilt_LARGE","base_BROAD","excl_BROAD","tilt_BROAD"],
+
+  "measurement": {
+    "engine": "weighted_screen_bt(weights_dt, returns_dt, bench_dt, cost_bps_oneway=15) — contract-grade, applies |Δw|×15bps one-way turnover cost natively (this is the |Δinv|×15bps the task requires; incremental exclusion/tilt turnover is captured in the paired difference).",
+    "primary_judgment": "paired incremental NW-t (lag 3, .nw_t_mean) on (arm_ret_net − base_ret_net), bench-independent (market component cancels). Threshold for a positive overlay finding: paired NW-t >= 2.0 (task). NOT a HARD capital gate.",
+    "secondary": "cap-w KOSPI200 PORT_t (build_benchmark_compare, NW lag-3) per arm; abs SR/CAGR/MDD; calmar; oos_retention v2 (anchored 3-split median); Δ vs base.",
+    "cost_note": "no separate overlay-cost re-measure needed (unlike regime exposure): exclusion/tilt IS a weight change, so weighted_screen_bt |Δw| cost already prices it end-to-end."
+  },
+
+  "pit_obligations": {
+    "1_assert_overlay_pit": "HARD: used_cutoff = ym2date(t) (signal known start of weights-month t; active_from<=t => report received <= t-1) <= holding_start = ym2date(t+1) (return earned t+1). >=1-month margin.",
+    "2_lag1_stress": "rebuild z1 using signal shifted +1 extra month (staler); measure excl/tilt again. m1 is annual/slow (Phase A annual_lag12 harvey_t -3.06 STRONGER when stale) -> expect persistence, no same-month leak.",
+    "3_strict_pit_ab": "strict cutoff requires age>=1 (signal known >=1 full month before weights-month => 2-month margin to holding); overlay_lookahead_ab SR current-vs-strict; inflation >5% => LOOK-AHEAD, re-judge on strict.",
+    "4_anchor_interval_ic": "verify score(-z1)->forward-excess IC sign is >=0 (PIT-direction sanity: clarity predicts higher forward excess) on the panel."
+  },
+
+  "honest_prior": "07-10 OVERLAY_CANDIDATE drain 16/16 SURVIVOR 0 (mechanism: crisis-rebound clipping — a market-timing artifact). m1 differs: stock-level quality-type signal, clipping mechanism inapplicable. BUT the BINDING walls (cap-tier localization + post-2017 decay; Phase A m1 cap-w 2.35<2.95, OOS retention ~0.06) apply. Expected: LARGE arm null; BROAD arm possibly positive IS but sub-threshold/decaying. Likely verdict: SCREEN_TIER / feature-preservation confirmed, NOT capital-grade. Measured, not assumed.",
+
+  "role_scope": "alpha-research screen diagnostic. EW/rule-based exclusion+tilt = fixed-rule (NOT optimization). NO covariance, NO optimized/target weights, NO admission. Mirrors overlay_candidate_drain.R (a diagnostic tool). Carrier read-only (not touched).",
+
+  "outputs": ["stage_artifacts/m1_overlay_drain/m1_overlay_drain_result.json", "stage_artifacts/m1_overlay_drain/scenarios.csv", "stage_artifacts/m1_overlay_drain/paired.csv", "L-code (alpha_research)", "telegram v7 brief + chart pack", "FQ-017 update"]
+}

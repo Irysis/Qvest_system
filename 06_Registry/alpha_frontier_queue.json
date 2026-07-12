@@ -318,14 +318,19 @@
       "title": "insider 소비 하네스 사전구축 (armed — 크롤 완결 즉시 1커맨드 실행)",
       "hypothesis": "(측정 아님) PORT_t-정렬 선별 × insider 패널 결합의 배관을 크롤 완결 전에 완성 — 패널 빌더 + R6 선별 하네스 통합 + 2005-2019 부분데이터 smoke-test",
       "ev_rationale": "선별 아크 유일 잔존 frontier의 리드타임 제거. 반쪽 데이터 본판정은 금지(post-2017 증거력) — 배관·parity만",
-      "wall_check": "부분 데이터로 판정 발화 금지 (smoke-test는 배관 검증 한정 라벨)",
-      "data_gate": "크롤 2020+ 잔여 (본측정만 게이트, 배관은 무게이트)",
+      "wall_check": "부분 데이터로 판정 발화 금지 (smoke-test는 배관 검증 한정 라벨). FULL 모드는 크롤 연속성(200501~202604, gap 0) 미충족 시 코드가 fail-closed stop — 실증 완료",
+      "data_gate": "크롤 2020+ 잔여 (본측정만 게이트, 배관은 무게이트). 현재 200501~201912 연속 180개월",
       "owner": "Q-Lead",
-      "status": "in_progress",
-      "next_action": "패널 빌더 구축 → 하네스 통합 → smoke → armed_await_crawl 전환",
+      "status": "armed_await_crawl",
+      "armed_date": "2026-07-12",
+      "next_action": "크롤 완결(체크포인트 연속 202604+ 도달) 확인 → 1커맨드 본측정: RAMP_R6_INSIDER=1 RAMP_R9_FULL=1 Rscript -e 'source(\"02_Infrastructure/ramp/run_ramp_r6_portt_boruta.R\", encoding=\"UTF-8\")' (패널 자동 재빌드 포함). 사전등록 4-config·kill·family n_trials=24 = armed spec 참조",
+      "smoke_result": "SMOKE PASS 2026-07-12 (부분창 2005-2019, SMOKE_ONLY — 증거력 없음): 스키마 PASS · parity-1 INS01 canonical 재계산 vs 패널저장 max|d|=0 (177개월) · parity-2 Pbase_W36_K20 vs R6 저장 Ppure_W36_K20 max|d|=0 (143개월, 기계 복제 무결) · PIT truncation-invariance 3/3 + 신호최종월<=크롤말 PASS. 배관 진단: INS 3종이 K20 풀 참여 58% anchors(trailing NW-t 유한 72/72) — 선별 흐름 관통 확인. 성과 수치는 .cache 로그에만(판정 미발화)",
+      "outputs": "02_Infrastructure/ramp/build_insider_factor_panel.R · run_ramp_r9_insider_ext.R · run_ramp_r6_portt_boruta.R(config 분기 7줄) · outputs/ramp/insider_factor_{scores,deployzone_active}.parquet + insider_panel_meta.json(partial_data=TRUE 라벨) · 04_Research/factor_selection_program/r9_insider_selection_armed_spec.md · .cache/_ramp_r9_insider_smoke_20260712.txt",
       "source_refs": [
-        "crawl: .cache/dart/insider_backfill 180개월",
-        "harness: 02_Infrastructure/ramp/run_ramp_r6_portt_boruta.R"
+        "crawl: .cache/dart/insider_backfill 180개월 (read-only 무간섭)",
+        "harness: 02_Infrastructure/ramp/run_ramp_r6_portt_boruta.R (RAMP_R6_INSIDER=1 분기)",
+        "spec: 04_Research/factor_selection_program/r9_insider_selection_armed_spec.md",
+        "frontier: FQ-014 revival ① / FQ-015 next_action / FQ-001 구분(standalone DEAD_PRELIM vs 풀-참여)"
       ]
     }
   ]

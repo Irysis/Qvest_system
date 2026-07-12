@@ -21,6 +21,13 @@
 suppressPackageStartupMessages({library(data.table); library(arrow); library(sandwich); library(lmtest); library(Boruta); library(digest); library(jsonlite)})
 setDTthreads(1); try(arrow::set_cpu_count(1),silent=TRUE); try(arrow::set_io_thread_count(2),silent=TRUE)
 QM <- "C:/Users/99922/OneDrive/Quant_Module_Moltbot"; setwd(QM)
+## [FQ-019 armed 2026-07-12] config 분기: RAMP_R6_INSIDER=1 → insider 확장 패널(102+INS) 소비
+##   경로(run_ramp_r9_insider_ext.R)로 위임. env 미설정 시 아래 기존 R6 재현 경로 완전 불변(회귀 금지).
+##   SMOKE(기본, 부분크롤 배관검증) / RAMP_R9_FULL=1(크롤 완결 후 본측정, fail-closed).
+if (nzchar(Sys.getenv("RAMP_R6_INSIDER", ""))) {
+  source("02_Infrastructure/ramp/run_ramp_r9_insider_ext.R", encoding = "UTF-8")
+  quit(save = "no")
+}
 source("02_Infrastructure/config.R")
 source("02_Infrastructure/ramp/factor_validation.R")   # build_monthly_forward_returns
 source("02_Infrastructure/contracts/canonical_screen_bt.R")

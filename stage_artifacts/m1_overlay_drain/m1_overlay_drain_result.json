@@ -1,0 +1,179 @@
+{
+  "fq_id": "FQ-017",
+  "measured_at": "2026-07-12T17:45:47+0900",
+  "prereg_sha256": "b93e48f2f238c4496e5774c9dd8b7c66bdfe89d9d9dccc4e514b683e79d1a3ee",
+  "metric_type": "weighted_screen",
+  "tier": "screen_diagnostic",
+  "engine": "weighted_screen_bt (contract NW lag-3) via overlay_candidate_drain.R primitives (QVEST_DRAIN_NORUN=1)",
+  "cost_bps_oneway": 15,
+  "tilt_kappa": 0.3,
+  "overlay_signal": "z1 = cross-sectional z of m1 avg_sentence_len (higher=more obfuscation); sole carrier per Phase A LOO",
+  "scenarios": [
+    {
+      "arm": "LARGE_base",
+      "n_months": 169,
+      "abs_SR": 0.141038,
+      "abs_CAGR": 0.007219,
+      "abs_MDD": -0.432649,
+      "calmar": 0.016685,
+      "IR": 0.017728,
+      "capw_PORT_t": 0.07102,
+      "active_SR": 0.017728,
+      "oos_v2": null,
+      "turnover_ann": 5.331124,
+      "n_names_avg": 25
+    },
+    {
+      "arm": "LARGE_excl",
+      "n_months": 169,
+      "abs_SR": 0.189786,
+      "abs_CAGR": 0.017957,
+      "abs_MDD": -0.427948,
+      "calmar": 0.041962,
+      "IR": 0.094074,
+      "capw_PORT_t": 0.387343,
+      "active_SR": 0.094074,
+      "oos_v2": 1.294662,
+      "turnover_ann": 5.694675,
+      "n_names_avg": 20
+    },
+    {
+      "arm": "LARGE_tilt",
+      "n_months": 169,
+      "abs_SR": 0.177555,
+      "abs_CAGR": 0.015335,
+      "abs_MDD": -0.419035,
+      "calmar": 0.036595,
+      "IR": 0.073677,
+      "capw_PORT_t": 0.292549,
+      "active_SR": 0.073677,
+      "oos_v2": 1.902396,
+      "turnover_ann": 5.530403,
+      "n_names_avg": 25
+    },
+    {
+      "arm": "BROAD_base",
+      "n_months": 169,
+      "abs_SR": 0.416084,
+      "abs_CAGR": 0.059981,
+      "abs_MDD": -0.408781,
+      "calmar": 0.146732,
+      "IR": 0.429544,
+      "capw_PORT_t": 1.515665,
+      "active_SR": 0.429544,
+      "oos_v2": -0.049143,
+      "turnover_ann": 0.700513,
+      "n_names_avg": 294.390533
+    },
+    {
+      "arm": "BROAD_excl",
+      "n_months": 169,
+      "abs_SR": 0.421318,
+      "abs_CAGR": 0.060803,
+      "abs_MDD": -0.412581,
+      "calmar": 0.147372,
+      "IR": 0.440507,
+      "capw_PORT_t": 1.53334,
+      "active_SR": 0.440507,
+      "oos_v2": -0.110269,
+      "turnover_ann": 0.830756,
+      "n_names_avg": 235.118343
+    },
+    {
+      "arm": "BROAD_tilt",
+      "n_months": 169,
+      "abs_SR": 0.428041,
+      "abs_CAGR": 0.062092,
+      "abs_MDD": -0.408553,
+      "calmar": 0.151979,
+      "IR": 0.446896,
+      "capw_PORT_t": 1.567834,
+      "active_SR": 0.446896,
+      "oos_v2": -0.02,
+      "turnover_ann": 0.727232,
+      "n_names_avg": 294.390533
+    }
+  ],
+  "paired_nw": [
+    {
+      "arm": "LARGE_excl",
+      "n": 169,
+      "paired_nw_t_lag3": 0.751017,
+      "mean_d_bps_m": 8.529239,
+      "mean_d_ann_bps": 102.350868
+    },
+    {
+      "arm": "LARGE_tilt",
+      "n": 169,
+      "paired_nw_t_lag3": 1.269506,
+      "mean_d_bps_m": 6.198188,
+      "mean_d_ann_bps": 74.378255
+    },
+    {
+      "arm": "BROAD_excl",
+      "n": 169,
+      "paired_nw_t_lag3": 0.152617,
+      "mean_d_bps_m": 0.562481,
+      "mean_d_ann_bps": 6.749774
+    },
+    {
+      "arm": "BROAD_tilt",
+      "n": 169,
+      "paired_nw_t_lag3": 0.882318,
+      "mean_d_bps_m": 1.57518,
+      "mean_d_ann_bps": 18.902163
+    }
+  ],
+  "pit_guard": {
+    "assert_overlay_pit": "PASS(HARD)",
+    "ic_direction": {
+      "mean_ic": 0.015475,
+      "nw_t": 2.80357,
+      "n_months": 169,
+      "note": "score=-z1 vs fwd_excess; >=0 = clarity predicts higher excess (PIT-normal)"
+    },
+    "lag1_stress": [
+      {
+        "arm": "LARGE_lag1_excl",
+        "n": 168,
+        "paired_nw_t_lag3": 0.651586,
+        "mean_d_bps_m": 7.436407,
+        "mean_d_ann_bps": 89.236884
+      },
+      {
+        "arm": "LARGE_lag1_tilt",
+        "n": 168,
+        "paired_nw_t_lag3": 1.082093,
+        "mean_d_bps_m": 5.233101,
+        "mean_d_ann_bps": 62.797217
+      },
+      {
+        "arm": "BROAD_lag1_excl",
+        "n": 168,
+        "paired_nw_t_lag3": -0.193155,
+        "mean_d_bps_m": -0.724456,
+        "mean_d_ann_bps": -8.693476
+      },
+      {
+        "arm": "BROAD_lag1_tilt",
+        "n": 168,
+        "paired_nw_t_lag3": 0.752162,
+        "mean_d_bps_m": 1.331075,
+        "mean_d_ann_bps": 15.972901
+      }
+    ],
+    "strict_ab": {
+      "excl": {
+        "inflation": -0.201188,
+        "lookahead_suspected": false,
+        "message": "[overlay_pit_guard] BROAD_excl abs_SR (current vs strict age>=1): current=0.4213 strict=0.5274 인플레=-20.1% → clean"
+      },
+      "tilt": {
+        "inflation": -0.22154,
+        "lookahead_suspected": false,
+        "message": "[overlay_pit_guard] BROAD_tilt abs_SR (current vs strict age>=1): current=0.4280 strict=0.5499 인플레=-22.2% → clean"
+      }
+    }
+  },
+  "note": "Screen-tier overlay diagnostic (NOT capital-grade). Carrier STR_1715 per-stock holdings unavailable (bt_result$holdings empty) + carrier in m1-dead mega/mid tier + drain overlay=market-scalar => measured on dual-tier bases from m1 panel via contract primitive. See preregistration.json infeasibility_surface."
+}

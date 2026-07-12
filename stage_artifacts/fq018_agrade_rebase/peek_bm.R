@@ -1,0 +1,11 @@
+# fq018 — benchmark.parquet schema peek (read-only)
+suppressMessages({ library(data.table); library(arrow) })
+data.table::setDTthreads(1L)
+arrow::set_io_thread_count(2)
+ROOT <- "C:/Users/99922/OneDrive/Quant_Module_Moltbot"
+bm <- as.data.table(arrow::read_parquet(file.path(ROOT, ".cache/benchmark.parquet")))
+cat("cols:", paste(names(bm), collapse=", "), "\n")
+cat("nrow:", nrow(bm), "\n")
+print(head(bm, 3))
+print(tail(bm, 3))
+for (cc in names(bm)) if (is.character(bm[[cc]])) cat(cc, ":", paste(unique(bm[[cc]])[1:min(5, length(unique(bm[[cc]])))], collapse=", "), "\n")
