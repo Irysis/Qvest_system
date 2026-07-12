@@ -263,6 +263,70 @@
         "asset: outputs/ramp/r6_factor_deployzone_active.parquet + L-RAMP-20260711_200226",
         "result: L-RAMP-20260712_161537 (config_hash 192bc9400eda1ca1, n_trials family=20, vintage bit-identical Δ0)"
       ]
+    },
+    {
+      "id": "FQ-016",
+      "lane": "selection_discipline",
+      "title": "R8 — R7 E2의 EW-oos 0.51 = band [0.5,0.7) 보강증거 escalation 미실행분 실측",
+      "hypothesis": "P-pure W36_K20의 EW-basis oos 0.51은 무조건 FAIL이 아니라 band — 보강증거 3종(trailing-subwindow PORT_t>0 / placebo p<0.05 / book-marginal ΔSR>0 ∧ |cor|<0.30) 2/3 충족 시 D3형(벤치-상대 배포성) 결정 재료 자격 회복",
+      "ev_rationale": "R7이 0.7 단일 문턱으로 'EW-real 미달' 선언했으나 measurement-graduation §3 band escalation 프로토콜을 EW 진단 basis에 적용하지 않음 — 기존 아티팩트로 즉시 실측 가능, 미소진 판정 절차",
+      "wall_check": "EW는 진단 basis — 통과해도 자본 게이트(cap-w) 우회 아님, D3형 도훈 결정 재료일 뿐(프레임 명시)",
+      "data_gate": "없음",
+      "owner": "Q-Lead",
+      "status": "in_progress",
+      "next_action": "3종 보강증거 EW-basis 실측 → 2/3 판정 → 보고",
+      "source_refs": [
+        "r7: outputs/ramp/r7_ewbasis_e2_reclass_20260712.*",
+        "rule: measurement-graduation §3 oos band escalation"
+      ]
+    },
+    {
+      "id": "FQ-017",
+      "lane": "screen_tier_recovery",
+      "title": "m1 문장길이 OVERLAY_CANDIDATE 드레인 (Phase A feature 소비)",
+      "hypothesis": "공시 난독화 m1(Size-무관 실신호·소형 국소화)을 book 오버레이/exclusion 신호로 소비 시 한계 기여가 있는가 — screen_route 라우팅의 실제 소비 실행",
+      "ev_rationale": "generic 드레인 러너(overlay_candidate_drain.R, 16건 드레인 자격 실증) 재사용 — 한계비용 낮음. 07-10 드레인 16건 전멸 prior 정직 병기(신규 재료라는 차이만)",
+      "wall_check": "오버레이 PIT C5 의무 4종(overlay_pit_guard HARD·lag1 스트레스·strict A/B·anchor 간격) — 07-06 실사고 재발방지. crisis 리바운드 클리핑 기전 주의",
+      "data_gate": "없음 (text_cache 4,490건 + alpha_scores 보존)",
+      "owner": "Q-Lead",
+      "status": "in_progress",
+      "next_action": "드레인 측정 → 판정 → L-code",
+      "source_refs": [
+        "phase_a: L-AR-20260712_152759",
+        "runner: 02_Infrastructure/regime/overlay_candidate_drain.R"
+      ]
+    },
+    {
+      "id": "FQ-018",
+      "lane": "ledger_revival",
+      "title": "A급 원장 18건 재베이스 일괄 재판정 (un-bury 탐사)",
+      "hypothesis": "07-02 벤치수리 이전 A급 기록 중 교정 벤치(IKS200)+pin 기준으로 생존하는 진짜 후보가 있는가 — 재베이스 의무 메타규칙의 소급 적용 = revival 메커니즘",
+      "ev_rationale": "역대 1·2위가 벤치버그 산물로 판명된 만큼 A 라벨 전수의 신뢰도가 미검증 — 생존자 발견 시 즉시 자본급 후보(un-bury), 전멸 시 원장 정화. 양쪽 다 EV 양",
+      "wall_check": "시계열 미보존 항목은 '재측정 불가' 정직 라벨(추정 재구성 금지 — feedback-performance-real-code-only)",
+      "data_gate": "없음",
+      "owner": "Q-Lead",
+      "status": "in_progress",
+      "next_action": "18건 분류(성과주장/process) → 보존 시계열 재베이스 → 생존자 표",
+      "source_refs": [
+        "harvest: .cache/harvest_20260712.json grade A 18",
+        "meta: reference-benchmark-iks200-bug-fix 재베이스 의무"
+      ]
+    },
+    {
+      "id": "FQ-019",
+      "lane": "non_return",
+      "title": "insider 소비 하네스 사전구축 (armed — 크롤 완결 즉시 1커맨드 실행)",
+      "hypothesis": "(측정 아님) PORT_t-정렬 선별 × insider 패널 결합의 배관을 크롤 완결 전에 완성 — 패널 빌더 + R6 선별 하네스 통합 + 2005-2019 부분데이터 smoke-test",
+      "ev_rationale": "선별 아크 유일 잔존 frontier의 리드타임 제거. 반쪽 데이터 본판정은 금지(post-2017 증거력) — 배관·parity만",
+      "wall_check": "부분 데이터로 판정 발화 금지 (smoke-test는 배관 검증 한정 라벨)",
+      "data_gate": "크롤 2020+ 잔여 (본측정만 게이트, 배관은 무게이트)",
+      "owner": "Q-Lead",
+      "status": "in_progress",
+      "next_action": "패널 빌더 구축 → 하네스 통합 → smoke → armed_await_crawl 전환",
+      "source_refs": [
+        "crawl: .cache/dart/insider_backfill 180개월",
+        "harness: 02_Infrastructure/ramp/run_ramp_r6_portt_boruta.R"
+      ]
     }
   ]
 }
