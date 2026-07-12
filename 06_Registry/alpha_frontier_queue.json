@@ -242,6 +242,23 @@
         "r6_result: outputs/ramp/r6_portt_boruta_{gates,paired,summary,prereg}_20260711 + r6_factor_deployzone_active.parquet(패널) + L-RAMP-20260711_200226 + challenge_note_r6_portt_boruta_20260711.md",
         "runner: 02_Infrastructure/ramp/run_ramp_r6_portt_boruta.R (PREREG byte-identical hash, pin r4r5_session_20260711)"
       ]
+    },
+    {
+      "id": "FQ-015",
+      "lane": "selection_discipline",
+      "title": "R7 — PORT_t-정렬 선별 × EW-basis (라벨 basis 교체 + R6 산출 재분류, 도훈 지시 07-12 'R6부터')",
+      "hypothesis": "E1: trailing 선별 라벨을 cap-w active → EW-유니버스 active로 교체하면 mega-cap 벤치 드리프트 오염이 제거돼 선별 순위가 개선되는가(cap-w 최종 판정 포함). E2: R6 최선 P-pure의 dual-basis·cap-tier 재분류 — 2.61이 어디에 사는지, EW-real이면 벤치-상대 배포성 결정(D3형) 재료",
+      "ev_rationale": "R6 첫 양성(선별 실효 +3.01)의 잔존 frontier 2갈래 중 데이터 게이트 없는 쪽. v8.3 M2 dual-basis 진단 계약과 정합. cap-w authoritative 불변 — E1은 cap-w 개선 가능성 실검증, E2는 결정 재료",
+      "wall_check": "cap-w 트랩(알파=벤치-저비중 tier 국소화)·substrate post-2017 감쇠가 기존 벽. E2는 자본 게이트 우회 아님(EW는 진단 basis) — 판정 프레임 명시 의무",
+      "data_gate": "없음 (r6_factor_deployzone_active.parquet + 벤치 캐시 재사용)",
+      "owner": "Q-Lead (R7 ramp-orchestrator)",
+      "status": "in_progress",
+      "next_action": "R7 측정 → 판정 → L-code → 텔레그램 차트 보고. 자매 갈래(PORT_t-정렬 × insider 패널)는 크롤 완료 후 별도(FQ-001 연계)",
+      "source_refs": [
+        "trigger: 도훈 2026-07-12 '그럼 R6부터'",
+        "frontier: project-selection-discipline-arc-r4r5r6 잔존 frontier ②",
+        "asset: outputs/ramp/r6_factor_deployzone_active.parquet + L-RAMP-20260711_200226"
+      ]
     }
   ]
 }
