@@ -112,7 +112,9 @@ saveRDS(P, file.path(OUT,"signal_panel.rds"))
 
 # ---- 6. monthly rank-IC (composite obfuscation vs fwd excess) + family ----
 ic_series <- function(scorevar) {
-  P[!is.na(fwd_excess), .(ic=spear(get(scorevar), fwd_excess), n=.N), by=ym][n>=10]
+  s <- P[!is.na(fwd_excess) & is.finite(get(scorevar)),
+         .(ic=spear(get(scorevar), fwd_excess), n=.N), by=ym][n>=10]
+  s[is.finite(ic)]
 }
 metrics_family <- c("obfuscation_composite","m1","m2","m3","m4","m5","m6")
 famtab <- rbindlist(lapply(metrics_family, function(v){
