@@ -11,7 +11,8 @@ source(file.path(ROOT, "02_Infrastructure/contracts/canonical_screen_bt.R"))
 set.seed(20260711)
 ym_add <- function(ym, k){ y<-ym%/%100L; m<-ym%%100L; t<-(y*12L+(m-1L))+k; (t%/%12L)*100L+(t%%12L)+1L }
 ym2date <- function(ym) as.Date(sprintf("%d-%02d-01", ym%/%100L, ym%%100L))
-spear <- function(x,y) suppressWarnings(cor(x,y,method="spearman",use="complete.obs"))
+spear <- function(x,y){ ok<-is.finite(x)&is.finite(y); if(sum(ok)<3) return(NA_real_)
+  suppressWarnings(tryCatch(cor(x[ok],y[ok],method="spearman"), error=function(e) NA_real_)) }
 nw_t <- function(x, lag=3L){ x<-x[is.finite(x)]; n<-length(x); if(n<8) return(NA_real_)
   mu<-mean(x); e<-x-mu; g0<-sum(e^2)/n; v<-g0
   for(L in 1:min(lag,n-1)){ w<-1-L/(lag+1); g<-sum(e[1:(n-L)]*e[(L+1):n])/n; v<-v+2*w*g }
