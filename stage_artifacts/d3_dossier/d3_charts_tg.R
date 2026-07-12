@@ -65,7 +65,7 @@ res <- tg_agent_brief(
   title = "D3 결정 재료 — 벤치-상대 배포 실사 완료",
   sections = list(
     list(type="summary", emoji="📌",
-         body="자본 배정도 북 변경도 아닙니다 — 도훈 결정을 요청드리는 재료입니다. R6 P-pure와 V02_EP를 '시장 동일가중 평균 대비' 별도 트랙으로 굴릴지에 대한 수용력·비용·간섭 실사를 마쳤습니다."),
+         body="자본 배정 아님 — 도훈 결정 요청 재료. P-pure·V02_EP의 벤치-상대(EW) 별도 트랙 여부용 수용력·비용·간섭 실사 완료."),
     list(type="bullet", emoji="📖", heading="쉬운 설명",
          items=c("대상: 시장평균 대비로는 강하지만(t 3.92) 대형주 지수 대비로는 기준 미달(t 2.61)인 소형주 쏠림 전략입니다",
                  "질문: 이걸 기존 운용과 별개의 작은 트랙으로 담을 가치가 있는가입니다",
@@ -95,6 +95,7 @@ res <- tg_agent_brief(
                  "권고 1줄: B안 — P-pure 단독(V02_EP는 중첩·oos 미달로 흡수), 실자본은 보류"))
   ),
   charts = c(f1, f2, f3),
-  as_of = "2026-07-13"
+  as_of = "2026-07-13",
+  force = TRUE
 )
 cat("tg ok:", isTRUE(res$ok), "\n")
