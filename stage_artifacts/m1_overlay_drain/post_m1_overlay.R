@@ -12,6 +12,9 @@ Sys.setenv(QVEST_DRAIN_NORUN = "1")
 source("02_Infrastructure/regime/overlay_candidate_drain.R")   # weighted_screen_bt
 source("02_Infrastructure/telegram/tg_chart_pack.R")
 source("02_Infrastructure/axiom/lcode_emit.R")
+# PerformanceAnalytics masks graphics::legend (diff formals -> 'argument 4 matches multiple formal args').
+# tg_chart_pack.R calls bare legend(); force the base one in globalenv so it resolves first (local, no infra edit).
+legend <- graphics::legend
 
 paired <- fread(file.path(OUT, "paired.csv"))
 scen   <- fread(file.path(OUT, "scenarios.csv"))
