@@ -1,0 +1,67 @@
+{
+  "task_id": "WT-D20260713_002",
+  "as_of_date": "2025-06-01",
+  "forecast_horizon": "1M",
+  "wt_type": "discovery",
+  "selection_objective": "canonical_port_t",
+  "selection_type": "sweep",
+  "n_trials": 2,
+  "alpha_vector": {
+    "A450080": -0.7242
+  },
+  "confidence_vector": {
+    "A450080": 0.1
+  },
+  "signal_matrix_ref": "stage_artifacts/WT_D20260713_002/alpha_scores.parquet",
+  "factor_specs": [
+    {
+      "factor_family": "EarningsQuality_Forensic",
+      "proxy": "Modified-Jones Discretionary Accruals (residual)",
+      "formula": "eps of per-FY xsec reg TA/A ~ 1/A + (dRev-dREC)/A + PPE/A ; TA=NI-OCF",
+      "lag_rule": "annual, Factor_Date<=sig_date (+1m hold)",
+      "winsorization": "1/99 per-FY",
+      "neutralization": "cross-sectional z; Size-partial robustness",
+      "economic_rationale": "discretionary (managed) accruals proxy earnings management -> negative forward (Sloan 1996, Xie 2001)",
+      "weight_theta": 0,
+      "references": ["Jones 1991", "Dechow-Sloan-Sweeney 1995", "Xie 2001"],
+      "canonical_port_t_nw_lag3": 0.44948,
+      "redundancy_cluster_id": "accrual_AC13 (corr 0.991)"
+    },
+    {
+      "factor_family": "EarningsQuality_Forensic",
+      "proxy": "Benford First-Digit Deviation (FSD MAD)",
+      "formula": "mean_d |p_obs(d)-log10(1+1/d)| over 43 raw-monetary line-items, >=15 items",
+      "lag_rule": "annual, Factor_Date<=sig_date (+1m hold)",
+      "winsorization": "none (bounded MAD)",
+      "neutralization": "cross-sectional z; Size-partial robustness (corr_vs_Size 0.006)",
+      "economic_rationale": "deviation from Benford = manipulation fingerprint -> lower quality -> negative forward (Amiram 2015)",
+      "weight_theta": 0,
+      "references": ["Amiram-Bozanic-Rouen 2015", "Benford 1938", "Nigrini 2012"],
+      "canonical_port_t_nw_lag3": 0.56811,
+      "redundancy_cluster_id": "benford_virgin (corr_vs_Size 0.006)"
+    }
+  ],
+  "diagnostics": {
+    "canonical_port_t_nw_lag3": 0.56811,
+    "canonical_port_t_pvalue": 0.56996,
+    "canonical_n_months": 191,
+    "rank_ic": -0.0043,
+    "icir": -0.07264,
+    "monotonicity": null,
+    "subperiod_stability": null,
+    "turnover_proxy": 2.3125,
+    "harvey_t_stat": -1.00387,
+    "post_neutralization_ic": 0.44943,
+    "note": "primary diagnostics = best factor F-B. Full per-factor metrics in alpha_validation.json."
+  },
+  "graduation": {
+    "passed": false,
+    "hard_gates_3": {
+      "port_t_2p95": false,
+      "oos_retention_0p7": false,
+      "calmar_0p64": false
+    }
+  },
+  "challenge_flags": ["F-A redundant with existing AC13 (xsec corr 0.991) — modified-Jones dREC adjustment immaterial in KR; AC13 already FAILED standalone (PORT_t 0.227, Grade F).", "F-B null vs placebo (p=0.160) — no genuine signal structure; rank-IC wrong sign & insignificant.", "BOTH fail on EW-universe basis too (dual-basis) => NOT a benchmark artifact; genuine absence of alpha in KR large-cap.", "cap-tier: both ~90-95% OTHER (small-cap localized) — same cap-w trap family; large-cap segment signal-dead.", "K-IFRS 2011 + source break 2016 (QW->DART) structural breaks flagged; mitigated by monthly xsec-z (level removed).", "coverage 2009-06+ (frozen panel), not 2005+ — shorter than alpha-search mandate; consistent w/ sibling R17."],
+  "verdict": "config-scoped negative (both) — screen-tier/feature. F-A -> quality composite supporting feature; F-B -> forensic EXCLUSION overlay probe or small-cap (RAMP). No add_factor."
+}

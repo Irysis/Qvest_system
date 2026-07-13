@@ -1,0 +1,111 @@
+{
+  "wt_id": "WT-D20260713_002",
+  "frontier_id": "FQ-031",
+  "as_of_date": "2025-06-01",
+  "verdict": "config-scoped negative (both) — no survivor. F-A redundant w/ AC13; F-B null-vs-placebo.",
+  "universe": "KR_top342 (K200 U KQ150)",
+  "benchmark": "cap-w KOSPI200 (HARD authoritative)",
+  "n_months": 191,
+  "period": "2009-06..2025-06 (frozen membership panel)",
+  "hard_gates_3": {
+    "portfolio_alpha_t_nw_ge_2p95": false,
+    "oos_retention_ge_0p7": false,
+    "calmar_ge_0p64": false
+  },
+  "factors": {
+    "FA": {
+      "name": "Modified-Jones Discretionary Accruals",
+      "score_sign": -1,
+      "canonical": {
+        "port_t_capw": 0.44948,
+        "port_p": 0.65309,
+        "port_t_IS": 1.07137,
+        "port_t_OOS": -0.57335,
+        "net_sr": 0.1108,
+        "calmar": 0.14145,
+        "turnover_annual": 2.2925
+      },
+      "dual_basis": {
+        "ew_uni_t": -0.33316,
+        "ew_post2017_t": -1.04525,
+        "ew_oos_retention_approx": -3.63782,
+        "cap_tier_weight": {
+          "MEGA": 0.02583,
+          "MID": 0.0225,
+          "OTHER": 0.95167
+        }
+      },
+      "advisory": {
+        "rank_ic": 0.00383,
+        "icir": 0.04347,
+        "rank_ic_t": 0.6008
+      },
+      "robustness": {
+        "placebo_p": 0.035,
+        "placebo_base": 0.44948,
+        "szpartial_port_t": 0.65703
+      },
+      "incrementality": {
+        "corr_vs_AC13ref": 0.99084,
+        "corr_vs_FB": 0.01723,
+        "corr_vs_Size": 0.06503,
+        "note": "corr_vs_AC13ref=0.991 => modified-Jones ~ original Jones in KR; dREC adjustment immaterial; redundant w/ AC13 (standalone LO top25 FAILED 2026-06-06 PORT_t 0.227 Grade F)"
+      },
+      "verdict": "config-scoped negative + frontier: standalone dead & redundant w/ AC13. route = quality/accrual composite supporting feature only (DIST-QPM-003/006).",
+      "next_probe": ["multi-sleeve component within earnings-quality composite (not standalone)", "worst-decile EXCLUSION overlay (envelope-safe consumption) rather than long-selection"]
+    },
+    "FB": {
+      "name": "Benford First-Digit Deviation (FSD MAD, Amiram 2015)",
+      "score_sign": -1,
+      "virgin_family": true,
+      "canonical": {
+        "port_t_capw": 0.56811,
+        "port_p": 0.56996,
+        "port_t_IS": 0.78905,
+        "port_t_OOS": -0.14091,
+        "net_sr": 0.1416,
+        "calmar": 0.15204,
+        "turnover_annual": 2.3125
+      },
+      "dual_basis": {
+        "ew_uni_t": -0.29671,
+        "ew_post2017_t": -0.33295,
+        "ew_oos_retention_approx": null,
+        "cap_tier_weight": {
+          "MEGA": 0.03604,
+          "MID": 0.06167,
+          "OTHER": 0.90229
+        }
+      },
+      "advisory": {
+        "rank_ic": -0.0043,
+        "icir": -0.07264,
+        "rank_ic_t": -1.00387
+      },
+      "robustness": {
+        "placebo_p": 0.16,
+        "placebo_base": 0.56811,
+        "szpartial_port_t": 0.44943,
+        "placebo_note": "placebo p=0.160 => PORT_t within shuffle noise = NO genuine signal structure"
+      },
+      "incrementality": {
+        "corr_vs_Size": 0.00604,
+        "note": "corr_vs_Size=0.006 => NOT a size/item-count proxy (Self-Adversarial concern cleared). But null: rank-IC wrong sign & insignificant, placebo p=0.16."
+      },
+      "verdict": "config-scoped negative + frontier: clean null in KR large-cap (most-audited segment). NEW knowledge (first Benford measurement in system).",
+      "next_probe": ["micro/small-cap universe (higher manipulation variance) — screen-tier/RAMP only, out of deployment envelope", "quarterly-filing FSD (more digits per firm) + composite w/ F-A residual as forensic EXCLUSION screen"]
+    }
+  },
+  "dsr": {
+    "selection_type": "sweep",
+    "n_trials": 2,
+    "e_max_2z": 0.52,
+    "note": "best PORT_t=0.57 (F-B) << E[max_2 z]=0.52-adjusted hurdle & << 2.95 — DSR moot (no candidate near threshold)."
+  },
+  "step0_field_audit": {
+    "result": "PASS (both feasible, no estimation-substitution)",
+    "FA_fields": "all present: NetIncome,OperatingCF,TotalAssets,Revenue,AccountsRecv(dREC),TangibleAssets(PPE) — fundamental_merged.parquet",
+    "FB_items": "raw-monetary whitelist 43 items; 98.7% firm-years >=15, median 33; source QW<=2015/DART2016+ (flagged)"
+  },
+  "dual_basis_conclusion": "BOTH fail on EW-universe basis too (F-A ew_t -0.33, F-B ew_t -0.30) => NOT a cap-w benchmark artifact. Genuine absence of alpha."
+}
