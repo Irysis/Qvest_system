@@ -1,0 +1,102 @@
+{
+  "task": "FQ-020 RAMP_03C_BOOKMOM_CAPW 단일 config 재현",
+  "strategy_id": "RAMP_03C_BOOKMOM_CAPW",
+  "source_lcode": "L-RAMP-20260620_184815",
+  "config_hash": "d9ca5fbdf98234fe16531d6afc83133e",
+  "pin_tag": "ramp03c_rerun_20260713_205545",
+  "as_of_date": "2026-07-13",
+  "generated_at": "2026-07-13T21:06:40+0900",
+  "source_version": "qvest_v8.3",
+  "security_id": "Ticker(RAWDATA K200uKQ150)",
+  "original_record": {
+    "pt": 2.98,
+    "oos_retention": 1.19,
+    "calmar": 0.89,
+    "SR": 0.99,
+    "window_mo": 164,
+    "note": "벤치버그기 측정·경계값+0.03·원 시계열 소실"
+  },
+  "remeasured": {
+    "proxy_full": {
+      "pt_capwt": 2.9839,
+      "oos_ret": 0.375,
+      "calmar": 0.421,
+      "SR": 0.8099,
+      "CAGR": 0.2128,
+      "MDD": -0.5052,
+      "net_IR": 0.6828,
+      "grade": "B",
+      "n": 255
+    },
+    "proxy_t164": {
+      "pt_capwt": 2.694,
+      "oos_ret": 0.361,
+      "calmar": 0.598,
+      "SR": 0.8464,
+      "CAGR": 0.226,
+      "MDD": -0.3781,
+      "net_IR": 0.7549,
+      "grade": "B",
+      "n": 164
+    },
+    "iks200_full": {
+      "pt_capwt": 2.6495,
+      "oos_ret": 0.217,
+      "calmar": 0.421,
+      "SR": 0.8099,
+      "CAGR": 0.2128,
+      "MDD": -0.5052,
+      "net_IR": 0.6074,
+      "grade": "B",
+      "n": 255
+    },
+    "iks200_t164": {
+      "pt_capwt": 2.2776,
+      "oos_ret": 0.217,
+      "calmar": 0.598,
+      "SR": 0.8464,
+      "CAGR": 0.226,
+      "MDD": -0.3781,
+      "net_IR": 0.6425,
+      "grade": "B",
+      "n": 164
+    },
+    "alt_mom6_rez_proxy_full": {
+      "pt_capwt": 3.0335,
+      "oos_ret": 0.414,
+      "calmar": 0.431,
+      "grade": "B"
+    }
+  },
+  "weighting_pattern": {
+    "ew_pt": 4.2527,
+    "score_pt": 4.265,
+    "capw_pt": 2.9839,
+    "note": "원 기록은 cap-w가 최고(OOS레버 주장). 재현은 cap-w가 최악(EW/score PORT_t 4.25/4.26 > cap-w 2.98) — cap-tier localization / closet-indexing 정합"
+  },
+  "decay_post2017": {
+    "basis": ["proxy_capw", "iks200"],
+    "n_pre": [144, 144],
+    "n_post": [111, 111],
+    "pt_pre": [2.9584, 2.8387],
+    "pt_post": [1.1146, 0.7556],
+    "actSR_pre": [0.9211, 0.8914],
+    "actSR_post": [0.3658, 0.2455]
+  },
+  "hard_verdict": {
+    "proxy_full": {
+      "port_t": true,
+      "oos": false,
+      "calmar": false
+    },
+    "iks200_full": {
+      "port_t": false,
+      "oos": false,
+      "calmar": false
+    }
+  },
+  "verdict": "DEMOTED — 재현 실패. authoritative 교정 IKS200 basis HARD 0/3, RAMP-native proxy basis 1/3(PORT_t만). oos_retention 1.19->0.22~0.41 붕괴 + calmar 0.89->0.42~0.60 붕괴 + cap-w OOS레버 기전 반전(cap-w=최악 가중). 원 2.98/1.19/0.89 = 벤치버그기+소실164mo창 아티팩트. config-scoped negative.",
+  "original_config_fidelity": "high(pt 2.98 proxy-full exact match) — construction 복원 충실. 단 164mo 정확 월-집합은 _bo_fwdgic 소실로 미복원(full+t164 병기로 대체)",
+  "benchmark_basis_note": "원 RAMP는 IKS를 쓰지 않고 build_monthly_forward_returns cap-w K200uKQ150 proxy 사용 — 'IKS001->IKS200 벤치버그'는 RAMP에 직접 비적용. RAMP 벤치버그=RAWDATA April-gap(말단 1mo, 영향 미미). authoritative 판정은 태스크 지정 교정 IKS200 채택(보수적)",
+  "capital_note": "자본 편입 = governor 정지(도훈 수동). 본 재현은 편입 근거 아님(FAIL)."
+}
