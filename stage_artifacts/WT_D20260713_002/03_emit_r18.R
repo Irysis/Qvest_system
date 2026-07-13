@@ -30,7 +30,9 @@ ch_eq <- tg_chart_pack(prb, out_dir=OUT, title="R18 F-B Benford FSD (best PORT_t
 labs <- c("F-A cap-w","F-A EW-uni","F-B cap-w","F-B EW-uni")
 vals <- c(res$FA$port_t_full, res$FA$ew_t, res$FB$port_t_full, res$FB$ew_t)
 ch_sw <- tg_chart_sweep(labs, vals, out_dir=OUT,
-          title="R18 canonical PORT_t (NW lag3) — both << 2.95 hurdle", prefix="portt_")
+          title="R18 canonical PORT_t (NW lag3) — both << 2.95 hurdle",
+          value_label="portfolio-alpha t (NW lag3)", hline=2.95, hline_label="HARD",
+          filename="portt_sweep.png")
 charts <- c(ch_sw, ch_eq[1])
 cat("charts:", paste(basename(charts),collapse=", "),"\n")
 
