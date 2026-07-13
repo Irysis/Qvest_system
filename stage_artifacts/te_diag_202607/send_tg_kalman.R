@@ -9,17 +9,14 @@ res <- tg_agent_brief(
   sections = list(
     list(emoji = "📌", heading = "요약", type = "text",
          body = paste0(
-           "도훈 질문(\"Kalman beta 써봤나\") → 처녀기법 Kalman 2종(local-level 변동성 SV + ",
-           "TV-beta)을 어제 TE 진단과 동일 워크포워드 하네스로 대결. 대조군 5/5 정확 재현. ",
-           "Kalman-SV가 raw 지표선 이기나(분산비 1.015·오경보 0.9%), 적대검증 결과 이 승리는 ",
-           "log-offset로 눈금 level을 맞춘 아티팩트 — 단일 상수 re-baseline이 거의 복제. ",
-           "TV-beta는 EWMA 못 이기고 오버레이 성분 흡수도 실패. 진단·결정 재료만(무변경).")),
+           "도훈 질문 → 처녀기법 Kalman 2종(변동성 SV + TV-beta)을 어제 TE 진단과 동일 워크포워드로 대결. ",
+           "대조군 5/5 재현. Kalman-SV가 raw 지표선 이기나(분산비 1.015·오경보 0.9%), 적대검증서 이 승리는 ",
+           "log-offset level 아티팩트 — 단일 상수 re-baseline이 거의 복제. 진단·결정 재료만(무변경).")),
     list(emoji = "💡", heading = "쉬운 설명", type = "text",
          body = paste0(
-           "추적오차(TE)=방어북이 지수와 벌어지는 폭. 이걸 예측하는 '눈금자'로 Kalman filter(상태공간 ",
-           "추정, 이론적으로 EWMA의 상위호환)를 처음 시험했다. 결과: Kalman이 표면 점수는 좋지만, ",
-           "그 이득의 대부분은 '눈금 높이를 올린' 것뿐이라 훨씬 단순한 상수 재조정으로 똑같이 얻어진다. ",
-           "즉 정교한 기법값을 못 한다 — 우리 'EW 천장' 교훈과 같은 형태.")),
+           "추적오차(TE)=방어북이 지수와 벌어지는 폭. 예측 눈금자로 Kalman filter(EWMA의 이론적 상위호환)를 ",
+           "처음 시험했다. 결과: 표면 점수는 좋지만 이득 대부분이 '눈금 높이를 올린' 것뿐 — 단순 상수 재조정으로 ",
+           "똑같이 얻어진다. 정교한 기법값을 못 한다(우리 'EW 천장' 교훈과 동형).")),
     list(emoji = "📊", heading = "Head-to-head (공통창 233개월, 낮을수록/1에 가까울수록 우수)", type = "table",
          df = data.frame(
            추정기 = c("Kalman-SV", "EWMA λ0.97", "Kalman-TVbeta", "현행 상수", "국면조건부"),
