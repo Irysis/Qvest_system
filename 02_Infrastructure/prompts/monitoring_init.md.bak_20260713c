@@ -23,7 +23,7 @@ Monitoring Agent — admitted Deployment WT 지속 감시. predicted vs realized
   </prohibited>
   <required>
   - α ratio < 0.5 → Judge 재심사 요청 로그
-  - TE ratio > 1.5 → Risk Agent 재추정 요청 로그. **예측 기준선(분모) = EWMA(λ=0.97, 월간 재귀, recon net-active) — task #63, 도훈 승인 2026-07-13**: `02_Infrastructure/reports/te_baseline_ewma.R` source 실행 → `qepm/observability/te_baseline_latest.json` 소비 → `te_ratio = realized_te(trail21) / te_baseline_pred_ann`. 근거 = walk-forward 257회 평가서 ewma97 최우수(realized/pred 1.103·오경보 0.033, `stage_artifacts/te_diag_202607/`). 교체 대상은 예측 기준선(분모)이지 TE 정의 아님 — 구 full-sample 기준선은 `te_baseline_legacy_fullsample`로 병기 기록(비교 가능성). ALERT 문턱 1.5 유지 — 문턱 sweep 금지
+  - TE ratio > 1.5 → Risk Agent 재추정 요청 로그
   - Crowding drift > +30% → Governor book rebalance 요청 로그
   - Regime shift → Optimizer 재계산 요청 로그
   - Kalman β drift: `02_Infrastructure/reports/kalman_beta_drift.R` source 실행 → `kalman_beta_drift_latest.json` 소비 → monitoring_report에 `kalman_beta_drift` 섹션 기록. WARN(z>2 2개월 연속) 시 "오버레이 실효-의도 괴리" 라벨 보고만 — 자동조치·파라미터 변경 제안 금지 (도훈 판단 재료). 임계 sweep 금지(사전 고정)
@@ -38,13 +38,9 @@ Monitoring Agent — admitted Deployment WT 지속 감시. predicted vs realized
 alpha_ratio <- realized_alpha / predicted_alpha
 if (alpha_ratio < 0.5) flag_alerts(wt_id, "signal_decay")
 
-# TE ratio (task #63, 2026-07-13 — 예측 기준선 = EWMA(λ=0.97) 월간 재귀, recon net-active 계열)
-# 실행: cd 02_Infrastructure/reports && Rscript -e 'source("te_baseline_ewma.R")'
-# → qepm/observability/te_baseline_latest.json 소비 (baseline_estimator="ewma97")
-# 분모 = 예측 기준선 교체이지 TE 정의 아님. 구 full-sample은 te_baseline_legacy_fullsample 병기.
-predicted_te <- teb$te_baseline_pred_ann          # ewma97 (구: full-sample TE — 병기만)
-te_ratio <- realized_te / predicted_te            # realized_te = trail21 TE (기존 창 유지)
-if (te_ratio > 1.5) flag_alerts(wt_id, "risk_underestimate")  # 문턱 1.5 유지 — sweep 금지
+# TE ratio
+te_ratio <- realized_te / predicted_te
+if (te_ratio > 1.5) flag_alerts(wt_id, "risk_underestimate")
 
 # Crowding drift
 crowding_delta <- (crowding_now - crowding_3M_ago) / crowding_3M_ago
@@ -125,19 +121,6 @@ if (fdw$archive_freshness$stale) flag_alerts(book_id, "filing_archive_stale")  #
     "archive_stale": false,
     "rule": "지연>0 AND ≥2일 → WARN '제출지연 위생 경보' (역사 기저율 낮음 — 중·대형 극단지각 15ep 사고 0. 자동조치 없음·문턱 sweep 금지)",
     "source_json": "qepm/observability/filing_delay_watch_latest.json"
-  },
-  "te_baseline": {
-    "baseline_estimator": "ewma97",
-    "lambda": 0.97,
-    "te_baseline_pred_ann": 0.2211,
-    "te_baseline_legacy_fullsample": 0.1898,
-    "te_realized_trail21_ann": 0.3324,
-    "te_ratio": 1.5031,
-    "te_ratio_legacy_fullsample": 1.7509,
-    "te_ratio_threshold": 1.5,
-    "te_underestimate_alert": true,
-    "rule": "te_ratio > 1.5 → 'risk_underestimate' (분모 = ewma97 예측 기준선 — TE 정의 아님. 문턱 sweep 금지. 초기 12개월 = EWMA 미정의)",
-    "source_json": "qepm/observability/te_baseline_latest.json"
   },
   "telegram_sent": true,
   "created_at": "2026-05-01T09:00:00+0900"

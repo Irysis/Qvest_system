@@ -1,0 +1,59 @@
+{
+  "as_of": "2026-07-13",
+  "book": "STR_1715_on_M4_R05_noLayer4_PG2",
+  "basis": "recon net-active (contract-authoritative bt_result rds) read-only 소비 · monitoring TE 예측 기준선",
+  "baseline_estimator": "ewma97",
+  "lambda": 0.97,
+  "honest_label": {
+    "scope": "교체 대상 = 예측 기준선(분모)이지 TE 정의 아님. TE 정의 sd(active)*sqrt(12) 불변",
+    "metric_type_realized": "backtested (recon 계약-authoritative rds 파생, 표준 sd)",
+    "metric_type_baseline": "estimated (walk-forward 257회 PIT 평가 검증 예측치)"
+  },
+  "ewma_detail": {
+    "recursion": "v_t = lambda*v_(t-1) + (1-lambda)*a_(t-1)^2 ; sigma_t = sqrt(v_t) — PIT: t-1까지만",
+    "init": "v_init = var(a[1:12]) 표본분산 — 초기 12개월은 예측 미정의(NA)",
+    "forecast_convention": "기준선 = sigma_N*sqrt(12), 당월 a_N 미포함 1-step-ahead (walkforward eval current_TE_forecast_ann 동일 convention)",
+    "source_impl": "stage_artifacts/te_diag_202607/te_decompose.R §F ewma_sig 재사용 (재발명 금지)",
+    "next_vintage_diag_ann": 0.268348
+  },
+  "series": {
+    "source_rds": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260702_002/output/bt_result_C_noL4_CLEAN_ann12.rds",
+    "n_months": 269,
+    "start": "2004-02-02",
+    "end": "2026-06-01",
+    "trail21_window": "2024-10-02 ~ 2026-06-01"
+  },
+  "te_baseline_pred_ann": 0.221138,
+  "te_baseline_legacy_fullsample": 0.189841,
+  "te_realized_trail21_ann": 0.332387,
+  "te_realized_trail12_ann": 0.334952,
+  "te_realized_trail36_ann": 0.273713,
+  "te_ratio": 1.503074,
+  "te_ratio_legacy_fullsample": 1.750874,
+  "te_ratio_threshold": 1.5,
+  "te_underestimate_alert": true,
+  "te_underestimate_alert_legacy": true,
+  "rule": "te_ratio > 1.5 → 'risk_underestimate' ALERT (Risk Agent 재추정 요청 로그 — 자동조치 없음·문턱 sweep 금지)",
+  "walkforward_provenance": {
+    "eval_csv": "stage_artifacts/te_diag_202607/walkforward_estimator_eval.csv",
+    "n_eval": 257,
+    "ewma97": {
+      "realized_over_pred": 1.103133,
+      "pct_z_gt1": 0.276265,
+      "alert_1p5_rate": 0.03252
+    },
+    "legacy_expand_const": {
+      "realized_over_pred": 1.197347,
+      "pct_z_gt1": 0.299611,
+      "alert_1p5_rate": 0.060976
+    },
+    "note": "후보 5종(expand_const/roll36/ewma94/ewma97/regime_cond) 중 ewma97 최우수 — task #47 진단 실측"
+  },
+  "diag_reference_check": {
+    "diag_as_of": "2026-07-13",
+    "delta_full": -2.658399e-07,
+    "delta_trail21": 2.925257e-07,
+    "delta_ewma97": 2.933179e-07,
+    "note": "동일 rds vintage면 delta≈0 기대. rds 연장 시 delta 발생은 정상(신선 데이터) — 참조값은 2026-07-13 진단 고정"
+  }
+}
