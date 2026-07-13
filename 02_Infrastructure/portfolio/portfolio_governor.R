@@ -174,22 +174,31 @@ if (!exists("%||%")) {
 }
 
 #' Lazy-load regime signal (sourced only once per session)
+#' [2026-07-13 수리, task #49] 구 경로 file.path(.pg_root, "regime_signal.R")는 portfolio/ 안을
+#'   찾아 상시 file.exists FALSE → 무경고 NEUTRAL/0 fallback (gap_vector가 엔진값을 한 번도
+#'   못 읽던 배선 버그 — 엔진 CRISIS vs 표시 NEUTRAL 불일치의 원인). 실물은 regime/ 소재.
+#'   fallback은 warn-loud + source 라벨로 침묵 금지.
 .pg_get_regime <- function(date = Sys.Date() - 1) {
   if (!exists("get_regime_at_date", envir = .GlobalEnv)) {
-    rs_path <- file.path(.pg_root, "regime_signal.R")
-    if (file.exists(rs_path)) {
+    rs_candidates <- c(file.path(dirname(.pg_root), "regime", "regime_signal.R"),
+                       file.path(.pg_root, "regime_signal.R"))
+    rs_path <- rs_candidates[file.exists(rs_candidates)][1]
+    if (!is.na(rs_path)) {
       tryCatch(source(rs_path, local = FALSE), error = function(e) {
         warning("[pg] Failed to source regime_signal.R: ", e$message)
       })
+    } else {
+      warning("[pg] regime_signal.R not found in: ", paste(rs_candidates, collapse = " | "))
     }
   }
   if (exists("get_regime_at_date", envir = .GlobalEnv)) {
     tryCatch(get_regime_at_date(date), error = function(e) {
-      warning("[pg] get_regime_at_date failed: ", e$message)
-      data.table(Category = "NEUTRAL", Regime_Score = 0)
+      warning("[pg] get_regime_at_date failed — NEUTRAL/0 fallback 사용: ", e$message)
+      data.table(Category = "NEUTRAL", Regime_Score = 0, source = "fallback")
     })
   } else {
-    data.table(Category = "NEUTRAL", Regime_Score = 0)
+    warning("[pg] get_regime_at_date 부재 — NEUTRAL/0 fallback 사용 (엔진값 아님)")
+    data.table(Category = "NEUTRAL", Regime_Score = 0, source = "fallback")
   }
 }
 
