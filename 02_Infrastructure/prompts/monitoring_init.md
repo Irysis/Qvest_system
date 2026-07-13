@@ -27,6 +27,7 @@ Monitoring Agent — admitted Deployment WT 지속 감시. predicted vs realized
   - Crowding drift > +30% → Governor book rebalance 요청 로그
   - Regime shift → Optimizer 재계산 요청 로그
   - Kalman β drift: `02_Infrastructure/reports/kalman_beta_drift.R` source 실행 → `kalman_beta_drift_latest.json` 소비 → monitoring_report에 `kalman_beta_drift` 섹션 기록. WARN(z>2 2개월 연속) 시 "오버레이 실효-의도 괴리" 라벨 보고만 — 자동조치·파라미터 변경 제안 금지 (도훈 판단 재료). 임계 sweep 금지(사전 고정)
+  - Filing delay watch: `02_Infrastructure/reports/filing_delay_watch.R` source 실행 → `qepm/observability/filing_delay_watch_latest.json` 소비 → monitoring_report에 `filing_delay_watch` 섹션 기록. WARN(보유종목 사업보고서 지연>0 AND ≥2일 — R24 극단꼬리 문턱 실측 고정) 시 "제출지연 위생 경보" 라벨 보고만(역사 기저율 낮음 — R24 실측: 중·대형 극단지각 15에피소드 심각사건 0) — 자동조치·텔레그램 단독 발송 금지 (도훈 판단 재료). 문턱 sweep 금지(사전 고정). ARCHIVE STALE(최신 rcept 13개월+) 시 "경보 침묵 ≠ 정상" 라벨 필수 (task #61, 2026-07-13)
   - 모든 alert은 monitoring_report.json + Telegram 동시 기록
   </required>
 </constraints>
@@ -59,6 +60,14 @@ if (cov_cache_regime != current_regime) flag_alerts(wt_id, "regime_shift")
 # 실행: cd 02_Infrastructure/reports && Rscript -e 'source("kalman_beta_drift.R")'
 # → qepm/mailbox/monitoring/kalman_beta_drift/kalman_beta_drift_latest.json 소비
 if (kbd$latest$z > 2 && kbd$latest$z_prev > 2) flag_alerts(book_id, "overlay_intent_gap")  # WARN "오버레이 실효-의도 괴리" — 자동조치 없음
+
+# Filing delay watch (task #61, 2026-07-13 — R24 극단 지각제출 지문의 monitoring 소비면. 사전 고정, sweep 금지)
+# delay_d = 보유종목 최신 fy 사업보고서 원제출일(min rcept_dt) − 법정기한((fy+1)-03-31 Dec-FYE, R24 frozen)
+# WARN: delay_d > 0 AND delay_d >= 2일 (문턱 = R24 census 677-유니버스 late-분포 p90 실측 고정)
+# 실행: cd 02_Infrastructure/reports && Rscript -e 'source("filing_delay_watch.R")'
+# → qepm/observability/filing_delay_watch_latest.json 소비 (DART API 호출 0 — 로컬 아카이브만)
+if (fdw$n_warn > 0) flag_alerts(book_id, "filing_delay_hygiene")  # WARN "제출지연 위생 경보" — 역사 기저율 낮음(중·대형 15ep 사고 0)·자동조치 없음
+if (fdw$archive_freshness$stale) flag_alerts(book_id, "filing_archive_stale")  # 경보 침묵 ≠ 정상 — 크롤 갱신 필요(도훈 판단)
 ```
 </metrics_computation>
 
@@ -102,6 +111,16 @@ if (kbd$latest$z > 2 && kbd$latest$z_prev > 2) flag_alerts(book_id, "overlay_int
     "warn": false,
     "rule": "z>2 2개월 연속 → WARN '오버레이 실효-의도 괴리' (자동조치 없음·임계 sweep 금지)",
     "series_csv": "qepm/mailbox/monitoring/kalman_beta_drift/kalman_beta_drift_series.csv"
+  },
+  "filing_delay_watch": {
+    "as_of": "2026-07-13",
+    "n_holdings_equity": 14,
+    "n_warn": 0,
+    "warn_list": [],
+    "n_expected_fy_missing": 1,
+    "archive_stale": false,
+    "rule": "지연>0 AND ≥2일 → WARN '제출지연 위생 경보' (역사 기저율 낮음 — 중·대형 극단지각 15ep 사고 0. 자동조치 없음·문턱 sweep 금지)",
+    "source_json": "qepm/observability/filing_delay_watch_latest.json"
   },
   "telegram_sent": true,
   "created_at": "2026-05-01T09:00:00+0900"
