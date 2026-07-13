@@ -72,10 +72,14 @@ for (ym in months) {
   # "partial → 체크포인트 스킵 → 재시도" 무한루프 유발(201912 정체 실사고, 3h 스케줄 반복 공전).
   # 일시 오류 = 백오프 재시도 2회 → 소진 시 해당 문서만 note 행 기록 후 계속(월당 실패율 2% 초과면 partial).
   # 진짜 일한도(status 020)만 즉시 halt.
-  .is_rate  <- function(pr) !is.null(pr) && "note" %in% names(pr) &&
-    any(grepl("020|rate|http_fail_(429|503)", as.character(pr$note)), na.rm = TRUE)
-  .is_quota <- function(pr) !is.null(pr) && "note" %in% names(pr) &&
-    any(grepl("\\b020\\b", as.character(pr$note)), na.rm = TRUE)
+  # [2026-07-13 2차 수리] 감지 컬럼 교정: `note`는 공시 원문의 '비고' 자유텍스트라
+  # "2020년" 등의 '020' 부분매칭 오탐 발생(202107 76/370 결정론적 가짜실패 실사고 —
+  # 2020년 언급이 늘어난 202001+ 교착의 공범). 파서 오류 어휘는 parse_note/parse_status
+  # (http_fail_<code> / FETCH_FAIL — dart_insider_doc_parser.R L51/L361)에만 실린다.
+  .is_rate  <- function(pr) !is.null(pr) && "parse_note" %in% names(pr) &&
+    any(grepl("http_fail_(429|503)", as.character(pr$parse_note)), na.rm = TRUE)
+  .is_quota <- function(pr) !is.null(pr) && "parse_note" %in% names(pr) &&
+    any(grepl("\\b020\\b", as.character(pr$parse_note)), na.rm = TRUE)
   rows <- list(); partial <- FALSE; fail_n <- 0L
   for (i in seq_len(nrow(ins))) {
     if (calls >= DAILY_BUDGET) { partial <- TRUE; break }
