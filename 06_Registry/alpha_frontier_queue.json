@@ -495,10 +495,34 @@
       "wall_check": "cap-tier×cap-w 벽 잔존. AND-gate는 수익파생 교집합 금지(DIST 조건부 교집합)와 구분 — 이건 신호 교집합이 아니라 퇴출 규칙 결합(prereg에 구분 명시)",
       "data_gate": "없음",
       "owner": "Q-Lead (R14 ramp-orchestrator)",
-      "status": "in_progress",
-      "next_action": "2 arm chain → 판정(config-scoped + next_probe ≥2)",
+      "status": "config_scoped_negative",
+      "next_action": "잠금(백오프) — return-derived 위 퇴출 규칙 결합 소진. revival: fill-규율 축(FQ-028 후보) 또는 비-수익 substrate 확보 시 재개",
+      "result": "config-scoped negative (2026-07-13, RAMP R14, selection_type=chain, config_hash 0e222e5340fc3369, base parity Δ1.39e-5·ctrl_F1 R12 정확재현 Δ0.000·IS-only 승자·2차결합 없음). 1차 endpoint=oos_retention(cap-w). ExExEx 교대(진입 사이 exit-only 점검 1회) → 4 gate 동일 진입·동일 level36 fill·퇴출 술어만 상이(격자 엄밀: C-1(AND)⊆{F-1,D-2}⊆C-2(OR), base=no-exit). base cap-w 2.612·oos -0.076. ★C-1(AND: 순위이탈 AND 감쇠 동시=정밀지정, 유예 1분기)=best arm cap-w 2.821·oos +0.025·post17SR +0.011이나 F-1 단독 2.937 미달 — 감쇠-confirm가 rank 퇴출 억제(both-fire 45/740=6.1%·Jaccard C-1↔base 0.956·C-1↔F-1 0.967·grace_expire 0[교대구조상 완전비활성]). C-2(OR: 어느쪽이든 퇴출=공격적)=cap-w 2.422<base·oos -0.008 — over-cleaning 신호손실(비용 아님, TO 전 안 9.27 동일). ctrl F-1(RANK)=2.937/oos+0.048(최고)·ctrl D-2(DECAY, level36-fill)=2.406/oos+0.041·diag D-3a(겹침 12m×5 trimmed-min)=2.647/oos+0.004. HARD 0/6·max full paired 1.44(<2.0)·C-1 IS paired -0.077(OSS +2.80만). ★핵심: '정밀지정(AND)>공격청소(OR)이나 결합≯단일 최선 트리거' — 퇴출 술어 결합은 cap-w·oos 어느 endpoint도 열지 못함. ★메타: oos 천장 ~+0.12 exit-rule-invariant 재확인(C-1 +0.025·F-1 +0.048·D-2 +0.041·R12 armF +0.121 ≪0.7). cap-tier×cap-w 벽 불변(EW-uni oos 0.72~0.89 高나 cap-w oos 붕괴, FQ-015 확증). return-derived 위 construction(선별/퇴출/일관성/결합) 소진 지대. 적대검증 7약점(challenge_note ①~⑦: ①ACCEPT C-1≈base·②REBUTTAL C-2 비용아닌신호손실·③ACCEPT oos post2017·④PARTIAL D-2 fill민감·⑤ACCEPT C-1 IS-zero·⑥REBUTTAL chain·⑦ACCEPT return-substrate).",
+      "result_ref": "outputs/ramp/r14_exitcomb_{prereg,gates,paired,conc,oossub,summary}_20260713.* + 02_Infrastructure/ramp/run_ramp_r14_exitcomb.R + 04_Research/ramp/reports/challenge_note_r14_exitcomb_20260713.md + L-RAMP-20260713_110343 (grade F·backtested·chain·composite)",
+      "verdict_date": "2026-07-13",
+      "next_probe": [
+        "①(FQ-028 후보) fill-규율 축 — 퇴출 트리거 F-1(rank) 고정·충원(fill) 규율만 변주(non-decaying-preferred / rank-decay-blend). D-2 fill 민감(2.406↔2.503)이 노출한 미탐색 cap-w 레버, 퇴출 공간과 직교",
+        "②(revival) 비-수익 substrate(DART insider backfill 2013+) 확보 시 검증된 F-1 퇴출규율 × insider-exec 패널 결합 — return-derived 위가 아닌 novel 재료에 이식",
+        "③(저순위) cadence_exit=2로 진입 사이 점검 ≥2회 → C-1 grace 실작동 검증(회전↑ 대비 저EV, 기전 검증 전용)"
+      ],
+      "revival_signal": "fill-규율 축(FQ-028) 또는 비-수익 substrate(DART insider 연속) 확보. return-derived 위 시간-함수형(선별·퇴출·일관성·결합) 4축 전부 cap-w~2.9·oos~+0.12 천장 소진 — 신규 재료 없이 재도전 저EV",
       "source_refs": [
         "parent: FQ-026 next_probe D-2a/D-3a + L-RAMP-20260713_102944"
+      ]
+    },
+    {
+      "id": "FQ-028",
+      "lane": "selection_discipline",
+      "title": "R15 — 충원(fill) 규율 축 (R14 노출 미탐색 직교 레버)",
+      "hypothesis": "퇴출 트리거를 챔피언(F-1 순위-단독)에 고정하고 빈 슬롯 충원 규율만 변주(수준-fill/신선-fill/무-fill 축소/일관성-fill)하면 cap-w 또는 oos가 움직이는가 — R14 ④에서 fill 선택만으로 ctrl_D2가 2.406↔2.503 이동한 민감성이 근거",
+      "ev_rationale": "R14 next_probe 1순위 소비. 퇴출 공간과 직교하는 마지막 미탐색 construction 다이얼. chain 연속",
+      "wall_check": "construction cap-w ~2.94 포화·oos 천장 ~+0.12 진단 존재 — 정직 기대 = 이 다이얼이 그 천장 밖 값을 내는지 판별. return-derived substrate 벽 잔존",
+      "data_gate": "없음",
+      "owner": "Q-Lead (R15 ramp-orchestrator)",
+      "status": "in_progress",
+      "next_action": "3 arm chain → 판정(config-scoped + next_probe ≥2)",
+      "source_refs": [
+        "parent: FQ-027 next_probe 1 + L-RAMP-20260713_110343 challenge ④"
       ]
     }
   ]
