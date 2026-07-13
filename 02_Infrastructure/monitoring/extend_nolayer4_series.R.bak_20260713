@@ -77,28 +77,6 @@ if ("ret_L5_faith" %in% names(p)) {
   print(d_last)
 }
 
-## --- 2b. 계약 rds 앵커 (2026-07-13 위생수리 task #48, 도훈 지시) ---
-## 배경(실사고): base 패널 재생성 시 m4 매핑(WT-D20260430_001_m4_extended.csv) 연장 시점에 따라
-##   과거월 m4가 vintage flip — 2026-06 행: rds vintage m4=1.0(매핑 미연장 → merge NA-fill,
-##   run_layer5_rerun_extended.R L131) vs 07-03 패널 0.8064 → ret_net 0.0724 vs 0.0582.
-##   monitoring/holdout/recon IR(governor)은 전부 계약 rds 기준이라 2회 연속 플래그 발생.
-## 원칙: 계약-authoritative rds가 커버하는 월은 rds ret_net으로 앵커(고정) — 단일 기준 유지.
-##   신규 실현월(rds 이후)만 본 스크립트의 단일-vintage 재계산치 사용.
-##   재계산치는 ret_recompute_panel 진단 컬럼으로 전 월 보존(불일치 감사 가능).
-RDS_ANCHOR <- file.path(ROOT, "qepm/mailbox/worktask/WT-D20260702_002/output/bt_result_C_noL4_CLEAN_ann12.rds")
-p[, ret_recompute_panel := ret_noLayer4]
-p[, ret_net_source := "panel_recompute"]
-if (file.exists(RDS_ANCHOR)) {
-  prA <- as.data.table(readRDS(RDS_ANCHOR)$period_returns)[, .(anchor_date = as.Date(date), ret_rds = as.numeric(ret_net))]
-  p <- merge(p, prA, by = "anchor_date", all.x = TRUE)
-  ndiv <- p[is.finite(ret_rds) & abs(ret_noLayer4 - ret_rds) > 1e-9, .N]
-  if (ndiv > 0) cat(sprintf("[2b][warn] 패널 재계산 vs 계약 rds 불일치 %d개월 — rds로 앵커(진단: ret_recompute_panel 컬럼 대조)\n", ndiv))
-  p[is.finite(ret_rds), `:=`(ret_noLayer4 = ret_rds, ret_net_source = "rds_anchor(WT-D20260702_002)")]
-  p[, ret_rds := NULL]
-  cat(sprintf("[2b] 계약 rds 앵커 적용: %d/%d월 rds 고정, 나머지 신규월만 재계산\n",
-              p[ret_net_source != "panel_recompute", .N], nrow(p)))
-} else cat("[2b][warn] 계약 rds 부재 — 앵커 스킵(전체 재계산 사용, monitoring 불일치 재발 가능)\n")
-
 ## --- 3. return_ym 부여 + 정렬 가드 (어제 버그 #1 물리 차단) ---
 cat("[3] add_return_ym + assert_panel_alignment (return_ym β vs KOSPI200 ≥0.5)\n")
 source(file.path(ROOT, "02_Infrastructure/contracts/panel_alignment_guard.R"))
@@ -121,8 +99,7 @@ out <- p[, .(
   return_ym,                           # 진짜 수익 달력월 (외부조인용)
   regime,
   ret_net     = ret_noLayer4,          # monitor가 'ret_net' 컬럼을 읽음 (slot 2-3 shape)
-  ret_orig, beta_R05, m4, dR05,
-  ret_recompute_panel, ret_net_source  # 2b 앵커 진단 (rds_anchor vs panel_recompute)
+  ret_orig, beta_R05, m4, dR05
 )]
 setorder(out, realized_ym)
 out[, book_id := BOOK_ID]
