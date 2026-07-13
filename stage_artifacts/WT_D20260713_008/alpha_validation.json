@@ -1,0 +1,75 @@
+{
+  "wt_id": "WT-D20260713_008",
+  "fq_id": "FQ-037",
+  "iteration": "R24",
+  "round_type": "STAGE_1_KNOWLEDGE_ROUND",
+  "metric_type": "event_prediction_OR_lift (NOT portfolio; canonical PORT_t N/A)",
+  "prereg_sha256": "e13d4251f0be30023307d82e91c8e2f0c2752b7f23aeaec2359a2496568d4291",
+  "verdict": "CONFIG_SCOPED_NEGATIVE",
+  "frontier": "OPEN",
+  "universe_scope": {
+    "measurable_universe": 677,
+    "label": "DART_FILING_COVERED_UNIVERSE_677",
+    "rawdata_full_universe": 3914,
+    "honest_reduction": "full ~2500 KOSPI+KOSDAQ filer universe unreachable without DART API this round; scope frozen at 677 (historical K200uKQ150 union with full annual filing history).",
+    "note": "universe_comparison mandate (KR_top342 vs v2) N/A: this is an event-prediction study, not a factor screen; the relevant comparison is R23 monthly-K200uKQ150-panel vs R24 episode-677-universe, reported below."
+  },
+  "design": {
+    "level": "episode (ticker x fiscal-year filing)",
+    "n_episodes": 8145,
+    "base_rate": 0.020626
+  },
+  "frozen_primary_hardened": {
+    "treatment": "per-fy p90 & delay>0 (collapsed to any-late, 1105 ep / 528 firms)",
+    "lift": 1.228507,
+    "lift_firmboot95": [0.861619, 1.62038],
+    "or_ctrl_yearFE": 2.335377,
+    "or_ctrl_yearFE_ci": [0.995657, 5.477776],
+    "or_ctrl_yearFE_p": 0.051177,
+    "or_ctrl_noFE": 1.333229,
+    "or_ctrl_noFE_p": 0.136615,
+    "outcome": "PREDICTION_NOT_ESTABLISHED (bootCI includes 1; year-FE p=0.051)"
+  },
+  "extreme_tail_diagnostic_nonauthoritative": {
+    "treatment": "per-fy rank top-decile & delay>0 (29 ep / 27 firms / 6 events)",
+    "lift": 10.030788,
+    "lift_firmboot95": [3.506161, 17.259919],
+    "or_ctrl_yearFE": 6.188458,
+    "or_ctrl_yearFE_p": 0.0009,
+    "or_ctrl_noFE": 6.92924,
+    "or_ctrl_noFE_p": 0.000331,
+    "loo": {
+      "min_or": 5.380055,
+      "max_p": 0.00396,
+      "n_firms": 27,
+      "n_event_firms": 6,
+      "any_kills_p05": false,
+      "any_kills_or1": false
+    },
+    "note": "robust (boot CI excludes 1, LOO all-survive) but non-authoritative; routes to pre-registered extreme-tail round."
+  },
+  "size_tier": {
+    "events_by_tier": {
+      "small": 6,
+      "mid": 0,
+      "large": 0
+    },
+    "small_lift": 12.22,
+    "finding": "all 6 extreme-tail severe events small-cap => small-cap-confined; structural deployment-universe starvation, deployment-conservative."
+  },
+  "aux_continuous_delay": {
+    "or_per_sd": 1.097074,
+    "p": 0.185277,
+    "note": "flat => non-monotonic extreme-tail concentration (R22 D2/R23 replicated)"
+  },
+  "power_comparison_R23_to_R24": {
+    "independent_event_firms_R23": 6,
+    "independent_extreme_tail_firms_R24": 27,
+    "note": "episode design + universe expansion resolved R23's power/inference wall at the extreme tail."
+  },
+  "pit": {
+    "dart_api_calls": 0,
+    "hardening": "disc_ck 36/2492 matched, hardened==pureflag, 89% same-month (R23), residual direction conservative"
+  },
+  "charts": ["charts/01_independent_firms.png", "charts/02_lift_by_definition.png", "charts/03_controlled_or.png", "charts/04_size_tier.png"]
+}

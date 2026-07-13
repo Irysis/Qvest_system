@@ -1,0 +1,90 @@
+{
+  "wt_id": "WT-D20260713_008",
+  "fq_id": "FQ-037",
+  "iteration": "R24",
+  "prereg_sha256": "e13d4251f0be30023307d82e91c8e2f0c2752b7f23aeaec2359a2496568d4291",
+  "verdict": "CONFIG_SCOPED_NEGATIVE",
+  "frontier": "OPEN",
+  "stage": "STAGE_1_KNOWLEDGE_ROUND (prediction validity only; NO capital/PORT_t/filter claim)",
+  "headline": "R24 consumed R23 P1(universe)+P2(episode-level) jointly on the honest maximum measurable filing universe (677 DART-filing-covered tickers; the FULL ~2500 filer universe is unreachable without DART API this round). The FROZEN pre-registered PRIMARY (worst_decile_late = per-fy p90 & delay>0) NOMINALLY collapsed to 'any late filer' (1105 episodes/528 firms) because <10% of firms file late in most fiscal years => per-fy p90<=0; on that diluted operationalization the prediction is NOT established (lift 1.23, firm-bootstrap CI [0.86,1.62] includes 1, controlled OR w/ year-FE 2.34 p=0.051 just misses, no-FE OR 1.33 p=0.14). BUT the R23 power wall IS resolved: the signal is unambiguously EXTREME-TAIL, and the strict top-decile-by-rank diagnostic (29 episodes / 27 INDEPENDENT firms / 6 events) shows lift 10.0x, firm-bootstrap CI [3.5,17.3] EXCLUDING 1, controlled OR 6.2 (year-FE) p<0.001, and is LEAVE-ONE-FIRM-OUT ROBUST (drop any of 27 firms => min OR 5.38, max p 0.004) with events spread across 2012-2023 (NOT a COVID artifact). Independent event-firms went 6 (R23, LOO 3/6 decisive, boot CI included 1) -> 27 (R24, LOO all-survive, boot CI excludes 1): a genuine power/inference resolution. Goalpost discipline: the FROZEN primary governs the verdict (NOT ESTABLISHED); the robust extreme-tail result licenses a NEW pre-registered extreme-tail confirmatory round (next_probe P1), NOT an upgrade of this round.",
+
+  "coverage_census_outcome": {
+    "measurable_universe_frozen": 677,
+    "measurable_universe_label": "DART_FILING_COVERED_UNIVERSE_677 (historical K200uKQ150 union; filing-delay data caps here under no-API constraint)",
+    "rawdata_full_universe_tickers": 3914,
+    "honest_scope_reduction": "P1 envisioned the FULL KOSPI+KOSDAQ filer universe (~2500). Filing-DATE data (no DART API this round) exists for only 677 tickers. Scope was honestly reduced and FROZEN pre-association. Direction of residual survivorship (never-index micro-caps absent) = fewer delisting events observed = CONSERVATIVE for a positive verdict.",
+    "episode_design_delivered": "P2 delivered: one obs per (ticker, fiscal-year) filing episode (n=8145), removing the R23 12-month monthly-overlap (47 monthly hits = 6 firms) at the design level."
+  },
+
+  "validity_gate": {
+    "rule": "distinct worst-decile-late firms in-window >= 30 else POWER_INSUFFICIENT",
+    "frozen_primary_firms": 528,
+    "outcome": "PASS (528 >> 30). Therefore the frozen-primary NULL is a genuine weak-signal result, NOT power-insufficiency. (The extreme-tail diagnostic has 27 firms, also > R23's 6.)"
+  },
+
+  "prereg_primary_FROZEN_literal": {
+    "treatment": "worst_decile_late = (delay_d >= per-fy quantile(delay_d,0.90,type=7)) AND (delay_d>0)",
+    "operationalization_note": "collapsed to 'any late filer' (delay>0) because per-fy p90<=0 in most years (>90% file on-time). This is a pre-registration operationalization MISS: p90 is a looser 'worst decile' than rank-based top-decile in a mostly-on-time distribution.",
+    "hardened_authoritative": {
+      "n": 8145, "base_rate": 0.02063, "wd_late_n": 1105, "wd_late_events": 28, "wd_late_evrate": 0.02534,
+      "lift": 1.229, "lift_wilson95": [0.853, 1.764], "lift_firmboot95": [0.857, 1.607],
+      "or_ctrl_noFE": 1.333, "or_ctrl_noFE_ci95": [0.913, 1.947], "or_ctrl_noFE_p": 0.1366,
+      "or_ctrl_yearFE_PRIMARY": 2.335, "or_ctrl_yearFE_ci95": [0.996, 5.478], "or_ctrl_yearFE_p": 0.05118
+    },
+    "pureflag_robustness": {"identical_to_hardened": true, "note": "hardened == pure-flag (89% same-month designation, R23 confirmed PIT-cleanliness). base/events identical."},
+    "prereg_rule_outcome": "PREDICTION_NOT_ESTABLISHED: firm-bootstrap lift 95% CI [0.857,1.607] INCLUDES 1 (fails required lower>1) AND year-FE p=0.051 >= 0.05. Both required conditions fail. => config-scoped negative on the frozen primary."
+  },
+
+  "stability_frozen_primary": {
+    "pre2016": {"estimable": true, "n": 3020, "wd_n": 297, "events": 9, "lift": 1.24, "or_ctrl": 1.169, "p": 0.6661},
+    "post2016": {"estimable": true, "n": 5125, "wd_n": 808, "events": 19, "lift": 1.28, "or_ctrl": 1.461, "p": 0.09555},
+    "verdict": "Both eras directionally OR>1 but neither significant. Direction-consistent weak positive; no era establishes the diluted-treatment prediction."
+  },
+
+  "extreme_tail_DIAGNOSTIC_nonauthoritative": {
+    "definition": "wd_strict = per-fy rank top-decile (frank-ceiling) & delay>0 (matches census 299-cut spirit & R22/R23 'worst decile' intent). LABELED DIAGNOSTIC, NOT the frozen primary; does NOT upgrade the verdict (goalpost discipline).",
+    "n_episodes": 29, "n_firms": 27, "events": 6, "evrate": 0.2069,
+    "lift": 10.031, "lift_wilson95": [4.774, 18.613], "lift_firmboot95": [3.506, 17.260],
+    "or_ctrl_noFE": 6.929, "or_ctrl_noFE_ci95": [2.408, 19.937], "or_ctrl_noFE_p": 0.0003305,
+    "or_ctrl_yearFE": 6.188, "or_ctrl_yearFE_ci95": [2.110, 18.151], "or_ctrl_yearFE_p": 0.0008999,
+    "leave_one_firm_out": {"n_firms": 27, "event_firms": 6, "min_or_noFE": 5.380, "max_p": 0.00396, "any_drop_kills_OR_le1": false, "any_drop_kills_p_ge05": false, "interpretation": "ROBUST to dropping any single firm (contrast R23: 3/6 firms individually decisive)."},
+    "fy_spread": {"2012": 2, "2014": 1, "2015": 3, "2017": 1, "2018": 1, "2019": 4, "2020": 4, "2021": 2, "2022": 1, "2023": 10, "note": "spread across 2012-2023; NOT COVID-only (rules out era-artifact). 2023 heavier but multiple pre-2020 firms present."},
+    "significance": "This is the genuine R23 power resolution: robustly positive extreme-tail signal with 27 independent, LOO-surviving firms and a firm-bootstrap CI excluding 1. Event-count (6) still modest => confirm in a pre-registered extreme-tail round."
+  },
+
+  "size_tier_decomposition_DECISIVE": {
+    "method": "per-fy log_size tercile {small,mid,large}. extreme-tail (wd_strict) episodes split small 14 / mid 6 / large 9.",
+    "events_by_tier": {"small": 6, "mid": 0, "large": 0},
+    "lift_by_tier": {"small": 12.22, "mid": 0.0, "large": 0.0},
+    "small_tier_base_rate": 0.0351,
+    "finding": "ALL 6 extreme-tail severe events come from SMALL-cap late filers. Mid- and large-cap extreme-late filers (15 episodes) had ZERO severe events. So the mechanism is 'small-cap AND extreme-late filing', not late filing per se. WITHIN small-caps it is NOT merely 'being small': extreme-late small filers have lift 12.2x vs the small-cap base rate (0.0351), and the controlled OR (6.19, size_z + year-FE) survives linear size adjustment. But the effect is confined to the small tier.",
+    "deployment_implication": "This is the honest reconciliation of R23's deployment-universe (K200uKQ150 large/mid) starvation: it is STRUCTURAL, not merely low-power. Large/mid caps that file extremely late do NOT subsequently fail (0 events / 15 episodes here); the signal lives entirely in small-caps OUTSIDE the deployment universe. Therefore even a confirmed extreme-tail signal has LIMITED deployment relevance for a K200uKQ150 long-only book — Stage-2 capital prospects remain dim regardless of confirmation.",
+    "answer_to_mandated_concern1": "The small-cap confound is REAL and material (all events small-cap) but is NOT a pure size-rediscovery: within-small extreme-late lift is 12x over the small base rate and OR survives size_z+year-FE. Honest label: 'small-cap-confined extreme-late-filing distress signal', deployment-conservative."
+  },
+
+  "aux_continuous_delay_hazard": {
+    "outcome": "delisting-only", "or_per_sd_delay_z": 1.097, "p": 0.1853, "n": 8145, "delist_hits": 31,
+    "interpretation": "continuous days-late is FLAT (non-monotonic) => signal is EXTREME-TAIL concentrated, not a smooth dose-response. Replicates R22 D2 / R23 exactly: widening/smoothing dilutes; power must come from more extreme-tail episodes, not a smoother predictor. This is WHY the frozen p90 (which widened to any-late) failed while the strict tail succeeded."
+  },
+
+  "composition_frozen_primary": {"Delisting": 2, "AdminStock": 16, "UnfaithfulDisc": 7,
+    "interpretation": "designation events (disclosure-dated, NOT last-obs-derived) dominate => the delist last-obs mechanicity artifact cannot manufacture the association (R23 Concern 2 defused again)."},
+
+  "pit_label_hardening": {
+    "hardened_matched": "36/2492 covered (disc_ck survivor-biased 348 stocks)",
+    "hardened_equals_pureflag": true,
+    "conclusion": "R23 established flag onset == public designation month in 89% of matchable cases (median gap 0). Hardened target numerically identical to pure-flag => PIT-clean designation proxy. Coverage caveat retained; residual backdating direction = would inflate => null-actionable verdict conservative."
+  },
+
+  "two_stage_discipline": "Stage-2 (filter redesign / capital) NOT opened. Neither the frozen-primary null nor the non-authoritative extreme-tail diagnostic licenses any de-mining filter or capital claim. A robust extreme-tail signal, IF confirmed in a pre-registered round, would only license opening a SEPARATE Stage-2 filter round confined to the deployment universe.",
+
+  "goalpost_discipline_statement": "The FROZEN pre-registered primary (p90) governs this round's verdict = NOT ESTABLISHED. The strict-tail diagnostic is MORE restrictive than the frozen primary; adopting it post-hoc to declare success would be the exact goalpost-move R22 refused (post-hoc restriction to significance). Therefore R24 is honestly a config-scoped negative on its frozen primary, WITH a robust extreme-tail diagnostic that resolves R23's power wall and routes to a clean confirmatory round.",
+
+  "next_probe": {
+    "P1": "PRE-REGISTERED EXTREME-TAIL CONFIRMATORY ROUND: pre-register wd_strict = per-fy rank top-decile & delay>0 (or a fixed absolute cut e.g. delay>=15d chosen a-priori from the pre-2020 tail) as the PRIMARY treatment on the 677-universe episode design. R24 already shows it is LOO-robust (27 firms) and boot-CI-excludes-1; a clean pre-registered round with this definition frozen BEFORE association would deliver an established verdict. Event count (6) is the remaining thinness => combine with P2.",
+    "P2": "COVERAGE EXPANSION FOR MORE EXTREME-TAIL EVENTS: to lift the extreme-tail event count above ~6, obtain 사업보고서 filing dates for the never-index micro-cap filers (the true full universe, ~2500) via the scheduled DART crawl (insider-backfill wave capacity) or extend disc_ck's 46 non-inventory 사업보고서 stocks with a uniform delay-derivation. More delisted micro-caps = more severe events among genuine extreme-late filers (currently survivor-conservative).",
+    "P3": "MECHANISM SPLIT: within the extreme tail, separate the AdminStock/UnfaithfulDisc designation channel (16+7=23 of 25 frozen-primary hits; disclosure-dated, artifact-immune) from delisting (2 hits, potentially last-obs mechanical). Pre-register the designation-only outcome to test the cleanest disclosure-dated channel at the extreme tail."
+  },
+
+  "disposition": "delay(F3) extreme-tail severity prediction: FROZEN-primary (p90->any-late diluted) = CONFIG_SCOPED_NEGATIVE + FRONTIER_OPEN. Feature PRESERVED. R23's binding power wall (6 fragile episodes) is RESOLVED at the design level: episode-level + universe expansion delivered 27 independent LOO-robust extreme-tail firms with a firm-bootstrap CI excluding 1 (OR ~6, p<0.001) — the mechanism is robustly corroborated at the extreme tail, pending a pre-registered extreme-tail confirmatory round (next_probe P1)."
+}

@@ -1,0 +1,49 @@
+{
+  "task_id": "WT-D20260713_008",
+  "as_of_date": "2026-07-13",
+  "forecast_horizon": "12M_event",
+  "round_type": "STAGE_1_KNOWLEDGE_ROUND",
+  "alpha_vector": null,
+  "confidence_vector": null,
+  "signal_matrix_ref": "stage_artifacts/WT_D20260713_008/alpha_scores.parquet",
+  "factor_specs": [
+    {
+      "factor_family": "Disclosure/Governance forensics",
+      "proxy": "사업보고서 filing delay extreme tail (days late vs 90d legal deadline)",
+      "formula": "delay_d = rcept_dt - (Dec-FYE+90d); worst_decile_late = per-fy p90 & delay>0 (FROZEN primary); wd_strict = per-fy rank top-decile & delay>0 (diagnostic)",
+      "lag_rule": "filing month rcept_ym; outcome strictly forward [rcept_ym+1, rcept_ym+12] (C5)",
+      "winsorization": "none (rank/threshold-based)",
+      "neutralization": "logSize_z + logADV_z + KOSPI + year-FE (regression controls)",
+      "economic_rationale": "firms in governance distress delay mandatory annual filings; the EXTREME tail of lateness precedes delisting/관리종목/불성실공시 designation — but only among small-caps (large/mid late filers do not fail). Not a return factor; an adverse-event early-warning signal.",
+      "weight_theta": null,
+      "references": [
+        "R22 WT-D20260713_006",
+        "R23 WT-D20260713_007"
+      ]
+    }
+  ],
+  "diagnostics": {
+    "canonical_port_t_nw_lag3": null,
+    "canonical_port_t_null_reason": "Stage-1 knowledge round: event-prediction (OR/lift), NOT a long-only portfolio. canonical_screen_bt N/A — no capital/PORT_t claim by design.",
+    "frozen_primary_lift": 1.228507,
+    "frozen_primary_or_yearFE": 2.335377,
+    "frozen_primary_p": 0.051177,
+    "extreme_tail_lift": 10.030788,
+    "extreme_tail_or_yearFE": 6.188458,
+    "extreme_tail_p": 0.0009,
+    "n_episodes": 8145,
+    "base_rate": 0.020626
+  },
+  "selection_objective": "event_prediction_controlled_OR",
+  "selection_type": "chain",
+  "n_trials": 1,
+  "challenge_flags": [
+    "FROZEN primary p90 collapsed to any-late (dilution) => NOT ESTABLISHED",
+    "signal is small-cap-confined (all 6 extreme-tail events small-cap; 0 mid/large) => structural deployment starvation",
+    "extreme-tail robust (27 firms, LOO-survive, bootCI excl 1) but non-authoritative + event-count modest (6)",
+    "universe honestly reduced to 677 (no DART API); NOT full filer universe",
+    "NO capital/PORT_t/filter claim (Stage-1)"
+  ],
+  "verdict": "CONFIG_SCOPED_NEGATIVE",
+  "frontier": "OPEN"
+}

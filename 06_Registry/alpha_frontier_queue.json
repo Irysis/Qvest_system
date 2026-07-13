@@ -733,10 +733,35 @@
       "wall_check": "유니버스 확장은 지식 검증용이지 전략 백테 아님(alpha-search 유니버스 고정과 무충돌 명시). 유효성 게이트 사전등록: 독립 지각 에피소드 <30이면 POWER_INSUFFICIENT 정직 라벨. DART API 금지(로컬 아카이브만 — 크롤 쿼터 보호)",
       "data_gate": "로컬 DART list 아카이브(50.7만행) rcept_dt + RAWDATA 전시장 플래그/last-obs — coverage 실측 후 fail-closed",
       "owner": "Q-Lead (R24 alpha-research)",
-      "status": "in_progress",
-      "next_action": "coverage census → 신규 prereg(episode-level) → 유효 추론 판정",
+      "status": "config_scoped_negative_frontier_open",
+      "next_action": "next_probe: P1 사전등록 극단꼬리 확정 라운드 / P2 소형주 coverage 확장(사건수↑) / P3 지정공시-only 채널 분리",
       "source_refs": [
         "parent: FQ-036 config_scoped_negative_frontier_open + L-AR-20260713_183418 P1/P2/P3"
+      ],
+      "result_R24": "FROZEN PRIMARY(p90->임의지각 collapse) NOT ESTABLISHED: lift 1.23 firmbootCI[0.86,1.62]∋1, OR(yearFE) 2.34 p=0.051. BUT R23 검정력 벽 해소: 극단꼬리(top-decile 진단) 독립 event-firm 6->27, lift 10x firmbootCI[3.5,17.3]∌1, OR 6.2 p<0.001, LOO 27종목 全생존. DECISIVE: 극단꼬리 6사건 全 소형주(mid/large 0) => 배포 유니버스 밖 소형주 국소 = R23 기아는 구조. Coverage: filing-delay 무-API 상한 677종목(전체 3914중), 정직 축소·동결. Stage-1 지식 라운드, 자본 미주장.",
+      "verdict": "CONFIG_SCOPED_NEGATIVE",
+      "lcode": "L-AR-20260713_191430",
+      "prereg_sha256": "e13d4251f0be30023307d82e91c8e2f0c2752b7f23aeaec2359a2496568d4291",
+      "next_probe": [
+        "P1_extreme_tail_prereg_round",
+        "P2_smallcap_coverage_expansion",
+        "P3_designation_only_channel"
+      ]
+    },
+    {
+      "id": "FQ-038",
+      "lane": "non_return",
+      "title": "지각제출 극단꼬리 — 소형 filer coverage 확장 재검 (R24 P2, 신규 표본 out-of-sample)",
+      "hypothesis": "소형주 filer coverage를 현 677종목 밖(비-유니버스 KOSDAQ 소형)으로 확장하면 극단지각→심각사고 지문이 신규 독립 표본에서 재현되는가 — R24 사고 6건의 out-of-sample 확증. 동일 표본 재-prereg는 통계 연극이므로 금지(이미 관측), 신규 데이터만이 정당 확증 경로",
+      "ev_rationale": "R24 극단꼬리 lift 10x·LOO 27/27 강건 — 지식 확립됐으나 사고 n=6 얇음. 신규 소형 filer 표본은 사고수 자체를 늘려 확증 + P3(지정공시-only 채널)도 신규 표본에서 병행 가능. 자본 EV는 캡(소형 국소) — Stage-1 지식·monitoring 강화 목적",
+      "wall_check": "자본/PORT_t 주장 없음(소형 국소 확정). 상폐 생존편의 보수 방향 유지. episode-level 설계 승계",
+      "data_gate": "DART list 크롤 확장 필요(일 20k 쿼터 — insider 백필 완결 후순위) 또는 disc_ck 커버 확장",
+      "owner": "Q-Lead",
+      "status": "capacity_wait",
+      "next_action": "insider 백필 완결 후 쿼터 여유분으로 소형 filer list 크롤 → 신규 표본 재검",
+      "source_refs": [
+        "parent: FQ-037 config_scoped_negative_frontier_open + L-AR-20260713_191430 P1/P2/P3",
+        "memory: project-latefiling-severe-event-arc"
       ]
     }
   ]

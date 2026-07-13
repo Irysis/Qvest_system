@@ -1,0 +1,78 @@
+{
+  "wt_id": "WT-D20260713_008",
+  "fq_id": "FQ-037",
+  "iteration": "R24",
+  "title": "Late 사업보고서 filing -> severe adverse-event prediction: DART-filing-covered universe + episode-level design (R23 next_probe P1+P2 combined; NEW pre-registered confirmatory round)",
+  "prereg_utc": "2026-07-13",
+  "round_nature": "STAGE_1_KNOWLEDGE_ROUND",
+  "stage_declaration": "PREDICTION VALIDITY ONLY. This round establishes the FACT of whether late annual-report filing predicts severe corporate events. NO capital / PORT_t / portfolio / graduation claim is made or licensed. The universe expansion is for knowledge-validation power ONLY and does NOT conflict with alpha-search mode's fixed strategy-backtest universe (K200uKQ150), because NO strategy-return claim is made. IF the prediction is established, filter-consumption (Stage-2) is a SEPARATE later round confined to the deployment universe.",
+  "relation_to_R23": "SEPARATE pre-registered round consuming R23 (WT-D20260713_007) next_probe P1 (POWER VIA UNIVERSE) + P2 (EPISODE-LEVEL DESIGN) jointly. R23 established the severity-restriction hypothesis is directionally CONFIRMED (union lift 2.07->3.74 on dropping transient LongHalt; controls barely attenuate 4.08->3.43 = NOT size-disguise) but the K200uKQ150 monthly panel reduced to ~6 independent late-filer company-episodes: ticker-bootstrap lift CI [0.95,7.25] includes 1, LOO 3/6 decisive, cluster-robust p invalid at 6 clusters. R24 removes the per-month membership restriction (episode-level design) and expands to the full DART-filing-covered universe to obtain a valid independent-episode count.",
+
+  "coverage_census_frozen": {
+    "census_artifact": "stage_artifacts/WT_D20260713_008/census.rds + 01_census.R stdout",
+    "rawdata_full_universe": {"distinct_tickers": 3914, "severe_event_tickers": 1705, "note": "event side is full-universe (all rawdata tickers)"},
+    "filing_delay_predictor_universe": {"source": "stage_artifacts/WT_D20260711_002/filings_inventory.parquet (사업보고서, R22 F-B source)", "distinct_tickers": 677, "saup_rows": 8145, "fy_range": "2009..2023", "late_filer_tickers_delay_gt0": 528, "note": "This is the BINDING scope cap. No-API constraint => filing-date data caps at 677 (the historical K200uKQ150 union with full annual filing history). This is NOT the full ~2500 listed filer universe P1 envisioned; DART API is forbidden this round, so scope is honestly reduced to the maximum measurable universe."},
+    "disc_ck_extension_available_not_used_as_primary": {"stocks": 348, "saup_rows": 6892, "stocks_not_in_inventory": 46, "note": "disc_ck (50.7만행 list archive) could add 46 tickers but with a different delay-derivation lineage (no fy field); kept as coverage note, NOT folded into primary uniform-delay universe. P3 (coverage expansion) is non-blocking per task."},
+    "measurable_universe_FROZEN": {"n_tickers": 677, "definition": "tickers with 사업보고서 filing-delay data AND present in rawdata attr panel (controls+events available)", "severe_event_tickers_within": 171, "honest_scope_label": "DART_FILING_COVERED_UNIVERSE_677 (historical K200uKQ150 union). Scope reduction from 'full KOSPI+KOSDAQ filers' is documented and frozen here; direction of the residual survivorship (never-index micro-caps absent) = fewer delisting events observed = CONSERVATIVE for a positive verdict."},
+    "episode_power_preview_NOT_association": {"per_fy_worstdecile_frank_episodes": 299, "distinct_worstdecile_firms": 171, "temporal_note": "census (a COVERAGE fact, not a treatment-outcome association) showed worst-decile late-filing episodes are ~95% concentrated in fy2020-2023 (COVID-era filing-delay spike). This is why year fixed effects are pre-registered in the PRIMARY spec below (to identify the effect WITHIN-era, not from the era base-rate shift). R23 already documented era base-rate non-stationarity (Concern 3), so year-FE is an a-priori confound guard, not a post-hoc tuning."}
+  },
+
+  "hypothesis": "Within the DART-filing-covered universe (677 tickers), a firm whose 사업보고서 (annual report) is filed in the per-fiscal-year worst decile of days-late-vs-90d-deadline (AND actually late, delay>0) has, controlling for size, liquidity, exchange, and year, a firm-cluster-robust residual odds significantly >1 of experiencing a SEVERE adverse event {Delisting OR AdminStock designation OR UnfaithfulDisc designation} within the forward 12 months of the filing.",
+
+  "universe_FROZEN": {"label": "DART_FILING_COVERED_UNIVERSE_677", "n": 677, "rationale": "maximum measurable filing-delay universe under no-API constraint (census-frozen)."},
+
+  "design_FROZEN": {
+    "level": "EPISODE (R23 P2)",
+    "unit_of_observation": "one row per (Ticker, fiscal_year) 사업보고서 filing episode",
+    "n_episodes_pre_censor": 8145,
+    "rationale": "collapses the R23 12-month monthly-overlap (47 monthly hits = 6 firms) to independent filing episodes; effective n = independent episodes, firm-clustered inference valid."
+  },
+
+  "predictor_FROZEN": {
+    "feature": "delay_d = rcept_dt - deadline; deadline = Dec-FYE + 90d ~= (fy+1)-03-31 (R22 F-B definition, FROZEN).",
+    "source": "filings_inventory.parquet 사업보고서 rows.",
+    "treatment_definition": "worst_decile_late = 1 iff (delay_d >= per-fy quantile(delay_d, 0.90, type=7)) AND (delay_d > 0). Deterministic, tie-robust. Per-fy cross-section (episode grouping). The 'delay_d>0' guard prevents flagging on-time filers as worst-decile in years where >=90% file on time.",
+    "frozen_threshold_note": "0.90 percentile = 'worst 10%' rule from R22/R23, applied to the new episode-level per-fy cross-section. NO threshold reselection. Switch from R23 frank-ceiling to p90-quantile is a pre-registered tie-robustness definitional choice (both encode 'worst decile'); made BEFORE any treatment-outcome association was computed.",
+    "feature_caveat": "delay assumes Dec FYE; non-Dec-FYE firms have miscalculated delay (inherited R22 noise, frozen). Adds noise (attenuates), does not manufacture signal."
+  },
+
+  "outcome_FROZEN": {
+    "definition": "E = 1 iff onset of ANY severe component in [rcept_ym+1, rcept_ym+12].",
+    "components": {
+      "Delisting": "R22 last-obs method (last_obs_date < data_end-180d, no relisting). No designation-date hardening (delisted names absent from disc_ck; direction = conservative).",
+      "AdminStock_designation": "RAWDATA AdminStock monthly 0->1 onset, HARDENED to actual 관리종목지정 disclosure month from disc_ck where the ticker is covered (R23 hardening logic reused); flag onset retained where not covered.",
+      "UnfaithfulDisc_designation": "RAWDATA UnfaithfulDisc monthly 0->1 onset, HARDENED to actual 불성실공시법인지정 disclosure month from disc_ck where covered; flag onset retained where not covered."
+    },
+    "hardening_authority": "HARDENED target = authoritative for the primary verdict. Pure-flag target reported as robustness delta.",
+    "censoring": "Drop episodes where rcept_ym+12 exceeds observable data (rawdata data_end month). ym_cut applied so every retained episode has a fully observable 12m forward window."
+  },
+
+  "controls_FROZEN": "logSize_z (per-fy z), logADV_z (per-fy z, adv20 dollar volume), KOSPI (Market==KOSPI indicator vs KOSDAQ), year fixed effects factor(fy).",
+
+  "tests_FROZEN": {
+    "primary_AUTHORITATIVE": "firm-clustered logistic glm(E ~ worst_decile_late + logSize_z + logADV_z + KOSPI + factor(fy), family=binomial); ticker-cluster-robust SE (vcovCL, valid at >30 clusters). Report OR(worst_decile_late), CI, p. Year FE identifies the effect WITHIN-era.",
+    "supporting_no_FE": "same logistic WITHOUT factor(fy) (era-confounded comparison, surfaces how much year-FE moves the estimate).",
+    "supporting_lift": "worst-decile lift = P(E|worst_decile_late=1)/base; Wilson 95% + FIRM-cluster bootstrap 95% CI (1000 reps, resample firms). This is the R23 test that FAILED (CI included 1 at 6 firms); now REQUIRED to clear 1.",
+    "supporting_stability": "re-estimate primary OR on pre-2016 vs post-2016 episode subsamples; direction consistency where estimable. If a subsample has <10 worst-decile-late episodes => NOT ESTIMABLE, reported honestly (post-2016-only label if pre non-estimable).",
+    "aux_hazard": "auxiliary: continuous delay_d_z (per-fy) logistic on delisting-only outcome, firm-cluster-robust, to check monotonic vs extreme-tail channel (R23 found flat continuous => extreme-tail concentrated)."
+  },
+
+  "validity_gate_FROZEN": {
+    "rule": "IF distinct worst-decile-late firms with an observable forward window (post-censor) < 30 => verdict = POWER_INSUFFICIENT, honest label, NO p-value cited.",
+    "census_preview": "171 distinct worst-decile firms pre-censor => gate expected to PASS, but confirmed post-censor in results.",
+    "escalation_if_low": "if census-optimistic 171 collapses post-censor below 30, honestly reduce and label POWER_INSUFFICIENT."
+  },
+
+  "prereg_verdict_rule_FROZEN": {
+    "PREDICTION_ESTABLISHED": "ALL of: (validity gate PASS, >=30 firms) AND (primary controlled OR with year-FE > 1 AND firm-cluster-robust p < 0.05) AND (firm-bootstrap lift 95% CI lower bound > 1). Direction consistency pre/post-2016 where estimable (non-estimable pre => temporal robustness labeled 'unestablished', does NOT by itself fail primary).",
+    "PREDICTION_NOT_ESTABLISHED": "ELSE. delay = feature-preserve config-scoped negative + frontier tag.",
+    "language_discipline": "negative verdict phrased as 'config-scoped negative + frontier tag'; next_probe >= 2 mandatory (W9 health gate).",
+    "hardening_authority_clause": "If pure-flag passes but hardened does not (or vice versa), the HARDENED verdict is authoritative and the delta surfaced.",
+    "no_capital_clause": "Regardless of outcome, NO capital/portfolio/filter claim. A positive only licenses opening a SEPARATE Stage-2 filter-redesign round confined to the deployment universe."
+  },
+
+  "n_trials": 1,
+  "selection_type": "chain",
+  "selection_note": "Single feature (delay_d), single frozen threshold (per-fy p90 & delay>0), single target (severity union), single design (episode-level). Truly confirmatory single test (not a sweep). DSR gate not applicable (metric = OR/lift not Sharpe; n_trials=1). No Bonferroni across specs: year-FE spec is the single pre-registered PRIMARY; no-FE/lift/stability are pre-declared supporting diagnostics, not competing selections.",
+  "pit_notes": "All controls and treatment measured at/ before the filing month (rcept_ym); outcome strictly forward [rcept_ym+1, rcept_ym+12] (C5). Label hardening AFFIRMS PIT-cleanliness (R23: flag onset == public designation month in 89% of matchable cases, median gap 0). disc_ck coverage is survivor-biased (348 current stocks); hardening verifiable only on covered subset (honest coverage caveat; residual backdating direction = would inflate => null-actionable verdict conservative)."
+}
