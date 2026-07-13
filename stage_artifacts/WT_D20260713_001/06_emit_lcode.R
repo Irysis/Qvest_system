@@ -1,0 +1,21 @@
+# 06_emit_lcode.R — R17/FQ-030 3종 non-return 팩터 (alpha_research, canonical_screen, sweep)
+ROOT <- "C:/Users/99922/OneDrive/Quant_Module_Moltbot"; setwd(ROOT)
+source(file.path(ROOT,"02_Infrastructure/axiom/lcode_emit.R"))
+`%||%` <- function(a,b) if(is.null(a)||length(a)==0||is.na(a)) b else a
+
+res <- emit_lcode(
+  mode="alpha_research", strategy_id="WT-D20260713_001", grade="F",
+  metric_type="canonical_screen", selection_type="sweep", record_type="performance",
+  portfolio_alpha_t=1.29, oos_months=180,
+  core_reference="R17/FQ-030 보유데이터 신규 팩터 3종 sweep. prereg.sha256 6b90a389 / alpha_validation.json / 원천 text_cache 4,490·filings_inventory 8,229·insider_activity 13,440 (DART 0)",
+  mechanism_hypothesis="① Lazy Prices(CMN 2020): 사업보고서 YoY 문구 유사↑=변화없음=우위(high-sim long) ② 제출지연(distress): 법정기한 90d 대비 지연↑=음 ③ insider 공시건수 YoY 급변=이벤트밀도=음",
+  falsification_attempts="3종 canonical dual-basis(top25 EW 15bps liq2e8 cap-w authoritative) full/IS/OOS + 월간 rank-IC + placebo 월셔플 200draw + Size-partial 잔차 재스크리닝 + EW-uni·cap-tier 병기 + F-A cos/jac 단일지표 분해 + F-A 부호반전 검정. prereg hash 대조. IS-only 선택.",
+  lesson_text=paste0(
+    "보유자산 non-return 신규 3종(API 0) = 3/3 config-scoped negative, survivors 0. ",
+    "F-A 텍스트유사도(section_head ≤8000자 YoY, 3657쌍): prereg-sign(high-sim long) cap-w PORT_t 0.72·EW-uni -0.59·placebo p0.25 = null. cos-only/jac-only 동일(0.67, cor0.86)로 합성-은폐 배제=진짜 null. 부호반전(low-sim long) cap-w 1.38·EW-uni 0.33 = post-hoc·sub-threshold → CMN 방향 KR 반전 가능성만 표시(next_probe, 미채택). ",
+    "F-B 제출지연(선두): cap-w 1.29·Size-partial 1.10(소형주 순수대리 아님)·EW post2017 +0.80·방향일관(조기=long)이나 ≪2.95·placebo p0.135. 실측 정정: delay 중앙값 -1일=사실상 '조기성 스프레드'. prior 'DART Disclosure Earliness' FAIL(MDD 55.8% hard_fail, 2026-06-13 폐지 게이트·alpha-search bare)을 canonical서 재측정→'약함'으로 재판정(MDD-dead 아님). ",
+    "F-C insider공시량 YoY: cap-w 1.17·IS0.13/OOS1.45 불안정·turnover 4.87 과다·placebo p0.22 = 노이즈 확증. 정직 재라벨(insider-only, 전체공시 아님) + insider lane confound(mega_w 0.10 최대, Size-partial 0.88). ",
+    "종합: IC→PORT_t 전이 벽 + placebo 비유의로 3종 편입자격 부재. add_factor 온보딩 없음. frontier lead=F-B(오버레이 결합 next_probe). 판정=config-scoped negative(종결 아님, INV-7). n_trials=3 sweep."),
+  tags=c("non_return","text_alpha","lazy_prices","filing_delay","insider_activity","sweep","canonical_screen","survivors_0","cap_tier_trap","fq030","r17")
+)
+cat("[emit] l_code =", res$l_code %||% res$lcode %||% "?", "\n")
