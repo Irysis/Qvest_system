@@ -1,0 +1,120 @@
+{
+  "wt_id": "WT-D20260713_001",
+  "iteration": "R17",
+  "frontier_id": "FQ-030",
+  "preregistration_sha256": "6b90a3898b5b83518923ad48425d55bb7e36b048595058bc1423190762d98fe9",
+  "metric_type": "canonical_screen",
+  "selection_authority": "cap-w portfolio_alpha_t_nw_lag3 (NW lag-3)",
+  "hard_gates": {
+    "PORT_t": 2.95,
+    "oos_retention": 0.7,
+    "calmar": 0.64,
+    "DSR": 0.5
+  },
+  "n_trials": 3,
+  "selection_type": "sweep",
+  "factors": {
+    "F-A": {
+      "cap_w_port_t_nw_lag3": 0.7224,
+      "cap_w_port_pvalue": 0.47,
+      "port_t_IS": 1.1158,
+      "port_t_OOS": -0.1957,
+      "ew_uni_t": -0.5888,
+      "ew_uni_post2017_t": -0.654,
+      "ew_uni_oos_retention_approx": null,
+      "cap_tier_weight_share": {
+        "MEGA": 0.0205,
+        "MID": 0.0485,
+        "OTHER": 0.931
+      },
+      "rank_ic": -0.0036,
+      "icir": -0.054,
+      "rank_ic_t": -0.6744,
+      "size_partial_cap_w_port_t": 0.5579,
+      "placebo_p_value": 0.25,
+      "placebo_base": 0.7224,
+      "net_sr": 0.2177,
+      "calmar": 0.117,
+      "turnover_annual": 1.7815,
+      "n_months": 156
+    },
+    "F-B": {
+      "cap_w_port_t_nw_lag3": 1.2901,
+      "cap_w_port_pvalue": 0.197,
+      "port_t_IS": 1.4108,
+      "port_t_OOS": 0.1513,
+      "ew_uni_t": 0.4579,
+      "ew_uni_post2017_t": 0.7956,
+      "ew_uni_oos_retention_approx": 8.168,
+      "cap_tier_weight_share": {
+        "MEGA": 0.0422,
+        "MID": 0.0638,
+        "OTHER": 0.894
+      },
+      "rank_ic": 0.004,
+      "icir": 0.0579,
+      "rank_ic_t": 0.7772,
+      "size_partial_cap_w_port_t": 1.101,
+      "placebo_p_value": 0.135,
+      "placebo_base": 1.2901,
+      "net_sr": 0.3691,
+      "calmar": 0.2155,
+      "turnover_annual": 1.6507,
+      "n_months": 180
+    },
+    "F-C": {
+      "cap_w_port_t_nw_lag3": 1.1715,
+      "cap_w_port_pvalue": 0.2414,
+      "port_t_IS": 0.1314,
+      "port_t_OOS": 1.4533,
+      "ew_uni_t": 0.2592,
+      "ew_uni_post2017_t": 0.3658,
+      "ew_uni_oos_retention_approx": null,
+      "cap_tier_weight_share": {
+        "MEGA": 0.1003,
+        "MID": 0.1161,
+        "OTHER": 0.7836
+      },
+      "rank_ic": 0.0023,
+      "icir": 0.0189,
+      "rank_ic_t": 0.2169,
+      "size_partial_cap_w_port_t": 0.8754,
+      "placebo_p_value": 0.22,
+      "placebo_base": 1.1715,
+      "net_sr": 0.3594,
+      "calmar": 0.1333,
+      "turnover_annual": 4.8691,
+      "n_months": 132
+    }
+  },
+  "fa_decomposition": {
+    "note": "단일지표 분해 — cos-only/jac-only 동일(0.67, EW-uni 음수) → 합성 은폐 아님, 진짜 null. INVERTED sign(low-sim long) cap-w 1.38·EW-uni 0.33 = post-hoc(사전등록 아님)·sub-threshold — KR Lazy Prices 부호 반전 가능성 next_probe",
+    "cos_only_cap_w_t": 0.67,
+    "jac_only_cap_w_t": 0.67,
+    "cos_jac_cor": 0.86,
+    "inverted_cap_w_t": 1.38,
+    "inverted_ew_uni_t": 0.33
+  },
+  "universe_comparison": {
+    "note": "cap-w HARD 판정 권위 불변. EW-uni는 진단 병기(canonical_screen_diag). 3종 모두 cap-w<2.95 AND EW-uni도 미생존(F-A 음수·F-B 0.46·F-C 0.26). 감쇠=벤치 아티팩트 아님(EW-uni도 약함).",
+    "KR_top342": "cap-w authoritative (위 factors)",
+    "KR_TOP500_FREEFLOAT": "미실행 — cap-w·EW-uni 공히 신호 부재로 v2 확대 EV 낮음(next_probe)"
+  },
+  "verdict": {
+    "survivors": 0,
+    "verdict_label": "config-scoped negative (3/3) — 프론티어 표시. 종결어휘 없음.",
+    "by_factor": {
+      "F-A": "prereg-sign null (cap-w 0.72·EW-uni −0.59·placebo p0.25). 분해로 blending-artifact 배제. 부호반전 약양성(post-hoc).",
+      "F-B": "lead — 방향 일관(조기=long)·Size-robust(1.10)·EW post2017 +0.80, 그러나 cap-w 1.29≪2.95·placebo p0.135. prior earliness FAIL(MDD-killed, 폐지 게이트)이 canonical선 '약함'으로 재판정.",
+      "F-C": "불안정(IS0.13/OOS1.45)·turnover 4.87 과다·placebo p0.22. insider-count churn 노이즈."
+    },
+    "survivor_criterion": "placebo p<0.05 AND Size-무관 → 미충족(3/3). add_factor 온보딩 권고 없음."
+  },
+  "screen_route": {
+    "F-A": "NONE",
+    "F-B": "NONE (frontier lead)",
+    "F-C": "NONE"
+  },
+  "next_probe": ["F-A: full MD&A(≤40000자) 유사도 재추출 — section_head는 '개요' boilerplate 지배로 유사도 상향편의 의심(재추출=쿼터 필요, insider 백필 후)", "F-A: KR Lazy Prices 부호 반전 가설(changers outperform, inverted 1.38) 정식 사전등록 재검증", "F-B: 조기성 연속 스프레드 × 소형/distress 상호작용 + overlay-candidate로 β/regime 결합 검토", "F-C: YoY-change 대신 count-level 또는 방향서명(net-buy 부호 가중) insider-density; 전체-유형 공시 count는 full list.json 크롤 필요", "universe v2(KR_TOP500_FREEFLOAT)는 cap-w·EW-uni 공히 신호부재로 후순위"],
+  "parallel_note": "insider 백필(PID 17920/48260) 중 — DART API 0, text_cache read-only 준수"
+}

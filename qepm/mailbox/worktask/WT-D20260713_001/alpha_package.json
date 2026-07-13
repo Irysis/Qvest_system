@@ -1,0 +1,72 @@
+{
+  "task_id": "WT-D20260713_001",
+  "as_of_date": "2025-03-01",
+  "forecast_horizon": "1M",
+  "wt_type": "discovery",
+  "frontier_id": "FQ-030",
+  "alpha_vector": {
+    "A393890": -0.4207
+  },
+  "confidence_vector": {
+    "A393890": 0.342
+  },
+  "signal_matrix_ref": "stage_artifacts/WT_D20260713_001/alpha_scores.parquet",
+  "selection_objective": "canonical_port_t",
+  "factor_specs": [
+    {
+      "factor_family": "text_disclosure_similarity",
+      "proxy": "MD&A section_head YoY sim (0.5cos+0.5jac, 5-gram)",
+      "formula": "sim=0.5*cosine+0.5*jaccard(charNgram5, head_Y vs head_Y-1)",
+      "lag_rule": "annual, rcept月+1, hold 12m",
+      "neutralization": "none (Size-partial 진단)",
+      "economic_rationale": "Lazy Prices: 문구변화=부정정보(CMN 2020). KR 부호반전 실증",
+      "weight_theta": null,
+      "references": [
+        "Cohen-Malloy-Nguyen 2020 JF Lazy Prices"
+      ],
+      "source": "new_designed",
+      "canonical_port_t_nw_lag3": 0.722
+    },
+    {
+      "factor_family": "filing_timeliness",
+      "proxy": "사업보고서 제출지연 vs 법정기한 90d",
+      "formula": "delay_d=rcept-(Dec31+90d); score=-z(delay)",
+      "lag_rule": "annual, rcept月+1, hold 12m",
+      "neutralization": "none (Size-partial 진단)",
+      "economic_rationale": "조기제출=거버넌스 우수=long; 지연=distress",
+      "weight_theta": null,
+      "references": [
+        "filing-delay distress; KR earliness prior(FAIL, MDD-killed)"
+      ],
+      "source": "new_designed",
+      "canonical_port_t_nw_lag3": 1.29
+    },
+    {
+      "factor_family": "insider_filing_activity_change",
+      "proxy": "임원·주요주주 공시 건수 YoY (insider-only)",
+      "formula": "yoy=(q_cnt-q_cnt_-4)/(q_cnt_-4+1); score=-z(yoy)",
+      "lag_rule": "quarterly, qend月+1, hold 3m",
+      "neutralization": "none (Size-partial 진단)",
+      "economic_rationale": "공시 활동 급변=이벤트밀도/불확실성",
+      "weight_theta": null,
+      "references": [
+        "event/insider activity density"
+      ],
+      "source": "new_designed",
+      "canonical_port_t_nw_lag3": 1.171
+    }
+  ],
+  "diagnostics": {
+    "canonical_port_t_nw_lag3": 1.29,
+    "canonical_port_t_pvalue": 0.197,
+    "canonical_n_months": 180,
+    "rank_ic": 0.004,
+    "icir": 0.0579,
+    "harvey_t_stat": 0.777,
+    "turnover_proxy": 1.651,
+    "note": "diagnostics = lead factor F-B. 전 3종 상세 = alpha_validation.json"
+  },
+  "metric_type": "canonical_screen",
+  "graduation_status": "ALL_BELOW_HARD (survivors 0)",
+  "challenge_flags": ["3/3 cap-w PORT_t<2.95 + placebo p<0.05 통과 0건 — survivors 없음, add_factor 권고 없음", "F-A prereg-sign null·EW-uni 음수; 부호반전(1.38)은 post-hoc·sub-threshold", "F-B가 prior 'DART Disclosure Earliness' FAIL과 동일 신호 축(차별=canonical frame·MDD게이트 폐지). config-scoped 재측정", "F-C = insider-only 공시(전체공시 아님, 정직 재라벨) + insider lane confound(Size-partial로 부분 배제) + turnover 4.87 과다"]
+}
