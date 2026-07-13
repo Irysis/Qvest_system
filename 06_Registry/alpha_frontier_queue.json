@@ -533,6 +533,23 @@
       "source_refs": [
         "parent: FQ-027 next_probe 1 + L-RAMP-20260713_110343 challenge ④"
       ]
+    },
+    {
+      "id": "FQ-029",
+      "lane": "non_return",
+      "title": "R16 — 거래량/마이크로스트럭처 신규 팩터 엔지니어링 (기존 RAWDATA, 도훈 지시 07-13)",
+      "hypothesis": "RAWDATA 기존 필드(Vol·거래대금·Size)에서 파생한 마이크로스트럭처 팩터군(Amihud 비유동성 변화·거래량 충격 지속성·회전율 추세이탈·거래대금 비대칭 등)에 미수확 횡단 알파가 있는가 — 원장 family 분포상 liquidity 1/flow 1건 = 사실상 미개척 공간",
+      "ev_rationale": "도훈 '기존 데이터로 새 팩터' 지시. 외부 데이터 0·DART 쿼터 0. 정직 prior: FLOW 후보(forge 2.35)·smartbeta loser-penalty 등 인접 측정 존재 — hypothesis_index 대조 의무. volume은 return-파생 16/16 posterior 사정권 밖(가격수익 변환 아님)이나 market-data 파생이라 보수적 기대",
+      "wall_check": "IC→PORT_t 전이 벽·cap-tier 국소화 동일 적용 — canonical dual-basis 의무. 신규 팩터는 add_factor 온보딩 인터페이스 경유(PIT 구조 보장)",
+      "data_gate": "없음",
+      "owner": "Q-Lead (R16 alpha-research)",
+      "status": "in_progress",
+      "next_action": "hypothesis_index 대조 → 후보 팩터 ≤6종 사전등록 → canonical 스크린 → 생존자만 add_factor 온보딩",
+      "source_refs": [
+        "trigger: 도훈 2026-07-13 '기존 데이터를 활용해서 새로운 팩터를 만들 수도 있잖니'",
+        "gap: .cache/harvest_20260712.json family 분포 (liquidity 1·flow_supply 1 / 273)",
+        "adjacent: FLOW forge 2.35(Cycle 2)·project-smartbeta-allstock-rotation loser-penalty"
+      ]
     }
   ]
 }
