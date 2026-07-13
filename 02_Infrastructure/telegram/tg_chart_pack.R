@@ -133,11 +133,16 @@ tg_chart_sweep <- function(labels, values, out_dir, title,
   if (!is.null(highlight)) cols[lb %in% highlight] <- "#ff7f0e"
   f <- file.path(out_dir, filename)
   h <- max(560, 120 + 34 * length(lb))
+  # [2026-07-13 도훈 피드백] 고정 좌여백 12줄이 그림을 오른쪽으로 밀어 수치 파악 저해 →
+  # 라벨 길이 기반 동적 여백 + 값 라벨 공간을 xlim에 사전 확보(라벨이 가장자리로 밀리지 않게).
+  lmar <- min(11, max(5, 0.42 * max(nchar(lb)) + 1.5))
   grDevices::png(f, width = 1000, height = h, res = 110)
-  graphics::par(mar = c(4.2, 12, 3.2, 1.4), family = "")
+  graphics::par(mar = c(4.2, lmar, 3.2, 1.4), family = "")
+  span <- diff(range(c(vl, 0, hline)))
+  xlim <- range(c(vl, 0, hline)) + c(-0.14, 0.14) * span
   bp <- barplot(vl, names.arg = lb, horiz = TRUE, las = 1, col = cols, border = NA,
-                xlab = value_label, main = title, cex.names = 0.72)
-  text(vl, bp, labels = sprintf("%.2f", vl), pos = ifelse(vl >= 0, 4, 2), cex = 0.7, xpd = TRUE)
+                xlab = value_label, main = title, cex.names = 0.72, xlim = xlim)
+  text(vl, bp, labels = sprintf("%.2f", vl), pos = ifelse(vl >= 0, 4, 2), cex = 0.72)
   abline(v = 0, col = "#333333")
   if (!is.null(hline)) {
     abline(v = hline, col = .tgcp_col_neg, lty = 2, lwd = 1.6)

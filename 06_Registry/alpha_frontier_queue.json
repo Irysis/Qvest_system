@@ -606,13 +606,28 @@
       "wall_check": "수익률-파생 + 방어 family 이중 그림자 — 사전 kill: Kalman-β와 OLS-β 랭킹 상관 0.95+ 시 동일-팩터 판정(측정 중단 아닌 결과 기록). cap-w dual-basis 의무",
       "data_gate": "없음 (일간 수익률·벤치)",
       "owner": "Q-Lead (R19 alpha-research)",
-      "status": "in_progress",
-      "next_action": "칼만 β 패널 구축 → OLS 대조 paired → standalone + AX-001v2 조건부 판정",
+      "status": "settled_negative_config_scoped",
+      "next_action": "INV-7 프론티어: return-derived BAB 소진. next_probe P1(risk-model 입력)이 최유망 — 별도 WT 필요 시 Q-Lead 발주.",
       "source_refs": [
         "trigger: 도훈 2026-07-13 'BAB에 칼만필터 튜닝 가미한 팩터'",
         "prior: measurement-graduation §6 (BAB port_t -2.02) · project-defense-factor-db-survey-settled",
         "literature: Frazzini-Pedersen 2014 (수축β) · Novy-Marx BAB 추정기 민감성"
-      ]
+      ],
+      "result": {
+        "wt_id": "WT-D20260713_003",
+        "date": "2026-07-13",
+        "verdict": "config-scoped NEGATIVE — 칼만 시변β 추정기 교체는 β 점-예측만 개선(실현β RMSE −10%, t+56), 전방 헤지오차·팩터 알파·방어 어느쪽도 개선 없음(운용 inert) + melt-up 유의 열화. 저베타 자체 음(arm O PORT_t −1.09/arm K −1.78).",
+        "primary_endpoint": "metric_1 헤지오차 paired_t −1.18(melt-up −11.87) / metric_2 실현β예측 paired_t +56.5. Q-Lead 승격 바(헤지오차 우세) 미달.",
+        "ranking_spearman": 0.781,
+        "placebo_p": 0.998,
+        "ax001v2": "저베타 위기알파 실재(OLS crisis_t 1.935)이나 칼만 개선 못함(1.559).",
+        "next_probe": [
+          "P1: 칼만 β를 risk-model 입력(β_R05/book β/TE)으로 소비",
+          "P2: 느린 κ(hl 40-60d) 재튜닝",
+          "P3: Kalman tail-β(D08) 방어 sharpening"
+        ],
+        "artifacts": "stage_artifacts/WT_D20260713_003/ (prereg·primary_beta_accuracy·factor_canonical_summary·kappa_*_curve·challenge_note) + qepm/mailbox/worktask/WT-D20260713_003/alpha_package.json"
+      }
     },
     {
       "id": "FQ-033",

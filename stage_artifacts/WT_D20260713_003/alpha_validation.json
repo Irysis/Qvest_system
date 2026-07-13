@@ -1,0 +1,77 @@
+{
+  "wt_id": "WT-D20260713_003",
+  "fq_id": "FQ-032",
+  "label": "R19 칼만 시변베타 BAB — 추정기 교체 한계기여 격리",
+  "as_of": "2026-07-13",
+  "prereg_hash": "a98bdb6fdaf04c7c41e85d2cec7dc7a0",
+  "rawdata_pin_tag": "RAWDATA_mtime20260713-000411_size421258666",
+  "metric_type": "canonical_screen",
+  "selection_objective": "canonical_port_t",
+  "n_trials": 2, "selection_type": "sweep",
+
+  "primary_endpoint_beta_accuracy": {
+    "note": "Q-Lead 교정 최우선. metric_1=전방 daily 헤지잔차 MSE(paired), metric_2=실현 forward-252d β 예측 RMSE(paired). β winsorize[-0.5,3].",
+    "metric_1_forward_hedge_error": {
+      "overall": {"kalman_better_pct": 49.3, "paired_t": -1.18, "rel_improve_pct": -0.011,
+        "interpret": "칼만 우세 아님(사실상 coin-flip, 경제적 무의미). sign_p=0은 n=157890 아티팩트."},
+      "meltup_2025plus": {"kalman_better_pct": 40.1, "paired_t": -11.87, "rel_improve_pct": -0.105,
+        "interpret": "칼만 유의 열화 — 빠른 필터가 melt-up 노이즈 chase. a-priori 가설(낡은 OLS가 melt-up서 가장 틀림)과 반대."},
+      "by_tier": {"MEGA_paired_t": 0.01, "MID_paired_t": 0.53, "OTHER_paired_t": -1.23}
+    },
+    "metric_2_realized_beta_prediction": {
+      "overall": {"rmse_ols": 0.3955, "rmse_kal": 0.3548, "rel_rmse_improve_pct": 10.29, "paired_t": 56.46,
+        "interpret": "칼만 유의 우세 — 적응 필터가 β drift 추적, 실현 forward-252d β를 10% 낮은 RMSE로 예측."},
+      "meltup_2025plus": {"rmse_ols": 0.3943, "rmse_kal": 0.4179, "rel_rmse_improve_pct": -5.98, "paired_t": -11.93,
+        "interpret": "melt-up서는 칼만 β 예측도 열화."},
+      "by_tier": {"MEGA": {"rmse_ols": 0.2856, "rmse_kal": 0.2659, "paired_t": 5.02},
+                  "MID": {"rmse_ols": 0.3158, "rmse_kal": 0.2881, "paired_t": 10.23},
+                  "OTHER": {"rmse_ols": 0.3993, "rmse_kal": 0.358, "paired_t": 55.56}}
+    },
+    "verdict_primary": "칼만 β는 β 점-예측(metric_2)서 유의 우세(RMSE −10%, t+56)이나, 운용 관련 전방 헤지오차(metric_1)는 개선 없음(idiosyncratic 지배)이며 melt-up서 유의 열화. Q-Lead 승격 바(=헤지오차 유의 우세) 미달 → '운용자산 승격' 불가. β 점-예측 우세는 진짜지만 operationally inert(NC1: drift-persistent β서 부분 기계적)."
+  },
+
+  "secondary_endpoint_factor_level": {
+    "arm_O_ols": {"portfolio_alpha_t_nw_lag3": -1.086, "diag_ew_universe_port_t": -1.541,
+      "diag_ew_universe_post2017_t": -1.518, "net_sr": -0.275, "oos_retention": -4.645,
+      "calmar": 0.073, "turnover_annual": 5.092, "rank_ic": 0.0058, "harvey_t": 0.466},
+    "arm_K_kalman": {"portfolio_alpha_t_nw_lag3": -1.78, "diag_ew_universe_port_t": -2.767,
+      "diag_ew_universe_post2017_t": -2.899, "net_sr": -0.442, "oos_retention": -9.007,
+      "calmar": 0.022, "turnover_annual": 2.874, "rank_ic": 0.0, "harvey_t": -0.001},
+    "kalman_marginal_paired_nw_t": -1.62,
+    "kalman_marginal_interpret": "|t|<2 비유의 — 칼만 한계기여 무의미(오히려 소폭 악화). 칼만 turnover 낮음(2.87 vs 5.09)이 유일 차이나 알파로 전이 안 됨.",
+    "ranking_spearman": {"mean_rho": 0.781, "pct_months_ge_0.95": 6.1, "interpret": "랭킹 실질적으로 다름 → 추정기 교체 ≠ 동일 팩터(C1 반증). 단 차이가 canonical서 도움 안 됨."},
+    "placebo_p": 0.998,
+    "placebo_interpret": "저베타 선택이 랜덤 top-25보다 나쁨 = KR long-only 저베타 음의 알파(선행 BAB PORT_t −2.02 정합)",
+    "cap_tier_localization": {"arm_O_OTHER_pct": 91.3, "arm_K_OTHER_pct": 90.3,
+      "median_univ_rank_of_349": {"ols": 154, "kalman": 146},
+      "interpret": "C2 ACCEPT — 저베타 = ~91% 소형주 국소화. 음 알파 상당분 = 2025 mega-cap 레짐 역풍(EW-uni post2017도 음이라 벤치 아티팩트 아님)."}
+  },
+
+  "conditional_AX001v2": {
+    "note": "방어형은 전기간 SR 채점 금지(AX-001v2). 위기구간(BM<-5% or rolling6m worst quintile) alpha + bad/normal IC ratio.",
+    "crisis_months": 62,
+    "arm_O_ols": {"crisis_mean_active": 0.0084, "crisis_active_t": 1.935, "normal_mean_active": -0.0091, "bad_normal_ic_ratio": 4.659},
+    "arm_K_kalman": {"crisis_mean_active": 0.0073, "crisis_active_t": 1.559, "normal_mean_active": -0.0121, "bad_normal_ic_ratio": 2.949},
+    "verdict_conditional": "저베타는 진짜 위기 알파 보유(OLS crisis_t 1.935, 방어 속성 intact) — AX-001v2 방어형 정당 평가서 전기간 음이 곧 무가치는 아님. 그러나 칼만이 방어 속성을 개선 못함(crisis_t·bad/normal IC ratio 모두 OLS ≥ Kalman)."
+  },
+
+  "kappa_selection": {
+    "free_dlmMLE_kappa": 0.4556, "free_mle_clamped": 0.1,
+    "free_mle_note": "자유 MLE 및 IS-hedge-MSE 튜닝 = 일별 노이즈 과적합 → κ→degenerate-fast(hl 2일, β pooled sd 0.92). idiosyncratic 지배가 hedge-MSE 판별력 소거.",
+    "kappa_star_used": 0.01, "kappa_star_half_life_days": 7,
+    "kappa_star_method": "metric_2(실현 β 예측, β-vs-β) IS-min 재선택 — prereg 허용범위 내 원리적 refinement (challenge_note C1)",
+    "filter_verified": "Samsung 단일종목 κ=1e-5 month-end β sd 0.060 range[0.94,1.30] < rolling-OLS sd 0.228 — 필터 정확"
+  },
+
+  "universe_comparison": {
+    "universe_used": "KR_top342 (K200∪KQ150, LIQ 2e8, 15bps)",
+    "v2_note": "본건은 ICIR-attenuation 진단 아님(추정기 비교) → v2 universe mandate 미해당. cap-w authoritative + diag_ew_universe(EW-uni) 병기로 dual-basis 충족. EW-uni PORT_t/post2017도 음이라 감쇠가 cap-w 벤치 아티팩트 아님 확인."
+  },
+
+  "overall_verdict": "config-scoped NEGATIVE — 칼만 시변β는 (1차) β 점-예측서 유의 우세하나 전방 헤지·팩터 알파·방어 어느쪽도 개선 없음(운용 inert) + melt-up 취약. (2차) 저베타 팩터 자체가 음(both arms). 방향판결 아님(INV-7 프론티어 표시). next_probe ≥2 하단.",
+  "next_probe": [
+    "P1: 칼만 β를 alpha factor가 아닌 risk-model 입력(β_R05 국면오버레이 β / book β 추적 / TE 통제)으로 소비 — metric_2 우세(더 정확한 β 점-예측)가 가장 관련되는 소비처. hedge-ratio 정밀도가 book β·TE에 유의미한지 실측(Q-Lead P1 경로).",
+    "P2: 느린 κ(hl~40-60d) — κ*=1e-2(hl 7d)는 metric_2 IS-min이 빠른쪽 선택. melt-up 취약성 완화 + metric_2 edge 유지하는 hedge-error-robust κ 재튜닝(단 hedge-error idiosyncratic 지배로 EV 낮음).",
+    "P3: Kalman tail-β(D08 downside-beta 시변화) — 방어 속성이 유일 positive이므로 위기 타이밍 sharpening 여지. AX-001v2 조건부 재평가."
+  ]
+}

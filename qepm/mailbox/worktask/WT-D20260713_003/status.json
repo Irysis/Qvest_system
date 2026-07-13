@@ -1,0 +1,27 @@
+{
+  "task_id": "WT-D20260713_003",
+  "current_phase": "ALPHA_DONE_NEGATIVE",
+  "updated": "2026-07-13",
+  "verdict": "config_scoped_negative",
+  "survivors": 0,
+  "l_code": "L-AR-20260713_171036",
+  "note": "R19 칼만 시변β BAB 추정기 격리 — 칼만 β는 실현β 점-예측만 유의개선(RMSE −10%, t+56, 운용 inert), 전방헤지오차(t−1.18·melt-up t−11.87)/팩터알파(arm O −1.09·arm K −1.78, 칼만 한계기여 −1.62 비유의)/방어(OLS crisis_t 1.94 > Kalman 1.56) 어느쪽도 개선 없음. 저베타 자체 음(placebo p 0.998, ~91% 소형주). return-derived BAB 소진.",
+  "primary_endpoint": {
+    "metric1_hedge_paired_t": -1.18,
+    "metric1_meltup_t": -11.87,
+    "metric2_realizedbeta_paired_t": 56.46,
+    "rmse_ols": 0.3955,
+    "rmse_kal": 0.3548,
+    "verdict": "Q-Lead 승격 바(헤지오차 유의 우세) 미달 → 운용자산 승격 불가"
+  },
+  "next_probe": [
+    "P1 risk-model 입력(β_R05/book β/TE)",
+    "P2 느린 κ(hl 40-60d)",
+    "P3 Kalman tail-β(D08)"
+  ],
+  "kappa_star": {
+    "value": 0.01,
+    "half_life_days": 7,
+    "method": "metric_2 IS-min (hedge-MSE/free-MLE 튜닝은 idiosyncratic 지배 퇴화로 폐기)"
+  }
+}
