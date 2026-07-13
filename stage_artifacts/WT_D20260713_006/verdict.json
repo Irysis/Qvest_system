@@ -1,0 +1,164 @@
+{
+  "wt_id": "WT-D20260713_006",
+  "fq_id": "FQ-035",
+  "iteration": "R22",
+  "prereg_sha256": "3455656218d17d2af7333a40d0ba1abda74c242fa891013f0100a9eae49e0659",
+  "verdict": "CONFIG_SCOPED_NEGATIVE",
+  "stage": "STAGE_1_PREDICTION_VALIDITY_ONLY",
+  "headline": "Forensic stack does NOT clear the pre-registered event-prediction bar (no predictor: controlled OR p<0.05 full-sample AND pre/post-2016 stable). BUT delay(F3) is a size-robust, severe-event-specific sub-threshold signal (frontier open); Benford/m1/stack are flat nulls (terminate).",
+  "prereg_rule_outcome": {
+    "predicts_holds": false,
+    "reason": "F1/F2/stack: controlled OR~1, p>0.6, AUC~0.51-0.52 (flat null). F3 delay: controlled OR 2.06 p=0.0745 (fails p<0.05 on power) + pre-2016 not estimable (delay coverage post-2016 only) => stability clause unmet.",
+    "bonferroni_x4_min_p": 0.298
+  },
+  "disposition": {
+    "benford_F1": "EVENT_PREDICTOR_TERMINATE (flat null; feature preserved for prior return-overlay use only)",
+    "m1_F2": "EVENT_PREDICTOR_TERMINATE (flat null + sign-unstable pre/post; m1 retains OVERLAY_CANDIDATE return status from WT-D20260711_002)",
+    "stack": "TERMINATE (dominated by two null features; dilutes delay)",
+    "delay_F3": "CONFIG_SCOPED_NEGATIVE + FRONTIER_OPEN (size-robust extreme-tail late-filing signal; under-powered on union-target/decile config)"
+  },
+  "size_disguise_check": {
+    "concern": "lift could be a small-cap base-rate artifact",
+    "resolution": "F3 controlled OR (2.06) ~ raw OR (2.18): Size/tier/liq controls barely attenuate => NOT size-disguise. F1/F2 have no lift to disguise.",
+    "authoritative": true
+  },
+  "delay_event_type_decomposition": {
+    "note": "F3 delay worst-decile lift by event type (why union masks the signal)",
+    "Delisting": 6.38,
+    "AdminStock": 4.24,
+    "UnfaithfulDisc": 3.82,
+    "LongHalt_transient": 1.8,
+    "interpretation": "Signal is severe-event-specific; transient LongHalt (largest base) dilutes union lift 2.07."
+  },
+  "tail_monotonicity": {
+    "continuous_days_late_OR_perSD": 1.074,
+    "continuous_p": 0.396,
+    "top_quintile_OR": 1.363,
+    "top_quintile_p": 0.342,
+    "interpretation": "Signal lives in the EXTREME tail (top decile), NOT monotonic. Widening threshold dilutes => power must come from severity-restricted target / longer window / larger filer universe, not wider threshold."
+  },
+  "results": {
+    "benford_F1": {
+      "n": 60727,
+      "base_rate": 0.03316,
+      "worst_decile_n": 6146,
+      "worst_decile_evrate": 0.03482,
+      "lift": 1.05,
+      "lift_wilson95": [0.92, 1.197],
+      "lift_boot_ticker95": [0.679, 1.514],
+      "auc": 0.5106,
+      "auc_ci95": [0.4981, 0.5232],
+      "or_raw": 1.058,
+      "or_ctrl": 1.09,
+      "or_ctrl_ci95": [0.701, 1.696],
+      "or_ctrl_p_clusterrobust": 0.7016,
+      "stability": {
+        "pre2016": {
+          "lift": 1.087,
+          "or_ctrl": 1.15,
+          "p": 0.6306,
+          "n": 25872
+        },
+        "post2016": {
+          "lift": 0.999,
+          "or_ctrl": 1.025,
+          "p": 0.9384,
+          "n": 34855
+        }
+      }
+    },
+    "m1_F2": {
+      "n": 49755,
+      "base_rate": 0.02963,
+      "worst_decile_n": 5045,
+      "worst_decile_evrate": 0.03231,
+      "lift": 1.091,
+      "lift_wilson95": [0.938, 1.268],
+      "lift_boot_ticker95": [0.666, 1.548],
+      "auc": 0.5178,
+      "auc_ci95": [0.503, 0.5326],
+      "or_raw": 1.105,
+      "or_ctrl": 1.01,
+      "or_ctrl_ci95": [0.622, 1.639],
+      "or_ctrl_p_clusterrobust": 0.968,
+      "stability": {
+        "pre2016": {
+          "lift": 1.448,
+          "or_ctrl": 1.535,
+          "p": 0.2469,
+          "n": 14135
+        },
+        "post2016": {
+          "lift": 0.863,
+          "or_ctrl": 0.766,
+          "p": 0.4197,
+          "n": 35620
+        }
+      }
+    },
+    "delay_F3": {
+      "n": 54921,
+      "base_rate": 0.03168,
+      "worst_decile_n": 871,
+      "worst_decile_evrate": 0.06544,
+      "lift": 2.066,
+      "lift_wilson95": [1.605, 2.647],
+      "lift_boot_ticker95": [0.707, 3.653],
+      "auc": 0.5207,
+      "auc_ci95": [0.507, 0.5343],
+      "or_raw": 2.179,
+      "or_ctrl": 2.056,
+      "or_ctrl_ci95": [0.931, 4.543],
+      "or_ctrl_p_clusterrobust": 0.07455,
+      "stability": {
+        "pre2016": {
+          "lift": "NA",
+          "or_ctrl": "NA",
+          "p": "NA",
+          "n": 17260
+        },
+        "post2016": {
+          "lift": 2.485,
+          "or_ctrl": 2.575,
+          "p": 0.02203,
+          "n": 37661
+        }
+      }
+    },
+    "stack": {
+      "n": 44717,
+      "base_rate": 0.02766,
+      "worst_decile_n": 627,
+      "worst_decile_evrate": 0.03987,
+      "lift": 1.441,
+      "lift_wilson95": [0.981, 2.104],
+      "lift_boot_ticker95": [0.277, 3.362],
+      "auc": 0.5172,
+      "auc_ci95": [0.5051, 0.5293],
+      "or_raw": 1.469,
+      "or_ctrl": 1.322,
+      "or_ctrl_ci95": [0.424, 4.116],
+      "or_ctrl_p_clusterrobust": 0.6305,
+      "stability": {
+        "pre2016": {
+          "lift": 3.568,
+          "or_ctrl": 3.693,
+          "p": 0.06338,
+          "n": 13991
+        },
+        "post2016": {
+          "lift": 0.719,
+          "or_ctrl": 0.663,
+          "p": 0.5273,
+          "n": 30726
+        }
+      }
+    }
+  },
+  "next_probe": {
+    "P1": "Severity-restricted target: pre-register + re-run delay(F3) extreme tail vs target={Delisting U AdminStock U UnfaithfulDisc} (drop transient LongHalt). D1 predicts 4-6x tail lift; may clear p<0.05 with the same tail. NEW pre-registered round (do NOT post-hoc this round).",
+    "P2": "Power via coverage not threshold: keep extreme top-decile; grow n by (a) 24m forward window, (b) pooling delay across full DART filing universe (delay computable for all filers, not just K200∪KQ150), (c) discrete-time delisting-hazard model with continuous days-late x severity.",
+    "P3": "Event-label PIT hardening: obtain actual designation announcement dates (vs rawdata flag onset) to rule out any backdating look-ahead before any capital use."
+  },
+  "two_stage_discipline": "Stage-2 (exclusion filter redesign) NOT opened — pre-registered bar not cleared. Severity-restricted re-run is a NEW pre-registered round, not a post-hoc extension of this frozen prereg."
+}
