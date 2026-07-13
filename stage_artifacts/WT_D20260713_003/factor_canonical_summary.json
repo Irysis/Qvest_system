@@ -1,0 +1,106 @@
+{
+  "wt_id": "WT-D20260713_003",
+  "endpoint": "secondary_factor_level",
+  "arm_O_ols": {
+    "portfolio_alpha_t_nw_lag3": -1.086,
+    "portfolio_alpha_t_pvalue": 0.2773,
+    "information_ratio": -0.275,
+    "net_sr": -0.275,
+    "mean_active_net": -0.00468,
+    "turnover_annual": 5.092,
+    "n_months": 245,
+    "diag_ew_universe_port_t": -1.541,
+    "diag_ew_universe_post2017_t": -1.518,
+    "diag_cap_tier": {
+      "MEGA": -0.002329,
+      "MID": -0.00122,
+      "OTHER": 0.068647,
+      "UNRANKED": 0
+    },
+    "diag_cap_tier_hold_pct": {},
+    "oos_retention": -4.645,
+    "calmar": 0.073,
+    "cagr": 0.0422,
+    "mdd": 0.5818,
+    "net_sr.1": -0.275
+  },
+  "arm_K_kalman": {
+    "portfolio_alpha_t_nw_lag3": -1.78,
+    "portfolio_alpha_t_pvalue": 0.0751,
+    "information_ratio": -0.442,
+    "net_sr": -0.442,
+    "mean_active_net": -0.00717,
+    "turnover_annual": 2.874,
+    "n_months": 245,
+    "diag_ew_universe_port_t": -2.767,
+    "diag_ew_universe_post2017_t": -2.899,
+    "diag_cap_tier": {
+      "MEGA": -0.002937,
+      "MID": 0.000753,
+      "OTHER": 0.034071,
+      "UNRANKED": 0
+    },
+    "diag_cap_tier_hold_pct": {},
+    "oos_retention": -9.007,
+    "calmar": 0.022,
+    "cagr": 0.013,
+    "mdd": 0.5868,
+    "net_sr.1": -0.442
+  },
+  "kalman_marginal": {
+    "paired_nw_t": -1.624,
+    "paired_mean_active_annual": -0.02988,
+    "interpret": "paired_nw_t = active_K − active_O NW lag-3 t. |t|<~2 이면 칼만 한계기여 무의미(추정기 교체 실질 동일)."
+  },
+  "ranking_spearman": {
+    "mean_rho": 0.781,
+    "median_rho": 0.777,
+    "min_rho": 0.527,
+    "pct_months_ge_0.95": 6.1,
+    "n_months": 246
+  },
+  "rank_ic_advisory": {
+    "armO": {
+      "rank_ic": 0.0058,
+      "icir": 0.03,
+      "harvey_t": 0.466,
+      "n": 245
+    },
+    "armK": {
+      "rank_ic": -0,
+      "icir": -0,
+      "harvey_t": -0.001,
+      "n": 245
+    }
+  },
+  "placebo": {
+    "armK_port_t": -1.78,
+    "placebo_mean_t": -0.099,
+    "placebo_p_value": 0.998,
+    "n": 500,
+    "interpret": "랜덤 top-25 대비 저베타 선택 우위 검정. p<0.05 이면 신호 실재."
+  },
+  "ax001v2_conditional": {
+    "crisis_months": 62,
+    "armO": {
+      "crisis_mean_active": 0.0084,
+      "crisis_n": 62,
+      "crisis_active_t": 1.935,
+      "normal_mean_active": -0.0091,
+      "bad_normal_ic_ratio": 4.659
+    },
+    "armK": {
+      "crisis_mean_active": 0.0073,
+      "crisis_n": 62,
+      "crisis_active_t": 1.559,
+      "normal_mean_active": -0.0121,
+      "bad_normal_ic_ratio": 2.949
+    },
+    "note": "AX-001v2: 방어형은 전기간 SR 채점 금지. 위기구간 alpha + bad/normal IC ratio로 조건부 평가."
+  },
+  "cost_model_version": "v2.4_kr_retail_15bps",
+  "universe": "KR_top342 (K200∪KQ150, LIQ 2e8)",
+  "selection_objective": "canonical_port_t",
+  "n_trials": 2,
+  "selection_type": "sweep"
+}

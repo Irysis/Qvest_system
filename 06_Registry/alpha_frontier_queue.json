@@ -613,6 +613,23 @@
         "prior: measurement-graduation §6 (BAB port_t -2.02) · project-defense-factor-db-survey-settled",
         "literature: Frazzini-Pedersen 2014 (수축β) · Novy-Marx BAB 추정기 민감성"
       ]
+    },
+    {
+      "id": "FQ-033",
+      "lane": "non_return",
+      "title": "R20 — 포렌식 필터의 지수-레벨 검증 (KOSPI200/KOSDAQ150/KOSPI/KOSDAQ ex-flagged, 도훈 설계 07-13)",
+      "hypothesis": "Benford 최악분위 제거가 지수 자체의 리스크 지표(MDD·하방편차·꼬리)를 무작위-제거 대조 대비 개선하는가 — 전략 틸트 교란 제거 설계. 기전 예측: 효과가 감사품질 구배(K200≈0 → KOSDAQ 전체 최대)로 단조 증가하면 필터 정보 실재의 강증거",
+      "ev_rationale": "도훈 설계 — P-pure/V02_EP 교차기각의 원인(전략-필터 상호작용)을 지수 기질로 원천 제거. R18 Benford 점수 패널(3,562종목) 재사용, API 0",
+      "wall_check": "KOSPI/KOSDAQ 전체 = 배포 봉투 밖 → 진단-only 라벨(자본 전략 아님·봉투 불변). 커버리지 정직 보고(소형 재무데이터 결손). cap-w 재정규화 vs 지수 비교가 권위, EW 병기",
+      "data_gate": "없음 (Benford 패널 + rawdata 전종목 + 지수 구성)",
+      "owner": "Q-Lead (R20 alpha-research)",
+      "status": "in_progress",
+      "next_action": "4 유니버스 × {ex-flagged, 무작위 3seed} → 리스크 지표 대조 → 구배 패턴 판정",
+      "source_refs": [
+        "trigger: 도훈 2026-07-13 '지수와 비교 — 구성종목에서 위험 종목 삭제 시 리스크 우위'",
+        "asset: stage_artifacts/WT_D20260713_002 Benford 점수 패널",
+        "prior: crosscheck_decision.json (전략-기질 교차기각) + R18 감사품질 진단"
+      ]
     }
   ]
 }
