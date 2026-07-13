@@ -1,0 +1,63 @@
+{
+  "label": "제2 독립 소형 기질 교차확인 — 승격 최종 관문 (판정-후 소비진단, 게이트 불변)",
+  "substrates": {
+    "Ppure_W36_K20": {
+      "source": "d3 holdings_monthly_ppure.parquet",
+      "n_months": 193,
+      "criteria": {
+        "C1_binding_real": true,
+        "C2_tail_beats_random": true,
+        "C3_alpha_intact": true,
+        "C4_not_concentrated": true,
+        "pass_count": 4
+      },
+      "d_downside_dev": 0.0033,
+      "d_downside_dev_rel_pct": 2.60804,
+      "beats_random": true,
+      "pass": "4/4"
+    },
+    "V02_EP": {
+      "source": "d3 holdings_monthly_v02ep.parquet",
+      "n_months": 193,
+      "binding_overall": 0.07275,
+      "by_tier": [
+        {
+          "tier": "OTHER",
+          "held": 4778,
+          "bound": 350,
+          "rate": 0.07325
+        },
+        {
+          "tier": "MID",
+          "held": 40,
+          "bound": 1,
+          "rate": 0.025
+        },
+        {
+          "tier": "MEGA",
+          "held": 7,
+          "bound": 0,
+          "rate": 0
+        }
+      ],
+      "criteria": {
+        "C1": true,
+        "C2": false,
+        "C3": true,
+        "C4": false,
+        "pass": 2
+      },
+      "d_downside_dev": -0.001,
+      "d_downside_dev_rel_pct": -0.81678,
+      "rand_d_dd_seeds": [0.00167, 0.00153, -0.0008],
+      "beats_random": false,
+      "paired_nwt": -0.41807,
+      "pass": "2/4"
+    }
+  },
+  "third_substrate_R13_D2": "EXCLUDED — R13 arms(armD1 등)은 Ppure_W36_K20 base 변형(독립 기질 아님) + 재사용 holdings 아티팩트 부재(신규 엔진 금지). 2 독립 기질로 결정 도달.",
+  "reproduction": "NOT REPRODUCED — 방향 불일치. P-pure에서 F-B exclusion이 하방편차 개선(무작위 3seed 전부 능가, 4/4), V02_EP에서 하방편차 악화(-0.82% rel)이며 무작위(양수)에 패배 → C2 반전, 2/4.",
+  "verdict": "2기질 교차 미재현 → 승격안 상정 불가. F-B exclusion 효과 = P-pure-특이(config-scoped). Production Constraints 기본 필터 승격 부적격.",
+  "honesty_note": "P-pure 4/4는 substrate-특이 false-positive였음 — 교차확인 관문이 이를 적발(효과크기 marginal 경고가 실증됨). 게이트 판정(F-B/F-A config-scoped negative)과 정합.",
+  "next_probe": "F-B는 TEXT/forensic feature로 보존(OVERLAY_CANDIDATE). 범용 기본필터 승격 재도전 조건 = 다수 독립 소형기질서 하방편차>무작위 재현 시(현재 미충족)."
+}

@@ -1,0 +1,70 @@
+{
+  "method": "metric_2(실현 forward-252d β 예측) IS-min κ 선택. hedge-MSE 튜닝은 idiosyncratic 지배 퇴화(κ*→1e-1)로 폐기.",
+  "kappa_star": 0.01,
+  "kappa_star_half_life_days": 6.9,
+  "grid": [1e-05, 0.00003, 0.0001, 0.0003, 0.001, 0.003, 0.01],
+  "ols_baseline": {
+    "rmse_is": "NA",
+    "rmse_oos": "NA",
+    "rmse_all": "NA"
+  },
+  "kalman_curve": {
+    "1e-05": {
+      "kappa": 1e-05,
+      "half_life_days": 219.2,
+      "rmse_is": 1.1418,
+      "rmse_oos": 0.878,
+      "rmse_all": 0.9512,
+      "beta_sd": 0.903
+    },
+    "3e-05": {
+      "kappa": 0.00003,
+      "half_life_days": 126.6,
+      "rmse_is": 1.1418,
+      "rmse_oos": 0.8779,
+      "rmse_all": 0.9512,
+      "beta_sd": 0.903
+    },
+    "1e-04": {
+      "kappa": 0.0001,
+      "half_life_days": 69.3,
+      "rmse_is": 1.1418,
+      "rmse_oos": 0.8776,
+      "rmse_all": 0.9509,
+      "beta_sd": 0.903
+    },
+    "3e-04": {
+      "kappa": 0.0003,
+      "half_life_days": 40,
+      "rmse_is": 1.1418,
+      "rmse_oos": 0.8767,
+      "rmse_all": 0.9503,
+      "beta_sd": 0.903
+    },
+    "1e-03": {
+      "kappa": 0.001,
+      "half_life_days": 21.9,
+      "rmse_is": 1.1416,
+      "rmse_oos": 0.8745,
+      "rmse_all": 0.9487,
+      "beta_sd": 0.903
+    },
+    "3e-03": {
+      "kappa": 0.003,
+      "half_life_days": 12.7,
+      "rmse_is": 1.1413,
+      "rmse_oos": 0.8713,
+      "rmse_all": 0.9464,
+      "beta_sd": 0.903
+    },
+    "1e-02": {
+      "kappa": 0.01,
+      "half_life_days": 6.9,
+      "rmse_is": 1.1405,
+      "rmse_oos": 0.8678,
+      "rmse_all": 0.9437,
+      "beta_sd": 0.906
+    }
+  },
+  "verdict_primary": "칼만 κ*_2 실현β 예측 RMSE_OOS=0.8678 vs OLS NA — NA"
+}

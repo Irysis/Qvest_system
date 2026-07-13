@@ -10,6 +10,9 @@ beta_ols_p <- as.data.table(read_parquet(file.path(OUT,"beta_monthly.parquet")))
 beta_kal_p <- as.data.table(read_parquet(file.path(OUT,"beta_kalman_tuned.parquet")))[,.(Date,Ticker,beta_kalman)]
 beta_m <- merge(beta_ols_p, beta_kal_p, by=c("Date","Ticker"), all=FALSE)  # tuned κ* Kalman
 beta_m <- beta_m[!is.na(beta_ols) & !is.na(beta_kalman)]   # 두 arm 공통 stock-month만(paired)
+# winsorize β to sensible market bounds [-0.5, 3.0] — 소형주 미수렴 극단 방지(공정 비교)
+wz <- function(x) pmin(pmax(x, -0.5), 3.0)
+beta_m[, beta_ols := wz(beta_ols)]; beta_m[, beta_kalman := wz(beta_kalman)]
 setorder(beta_m, Ticker, Date)
 sig_dates <- sort(unique(beta_m$Date))
 
@@ -58,12 +61,14 @@ write_parquet(he, file.path(OUT,"hedge_error_stockmonth.parquet"))
 # 집계 (전체 + tier + melt)
 paired_stats <- function(dt) {
   d <- dt$mse_ols - dt$mse_kal                     # >0 이면 Kalman 우세(오차 작음)
-  n <- length(d)
+  n <- length(d); nb <- sum(d>0); sign_p <- tryCatch(binom.test(nb,n,0.5)$p.value, error=function(e)NA)
   list(n=n, mean_mse_ols=mean(dt$mse_ols), mean_mse_kal=mean(dt$mse_kal),
+       median_mse_ols=median(dt$mse_ols), median_mse_kal=median(dt$mse_kal),
        kalman_better_pct=round(100*mean(d>0),1),
+       sign_test_p=round(sign_p,4),
        paired_t=round(mean(d)/(sd(d)/sqrt(n)),3),
-       mean_diff=mean(d),
-       rel_improve_pct=round(100*(mean(dt$mse_ols)-mean(dt$mse_kal))/mean(dt$mse_ols),2))
+       median_diff=median(d),
+       rel_improve_pct=round(100*(mean(dt$mse_ols)-mean(dt$mse_kal))/mean(dt$mse_ols),3))
 }
 agg <- list(overall = paired_stats(he))
 for (tt in c("MEGA","MID","OTHER")) agg[[tt]] <- paired_stats(he[tier==tt])
@@ -86,7 +91,7 @@ for (i in seq_len(nrow(beta_m))) {
   if (nrow(fut) < 120L) next
   fit <- tryCatch(lm.fit(cbind(1,fut$BM_Ret), fut$Ret), error=function(e) NULL)
   if (is.null(fit)) next
-  br <- fit$coefficients[2L]
+  br <- min(max(fit$coefficients[2L], -0.5), 3.0)   # realized β도 winsorize(공정 비교)
   realb_list[[i]] <- data.table(Date=row$Date, Ticker=row$Ticker, tier=row$tier,
                       beta_real=br, err_ols=row$beta_ols-br, err_kal=row$beta_kalman-br,
                       melt=ifelse(row$Date>=as.Date("2025-01-01"),"meltup_2025+","pre2025"))
@@ -95,11 +100,12 @@ rb <- rbindlist(realb_list, use.names=TRUE)
 write_parquet(rb, file.path(OUT,"realized_beta_pred.parquet"))
 pred_stats <- function(dt){
   n<-nrow(dt); d<-dt$err_ols^2 - dt$err_kal^2
+  nb<-sum(d>0); sp<-tryCatch(binom.test(nb,n,0.5)$p.value,error=function(e)NA)
   list(n=n, rmse_ols=round(sqrt(mean(dt$err_ols^2)),4), rmse_kal=round(sqrt(mean(dt$err_kal^2)),4),
        mae_ols=round(mean(abs(dt$err_ols)),4), mae_kal=round(mean(abs(dt$err_kal)),4),
-       kalman_better_pct=round(100*mean(d>0),1),
+       kalman_better_pct=round(100*mean(d>0),1), sign_test_p=round(sp,4),
        paired_t=round(mean(d)/(sd(d)/sqrt(n)),3),
-       rel_rmse_improve_pct=round(100*(sqrt(mean(dt$err_ols^2))-sqrt(mean(dt$err_kal^2)))/sqrt(mean(dt$err_ols^2)),2))
+       rel_rmse_improve_pct=round(100*(sqrt(mean(dt$err_ols^2))-sqrt(mean(dt$err_kal^2)))/sqrt(mean(dt$err_ols^2)),3))
 }
 pred <- list(overall=pred_stats(rb))
 for (tt in c("MEGA","MID","OTHER")) pred[[tt]] <- pred_stats(rb[tier==tt])

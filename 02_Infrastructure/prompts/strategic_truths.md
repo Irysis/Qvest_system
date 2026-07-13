@@ -1,4 +1,8 @@
-[확립 전략 진실 — 죽은 방향 재제안 금지. SOT: measurement-graduation.md §6 + 메모리. 2026-07-10 갱신(07-05/06 확립사실 3건 반영)]
+[확립 전략 진실 — 죽은 방향 재제안 금지. SOT: measurement-graduation.md §6 + 메모리. 2026-07-13 갱신(선별 아크 R4~R15 + 팩터 발굴 R16~R18 확립사실 4건 추가)]
+  - 선별 라벨 지배(07-11~12 실측): relevance-선별(Boruta/StabSel/mRMR) 3규율 10-trial 전멸 vs **realized-PORT_t-정렬 선별만 양성**(동일기질 ctrl 대비 paired +3.01) — "무엇으로 고르나"가 규율 종류보다 지배적. Boruta는 全기질 음-소진 재시도 금지 (project-selection-discipline-arc-r4r5r6)
+  - construction 천장(07-13 실측): P-pure 계보 선별·퇴출·충원 3축 전부 cap-w ~2.94 포화·oos 천장 ~+0.12 exit-rule-invariant. 챔피언 구성 = 반기 진입·분기 순위-단독 퇴출·수준-상위 충원(2.937/+0.048). 감쇠를 선별재료로 쓰면 FM 수렴 붕괴(퇴출 트리거로만 유효). return-derived 재료 위 construction 미세조정 = 한계효익 소진 지대 (동 topic R10~R15 추기)
+  - 벽의 재료-불변성(07-13 실측): market-data 파생(거래량/마이크로스트럭처 5종)·텍스트(유사도/지연/공시량 3종)·회계-포렌식 통계(재량발생액/Benford 2종) 전부 동일 cap-tier×cap-w 벽 — 벽은 재료가 아니라 long-only 횡단선택→cap-w 전이 자체 (L-AR-20260713_133212/161721/162115)
+  - 포렌식 exclusion 승격 부적격(07-13): Benford worst-decile 제외가 P-pure서 4/4(꼬리>무작위)였으나 V02_EP 교차확인서 C2 역전(꼬리 악화·무작위 패배) = 기질-특이. 사전등록 교차관문이 false-positive 차단 실증 — 범용 필터 재도전 조건 = 다수 독립 기질 재현 (WT-D20260713_002 crosscheck_decision.json)
   - IC→PORT_t 전이 벽: 횡단면 신호(IC/ICIR)가 실재해도 top-25 long-only 실현 PORT_t로 미전이 — standalone 16/16 admission FAIL, 신호종류·horizon·원천 무관 (§6 / project-dart-insider-exec-nonreturn-frontier)
   - post-2017 감쇠(cohort-wide 실재)의 상당부분 = cap-w mega-cap 벤치 아티팩트: 동일 알파가 EW-벤치 대비 생존(post2017_t 0.41→2.04 실측) — 알파 기각 전 EW-대비 oos 확인 의무 (project-megacap-anchor-construction-discovery)
   - cap-tier 국소화: 알파는 벤치-저비중 소형 끝에 집중·배포 대형주 tier에선 붕괴 — long-only 횡단선택으로 cap-w 탈출 구조 불가. 실측 NW-t(insider `captier_decomp.csv`): REST(>50) long-active +5.19 / 배포권 top-50 +0.53 / MEGA rank-IC +1.01(가격신호 mega는 t≈0.6). ⚠ 구 "MID(11-30) t=3.02"는 미검증 회상(가격신호 score_eff 분해 원본 미소재)이라 철회 — 구조 결론은 불변, 오늘 WT-D20260710_001 MID 다축 cap-w 2.08이 재확증 (project-captier-alpha-localization-20260706 / WT-D20260710_001)
