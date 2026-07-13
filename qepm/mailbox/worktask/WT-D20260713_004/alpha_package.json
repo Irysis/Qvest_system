@@ -1,0 +1,43 @@
+{
+  "task_id": "WT-D20260713_004",
+  "as_of_date": "2025-06-01",
+  "forecast_horizon": "12M",
+  "wt_type": "discovery",
+  "metric_type": "diagnostic",
+  "alpha_vector": {},
+  "confidence_vector": {},
+  "signal_matrix_ref": "stage_artifacts/WT_D20260713_004/alpha_scores.parquet",
+  "factor_specs": [
+    {
+      "factor_family": "Forensic/EarningsQuality",
+      "proxy": "Benford First-Digit Deviation (FSD MAD)",
+      "formula": "MAD = mean_d |p_obs(d)-p_exp(d)|, p_exp=log10(1+1/d), raw-monetary whitelist 43 items, >=15/firm-year",
+      "lag_rule": "annual, Factor_Date+1 month (expand_hold H=12)",
+      "winsorization": "per-FY 1/99 (n/a here; raw MAD)",
+      "neutralization": "none (cross-sectional decile within universe)",
+      "economic_rationale": "manipulation fingerprint (Amiram-Bozanic-Rouen 2015)",
+      "weight_theta": 1,
+      "references": [
+        "Amiram-Bozanic-Rouen 2015 RAS",
+        "Benford 1938",
+        "Nigrini 2012"
+      ]
+    }
+  ],
+  "diagnostics": {
+    "canonical_port_t_nw_lag3": {},
+    "canonical_port_t_note": "NULL by design: R20 is an index-level risk-EXCLUSION overlay diagnostic, not a top-N long-alpha screen. Long-alpha PORT_t already delivered by R18 (WT_D20260713_002) = null (cap-w 0.57, placebo p=0.16).",
+    "gradient_spearman_capw": -0.4,
+    "gradient_monotonic": false,
+    "exfl_vs_random_all_CI_straddle_zero": true
+  },
+  "selection_objective": "canonical_port_t",
+  "selection_objective_note": "risk-overlay characterization (not long-selection); no candidate sweep (single prereg filter+threshold, random=control).",
+  "challenge_flags": [
+    "RF: gradient FALSIFIED (Spearman -0.4 vs +1 predicted)",
+    "coverage-gate: post-2016 small-universe honestly excluded",
+    "power: clean-window excludes 2008/2020 crashes",
+    "C6: 8.5% delisted-small-cap exchange-label gap (bias against positive claim)"
+  ],
+  "verdict": "config-scoped negative + frontier marker"
+}

@@ -645,6 +645,23 @@
         "asset: stage_artifacts/WT_D20260713_002 Benford 점수 패널",
         "prior: crosscheck_decision.json (전략-기질 교차기각) + R18 감사품질 진단"
       ]
+    },
+    {
+      "id": "FQ-034",
+      "lane": "selection_discipline",
+      "title": "R21 — 칼만 정확도의 리스크-소비 2종: 위기-조건부 슬리브 틸트 + 칼만-잔차 IVOL (도훈 제안 07-13)",
+      "hypothesis": "① 위기 국면에 한해 주식 슬리브 내부를 칼만-저베타로 틸트(현금과 비경쟁·within-sleeve) — R19 위기알파 t 1.94 직접 소비 ② IVOL을 칼만-잔차로 재구성 시 OLS-잔차 IVOL 대비 개선 — 점-예측 우위가 구성상 직접 전이되는 유일 구조",
+      "ev_rationale": "도훈 제안. 칼만 정확도 우위(실증)의 미측정 소비처 잔여 2종 확정 실험. 인접 negative 정직 병기: 저베타<현금(07-05)·regime-조건부 결합 소진·R3 위기 sleeve 반증 — 차별점 = within-sleeve + 정밀 β + 잔차-품질 전이",
+      "wall_check": "return-derived 그림자 — ①은 AX-001v2 조건부 채점 권위, ②는 추정기-격리 paired가 권위. 순수 재조합 방화벽(DIST-AR-009)은 도훈 직접 제안으로 confirm 충족 + 신규축(칼만 추정기) 존재",
+      "data_gate": "없음 (beta_kalman_tuned.parquet + rawdata 재사용)",
+      "owner": "Q-Lead (R21 alpha-research)",
+      "status": "in_progress",
+      "next_action": "2 arm 측정 → AX-001v2 조건부 + paired 격리 판정",
+      "source_refs": [
+        "trigger: 도훈 2026-07-13 '위기 시그널 시 팩터 투입 / 변동성 조합 뉴팩터'",
+        "evidence: R19 crisis_active_t 1.94 (L-AR-20260713_171036)",
+        "priors: project-pg2-overlay-gate-composition-settled(저베타<현금) · L-QPM-20260705_105130 · R3"
+      ]
     }
   ]
 }

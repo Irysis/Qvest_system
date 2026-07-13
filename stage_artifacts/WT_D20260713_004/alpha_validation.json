@@ -1,0 +1,486 @@
+{
+  "wt_id": "WT-D20260713_004",
+  "frontier_id": "FQ-033",
+  "title": "R20 — Index-level forensic (Benford) filter validation across audit-quality gradient",
+  "prereg_sha256": "6b7e18a6b2eb496afe60a1b1761f786c0a917e4ea6838c0fe288fc3b65d84c34",
+  "metric_type": "diagnostic (index reconstruction; NOT canonical_screen, NOT capital strategy)",
+  "envelope_note": "KOSPI-all & KOSDAQ-all are OUTSIDE deployment envelope (K200 U KQ150). Diagnostic only; production envelope unchanged.",
+  "primary_window": "decision_ym 2010-01..2015-12 (72 months; all 4 universes >=98% Benford coverage)",
+  "coverage_gate": {
+    "finding": "Benford (annual, >=15 raw-monetary items) coverage 98-100% all universes 2009-2015; COLLAPSES post-2016 (DART source): KOSPI-all ~40%, KOSDAQ-all ~20-25%. K200/KQ150 75-96%.",
+    "decision": "availability-driven primary window 2010-2015 fixed in prereg; post-2016 small-universe honestly EXCLUDED (would confound audit-quality construct)."
+  },
+  "verdict": "config-scoped negative + frontier marker",
+  "verdict_detail": "Index-level design (confound-removed, per Dohoon) did NOT rescue the Benford forensic filter. Across ALL 4 universes and BOTH weighting bases, removing the worst-Benford-decile is statistically indistinguishable from random removal on every tail metric (all exfl-vs-random CIs straddle 0). The pre-registered audit-quality GRADIENT is FALSIFIED: predicted monotonic increase K200~0 -> KOSDAQ-all max; observed Spearman(audit-order, MDD-effect)=-0.4 (vs +1 predicted); EW-basis ~0 everywhere. Corroborates & generalizes R18 null (long-alpha placebo p=0.16) to the risk-exclusion overlay framing.",
+  "gradient": {
+    "predicted": "monotonic increasing (K200 smallest -> KOSDAQ_all largest)",
+    "capw_mdd_effect": {
+      "K200": 0.02144,
+      "KQ150": -0.00551,
+      "KOSPI_all": 0.00967,
+      "KOSDAQ_all": -0.00415
+    },
+    "ew_mdd_effect": {
+      "K200": 0.00179,
+      "KQ150": -0.00697,
+      "KOSPI_all": -0.0022,
+      "KOSDAQ_all": -0.00376
+    },
+    "spearman_capw": -0.4,
+    "monotonic_increasing": false,
+    "note": "one large cap-w number (K200 MDD +0.0214) is a single-name cap-concentration drawdown-path artifact: absent in EW (+0.0018), incoherent (2/4 tail metrics), CI straddles 0."
+  },
+  "tail_coherence_capw": {
+    "K200": 2,
+    "KQ150": 1,
+    "KOSPI_all": 2,
+    "KOSDAQ_all": 2
+  },
+  "per_universe": {
+    "K200": {
+      "n_months": 72,
+      "k_mean": 20,
+      "members_mean": 199,
+      "scored_mean": 199,
+      "capw": {
+        "base": {
+          "ann_ret": 0.0206,
+          "ann_vol": 0.14044,
+          "mdd": 0.20604,
+          "dd": 0.02767,
+          "worst5": -0.0786,
+          "cvar20": -0.05243
+        },
+        "exfl": {
+          "ann_ret": 0.02547,
+          "ann_vol": 0.13808,
+          "mdd": 0.195,
+          "dd": 0.02718,
+          "worst5": -0.07681,
+          "cvar20": -0.05131
+        },
+        "random": {
+          "ann_ret": 0.0097,
+          "ann_vol": 0.14055,
+          "mdd": 0.21644,
+          "dd": 0.02829,
+          "worst5": -0.08059,
+          "cvar20": -0.05343
+        }
+      },
+      "ew": {
+        "base": {
+          "ann_ret": 0.04164,
+          "ann_vol": 0.16108,
+          "mdd": 0.23218,
+          "dd": 0.03111,
+          "worst5": -0.09128,
+          "cvar20": -0.0615
+        },
+        "exfl": {
+          "ann_ret": 0.04143,
+          "ann_vol": 0.16199,
+          "mdd": 0.23168,
+          "dd": 0.03127,
+          "worst5": -0.0915,
+          "cvar20": -0.06183
+        },
+        "random": {
+          "ann_ret": 0.03804,
+          "ann_vol": 0.16043,
+          "mdd": 0.23347,
+          "dd": 0.03109,
+          "worst5": -0.09115,
+          "cvar20": -0.06125
+        }
+      },
+      "exfl_vs_random_impr": {
+        "mdd": 0.02144,
+        "cvar20": -0.00212,
+        "dd": 0.00111,
+        "worst5": -0.00378
+      },
+      "exfl_vs_random_CI": {
+        "mdd": [-0.04552, 0.01696],
+        "cvar20": [-0.00165, 0.00546],
+        "dd": [-0.00203, 0.0003],
+        "worst5": [-0.00042, 0.0055]
+      },
+      "return_drag_ann": 0.00487
+    },
+    "KQ150": {
+      "n_months": 71,
+      "k_mean": 14.5,
+      "members_mean": 141,
+      "scored_mean": 141,
+      "capw": {
+        "base": {
+          "ann_ret": 0.14486,
+          "ann_vol": 0.1593,
+          "mdd": 0.12475,
+          "dd": 0.02447,
+          "worst5": -0.07149,
+          "cvar20": -0.04791
+        },
+        "exfl": {
+          "ann_ret": 0.14582,
+          "ann_vol": 0.15792,
+          "mdd": 0.13085,
+          "dd": 0.02471,
+          "worst5": -0.0713,
+          "cvar20": -0.04861
+        },
+        "random": {
+          "ann_ret": 0.14414,
+          "ann_vol": 0.15722,
+          "mdd": 0.12535,
+          "dd": 0.02455,
+          "worst5": -0.07214,
+          "cvar20": -0.04782
+        }
+      },
+      "ew": {
+        "base": {
+          "ann_ret": 0.30904,
+          "ann_vol": 0.17382,
+          "mdd": 0.12229,
+          "dd": 0.02332,
+          "worst5": -0.07111,
+          "cvar20": -0.04445
+        },
+        "exfl": {
+          "ann_ret": 0.30354,
+          "ann_vol": 0.17674,
+          "mdd": 0.12659,
+          "dd": 0.02408,
+          "worst5": -0.07357,
+          "cvar20": -0.04577
+        },
+        "random": {
+          "ann_ret": 0.30687,
+          "ann_vol": 0.17365,
+          "mdd": 0.11961,
+          "dd": 0.02321,
+          "worst5": -0.07127,
+          "cvar20": -0.04406
+        }
+      },
+      "exfl_vs_random_impr": {
+        "mdd": -0.00551,
+        "cvar20": 0.00079,
+        "dd": -0.00016,
+        "worst5": -0.00084
+      },
+      "exfl_vs_random_CI": {
+        "mdd": [-0.02405, 0.02714],
+        "cvar20": [-0.00322, 0.004],
+        "dd": [-0.00186, 0.00148],
+        "worst5": [-0.00365, 0.00883]
+      },
+      "return_drag_ann": 0.00096
+    },
+    "KOSPI_all": {
+      "n_months": 72,
+      "k_mean": 69.1,
+      "members_mean": 691,
+      "scored_mean": 687,
+      "capw": {
+        "base": {
+          "ann_ret": 0.03003,
+          "ann_vol": 0.13185,
+          "mdd": 0.19017,
+          "dd": 0.02583,
+          "worst5": -0.07479,
+          "cvar20": -0.04904
+        },
+        "exfl": {
+          "ann_ret": 0.03428,
+          "ann_vol": 0.12951,
+          "mdd": 0.17842,
+          "dd": 0.02531,
+          "worst5": -0.07383,
+          "cvar20": -0.04815
+        },
+        "random": {
+          "ann_ret": 0.02624,
+          "ann_vol": 0.13213,
+          "mdd": 0.1881,
+          "dd": 0.02615,
+          "worst5": -0.07581,
+          "cvar20": -0.04978
+        }
+      },
+      "ew": {
+        "base": {
+          "ann_ret": 0.13483,
+          "ann_vol": 0.14767,
+          "mdd": 0.18696,
+          "dd": 0.02609,
+          "worst5": -0.07695,
+          "cvar20": -0.05076
+        },
+        "exfl": {
+          "ann_ret": 0.13608,
+          "ann_vol": 0.14877,
+          "mdd": 0.18813,
+          "dd": 0.02625,
+          "worst5": -0.07737,
+          "cvar20": -0.05089
+        },
+        "random": {
+          "ann_ret": 0.13539,
+          "ann_vol": 0.1475,
+          "mdd": 0.18593,
+          "dd": 0.02602,
+          "worst5": -0.07641,
+          "cvar20": -0.05062
+        }
+      },
+      "exfl_vs_random_impr": {
+        "mdd": 0.00967,
+        "cvar20": -0.00163,
+        "dd": 0.00084,
+        "worst5": -0.00198
+      },
+      "exfl_vs_random_CI": {
+        "mdd": [-0.02966, 0.01428],
+        "cvar20": [-0.00158, 0.00451],
+        "dd": [-0.00127, 0.00005],
+        "worst5": [0.00019, 0.00312]
+      },
+      "return_drag_ann": 0.00425
+    },
+    "KOSDAQ_all": {
+      "n_months": 72,
+      "k_mean": 83,
+      "members_mean": 829,
+      "scored_mean": 823,
+      "capw": {
+        "base": {
+          "ann_ret": 0.07195,
+          "ann_vol": 0.16679,
+          "mdd": 0.16509,
+          "dd": 0.03036,
+          "worst5": -0.08462,
+          "cvar20": -0.05871
+        },
+        "exfl": {
+          "ann_ret": 0.07086,
+          "ann_vol": 0.16726,
+          "mdd": 0.16617,
+          "dd": 0.03056,
+          "worst5": -0.08499,
+          "cvar20": -0.05901
+        },
+        "random": {
+          "ann_ret": 0.07309,
+          "ann_vol": 0.16723,
+          "mdd": 0.16202,
+          "dd": 0.0303,
+          "worst5": -0.0848,
+          "cvar20": -0.05852
+        }
+      },
+      "ew": {
+        "base": {
+          "ann_ret": 0.1936,
+          "ann_vol": 0.17129,
+          "mdd": 0.17393,
+          "dd": 0.02803,
+          "worst5": -0.08671,
+          "cvar20": -0.05325
+        },
+        "exfl": {
+          "ann_ret": 0.19303,
+          "ann_vol": 0.17201,
+          "mdd": 0.17636,
+          "dd": 0.02821,
+          "worst5": -0.08824,
+          "cvar20": -0.0534
+        },
+        "random": {
+          "ann_ret": 0.19309,
+          "ann_vol": 0.17141,
+          "mdd": 0.17259,
+          "dd": 0.028,
+          "worst5": -0.08674,
+          "cvar20": -0.05334
+        }
+      },
+      "exfl_vs_random_impr": {
+        "mdd": -0.00415,
+        "cvar20": 0.00049,
+        "dd": -0.00026,
+        "worst5": 0.00019
+      },
+      "exfl_vs_random_CI": {
+        "mdd": [-0.01005, 0.01218],
+        "cvar20": [-0.00319, 0.00207],
+        "dd": [-0.00029, 0.00073],
+        "worst5": [-0.00253, 0.00183]
+      },
+      "return_drag_ann": -0.00109
+    }
+  },
+  "secondary_full_period": {
+    "note": "K200/KQ150 full 2010-2025 (large-cap end longevity; small universes coverage-blocked post-2016).",
+    "K200": {
+      "n_months": 186,
+      "k_mean": 18.2,
+      "members_mean": 200,
+      "scored_mean": 178,
+      "capw": {
+        "base": {
+          "ann_ret": 0.03858,
+          "ann_vol": 0.16351,
+          "mdd": 0.34355,
+          "dd": 0.03167,
+          "worst5": -0.12545,
+          "cvar20": -0.05977
+        },
+        "exfl": {
+          "ann_ret": 0.03935,
+          "ann_vol": 0.16215,
+          "mdd": 0.34829,
+          "dd": 0.0313,
+          "worst5": -0.12311,
+          "cvar20": -0.05908
+        },
+        "random": {
+          "ann_ret": 0.03132,
+          "ann_vol": 0.16426,
+          "mdd": 0.34854,
+          "dd": 0.03202,
+          "worst5": -0.12579,
+          "cvar20": -0.06045
+        }
+      },
+      "ew": {
+        "base": {
+          "ann_ret": 0.03916,
+          "ann_vol": 0.1754,
+          "mdd": 0.43554,
+          "dd": 0.03468,
+          "worst5": -0.13392,
+          "cvar20": -0.06719
+        },
+        "exfl": {
+          "ann_ret": 0.03759,
+          "ann_vol": 0.17488,
+          "mdd": 0.42947,
+          "dd": 0.03468,
+          "worst5": -0.13267,
+          "cvar20": -0.06729
+        },
+        "random": {
+          "ann_ret": 0.0367,
+          "ann_vol": 0.17544,
+          "mdd": 0.43937,
+          "dd": 0.03475,
+          "worst5": -0.13384,
+          "cvar20": -0.06731
+        }
+      },
+      "exfl_vs_random_impr": {
+        "mdd": 0.00025,
+        "cvar20": -0.00137,
+        "dd": 0.00072,
+        "worst5": -0.00267
+      },
+      "exfl_vs_random_CI": {
+        "mdd": [-0.06175, 0.00505],
+        "cvar20": [-0.0008, 0.00338],
+        "dd": [-0.00125, -0.00007],
+        "worst5": [-0.00027, 0.00487]
+      },
+      "return_drag_ann": 0.00076
+    },
+    "KQ150": {
+      "n_months": 185,
+      "k_mean": 14.6,
+      "members_mean": 147,
+      "scored_mean": 141,
+      "capw": {
+        "base": {
+          "ann_ret": 0.07288,
+          "ann_vol": 0.22237,
+          "mdd": 0.39981,
+          "dd": 0.04225,
+          "worst5": -0.16951,
+          "cvar20": -0.08116
+        },
+        "exfl": {
+          "ann_ret": 0.06429,
+          "ann_vol": 0.21844,
+          "mdd": 0.4268,
+          "dd": 0.04192,
+          "worst5": -0.16687,
+          "cvar20": -0.08065
+        },
+        "random": {
+          "ann_ret": 0.07322,
+          "ann_vol": 0.22309,
+          "mdd": 0.39856,
+          "dd": 0.04235,
+          "worst5": -0.16963,
+          "cvar20": -0.08135
+        }
+      },
+      "ew": {
+        "base": {
+          "ann_ret": 0.11243,
+          "ann_vol": 0.20413,
+          "mdd": 0.38018,
+          "dd": 0.03791,
+          "worst5": -0.1539,
+          "cvar20": -0.07384
+        },
+        "exfl": {
+          "ann_ret": 0.11172,
+          "ann_vol": 0.20301,
+          "mdd": 0.38876,
+          "dd": 0.03758,
+          "worst5": -0.15286,
+          "cvar20": -0.07337
+        },
+        "random": {
+          "ann_ret": 0.11205,
+          "ann_vol": 0.20456,
+          "mdd": 0.3856,
+          "dd": 0.03798,
+          "worst5": -0.15489,
+          "cvar20": -0.0737
+        }
+      },
+      "exfl_vs_random_impr": {
+        "mdd": -0.02824,
+        "cvar20": -0.0007,
+        "dd": 0.00043,
+        "worst5": -0.00276
+      },
+      "exfl_vs_random_CI": {
+        "mdd": [-0.02954, 0.04562],
+        "cvar20": [-0.00177, 0.00347],
+        "dd": [-0.00114, 0.00031],
+        "worst5": [-0.0011, 0.00482]
+      },
+      "return_drag_ann": -0.00859
+    }
+  },
+  "power_caveat": "Clean-coverage window (2010-2015) EXCLUDES 2008 GFC (pre-data) & 2020 COVID (post-coverage-collapse) => reduced tail-event sampling weakens ABSOLUTE tail-protection power. But the discriminating GRADIENT prediction (shape, less crash-dependent) fails clearly, and the least-audited universe (KOSDAQ-all, predicted MAX) is flattest/negative.",
+  "survivorship_c6": {
+    "raw_returns": "survivorship-free (RAWDATA includes delisted history).",
+    "exchange_map_gap": "8.5% stock-days (488 codes) unlabeled = delisted-pre-2026 small caps (median Size ~half), mostly small KOSDAQ, excluded from KOSPI-all/KOSDAQ-all.",
+    "direction": "excluded delisted small caps are often manipulation/fraud collapses (Benford-target tail) => bias AGAINST a positive filter claim (conservative). cap-weighting shrinks their impact."
+  },
+  "next_probe": [
+    "Discrete delisting/unfaithful-disclosure EVENT study: test Benford-flag AUC/hazard against RAWDATA UnfaithfulDisc/AdminStock/TradingHalt event flags (construct-valid, higher power than smoothed cap-w monthly index tail-risk; forensic tail may be too rare/idiosyncratic to surface in an index return series).",
+    "Coverage-repaired KOSDAQ-all re-test (screen-tier/RAMP, out of envelope): relax >=15-item threshold or pool quarterly-filing digits to restore post-2016 small-cap Benford coverage, then complete the least-audited gradient arm (currently data-blocked <25%, exactly where prereg predicted strongest effect).",
+    "EW-basis + crisis-window tail check conditional on 2008/2020 coverage restoration (absolute-power complement)."
+  ],
+  "data_provenance": {
+    "benford_scores": "recomputed universe-agnostic FSD MAD (R18 WT_D20260713_002 exact code, no universe filter)",
+    "exchange_map": "KRX stk_info(KOSPI)/ksq_info(KOSDAQ) common-stock static map (59 snapshots 2026-03/04 union) + flag-augment (ever-K200->KOSPI, ever-KQ150->KOSDAQ)",
+    "returns": "RAWDATA daily Ret compounded monthly (exact-adjusted: Ret==Close-ratio verified); cap-weight = month-start Size share"
+  }
+}

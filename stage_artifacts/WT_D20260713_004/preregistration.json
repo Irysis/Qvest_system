@@ -1,0 +1,54 @@
+{
+  "wt_id": "WT-D20260713_004",
+  "frontier_id": "FQ-033",
+  "title": "R20 — Index-level forensic (Benford) filter validation across an audit-quality gradient",
+  "prereg_frozen_at": "2026-07-13",
+  "designer": "Dohoon (2026-07-13): compare against the index itself — remove flagged risky names from each index's constituents, is the index-relative risk profile superior vs random removal?",
+  "design_rationale": "P-pure/V02_EP cross-rejection cause = strategy-tilt x filter interaction. Using the INDEX as substrate removes that confound at source. 4 universes form an audit-quality gradient; mechanism prediction (prereg): filter effect ~ 0 in K200 (largest, most-audited) and increases monotonically K200 -> KQ150 -> KOSPI-all -> KOSDAQ-all (smallest, least-audited, highest manipulation variance). Monotonic gradient => strong evidence filter carries genuine forensic information.",
+  "selection_type": "characterization (single pre-registered filter + single threshold per universe; random removal is a CONTROL not a trial). Not a sweep. DSR moot (risk-overlay diagnostic, not long-alpha selection; R18 already delivered the long-alpha verdict = null placebo p=0.16).",
+  "metric_type_label": "diagnostic (index reconstruction). Self-reconstructed cap-weighted monthly index returns approximate official indices; comparisons are between identical reconstructions (internally consistent). NOT canonical_screen (not a top-N long portfolio) and NOT a capital strategy.",
+  "universes": {
+    "K200": "RAWDATA K200==1 flag, month-end membership (KOSPI200, largest/most-audited)",
+    "KQ150": "RAWDATA KQ150==1 flag (KOSDAQ150). NOTE: KQ150 index launched 2015; RAWDATA flag exists from 2010 (reconstructed membership) — treated as-is per R18, flag absent 2009.",
+    "KOSPI_all": "Exchange=KOSPI via KRX stk_info(MKT_TP_NM=KOSPI, common stock only) static map + augment (ever-K200 -> KOSPI)",
+    "KOSDAQ_all": "Exchange=KOSDAQ via KRX ksq_info(MKT_TP_NM=KOSDAQ) static map + augment (ever-KQ150 -> KOSDAQ)"
+  },
+  "envelope_honesty": "KOSPI-all and KOSDAQ-all are OUTSIDE the deployment envelope (K200 U KQ150). This is a FILTER-CHARACTERIZATION diagnostic, NOT a capital strategy. The production envelope (25 names, liq 2e8, K200UKQ150) is unchanged.",
+  "benford_filter": {
+    "source": "Recomputed universe-agnostic FSD MAD per (Ticker, annual fy) using R18 (WT_D20260713_002) exact code: raw-monetary whitelist 43 items, >=15 items/firm-year, MAD = mean_d |p_obs(d)-p_exp(d)|, p_exp=log10(1+1/d). Reuses the R18 Benford panel logic (3,562-firm base) but WITHOUT the R18 universe filter, so KOSPI-all/KOSDAQ-all members are scored.",
+    "worst_decile_def": "worst = HIGHEST FSD MAD (most deviation from Benford) = R18 score_sign -1 convention. Flag = top decile by raw FSD within scored universe-members that month. p90 threshold FIXED (no sweep).",
+    "pit": "expand_hold (R18 frozen): usable decision month = month(Factor_Date)+1, hold H=12 forward, most-recent active per (Ticker,decision_ym). Factor_Date already includes filing lag (C4). Signal known at holding-month start => C5-safe."
+  },
+  "coverage_gate": {
+    "finding": "Benford coverage 98-100% for ALL universes in 2009-2015 (QuantiWise fundamental source). COLLAPSES post-2016 (DART source, >=15-item threshold fails for small firms): KOSPI-all ~40%, KOSDAQ-all ~20-25%. K200/KQ150 stay 75-96%.",
+    "decision": "PRIMARY analysis window = decision_ym in [201001, 201512] where all 4 universes have >=98% Benford coverage. This is an AVAILABILITY-DRIVEN restriction fixed in prereg BEFORE measurement (not result-driven). Post-2016 small-universe coverage <50% would confound the audit-quality construct (only well-disclosing firms scored) => that region is honestly EXCLUDED per mandate ('coverage-low universe-years honestly excluded/labeled, no estimation substitution').",
+    "secondary": "Full-period (2010-2025) K200 + KQ150 only (coverage acceptable) as large-cap-end longevity check — cannot complete the gradient.",
+    "primary_window_limitation": "2009-2015 window EXCLUDES the two largest crash episodes (2008 GFC pre-data; 2020 COVID post-coverage) => reduced tail-event sampling => wide CIs. Reported honestly."
+  },
+  "construction": {
+    "base": "universe U members: cap-weighted monthly return = sum_i w_i * r_i, w_i = month-start market cap (Size_{ym-1 end}) share among members, r_i = stock return over month ym (compound daily Ret, exact-adjusted). Monthly rebalance to cap weights.",
+    "ex_flagged": "U members minus top-Benford-decile (p90) among scored members that month; renormalize cap weights among survivors.",
+    "random_control": "U members minus k random members (k = number flagged that month), 3 seeds (seed 101/202/303), renormalize. Same monthly k as ex-flagged.",
+    "ew_diagnostic": "equal-weight variants of all three (diagnostic; cap-w is authoritative)."
+  },
+  "risk_metrics": {
+    "primary_tail": ["MDD (PerformanceAnalytics maxDrawdown)", "DownsideDeviation (MAR=0)", "worst-5-month mean", "CVaR quintile (ES worst-20% months)", "annualized volatility (sd*sqrt12)"],
+    "cost": "return drag = Return.annualized(ex_flagged) - Return.annualized(base) (negative = cost of removal)",
+    "paired": "ex_flagged vs random-mean: is ex_flagged tail STRICTLY better than random removal of same count? (isolates filter INFORMATION beyond mechanical breadth reduction)",
+    "ci": "block bootstrap (block=12 months) on paired monthly return vectors (base, ex_flag, rand_mean); recompute metric DIFFERENCES per resample; nsim=2000; report [5%,95%]."
+  },
+  "verdict_frame": {
+    "q1": "Per universe: does ex_flagged beat BOTH base AND random on tail metrics (with CI)?",
+    "q2": "Gradient: is effect size monotonic in audit-quality order (K200 <= KQ150 <= KOSPI_all <= KOSDAQ_all)?",
+    "q3": "Net of return drag: does the tail improvement exceed the return cost?",
+    "language": "negative => 'config-scoped negative + frontier marker' with >=2 next_probe (AX-000, no premature structural-limit claim)."
+  },
+  "survivorship_c6": {
+    "raw_data": "RAWDATA includes delisted stocks (survivorship-free for returns; e.g., 2011 tickers 1804 -> 393 gone by 2024 present in history).",
+    "exchange_map_gap": "8.5% of stock-days (488 codes) lack an exchange label = delisted-pre-2026 small caps (median Size ~half of classified). Mostly small KOSDAQ. Excluded from KOSPI-all/KOSDAQ-all reconstructions.",
+    "direction": "Excluded delisted small caps are often manipulation/fraud collapses (exactly the Benford-target tail). Excluding them UNDERSTATES both base-index tail AND filter potential benefit in KOSDAQ-all => bias AGAINST finding a filter effect (conservative for a positive claim). Cap-weighting further shrinks their impact (tiny weights)."
+  },
+  "hard_constraints_awareness": {"note": "index reconstruction has no 25-name/liq/long-only constraint (it is a diagnostic on full constituents); production envelope unchanged."},
+  "cost_model_version": "n/a (index reconstruction diagnostic; no transaction cost applied to buy-and-hold-monthly-rebalanced index. Turnover of the exclusion is reported descriptively.)",
+  "execution_discipline": ".R file source, setDTthreads(1), arrow io(2), rawdata col_select. No DART API. Parallel-safe (R19 + backfill running; RAM checked 18GB free; no name-kill)."
+}
