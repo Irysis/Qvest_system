@@ -1,0 +1,115 @@
+{
+  "as_of": "2026-07-13",
+  "book": "STR_1715_on_M4_R05_noLayer4_PG2",
+  "basis": "recon_backtested read-only",
+  "te_authoritative": {
+    "full": 0.189841,
+    "trail36": 0.273713,
+    "trail21": 0.332387,
+    "trail12": 0.334952,
+    "ratio_21_vs_full": 1.750874
+  },
+  "recon_check": {
+    "book_gap_median": 0,
+    "book_gap_max": 0.014162,
+    "last_month_gap": 0.014162
+  },
+  "structural_decomp_trail21": {
+    "window": "trail21",
+    "n": 21,
+    "TE_recon": 0.339359,
+    "TE_from_sel": 0.284066,
+    "TE_from_ovl": 0.080867,
+    "var_share_sel": 0.700679,
+    "var_share_ovl": 0.056784,
+    "var_share_2cov": 0.23955,
+    "cov_sel_ovl": 0.001149,
+    "corr_sel_ovl": 0.600471
+  },
+  "structural_decomp_full": {
+    "window": "full",
+    "n": 269,
+    "TE_recon": 0.190809,
+    "TE_from_sel": 0.186997,
+    "TE_from_ovl": 0.063549,
+    "var_share_sel": 0.960437,
+    "var_share_ovl": 0.110921,
+    "var_share_2cov": -0.072097,
+    "cov_sel_ovl": -0.000109,
+    "corr_sel_ovl": -0.110445
+  },
+  "meltup_months": ["2025-07", "2025-10", "2025-11", "2026-01", "2026-02", "2026-03", "2026-05", "2026-06"],
+  "te_trail21_ex_meltup": 0.231765,
+  "estimator_eval": [
+    {
+      "estimator": "expand_const",
+      "n_eval": 257,
+      "realized_over_pred": 1.197347,
+      "pct_z_gt1": 0.299611,
+      "alert_1p5_rate": 0.060976,
+      "current_TE_forecast_ann": 0.1804
+    },
+    {
+      "estimator": "roll36",
+      "n_eval": 257,
+      "realized_over_pred": 1.215393,
+      "pct_z_gt1": 0.315175,
+      "alert_1p5_rate": 0.093496,
+      "current_TE_forecast_ann": 0.221991
+    },
+    {
+      "estimator": "ewma94",
+      "n_eval": 257,
+      "realized_over_pred": 1.107823,
+      "pct_z_gt1": 0.268482,
+      "alert_1p5_rate": 0.044715,
+      "current_TE_forecast_ann": 0.238883
+    },
+    {
+      "estimator": "ewma97",
+      "n_eval": 257,
+      "realized_over_pred": 1.103133,
+      "pct_z_gt1": 0.276265,
+      "alert_1p5_rate": 0.03252,
+      "current_TE_forecast_ann": 0.221138
+    },
+    {
+      "estimator": "regime_cond",
+      "n_eval": 257,
+      "realized_over_pred": 1.290484,
+      "pct_z_gt1": 0.311284,
+      "alert_1p5_rate": 0.105691,
+      "current_TE_forecast_ann": 0.12091
+    }
+  ],
+  "forecast_scenarios": [
+    {
+      "scenario": "현행(구예측=full-sample)",
+      "TE_forecast": 0.189841,
+      "CI90_lo": 0.17732,
+      "CI90_hi": 0.20444
+    },
+    {
+      "scenario": "정상화(trail36 blended)",
+      "TE_forecast": 0.273713,
+      "CI90_lo": 0.22946,
+      "CI90_hi": 0.341646
+    },
+    {
+      "scenario": "melt-up지속(trail21)",
+      "TE_forecast": 0.332387,
+      "CI90_lo": 0.26523,
+      "CI90_hi": 0.451262
+    },
+    {
+      "scenario": "melt-up지속-보수(trail12)",
+      "TE_forecast": 0.334952,
+      "CI90_lo": 0.25045,
+      "CI90_hi": 0.519389
+    }
+  ],
+  "bm_vol": {
+    "full": 0.225154,
+    "trail21": 0.4136
+  }
+}
