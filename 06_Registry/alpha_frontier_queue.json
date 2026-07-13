@@ -426,6 +426,23 @@
         "negative prior: project-uncertainty-aware-selection-transition-wall (sizing FAIL)",
         "L-RAMP-20260713_084821 (R10 backtested, construction_type=composite, selection_type=sweep, n_trials lineage=14)"
       ]
+    },
+    {
+      "id": "FQ-024",
+      "lane": "selection_discipline",
+      "title": "R11 — P-pure 발전 chain (선별 신선도 / 보유밴드 / 선별-vintage 앙상블, 도훈 mandate 07-13)",
+      "hypothesis": "P-pure의 바인딩 실패(oos·post-2017 감쇠 추적)를 세 독립 기전으로 공략: ①선별 갱신주기 단축(반기→분기 — 풀 staleness가 감쇠 추적 실패 원인) ②top-25 보유밴드(경계 churn 잡음·비용 절감 — S3_consensus_band 양성 선례) ③선별-시점 겹침 앙상블(선별 timing-luck 분산 축소 — SPEC-2 정합)",
+      "ev_rationale": "chain 자격(기전별 진단 1줄·IS-only·holdout 최종 1회). 각 기전이 R7/R8/R10 진단(감쇠=바인딩·경계잡음·vintage 산포)에 1:1 대응. 보유밴드는 사내 양성 선례 보유",
+      "wall_check": "factor-momentum 타이밍 null(06-30) prior — ①은 '타이밍'이 아니라 '갱신 주기'로 구분하되 수렴 여부 적대검증 의무. cap-tier 국소화 벽은 본 라운드가 못 풂(정직 명시)",
+      "data_gate": "없음 (R6 하네스·패널 재사용)",
+      "owner": "Q-Lead (R11 ramp-orchestrator)",
+      "status": "in_progress",
+      "next_action": "1차 3-arm 측정 → 기전 진단 → 승자 × W-stock-sqrt 결합 1 config 2차 → 판정",
+      "source_refs": [
+        "trigger: 도훈 2026-07-13 'P-pure 더 발전시켜봐'",
+        "diag: L-RAMP-20260713_084821 (R10) + challenge_note_r8 (trailing 감쇠)",
+        "precedent: stage_artifacts/pg2_w2_earnings3m S3_consensus_band paired +2.03"
+      ]
     }
   ]
 }
