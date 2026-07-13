@@ -1,0 +1,50 @@
+{
+  "mode": "RAMP",
+  "round": "R11",
+  "fq": "FQ-024",
+  "question": "P-pure(W36_K20)의 oos·post-2017 감쇠 추적 실패를 세 독립 기전으로 공략(선별 신선도/보유밴드/선별-vintage 앙상블)",
+  "base": "Ppure_W36_K20 (종목 EW × 팩터 EW, R6 저장 2.6124 parity 앵커)",
+  "selection_type": "chain",
+  "chain_discipline": "arm 간 선택 IS-only(첫 65% 배포월 paired-t) · oos는 최종 게이트 산출로만 · 2차는 1차 IS 승자 후 · DSR 진단용(게이트 부적용)",
+  "arms": {
+    "armF_cadence3": {
+      "mechanism": "선별 갱신 반기(cadence 6)→분기(cadence 3)",
+      "diag": "풀 자기상관 0.86~0.92 sticky → 감쇠 팩터 만기 지연이 감쇠 추적 실패 원인 — 갱신 단축이 post-2017/oos 추적 개선",
+      "adversarial": "factor-momentum 타이밍 null(06-30) 수렴 여부 = 풀 churn·회전 증가로 판별. 회전비용 delta 15bps 내장"
+    },
+    "armB_band2535": {
+      "mechanism": "종목 히스테리시스 밴드(진입 rank<=25 / 이탈 rank>35, 밴드폭 35 고정)",
+      "diag": "경계 churn = 잡음 거래 + 비용 — 밴드가 net·oos 개선(S3_consensus_band paired +2.03 선례)"
+    },
+    "armV_vintage": {
+      "mechanism": "반기 선별 3개월 offset 두 코호트(A:37+6k / B:40+6k) trailing_t 평균 top-K",
+      "diag": "선별-시점 timing-luck(SPEC-2 산포)가 oos 불안정에 기여 — 코호트 분산으로 완화"
+    }
+  },
+  "combine_2nd": "1차 IS 승자 × W-stock-sqrt(R10 최고 paired +1.78). IS < 승자 단독 → 폐기",
+  "gate_hard": [2.95, 0.7, 0.64, 0.5],
+  "primary_criterion": "1차 승자 = IS paired NW-t(cap-w act_bm) vs base 최대(IS-only). 최종 판정 = full HARD 3종 + full paired vs base + oos_retention(감쇠 target)",
+  "kill_rule": "전 arm full paired < 2.0 AND HARD 3종 0/N AND oos_retention 0.7 미도달 → P-pure 구조 개선 chain 소진 — 남은 경로 재료(R9 insider)",
+  "honest_frame": "본 라운드=oos·감쇠 추적 공략. cap-tier 국소화×cap-w 벽은 못 풂(보고 명시). return-derived substrate 재사용(신규 재료 아님)",
+  "is_frac": 0.65,
+  "top_n": 25,
+  "cost_bps_oneway": 15,
+  "liq_min": 200000000,
+  "cap": 0.2,
+  "floor_frac": 0.25,
+  "cadence_base": 6,
+  "cadence_F": 3,
+  "v_offset": 3,
+  "band_enter": 25,
+  "band_exit": 35,
+  "n_trials_r11": 4,
+  "n_trials_lineage": 18,
+  "cost_model": "delta-based |Δw|×15bps one-way (weighted_screen_bt 내장 — 밴드/선별 회전 자동 반영)",
+  "xmode_check": "hypothesis_index: factor-momentum timing NULL(06-30) prior — armF는 '갱신 주기'로 구분하되 수렴 여부 적대검증. band/vintage는 R11 신규(중복 아님, INV-7)",
+  "vintage_pin": "r6_session_20260711 (sel_traj/pure_factor_scores/factor_group_scores/rawdata/panel; base parity Δ=0 확인)",
+  "as_of_date": "2026-07-13",
+  "source_version": "RAMP_R11_v1",
+  "security_id": "Ticker (rawdata) -> factor_id z (pure_factor_scores.z=Z_Score_Aligned)",
+  "config_hash": "53403eaf16de7662",
+  "generated_at": "2026-07-13T09:25:07+0900"
+}

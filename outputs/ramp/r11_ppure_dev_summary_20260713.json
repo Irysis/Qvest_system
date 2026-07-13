@@ -1,0 +1,264 @@
+{
+  "prereg": {
+    "mode": "RAMP",
+    "round": "R11",
+    "fq": "FQ-024",
+    "question": "P-pure(W36_K20)의 oos·post-2017 감쇠 추적 실패를 세 독립 기전으로 공략(선별 신선도/보유밴드/선별-vintage 앙상블)",
+    "base": "Ppure_W36_K20 (종목 EW × 팩터 EW, R6 저장 2.6124 parity 앵커)",
+    "selection_type": "chain",
+    "chain_discipline": "arm 간 선택 IS-only(첫 65% 배포월 paired-t) · oos는 최종 게이트 산출로만 · 2차는 1차 IS 승자 후 · DSR 진단용(게이트 부적용)",
+    "arms": {
+      "armF_cadence3": {
+        "mechanism": "선별 갱신 반기(cadence 6)→분기(cadence 3)",
+        "diag": "풀 자기상관 0.86~0.92 sticky → 감쇠 팩터 만기 지연이 감쇠 추적 실패 원인 — 갱신 단축이 post-2017/oos 추적 개선",
+        "adversarial": "factor-momentum 타이밍 null(06-30) 수렴 여부 = 풀 churn·회전 증가로 판별. 회전비용 delta 15bps 내장"
+      },
+      "armB_band2535": {
+        "mechanism": "종목 히스테리시스 밴드(진입 rank<=25 / 이탈 rank>35, 밴드폭 35 고정)",
+        "diag": "경계 churn = 잡음 거래 + 비용 — 밴드가 net·oos 개선(S3_consensus_band paired +2.03 선례)"
+      },
+      "armV_vintage": {
+        "mechanism": "반기 선별 3개월 offset 두 코호트(A:37+6k / B:40+6k) trailing_t 평균 top-K",
+        "diag": "선별-시점 timing-luck(SPEC-2 산포)가 oos 불안정에 기여 — 코호트 분산으로 완화"
+      }
+    },
+    "combine_2nd": "1차 IS 승자 × W-stock-sqrt(R10 최고 paired +1.78). IS < 승자 단독 → 폐기",
+    "gate_hard": [2.95, 0.7, 0.64, 0.5],
+    "primary_criterion": "1차 승자 = IS paired NW-t(cap-w act_bm) vs base 최대(IS-only). 최종 판정 = full HARD 3종 + full paired vs base + oos_retention(감쇠 target)",
+    "kill_rule": "전 arm full paired < 2.0 AND HARD 3종 0/N AND oos_retention 0.7 미도달 → P-pure 구조 개선 chain 소진 — 남은 경로 재료(R9 insider)",
+    "honest_frame": "본 라운드=oos·감쇠 추적 공략. cap-tier 국소화×cap-w 벽은 못 풂(보고 명시). return-derived substrate 재사용(신규 재료 아님)",
+    "is_frac": 0.65,
+    "top_n": 25,
+    "cost_bps_oneway": 15,
+    "liq_min": 200000000,
+    "cap": 0.2,
+    "floor_frac": 0.25,
+    "cadence_base": 6,
+    "cadence_F": 3,
+    "v_offset": 3,
+    "band_enter": 25,
+    "band_exit": 35,
+    "n_trials_r11": 4,
+    "n_trials_lineage": 18,
+    "cost_model": "delta-based |Δw|×15bps one-way (weighted_screen_bt 내장 — 밴드/선별 회전 자동 반영)",
+    "xmode_check": "hypothesis_index: factor-momentum timing NULL(06-30) prior — armF는 '갱신 주기'로 구분하되 수렴 여부 적대검증. band/vintage는 R11 신규(중복 아님, INV-7)",
+    "vintage_pin": "r6_session_20260711 (sel_traj/pure_factor_scores/factor_group_scores/rawdata/panel; base parity Δ=0 확인)",
+    "as_of_date": "2026-07-13",
+    "source_version": "RAMP_R11_v1",
+    "security_id": "Ticker (rawdata) -> factor_id z (pure_factor_scores.z=Z_Score_Aligned)",
+    "config_hash": "53403eaf16de7662",
+    "generated_at": "2026-07-13T09:25:07+0900"
+  },
+  "config_hash": "53403eaf16de7662",
+  "meta": {
+    "as_of_date": "2026-07-13",
+    "generated_at": "2026-07-13T09:25:29+0900",
+    "source_version": "RAMP_R11_v1",
+    "security_id": "Ticker->factor_id z (pure_factor_scores.z=Z_Score_Aligned)"
+  },
+  "results": [
+    {
+      "model": "base",
+      "port_t_capwt": 2.6124,
+      "port_t_EWuni": 3.9191,
+      "oos_retention": -0.0759,
+      "calmar": 0.45,
+      "dsr": 1.8504,
+      "post2017_bm_sr": -0.1052,
+      "full_bm_sr": 0.676,
+      "turnover": 9.2705,
+      "n_months": 220
+    },
+    {
+      "model": "armF_cadence3",
+      "port_t_capwt": 2.852,
+      "port_t_EWuni": 4.2384,
+      "oos_retention": 0.1208,
+      "calmar": 0.4709,
+      "dsr": 2.0247,
+      "post2017_bm_sr": 0.1052,
+      "full_bm_sr": 0.722,
+      "turnover": 9.2793,
+      "n_months": 220
+    },
+    {
+      "model": "armB_band2535",
+      "port_t_capwt": 2.4141,
+      "port_t_EWuni": 3.6649,
+      "oos_retention": -0.121,
+      "calmar": 0.4479,
+      "dsr": 1.7505,
+      "post2017_bm_sr": -0.1833,
+      "full_bm_sr": 0.6418,
+      "turnover": 6.8138,
+      "n_months": 220
+    },
+    {
+      "model": "armV_vintage",
+      "port_t_capwt": 2.8948,
+      "port_t_EWuni": 3.7289,
+      "oos_retention": 0.0868,
+      "calmar": 0.4764,
+      "dsr": 2.3006,
+      "post2017_bm_sr": 0.0367,
+      "full_bm_sr": 0.7471,
+      "turnover": 8.9258,
+      "n_months": 220
+    },
+    {
+      "model": "comb_armV_vintage_sqrt",
+      "port_t_capwt": 2.8481,
+      "port_t_EWuni": 3.6746,
+      "oos_retention": 0.0845,
+      "calmar": 0.4678,
+      "dsr": 2.2696,
+      "post2017_bm_sr": 0.0253,
+      "full_bm_sr": 0.7358,
+      "turnover": 9.0314,
+      "n_months": 220
+    }
+  ],
+  "paired": [
+    {
+      "model": "armF_cadence3",
+      "mean_diff_ann": 0.0065,
+      "paired_t_full": 0.4242,
+      "paired_t_IS": -1.1078,
+      "paired_t_OOS": 1.4361,
+      "n": 220,
+      "n_is": 143
+    },
+    {
+      "model": "armB_band2535",
+      "mean_diff_ann": -0.0051,
+      "paired_t_full": -0.5727,
+      "paired_t_IS": -0.2589,
+      "paired_t_OOS": -0.615,
+      "n": 220,
+      "n_is": 143
+    },
+    {
+      "model": "armV_vintage",
+      "mean_diff_ann": 0.0107,
+      "paired_t_full": 0.5822,
+      "paired_t_IS": -0.1061,
+      "paired_t_OOS": 1.6194,
+      "n": 220,
+      "n_is": 143
+    },
+    {
+      "model": "comb_armV_vintage_sqrt",
+      "mean_diff_ann": 0.0104,
+      "paired_t_full": 0.5732,
+      "paired_t_IS": -0.1164,
+      "paired_t_OOS": 1.4844,
+      "n": 220,
+      "n_is": 143
+    }
+  ],
+  "concentration": [
+    {
+      "model": "base",
+      "hhi": 0.04,
+      "n_eff": 25,
+      "maxw": 0.04,
+      "n_hold": 25,
+      "w_MEGA": 0.086,
+      "w_MID": 0.1257,
+      "w_OTHER": 0.906,
+      "w_UNRANKED": 0
+    },
+    {
+      "model": "armF_cadence3",
+      "hhi": 0.04,
+      "n_eff": 25,
+      "maxw": 0.04,
+      "n_hold": 25,
+      "w_MEGA": 0.0933,
+      "w_MID": 0.1271,
+      "w_OTHER": 0.9025,
+      "w_UNRANKED": 0
+    },
+    {
+      "model": "armB_band2535",
+      "hhi": 0.04,
+      "n_eff": 25,
+      "maxw": 0.04,
+      "n_hold": 25,
+      "w_MEGA": 0.0865,
+      "w_MID": 0.1289,
+      "w_OTHER": 0.9058,
+      "w_UNRANKED": 0
+    },
+    {
+      "model": "armV_vintage",
+      "hhi": 0.04,
+      "n_eff": 25,
+      "maxw": 0.04,
+      "n_hold": 25,
+      "w_MEGA": 0.0846,
+      "w_MID": 0.1327,
+      "w_OTHER": 0.9038,
+      "w_UNRANKED": 0
+    },
+    {
+      "model": "comb_armV_vintage_sqrt",
+      "hhi": 0.0422,
+      "n_eff": 23.6922,
+      "maxw": 0.0665,
+      "n_hold": 25,
+      "w_MEGA": 0.0841,
+      "w_MID": 0.1295,
+      "w_OTHER": 0.9055,
+      "w_UNRANKED": 0
+    }
+  ],
+  "base_parity": {
+    "r11_base_pt": 2.6124,
+    "r6_stored": 2.6124,
+    "delta": 0,
+    "ok": true
+  },
+  "winner_1st": "armV_vintage",
+  "winner_is_t": -0.1061,
+  "combine_2nd": "comb_armV_vintage_sqrt",
+  "combine_is_t": -0.1164,
+  "combine_keep": false,
+  "challenge": {
+    "armF": {
+      "pool_churn_c6": 0.3069,
+      "pool_churn_c3": 0.2062,
+      "rank_ac_c6": 0.859,
+      "rank_ac_c3": 0.9217,
+      "to_base": 9.2705,
+      "to_armF": 9.2793
+    },
+    "armB": {
+      "paired_is": -0.2589,
+      "paired_oos": -0.615,
+      "to_base": 9.2705,
+      "to_armB": 6.8138,
+      "name_churn_per_reb": 7.0731,
+      "oos_base": -0.0759,
+      "oos_armB": -0.121
+    },
+    "armV": {
+      "cohort_spearman_mean": 0.9226,
+      "cohort_jaccard_mean": 0.6706
+    }
+  },
+  "kill": true,
+  "max_paired_full": 0.5822,
+  "any_graduation": false,
+  "best_oos_nonbase": 0.1208,
+  "n_trials_r11": 4,
+  "n_trials_lineage": 18,
+  "selection_type": "chain",
+  "n_sig": 257,
+  "date_range": ["2005-01-31", "2026-05-31"],
+  "r10_ref": {
+    "w_stock_capwt": 2.9303,
+    "w_stock_sqrt_paired": 1.7816,
+    "base_capwt": 2.6124
+  }
+}
