@@ -20,10 +20,9 @@ res <- tg_agent_brief(
     list(emoji = "📊", heading = "Head-to-head (공통창 233개월, 낮을수록/1에 가까울수록 우수)", type = "table",
          df = data.frame(
            추정기 = c("Kalman-SV", "EWMA λ0.97", "Kalman-TVbeta", "현행 상수", "국면조건부"),
-           `오경보율` = c("0.9%", "3.6%", "3.6%", "4.1%", "5.9%"),
-           `분산비` = c("1.015", "1.103", "1.138", "1.198", "1.294"),
+           `오경보율·분산비` = c("0.9% · 1.015", "3.6% · 1.103", "3.6% · 1.138", "4.1% · 1.198", "5.9% · 1.294"),
            check.names = FALSE, stringsAsFactors = FALSE),
-         max_col_width = 15L,
+         max_col_width = 18L,
          notes = c("Kalman-SV paired z² vs EWMA97: t=-5.88 p<0.001 (raw 지표 기준 유의)",
                    "단, 아래 강건성서 이 승리 붕괴")),
     list(emoji = "🔬", heading = "적대검증: Kalman-SV 승리의 강건성", type = "table",
