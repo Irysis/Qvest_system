@@ -20,7 +20,6 @@ Governor가 편입한 Deployment WT를 지속 모니터링. alpha decay + crowdi
 - `qepm/mailbox/worktask/{wt_id}/optimization_package.json` — predicted α̂ + TE
 - `.cache/realized_returns/{wt_id}_{month}.parquet` — 실현 수익률
 - `.cache/regime_current.json` — 현재 국면
-- `02_Infrastructure/reports/kalman_beta_drift.R` — 칼만 β̂ 대조 지표 (task #56, 2026-07-13). 월간 실행 시 source 패턴으로 실행(`cd 02_Infrastructure/reports && Rscript -e 'source("kalman_beta_drift.R")'`) → `qepm/mailbox/monitoring/kalman_beta_drift/kalman_beta_drift_latest.json` 생성·소비. 입력 = 계약 recon rds(WT-D20260702_002 clean_rds) + 배포 manifest 패널(m4×β_R05)
 
 ## Metrics
 | Metric | Formula | Threshold |
@@ -31,11 +30,9 @@ Governor가 편입한 Deployment WT를 지속 모니터링. alpha decay + crowdi
 | Crowding drift | Δ crowding_factor over 3M | > +30% → overcrowd alert |
 | Signal decay IC | 3M rank_ic vs 12M rank_ic | 3M / 12M < 0.3 → decay |
 | Regime shift | current regime vs cached regime_tag | mismatch → covariance rebuild |
-| Kalman β drift | β̂_t(dlm TV-beta filtered β_{t|t}, 북 recon vs 벤치 — 스무더 금지 PIT) vs invested_t(=m4×β_R05 manifest); gap_t=\|β̂_t−invested_t\|; z_t = gap의 trailing 12m(당월 제외) z-score | z>2 **2개월 연속** → "오버레이 실효-의도 괴리" WARN (사전 고정 규칙 — 임계 sweep 금지, 자동조치 없음·도훈 판단 재료) |
 
 ## Output
-- `qepm/mailbox/monitoring/reports/monitoring_report_{yyyymm}.json` — **`kalman_beta_drift` 섹션 포함 의무** (latest month β̂/invested/gap/z/z_prev/warn + series_csv 경로 — kalman_beta_drift_latest.json에서 복사)
-- `qepm/mailbox/monitoring/kalman_beta_drift/` — series csv + latest/월 아카이브 json (kalman_beta_drift.R 산출)
+- `qepm/mailbox/monitoring/reports/monitoring_report_{yyyymm}.json`
 - Telegram alert (Q-Lead 채널)
 
 ## Execution Mode
@@ -48,7 +45,6 @@ Governor가 편입한 Deployment WT를 지속 모니터링. alpha decay + crowdi
 - TE ratio > 1.5 → Risk Agent 재추정 요청
 - Crowding drift > +30% → Governor book rebalance 요청
 - Regime shift → Optimizer 재계산 요청
-- Kalman β drift WARN → 보고만 (자동조치 없음 — "오버레이 실효-의도 괴리" 라벨로 도훈 판단 재료 제공. weight/오버레이 파라미터 변경 제안 금지)
 
 ## Work Path
 `qepm/mailbox/monitoring/{inbox,reports,done}`

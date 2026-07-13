@@ -1,0 +1,42 @@
+{
+  "as_of": "2026-07-13",
+  "book": "STR_1715_on_M4_R05_noLayer4_PG2",
+  "metric_type": "backtested",
+  "basis": "recon_backtested read-only · monitoring diagnostic (book 무변경)",
+  "method": "dlm TV-beta filtered beta_{t|t} (te_diag_202607/kalman_ext.R [3] 재사용; dlmMLE stride-12 walk-forward 확장창·과거만; dlmFilter only — 스무더 금지 PIT)",
+  "rule": "z_t=(gap_t−mean(gap_{t−12..t−1}))/sd(gap_{t−12..t−1}); z>2 2개월 연속 → WARN '오버레이 실효-의도 괴리' (자동조치 없음·임계 sweep 금지)",
+  "params_fixed": {
+    "z_thresh": 2,
+    "z_window_months": 12,
+    "consecutive": 2,
+    "burn": 36,
+    "mle_stride": 12
+  },
+  "n_months": 269,
+  "latest": {
+    "month": "2026-06",
+    "date": "2026-06-01",
+    "beta_hat": 0.705631,
+    "invested": 0.4032,
+    "gap": 0.302431,
+    "z": 1.421336,
+    "z_prev": -1.701609,
+    "warn": false
+  },
+  "warn_active": false,
+  "warn_months_history": [
+    "2022-10"
+  ],
+  "current_manifest": {
+    "source": "book_state.json::live_exposure_change (당월 standing manifest)",
+    "invested_now": 0.2478,
+    "beta_hat_latest": 0.705631,
+    "gap_vs_beta_hat_latest": 0.457831,
+    "note": "정보용 주석 — 경보 판정은 실현월 시계열(z 규칙)로만"
+  },
+  "series_csv": "qepm/mailbox/monitoring/kalman_beta_drift/kalman_beta_drift_series.csv",
+  "inputs": {
+    "recon_rds": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/qepm/mailbox/worktask/WT-D20260702_002/output/bt_result_C_noL4_CLEAN_ann12.rds",
+    "panel_csv": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/05_Production/2.Factor_Model/2-2.STR_1715_FaithTrend_on_M4_R05_overlay_PG2/04_backtest_results/period_returns_layer5_faith.csv"
+  }
+}

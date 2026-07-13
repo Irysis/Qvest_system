@@ -10,11 +10,6 @@
 #       + strategy_manifest 부재 시 hurdle_result.json fallback (초기 run)
 #       + 둘 다 없는 빈 디렉터리는 중단 run으로 스킵 (사유 기록)
 #   (b) .cache/lcode_corpus.json                               (L-code 594건+)
-#       + 보충 스캔 (2026-07-13 task#54): corpus mtime보다 새
-#         stage_artifacts/l_code/*/l_code_*.json (+ flat l_code_*.json)을 직접 파싱해
-#         보충. dedup 키 = l_code (corpus 항목 우선). 파싱 실패 파일은 skip+카운트.
-#         배경: corpus 정체 시 중복방지 게이트가 실명하던 07-13 실사고(이틀) 재발 방지 —
-#         harvester 미가동/우회 상태에서도 인덱스가 원본 계층에서 자립.
 #   (c) 06_Registry/module_catalog.json                        (등록 모듈 265건+)
 #   (d) 06_Registry/distilled_knowledge.json                   (②Distilled 클러스터 통합 지식)
 #       verdict = DISTILLED_NEG / DISTILLED_COND / DISTILLED_POS.
@@ -306,25 +301,6 @@ FAMILY_PATTERNS <- list(
   )
 }
 
-# (task#54-1 2026-07-13) 원본 L-code json → corpus-호환 엔트리 어댑터 (보충 스캔 전용).
-#   harvester가 corpus에 넣어주는 파생필드 중 .hi_parse_lcode가 소비하는 것만 보충:
-#   source_file(상대경로) + mtime(파일 mtime). family는 원본에 없으면 .hi_parse_lcode의
-#   .hi_infer_family 폴백이 처리(기존 경로 재사용 — 별도 추론 로직 중복 구현 금지).
-.hi_raw_lcode_entry <- function(path, root = QM_ROOT) {
-  d <- fromJSON(path, simplifyVector = FALSE)   # 실패 시 호출측 tryCatch가 skip+카운트
-  lcode <- .hi_join(d$l_code)
-  if (!nzchar(lcode)) {
-    # harvester와 동일 관례: 파일명에서 L-\d+ 복원 시도
-    m <- regmatches(basename(path), regexpr("L-[0-9]+", basename(path)))
-    lcode <- if (length(m)) m else ""
-  }
-  if (!nzchar(lcode)) stop("l_code 필드 부재 + 파일명 복원 실패: ", basename(path))
-  d$l_code <- lcode
-  d$source_file <- sub(paste0("^", root, "/"), "", gsub("\\\\", "/", path))
-  d$mtime <- format(file.info(path)$mtime, "%Y-%m-%dT%H:%M:%S")
-  d
-}
-
 .hi_parse_distilled <- function(e) {
   stmt  <- e$statement_refined %||% e$statement_draft %||% ""
   refined <- !is.null(e$statement_refined) && nzchar(e$statement_refined %||% "")
@@ -504,8 +480,6 @@ build_hypothesis_index <- function(root = QM_ROOT, out_path = HI_INDEX_PATH,
   cov <- list(alpha_search_manifest = 0L, alpha_search_hurdle_fallback = 0L,
               alpha_search_skipped_empty = 0L, alpha_search_parse_fail = 0L,
               lcode_indexed = 0L, lcode_skipped = 0L,
-              lcode_supplement_indexed = 0L, lcode_supplement_skipped_dup = 0L,
-              lcode_supplement_parse_fail = 0L,
               module_indexed = 0L, module_skipped = 0L,
               distilled_indexed = 0L, distilled_skipped = 0L,
               wt_inflight_indexed = 0L, wt_inflight_skipped_terminal = 0L,
@@ -541,13 +515,9 @@ build_hypothesis_index <- function(root = QM_ROOT, out_path = HI_INDEX_PATH,
 
   # --- (b) lcode corpus ---
   lc_path <- file.path(root, ".cache/lcode_corpus.json")
-  lc_seen <- character(0)   # (task#54-1) corpus 반영된 l_code 키 — 보충 스캔 dedup (corpus 우선)
-  lc_mtime <- if (file.exists(lc_path)) file.info(lc_path)$mtime
-              else as.POSIXct("1970-01-01", tz = "UTC")   # corpus 부재 → 전체 원본 스캔
   if (file.exists(lc_path)) {
     lc <- tryCatch(fromJSON(lc_path, simplifyVector = FALSE), error = function(e) NULL)
     for (e in (lc$lcodes %||% list())) {
-      k <- .hi_join(e$l_code); if (nzchar(k)) lc_seen <- c(lc_seen, k)
       pe <- tryCatch(.hi_parse_lcode(e), error = function(err) {
         message(sprintf("[hypothesis_index][WARN] lcode parse 실패 skip: %s (%s)",
                         e$l_code %||% e$strategy_id %||% "?", conditionMessage(err)))
@@ -555,42 +525,6 @@ build_hypothesis_index <- function(root = QM_ROOT, out_path = HI_INDEX_PATH,
       })
       if (add_entry(pe)) cov$lcode_indexed <- cov$lcode_indexed + 1L
       else cov$lcode_skipped <- cov$lcode_skipped + 1L
-    }
-  }
-
-  # --- (b+) L-code 보충 스캔 (2026-07-13 task#54-1 — corpus 정체 시 게이트 실명 재발 방지) ---
-  #   corpus mtime보다 새 원본 L-code 파일을 직접 파싱해 보충. dedup 키 = l_code
-  #   (corpus 항목 우선 — corpus에 이미 있으면 skip). 파싱 실패는 skip + 카운트.
-  #   경로 패턴은 harvester(lcode_harvester.py)와 동일: mode-분리 + flat back-compat.
-  raw_lc_paths <- c(
-    Sys.glob(file.path(root, "stage_artifacts/l_code/*/l_code_*.json")),
-    Sys.glob(file.path(root, "stage_artifacts/l_code_*.json"))
-  )
-  if (length(raw_lc_paths)) {
-    fi_raw <- file.info(raw_lc_paths)
-    raw_new <- raw_lc_paths[!is.na(fi_raw$mtime) & fi_raw$mtime > lc_mtime]
-    for (p in raw_new) {
-      pe <- tryCatch({
-        d <- .hi_raw_lcode_entry(p, root)
-        k <- .hi_join(d$l_code)
-        if (k %in% lc_seen) {
-          cov$lcode_supplement_skipped_dup <- cov$lcode_supplement_skipped_dup + 1L
-          NULL
-        } else {
-          lc_seen <- c(lc_seen, k)
-          pe2 <- .hi_parse_lcode(d)
-          pe2$source_types <- "lcode_supplement"   # 감사가능성: corpus 경유 아님을 명시
-          pe2
-        }
-      }, error = function(err) {
-        message(sprintf("[hypothesis_index][WARN] lcode 보충 스캔 parse 실패 skip: %s (%s)",
-                        basename(p), conditionMessage(err)))
-        cov$lcode_supplement_parse_fail <<- cov$lcode_supplement_parse_fail + 1L
-        NULL
-      })
-      if (!is.null(pe) && add_entry(pe)) {
-        cov$lcode_supplement_indexed <- cov$lcode_supplement_indexed + 1L
-      }
     }
   }
 
@@ -700,9 +634,6 @@ build_hypothesis_index <- function(root = QM_ROOT, out_path = HI_INDEX_PATH,
                 cov$lcode_indexed, cov$lcode_skipped,
                 cov$module_indexed, cov$module_skipped,
                 cov$distilled_indexed, cov$distilled_skipped))
-    cat(sprintf("  lcode_supplement=%d (dup skip %d, parse_fail %d) [corpus보다 새 원본 직접 파싱]\n",
-                cov$lcode_supplement_indexed, cov$lcode_supplement_skipped_dup,
-                cov$lcode_supplement_parse_fail))
     cat(sprintf("  wt_inflight=%d (terminal skip %d, empty %d, parse_fail %d, merged_completed %d)\n",
                 cov$wt_inflight_indexed, cov$wt_inflight_skipped_terminal,
                 cov$wt_inflight_skipped_empty, cov$wt_inflight_parse_fail,
@@ -773,14 +704,6 @@ HI_QUERY_ALIAS <- list(
   for (s in srcs) {
     p <- file.path(root, s)
     if (file.exists(p) && file.info(p)$mtime > idx_mt) stale <- c(stale, s)
-  }
-  # (task#54-1 2026-07-13) 원본 L-code 파일이 인덱스보다 최신이면 stale — corpus 정체와
-  #   무관하게 lookup 자동 재빌드(→ 보충 스캔 소비)가 트리거되도록 원본 계층을 직접 감시.
-  raw_lc <- c(Sys.glob(file.path(root, "stage_artifacts/l_code/*/l_code_*.json")),
-              Sys.glob(file.path(root, "stage_artifacts/l_code_*.json")))
-  if (length(raw_lc)) {
-    raw_mt <- suppressWarnings(max(file.info(raw_lc)$mtime, na.rm = TRUE))
-    if (is.finite(raw_mt) && raw_mt > idx_mt) stale <- c(stale, "stage_artifacts/l_code (원본 L-code)")
   }
   # (M6 2026-07-10) in-flight WT 원천 stale 검사 — mailbox의 request/status.json 최신 mtime
   wt_files <- Sys.glob(file.path(root, "qepm/mailbox/worktask/*", c("status.json", "request.json")))

@@ -26,7 +26,6 @@ Monitoring Agent — admitted Deployment WT 지속 감시. predicted vs realized
   - TE ratio > 1.5 → Risk Agent 재추정 요청 로그
   - Crowding drift > +30% → Governor book rebalance 요청 로그
   - Regime shift → Optimizer 재계산 요청 로그
-  - Kalman β drift: `02_Infrastructure/reports/kalman_beta_drift.R` source 실행 → `kalman_beta_drift_latest.json` 소비 → monitoring_report에 `kalman_beta_drift` 섹션 기록. WARN(z>2 2개월 연속) 시 "오버레이 실효-의도 괴리" 라벨 보고만 — 자동조치·파라미터 변경 제안 금지 (도훈 판단 재료). 임계 sweep 금지(사전 고정)
   - 모든 alert은 monitoring_report.json + Telegram 동시 기록
   </required>
 </constraints>
@@ -51,14 +50,6 @@ if (ic_decay < 0.3) flag_alerts(wt_id, "ic_decay")
 
 # Regime shift
 if (cov_cache_regime != current_regime) flag_alerts(wt_id, "regime_shift")
-
-# Kalman β drift (task #56, 2026-07-13 — 사전 고정 규칙, sweep 금지)
-# β̂_t = dlm TV-beta filtered β_{t|t} (북 recon vs 벤치, 스무더 금지 PIT)
-# invested_t = m4_t × β_R05_t (배포 manifest) ; gap_t = |β̂_t − invested_t|
-# z_t = (gap_t − mean(gap_{t−12..t−1})) / sd(gap_{t−12..t−1})   # trailing 12m, 당월 제외
-# 실행: cd 02_Infrastructure/reports && Rscript -e 'source("kalman_beta_drift.R")'
-# → qepm/mailbox/monitoring/kalman_beta_drift/kalman_beta_drift_latest.json 소비
-if (kbd$latest$z > 2 && kbd$latest$z_prev > 2) flag_alerts(book_id, "overlay_intent_gap")  # WARN "오버레이 실효-의도 괴리" — 자동조치 없음
 ```
 </metrics_computation>
 
@@ -91,17 +82,6 @@ if (kbd$latest$z > 2 && kbd$latest$z_prev > 2) flag_alerts(book_id, "overlay_int
     "aggregate_alpha_ratio": 0.52,
     "aggregate_te_ratio": 1.32,
     "highest_alert_count_wt": "WT-P20260424_001"
-  },
-  "kalman_beta_drift": {
-    "latest_month": "2026-06",
-    "beta_hat": 0.7056,
-    "invested": 0.4032,
-    "gap": 0.3024,
-    "z": 1.4213,
-    "z_prev": -1.7016,
-    "warn": false,
-    "rule": "z>2 2개월 연속 → WARN '오버레이 실효-의도 괴리' (자동조치 없음·임계 sweep 금지)",
-    "series_csv": "qepm/mailbox/monitoring/kalman_beta_drift/kalman_beta_drift_series.csv"
   },
   "telegram_sent": true,
   "created_at": "2026-05-01T09:00:00+0900"

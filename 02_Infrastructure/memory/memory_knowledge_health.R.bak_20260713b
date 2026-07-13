@@ -18,11 +18,6 @@
 #   4) external memory not indexed → INFO (audit v3 권고 B 격하)
 #   5) enforcement claim ↔ hook 실제 강제력 불일치 (AX-003~005)
 #   6) regime_validation parse fail (soft_mrs.json) + .cache/axiom_core.json STALE
-#   7) Stop hook script ↔ settings.json 등록 정합 (2026-07-13 task#54-3ⓒ:
-#      기대목록 현행 4건 — auto_commit·auto_push·performance_realmeasure_gate·
-#      research_continuity_guard)
-#   8) layer_bottleneck_map.md 신선도 — 최신 L-code 대비 24h+ 뒤처짐 (task#54-3ⓐ)
-#   9) 최근 7일 negative(C/F) L-code next_probe 부재 (task#54-3ⓑ — AX-000 탐색 연속성)
 #
 # Usage: Rscript 02_Infrastructure/memory/memory_knowledge_health.R
 
@@ -390,102 +385,31 @@ if (file.exists(cache_path)) {
 }
 
 # WARN_7: Stop hook script ↔ settings.json 등록 정합 (L-314 follow-up — L-275 silent fail 재발 방지)
-# (2026-07-13 task#54-3ⓒ) 기대목록을 현행 Stop hook 4건으로 갱신 — 구 패턴
-# ^auto_(commit|push)_on_stop\.sh$ 은 performance_realmeasure_gate(2026-06-17)·
-# research_continuity_guard(2026-07-13) 등록누락을 감지하지 못했음. 양방향 검사:
-# (a) FS 존재 + settings 미등록 → WARN (L-275 silent fail) / (b) 기대 스크립트 FS 부재 → WARN
-# (settings에 등록돼 있어도 파일이 없으면 || true 로 조용히 무력화되는 동형 패턴).
 cat("[W7] Stop hook script ↔ settings.json registration consistency\n")
 stop_hook_dir <- file.path(PROJ_ROOT, "02_Infrastructure/hooks")
-expected_stop_hooks <- c("auto_commit_on_stop.sh",
-                         "auto_push_on_stop.sh",
-                         "performance_realmeasure_gate.sh",
-                         "research_continuity_guard.sh")
+stop_hook_scripts <- list.files(
+  stop_hook_dir,
+  pattern = "^auto_(commit|push)_on_stop\\.sh$",
+  full.names = FALSE
+)
 settings_path <- file.path(PROJ_ROOT, ".claude/settings.json")
-if (file.exists(settings_path)) {
+if (length(stop_hook_scripts) > 0 && file.exists(settings_path)) {
   settings_content <- paste(readLines(settings_path, warn = FALSE),
                             collapse = "\n")
   unregistered <- character()
-  fs_missing <- character()
-  for (script in expected_stop_hooks) {
-    on_fs <- file.exists(file.path(stop_hook_dir, script))
-    in_settings <- grepl(script, settings_content, fixed = TRUE)
-    if (on_fs && !in_settings) unregistered <- c(unregistered, script)
-    if (!on_fs) fs_missing <- c(fs_missing, script)
+  for (script in stop_hook_scripts) {
+    if (!grepl(script, settings_content, fixed = TRUE)) {
+      unregistered <- c(unregistered, script)
+    }
   }
   if (length(unregistered) > 0) {
     add_warn("WARN_7_stop_hook_unregistered",
              sprintf("Stop hook script(s) exist but not registered in settings.json: %s — L-275 silent fail pattern",
                      paste(unregistered, collapse = ", ")))
-  }
-  if (length(fs_missing) > 0) {
-    add_warn("WARN_7_stop_hook_script_missing",
-             sprintf("expected Stop hook script(s) missing on FS: %s — settings 등록만 남은 무력화 상태",
-                     paste(fs_missing, collapse = ", ")))
-  }
-  if (length(unregistered) == 0 && length(fs_missing) == 0) {
-    cat(sprintf("  %d expected Stop hook(s) present + registered in settings.json: OK\n",
-                length(expected_stop_hooks)))
-  }
-} else {
-  add_warn("WARN_7_settings_missing", ".claude/settings.json 부재 — Stop hook 등록 검증 불가")
-}
-
-# WARN_8 (2026-07-13 task#54-3ⓐ): layer_bottleneck_map.md 신선도 — 최신 L-code 대비 24h+ 뒤처짐.
-# 배경: 신선도 사슬 구조 감사 — 병목지도가 L-code 적립을 따라가지 못하면 프론티어 판단이
-# stale 지도 위에서 이뤄짐 (corpus 정체와 동형의 지식환류 단절).
-cat("[W8] layer_bottleneck_map freshness vs newest L-code\n")
-lbm_path <- file.path(PROJ_ROOT, "06_Registry/layer_bottleneck_map.md")
-raw_lc_files <- c(Sys.glob(file.path(PROJ_ROOT, "stage_artifacts/l_code/*/l_code_*.json")),
-                  Sys.glob(file.path(PROJ_ROOT, "stage_artifacts/l_code_*.json")))
-if (length(raw_lc_files) == 0) {
-  cat("  L-code 원본 파일 없음 — skip\n")
-} else {
-  newest_lc_mt <- suppressWarnings(max(file.info(raw_lc_files)$mtime, na.rm = TRUE))
-  if (!file.exists(lbm_path)) {
-    add_warn("WARN_8_bottleneck_map_missing",
-             "06_Registry/layer_bottleneck_map.md 부재 — 병목지도 현행화 필요")
   } else {
-    lag_h <- as.numeric(difftime(newest_lc_mt, file.info(lbm_path)$mtime, units = "hours"))
-    if (is.finite(lag_h) && lag_h > 24) {
-      add_warn("WARN_8_bottleneck_map_stale",
-               sprintf("layer_bottleneck_map.md가 최신 L-code보다 %.1fh 뒤처짐 (임계 24h) — 병목지도 현행화 필요",
-                       lag_h))
-    } else {
-      cat(sprintf("  bottleneck map fresh (최신 L-code 대비 lag %.1fh <= 24h)\n", max(lag_h, 0)))
-    }
+    cat(sprintf("  %d Stop hook script(s) registered in settings.json: OK\n",
+                length(stop_hook_scripts)))
   }
-}
-
-# WARN_9 (2026-07-13 task#54-3ⓑ): 최근 7일 negative performance L-code(C/F) next_probe 부재.
-# AX-000 탐색 연속성 — 실패지식이 "다음 탐침" 없이 적립되면 dead-end 라벨과 기능적으로
-# 동일해짐 (research_continuity_guard의 L-code 레벨 등가물).
-cat("[W9] recent negative L-code next_probe presence\n")
-np_cutoff <- Sys.time() - as.difftime(7, units = "days")
-missing_np <- character(0)
-n_recent_neg <- 0L
-for (f in raw_lc_files) {
-  mt <- file.info(f)$mtime
-  if (is.na(mt) || mt < np_cutoff) next
-  d <- tryCatch(fromJSON(f, simplifyVector = FALSE), error = function(e) NULL)
-  if (is.null(d)) next
-  g <- toupper(trimws(safe_str(d$grade, "")))
-  if (!nzchar(g) || g == "?" || !(g %in% c("C", "F", "REJECT"))) next
-  n_recent_neg <- n_recent_neg + 1L
-  np_txt <- trimws(paste(unlist(d$next_probe), collapse = " "))
-  if (!nzchar(np_txt)) {
-    missing_np <- c(missing_np, safe_str(d$l_code, basename(f)))
-  }
-}
-if (length(missing_np) > 0) {
-  shown <- head(missing_np, 8)
-  add_warn("WARN_9_negative_lcode_no_next_probe",
-           sprintf("최근 7일 negative(C/F) L-code %d/%d건 next_probe 부재: %s%s — 실패 기록에 다음 탐침 명시 필요 (AX-000 탐색 연속성)",
-                   length(missing_np), n_recent_neg, paste(shown, collapse = ","),
-                   if (length(missing_np) > 8) sprintf(" 외 %d건", length(missing_np) - 8) else ""))
-} else {
-  cat(sprintf("  최근 7일 negative L-code %d건 전부 next_probe 보유 (또는 해당 없음)\n",
-              n_recent_neg))
 }
 
 # ─── Summary ─────────────────────────────────────────────────────

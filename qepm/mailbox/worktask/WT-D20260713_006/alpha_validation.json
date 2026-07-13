@@ -1,0 +1,63 @@
+{
+  "wt_id": "WT-D20260713_006",
+  "iteration": "R22",
+  "metric_type": "event_prediction_diagnostic",
+  "canonical_port_t_nw_lag3": {},
+  "canonical_port_t_reason": "N/A — this is an event-classification study (feature->12m adverse-event lift), not a top-25 long-only portfolio screen. No portfolio-alpha computed by design (2-stage prereg: prediction validity only).",
+  "availability_audit": {
+    "rawdata_flags": {
+      "UnfaithfulDisc": {
+        "exists": true,
+        "coverage": "2009+",
+        "monthly_onsets": 843,
+        "note": "binary state flag; onset=monthly 0->1"
+      },
+      "AdminStock": {
+        "exists": true,
+        "coverage": "1990+",
+        "monthly_onsets": 1649
+      },
+      "TradingHalt": {
+        "exists": true,
+        "coverage": "1993+",
+        "values": "0/1/2 state",
+        "long_halt_onsets_ge20d": 2788
+      },
+      "Delisting": {
+        "exists": "DERIVED (last-obs < data_end-180d, no relisting; C6)",
+        "events": 1105,
+        "survivorship_caveat": "rawdata (K200/KQ150 support universe) may under-retain fully-delisted micro-caps => fewer events observed => HARDER to detect => CONSERVATIVE for a positive verdict"
+      }
+    },
+    "features": {
+      "benford_FSD": {
+        "source": "WT-D20260713_002 F-B_Benford_FSD",
+        "window": "2009-06..2025-06",
+        "tickers": 728
+      },
+      "m1_obfuscation": {
+        "source": "WT-D20260711_002 signal_panel.rds (m1 sentence length)",
+        "window": "2011-04..2025-04",
+        "tickers": 667,
+        "caveat": "alpha_scores.parquet is single-month(202504); longitudinal panel is signal_panel.rds"
+      },
+      "delay": {
+        "source": "WT-D20260713_001 F-B (days late vs 90d deadline)",
+        "window": "2010-04..2025-03",
+        "tickers": 670,
+        "coverage_caveat": "effectively post-2016 (pre-2016 worst-decile events <10 => stability clause not estimable pre-2016)"
+      }
+    }
+  },
+  "pit": {
+    "feature_month": "t",
+    "event_window": "[t+1,t+12]",
+    "censor": "decision months t>202507 dropped (12m forward observable)",
+    "label_pit_caveat": "flag onset = rawdata designation date (forward-looking). If rawdata backdates AdminStock to cause-date, mild look-ahead would INFLATE predictability; direction noted, verdict largely null so robust."
+  },
+  "n_trials": 4,
+  "selection_type": "sweep(4 enumerated)",
+  "multiple_testing": "Bonferroni x4 => none<0.05",
+  "dsr_context": "metric is AUC/OR not Sharpe; DSR-analog = multiple-testing correction (reported). No candidate near threshold post-correction.",
+  "prereg_sha256": "3455656218d17d2af7333a40d0ba1abda74c242fa891013f0100a9eae49e0659"
+}

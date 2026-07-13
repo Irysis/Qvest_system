@@ -683,13 +683,21 @@
       "wall_check": "이벤트 예측 성립 ≠ 자본 개선 — 2단계 분리(예측 성립 후에만 필터 재설계). Size·유동성 통제 의무(소형=사건 base rate 높음 confound). C6 상폐 표본 포함 여부가 이번엔 필수(사건 자체가 표적)",
       "data_gate": "없음 (RAWDATA 플래그 + 보존 feature 패널 3종)",
       "owner": "Q-Lead (R22 alpha-research)",
-      "status": "in_progress",
-      "next_action": "이벤트 패널 구축 → PIT feature→12m 사건 lift/AUC → tier·Size 통제 판정",
+      "status": "config_scoped_negative_frontier_open",
+      "next_action": "P1 심각사건 한정 재과녁(상폐+관리+불성실, 단기정지 제외) 지연 극단꼬리 NEW 사전등록 → FQ 신규 등록 권고",
       "source_refs": [
         "parent: FQ-033 settled_negative + L-AR-20260713_173418 next_probe 1",
         "features: Benford(WT-D20260713_002)·m1(WT-D20260711_002)·제출지연(WT-D20260713_001 F-B)",
         "flags: RAWDATA UnfaithfulDisc/AdminStock/TradingHalt"
-      ]
+      ],
+      "result": "R22 실측: 사전등록 문턱(통제 후 controlled OR p<0.05 full-sample AND pre/post-2016 stable) 미달. Benford(OR 1.09 p 0.70)·m1(OR 1.01 p 0.97)·스택(OR 1.32 p 0.63)=flat null → event-predictor 종결. 제출지연(F3)만 live sub-threshold: controlled OR 2.06(raw 2.18=크기위장 아님) p 0.075, post-2016 OR 2.58 p 0.022(pre-2016 미추정). 사건유형 분해: 지연 최악10% lift 상폐 6.4x·관리 4.2x·불성실 3.8x vs 단기정지 1.8x(합집합 희석). Bonferroni x4 생존 0.",
+      "l_code": "L-AR-20260713_180008",
+      "next_probe": {
+        "P1": "severity-restricted target {Delisting+AdminStock+UnfaithfulDisc}, delay extreme-tail, NEW prereg",
+        "P2": "power via coverage not threshold: 24m window / full DART filer pooling / delisting discrete-time hazard",
+        "P3": "event-label PIT hardening: actual designation announcement dates vs flag onset before any capital use"
+      },
+      "verdict_artifact": "stage_artifacts/WT_D20260713_006/verdict.json"
     }
   ]
 }

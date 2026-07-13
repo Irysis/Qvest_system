@@ -13,12 +13,6 @@ Inputs:
 Output:
   .cache/lcode_corpus.json
 
-⚠ 정본 우회 방지 (2026-07-13 task#54-2): --output으로 커스텀 출력을 지정해도
-  정본 corpus(.cache/lcode_corpus.json)를 **함께 갱신**한다(이중 쓰기).
-  배경: 커스텀 출력이 정본을 우회 → corpus 정체 → hypothesis_index 중복방지
-  게이트가 이틀간 실명하던 07-13 실사고. 정본 갱신을 생략할 방법은 없다
-  (의도적 미제공 — 정본이 항상 최신이어야 신선도 사슬이 성립).
-
 Schema:
   {
     "schema_version": "v54_ax_p0_mode",
@@ -442,21 +436,6 @@ def _record_type_dist(lcodes: list[dict]) -> dict[str, int]:
     return out
 
 
-def _write_json_atomic(obj: dict, path: str) -> None:
-    """temp + os.replace 원자적 쓰기 — 중단/동시읽기 시 반파일(손상 JSON) 방지.
-
-    OneDrive 경로 확립 관행(temp-rename, [project-windows-arrow-mmap-1224])과 정합.
-    hypothesis_index.R의 (F-1) 원자적 쓰기와 동일 패턴.
-    """
-    d = os.path.dirname(path)
-    if d:
-        os.makedirs(d, exist_ok=True)
-    tmp = os.path.join(d or ".", f".{os.path.basename(path)}.tmp_{os.getpid()}")
-    with open(tmp, "w", encoding="utf-8") as f:
-        json.dump(obj, f, indent=2, ensure_ascii=False)
-    os.replace(tmp, path)  # Windows에서도 원자적 교체 (기존 파일 덮어씀)
-
-
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument(
@@ -464,29 +443,18 @@ def main() -> int:
         default=os.environ.get("QVEST_PROJECT_DIR")
         or os.environ.get("CLAUDE_PROJECT_DIR") or os.environ.get("QM_ROOT") or os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
     )
-    ap.add_argument(
-        "--output", default=None,
-        help="커스텀 출력 경로. 지정해도 정본 .cache/lcode_corpus.json은 함께 갱신됨"
-             " (이중 쓰기 — 07-13 정본 우회 실사고 재발 방지, 우회 불가)",
-    )
+    ap.add_argument("--output", default=None)
     args = ap.parse_args()
 
-    canonical = os.path.join(args.project_dir, ".cache", "lcode_corpus.json")
-    out = args.output or canonical
+    out = args.output or os.path.join(args.project_dir, ".cache", "lcode_corpus.json")
+    os.makedirs(os.path.dirname(out), exist_ok=True)
 
     corpus = harvest(args.project_dir)
-    _write_json_atomic(corpus, out)
-
-    # (2026-07-13 task#54-2) 커스텀 --output 지정 시에도 정본을 함께 갱신 (이중 쓰기).
-    # 커스텀 출력이 정본을 우회하던 07-13 실사고(corpus 정체 → hypothesis_index
-    # 중복방지 게이트 이틀 실명) 재발 방지 배선.
-    dual_note = ""
-    if os.path.abspath(out) != os.path.abspath(canonical):
-        _write_json_atomic(corpus, canonical)
-        dual_note = f" (+정본 동시 갱신: {canonical})"
+    with open(out, "w", encoding="utf-8") as f:
+        json.dump(corpus, f, indent=2, ensure_ascii=False)
 
     print(
-        f"[lcode_harvester] {out}{dual_note} — n={corpus['n_lcodes']} "
+        f"[lcode_harvester] {out} — n={corpus['n_lcodes']} "
         f"promoted={corpus['n_promoted']} "
         f"families={corpus['family_distribution']} "
         f"grades={corpus['grade_distribution']}"
