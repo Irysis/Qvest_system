@@ -1,0 +1,14 @@
+{
+  "strategy_id": "RAMP_03C_BOOKMOM_CAPW",
+  "source_lcode": "L-RAMP-20260620_184815",
+  "signal": "0.5*zc(book_score_eff, ny-aligned) + 0.5*mean(zc(mom6))",
+  "mom6": ["M05_Trended_Mom", "M32_Composite_Mom_v2", "M09_Composite_Mom", "M13_VolAdj_Mom", "M01_Mom_12_1", "M08_Residual_Mom"],
+  "select": "top-25 by score",
+  "weight": "cap_norm(Size), [0,0.20], Sigma_w=1",
+  "universe": "K200 union KQ150",
+  "liq": "ADV>=2e8",
+  "cost_bps": 15,
+  "bench_bases": ["RAMP-native cap-w K200uKQ150 proxy (build_monthly_forward_returns)", "corrected IKS200 (benchmark.parquet)"],
+  "measure": "weighted_screen_bt -> build_benchmark_compare NW lag3 + essence_score oos v2/calmar",
+  "pin_tag": "ramp03c_rerun_20260713_205545"
+}

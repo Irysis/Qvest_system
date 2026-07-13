@@ -28,6 +28,7 @@ Monitoring Agent — admitted Deployment WT 지속 감시. predicted vs realized
   - Regime shift → Optimizer 재계산 요청 로그
   - Kalman β drift: `02_Infrastructure/reports/kalman_beta_drift.R` source 실행 → `kalman_beta_drift_latest.json` 소비 → monitoring_report에 `kalman_beta_drift` 섹션 기록. WARN(z>2 2개월 연속) 시 "오버레이 실효-의도 괴리" 라벨 보고만 — 자동조치·파라미터 변경 제안 금지 (도훈 판단 재료). 임계 sweep 금지(사전 고정)
   - Filing delay watch: `02_Infrastructure/reports/filing_delay_watch.R` source 실행 → `qepm/observability/filing_delay_watch_latest.json` 소비 → monitoring_report에 `filing_delay_watch` 섹션 기록. WARN(보유종목 사업보고서 지연>0 AND ≥2일 — R24 극단꼬리 문턱 실측 고정) 시 "제출지연 위생 경보" 라벨 보고만(역사 기저율 낮음 — R24 실측: 중·대형 극단지각 15에피소드 심각사건 0) — 자동조치·텔레그램 단독 발송 금지 (도훈 판단 재료). 문턱 sweep 금지(사전 고정). ARCHIVE STALE(최신 rcept 13개월+) 시 "경보 침묵 ≠ 정상" 라벨 필수 (task #61, 2026-07-13)
+  - P-pure D3 페이퍼 트랙 (task #62, 2026-07-13 — dossier §7 병행안, 도훈 승인): 월간 러너 `02_Infrastructure/portfolio/ppure_paper_track.R` source 실행 → `06_Registry/live_track/{PPURE_BASE_W36K20, PPURE_D2_DECAYEXIT}/paper_nav.csv` append + trailing 실측 vs 봉인 구간(`holdout_interval.json` [q05,q95], `judge_holdout()` trailing 공용·최소 6개월) 대조 → monitoring_report에 `ppure_paper_track` 섹션 기록. FAIL_FALSIFIED(하단 침범) 시 "봉인 하단 침범" WARN 보고만 — **자동 퇴출 없음**(도훈 수동, STR_1715 규약 동일). **페이퍼 전용 — book_state 쓰기 금지·자본 게이트 무관**(cap-w HARD 3종 FAIL 불변, 벤치-상대 EW-uni 채점 트랙). D-2 보고 시 선택편향 라벨(후보 선택 2026-07-13, R13 게이트 산출 사후 지목) 병기 의무. 러너 parity-guard 실패로 append 중단 시 = "업스트림 데이터 변형" 경보(도훈 판단 재료, [[project-cache-vintage-pinning]]). 러너 [WARN] scores stale 시 RAMP score refresh 필요 보고
   - 모든 alert은 monitoring_report.json + Telegram 동시 기록
   </required>
 </constraints>
@@ -72,6 +73,14 @@ if (kbd$latest$z > 2 && kbd$latest$z_prev > 2) flag_alerts(book_id, "overlay_int
 # → qepm/observability/filing_delay_watch_latest.json 소비 (DART API 호출 0 — 로컬 아카이브만)
 if (fdw$n_warn > 0) flag_alerts(book_id, "filing_delay_hygiene")  # WARN "제출지연 위생 경보" — 역사 기저율 낮음(중·대형 15ep 사고 0)·자동조치 없음
 if (fdw$archive_freshness$stale) flag_alerts(book_id, "filing_archive_stale")  # 경보 침묵 ≠ 정상 — 크롤 갱신 필요(도훈 판단)
+
+# P-pure D3 페이퍼 트랙 (task #62, 2026-07-13 — 페이퍼 전용·book_state 무관·자본 게이트 무관)
+# 실행: cd QM && Rscript -e 'source("02_Infrastructure/portfolio/ppure_paper_track.R")'
+#   (러너가 등록 확인 + frozen 선별 재구성 + parity guard + paper_nav append + judge_holdout 판정 출력)
+# 판정 basis: primary=절대 net (STR_1715 c3 컨벤션) / 채점 프레임=EW-active (supplementary_intervals$ew_active)
+if (ppt$judge_net == "FAIL_FALSIFIED" || ppt$judge_ew == "FAIL_FALSIFIED")
+  flag_alerts(track_id, "paper_track_interval_breach")   # WARN "봉인 하단 침범" — 보고만, 자동 퇴출 없음(도훈 수동)
+if (ppt$parity_guard_failed) flag_alerts(track_id, "paper_track_upstream_mutation")  # append 중단 = 업스트림 데이터 변형 의심
 ```
 </metrics_computation>
 
