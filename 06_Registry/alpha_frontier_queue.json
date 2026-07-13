@@ -436,12 +436,31 @@
       "wall_check": "factor-momentum 타이밍 null(06-30) prior — ①은 '타이밍'이 아니라 '갱신 주기'로 구분하되 수렴 여부 적대검증 의무. cap-tier 국소화 벽은 본 라운드가 못 풂(정직 명시)",
       "data_gate": "없음 (R6 하네스·패널 재사용)",
       "owner": "Q-Lead (R11 ramp-orchestrator)",
-      "status": "in_progress",
-      "next_action": "1차 3-arm 측정 → 기전 진단 → 승자 × W-stock-sqrt 결합 1 config 2차 → 판정. 전 arm 음이어도 기전 진단에서 다음 반복 가설 ≥2 도출 의무(도훈 교정 07-13: 종결 어휘 금지 — negative는 config-scoped + 프론티어 표시로만)",
+      "status": "config_scoped_negative_frontier_open",
+      "result": "config-scoped negative (2026-07-13, RAMP R11, selection_type=chain). 3-arm 측정(cap-w authoritative·weighted_screen_bt 계약·base parity Δ1.4e-5·IS-only 승자·config_hash 53403eaf16de7662): base cap-w 2.612·oos -0.076. armF(선별 cadence 6→3) cap-w 2.852·oos +0.121(P-pure 사상 최고)·post17SR 부호전환·paired full +0.42(IS -1.11 OOS +1.44)·factor-momentum 아님(churn 0.307→0.206·AC 0.86→0.92·TO flat). armB(대칭 보유밴드 [25,35]) cap-w 2.414 악화·oos -0.121·TO 9.27→6.81 절감에도 net 악화=경계 churn=신호(기전 falsified). armV(vintage 앙상블 3M offset) cap-w 2.895(최고·R10 W-stock 2.930 tie)·oos +0.087·코호트 Spearman 0.923(과-homogeneous·분산축소 modest). 2차 armV×sqrt IS 악화→폐기. max full paired +0.582<2.0·HARD 3종 0/5. 세 construction 축 동일 cap-w~2.9 천장=construction-invariant 진단(벽=cap-tier 국소화×cap-w). 대칭-construction config 한정 negative — 비대칭/이질 레버 미검증. L-RAMP-20260713_093129.",
+      "result_ref": "outputs/ramp/r11_ppure_dev_{prereg,gates,paired,conc,summary}_20260713.* + 02_Infrastructure/ramp/run_ramp_r11_ppure_dev.R + challenge: 04_Research/ramp/reports/challenge_note_r11_ppure_dev_20260713.md",
+      "next_action": "미검증 construction 프론티어(도훈 판정프레임 교정 07-13 — dead-end 아님, next_probe): [F-1] 팩터 퇴출 비대칭(진입 느리게·퇴출 빠르게) [F-2] 감쇠-속도(Δt) 선별 [B-1] 비대칭 밴드=oos-안정 레버 [B-2] 기여-기반 이탈 [V-1] 창 이질 앙상블(36m+60m 혼합) [V-2] 목적함수 이질 앙상블(PORT_t+rank-IC 코호트). 병행: 재료축 R9 DART insider(FQ-001).",
       "source_refs": [
-        "trigger: 도훈 2026-07-13 'P-pure 더 발전시켜봐'",
+        "trigger: 도훈 2026-07-13 'P-pure 더 발전시켜봐' + 판정프레임 교정('소진/dead-end' 어휘 금지·실패기전→다음가설 번역·config-scoped+frontier)",
         "diag: L-RAMP-20260713_084821 (R10) + challenge_note_r8 (trailing 감쇠)",
-        "precedent: stage_artifacts/pg2_w2_earnings3m S3_consensus_band paired +2.03"
+        "precedent: stage_artifacts/pg2_w2_earnings3m S3_consensus_band paired +2.03 (P-pure substrate 미전이)",
+        "L-RAMP-20260713_093129 (R11 backtested, construction_type=composite, selection_type=chain, n_trials lineage=18, next_probe 6종)"
+      ]
+    },
+    {
+      "id": "FQ-025",
+      "lane": "selection_discipline",
+      "title": "R12 — P-pure 비대칭·이질 construction chain (R11 next_probe 수렴점 소비)",
+      "hypothesis": "R11 두 진단의 수렴점 '퇴출은 빠르게·진입은 엄격하게': ①F-1 팩터 퇴출 비대칭(진입 느리게·퇴출 즉시) ②B-1 종목 비대칭 밴드(엄격 진입·즉시 퇴출 — R11 대칭밴드의 정확한 역) ③V-1 창 이질(36m+60m) 코호트 앙상블이 oos·cap-w를 유의 수준까지 미는가",
+      "ev_rationale": "R11이 도출한 next_probe 6종 중 기전 수렴(armF 신선풀 우위 + armB 퇴출지연 손해)이 있는 3종 우선. armF/armV의 OOS-집중 개선(+1.44/+1.62 paired) 방향과 정합. chain 연속(진단→가설 번역)",
+      "wall_check": "construction-invariant ~2.9 천장 진단 존재 — 본 라운드도 cap-tier 벽은 못 풀 수 있음(정직 병기). OOS 누적 노출 관리: R11 OOS는 게이트 산출로 소비됐고 R12는 자체 사전등록으로 신규 측정",
+      "data_gate": "없음",
+      "owner": "Q-Lead (R12 ramp-orchestrator)",
+      "status": "in_progress",
+      "next_action": "3 arm chain 측정 → 기전 진단 → 판정(negative여도 next_probe ≥2 도출 의무)",
+      "source_refs": [
+        "parent: FQ-024 config_scoped_negative_frontier_open + L-RAMP-20260713_093129 next_probe",
+        "교정: 도훈 07-13 종결어휘 금지 — 판정=config-scoped+frontier"
       ]
     }
   ]

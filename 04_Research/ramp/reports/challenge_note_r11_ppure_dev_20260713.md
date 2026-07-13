@@ -57,5 +57,20 @@
 - **chain 규율 준수**: 승자 지목 IS-only(OOS 미조회) · 2차 결합 승자 확정 후 · IS 악화로 결합 폐기(사전등록 규칙 그대로) · DSR 진단용(chain → 게이트 부적용).
 - **과대판결 차단**: armB '밴드=신호' 결론은 이 substrate 한정(S3 선례 부정 아님). armF 'factor-momentum 아님'은 이 측정 지문(churn/TO) 근거 — 일반 명제 아님.
 
+## No-Silent-Override 기록 (도훈 판정프레임 교정 2026-07-13, 측정 후·finalize 전)
+Q-Lead 경유 도훈 교정 수신: **측정 설계(3 arm + 2차 결합·prereg config_hash 53403eaf16de7662) 불변** — 판정/보고 규약만 변경. ① "구조 개선 chain 소진 — 남은 경로는 재료뿐" 조항 **폐기**, "소진/폐쇄/dead-end" 종결 어휘 금지. ② 대체: 각 arm 실패 기전에서 다음-반복 가설 ≥2 도출(L-code next_probe + 본 노트 아래). ③ 모든 negative = "config-scoped negative + 프론티어 표시". ④ 본 교정 자체를 기록(이 절). 최초 finalize 초안은 "chain 소진" 프레임이었고 교정 반영해 아래 재분류. (AX-000 조기-dead-end 금지 + INV-7 config-scoped·프론티어 정합.)
+
+## 다음-반복 가설 (실패 기전 → 다음에 무엇을 다르게, arm별 ≥2)
+- **armF (선별 신선도)** — 기전: cadence 단축은 oos 방향 개선(≠factor-momentum: churn↓·AC 0.92 sticky)이나 대칭 문턱이 감쇠 팩터를 지연 배출 → OOS-집중·유의 미달.
+  - **F-1 팩터 퇴출 비대칭**: 진입 엄격 trailing-t 문턱 / 퇴출 즉시(음전환·하위분위 시 배출, 재진입은 상위 재확인). staleness의 진짜 원인=퇴출 지연이지 갱신 주기 아님.
+  - **F-2 감쇠-속도(2차 도함수) 선별**: trailing-t 레벨 아니라 최근 3~6m Δt(기울기)로 선별 — 레벨 높으나 빠르게 식는 팩터 선제 배출(armF OOS-집중이 감쇠 국면 지목).
+- **armB (보유밴드)** — 기전: 대칭 밴드가 경계 churn(=신호)을 억제해 net 악화(비용 절감이 신호 손실로 상쇄).
+  - **B-1 비대칭 밴드(oos-안정 레버 재정의)**: 급락 감쇠명 즉시 배출(좁은 이탈) + 안정 상위명 관성 보유(넓은 잔류). 밴드를 비용 레버 아니라 방향별 oos-안정 레버로.
+  - **B-2 기여-기반 이탈**: 이탈 판정을 composite rank 아니라 종목 개별 trailing alpha 기여로 — 신호명 보유·잡음명 배출 분리.
+- **armV (선별-vintage 앙상블)** — 기전: 3M-offset 코호트가 과-homogeneous(Spearman 0.92)라 분산축소 modest.
+  - **V-1 창 이질 앙상블**: offset 폭 아니라 trailing 창 이질화 = 36m(감쇠-민감)+60m(안정) 혼합(R6 W60 pool 재사용).
+  - **V-2 목적함수 이질 앙상블**: 한 코호트 trailing-PORT_t + 다른 코호트 trailing rank-IC/EW-uni active — objective-luck도 분산.
+- **병행 프론티어**: 재료축 R9 DART insider 비-수익 패널(FQ-001) — construction 프론티어와 독립·병행(택일 아님).
+
 ## 최종 분류
-**PARTIAL** — chain은 규율대로 완주(base parity·IS-only 승자·결합 폐기). 라운드 target(oos·감쇠 추적)은 **방향성 개선 실측**(armF oos −0.076→+0.121·post17SR 부호전환·armV cap-w 2.895)이나 **net-불충분**(full paired +0.582<2.0·HARD 3종 0/5·oos<<0.7·개선 OOS-집중·IS 음). 적대 라운드가 판정을 못 뒤집고 scope 정밀화: **(C①) armF≠factor-momentum(churn↓·AC↑·TO flat); (C②) armB 밴드 기전 falsified(경계 churn=신호); (C③) armV 분산축소 실효는 modest(코호트 0.92 고상관); (C④) 승자 지목은 nominal, 실개선=OOS-집중·unselectable; (C⑤) 세 독립 construction 축의 동일 ~2.9 천장 = 벽 construction-invariant.** 메타: **P-pure 구조 개선 chain(선별 신선도/밴드/vintage/비중)은 소진** — cap-tier 국소화×cap-w 벽은 본 라운드가 못 풂(사전 명시대로). 남은 발전 경로 = **재료**(R9 DART insider 비-수익 패널, FQ-001). return-derived substrate 위 construction 튜닝은 R4~R11 일관 벽.
+**PARTIAL** — chain은 규율대로 완주(base parity Δ1.4e-5·IS-only 승자·결합 폐기). 라운드 target(oos·감쇠 추적)은 **방향성 개선 실측**(armF oos −0.076→+0.121·post17SR 부호전환·armV cap-w 2.895)이나 **net-불충분**(full paired +0.582<2.0·HARD 3종 0/5·oos<<0.7·개선 OOS-집중·IS 음) = **config-scoped negative**(대칭 선별문턱·대칭 밴드·homogeneous 3M-offset 코호트 config 집합 한정). 적대 라운드가 판정을 못 뒤집고 scope 정밀화: **(C①) armF≠factor-momentum(churn↓·AC↑·TO flat); (C②) armB 대칭 밴드 기전 falsified(경계 churn=신호); (C③) armV 분산축소 실효 modest(코호트 0.92); (C④) 승자 지목 nominal·실개선 OOS-집중·unselectable; (C⑤) 세 독립 construction 축 동일 ~2.9 천장 = 벽 construction-invariant.** 메타: 세 construction 축의 동일 천장은 **비대칭/이질 construction 레버(위 next_probe F-1/F-2·B-1/B-2·V-1/V-2)를 미검증으로 남긴 프론티어 표시**이지 종결이 아니다. cap-tier 국소화×cap-w 벽은 본 라운드가 못 풂(사전 명시) = construction-invariant 진단. return-derived substrate 위 대칭-construction 튜닝은 R4~R11 config-scoped negative — 프론티어(비대칭/이질 construction · 재료 R9) 열림.
