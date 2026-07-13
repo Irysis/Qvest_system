@@ -456,11 +456,30 @@
       "wall_check": "construction-invariant ~2.9 천장 진단 존재 — 본 라운드도 cap-tier 벽은 못 풀 수 있음(정직 병기). OOS 누적 노출 관리: R11 OOS는 게이트 산출로 소비됐고 R12는 자체 사전등록으로 신규 측정",
       "data_gate": "없음",
       "owner": "Q-Lead (R12 ramp-orchestrator)",
-      "status": "in_progress",
-      "next_action": "3 arm chain 측정 → 기전 진단 → 판정(negative여도 next_probe ≥2 도출 의무)",
+      "status": "config_scoped_negative_frontier_open",
+      "result": "config-scoped negative (2026-07-13, RAMP R12, selection_type=chain, config_hash 85d9c45646a8bb3a·base parity Δ1.4e-5·IS-only 승자·R11 OOS 미입력). 3-arm(cap-w authoritative·weighted_screen_bt 계약): base cap-w 2.612·oos -0.076. armF-1(비대칭 퇴출: 진입 반기 full/퇴출 분기 즉시 rank>30·부호flip) cap-w 2.937(계보 최고·R10 W-stock 2.930·R11 armV 2.895 초과·자본문턱 2.95까지 0.013)·oos +0.048·paired full +1.819(계보 최고·IS +0.410 첫 양의 IS·OOS +2.159 유의)·post17SR 부호전환. armB-1(비대칭 밴드 진입≤20/퇴출>25=R11 대칭[25,35]의 역) cap-w 2.522(R11 armB 2.414보다 개선이나 base 미달)·oos -0.021·paired -0.321(IS -1.258 경계 신호 매도)·eff-N 24.95·HHI≈base(under-hold/집중 아님·short 7/220). armV-1(창 이질 36m∪60m 합집합) cap-w 2.348(역효과)·Jaccard 0.491(R11 0.671보다 더 다양=목표달성이나 60m stale 주입으로 신호 희석). 1차 IS 승자=armF-1. 2차 결합 없음. max full paired +1.819<2.0·HARD 3종 0/5·oos +0.048<<0.7. 확립: (C①)armF-1≠armF 재발견(churn 0.057<0.069·Jaccard 0.906·TO↓·cap-w↑=exit>refresh, cap-w축·oos 부분복제 caveat) (C②)B-1 엄격진입=집중 아님(부진=경계 신호 매도) (C③)V-1 이질≠개선(다양성 달성이나 stale 역효과) (C④/⑥)cap-w 축 포화~2.94·결속 벽=oos_retention construction-invariant(R10/R11/R12 4축 동일 천장). 비대칭 퇴출=construction 레버 중 최강이나 벽이 cap-w 아닌 oos 확증 → 프론티어 축 전환(construction 미세조정→감쇠속도 선별·재료 R9). L-RAMP-20260713_100638.",
+      "result_ref": "outputs/ramp/r12_asym_{prereg,gates,paired,conc,summary}_20260713.* + 02_Infrastructure/ramp/run_ramp_r12_asym.R + challenge: 04_Research/ramp/reports/challenge_note_r12_asym_20260713.md + charts: stage_artifacts/ramp_r12/*.png",
+      "next_action": "미검증 프론티어(config-scoped negative·종결 아님, L-RAMP-20260713_100638 next_probe 7종): [F-1a] 퇴출-트리거×감쇠속도(Δt) 융합 [F-1b] 퇴출문턱 sweep 목표=oos 최대화(cap-w 포화 대응) [B-1a] 기여-기반 퇴출 [B-1b] B-1 밴드×armF-1 pool 스택(2차 결합) [V-1a] 교집합+비대칭 가중(stale 주입 차단) [V-1b] 60m를 감쇠속도-필터 pool로 대체. 메타 축전환: cap-w 축 포화(2.94) → oos/감쇠 축(감쇠속도 선별)+재료 축(R9 DART insider, FQ-001, backfill 완료 후).",
       "source_refs": [
-        "parent: FQ-024 config_scoped_negative_frontier_open + L-RAMP-20260713_093129 next_probe",
-        "교정: 도훈 07-13 종결어휘 금지 — 판정=config-scoped+frontier"
+        "parent: FQ-024 config_scoped_negative_frontier_open + L-RAMP-20260713_093129 next_probe(F-1/B-1/V-1)",
+        "교정: 도훈 07-13 종결어휘 금지 — 판정=config-scoped+frontier",
+        "L-RAMP-20260713_100638 (R12 backtested, construction_type=composite, selection_type=chain, n_trials lineage=21, next_probe 7종)"
+      ]
+    },
+    {
+      "id": "FQ-026",
+      "lane": "selection_discipline",
+      "title": "R13 — P-pure 감쇠속도(oos) 축 chain (R12 메타진단 축전환 소비)",
+      "hypothesis": "바인딩 축=oos_retention(construction-invariant, cap-w 4축 ~2.94 포화 실측). 선별·퇴출 기준을 trailing '수준'에서 '감쇠 속도/일관성'으로 전환하면 oos가 움직이는가: ①감쇠속도 선별(recent-half vs older-half 차분) ②F-1a 융합(비대칭 퇴출 트리거=감쇠속도) ③부분창 일관성 가중 선별",
+      "ev_rationale": "R12 next_probe 축전환 지시 소비. 1차 endpoint = oos_retention(cap-w는 2차) — 실패 축을 직접 조준하는 첫 라운드. 재료는 realized-PORT_t 유지(R7 교훈: 라벨 재료가 지배적) — 시간 함수형만 변경",
+      "wall_check": "cap-tier 국소화 벽 잔존(정직 병기). 감쇠속도 = 팩터 모멘텀 수렴 위험 → R11 C①식 churn/풀궤적 판별 의무",
+      "data_gate": "없음",
+      "owner": "Q-Lead (R13 ramp-orchestrator)",
+      "status": "in_progress",
+      "next_action": "3 arm chain → 기전 진단 → 판정(config-scoped + next_probe ≥2)",
+      "source_refs": [
+        "parent: FQ-025 + L-RAMP-20260713_100638 next_probe(F-1a/F-1b/V-1b + 메타 축전환)",
+        "binding: R12 C④/C⑥ oos construction-invariant 진단"
       ]
     }
   ]

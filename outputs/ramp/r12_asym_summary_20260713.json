@@ -1,0 +1,271 @@
+{
+  "prereg": {
+    "mode": "RAMP",
+    "round": "R12",
+    "fq": "FQ-025",
+    "question": "R11 next_probe 수렴점 '퇴출 빠르게·진입 엄격하게'를 세 비대칭/이질 construction 기전(팩터 퇴출 비대칭 / 종목 비대칭 밴드 / 창 이질 앙상블)으로 공략",
+    "base": "Ppure_W36_K20 (종목 EW × 팩터 EW, R6 저장 2.6124 parity 앵커)",
+    "selection_type": "chain",
+    "chain_discipline": "arm 간 선택 IS-only(첫 65% 배포월 paired-t) · oos는 최종 게이트 산출로만 · 2차 결합 없음(1차만) · DSR 진단용(게이트 부적용)",
+    "oos_exposure_mgmt": "R11 OOS(게이트 산출로 소비됨)는 arm 선택 입력으로 미사용 — 가설 동기로만. R12는 자체 사전등록 신규 측정(IS-only 승자는 R12 IS paired-t)",
+    "arms": {
+      "armF1_asym_exit": {
+        "mechanism": "진입=반기(cadence6) full top-K20 / 퇴출=분기(cadence3) 즉시(held rank>30 또는 trailing-t<0 배출·빈슬롯 차순위 충원)",
+        "diag": "armF 개선 원천이 '감쇠 팩터 조기 제거'라면 갱신 전체(armF full 재선별) 아니라 퇴출만 빨라도 충분·회전 비용 더 적다",
+        "adversarial": "C① 차별성 = F-1 pool churn·TO·Jaccard vs armF cadence3 대조(퇴출 가속이 사실상 cadence3와 동일 효과인가)"
+      },
+      "armB1_asym_band": {
+        "mechanism": "진입 엄격 rank<=20 만 신규진입 / 퇴출 즉시 rank>25 이탈 매도. 25종 미달 월 기존 보유 유지분 best-rank 충원(봉투<=25)",
+        "diag": "armB 반증(퇴출 지연=손해) 방향 — 퇴출 즉시로 두고 경계 신규진입 잡음만 진입 문턱으로 거른다",
+        "adversarial": "C② eff-N·HHI·n_hold — 엄격 진입이 유효 종목수 미달/집중을 만드는가"
+      },
+      "armV1_hetero_window": {
+        "mechanism": "36m 코호트 pool ∪ 60m 코호트 pool(R6 W60 궤적 재사용) → 합집합 위 EW composite(합의)",
+        "diag": "R11 armV 한계=코호트 과-동질(3M-offset Spearman 0.92) → offset 아니라 관측창 이질화(36m 감쇠민감+60m 안정)로 진짜 다양성",
+        "adversarial": "C③ Jaccard·Spearman(36,60) vs R11 armV(0.671/0.923) — 이질 코호트의 실제 다양성"
+      }
+    },
+    "no_2nd_combine": "이번엔 1차만(결합은 R11서 IS-폐기 선례)",
+    "gate_hard": [2.95, 0.7, 0.64, 0.5],
+    "primary_criterion": "1차 승자 = R12 자체 IS paired NW-t(cap-w act_bm) vs base 최대(IS-only). 최종 판정 = full HARD 3종 + full paired vs base + oos_retention",
+    "kill_rule": "전 arm full paired<2.0 AND HARD 3종 0/N AND oos_retention 0.7 미도달 → config-scoped negative(대칭→비대칭 config 집합 한정). '소진/dead-end' 어휘 금지 — next_probe >=2 도출 의무",
+    "honest_frame": "본 라운드=비대칭/이질 construction 레버 검증. construction-invariant ~2.9 천장 진단 존재 → cap-tier×cap-w 벽은 못 풀 수 있음(정직 병기). return-derived substrate 재사용(신규 재료 아님)",
+    "is_frac": 0.65,
+    "top_n": 25,
+    "cost_bps_oneway": 15,
+    "liq_min": 200000000,
+    "cap": 0.2,
+    "floor_frac": 0.25,
+    "cadence_entry": 6,
+    "cadence_exit": 3,
+    "exit_rank_bar": 30,
+    "b1_enter": 20,
+    "b1_exit": 25,
+    "windows": [36, 60],
+    "n_trials_r12": 3,
+    "n_trials_lineage": 21,
+    "r11_ref": {
+      "base_capwt": 2.6124,
+      "armF_capwt": 2.852,
+      "armF_oos": 0.1208,
+      "armV_capwt": 2.8948,
+      "armV_oos": 0.0868
+    },
+    "cost_model": "delta-based |Δw|×15bps one-way (weighted_screen_bt 내장 — 밴드/선별 회전 자동 반영)",
+    "xmode_check": "hypothesis_index: factor-momentum timing NULL(06-30) prior — F-1 퇴출가속이 armF cadence3(full 재선별)와 다른가 = churn/TO/Jaccard 적대검증. B-1/V-1은 R11 next_probe 직계(중복 아님, INV-7 재도전)",
+    "vintage_pin": "r6_session_20260711 (sel_traj 36+60/pure_factor_scores/factor_group_scores/rawdata/panel; base parity Δ=0 확인)",
+    "as_of_date": "2026-07-13",
+    "source_version": "RAMP_R12_v1",
+    "security_id": "Ticker (rawdata) -> factor_id z (pure_factor_scores.z=Z_Score_Aligned)",
+    "config_hash": "85d9c45646a8bb3a",
+    "generated_at": "2026-07-13T09:58:56+0900"
+  },
+  "config_hash": "85d9c45646a8bb3a",
+  "meta": {
+    "as_of_date": "2026-07-13",
+    "generated_at": "2026-07-13T09:59:15+0900",
+    "source_version": "RAMP_R12_v1",
+    "security_id": "Ticker->factor_id z (pure_factor_scores.z=Z_Score_Aligned)"
+  },
+  "results": [
+    {
+      "model": "base",
+      "port_t_capwt": 2.6124,
+      "port_t_EWuni": 3.9191,
+      "oos_retention": -0.0759,
+      "calmar": 0.45,
+      "dsr": 1.7004,
+      "post2017_bm_sr": -0.1052,
+      "full_bm_sr": 0.676,
+      "turnover": 9.2705,
+      "n_months": 220
+    },
+    {
+      "model": "armF1_asym_exit",
+      "port_t_capwt": 2.937,
+      "port_t_EWuni": 4.3441,
+      "oos_retention": 0.0482,
+      "calmar": 0.4998,
+      "dsr": 2.007,
+      "post2017_bm_sr": 0.0346,
+      "full_bm_sr": 0.7564,
+      "turnover": 9.2269,
+      "n_months": 220
+    },
+    {
+      "model": "armB1_asym_band",
+      "port_t_capwt": 2.5218,
+      "port_t_EWuni": 3.7289,
+      "oos_retention": -0.0211,
+      "calmar": 0.4416,
+      "dsr": 1.6695,
+      "post2017_bm_sr": -0.0855,
+      "full_bm_sr": 0.6605,
+      "turnover": 6.4778,
+      "n_months": 220
+    },
+    {
+      "model": "armV1_hetero_window",
+      "port_t_capwt": 2.348,
+      "port_t_EWuni": 3.7824,
+      "oos_retention": -0.0934,
+      "calmar": 0.4262,
+      "dsr": 1.1917,
+      "post2017_bm_sr": -0.1768,
+      "full_bm_sr": 0.5768,
+      "turnover": 9.0567,
+      "n_months": 220
+    },
+    {
+      "model": "ctrl_armF_cad3",
+      "port_t_capwt": 2.852,
+      "port_t_EWuni": 4.2384,
+      "oos_retention": 0.1208,
+      "calmar": 0.4709,
+      "dsr": 1.8747,
+      "post2017_bm_sr": 0.1052,
+      "full_bm_sr": 0.722,
+      "turnover": 9.2793,
+      "n_months": 220
+    }
+  ],
+  "paired": [
+    {
+      "model": "armF1_asym_exit",
+      "mean_diff_ann": 0.0142,
+      "paired_t_full": 1.819,
+      "paired_t_IS": 0.4097,
+      "paired_t_OOS": 2.1593,
+      "n": 220,
+      "n_is": 143
+    },
+    {
+      "model": "armB1_asym_band",
+      "mean_diff_ann": -0.0035,
+      "paired_t_full": -0.3212,
+      "paired_t_IS": -1.2584,
+      "paired_t_OOS": 0.7372,
+      "n": 220,
+      "n_is": 143
+    },
+    {
+      "model": "armV1_hetero_window",
+      "mean_diff_ann": -0.0101,
+      "paired_t_full": -0.7019,
+      "paired_t_IS": -0.9029,
+      "paired_t_OOS": -0.1351,
+      "n": 220,
+      "n_is": 143
+    }
+  ],
+  "concentration": [
+    {
+      "model": "base",
+      "hhi": 0.04,
+      "n_eff": 25,
+      "maxw": 0.04,
+      "n_hold": 25,
+      "min_nhold": 25,
+      "w_MEGA": 0.086,
+      "w_MID": 0.1257,
+      "w_OTHER": 0.906,
+      "w_UNRANKED": 0
+    },
+    {
+      "model": "armF1_asym_exit",
+      "hhi": 0.04,
+      "n_eff": 25,
+      "maxw": 0.04,
+      "n_hold": 25,
+      "min_nhold": 25,
+      "w_MEGA": 0.0843,
+      "w_MID": 0.1235,
+      "w_OTHER": 0.9095,
+      "w_UNRANKED": 0
+    },
+    {
+      "model": "armB1_asym_band",
+      "hhi": 0.0401,
+      "n_eff": 24.9455,
+      "maxw": 0.0401,
+      "n_hold": 24.9455,
+      "min_nhold": 20,
+      "w_MEGA": 0.085,
+      "w_MID": 0.1195,
+      "w_OTHER": 0.906,
+      "w_UNRANKED": 0
+    },
+    {
+      "model": "armV1_hetero_window",
+      "hhi": 0.04,
+      "n_eff": 25,
+      "maxw": 0.04,
+      "n_hold": 25,
+      "min_nhold": 25,
+      "w_MEGA": 0.0745,
+      "w_MID": 0.1123,
+      "w_OTHER": 0.9271,
+      "w_UNRANKED": 0
+    }
+  ],
+  "base_parity": {
+    "r12_base_pt": 2.6124,
+    "r6_stored": 2.6124,
+    "delta": 0,
+    "ok": true
+  },
+  "winner_1st": "armF1_asym_exit",
+  "winner_is_t": 0.4097,
+  "challenge": {
+    "armF1": {
+      "pool_churn_base": 0.0505,
+      "pool_churn_F1": 0.0571,
+      "pool_churn_armF": 0.0687,
+      "jaccard_F1_armF": 0.9058,
+      "to_base": 9.2705,
+      "to_F1": 9.2269,
+      "to_armF": 9.2793,
+      "oos_F1": 0.0482,
+      "oos_armF": 0.1208,
+      "capwt_F1": 2.937,
+      "capwt_armF": 2.852
+    },
+    "armB1": {
+      "n_hold_mean": 24.9455,
+      "n_hold_min": 20,
+      "short_months": 7,
+      "n_eff": 24.9455,
+      "hhi": 0.0401,
+      "maxw": 0.0401,
+      "n_eff_base": 25,
+      "paired_is": -1.2584,
+      "paired_oos": 0.7372,
+      "name_churn_per_reb": 6.6895,
+      "to_base": 9.2705,
+      "to_B1": 6.4778
+    },
+    "armV1": {
+      "cohort_jaccard_mean": 0.4911,
+      "cohort_spearman_mean": 0.7971,
+      "union_size_mean": 27.1327,
+      "r11_armV_jaccard": 0.6706,
+      "r11_armV_spearman": 0.9226
+    }
+  },
+  "kill": true,
+  "max_paired_full": 1.819,
+  "any_graduation": false,
+  "best_oos_arm": 0.0482,
+  "n_trials_r12": 3,
+  "n_trials_lineage": 21,
+  "selection_type": "chain",
+  "n_sig": 257,
+  "date_range": ["2005-01-31", "2026-05-31"],
+  "r11_ref": {
+    "base_capwt": 2.6124,
+    "armF_capwt": 2.852,
+    "armF_oos": 0.1208,
+    "armV_capwt": 2.8948,
+    "armV_oos": 0.0868
+  }
+}
