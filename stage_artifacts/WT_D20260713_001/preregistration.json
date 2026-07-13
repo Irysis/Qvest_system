@@ -1,0 +1,74 @@
+{
+  "wt_id": "WT-D20260713_001",
+  "frontier_id": "FQ-030",
+  "iteration_label": "R17",
+  "mode": "QEPM_alpha_research",
+  "created": "2026-07-13",
+  "trigger": "도훈 2026-07-13 '팩터 좀 새로 만들고 싶은디' — 보유 데이터 신규 팩터 3종",
+  "selection_type": "sweep",
+  "n_trials_preregistered": 3,
+  "dsr_gate_applies": true,
+  "dsr_gate_note": "3종 사전등록 열거 = sweep → DSR 산출 의무. HARD 3종(PORT_t 2.95·oos_retention 0.7·calmar 0.64)은 forge-authoritative 값에만; alpha 단계는 canonical screening 실측(권위=선택, 졸업선언 금지).",
+  "api_calls": 0,
+  "data_provenance": "전부 보유 자산 (DART API 호출 0 — 병행 insider 백필 쿼터 보호). text_cache read-only.",
+  "universe": "KR_top342 (KOSPI200 ∪ KOSDAQ150; monthly_panel me K200|KQ150 flag)",
+  "cost_model": "15bps one-way (v2.4_kr_retail_15bps, delta-based)",
+  "liquidity_filter": "adv20 >= 2e8 KRW (t-1 PIT)",
+  "benchmark": "cap-w bench (monthly_panel bench_m) — cap-w HARD 판정 권위 불변; EW-uni + cap-tier = 진단 병기 (metric_type=canonical_screen_diag)",
+  "measurement_protocol": {
+    "screen": "canonical_screen_bt(top_n=25, cost_bps_oneway=15, liq_min=2e8, size_dt=Size, diag_dual_basis=TRUE)",
+    "selection_authority": "canonical portfolio_alpha_t_nw_lag3 (NW lag-3, cap-w) — advisory: rank-IC/ICIR",
+    "dual_basis": "diag_ew_universe (EW-uni 벤치 post2017_t/oos) + diag_cap_tier (MEGA top-10/MID 11-30/OTHER) 병기 — 기각 전 EW-대비·cap-tier 생존 확인 (M2 mandate)",
+    "windows": "full 2010-2026 | IS <2019 | OOS >=2019 (IS-only 변형선택 원칙; 본 sweep은 고정 스펙 3종 → OOS 1회 조회)",
+    "robustness": ["placebo (per-corp signal 월-shuffle 200회, p<0.05)", "Size partial (score~Size 회귀 후 잔차 재스크리닝 — 크기함정 분리; WT-005 교훈)", "subperiod (2010-2016 / 2017-2026)"]
+  },
+  "factors": [
+    {
+      "id": "F-A",
+      "name": "Lazy Prices KR — 사업보고서 YoY 텍스트 유사도",
+      "family": "text_disclosure_similarity",
+      "mechanism": "동일 corp 연속 연차 사업보고서 MD&A 텍스트가 유사할수록(문구 변화 없음) 미래수익 우위 — 문구 변경은 부정적 정보의 신호. Cohen-Malloy-Nguyen 2020 'Lazy Prices' (changers underperform) KR 이식.",
+      "literature": "Cohen, Malloy, Nguyen (2020, JF) 'Lazy Prices'",
+      "raw_source": "stage_artifacts/WT_D20260711_002/text_cache section_head (MD&A head <=8000 chars, 4432 OK rows, 670 corp, fy2010-2023). metric_type=canonical_screen; raw_similarity_scope='section_head <=8000char (full MD&A <=40000 미보존 → head 한정, 정직 라벨)'",
+      "formula": "sim(corp,Y) = 0.5*cosine(charNgram5_countvec(head_Y), head_{Y-1}) + 0.5*jaccard(charNgram5set(head_Y), head_{Y-1}); 연속 fy 쌍만(diff==1)",
+      "sign_prereg": "score = +sim (높은 유사도=long). 부호: 문구 변화 적음 = 우위",
+      "signal_timing": "연차보고서 rcept_dt의 월+1부터 usable (PIT C5), 12개월 유지 (stale 명시)",
+      "virgin_check": "hypothesis_index 883엔트리 대조 — lazy/유사도/jaccard/cosine/text-similarity hit 0건 → VIRGIN (텍스트 아크는 가독성 m1~m6만 소진, 유사도 축 미탐색)"
+    },
+    {
+      "id": "F-B",
+      "name": "사업보고서 제출 지연 (법정기한 대비)",
+      "family": "filing_timeliness",
+      "mechanism": "법정기한(FY말+90일=3/31) 대비 제출 지연일수 클수록 distress/부정정보 은폐 → 음(-) forward. 조기 제출=우수 거버넌스=long.",
+      "literature": "filing-delay distress (예: Bartov-Konchitchki 2017 계열; KR earliness)",
+      "raw_source": "stage_artifacts/WT_D20260711_002/filings_inventory.parquet (사업보고서 rcept_dt+fy, 677 corp, fy2009-2023)",
+      "formula": "delay_d(corp,Y) = rcept_date - (Dec31_Y + 90d); score = -z_cross-section(delay_d) per fy",
+      "sign_prereg": "score = -delay_z (지연 클수록 short; 조기=long)",
+      "signal_timing": "rcept_dt 월+1부터 usable, 12개월 유지",
+      "prior_overlap": "hypothesis_index: 'DART Disclosure Earliness (KR-native)' FAIL(2026-06-11, hard_fail=MDD 55.8%>45%). 단 (a) MDD 단독 hard_fail은 2026-06-13 게이트 완화로 폐지(structural drawdown만) (b) 측정=alpha-search bare β≈0.8 frame. 본 F-B = canonical cap-w top-25 dual-basis + Size-partial 재측정 → config-scoped 차별 측정(설정판결 아님, INV-7). 동일 신호 축임을 정직 명시."
+    },
+    {
+      "id": "F-C",
+      "name": "임원·주요주주 공시 건수 YoY 급변 (이벤트 밀도)",
+      "family": "insider_filing_activity_change",
+      "mechanism": "corp별 임원·주요주주 소유상황보고 건수의 YoY 급변 = 내부자 활동/이벤트 밀도 급증 = 불확실성 → 1차 부호 급증=음(-). 양방향 열어둠.",
+      "literature": "disclosure/insider activity intensity (event density)",
+      "raw_source": ".cache/dart/insider_activity_hist.parquet (ym·corp_code·Ticker·n_insider, 2012-2023, 13440행, 327 in-univ)",
+      "honest_relabel": "원 task는 '전체 공시 총건수'이나 보유 자산에 전체-유형 공시 count 데이터 부재 → insider(임원·주요주주) 공시 건수로 정직 축소. metric_type=canonical_screen; scope='insider-filing count only, NOT all-disclosure'. 전체공시 버전 = full list.json 크롤 필요 → next_probe(익일 쿼터).",
+      "formula": "q_cnt(corp,q) = sum(n_insider over quarter); yoy(corp,q) = (q_cnt - q_cnt_{q-4}) / (q_cnt_{q-4}+1); score = -z_cross-section(yoy)",
+      "sign_prereg": "score = -yoy_z (급증=short). 양방향 진단 병기",
+      "signal_timing": "분기말 count → 익월+1 usable (PIT), 3개월 유지",
+      "differentiation": "WT-D20260710_005(insider net-buy MAGNITUDE, MARGINAL) + L-AR-20260710_234439(정정 '빈도')와 구분: F-C = 공시 COUNT 급변(활동강도/churn), 방향·크기·정정 아님. 단 insider 계열 confound 가능 → challenge_note에서 orthogonality 진단.",
+      "confound_flag": "HIGH — insider lane과 데이터 원천 공유. Size-partial + placebo로 판별."
+    }
+  ],
+  "hard_gates_reference": {
+    "PORT_t_nw_lag3": ">=2.95 (forge-authoritative; canonical은 screening 실측)",
+    "oos_retention": ">=0.7 (v2 anchored 3분할 중앙값)",
+    "calmar": ">=0.64",
+    "DSR": ">=0.5 (sweep — 3 trials)"
+  },
+  "survivor_criterion": "placebo p<0.05 AND Size-무관(Size-partial 잔차 재스크리닝서 PORT_t 부호·유의 유지) → add_factor 온보딩 권고(Q-Lead 확인 후) + P-pure(R6) 확장 후보",
+  "verdict_vocabulary": "config-scoped negative + 프론티어 표시만. 종결어휘 금지. next_probe >=2 = 보고 완성 요건.",
+  "screen_route_rule": "PIT만 절대. 신호력 실재(SR>=0.7 또는 EW-uni 생존)면 screen_route(OVERLAY_CANDIDATE/FR_RCMA/TURNOVER_REVIEW)로 라우팅. cap-w FAIL이나 EW-대비 생존 시 'cap-w 벤치 미스매치 가능' 라벨."
+}
