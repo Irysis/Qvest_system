@@ -1,0 +1,107 @@
+{
+  "wt_id": "WT-D20260713_005",
+  "arm": "A_crisis_conditional_lowbeta_tilt",
+  "tilt_spec": {
+    "gamma": 0.5,
+    "form": "w_base × sqrt(pmax(1+gamma*z(-beta),0.05)), renorm cap0.20",
+    "N_sleeve": 20,
+    "applied_when": "regime_state ∈ {CRISIS,CAUTION}",
+    "overlay": "m4×β_R05 common to all arms"
+  },
+  "arms": {
+    "base": {
+      "port_t": -0.502,
+      "net_sr": -0.123,
+      "ir": -0.123,
+      "turnover": 5.77,
+      "mean_active": -0.00235,
+      "cagr": 0.0536,
+      "mdd": 0.5681,
+      "calmar": 0.094,
+      "oos_retention": -2.619,
+      "n": 245
+    },
+    "armA_K": {
+      "port_t": -0.495,
+      "net_sr": -0.121,
+      "ir": -0.121,
+      "turnover": 6.109,
+      "mean_active": -0.00232,
+      "cagr": 0.0541,
+      "mdd": 0.5679,
+      "calmar": 0.095,
+      "oos_retention": -2.59,
+      "n": 245
+    },
+    "armA_O": {
+      "port_t": -0.5,
+      "net_sr": -0.122,
+      "ir": -0.122,
+      "turnover": 6.127,
+      "mean_active": -0.00235,
+      "cagr": 0.0538,
+      "mdd": 0.5678,
+      "calmar": 0.095,
+      "oos_retention": -2.611,
+      "n": 245
+    },
+    "placebo_K_shift12m": {
+      "port_t": -0.557,
+      "net_sr": -0.137,
+      "ir": -0.137,
+      "turnover": 6.033,
+      "mean_active": -0.0026,
+      "cagr": 0.051,
+      "mdd": 0.5681,
+      "calmar": 0.09,
+      "oos_retention": -2.845,
+      "n": 245
+    }
+  },
+  "paired": {
+    "K_vs_base_full": {
+      "nw_t": 0.435,
+      "mean_annual": 0.00035,
+      "n": 245
+    },
+    "K_vs_base_crisis": {
+      "nw_t": 1.274,
+      "mean_annual": 0.00813,
+      "n": 18
+    },
+    "K_vs_O_kalman_marginal": {
+      "nw_t": 0.988,
+      "mean_annual": 0.00027,
+      "n": 245
+    },
+    "placebo_vs_base_full": {
+      "nw_t": -1.155,
+      "mean_annual": -0.00297,
+      "n": 245
+    }
+  },
+  "ax001v2_conditional": {
+    "regime_crisis_months": 18,
+    "market_crisis_months": 62,
+    "base_regime_crisis_active": -0.03364,
+    "K_regime_crisis_active": -0.03296,
+    "K_minus_base_regime_crisis": {
+      "nw_t": 1.274,
+      "mean_annual": 0.00813,
+      "n": 18
+    },
+    "base_mkt_crisis_active": 0.00516,
+    "K_mkt_crisis_active": 0.00548,
+    "mdd_base": 0.5681,
+    "mdd_K": 0.5679,
+    "mdd_relief": 0.0002,
+    "note": "AX-001v2 조건부: 전기간 SR 채점 금지. 위기구간 active + Core(base) 대비 MDD 완화."
+  },
+  "crisis_months_regime": 18,
+  "cost_model_version": "v2.4_kr_retail_15bps",
+  "universe": "KR_top342 (K200∪KQ150, LIQ 2e8)",
+  "selection_objective": "canonical_port_t",
+  "n_trials": 2,
+  "selection_type": "sweep",
+  "interpret": "arm A는 book-construction 개선 여부(AX-001v2). K_vs_base = 틸트 순효과, K_vs_O = 칼만 한계기여, placebo_vs_base = 시점-무관 스타일 효과(유의하면 R3 재판)."
+}
