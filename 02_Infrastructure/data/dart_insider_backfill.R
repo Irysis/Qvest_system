@@ -68,23 +68,45 @@ for (ym in months) {
   if (!nrow(ins)) { fwrite(data.table(ym = ym, note = "no_universe_insider"), ck);
                     cat(sprintf("[bf] %s: 0 universe insider (calls=%d)\n", ym, calls)); next }
 
-  rows <- list(); partial <- FALSE
+  # [2026-07-13 수리] 단발 429/503에 즉시 halt하던 fail-fast가 대형 월(202001+ 600건대)에서
+  # "partial → 체크포인트 스킵 → 재시도" 무한루프 유발(201912 정체 실사고, 3h 스케줄 반복 공전).
+  # 일시 오류 = 백오프 재시도 2회 → 소진 시 해당 문서만 note 행 기록 후 계속(월당 실패율 2% 초과면 partial).
+  # 진짜 일한도(status 020)만 즉시 halt.
+  .is_rate  <- function(pr) !is.null(pr) && "note" %in% names(pr) &&
+    any(grepl("020|rate|http_fail_(429|503)", as.character(pr$note)), na.rm = TRUE)
+  .is_quota <- function(pr) !is.null(pr) && "note" %in% names(pr) &&
+    any(grepl("\\b020\\b", as.character(pr$note)), na.rm = TRUE)
+  rows <- list(); partial <- FALSE; fail_n <- 0L
   for (i in seq_len(nrow(ins))) {
     if (calls >= DAILY_BUDGET) { partial <- TRUE; break }
     calls <- calls + 1L
     # elestock.json(최근2년 cap) → document.xml 원문 파서(역사 전구간). parse_insider_doc가 GET 자체수행.
     pr <- tryCatch(parse_insider_doc(ins$rcept_no[i], KEY), error = function(e) NULL)
     Sys.sleep(DELAY)
-    if (!is.null(pr) && "note" %in% names(pr) &&
-        any(grepl("020|rate|http_fail_(429|503)", as.character(pr$note)), na.rm = TRUE)) {
-      cat("[bf] DART rate-limit/http halt — stop\n"); halted <- TRUE; partial <- TRUE; break
+    retry <- 0L
+    while (.is_rate(pr) && !.is_quota(pr) && retry < 2L && calls < DAILY_BUDGET) {
+      retry <- retry + 1L; Sys.sleep(5 * retry)
+      calls <- calls + 1L
+      pr <- tryCatch(parse_insider_doc(ins$rcept_no[i], KEY), error = function(e) NULL)
+      Sys.sleep(DELAY)
+    }
+    if (.is_quota(pr)) { cat("[bf] DART status 020 (일한도) — halt\n"); halted <- TRUE; partial <- TRUE; break }
+    if (.is_rate(pr)) {
+      fail_n <- fail_n + 1L
+      rows[[length(rows) + 1L]] <- data.table(ym = ym, rcept_dt = ins$rcept_dt[i],
+                                              note = sprintf("doc_fail_after_retry:%s", ins$rcept_no[i]))
+      next
     }
     if (!is.null(pr) && nrow(pr) > 0) {
       pr[, rcept_dt := ins$rcept_dt[i]]; pr[, ym := ym]
       rows[[length(rows) + 1L]] <- pr
     }
   }
-  if (partial) { cat(sprintf("[bf] %s partial (budget/halt at report %d/%d) — skip checkpoint, redo next run\n", ym, i, nrow(ins))); break }
+  if (!partial && fail_n > max(2L, as.integer(0.02 * nrow(ins)))) {
+    cat(sprintf("[bf] %s doc 실패 과다(fail_n=%d/%d) — skip checkpoint, redo next run\n", ym, fail_n, nrow(ins)))
+    partial <- TRUE
+  }
+  if (partial) { cat(sprintf("[bf] %s partial (budget/halt at report %d/%d, fail_n=%d) — skip checkpoint, redo next run\n", ym, i, nrow(ins), fail_n)); break }
 
   out <- if (length(rows)) rbindlist(rows, fill = TRUE) else data.table(ym = ym, note = "no_insider_trades")
   fwrite(out, ck)
