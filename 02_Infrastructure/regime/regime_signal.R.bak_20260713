@@ -879,36 +879,6 @@ build_regime_signal_table_daily <- function(save_path = NULL,
   }
   dir.create(dirname(save_path), recursive = TRUE, showWarnings = FALSE)
   write_parquet(signal_dt, save_path)
-
-  # ── regime_current.json emit (2026-07-13 위생수리 task #48 — 애초 미배선이던 생성기 신설) ──
-  #   monitoring 표준 입력 + hooks/covariance_freshness_gate.sh(regime_tag 대조, warn-only) 소비.
-  #   regime_tag = 엔진 Category 어휘 그대로 / regime_tag_m4 = M4 어휘 병기 —
-  #   리더 대조값이 M4 어휘일 때 enum 드리프트 오경보 방지(매핑은 보수 = 위험 과대 방향).
-  #   emit 실패는 비차단(warn) — 엔진 parquet 빌드를 막지 않는다.
-  if (basename(save_path) == "unified_regime_signal_daily.parquet") {
-    tryCatch({
-      last_row <- signal_dt[which.max(Date)]
-      m4_map <- c(RISK_ON = "BULL", NEUTRAL = "NORMAL", CAUTION = "CAUTION",
-                  RISK_OFF = "CRISIS", CRISIS = "CRISIS")
-      tag <- as.character(last_row$Category)
-      tag_m4 <- unname(m4_map[tag]); if (is.na(tag_m4)) tag_m4 <- tag  # 미지 enum 방어
-      jsonlite::write_json(list(
-        regime_tag    = tag,
-        regime_tag_m4 = tag_m4,
-        date          = as.character(last_row$Date),
-        score         = round(as.numeric(last_row$Regime_Score), 4),
-        source        = "unified_regime_signal_daily.parquet",
-        generated_at  = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
-        m4_map_note   = "RISK_ON→BULL, NEUTRAL→NORMAL, CAUTION→CAUTION, RISK_OFF→CRISIS(보수), CRISIS→CRISIS"
-      ), file.path(CACHE_DIR, "regime_current.json"), auto_unbox = TRUE, pretty = TRUE)
-      if (verbose) cat(sprintf("[regime_signal/daily] regime_current.json emitted: %s (%s / m4 %s)\n",
-                               as.character(last_row$Date), tag, tag_m4))
-    }, error = function(e) {
-      cat(sprintf("[regime_signal/daily][warn] regime_current.json emit 실패(비차단): %s\n",
-                  conditionMessage(e)))
-    })
-  }
-
   if (verbose) {
     cat(sprintf("\n[regime_signal/daily] Saved: %s (%d rows)\n",
                 save_path, nrow(signal_dt)))

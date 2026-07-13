@@ -54,10 +54,26 @@
 
 ---
 
-## Item 2 — `.cache/regime_current.json` 부재 (하기 추가)
+## Item 2 — `.cache/regime_current.json` 부재 (복원 + 상시 배선 완료)
 
-(작성 중 — 조사·복원 후 추가)
+### 판정: (c) 애초 미배선
+조사(Q-Lead 수령) 결과 repo 전체에서 `regime_current.json`을 **쓰는 코드가 전무** — 참조·리더만 존재(covariance_freshness_gate.sh L58-71의 optional read, monitoring/risk 프롬프트·스킬 문서의 표준 입력 언급). 스케줄 단절·cleaner 삭제가 아니라 **생성기가 처음부터 없던 배선 공백**. 국면 엔진 자체는 정상 가동 중(`.cache/unified_regime_signal_daily.parquet` 2026-07-13 07:13 신선, 11,227행 2000-01-01~2026-07-10).
 
-## Item 3 — AR 트랙 recon NOT_TRACKED (조사만, 수리 안 함)
+### 복원 (일회성)
+`generate_regime_current.R` — 엔진 parquet 최종행(2026-07-10)에서 생성:
+```json
+{"regime_tag":"CRISIS","regime_tag_m4":"CRISIS","date":"2026-07-10","score":43.7877,
+ "source":"unified_regime_signal_daily.parquet","generated_at":"...","m4_map_note":"RISK_ON→BULL, NEUTRAL→NORMAL, CAUTION→CAUTION, RISK_OFF→CRISIS(보수), CRISIS→CRISIS"}
+```
+두 어휘 병기: `regime_tag` = 엔진 Category vocab 그대로(RISK_ON/NEUTRAL/CAUTION/RISK_OFF/CRISIS), `regime_tag_m4` = M4 vocab(BULL/NORMAL/CAUTION/CRISIS) 보수(위험 과대) 매핑 — 리더 대조값이 M4 어휘일 때 enum 드리프트 오경보 방지.
 
-(작성 중 — 조사 후 추가)
+### 재발 방지 배선
+`02_Infrastructure/regime/regime_signal.R` 패치(백업 `.bak_20260713`): `build_regime_signal_table_daily()`의 `write_parquet(unified_regime_signal_daily)` 직후 동일 스키마 JSON emit 추가 — **엔진이 돌 때마다 JSON 자동 갱신**. emit 실패는 tryCatch warn(비차단, 엔진 빌드 보호). 검증: daily 빌드 1회 실구동(`verify_regime_emit.R`) → parquet 재생성(11,227행 동일, 최종행 값 불변 = rerun 결정적) + JSON emit + 정합검사 **PASS**(JSON == parquet 최종행, generated_at 갱신).
+
+### Caveat 2건 (도훈/Q-Lead 판단 재료, 비차단)
+1. **enum 드리프트**: 유일 실행 리더 covariance_freshness_gate.sh는 top-level `regime_tag`를 covariance meta sidecar의 `regime_tag`와 **문자열 동등 비교**하는데, 기존 sidecar 태그는 자유형 소문자 텍스트("caution_baseline"·"normal_to_rate_hike_transition"·"normal", `.cache/covariance/*.meta.json` 실측) — 어휘 표준화 전까지 구 sidecar 대상 mismatch warn은 발생할 수 있음(단 gate는 log-only 비차단 + 해당 sidecar들은 age>30d stale로 어차피 warn 대상).
+2. **★국면 소스 간 divergence (실측)**: 같은 날짜(2026-07-10) 기준 — 엔진 daily cascade는 **CRISIS**(MSM_Crisis_Prob≈1.0이 07-02부터 8거래일 연속 → ≥0.9 단락 escalation. 단 코드 주석상 Category는 display-only, production 결정은 Score/Cash_Pct이며 Score 43.79=base NEUTRAL·Cash_Pct 0) vs gap_vector.regime_state는 **NEUTRAL/score 0**(score 0은 classify 산식상 RISK_ON이 나와야 하므로 하드코딩 fallback으로 추정). monitoring 202607의 "CAUTION(recon)→NEUTRAL(현) 전이" 서술은 gap_vector fallback 기반 — 엔진 기준으로는 display-CRISIS. **두 소스 중 어느 쪽을 국면 서술 권위로 둘지 + MSM 8일 연속 1.0의 진위(멜트업 국면에서 crisis prob 포화)는 본 task 범위 밖 — 별도 확인 권고.**
+
+## Item 3 — AR 트랙 recon NOT_TRACKED (지시대로 수리 안 함 — 조사만)
+
+**현황**: `06_Registry/live_track/STR_1715_AR_on_M4_R05_overlay_PG2/` = holdout_interval.json(2026-06-10 봉인, un-consumed 유효) + monitoring_report_202607.json(verdict **NOT_TRACKED**, track_role `rollback_preserved_inactive`) 2개뿐 — recon 시계열·paper_nav 부재. **왜 없는가**: AR 북은 라이브 트래킹 개시 전에 교체됨(FaithTrend 07-01 admit → noLayer4 07-02 전환)이라 트래킹 시계열을 만들 계기가 없었고, monitoring은 "미배포 북 recon 재구성은 범위 밖 + 추정 금지" 원칙으로 수치 날조 없이 NOT_TRACKED로 정직 보고 — **의도적 rollback 동결 상태이지 사고가 아님**. **복원 비용: 낮음** — `qepm/mailbox/worktask/WT-D20260702_002/output/bt_result_B_AR.rds`(07-02 forge retrial 계약 산출, β_AR 포함 AR 변형 recon)에서 period_returns 추출만으로 live_book_series 등가물 생성 가능(본 task item 1 repair 스크립트와 동일 패턴, 파이프라인 재실행 불요). 단 caveat: 그 rds도 07-02 vintage 입력 패널 기준이라 item 1과 동일한 2026-06 m4 vintage 주의가 따라붙으며, AR 재활성 시 신규 사전등록 holdout 구간 필요 여부 검토 필요(monitoring caveat 동일). **rollback 보존 목적상 현행 동결 유지가 정합 — 복원 여부는 도훈 판단.**
