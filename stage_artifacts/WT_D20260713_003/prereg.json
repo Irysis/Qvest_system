@@ -1,0 +1,74 @@
+{
+  "wt_id": "WT-D20260713_003",
+  "fq_id": "FQ-032",
+  "label": "R19 — 칼만 시변베타 BAB 격리 측정 (추정기 교체 한계기여)",
+  "created": "2026-07-13",
+  "owner": "alpha-research (R19)",
+  "mode": "QEPM alpha lane",
+  "trigger": "도훈 문의 'BAB에 칼만필터 튜닝을 가미한 팩터' (2026-07-13)",
+  "rawdata_pin_tag": "RAWDATA_mtime20260713-000411_size421258666",
+  "frame_honest": {
+    "prior": "기존 BAB(롤링 OLS β) 배포권 실측 PORT_t = -2.02 (measurement-graduation §6). 방어 family negative(AX-005 계보, 07-03 방어팩터 전수).",
+    "purpose": "부활 실험이 아니라 추정기 교체(OLS→Kalman)의 한계기여 격리. (a) 랭킹이 실질적으로 달라지는가 (b) 달라진 부분이 canonical에서 유의한가. Kalman = 원장 측정 0의 처녀 기법.",
+    "reclassify_note": "이 측정은 canonical PORT_t로 판정하되, 결과 negative여도 판정어휘 = 'config-scoped negative + 프론티어 표시'만 (next_probe >= 2 의무)."
+  },
+  "endpoint_hierarchy": {
+    "primary": {
+      "name": "β 추정 정확도 (Q-Lead 교정 2026-07-13, 최우선)",
+      "metric_1_forward_hedge_error": "각 stock-month t의 β̂_t(OLS vs Kalman)로 다음 1개월 시장헤지 잔차 e = R_i,t+1 − β̂_t·R_m,t+1 (월간수익 basis). 종목-월 전수 잔차분산(MSE) 집계·비교. PIT(필터값만).",
+      "metric_2_realized_beta_pred_error": "β̂_t vs 실현 β(t+1..t+12 창 daily OLS)의 예측오차 RMSE/MAE.",
+      "decomposition": "유니버스 전체 + cap-tier(MEGA top-10 / MID 11-30 / OTHER 31+) + melt-up 2025+ 분리(낡은 OLS가 가장 크게 틀릴 구간).",
+      "verdict_rule": "칼만이 헤지오차에서 유의하게(paired) 이기면 → 'β 추정 정확도 개선 실증 = 운용자산'(BAB 알파 여부와 독립으로 β 소비처 전반 승격 권고: β_R05 입력·북 β 추적·TE). 팩터-레벨(2차)은 별개."
+    },
+    "secondary": {
+      "name": "팩터-레벨 (기존 설계, 2차)",
+      "logic": "정확한 β로도 저베타 알파가 없으면 스타일의 문제지 추정의 문제가 아님을 분리 보고."
+    },
+    "conditional": {
+      "name": "AX-001v2 방어형 조건부 (병기, 전기간 SR 채점 금지)",
+      "axes": ["위기구간(BM_Ret<-5% or rolling6m worst quintile) alpha", "Core(현 book) 대비 MDD 완화", "bad/normal IC ratio"]
+    }
+  },
+  "beta_estimation": {
+    "data": "RAWDATA.parquet daily Ret + BM_Ret(일별 단일 시장수익)",
+    "arm_O_control": {
+      "method": "롤링 252-거래일 daily 시장모형 OLS (D02_Beta 관례). slope of daily r_i on daily r_m. min_obs=120. 월말 sig_date마다 β_OLS.",
+      "convention_source": "compute_defense.R D02_Beta + BAB WT-D20260508_009 sigma_window 252"
+    },
+    "arm_K_kalman": {
+      "model": "dlm 시변회귀: r_i,d = α + β_d·r_m,d + ε_d ; β_d = β_{d-1} + w_d (local-level on β)",
+      "signal_to_noise": "κ = dW/dV. IS burn-in(2005-01..2011-12) 대표종목 표본 dlmMLE 로그비율의 median으로 pooled κ 동결. per-stock dV = IS static-OLS 일별잔차분산, dW = κ·dV.",
+      "pit": "dlmFilter 필터값만 (dlmSmooth 금지 = look-ahead). 월말 β̂ = 그 달 마지막 필터 β_d.",
+      "package": "dlm (KFAS 부재 확인). 자체 수기 필터 미구현."
+    },
+    "ranking_diagnostic": "월별 (−β_K) vs (−β_O) Spearman 랭킹상관 시계열. 0.95+ 지속이면 '추정기 교체 = 실질 동일 팩터' 판정 근거(canonical은 완주)."
+  },
+  "factor_construction": {
+    "universe": "KR_top342 = K200 ∪ KQ150 (RAWDATA 월별 flag), LIQ ADV20 ≥ 2e8 KRW, cost 15bps (default). cost_model_version v2.4_kr_retail_15bps.",
+    "signal": "z = −β cross-sectional (유니버스 내 winsorize 3std → z-score). 저베타 상위.",
+    "arms": "arm K(Kalman β) top-25 EW long-only vs arm O(OLS β, 기존 BAB 재현) top-25 EW long-only.",
+    "measurement": "canonical_screen_bt(top_n=25, cost 15bps, liq 2e8, size_dt 전달). cap-w PORT_t authoritative + diag_ew_universe + diag_cap_tier.",
+    "kalman_marginal": "paired NW-t on (active_K − active_O) 월간 시계열 → 칼만 한계기여 격리."
+  },
+  "period": {
+    "sig_dates": "월말 2006-01 .. 2026-05 (β 252d 워밍업 후 시작, forward 1M 가용까지)",
+    "oos_split": "IS-only 선택원칙(chain 자격요건 ②) — 본건은 sweep(arm K vs O, n_trials=2)이므로 DSR 산출. oos_retention anchored 3분할 중앙값 + 2017+ 분리."
+  },
+  "gates": {
+    "selection_objective": "canonical_port_t",
+    "graduation_HARD_forge_only": ["portfolio_alpha_t_nw >= 2.95", "oos_retention >= 0.7", "calmar >= 0.64"],
+    "dsr": "n_trials=2 sweep → DSR 산출·기록",
+    "advisory": ["rank_ic", "icir", "harvey_t(rank-IC)", "subperiod_stability"],
+    "placebo": "signal shuffle p<0.05",
+    "size_partial": "저베타 alpha의 Size 편향 partial-corr"
+  },
+  "n_trials": 2,
+  "selection_type": "sweep",
+  "self_adversarial_concerns_preregistered": [
+    "C1: 칼만 q(κ) 선택이 사실상 랭킹을 OLS로 수렴시키는지 (κ→0이면 β_t≈full-sample static → K≈O)",
+    "C2: 저베타 top-25가 소형주 국소화 그림자인지 (cap-tier diag로 검증)",
+    "C3: melt-up 구간 β 급변이 칼만 쪽 회전비용을 잠식하는지 (랭킹 turnover)"
+  ],
+  "verdict_lexicon": "negative = 'config-scoped negative + 프론티어 표시'만. next_probe >= 2 의무.",
+  "prohibitions": ["공분산 추정 금지", "target weights 제안 금지", "자체합성 백테 금지(canonical 계약 경유)", "DART API 금지(병렬 백필 중)", "이름 kill 금지"]
+}
