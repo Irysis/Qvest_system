@@ -6,7 +6,9 @@ suppressMessages({library(arrow); library(data.table)})
 arrow::set_cpu_count(2L); try(arrow::set_io_thread_count(2L), silent=TRUE); setDTthreads(2L)
 OUT <- "stage_artifacts/WT_D20260713_003"
 
-beta_m <- as.data.table(read_parquet(file.path(OUT,"beta_monthly.parquet")))
+beta_ols_p <- as.data.table(read_parquet(file.path(OUT,"beta_monthly.parquet")))[,.(Date,Ticker,beta_ols)]
+beta_kal_p <- as.data.table(read_parquet(file.path(OUT,"beta_kalman_tuned.parquet")))[,.(Date,Ticker,beta_kalman)]
+beta_m <- merge(beta_ols_p, beta_kal_p, by=c("Date","Ticker"), all=FALSE)  # tuned κ* Kalman
 beta_m <- beta_m[!is.na(beta_ols) & !is.na(beta_kalman)]   # 두 arm 공통 stock-month만(paired)
 setorder(beta_m, Ticker, Date)
 sig_dates <- sort(unique(beta_m$Date))
