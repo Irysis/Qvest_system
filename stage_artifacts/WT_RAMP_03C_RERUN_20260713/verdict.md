@@ -63,4 +63,32 @@ book carrier PORT_t 재측정: full 257mo proxy **6.18** / t164 **5.12** / iks20
 
 ## 6. next_probe (W9 게이트)
 1. **cap-tier 국소화 후속(FQ-006~008 정합)**: RAMP_03C의 pre-2017 PORT_t 2.9는 실재 — MID(11-30위) tier 국한 여부 실측(cap-w가 MEGA에 비중을 실어 죽인 신호가 MID에 살아있나). cap-tier LS 분해.
-2. **2017+ decay가 book-marginal에 미치는 영향**: EW/score-tilt(PORT_t 4.25/4.26, oos 0.42)가 cap-w보다 우월 — 이 EW variant를 현 pinned book(6.13)과 book-marginal ΔIR로 재평가(oos 0.42<0.7이라 standalone 졸업 불가하나 blend 기여 가능성).
+2. **2017+ decay가 book-marginal에 미치는 영향**: EW/score-tilt(PORT_t 4.25/4.26, oos 0.42)가 cap-w보다 우월 — 이 EW variant를 현 pinned book(6.13)과 book-marginal ΔIR로 재평가(oos 0.42<0.7이라 standalone 졸업 불가하나 blend 기여 가능성). → **§7에서 소비 완료 (태스크 #66, 2026-07-13): config-scoped negative.**
+
+---
+
+## 7. [태스크 #66 addendum 2026-07-13] EW/score-tilt book-marginal ΔIR 진단 — next_probe #2 소비
+
+**판정(진단): blend 기여 없음 — config-scoped negative.** 산출 `deltair_diag/deltair_grid_results.json` · 엔진 `portfolio_governor.R::.pg_book_ir_recon`(net_active_recon_v1, Return.portfolio 월리밸 + build_benchmark_compare ann=12, book_optimize QP는 incumbent 3-package 부재로 불가 — §4 recon 어댑터가 canonical). pin 동일(`ramp03c_rerun_20260713_205545`). 재생성 충실도 pt EW 4.2527/score 4.2650 (기록 4.25/4.26 일치). **book_state 쓰기·admission 없음 — 도훈 결정 재료.**
+
+| variant | w | new_book_ir | ΔIR(vs stored 1.416) | ΔIR(window-matched) | cor_gross | cor_active |
+|---|---|---|---|---|---|---|
+| EW | 0 (control) | 1.4834 | +0.0674 | 0 | 0.791 | 0.606 |
+| EW | 0.05 | 1.4835 | +0.0675 | **+0.0001** | 0.791 | 0.606 |
+| EW | 0.10 | 1.4812 | +0.0652 | −0.0022 | 0.791 | 0.606 |
+| EW | 0.15 | 1.4763 | +0.0603 | −0.0071 | 0.791 | 0.606 |
+| EW | 0.20 | 1.4685 | +0.0525 | −0.0149 | 0.791 | 0.606 |
+| SCORETILT | 0 (control) | 1.4834 | +0.0674 | 0 | 0.787 | 0.615 |
+| SCORETILT | 0.05 | 1.4839 | +0.0679 | **+0.0005** | 0.787 | 0.615 |
+| SCORETILT | 0.10 | 1.4812 | +0.0652 | −0.0022 | 0.787 | 0.615 |
+| SCORETILT | 0.15 | 1.4752 | +0.0592 | −0.0082 | 0.787 | 0.615 |
+| SCORETILT | 0.20 | 1.4657 | +0.0497 | −0.0178 | 0.787 | 0.615 |
+
+(공통창 2005-02~2026-04, 255mo. w-그리드 = 진단 전수보고·선택 없음 → DSR sweep 게이트 비적용. variant 단독 net-active IR: EW 0.923 / score 0.947.)
+
+- **ΔIR≥0.05 도달 없음(실질)**: "vs stored" 열의 +0.05~0.07은 **w=0 control이 이미 +0.0674**임이 증명하는 창(255m vs 269m)+BM basis(calendar canonical vs anchor-window embedded) 아티팩트 — variant 기여 아님. 깨끗한 귀속 = window-matched: 최대 **+0.0005**(score w=0.05), w≥0.10은 전부 음수(희석). blend PORT_t도 w 증가에 단조 하락(6.81→6.43).
+- **기전 = 구조적 중복**: RAMP_03C 신호의 절반이 book 자신의 score_eff(0.5*zc(book_score_eff)) — active(−BM) cor 0.61(≫0.30 참고문턱), gross 0.79 (basis 라벨 병기, §6 규약). 남는 절반(mom6)도 book carrier 보유 모멘텀축과 중첩.
+- **정렬 사고 1건 적발·정정**: 1차 그리드는 incumbent bt(WT-D20260702_002 CLEAN) date 라벨이 eval-anchor월(+1)임을 정렬검증 3a가 적발(embedded↔canonical BM cor 0.136·S0 0.848≠1.416)해 **무효·supersede** — offset-scan k*=−1 실증(bm_cor 0.946·ret β 0.655) 후 return_ym 정정 재산출. [[reference-book-benchmark-alignment-realized-ym]] 규약 재확인. 1차 로그(deltair_diag.log 1차분)의 그리드 인용 금지.
+- **거버넌스 발견(basis 주의)**: stored incumbent 1.416은 anchor-window embedded BM 산출 — 동일 book을 canonical calendar BM으로 recon하면 **1.327**(Δ−0.089, 269m). §4 게이트가 "stored baseline vs canonical-BM recon 후보"를 그대로 빼면 창/basis 혼합으로 ΔIR이 systematically ~+0.07 인플레 — **window-matched control(w=0 행) 병기 의무** 권고.
+
+**next_probe(#66)**: ① book-성분 제거 variant — mom6-only(bz 가중 0) 또는 variant active를 book active에 직교화한 잔차의 한계기여 재측정(중복 기전 분리 — 4.25의 신규 정보량 격리). ② §4 게이트 배관 — pg1 book-context에 window-matched incumbent 재계산(basis/창 동일화) control 병기 검토(stored-vs-recon basis 혼합 인플레 방지). ③ (유지) §6 #1 cap-tier LS 분해.
