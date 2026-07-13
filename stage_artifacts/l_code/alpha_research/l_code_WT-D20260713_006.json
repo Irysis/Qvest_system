@@ -4,7 +4,15 @@
   "grade": "F",
   "core_reference": "FQ-035 R22 / parent FQ-033 settled_negative + L-AR-20260713_173418 next_probe 1 / preregistration.sha256 3455656218 / verdict.json",
   "lesson_text": "포렌식 스택 이벤트-예측 재과녁(R22): 사전등록 문턱(통제 후 controlled OR p<0.05 full-sample AND pre/post-2016 stable) 미달 = CONFIG_SCOPED_NEGATIVE. Benford(controlled OR 1.09 p 0.70·AUC 0.51)·m1(OR 1.01 p 0.97·부호 불안정)·스택(OR 1.32 p 0.63) = flat null -> event-predictor 종결(feature 보존). 제출 지연(F3)만 live sub-threshold: 최악10% lift 2.07(Wilson [1.61,2.65] 제외 1이나 ticker-cluster boot [0.71,3.65] 포함 1), controlled OR 2.06(raw 2.18에서 거의 안 줄어듦 = 크기위장 아님, 통제가 authoritative), full-sample p 0.075(검정력)·post-2016 OR 2.58 p 0.022(pre-2016 미추정 -> 안정성 clause 미충족). 핵심 진단: 합집합 과녁이 진짜 신호를 희석 — delay 최악10% 사건유형별 lift = 상폐 6.4x·관리종목 4.2x·불성실공시 3.8x vs 기저 큰 단기 거래정지 1.8x. 심각사건-특이·극단꼬리 국소(연속/quintile 확대 시 희석·비단조). R20 대비: 월간꼬리 프레임이 못 본 size-robust 심각사건-late-filing 관계를 이벤트 프레임이 표면화 -> 프레임 부분 입증이나 union/decile config 검정력 미달. 2단 분리 준수: 사전등록 문턱 미충족 -> 필터 재설계(stage-2) 미개시. 심각사건 한정 재과녁은 NEW 사전등록 라운드(post-hoc 금지).",
-  "tags": ["non_return", "forensic_stack", "event_prediction", "config_scoped_negative", "size_robust", "frontier_open", "delay_severe_event"],
+  "tags": [
+    "non_return",
+    "forensic_stack",
+    "event_prediction",
+    "config_scoped_negative",
+    "size_robust",
+    "frontier_open",
+    "delay_severe_event"
+  ],
   "created_at": "2026-07-13",
   "research_mode": "alpha_research",
   "created_by": "emit:alpha_research",
@@ -14,5 +22,10 @@
   "lcode_schema_version": 2,
   "falsification_attempts": "사전등록 hash 동결(feature->event 무관측 상태에서) / 4-trial sweep(3 단독+스택, Bonferroni x4) / ticker-cluster-robust logistic Size·tier·유동성 통제 / ticker-cluster 부트스트랩 lift CI / pre-post 2016 안정성 / 연속 days-late·top-quintile 대체 검정 / 사건유형별 lift 분해 / delisting C6 last-obs 도출·생존편향 방향 명시",
   "selection_type": "sweep",
-  "record_type": "process"
+  "record_type": "process",
+  "next_probe": [
+    "R23 심각사건 한정 신규 prereg(FQ-036, alpha-research 진행 중) — P1 직접 소비",
+    "P3 사건 라벨 PIT 경화(지정 공시일)를 R23에 포함 — 성립 시 소형 트랙 지뢰제거 필터 기초(2단 분리 유지)"
+  ],
+  "next_probe_note": "2026-07-13 retro 정합(W9 건강게이트) — 실제 후속 라운드/열린 프론티어 기록, 사후 조작 아님"
 }
