@@ -1,0 +1,47 @@
+{
+  "wt_id": "WT-D20260713_006",
+  "fq_id": "FQ-035",
+  "iteration": "R22",
+  "title": "Forensic stack event-prediction re-targeting (discrete adverse events)",
+  "prereg_utc": "2026-07-13",
+  "hypothesis": "The preserved forensic feature stack (Benford FSD deviation, m1 sentence-length obfuscation, filing-submission delay) predicts, with significant lift over base rate, the occurrence of a discrete adverse corporate event within the next 12 months. The construct-valid target of forensic signals is discrete events (designation/halt/delisting), NOT the monthly portfolio tail (rejected R20).",
+  "verdict_frame_2stage": {
+    "stage1_this_round": "Judge PREDICTION VALIDITY ONLY. A significant prediction does NOT license any capital/portfolio improvement claim.",
+    "stage2_separate_round": "IF prediction holds (controlled residual lift significant AND stable), THEN a filter-redesign round (exclude event-risk top tail; R18 consumption frame) is opened separately. IF not, forensic stack = feature-preserve TERMINATE."
+  },
+  "event_target": {
+    "definition": "For decision-month t (feature known), E_{i,t}=1 iff stock i experiences ANY adverse-event onset in the forward window months [t+1, t+12].",
+    "components": {
+      "UnfaithfulDisc_onset": "monthly transition 0->1 of UnfaithfulDisc flag (new 불성실공시 designation). available 2009+.",
+      "AdminStock_onset": "monthly transition 0->1 of AdminStock flag (new 관리종목 designation). available 1990+.",
+      "LongTradingHalt_onset": "daily TradingHalt>0 run >= 20 consecutive trading days (long halt, distinguishing structural halts from transient/administrative). onset month = first month of qualifying run. available 1993+.",
+      "Delisting": "month of a ticker's last observation, when last_obs_date < data_end - 180 days AND ticker has no subsequent re-listing (last observation = market disappearance, C6). This is the delisting event month."
+    },
+    "dedup_rule": "Onsets require prior-month flag==0 (or absent) so state persistence is not re-counted. Target is binary ANY-event-in-window; multiple component onsets in one window count once.",
+    "censoring": "Drop decision-months t where t+12 exceeds data_end (2026-07); with feature panels ending <=2025-06, forward window fully observable for all retained months.",
+    "survivorship_note": "rawdata universe (K200/KQ150 support) may under-retain fully delisted micro-caps; direction of bias = fewer delisting events observed = HARDER to detect prediction = CONSERVATIVE for a positive verdict."
+  },
+  "predictors": {
+    "note": "worst decile = per-month cross-sectional TOP decile of a mechanism-driven suspect value (higher = more forensically suspect). Direction is pre-specified by mechanism, NOT fit to events.",
+    "F1_benford": {"source": "stage_artifacts/WT_D20260713_002/alpha_scores.parquet factor=F-B_Benford_FSD", "suspect": "-score (score_sign=-1 => low score = high FSD deviation)", "window": "2009-06..2025-06"},
+    "F2_m1_obfuscation": {"source": "stage_artifacts/WT_D20260711_002/signal_panel.rds", "suspect": "m1 (sentence length; higher = more obfuscation)", "window": "2011-04..2025-04"},
+    "F3_delay": {"source": "stage_artifacts/WT_D20260713_001/alpha_scores.parquet factor=F-B", "suspect": "-score (raw=days late vs 90d deadline, sign=-1 => low score = later filing)", "window": "2010-04..2025-03"},
+    "STACK": {"definition": "1 iff >=2 of {F1 D10, F2 D10, F3 D10} in month t, over common months where all three features exist (~2011-04..2025-03)"}
+  },
+  "tests_per_predictor": {
+    "a_lift": "P(E | pred=1) / base_rate, with Wilson 95% CI and ticker-cluster bootstrap CI (1000 reps).",
+    "b_auc": "ROC AUC of continuous suspect value vs E, with 95% CI (bootstrap by ticker).",
+    "c_controlled_residual": "AUTHORITATIVE. logistic E ~ pred + log(Size) + liq_z + K200 + KQ150, ticker-cluster-robust SE. Report OR and p on the feature term. If OR->1 & insignificant after controls => 'size-disguise' verdict.",
+    "d_stability": "re-estimate lift and controlled OR on pre-2016 vs post-2016 (>=2016) subsamples."
+  },
+  "universe": "Full feature-ticker universe (all stock-months where the feature exists). This is an event-prediction study, not a portfolio; deployment universe constraint does not bind. Tier breakdown (K200/KQ150/OTHER) reported.",
+  "pit": "Feature at decision-month t; events strictly in [t+1, t+12]. Flag onset month = public designation date (forward-looking). C4/C5 compliant. Event-label PIT caveat (designation date vs cause date) surfaced in challenge_note.",
+  "n_trials": 4,
+  "selection_type": "sweep (4 enumerated predictors) -> Bonferroni-adjusted p across 4 + DSR-context note (metric is AUC/OR, not Sharpe; DSR reported for governance parity).",
+  "prereg_verdict_rule": {
+    "PRIMARY": "test (c) controlled residual OR.",
+    "PREDICTION_HOLDS": "IF >=1 predictor (single or stack) has controlled OR>1 with cluster-robust p<0.05 AND directionally stable (pre-2016 AND post-2016 controlled OR both >1).",
+    "PREDICTION_FAILS": "ELSE. forensic stack = feature-preserve TERMINATE; no filter-redesign round opened.",
+    "language_discipline": "negative verdict phrased as 'config-scoped negative + frontier tag', next_probe >= 2 mandatory."
+  }
+}

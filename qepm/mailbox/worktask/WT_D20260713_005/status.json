@@ -1,0 +1,30 @@
+{
+  "task_id": "WT-D20260713_005",
+  "current_phase": "ALPHA_DONE_NEGATIVE",
+  "updated": "2026-07-13",
+  "verdict": "config_scoped_negative",
+  "survivors": 0,
+  "l_code": "L-AR-20260713_R21",
+  "note": "R21 칼만 정확도의 리스크-소비 2종. arm A(위기-조건부 저베타 within-sleeve 틸트): 현 book(noLayer4) top-20 슬리브 개선 ~0 — base PORT_t −0.50 vs armA_K −0.495, 칼만 한계기여 K-vs-O NW_t 0.99(비유의), 위기구간 K-base NW_t 1.27(n=18 소표본 비유의), MDD relief 0.0002, placebo-shift −1.16(시점무관 아님이나 효과 미미). arm B(칼만-잔차 IVOL): IVOL_K PORT_t −1.58/OLS −1.50(둘 다 음), 추정기 무차별(paired −1.01·랭킹상관 0.999), 기존 D35_RealVol_63d 재현(|ρ|0.97)·D01_IdioVol 0.80, IC→PORT_t 벽(rank-IC 0.049 harvey_t 4.57 advisory good but PORT_t 음). 메타: 칼만 β-정확도(R19 −10.3%)가 리스크-소비 3채널(저베타 팩터·위기틸트·잔차 IVOL) 전이 벽에 inert. 벽=잔차 개별잡음 지배(추정기 wash-out)+저베타=소형주 음-초과수익+book 이미 cash 오버레이 위기 de-risk.",
+  "arm_A": {
+    "base_port_t": -0.50, "K_port_t": -0.495, "O_port_t": -0.50,
+    "kalman_marginal_KvsO_nw_t": 0.99, "crisis_KvsBase_nw_t": 1.27, "crisis_n": 18,
+    "mdd_relief": 0.0002, "placebo_shift_nw_t": -1.16,
+    "scoring": "AX-001v2 conditional (full-period SR not used as reject)"
+  },
+  "arm_B": {
+    "ivolK_port_t": -1.58, "ivolO_port_t": -1.50,
+    "estimator_marginal_nw_t": -1.01, "prediag_rank_corr": 0.999,
+    "rank_ic": 0.049, "harvey_t": 4.57,
+    "redundancy": {"D35_RealVol_63d": 0.97, "D01_IdioVol": 0.80, "R12_Idiosyncratic_Risk": 0.80, "D03_RealVol": 0.79, "D02_Beta": 0.23}
+  },
+  "next_probe": [
+    "A-P1: 위기틸트를 저베타 아닌 직교 방어신호(품질·부실회피)로 — book 저베타 이미 포화",
+    "A-P2: 공격 슬리브·비방어 book에 틸트 — 저베타 미포화 지점",
+    "B-P1: 잔차변동성을 단독 팩터 아닌 OVERLAY_CANDIDATE feature(과밀·배제)로",
+    "B-P2: IVOL 수준 아닌 변화량(ΔIVOL surprise) — 기존 RealVol과 덜 중복"
+  ],
+  "verdict_lexicon": "config-scoped negative + 프론티어 표시. next_probe >= 2 per arm 충족.",
+  "reuse_from": "WT-D20260713_003 (R19) beta_kalman_tuned + beta_monthly",
+  "rawdata_pin_tag": "RAWDATA_mtime20260713-000411_size421258666"
+}

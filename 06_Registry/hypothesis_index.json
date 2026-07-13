@@ -16129,6 +16129,41 @@
         "beta_accuracy_diagnostic"
       ],
       "date": "2026-07-13"
+    },
+    {
+      "strategy_id": "WT-D20260713_005_R21_kalman_risk_consumption",
+      "hypothesis_signature": "market=KR;family=defense_lowbeta+lowrisk_residual;estimator=kalman_tvp_vs_ols252;structure=A:crisis_conditional_withinSleeve_tilt|B:kalman_residual_IVOL_top25_EW_longonly",
+      "title": "R21 칼만 정확도의 리스크-소비 2종 — arm A 위기-조건부 저베타 틸트 / arm B 칼만-잔차 IVOL",
+      "verdict": "VALIDATED_NEGATIVE_CONFIG_SCOPED",
+      "grade": "F(screen)",
+      "key_metrics": {
+        "armA_base_PORT_t": -0.50,
+        "armA_K_PORT_t": -0.495,
+        "armA_kalman_marginal_KvsO_nw_t": 0.99,
+        "armA_crisis_tilt_KvsBase_crisis_nw_t": 1.27,
+        "armA_crisis_months_n": 18,
+        "armA_mdd_relief": 0.0002,
+        "armA_placebo_shift_nw_t": -1.16,
+        "armB_ivolK_PORT_t": -1.58,
+        "armB_ivolO_PORT_t": -1.50,
+        "armB_estimator_marginal_nw_t": -1.01,
+        "armB_prediag_rank_corr": 0.999,
+        "armB_rank_ic": 0.049,
+        "armB_harvey_t": 4.57,
+        "armB_redundancy_D35_RealVol_63d_absrho": 0.97,
+        "armB_redundancy_D01_IdioVol_absrho": 0.80
+      },
+      "note": "칼만 β-정확도(R19 realized-β RMSE −10.3%) 리스크-소비 3채널 전이 벽 inert. arm A within-sleeve 위기 저베타 틸트 순효과 ~0(칼만 한계기여 무의미·위기 소표본 n18·MDD relief 0.0002·placebo −1.16=시점무관 아님). arm B 칼만-잔차 IVOL 둘 다 음·추정기 무차별(랭킹상관 0.999)·기존 D35_RealVol_63d 재현(|ρ|0.97)·IC→PORT_t 벽. 벽=잔차 개별잡음 지배+저베타 소형주 음-초과수익+book 기존 cash 오버레이 위기방어 중복. next_probe A: 직교 방어신호 틸트/공격 슬리브 · B: 오버레이 후보 feature/ΔIVOL.",
+      "source_paths": [
+        "stage_artifacts/WT_D20260713_005/",
+        "qepm/mailbox/worktask/WT_D20260713_005/alpha_package.json"
+      ],
+      "source_types": [
+        "canonical_screen",
+        "weighted_screen",
+        "estimator_isolation_diagnostic"
+      ],
+      "date": "2026-07-13"
     }
   ]
 }

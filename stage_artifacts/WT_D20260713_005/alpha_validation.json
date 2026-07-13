@@ -1,0 +1,80 @@
+{
+  "wt_id": "WT-D20260713_005",
+  "fq_id": "FQ-034",
+  "verdict_lexicon": "config-scoped negative + frontier (both arms). next_probe>=2 per arm.",
+  "arm_A": {
+    "finding": "within-sleeve crisis low-beta tilt adds ~0 to book",
+    "base_port_t": -0.502,
+    "K_port_t": -0.495,
+    "O_port_t": -0.5,
+    "kalman_marginal_KvsO_nw_t": 0.988,
+    "crisis_tilt_KvsBase_full_nw_t": 0.435,
+    "crisis_tilt_KvsBase_crisis_nw_t": 1.274,
+    "crisis_n": 18,
+    "placebo_shift12m_nw_t": -1.155,
+    "mdd_relief": 0.0002,
+    "ax001v2_regime_crisis_active": {
+      "base": -0.03364,
+      "K": -0.03296
+    },
+    "scoring": "AX-001v2 conditional (full-period SR not used as reject)",
+    "next_probe": ["crisis-conditional tilt with ORTHOGONAL defensive signal (quality/low-distress) not low-beta (book already low-beta via M08+overlay)", "test tilt on OFFENSE sleeve/non-defensive book where low-beta not saturated"]
+  },
+  "arm_B": {
+    "finding": "Kalman-residual IVOL = estimator-indifferent + redundant + negative",
+    "K_port_t": -1.577,
+    "O_port_t": -1.501,
+    "estimator_marginal_nw_t": -1.012,
+    "prediag_rank_corr": {
+      "mean_rho": 0.9994,
+      "median_rho": 0.9996,
+      "min_rho": 0.9915,
+      "pct_ge_0.97": 100,
+      "n_months": 246
+    },
+    "rank_ic_advisory": {
+      "rank_ic": 0.0487,
+      "icir": 0.292,
+      "harvey_t": 4.567,
+      "n": 245
+    },
+    "ic_port_t_wall": "rank-IC 0.049 harvey_t 4.57 advisory-good but PORT_t -1.58 authoritative-negative",
+    "redundancy_vs_lowrisk": [
+      {
+        "factor": "D01_IdioVol",
+        "mean_rho": -0.802,
+        "n_months": 19,
+        "mean_n": 637
+      },
+      {
+        "factor": "R12_Idiosyncratic_Risk",
+        "mean_rho": -0.802,
+        "n_months": 19,
+        "mean_n": 637
+      },
+      {
+        "factor": "D03_RealVol",
+        "mean_rho": -0.787,
+        "n_months": 20,
+        "mean_n": 643
+      },
+      {
+        "factor": "D02_Beta",
+        "mean_rho": -0.233,
+        "n_months": 19,
+        "mean_n": 637
+      },
+      {
+        "factor": "D35_RealVol_63d",
+        "mean_rho": -0.967,
+        "n_months": 20,
+        "mean_n": 643
+      }
+    ],
+    "next_probe": ["consume residual-vol as OVERLAY_CANDIDATE feature (crowding/exclusion) not standalone long factor", "test IVOL INNOVATION (dIVOL surprise) not level — less redundant with D35_RealVol_63d"]
+  },
+  "meta_conclusion": "Kalman beta-accuracy edge (realized-beta RMSE -10.3%, R19) is INERT across 3 risk-consumption channels. Binding wall: (a) residual idiosyncratic variance dominates -> estimator washes out (rank corr 0.999), (b) low-beta = small-cap negative-alpha style (R19 ~91% OTHER tier), (c) book already de-risks via cash overlay in crisis.",
+  "universe_comparison": "KR_top342 only (default). ICIR not <0.15 attenuation case requiring v2; both arms clearly negative on cap-w authoritative + EW-universe diag (armB EWuni -2.19).",
+  "cost_model_version": "v2.4_kr_retail_15bps",
+  "rawdata_pin_tag": "RAWDATA_mtime20260713-000411_size421258666"
+}
