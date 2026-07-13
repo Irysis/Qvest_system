@@ -1,0 +1,343 @@
+{
+  "prereg": {
+    "mode": "RAMP",
+    "round": "R13",
+    "fq": "FQ-026",
+    "question": "R12 메타진단 축전환(construction 4축 cap-w ~2.94 포화 → 바인딩 벽=oos_retention) 소비 — 감쇠속도 선별 3기전으로 oos 축 직타. 시간-함수형만 변경·재료=realized active NW-t 불변(R7)",
+    "base": "Ppure_W36_K20 (종목 EW × 팩터 EW level36-top20, R6 저장 2.6124 parity 앵커)",
+    "selection_type": "chain",
+    "endpoint_hierarchy": {
+      "primary": "oos_retention (v2 anchored 3분할 중앙값, cap-w act_bm)",
+      "secondary": "port_t_capwt + HARD 3종 + EW-uni + 2017+ 분리 + paired vs base",
+      "tension": "endpoint=oos여도 arm '선택'은 IS-only(OOS 오염 방지). 선택=IS paired-t · 판정=게이트 산출 전체. oos는 최종 게이트 산출로만(선택 입력 아님)"
+    },
+    "chain_discipline": "arm 간 선택 IS-only(첫 65% 배포월 paired-t) · oos는 최종 게이트 산출로만 · 2차 결합 없음(1차만) · DSR 진단용(게이트 부적용)",
+    "arms": {
+      "armD1_decay_penalty": {
+        "mechanism": "선별점수 = z(level36) + 0.5·z(recent18_t − older18_t). 수준 상위이나 최근-half 급락 팩터 강등. top-K20 by adj. base와 동일 base_anchors(cadence6)",
+        "diag": "수준-기반 trailing은 후행 평균 → 감쇠 늦게 반영 = oos 실패 직접 원인 가설. 감쇠속도 보정으로 선제 배출",
+        "adversarial": "C① FM 수렴 = pool churn·rank AC(Spearman)·Jaccard vs ctrl_factormom(recent18 단독)"
+      },
+      "armD2_decay_exit": {
+        "mechanism": "F-1(반기 진입·분기 퇴출) 구조 유지 · 퇴출 트리거 순위→감쇠속도(held recent18_t<0 OR decay<−1.0 배출·비-감쇠 차순위 충원)",
+        "diag": "'무엇을 내보낼지'를 감쇠 신호로 직접 지정 — F-1(2.937) 퇴출 규율에 감쇠 정보 주입. F-1 oos(+0.048)<armF full(+0.121) 격차=진입측 갱신이 잡는 감쇠를 퇴출로 포획 가설",
+        "adversarial": "C① FM 수렴 = churn·Jaccard vs ctrl_factormom + F-1 대비 pool 차이"
+      },
+      "armD3_subwin_consistency": {
+        "mechanism": "선별점수 = min(NW-t over 3 부분창 12m×3). 부분창 전반 일관 팩터=감쇠저항 프록시. top-K20 by min_t",
+        "diag": "지속성 프록시. 재료=realized active NW-t 그대로, 시간 함수형(min-subwindow)만 변경. anti-momentum(과거 약했으면 최근 강해도 강등)",
+        "adversarial": "C② StabSel(서브샘플 LASSO relevance, R5 폐쇄)과 구분 = 라벨 realized active NW-t(수익)이지 relevance 아님 + FM Jaccard"
+      }
+    },
+    "ctrl": "ctrl_factormom: top-K20 by recent18_t 단독(순수 FM) — C① 수렴 대조군(판정 arm 아님)",
+    "no_2nd_combine": "이번엔 1차만(결합은 R11서 IS-폐기 선례)",
+    "gate_hard": [2.95, 0.7, 0.64, 0.5],
+    "primary_criterion": "1차 승자 = R13 자체 IS paired NW-t(cap-w act_bm) vs base 최대(IS-only). 최종 판정 = oos_retention(1차) + full HARD 3종 + full paired vs base + cap-w(2차)",
+    "kill_rule": "전 arm oos_retention 0.7 미도달 AND HARD 3종 0/N AND full paired<2.0 → config-scoped negative(감쇠속도 선별 config 한정). '소진/dead-end' 어휘 금지 — next_probe >=2 도출 의무",
+    "honest_frame": "본 라운드=감쇠속도 선별로 oos 축 직타. base oos −0.076·R12 best +0.121 vs 문턱 0.7 = 큰 격차 → 방향 개선이어도 0.7 도달 난망(정직 병기). return-derived substrate 재사용(신규 재료 아님). cap-tier×cap-w 벽 미해결 가능.",
+    "xmode_fail_prior": "hypothesis_index: 'Alpha Decay Adaptive FM'·'IC Decay-Weighted FM' MARGINAL, 'Cross-Factor Momentum' FAIL, factor-momentum timing NULL(06-30), DIST-AR-007(momentum return-파생) DISTILLED_NEG. INV-7 재도전 차별점: ①endpoint=oos(바인딩 벽) ②재료=realized active NW-t(IC아님) ③D-3=anti-momentum(지속성)",
+    "is_frac": 0.65,
+    "top_n": 25,
+    "cost_bps_oneway": 15,
+    "liq_min": 200000000,
+    "cap": 0.2,
+    "floor_frac": 0.25,
+    "cadence_entry": 6,
+    "cadence_exit": 3,
+    "lambda_d1": 0.5,
+    "decay_drop_bar": -1,
+    "windows": [36, 60],
+    "subwin_split": [18, 18],
+    "subwin3": [12, 12, 12],
+    "n_trials_r13": 3,
+    "n_trials_lineage": 24,
+    "r12_ref": {
+      "base_capwt": 2.6124,
+      "base_oos": -0.0759,
+      "armF1_capwt": 2.937,
+      "armF1_oos": 0.0482,
+      "armF_oos_best": 0.1208
+    },
+    "cost_model": "delta-based |Δw|×15bps one-way (weighted_screen_bt 내장 — 선별 회전 자동 반영)",
+    "vintage_pin": "r6_session_20260711 (sel_traj 36+60/pure_factor_scores/factor_group_scores/rawdata/panel; base parity Δ<5e-3 확인)",
+    "as_of_date": "2026-07-13",
+    "source_version": "RAMP_R13_v1",
+    "security_id": "Ticker (rawdata) -> factor_id z (pure_factor_scores.z=Z_Score_Aligned)",
+    "config_hash": "d997ab856f3c4884",
+    "generated_at": "2026-07-13T10:22:32+0900"
+  },
+  "config_hash": "d997ab856f3c4884",
+  "meta": {
+    "as_of_date": "2026-07-13",
+    "generated_at": "2026-07-13T10:23:18+0900",
+    "source_version": "RAMP_R13_v1",
+    "security_id": "Ticker->factor_id z (pure_factor_scores.z=Z_Score_Aligned)"
+  },
+  "results": [
+    {
+      "model": "base",
+      "port_t_capwt": 2.6124,
+      "port_t_EWuni": 3.9191,
+      "oos_retention": -0.0759,
+      "oos_ew": 0.5064,
+      "calmar": 0.45,
+      "dsr": 1.5504,
+      "post2017_bm_sr": -0.1052,
+      "full_bm_sr": 0.676,
+      "turnover": 9.2705,
+      "n_months": 220
+    },
+    {
+      "model": "armD1_decay_penalty",
+      "port_t_capwt": 1.5549,
+      "port_t_EWuni": 2.4561,
+      "oos_retention": -0.4481,
+      "oos_ew": 0.1411,
+      "calmar": 0.3282,
+      "dsr": 0.5643,
+      "post2017_bm_sr": -0.4118,
+      "full_bm_sr": 0.4271,
+      "turnover": 9.6676,
+      "n_months": 220
+    },
+    {
+      "model": "armD2_decay_exit",
+      "port_t_capwt": 2.503,
+      "port_t_EWuni": 3.5996,
+      "oos_retention": 0.0448,
+      "oos_ew": 0.7453,
+      "calmar": 0.4251,
+      "dsr": 1.4501,
+      "post2017_bm_sr": 0.0484,
+      "full_bm_sr": 0.6454,
+      "turnover": 9.4495,
+      "n_months": 220
+    },
+    {
+      "model": "armD3_subwin_consistency",
+      "port_t_capwt": 2.1639,
+      "port_t_EWuni": 2.9762,
+      "oos_retention": -0.0282,
+      "oos_ew": 0.9717,
+      "calmar": 0.4241,
+      "dsr": 1.2166,
+      "post2017_bm_sr": -0.0827,
+      "full_bm_sr": 0.5767,
+      "turnover": 9.6327,
+      "n_months": 220
+    },
+    {
+      "model": "ctrl_factormom",
+      "port_t_capwt": 1.3221,
+      "port_t_EWuni": 1.9726,
+      "oos_retention": -0.4478,
+      "oos_ew": 0.4002,
+      "calmar": 0.3389,
+      "dsr": 0.3484,
+      "post2017_bm_sr": -0.425,
+      "full_bm_sr": 0.3681,
+      "turnover": 10.008,
+      "n_months": 220
+    }
+  ],
+  "paired": [
+    {
+      "model": "armD1_decay_penalty",
+      "mean_diff_ann": -0.0365,
+      "paired_t_full": -1.4525,
+      "paired_t_IS": -0.7353,
+      "paired_t_OOS": -1.283,
+      "n": 220,
+      "n_is": 143
+    },
+    {
+      "model": "armD2_decay_exit",
+      "mean_diff_ann": -0.0035,
+      "paired_t_full": -0.2824,
+      "paired_t_IS": -1.4316,
+      "paired_t_OOS": 1.2031,
+      "n": 220,
+      "n_is": 143
+    },
+    {
+      "model": "armD3_subwin_consistency",
+      "mean_diff_ann": -0.0266,
+      "paired_t_full": -1.2813,
+      "paired_t_IS": -2.1359,
+      "paired_t_OOS": 0.3368,
+      "n": 220,
+      "n_is": 143
+    }
+  ],
+  "concentration": [
+    {
+      "model": "base",
+      "hhi": 0.04,
+      "n_eff": 25,
+      "maxw": 0.04,
+      "n_hold": 25,
+      "min_nhold": 25,
+      "w_MEGA": 0.086,
+      "w_MID": 0.1257,
+      "w_OTHER": 0.906,
+      "w_UNRANKED": 0
+    },
+    {
+      "model": "armD1_decay_penalty",
+      "hhi": 0.04,
+      "n_eff": 25,
+      "maxw": 0.04,
+      "n_hold": 25,
+      "min_nhold": 25,
+      "w_MEGA": 0.0867,
+      "w_MID": 0.1128,
+      "w_OTHER": 0.9104,
+      "w_UNRANKED": 0
+    },
+    {
+      "model": "armD2_decay_exit",
+      "hhi": 0.04,
+      "n_eff": 25,
+      "maxw": 0.04,
+      "n_hold": 25,
+      "min_nhold": 25,
+      "w_MEGA": 0.0861,
+      "w_MID": 0.1275,
+      "w_OTHER": 0.8991,
+      "w_UNRANKED": 0
+    },
+    {
+      "model": "armD3_subwin_consistency",
+      "hhi": 0.04,
+      "n_eff": 25,
+      "maxw": 0.04,
+      "n_hold": 25,
+      "min_nhold": 25,
+      "w_MEGA": 0.1117,
+      "w_MID": 0.1434,
+      "w_OTHER": 0.8698,
+      "w_UNRANKED": 0
+    },
+    {
+      "model": "ctrl_factormom",
+      "hhi": 0.04,
+      "n_eff": 25,
+      "maxw": 0.04,
+      "n_hold": 25,
+      "min_nhold": 25,
+      "w_MEGA": 0.0865,
+      "w_MID": 0.1052,
+      "w_OTHER": 0.8913,
+      "w_UNRANKED": 0
+    }
+  ],
+  "oos_subperiod": [
+    {
+      "model": "base",
+      "sr_full": 0.676,
+      "sr_pre2017": 1.6398,
+      "sr_post2017": -0.1052,
+      "oos_full": -0.0759,
+      "oos_pre": 1.19,
+      "oos_post": -807.4422,
+      "n_pre": 108,
+      "n_post": 112
+    },
+    {
+      "model": "armD1_decay_penalty",
+      "sr_full": 0.4271,
+      "sr_pre2017": 1.426,
+      "sr_post2017": -0.4118,
+      "oos_full": -0.4481,
+      "oos_pre": 1.3178,
+      "oos_post": -9.3184,
+      "n_pre": 108,
+      "n_post": 112
+    },
+    {
+      "model": "armD2_decay_exit",
+      "sr_full": 0.6454,
+      "sr_pre2017": 1.4169,
+      "sr_post2017": 0.0484,
+      "oos_full": 0.0448,
+      "oos_pre": 1.3705,
+      "oos_post": -0.8305,
+      "n_pre": 108,
+      "n_post": 112
+    },
+    {
+      "model": "armD3_subwin_consistency",
+      "sr_full": 0.5767,
+      "sr_pre2017": 1.2806,
+      "sr_post2017": -0.0827,
+      "oos_full": -0.0282,
+      "oos_pre": 1.4964,
+      "oos_post": -4.992,
+      "n_pre": 108,
+      "n_post": 112
+    },
+    {
+      "model": "ctrl_factormom",
+      "sr_full": 0.3681,
+      "sr_pre2017": 1.2214,
+      "sr_post2017": -0.425,
+      "oos_full": -0.4478,
+      "oos_pre": 1.2627,
+      "oos_post": -43.1696,
+      "n_pre": 108,
+      "n_post": 112
+    }
+  ],
+  "base_parity": {
+    "r13_base_pt": 2.6124,
+    "r6_stored": 2.6124,
+    "delta": 0,
+    "ok": true
+  },
+  "winner_1st": "armD1_decay_penalty",
+  "winner_is_t": -0.7353,
+  "endpoint_primary": "oos_retention",
+  "endpoint_secondary": "port_t_capwt",
+  "challenge": {
+    "fm_convergence": {
+      "churn_base": 0.0505,
+      "churn_D1": 0.0637,
+      "churn_D2": 0.0712,
+      "churn_D3": 0.0849,
+      "churn_FM": 0.0788,
+      "jaccard_D1_FM": 0.7128,
+      "jaccard_D2_FM": 0.44,
+      "jaccard_D3_FM": 0.3312,
+      "jaccard_D1_base": 0.5788,
+      "jaccard_D2_base": 0.884,
+      "jaccard_D3_base": 0.4944,
+      "rank_ac_base": 0.859,
+      "rank_ac_D1": 0.7659,
+      "rank_ac_D3": 0.5132,
+      "rank_ac_FM": 0.6665
+    },
+    "oos_improve": 0.1207,
+    "base_oos": -0.0759,
+    "best_oos": 0.0448,
+    "best_oos_arm": "armD2_decay_exit"
+  },
+  "kill": true,
+  "max_paired_full": -0.2824,
+  "any_graduation": false,
+  "best_oos_arm": "armD2_decay_exit",
+  "best_oos_val": 0.0448,
+  "best_capwt_arm": "armD2_decay_exit",
+  "best_capwt_val": 2.503,
+  "n_trials_r13": 3,
+  "n_trials_lineage": 24,
+  "selection_type": "chain",
+  "n_sig": 257,
+  "date_range": ["2005-01-31", "2026-05-31"],
+  "r12_ref": {
+    "base_capwt": 2.6124,
+    "base_oos": -0.0759,
+    "armF1_capwt": 2.937,
+    "armF1_oos": 0.0482,
+    "armF_oos_best": 0.1208
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "mode": "RAMP",
+  "round": "R13",
+  "fq": "FQ-026",
+  "question": "R12 메타진단 축전환(construction 4축 cap-w ~2.94 포화 → 바인딩 벽=oos_retention) 소비 — 감쇠속도 선별 3기전으로 oos 축 직타. 시간-함수형만 변경·재료=realized active NW-t 불변(R7)",
+  "base": "Ppure_W36_K20 (종목 EW × 팩터 EW level36-top20, R6 저장 2.6124 parity 앵커)",
+  "selection_type": "chain",
+  "endpoint_hierarchy": {
+    "primary": "oos_retention (v2 anchored 3분할 중앙값, cap-w act_bm)",
+    "secondary": "port_t_capwt + HARD 3종 + EW-uni + 2017+ 분리 + paired vs base",
+    "tension": "endpoint=oos여도 arm '선택'은 IS-only(OOS 오염 방지). 선택=IS paired-t · 판정=게이트 산출 전체. oos는 최종 게이트 산출로만(선택 입력 아님)"
+  },
+  "chain_discipline": "arm 간 선택 IS-only(첫 65% 배포월 paired-t) · oos는 최종 게이트 산출로만 · 2차 결합 없음(1차만) · DSR 진단용(게이트 부적용)",
+  "arms": {
+    "armD1_decay_penalty": {
+      "mechanism": "선별점수 = z(level36) + 0.5·z(recent18_t − older18_t). 수준 상위이나 최근-half 급락 팩터 강등. top-K20 by adj. base와 동일 base_anchors(cadence6)",
+      "diag": "수준-기반 trailing은 후행 평균 → 감쇠 늦게 반영 = oos 실패 직접 원인 가설. 감쇠속도 보정으로 선제 배출",
+      "adversarial": "C① FM 수렴 = pool churn·rank AC(Spearman)·Jaccard vs ctrl_factormom(recent18 단독)"
+    },
+    "armD2_decay_exit": {
+      "mechanism": "F-1(반기 진입·분기 퇴출) 구조 유지 · 퇴출 트리거 순위→감쇠속도(held recent18_t<0 OR decay<−1.0 배출·비-감쇠 차순위 충원)",
+      "diag": "'무엇을 내보낼지'를 감쇠 신호로 직접 지정 — F-1(2.937) 퇴출 규율에 감쇠 정보 주입. F-1 oos(+0.048)<armF full(+0.121) 격차=진입측 갱신이 잡는 감쇠를 퇴출로 포획 가설",
+      "adversarial": "C① FM 수렴 = churn·Jaccard vs ctrl_factormom + F-1 대비 pool 차이"
+    },
+    "armD3_subwin_consistency": {
+      "mechanism": "선별점수 = min(NW-t over 3 부분창 12m×3). 부분창 전반 일관 팩터=감쇠저항 프록시. top-K20 by min_t",
+      "diag": "지속성 프록시. 재료=realized active NW-t 그대로, 시간 함수형(min-subwindow)만 변경. anti-momentum(과거 약했으면 최근 강해도 강등)",
+      "adversarial": "C② StabSel(서브샘플 LASSO relevance, R5 폐쇄)과 구분 = 라벨 realized active NW-t(수익)이지 relevance 아님 + FM Jaccard"
+    }
+  },
+  "ctrl": "ctrl_factormom: top-K20 by recent18_t 단독(순수 FM) — C① 수렴 대조군(판정 arm 아님)",
+  "no_2nd_combine": "이번엔 1차만(결합은 R11서 IS-폐기 선례)",
+  "gate_hard": [2.95, 0.7, 0.64, 0.5],
+  "primary_criterion": "1차 승자 = R13 자체 IS paired NW-t(cap-w act_bm) vs base 최대(IS-only). 최종 판정 = oos_retention(1차) + full HARD 3종 + full paired vs base + cap-w(2차)",
+  "kill_rule": "전 arm oos_retention 0.7 미도달 AND HARD 3종 0/N AND full paired<2.0 → config-scoped negative(감쇠속도 선별 config 한정). '소진/dead-end' 어휘 금지 — next_probe >=2 도출 의무",
+  "honest_frame": "본 라운드=감쇠속도 선별로 oos 축 직타. base oos −0.076·R12 best +0.121 vs 문턱 0.7 = 큰 격차 → 방향 개선이어도 0.7 도달 난망(정직 병기). return-derived substrate 재사용(신규 재료 아님). cap-tier×cap-w 벽 미해결 가능.",
+  "xmode_fail_prior": "hypothesis_index: 'Alpha Decay Adaptive FM'·'IC Decay-Weighted FM' MARGINAL, 'Cross-Factor Momentum' FAIL, factor-momentum timing NULL(06-30), DIST-AR-007(momentum return-파생) DISTILLED_NEG. INV-7 재도전 차별점: ①endpoint=oos(바인딩 벽) ②재료=realized active NW-t(IC아님) ③D-3=anti-momentum(지속성)",
+  "is_frac": 0.65,
+  "top_n": 25,
+  "cost_bps_oneway": 15,
+  "liq_min": 200000000,
+  "cap": 0.2,
+  "floor_frac": 0.25,
+  "cadence_entry": 6,
+  "cadence_exit": 3,
+  "lambda_d1": 0.5,
+  "decay_drop_bar": -1,
+  "windows": [36, 60],
+  "subwin_split": [18, 18],
+  "subwin3": [12, 12, 12],
+  "n_trials_r13": 3,
+  "n_trials_lineage": 24,
+  "r12_ref": {
+    "base_capwt": 2.6124,
+    "base_oos": -0.0759,
+    "armF1_capwt": 2.937,
+    "armF1_oos": 0.0482,
+    "armF_oos_best": 0.1208
+  },
+  "cost_model": "delta-based |Δw|×15bps one-way (weighted_screen_bt 내장 — 선별 회전 자동 반영)",
+  "vintage_pin": "r6_session_20260711 (sel_traj 36+60/pure_factor_scores/factor_group_scores/rawdata/panel; base parity Δ<5e-3 확인)",
+  "as_of_date": "2026-07-13",
+  "source_version": "RAMP_R13_v1",
+  "security_id": "Ticker (rawdata) -> factor_id z (pure_factor_scores.z=Z_Score_Aligned)",
+  "config_hash": "d997ab856f3c4884",
+  "generated_at": "2026-07-13T10:22:32+0900"
+}

@@ -119,3 +119,15 @@ R8이 확정한 사실 두 개가 이 결정의 전부다:
 - **한계 (정직)**: ① 참여율 10%/일은 가정(체결 스타일에 따라 ±) ② 비용 시나리오는 선형 산술 — 실현 슬리피지·시장충격 비선형 미반영 ③ book 종목단 중첩 미측정(원 계약 holdings 미보존) ④ V02_EP EW 수치의 config-민감성(§1 각주).
 - **산출물**: `stage_artifacts/d3_dossier/` — `build_d3_dossier.R`(재현 스크립트) · `_build_d3_dossier_log.txt` · `d3_summary.json` · `capacity_monthly_{ppure,v02ep}.{parquet,csv}` · `cost_scenarios.csv` · `days_to_build_*.csv` · `holdings_monthly_*.parquet` · `holdings_latest_*.csv`(최신월 25종 스냅샷) · 차트 `capacity_timeseries.png`/`cost_scenarios.png`/`captier_weights.png`.
 - **참조**: R8 `outputs/ramp/r8_band_escalation_20260712.json` + challenge_note · R7 E2 `r7_ewbasis_e2_reclass_20260712.json` · R6 `r6_portt_boruta_summary_20260711.json` · R3 `l_code_RAMP_R3_SLEEVE_ADDITION_20260711.json` · FQ-009/FQ-016 (`06_Registry/alpha_frontier_queue.json`).
+
+---
+
+## §7 추기 (07-13 오전, Q-Lead) — R13이 페이퍼 트래킹 후보에 주는 함의
+
+R13(감쇠속도 축) 게이트 산출에서 P-pure 변형 2종의 **EW-basis oos_retention이 문턱(0.7)을 상회**했다:
+- **D-2 (감쇠-트리거 퇴출)**: EW-oos 0.745 · cap-w oos도 base 대비 개선(+0.045) · post17SR 부호 양
+- **D-3 (부분창 일관성 선별)**: EW-oos 0.972 · 단 cap-w 전반 열위(2.164)
+
+**함의**: 페이퍼 트래킹 트랙의 후보를 base P-pure(EW-oos 0.506 band-조건부)에서 **D-2 변형으로 승격하는 안**이 열림 — EW-basis 자격이 조건부가 아닌 정면 통과이기 때문. **정직 라벨**: 이 변형 지목은 R13 게이트 산출(측정된 과거)을 보고 고른 것이므로 선택 편향이 있다 — 다만 페이퍼 트래킹 자체가 미접촉 미래 데이터로 검증하는 장치라, 편향은 트래킹 개시 후 실측으로 자연 심판된다(사전등록 예측구간에 후보 선택 시점 명기 의무).
+
+**갱신된 선택지**: B안(기존) = base P-pure 페이퍼 트래킹 / **B+안(신규) = D-2 변형 페이퍼 트래킹**(EW 자격 정면 통과·선택편향 라벨 부착) / 병행안 = 둘 다 봉인 기록(계산 비용 0에 가까움, 비교 실측 확보). 권고: **병행안** — 후보 선택 편향 논쟁 자체를 실측으로 종결.
