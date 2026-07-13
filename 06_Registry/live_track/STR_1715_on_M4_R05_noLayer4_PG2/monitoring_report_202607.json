@@ -1,0 +1,141 @@
+{
+  "schema_version": "monitoring_v6.1_r9",
+  "report_month": "202607",
+  "generated_at": "2026-07-13T13:03:22+0900",
+  "generated_by": "monitoring agent — 라이브 북 첫 월간 holdout 대조 (운영 갭 종결: monitoring_report 0건→1건)",
+  "strategy_id": "STR_1715_on_M4_R05_noLayer4_PG2",
+  "track_role": "live_book_active",
+  "book_weight": 1,
+  "admission_tier": "PG2_CORE_ALPHA",
+  "holdout_judgment": {
+    "interval": {
+      "q05": 0.3046,
+      "q95": 3.1414,
+      "boot_median": 1.6951,
+      "sr_input": 1.7042,
+      "holdout_months": 21,
+      "block": 12,
+      "B": 4000,
+      "seed": 7,
+      "generated": "2026-07-02",
+      "origin_wt": "WT-D20260702_002",
+      "consumed": false
+    },
+    "realized_window": {
+      "source": "bt_result_C_noL4_CLEAN_ann12.rds period_returns$ret_net (contract-authoritative, interval 생성 원천)",
+      "basis": "recon_backtested_pre_adoption",
+      "metric_type": "backtested",
+      "n_months": 21,
+      "window_start": "2024-10-02",
+      "window_end": "2026-06-01"
+    },
+    "realized_sr": 3.2462,
+    "verdict": "PASS_PLUS",
+    "verdict_note": "구간 상단 초과 — 기대 이상.",
+    "caveats": ["★저정보/비-forward: trailing 21m 창(2024-10~2026-06)이 전량 pre-adoption recon(채택 2026-07-02) — interval 자체 입력구간과 중첩되는 in-sample 측정. PASS_PLUS는 '전방 검증'이 아니라 파이프라인 가동 + 현 위치 baseline.", "창이 2025-2026 초대형주 반도체 melt-up 레짐 꼬리와 일치(실측, [[reference-kr-2025-megacap-semi-regime]] — 오염 아님). 최근 국면이 표본 최상단이라 trailing SR이 q95 소폭 초과.", "진짜 forward 정보는 라이브/페이퍼 NAV가 recon 월을 대체하며 월별 축적. 채택후 실측은 현재 ~10일(7월 부분월)뿐 → judge_holdout(post-adoption-only)=INSUFFICIENT(<6m). 완전 21m forward 창 완성 ~2028-04.", "우열 해석 금지(contract 규율): 구간 내/초과 위치로 전략 우열 단정 불가."],
+    "post_adoption_only_status": {
+      "verdict": "INSUFFICIENT",
+      "n_live_days": "~10 (07-02~07-10)",
+      "note": "채택(2026-07-02) 후 실측 ~10일(daily_nav 07-02~07-10, MTD -3.37%) — 6개월 미만이라 forward 판정 보류"
+    }
+  },
+  "drift_diagnostics": {
+    "basis": "recon backtested (benchmark KOSPI200 rebalance-window aligned, 실측 확증 — rds 벤치 꼬리 폭등은 megacap 레짐 실값)",
+    "alignment_check": {
+      "full_active_mean": 0.022402,
+      "contract_ref": 0.022402,
+      "aligned": true
+    },
+    "full_period_reference": {
+      "n": 269,
+      "active_ann": 0.2688,
+      "TE_ann": 0.1898,
+      "IR": 1.416,
+      "beta": 0.7056,
+      "up_capture": 1.2768,
+      "down_capture": 0.1727,
+      "hit_ratio": 0.6729,
+      "PORT_t_NW_lag3": 6.2143
+    },
+    "trailing_21m": {
+      "n": 21,
+      "strat_sr": 3.2462,
+      "strat_mean_mo": 0.0801,
+      "bm_mean_mo": 0.0726,
+      "active_mean_mo": 0.0076,
+      "active_ann": 0.0906,
+      "TE_ann": 0.3324,
+      "IR": 0.2727,
+      "hit_ratio": 0.5714,
+      "up_capture": 0.9076,
+      "down_capture": -0.2616
+    },
+    "trailing_12m": {
+      "n": 12,
+      "strat_sr": 4.3295,
+      "strat_mean_mo": 0.1021,
+      "bm_mean_mo": 0.1271,
+      "active_mean_mo": -0.025,
+      "active_ann": -0.3,
+      "TE_ann": 0.335,
+      "IR": -0.8956,
+      "hit_ratio": 0.5,
+      "up_capture": 0.736,
+      "down_capture": -0.0636
+    },
+    "trailing_36m": {
+      "n": 36,
+      "strat_sr": 2.6962,
+      "strat_mean_mo": 0.0609,
+      "bm_mean_mo": 0.0447,
+      "active_mean_mo": 0.0162,
+      "active_ann": 0.1946,
+      "TE_ann": 0.2737,
+      "IR": 0.7109,
+      "hit_ratio": 0.6111,
+      "up_capture": 1.0132,
+      "down_capture": -0.0816
+    },
+    "te_ratio_trailing21_vs_full": 1.7509,
+    "te_ratio_threshold": 1.5,
+    "te_underestimate_alert": true,
+    "signal_decay": {
+      "metric": "rank_ic 3M/12M = N/A (composite 배포 북, 단일팩터 IC 부재)",
+      "proxy_active_return": {
+        "active3m_mo": -0.0985,
+        "active12m_mo": -0.025,
+        "active36m_mo": 0.0162,
+        "ratio_3m_over_12m": 3.9393
+      },
+      "note": "proxy: 최근 3m active가 12m 대비 급감/부호반전이면 감쇠 조짐. 판정 아님 — 진단."
+    },
+    "turnover": {
+      "annual_one_way_backtest": 5.5725,
+      "hard_cap": 11,
+      "live_rebalances_since_adoption": 1,
+      "note": "라이브 회전 drift는 리밸 ≥2회 후 산출 가능 — 현재 1회(07-01)"
+    }
+  },
+  "regime": {
+    "current": {
+      "source": "portfolio_gap_vector.json regime_state (regime_current.json 부재)",
+      "date": "2026-07-10",
+      "category": "NEUTRAL",
+      "score": 0
+    },
+    "last_recon_month": {
+      "ym": "2026-06",
+      "regime": "CAUTION"
+    },
+    "shift_flag": true,
+    "shift_note": "CAUTION(recon 마지막)→NEUTRAL(현). β_R05 regime-conditional 북이라 국면 전이는 노출 재조정 유발 — covariance rebuild 트리거 후보(진단; optimizer 재계산은 Q-Lead/도훈 판단)."
+  },
+  "alert": {
+    "breach_lower": false,
+    "telegram_required": false,
+    "action_if_breach": "Telegram Q-Lead alert (자동 퇴출 아님 — 도훈 수동 판단)",
+    "realized_drag_note": "★melt-up 국면 active drag 관찰: 2026-04 CRISIS de-risk(β0.5)로 BM +33% 대비 -0.3%, 2026-05 strat +20.6% vs BM +35% (~-15pp) — 방어 오버레이의 상대수익 비용(insurance premium)이 현재 발현. 진단만 — 전략 수정 제안 아님."
+  },
+  "data_notes": ["2026-06 ret_net: rds/ledger 0.0724 vs live_book_series 0.0582 불일치 — interval 정합상 rds(contract-authoritative) 채택. live_book_series 재생성 시 정합 권고(진단, 비차단).", ".cache/regime_current.json 부재 — gap_vector.regime_state로 대체. monitoring 표준 입력 복원 권고.", "trades/costs 제외(리서치 계약). ret_net = 15bps net (v2.4_kr_retail_15bps_perlayer)."],
+  "boundary": "read-only(book_state/recon/live_track holdout 무수정) · 전략 변경/weight 제안 없음 · governor 정지 존중 · Judge 재판정 없음"
+}

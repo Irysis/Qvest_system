@@ -1,0 +1,27 @@
+{
+  "schema_version": "monitoring_v6.1_r9",
+  "report_month": "202607",
+  "generated_at": "2026-07-13T13:03:22+0900",
+  "generated_by": "monitoring agent — 첫 월간 대조",
+  "strategy_id": "STR_1715_AR_on_M4_R05_overlay_PG2",
+  "track_role": "rollback_preserved_inactive",
+  "holdout_judgment": {
+    "interval": {
+      "q05": 0.3929,
+      "q95": 3.1626,
+      "boot_median": 1.7535,
+      "sr_input": 1.7089,
+      "holdout_months": 21,
+      "generated": "2026-06-10",
+      "consumed": false
+    },
+    "verdict": "NOT_TRACKED",
+    "verdict_note": "interval un-consumed(유효)이나 AR 북은 미배포 rollback 보존 — FaithTrend(07-01)→noLayer4(07-02)로 라이브 트래킹 개시 전 교체됨. live_track 폴더에 recon 트래킹 시계열 부재(holdout_interval.json 단독). trailing 판정하려면 β_AR 오버레이 recon 재구성 필요 — 미배포 북 대상 재구성은 monitoring 범위 밖 + 추정 금지 원칙. 수치 날조 없이 NOT_TRACKED 보고. interval은 소모 안 됨 → 보존.",
+    "caveats": "AR = STR_1715×m4×β_R05×β_AR. 현 노L4 북은 β_AR 제거판. AR 재활성 시 신규 사전등록 구간 필요 여부 검토."
+  },
+  "alert": {
+    "breach_lower": false,
+    "telegram_required": false
+  },
+  "boundary": "read-only · 추정/날조 없음 · interval 보존"
+}

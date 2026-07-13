@@ -1,0 +1,101 @@
+{
+  "task": "R16 — 거래량/마이크로스트럭처 신규 팩터 엔지니어링",
+  "frontier_id": "FQ-029",
+  "lane": "non_return (market-data derived, not pure return-transform)",
+  "mode": "QEPM alpha-research",
+  "created": "2026-07-13",
+  "owner": "Q-Lead (R16 alpha-research)",
+  "selection_type": "sweep (enumerated pre-registered family)",
+  "n_trials_family": 5,
+  "universe": "KR_top342 (KOSPI200 ∪ KOSDAQ150)",
+  "cost_model_version": "v2.4_kr_retail_15bps",
+  "measurement": "canonical_screen_bt top_n=25 EW long-only, 15bps one-way, liq_min=2e8 (20d ADV), cap-w authoritative + dual-basis (diag_ew_universe + diag_cap_tier)",
+  "data_vintage": {
+    "source": ".cache/RAWDATA.parquet",
+    "mtime": "2026-07-13T00:04:11+0900",
+    "md5_prefix": "323edc956d366d11",
+    "note": "screening (non-graduation A/B) — current vintage recorded as pin tag; no multi-round tipping risk"
+  },
+  "pit_policy": {
+    "rule": "월말 sig_date d0 종가까지의 일별 데이터로만 신호 계산 → forward return d0→d1 (다음 월말). 신호 계산창은 d0 inclusive, holding month은 d0 이후 → C5 clean(신호는 홀딩월 시작 전).",
+    "liquidity": "20d 평균 거래대금(TV=Close*Vol) at d0 ≥ 2e8 KRW (C10 t-1 만족 — d0는 홀딩월 이전).",
+    "rolling": "expanding/rolling only (frollmean); full-sample 통계 없음 (C1).",
+    "index_membership": "K200/KQ150 membership at d0 (PIT — d0 시점 지수구성 알 수 있음)."
+  },
+  "dropped_candidates": [
+    {
+      "id": "AMH_D",
+      "reason": "hypothesis_index gate FAIL — 중복 재측정 금지 위반. C24_LIQ_IMPROVE_WT-D20260621_006 (L-AR-20260621_172656, construction=amihud_slope_liquidity_trend) 가 이미 'log-Amihud 음기울기 126d = 유동성 개선추세' 를 canonical 실측 → FALSIFIED (PORT_t 1.11, oos -0.33, L10_Amihud_Ratio corr -0.613 / L29_Illiq_Change -0.635 로 기존 illiquidity-change construct와 동일축·부호반대, short-leg only D1 t-2.48 / D10 비유의, sector-neutral서 raw IC 소멸). AMH_D(Amihud 12m 대비 3m 변화)는 동일 illiquidity-change 축의 재측정 → drop. 지식 보존: 유동성 level(AdjILLIQ F PORT_t 2.06 post-2017 decay) 및 slope(C24) 축은 both dead — ILLIQ_VOL(2nd moment)로 미탐색 축만 대체.",
+      "prior_refs": ["L-AR-20260621_172656 (C24)", "L-AR (Modified Amihud AdjILLIQ level)"]
+    }
+  ],
+  "candidates": [
+    {
+      "id": "VSHK_P",
+      "name": "Volume Shock Persistence",
+      "family": "liquidity/flow (volume microstructure)",
+      "formula": "x = log(turnover), turnover = (Close*Vol)/Size. rolling-63d lag-1 autocorrelation AR1_w = [E_w(x_t x_{t-1}) - E_w(x_t)E_w(x_{t-1})] / var_w(x). score = +AR1 (higher persistence → long).",
+      "hypothesized_sign": "+",
+      "mechanism": "정보성 거래는 지속(sticky attention/info flow)하고 잡음 거래는 평균회귀 — 거래강도의 자기상관(지속성)이 높은 종목은 정보-주도 거래로 후속 drift.",
+      "reference": "Gervais, Kaniel & Mingelgrin 2001 (high-volume return premium); Llorente-Michaely-Saar-Wang 2002 (volume-return dynamics informed vs liquidity)"
+    },
+    {
+      "id": "TOD_DT",
+      "name": "Turnover Trend Deviation (attention spike)",
+      "family": "liquidity/flow (attention)",
+      "formula": "turnover = (Close*Vol)/Size. TOD = log( MA5(turnover) / MA252(turnover) ) at d0. score = -TOD (낮은 상대회전율=neglected → long; 높은 attention spike → avoid).",
+      "hypothesized_sign": "- (attention spike → 단기 과대평가 → 후속 reversal)",
+      "mechanism": "Barber-Odean attention-induced buying: 자기 연간 baseline 대비 급증한 회전율=개인 관심 급증→일시적 과매수→후속 underperform. long-only는 반대 leg(neglected)를 매수.",
+      "reference": "Barber & Odean 2008 (attention & retail buying); Gervais-Kaniel-Mingelgrin 2001",
+      "adjacency_caution": "hypothesis_index turnover lookup = accounting asset-turnover/cost-cap만(거래 회전율 추세이탈 virgin). L03 volume-mom confound 점검 의무."
+    },
+    {
+      "id": "AMT_ASY",
+      "name": "Up/Down-day Amount Asymmetry (buying pressure)",
+      "family": "flow (price-directional, NO investor identity)",
+      "formula": "up_tv = Σ_{60d, Ret>0} TV ; dn_tv = Σ_{60d, Ret<0} |TV| ; AMT_ASY = log((up_tv+eps)/(dn_tv+eps)). score = +AMT_ASY (accumulation → long).",
+      "hypothesized_sign": "+ (buying-pressure asymmetry → accumulation/continuation, Money Flow default)",
+      "mechanism": "상승일 거래대금 > 하락일 거래대금 = 매수우위(정보/수요). Lee-Ready식 방향추정 없이 가격방향×거래대금으로 buyer/seller-initiated 근사.",
+      "reference": "Lee & Ready 1991 (trade direction); Money Flow Index (Quong-Soudack 1989)",
+      "adjacency_caution": "투자자-정체성 flow(C21/C22/C25: 외국인+기관 순매수)와 구분 — 가격기반 pressure(investor_wide 불사용). 단 KR 실증 'directional demand 1M 평균회귀·short-leg'(C22/C25) prior → 역부호 risk를 challenge에 명시."
+    },
+    {
+      "id": "VPRC_CORR",
+      "name": "Volume-|Return| Correlation Change (Kyle-lambda proxy change)",
+      "family": "liquidity (price-impact / adverse selection)",
+      "formula": "a=|Ret|, b=log(TV). corr_w = (E_w(ab)-E_w(a)E_w(b))/sqrt(var_w(a)var_w(b)). VPRC = corr_60 - corr_250. score = +VPRC (price-impact 상승 → illiquidity 상승 → premium).",
+      "hypothesized_sign": "+",
+      "mechanism": "|수익|-거래량 공행성 = Kyle λ(단위거래당 가격충격) 근사. 60d 대비 250d 상승 = 최근 price-impact/adverse-selection 심화 → 유동성 악화 → illiquidity premium(Amihud).",
+      "reference": "Kyle 1985 (lambda); Amihud 2002 (illiquidity premium)",
+      "adjacency_caution": "C24(Amihud slope) FALSIFIED 축과 인접(둘 다 illiquidity 변화) — 단 VPRC는 corr기반 price-impact(Amihud ratio와 상이 proxy). C24 corr 점검 의무. sector-neutral IC 생존 여부 필수 확인(C24가 여기서 사망)."
+    },
+    {
+      "id": "ILLIQ_VOL",
+      "name": "Illiquidity Risk (2nd moment / variability)",
+      "family": "liquidity (liquidity risk premium)",
+      "formula": "amihud_t = |Ret_t| / TV_t. ILLIQ_VOL = SD_60d(amihud) / MA_60d(amihud) (coefficient of variation, level에서 직교화). score = +ILLIQ_VOL.",
+      "hypothesized_sign": "+",
+      "mechanism": "유동성 risk(2차 모멘트) premium: 비유동성이 시간가변적으로 크게 요동치는 종목=liquidity risk 노출→higher expected return. level(dead)/slope(dead)와 다른 미탐색 축(2nd moment).",
+      "reference": "Pastor & Stambaugh 2003 (liquidity risk premium); Amihud 2002 (illiquidity variability)",
+      "adjacency_caution": "liquidity level(AdjILLIQ)·slope(C24) both dead → 이 후보는 CV(2nd moment)로 명시 직교화. 재측정 아님(신규 construction). level과의 cross-sectional corr 보고 의무."
+    }
+  ],
+  "diagnostics_required": [
+    "canonical PORT_t (cap-w, NW lag-3) — 1급 선택기준",
+    "diag_ew_universe (EW-uni PORT_t + post2017 + oos_approx) — 기각 전 EW-생존 확인",
+    "diag_cap_tier (MEGA top-10 / MID 11-30 / OTHER) — cap-tier 국소화 진단",
+    "post-2017 분리 (pre/post 2017-01)",
+    "rank-IC + ICIR (advisory)",
+    "placebo (month-shuffle permutation p-value, n=200)",
+    "Size partial-IC (log-Size 통제) + factor↔log-Size cross-sectional corr (크기 프록시 함정)",
+    "DSR (sweep, n_trials=5)",
+    "turnover_annual (비용 인지)"
+  ],
+  "verdict_rules": {
+    "HARD_graduation": "PORT_t(cap-w, forge-authoritative) ≥ 2.95 AND oos_retention ≥ 0.7 AND calmar ≥ 0.64 — canonical 단계에서는 PASS 선언 금지(스크리닝 실측). 자본급 주장은 forge 완주 시만.",
+    "survivor_for_onboarding": "canonical에서 placebo p<0.05 AND Size-무관(Size-partial IC가 raw IC의 부호·크기 유지) 인 팩터만 add_factor 온보딩 권고. capital-grade는 HARD 3종 통과 시만.",
+    "screen_tier_routing": "신호 실재하나 HARD 미달 → OVERLAY_CANDIDATE / feature 보존 라우팅.",
+    "verdict_lexicon": "negative = 'config-scoped negative + 프론티어 표시' (종결어휘 금지). next_probe ≥ 2 필수."
+  },
+  "composite_policy": "단일지표 분해 의무(합성-희석 교훈, Phase A m1). composite는 ≥2 survivor일 때만 leave-one-out 병기로 구축. 기본 산출=5 singles."
+}

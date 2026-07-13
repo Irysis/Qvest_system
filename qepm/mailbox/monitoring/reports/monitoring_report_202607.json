@@ -1,0 +1,44 @@
+{
+  "schema_version": "monitoring_v6.1_r9",
+  "report_month": "202607",
+  "generated_at": "2026-07-13T13:03:22+0900",
+  "title": "라이브 북 첫 월간 holdout 대조 (운영 갭 종결)",
+  "context": "Q-Lead 전략계층 감사: holdout 구간 3건 등록됐으나 월간 대조 0건 실행(monitoring_report 0건). 본 실행이 첫 대조.",
+  "book": "STR_1715_on_M4_R05_noLayer4_PG2 (book_state v2.5, 100%, incumbent IR 1.416 net_active_recon_v1)",
+  "tracks": [
+    {
+      "id": "STR_1715_on_M4_R05_noLayer4_PG2",
+      "role": "live_book_active",
+      "verdict": "PASS_PLUS",
+      "realized_sr": 3.2462,
+      "interval": [0.3046, 3.1414],
+      "breach_lower": false
+    },
+    {
+      "id": "STR_1715_AR_on_M4_R05_overlay_PG2",
+      "role": "rollback_preserved_inactive",
+      "verdict": "NOT_TRACKED",
+      "interval": [0.3929, 3.1626],
+      "breach_lower": false
+    },
+    {
+      "id": "STR_1715_FaithTrend_on_M4_R05_overlay_PG2",
+      "role": "consumed_superseded",
+      "verdict": "CONSUMED",
+      "interval": [0.6626, 3.1866],
+      "breach_lower": false
+    }
+  ],
+  "any_lower_breach": false,
+  "headline": "하단 침범 0건 — 현 운용 유지, 조치 불요 (단 Track1 PASS_PLUS는 recon-trailing 저정보 baseline, forward 검증 아님)",
+  "drift_summary": {
+    "track1_te_ratio": 1.7509,
+    "track1_te_alert": true,
+    "track1_signal_decay_proxy_ratio": 3.9393,
+    "track1_regime_shift": "CAUTION→NEUTRAL (진단 — optimizer 재계산 후보)",
+    "track1_melt_up_active_drag": "관찰됨(진단): 방어 오버레이가 megacap melt-up서 상대수익 비용 발현. 전략 수정 제안 아님."
+  },
+  "data_gaps": [".cache/regime_current.json 부재", "2026-06 ret_net rds/series 불일치", "AR recon 트래킹 시계열 부재"],
+  "outputs": ["06_Registry/live_track/STR_1715_on_M4_R05_noLayer4_PG2/monitoring_report_202607.json", "06_Registry/live_track/STR_1715_AR_on_M4_R05_overlay_PG2/monitoring_report_202607.json", "06_Registry/live_track/STR_1715_FaithTrend_on_M4_R05_overlay_PG2/monitoring_report_202607.json", "qepm/mailbox/monitoring/reports/monitoring_report_202607.json"],
+  "boundary": "read-only · 전략 변경 제안 없음 · governor 정지 존중 · Judge 재판정 없음"
+}

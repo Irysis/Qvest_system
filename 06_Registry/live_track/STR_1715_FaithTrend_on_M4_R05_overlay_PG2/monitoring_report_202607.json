@@ -1,0 +1,28 @@
+{
+  "schema_version": "monitoring_v6.1_r9",
+  "report_month": "202607",
+  "generated_at": "2026-07-13T13:03:22+0900",
+  "generated_by": "monitoring agent — 첫 월간 대조",
+  "strategy_id": "STR_1715_FaithTrend_on_M4_R05_overlay_PG2",
+  "track_role": "consumed_superseded",
+  "holdout_judgment": {
+    "interval": {
+      "q05": 0.6626,
+      "q95": 3.1866,
+      "boot_median": 1.8937,
+      "sr_input": 1.8747,
+      "generated": "2026-07-01",
+      "consumed": true,
+      "consumed_date": "2026-07-02",
+      "consumed_reason": "SUPERSEDED by Layer4 removal (WT-D20260702_002, 도훈 FINAL 2026-07-02). Layer4(β_faith) 제거로 전략 파라미터 변경 → C3 소모 규칙 적용. 후속 book=STR_1715_on_M4_R05_noLayer4_PG2 신규 사전등록 구간으로 대체."
+    },
+    "verdict": "CONSUMED",
+    "verdict_note": "interval consumed=true (Layer4 제거 WT-D20260702_002로 소모, 2026-07-02). C3 소모 규칙: judge_holdout() 재판정 거부 — 실측 error='[C3] 이 구간은 소모됨(SUPERSEDED by Layer4 removal (WT-D20260702_002, 도훈 FINAL 2026-07-02). Layer4(β_faith) 제거로 전략 파라미터 변경 → C3 소모 규칙 적용. 후속 book=STR_1715_on_M4_R05_noLayer4_PG2 신규 사전등록 구간으로 대체.) — 새 봉인 구간 누적 전 재판정 금지.'. 후속 북=STR_1715_on_M4_R05_noLayer4_PG2 신규 사전등록 구간(Track1)으로 대체됨. 정상 상태 — 조치 불요.",
+    "caveats": "소모된 구간 재판정 금지(사전등록 무결성). 감사이력 보존 목적으로만 기록."
+  },
+  "alert": {
+    "breach_lower": false,
+    "telegram_required": false
+  },
+  "boundary": "read-only · C3 소모규칙 존중(재판정 없음)"
+}
