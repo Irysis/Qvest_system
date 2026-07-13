@@ -1,0 +1,377 @@
+{
+  "prereg": {
+    "mode": "RAMP",
+    "round": "R15",
+    "fq": "FQ-028",
+    "question": "퇴출 트리거를 챔피언 F-1(순위-단독)에 고정하고 빈 슬롯 충원(fill) 규율만 변주(수준-fill/신선-fill/무-fill 축소/일관성-fill)하면 cap-w 또는 oos가 움직이는가. R14 ④(ctrl_D2 fill 선택만으로 2.406↔2.503 이동)이 노출한 퇴출-직교 다이얼.",
+    "base": "base_F1_level36fill (진입 반기 top-K20 by level36 · 퇴출 F-1 rank-only 분기 · 충원 level36-top = R14 ctrl_F1 2.937 정확 재현)",
+    "selection_type": "chain",
+    "lattice": "entry(반기 top-K20 level36)·exit(F-1 rank-only 분기) 전 arm 고정 → 차이는 빈 슬롯 충원 규율만. base=level36-fill, L-1=recent18-fill, L-2=no-fill(축소), L-3=consist-min-fill(12m×3)",
+    "endpoint_hierarchy": {
+      "primary": "oos_retention (v2 anchored 3분할 중앙값, cap-w act_bm)",
+      "secondary": "port_t_capwt + HARD 3종 + EW-uni + 2017+ 분리 + paired vs base(F-1)",
+      "tension": "endpoint=oos여도 arm '선택'은 IS-only(OOS 오염 방지). 선택=IS paired-t · 판정=게이트 산출 전체"
+    },
+    "chain_discipline": "arm 간 선택 IS-only(첫 65% 배포월 paired-t) · oos는 최종 게이트 산출로만 · 2차 결합 없음(1차만) · DSR 진단용(게이트 부적용)",
+    "arms": {
+      "armL1_fresh_fill": {
+        "mechanism": "퇴출=F-1 rank-only(불변). 빈 슬롯 충원 = recent18 NW-t 상위 차순위(수준-fill 대신 신선-fill). 유한 recent18 소진 시 level36 순서로 tail 폴백(K20 유지)",
+        "diag": "충원 시점은 정보가 가장 신선해야 할 순간 — 수준-fill(trailing 36m)은 감쇠 중인 팩터를 다시 들일 수 있다",
+        "adversarial": "② L-1이 FM 수렴하는가 — fill에만 적용해도 pool이 FM화되는지 Jaccard(L-1 vs FMpure) vs (base vs FMpure)"
+      },
+      "armL2_nofill_shrink": {
+        "mechanism": "퇴출=F-1 rank-only(불변). 퇴출 슬롯을 다음 반기 진입까지 미충원 → 팩터 pool 자연 축소(exit-only anchor 후 <K20). 종목 top-25는 잔여 풀 z-composite 합의로 유지. 다음 반기 진입서 level36 top-K20 재충전",
+        "diag": "충원 자체가 잡음 유입일 가능성 — 검증된 생존자만으로 압축 운용. 팩터 breadth 축소가 신호를 정제하는가 잡음 낳는가",
+        "adversarial": "① L-2가 K 축소 sweep(R6 K10 cap-w 1.906·oos -0.375)과 수렴하는가 — 유효 K(pool 크기 궤적)·수렴 여부 정량화"
+      },
+      "armL3_consist_fill": {
+        "mechanism": "퇴출=F-1 rank-only(불변). 빈 슬롯 충원 = min(NW-t over 3 부분창 12m×3) 상위 차순위(R13 D-3 산식 fill에만 적용). 유한 consist-min 소진 시 level36 tail 폴백",
+        "diag": "충원 팩터만큼은 감쇠-저항성(부분창 전반 일관) 검증을 요구 — 신규 진입에 지속성 프록시 게이트",
+        "adversarial": "StabSel(relevance, R5 폐쇄)과 구분 = 라벨 realized active NW-t(수익)이지 relevance 아님. fill-only 적용이 pool 정체를 바꾸는가 Jaccard"
+      }
+    },
+    "ctrl": {
+      "anchor_R6_noexit": "R6 Ppure_W36_K20(no-exit, level36-top) — vintage parity anchor(cap-w 2.6124 재현). 판정 arm 아님",
+      "r6_k10_ref": "R6 Ppure_W36_K10 cap-w 1.9055·oos -0.3753 = L-2 무-fill 수렴 판별 대조(challenge ①)"
+    },
+    "gate_hard": [2.95, 0.7, 0.64, 0.5],
+    "primary_criterion": "1차 승자 = R15 자체 IS paired NW-t(cap-w act_bm) vs base(F-1) 최대(IS-only, JUDGED_ARMS만). 최종 판정 = oos_retention(1차) + full HARD 3종 + full paired vs base + cap-w(2차)",
+    "kill_rule": "전 judged arm oos_retention 0.7 미도달 AND HARD 3종 0/N AND full paired<2.0 → config-scoped negative(충원 규율 config 한정). '소진/dead-end' 어휘 금지 — next_probe >=2 도출 의무",
+    "honest_frame": "본 라운드=충원 규율 레버(퇴출과 직교). construction cap-w ~2.94 포화·oos 천장 ~+0.12 진단 존재 → 정직 기대=이 다이얼이 그 천장 밖 값을 내는지 판별(소폭 돌파 또는 재확인). ★설계상 fill은 exit-only anchor(교대구조상 반기당 1회)에서만 작동 → 개입 빈도 낮음 = 검정력 한계 사전 예고(challenge ③). return-derived substrate 재사용(신규 재료 아님). cap-tier×cap-w 벽 미해결 가능(정직 병기)",
+    "xmode_fail_prior": "hypothesis_index: 'fill/충원' 키워드 0-coverage(novel 다이얼, INV-7 차별점 충족). 인접 prior: factor-momentum timing NULL(06-30)·DIST-AR-007 momentum return-파생 DISTILLED_NEG — L-1(recent18-fill)이 FM 계열 근접이나 ①fill-only 적용(전체 선별 아님)②재료=realized active NW-t(IC 아님)③퇴출 F-1 고정으로 pool 골격 유지 = family 근접하나 개입면 차별. R13 D-1(감쇠속도 선별)이 FM 수렴 붕괴(Jaccard vs FM 0.713)한 선례 → L-1 fill-only가 그 수렴을 회피하는지 판별.",
+    "is_frac": 0.65,
+    "top_n": 25,
+    "cost_bps_oneway": 15,
+    "liq_min": 200000000,
+    "cap": 0.2,
+    "floor_frac": 0.25,
+    "cadence_entry": 6,
+    "cadence_exit": 3,
+    "exit_rank_bar": 30,
+    "n_trials_r15": 3,
+    "n_trials_lineage": 30,
+    "ref": {
+      "r14_ctrl_f1_capwt": 2.937,
+      "r6_base": 2.6124,
+      "r6_k10_capwt": 1.9055,
+      "r6_k10_oos": -0.3753
+    },
+    "cost_model": "delta-based |Δw|×15bps one-way (weighted_screen_bt 내장 — 충원 회전 자동 반영)",
+    "vintage_pin": "r6_session_20260711 (sel_traj 36/pure_factor_scores/factor_group_scores/rawdata/panel; SUB=_ramp_r13_sub 재사용; base_F1 parity Δ<5e-3 확인)",
+    "as_of_date": "2026-07-13",
+    "source_version": "RAMP_R15_v1",
+    "security_id": "Ticker (rawdata) -> factor_id z (pure_factor_scores.z=Z_Score_Aligned)",
+    "config_hash": "7f5855e1dc0ce7e4",
+    "generated_at": "2026-07-13T11:16:29+0900"
+  },
+  "config_hash": "7f5855e1dc0ce7e4",
+  "meta": {
+    "as_of_date": "2026-07-13",
+    "generated_at": "2026-07-13T11:16:47+0900",
+    "source_version": "RAMP_R15_v1",
+    "security_id": "Ticker->factor_id z (pure_factor_scores.z=Z_Score_Aligned)"
+  },
+  "results": [
+    {
+      "model": "anchor_R6_noexit",
+      "port_t_capwt": 2.6124,
+      "port_t_EWuni": 3.9191,
+      "oos_retention": -0.0759,
+      "oos_ew": 0.5064,
+      "calmar": 0.45,
+      "dsr": 1.2504,
+      "post2017_bm_sr": -0.1052,
+      "full_bm_sr": 0.676,
+      "turnover": 9.2705,
+      "n_months": 220
+    },
+    {
+      "model": "base_F1_level36fill",
+      "port_t_capwt": 2.937,
+      "port_t_EWuni": 4.3441,
+      "oos_retention": 0.0482,
+      "oos_ew": 0.6512,
+      "calmar": 0.4998,
+      "dsr": 1.557,
+      "post2017_bm_sr": 0.0346,
+      "full_bm_sr": 0.7564,
+      "turnover": 9.2269,
+      "n_months": 220
+    },
+    {
+      "model": "armL1_fresh_fill",
+      "port_t_capwt": 2.7321,
+      "port_t_EWuni": 3.8619,
+      "oos_retention": -0.0564,
+      "oos_ew": 0.491,
+      "calmar": 0.4858,
+      "dsr": 1.4766,
+      "post2017_bm_sr": -0.0951,
+      "full_bm_sr": 0.7122,
+      "turnover": 9.3927,
+      "n_months": 220
+    },
+    {
+      "model": "armL2_nofill_shrink",
+      "port_t_capwt": 2.6523,
+      "port_t_EWuni": 3.8988,
+      "oos_retention": -0.089,
+      "oos_ew": 0.4459,
+      "calmar": 0.4718,
+      "dsr": 1.354,
+      "post2017_bm_sr": -0.0876,
+      "full_bm_sr": 0.6902,
+      "turnover": 9.3098,
+      "n_months": 220
+    },
+    {
+      "model": "armL3_consist_fill",
+      "port_t_capwt": 2.89,
+      "port_t_EWuni": 4.0536,
+      "oos_retention": 0.0786,
+      "oos_ew": 0.6746,
+      "calmar": 0.5059,
+      "dsr": 1.5913,
+      "post2017_bm_sr": 0.0314,
+      "full_bm_sr": 0.7444,
+      "turnover": 9.2269,
+      "n_months": 220
+    }
+  ],
+  "paired": [
+    {
+      "model": "armL1_fresh_fill",
+      "mean_diff_ann": -0.0091,
+      "paired_t_full": -1.2277,
+      "paired_t_IS": 0.2817,
+      "paired_t_OOS": -2.0016,
+      "n": 220,
+      "n_is": 143
+    },
+    {
+      "model": "armL2_nofill_shrink",
+      "mean_diff_ann": -0.0119,
+      "paired_t_full": -1.5467,
+      "paired_t_IS": 0.3416,
+      "paired_t_OOS": -2.1709,
+      "n": 220,
+      "n_is": 143
+    },
+    {
+      "model": "armL3_consist_fill",
+      "mean_diff_ann": -0.0031,
+      "paired_t_full": -0.3768,
+      "paired_t_IS": -0.5257,
+      "paired_t_OOS": -0.0255,
+      "n": 220,
+      "n_is": 143
+    }
+  ],
+  "concentration": [
+    {
+      "model": "anchor_R6_noexit",
+      "hhi": 0.04,
+      "n_eff": 25,
+      "maxw": 0.04,
+      "n_hold": 25,
+      "min_nhold": 25,
+      "w_MEGA": 0.086,
+      "w_MID": 0.1257,
+      "w_OTHER": 0.906,
+      "w_UNRANKED": 0
+    },
+    {
+      "model": "base_F1_level36fill",
+      "hhi": 0.04,
+      "n_eff": 25,
+      "maxw": 0.04,
+      "n_hold": 25,
+      "min_nhold": 25,
+      "w_MEGA": 0.0843,
+      "w_MID": 0.1235,
+      "w_OTHER": 0.9095,
+      "w_UNRANKED": 0
+    },
+    {
+      "model": "armL1_fresh_fill",
+      "hhi": 0.04,
+      "n_eff": 25,
+      "maxw": 0.04,
+      "n_hold": 25,
+      "min_nhold": 25,
+      "w_MEGA": 0.0861,
+      "w_MID": 0.1257,
+      "w_OTHER": 0.9067,
+      "w_UNRANKED": 0
+    },
+    {
+      "model": "armL2_nofill_shrink",
+      "hhi": 0.04,
+      "n_eff": 25,
+      "maxw": 0.04,
+      "n_hold": 25,
+      "min_nhold": 25,
+      "w_MEGA": 0.0863,
+      "w_MID": 0.1216,
+      "w_OTHER": 0.9115,
+      "w_UNRANKED": 0
+    },
+    {
+      "model": "armL3_consist_fill",
+      "hhi": 0.04,
+      "n_eff": 25,
+      "maxw": 0.04,
+      "n_hold": 25,
+      "min_nhold": 25,
+      "w_MEGA": 0.0839,
+      "w_MID": 0.1192,
+      "w_OTHER": 0.912,
+      "w_UNRANKED": 0
+    }
+  ],
+  "oos_subperiod": [
+    {
+      "model": "base_F1_level36fill",
+      "sr_full": 0.7564,
+      "sr_pre2017": 1.6644,
+      "sr_post2017": 0.0346,
+      "oos_full": 0.0482,
+      "oos_pre": 1.1072,
+      "oos_post": -0.6423,
+      "n_pre": 108,
+      "n_post": 112
+    },
+    {
+      "model": "armL1_fresh_fill",
+      "sr_full": 0.7122,
+      "sr_pre2017": 1.6449,
+      "sr_post2017": -0.0951,
+      "oos_full": -0.0564,
+      "oos_pre": 1.1932,
+      "n_pre": 108,
+      "n_post": 112
+    },
+    {
+      "model": "armL2_nofill_shrink",
+      "sr_full": 0.6902,
+      "sr_pre2017": 1.6142,
+      "sr_post2017": -0.0876,
+      "oos_full": -0.089,
+      "oos_pre": 1.0862,
+      "oos_post": -9.9233,
+      "n_pre": 108,
+      "n_post": 112
+    },
+    {
+      "model": "armL3_consist_fill",
+      "sr_full": 0.7444,
+      "sr_pre2017": 1.582,
+      "sr_post2017": 0.0314,
+      "oos_full": 0.0786,
+      "oos_pre": 1.1463,
+      "oos_post": -0.2632,
+      "n_pre": 108,
+      "n_post": 112
+    }
+  ],
+  "parity": {
+    "r6_anchor_pt": 2.6124,
+    "r6_stored": 2.6124,
+    "r6_delta": 0,
+    "r6_ok": true,
+    "base_F1_pt": 2.937,
+    "r14_ctrl_f1": 2.937,
+    "f1_delta": 0,
+    "f1_ok": true
+  },
+  "winner_1st": "armL2_nofill_shrink",
+  "winner_is_t": 0.3416,
+  "endpoint_primary": "oos_retention",
+  "endpoint_secondary": "port_t_capwt",
+  "challenge": {
+    "pool_size": {
+      "base": {
+        "mean": 20,
+        "min": 20,
+        "max": 20
+      },
+      "L1": {
+        "mean": 20,
+        "min": 20,
+        "max": 20
+      },
+      "L2": {
+        "mean": 19.027,
+        "min": 11,
+        "max": 20
+      },
+      "L3": {
+        "mean": 20,
+        "min": 20,
+        "max": 20
+      }
+    },
+    "fill_stats": {
+      "base": {
+        "n_exitcheck": 37,
+        "rank_fire": 72,
+        "sum_slots": 72,
+        "sum_filled": 72,
+        "underfill_months": 0
+      },
+      "L1": {
+        "sum_slots": 72,
+        "sum_filled": 72,
+        "underfill_months": 0,
+        "fresh_frac_num": 56,
+        "fresh_frac_den": 72
+      },
+      "L2": {
+        "sum_slots": 72,
+        "sum_filled": 0,
+        "underfill_months": 24
+      },
+      "L3": {
+        "sum_slots": 72,
+        "sum_filled": 72,
+        "underfill_months": 0,
+        "fresh_frac_num": 53,
+        "fresh_frac_den": 72
+      }
+    },
+    "jaccard": {
+      "L1_FM": 0.4417,
+      "base_FM": 0.418,
+      "L3_FM": 0.417,
+      "L1_base": 0.9375,
+      "L2_base": 0.955,
+      "L3_base": 0.9414
+    },
+    "fresh_frac": {
+      "L1": 0.7778,
+      "L3": 0.7361
+    },
+    "r6_k10_ref": {
+      "capwt": 1.9055,
+      "oos": -0.3753
+    },
+    "parity": {
+      "r6_anchor": 0,
+      "base_F1_vs_r14": 0
+    }
+  },
+  "kill": true,
+  "max_paired_full": -0.3768,
+  "any_graduation": false,
+  "base_oos": 0.0482,
+  "base_capwt": 2.937,
+  "best_oos_arm": "armL3_consist_fill",
+  "best_oos_val": 0.0786,
+  "best_capwt_arm": "armL3_consist_fill",
+  "best_capwt_val": 2.89,
+  "n_trials_r15": 3,
+  "n_trials_lineage": 30,
+  "selection_type": "chain",
+  "n_sig": 257,
+  "date_range": ["2005-01-31", "2026-05-31"]
+}

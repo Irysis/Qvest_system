@@ -47,15 +47,18 @@ RAMP_R6_INSIDER=1 RAMP_R9_FULL=1 Rscript -e 'source("02_Infrastructure/ramp/run_
   - 활동 없는 종목-월 = NA (이벤트 팩터 규약; composite 단계 NA→0 중립).
 - **PIT**: 신호월 m = 공시 **접수월**(rcept_dt), forward = m+1월 → 홀딩월 시작 전 데이터만(C5 정합). 빌더에 truncation-invariance assert(표본월 3곳, 미래 행 제거 재계산 == 전체 계산) HARD 내장.
 
-### 4.2 config (≤6 준수: **4 trial**)
+### 4.2 config (≤6 준수: **4 trial**) — [2026-07-13 개정: R12~R15 챔피언 구성 이식]
+
+> **개정 사유**(사전등록 확정 전 초안 수정 — 규율 정합): R12~R15 chain이 construction 3대 축을 실측 완결 — 챔피언 = **F-1 구성(반기 진입 top-K by level36 · 분기 순위-단독 퇴출 · level36-top 충원)**, cap-w 2.937·oos +0.048로 plain(무퇴출 2.612)을 지배. R15 next_probe 1("novel 재료 × 검증된 F-1 구성 이식") 소비. 구 초안의 W60_K10 plain arm(정보량 최소)을 F-1 arm 2개로 교체 — trial 수 4 불변.
 
 | 축 | 값 |
 |---|---|
-| arms (trial) | `Ppins_W{36,60}_K{10,20}` = 4 — trailing PORT_t top-K 선별, 기질=확장 패널 |
-| controls (비-trial) | `Pbase_W{36,60}_K{10,20}` — 동일 선별·102-only 기질 (insider 한계기여 격리) |
-| cadence | 6m (R6 고정 — parity 대조 가능 조건) |
+| arms (trial) | `Ppins_W36_K20_plain`(R6-parity) · `Ppins_W60_K20_plain` · **`Ppins_W36_K20_F1`(챔피언 구성)** · **`Ppins_W36_K10_F1`** = 4 |
+| controls (비-trial) | 각 arm과 **동일 construction**의 102-only 기질 대응쌍 (insider 한계기여 격리 — construction 교란 제거) |
+| cadence | 진입 6m 고정(R6 parity) · F-1 arm은 퇴출 분기(R12 구현 재사용) |
 | 측정 | canonical top-25 EW·15bps·liq 2e8·cap-w authoritative (R6 `gates()` 복제) |
 | **Boruta arm** | **없음** — Boruta-on-PORT_t-pool 음-소진 (FQ-014 재시도 금지) |
+| (참고) R10~R15 | P-pure construction chain(비-sweep·chain 회계, lineage 33) — 본 family sweep 회계에 비산입, DSR 진단 시 병기 |
 
 ### 4.3 판정 구조 (paired + kill + HARD)
 

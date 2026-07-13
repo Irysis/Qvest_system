@@ -1,0 +1,65 @@
+{
+  "mode": "RAMP",
+  "round": "R15",
+  "fq": "FQ-028",
+  "question": "퇴출 트리거를 챔피언 F-1(순위-단독)에 고정하고 빈 슬롯 충원(fill) 규율만 변주(수준-fill/신선-fill/무-fill 축소/일관성-fill)하면 cap-w 또는 oos가 움직이는가. R14 ④(ctrl_D2 fill 선택만으로 2.406↔2.503 이동)이 노출한 퇴출-직교 다이얼.",
+  "base": "base_F1_level36fill (진입 반기 top-K20 by level36 · 퇴출 F-1 rank-only 분기 · 충원 level36-top = R14 ctrl_F1 2.937 정확 재현)",
+  "selection_type": "chain",
+  "lattice": "entry(반기 top-K20 level36)·exit(F-1 rank-only 분기) 전 arm 고정 → 차이는 빈 슬롯 충원 규율만. base=level36-fill, L-1=recent18-fill, L-2=no-fill(축소), L-3=consist-min-fill(12m×3)",
+  "endpoint_hierarchy": {
+    "primary": "oos_retention (v2 anchored 3분할 중앙값, cap-w act_bm)",
+    "secondary": "port_t_capwt + HARD 3종 + EW-uni + 2017+ 분리 + paired vs base(F-1)",
+    "tension": "endpoint=oos여도 arm '선택'은 IS-only(OOS 오염 방지). 선택=IS paired-t · 판정=게이트 산출 전체"
+  },
+  "chain_discipline": "arm 간 선택 IS-only(첫 65% 배포월 paired-t) · oos는 최종 게이트 산출로만 · 2차 결합 없음(1차만) · DSR 진단용(게이트 부적용)",
+  "arms": {
+    "armL1_fresh_fill": {
+      "mechanism": "퇴출=F-1 rank-only(불변). 빈 슬롯 충원 = recent18 NW-t 상위 차순위(수준-fill 대신 신선-fill). 유한 recent18 소진 시 level36 순서로 tail 폴백(K20 유지)",
+      "diag": "충원 시점은 정보가 가장 신선해야 할 순간 — 수준-fill(trailing 36m)은 감쇠 중인 팩터를 다시 들일 수 있다",
+      "adversarial": "② L-1이 FM 수렴하는가 — fill에만 적용해도 pool이 FM화되는지 Jaccard(L-1 vs FMpure) vs (base vs FMpure)"
+    },
+    "armL2_nofill_shrink": {
+      "mechanism": "퇴출=F-1 rank-only(불변). 퇴출 슬롯을 다음 반기 진입까지 미충원 → 팩터 pool 자연 축소(exit-only anchor 후 <K20). 종목 top-25는 잔여 풀 z-composite 합의로 유지. 다음 반기 진입서 level36 top-K20 재충전",
+      "diag": "충원 자체가 잡음 유입일 가능성 — 검증된 생존자만으로 압축 운용. 팩터 breadth 축소가 신호를 정제하는가 잡음 낳는가",
+      "adversarial": "① L-2가 K 축소 sweep(R6 K10 cap-w 1.906·oos -0.375)과 수렴하는가 — 유효 K(pool 크기 궤적)·수렴 여부 정량화"
+    },
+    "armL3_consist_fill": {
+      "mechanism": "퇴출=F-1 rank-only(불변). 빈 슬롯 충원 = min(NW-t over 3 부분창 12m×3) 상위 차순위(R13 D-3 산식 fill에만 적용). 유한 consist-min 소진 시 level36 tail 폴백",
+      "diag": "충원 팩터만큼은 감쇠-저항성(부분창 전반 일관) 검증을 요구 — 신규 진입에 지속성 프록시 게이트",
+      "adversarial": "StabSel(relevance, R5 폐쇄)과 구분 = 라벨 realized active NW-t(수익)이지 relevance 아님. fill-only 적용이 pool 정체를 바꾸는가 Jaccard"
+    }
+  },
+  "ctrl": {
+    "anchor_R6_noexit": "R6 Ppure_W36_K20(no-exit, level36-top) — vintage parity anchor(cap-w 2.6124 재현). 판정 arm 아님",
+    "r6_k10_ref": "R6 Ppure_W36_K10 cap-w 1.9055·oos -0.3753 = L-2 무-fill 수렴 판별 대조(challenge ①)"
+  },
+  "gate_hard": [2.95, 0.7, 0.64, 0.5],
+  "primary_criterion": "1차 승자 = R15 자체 IS paired NW-t(cap-w act_bm) vs base(F-1) 최대(IS-only, JUDGED_ARMS만). 최종 판정 = oos_retention(1차) + full HARD 3종 + full paired vs base + cap-w(2차)",
+  "kill_rule": "전 judged arm oos_retention 0.7 미도달 AND HARD 3종 0/N AND full paired<2.0 → config-scoped negative(충원 규율 config 한정). '소진/dead-end' 어휘 금지 — next_probe >=2 도출 의무",
+  "honest_frame": "본 라운드=충원 규율 레버(퇴출과 직교). construction cap-w ~2.94 포화·oos 천장 ~+0.12 진단 존재 → 정직 기대=이 다이얼이 그 천장 밖 값을 내는지 판별(소폭 돌파 또는 재확인). ★설계상 fill은 exit-only anchor(교대구조상 반기당 1회)에서만 작동 → 개입 빈도 낮음 = 검정력 한계 사전 예고(challenge ③). return-derived substrate 재사용(신규 재료 아님). cap-tier×cap-w 벽 미해결 가능(정직 병기)",
+  "xmode_fail_prior": "hypothesis_index: 'fill/충원' 키워드 0-coverage(novel 다이얼, INV-7 차별점 충족). 인접 prior: factor-momentum timing NULL(06-30)·DIST-AR-007 momentum return-파생 DISTILLED_NEG — L-1(recent18-fill)이 FM 계열 근접이나 ①fill-only 적용(전체 선별 아님)②재료=realized active NW-t(IC 아님)③퇴출 F-1 고정으로 pool 골격 유지 = family 근접하나 개입면 차별. R13 D-1(감쇠속도 선별)이 FM 수렴 붕괴(Jaccard vs FM 0.713)한 선례 → L-1 fill-only가 그 수렴을 회피하는지 판별.",
+  "is_frac": 0.65,
+  "top_n": 25,
+  "cost_bps_oneway": 15,
+  "liq_min": 200000000,
+  "cap": 0.2,
+  "floor_frac": 0.25,
+  "cadence_entry": 6,
+  "cadence_exit": 3,
+  "exit_rank_bar": 30,
+  "n_trials_r15": 3,
+  "n_trials_lineage": 30,
+  "ref": {
+    "r14_ctrl_f1_capwt": 2.937,
+    "r6_base": 2.6124,
+    "r6_k10_capwt": 1.9055,
+    "r6_k10_oos": -0.3753
+  },
+  "cost_model": "delta-based |Δw|×15bps one-way (weighted_screen_bt 내장 — 충원 회전 자동 반영)",
+  "vintage_pin": "r6_session_20260711 (sel_traj 36/pure_factor_scores/factor_group_scores/rawdata/panel; SUB=_ramp_r13_sub 재사용; base_F1 parity Δ<5e-3 확인)",
+  "as_of_date": "2026-07-13",
+  "source_version": "RAMP_R15_v1",
+  "security_id": "Ticker (rawdata) -> factor_id z (pure_factor_scores.z=Z_Score_Aligned)",
+  "config_hash": "7f5855e1dc0ce7e4",
+  "generated_at": "2026-07-13T11:16:29+0900"
+}
