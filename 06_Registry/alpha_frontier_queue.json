@@ -708,11 +708,35 @@
       "wall_check": "2단 분리 유지 — 성립해도 자본 주장 금지, 필터 재설계는 별도 라운드. 사건 라벨 PIT 경화(지정 '공시일' 확보 — 플래그 onset 백데이팅 배제, R22 P3) 본 라운드에 포함 의무. 상폐 생존편의는 보수 방향 명시",
       "data_gate": "없음 (R22 이벤트 패널 + WT-005 list 아카이브로 지정공시일 교차)",
       "owner": "Q-Lead (R23 alpha-research)",
-      "status": "in_progress",
+      "status": "config_scoped_negative_frontier_open",
       "next_action": "심각사건 라벨 PIT 경화 → 신규 prereg → 통제 후 lift/hazard 판정",
       "source_refs": [
         "parent: FQ-035 config_scoped_negative_frontier_open + L-AR-20260713_180008 P1/P3",
         "decomp: charts/03_delay_eventtype.png (상폐 6.4·관리 4.2·불성실 3.8)"
+      ],
+      "l_code": "L-AR-20260713_183418",
+      "result": "R23 실측: 심각사건 제한이 방향대로 작동 — 단기정지 제거로 union lift 2.07->3.74, 통제 전후 4.08->3.43(크기위장 아님), 명목 PRIMARY 통과(통제 OR 3.43 cluster-robust p 0.011<0.05). 그러나 47건 worst-decile 사건이 단 6개 late-filer 회사-에피소드(12개월 hold 월-중복; 종목별 12/11/11/7/5/1). 사전등록 ticker-부트 CI [0.95,7.25] 포함 1 + leave-one-ticker-out 3/6 각각 p>=0.05 붕괴 + 6-cluster cluster-robust 추론 무효 -> 강건히 성립 못함. 라벨 PIT 경화(P3 실행): 플래그 onset==실제 지정 공시월 89%(median gap 0) = 백데이팅 없음(coverage 36/2492, hardened==pure-flag). 연속 days-late delisting hazard flat(OR 1.18 p 0.62)=극단꼬리·비단조. 전신호 post-2016. per-type lift 상폐6.38·관리4.24·불성실3.82(R22 일치). 결론: 희석-가설 방향 확증, 바인딩 벽이 '희석'->'독립 late-filer 에피소드 부족(대형주 지각제출 극소)'=universe-power 벽(해결가능). 2단 분리 준수(stage-2 미개시).",
+      "next_probe": {
+        "P1": "full DART filer universe 재검(전체 KOSPI+KOSDAQ 필러) — 유효 cluster 확보 NEW prereg",
+        "P2": "episode-level 설계(에피소드 1관측 + discrete-time hazard + firm wild bootstrap)",
+        "P3": "라벨 경화 coverage를 상폐·관리 마이크로캡 꼬리로 확장"
+      },
+      "verdict_artifact": "stage_artifacts/WT_D20260713_007/verdict.json",
+      "prereg_sha256": "4b880cfb48e83f6f59161cb2ce21bf61ee1ff7d4a9896ba439164408a3a6f12d"
+    },
+    {
+      "id": "FQ-037",
+      "lane": "non_return",
+      "title": "R24 — 지각제출×심각사건 전체-필러 유니버스 + episode-level 설계 (R23 P1+P2 소비)",
+      "hypothesis": "전체 KOSPI+KOSDAQ 필러 유니버스에서 사업보고서 제출지연 극단꼬리가 심각사건{상폐·관리·불성실}(단기정지 제외)을 episode-level 유효 추론(독립 에피소드 수십+)으로 예측하는가 — R23의 벽 = 배포 유니버스 내 독립 지각제출 회사 6개뿐(신호 부재 아닌 universe-power 벽)",
+      "ev_rationale": "R23 방향 확증(lift 2.07→3.74, 통제 OR 3.43 명목 p 0.011, per-type R22 정확 재현) + 명확한 검정력 처방(P1 유니버스 확장·P2 에피소드 1관측 설계). Stage-1 지식 라운드 — 자본/PORT_t 주장 없음, 필터 소비는 배포 유니버스 내로 별도(2단 분리)",
+      "wall_check": "유니버스 확장은 지식 검증용이지 전략 백테 아님(alpha-search 유니버스 고정과 무충돌 명시). 유효성 게이트 사전등록: 독립 지각 에피소드 <30이면 POWER_INSUFFICIENT 정직 라벨. DART API 금지(로컬 아카이브만 — 크롤 쿼터 보호)",
+      "data_gate": "로컬 DART list 아카이브(50.7만행) rcept_dt + RAWDATA 전시장 플래그/last-obs — coverage 실측 후 fail-closed",
+      "owner": "Q-Lead (R24 alpha-research)",
+      "status": "in_progress",
+      "next_action": "coverage census → 신규 prereg(episode-level) → 유효 추론 판정",
+      "source_refs": [
+        "parent: FQ-036 config_scoped_negative_frontier_open + L-AR-20260713_183418 P1/P2/P3"
       ]
     }
   ]

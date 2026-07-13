@@ -1,0 +1,27 @@
+{
+  "task_id": "WT-D20260713_007",
+  "fq_id": "FQ-036",
+  "iteration": "R23",
+  "wt_type": "discovery",
+  "mode": "QEPM_alpha_research",
+  "created_utc": "2026-07-13",
+  "owner": "Q-Lead (R23 alpha-research)",
+  "title": "Filing-delay extreme tail -> severity-restricted adverse-event prediction (R22 P1 NEW pre-registered confirmatory round)",
+  "theme": "non_return / forensic event prediction",
+  "hypothesis_title": "Delay worst-decile predicts severe adverse events {Delisting U AdminStock U UnfaithfulDisc}",
+  "universe": "Full F3-delay feature-ticker universe (event-prediction study, not portfolio; deployment universe constraint does not bind). Tier breakdown reported.",
+  "benchmark": "n/a (event-prediction; base-rate reference)",
+  "hard_constraints": {
+    "note": "This is a prediction-validity study (Stage 1). No portfolio / weights / covariance produced. 25-name / long-only / Sigma constraints do not bind at this stage."
+  },
+  "data_lag_rules": "Feature at decision-month t; events strictly in [t+1, t+12]. Event labels PIT-hardened to actual disclosure designation dates (disc_ck) where available.",
+  "prereg_ref": "stage_artifacts/WT_D20260713_007/preregistration.json",
+  "prereg_sha256": "4b880cfb48e83f6f59161cb2ce21bf61ee1ff7d4a9896ba439164408a3a6f12d",
+  "parent": "FQ-035 / WT-D20260713_006 (R22) config_scoped_negative_frontier_open + L-AR-20260713_180008 P1/P3",
+  "reuse": [
+    "stage_artifacts/WT_D20260713_006/events.rds",
+    "stage_artifacts/WT_D20260713_006/panels.rds (P$F3)",
+    "stage_artifacts/WT_D20260713_006/attr_m.rds",
+    "stage_artifacts/WT-D20260710_005/disc_ck/*.csv (disclosure list archive, 506,874 rows, 348 stocks)"
+  ]
+}

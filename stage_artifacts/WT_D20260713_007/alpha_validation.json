@@ -1,0 +1,91 @@
+{
+  "wt_id": "WT-D20260713_007",
+  "fq_id": "FQ-036",
+  "iteration": "R23",
+  "prereg_sha256": "4b880cfb48e83f6f59161cb2ce21bf61ee1ff7d4a9896ba439164408a3a6f12d",
+  "study_type": "event_prediction_validity_stage1",
+  "note": "This is a discrete-event prediction study (Stage 1), NOT a portfolio. canonical_port_t / SR / weights are N/A by construction (no portfolio formed). Selection objective = controlled residual OR on a pre-registered severe-event target.",
+  "target": "severe adverse event onset {Delisting U AdminStock-designation U UnfaithfulDisc-designation} in forward [t+1,t+12]; transient LongHalt excluded",
+  "feature": "F3 filing delay worst decile (FROZEN R22 threshold)",
+  "n_obs": 54921,
+  "base_rate": 0.01444,
+  "worst_decile_n": 871,
+  "worst_decile_events": 47,
+  "primary_hardened": {
+    "lift": 3.737,
+    "lift_wilson95": [2.827, 4.919],
+    "lift_bootTicker95": [0.946, 7.247],
+    "auc": 0.5552,
+    "auc_ci95": [0.5334, 0.577],
+    "or_raw": 4.076,
+    "or_ctrl": 3.431,
+    "or_ctrl_ci95": [1.325, 8.882],
+    "or_ctrl_p_clusterrobust": 0.01109
+  },
+  "robustness_pureflag": {
+    "or_ctrl": 3.431,
+    "or_ctrl_p": 0.01109,
+    "note": "identical to hardened (hardening did not move target)"
+  },
+  "stability": {
+    "pre2016": {
+      "estimable": false,
+      "worst_decile_n": 4,
+      "events": 1,
+      "note": "NOT estimable: delay feature coverage is post-2016-heavy; <5 pre-2016 worst-decile events"
+    },
+    "post2016": {
+      "estimable": true,
+      "lift": 4.61,
+      "or_ctrl": 4.155,
+      "p": 0.00508,
+      "note": "all signal lives post-2016 (alpha-decay regime); temporal robustness UNESTABLISHED not disproven"
+    }
+  },
+  "aux_delisting_hazard": {
+    "or_per_sd_continuous_dayslate": 1.184,
+    "p": 0.6158,
+    "delist_hits": 178,
+    "note": "continuous days-late does NOT predict delisting (p=0.62). Signal is EXTREME-TAIL concentrated, NOT monotonic (confirms R22)."
+  },
+  "fragility": {
+    "distinct_tickers_carrying_worst_decile_events": 6,
+    "events_per_ticker": [12, 11, 11, 7, 5, 1],
+    "monthly_overlap_note": "12-month hold => one late-filing episode generates up to 12 monthly 'events' for the same firm => 47 monthly hits reduce to ~6 independent company-episodes",
+    "leave_one_ticker_out": "removing ANY of {A001570, A016790, A290510} pushes controlled OR p>=0.05 (3/6 event-tickers individually decisive)",
+    "cluster_robust_validity": "cluster-robust SE requires many clusters; with 6 event-carrying clusters the nominal p=0.011 is anti-conservative / not trustworthy",
+    "placebo_month_permuted_or": {
+      "median": 0.781,
+      "q99": 1.365,
+      "p_ge_obs": 0,
+      "note": "placebo confirms the association is not a within-month artifact, but does not rescue the few-cluster problem"
+    }
+  },
+  "label_hardening": {
+    "au_onsets_total": 2492,
+    "covered_by_disc_ck": 62,
+    "hardened_matched_within_12m": 36,
+    "gap_months_flag_minus_designation": {
+      "min": -11,
+      "q25": 0,
+      "median": 0,
+      "mean": -0.361,
+      "q75": 0,
+      "max": 1,
+      "share_flag_leads_lookahead_risk": 0.056,
+      "share_same_month": 0.889,
+      "share_flag_lags_safe": 0.056
+    },
+    "interpretation": "Flag onset aligns to actual public designation month in 89% of matchable cases (median gap 0). No systematic backdating -> RAWDATA flag onset is PIT-clean as a designation-date proxy. Coverage is low (36/2492) because disc_ck is a survivor-biased 348-stock archive; non-covered events retain flag onset. Because matched hardening months equal flag months in ~89% of cases, hardened target == pure-flag target (identical base rate & event count) -> hardening confirms PIT cleanliness but does not move the verdict."
+  },
+  "per_type_worst_decile_lift": {
+    "Delisting": 6.38,
+    "AdminStock": 4.24,
+    "UnfaithfulDisc": 3.82,
+    "note": "identical to R22 D1 decomposition -> pipeline internal-consistency confirmed"
+  },
+  "selection_objective": "controlled_residual_or_severe_event",
+  "n_trials": 1,
+  "selection_type": "chain",
+  "challenge_flags": ["FRAGILITY_HIGH: 47 worst-decile hits = ~6 company-episodes; ticker-bootstrap CI [0.95,7.25] includes 1; LOO 3/6 kill significance; cluster-robust p invalid at 6 clusters", "TEMPORAL: all signal post-2016; pre-2016 non-estimable -> robustness unestablished", "NON_MONOTONIC: continuous days-late flat (p=0.62); signal only in extreme tail", "UNIVERSE_POWER: K200uKQ150 large-caps rarely file late -> too few late-filer episodes; proper power needs full DART filer universe"]
+}

@@ -1,0 +1,56 @@
+{
+  "wt_id": "WT-D20260713_007",
+  "fq_id": "FQ-036",
+  "iteration": "R23",
+  "title": "Filing-delay extreme tail -> severity-restricted adverse-event prediction (NEW pre-registered confirmatory round; R22 P1 consumption)",
+  "prereg_utc": "2026-07-13",
+  "relation_to_R22": "SEPARATE pre-registered round. R22 (WT-D20260713_006, prereg 3455656218...) refused to post-hoc a severity-restricted re-target on its frozen prereg. R23 pre-registers exactly that restricted subset as a NEW confirmatory test. Only two things change vs R22: (1) target definition drops transient LongHalt; (2) event labels are PIT-hardened against actual disclosure designation dates. Feature definition and worst-decile threshold are FROZEN at R22 values (no threshold reselection).",
+  "hypothesis": "The filing-submission-delay extreme tail (per-month cross-sectional worst decile of days-late-vs-90d-deadline; R22 F3 definition, FROZEN) predicts, with controlled residual odds significantly > 1 (cluster-robust p<0.05 full-sample), the onset of a SEVERE adverse corporate event {Delisting OR AdminStock designation OR UnfaithfulDisc designation} within the forward 12 months. Rationale: R22 event-type decomposition found delay worst-decile lift = Delisting 6.4x, AdminStock 4.2x, UnfaithfulDisc 3.8x but transient LongHalt only 1.8x; because LongHalt is the largest base component it diluted the union lift to 2.07 and the controlled OR (2.06) missed p<0.05 by power (p=0.0745). Removing the diluting transient class is predicted to concentrate the signal onto the coherent severe-outcome target.",
+  "verdict_frame_2stage": {
+    "stage1_this_round": "PREDICTION VALIDITY ONLY. A significant prediction does NOT license any capital / portfolio / filter claim.",
+    "stage2_separate_round": "IF prediction holds, a de-mining exclusion-filter redesign (R18 consumption frame + randomized control re-application) is opened as a SEPARATE later round. IF not, delay = feature-preserve config-scoped negative."
+  },
+  "event_target": {
+    "definition": "For decision-month t (feature known at t), E_{i,t}=1 iff stock i experiences onset of ANY of the three SEVERE components in the forward window months [t+1, t+12]. Transient LongTradingHalt is EXCLUDED from R23 target.",
+    "components": {
+      "Delisting": "month of a ticker's last observation, when last_obs_date < data_end - 180 days AND no subsequent re-listing (C6 market-disappearance). No designation-date hardening possible (delisted names absent from the disclosure archive; direction = conservative, see challenge).",
+      "AdminStock_designation": "onset = monthly 0->1 transition of RAWDATA AdminStock flag, HARDENED to the actual 관리종목지정 disclosure date (month) from the WT-D20260710_005/disc_ck archive where the ticker is covered (348-stock archive); flag onset retained where not covered.",
+      "UnfaithfulDisc_designation": "onset = monthly 0->1 transition of RAWDATA UnfaithfulDisc flag, HARDENED to the actual 불성실공시법인지정 disclosure date (month) from disc_ck where covered; flag onset retained where not covered."
+    },
+    "dedup_rule": "Onsets require prior-month flag==0/absent (no state-persistence re-count). Binary ANY-severe-event-in-window; multiple component onsets in a window count once.",
+    "censoring": "Drop decision-months t where t+12 exceeds observable data (feature panel ends 2025-03; ym_cut applied so all retained months have a fully observable 12m forward window).",
+    "label_pit_hardening": {
+      "mandate": "R22 next_probe P3. Cross-obtain actual public designation dates from disc_ck (report_nm in {관리종목지정 (excl 해제/우려/예고/미), 불성실공시법인지정 (excl 예고/미지정)}) to rule out RAWDATA flag backdating look-ahead.",
+      "authority": "The HARDENED target is the AUTHORITATIVE target for the primary verdict. Pure-flag-onset target reported as robustness delta.",
+      "coverage": "disc_ck covers 348 (survivor-biased current) stocks; only ticker-events in that coverage are hardenable. Coverage ratio reported honestly; non-covered events retain flag onset.",
+      "gap_report": "Distribution of (flag_onset_month - disc_designation_month) reported. If flag onset systematically PRECEDES public designation => backdating look-ahead flagged."
+    },
+    "survivorship_note": "rawdata universe (K200/KQ150 support) under-retains fully-delisted micro-caps => fewer delisting events observed => HARDER to detect => CONSERVATIVE for a positive verdict."
+  },
+  "predictor": {
+    "F3_delay": {
+      "source": "R22 panels.rds P$F3 (built from stage_artifacts/WT_D20260713_001 scores_FB, factor F-B; suspect = -score = days late vs 90d 사업보고서 deadline; higher suspect = later filer). FROZEN.",
+      "worst_decile": "pred=1 iff per-month cross-sectional top decile (dec==10) of suspect. FROZEN R22 threshold; NO reselection.",
+      "window": "F3 panel decision-months 2010-04..2025-03."
+    }
+  },
+  "controls": "log(Size) z, liquidity(log adv20) z, K200 membership, KQ150 membership (all per-month, R22 definitions, FROZEN).",
+  "tests": {
+    "a_controlled_OR": "AUTHORITATIVE / PRIMARY. logistic E ~ pred + size_z + liq_z + K200 + KQ150; ticker-cluster-robust SE (vcovCL). Report OR and p on pred.",
+    "b_stability": "re-estimate controlled OR on pre-2016 vs post-2016 (>=201600) subsamples. Direction consistency check (supporting).",
+    "c_hazard": "auxiliary discrete-time delisting hazard: glm(delist_this_month ~ continuous_days_late_z + size_z + liq_z, cluster-robust) on delisting-only outcome, to corroborate the delay->severe channel with a continuous predictor.",
+    "d_lift": "worst-decile lift = P(E|pred=1)/base, Wilson 95% CI + ticker-cluster bootstrap 95% CI (1000 reps)."
+  },
+  "prereg_verdict_rule": {
+    "PRIMARY": "test (a) controlled residual OR on the HARDENED target.",
+    "PREDICTION_HOLDS": "controlled OR(pred) > 1 AND cluster-robust p < 0.05 (full-sample). ",
+    "SUPPORTING_ROBUSTNESS": "(b) pre-2016 AND post-2016 controlled OR both > 1 where estimable. If pre-2016 has <10 worst-decile events => NOT ESTIMABLE, reported as non-contradicting; it does NOT by itself fail the primary but temporal robustness is then labeled 'unestablished'.",
+    "PREDICTION_FAILS": "ELSE. delay = feature-preserve config-scoped negative + frontier tag.",
+    "language_discipline": "negative verdict phrased as 'config-scoped negative + frontier tag', next_probe >= 2 mandatory (W9 health gate).",
+    "hardening_authority_clause": "If the pure-flag target passes but the hardened target does not (or vice versa), the HARDENED target verdict is authoritative and the delta is surfaced."
+  },
+  "n_trials": 1,
+  "selection_type": "chain",
+  "selection_note": "Single feature (F3 delay), single frozen threshold (worst decile), single target (severity union). Truly confirmatory single test (not a sweep). DSR gate not applicable (metric = OR/lift not Sharpe; n_trials=1). DSR/Bonferroni not applied; single pre-registered hypothesis.",
+  "two_stage_discipline": "Stage-2 (exclusion filter redesign) NOT opened in this round regardless of outcome; a positive prediction only licenses opening a SEPARATE filter-redesign round."
+}

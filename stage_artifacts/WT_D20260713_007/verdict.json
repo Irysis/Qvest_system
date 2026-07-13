@@ -1,0 +1,75 @@
+{
+  "wt_id": "WT-D20260713_007",
+  "fq_id": "FQ-036",
+  "iteration": "R23",
+  "prereg_sha256": "4b880cfb48e83f6f59161cb2ce21bf61ee1ff7d4a9896ba439164408a3a6f12d",
+  "verdict": "CONFIG_SCOPED_NEGATIVE",
+  "frontier": "OPEN",
+  "stage": "STAGE_1_PREDICTION_VALIDITY_ONLY",
+  "headline": "Severity restriction worked directionally exactly as R22 predicted (union lift 2.07 -> 3.74; controls barely attenuate 4.08 -> 3.43 = NOT size-disguise) and the pre-registered PRIMARY nominally PASSES (controlled OR 3.43, cluster-robust p=0.011 < 0.05). BUT the evidence reduces to ~6 late-filer company-episodes: the pre-registered ticker-bootstrap lift CI [0.95, 7.25] includes 1, leave-one-out shows any of 3 single firms kills significance, and cluster-robust inference is invalid at 6 event-clusters. => Prediction is coherent but NOT robustly established. No capital / filter claim. Frontier open: proper power needs the full DART filer universe (K200uKQ150 large-caps almost never file late).",
+  "prereg_primary_literal": {
+    "rule": "controlled OR(pred) > 1 AND cluster-robust p < 0.05 full-sample (on hardened target)",
+    "or_ctrl": 3.431,
+    "or_ctrl_ci95": [1.325, 8.882],
+    "or_ctrl_p_clusterrobust": 0.01109,
+    "literal_outcome": "PASS",
+    "why_not_actionable": "The nominal PASS rests on cluster-robust asymptotics that are invalid with only 6 event-carrying clusters; the pre-registered robustness test (d, ticker-bootstrap) does NOT clear 1, and leave-one-ticker-out shows 3/6 event-tickers are each individually decisive. Reporting this is a VALIDITY disclosure of the primary statistic, not a post-hoc goalpost move."
+  },
+  "results_hardened": {
+    "n": 54921,
+    "base_rate": 0.01444,
+    "worst_decile_n": 871,
+    "worst_decile_events": 47,
+    "worst_decile_evrate": 0.05396,
+    "lift": 3.737,
+    "lift_wilson95": [2.827, 4.919],
+    "lift_boot_ticker95": [0.946, 7.247],
+    "auc": 0.5552,
+    "auc_ci95": [0.5334, 0.5770],
+    "or_raw": 4.076,
+    "or_ctrl": 3.431,
+    "or_ctrl_ci95": [1.325, 8.882],
+    "or_ctrl_p_clusterrobust": 0.01109
+  },
+  "comparison_to_R22": {
+    "R22_union_incl_LongHalt": {"lift": 2.066, "or_ctrl": 2.056, "p": 0.07455, "verdict": "sub-threshold"},
+    "R23_severity_union": {"lift": 3.737, "or_ctrl": 3.431, "p": 0.01109, "verdict": "nominal pass, fragile"},
+    "interpretation": "Removing transient LongHalt concentrated the point estimate exactly as R22 D1 predicted. The severity restriction is directionally validated. The binding wall shifted from 'dilution' (R22) to 'too few independent late-filer episodes' (R23) - a power/universe wall, not a signal-absence wall."
+  },
+  "fragility": {
+    "distinct_event_tickers": 6,
+    "events_per_ticker": {"A016790": 12, "A001570": 11, "A290510": 11, "A036490": 7, "A084990": 5, "A001440": 1},
+    "monthly_overlap": "12-month hold => one late-filing episode spawns up to 12 monthly hits for the same firm => 47 monthly hits ~ 6 independent company-episodes",
+    "leave_one_out_killers": ["A001570", "A016790", "A290510"],
+    "cluster_robust_validity": "6 clusters << the ~30-40 needed for cluster-robust SE reliability => nominal p=0.011 anti-conservative",
+    "placebo_month_permuted": {"median_or": 0.781, "q99": 1.365, "p_ge_obs": 0, "note": "rules out within-month artifact; does not rescue few-cluster problem"}
+  },
+  "stability": {
+    "pre2016": "NOT ESTIMABLE (<5 worst-decile events; delay feature coverage post-2016-heavy)",
+    "post2016": {"lift": 4.61, "or_ctrl": 4.155, "p": 0.00508},
+    "verdict": "all signal post-2016 (alpha-decay regime); temporal robustness UNESTABLISHED not disproven"
+  },
+  "aux_delisting_hazard": {
+    "or_per_sd_continuous_dayslate": 1.184,
+    "p": 0.6158,
+    "delist_hits": 178,
+    "interpretation": "continuous days-late does NOT predict delisting -> signal is EXTREME-TAIL concentrated, non-monotonic (confirms R22 D2). Widening the threshold dilutes; power must come from more late-filer episodes (universe), not a smoother predictor."
+  },
+  "per_type_worst_decile_lift": {"Delisting": 6.38, "AdminStock": 4.24, "UnfaithfulDisc": 3.82,
+    "note": "identical to R22 D1 -> pipeline internal consistency confirmed"},
+  "label_pit_hardening": {
+    "mandate": "R22 next_probe P3 (executed this round)",
+    "source": "stage_artifacts/WT-D20260710_005/disc_ck (506,874 rows, 348 stocks, actual 관리종목지정 / 불성실공시법인지정 disclosure dates)",
+    "coverage": "36 of 2492 AdminStock/UnfaithfulDisc onsets matchable (disc_ck survivor-biased to 348 current stocks; delisted names absent)",
+    "gap_flag_minus_designation_months": {"median": 0, "mean": -0.36, "share_same_month": 0.889, "share_flag_leads_lookahead": 0.056, "share_flag_lags_safe": 0.056},
+    "conclusion": "NO systematic backdating: flag onset == public designation month in 89% of matchable cases (median gap 0). RAWDATA flag onset is PIT-clean as a designation-date proxy. Hardened target == pure-flag target (identical base rate & event count) -> hardening confirms cleanliness but does not move the verdict.",
+    "honest_coverage_caveat": "Only the covered subset is directly verifiable; the full-target backdating cleanliness is inferred from the 36-event matched sample, which is small. Direction of any residual backdating = would inflate predictability, so the null-actionable verdict is conservative."
+  },
+  "two_stage_discipline": "Stage-2 (exclusion filter redesign) NOT opened. A fragile, non-robust prediction does not license any de-mining filter or capital claim.",
+  "next_probe": {
+    "P1": "POWER VIA UNIVERSE (primary): re-run identical severity-restricted worst-decile delay test on the FULL DART filer universe (all KOSPI+KOSDAQ filers, not just K200uKQ150). Rationale: large-caps almost never file late (only ~6 extreme late-filers in 15y here); the mechanism is real but the deployment universe starves it of independent episodes. Full-universe should yield dozens-hundreds of independent late-filer->severe-outcome episodes -> proper cluster count for valid inference. NEW pre-registered round.",
+    "P2": "EPISODE-LEVEL DESIGN: collapse the 12-month monthly-overlap to one observation per (ticker, late-filing episode) with a discrete-time survival/hazard model, so the effective n equals independent episodes (not autocorrelated monthly hits). Report firm-clustered wild bootstrap. Removes the '47 hits = 6 firms' inflation at the design level.",
+    "P3": "LABEL-HARDENING COVERAGE EXPANSION: extend the disc_ck disclosure archive to the delisted / managed micro-cap tail (currently survivor-biased 348 stocks) to verify designation-date PIT-cleanliness on the event-carrying names themselves (currently only 36/2492 verifiable)."
+  },
+  "disposition": "delay(F3) severity-restricted = CONFIG_SCOPED_NEGATIVE (prediction not robustly established) + FRONTIER_OPEN. Feature preserved (m1/Benford already terminated in R22). The severity-restriction hypothesis is directionally CONFIRMED; the binding wall is now universe-power (too few late-filer episodes in large-caps), which is addressable (P1)."
+}

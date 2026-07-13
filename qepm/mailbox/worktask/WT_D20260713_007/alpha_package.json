@@ -1,0 +1,61 @@
+{
+  "task_id": "WT-D20260713_007",
+  "fq_id": "FQ-036",
+  "iteration": "R23",
+  "as_of_date": "2026-07-13",
+  "forecast_horizon": "12M_event",
+  "study_type": "event_prediction_validity_stage1",
+  "note": "Discrete-event prediction study (Stage 1). NOT a portfolio: no alpha_vector/weights/covariance produced by construction. Selection objective = controlled residual OR on a pre-registered severe-event target.",
+  "alpha_vector": null,
+  "confidence_vector": null,
+  "signal_matrix_ref": "stage_artifacts/WT_D20260713_007/alpha_scores.parquet",
+  "factor_specs": [
+    {
+      "factor_family": "ForensicTimeliness",
+      "proxy": "filing_delay_worst_decile",
+      "formula": "per-month cross-sectional top decile of (days late vs 90d 사업보고서 deadline); FROZEN R22 F3 threshold",
+      "lag_rule": "feature at decision-month t; events strictly in [t+1,t+12]; label PIT-hardened to actual designation disclosure dates",
+      "winsorization": "n/a (rank decile)",
+      "neutralization": "controls in test: log(Size) z, liq z, K200, KQ150",
+      "economic_rationale": "chronic late annual-report filing signals distress -> forward designation/delisting",
+      "weight_theta": 1,
+      "references": [
+        "R22 WT-D20260713_006 D1 decomposition",
+        "Beneish/forensic-timeliness lit"
+      ]
+    }
+  ],
+  "diagnostics": {
+    "canonical_port_t_nw_lag3": null,
+    "canonical_port_t_pvalue": null,
+    "canonical_n_months": null,
+    "canonical_port_t_reason": "N/A by construction: event-prediction validity study, no portfolio formed. Primary objective = controlled residual OR.",
+    "controlled_or_hardened": 3.431,
+    "controlled_or_p_clusterrobust": 0.01109,
+    "controlled_or_ci95": [1.325, 8.882],
+    "worst_decile_lift": 3.737,
+    "lift_bootTicker95": [0.946, 7.247],
+    "auc": 0.5552,
+    "base_rate": 0.01444,
+    "worst_decile_events": 47,
+    "distinct_event_tickers": 6,
+    "aux_delisting_hazard_or": 1.184,
+    "aux_delisting_hazard_p": 0.6158,
+    "post2016_or": 4.155,
+    "post2016_p": 0.00508,
+    "pre2016": "not_estimable"
+  },
+  "selection_objective": "controlled_residual_or_severe_event",
+  "n_trials": 1,
+  "selection_type": "chain",
+  "verdict": "CONFIG_SCOPED_NEGATIVE + FRONTIER_OPEN (prediction directionally confirmed but NOT robustly established: ~6 company-episodes, bootstrap CI includes 1, LOO 3/6 decisive, cluster-robust invalid at 6 clusters)",
+  "prereg_sha256": "4b880cfb48e83f6f59161cb2ce21bf61ee1ff7d4a9896ba439164408a3a6f12d",
+  "l_code": "L-AR-20260713_183418",
+  "challenge_flags": ["canonical_port_t null: event-prediction study, no portfolio (intentional, not a gap)", "FRAGILITY_HIGH: 47 hits = ~6 firms; ticker-bootstrap CI includes 1; LOO 3/6 kill; cluster-robust p invalid at 6 clusters", "TEMPORAL: all signal post-2016; pre-2016 non-estimable", "NON_MONOTONIC: continuous days-late flat (p=0.62)", "UNIVERSE_POWER: K200uKQ150 large-caps rarely file late -> needs full DART filer universe (next_probe P1)", "LABEL_PIT: hardened, no backdating (89% same-month, median gap 0); coverage 36/2492 (survivor-biased archive)"],
+  "artifacts": {
+    "alpha_scores": "stage_artifacts/WT_D20260713_007/alpha_scores.parquet",
+    "alpha_validation": "stage_artifacts/WT_D20260713_007/alpha_validation.json",
+    "verdict": "stage_artifacts/WT_D20260713_007/verdict.json",
+    "challenge_note": "stage_artifacts/WT_D20260713_007/challenge_note.md"
+  }
+}
