@@ -1,0 +1,39 @@
+{
+  "wt_id": "WT-D20260713_002",
+  "label": "POST-VERDICT CONSUMPTION DIAGNOSTIC (exclusion mode) — SEPARATE from gate verdict",
+  "separation_note": "게이트 판정(F-A/F-B config-scoped negative, cap-w PORT_t 0.45/0.57)은 불변·재측정 없음. 본 진단은 기존 alpha_scores.parquet(worst-decile) + 기존 계약 산출(P-pure holdings, book snapshots) 소비만. 신규 백테 엔진 없음(canonical 선별·비용 컨벤션 재사용).",
+  "frozen_before_ab_results": true,
+  "frozen_at": "2026-07-13",
+  "worst_decile_definition": {
+    "threshold": "raw >= per-month p90 (worst decile). FIXED, NO sweep.",
+    "FA_raw": "modified-Jones discretionary accrual (higher = worse)",
+    "FB_raw": "Benford FSD MAD (higher = worse)",
+    "filters": ["F-B alone", "F-A UNION F-B"],
+    "FA_note": "F-A는 AC13 중복 판정(corr 0.991) — standalone 필터 제외, 합집합에만 참여"
+  },
+  "binding_rate_gate": {
+    "targets": ["ⓐ current book (STR_1715 R05_AR) top-25 — snapshots (large-cap)",
+                "ⓑ P-pure R6 W36_K20 top-25 — holdings_monthly_ppure.parquet (full history, small-cap ~90%)"],
+    "cap_tier_decomp": "MEGA(rank1-10)/MID(11-30)/OTHER(31+) via size_all monthly ranking — '대형~0, 소형 binding' 가설 검증 대상",
+    "redundant_by_construction_rule": "ⓐ(book) binding ~0 => WT-005 H-b형 redundant 기록, book exclusion A/B 생략",
+    "binding_material_threshold": "held-stock-months in worst-decile(union) >= 5% AND concentrated in OTHER/MID (vs ~0 MEGA)"
+  },
+  "exclusion_ab": {
+    "construction": "P-pure top-25 holdings에서 worst-decile 종목 제거 후 잔여 EW 재정규화(drop+renormalize, 표준 exclusion overlay). 비용 = |Δw|×15bps(exclusion 유발 리밸 포함). vs 미적용 baseline.",
+    "returns_source": "holdings × forward returns (panels.rds returns_all, ym-aligned) — 재구성-parity(baseline vs d3 저장계열 대조)",
+    "metrics": ["paired NW-t (lag3) of (excl_net - base_net)", "MDD", "worst_month", "downside_deviation", "worst_5_month_contribution"],
+    "frame": "AX-005: exclusion은 필요조건이지 충분조건 아님. 꼬리 채점(지뢰제거)이 정당한 무대 — 알파 부재 != 필터 무가치."
+  },
+  "random_control": {
+    "design": "각 월 forensic이 제거한 것과 동일 수(k_t)를 무작위 제거, seed 3개(101/202/303) 평균. renormalize 동일.",
+    "purpose": "꼬리 개선이 '종목수 축소 기계효과'가 아니라 '포렌식 정보효과'임을 격리. forensic이 무작위 대조 못 이기면 승격 부적격."
+  },
+  "promotion_criteria_4_PREREGISTERED": {
+    "note": "결과 도착 전 고정 — 사후 채택편향 방지. 4/4 충족 시에만 'Production Constraints 기본필터 승격 후보 — 도훈 confirm 회부'.",
+    "C1_binding_real": "binding 실재 — OTHER/MID tier에서 worst-decile(union)이 P-pure 보유의 >=5% stock-months (MEGA ~0 대비 국소화 확인)",
+    "C2_tail_beats_random": "꼬리 개선 > 무작위-제외 대조 — forensic ΔMDD·Δdownside_dev 개선이 random 3-seed 평균을 초과 AND 주지표(downside_deviation)에서 forensic이 3개 seed 중 best를 능가(정보효과 격리)",
+    "C3_alpha_intact": "paired 순성과 비손상 — paired NW-t(excl_net - base_net) > -1.64 (5% 단측서 유의 음 아님 = 알파 비손상)",
+    "C4_not_concentrated": "개선 비집중 — baseline 최악 2개월 제외 후에도 forensic 꼬리 개선 방향 유지(ΔMDD 또는 Δdownside_dev 여전히 우호)"
+  },
+  "verdict_line_upgraded": "'소형 트랙 방패 채택 가치'에서 '기본 필터 승격 요건 4종 충족 여부'로 상향 (도훈 방침: 효과 확인 시 유동성 기준처럼 전 전략 기본 필터 승격 후보)."
+}

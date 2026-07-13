@@ -1,0 +1,135 @@
+{
+  "label": "POST-VERDICT CONSUMPTION DIAGNOSTIC — gate 판정과 분리(재측정 없음)",
+  "prereg_sha256": "e7d6c8d8e91fee704f814045c6c0859fc9664ec6f1013bcd29e76bc25f783aa5",
+  "binding": {
+    "Ppure_FB": {
+      "overall_rate": 0.09741,
+      "by_tier": [
+        {
+          "tier": "MEGA",
+          "held": 123,
+          "bound": 26,
+          "rate": 0.21138
+        },
+        {
+          "tier": "MID",
+          "held": 229,
+          "bound": 27,
+          "rate": 0.1179
+        },
+        {
+          "tier": "OTHER",
+          "held": 4473,
+          "bound": 417,
+          "rate": 0.09323
+        }
+      ]
+    },
+    "Ppure_UNION": {
+      "overall_rate": 0.13927,
+      "by_tier": [
+        {
+          "tier": "OTHER",
+          "held": 4473,
+          "bound": 616,
+          "rate": 0.13772
+        },
+        {
+          "tier": "MID",
+          "held": 229,
+          "bound": 28,
+          "rate": 0.12227
+        },
+        {
+          "tier": "MEGA",
+          "held": 123,
+          "bound": 28,
+          "rate": 0.22764
+        }
+      ]
+    },
+    "book_snapshots": {
+      "20231201_weights_cap_0p20.csv": {
+        "ym": 202312,
+        "n_held": 20,
+        "bound_FB": 5,
+        "bound_UNION": 7,
+        "mega": 1,
+        "mid": 1,
+        "other": 18
+      },
+      "20260501_weights_cap_0p20.csv": {
+        "ym": 202605,
+        "n_held": 20,
+        "bound_FB": 0,
+        "bound_UNION": 0,
+        "mega": 3,
+        "mid": 1,
+        "other": 16
+      },
+      "20260601_R05_AR_weights_cap_0p20.csv": {
+        "ym": 202606,
+        "n_held": 20,
+        "bound_FB": 0,
+        "bound_UNION": 0,
+        "mega": 3,
+        "mid": 1,
+        "other": 16
+      },
+      "20260701_R05_AR_weights_cap_0p20.csv": {
+        "ym": 202607,
+        "n_held": 20,
+        "bound_FB": 0,
+        "bound_UNION": 0,
+        "mega": 3,
+        "mid": 1,
+        "other": 16
+      }
+    },
+    "note": "binding 실재(P-pure 9.7% FB / 13.9% union). tier횡단 존재 — '대형~0' 가설 미확인(MEGA 21% but n=123). book은 episodic(2023-12 7/20, 최근 cash-heavy 0·신호 2025-06 종료 영향)."
+  },
+  "exclusion_ab": {
+    "baseline_tail": {
+      "mdd": 0.38961,
+      "worst_month": -0.17485,
+      "downside_dev": 0.12641,
+      "worst5": -0.75395,
+      "sr": 0.89496,
+      "n": 193
+    },
+    "FB": {
+      "mean_k": 2.43523,
+      "d_mdd": -0.002,
+      "d_downside_dev": 0.0033,
+      "d_downside_dev_rel_pct": 2.60804,
+      "rand_d_dd_seeds": [-0.00019, -0.00354, -0.0062],
+      "paired_nwt": 0.18895,
+      "c4_d_dd_ex2": 0.00329
+    },
+    "UNION": {
+      "mean_k": 3.48187,
+      "d_mdd": -0.05313,
+      "d_downside_dev": -0.00141,
+      "rand_d_mdd_mean": 0.00882,
+      "paired_nwt": -0.75956
+    }
+  },
+  "criteria_4": {
+    "FB": {
+      "C1_binding_real": true,
+      "C2_tail_beats_random": true,
+      "C3_alpha_intact": true,
+      "C4_not_concentrated": true,
+      "pass_count": 4
+    },
+    "UNION": {
+      "C1_binding_real": true,
+      "C2_tail_beats_random": false,
+      "C3_alpha_intact": true,
+      "C4_not_concentrated": false,
+      "pass_count": 2
+    }
+  },
+  "verdict": "F-B 단독 4/4 사전등록 요건 충족(binding 실재·하방편차 개선이 무작위-제외 3seed 전부 능가·알파 비손상·비집중) → 'Production Constraints 기본 필터 승격 후보 — 도훈 confirm 회부'. ★단 효과크기 marginal(하방편차 -2.61% 상대 개선, MDD는 +0.51% 소폭 악화) — 승격 전 2차 소형전략 교차확인 + 효과 실질성 판단 권고. FA∪FB는 2/4 미달(C2 tail<random·C4 집중, F-A redundant noise가 꼬리 훼손). AX-005 프레임: exclusion=필요조건, 포렌식 정보가 무작위 대비 하방편차서만 약한 우위(선택 알파는 여전히 null).",
+  "frame": "게이트 판정(config-scoped negative) 불변. 본 진단은 tail-risk 정보효과 별개 질문 — 선택 알파 부재 != 필터 무가치(AX-005)."
+}
