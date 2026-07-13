@@ -76,6 +76,23 @@ msgs = []
 if terminal and not nextstep:
     msgs.append("[research_continuity_guard] 종결 판정 어휘가 있는데 다음-단계(next_probe/후속/착수) 마커가 없습니다. "
                 "도훈 mandate: negative는 config-scoped + 프론티어 표시로만, 기전 진단에서 다음 가설 ≥2 도출이 보고 완성 요건.")
+
+# W3 (2026-07-13 도훈 "제도화 강제력" 지적): 라운드 수집(신규 L-code) 후 계층 병목 지도 미갱신 감지 —
+# 최근 6h 내 emit된 L-code가 layer_bottleneck_map.md보다 새로우면 경고 (mtime 결정론 검증).
+try:
+    import glob, time as _t
+    root2 = os.environ.get('CLAUDE_PROJECT_DIR') or os.environ.get('QM_ROOT') or 'C:/Users/99922/OneDrive/Quant_Module_Moltbot'
+    lc_files = glob.glob(os.path.join(root2, 'stage_artifacts', 'l_code', '*', '*.json'))
+    if lc_files:
+        newest_lc = max(os.path.getmtime(f) for f in lc_files)
+        map_p = os.path.join(root2, '06_Registry', 'layer_bottleneck_map.md')
+        map_mt = os.path.getmtime(map_p) if os.path.exists(map_p) else 0
+        if (_t.time() - newest_lc) < 6 * 3600 and newest_lc > map_mt:
+            msgs.append("[research_continuity_guard] 최근 6시간 내 L-code가 적립됐는데 계층 병목 지도"
+                        "(06_Registry/layer_bottleneck_map.md)가 그보다 오래됐습니다 — 라운드 수집 시 지도 갱신 의무"
+                        "(answer-principles 연속성 5호). 해당 계층 행·갭 귀속을 갱신하세요.")
+except Exception:
+    pass
 if waitclose:
     # frontier 큐 in_progress 확인 — 진행 중 리서치가 있으면 대기 마감도 정당
     n_prog = -1

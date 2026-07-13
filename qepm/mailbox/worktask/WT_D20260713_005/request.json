@@ -1,0 +1,18 @@
+{
+  "task_id": "WT-D20260713_005",
+  "wt_type": "discovery",
+  "fq_id": "FQ-034",
+  "hypothesis_title": "R21 — 칼만 정확도의 리스크-소비 2종 (위기-조건부 저베타 틸트 / 칼만-잔차 IVOL)",
+  "hypothesis_description": "R19에서 확정된 κ*=1e-2 kalman β(realized-β 예측 RMSE −10.3% 우세)를 두 소비처로 검증: (A) 현 book 슬리브의 위기-조건부 저베타 재가중(현금 오버레이 불변, AX-001v2 조건부 채점), (B) 칼만-잔차 IVOL 팩터(저-IVOL long, 추정기 효과 paired 격리 + 기존 LowRisk 중복성).",
+  "universe": "KR_top342",
+  "benchmark": "KOSPI200_total_return (cap-w K200∪KQ150 forward)",
+  "as_of_date": "2026-04-30",
+  "forecast_horizon": "1M",
+  "hard_constraints": {"max_names": 25, "long_only": true, "weight_bounds": [0, 0.20], "sum_w": 1, "liq_min_krw": 200000000, "cost_bps_oneway": 15, "cost_model_version": "v2.4_kr_retail_15bps"},
+  "data_lag_rules": "PIT C1-C15. β̂ dlmFilter 필터값만. 국면 신호 홀딩월 시작 전(C5).",
+  "selection_objective": "canonical_port_t",
+  "n_trials": 4,
+  "selection_type": "sweep",
+  "reuse_wt": "WT-D20260713_003 (R19)",
+  "status": "ALPHA_IN_PROGRESS"
+}

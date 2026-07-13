@@ -1,0 +1,58 @@
+{
+  "wt_id": "WT-D20260713_005",
+  "fq_id": "FQ-034",
+  "label": "R21 — 칼만 정확도의 리스크-소비 2종 (arm A 위기-조건부 저베타 틸트 / arm B 칼만-잔차 IVOL)",
+  "created": "2026-07-13",
+  "owner": "alpha-research (R21)",
+  "mode": "QEPM alpha lane",
+  "trigger": "도훈 제안 (2026-07-13): '위기 시그널 시 팩터 투입 / 변동성 조합 뉴팩터'. R19(WT-D20260713_003)에서 확정된 κ*=1e-2 kalman β 정확도(realized-β RMSE −10.3%)의 소비처 2종 탐색.",
+  "rawdata_pin_tag": "RAWDATA_mtime20260713-000411_size421258666",
+  "reuse_from_R19": {
+    "beta_kalman_tuned.parquet": "월말 β̂_Kalman (κ*=1e-2, hl 7d, dlmFilter 필터값). PIT-clean.",
+    "beta_monthly.parquet": "월말 β_OLS (rolling 252d). control 추정기.",
+    "R19_facts": "저베타 위기알파 crisis_active_t=1.935(OLS 기준, bad/normal IC 4.66) 실재 / 칼만은 헤지·팩터·방어 3면 개선 없음(paired_NW_t −1.62) / 저베타=소형주 국소화(~91% OTHER tier)."
+  },
+  "frame_honest": {
+    "adjacent_negatives_prereg": [
+      "① 저베타 틸트 < 현금 (07-05 M4×R05 초월: 위기 저β −3.12 vs 현금 0). 차별점: 그건 '현금 대체재' 프레임 — 본 arm A는 현금 오버레이 불변, 슬리브 구성(어떤 종목에 얼마)과만 경쟁. 위기월 슬리브-내 저베타 재가중이 book AX-001v2 지표를 개선하는가.",
+      "② regime-조건부 신호결합 소진 (L-QPM-20260705_105130). 차별점: 신규 신호 결합이 아니라 확정 book 슬리브의 위기-조건부 재가중(construction). ",
+      "③ R3 위기 sleeve 반증(placebo가 시점-무관 스타일 틸트 판정). 차별점: 본건 placebo = 국면 12m 시프트 틸트로 동일 방어 — 시점-무관 스타일 효과 검출 시 R3 재판 인정."
+    ],
+    "verdict_lexicon": "negative = 'config-scoped negative + 프론티어 표시'만. next_probe >= 2 의무. arm A는 AX-001v2 조건부 채점(전기간 SR 기각 금지)."
+  },
+  "arm_A_crisis_conditional_lowbeta_tilt": {
+    "structure": "현 book(STR_1715_on_M4_R05_noLayer4_PG2) 주식 슬리브 구성만 변형. 위기 국면(regime_state ∈ {CRISIS, CAUTION}, alpha_scores_r05_panel 소비) 월에 한해 top-20 슬리브 홀딩 내에서 칼만-저베타 상위로 sqrt-완만 재가중. 비위기 월 = 현행 그대로.",
+    "cash_overlay_invariant": "현금 오버레이 exposure(t)=m4_scalar×β_R05 은 모든 arm에 동일 적용(weighted_screen_bt exposure_dt) → cross-arm 상쇄. 현금과 비경쟁.",
+    "base_sleeve_rule": "top-20 by score_eff (liquid ADV20≥2e8), LinTilt λ=1.5, cap 0.20 (noLayer4 forward_weights 규칙 정확 재현).",
+    "tilt_spec_preregistered": "위기월 held-20 내: zlb_i = cross-sectional z(−β) among held. multiplier g_i = (1 + 0.5*zlb_i)_+ 의 sqrt 완만 = sqrt(pmax(1+0.5*zlb_i, 0.05)). w_A ∝ w_base × g_i, 재정규 + cap 0.20. gamma=0.5 단일 사전등록(틸트 강도 sweep 없음).",
+    "arms": ["base(무틸트=현 book 슬리브)", "armA_K(kalman 저베타 틸트)", "armA_O(OLS 저베타 틸트, 진단=칼만 한계기여 격리)"],
+    "scoring_authority_AX001v2": "위기구간 active·Core(base) 대비 MDD 완화·bad/normal ratio. 전기간 SR로 기각 금지.",
+    "tests": ["paired NW-t (전기간 & 위기구간 분리) armA_K vs base", "paired NW-t armA_K vs armA_O (칼만 한계기여)", "turnover 비용 반영(weighted_screen_bt)", "placebo: 국면 라벨 12m 시프트 틸트 (시점-무관 스타일 효과 검출)"],
+    "pit": "국면 신호는 홀딩월 시작 전(C5) — regime_state는 decision-YM(홀딩월 직전) 값. β̂는 필터값만."
+  },
+  "arm_B_kalman_residual_ivol": {
+    "definition": "IVOL_K = 60거래일 잔차 sd, 잔차 e_d = r_i,d − β̂_Kalman,t·r_m,d (월말 β̂_t constant over trailing 60d). IVOL_O = 동일 산식, β_OLS,t. 추정기 효과 격리 위해 양측 동일 월말-β constant-window (시간해상도 confound 배제).",
+    "signal": "저-IVOL long. z = −IVOL cross-sectional (winsor 3std). 부호 사전등록.",
+    "measurement": "canonical_screen_bt(top-25 EW long-only, 15bps, liq 2e8, size_dt, dual-basis).",
+    "authority_question": "paired(IVOL_K vs IVOL_O) — 추정기 효과 격리(본 arm 권위 질문).",
+    "redundancy_R18_AC13": "기존 LowRisk 군(D01_IdioVol / R12_Idiosyncratic_Risk / D03_RealVol / D02_Beta) 과의 랭킹상관 — 중복성 진단.",
+    "prediag": "IVOL_K vs IVOL_O 랭킹상관. 0.97+ 지속이면 '추정기 무차별' 기록."
+  },
+  "universe": "KR_top342 = K200∪KQ150, LIQ ADV20≥2e8, cost 15bps (v2.4_kr_retail_15bps).",
+  "period": "월말 2006-01 .. 2026-04 (β 252d 워밍업 후, forward 1M 가용까지).",
+  "gates": {
+    "selection_objective": "canonical_port_t",
+    "graduation_HARD_forge_only": ["portfolio_alpha_t_nw >= 2.95", "oos_retention >= 0.7", "calmar >= 0.64"],
+    "armA_scoring": "AX-001v2 조건부 (graduation HARD는 arm B standalone에만, arm A는 book-construction 개선 여부)",
+    "advisory": ["rank_ic", "icir", "harvey_t(rank-IC)", "subperiod_stability"]
+  },
+  "n_trials": {"armA": "1 tilt spec + 1 OLS diagnostic (estimator sweep, n=2)", "armB": "1 (IVOL_K) + 1 diagnostic (IVOL_O), estimator sweep n=2"},
+  "selection_type": "sweep (estimator O vs K, per arm)",
+  "self_adversarial_concerns_preregistered": [
+    "SC1: arm A 개선이 위기월 소표본 잡음인지 (위기월 n 명시 의무)",
+    "SC2: placebo-시프트 틸트와의 구분 실패 시 R3 재판 (시점-무관 스타일 효과)",
+    "SC3: arm B가 LowRisk 기존(D01_IdioVol/R12)과 중복인지 (redundancy corr)",
+    "SC4: arm A 저베타 틸트가 book cash-overlay de-risk와 중복인지 (book이 이미 crisis 현금화)"
+  ],
+  "prohibitions": ["공분산 추정 금지", "target weights 자유 최적화 금지(고정-spec 틸트만)", "자체합성 백테 금지(canonical/weighted_screen_bt 계약 경유)", "DART API 금지(병렬 백필 중)", "이름 kill 금지", "05_Production write 금지(참조만)"]
+}
