@@ -1,0 +1,434 @@
+{
+  "prereg": {
+    "mode": "RAMP",
+    "round": "R14",
+    "fq": "FQ-027",
+    "question": "R12 F-1(cap-w 2.937·순위 퇴출)과 R13 D-2(oos +0.045·감쇠 퇴출)의 퇴출 트리거를 AND/OR 결합해 두 endpoint 동시 취득 여부 판별. 보조 diag D-3a=6m 스텝 겹침 12m창×5 trimmed-min(12m 노이즈 완화)",
+    "base": "Ppure_W36_K20 (종목 EW × 팩터 EW level36-top20, R6 저장 2.6124 parity 앵커)",
+    "selection_type": "chain",
+    "lattice": "ExExEx 교대 → 진입 사이 exit-only 점검 1회. 4 gate 동일 진입·동일 level36 fill, 퇴출 술어만 상이. 퇴출집합 C-1(AND)⊆{F-1,D-2}⊆C-2(OR), base=퇴출 없음",
+    "endpoint_hierarchy": {
+      "primary": "oos_retention (v2 anchored 3분할 중앙값, cap-w act_bm)",
+      "secondary": "port_t_capwt + HARD 3종 + EW-uni + 2017+ 분리 + paired vs base",
+      "tension": "endpoint=oos여도 arm '선택'은 IS-only(OOS 오염 방지). 선택=IS paired-t · 판정=게이트 산출 전체"
+    },
+    "chain_discipline": "arm 간 선택 IS-only(첫 65% 배포월 paired-t) · oos는 최종 게이트 산출로만 · 2차 결합 없음(1차만) · DSR 진단용(게이트 부적용)",
+    "arms": {
+      "armC1_and_exit": {
+        "mechanism": "퇴출 = 순위 이탈(rank>30 OR level36_t<0) AND 감쇠 신호(recent18<0 OR decay<−1.0) 동시 충족 시 즉시 퇴출. 단일 트리거만이면 유예 1분기(grace). entry/fill=F-1 동일",
+        "diag": "순위-단독(F-1)은 잡음 이탈을 퇴출·감쇠-단독(D-2)은 순위 건재한 감쇠 초기 놓침 — 교집합이 '진짜 죽는 팩터' 정밀 지정",
+        "distinction": "퇴출 규칙(운영 규율) 결합 — 종목 선택 신호(무엇을 살지)의 수익파생 교집합 아님. 신호=pool 위 z-composite EW 불변. 결합 대상=팩터 유지/배출 게이트(when to drop). DIST 조건부 교집합 대상 아님",
+        "adversarial": "C① both-fire 발화빈도·grace 만료빈도 — C-1이 F-1 궤적과 사실상 동일한가(AND의 감쇠 조건 비활성 여부)"
+      },
+      "armC2_or_exit": {
+        "mechanism": "퇴출 = 순위 이탈 OR 감쇠 신호 어느 쪽이든 발화 시 즉시 퇴출(가장 공격적 신선도). grace 없음",
+        "diag": "C-1과 대조 — '정밀 지정 vs 공격적 청소' 어느 기전이 유효한지 판별",
+        "adversarial": "C② 과도 회전이 비용 잠식하는가 — turnover·either-fire 빈도·oos/cap-w 대조"
+      }
+    },
+    "diag_D3a": {
+      "mechanism": "선별점수 = trimmed-min(5 겹침창 NW-t: 12m창을 6m 스텝으로 [36:25][30:19][24:13][18:7][12:1]) — 최악 1창 제거 후 최소. top-K20 by trimmed-min. base_anchors(cadence6) 진입, 퇴출 없음",
+      "diag": "R13 D-3(비겹침 12m×3 hard-min, cap-w 2.164·oos −0.028·rank AC 0.513=12m 노이즈)의 노이즈 완화 가설 확인 진단. arm 아님·판정 무관",
+      "interp": "'6m×2 겹침창' = 6m 스텝 겹침 12m창(D-3 3창 대비 ~2배 밀도)·trimmed=최악 1창 절사"
+    },
+    "ctrl": {
+      "ctrl_F1_rank_exit": "RANK gate=R12 F-1 정확 재구성(entry/fill 동일·level36=trailing_t 정합). 참조 2.937",
+      "ctrl_D2_decay_exit": "DECAY gate=D-2 퇴출 술어 재구성. 단 fill=level36(격자 통일) — R13 D-2(감쇠-인지 fill) 2.503과 fill 상이 가능(정직 병기)"
+    },
+    "gate_hard": [2.95, 0.7, 0.64, 0.5],
+    "primary_criterion": "1차 승자 = R14 자체 IS paired NW-t(cap-w act_bm) vs base 최대(IS-only, JUDGED_ARMS만). 최종 판정 = oos_retention(1차) + full HARD 3종 + full paired vs base + cap-w(2차)",
+    "kill_rule": "전 judged arm oos_retention 0.7 미도달 AND HARD 3종 0/N AND full paired<2.0 → config-scoped negative(퇴출 결합 config 한정). '소진/dead-end' 어휘 금지 — next_probe >=2 도출 의무",
+    "honest_frame": "본 라운드=퇴출 트리거 결합 레버. R13 진단 = oos 천장 ~+0.12 exit-rule-invariant(단일 트리거). 결합이 천장을 소폭이라도 여는가 판별. 정직 기대=천장 재확인 또는 소폭 돌파. cap-tier×cap-w 벽 미해결 가능(정직 병기). return-derived substrate 재사용(신규 재료 아님)",
+    "xmode_fail_prior": "hypothesis_index: R12 F-1(cap-w 2.937·oos +0.048)·R13 D-2(oos +0.045)·armF cad3(oos +0.121) — 단일 퇴출 트리거 oos 천장 ~+0.12. factor-momentum timing NULL(06-30)·DIST-AR-007 momentum return-파생 DISTILLED_NEG. INV-7 재도전 차별점: ①퇴출 술어 결합(AND/OR 격자, 미탐색 construction) ②재료=realized active NW-t(IC 아님) ③운영 규율 결합(신호 교집합 아님)",
+    "is_frac": 0.65,
+    "top_n": 25,
+    "cost_bps_oneway": 15,
+    "liq_min": 200000000,
+    "cap": 0.2,
+    "floor_frac": 0.25,
+    "cadence_entry": 6,
+    "cadence_exit": 3,
+    "exit_rank_bar": 30,
+    "decay_drop_bar": -1,
+    "d3a_windows": "12m@6m-step [36:25][30:19][24:13][18:7][12:1] trimmed-min(drop worst 1)",
+    "n_trials_r14": 3,
+    "n_trials_lineage": 27,
+    "ref": {
+      "r12_f1_capwt": 2.937,
+      "r13_d2_capwt": 2.503,
+      "r6_base": 2.6124
+    },
+    "cost_model": "delta-based |Δw|×15bps one-way (weighted_screen_bt 내장 — 퇴출 회전 자동 반영)",
+    "vintage_pin": "r6_session_20260711 (sel_traj 36/pure_factor_scores/factor_group_scores/rawdata/panel; SUB=_ramp_r13_sub 재사용; base parity Δ<5e-3 확인)",
+    "as_of_date": "2026-07-13",
+    "source_version": "RAMP_R14_v1",
+    "security_id": "Ticker (rawdata) -> factor_id z (pure_factor_scores.z=Z_Score_Aligned)",
+    "config_hash": "0e222e5340fc3369",
+    "generated_at": "2026-07-13T10:56:33+0900"
+  },
+  "config_hash": "0e222e5340fc3369",
+  "meta": {
+    "as_of_date": "2026-07-13",
+    "generated_at": "2026-07-13T10:56:56+0900",
+    "source_version": "RAMP_R14_v1",
+    "security_id": "Ticker->factor_id z (pure_factor_scores.z=Z_Score_Aligned)"
+  },
+  "results": [
+    {
+      "model": "base",
+      "port_t_capwt": 2.6124,
+      "port_t_EWuni": 3.9191,
+      "oos_retention": -0.0759,
+      "oos_ew": 0.5064,
+      "calmar": 0.45,
+      "dsr": 1.4004,
+      "post2017_bm_sr": -0.1052,
+      "full_bm_sr": 0.676,
+      "turnover": 9.2705,
+      "n_months": 220
+    },
+    {
+      "model": "armC1_and_exit",
+      "port_t_capwt": 2.8208,
+      "port_t_EWuni": 4.1809,
+      "oos_retention": 0.0249,
+      "oos_ew": 0.6158,
+      "calmar": 0.4684,
+      "dsr": 1.5676,
+      "post2017_bm_sr": 0.0108,
+      "full_bm_sr": 0.7203,
+      "turnover": 9.3185,
+      "n_months": 220
+    },
+    {
+      "model": "armC2_or_exit",
+      "port_t_capwt": 2.4224,
+      "port_t_EWuni": 3.5254,
+      "oos_retention": -0.0084,
+      "oos_ew": 0.7149,
+      "calmar": 0.4456,
+      "dsr": 1.2083,
+      "post2017_bm_sr": -0.0345,
+      "full_bm_sr": 0.623,
+      "turnover": 9.2705,
+      "n_months": 220
+    },
+    {
+      "model": "ctrl_F1_rank_exit",
+      "port_t_capwt": 2.937,
+      "port_t_EWuni": 4.3441,
+      "oos_retention": 0.0482,
+      "oos_ew": 0.6512,
+      "calmar": 0.4998,
+      "dsr": 1.707,
+      "post2017_bm_sr": 0.0346,
+      "full_bm_sr": 0.7564,
+      "turnover": 9.2269,
+      "n_months": 220
+    },
+    {
+      "model": "ctrl_D2_decay_exit",
+      "port_t_capwt": 2.4058,
+      "port_t_EWuni": 3.527,
+      "oos_retention": 0.0413,
+      "oos_ew": 0.8867,
+      "calmar": 0.4295,
+      "dsr": 1.2042,
+      "post2017_bm_sr": 0.0195,
+      "full_bm_sr": 0.6227,
+      "turnover": 9.3185,
+      "n_months": 220
+    },
+    {
+      "model": "diagD3a_trim_consistency",
+      "port_t_capwt": 2.6471,
+      "port_t_EWuni": 3.4795,
+      "oos_retention": 0.0043,
+      "oos_ew": 0.8019,
+      "calmar": 0.4522,
+      "dsr": 1.4583,
+      "post2017_bm_sr": -0.0622,
+      "full_bm_sr": 0.6725,
+      "turnover": 9.1004,
+      "n_months": 220
+    }
+  ],
+  "paired": [
+    {
+      "model": "armC1_and_exit",
+      "mean_diff_ann": 0.0078,
+      "paired_t_full": 1.4382,
+      "paired_t_IS": -0.0771,
+      "paired_t_OOS": 2.8027,
+      "n": 220,
+      "n_is": 143
+    },
+    {
+      "model": "armC2_or_exit",
+      "mean_diff_ann": -0.0064,
+      "paired_t_full": -0.5795,
+      "paired_t_IS": -1.4584,
+      "paired_t_OOS": 1.2039,
+      "n": 220,
+      "n_is": 143
+    },
+    {
+      "model": "ctrl_F1_rank_exit",
+      "mean_diff_ann": 0.0142,
+      "paired_t_full": 1.819,
+      "paired_t_IS": 0.4097,
+      "paired_t_OOS": 2.1593,
+      "n": 220,
+      "n_is": 143
+    },
+    {
+      "model": "ctrl_D2_decay_exit",
+      "mean_diff_ann": -0.0072,
+      "paired_t_full": -0.6209,
+      "paired_t_IS": -2.3586,
+      "paired_t_OOS": 1.6977,
+      "n": 220,
+      "n_is": 143
+    },
+    {
+      "model": "diagD3a_trim_consistency",
+      "mean_diff_ann": -0.0045,
+      "paired_t_full": -0.1964,
+      "paired_t_IS": -0.5902,
+      "paired_t_OOS": 0.4669,
+      "n": 220,
+      "n_is": 143
+    }
+  ],
+  "concentration": [
+    {
+      "model": "base",
+      "hhi": 0.04,
+      "n_eff": 25,
+      "maxw": 0.04,
+      "n_hold": 25,
+      "min_nhold": 25,
+      "w_MEGA": 0.086,
+      "w_MID": 0.1257,
+      "w_OTHER": 0.906,
+      "w_UNRANKED": 0
+    },
+    {
+      "model": "armC1_and_exit",
+      "hhi": 0.04,
+      "n_eff": 25,
+      "maxw": 0.04,
+      "n_hold": 25,
+      "min_nhold": 25,
+      "w_MEGA": 0.0847,
+      "w_MID": 0.1227,
+      "w_OTHER": 0.9084,
+      "w_UNRANKED": 0
+    },
+    {
+      "model": "armC2_or_exit",
+      "hhi": 0.04,
+      "n_eff": 25,
+      "maxw": 0.04,
+      "n_hold": 25,
+      "min_nhold": 25,
+      "w_MEGA": 0.0883,
+      "w_MID": 0.131,
+      "w_OTHER": 0.9025,
+      "w_UNRANKED": 0
+    },
+    {
+      "model": "ctrl_F1_rank_exit",
+      "hhi": 0.04,
+      "n_eff": 25,
+      "maxw": 0.04,
+      "n_hold": 25,
+      "min_nhold": 25,
+      "w_MEGA": 0.0843,
+      "w_MID": 0.1235,
+      "w_OTHER": 0.9095,
+      "w_UNRANKED": 0
+    },
+    {
+      "model": "ctrl_D2_decay_exit",
+      "hhi": 0.04,
+      "n_eff": 25,
+      "maxw": 0.04,
+      "n_hold": 25,
+      "min_nhold": 25,
+      "w_MEGA": 0.0891,
+      "w_MID": 0.1302,
+      "w_OTHER": 0.9016,
+      "w_UNRANKED": 0
+    },
+    {
+      "model": "diagD3a_trim_consistency",
+      "hhi": 0.04,
+      "n_eff": 25,
+      "maxw": 0.04,
+      "n_hold": 25,
+      "min_nhold": 25,
+      "w_MEGA": 0.096,
+      "w_MID": 0.1295,
+      "w_OTHER": 0.898,
+      "w_UNRANKED": 0
+    }
+  ],
+  "oos_subperiod": [
+    {
+      "model": "base",
+      "sr_full": 0.676,
+      "sr_pre2017": 1.6398,
+      "sr_post2017": -0.1052,
+      "oos_full": -0.0759,
+      "oos_pre": 1.19,
+      "oos_post": -807.4422,
+      "n_pre": 108,
+      "n_post": 112
+    },
+    {
+      "model": "armC1_and_exit",
+      "sr_full": 0.7203,
+      "sr_pre2017": 1.5884,
+      "sr_post2017": 0.0108,
+      "oos_full": 0.0249,
+      "oos_pre": 1.1205,
+      "oos_post": -1.1095,
+      "n_pre": 108,
+      "n_post": 112
+    },
+    {
+      "model": "armC2_or_exit",
+      "sr_full": 0.623,
+      "sr_pre2017": 1.4699,
+      "sr_post2017": -0.0345,
+      "oos_full": -0.0084,
+      "oos_pre": 1.3461,
+      "oos_post": -2.4226,
+      "n_pre": 108,
+      "n_post": 112
+    },
+    {
+      "model": "ctrl_F1_rank_exit",
+      "sr_full": 0.7564,
+      "sr_pre2017": 1.6644,
+      "sr_post2017": 0.0346,
+      "oos_full": 0.0482,
+      "oos_pre": 1.1072,
+      "oos_post": -0.6423,
+      "n_pre": 108,
+      "n_post": 112
+    },
+    {
+      "model": "ctrl_D2_decay_exit",
+      "sr_full": 0.6227,
+      "sr_pre2017": 1.3906,
+      "sr_post2017": 0.0195,
+      "oos_full": 0.0413,
+      "oos_pre": 1.3696,
+      "oos_post": -1.1162,
+      "n_pre": 108,
+      "n_post": 112
+    },
+    {
+      "model": "diagD3a_trim_consistency",
+      "sr_full": 0.6725,
+      "sr_pre2017": 1.5017,
+      "sr_post2017": -0.0622,
+      "oos_full": 0.0043,
+      "oos_pre": 1.2821,
+      "oos_post": -2.0386,
+      "n_pre": 108,
+      "n_post": 112
+    }
+  ],
+  "base_parity": {
+    "r14_base_pt": 2.6124,
+    "r6_stored": 2.6124,
+    "delta": 0,
+    "ok": true,
+    "ctrl_F1_pt": 2.937,
+    "ctrl_D2_pt": 2.4058
+  },
+  "winner_1st": "armC1_and_exit",
+  "winner_is_t": -0.0771,
+  "endpoint_primary": "oos_retention",
+  "endpoint_secondary": "port_t_capwt",
+  "challenge": {
+    "C1_stats": {
+      "n_check": 740,
+      "rank_fire": 72,
+      "decay_fire": 245,
+      "both": 45,
+      "either": 272,
+      "grace_start": 227,
+      "grace_expire": 0,
+      "n_exit": 45,
+      "n_exitcheck": 37
+    },
+    "C2_stats": {
+      "n_check": 740,
+      "rank_fire": 72,
+      "decay_fire": 245,
+      "both": 45,
+      "either": 272,
+      "grace_start": 0,
+      "grace_expire": 0,
+      "n_exit": 272,
+      "n_exitcheck": 37
+    },
+    "F1_stats": {
+      "n_check": 740,
+      "rank_fire": 72,
+      "decay_fire": 245,
+      "both": 45,
+      "either": 272,
+      "grace_start": 0,
+      "grace_expire": 0,
+      "n_exit": 72,
+      "n_exitcheck": 37
+    },
+    "D2_stats": {
+      "n_check": 740,
+      "rank_fire": 72,
+      "decay_fire": 245,
+      "both": 45,
+      "either": 272,
+      "grace_start": 0,
+      "grace_expire": 0,
+      "n_exit": 245,
+      "n_exitcheck": 37
+    },
+    "jaccard": {
+      "C1_F1": 0.9667,
+      "C1_D2": 0.9563,
+      "C1_base": 0.9556,
+      "C2_F1": 0.9598,
+      "C2_D2": 0.9667
+    },
+    "turnover": {
+      "base": 9.2705,
+      "C1": 9.3185,
+      "C2": 9.2705,
+      "F1": 9.2269,
+      "D2": 9.3185
+    },
+    "parity": {
+      "base": 0,
+      "ctrl_F1_vs_r12": 0,
+      "ctrl_D2_vs_r13": -0.0972
+    }
+  },
+  "kill": true,
+  "max_paired_full": 1.4382,
+  "any_graduation": false,
+  "best_oos_arm": "armC1_and_exit",
+  "best_oos_val": 0.0249,
+  "best_capwt_arm": "armC1_and_exit",
+  "best_capwt_val": 2.8208,
+  "n_trials_r14": 3,
+  "n_trials_lineage": 27,
+  "selection_type": "chain",
+  "n_sig": 257,
+  "date_range": ["2005-01-31", "2026-05-31"]
+}

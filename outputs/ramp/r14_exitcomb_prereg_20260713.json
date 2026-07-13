@@ -1,0 +1,67 @@
+{
+  "mode": "RAMP",
+  "round": "R14",
+  "fq": "FQ-027",
+  "question": "R12 F-1(cap-w 2.937·순위 퇴출)과 R13 D-2(oos +0.045·감쇠 퇴출)의 퇴출 트리거를 AND/OR 결합해 두 endpoint 동시 취득 여부 판별. 보조 diag D-3a=6m 스텝 겹침 12m창×5 trimmed-min(12m 노이즈 완화)",
+  "base": "Ppure_W36_K20 (종목 EW × 팩터 EW level36-top20, R6 저장 2.6124 parity 앵커)",
+  "selection_type": "chain",
+  "lattice": "ExExEx 교대 → 진입 사이 exit-only 점검 1회. 4 gate 동일 진입·동일 level36 fill, 퇴출 술어만 상이. 퇴출집합 C-1(AND)⊆{F-1,D-2}⊆C-2(OR), base=퇴출 없음",
+  "endpoint_hierarchy": {
+    "primary": "oos_retention (v2 anchored 3분할 중앙값, cap-w act_bm)",
+    "secondary": "port_t_capwt + HARD 3종 + EW-uni + 2017+ 분리 + paired vs base",
+    "tension": "endpoint=oos여도 arm '선택'은 IS-only(OOS 오염 방지). 선택=IS paired-t · 판정=게이트 산출 전체"
+  },
+  "chain_discipline": "arm 간 선택 IS-only(첫 65% 배포월 paired-t) · oos는 최종 게이트 산출로만 · 2차 결합 없음(1차만) · DSR 진단용(게이트 부적용)",
+  "arms": {
+    "armC1_and_exit": {
+      "mechanism": "퇴출 = 순위 이탈(rank>30 OR level36_t<0) AND 감쇠 신호(recent18<0 OR decay<−1.0) 동시 충족 시 즉시 퇴출. 단일 트리거만이면 유예 1분기(grace). entry/fill=F-1 동일",
+      "diag": "순위-단독(F-1)은 잡음 이탈을 퇴출·감쇠-단독(D-2)은 순위 건재한 감쇠 초기 놓침 — 교집합이 '진짜 죽는 팩터' 정밀 지정",
+      "distinction": "퇴출 규칙(운영 규율) 결합 — 종목 선택 신호(무엇을 살지)의 수익파생 교집합 아님. 신호=pool 위 z-composite EW 불변. 결합 대상=팩터 유지/배출 게이트(when to drop). DIST 조건부 교집합 대상 아님",
+      "adversarial": "C① both-fire 발화빈도·grace 만료빈도 — C-1이 F-1 궤적과 사실상 동일한가(AND의 감쇠 조건 비활성 여부)"
+    },
+    "armC2_or_exit": {
+      "mechanism": "퇴출 = 순위 이탈 OR 감쇠 신호 어느 쪽이든 발화 시 즉시 퇴출(가장 공격적 신선도). grace 없음",
+      "diag": "C-1과 대조 — '정밀 지정 vs 공격적 청소' 어느 기전이 유효한지 판별",
+      "adversarial": "C② 과도 회전이 비용 잠식하는가 — turnover·either-fire 빈도·oos/cap-w 대조"
+    }
+  },
+  "diag_D3a": {
+    "mechanism": "선별점수 = trimmed-min(5 겹침창 NW-t: 12m창을 6m 스텝으로 [36:25][30:19][24:13][18:7][12:1]) — 최악 1창 제거 후 최소. top-K20 by trimmed-min. base_anchors(cadence6) 진입, 퇴출 없음",
+    "diag": "R13 D-3(비겹침 12m×3 hard-min, cap-w 2.164·oos −0.028·rank AC 0.513=12m 노이즈)의 노이즈 완화 가설 확인 진단. arm 아님·판정 무관",
+    "interp": "'6m×2 겹침창' = 6m 스텝 겹침 12m창(D-3 3창 대비 ~2배 밀도)·trimmed=최악 1창 절사"
+  },
+  "ctrl": {
+    "ctrl_F1_rank_exit": "RANK gate=R12 F-1 정확 재구성(entry/fill 동일·level36=trailing_t 정합). 참조 2.937",
+    "ctrl_D2_decay_exit": "DECAY gate=D-2 퇴출 술어 재구성. 단 fill=level36(격자 통일) — R13 D-2(감쇠-인지 fill) 2.503과 fill 상이 가능(정직 병기)"
+  },
+  "gate_hard": [2.95, 0.7, 0.64, 0.5],
+  "primary_criterion": "1차 승자 = R14 자체 IS paired NW-t(cap-w act_bm) vs base 최대(IS-only, JUDGED_ARMS만). 최종 판정 = oos_retention(1차) + full HARD 3종 + full paired vs base + cap-w(2차)",
+  "kill_rule": "전 judged arm oos_retention 0.7 미도달 AND HARD 3종 0/N AND full paired<2.0 → config-scoped negative(퇴출 결합 config 한정). '소진/dead-end' 어휘 금지 — next_probe >=2 도출 의무",
+  "honest_frame": "본 라운드=퇴출 트리거 결합 레버. R13 진단 = oos 천장 ~+0.12 exit-rule-invariant(단일 트리거). 결합이 천장을 소폭이라도 여는가 판별. 정직 기대=천장 재확인 또는 소폭 돌파. cap-tier×cap-w 벽 미해결 가능(정직 병기). return-derived substrate 재사용(신규 재료 아님)",
+  "xmode_fail_prior": "hypothesis_index: R12 F-1(cap-w 2.937·oos +0.048)·R13 D-2(oos +0.045)·armF cad3(oos +0.121) — 단일 퇴출 트리거 oos 천장 ~+0.12. factor-momentum timing NULL(06-30)·DIST-AR-007 momentum return-파생 DISTILLED_NEG. INV-7 재도전 차별점: ①퇴출 술어 결합(AND/OR 격자, 미탐색 construction) ②재료=realized active NW-t(IC 아님) ③운영 규율 결합(신호 교집합 아님)",
+  "is_frac": 0.65,
+  "top_n": 25,
+  "cost_bps_oneway": 15,
+  "liq_min": 200000000,
+  "cap": 0.2,
+  "floor_frac": 0.25,
+  "cadence_entry": 6,
+  "cadence_exit": 3,
+  "exit_rank_bar": 30,
+  "decay_drop_bar": -1,
+  "d3a_windows": "12m@6m-step [36:25][30:19][24:13][18:7][12:1] trimmed-min(drop worst 1)",
+  "n_trials_r14": 3,
+  "n_trials_lineage": 27,
+  "ref": {
+    "r12_f1_capwt": 2.937,
+    "r13_d2_capwt": 2.503,
+    "r6_base": 2.6124
+  },
+  "cost_model": "delta-based |Δw|×15bps one-way (weighted_screen_bt 내장 — 퇴출 회전 자동 반영)",
+  "vintage_pin": "r6_session_20260711 (sel_traj 36/pure_factor_scores/factor_group_scores/rawdata/panel; SUB=_ramp_r13_sub 재사용; base parity Δ<5e-3 확인)",
+  "as_of_date": "2026-07-13",
+  "source_version": "RAMP_R14_v1",
+  "security_id": "Ticker (rawdata) -> factor_id z (pure_factor_scores.z=Z_Score_Aligned)",
+  "config_hash": "0e222e5340fc3369",
+  "generated_at": "2026-07-13T10:56:33+0900"
+}
