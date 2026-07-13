@@ -1,0 +1,57 @@
+{
+  "wt_id": "WT-D20260713_002",
+  "frontier_id": "FQ-031",
+  "title": "R18 — Accounting-forensic statistical factors: Modified-Jones discretionary accruals (F-A) + Benford FSD (F-B)",
+  "prereg_frozen_at": "2026-07-13",
+  "selection_type": "sweep",
+  "n_trials": 2,
+  "universe": "KR_top342 (KOSPI200 U KOSDAQ150), monthly membership from monthly_panel.rds (me$K200|KQ150)",
+  "benchmark": "cap-w KOSPI200 total-return (bench_m$bench_mret) — HARD gate authoritative basis",
+  "period_coverage": "2009-06 .. 2025-06 (frozen membership panel; identical to sibling R17 for comparability). NOTE: shorter than 2005+ because monthly_panel.rds starts 200906.",
+  "cost_model_version": "v2.4_kr_retail_15bps",
+  "hard_constraints": {"max_names": 25, "long_only": true, "weight_bounds": [0, 0.20], "liq_min_krw": 2e8, "cost_bps_oneway": 15},
+  "data_sources": {
+    "fundamentals": ".cache/fundamental_merged.parquet (long: Ticker, Period, Period_Date, Factor_Date, Item, Value, Source). PIT via Factor_Date <= sig_date (already encodes annual filing lag).",
+    "panel": "stage_artifacts/WT_D20260711_002/monthly_panel.rds (me + bench_m, pin frozen). returns/bench/size/liq aligned per R17 13b convention.",
+    "sector": "Ticker->Sector static map from .cache/RAWDATA.parquet (27 KR sectors)."
+  },
+  "pit_convention": "expand_hold (frozen, R17): usable decision month = dt2ym(Factor_Date)+1, hold H=12 months forward, keep most-recent active per (Ticker,decision_ym). Factor_Date already includes filing lag (C4). +1 month = mild conservatism, no look-ahead.",
+  "factors": {
+    "F-A": {
+      "name": "Modified-Jones Discretionary Accruals (residual)",
+      "mechanism": "Discretionary (managed) accrual component = residual of within-fiscal-year cross-sectional regression of scaled total accruals on 1/A, (dRev-dREC)/A, PPE/A (Jones 1991 + Dechow 1995 receivables adjustment). High discretionary accruals => earnings management => negative forward returns (Sloan 1996, Xie 2001).",
+      "literature": "Jones (1991); Dechow-Sloan-Sweeney (1995) modified Jones; Xie (2001); Sloan (1996).",
+      "total_accruals": "CF method: TA = NetIncome - OperatingCF (cleaner than BS; Hribar-Collins 2002).",
+      "regression_spec": "primary: per-fiscal-year pooled (all firms with valid data that FY, broad estimation), design X = [1/A_lag, (dRev-dREC)/A_lag, PPE/A_lag], y = TA/A_lag, no separate intercept (1/A term is the intercept surrogate). residual eps = discretionary accrual.",
+      "industry_variant": "robustness only: add sector fixed-effects when n(sector,FY) >= 15 else fall back to pooled-FY. Primary selection uses pooled-FY.",
+      "raw_signal": "eps (discretionary accrual, scaled)",
+      "score_sign": -1,
+      "score": "sign * cross-sectional z(raw) among universe members per decision month",
+      "holding_months": 12,
+      "incrementality_test": "cross-sectional monthly corr vs existing DB factor AC13 (original Jones, DB pooled-at-sig-date) computed inline. F-A differs by (i) dREC modified-Jones adjustment, (ii) per-fiscal-year cohort estimation. |corr|>0.9 => redundant with AC13. AC13 prior: standalone LO top25 FAILED (PORT_t 0.227, oos -0.53, Grade F, 2026-06-06)."
+    },
+    "F-B": {
+      "name": "Benford First-Digit Deviation (FSD_Score)",
+      "mechanism": "Financial-statement line items naturally follow Benford's law; deviation of a firm's first-digit distribution from Benford expectation = manipulation fingerprint (Amiram-Bozanic-Rouen 2015). Higher deviation => lower earnings quality => negative forward returns.",
+      "literature": "Amiram, Bozanic, Rouen (2015 RAS) FSD_Score; Benford (1938); Nigrini (2012).",
+      "raw_monetary_whitelist": ["TotalAssets","TotalLiab","TotalEquity","CurrentAssets","NonCurrentAssets","CurrentLiab","NonCurrentLiab","CashAndEquiv","AccountsRecv","Inventory","TangibleAssets","IntangibleAssets","ShortTermBorr","LongTermBorr","AccountsPay","LongTermPay","LongTermRecv","RetainedEarnings","CapitalStock","TotalDebt","NetDebt","WorkingCapital","Revenue","COGS","GrossProfit","SGAExpense","OperatingProfit","PretaxIncome","NetIncome","TaxExpense","InterestExp","InterestIncome","DepAmort","EBITDA","EBIT","NOPAT","RandD","Dividends","OperatingCF","InvestCF","FinanceCF","FCF1","FCF2"],
+      "excluded": "ALL ratios/margins/growth/deltas/scores (Benford applies only to raw monetary magnitudes spanning multiple orders of magnitude).",
+      "min_items_threshold": 15,
+      "fsd_measure": "MAD = mean over d=1..9 of |p_obs(d) - p_exp(d)|, p_exp(d)=log10(1+1/d). Computed per (Ticker, annual Period).",
+      "raw_signal": "FSD (MAD)",
+      "score_sign": -1,
+      "score": "sign * cross-sectional z(raw) among universe members per decision month",
+      "holding_months": 12,
+      "structural_break_flag": "source shift QuantiWise(<=2015, ~32 raw items)->DART(2016+, ~24 raw items) changes item set => FSD level shift. Mitigated by monthly cross-sectional z (removes level). 2016+ subperiod reported separately."
+    }
+  },
+  "measurement": {
+    "authority": "cap-w portfolio_alpha_t_nw_lag3 (canonical_screen_bt, top_n=25, 15bps, liq 2e8). advisory = rank-IC/ICIR.",
+    "dual_basis": "diag_ew_universe (EW-uni bench, post2017_t, oos_approx) + diag_cap_tier (MEGA/MID/OTHER) MANDATORY per M2.",
+    "robustness": ["IS(<2019)/OOS(>=2019) split","placebo (permute each corp signal across its own months, nsim=200, p=frac sims>=base)","Size-partial (residualize score on Size per month, re-screen)","2017+ subperiod (post2017_t)","incrementality corr vs AC13 and F-A vs F-B"],
+    "hard_gates_3": {"portfolio_alpha_t_nw >= 2.95": "forge-authoritative only", "oos_retention >= 0.7": "", "calmar >= 0.64": ""},
+    "dsr": "sweep n_trials=2 => DSR computed as diagnostic (best-of-2 multiple-testing aware).",
+    "verdict_language": "negative = 'config-scoped negative + frontier marker' with >=2 next_probe. No premature structural-limit claim (AX-000)."
+  },
+  "survivor_rule": "survivor (cap-w PORT_t>=2.95 AND EW-uni survives AND oos>=0.7) => add_factor recommendation + P-pure substrate extension candidate. else screen-tier/feature per dual-basis."
+}

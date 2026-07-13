@@ -1,0 +1,168 @@
+{
+  "as_of": "2026-07-13",
+  "book": "STR_1715_on_M4_R05_noLayer4_PG2",
+  "basis": "recon_backtested read-only · diagnostic only (no book/monitoring change)",
+  "method": "dlm state-space (dlmMLE/dlmFilter); no hand-rolled filter; QMLE-SV offset c=0.02*mean(a^2)",
+  "reproduction": {
+    "alert_match": 5,
+    "ratio_match": 5,
+    "detail": [
+      {
+        "estimator": "expand_const",
+        "alert_native": 0.060976,
+        "ratio_native": 1.197347,
+        "alert_saved": 0.060976,
+        "ratio_saved": 1.197347,
+        "alert_match": true,
+        "ratio_match": true
+      },
+      {
+        "estimator": "roll36",
+        "alert_native": 0.093496,
+        "ratio_native": 1.215393,
+        "alert_saved": 0.093496,
+        "ratio_saved": 1.215393,
+        "alert_match": true,
+        "ratio_match": true
+      },
+      {
+        "estimator": "ewma94",
+        "alert_native": 0.044715,
+        "ratio_native": 1.107823,
+        "alert_saved": 0.044715,
+        "ratio_saved": 1.107823,
+        "alert_match": true,
+        "ratio_match": true
+      },
+      {
+        "estimator": "ewma97",
+        "alert_native": 0.03252,
+        "ratio_native": 1.103133,
+        "alert_saved": 0.03252,
+        "ratio_saved": 1.103133,
+        "alert_match": true,
+        "ratio_match": true
+      },
+      {
+        "estimator": "regime_cond",
+        "alert_native": 0.105691,
+        "ratio_native": 1.290484,
+        "alert_saved": 0.105691,
+        "ratio_saved": 1.290484,
+        "alert_match": true,
+        "ratio_match": true
+      }
+    ]
+  },
+  "headtohead_common": {
+    "n_common": 233,
+    "t_start": 37,
+    "t_end": 269,
+    "table": [
+      {
+        "estimator": "kalman_SV",
+        "n_eval": 233,
+        "realized_over_pred": 1.015006,
+        "pct_z_gt1": 0.253219,
+        "alert_1p5_rate": 0.009009,
+        "current_TE_forecast_ann": 0.212685
+      },
+      {
+        "estimator": "ewma97",
+        "n_eval": 233,
+        "realized_over_pred": 1.103136,
+        "pct_z_gt1": 0.283262,
+        "alert_1p5_rate": 0.036036,
+        "current_TE_forecast_ann": 0.221138
+      },
+      {
+        "estimator": "kalman_TVbeta",
+        "n_eval": 233,
+        "realized_over_pred": 1.138187,
+        "pct_z_gt1": 0.261803,
+        "alert_1p5_rate": 0.036036,
+        "current_TE_forecast_ann": 0.185371
+      },
+      {
+        "estimator": "expand_const",
+        "n_eval": 233,
+        "realized_over_pred": 1.197646,
+        "pct_z_gt1": 0.304721,
+        "alert_1p5_rate": 0.040541,
+        "current_TE_forecast_ann": 0.1804
+      },
+      {
+        "estimator": "ewma94",
+        "n_eval": 233,
+        "realized_over_pred": 1.106287,
+        "pct_z_gt1": 0.274678,
+        "alert_1p5_rate": 0.040541,
+        "current_TE_forecast_ann": 0.238883
+      },
+      {
+        "estimator": "regime_cond",
+        "n_eval": 233,
+        "realized_over_pred": 1.293985,
+        "pct_z_gt1": 0.317597,
+        "alert_1p5_rate": 0.058559,
+        "current_TE_forecast_ann": 0.12091
+      },
+      {
+        "estimator": "roll36",
+        "n_eval": 233,
+        "realized_over_pred": 1.21753,
+        "pct_z_gt1": 0.321888,
+        "alert_1p5_rate": 0.076577,
+        "current_TE_forecast_ann": 0.221991
+      }
+    ]
+  },
+  "paired_vs_ewma97": [
+    {
+      "vs": "ewma97",
+      "cand": "kalman_SV",
+      "mean_z2_cand": 1.030237,
+      "mean_z2_ewma97": 1.216909,
+      "mean_diff": -0.186673,
+      "t_stat": -5.881211,
+      "p_value": 1.410878e-08
+    },
+    {
+      "vs": "ewma97",
+      "cand": "kalman_TVbeta",
+      "mean_z2_cand": 1.295471,
+      "mean_z2_ewma97": 1.216909,
+      "mean_diff": 0.078561,
+      "t_stat": 1.87948,
+      "p_value": 0.061432
+    }
+  ],
+  "kalman_SV": {
+    "current_q": 1.522999e-08,
+    "implied_lambda": 0.999944,
+    "current_TE_ann": 0.212685,
+    "offset_c": 0.00007,
+    "burn": 36
+  },
+  "kalman_TVbeta": {
+    "current_beta": 0.675802,
+    "stride": 12,
+    "current_TE_ann": 0.185371,
+    "term_res": 0.00241,
+    "term_sys": 0.000405,
+    "term_bunc": 0.000039,
+    "term_aunc": 9.338628e-06,
+    "cor_sys_derisk": -0.029855,
+    "te_derisk_zone": 0.189346,
+    "te_fullinv_zone": 0.188443
+  },
+  "current_vintage_TE_ann": {
+    "expand_const": 0.1804,
+    "roll36": 0.221991,
+    "ewma94": 0.238883,
+    "ewma97": 0.221138,
+    "regime_cond": 0.12091,
+    "kalman_SV": 0.212685,
+    "kalman_TVbeta": 0.185371
+  }
+}
