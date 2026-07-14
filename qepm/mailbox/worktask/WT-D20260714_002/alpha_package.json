@@ -1,0 +1,48 @@
+{
+  "task_id": "WT-D20260714_002",
+  "as_of_date": "2026-07-14",
+  "forecast_horizon": "1M",
+  "wt_type": "discovery (book-enhancement screen — 진단 전용, book_state 무변경)",
+  "hypothesis_title": "R26 FQ-039 — PG2 score_eff 8번째 팩터 add/remove/replace 스크린",
+  "selection_objective": "canonical_port_t",
+  "verdict": "CONFIG_SCOPED_NEGATIVE (book-marginal capital) — 어떤 구성도 authoritative(frozen cap-w) 축에서 paired NW-t>=2.0 AND ΔIR(window-matched)>=0.05 를 OOS 확인과 함께 충족 못함. frontier 2 open.",
+  "alpha_vector": null,
+  "alpha_vector_note": "screen/decision-material — deployment 아님. book_state 무변경. 실편입 시 QEPM 6-agent 파이프라인이 alpha_vector 생성 + 도훈 수동.",
+  "confidence_vector": null,
+  "base_incumbent": {
+    "id": "STR_1715_on_M4_R05_noLayer4_PG2 (score_eff top-25 cap-w, selection-level)",
+    "canonical_port_t_nw_lag3": 5.324,
+    "net_active_IR_windowmatched": 1.2749,
+    "n_months": 255,
+    "turnover_annual": 12.5,
+    "ir_basis": "net_active window-matched (w=0 base, 동일 하네스). stored 1.416 / canonical 1.327은 basis 라벨만(미사용)."
+  },
+  "factor_specs": [
+    {"factor_family":"Value","proxy":"V14_EBIT_EV (EBIT/EV)","axis":"ADD","economic_rationale":"book에 부재한 순수 value 노출. cheap earnings-yield 프리미엄.","redundancy_cluster_id":"value_yield (book Core=consensus/Defense=quality — value 축 부재, cor_active vs book -0.04)","references":["Fama-French 1993","Loughran-Wellman 2011 EV/EBITDA"],"result":"ADD w0.30 paired 1.87 / ΔIR +0.102 / holdout paired 1.76 — 최유망 미달(paired<2.0)"},
+    {"factor_family":"Value","proxy":"V07_EV_EBITDA","axis":"ADD","economic_rationale":"enterprise-value 기반 value, 부채구조 조정.","redundancy_cluster_id":"value_yield","references":["Loughran-Wellman 2011"],"result":"ADD w0.15 paired 1.81 / ΔIR +0.120 / holdout paired 0.39 (OOS 감쇠)"},
+    {"factor_family":"Value","proxy":"V02_EP (earnings yield)","axis":"ADD","economic_rationale":"고전 earnings-price value.","redundancy_cluster_id":"value_yield","references":["Basu 1977"],"result":"ADD w0.15 paired 1.26 / ΔIR +0.035"},
+    {"factor_family":"Growth_Profit","proxy":"IN03_RD_to_Market","axis":"ADD","economic_rationale":"R&D intensity = 미래성장 underpricing.","redundancy_cluster_id":"intangible_growth","references":["Chan-Lakonishok-Sougiannis 2001"],"result":"ADD w0.30 paired 0.58 / ΔIR +0.038 (deployzone PORT_t 최고 3.75이나 blend 전이 실패)"},
+    {"factor_family":"Consensus","proxy":"M27_Analyst_Rev_Mom","axis":"ADD+REPLACE","economic_rationale":"analyst revision momentum.","redundancy_cluster_id":"consensus_revision (book Core와 축중첩, cor_active 0.29)","references":["Chan-Jegadeesh-Lakonishok 1996"],"result":"ADD paired -0.65 (Core 중복 열위); REPLACE C06 슬롯 삽입 시 recon paired 2.63/holdout 1.64 (proxy)"},
+    {"factor_family":"Liquidity_micro","proxy":"VPRC_CORR (R16, task-flagged)","axis":"ADD","economic_rationale":"|ret|-volume 공행성 변화 = Kyle-λ proxy 상승 → illiquidity 프리미엄.","redundancy_cluster_id":"illiquidity_change","references":["Kyle 1985","Amihud 2002"],"result":"tier_survival FAIL(tier_ic_t 0.10) → shortlist 밖. ADD w0.15 paired 0.20 (무의미)"},
+    {"factor_family":"Liquidity_micro","proxy":"VSHK_P (R16, sign-flip, task-flagged)","axis":"ADD","economic_rationale":"volume shock persistence 음-IC → 부호반전 참여.","redundancy_cluster_id":"volume_persistence","references":["Gervais-Kaniel-Mingelgrin 2001"],"result":"tier_survival FAIL(sign inconsistent) → shortlist 밖. ADD w0.30 paired -2.02 (해로움)"}
+  ],
+  "diagnostics": {
+    "canonical_port_t_nw_lag3": 5.324,
+    "canonical_port_t_note": "base(frozen score_eff top-25 cap-w). 후보 add 최고 variant PORT_t 6.13(V07 w0.30)이나 book-marginal paired 미달.",
+    "best_add_frozen": {"factor":"V14_EBIT_EV","w":0.30,"paired_nw_t":1.87,"delta_ir_windowmatched":0.102,"holdout_paired":1.76},
+    "extension_B_recon_proxy": {"recon_fid_eff_median":0.914,"weakest_slot":"C06_TP_Gap","removal_paired_is":2.45,"removal_holdout":-0.60,"replace_C06_M27_paired_is":2.63,"replace_holdout":1.64,"critical_factor":"C02_EPS_Chg_1m (removal paired -7.09)"},
+    "dsr": {"n_trials":26,"best_netactive_SR_ann":1.99,"base_SR_ann":1.275,"dsr_absolute":1.0,"binding_note":"binding book-marginal quantity = paired NW-t (not DSR). 없음 passes."},
+    "dual_basis": "cap-w HARD authoritative. EW/EWuni 진단 병기(base EW 6.38, EWuni 6.71). cap-tier: 후보 blend가 MID weight 유지(0.06~0.10).",
+    "turnover_annual_base": 12.5
+  },
+  "challenge_flags": [
+    "RF: 어떤 add 후보도 paired NW-t>=2.0 미달 (best V14 1.87) — book-marginal 자본기여 부재. 06-24 직교 327팩터 t>2=0 · 07-10 프로브 fleet 0 prior와 정합.",
+    "Ext-B C06_TP_Gap 제거 IS 양성(2.45)이나 holdout 붕괴(-0.60) = IS-특이/과적합 + recon-proxy(C06 vintage-noisy 아티팩트 가능) → finding 아님, frontier로만.",
+    "value 축(V14/V07)이 book 최유망 미결 노출(cor -0.05, ΔIR+ , holdout+)이나 marginal sub-significant.",
+    "선택 sweep(n_trials 26) — DSR 진단산출. book_state 무변경."
+  ],
+  "next_probe": [
+    "P1: frozen-book C06_TP_Gap pruning 검증 — production `_recompute_alpha_asof.R` SLEEVE_CORE에서 C06 제거하여 268m score_eff 재구축 → canonical cap-w PORT_t + oos_retention. recon(fid 0.914)이 flag했으나 recon≠frozen + holdout 붕괴 → production 재구축만이 settle. (EV 보수: holdout OOS 이미 음수.)",
+    "P2: value sleeve를 z-blend 아닌 제3 sleeve로 통합 — book = Core(consensus)+Defense(quality)+[신규 Value(EBIT_EV/EV_EBITDA composite)] regime-conditional 3-sleeve. z-blend(paired 1.87)보다 sleeve 분리가 value 전이 벽을 넘는지. FQ 등재 후보."
+  ]
+}

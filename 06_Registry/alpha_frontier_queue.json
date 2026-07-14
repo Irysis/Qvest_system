@@ -784,11 +784,45 @@
       "wall_check": "cap-tier 국소화 — 후보는 북 보유존(MEGA/MID) tier 생존 필수(SMALL-only 신호는 R25류 size 아티팩트). sweep 회계(후보 열거 argmax = DSR 적용). insider 3종 제외(부분 크롤 — R9 fail-closed 위임). 포렌식/감사/텍스트 negative 확정분 제외. book_state 무변경 — 결과는 도훈 결정 재료(편입은 QEPM 파이프라인)",
       "data_gate": "없음 (전부 로컬: r6_factor_deployzone_active.parquet + factor DB + recon)",
       "owner": "Q-Lead (R26 alpha-research, 도훈 지시 2026-07-14)",
-      "status": "in_progress",
-      "next_action": "2단 스크린 → 세 갈래(추가 blend / removal-only / 교체) 실측 — paired NW-t + ΔIR window-matched, family n_trials ≤23 DSR",
+      "status": "config_scoped_negative_frontier_open",
+      "next_action": "frontier 분기 FQ-040·FQ-041로 이관 (도훈 결정 재료 — 실편입은 QEPM 6-agent + 수동)",
       "source_refs": [
         "prior: project-pg2-orthogonal-alpha-search(06-24) + L-AR-20260710_150153(프로브 fleet)",
-        "method: WT_RAMP_03C_RERUN deltair_diag(window-matched) + r6_factor_deployzone_active.parquet"
+        "method: WT_RAMP_03C_RERUN deltair_diag(window-matched) + r6_factor_deployzone_active.parquet",
+        "result: L-AR-20260714_153519 + stage_artifacts/WT_D20260714_002/{verdict.md,alpha_validation.json,challenge_note.md}"
+      ],
+      "result": "R26 완료 2026-07-14 (L-AR-20260714_153519). base score_eff top-25 cap-w PORT_t 5.324/IR 1.275(window-matched). ADD 14arms 全 paired NW-t<2.0(best V14_EBIT_EV w0.30=1.87,ΔIR+0.10,holdout1.76). Ext-B(recon proxy fid 0.914): C06_TP_Gap 제거 IS paired 2.45나 holdout 붕괴(-0.60), C02_EPS_Chg_1m 필수(제거-7.09). 판정 CONFIG_SCOPED_NEGATIVE(book-marginal). frontier 2→FQ-040(value 제3-sleeve)/FQ-041(C06 frozen 검증)."
+    },
+    {
+      "id": "FQ-040",
+      "lane": "book_enhancement",
+      "title": "value 제3-sleeve 통합 — score_eff에 z-blend 아닌 별도 Value sleeve (R26 P2)",
+      "hypothesis": "book alpha=Core(4F Consensus)+Defense(Q07/M08/Q25)로 순수 value 축 부재. value(EBIT_EV·EV_EBITDA)를 z-blend(R26 paired 1.87 미달) 아닌 regime-conditional 제3 sleeve로 통합하면 value 전이 벽을 넘는가",
+      "ev_rationale": "R26서 value 유일 일관 양(cor-0.05 직교·ΔIR+·holdout V14 +1.76)이나 z-blend marginal sub-significant. sleeve 분리가 value에 전용 가중을 줘 전이 개선 가능. EV 보수(전이 벽 prior).",
+      "wall_check": "cap-w authoritative+window-matched ΔIR+paired∧ΔIR AND-게이트 유지. 종목수 25 hard·turnover 감시. 06-24 직교327 prior=벽 존재.",
+      "data_gate": "없음(로컬: pure_factor_scores value z + score_eff)",
+      "owner": "Q-Lead",
+      "status": "frontier_open",
+      "next_action": "Core/Defense/Value 3-sleeve regime theta 재추정 → canonical cap-w PORT_t + paired vs 현 2-sleeve base",
+      "source_refs": [
+        "parent: FQ-039 R26 L-AR-20260714_153519",
+        "memory: project-captier-alpha-localization"
+      ]
+    },
+    {
+      "id": "FQ-041",
+      "lane": "book_enhancement",
+      "title": "C06_TP_Gap frozen-book pruning 검증 — production 재구축 (R26 P1)",
+      "hypothesis": "R26 Ext-B(recon proxy fid 0.914)가 C06_TP_Gap를 최약슬롯 flag(IS 제거 paired 2.45). frozen book SLEEVE_CORE−C06 268m 재구축 시 canonical cap-w PORT_t·oos_retention 실제 개선되는가",
+      "ev_rationale": "recon IS 개선 flag하나 holdout 붕괴(-0.60)+recon≠frozen(C06=analyst TP vintage-noisy 아티팩트 가능)→recon으로 settle 불가. production _recompute만 authoritative. EV 낮음이나 book 위생 저비용 확인.",
+      "wall_check": "C02_EPS_Chg_1m 필수(제거 시 book 붕괴 -7.09)—절대 제거 금지. frozen 재구축=production 경로, book_state 무변경, 도훈 confirm 후.",
+      "data_gate": "없음(로컬: factor_db + _recompute_alpha_asof.R)",
+      "owner": "Q-Lead",
+      "status": "frontier_open",
+      "next_action": "_recompute SLEEVE_CORE={C01,C02,C04}(C06 제거) 268m → canonical PORT_t + holdout falsification vs base",
+      "source_refs": [
+        "parent: FQ-039 R26 L-AR-20260714_153519",
+        "method: _recompute_alpha_asof.R"
       ]
     }
   ]

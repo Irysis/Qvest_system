@@ -1,7 +1,7 @@
 # 계층 병목 지도 (Layer Bottleneck Map)
 
 **목적**: "SR 2.5까지의 갭(현재 +0.60, gap_vector 실측)이 어느 계층에서 막혀 있는가"의 상시 실측 지도. 라운드 수집 시 Q-Lead가 갱신(answer-principles 연속성 절 4호 소비처-전개 의무의 계층 뷰). 도훈 지시 2026-07-13 "어떤 계층에서 개선이 필요할지를 탐구하는 능력" 제도화.
-**갱신**: 2026-07-14 v6 (R25 반영 — 감사 메타데이터 배포 유니버스 신호력 없음·SMALL 국소·부호 역전 = distress/forensic 재료 3연속(R20·R24·R25) cap-tier 벽 강건 확립. 배포 자본 미검 재료 = insider(크롤 대기)) | **소비자**: Q-Lead 라운드 선택 · 주입면 · 도훈 결정
+**갱신**: 2026-07-14 v7 (R26 FQ-039 book-marginal 반영 — score_eff 8번째 팩터 add/remove/replace 스크린. ②construction z-blend 소비형태도 book-marginal 자본기여 부재(ADD 14arms 全 paired<2.0), 단 ①재료서 value=book 유일 미결 노출 발견. + R25 감사 메타데이터·distress/forensic 3연속 cap-tier 벽) | **소비자**: Q-Lead 라운드 선택 · 주입면 · 도훈 결정
 
 | 계층 | 실측 상태 | 병목 기여 | 열린 프론티어 (EV순) |
 |---|---|---|---|
@@ -14,6 +14,8 @@
 | ⑦ 집행/비용 | anchor 최적(SPEC-2 단조) · tranche=경로분산 축소만 | 최적 상태 | G5 tranche 채택(도훈, 기대SR 중립) |
 | ⑧ 위험모델/감시 | TE 기준선 EWMA 후보 확정 · **칼만 소비 3채널(팩터·위기틸트·잔차IVOL) 전부 inert 확정(R21)** — 기전: 잔차 개별잡음이 추정기 차이를 wash-out(랭킹상관 0.999)·저베타=소형 음-스타일·현금 오버레이가 이미 de-risk | 위생 계층 — 성과 병목 아님 (칼만 연구 완결) | TE 기준선 교체(도훈, 저부담) · 칼만 β̂ 감시 배선(#56 — 유일 잔존 소비처) |
 | ⑨ 자본/운영 | 7월 비중 정정 완료 · recon 정합 | **즉시 실행 가능 확정 개선 1건 방치** | **★G2 현금 캐리(1억당 월 19만원) — 도훈 실주문만 남음** |
+
+**부기 (07-14, R26 FQ-039 book-marginal 스크린)**: 기존 PG2 book(STR_1715 score_eff top-25 cap-w, base PORT_t 5.324/IR 1.275 window-matched)에 8번째 팩터 add/remove/replace. **①재료 발견**: book alpha = Core(4F Consensus)+Defense(Q07/M08/Q25)로 **순수 value 축 부재** → value(EBIT_EV·EV_EBITDA)가 cor-0.05 직교·ΔIR+·holdout+로 유일 일관 양이나 z-blend marginal sub-significant(best V14 paired 1.87<2.0) → FQ-040(value 제3-sleeve) 등재. **②construction 확인**: composite z-blend 소비형태도 book-marginal 자본기여 부재 = ② 소진 재확인(재료 종속). **incumbent pruning 축(신규)**: recon-proxy(fid 0.914)가 C06_TP_Gap 최약슬롯 flag(IS 제거 paired 2.45)하나 holdout 붕괴(-0.60)+recon 아티팩트 → frozen 검증 필요(FQ-041). C02_EPS_Chg_1m=필수(제거 시 book -7.09). 메타: 06-24 직교327·07-10 프로브fleet0 book-marginal 벽 재확인 — 소비형태(z-blend) 신규검증도 동일 결론, 잔여 갭 ①재료 귀속 불변.
 
 **부기 (07-13 밤, RAMP_03C 재현)**: A급 원장 un-bury 아크 완전 종착 — 유일 명목 HARD 3/3(03C)이 재현서 0/3 FAIL(교정벤치 2.65·oos 0.22·calmar 0.42, 2017+ decay 기전). 원장에 숨은 생존자 없음 확정 → ①재료 귀속 강화. 부산물: cap-weight = closet-indexing 희석 실증(동일 selection서 EW 4.25 ≫ cap-w 2.98) — next_probe로 EW-variant book-marginal ΔIR 진단 진행.
 
