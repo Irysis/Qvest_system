@@ -1,0 +1,73 @@
+{
+  "wt": "WT-D20260715_011",
+  "mode": "monitoring 배관 (live OOS 추적 활성화 — 새 측정 아님)",
+  "round": "R42",
+  "fq": "FQ-053 (P2)",
+  "title": "insider SAFE/SAFE_FADING live OOS 추적 배관 (R41 P1 소비 — armed→active, 현 북 SAFE_FADING 2건 발화)",
+  "as_of_date": "2026-07-15",
+  "verdict_type": "capability_established",
+  "parent": "R41 next_probe P1 (FQ-053 P2) — SAFE/SAFE_FADING live 발화 OOS 추적 배관, armed→active",
+  "task_class": "wiring_only_live_track",
+  "base_source": "상류 filing_delay_watch_latest.json(insider_net_buy_safe, R41 산출 202607) + .cache/rawdata.parquet(실현수익 Ret_1m, 완료월만·초기 실행선 미로드). §7b 정합. DART API 0. book_state/05_Production/outputs.ramp 무변경.",
+
+  "wiring_summary": {
+    "new_writer": "02_Infrastructure/reports/insider_safe_live_track.R (신규) — 상류 FDW insider_net_buy_safe 소비, live 추적 JSON 갱신",
+    "schema_out": "qepm/observability/insider_safe_live_track.json (insider_safe_live_track_v1)",
+    "monitoring_init": "02_Infrastructure/prompts/monitoring_init.md — <required> Part C-live 항목 + <metrics_computation> block(insider_safe_fading_cleared / insider_protection_oos_divergence flag) + <output_schema> insider_safe_live_track 섹션",
+    "run_order": "월간: filing_delay_watch.R *후* insider_safe_live_track.R source (상류 latest.json 갱신 후 소비)",
+    "mechanics": "① 발화 register(현 홀딩월 NET_BUY_SAFE/SAFE_FADING 보유 → 발화월·종목·상태·mso·tier·발화시점 INS02 z 등록, idempotent — 재실행 register 0·update N) / ② 익월 실현위험 append(완료된 fading/SAFE 홀딩월만 — Ret_1m 동월 실현=prod(1+Ret)-1 per Ticker×월 R40-identical → downside=mean(r<0)·tail=P(r<-0.15)·vol=sd. 당월/미래월 pending) / ③ mso auto-clear 로그(active 트랙이 현 홀딩월 fired에서 사라짐=mso 1→2 → cleared_log, R40 transient horizon 실증)",
+    "oos_baseline": "R40(WT_D20260715_009): OFF tail 7.9% · protection 창 h0 5.2%·h1 3.5%(<baseline, 집중) · h2 12.3%·h3 10.5%(baseline 복귀). protection 창(mso∈{0,1}) 실현 tail-hit 누적이 baseline 7.9% 미만이면 라이브 protection 재현 — 표본 축적 전 판정 금지·자동조치 없음(도훈 재료)",
+    "non_capital": "monitoring 배관 · 자본/sizing 아님 (R34 cohort-path 분산 아티팩트 불변). per-holding track/observations only"
+  },
+
+  "data_hygiene_finding": {
+    "issue": "★live rawdata(.cache/rawdata.parquet) 전역 Ret max=66999(물리 불가능=오염) 실측 — R42 진단 _r42_ret_scale_diag_log.txt. R40 pin(rawdata_r9_pin_20260715.parquet)도 동일 vintage(byte-동일 stats).",
+    "mitigation": "writer 실현-append에 KR ±30% 가격제한 가드(RET_LIMIT=0.31, |일간 Ret|>0.31 제거) 추가 — 물리 불가능 오염(66999류)만 제거, 정당 limit-bound 이동 보존. n_days_dropped_contamination 기록.",
+    "not_over_flagged": "A011070(LG이노텍) 202605 일간 이동은 전부 ≤+28.6%(<±30% 제한 내)이라 가드 미제거 — 2025-2026 반도체 megacap 레짐서 정당 가능(reference-kr-2025-megacap-semi-regime: '수치 커서 오염 단정 금지'). 오염≠큰-이동 구분.",
+    "residual_gate": "익월 1차 실현 obs는 source_verified=FALSE — R40 production-basis(uni$Ret_1m, production_parity_verified) cohort 스팟체크로 정합 확인 후 TRUE(§7b). OOS 판정은 검증 후.",
+    "impact_on_initial_reg": "없음 — 초기 실행선 realized append 미실행(202607 미완결). 등록 2건은 실현수익 무관(발화 메타만)."
+  },
+  "verification_current_book": {
+    "holding_ym": 202607,
+    "latest_signal": "2026-06-30 (PIT-clean)",
+    "panel_stale": false,
+    "n_registered_this_run": 2,
+    "n_active": 2,
+    "n_cleared": 0,
+    "n_observations": 0,
+    "registered_firings": [
+      {"track_id": "A011070@202607", "ticker": "A011070", "name": "LG이노텍", "status_at_firing": "SAFE_FADING", "firing_holding_ym": 202607, "firing_mso": 1, "clears_at_mso": 2, "tier": "MID_OTHER", "tier_confidence": "robust_midcap", "ins02_z_at_firing": 0.912, "ins02_z_prev": 0.998, "state": "active", "observations": 0, "realized": "pending (홀딩월 202607 미완결 — 익월 202608 append 예정)"},
+      {"track_id": "A004170@202607", "ticker": "A004170", "name": "신세계", "status_at_firing": "SAFE_FADING", "firing_holding_ym": 202607, "firing_mso": 1, "clears_at_mso": 2, "tier": "MID_OTHER", "tier_confidence": "robust_midcap", "ins02_z_at_firing": 0.912, "ins02_z_prev": 0.998, "state": "active", "observations": 0, "realized": "pending (홀딩월 202607 미완결 — 익월 202608 append 예정)"}
+    ],
+    "oos_rollup": {"n_protection_window": 0, "realized_tail_hit_rate": null, "baseline_off_tail": 0.07946, "confirms_protection": null, "status": "pending (익월부터 — 현 발화 홀딩월 미완결)"},
+    "idempotency_verified": "2차 실행 register 0 · update 2 (재발화 아님 — 기존 active episode 갱신)",
+    "json_well_formed": "TRUE (fromJSON 파싱 + required 13 top-level 필드 present + per-track 필드 present + ASSERT PASS: 현 SAFE_FADING 2건 mso=1 MID_OTHER 등록)",
+    "verify_scripts": "stage_artifacts/WT_D20260715_011/_validate_live_track.R + _r42_validate_log.txt"
+  },
+
+  "constraints_respected": "book_state/05_Production/outputs.ramp 무변경(monitoring 배관만). DART API 금지. insider 패널 재사용(재빌드 없음). 텔레그램 발송 없음(배관 태스크). cov/weights 미산출(역할경계). §7b clean base. 단일스레드·arrow io(2)·OneDrive temp-rename. 초기 실행선 rawdata 미로드(need_ret 공집합 — 완료월 부재).",
+  "consumer_surfaces": [
+    "⑤monitoring: insider_safe_live_track.R 실배선(발화 register·완료 홀딩월 실현위험 append·mso auto-clear 로그) + monitoring_init.md Part C-live + metrics_computation flag. 월간·보고만·자동조치 없음",
+    "⑧위험감시: protection 창(mso∈{0,1}) 실현 tail-hit OOS 누적 vs R40 baseline(OFF 7.9%·h0-1 예측) — 라이브 protection 재현 대조 배관. per-holding track. 자본/sizing 아님"
+  ],
+  "next_probes": [
+    "익월(202608) 1차 실현위험 관측: LG이노텍·신세계 h1 창(mso=1) 202607 홀딩월 Ret_1m tail-hit을 R40 baseline OFF 7.9%·h1 예측 3.5%와 대조 + mso 1→2 auto-clear 실증(R40 transient horizon). feasible now(익월 rawdata 완결 시).",
+    "부실 tripwire coverage 확장 (FQ-053 P2 / FQ-038 결합) — catastrophic exit(투자가능 유니버스 0.9%)은 pre-filter small-cap 진성폐지 집중. SAFE_FADING이 구조적으로 놓치는 소관을 R22~R25 부실 라인과 정합.",
+    "catastrophic-exit 경계 명시 tripwire 형식화 (R39 P3 승계) — benign 98.3%/catastrophic 0.9% 경계를 execution 유니버스이탈 감지와 명시 우선순위 규칙으로 형식화 검토."
+  ],
+  "layer_bottleneck": "⑧위험모델/감시 (insider SAFE_FADING live OOS 추적 배관 활성화) — 성과 병목 아님(위생 배관). insider 라인 R9~R42 monitoring 소비면 확립 완료·자본 미검 불변.",
+  "book_state_unchanged": true,
+  "production_unchanged": true,
+  "outputs_ramp_unchanged": true,
+  "artifacts": {
+    "writer": "02_Infrastructure/reports/insider_safe_live_track.R",
+    "output_json": "qepm/observability/insider_safe_live_track.json",
+    "monitoring_init": "02_Infrastructure/prompts/monitoring_init.md (Part C-live + metrics_computation + output_schema)",
+    "verify": "stage_artifacts/WT_D20260715_011/_validate_live_track.R + _r42_validate_log.txt",
+    "close_round": "stage_artifacts/WT_D20260715_011/_close_r42.R + _r42_close_log.txt + .cache/last_round_closure.json",
+    "l_code": "stage_artifacts/l_code/ramp/l_code_R42_insider_safe_live_track_wiring.json (L-RAMP-20260715_055418)",
+    "layer_map": "06_Registry/layer_bottleneck_map.md (⑧ 행 v15)",
+    "frontier_queue": "06_Registry/alpha_frontier_queue.json (FQ-053 P2 armed→active)"
+  },
+  "generated_at": "2026-07-15"
+}
