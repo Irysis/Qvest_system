@@ -43,6 +43,10 @@
 ## §7 Vintage Pinning (2026-07-03 도훈 confirm, 아키텍처 감사)
 - **HARD 게이트 판정·다중라운드 A/B 산출은 `pin_cache`(`02_Infrastructure/data/pin_cache.R`)로 고정된 스냅샷 기준**으로 수행하고, **pin tag를 산출물에 기록**한다. 근거: 세션 중 캐시 재생성이 판정 tipping 유발 실사고 ([[project-cache-vintage-pinning]] — benchmark 재생성으로 F5 SR 2.224→2.161).
 
+## §7b Incumbent Base 권위 = Production 코드 (2026-07-14 도훈 mandate — "production 폴더의 현 PG2 코드를 기준으로")
+- **book/incumbent 비교 측정의 base는 `05_Production` 현행 코드 경로(read-only 실행, T-1 convention)에서 파생한 신호만 권위.** 파생 저장 패널(예: `alpha_scores_str1715_268m.parquet`) 재사용 금지 — 07-14 실사고: 저장 패널이 전기간 동월 vintage(~1개월 look-ahead)로 PORT_t 2.08× 부풀림(R28 적발·R29 judge-급 확정), R26/R27 판정 이중 반전 유발. clean 재빌드 패널도 **production 코드 실산출과의 parity 검증(`production_parity_verified` 라벨)** 후에만 base로 소비 가능.
+- placebo·lag-stress는 candidate 무결성만 시험 — **base 패널 vintage 오염 검거 도구 = vintage-swap 통제 + window-matched control** (메모리: project-stored-panel-samemonth-lookahead).
+
 ## 참조
 - `.claude/rules/backtest-contract.md`(10-component) / `pit.md` / `research_philosophy.md`(④⑤⑥) / `answer-principles.md`(자체합성 금지)
 - `02_Infrastructure/contracts/{backtest_result_contract,canonical_screen_bt,registry_writer}.R` · `hooks/discovery_graduation_gate.sh` · `portfolio/portfolio_governor.R`
