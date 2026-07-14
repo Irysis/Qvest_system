@@ -1,0 +1,197 @@
+{
+  "task_id": "WT-D20260714_003",
+  "candidate": "Z6_zblend_V14_V07_w0.30",
+  "as_of_date": "2026-03-31",
+  "producer": "risk-research (Opus 4.8)",
+  "consumed_alpha": "alpha_package.json (WT-D20260714_003)",
+  "exposure_matrix_ref": "stage_artifacts/WT_D20260714_003/exposure_matrix.parquet",
+  "factor_covariance_ref": "stage_artifacts/WT_D20260714_003/factor_covariance.parquet",
+  "specific_risk_ref": "stage_artifacts/WT_D20260714_003/specific_risk.parquet",
+  "security_covariance_ref": "stage_artifacts/WT_D20260714_003/covariance.parquet",
+  "covariance_alt_ref": "stage_artifacts/WT_D20260714_003/covariance_ledoitwolf_alt.parquet",
+  "tail_risk_ref": "stage_artifacts/WT_D20260714_003/tail_risk.json",
+  "selection_objective": "condition_number",
+  "covariance_structure": "Sigma = B*Omega*B' + D (factor model: MKT,SMB,HML,WML,BAB)",
+  "method_shopping_log": {
+    "candidates_tried": 4,
+    "method_log": [
+      {
+        "name": "sample",
+        "condition": 170.3,
+        "mineig": 0.000873,
+        "psd": true,
+        "selected": false
+      },
+      {
+        "name": "ledoit_wolf_const_corr",
+        "condition": 39.9,
+        "delta": 0.753,
+        "psd": true,
+        "selected": false
+      },
+      {
+        "name": "gerber_rmt",
+        "condition": 184.6,
+        "mineig": 0.00112,
+        "psd": true,
+        "selected": false
+      },
+      {
+        "name": "factor_model_BOmegaBt_D",
+        "condition": 31.3,
+        "factor_coverage_pct": 84.2,
+        "psd": true,
+        "selected": true
+      }
+    ]
+  },
+  "risk_summary": {
+    "top_common_risks": [
+      "MKT (74.2%)",
+      "Specific (15.8%)",
+      "BAB (5.9%)",
+      "SMB (4.1%)"
+    ],
+    "factor_coverage_pct": 84.2,
+    "sector_hhi": 0.098,
+    "n_sectors": 14,
+    "n_effective_names": 25,
+    "portfolio_ew_market_beta": 0.835,
+    "crowding_flags": [],
+    "crowding_score_per_factor": [
+      {
+        "factor_name": "Composite_Incumbent",
+        "crowding_score": 0.375,
+        "hhi_top": 0.417,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 1,
+        "demand_elasticity_proxy": 0,
+        "alert": "none"
+      },
+      {
+        "factor_name": "Value_zblend",
+        "crowding_score": 0.278,
+        "hhi_top": 0.095,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 1,
+        "demand_elasticity_proxy": 0,
+        "alert": "none"
+      },
+      {
+        "factor_name": "Candidate_alpha_blend",
+        "crowding_score": 0.375,
+        "hhi_top": 0.417,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 1,
+        "demand_elasticity_proxy": 0,
+        "alert": "none"
+      }
+    ],
+    "liquidity_flags": [],
+    "stress_tests": {
+      "market_down_5_betaimplied": -0.0417,
+      "COVID_2020": {
+        "cum_ew_ret": -0.1542,
+        "coverage": 0.88,
+        "reliable": true
+      },
+      "RateHike_2022": {
+        "cum_ew_ret": -0.2527,
+        "coverage": 1,
+        "reliable": true
+      },
+      "GFC_2008": {
+        "cum_ew_ret": -0.4405,
+        "coverage": 0.56,
+        "reliable": false,
+        "note": "UNRELIABLE: 56% coverage (holdings post-date 2008 — partial-listing artifact, not policy breach)"
+      }
+    }
+  },
+  "style_analysis_vs_STR1715": {
+    "note": "monthly OLS betas on KR FF-proxy(MKT,SMB,HML)+WML(mom)+BAB. HML/WML from LS tercile spreads; RMW/CMA proxied-omitted (see challenge_note).",
+    "candidate": {
+      "MKT": 0.844,
+      "SMB": 0.344,
+      "HML": 0.268,
+      "WML": 0.323,
+      "BAB": -0.002,
+      "R2": 0.665,
+      "alpha_mo.(Intercept)": 0.019
+    },
+    "STR1715_vanilla": {
+      "MKT": 0.888,
+      "SMB": 0.417,
+      "HML": 0.106,
+      "WML": 0.401,
+      "BAB": -0.083,
+      "R2": 0.724,
+      "alpha_mo.(Intercept)": 0.006
+    },
+    "base_score_eff": {
+      "MKT": 0.852,
+      "SMB": 0.349,
+      "HML": 0.04,
+      "WML": 0.411,
+      "BAB": -0.019,
+      "R2": 0.671,
+      "alpha_mo.(Intercept)": 0.017
+    },
+    "key_diff": "candidate HML 0.268 vs STR1715 0.106 vs base 0.040 = intended value 3rd-axis tilt realized"
+  },
+  "correlation_vs_incumbent": {
+    "signal_cor_alpha_blend_vs_score_eff": 0.924,
+    "signal_cor_value_z_vs_score_eff": -0.077,
+    "realized_cor_candidate_vs_STR1715_total": 0.865,
+    "realized_cor_candidate_vs_STR1715_active": 0.668,
+    "realized_cor_candidate_vs_base_active": 0.926,
+    "alpha_pkg_ref_cor_active_vs_base": 0.7884,
+    "interpretation": "candidate signal ~= incumbent (0.92) + orthogonal value axis (value_z vs score_eff = -0.08). realized active co-movement vs STR1715 vanilla = 0.67 => modest but real diversification; marginal edge = value(HML) exposure incumbent lacks."
+  },
+  "regime_correlation": {
+    "all": 0.22,
+    "crisis_bottom15_mkt": 0.108,
+    "normal": 0.157,
+    "shift": -0.049,
+    "caveat": "crisis<normal is small-sample sensitive (holdings post-date most 2005-2015 crises; few full-coverage crisis months). TDC (0.29) is the more robust co-crash measure.",
+    "ref": "stage_artifacts/WT_D20260714_003/regime_correlation.parquet"
+  },
+  "diagnostics": {
+    "condition_number": 31.3,
+    "condition_number_before_after": {
+      "sample": 170.3,
+      "factor_model_selected": 31.3,
+      "ledoit_wolf_alt": 39.9
+    },
+    "psd_verified": true,
+    "min_eigenvalue": 0.0033,
+    "shrinkage_used": true,
+    "shrinkage_method": "factor_model_structural + LW(delta=0.75) alternative",
+    "ledoit_wolf_delta": 0.753,
+    "ledoit_wolf_avg_corr": null,
+    "tdc_summary": {
+      "mean_lower_tdc_q10": 0.291,
+      "p90": 0.464
+    },
+    "hill_tail_index": 2.68,
+    "evt_gpd_xi": 0.187,
+    "ir_estimate_candidate_active": 1.755,
+    "regime_correlation_ref": "stage_artifacts/WT_D20260714_003/regime_correlation.parquet",
+    "covariance_vintage": {
+      "rawdata_mtime": "2026-07-14 07:15:15.725826",
+      "pin": "unpinned_main_cache"
+    },
+    "factor_correlation_warnings": []
+  },
+  "red_flags": {
+    "RF-R1": "HIGH: top common risk MKT (74.2%) > 40% — structural KR long-only market-beta dominance (β_EW=0.83), not ill-conditioning. exposure bound = optimizer scope.",
+    "RF-R5b": "MEDIUM: tail-dependence p90=0.46 (mean 0.29 < 0.30 target OK, but high-pair co-crash clustering exists)"
+  },
+  "challenge_flags": [
+    "TEMPLATE UNSUBSTITUTED: spawn passed WT-MISSING/CAND/lockbox-2023-12-22 placeholders. Resolved WT->WT-D20260714_003 & CAND->Z6_zblend_V14_V07_w0.30 by matching consumed alpha_package. lockbox 2023-12-22 NOT applied (conflicts with alpha as_of 2026-03-31; applying would discard 27m recent-regime data = anti-PIT-informative). Surfaced not silently defaulted. See challenge_note_risk.md.",
+    "RF-R1 market 74% of common variance: structural KR long-only β-floor (EW β=0.835), not a covariance defect. Reported for optimizer exposure-bounding, no override of alpha.",
+    "Marginal diversification limited: candidate active-cor vs STR1715 vanilla = 0.67 (vs base 0.93). Real value(HML) tilt exists but portfolio co-moves strongly with incumbent — book-marginal ΔIR (alpha=0.48) is the binding evidence, not covariance orthogonality."
+  ],
+  "scope_note": "Risk diagnosis only (Sigma + tail + stress + crowding + style). No alpha modification, no weights, no MVO. Exposure bounds (RF-R1) = optimizer scope (recommendation only).",
+  "metric_type": "risk_diagnostic (estimated)"
+}

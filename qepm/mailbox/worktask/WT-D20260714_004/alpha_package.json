@@ -1,0 +1,69 @@
+{
+  "task_id": "WT-D20260714_004",
+  "as_of_date": "2026-07-14",
+  "forecast_horizon": "1M",
+  "wt_type": "discovery (book-enhancement pruning screen — 진단 전용, book_state 무변경)",
+  "frontier_id": "FQ-041",
+  "hypothesis_title": "R28 FQ-041 — C06_TP_Gap frozen-book pruning 검증 (R26 P1 settle)",
+  "selection_objective": "canonical_port_t",
+  "verdict": "CONFIG_SCOPED_NEGATIVE (C06 pruning book-marginal 자본 미검증) + HIGH-severity look-ahead 발견 (Q-Lead/도훈 escalate)",
+  "alpha_vector": null,
+  "alpha_vector_note": "screen/decision-material — deployment 아님. book_state 무변경. C06 제거 실편입 시 QEPM 6-agent + 도훈 수동.",
+  "confidence_vector": null,
+  "base_incumbent": {
+    "id": "STR_1715_on_M4_R05_noLayer4_PG2",
+    "stored_panel_direct_capw_port_t": 5.241,
+    "PIT_clean_capw_port_t_off0": 3.058,
+    "PIT_clean_ic_theta_off0": 3.247,
+    "note": "stored 268m 패널 = same-month(look-ahead) vintage(parity 0.913). PIT-clean(T-1)=production _recompute convention."
+  },
+  "factor_specs": [
+    {
+      "factor_family": "Consensus/Analyst",
+      "proxy": "C06_TP_Gap (target-price gap, analyst)",
+      "role": "SLEEVE_CORE 4번째(제거 후보)",
+      "economic_rationale": "애널리스트 목표주가 대비 갭 = 재평가 momentum. vintage-noisy(consensus 재추정) — R26 recon 최약 core 슬롯 flag.",
+      "redundancy_cluster_id": "consensus_revision (core 내 SUE/EPS-chg family와 축 인접)",
+      "references": ["Brav-Lehavy 2003 target price"],
+      "result": "PIT-clean 제거효과 paired IS 0.85/HO 1.13(sub-significant). production IC-theta에서 이미 self-deweight(가중 0~0.05)=near no-op. R26 IS-positive(2.45)=look-ahead 아티팩트."
+    },
+    {
+      "factor_family": "Consensus (필수, 제거금지)",
+      "proxy": "C02_EPS_Chg_1m",
+      "role": "SLEEVE_CORE 필수축",
+      "economic_rationale": "1개월 EPS 컨센 변화 momentum — book 핵심.",
+      "redundancy_cluster_id": "consensus_revision",
+      "references": ["Chan-Jegadeesh-Lakonishok 1996"],
+      "result": "제거 시 book 붕괴(R26 paired -7.09). 본 라운드 미변경(C06만)."
+    }
+  ],
+  "diagnostics": {
+    "canonical_port_t_nw_lag3": 3.058,
+    "canonical_port_t_note": "off=0(T-1, PIT-clean) stored-theta 7F cap-w top-25. stored 패널 직접=5.241(look-ahead 오염). production ic-theta off=0=3.247.",
+    "canonical_n_months": 268,
+    "c06_pruning_paired_is_clean": 0.850,
+    "c06_pruning_paired_ho_clean": 1.133,
+    "c06_pruning_paired_is_production_ictheta": 0.303,
+    "lookahead_inflation_ratio": 2.085,
+    "parity_stored_basis_off1": 0.9132,
+    "parity_clean_basis_off0": 0.6115,
+    "oos_retention_clean_capw": 0.167,
+    "post2017_t_clean_capw": 0.51,
+    "ewuni_port_t_clean": 3.77,
+    "ic_contemporaneous_t": 4.74,
+    "ic_forward_plus1_t": 5.92,
+    "turnover_annual": 13.7
+  },
+  "challenge_flags": [
+    "HIGH: 저장 268m frozen 백테 패널 = same-month(M-end) factor vintage → 1개월 factor look-ahead 의심. controlled PORT_t 2.1× inflation(factor_db 월만 변경). production forward recompute는 PIT-clean(T-1). judge/PIT 검증 + live NAV corroborate 권고. (단정 아님, escalate.)",
+    "C06 pruning은 PIT-clean 기준 자본개선 미검증(paired IS 0.85/HO 1.13 sub-significant). R26 recon IS-positive(2.45)=look-ahead 아티팩트, holdout 붕괴(-0.60)=recon-proxy 아티팩트.",
+    "production IC-theta에서 C06는 이미 self-deweight(가중~0)=near no-op. book 위생상 제거 무해하나 자본개선 아님.",
+    "nuance(over-claim 방지): stored 패널 clean-forward IC t=5.92 → 알파 진위 실재. look-ahead는 top-25 cap-w PORT_t magnitude 국한.",
+    "parity gate: stored-basis(off=+1) 0.913≥0.90 통과 → 발화 자격. off=0(clean)은 독립 PIT 측정."
+  ],
+  "next_probe": [
+    "P1(escalate): judge/PIT-agent가 stored 268m 패널 vintage seam 검증(historical same-month vs forward recompute T-1 1개월 불일치) + true admission PORT_t 재산출(clean ~3.1) + live NAV corroborate.",
+    "P2: production 파이프라인 재빌드 시 clean(T-1) convention 통일. C06는 IC-theta self-deweight로 명시 제거 무해(near no-op)."
+  ],
+  "method_shopping_log": {"candidates_tried": 1, "selection_type": "chain (n_trials=1, 단일 구성 C06 제거)", "method_log": [{"name":"C06_removal_frozen_recon", "basis":"off0/off1 x stored/ic theta robustness(전수, argmax 없음)", "selected": true}]}
+}

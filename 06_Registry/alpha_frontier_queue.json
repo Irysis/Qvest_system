@@ -820,8 +820,11 @@
       "wall_check": "C02_EPS_Chg_1m 필수(제거 시 book 붕괴 -7.09)—절대 제거 금지. frozen 재구축=production 경로, book_state 무변경, 도훈 confirm 후.",
       "data_gate": "없음(로컬: factor_db + _recompute_alpha_asof.R)",
       "owner": "Q-Lead",
-      "status": "frontier_open",
-      "next_action": "_recompute SLEEVE_CORE={C01,C02,C04}(C06 제거) 268m → canonical PORT_t + holdout falsification vs base",
+      "status": "config_scoped_negative",
+      "next_action": "SETTLED R28(2026-07-14 L-AR-20260714_164238): C06 pruning=PIT-clean 미검증(paired IS 0.85/HO 1.13)+production ic-theta self-deweight near no-op. R26 IS-positive=look-ahead 아티팩트. ★부수 escalate: 저장 268m 패널 same-month(look-ahead) vintage(PORT_t 2.1x inflation)→judge/PIT 검증 권고(FQ-044 신규).",
+      "result": "R28 완료 2026-07-14. frozen 재구축 parity: off=+1(same-month) 0.913(R26 fid 재현)/off=0(T-1 production) 0.612. C06 counterfactual PIT-clean(off=0): paired IS 0.850/HO 1.133 미달, production ic-theta IS 0.303 near no-op(C06 IC-theta self-deweight~0). look-ahead basis(off=+1)에서만 통과=오염. 판정 CONFIG_SCOPED_NEGATIVE + look-ahead 발견(controlled PORT_t 2.08~2.18x, factor_db 월만 변경). nuance: clean-forward IC t=5.92>contemp 4.74=알파 진위, look-ahead는 top-25 cap-w magnitude 국한. live/forward=PIT-clean.",
+      "result_lcode": "L-AR-20260714_164238",
+      "result_artifacts": "stage_artifacts/WT_D20260714_004/ (verdict/alpha_validation/challenge_note/recon_panels/paired_results/parity_summary/dualbasis_oos/lookahead_confirm/charts)",
       "source_refs": [
         "parent: FQ-039 R26 L-AR-20260714_153519",
         "method: _recompute_alpha_asof.R"
@@ -857,6 +860,23 @@
       "source_refs": [
         "parent: FQ-040 R27",
         "memory: project-cache-vintage-pinning(측정 배관 트랩 계열)"
+      ]
+    },
+    {
+      "id": "FQ-044",
+      "lane": "infra_integrity",
+      "title": "★HIGH: 저장 268m frozen 백테 패널 factor vintage look-ahead 검증 (R28 escalate)",
+      "hypothesis": "R28이 저장 alpha_scores_str1715_268m 패널 = same-month(M-end) factor_db vintage(parity 0.913, R26 fid 재현)로 구축됨을 발견. production forward recompute(_recompute_alpha_asof.R)는 T-1(clean). controlled 비교(factor_db 월만 변경) top-25 cap-w PORT_t 2.08~2.18x inflation(clean 3.06 vs same-month 6.38, 저장 직접 5.24). admission PORT_t(5.324)가 동월 vintage로 ~2x 부풀려졌는가.",
+      "ev_rationale": "book 자본판정 근거(historical PORT_t)의 무결성 이슈. 3축 근거(parity 0.913 · factor_db 내부 Date=M-end+load_month_factors same-month매핑 · controlled 2.1x). 단 nuance: stored 패널 clean-forward IC t=5.92>contemp 4.74 → 알파 진위 실재, look-ahead는 top-25 cap-w magnitude 국한. live/forward=PIT-clean이라 live는 backtest 하회 예상.",
+      "wall_check": "판정 아닌 검증 권고(확정 아님). historical(same-month) vs forward recompute(T-1) 1개월 seam 귀속 미확정(panel 구성 vs measurement 매핑) — judge/PIT-agent 검증 필요. book_state 무변경.",
+      "data_gate": "없음(로컬: alpha_scores_str1715_268m + factor_db + _recompute)",
+      "owner": "Q-Lead → judge/PIT-agent escalate (도훈 인지)",
+      "status": "escalated_open",
+      "next_action": "judge/PIT-agent: (1) stored 패널 vintage seam 확정 + true admission PORT_t 재산출(clean~3.1) (2) live NAV로 backtest 하회 corroborate (3) production 재빌드 시 clean(T-1) convention 통일 권고. FQ-043(screen-time value merge)와 구분 — 본건은 core factor 패널 vintage.",
+      "source_refs": [
+        "parent: FQ-041 R28 L-AR-20260714_164238",
+        "method: alpha_scores_str1715_268m vs _recompute_alpha_asof.R off=0/+1 controlled",
+        "related: FQ-043(screen-time ym-정렬), memory: reference-book-benchmark-alignment-realized-ym"
       ]
     }
   ]

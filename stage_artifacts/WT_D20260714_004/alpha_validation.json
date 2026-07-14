@@ -1,0 +1,59 @@
+{
+  "task_id": "WT-D20260714_004",
+  "frontier_id": "FQ-041",
+  "as_of_date": "2026-07-14",
+  "metric_type": "canonical_screen (weighted_screen_bt cap-w top-25, NW lag-3) — admission binding 아님(forge authoritative)",
+  "verdict": "CONFIG_SCOPED_NEGATIVE (C06 pruning book-marginal 자본) + HIGH-severity look-ahead 발견(escalate)",
+  "parity_gate": {
+    "challenge_1": "7F recon vs stored score_eff median cross-sectional cor",
+    "off_plus1_samemonth_stored_theta": 0.9132,
+    "off_plus1_samemonth_ic_theta": 0.9196,
+    "off_0_T1_stored_theta": 0.6115,
+    "off_0_T1_ic_theta": 0.6330,
+    "conclusion": "stored 268m 패널 = same-month factor_db(off=+1) vintage(parity 0.913, R26 fid 0.914 재현). off=0(T-1)=production _recompute convention. stored-basis(off=+1)≥0.90 gate 통과 → 발화 자격. off=0은 독립 PIT-clean 측정(stored 재현 주장 안 함)."
+  },
+  "c06_counterfactual_paired": {
+    "definition": "paired NW-t(lag3) of (6F minus 7F net-active), positive=C06 제거가 도움. IS return-month<=2024-06 (247m) / holdout 2024-07..2026-04 (21m)",
+    "off0_stored_theta_PITclean":  {"port_t7":3.058, "port_t6":3.498, "paired_is":0.850, "paired_ho":1.133, "paired_full":1.094, "dIR":0.079, "verdict":"미달(IS·HO<2.0)"},
+    "off0_ic_theta_production":    {"port_t7":3.247, "port_t6":3.307, "paired_is":0.303, "paired_ho":null, "dIR":0.006, "verdict":"near no-op (C06 IC-theta self-deweight ~0)"},
+    "off1_stored_theta_lookahead": {"port_t7":6.376, "port_t6":7.641, "paired_is":3.337, "paired_ho":2.027, "paired_full":3.510, "dIR":0.275, "verdict":"통과하나 look-ahead 오염 basis (자본 판정 무효)"},
+    "off1_ic_theta_lookahead":     {"port_t7":6.922, "port_t6":7.095, "paired_is":1.946, "paired_ho":null, "dIR":0.045, "verdict":"near no-op"},
+    "primary_criterion": "paired IS>=2.0 AND holdout>=2.0 AND dIR>=0.05 (PIT-clean basis)",
+    "primary_result": "FAIL — clean basis(off=0) IS 0.85/0.30, HO 1.13. C06 pruning 자본개선 미검증.",
+    "r26_reconciliation": "R26 recon IS-positive(paired 2.45)는 same-month(look-ahead) vintage 아티팩트(off=+1에서만 재현). R26 recon holdout 붕괴(-0.60)는 remove-only recon-proxy 아티팩트 — frozen renorm 재구축선 재현 안 됨(clean HO +1.13, LA HO +2.03)."
+  },
+  "lookahead_finding": {
+    "severity": "HIGH — Q-Lead/도훈 escalate, judge/PIT 검증 권고 (확정 아님)",
+    "controlled_inflation": {"stored_S7": 2.085, "stored_S6": 2.184, "ic_S7": 2.132, "ic_S6": 2.145, "note": "off=0(T-1)→off=+1(same-month) PORT_t 배율, factor_db 월만 다름"},
+    "stored_panel_direct_port_t": 5.241,
+    "evidence_3axis": [
+      "parity: stored=same-month(M-end) factor_db 0.913 / production=T-1",
+      "factor_db 내부 Date=M-end(2015-06-30) + load_month_factors same-month 매핑 → same-month data로 month-M 수익 예측=look-ahead",
+      "controlled PORT_t 2.1× (오직 factor_db 월 변경)"
+    ],
+    "nuance_no_overclaim": "stored 패널 clean-forward(M-end→M+1) rank-IC t=5.92 > contemporaneous(M-end→M) t=4.74 → 알파 자체는 진짜 forward 예측력. look-ahead는 top-25 cap-w PORT_t magnitude 부풀림 국한. live/forward recompute는 PIT-clean(T-1).",
+    "implication": "admission backtest PORT_t(5.324)는 동월 vintage로 top-25 cap-w ~2× 부풀림. PIT-clean ~3.1. historical(same-month) vs forward recompute(T-1) 1개월 vintage seam. live는 backtest 하회 예상."
+  },
+  "dual_basis_M2": {
+    "note": "cap-w HARD authoritative + EW-uni 진단 병기. clean cap-w post-2017 감쇠 상당부분=mega-cap 벤치 아티팩트.",
+    "off0_stored_S7": {"capw_port_t":3.06, "capw_oos":0.167, "capw_post2017_t":0.51, "ewuni_port_t":3.77, "ewuni_oos":1.16, "ewuni_post2017_t":1.21},
+    "off0_stored_S6": {"capw_port_t":3.50, "capw_oos":0.408, "capw_post2017_t":1.25, "ewuni_port_t":2.28, "ewuni_oos":1.66, "ewuni_post2017_t":1.78},
+    "off0_ic_S7":     {"capw_port_t":3.25, "capw_oos":0.324, "capw_post2017_t":0.90, "ewuni_port_t":2.08, "ewuni_oos":1.38, "ewuni_post2017_t":1.53}
+  },
+  "universe_comparison": {
+    "note": "본 라운드는 KR_top342(default) 단일 유니버스. universe v2(KR_TOP500_FREEFLOAT) 비교는 미수행 — ICIR attenuation 진단이 아닌 book-marginal pruning 검증이라 mandate 대상 아님. cost_model v2.4_kr_retail_15bps.",
+    "universe": "KR_top342", "cost_model_version": "v2.4_kr_retail_15bps"
+  },
+  "ic_corroboration": {
+    "contemporaneous_M_rank_ic_mean": 0.0476, "contemporaneous_M_ic_t_nw3": 4.74,
+    "forward_plus1_rank_ic_mean": 0.0436, "forward_plus1_ic_t_nw3": 5.92,
+    "reading": "clean-forward IC(t=5.92) >= contemporaneous(t=4.74) → 알파 forward 예측력 실재. look-ahead 이득은 top-25 tail cap-w PORT_t에 집중(broad IC 아님)."
+  },
+  "governance": "book_state 무변경. 결과=도훈 결정 재료. n_trials=1(chain, sweep 게이트 부적용). C02_EPS_Chg_1m 절대 제거 금지 준수(본 라운드 C06만).",
+  "pin_tag": "R28_current_20260714 (factor_db 캐시 현행 vintage, factor_ic_monthly Jun30)",
+  "artifacts": [
+    "recon_panels.parquet (271m x 8 variant score cols)",
+    "screen_results.rds", "paired_results.parquet", "parity_summary.parquet",
+    "dualbasis_oos.parquet", "lookahead_confirm.parquet", "charts/ (4 png)"
+  ]
+}
