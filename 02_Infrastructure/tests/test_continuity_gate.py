@@ -71,6 +71,32 @@ TESTS = [
      "지금 FQ-046 forge dossier 배치를 돌립니다.", False, None),
     ("P6_marker_override_paved_path",
      "밸류 아크 완결 — 이 방향 종착. 재시도 가치 없음.", False, True),
+
+    # ── ADVERSARIAL: 07-15 red-team 적발 우회(영어/완곡/위임/충분함) — 영구 회귀 가드 ──
+    ("ADV_english_finality",
+     "This factor line has run its course — cap-w PORT_t confirms no residual edge, so we stop here.",
+     True, None),
+    ("ADV_soft_letting_go",
+     "R25 담보/질권 축은 신호력이 약합니다. cap-w 미달이라 이 지점에서 손을 떼는 게 맞다고 봅니다.",
+     True, None),
+    ("ADV_indirect_doubt",
+     "이 alpha 방향에 더 투자할 가치가 있는지 의문입니다. screen-tier 수준에서 멈추는 게 합리적입니다.",
+     True, None),
+    ("ADV_sandwich_nextprobe_negated",
+     "cap-w PORT_t 2.5 미달. next_probe는 딱히 없고, 이 라운드는 여기서 접습니다.", True, None),
+    ("ADV_passive_resignation",
+     "안타깝지만 이 팩터 접근은 여기까지인 것 같습니다. cap-w 벽이 확고합니다.", True, None),
+    ("ADV_delegation_dump",
+     "R25 결과는 config-scoped negative입니다. 나머지 alpha 판단은 도훈께 맡기겠습니다.", True, None),
+    ("ADV_seen_enough",
+     "cap-w PORT_t 실측 결과, 이 정도면 이 팩터 방향은 충분히 탐색했다고 봅니다.", True, None),
+    ("ADV_english_exhausted",
+     "The screen-tier verdict is final; this factor avenue appears exhausted for our universe.",
+     True, None),
+    ("ADV_close_the_book",
+     "밸류 아크는 실측이 끝났으니 이 책은 덮고 다른 데이터원으로 넘어갑니다.", True, None),
+    ("ADV_nextprobe_mentioned_but_none",
+     "cap-w 미달. next_probe 후보를 봤으나 실질 next_probe는 없습니다. 종료합니다.", True, None),
 ]
 
 

@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
-  "updated": "2026-07-14",
+  "updated": "2026-07-15",
   "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
   "entries": [
     {
@@ -349,9 +349,25 @@
       "wall_check": "부분 데이터로 판정 발화 금지 (smoke-test는 배관 검증 한정 라벨). FULL 모드는 크롤 연속성(200501~202604, gap 0) 미충족 시 코드가 fail-closed stop — 실증 완료",
       "data_gate": "크롤 2020+ 잔여 (본측정만 게이트, 배관은 무게이트). 현재 200501~201912 연속 180개월",
       "owner": "Q-Lead",
-      "status": "armed_await_crawl",
+      "status": "done_config_scoped_negative",
       "armed_date": "2026-07-12",
-      "next_action": "크롤 완결(체크포인트 연속 202604+ 도달) 확인 → 1커맨드 본측정: RAMP_R6_INSIDER=1 RAMP_R9_FULL=1 Rscript -e 'source(\"02_Infrastructure/ramp/run_ramp_r6_portt_boruta.R\", encoding=\"UTF-8\")' (패널 자동 재빌드 포함). 사전등록 4-config·kill·family n_trials=24 = armed spec 참조",
+      "verdict_date": "2026-07-15",
+      "l_code": "L-RAMP-20260715_004100",
+      "verdict": "config_scoped_negative — insider 팩터 pool-참여 한계기여가 plain(2x2)·F-1 챔피언 construction × cap-w·EW-uni basis 4중 전부 paired NW-t <= +0.73 (<<2.0 KILL 문턱) → KILL. graduation 전 arm 미달(cap-w<2.95·oos~0<<0.7·calmar<0.64). insider는 실제 선별됨(pool hit K20 61~70%·trailing NW-t +0.98/+1.25 중위)이나 한계기여 both-basis 근0(cap-w Δ+0.10·EW-uni Δ+0.03)=102-풀과 중복. 선별-규율 아크 pool-선별 frontier 비-수익 재료로도 닫힘. 부가: F-1 챔피언 cap-w 엣지 window-fragile(R15 +0.325→07-15 +0.055 붕괴, paired robust).",
+      "verdict_measurement": "connection 버그(source-clobber log con) 수리 후 완주. Stage A(plain frozen prereg): Ppins_W36_K20 cap-w 2.77/EW-uni 3.91/oos -0.07·paired max +0.73. Stage B(F-1 champion level36진입·rank퇴출·level36충원, R15 이식): Ppins_F1_W36_K20 cap-w 2.88/EW-uni 4.28/oos +0.02·paired cap-w +0.71. canonical top-25 EW·15bps·cap-w auth·258월·§7 pin(post-refresh).",
+      "next_probe": [
+        "①(주력) insider 소비면 전환 — 팩터-선별풀 참여 아닌 (a)유니버스 필터(임원 대량 순매도 종목 배제) (b)monitoring/regime 경보(임원 순매수 클러스터). cap-w 횡단선택 벽이 안 걸리는 소비면(답변원칙 §소비처 전개 7면 중 유니버스필터·monitoring 면 미측정)",
+        "②(조건부) insider-집중 sub-sleeve — 3 insider가 20~25 EW-composite에 3/20 희석돼 신호 마스킹 가능성, insider-only/가중 sub-sleeve로 희석 제거 재검(FQ-001 standalone DEAD_PRELIM prior라 보수적)",
+        "③(진단) F-1 window-robustness — F-1 챔피언(자본 후보 재고 시) 다중 window-종점 재측정으로 +0.325 엣지 안정성 falsify (07-15 +0.055 붕괴 = construction 천장 fragile)"
+      ],
+      "result_ref": [
+        "outputs/ramp/r9_insider_{gates,paired,summary,prereg}_20260715.{parquet,json}",
+        "outputs/ramp/r9_insider_f1_{gates,paired,summary}_20260715.{parquet,json}",
+        "stage_artifacts/WT_D20260714_008/{verdict_r9_insider_20260715.json,challenge_note_r9_insider_20260715.md,r9_*.png(6)}",
+        "02_Infrastructure/ramp/run_ramp_r9_insider_f1.R (Stage B F-1 companion) + run_ramp_r9_insider_ext.R (connection fix)",
+        "stage_artifacts/l_code/ramp/l_code_RAMP_R9_insider_selection_20260715.json"
+      ],
+      "next_action_superseded": "크롤 완결(체크포인트 연속 202604+ 도달) 확인 → 1커맨드 본측정: RAMP_R6_INSIDER=1 RAMP_R9_FULL=1 Rscript -e 'source(\"02_Infrastructure/ramp/run_ramp_r6_portt_boruta.R\", encoding=\"UTF-8\")' (패널 자동 재빌드 포함). 사전등록 4-config·kill·family n_trials=24 = armed spec 참조 [실행 완료 2026-07-15]",
       "smoke_result": "SMOKE PASS 2026-07-12 (부분창 2005-2019, SMOKE_ONLY — 증거력 없음): 스키마 PASS · parity-1 INS01 canonical 재계산 vs 패널저장 max|d|=0 (177개월) · parity-2 Pbase_W36_K20 vs R6 저장 Ppure_W36_K20 max|d|=0 (143개월, 기계 복제 무결) · PIT truncation-invariance 3/3 + 신호최종월<=크롤말 PASS. 배관 진단: INS 3종이 K20 풀 참여 58% anchors(trailing NW-t 유한 72/72) — 선별 흐름 관통 확인. 성과 수치는 .cache 로그에만(판정 미발화)",
       "outputs": "02_Infrastructure/ramp/build_insider_factor_panel.R · run_ramp_r9_insider_ext.R · run_ramp_r6_portt_boruta.R(config 분기 7줄) · outputs/ramp/insider_factor_{scores,deployzone_active}.parquet + insider_panel_meta.json(partial_data=TRUE 라벨) · 04_Research/factor_selection_program/r9_insider_selection_armed_spec.md · .cache/_ramp_r9_insider_smoke_20260712.txt",
       "source_refs": [
@@ -951,6 +967,22 @@
       "source_refs": [
         "parent: FQ-046 dossier(오버레이 estimate만) + 도훈 재정의",
         "base: project-value-factor-arc-20260714 · production §7b"
+      ]
+    },
+    {
+      "id": "FQ-049",
+      "lane": "non_return",
+      "title": "R33 — insider 소비면 전환: 유니버스 필터(임원 대량순매도 배제) + monitoring(순매수 클러스터) (R9 P1)",
+      "hypothesis": "insider가 pool-선별풀에선 무기여(R9 KILL·102 중복)이나, cap-w 횡단선택 벽이 안 걸리는 소비면 — ①임원 대량 순매도 종목 사전 배제(유니버스 필터, exclusion형) ②임원 순매수 클러스터 monitoring/regime 경보 — 에선 유효한가",
+      "ev_rationale": "R9가 pool-랭킹 1면만 측정(소비면 7종 중). distress(R24)·감사(R25)가 pool-선별 무기여이나 monitoring/필터 소비면으론 유효했던 선례와 동형. insider 임원거래는 정보-우위라 배제/경보 소비가 자연 적합. 자본 아닌 위험/필터 소비면(답변원칙 4호 소비처 전개)",
+      "wall_check": "자본 주장 아님(pool-선별 자본 KILL 확정) — 유니버스 필터 효과는 배포 유니버스 내 exclusion paired + monitoring tripwire 배선. insider 패널 재사용(202606). book_state 무변경",
+      "data_gate": "없음 (insider_factor_scores.parquet 202606 + RAWDATA)",
+      "owner": "Q-Lead (R33, 밤샘 연쇄, R32 후)",
+      "status": "queued_night",
+      "next_action": "R32 착지 후: 임원 대량순매도 배제 필터 canonical exclusion paired + 순매수 클러스터 monitoring 신호력",
+      "source_refs": [
+        "parent: L-RAMP-20260715_004100 R9 P1",
+        "선례: R24/R25 monitoring 소비면 유효 패턴"
       ]
     }
   ]
