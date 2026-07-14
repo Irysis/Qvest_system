@@ -1005,8 +1005,8 @@
       "wall_check": "monitoring tripwire(per-holding 안전 특성화)이지 자본/sizing 신호 아님 — R34 cohort-path 진단서 flag sub-basket MDD/vol 악화(분산 아티팩트) 확인 → sizing 배선 금지. book_state/05_Production 무변경. insider 패널 재사용·DART API X",
       "data_gate": "없음 (insider_factor_scores.parquet 202606 + production clean T-1 §7b + rawdata pin)",
       "owner": "Q-Lead (R34, 밤샘 연쇄, R33 후)",
-      "status": "measured_capability_established_wired",
-      "next_action": "완료(R34, 2026-07-15). 판정 capability_established: 북 보유 flag 종목 per-holding forward SAFE 확증(gap NW-t +2.50·restricted +2.68·하방 -7.6% vs -8.3%·급락<-15% 4.7% vs 7.0%·flagged 전량 MEGA/MID·lag1 robust +1.89). ★자본 아님: cohort-path MDD/vol flag 악화=분산 아티팩트(2.5 vs 22.5종). tripwire = filing_delay_watch.R Part C + monitoring_init.md 배선(부실=경보/순매수=안전, net-sell advisory only). 현 북 14보유 snapshot: NET_BUY_SAFE 0·NEUTRAL 11·NO_INSIDER_DATA 3 (armed·inactive). next_probe: P1 coverage 확장(INS02+INS03/breadth 완화) / P2 live SAFE 발화 OOS 추적 / P3 exit-timing 대칭 검정.",
+      "status": "measured_capability_established_wired__P2_coverage_expanded_R36",
+      "next_action": "완료(R34, 2026-07-15). 판정 capability_established: 북 보유 flag 종목 per-holding forward SAFE 확증(gap NW-t +2.50·restricted +2.68·하방 -7.6% vs -8.3%·급락<-15% 4.7% vs 7.0%·flagged 전량 MEGA/MID·lag1 robust +1.89). ★자본 아님: cohort-path MDD/vol flag 악화=분산 아티팩트(2.5 vs 22.5종). tripwire = filing_delay_watch.R Part C + monitoring_init.md 배선(부실=경보/순매수=안전, net-sell advisory only). 현 북 14보유 snapshot: NET_BUY_SAFE 0·NEUTRAL 11·NO_INSIDER_DATA 3 (armed·inactive). next_probe: P1 coverage 확장(INS02+INS03/breadth 완화) / P2 live SAFE 발화 OOS 추적 / P3 exit-timing 대칭 검정. **[R36 = P1 coverage 확장 완료 2026-07-15, capability_established]**: 3형태 실측 — F2 완화(INS02≥+0.5) SAFE 유지+coverage 126→250개월(2배)·희석 caveat(연 12.4→9.0%) / F3 연속 INS01 순매수강도 신규 유효(IC t+4.12·lag1 +2.95) / F1 정밀(INS02∧INS03 recency) 무이득 config_scoped_negative·배선 금지. ★핵심 honest 교정: 진짜 대형주 TOP30 SAFE t 1.30~1.68(표본 3.1배에도 <2, mega 얇음) — R33 인용 large t2.57은 size-tercile large(상단중형 포함)이고 mega-30 분리 시 t1.38. SAFE=mid-cap 중심(cap-tier localization 정합). tripwire 임계 완화 권고(INS02≥+0.5 + INS01≥+0.5 상보), 배선 별도. 상세 stage_artifacts/WT_D20260715_005/verdict.json. next frontier → FQ-051(TOP30 thinness + INS01+INS02 복합).",
       "result": {
         "verdict_type": "capability_established",
         "derisk_per_holding": "CONFIRMED (gap NW-t +2.50, restricted +2.68, 하방/tail 감소, flagged 전량 MEGA/MID, lag1 robust +1.89)",
@@ -1021,7 +1021,25 @@
         "parent: FQ-049 R33 next_probe P1",
         "verdict: stage_artifacts/WT_D20260715_003/verdict.json",
         "wiring: 02_Infrastructure/reports/filing_delay_watch.R (Part C) + 02_Infrastructure/prompts/monitoring_init.md",
-        "l_code: L-RAMP-20260715_022534"
+        "l_code: L-RAMP-20260715_022534",
+        "R36 coverage 확장(P1): stage_artifacts/WT_D20260715_005/verdict.json"
+      ]
+    },
+    {
+      "id": "FQ-051",
+      "lane": "non_return",
+      "title": "R37(후보) — insider SAFE tripwire 대형주 TOP30 thinness 진단 + INS01+INS02 복합 (R36 next_probe P1/P2)",
+      "hypothesis": "R36에서 net-buy SAFE 신호는 mid-cap 중심이고 진짜 대형주 TOP30 gap 은 표본 3.1배 확장 후에도 t 1.30~1.68(<2)로 얇게 잔존. (P1) 4형태 pooled cross-form TOP30 순열검정으로 power 문제인지 genuine mega signal-death(cap-tier localization)인지 판별 + (P2) INS01(순매수강도)+INS02(breadth) 복합 SAFE flag 이 부분 독립성으로 coverage↑ SAFE↑ 하며 mega tier t>2 도달 가능한지 실측",
+      "ev_rationale": "R36 next_probe P1/P2 직접 소비. 자본 아님(monitoring 소비면). 대형주 SAFE 신뢰는 배포 유니버스 중심(mega 보유)에서 tripwire 신뢰도를 좌우 — thinness 원인 규명이 tripwire 신뢰 tier 경계를 확정",
+      "wall_check": "monitoring tripwire(non-capital)·selection/자본 아님. cap-tier localization([[project-captier-alpha-localization-20260706]]) 정합 — mega signal-death 라면 mid-cap 한정 tripwire 로 confirm(자본 게이트 무관). insider 패널 재사용·DART API X. book_state/05_Production 무변경",
+      "data_gate": "없음 (insider_factor_scores.parquet + production clean T-1 §7b + rawdata pin 재사용)",
+      "owner": "Q-Lead (R36 후, capacity 대기 — armed)",
+      "status": "armed",
+      "next_action": "미착수(armed). R36 산출(stage_artifacts/WT_D20260715_005/_r36_objects.rds) 재사용해 (P1) TOP30 pooled 순열검정 + (P2) INS01+INS02 복합 z(union/additive) SAFE·coverage·tier 실측. 정직 prior: mega thinness 가 power 아니라 signal-death면 tripwire 는 mid-cap 한정으로 confirm(대형주 SAFE 라벨 신뢰 낮음 명시). P3(exit-timing 대칭)은 별도 이월.",
+      "source_refs": [
+        "parent: FQ-050 R36 next_probe P1/P2",
+        "verdict: stage_artifacts/WT_D20260715_005/verdict.json",
+        "objects: stage_artifacts/WT_D20260715_005/_r36_objects.rds"
       ]
     }
   ]

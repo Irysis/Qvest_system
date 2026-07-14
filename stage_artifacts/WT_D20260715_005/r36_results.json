@@ -1,0 +1,336 @@
+{
+  "prereg": {
+    "mode": "RAMP-adjacent alpha consumption (monitoring coverage 확장)",
+    "round": "R36",
+    "fq": "FQ-050",
+    "wt": "WT-D20260715_005",
+    "parent": "R33/R34 next_probe P1 (net-buy 클러스터 coverage 확장 — 표본·대형 tier 강건성)",
+    "base_source": "production clean T-1 (alpha_scores_str1715_268m_cleanT1, production_parity_verified)",
+    "universe": "clean ∩ size(t-1) ∩ insider-covered (R33 sizeneutral 프레임)",
+    "pit": "clean T-1 홀딩월(검증) + insider signal(월말 m)→홀딩월(m+1), 홀딩월 시작 전 (C5) + lag1 스트레스",
+    "forms": {
+      "F0_base": "INS02_OffBuyBreadth6m z>=+1.0 (R33 baseline 비교축)",
+      "F1_prec": "INS02 z>=+1.0 AND INS03_OffNetBuyRecency z>=+0.5 (정밀)",
+      "F2_relax": "INS02 z>=+0.5 (완화 — 표본↑)",
+      "F3_cont": "INS01_OffNetBuyIntensity3m 연속 Spearman IC + top-cut(z>=+0.5)"
+    },
+    "measures": ["forward gap NW-lag3 t", "downside/vol/tail(<-15%)", "size tercile + TOP30 tier 분해", "lag1 스트레스", "placebo(월내 순열 300)"],
+    "decision_axis": "SAFE(고수익·저하방·저급락) 유지/강화 + 대형 tier 표본 실제 강화. 자본 아님(monitoring 소비면).",
+    "honest_prior": "임계 완화는 표본↑이나 신호 희석 가능 — 순 효과 실측. Form1 AND는 정밀↑ 표본↓ trade-off.",
+    "selection_type": "chain (가설주도 고정 config · sweep 아님)",
+    "n_trials": 4,
+    "vintage_pin": ".cache/pin/rawdata_r9_pin_20260715.parquet",
+    "pin_mtime": "2026-07-15 00:21:02.834291",
+    "as_of": "2026-07-15",
+    "config_hash": "78164cf5834f1936"
+  },
+  "vintage_pin": ".cache/pin/rawdata_r9_pin_20260715.parquet",
+  "pin_mtime": "2026-07-15 00:21:02.834291",
+  "base_parity": {
+    "clean_parity_port_t": 3.05834,
+    "note": "§7b production_parity_verified"
+  },
+  "universe_coverage": {
+    "rows": 77629,
+    "months": 255,
+    "insider_covered": 22571
+  },
+  "F0_base": {
+    "desc": "F0_base",
+    "coverage": {
+      "n_flag_obs": 3553,
+      "coverage_months": 126,
+      "avg_flag_per_month": 28.2,
+      "n_flag_large_terc": 2204,
+      "n_flag_top30": 744
+    },
+    "safe": {
+      "fwd_flag": 0.01884,
+      "fwd_nonflag": 0.00969,
+      "gap_ret_ann": 0.12377,
+      "gap_ret_t": 3.364,
+      "gap_exc_t": 3.364,
+      "downside_flag": -0.07186,
+      "downside_nonflag": -0.08437,
+      "vol_flag": 0.12233,
+      "vol_nonflag": 0.13768,
+      "tail_flag": 0.0504,
+      "tail_nonflag": 0.0766
+    },
+    "placebo": {
+      "p_value": 0,
+      "perm_mean_ann": -0.00061,
+      "perm_sd": 0.02629,
+      "nperm": 300
+    },
+    "tier": {
+      "tercile": [
+        {
+          "sz_tercile": "mid",
+          "gap_ann": 0.28108,
+          "gap_t": 5.17015,
+          "months": 126,
+          "avg_flag": 7.80952
+        },
+        {
+          "sz_tercile": "large",
+          "gap_ann": 0.08332,
+          "gap_t": 2.56627,
+          "months": 126,
+          "avg_flag": 17.49206
+        },
+        {
+          "sz_tercile": "small",
+          "gap_ann": 0.12954,
+          "gap_t": 1.34044,
+          "months": 100,
+          "avg_flag": 3.65
+        }
+      ],
+      "top30": [
+        {
+          "megatier": "REST",
+          "gap_ann": 0.1658,
+          "gap_t": 3.80187,
+          "months": 126,
+          "avg_flag": 22.29365,
+          "tot_flag": 2809
+        },
+        {
+          "megatier": "TOP30",
+          "gap_ann": 0.06733,
+          "gap_t": 1.384,
+          "months": 126,
+          "avg_flag": 5.90476,
+          "tot_flag": 744
+        }
+      ]
+    },
+    "lag1": {
+      "gap_ret_t": 3.066,
+      "gap_ret_ann": 0.10923,
+      "n_flag": 3512
+    }
+  },
+  "F1_prec": {
+    "desc": "F1_prec",
+    "coverage": {
+      "n_flag_obs": 3104,
+      "coverage_months": 126,
+      "avg_flag_per_month": 24.63,
+      "n_flag_large_terc": 1946,
+      "n_flag_top30": 660
+    },
+    "safe": {
+      "fwd_flag": 0.01887,
+      "fwd_nonflag": 0.00974,
+      "gap_ret_ann": 0.11295,
+      "gap_ret_t": 3.167,
+      "gap_exc_t": 3.167,
+      "downside_flag": -0.07198,
+      "downside_nonflag": -0.08429,
+      "vol_flag": 0.12205,
+      "vol_nonflag": 0.13761,
+      "tail_flag": 0.0509,
+      "tail_nonflag": 0.0764
+    },
+    "placebo": {
+      "p_value": 0,
+      "perm_mean_ann": -0.00091,
+      "perm_sd": 0.03077,
+      "nperm": 300
+    },
+    "tier": {
+      "tercile": [
+        {
+          "sz_tercile": "mid",
+          "gap_ann": 0.24533,
+          "gap_t": 4.11664,
+          "months": 126,
+          "avg_flag": 6.69048
+        },
+        {
+          "sz_tercile": "large",
+          "gap_ann": 0.06178,
+          "gap_t": 1.75055,
+          "months": 125,
+          "avg_flag": 15.568
+        },
+        {
+          "sz_tercile": "small",
+          "gap_ann": 0.08123,
+          "gap_t": 0.7431,
+          "months": 93,
+          "avg_flag": 3.3871
+        }
+      ],
+      "top30": [
+        {
+          "megatier": "REST",
+          "gap_ann": 0.15009,
+          "gap_t": 3.56958,
+          "months": 126,
+          "avg_flag": 19.39683,
+          "tot_flag": 2444
+        },
+        {
+          "megatier": "TOP30",
+          "gap_ann": 0.04925,
+          "gap_t": 0.93106,
+          "months": 124,
+          "avg_flag": 5.32258,
+          "tot_flag": 660
+        }
+      ]
+    },
+    "lag1": {
+      "gap_ret_t": 3.123,
+      "gap_ret_ann": 0.10465,
+      "n_flag": 3072
+    }
+  },
+  "F2_relax": {
+    "desc": "F2_relax",
+    "coverage": {
+      "n_flag_obs": 10934,
+      "coverage_months": 250,
+      "avg_flag_per_month": 43.74,
+      "n_flag_large_terc": 6633,
+      "n_flag_top30": 2341
+    },
+    "safe": {
+      "fwd_flag": 0.01617,
+      "fwd_nonflag": 0.00911,
+      "gap_ret_ann": 0.08997,
+      "gap_ret_t": 4.25,
+      "gap_exc_t": 4.25,
+      "downside_flag": -0.07504,
+      "downside_nonflag": -0.08517,
+      "vol_flag": 0.12571,
+      "vol_nonflag": 0.13877,
+      "tail_flag": 0.0555,
+      "tail_nonflag": 0.0786
+    },
+    "placebo": {
+      "p_value": 0,
+      "perm_mean_ann": 0.00006,
+      "perm_sd": 0.01826,
+      "nperm": 300
+    },
+    "tier": {
+      "tercile": [
+        {
+          "sz_tercile": "mid",
+          "gap_ann": 0.19118,
+          "gap_t": 6.13155,
+          "months": 250,
+          "avg_flag": 12.18
+        },
+        {
+          "sz_tercile": "large",
+          "gap_ann": 0.05584,
+          "gap_t": 2.63858,
+          "months": 250,
+          "avg_flag": 26.532
+        },
+        {
+          "sz_tercile": "small",
+          "gap_ann": 0.13965,
+          "gap_t": 2.04053,
+          "months": 219,
+          "avg_flag": 5.73516
+        }
+      ],
+      "top30": [
+        {
+          "megatier": "REST",
+          "gap_ann": 0.12625,
+          "gap_t": 5.04581,
+          "months": 250,
+          "avg_flag": 34.372,
+          "tot_flag": 8593
+        },
+        {
+          "megatier": "TOP30",
+          "gap_ann": 0.03806,
+          "gap_t": 1.30421,
+          "months": 250,
+          "avg_flag": 9.364,
+          "tot_flag": 2341
+        }
+      ]
+    },
+    "lag1": {
+      "gap_ret_t": 3.893,
+      "gap_ret_ann": 0.0818,
+      "n_flag": 10905
+    }
+  },
+  "F3_cont": {
+    "desc": "Form3 연속 INS01 z-노출",
+    "continuous_ic": {
+      "ic_mean": 0.04442,
+      "ic_t": 4.125,
+      "icir": 0.265,
+      "ic_months": 253,
+      "ic_t_lag1": 2.95
+    },
+    "cut_safe": {
+      "n_flag_obs": 8373,
+      "gap_ret_ann": 0.10498,
+      "gap_ret_t": 5.145,
+      "placebo_p": 0,
+      "downside_flag": -0.07516,
+      "downside_nonflag": -0.08479,
+      "vol_flag": 0.1275,
+      "vol_nonflag": 0.13811,
+      "tail_flag": 0.0557,
+      "tail_nonflag": 0.0778,
+      "n_flag_large_terc": 5339,
+      "n_flag_top30": 2056,
+      "tercile": [
+        {
+          "sz_tercile": "mid",
+          "gap_ann": 0.17786,
+          "gap_t": 4.60172,
+          "months": 252,
+          "avg_flag": 8.57937
+        },
+        {
+          "sz_tercile": "large",
+          "gap_ann": 0.07205,
+          "gap_t": 3.16199,
+          "months": 253,
+          "avg_flag": 21.10277
+        },
+        {
+          "sz_tercile": "small",
+          "gap_ann": 0.19163,
+          "gap_t": 2.65217,
+          "months": 204,
+          "avg_flag": 4.27451
+        }
+      ],
+      "top30": [
+        {
+          "megatier": "REST",
+          "gap_ann": 0.14089,
+          "gap_t": 6.05052,
+          "months": 253,
+          "avg_flag": 24.96838,
+          "tot_flag": 6317
+        },
+        {
+          "megatier": "TOP30",
+          "gap_ann": 0.05187,
+          "gap_t": 1.67789,
+          "months": 252,
+          "avg_flag": 8.15873,
+          "tot_flag": 2056
+        }
+      ],
+      "lag1_t": 4.256
+    }
+  },
+  "generated_at": "2026-07-15T03:14:16+0900"
+}

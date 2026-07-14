@@ -1,0 +1,99 @@
+{
+  "wt": "WT-D20260715_005",
+  "mode": "RAMP-adjacent alpha consumption (monitoring coverage 확장)",
+  "round": "R36",
+  "fq": "FQ-050",
+  "title": "insider net-buy tripwire coverage 확장 — 3형태 표본·강건성 강화 (R33/R34 next_probe P1 소비)",
+  "as_of_date": "2026-07-15",
+  "verdict_type": "capability_established",
+  "config_hash": "78164cf5834f1936",
+  "selection_type": "chain (가설주도 고정 4-config · sweep 아님) n_trials=4",
+  "vintage_pin": ".cache/pin/rawdata_r9_pin_20260715.parquet (mtime 2026-07-15 00:21:02, R9/R33/R34 pin 재사용)",
+  "base_source": "production clean T-1 (alpha_scores_str1715_268m_cleanT1, production_parity_verified 3.058) — §7b 정합, 저장 268m same-month vintage 미사용",
+  "universe": "clean ∩ size(t-1) ∩ insider-covered = 77,629 name-months / 255 months (R33 sizeneutral 프레임)",
+  "pit": "clean T-1 홀딩월(검증) + insider signal(월말 m)→홀딩월(m+1), 홀딩월 시작 전 (C5) + lag1 스트레스 전부 통과 (동월누출 배제)",
+
+  "parity_confirm": "F0_base(INS02 z>=+1.0) = R33 Branch B 정확 재현: flag_obs=3553 · months=126 · gap_ann=+0.1238 · gap_t=+3.36 · downside -7.19% vs -8.44% · vol 12.23% vs 13.77% · tail 5.0% vs 7.7% · size-tercile large t=+2.57. 프레임 무결.",
+
+  "forms": {
+    "F0_base": {
+      "def": "INS02_OffBuyBreadth6m z>=+1.0 (R33 baseline 비교축)",
+      "coverage": {"flag_obs": 3553, "months": 126, "avg_flag_per_month": 28.2, "n_flag_large_tercile": 2204, "n_flag_TOP30": 744},
+      "safe": {"gap_ann": 0.1238, "gap_t": 3.36, "downside_flag": -0.0719, "downside_nonflag": -0.0844, "vol_flag": 0.1223, "vol_nonflag": 0.1377, "tail_flag": 0.050, "tail_nonflag": 0.077},
+      "tier": {"mid_t": 5.17, "large_tercile_t": 2.57, "small_t": 1.34, "TOP30_t": 1.38, "REST_t": 3.80},
+      "lag1_t": 3.07, "placebo_p": 0.000,
+      "verdict": "reference (R33 재현)"
+    },
+    "F1_prec": {
+      "def": "INS02 z>=+1.0 AND INS03_OffNetBuyRecency z>=+0.5 (정밀 — recency 공동)",
+      "coverage": {"flag_obs": 3104, "months": 126, "avg_flag_per_month": 24.6, "n_flag_TOP30": 660},
+      "safe": {"gap_ann": 0.1130, "gap_t": 3.17, "downside_flag": -0.0720, "tail_flag": 0.051},
+      "tier": {"mid_t": 4.12, "large_tercile_t": 1.75, "TOP30_t": 0.93},
+      "lag1_t": 3.12, "placebo_p": 0.000,
+      "verdict": "config_scoped_negative",
+      "verdict_text": "recency AND-gate = 무이득. gap_t +3.17 < F0 +3.36 · 표본 3553→3104 축소 · 모든 tier t 하락(TOP30 1.38→0.93). INS03 결합은 좋은 obs 를 제거해 정밀도도 표본도 개선 못함 — SAFE 신호는 breadth(INS02) 단독이 이미 최적. 배선 금지."
+    },
+    "F2_relax": {
+      "def": "INS02 z>=+0.5 (완화 — 표본↑)",
+      "coverage": {"flag_obs": 10934, "months": 250, "avg_flag_per_month": 43.7, "n_flag_large_tercile": 6633, "n_flag_TOP30": 2341},
+      "safe": {"gap_ann": 0.0900, "gap_t": 4.25, "downside_flag": -0.0750, "downside_nonflag": -0.0852, "vol_flag": 0.1257, "vol_nonflag": 0.1388, "tail_flag": 0.056, "tail_nonflag": 0.079},
+      "tier": {"mid_t": 6.13, "large_tercile_t": 2.64, "small_t": 2.04, "TOP30_t": 1.30},
+      "lag1_t": 3.89, "placebo_p": 0.000,
+      "verdict": "capability_established (coverage 확장 — SAFE 유지 with 희석)",
+      "verdict_text": "완화 = 모니터링 coverage 승리, per-name magnitude 희석. gap_ann 12.4%→9.0% (정직 prior대로 per-name 신호 희석) 이나 coverage months 126→250(월 armed 2배) · flag_obs 3553→10934(3.1x) · TOP30 flag 744→2341(3.1x). SAFE 속성 전부 유지: downside/vol/tail 모두 개선, placebo p=0, lag1 t+3.89 robust. gap_t +4.25>F0 +3.36 은 상당부분 표본증가(월수 126→250) 아티팩트 — per-name 강화 아님. 모니터링 tripwire(coverage 우선)엔 순이득."
+    },
+    "F3_cont": {
+      "def": "INS01_OffNetBuyIntensity3m 연속 z-노출 (binary 아님) — Spearman IC + top-cut(z>=+0.5)",
+      "continuous_ic": {"ic_mean": 0.0444, "ic_t": 4.12, "icir": 0.26, "ic_months": 253, "ic_t_lag1": 2.95},
+      "cut_safe": {"flag_obs": 8373, "gap_ann": 0.1050, "gap_t": 5.14, "downside_flag": -0.0752, "downside_nonflag": -0.0848, "tail_flag": 0.056, "tail_nonflag": 0.078, "n_flag_TOP30": 2056, "TOP30_t": 1.68, "lag1_cut_t": 4.26, "placebo_p": 0.000},
+      "verdict": "capability_established (신규 SAFE 축)",
+      "verdict_text": "INS01 연속 순매수 강도 = 유효 SAFE 신호 — Spearman IC +0.044(t+4.12) ICIR 0.26 · lag1 IC t+2.95 robust · cut(z>=+0.5) gap_t+5.14 SAFE 전부 유지. ★신규성: R33 은 INS01 net-sell 극단(z<=-1.0)만 검정해 null(t-0.01)이었으나, INS01 의 net-buy 방향(연속 강도 高)은 정보성 있음 — SAFE 신호 family 가 INS02 breadth 단독이 아니라 INS01 intensity 도 포함. TOP30 t=1.68(4형태 중 최고) 이나 여전히 <2."
+    }
+  },
+
+  "core_finding_TOP30_thinness": {
+    "note": "★R33 정밀화(honest 교정): R33 이 인용한 large-tier t=+2.57 은 size-TERCILE large(상위 ~85종, 상단-중형 포함). 진짜 대형주 TOP30(상위 30, mega/large)만 분리하면 SAFE gap 이 4형태 전부 sub-threshold: F0 t=1.38 · F1 t=0.93 · F2 t=1.30 · F3cut t=1.68 (전부 <2, 경제적으론 +3.8~6.7%/yr 양수).",
+    "sample_vs_signal": "표본은 실제 강화됨(TOP30 flag F0 744 → F2 2341 · F3cut 2056, 3.1x). 그러나 표본 3배에도 TOP30 SAFE t 는 문턱 미달 유지 — coverage 확장이 표본은 늘렸으나 mega-tier 신호는 얇게 잔존. SAFE 신호 = mid-cap 중심(mid-tercile t 5.17~6.13 지배).",
+    "linkage": "cap-tier 국소화([[project-captier-alpha-localization-20260706]]) 와 정합 — 선별-면에서 확인된 'mega=signal-dead' 가 monitoring-면 SAFE 신호에도 약하게 재현(mega tier 는 표본 두꺼워도 신호 얇음). 단 monitoring-면은 선별-면과 달리 KILL 아님 — mid-cap 보유엔 강건한 de-risk 라벨."
+  },
+
+  "tripwire_threshold_recommendation": {
+    "recommend": "net-buy SAFE tripwire 임계 완화: INS02 z>=+1.0 → z>=+0.5 (F2) + INS01 z>=+0.5 (F3) 를 상보 SAFE flag 로 추가. 배선은 별도 태스크(filing_delay_watch.R Part C 임계 갱신).",
+    "rationale": "① coverage: armed months 126→250(~98% 월 커버), 현 북 tripwire 활성화 — R34 스냅샷 현 북 max INS02=+0.91(z>=1.0 에선 0건 flag) 이 z>=+0.5 에선 flag 되어 현재 armed-inactive tripwire 가 실발화. ② SAFE 유지: gap_t+4.25 · downside/vol/tail 개선 · placebo p=0 · lag1 robust. ③ INS01 연속은 독립 SAFE 축(R33 net-sell null 과 별개 방향).",
+    "caveats": ["per-name magnitude 희석(12.4%→9.0%/yr) — 완화는 신호강도 트레이드", "TOP30 대형주 tier 는 완화 후에도 sub-threshold(t 1.30) — mega 보유엔 SAFE 신뢰 약함", "F1 recency AND-gate 는 배선 금지(무이득)", "자본/sizing 신호 아님 — R34 확립대로 per-holding SAFE 라벨만(cohort-path 저변동 아님)"],
+    "wiring_owner": "monitoring (별도 태스크) — 본 라운드는 측정·권고만"
+  },
+
+  "consumer_surfaces_checklist": {
+    "note": "answer-principles 소비면 7종 순회 (monitoring-face 라운드)",
+    "5_monitoring": "net-buy SAFE tripwire 임계 완화 권고(INS02>=+0.5 + INS01>=+0.5 상보) — coverage 2배·현북 활성화. 배선=별도(filing_delay_watch Part C).",
+    "8_risk_model": "per-holding de-risk 라벨 = mid-cap 중심 강건 · mega-tier(TOP30) 약함 caveat 추가.",
+    "1_factor_rank": "N/A — net-buy=monitoring-only(R33 net-sell 선별/필터 KILL · R34 cohort-path=분산 아티팩트).",
+    "2_universe_filter": "N/A — R33 net-sell exclusion 무기여 확정.",
+    "3_overlay_regime": "N/A — 종목-단 SAFE 신호(북-레벨 timing 아님).",
+    "6_selection_label": "N/A — cap-w 횡단선택 벽(R9/R33) 잔존.",
+    "7_other_mode": "RAMP monitoring 이식 후보이나 non-capital tripwire — 현 미착수(FQ 잔류)."
+  },
+
+  "next_probes": [
+    "TOP30 대형주 SAFE thinness 진단 — 4형태 pooled cross-form TOP30 순열검정 + INS 복합(INS01+INS02 union/additive z)이 mega tier t>2 도달 가능한지. power 문제(표본 부족)인지 genuine mega signal-death(cap-tier localization)인지 판별.",
+    "INS01+INS02 net-buy 복합 SAFE flag — 연속 강도(INS01)와 breadth(INS02)는 부분 독립 가능. 복합이 coverage↑ SAFE↑ 하며 TOP30 를 끌어올리는가 (상보성 실측).",
+    "de-risk exit-timing 대칭검정 (R34 next_probe #3 계승) — 완화 flag(INS02>=+0.5) 소멸 시 forward 위험 재상승 여부 = tripwire 진입/청산 양측 정보성."
+  ],
+
+  "layer_bottleneck": "⑤monitoring (net-buy SAFE tripwire coverage 확장 완료 — 권고 산출) — ①재료 수익-파생/선별 벽과 무관한 소비면. mega-tier SAFE thinness 는 성과 병목 아니라 monitoring 신뢰 tier 경계.",
+  "kill": {"F1_recency_andgate": true, "F2_relaxation": false, "F3_ins01_continuous": false},
+  "book_state_unchanged": true,
+  "production_unchanged": true,
+  "outputs_ramp_unchanged": true,
+  "artifacts": {
+    "runner": "stage_artifacts/WT_D20260715_005/run_r36_insider_coverage.R",
+    "results": "stage_artifacts/WT_D20260715_005/r36_results.json",
+    "gap_series": "stage_artifacts/WT_D20260715_005/r36_gap_series.parquet",
+    "coverage_summary": "stage_artifacts/WT_D20260715_005/r36_coverage_summary.parquet",
+    "objects": "stage_artifacts/WT_D20260715_005/_r36_objects.rds",
+    "prereg": "stage_artifacts/WT_D20260715_005/prereg_r36.json",
+    "challenge_note": "stage_artifacts/WT_D20260715_005/challenge_note_r36_20260715.md",
+    "log": "stage_artifacts/WT_D20260715_005/_r36_run_log.txt"
+  }
+}
