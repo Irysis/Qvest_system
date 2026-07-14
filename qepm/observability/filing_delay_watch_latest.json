@@ -430,17 +430,22 @@
     "basis": "임원 순매수 breadth 클러스터 SAFE tripwire + 상태전이 (R33/R34/R37/R38/R39 소비면) · risk-감소 신호 NOT 자본/sizing · book 무변경",
     "metric_type": "observational_monitoring",
     "direction": "SAFE(de-risk 예외) — 부실신호(Part A 제출지연·Part B 감사 distress)의 반대 부호. 순매수=안전 / 부실=경보",
-    "warn_tone": "임원 순매수 breadth 클러스터(INS02 z>=+1.0) = 종목단 forward SAFE 신호(de-risk 예외) · 자본/sizing 신호 아님 (R33 capability + R34 북-레벨 확증 gap t+2.50 + R39 상태전이 배선: ENTRY/SUSTAIN=SAFE·EXIT=SAFE_FADING(청산 no hangover·protection 점착, R38)·OFF=해제. tier: mid-cap 강건 / 대형 TOP30 저신뢰, R37). net-sell(INS01)=advisory·R33 무정보.",
+    "warn_tone": "임원 순매수 breadth 클러스터(INS02 z>=+1.0) = 종목단 forward SAFE 신호(de-risk 예외) · 자본/sizing 신호 아님 (R33 capability + R34 북-레벨 확증 gap t+2.50 + R39/R41 상태전이 배선: ENTRY/SUSTAIN=SAFE·EXIT=SAFE_FADING(청산 no hangover·protection 점착, R38)·OFF=해제. SAFE_FADING = horizon-bounded(months_since_off<=1 fading·>=2 auto-clear, R40 protection ~1개월 transient). tier: mid-cap 강건 / 대형 TOP30 저신뢰, R37). net-sell(INS01)=advisory·R33 무정보.",
     "r34_verdict": "capability_established",
     "r38_verdict": "capability_established",
     "r38_symmetry": "asymmetric_benign_risk_sticky",
+    "r40_verdict": "capability_established",
+    "r40_verdict_class": "no_hangover_horizon_limited",
     "insider_rule": "NET_BUY_SAFE(ENTRY/SUSTAIN) = 보유종목 INS02_OffBuyBreadth6m z >= +1.0 (현 홀딩월, signal m→m+1 PIT). net-sell(INS01<=-1.0)=advisory·R33 무정보(경보 아님·문턱 sweep 금지)",
     "state_machine": {
       "definition": "현 홀딩월 flag on_t(INS02 z>=1.0) × 직전 홀딩월 flag on_p, 양월 insider-covered에서만 전이 판정 (R38 상속)",
-      "states": "ENTRY(on_t∧¬on_p)=NET_BUY_SAFE·단발신뢰低 / SUSTAIN(on_t∧on_p)=NET_BUY_SAFE·지속신뢰高 / EXIT(¬on_t∧on_p)=SAFE_FADING / OFF(¬on_t∧¬on_p)=해제",
+      "states": "ENTRY(on_t∧¬on_p)=NET_BUY_SAFE·단발신뢰低 / SUSTAIN(on_t∧on_p)=NET_BUY_SAFE·지속신뢰高 / EXIT(¬on_t∧on_p)=청산 진입(SAFE_FADING mso=0) / OFF(¬on_t∧¬on_p)=해제(단 최근 청산이면 mso로 SAFE_FADING 잔존 가능)",
       "r38_facts": "R38(WT_D20260715_007) MID 월별-paired NW-lag3: SUSTAIN vs OFF t+3.63(유의)·ENTRY t+1.05·EXIT vs OFF t+1.57(무유의) = 수익 premium은 SUSTAIN 클러스터 현상. hold-dur d1 t+0.05 / d2_3 t+2.38 / d4plus t+3.04 = 지속 flag 우선신뢰. EXIT 위험: downside -6.9% vs OFF -8.6%·tail 5.2% vs 7.9% = protection 점착(no hangover). lag1 SUSTAIN +3.40 robust.",
-      "exit_rule": "SOFT-LAG (R38 P3): flag-off은 danger 아님 → SAFE 라벨 즉시해제 불요. SAFE_FADING = 강도 하향(수익 premium 소멸)이나 위험 protection 점착. 지속(SUSTAIN/dur>=2) flag을 단발(ENTRY/dur=1)보다 신뢰.",
-      "censoring_caveat": "⚠ R38 검열편향: catastrophic exit(상폐/유동성붕괴/유니버스이탈)한 종목은 EXIT 표본에서 검열 → SAFE_FADING의 'no hangover'는 투자가능(북 잔존) 종목 조건부. **catastrophic exit은 SAFE_FADING 소관 아님 — 부실 tripwire(Part A 제출지연·Part B 감사)와 execution 이탈감지 우선.**"
+      "exit_rule": "HORIZON-BOUNDED (R41, R40 소비 — 무기한 SOFT-LAG 폐지): flag-off은 danger 아님(R38 no hangover) → 즉시해제 불요이되 protection은 ~1개월 transient(R40). SAFE_FADING = months_since_off ∈ {0,1}(청산월 h0 + 청산+1월 h1, R40 protection 창)에서만 유지, months_since_off>=2 자동 해제(cleared→NEUTRAL). 지속(SUSTAIN/dur>=2) flag을 단발(ENTRY/dur=1)보다 신뢰.",
+      "fade_horizon_rule": "months_since_off = 청산(첫 off월) 후 경과 홀딩월(exit월=0=R40 h). fading 창 = {0..1}, clear at >=2. R40 실측 근거: h0 tail 5.2%·h1 3.5%(<OFF 7.9%, 집중) / h2 12.3%·h3 10.5%(baseline 복귀, paired-t 전구간 |t|<2 비유의) = protection 무기한 아닌 transient. window {m-1,m-2,m-3} 최근 ON offset k → mso=k-1.",
+      "r40_facts": "R40(WT_D20260715_009, verdict=capability_established/no_hangover_horizon_limited): 검열편향 immaterial — MID 검열 2건/0.2%·진성폐지 0·차등이탈 p=0.757·worst-case wipeout(-100%) 대입해도 EXIT tail 6.0%<OFF 7.9% risk-sticky. self-adversarial이 terminal right-truncation 오분류(초기 no_hangover 반전) finalize 전 검거. → 'no hangover'는 검열-조정 후에도 성립, 단 protection은 h0-1 transient.",
+      "catastrophic_vs_benign": "R40 P3 정량(MID 117 off-transitions): benign exit 115(98.3%)=SAFE_FADING(monitoring) 소관 / benign_censored 1(0.9%) / catastrophic 1(0.9%)=부실 tripwire(distress/delisting) 소관. 투자가능 유니버스에서 catastrophic exit ~1%뿐 = SAFE_FADING이 사실상 전량(99%) 소관. 단 투자가능 조건부 — small-cap/비투자가능 진성폐지는 uni 밖(부실 tripwire 잔여 소관).",
+      "censoring_caveat": "⚠ R38 검열편향(R40 정량 기각): catastrophic exit(상폐/유동성붕괴/유니버스이탈)한 종목은 EXIT 표본에서 검열되나 R40 census 실측 immaterial(위 r40_facts). SAFE_FADING의 'no hangover'는 투자가능(북 잔존) 종목 조건부·검열-robust. **catastrophic exit은 SAFE_FADING 소관 아님 — 부실 tripwire(Part A 제출지연·Part B 감사)와 execution 이탈감지 우선.**"
     },
     "tier_confidence_rule": {
       "rule": "배포 유니버스(K200∪KQ150) 최신 size-rank <= 30 = MEGA_TOP30(SAFE 저신뢰) / 그 외 = MID_OTHER(SAFE 강건). R37 소비.",
@@ -457,7 +462,7 @@
     "panel_stale_note": "현 보유월 signal 부재 = insider 패널 갱신 필요(DART 크롤 — 본 watch는 refresh 경로 없음, 로컬 재사용). stale=TRUE면 flag는 과거 홀딩월 기준(경보 침묵을 신선도로 해석 금지)",
     "n_holdings_with_insider": 11,
     "n_net_buy_safe": 0,
-    "n_safe_fading": 0,
+    "n_safe_fading": 2,
     "n_no_insider_data": 3,
     "n_net_sell_advisory": 7,
     "state_counts": {
@@ -472,7 +477,30 @@
       "note": "R36 F2 완화(INS02 z>=+0.5) 진단 카운트만 — active tripwire 문턱 아님(1.0 frozen). 완화 배선은 별도(R36/R37 권고, 미착수)."
     },
     "net_buy_safe_list": [],
-    "safe_fading_list": [],
+    "safe_fading_list": [
+      {
+        "ticker": "A011070",
+        "name": "LG이노텍",
+        "weight": 0.029431,
+        "months_since_off": 1,
+        "clears_at_mso": 2,
+        "ins02_prev_month": 0.998,
+        "ins02_net_buy_breadth": 0.912,
+        "tier": "MID_OTHER",
+        "tier_confidence": "robust_midcap"
+      },
+      {
+        "ticker": "A004170",
+        "name": "신세계",
+        "weight": 0.007927,
+        "months_since_off": 1,
+        "clears_at_mso": 2,
+        "ins02_prev_month": 0.998,
+        "ins02_net_buy_breadth": 0.912,
+        "tier": "MID_OTHER",
+        "tier_confidence": "robust_midcap"
+      }
+    ],
     "per_holding_insider": [
       {
         "ticker": "A005930",
@@ -483,6 +511,7 @@
         "ins01_net_sell_advisory": -1.389,
         "ins03_recency": 0.506,
         "insider_state": "OFF",
+        "months_since_off": null,
         "dur_trust": null,
         "size_rank": 1,
         "tier": "MEGA_TOP30",
@@ -499,6 +528,7 @@
         "ins01_net_sell_advisory": -1.41,
         "ins03_recency": 0.647,
         "insider_state": "OFF",
+        "months_since_off": null,
         "dur_trust": null,
         "size_rank": 2,
         "tier": "MEGA_TOP30",
@@ -515,6 +545,7 @@
         "ins01_net_sell_advisory": -1.31,
         "ins03_recency": -1.183,
         "insider_state": "OFF",
+        "months_since_off": null,
         "dur_trust": null,
         "size_rank": 91,
         "tier": "MID_OTHER",
@@ -531,6 +562,7 @@
         "ins01_net_sell_advisory": null,
         "ins03_recency": -1.747,
         "insider_state": "OFF",
+        "months_since_off": null,
         "dur_trust": null,
         "size_rank": 17,
         "tier": "MEGA_TOP30",
@@ -547,6 +579,7 @@
         "ins01_net_sell_advisory": null,
         "ins03_recency": null,
         "insider_state": "OFF",
+        "months_since_off": null,
         "dur_trust": null,
         "size_rank": 110,
         "tier": "MID_OTHER",
@@ -563,12 +596,13 @@
         "ins01_net_sell_advisory": -1.408,
         "ins03_recency": 0.928,
         "insider_state": "OFF",
-        "dur_trust": null,
+        "months_since_off": 1,
+        "dur_trust": "fading",
         "size_rank": 45,
         "tier": "MID_OTHER",
         "tier_confidence": "robust_midcap",
         "relax_flag_z0p5": 1,
-        "insider_flag": "NEUTRAL"
+        "insider_flag": "SAFE_FADING"
       },
       {
         "ticker": "A007340",
@@ -579,6 +613,7 @@
         "ins01_net_sell_advisory": null,
         "ins03_recency": null,
         "insider_state": null,
+        "months_since_off": null,
         "dur_trust": null,
         "size_rank": 180,
         "tier": "MID_OTHER",
@@ -595,6 +630,7 @@
         "ins01_net_sell_advisory": null,
         "ins03_recency": -0.057,
         "insider_state": null,
+        "months_since_off": null,
         "dur_trust": null,
         "size_rank": 113,
         "tier": "MID_OTHER",
@@ -611,12 +647,13 @@
         "ins01_net_sell_advisory": null,
         "ins03_recency": 0.506,
         "insider_state": "OFF",
-        "dur_trust": null,
+        "months_since_off": 1,
+        "dur_trust": "fading",
         "size_rank": 98,
         "tier": "MID_OTHER",
         "tier_confidence": "robust_midcap",
         "relax_flag_z0p5": 1,
-        "insider_flag": "NEUTRAL"
+        "insider_flag": "SAFE_FADING"
       },
       {
         "ticker": "A402340",
@@ -627,6 +664,7 @@
         "ins01_net_sell_advisory": -1.458,
         "ins03_recency": -1.043,
         "insider_state": "OFF",
+        "months_since_off": null,
         "dur_trust": null,
         "size_rank": 3,
         "tier": "MEGA_TOP30",
@@ -643,6 +681,7 @@
         "ins01_net_sell_advisory": -1.31,
         "ins03_recency": null,
         "insider_state": "OFF",
+        "months_since_off": null,
         "dur_trust": null,
         "size_rank": 114,
         "tier": "MID_OTHER",
@@ -659,6 +698,7 @@
         "ins01_net_sell_advisory": null,
         "ins03_recency": null,
         "insider_state": null,
+        "months_since_off": null,
         "dur_trust": null,
         "size_rank": 319,
         "tier": "MID_OTHER",
@@ -675,6 +715,7 @@
         "ins01_net_sell_advisory": null,
         "ins03_recency": 0.506,
         "insider_state": "OFF",
+        "months_since_off": null,
         "dur_trust": null,
         "size_rank": 190,
         "tier": "MID_OTHER",
@@ -691,6 +732,7 @@
         "ins01_net_sell_advisory": -1.287,
         "ins03_recency": -0.62,
         "insider_state": "OFF",
+        "months_since_off": null,
         "dur_trust": null,
         "size_rank": 270,
         "tier": "MID_OTHER",
@@ -699,7 +741,7 @@
         "insider_flag": "NEUTRAL"
       }
     ],
-    "evidence": "R33 stage_artifacts/WT_D20260715_002 + R34 WT_D20260715_003 + R37 WT_D20260715_006 + R38 WT_D20260715_007"
+    "evidence": "R33 stage_artifacts/WT_D20260715_002 + R34 WT_D20260715_003 + R37 WT_D20260715_006 + R38 WT_D20260715_007 + R40 WT_D20260715_009 (horizon) + R41 WT_D20260715_010 (배선)"
   },
   "inputs": {
     "holdings_csv": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/05_Production/2.Factor_Model/2-3.STR_1715_on_M4_R05_noLayer4_PG2/02_holdings_universe/20260701_noLayer4_weights_cap_0p20.csv",
@@ -710,6 +752,7 @@
     "r25_verdict": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/WT_D20260714_001/verdict.json",
     "insider_panel": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/outputs/ramp/insider_factor_scores.parquet",
     "r34_verdict": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/WT_D20260715_003/verdict.json",
-    "r38_verdict": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/WT_D20260715_007/verdict.json"
+    "r38_verdict": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/WT_D20260715_007/verdict.json",
+    "r40_verdict": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/WT_D20260715_009/verdict.json"
   }
 }

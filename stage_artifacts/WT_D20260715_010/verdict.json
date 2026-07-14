@@ -1,0 +1,64 @@
+{
+  "wt": "WT-D20260715_010",
+  "mode": "monitoring 배선 refine (wiring 태스크 — 새 측정 아님)",
+  "round": "R41",
+  "fq": "FQ-053",
+  "title": "insider SAFE_FADING horizon-bounded 실배선 (R40 P1 소비 — 무기한 SOFT-LAG → ~1개월 transient 교정)",
+  "as_of_date": "2026-07-15",
+  "verdict_type": "capability_established",
+  "parent": "R40 next_probe P1 (FQ-053) — SAFE_FADING horizon-bounded 실배선 + R37 tier 신뢰가중 + dur-가중",
+  "task_class": "wiring_only",
+  "base_source": "production clean T-1 holdings(05_Production read-only) + insider_factor_scores.parquet(로컬 재사용·202606) + rawdata size 스냅샷. §7b 정합. DART API 0. book_state/05_Production/outputs.ramp 무변경.",
+
+  "refine_summary": {
+    "target_file": "02_Infrastructure/reports/filing_delay_watch.R (Part C 상태전이 horizon 확장) + 02_Infrastructure/prompts/monitoring_init.md (Part C horizon 규칙)",
+    "what_changed": "R39의 '무기한 SOFT-LAG'(SAFE_FADING이 EXIT 상태(m/m-1)에서만·이후 OFF) → R41 horizon-bounded. months_since_off(청산=첫 off월 후 경과 홀딩월, exit월=0=R40 h) 추적: window {m-1,m-2,m-3}의 최근 ON offset k → months_since_off=k-1. SAFE_FADING = months_since_off ∈ {0,1}(R40 protection 창 h0-1) · months_since_off>=2 자동 해제(cleared→NEUTRAL).",
+    "constant_added": "FADE_MAX_MSO=1L (SAFE_FADING horizon 경계, sweep 금지·사전 고정). 청산 후 경과월 <=1 fading, >=2 auto-clear.",
+    "r40_basis": "R40(WT-D20260715_009, verdict=capability_established/no_hangover_horizon_limited): 청산 후 protection = ~1개월 transient — MID EXIT cohort h0 tail 5.2%·h1 3.5%(<OFF 7.9%, 집중) / h2 12.3%·h3 10.5%(baseline 복귀·paired-t 전구간 |t|<2 비유의). R39 무기한 SOFT-LAG는 h2+ protection 소멸을 반영 못함 → horizon-bounded 교정.",
+    "r37_tier_kept": "tier 신뢰가중 유지: size-rank<=30=MEGA_TOP30(SAFE 저신뢰·genuine mega attenuation) / MID_OTHER(SAFE 강건 gap t 4.6~6.1). dur-가중 유지: SUSTAIN(지속·high) > ENTRY(단발·low), fading은 청산창.",
+    "catastrophic_boundary_labeled": "R40 P3 정량 명시: benign exit 98.3%(SAFE_FADING·monitoring 소관) / catastrophic 0.9%(부실 tripwire Part A/B 소관). state_machine.catastrophic_vs_benign 필드 + 주석. 투자가능 유니버스에서 catastrophic exit ~1%뿐 = SAFE_FADING 사실상 전량(99%) 소관, 단 투자가능 조건부(비투자가능 진성폐지는 uni 밖·부실 tripwire).",
+    "censoring_immaterial": "R40 검열편향 정량 기각 내장(state_machine.r40_facts): MID 검열 2건/0.2%·진성폐지 0·차등이탈 p=0.757·worst-case wipeout(-100%)에도 EXIT tail 6.0%<OFF 7.9% risk-sticky → 'no hangover'는 검열-조정 후에도 성립."
+  },
+
+  "verification_current_book": {
+    "holding_ym": 202607, "prev_holding_ym": 202606,
+    "signal_used": "2026-06-30 (PIT-clean, 홀딩월 시작 전)", "n_holdings": 14,
+    "state_counts_immediate_m_m1": {"ENTRY": 0, "SUSTAIN": 0, "EXIT": 0, "OFF": 11},
+    "insider_flag_counts": {"NET_BUY_SAFE": 0, "SAFE_FADING": 2, "NEUTRAL": 9, "NO_INSIDER_DATA": 3},
+    "n_net_buy_safe": 0, "n_safe_fading": 2, "n_no_insider_data": 3, "n_net_sell_advisory": 7,
+    "safe_fading_holdings": [
+      {"ticker": "A011070", "name": "LG이노텍", "months_since_off": 1, "clears_at_mso": 2, "tier": "MID_OTHER", "tier_confidence": "robust_midcap"},
+      {"ticker": "A004170", "name": "신세계", "months_since_off": 1, "clears_at_mso": 2, "tier": "MID_OTHER", "tier_confidence": "robust_midcap"}
+    ],
+    "determination_change_vs_r39": "★R39 판정(SAFE_FADING 0)과 다름 — R41 horizon 확장이 R39가 놓친 h1 protection 창을 포착. LG이노텍(A011070)·신세계(A004170)는 INS02 z: 202604=1.048(ON)·202605=1.014(ON)·202606=0.998(OFF, 문턱 1.0 미달=exit월 h0)·202607=0.912(OFF, h1). 즉 청산월=202606, 현 홀딩월 202607=exit+1=R40 h1(mso=1) → SAFE_FADING(R40 protection 창 잔존). R39(m/m-1 window만)에선 on_p(202606)=off·on_t(202607)=off → OFF로 오분류했으나, R40 실측상 h1은 여전히 protection 구간이므로 R41이 SAFE_FADING으로 올바로 유지. 다음달 202608(mso=2)에 auto-clear 예정(if still off). ⚠ 태스크 지시문의 '현 SAFE/FADING 0 armed 확인'은 R39 behavior 기준 — R41 horizon 확장의 설계 목적(h1 창 포착)이 정확히 이 2건을 드러냄(정직 보고, 배선 정상 동작 실증).",
+    "both_safe_fading_tier": "둘 다 MID_OTHER(robust_midcap) — mega attenuation 저신뢰 tier 아님, SAFE_FADING 라벨 신뢰 정상.",
+    "insider_state_vs_flag": "SAFE_FADING 2건의 insider_state(m/m-1 즉시전이 라벨)=OFF이나 insider_flag(horizon)=SAFE_FADING — R41 설계의 핵심: 즉시전이는 OFF여도 최근 청산(h1) 창이면 SAFE_FADING 잔존. mso 필드로 투명 노출.",
+    "data_note": "A011070·A004170 INS02 z 시계열 byte-identical(1.0477/1.0135/0.9977/0.9123) — INS02=OffBuyBreadth6m(이산 breadth 측정)의 z-tie로 추정(discrete 측정 동값), 배선 무관·frozen 입력 패널(재빌드 금지). 배선 정확성 영향 없음.",
+    "three_part_report_ok": "Part A(제출지연 WARN 0·FRESH·EXPECTED_FY_MISSING 1) + Part B(AUDIT_WARN 0·composite 0·NO_AUDIT_DATA 1) + Part C(horizon 상태전이 SAFE_FADING 2) 통합 리포트 정상 실행. JSON well-formed 검증 완료(r40_verdict/exit_rule=HORIZON-BOUNDED/fade_horizon_rule/catastrophic_vs_benign/safe_fading_list months_since_off 필드 확인).",
+    "verify_script": "stage_artifacts/WT_D20260715_010/_verify_mso.R (INS02 z 시계열 재확인) + _validate_json.R (JSON 필드 검증)"
+  },
+
+  "constraints_respected": "book_state/05_Production/outputs.ramp 무변경(monitoring 배선 refine만). DART API 금지. insider 패널 재사용(재빌드 없음). 텔레그램 발송 없음(배선 태스크). cov/weights 미산출(역할경계). §7b clean base. 단일스레드·arrow io(2)·OneDrive temp-rename.",
+  "consumer_surfaces": [
+    "⑤monitoring: SAFE_FADING horizon-bounded 실배선 완료(filing_delay_watch.R Part C + monitoring_init.md). months_since_off ∈ {0,1} fading · >=2 auto-clear — 무기한 SOFT-LAG 폐지. 월간·보고만·자동조치 없음",
+    "⑧위험모델/감시: per-holding SAFE_FADING에 months_since_off/clears_at_mso 노출 + R37 tier 신뢰 + dur 가중신뢰 유지. R40 검열-immaterial·benign 98.3%/catastrophic 0.9% 경계 내장. 자본/sizing 아님",
+    "부실 tripwire(Part A/B): catastrophic exit(0.9%) = SAFE_FADING 소관 아님 명시(R40 정량) — benign 98.3%만 SAFE_FADING, 진성폐지/distress는 부실 tripwire 우선"
+  ],
+  "next_probes": [
+    "SAFE/SAFE_FADING live 발화 OOS 추적 배관 (FQ-053 P2 승계·현 SAFE_FADING 2건 발화로 armed→active) — flagged 보유(LG이노텍·신세계)의 익월(202608~) 실현 위험(하방/tail)을 monitoring_report에 tier별(mid/mega) 누적 기록해 R40 h0-1 protection 창의 out-of-sample 확증. mso=1→2 auto-clear 시점도 로그. feasible now(insider 패널+rawdata 재사용).",
+    "부실 tripwire coverage 확장 (FQ-053 P2 / FQ-038 결합) — catastrophic exit(진성폐지/distress)은 투자가능 uni에서 ~1%뿐이나 pre-filter(small-cap/below-liq) 영역에 집중. R40 census를 uni-이전 broader universe로 확장해 SAFE_FADING(투자가능-only)이 구조적으로 놓치는 부분을 R22~R24 지각제출/부실 라인과 소관 정합.",
+    "catastrophic-exit 경계 명시 tripwire 형식화 (R39 P3 승계) — 현재 catastrophic exit은 Part A/B 부실 tripwire + execution 유니버스이탈에 caveat 라벨로만 위임. benign 98.3%/catastrophic 0.9% 경계를 execution 이탈감지와 명시 우선순위 규칙으로 형식화할지 검토(현 배선은 라벨·주석 경계)."
+  ],
+  "layer_bottleneck": "⑧위험모델/감시 (SAFE tripwire 청산규칙 horizon 정교화) — 성과 병목 아님(위생 배선 refine). insider 라인 R9~R41 monitoring 소비면 확립 완료·자본 미검 불변.",
+  "book_state_unchanged": true,
+  "production_unchanged": true,
+  "outputs_ramp_unchanged": true,
+  "artifacts": {
+    "wiring": "02_Infrastructure/reports/filing_delay_watch.R (Part C horizon 확장: FADE_MAX_MSO·months_since_off·prev2/prev3) + 02_Infrastructure/prompts/monitoring_init.md (Part C horizon 규칙)",
+    "run_log": "stage_artifacts/WT_D20260715_010/_r41_watch_run_log.txt",
+    "verify_scripts": "stage_artifacts/WT_D20260715_010/_verify_mso.R + _validate_json.R",
+    "output_json": "qepm/observability/filing_delay_watch_latest.json + filing_delay_watch_202607.json",
+    "layer_map": "06_Registry/layer_bottleneck_map.md (⑧ 행 v14)"
+  },
+  "generated_at": "2026-07-15"
+}
