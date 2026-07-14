@@ -1,0 +1,28 @@
+source("02_Infrastructure/axiom/lcode_emit.R")
+r <- emit_lcode(
+  mode = "ramp",
+  strategy_id = "R33_insider_consumption_faces",
+  grade = "C",
+  metric_type = "canonical_screen",
+  selection_type = "chain",
+  lesson_text = "insider 소비면 전환(R9 next_probe P1): 선별/필터 3면(R9 pool-선별·A net-seller exclusion paired t=-0.09·B net-sell tripwire t=-0.01)은 config-scoped negative(수익-파생 선별/필터 벽 잔존). 그러나 B net-buy breadth 클러스터(INS02>=+1.0)는 monitoring 소비면에서 capability_established — 익월 forward 수익차 +12.4%/yr(NW-t 3.36), size-잔차 통제 후 +15.6%/yr(t 5.22, 강화), 배포-관련 large-cap tier t 2.57, 하방(-8.4->-7.2%)·변동성(13.8->12.2%)·급락빈도(7.7->5.0%) 모두 감소. 선별-면 cap-tier 국소화 벽이 monitoring-면엔 안 걸림(R24/R25 선례 재현: pool-무기여 신호가 tripwire로 유효). base=production clean T-1(§7b parity 검증), insider 패널 재사용, DART API X.",
+  mechanism_hypothesis = "임원 순매수 breadth 클러스터 = 종목단 forward 안전(신뢰) 신호. 정보-우위 임원의 지속 매집이 다음달 낮은 낙폭/변동성/급락과 결합 — 종목선별(cap-w top-25 전이)이 아닌 per-stock 위험 특성화 소비면에서 신호 보존.",
+  core_reference = "Cohen-Malloy-Pomorski 2012 (routine vs opportunistic insider trades)",
+  metrics = list(
+    branchA_exclusion_paired_t = -0.09,
+    branchB_netbuy_gap_t = 3.36,
+    branchB_netbuy_sizeneutral_t = 5.22,
+    branchB_netbuy_largecap_t = 2.57,
+    branchB_netsell_gap_t = -0.01,
+    coverage_months = 126,
+    n_trials = 3,
+    verdict_type = "capability_established",
+    next_probe = c(
+      "net-buy 클러스터를 PG2 book overlay/de-risk 예외 tripwire로 배선 측정(자본 아님)",
+      "coverage 확장(126m->) + 대형주 tier 안정성 재검정",
+      "sector-neutral 검정으로 잔여 confound 격리"),
+    consumer_surfaces = c("monitoring: net-buy tripwire 배선 후보", "선별라벨/유니버스: net-sell 무효"),
+    evidence = "stage_artifacts/WT_D20260715_002/verdict_r33_insider_consumption.json"
+  )
+)
+cat("emitted:", if(is.list(r)) (r$l_code %||% "see-output") else as.character(r), "\n")

@@ -1,0 +1,35 @@
+Warning messages:
+1: package 'arrow' was built under R version 4.5.3 
+2: package 'sandwich' was built under R version 4.5.2 
+3: package 'lmtest' was built under R version 4.5.2 
+4: package 'digest' was built under R version 4.5.2 
+[ramp_io.R] Loaded — ramp_write_parquet/ramp_write_json (§2.4 meta enforced)
+[backtest_result_contract.R] Loaded — Backtest Result Contract v1.0
+  Functions: build_bt_result() / validate_bt_result()
+  10 components: manifest, strategy_spec, nav, period_returns, holdings, benchmark_returns, metrics, benchmark_compare, rolling_metrics, drawdowns, audit
+[canonical_screen_bt.R] Loaded — canonical_screen_bt() (v8.x WS1 real-computation helper)
+[factor_validation.R] Loaded — build_monthly_forward_returns / validate_factor / approve_factors
+[backtest_result_contract.R] Loaded — Backtest Result Contract v1.0
+  Functions: build_bt_result() / validate_bt_result()
+  10 components: manifest, strategy_spec, nav, period_returns, holdings, benchmark_returns, metrics, benchmark_compare, rolling_metrics, drawdowns, audit
+[canonical_screen_bt.R] Loaded — canonical_screen_bt() (v8.x WS1 real-computation helper)
+[1] TRUE
+=== R33 insider 소비면 전환 — WT-D20260715_002 / FQ-049 === 
+[vintage] rawdata pin=.cache/pin/rawdata_r9_pin_20260715.parquet (mtime=2026-07-15 00:21:02.834291) 
+[base] clean T-1 panel: rows=79856 months=268 range=2004-01-01~2026-04-01 label=production_parity_verified parity_PORT_t=3.058 
+[align] bench months=268 liq rows=82127 size rows=82127 | ticker overlap clean∩raw=846 
+[insider] rows=43115 hold_ym cov=200502~202607 (홀딩월 정렬, signal m→m+1 PIT) 
+[prereg] config_hash=fef068a43039d72f selection_type=chain n_trials=3 
+[parity] base cap-w PORT_t=3.478 (target 3.058) | EW-uni diag PORT_t=4.214 | n_months=268 | TO=12.45 
+[A] 배제 후보(INS01 z<=-1.0) rows=5009 months=236 (net-seller 극단) 
+[A] base top-25 중 배제된 종목: 총 393건 / 영향월 164 / 월평균(영향월) 2.40종목 
+[A] filtered cap-w PORT_t=3.306 | EW-uni diag=4.122 | n=268 | TO=12.51 
+[A] PAIRED (filtered-base) NW-t=-0.09 Δann=-0.0006 | 영향월=185 / 268 | KILL(>=2.0)=TRUE 
+[A] risk: MDD base=-0.368 filt=-0.370 | active-SR base=0.78 filt=0.75 | active-vol base=0.134 filt=0.139 
+[B:net_buy_cluster(INS02>=+1.0)] n_obs=3553 months=126 avg/mo=28.2 | fwd flag=+0.0188 nonflag=+0.0097 | gap_ret_t=+3.36 gap_exc_t=+3.36 
+[B:net_buy_cluster(INS02>=+1.0)] downside flag=-0.0719 nonflag=-0.0844 | vol flag=0.1223 nonflag=0.1377 | tail(<-15%) flag=0.050 nonflag=0.077 
+[B:net_sell_extreme(INS01<=-1.0)] n_obs=3663 months=232 avg/mo=15.8 | fwd flag=+0.0110 nonflag=+0.0101 | gap_ret_t=-0.01 gap_exc_t=-0.01 
+[B:net_sell_extreme(INS01<=-1.0)] downside flag=-0.0877 nonflag=-0.0836 | vol flag=0.1420 nonflag=0.1368 | tail(<-15%) flag=0.082 nonflag=0.075 
+
+R33_DONE parity=3.478 A_paired_t=-0.09 B_buy_gap_t=+3.36 B_sell_gap_t=-0.01 
+[SAVED] stage_artifacts/WT_D20260715_002/r33_results.json 

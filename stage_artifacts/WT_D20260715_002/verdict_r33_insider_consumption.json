@@ -1,0 +1,71 @@
+{
+  "wt": "WT_D20260715_002",
+  "mode": "RAMP-adjacent alpha consumption",
+  "round": "R33",
+  "fq": "FQ-049",
+  "title": "insider 소비면 전환 — R9 next_probe P1 직접 소비 (exclusion 필터 / monitoring 경보)",
+  "as_of_date": "2026-07-15",
+  "source_version": "R33_v1",
+  "vintage_pin": ".cache/pin/rawdata_r9_pin_20260715.parquet (mtime 2026-07-15 00:21:02, R9 pin 재사용 = 부모 라운드 정합)",
+  "base_source": "production clean T-1 (alpha_scores_str1715_268m_cleanT1.parquet, production_parity_verified) — §7b 정합, 파생 저장 268m same-month vintage 미사용",
+  "pit": "clean T-1 alpha(홀딩월 결정, 검증) + insider signal_date(m월말)→홀딩월(m+1) 필터/경보, 홀딩월 시작 전 데이터만 (C5). insider 재빌드 X, DART API X.",
+  "config_hash": "fef068a43039d72f",
+  "selection_type": "chain (가설주도 고정 config, sweep 아님) n_trials=3",
+  "parity_note": "base cap-w PORT_t=3.478 (재구성 cap-w 벤치 기준) vs production-meta 3.058 — 벤치 재구성 차이(Size-가중 rawdata 재빌드 ≠ production 벤치). paired 판정은 벤치·vintage canceling이라 이 차이에 불변. 절대치는 재구성-벤치 라벨.",
+
+  "branchA_exclusion_filter": {
+    "kind": "universe exclusion filter (net-seller 배제)",
+    "target": "INS01_OffNetBuyIntensity3m z <= -1.0 (임원 대량 순매도, 사전고정)",
+    "coverage": {"excl_candidate_rows": 5009, "excl_months": 236, "excl_in_top25_total": 393, "affected_months": 164, "avg_when_affected": 2.40, "paired_active_months": 185, "total_months": 268},
+    "base_capw_port_t": 3.478, "filt_capw_port_t": 3.306,
+    "base_ewuni_port_t": 4.214, "filt_ewuni_port_t": 4.122,
+    "paired_nw_t": -0.09, "paired_delta_ann": -0.0006,
+    "risk": {"mdd_base": -0.368, "mdd_filt": -0.370, "active_sr_base": 0.78, "active_sr_filt": 0.75, "active_vol_base": 0.134, "active_vol_filt": 0.139},
+    "verdict": "config_scoped_negative",
+    "verdict_text": "net-seller 배제는 북 위험/수익 어느 축도 개선 못함 — paired t=-0.09(≈0, 미미 음), MDD·active-SR·vol 전부 불개선(경미 악화). top-25 고알파 이름 내에서 임원 순매도는 underperformance 예측 안 함(오히려 배제가 미세 손해). exclusion 소비면에서도 cap-w 벽과 무관하게 무기여."
+  },
+
+  "branchB_monitoring": {
+    "net_buy_cluster": {
+      "flag": "INS02_OffBuyBreadth6m z >= +1.0 (임원 순매수 breadth 클러스터)",
+      "coverage_months": 126, "avg_flag_per_month": 28.2, "n_obs": 3553,
+      "fwd_ret_flag": 0.0188, "fwd_ret_nonflag": 0.0097,
+      "gap_ret_nw_t": 3.36, "gap_ann": 0.1238,
+      "size_neutral": {"resid_gap_ann": 0.1564, "resid_gap_nw_t": 5.22, "note": "size 통제 후 신호 강화 — 소형주 아티팩트 아님"},
+      "tercile": {"small": {"gap_ann": 0.130, "t": 1.34}, "mid": {"gap_ann": 0.281, "t": 5.17}, "large": {"gap_ann": 0.083, "t": 2.57}},
+      "flag_size_dist": {"small": 365, "mid": 984, "large": 2204},
+      "risk": {"downside_flag": -0.0719, "downside_nonflag": -0.0844, "vol_flag": 0.1223, "vol_nonflag": 0.1377, "tail_lt_m15pct_flag": 0.050, "tail_lt_m15pct_nonflag": 0.077},
+      "verdict": "capability_established (monitoring-face, non-capital)",
+      "verdict_text": "임원 순매수 breadth 클러스터 = 종목단 forward 안전/신뢰 신호. forward 수익 gap +12.4%/yr(t=+3.36), size 통제 후 +15.6%/yr(t=+5.22, 강화) — 소형주 아티팩트 아님. ★배포-관련 large-cap tier에서도 t=+2.57(유의) = 선별-면 cap-tier 국소화 벽(R9)과 달리 monitoring-면은 열림. flag 종목은 하방(-7.2% vs -8.4%)·변동성(12.2% vs 13.8%)·tail(<-15%: 5.0% vs 7.7%) 모두 낮음 = risk-경보가 아니라 risk-감소(신뢰) tripwire. R9 next_probe P1 답: insider는 monitoring 소비면(net-buy 방향)에서 유효 — 선별풀 KILL과 다른 기전."
+    },
+    "net_sell_extreme": {
+      "flag": "INS01_OffNetBuyIntensity3m z <= -1.0",
+      "coverage_months": 232, "avg_flag_per_month": 15.8, "n_obs": 3663,
+      "fwd_ret_flag": 0.0110, "fwd_ret_nonflag": 0.0101, "gap_ret_nw_t": -0.01,
+      "risk": {"downside_flag": -0.0877, "downside_nonflag": -0.0836, "vol_flag": 0.1420, "vol_nonflag": 0.1368, "tail_lt_m15pct_flag": 0.082, "tail_lt_m15pct_nonflag": 0.075},
+      "verdict": "config_scoped_negative",
+      "verdict_text": "임원 순매도 극단은 forward 위험 신호력 없음 — 수익 gap t=-0.01(비플래그와 무구분), 하방/vol/tail 미세 악화나 유의성 無. net-sell = KR에서 쓸모있는 risk tripwire 아님(Branch A 배제 무기여와 정합)."
+    },
+    "dual_basis_note": "cross-sectional 월별 그룹평균 gap에서 market-excess(ret-BM)는 BM이 상수라 raw와 축퇴(동일 t). monitoring dual-basis의 실질 = 위험지표(downside/vol/tail) — 병기함."
+  },
+
+  "verdict_overall": "capability_established",
+  "verdict_overall_text": "insider 소비면 전환 = 부분 성공. R9 pool-선별 KILL·Branch A net-seller exclusion·Branch B net-sell tripwire = 3면 config_scoped_negative(수익-파생 선별/필터 면 벽 재확인). 그러나 Branch B **net-buy breadth 클러스터 = monitoring 소비면 capability_established**: size-robust(t 3.36→5.22)·large-cap 유의(t 2.57)·하방/vol/tail 감소. 선별-면 cap-tier 벽이 monitoring-면엔 안 걸림(R24/R25 선례 재현 — pool-무기여 신호가 tripwire로 유효). tripwire 배선 후보 = net-buy 클러스터(자본 아님, 신뢰/de-risk 신호).",
+  "consumer_surfaces": ["⑤monitoring: net-buy breadth 클러스터 → forward 안전 tripwire (배선 후보)", "⑥선별라벨: net-sell exclusion = 무효(배선 금지)", "①유니버스: net-sell 필터 = 무효(배선 금지)"],
+  "next_probes": [
+    "net-buy 클러스터를 incumbent PG2 book overlay/de-risk 예외 신호로 배선 측정 — 북 보유 종목이 net-buy flag일 때 실현 drawdown/보유확신 개선하는가 (tripwire 실효 검증, 자본 아님)",
+    "net-buy 클러스터 coverage 확장(126m→) — INS02+INS03 결합 또는 breadth 임계 완화로 월커버리지 늘려 large-cap tier(t=2.57) 안정성 재검정",
+    "net-buy 클러스터 forward-gap 의 sector-neutral 검정 — size 통제는 통과, 섹터 집중(오너경영 종목군) 잔여 confound 격리"
+  ],
+  "live_trigger_negative_faces": "net-sell exclusion/tripwire 부활 = KR 임원 순매도 정보성이 회복되는 레짐(공시제도 강화/숏 규제 변화) 또는 비-장내 순매도 magnitude 데이터원 등재 시",
+  "layer_bottleneck": "⑤monitoring (net-buy 신호 monitoring-면 열림) / 선별·필터 면은 ①재료 수익-파생 벽 잔존",
+  "kill": {"branchA": true, "branchB_net_sell": true, "branchB_net_buy": false},
+  "artifacts": {
+    "runner": "stage_artifacts/WT_D20260715_002/run_r33_insider_consumption.R + run_r33_sizeneutral.R",
+    "results": "stage_artifacts/WT_D20260715_002/r33_results.json + r33_sizeneutral.json",
+    "paired_series": "stage_artifacts/WT_D20260715_002/r33_branchA_paired_series.parquet",
+    "objects": "stage_artifacts/WT_D20260715_002/_r33_objects.rds",
+    "log": "stage_artifacts/WT_D20260715_002/_r33_run_log.txt",
+    "challenge_note": "stage_artifacts/WT_D20260715_002/challenge_note_r33_20260715.md"
+  }
+}

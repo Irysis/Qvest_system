@@ -1,0 +1,124 @@
+{
+  "prereg": {
+    "mode": "RAMP-adjacent alpha consumption",
+    "round": "R33",
+    "fq": "FQ-049",
+    "wt": "WT-D20260715_002",
+    "base_source": "production clean T-1 (alpha_scores_str1715_268m_cleanT1.parquet, production_parity_verified)",
+    "base_returns": "production-verified Ret_1m (§7b)",
+    "bench": "cap-w KOSPI200∪KQ150 (rawdata pin, hold-aligned)",
+    "pit": "clean T-1 alpha + insider signal_date(m월말)→홀딩월(m+1) 필터, 홀딩월 시작 전 데이터만 (C5)",
+    "branchA": {
+      "kind": "universe exclusion filter",
+      "target": "INS01_OffNetBuyIntensity3m z <= -1.0 (임원 대량 순매도, 사전고정)",
+      "action": "배제 후 잔여에서 top-25 EW 재선정",
+      "authoritative": "paired NW-t (filtered - base, 벤치·vintage canceling)",
+      "dual_basis": "cap-w + EW-uni 절대 PORT_t 병기 (canonical_screen_diag, 비바인딩)"
+    },
+    "branchB": {
+      "kind": "monitoring tripwire",
+      "flags": {
+        "net_buy_cluster": "INS02_OffBuyBreadth6m z >= +1.0",
+        "net_sell_extreme": "INS01_OffNetBuyIntensity3m z <= -1.0"
+      },
+      "outcome": "forward 1m 수익(홀딩월) — 평균/하방/변동성/tail(<-15%) vs 비플래그",
+      "dual_basis": "raw + market-excess(ret-BM)"
+    },
+    "top_n": 25,
+    "cost_bps_oneway": 15,
+    "liq_min": 200000000,
+    "gate_hard": [2.95, 0.7, 0.64],
+    "paired_kill": 2,
+    "selection_type": "chain (가설주도 고정 config, sweep 아님)",
+    "n_trials": 3,
+    "honest_prior": "FQ-001 standalone insider DEAD_PRELIM + R9 pool-선별 KILL(paired<=+0.73) — 보수적",
+    "vintage_pin": ".cache/pin/rawdata_r9_pin_20260715.parquet",
+    "pin_mtime": "2026-07-15 00:21:02.834291",
+    "as_of": "2026-07-15",
+    "config_hash": "fef068a43039d72f"
+  },
+  "vintage_pin": ".cache/pin/rawdata_r9_pin_20260715.parquet",
+  "pin_mtime": "2026-07-15 00:21:02.834291",
+  "parity": {
+    "base_capw_port_t": 3.47819,
+    "target": 3.058,
+    "base_ewuni_port_t": 4.21425,
+    "base_n_months": 268,
+    "base_turnover": 12.44955
+  },
+  "branchA": {
+    "excl_threshold": -1,
+    "n_excl_candidate_rows": 5009,
+    "n_excl_months": 236,
+    "excl_in_top25_total": 393,
+    "excl_in_top25_affected_months": 164,
+    "excl_in_top25_avg_when_affected": 2.39634,
+    "filt_capw_port_t": 3.30556,
+    "filt_ewuni_port_t": 4.122,
+    "filt_turnover": 12.51045,
+    "paired_nw_t": -0.08734,
+    "paired_delta_ann": -0.0006,
+    "paired_n_months": 268,
+    "paired_active_months": 185,
+    "paired_kill": true,
+    "risk": {
+      "base_mdd": -0.3675,
+      "filt_mdd": -0.37046,
+      "base_active_sr": 0.77859,
+      "filt_active_sr": 0.74968,
+      "base_active_vol": 0.13443,
+      "filt_active_vol": 0.13881
+    },
+    "capw_tier_base": {
+      "MEGA": 0.06015,
+      "MID": 0.08701,
+      "OTHER": 0.85254,
+      "UNRANKED": 0.0003
+    },
+    "capw_tier_filt": {
+      "MEGA": 0.05134,
+      "MID": 0.08731,
+      "OTHER": 0.86104,
+      "UNRANKED": 0.0003
+    }
+  },
+  "branchB": {
+    "net_buy_cluster": {
+      "label": "net_buy_cluster(INS02>=+1.0)",
+      "n_flag_obs": 3553,
+      "n_months": 126,
+      "avg_flag_per_month": 28.19841,
+      "mean_fwd_flag": 0.01884,
+      "mean_fwd_nonflag": 0.00969,
+      "downside_flag": -0.07186,
+      "downside_nonflag": -0.08437,
+      "vol_flag": 0.12233,
+      "vol_nonflag": 0.13768,
+      "tail_hit_flag": 0.05038,
+      "tail_hit_nonflag": 0.07657,
+      "gap_ret_ann": 0.12377,
+      "gap_ret_t": 3.36358,
+      "gap_exc_ann": 0.12377,
+      "gap_exc_t": 3.36358
+    },
+    "net_sell_extreme": {
+      "label": "net_sell_extreme(INS01<=-1.0)",
+      "n_flag_obs": 3663,
+      "n_months": 232,
+      "avg_flag_per_month": 15.78879,
+      "mean_fwd_flag": 0.01097,
+      "mean_fwd_nonflag": 0.01007,
+      "downside_flag": -0.0877,
+      "downside_nonflag": -0.08364,
+      "vol_flag": 0.14202,
+      "vol_nonflag": 0.13678,
+      "tail_hit_flag": 0.08167,
+      "tail_hit_nonflag": 0.07506,
+      "gap_ret_ann": -0.00028,
+      "gap_ret_t": -0.00742,
+      "gap_exc_ann": -0.00028,
+      "gap_exc_t": -0.00742
+    }
+  },
+  "generated_at": "2026-07-15T01:39:45+0900"
+}
