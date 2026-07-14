@@ -21,7 +21,8 @@ cap_norm <- function(w){w[!is.finite(w)|w<0]<-0; if(sum(w)<=0) return(rep(1/leng
 mk_capw <- function(scoredt, scorecol){
   S <- merge(scoredt[is.finite(get(scorecol)),.(Date,Ticker,sc=get(scorecol))], SIZE, by=c("Date","Ticker"))
   S <- merge(S, liqf, by=c("Date","Ticker"), all.x=TRUE); S <- S[is.na(adv)|adv>=2e8]
-  W <- list(); for(d in sort(unique(S$Date))){sub<-S[Date==d]; if(nrow(sub)<25) next
+  dd <- sort(unique(S$Date))
+  W <- list(); for(i in seq_along(dd)){d<-dd[i]; sub<-S[Date==d]; if(nrow(sub)<25) next
     setorder(sub,-sc); hd<-head(sub,25); W[[as.character(d)]]<-data.table(Date=d,Ticker=hd$Ticker,w=cap_norm(hd$Size))}
   rbindlist(W)}
 ## NW lag-3 t of a mean (paired diff series)
