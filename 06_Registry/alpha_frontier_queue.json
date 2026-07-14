@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
-  "updated": "2026-07-13",
+  "updated": "2026-07-14",
   "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
   "entries": [
     {
@@ -9,7 +9,7 @@
       "lane": "non_return",
       "title": "DART exec-insider 역사 (CMP 2012 충실복제)",
       "hypothesis": "임원(officer) 순매수 신호의 routine/opportunistic 분류 기반 횡단 알파 — K200∪KQ150에서 ICIR 1.31@H1 실측(감쇠벽 밖), IC→PORT_t 전이 검증이 미완",
-      "ev_rationale": "⚠07-10 예비 canonical(2005~2017-09 read-only)로 EV 대폭 하향: standalone DEAD_PRELIM(placebo 70pct·EW-basis 음·forward 소멸·book 비직교 corr 0.49). KR서 CMP routine/opportunistic 분리 공허. 전체 크롤 완료 후에도 standalone 본측정 보류 권고 — 잔여 가치는 screen-tier 재확인 1회 + MEGA sign-content conditioning-feature 한정 (INSIDER_CMP_PRELIM_20260710 L-code)",
+      "ev_rationale": "⚠07-10 예비 canonical(2005~2017-09 read-only)로 EV 대폭 하향: standalone DEAD_PRELIM(placebo 70pct·EW-basis 음·forward 소멸·book 비직교 corr 0.49). KR서 CMP routine/opportunistic 분리 공허. 전체 크롤 완료 후에도 standalone 본측정 보류 권고 — 잔여 가치는 screen-tier 재확인 1회 + MEGA sign-content conditioning-feature 한정 (INSIDER_CMP_PRELIM_20260710 L-code) | [07-14 갱신] 백필 248/258개월(200501~202508 done, 잔여 202509~202606 10개월). R9 발사조건 202604 미도달 — 내일 02:00 wave 이어수집(BF_END=2026-06 배선 완료)",
       "wall_check": "return-파생 소진 벽 밖(비-return 원천). 단 top-25 long-only IC→PORT_t 전이 벽은 미검증 — canonical PORT_t가 최종 관문",
       "data_gate": "document.xml 크롤 연속 커버리지(2009-2024) 필요 — 스케줄태스크 Qvest_InsiderBackfill 진행중(~10-14일), 현재 비연속",
       "owner": "다른 세션/스케줄태스크 (크롤). 실측은 크롤 2013+ 연속 도달 후",
@@ -61,28 +61,19 @@
       "wall_check": "비-return·미탐색. exclusion-형 소비면 long-only 정합",
       "data_gate": "2단: [1단 무파서] T1 감사의견 구조화 API(3,828콜·0.5일) + T3 정정지도(~400콜) + T2a 담보 최근2년 majorstock(348콜) — insider 백필 완결 후 즉시 가능. [2단 파서] T2b 담보 역사 document.xml ~29k건(~4.5일) — 1단 예비 신호 양성일 때만 지불(도훈 결정). census: 04_Research/dart_census/census_pledge_audit_20260713.md",
       "owner": "Q-Lead (도훈 승인 2026-07-13, task #64)",
-      "status": "stage1_acquired_t2a_resume_pending",
-      "next_action": "t2a 잔여 283콜 재개(07-14 insider 02:00 wave 후 잔여 쿼터 — insider는 230/230월 완결이라 no-op, 쿼터 리셋 후 resume_cmd 재실행) → 완료 시 신호 실측 사전등록 라운드(T1 exclusion형·T3 정정빈도·T2a 담보 — returns join은 사전등록 후에만)",
+      "status": "stage1_acquired_complete_await_signal_round",
+      "next_action": "신호 실측 사전등록 라운드 — T1 exclusion형(비적정/going-concern)·T3 정정빈도·T2a 담보설정 exclusion. 유니버스 PIT(당시 constituent)로 생존편향 처리 의무",
       "source_refs": [
         "memory: next_session_task 07-05 미탐색 프론티어 맵",
         "census: FQ-022 / 04_Research/dart_census/census_pledge_audit_20260713.{md,json}",
         "acquisition: 02_Infrastructure/data/dart_pledge_audit/acquisition_manifest.json (task #64)"
       ],
       "acquisition_result": {
-        "date": "2026-07-13",
-        "calls": {
-          "total": 4335,
-          "t1": 3828,
-          "t3_a001": 348,
-          "t3_f": 93,
-          "t2a_partial": 66,
-          "fails": 0,
-          "hard_cap": 5000
-        },
-        "t1_audit_opinion": "FY2015~2025 348 corps 완료(문서 0). 커버리지 FY2015 252/348 → FY2024+ 348/348 (013=미공시·상장전). 비적정(한정) 당기 2건: 한화오션 FY2016·코나아이 FY2019 — ⚠현행 유니버스 = 생존편향, 신호 라운드에서 PIT 유니버스 필요. emphs_matter(강조사항)는 FY2019+ 실효(45~97/yr), 계속기업 kw 6행/5 corps",
-        "t3_correction_map": "A001 7,680행/348 corps, [기재정정] 1,694행/325 corps (연 13~142건, 2014+ 상승) + F군 정정 165행/93 corps(census 일치) — 상장 유니버스 정정지도 F채널 대비 ~10배 밀도",
-        "t2a_pledge": "PARTIAL 65/348 corps(쿼터 halt 020, 07-13 21:33). 730행, 담보/질권 resn 24/65 corps — 283콜 잔여",
-        "artifacts": "02_Infrastructure/data/dart_pledge_audit/{t1_audit_fy2015..2025,t1_audit_opinion_fy2015_2025,t3_a001_annual_reports,t3_fgroup_rows}.parquet + raw_*.jsonl + acquisition_manifest.json"
+        "t1_audit_opinion": "FY2015~2025 12,844행, 348 corps (비적정 당기 2건: 한화오션 FY2016·코나아이 FY2019 — 생존편향 유의)",
+        "t3_correction_map": "상장 유니버스 [기재정정] 1,694행/325 corps (2014+ 상승)",
+        "t2a_pledge_2yr": "majorstock 4,000행/339 corps, 담보/질권 설정 205/339 corps (ctr_stkqy>0), 최근2년(2024~2026)",
+        "calls_total": 4618,
+        "fails": 0
       }
     },
     {
