@@ -15,7 +15,8 @@
       "args": "optional R named-list args passed to entry_fn",
       "tier": "1=critical (regime/MSM/strategy), 2=important (factor/macro), 3=research",
       "value_checks": "OPTIONAL (2026-07-03 감사 DATA-P0-1) — 값-무결성 선언. cache_freshness_audit.R (1b) 섹션이 소비, 위반=VALUE_FAIL/CRITICAL. keys: abs_ret_max {col, threshold, max_violations} = |col|>threshold 건수 상한 (날짜 unique 기준) / required_cols [..] = 필수 컬럼 존재 (Layer2 strip 사고 탐지) / parity {against, col, against_col, min_monthly_cor} = 기준 캐시 대비 월수익(log1p 합) 상관 하한"
-    }
+    },
+    "last_hygiene": "2026-07-14 Q (ic_matrix on_demand 재분류 + dart_raw_quarterly 계절 문턱)"
   },
   "caches": [
     {
@@ -28,9 +29,33 @@
       "depends_on": [],
       "tier": 1,
       "value_checks": {
-        "abs_ret_max": {"col": "BM_Ret", "threshold": 0.15, "max_violations": 0},
-        "required_cols": ["Date", "Ticker", "K200", "KQ150", "UnfaithfulDisc", "AdminStock", "TradingHalt", "Float", "Sector_Lv2", "BM_Ret", "Ret", "Close", "Vol", "Size"],
-        "parity": {"against": ".cache/benchmark.parquet", "col": "BM_Ret", "against_col": "BM_Ret", "min_monthly_cor": 0.99}
+        "abs_ret_max": {
+          "col": "BM_Ret",
+          "threshold": 0.15,
+          "max_violations": 0
+        },
+        "required_cols": [
+          "Date",
+          "Ticker",
+          "K200",
+          "KQ150",
+          "UnfaithfulDisc",
+          "AdminStock",
+          "TradingHalt",
+          "Float",
+          "Sector_Lv2",
+          "BM_Ret",
+          "Ret",
+          "Close",
+          "Vol",
+          "Size"
+        ],
+        "parity": {
+          "against": ".cache/benchmark.parquet",
+          "col": "BM_Ret",
+          "against_col": "BM_Ret",
+          "min_monthly_cor": 0.99
+        }
       },
       "_value_note": "2026-07-03 감사 DATA-P0-1: BM_Ret +581% 손상값이 신선도-단일축에서 FRESH 판정 → 7월 factor DB 60팩터(M08_Residual_Mom 포함) 결손. threshold 0.15 근거 = 1990~2026 실측 max |BM_Ret| 0.1223 (지수 일수익). required_cols = Layer2 strip 사고(rawdata_sanitize core_cols) 재발 방지"
     },
@@ -44,8 +69,16 @@
       "depends_on": [],
       "tier": 1,
       "value_checks": {
-        "abs_ret_max": {"col": "BM_Ret", "threshold": 0.15, "max_violations": 0},
-        "required_cols": ["Date", "BM_Close", "BM_Ret"]
+        "abs_ret_max": {
+          "col": "BM_Ret",
+          "threshold": 0.15,
+          "max_violations": 0
+        },
+        "required_cols": [
+          "Date",
+          "BM_Close",
+          "BM_Ret"
+        ]
       }
     },
     {
@@ -55,7 +88,9 @@
       "schedule": "monthly",
       "date_col": "Date",
       "max_lag_days": 35,
-      "depends_on": [".cache/RAWDATA.parquet"],
+      "depends_on": [
+        ".cache/RAWDATA.parquet"
+      ],
       "tier": 1,
       "_note": "universe는 월말 snapshot만 추가 — krx_update_universe()가 'No new month-ends' 시 skip. 2026-05-24 도훈 audit: schedule=daily mislabel 정정 (lag false-CRITICAL)"
     },
@@ -76,7 +111,9 @@
       "schedule": "daily",
       "date_col": "Date",
       "max_lag_days": 3,
-      "depends_on": [".cache/RAWDATA.parquet"],
+      "depends_on": [
+        ".cache/RAWDATA.parquet"
+      ],
       "tier": 1
     },
     {
@@ -106,7 +143,9 @@
       "schedule": "daily",
       "date_col": "Date",
       "max_lag_days": 4,
-      "depends_on": [".cache/fred_macro.parquet"],
+      "depends_on": [
+        ".cache/fred_macro.parquet"
+      ],
       "tier": 1
     },
     {
@@ -127,7 +166,9 @@
       "schedule": "daily",
       "date_col": "Date",
       "max_lag_days": 1,
-      "depends_on": [".cache/benchmark.parquet"],
+      "depends_on": [
+        ".cache/benchmark.parquet"
+      ],
       "tier": 1
     },
     {
@@ -137,7 +178,9 @@
       "schedule": "daily",
       "date_col": "Date",
       "max_lag_days": 1,
-      "depends_on": [".cache/benchmark.parquet"],
+      "depends_on": [
+        ".cache/benchmark.parquet"
+      ],
       "tier": 1
     },
     {
@@ -147,18 +190,28 @@
       "schedule": "daily",
       "date_col": "Date",
       "max_lag_days": 35,
-      "depends_on": [".cache/msm_hybrid_latest.parquet", ".cache/macro_regime.parquet", ".cache/ktri_indices.parquet"],
+      "depends_on": [
+        ".cache/msm_hybrid_latest.parquet",
+        ".cache/macro_regime.parquet",
+        ".cache/ktri_indices.parquet"
+      ],
       "tier": 1
     },
     {
       "path": ".cache/unified_regime_signal_daily.parquet",
       "producer": "02_Infrastructure/regime/regime_signal.R",
       "entry_fn": "build_regime_signal_table",
-      "args": {"daily": true},
+      "args": {
+        "daily": true
+      },
       "schedule": "daily",
       "date_col": "Date",
       "max_lag_days": 3,
-      "depends_on": [".cache/msm_daily_latest.parquet", ".cache/fred_macro_wide.parquet", ".cache/ktri_indices.parquet"],
+      "depends_on": [
+        ".cache/msm_daily_latest.parquet",
+        ".cache/fred_macro_wide.parquet",
+        ".cache/ktri_indices.parquet"
+      ],
       "tier": 1
     },
     {
@@ -177,9 +230,12 @@
       "entry_fn": "dart_daily_incremental",
       "schedule": "daily",
       "date_col": null,
-      "max_lag_days": 3,
-      "depends_on": [".cache/dart/corpcode_map.parquet"],
-      "tier": 2
+      "max_lag_days": 100,
+      "depends_on": [
+        ".cache/dart/corpcode_map.parquet"
+      ],
+      "tier": 2,
+      "_note": "2026-07-14: max_lag 3→100. 분기공시 = 이벤트성(Q1 5월·반기 8월·Q3 11월·연간 3~4월) — daily 수집은 유지하되 소강기(7월 등)에 새 행 부재는 정상. 3일 문턱은 계절성 무시로 CRITICAL 오탐. 100d = 분기 간격 여유(시즌 미갱신은 여전히 감지)"
     },
     {
       "path": ".cache/dart/insider_trades.parquet",
@@ -188,7 +244,9 @@
       "schedule": "daily",
       "date_col": "Date",
       "max_lag_days": 90,
-      "depends_on": [".cache/dart/corpcode_map.parquet"],
+      "depends_on": [
+        ".cache/dart/corpcode_map.parquet"
+      ],
       "tier": 2,
       "_note": "DART insider 공시는 비정기 filing (분기 또는 그 이상 gap 가능). 2026-05-24 audit: max_lag 4 → 90 정정 (data refresh OK but upstream filing 빈도 의존). daily_refresh.sh가 매일 fetch 시도하나 새 filing 없으면 max Date 정체"
     },
@@ -199,7 +257,9 @@
       "schedule": "monthly",
       "date_col": null,
       "max_lag_days": 35,
-      "depends_on": [".cache/dart/dart_raw_financials.parquet"],
+      "depends_on": [
+        ".cache/dart/dart_raw_financials.parquet"
+      ],
       "tier": 2
     },
     {
@@ -209,7 +269,10 @@
       "schedule": "monthly",
       "date_col": null,
       "max_lag_days": 35,
-      "depends_on": [".cache/fundamental_dart.parquet", ".cache/fundamental_xlsx.parquet"],
+      "depends_on": [
+        ".cache/fundamental_dart.parquet",
+        ".cache/fundamental_xlsx.parquet"
+      ],
       "tier": 2,
       "_note": "도훈 audit — incremental drift 우려. 월간 full rebuild"
     },
@@ -217,12 +280,14 @@
       "path": ".cache/ic_matrix_expanding.parquet",
       "producer": "04_Research/strategies/meta_learning/build_ic_matrix.R",
       "entry_fn": "(source)",
-      "schedule": "monthly",
+      "schedule": "on_demand",
       "date_col": "Date",
       "max_lag_days": 35,
-      "depends_on": [".cache/RAWDATA.parquet"],
+      "depends_on": [
+        ".cache/RAWDATA.parquet"
+      ],
       "tier": 3,
-      "_note": "도훈 audit — 수동 의존. 월간 schedule 등록"
+      "_note": "2026-07-14 재분류: legacy STR_1676 MetaRegime 전용(build_ic_matrix.R). 현행 파이프라인(P-pure/RAMP/QEPM/noLayer4 PG2) 미소비 — grep 확인. monthly→on_demand(CRITICAL 오탐 제거, legacy 미가동은 stall 아님). 현행 재소비 시 monthly 복귀"
     },
     {
       "path": ".cache/kr_factor_returns.parquet",
@@ -231,7 +296,10 @@
       "schedule": "monthly",
       "date_col": "Date",
       "max_lag_days": 180,
-      "depends_on": [".cache/RAWDATA.parquet", ".cache/fundamental_merged.parquet"],
+      "depends_on": [
+        ".cache/RAWDATA.parquet",
+        ".cache/fundamental_merged.parquet"
+      ],
       "tier": 3,
       "_note": "FF5 v1 (legacy) + v2 (active, kr_factor_returns_v2.parquet). PIT lag: 연결산 5월 적용 → 항상 ~5개월 behind. 2026-05-24 도훈 audit: max_lag 35 → 180 정정 (PIT 정합)"
     },
@@ -243,7 +311,9 @@
       "file_pattern": "^factor_db_[0-9]{6}\\.parquet$",
       "date_col": null,
       "max_lag_days": 40,
-      "depends_on": [".cache/RAWDATA.parquet"],
+      "depends_on": [
+        ".cache/RAWDATA.parquet"
+      ],
       "tier": 2,
       "_note": "월간 Factor DB 디렉토리 (1파일=1개월, 437파일 1990~). freshness=최신 파일명 YYYYMM 월말 기준 (전월 기대 → lag ≤40 정상, 초과=한 달 이상 미빌드). 빌더는 daily_refresh [6a] update_factor_db_daily() — 이름과 달리 '월간' DB 현재월 빌드 함수. 2026-06-10 P1 등재"
     },
@@ -255,7 +325,9 @@
       "file_pattern": "^fdb_daily_[0-9]{6}\\.parquet$",
       "date_col": "Date",
       "max_lag_days": 45,
-      "depends_on": [".cache/RAWDATA.parquet"],
+      "depends_on": [
+        ".cache/RAWDATA.parquet"
+      ],
       "tier": 2,
       "_note": "일간 Factor DB 디렉토리 (1파일=1개월 wide, ML 피처원). ★on-demand 캐시: 갱신=update_daily_fdb_current()가 phase6+7+8 전체 1990~ 재빌드(전파일 삭제, 수시간, 인크리멘털 stub)라 cron 자동실행 금지 — QVEST_FDB_DAILY_AUTOREBUILD=1 명시 시에만(기본 OFF). 따라서 완료월 기준 자연 lag ~30-40일이 정상. SLA=45d(2026-06-26 5→45 정정: 구 5d는 on-demand 캐시에 daily SLA 오설정 → 영구 CRITICAL false alarm, 노트의 'WARN만' 의도와도 모순). >45d=재빌드 한 달+ 지연 WARN, >90d=CRITICAL. 수동 갱신: QVEST_FDB_DAILY_AUTOREBUILD=1 후 daily_refresh [6b] 또는 update_daily_fdb_current() 직접. 2026-06-10 P1 등재, 2026-06-26 SLA 정정"
     },
@@ -266,7 +338,9 @@
       "schedule": "monthly",
       "date_col": "Usable_Date",
       "max_lag_days": 40,
-      "depends_on": [".cache/factor_db/"],
+      "depends_on": [
+        ".cache/factor_db/"
+      ],
       "tier": 2,
       "_note": "월간 factor IC (327팩터, C14 Usable_Date 게이트). freshness=max(Usable_Date), 전월 월말 기대 (예: 2026-06-10 시점 max=2026-05-31, lag 10). 기존 수동 재산출 전용이던 것을 registry monthly 등재 — cache_registry_run(schedule=monthly)로 실행 가능. 2026-06-10 P1 등재"
     },
@@ -277,7 +351,9 @@
       "schedule": "weekly",
       "date_col": "Date",
       "max_lag_days": 90,
-      "depends_on": [".cache/investor_stock/"],
+      "depends_on": [
+        ".cache/investor_stock/"
+      ],
       "tier": 3,
       "_note": "도훈 audit — research output, weekly catch-up. investor_stock source data ~60d lag = max_lag 14 → 90 (2026-05-24 정정)"
     }

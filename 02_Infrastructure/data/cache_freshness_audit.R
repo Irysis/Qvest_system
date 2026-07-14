@@ -137,7 +137,17 @@ cache_freshness_audit <- function(telegram_alert = TRUE,
     res$data_lag <- data_lag
     res$lag_used <- lag
 
-    if (!is.null(c$max_lag_days) && !is.na(lag)) {
+    if (isTRUE(c$schedule == "on_demand")) {
+      # [2026-07-14 Q] on_demand 캐시 = '요청 시 생성' 의미론 — stale 개념 부적용.
+      #   신선도는 정보(lag 기록)로만 보고하고 severity는 최대 WARN(CRITICAL 승격 금지).
+      #   근거: on_demand는 스케줄 갱신 대상이 아니라 소비 시점 생성물(예: legacy STR 전용
+      #   ic_matrix). CRITICAL로 올리면 미가동이 상시 오탐 → 진짜 daily/monthly 신선도 신호를 가림.
+      if (!is.null(c$max_lag_days) && !is.na(lag) && lag > c$max_lag_days) {
+        res$status <- "ON_DEMAND_STALE"; res$severity <- "WARN"
+      } else {
+        res$status <- "ON_DEMAND"; res$severity <- "OK"
+      }
+    } else if (!is.null(c$max_lag_days) && !is.na(lag)) {
       warn_thresh <- c$max_lag_days * warn_lag_multiplier
       crit_thresh <- c$max_lag_days * critical_lag_multiplier
       if (lag <= c$max_lag_days) {

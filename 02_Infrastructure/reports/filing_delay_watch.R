@@ -1,7 +1,10 @@
 ## ============================================================================
-## filing_delay_watch.R — 월간 monitoring 입력: 현 북 보유종목 사업보고서 제출지연 감시
-## (task #61 배선, 2026-07-13 — R24(WT-D20260713_008) "극단 지각제출 = 부실 조기경보 지문"
-##  지식의 유일 in-envelope 소비면 = ⑤ monitoring. 선례 kalman_beta_drift.R(#56) 구조 승계)
+## filing_delay_watch.R — 월간 monitoring 입력: 현 북 보유종목 부실 조기경보 (단일 창구)
+##  Part A (task #61, 2026-07-13): 사업보고서 제출지연 감시 (R24 극단지각 지문)
+##  Part B (task #68, 2026-07-14): 감사(audit) distress 감시 (R25 감사-메타데이터 지식 소비)
+## (R24(WT-D20260713_008) "극단 지각제출 = 부실 조기경보 지문" + R25(WT_D20260714_001)
+##  "감사 distress = 소형주 국소 위험감시 신호(배포 자본 레버 아님)" 지식의 유일 in-envelope
+##  소비면 = ⑤ monitoring. 선례 kalman_beta_drift.R(#56) 구조 승계. 부실 조기경보는 단일 파일 통합)
 ## book·전략 무변경 — monitoring 입력 확장만. book_state/weights/배포 파라미터 무수정.
 ## DART API 호출 절대 금지 (크롤 쿼터 = insider 백필 전용) — 전 재료 로컬 아카이브만.
 ##
@@ -53,6 +56,10 @@ HOLDINGS_CSV <- file.path(ROOT, "05_Production/2.Factor_Model/2-3.STR_1715_on_M4
 INV_PARQUET  <- file.path(ROOT, "stage_artifacts/WT_D20260711_002/filings_inventory.parquet")   # lineage A
 DISC_DIR     <- file.path(ROOT, "stage_artifacts/WT-D20260710_005/disc_ck")                     # lineage B
 CENSUS_RDS   <- file.path(ROOT, "stage_artifacts/WT_D20260713_008/census.rds")                  # 문턱 provenance soft-check용
+## Part B (감사 distress, task #68) 재료 — 전부 로컬 canonical (DART API 호출 0)
+AUDIT_PARQUET   <- file.path(ROOT, "02_Infrastructure/data/dart_pledge_audit/t1_audit_opinion_fy2015_2025.parquet")  # 감사의견 canonical (durable)
+RAWDATA_PARQUET <- file.path(ROOT, ".cache/rawdata.parquet")                                     # AdminStock/UnfaithfulDisc 지정 플래그
+R25_VERDICT     <- file.path(ROOT, "stage_artifacts/WT_D20260714_001/verdict.json")              # R25 사실 인용(경보 톤 내장)
 OUT_DIR      <- file.path(ROOT, "qepm/observability")
 dir.create(OUT_DIR, showWarnings = FALSE, recursive = TRUE)
 
@@ -162,6 +169,109 @@ thresh_check <- tryCatch({
               note = "census.rds 부재 — 고정 문턱값으로 계속 (provenance는 header 기록)")
 }, error = function(e) list(recomputed_p90 = NA, match = NA, note = paste("soft-check 실패:", conditionMessage(e))))
 
+## ============================================================================
+## Part B — 감사(audit) distress 체크 (task #68, 2026-07-14 — R25 WT_D20260714_001 소비면)
+## R25 verdict(CONFIG_SCOPED_NEGATIVE): 감사-메타데이터 exclusion = 배포 유니버스 long-only서
+##   cap-w authoritative 全 무의미(|t|<1) · EW 양(+)효과 = SMALL-tier size 아티팩트(부호 반전).
+##   => 감사 distress = "소형주 국소 위험감시 신호"이지 배포 자본(알파) 레버 아님.
+##   본 체크의 소비 자격 = monitoring tripwire(risk guard), NOT alpha. (verdict.json 인용)
+## ⚠ 데이터 출처 결정(실측 근거): R25 산출 audit_signal_panel.parquet(stage)의 gc 플래그는
+##   신뢰불가로 확인 — A034730(SK) fy2025는 canonical raw="적정의견/해당사항 없음"인데 panel gc=1(오탐).
+##   검사한 gc=1 7종 중 6종이 raw parquet에 계속기업 텍스트 부재. => stage panel 미소비, canonical raw
+##   t1_audit_opinion에서 직접 클린 재도출(계속기업 doubt only, benign "계속기업 가정" 언급 제외).
+## 지표(canonical raw · 사전 고정): 대상 = 사업보고서 감사의견 current-term(당기) 행,
+##   rcept_dt = rcept_no[1:8](공시일 PIT — 최신 회계연도 감사보고서만, rcept_dt <= 실행일).
+##   nonclean = 감사의견 ∈ {한정·부적정·의견거절} (R25 _norm_opinion 순서충실: 의견거절>부적정>한정>적정).
+##   gc(going-concern doubt) = 계속기업 텍스트 ∧ {불확실·의문·의구심·존속능력·중대한 의심} 동시존재
+##     (강조사항 emphs_matter ∪ 특기사항 adt_reprt_spcmnt_matter). benign 가정언급 제외.
+##   has_kam = core_adt_matter 비-trivial (KAM 존재 — advisory 컨텍스트만).
+## 경보 규칙(사전 고정 · sweep 금지):
+##   AUDIT_WARN = 보유종목 최신 감사의견이 nonclean OR gc. 톤 = R25 사실 내장.
+##   ⚠ "KAM 급증"은 WARN 레그에서 제외 — core_adt_matter는 요약 blob(줄바꿈=워드랩, 항목분리 아님)이라
+##      KAM 항목수/급증을 신뢰성 있게 계산 불가(오탐 위험). 진짜 magnitude = document.xml KAM 파서
+##      필요(R25 next_probe #3 gate, 본 watch 범위 밖). has_kam은 advisory만 — 조용한 단순화 아님(명시).
+##   NO_AUDIT_DATA = 보유종목이 감사 아카이브 부재(취득 유니버스 밖).
+##   P2 composite(HIGH, 관찰리스트 only) = 최신 gc ∧ RAWDATA{AdminStock ∪ UnfaithfulDisc 최근지정}
+##     교집합(R24 예측 심각사건 선행조합). 감사 취득 유니버스=현 constituents라 소형 distress 미커버 →
+##     보유·배포엔 사실상 부재(정직 라벨 — 생존편향, R25 challenge_note Concern 1).
+## ============================================================================
+r25 <- tryCatch(fromJSON(R25_VERDICT), error = function(e) NULL)
+audit_tone <- paste0(
+  "감사 distress = 소형주 국소 위험감시 신호 · 배포 자본(알파) 레버 아님 ",
+  "(R25 WT_D20260714_001: 감사-메타데이터 exclusion cap-w authoritative |t|<1 · ",
+  "EW 양효과는 SMALL-tier size 아티팩트). WARN = risk guard 검토재료이지 퇴출/편출 신호 아님.")
+
+## 감사의견 canonical raw 로드 → current-term(당기) → 클린 재도출
+TRIV_TXT <- c("", "-", "nan", "None", "해당사항 없음", "해당사항없음", "해당 사항 없음",
+              "해당사항 없음.", "없음", "NA")
+norm_op <- function(v) { v <- trimws(as.character(v))
+  fifelse(v %in% c("", "-", "nan", "None", "NA"), "missing",
+  fifelse(grepl("의견거절", v), "의견거절",
+  fifelse(grepl("부적정",   v), "부적정",
+  fifelse(grepl("한정",     v), "한정",
+  fifelse(grepl("적정",     v), "적정", "other"))))) }
+
+audit_ok <- TRUE
+audit_err <- NA_character_
+audit_latest <- NULL
+aud_max_rc <- as.Date(NA)
+tryCatch({
+  AO <- as.data.table(read_parquet(AUDIT_PARQUET))
+  AO[, rcd := as.Date(substr(as.character(rcept_no), 1, 8), "%Y%m%d")]
+  AO <- AO[grepl("당기", bsns_year) & !is.na(rcd)]                 # current-term rows only
+  AO[, sc := sub("^A", "", as.character(ticker))]
+  AO[, txt := paste(emphs_matter, adt_reprt_spcmnt_matter)]
+  AO[, op := norm_op(adt_opinion)]
+  AO[, nonclean := as.integer(op %in% c("한정", "부적정", "의견거절"))]
+  AO[, gc := as.integer(grepl("계속기업", txt) &
+                        grepl("불확실|의문|의구심|의심|존속능력|중대한 의심|중요한 불확실", txt))]
+  AO[, has_emphs := as.integer(!(trimws(emphs_matter) %in% TRIV_TXT))]
+  AO[, has_kam := as.integer(!(trimws(core_adt_matter) %in% TRIV_TXT))]
+  AO[, qfy := suppressWarnings(as.integer(query_fy))]
+  aud_max_rc <<- max(AO$rcd, na.rm = TRUE)
+  ## PIT: rcept_dt <= 실행일 → 종목별 최신(당기 max fy, 동fy면 최신 rcept)
+  AOP <- AO[rcd <= check_date]
+  setorder(AOP, sc, qfy, rcd)
+  audit_latest <<- AOP[, .SD[.N], by = sc][, .(sc, audit_fy = qfy, audit_rcept = rcd,
+                       audit_opinion = op, nonclean, gc, has_emphs, has_kam)]
+}, error = function(e) { audit_ok <<- FALSE; audit_err <<- conditionMessage(e) })
+
+## 보유종목별 감사 flag join
+if (audit_ok) {
+  aj <- merge(res[, .(sc, Ticker, Name, Weight)], audit_latest, by = "sc", all.x = TRUE)
+  aj[, audit_flag := fifelse(is.na(audit_fy), "NO_AUDIT_DATA",
+                     fifelse(nonclean == 1L | gc == 1L, "AUDIT_WARN", "OK"))]
+  setorder(aj, -Weight)
+} else {
+  aj <- res[, .(sc, Ticker, Name, Weight)]; aj[, audit_flag := "AUDIT_SOURCE_ERROR"]
+}
+n_audit_warn <- if (audit_ok) aj[audit_flag == "AUDIT_WARN", .N] else NA_integer_
+n_no_audit   <- if (audit_ok) aj[audit_flag == "NO_AUDIT_DATA", .N] else NA_integer_
+
+## P2 composite watchlist: 최신 gc ∧ RAWDATA {AdminStock ∪ UnfaithfulDisc 최근지정}
+composite_ok <- audit_ok
+composite <- data.table()
+rd_max <- as.Date(NA)
+tryCatch({
+  if (!audit_ok) stop("audit source unavailable")
+  RD <- as.data.table(read_parquet(RAWDATA_PARQUET,
+        col_select = c("Date", "Ticker", "AdminStock", "UnfaithfulDisc", "K200", "KQ150", "Size")))
+  RD[, Date := as.Date(Date)]
+  rd_max <<- max(RD$Date, na.rm = TRUE)
+  RD <- RD[Date >= (rd_max - 400L)]                                # 최근 ~13개월 창(현재 지정 상태)
+  RD[, sc := sub("^A", "", as.character(Ticker))]
+  st <- RD[, .(admin_active = as.integer(any(AdminStock[Date == max(Date)] > 0, na.rm = TRUE)),
+               unf_active   = as.integer(any(UnfaithfulDisc[Date == max(Date)] > 0, na.rm = TRUE)),
+               admin_recent = as.integer(any(AdminStock > 0, na.rm = TRUE)),
+               unf_recent   = as.integer(any(UnfaithfulDisc > 0, na.rm = TRUE)),
+               in_deploy    = as.integer(any(K200 > 0 | KQ150 > 0, na.rm = TRUE)),
+               size_last    = as.numeric(last(Size))), by = sc]
+  gc_names <- audit_latest[gc == 1L]
+  comp <- merge(gc_names, st, by = "sc")
+  composite <<- comp[admin_recent == 1L | unf_recent == 1L]
+  setorder(composite, -size_last)
+}, error = function(e) { composite_ok <<- FALSE })
+
 ## ---- 7. JSON 저장 (OneDrive temp-rename) + 콘솔 요약 -----------------------
 warn_rows <- res[flag == "WARN"]
 per_holding <- lapply(seq_len(nrow(res)), function(i) {
@@ -199,7 +309,67 @@ fdw_result <- list(
   per_holding = per_holding,
   archive_freshness = freshness,
   thresh_soft_check = thresh_check,
-  inputs = list(holdings_csv = HOLDINGS_CSV, filings_inventory = INV_PARQUET, disc_ck_dir = DISC_DIR))
+  audit_distress = {
+    per_holding_audit <- if (audit_ok) lapply(seq_len(nrow(aj)), function(i) {
+      r <- aj[i]
+      list(ticker = r$Ticker, name = r$Name, weight = r$Weight,
+           latest_audit_fy = if (is.na(r$audit_fy)) NA else r$audit_fy,
+           rcept_dt        = if (is.na(r$audit_fy)) NA else format(r$audit_rcept),
+           audit_opinion   = if (is.na(r$audit_fy)) NA else r$audit_opinion,
+           nonclean = if (is.na(r$audit_fy)) NA else r$nonclean,
+           going_concern = if (is.na(r$audit_fy)) NA else r$gc,
+           has_emphasis  = if (is.na(r$audit_fy)) NA else r$has_emphs,
+           has_kam = if (is.na(r$audit_fy)) NA else r$has_kam,
+           audit_flag = r$audit_flag)
+    }) else list()
+    audit_warn_list <- if (audit_ok && n_audit_warn > 0)
+      lapply(seq_len(nrow(aj[audit_flag == "AUDIT_WARN"])), function(i) {
+        w <- aj[audit_flag == "AUDIT_WARN"][i]
+        list(ticker = w$Ticker, name = w$Name, latest_audit_fy = w$audit_fy,
+             opinion = w$audit_opinion, nonclean = w$nonclean, going_concern = w$gc)
+      }) else list()
+    comp_list <- if (composite_ok && nrow(composite) > 0)
+      lapply(seq_len(nrow(composite)), function(i) {
+        c1 <- composite[i]
+        list(ticker = paste0("A", c1$sc), latest_audit_fy = c1$audit_fy,
+             going_concern = 1L, admin_active = c1$admin_active, unf_active = c1$unf_active,
+             admin_recent = c1$admin_recent, unf_recent = c1$unf_recent,
+             in_deploy_universe = c1$in_deploy)
+      }) else list()
+    list(
+      basis = "canonical raw t1_audit_opinion(당기) 직접 클린 재도출 · risk guard NOT alpha (R25 소비면)",
+      metric_type = "observational_monitoring",
+      source_decision = paste0("R25 audit_signal_panel.parquet(stage) gc 플래그 신뢰불가(A034730 SK 오탐) → ",
+                               "canonical raw parquet에서 직접 재도출. 소비 = monitoring tripwire이지 alpha 아님"),
+      r25_verdict = if (!is.null(r25)) r25$verdict else "unavailable",
+      warn_tone = audit_tone,
+      audit_rule = "AUDIT_WARN = 보유종목 최신 감사의견 nonclean OR going-concern doubt (rcept_dt<=실행일 PIT, 최신 회계연도만)",
+      kam_note = paste0("KAM 급증은 WARN 레그 제외 — core_adt_matter 요약 blob(워드랩≠항목분리)이라 ",
+                        "항목수 신뢰 계산 불가. document.xml KAM 파서 필요(R25 next_probe #3). has_kam=advisory만"),
+      gc_definition = "계속기업 텍스트 ∧ {불확실/의문/의구심/존속능력/중대한 의심/중요한 불확실} 동시존재(강조+특기), benign 가정언급 제외",
+      audit_source_ok = audit_ok,
+      audit_source_error = audit_err,
+      n_holdings_with_audit = if (audit_ok) aj[!is.na(audit_fy), .N] else NA,
+      n_audit_warn = n_audit_warn,
+      n_no_audit_data = n_no_audit,
+      audit_warn_list = audit_warn_list,
+      per_holding_audit = per_holding_audit,
+      composite_watchlist = list(
+        rule = "HIGH(관찰리스트 only) = 최신 going-concern ∧ RAWDATA{AdminStock ∪ UnfaithfulDisc 최근지정}. R24 예측 심각사건 선행조합",
+        coverage_caveat = paste0("감사 취득 유니버스=현 constituents(생존편향) → 소형 distress 미커버. ",
+                                 "보유·배포엔 사실상 부재(정직 라벨, R25 challenge_note Concern 1)"),
+        composite_source_ok = composite_ok,
+        n_composite = if (composite_ok) nrow(composite) else NA,
+        n_in_deploy_universe = if (composite_ok) sum(composite$in_deploy) else NA,
+        n_in_holdings = if (composite_ok) composite[paste0("A", sc) %in% hold$Ticker, .N] else NA,
+        watchlist = comp_list),
+      audit_freshness = list(
+        latest_audit_rcept_dt = format(aud_max_rc),
+        age_months = mdiff(check_date, aud_max_rc),
+        cadence_caveat = "감사데이터 갱신 = 연 1회 감사보고서 시즌(3~4월 정점) 의존 · DART 크롤 필요. 시즌 외 정적은 정상(STALE 아님)"))
+  },
+  inputs = list(holdings_csv = HOLDINGS_CSV, filings_inventory = INV_PARQUET, disc_ck_dir = DISC_DIR,
+                audit_opinion = AUDIT_PARQUET, rawdata = RAWDATA_PARQUET, r25_verdict = R25_VERDICT))
 
 write_json_atomic <- function(obj, path) {   # OneDrive temp-rename 패턴
   tmp <- paste0(path, ".tmp_", Sys.getpid())
@@ -231,4 +401,33 @@ if (fdw_result$n_warn > 0)
 cat(sprintf("[fdw] 아카이브 신선도: 결합 최신 rcept %s (%d개월 전) → %s\n",
             freshness$combined_max_rcept_dt, freshness$combined_age_months,
             ifelse(arch_stale, "★STALE — 경보 침묵을 신선도 문제로 해석 금지·크롤 갱신 필요", "FRESH")))
+
+## ---- Part B 콘솔 요약 (감사 distress) --------------------------------------
+cat(sprintf("\n[audit] %s 기준 감사 distress 판정 (risk guard NOT alpha — R25 소비면):\n", format(check_date)))
+if (!audit_ok) {
+  cat("   ★ 감사 소스 로드 실패:", audit_err, "\n")
+} else {
+  for (i in seq_len(nrow(aj))) {
+    r <- aj[i]
+    if (is.na(r$audit_fy)) {
+      cat(sprintf("   %-8s %-14s w=%.4f  [%s] 감사 아카이브 부재(취득 유니버스 밖)\n",
+                  r$Ticker, r$Name, r$Weight, r$audit_flag))
+    } else {
+      cat(sprintf("   %-8s %-14s w=%.4f  fy%d 의견=%s (nonclean=%d gc=%d emphs=%d kam=%d) [%s]\n",
+                  r$Ticker, r$Name, r$Weight, r$audit_fy, r$audit_opinion,
+                  r$nonclean, r$gc, r$has_emphs, r$has_kam, r$audit_flag))
+    }
+  }
+  cat(sprintf("[audit] AUDIT_WARN %d건 · NO_AUDIT_DATA %d건 · 감사 최신 rcept %s (%d개월 전, 연1회 시즌 의존)\n",
+              n_audit_warn, n_no_audit, format(aud_max_rc), mdiff(check_date, aud_max_rc)))
+  if (n_audit_warn > 0)
+    cat("[audit] ⚠ AUDIT_WARN:", paste(aj[audit_flag == "AUDIT_WARN", Ticker], collapse = ", "),
+        "— 감사 distress = 소형 국소 위험감시(배포 자본 신호 아님)\n")
+  if (composite_ok) {
+    cat(sprintf("[audit] P2 composite(관찰리스트, gc ∧ AdminStock/UnfaithfulDisc): %d종목 (배포유니버스 %d · 보유 %d)\n",
+                nrow(composite), sum(composite$in_deploy),
+                composite[paste0("A", sc) %in% hold$Ticker, .N]))
+    cat("        (감사 취득=현 constituents 생존편향 → 소형 distress 미커버, 보유·배포엔 사실상 부재 = 정직 라벨)\n")
+  } else cat("[audit] P2 composite: RAWDATA 로드 실패 — composite 미산출\n")
+}
 cat("[DONE] outputs →", OUT_DIR, "\n")

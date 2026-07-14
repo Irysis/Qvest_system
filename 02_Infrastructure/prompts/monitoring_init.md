@@ -27,7 +27,10 @@ Monitoring Agent — admitted Deployment WT 지속 감시. predicted vs realized
   - Crowding drift > +30% → Governor book rebalance 요청 로그
   - Regime shift → Optimizer 재계산 요청 로그
   - Kalman β drift: `02_Infrastructure/reports/kalman_beta_drift.R` source 실행 → `kalman_beta_drift_latest.json` 소비 → monitoring_report에 `kalman_beta_drift` 섹션 기록. WARN(z>2 2개월 연속) 시 "오버레이 실효-의도 괴리" 라벨 보고만 — 자동조치·파라미터 변경 제안 금지 (도훈 판단 재료). 임계 sweep 금지(사전 고정)
-  - Filing delay watch: `02_Infrastructure/reports/filing_delay_watch.R` source 실행 → `qepm/observability/filing_delay_watch_latest.json` 소비 → monitoring_report에 `filing_delay_watch` 섹션 기록. WARN(보유종목 사업보고서 지연>0 AND ≥2일 — R24 극단꼬리 문턱 실측 고정) 시 "제출지연 위생 경보" 라벨 보고만(역사 기저율 낮음 — R24 실측: 중·대형 극단지각 15에피소드 심각사건 0) — 자동조치·텔레그램 단독 발송 금지 (도훈 판단 재료). 문턱 sweep 금지(사전 고정). ARCHIVE STALE(최신 rcept 13개월+) 시 "경보 침묵 ≠ 정상" 라벨 필수 (task #61, 2026-07-13)
+  - Filing delay + audit distress watch (부실 조기경보 단일 창구): `02_Infrastructure/reports/filing_delay_watch.R` source 실행 → `qepm/observability/filing_delay_watch_latest.json` 소비 → monitoring_report에 `filing_delay_watch` **+ `audit_distress`** 섹션 기록.
+    - Part A 제출지연: WARN(보유종목 사업보고서 지연>0 AND ≥2일 — R24 극단꼬리 문턱 실측 고정) 시 "제출지연 위생 경보" 라벨 보고만(역사 기저율 낮음 — R24 실측: 중·대형 극단지각 15에피소드 심각사건 0). 문턱 sweep 금지. ARCHIVE STALE(최신 rcept 13개월+) 시 "경보 침묵 ≠ 정상" 라벨 필수 (task #61)
+    - Part B 감사 distress (task #68, 2026-07-14 — R25 WT_D20260714_001 소비면): AUDIT_WARN(보유종목 최신 감사의견 nonclean OR going-concern doubt, rcept_dt≤실행일 PIT) 시 **"감사 distress = 소형주 국소 위험감시 · 배포 자본(알파) 레버 아님"** 라벨 보고만 (R25 verdict=CONFIG_SCOPED_NEGATIVE: cap-w authoritative |t|<1 · EW 양효과=SMALL-tier size 아티팩트). canonical raw t1_audit_opinion 직접 재도출(R25 stage panel gc 오탐 실측 회피). "KAM 급증"은 WARN 레그 아님(blob 항목수 신뢰불가·document.xml 파서 필요=R25 next_probe #3). P2 composite(going-concern ∧ RAWDATA AdminStock/UnfaithfulDisc)는 HIGH 관찰리스트 only(감사 취득=현 constituents 생존편향 → 소형 distress 미커버, 보유·배포엔 사실상 부재). NO_AUDIT_DATA(취득 유니버스 밖) 라벨 유지.
+    - **공통: 월간·보고만·자동조치 없음·텔레그램 단독 발송 금지 (도훈 판단 재료). 문턱/키워드 sweep 금지(사전 고정)**
   - P-pure D3 페이퍼 트랙 (task #62, 2026-07-13 — dossier §7 병행안, 도훈 승인): 월간 러너 `02_Infrastructure/portfolio/ppure_paper_track.R` source 실행 → `06_Registry/live_track/{PPURE_BASE_W36K20, PPURE_D2_DECAYEXIT}/paper_nav.csv` append + trailing 실측 vs 봉인 구간(`holdout_interval.json` [q05,q95], `judge_holdout()` trailing 공용·최소 6개월) 대조 → monitoring_report에 `ppure_paper_track` 섹션 기록. FAIL_FALSIFIED(하단 침범) 시 "봉인 하단 침범" WARN 보고만 — **자동 퇴출 없음**(도훈 수동, STR_1715 규약 동일). **페이퍼 전용 — book_state 쓰기 금지·자본 게이트 무관**(cap-w HARD 3종 FAIL 불변, 벤치-상대 EW-uni 채점 트랙). D-2 보고 시 선택편향 라벨(후보 선택 2026-07-13, R13 게이트 산출 사후 지목) 병기 의무. 러너 parity-guard 실패로 append 중단 시 = "업스트림 데이터 변형" 경보(도훈 판단 재료, [[project-cache-vintage-pinning]]). 러너 [WARN] scores stale 시 RAMP score refresh 필요 보고
   - 모든 alert은 monitoring_report.json + Telegram 동시 기록
   </required>
@@ -66,13 +69,21 @@ if (cov_cache_regime != current_regime) flag_alerts(wt_id, "regime_shift")
 # → qepm/mailbox/monitoring/kalman_beta_drift/kalman_beta_drift_latest.json 소비
 if (kbd$latest$z > 2 && kbd$latest$z_prev > 2) flag_alerts(book_id, "overlay_intent_gap")  # WARN "오버레이 실효-의도 괴리" — 자동조치 없음
 
-# Filing delay watch (task #61, 2026-07-13 — R24 극단 지각제출 지문의 monitoring 소비면. 사전 고정, sweep 금지)
+# Filing delay + audit distress watch (task #61 Part A + task #68 Part B — R24/R25 부실 조기경보 소비면. 사전 고정, sweep 금지)
 # delay_d = 보유종목 최신 fy 사업보고서 원제출일(min rcept_dt) − 법정기한((fy+1)-03-31 Dec-FYE, R24 frozen)
 # WARN: delay_d > 0 AND delay_d >= 2일 (문턱 = R24 census 677-유니버스 late-분포 p90 실측 고정)
 # 실행: cd 02_Infrastructure/reports && Rscript -e 'source("filing_delay_watch.R")'
 # → qepm/observability/filing_delay_watch_latest.json 소비 (DART API 호출 0 — 로컬 아카이브만)
 if (fdw$n_warn > 0) flag_alerts(book_id, "filing_delay_hygiene")  # WARN "제출지연 위생 경보" — 역사 기저율 낮음(중·대형 15ep 사고 0)·자동조치 없음
 if (fdw$archive_freshness$stale) flag_alerts(book_id, "filing_archive_stale")  # 경보 침묵 ≠ 정상 — 크롤 갱신 필요(도훈 판단)
+# Part B 감사 distress (task #68, R25 소비면 — risk guard NOT alpha. canonical raw 재도출)
+# AUDIT_WARN = 보유종목 최신 감사의견 nonclean OR going-concern doubt (rcept_dt<=실행일 PIT, 최신 회계연도만)
+ad <- fdw$audit_distress
+if (isTRUE(ad$audit_source_ok) && ad$n_audit_warn > 0)
+  flag_alerts(book_id, "audit_distress")  # WARN "감사 distress = 소형 국소 위험감시(배포 자본 신호 아님, R25)" — 자동조치 없음
+if (isTRUE(ad$composite_watchlist$composite_source_ok) && ad$composite_watchlist$n_in_holdings > 0)
+  flag_alerts(book_id, "audit_composite_distress")  # HIGH: going-concern ∧ AdminStock/UnfaithfulDisc 보유 교집합(R24 심각사건 선행조합) — 사실상 0 예상
+# KAM 급증은 WARN 아님(blob 항목수 신뢰불가). has_kam=advisory. 감사데이터=연1회 시즌 의존(시즌 외 정적=정상, STALE 아님)
 
 # P-pure D3 페이퍼 트랙 (task #62, 2026-07-13 — 페이퍼 전용·book_state 무관·자본 게이트 무관)
 # 실행: cd QM && Rscript -e 'source("02_Infrastructure/portfolio/ppure_paper_track.R")'
@@ -126,7 +137,7 @@ if (ppt$parity_guard_failed) flag_alerts(track_id, "paper_track_upstream_mutatio
     "series_csv": "qepm/mailbox/monitoring/kalman_beta_drift/kalman_beta_drift_series.csv"
   },
   "filing_delay_watch": {
-    "as_of": "2026-07-13",
+    "as_of": "2026-07-14",
     "n_holdings_equity": 14,
     "n_warn": 0,
     "warn_list": [],
@@ -134,6 +145,18 @@ if (ppt$parity_guard_failed) flag_alerts(track_id, "paper_track_upstream_mutatio
     "archive_stale": false,
     "rule": "지연>0 AND ≥2일 → WARN '제출지연 위생 경보' (역사 기저율 낮음 — 중·대형 극단지각 15ep 사고 0. 자동조치 없음·문턱 sweep 금지)",
     "source_json": "qepm/observability/filing_delay_watch_latest.json"
+  },
+  "audit_distress": {
+    "as_of": "2026-07-14",
+    "n_holdings_with_audit": 13,
+    "n_audit_warn": 0,
+    "n_no_audit_data": 1,
+    "audit_warn_list": [],
+    "composite_n_in_holdings": 0,
+    "composite_n_in_deploy_universe": 0,
+    "warn_tone": "감사 distress = 소형주 국소 위험감시 · 배포 자본(알파) 레버 아님 (R25 CONFIG_SCOPED_NEGATIVE)",
+    "rule": "보유 최신 감사의견 nonclean OR going-concern doubt → WARN 'audit_distress' (risk guard NOT alpha. KAM 급증 제외·자동조치 없음). P2 composite(gc ∧ AdminStock/UnfaithfulDisc)=HIGH 관찰리스트 only",
+    "source_json": "qepm/observability/filing_delay_watch_latest.json (audit_distress 섹션)"
   },
   "te_baseline": {
     "baseline_estimator": "ewma97",
