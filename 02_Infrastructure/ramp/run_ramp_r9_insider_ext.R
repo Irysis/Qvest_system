@@ -54,7 +54,12 @@ MODE_LAB <- if (SMOKE) "SMOKE_ONLY" else "FULL"
 RUNTAG <- if (SMOKE) sprintf("smoke_%s", format(Sys.Date(),"%Y%m%d")) else format(Sys.Date(),"%Y%m%d")
 OUT <- "outputs/ramp"
 logf <- file.path(".cache", sprintf("_ramp_r9_insider_%s.txt", RUNTAG))
-con <- file(logf,"w",encoding="UTF-8"); w<-function(...){ writeLines(paste0(...),con); flush(con) }; wf<-function(...){w(sprintf(...))}
+## [FQ-019 fix 2026-07-15] append-per-call 로거 — sourced 스크립트(build_insider_factor_panel.R)가
+##   global `con` 변수를 clobber해 원 log 연결이 gc-close되며 wf() "invalid connection" halt(2026-07-14)한
+##   버그 우회. persistent 연결 미보유(clobber 불가) + try()로 감싸 로그 실패가 측정 루프를 절대 halt시키지 않음.
+if (file.exists(logf)) try(file.remove(logf), silent=TRUE)
+w  <- function(...){ try({ .lc <- file(logf,"a",encoding="UTF-8"); writeLines(paste0(...), .lc); close(.lc) }, silent=TRUE); invisible() }
+wf <- function(...){ w(sprintf(...)) }
 wf("=== RAMP R9: PORT_t-정렬 선별 × insider 확장 패널 [%s] ===", MODE_LAB)
 if (SMOKE) w("★SMOKE_ONLY — 배관 검증 한정. 아래 모든 성과 수치는 부분창(크롤 진행중) 산출로 증거력 없음.")
 if (SMOKE) w("★판정·graduation·L-code·텔레그램 발화 금지. 산출물은 .cache/ 에만 기록.")
