@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
-  "updated": "2026-07-14 (R31 FQ-047 밸류 아크 완결)",
+  "updated": "2026-07-14",
   "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
   "entries": [
     {
@@ -935,6 +935,22 @@
         "prior: reference-kr-value-factor-decay(24/24)",
         "R31: L-AR-20260714_235257 / stage_artifacts/WT_D20260714_007/",
         "frontier: SP sales-yield EW-basis (feasible now, V02_EP FQ-008/009 경로)"
+      ]
+    },
+    {
+      "id": "FQ-048",
+      "lane": "book_enhancement",
+      "title": "R32 — 밸류 추가가 실제 PG2 북(오버레이 적용) 최종 성과를 강화하는가 (도훈 재정의, armed R9 후)",
+      "hypothesis": "현 PG2 북(STR_1715 score_eff × M4×R05 오버레이, 현금조절 포함)에 밸류(EBIT/EV B2 tier-조건부 + Z6 대조)를 넣은 북의 forge-authoritative 최종 배포 성과(SR·Calmar·MDD·PORT_t·ΔIR 오버레이 basis)가 현행 북 대비 강화되는가 — 알파-레벨(오버레이 前) 아님, 오버레이 적용 실제 북 성과 축",
+      "ev_rationale": "도훈 명시 재정의(2026-07-14): 'PG2에 밸류 추가해서 성과 더 강화하는지'. 지금껏 R26~R31/FQ-046은 알파 선별레벨(오버레이 前) book-marginal만 측정 — 오버레이는 estimate(1.113)만. **미측정 = 밸류 방어성×오버레이 현금조절 상호작용의 위험축(MDD/Calmar) 개선 여지**. 정직 prior 낮음: 알파 2024+ 역전·incumbent corr 0.98은 오버레이 공통적용으로 상쇄(상대비교서 오버레이 효과 소거) — but 위험축은 미측정",
+      "wall_check": "forge build_bt_result authoritative(오버레이 포함 10-component)·production 코드 §7b base·M4×R05 동일 적용(현행 vs 밸류-추가 대칭). book_state 무변경·governor 정지. graduation HARD는 오버레이-북 basis로 재판정. 스타일 감쇠는 β타이밍 아님(오버레이 구제 한계) 명시",
+      "data_gate": "없음 (clean base §7b + M4×R05 오버레이 + EBIT/EV 밸류)",
+      "owner": "Q-Lead (R32 forge/dossier, 도훈 지시 2026-07-14, armed R9 완료 후)",
+      "status": "armed_await_r9",
+      "next_action": "R9 착지(RAM 해방) 즉시 발사: 현행 PG2 오버레이-북 vs 밸류-추가 오버레이-북 forge bt_result 비교 + 위험축(MDD/Calmar) + ΔIR",
+      "source_refs": [
+        "parent: FQ-046 dossier(오버레이 estimate만) + 도훈 재정의",
+        "base: project-value-factor-arc-20260714 · production §7b"
       ]
     }
   ]
