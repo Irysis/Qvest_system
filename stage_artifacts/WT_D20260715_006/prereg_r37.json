@@ -1,0 +1,21 @@
+{
+  "mode": "RAMP-adjacent monitoring 진단 (mega-tier thinness power vs death)",
+  "round": "R37",
+  "fq": "FQ-051",
+  "wt": "WT-D20260715_006",
+  "parent": "R36 next_probe P1/P2 (TOP30 thinness 진단 + INS 복합)",
+  "base_source": "R36 _r36_objects.rds uni (production clean T-1 파생, production_parity_verified, PIT C5 검증 상속)",
+  "diagnostics": {
+    "P1": "power vs death: 이질성 monthly(gap_MID-gap_TOP30) NW-t + MDE + TOP30표본 검정력(mid/large 효과) + t>2 필요월수 + bootstrap CI + era 편중",
+    "P2": "INS01+INS02 복합 SAFE (union/inter/additive-z) TOP30 t>2 도달 + 부분독립성 corr",
+    "P3": "pooled cross-form(F0∪F2∪F3) TOP30 월내 순열검정 (최대검정력 단일검정)"
+  },
+  "decision_axis": "TOP30 SAFE thinness 원인 = power(표본부족) vs genuine signal-death(cap-tier localization) 판별. 자본 아님(monitoring 진단).",
+  "honest_prior": "cap-tier localization prior 상 death 우세 예상. 복합이 TOP30 를 t>2 로 못 올릴 가능성 高.",
+  "selection_type": "chain (가설주도 고정 config · sweep 아님)",
+  "n_trials": 1,
+  "vintage_pin": ".cache/pin/rawdata_r9_pin_20260715.parquet",
+  "pin_mtime": "2026-07-15 00:21:02.834291",
+  "as_of": "2026-07-15",
+  "config_hash": "ae1b26f000d39034"
+}

@@ -1,0 +1,76 @@
+setwd("C:/Users/99922/OneDrive/Quant_Module_Moltbot")
+Sys.setenv(QM_ROOT="C:/Users/99922/OneDrive/Quant_Module_Moltbot")
+source("02_Infrastructure/contracts/close_round.R")
+close_round(
+  round_id = "R37 / FQ-051 / WT-D20260715_006 (insider mega-tier TOP30 thinness — power vs signal-death 판별)",
+  verdict_type = "capability_established",
+  mechanism_diagnosis = "TOP30 SAFE thinness = genuine mega-tier signal attenuation 우세(power 문제 아님) — cap-tier localization을 monitoring 면에서 확증. 판별 근거 3경로: ① TOP30 표본(F2 flag 2341·250개월)이 MID 효과크기(19.1%/yr) 검출할 검정력=1.000인데 관측 gap_t=1.30 → '표본 얇아 mid-강도 신호를 놓쳤다'는 power 가설 falsified(power 곡선 plateau·MDE 8.2%/yr). ② 이질성 (mid−TOP30) 공통월 NW-lag3 t=+3.70(F2)/+3.15(F0)/+2.50(F3) 3형태 전부 유의 → mega 효과 진짜 mid의 ~1/5로 감쇠(신호는 mid-cap 집중, large−TOP30은 무의미 0.5~1.0). ③ bootstrap CI[−1.9%,+9.7%]/yr가 MID 19.1% 배제(효과 진짜 작음). 단 zero 대비로는 잔여 3.8%/yr이 검출 문턱(MDE) 이하라 standalone 유의 확립 불가(이 sub-질문만 underpowered)·pooled 순열이 겨우 p=0.023로 '약한 신호 존재'까지만·그마저 최근-레짐(2015+) 국한(pre-2015 −3.4% t−0.91). INS01+INS02 복합은 corr 0.80~0.85 高중복으로 부분독립성 전제 붕괴 → best union TOP30 t=1.97<2(무이득).",
+  next_probes = c(
+    "de-risk exit-timing 대칭검정(R34·R36 next_probe #3 계승) — 완화 flag(INS02>=+0.5) 소멸 시 forward 위험 재상승 여부. 진입/청산 양측 정보성으로 tripwire 완성. 데이터게이트 없음(insider 패널 재사용, feasible now).",
+    "TOP30 잔여 SAFE의 최근-레짐(2015+) 조건부성 실측 — era-gap 2005-14 음(−3.4%,t−0.91)/2015+ 양(+8~11%). mega SAFE는 최근-반도체-집중 레짐과 얽힌 조건부 신호인가(레짐 상호작용 항 검정) — cap-tier localization의 시간축 정련.",
+    "mid-cap SAFE 신호의 배포 유니버스(STR_1715 대형주 편중) 내 실효 coverage — SAFE는 mid-cap 지배인데 현 북은 대형주 편중. mid-cap 보유 비중별 tripwire 실발화 빈도 측정으로 현 북에서 monitoring 실효가치 확정."
+  ),
+  consumer_surfaces = c(
+    "⑤monitoring: SAFE tripwire cap-tier 신뢰 라벨 확정 — mid-cap 강건(t 4.6~6.1)/TOP30 저신뢰(최근-레짐 조건부·검출 문턱 이하). filing_delay_watch.R Part C 배선 시 tier별 신뢰가중 부기(배선=별도 태스크)",
+    "⑧위험모델: per-holding de-risk 라벨 mid-cap 중심 강건 확정 + mega-tier SAFE 라벨 신뢰 '약함(attenuation 실측 power 1.0·het t 3.70)' caveat 격상(R36 정성 caveat → 정량 근거)",
+    "⑥선별라벨: cap-tier localization monitoring-면 재확인이 선별-면 mega-배제 유지 논거 강화(mega=signal 감쇠 양측 증명 축적)"
+  ),
+  frontier_update = "FQ-051 소비 완료(R36 next_probe P1/P2): TOP30 thinness=genuine attenuation(cap-tier localization monitoring-면 확증), power 문제 아님. 복합(P2) 무이득·pooled(P3) marginal p=0.023. FQ-051 status=capability_established. 잔여 프론티어 → FQ-052(exit-timing 대칭 + TOP30 최근-레짐 조건부성 + mid-cap 실효 coverage).",
+  layer = "⑤monitoring (SAFE tripwire cap-tier 신뢰 경계 확정) — 성과 병목 아님(소비면 진단). mega-tier attenuation = cap-tier localization 벽의 monitoring-면 발현이지 신규 성과 병목 아님",
+  evidence_refs = c(
+    "stage_artifacts/WT_D20260715_006/verdict.json",
+    "stage_artifacts/WT_D20260715_006/r37_results.json",
+    "stage_artifacts/WT_D20260715_006/challenge_note_r37_20260715.md",
+    "stage_artifacts/WT_D20260715_006/_r37_objects.rds",
+    "stage_artifacts/WT_D20260715_006/charts/",
+    "prereg config_hash ae1b26f000d39034 (prereg_r37.json)",
+    "parent: FQ-050 R36 verdict stage_artifacts/WT_D20260715_005/verdict.json"
+  )
+)
+
+## L-code emit (ledger 완결)
+source("02_Infrastructure/axiom/lcode_emit.R")
+r <- emit_lcode(
+  mode = "alpha_research",
+  strategy_id = "R37_insider_megatier_TOP30_power_vs_death",
+  grade = "B",
+  metric_type = "canonical_screen",
+  construction_type = "insider_netbuy_safe_tripwire_megatier_diagnosis + power_analysis + heterogeneity_test + pooled_permutation",
+  selection_type = "chain",
+  lesson_text = paste0(
+"[canonical_screen 진단] R37 FQ-051 insider net-buy SAFE tripwire 대형주(TOP30) thinness = genuine mega-tier signal attenuation 우세(power 문제 아님) — R36이 남긴 물음(TOP30 4형태 t 0.93~1.68<2, F2 완화로 표본 3.1배에도 미달) 판별. base=R36 _r36_objects.rds uni(production clean T-1 파생, production_parity_verified 3.058, PIT C5·lag1 검증 상속). monitoring-face 진단(자본 아님). ",
+"★판정: CAPABILITY_ESTABLISHED — power vs death 판별능력 확립 + attenuation 우세 확증. ",
+"P1 power vs death: TOP30 표본(F2 flag 2341·250개월·월별 gap NW-SE 0.00243)이 MID 효과크기(19.1%/yr) 검출할 검정력=1.000(3형태 전부)인데 관측 gap_t=1.30 → 'power 문제로 mid-강도 신호가 가려졌다' 가설 falsified. MDE(80%)=8.2%/yr·TOP30 관측 3.8%/yr<MDE(own achieved power 0.257)·t>2 필요월수 588(실제 250). 이질성 (mid−TOP30) 공통월 NW-lag3 t=+3.70(F2)/+3.15(F0)/+2.50(F3) 전부 유의 → mega 효과 진짜 mid의 ~1/5 감쇠(large−TOP30 무의미 0.5~1.0 = 감쇠는 mid→large/mega 구간, 신호 mid-cap 집중). bootstrap CI[−1.9%,+9.7%]/yr가 MID 19.1% 배제. era: 2005-14 −3.4%(t−0.91)/2015-19 +7.9%(t2.02)/2020-26 +11.5%(t1.73) = 잔여 양(+)은 2015+ 최근레짐 국한. ",
+"P2 복합: corr(INS01강도,INS02breadth)=0.853전체/0.803 TOP30 高중복 → 부분독립성 전제 붕괴. C_union/inter/addz TOP30 t=1.97/1.24/1.21 전부<2(무이득). ",
+"P3 pooled: F0∪F2∪F3 TOP30 gap 5.45%/yr 월내 순열 p=0.023<0.05(약한 신호 실재) 이나 NW-t 1.97·F2단독 p=0.087 marginal → P1 '검출 문턱 이하 잔여 소효과' 정합. ",
+"결론: mid 대비=death 확정(감쇠) / zero 대비=잔여 underpowered. cap-tier localization([[project-captier-alpha-localization-20260706]]) 선별-면 mega=signal-dead가 monitoring-면 SAFE에서도 재현(단 KILL 아님·mid-cap 보유엔 강건 de-risk). monitoring 함의: SAFE tripwire mid-cap 강건(t 4.6~6.1)·대형주 저신뢰 라벨 확정. ",
+"방법론: R36 uni 상속(신규 데이터 접근 없음). tier_gap_series(월별 flag-nonflag gap NW-lag3)·pwr2(two-sided 5% ncp)·MDE(2.802×SE)·bootstrap(B=2000)·월내 순열(nperm=2000, TOP30 flag 라벨 셔플). n_trials=1(chain·DSR 부적용, monitoring-face). book_state/05_Production/outputs.ramp 무변경·DART API 금지·cov/weights 미산출(역할경계). pin rawdata_r9_pin_20260715·prereg config_hash ae1b26f0. ",
+"next_probe: P1(exit-timing 대칭검정 R34/R36 #3 계승, feasible now); P2(TOP30 잔여 2015+ 레짐 조건부성·상호작용 검정); P3(mid-cap SAFE 배포 유니버스 실효 coverage)."),
+  mechanism_hypothesis = "insider net-buy SAFE 신호의 대형주(TOP30) 약함이 표본부족(power)인가 진짜 mega signal-death(cap-tier localization)인가. 결과: attenuation(death) 우세 — TOP30 표본이 mid-효과 검출 검정력 100%인데도 t=1.30(power 가설 falsified)·이질성 NW-t 2.50~3.70 유의·CI가 mid 배제. 잔여 소효과(3.8%/yr)는 검출 문턱 이하+최근레짐 국한. 복합(INS01+INS02)은 corr 0.80~0.85 중복으로 무이득. cap-tier localization의 monitoring-면 발현.",
+  portfolio_alpha_t = 1.30,
+  oos_months = 250L,
+  core_reference = "FQ-051 (R36 L 계승 next_probe P1/P2); base R36 uni production_parity_verified 3.058; prereg config_hash ae1b26f000d39034; parent verdict stage_artifacts/WT_D20260715_005/verdict.json",
+  metrics = list(
+    top30_f2_gap_ann = 0.0381, top30_f2_gap_t = 1.30, top30_f2_se_monthly = 0.00243,
+    pow_detect_mid_effect = 1.000, pow_detect_large_effect = 0.482, pow_achieved_own = 0.257,
+    mde_80pct_ann = 0.0818, n_months_needed_t2 = 588L,
+    het_mid_minus_top_t_f2 = 3.70, het_mid_minus_top_t_f0 = 3.15, het_mid_minus_top_t_f3 = 2.50,
+    het_large_minus_top_t_f2 = 0.88,
+    bootstrap_ci_lo = -0.0188, bootstrap_ci_hi = 0.0974, bootstrap_median = 0.0384,
+    era_2005_2014_gap = -0.0345, era_2005_2014_t = -0.91, era_2015_2019_gap = 0.0791, era_2015_2019_t = 2.02,
+    era_2020_2026_gap = 0.1146, era_2020_2026_t = 1.73,
+    cor_ins01_ins02_all = 0.853, cor_ins01_ins02_top30 = 0.803,
+    composite_union_top30_t = 1.97, composite_inter_top30_t = 1.24, composite_addz_top30_t = 1.21,
+    pooled_top30_gap_ann = 0.0545, pooled_top30_nwt = 1.97, pooled_perm_p = 0.0230, pooled_perm_q95 = 0.0457,
+    mid_gap_t_f2 = 6.13, mid_gap_ann_f2 = 0.1912,
+    n_trials = 1L, verdict_type = "capability_established",
+    next_probe = c("exit-timing 대칭 (P1)", "TOP30 2015+ 레짐 조건부성 (P2)", "mid-cap 실효 coverage (P3)"),
+    consumer_surfaces = c("monitoring: SAFE tripwire cap-tier 신뢰 라벨", "위험모델: mega SAFE 약함 caveat 격상", "선별라벨: mega-배제 논거 강화"),
+    evidence = "stage_artifacts/WT_D20260715_006/verdict.json"
+  ),
+  tags = c("insider_netbuy","safe_tripwire","monitoring_face","megatier_thinness",
+           "power_vs_signal_death","power_analysis","heterogeneity_test","pooled_permutation",
+           "captier_localization","mid_cap_dominant","non_capital","capability_established",
+           "regime_conditional_recent","composite_redundancy","cap_w_wall")
+)
+cat("emitted:", if(is.list(r)) (if(!is.null(r$l_code)) r$l_code else "see-output") else as.character(r), "\n")

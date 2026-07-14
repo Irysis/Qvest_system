@@ -1,0 +1,109 @@
+{
+  "wt": "WT-D20260715_006",
+  "mode": "RAMP-adjacent monitoring 진단 (mega-tier SAFE thinness — power vs signal-death 판별)",
+  "round": "R37",
+  "fq": "FQ-051",
+  "title": "insider net-buy SAFE 신호 대형주(TOP30) thinness 진단 — 검정력 문제인가 genuine mega signal-death인가",
+  "as_of_date": "2026-07-15",
+  "verdict_type": "capability_established",
+  "config_hash": "ae1b26f000d39034",
+  "prereg_sha256_ref": "stage_artifacts/WT_D20260715_006/prereg_r37.json",
+  "selection_type": "chain (가설주도 고정 config · sweep 아님) n_trials=1",
+  "vintage_pin": ".cache/pin/rawdata_r9_pin_20260715.parquet (mtime 2026-07-15 00:21:02, R9/R33/R34/R36 pin 재사용)",
+  "base_source": "R36 _r36_objects.rds uni 상속 (production clean T-1 파생, production_parity_verified 3.058, PIT C5 검증·lag1 통과 상속) — §7b 정합, 저장 268m same-month vintage 미사용",
+
+  "headline": "TOP30 thinness = genuine mega-tier signal attenuation 우세(cap-tier localization을 monitoring 면에서 확증) — power(표본부족) 문제 아님. 단 mid보다 ~5x 약한 잔여 신호는 최근-레짐(2015+) 국한·검출 문턱 이하로 존재(pooled 순열 p=0.023).",
+
+  "P1_power_vs_death": {
+    "verdict": "signal_attenuation_dominant",
+    "core_logic": "TOP30 표본(F2 flag 2341·250개월)이 MID 효과크기(19.1%/yr)를 검출할 검정력 = 1.000. 즉 대형주에 mid-강도 신호가 있었다면 확실히(t≈6~8) 잡혔을 것. 관측 t=1.30 → '표본이 얇아 mid-강도 신호를 놓쳤다'는 power 가설 falsified.",
+    "heterogeneity_test": {
+      "note": "공통월 (gap_MID − gap_TOP30) NW-lag3 t — 양수 유의 = TOP30 효과 진짜 작음(attenuation)",
+      "F2_relax": {"mid_minus_top_ann": 0.1531, "mid_minus_top_t": 3.70, "large_minus_top_ann": 0.0178, "large_minus_top_t": 0.88, "common_months": 250},
+      "F0_base":  {"mid_minus_top_ann": 0.2137, "mid_minus_top_t": 3.15, "large_minus_top_t": 0.53, "common_months": 126},
+      "F3_cut":   {"mid_minus_top_ann": 0.1263, "mid_minus_top_t": 2.50, "large_minus_top_t": 1.00, "common_months": 251},
+      "reading": "3형태 전부 (mid−TOP30) NW-t ≥ 2.50 유의 → mega 효과가 mid의 ~1/5로 진짜 감쇠. (large−TOP30)은 무의미(0.5~1.0) → 감쇠는 mid→large/mega 구간에서 발생(신호는 mid-cap에 집중)."
+    },
+    "power_decomposition_F2": {
+      "top30_gap_ann": 0.0381, "top30_gap_t": 1.30, "se_monthly": 0.00243, "n_months": 250,
+      "pow_detect_mid_effect": 1.000,
+      "pow_detect_large_effect": 0.482,
+      "pow_achieved_own": 0.257,
+      "MDE_80pct_ann": 0.0818,
+      "n_months_needed_for_t2_at_observed": 588,
+      "reading": "MDE(80% 검정력)=8.2%/yr. TOP30 관측 3.8%/yr < MDE → 관측 잔여효과는 검출 문턱 이하(underpowered vs zero). 그러나 mid 19.1%는 문턱 훨씬 위 → 놓칠 리 없음. 결론: mid 대비 = death(감쇠 확정), zero 대비 = 잔여 소효과 검출 불가(power)."
+    },
+    "bootstrap_top30_f2_ci": {"lo": -0.0188, "median": 0.0384, "hi": 0.0974, "B": 2000,
+      "reading": "TOP30 F2 효과 95% CI = [−1.9%, +9.7%]/yr — 0 포함(zero 기각 불가) 이나 MID 19.1% 배제(효과 진짜 mid보다 훨씬 작음)."},
+    "era_concentration_challenge2": {
+      "note": "TOP30 F2 gap 시대별 (challenge #2: mega 표본 시대편중 실측)",
+      "2005-2014": {"gap_ann": -0.0345, "gap_t": -0.91, "months": 114},
+      "2015-2019": {"gap_ann": 0.0791, "gap_t": 2.02, "months": 60},
+      "2020-2026": {"gap_ann": 0.1146, "gap_t": 1.73, "months": 76},
+      "reading": "잔여 TOP30 양(+)은 2015+ 최근 레짐 국한 — pre-2015는 null/음(−3.4%/yr t−0.91). 대형주 SAFE 잔여신호 = 최근-레짐 조건부(구조적 상시 아님)."
+    }
+  },
+
+  "P2_composite": {
+    "verdict": "복합 미해결 — TOP30 t>2 도달 실패 (best union t=1.97<2)",
+    "partial_independence_failed": {"cor_ins01_ins02_all": 0.853, "cor_ins01_ins02_top30": 0.803,
+      "reading": "INS01(강도)·INS02(breadth) corr 0.80~0.85 = 高중복. '부분독립성으로 복합이 정보 추가' 전제가 데이터에서 성립 안 함 → 복합이 TOP30를 못 끌어올림."},
+    "forms": {
+      "C_union (OR)":   {"top30_gap_ann": 0.0545, "top30_gap_t": 1.97, "uni_gap_t": 4.77, "mid_gap_t": 6.01, "n_flag_top30": 2767},
+      "C_inter (AND)":  {"top30_gap_ann": 0.0387, "top30_gap_t": 1.24, "uni_gap_t": 4.44, "mid_gap_t": 4.66, "n_flag_top30": 1630},
+      "C_addz (>=0.5)": {"top30_gap_ann": 0.0359, "top30_gap_t": 1.21, "uni_gap_t": 4.48, "mid_gap_t": 6.32, "n_flag_top30": 2405}
+    }
+  },
+
+  "P3_pooled_perm": {
+    "verdict": "pooled 최대검정력 단일검정 = 약한(marginal) TOP30 within-month SAFE 신호 존재 (p=0.023)",
+    "pooled_flag": "F0 ∪ F2 ∪ F3cut (F1 KILL 제외)",
+    "top30_pooled_gap_ann": 0.0545, "top30_pooled_nwt": 1.97, "n_flag": 2767, "n_months": 253,
+    "permutation": {"p_value": 0.0230, "perm_mean_ann": 0.0004, "perm_sd": 0.0269, "q95_ann": 0.0457, "q99_ann": 0.0619, "nperm": 2000},
+    "robust_f2_alone": {"gap_ann": 0.0381, "p_value": 0.0865},
+    "reading": "월내 flag 셔플 정확 순열에서 pooled TOP30 gap(5.45%/yr)은 p=0.023<0.05 유의 — 대형주에도 얇은 SAFE 신호가 실재(우연 아님). 그러나 NW-t 1.97·F2 단독 p=0.087 = marginal. P1 '검출 문턱 이하 잔여 소효과' 판독과 정합(zero보단 크나 mid보단 훨씬 작음)."
+  },
+
+  "synthesis": {
+    "power_vs_death_answer": "둘 다 사실이나 지배적 = attenuation(death). ① mid 대비: 표본이 mid-강도를 검출할 검정력 100%인데도 t=1.30 → mega 효과가 진짜 ~1/5로 감쇠(cap-tier localization 확증). power 문제로 mid-신호가 가려진 게 아님. ② zero 대비: 잔여 3.8%/yr은 표본 MDE(8.2%) 이하라 standalone 유의 확립 불가(이 sub-질문만 underpowered). pooled 순열이 겨우 p=0.023로 '약한 신호 존재'까지만 확인.",
+    "cap_tier_localization_confirm": "[[project-captier-alpha-localization-20260706]] 선별-면 'mega=signal-dead'가 monitoring-면 SAFE 신호에서도 재현 확정. 단 monitoring-면은 선별-면과 달리 KILL 아님(mid-cap 보유엔 강건 de-risk 라벨).",
+    "monitoring_implication": "SAFE de-risk tripwire 신뢰 tier 확정 — mid-cap 보유 = 강건(t 4.6~6.1), 대형주(TOP30) 보유 = 저신뢰(최근-레짐 국한·검출 문턱 이하). 대형주 SAFE 라벨은 '약함' 명시 필수."
+  },
+
+  "consumer_surfaces_checklist": {
+    "note": "answer-principles 소비면 7종 순회 (monitoring-face 진단 라운드)",
+    "5_monitoring": "SAFE tripwire cap-tier 신뢰 라벨 확정: mid-cap 강건 / TOP30 저신뢰(최근-레짐 조건부·검출 문턱 이하). filing_delay_watch.R Part C 배선 시 tier별 신뢰가중 부기(배선=별도 태스크).",
+    "8_risk_model": "per-holding de-risk 라벨 = mid-cap 중심 강건 확정. mega-tier(TOP30) SAFE 라벨 신뢰 '약함(attenuation 실측)' caveat — R36 caveat를 정량 근거(power 1.0·het t 3.70)로 격상.",
+    "1_factor_rank": "N/A — net-buy=monitoring-only. cap-tier localization 재확인이 선별-면 mega 배제 유지 근거 강화.",
+    "2_universe_filter": "N/A.",
+    "3_overlay_regime": "N/A (종목-단 SAFE).",
+    "6_selection_label": "N/A — cap-w 횡단선택 벽 잔존. mega 감쇠 확증이 선별-면 mega-배제 유지 논거.",
+    "7_other_mode": "RAMP monitoring 이식 후보이나 non-capital tripwire — 현 미착수(FQ 잔류)."
+  },
+
+  "next_probes": [
+    "de-risk exit-timing 대칭검정 (R34·R36 next_probe #3 계승) — 완화 flag(INS02>=+0.5) 소멸 시 forward 위험 재상승 여부. 진입/청산 양측 정보성 = tripwire 완성. 데이터게이트 없음(feasible now).",
+    "TOP30 잔여 SAFE의 최근-레짐(2015+) 조건부성 실측 — era-gap이 2005-14 음(−3.4%)/2015+ 양(+8~11%)으로 갈림. mega SAFE는 최근-반도체-집중 레짐과 얽힌 조건부 신호인가(레짐 상호작용 검정) — cap-tier localization의 시간축 정련.",
+    "mid-cap SAFE 신호의 배포 유니버스 내 실효 coverage — SAFE가 mid-cap 지배인데 배포 책(STR_1715)은 대형주 편중. mid-cap 보유 비중별 tripwire 실발화 빈도 측정으로 현 북에서의 실효 monitoring 가치 확정."
+  ],
+
+  "layer_bottleneck": "⑤monitoring (SAFE tripwire cap-tier 신뢰 경계 확정) — 성과 병목 아님(소비면 진단). mega-tier attenuation은 cap-tier localization 벽의 monitoring-면 발현이지 신규 성과 병목 아님.",
+  "self_adversarial": {
+    "challenge_note": "stage_artifacts/WT_D20260715_006/challenge_note_r37_20260715.md",
+    "concerns": 3,
+    "escalation": "불요 (monitoring-face 진단, 자본 게이트 무관·HIGH severity <5·PIT C5 상속 clean)",
+    "ax008": "self-adversarial 단독 + R36 uni 상속(parity 3.058) + placebo/permutation 내부검증. 자본 게이트 진입 아님 → 3-source 재적용 미대상."
+  },
+  "book_state_unchanged": true,
+  "production_unchanged": true,
+  "outputs_ramp_unchanged": true,
+  "artifacts": {
+    "runner": "stage_artifacts/WT_D20260715_006/run_r37_insider_megatier_power.R",
+    "results": "stage_artifacts/WT_D20260715_006/r37_results.json",
+    "objects": "stage_artifacts/WT_D20260715_006/_r37_objects.rds",
+    "prereg": "stage_artifacts/WT_D20260715_006/prereg_r37.json",
+    "charts": "stage_artifacts/WT_D20260715_006/charts/ (r37_power_curve.png · r37_top30_t_bars.png · r37_pooled_perm.png)",
+    "challenge_note": "stage_artifacts/WT_D20260715_006/challenge_note_r37_20260715.md",
+    "log": "stage_artifacts/WT_D20260715_006/_r37_run_log.txt"
+  }
+}
