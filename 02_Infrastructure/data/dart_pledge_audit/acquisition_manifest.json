@@ -52,9 +52,15 @@
  },
  "resume_needed": true,
  "resume_point": {
-  "reason": "DART quota status 020 (사용한도를 초과하였습니다.)",
   "phase": "t2a",
-  "at": "2026-07-13 21:33:06"
+  "corp_idx_next": 65,
+  "corps_remaining": 283,
+  "calls_remaining_est": 283,
+  "halted_at": "2026-07-13 21:33:06",
+  "halt_reason": "DART quota status 020 (사용한도를 초과하였습니다.)",
+  "resume_condition": "2026-07-14 insider 02:00 wave 완료 후 잔여 쿼터로 재개 (insider 백필은 230/230월 완결 상태라 02:00 run은 no-op — 07-14 쿼터 리셋 후 아무 때나 가능)",
+  "resume_cmd": ".venv_qvest_ml/Scripts/python.exe 02_Infrastructure/data/dart_pledge_audit_acquire.py",
+  "resume_note": "state_stage1.json 위치(t2a corp_idx 65)에서 자동 이어수집. t1/t3는 done — 재호출 없음"
  },
  "resume_cmd": ".venv_qvest_ml/Scripts/python.exe 02_Infrastructure/data/dart_pledge_audit_acquire.py",
  "resume_note": "insider wave(02:00) 이후 재실행 — state_stage1.json 위치에서 이어서 수집",
@@ -245,8 +251,44 @@
    "corps": 93,
    "correction_rows": 165,
    "census_expected_corr": 165
+  },
+  "t2a_majorstock_PARTIAL": {
+   "label": "PARTIAL — 65/348 corps만 수집(쿼터 halt). 해석 주의: 전유니버스 통계 아님",
+   "corps_collected": 65,
+   "total_rows": 730,
+   "corps_with_pledge_resn": 24,
+   "by_year": {
+    "2024": {
+     "reports": 150,
+     "ctr_pos": 113,
+     "resn_pledge": 34
+    },
+    "2025": {
+     "reports": 348,
+     "ctr_pos": 234,
+     "resn_pledge": 90
+    },
+    "2026": {
+     "reports": 232,
+     "ctr_pos": 116,
+     "resn_pledge": 55
+    }
+   }
   }
  },
  "no_returns_join": true,
- "universe_n": 348
+ "universe_n": 348,
+ "calls_by_phase_actual": {
+  "t1": 3828,
+  "t3_a001": 348,
+  "t3_f": 93,
+  "t2a_partial": 66,
+  "total": 4335,
+  "vs_census_estimate": {
+   "t1": "3828/3828 정확 일치",
+   "t3": "441 실측 vs ~400 추정(A001 348 + F재수집 93, page-2 없음)",
+   "t2a": "66/348 (283 잔여)"
+  }
+ },
+ "date_closeout": "2026-07-13 21:36:49"
 }

@@ -60,13 +60,30 @@
       "ev_rationale": "hypothesis_index 700 전수 기준 0-coverage. ★07-13 N3 census(FQ-022)로 취득 지도 확정: 감사의견 FY2015+와 담보 최근 2년은 메타데이터 API만으로 취득 가능(파서·문서 불요, 합계 ~4.6k콜) — '파서 개발 비용' 결정은 담보 역사(2005~2023, 문서 ~29k건 추정, ~4.5일)에만 해당",
       "wall_check": "비-return·미탐색. exclusion-형 소비면 long-only 정합",
       "data_gate": "2단: [1단 무파서] T1 감사의견 구조화 API(3,828콜·0.5일) + T3 정정지도(~400콜) + T2a 담보 최근2년 majorstock(348콜) — insider 백필 완결 후 즉시 가능. [2단 파서] T2b 담보 역사 document.xml ~29k건(~4.5일) — 1단 예비 신호 양성일 때만 지불(도훈 결정). census: 04_Research/dart_census/census_pledge_audit_20260713.md",
-      "owner": "Q-Lead (도훈 승인 2026-07-13)",
-      "status": "in_progress_stage1_acquisition",
-      "next_action": "1단 무파서 취득 진행(T1 감사의견 FY2015+ 3,828콜 + T3 정정지도 + T2a 담보 2년) — 신호 실측은 취득 후 별도 사전등록 라운드",
+      "owner": "Q-Lead (도훈 승인 2026-07-13, task #64)",
+      "status": "stage1_acquired_t2a_resume_pending",
+      "next_action": "t2a 잔여 283콜 재개(07-14 insider 02:00 wave 후 잔여 쿼터 — insider는 230/230월 완결이라 no-op, 쿼터 리셋 후 resume_cmd 재실행) → 완료 시 신호 실측 사전등록 라운드(T1 exclusion형·T3 정정빈도·T2a 담보 — returns join은 사전등록 후에만)",
       "source_refs": [
         "memory: next_session_task 07-05 미탐색 프론티어 맵",
-        "census: FQ-022 / 04_Research/dart_census/census_pledge_audit_20260713.{md,json}"
-      ]
+        "census: FQ-022 / 04_Research/dart_census/census_pledge_audit_20260713.{md,json}",
+        "acquisition: 02_Infrastructure/data/dart_pledge_audit/acquisition_manifest.json (task #64)"
+      ],
+      "acquisition_result": {
+        "date": "2026-07-13",
+        "calls": {
+          "total": 4335,
+          "t1": 3828,
+          "t3_a001": 348,
+          "t3_f": 93,
+          "t2a_partial": 66,
+          "fails": 0,
+          "hard_cap": 5000
+        },
+        "t1_audit_opinion": "FY2015~2025 348 corps 완료(문서 0). 커버리지 FY2015 252/348 → FY2024+ 348/348 (013=미공시·상장전). 비적정(한정) 당기 2건: 한화오션 FY2016·코나아이 FY2019 — ⚠현행 유니버스 = 생존편향, 신호 라운드에서 PIT 유니버스 필요. emphs_matter(강조사항)는 FY2019+ 실효(45~97/yr), 계속기업 kw 6행/5 corps",
+        "t3_correction_map": "A001 7,680행/348 corps, [기재정정] 1,694행/325 corps (연 13~142건, 2014+ 상승) + F군 정정 165행/93 corps(census 일치) — 상장 유니버스 정정지도 F채널 대비 ~10배 밀도",
+        "t2a_pledge": "PARTIAL 65/348 corps(쿼터 halt 020, 07-13 21:33). 730행, 담보/질권 resn 24/65 corps — 283콜 잔여",
+        "artifacts": "02_Infrastructure/data/dart_pledge_audit/{t1_audit_fy2015..2025,t1_audit_opinion_fy2015_2025,t3_a001_annual_reports,t3_fgroup_rows}.parquet + raw_*.jsonl + acquisition_manifest.json"
+      }
     },
     {
       "id": "FQ-005",

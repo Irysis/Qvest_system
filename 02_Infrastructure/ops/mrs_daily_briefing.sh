@@ -40,6 +40,22 @@ if [ ! -f "$REGIME_DAILY" ] && [ ! -f "$REGIME_MONTHLY" ]; then
   exit 0
 fi
 
+# [2026-07-14 Q] 데이터-조건 게이트 — 실사고: 오늘 mrs가 07:12 발사(wake catch-up, 의도 07:30)
+#   → DailyRefresh(07:15 완료) 前 vintage(07-10)로 KTRI 전전영업일 차트 발송("Neutral"),
+#   07:15 신선 재빌드 실측은 KTRI 32.3 "Defensive Bias" — 국면 메시지가 실질적으로 달랐다.
+#   시각-기반 대신 데이터-조건: 렌더 산출물 2개가 전영업일 도달까지 최대 30분(120s×15) 대기
+#   → freshness_audit 재실행(as_of 순환성 수리판) → 아래 mrs_regime_send 자체 stale-게이트가
+#   교정된 판정을 소비. 타임아웃 시에도 감사 재실행 후 진행(게이트가 보류·알림 판단).
+GATE="INIT"
+for _i in $(seq 1 15); do
+  GATE=$(Rscript --no-save -e 'source("02_Infrastructure/ops/morning_steps/regime_data_gate.R")' 2>/dev/null | tail -1)
+  case "$GATE" in OK*) break ;; esac
+  echo "$(date -Iseconds) [mrs_daily] data-gate: $GATE (retry $_i/15)" >> "$LOG"
+  sleep 120
+done
+echo "$(date -Iseconds) [mrs_daily] data-gate final: $GATE" >> "$LOG"
+Rscript --no-save -e 'source("02_Infrastructure/ops/morning_steps/freshness_audit.R")' >> "$LOG" 2>&1
+
 echo "$TS [mrs_daily] start briefing v2.8" >> "$LOG"
 
 # [외부화 2026-06-18 Q] 기존 멀티라인 `Rscript -e '...'` 블록은 Windows Git Bash 에서 첫 줄만

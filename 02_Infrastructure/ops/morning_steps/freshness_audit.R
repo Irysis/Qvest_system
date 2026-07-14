@@ -11,10 +11,20 @@ source("02_Infrastructure/config.R")
 suppressPackageStartupMessages({library(data.table); library(arrow); library(jsonlite)})
 
 today <- Sys.Date()
-# as_of = 직전 거래일 (benchmark KOSPI200 max). calendar today 대신 이걸 기준으로 lag 계산
-# → 월요일/연휴 오탐 제거 (도훈 2026-06-01).
-as_of <- tryCatch(max(as.Date(as.data.table(read_parquet(".cache/benchmark.parquet"))$Date), na.rm = TRUE),
-                  error = function(e) today)
+# [2026-07-14 Q] as_of 순환성 수리 — 구현(benchmark-max 유도)은 '부분 stale'만 잡고,
+#   '전면 stale'(아침 갱신 전체 미도래)이면 as_of가 데이터와 같이 끌려 내려가 전부 FRESH 오판
+#   (07-14 실사고: 07:11 감사가 as_of=07-10으로 KTRI 전전영업일 발송을 통과시킴).
+#   기준일은 데이터가 아닌 달력에서: 주말 제외 직전 평일 후보 → trading_calendar(QW ground
+#   truth)가 후보를 커버하면 휴일 보정, 미커버면 후보 유지(보수 — 드문 평일휴일 아침 오탐은
+#   mrs '보류 알림'으로 표면화, 침묵-stale보다 낫다). 도훈 06-01 월요일 오탐 제거 목적은
+#   주말 스킵 + 달력 휴일 보정으로 유지된다.
+.prev_bd <- function(d) { t <- d - 1; while (format(t, "%u") %in% c("6", "7")) t <- t - 1; t }
+as_of <- .prev_bd(today)
+.cal <- tryCatch(as.Date(as.data.table(read_parquet(".cache/trading_calendar.parquet"))$Date),
+                 error = function(e) as.Date(character(0)))
+if (length(.cal) && max(.cal, na.rm = TRUE) >= as_of && !(as_of %in% .cal)) {
+  as_of <- max(.cal[.cal < as_of])
+}
 if (length(as_of) != 1 || is.na(as_of) || as_of > today) as_of <- today
 
 audits <- list()
