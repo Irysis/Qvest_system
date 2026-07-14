@@ -1,0 +1,111 @@
+{
+  "wt": "WT-D20260715_012",
+  "round": "R43",
+  "mode": "data-integrity 진단·격리 (밤샘 위생 — 새 알파 측정 아님)",
+  "title": "rawdata Ret 극단값 오염 census·원인진단·canonical 커버·라이브 영향 (R42 적발 66999 추적)",
+  "as_of_date": "2026-07-15",
+  "verdict_type": "capability_established",
+  "task_class": "data_integrity_diagnosis_and_isolation",
+  "parent": "R42 (WT-D20260715_011) data_hygiene_finding — .cache/rawdata.parquet 전역 Ret max=66999 적발",
+  "base_source": "read-only: .cache/rawdata.parquet(live, mtime 2026-07-15 00:07, 421,350,461 bytes) + .cache/pin/rawdata_r9_pin_20260715.parquet(R40 pin, byte-동일 vintage — max Ret 66999 양측 일치). rawdata/book_state/05_Production 무변경. DART API 0.",
+  "pin_record": {
+    "pinned_snapshot": ".cache/pin/rawdata_r9_pin_20260715.parquet",
+    "parity_with_live": "byte-identical stats (max Ret 66999, N 14,004,246 both) — 밤샘 라운드 R9~R42가 소비한 vintage와 동일",
+    "note": "본 진단은 R40 pin vintage 기준. 신규 pin 미생성 (기존 pin이 정확히 이 vintage 캡처)."
+  },
+
+  "census": {
+    "total_rows": 14004246,
+    "non_na_ret": 14004014,
+    "ret_overall": {"min": -0.9945, "p1": -0.1111, "median": 0.0, "mean": 0.00529, "p99": 0.1408, "max": 66999.0,
+                    "mean_note": "글로벌 mean이 단일 66999 값에 지배 (66999/14M ≈ +0.0048 = mean의 90%)"},
+    "tiers": {
+      "ret_gt_0.31_above_up_limit":   {"rows": 834,  "in_universe": 8},
+      "ret_gt_1.0_physically_impossible": {"rows": 254, "in_universe": 1},
+      "ret_gt_10_over_1000pct":       {"rows": 21,   "in_universe": 0},
+      "ret_lt_neg0.31_below_down_limit": {"rows": 1926, "in_universe": 9},
+      "ret_lt_neg0.90_near_wipeout":  {"rows": 269,  "in_universe": 1},
+      "grand_abs_gt_1.0":             {"rows": 343,  "in_universe": 1}
+    },
+    "worst_single": {"ticker": "A008080", "date": "2013-09-11", "Ret": 66999.0, "Close": 67000, "prevClose": 1,
+                     "diagnosis": "전일 종가 1원(placeholder/units 결함) → 당일 67000원 = ratio 67000. 물리 불가능·글로벌 mean 지배."}
+  },
+
+  "cause_diagnosis": {
+    "method": "Ret := Close/shift(Close)-1 (rawdata_sanitize.R Step5 재계산식) 역추적 — 각 종목-일의 Close·전일Close·날짜갭·유니버스플래그로 분류",
+    "categories_pos_gt0.31": {
+      "E_other_split_rights_375": "ratio≈2.0 (Ret=1.0 정확 배가) 다수 + A052670 300x/A037030 93x — 액면분할·유상증자·병합 미조정",
+      "D_lowprice_prevClose<=100_244": "저가주(전일 종가 ≤100원) — 호가단위 반올림 증폭",
+      "A_divide_tiny_prevClose<=10_184": "전일 종가 ≤10원(0원 제수류) — 66999 monster 포함",
+      "C_dategap>20d_16": "상장폐지→재상장 날짜갭 (예: A037030 전일 2005-08-30→당일 2015-04-24, 10년 갭 넘어 Close 비율)",
+      "B_april30_10x_seam_15": "★2026-04-30 정확 10배 이음매 — project-rawdata-april-gap-incident 잔재"
+    },
+    "april30_seam": {
+      "date": "2026-04-30",
+      "extent": {"up_10x": 18, "up_2x": 30, "down_0.5x": 3, "down_0.1x": 1},
+      "mechanism": "2026-03-30~04-29 QuantiWise 이음매 구멍(07-11 KRX 백필)의 잔재 — late-April 복원값 일부가 1/10 또는 2배 스케일 → 04-30에서 정상 스케일로 snap-back하며 허위 +900%/-50% 발생. 예: A004410 서울식품 04-24~04-29 Close=158(1/10) → 04-30 Close=1580 → 05-04 1580 유지. (07-11 백필이 유니버스 종목 우선 처리, 잔여 microcap 미교정)",
+      "in_universe_hit": ["A328130 루닛 (KQ150, 04-30 Ret -0.496, 41200→20750 ~2x snap-back)", "A183300 코미코 (KQ150, 04-30 Ret -0.494, 142400→72119)"]
+    },
+    "in_universe_anomaly_forensics": {
+      "A010120_LS_ELECTRIC_2026-04-13": "K200. 788000(04-08~10 Vol=0 stale) → 179200(04-13, 이후 유지). ratio 0.23 = 미조정 ~1:4.4 액면분할. 허위 -77.3% 단일일. 2026-04 유니버스 월수익 오염(fwd -0.613).",
+      "A063350_2007-04": "K200 플래그이나 45~165원 penny — stale/오류 index flag 강한 의심(실 K200 구성은 이 가격대 부재). 폭락→반등 실거래(대량 Vol). 유일한 유니버스內 >1.0 (04-20 Ret 1.538).",
+      "2025-01-02_A277810_A058610_A454910": "년초 +32~50% gap 후 유지 — 실 gap-up 또는 년경계 refresh 이음매. 소규모(ratio 1.3~1.5)·저물질성."
+    }
+  },
+
+  "canonical_coverage": {
+    "verdict": "유니버스+유동성 필터가 ~99.7% 커버 — 단 Ret winsorize 방화벽은 부재(완전 커버 아님)",
+    "universe_filter": "K200∪KQ150: 물리불가 343건 → 유니버스內 1건. 오염 거의 전량이 non-index microcap/상폐주.",
+    "liquidity_filter": "20일 ADV≥2e8: 오염행 다수 Vol=0 → 제거.",
+    "ret_winsorize_absent": "canonical_screen_bt.R(Ret_1m 직접 소비, WR[is.na→0]만) / rawdata_sanitize.R Step5(|Ret|>0.3 로깅만·drop 안 함) / factor_db_builder Fwd_Ret=prod(1+Ret)(winsorize는 Raw_Value 팩터값에만·Ret엔 없음) — 어디에도 Ret 클립 없음.",
+    "monthly_compound_universe": "유니버스 ticker-month 117,045개 중 |fwd|>3.0 = 0건. 단일일 아티팩트 있는 월 = 7건(4건 2002-2013 penny + LS ELECTRIC/루닛/코미코 2026-04). 월복리 폭발 없음.",
+    "residual_exposure": "유니버스內 잔여 이상 = 양(+) 8행/6종목·음(-) 9행/7종목 (20년 걸쳐 ~17 종목-일). 선택+보유될 때만 전파 — winsorize 미적용이라 통과."
+  },
+
+  "live_book_impact": {
+    "book": "STR_1715_on_M4_R05_noLayer4_PG2 — 14 보유 + CASH (2026-07 홀딩)",
+    "holdings": ["A005930 삼성전자","A000660 SK하이닉스","A319660 피에스케이","A034730 SK","A095610 테스","A011070 LG이노텍","A007340 DN오토모티브","A023530 롯데쇼핑","A004170 신세계","A402340 SK스퀘어","A222800 심텍","A003030","A290650 엘앤씨바이오","A189300 인텔리안테크"],
+    "contamination": "ZERO — 14 보유 전 종목이 전 역사에서 |Ret|>0.31 월 0건. 최대 |Ret| = A189300 +0.300(제한값)·나머지 ≤+0.30/≥-0.21. LG이노텍 +154% 월(R42 diag)도 최대 단일일 +28.6%(<제한)의 정당 누적.",
+    "recon_nav": "현 북 recon NAV·monitoring 오염 소비 없음 — clean.",
+    "overnight_rounds_R9_R42": "R40 pin 동일 오염 보유. 그러나 라운드는 유니버스 월패널(폭발 0) 소비 → verdict 거의 확실히 무영향. ★CAVEAT: 2026-04 유니버스 홀딩월을 측정한 라운드가 있다면 LS ELECTRIC/루닛/코미코 seam-day를 exclude/winsorize 후 재확인 권고(구조판결 아닌 데이터 위생 확인)."
+  },
+
+  "repair_recommendation": {
+    "scope": "별도 태스크 — rawdata 직접수정 금지, 리빌드 파이프라인 경유 (project-rawdata-april-gap 패턴)",
+    "items": [
+      "R1 (파이프라인 방화벽·우선): 월패널 build 또는 canonical_screen_bt 입력단에 Ret sanity 게이트 — |일간 Ret|>0.31(KR 가격제한)은 suspect flag, 분할/증자류는 back-adjust, 0원제수·날짜갭류는 Ret:=NA(허위 cross-gap 수익 차단). rawdata 오염이 남아도 소비면을 보호.",
+      "R2 (2026-04-30 April-gap seam 재수리): late-April 2026 복원값 스케일 오류(1/10·2배) — KRX 백필 재실행으로 루닛/코미코(유니버스) + microcap 10x 클러스터 교정.",
+      "R3 (A010120 LS ELECTRIC 2026-04-13): ~1:4.4 액면분할 back-adjust (K200 유니버스 월수익 정합).",
+      "R4 (rawdata_sanitize.R Step5 강화): 현재 |Ret|>0.3 로깅만 → 물리불가(|Ret|>1.0)·0원제수(prevClose≤10)·날짜갭(>20d) 자동 격리(Ret:=NA) + n_isolated 기록."
+    ]
+  },
+
+  "next_probes": [
+    "R1 파이프라인 Ret sanity 방화벽 배선 (월패널/canonical 입력단 |Ret|>0.31 suspect → 분할 back-adjust / 0원제수·날짜갭 Ret:=NA) — 오염 상존해도 소비면 보호. feasible now.",
+    "2026-04 유니버스 홀딩월을 측정한 밤샘 라운드(있으면) LS ELECTRIC/루닛/코미코 seam-day exclude 후 verdict 재확인 — 무영향 예상이나 실측 확인(밤샘 판정 위생).",
+    "April-gap seam 근본 재수리(R2/R3): late-April 2026 스케일오류 + LS ELECTRIC 분할 back-adjust — KRX 백필 재실행(별도 리빌드 태스크, DART/rawdata 직접수정 금지)."
+  ],
+
+  "consumer_surfaces": [
+    "①재료/데이터 원천: rawdata Ret 무결성 census 확립 — |Ret|>0.31 격리리스트(2,760행) + 유니버스內 focused(17행) 상시 자산화. 신규 팩터/패널 build 전 참조.",
+    "⑧위험모델/감시: April-gap seam(2026-04-30) 잔재 + LS ELECTRIC 분할 미조정을 monitoring 데이터-위생 tripwire로 등재 — 리빌드 로그 행수추이 + |Ret|>0.31 카운트 급증 감시.",
+    "⑨자본/운영: 현 북 오염 ZERO 확정 — recon NAV clean 재확인 (자본 무영향)."
+  ],
+  "layer_bottleneck": "①재료(데이터 무결성 위생) — 성과 병목 아님(위생). 오염은 non-universe에 국소·현 북/유니버스 월패널 clean → 밤샘 판정 무영향(2026-04 seam caveat 단서). Ret winsorize 방화벽 부재 = 파이프라인 강화 여지(R1).",
+
+  "constraints_respected": "rawdata.parquet/book_state/05_Production/outputs.ramp 무변경(읽기만). DART API 0. 단일스레드·arrow io(2)·파일경유. 신규 pin 미생성(R40 pin이 정확 vintage). 판정 어휘 규약 준수(종결어휘 미사용·verdict enum).",
+  "book_state_unchanged": true,
+  "production_unchanged": true,
+  "rawdata_unchanged": true,
+
+  "artifacts": {
+    "census_summary": "stage_artifacts/WT_D20260715_012/census_summary.json",
+    "isolation_full": "stage_artifacts/WT_D20260715_012/isolation_list_abs_gt0.31.csv (2,760행)",
+    "isolation_in_universe": "stage_artifacts/WT_D20260715_012/isolation_list_IN_UNIVERSE.csv (17행 — 파이프라인 소비가능 유일 집합)",
+    "isolation_impossible": "stage_artifacts/WT_D20260715_012/isolation_list_gt1.csv (343행 |Ret|>1.0)",
+    "chart_cause": "stage_artifacts/WT_D20260715_012/chart_cause_breakdown.png",
+    "chart_universe": "stage_artifacts/WT_D20260715_012/chart_universe_penetration.png",
+    "logs": "stage_artifacts/WT_D20260715_012/{_census_log,_diag_log,_final_forensics_log}.txt"
+  },
+  "generated_at": "2026-07-15"
+}

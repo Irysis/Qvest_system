@@ -1,0 +1,81 @@
+{
+  "schema": "rawdata_ret_contamination_census_v1",
+  "round": "R43 (WT-D20260715_012)",
+  "as_of": "2026-07-15",
+  "source": ".cache/rawdata.parquet (live) — R40 pin byte-identical (max Ret 66999 both)",
+  "total_rows": 14004246,
+  "non_na_ret": 14004014,
+  "ret_overall": {
+    "min": -0.9945,
+    "p1": -0.1111,
+    "median": 0,
+    "mean": 0.0053,
+    "p99": 0.1408,
+    "max": 66999
+  },
+  "census_tiers": {
+    "ret_gt_0.31": {
+      "rows": 834,
+      "in_universe": 8
+    },
+    "ret_gt_1.0_impossible": {
+      "rows": 254,
+      "in_universe": 1
+    },
+    "ret_gt_10": {
+      "rows": 21,
+      "in_universe": 0
+    },
+    "ret_lt_neg0.31": {
+      "rows": 1926,
+      "in_universe": 9
+    },
+    "ret_lt_neg0.90": {
+      "rows": 269,
+      "in_universe": 1
+    },
+    "grand_abs_gt_1.0": {
+      "rows": 254,
+      "in_universe": 1
+    }
+  },
+  "worst_single": {
+    "ticker": "A008080",
+    "date": "2013-09-11",
+    "Ret": 66999,
+    "Close": 67000,
+    "prevClose": 1,
+    "note": "divide-by-1KRW placeholder artifact — dominates global mean"
+  },
+  "cause_breakdown_pos_gt0.31": {
+    "E_other_split_rights": 375,
+    "D_lowprice_prevClose<=100": 244,
+    "A_divide_tiny_prevClose<=10": 184,
+    "C_dategap>20d_delist_relist": 16,
+    "B_april30_10x_seam": 15
+  },
+  "april30_seam": {
+    "date": "2026-04-30",
+    "up_10x": 18,
+    "up_2x": 30,
+    "down_0.5x": 3,
+    "in_universe_names": ["A328130 루닛 (-0.496)", "A183300 코미코 (-0.494) — KQ150, ~2x snap-back"]
+  },
+  "in_universe_anomalies": {
+    "positive": "8 rows / 6 tickers >0.31; only 1 row >1.0 = A063350 2007-04-20 (stale K200 flag on penny stock 45-165 KRW)",
+    "negative": "9 rows / 7 tickers < -0.31; incl A010120 LS ELECTRIC 2026-04-13 (-0.773, unadjusted ~1:4.4 split), 루닛/코미코 2026-04-30 seam",
+    "monthly_compound_universe": "0 ticker-months |fwd|>3.0; 7 ticker-months w/ single-day artifact (4 old 2002-2013 penny + LS ELECTRIC/루닛/코미코 2026-04)"
+  },
+  "canonical_coverage": {
+    "universe_filter": "K200∪KQ150 removes ~99.7% (343 impossible -> 1 in-universe)",
+    "liquidity_filter": "2e8 ADV removes zero-Vol microcaps (many contaminated rows Vol=0)",
+    "ret_winsorize": "NONE — canonical_screen_bt / rawdata_sanitize Step5 / factor_db Fwd_Ret(prod(1+Ret)) do NOT winsorize Ret. residual in-universe anomalies pass through if selected+held",
+    "verdict": "coverage ~99.7% via universe+liq; NOT a full winsorize firewall"
+  },
+  "live_book_impact": {
+    "book": "STR_1715_on_M4_R05_noLayer4_PG2 — 14 holdings + CASH",
+    "holdings": ["A005930", "A000660", "A319660", "A034730", "A095610", "A011070", "A007340", "A023530", "A004170", "A402340", "A222800", "A003030", "A290650", "A189300"],
+    "contamination": "ZERO — no holding has |Ret|>0.31 in ANY month. max |Ret|=A189300 +0.300 (at limit). book recon NAV clean",
+    "overnight_rounds_R9_R42": "R40 pin has same contamination; universe monthly panel clean (0 explosions). verdicts almost certainly unaffected. CAVEAT: any 2026-04 in-universe holding-month measurement should exclude LS ELECTRIC/루닛/코미코 seam days"
+  }
+}
