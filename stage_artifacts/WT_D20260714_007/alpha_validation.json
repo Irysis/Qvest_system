@@ -1,0 +1,168 @@
+{
+  "wt_id": "WT_D20260714_007",
+  "round": "R31",
+  "fq": "FQ-047",
+  "as_of": "2026-07-14T23:47:16+0900",
+  "metric_type": "weighted_screen (cap-w top-25 paired NW-t lag3 vs clean base 0_stored_S7)",
+  "base_authority": "production_parity_verified clean 0_stored_S7 (WT_004 recon_panels, off0 T-1, READ-ONLY 05_Production)",
+  "base_port_t": 3.058339,
+  "base_ir": 0.663068,
+  "pin": "R28_current_20260714",
+  "prereg_sha256": "6e4d278cd4f82734fe48eb70b7d955b231af91d6b43bb5c4d9b1cfbb27383e70",
+  "parity_check": {
+    "note": "EBIT_EV B2 reproduces R30 exactly",
+    "r30_paired": 2.378,
+    "r31_ebit_ev_paired": 2.378209,
+    "r30_dIR": 0.232,
+    "r31_ebit_ev_dIR": 0.231756,
+    "match": true
+  },
+  "subaxis_grid": [
+    {
+      "subaxis": "BM",
+      "definition": "Book-to-Market",
+      "variant_port_t": 3.702,
+      "paired_full": 1.291,
+      "paired_pre2024": 1.014,
+      "paired_post2024": 1.172,
+      "dIR_full": 0.111,
+      "dIR_post2024": -0.022,
+      "post2017_t": 0.967,
+      "cor_active": 0.886,
+      "ewuni_port_t": 6.731,
+      "ewuni_oos": 0.495,
+      "AND_gate": false
+    },
+    {
+      "subaxis": "EP",
+      "definition": "Earnings yield",
+      "variant_port_t": 3.416,
+      "paired_full": 1.229,
+      "paired_pre2024": 0.767,
+      "paired_post2024": 1.334,
+      "dIR_full": 0.051,
+      "dIR_post2024": -0.004,
+      "post2017_t": 1.269,
+      "cor_active": 0.925,
+      "ewuni_port_t": 5.443,
+      "ewuni_oos": 0.376,
+      "AND_gate": false
+    },
+    {
+      "subaxis": "CFP",
+      "definition": "Cash-flow yield",
+      "variant_port_t": 3.335,
+      "paired_full": 0.332,
+      "paired_pre2024": -0.034,
+      "paired_post2024": 0.787,
+      "dIR_full": 0.032,
+      "dIR_post2024": -0.065,
+      "post2017_t": 0.794,
+      "cor_active": 0.913,
+      "ewuni_port_t": 5.52,
+      "ewuni_oos": 0.298,
+      "AND_gate": false
+    },
+    {
+      "subaxis": "FCF",
+      "definition": "FCF yield",
+      "variant_port_t": 3.096,
+      "paired_full": -0.214,
+      "paired_pre2024": 0.003,
+      "paired_post2024": -0.519,
+      "dIR_full": -0.022,
+      "dIR_post2024": -0.377,
+      "post2017_t": 0.364,
+      "cor_active": 0.928,
+      "ewuni_port_t": 4.637,
+      "ewuni_oos": 0.286,
+      "AND_gate": false
+    },
+    {
+      "subaxis": "SP",
+      "definition": "Sales yield",
+      "variant_port_t": 3.825,
+      "paired_full": 1.523,
+      "paired_pre2024": 0.986,
+      "paired_post2024": 1.849,
+      "dIR_full": 0.133,
+      "dIR_post2024": 0.104,
+      "post2017_t": 1.883,
+      "cor_active": 0.899,
+      "ewuni_port_t": 6.601,
+      "ewuni_oos": 0.612,
+      "AND_gate": false
+    },
+    {
+      "subaxis": "SHY",
+      "definition": "Shareholder yield",
+      "variant_port_t": 3.831,
+      "paired_full": 1.275,
+      "paired_pre2024": 0.973,
+      "paired_post2024": 0.914,
+      "dIR_full": 0.136,
+      "dIR_post2024": 0.027,
+      "post2017_t": 1.439,
+      "cor_active": 0.929,
+      "ewuni_port_t": 5.147,
+      "ewuni_oos": 0.464,
+      "AND_gate": false
+    },
+    {
+      "subaxis": "EBIT_EV",
+      "definition": "EBIT/EV (CONTROL=R30)",
+      "variant_port_t": 4.234,
+      "paired_full": 2.378,
+      "paired_pre2024": 2.207,
+      "paired_post2024": 0.919,
+      "dIR_full": 0.232,
+      "dIR_post2024": -0.086,
+      "post2017_t": 1.734,
+      "cor_active": 0.859,
+      "ewuni_port_t": 6.588,
+      "ewuni_oos": 0.512,
+      "AND_gate": true
+    }
+  ],
+  "recency_finding": "2024+ decay is DEFINITION-SPECIFIC not value-universal: EBIT_EV(2.21->0.92)+FCF(0.00->-0.52) decay; SP(0.99->1.85)+EP(0.77->1.33)+CFP(-0.03->0.79) IMPROVE post-2024",
+  "incumbent_redundancy_finding": "cor_active uniformly high 0.86-0.93 across ALL definitions (even FCF whose value-signal cross-corr to EBIT_EV=0.07) => redundancy is CONSTRUCTION property (cap-w tier-tilt w=0.3 ~ base), NOT definition property. '실낱 EV' (less-redundant definition) FALSIFIED. Caveat: cor_active=screening proxy; risk-stage realized corr vs STR_1715 authoritative (moot, none gate-clear)",
+  "subaxis_corr_median": {
+    "BM": 0.637,
+    "EP": 0.566,
+    "CFP": 0.3,
+    "FCF": 0.072,
+    "SP": 0.614,
+    "SHY": 0.472,
+    "EBIT_EV": 1
+  },
+  "characterization": {
+    "SP": {
+      "actual": 1.522909,
+      "p_emp": 0.025,
+      "lag1": 2.146927
+    },
+    "EP": {
+      "actual": 1.229245,
+      "p_emp": 0,
+      "lag1": 1.005841
+    }
+  },
+  "gate_pass_subaxes": "EBIT_EV",
+  "frontier_dossier_candidates": [],
+  "verdict": "VALUE_DEFINITION_AXIS_CONFIG_SCOPED_EXHAUSTED (screening/cap-w). EBIT/EV uniquely gate-clearing; no new definition clears AND-gate nor escapes construction-bound incumbent redundancy. Recency NOT value-universal (SP/EP improve 2024+). Arc complete at cap-w book-marginal; SP=EW-basis frontier flag.",
+  "n_trials_this_round": 7,
+  "selection_type": "chain",
+  "value_family_cumulative_trials": "~15 (R26-R30 ~8 + R31 7)",
+  "dsr_note": "chain (each independent value definition, hypothesis-driven, not argmax). DSR gate not applied (measurement-graduation §3). multiple-testing disclosed in challenge_note.",
+  "pit": {
+    "lag1_stress": "SP lag1=2.147 (no collapse), EP lag1=1.006 (stable) => no same-month look-ahead; value vintage off0=T-1 clean (R29 parity)",
+    "c4_note": "factor_db aligned-z is PIT-built with financial-statement lag; off0 vintage = month M = AS_OF-1"
+  },
+  "prohibitions_respected": {
+    "book_state": "unchanged",
+    "production": "read-only",
+    "insider_crawl": "untouched",
+    "dart_api": "not used",
+    "cov_weights": "none (alpha-research role)"
+  }
+}

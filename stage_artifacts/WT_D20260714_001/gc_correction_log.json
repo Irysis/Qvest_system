@@ -1,0 +1,17 @@
+{
+  "task": "R25 audit_signal_panel gc 오탐 교정 (도훈 지시 2026-07-14)",
+  "panel": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/WT_D20260714_001/audit_signal_panel.parquet",
+  "backup": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/WT_D20260714_001/audit_signal_panel.parquet.bak_pre_gcfix",
+  "root_cause": "생성기 gc = grepl(UNC, paste(emphs_matter,adt_reprt_spcmnt_matter,core_adt_matter)) [당기] — 불확실성 disjunction만·'계속기업 AND' 누락·KAM blob 포함 → 오탐 196. 실측 역설계로 2786/2786 정확 재현.",
+  "fix_criteria": "filing_delay_watch.R Part B: grepl('계속기업',txt) & grepl(UNC,txt), txt=paste(emphs_matter,adt_reprt_spcmnt_matter), 당기, (ticker,fy) OR",
+  "gc_before": 196,
+  "gc_after": 12,
+  "false_positives_removed": 184,
+  "newly_added": 0,
+  "a034730_fixed": true,
+  "non_gc_columns_unchanged": true,
+  "columns_touched": "gc (only)",
+  "verdict_impact": "R25 CONFIG_SCOPED_NEGATIVE 불변 — 오탐은 exclusion-과다(보수) 방향. 재판정 불요(도훈 mandate).",
+  "downstream_note": "measurement_results.json / canonical_exclusion.json 은 교정 전 gc(196)로 산출된 R25 종결 산출물(historical record) — 도훈 '재판정 불요' 지시로 미변경. 패널만 위생 수리.",
+  "generator_provenance": "원 생성 스크립트는 ad-hoc inline으로 소실 확인 → 본 스크립트가 교정 생성기 SOT"
+}

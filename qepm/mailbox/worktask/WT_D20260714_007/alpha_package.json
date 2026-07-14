@@ -1,0 +1,106 @@
+{
+  "task_id": "WT_D20260714_007",
+  "as_of_date": "2026-07-14",
+  "forecast_horizon": "1M",
+  "wt_type": "discovery",
+  "selection_objective": "canonical_port_t",
+  "alpha_vector": [],
+  "confidence_vector": [],
+  "signal_matrix_ref": "stage_artifacts/WT_D20260714_007/alpha_scores.parquet",
+  "factor_specs": [
+    {
+      "factor_family": "Value",
+      "proxy": "BM",
+      "formula": "V01_BM aligned-z",
+      "construction": "B2 non-mega tier-conditional tilt: csc=0.7*base_z + 0.3*(value_z if tier in {MID,OTHER} else 0)",
+      "lag_rule": "off0 T-1 clean (factor_db month M)",
+      "neutralization": "per-month cross-sectional z",
+      "economic_rationale": "value risk-premium / mispricing; tested whether definition escapes EBIT/EV 2024+ decay + incumbent redundancy",
+      "variant_port_t": 3.702418,
+      "paired_vs_base": 1.291353
+    },
+    {
+      "factor_family": "Value",
+      "proxy": "EP",
+      "formula": "V02_EP",
+      "construction": "B2 non-mega tier-conditional tilt: csc=0.7*base_z + 0.3*(value_z if tier in {MID,OTHER} else 0)",
+      "lag_rule": "off0 T-1 clean (factor_db month M)",
+      "neutralization": "per-month cross-sectional z",
+      "economic_rationale": "value risk-premium / mispricing; tested whether definition escapes EBIT/EV 2024+ decay + incumbent redundancy",
+      "variant_port_t": 3.416468,
+      "paired_vs_base": 1.229245
+    },
+    {
+      "factor_family": "Value",
+      "proxy": "CFP",
+      "formula": "V03_CFP",
+      "construction": "B2 non-mega tier-conditional tilt: csc=0.7*base_z + 0.3*(value_z if tier in {MID,OTHER} else 0)",
+      "lag_rule": "off0 T-1 clean (factor_db month M)",
+      "neutralization": "per-month cross-sectional z",
+      "economic_rationale": "value risk-premium / mispricing; tested whether definition escapes EBIT/EV 2024+ decay + incumbent redundancy",
+      "variant_port_t": 3.334661,
+      "paired_vs_base": 0.331617
+    },
+    {
+      "factor_family": "Value",
+      "proxy": "FCF",
+      "formula": "V10_FCF_Yield",
+      "construction": "B2 non-mega tier-conditional tilt: csc=0.7*base_z + 0.3*(value_z if tier in {MID,OTHER} else 0)",
+      "lag_rule": "off0 T-1 clean (factor_db month M)",
+      "neutralization": "per-month cross-sectional z",
+      "economic_rationale": "value risk-premium / mispricing; tested whether definition escapes EBIT/EV 2024+ decay + incumbent redundancy",
+      "variant_port_t": 3.096484,
+      "paired_vs_base": -0.21419
+    },
+    {
+      "factor_family": "Value",
+      "proxy": "SP",
+      "formula": "V20_SP",
+      "construction": "B2 non-mega tier-conditional tilt: csc=0.7*base_z + 0.3*(value_z if tier in {MID,OTHER} else 0)",
+      "lag_rule": "off0 T-1 clean (factor_db month M)",
+      "neutralization": "per-month cross-sectional z",
+      "economic_rationale": "value risk-premium / mispricing; tested whether definition escapes EBIT/EV 2024+ decay + incumbent redundancy",
+      "variant_port_t": 3.825373,
+      "paired_vs_base": 1.522909
+    },
+    {
+      "factor_family": "Value",
+      "proxy": "SHY",
+      "formula": "V11_Shareholder_Yield (sparse)",
+      "construction": "B2 non-mega tier-conditional tilt: csc=0.7*base_z + 0.3*(value_z if tier in {MID,OTHER} else 0)",
+      "lag_rule": "off0 T-1 clean (factor_db month M)",
+      "neutralization": "per-month cross-sectional z",
+      "economic_rationale": "value risk-premium / mispricing; tested whether definition escapes EBIT/EV 2024+ decay + incumbent redundancy",
+      "variant_port_t": 3.831411,
+      "paired_vs_base": 1.275213
+    },
+    {
+      "factor_family": "Value",
+      "proxy": "EBIT_EV",
+      "formula": "V14_EBIT_EV+V07_EV_EBITDA blend (control)",
+      "construction": "B2 non-mega tier-conditional tilt: csc=0.7*base_z + 0.3*(value_z if tier in {MID,OTHER} else 0)",
+      "lag_rule": "off0 T-1 clean (factor_db month M)",
+      "neutralization": "per-month cross-sectional z",
+      "economic_rationale": "value risk-premium / mispricing; tested whether definition escapes EBIT/EV 2024+ decay + incumbent redundancy",
+      "variant_port_t": 4.234062,
+      "paired_vs_base": 2.378209
+    }
+  ],
+  "diagnostics": {
+    "canonical_port_t_nw_lag3": 6.60069,
+    "canonical_note": "value_screening: cap-w authoritative paired; EW-uni diag non-binding",
+    "base_port_t": 3.058339,
+    "best_new_definition": "SP",
+    "best_new_paired": 1.522909,
+    "ebit_ev_control_paired": 2.378209,
+    "gate_pass": "EBIT_EV"
+  },
+  "challenge_flags": [
+    "SCREENING_NEGATIVE: no new value definition clears cap-w AND-gate (paired>=2.0); EBIT/EV uniquely gate-clearing",
+    "RECENCY_NUANCE: 2024+ decay is definition-specific (EBIT_EV/FCF decay; SP/EP/CFP improve) — not value-universal",
+    "INCUMBENT_REDUNDANCY_CONSTRUCTION_BOUND: cor_active ~0.9 for all (even orthogonal FCF signal) => '실낱 EV' falsified",
+    "SP_FRONTIER: sales-yield only definition improving 2024+ (post24 1.85, EW-uni 6.60, oos 0.61, placebo p=0.025) but cap-w gate fail = cap-w localization -> EW-basis frontier flag",
+    "LOW_EV_MULTIPLE_TESTING: value family cumulative ~15 trials; chain justification + DSR diagnostic"
+  ],
+  "verdict": "VALUE_DEFINITION_AXIS_CONFIG_SCOPED_EXHAUSTED (screening/cap-w). EBIT/EV uniquely gate-clearing; no new definition clears AND-gate nor escapes construction-bound incumbent redundancy. Recency NOT value-universal (SP/EP improve 2024+). Arc complete at cap-w book-marginal; SP=EW-basis frontier flag."
+}
