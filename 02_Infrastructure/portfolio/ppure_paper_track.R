@@ -128,6 +128,35 @@ BENCH_DT <- fwd$bench_dt[, .(Date = as.Date(Date), BM_Ret)]
 LIQ_DT   <- fwd$liq_dt[, .(Date = as.Date(Date), Ticker, adv)]
 ewb <- fwd$returns_dt[, .(ew = mean(Ret_1m, na.rm = TRUE)), by = .(date = as.Date(Date))]
 realized_sig <- sort(unique(RET_DT$Date))
+
+## ── [task #62 배관 수리 2026-07-14] 최신 신호월 유동성 필터 공백 보충 ────────────────
+##  build_monthly_forward_returns 루프가 for(i in 1..length-1)라 마지막 calc_date에는 liq
+##  행이 미생성 → build_weights_ew(S[is.na(adv)|adv>=LIQ_MIN])가 NA adv를 통과시켜 최신
+##  신호월(미실현) top-25가 liq>=2e8 필터 없이 산출됨(frozen rule "liq>=2e8 top-25 EW" 및
+##  익월 채점 보유와 불일치 = 발행-채점 불일치). 함수 무변경(frozen 소비처 다수) — 러너에서
+##  LIQ_DT에 없는 signal월(=최신 미실현월)에 한해 동일 정의(as-of 월말 Vol*Close, K200|KQ150)로
+##  보충. Close1(익월 종가) 조건은 제외 = PIT-safe(미래 종가 미요구). 과거월은 겹침 종목 adv
+##  값-parity(fail-closed)로 정의 동일성 검증 — 불일치 시 업스트림 데이터/컬럼 변형 경보.
+{
+  me_map  <- data.table(Date = as.Date(calc_dates), me = as.Date(.me))       # calc_date -> as-of 월말 거래일
+  liq_all <- rawme_f[(K200 == TRUE | KQ150 == TRUE) & !is.na(Close) & Close > 0,
+                     .(me = as.Date(Date), Ticker, adv_supp = Vol * Close)]  # liq 정의 자구동일(Vol0*Close0)
+  liq_lab <- merge(me_map[!is.na(me)], liq_all, by = "me", allow.cartesian = TRUE)[, .(Date, Ticker, adv_supp)]
+  ## (a) 과거월 값-parity: 기존 LIQ_DT ∩ 보충정의(공유 종목) adv 완전 일치 요구
+  cmp <- merge(LIQ_DT[, .(Date, Ticker, adv)], liq_lab, by = c("Date","Ticker"))
+  par_max <- if (nrow(cmp)) max(abs(cmp$adv - cmp$adv_supp)) else NA_real_
+  if (is.finite(par_max) && par_max >= 1)
+    stop(sprintf("[fail-closed] liq 보충 정의 parity 실패: max|d|=%.4g (n=%d) — 업스트림 rawdata/컬럼 변형 의심(도훈 보고 재료).", par_max, nrow(cmp)))
+  ## (b) weights 대상 sig_dates 중 LIQ_DT 부재월 보충 (통상 최신 미실현월 1건)
+  have_c <- unique(as.character(LIQ_DT$Date))
+  need_c <- setdiff(as.character(sig_dates), have_c)
+  add <- liq_lab[as.character(Date) %in% need_c, .(Date, Ticker, adv = adv_supp)]
+  if (nrow(add)) { LIQ_DT <- rbindlist(list(LIQ_DT, add), use.names = TRUE); setorder(LIQ_DT, Date, Ticker) }
+  wf("[liq-fix] 보충 대상 signal월 %d건(%s): +%d행 | 과거월 parity max|d|=%s (n=%d) -> %s",
+     length(need_c), if (length(need_c)) paste(sort(need_c), collapse = ",") else "-", nrow(add),
+     if (is.finite(par_max)) sprintf("%.3g", par_max) else "NA(겹침0)", nrow(cmp),
+     if (!is.finite(par_max) || par_max < 1) "PASS" else "FAIL")
+}
 rm(rawme_f); invisible(gc())
 wf("[fwd] 실현 signal월 %d (마지막 실현 = %s, 홀딩월 %s)", length(realized_sig),
    as.character(max(realized_sig)), hym(max(realized_sig)))
@@ -435,13 +464,20 @@ run_track <- function(td){
   wf("[paper %s] 신규 %d행 append (누적 %d행, 최신 홀딩월 %s ret_net=%s)", td$id, n_new, nrow(allp),
      if (nrow(allp)) allp[.N, holding_ym] else "-", if (nrow(allp)) sprintf("%+.4f", allp[.N, ret_net]) else "-")
 
-  ## (4) 보유 기록: paper_holdings append (봉인 이후 전 signal월, 미실현 최신월 포함) + 최신 스냅샷
+  ## (4) 보유 기록: paper_holdings — 실현월 동결 + 미실현 최신월 갱신 (liq-fix 정합, task #62 2026-07-14)
+  ##  구 append-skip은 미실현 최신월도 최초 기록값에 고정 → liq-fix 후 발행 보유(holdings_latest)와
+  ##  불일치할 수 있음. 규율: 실현월(<=마지막 실현 signal월)은 최초 기록 동결(파생 드리프트 방지),
+  ##  미실현 최신월(>마지막 실현월)은 매 실행 현재 Wfull(=liq-filtered)로 갱신 → 실현 시 채점 보유와
+  ##  발행 보유 일치. frozen 선별 규칙(R6/R13)·수익 채점(step 3)은 무변경 — 이 블록은 기록 정합만.
   hp <- file.path(td$dir, "paper_holdings.csv")
   oldh <- if (file.exists(hp)) { o <- fread(hp); o[, signal_date := as.Date(signal_date)]; o } else NULL
-  Hnew <- Wfull[Date > SEAL_END, .(signal_date = Date, Ticker, w)]
-  Hnew[, holding_ym := hym(signal_date)]
-  if (!is.null(oldh)) Hnew <- Hnew[!signal_date %in% oldh$signal_date]
-  allh <- rbindlist(list(oldh, Hnew), use.names = TRUE, fill = TRUE)
+  last_realized <- max(realized_sig)
+  frozen_dates  <- if (!is.null(oldh)) unique(oldh[signal_date <= last_realized, signal_date]) else as.Date(character(0))
+  oldh_frozen   <- if (!is.null(oldh)) oldh[signal_date %in% frozen_dates] else NULL
+  Hfresh <- Wfull[Date > SEAL_END, .(signal_date = Date, Ticker, w)]
+  Hfresh[, holding_ym := hym(signal_date)]
+  Hfresh <- Hfresh[!signal_date %in% frozen_dates]        # 동결 실현월 제외 → 신규실현월 + 미실현 최신월(갱신)
+  allh <- rbindlist(list(oldh_frozen, Hfresh), use.names = TRUE, fill = TRUE)
   if (nrow(allh)) { setorder(allh, signal_date, -w, Ticker); fwrite_atomic(allh, hp) }
   lastW <- Wfull[Date == max(Date)]
   fwrite_atomic(lastW[order(-w, Ticker), .(signal_date = Date, holding_ym = hym(max(Wfull$Date)), Ticker, w)],
