@@ -7,107 +7,76 @@ if [ -z "${QVEST_PY_BIN:-}" ]; then
   export QVEST_PY_BIN
 fi
 #==============================================================================
-# research_continuity_guard.sh — Stop hook (리서치 연속성 가드, warn-level)
-# 도훈 mandate 2026-07-13: "자꾸 리서치를 중도 포기하는 문제" — Q-Lead 턴 마감 편향의
-#   결정론적 백스톱. 4차례 메모리 강화로도 24h 내 재발 → 기계 층 추가.
-# 발화 조건 (둘 다 warn — 컨텍스트 주입, 차단 아님. 2주 관찰 후 block 승격 검토):
-#   W1) 종결 어휘(소진/폐쇄/종결/중단 판정형)가 있는데 다음-단계 마커가 전무
-#   W2) 턴 마감이 대기-자세(대기/기다림/결정 주시면)인데 frontier 큐 in_progress가 0
-# 안전: 어떤 오류든 '{}'(통과). stop_hook_active면 통과(무한루프 회피).
+# research_continuity_guard.sh — Stop hook (Continuity Firewall: 포기 원천차단)
+#
+# 도훈 mandate 2026-07-15: "자체적으로 포기하지 않는 자가발전형 아키텍처. 누적 실패 후
+#   '끝남 표현들'로 라운드를 마무리하려는 것을 원천차단."
+#   → warn-only(2026-07-13)에서 BLOCK으로 승격. settings.json _doc이 예고한 "2주 관찰 후
+#     block 승격"의 집행 + 도훈 명시 mandate.
+#
+# 아키텍처(4레이어 — SOT 02_Infrastructure/docs/rules/continuity-firewall.md):
+#   L1 차단 이빨: 이 훅이 continuity_gate.py 판정을 받아 {"decision":"block"} 발행 →
+#                 종결 턴을 되돌려 강제 속행(사후 넛지가 아니라 현재 턴 개입).
+#   L2 독립 semantic 판정: continuity_gate.py = 케이스 결정론 + verdict-close 일반화(신어
+#                 커버) + 선택적 Haiku(QVEST_CONTINUITY_LLM=1). 편향 당사자 self-certify 차단.
+#   L3 건설적 종료계약: 종결 프레이밍 감지 시 next_probe≥2 (+negative면 live_trigger) 요구.
+#                 close_round()가 이 계약을 인자로 강제(paved path) → 마커로 게이트 자동 통과.
+#   L4 자가발전: 06_Registry/continuity_cases.json 성장(잡을수록 강해짐). 차단 이력은
+#                 .cache/continuity_blocks.jsonl 감사 → 주간 /cleaner가 신규 우회를 케이스로 승격.
+#
+# 무한루프 방지: continuity_gate.py 내부 per-turn cap(기본 3) + stop_hook_active + ERR trap.
+# 안전: 어떤 오류든 '{}'(통과)로 빠져 내 턴을 깨지 않음(fail-open — 포기억제가 목적이지
+#       작업차단이 아님).
 #==============================================================================
 set -uo pipefail
 trap 'echo "{}"; exit 0' ERR
 
+DIR="${CLAUDE_PROJECT_DIR:-${QM_ROOT:-C:/Users/99922/OneDrive/Quant_Module_Moltbot}}"
+GATE="$DIR/02_Infrastructure/axiom/continuity_gate.py"
+
 INPUT=$(cat)
 EVENT=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; print(json.load(sys.stdin).get("hook_event_name",""))' 2>/dev/null || echo "")
 if [ "$EVENT" != "Stop" ]; then echo '{}'; exit 0; fi
-ACTIVE=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; print(json.load(sys.stdin).get("stop_hook_active",False))' 2>/dev/null || echo "False")
-if [ "$ACTIVE" = "True" ]; then echo '{}'; exit 0; fi
 TP=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; print(json.load(sys.stdin).get("transcript_path",""))' 2>/dev/null || echo "")
 if [ -z "$TP" ] || [ ! -f "$TP" ]; then echo '{}'; exit 0; fi
 
-"$QVEST_PY_BIN" - "$TP" <<'PY' 2>/dev/null || echo '{}'
-import json, sys, re, os
+# ── L1~L3: continuity_gate 판정 (block JSON 또는 '{}') ────────────────────────
+GATE_OUT='{}'
+if [ -f "$GATE" ]; then
+  GATE_OUT=$(CLAUDE_PROJECT_DIR="$DIR" PYTHONUTF8=1 "$QVEST_PY_BIN" "$GATE" --transcript "$TP" 2>>/tmp/continuity_gate.stderr.log || echo '{}')
+  [ -n "$GATE_OUT" ] || GATE_OUT='{}'
+fi
 
-tp = sys.argv[1]
-lines = []
-with open(tp, 'r', encoding='utf-8', errors='replace') as f:
-    for ln in f:
-        ln = ln.strip()
-        if not ln: continue
-        try: lines.append(json.loads(ln))
-        except Exception: pass
+# block 발행 시 그대로 전달(이빨) + 차단 이력 감사 append(자가발전 연료)
+if printf '%s' "$GATE_OUT" | grep -q '"decision"'; then
+  {
+    TS=$(date +%Y-%m-%dT%H:%M:%S)
+    printf '{"ts":"%s","tp":"%s"}\n' "$TS" "$TP" >> "$DIR/.cache/continuity_blocks.jsonl"
+  } 2>/dev/null || true
+  printf '%s\n' "$GATE_OUT"
+  exit 0
+fi
 
-def is_user_prompt(m):
-    if m.get('type') != 'user': return False
-    c = m.get('message', {}).get('content')
-    if isinstance(c, str): return True
-    if isinstance(c, list):
-        return any(isinstance(b, dict) and b.get('type') == 'text' for b in c)
-    return False
+# ── W3(유지): 라운드 수집(신규 L-code) 후 계층 병목 지도 미갱신 warn ──────────
+# gate가 pass일 때만. block과 달리 순수 컨텍스트 넛지.
+ACTIVE=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; print(json.load(sys.stdin).get("stop_hook_active",False))' 2>/dev/null || echo "False")
+if [ "$ACTIVE" = "True" ]; then echo '{}'; exit 0; fi
 
-start = 0
-for i, m in enumerate(lines):
-    if is_user_prompt(m): start = i
-
-atext = []
-for m in lines[start:]:
-    if m.get('type') == 'assistant':
-        c = m.get('message', {}).get('content', [])
-        if isinstance(c, list):
-            for b in c:
-                if isinstance(b, dict) and b.get('type') == 'text':
-                    atext.append(b.get('text', ''))
-
-full = ' '.join(atext)
-tail = full[-400:] if len(full) > 400 else full
-if not full.strip():
-    print('{}'); sys.exit(0)
-
-# W1: 판정형 종결 어휘 (과거 인용 "R5 계열 폐쇄" 오탐을 줄이기 위해 선언형 패턴만)
-terminal = re.search(r'(소진\s*판정|계열\s*소진|축\s*소진(?!\s*지대)|폐쇄\s*판정|종결\s*판정|종결합니다|중단합니다|종착|막다른\s*길|완결\s*(라운드|아크|판정)?|아크\s*완결|(이\s*)?방향\s*(은\s*)?끝|끝난\s*건가|재시도\s*가치\s*없|더\s*이상\s*경로가\s*없)', full)
-nextstep = re.search(r'(next_probe|다음\s*(반복|가설|사이클|라운드|스텝)|후속|착수|스폰|프론티어|재도전|frontier|armed)', full)
-
-# W2: 대기-자세 마감
-waitclose = re.search(r'(대기\s*중입니다|대기하겠|기다리겠습니다|결정(을|만)?\s*주시면|승인하시면|말씀\s*주시면)\s*[^가-힣]*$', tail.strip()) or \
-            re.search(r'(대기\s*중입니다|결정\s*대기)\W*$', tail.strip())
-
+"$QVEST_PY_BIN" - "$DIR" <<'PY' 2>/dev/null || echo '{}'
+import os, sys, glob, time, json
+root = sys.argv[1]
 msgs = []
-if terminal and not nextstep:
-    msgs.append("[research_continuity_guard] 종결 판정 어휘가 있는데 다음-단계(next_probe/후속/착수) 마커가 없습니다. "
-                "도훈 mandate: negative는 config-scoped + 프론티어 표시로만, 기전 진단에서 다음 가설 ≥2 도출이 보고 완성 요건.")
-
-# W3 (2026-07-13 도훈 "제도화 강제력" 지적): 라운드 수집(신규 L-code) 후 계층 병목 지도 미갱신 감지 —
-# 최근 6h 내 emit된 L-code가 layer_bottleneck_map.md보다 새로우면 경고 (mtime 결정론 검증).
 try:
-    import glob, time as _t
-    root2 = os.environ.get('CLAUDE_PROJECT_DIR') or os.environ.get('QM_ROOT') or 'C:/Users/99922/OneDrive/Quant_Module_Moltbot'
-    lc_files = glob.glob(os.path.join(root2, 'stage_artifacts', 'l_code', '*', '*.json'))
+    lc_files = glob.glob(os.path.join(root, 'stage_artifacts', 'l_code', '*', '*.json'))
     if lc_files:
         newest_lc = max(os.path.getmtime(f) for f in lc_files)
-        map_p = os.path.join(root2, '06_Registry', 'layer_bottleneck_map.md')
+        map_p = os.path.join(root, '06_Registry', 'layer_bottleneck_map.md')
         map_mt = os.path.getmtime(map_p) if os.path.exists(map_p) else 0
-        if (_t.time() - newest_lc) < 6 * 3600 and newest_lc > map_mt:
-            msgs.append("[research_continuity_guard] 최근 6시간 내 L-code가 적립됐는데 계층 병목 지도"
+        if (time.time() - newest_lc) < 6 * 3600 and newest_lc > map_mt:
+            msgs.append("[research_continuity_guard/W3] 최근 6시간 내 L-code가 적립됐는데 계층 병목 지도"
                         "(06_Registry/layer_bottleneck_map.md)가 그보다 오래됐습니다 — 라운드 수집 시 지도 갱신 의무"
                         "(answer-principles 연속성 5호). 해당 계층 행·갭 귀속을 갱신하세요.")
 except Exception:
     pass
-if waitclose:
-    # frontier 큐 in_progress 확인 — 진행 중 리서치가 있으면 대기 마감도 정당
-    n_prog = -1
-    try:
-        root = os.environ.get('CLAUDE_PROJECT_DIR') or os.environ.get('QM_ROOT') or 'C:/Users/99922/OneDrive/Quant_Module_Moltbot'
-        q = json.load(open(os.path.join(root, '06_Registry', 'alpha_frontier_queue.json'), encoding='utf-8'))
-        n_prog = sum(1 for e in q.get('entries', []) if 'in_progress' in str(e.get('status', '')))
-    except Exception:
-        pass
-    if n_prog == 0:
-        msgs.append("[research_continuity_guard] 턴이 대기-자세로 끝났고 frontier 큐 in_progress가 0입니다. "
-                    "도훈 mandate: '리서치는 누가 멈추라고 했지' — 결정-대기 항목이 있어도 envelope-안 사이클을 뽑아 병행 가동하세요.")
-
-if msgs:
-    print(' | '.join(msgs))
-else:
-    print('{}')
+print(' | '.join(msgs) if msgs else '{}')
 PY

@@ -1,0 +1,192 @@
+{
+  "prereg": {
+    "mode": "RAMP",
+    "round": "R9",
+    "run_mode": "FULL",
+    "mechanism": "trailing_realized_PORTt_pool_selection x insider-extended substrate (102+INS participation)",
+    "frontier_of": "selection-discipline arc R4~R7 잔존 frontier ① (FQ-014 revival / FQ-015 next_action)",
+    "distinct_from": "FQ-001 standalone insider (DEAD_PRELIM) — 본 건은 풀-참여 결합",
+    "substrate_ext": "102 approved + INS01~03 (insider_factor_deployzone_active.parquet append)",
+    "substrate_base": "102 approved only (Pbase controls — insider 한계기여 격리)",
+    "arms": {
+      "Ppins": "top-K pool EW rotation on extended panel"
+    },
+    "controls": {
+      "Pbase": "동일 선별, 102-only 기질 (비-trial)"
+    },
+    "paired": "Ppins_WxKy vs Pbase_WxKy per config, NW-t lag3",
+    "kill_rule": "전 config paired < 2.0 -> insider 풀-참여 무효",
+    "no_boruta": "Boruta-on-PORT_t-pool 음-소진 (FQ-014 재시도 금지) — arm 없음",
+    "windows": [36, 60],
+    "kpool": [10, 20],
+    "cadence_months": 6,
+    "top_n": 25,
+    "cost_bps_oneway": 15,
+    "liq_min": 200000000,
+    "gate_hard": [2.95, 0.7, 0.64, 0.5],
+    "n_trials_r9": 4,
+    "n_trials_family": 24,
+    "selection_type": "sweep",
+    "crawl_coverage": "200501~202606 gaps=0",
+    "insider_factors": ["INS01_OffNetBuyIntensity3m", "INS02_OffBuyBreadth6m", "INS03_OffNetBuyRecency"],
+    "pit": "insider 신호월 m=rcept 접수월, forward=m+1 (C5 정합) + 패널 truncation-invariance assert PASS",
+    "honest_prior": "FQ-001 standalone DEAD_PRELIM / return-substrate post-2017 감쇠 벽(R6~R7) — 결합 EV 보수적",
+    "as_of_date": "2026-07-15",
+    "source_version": "RAMP_R9_v1",
+    "config_hash": "9ad760e87cfc4b9d",
+    "generated_at": "2026-07-15T00:22:09+0900"
+  },
+  "config_hash": "9ad760e87cfc4b9d",
+  "run_mode": "FULL",
+  "smoke_only": false,
+  "results": [
+    {
+      "model": "Ppins_W36_K10",
+      "port_t_EWuni": 3.1284,
+      "port_t_capwt": 1.9762,
+      "oos_retention": -0.2343,
+      "calmar": 0.4132,
+      "dsr": 1.0248,
+      "post2017_bm_sr": -0.3777,
+      "full_bm_sr": 0.5436,
+      "turnover": 9.4371,
+      "n_months": 221
+    },
+    {
+      "model": "Pbase_W36_K10",
+      "port_t_EWuni": 2.9885,
+      "port_t_capwt": 1.8972,
+      "oos_retention": -0.3745,
+      "calmar": 0.3979,
+      "dsr": 0.9705,
+      "post2017_bm_sr": -0.544,
+      "full_bm_sr": 0.5283,
+      "turnover": 9.3372,
+      "n_months": 221
+    },
+    {
+      "model": "Ppins_W36_K20",
+      "port_t_EWuni": 3.9149,
+      "port_t_capwt": 2.7745,
+      "oos_retention": -0.0678,
+      "calmar": 0.4634,
+      "dsr": 1.7977,
+      "post2017_bm_sr": -0.0977,
+      "full_bm_sr": 0.7219,
+      "turnover": 9.3589,
+      "n_months": 221
+    },
+    {
+      "model": "Pbase_W36_K20",
+      "port_t_EWuni": 3.8763,
+      "port_t_capwt": 2.6686,
+      "oos_retention": -0.0557,
+      "calmar": 0.4518,
+      "dsr": 1.5866,
+      "post2017_bm_sr": -0.0853,
+      "full_bm_sr": 0.6843,
+      "turnover": 9.2633,
+      "n_months": 221
+    },
+    {
+      "model": "Ppins_W60_K10",
+      "port_t_EWuni": 2.0505,
+      "port_t_capwt": 1.4618,
+      "oos_retention": -0.3256,
+      "calmar": 0.3333,
+      "dsr": 0.4078,
+      "post2017_bm_sr": -0.2296,
+      "full_bm_sr": 0.4034,
+      "turnover": 8.8569,
+      "n_months": 197
+    },
+    {
+      "model": "Pbase_W60_K10",
+      "port_t_EWuni": 2.059,
+      "port_t_capwt": 1.3383,
+      "oos_retention": -0.4315,
+      "calmar": 0.3296,
+      "dsr": 0.309,
+      "post2017_bm_sr": -0.2769,
+      "full_bm_sr": 0.3808,
+      "turnover": 9.1444,
+      "n_months": 197
+    },
+    {
+      "model": "Ppins_W60_K20",
+      "port_t_EWuni": 2.956,
+      "port_t_capwt": 2.0726,
+      "oos_retention": -0.2478,
+      "calmar": 0.4321,
+      "dsr": 1.0827,
+      "post2017_bm_sr": -0.2023,
+      "full_bm_sr": 0.5856,
+      "turnover": 9.0859,
+      "n_months": 197
+    },
+    {
+      "model": "Pbase_W60_K20",
+      "port_t_EWuni": 3.0749,
+      "port_t_capwt": 1.5998,
+      "oos_retention": -0.4148,
+      "calmar": 0.4447,
+      "dsr": 0.5575,
+      "post2017_bm_sr": -0.3189,
+      "full_bm_sr": 0.467,
+      "turnover": 9.0908,
+      "n_months": 197
+    }
+  ],
+  "paired": [
+    {
+      "model": "Ppins_W36_K10",
+      "base": "Pbase_W36_K10",
+      "kind": "insider_participation",
+      "mean_diff_ann": 0.0014,
+      "paired_t": 0.1529,
+      "n": 221
+    },
+    {
+      "model": "Ppins_W36_K20",
+      "base": "Pbase_W36_K20",
+      "kind": "insider_participation",
+      "mean_diff_ann": 0.0049,
+      "paired_t": 0.5456,
+      "n": 221
+    },
+    {
+      "model": "Ppins_W60_K10",
+      "base": "Pbase_W60_K10",
+      "kind": "insider_participation",
+      "mean_diff_ann": 0.0041,
+      "paired_t": 0.4375,
+      "n": 197
+    },
+    {
+      "model": "Ppins_W60_K20",
+      "base": "Pbase_W60_K20",
+      "kind": "insider_participation",
+      "mean_diff_ann": 0.0122,
+      "paired_t": 0.7322,
+      "n": 197
+    }
+  ],
+  "smoke_checks": {},
+  "kill": true,
+  "any_graduation": false,
+  "max_paired": 0.7322,
+  "n_sig": 258,
+  "date_range": ["2005-01-31", "2026-06-30"],
+  "crawl": {
+    "first": "200501",
+    "last": "202606",
+    "gaps": 0
+  },
+  "insider_meta": {
+    "crawl_last_ym": "202606",
+    "partial_data": false,
+    "pit_ok": true,
+    "factors": ["INS01_OffNetBuyIntensity3m", "INS02_OffBuyBreadth6m", "INS03_OffNetBuyRecency"]
+  },
+  "generated_at": "2026-07-15T00:22:41+0900"
+}

@@ -1,0 +1,154 @@
+{
+  "schema_version": "continuity_cases_v1",
+  "generated_at": "2026-07-15",
+  "owner": "Continuity Firewall (포기 원천차단 게이트)",
+  "sot": "02_Infrastructure/docs/rules/continuity-firewall.md",
+  "purpose": "누적 실패 후 '끝남 표현'으로 리서치 라운드를 마무리하려는 Q-Lead 편향을 원천차단하는 게이트의 케이스 라이브러리이자 데이터원. continuity_gate.py가 (1) 결정론 판정(category backstop_terms + verdict-close + waiting-close)과 (2) 선택적 semantic(LLM) 판정의 few-shot 예시집으로 소비한다.",
+  "design_principle": "★핵심 전환: '끝남 단어 금지'(어휘 발명에 매번 짐)가 아니라 '계속 산출물 요구'(next_probe≥2·소비면 라우팅을 실제로 냈나 — 단어교체로 못 속임). 게이트는 종결 프레이밍이 감지되면 required_closure_contract 충족 여부를 검사하고, 미충족이면 그 턴을 못 끝내게 block(강제 속행)한다. 자가발전(§0.1 원리 3·4·5): 새 우회어는 코드가 아니라 이 파일에 case/term 추가로 학습되고, 잡을수록 강해진다.",
+  "reconciliation_with_inv7": "이 게이트는 '판정 자체'를 막지 않는다 — negative·천장·config-scoped 결론은 정당하다(AX-000·INV-7). 막는 것은 오직 '계속을 생산하지 않는 종료'다. 즉 게이트 통과 = 정당한 라운드 수렴이고, 게이트 block = 계속 산출물 결측. INV-7 'negative는 탐색지도(frontier+live_trigger)'가 곧 이 게이트의 통과 조건이다.",
+
+  "required_closure_contract": {
+    "note": "리서치 라운드를 '닫는(close)' 턴이 반드시 담아야 하는 최소 계속-산출물. 게이트는 종결 프레이밍 감지 시 이 계약 충족을 요구한다. fresh close_round() 마커가 있으면 계약은 구조적으로 이미 충족된 것으로 간주(paved path).",
+    "fields": {
+      "verdict_type": {
+        "required": true,
+        "enum": ["config_scoped_negative", "ceiling_reached_frontier_open", "screen_tier_routed", "revival_conditional", "incumbent_confirmed", "capability_established"],
+        "forbidden_framings": ["소진 판정", "계열 소진(무프론티어)", "폐쇄 판정", "종결 판정", "종착", "완결", "dead-end", "막다른 길", "방향 끝"]
+      },
+      "mechanism_diagnosis": {"required": true, "min_chars": 20, "note": "왜 이 config가 미달인지 기전 1줄 이상 (연속성 3호)"},
+      "next_probes": {"required": true, "min_count": 2, "note": "다음 가설/프로브 ≥2 (연속성 3호). 저순위 운영 태스크로 접기 금지(연속성 4호)"},
+      "consumer_or_frontier": {"required": true, "note": "소비면 라우팅(팩터랭킹/유니버스/오버레이/위험/monitoring/선별라벨/타모드) 또는 frontier 큐 등재 ≥1 (연속성 4호)"},
+      "live_trigger_if_negative": {"required_when": "verdict_type in [config_scoped_negative, screen_tier_routed, revival_conditional]", "note": "부활 조건(경로-scoped 재도전 신호) — INV-7. 없으면 negative가 영구 판결로 둔갑"}
+    },
+    "satisfied_rule": "fresh_close_round_marker OR (next_probes>=2 AND consumer_or_frontier AND (live_trigger present when verdict is negative))"
+  },
+
+  "research_context_terms": [
+    "L-code", "L-AR", "L-QPM", "L-RAMP", "L-JG", "PORT_t", "port_t", "oos_retention", "oos ", "graduation", "screen-tier", "screen_tier", "canonical", "cap-w", "cap-tier", "negative", "기각", "미달", "전멸", "전량", "FAIL", "라운드", "FQ-", "WT-", "판정", "verdict", "sleeve", "overlay", "오버레이", "RAMP", "국면", "팩터", "factor", "alpha", "알파", "졸업", "book-marginal", "paired", "placebo", "홀드아웃", "holdout", "insider", "밸류 아크", "아크"],
+
+  "categories": [
+    {
+      "id": "finality_noun",
+      "name": "종결형 명사/판정 (declaring an end)",
+      "description": "라운드/방향/계열을 '끝'으로 선언하는 종결 어휘. answer-principles 종결어휘 금칙의 핵심 대상.",
+      "generalization": "'이 방향/계열/라운드가 (더는) 없다/끝이다/닫혔다'는 의미면 어떤 신어든 이 범주. 사전에 없는 표현도 semantic 판정이 일반화.",
+      "backstop_terms": ["종결", "종착", "완결", "소진 판정", "계열 소진", "축 소진", "폐쇄", "dead-end", "dead end", "막다른", "방향 끝", "방향은 끝", "이 방향 끝", "끝났", "끝난 건가", "종결합니다", "중단합니다", "아크 완결", "완결 라운드", "완결 판정", "final verdict", "더 이상 경로가 없", "남은 경로가 없", "재시도 가치 없", "재도전 가치 없", "볼 것이 없", "짜낼 것이 없"]
+    },
+    {
+      "id": "arc_completion",
+      "name": "아크/프로그램 완결 서술 (wrapping a whole arc as done)",
+      "description": "여러 라운드를 묶은 리서치 '아크/프로그램/프레임'을 통째로 완료로 서술. 2026-07-14 도훈이 '밸류 아크 완결/종합', '아크 완결'로 3회 적발한 실제 패턴.",
+      "generalization": "개별 라운드가 아니라 '아크/프로그램/전체 방향/프레임'을 완료·종합·마무리로 프레이밍하면 이 범주. 천장을 '완결'로 서술하는 것도 위반.",
+      "backstop_terms": ["아크 완결", "아크 종합", "밸류 아크 완결", "프로그램 완결", "프로그램 종료", "전체 방향 마무리", "이 프레임 종료", "아크 마무리", "완전 종착", "완전 종결"]
+    },
+    {
+      "id": "retry_worthless",
+      "name": "재시도 무의미 단정 (asserting no remaining paths)",
+      "description": "남은 경로·재시도가 없다/가치 없다는 무조건적 단정. INV-7(negative는 영구 판결 아님)과 정면 충돌하는 어투.",
+      "generalization": "재도전 조건(부활신호)·미검 축 없이 '재시도 금지/무의미/무가치'를 단정하면 이 범주. 단, '이 config는 재탕 저EV(차별점 명시 시 재도전 가능)'식 경로-scoped 서술은 허용(pass).",
+      "backstop_terms": ["재시도 금지", "재도전 금지", "재제안 금지", "재시도 무의미", "재도전 무의미", "더 볼 것 없", "남은 수단 없", "가능한 접근 소진", "모든 수단 소진"]
+    },
+    {
+      "id": "exhaustion_verdict",
+      "name": "소진/전멸 판정 (exhaustion as turn-closing verdict)",
+      "description": "계열/축/공간이 소진·전멸했다는 판정을 프론티어/next_probe 없이 턴 마감으로 사용.",
+      "generalization": "'소진/전멸/전량 부정'이 결론 위치에서 continuation 없이 등장하면 이 범주. '소진 지대(frontier 병기)'·'config-scoped 전멸 + 미검 축'은 허용.",
+      "backstop_terms": ["소진 지대", "소진 확정", "전멸 확정", "계열 폐쇄", "공간 소진", "탐색 종료", "탐색 완료(무프론티어)"]
+    },
+    {
+      "id": "waiting_posture_close",
+      "name": "대기-자세 마감 (passive-wait turn close)",
+      "description": "라운드 완결 후 턴의 마지막이 '대기/결정 주시면'인데 병행 가동할 envelope-안 사이클을 뽑지 않음. 연속성 1호 위반.",
+      "generalization": "턴 말미가 수동적 대기(결정/승인/지시 기다림)이고 진행 중 리서치·병행 사이클 제시가 없으면 이 범주. 진행 중 리서치가 실재하면(frontier in_progress>0 또는 병행 스폰) 허용.",
+      "backstop_terms": ["대기 중입니다", "대기하겠습니다", "기다리겠습니다", "결정 주시면", "결정만 주시면", "승인하시면", "말씀 주시면", "지시 주시면", "결정 대기"]
+    }
+  ],
+
+  "next_probe_markers": ["next_probe", "다음 가설", "다음 프로브", "다음 사이클", "다음 라운드", "다음 스텝", "후속 프로브", "재도전 조건", "재도전 대상", "armed", "프론티어 항목", "미검 축", "미검 경로", "next_action", "P1 ", "P2 ", "P3 ", "① ", "② ", "③ "],
+
+  "routing_markers": ["OVERLAY_CANDIDATE", "overlay_candidate", "monitoring", "tripwire", "feature 보존", "feature 로 보존", "feature 로", "screen_route", "screen-tier", "FR_RCMA", "RAMP", "factor-rotation", "라우팅", "재라우팅", "재분류", "소비면", "소비 경로", "소비", "FQ-", "frontier", "큐 등재", "등재", "팩터 랭킹", "유니버스 필터", "위험모델", "선별 라벨", "타 모드 이식", "자산 보존", "패널", "close_round"],
+
+  "live_trigger_markers": ["live_trigger", "부활 조건", "부활신호", "부활", "retry_condition", "retry_policy", "재도전 조건", "재도전", "재시도 가능", "revival", "un-bury", "미검 축", "미검 경로", "open frontier", "frontier crack", "트리거 발화", "CRISIS 국면", "스프레드 재확대", "재확대", "레짐 반전", "반전 시", "데이터원 등재 시", "등재 시", "조건 충족 시", "신호 발화"],
+
+  "reframe_map": [
+    {"from": "이 방향은 끝났다 / 방향 끝", "to": "이 config는 (측정틀 명시) 미달·수렴 — 미검 축 [X], 부활 조건 [Y]. next_probe: ①... ②..."},
+    {"from": "아크 완결 / 아크 종합(완료)", "to": "이 아크의 소비형태 N종 실측 완료 — 확립된 능력 [Z], 미검 소비면 [W](FQ-등재). next_probe: ①... ②..."},
+    {"from": "계열 소진 / 재시도 금지", "to": "이 계열 config-scoped 음-소진(차별점 없는 재탕은 저EV) — 재도전 신호 [부활조건]. 미검 인접 경로 [frontier]"},
+    {"from": "완결 / 종결 / 종착", "to": "현 config 수렴 + 프론티어 표시 (연속성 2호). 라운드 마무리 = 'config-scoped negative/천장 + 프론티어' 또는 '판정 수집/수렴 + next_probe'"},
+    {"from": "대기하겠습니다 / 결정 주시면 (턴 마감)", "to": "도훈 결정 항목 [D]는 병렬로 두고, envelope-안 가용 사이클 [C]를 지금 착수/스폰합니다 (연속성 1호)"}
+  ],
+
+  "cases": [
+    {
+      "verdict": "violation",
+      "category": "arc_completion",
+      "caught_text": "밸류 아크 완결 — judge REJECT·incumbent RETAIN. 이 방향 종착.",
+      "why_violation": "여러 라운드(R26~FQ-046)를 묶은 '밸류 아크'를 '완결/종착'으로 서술 = 종결 프레이밍. judge REJECT는 자본-레벨 판정일 뿐, value_z feature 보존·부활 조건(value-vs-mega 로테이션 반전)이 실재하므로 '완결'이 아니라 'config-scoped + frontier'가 정직한 형태.",
+      "missing_requirement": "next_probes(≥2) + live_trigger + '완결' 어휘 제거",
+      "reframed_to": "밸류 아크의 소비형태 5종(z-blend·sleeve·EW트랙·tier조건부·full-dossier) 자본 미달 실측 완료. 신호는 실재(EW-uni 6.588 생존)→value_z=OVERLAY_CANDIDATE 보존. 부활 조건=value-vs-mega 로테이션 반전. next_probe: ①R9 insider(대형 tier 사는 신호원) ②EW-대비 재분류 소비.",
+      "added_at": "2026-07-15", "seed": true, "source": "layer_bottleneck_map.md 07-14 부기 + answer-principles 07-14 3회 적발"
+    },
+    {
+      "verdict": "violation",
+      "category": "finality_noun",
+      "caught_text": "이 config 수렴으로 라운드 완결합니다. 결정 주시면 다음으로 넘어가겠습니다.",
+      "why_violation": "'완결' 종결어휘 + 대기-자세 마감. next_probe·프론티어·병행 사이클 전무.",
+      "missing_requirement": "next_probes(≥2) + consumer_or_frontier + 병행 착수",
+      "reframed_to": "현 config 수렴(측정틀 X). 미검 축: [A],[B]. next_probe: ①[가설1] ②[가설2] — 지금 [가용사이클] 병행 착수, 도훈 결정 [D]는 병렬 대기.",
+      "added_at": "2026-07-15", "seed": true, "source": "연속성 규약 1·2호 위반 합성"
+    },
+    {
+      "verdict": "violation",
+      "category": "retry_worthless",
+      "caught_text": "16/16 FAIL posterior로 이 계열은 재시도 가치가 없습니다. 남은 경로가 없습니다.",
+      "why_violation": "'재시도 가치 없/남은 경로 없' 무조건 단정 = INV-7 위반(negative는 영구 판결 아님). 경로-scoped·부활조건 없이 방향(family) 판결.",
+      "missing_requirement": "verdict_type=config_scoped_negative + live_trigger + next_probes",
+      "reframed_to": "return-derived standalone 16/16 config-scoped FAIL(측정틀 cap-w top-25). 벽=IC→PORT_t 전이(경로-scoped). 재도전 신호: 비-return 원천(대형 tier 사는 신호). next_probe: ①R9 insider ②EW-basis 재분류.",
+      "added_at": "2026-07-15", "seed": true, "source": "reference-alpha-frontier 16/16 posterior"
+    },
+    {
+      "verdict": "violation",
+      "category": "exhaustion_verdict",
+      "caption_note": "종결어휘가 사전에 없는 신어여도 잡혀야 함(anti-whack-a-mole 회귀 케이스)",
+      "caught_text": "이 라운드로 해당 탐색 라인은 갈무리됐고 더 파낼 여지는 소진됐습니다. 스크린-티어 확정.",
+      "why_violation": "'갈무리/파낼 여지 소진'은 backstop 사전에 없을 수 있는 표현이나 의미는 종결. screen-tier 확정 자체는 정당하나 continuation(next_probe·소비면·부활조건)이 없어 종료로 기능.",
+      "missing_requirement": "next_probes(≥2) + consumer_or_frontier + live_trigger",
+      "reframed_to": "screen-tier 라우팅(cap-w 미달·신호 실재). 소비면: [OVERLAY_CANDIDATE/monitoring]. next_probe: ①... ②... 부활 조건: [경로-scoped 신호].",
+      "added_at": "2026-07-15", "seed": true, "source": "anti-vocabulary-invention 회귀 씨앗"
+    },
+    {
+      "verdict": "violation",
+      "category": "waiting_posture_close",
+      "caught_text": "관련 결과를 정리했습니다. 도훈 결정을 기다리겠습니다.",
+      "why_violation": "턴 마감이 순수 대기-자세. frontier in_progress·병행 사이클 제시 없음(연속성 1호).",
+      "missing_requirement": "병행 envelope-안 사이클 착수 또는 진행 중 리서치 명시",
+      "reframed_to": "정리 완료. 도훈 결정 [D]는 병렬 대기하고, 지금 [가용 frontier 사이클]를 착수/스폰합니다.",
+      "added_at": "2026-07-15", "seed": true, "source": "연속성 1호"
+    },
+
+    {
+      "verdict": "pass",
+      "category": "none",
+      "caught_text": "R6 P-pure는 cap-w PORT_t 2.61<2.95로 screen-tier 잔류(config-scoped negative). 기전=return-derived substrate의 post-2017 감쇠(선별 효율↑≠벽 극복). next_probe: ①비-수익 원천(DART insider) 팩터 패널에 동일 PORT_t-정렬 선별 적용 ②EW-유니버스/cap-tier basis 재분류. 부활 조건: 선별 기준을 realized-PORT_t 정렬로 교체(open frontier). 소비: r6_factor_deployzone_active.parquet 자산 보존.",
+      "why_violation": "위반 아님 — config-scoped 명시 + 기전 진단 + next_probe 2건 + 부활조건(live_trigger) + 소비면 라우팅. 정확히 원하는 형태. PASS.",
+      "missing_requirement": null, "reframed_to": null,
+      "added_at": "2026-07-15", "seed": true, "source": "FQ-014 실제 정당 종료"
+    },
+    {
+      "verdict": "pass",
+      "category": "none",
+      "caught_text": "파일 저장 완료. settings.json 훅 등록 확인했습니다.",
+      "why_violation": "위반 아님 — '완료'가 있으나 research_context 아님(리서치 라운드 종결이 아니라 작업 완료 보고). 게이트는 research_context에서만 발화.",
+      "missing_requirement": null, "reframed_to": null,
+      "added_at": "2026-07-15", "seed": true, "source": "false-positive 방지 씨앗"
+    },
+    {
+      "verdict": "pass",
+      "category": "none",
+      "caught_text": "이 config는 cap-w에서 수렴(2.94 천장)이나, EW-oos 0.745·0.972로 D3형 재료 자격은 살아 있습니다. 재도전 신호: value-vs-mega 반전. 지금 R9 insider armed 배관 smoke-test를 병행 착수합니다. next_probe: ①재료축 R9 ②EW 재분류.",
+      "why_violation": "위반 아님 — '수렴/천장'을 쓰되 frontier·부활조건·병행 착수·next_probe 2건 완비. 연속성 규약 만족.",
+      "missing_requirement": null, "reframed_to": null,
+      "added_at": "2026-07-15", "seed": true, "source": "정당한 천장 서술"
+    }
+  ]
+}

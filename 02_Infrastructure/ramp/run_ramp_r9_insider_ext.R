@@ -142,7 +142,11 @@ wf("window: %s~%s (%d개월)%s", as.character(sig_dates[1]), as.character(sig_da
    if(SMOKE) sprintf(" [부분창 절단 @크롤말 %s]", as.character(smoke_end)) else "")
 
 .need <- c("Date","Ticker","Close","K200","KQ150","Vol","Size","Ret","Sector","BM_Ret")
-rawdata <- as.data.table(read_parquet(".cache/rawdata.parquet", col_select=all_of(.need))); rawdata[,Date:=as.Date(Date)]
+## [FQ-019 fix 2026-07-15] §7 vintage pin — R9_RAWDATA_PIN 있으면 그 스냅샷 소비(DailyRefresh 동시가동 중
+##   torn-read/vintage churn 차단). 기본은 라이브 캐시.
+RAW_P <- Sys.getenv("R9_RAWDATA_PIN", ".cache/rawdata.parquet"); if(!file.exists(RAW_P)) RAW_P <- ".cache/rawdata.parquet"
+wf("[vintage] rawdata source=%s (mtime=%s)", RAW_P, tryCatch(as.character(file.info(RAW_P)$mtime), error=function(e) "NA"))
+rawdata <- as.data.table(read_parquet(RAW_P, col_select=all_of(.need))); rawdata[,Date:=as.Date(Date)]
 .udates <- sort(unique(rawdata$Date))
 .me <- as.Date(vapply(sig_dates, function(d){ v <- .udates[.udates <= d]
   if(length(v)) as.character(max(v)) else NA_character_ }, character(1)))

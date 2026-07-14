@@ -32,7 +32,7 @@
 3. **다음-가설 도출 의무**: 모든 negative 보고는 기전 진단에서 next_probe ≥2 도출로 완성된다.
 4. **소비처 전개 의무 (도훈 지시 2026-07-13 — "엔진이 제대로면 이런 지시를 내가 내릴 필요 없어야")**: 라운드가 능력을 확립하면(양성이든 정보성 negative든 — 예: "칼만 = β 점-예측 우위", "Benford = 조작 지문") Q-Lead는 수집 시점에 **소비면 7종 체크리스트를 명시 순회**한다: ①팩터 랭킹 ②유니버스 필터 ③오버레이/국면 입력 ④위험모델·β예산 ⑤monitoring 신호 ⑥선별 라벨 ⑦타 모드 이식. 미측정 면은 FQ 등재(즉시 착수 또는 capacity-대기 명시). next_probe를 저순위 운영 태스크로 접는 것 = 위반 패턴(실사례: R19 P1을 배관 태스크로 축소 → 도훈이 재지시하게 만듦).
 5. **계층 병목 지도 유지 의무 (도훈 지시 2026-07-13 — "어떤 계층에서 개선이 필요할지 탐구하는 능력")**: `06_Registry/layer_bottleneck_map.md` = "목표 갭이 어느 계층에 막혀 있나"의 상시 실측 지도. 라운드 수집 시 해당 계층 행 갱신 + 갭 귀속 재판정. 자율 라운드 선택은 이 지도의 병목 계층을 따른다(병목이 게이트에 막힌 동안만 위생/소비면 라운드).
-6. 기계 백스톱: `research_continuity_guard.sh` (Stop hook warn) — 이 규약의 grep 감시.
+6. **기계 원천차단 (Continuity Firewall — 2026-07-15 도훈 mandate "block 승격 + 자가발전")**: `research_continuity_guard.sh`(Stop hook)가 `continuity_gate.py`(독립 semantic 판정 + verdict-close 신어 일반화 + 건설적 종료계약)로 **종결 프레이밍 ∧ 계속-산출물 결측** 턴을 `{"decision":"block"}` 발행해 **강제 속행**(warn→block). 통과 경로 = `close_round()` 호출(paved path — next_probe≥2·소비면·부활조건을 인자로 강제해야 마커 발행→게이트 자동 통과) 또는 인라인으로 3호(next_probe≥2)+INV-7(부활조건) 충족. ★핵심: 종결 단어를 지우는 것으로는 통과 못 함 — 계속을 *생산*해야 함(어휘가 아니라 계약이 게이트). 새 우회어는 잡을수록 케이스로 학습(`06_Registry/continuity_cases.json` 자가발전). SOT `02_Infrastructure/docs/rules/continuity-firewall.md`. 도훈이 새 우회 적발 시 즉시 `continuity_gate.py --append-case`.
 
 ## 자가체크 (제출 전)
 

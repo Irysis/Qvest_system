@@ -347,6 +347,31 @@ run_step("axiom_candidates_summary", {
 })
 
 # =============================================================================
+# [3.7] Continuity Firewall 자가발전 — 차단 이력 + pending 신어 후보 (2026-07-15 도훈 mandate)
+#   게이트가 잡은 신어(backstop 사전 밖·verdict_close로만 잡힌) 후보를 /cleaner가 정제 후 승격.
+#   ★firewall의 'append_firewall_case caller 0건 → 코퍼스 성장 정지'(연구 T3) 실패를 반복하지
+#   않는 실배선 caller. 이 스텝이 pending을 다이제스트에 실어 /cleaner 세션 도달을 보장한다.
+# =============================================================================
+continuity_review_summary <- NULL
+run_step("continuity_review", {
+  py <- Sys.getenv("QVEST_PY", file.path(root, ".venv_qvest_ml", "Scripts", "python.exe"))
+  if (!file.exists(py)) py <- "python"
+  gate <- file.path(root, "02_Infrastructure", "axiom", "continuity_gate.py")
+  if (!file.exists(gate)) stop("continuity_gate.py 부재")
+  Sys.setenv(CLAUDE_PROJECT_DIR = root, PYTHONUTF8 = "1")
+  out <- suppressWarnings(system2(py, c(shQuote(gate), "--review"), stdout = TRUE, stderr = TRUE))
+  st <- attr(out, "status")
+  if (!is.null(st) && st != 0) stop(sprintf("continuity --review exit=%s: %s", st, paste(tail(out, 2), collapse = " | ")))
+  continuity_review_summary <<- tryCatch(fromJSON(paste(out, collapse = "\n"), simplifyVector = FALSE),
+                                         error = function(e) list(raw = out))
+  cat(sprintf("[cleaner] continuity firewall: blocks_logged=%s cases=%s pending_novel=%s\n",
+              as.character(continuity_review_summary$n_blocks_logged %||% "?"),
+              as.character(continuity_review_summary$n_cases %||% "?"),
+              as.character(continuity_review_summary$n_pending_novel %||% 0)))
+  invisible(TRUE)
+})
+
+# =============================================================================
 # [4] cleaner_pending.json 기록 — /cleaner 증류 세션이 소비, bootstrap이 마커 감지
 # =============================================================================
 sweep_deleted_n <- length(weekly_deleted$cache_scratch) + length(weekly_deleted$temp_logs) +
@@ -369,9 +394,10 @@ run_step("write_pending", {
     ),
     inventory     = inventory,
     axiom_candidates = axiom_candidates_summary,   # [3.5] 주간 axiom 사이클 후보 현황 (n_pending/failing_axis_histogram/near_miss)
+    continuity_firewall = continuity_review_summary,  # [3.7] 포기 원천차단 게이트 — 차단 이력 + pending 신어 후보(승격 대상)
     step_status   = step_status,
     status        = "awaiting_distill",
-    next_action   = "/cleaner 스킬 (다음 세션) — 주간 엑기스 증류 + L-code 적립 + axiom 후보 현황 검토(near-miss 정제) + 잔재 무아카이브 삭제"
+    next_action   = "/cleaner 스킬 (다음 세션) — 주간 엑기스 증류 + L-code 적립 + axiom 후보 현황 검토(near-miss 정제) + continuity 신어 후보 승격(--append-case) + 잔재 무아카이브 삭제"
   )
   write_json(pending, pending_path, auto_unbox = TRUE, pretty = TRUE,
              null = "null", na = "null")

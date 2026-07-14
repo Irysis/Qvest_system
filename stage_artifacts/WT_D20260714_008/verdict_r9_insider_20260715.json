@@ -1,0 +1,74 @@
+{
+  "wt": "WT_D20260714_008",
+  "mode": "RAMP",
+  "round": "R9",
+  "fq": "FQ-019",
+  "title": "insider 확장 패널 × PORT_t-정렬 선별 — 본측정 판정 (선별-규율 아크 잔존 frontier ①)",
+  "as_of_date": "2026-07-15",
+  "generated_at": "2026-07-15",
+  "source_version": "RAMP_R9_v1 (Stage A) + RAMP_R9_stageB_v1 (Stage B F-1)",
+  "security_id": "Ticker (rawdata) -> factor_id z (pure/insider z = Z_Score_Aligned)",
+  "vintage_pin": ".cache/pin/rawdata_r9_pin_20260715.parquet (rawdata mtime 2026-07-15 00:07:23, post-DailyRefresh; panel r6/insider = pre-refresh 재사용; paired = vintage-canceling)",
+  "connection_fix": {
+    "root_cause": "run_ramp_r9_insider_ext.R L57 persistent con(#3) opened; source(build_insider_factor_panel.R) L46 reassigns global `con` to its own log then close() L199 -> original R9 con gc-closed -> next wf()/writeLines(con) 'invalid connection' halt (2026-07-14).",
+    "fix": [
+      "L56-57: append-per-call logger wrapped in try() (no persistent con to clobber; log failure never halts measurement).",
+      "L68 need_build: FULL 강제 재빌드 제거 -> 유효 패널(partial_data=FALSE,pit_ok) 재사용 (재빌드=clobber 재유발 회피 + 도훈 재사용 지시). RAMP_R9_FORCE_PANEL로만 재빌드.",
+      "L136 §7 vintage pin: R9_RAWDATA_PIN env -> pinned rawdata snapshot 소비 (DailyRefresh 동시가동 torn-read/vintage churn 차단).",
+      "L379 close(con) 제거 (persistent con 미보유)."
+    ],
+    "verified": "Stage A exit 0, full measurement + KILL + HARD + save 완주, no 'invalid connection' error. panel reused (ext=105=102+3, no rebuild line)."
+  },
+  "config": {
+    "stageA_plain": {"windows": [36, 60], "kpool": [10, 20], "cadence": 6, "construction": "plain top-K pool EW rotation (frozen prereg fdb26b8f)"},
+    "stageB_F1": {"window": 36, "kpool": [20, 10], "cadence_entry": 6, "cadence_exit": 3, "exit_rank_bar": 30, "construction": "F-1 champion (level36 entry / rank-only quarterly exit / level36 fill) — R15 이식"},
+    "top_n": 25, "cost_bps_oneway": 15, "liq_min": 2e8, "contract": "canonical_screen_bt (cap-w authoritative)",
+    "n_trials_family": 24, "kill_paired_threshold": 2.0, "gate_hard": {"port_t_capwt": 2.95, "oos_retention": 0.7, "calmar": 0.64}
+  },
+  "results_capw": {
+    "Ppins_W36_K20_plain": {"cap_w": 2.77, "ew_uni": 3.91, "oos": -0.068, "calmar": 0.46, "post17_sr": -0.098},
+    "Pbase_W36_K20_plain": {"cap_w": 2.67, "ew_uni": 3.88, "oos": -0.056, "calmar": 0.45},
+    "Ppins_W60_K20_plain": {"cap_w": 2.07, "ew_uni": 2.96, "oos": -0.248, "calmar": 0.43},
+    "Pbase_W60_K20_plain": {"cap_w": 1.60, "ew_uni": 3.07, "oos": -0.415, "calmar": 0.44},
+    "Ppins_W36_K10_plain": {"cap_w": 1.98, "ew_uni": 3.13, "oos": -0.234, "calmar": 0.41},
+    "Ppins_W60_K10_plain": {"cap_w": 1.46, "ew_uni": 2.05, "oos": -0.326, "calmar": 0.33},
+    "Ppins_F1_W36_K20": {"cap_w": 2.878, "ew_uni": 4.282, "oos": 0.018, "oos_ew": 0.643, "calmar": 0.498, "post17_sr": -0.002},
+    "Pbase_F1_W36_K20": {"cap_w": 2.724, "ew_uni": 4.365, "oos": 0.007, "oos_ew": 0.668, "calmar": 0.484},
+    "Ppins_F1_W36_K10": {"cap_w": 1.973, "ew_uni": 3.006, "oos": -0.237, "calmar": 0.385},
+    "Pbase_F1_W36_K10": {"cap_w": 1.889, "ew_uni": 2.912, "oos": -0.350}
+  },
+  "paired_insider_marginal": {
+    "plain_W36_K10": {"cap_w_t": 0.15, "d_ann": 0.0014},
+    "plain_W36_K20": {"cap_w_t": 0.55, "d_ann": 0.0049},
+    "plain_W60_K10": {"cap_w_t": 0.44, "d_ann": 0.0041},
+    "plain_W60_K20": {"cap_w_t": 0.73, "d_ann": 0.0122},
+    "F1_W36_K20": {"cap_w_t": 0.71, "ew_uni_t": 0.71, "d_ann": 0.0059},
+    "F1_W36_K10": {"cap_w_t": 0.28, "ew_uni_t": 0.28, "d_ann": 0.0027},
+    "max_paired_t": 0.73
+  },
+  "insider_participation": {
+    "plain_W36_pool_hit_frac": {"K10": 0.38, "K20": 0.70},
+    "plain_W60_pool_hit_frac": {"K10": 0.36, "K20": 0.61},
+    "F1_pool_hit_frac": {"K10": 0.38, "K20": "measured (see summary)"},
+    "insider_trailing_nwt_mean": {"W36": 0.98, "W60": 1.25},
+    "note": "insider 팩터 실제 선별됨(참여) — level36 중위. 그러나 한계기여 근0(both basis) = 사실상 중복."
+  },
+  "verdict": "config_scoped_negative",
+  "verdict_text": "insider 팩터 pool-참여의 한계기여는 plain·F-1 construction, cap-w·EW-uni basis 4중 전부 paired NW-t <= +0.73 (<< 2.0 KILL 문턱) -> KILL. graduation 전 arm 미달(cap-w<2.95, oos~0<<0.7, calmar<0.64). 선별-규율 아크의 잔존 pool-선별 frontier는 비-수익(insider) 재료로도 닫힘. 종결 어휘 미사용 — config-scoped negative + 프론티어 표시.",
+  "kill": true,
+  "any_graduation": false,
+  "dual_basis": "cap-w HARD 불변. base 신호는 cap-tier 국소화 재발(EW-uni 3.88>>cap-w 2.67·F-1 base EW-oos +0.668~0.7). 단 insider 한계기여는 both-basis 소(cap-w Δ+0.10·EW-uni Δ+0.03) -> 벤치 아티팩트 아님(insider 자체가 무기여).",
+  "f1_construction_parity": {
+    "measured_uplift": 0.055, "r15_uplift": 0.325, "ok": false,
+    "attribution": "port 버그 아님 (상태머신 byte-등가 + plain-path Stage A 정확 재현). F-1 챔피언 cap-w 엣지가 window/vintage-fragile: R15 n_sig=257(2026-05) 2.937 -> 본 n_sig=258(2026-06)+refresh 2.724. paired는 vintage-canceling이라 KILL robust.",
+    "implication": "F-1 절대치는 검증 챔피언 재현 아님(라벨 강등). insider paired 결론은 무영향."
+  },
+  "artifacts": {
+    "stageA": "outputs/ramp/r9_insider_{gates,paired,summary,prereg}_20260715.{parquet,json}",
+    "stageB": "outputs/ramp/r9_insider_f1_{gates,paired,summary}_20260715.{parquet,json}",
+    "runners": ["02_Infrastructure/ramp/run_ramp_r9_insider_ext.R (connection fix)", "02_Infrastructure/ramp/run_ramp_r9_insider_f1.R (Stage B F-1)"],
+    "challenge_note": "stage_artifacts/WT_D20260714_008/challenge_note_r9_insider_20260715.md",
+    "logs": [".cache/_ramp_r9_insider_20260715.txt", ".cache/_ramp_r9_insider_f1_20260715.txt"]
+  },
+  "escalation_note": "armed spec §4.2(2026-07-13)·FQ-028 next_probe ①은 R9=insider×F-1 챔피언을 지정하나 run_ramp_r9_insider_ext.R 러너는 plain 2x2만 구현(F-1 미구현), frozen prereg fdb26b8f도 plain 반영 = 구현 갭. Stage B가 F-1을 companion으로 채워 4-config 전건 측정 완료. 단 F-1 절대치는 vintage-fragile(parity 미달) — insider 결론은 paired robust."
+}

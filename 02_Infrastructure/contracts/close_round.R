@@ -1,0 +1,174 @@
+# close_round.R — 건설적 라운드 종료 계약 (Continuity Firewall L3)
+#
+# 도훈 mandate 2026-07-15: "자체적으로 포기하지 않는 자가발전형 아키텍처. 누적 실패 후
+#   '끝남 표현들'로 라운드를 마무리하려는 것을 원천차단."
+#
+# 원리: "make the right thing the only expressible thing." 리서치 라운드를 닫는 유일한
+#   깔끔한 경로 = close_round() 호출. next_probe≥2 · 소비면(consumer_surfaces) · frontier ·
+#   (negative면) 부활 조건(live_trigger)을 *인자로 강제*해야만 종료 기록이 발행된다.
+#   → 계속을 '생산'하지 않으면 함수가 stop()으로 거부(단어만 지우고 멈추기 봉쇄).
+#   발행되는 마커(.cache/last_round_closure.json)를 Stop 게이트(continuity_gate.py)가 읽어
+#   자동 통과 → 종료가 '계약 충족'과 물리적으로 묶인다. Q-Lead는 이 함수의 반환 요약에서
+#   그대로 보고(구조화 필드 = 서술의 원천).
+#
+# 정합: answer-principles 연속성 3호(next_probe≥2)·4호(소비처 전개)·INV-7(부활 조건).
+#   판정 자체는 막지 않는다 — negative·천장·config-scoped는 정당(AX-000). 막는 건 '계속 결측'뿐.
+
+suppressWarnings(suppressMessages({
+  if (!requireNamespace("jsonlite", quietly = TRUE)) stop("close_round: jsonlite 필요")
+}))
+
+.cr_root <- function() {
+  for (k in c("CLAUDE_PROJECT_DIR", "QM_ROOT")) {
+    v <- Sys.getenv(k, "")
+    if (nzchar(v) && dir.exists(v)) return(v)
+  }
+  cand <- "C:/Users/99922/OneDrive/Quant_Module_Moltbot"
+  if (dir.exists(cand)) return(cand)
+  getwd()
+}
+
+.CR_VERDICT_TYPES <- c(
+  "config_scoped_negative",       # 이 config가 측정틀에서 미달 (재료/구성 등 경로-scoped)
+  "ceiling_reached_frontier_open",# 천장 도달, 미검 축/프론티어 열림
+  "screen_tier_routed",           # 자본 미달이나 신호 실재 → overlay/feature/RAMP 라우팅
+  "revival_conditional",          # 부활 조건 충족 시 재도전 대기
+  "incumbent_confirmed",          # 현직 확정 (도전자 미달)
+  "capability_established"         # 능력 확립 (positive — 소비면 전개 대상)
+)
+.CR_NEGATIVE_TYPES <- c("config_scoped_negative", "screen_tier_routed", "revival_conditional")
+
+#' close_round — 리서치 라운드를 계약에 맞게 닫고 종료 마커를 발행한다.
+#'
+#' @param round_id      라운드 식별자 (예 "R31" / "FQ-047" / "WT-D...").
+#' @param verdict_type  .CR_VERDICT_TYPES 중 하나. '완결/종결/소진 판정' 같은 종결어휘 금지 —
+#'                      구조화 enum으로만 판정을 표현.
+#' @param mechanism_diagnosis  왜 이 결과인지 기전 1줄 (≥20자, 연속성 3호).
+#' @param next_probes   다음 가설/프로브 문자열 벡터 (≥2, 연속성 3호). 저순위 운영태스크로
+#'                      접기 금지 — 실제 다음 탐색 축.
+#' @param consumer_surfaces  소비면 라우팅 (팩터랭킹/유니버스/오버레이/위험/monitoring/선별라벨/
+#'                      타모드) 문자열 벡터 (연속성 4호).
+#' @param frontier_update  frontier 큐 갱신 서술 (FQ-id + status) 또는 NULL.
+#' @param live_trigger  부활 조건 (negative 판정 시 필수, INV-7). 경로-scoped 재도전 신호.
+#' @param layer         병목 계층 태그 (①재료~⑨자본 중) — layer_bottleneck_map 갱신 대상.
+#' @param evidence_refs L-code/보고서 경로 벡터.
+#' @return (invisibly) 종료 기록 list. 콘솔에 사람용 요약 출력.
+close_round <- function(round_id,
+                        verdict_type,
+                        mechanism_diagnosis,
+                        next_probes,
+                        consumer_surfaces = character(0),
+                        frontier_update = NULL,
+                        live_trigger = NULL,
+                        layer = NULL,
+                        evidence_refs = character(0),
+                        write_marker = TRUE) {
+  # ── 계약 검증 (미충족 = stop, 종료 거부) ──────────────────────────────────
+  if (missing(round_id) || !nzchar(paste(round_id, collapse = "")))
+    stop("close_round: round_id 필수.")
+  if (missing(verdict_type) || !(verdict_type %in% .CR_VERDICT_TYPES))
+    stop(sprintf("close_round: verdict_type은 다음 중 하나 — %s. (종결어휘 '완결/종결/소진 판정' 대신 구조화 enum)",
+                 paste(.CR_VERDICT_TYPES, collapse = ", ")))
+  if (missing(mechanism_diagnosis) || nchar(gsub("\\s", "", paste(mechanism_diagnosis, collapse = ""))) < 20)
+    stop("close_round: mechanism_diagnosis ≥20자 필수 — 왜 이 결과인지 기전 진단 (연속성 3호).")
+  np <- Filter(nzchar, as.character(next_probes))
+  if (length(np) < 2)
+    stop("close_round: next_probes ≥2 필수 — 기전 진단에서 다음 가설 2개 이상 도출 (연속성 3호). ",
+         "이것이 원천차단의 핵심: negative 보고는 next_probe 없이는 완성되지 않는다.")
+  cs <- Filter(nzchar, as.character(consumer_surfaces))
+  has_frontier <- !is.null(frontier_update) && nzchar(paste(frontier_update, collapse = ""))
+  if (length(cs) == 0 && !has_frontier)
+    stop("close_round: consumer_surfaces 또는 frontier_update 최소 1 필수 — 소비처 전개/frontier 등재 (연속성 4호). ",
+         "라운드가 능력을 확립하면 소비면 7종을 순회하라: 팩터랭킹/유니버스/오버레이/위험/monitoring/선별라벨/타모드.")
+  lt <- if (is.null(live_trigger)) character(0) else Filter(nzchar, as.character(live_trigger))
+  if (verdict_type %in% .CR_NEGATIVE_TYPES && length(lt) == 0)
+    stop("close_round: negative 판정(", verdict_type, ")은 live_trigger(부활 조건) 필수 — ",
+         "negative는 영구 판결이 아니다 (INV-7). 경로-scoped 재도전 신호를 명시하라 ",
+         "(예: 스프레드 재확대 / 레짐 반전 / 비-return 데이터원 등재).")
+
+  # ── 제약 방화벽 재사용 (있으면) — 제약 귀속/완화-레버 색출 ───────────────
+  fw_note <- NULL
+  fw_path <- file.path(.cr_root(), "02_Infrastructure", "axiom", "constraint_firewall.R")
+  if (file.exists(fw_path)) {
+    fw_note <- tryCatch({
+      # 가벼운 backstop 힌트만 — semantic 판정은 호출 LLM(Q-Lead)이 이미 수행
+      blob <- paste(c(mechanism_diagnosis, np, lt), collapse = " ")
+      if (grepl("종목수.*(때문|탓)|공매도.*(허용|되면)|유동성.*(낮추|완화)|>\\s*25종|short 허용",
+                blob))
+        "⚠ 방화벽 경고: 서술에 제약-귀속/완화-레버 의심 표현 — envelope-상대로 재확인 (INV-7 firewall)."
+      else NULL
+    }, error = function(e) NULL)
+  }
+
+  # ── 종료 기록 발행 ────────────────────────────────────────────────────────
+  now <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")
+  rec <- list(
+    schema = "round_closure_v1",
+    round_id = round_id,
+    verdict_type = verdict_type,
+    mechanism_diagnosis = mechanism_diagnosis,
+    next_probes = np,
+    consumer_surfaces = cs,
+    frontier_update = if (has_frontier) frontier_update else NULL,
+    live_trigger = lt,
+    layer = layer,
+    evidence_refs = as.character(evidence_refs),
+    firewall_note = fw_note,
+    closed_at = now
+  )
+
+  if (isTRUE(write_marker)) {
+    cache_dir <- file.path(.cr_root(), ".cache")
+    if (!dir.exists(cache_dir)) dir.create(cache_dir, recursive = TRUE, showWarnings = FALSE)
+    marker <- file.path(cache_dir, "last_round_closure.json")
+    writeLines(jsonlite::toJSON(rec, auto_unbox = TRUE, pretty = TRUE), marker, useBytes = TRUE)
+    # 감사 원장 append (jsonl) — 종료 이력 정직 전수
+    ledger <- file.path(cache_dir, "round_closures.jsonl")
+    cat(jsonlite::toJSON(rec, auto_unbox = TRUE), "\n", file = ledger, append = TRUE, sep = "")
+  }
+
+  # ── 사람용 요약 (Q-Lead가 이걸로 보고 — 구조화 필드 = 서술의 원천) ────────
+  probe_lines <- sprintf("  %s %s", intToUtf8(9312 + seq_along(np) - 1, multiple = TRUE), np)
+  cons_line <- if (length(cs)) paste(cs, collapse = " · ") else "(frontier only)"
+  lt_line <- if (length(lt)) paste(lt, collapse = " · ") else "(positive — 부활조건 불요)"
+  summary <- paste0(
+    sprintf("── 라운드 종료: %s [%s] ──\n", round_id, verdict_type),
+    sprintf("기전: %s\n", mechanism_diagnosis),
+    "next_probe:\n", paste(probe_lines, collapse = "\n"), "\n",
+    sprintf("소비면: %s\n", cons_line),
+    if (has_frontier) sprintf("frontier: %s\n", frontier_update) else "",
+    sprintf("부활 조건: %s\n", lt_line),
+    if (!is.null(layer)) sprintf("병목 계층: %s\n", layer) else "",
+    if (!is.null(fw_note)) paste0(fw_note, "\n") else "",
+    sprintf("마커 발행 → Stop 게이트 자동 통과 (%s)\n", now)
+  )
+  cat(summary)
+  invisible(rec)
+}
+
+# 자기 검증(직접 실행 시): source 후 sys.frame 없으면 데모 실행 안 함.
+if (identical(environment(), globalenv()) && !interactive() &&
+    nzchar(Sys.getenv("CLOSE_ROUND_SELFTEST", ""))) {
+  cat("[close_round selftest]\n")
+  ok <- tryCatch({
+    close_round(
+      round_id = "SELFTEST_R0",
+      verdict_type = "config_scoped_negative",
+      mechanism_diagnosis = "셀프테스트 — cap-w 전이 벽으로 이 config 미달(기전 진단 데모).",
+      next_probes = c("비-return 원천에 동일 선별 적용", "EW-basis cap-tier 재분류"),
+      consumer_surfaces = c("OVERLAY_CANDIDATE feature 보존"),
+      live_trigger = c("비-return 방어 데이터원 등재 시"),
+      layer = "①재료"
+    )
+    TRUE
+  }, error = function(e) { cat("FAIL:", conditionMessage(e), "\n"); FALSE })
+  # 계약 위반 케이스: next_probes 1개 → stop 기대
+  viol <- tryCatch({
+    close_round("SELFTEST_R1", "config_scoped_negative",
+                "기전 진단 20자 이상 채운 데모 문장입니다.",
+                next_probes = c("하나뿐"), consumer_surfaces = "x",
+                live_trigger = "y", write_marker = FALSE)
+    FALSE  # stop 안 나면 실패
+  }, error = function(e) TRUE)
+  cat(sprintf("[selftest] valid_close=%s  contract_reject=%s\n", ok, viol))
+}
