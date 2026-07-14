@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
-  "updated": "2026-07-12",
+  "updated": "2026-07-14",
   "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
   "entries": [
     {
@@ -9,7 +9,7 @@
       "lane": "non_return",
       "title": "DART exec-insider 역사 (CMP 2012 충실복제)",
       "hypothesis": "임원(officer) 순매수 신호의 routine/opportunistic 분류 기반 횡단 알파 — K200∪KQ150에서 ICIR 1.31@H1 실측(감쇠벽 밖), IC→PORT_t 전이 검증이 미완",
-      "ev_rationale": "⚠07-10 예비 canonical(2005~2017-09 read-only)로 EV 대폭 하향: standalone DEAD_PRELIM(placebo 70pct·EW-basis 음·forward 소멸·book 비직교 corr 0.49). KR서 CMP routine/opportunistic 분리 공허. 전체 크롤 완료 후에도 standalone 본측정 보류 권고 — 잔여 가치는 screen-tier 재확인 1회 + MEGA sign-content conditioning-feature 한정 (INSIDER_CMP_PRELIM_20260710 L-code)",
+      "ev_rationale": "⚠07-10 예비 canonical(2005~2017-09 read-only)로 EV 대폭 하향: standalone DEAD_PRELIM(placebo 70pct·EW-basis 음·forward 소멸·book 비직교 corr 0.49). KR서 CMP routine/opportunistic 분리 공허. 전체 크롤 완료 후에도 standalone 본측정 보류 권고 — 잔여 가치는 screen-tier 재확인 1회 + MEGA sign-content conditioning-feature 한정 (INSIDER_CMP_PRELIM_20260710 L-code) | [07-14 갱신] 백필 248/258개월(200501~202508 done, 잔여 202509~202606 10개월). R9 발사조건 202604 미도달 — 내일 02:00 wave 이어수집(BF_END=2026-06 배선 완료)",
       "wall_check": "return-파생 소진 벽 밖(비-return 원천). 단 top-25 long-only IC→PORT_t 전이 벽은 미검증 — canonical PORT_t가 최종 관문",
       "data_gate": "document.xml 크롤 연속 커버리지(2009-2024) 필요 — 스케줄태스크 Qvest_InsiderBackfill 진행중(~10-14일), 현재 비연속",
       "owner": "다른 세션/스케줄태스크 (크롤). 실측은 크롤 2013+ 연속 도달 후",
@@ -57,15 +57,24 @@
       "lane": "non_return",
       "title": "DART 담보/질권 + 감사의견/going-concern — virgin 0-coverage",
       "hypothesis": "대주주 주식담보/질권 설정과 감사의견 변화는 비-return 리스크/알파 신호 — 시스템 미탐색",
-      "ev_rationale": "hypothesis_index 700 전수 기준 0-coverage + document.xml 파서 확장으로 취득 가능(신규 API 불요)",
+      "ev_rationale": "hypothesis_index 700 전수 기준 0-coverage. ★07-13 N3 census(FQ-022)로 취득 지도 확정: 감사의견 FY2015+와 담보 최근 2년은 메타데이터 API만으로 취득 가능(파서·문서 불요, 합계 ~4.6k콜) — '파서 개발 비용' 결정은 담보 역사(2005~2023, 문서 ~29k건 추정, ~4.5일)에만 해당",
       "wall_check": "비-return·미탐색. exclusion-형 소비면 long-only 정합",
-      "data_gate": "document.xml 파서 확장 — 도훈 결정(파서 개발 비용)",
-      "owner": null,
-      "status": "dohoon_decision",
-      "next_action": "도훈 승인 시 insider 파서 기반 확장 설계",
+      "data_gate": "2단: [1단 무파서] T1 감사의견 구조화 API(3,828콜·0.5일) + T3 정정지도(~400콜) + T2a 담보 최근2년 majorstock(348콜) — insider 백필 완결 후 즉시 가능. [2단 파서] T2b 담보 역사 document.xml ~29k건(~4.5일) — 1단 예비 신호 양성일 때만 지불(도훈 결정). census: 04_Research/dart_census/census_pledge_audit_20260713.md",
+      "owner": "Q-Lead (R25 alpha-research, 도훈 재개 지시 2026-07-14)",
+      "status": "signal_round_negative_frontier_open",
+      "next_action": "R25 완료 = CONFIG_SCOPED_NEGATIVE (L-AR-20260714_R25). cap-w authoritative 全 무의미(|t|<1), EW 양효과=SMALL size 아티팩트(부호반전), 비적정=sparsity 벽(top-25 0회), 계약등급 exclusion delta +0.024/0.000. next_probe: P1 소형주-포함 유니버스 distress 재측정(monitoring/risk 소비면) / P2 confound-controlled hard-distress composite(going-concern x AdminStock/TradingHalt/UnfaithfulDisc, Size-residualized) / P3 정정 진짜 magnitude=파서 gate(precursor 약함, 미정당화). 소비 배선: going-concern/비적정 monitoring tripwire.",
       "source_refs": [
-        "memory: next_session_task 07-05 미탐색 프론티어 맵"
-      ]
+        "memory: next_session_task 07-05 미탐색 프론티어 맵",
+        "census: FQ-022 / 04_Research/dart_census/census_pledge_audit_20260713.{md,json}",
+        "acquisition: 02_Infrastructure/data/dart_pledge_audit/acquisition_manifest.json (task #64)"
+      ],
+      "acquisition_result": {
+        "t1_audit_opinion": "FY2015~2025 12,844행, 348 corps (비적정 당기 2건: 한화오션 FY2016·코나아이 FY2019 — 생존편향 유의)",
+        "t3_correction_map": "상장 유니버스 [기재정정] 1,694행/325 corps (2014+ 상승)",
+        "t2a_pledge_2yr": "majorstock 4,000행/339 corps, 담보/질권 설정 205/339 corps (ctr_stkqy>0), 최근2년(2024~2026)",
+        "calls_total": 4618,
+        "fails": 0
+      }
     },
     {
       "id": "FQ-005",
@@ -144,7 +153,8 @@
       "data_gate": "도훈 프레임 결정",
       "owner": null,
       "status": "dohoon_decision_v02ep_routed",
-      "next_action": "도훈과 D3(SOT §5) 논의",
+      "next_action": "도훈 결정 대기 — D3 실사 dossier 납품 완료(2026-07-13 야간, 텔레그램 발송). 옵션 A(실계좌 소액)/B(페이퍼 트래킹, 권고)/C(보류) 3안. 권고 = P-pure 단독 페이퍼 트래킹·V02_EP 독립 트랙 불채택(보유 중첩 32.5%·본 측정틀 EW-oos 0.469<0.5 밴드 미달)",
+      "result_ref": "04_Research/01_reports/d3_deployability_dossier_20260713.md + stage_artifacts/d3_dossier/ (capacity/비용/추적 실측: P-pure 최근36m cap_1d 중앙값 49억·break-even 46bps·재구성 parity Δ=0, pin d3_dossier_20260713)",
       "source_refs": [
         "memory: project-captier-alpha-localization-20260706"
       ]
@@ -273,11 +283,18 @@
       "wall_check": "EW는 진단 basis — 통과해도 자본 게이트(cap-w) 우회 아님, D3형 도훈 결정 재료일 뿐(프레임 명시)",
       "data_gate": "없음",
       "owner": "Q-Lead",
-      "status": "in_progress",
-      "next_action": "3종 보강증거 EW-basis 실측 → 2/3 판정 → 보고",
+      "status": "done_characterized",
+      "next_action": "완료 — band escalation 2/3 → band_escalated. D3형(벤치-상대 배포성) 도훈 결정 재료 자격 회복. ★자본 배정 없음(cap-w authoritative 3/3 HARD FAIL·book-marginal FAIL). 후속: D3 실사 dossier 납품 2026-07-13 (FQ-009 result_ref 참조).",
       "source_refs": [
         "r7: outputs/ramp/r7_ewbasis_e2_reclass_20260712.*",
         "rule: measurement-graduation §3 oos band escalation"
+      ],
+      "result": "EW-oos 0.5064 ∈ [0.5,0.7) band escalation 실행: e1 trailing PORT_t 1.46>0 PASS · e2 placebo p=0.000(real 3.92 vs null −2.38) PASS · e3 book-marginal ΔIR(w0.05) −0.005<0 ∧ cap-w cor 0.324≥0.30 FAIL → 2/3 band_escalated(조건부 PASS). 판정 프레임: EW-basis 조건부 band-PASS = D3형 결정 재료 자격 회복이지 자본 게이트 통과 아님(cap-w PORT_t 2.61·oos −0.08·calmar 0.45 3/3 HARD FAIL 불변). 메타: 신호 실재(e2 p=0)와 cap-w 추출 불가(e3·cap-w FAIL) 동시 확증 = cap-tier 국소화 벽(project-captier-alpha-localization). R7 'EW-real 미달'은 절차 미완 → R8이 §3 escalation으로 완결(EW-real band-escalated로 정정, 자본 결론 불변).",
+      "result_ref": [
+        "L-RAMP-20260712_175852",
+        "outputs/ramp/r8_band_escalation_20260712.json",
+        "04_Research/ramp/reports/challenge_note_r8_band_escalation_20260712.md",
+        "02_Infrastructure/ramp/run_ramp_r8_band_escalation.R"
       ]
     },
     {
@@ -289,8 +306,8 @@
       "wall_check": "오버레이 PIT C5 의무 4종(overlay_pit_guard HARD·lag1 스트레스·strict A/B·anchor 간격) — 07-06 실사고 재발방지. crisis 리바운드 클리핑 기전 주의",
       "data_gate": "없음 (text_cache 4,490건 + alpha_scores 보존)",
       "owner": "Q-Lead",
-      "status": "measured",
-      "next_action": "완료 — SCREEN_TIER 확정. m1 종목단 exclusion/tilt 오버레이 4암 전부 paired 증분 NW-t <2.0 (최선 LARGE_tilt 1.27). cap-tier 트랩 재확인(소형 base 자체 PORT_t 1.52, 오버레이 증분 ~0). PIT 4종 clean. m1은 feature 보존, 자본기여 자격 없음.",
+      "status": "done_consumed_feature_retained",
+      "next_action": "완료 — m1 오버레이 드레인(L-AR-20260712_175553) + 이벤트-예측 재과녁 R22 종결. feature 보존(OVERLAY_CANDIDATE 라벨). 라벨 정합 2026-07-13",
       "source_refs": [
         "phase_a: L-AR-20260712_152759",
         "runner: 02_Infrastructure/regime/overlay_candidate_drain.R"
@@ -300,7 +317,7 @@
         "measured_at": "2026-07-12T17:57:15+0900",
         "metric_type": "canonical_screen (screen_diagnostic)",
         "best_arm_paired_nw_t": 1.27,
-        "l_code": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/l_code/alpha_research/l_code_FQ-017_m1_overlay_drain.json",
+        "l_code": "L-AR-20260712_175553",
         "prereg_sha256": "b93e48f2f238c4496e5774c9dd8b7c66bdfe89d9d9dccc4e514b683e79d1a3ee",
         "result_path": "stage_artifacts/m1_overlay_drain/m1_overlay_drain_result.json",
         "challenge_note": "stage_artifacts/m1_overlay_drain/challenge_note.md",
@@ -316,8 +333,8 @@
       "wall_check": "시계열 미보존 항목은 '재측정 불가' 정직 라벨(추정 재구성 금지 — feedback-performance-real-code-only)",
       "data_gate": "없음",
       "owner": "Q-Lead",
-      "status": "in_progress",
-      "next_action": "18건 분류(성과주장/process) → 보존 시계열 재베이스 → 생존자 표",
+      "status": "done",
+      "next_action": "완료(2026-07-12, task #34) — A급 원장 18건 재베이스 재판정 실행 종료. 상태 라벨 정합 2026-07-13",
       "source_refs": [
         "harvest: .cache/harvest_20260712.json grade A 18",
         "meta: reference-benchmark-iks200-bug-fix 재베이스 의무"
@@ -352,12 +369,460 @@
       "ev_rationale": "FQ-018 재베이스 감사의 유일 잔존 단서. 반대 증거: 동일 창 실측 감쇠 전부 음(−0.57~−0.58t)·cap-weight 레버는 cap-tier 국소화(mega signal-dead)와 긴장 — 기대값 보수적",
       "wall_check": "벤치버그기 A급 2건 재베이스 실측이 전부 큰 폭 하락(2.52→1.94, 1.94→1.37) — 재실행 시 동일 방향 하락 사전 예상치 명시",
       "data_gate": "없음 (재실행은 rawdata·factor_db 현행분으로 가능)",
-      "owner": null,
-      "status": "dohoon_decision",
-      "next_action": "도훈 결정: 재실행(1회 실측) 승인 여부. 승인 시 pin 고정 + 사전등록 후 단일 config 재현",
+      "owner": "Q-Lead (도훈 승인 2026-07-13)",
+      "status": "settled_negative",
+      "verdict": "DEMOTED — 재현 실패 (2026-07-13, 태스크 #65). canonical(weighted_screen_bt+essence_score) 재측정: cap-w PORT_t 2.98은 RAMP-native proxy·full 255mo서 우연 정확 재현되나 교정 IKS200(authoritative)서 2.65 미달(경계 +0.03 벤치-취약 실증). oos_retention 1.19→0.22~0.41·calmar 0.89→0.42~0.60 붕괴 → 모든 window(full/t164)×benchmark(proxy/IKS)서 HARD 0/3~1/3. 기전 반전: 원 'cap-w=OOS레버' 주장 = 재현 시 cap-w가 최악 가중(EW/score pt 4.25/4.26 ≫ cap-w 2.98)=closet-indexing. 바인딩 벽=cohort-wide 2017+ decay(pt pre2017 2.96→post2017 1.11). 원 2.98/1.19/0.89 = 벤치버그기+소실 164mo창 아티팩트. ⚠ 태스크 cite 161507=RAMP_03 MOMCONS 별개, 실측 대상 184815. construction 복원 충실도 high(pt exact match·mom6 ALT robust), 164mo 정확 월-집합만 미복원(_bo_fwdgic 소실).",
+      "next_action": "종결(config-scoped negative). next_probe(L-code): ①cap-tier 국소화 LS 분해(pre2017 pt 2.9가 MID 11-30위 생존?) ②EW/score-tilt variant(pt 4.25·oos 0.42) book-marginal ΔIR 재평가. 자본=governor 정지 도훈 수동.",
       "source_refs": [
         "audit: 04_Research/01_reports/agrade_rebase_audit_20260712.md",
-        "l_code: L-RAMP-20260620_161507 계열"
+        "l_code(원): L-RAMP-20260620_184815 (RAMP_03C_BOOKMOM_CAPW). ⚠태스크 cite 161507=RAMP_03 MOMCONS 별개",
+        "l_code(재현): L-RAMP-20260713_211037",
+        "verdict: stage_artifacts/WT_RAMP_03C_RERUN_20260713/ (verdict.md/json·challenge_note·preregistration·차트5)"
+      ]
+    },
+    {
+      "id": "FQ-021",
+      "lane": "non_return",
+      "title": "N2 — 공시 가독성 악화(Δm1) 신호: 레벨→변화 축 (Phase A chain 확장)",
+      "hypothesis": "문장길이의 YoY 악화(전년 대비 Δm1)가 레벨(m1)과 독립인 신호인가 — '갑자기 어려워진 공시'=악재 은폐 이벤트 prior(Li 2008 change 문헌). Phase A는 레벨만 측정, 변화 축은 미검증",
+      "ev_rationale": "text_cache 4,490건 재사용 = 데이터 비용 0·DART 쿼터 0. Phase A 교훈 반영(단일지표 primary·합성 금지). 정직 prior: 레벨이 screen-tier라 변화도 보수적 기대",
+      "wall_check": "cap-tier 국소화·전이 벽 동일 적용 — dual-basis 병기. 연차 주기 신호라 이벤트 희소성(연 1회)·검정력 주의",
+      "data_gate": "없음",
+      "owner": "Q-Lead 야간 라운드",
+      "status": "settled_negative",
+      "verdict": "CHANGE_AXIS_NULL (2026-07-13). 4 config(raw/잔차×12m/6m) 전부 cap-w PORT_t<2.95 (0.77/0.64/-0.20/-0.38). rank-IC +0.008 = 가설(음수) 방향 역전+무의미(Harvey-t 1.85·placebo p 0.085). EW-uni도 약/음(cap-w 아티팩트 아님). 잔차 Δ가 raw보다 소폭↑이나 여전히 null → 변화는 '독립이나 null' 차원. kill 기준 충족 → 텍스트 가독성 아크 최종 종결(레벨 m1=OVERLAY_CANDIDATE feature 보존, 변화축=부정 적립).",
+      "next_action": "종결. 잔여 프론티어 = 비-return 원천(FQ-001~005). text_cache 4,490건 자산 재사용 가능.",
+      "source_refs": [
+        "asset: stage_artifacts/WT_D20260711_002/delta_ext/{preregistration_delta.json,alpha_validation_delta.json,delta_results.rds,challenge_note_delta.md}",
+        "l_code: L-AR-20260713_024441 (chain, canonical_screen)",
+        "prior: L-AR-20260712_152759 (Phase A level m1)"
+      ]
+    },
+    {
+      "id": "FQ-022",
+      "lane": "non_return",
+      "title": "N3 — DART 담보/질권·감사의견 metadata census (FQ-004 본크롤 설계 재료)",
+      "hypothesis": "(측정 아님) 두 virgin 원천의 공시 존재량·기간 커버리지 지도를 list 호출만으로 작성 — 본크롤 설계·비용 산정 재료",
+      "ev_rationale": "list.json 메타만(문서 다운로드 0) = 쿼터 최소. insider 백필과 경쟁 최소화(콜 캡 + 즉시 중단 규약)",
+      "wall_check": "쿼터 경쟁 시 즉시 중단 — insider 크롤(R9 게이트)이 항상 우선",
+      "data_gate": "DART list API (경량)",
+      "owner": "Q-Lead 야간 라운드",
+      "status": "done",
+      "next_action": "종결 — census 지도 완성. 본크롤은 FQ-004(도훈 결정, insider 백필 완결 후 T1→T3/T2a→T2b 순번)",
+      "source_refs": [
+        "FQ-004 virgin 0-coverage"
+      ],
+      "result": "census 완주(총 1,058콜/캡 1,500, 문서 다운로드 0, 중단규약 미발동). 판정: ① majorstock=최근 2년 rolling만 — 단 2yr universe 담보·질권 메타 식별 1,115건/134 corps(모수 충분) ② 감사의견 FY2015+는 구조화 API로 문서 파싱 불요 (2010=013 실측·going-concern은 emphs_matter) ③ 상장 F군 별도 감사공시 2011+ 붕괴 실증(정정 지도는 A군 [기재정정] 병행 필요) ④ 담보 역사(2005~2023)만 문서 파싱 필요 — universe ~29k건 추정. corp_code 없는 list.json=3개월 제한 실측",
+      "result_ref": [
+        "04_Research/dart_census/census_pledge_audit_20260713.md",
+        "04_Research/dart_census/census_pledge_audit_20260713.json"
+      ]
+    },
+    {
+      "id": "FQ-023",
+      "lane": "selection_discipline",
+      "title": "R10 — P-pure 비중 고도화 (종목 점수-비례 × 팩터 성과-비례, 도훈 질문 07-13)",
+      "hypothesis": "P-pure(W36_K20)의 동일가중을 ① 종목-레벨 합의점수 비례(봉투 [0,0.20]) ② 팩터-레벨 trailing 성과 비례로 교체 시 cap-w/EW 성과가 개선되는가 — LinearTilt(알파-비례) 승리 선례가 유일한 양성 prior",
+      "ev_rationale": "북-레벨 통계 sizing은 전수 settled-negative(HRP 24·robust-MVO/BL/resampled·ML sizing·DPL)이나 알파-비례 틸트만 유일 승자였음 — 그 계열의 P-pure 내부 적용은 미검증. R6 하네스 + weighted_screen_bt 계약 프리미티브 재사용으로 한계비용 낮음",
+      "wall_check": "추정오차>신호(EW 천장)·cap-tier 국소화 벽 동일 적용. 위험기반(공분산) 배분은 재제안 금지 대상이라 제외 — 알파/점수-비례 계열만",
+      "data_gate": "없음",
+      "owner": "Q-Lead (R10 ramp-orchestrator)",
+      "status": "settled_negative_kill_axis",
+      "next_action": "P-pure 비중 축 소진 — 동일가중 유지 확정. 잔존: 점수-비례 틸트를 비-수익 패널(FQ-001 DART insider)에 재적용(방향성 양 확인)",
+      "result": "KILL_axis=TRUE (2026-07-13, RAMP R10). 4 config sweep(weighted_screen_bt 계약, cap-w authoritative, base parity Δ=1.4e-5): base cap-w PORT_t=2.612·oos=-0.076. W-stock(종목 z-선형비례) cap-w=2.930(2.95 hard gate 근접·oos 부호전환 +0.015)·paired vs base +1.60. W-stock-sqrt(완만화) paired +1.78(최고). W-both +1.13. W-factor(팩터 trailing-t 비례) cap-w=2.520 악화·paired -0.17(factor momentum timing NULL 재확인). 전 config paired NW-t < 2.0 문턱 → 유의 개선 아님, HARD 3종 0/4. 확립: 종목 점수-비례는 방향성 양(+)의 가장 순한 레버(headline 2.61→2.93 = P-pure 사상 최근접)이나 유의 미달 = 'EW=통계 sizing 천장' prior 정합. 소형주농축 아티팩트 아님(OTHER 0.906→0.912, eff-N 25→19.8)·강틸트 degradation 부재·회전비용 생존. 벽=cap-tier 국소화 불변. L-RAMP-20260713_084821.",
+      "result_ref": "outputs/ramp/r10_weighting_{prereg,gates,paired,conc,summary}_20260713.* + 02_Infrastructure/ramp/run_ramp_r10_weighting.R + challenge: 04_Research/ramp/reports/challenge_note_r10_weighting_20260713.md (config_hash 1648fada1bd7f4f8)",
+      "source_refs": [
+        "trigger: 도훈 2026-07-13 '비중 결정 방법 통계적 고도화 적용해봤니'",
+        "prior: project-hrp-frontier-weighting-settled (LinearTilt 지배)",
+        "negative prior: project-uncertainty-aware-selection-transition-wall (sizing FAIL)",
+        "L-RAMP-20260713_084821 (R10 backtested, construction_type=composite, selection_type=sweep, n_trials lineage=14)"
+      ]
+    },
+    {
+      "id": "FQ-024",
+      "lane": "selection_discipline",
+      "title": "R11 — P-pure 발전 chain (선별 신선도 / 보유밴드 / 선별-vintage 앙상블, 도훈 mandate 07-13)",
+      "hypothesis": "P-pure의 바인딩 실패(oos·post-2017 감쇠 추적)를 세 독립 기전으로 공략: ①선별 갱신주기 단축(반기→분기 — 풀 staleness가 감쇠 추적 실패 원인) ②top-25 보유밴드(경계 churn 잡음·비용 절감 — S3_consensus_band 양성 선례) ③선별-시점 겹침 앙상블(선별 timing-luck 분산 축소 — SPEC-2 정합)",
+      "ev_rationale": "chain 자격(기전별 진단 1줄·IS-only·holdout 최종 1회). 각 기전이 R7/R8/R10 진단(감쇠=바인딩·경계잡음·vintage 산포)에 1:1 대응. 보유밴드는 사내 양성 선례 보유",
+      "wall_check": "factor-momentum 타이밍 null(06-30) prior — ①은 '타이밍'이 아니라 '갱신 주기'로 구분하되 수렴 여부 적대검증 의무. cap-tier 국소화 벽은 본 라운드가 못 풂(정직 명시)",
+      "data_gate": "없음 (R6 하네스·패널 재사용)",
+      "owner": "Q-Lead (R11 ramp-orchestrator)",
+      "status": "config_scoped_negative_frontier_open",
+      "result": "config-scoped negative (2026-07-13, RAMP R11, selection_type=chain). 3-arm 측정(cap-w authoritative·weighted_screen_bt 계약·base parity Δ1.4e-5·IS-only 승자·config_hash 53403eaf16de7662): base cap-w 2.612·oos -0.076. armF(선별 cadence 6→3) cap-w 2.852·oos +0.121(P-pure 사상 최고)·post17SR 부호전환·paired full +0.42(IS -1.11 OOS +1.44)·factor-momentum 아님(churn 0.307→0.206·AC 0.86→0.92·TO flat). armB(대칭 보유밴드 [25,35]) cap-w 2.414 악화·oos -0.121·TO 9.27→6.81 절감에도 net 악화=경계 churn=신호(기전 falsified). armV(vintage 앙상블 3M offset) cap-w 2.895(최고·R10 W-stock 2.930 tie)·oos +0.087·코호트 Spearman 0.923(과-homogeneous·분산축소 modest). 2차 armV×sqrt IS 악화→폐기. max full paired +0.582<2.0·HARD 3종 0/5. 세 construction 축 동일 cap-w~2.9 천장=construction-invariant 진단(벽=cap-tier 국소화×cap-w). 대칭-construction config 한정 negative — 비대칭/이질 레버 미검증. L-RAMP-20260713_093129.",
+      "result_ref": "outputs/ramp/r11_ppure_dev_{prereg,gates,paired,conc,summary}_20260713.* + 02_Infrastructure/ramp/run_ramp_r11_ppure_dev.R + challenge: 04_Research/ramp/reports/challenge_note_r11_ppure_dev_20260713.md",
+      "next_action": "미검증 construction 프론티어(도훈 판정프레임 교정 07-13 — dead-end 아님, next_probe): [F-1] 팩터 퇴출 비대칭(진입 느리게·퇴출 빠르게) [F-2] 감쇠-속도(Δt) 선별 [B-1] 비대칭 밴드=oos-안정 레버 [B-2] 기여-기반 이탈 [V-1] 창 이질 앙상블(36m+60m 혼합) [V-2] 목적함수 이질 앙상블(PORT_t+rank-IC 코호트). 병행: 재료축 R9 DART insider(FQ-001).",
+      "source_refs": [
+        "trigger: 도훈 2026-07-13 'P-pure 더 발전시켜봐' + 판정프레임 교정('소진/dead-end' 어휘 금지·실패기전→다음가설 번역·config-scoped+frontier)",
+        "diag: L-RAMP-20260713_084821 (R10) + challenge_note_r8 (trailing 감쇠)",
+        "precedent: stage_artifacts/pg2_w2_earnings3m S3_consensus_band paired +2.03 (P-pure substrate 미전이)",
+        "L-RAMP-20260713_093129 (R11 backtested, construction_type=composite, selection_type=chain, n_trials lineage=18, next_probe 6종)"
+      ]
+    },
+    {
+      "id": "FQ-025",
+      "lane": "selection_discipline",
+      "title": "R12 — P-pure 비대칭·이질 construction chain (R11 next_probe 수렴점 소비)",
+      "hypothesis": "R11 두 진단의 수렴점 '퇴출은 빠르게·진입은 엄격하게': ①F-1 팩터 퇴출 비대칭(진입 느리게·퇴출 즉시) ②B-1 종목 비대칭 밴드(엄격 진입·즉시 퇴출 — R11 대칭밴드의 정확한 역) ③V-1 창 이질(36m+60m) 코호트 앙상블이 oos·cap-w를 유의 수준까지 미는가",
+      "ev_rationale": "R11이 도출한 next_probe 6종 중 기전 수렴(armF 신선풀 우위 + armB 퇴출지연 손해)이 있는 3종 우선. armF/armV의 OOS-집중 개선(+1.44/+1.62 paired) 방향과 정합. chain 연속(진단→가설 번역)",
+      "wall_check": "construction-invariant ~2.9 천장 진단 존재 — 본 라운드도 cap-tier 벽은 못 풀 수 있음(정직 병기). OOS 누적 노출 관리: R11 OOS는 게이트 산출로 소비됐고 R12는 자체 사전등록으로 신규 측정",
+      "data_gate": "없음",
+      "owner": "Q-Lead (R12 ramp-orchestrator)",
+      "status": "config_scoped_negative_frontier_open",
+      "result": "config-scoped negative (2026-07-13, RAMP R12, selection_type=chain, config_hash 85d9c45646a8bb3a·base parity Δ1.4e-5·IS-only 승자·R11 OOS 미입력). 3-arm(cap-w authoritative·weighted_screen_bt 계약): base cap-w 2.612·oos -0.076. armF-1(비대칭 퇴출: 진입 반기 full/퇴출 분기 즉시 rank>30·부호flip) cap-w 2.937(계보 최고·R10 W-stock 2.930·R11 armV 2.895 초과·자본문턱 2.95까지 0.013)·oos +0.048·paired full +1.819(계보 최고·IS +0.410 첫 양의 IS·OOS +2.159 유의)·post17SR 부호전환. armB-1(비대칭 밴드 진입≤20/퇴출>25=R11 대칭[25,35]의 역) cap-w 2.522(R11 armB 2.414보다 개선이나 base 미달)·oos -0.021·paired -0.321(IS -1.258 경계 신호 매도)·eff-N 24.95·HHI≈base(under-hold/집중 아님·short 7/220). armV-1(창 이질 36m∪60m 합집합) cap-w 2.348(역효과)·Jaccard 0.491(R11 0.671보다 더 다양=목표달성이나 60m stale 주입으로 신호 희석). 1차 IS 승자=armF-1. 2차 결합 없음. max full paired +1.819<2.0·HARD 3종 0/5·oos +0.048<<0.7. 확립: (C①)armF-1≠armF 재발견(churn 0.057<0.069·Jaccard 0.906·TO↓·cap-w↑=exit>refresh, cap-w축·oos 부분복제 caveat) (C②)B-1 엄격진입=집중 아님(부진=경계 신호 매도) (C③)V-1 이질≠개선(다양성 달성이나 stale 역효과) (C④/⑥)cap-w 축 포화~2.94·결속 벽=oos_retention construction-invariant(R10/R11/R12 4축 동일 천장). 비대칭 퇴출=construction 레버 중 최강이나 벽이 cap-w 아닌 oos 확증 → 프론티어 축 전환(construction 미세조정→감쇠속도 선별·재료 R9). L-RAMP-20260713_100638.",
+      "result_ref": "outputs/ramp/r12_asym_{prereg,gates,paired,conc,summary}_20260713.* + 02_Infrastructure/ramp/run_ramp_r12_asym.R + challenge: 04_Research/ramp/reports/challenge_note_r12_asym_20260713.md + charts: stage_artifacts/ramp_r12/*.png",
+      "next_action": "미검증 프론티어(config-scoped negative·종결 아님, L-RAMP-20260713_100638 next_probe 7종): [F-1a] 퇴출-트리거×감쇠속도(Δt) 융합 [F-1b] 퇴출문턱 sweep 목표=oos 최대화(cap-w 포화 대응) [B-1a] 기여-기반 퇴출 [B-1b] B-1 밴드×armF-1 pool 스택(2차 결합) [V-1a] 교집합+비대칭 가중(stale 주입 차단) [V-1b] 60m를 감쇠속도-필터 pool로 대체. 메타 축전환: cap-w 축 포화(2.94) → oos/감쇠 축(감쇠속도 선별)+재료 축(R9 DART insider, FQ-001, backfill 완료 후).",
+      "source_refs": [
+        "parent: FQ-024 config_scoped_negative_frontier_open + L-RAMP-20260713_093129 next_probe(F-1/B-1/V-1)",
+        "교정: 도훈 07-13 종결어휘 금지 — 판정=config-scoped+frontier",
+        "L-RAMP-20260713_100638 (R12 backtested, construction_type=composite, selection_type=chain, n_trials lineage=21, next_probe 7종)"
+      ]
+    },
+    {
+      "id": "FQ-026",
+      "lane": "selection_discipline",
+      "title": "R13 — P-pure 감쇠속도(oos) 축 chain (R12 메타진단 축전환 소비)",
+      "hypothesis": "바인딩 축=oos_retention(construction-invariant, cap-w 4축 ~2.94 포화 실측). 선별·퇴출 기준을 trailing '수준'에서 '감쇠 속도/일관성'으로 전환하면 oos가 움직이는가: ①감쇠속도 선별(recent-half vs older-half 차분) ②F-1a 융합(비대칭 퇴출 트리거=감쇠속도) ③부분창 일관성 가중 선별",
+      "ev_rationale": "R12 next_probe 축전환 지시 소비. 1차 endpoint = oos_retention(cap-w는 2차) — 실패 축을 직접 조준하는 첫 라운드. 재료는 realized-PORT_t 유지(R7 교훈: 라벨 재료가 지배적) — 시간 함수형만 변경",
+      "wall_check": "cap-tier 국소화 벽 잔존(정직 병기). 감쇠속도 = 팩터 모멘텀 수렴 위험 → R11 C①식 churn/풀궤적 판별 의무",
+      "data_gate": "없음",
+      "owner": "Q-Lead (R13 ramp-orchestrator)",
+      "status": "config_scoped_negative_frontier_open",
+      "next_action": "미검증 프론티어(config-scoped negative·종결 아님, L-RAMP-20260713_102944 next_probe 6종+메타2): [D-1a] λ↓0.15+penalty-only(decay>0 부스트 제거=FM 수렴 원천 차단) [D-1b] 종목-레벨 감쇠(팩터풀 base 고정) [D-2a] rank×감쇠 AND-gate(cap-w F-1 2.937 우위+oos D-2 +0.045 동시취득) [D-2b] 감쇠 대칭 충원 [D-3a] 6m×2 겹침창/trimmed 일관성(12m NW-t 노이즈 완화) [D-3b] EW-basis 배포 결정재료(EW-oos 0.972, cap-w 트랩 밖·FQ-015 E2 계보). ★메타 축전환(도훈 판정프레임): 시간-함수형 축은 cap-w+oos 양면 소진 지대 → 프론티어=재료 축(R9/FQ-001 DART insider 비-수익 substrate, insider backfill 완료 후 PORT_t-정렬 선별×비-수익)+basis 재분류(EW-real D3형 배포 결정재료).",
+      "source_refs": [
+        "parent: FQ-025 + L-RAMP-20260713_100638 next_probe(F-1a/F-1b/V-1b + 메타 축전환)",
+        "binding: R12 C④/C⑥ oos construction-invariant 진단"
+      ],
+      "result": "config-scoped negative (2026-07-13, RAMP R13, selection_type=chain, config_hash d997ab856f3c4884, base parity Δ1.4e-5·level 재계산 Δ0·IS-only 승자·2차결합 없음). 1차 endpoint=oos_retention(cap-w). base cap-w 2.612·oos -0.076. D-1(감쇠속도 선별 페널티 z(lvl)+0.5·z(recent18-older18))=팩터모멘텀 수렴·붕괴: cap-w 1.555·oos -0.448(FM 대조군 1.322/-0.4478과 4째자리 차)·Jaccard vs FM 0.713·rank AC 0.766. D-2(F-1 구조·퇴출 트리거=감쇠속도 recent18<0 OR decay<-1.0)=1차 best이나 미소: cap-w 2.503(<base)·oos +0.045(Δ+0.121)·post17SR -0.105→+0.048·Jaccard vs FM 0.440·vs base 0.884. D-3(부분창 일관성 min(NW-t 12m×3))=anti-momentum 최강(Jaccard vs FM 0.331)이나 cap-w 2.164·oos -0.028·rank AC 0.513(12m NW-t 노이즈). 전 arm oos<<0.7·cap-w<2.95·paired<2.0·HARD 0/5. ★핵심: 감쇠속도=선별재료(D-1)→FM 수렴 붕괴 / 퇴출트리거(D-2)→base 유지 소폭 개선 = '선별 규율 < 퇴출 규율' 감쇠축 재확인. ★메타: D-2 oos Δ+0.121 = R12 best(armF cad3 +0.121)와 정확 동일 = oos 벽 exit-rule-invariant 확대 확증(퇴출-규율 oos 천장 ~+0.12 = 문턱 0.7의 1/6). 시간-함수형 축(선별·퇴출·일관성)은 cap-w(R10~R12 4축 포화)+oos축도 ~+0.12 천장으로 소진 지대. cap-tier×cap-w 벽 불변(D-2/D-3 EW-oos 0.745/0.972 高이나 cap-w oos 붕괴, FQ-015 확증). 적대검증 PARTIAL(7약점 C①~C⑦, FM 수렴 판별 task-의무 이행: D-1 수렴·D-2 구별·D-3 anti-momentum 실측).",
+      "result_ref": "outputs/ramp/r13_decay_{prereg,gates,paired,conc,oossub,summary}_20260713.* + 02_Infrastructure/ramp/run_ramp_r13_decay.R + 04_Research/ramp/reports/challenge_note_r13_decay_20260713.md + L-RAMP-20260713_102944 (grade F·backtested·chain·composite)",
+      "verdict_date": "2026-07-13",
+      "revival_signal": "비-수익 substrate 확보(DART insider backfill 2013+ 연속) 시 감쇠속도 선별×비-수익 패널 재적용 (return-derived 위 시간-함수형은 저EV)"
+    },
+    {
+      "id": "FQ-027",
+      "lane": "selection_discipline",
+      "title": "R14 — cap-w×oos 이중 endpoint 결합 chain (F-1 퇴출규율 × D-2 감쇠트리거 AND-gate)",
+      "hypothesis": "R12 F-1(cap-w 2.937 최고)과 R13 D-2(oos +0.045 최고)의 퇴출 기전을 AND-gate로 결합(순위 이탈 AND 감쇠 신호 시 퇴출 — 또는 사전등록된 우선순위 규칙)하면 두 endpoint를 동시 취득하는가. 보조: D-3a(6m×2 겹침창 trimmed 일관성 — 12m 부분창 노이즈 완화)",
+      "ev_rationale": "R13 next_probe D-2a 소비. 두 레버가 같은 구조(비대칭 퇴출)의 다른 트리거라 결합이 자연스러움. oos 천장 ~+0.12 exit-rule-invariant 진단이 있으므로 정직 기대 = 천장 재확인 또는 소폭 돌파 여부 판별",
+      "wall_check": "cap-tier×cap-w 벽 잔존. AND-gate는 수익파생 교집합 금지(DIST 조건부 교집합)와 구분 — 이건 신호 교집합이 아니라 퇴출 규칙 결합(prereg에 구분 명시)",
+      "data_gate": "없음",
+      "owner": "Q-Lead (R14 ramp-orchestrator)",
+      "status": "config_scoped_negative",
+      "next_action": "잠금(백오프) — return-derived 위 퇴출 규칙 결합 소진. revival: fill-규율 축(FQ-028 후보) 또는 비-수익 substrate 확보 시 재개",
+      "result": "config-scoped negative (2026-07-13, RAMP R14, selection_type=chain, config_hash 0e222e5340fc3369, base parity Δ1.39e-5·ctrl_F1 R12 정확재현 Δ0.000·IS-only 승자·2차결합 없음). 1차 endpoint=oos_retention(cap-w). ExExEx 교대(진입 사이 exit-only 점검 1회) → 4 gate 동일 진입·동일 level36 fill·퇴출 술어만 상이(격자 엄밀: C-1(AND)⊆{F-1,D-2}⊆C-2(OR), base=no-exit). base cap-w 2.612·oos -0.076. ★C-1(AND: 순위이탈 AND 감쇠 동시=정밀지정, 유예 1분기)=best arm cap-w 2.821·oos +0.025·post17SR +0.011이나 F-1 단독 2.937 미달 — 감쇠-confirm가 rank 퇴출 억제(both-fire 45/740=6.1%·Jaccard C-1↔base 0.956·C-1↔F-1 0.967·grace_expire 0[교대구조상 완전비활성]). C-2(OR: 어느쪽이든 퇴출=공격적)=cap-w 2.422<base·oos -0.008 — over-cleaning 신호손실(비용 아님, TO 전 안 9.27 동일). ctrl F-1(RANK)=2.937/oos+0.048(최고)·ctrl D-2(DECAY, level36-fill)=2.406/oos+0.041·diag D-3a(겹침 12m×5 trimmed-min)=2.647/oos+0.004. HARD 0/6·max full paired 1.44(<2.0)·C-1 IS paired -0.077(OSS +2.80만). ★핵심: '정밀지정(AND)>공격청소(OR)이나 결합≯단일 최선 트리거' — 퇴출 술어 결합은 cap-w·oos 어느 endpoint도 열지 못함. ★메타: oos 천장 ~+0.12 exit-rule-invariant 재확인(C-1 +0.025·F-1 +0.048·D-2 +0.041·R12 armF +0.121 ≪0.7). cap-tier×cap-w 벽 불변(EW-uni oos 0.72~0.89 高나 cap-w oos 붕괴, FQ-015 확증). return-derived 위 construction(선별/퇴출/일관성/결합) 소진 지대. 적대검증 7약점(challenge_note ①~⑦: ①ACCEPT C-1≈base·②REBUTTAL C-2 비용아닌신호손실·③ACCEPT oos post2017·④PARTIAL D-2 fill민감·⑤ACCEPT C-1 IS-zero·⑥REBUTTAL chain·⑦ACCEPT return-substrate).",
+      "result_ref": "outputs/ramp/r14_exitcomb_{prereg,gates,paired,conc,oossub,summary}_20260713.* + 02_Infrastructure/ramp/run_ramp_r14_exitcomb.R + 04_Research/ramp/reports/challenge_note_r14_exitcomb_20260713.md + L-RAMP-20260713_110343 (grade F·backtested·chain·composite)",
+      "verdict_date": "2026-07-13",
+      "next_probe": [
+        "①(FQ-028 후보) fill-규율 축 — 퇴출 트리거 F-1(rank) 고정·충원(fill) 규율만 변주(non-decaying-preferred / rank-decay-blend). D-2 fill 민감(2.406↔2.503)이 노출한 미탐색 cap-w 레버, 퇴출 공간과 직교",
+        "②(revival) 비-수익 substrate(DART insider backfill 2013+) 확보 시 검증된 F-1 퇴출규율 × insider-exec 패널 결합 — return-derived 위가 아닌 novel 재료에 이식",
+        "③(저순위) cadence_exit=2로 진입 사이 점검 ≥2회 → C-1 grace 실작동 검증(회전↑ 대비 저EV, 기전 검증 전용)"
+      ],
+      "revival_signal": "fill-규율 축(FQ-028) 또는 비-수익 substrate(DART insider 연속) 확보. return-derived 위 시간-함수형(선별·퇴출·일관성·결합) 4축 전부 cap-w~2.9·oos~+0.12 천장 소진 — 신규 재료 없이 재도전 저EV",
+      "source_refs": [
+        "parent: FQ-026 next_probe D-2a/D-3a + L-RAMP-20260713_102944"
+      ]
+    },
+    {
+      "id": "FQ-028",
+      "lane": "selection_discipline",
+      "title": "R15 — 충원(fill) 규율 축 (R14 노출 미탐색 직교 레버)",
+      "hypothesis": "퇴출 트리거를 챔피언(F-1 순위-단독)에 고정하고 빈 슬롯 충원 규율만 변주(수준-fill/신선-fill/무-fill 축소/일관성-fill)하면 cap-w 또는 oos가 움직이는가 — R14 ④에서 fill 선택만으로 ctrl_D2가 2.406↔2.503 이동한 민감성이 근거",
+      "ev_rationale": "R14 next_probe 1순위 소비. 퇴출 공간과 직교하는 마지막 미탐색 construction 다이얼. chain 연속",
+      "wall_check": "construction cap-w ~2.94 포화·oos 천장 ~+0.12 진단 존재 — 정직 기대 = 이 다이얼이 그 천장 밖 값을 내는지 판별. return-derived substrate 벽 잔존",
+      "data_gate": "없음",
+      "owner": "Q-Lead (R15 ramp-orchestrator)",
+      "status": "config_scoped_negative",
+      "next_action": "잠금(백오프) — return-derived 위 construction 3대 축(선별 R6~R8·퇴출 R12~R14·충원 R15) 동일 천장 수렴 확정. revival: 비-수익 substrate(DART insider) 확보 시 검증된 F-1 construction(진입·퇴출·level36-fill 최적) 이식(FQ-001/FQ-019 armed)",
+      "result": "config-scoped negative (2026-07-13, RAMP R15, selection_type=chain, config_hash 7f5855e1dc0ce7e4, parity: R6 anchor Δ1.4e-5·base_F1(level36-fill) cap-w 2.9370==R14 ctrl_F1 2.937 3-소수 정확재현 Δ=0.000·IS-only 승자·2차결합 없음). 진입(반기 top-K20 level36)·퇴출(F-1 rank-only 분기) 전 arm 고정, fill 규율만 변주(격자 엄밀: base=level36-fill / L-1=recent18(신선) / L-2=none(무충원 축소) / L-3=consist-min 12m×3(일관성)). base F-1 cap-w 2.937·oos +0.048. ★어떤 fill 규율도 level36-fill(챔피언 기본값)의 cap-w를 넘지 못함 — best cap-w arm=L-3 2.890(<F-1)·best oos arm=L-3 +0.079(base +0.048, Δ+0.030 nominal·EW-uni oos 0.675 최고·post17 SR +0.031)이나 full paired −0.377(유의 아님). L-1 신선-fill cap-w 2.732(모멘텀-hot·level-weak 재유입 희석)·L-2 무-fill cap-w 2.652(≈R6 no-exit 2.612 = F-1 재충원 이득만 소멸). HARD 0/5·max full paired −0.377(<2.0). ★핵심: F-1의 cap-w 우위(2.612→2.937)는 '퇴출'이 아니라 '퇴출 슬롯을 level36-top으로 재충원'에서 나온다 — fill 다이얼은 기본값(level36) 최적 확증 null. ★메타: construction 3대 축(선별·퇴출·충원) 전부 cap-w~2.94·oos~+0.12 천장 수렴 = return-derived construction 소진 지대. cap-tier×cap-w 벽 불변(EW-uni oos 高나 cap-w oos 붕괴, FQ-015). 적대검증 7약점(①REBUTTAL L-2≠K10-sweep(유효K 19.0·R6 K10 1.905와 다른 지대)·②REBUTTAL L-1≠FM(fill-only Jaccard Δ+0.024·pool 94% base)·③ACCEPT 저빈도 검정력한계(분기 ~2슬롯·pool 94~96% 겹침)·④PARTIAL IS승자(L-2)잡음·⑤ACCEPT L-3<base F-1·⑥ACCEPT 기본값-최적 null·⑦ACCEPT return-substrate 천장).",
+      "result_ref": "outputs/ramp/r15_fill_{prereg,gates,paired,conc,oossub,summary}_20260713.* + 02_Infrastructure/ramp/run_ramp_r15_fill.R + 04_Research/ramp/reports/challenge_note_r15_fill_20260713.md + stage_artifacts/ramp_r15/*.png(5) + L-RAMP-20260713_112544 (grade F·backtested·chain·composite)",
+      "verdict_date": "2026-07-13",
+      "next_probe": [
+        "①(revival·주력) 비-수익 substrate(DART insider, FQ-001/FQ-019 armed 하네스) × 검증된 F-1 construction(반기 level36 진입 + rank 퇴출 + level36 재충원, 최적 fill 확정) 이식 — construction 3대 축 return-derived 소진 확정, 잔존 crack=novel 재료",
+        "②(조건부·진단) L-3 consist-fill의 EW-basis/cap-tier 재분류 — L-3 EW-uni oos 0.675(전 arm 최고·>base F-1 0.651)·post17 SR 양(+0.031)이 D3형(벤치-상대 배포성) 결정재료로 라우팅되는지 FQ-015/FQ-016 escalation 적용(EW=진단 basis, 자본 게이트 우회 아님)",
+        "③(저EV·구조) cadence_exit=2 × L-3 consist-fill — fill 개입 슬롯 분기당 ~2 이상 확대(검정력 한계 완화)이나 R14가 이미 cadence2 저EV(회전↑)·construction 천장 확정으로 최후순위(기전 검증 전용)"
+      ],
+      "revival_signal": "비-수익 substrate(DART insider backfill 연속 2013+) 확보 시 검증된 F-1 construction × insider 패널 결합. return-derived 위 construction(선별·퇴출·충원) 3축 전부 cap-w~2.94·oos~+0.12 천장 소진 — 신규 재료 없이 재도전 저EV",
+      "source_refs": [
+        "parent: FQ-027 next_probe 1 + L-RAMP-20260713_110343 challenge ④"
+      ]
+    },
+    {
+      "id": "FQ-029",
+      "lane": "non_return",
+      "title": "R16 — 거래량/마이크로스트럭처 신규 팩터 엔지니어링 (기존 RAWDATA, 도훈 지시 07-13)",
+      "hypothesis": "RAWDATA 기존 필드(Vol·거래대금·Size)에서 파생한 마이크로스트럭처 팩터군(Amihud 비유동성 변화·거래량 충격 지속성·회전율 추세이탈·거래대금 비대칭 등)에 미수확 횡단 알파가 있는가 — 원장 family 분포상 liquidity 1/flow 1건 = 사실상 미개척 공간",
+      "ev_rationale": "도훈 '기존 데이터로 새 팩터' 지시. 외부 데이터 0·DART 쿼터 0. 정직 prior: FLOW 후보(forge 2.35)·smartbeta loser-penalty 등 인접 측정 존재 — hypothesis_index 대조 의무. volume은 return-파생 16/16 posterior 사정권 밖(가격수익 변환 아님)이나 market-data 파생이라 보수적 기대",
+      "wall_check": "IC→PORT_t 전이 벽·cap-tier 국소화 동일 적용 — canonical dual-basis 의무. 신규 팩터는 add_factor 온보딩 인터페이스 경유(PIT 구조 보장)",
+      "data_gate": "없음",
+      "owner": "Q-Lead (R16 alpha-research)",
+      "status": "done_config_scoped_negative",
+      "verdict": "CONFIG_SCOPED_NEGATIVE (standalone capital). 5종(VSHK_P/TOD_DT/AMT_ASY/VPRC_CORR/ILLIQ_VOL) canonical cap-w PORT_t 전부 <2.95 (max 1.157 AMT_ASY / VSHK 0.44 / VPRC 0.86 / ILLIQ 0.68 / TOD -1.56)·DSR 최고 0.471<0.5(sweep n_trials=5)·2017후 cap-w 전부 음. placebo(월셔플 n=200) null mean -1.3 → 4/5 one-sided p<0.001 = 실선택 신호 존재(랜덤보다 유의)이나 cap-w hurdle이 흡수 = cap-tier 국소화(보유 95~98% OTHER 소형tier). Size-무관(size-partial IC |0.02| 이하). AMH_D는 착수 전 hypothesis_index서 C24_LIQ_IMPROVE 중복(FALSIFIED) drop. 자본급 add_factor 0건.",
+      "verdict_date": "2026-07-13",
+      "next_action": "screen-tier 라우팅(자본 배정 없음): (1) VPRC_CORR(유일 EW-post2017 생존: EW-uni 1.85·post17 t 1.90·oos 1.60, rank-IC≈0=구성효과 의심) EW-relative 재측정·factor-rotation/RAMP 소비 (2) VSHK_P 유의 -IC(t -3.01, 거래지속→underperform short-side) exclusion 오버레이 드레인(lag1+strict A/B) (3) 마이크로스트럭처 × 비-return insider 패널(FQ-019, 백필 완료 후) PORT_t-정렬 선별 결합. VPRC/VSHK만 feature 보존 권고.",
+      "result_ref": [
+        "L-AR-20260713_133212",
+        "stage_artifacts/r16_microstructure/{preregistration.json(sha256 8e9258a7),alpha_validation.json,results_main.json,results_placebo_dsr.json,challenge_note.md,alpha_scores.parquet,charts/*.png(5)}"
+      ],
+      "source_refs": [
+        "trigger: 도훈 2026-07-13 '기존 데이터를 활용해서 새로운 팩터를 만들 수도 있잖니'",
+        "gap: .cache/harvest_20260712.json family 분포 (liquidity 1·flow_supply 1 / 273)",
+        "adjacent: FLOW forge 2.35(Cycle 2)·project-smartbeta-allstock-rotation loser-penalty",
+        "hypothesis_index: C24_LIQ_IMPROVE(L-AR-20260621_172656) AMH_D 중복 gate-drop"
+      ]
+    },
+    {
+      "id": "FQ-030",
+      "lane": "non_return",
+      "title": "R17 — 보유 데이터 신규 팩터 3종: Lazy Prices 유사도·제출 지연·공시량 급변 (도훈 지시 07-13)",
+      "hypothesis": "① 사업보고서 YoY 텍스트 유사도(변화 적음=long, Lazy Prices KR 이식) ② 법정기한 대비 제출 지연일수(지연=distress) ③ 분기 공시 건수 YoY 급변 — 전부 이미 크롤된 자산(text_cache 4,490·WT-005 list 50.7만행·filings_inventory)에서 API 0으로 구축, 문헌 근거 보유",
+      "ev_rationale": "도훈 '팩터 좀 새로 만들고 싶은디' + '신규 데이터 타령 금지'. 텍스트 아크는 가독성 축만 소진 — 유사도 축은 virgin(hypothesis_index 대조 의무). 지연·공시량도 미측정. 비-수익 계열 = 16/16 posterior 밖",
+      "wall_check": "cap-tier 국소화·IC→PORT_t 벽 동일 적용 — canonical dual-basis 의무. Lazy Prices는 원문 raw text 보존 여부 선확인(미보존 시 지표-벡터 유사도 프록시로 정직 라벨 또는 익일 쿼터 재수집)",
+      "data_gate": "없음 (보유 자산)",
+      "owner": "Q-Lead (R17 alpha-research, QEPM lane)",
+      "status": "explored_negative",
+      "next_action": "frontier lead=F-B 오버레이 결합(FQ 별건 검토). 재착수 전 hypothesis_index 대조 의무.",
+      "source_refs": [
+        "trigger: 도훈 2026-07-13 '팩터 좀 새로 만들고 싶은디'",
+        "assets: stage_artifacts/WT_D20260711_002/text_cache + WT-D20260710_005 list archive + filings_inventory.parquet",
+        "literature: Cohen-Malloy-Nguyen 2020 Lazy Prices / filing-delay distress"
+      ],
+      "backoff": "config-scoped negative 3/3 (survivors 0) — 재착수 잠금(백오프). 부활 트리거: F-A 전문 재추출 후 부호반전 재검증 / F-B 오버레이 결합 / 전체-유형 공시 count 데이터 확보",
+      "verdict_20260713": "R17 실측: F-A cap-w 0.72(EW-uni -0.59 null·부호반전 1.38 post-hoc) / F-B 1.29(lead·Size-robust 1.10·EW post2017 +0.80) / F-C 1.17(placebo p0.22 noise). 전부 HARD 2.95 미달·placebo 비유의. add_factor 권고 없음.",
+      "l_code": "L-AR-20260713_161721",
+      "artifacts": "stage_artifacts/WT_D20260713_001/ (alpha_validation.json·canon_summary.csv·challenge_note.md·charts/) + qepm/mailbox/worktask/WT-D20260713_001/"
+    },
+    {
+      "id": "FQ-031",
+      "lane": "non_return",
+      "title": "R18 — 회계-포렌식 통계 팩터 2종: 재량적 발생액(Jones 잔차) + Benford 위반도(FSD)",
+      "hypothesis": "① 발생액의 횡단회귀 잔차(재량분) = 이익조정 프록시, 높을수록 음(-) forward(Sloan-Dechow) ② 재무제표 첫자리 분포의 벤포드 이탈도 = 조작 지문, 높을수록 음(-)(Amiram 2015 FSD). 통계 기법을 비-수익 재료(재무제표)에 적용 — 16/16 return-파생 posterior 밖, 난독화 m1과 동일 '숨김 탐지' family(기전 정합)",
+      "ev_rationale": "도훈 '통계적으로 정교한 팩터' 문의 → 원장 대조상 회계-포렌식 통계 계열이 유일 미개척. 필드 가용성(QuantiWise 재무 라인아이템) 선확인 필수",
+      "wall_check": "cap-tier 국소화·전이 벽 동일 — canonical dual-basis 의무. 재무 필드 부재 시 정직 중단(추정 대체 금지). C4 재무 lag 준수",
+      "data_gate": "조건부 — factor DB 입력단 재무 라인아이템 커버리지 확인",
+      "owner": "Q-Lead (R18 alpha-research, QEPM lane)",
+      "status": "done_screen_tier",
+      "next_action": "종결 — R18 전체 완료. 게이트 2/2 config-scoped negative + F-B exclusion 승격 부적격(2기질 미재현). F-B는 OVERLAY_CANDIDATE/forensic feature 보존. 재도전 조건=다수 독립 소형기질서 하방편차>무작위 재현 시(현재 미충족).",
+      "source_refs": [
+        "trigger: 도훈 2026-07-13 '통계적으로 정교한 팩터'",
+        "literature: Jones 1991/Dechow 1995 · Amiram et al. 2015 FSD_Score",
+        "family: project-text-obfuscation-phasea-screen-tier (숨김 탐지 기전 정합)"
+      ],
+      "result_ref": "L-AR-20260713_162115 — 2/2 config-scoped negative. F-A ModJones cap-w PORT_t 0.449(vs AC13 corr 0.991 무증분·AC13 이미 FAIL) / F-B Benford FSD 0.568(placebo p0.16 null·Size무관 corr0.006). 둘 다 EW-uni basis도 음(-0.33/-0.30)=벤치아티팩트 아님. alpha_validation.json + challenge_note.md + charts(portt_sweep/fb_equity). prereg sha256 f5b797b2. || 소비진단(판정-후, 게이트 불변): F-B 최악분위 EXCLUSION 오버레이가 소형 P-pure서 사전등록 승격요건 4/4 충족(binding 9.7%·하방편차 +2.61% 무작위3seed 전부 능가·paired-t 0.19 알파비손상·비집중) → '기본필터 승격 후보, 도훈 confirm 회부' 단 효과 marginal(MDD +0.5% 악화). FA∪FB 2/4 미달(F-A redundant 꼬리훼손). consumption_diagnostic.json + prereg e7d6c8d8 + charts(binding_tier/ab_tail). || 교차확인(제2 독립기질 V02_EP): 미재현 — F-B exclusion이 V02_EP서 하방편차 악화(-0.82% rel)·무작위-제외에 패배 → C2 반전, 2/4(vs P-pure 4/4). 승격안 상정 불가 = P-pure-특이(config-scoped). R13 D-2는 P-pure변형·holdings부재로 제외. crosscheck_decision.json + charts(crosscheck_matrix/ddd). 결론: F-B=forensic feature 보존만, 범용 기본필터 승격 부적격."
+    },
+    {
+      "id": "FQ-032",
+      "lane": "selection_discipline",
+      "title": "R19 — 칼만 시변베타 BAB (도훈 문의 07-13, 칼만 한계기여 격리)",
+      "hypothesis": "칼만 필터 시변 β로 구성한 저베타 팩터가 롤링 OLS β 대조군과 (a) 랭킹이 실질적으로 다른가 (b) 그 차이가 canonical에서 유의한가. 병기: AX-001v2 조건부 평가(위기구간 alpha·MDD 완화 — 방어형은 전기간 SR 채점 금지)",
+      "ev_rationale": "칼만 = 원장 측정 0 처녀 기법 + BAB는 추정기-민감 문헌. 정직 prior: 기존 BAB 배포권 PORT_t -2.02·방어 family negative — 부활 실험이 아니라 추정기-교체 격리 측정으로 프레임",
+      "wall_check": "수익률-파생 + 방어 family 이중 그림자 — 사전 kill: Kalman-β와 OLS-β 랭킹 상관 0.95+ 시 동일-팩터 판정(측정 중단 아닌 결과 기록). cap-w dual-basis 의무",
+      "data_gate": "없음 (일간 수익률·벤치)",
+      "owner": "Q-Lead (R19 alpha-research)",
+      "status": "settled_negative_config_scoped",
+      "next_action": "INV-7 프론티어: return-derived BAB 소진. next_probe P1(risk-model 입력)이 최유망 — 별도 WT 필요 시 Q-Lead 발주.",
+      "source_refs": [
+        "trigger: 도훈 2026-07-13 'BAB에 칼만필터 튜닝 가미한 팩터'",
+        "prior: measurement-graduation §6 (BAB port_t -2.02) · project-defense-factor-db-survey-settled",
+        "literature: Frazzini-Pedersen 2014 (수축β) · Novy-Marx BAB 추정기 민감성"
+      ],
+      "result": {
+        "wt_id": "WT-D20260713_003",
+        "date": "2026-07-13",
+        "verdict": "config-scoped NEGATIVE — 칼만 시변β 추정기 교체는 β 점-예측만 개선(실현β RMSE −10%, t+56), 전방 헤지오차·팩터 알파·방어 어느쪽도 개선 없음(운용 inert) + melt-up 유의 열화. 저베타 자체 음(arm O PORT_t −1.09/arm K −1.78).",
+        "primary_endpoint": "metric_1 헤지오차 paired_t −1.18(melt-up −11.87) / metric_2 실현β예측 paired_t +56.5. Q-Lead 승격 바(헤지오차 우세) 미달.",
+        "ranking_spearman": 0.781,
+        "placebo_p": 0.998,
+        "ax001v2": "저베타 위기알파 실재(OLS crisis_t 1.935)이나 칼만 개선 못함(1.559).",
+        "next_probe": [
+          "P1: 칼만 β를 risk-model 입력(β_R05/book β/TE)으로 소비",
+          "P2: 느린 κ(hl 40-60d) 재튜닝",
+          "P3: Kalman tail-β(D08) 방어 sharpening"
+        ],
+        "artifacts": "stage_artifacts/WT_D20260713_003/ (prereg·primary_beta_accuracy·factor_canonical_summary·kappa_*_curve·challenge_note) + qepm/mailbox/worktask/WT-D20260713_003/alpha_package.json"
+      }
+    },
+    {
+      "id": "FQ-033",
+      "lane": "non_return",
+      "title": "R20 — 포렌식 필터의 지수-레벨 검증 (KOSPI200/KOSDAQ150/KOSPI/KOSDAQ ex-flagged, 도훈 설계 07-13)",
+      "hypothesis": "Benford 최악분위 제거가 지수 자체의 리스크 지표(MDD·하방편차·꼬리)를 무작위-제거 대조 대비 개선하는가 — 전략 틸트 교란 제거 설계. 기전 예측: 효과가 감사품질 구배(K200≈0 → KOSDAQ 전체 최대)로 단조 증가하면 필터 정보 실재의 강증거",
+      "ev_rationale": "도훈 설계 — P-pure/V02_EP 교차기각의 원인(전략-필터 상호작용)을 지수 기질로 원천 제거. R18 Benford 점수 패널(3,562종목) 재사용, API 0",
+      "wall_check": "KOSPI/KOSDAQ 전체 = 배포 봉투 밖 → 진단-only 라벨(자본 전략 아님·봉투 불변). 커버리지 정직 보고(소형 재무데이터 결손). cap-w 재정규화 vs 지수 비교가 권위, EW 병기",
+      "data_gate": "없음 (Benford 패널 + rawdata 전종목 + 지수 구성)",
+      "owner": "Q-Lead (R20 alpha-research)",
+      "status": "settled_negative_config_scoped",
+      "next_action": "settled (config-scoped). Frontier open via FQ next_probe: (1) delisting/unfaithful-disclosure EVENT prediction (rawdata flags, AUC/hazard); (2) coverage-repaired KOSDAQ-all re-test (quarterly FSD / relaxed item threshold, screen-tier/RAMP).",
+      "source_refs": [
+        "trigger: 도훈 2026-07-13 '지수와 비교 — 구성종목에서 위험 종목 삭제 시 리스크 우위'",
+        "asset: stage_artifacts/WT_D20260713_002 Benford 점수 패널",
+        "prior: crosscheck_decision.json (전략-기질 교차기각) + R18 감사품질 진단"
+      ],
+      "result_wt": "WT-D20260713_004",
+      "verdict": "config-scoped negative + frontier. Index-level design did NOT rescue Benford filter; audit-quality GRADIENT FALSIFIED (Spearman -0.40 vs +1 predicted; EW ~0 all universes; all exfl-vs-random CIs straddle 0). Confirms & generalizes R18 null to risk-exclusion framing.",
+      "result_refs": [
+        "stage_artifacts/WT_D20260713_004/alpha_validation.json",
+        "L-AR-20260713_173418",
+        "prereg.sha256 6b7e18a6"
+      ],
+      "coverage_note": "Benford annual >=15-item coverage 98-100% (2009-2015) but COLLAPSES post-2016 (DART): KOSDAQ-all 20-25%, KOSPI-all 40%. Primary window fixed 2010-2015 (availability-driven, prereg-frozen). Power caveat: excludes 2008/2020 crashes.",
+      "updated": "2026-07-13"
+    },
+    {
+      "id": "FQ-034",
+      "lane": "selection_discipline",
+      "title": "R21 — 칼만 정확도의 리스크-소비 2종: 위기-조건부 슬리브 틸트 + 칼만-잔차 IVOL (도훈 제안 07-13)",
+      "hypothesis": "① 위기 국면에 한해 주식 슬리브 내부를 칼만-저베타로 틸트(현금과 비경쟁·within-sleeve) — R19 위기알파 t 1.94 직접 소비 ② IVOL을 칼만-잔차로 재구성 시 OLS-잔차 IVOL 대비 개선 — 점-예측 우위가 구성상 직접 전이되는 유일 구조",
+      "ev_rationale": "도훈 제안. 칼만 정확도 우위(실증)의 미측정 소비처 잔여 2종 확정 실험. 인접 negative 정직 병기: 저베타<현금(07-05)·regime-조건부 결합 소진·R3 위기 sleeve 반증 — 차별점 = within-sleeve + 정밀 β + 잔차-품질 전이",
+      "wall_check": "return-derived 그림자 — ①은 AX-001v2 조건부 채점 권위, ②는 추정기-격리 paired가 권위. 순수 재조합 방화벽(DIST-AR-009)은 도훈 직접 제안으로 confirm 충족 + 신규축(칼만 추정기) 존재",
+      "data_gate": "없음 (beta_kalman_tuned.parquet + rawdata 재사용)",
+      "owner": "Q-Lead (R21 alpha-research)",
+      "status": "settled_negative_config_scoped",
+      "result_ref": "WT-D20260713_005 / stage_artifacts/WT_D20260713_005/{alpha_validation,challenge_note.md}. arm A: within-sleeve 위기 저베타 틸트 순효과 ~0 (base PORT_t −0.50 vs K −0.495; 칼만 한계기여 K-vs-O NW_t 0.99 비유의; 위기구간 NW_t 1.27 n=18 비유의; MDD relief 0.0002; placebo-shift −1.16). arm B: 칼만-잔차 IVOL PORT_t −1.58/OLS −1.50 (둘 다 음); 추정기 무차별(paired −1.01·랭킹상관 0.999); 기존 D35_RealVol_63d와 |ρ|0.97 중복; IC→PORT_t 벽(rank-IC 0.049 harvey_t 4.57 advisory good but PORT_t 음). 메타: 칼만 β-정확도(R19 −10.3%) 리스크-소비 3채널 inert.",
+      "next_action": "lane 폐쇄(config-scoped). next_probe: [A] 위기틸트를 직교 방어신호(품질·부실회피)로 / 공격 슬리브에 적용 (저베타는 book 이미 포화). [B] 잔차변동성을 오버레이 후보(과밀·배제) feature로 / ΔIVOL 변화량 (기존 RealVol과 덜 중복).",
+      "source_refs": [
+        "trigger: 도훈 2026-07-13 '위기 시그널 시 팩터 투입 / 변동성 조합 뉴팩터'",
+        "evidence: R19 crisis_active_t 1.94 (L-AR-20260713_171036)",
+        "priors: project-pg2-overlay-gate-composition-settled(저베타<현금) · L-QPM-20260705_105130 · R3",
+        "result: L-AR-20260713_R21 (WT-D20260713_005)"
+      ]
+    },
+    {
+      "id": "FQ-035",
+      "lane": "non_return",
+      "title": "R22 — 포렌식 스택의 이벤트-예측 재과녁 (상폐·관리종목·불성실공시 이산 이벤트, R20 next_probe)",
+      "hypothesis": "이번 주 보존 feature 스택(Benford 이탈·m1 난독화·제출 지연)이 12개월 내 이산 악재 이벤트(불성실공시 지정·관리종목·거래정지·상폐)를 base rate 대비 유의 lift로 예측하는가 — 포렌식 신호의 construct-valid 과녁은 월간 지수 꼬리(희석)가 아니라 이산 사건",
+      "ev_rationale": "R20이 반증한 것은 '월간 포트 꼬리' 프레임 — 이벤트 프레임은 통계 검정력이 근본적으로 다름(사건-레벨 n). RAWDATA 기존 플래그(UnfaithfulDisc/AdminStock/TradingHalt) 소비 = API 0. 성립 시 exclusion 필터 논의가 올바른 기초 위에서 재개(사건-위험 상위 제외)",
+      "wall_check": "이벤트 예측 성립 ≠ 자본 개선 — 2단계 분리(예측 성립 후에만 필터 재설계). Size·유동성 통제 의무(소형=사건 base rate 높음 confound). C6 상폐 표본 포함 여부가 이번엔 필수(사건 자체가 표적)",
+      "data_gate": "없음 (RAWDATA 플래그 + 보존 feature 패널 3종)",
+      "owner": "Q-Lead (R22 alpha-research)",
+      "status": "config_scoped_negative_frontier_open",
+      "next_action": "P1 심각사건 한정 재과녁(상폐+관리+불성실, 단기정지 제외) 지연 극단꼬리 NEW 사전등록 → FQ 신규 등록 권고",
+      "source_refs": [
+        "parent: FQ-033 settled_negative + L-AR-20260713_173418 next_probe 1",
+        "features: Benford(WT-D20260713_002)·m1(WT-D20260711_002)·제출지연(WT-D20260713_001 F-B)",
+        "flags: RAWDATA UnfaithfulDisc/AdminStock/TradingHalt"
+      ],
+      "result": "R22 실측: 사전등록 문턱(통제 후 controlled OR p<0.05 full-sample AND pre/post-2016 stable) 미달. Benford(OR 1.09 p 0.70)·m1(OR 1.01 p 0.97)·스택(OR 1.32 p 0.63)=flat null → event-predictor 종결. 제출지연(F3)만 live sub-threshold: controlled OR 2.06(raw 2.18=크기위장 아님) p 0.075, post-2016 OR 2.58 p 0.022(pre-2016 미추정). 사건유형 분해: 지연 최악10% lift 상폐 6.4x·관리 4.2x·불성실 3.8x vs 단기정지 1.8x(합집합 희석). Bonferroni x4 생존 0.",
+      "l_code": "L-AR-20260713_180008",
+      "next_probe": {
+        "P1": "severity-restricted target {Delisting+AdminStock+UnfaithfulDisc}, delay extreme-tail, NEW prereg",
+        "P2": "power via coverage not threshold: 24m window / full DART filer pooling / delisting discrete-time hazard",
+        "P3": "event-label PIT hardening: actual designation announcement dates vs flag onset before any capital use"
+      },
+      "verdict_artifact": "stage_artifacts/WT_D20260713_006/verdict.json"
+    },
+    {
+      "id": "FQ-036",
+      "lane": "non_return",
+      "title": "R23 — 제출지연 × 심각사건 한정 재과녁 (신규 사전등록, R22 P1 소비)",
+      "hypothesis": "제출지연 극단꼬리(최악 10분위, R22 정의 고정)가 심각사건 한정 표적{상폐·관리종목 지정·불성실공시 지정}(단기 거래정지 제외)을 Size·tier·유동성 통제 후에도 유의(p<0.05)하게 예측하는가 — R22 분해에서 상폐 6.4·관리 4.2·불성실 3.8배 lift가 합집합(단기정지 1.8배 포함)에 희석돼 p 0.075 근소 미달",
+      "ev_rationale": "R22의 post-hoc 채택 거부 → 신규 prereg로 정당 재검. size-robust 실증(통제가 OR 거의 안 깎음 2.18→2.06) + post-2016 유의(0.022) = 이번 주 팩터 라인 최강 단서. 성립 시 소형 트랙 지뢰제거 필터의 올바른 기초",
+      "wall_check": "2단 분리 유지 — 성립해도 자본 주장 금지, 필터 재설계는 별도 라운드. 사건 라벨 PIT 경화(지정 '공시일' 확보 — 플래그 onset 백데이팅 배제, R22 P3) 본 라운드에 포함 의무. 상폐 생존편의는 보수 방향 명시",
+      "data_gate": "없음 (R22 이벤트 패널 + WT-005 list 아카이브로 지정공시일 교차)",
+      "owner": "Q-Lead (R23 alpha-research)",
+      "status": "config_scoped_negative_frontier_open",
+      "next_action": "심각사건 라벨 PIT 경화 → 신규 prereg → 통제 후 lift/hazard 판정",
+      "source_refs": [
+        "parent: FQ-035 config_scoped_negative_frontier_open + L-AR-20260713_180008 P1/P3",
+        "decomp: charts/03_delay_eventtype.png (상폐 6.4·관리 4.2·불성실 3.8)"
+      ],
+      "l_code": "L-AR-20260713_183418",
+      "result": "R23 실측: 심각사건 제한이 방향대로 작동 — 단기정지 제거로 union lift 2.07->3.74, 통제 전후 4.08->3.43(크기위장 아님), 명목 PRIMARY 통과(통제 OR 3.43 cluster-robust p 0.011<0.05). 그러나 47건 worst-decile 사건이 단 6개 late-filer 회사-에피소드(12개월 hold 월-중복; 종목별 12/11/11/7/5/1). 사전등록 ticker-부트 CI [0.95,7.25] 포함 1 + leave-one-ticker-out 3/6 각각 p>=0.05 붕괴 + 6-cluster cluster-robust 추론 무효 -> 강건히 성립 못함. 라벨 PIT 경화(P3 실행): 플래그 onset==실제 지정 공시월 89%(median gap 0) = 백데이팅 없음(coverage 36/2492, hardened==pure-flag). 연속 days-late delisting hazard flat(OR 1.18 p 0.62)=극단꼬리·비단조. 전신호 post-2016. per-type lift 상폐6.38·관리4.24·불성실3.82(R22 일치). 결론: 희석-가설 방향 확증, 바인딩 벽이 '희석'->'독립 late-filer 에피소드 부족(대형주 지각제출 극소)'=universe-power 벽(해결가능). 2단 분리 준수(stage-2 미개시).",
+      "next_probe": {
+        "P1": "full DART filer universe 재검(전체 KOSPI+KOSDAQ 필러) — 유효 cluster 확보 NEW prereg",
+        "P2": "episode-level 설계(에피소드 1관측 + discrete-time hazard + firm wild bootstrap)",
+        "P3": "라벨 경화 coverage를 상폐·관리 마이크로캡 꼬리로 확장"
+      },
+      "verdict_artifact": "stage_artifacts/WT_D20260713_007/verdict.json",
+      "prereg_sha256": "4b880cfb48e83f6f59161cb2ce21bf61ee1ff7d4a9896ba439164408a3a6f12d"
+    },
+    {
+      "id": "FQ-037",
+      "lane": "non_return",
+      "title": "R24 — 지각제출×심각사건 전체-필러 유니버스 + episode-level 설계 (R23 P1+P2 소비)",
+      "hypothesis": "전체 KOSPI+KOSDAQ 필러 유니버스에서 사업보고서 제출지연 극단꼬리가 심각사건{상폐·관리·불성실}(단기정지 제외)을 episode-level 유효 추론(독립 에피소드 수십+)으로 예측하는가 — R23의 벽 = 배포 유니버스 내 독립 지각제출 회사 6개뿐(신호 부재 아닌 universe-power 벽)",
+      "ev_rationale": "R23 방향 확증(lift 2.07→3.74, 통제 OR 3.43 명목 p 0.011, per-type R22 정확 재현) + 명확한 검정력 처방(P1 유니버스 확장·P2 에피소드 1관측 설계). Stage-1 지식 라운드 — 자본/PORT_t 주장 없음, 필터 소비는 배포 유니버스 내로 별도(2단 분리)",
+      "wall_check": "유니버스 확장은 지식 검증용이지 전략 백테 아님(alpha-search 유니버스 고정과 무충돌 명시). 유효성 게이트 사전등록: 독립 지각 에피소드 <30이면 POWER_INSUFFICIENT 정직 라벨. DART API 금지(로컬 아카이브만 — 크롤 쿼터 보호)",
+      "data_gate": "로컬 DART list 아카이브(50.7만행) rcept_dt + RAWDATA 전시장 플래그/last-obs — coverage 실측 후 fail-closed",
+      "owner": "Q-Lead (R24 alpha-research)",
+      "status": "config_scoped_negative_frontier_open",
+      "next_action": "next_probe: P1 사전등록 극단꼬리 확정 라운드 / P2 소형주 coverage 확장(사건수↑) / P3 지정공시-only 채널 분리",
+      "source_refs": [
+        "parent: FQ-036 config_scoped_negative_frontier_open + L-AR-20260713_183418 P1/P2/P3"
+      ],
+      "result_R24": "FROZEN PRIMARY(p90->임의지각 collapse) NOT ESTABLISHED: lift 1.23 firmbootCI[0.86,1.62]∋1, OR(yearFE) 2.34 p=0.051. BUT R23 검정력 벽 해소: 극단꼬리(top-decile 진단) 독립 event-firm 6->27, lift 10x firmbootCI[3.5,17.3]∌1, OR 6.2 p<0.001, LOO 27종목 全생존. DECISIVE: 극단꼬리 6사건 全 소형주(mid/large 0) => 배포 유니버스 밖 소형주 국소 = R23 기아는 구조. Coverage: filing-delay 무-API 상한 677종목(전체 3914중), 정직 축소·동결. Stage-1 지식 라운드, 자본 미주장.",
+      "verdict": "CONFIG_SCOPED_NEGATIVE",
+      "lcode": "L-AR-20260713_191430",
+      "prereg_sha256": "e13d4251f0be30023307d82e91c8e2f0c2752b7f23aeaec2359a2496568d4291",
+      "next_probe": [
+        "P1_extreme_tail_prereg_round",
+        "P2_smallcap_coverage_expansion",
+        "P3_designation_only_channel"
+      ]
+    },
+    {
+      "id": "FQ-038",
+      "lane": "non_return",
+      "title": "지각제출 극단꼬리 — 소형 filer coverage 확장 재검 (R24 P2, 신규 표본 out-of-sample)",
+      "hypothesis": "소형주 filer coverage를 현 677종목 밖(비-유니버스 KOSDAQ 소형)으로 확장하면 극단지각→심각사고 지문이 신규 독립 표본에서 재현되는가 — R24 사고 6건의 out-of-sample 확증. 동일 표본 재-prereg는 통계 연극이므로 금지(이미 관측), 신규 데이터만이 정당 확증 경로",
+      "ev_rationale": "R24 극단꼬리 lift 10x·LOO 27/27 강건 — 지식 확립됐으나 사고 n=6 얇음. 신규 소형 filer 표본은 사고수 자체를 늘려 확증 + P3(지정공시-only 채널)도 신규 표본에서 병행 가능. 자본 EV는 캡(소형 국소) — Stage-1 지식·monitoring 강화 목적",
+      "wall_check": "자본/PORT_t 주장 없음(소형 국소 확정). 상폐 생존편의 보수 방향 유지. episode-level 설계 승계",
+      "data_gate": "DART list 크롤 확장 필요(일 20k 쿼터 — insider 백필 완결 후순위) 또는 disc_ck 커버 확장",
+      "owner": "Q-Lead",
+      "status": "capacity_wait",
+      "next_action": "insider 백필 완결 후 쿼터 여유분으로 소형 filer list 크롤 → 신규 표본 재검",
+      "source_refs": [
+        "parent: FQ-037 config_scoped_negative_frontier_open + L-AR-20260713_191430 P1/P2/P3",
+        "memory: project-latefiling-severe-event-arc"
+      ]
+    },
+    {
+      "id": "FQ-039",
+      "lane": "book_enhancement",
+      "title": "R26 — PG2 score_eff 8번째 팩터 추가 + 교체(replacement) 스크린 (book-marginal, 도훈 지시)",
+      "hypothesis": "배포권 실현-PORT_t 상위 + 북 보유존(MEGA/MID tier) 생존 + 저상관 팩터를 score_eff composite에 z-blend하면 book-marginal ΔIR ≥ 0.05 개선이 존재하는가 + [확장 07-14] 기존 7팩터 중 최약 슬롯(LOO 진단)을 후보로 교체 또는 단순 제거(7→6)해도 ΔIR 개선이 존재하는가 — 감쇠 incumbent 제거 효과와 신규 삽입 효과 분리 귀속",
+      "ev_rationale": "도훈 직접 지시(07-14). 선례 2건 정직 인용: 06-24 직교알파 전수 327팩터 t>2=0 · 07-10 book-marginal 프로브 fleet 생존 0 — 단 신규 요소 4: ①R6 deployzone 실현-PORT_t 라벨(07-11, 라벨 지배 지식 후행) ②ΔIR window-matched control(07-13) ③R16 신규 팩터 미검(VPRC_CORR 등) ④composite z-blend 소비형태 미검(06-24=standalone 직교·WT-H001=내부 튜닝만). EV 보수적",
+      "wall_check": "cap-tier 국소화 — 후보는 북 보유존(MEGA/MID) tier 생존 필수(SMALL-only 신호는 R25류 size 아티팩트). sweep 회계(후보 열거 argmax = DSR 적용). insider 3종 제외(부분 크롤 — R9 fail-closed 위임). 포렌식/감사/텍스트 negative 확정분 제외. book_state 무변경 — 결과는 도훈 결정 재료(편입은 QEPM 파이프라인)",
+      "data_gate": "없음 (전부 로컬: r6_factor_deployzone_active.parquet + factor DB + recon)",
+      "owner": "Q-Lead (R26 alpha-research, 도훈 지시 2026-07-14)",
+      "status": "config_scoped_negative_frontier_open",
+      "next_action": "frontier 분기 FQ-040·FQ-041로 이관 (도훈 결정 재료 — 실편입은 QEPM 6-agent + 수동)",
+      "source_refs": [
+        "prior: project-pg2-orthogonal-alpha-search(06-24) + L-AR-20260710_150153(프로브 fleet)",
+        "method: WT_RAMP_03C_RERUN deltair_diag(window-matched) + r6_factor_deployzone_active.parquet",
+        "result: L-AR-20260714_153519 + stage_artifacts/WT_D20260714_002/{verdict.md,alpha_validation.json,challenge_note.md}"
+      ],
+      "result": "R26 완료 2026-07-14 (L-AR-20260714_153519). base score_eff top-25 cap-w PORT_t 5.324/IR 1.275(window-matched). ADD 14arms 全 paired NW-t<2.0(best V14_EBIT_EV w0.30=1.87,ΔIR+0.10,holdout1.76). Ext-B(recon proxy fid 0.914): C06_TP_Gap 제거 IS paired 2.45나 holdout 붕괴(-0.60), C02_EPS_Chg_1m 필수(제거-7.09). 판정 CONFIG_SCOPED_NEGATIVE(book-marginal). frontier 2→FQ-040(value 제3-sleeve)/FQ-041(C06 frozen 검증)."
+    },
+    {
+      "id": "FQ-040",
+      "lane": "book_enhancement",
+      "title": "value 제3-sleeve 통합 — score_eff에 z-blend 아닌 별도 Value sleeve (R26 P2)",
+      "hypothesis": "book alpha=Core(4F Consensus)+Defense(Q07/M08/Q25)로 순수 value 축 부재. value(EBIT_EV·EV_EBITDA)를 z-blend(R26 paired 1.87 미달) 아닌 regime-conditional 제3 sleeve로 통합하면 value 전이 벽을 넘는가",
+      "ev_rationale": "R26서 value 유일 일관 양(cor-0.05 직교·ΔIR+·holdout V14 +1.76)이나 z-blend marginal sub-significant. sleeve 분리가 value에 전용 가중을 줘 전이 개선 가능. EV 보수(전이 벽 prior).",
+      "wall_check": "cap-w authoritative+window-matched ΔIR+paired∧ΔIR AND-게이트 유지. 종목수 25 hard·turnover 감시. 06-24 직교327 prior=벽 존재.",
+      "data_gate": "없음(로컬: pure_factor_scores value z + score_eff)",
+      "owner": "Q-Lead",
+      "status": "frontier_open",
+      "next_action": "Core/Defense/Value 3-sleeve regime theta 재추정 → canonical cap-w PORT_t + paired vs 현 2-sleeve base",
+      "source_refs": [
+        "parent: FQ-039 R26 L-AR-20260714_153519",
+        "memory: project-captier-alpha-localization"
+      ]
+    },
+    {
+      "id": "FQ-041",
+      "lane": "book_enhancement",
+      "title": "C06_TP_Gap frozen-book pruning 검증 — production 재구축 (R26 P1)",
+      "hypothesis": "R26 Ext-B(recon proxy fid 0.914)가 C06_TP_Gap를 최약슬롯 flag(IS 제거 paired 2.45). frozen book SLEEVE_CORE−C06 268m 재구축 시 canonical cap-w PORT_t·oos_retention 실제 개선되는가",
+      "ev_rationale": "recon IS 개선 flag하나 holdout 붕괴(-0.60)+recon≠frozen(C06=analyst TP vintage-noisy 아티팩트 가능)→recon으로 settle 불가. production _recompute만 authoritative. EV 낮음이나 book 위생 저비용 확인.",
+      "wall_check": "C02_EPS_Chg_1m 필수(제거 시 book 붕괴 -7.09)—절대 제거 금지. frozen 재구축=production 경로, book_state 무변경, 도훈 confirm 후.",
+      "data_gate": "없음(로컬: factor_db + _recompute_alpha_asof.R)",
+      "owner": "Q-Lead",
+      "status": "frontier_open",
+      "next_action": "_recompute SLEEVE_CORE={C01,C02,C04}(C06 제거) 268m → canonical PORT_t + holdout falsification vs base",
+      "source_refs": [
+        "parent: FQ-039 R26 L-AR-20260714_153519",
+        "method: _recompute_alpha_asof.R"
       ]
     }
   ]

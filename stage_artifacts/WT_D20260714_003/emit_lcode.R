@@ -1,0 +1,57 @@
+setwd("C:/Users/99922/OneDrive/Quant_Module_Moltbot")
+Sys.setenv(QM_ROOT = "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
+`%||%`<-function(a,b) if(is.null(a)||length(a)==0) b else a
+source("02_Infrastructure/axiom/lcode_emit.R")
+lesson <- paste0(
+"[canonical_screen 실측 · positive · R26 REVERSE] R27 FQ-040 value 제3-축 통합(slot-carve + z-blend 형태비교, book_enhancement, 도훈 지시 2026-07-14, R26.P2 chain) = BOOK-MARGINAL SCREENING PASS(verified, PIT-robust). ",
+"base=frozen score_eff top-25 cap-w PORT_t 5.324·IR 1.275(window-matched, 255m). ",
+"★best=Z6 z-blend(V14_EBIT_EV+V07_EV_EBITDA, w0.30): paired NW-t 3.807·ΔIR window-matched +0.481·variant PORT_t 7.60·net-IR 1.755·turnover 13.0(+0.5). 게이트(paired>=2.0 AND dIR>=0.05) 통과 arm=7/10(zblend 5+slotcarve 2, grid 전반 pervasive). holdout(2024-07..2026-03,21m) Z6 IS 3.171->HO 4.300(강화)·post2017 marginal t 4.08. ",
+"★★R26 부정판정 원인=측정 배관결함 입증: R26 exact-Date value 병합이 SCdt(거래일 월말)vs pure_factor_scores(달력 월말) 불일치로 92/255월 value 누락(exact-match 163/255). 재현=exact-Date V14 w0.30 paired 1.868(R26 1.87 정확재현) vs ym-정렬 2.675. ym-정렬(255/255)=R26 Ext-B recon ymL 확립규약·PIT-safe. ",
+"PIT-robust 3중검증: lag-stress concurrent 3.807->lag1 2.982->lag2 3.012(동월 look-ahead 부재, lag1도 통과=병합해석 불변) + placebo(월내 셔플 10seed) real 3.807 vs mean -1.956 p=0.000 + bug재현. ",
+"형태비교: z-blend(3.81)>slot-carve(2.59) — Q-Lead 'sleeve 슬롯분리가 value 전이 개선' 가설 FALSIFIED(slotcarve N8 added value fwd이 bumped score_eff 대비 -0.006~-0.017/yr 강제 displacement 열위; z-blend 연속tilt 우위). 단 두 형태 모두 게이트 통과. V14+V07 blend>단독(V14~V07 cor 0.20 준독립). V02_EP cor 0.66 별도def 미채택. ",
+"honest prior: KR value 전수감쇠(24/24 standalone post-2015)와 정합=본건 standalone 아닌 book-marginal orthogonal tilt(book=Core consensus+Defense quality/mom, 순수value 부재), post2017 marginal 4.08로 미감쇠. R26 frontier P2가 옳게 'value 미결노출' 표시->R27 배관정정으로 해소. AX-000: R26 negative=벽 아닌 측정결함. ",
+"governance: alpha screening 실측(weighted/canonical PORT_t). admission 권위=forge+judge+governor+도훈. book_state 무변경. next_probe: P1 Z6 QEPM 6-agent dossier 승격(forge HARD 3종 판정, screening!=graduation); P2 value w sweep(0.20~0.40)+regime theta; P3(배관 시급) R26 ADD/replace축 재측정+deployzone/pure_factor_scores 소비 전반 ym-정렬 표준화(트랩 재발방지)."
+)
+res <- emit_lcode(
+  mode = "alpha_research",
+  strategy_id = "R27_FQ040_VALUE_3RD_AXIS",
+  grade = "B",
+  lesson_text = lesson,
+  metric_type = "canonical_screen",
+  construction_type = "book_marginal_value_zblend_and_slotcarve",
+  selection_type = "sweep",
+  mechanism_hypothesis = "book(Core consensus+Defense quality/mom)에 순수 value 축 부재. value(EBIT_EV+EV_EBITDA)를 z-blend 또는 slot-carve sleeve로 통합 시 book-marginal 게이트(paired>=2.0 AND dIR>=0.05) 통과하는가 — z-blend V14+V07 w0.30 paired 3.81 통과(R26 exact-Date 병합결함으로 1.87 저평가됐던 것을 ym-정렬로 정정, lag1-robust 2.98/placebo p=0). z-blend>slot-carve.",
+  portfolio_alpha_t = 3.807,
+  oos_months = 255L,
+  core_reference = "FQ-040 도훈 2026-07-14 R26.P2 chain; prereg_sha256 9fca7b78; base STR_1715_on_M4_R05_noLayer4_PG2; parent R26 L-AR-20260714_153519; pin R26_FQ039_20260714; ym-alignment fix(SCdt trading-monthend vs pure_factor_scores calendar-monthend)",
+  tags = c("book_enhancement","book_marginal","value_axis","zblend","slot_carve",
+           "screening_pass","positive","r26_reverse","pit_ym_alignment_fix","lag_robust",
+           "placebo_pass","window_matched_deltair","fq_040","captier_localization","form_comparison"),
+  metrics = list(
+    base_capw_port_t = 5.324, base_ir_windowmatched = 1.275,
+    best_arm = "Z6_zblend_V14_V07_w0.30",
+    best_paired_t = 3.807, best_dIR = 0.481, best_variant_port_t = 7.604, best_net_ir = 1.755,
+    gate_pass_arms = "7/10", holdout_paired_is = 3.171, holdout_paired_ho = 4.300, post2017_marginal_t = 4.076,
+    bug_proof_exact_date_paired = 1.868, ym_aligned_paired = 2.675,
+    lag1_paired = 2.982, lag2_paired = 3.012, placebo_p = 0.000, placebo_mean = -1.956,
+    zblend_vs_slotcarve = "zblend 3.807 > slotcarve 2.585 (sleeve 가설 FALSIFIED)",
+    cor_v14_v07 = 0.204, turnover = 13.0, dsr_n_trials_cum = 30,
+    next_probe = "P1 Z6 QEPM dossier 승격(forge HARD 3종); P2 value w sweep+regime theta; P3 R26 ADD/replace 재측정+pure_factor_scores 소비 ym-정렬 표준화"
+  ),
+  dry_run = FALSE
+)
+cat("[emit] l_code=", res$l_code %||% res$entry$l_code %||% "?", "\n")
+
+## lineage (alpha_package write 후)
+source("02_Infrastructure/worktask/lineage_utils.R")
+tryCatch(record_package_lineage(
+  task_id = "WT-D20260714_003",
+  package_type = "alpha_package",
+  method_selected = "value z-blend V14_EBIT_EV+V07_EV_EBITDA w0.30 into frozen score_eff (book-marginal)",
+  input_file_paths = c(
+    "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/02_holdings_universe/alpha_scores_str1715_268m.parquet",
+    "outputs/ramp/pure_factor_scores.parquet",
+    ".cache/RAWDATA.parquet"
+  )
+), error=function(e) cat("lineage warn:",conditionMessage(e),"\n"))
+cat("EMIT_LCODE_DONE\n")

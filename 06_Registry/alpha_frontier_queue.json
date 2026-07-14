@@ -29,7 +29,7 @@
       "ev_rationale": "07-06 4-프로브에서 2번째 deferred lead로 지정. long-side·directional — short-side-견인 벽(no-short 미하베스트) 회피 가능성",
       "wall_check": "long-side 신호라 'short-side-견인 × no-short' 벽 회피 시도. IC→PORT_t 전이는 미검증",
       "data_gate": "FQ-001과 동일 document.xml 파이프 — insider 크롤 완료 시 파서 재사용",
-      "owner": null,
+      "owner": {},
       "status": "parser_gated",
       "next_action": "insider 크롤 완료 시 계약금액 추출 병행 → canonical 측정",
       "source_refs": [
@@ -44,7 +44,7 @@
       "ev_rationale": "★최고 EV 비-return QEPM lane. KR 공매도제약(2023-11~2025 전면금지 등)으로 고-공매도-수요 종목 과대평가가 차익거래로 미해소(Miller 1977) → long-only가 회피/저비중 exclusion 신호로 하베스트 가능(무제약 시장은 short-side라 못 먹음). hypothesis_index virgin(0), envelope-안(타 투자자 short를 신호로, 우리는 long-only 유지). 데이터 depth 공매도잔고공시 2016-06~.",
       "wall_check": "비-return. 단 신호가 short-side 견인이면 long-only 하베스트 제한 벽에 걸릴 수 있음 — exclusion 소비 설계 필요",
       "data_gate": "2026-07-10 재확인: KRX 공식 OPEN API(구 data-dbg.krx.co.kr /srt/* + 신 openapi.krx.co.kr) 둘 다 공매도 서비스 부재(404/미수록). KRX MDC(data.krx.co.kr MDCSTAT300 개별종목 공매도 종합정보)·공매도종합포털은 로그인 게이트. → 실무 경로 = 도훈 로그인 export. 권장: QuantiWise 공매도잔고/대차잔고 export(도훈 이미 QW 사용·기존 인제스트 파이프). 대안: 공매도종합포털 bulk 다운로드.",
-      "owner": null,
+      "owner": {},
       "status": "dohoon_data_work",
       "next_action": "도훈 QW 로그인 세션에서 공매도잔고(+대차잔고) K200∪KQ150 2016-06~ export(daily 또는 monthly). 랜딩 시 add_factor 선언→builder→canonical_screen_bt 예비 실측. Q가 온보딩 스캐폴드 사전 준비.",
       "source_refs": [
@@ -84,7 +84,7 @@
       "ev_rationale": "research_philosophy ⑤(Crowding) 미충족 lane + 데이터가 기존 계약(QuantiWise) 안에 있음 ⚠ FQ-003(공매도잔고)과 동일 QW export 세션에서 신용/대차 함께 취득 권장(1회 로그인으로 crowding+short 동시).",
       "wall_check": "비-return. exclusion/timing 소비면 long-only 정합",
       "data_gate": "QuantiWise 로그인 — 도훈 수동 (자동화는 로그인 UI에서 보류됨 07-01)",
-      "owner": null,
+      "owner": {},
       "status": "dohoon_decision",
       "next_action": "도훈 로그인 세션에서 인제스트 → 커버리지 확인",
       "source_refs": [
@@ -151,7 +151,7 @@
       "ev_rationale": "배포권 대형주 tier 엣지 ~t 0.5(captier_decomp.csv top-50 long-active +0.53), 알파는 벤치-저비중 소형 끝에 집중(REST +5.19). 벤치-상대(배포성) vs 절대수익(SR 2.5) 관점 정리가 선행돼야 후속 리서치 조준 가능. ⚠ 구 'MID t=3.02'는 미검증 회상 철회(strategic_truths 07-10 교정) ★07-11 RAMP R3 소비: V02_EP EW-weight sleeve 배분 실측 = cap-tier 트랩 배분-레벨 재현(EW-uni 증분 > cap-w 증분 +0.54, cap-w paired +1.41<2.0). standalone cap-w graduation 대상 아님 확정 → 본 프레임(벤치-상대 배포성) 결정만이 V02_EP 소비 경로. (L-RAMP-20260711_152314)",
       "wall_check": "게이트 변경 제안 아님 — 소비 경로(벤치-상대 구성·overlay·RAMP) 설계 논의",
       "data_gate": "도훈 프레임 결정",
-      "owner": null,
+      "owner": {},
       "status": "dohoon_decision_v02ep_routed",
       "next_action": "도훈 결정 대기 — D3 실사 dossier 납품 완료(2026-07-13 야간, 텔레그램 발송). 옵션 A(실계좌 소액)/B(페이퍼 트래킹, 권고)/C(보류) 3안. 권고 = P-pure 단독 페이퍼 트래킹·V02_EP 독립 트랙 불채택(보유 중첩 32.5%·본 측정틀 EW-oos 0.469<0.5 밴드 미달)",
       "result_ref": "04_Research/01_reports/d3_deployability_dossier_20260713.md + stage_artifacts/d3_dossier/ (capacity/비용/추적 실측: P-pure 최근36m cap_1d 중앙값 49억·break-even 46bps·재구성 parity Δ=0, pin d3_dossier_20260713)",
@@ -163,11 +163,11 @@
       "id": "FQ-010",
       "lane": "pipeline",
       "title": "논문 인입 라인 재가동 + pg2 43편 큐 소비 배선",
-      "hypothesis": null,
+      "hypothesis": {},
       "ev_rationale": "무인 인입 처리량 복구 — 라우터/알파큐는 07-08부터 지출한도 정지(경보 배선은 v8.3에서 완료). pg2 강화 43편 큐는 상태 필드/소비자 부재",
       "wall_check": "해당 없음 (파이프라인 운영)",
       "data_gate": "헤드리스 claude 월 지출한도 — 도훈 결정 D1(한도 상향 / 리셋 대기 / 세션-내 이관)",
-      "owner": null,
+      "owner": {},
       "status": "dohoon_decision",
       "next_action": "D1 결정 후: 백로그 17편 라우팅 확인 + pg2 큐에 status 필드·소비 기록 writer 추가",
       "source_refs": [
@@ -802,12 +802,14 @@
       "wall_check": "cap-w authoritative+window-matched ΔIR+paired∧ΔIR AND-게이트 유지. 종목수 25 hard·turnover 감시. 06-24 직교327 prior=벽 존재.",
       "data_gate": "없음(로컬: pure_factor_scores value z + score_eff)",
       "owner": "Q-Lead",
-      "status": "frontier_open",
-      "next_action": "Core/Defense/Value 3-sleeve regime theta 재추정 → canonical cap-w PORT_t + paired vs 현 2-sleeve base",
+      "status": "screening_pass_dossier_pending",
+      "next_action": "R27 BOOK-MARGINAL SCREENING PASS(verified) — best Z6 zblend(V14_EBIT_EV+V07_EV_EBITDA) w0.30 paired 3.807·ΔIR +0.481·IS3.17->HO4.30·post2017 marginal 4.08·placebo p=0·lag1 2.98. R26 부정판정=exact-Date value 병합결함(1.87)을 ym-정렬로 정정(2.68, bug재현). z-blend>slot-carve(sleeve 가설 FALSIFIED). → P1 Z6 QEPM 6-agent dossier 승격(forge HARD 3종 authoritative, screening!=graduation) + 도훈 수동.",
       "source_refs": [
         "parent: FQ-039 R26 L-AR-20260714_153519",
         "memory: project-captier-alpha-localization"
-      ]
+      ],
+      "result_lcode": "L-AR-20260714_161109",
+      "result_artifacts": "stage_artifacts/WT_D20260714_003/ (verdict/alpha_validation/challenge_note/carve_grid/holdout_grid/charts)"
     },
     {
       "id": "FQ-041",
@@ -823,6 +825,38 @@
       "source_refs": [
         "parent: FQ-039 R26 L-AR-20260714_153519",
         "method: _recompute_alpha_asof.R"
+      ]
+    },
+    {
+      "id": "FQ-042",
+      "lane": "book_enhancement",
+      "title": "value 3rd-axis(Z6) QEPM 6-agent dossier 승격 — forge-authoritative 확정 (R27 P1)",
+      "hypothesis": "R27 screening PASS(Z6 zblend V14+V07 w0.30, paired 3.807·ΔIR +0.481)를 QEPM 6-agent(risk->optimizer->forge->judge)로 완주해 forge build_bt_result authoritative PORT_t + HARD 3종(PORT_t 2.95·oos_retention 0.7·calmar 0.64) 판정. screening!=graduation.",
+      "ev_rationale": "R27 book-marginal screening 3중검증(bug재현·lag-robust·placebo) 통과. 단 canonical/weighted=screening 실측이지 자본 아님. forge가 최적화 weights로 재측정해야 admission 자격 확정.",
+      "wall_check": "cap-w authoritative + oos_retention v2(band escalation) + calmar. holdout falsification 사전등록. book_state 무변경, governor 정지(도훈 수동). turnover 13.0/yr 감시.",
+      "data_gate": "없음(로컬: alpha_package.json + score_eff + pure_factor_scores)",
+      "owner": "Q-Lead",
+      "status": "frontier_open",
+      "next_action": "qvest-dossier-pipeline skill: args={wt_id:WT-D20260714_003, candidate_tag:Z6_value_zblend, n_trials_cumulative:30}",
+      "source_refs": [
+        "parent: FQ-040 R27 L-AR-20260714_161109",
+        "alpha_package: qepm/mailbox/worktask/WT-D20260714_003/alpha_package.json"
+      ]
+    },
+    {
+      "id": "FQ-043",
+      "lane": "infra_integrity",
+      "title": "pure_factor_scores/deployzone 소비 ym-정렬 표준화 + R26 ADD/replace축 재측정 (R27 P3, 트랩 재발방지)",
+      "hypothesis": "R27이 exact-Date value 병합결함(SCdt 거래일 월말 vs pure_factor_scores 달력 월말, 92/255월 누락)을 발견. R26 ADD/replace축 value 관련 결론(shortlist ranking·C06 replace 등)이 동일 아티팩트로 왜곡됐을 수 있음. 소비 전반 ym-정렬 표준화 + R26 재측정.",
+      "ev_rationale": "R26 value z-blend 1.87 저평가가 배관결함으로 입증됨(ym-정렬 2.68). 같은 병합을 쓴 R26 다른 축·타 라운드도 영향 가능. 저비용 위생 + 잠재적 다수 결론 정정.",
+      "wall_check": "ym-정렬은 PIT-safe(lag1-robust 실증) + R26 Ext-B recon ymL 확립규약. 정정은 배관이지 게이트 완화 아님(INV-7 무관).",
+      "data_gate": "없음(로컬)",
+      "owner": "Q-Lead(architect 협의 가능)",
+      "status": "frontier_open",
+      "next_action": "canonical_screen_bt/weighted_screen_bt 호출부 value/factor z 병합을 ym-key 표준화(또는 helper) + R26 ADD 14arm·replace 5arm ym-정렬 재측정 → 결론 delta 확인",
+      "source_refs": [
+        "parent: FQ-040 R27",
+        "memory: project-cache-vintage-pinning(측정 배관 트랩 계열)"
       ]
     }
   ]

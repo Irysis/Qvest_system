@@ -1,0 +1,90 @@
+{
+  "task": "R27 — value 제3 sleeve(slot-carve) 통합 재시험 (FQ-040, book-marginal)",
+  "wt_id": "WT-D20260714_003",
+  "frontier_id": "FQ-040",
+  "parent": "FQ-039 / R26 WT-D20260714_002 / L-AR-20260714_153519",
+  "mode": "QEPM alpha-research (book_enhancement lane) — self-development chain R26.P2 직접 소비",
+  "created": "2026-07-14",
+  "owner": "Q-Lead (R27 alpha-research, 도훈 지시 2026-07-14)",
+  "governance": "진단 전용 — book_state 무변경. 결과 = 도훈 결정 재료(실편입은 QEPM 6-agent 파이프라인 + 도훈 수동). alpha 단계 canonical/weighted PORT_t = 스크리닝 실측(admission 권위는 forge).",
+
+  "hypothesis": "현 PG2 북 alpha = Core(4F Consensus)+Defense(Q07/M08/Q25)로 순수 value 축 부재. R26서 value(V14_EBIT_EV·V07_EV_EBITDA)가 유일 일관 양(cor_active -0.05 직교·ΔIR +0.06~0.17·V14 holdout IS1.51→HO1.76)이나 z-blend 형태로는 paired 최대 1.87<2.0 미달. 가설: 소비 형태를 z-blend(랭킹 희석)에서 독립 sleeve(슬롯 확보)로 바꾸면 value의 직교 정보가 온전히 전달되어 book-marginal 게이트(paired≥2.0 ∧ ΔIR≥0.05)를 넘는가.",
+
+  "scoping_note": "본 R27 = FQ-040의 최소 형태검정(z-blend→slot-carve sleeve 소비형태 변경). FQ-040 next_action의 regime-conditional 3-sleeve theta 재추정은 본 형태검정이 신호를 보이면의 후속. 무조건 regime-conditioning부터 하지 않고 형태 자체의 전이 여부를 먼저 격리 측정(자유도 최소화).",
+
+  "honest_prior": {
+    "kr_value_decay": "reference-kr-value-factor-decay: KR value 24/24 팩터 post-2015 감쇠·spread 사상최대(reversion 미검증). R26 value 양(+) 신호와 긴장 → holdout·post-2017 분해로 정면 대조.",
+    "v02_ep_standalone": "DIST-QPM-006(구 AX-003): V02_EP standalone 실패. 단 본 건은 standalone 아닌 북-내 sleeve 참여(구성 상이). 부활신호 value_quality_spread 극단 여부 확인·병기.",
+    "slotcarve_precedent": "L-AR-20260710_150153 P3: tail-방어 sleeve slot-carve paired -2.805(negative). 단 그건 crisis-conditional 방어 재료(D48_VaR)였고 value는 직교 return 재료 — 차별점 명시. slot-carve 형태 자체가 negative는 아님(재료 성격 상이).",
+    "ax007_exception": "AX-007 예외 구조 — multi-sleeve는 명시 예외 4종 중 하나. 구조 자체는 정당.",
+    "ev": "보수(전이 벽 prior). R26 z-blend paired 1.87 → slot-carve가 랭킹 희석을 제거해 value 전용 슬롯을 주므로 소폭 상방 가능하나, value 자체 신호력이 벽을 넘을 만큼인지는 미지."
+  },
+
+  "base": {
+    "definition": "frozen score_eff top-25 cap-w (R26와 동일, selection-level, M4×R05 오버레이는 base/variant 동일 적용이라 paired diff서 상쇄).",
+    "source": "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/02_holdings_universe/alpha_scores_str1715_268m.parquet (score_eff)",
+    "reuse": "scriptA_out.rds (R26 vintage, pin R26_FQ039_20260714 재사용) — SCdt/fwd_ret/bench/liq/SIZE/r_base/base_pr/r_base_ew",
+    "frozen_base_capw_PORT_t_expected": 5.324091,
+    "frozen_base_IR_windowmatched_expected": 1.274899,
+    "n_months_expected": 255
+  },
+
+  "slot_carve_construction": {
+    "principle": "총 25종 불변(PIT 슬리브 조합 최종 ≤25). 월별: core slots = top-(25-N_val) by score_eff (기존 Core/Defense 최상위 유지 — 최약 N_val score_eff 슬롯만 value로 교체). value slots = top-N_val by value_z among (universe \\ core_names, finite value_z, 동일 liq 필터). 두 집합 합집합 = 25 distinct. cap-w = cap_norm(Size) over 25.",
+    "coverage_rule": "value_z finite 종목이 N_val 미만이면 잔여 슬롯을 core 다음 순위 score_eff 종목으로 채워 항상 25 유지(coverage 기록).",
+    "N_val_grid": [5, 8],
+    "value_defs": {
+      "V14": "value_z = z(V14_EBIT_EV)",
+      "V14_V07": "value_z = z( z(V14_EBIT_EV) + z(V07_EV_EBITDA) ) — 균등 blend 후 재-z (cross-sectional per month)"
+    },
+    "v02_ep_check": "V02_EP는 별도 정의로 채택하지 않음. 스크린 시 cor(V14,V07,V02) z 상관 산출·기록. |cor|>0.85 고상관 확인 시 중복 사유 명시(별도 정의 불요 재확인). 정직 prior(V02 standalone 실패)도 병기.",
+    "value_z_source": "outputs/ramp/pure_factor_scores.parquet (factor_id, signal_date->Date, security_id->Ticker, z)"
+  },
+
+  "trials": {
+    "n_arms": 4,
+    "grid": [
+      {"arm": "S1", "N_val": 5, "value_def": "V14"},
+      {"arm": "S2", "N_val": 8, "value_def": "V14"},
+      {"arm": "S3", "N_val": 5, "value_def": "V14_V07"},
+      {"arm": "S4", "N_val": 8, "value_def": "V14_V07"}
+    ],
+    "family_cumulative": "R26 26 + R27 4 = 30 (DSR 병기)"
+  },
+
+  "measurement": {
+    "universe": "KR_top342 (KOSPI200 ∪ KOSDAQ150)",
+    "cost_model_version": "v2.4_kr_retail_15bps (delta-based, one-way 15bps)",
+    "liquidity": "20d ADV(t-1) >= 2e8 KRW",
+    "top_n": 25,
+    "weighting_authoritative": "cap-w (Size, cap_norm 0.20 cap) via weighted_screen_bt — HARD 판정 권위",
+    "weighting_dual_basis": "EW canonical(carve-membership 재현 synthetic score → canonical_screen_bt) + diag_ew_universe(EW-유니버스 벤치) + diag_cap_tier(MEGA/MID/OTHER) 병기 — 비바인딩 진단",
+    "port_t": "portfolio_alpha_t_nw_lag3 (build_benchmark_compare, NW lag-3, ann=12)",
+    "paired": "nw_t(variant_active - base_active) on common months, NW lag-3 (vs frozen base, window-matched)",
+    "delta_ir": "IR_ann(variant_active) - IR_ann(base_active) on common months (window-matched w=0 base, net_active_recon_v1 개념: mean/sd*sqrt12)",
+    "post2017_decomp": "cap-w active 및 EW-uni active의 post-2017(>=2017-01) NW lag-3 t 산출 (value 감쇠 대조)"
+  },
+
+  "windowing_IS_only": {
+    "IS_window": "2005-01 .. 2024-06 (return-month) — arm 선택(best IS paired argmax)은 IS-only",
+    "holdout": "2024-07 .. 2026-04 (last ~21 return-months) — 최종 최우수 arm 1개만 1회 조회",
+    "rationale": "measurement-graduation §3 chain 자격요건 ②(IS-only 변형선택) + ③(holdout 최종 1회). full-window paired/ΔIR도 보고하되 arm 선택은 IS."
+  },
+
+  "VERDICT_criteria": {
+    "primary_capital_relevance": "paired NW-t(lag3, vs frozen base) >= 2.0 AND book-marginal ΔIR(window-matched) >= 0.05 (AND-게이트 — R26서 ΔIR 단독은 허위통과 실증)",
+    "oos_confirmation": "IS 통과 arm의 holdout paired가 붕괴하지 않을 것(R26 C06 IS2.45→HO-0.60 과적합 검거 선례)",
+    "dual_basis": "cap-w HARD 권위 + EW-uni/cap-tier 병기 — cap-w FAIL이나 EW-대비 생존 시 'cap-w 벤치 미스매치 가능' 라벨 + screen_route 재분류 검토",
+    "sweep_accounting": "4 arm 열거 argmax = sweep. n_trials 누적 30. DSR 산출·기록.",
+    "honest_prior_ref": "06-24 직교327 t>2=0 · 07-10 프로브 fleet 0 · R26 z-blend 1.87 · KR value 전수감쇠 — EV 보수. 신규 요소: slot-carve 소비형태(z-blend 랭킹희석 제거)."
+  },
+
+  "self_adversarial_preplan": [
+    "① sleeve 슬롯이 기존 Core/Defense 종목을 밀어내는 기회비용 귀속 — 밀려난(rank 25-N_val+1..25 score_eff) 종목의 forward 성과 병기.",
+    "② value 감쇠 국면에서 holdout 양(+)이 2024-26 특이 국면(가치주 반등) 편승인지 — post-2017 및 holdout 국면 대조.",
+    "③ N_val 슬롯 수 자체가 추가 자유도 — 2 grid(5,8)만 사전등록, best IS-only 선택, DSR 회계."
+  ],
+
+  "execution_discipline": "R .R source·단일스레드·arrow io(2)·잔류 R 프로세스 확인 · pin_cache vintage 고정(R26_FQ039_20260714 재사용)+pin tag · proxy 손계산 금지(weighted_screen_bt/canonical_screen_bt 경로만) · OneDrive tmp+rename · DART API 금지 · book_state 무변경",
+  "pin_tag": "R26_FQ039_20260714 (RAWDATA md5 c5242397f9f35f092ea2439a7e744873, benchmark md5 d0b5549ede7963183786148b47032595 — R27 재사용, 재검증 완료)"
+}

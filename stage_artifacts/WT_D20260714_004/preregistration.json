@@ -1,0 +1,54 @@
+{
+  "task": "R28 — C06_TP_Gap frozen-book pruning 검증 (FQ-041, book_marginal)",
+  "wt_id": "WT-D20260714_004",
+  "frontier_id": "FQ-041",
+  "parent": "FQ-039 R26 (WT-D20260714_002, L-AR-20260714_153519)",
+  "mode": "QEPM alpha-research (book_enhancement lane)",
+  "created": "2026-07-14",
+  "owner": "Q-Lead (R28 alpha-research, 도훈 지시 2026-07-14)",
+  "governance": "진단 전용 — book_state 무변경. 결과 = 도훈 결정 재료(실편입은 QEPM 6-agent + 도훈 수동). n_trials=1 (단일 가설 단일 구성, chain — DSR sweep 게이트 부적용).",
+  "hypothesis": "R26 Ext-B recon-proxy(fid_eff 0.914 @ same-month factor_db)가 C06_TP_Gap을 최약 core 슬롯으로 flag(IS 제거 paired +2.45)했으나 holdout 붕괴(-0.60). frozen 재구축(production _recompute 경로)으로 C06 제거가 실제 book 개선인지 settle.",
+  "prior_expectation": "null/기각 쪽 (proxy holdout 이미 붕괴 관측). 성립하면 무료 개선(7->6)이라 EV 비대칭 → 1회 실측 정당.",
+  "incumbent_book": {
+    "id": "STR_1715_on_M4_R05_noLayer4_PG2",
+    "score_eff": "0.65*z(core) + 0.35*z(defense), core=4F IC-theta {C01_SUE,C02_EPS_Chg_1m,C04_ESBR,C06_TP_Gap}, defense=EW {Q07,M08,Q25}",
+    "score_eff_source": "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/02_holdings_universe/alpha_scores_str1715_268m.parquet",
+    "production_recompute_path": "05_Production/.../2-3.STR_1715_on_M4_R05_noLayer4_PG2/01_reproducible_code/_recompute_alpha_asof.R (READ-ONLY 참조, stage_artifacts에 methodology 사본)"
+  },
+  "measurement": {
+    "universe": "KR_top342 (KOSPI200 ∪ KOSDAQ150)",
+    "cost_model_version": "v2.4_kr_retail_15bps (one-way 15bps, delta-based)",
+    "liquidity": "20d ADV(t-1) >= 2e8 KRW",
+    "top_n": 25,
+    "weighting_authoritative": "cap-w (Size, cap_norm 0.20) — HARD 판정 권위",
+    "weighting_dual_basis": "EW-universe (diag) + cap-tier(MEGA/MID/OTHER) 병기 — 비바인딩",
+    "engine": "02_Infrastructure/contracts/weighted_screen_bt.R (cap-w) + canonical_screen_bt.R (dual-basis diag)",
+    "port_t": "portfolio_alpha_t_nw_lag3 (build_benchmark_compare, NW lag-3, ann=12)",
+    "score_return_alignment": "score AS_OF(first-of-month M) ↔ fwd sig_date d0(month-end M-1), Ret_1m(d0)=month-M return. β-scan offset 0 규약(deltair 2026-07-13)"
+  },
+  "windowing": {
+    "IS": "return-month d0 <= 2024-06-30 (variant 선택·IS paired)",
+    "holdout": "return-month d0 > 2024-06-30 (2024-07..2026-04, ~22m) — 최종판 1회 조회",
+    "note": "n_trials=1 chain: 단일 구성(C06 제거) — holdout는 falsification 확인용."
+  },
+  "reconstruction_recipe_calibration": {
+    "note": "재구축 recipe(factor_db 월 vintage)는 측정-방법론 캘리브레이션이지 전략 선택이 아님. 사전등록 前 recipe scan으로 parity 최대화 vintage를 실증 결정.",
+    "finding_pre_freeze": "stored 268m 패널은 same-month factor_db(off=+1, factor_db_{label month})로 재현될 때 parity 0.90-0.96(R26 fid 0.914 재현). production _recompute forward 경로는 T-1(off=0, factor_db_{label-1})=PIT-correct이나 stored 대비 parity 0.5-0.7. => stored 패널과 forward 경로 간 1개월 vintage 규약 불일치 발견(잠재 PIT 이슈, 별도 진단).",
+    "measured_conventions": ["off=0 (T-1, PIT-correct, production forward path)", "off=+1 (same-month, stored-panel-matching)"],
+    "theta_modes": ["stored (frozen panel theta_core JSON — book-as-deployed)", "ic (production _recompute IC-theta)"]
+  },
+  "verdict_criteria_precommitted": {
+    "parity_gate": "challenge #1 — 7F recon vs stored score_eff median cross-sectional cor. off=+1 stored-theta에서 >=0.90 이면 stored-panel basis 판정 발화 가능. off=0에서 낮으면(vintage 불일치) production-path 판정은 apples-to-apples paired diff로만(절대 stored 재현 주장 금지).",
+    "primary": "paired NW-t(6F-7F, positive=C06 제거가 도움) IS >= 2.0 AND holdout >= 2.0 AND ΔIR(6F-7F) >= 0.05 동시. 두 vintage/theta cell에서 일관해야 신뢰.",
+    "branch_A_confirm": "frozen IS 양 ∧ holdout 양(둘 다 >=2.0) → 도훈 결정 재료(pruning = QEPM 파이프라인 + 수동). C02 절대 제거 금지.",
+    "branch_B_reject_maintain": "frozen에서도 holdout 붕괴 재현 → C06 유지 확정 + 'proxy LOO는 vintage-noisy 재료에서 신뢰 불가' 방법론 지식.",
+    "branch_C_recon_artifact": "frozen IS부터 무의미(near no-op 또는 음) → recon 아티팩트 확정 / 또는 parity 미달로 frozen settle 불가.",
+    "sweep_accounting": "n_trials=1 (단일 구성). vintage/theta cell(off×theta=4)은 robustness 재현이지 selection 아님(전 cell 보고, argmax 없음) → DSR sweep 게이트 부적용."
+  },
+  "critical_constraints": [
+    "C02_EPS_Chg_1m 절대 제거 금지(R26: 제거 시 paired -7.09, book 붕괴). 본 라운드는 C06만.",
+    "05_Production 무수정(READ-ONLY). 산출은 stage_artifacts/WT_D20260714_004/.",
+    "book_state 무변경."
+  ],
+  "execution_discipline": "R .R source·단일스레드·arrow io(2)·잔류 R 프로세스 확인·OneDrive tmp+rename·canonical 경로만(proxy 손계산 금지)·pin은 현행 factor_db 캐시(vintage tag 기록)."
+}
