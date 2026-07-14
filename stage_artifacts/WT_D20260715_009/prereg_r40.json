@@ -1,0 +1,26 @@
+{
+  "mode": "RAMP-adjacent monitoring 진단 (insider SAFE 청산 검열-스트레스)",
+  "round": "R40",
+  "fq": "FQ-053",
+  "wt": "WT-D20260715_009",
+  "parent": "R38 next_probe P1 (검열편향 caveat HIGH 정량)",
+  "base_source": "R38이 상속한 R36 _r36_objects.rds uni (production clean T-1, production_parity_verified 3.058, PIT C5 상속) + pin rawdata broader universe(검열탐지)",
+  "diagnostics": {
+    "P1": "다중월 forward 위험궤적: EXIT cohort exit_ym+h(h=0..3) downside/tail/vol + 월별-paired NW-t vs OFF + horizon별 attrition",
+    "P2": "검열 census(폐지/유동성/유니버스/부실) + rmon 실측 + 진성폐지 worst-case 대입(-20/-30/-50/-80/-100%) → risk_sticky 재판정 + ★차등검열 ON vs OFF 이탈/폐지율",
+    "P3": "catastrophic(폐지·부실, 부실tripwire 소관) vs benign(uni잔존 EXIT, SAFE_FADING 소관) 경계 정량"
+  },
+  "decision_axis": "R38 no-hangover(청산≠위험재상승)의 검열-조정 강건성. 자본 아님(monitoring).",
+  "flags": {
+    "net_buy": "INS02_OffBuyBreadth6m z>=+1.0 (R33 frozen)"
+  },
+  "worst_case_scenarios": "actual_only / -20% / -30% / -50% / -80% / -100%(wipeout)",
+  "liq_threshold": 200000000,
+  "pit": "uni 상속 clean T-1 (Ret_1m 동월 실현, cor=1.0 rmon 검증) + 검열은 j→j+1 forward 멤버십",
+  "selection_type": "chain (가설주도 고정 config · sweep 아님)",
+  "n_trials": 1,
+  "vintage_pin": ".cache/pin/rawdata_r9_pin_20260715.parquet",
+  "pin_mtime": "2026-07-15 00:21:02.834291",
+  "as_of": "2026-07-15",
+  "config_hash": "5a5dd3bda71dd13e"
+}

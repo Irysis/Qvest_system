@@ -1,0 +1,292 @@
+{
+  "prereg": {
+    "mode": "RAMP-adjacent monitoring 진단 (insider SAFE 청산 검열-스트레스)",
+    "round": "R40",
+    "fq": "FQ-053",
+    "wt": "WT-D20260715_009",
+    "parent": "R38 next_probe P1 (검열편향 caveat HIGH 정량)",
+    "base_source": "R38이 상속한 R36 _r36_objects.rds uni (production clean T-1, production_parity_verified 3.058, PIT C5 상속) + pin rawdata broader universe(검열탐지)",
+    "diagnostics": {
+      "P1": "다중월 forward 위험궤적: EXIT cohort exit_ym+h(h=0..3) downside/tail/vol + 월별-paired NW-t vs OFF + horizon별 attrition",
+      "P2": "검열 census(폐지/유동성/유니버스/부실) + rmon 실측 + 진성폐지 worst-case 대입(-20/-30/-50/-80/-100%) → risk_sticky 재판정 + ★차등검열 ON vs OFF 이탈/폐지율",
+      "P3": "catastrophic(폐지·부실, 부실tripwire 소관) vs benign(uni잔존 EXIT, SAFE_FADING 소관) 경계 정량"
+    },
+    "decision_axis": "R38 no-hangover(청산≠위험재상승)의 검열-조정 강건성. 자본 아님(monitoring).",
+    "flags": {
+      "net_buy": "INS02_OffBuyBreadth6m z>=+1.0 (R33 frozen)"
+    },
+    "worst_case_scenarios": "actual_only / -20% / -30% / -50% / -80% / -100%(wipeout)",
+    "liq_threshold": 200000000,
+    "pit": "uni 상속 clean T-1 (Ret_1m 동월 실현, cor=1.0 rmon 검증) + 검열은 j→j+1 forward 멤버십",
+    "selection_type": "chain (가설주도 고정 config · sweep 아님)",
+    "n_trials": 1,
+    "vintage_pin": ".cache/pin/rawdata_r9_pin_20260715.parquet",
+    "pin_mtime": "2026-07-15 00:21:02.834291",
+    "as_of": "2026-07-15",
+    "config_hash": "5a5dd3bda71dd13e"
+  },
+  "vintage_pin": ".cache/pin/rawdata_r9_pin_20260715.parquet",
+  "pin_mtime": "2026-07-15 00:21:02.834291",
+  "base_parity": {
+    "clean_parity_port_t": 3.05834,
+    "note": "§7b R38→R36 uni 상속"
+  },
+  "P2_census": {
+    "all": {
+      "n_on": 3486,
+      "outcome": {
+        "SUSTAIN": 2769,
+        "EXIT_obs": 434,
+        "cov_lost": 273,
+        "CENSORED": 10
+      },
+      "cens_type": {
+        "liquidity_drop": 4,
+        "distress_admin_halt": 2,
+        "other_filter": 2,
+        "universe_exit": 2
+      }
+    },
+    "mid": {
+      "n_on": 959,
+      "outcome": {
+        "SUSTAIN": 757,
+        "EXIT_obs": 115,
+        "cov_lost": 85,
+        "CENSORED": 2
+      },
+      "cens_type": {
+        "other_filter": 1,
+        "distress_admin_halt": 1
+      }
+    }
+  },
+  "differential_censoring": {
+    "all": [
+      {
+        "flag_grp": "OFF/other",
+        "n": 17443,
+        "left_uni_rate": 0.00235,
+        "delist_rate": 0
+      },
+      {
+        "flag_grp": "ON(SAFE)",
+        "n": 3486,
+        "left_uni_rate": 0.00287,
+        "delist_rate": 0
+      }
+    ],
+    "mid": [
+      {
+        "flag_grp": "OFF/other",
+        "n": 4668,
+        "left_uni_rate": 0.00107,
+        "delist_rate": 0
+      },
+      {
+        "flag_grp": "ON(SAFE)",
+        "n": 959,
+        "left_uni_rate": 0.00209,
+        "delist_rate": 0
+      }
+    ],
+    "tests": {
+      "all_leave_diff": 0.00052,
+      "all_leave_p": 0.7052,
+      "all_delist_diff": 0,
+      "all_delist_p": "NaN",
+      "mid_leave_diff": 0.00101,
+      "mid_leave_p": 0.7575,
+      "mid_delist_diff": 0,
+      "mid_delist_p": "NaN"
+    },
+    "favorable": true
+  },
+  "P2_worstcase": {
+    "off_baseline": {
+      "downside": -0.08641,
+      "tail": 0.07946,
+      "n": 4581
+    },
+    "r38_exit_obs": {
+      "n": 115,
+      "downside": -0.06988,
+      "tail": 0.05217,
+      "min": -0.2406
+    },
+    "cens_actual_n": 2,
+    "cens_impute_n": 0,
+    "cens_actual_summary": {
+      "mean": -0.12083,
+      "min": -0.2361,
+      "tail": 0.5
+    },
+    "scenarios": {
+      "actual_only": {
+        "scenario": "actual_only",
+        "impute_val": null,
+        "n": 117,
+        "downside": -0.0717,
+        "tail": 0.05983,
+        "vol": 0.11281,
+        "min": -0.24061,
+        "risk_sticky": true,
+        "hangover": false
+      },
+      "wc_m20": {
+        "scenario": "wc_m20",
+        "impute_val": -0.2,
+        "n": 117,
+        "downside": -0.0717,
+        "tail": 0.05983,
+        "vol": 0.11281,
+        "min": -0.24061,
+        "risk_sticky": true,
+        "hangover": false
+      },
+      "wc_m30": {
+        "scenario": "wc_m30",
+        "impute_val": -0.3,
+        "n": 117,
+        "downside": -0.0717,
+        "tail": 0.05983,
+        "vol": 0.11281,
+        "min": -0.24061,
+        "risk_sticky": true,
+        "hangover": false
+      },
+      "wc_m50": {
+        "scenario": "wc_m50",
+        "impute_val": -0.5,
+        "n": 117,
+        "downside": -0.0717,
+        "tail": 0.05983,
+        "vol": 0.11281,
+        "min": -0.24061,
+        "risk_sticky": true,
+        "hangover": false
+      },
+      "wc_m80": {
+        "scenario": "wc_m80",
+        "impute_val": -0.8,
+        "n": 117,
+        "downside": -0.0717,
+        "tail": 0.05983,
+        "vol": 0.11281,
+        "min": -0.24061,
+        "risk_sticky": true,
+        "hangover": false
+      },
+      "wipeout": {
+        "scenario": "wipeout",
+        "impute_val": -1,
+        "n": 117,
+        "downside": -0.0717,
+        "tail": 0.05983,
+        "vol": 0.11281,
+        "min": -0.24061,
+        "risk_sticky": true,
+        "hangover": false
+      }
+    },
+    "sticky_scenarios": ["actual_only", "wc_m20", "wc_m30", "wc_m50", "wc_m80", "wipeout"],
+    "hangover_scenarios": []
+  },
+  "P1_multimonth": {
+    "h0": {
+      "h": 0,
+      "n_events": 115,
+      "surv_uni": 1,
+      "surv_any": 1,
+      "downside": -0.06902,
+      "tail": 0.05217,
+      "vol": 0.11448,
+      "mean": 0.01226,
+      "min": -0.24061,
+      "paired_vs_off_t": 1.89051,
+      "paired_gap_ann": 0.33815,
+      "n_months": 47
+    },
+    "h1": {
+      "h": 1,
+      "n_events": 114,
+      "surv_uni": 1,
+      "surv_any": 1,
+      "downside": -0.0695,
+      "tail": 0.03509,
+      "vol": 0.11939,
+      "mean": 0.02218,
+      "min": -0.35619,
+      "paired_vs_off_t": 1.32635,
+      "paired_gap_ann": 0.23056,
+      "n_months": 46
+    },
+    "h2": {
+      "h": 2,
+      "n_events": 114,
+      "surv_uni": 1,
+      "surv_any": 1,
+      "downside": -0.09229,
+      "tail": 0.12281,
+      "vol": 0.11893,
+      "mean": -0.00031,
+      "min": -0.3,
+      "paired_vs_off_t": -0.03153,
+      "paired_gap_ann": -0.00753,
+      "n_months": 46
+    },
+    "h3": {
+      "h": 3,
+      "n_events": 114,
+      "surv_uni": 1,
+      "surv_any": 1,
+      "downside": -0.09819,
+      "tail": 0.10526,
+      "vol": 0.12821,
+      "mean": 0.0044,
+      "min": -0.30106,
+      "paired_vs_off_t": -1.64955,
+      "paired_gap_ann": -0.23484,
+      "n_months": 46
+    }
+  },
+  "P3_catastrophic_benign": {
+    "n_off_transitions_mid": 117,
+    "class": {
+      "benign": 115,
+      "benign_censored": 1,
+      "catastrophic": 1
+    },
+    "catastrophic_actual_n": 1,
+    "catastrophic_impute_n": 0,
+    "catastrophic_actual_min": -0.0056
+  },
+  "right_truncated": {
+    "all": 67,
+    "mid": 25,
+    "note": "hold_ym==MAX_YM ON-event(j1 관측창 밖) — informative censoring 아닌 right-truncation, census 제외 (자가적대검증 catch)"
+  },
+  "verdict": {
+    "class": "no_hangover_horizon_limited",
+    "censoring_bias_material": false,
+    "diff_favorable": true,
+    "delist_favorable": true,
+    "leave_favorable": true,
+    "leave_p_mid": 0.7575,
+    "full_universe_ok": true,
+    "survivor_ok": false,
+    "survivor_sig_ok": true,
+    "actual_sticky": true,
+    "on_delist_rate": 0,
+    "off_delist_rate": 0,
+    "on_leave_rate": 0.00209,
+    "off_leave_rate": 0.00107,
+    "sticky_scenarios": ["actual_only", "wc_m20", "wc_m30", "wc_m50", "wc_m80", "wipeout"],
+    "hangover_scenarios": [],
+    "delayed_hangover_h": [2, 3],
+    "delayed_hangover_sig_h": [],
+    "r38_censoring_caveat_dismissed": true,
+    "r38_conclusion_holds": true
+  },
+  "generated_at": "2026-07-15T05:00:35+0900"
+}

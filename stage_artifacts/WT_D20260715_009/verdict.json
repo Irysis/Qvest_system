@@ -1,0 +1,85 @@
+{
+  "round": "R40",
+  "fq": "FQ-053",
+  "wt": "WT-D20260715_009",
+  "title": "insider SAFE 청산 검열-스트레스 정량 (censoring bias quantification)",
+  "mode": "RAMP-adjacent monitoring 진단 (자본 아님)",
+  "parent": "R38 next_probe P1 (검열편향 caveat HIGH 정량)",
+  "verdict_type": "capability_established",
+  "verdict_class": "no_hangover_horizon_limited",
+  "headline": "R38 'no hangover' 검열편향 caveat = 정량 기각(immaterial). 검열 극소(MID 2건/0.2%·21년 진성폐지 0·차등이탈 비유의 p=0.757)이고 worst-case wipeout(-100%) 대입해도 EXIT tail 6.0%<OFF 7.9%로 risk-sticky 유지 → 청산≠위험재상승은 검열-조정 후에도 성립. ★단 별개 refine: protection은 단기(h=0-1)이고 다중월 h2-3에 survivor tail이 baseline 복귀(directional·paired-t 비유의) → R38의 'protection 점착(무기한)'은 '~1개월 transient'로 교정. SAFE_FADING은 horizon-bounded(1-2개월 auto-clear), catastrophic exit(부실 tripwire)은 mid-cap ON→off의 ~1%뿐(투자가능 유니버스 조건부).",
+  "chartered_question": "R38 EXIT 표본은 flag-off 다음달 uni 잔존 조건부라, 동시 폐지/유동성붕괴/유니버스이탈 종목이 검열됨. 이 검열이 'no hangover'를 낙관편향시키는가?",
+  "chartered_answer": "NO — 검열편향 immaterial. (a) 검열 실체 극소, (b) 차등검열 비유의(SAFE가 OFF보다 유의하게 더 이탈/폐지하지 않음), (c) worst-case 상한에서도 결론 불변.",
+  "base": {
+    "source": "R38이 상속한 R36 _r36_objects.rds uni (production clean T-1, production_parity_verified 3.058, PIT C5 상속) + pin rawdata broader universe(검열탐지)",
+    "vintage_pin": ".cache/pin/rawdata_r9_pin_20260715.parquet",
+    "prereg_config_hash": "5a5dd3bda71dd13e",
+    "selection_type": "chain",
+    "n_trials": 1,
+    "ret_alignment_check": "uni Ret_1m == rmon 동월 compound (cor=1.0, 77629/77629 match)"
+  },
+  "self_adversarial_catch": {
+    "concern": "초기 실행: MID CENSORED 27건 중 25건이 j1=202605(uni 종료 202604 직후) = terminal right-truncation을 informative censoring으로 오분류 → 초기 verdict를 no_hangover_not_robust_both(R38 반전)로 오도.",
+    "fix": "MAX_YM 가드 도입 — j1>MAX_YM ON-event(ALL 67·MID 25) right_truncated 분리제외.",
+    "impact": "MID 검열 27→2건, 차등이탈 p 3.3e-8→0.757, verdict 반전 → horizon_limited. self-adversarial이 false-reversal을 finalize 전 검거.",
+    "detail": "challenge_note_r40_20260715.md Concern 1"
+  },
+  "P1_multimonth_trajectory_MID": {
+    "definition": "관측 EXIT cohort(uni 잔존)의 exit_ym+h forward 위험 + 월별-paired NW-lag3 vs OFF (h=0=R38 재현)",
+    "h0": {"tail_pct": 5.2, "downside": -0.069, "paired_vs_off_t": 1.89, "n": 115},
+    "h1": {"tail_pct": 3.5, "downside": -0.070, "paired_vs_off_t": 1.33, "n": 114},
+    "h2": {"tail_pct": 12.3, "downside": -0.092, "paired_vs_off_t": -0.03, "n": 114},
+    "h3": {"tail_pct": 10.5, "downside": -0.098, "paired_vs_off_t": -1.65, "n": 114},
+    "off_tail_pct": 7.9,
+    "interpretation": "protection h=0-1 집중(OFF 대비 낮은 tail), h2-3에 baseline 복귀/소폭 초과 = directional(paired-t 전구간 |t|<2 비유의). R38 SUSTAIN-cluster 기전 정합 — protection은 무기한 아닌 ~1개월 transient. attrition 없음(surv_uni≈1.0, terminal 제외 후)."
+  },
+  "P2_censoring_census_and_worstcase": {
+    "MID_outcome": {"SUSTAIN": 757, "EXIT_obs": 115, "cov_lost": 85, "CENSORED": 2},
+    "MID_censored_types": {"other_filter": 1, "distress_admin_halt": 1, "delisted_hard": 0},
+    "ALL_censored_types": {"liquidity_drop": 4, "distress_admin_halt": 2, "other_filter": 2, "universe_exit": 2, "delisted_hard": 0},
+    "right_truncated_excluded": {"ALL": 67, "MID": 25, "note": "hold_ym==202604 ON-event (j1 관측창 밖) — informative censoring 아님"},
+    "differential_censoring_MID": {"on_leave_rate_pct": 0.209, "off_leave_rate_pct": 0.107, "leave_diff_p": 0.757, "on_delist_rate": 0.0, "off_delist_rate": 0.0, "verdict": "SAFE(ON)가 OFF보다 유의하게 더 이탈/폐지하지 않음 — 검열 낙관편향 아님"},
+    "worstcase_MID": {
+      "off_baseline_tail_pct": 7.9, "off_downside": -0.086,
+      "r38_exit_obs_tail_pct": 5.2, "r38_exit_obs_n": 115,
+      "cens_actual_n": 2, "cens_impute_n": 0, "cens_actual_tail_pct": 50.0, "cens_actual_min": -0.236,
+      "actual_only": {"exit_tail_pct": 6.0, "risk_sticky": true, "hangover": false},
+      "wipeout_m100": {"exit_tail_pct": 6.0, "risk_sticky": true, "hangover": false},
+      "note": "진성폐지 0건 → impute_n=0이라 worst-case 시나리오는 actual_only와 동일(대입할 미측정 이탈 없음). 검열 2건 실측(tail 50%) 추가해도 EXIT tail 5.2%→6.0%<OFF 7.9%. 수기검증: 검열 2건을 -100% 강제해도 tail~6.8%<7.9% 유지."
+    }
+  },
+  "P3_catastrophic_vs_benign_MID": {
+    "n_off_transitions": 117,
+    "benign": {"n": 115, "pct": 98.3, "owner": "SAFE_FADING (monitoring)"},
+    "benign_censored": {"n": 1, "pct": 0.9},
+    "catastrophic": {"n": 1, "pct": 0.9, "owner": "부실 tripwire (distress/delisting)"},
+    "boundary": "mid-cap 투자가능 유니버스에서 catastrophic exit은 ~1%뿐 — SAFE_FADING이 사실상 전량(99%) 소관. 단 이는 투자가능 조건부 — small-cap/비투자가능 영역의 진성폐지는 애초 uni 밖(부실 tripwire 잔여 소관, next_probe P2)."
+  },
+  "verdict_logic": {
+    "full_universe_ok": true,
+    "diff_favorable": true,
+    "survivor_ok": false,
+    "survivor_sig_ok": true,
+    "censoring_bias_material": false,
+    "r38_censoring_caveat_dismissed": true,
+    "r38_conclusion_holds": true
+  },
+  "caveats": [
+    "결론은 KR mid/large 투자가능(uni: K200∪KQ150 + 2e8 liq) 조건부. 검열이 immaterial한 이유는 '투자가능 유니버스에서 flag-off 동시 폐지/이탈이 거의 없어서'(census 실측) — small-cap/비투자가능 영역 진성폐지는 uni 밖(부실 tripwire 소관).",
+    "다중월 h2-3 지연 재악화는 directional(paired-t 비유의) — '유의 hangover' 주장 아님. tail-threshold 플래그와 유의성 검정 분리(survivor_sig_ok=TRUE).",
+    "차등 이탈률 잔여 방향성(ON 0.209% vs OFF 0.107%)은 composition-consistent(SAFE=insider-covered 소형 편중, 유동성 경계 근접)이나 비유의(p=0.757)·절대율 극소.",
+    "잔여 other_filter 1건(A008930 201008)은 rmon 동월 vs uni T-1 멤버십 convention 불일치 가능(라벨 정밀도 한계, census 무영향)."
+  ],
+  "next_probes": [
+    "SAFE_FADING 라벨 실배선(horizon-bounded): R38 SOFT-LAG + R40 '~1개월 transient' 통합 — filing_delay_watch.R Part C에 상태전이(SAFE→SAFE_FADING@1mo→cleared@2mo+, 무기한 아님). R37 mid-cap 신뢰가중 + dur-가중(지속flag>단발) 반영. monitoring 태스크(자본 아님).",
+    "부실 tripwire coverage 확장: catastrophic exit(진성폐지/distress)은 투자가능 uni에서 ~1%뿐이나, 진성폐지는 pre-filter(small-cap/below-liq) 영역에 집중 — R40 census를 uni-이전 broader universe로 확장해 SAFE_FADING(투자가능-only)이 구조적으로 놓치는 부분을 부실 tripwire(R22~R24 지각제출/부실 라인, project-latefiling-severe-event-arc)와 소관 정합. FQ-038(부실 coverage)와 결합."
+  ],
+  "layer": "⑤monitoring (SAFE tripwire 청산규칙 검열-강건성) — 성과 병목 아님(소비면 진단). insider 라인(R9~R40) exit-timing/검열 마지막 진단.",
+  "consumer_surfaces": [
+    "⑤monitoring: SAFE_FADING = horizon-bounded(1-2개월 auto-clear, 무기한 SOFT-LAG 아님). 검열편향 없음이 정량 확인 — 라벨 즉시해제 불요는 유효하되 1-2개월 내 fade.",
+    "⑧위험감시: per-holding 'no hangover'는 검열-robust(투자가능 조건부). catastrophic exit ~1%는 부실 tripwire 소관 명확화.",
+    "⑥선별라벨: R38 'protection 점착'을 '~1개월 transient'로 교정 — 청산 후 즉시가 아닌 1-2개월 관찰창."
+  ],
+  "constraints_respected": "book_state/05_Production/outputs.ramp 무변경(stage_artifacts만). canonical 진단 · cov/weights 미산출(역할경계). DART API 금지. 자본 주장 없음(monitoring). §7b R38→R36 uni 상속(저장 268m same-month vintage 미사용). pin rawdata_r9_pin_20260715. selection_type=chain(DSR 부적용).",
+  "generated_at": "2026-07-15"
+}
