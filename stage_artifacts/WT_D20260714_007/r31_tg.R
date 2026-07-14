@@ -27,10 +27,10 @@ tg_agent_brief(
         "신규 정의 관문 통과 수"="0 / 6")),
     list(type="kv", emoji="🔎", heading="두 정보성 발견 (정직)",
       kv=list(
-        "2024+ 감쇠=정의-특이"="EBIT/EV 2.21→0.92·FCF 0.00→-0.52 감쇠 vs SP 0.99→1.85·EP 0.77→1.33 개선",
-        "incumbent 중복=구성-바운드"="cor 전정의 0.86~0.93 균일, 신호직교 FCF조차 0.928 → '실낱 EV' 반증",
-        "SP/EP 실신호 확인"="위약 p=0.025/0.000, 지연1 붕괴無(미래참조 아님) — 단 cap-w 게이트 미달",
-        "정의 독립성"="FCF는 EBIT/EV와 거의 직교(상관 0.07) = 진짜 다른 정의 다수(1테스트 아님)")),
+        "2024+ 감쇠=정의-특이"="EBIT/EV·FCF 감쇠 vs SP·EP·CFP 개선",
+        "incumbent 중복=구성-바운드"="cor 0.86~0.93 균일 → '실낱 EV' 반증",
+        "SP/EP 실신호"="위약 p=0.025/0.000, 지연1 붕괴無 (게이트는 미달)",
+        "정의 독립성"="FCF-EBIT/EV 상관 0.07 = 진짜 다른 정의(1테스트 아님)")),
     list(type="bullet", emoji="🚩", heading="Challenge flags (self-adversarial)",
       items=c(
         "cor_active 구성상 높음 → '실낱 EV 반증'은 '구성-바운드+게이트 EBIT/EV뿐 moot'로 축소",
