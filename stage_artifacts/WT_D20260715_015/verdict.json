@@ -1,0 +1,66 @@
+{
+  "wt": "WT-D20260715_015",
+  "round": "R46",
+  "mode": "data-integrity 배선 정련 (밤샘 위생 — R45 P2+P3 next_probe 소비, 무결성 라인 완결)",
+  "title": "ret_sanity_firewall date-gap 정련(P3, stored 참값 보존) + Close 연속성 tripwire(P2) 배선 — R45 seam 근원 지식을 방화벽·게이트로 제도화",
+  "as_of_date": "2026-07-15",
+  "verdict_type": "capability_established",
+  "task_class": "data_integrity_wiring_refinement",
+  "parent": "R45 (WT-D20260715_014) next_probes P2(Close 연속성 tripwire) + P3(firewall date-gap stored 보존). 근원=Close 시계열 구멍·stored Ret 참값·라이브 무영향.",
+  "pin_record": {
+    "pinned_snapshot": ".cache/pin/rawdata_r9_pin_20260715.parquet",
+    "pin_tag": "rawdata_r9_pin_20260715 (R40 pin, byte-identical to live 2026-07-15)",
+    "note": "read-only 검증. rawdata.parquet/book_state/05_Production/factor_db 무변경(입력단 함수 배선만). DART API 0."
+  },
+
+  "changes": {
+    "P3_firewall_dategap_refine": {
+      "file": "02_Infrastructure/data/rawdata_sanitize.R :: ret_sanity_firewall()",
+      "logic": "date-gap(gapdays>20) ∧ stored 물리타당(|stored Ret|≤0.31) → NA 격리 대신 stored 참값 복원(RESTORE, mask_restore). recompute(Close/shift(Close)-1) magnitude 무관(|recompute|>1.0 phys·penny 포함) — date-gap이면 recompute 자체가 Close-hole span 스퓨리어스이므로 date-gap이 phys/zerodiv보다 우선(restore carve-out). date-gap ∧ stored 무효(|stored|>0.31 or NA)는 HARD NA 유지. 연속일(non-gap) phys(|recompute|>1.0)·0원제수(prevClose≤10)만 HARD(stored도 오염).",
+      "stored_ref": "명시 Ret_stored 컬럼 우선(sanitize Step5·census 주입), 없으면 dt$Ret 자체. Step5: recompute 전 raw[, Ret_stored := Ret] 보존 → 방화벽 후 raw[mask_restore, Ret := Ret_stored] 복원. Ret_stored 임시컬럼은 저장 전 제거(스키마 불변).",
+      "return_added": "mask_restore + counts$restore + counts$restore_in_universe + isolation action='stored_restored_kept'/cause='RESTORE_dategap_stored_valid_kept'. mask_hard/mask_suspect 하위호환 유지."
+    },
+    "P2_close_continuity_tripwire": {
+      "file": "02_Infrastructure/data/rawdata_sanitize.R :: close_continuity_tripwire()",
+      "logic": "활성상장(비-상폐, 최종관측일이 데이터셋 max에서 90일 이내) 종목의 Close gapdays>20 hole 감지·리포트. gap_threshold=20d(KR 최장 연휴 ~9일 초과=진성 구멍만). in_universe/active_listed/source_seam(krx_api_backfill_*→krx_api 경계 지문)/recent 태깅. gate_flag=유니버스內 활성 구멍>0(리빌드 전 경보 대상).",
+      "wiring": "sanitize_rawdata Step 4b에 report-only 호출(비변경) — 리빌드 전 April-gap류 재발 조기 감지. Ret firewall(recompute 산물 격리, 사후)과 상보(tripwire=근원 Close hole, 사전).",
+      "purity": "순수 함수(dt copy·부작용 없음). report_path 지정 시 hole CSV 저장."
+    }
+  },
+
+  "verification": {
+    "battery": "6-test 회귀 배터리 all PASS (r46_verify_results.json). 규율: read-only pin·단일스레드·io(2).",
+    "testA_census_inuniv_class_unchanged": "PASS — recompute basis: |Ret|>0.31=2793·|Ret|>1.0=257. HARD 633(R44 672 − 39 restore)·RESTORE 39·SUSPECT 2121. ★유니버스內 분류 불변: iso 17행(R44 정합) = 1 phys HARD(A063350) + 16 suspect, restore_in_universe=0.",
+    "testB_book_parity": "PASS — 현 북 14보유 방화벽 격리 0행(R45 hole 0 재확인).",
+    "testC_universe_panel_parity": "PASS — RESTORE 39건 전량 비-유니버스(restore_in_universe=0) → 유니버스 월패널 수학적 불변. 실측: book+anom+유니버스샘플 171종목 OLD(R44 hard-drop) vs NEW(hard-NA+restore-복원) 월패널 max|Δ Ret_1m|=0·상이행 0·book max|Δ|=0. NEW가 +39행 보존(정보손실 방지).",
+    "testD_canonical_guard": "PASS — canonical_screen_bt Ret_1m 가드(R44 배선) 불변 재확인: clean 경고 0·PORT_t finite / monster(Ret_1m=67000) 주입 시 1회 발화·격리→결과 clean과 bit-일치.",
+    "testE_r45_196_restore": "PASS — R45 196 seam 케이스 분류: RESTORE 39(|recompute|>0.31 date-gap·stored 물리타당 전량 복원) · HARD 0 · SUSPECT 0 · 미발화 157(|recompute|≤0.31 → 방화벽 임계 미도달, OLD/NEW 동일·변화 없음). restore 행 stored 전량 |stored|≤0.31. worked example A004415@2026-07-02: recompute +489%(hole-span) → OLD NA-drop → NEW stored +2.93% 보존.",
+    "testF_tripwire_current_rawdata": "PASS(gate clean) — 현 rawdata 구멍(gapdays>20): 245행·고유 241종목·유니버스內 0·활성상장 234·유니버스×활성 0·최근90d 218·source-seam 218(krx_api_backfill→krx_api). gate_flag_in_universe_active=FALSE → 리빌드 안전(비-유니버스 April/July seam 잔여만·라이브 무영향). 잔여 hole 리포트 저장."
+  },
+
+  "residual_known_scoped": {
+    "seam_157_small_magnitude": "R45 196 중 157건은 |recompute|≤0.31(소폭)이라 방화벽 임계(>0.31) 미도달 → P3 미적용(OLD/NEW 동일, recompute 값 유지·stored와 최대 0.30 차). 이는 방화벽 설계 scope(>0.31 outlier만 개입) 정합 — 소폭 seam 완전 정합은 근원(Close hole) 수리 소관. 비-유니버스·라이브 무영향.",
+    "close_holes_245_krx_backfill": "tripwire가 감지한 245 활성 Close 구멍(218 source_seam, 전량 비-유니버스)은 근원 수리 표적 = KRX 일별 재수집(R2/R3 April-gap 리빌드와 동시). rawdata 직접수정 금지 → KRX 백필 리빌드 경유. 리빌드 후 recompute==stored parity 회복(P1)."
+  },
+
+  "next_probes": [
+    "KRX 백필 리빌드(별도 태스크·armed): tripwire가 감지한 245 활성 Close 구멍(2026-04-30→07-01 April cluster + 07-03/06 July seam, 전량 비-유니버스) KRX 일별 재수집 → recompute==stored parity 회복 + 157 소폭 seam 동시 해소. April-gap R2/R3 잔여와 동시. rawdata 직접수정 금지(KRX 백필 경유). 차기 리밸 유니버스 진입 후보 우선.",
+    "tripwire 게이트화(선택): close_continuity_tripwire를 factor_db 리빌드 파이프라인 pre-hook으로 승격 — 현재 sanitize Step 4b report-only(warn). 유니버스內 활성 구멍 발생 시 hard-block(April-gap 실데이터 삭제 사고류 사전 차단, 현 Step 3 캘린더-hole 가드와 정합).",
+    "pre-2015 가격제한 시변(선택): SUSPECT 임계 ret_limit=0.31은 2015+ ±30% 기준 — pre-2015 ±15% 구간은 0.16 임계가 더 정합. 시변 임계 검토(R44 P2 잔존)."
+  ],
+
+  "consumer_surfaces": [
+    "①재료/데이터 원천: ret_sanity_firewall date-gap 정련 = seam 참값(stored Ret) 정보손실 방지 배선(39건 복원). R45 '근원=Close hole·stored 참값' 지식을 방화벽 로직으로 제도화. Close 연속성 tripwire = 리빌드 전 구멍 조기감지 단일함수(source seam 지문).",
+    "⑧위험모델/감시: close_continuity_tripwire counts(gate_flag_in_universe_active) = 새 데이터-위생 게이트 신호 — 리빌드 전 유니버스內 활성 구멍 발생 시 경보(April-gap 재발 조기감지). Ret firewall(사후 artifact 격리)과 상보(사전 근원 감지).",
+    "⑨자본/운영: 현 북 14보유·유니버스 월패널·유니버스內 활성 구멍 0 = 라이브 factor 무영향 재확인(정련 후에도 known-case parity 불변, recon NAV clean)."
+  ],
+
+  "layer_bottleneck": "①재료(데이터 무결성 위생) — 성과 병목 아님. R45 P2+P3 소비로 seam 근원 지식을 방화벽 정련(참값 보존)·tripwire(사전 감지)로 배선. 밤샘 무결성 라인(R42 적발→R43 census→R44 방화벽→R45 근원→R46 정련·tripwire) 배선 완결. 잔여 근본수리=KRX 백필 리빌드(별도).",
+  "integrity_line_status": "R42(Ret max=66999 적발) → R43(census: |Ret|>0.31=2760·유니버스 17) → R44(ret_sanity_firewall 배선·4-test parity) → R45(근원=Close hole·stored 참값·라이브 무영향) → R46(P3 stored 보존 정련 + P2 Close 연속성 tripwire·6-test parity). 배선 라인 완결. 남은 것 = 근원 수리(KRX 백필 R2/R3·별도 리빌드).",
+  "book_state_unchanged": true,
+  "production_unchanged": true,
+  "rawdata_unchanged": true,
+  "factor_db_unchanged": true,
+  "constraints_respected": "rawdata.parquet/book_state/05_Production/factor_db 무변경(입력단 함수 배선만) · DART API 0 · 단일스레드 · arrow io(2) · §7 pin 고정 read-only · known-case parity(정당 데이터·유니버스 분류·북·유니버스 월패널 전부 불변) · 판정 어휘 규약(종결어휘 미사용·verdict enum capability_established).",
+  "generated_at": "2026-07-15"
+}

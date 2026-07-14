@@ -23,17 +23,24 @@ if (!exists("is_trading_day")) source(file.path(DATA_DIR, "trading_calendar.R"))
 #   R43 census(WT-D20260715_012): 전역 일간 Ret max=66999(전일종가 0원류·+6,699,900%).
 #     |Ret|>0.31 = 2,760 종목-일 · |Ret|>1.0(물리불가) = 343 · 유니버스內(K200∪KQ150) 17.
 #   KR 일일 가격제한 ±30%(0.30) → 0.31 초과 = 제한위반, 1.0 초과 = 물리 불가능.
-#   두-단계 격리 (오염만 제거·정당 데이터 불변 = known-case parity):
+#   세-단계 격리 (오염만 제거·정당 데이터 불변 = known-case parity):
 #     ① HARD (Ret:=NA → 후속 !is.na(Ret) 제거가 소비): 물리불가(|Ret|>1.0) + 0원제수
-#        (prevClose≤10, 반올림 증폭) + 날짜갭>20d(상폐/재상장 cross-gap 허위수익).
+#        (prevClose≤10, 반올림 증폭) + 날짜갭>20d ∧ stored 무효(|stored|>0.31 or NA).
 #        → 정당 limit-bound(≤0.30) 및 megacap 레짐 정당 이동은 불변(reference-kr-2025-megacap 준수).
-#     ② SUSPECT (값 유지 · 격리리스트 아티팩트로만 보존): 0.31<|Ret|≤1.0 잔여(분할류
+#     ② RESTORE (P3, R46 — WT-D20260715_015): 날짜갭>20d ∧ stored 물리타당(|stored|≤0.31).
+#        R45(WT-D20260715_014) 근원 규명: date-gap 불일치의 recompute(Close/shift(Close)-1)는
+#        Close 시계열 구멍을 gap 넘어 stale prevClose로 참조한 스퓨리어스이고 stored Ret이
+#        참값(|stored|≤0.31 물리타당 196/196=100%). → NA 격리 대신 stored 참값 복원(행 보존·
+#        recompute 스퓨리어스만 폐기 = 정보손실 방지). 소비는 mask_restore로 Ret:=Ret_stored.
+#     ③ SUSPECT (값 유지 · 격리리스트 아티팩트로만 보존): 0.31<|Ret|≤1.0 잔여(분할류
 #        ratio≈정수배 등). 분할 back-adjust는 R2/R3 KRX 백필 리빌드 소관 — 방화벽은 FLAG,
 #        리빌드가 FIX. rawdata 스키마 불변(새 컬럼 미추가, "직접수정 금지" 정합).
+#   ★stored Ret 참조: 명시 Ret_stored 컬럼 우선(sanitize Step5·census 주입), 없으면 dt$Ret 자체.
 #   ★순수 함수(부작용 없음) — sanitize Step5와 회귀검증이 동일 로직을 공유(단일 진실).
-#' @param dt data.table(Ticker, Date, Close, Ret[, prevClose, gapdays, K200, KQ150])
+#' @param dt data.table(Ticker, Date, Close, Ret[, Ret_stored, prevClose, gapdays, K200, KQ150])
 #'           prevClose/gapdays 부재 시 Ticker·Date 정렬 후 shift로 계산(원본 복제, 미변경).
-#' @return list(mask_hard, mask_suspect, isolation=data.table, thresholds, counts)
+#'           Ret_stored(recompute 전 원본 stored Ret) 있으면 P3 date-gap 참값보존 활성.
+#' @return list(mask_hard, mask_suspect, mask_restore, isolation=data.table, thresholds, counts)
 ret_sanity_firewall <- function(dt,
                                 ret_phys_impossible = 1.0,
                                 ret_limit = 0.31,
@@ -48,12 +55,23 @@ ret_sanity_firewall <- function(dt,
     if (need_gd) D[, gapdays := as.integer(Date - shift(Date)), by = Ticker]
   }
   ret <- D$Ret; pc <- D$prevClose; gd <- D$gapdays
+  # stored Ret 참조 (P3, R46) — 명시 Ret_stored 컬럼 우선(sanitize Step5·census 주입),
+  #   없으면 ret 자체(standalone census: dt$Ret이 이미 stored 참값).
+  stored_ret <- if ("Ret_stored" %in% names(D)) D$Ret_stored else ret
   has_ret <- !is.na(ret)
-  m_phys    <- has_ret & abs(ret) > ret_phys_impossible
-  m_zerodiv <- has_ret & abs(ret) > ret_limit & !is.na(pc) & pc <= zero_div_prevclose
-  m_dategap <- has_ret & abs(ret) > ret_limit & !is.na(gd) & gd > dategap_max
-  m_hard    <- m_phys | m_zerodiv | m_dategap
-  m_suspect <- has_ret & abs(ret) > ret_limit & !m_hard
+  stored_valid <- !is.na(stored_ret) & abs(stored_ret) <= ret_limit
+  m_flagged <- has_ret & abs(ret) > ret_limit
+  m_phys    <- m_flagged & abs(ret) > ret_phys_impossible
+  m_zerodiv <- m_flagged & !is.na(pc) & pc <= zero_div_prevclose
+  m_dategap_all <- m_flagged & !is.na(gd) & gd > dategap_max
+  # ── P3 (R46): date-gap ∧ stored 물리타당 → stored 참값 보존(RESTORE, NA 대신 stored 복원) ──
+  #   date-gap이면 recompute(Close/shift(Close)-1) 자체가 Close-hole을 gap 넘어 참조한 스퓨리어스
+  #   (magnitude 무관 — |recompute|>1.0(phys)·penny 포함). stored 물리타당(|stored|≤0.31)이면 stored가
+  #   참값(R45 196/196=100%) → NA 대신 복원. ★date-gap이 phys/zerodiv보다 우선(restore carve-out);
+  #   연속일(non-gap) phys/0원제수만 HARD(stored도 오염). date-gap ∧ stored 무효 → HARD NA 유지.
+  m_dategap_restore <- m_dategap_all & stored_valid
+  m_hard    <- (m_phys | m_zerodiv | m_dategap_all) & !m_dategap_restore
+  m_suspect <- m_flagged & !m_hard & !m_dategap_restore
   # SUSPECT 세분: 분할/증자류(ratio≈정수배 up 또는 1/정수 down) 식별 — R2/R3 back-adjust 표적화용.
   #   ratio = Close/prevClose = 1+Ret. up=액면분할/증자(≈정수배), down=병합/reverse-split·seam(≈1/정수).
   ratio <- 1 + ret
@@ -62,27 +80,93 @@ ret_sanity_firewall <- function(dt,
     (ratio >= 1.5 & abs(ratio - round(ratio)) <= int_tol * pmax(round(ratio), 1) & round(ratio) >= 2) |
     (ratio > 0 & ratio <= 0.67 & abs(1/ratio - round(1/ratio)) <= int_tol * pmax(round(1/ratio), 1) & round(1/ratio) >= 2))
   cause <- rep(NA_character_, length(ret))
-  cause[m_suspect] <- "SUSPECT_above_limit"
-  cause[m_split]   <- "SUSPECT_split_like_ratio_int"       # 분할류(ratio≈정수배) — log+flag(값유지)
-  cause[m_dategap] <- "HARD_dategap_gt20d"
-  cause[m_zerodiv] <- "HARD_zerodiv_prevclose_le10"
-  cause[m_phys]    <- "HARD_phys_impossible_absret_gt1"    # 우선순위: 물리불가가 최상위
+  cause[m_suspect]         <- "SUSPECT_above_limit"
+  cause[m_split]           <- "SUSPECT_split_like_ratio_int"        # 분할류(ratio≈정수배) — log+flag(값유지)
+  cause[m_dategap_restore] <- "RESTORE_dategap_stored_valid_kept"   # P3 — stored 참값 보존(행 유지)
+  # HARD 세부 라벨(우선순위 phys>zerodiv>dategap) — restore는 carve-out되어 m_hard=FALSE
+  cause[m_hard & m_dategap_all & !m_phys & !m_zerodiv] <- "HARD_dategap_gt20d_stored_invalid"
+  cause[m_hard & m_zerodiv]  <- "HARD_zerodiv_prevclose_le10"
+  cause[m_hard & m_phys]     <- "HARD_phys_impossible_absret_gt1"   # 우선순위: 물리불가가 최상위
   k200  <- if ("K200"  %in% names(D)) D$K200  else rep(NA, nrow(D))
   kq150 <- if ("KQ150" %in% names(D)) D$KQ150 else rep(NA, nrow(D))
   in_univ <- (!is.na(k200) & k200 == TRUE) | (!is.na(kq150) & kq150 == TRUE)
-  iso_idx <- which(m_hard | m_suspect)
+  iso_idx <- which(m_hard | m_suspect | m_dategap_restore)
   isolation <- data.table::data.table(
     Ticker = D$Ticker[iso_idx], Date = D$Date[iso_idx], Ret = ret[iso_idx],
+    Ret_stored = stored_ret[iso_idx],
     Close = D$Close[iso_idx], prevClose = pc[iso_idx], gapdays = gd[iso_idx],
     in_universe = in_univ[iso_idx],
-    action = data.table::fifelse(m_hard[iso_idx], "NA_isolated", "suspect_flag_kept"),
+    action = data.table::fifelse(m_hard[iso_idx], "NA_isolated",
+              data.table::fifelse(m_dategap_restore[iso_idx], "stored_restored_kept", "suspect_flag_kept")),
     cause = cause[iso_idx])
-  list(mask_hard = m_hard, mask_suspect = m_suspect, isolation = isolation,
+  list(mask_hard = m_hard, mask_suspect = m_suspect, mask_restore = m_dategap_restore,
+       isolation = isolation,
        thresholds = list(ret_phys_impossible = ret_phys_impossible, ret_limit = ret_limit,
                          zero_div_prevclose = zero_div_prevclose, dategap_max = dategap_max),
        counts = list(hard = sum(m_hard, na.rm = TRUE), suspect = sum(m_suspect, na.rm = TRUE),
+                     restore = sum(m_dategap_restore, na.rm = TRUE),
                      hard_in_universe = sum(m_hard & in_univ, na.rm = TRUE),
-                     suspect_in_universe = sum(m_suspect & in_univ, na.rm = TRUE)))
+                     suspect_in_universe = sum(m_suspect & in_univ, na.rm = TRUE),
+                     restore_in_universe = sum(m_dategap_restore & in_univ, na.rm = TRUE)))
+}
+
+# ─── Close 연속성 tripwire (P2, R46 — WT-D20260715_015) ────────────────────────
+#   목적: factor_db/sanitize 리빌드 *전에* 활성상장(비-상폐) 종목의 Close 시계열 구멍
+#     (gapdays>threshold hole)을 감지·리포트. April-gap류 재발 조기 감지 (source seam
+#     krx_api_backfill_*→krx_api 경계가 지문). Ret firewall(recompute 산물 격리)과 상보 —
+#     firewall은 이미 발생한 스퓨리어스만 잡고, tripwire는 근원(Close hole) 자체를 조기 감지.
+#   판정 배경(R45): recompute Ret 스퓨리어스의 근원 = Close hole. 홀 자체를 리빌드 전에 보면
+#     R2/R3 KRX 백필 우선순위(유니버스 진입 후보)를 조준할 수 있다.
+#   ★threshold=20d: KR 최장 연휴(설/추석 ~주말포함 최대 ~9일) 초과 → 진성 구멍만 검출
+#     (정당 공휴일 gap 오탐 방지). ★순수 함수(부작용 없음, dt copy). rawdata 미변경.
+#' @param dt data.table(Ticker, Date, Close[, source, K200, KQ150, Name, Market])
+#' @param gap_threshold 캘린더-일 gap 임계(초과 = 진성 구멍). 기본 20L.
+#' @param active_lag_days 종목 최종관측일이 데이터셋 max에서 이 이내면 '활성상장'. 기본 90L.
+#' @param report_path (선택) 구멍 리스트 CSV 저장 경로.
+#' @return list(holes=data.table, counts, thresholds, ds_max)
+close_continuity_tripwire <- function(dt, gap_threshold = 20L, active_lag_days = 90L,
+                                      report_path = NULL) {
+  stopifnot(all(c("Ticker", "Date", "Close") %in% names(dt)))
+  D <- data.table::copy(dt)
+  D[, Date := as.Date(Date)]
+  data.table::setorder(D, Ticker, Date)
+  D[, prevDate := shift(Date), by = Ticker]
+  D[, gapdays  := as.integer(Date - prevDate)]
+  D[, prevClose := shift(Close), by = Ticker]
+  has_src <- "source" %in% names(D)
+  if (has_src) D[, prevSource := shift(source), by = Ticker]
+  ds_max <- max(D$Date, na.rm = TRUE)
+  # 활성상장(비-상폐): 종목 최종 관측일이 데이터셋 max에서 active_lag_days 이내
+  last_dt <- D[, .(last_date = max(Date)), by = Ticker]
+  active_tick <- last_dt[as.integer(ds_max - last_date) <= active_lag_days, Ticker]
+  k200  <- if ("K200"  %in% names(D)) D$K200  else rep(NA, nrow(D))
+  kq150 <- if ("KQ150" %in% names(D)) D$KQ150 else rep(NA, nrow(D))
+  D[, in_universe := (!is.na(k200) & k200 == TRUE) | (!is.na(kq150) & kq150 == TRUE)]
+  # 구멍: gapdays > threshold (mid-series — shift 이므로 gap 후 재개 행만 잡힘 = 상폐경계 아님)
+  holes <- D[!is.na(gapdays) & gapdays > gap_threshold]
+  if (nrow(holes) > 0) {
+    holes[, active_listed := Ticker %in% active_tick]
+    holes[, source_seam := if (has_src) (!is.na(prevSource) & source != prevSource) else NA]
+    holes[, recent := as.integer(ds_max - Date) <= active_lag_days]
+  }
+  keep <- intersect(c("Ticker", "Name", "Market", "prevDate", "Date", "gapdays",
+                      "prevClose", "Close", "source", "prevSource",
+                      "in_universe", "active_listed", "source_seam", "recent"), names(holes))
+  holes_out <- if (nrow(holes) > 0) holes[order(-recent, -in_universe, -gapdays), ..keep] else holes[, ..keep]
+  cnt <- list(
+    total_holes            = nrow(holes),
+    in_universe            = if (nrow(holes)) holes[in_universe == TRUE, .N] else 0L,
+    active_listed          = if (nrow(holes)) holes[active_listed == TRUE, .N] else 0L,
+    in_universe_active     = if (nrow(holes)) holes[in_universe == TRUE & active_listed == TRUE, .N] else 0L,
+    recent                 = if (nrow(holes)) holes[recent == TRUE, .N] else 0L,
+    source_seam            = if (nrow(holes) && has_src) holes[source_seam == TRUE, .N] else 0L,
+    unique_tickers         = if (nrow(holes)) holes[, uniqueN(Ticker)] else 0L)
+  # ★게이트 신호: 유니버스內 활성 구멍(=리빌드가 오염 유발 가능) → 리빌드 전 경보 대상
+  cnt$gate_flag_in_universe_active <- cnt$in_universe_active > 0L
+  if (!is.null(report_path) && nrow(holes_out) > 0) data.table::fwrite(holes_out, report_path)
+  list(holes = holes_out, counts = cnt,
+       thresholds = list(gap_threshold = gap_threshold, active_lag_days = active_lag_days),
+       ds_max = ds_max)
 }
 
 sanitize_rawdata <- function(dry_run = FALSE) {
@@ -220,17 +304,34 @@ sanitize_rawdata <- function(dry_run = FALSE) {
     cat("  누락 없음.\n")
   }
 
-  # ─── Step 5: Ret 재계산 + Ret sanity 방화벽 (R44) ───────────────────────────
-  #   원리: ret_sanity_firewall() (파일 상단) — 물리불가·0원제수·날짜갭은 HARD 격리(Ret:=NA),
-  #         분할류 잔여는 SUSPECT flag(값 유지·격리리스트만). 정당 데이터 불변(known-case parity).
-  cat("\n[Step 5] Ret 재계산 + Ret sanity 방화벽 (R44)...\n")
+  # ─── Step 4b: Close 연속성 tripwire (P2, R46) — 리빌드 전 구멍 조기 감지 ───────
+  #   report-only(비변경). 유니버스內 활성 구멍 존재 시 경보(April-gap류 재발 조기 감지).
+  cat("\n[Step 4b] Close 연속성 tripwire (P2, gapdays>20 hole)...\n")
+  tw_path <- file.path(CACHE_DIR, sprintf("close_continuity_holes_%s.csv", format(Sys.Date(), "%Y%m%d")))
+  tw <- close_continuity_tripwire(raw, gap_threshold = 20L, active_lag_days = 90L, report_path = tw_path)
+  cat(sprintf("  구멍(gapdays>20): %d행 · 고유종목 %d · 유니버스內 %d · 활성상장 %d · 유니버스×활성 %d · 최근90d %d · source-seam %d\n",
+              tw$counts$total_holes, tw$counts$unique_tickers, tw$counts$in_universe,
+              tw$counts$active_listed, tw$counts$in_universe_active, tw$counts$recent, tw$counts$source_seam))
+  if (isTRUE(tw$counts$gate_flag_in_universe_active)) {
+    cat(sprintf("  ⚠️ 경보: 유니버스內 활성 Close 구멍 %d건 — 리빌드 전 KRX 백필 우선 권고(R2/R3). 리스트: %s\n",
+                tw$counts$in_universe_active, tw_path))
+  } else if (tw$counts$total_holes > 0) {
+    cat(sprintf("  참고: 구멍 전량 비-유니버스/비-활성 (April-gap 비-유니버스 잔여) — 라이브 무영향. 리스트: %s\n", tw_path))
+  }
+
+  # ─── Step 5: Ret 재계산 + Ret sanity 방화벽 (R44/R46) ───────────────────────
+  #   원리: ret_sanity_firewall() (파일 상단) — 물리불가·0원제수·날짜갭∧stored무효는 HARD 격리
+  #         (Ret:=NA), 날짜갭∧stored물리타당은 RESTORE(stored 참값 복원·P3), 분할류 잔여는
+  #         SUSPECT flag(값 유지·격리리스트만). 정당 데이터 불변(known-case parity).
+  cat("\n[Step 5] Ret 재계산 + Ret sanity 방화벽 (R44/R46)...\n")
   if (!dry_run) {
+    raw[, Ret_stored := Ret]                       # P3(R46): recompute 전 stored 참값 보존
     setorder(raw, Ticker, Date)
     raw[, prevClose := shift(Close), by = Ticker]
     raw[, gapdays   := as.integer(Date - shift(Date)), by = Ticker]
     raw[, Ret := Close / prevClose - 1]            # = Close/shift(Close)-1 (parity 불변)
 
-    fw  <- ret_sanity_firewall(raw)               # prevClose/gapdays 이미 존재 → 재계산 안 함
+    fw  <- ret_sanity_firewall(raw)               # Ret_stored/prevClose/gapdays 존재 → P3 restore 활성
     iso <- fw$isolation
     cnt <- fw$counts
 
@@ -243,14 +344,17 @@ sanitize_rawdata <- function(dry_run = FALSE) {
 
     # HARD 격리: Ret:=NA → 다음 !is.na(Ret) 제거가 소비 (오염행 제거·정당 데이터 불변)
     if (cnt$hard > 0) raw[fw$mask_hard, Ret := NA_real_]
+    # RESTORE (P3): date-gap ∧ stored 물리타당 → stored 참값 복원(recompute 스퓨리어스만 폐기·행 보존)
+    if (cnt$restore > 0) raw[fw$mask_restore, Ret := Ret_stored]
 
-    # 각 종목 첫 날 Ret = NA + HARD 격리 NA → 제거
+    # 각 종목 첫 날 Ret = NA + HARD 격리 NA → 제거 (RESTORE는 유효값 → 보존)
     raw <- raw[!is.na(Ret)]
-    raw[, c("prevClose", "gapdays") := NULL]      # 임시 컬럼 정리(Step 8 core_cols에도 부재)
+    raw[, c("prevClose", "gapdays", "Ret_stored") := NULL]  # 임시 컬럼 정리(Step 8 core_cols에도 부재)
 
-    cat(sprintf("  방화벽 격리: HARD NA %d건(유니버스 %d) · SUSPECT flag %d건(유니버스 %d)\n",
-                cnt$hard, cnt$hard_in_universe, cnt$suspect, cnt$suspect_in_universe))
-    cat(sprintf("  잔여 |Ret|>0.3: %d건 (전량 suspect·값 유지 — 분할 back-adjust는 R2/R3 리빌드 소관)\n",
+    cat(sprintf("  방화벽 격리: HARD NA %d건(유니버스 %d) · RESTORE(stored 보존) %d건(유니버스 %d) · SUSPECT flag %d건(유니버스 %d)\n",
+                cnt$hard, cnt$hard_in_universe, cnt$restore, cnt$restore_in_universe,
+                cnt$suspect, cnt$suspect_in_universe))
+    cat(sprintf("  잔여 |Ret|>0.3: %d건 (suspect·값 유지 — 분할 back-adjust는 R2/R3 리빌드 소관)\n",
                 raw[abs(Ret) > 0.3, .N]))
   }
 
