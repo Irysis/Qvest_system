@@ -1,0 +1,98 @@
+{
+  "task": "R26 — PG2 score_eff 8번째 팩터 스크린 (FQ-039, book-marginal)",
+  "wt_id": "WT-D20260714_002",
+  "frontier_id": "FQ-039",
+  "mode": "QEPM alpha-research (book_enhancement lane)",
+  "created": "2026-07-14",
+  "owner": "Q-Lead (R26 alpha-research, 도훈 지시 2026-07-14)",
+  "governance": "진단 전용 — book_state 무변경. 결과 = 도훈 결정 재료(실편입은 QEPM 6-agent 파이프라인 + 도훈 수동). alpha 단계 canonical PORT_t = 스크리닝 실측(admission 권위는 forge).",
+  "extension_note": "Extension B(교체 축)는 도훈 추가 지시(2026-07-14, 코디네이터 경유)로 Stage 2 측정 착수 前 본 사전등록에 통합됨(측정 시작 전 통합 — 별도 순서기록 불요). 원 지시(추가 blend)는 §STAGE2_ADD, 확장 지시(제거/교체)는 §EXTENSION_B.",
+
+  "incumbent_book": {
+    "id": "STR_1715_on_M4_R05_noLayer4_PG2",
+    "alpha": "score_eff = 0.65*score_core_z + 0.35*score_defense_z (frozen, 실측 identity max|diff|=0 across all regimes)",
+    "core_sleeve_4F": ["C01_SUE","C02_EPS_Chg_1m","C04_ESBR","C06_TP_Gap"],
+    "core_weights": "IC-based (theta_core, per-month, parquet JSON), winsor 2.5 + z",
+    "defense_sleeve_3F": ["Q07_Earnings_Stability","M08_Residual_Mom","Q25_Ohlson_O"],
+    "defense_weights": "EW (1/3 each), winsor 2.5 + z",
+    "book7_factors": ["C01_SUE","C02_EPS_Chg_1m","C04_ESBR","C06_TP_Gap","Q07_Earnings_Stability","M08_Residual_Mom","Q25_Ohlson_O"],
+    "overlay": "M4 x AR x R05 (시장타이밍/노출 스칼라) — 본 스크린은 선택-레벨(canonical top-25 cap-w) 비교, 오버레이는 base/variant 동일 적용이라 paired diff서 상쇄(선택-레벨 격리)",
+    "score_eff_source": "05_Production/2.Factor_Model/2-1.STR_1715_AR_on_M4_R05_overlay_PG2/02_holdings_universe/alpha_scores_str1715_268m.parquet",
+    "incumbent_book_ir_stored": 1.416,
+    "incumbent_book_ir_basis": "anchor-window basis (book_state). canonical calendar recon = 1.327. basis 라벨 의무 — 본 스크린 ΔIR은 window-matched w=0 base 대비만 사용(stored 1.416 절대 미사용, 07-13 deltair_diag 교훈)."
+  },
+
+  "measurement": {
+    "universe": "KR_top342 (KOSPI200 ∪ KOSDAQ150)",
+    "cost_model_version": "v2.4_kr_retail_15bps (delta-based, one-way 15bps)",
+    "liquidity": "20d ADV(t-1) >= 2e8 KRW",
+    "top_n": 25,
+    "weighting_authoritative": "cap-w (Size, cap_norm 0.20 cap) — HARD 판정 권위",
+    "weighting_dual_basis": "EW canonical (diag_ew_universe) + cap-tier(MEGA top-10 / MID 11-30 / OTHER) 병기 — 비바인딩 진단",
+    "engine": ["02_Infrastructure/contracts/weighted_screen_bt.R (cap-w authoritative)", "02_Infrastructure/contracts/canonical_screen_bt.R (EW dual-basis)"],
+    "port_t": "portfolio_alpha_t_nw_lag3 (build_benchmark_compare, NW lag-3, ann=12)",
+    "score_return_alignment": "score label at ny(sig_date) = return-realized month (deltair_diag 규약, β-scan offset 0 검증 의무)"
+  },
+
+  "windowing_IS_only": {
+    "IS_window": "2005-01 .. 2024-06 (return-month) — 모든 선택(Stage1 shortlist + Stage2 argmax + Ext-B slot 선택)은 IS-only",
+    "holdout": "2024-07 .. 2026-04 (last ~22 return-months) — 최종 최우수 1개 구성(추가/제거/교체 통틀어)만 1회 조회",
+    "rationale": "measurement-graduation §3 chain 자격요건 ②(IS-only 변형선택) + ③(holdout 최종 1회). full-window paired/ΔIR도 보고하되 선택 결정은 IS."
+  },
+
+  "candidate_pool": {
+    "deployzone": "outputs/ramp/r6_factor_deployzone_active.parquet (102 factors, realized cap? deployzone active 궤적) — Stage1 (a)(c) 소스",
+    "r16_new": [
+      {"id":"VPRC_CORR","sign":"+","note":"R16 EW-post17 유일 생존, 미소비"},
+      {"id":"VSHK_P","sign":"-","note":"R16 rank-IC 음(-0.020, t-3.01) — 부호반전 참여(score = -z(VSHK_P))"},
+      {"id":"AMT_ASY","sign":"+","note":"R16 best cap-w PORT_t(+1.16), DSR 0.47"},
+      {"id":"TOD_DT","sign":"-","note":"R16 attention spike (prereg sign -)"},
+      {"id":"ILLIQ_VOL","sign":"+","note":"R16 liquidity risk 2nd moment"}
+    ],
+    "r16_z_source": "stage_artifacts/r16_microstructure/scores_long.parquet (score col = directional signed)",
+    "exclusions_frozen": [
+      "book7 factors (C01/C02/C04/C06/Q07/M08/Q25) — ADD 후보서 제외(composite 내 이미 존재=trivial redundancy). 단 REPLACE 슬롯 후보는 book7 제외한 shortlist만 삽입.",
+      "insider 3종 (부분 크롤 202508 — R9 fail-closed 위임, 내일 완결)",
+      "포렌식/감사/텍스트 파생 (R18/R20/R25 config-scoped negative 확정)",
+      "relevance-선별 방법 (Boruta/StabSel/mRMR) — R4~R8 계열 폐쇄",
+      "제약 완화 레버 (INV-7 방화벽)"
+    ]
+  },
+
+  "STAGE1_screen": {
+    "purpose": "association 최소 소비 — shortlist 규칙 측정 前 동결(challenge #1 방어)",
+    "metrics": {
+      "a_trailing_deployzone_port_t": "deployzone active_bm 시계열 IS-window NW lag-3 t (realized 배포권 PORT_t)",
+      "b_book_zone_tier_survival": "factor z-panel × size × forward-ret, cap-rank<=30(MEGA+MID) 부분집합 rank-IC(Spearman) IS-window: sign이 full-sample sign과 일치 AND |t_NW lag-3| >= 1.0",
+      "c_cor_active_with_book": "deployzone active vs base canonical net-active(book) IS-window Pearson cor, realized_ym 정렬"
+    },
+    "frozen_shortlist_rule": "pool(deployzone 102 - book7 + r16 5) 중 {|cor_active with book| < 0.5} AND {b_tier_survival PASS} 를 통과한 팩터를 a_trailing_deployzone_port_t 내림차순 정렬 → 상위 5 = shortlist. tie-break: cap-tier MID contrib 큰 순. b_tier_survival 계산은 {|cor|<0.5} 통과 전량에 대해 수행(compute shortcut로 규칙 왜곡 방지).",
+    "shortlist_max": 5
+  },
+
+  "STAGE2_ADD": {
+    "construction": "new_score = (1-w)*z(score_eff) + w*z(signed_factor), cross-sectional z per month",
+    "w_grid": [0.15, 0.30],
+    "measurement": "top-25 cap-w → weighted_screen_bt(15bps, liq 2e8) → paired NW-t(lag3) vs base(w=0, 동일 하네스) + book-marginal ΔIR window-matched(w=0 base 대비, net_active_recon_v1 개념: mean/sd*sqrt(12) net-active) + dual-basis(EW canonical + cap-tier)",
+    "n_arms_max": 10
+  },
+
+  "EXTENSION_B_replace": {
+    "b1_LOO_diagnostic": "reconstruction 기반(frozen score_eff를 7 constituent에서 재구성, fid_eff median 0.914 q05 0.731 @ same-month-end factor_db — proxy 라벨 의무). 7팩터 각각 leave-one-out(해당 sleeve 내 가중 재정규화) → 6팩터 composite top-25 cap-w paired vs RECON full-7 base. 7회 측정 = family 정직 산입.",
+    "b2_removal_only_control": "b1서 식별된 최약 슬롯 단순 제거(7->6, 삽입 없음) paired vs recon full-7 base — 교체효과의 '제거' 성분 분리",
+    "b3_replace_arms": "최약 슬롯 × Stage1 shortlist(<=5): 삽입 팩터가 제거 팩터의 sleeve-내 가중 승계 → recon 재구성 top-25 cap-w → paired vs recon full-7 base + ΔIR window-matched. w-grid 불요(자리 승계). trial <=5",
+    "base_for_extension_B": "reconstructed full-7 book (NOT frozen) — remove/replace paired는 recon-base 대비 apples-to-apples. recon proxy 성격상 결론은 relative(어느 슬롯이 최약/개선)로만, 절대 자본판정은 frozen ADD 축이 권위.",
+    "slot_selection_IS_only": "LOO 슬롯 선택도 IS-only (challenge #4 방어). holdout은 최종 최우수 1개(추가/제거/교체 통틀어)만 1회."
+  },
+
+  "VERDICT_criteria": {
+    "primary_capital_relevance": "paired NW-t(lag3) >= 2.0 AND book-marginal ΔIR(window-matched) >= 0.05",
+    "reference_only": "|cor_active with book| < 0.30 (보강 참고, basis=active 명기)",
+    "dual_basis": "cap-w HARD 권위 + EW-uni/cap-tier 병기 — cap-w FAIL이나 EW-대비 생존 시 'cap-w 벤치 미스매치 가능' 라벨 + screen_route 재분류 검토",
+    "sweep_accounting": "후보 열거 argmax = sweep. n_trials = ADD arms + LOO 7 + removal 1 + replace arms + Stage1 자유도(파일럿 필터). DSR 산출·기록, sweep-gate 적용(DSR>=0.5).",
+    "honest_prior": "06-24 직교 327팩터 t>2=0 · 07-10 프로브 fleet 생존 0 · WT-H001 내부튜닝 포화 — EV 보수적. 신규 요소: R6 deployzone 라벨 + ΔIR window-matched + R16 신규팩터 + composite z-blend 소비형태 미검."
+  },
+
+  "execution_discipline": "R .R source·단일스레드·arrow io(2)·잔류 R 프로세스 확인 · pin_cache vintage 고정+pin tag · proxy 손계산 금지(canonical 경로만) · OneDrive tmp+rename · DART API 금지",
+  "pin_tag": "R26_FQ039_20260714 (RAWDATA/benchmark 스냅샷 md5 기록)"
+}
