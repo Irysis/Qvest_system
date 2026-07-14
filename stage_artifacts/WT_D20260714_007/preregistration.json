@@ -1,0 +1,65 @@
+{
+  "wt_id": "WT_D20260714_007",
+  "round": "R31",
+  "fq": "FQ-047",
+  "title": "밸류 정의 스펙트럼 확장 × B2 tier-조건부 (밸류 아크 완결 라운드)",
+  "date": "2026-07-14",
+  "agent": "alpha-research",
+  "parent_chain": "R26..R30(FQ-045) -> FQ-046 dossier(judge REJECT) -> R31(FQ-047)",
+  "objective": "EBIT/EV 계열(V14/V07) 밖 밸류 정의도 같은 벽(2024+ recency 감쇠 + incumbent 잉여)인지 전수 확인해 '밸류 추가 방향' 완결 답. screening-tier only, NOT dossier.",
+  "honest_prior": "낮음(정직). KR value standalone 24/24 post-2015 감쇠(EP/BM 등급 F, reference-kr-value-factor-decay). R30/FQ-046이 EBIT/EV로 신호 진짜·2024+ 역전·incumbent corr 0.98 잉여 확정. 스펙트럼 완결성만.",
+  "base_authority": {
+    "base_col": "0_stored_S7",
+    "source": "stage_artifacts/WT_D20260714_004/recon_panels.parquet",
+    "label": "production_parity_verified clean (off0 T-1), READ-ONLY 05_Production/outputs",
+    "rule": "measurement-graduation §7b"
+  },
+  "value_subaxes": [
+    {"id": "BM",      "definition": "deep-value Book-to-Market",      "factors": ["V01_BM"],                    "coverage": "full (~1700-2160 KR-wide)"},
+    {"id": "EP",      "definition": "Earnings yield (classic)",       "factors": ["V02_EP"],                    "coverage": "full (~1660-1830)"},
+    {"id": "CFP",     "definition": "Cash-flow yield",               "factors": ["V03_CFP"],                   "coverage": "full (~1680-1840)"},
+    {"id": "FCF",     "definition": "Free-cash-flow yield",          "factors": ["V10_FCF_Yield"],             "coverage": "full (~1680-1830)"},
+    {"id": "SP",      "definition": "Sales yield (sales-to-price)",  "factors": ["V20_SP"],                    "coverage": "full (~1760-1790)"},
+    {"id": "SHY",     "definition": "Shareholder/payout yield",      "factors": ["V11_Shareholder_Yield"],     "coverage": "SPARSE (~222-615 KR-wide) — dividend/buyback payers only; non-mega tilt weakened where missing (v_z=0). honest label."},
+    {"id": "EBIT_EV", "definition": "EBIT/EV enterprise multiple (CONTROL = R30 blend)", "factors": ["V14_EBIT_EV","V07_EV_EBITDA"], "coverage": "full", "note": "reuse WT_005 value_panels.parquet vz_off0 for parity with R30 B2"}
+  ],
+  "construction": {
+    "form": "B2 (non-mega tier-conditional value tilt) verbatim from R30 r30_measure.R add_cond_blend",
+    "detail": "b_z=zc(base per month); v_z=zc(value_subaxis per month, 0 if missing); v_boost=v_z if tier in {MID,OTHER} else 0; csc=0.7*b_z+0.3*v_boost; cap-w top-25 from csc via weighted_screen_bt (15bps, liq 2e8, K200uKQ150)",
+    "tier": "SIZE monthly desc: MEGA 1-10 / MID 11-30 / OTHER 31+",
+    "value_vintage": "off0 = T-1 clean (factor_db month M = AS_OF-1), aligned z via align_factor_direction (C13). identical vintage to R29/R30."
+  },
+  "metrics_per_subaxis": {
+    "authority": "cap-w top-25 paired NW-t (lag3) vs clean base (screening, metric_type=weighted_screen)",
+    "fields": ["variant_port_t","paired_full","paired_is(<=2024-06-30)","paired_ho(>2024-06-30)","dIR_full",
+               "paired_pre2024(<2024-01-01)","paired_post2024(>=2024-01-01)","dIR_pre2024","dIR_post2024",
+               "cor_active(variant vs base = incumbent-redundancy screening proxy)","post2017_t","turnover"],
+    "recency_key_axis": "paired_post2024 vs paired_pre2024 — does any definition suffer LESS 2024+ reversal (FQ-046 EBIT/EV pre +3.96 -> post -1.67)",
+    "dual_basis": "EW-uni PORT_t + oos_retention_approx via canonical_screen_bt diag (non-binding, cap-w authoritative)",
+    "for_candidates_only": ["placebo (value shuffle N=40, p)", "lag1 value-shift stress (PIT C5)"]
+  },
+  "subaxis_redundancy_check": "pairwise cross-sectional corr of value sub-axis z (concern #1 — high corr => effectively fewer independent trials)",
+  "gates": {
+    "AND_gate": "paired_full >= 2.0 AND dIR_full >= 0.05 (R30 screening AND-gate)",
+    "note": "screening only — graduation HARD (PORT_t 2.95 forge / oos 0.7 / calmar 0.64) NOT evaluated here"
+  },
+  "verdict_branches": {
+    "arc_complete": "ALL sub-axes 2024+ reversal (paired_post2024 <= 0 or << pre) AND cor_active high => 밸류 정의축 config-scoped 소진 (아크 완결 L-code)",
+    "frontier_open": "any sub-axis paired_post2024 not decayed AND cor_active < 0.5 => that one -> next-round dossier candidate (frontier, NOT this round)"
+  },
+  "selection_type": "chain (each sub-axis independent value definition, hypothesis-driven; NOT sweep argmax). DSR computed as diagnostic (n_trials family = 7 sub-axes + value family cumulative ~8 from R26-R30). low-EV round multiple-testing acknowledged in challenge_note.",
+  "trials_this_round": 7,
+  "prohibitions": [
+    "book_state / 05_Production / outputs/ramp UNCHANGED",
+    "02:00 insider crawl + R9 auto-fire UNTOUCHED (R31 writes only stage_artifacts)",
+    "DART API not used (factor_db only)",
+    "no covariance / no weights / no pre-optimization (alpha-research role boundary)",
+    "canonical/clean base only; pin recorded; OneDrive temp+rename I/O"
+  ],
+  "pin": "R28_current_20260714 (RAWDATA/factor_db snapshot as used by WT_004/005/006)",
+  "self_adversarial_concerns_preregistered": [
+    "#1 sub-axis high mutual corr => effectively 1 test (redundant trials) — measured via subaxis_redundancy_check",
+    "#2 factor DB value definitions PIT integrity (financial-statement lag C4) — factor_db aligned-z is PIT-built; off0 = T-1 vintage (clean) verified by R29 parity",
+    "#3 low-EV round multiple testing — chain justification (each independent definition, hypothesis-driven, not argmax); DSR diagnostic + value family cumulative trial count disclosed"
+  ]
+}
