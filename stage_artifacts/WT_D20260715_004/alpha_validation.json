@@ -1,0 +1,72 @@
+{
+  "wt_id": "WT_D20260715_004",
+  "round": "R35",
+  "fq": "FQ-047 P1",
+  "title": "SP(sales-yield) consumption-face re-routing",
+  "metric_type": "canonical_screen + canonical_screen_diag (screening-tier, not dossier)",
+  "base_authority": "clean recon_panels WT_D20260714_004 (production_parity_verified, off0 T-1)",
+  "pin": "R28_current_20260714",
+  "prereg_sha256": "7ddd3cb38f33c3cec9bef28908ca0f3846975bda3b629465e95ef407710faeea",
+  "verdict_type": "screen_tier_routed",
+  "verdict_oneline": "SP EW-basis real+PIT-safe+diversifying but capital-fail (PORT_t<2.95, capacity 0.5bil micro); overlay marginal pre-2024-only; R31 '2024+ survival' = cap-w marginal frame artifact (standalone SP is pre-2024-dominant). SP retained as OVERLAY_CANDIDATE feature, re-characterized.",
+
+  "part1_ew_basis_deployability": {
+    "sp_ew_top25_capw_port_t": 2.236,
+    "sp_ew_top25_ewuni_port_t": 2.758,
+    "ewuni_post2017_t": 1.162,
+    "oos_v2_ew": 0.902,
+    "oos_v2_capw": 0.029,
+    "net_sr_ew": 0.619,
+    "net_sr_capw": 0.449,
+    "te_ann_ew": 0.126,
+    "te_ann_capw": 0.195,
+    "turnover_ann": 3.9,
+    "capacity_median_aum_bil_krw": 0.5,
+    "capacity_note": "5% ADV participation, binding smallest EW holding near 2e8 liq floor -> micro, not deployable at scale",
+    "active_corr_vs_ppure_base": 0.458,
+    "active_corr_vs_ppure_d2": 0.423,
+    "holding_jaccard_vs_ppure_base": 0.064,
+    "holding_shared_median_of25": 3.0,
+    "pit_lag1_ewuni": 2.182,
+    "pit_lag1_note": "base 2.758 -> lag1 2.182 graceful decay, no same-month inflation = PIT-safe",
+    "placebo_p_emp": 0.000,
+    "placebo_null_max": -0.276,
+    "verdict": "config_scoped_negative_standalone_deploy (real signal but capital-fail + capacity micro)"
+  },
+
+  "part2_overlay_feature": {
+    "on_base_clean": {"paired_nw_t": 1.882, "dIR": 0.394, "pre2024_paired": 1.959, "post2024_paired": -0.178, "base_ew_pt": 4.21, "ovl_ew_pt": 6.65},
+    "on_incumbent_bk": {"paired_nw_t": 1.127, "dIR": 0.298, "pre2024_paired": 1.174, "post2024_paired": -0.026, "bk_ew_pt": 6.63, "ovl_ew_pt": 7.94},
+    "verdict": "config_scoped_negative_live_lever (marginal positive but pre-2024-only, decayed to ~0 post-2024 on BOTH bases = SP-specific decay, not base artifact)"
+  },
+
+  "part3_2024plus_robustness": {
+    "subperiod_ew_active_nw_t": {"P2008_14": 2.28, "P2015_19": -0.24, "P2020_23": 2.51, "P2024_26": 1.12},
+    "pre2024_nw_t": 2.508,
+    "post2024_nw_t": 1.119,
+    "rolling24m_last": 2.00,
+    "rolling24m_max": 5.12,
+    "rolling24m_min": -2.09,
+    "rolling24m_last12_pos": "11/12",
+    "sector_hhi_pre2024": 0.099,
+    "sector_hhi_post2024": 0.105,
+    "sector_top_post2024": ["필수소비재", "건설건축", "건강관리", "철강", "화학"],
+    "low_quality_proxy_ep_z_median": -0.016,
+    "verdict": "SP absolute signal is PRE-2024-DOMINANT + regime-dependent (dead 2015-19, revived 2020-23, modest 2024+). R31 '2024+ survival' CORRECTED to cap-w-marginal-frame artifact. broad cyclical-value sector tilt (HHI 0.10, not single-sector). NOT low-quality trap (EP-neutral)."
+  },
+
+  "challenge_flags": [
+    {"id": "C1", "class": "ACCEPT", "note": "SP 2024+ survival = cap-w marginal frame artifact; standalone pre-2024-dominant. R31 narrative corrected."},
+    {"id": "C2", "class": "ACCEPT", "note": "EW-basis not deployable (cap-w bench mandate + capacity 0.5bil micro)."},
+    {"id": "C3", "class": "PARTIAL", "note": "low-quality trap not supported (EP-z median -0.016), but proxy only (tail distress not fully excluded)."},
+    {"id": "C4", "class": "ACCEPT", "note": "2024+ window n=29 thin -> no structural claim; single-regime label."},
+    {"id": "C5", "class": "REBUTTAL", "note": "SP diversifying not redundant: corr<0.5 vs P-pure, Jaccard 0.064. (but corr low != capital-grade)."},
+    {"id": "C6", "class": "ACCEPT", "note": "overlay marginal pre-2024-only confirmed on BOTH base+incumbent = SP-specific decay."}
+  ],
+  "role_boundary": "alpha-research: no covariance, no weights, no forge/judge. screening-tier only. book_state/05_Production/outputs.ramp unchanged. DART API not used. selection_type=chain (DSR gate n/a).",
+  "next_probe": [
+    "P1: SP regime-conditional input to RAMP/factor-rotation (not standalone) — low-EV (cross-family regime-conditional FALSIFIED prior)",
+    "P2: value-definition-rotation tripwire re-scoped to SP absolute rolling-24m EW PORT_t sustained >2 (not relative-to-EBIT/EV which is base-collapse artifact)",
+    "P3: SP signal in deployable cap-tier (MEGA/MID) via diag_cap_tier — expected OTHER-localized, low priority"
+  ]
+}

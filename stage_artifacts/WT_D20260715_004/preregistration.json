@@ -1,0 +1,46 @@
+{
+  "wt_id": "WT_D20260715_004",
+  "round": "R35",
+  "fq": "FQ-047 P1",
+  "title": "SP(sales-yield) consumption-face re-routing — EW-basis deployability + OVERLAY feature + 2024+ robustness",
+  "parent_chain": "R26..R31(FQ-047) value-arc -> R31 found SP is ONLY 2024+ surviving value definition -> R35 re-routes to non-cap-w consumption faces",
+  "role": "alpha-research (screening/characterization, NOT capital re-challenge)",
+  "honest_prior": "LOW-EV. SP cap-w capital gate CONFIRMED FAIL (R31 paired 1.523<2.0). This round is NOT a capital retry. Goal = (a) EW-basis deployability D3-form dossier material, (b) OVERLAY_CANDIDATE feature qualification, (c) 2024+ survival robustness diagnosis. Material preservation value because SP is the sole 2024+ surviving value axis (R31 post24 1.85, dIR_post +0.104, EW-uni 6.60, EW-oos 0.61, placebo p 0.025, lag1 2.147).",
+  "base_authority": "clean recon_panels (WT_D20260714_004, production_parity_verified, off0 T-1) READ-ONLY. §7b.",
+  "pin": "R28_current_20260714",
+  "metric_type_primary": "canonical_screen (EW top-25 long-only, 15bps, liq 2e8) + canonical_screen_diag (EW-universe basis)",
+  "SP_definition": "V20_SP single factor, aligned-z (C13), per-month cross-sectional z within base membership. Reuse stage_artifacts/WT_D20260714_007/subaxis_panels.parquet$SP.",
+  "prereg_measurements": {
+    "part1_ew_basis_deployability": {
+      "sp_ew_track": "canonical_screen_bt(SP score, top_n=25, liq 2e8, 15bps, size_dt=SIZE, diag_dual_basis=TRUE). Report cap-w bench PORT_t + diag_ew_universe PORT_t/post2017_t/oos_retention_approx + net_sr + turnover.",
+      "oos_retention_v2": "anchored 3-split {55/65/75} median on EW-active. Band [0.5,0.7) -> 2/3 supporting evidence check (trailing-subwindow PORT_t>0, placebo p<0.05, book-marginal). PASS if >=0.7 / FAIL if <0.5.",
+      "tracking_error": "sd(EW-active) annualized.",
+      "capacity": "min holding ADV x weight -> max AUM at 5% ADV participation cap.",
+      "active_corr_vs_papertrack": "SP EW-active vs P-pure base (act_ew) and D-2 (act_ew) sealed series, monthly. Also holding overlap Jaccard.",
+      "predicted": "SP EW-basis PORT_t strong (~6, R31 diag), oos band [0.5,0.7). Deployability material IF corr vs incumbent paper-tracks < ~0.5 (adds diversification) — else redundant."
+    },
+    "part2_overlay_feature": {
+      "sp_ew_tilt_overlay": "0.7*base_z + 0.3*SP_z EW top-25 vs base EW. paired NW-t lag3 marginal (m1-drain FQ-017 format).",
+      "sp_incumbent_overlay": "0.7*bk_score_eff_z + 0.3*SP_z EW top-25 vs bk EW. paired marginal.",
+      "predicted": "marginal likely small at EW (SP orthogonal but signal weak full-period). Qualify as OVERLAY_CANDIDATE feature if marginal paired-t > 0 and PIT-safe."
+    },
+    "part3_2024plus_robustness": {
+      "prepost_decomp": "SP EW-active pre/post-2024 NW-t + subperiod {2008-14, 15-19, 20-23, 24-26}.",
+      "rolling": "rolling 24m PORT_t of SP EW-active — spike vs sustained.",
+      "sector_concentration": "SP top-25 EW holdings sector distribution (RAWDATA Sector) pre vs post-2024 — is post24 edge sector-concentrated (single-regime) or broad (structural)?",
+      "predicted": "post24 edge partly sector-concentrated (value-cyclicals). Honest: single 2.5yr window is thin — label single-regime risk."
+    }
+  },
+  "gates": {
+    "note": "screening-tier only, NOT dossier. No forge/judge. No capital gate declared. book_state/05_Production/outputs/ramp UNCHANGED. stage_artifacts only. DART API forbidden (factor_db only). No covariance/weights (alpha-research role boundary).",
+    "selection_type": "chain (single factor SP characterization, not sweep — DSR gate not applicable, diagnostic only)"
+  },
+  "challenge_concerns_preregistered": [
+    "C1: SP 2024+ survival may be mean-reversion tailwind (post-decline bounce) not structural sales-yield premium — pre/post + rolling must distinguish.",
+    "C2: EW-basis is not investable (no EW benchmark mandate; deployment universe is cap-w KOSPI200) — EW-basis strength is diagnostic of signal, not a deployable book.",
+    "C3: sales-yield low-quality trap — high sales / negative earnings firms (distressed) may dominate SP top-decile; edge may be junk-rally not value.",
+    "C4: 2.5yr post-2024 window (~30 months) is thin for a regime claim — SE wide.",
+    "C5: active corr vs P-pure paper-tracks may be high (both cap-tier-localized small-cap value tilts) -> redundant consumption."
+  ],
+  "next_probe_min": 2
+}
