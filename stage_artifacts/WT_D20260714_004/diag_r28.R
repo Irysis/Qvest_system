@@ -45,7 +45,9 @@ tier_share <- function(cc){
   sh <- HT[,.(w=sum(w)),by=.(Date,tier)][,.(share=mean(w)),by=tier]
   sh[,panel:=cc]; sh}
 TS <- rbindlist(lapply(c("0_stored_S7","0_stored_S6","1_stored_S7"), tier_share), fill=TRUE)
-cat("\n===== CAP-TIER weight share (base panels) =====\n"); print(dcast(TS, panel~tier, value.var="share"))
+cat("\n===== CAP-TIER weight share (base panels) =====\n")
+tryCatch(print(dcast(TS[,.(panel,tier,share)], panel~tier, value.var="share")), error=function(e) print(TS))
+save_safe(TS, file.path(WT,"cap_tier_share.parquet"), function(o,p) write_parquet(o,p))
 
 ## lookahead confirmation table: PORT_t off=0 vs off=+1, same theta+sleeve (only factor_db month differs)
 la <- data.table(
