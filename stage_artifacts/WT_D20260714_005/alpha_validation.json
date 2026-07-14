@@ -1,0 +1,87 @@
+{
+  "task_id": "WT-D20260714_005",
+  "frontier_id": "FQ-044",
+  "as_of_date": "2026-07-14",
+  "metric_type": "canonical_screen (weighted_screen_bt cap-w top-25, NW lag-3) — admission binding 아님(forge authoritative)",
+  "selection_type": "re-measurement chain (n_trials=1, Z6 단일 구성; vintage cell 전수 decomposition, argmax 없음) — DSR sweep 게이트 부적용",
+  "verdict": "판정1(Q1 seam) CONFIRMED: 저장 268m 패널 = 전기간 균일 same-month(off+1) look-ahead vintage; forward recompute=T-1 clean; value=T-1 clean(seam 무관). 판정2(Q2 Z6 clean) CONFIG_SCOPED_NEGATIVE: PIT-clean base paired 1.02~1.72<2.0 (AND-게이트 FAIL). R27 3.807 = look-ahead-base 아티팩트. value 신호 자체는 진짜·clean이나 cap-w top-25 국소화 벽. dossier 재발사 NO-GO(clean 기준).",
+
+  "Q1_seam_determination": {
+    "stored_panel_vintage": "same-month (off+1) = factor_db_{M+1}, ~1개월 look-ahead, 전기간 균일(era boundary 없음)",
+    "production_forward_vintage": "T-1 (off0) = factor_db_{M}, PIT-clean (_recompute_alpha_asof.R)",
+    "seam_location": "패널 내부 아님 — {historical stored=same-month} vs {forward recompute=T-1} live-경계 1개월 불연속",
+    "evidence_chain": {
+      "parity_off1_samemonth_vs_stored": 0.913,
+      "parity_off0_T1_vs_stored": 0.612,
+      "stored_direct_port_t_R29": 5.241,
+      "stored_direct_port_t_R28": 5.241,
+      "controlled_inflation_off0_to_off1": {"stored_theta": 2.085, "ic_theta": 2.132},
+      "note": "R28 4-cell 승계 + R29 독립 재현으로 확정"
+    },
+    "value_component_vintage": {
+      "cor_pfs_vs_factordb_off0_T1_clean": 1.0000,
+      "cor_pfs_vs_factordb_off1_samemonth": 0.985,
+      "value_self_seam_off0_vs_off1": 0.985,
+      "conclusion": "pure_factor_scores value(V14/V07) = 완전 T-1 clean. R27 value 병합은 seam 미도입. look-ahead는 전적으로 base(core+momentum) 패널."
+    }
+  },
+
+  "Q2_z6_clean_reverdict": {
+    "gate": "PIT-clean base(off0) paired NW-t(lag3, vs clean base) >= 2.0 AND ΔIR(window-matched) >= 0.05",
+    "pipeline_verification_R27_exact": {
+      "setup": "STORED panel base(alpha_scores_str1715_268m) + pure_factor_scores value, w=0.30 (non-recon, R27 verbatim)",
+      "paired_full": 3.738, "paired_is": 3.107, "paired_ho": 4.357, "delta_ir": 0.458, "variant_port_t": 7.398,
+      "R27_reported": {"paired": 3.807, "is": 3.171, "ho": 4.300, "dir": 0.481, "var_pt": 7.60},
+      "conclusion": "R27 노이즈 내 정확 재현 → 파이프라인 유효 (challenge #1 recon-parity 의존 해소)"
+    },
+    "controlled_vintage_swap_same_value_vzpfs": [
+      {"base": "1_stored_S7", "vintage": "off+1_LA", "base_port_t": 6.38, "variant_port_t": 8.50, "paired": 2.226, "is": 1.785, "ho": 2.222, "dir": 0.345},
+      {"base": "0_stored_S7", "vintage": "off0_CLEAN", "base_port_t": 3.06, "variant_port_t": 3.75, "paired": 1.023, "is": 0.668, "ho": 1.075, "dir": 0.127},
+      {"base": "1_ic_S7", "vintage": "off+1_LA_prod", "base_port_t": 6.92, "variant_port_t": 9.19, "paired": 2.593, "is": 2.627, "ho": 0.606, "dir": 0.433},
+      {"base": "0_ic_S7", "vintage": "off0_CLEAN_prod", "base_port_t": 3.25, "variant_port_t": 4.16, "paired": 1.328, "is": 1.324, "ho": 0.360, "dir": 0.197}
+    ],
+    "primary_clean_cells": [
+      {"cell": "PRIMARY (0_stored_S7 + clean factor_db value)", "variant_port_t": 3.85, "base_port_t": 3.06, "paired_full": 1.243, "paired_is": 0.918, "paired_ho": 1.075, "delta_ir": 0.153, "paired_lag1": 1.530, "post2017_t": 1.03, "ewuni_port_t": 6.39, "ewuni_oos_approx": 0.52, "turnover": 14.0, "verdict": "미달 (paired<2.0)"},
+      {"cell": "prod-ic (0_ic_S7 + clean factor_db value)", "variant_port_t": 4.35, "base_port_t": 3.25, "paired_full": 1.721, "paired_is": 1.611, "paired_ho": 0.628, "delta_ir": 0.244, "paired_lag1": 0.881, "post2017_t": 0.86, "ewuni_port_t": 7.23, "ewuni_oos_approx": 0.54, "turnover": 13.3, "verdict": "미달 (paired<2.0)"},
+      {"cell": "clean base + pfs value (R27 exact value)", "variant_port_t": 3.75, "base_port_t": 3.06, "paired_full": 1.023, "paired_is": 0.668, "paired_ho": 1.075, "delta_ir": 0.127, "post2017_t": 1.05, "ewuni_port_t": 6.42, "ewuni_oos_approx": 0.52, "verdict": "미달 (paired<2.0)"}
+    ],
+    "primary_result": "FAIL — 전 clean cell paired 1.02~1.72 < 2.0. R27 3.807은 look-ahead-base 아티팩트(base off+1→off0 vintage swap 단독으로 2.2~2.6→1.0~1.3).",
+    "mechanism_consistency": "R27 placebo(p=0)/lag1(2.98)은 VALUE 무결성(실신호+PIT-safe)만 시험 — 그 결론 유지(value=진짜·clean, vz_pfs=T-1 cor 1.0). 미시험=BASE vintage(R28/R29 검거). look-ahead base가 value 오버레이 한계이득을 ~2배 증폭(dIR 0.153 clean vs 0.345 LA). 모순 없음.",
+    "component_attribution": "seam 전부=base 패널(off+1→off0 base PORT_t 6.38→3.06, 2.08x). value 성분=seam 무관·clean에서도 양(variant PORT_t 3.06→3.85·dIR+0.153·EW-uni pt 6.39). R27 3.807=(base 증폭)x(진짜 clean value)."
+  },
+
+  "Q3_true_admission_numbers": {
+    "note": "canonical_screen(cap-w) 스크리닝 실측 — admission 권위 아님(forge). 현직 book pinned 6.130 재해석 = 범위 밖(별도 judge 라운드).",
+    "clean_base_stored_theta_port_t": 3.058,
+    "clean_base_ic_theta_port_t": 3.247,
+    "z6_clean_variant_stored_theta_port_t": 3.85,
+    "z6_clean_variant_ic_theta_port_t": 4.35,
+    "stored_LA_base_port_t_ref": 5.241,
+    "incumbent_book_pinned_ref": 6.130,
+    "reading": "clean base ~3.06~3.25 vs 저장 LA 5.24 = 벤치 미포함 base 부풀림 배율 정합. book 6.130은 오버레이 포함·LA-basis — clean 재베이스는 FQ-044 후속."
+  },
+
+  "dual_basis_M2": {
+    "note": "cap-w HARD 권위 + EW-uni 진단 병기. clean Z6 value 오버레이 신호 = EW-유니버스에서 훨씬 강함(cap-tier 국소화).",
+    "primary_capw_port_t": 3.85, "primary_ewuni_port_t": 6.39, "primary_ewuni_oos_approx": 0.52,
+    "reading": "cap-w top-25(mega-편중)가 value 한계기여 희석. cap-w FAIL이나 EW-대비 생존 → screen_route 재분류 후보(overlay/EW/cap-tier-conditional)."
+  },
+
+  "universe_comparison": {
+    "note": "KR_top342(default) 단일 유니버스. universe v2 비교 미수행 — measurement-integrity re-test(book-marginal vintage 재판정)라 ICIR-attenuation mandate 대상 아님.",
+    "universe": "KR_top342", "cost_model_version": "v2.4_kr_retail_15bps"
+  },
+
+  "governance": "book_state·05_Production 무변경. 결과=도훈 결정 재료. n_trials=1(chain, sweep 부적용). C02_EPS_Chg_1m 등 base 팩터 무변경(value 오버레이만).",
+  "pin_tag": "R28_current_20260714 (RAWDATA md5 c5242397f9f35f092ea2439a7e744873, benchmark md5 d0b5549ede7963183786148b47032595)",
+  "artifacts": [
+    "value_panels.parquet (80906 rows: vz_off0[T-1 clean], vz_off1[same-month], vz_pfs[R27 exact])",
+    "z6_vintage_grid.parquet (7 cells)", "z6_prmap.rds", "value_vintage_parity.rds",
+    "r29_build_value.R", "r29_screen.R", "r29_verify.R", "r29_charts.R", "charts/r29_panel.png"
+  ],
+  "next_probe": [
+    "P1(cap-tier 국소화): clean base value 오버레이 EW-uni pt 6.39 vs cap-w 3.85 gap → cap-tier-conditional(MID/OTHER) 또는 EW-tilt 재소비 프론티어(FQ 신설). IS-only.",
+    "P2(base seam 후속=FQ-044 본류): 저장 268m 패널 clean(T-1) 전량 재빌드 + 현직 pinned 6.130 clean-basis 재산출(별도 judge). factor_db 매핑 off0 통일(재발방지).",
+    "P3(조건부): clean base w sweep(0.20~0.40)+regime theta는 P1 신호 시 후속 — 단독 w-tuning EV 낮음(clean w0.30 paired 1.24)."
+  ]
+}

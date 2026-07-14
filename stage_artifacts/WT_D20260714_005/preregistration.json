@@ -1,0 +1,60 @@
+{
+  "task": "R29 (FQ-044) — Z6 value-blend PIT-clean re-measurement + frozen 268m panel vintage seam 확정",
+  "wt_id": "WT-D20260714_005",
+  "frontier_id": "FQ-044",
+  "parent_chain": "R27 (WT-D20260714_003, FQ-040, Z6 screening PASS on stored base) -> R28 (WT-D20260714_004, FQ-041, stored panel = same-month vintage 발견) -> R29",
+  "mode": "QEPM alpha-research (book_enhancement lane) — measurement-integrity re-test",
+  "created": "2026-07-14",
+  "owner": "Q-Lead (R29 alpha-research, 도훈 최우선 지시 2026-07-14)",
+  "governance": "진단 전용 — book_state 무변경, 05_Production 무변경, DART API 미사용. alpha 단계 canonical/weighted PORT_t = 스크리닝 실측(admission 권위=forge). 현직 book pinned 6.130 재해석 = 범위 밖(별도 judge 라운드).",
+  "selection_type": "re-measurement chain (n_trials=1: Z6 단일 구성 V14+V07 z-blend w=0.30, R27서 확정). vintage cell(base off0/off1 x value off0/off1/pfs)은 argmax 선택 아님 — 전수 보고 decomposition. DSR sweep 게이트 부적용.",
+
+  "hypothesis_fixed": "R27 Z6(z-blend V14_EBIT_EV + V07_EV_EBITDA, w=0.30, ym-정렬)이 screening PASS(paired 3.807)로 판정됐으나 base = 저장 frozen score_eff 패널. R28이 저장 268m 패널 = same-month(off+1) factor vintage(look-ahead) 강한 증거 산출. R29 가설: off=0(T-1, PIT-clean) base에서 base(7F clean) + Z6 variant(clean base + V14/V07 z-blend w=0.30)를 재구축하면 paired>=2.0 AND dIR>=0.05가 유지되는가.",
+
+  "Q1_seam_determination": "R28 4-cell 캘리브레이션 승계 + 독립 재현으로 저장 268m 패널 vintage 확정(judge-grade): 어느 구간이 어느 vintage인지 + 증거 체인. R28 recipe/산출(recon_panels.parquet, screen_inputs.rds) 재사용.",
+  "Q2_z6_clean_verdict": "off=0(T-1) base(0_stored_S7 primary + 0_ic_S7 production-path) + Z6 value blend(clean value = factor_db T-1). canonical top-25 cap-w paired NW-t(lag3) + book-marginal ΔIR window-matched(clean base 대비) + dual-basis(EW-uni) + holdout(2024-07..2026-04) + lag1 스트레스. 판정: paired>=2.0 AND dIR>=0.05.",
+  "Q3_true_admission_numbers": "clean base PORT_t + Z6 clean variant PORT_t 산출(FQ-044 admission 근거 재산출 재료). 현직 book pinned 6.130 = 수치 병기만, 판정 금지.",
+
+  "value_vintage_check": "value z(V14/V07) 자체의 vintage T-1 정합 여부 확인: pure_factor_scores(R27 source) vs factor_db off0(T-1)/off1(same-month) 월별 cross-sectional cor. R27 ym-정렬 규약 유지(그 정정은 별개 유효 사안).",
+
+  "measurement": {
+    "universe": "KR_top342 (KOSPI200 ∪ KQ150)",
+    "cost_model_version": "v2.4_kr_retail_15bps (delta-based, one-way 15bps)",
+    "liquidity": "20d ADV(t-1) >= 2e8 KRW",
+    "top_n": 25,
+    "weighting_authoritative": "cap-w (Size, cap_norm 0.20 cap) via weighted_screen_bt — HARD screening 권위",
+    "weighting_dual_basis": "EW-uni(canonical_screen_bt diag_ew_universe) 병기 — 비바인딩 진단",
+    "port_t": "portfolio_alpha_t_nw_lag3 (build_benchmark_compare, NW lag-3, ann=12)",
+    "paired": "nw_t(variant_active - SAME-vintage base_active) on common months, NW lag-3, window-matched",
+    "delta_ir": "IR_ann(variant_active) - IR_ann(base_active) window-matched (net_active_recon_v1 개념)",
+    "IS_window": "return-month <= 2024-06 (변형/판정은 IS-only)",
+    "holdout": "2024-07 .. 2026-04 (최종 1회 조회)",
+    "lag1_stress": "value z를 1개월 과거로 carry(strictly PIT-safe) 후 paired 재측정"
+  },
+
+  "blend_recipe_R27_verbatim": "dm[,se_z:=zc(base),by=Date]; dm[,vz_z:=zc(value),by=Date]; dm[is.na(vz_z),vz_z:=0]; blend=(1-0.30)*se_z+0.30*vz_z. top-25 by blend, cap-w by Size.",
+
+  "vintage_cells_reported": [
+    "PRIMARY: base=0_stored_S7(clean T-1, stored theta) + value=vz_off0(clean T-1)",
+    "clean_base_prod_ic: base=0_ic_S7(clean T-1, production ic theta) + value=vz_off0",
+    "clean_base_pfs_val: base=0_stored_S7 + value=vz_pfs(R27 exact pure_factor_scores value)",
+    "LA_base_ref: base=1_stored_S7 / 1_ic_S7(same-month LA) — R27 reference basis",
+    "R27_exact_reproduction: STORED panel base(alpha_scores_str1715_268m) + vz_pfs (파이프라인 검증, 목표 paired ~3.807)"
+  ],
+
+  "VERDICT_criteria": {
+    "primary_pass": "PIT-clean base(off=0) paired NW-t(lag3, vs clean base) >= 2.0 AND ΔIR(window-matched) >= 0.05 (AND-게이트)",
+    "pass_branch": "Z6 clean 통과 -> clean 기반 alpha_package 재구축(canonical) + dossier 재발사 준비 완료(재발사는 Q-Lead)",
+    "fail_branch": "Z6 clean 미달 -> value 레버 상당분 = vintage 아티팩트. 정직 보고 + 기전 분해(어느 성분이 seam 의존) + next_probe >=2",
+    "q1_independent": "어느 쪽이든 Q1 seam 판정은 독립 산출(book 전반 재베이스는 FQ-044 후속)"
+  },
+
+  "self_adversarial_preplan": [
+    "① clean 재구축 자체의 parity 검증 — R28 recon recipe 의존 리스크. 대응: R27 exact(stored panel + pfs) 3.807 재현으로 파이프라인 검증 + controlled recon off+1 vs off0(동일 파이프라인, 월만 변경)로 vintage 격리.",
+    "② Z6가 clean에서 죽으면 R27 placebo(p=0)/lag(2.98) 통과를 어떻게 설명 — 기전 정합성. 대응: R27 검증배터리는 VALUE 무결성(실신호+PIT-safe)만 시험했고 그 결론은 유지(value=진짜·clean); 미시험 = BASE vintage(R28/R29가 검거).",
+    "③ holdout 창(2024-07~2026-03) melt-up 편중 — cap-w top-25 국면 특이. 대응: IS+HO+full 병행, dual-basis EW-uni 병기."
+  ],
+
+  "execution_discipline": "R .R source·단일스레드·arrow io(2)·잔류 R 프로세스 확인 · pin_cache vintage 고정(R28_current_20260714 승계) · proxy 손계산 금지(weighted_screen_bt/canonical_screen_bt 경로만) · OneDrive tmp+rename · DART API 금지 · book_state/05_Production 무변경 · R28 산출(recon_panels/screen_inputs) 재사용(재계산 최소화)",
+  "pin_tag": "R28_current_20260714 (factor_db 캐시 현행 vintage, factor_ic_monthly Jun30; RAWDATA md5 c5242397f9f35f092ea2439a7e744873, benchmark md5 d0b5549ede7963183786148b47032595)"
+}

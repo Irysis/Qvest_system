@@ -802,8 +802,8 @@
       "wall_check": "cap-w authoritative+window-matched ΔIR+paired∧ΔIR AND-게이트 유지. 종목수 25 hard·turnover 감시. 06-24 직교327 prior=벽 존재.",
       "data_gate": "없음(로컬: pure_factor_scores value z + score_eff)",
       "owner": "Q-Lead",
-      "status": "screening_pass_dossier_pending",
-      "next_action": "R27 BOOK-MARGINAL SCREENING PASS(verified) — best Z6 zblend(V14_EBIT_EV+V07_EV_EBITDA) w0.30 paired 3.807·ΔIR +0.481·IS3.17->HO4.30·post2017 marginal 4.08·placebo p=0·lag1 2.98. R26 부정판정=exact-Date value 병합결함(1.87)을 ym-정렬로 정정(2.68, bug재현). z-blend>slot-carve(sleeve 가설 FALSIFIED). → P1 Z6 QEPM 6-agent dossier 승격(forge HARD 3종 authoritative, screening!=graduation) + 도훈 수동.",
+      "status": "screening_pass_reversed_lookahead_base",
+      "next_action": "R27 BOOK-MARGINAL SCREENING PASS(verified) — best Z6 zblend(V14_EBIT_EV+V07_EV_EBITDA) w0.30 paired 3.807·ΔIR +0.481·IS3.17->HO4.30·post2017 marginal 4.08·placebo p=0·lag1 2.98. R26 부정판정=exact-Date value 병합결함(1.87)을 ym-정렬로 정정(2.68, bug재현). z-blend>slot-carve(sleeve 가설 FALSIFIED). → P1 Z6 QEPM 6-agent dossier 승격(forge HARD 3종 authoritative, screening!=graduation) + 도훈 수동. [R29 정정 2026-07-14 L-AR-20260714_172027: R27 screening PASS(3.807)의 base=same-month look-ahead(R28/R29 확정). PIT-clean base 재측정 paired 1.02~1.72<2.0 → screening PASS 자격 REVERSED(clean 기준). value=T-1 clean·실재이나 cap-w top-25 국소화. dossier 승격(FQ-042) NO-GO. 재소비=FQ-045.]",
       "source_refs": [
         "parent: FQ-039 R26 L-AR-20260714_153519",
         "memory: project-captier-alpha-localization"
@@ -839,12 +839,13 @@
       "wall_check": "cap-w authoritative + oos_retention v2(band escalation) + calmar. holdout falsification 사전등록. book_state 무변경, governor 정지(도훈 수동). turnover 13.0/yr 감시.",
       "data_gate": "없음(로컬: alpha_package.json + score_eff + pure_factor_scores)",
       "owner": "Q-Lead",
-      "status": "frontier_open",
-      "next_action": "qvest-dossier-pipeline skill: args={wt_id:WT-D20260714_003, candidate_tag:Z6_value_zblend, n_trials_cumulative:30}",
+      "status": "dossier_nogo_clean_basis",
+      "next_action": "NO-GO (R29 2026-07-14 L-AR-20260714_172027): dossier 승격 보류 — R27 screening PASS(paired 3.807)의 base가 same-month look-ahead(R28/R29 확정)였음. PIT-clean base 재측정 시 Z6 paired 1.02~1.72<2.0(AND-게이트 FAIL) → forge HARD 3종 판정 이전에 screening 자격 미충족. dossier 파이프라인을 look-ahead-base Z6에 돌리지 말 것. value 신호 자체는 clean·실재(dIR+·EW-uni 6.39)이나 cap-w top-25 국소화 벽 → 재소비는 FQ-045(cap-tier-conditional/EW-tilt)로 라우팅.",
       "source_refs": [
         "parent: FQ-040 R27 L-AR-20260714_161109",
         "alpha_package: qepm/mailbox/worktask/WT-D20260714_003/alpha_package.json"
-      ]
+      ],
+      "result_lcode": "L-AR-20260714_172027"
     },
     {
       "id": "FQ-043",
@@ -870,13 +871,32 @@
       "ev_rationale": "book 자본판정 근거(historical PORT_t)의 무결성 이슈. 3축 근거(parity 0.913 · factor_db 내부 Date=M-end+load_month_factors same-month매핑 · controlled 2.1x). 단 nuance: stored 패널 clean-forward IC t=5.92>contemp 4.74 → 알파 진위 실재, look-ahead는 top-25 cap-w magnitude 국한. live/forward=PIT-clean이라 live는 backtest 하회 예상.",
       "wall_check": "판정 아닌 검증 권고(확정 아님). historical(same-month) vs forward recompute(T-1) 1개월 seam 귀속 미확정(panel 구성 vs measurement 매핑) — judge/PIT-agent 검증 필요. book_state 무변경.",
       "data_gate": "없음(로컬: alpha_scores_str1715_268m + factor_db + _recompute)",
-      "owner": "Q-Lead → judge/PIT-agent escalate (도훈 인지)",
-      "status": "escalated_open",
-      "next_action": "judge/PIT-agent: (1) stored 패널 vintage seam 확정 + true admission PORT_t 재산출(clean~3.1) (2) live NAV로 backtest 하회 corroborate (3) production 재빌드 시 clean(T-1) convention 통일 권고. FQ-043(screen-time value merge)와 구분 — 본건은 core factor 패널 vintage.",
+      "owner": "Q-Lead (R29 완료; book re-base + book 6.130 clean 재산출 = judge/PIT 후속)",
+      "status": "confirmed_seam_z6_clean_negative",
+      "next_action": "R29 완료 2026-07-14 (L-AR-20260714_172027): 판정1 seam CONFIRMED — 저장 268m 패널=전기간 균일 same-month(off+1) look-ahead(era boundary 없음), forward recompute=T-1 clean, value=T-1 clean(cor 1.0). 독립 재현 stored 5.241·inflation 2.08x. 판정2 Z6 clean=CONFIG_SCOPED_NEGATIVE: R27 3.807=look-ahead-base 아티팩트, PIT-clean base paired 1.02~1.72<2.0(AND-게이트 FAIL). 파이프라인 검증=R27 exact 재현 3.738. → 남은 후속(judge/PIT + 도훈): (1)저장 268m clean(T-1) 전량 재빌드 (2)현직 book pinned 6.130 clean-basis 재산출(별도 judge 라운드) (3)factor_db 매핑 off0 통일(재발방지). live NAV corroborate.",
       "source_refs": [
         "parent: FQ-041 R28 L-AR-20260714_164238",
         "method: alpha_scores_str1715_268m vs _recompute_alpha_asof.R off=0/+1 controlled",
         "related: FQ-043(screen-time ym-정렬), memory: reference-book-benchmark-alignment-realized-ym"
+      ],
+      "result_lcode": "L-AR-20260714_172027",
+      "result_artifacts": "stage_artifacts/WT_D20260714_005/ (verdict/alpha_validation/challenge_note/z6_vintage_grid/value_panels/charts) + qepm/mailbox/worktask/WT-D20260714_005/"
+    },
+    {
+      "id": "FQ-045",
+      "lane": "book_enhancement",
+      "title": "value(V14/V07) cap-tier-conditional / EW-tilt 재소비 — cap-w top-25 국소화 우회 (R29 P1)",
+      "hypothesis": "R29서 clean value 오버레이가 EW-uni PORT_t 6.39 >> cap-w top-25 PORT_t 3.85 (paired 1.24<2.0). cap-w top-25(mega-편중)가 value 한계기여를 희석하는 cap-tier 국소화. value를 cap-tier-conditional(MID/OTHER 슬리브) 또는 EW-tilt로 재소비하면 book-marginal 게이트를 넘는가.",
+      "ev_rationale": "value 신호 clean·실재(dIR+0.153·variant PORT_t 3.06->3.85·EW-uni 6.39·placebo p=0·lag-robust). 벽=cap-w top-25 소비형태. cap-tier 국소화 prior(project-captier-alpha-localization)와 정합. EV 중립(국소화 우회가 배포 유니버스(2e8 liq·25종)서 실현 가능한지 미지).",
+      "wall_check": "cap-w authoritative + paired∧ΔIR AND-게이트 유지. 종목수 25 hard·liq 2e8·turnover 감시. cap-tier long-only 횡단선택으로 cap-w 탈출 구조 불가 prior(project-captier-alpha-localization) 정면 대조. IS-only.",
+      "data_gate": "없음(로컬: value_panels.parquet[vz_off0 clean] + recon_panels[clean base] + SIZE)",
+      "owner": "Q-Lead (capacity 대기 — 즉시 착수 또는 도훈 우선순위 지시)",
+      "status": "frontier_open",
+      "next_action": "clean base(0_stored_S7/0_ic_S7) + value(vz_off0)를 (a)cap-tier-conditional 슬리브(MEGA/MID/OTHER 분리 tilt) (b)EW-tilt top-25 로 재소비, cap-w paired NW-t + dual-basis 측정. IS-only, DSR 회계.",
+      "source_refs": [
+        "parent: FQ-044 R29 L-AR-20260714_172027",
+        "memory: project-captier-alpha-localization-20260706",
+        "value: stage_artifacts/WT_D20260714_005/value_panels.parquet"
       ]
     }
   ]
