@@ -22,6 +22,7 @@ build_monthly_forward_returns <- function(rawdata, sig_dates) {
   # 각 종목 월말 종가 → 다음 월말 종가 forward return
   sig_dates <- sort(as.Date(sig_dates))
   out <- list(); bench <- list(); liq <- list()
+  n_ret_firewall <- 0L   # [R44] monthly Ret_1m sanity 격리 카운트
   # 월말 거래일 매핑
   asof_close <- function(d) {
     sub <- rawdata[Date <= d]
@@ -37,6 +38,10 @@ build_monthly_forward_returns <- function(rawdata, sig_dates) {
                c1[, .(Ticker, Close1 = Close)], by = "Ticker")
     m <- m[(K200 == TRUE | KQ150 == TRUE) & !is.na(Close0) & Close0 > 0 & !is.na(Close1)]
     m[, Ret_1m := Close1 / Close0 - 1]
+    # [R44 2026-07-15, WT-D20260715_013] monthly Ret_1m sanity — 물리불가 격리(월 >+500% /
+    #   <-100%). clean 유니버스 월 |fwd| 최대 ~2.47(R43 census) ≪ 5.0 → 미발화·parity 보장.
+    .bad <- is.finite(m$Ret_1m) & (m$Ret_1m > 5.0 | m$Ret_1m < -1.0)
+    if (any(.bad)) { n_ret_firewall <- n_ret_firewall + sum(.bad); m <- m[!.bad] }
     out[[length(out) + 1L]] <- m[, .(Date = d0, Ticker, Ret_1m)]
     # liquidity proxy: 20d ADV at t-1 (사용은 단순 Vol0*Close0; canonical_screen_bt liq_dt)
     liq[[length(liq) + 1L]] <- m[, .(Date = d0, Ticker, adv = Vol0 * Close0)]
@@ -47,10 +52,13 @@ build_monthly_forward_returns <- function(rawdata, sig_dates) {
     else mean(m$Ret_1m, na.rm = TRUE)
     bench[[length(bench) + 1L]] <- data.table(Date = d0, BM_Ret = bm_w)
   }
+  if (n_ret_firewall > 0)
+    cat(sprintf("[build_monthly_forward_returns] Ret_1m sanity 방화벽: %d 물리불가 월수익 격리(>+500%%/<-100%%).\n", n_ret_firewall))
   list(
     returns_dt = if (length(out)) rbindlist(out) else data.table(),
     bench_dt = if (length(bench)) rbindlist(bench) else data.table(),
-    liq_dt = if (length(liq)) rbindlist(liq) else data.table()
+    liq_dt = if (length(liq)) rbindlist(liq) else data.table(),
+    ret_firewall_dropped = n_ret_firewall   # [R44] 격리 카운트(진단)
   )
 }
 

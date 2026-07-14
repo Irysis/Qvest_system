@@ -199,6 +199,17 @@ canonical_screen_bt <- function(scores_dt, returns_dt, bench_dt,
 
   S <- as.data.table(scores_dt)[!is.na(score)]
   R <- as.data.table(returns_dt)[!is.na(Ret_1m)]
+
+  # ── [R44 2026-07-15, WT-D20260715_013] Ret_1m sanity assert (입력단 이중 방어) ──
+  #   1차 방화벽 = rawdata_sanitize Step5(일간 Ret). 여기선 monthly forward return의 물리불가
+  #   잔존만 backstop: Ret_1m > +500%(월간 상한 초월) 또는 < -100%(손실>100% 물리 불가능).
+  #   clean 유니버스 월 |fwd| 최대 ~2.47(R43 census) ≪ 5.0 → 미발화·known-case parity 보장.
+  #   assert-only(warn+NA·본판정 비중단) — sanitize 미적용 vintage 소비 시 소비면 보호.
+  bad_1m <- is.finite(R$Ret_1m) & (R$Ret_1m > 5.0 | R$Ret_1m < -1.0)
+  if (any(bad_1m)) {
+    warning(sprintf("[canonical_screen_bt] Ret_1m sanity 방화벽: %d 물리불가 월수익 격리(Ret_1m>5.0 or <-1.0) — rawdata_sanitize 방화벽 미적용 vintage 의심.", sum(bad_1m)))
+    R <- R[!bad_1m]
+  }
   # [additive 2026-07-10] 유동성필터 前 패널 유니버스 스냅샷 — diag_ew_universe(EW 벤치)용.
   univ_prefilter <- if (isTRUE(diag_dual_basis)) unique(S[, .(Date, Ticker)]) else NULL
   if (!is.null(liq_dt)) {

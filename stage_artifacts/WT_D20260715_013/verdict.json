@@ -1,0 +1,89 @@
+{
+  "wt": "WT-D20260715_013",
+  "round": "R44",
+  "mode": "data-integrity 방화벽 배선 (밤샘 위생 — 새 알파 측정 아님)",
+  "title": "Ret sanity 방화벽 배선 — rawdata_sanitize Step5 강화 + canonical 입력단 이중가드 (R43 R1+R4)",
+  "as_of_date": "2026-07-15",
+  "verdict_type": "capability_established",
+  "task_class": "data_integrity_firewall_wiring",
+  "parent": "R43 (WT-D20260715_012) — rawdata Ret 오염 census. Ret winsorize 방화벽 부재 적발.",
+  "pin_record": {
+    "pinned_snapshot": ".cache/pin/rawdata_r9_pin_20260715.parquet",
+    "pin_tag": "rawdata_r9_pin_20260715 (R40 pin, byte-identical to live 2026-07-15, max Ret 66999)",
+    "note": "회귀검증은 pin vintage 고정 read-only(§7). rawdata.parquet 무변경 — 방화벽은 함수 배선만."
+  },
+
+  "wiring": {
+    "primary_firewall": {
+      "file": "02_Infrastructure/data/rawdata_sanitize.R",
+      "changes": [
+        "신규 순수함수 ret_sanity_firewall(dt) — 두-단계 격리 분류(HARD NA / SUSPECT flag).",
+        "Step5 재작성: 현 '|Ret|>0.3 로깅만' → prevClose/gapdays 계산 후 ret_sanity_firewall 적용 → HARD(물리불가|Ret|>1.0 + 0원제수 prevClose<=10 + 날짜갭>20d) Ret:=NA(후속 !is.na 제거가 소비) · SUSPECT(0.31<|Ret|<=1.0 잔여) 값유지+격리리스트 기록.",
+        "격리리스트 CSV 자동기록: .cache/ret_firewall_isolation_<date>.csv (n_isolated 기록 — R43 R4 권고)."
+      ],
+      "invariants": "rawdata 스키마 불변(새 컬럼 미추가·prevClose/gapdays 임시 후 제거) · Ret 재계산식 = Close/shift(Close)-1 동일(parity) · 정당 limit-bound(<=0.30)·megacap 정당이동 불변."
+    },
+    "secondary_guards": {
+      "canonical_screen_bt": {
+        "file": "02_Infrastructure/contracts/canonical_screen_bt.R",
+        "change": "returns_dt 소비 전 Ret_1m sanity assert — 물리불가 월수익(Ret_1m>5.0 or <-1.0) warn+NA 격리. assert-only(본판정 비중단). clean 유니버스 월 |fwd| 최대 ~2.47 ≪ 5.0 → 미발화(parity)."
+      },
+      "build_monthly_forward_returns": {
+        "file": "02_Infrastructure/ramp/factor_validation.R",
+        "change": "월별 Ret_1m 산출 직후 물리불가 격리(>+500%/<-100%) + 반환 리스트에 ret_firewall_dropped 카운트 추가."
+      }
+    }
+  },
+
+  "verification": {
+    "script": "stage_artifacts/WT_D20260715_013/verify_r44.R",
+    "log": "stage_artifacts/WT_D20260715_013/_verify_r44_log.txt",
+    "results": "stage_artifacts/WT_D20260715_013/r44_verify_results.json",
+    "overall_pass": true,
+    "testA_firewall_census": {
+      "abs_gt_0.31_recompute": 2793,
+      "abs_gt_1.0_recompute": 257,
+      "hard_total": 672,
+      "hard_breakdown": {"phys_impossible_absret_gt1": 257, "zerodiv_prevclose_le10": 373, "dategap_gt20d": 42},
+      "suspect_total": 2121,
+      "in_universe_isolated": 17,
+      "in_universe_hard": 1,
+      "in_universe_suspect": 16,
+      "r43_cross_check": "유니버스內 17/17 정확 일치(A063350 2007-04-20 phys-impossible=유일 HARD + 16 suspect, LS ELECTRIC·루닛·코미코 포함). 전체 count(2793 vs R43 2760·257 vs 254)의 소차는 (a)stored Ret vs recompute Ret max|Δ|=4.86(non-universe microcap 대상, 스토어드-Ret은 Close/shift(Close)-1과 일부 불일치) + (b)경량 회귀가 Step2-4(04/01 재태깅·비거래일 제거) 미선행 — 유니버스·판정에 무영향."
+    },
+    "testB_book_parity": {"pass": true, "book_holdings_isolated": 0, "note": "현 북 14보유 HARD/SUSPECT 격리 0행 — R43 오염 ZERO 재확인."},
+    "testC_panel_parity": {"pass": true, "monthly_panel_max_delta": 0.0, "n_diff_rows": 0, "hard_rows_removed": 672, "pct_removed": "0.0327%",
+      "note": "HARD 격리 前/後 book+anom 24종목 월패널 max|Δ Ret_1m|=0 — HARD는 전부 월중일(월말 asof close 불변). SUSPECT(루닛/코미코 2026-04-30 seam·LS ELECTRIC)는 값유지=월패널 잔존(R2/R3 리빌드 소관). 정당 데이터 불변 실증."},
+    "testD_canonical_guard": {"pass": true, "clean_warns": 0, "clean_port_t": -0.709, "clean_max_abs_ret1m": 1.172,
+      "injected_monster_warns": 1, "injected_result_finite": true, "injected_matches_clean": true,
+      "note": "clean 월패널(5785 종목-월)엔 가드 inert(0경고·PORT_t 불변). Ret_1m=67000 주입 시 가드 1회 발화+격리→결과 finite·clean과 bit-일치(monster가 port 폭발 못 시킴)."}
+  },
+
+  "isolation_consumption": {
+    "r43_in_universe_17": "명시 격리 대상 반영 완료 — firewall_isolation_IN_UNIVERSE.csv(17행, action/cause 라벨). 1 HARD(A063350 phys-impossible→NA) + 16 SUSPECT(값유지·리스트 보존, 분할 back-adjust는 R2/R3).",
+    "artifacts": [
+      "stage_artifacts/WT_D20260715_013/firewall_isolation_IN_UNIVERSE.csv (17행)",
+      "stage_artifacts/WT_D20260715_013/firewall_isolation_ALL.csv (2,793행)"
+    ]
+  },
+
+  "residual": "R2(2026-04-30 April-gap seam 루닛/코미코 2x·microcap 10x)·R3(A010120 LS ELECTRIC ~1:4.4 분할 back-adjust)는 별도 KRX 백필 리빌드 태스크(rawdata 직접수정 금지) — SUSPECT flag로 가시화만. stored Ret vs recompute Δ=4.86(비-유니버스 microcap)는 별개 데이터 위생 프로브 후보.",
+
+  "next_probes": [
+    "다음 sanitize/factor_db 리빌드 시 방화벽 실적용 관측 — .cache/ret_firewall_isolation_<date>.csv n_isolated + factor_db Fwd_Ret(prod(1+Ret)) 재산출값 대조(HARD 673 제거·유니버스 월패널 불변 실증). R2/R3 KRX 백필과 동시 실행 권장.",
+    "가격제한 시변 정교화: 2015-06 이전 KR 일일제한 ±15% → 그 이전 구간 SUSPECT 경계를 0.16으로 시변 적용 검토(현재 0.31 균일). pre-2015 penny 오염(A063350/A025930 2007) 회수율 향상 여부.",
+    "stored-Ret vs recompute Δ=4.86 근원 프로브 — 스토어드 rawdata Ret 컬럼이 Close/shift(Close)-1과 불일치하는 non-universe microcap 원인(Close 후수정·adj-close·중복일) 진단 → factor_db 직접소비(daily Ret) 오염 여부 확인."
+  ],
+
+  "consumer_surfaces": [
+    "①재료/데이터 원천: Ret sanity 방화벽 = canonical 입력단 구조적 취약 수리(물리불가 Ret 통과 봉쇄). ret_sanity_firewall() 단일 진실 함수 + 격리리스트 상시 자산화.",
+    "⑧위험모델/감시: ret_firewall_isolation CSV n_isolated 카운트 = 데이터-위생 tripwire(리빌드 로그 행수·|Ret|>0.31 급증 감시, R43 consumer ⑧ 배선 구체화).",
+    "⑨자본/운영: 현 북 14보유 방화벽 격리 0 — recon NAV clean 재확인(자본 무영향)."
+  ],
+  "layer_bottleneck": "①재료(데이터 무결성 위생) — 성과 병목 아님. 방화벽 배선으로 canonical 입력단 보호 완료(오염 상존해도 소비면 차단). R2/R3 seam 근본수리는 별도 리빌드.",
+  "book_state_unchanged": true,
+  "production_unchanged": true,
+  "rawdata_unchanged": true,
+  "constraints_respected": "rawdata.parquet/book_state/05_Production 무변경(함수 배선만) · DART API 0 · 단일스레드 · arrow io(2) · pin 고정 read-only · 판정 어휘 규약(종결어휘 미사용·verdict enum capability_established).",
+  "generated_at": "2026-07-15"
+}

@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
-  "updated": "2026-07-15 (R43 — FQ-054 rawdata Ret 오염 census·격리 + Ret sanity 방화벽 armed)",
+  "updated": "2026-07-15 (R44 — FQ-054 Ret sanity 방화벽 R1+R4 배선 완료·회귀 parity PASS. 잔여 R2/R3 KRX 백필 리빌드)",
   "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
   "entries": [
     {
@@ -1094,18 +1094,21 @@
       "lane": "data_integrity_hygiene",
       "title": "R43 — rawdata Ret 극단값 오염 census·격리 + 파이프라인 Ret sanity 방화벽(R1 armed)",
       "hypothesis": "R42 적발 전역 Ret max=66999 = 물리 불가능 오염. census 결과: |Ret|>0.31 = 2,760 종목-일, |Ret|>1.0(물리불가) = 343 종목-일 — 그중 유니버스內(K200∪KQ150) 단 1건. 현 북 14보유 오염 ZERO·유니버스 월복리 폭발 0건. 원인 5종(0원제수·April-gap 10배 seam·날짜갭·저가주·분할증자 미조정). 파이프라인에 Ret winsorize 방화벽 부재.",
-      "ev_rationale": "R42 data_hygiene_finding 소비. 데이터 무결성 위생(자본 아님). R1 방화벽 배선 = 오염 상존해도 소비면 보호(feasible now).",
-      "wall_check": "read-only census(rawdata/book_state/05_Production 무변경)·DART API X. 현 북/유니버스 월패널 clean → 밤샘 판정 무영향. Ret winsorize 부재는 파이프라인 강화 여지.",
-      "data_gate": "없음 (census는 rawdata 읽기만). R1 방화벽·April-gap 재수리는 별도 리빌드 태스크(rawdata 직접수정 금지, KRX 백필 경유).",
-      "owner": "Q-Lead (R43 census·격리 완료 2026-07-15 / R1 방화벽·April-gap 재수리 armed — 착수 대기)",
-      "status": "capability_established",
-      "next_action": "R1 파이프라인 Ret sanity 방화벽 배선(월패널/canonical 입력단 |Ret|>0.31 suspect→분할 back-adjust/0원제수·날짜갭 Ret:=NA) armed. R2 April-gap seam 재수리(루닛/코미코 2x·microcap 10x, KRX 백필) + R3 LS ELECTRIC ~1:4.4 분할 back-adjust = 별도 리빌드 태스크. R4 rawdata_sanitize.R Step5 강화(현 |Ret|>0.3 로깅만→물리불가 자동격리 Ret:=NA). 2026-04 유니버스 홀딩월 측정 밤샘 라운드 있으면 seam-day exclude 후 verdict 재확인(위생).",
+      "ev_rationale": "R42 data_hygiene_finding 소비. 데이터 무결성 위생(자본 아님). R1+R4 방화벽 배선 완료(R44) = 오염 상존해도 소비면 보호. 잔여 R2/R3 seam 근본수리는 별도 리빌드.",
+      "wall_check": "read-only census(rawdata/book_state/05_Production 무변경)·DART API X. 현 북/유니버스 월패널 clean → 밤샘 판정 무영향. Ret winsorize 부재 → R44에서 방화벽 배선으로 해소(소비면 보호). seam 잔재는 R2/R3 리빌드.",
+      "data_gate": "없음 (census는 rawdata 읽기만·방화벽은 함수 배선만). R2/R3 April-gap·LS ELECTRIC 분할 재수리는 별도 리빌드 태스크(rawdata 직접수정 금지, KRX 백필 경유).",
+      "owner": "Q-Lead (R43 census·격리 완료 2026-07-15 / R44 R1+R4 방화벽 배선·회귀 parity PASS 2026-07-15 / R2·R3 KRX 백필 리빌드 armed — 착수 대기)",
+      "status": "capability_established (R1+R4 wired · R2/R3 armed)",
+      "next_action": "★R1+R4 배선 완료(R44, WT-D20260715_013): ret_sanity_firewall() 신규 순수함수 → rawdata_sanitize Step5(HARD Ret:=NA[물리불가/0원제수/날짜갭] + SUSPECT flag[분할류 값유지·격리리스트]) + canonical_screen_bt/build_monthly_forward_returns Ret_1m 이중가드. 회귀 4-test PASS(북0·월패널Δ0·가드 clean무해+monster격리·유니버스 17/17). 잔여: R2 April-gap seam 재수리(루닛/코미코 2x·microcap 10x, KRX 백필) + R3 LS ELECTRIC ~1:4.4 분할 back-adjust = 별도 리빌드(SUSPECT flag로 가시화). 다음 리빌드 시 방화벽 실적용 관측(P1)·가격제한 시변 pre-2015 ±15%(P2)·stored-Ret Δ 근원(P3).",
       "source_refs": [
+        "verdict R44: stage_artifacts/WT_D20260715_013/verdict.json (방화벽 배선·회귀 parity)",
+        "l_code R44: L-RAMP-20260715_070019 (ret_sanity_firewall 배선)",
+        "verify R44: stage_artifacts/WT_D20260715_013/verify_r44.R + r44_verify_results.json + _verify_r44_log.txt",
+        "wiring: 02_Infrastructure/data/rawdata_sanitize.R (ret_sanity_firewall+Step5) + contracts/canonical_screen_bt.R + ramp/factor_validation.R",
         "verdict R43: stage_artifacts/WT_D20260715_012/verdict.json",
         "census: stage_artifacts/WT_D20260715_012/census_summary.json + isolation_list_*.csv",
         "parent R42: stage_artifacts/WT_D20260715_011/verdict.json (Ret max=66999 적발)",
-        "precedent: project-rawdata-april-gap-incident-20260711",
-        "pipeline: 02_Infrastructure/contracts/canonical_screen_bt.R (Ret winsorize 부재) + 02_Infrastructure/data/rawdata_sanitize.R Step5"
+        "precedent: project-rawdata-april-gap-incident-20260711"
       ]
     }
   ]

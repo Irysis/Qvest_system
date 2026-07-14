@@ -18,6 +18,73 @@ suppressPackageStartupMessages({
 if (!exists("PROJECT_ROOT")) source(file.path(dirname(dirname(sys.frame(1)$ofile %||% ".")), "config.R"))
 if (!exists("is_trading_day")) source(file.path(DATA_DIR, "trading_calendar.R"))
 
+# ─── Ret Sanity 방화벽 (R44, 2026-07-15 — WT-D20260715_013) ────────────────────
+#   목적: 물리 불가능한 Ret가 canonical 입력단을 통과하는 구조적 취약 수리.
+#   R43 census(WT-D20260715_012): 전역 일간 Ret max=66999(전일종가 0원류·+6,699,900%).
+#     |Ret|>0.31 = 2,760 종목-일 · |Ret|>1.0(물리불가) = 343 · 유니버스內(K200∪KQ150) 17.
+#   KR 일일 가격제한 ±30%(0.30) → 0.31 초과 = 제한위반, 1.0 초과 = 물리 불가능.
+#   두-단계 격리 (오염만 제거·정당 데이터 불변 = known-case parity):
+#     ① HARD (Ret:=NA → 후속 !is.na(Ret) 제거가 소비): 물리불가(|Ret|>1.0) + 0원제수
+#        (prevClose≤10, 반올림 증폭) + 날짜갭>20d(상폐/재상장 cross-gap 허위수익).
+#        → 정당 limit-bound(≤0.30) 및 megacap 레짐 정당 이동은 불변(reference-kr-2025-megacap 준수).
+#     ② SUSPECT (값 유지 · 격리리스트 아티팩트로만 보존): 0.31<|Ret|≤1.0 잔여(분할류
+#        ratio≈정수배 등). 분할 back-adjust는 R2/R3 KRX 백필 리빌드 소관 — 방화벽은 FLAG,
+#        리빌드가 FIX. rawdata 스키마 불변(새 컬럼 미추가, "직접수정 금지" 정합).
+#   ★순수 함수(부작용 없음) — sanitize Step5와 회귀검증이 동일 로직을 공유(단일 진실).
+#' @param dt data.table(Ticker, Date, Close, Ret[, prevClose, gapdays, K200, KQ150])
+#'           prevClose/gapdays 부재 시 Ticker·Date 정렬 후 shift로 계산(원본 복제, 미변경).
+#' @return list(mask_hard, mask_suspect, isolation=data.table, thresholds, counts)
+ret_sanity_firewall <- function(dt,
+                                ret_phys_impossible = 1.0,
+                                ret_limit = 0.31,
+                                zero_div_prevclose = 10,
+                                dategap_max = 20L) {
+  need_pc <- !("prevClose" %in% names(dt))
+  need_gd <- !("gapdays"  %in% names(dt))
+  D <- dt
+  if (need_pc || need_gd) {
+    D <- data.table::copy(dt); data.table::setorder(D, Ticker, Date)
+    if (need_pc) D[, prevClose := shift(Close), by = Ticker]
+    if (need_gd) D[, gapdays := as.integer(Date - shift(Date)), by = Ticker]
+  }
+  ret <- D$Ret; pc <- D$prevClose; gd <- D$gapdays
+  has_ret <- !is.na(ret)
+  m_phys    <- has_ret & abs(ret) > ret_phys_impossible
+  m_zerodiv <- has_ret & abs(ret) > ret_limit & !is.na(pc) & pc <= zero_div_prevclose
+  m_dategap <- has_ret & abs(ret) > ret_limit & !is.na(gd) & gd > dategap_max
+  m_hard    <- m_phys | m_zerodiv | m_dategap
+  m_suspect <- has_ret & abs(ret) > ret_limit & !m_hard
+  # SUSPECT 세분: 분할/증자류(ratio≈정수배 up 또는 1/정수 down) 식별 — R2/R3 back-adjust 표적화용.
+  #   ratio = Close/prevClose = 1+Ret. up=액면분할/증자(≈정수배), down=병합/reverse-split·seam(≈1/정수).
+  ratio <- 1 + ret
+  int_tol <- 0.03
+  m_split <- m_suspect & !is.na(ratio) & (
+    (ratio >= 1.5 & abs(ratio - round(ratio)) <= int_tol * pmax(round(ratio), 1) & round(ratio) >= 2) |
+    (ratio > 0 & ratio <= 0.67 & abs(1/ratio - round(1/ratio)) <= int_tol * pmax(round(1/ratio), 1) & round(1/ratio) >= 2))
+  cause <- rep(NA_character_, length(ret))
+  cause[m_suspect] <- "SUSPECT_above_limit"
+  cause[m_split]   <- "SUSPECT_split_like_ratio_int"       # 분할류(ratio≈정수배) — log+flag(값유지)
+  cause[m_dategap] <- "HARD_dategap_gt20d"
+  cause[m_zerodiv] <- "HARD_zerodiv_prevclose_le10"
+  cause[m_phys]    <- "HARD_phys_impossible_absret_gt1"    # 우선순위: 물리불가가 최상위
+  k200  <- if ("K200"  %in% names(D)) D$K200  else rep(NA, nrow(D))
+  kq150 <- if ("KQ150" %in% names(D)) D$KQ150 else rep(NA, nrow(D))
+  in_univ <- (!is.na(k200) & k200 == TRUE) | (!is.na(kq150) & kq150 == TRUE)
+  iso_idx <- which(m_hard | m_suspect)
+  isolation <- data.table::data.table(
+    Ticker = D$Ticker[iso_idx], Date = D$Date[iso_idx], Ret = ret[iso_idx],
+    Close = D$Close[iso_idx], prevClose = pc[iso_idx], gapdays = gd[iso_idx],
+    in_universe = in_univ[iso_idx],
+    action = data.table::fifelse(m_hard[iso_idx], "NA_isolated", "suspect_flag_kept"),
+    cause = cause[iso_idx])
+  list(mask_hard = m_hard, mask_suspect = m_suspect, isolation = isolation,
+       thresholds = list(ret_phys_impossible = ret_phys_impossible, ret_limit = ret_limit,
+                         zero_div_prevclose = zero_div_prevclose, dategap_max = dategap_max),
+       counts = list(hard = sum(m_hard, na.rm = TRUE), suspect = sum(m_suspect, na.rm = TRUE),
+                     hard_in_universe = sum(m_hard & in_univ, na.rm = TRUE),
+                     suspect_in_universe = sum(m_suspect & in_univ, na.rm = TRUE)))
+}
+
 sanitize_rawdata <- function(dry_run = FALSE) {
   cat("=== RAWDATA Sanitize 시작 ===\n\n")
 
@@ -153,16 +220,38 @@ sanitize_rawdata <- function(dry_run = FALSE) {
     cat("  누락 없음.\n")
   }
 
-  # ─── Step 5: Ret 재계산 ─────────────────────────────────────────────────────
-  cat("\n[Step 5] Ret 재계산...\n")
+  # ─── Step 5: Ret 재계산 + Ret sanity 방화벽 (R44) ───────────────────────────
+  #   원리: ret_sanity_firewall() (파일 상단) — 물리불가·0원제수·날짜갭은 HARD 격리(Ret:=NA),
+  #         분할류 잔여는 SUSPECT flag(값 유지·격리리스트만). 정당 데이터 불변(known-case parity).
+  cat("\n[Step 5] Ret 재계산 + Ret sanity 방화벽 (R44)...\n")
   if (!dry_run) {
     setorder(raw, Ticker, Date)
-    raw[, Ret := Close / shift(Close) - 1, by = Ticker]
+    raw[, prevClose := shift(Close), by = Ticker]
+    raw[, gapdays   := as.integer(Date - shift(Date)), by = Ticker]
+    raw[, Ret := Close / prevClose - 1]            # = Close/shift(Close)-1 (parity 불변)
 
-    # 각 종목 첫 날 Ret = NA → 제거
+    fw  <- ret_sanity_firewall(raw)               # prevClose/gapdays 이미 존재 → 재계산 안 함
+    iso <- fw$isolation
+    cnt <- fw$counts
+
+    # 격리 리스트 파일 기록 (n_isolated 기록 — R43 R4 권고)
+    if (nrow(iso) > 0) {
+      iso_path <- file.path(CACHE_DIR, sprintf("ret_firewall_isolation_%s.csv", format(Sys.Date(), "%Y%m%d")))
+      data.table::fwrite(iso, iso_path)
+      cat(sprintf("  격리 리스트 기록: %s (%d행)\n", iso_path, nrow(iso)))
+    }
+
+    # HARD 격리: Ret:=NA → 다음 !is.na(Ret) 제거가 소비 (오염행 제거·정당 데이터 불변)
+    if (cnt$hard > 0) raw[fw$mask_hard, Ret := NA_real_]
+
+    # 각 종목 첫 날 Ret = NA + HARD 격리 NA → 제거
     raw <- raw[!is.na(Ret)]
+    raw[, c("prevClose", "gapdays") := NULL]      # 임시 컬럼 정리(Step 8 core_cols에도 부재)
 
-    cat(sprintf("  Ret 재계산 완료. 이상치(|Ret|>0.3): %d건\n", raw[abs(Ret) > 0.3, .N]))
+    cat(sprintf("  방화벽 격리: HARD NA %d건(유니버스 %d) · SUSPECT flag %d건(유니버스 %d)\n",
+                cnt$hard, cnt$hard_in_universe, cnt$suspect, cnt$suspect_in_universe))
+    cat(sprintf("  잔여 |Ret|>0.3: %d건 (전량 suspect·값 유지 — 분할 back-adjust는 R2/R3 리빌드 소관)\n",
+                raw[abs(Ret) > 0.3, .N]))
   }
 
   # ─── Step 6: BM_Ret 재계산 ──────────────────────────────────────────────────
