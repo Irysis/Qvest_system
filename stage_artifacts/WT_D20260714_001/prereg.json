@@ -1,0 +1,50 @@
+{
+  "prereg_id": "WT-D20260714_001_R25_audit_meta",
+  "locked_before_return_association": true,
+  "prereg_datetime": "2026-07-14",
+  "observed_before_lock": "Signal COUNT distributions only (opinion dist, has_emphs/has_kam/gc counts by FY, ticker-fy dedup counts). NO forward-return association observed at lock time.",
+
+  "signal_surfaces": [
+    {"id": "S1_nonclean_opinion", "def": "adt_opinion current-term parses to 한정/부적정/의견거절 (non-적정). Manifest/queue prior: only ~2 firms in 11yr deploy universe.", "form": ["exclusion"], "expectation": "sparsity wall (R24 form) — exclusion near-null in deploy universe; measure to confirm."},
+    {"id": "S2_emphasis_of_matter", "def": "adt_reprt_spcmnt_matter present (!= '-'/empty) OR emphs_matter non-empty. Full-period measurable (113-217/yr pre-2024).", "form": ["exclusion", "signal"], "expectation": "primary exclusion candidate."},
+    {"id": "S3_going_concern", "def": "keyword scan (계속기업/존속능력/불확실) across emphasis+KAM text. moderate 2019+.", "form": ["exclusion", "signal"], "expectation": "distress signal; sparse pre-2019."},
+    {"id": "S4_KAM", "def": "core_adt_matter present (has_kam) and kam_count. FY2019+ ONLY (KAM 실효 2019).", "form": ["exclusion", "signal"], "expectation": "time-restricted; complexity/risk proxy, sign uncertain."},
+    {"id": "S5_correction_magnitude_LIMITED", "def": "[기재정정] annual-report correction ROUND count on same base report (t3 is_jungjung). NOTE: true financial-restatement magnitude requires document parsing (PROHIBITED this round) — metadata yields only count = frequency-adjacent (WT-005 VALIDATED_NEGATIVE). Measured as completeness/robustness only, LABELED frequency-adjacent, NOT a new axis.", "form": ["exclusion"], "expectation": "expected negative (frequency proxy); data-gate limits magnitude extraction."}
+  ],
+
+  "pit_rules": {
+    "signal_available_from": "audit report rcept_dt (from rcept_no[:8] for t1; rcept_dt for t3). Signal at month-end sig_date t only if rcept_dt <= t. Holding month t+1 starts after t => C5 satisfied.",
+    "financial_lag": "audit reports filed ~Mar-Apr of FY+1 (C4). carry latest FY audit whose rcept_dt <= sig_date.",
+    "liquidity_filter": "AvgTV20 at t-1 >= 2e8 (C10).",
+    "universe_pit": "membership from RAWDATA K200/KQ150 at each month-end (time-varying).",
+    "survivorship_caveat": "audit data pulled for CURRENT ~348 constituents (not PIT-delisted firms). Delisted-after-nonclean firms ABSENT => exclusion effect UNDERESTIMATED (conservative direction). Documented, not fully fixable without delisted-firm audit history."
+  },
+
+  "measurement_design": {
+    "A_signal_form": {
+      "construct": "monthly EW long portfolio of FLAGGED names; forward 1M return.",
+      "basis_authoritative": "cap-w benchmark (BM_Ret) active return, PORT_t NW lag-3 via build_benchmark_compare.",
+      "basis_diagnostic": "EW-universe active (diag).",
+      "size_tier": "MEGA(cap rank 1-10) / MID(11-30) / small(31+) decomposition of flagged group + tier-conditional flagged-vs-unflagged spread.",
+      "interpretation": "flagged group NEGATIVE active with |t|>=2 => flag has bad-firm content."
+    },
+    "B_exclusion_form_primary": {
+      "construct": "base = EW deploy universe (each month EW over eligible liq-pass members); exclusion = same minus flagged names, reweighted EW.",
+      "test": "canonical paired NW-t on monthly (exclusion_ret - base_ret) difference series + each vs BM active PORT_t.",
+      "also": "canonical_screen_bt with clean-preference score (score = -flag_severity) top-25 vs score-constant top-25 to show exclusion rarely touches deploy top-25.",
+      "interpretation": "positive paired NW-t (exclusion helps) with cap-w significance = deployable exclusion value."
+    }
+  },
+
+  "verdict_thresholds": {
+    "primary_pass": "exclusion paired NW-t >= 2.0 AND cap-w significant (flagged active PORT_t <= -2.0 authoritative)",
+    "graduation_note": "canonical is screening (metric_type canonical_screen). Capital graduation authority = forge + essence_score (PORT_t 2.95 / oos_retention 0.7 / calmar 0.64). This round is signal/screen only.",
+    "n_trials": "4 primary surfaces (S1-S4) in parallel = family accounting; S5 robustness-only. selection_type=chain (hypothesis-driven, not sweep) => DSR advisory."
+  },
+
+  "adversarial_challenges_preregistered": [
+    "C1: survivorship — exclusion underestimated? answered by PIT universe + direction note (conservative).",
+    "C2: non-clean sparsity => power wall (R24 form). answered by size-tier: is it absence-of-signal or tier-localization?",
+    "C3: KAM FY2019+ sample-era bias — S4 verdict scoped to 2019-2026 only, not full period."
+  ]
+}

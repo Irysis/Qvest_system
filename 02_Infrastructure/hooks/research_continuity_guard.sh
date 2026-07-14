@@ -65,7 +65,7 @@ if not full.strip():
     print('{}'); sys.exit(0)
 
 # W1: 판정형 종결 어휘 (과거 인용 "R5 계열 폐쇄" 오탐을 줄이기 위해 선언형 패턴만)
-terminal = re.search(r'(소진\s*판정|계열\s*소진|축\s*소진(?!\s*지대)|폐쇄\s*판정|종결\s*판정|종결합니다|중단합니다|재시도\s*가치\s*없|더\s*이상\s*경로가\s*없)', full)
+terminal = re.search(r'(소진\s*판정|계열\s*소진|축\s*소진(?!\s*지대)|폐쇄\s*판정|종결\s*판정|종결합니다|중단합니다|종착|막다른\s*길|재시도\s*가치\s*없|더\s*이상\s*경로가\s*없)', full)
 nextstep = re.search(r'(next_probe|다음\s*(반복|가설|사이클|라운드|스텝)|후속|착수|스폰|프론티어|재도전|frontier|armed)', full)
 
 # W2: 대기-자세 마감
