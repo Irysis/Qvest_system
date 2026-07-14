@@ -1,0 +1,64 @@
+{
+  "round": "R38",
+  "fq": "FQ-052",
+  "wt": "WT-D20260715_007",
+  "title": "insider SAFE 청산-타이밍 대칭검정 (exit-timing symmetry)",
+  "mode": "RAMP-adjacent monitoring 진단 (자본 아님)",
+  "parent": "R34 P3 / R37 next_probe P1 (SAFE 진입 확립 → 청산 타이밍 대칭성)",
+  "verdict_type": "capability_established",
+  "symmetry_class": "asymmetric_benign_risk_sticky",
+  "headline": "청산(flag off)은 위험 재상승 아님(no hangover). 수익 premium은 청산 시 완만 복귀(무유의)하나 하방/tail 위험 protection은 점착. SAFE 수익 신호 = 지속(SUSTAIN)-클러스터 현상이지 진입/청산 이벤트 아님. → tripwire 청산규칙 불요(SOFT-LAG: 라벨 강도 하향 SAFE→SAFE_FADING 권고).",
+  "base": {
+    "source": "R36 _r36_objects.rds uni (production clean T-1 파생, production_parity_verified 3.058, PIT C5 상속)",
+    "vintage_pin": ".cache/pin/rawdata_r9_pin_20260715.parquet",
+    "prereg_config_hash": "7d9d5f1a7ccfa754",
+    "selection_type": "chain",
+    "n_trials": 1
+  },
+  "state_machine": {
+    "definition": "ENTRY/SUSTAIN/EXIT/OFF (연속 hold_ym m-1→m + 양월 insider-covered + INS02 z>=1.0 교차)",
+    "counts_all": {"OFF": 17096, "SUSTAIN": 2769, "ENTRY": 448, "EXIT": 434},
+    "counts_mid": {"OFF": 4581, "SUSTAIN": 753, "ENTRY": 131, "EXIT": 115}
+  },
+  "P1_symmetry_MID": {
+    "ENTRY_vs_OFF_t": 1.05,
+    "SUSTAIN_vs_OFF_t": 3.63,
+    "EXIT_vs_OFF_t": 1.57,
+    "EXIT_vs_SUSTAIN_delta_t": 0.69,
+    "return_axis": "수익 premium 유의는 SUSTAIN(t=3.63)뿐 — ENTRY/EXIT 무유의. 청산 시 premium 완만복귀.",
+    "risk_axis_MID": {
+      "OFF_downside": -0.0864, "EXIT_downside": -0.0690,
+      "OFF_tail_lt_m15": 0.079, "EXIT_tail_lt_m15": 0.052,
+      "risk_sticky": true, "risk_hangover": false,
+      "note": "EXIT 하방/tail이 OFF보다 낮음(더 안전) = 청산 후에도 위험 protection 점착. 상태 간 단조순서 OFF>ENTRY>SUSTAIN≈EXIT."
+    }
+  },
+  "P2_hold_duration_MID": {
+    "d1_vs_off_t": 0.05,
+    "d2_3_vs_off_t": 2.38,
+    "d4plus_vs_off_t": 3.04,
+    "freshness_slope_t": -1.32,
+    "note": "지속 flag이 더 신뢰(d4plus t=3.04 > d1 t=0.05, 표본·안정성). raw수익은 신선할수록 약간↑(freshness slope t=-1.32 무유의=신선도 절벽 없음), excess는 지속할수록↑. 신호=지속-클러스터."
+  },
+  "robustness": {
+    "lag1_stress": {"entry_t": 0.98, "sustain_t": 3.40, "exit_t": 1.24, "verdict": "SUSTAIN robust(+3.63→+3.40) — 동월누출 아님"},
+    "held_confirm": {"n_name_months": 1880, "sustain_vs_off_t": 2.78, "exit_vs_off_t": 2.28, "verdict": "북 보유 슬리브에서 SUSTAIN/EXIT 독립 유의 — 청산 후에도 북 잔존종목 위험재상승 없음"}
+  },
+  "P3_monitoring_implication": {
+    "exit_rule_needed": false,
+    "recommendation": "SOFT-LAG: flag-off은 위험 아님(protection 점착) → SAFE 라벨 즉시해제 불요. 수익 premium만 소멸 → 라벨 강도 하향(SAFE→SAFE_FADING). 지속(dur≥2) flag을 단발보다 신뢰. filing_delay_watch.R Part C에 SAFE_FADING 상태 추가 권고.",
+    "wiring_status": "armed (현 북 SAFE 활성 0건 — R34 배선 상속)"
+  },
+  "caveats": [
+    "EXIT 표본 희소(MID n=115, held n=29) + 수익축 무유의(EXIT vs OFF t=1.57<2). risk_sticky는 유의검정 아닌 상태 간 downside/tail 단조순서 + lag1 + held 확증.",
+    "검열편향: flag-off과 동시에 상장폐지/유동성붕괴/유니버스이탈한 종목은 EXIT 표본에서 검열 → 'no hangover'는 북 잔존(투자가능) 종목 조건부. catastrophic exit은 별도 tripwire 소관.",
+    "novel 기여 = EXIT 거동뿐. SUSTAIN 유의는 R33/R34 진입 SAFE 재확인(신규 아님)."
+  ],
+  "next_probes": [
+    "청산 후 다중월(t+1..t+3) forward 위험 궤적 + 패널이탈 종목 worst-case 대입(검열편향 정량 스트레스) — 'no hangover'의 검열-조정 강건성.",
+    "SAFE_FADING 라벨 실배선 + dur-가중 신뢰(지속 flag > 단발) — filing_delay_watch.R Part C에 상태전이(SAFE→SAFE_FADING→cleared) 추가 (monitoring 태스크, 자본 아님)."
+  ],
+  "layer": "⑤monitoring (SAFE tripwire 청산규칙 판정) — 성과 병목 아님(소비면 진단). insider 라인 exit-timing 마지막 진단.",
+  "constraints_respected": "book_state/05_Production/outputs.ramp 무변경. canonical 진단만. cov/weights 미산출(역할경계). DART API 금지. 자본 주장 없음.",
+  "generated_at": "2026-07-15"
+}

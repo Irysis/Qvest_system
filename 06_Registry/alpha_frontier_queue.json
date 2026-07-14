@@ -1041,6 +1041,26 @@
         "verdict: stage_artifacts/WT_D20260715_005/verdict.json",
         "objects: stage_artifacts/WT_D20260715_005/_r36_objects.rds"
       ]
+    },
+    {
+      "id": "FQ-052",
+      "lane": "non_return",
+      "title": "R38 — insider SAFE 청산-타이밍 대칭검정 (R34 P3/R37 P1 계승, insider 라인 exit-timing 마지막 진단)",
+      "hypothesis": "SAFE 진입 정보성(R33/R34 확립)이 청산(INS02 net-buy flag 소멸) 시 대칭적으로 소멸/재상승/점착하는가. 상태기계(ENTRY/SUSTAIN/EXIT/OFF)로 진입/청산 양측 정보성 + hold-duration 신선도 + tripwire 청산규칙 필요성 판별",
+      "ev_rationale": "R34 P3/R37 P1 직접 소비. 자본 아님(monitoring 소비면). 청산이 위험 재상승이면 tripwire에 청산규칙(flag off 경보해제) 필요 — monitoring 정교화의 마지막 조각",
+      "wall_check": "monitoring tripwire(non-capital). insider 패널+R36 uni 재사용·DART API X. book_state/05_Production 무변경. canonical 진단·cov/weights 미산출(역할경계)",
+      "data_gate": "없음 (R36 _r36_objects.rds uni + R34 held 슬리브 + rawdata pin 재사용)",
+      "owner": "Q-Lead (R38 완료 2026-07-15)",
+      "status": "capability_established",
+      "next_action": "완료(R38, 2026-07-15). 판정 capability_established / symmetry=asymmetric_benign_risk_sticky: 청산(flag-off)은 위험 재상승 아님(no hangover). ★수익축(MID 월별-paired NW-lag3 vs OFF): SUSTAIN t=+3.63(유의)이나 ENTRY t=+1.05·EXIT vs OFF t=+1.57·EXIT vs SUSTAIN t=+0.69 전부 무유의 → SAFE 수익 premium=진입/청산 이벤트 아닌 '지속(SUSTAIN) 클러스터' 현상, 청산 시 완만복귀(ALL mega희석 EXIT t=−0.17). ★위험축(MID): EXIT downside −6.9%(OFF −8.6%)·tail(<-15%) 5.2%(OFF 7.9%)=청산 후에도 하방/tail protection 점착(단조순서 OFF>ENTRY>SUSTAIN≈EXIT, hangover=FALSE). ★hold-duration(MID vs OFF): d1 t=+0.05(단발 무신뢰)·d2_3 t=+2.38·d4plus t=+3.04=지속 flag이 더 신뢰, freshness slope t=−1.32 무유의(신선도 절벽 없음). robustness: lag1 SUSTAIN +3.63→+3.40(동월누출 아님)·held 슬리브 SUSTAIN t=+2.78·EXIT t=+2.28(북 잔존종목 청산 후 위험재상승 없음 독립확증). ★한계: EXIT 표본 희소(MID 115·held 29)·수익축 무유의·검열편향(flag-off 동시 폐지/유동성붕괴 종목 검열 → no hangover는 투자가능 조건부). monitoring 함의: tripwire 청산규칙=SOFT-LAG(불요) — flag-off≠danger, SAFE→SAFE_FADING 강도하향 + 지속flag 우선신뢰. insider 라인(R9~R38) exit-timing 마지막 진단·monitoring 소비면 확립 완료(자본 미검 불변). 상세 stage_artifacts/WT_D20260715_007/verdict.json. next_probe → 검열-스트레스(청산후 다중월+패널이탈 worst-case)·SAFE_FADING 실배선(filing_delay_watch Part C 상태전이).",
+      "source_refs": [
+        "parent: FQ-050 R34 P3 + FQ-051 R37 P1",
+        "verdict: stage_artifacts/WT_D20260715_007/verdict.json",
+        "results: stage_artifacts/WT_D20260715_007/r38_results.json",
+        "objects: stage_artifacts/WT_D20260715_007/_r38_objects.rds",
+        "challenge: stage_artifacts/WT_D20260715_007/challenge_note_r38_20260715.md",
+        "L-code: L-RAMP-20260715_040901"
+      ]
     }
   ]
 }
