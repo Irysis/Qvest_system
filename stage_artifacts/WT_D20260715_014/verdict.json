@@ -1,0 +1,93 @@
+{
+  "wt": "WT-D20260715_014",
+  "round": "R45",
+  "mode": "data-integrity 근원 진단 (밤샘 위생 — R44 P3 next_probe 소비)",
+  "title": "stored-Ret vs recompute(Close/shift(Close)-1) 불일치 근원 진단 — Close 시계열 구멍(April-gap 잔여 seam) 확정, stored Ret이 참값, 라이브·factor_db 무영향",
+  "as_of_date": "2026-07-15",
+  "verdict_type": "capability_established",
+  "task_class": "data_integrity_root_cause_diagnosis",
+  "parent": "R44 (WT-D20260715_013) next_probe P3 — stored Ret vs recompute max|Δ|=4.86(non-universe microcap) 근원 진단 요청.",
+  "pin_record": {
+    "pinned_snapshot": ".cache/pin/rawdata_r9_pin_20260715.parquet",
+    "pin_tag": "rawdata_r9_pin_20260715 (R40 pin, byte-identical to live 2026-07-15)",
+    "note": "read-only 진단. rawdata.parquet/book_state/05_Production/factor_db 무변경. DART API 0."
+  },
+
+  "census": {
+    "n_rows": 14004246,
+    "n_comparable_stockdays": 14000332,
+    "n_dup_ticker_date_keys": 0,
+    "n_mismatch_gt_0.01": 196,
+    "pct_of_comparable": 0.0014,
+    "max_dAbs": 4.8634,
+    "magnitude_buckets": {"0.01-0.05": 42, "0.05-0.10": 28, "0.10-0.30": 87, "0.30-1.0": 35, ">1.0": 4},
+    "in_universe": 0,
+    "out_of_universe": 196,
+    "unique_universe_tickers_affected": 0,
+    "period": "전건 2026 (2026-07-02: 160 · 2026-07-07: 35 · 2026-05-04: 1)",
+    "ticker_character": "우선주(Name 끝 '우/우B') 34 + Name-NA 마스터미매칭 소형 138 — 전부 비-유니버스",
+    "artifacts": [
+      "stage_artifacts/WT_D20260715_014/mismatch_census_ALL.csv (196행)",
+      "stage_artifacts/WT_D20260715_014/mismatch_census_IN_UNIVERSE.csv (0행)",
+      "stage_artifacts/WT_D20260715_014/census_summary.json"
+    ]
+  },
+
+  "root_cause": {
+    "verdict": "Close 시계열 구멍(missing intervening trading days) — recompute Close/shift(Close)-1이 stale prevClose를 gap 넘어 참조하여 스퓨리어스. stored Ret 컬럼이 참값(KRX-sourced 정상 일별수익).",
+    "not_causes_ruled_out": [
+      "adj-close/배당·분할 조정 아님: adj-close 컬럼 부재(OHLC만) + ratio가 정수배 분할 지문 아님",
+      "중복일 아님: dup (Ticker,Date) 키 0",
+      "파싱오류 아님: stored Ret 100%가 KR 제한 |Ret|<=0.31 물리타당, recompute은 20%가 ±30% 위반"
+    ],
+    "clusters": {
+      "cluster1_april_gap": "161행 @ prevDate=2026-04-29 (gapdays=64). 2026-04-29→07-02 사이 일별행 결측 → recompute이 64일 hole 넘어 계산. April-gap 사고(project-rawdata-april-gap-incident-20260711)의 비-유니버스 잔여 — source seam krx_api_backfill_20260711 → krx_api.",
+      "cluster2_july_seam": "35행 @ prevDate=2026-07-02 (gapdays=5). 07-03/07-06 결측(smaller hole). 동일 phenomenon, 소형 seam."
+    },
+    "worked_example_A004415": "series: 04-27/28/29 Close=1193(krx_api_backfill stub, Ret=0) → 07-02 Close=7030(krx_api). 04-30~07-01 전부 결측(64일 hole). stored Ret(07-02)=+0.0293(정상 1일수익) vs recompute=7030/1193-1=+4.8927(hole-spanning 스퓨리어스). stored가 참값.",
+    "direction_judgment": "|Ret_stored|<=0.31 (물리타당): 196/196 (100%). |Ret_recompute|<=0.31: 157/196 (80.1%). → stored Ret 신뢰, recompute이 artifact.",
+    "R44_framing_correction": "R44 residual/next_probe P3의 'stored Ret 불일치 원인(Close 후수정·adj-close·중복일 → factor_db 오염 여부)' 프레이밍은 반전 필요 — 이는 stored-Ret 오염이 아니라 recompute 산물이다. Δ=4.86은 stored 컬럼 결함이 아니라 Close 시계열 hole의 증상. stored Ret이 참값."
+  },
+
+  "factor_db_consumption_path": {
+    "factor_db_builder_Fwd_Ret_IC": "factor_db_builder.R L1325/L1508 = Fwd_Ret = prod(1+Ret)-1 → stored Ret 직접소비. 본 seam 케이스는 stored Ret이 참값 → factor_ic_monthly IC 오염 아님(recompute 안 함).",
+    "compute_momentum_risk_defense": "compute_momentum.R(M08_Residual_Mom 포함)·compute_risk.R 등 = 일별 stored Ret 직접소비. seam 케이스 stored 참값 → Z_Score 오염 아님. 단 underlying Close-hole로 해당 비-유니버스 종목 window는 결측일 존재(관측수 감소)이나 present-day 값 정상. 비-유니버스 → 무관.",
+    "canonical_screen_bt": "canonical_screen_bt.R L40 build_monthly_forward_returns = Close1/Close0-1 (월말 Close 재계산) → Close-hole 노출 가능하나 (a)유니버스 필터(196 전건 비-유니버스 미선택) (b)양쪽 월말 Close 필요 → 보호됨.",
+    "net": "factor_db(stored Ret 소비)는 이 불일치에 오염 안 됨(stored=참값). canonical(Close 재계산)은 유니버스필터로 보호. 어느 소비면도 실질 오염 없음."
+  },
+
+  "live_impact": {
+    "book": "STR_1715_on_M4_R05_noLayer4_PG2 (14 보유)",
+    "score_eff_7factors": "CORE(C01_SUE,C02_EPS_Chg_1m,C04_ESBR,C06_TP_Gap)+DEF(Q07,M08_Residual_Mom,Q25). _recompute_alpha_asof.R L62 유니버스 필터(fw[Ticker %in% uni]) → 196 불일치 종목 0건 선택. M08(return-derived, stored Ret 소비)+IC-tilt(factor_ic_monthly)도 유니버스 대상이며 stored=참값.",
+    "book_holdings_gap_check": "14보유 전부 2026-04~07 max_gapdays=4(주말/휴일만)·hole 0. 삼성전자 A005930 04-27~07-08 49거래일 연속.",
+    "universe_completeness": "K200∪KQ150 07-02 활성 348종목 전부 04-30~07-01 구간 41/41일 보유(hole<30일 0건).",
+    "verdict": "라이브 factor 영향 ZERO. R44 testB(book isolated=0) 재확인 + 근원까지 규명."
+  },
+
+  "repair_recommendation": {
+    "primary": "196 비-유니버스 종목(우선주+Name-NA 소형)의 Close 시계열 구멍(04-30→07-01, 07-03/06)을 KRX 일별 재수집으로 메움 → recompute==stored parity 회복. April-gap 사고 R2/R3 잔여와 동시 실행. rawdata 직접수정 금지 → KRX 백필 리빌드 경유.",
+    "priority": "낮음(비-유니버스·라이브 무영향). 단 차기 리밸 유니버스 진입 가능 종목은 우선.",
+    "guard_add": "factor_db 리빌드 전 Close-series 연속성 게이트(활성상장 중 gapdays>20 hole 감지) — 현 ret_sanity_firewall은 recompute 산물만 격리, Close hole 자체는 미감지. source seam(krx_api_backfill_*→krx_api) 경계가 감지 지문.",
+    "firewall_direction_refine": "ret_sanity_firewall date_gap HARD 분기에서 Ret:=NA 대신 |stored Ret|<=0.31이면 stored 보존(recompute만 폐기) 정교화 검토 — stored가 참값이므로 정보 손실 방지(비-유니버스라 저EV)."
+  },
+
+  "next_probes": [
+    "KRX 백필 완결(수리 경로): 196 비-유니버스 종목 04-30→07-01+07-03/06 Close 구멍 재수집 → recompute==stored parity 회복 검증. April-gap R2/R3 잔여와 동시. 차기 리밸 유니버스 진입 후보 우선.",
+    "Close-series 연속성 tripwire 배선: factor_db 리빌드 전 활성상장 중 gapdays>20 hole 감지 게이트 추가(source seam 경계 발화). Ret firewall(recompute 산물 격리)과 상보.",
+    "firewall 방향 정합(선택): ret_sanity_firewall date_gap HARD에서 |stored|<=0.31이면 stored Ret 보존·recompute만 폐기 — stored 참값 정보손실 방지."
+  ],
+
+  "consumer_surfaces": [
+    "①재료/데이터 원천: stored Ret 컬럼 = KRX-sourced 참값(recompute은 gap 넘어 스퓨리어스) — factor_db 직접소비(prod(1+Ret))는 오염 아님. R44 P3 프레이밍(stored 오염 의심) 반전 기록.",
+    "⑧위험모델/감시: Close-series 연속성(gapdays>20 hole) = 새 데이터-위생 tripwire 후보 — 현 Ret firewall과 상보(source seam 경계 지문).",
+    "⑨자본/운영: 현 북 14보유·유니버스 348종목 hole 0 = 라이브 factor 무영향 근원까지 재확인(recon NAV clean)."
+  ],
+
+  "layer_bottleneck": "①재료(데이터 무결성 위생) — 성과 병목 아님. R44 P3 소비로 stored-vs-recompute Δ 근원 규명(Close-hole·비-유니버스·라이브 무영향). 수리는 KRX 백필 리빌드(별도).",
+  "book_state_unchanged": true,
+  "production_unchanged": true,
+  "rawdata_unchanged": true,
+  "factor_db_unchanged": true,
+  "constraints_respected": "rawdata.parquet/book_state/05_Production/factor_db 무변경(read-only 진단만) · DART API 0 · 단일스레드 · arrow io(2) · pin 고정 read-only · 판정 어휘 규약(종결어휘 미사용·verdict enum capability_established).",
+  "generated_at": "2026-07-15"
+}

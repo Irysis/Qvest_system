@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
-  "updated": "2026-07-15 (R44 — FQ-054 Ret sanity 방화벽 R1+R4 배선 완료·회귀 parity PASS. 잔여 R2/R3 KRX 백필 리빌드)",
+  "updated": "2026-07-15 (R45 — FQ-054 P3 소비: stored-Ret vs recompute Δ 근원=Close 시계열 구멍(April-gap 비-유니버스 잔여), stored Ret 참값·factor_db 오염 아님·라이브 무영향. 잔여 R2/R3 KRX 백필 리빌드 armed. R44 — Ret sanity 방화벽 R1+R4 배선·parity PASS)",
   "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
   "entries": [
     {
@@ -1097,10 +1097,13 @@
       "ev_rationale": "R42 data_hygiene_finding 소비. 데이터 무결성 위생(자본 아님). R1+R4 방화벽 배선 완료(R44) = 오염 상존해도 소비면 보호. 잔여 R2/R3 seam 근본수리는 별도 리빌드.",
       "wall_check": "read-only census(rawdata/book_state/05_Production 무변경)·DART API X. 현 북/유니버스 월패널 clean → 밤샘 판정 무영향. Ret winsorize 부재 → R44에서 방화벽 배선으로 해소(소비면 보호). seam 잔재는 R2/R3 리빌드.",
       "data_gate": "없음 (census는 rawdata 읽기만·방화벽은 함수 배선만). R2/R3 April-gap·LS ELECTRIC 분할 재수리는 별도 리빌드 태스크(rawdata 직접수정 금지, KRX 백필 경유).",
-      "owner": "Q-Lead (R43 census·격리 완료 2026-07-15 / R44 R1+R4 방화벽 배선·회귀 parity PASS 2026-07-15 / R2·R3 KRX 백필 리빌드 armed — 착수 대기)",
-      "status": "capability_established (R1+R4 wired · R2/R3 armed)",
-      "next_action": "★R1+R4 배선 완료(R44, WT-D20260715_013): ret_sanity_firewall() 신규 순수함수 → rawdata_sanitize Step5(HARD Ret:=NA[물리불가/0원제수/날짜갭] + SUSPECT flag[분할류 값유지·격리리스트]) + canonical_screen_bt/build_monthly_forward_returns Ret_1m 이중가드. 회귀 4-test PASS(북0·월패널Δ0·가드 clean무해+monster격리·유니버스 17/17). 잔여: R2 April-gap seam 재수리(루닛/코미코 2x·microcap 10x, KRX 백필) + R3 LS ELECTRIC ~1:4.4 분할 back-adjust = 별도 리빌드(SUSPECT flag로 가시화). 다음 리빌드 시 방화벽 실적용 관측(P1)·가격제한 시변 pre-2015 ±15%(P2)·stored-Ret Δ 근원(P3).",
+      "owner": "Q-Lead (R43 census 2026-07-15 / R44 R1+R4 방화벽 배선·parity PASS 2026-07-15 / R45 P3 근원 진단 완료 2026-07-15 / R2·R3 KRX 백필 리빌드 armed — 착수 대기)",
+      "status": "capability_established (R1+R4 wired · P3 근원규명 · R2/R3 armed)",
+      "next_action": "★R45(WT-D20260715_014) P3 소비 완료: stored-Ret vs recompute max|Δ|=4.86 근원 = Close 시계열 구멍(결측 거래일) — recompute Close/shift(Close)-1이 stale prevClose를 gap 넘어 참조한 스퓨리어스, stored Ret은 참값(|Ret|<=0.31 물리타당 196/196=100% vs recompute 80.1%). census 196 종목-일(0.0014%)·유니버스內 0·중복키 0. 2 cluster: 161@prevDate 04-29(64일 hole=April-gap 비-유니버스 잔여) + 35@prevDate 07-02(5일 seam). factor_db(prod(1+Ret)=stored 소비) 오염 아님·현 북 14보유·유니버스 348종목 hole 0=라이브 무영향. ★잔여 수리(armed): R2 April-gap seam + R3 LS ELECTRIC 분할 + 196 비-유니버스 Close 구멍(P1) = KRX 백필 동시(rawdata 직접수정 금지). 신규 tripwire 후보: Close-series 연속성(gapdays>20 hole, source seam 경계)=Ret firewall과 상보(P2). firewall date_gap에서 stored 보존 정교화(P3).",
       "source_refs": [
+        "verdict R45: stage_artifacts/WT_D20260715_014/verdict.json (근원=Close-hole·stored 참값·라이브 무영향)",
+        "l_code R45: stage_artifacts/l_code/ramp/l_code_R45_stored_ret_vs_recompute_rootcause.json",
+        "census R45: stage_artifacts/WT_D20260715_014/census_r45.R + census_summary.json + mismatch_census_{ALL,IN_UNIVERSE}.csv",
         "verdict R44: stage_artifacts/WT_D20260715_013/verdict.json (방화벽 배선·회귀 parity)",
         "l_code R44: L-RAMP-20260715_070019 (ret_sanity_firewall 배선)",
         "verify R44: stage_artifacts/WT_D20260715_013/verify_r44.R + r44_verify_results.json + _verify_r44_log.txt",
