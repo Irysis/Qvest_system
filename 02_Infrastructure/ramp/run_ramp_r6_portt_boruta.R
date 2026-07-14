@@ -18,6 +18,7 @@
 ## [정직 prior] trailing 실현성과 선별 = 팩터 모멘텀 계열 → factor-of-factors momentum timing NULL(06-30).
 ## [측정] cap-w authoritative(R4 gates() 복제) + HARD 3종 + 2017+ 분리 + DSR(family n_trials=16). 실측-only.
 ## 단일스레드 · vintage: R4/R5 세션 pin. [최적화] 키드 subset + slim Boruta table + P-pure先/Boruta後 + flush/checkpoint.
+## [FQ-043 2026-07-14] 다음 개정 시 신호월-수익월 병합은 02_Infrastructure/contracts/align_signal_return_ym.R 경유 (R27 exact-Date 92/255 소실·R29 동월 vintage 실사고 재발방지).
 suppressPackageStartupMessages({library(data.table); library(arrow); library(sandwich); library(lmtest); library(Boruta); library(digest); library(jsonlite)})
 setDTthreads(1); try(arrow::set_cpu_count(1),silent=TRUE); try(arrow::set_io_thread_count(2),silent=TRUE)
 QM <- "C:/Users/99922/OneDrive/Quant_Module_Moltbot"; setwd(QM)

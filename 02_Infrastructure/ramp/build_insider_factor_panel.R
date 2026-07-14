@@ -27,6 +27,7 @@
 ##   outputs/ramp/insider_panel_meta.json                  (커버리지·gap·PIT assert·partial 라벨)
 ##
 ## 실행: cd QM_ROOT && Rscript -e 'source("02_Infrastructure/ramp/build_insider_factor_panel.R")'
+## [FQ-043 2026-07-14] 다음 개정 시 신호월-수익월 병합은 02_Infrastructure/contracts/align_signal_return_ym.R 경유 (R27 exact-Date 92/255 소실·R29 동월 vintage 실사고 재발방지).
 suppressPackageStartupMessages({ library(data.table); library(arrow); library(jsonlite) })
 setDTthreads(1); try(arrow::set_cpu_count(1), silent=TRUE); try(arrow::set_io_thread_count(2), silent=TRUE)
 QM <- "C:/Users/99922/OneDrive/Quant_Module_Moltbot"; setwd(QM)

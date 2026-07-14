@@ -1,0 +1,39 @@
+[config.R] PROJECT_ROOT: C:/Users/99922/OneDrive/Quant_Module_Moltbot
+[ramp_io.R] Loaded — ramp_write_parquet/ramp_write_json (§2.4 meta enforced)
+[backtest_result_contract.R] Loaded — Backtest Result Contract v1.0
+  Functions: build_bt_result() / validate_bt_result()
+  10 components: manifest, strategy_spec, nav, period_returns, holdings, benchmark_returns, metrics, benchmark_compare, rolling_metrics, drawdowns, audit
+[canonical_screen_bt.R] Loaded — canonical_screen_bt() (v8.x WS1 real-computation helper)
+[factor_validation.R] Loaded — build_monthly_forward_returns / validate_factor / approve_factors
+[weighted_screen_bt.R] Loaded — weighted_screen_bt() (임의 가중 contract-grade A/B primitive)
+=== ppure_paper_track 20260714_181457 (task #62) — 페이퍼 전용·book_state 무관·자본 게이트 무관 ===
+[data] score 월 258 (2005-01-31~2026-06-30) | rawdata max=2026-07-13 | 완결 추가 월말: (없음)
+[fwd] 실현 signal월 257 (마지막 실현 = 2026-05-31, 홀딩월 2026-06)
+[frozen] base anchors(frozen)=37..253 | exit anchors=74개(마지막 256) | D-2 pool anchors=74
+
+--- track PPURE_BASE_W36K20 ---
+[register PPURE_BASE_W36K20] 기존 봉인 구간 존재 — 재등록 안함(불변 원칙)
+[parity PPURE_BASE_W36K20] 보유(220m x 25): 불일치행=0 max|dw|=0.00e+00 -> PASS
+[parity PPURE_BASE_W36K20] 수익(계약 재구성 vs 봉인): n=220/220 max|d|=5.00e-16 -> PASS | 이중기입 max|d|=0.00e+00
+[paper PPURE_BASE_W36K20] 신규 0행 append (누적 1행, 최신 홀딩월 2026-06 ret_net=+0.0282)
+[holdings PPURE_BASE_W36K20] 최신 signal=2026-06-30 홀딩월=2026-07 종목수=25 (paper_holdings 누적 50행)
+[judge PPURE_BASE_W36K20] net: INSUFFICIENT (n=1) | ew_active: INSUFFICIENT
+
+--- track PPURE_D2_DECAYEXIT ---
+[register PPURE_D2_DECAYEXIT] 기존 봉인 구간 존재 — 재등록 안함(불변 원칙)
+[parity PPURE_D2_DECAYEXIT] 보유(220m x 25): 불일치행=0 max|dw|=0.00e+00 -> PASS
+[parity PPURE_D2_DECAYEXIT] 수익(계약 재구성 vs 봉인): n=220/220 max|d|=4.86e-16 -> PASS | 이중기입 max|d|=0.00e+00
+[paper PPURE_D2_DECAYEXIT] 신규 0행 append (누적 1행, 최신 홀딩월 2026-06 ret_net=-0.0839)
+[holdings PPURE_D2_DECAYEXIT] 최신 signal=2026-06-30 홀딩월=2026-07 종목수=25 (paper_holdings 누적 50행)
+[judge PPURE_D2_DECAYEXIT] net: INSUFFICIENT (n=1) | ew_active: INSUFFICIENT
+
+[verify] base@2026-04-30 vs d3_dossier holdings_latest_ppure.csv: overlap=25/25
+[verify] D-2@2026-04-30 보유는 sealed_holdings_ref(=R13 WMAP armD2) 220m 전체 parity로 검증됨 (위 parity guard)
+
+=== DONE 20260714_181457 ===
+  PPURE_BASE_W36K20: net봉인[-0.3433,2.3312] | 신규 0행 (누적 1) | parity 보유 PASS / 수익 PASS | 최신판정 INSUFFICIENT
+  PPURE_D2_DECAYEXIT: net봉인[-0.3478,2.2195] | 신규 0행 (누적 1) | parity 보유 PASS / 수익 PASS | 최신판정 INSUFFICIENT
+
+PPURE_PAPER_TRACK_DONE tracks=2 new_rows=0,0 log=.cache/_ppure_paper_track_20260714.txt
+Warning message:
+package 'arrow' was built under R version 4.5.3 
