@@ -1,7 +1,10 @@
 ## ============================================================================
-## filing_delay_watch.R — 월간 monitoring 입력: 현 북 보유종목 부실 조기경보 (단일 창구)
-##  Part A (task #61, 2026-07-13): 사업보고서 제출지연 감시 (R24 극단지각 지문)
-##  Part B (task #68, 2026-07-14): 감사(audit) distress 감시 (R25 감사-메타데이터 지식 소비)
+## filing_delay_watch.R — 월간 monitoring 입력: 현 북 보유종목 부실 조기경보 + 안전신호 (단일 창구)
+##  Part A (task #61, 2026-07-13): 사업보고서 제출지연 감시 (R24 극단지각 지문) — CONCERN
+##  Part B (task #68, 2026-07-14): 감사(audit) distress 감시 (R25 감사-메타데이터 지식 소비) — CONCERN
+##  Part C (task #70, 2026-07-15): 임원 순매수 클러스터 SAFE tripwire (R33/R34 소비면) — SAFE(de-risk 예외)
+##    ★방향 대비: 부실신호(A/B)=경보 / 순매수 클러스터(C)=안전. net-sell(INS01)=advisory(R33 무정보).
+##    ★C는 per-holding 안전 특성화 monitoring 신호이지 자본/sizing 신호 아님 (cohort-path 미개선·분산 아티팩트).
 ## (R24(WT-D20260713_008) "극단 지각제출 = 부실 조기경보 지문" + R25(WT_D20260714_001)
 ##  "감사 distress = 소형주 국소 위험감시 신호(배포 자본 레버 아님)" 지식의 유일 in-envelope
 ##  소비면 = ⑤ monitoring. 선례 kalman_beta_drift.R(#56) 구조 승계. 부실 조기경보는 단일 파일 통합)
@@ -60,6 +63,8 @@ CENSUS_RDS   <- file.path(ROOT, "stage_artifacts/WT_D20260713_008/census.rds")  
 AUDIT_PARQUET   <- file.path(ROOT, "02_Infrastructure/data/dart_pledge_audit/t1_audit_opinion_fy2015_2025.parquet")  # 감사의견 canonical (durable)
 RAWDATA_PARQUET <- file.path(ROOT, ".cache/rawdata.parquet")                                     # AdminStock/UnfaithfulDisc 지정 플래그
 R25_VERDICT     <- file.path(ROOT, "stage_artifacts/WT_D20260714_001/verdict.json")              # R25 사실 인용(경보 톤 내장)
+INSIDER_PARQUET <- file.path(ROOT, "outputs/ramp/insider_factor_scores.parquet")                 # Part C: 임원 순매수 클러스터 (R33/R34, 로컬 재사용·DART API 0)
+R34_VERDICT     <- file.path(ROOT, "stage_artifacts/WT_D20260715_003/verdict.json")              # R34 사실 인용(경보 톤 내장)
 OUT_DIR      <- file.path(ROOT, "qepm/observability")
 dir.create(OUT_DIR, showWarnings = FALSE, recursive = TRUE)
 
@@ -67,11 +72,15 @@ dir.create(OUT_DIR, showWarnings = FALSE, recursive = TRUE)
 THRESH_DELAY_D     <- 2L    # R24 census 실측 고정 (677-유니버스 late-분포 p90, 상단 header 참조)
 HOLDING_STALE_DAYS <- 456L  # 12개월(366) + 법정 90일 — 최신 결산기말이 이보다 과거면 EXPECTED_FY_MISSING
 ARCHIVE_STALE_M    <- 13L   # 아카이브 최신 rcept_dt 13개월 이상 과거 = STALE
+INS_NB_THR         <- 1.0   # Part C: net-buy 클러스터 SAFE 문턱 (INS02_OffBuyBreadth6m z>=+1.0, R33 frozen — sweep 금지)
+INS_NS_THR         <- -1.0  # Part C: net-sell advisory 문턱 (INS01_OffNetBuyIntensity3m z<=-1.0, R33 무정보 — 경보 아님)
 
 check_date <- Sys.Date()
 d2date <- function(x) as.Date(as.character(x), "%Y%m%d")
 mdiff  <- function(a, b) (as.integer(format(a, "%Y")) * 12L + as.integer(format(a, "%m"))) -
                          (as.integer(format(b, "%Y")) * 12L + as.integer(format(b, "%m")))
+ym       <- function(d) as.integer(format(as.Date(d), "%Y")) * 100L + as.integer(format(as.Date(d), "%m"))
+ymshift  <- function(ymv, k) { y <- ymv %/% 100L; m <- ymv %% 100L; t <- (y * 12L + (m - 1L)) + k; (t %/% 12L) * 100L + (t %% 12L) + 1L }
 eom    <- function(y, m) { d <- as.Date(sprintf("%d-%02d-01", y + (m == 12L), ifelse(m == 12L, 1L, m + 1L))); d - 1L }
 ## 법정기한 (R24 frozen): 12월 결산 = (fy+1)-03-31 정확 재사용 / 비-12월 = 결산월말 + 90d (일반화)
 deadline_of <- function(fy, fye_m) fifelse(fye_m == 12L,
@@ -272,6 +281,57 @@ tryCatch({
   setorder(composite, -size_last)
 }, error = function(e) { composite_ok <<- FALSE })
 
+## ============================================================================
+## Part C — insider 순매수 클러스터 SAFE tripwire (task #70, 2026-07-15 — R33/R34 소비면)
+## R33(WT_D20260715_002)+R34(WT_D20260715_003): 임원 순매수 breadth 클러스터(INS02 z>=+1.0)
+##   = 종목단 forward *안전*신호(R33 익월 수익차 t+3.36·size통제 t+5.22·large-cap tier t+2.57·
+##   하방/tail 감소). R34 북-레벨 확증: 북 보유 flag 종목 forward 수익 gap t+2.50·downside
+##   -7.6% vs -8.3%·tail(<-15%) 4.7% vs 7.0%·flagged 전량 MEGA/MID(배포 tier)·lag1 robust(+1.89).
+## ★방향 대비 (부실 조기경보 창구 내 반대 부호): net-buy 클러스터 = SAFE(위험감소·de-risk 예외) /
+##   부실신호(Part A 제출지연·Part B 감사 distress) = CONCERN.
+##   ⚠ net-sell(INS01 z<=-1.0)은 R33 무정보(tripwire t=-0.01) → advisory 기록만, 경보 아님.
+## ⚠ 소비 자격 = monitoring tripwire(per-holding 안전 특성화)이지 자본/sizing 신호 아님:
+##   R34 cohort-path 진단서 flag sub-basket MDD/vol은 오히려 악화(2.5 vs 57종 = 분산 아티팩트) —
+##   집중/사이징 근거로 쓰지 말 것(per-holding 특성화만 유효). book_state/weights 무변경.
+## PIT (C5): signal_date(월말 m) → 홀딩월(m+1). 현 홀딩월 flag = 직전 월말 signal(홀딩월 시작 전).
+##   insider 패널 = 로컬 재사용(재빌드/DART API 없음). 패널 stale(현 보유월 signal 부재) 시 warn-loud.
+## ============================================================================
+r34 <- tryCatch(fromJSON(R34_VERDICT), error = function(e) NULL)
+insider_tone <- paste0(
+  "임원 순매수 breadth 클러스터(INS02 z>=+1.0) = 종목단 forward SAFE 신호(de-risk 예외) · ",
+  "자본/sizing 신호 아님 (R33 WT_D20260715_002 capability_established + R34 북-레벨 확증: ",
+  "gap t+2.50·downside/tail 감소·flagged 전량 MEGA/MID·lag1 robust). net-sell(INS01)=advisory·R33 무정보.")
+ins_ok <- TRUE; ins_err <- NA_character_
+ins_latest_signal <- as.Date(NA); ins_cur_hy <- NA_integer_; ins_stale <- NA
+ij <- NULL
+tryCatch({
+  IN <- as.data.table(read_parquet(INSIDER_PARQUET))
+  IN[, signal_date := as.Date(signal_date)]
+  IN <- IN[signal_date <= check_date]                      # PIT: 알려진 signal만
+  if (nrow(IN) == 0) stop("no insider signal <= check_date")
+  IN[, hy := ymshift(ym(signal_date), 1L)]                 # signal m → 홀딩월 m+1
+  ins_latest_signal <<- max(IN$signal_date)
+  ins_cur_hy <<- max(IN$hy)                                # 현 홀딩월 flag (직전 월말 signal, PIT-clean)
+  expected_hold_ym <- ym(check_date)                       # 이번 달 = 현 보유월
+  ins_stale <<- ins_cur_hy < expected_hold_ym             # 현 보유월 signal 부재 = 패널 갱신 필요(DART 크롤)
+  INC <- IN[hy == ins_cur_hy]
+  insw2 <- dcast(INC, security_id ~ factor_id, value.var = "z")
+  setnames(insw2, "security_id", "Ticker")
+  keepc <- intersect(c("INS02_OffBuyBreadth6m", "INS01_OffNetBuyIntensity3m", "INS03_OffNetBuyRecency"), names(insw2))
+  ij <<- merge(res[, .(Ticker, Name, Weight)], insw2[, c("Ticker", keepc), with = FALSE], by = "Ticker", all.x = TRUE)
+  if (!("INS02_OffBuyBreadth6m" %in% names(ij))) ij[, INS02_OffBuyBreadth6m := NA_real_]
+  if (!("INS01_OffNetBuyIntensity3m" %in% names(ij))) ij[, INS01_OffNetBuyIntensity3m := NA_real_]
+  if (!("INS03_OffNetBuyRecency" %in% names(ij))) ij[, INS03_OffNetBuyRecency := NA_real_]
+  ij[, nb_safe := as.integer(!is.na(INS02_OffBuyBreadth6m) & INS02_OffBuyBreadth6m >= INS_NB_THR)]
+  ij[, ns_advisory := as.integer(!is.na(INS01_OffNetBuyIntensity3m) & INS01_OffNetBuyIntensity3m <= INS_NS_THR)]
+  ij[, insider_flag := fifelse(is.na(INS02_OffBuyBreadth6m) & is.na(INS01_OffNetBuyIntensity3m), "NO_INSIDER_DATA",
+                       fifelse(nb_safe == 1L, "NET_BUY_SAFE", "NEUTRAL"))]
+  setorder(ij, -Weight)
+}, error = function(e) { ins_ok <<- FALSE; ins_err <<- conditionMessage(e) })
+n_ins_safe <- if (ins_ok) ij[insider_flag == "NET_BUY_SAFE", .N] else NA_integer_
+n_ins_nodata <- if (ins_ok) ij[insider_flag == "NO_INSIDER_DATA", .N] else NA_integer_
+n_ins_ns_adv <- if (ins_ok) ij[ns_advisory == 1L, .N] else NA_integer_
+
 ## ---- 7. JSON 저장 (OneDrive temp-rename) + 콘솔 요약 -----------------------
 warn_rows <- res[flag == "WARN"]
 per_holding <- lapply(seq_len(nrow(res)), function(i) {
@@ -368,8 +428,46 @@ fdw_result <- list(
         age_months = mdiff(check_date, aud_max_rc),
         cadence_caveat = "감사데이터 갱신 = 연 1회 감사보고서 시즌(3~4월 정점) 의존 · DART 크롤 필요. 시즌 외 정적은 정상(STALE 아님)"))
   },
+  insider_net_buy_safe = {
+    per_holding_ins <- if (ins_ok) lapply(seq_len(nrow(ij)), function(i) {
+      r <- ij[i]
+      list(ticker = r$Ticker, name = r$Name, weight = r$Weight,
+           ins02_net_buy_breadth = if (is.na(r$INS02_OffBuyBreadth6m)) NA else round(r$INS02_OffBuyBreadth6m, 3),
+           ins01_net_sell_advisory = if (is.na(r$INS01_OffNetBuyIntensity3m)) NA else round(r$INS01_OffNetBuyIntensity3m, 3),
+           ins03_recency = if (is.na(r$INS03_OffNetBuyRecency)) NA else round(r$INS03_OffNetBuyRecency, 3),
+           insider_flag = r$insider_flag)
+    }) else list()
+    safe_list <- if (ins_ok && n_ins_safe > 0)
+      lapply(seq_len(nrow(ij[insider_flag == "NET_BUY_SAFE"])), function(i) {
+        s <- ij[insider_flag == "NET_BUY_SAFE"][i]
+        list(ticker = s$Ticker, name = s$Name, weight = s$Weight,
+             ins02_net_buy_breadth = round(s$INS02_OffBuyBreadth6m, 3))
+      }) else list()
+    list(
+      basis = "임원 순매수 breadth 클러스터 SAFE tripwire (R33/R34 소비면) · risk-감소 신호 NOT 자본/sizing · book 무변경",
+      metric_type = "observational_monitoring",
+      direction = "SAFE(de-risk 예외) — 부실신호(Part A 제출지연·Part B 감사 distress)의 반대 부호. 순매수=안전 / 부실=경보",
+      warn_tone = insider_tone,
+      r34_verdict = if (!is.null(r34)) r34$verdict_type else "unavailable",
+      insider_rule = sprintf("NET_BUY_SAFE = 보유종목 INS02_OffBuyBreadth6m z >= +%.1f (현 홀딩월, signal m→m+1 PIT). net-sell(INS01<=%.1f)=advisory·R33 무정보(경보 아님·문턱 sweep 금지)", INS_NB_THR, INS_NS_THR),
+      consumption_caveat = "monitoring tripwire(per-holding 안전 특성화)만 — 자본/sizing 근거 금지. R34 cohort-path 진단: flag sub-basket MDD/vol 오히려 악화(분산 아티팩트 2.5 vs 57종). de-risk 예외 = '유지 안전' 라벨이지 비중 확대 신호 아님",
+      insider_source_ok = ins_ok,
+      insider_source_error = ins_err,
+      current_holding_ym = if (ins_ok) ins_cur_hy else NA,
+      latest_signal_date = format(ins_latest_signal),
+      panel_stale = if (ins_ok) ins_stale else NA,
+      panel_stale_note = "현 보유월 signal 부재 = insider 패널 갱신 필요(DART 크롤 — 본 watch는 refresh 경로 없음, 로컬 재사용). stale=TRUE면 flag는 과거 홀딩월 기준(경보 침묵을 신선도로 해석 금지)",
+      n_holdings_with_insider = if (ins_ok) ij[!(insider_flag == "NO_INSIDER_DATA"), .N] else NA,
+      n_net_buy_safe = n_ins_safe,
+      n_no_insider_data = n_ins_nodata,
+      n_net_sell_advisory = n_ins_ns_adv,
+      net_buy_safe_list = safe_list,
+      per_holding_insider = per_holding_ins,
+      evidence = "R33 stage_artifacts/WT_D20260715_002/verdict_r33_insider_consumption.json + R34 stage_artifacts/WT_D20260715_003/verdict.json")
+  },
   inputs = list(holdings_csv = HOLDINGS_CSV, filings_inventory = INV_PARQUET, disc_ck_dir = DISC_DIR,
-                audit_opinion = AUDIT_PARQUET, rawdata = RAWDATA_PARQUET, r25_verdict = R25_VERDICT))
+                audit_opinion = AUDIT_PARQUET, rawdata = RAWDATA_PARQUET, r25_verdict = R25_VERDICT,
+                insider_panel = INSIDER_PARQUET, r34_verdict = R34_VERDICT))
 
 write_json_atomic <- function(obj, path) {   # OneDrive temp-rename 패턴
   tmp <- paste0(path, ".tmp_", Sys.getpid())
@@ -429,5 +527,25 @@ if (!audit_ok) {
                 composite[paste0("A", sc) %in% hold$Ticker, .N]))
     cat("        (감사 취득=현 constituents 생존편향 → 소형 distress 미커버, 보유·배포엔 사실상 부재 = 정직 라벨)\n")
   } else cat("[audit] P2 composite: RAWDATA 로드 실패 — composite 미산출\n")
+}
+
+## ---- Part C 콘솔 요약 (insider 순매수 SAFE tripwire) -----------------------
+cat(sprintf("\n[insider] %s 기준 순매수 클러스터 SAFE tripwire (de-risk 예외 · monitoring NOT 자본, R33/R34):\n", format(check_date)))
+if (!ins_ok) {
+  cat("   ★ insider 패널 로드 실패:", ins_err, "\n")
+} else {
+  for (i in seq_len(nrow(ij))) {
+    r <- ij[i]
+    cat(sprintf("   %-8s %-14s w=%.4f  INS02(net-buy breadth)=%s [%s]  (INS01 net-sell=%s advisory·R33 무정보)\n",
+                r$Ticker, ifelse(is.na(r$Name) | r$Name == "", "-", r$Name), r$Weight,
+                ifelse(is.na(r$INS02_OffBuyBreadth6m), "NA", sprintf("%+.2f", r$INS02_OffBuyBreadth6m)), r$insider_flag,
+                ifelse(is.na(r$INS01_OffNetBuyIntensity3m), "NA", sprintf("%+.2f", r$INS01_OffNetBuyIntensity3m))))
+  }
+  cat(sprintf("[insider] NET_BUY_SAFE %d건 · NO_INSIDER_DATA %d건 · (advisory net-sell %d건 — 경보 아님) | 홀딩월 %d · 최신 signal %s%s\n",
+              n_ins_safe, n_ins_nodata, n_ins_ns_adv, ins_cur_hy, format(ins_latest_signal),
+              if (isTRUE(ins_stale)) " ★STALE — 현 보유월 signal 부재, 패널 크롤 갱신 필요" else ""))
+  if (n_ins_safe > 0)
+    cat("[insider] ✅ NET_BUY_SAFE(de-risk 예외 — 유지 안전 라벨, 비중확대 신호 아님):",
+        paste(ij[insider_flag == "NET_BUY_SAFE", Ticker], collapse = ", "), "\n")
 }
 cat("[DONE] outputs →", OUT_DIR, "\n")

@@ -1,5 +1,5 @@
 {
-  "as_of": "2026-07-14",
+  "as_of": "2026-07-15",
   "book": "STR_1715_on_M4_R05_noLayer4_PG2",
   "metric_type": "observational_monitoring",
   "basis": "로컬 DART list 아카이브 read-only 소비 · monitoring 위생 진단 (book 무변경 · API 호출 0)",
@@ -426,12 +426,163 @@
       "cadence_caveat": "감사데이터 갱신 = 연 1회 감사보고서 시즌(3~4월 정점) 의존 · DART 크롤 필요. 시즌 외 정적은 정상(STALE 아님)"
     }
   },
+  "insider_net_buy_safe": {
+    "basis": "임원 순매수 breadth 클러스터 SAFE tripwire (R33/R34 소비면) · risk-감소 신호 NOT 자본/sizing · book 무변경",
+    "metric_type": "observational_monitoring",
+    "direction": "SAFE(de-risk 예외) — 부실신호(Part A 제출지연·Part B 감사 distress)의 반대 부호. 순매수=안전 / 부실=경보",
+    "warn_tone": "임원 순매수 breadth 클러스터(INS02 z>=+1.0) = 종목단 forward SAFE 신호(de-risk 예외) · 자본/sizing 신호 아님 (R33 WT_D20260715_002 capability_established + R34 북-레벨 확증: gap t+2.50·downside/tail 감소·flagged 전량 MEGA/MID·lag1 robust). net-sell(INS01)=advisory·R33 무정보.",
+    "r34_verdict": "capability_established",
+    "insider_rule": "NET_BUY_SAFE = 보유종목 INS02_OffBuyBreadth6m z >= +1.0 (현 홀딩월, signal m→m+1 PIT). net-sell(INS01<=-1.0)=advisory·R33 무정보(경보 아님·문턱 sweep 금지)",
+    "consumption_caveat": "monitoring tripwire(per-holding 안전 특성화)만 — 자본/sizing 근거 금지. R34 cohort-path 진단: flag sub-basket MDD/vol 오히려 악화(분산 아티팩트 2.5 vs 57종). de-risk 예외 = '유지 안전' 라벨이지 비중 확대 신호 아님",
+    "insider_source_ok": true,
+    "insider_source_error": null,
+    "current_holding_ym": 202607,
+    "latest_signal_date": "2026-06-30",
+    "panel_stale": false,
+    "panel_stale_note": "현 보유월 signal 부재 = insider 패널 갱신 필요(DART 크롤 — 본 watch는 refresh 경로 없음, 로컬 재사용). stale=TRUE면 flag는 과거 홀딩월 기준(경보 침묵을 신선도로 해석 금지)",
+    "n_holdings_with_insider": 11,
+    "n_net_buy_safe": 0,
+    "n_no_insider_data": 3,
+    "n_net_sell_advisory": 7,
+    "net_buy_safe_list": [],
+    "per_holding_insider": [
+      {
+        "ticker": "A005930",
+        "name": "삼성전자",
+        "weight": 0.06,
+        "ins02_net_buy_breadth": 0.555,
+        "ins01_net_sell_advisory": -1.389,
+        "ins03_recency": 0.506,
+        "insider_flag": "NEUTRAL"
+      },
+      {
+        "ticker": "A000660",
+        "name": "SK하이닉스",
+        "weight": 0.056493,
+        "ins02_net_buy_breadth": -0.019,
+        "ins01_net_sell_advisory": -1.41,
+        "ins03_recency": 0.647,
+        "insider_flag": "NEUTRAL"
+      },
+      {
+        "ticker": "A319660",
+        "name": "피에스케이",
+        "weight": 0.042503,
+        "ins02_net_buy_breadth": -0.808,
+        "ins01_net_sell_advisory": -1.31,
+        "ins03_recency": -1.183,
+        "insider_flag": "NEUTRAL"
+      },
+      {
+        "ticker": "A034730",
+        "name": "SK",
+        "weight": 0.041601,
+        "ins02_net_buy_breadth": -1.381,
+        "ins01_net_sell_advisory": null,
+        "ins03_recency": -1.747,
+        "insider_flag": "NEUTRAL"
+      },
+      {
+        "ticker": "A095610",
+        "name": "테스",
+        "weight": 0.032527,
+        "ins02_net_buy_breadth": -1.381,
+        "ins01_net_sell_advisory": null,
+        "ins03_recency": null,
+        "insider_flag": "NEUTRAL"
+      },
+      {
+        "ticker": "A011070",
+        "name": "LG이노텍",
+        "weight": 0.029431,
+        "ins02_net_buy_breadth": 0.912,
+        "ins01_net_sell_advisory": -1.408,
+        "ins03_recency": 0.928,
+        "insider_flag": "NEUTRAL"
+      },
+      {
+        "ticker": "A007340",
+        "name": "DN오토모티브",
+        "weight": 0.008364,
+        "ins02_net_buy_breadth": null,
+        "ins01_net_sell_advisory": null,
+        "ins03_recency": null,
+        "insider_flag": "NO_INSIDER_DATA"
+      },
+      {
+        "ticker": "A023530",
+        "name": "롯데쇼핑",
+        "weight": 0.008072,
+        "ins02_net_buy_breadth": null,
+        "ins01_net_sell_advisory": null,
+        "ins03_recency": -0.057,
+        "insider_flag": "NO_INSIDER_DATA"
+      },
+      {
+        "ticker": "A004170",
+        "name": "신세계",
+        "weight": 0.007927,
+        "ins02_net_buy_breadth": 0.912,
+        "ins01_net_sell_advisory": null,
+        "ins03_recency": 0.506,
+        "insider_flag": "NEUTRAL"
+      },
+      {
+        "ticker": "A402340",
+        "name": "SK스퀘어",
+        "weight": 0.005626,
+        "ins02_net_buy_breadth": -0.808,
+        "ins01_net_sell_advisory": -1.458,
+        "ins03_recency": -1.043,
+        "insider_flag": "NEUTRAL"
+      },
+      {
+        "ticker": "A222800",
+        "name": "심텍",
+        "weight": 0.004749,
+        "ins02_net_buy_breadth": -1.381,
+        "ins01_net_sell_advisory": -1.31,
+        "ins03_recency": null,
+        "insider_flag": "NEUTRAL"
+      },
+      {
+        "ticker": "A003030",
+        "name": "",
+        "weight": 0.001183,
+        "ins02_net_buy_breadth": null,
+        "ins01_net_sell_advisory": null,
+        "ins03_recency": null,
+        "insider_flag": "NO_INSIDER_DATA"
+      },
+      {
+        "ticker": "A290650",
+        "name": "엘앤씨바이오",
+        "weight": 0.000972,
+        "ins02_net_buy_breadth": 0.148,
+        "ins01_net_sell_advisory": null,
+        "ins03_recency": 0.506,
+        "insider_flag": "NEUTRAL"
+      },
+      {
+        "ticker": "A189300",
+        "name": "인텔리안테크",
+        "weight": 0.000549,
+        "ins02_net_buy_breadth": -1.381,
+        "ins01_net_sell_advisory": -1.287,
+        "ins03_recency": -0.62,
+        "insider_flag": "NEUTRAL"
+      }
+    ],
+    "evidence": "R33 stage_artifacts/WT_D20260715_002/verdict_r33_insider_consumption.json + R34 stage_artifacts/WT_D20260715_003/verdict.json"
+  },
   "inputs": {
     "holdings_csv": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/05_Production/2.Factor_Model/2-3.STR_1715_on_M4_R05_noLayer4_PG2/02_holdings_universe/20260701_noLayer4_weights_cap_0p20.csv",
     "filings_inventory": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/WT_D20260711_002/filings_inventory.parquet",
     "disc_ck_dir": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/WT-D20260710_005/disc_ck",
     "audit_opinion": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/02_Infrastructure/data/dart_pledge_audit/t1_audit_opinion_fy2015_2025.parquet",
     "rawdata": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rawdata.parquet",
-    "r25_verdict": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/WT_D20260714_001/verdict.json"
+    "r25_verdict": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/WT_D20260714_001/verdict.json",
+    "insider_panel": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/outputs/ramp/insider_factor_scores.parquet",
+    "r34_verdict": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/WT_D20260715_003/verdict.json"
   }
 }

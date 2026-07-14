@@ -1,0 +1,78 @@
+{
+  "wt": "WT-D20260715_003",
+  "mode": "RAMP-adjacent alpha consumption (monitoring 배선)",
+  "round": "R34",
+  "fq": "FQ-050",
+  "title": "insider net-buy 클러스터 monitoring tripwire 배선 + PG2 북 de-risk 예외 진단 (R33 next_probe P1 소비)",
+  "as_of_date": "2026-07-15",
+  "verdict_type": "capability_established",
+  "config_hash": "794f3808dd745945",
+  "vintage_pin": ".cache/pin/rawdata_r9_pin_20260715.parquet (mtime 2026-07-15 00:21:02, R9/R33 pin 재사용)",
+  "base_source": "production clean T-1 (alpha_scores_str1715_268m_cleanT1.parquet, production_parity_verified 3.058) — §7b 정합, 저장 268m same-month vintage 미사용",
+  "held_reconstruction": "북 equity 슬리브 = score_eff top-25 + liq>=2e8 (오버레이 M4×R05 = 북-레벨 현금조절이지 종목선택 아님)",
+  "pit": "clean T-1 held(홀딩월 결정, 검증) + insider signal_date(월말 m)→홀딩월(m+1) flag (홀딩월 시작 전, C5) + lag1 스트레스 통과. insider 패널 로컬 재사용, DART API X.",
+  "selection_type": "chain (배선/진단 · sweep 아님) n_trials=1",
+
+  "task1_derisk_diagnostic": {
+    "question": "북 보유(top-25 슬리브) 종목이 net-buy flag(INS02 z>=+1.0)일 때 실현 forward 위험이 비-flag 대비 개선되는가 — R33 universe 결과의 북-레벨 확장 (진단만, 북 운용 무변경)",
+    "coverage": {"held_name_months": 6698, "holding_months": 268, "insider_covered_held": 2039, "flagged_held": 277, "flagged_held_pct": 4.14, "avg_flag_per_month": 2.45, "flag_months": 113},
+    "per_holding_basis_CONFIRMED": {
+      "note": "monitoring tripwire 가 사용하는 per-holding(종목단) basis — R33 universe 신호가 북 보유 부분집합에서도 확증",
+      "fwd_ret_flag": 0.0368, "fwd_ret_nonflag": 0.0193, "gap_ret_nw_t": 2.50, "gap_ann": 0.207,
+      "gap_ret_restricted_nw_t": 2.68,
+      "downside_flag": -0.0763, "downside_nonflag": -0.0834,
+      "tail_lt_m15pct_flag": 0.047, "tail_lt_m15pct_nonflag": 0.070,
+      "per_name_vol_flag": 0.1362, "per_name_vol_nonflag": 0.1348,
+      "tier_dist_flagged_held": {"MEGA": 173, "MID": 104, "OTHER": 0},
+      "interpret": "북 보유 flag 종목 = forward 수익 높고(gap t+2.50, restricted +2.68) · 하방 완화(-7.6% vs -8.3%) · 급락(<-15%) 절반(4.7% vs 7.0%). flagged 전량 MEGA/MID(배포 tier) = 소형주 아티팩트 아님(선별-면 cap-tier 벽이 monitoring-면엔 안 걸림 재확인). 단 per-name 대칭 vol은 동등 — 안전=우편향(급락회피+고수익)이지 저변동 아님."
+    },
+    "cohort_path_basis_CONFOUNDED": {
+      "note": "★정직 caveat: cohort(sub-basket) path 위험은 flag가 오히려 악화 — 분산 아티팩트이지 위험속성 아님",
+      "cohort_mdd_flag": -0.345, "cohort_mdd_nonflag": -0.167,
+      "cohort_vol_flag": 0.355, "cohort_vol_nonflag": 0.225,
+      "cohort_sr_flag": 1.42, "cohort_sr_nonflag": 1.33,
+      "confound": "flag cohort ~2.5종/월 vs nonflag ~22.5종/월 — 소수 EW 바스켓이 구조적으로 고변동/깊은 MDD. cohort-path 개선 없음 = 집중/sizing 근거 불가. de-risk 값은 per-holding(유지 안전)이지 포트-path 저변동 아님.",
+      "consumption_rule": "tripwire = per-holding SAFE 라벨(유지 안전)만. 비중확대/집중 신호로 쓰지 말 것."
+    },
+    "lag1_stress": {"gap_ret_nw_t": 1.89, "fwd_flag": 0.0294, "fwd_nonflag": 0.0196, "downside_flag": -0.0794, "downside_nonflag": -0.0833,
+      "interpret": "flag +1월 추가 shift 시 gap +2.50→+1.89 (감쇠하나 붕괴 아님·부호 유지) = 동월 look-ahead 아님(누출이면 붕괴). 효과는 1개월-horizon 집중 = 월간 tripwire 적합."},
+    "dual_basis_note": "cross-sectional 월별 gap에서 market-excess(ret-BM)는 BM 상수라 raw와 축퇴(gap_t 동일 2.50). monitoring dual-basis 실질 = 위험지표(downside/tail/cohort) — 병기함 (R33 정합)."
+  },
+
+  "task2_wiring": {
+    "target_file": "02_Infrastructure/reports/filing_delay_watch.R (Part C 신설) + 02_Infrastructure/prompts/monitoring_init.md",
+    "design": "부실 조기경보 단일 창구에 방향-대비로 통합: net-buy 클러스터(INS02 z>=+1.0) = SAFE(de-risk 예외) / 부실신호(Part A 제출지연·Part B 감사 distress) = CONCERN. net-sell(INS01 z<=-1.0) = advisory only(R33 무정보 t=-0.01, 경보 아님).",
+    "pit": "signal_date(월말 m)→홀딩월(m+1), 현 홀딩월 flag = 직전 월말 signal(홀딩월 시작 전). 패널 stale(현 보유월 signal 부재) 시 warn-loud.",
+    "current_book_snapshot": {
+      "holding_ym": 202607, "signal_used": "2026-06-30 (PIT-clean, 홀딩월 시작 전)", "n_holdings": 14,
+      "n_net_buy_safe": 0, "n_neutral": 11, "n_no_insider_data": 3, "n_net_sell_advisory": 7,
+      "interpret": "현 시점 net-buy SAFE flag 보유 0건 (최대 INS02 = +0.91 <1.0) — tripwire armed·inactive. net-sell advisory 7건은 R33 무정보라 경보 아님. NO_INSIDER_DATA 3건 = 저커버 소형(A007340/A023530/A003030)."
+    }
+  },
+
+  "verdict_overall": "capability_established",
+  "verdict_overall_text": "insider net-buy 클러스터 monitoring tripwire = 배선 완료 + 북-레벨 확증. R33 universe 신호(gap t+3.36)가 북 보유(top-25 슬리브) 부분집합에서도 per-holding basis로 유효 — forward 수익 gap t+2.50(restricted +2.68)·하방 -7.6% vs -8.3%·급락 4.7% vs 7.0%·flagged 전량 MEGA/MID(배포 tier)·lag1 robust(+1.89). tripwire를 filing_delay_watch.R Part C로 배선(부실=경보 / 순매수=안전 방향대비). ★단 자본/sizing 신호 아님: cohort-path MDD/vol은 오히려 악화(분산 아티팩트 2.5 vs 22.5종) = de-risk 값은 per-holding '유지 안전' 라벨이지 포트-path 저변동 아님. book_state/05_Production 무변경.",
+  "consumer_surfaces": [
+    "⑤monitoring: net-buy 클러스터 SAFE tripwire = filing_delay_watch.R Part C 배선 완료 (부실 창구 방향대비, 월간·보고만)",
+    "⑧위험모델/감시: per-holding de-risk 예외 라벨 (유지 안전 — 자본/sizing 배선 금지)",
+    "⑥선별라벨: net-sell(INS01) advisory only = R33 무정보 (경보 배선 금지 — 배선면에도 명시)"
+  ],
+  "next_probes": [
+    "net-buy 클러스터 coverage 확장(현 북 flag 2.45/월 희소) — INS02+INS03 결합 또는 breadth 임계 완화로 large-cap tier 안정성·표본 재검정 (R33 next_probe #2 계승, FQ-050)",
+    "net-buy SAFE tripwire live 발화 시 실효 추적 — flagged 보유의 익월 실현 위험을 monitoring_report에 누적 기록해 out-of-sample 확증(현 0건 armed 상태에서 발화 대기)",
+    "de-risk 예외의 exit-timing 소비 — net-buy flag 소멸(cluster 해제) 시 forward 위험 재상승 여부(대칭 검정) = tripwire의 진입/청산 양측 정보성"
+  ],
+  "layer_bottleneck": "⑤monitoring (net-buy SAFE tripwire 배선 완료) — ①재료 수익-파생/선별 벽과 무관한 소비면. de-risk 값은 per-holding 특성화(risk-감시)이지 성과 병목 해소 아님.",
+  "kill": {"derisk_per_holding": false, "derisk_cohort_path": true, "net_sell_advisory": true},
+  "book_state_unchanged": true,
+  "production_unchanged": true,
+  "artifacts": {
+    "runner": "stage_artifacts/WT_D20260715_003/run_r34_derisk_wiring.R",
+    "results": "stage_artifacts/WT_D20260715_003/r34_results.json",
+    "cohort_series": "stage_artifacts/WT_D20260715_003/r34_cohort_series.parquet",
+    "objects": "stage_artifacts/WT_D20260715_003/_r34_objects.rds",
+    "wiring": "02_Infrastructure/reports/filing_delay_watch.R (Part C) + 02_Infrastructure/prompts/monitoring_init.md",
+    "challenge_note": "stage_artifacts/WT_D20260715_003/challenge_note_r34_20260715.md",
+    "log": "stage_artifacts/WT_D20260715_003/_r34_run_log.txt"
+  }
+}

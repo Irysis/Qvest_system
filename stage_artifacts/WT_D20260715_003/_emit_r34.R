@@ -1,0 +1,27 @@
+setwd("C:/Users/99922/OneDrive/Quant_Module_Moltbot")
+source("02_Infrastructure/axiom/lcode_emit.R")
+r <- emit_lcode(
+  mode = "ramp",
+  strategy_id = "R34_insider_derisk_tripwire_wiring",
+  grade = "C",
+  metric_type = "canonical_screen",
+  construction_type = "monitoring_tripwire",
+  selection_type = "chain",
+  lesson_text = "insider net-buy 클러스터(INS02 z>=+1.0) monitoring tripwire 배선 + 북-레벨 de-risk 진단(R33 P1 소비). 북 보유(score_eff top-25 슬리브) flag 종목 = per-holding forward SAFE: 수익 gap NW-t +2.50(restricted +2.68·ann +20.7%)·하방 -7.6% vs -8.3%·급락(<-15%) 4.7% vs 7.0%·flagged 전량 MEGA/MID(173/104, OTHER 0 = 배포 tier, 소형 아티팩트 아님)·lag1 robust(+1.89 붕괴 아님=동월누출 아님). ★단 cohort-path(sub-basket) MDD -34.5% vs -16.7%·vol 35.5% vs 22.5% = flag 오히려 악화 = 분산 아티팩트(2.5 vs 22.5종)이지 위험속성 아님 → de-risk 값은 per-holding '유지 안전'이지 포트-path 저변동/sizing 아님. tripwire를 filing_delay_watch.R Part C(부실=경보/순매수=안전 방향대비)+monitoring_init.md 배선. net-sell(INS01)=advisory only(R33 무정보). base=production clean T-1 §7b, insider 패널 재사용, DART API X, book_state 무변경.",
+  mechanism_hypothesis = "정보-우위 임원의 지속 매집(breadth 클러스터)이 다음달 종목단 우편향 위험(고수익+급락회피)과 결합 — per-stock 위험 특성화(monitoring) 소비면에서 신호 보존. 선별-면 cap-tier 국소화 벽(R9)이 monitoring-면엔 안 걸림(R24/R25 선례 재현). 단 소수-이름 sub-basket 집중은 분산이익을 상쇄해 포트-path 위험 개선으로 전이되지 않음.",
+  core_reference = "Cohen-Malloy-Pomorski 2012 (insider information content) + R33 verdict",
+  metrics = list(
+    derisk_gap_ret_nw_t = 2.50, derisk_gap_restricted_nw_t = 2.68,
+    downside_flag = -0.0763, downside_nonflag = -0.0834,
+    tail_lt_m15_flag = 0.047, tail_lt_m15_nonflag = 0.070,
+    cohort_mdd_flag = -0.345, cohort_mdd_nonflag = -0.167,
+    lag1_gap_nw_t = 1.89, flagged_held = 277L, flagged_held_pct = 4.14,
+    tier_flagged = "MEGA 173 / MID 104 / OTHER 0",
+    wiring_current_book_safe = 0L, wiring_holding_ym = 202607L, n_trials = 1L,
+    verdict_type = "capability_established",
+    next_probe = c("coverage 확장(INS02+INS03/breadth 완화)", "live SAFE 발화 OOS 추적", "exit-timing 대칭 검정"),
+    consumer_surfaces = c("monitoring: filing_delay_watch Part C 배선", "위험감시: per-holding 유지-안전 라벨", "net-sell advisory only"),
+    evidence = "stage_artifacts/WT_D20260715_003/verdict.json"
+  )
+)
+cat("emitted:", if(is.list(r)) (if(!is.null(r$l_code)) r$l_code else "see-output") else as.character(r), "\n")

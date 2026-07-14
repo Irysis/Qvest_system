@@ -979,8 +979,8 @@
       "wall_check": "자본 주장 아님(pool-선별 자본 KILL 확정) — 유니버스 필터 효과는 배포 유니버스 내 exclusion paired + monitoring tripwire 배선. insider 패널 재사용(202606). book_state 무변경",
       "data_gate": "없음 (insider_factor_scores.parquet 202606 + RAWDATA)",
       "owner": "Q-Lead (R33, 밤샘 연쇄, R32 후)",
-      "status": "measured_capability_established_monitoring",
-      "next_action": "완료(R33). 결과: A(net-seller exclusion) config-scoped negative paired t=-0.09·위험 3축 불개선 / B net-buy breadth 클러스터 = monitoring capability_established(gap t=+3.36, size-neutral +5.22, large-cap t=+2.57, 하방/vol/tail 감소) / B net-sell tripwire t=-0.01 무효. 다음: net-buy 클러스터 PG2 book overlay/de-risk tripwire 배선 측정(자본 아님) + coverage 확장 + sector-neutral.",
+      "status": "measured_capability_established_monitoring_p1_consumed",
+      "next_action": "완료(R33). 결과: A(net-seller exclusion) config-scoped negative paired t=-0.09·위험 3축 불개선 / B net-buy breadth 클러스터 = monitoring capability_established(gap t=+3.36, size-neutral +5.22, large-cap t=+2.57, 하방/vol/tail 감소) / B net-sell tripwire t=-0.01 무효. **P1(de-risk tripwire 배선) = R34(FQ-050) 완료·capability_established 북-레벨 확증** → filing_delay_watch.R Part C 배선. P2(coverage 확장)·P3(sector-neutral)은 FQ-050 next_probe로 이월.",
       "result": {
         "verdict_overall": "capability_established (monitoring-face net-buy, non-capital)",
         "branchA_exclusion": "config_scoped_negative (paired t=-0.09, MDD/SR/vol 불개선)",
@@ -993,6 +993,34 @@
         "parent: L-RAMP-20260715_004100 R9 P1",
         "선례: R24/R25 monitoring 소비면 유효 패턴",
         "verdict: stage_artifacts/WT_D20260715_002/verdict_r33_insider_consumption.json"
+      ]
+    },
+    {
+      "id": "FQ-050",
+      "lane": "non_return",
+      "title": "R34 — insider net-buy 클러스터 monitoring tripwire 배선 + PG2 북 de-risk 예외 진단 (R33 P1 소비)",
+      "hypothesis": "R33이 확립한 net-buy breadth 클러스터(monitoring capability)를 (①측정) 북 보유 종목에 적용 시 flag 종목의 실현 forward 위험이 비-flag 대비 개선되는가(북-레벨 확장) + (②배선) tripwire를 filing_delay_watch.R 단일 창구에 방향-대비로 배선",
+      "ev_rationale": "R33 next_probe P1 직접 소비. 자본 아님(monitoring 소비면). R24/R25 tripwire 계열과 동형 — 부실=경보 / 순매수=안전 단일 창구 통합",
+      "wall_check": "monitoring tripwire(per-holding 안전 특성화)이지 자본/sizing 신호 아님 — R34 cohort-path 진단서 flag sub-basket MDD/vol 악화(분산 아티팩트) 확인 → sizing 배선 금지. book_state/05_Production 무변경. insider 패널 재사용·DART API X",
+      "data_gate": "없음 (insider_factor_scores.parquet 202606 + production clean T-1 §7b + rawdata pin)",
+      "owner": "Q-Lead (R34, 밤샘 연쇄, R33 후)",
+      "status": "measured_capability_established_wired",
+      "next_action": "완료(R34, 2026-07-15). 판정 capability_established: 북 보유 flag 종목 per-holding forward SAFE 확증(gap NW-t +2.50·restricted +2.68·하방 -7.6% vs -8.3%·급락<-15% 4.7% vs 7.0%·flagged 전량 MEGA/MID·lag1 robust +1.89). ★자본 아님: cohort-path MDD/vol flag 악화=분산 아티팩트(2.5 vs 22.5종). tripwire = filing_delay_watch.R Part C + monitoring_init.md 배선(부실=경보/순매수=안전, net-sell advisory only). 현 북 14보유 snapshot: NET_BUY_SAFE 0·NEUTRAL 11·NO_INSIDER_DATA 3 (armed·inactive). next_probe: P1 coverage 확장(INS02+INS03/breadth 완화) / P2 live SAFE 발화 OOS 추적 / P3 exit-timing 대칭 검정.",
+      "result": {
+        "verdict_type": "capability_established",
+        "derisk_per_holding": "CONFIRMED (gap NW-t +2.50, restricted +2.68, 하방/tail 감소, flagged 전량 MEGA/MID, lag1 robust +1.89)",
+        "derisk_cohort_path": "config_scoped_negative (MDD -34.5% vs -16.7% = 분산 아티팩트, sizing 아님)",
+        "net_sell": "advisory only (R33 무정보)",
+        "wiring": "filing_delay_watch.R Part C + monitoring_init.md (부실=경보/순매수=안전 방향대비)",
+        "current_book_202607": "NET_BUY_SAFE 0 · NEUTRAL 11 · NO_INSIDER_DATA 3 (armed)",
+        "closed_at": "2026-07-15",
+        "artifacts": "stage_artifacts/WT_D20260715_003/{verdict,r34_results}.json + challenge_note_r34_20260715.md"
+      },
+      "source_refs": [
+        "parent: FQ-049 R33 next_probe P1",
+        "verdict: stage_artifacts/WT_D20260715_003/verdict.json",
+        "wiring: 02_Infrastructure/reports/filing_delay_watch.R (Part C) + 02_Infrastructure/prompts/monitoring_init.md",
+        "l_code: L-RAMP-20260715_022534"
       ]
     }
   ]

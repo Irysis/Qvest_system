@@ -1,0 +1,260 @@
+{
+  "prereg": {
+    "mode": "RAMP-adjacent alpha consumption",
+    "round": "R34",
+    "fq": "FQ-050",
+    "wt": "WT-D20260715_003",
+    "parent": "R33 next_probe P1 (net-buy 클러스터 book de-risk tripwire 배선 측정)",
+    "base_source": "production clean T-1 (alpha_scores_str1715_268m_cleanT1, production_parity_verified)",
+    "held_reconstruction": "score_eff top-25 equity 슬리브 + liq>=2e8 (오버레이=현금조절이지 선택 아님)",
+    "pit": "clean T-1 held + insider signal(월말 m)→홀딩월(m+1) flag, 홀딩월 시작 전 (C5) + lag1 스트레스",
+    "flags": {
+      "net_buy": "INS02_OffBuyBreadth6m z>=+1.0 (R33 frozen)",
+      "net_sell": "INS01_OffNetBuyIntensity3m z<=-1.0"
+    },
+    "dual_basis": "raw Ret_1m + market-excess(ret-BM cap-w) + cohort forward MDD/vol/SR",
+    "selection_type": "chain (배선/진단 · sweep 아님)",
+    "n_trials": 1,
+    "vintage_pin": ".cache/pin/rawdata_r9_pin_20260715.parquet",
+    "pin_mtime": "2026-07-15 00:21:02.834291",
+    "as_of": "2026-07-15",
+    "config_hash": "794f3808dd745945"
+  },
+  "vintage_pin": ".cache/pin/rawdata_r9_pin_20260715.parquet",
+  "pin_mtime": "2026-07-15 00:21:02.834291",
+  "base_parity": {
+    "clean_parity_port_t": 3.05834,
+    "note": "§7b production_parity_verified"
+  },
+  "held_coverage": {
+    "held_name_months": 6698,
+    "holding_months": 268,
+    "insider_covered_held": 2039,
+    "flagged_held": 277,
+    "net_sell_flagged_held": 399,
+    "flagged_held_pct": 4.14
+  },
+  "derisk_primary": {
+    "label": "primary(nonflag=all-other-held)",
+    "n_flag_obs": 277,
+    "n_nonflag_obs": 6421,
+    "n_months": 113,
+    "avg_flag_per_month": 2.45133,
+    "avg_nonflag_per_month": 22.53097,
+    "mean_fwd_flag": 0.03682,
+    "mean_fwd_nonflag": 0.01928,
+    "downside_flag": -0.07631,
+    "downside_nonflag": -0.08343,
+    "vol_flag": 0.13624,
+    "vol_nonflag": 0.13475,
+    "tail_hit_flag": 0.04693,
+    "tail_hit_nonflag": 0.06993,
+    "gap_ret_ann": 0.20657,
+    "gap_ret_t": 2.49942,
+    "gap_exc_ann": 0.20657,
+    "gap_exc_t": 2.49942,
+    "cohort_mdd_flag": -0.34492,
+    "cohort_mdd_nonflag": -0.16722,
+    "cohort_vol_flag": 0.35475,
+    "cohort_vol_nonflag": 0.22454,
+    "cohort_sr_flag": 1.42307,
+    "cohort_sr_nonflag": 1.32837,
+    "cohort_months": 113
+  },
+  "derisk_restricted": {
+    "label": "restricted(insider-covered held only)",
+    "n_flag_obs": 277,
+    "n_nonflag_obs": 1762,
+    "n_months": 111,
+    "avg_flag_per_month": 2.45946,
+    "avg_nonflag_per_month": 5.90991,
+    "mean_fwd_flag": 0.03682,
+    "mean_fwd_nonflag": 0.0199,
+    "downside_flag": -0.07631,
+    "downside_nonflag": -0.08365,
+    "vol_flag": 0.13624,
+    "vol_nonflag": 0.13658,
+    "tail_hit_flag": 0.04693,
+    "tail_hit_nonflag": 0.06981,
+    "gap_ret_ann": 0.28186,
+    "gap_ret_t": 2.68358,
+    "gap_exc_ann": 0.28186,
+    "gap_exc_t": 2.68358,
+    "cohort_mdd_flag": -0.34492,
+    "cohort_mdd_nonflag": -0.28375,
+    "cohort_vol_flag": 0.35475,
+    "cohort_vol_nonflag": 0.29355,
+    "cohort_sr_flag": 1.42307,
+    "cohort_sr_nonflag": 0.70555,
+    "cohort_months": 113
+  },
+  "derisk_lag1_stress": {
+    "label": "lag1-stress(flag shifted +1m)",
+    "n_flag_obs": 279,
+    "n_nonflag_obs": 6419,
+    "n_months": 115,
+    "avg_flag_per_month": 2.42609,
+    "avg_nonflag_per_month": 22.55652,
+    "mean_fwd_flag": 0.02935,
+    "mean_fwd_nonflag": 0.0196,
+    "downside_flag": -0.07938,
+    "downside_nonflag": -0.08331,
+    "vol_flag": 0.12861,
+    "vol_nonflag": 0.13511,
+    "tail_hit_flag": 0.04301,
+    "tail_hit_nonflag": 0.0701,
+    "gap_ret_ann": 0.1346,
+    "gap_ret_t": 1.88867,
+    "gap_exc_ann": 0.1346,
+    "gap_exc_t": 1.88867,
+    "cohort_mdd_flag": -0.37436,
+    "cohort_mdd_nonflag": -0.29477,
+    "cohort_vol_flag": 0.3443,
+    "cohort_vol_nonflag": 0.22755,
+    "cohort_sr_flag": 1.06257,
+    "cohort_sr_nonflag": 1.01622,
+    "cohort_months": 115
+  },
+  "flagged_held_tier_dist": {
+    "MEGA": 173,
+    "MID": 104
+  },
+  "wiring_current_book": {
+    "holding_ym": 202607,
+    "n_holdings": 14,
+    "tripwire_rule": "NET_BUY_SAFE = INS02_OffBuyBreadth6m z>=+1.0 (R33 capability). net-sell(INS01)=advisory only(R33 무정보). 경보방향=부실신호(지각/감사)",
+    "n_net_buy_safe": 0,
+    "n_neutral": 11,
+    "n_no_insider_data": 3,
+    "n_net_sell_advisory": 7,
+    "per_holding": [
+      {
+        "ticker": "A005930",
+        "name": "삼성전자",
+        "weight": 0.06,
+        "ins02_net_buy_breadth": 0.555,
+        "ins01_net_sell_advisory": -1.389,
+        "ins03_recency": 0.506,
+        "tripwire": "NEUTRAL"
+      },
+      {
+        "ticker": "A000660",
+        "name": "SK하이닉스",
+        "weight": 0.05649,
+        "ins02_net_buy_breadth": -0.019,
+        "ins01_net_sell_advisory": -1.41,
+        "ins03_recency": 0.647,
+        "tripwire": "NEUTRAL"
+      },
+      {
+        "ticker": "A319660",
+        "name": "피에스케이",
+        "weight": 0.0425,
+        "ins02_net_buy_breadth": -0.808,
+        "ins01_net_sell_advisory": -1.31,
+        "ins03_recency": -1.183,
+        "tripwire": "NEUTRAL"
+      },
+      {
+        "ticker": "A034730",
+        "name": "SK",
+        "weight": 0.0416,
+        "ins02_net_buy_breadth": -1.381,
+        "ins01_net_sell_advisory": null,
+        "ins03_recency": -1.747,
+        "tripwire": "NEUTRAL"
+      },
+      {
+        "ticker": "A095610",
+        "name": "테스",
+        "weight": 0.03253,
+        "ins02_net_buy_breadth": -1.381,
+        "ins01_net_sell_advisory": null,
+        "ins03_recency": null,
+        "tripwire": "NEUTRAL"
+      },
+      {
+        "ticker": "A011070",
+        "name": "LG이노텍",
+        "weight": 0.02943,
+        "ins02_net_buy_breadth": 0.912,
+        "ins01_net_sell_advisory": -1.408,
+        "ins03_recency": 0.928,
+        "tripwire": "NEUTRAL"
+      },
+      {
+        "ticker": "A007340",
+        "name": "DN오토모티브",
+        "weight": 0.00836,
+        "ins02_net_buy_breadth": null,
+        "ins01_net_sell_advisory": null,
+        "ins03_recency": null,
+        "tripwire": "NO_INSIDER_DATA"
+      },
+      {
+        "ticker": "A023530",
+        "name": "롯데쇼핑",
+        "weight": 0.00807,
+        "ins02_net_buy_breadth": null,
+        "ins01_net_sell_advisory": null,
+        "ins03_recency": -0.057,
+        "tripwire": "NO_INSIDER_DATA"
+      },
+      {
+        "ticker": "A004170",
+        "name": "신세계",
+        "weight": 0.00793,
+        "ins02_net_buy_breadth": 0.912,
+        "ins01_net_sell_advisory": null,
+        "ins03_recency": 0.506,
+        "tripwire": "NEUTRAL"
+      },
+      {
+        "ticker": "A402340",
+        "name": "SK스퀘어",
+        "weight": 0.00563,
+        "ins02_net_buy_breadth": -0.808,
+        "ins01_net_sell_advisory": -1.458,
+        "ins03_recency": -1.043,
+        "tripwire": "NEUTRAL"
+      },
+      {
+        "ticker": "A222800",
+        "name": "심텍",
+        "weight": 0.00475,
+        "ins02_net_buy_breadth": -1.381,
+        "ins01_net_sell_advisory": -1.31,
+        "ins03_recency": null,
+        "tripwire": "NEUTRAL"
+      },
+      {
+        "ticker": "A003030",
+        "name": "",
+        "weight": 0.00118,
+        "ins02_net_buy_breadth": null,
+        "ins01_net_sell_advisory": null,
+        "ins03_recency": null,
+        "tripwire": "NO_INSIDER_DATA"
+      },
+      {
+        "ticker": "A290650",
+        "name": "엘앤씨바이오",
+        "weight": 0.00097,
+        "ins02_net_buy_breadth": 0.148,
+        "ins01_net_sell_advisory": null,
+        "ins03_recency": 0.506,
+        "tripwire": "NEUTRAL"
+      },
+      {
+        "ticker": "A189300",
+        "name": "인텔리안테크",
+        "weight": 0.00055,
+        "ins02_net_buy_breadth": -1.381,
+        "ins01_net_sell_advisory": -1.287,
+        "ins03_recency": -0.62,
+        "tripwire": "NEUTRAL"
+      }
+    ]
+  },
+  "generated_at": "2026-07-15T02:14:01+0900"
+}

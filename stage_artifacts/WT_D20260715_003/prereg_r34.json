@@ -1,0 +1,21 @@
+{
+  "mode": "RAMP-adjacent alpha consumption",
+  "round": "R34",
+  "fq": "FQ-050",
+  "wt": "WT-D20260715_003",
+  "parent": "R33 next_probe P1 (net-buy 클러스터 book de-risk tripwire 배선 측정)",
+  "base_source": "production clean T-1 (alpha_scores_str1715_268m_cleanT1, production_parity_verified)",
+  "held_reconstruction": "score_eff top-25 equity 슬리브 + liq>=2e8 (오버레이=현금조절이지 선택 아님)",
+  "pit": "clean T-1 held + insider signal(월말 m)→홀딩월(m+1) flag, 홀딩월 시작 전 (C5) + lag1 스트레스",
+  "flags": {
+    "net_buy": "INS02_OffBuyBreadth6m z>=+1.0 (R33 frozen)",
+    "net_sell": "INS01_OffNetBuyIntensity3m z<=-1.0"
+  },
+  "dual_basis": "raw Ret_1m + market-excess(ret-BM cap-w) + cohort forward MDD/vol/SR",
+  "selection_type": "chain (배선/진단 · sweep 아님)",
+  "n_trials": 1,
+  "vintage_pin": ".cache/pin/rawdata_r9_pin_20260715.parquet",
+  "pin_mtime": "2026-07-15 00:21:02.834291",
+  "as_of": "2026-07-15",
+  "config_hash": "794f3808dd745945"
+}
