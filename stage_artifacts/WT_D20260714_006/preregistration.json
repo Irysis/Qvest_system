@@ -1,0 +1,35 @@
+{
+  "task_id": "WT-D20260714_006",
+  "frontier_id": "FQ-045",
+  "prereg_time": "2026-07-14",
+  "parent": "R29 (WT-D20260714_005) verdict + next_probe P1",
+  "selection_type": "chain",
+  "n_trials_r30": 4,
+  "base_convention": {
+    "clean_base_stored": "recon_panels 0_stored_S7 (= alpha_scores_str1715_268m_cleanT1, production_parity_verified, cor 1.0, off0 T-1 clean)",
+    "clean_base_ic": "recon_panels 0_ic_S7 (production ic-theta forward path, off0 T-1 clean)",
+    "value": "value_panels vz_off0 (T-1 clean factor_db V14_EBIT_EV+V07_EV_EBITDA aligned z-blend), NA->0 in blend",
+    "w_blend": 0.30,
+    "rule": "§7b — base 권위 = production 코드 파생(off0 clean)만. 저장 same-month(off+1) 패널 소비 금지. R29 검증 파이프라인 재사용."
+  },
+  "branch_A": {
+    "object": "clean Z6 blend (0_stored_S7 + vz_off0, w0.30) EW top-25 track + clean pure-value(vz_off0) EW top-25 track (정직 standalone value #3 후보)",
+    "form": "canonical_screen_bt EW top-25 long-only, liq 2e8, 15bps, diag_dual_basis=TRUE, size_dt=SIZE",
+    "metrics_prereg": ["EW-uni PORT_t (NW lag3)", "EW oos_retention v2 (anchored 3-split {55/65/75} median)", "TE vs EW-uni (ann)", "EW IR", "turnover_annual", "capacity cap_1d/cap_5d (ADV20 10%/day, min_i PART*ADV20/w)", "cost break-even (EW t=2.95) via bps grid {15,20,30,40,50}", "holding overlap % + EW-active corr vs P-pure base holdings"],
+    "verdict_rule": "D3 dossier form — 자본 결정 아님(book_state 무변경). '밸류 페이퍼트래킹 3호 후보 자격' = EW oos>=0.7 단독 OR band[0.5,0.7) 보강증거 2/3(trailing PORT_t>0, placebo, book-marginal). cap-w HARD FAIL 불변 라벨. due_diligence_arithmetic(비바인딩) for capacity/cost/overlap."
+  },
+  "branch_B": {
+    "object": "MID-tier 조건부 value 슬로팅 — cap-rank(SIZE 월별 내림차순) MEGA=1-10 / MID=11-30 / OTHER=31+",
+    "trials": [
+      {"id": "B1_MID_only", "score": "z(base_z) + w*z(value_z)*1[tier==MID], w=0.30, value NA->0 in tier", "note": "value 부스트 MID(11-30)만"},
+      {"id": "B2_MID_OTHER", "score": "z(base_z) + w*z(value_z)*1[tier in {MID,OTHER}], w=0.30", "note": "value 부스트 non-mega(11+)"}
+    ],
+    "screen": "weighted_screen_bt cap-w top-25 (mk_capw, cap-rank -> cap_norm Size, liq 2e8, 15bps) — R29 동일 규격. dual-basis EW via canonical_screen_bt.",
+    "gate": "AND: paired NW-t(lag3, variant active - clean-base active, full) >= 2.0 AND ΔIR(window-matched, IR_ann(variant)-IR_ann(base)) >= 0.05. base = clean 0_stored_S7 cap-w top-25 (paired 기준 동일 base).",
+    "reference_baseline": "R29 PRIMARY (unconditional value blend on all tiers): paired 1.243, dIR +0.153, cap-w var_pt 3.85, EW-uni 6.39.",
+    "prior": "project-captier-alpha-localization: long-only 횡단선택으로 cap-w 탈출 구조 불가 (양측 증명). MID-tier 조건부는 미측정 config이나 기대값 보수적 — cap-w에서 MID 명목가중 작음(mega 편중)이 바인딩 벽."
+  },
+  "diagnostics_all": ["paired_is (IS<=2024-06-30)", "paired_ho (2024-07..2026)", "post2017_t", "paired_lag1 (value shift 1m stress)", "cor_active vs base", "dual-basis diag_ew_universe + diag_cap_tier"],
+  "governance": "book_state·05_Production·outputs/ramp 무변경. R30 산출=stage_artifacts/WT_D20260714_006만. pin R28_current_20260714 승계. DSR sweep 부적용(chain). value family 누적 n_trials 기록.",
+  "abort_rules": ["look-ahead 징후(base=off0 clean 확인, value=vz_off0 T-1)", "monotonicity 붕괴", "cost_ratio<2"]
+}

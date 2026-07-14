@@ -1,0 +1,73 @@
+{
+  "task_id": "WT-D20260714_006",
+  "frontier_id": "FQ-045",
+  "as_of_date": "2026-07-14",
+  "parent_chain": "R27(FQ-040) -> R28(FQ-041) -> R29(FQ-044) -> R30(FQ-045)",
+  "metric_type": "Branch B = weighted_screen (cap-w top-25, NW lag-3) — admission binding 아님(forge authoritative). Branch A = canonical_screen diag_ew_universe + due_diligence_arithmetic(capacity/cost/overlap, 비바인딩)",
+  "selection_type": "chain (n_trials_r30=4: B1/B2 cap-w + Z6/pureVal EW 재실사; argmax 최종픽 아님) — DSR sweep 게이트 부적용. value(V14/V07) family 누적 n_trials ~8(R26~R30) — forge 단계 DSR/Harvey 엄격 적용 권고.",
+
+  "verdict_summary": "Branch B CONFIG-SCOPED POSITIVE (screening AND-게이트, full-period): B2(non-mega=MID+OTHER value slotting) cap-w paired 2.378>=2.0 ∧ ΔIR 0.232>=0.05 = R29 unconditional(1.243) 대비 최초 게이트 관통. placebo p=0.000·lag1 2.473·paired-diff oos_v2 2.326 = 실신호·PIT-safe. cap-tier 국소화 방향 확증(mega에 value 적용 = 희석; non-mega가 marginal 견인). BUT holdout dIR -0.022·paired_HO 1.17·post2017_t 1.73·variant 절대 oos 0.452 = 최근/OOS marginal 감쇠 → screening-tier(자본 아님). Branch A: pure-value EW track = band-조건부(oos_v2 0.659·trailing-stable·cost-robust)이나 P-pure active-corr 0.50(redundant) → 독립 페이퍼트래킹 3호 불채택. value paper-track #3 = 독립 EW 트랙 부적격; 소비형태는 Branch B(book-marginal)가 상위 EV.",
+
+  "branch_B_midtier_conditional": {
+    "base": "clean 0_stored_S7 cap-w top-25 (production_parity_verified, off0 T-1), base PORT_t 3.058, IR 0.663, TO 13.7",
+    "tier_def": "SIZE 월별 내림차순: MEGA 1-10 / MID 11-30 / OTHER 31+",
+    "gate": "AND: paired NW-t(lag3, variant active - clean-base active, full) >= 2.0 AND ΔIR(IR_ann diff, full) >= 0.05",
+    "cells": [
+      {"id": "B1_MID_only", "boost_tiers": "MID(11-30)", "variant_port_t": 3.281, "paired_full": 1.072, "paired_is": 0.279, "paired_ho": 1.774, "dIR_full": 0.046, "dIR_is": 0.019, "dIR_ho": 0.156, "post2017_t": 0.847, "paired_lag1": 0.262, "cor_active": 0.944, "ewuni_port_t": 4.301, "ewuni_oos": 0.500, "wshare": {"MEGA": 0.061, "MID": 0.070, "OTHER": 0.869}, "AND_gate": false, "verdict": "FAIL — MID(11-30)만 부스트: cap-w에서 MID 명목가중 작음(0.07), R29 unconditional보다도 약함"},
+      {"id": "B2_MID_OTHER", "boost_tiers": "MID+OTHER(11+, non-mega)", "variant_port_t": 4.234, "paired_full": 2.378, "paired_is": 2.096, "paired_ho": 1.170, "dIR_full": 0.232, "dIR_is": 0.238, "dIR_ho": -0.022, "post2017_t": 1.734, "paired_lag1": 2.473, "cor_active": 0.859, "ewuni_port_t": 6.588, "ewuni_oos": 0.512, "wshare": {"MEGA": 0.056, "MID": 0.062, "OTHER": 0.882}, "AND_gate": true, "verdict": "PASS(screening AND-gate, full-period) — R29 uncond 1.243 대비 관통. 단 holdout dIR -0.022·paired_HO 1.17·post2017 1.73 = 최근 marginal 감쇠(IS/pre-2017 견인)"}
+    ],
+    "robustness_B2": {
+      "placebo_value_shuffle": {"n_null": 40, "null_paired_max": 1.104, "null_paired_mean": -0.393, "actual_paired": 2.378, "p_value": 0.000, "reading": "value 순서 셔플이 marginal 파괴 → 실신호(우연 아님)"},
+      "lag1_value_shift": 2.473,
+      "paired_diff_oos_v2": 2.326,
+      "capw_oos_v2_variant_absolute": 0.452,
+      "capw_oos_v2_base_absolute": 0.167,
+      "note": "paired-diff oos_v2 2.326(anchored 55/65/75 splits, 마지막 split~2021)은 高이나, 명시적 2024-07+ holdout dIR -0.022 = 최근-2년 marginal flat/negative. 두 지표 상충 아님(window 상이) — recency 감쇠 실재."
+    },
+    "mechanism": "value alpha가 non-mega(특히 OTHER=small-cap 31+)에 국소(project-captier-alpha-localization). mega에 value 적용(R29 unconditional)이 marginal 희석 → mega는 순수 base 순위 유지 + non-mega만 value 틸트 = paired 1.243->2.378. B1(MID-only) FAIL·B2(OTHER 포함) PASS = OTHER 소형가치가 견인. 단 non-mega cap-w 명목가중 작음(wMID 0.062) → marginal은 top-25 tail 선택변화의 소가중 증폭.",
+    "prior_relation": "project-captier-alpha-localization 'long-only 횡단선택으로 cap-w 탈출 구조 불가' 양측증명과의 관계: B2는 cap-w '탈출'이 아니라 cap-w 안에서 mega에 value 미적용 = 국소화 존중. screening 게이트 관통은 최초이나 graduation(forge HARD 3종) 미검증 — prior의 '자본 불가'는 아직 반증 아님."
+  },
+
+  "branch_A_ew_deployability": {
+    "form": "canonical_screen_bt EW top-25 long-only, liq 2e8, 15bps, diag_dual_basis. 자본 결정 아님(D3 dossier form, due_diligence_arithmetic).",
+    "tracks": [
+      {"id": "Z6_blend_EW", "note": "book+value 블렌드(0.7*base+0.3*value) = ~book-duplicate as standalone", "ewuni_port_t": 6.390, "ewuni_ir": 1.302, "ewuni_oos_v2": 0.520, "ewuni_post17_t": 2.627, "te_ew_ann": 0.0934, "turnover_ann": 12.21, "capw_port_t_context": 4.560, "trailing_3split_t": [4.391, 4.970, 2.250], "breakeven_bps_ew295": ">50 (ext ~68)", "cap_1d_med_krw": 1.203e9, "cap_1d_36m_krw": 2.387e9, "cap_1d_worst_krw": 5.22e8, "cap_5d_36m_krw": 1.1934e10, "overlap_ppure": 0.1248, "active_corr_ppure_approx": 0.192},
+      {"id": "pure_value_EW", "note": "정직 standalone value #3 후보 (analog to P-pure/V02_EP)", "ewuni_port_t": 3.749, "ewuni_ir": 0.742, "ewuni_oos_v2": 0.659, "ewuni_post17_t": 1.389, "te_ew_ann": 0.1119, "turnover_ann": 4.96, "capw_port_t_context": 2.368, "trailing_3split_t": [2.145, 2.135, 2.259], "breakeven_bps_ew295": ">50 (~51)", "cap_1d_med_krw": 9.44e8, "cap_1d_36m_krw": 1.902e9, "cap_1d_worst_krw": 4.10e8, "cap_5d_36m_krw": 9.508e9, "overlap_ppure": 0.1953, "active_corr_ppure_approx": 0.496}
+    ],
+    "cost_robustness": "pure_value oos_v2 cost와 함께 상승(15bps 0.659 -> 50bps 0.729) — 비용이 IS 구간을 더 깎음(D3 패턴). 양 트랙 break-even > 50bps = cost-robust.",
+    "paper_track_3_qualification": "pure_value EW = band-조건부 후보(oos_v2 0.659 in [0.5,0.7), trailing-stable 2.1~2.3 = KR value 24/24 감쇠 서사와 달리 감쇠 미검출, cost-robust, capacity 36m 19억 = 도훈 규모 적정). BUT active-corr 0.50 with 기존 P-pure paper track(basis-mixed proxy) > V02_EP 0.34(D3서 redundancy로 독립 불채택) → value 정보 ~절반 P-pure 중복. => 독립 페이퍼트래킹 3호 부적격(redundant). Z6 blend EW = book-duplicate(standalone 무의미).",
+    "caveat_ew_track_infeasibility": "EW-유니버스 벤치 상대 트랙은 실투자 mandate 벤치가 EW가 아니므로 프레임 전용 채점(D3 §3 동일 한계). 실현 슬리피지는 실계좌에서만 측정."
+  },
+
+  "value_quality_spread_context": {
+    "current_percentile": 0.175,
+    "as_of": "2026-07-14",
+    "reference": "06-24 '사상최대'(reference-kr-value-factor-decay)에서 크게 압축 = reversion 상당분 기진행",
+    "risk": "늦은-사이클 리스크. clean holdout 양성(2024-26)이 소진된 되돌림의 후행 관측일 가능성 — Branch B holdout dIR -0.022·pure-value post17 1.39 감쇠와 정합 방향. forward value 기대 하향 조정 필요."
+  },
+
+  "dual_basis_M2": {
+    "note": "cap-w HARD 권위 + EW-uni 진단 병기. B2 non-mega slotting은 cap-w(2.378)·EW-uni(6.588) 양측 강함 — cap-tier 국소화 존중 구성이 cap-w에서도 게이트 관통(screening).",
+    "B2_capw_paired": 2.378, "B2_ewuni_port_t": 6.588, "B2_ewuni_oos": 0.512
+  },
+
+  "universe_comparison": {
+    "note": "KR_top342(default) 단일 유니버스. universe v2 비교 미수행 — cap-tier 국소화는 이미 tier 분해로 진단(v2 확장은 forge dossier 단계 옵션).",
+    "universe": "KR_top342", "cost_model_version": "v2.4_kr_retail_15bps"
+  },
+
+  "governance": "book_state·05_Production·outputs/ramp 무변경(read-only). 02:00 insider crawl + R9 자동발사 무접촉. R30 산출 = stage_artifacts/WT_D20260714_006만. n_trials_r30=4 chain(sweep 아님). 결과 = 도훈 결정 재료.",
+  "pin_tag": "R28_current_20260714 (RAWDATA md5 c5242397f9f35f092ea2439a7e744873 확인)",
+  "prereg_sha256": "bc3d2dfd6528a037b6005a7906a5b445a0e055eecc733db6cd9752d34af3ac04",
+  "artifacts": [
+    "alpha_scores.parquet (79856 rows, 268m: score_pureval/score_z6_blend/score_B1_midonly/score_B2_nonmega + tier/cap_rank)",
+    "branchB_grid.parquet", "branchB_prmap.rds", "branchA_summary.parquet", "r30_branchA_diag.rds", "cost_scenarios.parquet",
+    "r30_measure.R", "r30_branchA.R", "r30_emit_charts.R", "charts/r30_panel.png",
+    "preregistration.json", "preregistration.sha256"
+  ],
+  "next_probe": [
+    "P1(B2 forge/graduation dossier): B2 non-mega slotting score를 QEPM forge(build_bt_result authoritative) + judge HARD 3종(PORT_t 2.95·oos 0.7·calmar 0.64)로 판정. 특히 oos_retention(variant 절대 0.452<0.5 우려) + holdout falsification(사전등록 구간) + DSR(value family 누적 ~8 trial 다중검정). book-marginal ΔIR(recon NAV net-active). governor 정지·도훈 confirm. FQ 신설 후보.",
+    "P2(tier-cut 민감도 + OTHER 정제): B2가 OTHER(31+)에서 견인 — tier 경계(top-10/30) 민감도 + OTHER 내 liq/capacity 필터 강화 시 marginal 생존 여부. wMID 0.06 소가중 증폭 우려 정면 검증. IS-only.",
+    "P3(recency 감쇠 진단): B2 holdout dIR -0.022 + spread 압축 0.175 → value marginal의 최근-2년 flat이 (a)일시적 vs (b)스프레드 소진 후행인지 판별. monitoring tripwire(월간 trailing 12m paired) 등록 검토. 늦은-사이클 규율."
+  ]
+}

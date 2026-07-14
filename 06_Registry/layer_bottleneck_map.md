@@ -1,7 +1,7 @@
 # 계층 병목 지도 (Layer Bottleneck Map)
 
 **목적**: "SR 2.5까지의 갭(현재 +0.60, gap_vector 실측)이 어느 계층에서 막혀 있는가"의 상시 실측 지도. 라운드 수집 시 Q-Lead가 갱신(answer-principles 연속성 절 4호 소비처-전개 의무의 계층 뷰). 도훈 지시 2026-07-13 "어떤 계층에서 개선이 필요할지를 탐구하는 능력" 제도화.
-**갱신**: 2026-07-14 v7 (R26 FQ-039 book-marginal 반영 — score_eff 8번째 팩터 add/remove/replace 스크린. ②construction z-blend 소비형태도 book-marginal 자본기여 부재(ADD 14arms 全 paired<2.0), 단 ①재료서 value=book 유일 미결 노출 발견. + R25 감사 메타데이터·distress/forensic 3연속 cap-tier 벽) | **소비자**: Q-Lead 라운드 선택 · 주입면 · 도훈 결정
+**갱신**: 2026-07-14 v8 (R30 FQ-045 반영 — ②construction: non-mega tier-conditional value slotting(B2)이 cap-w 국소화 벽 최초 screening 관통(paired 2.378 PASS), 단 자본 미검(FQ-046). + R26 FQ-039 book-marginal 반영 — score_eff 8번째 팩터 add/remove/replace 스크린. ②construction z-blend 소비형태도 book-marginal 자본기여 부재(ADD 14arms 全 paired<2.0), 단 ①재료서 value=book 유일 미결 노출 발견. + R25 감사 메타데이터·distress/forensic 3연속 cap-tier 벽) | **소비자**: Q-Lead 라운드 선택 · 주입면 · 도훈 결정
 
 | 계층 | 실측 상태 | 병목 기여 | 열린 프론티어 (EV순) |
 |---|---|---|---|
@@ -14,6 +14,8 @@
 | ⑦ 집행/비용 | anchor 최적(SPEC-2 단조) · tranche=경로분산 축소만 | 최적 상태 | G5 tranche 채택(도훈, 기대SR 중립) |
 | ⑧ 위험모델/감시 | TE 기준선 EWMA 후보 확정 · **칼만 소비 3채널(팩터·위기틸트·잔차IVOL) 전부 inert 확정(R21)** — 기전: 잔차 개별잡음이 추정기 차이를 wash-out(랭킹상관 0.999)·저베타=소형 음-스타일·현금 오버레이가 이미 de-risk | 위생 계층 — 성과 병목 아님 (칼만 연구 완결) | TE 기준선 교체(도훈, 저부담) · 칼만 β̂ 감시 배선(#56 — 유일 잔존 소비처) |
 | ⑨ 자본/운영 | 7월 비중 정정 완료 · recon 정합 | **즉시 실행 가능 확정 개선 1건 방치** | **★G2 현금 캐리(1억당 월 19만원) — 도훈 실주문만 남음** |
+
+**부기 (07-14 밤, R30 FQ-045 — ★cap-w 국소화 벽 최초 screening 관통, ②construction 갈래)**: R29 next_probe P1(cap-tier 국소화 소비) 직접 소비. **②construction 진전**: value 틸트를 non-mega tier(MID+OTHER, cap-rank 11+)에만 조건부 적용(mega=순수 base 유지)한 **B2**가 cap-w paired **2.378≥2.0 ∧ ΔIR 0.232≥0.05 = AND-게이트 PASS** — R29 unconditional(모든 tier value, paired 1.243 FAIL) 대비 **cap-w top-25 국소화 벽 최초 관통(screening)**. placebo p=0(null max 1.10)·lag1 2.473·paired-diff oos_v2 2.326 = 실신호·PIT-safe·cap-tier 국소화 방향 확증. B1(MID-only 11-30) 1.072 FAIL = OTHER(소형 31+)가 견인. **★단 자본 아님(screening-tier)**: holdout dIR **−0.022**·paired_HO 1.17·post2017 1.73·variant 절대 oos 0.452<0.5 = 최근/OOS marginal 감쇠(관통은 IS/pre-2017 견인)·wMID 0.062 소가중 증폭·metric_type=weighted_screen(forge 미검증). => **②construction이 ①재료 병목을 *screening 레벨*에서 부분 우회 가능함을 실증** — 단 graduation(자본) 벽은 recency 감쇠로 미검증(FQ-046 forge dossier로 판정). ①재료 지배 병목 결론은 *자본 기준* 불변(screening≠graduation). Branch A: pure-value EW 독립 페이퍼트래킹 3호 = P-pure active-corr 0.50 redundant로 부적격. value_quality_spread 0.175pct=늦은-사이클 리스크. L-AR-20260714_191441 / WT-D20260714_006.
 
 **부기 (07-14 저녁, R28+R29 — ★저장 패널 look-ahead 확정 + Z6 clean 재판정)**: R28이 저장 268m frozen 패널의 동월 vintage 의심을 적발 → R29가 **judge-급 확정**: 저장 패널 = 전기간 균일 same-month(off+1) = ~1개월 look-ahead(통제 부풀림 2.08×), **production 라이브 경로(T-1)는 PIT-clean·가치 성분도 T-1 clean(cor 1.0000)**. Z6 clean 재판정 = **config-scoped negative(cap-w)**: R27 paired 3.807의 상당분이 look-ahead-base 아티팩트(정확 재현 3.738 → clean 1.02~1.72<2.0), 단 **가치 신호는 진짜·clean**(ΔIR +0.153·clean variant 3.06→3.85·**EW-uni pt 6.39** ≫ cap-w) = cap-tier 국소화 벽 재등장(FQ-045 frontier). true 수치: clean base PORT_t 3.06/3.25(theta별)·저장 LA 5.24 = 2.08× 부풀림. **도훈 결정 재료: 현직 book pinned 6.130의 clean-basis 재산출(별도 judge 라운드)**. C06 pruning = 유지 확정(PIT-clean 0.85·live IC-가중 자가축소). dossier NO-GO. ①재료 귀속 "첫 균열" 표현은 철회 — clean 기준 갭 귀속 불변. 방법 교훈: placebo/lag는 base vintage를 못 잡음 — **vintage-swap 통제 + window-matched control이 실검거 2종**.
 
