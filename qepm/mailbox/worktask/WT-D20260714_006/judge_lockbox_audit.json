@@ -1,0 +1,32 @@
+{
+  "task_id": "WT-D20260714_006",
+  "agent": "judge",
+  "as_of": "2026-07-14",
+  "lockbox_cutoff_signal": "2023-12-22",
+  "lockbox_oos_start": "2024-01-01",
+  "measurement_source": "forge bt_result (contract period_returns/benchmark_returns); forge schedule includes walk-forward frozen extension to 2026-03-31 + frozen buy-and-hold to 2026-07-13 (deploy extension mandate satisfied)",
+  "lockbox_extension_status": "PRESENT (no OOS_CHART_INCOMPLETE: oos_zoom_chart.png covers post-cutoff period to 2026-07)",
+  "metrics": {
+    "lockbox_start": "2024-01-01",
+    "n_days_oos": 614,
+    "n_days_is": 4943,
+    "ir_is_daily": 0.9155,
+    "ir_oos_daily": -1.0906,
+    "oos_is_ratio": -1.1913,
+    "port_t_lockbox_nw3": -1.6715,
+    "port_t_preLB_nw3": 3.9572,
+    "sr_is": 0.9192,
+    "sr_oos": 0.9619,
+    "mdd_is": 0.5641,
+    "mdd_oos": 0.1795,
+    "active_dd_oos": 0.6512,
+    "cum_active_oos_arith": -0.567
+  },
+  "prelb_vs_lockbox": {
+    "sr_ratio_total": 1.0465,
+    "ir_ratio_active": -1.1913,
+    "diagnosis": "total-return SR retained (~0.99x, beta carry) but ACTIVE alpha inverted in lockbox (IR + -> -): style decay (value-vs-mega), overfitting-adjacent decay pattern, not market drawdown"
+  },
+  "harvey_lockbox_note": "5-spec Harvey regression on 31m lockbox window = low-info (SE +-0.7-0.8 per holdout rules); NW lag-3 daily active t reported instead",
+  "verdict": "LOCKBOX AUDIT COMPLETE - lockbox period alpha negative; graduation OOS gate binds"
+}

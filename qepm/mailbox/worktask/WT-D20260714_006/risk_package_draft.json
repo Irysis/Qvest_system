@@ -1,0 +1,278 @@
+{
+  "task_id": "WT-D20260714_006",
+  "frontier_id": "FQ-045",
+  "as_of_date": "2026-07-14",
+  "candidate": "B2_value_nonmega_conditional",
+  "incumbent": "STR_1715_on_M4_R05_noLayer4_PG2",
+  "pit_lockbox": "2023-12-22 strict",
+  "pin_tag": "R28_current_20260714",
+  "role_boundary": "risk-only. Sigma + tail + stress + crowding + style jindan only. alpha_vector unchanged, no weights (optimizer scope). RF-R1 exposure bound = measure/recommend only.",
+  "exposure_matrix_ref": "stage_artifacts/WT_D20260714_006/exposure_matrix.parquet",
+  "factor_covariance_ref": "stage_artifacts/WT_D20260714_006/factor_covariance.parquet",
+  "specific_risk_ref": "stage_artifacts/WT_D20260714_006/specific_risk.parquet",
+  "security_covariance_ref": "stage_artifacts/WT_D20260714_006/covariance.parquet",
+  "tail_risk_ref": "stage_artifacts/WT_D20260714_006/tail_risk.json",
+  "regime_correlation_ref": "stage_artifacts/WT_D20260714_006/regime_correlation.parquet",
+  "metric_type": "canonical_screen (risk diagnostics, monthly returns PIT<=2023-12-22). NOT admission-binding (forge authoritative).",
+  "selection_objective": "condition_number",
+  "covariance_recommendation": {
+    "recommended_estimator": "factor_model_BOmegaB_D",
+    "recommended_note": "5-factor (MKT/SMB/HML/WML/LOWVOL) B*Omega*B' + diag(D); sector-peer fallback for zero-history names. Only estimator yielding PSD well-conditioned 25x25 under strict PIT (1 name zero-history, 3 short-history).",
+    "condition_number": 43.4,
+    "psd": true,
+    "systematic_share": 0.851,
+    "specific_share": 0.149,
+    "ew_book_vol_annualized": 0.2212,
+    "ew_mean_market_beta": 1.108,
+    "method_shopping_log": {
+      "candidates_tried": 5,
+      "method_log": [
+        {
+          "name": "sample_pairwise_25names",
+          "condition": 115601858407.3,
+          "psd": false,
+          "selected": false,
+          "reason": "non-PSD (short/zero-history names) - unusable full-book"
+        },
+        {
+          "name": "sample_120m_22names_common",
+          "condition": 237.6,
+          "psd": true,
+          "selected": false,
+          "reason": "PSD on core subset but excludes 3-4 short-history names"
+        },
+        {
+          "name": "ledoit_wolf_hrp_core",
+          "condition": 1,
+          "psd": true,
+          "selected": false,
+          "reason": "degenerate over-shrink (cond=1.0, delta->1, loses correlation info)"
+        },
+        {
+          "name": "ledoit_wolf_const_corr",
+          "condition": 89.4,
+          "psd": true,
+          "selected": false,
+          "delta": 0.615,
+          "reason": "sensible return-based fallback for 22-name core; cannot cover zero-history LG CNS"
+        },
+        {
+          "name": "gerber_rmt",
+          "condition": 160023774808.39999,
+          "psd": false,
+          "selected": false,
+          "reason": "non-PSD (RMT eigen artifact on small sample); pd-floor still ill-conditioned"
+        },
+        {
+          "name": "factor_model_BOmegaB_D",
+          "condition": 43.4,
+          "psd": true,
+          "selected": true,
+          "reason": "PSD, best-conditioned, covers all 25 under PIT"
+        }
+      ],
+      "parallel_exec": false,
+      "n_workers": 1
+    }
+  },
+  "risk_summary": {
+    "top_common_risks": [
+      "Market 85.1% (systematic, dominant)",
+      "Specific/idiosyncratic 14.9%",
+      "Sector_Semiconductor 20% of names (HHI 0.104, n_eff 9.6)"
+    ],
+    "market_dominance_note": "RF-R1: market share 85%>40% = STRUCTURAL KR long-only beta floor (beta~1.11), not a fixable Sigma defect. 25 names give limited idio diversification. (memory: reference-orthogonality-gross-vs-active).",
+    "concentration": {
+      "sector_hhi": 0.104,
+      "n_effective_sectors": 9.62,
+      "largest_sector": "Semiconductor",
+      "largest_sector_share": 0.2,
+      "semiconductor_names": 5,
+      "note": "No sector >50%; ~9.6 effective sectors. Semiconductor cluster (5 names incl Samsung Elec + SK Hynix) = KR mega-cap semi regime exposure."
+    },
+    "crowding_flags": [],
+    "crowding_score_per_factor": [
+      {
+        "factor_name": "B2_value_nonmega",
+        "crowding_score": 0.4555,
+        "hhi_top": 0.6851,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 1,
+        "demand_elasticity_proxy": 0,
+        "alert": "normal"
+      },
+      {
+        "factor_name": "STR1715_base",
+        "crowding_score": 0.4558,
+        "hhi_top": 0.6859,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 1,
+        "demand_elasticity_proxy": 0,
+        "alert": "normal"
+      },
+      {
+        "factor_name": "value_z_standalone",
+        "crowding_score": 0.2782,
+        "hhi_top": 0.094,
+        "vol_concentration": 0,
+        "passive_overlap_proxy": 1,
+        "demand_elasticity_proxy": 0,
+        "alert": "normal"
+      }
+    ],
+    "crowding_note": "crowding sig_date=2023-12-22, top-25 by exposure. B2(0.456) ~ STR1715_base(0.456) IDENTICAL crowding fingerprint (redundancy corroboration). value_z_standalone lower (0.278). None >=0.75. hhi_top 0.685 (cap-w top-25 concentration) noteworthy but sub-threshold.",
+    "liquidity_flags": [],
+    "stress_tests": {
+      "market_down_5": -0.0554,
+      "gfc_2008": {
+        "realized_ew": -0.3952,
+        "beta_implied": -0.4636,
+        "coverage": 0.72,
+        "reliable": false,
+        "flag": "UNRELIABLE cov<85pct"
+      },
+      "eudebt_2011": {
+        "realized_ew": -0.2034,
+        "beta_implied": -0.1867,
+        "coverage": 0.76,
+        "reliable": false,
+        "flag": "UNRELIABLE cov<85pct"
+      },
+      "covid_2020": {
+        "realized_ew": -0.1726,
+        "beta_implied": -0.1857,
+        "coverage": 0.88,
+        "reliable": true
+      },
+      "rate_2022": {
+        "realized_ew": -0.2193,
+        "beta_implied": -0.2658,
+        "coverage": 0.96,
+        "reliable": true
+      }
+    }
+  },
+  "tail_summary": {
+    "headline_tail_tdc": 0.2518,
+    "tdc_threshold": 0.3,
+    "tdc_pass": true,
+    "pairwise_lower_tdc_mean": 0.2518,
+    "pairwise_lower_tdc_max": 0.6667,
+    "ew_book_vs_market_lower_tdc": 0.625,
+    "evt_gpd_xi": -0.038,
+    "evt_var95_monthly": -0.1148,
+    "hill_tail_alpha": 3.47,
+    "empirical_var5_monthly": -0.1145,
+    "empirical_es5_monthly": -0.1603
+  },
+  "style_comparison_vs_STR1715_vanilla": {
+    "signal_correlation_xsec_mean": 0.9308,
+    "signal_correlation_xsec_median": 0.9294,
+    "realized_return_correlation_gross": 0.9666,
+    "realized_return_correlation_active": 0.9804,
+    "n_months": 240,
+    "style_betas_active_vanilla": {
+      "(Intercept)": 0.007,
+      "SMB": 0.026,
+      "HML": 0.543,
+      "WML": 0.102,
+      "LOWVOL": -0.835,
+      "MKT": -0.958
+    },
+    "style_betas_active_B2": {
+      "(Intercept)": 0.009,
+      "SMB": -0.032,
+      "HML": 0.776,
+      "WML": 0.09,
+      "LOWVOL": -0.873,
+      "MKT": -0.946
+    },
+    "style_note": "B2 HML loading 0.78 vs vanilla 0.54 (value tilt present) but overall portfolios ~identical. MKT/LOWVOL multicollinear -> multivariate coeffs confounded; univariate mean beta 1.11.",
+    "redundancy_verdict": "B2 ~93pct signal-corr, ~97pct gross / ~98pct active realized-return-corr with incumbent STR_1715. Marginal risk-diversification benefit ~ZERO. Corroborates alpha holdout dIR -0.022 from risk angle."
+  },
+  "diagnostics": {
+    "condition_number": 43.4,
+    "shrinkage_used": true,
+    "shrinkage_method": "factor_model (structural) + eigen-PSD",
+    "factor_correlation_warnings": [],
+    "factor_correlation_max_abs": 0.46,
+    "tdc_summary": {
+      "mean_pairwise_lower": 0.2518,
+      "ew_book_vs_market": 0.625
+    },
+    "regime_correlation": {
+      "window": "last_120m_2014_2023",
+      "crisis": 0.19,
+      "normal": 0.135,
+      "uplift": 0.055
+    },
+    "regime_correlation_ref": "stage_artifacts/WT_D20260714_006/regime_correlation.parquet",
+    "data_limitations": [
+      "A064400 (LG CNS): IPO 2025-02, ZERO pre-lockbox history -> B/D via software-sector peers (proxy, lower confidence).",
+      "A377300(KakaoPay ~25m), A402340(SK Square ~24m), A290650(L&C Bio 61m): short pre-lockbox history -> factor betas robust but specific_var less precise.",
+      "GFC 2008 / EuDebt 2011 stress: coverage 72pct/76pct <85pct -> UNRELIABLE (partial-listing artifact); beta-implied extrapolation shown separately.",
+      "Style: MKT/SMB/HML/WML/LOWVOL from RAWDATA cross-section; RMW/CMA (FF5 profitability/investment) omitted (require fundamentals) - immaterial to redundancy conclusion (measured on realized returns)."
+    ],
+    "pit_note": "Sigma & all diagnostics on monthly returns Date<=2023-12-22 (strict lockbox). Crowding sig_date=2023-12-22. No post-lockbox returns in risk model.",
+    "stage_path_note": "Artifacts in stage_artifacts/WT_D20260714_006/ (live WT stage dir with alpha_scores) - task template suffix dir does not match this WT convention; refs point to live dir so optimizer finds them alongside alpha_package."
+  },
+  "red_flags": [
+    {
+      "id": "RF-R1",
+      "severity": "HIGH",
+      "triggered": true,
+      "detail": "top_common_risks[0] Market 85.1pct>40pct - STRUCTURAL long-only KR beta floor, not fixable via Sigma. Optimizer exposure-awareness note; not a STOP."
+    },
+    {
+      "id": "RF-R2",
+      "severity": "HIGH",
+      "triggered": false,
+      "detail": "condition_number 43.4<500 (factor model)"
+    },
+    {
+      "id": "RF-R3",
+      "severity": "MEDIUM",
+      "triggered": false,
+      "detail": "max crowding_score 0.456<0.75"
+    },
+    {
+      "id": "RF-R4",
+      "severity": "HIGH",
+      "triggered": false,
+      "detail": "market_down_5 -5.54pct > -8pct"
+    },
+    {
+      "id": "RF-R5",
+      "severity": "MEDIUM",
+      "triggered": false,
+      "detail": "0 factor pairs abs(cor)>0.8 (max 0.46 HML~SMB)"
+    }
+  ],
+  "challenge_flags": [
+    "RISK->ALPHA (supporting, not blocking): B2 realized active-return corr with incumbent = 0.98 + identical crowding fingerprint (0.4555 vs 0.4558) + signal cor 0.93 => book-marginal risk/diversification benefit ~0. Confirms screening-tier-not-capital from risk structure (independent of alpha holdout).",
+    "DATA: 1 holding (LG CNS) zero PIT history + 3 short-history -> risk estimates partly sector-peer-proxied; forge/optimizer treat their specific risk as lower-confidence.",
+    "STRUCTURAL: 85pct market variance share (RF-R1) = limited idiosyncratic diversification with 25 long-only names; expected, surfaced not overridden."
+  ],
+  "challenge_review": {
+    "from_agent": "risk",
+    "to_agent": "alpha",
+    "objection": true,
+    "objection_type": "corroborating_marginal_redundancy",
+    "targets_reviewed": [
+      "alpha_package",
+      "confidence_vector",
+      "factor_specs"
+    ],
+    "round": 1,
+    "summary": "No error in alpha_package; risk structure independently confirms negligible book-marginal (0.98 active-return corr with incumbent). Not a STOP - B2 verdict already screening-tier."
+  },
+  "status": "RISK_DONE",
+  "blocking": false,
+  "evaluation": {
+    "psd": true,
+    "cond_under_500": true,
+    "factor_coverage_over_80": true,
+    "stress_within_policy": true,
+    "note": "All eval criteria pass. Sigma well-posed. No Rule-2 STOP (stress within policy, no severe crowding/concentration)."
+  }
+}

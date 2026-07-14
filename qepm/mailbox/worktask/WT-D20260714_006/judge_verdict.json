@@ -1,0 +1,166 @@
+{
+  "task_id": "WT-D20260714_006",
+  "frontier_id": "FQ-045",
+  "agent": "judge",
+  "package_kind": "judge_verdict",
+  "as_of_date": "2026-07-14",
+  "wt_type": "discovery (consumption-form re-measurement)",
+  "candidate": "B2_value_nonmega_conditional",
+  "incumbent": "STR_1715_on_M4_R05_noLayer4_PG2",
+  "selection_type": "chain",
+  "hypothesis": "R30-B2: value 틸트를 non-mega tier(cap_rank>=11)에만 조건부 적용하면 cap-w book-marginal AND-게이트를 넘고 자본 graduation에 도달하는가",
+  "verdict": "FAIL",
+  "verdict_enum_note": "verdict='FAIL' = schema enum. GRADUATION_FAIL (HARD 3종 전패) -> next_state=JUDGE_FAILED. 자본 REJECT + screening-tier retain.",
+  "disposition": "REJECT (자본 편입 불가). incumbent RETAIN. screening-tier 소비만: screen_route=OVERLAY_CANDIDATE (value_z non-mega slotting feature 보존).",
+  "essence_grade": "B",
+  "essence_grade_note": "essence_score 권위(2026-05-31 mandate): Grade B = Component(PORT_t>=2.0 & net_IR>0.2, A 미달[OOS_ret fail, Calmar<0.64]). 블렌드 재료 표시일 뿐 자본 판정 아님 — graduation은 HARD 3종에서 FAIL. tail_review=TRUE (MDD 56.4% 비구조적: severe45 ep=4<15, severe55 ep=2<6).",
+  "forge_authoritative": {
+    "portfolio_alpha_t_nw_lag3": 2.7388,
+    "port_t_pvalue": 0.0062,
+    "net_sharpe_daily": 0.922,
+    "cagr": 0.2134,
+    "mdd_contract_daily": 0.5641,
+    "calmar_contract_daily": 0.3784,
+    "net_ir_active_daily": 0.5989,
+    "tracking_error": 0.1542,
+    "beta_vs_bm": 0.842,
+    "turnover_annual_round_trip": 8.902,
+    "n_months": 271,
+    "n_days": 5557,
+    "period": "2004-01-06 ~ 2026-07-13",
+    "bt_integrity": "WARNING (WARN 3 = forge lockbox-exempt 역할특성; FAIL 0; audit PASS)",
+    "citation_warning": "인용은 계약 daily 기준(MDD 56.4%/Calmar 0.378). forge_realized의 monthly 손계산치(MDD 44.7%/Calmar 0.465)는 SR provenance 병기용 — 판정 미사용."
+  },
+  "gates": {
+    "A_PIT": {
+      "status": "PASS",
+      "evidence": "C1~C15 재점검: alpha off0 T-1 clean(production_parity) + prereg sha256 bc3d2dfd + placebo p=0.000 + lag1 2.473(붕괴 없음 = 동월 누출 부재, C5) + risk Sigma strict lockbox(Date<=2023-12-22) + forge exec=t+1월 첫 거래일(same-day 없음) + BM 동일 calendar-YM 정합(realized_ym 사건 회피). bt_result audit FAIL 0 / WARN 3(lookahead_bias_checked·c15_factor_db_load_path·lookahead_detector_self_scan = forge가 weights.csv 소비자라 factor_db 직접 미로드 — 역할 특성, PIT는 alpha 단계서 강제됨). run_all.R 스캔: FLIP_SIGN/NEGATE 없음, top-N 재선택 없음.",
+      "hard_fail": false
+    },
+    "B_isolation": {
+      "status": "PASS_WITH_FLAG",
+      "evidence": "hash_audit start==end (3-package immutable). schedule fidelity: weights.csv AS-IS, 재선택/재생성 없음. lockbox_access_count_non_judge=0 (forge 전기간은 lockbox-scope 폐기 대상 — 규정 내). FLAG: alpha B1/B2 변형선택이 full-period paired AND-게이트(2024+ 겹침 포함) = chain 자격요건 ②(IS-only 선택) 부분 미충족 -> sweep 재분류 sensitivity 실행(Grade B 불변, DSR 0.729>=0.5 게이트로도 통과). 명시 holdout dIR -0.022는 선택 미사용·정직 보고."
+    },
+    "C_alpha_hurdle": {
+      "status": "FAIL",
+      "evidence": "PORT_t(forge NW lag-3, 권위) 2.7388 < 2.95 (Harvey-Liu-Zhu). net_IR 0.599 > 0.3 dep 충족이나 conjunctive FAIL. net>cost: active 14.4%>>비용 1.34%/yr — cost가 기각 사유 아님. rank-IC 계열은 advisory 미산출(canonical PORT_t 1급, v8.3 M1).",
+      "hard_fail": false
+    },
+    "D_crowding_stress": {
+      "status": "PASS",
+      "evidence": "crowding max 0.456<0.75(flag 0), B2 fingerprint==STR1715_base(0.4555/0.4558 — redundancy 방증). stress 생존 4/4: market_down_5 -5.54%(>-8% 정책), covid -17.3%/rate2022 -21.9%(reliable), gfc -39.5%/eudebt -20.3%(coverage<85% unreliable이나 -45% 이내)."
+    },
+    "E_concentration": {
+      "status": "PASS",
+      "evidence": "독립 재검증(weights.csv 268-date 전수): max_names 25<=25, long-only, max_w 0.04<=0.20, |sum_w-1|<=1e-3, HHI 0.04<=0.15.",
+      "hard_fail": false
+    },
+    "F_drift": {
+      "status": "FAIL",
+      "evidence": "oos_is_ratio: lockbox 실 OOS(judge 권위, 2024-01+ daily active) -1.191 / essence v2 splits -0.254{-0.23,-0.25,-0.45} — 양측 모두 <0.5 무조건 FAIL 영역(0.7 게이트). oos_fail_pattern=decay(value cohort 2017+ 감쇠 + 2024+ 스타일 역풍; 전략 고유 overfit보다 cohort-wide decay — screen_route 라우팅 사유)."
+    }
+  },
+  "graduation_hard_gates": {
+    "port_t_2.95": {
+      "value": 2.7388,
+      "pass": false,
+      "basis": "forge daily active NW lag-3 (계약)"
+    },
+    "oos_retention_0.7": {
+      "value": -1.1913,
+      "pass": false,
+      "basis": "judge lockbox override (2024-01+ 실측); v2 splits -0.254 병기 — <0.5 무조건 FAIL"
+    },
+    "calmar_0.64": {
+      "value": 0.3784,
+      "pass": false,
+      "basis": "계약 daily Calmar"
+    },
+    "result": "0/3 PASS — GRADUATION_FAIL"
+  },
+  "multi_objective_8": {
+    "net_sharpe": 0.922,
+    "cagr": 0.2134,
+    "mdd": 0.5641,
+    "calmar": 0.3784,
+    "portfolio_alpha_t": 2.7388,
+    "net_ir": 0.5989,
+    "oos_retention": -1.1913,
+    "dsr_n41": 0.729,
+    "turnover_yr": 8.902
+  },
+  "dsr_deflation": {
+    "n_trials_cumulative": 41,
+    "dsr_n41": 0.729,
+    "dsr_gate_applied": false,
+    "rationale": "selection_type=chain(가설주도 순차개선, 사전등록 sha256) — DSR HARD는 sweep 한정(§3). 진단 산출·기록 의무 이행.",
+    "sweep_sensitivity": "chain 자격 ②(IS-only) 부분 미충족 flag -> sweep 재분류 시에도 DSR 0.729>=0.5 통과, Grade B 불변.",
+    "method_shopping_penalty": "optimizer candidates_tried=8 x 0.05 = 0.40 -> DSR_adj 0.329<0.5 (진단 병기; optimizer 선택은 turnover HARD cap 제약 주도라 순수 성과-쇼핑 아님. REJECT는 HARD 3종에서 이미 확정 — verdict 무영향)."
+  },
+  "lockbox_audit": {
+    "ref": "qepm/mailbox/worktask/WT-D20260714_006/judge_lockbox_audit.json",
+    "extension_status": "PRESENT — forge가 walk-forward frozen extension(~2026-03) + frozen buy-and-hold(2026-04~07)로 deploy extension mandate 충족. oos_zoom_chart.png에 lockbox 기간 strategy line 연속(OOS_CHART_INCOMPLETE 아님).",
+    "prelb_vs_lockbox": {
+      "port_t_preLB": 3.9572,
+      "port_t_lockbox": -1.6715,
+      "ir_active_preLB": 0.9155,
+      "ir_active_lockbox": -1.0906,
+      "sr_total_preLB": 0.9192,
+      "sr_total_lockbox": 0.9619,
+      "mdd_lockbox": 0.1795,
+      "active_dd_lockbox": 0.6512,
+      "cum_active_lockbox_arith": -0.567
+    },
+    "diagnosis": "총수익 SR은 lockbox에서 유지(beta carry 0.96)되나 active 알파는 완전 역전 — 과적합-인접 decay(스타일 감쇠). Harvey 5-spec은 31m 저정보(SE ±0.7~0.8)라 NW lag-3 daily t로 대체."
+  },
+  "dual_basis_diag": {
+    "note": "v8.3 M2 의무 — cap-w HARD 판정 불변, 기각 전 EW-대비/cap-tier 병기.",
+    "diag_ew_universe": {
+      "ewuni_port_t": 6.588,
+      "ewuni_oos": 0.512,
+      "reading": "EW-유니버스 대비 full-period 생존 -> 'cap-w 벤치 구성 미스매치 가능' 라벨 병기. 단 EW-uni oos 0.512<0.7 + lockbox active 역전은 배포 basis 실측 — 기각 유지."
+    },
+    "diag_cap_tier": {
+      "mechanism": "MEGA=signal-dead, marginal 견인=OTHER(31+) 소형가치(wMID 0.062 소가중 tail 증폭)",
+      "source": "alpha_validation branch_B cells"
+    },
+    "screen_route": "OVERLAY_CANDIDATE (value_z non-mega slotting feature 보존; DPL_FEATURE 발급 중단 v8.3)",
+    "metric_type": "canonical_screen_diag (비바인딩)"
+  },
+  "book_marginal_context": {
+    "active_return_corr_vs_incumbent": 0.98,
+    "holdout_dIR": -0.022,
+    "reading": "risk_package 0.98 corr + crowding fingerprint 동일 + holdout dIR 음수 -> book-marginal ~0. ΔIR>=0.05 게이트 정식 산출 불요(governor 미인계 — graduation FAIL이 선행 차단)."
+  },
+  "role_honesty_audit": {
+    "alpha": "PASS — alpha-only, weights/cov 미산출, 정직 screening-tier 자기신고",
+    "risk": "PASS — Sigma/tail/crowding만, alpha 무수정, redundancy 방증 정직 보고",
+    "optimizer": "PASS — weights만, IS-overfit sizing 정직 배제(SOFTMAX 1.167 미채택), no_silent_override=true",
+    "forge": "PASS — pure function, hash immutable, divergence -0.545 기계적 분해 공개",
+    "self_synthesis": "권위 지표 전부 계약 경로(PerformanceAnalytics/build_bt_result). forge monthly 손계산은 provenance 병기 — 판정 미사용(citation_warning 참조).",
+    "axiom": "AX-000 정직보고(탐색중단 아님 — next_probe 3건 유지) / AX-001v2 해당없음(방어형 아님) / AX-002 하네스 내 실측만 사용 / AX-008 하단 참조"
+  },
+  "ax_008_triangulation": {
+    "source_1_forge": "PASS (실측 + challenge_note_forge.md 5건 자가검증, screening-tier 독립 확증)",
+    "source_2_self_adversarial": "PASS (judge challenge_note_judge.md 6건 — REJECT 전건 생존)",
+    "source_3_architect": "미소집 (REJECT disposition — 2/3 충족으로 비차단; ADMIT였다면 소집 의무)",
+    "status": "2/3 PASS"
+  },
+  "escalation": {
+    "q_lead_escalate": false,
+    "reason": "HIGH 0(<5), AX hard FAIL 0(<3), PIT C1 위반 0. INFO: screening positive 지식(cap-tier 국소화 확증)은 L-code로 원장 적립."
+  },
+  "next_state": "JUDGE_FAILED",
+  "recommendation_to_governor": "No admission — governor 인계 불요(graduation FAIL 선행 차단). incumbent STR_1715_on_M4_R05_noLayer4_PG2 RETAIN. B2 재시도는 forge 동일형태로는 저EV(lockbox active 역전 + book corr 0.98). 열린 프론티어: P2 tier-cut 민감도/OTHER 정제(IS-only), P3 recency 감쇠 판별 + monitoring trailing-12m paired tripwire, value_z m1형 OVERLAY_CANDIDATE feature 소비(frontier queue 등재 검토).",
+  "challenge_note": "challenge_note_judge.md",
+  "l_code_path": "stage_artifacts/l_code/judge_gate/l_code_WT-D20260714_006.json",
+  "charts": {
+    "equity_full": "stage_artifacts/WT_WT_D20260714_006_B2_value_nonmega_conditional/output/equity_curve.png",
+    "equity_oos": "stage_artifacts/WT_WT_D20260714_006_B2_value_nonmega_conditional/output/oos_zoom_chart.png",
+    "annual": "stage_artifacts/WT_WT_D20260714_006_B2_value_nonmega_conditional/output/annual_returns.png"
+  },
+  "pin_tag": "R28_current_20260714",
+  "cost_model_version": "v2.4_kr_retail_15bps",
+  "created_at": "2026-07-14",
+  "created_by": "judge"
+}

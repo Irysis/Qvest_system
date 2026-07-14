@@ -1,0 +1,48 @@
+{
+  "l_code": "L-JG-20260714_214259",
+  "strategy_id": "WT-D20260714_006",
+  "grade": "B",
+  "core_reference": "",
+  "lesson_text": "B2 non-mega value slotting (0.7*base+0.3*value*1[cap_rank>=11]) — screening AND-게이트 관통(paired 2.378)이 forge 실측(share-based, net 15bps)에서 자본 부적격으로 확정. HARD 3종 전패: PORT_t(NW lag-3) 2.739<2.95, oos_retention(lockbox 실 OOS 2024-01+) -1.191<0.5 무조건 FAIL, Calmar(계약 daily) 0.378<0.64. 지배 요인 = lockbox 기간 active 알파 완전 역전(pre-LB NW-t +3.96 -> lockbox -1.67, active IR +0.92 -> -1.09, 누적 active -56.7pp arith) = value-vs-mega 스타일 감쇠 실현 + incumbent와 active corr 0.98로 book-marginal ~0. 총수익 SR은 유지(IS 0.92 vs OOS 0.96, beta carry)되나 알파는 소멸 — 총SR 보존이 알파 보존을 의미하지 않음. essence Grade B(Component): PORT_t>=2.0 & net_IR 0.599>0.2, Sharpe 0.922, CAGR 21.3%. screening-tier retain: EW-uni PORT_t 6.588 생존 -> cap-w 벤치 구성 미스매치 가능 라벨 병기, screen_route=OVERLAY_CANDIDATE(value_z non-mega slotting feature 보존). DSR(N_trials=41 deflate) 0.729.",
+  "tags": "JUDGE_GATE",
+  "created_at": "2026-07-14",
+  "research_mode": "judge_gate",
+  "created_by": "emit:judge_gate",
+  "metric_type": "backtested",
+  "construction_type": "composite",
+  "mechanism_hypothesis": "value 리스크프리미엄은 non-mega tier에 국소(mega=signal-dead) — mega 제외 슬로팅으로 희석은 회피하나, 2024+ value-vs-mega 역풍이 cap-w 배포 active를 반전시킴(value_quality_spread 압축 0.175 = 되돌림 상당분 기소진 후행 관측 정합)",
+  "lcode_schema_version": 2,
+  "sharpe": 0.922,
+  "mdd_pct": 56.41,
+  "cagr_pct": 21.34,
+  "net_ir": 0.599,
+  "calmar": 0.3784,
+  "turnover_yr": 8.902,
+  "falsification_attempts": [
+    {
+      "test": "placebo value-shuffle N=40 (alpha 단계)",
+      "result": "survived",
+      "effect_retained": 2.378
+    },
+    {
+      "test": "lag1 signal shift stress (동월 look-ahead 판별)",
+      "result": "survived",
+      "effect_retained": 2.473
+    },
+    {
+      "test": "lockbox frozen deploy-extension OOS (2024-01+ 실측, judge 권위)",
+      "result": "falsified",
+      "effect_retained": -1.6715
+    },
+    {
+      "test": "sweep 재분류 DSR sensitivity (N_trials=41 deflate)",
+      "result": "survived",
+      "effect_retained": 0.729
+    }
+  ],
+  "oos_retention": -1.1913,
+  "oos_months": 31,
+  "portfolio_alpha_t": 2.7388,
+  "selection_type": "chain",
+  "record_type": "performance"
+}

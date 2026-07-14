@@ -1,0 +1,195 @@
+{
+  "task_id": "WT-D20260714_006",
+  "frontier_id": "FQ-045",
+  "as_of_date": "2026-07-14",
+  "candidate": "B2_value_nonmega_conditional",
+  "incumbent": "STR_1715_on_M4_R05_noLayer4_PG2",
+  "pit_lockbox": "2023-12-22 strict (signal-construction cutoff; post-lockbox = genuine OOS/holdout, IS_END 2024-06-30)",
+  "pin_tag": "R28_current_20260714",
+  "role_boundary": "optimizer-only. weights 결정만. alpha_vector/score_B2_nonmega 재해석 금지, Sigma 재정의 금지. book_state/05_Production/outputs 무변경.",
+
+  "method_selected": "EW_top25_bandbuffer_B40",
+  "method_selected_desc": "동일가중(1/25) top-25 by score_B2_nonmega, band-buffer(hysteresis) exit-rank 40 for turnover control. 알파 edge = selection(Grinold breadth)이므로 sizing이 아닌 EW로 표현. cap-w는 알파 screening 규격(비-배포).",
+  "selection_objective": "net_ir",
+  "selection_qualifiers": [
+    "gate1_hard_feasibility: turnover_annual <= 11.0 round-trip (band-buffer 필수 — 모든 naive method 12.2~14.6 위반)",
+    "gate2_deployment_expression: 가중이 non-mega value 알파를 표현해야 함 (cap-w는 상위알파 A073240@0.5% + mega 3종 60% = 알파 반전 = 배포 부적격, §6 closet-index)",
+    "gate3_no_IS_overfit (Cycle2/DeMiguel): 전기간 net_IR 높아도 holdout paired 음수 + oos<0.25면 IS-overfit로 disqualify (SOFTMAX/LINTILT/RANK 해당)",
+    "among_feasible: net_ir 순위 EW_buf30(1.120) > EW_buf40(1.065). buf40 채택 근거 = turnover 안전마진(8.91 vs 10.81, 후자 hard cap 대비 1.7% headroom=운영 breach 리스크) + oos 우위(0.181 vs 0.173), net_IR 희생 0.055 = 미미"
+  ],
+  "selection_type": "chain (알파 B2 signal 고정; band-buffer B = optimizer 구현 knob, primary driver = HARD turnover 제약. capital 주장 아님 → DSR sweep 게이트 부적용, 단 n_config 기록)",
+
+  "target_weights": {
+    "A073240": 0.04, "A005930": 0.04, "A032190": 0.04, "A006800": 0.04, "A290650": 0.04,
+    "A010950": 0.04, "A002380": 0.04, "A006650": 0.04, "A071970": 0.04, "A006730": 0.04,
+    "A000660": 0.04, "A000880": 0.04, "A377300": 0.04, "A402340": 0.04, "A034230": 0.04,
+    "A050890": 0.04, "A036570": 0.04, "A240810": 0.04, "A028670": 0.04, "A084370": 0.04,
+    "A033780": 0.04, "A006400": 0.04, "A064400": 0.04, "A078930": 0.04, "A214370": 0.04
+  },
+  "target_weights_note": "current as_of 배포 target = alpha_vector 25종 fresh top-25 EW(0.04). 초기 배포 시 band-buffer 무영향(직전 보유 없음). weights.csv walk-forward schedule은 band-buffer 적용(마지막 date 2026-03-31 holdings 21/25가 이 25종과 일치; 4종은 hysteresis로 top-40 legacy 보유).",
+  "active_weights_note": "제약 Σw=1 (absolute long-only) — active(vs KOSPI200) Σw=0 오버레이 아님. 벤치 구성종목 weight가 optimizer 입력에 없어 종목별 active weight 정밀 미산출. 벤치-상대 노출은 risk_package style_betas(MKT 0.946/HML 0.776) 참조.",
+
+  "n_names": 25,
+  "sum_weights": 1.0,
+  "max_weight": 0.04,
+  "min_weight": 0.04,
+  "hhi": 0.04,
+  "min_names_enforced": true,
+  "long_only": true,
+  "weight_bounds": [0, 0.20],
+  "weight_bounds_used_max": 0.04,
+
+  "expected_active_return": 0.1441,
+  "expected_tracking_error": 0.1353,
+  "expected_information_ratio": 1.065,
+  "expected_active_return_note": "walk-forward realized net active (arith ann). metric_type=canonical_screen (weighted_screen_bt contract, NOT forge-authoritative). 전기간 값 — 최근 감쇠는 subperiod 참조.",
+
+  "turnover": 8.914,
+  "turnover_unit": "annual round-trip (mean(sum|w_t - w_{t-1}|) * 12) — constraint_defaults turnover_hard_fail_annual 11.0과 동일 규약",
+  "turnover_cap": 11.0,
+  "turnover_within_cap": true,
+  "turnover_headroom": 0.19,
+  "estimated_cost": 0.01337,
+  "estimated_cost_note": "TO 8.914 * 15bps one-way delta (cost_model_version v2.4_kr_retail_15bps). 연 1.34%. net active 14.41% >> cost → net>cost 입증.",
+
+  "cvar_constraint": {
+    "measure": "monthly ES(95%) / CVaR 상한",
+    "upper_bound_monthly": 0.18,
+    "portfolio_es5_monthly_parametric": 0.1317,
+    "portfolio_es5_monthly_empirical_ew": 0.1603,
+    "evt_var95_monthly": -0.1148,
+    "hill_tail_alpha": 3.47,
+    "status": "within_bound (not binding)",
+    "note": "상한 0.18 = risk_package empirical EW ES5 0.1603 + headroom. 현 EW 포트 ES5 param 0.132/empirical 0.160 < 0.18. long-only 25종 top-tail은 시장 β(0.85 systematic share)에 지배 — Sigma로 완화 불가(RF-R1 구조적)."
+  },
+
+  "binding_constraints": ["turnover_cap_11 (band-buffer 강제 — 모든 naive method 위반, 선택된 EW_buf40 8.91로 통과)"],
+  "non_binding_constraints": ["max_names_25 (=25)", "weight_bounds_0_0.20 (max 0.04)", "sum_w_1", "long_only", "liquidity_2e8 (universe 필터 통과)", "cvar_0.18 (ES5 0.13<0.18)"],
+
+  "infeasibility_report": {
+    "weight_feasibility": "FEASIBLE — 25종/Σw=1/[0,0.20]/long-only/TO<=11 전부 충족 (weight 최적화 자체는 해 존재).",
+    "sr_2_5_target": {
+      "reachable": false,
+      "candidate_bare_net_active_sr": 1.065,
+      "sr_overlay_assumed": 1.8,
+      "sr_overlay_basis": "ESTIMATE (측정 아님) — 실제 PG2 overlay(AR_on_M4_R05) β-schedule이 optimizer 입력에 없음. 근거: 후보가 incumbent와 realized active-return corr 0.98(risk_package) → overlay가 near-identical 작동. incumbent+overlay 실현 SR ~1.84(PIT-정정 후, memory project-riskoverlay). 98% corr → 후보+overlay ~1.8.",
+      "reason": "① 후보 최근 24m active SR = -0.178 (2025 active -13.7%) = value-vs-mega STYLE rotation 감쇠. PG2 overlay는 MARKET 국면 타이밍이지 style-rotation 헤지 아님 → 최근 감쇠 구제 불가. ② book-marginal ~0 (98% corr, holdout dIR -0.022) → book에 추가해도 book SR을 incumbent ~1.84 위로 못 올림. ∴ SR 2.5 도달 불가.",
+      "honest_ax000": "SR 2.5는 이 후보(단독/오버레이/book-marginal 어느 경로로도)에서 도달 불가. 실측 정직 보고 — 탐색 중단 근거 아님(§AX-000)."
+    },
+    "graduation_assessment": {
+      "capital_grade": false,
+      "verdict": "SCREENING-TIER (자본 부적격) — 모든 weighting에서 oos_retention < 0.5 (§3 무조건 FAIL 영역). alpha/risk 정직 prior 최종 확증.",
+      "oos_retention_by_method": {"EW_buf40": 0.181, "EW_nobuf": 0.121, "CAPW_buf40": 0.648, "CAPW_nobuf": 0.452, "LINTILT": 0.192, "SOFTMAX": 0.243},
+      "graduation_hard_gates_vs_selected_EW_buf40": {
+        "port_t_2.95": {"value": 4.665, "pass": true, "note": "전기간 — 단 IS/pre-2015 견인"},
+        "oos_retention_0.7": {"value": 0.181, "pass": false, "note": "HARD FAIL (<0.5 무조건 FAIL)"},
+        "calmar_0.64": {"value": null, "pass": null, "note": "forge build_bt_result가 authoritative 산출"}
+      },
+      "caveat_capw_oos_0.648": "CAPW_buf40만 oos [0.5,0.7) band 진입(0.648)이나 (a) 배포 부적격(mega 60%, 알파 반전 §6), (b) band 조건부 PASS의 book-marginal |cor|<0.30 증거 실패(|corr|=0.98). → CAPW oos는 mega-cap-beta artifact(closet-index)이지 알파 아님.",
+      "suggested_resolution": "자본 편입 불가. screen-tier 소비만: value_z m1형 OVERLAY_CANDIDATE feature 보존 또는 dead-라벨. book-marginal ~0 → incumbent 대체/추가 불가. (No silent override — 제약 완화 아닌 정직 판정.)"
+    },
+    "no_silent_override": true
+  },
+
+  "method_comparison": {
+    "_basis": "walk-forward realized, metric_type=canonical_screen (weighted_screen_bt contract, build_benchmark_compare 경유 NW lag-3). NOT forge-authoritative.",
+    "_paired_baseline": "clean base_z cap-w top-25 (0_stored_S7 production-parity). paired = variant active - base active (동일 weighting).",
+    "walk_forward_nobuffer": {
+      "EW":      {"port_t": 4.668, "net_ir": 1.074, "net_sr": 1.074, "turnover": 12.24, "to_pass": false, "paired_full": 1.873, "paired_ho": -2.159, "post2017_t": 0.24, "oos": 0.121},
+      "CAPW":    {"port_t": 4.234, "net_ir": 0.895, "net_sr": 0.895, "turnover": 14.02, "to_pass": false, "paired_full": 2.378, "paired_ho": 1.170, "post2017_t": 1.73, "oos": 0.452, "note": "알파 AND-게이트 screening 규격 (paired 2.378 재현·검증)"},
+      "LINTILT": {"port_t": 5.175, "net_ir": 1.141, "net_sr": 1.141, "turnover": 14.05, "to_pass": false, "paired_full": 2.752, "paired_ho": -1.281, "post2017_t": 0.72, "oos": 0.192, "note": "IS-overfit (holdout 음수)"},
+      "RANK":    {"port_t": 4.992, "net_ir": 1.110, "net_sr": 1.110, "turnover": 13.41, "to_pass": false, "paired_full": 2.358, "paired_ho": -1.550, "post2017_t": 0.60, "oos": 0.192, "note": "IS-overfit"},
+      "SOFTMAX": {"port_t": 5.330, "net_ir": 1.167, "net_sr": 1.167, "turnover": 14.59, "to_pass": false, "paired_full": 3.104, "paired_ho": -0.919, "post2017_t": 0.94, "oos": 0.243, "note": "전기간 net_IR 최고이나 IS-overfit(holdout 음수)+turnover 위반 = disqualify"}
+    },
+    "band_buffer_turnover_controlled": {
+      "EW_buf30":   {"port_t": 4.93, "net_ir": 1.120, "turnover": 10.81, "to_pass": true, "paired_ho": -2.03, "oos": 0.173},
+      "EW_buf35":   {"port_t": 4.65, "net_ir": 1.067, "turnover": 9.77,  "to_pass": true, "paired_ho": -2.10, "oos": 0.162},
+      "EW_buf40":   {"port_t": 4.665,"net_ir": 1.065, "turnover": 8.914, "to_pass": true, "paired_ho": -2.01, "oos": 0.181, "selected": true, "alpha_ann": 0.152, "te_ann": 0.135},
+      "EW_buf45":   {"port_t": 4.60, "net_ir": 1.055, "turnover": 8.11,  "to_pass": true},
+      "CAPW_buf35": {"port_t": 4.23, "net_ir": 0.911, "turnover": 11.74, "to_pass": false, "paired_ho": 2.16, "oos": 0.598},
+      "CAPW_buf40": {"port_t": 3.77, "net_ir": 0.835, "turnover": 10.76, "to_pass": true, "paired_ho": 2.02, "oos": 0.648, "note": "oos band 진입이나 배포 부적격(mega 60%·알파 반전) + book-marginal |cor|0.98 → 미채택"}
+    },
+    "snapshot_ex_ante_risk_based": {
+      "_basis": "current 25종 Sigma(factor_model BOmegaB'+D, cond 43.4) + alpha z. metric_type=estimated (ex-ante, 상대비교용). score_per_risk=w'a/sqrt(w'Sw), vol_ann=sqrt(w'Sw*12).",
+      "EW":     {"vol_ann": 0.2212, "score_per_risk": 20.74, "hhi": 0.040, "neff": 25.0, "maxw": 0.040, "es5_m": 0.1317},
+      "CAPW":   {"vol_ann": 0.2299, "score_per_risk": 20.68, "hhi": 0.138, "neff": 7.2,  "maxw": 0.200, "es5_m": 0.1369},
+      "MinVar": {"vol_ann": 0.1518, "score_per_risk": 30.31, "hhi": 0.117, "neff": 8.5,  "maxw": 0.200, "es5_m": 0.0904, "note": "최저 vol이나 알파 무시(min-risk)"},
+      "MVO_l2_l10": {"vol_ann": 0.2744, "score_per_risk": 25.95, "hhi": 0.200, "neff": 5.0, "maxw": 0.200, "es5_m": 0.1634, "note": "5종 코너해(hhi 0.20 상한 붙음) — breadth 파괴, single-cluster 알파 희석(HRP-settled 교훈)"},
+      "ERC":    {"vol_ann": 0.1849, "score_per_risk": 24.02, "hhi": 0.055, "neff": 18.3, "maxw": 0.149, "es5_m": 0.1101},
+      "MaxDiv": {"vol_ann": 0.1730, "score_per_risk": 24.65, "hhi": 0.096, "neff": 10.4, "maxw": 0.200, "es5_m": 0.1030},
+      "LinTilt":{"vol_ann": 0.2360, "score_per_risk": 24.93, "hhi": 0.068, "neff": 14.6, "maxw": 0.150, "es5_m": 0.1405}
+    },
+    "ew_vs_sizing_verdict": "Cycle2/DeMiguel 확증: 전기간 net_IR을 올리는 sizing(SOFTMAX/LINTILT/RANK)은 전부 holdout paired 음수 = IS-overfit. risk-based(MVO 5종 코너해/ERC/MaxDiv)는 single-cluster(85% market) book서 breadth 파괴·알파 희석(HRP NO-GO 교훈 재현). EW selection이 알파 edge를 표현하는 정직한 배포. 즉 sizing은 이 25종 broad 알파의 net SR을 robust하게 개선하지 못함."
+  },
+
+  "method_shopping_log": {
+    "candidates_tried": 8,
+    "note": "8 weighting family (EW/CAPW/LinTilt/Rank/Softmax/ERC/MaxDiv/MinVar-MVO) + turnover-control band-buffer(EW/CAPW × B∈{30,35,40,45} = 8 config, 선택 family의 구현 knob). R2-C 상한 준수 — family 기준 8.",
+    "method_log": [
+      {"name": "EW_top25_bandbuffer_B40", "net_ir": 1.065, "turnover": 8.914, "oos": 0.181, "selected": true},
+      {"name": "EW_top25_bandbuffer_B30", "net_ir": 1.120, "turnover": 10.81, "selected": false, "reason": "turnover headroom 1.7% (운영 breach 리스크) + oos 0.173<0.181"},
+      {"name": "CAPW_bandbuffer_B40", "net_ir": 0.835, "turnover": 10.76, "oos": 0.648, "selected": false, "reason": "배포 부적격(mega 60%, 알파 반전 §6) — screening 규격만"},
+      {"name": "SOFTMAX_tilt", "net_ir": 1.167, "turnover": 14.59, "selected": false, "reason": "IS-overfit(holdout -0.92)+turnover 위반"},
+      {"name": "LINTILT", "net_ir": 1.141, "turnover": 14.05, "selected": false, "reason": "IS-overfit(holdout -1.28)+turnover 위반"},
+      {"name": "RANK_tilt", "net_ir": 1.110, "turnover": 13.41, "selected": false, "reason": "IS-overfit+turnover 위반"},
+      {"name": "ERC", "net_ir": null, "selected": false, "reason": "snapshot ex-ante only; single-cluster 알파 희석"},
+      {"name": "MVO_MaxDiv_MinVar", "net_ir": null, "selected": false, "reason": "snapshot; 코너해/breadth 파괴 or 알파 무시"}
+    ],
+    "parallel_exec": false,
+    "n_workers": 1
+  },
+
+  "hurdle_result": {
+    "method_basis_label": "optimizer_walk_forward_simulation",
+    "production_grade": false,
+    "production_grade_note": "canonical_screen(weighted_screen_bt) 실측 — forge build_bt_result가 admission-authoritative. 본 수치는 PG2 admission 부적격 basis (판정 참고용). schedule은 268 monthly walk-forward.",
+    "port_t_nw_lag3": 4.665,
+    "net_ir": 1.065,
+    "oos_retention_v2_approx": 0.181,
+    "turnover_annual": 8.914
+  },
+
+  "schedule": {
+    "unique_dates": 268,
+    "sig_dates_count": 268,
+    "schedule_density_ratio": 1.0,
+    "density_pass": true,
+    "date_range": "2003-12-30 ~ 2026-03-31",
+    "cadence": "monthly (매 sig_date rebalance, band-buffer hysteresis)",
+    "deploy_cutoff": "open-ended (train/signal cutoff 2023-12-22, schedule는 panel end 2026-03-31까지 frozen extension — forge OOS 측정용). weights.csv as_of_date column 시계열.",
+    "note": "RF-O9 walk-forward 충족 — weights.csv 다중 as_of_date 시계열. §9 schedule density 1.0 >= 0.95. TOphi skip 없음(band-buffer는 skip 아닌 hysteresis, 전 sig_date 보유)."
+  },
+
+  "red_flags": [
+    {"id": "RF-O1", "severity": "HIGH", "triggered": false, "detail": "binding_constraints 1개 (turnover) < K/2=12.5"},
+    {"id": "RF-O2", "severity": "HIGH", "triggered": false, "detail": "expected_active_return 14.4% >> cost*2 (2.7%). 단 최근 감쇠 caveat."},
+    {"id": "RF-O3", "severity": "MEDIUM", "triggered": false, "detail": "turnover 8.91 >> 0.02"},
+    {"id": "RF-O4", "severity": "HIGH", "triggered": false, "detail": "dual 급증 없음 (EW box QP, corner 아님)"},
+    {"id": "RF-O5", "severity": "CRITICAL", "triggered": false, "detail": "n_names 25 <= 25 ✓"},
+    {"id": "RF-O6", "severity": "CRITICAL", "triggered": false, "detail": "|sum(w)-1| = 1e-6 < 0.001 ✓"},
+    {"id": "RF-O7", "severity": "CRITICAL", "triggered": false, "detail": "all w=0.04 in [0,0.20] ✓"},
+    {"id": "RF-O9", "severity": "HARD", "triggered": false, "detail": "walk-forward 268-date 시계열 schedule ✓ (single-snapshot 아님)"}
+  ],
+
+  "rf_r1_response": {
+    "risk_flag": "RF-R1 market share 85.1% (systematic), beta ~1.11 = KR long-only 구조적 β floor",
+    "optimizer_action": "완화 불가(Sigma defect 아님, 구조적). EW로 25종 최대 분산(neff 25) — MinVar(vol 0.152)로 vol은 낮출 수 있으나 알파 무시. 배포는 알파 표현 우선(EW). 벤치-상대 β는 overlay(risk 단계 밖) 소관.",
+    "exposure_before_after": "EW 전후 β_market ~1.11 유지(long-only floor). MinVar 채택 시 vol 0.221→0.152이나 score_per_risk 왜곡·breadth 파괴 → 미채택."
+  },
+
+  "explanation": {
+    "top_overweights": ["25종 동일가중 0.04 (EW) — 알파 edge=selection이므로 종목별 편차 없음"],
+    "top_by_alpha": ["A073240 (α2.77, 최고확신)", "A005930 삼성전자 (α2.02)", "A032190 (α2.02)"],
+    "main_tradeoffs": [
+      "cap-w(알파 screening 규격) 대신 EW 배포 — cap-w는 최고알파 A073240@0.5% + mega 3종 60% = 알파 반전(closet-index §6). EW가 non-mega value 알파를 표현.",
+      "band-buffer B=40 = turnover 8.91로 hard cap 11.0 통과 (naive 12~14.6 위반). 알파 지연 반영 소폭 희생(PORT_t 4.67 vs no-buf 4.67 ≈ 동일).",
+      "sizing tilt(SOFTMAX net_IR 1.167)는 전기간만 우세, holdout 음수 = IS-overfit → 정직 배제(Cycle2)."
+    ],
+    "honest_headline": "배포가능·제약충족 weight는 존재하나, 후보는 SCREENING-TIER(자본 부적격). 전기간 IR 1.065는 pre-2015 견인, 최근 24m active SR -0.178(2025 -13.7%). oos_retention 0.181(<0.5 무조건 FAIL). book-marginal ~0(98% corr). SR 2.5 도달 불가."
+  },
+
+  "constraints_ok": true,
+  "blocking": false,
+  "status": "OPTIMIZER_DONE",
+  "next_step": "Forge integrate → run_all.R build_bt_result(authoritative) → Judge. Forge가 weights.csv(268-date EW_buf40) + alpha_scores + covariance 소비."
+}

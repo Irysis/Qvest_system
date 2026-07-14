@@ -1,0 +1,125 @@
+{
+  "task_id": "WT-D20260714_006",
+  "frontier_id": "FQ-045",
+  "as_of_date": "2026-07-14",
+  "candidate": "B2_value_nonmega_conditional",
+  "incumbent": "STR_1715_on_M4_R05_noLayer4_PG2",
+  "agent": "forge",
+  "role_boundary": "pure_function (weights.csv AS-IS; no target_weights/cov/alpha mod)",
+  "pin_tag": "R28_current_20260714",
+  "hash_audit": {
+    "start": {
+      "alpha": "b42be616c7eb9e8b2990006594977e29",
+      "risk": "c12a880b4b474521bf0c5df3b6737b21",
+      "opt": "0d2699006dea118dee604c7f19401ca0"
+    },
+    "end": {
+      "alpha": "b42be616c7eb9e8b2990006594977e29",
+      "risk": "c12a880b4b474521bf0c5df3b6737b21",
+      "opt": "0d2699006dea118dee604c7f19401ca0"
+    },
+    "immutable": true
+  },
+  "bt_result_ref": "stage_artifacts/WT_WT_D20260714_006_B2_value_nonmega_conditional/bt_result.rds",
+  "bt_integrity_status": "WARNING",
+  "audit_bt_result": "PASS",
+  "sr_realized_share_based": 0.9293,
+  "sr_factor_engine_continuous": 1.065,
+  "sr_lockbox_daily_harness": {},
+  "measurement_basis_primary": "forge_realized_share_based",
+  "sr_provenance_note": "sr_realized_share_based = monthly TOTAL-return Sharpe from share-based daily NAV (net 15bps). sr_factor_engine_continuous = optimizer canonical_screen net_ir 1.065 (ACTIVE-basis, continuous monthly aggregation). BASIS DIFFERS (total-SR vs active-IR): the like-for-like comparison is forge active-IR vs factor_engine active-IR below (divergence_factor_engine_vs_realized_pp).",
+  "forge_realized": {
+    "sr_total_monthly": 0.9293,
+    "sr_total_daily_ann": 0.922,
+    "ir_active_monthly": 0.5199,
+    "tracking_error": 0.1694,
+    "cagr": 0.2076,
+    "mdd": 0.4467,
+    "calmar": 0.4647,
+    "calmar_contract_daily": 0.3784,
+    "mdd_contract_daily": 0.5641,
+    "sharpe_contract_daily": 0.922,
+    "portfolio_alpha_t_nw_lag3": 2.7388,
+    "turnover_annual_round_trip": 8.902,
+    "turnover_cap": 11,
+    "turnover_within_cap": true,
+    "n_months": 271,
+    "n_days": 5557,
+    "period": "2004-01-06 ~ 2026-07-13",
+    "ir_active_monthly_matched_period": 0.7413,
+    "active_te_realized": 0.1694
+  },
+  "portfolio_alpha_t_nw_lag3": 2.7388,
+  "subperiods": {
+    "sr_is_pre2024": 0.9322,
+    "sr_oos_2024plus": 0.9209,
+    "ir_is_pre2024": 0.9809,
+    "ir_oos_2024plus": -0.8241,
+    "sr_post2017": 0.5388
+  },
+  "divergence_factor_engine_vs_realized_pp": -0.5451,
+  "vs_factor_engine": {
+    "factor_engine_metric": "canonical_screen net_ir (active, monthly)",
+    "factor_engine_value": 1.065,
+    "forge_realized_active_ir": 0.5199,
+    "divergence": -0.5451,
+    "diagnosis": "SIGNIFICANT_DRAG",
+    "note": "Schedule Fidelity: weights.csv 268-date band-buffer EW consumed AS-IS; no alpha_scores top-N re-selection, no schedule regeneration. Divergence reflects share-based floor(shares)+daily-drift+delta-cost vs continuous weighted_screen aggregation.",
+    "divergence_decomposition": {
+      "full_period_ir_active": 0.5199,
+      "matched_period_ir_active": 0.7413,
+      "matched_period_note": "same window as factor_engine (<=2026-03, 267m): forge share-based IR 0.741 vs factor_engine 1.065 -> -0.324 (share-based floor(shares)+daily-path+delta-cost + realized TE 0.169 vs optimizer expected 0.135; continuous weighted_screen understates active vol).",
+      "deploy_extension_drag": {
+        "months": 4,
+        "window": "2026-04 ~ 2026-07 frozen buy-and-hold",
+        "mean_active_monthly": -0.0942,
+        "note": "deploy-extension (mandated frozen OOS) pulls full-period IR 0.741 -> 0.520; value-vs-mega decay still active/severe in 2026."
+      },
+      "oos_2024plus_ir_active": -0.8241,
+      "is_pre2024_ir_active": 0.9809,
+      "interpretation": "Divergence is MECHANICAL (share-based realized + mandated deploy-extension), NOT fabrication: schedule consumed AS-IS (fidelity intact, no re-selection). Full-period -0.545 = SIGNIFICANT_DRAG (< 0.6 fabrication threshold). Forge share-based measurement INDEPENDENTLY CONFIRMS the screening-tier verdict and shows realized OOS (IR -0.82) is worse than the IS-heavy factor_engine 1.065 implied."
+    }
+  },
+  "pg2_overlay_scenario": {
+    "computed": true,
+    "sr_overlay": 1.1134,
+    "cagr_overlay": 0.2428,
+    "mdd_overlay": 0.3543,
+    "metric_type": "estimated",
+    "optimizer_estimate": 1.8,
+    "optimizer_estimate_basis": "0.98 active-return corr w/ incumbent -> near-identical overlay; ~1.84 PG2 realized",
+    "caveat": "overlay is MARKET-regime timing; candidate recent decay is STYLE (value-vs-mega) rotation -> overlay does not hedge it. book-marginal ~0 (98% corr). Not forge-authoritative.",
+    "note": "transparent regime overlay: beta{BULL/NORMAL=1.0,CAUTION=0.7,CRISIS=0.4} x candidate monthly net ret, regime from carrier decision_date (prior-month PIT). metric_type=estimated (exact production beta ladder may differ; not forge-authoritative). regime schedule coverage=269 months."
+  },
+  "graduation_context": {
+    "capital_grade": false,
+    "verdict": "SCREENING-TIER (자본 부적격) — forge realized confirms alpha/optimizer honest prior",
+    "oos_retention_optimizer": 0.181,
+    "port_t_2.95_gate": {
+      "value": 2.7388,
+      "basis": "forge daily active NW lag-3"
+    },
+    "calmar_0.64_gate": {
+      "value": 0.3784,
+      "pass": false
+    },
+    "honest_headline": "Forge realized (share-based, net 15bps) reproduces the screening-tier prior: full-period IR present but recent OOS decay + book-marginal ~0. SR 2.5 unreachable. AX-000 honest report — not a search-stop."
+  },
+  "charts": {
+    "equity_curve": "output/equity_curve.png",
+    "annual_returns": "output/annual_returns.png",
+    "oos_zoom": "output/oos_zoom_chart.png"
+  },
+  "schedule_fidelity": {
+    "weights_source": "stage_artifacts/WT_D20260714_006/weights.csv",
+    "consumed_as_is": true,
+    "n_sig_dates": 268,
+    "reselection_from_alpha_scores": false,
+    "schedule_regenerated": false,
+    "cadence": "monthly walk-forward, band-buffer hysteresis (optimizer EW_buf40)"
+  },
+  "cost_model_version": "v2.4_kr_retail_15bps",
+  "status": "FORGE_DONE",
+  "blocking": false,
+  "next_step": "Judge Gate 0-18 + PIT verification"
+}
