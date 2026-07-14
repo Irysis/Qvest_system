@@ -70,8 +70,12 @@ wf("crawl: %s~%s (%d개월, gap=%d) | complete(>=%s)=%s", ck_yms[1], ck_yms[leng
 SCORE_P <- file.path(OUT, "insider_factor_scores.parquet")
 PANELI_P <- file.path(OUT, "insider_factor_deployzone_active.parquet")
 META_P <- file.path(OUT, "insider_panel_meta.json")
-need_build <- FULL_MODE || nzchar(Sys.getenv("RAMP_R9_FORCE_PANEL","")) ||
-              !file.exists(SCORE_P) || !file.exists(PANELI_P)
+## [FQ-019 fix 2026-07-15] FULL 강제 재빌드 제거 — 유효 패널(partial_data=FALSE·pit_ok) 재사용.
+##   재빌드는 RAMP_R9_FORCE_PANEL 명시 시에만. 근거: (1) 2026-07-14 halt는 source() 재빌드가 log con을
+##   clobber한 것 (2) 패널은 이미 완결 크롤(200501~202606 gap=0)로 빌드 완료. 무결성은 아래 meta 검증
+##   (pit_ok / partial_data)이 fail-closed 담보. 도훈 지시: "재빌드 금지 — 재사용".
+need_build <- nzchar(Sys.getenv("RAMP_R9_FORCE_PANEL","")) ||
+              !file.exists(SCORE_P) || !file.exists(PANELI_P) || !file.exists(META_P)
 if (need_build) {
   w("[R9] insider 패널 (재)빌드: build_insider_factor_panel.R")
   source("02_Infrastructure/ramp/build_insider_factor_panel.R", encoding="UTF-8")
@@ -381,7 +385,7 @@ if (!SMOKE) {
   write_json(res, file.path(".cache", sprintf("_ramp_r9_insider_smoke_manifest_%s.json", RUNTAG)), auto_unbox=TRUE, pretty=TRUE, digits=4)
   w("[SMOKE_ONLY] 산출물 .cache/ 한정 — outputs/ 미기록 (판정 발화 금지 정합)")
 }
-close(con)
+## [FQ-019 fix 2026-07-15] persistent con 미보유(append-per-call 로거) — close 불요
 cat(sprintf("R9_DONE mode=%s smoke_pass=%s kill=%s log=%s\n", MODE_LAB,
     if(SMOKE) as.character(exists("SMOKE_PASS") && isTRUE(SMOKE_PASS)) else "NA", KILL, logf))
 cat(readLines(logf), sep="\n")
