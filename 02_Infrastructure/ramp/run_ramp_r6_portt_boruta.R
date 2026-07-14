@@ -173,6 +173,13 @@ if(file.exists(PANEL_CACHE) && !nzchar(Sys.getenv("RAMP_R6_FORCE_PANEL",""))){
      PANEL_CACHE, as.numeric(Sys.time()-t0,units="secs"), uniqueN(PANEL$factor_id),
      uniqueN(PANEL$signal_date), nrow(PANEL))
 }
+## [2026-07-14 #76] PANEL_ONLY 조기종료 — R9 발사 전 base 패널 말단 연장(2026-04→최신 완결월) 전용.
+##   Step1(패널 재빌드)만 수행하고 측정/판정/emit 없이 종료(측정 재발화·family 회계 오염 방지).
+##   근거: #76 사전점검 byte-parity 실측(현행 입력이 07-11 패널을 정확 재현 — 역사 불변·연장만).
+if (nzchar(Sys.getenv("RAMP_R6_PANEL_ONLY", ""))) {
+  wf("[panel-only] Step1 완료 — 조기 종료 (측정/판정/emit 없음)")
+  quit(save = "no")
+}
 PANEL_FACS <- sort(unique(PANEL$factor_id))
 Pw <- dcast(PANEL, signal_date ~ factor_id, value.var="active_bm"); setorder(Pw, signal_date)
 panel_dates <- Pw$signal_date
