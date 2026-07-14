@@ -1061,6 +1061,25 @@
         "challenge: stage_artifacts/WT_D20260715_007/challenge_note_r38_20260715.md",
         "L-code: L-RAMP-20260715_040901"
       ]
+    },
+    {
+      "id": "FQ-053",
+      "lane": "non_return",
+      "title": "R39 — insider SAFE_FADING 상태전이 tripwire 실배선 (R38 P2 소비, wiring 태스크)",
+      "hypothesis": "R38이 확립한 청산-대칭(asymmetric_benign_risk_sticky)을 filing_delay_watch.R Part C tripwire에 실배선 — SAFE 상태기계(ENTRY/SUSTAIN=NET_BUY_SAFE / EXIT=SAFE_FADING 강도하향·SOFT-LAG / OFF=해제) + tier 신뢰(R37 MEGA_TOP30 저신뢰/MID_OTHER 강건) + 검열 caveat(catastrophic exit=부실 tripwire A/B 소관). 새 측정 아닌 배선.",
+      "ev_rationale": "R38 next_probe P2 직접 소비. 자본 아님(monitoring 소비면·배선). insider 라인 R9~R39 monitoring 소비면 확립의 마지막 배관 조각.",
+      "wall_check": "monitoring tripwire(non-capital)·자본/sizing 아님. insider 패널 재사용·DART API X. book_state/05_Production/outputs.ramp 무변경·텔레그램 미발송(배선). cov/weights 미산출(역할경계)",
+      "data_gate": "없음 (insider_factor_scores.parquet + production clean T-1 §7b + rawdata size 스냅샷 재사용)",
+      "owner": "Q-Lead (R39 완료 2026-07-15)",
+      "status": "capability_established",
+      "next_action": "완료(R39, 2026-07-15). 판정 capability_established(배선): filing_delay_watch.R Part C에 상태기계 실배선(현 홀딩월 INS02 flag × 직전 홀딩월 flag, 양월 covered에서만 전이) — ENTRY/SUSTAIN=NET_BUY_SAFE·EXIT=SAFE_FADING(SOFT-LAG·즉시해제 안 함)·OFF=해제. R38 실측(청산 no hangover·protection 점착·수익 premium=SUSTAIN 클러스터 현상)·R37 tier(mid-cap 강건 t4.6~6.1/대형 TOP30 death)·R38 검열 caveat(catastrophic exit은 SAFE_FADING 소관 아님, 부실 tripwire A/B 우선) 라벨 내장. monitoring_init.md Part C 갱신. ★현 북 14보유 검증: 11 OFF·3 NO_INSIDER_DATA·SAFE/SAFE_FADING 0(armed·inactive) — max INS02 +0.912<1.0·신세계/LG이노텍 직전월 0.998=문턱 1.0 미달로 EXIT 아닌 OFF(near-miss). z>=0.5 완화 시 3건(advisory 카운트만·active 문턱 1.0 frozen). tier split MEGA_TOP30 4/MID_OTHER 10. RAWDATA 단일read 공유·3파트 통합 리포트 정상·JSON well-formed 검증. insider 라인(R9~R39) monitoring 소비면 확립 완료(자본 미검 불변). next_probe → 검열-스트레스 정량(P1)·live 발화 OOS 추적 배관(P2, armed 대기)·catastrophic-exit 형식화(P3).",
+      "source_refs": [
+        "parent: FQ-052 R38 next_probe P2",
+        "verdict: stage_artifacts/WT_D20260715_008/verdict.json",
+        "wiring: 02_Infrastructure/reports/filing_delay_watch.R (Part C 상태전이) + 02_Infrastructure/prompts/monitoring_init.md (Part C)",
+        "layer_map: 06_Registry/layer_bottleneck_map.md (⑧ 행 v13)",
+        "l_code: L-RAMP-20260715_043643"
+      ]
     }
   ]
 }

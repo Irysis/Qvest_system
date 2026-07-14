@@ -30,7 +30,7 @@ Monitoring Agent — admitted Deployment WT 지속 감시. predicted vs realized
   - Filing delay + audit distress + insider 순매수 watch (부실 조기경보 + 안전신호 단일 창구): `02_Infrastructure/reports/filing_delay_watch.R` source 실행 → `qepm/observability/filing_delay_watch_latest.json` 소비 → monitoring_report에 `filing_delay_watch` **+ `audit_distress` + `insider_net_buy_safe`** 섹션 기록.
     - Part A 제출지연 (CONCERN): WARN(보유종목 사업보고서 지연>0 AND ≥2일 — R24 극단꼬리 문턱 실측 고정) 시 "제출지연 위생 경보" 라벨 보고만(역사 기저율 낮음 — R24 실측: 중·대형 극단지각 15에피소드 심각사건 0). 문턱 sweep 금지. ARCHIVE STALE(최신 rcept 13개월+) 시 "경보 침묵 ≠ 정상" 라벨 필수 (task #61)
     - Part B 감사 distress (CONCERN, task #68, 2026-07-14 — R25 WT_D20260714_001 소비면): AUDIT_WARN(보유종목 최신 감사의견 nonclean OR going-concern doubt, rcept_dt≤실행일 PIT) 시 **"감사 distress = 소형주 국소 위험감시 · 배포 자본(알파) 레버 아님"** 라벨 보고만 (R25 verdict=CONFIG_SCOPED_NEGATIVE: cap-w authoritative |t|<1 · EW 양효과=SMALL-tier size 아티팩트). canonical raw t1_audit_opinion 직접 재도출(R25 stage panel gc 오탐 실측 회피). "KAM 급증"은 WARN 레그 아님(blob 항목수 신뢰불가·document.xml 파서 필요=R25 next_probe #3). P2 composite(going-concern ∧ RAWDATA AdminStock/UnfaithfulDisc)는 HIGH 관찰리스트 only(감사 취득=현 constituents 생존편향 → 소형 distress 미커버, 보유·배포엔 사실상 부재). NO_AUDIT_DATA(취득 유니버스 밖) 라벨 유지.
-    - Part C insider 순매수 클러스터 (SAFE·de-risk 예외, task #70, 2026-07-15 — R33 WT_D20260715_002 + R34 WT_D20260715_003 소비면): NET_BUY_SAFE(보유종목 INS02_OffBuyBreadth6m z≥+1.0, signal 월말 m→홀딩월 m+1 PIT) 시 **"임원 순매수 클러스터 = per-holding forward SAFE 신호(유지 안전·de-risk 예외) · 자본/sizing 신호 아님"** 라벨 보고만. R33 capability_established(universe gap t+3.36·size통제 +5.22·large-cap +2.57) + R34 북-레벨 확증(북 보유 flag 종목 forward gap t+2.50·하방 -7.6% vs -8.3%·급락<-15% 4.7% vs 7.0%·flagged 전량 MEGA/MID·lag1 robust +1.89). **★방향 대비**: 순매수 클러스터=SAFE / 부실신호(Part A·B)=CONCERN. **⚠ net-sell(INS01 z≤-1.0)=advisory only(R33 무정보 t=-0.01, 경보 아님)**. **⚠ 자본/sizing 근거 금지**: R34 cohort-path 진단서 flag sub-basket MDD/vol 오히려 악화(분산 아티팩트 2.5 vs 22.5종) → de-risk 값 = per-holding '유지 안전' 라벨이지 포트-path 저변동/비중확대 신호 아님. 패널 stale(현 보유월 signal 부재) 시 "경보 침묵 ≠ 신선" 라벨(insider 패널 갱신=DART 크롤 의존, 본 watch는 refresh 경로 없음·로컬 재사용). NO_INSIDER_DATA(취득 유니버스 밖) 라벨 유지.
+    - Part C insider 순매수 클러스터 (SAFE·de-risk 예외 + 상태전이, task #70 R34 + task #71 R39, 2026-07-15 — R33/R34/R37/R38 소비면): **상태기계**(현 홀딩월 INS02 flag on_t × 직전 홀딩월 flag on_p, 양월 insider-covered에서만 전이) → **ENTRY/SUSTAIN=NET_BUY_SAFE** / **EXIT=SAFE_FADING** / **OFF=해제**. NET_BUY_SAFE(INS02_OffBuyBreadth6m z≥+1.0, signal 월말 m→홀딩월 m+1 PIT) 시 **"임원 순매수 클러스터 = per-holding forward SAFE 신호(유지 안전·de-risk 예외) · 자본/sizing 신호 아님"** 라벨 보고만. R33 capability(universe gap t+3.36·size통제 +5.22) + R34 북-레벨 확증(gap t+2.50·하방 -7.6% vs -8.3%·급락<-15% 4.7% vs 7.0%·flagged 전량 MEGA/MID·lag1 robust +1.89). **★상태전이 (R38 WT_D20260715_007, symmetry=asymmetric_benign_risk_sticky)**: 청산(flag off)은 위험 재상승 아님(no hangover) — EXIT downside -6.9% vs OFF -8.6%·tail 5.2% vs 7.9% = protection 점착, 수익 premium만 완만복귀(MID SUSTAIN vs OFF t+3.63 유의 / ENTRY t+1.05·EXIT vs OFF t+1.57 무유의). ⇒ **SAFE_FADING = 강도 하향(SAFE→FADING)·즉시해제 안 함(SOFT-LAG)**. 지속(SUSTAIN/dur≥2, hold-dur d4plus t+3.04) flag을 단발(ENTRY/dur=1, d1 t+0.05 무신뢰)보다 우선 신뢰. **★tier 신뢰 (R37 WT_D20260715_006)**: SAFE = **mid-cap 강건(gap t 4.6~6.1)** / **대형주 TOP30 저신뢰**(genuine mega attenuation·death, het mid−TOP30 t+3.70·검정력 1.0=power 문제 아님). 배포 유니버스 size-rank≤30=MEGA_TOP30 → SAFE/SAFE_FADING 라벨 신뢰 하향 명시. **⚠ 검열 caveat (R38)**: catastrophic exit(상폐/유동성붕괴/유니버스이탈)은 EXIT 표본 검열 → 'no hangover'는 투자가능 종목 조건부 — **catastrophic exit은 SAFE_FADING 소관 아님, 부실 tripwire(Part A/B) 우선**. **★방향 대비**: 순매수 클러스터=SAFE / 부실신호(Part A·B)=CONCERN. **⚠ net-sell(INS01 z≤-1.0)=advisory only(R33 무정보 t=-0.01, 경보 아님)**. **⚠ 자본/sizing 근거 금지**: R34 cohort-path MDD/vol 오히려 악화(분산 아티팩트 2.5 vs 22.5종) → de-risk/fading = per-holding '유지 안전' 라벨이지 포트-path 저변동/비중조정 신호 아님. R36 완화(INS02 z≥+0.5) 카운트는 advisory 진단만(active 문턱 1.0 frozen, 완화 배선 별도). 패널 stale(현 보유월 signal 부재) 시 "경보 침묵 ≠ 신선" 라벨(insider 패널 갱신=DART 크롤 의존, 본 watch는 refresh 경로 없음·로컬 재사용). NO_INSIDER_DATA(취득 유니버스 밖) 라벨 유지.
     - **공통: 월간·보고만·자동조치 없음·텔레그램 단독 발송 금지 (도훈 판단 재료). 문턱/키워드 sweep 금지(사전 고정). book_state/weights/05_Production 무변경**
   - P-pure D3 페이퍼 트랙 (task #62, 2026-07-13 — dossier §7 병행안, 도훈 승인): 월간 러너 `02_Infrastructure/portfolio/ppure_paper_track.R` source 실행 → `06_Registry/live_track/{PPURE_BASE_W36K20, PPURE_D2_DECAYEXIT}/paper_nav.csv` append + trailing 실측 vs 봉인 구간(`holdout_interval.json` [q05,q95], `judge_holdout()` trailing 공용·최소 6개월) 대조 → monitoring_report에 `ppure_paper_track` 섹션 기록. FAIL_FALSIFIED(하단 침범) 시 "봉인 하단 침범" WARN 보고만 — **자동 퇴출 없음**(도훈 수동, STR_1715 규약 동일). **페이퍼 전용 — book_state 쓰기 금지·자본 게이트 무관**(cap-w HARD 3종 FAIL 불변, 벤치-상대 EW-uni 채점 트랙). D-2 보고 시 선택편향 라벨(후보 선택 2026-07-13, R13 게이트 산출 사후 지목) 병기 의무. 러너 parity-guard 실패로 append 중단 시 = "업스트림 데이터 변형" 경보(도훈 판단 재료, [[project-cache-vintage-pinning]]). 러너 [WARN] scores stale 시 RAMP score refresh 필요 보고
   - 모든 alert은 monitoring_report.json + Telegram 동시 기록
@@ -86,14 +86,16 @@ if (isTRUE(ad$composite_watchlist$composite_source_ok) && ad$composite_watchlist
   flag_alerts(book_id, "audit_composite_distress")  # HIGH: going-concern ∧ AdminStock/UnfaithfulDisc 보유 교집합(R24 심각사건 선행조합) — 사실상 0 예상
 # KAM 급증은 WARN 아님(blob 항목수 신뢰불가). has_kam=advisory. 감사데이터=연1회 시즌 의존(시즌 외 정적=정상, STALE 아님)
 
-# Part C insider 순매수 SAFE tripwire (task #70, R33/R34 소비면 — SAFE 방향·자본 아님. 사전 고정, sweep 금지)
-# NET_BUY_SAFE = 보유종목 INS02_OffBuyBreadth6m z>=+1.0 (현 홀딩월, signal 월말 m→홀딩월 m+1 PIT). insider 패널 로컬 재사용·DART API 0
+# Part C insider 순매수 SAFE tripwire + 상태전이 (task #70 R34 + task #71 R39, R33/R34/R37/R38 소비면 — SAFE·자본 아님. 사전 고정, sweep 금지)
+# 상태기계: 현 홀딩월 INS02 flag on_t × 직전 홀딩월 flag on_p → ENTRY/SUSTAIN=NET_BUY_SAFE / EXIT=SAFE_FADING / OFF=해제. insider 패널 로컬 재사용·DART API 0
 ins <- fdw$insider_net_buy_safe
 if (isTRUE(ins$insider_source_ok) && ins$n_net_buy_safe > 0)
-  flag_alerts(book_id, "insider_net_buy_safe")  # SAFE "임원 순매수 클러스터 = per-holding 유지-안전(de-risk 예외)" — 자본/sizing 아님·자동조치 없음
+  flag_alerts(book_id, "insider_net_buy_safe")  # SAFE "임원 순매수 클러스터 = per-holding 유지-안전(de-risk 예외)" — 자본/sizing 아님·자동조치 없음. tier=MEGA_TOP30이면 "대형주 저신뢰(R37)" 부기
+if (isTRUE(ins$insider_source_ok) && ins$n_safe_fading > 0)
+  flag_alerts(book_id, "insider_safe_fading")   # SAFE_FADING(EXIT: flag off) — 강도 하향(SOFT-LAG)·즉시해제 안 함(R38 no hangover·protection 점착). ⚠ catastrophic exit은 소관 아님(부실 tripwire A/B 우선)
 if (isTRUE(ins$panel_stale))
   flag_alerts(book_id, "insider_panel_stale")   # 현 보유월 signal 부재 = 패널 크롤 갱신 필요(경보 침묵 != 신선)
-# ⚠ net-sell(INS01)=advisory only(R33 무정보). cohort-path de-risk는 confounded(분산 아티팩트) — per-holding 라벨만 소비
+# ⚠ net-sell(INS01)=advisory only(R33 무정보). cohort-path de-risk는 confounded(분산 아티팩트) — per-holding 라벨만 소비. 지속(SUSTAIN/dur>=2) flag > 단발(ENTRY/dur=1) 신뢰(R38). R36 z>=0.5 완화=advisory 카운트만(active 문턱 1.0 frozen)
 
 # P-pure D3 페이퍼 트랙 (task #62, 2026-07-13 — 페이퍼 전용·book_state 무관·자본 게이트 무관)
 # 실행: cd QM && Rscript -e 'source("02_Infrastructure/portfolio/ppure_paper_track.R")'
@@ -171,16 +173,24 @@ if (ppt$parity_guard_failed) flag_alerts(track_id, "paper_track_upstream_mutatio
   "insider_net_buy_safe": {
     "as_of": "2026-07-15",
     "current_holding_ym": 202607,
+    "prev_holding_ym": 202606,
     "latest_signal_date": "2026-06-30",
     "n_holdings_with_insider": 11,
     "n_net_buy_safe": 0,
+    "n_safe_fading": 0,
     "n_no_insider_data": 3,
     "n_net_sell_advisory": 7,
+    "state_counts": {"ENTRY": 0, "SUSTAIN": 0, "EXIT": 0, "OFF": 11},
     "panel_stale": false,
     "net_buy_safe_list": [],
+    "safe_fading_list": [],
+    "relaxed_advisory": {"thr": 0.5, "n_flag_relaxed_z0p5": 3, "note": "R36 완화 진단 카운트만 — active 문턱 1.0 frozen"},
     "direction": "SAFE (de-risk 예외) — 부실신호(Part A·B)의 반대 부호. 순매수=안전 / 부실=경보",
-    "warn_tone": "임원 순매수 breadth 클러스터(INS02 z>=+1.0) = per-holding forward SAFE 신호 · 자본/sizing 아님 (R33 capability + R34 북-레벨 확증: gap t+2.50·하방/tail 감소·flagged 전량 MEGA/MID·lag1 robust)",
-    "rule": "보유 INS02_OffBuyBreadth6m z>=+1.0 → 'insider_net_buy_safe' (per-holding 유지-안전 라벨. net-sell=advisory·R33 무정보. cohort-path=confounded 분산아티팩트, 자본/sizing 배선 금지. 문턱 sweep 금지)",
+    "state_machine_rule": "ENTRY/SUSTAIN(on_t)=NET_BUY_SAFE / EXIT(¬on_t∧on_p)=SAFE_FADING(강도 하향·SOFT-LAG·즉시해제 안 함, R38 no hangover) / OFF=해제. 지속(SUSTAIN/dur>=2) > 단발(ENTRY/dur=1) 신뢰",
+    "tier_confidence_rule": "size-rank<=30=MEGA_TOP30 SAFE 저신뢰(R37 mega attenuation) / MID_OTHER 강건(gap t 4.6~6.1). per-holding tier/tier_confidence 필드",
+    "censoring_caveat": "catastrophic exit(상폐/유동성붕괴/유니버스이탈)은 SAFE_FADING 소관 아님 — 부실 tripwire(Part A/B) 우선 (R38 검열편향)",
+    "warn_tone": "임원 순매수 breadth 클러스터(INS02 z>=+1.0) = per-holding forward SAFE 신호 · 자본/sizing 아님 (R33 capability + R34 gap t+2.50 + R39 상태전이 배선)",
+    "rule": "보유 INS02_OffBuyBreadth6m z>=+1.0 → 'insider_net_buy_safe' / EXIT → 'insider_safe_fading' (per-holding 유지-안전 라벨. net-sell=advisory·R33 무정보. cohort-path=confounded 분산아티팩트, 자본/sizing 배선 금지. 문턱 sweep 금지)",
     "source_json": "qepm/observability/filing_delay_watch_latest.json (insider_net_buy_safe 섹션)"
   },
   "te_baseline": {

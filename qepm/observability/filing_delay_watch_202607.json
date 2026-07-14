@@ -427,32 +427,67 @@
     }
   },
   "insider_net_buy_safe": {
-    "basis": "임원 순매수 breadth 클러스터 SAFE tripwire (R33/R34 소비면) · risk-감소 신호 NOT 자본/sizing · book 무변경",
+    "basis": "임원 순매수 breadth 클러스터 SAFE tripwire + 상태전이 (R33/R34/R37/R38/R39 소비면) · risk-감소 신호 NOT 자본/sizing · book 무변경",
     "metric_type": "observational_monitoring",
     "direction": "SAFE(de-risk 예외) — 부실신호(Part A 제출지연·Part B 감사 distress)의 반대 부호. 순매수=안전 / 부실=경보",
-    "warn_tone": "임원 순매수 breadth 클러스터(INS02 z>=+1.0) = 종목단 forward SAFE 신호(de-risk 예외) · 자본/sizing 신호 아님 (R33 WT_D20260715_002 capability_established + R34 북-레벨 확증: gap t+2.50·downside/tail 감소·flagged 전량 MEGA/MID·lag1 robust). net-sell(INS01)=advisory·R33 무정보.",
+    "warn_tone": "임원 순매수 breadth 클러스터(INS02 z>=+1.0) = 종목단 forward SAFE 신호(de-risk 예외) · 자본/sizing 신호 아님 (R33 capability + R34 북-레벨 확증 gap t+2.50 + R39 상태전이 배선: ENTRY/SUSTAIN=SAFE·EXIT=SAFE_FADING(청산 no hangover·protection 점착, R38)·OFF=해제. tier: mid-cap 강건 / 대형 TOP30 저신뢰, R37). net-sell(INS01)=advisory·R33 무정보.",
     "r34_verdict": "capability_established",
-    "insider_rule": "NET_BUY_SAFE = 보유종목 INS02_OffBuyBreadth6m z >= +1.0 (현 홀딩월, signal m→m+1 PIT). net-sell(INS01<=-1.0)=advisory·R33 무정보(경보 아님·문턱 sweep 금지)",
-    "consumption_caveat": "monitoring tripwire(per-holding 안전 특성화)만 — 자본/sizing 근거 금지. R34 cohort-path 진단: flag sub-basket MDD/vol 오히려 악화(분산 아티팩트 2.5 vs 57종). de-risk 예외 = '유지 안전' 라벨이지 비중 확대 신호 아님",
+    "r38_verdict": "capability_established",
+    "r38_symmetry": "asymmetric_benign_risk_sticky",
+    "insider_rule": "NET_BUY_SAFE(ENTRY/SUSTAIN) = 보유종목 INS02_OffBuyBreadth6m z >= +1.0 (현 홀딩월, signal m→m+1 PIT). net-sell(INS01<=-1.0)=advisory·R33 무정보(경보 아님·문턱 sweep 금지)",
+    "state_machine": {
+      "definition": "현 홀딩월 flag on_t(INS02 z>=1.0) × 직전 홀딩월 flag on_p, 양월 insider-covered에서만 전이 판정 (R38 상속)",
+      "states": "ENTRY(on_t∧¬on_p)=NET_BUY_SAFE·단발신뢰低 / SUSTAIN(on_t∧on_p)=NET_BUY_SAFE·지속신뢰高 / EXIT(¬on_t∧on_p)=SAFE_FADING / OFF(¬on_t∧¬on_p)=해제",
+      "r38_facts": "R38(WT_D20260715_007) MID 월별-paired NW-lag3: SUSTAIN vs OFF t+3.63(유의)·ENTRY t+1.05·EXIT vs OFF t+1.57(무유의) = 수익 premium은 SUSTAIN 클러스터 현상. hold-dur d1 t+0.05 / d2_3 t+2.38 / d4plus t+3.04 = 지속 flag 우선신뢰. EXIT 위험: downside -6.9% vs OFF -8.6%·tail 5.2% vs 7.9% = protection 점착(no hangover). lag1 SUSTAIN +3.40 robust.",
+      "exit_rule": "SOFT-LAG (R38 P3): flag-off은 danger 아님 → SAFE 라벨 즉시해제 불요. SAFE_FADING = 강도 하향(수익 premium 소멸)이나 위험 protection 점착. 지속(SUSTAIN/dur>=2) flag을 단발(ENTRY/dur=1)보다 신뢰.",
+      "censoring_caveat": "⚠ R38 검열편향: catastrophic exit(상폐/유동성붕괴/유니버스이탈)한 종목은 EXIT 표본에서 검열 → SAFE_FADING의 'no hangover'는 투자가능(북 잔존) 종목 조건부. **catastrophic exit은 SAFE_FADING 소관 아님 — 부실 tripwire(Part A 제출지연·Part B 감사)와 execution 이탈감지 우선.**"
+    },
+    "tier_confidence_rule": {
+      "rule": "배포 유니버스(K200∪KQ150) 최신 size-rank <= 30 = MEGA_TOP30(SAFE 저신뢰) / 그 외 = MID_OTHER(SAFE 강건). R37 소비.",
+      "r37_facts": "R37(WT_D20260715_006): SAFE = mid-cap 강건(gap t 4.6~6.1) / 대형주 TOP30 genuine attenuation(t 0.93~1.68·death, het mid−TOP30 t+3.70·검정력 1.0 = power 문제 아님). 대형(MEGA_TOP30) 보유엔 SAFE/SAFE_FADING 라벨 신뢰 하향 명시.",
+      "rawdata_snapshot_ok": true
+    },
+    "consumption_caveat": "monitoring tripwire(per-holding 안전 특성화)만 — 자본/sizing 근거 금지. R34 cohort-path 진단: flag sub-basket MDD/vol 오히려 악화(분산 아티팩트 2.5 vs 22.5종). de-risk/fading = '유지 안전' 라벨이지 비중 확대/축소 신호 아님",
     "insider_source_ok": true,
     "insider_source_error": null,
     "current_holding_ym": 202607,
+    "prev_holding_ym": 202606,
     "latest_signal_date": "2026-06-30",
     "panel_stale": false,
     "panel_stale_note": "현 보유월 signal 부재 = insider 패널 갱신 필요(DART 크롤 — 본 watch는 refresh 경로 없음, 로컬 재사용). stale=TRUE면 flag는 과거 홀딩월 기준(경보 침묵을 신선도로 해석 금지)",
     "n_holdings_with_insider": 11,
     "n_net_buy_safe": 0,
+    "n_safe_fading": 0,
     "n_no_insider_data": 3,
     "n_net_sell_advisory": 7,
+    "state_counts": {
+      "ENTRY": 0,
+      "SUSTAIN": 0,
+      "EXIT": 0,
+      "OFF": 11
+    },
+    "relaxed_advisory": {
+      "thr": 0.5,
+      "n_flag_relaxed_z0p5": 3,
+      "note": "R36 F2 완화(INS02 z>=+0.5) 진단 카운트만 — active tripwire 문턱 아님(1.0 frozen). 완화 배선은 별도(R36/R37 권고, 미착수)."
+    },
     "net_buy_safe_list": [],
+    "safe_fading_list": [],
     "per_holding_insider": [
       {
         "ticker": "A005930",
         "name": "삼성전자",
         "weight": 0.06,
         "ins02_net_buy_breadth": 0.555,
+        "ins02_prev_month": 0.629,
         "ins01_net_sell_advisory": -1.389,
         "ins03_recency": 0.506,
+        "insider_state": "OFF",
+        "dur_trust": null,
+        "size_rank": 1,
+        "tier": "MEGA_TOP30",
+        "tier_confidence": "low_mega_attenuation",
+        "relax_flag_z0p5": 1,
         "insider_flag": "NEUTRAL"
       },
       {
@@ -460,8 +495,15 @@
         "name": "SK하이닉스",
         "weight": 0.056493,
         "ins02_net_buy_breadth": -0.019,
+        "ins02_prev_month": -0.062,
         "ins01_net_sell_advisory": -1.41,
         "ins03_recency": 0.647,
+        "insider_state": "OFF",
+        "dur_trust": null,
+        "size_rank": 2,
+        "tier": "MEGA_TOP30",
+        "tier_confidence": "low_mega_attenuation",
+        "relax_flag_z0p5": 0,
         "insider_flag": "NEUTRAL"
       },
       {
@@ -469,8 +511,15 @@
         "name": "피에스케이",
         "weight": 0.042503,
         "ins02_net_buy_breadth": -0.808,
+        "ins02_prev_month": -0.714,
         "ins01_net_sell_advisory": -1.31,
         "ins03_recency": -1.183,
+        "insider_state": "OFF",
+        "dur_trust": null,
+        "size_rank": 91,
+        "tier": "MID_OTHER",
+        "tier_confidence": "robust_midcap",
+        "relax_flag_z0p5": 0,
         "insider_flag": "NEUTRAL"
       },
       {
@@ -478,8 +527,15 @@
         "name": "SK",
         "weight": 0.041601,
         "ins02_net_buy_breadth": -1.381,
+        "ins02_prev_month": -1.284,
         "ins01_net_sell_advisory": null,
         "ins03_recency": -1.747,
+        "insider_state": "OFF",
+        "dur_trust": null,
+        "size_rank": 17,
+        "tier": "MEGA_TOP30",
+        "tier_confidence": "low_mega_attenuation",
+        "relax_flag_z0p5": 0,
         "insider_flag": "NEUTRAL"
       },
       {
@@ -487,8 +543,15 @@
         "name": "테스",
         "weight": 0.032527,
         "ins02_net_buy_breadth": -1.381,
+        "ins02_prev_month": -1.284,
         "ins01_net_sell_advisory": null,
         "ins03_recency": null,
+        "insider_state": "OFF",
+        "dur_trust": null,
+        "size_rank": 110,
+        "tier": "MID_OTHER",
+        "tier_confidence": "robust_midcap",
+        "relax_flag_z0p5": 0,
         "insider_flag": "NEUTRAL"
       },
       {
@@ -496,8 +559,15 @@
         "name": "LG이노텍",
         "weight": 0.029431,
         "ins02_net_buy_breadth": 0.912,
+        "ins02_prev_month": 0.998,
         "ins01_net_sell_advisory": -1.408,
         "ins03_recency": 0.928,
+        "insider_state": "OFF",
+        "dur_trust": null,
+        "size_rank": 45,
+        "tier": "MID_OTHER",
+        "tier_confidence": "robust_midcap",
+        "relax_flag_z0p5": 1,
         "insider_flag": "NEUTRAL"
       },
       {
@@ -505,8 +575,15 @@
         "name": "DN오토모티브",
         "weight": 0.008364,
         "ins02_net_buy_breadth": null,
+        "ins02_prev_month": null,
         "ins01_net_sell_advisory": null,
         "ins03_recency": null,
+        "insider_state": null,
+        "dur_trust": null,
+        "size_rank": 180,
+        "tier": "MID_OTHER",
+        "tier_confidence": "robust_midcap",
+        "relax_flag_z0p5": 0,
         "insider_flag": "NO_INSIDER_DATA"
       },
       {
@@ -514,8 +591,15 @@
         "name": "롯데쇼핑",
         "weight": 0.008072,
         "ins02_net_buy_breadth": null,
+        "ins02_prev_month": null,
         "ins01_net_sell_advisory": null,
         "ins03_recency": -0.057,
+        "insider_state": null,
+        "dur_trust": null,
+        "size_rank": 113,
+        "tier": "MID_OTHER",
+        "tier_confidence": "robust_midcap",
+        "relax_flag_z0p5": 0,
         "insider_flag": "NO_INSIDER_DATA"
       },
       {
@@ -523,8 +607,15 @@
         "name": "신세계",
         "weight": 0.007927,
         "ins02_net_buy_breadth": 0.912,
+        "ins02_prev_month": 0.998,
         "ins01_net_sell_advisory": null,
         "ins03_recency": 0.506,
+        "insider_state": "OFF",
+        "dur_trust": null,
+        "size_rank": 98,
+        "tier": "MID_OTHER",
+        "tier_confidence": "robust_midcap",
+        "relax_flag_z0p5": 1,
         "insider_flag": "NEUTRAL"
       },
       {
@@ -532,8 +623,15 @@
         "name": "SK스퀘어",
         "weight": 0.005626,
         "ins02_net_buy_breadth": -0.808,
+        "ins02_prev_month": -0.714,
         "ins01_net_sell_advisory": -1.458,
         "ins03_recency": -1.043,
+        "insider_state": "OFF",
+        "dur_trust": null,
+        "size_rank": 3,
+        "tier": "MEGA_TOP30",
+        "tier_confidence": "low_mega_attenuation",
+        "relax_flag_z0p5": 0,
         "insider_flag": "NEUTRAL"
       },
       {
@@ -541,8 +639,15 @@
         "name": "심텍",
         "weight": 0.004749,
         "ins02_net_buy_breadth": -1.381,
+        "ins02_prev_month": -1.284,
         "ins01_net_sell_advisory": -1.31,
         "ins03_recency": null,
+        "insider_state": "OFF",
+        "dur_trust": null,
+        "size_rank": 114,
+        "tier": "MID_OTHER",
+        "tier_confidence": "robust_midcap",
+        "relax_flag_z0p5": 0,
         "insider_flag": "NEUTRAL"
       },
       {
@@ -550,8 +655,15 @@
         "name": "",
         "weight": 0.001183,
         "ins02_net_buy_breadth": null,
+        "ins02_prev_month": null,
         "ins01_net_sell_advisory": null,
         "ins03_recency": null,
+        "insider_state": null,
+        "dur_trust": null,
+        "size_rank": 319,
+        "tier": "MID_OTHER",
+        "tier_confidence": "robust_midcap",
+        "relax_flag_z0p5": 0,
         "insider_flag": "NO_INSIDER_DATA"
       },
       {
@@ -559,8 +671,15 @@
         "name": "엘앤씨바이오",
         "weight": 0.000972,
         "ins02_net_buy_breadth": 0.148,
+        "ins02_prev_month": -0.039,
         "ins01_net_sell_advisory": null,
         "ins03_recency": 0.506,
+        "insider_state": "OFF",
+        "dur_trust": null,
+        "size_rank": 190,
+        "tier": "MID_OTHER",
+        "tier_confidence": "robust_midcap",
+        "relax_flag_z0p5": 0,
         "insider_flag": "NEUTRAL"
       },
       {
@@ -568,12 +687,19 @@
         "name": "인텔리안테크",
         "weight": 0.000549,
         "ins02_net_buy_breadth": -1.381,
+        "ins02_prev_month": -1.284,
         "ins01_net_sell_advisory": -1.287,
         "ins03_recency": -0.62,
+        "insider_state": "OFF",
+        "dur_trust": null,
+        "size_rank": 270,
+        "tier": "MID_OTHER",
+        "tier_confidence": "robust_midcap",
+        "relax_flag_z0p5": 0,
         "insider_flag": "NEUTRAL"
       }
     ],
-    "evidence": "R33 stage_artifacts/WT_D20260715_002/verdict_r33_insider_consumption.json + R34 stage_artifacts/WT_D20260715_003/verdict.json"
+    "evidence": "R33 stage_artifacts/WT_D20260715_002 + R34 WT_D20260715_003 + R37 WT_D20260715_006 + R38 WT_D20260715_007"
   },
   "inputs": {
     "holdings_csv": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/05_Production/2.Factor_Model/2-3.STR_1715_on_M4_R05_noLayer4_PG2/02_holdings_universe/20260701_noLayer4_weights_cap_0p20.csv",
@@ -583,6 +709,7 @@
     "rawdata": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/rawdata.parquet",
     "r25_verdict": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/WT_D20260714_001/verdict.json",
     "insider_panel": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/outputs/ramp/insider_factor_scores.parquet",
-    "r34_verdict": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/WT_D20260715_003/verdict.json"
+    "r34_verdict": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/WT_D20260715_003/verdict.json",
+    "r38_verdict": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/WT_D20260715_007/verdict.json"
   }
 }

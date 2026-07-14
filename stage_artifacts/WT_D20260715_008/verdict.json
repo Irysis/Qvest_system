@@ -1,0 +1,70 @@
+{
+  "wt": "WT-D20260715_008",
+  "mode": "monitoring 배선 (wiring 태스크 — 새 측정 아님)",
+  "round": "R39",
+  "fq": "FQ-053",
+  "title": "insider SAFE_FADING 상태전이 tripwire 실배선 (R38 P2 소비)",
+  "as_of_date": "2026-07-15",
+  "verdict_type": "capability_established",
+  "parent": "R38 next_probe P2 (FQ-052) — SAFE_FADING 라벨 실배선 + dur-가중 신뢰",
+  "task_class": "wiring_only",
+  "base_source": "production clean T-1 holdings(05_Production read-only) + insider_factor_scores.parquet(로컬 재사용·202606) + rawdata size 스냅샷. §7b 정합. DART API 0. book_state/05_Production/outputs.ramp 무변경.",
+
+  "wiring_summary": {
+    "target_file": "02_Infrastructure/reports/filing_delay_watch.R (Part C 상태전이 확장) + 02_Infrastructure/prompts/monitoring_init.md (Part C 항목)",
+    "state_machine": "현 홀딩월 INS02 flag on_t(z>=1.0) × 직전 홀딩월 flag on_p, 양월 insider-covered에서만 전이 판정 (R38 정의 상속). ENTRY(on_t∧¬on_p)=NET_BUY_SAFE·단발신뢰低 / SUSTAIN(on_t∧on_p)=NET_BUY_SAFE·지속신뢰高 / EXIT(¬on_t∧on_p)=SAFE_FADING / OFF=해제.",
+    "exit_rule": "SOFT-LAG (R38): flag-off은 danger 아님 → SAFE 라벨 즉시해제 불요. SAFE_FADING = 강도 하향(수익 premium 소멸)이나 위험 protection 점착. 지속(SUSTAIN/dur>=2) flag을 단발(ENTRY/dur=1, R38 d1 t+0.05)보다 우선 신뢰.",
+    "tier_confidence": "배포 유니버스(K200∪KQ150) 최신 size-rank <= 30 = MEGA_TOP30(SAFE 저신뢰, R37 genuine mega attenuation·death) / 그 외 = MID_OTHER(SAFE 강건, gap t 4.6~6.1). 대형 보유엔 SAFE/SAFE_FADING 라벨 신뢰 하향 명시.",
+    "censoring_caveat": "R38 검열편향: catastrophic exit(상폐/유동성붕괴/유니버스이탈)은 EXIT 표본에서 검열 → SAFE_FADING의 'no hangover'는 투자가능(북 잔존) 종목 조건부. catastrophic exit은 SAFE_FADING 소관 아님 — 부실 tripwire(Part A 제출지연·Part B 감사) 우선.",
+    "rawdata_single_read": "Part B composite + Part C tier가 RAWDATA를 단일 read로 공유(OneDrive 페이징 회피). composite_source_ok=TRUE로 Part B 무회귀 확인."
+  },
+
+  "r38_facts_embedded": {
+    "symmetry_class": "asymmetric_benign_risk_sticky",
+    "mid_sustain_vs_off_t": 3.63, "mid_entry_vs_off_t": 1.05, "mid_exit_vs_off_t": 1.57,
+    "mid_exit_downside": -0.069, "mid_off_downside": -0.086, "mid_exit_tail": 0.052, "mid_off_tail": 0.079,
+    "hold_dur_d1_t": 0.05, "hold_dur_d2_3_t": 2.38, "hold_dur_d4plus_t": 3.04,
+    "note": "청산=위험 재상승 아님(no hangover)·protection 점착. 수익 premium은 SUSTAIN 클러스터 현상(진입/청산 이벤트 아님)."
+  },
+  "r37_tier_facts_embedded": {
+    "safe_midcap_gap_t": "4.6~6.1", "top30_gap_t": "0.93~1.68",
+    "het_mid_minus_top_t": 3.70, "power_to_detect_mid_effect": 1.0,
+    "note": "TOP30 thinness = genuine mega attenuation(death), power 문제 아님. SAFE = mid-cap 집중."
+  },
+
+  "verification_current_book": {
+    "holding_ym": 202607, "prev_holding_ym": 202606,
+    "signal_used": "2026-06-30 (PIT-clean, 홀딩월 시작 전)", "n_holdings": 14,
+    "state_counts": {"ENTRY": 0, "SUSTAIN": 0, "EXIT": 0, "OFF": 11},
+    "n_net_buy_safe": 0, "n_safe_fading": 0, "n_no_insider_data": 3, "n_net_sell_advisory": 7,
+    "max_ins02_cur": 0.912,
+    "relaxed_z0p5_flag_count": 3,
+    "tier_split": {"MEGA_TOP30": 4, "MID_OTHER": 10},
+    "mega_top30_holdings": "A005930(삼성전자·rank1) A000660(SK하이닉스·rank2) A402340(SK스퀘어·rank3) A034730(SK·rank17)",
+    "interpret": "현 시점 SAFE·SAFE_FADING 0건 (tripwire armed·inactive). 현 max INS02 +0.912<1.0 → SAFE 발화 없음. ★신세계/LG이노텍 직전월(202606) INS02 0.998 = 문턱 1.0 바로 아래 미달로 on_p=FALSE → EXIT(SAFE_FADING) 아닌 OFF(정직 near-miss). z>=0.5 완화 시 3건 flag(삼성전자 0.555·LG이노텍/신세계 0.912)이나 advisory 진단 카운트만(active 문턱 1.0 frozen·완화 배선 별도).",
+    "three_part_report_ok": "Part A(제출지연 WARN 0·FRESH) + Part B(AUDIT_WARN 0·composite 0) + Part C(상태전이) 통합 리포트 정상 실행 확인. JSON well-formed 검증 완료."
+  },
+
+  "constraints_respected": "book_state/05_Production/outputs.ramp 무변경(monitoring 배선만). DART API 금지. insider 패널 재사용(재빌드 없음). 텔레그램 발송 없음(배선 태스크). cov/weights 미산출(역할경계). §7b clean base.",
+  "consumer_surfaces": [
+    "⑤monitoring: SAFE 상태기계 실배선 완료 (filing_delay_watch.R Part C + monitoring_init.md). EXIT=SAFE_FADING(SOFT-LAG) · 월간·보고만·자동조치 없음",
+    "⑧위험모델/감시: per-holding SAFE/SAFE_FADING 라벨에 tier 신뢰(mega 저신뢰/mid 강건) + dur 가중신뢰(SUSTAIN>ENTRY) 내장. 자본/sizing 아님",
+    "부실 tripwire(Part A/B): catastrophic exit 검열 caveat = SAFE_FADING 소관 아님 명시 → 부실/이탈 경보 우선"
+  ],
+  "next_probes": [
+    "검열-스트레스 정량 (R38 P1 미측정분 승계) — 청산 후 다중월(t+1..t+3) forward 위험 궤적 + 패널이탈(폐지/유동성붕괴) 종목 worst-case 대입으로 SAFE_FADING 'no hangover' 라벨의 검열-조정 강건성 확정. feasible now(insider 패널+rawdata 재사용).",
+    "SAFE/SAFE_FADING live 발화 OOS 추적 배관 — flagged 보유의 익월 실현 위험(하방/tail)을 monitoring_report에 tier별(mid/mega) 누적 기록해 out-of-sample 확증. 현 0건 armed 대기(FQ-050 P2 계승) — SAFE 또는 SAFE_FADING 최초 발화 시 실효 로그.",
+    "catastrophic-exit 경계 형식화 — 현재 catastrophic exit은 Part A/B 부실 tripwire + execution 유니버스이탈에 암묵 위임. SAFE_FADING과의 우선순위 규칙을 명시 tripwire로 형식화할지 검토(현 배선은 caveat 라벨로만 경계 표시)."
+  ],
+  "layer_bottleneck": "⑧위험모델/감시 (SAFE tripwire 상태전이 정교화) — 성과 병목 아님(위생 배선). insider 라인 R9~R39 monitoring 소비면 확립 완료·자본 미검 불변.",
+  "book_state_unchanged": true,
+  "production_unchanged": true,
+  "outputs_ramp_unchanged": true,
+  "artifacts": {
+    "wiring": "02_Infrastructure/reports/filing_delay_watch.R (Part C 상태전이) + 02_Infrastructure/prompts/monitoring_init.md (Part C)",
+    "run_log": "stage_artifacts/WT_D20260715_008/_r39_watch_run_log.txt",
+    "output_json": "qepm/observability/filing_delay_watch_latest.json + filing_delay_watch_202607.json",
+    "layer_map": "06_Registry/layer_bottleneck_map.md (⑧ 행 v13)"
+  },
+  "generated_at": "2026-07-15"
+}

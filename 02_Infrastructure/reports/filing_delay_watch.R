@@ -5,6 +5,11 @@
 ##  Part C (task #70, 2026-07-15): 임원 순매수 클러스터 SAFE tripwire (R33/R34 소비면) — SAFE(de-risk 예외)
 ##    ★방향 대비: 부실신호(A/B)=경보 / 순매수 클러스터(C)=안전. net-sell(INS01)=advisory(R33 무정보).
 ##    ★C는 per-holding 안전 특성화 monitoring 신호이지 자본/sizing 신호 아님 (cohort-path 미개선·분산 아티팩트).
+##    ★상태전이 배선 (task #71, R39, 2026-07-15 — R38 WT_D20260715_007 소비면): SAFE 상태기계
+##      ENTRY/SUSTAIN=NET_BUY_SAFE / EXIT=SAFE_FADING(강도 하향·즉시해제 안 함) / OFF=해제. R38 실측:
+##      청산(flag off)은 위험 재상승 아님(no hangover) — 하방/tail protection 점착, 수익 premium만 완만복귀.
+##      + tier 신뢰(R37): SAFE = mid-cap 강건(t 4.6~6.1) / 대형주 TOP30 저신뢰(genuine mega attenuation).
+##      ⚠ catastrophic exit(상폐/유동성붕괴/유니버스이탈)은 SAFE_FADING 소관 아님 — 부실 tripwire(A/B) 우선.
 ## (R24(WT-D20260713_008) "극단 지각제출 = 부실 조기경보 지문" + R25(WT_D20260714_001)
 ##  "감사 distress = 소형주 국소 위험감시 신호(배포 자본 레버 아님)" 지식의 유일 in-envelope
 ##  소비면 = ⑤ monitoring. 선례 kalman_beta_drift.R(#56) 구조 승계. 부실 조기경보는 단일 파일 통합)
@@ -65,6 +70,7 @@ RAWDATA_PARQUET <- file.path(ROOT, ".cache/rawdata.parquet")                    
 R25_VERDICT     <- file.path(ROOT, "stage_artifacts/WT_D20260714_001/verdict.json")              # R25 사실 인용(경보 톤 내장)
 INSIDER_PARQUET <- file.path(ROOT, "outputs/ramp/insider_factor_scores.parquet")                 # Part C: 임원 순매수 클러스터 (R33/R34, 로컬 재사용·DART API 0)
 R34_VERDICT     <- file.path(ROOT, "stage_artifacts/WT_D20260715_003/verdict.json")              # R34 사실 인용(경보 톤 내장)
+R38_VERDICT     <- file.path(ROOT, "stage_artifacts/WT_D20260715_007/verdict.json")              # R38 사실 인용(SAFE_FADING 상태전이 근거)
 OUT_DIR      <- file.path(ROOT, "qepm/observability")
 dir.create(OUT_DIR, showWarnings = FALSE, recursive = TRUE)
 
@@ -74,6 +80,8 @@ HOLDING_STALE_DAYS <- 456L  # 12개월(366) + 법정 90일 — 최신 결산기�
 ARCHIVE_STALE_M    <- 13L   # 아카이브 최신 rcept_dt 13개월 이상 과거 = STALE
 INS_NB_THR         <- 1.0   # Part C: net-buy 클러스터 SAFE 문턱 (INS02_OffBuyBreadth6m z>=+1.0, R33 frozen — sweep 금지)
 INS_NS_THR         <- -1.0  # Part C: net-sell advisory 문턱 (INS01_OffNetBuyIntensity3m z<=-1.0, R33 무정보 — 경보 아님)
+INS_RELAX_THR      <- 0.5   # Part C: R36 F2 완화 문턱 (INS02 z>=+0.5) — advisory 진단 카운트만(배선 별도, active tripwire 아님)
+TOP30_N            <- 30L   # Part C: 대형주 tier 경계 (배포 유니버스 size-rank <=30 = MEGA_TOP30, R37 SAFE 저신뢰 tier)
 
 check_date <- Sys.Date()
 d2date <- function(x) as.Date(as.character(x), "%Y%m%d")
@@ -257,17 +265,30 @@ if (audit_ok) {
 n_audit_warn <- if (audit_ok) aj[audit_flag == "AUDIT_WARN", .N] else NA_integer_
 n_no_audit   <- if (audit_ok) aj[audit_flag == "NO_AUDIT_DATA", .N] else NA_integer_
 
+## ---- RAWDATA 단일 read (Part B composite + Part C tier 공용, OneDrive 페이징 회피 = 이중read 금지) ----
+## Part C tier(R39): 배포 유니버스(K200∪KQ150) 최신일 스냅샷을 Size 내림차순 랭크 → MEGA_TOP30(rank<=30)/MID_OTHER.
+##   R37 실측: net-buy SAFE = mid-cap 강건(gap t 4.6~6.1) / 대형주 TOP30 genuine attenuation(t 0.93~1.68·death).
+rd_ok <- FALSE; RD_ALL <- NULL; rd_max <- as.Date(NA); size_tier <- data.table()
+tryCatch({
+  RD_ALL <- as.data.table(read_parquet(RAWDATA_PARQUET,
+        col_select = c("Date", "Ticker", "AdminStock", "UnfaithfulDisc", "K200", "KQ150", "Size")))
+  RD_ALL[, Date := as.Date(Date)]
+  rd_max <<- max(RD_ALL$Date, na.rm = TRUE)
+  RL <- RD_ALL[Date == rd_max & (K200 > 0 | KQ150 > 0) & !is.na(Size)]
+  RL[, sc := sub("^A", "", as.character(Ticker))]
+  RL[, size_rank := frank(-Size, ties.method = "first")]
+  size_tier <<- RL[, .(sc, size_rank, size_last = as.numeric(Size),
+                       tier = fifelse(size_rank <= TOP30_N, "MEGA_TOP30", "MID_OTHER"))]
+  rd_ok <<- TRUE
+}, error = function(e) { rd_ok <<- FALSE })
+
 ## P2 composite watchlist: 최신 gc ∧ RAWDATA {AdminStock ∪ UnfaithfulDisc 최근지정}
-composite_ok <- audit_ok
+composite_ok <- audit_ok && rd_ok
 composite <- data.table()
-rd_max <- as.Date(NA)
 tryCatch({
   if (!audit_ok) stop("audit source unavailable")
-  RD <- as.data.table(read_parquet(RAWDATA_PARQUET,
-        col_select = c("Date", "Ticker", "AdminStock", "UnfaithfulDisc", "K200", "KQ150", "Size")))
-  RD[, Date := as.Date(Date)]
-  rd_max <<- max(RD$Date, na.rm = TRUE)
-  RD <- RD[Date >= (rd_max - 400L)]                                # 최근 ~13개월 창(현재 지정 상태)
+  if (!rd_ok)    stop("rawdata snapshot unavailable")
+  RD <- RD_ALL[Date >= (rd_max - 400L)]                            # 최근 ~13개월 창(현재 지정 상태) — 공용 RD_ALL 재사용
   RD[, sc := sub("^A", "", as.character(Ticker))]
   st <- RD[, .(admin_active = as.integer(any(AdminStock[Date == max(Date)] > 0, na.rm = TRUE)),
                unf_active   = as.integer(any(UnfaithfulDisc[Date == max(Date)] > 0, na.rm = TRUE)),
@@ -282,27 +303,37 @@ tryCatch({
 }, error = function(e) { composite_ok <<- FALSE })
 
 ## ============================================================================
-## Part C — insider 순매수 클러스터 SAFE tripwire (task #70, 2026-07-15 — R33/R34 소비면)
+## Part C — insider 순매수 클러스터 SAFE tripwire + 상태전이 (task #70 R34 + task #71 R39, 2026-07-15)
 ## R33(WT_D20260715_002)+R34(WT_D20260715_003): 임원 순매수 breadth 클러스터(INS02 z>=+1.0)
 ##   = 종목단 forward *안전*신호(R33 익월 수익차 t+3.36·size통제 t+5.22·large-cap tier t+2.57·
 ##   하방/tail 감소). R34 북-레벨 확증: 북 보유 flag 종목 forward 수익 gap t+2.50·downside
 ##   -7.6% vs -8.3%·tail(<-15%) 4.7% vs 7.0%·flagged 전량 MEGA/MID(배포 tier)·lag1 robust(+1.89).
-## ★방향 대비 (부실 조기경보 창구 내 반대 부호): net-buy 클러스터 = SAFE(위험감소·de-risk 예외) /
-##   부실신호(Part A 제출지연·Part B 감사 distress) = CONCERN.
-##   ⚠ net-sell(INS01 z<=-1.0)은 R33 무정보(tripwire t=-0.01) → advisory 기록만, 경보 아님.
-## ⚠ 소비 자격 = monitoring tripwire(per-holding 안전 특성화)이지 자본/sizing 신호 아님:
-##   R34 cohort-path 진단서 flag sub-basket MDD/vol은 오히려 악화(2.5 vs 57종 = 분산 아티팩트) —
-##   집중/사이징 근거로 쓰지 말 것(per-holding 특성화만 유효). book_state/weights 무변경.
-## PIT (C5): signal_date(월말 m) → 홀딩월(m+1). 현 홀딩월 flag = 직전 월말 signal(홀딩월 시작 전).
-##   insider 패널 = 로컬 재사용(재빌드/DART API 없음). 패널 stale(현 보유월 signal 부재) 시 warn-loud.
+## ★상태전이 (R39, R38 WT_D20260715_007 소비면 — 새 측정 아닌 배선): SAFE 상태기계
+##   ENTRY/SUSTAIN=NET_BUY_SAFE / EXIT=SAFE_FADING / OFF=해제. 정의(R38 상속): 현 홀딩월(m) INS02 flag(on_t)
+##   × 직전 홀딩월(m-1) INS02 flag(on_p), 양월 insider-covered에서만 전이 판정.
+##     SUSTAIN(on_t∧on_p)=지속·가중신뢰 高 (R38 MID SUSTAIN vs OFF t+3.63·hold-dur d4plus t+3.04) /
+##     ENTRY(on_t∧¬on_p)=단발·신뢰 低 (R38 d1 t+0.05 = 단발 무신뢰) /
+##     EXIT(¬on_t∧on_p)=SAFE_FADING: 강도 하향·즉시해제 안 함 (R38: 청산해도 하방 -6.9% vs OFF -8.6%·
+##       tail 5.2% vs 7.9% = risk protection 점착·no hangover, 수익 premium만 완만복귀 EXIT vs OFF t+1.57 무유의) /
+##     OFF(¬on_t∧¬on_p)=해제.
+##   ⚠ 검열 caveat (R38): catastrophic exit(상폐/유동성붕괴/유니버스이탈)은 EXIT 표본에서 검열 → SAFE_FADING의
+##     'no hangover'는 투자가능 종목 조건부. **catastrophic exit은 SAFE_FADING 소관 아님 — 부실 tripwire(Part A/B) 우선.**
+## ★tier 신뢰 (R37 WT_D20260715_006): SAFE = mid-cap 강건(gap t 4.6~6.1) / 대형주 TOP30 저신뢰(genuine mega
+##   attenuation·death, het mid−TOP30 t+3.70·검정력 1.0). 대형(MEGA_TOP30) 보유엔 SAFE/SAFE_FADING 라벨 신뢰 하향.
+## ★방향 대비: net-buy 클러스터=SAFE(de-risk 예외) / 부실신호(A 제출지연·B 감사)=CONCERN.
+##   ⚠ net-sell(INS01 z<=-1.0)=R33 무정보(t=-0.01) → advisory 기록만. ⚠ 자본/sizing 신호 아님(cohort-path 분산 아티팩트).
+## PIT (C5): signal_date(월말 m)→홀딩월(m+1). 현 홀딩월 flag=직전 월말 signal(홀딩월 시작 전). 전이=현+직전 홀딩월.
+##   insider 패널=로컬 재사용(재빌드/DART API 없음). 패널 stale(현 보유월 signal 부재) 시 warn-loud.
 ## ============================================================================
 r34 <- tryCatch(fromJSON(R34_VERDICT), error = function(e) NULL)
+r38 <- tryCatch(fromJSON(R38_VERDICT), error = function(e) NULL)
 insider_tone <- paste0(
   "임원 순매수 breadth 클러스터(INS02 z>=+1.0) = 종목단 forward SAFE 신호(de-risk 예외) · ",
-  "자본/sizing 신호 아님 (R33 WT_D20260715_002 capability_established + R34 북-레벨 확증: ",
-  "gap t+2.50·downside/tail 감소·flagged 전량 MEGA/MID·lag1 robust). net-sell(INS01)=advisory·R33 무정보.")
+  "자본/sizing 신호 아님 (R33 capability + R34 북-레벨 확증 gap t+2.50 + R39 상태전이 배선: ",
+  "ENTRY/SUSTAIN=SAFE·EXIT=SAFE_FADING(청산 no hangover·protection 점착, R38)·OFF=해제. ",
+  "tier: mid-cap 강건 / 대형 TOP30 저신뢰, R37). net-sell(INS01)=advisory·R33 무정보.")
 ins_ok <- TRUE; ins_err <- NA_character_
-ins_latest_signal <- as.Date(NA); ins_cur_hy <- NA_integer_; ins_stale <- NA
+ins_latest_signal <- as.Date(NA); ins_cur_hy <- NA_integer_; ins_prev_hy <- NA_integer_; ins_stale <- NA
 ij <- NULL
 tryCatch({
   IN <- as.data.table(read_parquet(INSIDER_PARQUET))
@@ -312,6 +343,7 @@ tryCatch({
   IN[, hy := ymshift(ym(signal_date), 1L)]                 # signal m → 홀딩월 m+1
   ins_latest_signal <<- max(IN$signal_date)
   ins_cur_hy <<- max(IN$hy)                                # 현 홀딩월 flag (직전 월말 signal, PIT-clean)
+  ins_prev_hy <<- ymshift(ins_cur_hy, -1L)                 # 직전 홀딩월 (상태전이 판정용)
   expected_hold_ym <- ym(check_date)                       # 이번 달 = 현 보유월
   ins_stale <<- ins_cur_hy < expected_hold_ym             # 현 보유월 signal 부재 = 패널 갱신 필요(DART 크롤)
   INC <- IN[hy == ins_cur_hy]
@@ -322,15 +354,48 @@ tryCatch({
   if (!("INS02_OffBuyBreadth6m" %in% names(ij))) ij[, INS02_OffBuyBreadth6m := NA_real_]
   if (!("INS01_OffNetBuyIntensity3m" %in% names(ij))) ij[, INS01_OffNetBuyIntensity3m := NA_real_]
   if (!("INS03_OffNetBuyRecency" %in% names(ij))) ij[, INS03_OffNetBuyRecency := NA_real_]
-  ij[, nb_safe := as.integer(!is.na(INS02_OffBuyBreadth6m) & INS02_OffBuyBreadth6m >= INS_NB_THR)]
+  ## 직전 홀딩월 INS02 (상태전이 판정) — 패널 재사용, 추가 read 없음
+  INP <- IN[hy == ins_prev_hy & factor_id == "INS02_OffBuyBreadth6m", .(Ticker = security_id, ins02_prev = z)]
+  ij <<- merge(ij, INP, by = "Ticker", all.x = TRUE)
+  if (!("ins02_prev" %in% names(ij))) ij[, ins02_prev := NA_real_]
+  ## ---- 상태기계 (R38 정의 상속): on_t(현 flag) × on_p(직전 flag), 양월 covered에서만 전이 ----
+  ij[, ins02_cur := INS02_OffBuyBreadth6m]
+  ij[, on_t := !is.na(ins02_cur)  & ins02_cur  >= INS_NB_THR]
+  ij[, on_p := !is.na(ins02_prev) & ins02_prev >= INS_NB_THR]
+  ij[, both_cov := !is.na(ins02_cur) & !is.na(ins02_prev)]
+  ij[, insider_state := fifelse(is.na(ins02_cur), NA_character_,
+                        fifelse(on_t & on_p,  "SUSTAIN",
+                        fifelse(on_t & !on_p, "ENTRY",
+                        fifelse(!on_t & on_p, "EXIT", "OFF"))))]
+  ## dur 가중신뢰: SUSTAIN=지속 高(R38 t+3.63) / ENTRY=단발 低(R38 d1 t+0.05) / EXIT=fading / OFF=NA
+  ij[, dur_trust := fifelse(insider_state == "SUSTAIN", "sustained_high",
+                    fifelse(insider_state == "ENTRY",   "single_low",
+                    fifelse(insider_state == "EXIT",    "fading", NA_character_)))]
+  ij[, nb_safe     := as.integer(on_t)]                                        # ENTRY+SUSTAIN (현 flag on)
+  ij[, safe_fading := as.integer(!is.na(insider_state) & insider_state == "EXIT")]
   ij[, ns_advisory := as.integer(!is.na(INS01_OffNetBuyIntensity3m) & INS01_OffNetBuyIntensity3m <= INS_NS_THR)]
+  ij[, relax_flag  := as.integer(!is.na(ins02_cur) & ins02_cur >= INS_RELAX_THR)]  # R36 z>=0.5 advisory(배선 별도)
+  ## ---- tier 신뢰 (R37): 배포 유니버스 size-rank → MEGA_TOP30 저신뢰 / MID_OTHER 강건 ----
+  ij[, sc := sub("^A", "", Ticker)]
+  if (rd_ok && nrow(size_tier) > 0) {
+    ij <<- merge(ij, size_tier[, .(sc, size_rank, tier)], by = "sc", all.x = TRUE)
+  } else { ij[, size_rank := NA_integer_]; ij[, tier := NA_character_] }
+  ij[is.na(tier), tier := "UNKNOWN_TIER"]
+  ij[, tier_confidence := fifelse(tier == "MEGA_TOP30", "low_mega_attenuation",
+                          fifelse(tier == "MID_OTHER",  "robust_midcap", "unknown"))]
+  ## ---- 통합 flag: NET_BUY_SAFE(ENTRY/SUSTAIN) / SAFE_FADING(EXIT) / NEUTRAL(OFF) / NO_INSIDER_DATA ----
   ij[, insider_flag := fifelse(is.na(INS02_OffBuyBreadth6m) & is.na(INS01_OffNetBuyIntensity3m), "NO_INSIDER_DATA",
-                       fifelse(nb_safe == 1L, "NET_BUY_SAFE", "NEUTRAL"))]
+                       fifelse(is.na(ins02_cur), "NEUTRAL",         # INS01만 있고 INS02 부재 = SAFE state 불가
+                       fifelse(nb_safe == 1L, "NET_BUY_SAFE",
+                       fifelse(safe_fading == 1L, "SAFE_FADING", "NEUTRAL"))))]
   setorder(ij, -Weight)
 }, error = function(e) { ins_ok <<- FALSE; ins_err <<- conditionMessage(e) })
-n_ins_safe <- if (ins_ok) ij[insider_flag == "NET_BUY_SAFE", .N] else NA_integer_
+n_ins_safe   <- if (ins_ok) ij[insider_flag == "NET_BUY_SAFE", .N] else NA_integer_
+n_ins_fading <- if (ins_ok) ij[insider_flag == "SAFE_FADING", .N] else NA_integer_
 n_ins_nodata <- if (ins_ok) ij[insider_flag == "NO_INSIDER_DATA", .N] else NA_integer_
 n_ins_ns_adv <- if (ins_ok) ij[ns_advisory == 1L, .N] else NA_integer_
+n_ins_relax  <- if (ins_ok) ij[relax_flag == 1L, .N] else NA_integer_
+ins_state_counts <- if (ins_ok) as.list(table(factor(ij$insider_state, levels = c("ENTRY","SUSTAIN","EXIT","OFF")))) else list()
 
 ## ---- 7. JSON 저장 (OneDrive temp-rename) + 콘솔 요약 -----------------------
 warn_rows <- res[flag == "WARN"]
@@ -433,41 +498,76 @@ fdw_result <- list(
       r <- ij[i]
       list(ticker = r$Ticker, name = r$Name, weight = r$Weight,
            ins02_net_buy_breadth = if (is.na(r$INS02_OffBuyBreadth6m)) NA else round(r$INS02_OffBuyBreadth6m, 3),
+           ins02_prev_month      = if (is.na(r$ins02_prev)) NA else round(r$ins02_prev, 3),
            ins01_net_sell_advisory = if (is.na(r$INS01_OffNetBuyIntensity3m)) NA else round(r$INS01_OffNetBuyIntensity3m, 3),
            ins03_recency = if (is.na(r$INS03_OffNetBuyRecency)) NA else round(r$INS03_OffNetBuyRecency, 3),
+           insider_state = if (is.na(r$insider_state)) NA else r$insider_state,
+           dur_trust = if (is.na(r$dur_trust)) NA else r$dur_trust,
+           size_rank = if (is.na(r$size_rank)) NA else r$size_rank,
+           tier = r$tier, tier_confidence = r$tier_confidence,
+           relax_flag_z0p5 = r$relax_flag,
            insider_flag = r$insider_flag)
     }) else list()
     safe_list <- if (ins_ok && n_ins_safe > 0)
       lapply(seq_len(nrow(ij[insider_flag == "NET_BUY_SAFE"])), function(i) {
         s <- ij[insider_flag == "NET_BUY_SAFE"][i]
         list(ticker = s$Ticker, name = s$Name, weight = s$Weight,
-             ins02_net_buy_breadth = round(s$INS02_OffBuyBreadth6m, 3))
+             ins02_net_buy_breadth = round(s$INS02_OffBuyBreadth6m, 3),
+             insider_state = s$insider_state, dur_trust = s$dur_trust,
+             tier = s$tier, tier_confidence = s$tier_confidence)
+      }) else list()
+    fading_list <- if (ins_ok && n_ins_fading > 0)
+      lapply(seq_len(nrow(ij[insider_flag == "SAFE_FADING"])), function(i) {
+        s <- ij[insider_flag == "SAFE_FADING"][i]
+        list(ticker = s$Ticker, name = s$Name, weight = s$Weight,
+             ins02_prev_month = round(s$ins02_prev, 3), ins02_net_buy_breadth = round(s$INS02_OffBuyBreadth6m, 3),
+             tier = s$tier, tier_confidence = s$tier_confidence)
       }) else list()
     list(
-      basis = "임원 순매수 breadth 클러스터 SAFE tripwire (R33/R34 소비면) · risk-감소 신호 NOT 자본/sizing · book 무변경",
+      basis = "임원 순매수 breadth 클러스터 SAFE tripwire + 상태전이 (R33/R34/R37/R38/R39 소비면) · risk-감소 신호 NOT 자본/sizing · book 무변경",
       metric_type = "observational_monitoring",
       direction = "SAFE(de-risk 예외) — 부실신호(Part A 제출지연·Part B 감사 distress)의 반대 부호. 순매수=안전 / 부실=경보",
       warn_tone = insider_tone,
       r34_verdict = if (!is.null(r34)) r34$verdict_type else "unavailable",
-      insider_rule = sprintf("NET_BUY_SAFE = 보유종목 INS02_OffBuyBreadth6m z >= +%.1f (현 홀딩월, signal m→m+1 PIT). net-sell(INS01<=%.1f)=advisory·R33 무정보(경보 아님·문턱 sweep 금지)", INS_NB_THR, INS_NS_THR),
-      consumption_caveat = "monitoring tripwire(per-holding 안전 특성화)만 — 자본/sizing 근거 금지. R34 cohort-path 진단: flag sub-basket MDD/vol 오히려 악화(분산 아티팩트 2.5 vs 57종). de-risk 예외 = '유지 안전' 라벨이지 비중 확대 신호 아님",
+      r38_verdict = if (!is.null(r38)) r38$verdict_type else "unavailable",
+      r38_symmetry = if (!is.null(r38)) r38$symmetry_class else "unavailable",
+      insider_rule = sprintf("NET_BUY_SAFE(ENTRY/SUSTAIN) = 보유종목 INS02_OffBuyBreadth6m z >= +%.1f (현 홀딩월, signal m→m+1 PIT). net-sell(INS01<=%.1f)=advisory·R33 무정보(경보 아님·문턱 sweep 금지)", INS_NB_THR, INS_NS_THR),
+      state_machine = list(
+        definition = sprintf("현 홀딩월 flag on_t(INS02 z>=%.1f) × 직전 홀딩월 flag on_p, 양월 insider-covered에서만 전이 판정 (R38 상속)", INS_NB_THR),
+        states = "ENTRY(on_t∧¬on_p)=NET_BUY_SAFE·단발신뢰低 / SUSTAIN(on_t∧on_p)=NET_BUY_SAFE·지속신뢰高 / EXIT(¬on_t∧on_p)=SAFE_FADING / OFF(¬on_t∧¬on_p)=해제",
+        r38_facts = "R38(WT_D20260715_007) MID 월별-paired NW-lag3: SUSTAIN vs OFF t+3.63(유의)·ENTRY t+1.05·EXIT vs OFF t+1.57(무유의) = 수익 premium은 SUSTAIN 클러스터 현상. hold-dur d1 t+0.05 / d2_3 t+2.38 / d4plus t+3.04 = 지속 flag 우선신뢰. EXIT 위험: downside -6.9% vs OFF -8.6%·tail 5.2% vs 7.9% = protection 점착(no hangover). lag1 SUSTAIN +3.40 robust.",
+        exit_rule = "SOFT-LAG (R38 P3): flag-off은 danger 아님 → SAFE 라벨 즉시해제 불요. SAFE_FADING = 강도 하향(수익 premium 소멸)이나 위험 protection 점착. 지속(SUSTAIN/dur>=2) flag을 단발(ENTRY/dur=1)보다 신뢰.",
+        censoring_caveat = "⚠ R38 검열편향: catastrophic exit(상폐/유동성붕괴/유니버스이탈)한 종목은 EXIT 표본에서 검열 → SAFE_FADING의 'no hangover'는 투자가능(북 잔존) 종목 조건부. **catastrophic exit은 SAFE_FADING 소관 아님 — 부실 tripwire(Part A 제출지연·Part B 감사)와 execution 이탈감지 우선.**"),
+      tier_confidence_rule = list(
+        rule = sprintf("배포 유니버스(K200∪KQ150) 최신 size-rank <= %d = MEGA_TOP30(SAFE 저신뢰) / 그 외 = MID_OTHER(SAFE 강건). R37 소비.", TOP30_N),
+        r37_facts = "R37(WT_D20260715_006): SAFE = mid-cap 강건(gap t 4.6~6.1) / 대형주 TOP30 genuine attenuation(t 0.93~1.68·death, het mid−TOP30 t+3.70·검정력 1.0 = power 문제 아님). 대형(MEGA_TOP30) 보유엔 SAFE/SAFE_FADING 라벨 신뢰 하향 명시.",
+        rawdata_snapshot_ok = rd_ok),
+      consumption_caveat = "monitoring tripwire(per-holding 안전 특성화)만 — 자본/sizing 근거 금지. R34 cohort-path 진단: flag sub-basket MDD/vol 오히려 악화(분산 아티팩트 2.5 vs 22.5종). de-risk/fading = '유지 안전' 라벨이지 비중 확대/축소 신호 아님",
       insider_source_ok = ins_ok,
       insider_source_error = ins_err,
       current_holding_ym = if (ins_ok) ins_cur_hy else NA,
+      prev_holding_ym = if (ins_ok) ins_prev_hy else NA,
       latest_signal_date = format(ins_latest_signal),
       panel_stale = if (ins_ok) ins_stale else NA,
       panel_stale_note = "현 보유월 signal 부재 = insider 패널 갱신 필요(DART 크롤 — 본 watch는 refresh 경로 없음, 로컬 재사용). stale=TRUE면 flag는 과거 홀딩월 기준(경보 침묵을 신선도로 해석 금지)",
       n_holdings_with_insider = if (ins_ok) ij[!(insider_flag == "NO_INSIDER_DATA"), .N] else NA,
       n_net_buy_safe = n_ins_safe,
+      n_safe_fading = n_ins_fading,
       n_no_insider_data = n_ins_nodata,
       n_net_sell_advisory = n_ins_ns_adv,
+      state_counts = ins_state_counts,
+      relaxed_advisory = list(
+        thr = INS_RELAX_THR,
+        n_flag_relaxed_z0p5 = n_ins_relax,
+        note = "R36 F2 완화(INS02 z>=+0.5) 진단 카운트만 — active tripwire 문턱 아님(1.0 frozen). 완화 배선은 별도(R36/R37 권고, 미착수)."),
       net_buy_safe_list = safe_list,
+      safe_fading_list = fading_list,
       per_holding_insider = per_holding_ins,
-      evidence = "R33 stage_artifacts/WT_D20260715_002/verdict_r33_insider_consumption.json + R34 stage_artifacts/WT_D20260715_003/verdict.json")
+      evidence = "R33 stage_artifacts/WT_D20260715_002 + R34 WT_D20260715_003 + R37 WT_D20260715_006 + R38 WT_D20260715_007")
   },
   inputs = list(holdings_csv = HOLDINGS_CSV, filings_inventory = INV_PARQUET, disc_ck_dir = DISC_DIR,
                 audit_opinion = AUDIT_PARQUET, rawdata = RAWDATA_PARQUET, r25_verdict = R25_VERDICT,
-                insider_panel = INSIDER_PARQUET, r34_verdict = R34_VERDICT))
+                insider_panel = INSIDER_PARQUET, r34_verdict = R34_VERDICT, r38_verdict = R38_VERDICT))
 
 write_json_atomic <- function(obj, path) {   # OneDrive temp-rename 패턴
   tmp <- paste0(path, ".tmp_", Sys.getpid())
@@ -529,23 +629,33 @@ if (!audit_ok) {
   } else cat("[audit] P2 composite: RAWDATA 로드 실패 — composite 미산출\n")
 }
 
-## ---- Part C 콘솔 요약 (insider 순매수 SAFE tripwire) -----------------------
-cat(sprintf("\n[insider] %s 기준 순매수 클러스터 SAFE tripwire (de-risk 예외 · monitoring NOT 자본, R33/R34):\n", format(check_date)))
+## ---- Part C 콘솔 요약 (insider 순매수 SAFE tripwire + 상태전이) -------------
+cat(sprintf("\n[insider] %s 기준 순매수 SAFE tripwire + 상태전이 (de-risk 예외 · monitoring NOT 자본, R33/R34/R37/R39):\n", format(check_date)))
 if (!ins_ok) {
   cat("   ★ insider 패널 로드 실패:", ins_err, "\n")
 } else {
+  cat(sprintf("   (홀딩월 현=%d 직전=%d | 상태전이 = 현 INS02 flag × 직전 INS02 flag, 양월 covered)\n", ins_cur_hy, ins_prev_hy))
   for (i in seq_len(nrow(ij))) {
     r <- ij[i]
-    cat(sprintf("   %-8s %-14s w=%.4f  INS02(net-buy breadth)=%s [%s]  (INS01 net-sell=%s advisory·R33 무정보)\n",
+    cat(sprintf("   %-8s %-12s w=%.4f  INS02 cur=%s prev=%s state=%-7s [%s] tier=%s\n",
                 r$Ticker, ifelse(is.na(r$Name) | r$Name == "", "-", r$Name), r$Weight,
-                ifelse(is.na(r$INS02_OffBuyBreadth6m), "NA", sprintf("%+.2f", r$INS02_OffBuyBreadth6m)), r$insider_flag,
-                ifelse(is.na(r$INS01_OffNetBuyIntensity3m), "NA", sprintf("%+.2f", r$INS01_OffNetBuyIntensity3m))))
+                ifelse(is.na(r$INS02_OffBuyBreadth6m), "NA", sprintf("%+.2f", r$INS02_OffBuyBreadth6m)),
+                ifelse(is.na(r$ins02_prev), "NA", sprintf("%+.2f", r$ins02_prev)),
+                ifelse(is.na(r$insider_state), "n/a", r$insider_state), r$insider_flag, r$tier))
   }
-  cat(sprintf("[insider] NET_BUY_SAFE %d건 · NO_INSIDER_DATA %d건 · (advisory net-sell %d건 — 경보 아님) | 홀딩월 %d · 최신 signal %s%s\n",
-              n_ins_safe, n_ins_nodata, n_ins_ns_adv, ins_cur_hy, format(ins_latest_signal),
-              if (isTRUE(ins_stale)) " ★STALE — 현 보유월 signal 부재, 패널 크롤 갱신 필요" else ""))
+  cat(sprintf("[insider] state: %s | NET_BUY_SAFE %d · SAFE_FADING %d · NO_INSIDER_DATA %d · (advisory net-sell %d — 경보 아님)\n",
+              paste(sprintf("%s=%d", names(ins_state_counts), unlist(ins_state_counts)), collapse=" "),
+              n_ins_safe, n_ins_fading, n_ins_nodata, n_ins_ns_adv))
+  cat(sprintf("[insider] 홀딩월 %d · 최신 signal %s%s | R36 z>=%.1f 완화 시 flag=%d건(advisory, active 아님)\n",
+              ins_cur_hy, format(ins_latest_signal),
+              if (isTRUE(ins_stale)) " ★STALE — 현 보유월 signal 부재, 패널 크롤 갱신 필요" else "",
+              INS_RELAX_THR, n_ins_relax))
   if (n_ins_safe > 0)
-    cat("[insider] ✅ NET_BUY_SAFE(de-risk 예외 — 유지 안전 라벨, 비중확대 신호 아님):",
-        paste(ij[insider_flag == "NET_BUY_SAFE", Ticker], collapse = ", "), "\n")
+    cat("[insider] ✅ NET_BUY_SAFE(ENTRY/SUSTAIN — 유지 안전, 비중확대 아님):",
+        paste(sprintf("%s(%s/%s)", ij[insider_flag=="NET_BUY_SAFE", Ticker], ij[insider_flag=="NET_BUY_SAFE", insider_state], ij[insider_flag=="NET_BUY_SAFE", tier]), collapse=", "), "\n")
+  if (n_ins_fading > 0)
+    cat("[insider] 🟡 SAFE_FADING(EXIT — 강도 하향·즉시해제 안 함, R38 no hangover·protection 점착):",
+        paste(sprintf("%s(%s)", ij[insider_flag=="SAFE_FADING", Ticker], ij[insider_flag=="SAFE_FADING", tier]), collapse=", "), "\n")
+  cat("[insider] tier 신뢰(R37): MEGA_TOP30 SAFE 저신뢰(mega attenuation) / MID_OTHER 강건(t 4.6~6.1). ⚠ catastrophic exit은 SAFE_FADING 소관 아님(부실 tripwire A/B 우선)\n")
 }
 cat("[DONE] outputs →", OUT_DIR, "\n")
