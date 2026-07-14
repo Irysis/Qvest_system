@@ -1,11 +1,11 @@
 # 계층 병목 지도 (Layer Bottleneck Map)
 
 **목적**: "SR 2.5까지의 갭(현재 +0.60, gap_vector 실측)이 어느 계층에서 막혀 있는가"의 상시 실측 지도. 라운드 수집 시 Q-Lead가 갱신(answer-principles 연속성 절 4호 소비처-전개 의무의 계층 뷰). 도훈 지시 2026-07-13 "어떤 계층에서 개선이 필요할지를 탐구하는 능력" 제도화.
-**갱신**: 2026-07-13 v5 (R24 반영 — 지각제출 아크 수렴: 지식 강건 확립·소형주 국소로 자본 캡, monitoring tripwire 소비 진행) | **소비자**: Q-Lead 라운드 선택 · 주입면 · 도훈 결정
+**갱신**: 2026-07-14 v6 (R25 반영 — 감사 메타데이터 배포 유니버스 신호력 없음·SMALL 국소·부호 역전 = distress/forensic 재료 3연속(R20·R24·R25) cap-tier 벽 강건 확립. 배포 자본 미검 재료 = insider(크롤 대기)) | **소비자**: Q-Lead 라운드 선택 · 주입면 · 도훈 결정
 
 | 계층 | 실측 상태 | 병목 기여 | 열린 프론티어 (EV순) |
 |---|---|---|---|
-| **① 재료(데이터 원천)** | return-파생 16/16 소진 · market-data 파생 동일 벽(R16) · 텍스트 아크 종결 · 포렌식 = 4단 정직 negative(팩터 null→P-pure 특이→V02_EP 기각→**지수-레벨 구배 반증 R20**) | **★지배 병목** — 벽의 재료-불변성 실측으로 "long-only 횡단선택→cap-w 전이" 벽을 넘을 유일 후보 = 대형 tier에도 사는 신호원 | R9 insider(armed, 크롤 ~50개월 잔여) > FQ-004 감사의견 1단(무파서 0.6일, 도훈 결정) > **★제출지연×심각사건 아크(R22~R24 수렴)**: R24 가용-전체 677필러·episode-level로 R23 검정력 벽 해소(독립 event-firm 6→27·극단꼬리 lift 10x·부트CI[3.5,17.3]∌1·LOO 27/27 생존) = "극단 지각제출→심각사고" 지식 강건 확립. 단 ★규모 분해 DECISIVE: 사고 6건 전부 소형주·중대형 극단지각 15에피소드 0사고 = 신호는 배포 유니버스 밖 국소(cap-tier 국소화 이벤트-레벨 재확인) → 자본 소비 구조적 캡. 잔존 소비면 = monitoring 조기경보 tripwire(진행) + P2 소형 filer coverage 확장(FQ-038, DART 쿼터 insider 후순위) > 공매도(도훈 export). Benford·m1 = 이벤트 예측자로도 종결 |
+| **① 재료(데이터 원천)** | return-파생 16/16 config-scoped 벽 · market-data 파생 동일 벽(R16) · 텍스트 아크 config-scoped(screen-tier) · 포렌식 = 4단 정직 negative(팩터 null→P-pure 특이→V02_EP 기각→**지수-레벨 구배 반증 R20**) · **감사 메타데이터(R25): 배포 유니버스 신호력 無·SMALL 국소·부호 역전** | **★지배 병목** — 벽의 재료-불변성 실측으로 "long-only 횡단선택→cap-w 전이" 벽을 넘을 유일 후보 = 대형 tier에도 사는 신호원. **★distress/forensic 갈래(R20·R24·R25) 3연속 cap-tier 벽 = 부실-지문류 재료는 배포 자본 레버 아님 강건 확립**(소형 국소·monitoring 소비만) | **R9 insider(armed, 크롤 잔여 10개월·내일 자동)** = 배포 자본 미검 유일 재료(정보-우위, distress와 다른 기전) > FQ-004 감사 = R25 signal_round_negative(monitoring tripwire 소비) > **★제출지연×심각사건 아크(R22~R24 수렴)**: R24 가용-전체 677필러·episode-level로 R23 검정력 벽 해소(독립 event-firm 6→27·극단꼬리 lift 10x·부트CI[3.5,17.3]∌1·LOO 27/27 생존) = "극단 지각제출→심각사고" 지식 강건 확립. 단 ★규모 분해 DECISIVE: 사고 6건 전부 소형주·중대형 극단지각 15에피소드 0사고 = 신호는 배포 유니버스 밖 국소(cap-tier 국소화 이벤트-레벨 재확인) → 자본 소비 구조적 캡. 잔존 소비면 = monitoring 조기경보 tripwire(진행) + P2 소형 filer coverage 확장(FQ-038, DART 쿼터 insider 후순위) > 공매도(도훈 export). Benford·m1 = 이벤트 예측자로도 종결 |
 | ② 신호 생성 | 라벨 지배 확립: realized-PORT_t 정렬만 양성(+3.01), relevance 계열 폐쇄 | 재료 종속 — 자체 병목 아님 | 신규 재료 위 PORT_t-정렬 재적용(R9와 결합) |
 | ③ 선별 | R4~R8 지도 완결 | 소진 지대 (기여 확정: 2.61) | — |
 | ④ construction | 3축(선별·퇴출·충원) 지도 완결 · 챔피언 확정(2.937/+0.048) · 천장 cap-w ~2.94 / oos ~+0.12 | 소진 지대 (기여 확정: +0.33) | 재료 갱신 시 챔피언 구성 이식(R9 스펙 반영 완료) |

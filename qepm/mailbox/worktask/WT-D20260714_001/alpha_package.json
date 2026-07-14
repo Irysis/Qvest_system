@@ -1,0 +1,47 @@
+{
+  "task_id": "WT-D20260714_001",
+  "as_of_date": "2026-06-30",
+  "forecast_horizon": "1M",
+  "wt_type": "discovery",
+  "verdict": "CONFIG_SCOPED_NEGATIVE",
+  "hypothesis": "DART 감사 메타데이터(감사의견 비적정/강조사항/going-concern/KAM) + 정정 magnitude가 배포 유니버스(KOSPI200 KQ150)에서 exclusion 알파를 제공하는가",
+  "alpha_vector": {},
+  "confidence_vector": {},
+  "signal_matrix_ref": "stage_artifacts/WT_D20260714_001/alpha_scores.parquet",
+  "factor_specs": [
+    {"factor_family": "Accounting_Quality", "proxy": "audit_opinion_nonclean", "formula": "adt_opinion in {한정,부적정,의견거절}", "lag_rule": "audit report rcept_dt <= sig_date (C4/C5)", "neutralization": "size-tier decomposition", "economic_rationale": "distress/going-concern risk -> avoid", "source": "new_designed (DART t1 local parquet)", "result": "SPARSITY_WALL: 2 firms/11yr in deploy universe, 0 in top-25 ever"},
+    {"factor_family": "Accounting_Quality", "proxy": "emphasis_of_matter", "formula": "adt_reprt_spcmnt_matter present OR emphs_matter non-empty", "lag_rule": "rcept_dt<=sig_date", "economic_rationale": "auditor-flagged uncertainty", "source": "new_designed", "result": "cap-w PORT_t -0.73 (insig); EW spread +5.34 = small-cap size artifact; 14.3/25 top-cap flagged (too common to exclude)"},
+    {"factor_family": "Distress", "proxy": "going_concern_kw", "formula": "keyword scan 계속기업/존속능력/불확실 in emphasis+KAM", "lag_rule": "rcept_dt<=sig_date", "economic_rationale": "solvency risk -> avoid", "source": "new_designed", "result": "cap-w PORT_t +0.91 (insig); exclusion delta +0.024 t on top-25 (null)"},
+    {"factor_family": "Audit_Complexity", "proxy": "kam_count", "formula": "n(core_adt_matter items) >= 3, FY2019+", "lag_rule": "rcept_dt<=sig_date; FY2019+ only", "economic_rationale": "audit complexity/risk proxy", "source": "new_designed", "result": "cap-w PORT_t -0.36 (insig); MEGA tier -0.69 (insig); time-restricted 2020+"},
+    {"factor_family": "Restatement", "proxy": "correction_rounds", "formula": "n distinct [기재정정] filings >= 2 (frequency-adjacent, NOT true magnitude)", "lag_rule": "corr_first_dt<=sig_date", "economic_rationale": "reporting reliability", "source": "new_designed (t3 local, metadata-only)", "result": "cap-w PORT_t -0.53 (insig); frequency-adjacent = WT-005 VALIDATED_NEGATIVE re-confirmed; true magnitude needs document parser (data-gate, not paid this round)"}
+  ],
+  "diagnostics": {
+    "canonical_port_t_nw_lag3": -1.970,
+    "canonical_port_t_pvalue": 0.049,
+    "canonical_n_months": 125,
+    "canonical_note": "excl_goingconcern_top25 vs base_capw_top25 (-1.994): distress-exclusion moves deployable top-25 PORT_t by +0.024 t (going-concern) / +0.000 (non-clean, 0 names ever in top-25). Base negativity = mega-cap/cap-tilt drag, NOT audit signal. metric_type=canonical_screen.",
+    "cap_w_authoritative_all_insignificant": true,
+    "rank_ic": null,
+    "icir": null,
+    "turnover_proxy": 1.42,
+    "harvey_t_stat": null
+  },
+  "selection_objective": "canonical_port_t",
+  "n_trials": 4,
+  "selection_type": "chain",
+  "method_log": [
+    {"name": "S1_nonclean", "cap_w_port_t": null, "deploy_top25_flagged": 0.0, "selected": false},
+    {"name": "S2_emphasis", "cap_w_port_t": -0.73, "ew_spread_t": 5.34, "deploy_top25_flagged": 14.34, "selected": false},
+    {"name": "S3_going_concern", "cap_w_port_t": 0.91, "exclusion_delta_t": 0.024, "selected": false},
+    {"name": "S4_kam3", "cap_w_port_t": -0.36, "mega_tier_t": -0.69, "selected": false},
+    {"name": "S5_corr_rounds", "cap_w_port_t": -0.53, "note": "frequency-adjacent", "selected": false}
+  ],
+  "challenge_flags": [
+    "CONFIG_SCOPED_NEGATIVE: no surface deployable in KR_top342 long-only. cap-w authoritative all |t|<1.",
+    "SPARSITY_WALL (S1): non-clean opinion = 2 firms/11yr, 0 in top-25 (R24 form confirmed).",
+    "SIZE_ARTIFACT + SIGN_INVERSION: large EW spreads (S2 +5.34) driven purely by SMALL tier (+5.90); MEGA/MID insignificant. Flags proxy small-cap size premium => flagged OUTPERFORM in EW (opposite of exclusion thesis), non-deployable long-only in large-cap universe.",
+    "EXCLUSION_INFEASIBLE (common flags): emphasis-of-matter flags 14.3/25 top-cap names => cannot exclude without gutting portfolio.",
+    "SURVIVORSHIP (conservative): audit data = current constituents; delisted-after-distress firms absent => historical distress signal underestimated, but does not create deployable large-cap exclusion (MEGA/MID insig regardless).",
+    "S5 magnitude NOT extractable from local metadata (parser gate) — only frequency-adjacent measured."
+  ]
+}

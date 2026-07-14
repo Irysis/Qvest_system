@@ -1,0 +1,64 @@
+{
+  "task_id": "WT-D20260714_001",
+  "prereg_sha256": "d3e8564d8cdcacb2f690002d7f932fd6cd40df9651d32dfe1bd3b74f1a9a346d",
+  "verdict": "CONFIG_SCOPED_NEGATIVE",
+  "verdict_scope": "KR_top342 (KOSPI200 KQ150) long-only, top-25 cap-tilt deploy proxy, 2016-02..2026-06 (125 months), 15bps. Frontier remains open (INV-7).",
+  "panel": {"eligible_rows": 43682, "months": 125, "tickers": 702, "range": "2016-02-29..2026-06-30"},
+
+  "signal_surfaces": {
+    "S1_nonclean_opinion": {
+      "measurable": false, "reason": "SPARSITY_WALL — 2 firms/11yr (한화오션 FY2016, 코나아이 FY2019), 0 in deploy top-25 ever",
+      "deploy_top25_flagged_avg": 0.0, "exclusion_delta_port_t": 0.000
+    },
+    "S2_emphasis_of_matter": {
+      "cap_w_group_port_t": -0.73, "cap_w_pvalue": 0.468, "ew_spread_t_nw": 5.34,
+      "size_tier": {"MEGA": {"t": -0.20, "n_flag": 6.1}, "MID": {"t": 0.21, "n_flag": 11.15}, "SMALL": {"t": 5.90, "n_flag": 136.39}},
+      "exclusion_paired_ew_t": -3.97, "exclusion_ann_bps": -480.4,
+      "deploy_top25_flagged_avg": 14.34, "deploy_pct_months_any": 99,
+      "interpretation": "no cap-w content; EW effect = SMALL-tier size artifact (sign inverted: flagged outperform). Too common (14/25) to exclude."
+    },
+    "S3_going_concern": {
+      "cap_w_group_port_t": 0.91, "cap_w_pvalue": 0.360, "ew_spread_t_nw": 2.55,
+      "size_tier": {"MEGA": {"t": -0.41, "n_flag": 1.44}, "MID": {"t": 0.27, "n_flag": 3.36}, "SMALL": {"t": 2.87, "n_flag": 14.92}},
+      "exclusion_paired_ew_t": -3.76, "exclusion_ann_bps": -103.3,
+      "deploy_top25_flagged_avg": 2.05, "deploy_pct_months_any": 58,
+      "canonical_exclusion_delta_port_t": 0.024,
+      "interpretation": "genuine-distress but too sparse in deploy universe; exclusion moves top-25 PORT_t by +0.024 t (null). SMALL-tier only."
+    },
+    "S4_kam_count_ge3": {
+      "period": "FY2019+ (2020-01+)", "cap_w_group_port_t": -0.36, "cap_w_pvalue": 0.719, "ew_spread_t_nw": 2.40,
+      "size_tier": {"MEGA": {"t": -0.69, "n_flag": 2.75}, "MID": {"t": 1.30, "n_flag": 3.57}, "SMALL": {"t": 2.25, "n_flag": 23.3}},
+      "exclusion_paired_ew_t": -2.96, "deploy_top25_flagged_avg": 5.27,
+      "interpretation": "time-restricted; cap-w + MEGA insignificant. sample-era bias caveat (C3)."
+    },
+    "S5_correction_rounds_ge2": {
+      "cap_w_group_port_t": -0.53, "cap_w_pvalue": 0.594, "ew_spread_t_nw": 3.43,
+      "size_tier": {"MEGA": {"t": -1.78, "n_flag": 1.31}, "MID": {"t": 0.02, "n_flag": 3.27}, "SMALL": {"t": 3.83, "n_flag": 26.6}},
+      "label": "FREQUENCY_ADJACENT (not true magnitude — parser gate)",
+      "interpretation": "re-confirms WT-005 correction-frequency VALIDATED_NEGATIVE on cap-w; true financial-restatement magnitude untested (document parser required)."
+    }
+  },
+
+  "dual_basis_summary": {
+    "cap_w_authoritative": "ALL surfaces |PORT_t|<1 (insignificant). No deployable exclusion content.",
+    "ew_universe_diagnostic": "large positive spreads (2.4-5.3 t) but tier decomposition attributes 100% to SMALL tier = size premium, sign inverted vs thesis. This is the 'EW-basis rewards small-cap tilt' artifact (measurement-graduation §6), NOT alpha.",
+    "size_tier_verdict": "MEGA (deployable core) insignificant/weakly-negative for ALL surfaces; MID insignificant. Signal localizes entirely in SMALL tier (outside deploy relevance)."
+  },
+
+  "canonical_exclusion_contract_grade": {
+    "base_capw_top25": {"port_t_nw_lag3": -1.994, "pvalue": 0.046, "ir": -0.661, "note": "mega-cap/cap-tilt drag, audit-independent"},
+    "excl_going_concern_top25": {"port_t_nw_lag3": -1.970, "pvalue": 0.049, "delta_vs_base": 0.024},
+    "excl_nonclean_top25": {"port_t_nw_lag3": -1.994, "delta_vs_base": 0.000, "note": "identical — non-clean firms never in top-25"}
+  },
+
+  "adversarial_challenge_resolution": {
+    "C1_survivorship": "PIT universe used (time-varying K200/KQ150 membership). Audit data = current constituents => delisted-after-distress firms absent => historical distress signal UNDERESTIMATED (conservative). But irrelevant to deployable exclusion: MEGA/MID tiers insignificant regardless of survivorship; forward-investable large caps show no flag->underperformance.",
+    "C2_sparsity_vs_power": "S1 = genuine sparsity (2 firms). S2-S4 have ample counts (152/14/29 flagged/mo) => NOT a power wall; cap-w null is real. Tier decomposition resolves the large EW spread as SMALL-tier size artifact, not hidden power.",
+    "C3_kam_era_bias": "S4 scoped to 2020+ (FY2019 KAM 실효). cap-w -0.36 + MEGA -0.69 both insignificant; verdict explicitly period-scoped, not generalized to pre-2019."
+  },
+
+  "universe_comparison": {
+    "measured": "KR_top342 only",
+    "v2_note": "v2 (KR_TOP500_FREEFLOAT) not run: the null is cap-w-authoritative + size-tier-resolved (MEGA/MID insignificant, SMALL-only artifact). A larger universe would ADD small caps where the (sign-inverted) size effect concentrates — would strengthen the non-deployability conclusion, not overturn it. v2 deferred as low-EV for this verdict."
+  }
+}

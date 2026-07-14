@@ -1,0 +1,24 @@
+{
+  "task_id": "WT-D20260714_001",
+  "round": "R25",
+  "frontier": "FQ-004",
+  "verdict": "CONFIG_SCOPED_NEGATIVE",
+  "frontier_status": "OPEN",
+  "prereg_sha256": "d3e8564d8cdcacb2f690002d7f932fd6cd40df9651d32dfe1bd3b74f1a9a346d",
+  "one_line": "DART 감사-메타데이터(감사의견/going-concern/KAM/정정) exclusion은 KR 배포 유니버스 long-only에서 config-scoped negative — cap-w authoritative 全 무의미(|t|<1), EW 양(+)효과는 SMALL-tier size 아티팩트(부호 반전), non-clean은 sparsity 벽(top-25 0회).",
+  "selection_type": "chain",
+  "n_trials": 4,
+  "surfaces_verdict": {
+    "S1_nonclean": "SPARSITY_WALL (2 firms/11yr, 0 in top-25)",
+    "S2_emphasis": "cap-w insig + too common (14/25) to exclude + SMALL-tier size artifact",
+    "S3_going_concern": "cap-w insig; exclusion delta +0.024 t (null); too sparse in deploy",
+    "S4_kam3": "cap-w insig, MEGA insig; FY2019+ scoped",
+    "S5_corr_rounds": "frequency-adjacent, cap-w insig, re-confirms WT-005"
+  },
+  "authoritative_evidence": "contract-grade canonical_screen_bt: base_capw_top25 PORT_t -1.994 -> excl_going_concern -1.970 (delta +0.024) / excl_nonclean -1.994 (delta 0.000).",
+  "consumption_deployed": [
+    "monitoring tripwire (FQ registered): going-concern / non-clean opinion on an admitted book name -> alert (risk guard, NOT alpha)"
+  ],
+  "next_probe_count": 3,
+  "escalation": "none (HIGH severity 1/5, no AX hard-fail, no PIT violation)"
+}

@@ -1,0 +1,32 @@
+{
+  "l_code": "L-AR-20260714_R25",
+  "strategy_id": "WT-D20260714_001",
+  "grade": "F",
+  "core_reference": "FQ-004 R25 (신규 prereg; audit-metadata 신호 라운드) / prereg.sha256 d3e8564d / verdict.json / alpha_validation.json / canonical_exclusion.json",
+  "lesson_text": "DART 감사-메타데이터 exclusion 신호(R25, FQ-004): 동결 PRIMARY = CONFIG_SCOPED_NEGATIVE + FRONTIER_OPEN. 로컬 취득분(t1 감사의견 FY2015-2025 12,844행/348사, t3 정정 1,528 ticker-fy) 5신호표면(비적정/강조사항/going-concern/KAM count/정정 rounds) 배포유니버스(K200uKQ150, 43,682행/125월/702종목, 2016-02..2026-06, 15bps) 실측. ★cap-w authoritative 全 무의미: S1 NA(sparsity), S2 -0.73, S3 +0.91, S4 -0.36, S5 -0.53 — 全 |PORT_t|<1. ★결정적 size-tier 분해: EW-basis 큰 양(+) spread(S2 +5.34t)는 SMALL tier 단독 구동(S2 SMALL +5.90 / MID +0.21 / MEGA -0.20) — flag가 소형주 size premium을 proxy, 부호는 exclusion 논지와 반대(flagged가 OUTPERFORM). MEGA/MID(배포 core) 全 무의미. ★S1 비적정 = 순수 sparsity 벽: 2 firms/11yr(한화오션 FY16·코나아이 FY19), top-25 0회 진입 -> exclusion 불가. ★계약등급 canonical: base_capw_top25 -1.994(mega-cap drag, audit 무관) -> excl_going_concern -1.970(delta +0.024) / excl_nonclean -1.994(delta 0.000). 감사 exclusion이 배포 top-25 PORT_t를 사실상 못 움직임. ★강조사항은 배포 대형주 14.3/25 flagged(너무 흔해 exclusion 불가). ★S5 정정은 rounds(빈도-인접)만 — 진짜 magnitude는 document.xml 파서 필요(본 라운드 금지), WT-005 correction-frequency VALIDATED_NEGATIVE 재확인. 생존편향 방향 보수(상폐-distress firms 부재 -> 역사적 신호 과소평가하나 배포 대형주 무의미는 불변). Campbell-Hilscher-Szilagyi 2008 distress=LOW-return과 부호 반대 = KR small-cap size premium이 distress penalty 압도(sample).",
+  "tags": ["non_return", "dart_audit_metadata", "audit_opinion", "going_concern", "kam", "correction_magnitude", "exclusion_signal", "config_scoped_negative", "frontier_open", "sparsity_wall", "size_artifact", "sign_inversion", "smallcap_confined", "dual_basis", "cap_tier_decomposition", "stage1_no_parser"],
+  "created_at": "2026-07-14",
+  "research_mode": "alpha_research",
+  "created_by": "emit:alpha_research",
+  "metric_type": "canonical_screen",
+  "construction_type": "top25_capw_exclusion + EW_group_signal",
+  "mechanism_hypothesis": "감사 red-flag(비적정/강조사항/going-concern/KAM/정정)가 배포유니버스에서 forward-return 저하를 예측해 exclusion 알파를 제공. 반증: 로컬 감사-메타데이터는 배포 대형주(MEGA/MID)에서 무신호이고, 유일한 EW 효과는 소형주 size premium(부호 반전)이며, 진짜 distress(비적정)는 배포 유니버스에 2건뿐(top-25 부재).",
+  "lcode_schema_version": 2,
+  "next_probe": {
+    "P1": "소형주-포함 유니버스에서 genuine-distress(비적정+going-concern) 신호 재측정: 신호는 SMALL tier에 국소(S3 SMALL +2.87). KR_TOP500_FREEFLOAT 또는 소형주 확장 유니버스에서 distress penalty가 size premium과 분리되는지 Size/sector-residualized로 검정. 단 배포 mandate(2e8 liq)와 상충 -> 자본 아닌 monitoring/risk-guard 소비면. 부호가 진짜 distress면 음(-), size proxy면 양(+) 유지로 판별.",
+    "P2": "confound-controlled hard-distress composite: going-concern x RAWDATA{AdminStock, TradingHalt, UnfaithfulDisc} 결합 -> 희소하나 severe한 joint-flag가 Size/sector 통제 후 cap-w underperformance를 예측하는가. 현 5표면은 size를 proxy -> residualize 필수. joint-flag는 top-25 진입 종목만 발동하는 exclusion tripwire로 소비 가능.",
+    "P3": "정정 진짜 MAGNITUDE (파서 gate, FQ-004 2단): 재무제표 재작성 vs 단순 기재정정을 document.xml에서 추출(현 metadata는 rounds=빈도-인접만, WT-005 negative 재확인). 본 라운드 precursor 약함(cap-w -0.53 insig) -> 파서 비용(~29k건/4.5일) 미정당화. magnitude가 rounds와 독립 신호일 근거(예: 소형주 외 대형주에서 재작성-후 하락 사례) 확보 시에만 지불."
+  },
+  "consumption_surfaces_checked": {
+    "factor_ranking": "no (cap-w insig)",
+    "universe_filter": "no deployable exclusion (common flags gut portfolio / rare flags absent)",
+    "overlay_regime": "no",
+    "risk_model_beta": "no",
+    "monitoring_signal": "YES -> going-concern/non-clean tripwire on admitted book names (risk guard)",
+    "screen_label": "audit flags = small-cap size proxy label",
+    "cross_mode": "RAMP could use distress as risk-tier not alpha"
+  },
+  "falsification_attempts": "prereg hash 동결(association 무관측·count만 관측 시점 lock) / PIT as-of join(rcept_dt<=sig_date) + PIT time-varying universe / forward Close-to-Close return + gap>45d guard / dual-basis(cap-w authoritative + EW-uni diag) / size-tier 분해(MEGA/MID/SMALL) / 계약등급 canonical_screen_bt exclusion delta / 생존편향 방향 진단 / 5표면 병렬(family 회계 n_trials=4) / S5 frequency-adjacent 라벨 격리",
+  "selection_type": "chain",
+  "record_type": "process"
+}
