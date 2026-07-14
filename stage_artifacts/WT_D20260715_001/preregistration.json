@@ -1,0 +1,48 @@
+{
+  "wt_id": "WT-D20260715_001",
+  "round": "R32",
+  "fq": "FQ-048",
+  "date": "2026-07-15",
+  "title": "밸류 추가가 실제 PG2 북(M4xR05 오버레이 적용)의 최종 배포 성과를 강화하는가",
+  "role": "forge (integration + measurement, pure function)",
+  "question_redefined_by_dohoon": "PG2에 밸류 추가해서 성과 더 강화하는지 확인 — 알파 축(초과수익)이 아닌 위험조정 성과(MDD/Calmar) 축이 1급",
+  "distinction_from_prior": "R26~R31/FQ-046은 오버레이 前 맨몸 알파의 book-marginal만 측정. R32는 실제 배포 북 = 알파 x M4xR05 오버레이(국면 현금조절 포함)의 최종 성과를 현행 vs 밸류-추가로 대칭 비교. FQ-046 dossier는 오버레이를 estimate로만 처리 — 본 라운드가 오버레이 적용 실측.",
+  "base_authority_7b": {
+    "mandate": "book-관련 측정 base = 05_Production 현행 PG2 코드 파생 clean 신호만 (도훈 2026-07-14, measurement-graduation §7b). 오염 저장 패널(alpha_scores_str1715_268m.parquet, same-month vintage) 소비 금지.",
+    "base_score_source": "recon_panels.parquet 0_ic_S7 (ic-theta) — production _recompute_alpha_asof.R score와 spearman=1.000 exact parity (max_absdiff=0, 4 sample months, p2_prod_parity.rds). production_parity_verified.",
+    "value_source": "value_panels.parquet vz_off0 (R29 T-1 clean, factor_db off0 cor=1.0000)",
+    "overlay_scalars_source": "05_Production/2-2/04_backtest_results/period_returns_layer5_faith.csv (m4, beta_R05, ret_orig; 269 months; production canonical noLayer4 formula)",
+    "production_noL4_formula": "ret_noL4 = beta_R05 * m4 * ret_orig - |delta beta_R05| * 15bps (05_Production 2-3 recompute_bt_noLayer4_clean.R)"
+  },
+  "arms": {
+    "arm0_baseline": "score = 0_ic_S7 (STR_1715 score_eff production-parity) -> cap-w top-25 -> base_ret_net (15bps delta) -> x M4xR05 overlay",
+    "arm1_B2_value": "b_z=z(0_ic_S7), v_z=z(vz_off0), v_boost = v_z if tier in {MID,OTHER} else 0; score=0.7*b_z+0.3*v_boost -> cap-w top-25 -> base_ret_net -> x SAME M4xR05 overlay (R30 B2 non-mega tier-conditional 재사용)",
+    "arm2_Z6_value": "b_z, v_z; score=0.7*b_z+0.3*v_z (all tiers) -> cap-w top-25 -> base_ret_net -> x SAME M4xR05 overlay (R27/R29 Z6 z-blend w0.30 재사용)"
+  },
+  "construction": {
+    "top_n": 25,
+    "weighting": "cap-w by SIZE (cap_norm, cap 0.20, renorm) — R30 mk_capw 재사용 (graduation-authoritative cap-w basis §2)",
+    "liq_filter": "adv20 >= 2e8 KRW (동일 across arms)",
+    "cost_base": "15bps one-way delta (weighted_screen_bt traded_t = sum|w_t - w_{t-1}|)",
+    "cost_overlay": "|delta beta_R05| * 15bps (동일 across arms, production noL4)",
+    "tier": "SIZE 월별 내림차순: MEGA(cap_rank 1-10) / MID(11-30) / OTHER(31+)",
+    "z_blend_weight": 0.30
+  },
+  "overlay_alignment": "recon base return keyed by fwd_ret Date d0 (decision month-end) -> realized_ym = month(d0)+1 join production m4/beta_R05. 오버레이 스칼라 3 arm 동일 -> 오버레이 효과 대칭 상쇄, 차이 = 밸류 성분만.",
+  "benchmark": "SI$bench (cap-w KOSPI200 union KOSDAQ150, forward-aligned to d0) — 동일 across 3 arms (내부 일관성). production noL4는 pinned IKS200 사용 -> arm0 vs production noL4 비교는 context-only (bench/construction 차이).",
+  "metrics_authority": "build_metrics + build_benchmark_compare (contract, PerformanceAnalytics 표준함수, annualization_factor=12, monthly). self-synth 금지.",
+  "primary_axis": "위험조정 성과 (MDD, Calmar) — 밸류 방어성 x 오버레이 현금조절 상호작용. SR/CAGR/PORT_t 부차 (알파 축은 이미 negative).",
+  "book_marginal": "delta_IR = arm1/arm2 net_active_IR - arm0 net_active_IR (window-matched, ir_convention=net_active_recon_v1)",
+  "7b_parity_check": {
+    "primary": "arm0-recon base (pre-overlay) monthly ret_net vs production ret_orig (realized_ym aligned): Pearson corr + both annualized SR. corr < 0.9 또는 부호 역전 시 중단·보고.",
+    "secondary_context": "arm0 overlay-applied absolute SR/Calmar/MDD vs production noL4 (SR_geo 1.898 / Calmar 1.943 / MDD 0.2329 / CAGR 0.4526) — construction(top-25 cap-w vs N20 tilt) + bench 차이로 정확 일치 미기대, 방향 정합만 확인."
+  },
+  "honest_prior_prereg": "알파 문제(2024+ value-vs-mega 역전 + incumbent corr 0.98 잉여)는 오버레이 양쪽 동일적용이라 상대비교서 상쇄 -> 큰 개선 기대 낮음. 단 위험축 상호작용(밸류 방어성이 overlay 저노출 국면과 겹치면 MDD 개선 가능)은 미측정 -> 본 라운드가 판별. 밸류 아크 R26~FQ-046 = 소비형태 5종 전수 자본 미달 (알파 축). R32 = 6번째 소비형태(오버레이 적용 배포 북) 위험축 측정.",
+  "vintage_pin": "R32_frozen_panels_20260714 (recon_panels/value_panels/screen_inputs 07-14 off0 clean + prod period_returns_layer5_faith.csv frozen). RAWDATA md5=53748629 (07-15 refresh)이나 base returns는 frozen 패널 소비 -> RAWDATA 무관.",
+  "execution_discipline": "R .R source, setDTthreads(1), arrow io(2), OneDrive tmp+rename. book_state/05_Production 무변경 (stage_artifacts만 write). DART API 금지. governor 정지.",
+  "self_adversarial_challenges_planned": [
+    "1. arm0가 production 실북과 정합하는가 (§7b parity — base corr + overlay SR/Calmar 방향)",
+    "2. 오버레이가 밸류 방어성을 상쇄하는가 증폭하는가 (방향 귀속 — 밸류 drag가 저노출 국면에 집중되면 오버레이가 밸류 효과를 마스킹)",
+    "3. MDD 개선이 표본-특이(2020 COVID 등 단일 에피소드)인가 (drawdown 에피소드 분해)"
+  ]
+}
