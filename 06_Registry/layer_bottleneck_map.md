@@ -1,7 +1,7 @@
 # 계층 병목 지도 (Layer Bottleneck Map)
 
 **목적**: "SR 2.5까지의 갭(현재 +0.60, gap_vector 실측)이 어느 계층에서 막혀 있는가"의 상시 실측 지도. 라운드 수집 시 Q-Lead가 갱신(answer-principles 연속성 절 4호 소비처-전개 의무의 계층 뷰). 도훈 지시 2026-07-13 "어떤 계층에서 개선이 필요할지를 탐구하는 능력" 제도화.
-**갱신**: 2026-07-14 v8 (R30 FQ-045 반영 — ②construction: non-mega tier-conditional value slotting(B2)이 cap-w 국소화 벽 최초 screening 관통(paired 2.378 PASS), 단 자본 미검(FQ-046). + R26 FQ-039 book-marginal 반영 — score_eff 8번째 팩터 add/remove/replace 스크린. ②construction z-blend 소비형태도 book-marginal 자본기여 부재(ADD 14arms 全 paired<2.0), 단 ①재료서 value=book 유일 미결 노출 발견. + R25 감사 메타데이터·distress/forensic 3연속 cap-tier 벽) | **소비자**: Q-Lead 라운드 선택 · 주입면 · 도훈 결정
+**갱신**: 2026-07-15 v9 (R31 FQ-047 반영 — 밸류 정의축 config-scoped negative: 정의 7종 중 EBIT/EV만 cap-w 게이트 통과·그마저 FQ-046 REJECT. ★정보성: "2024+ 역전"은 정의-특이(EV배수 죽고 매출/이익 yield 생존) · incumbent 잉여=구성-바운드(정의-무관 cor 0.86~0.93). 밸류 추가 방향 config-scoped 수렴 + SP yield EW-basis 재라우팅 프론티어. ★R9 재료본진: insider 패널 빌드 완료(202606·PIT ok)·측정 connection 버그 재개 중. | v8: R30 non-mega tier-conditional B2 screening 관통 + R26 add/remove/replace) | **소비자**: Q-Lead 라운드 선택 · 주입면 · 도훈 결정
 
 | 계층 | 실측 상태 | 병목 기여 | 열린 프론티어 (EV순) |
 |---|---|---|---|

@@ -38,13 +38,13 @@ tg_agent_brief(
         "SHY 커버리지 희소(46%) → 주주환원은 커버리지-제약 검정(완전 기각 아님)",
         "저EV 다중검정 value family 누적 ~15 trial(chain) — 게이트 통과 신규 부재로 무효화",
         "metric_type=cap-w 스크리닝 (forge graduation 미검증, screening-tier only)")),
-    list(type="bullet", emoji="➡️", heading="밸류 아크 완결 답 + 다음 단계",
-      items=c(
-        "답(도훈): cap-w book-marginal 밸류 추가=소진. 단 밸류 사멸 아님(매출/이익 yield 생존)",
-        "P1: SP 매출yield → EW-basis/OVERLAY 재라우팅 (V02_EP FQ-008/009 경로, 지금 가능)",
-        "P2: EBIT/EV-vs-매출yield 정의-로테이션 monitoring tripwire (FQ-046 부활조건 정련)",
-        "P3: 비-cap-w EW/벤치-상대 밸류 소비 (RAMP 모드, 저순위)",
-        "book·05_Production·insider crawl 무접촉. L-AR-20260714_235257 / WT-D20260714_007"))
+    list(type="kv", emoji="➡️", heading="밸류 아크 완결 답 + 다음 단계",
+      kv=list(
+        "답(도훈)"="대형주가중 book 밸류 추가=소진. 단 밸류 사멸 아님",
+        "P1"="매출yield → 동일가중/오버레이 재라우팅 (지금 가능)",
+        "P2"="기업가치배수-vs-매출yield 로테이션 감시선 (부활조건 정련)",
+        "P3"="비-대형주가중 밸류 소비 (RAMP 모드, 저순위)",
+        "무접촉"="book·05_Production·insider crawl. L-AR-20260714_235257"))
   ),
   charts = c(file.path(CH,"01_paired_by_subaxis.png"),
              file.path(CH,"02_recency_pre_post_2024.png"),
