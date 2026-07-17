@@ -26,6 +26,15 @@ if (abs(file.info(BACKUP)$size - file.info(RAWDATA_CACHE)$size) > 1e6)
 old <- as.data.table(read_parquet(RAWDATA_CACHE))
 fill <- as.data.table(read_parquet(file.path(WT, "r47_fill_rows.parquet")))
 old[, Date := as.Date(Date)]; fill[, Date := as.Date(Date)]
+# fill 내부 중복 방어 (stk/ksq 동일티커 방지 — 없어야 정상)
+ndup_fill <- sum(duplicated(fill, by=c("Date","Ticker")))
+if (ndup_fill > 0) { log("[fill] 내부 중복 %d행 dedup", ndup_fill); fill <- unique(fill, by=c("Date","Ticker")) }
+# book 14보유 overlap 확인 (있으면 abort — book은 유니버스, fill은 non-universe라 0이어야)
+book <- c("A005930","A000660","A319660","A034730","A095610","A011070","A007340","A023530",
+          "A004170","A402340","A222800","A003030","A290650","A189300")
+book_overlap <- intersect(unique(fill$Ticker), book)
+log("[book] fill∩book14 overlap = %d (MUST be 0)", length(book_overlap))
+if (length(book_overlap) > 0) abort(sprintf("book overlap: %s", paste(book_overlap, collapse=",")))
 rows_pre <- nrow(old); maxd_pre <- max(old$Date); mind_pre <- min(old$Date)
 nuniv_pre <- nrow(old[K200 %in% 1 | KQ150 %in% 1])
 ntick_pre <- uniqueN(old$Ticker)
