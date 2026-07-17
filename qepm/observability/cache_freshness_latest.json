@@ -1,10 +1,10 @@
 {
-  "ran_at": "2026-07-17T19:08:01+0900",
-  "n_total": 54,
+  "ran_at": "2026-07-17T20:02:01+0900",
+  "n_total": 44,
   "summary": {
-    "OK": 21,
-    "WARN": 33,
-    "CRITICAL": 0
+    "OK": 43,
+    "WARN": 0,
+    "CRITICAL": 1
   },
   "results": [
     {
@@ -193,11 +193,11 @@
       "schedule": "daily",
       "max_lag_days": 90,
       "registered": true,
-      "mtime_lag": 2,
-      "data_lag": 119,
-      "lag_used": 119,
-      "status": "STALE_WARN",
-      "severity": "WARN"
+      "mtime_lag": 0,
+      "data_lag": 1,
+      "lag_used": 1,
+      "status": "FRESH",
+      "severity": "OK"
     },
     {
       "path": ".cache/fundamental_dart.parquet",
@@ -217,23 +217,23 @@
       "schedule": "monthly",
       "max_lag_days": 35,
       "registered": true,
-      "mtime_lag": 40,
+      "mtime_lag": 0,
       "data_lag": null,
-      "lag_used": 40,
-      "status": "STALE_WARN",
-      "severity": "WARN"
+      "lag_used": 0,
+      "status": "FRESH",
+      "severity": "OK"
     },
     {
       "path": ".cache/ic_matrix_expanding.parquet",
       "tier": 3,
       "schedule": "on_demand",
-      "max_lag_days": 35,
+      "max_lag_days": {},
       "registered": true,
       "mtime_lag": 40,
       "data_lag": 78,
       "lag_used": 78,
-      "status": "ON_DEMAND_STALE",
-      "severity": "WARN"
+      "status": "ON_DEMAND",
+      "severity": "OK"
     },
     {
       "path": ".cache/kr_factor_returns.parquet",
@@ -267,13 +267,9 @@
       "schedule": "on_demand",
       "max_lag_days": 45,
       "registered": true,
-      "latest_file": "fdb_daily_202605.parquet",
-      "n_files": 437,
-      "mtime_lag": 40,
-      "data_lag": 55,
-      "lag_used": 55,
-      "status": "ON_DEMAND_STALE",
-      "severity": "WARN"
+      "status": "MISSING",
+      "severity": "CRITICAL",
+      "note": "file_pattern '^fdb_daily_[0-9]{6}\\.parquet$' 매칭 파일 0건"
     },
     {
       "path": ".cache/factor_db/factor_ic_monthly.parquet",
@@ -293,11 +289,227 @@
       "schedule": "weekly",
       "max_lag_days": 90,
       "registered": true,
+      "mtime_lag": 0,
+      "data_lag": 16,
+      "lag_used": 16,
+      "status": "FRESH",
+      "severity": "OK"
+    },
+    {
+      "path": ".cache/ecos_bond_rates.parquet",
+      "tier": 2,
+      "schedule": "daily",
+      "max_lag_days": 7,
+      "registered": true,
+      "mtime_lag": 0,
+      "data_lag": 1,
+      "lag_used": 1,
+      "status": "FRESH",
+      "severity": "OK"
+    },
+    {
+      "path": ".cache/macro_fred.parquet",
+      "tier": 2,
+      "schedule": "daily",
+      "max_lag_days": 7,
+      "registered": true,
+      "mtime_lag": 0,
+      "data_lag": 1,
+      "lag_used": 1,
+      "status": "FRESH",
+      "severity": "OK"
+    },
+    {
+      "path": ".cache/regime_daily_v2.parquet",
+      "tier": 2,
+      "schedule": "daily",
+      "max_lag_days": 4,
+      "registered": true,
+      "mtime_lag": 0,
+      "data_lag": 1,
+      "lag_used": 1,
+      "status": "FRESH",
+      "severity": "OK"
+    },
+    {
+      "path": ".cache/value_quality_spread.parquet",
+      "tier": 3,
+      "schedule": "daily",
+      "max_lag_days": 7,
+      "registered": true,
+      "mtime_lag": 0,
+      "data_lag": null,
+      "lag_used": 0,
+      "status": "FRESH",
+      "severity": "OK"
+    },
+    {
+      "path": ".cache/fundamental_dart_quarterly.parquet",
+      "tier": 2,
+      "schedule": "daily",
+      "max_lag_days": 14,
+      "registered": true,
+      "mtime_lag": 2,
+      "data_lag": null,
+      "lag_used": 2,
+      "status": "FRESH",
+      "severity": "OK"
+    },
+    {
+      "path": ".cache/indices.parquet",
+      "tier": 2,
+      "schedule": "on_demand",
+      "max_lag_days": {},
+      "registered": true,
+      "mtime_lag": 14,
+      "data_lag": 17,
+      "lag_used": 17,
+      "status": "ON_DEMAND",
+      "severity": "OK"
+    },
+    {
+      "path": ".cache/kr_factor_returns_v2.parquet",
+      "tier": 3,
+      "schedule": "monthly",
+      "max_lag_days": 180,
+      "registered": true,
       "mtime_lag": 40,
-      "data_lag": 113,
-      "lag_used": 113,
-      "status": "STALE_WARN",
-      "severity": "WARN"
+      "data_lag": 135,
+      "lag_used": 135,
+      "status": "FRESH",
+      "severity": "OK"
+    },
+    {
+      "path": ".cache/fundamental_xlsx.parquet",
+      "tier": 2,
+      "schedule": "on_demand",
+      "max_lag_days": {},
+      "registered": true,
+      "mtime_lag": 40,
+      "data_lag": null,
+      "lag_used": 40,
+      "status": "ON_DEMAND",
+      "severity": "OK"
+    },
+    {
+      "path": ".cache/fundamental_xlsx_derived.parquet",
+      "tier": 2,
+      "schedule": "on_demand",
+      "max_lag_days": {},
+      "registered": true,
+      "mtime_lag": 0,
+      "data_lag": null,
+      "lag_used": 0,
+      "status": "ON_DEMAND",
+      "severity": "OK"
+    },
+    {
+      "path": ".cache/fundamental_xlsx_ttm.parquet",
+      "tier": 2,
+      "schedule": "on_demand",
+      "max_lag_days": {},
+      "registered": true,
+      "mtime_lag": 40,
+      "data_lag": null,
+      "lag_used": 40,
+      "status": "ON_DEMAND",
+      "severity": "OK"
+    },
+    {
+      "path": ".cache/shares_issued.parquet",
+      "tier": 3,
+      "schedule": "on_demand",
+      "max_lag_days": {},
+      "registered": true,
+      "mtime_lag": 40,
+      "data_lag": null,
+      "lag_used": 40,
+      "status": "ON_DEMAND",
+      "severity": "OK"
+    },
+    {
+      "path": ".cache/stock_buyback.parquet",
+      "tier": 3,
+      "schedule": "on_demand",
+      "max_lag_days": {},
+      "registered": true,
+      "mtime_lag": 40,
+      "data_lag": null,
+      "lag_used": 40,
+      "status": "ON_DEMAND",
+      "severity": "OK"
+    },
+    {
+      "path": ".cache/ml_momentum_pred.parquet",
+      "tier": 3,
+      "schedule": "on_demand",
+      "max_lag_days": {},
+      "registered": true,
+      "mtime_lag": 40,
+      "data_lag": null,
+      "lag_used": 40,
+      "status": "ON_DEMAND",
+      "severity": "OK"
+    },
+    {
+      "path": ".cache/regime_jump_daily.parquet",
+      "tier": 3,
+      "schedule": "on_demand",
+      "max_lag_days": {},
+      "registered": true,
+      "mtime_lag": 40,
+      "data_lag": null,
+      "lag_used": 40,
+      "status": "ON_DEMAND",
+      "severity": "OK"
+    },
+    {
+      "path": ".cache/regime_forecast_series.parquet",
+      "tier": 3,
+      "schedule": "on_demand",
+      "max_lag_days": {},
+      "registered": true,
+      "mtime_lag": 40,
+      "data_lag": null,
+      "lag_used": 40,
+      "status": "ON_DEMAND",
+      "severity": "OK"
+    },
+    {
+      "path": ".cache/regime_forecast_series_v1vix.parquet",
+      "tier": 3,
+      "schedule": "on_demand",
+      "max_lag_days": {},
+      "registered": true,
+      "mtime_lag": 40,
+      "data_lag": null,
+      "lag_used": 40,
+      "status": "ON_DEMAND",
+      "severity": "OK"
+    },
+    {
+      "path": ".cache/regime_forecast_series_v2.parquet",
+      "tier": 3,
+      "schedule": "on_demand",
+      "max_lag_days": {},
+      "registered": true,
+      "mtime_lag": 40,
+      "data_lag": null,
+      "lag_used": 40,
+      "status": "ON_DEMAND",
+      "severity": "OK"
+    },
+    {
+      "path": ".cache/regime_forecast_series_v3.parquet",
+      "tier": 3,
+      "schedule": "on_demand",
+      "max_lag_days": {},
+      "registered": true,
+      "mtime_lag": 40,
+      "data_lag": null,
+      "lag_used": 40,
+      "status": "ON_DEMAND",
+      "severity": "OK"
     },
     {
       "path": ".cache/RAWDATA.parquet::value",
@@ -322,258 +534,6 @@
       "abs_ret_max_abs": 0.1223,
       "status": "VALUE_PASS",
       "severity": "OK"
-    },
-    {
-      "path": ".cache/benchmark_pin20260703.parquet",
-      "tier": null,
-      "schedule": null,
-      "registered": false,
-      "status": "ORPHAN",
-      "severity": "WARN",
-      "note": "registry에 등록되지 않은 cache — registry entry 추가 필요"
-    },
-    {
-      "path": ".cache/ecos_bond_rates.parquet",
-      "tier": null,
-      "schedule": null,
-      "registered": false,
-      "status": "ORPHAN",
-      "severity": "WARN",
-      "note": "registry에 등록되지 않은 cache — registry entry 추가 필요"
-    },
-    {
-      "path": ".cache/fundamental_dart_quarterly.parquet",
-      "tier": null,
-      "schedule": null,
-      "registered": false,
-      "status": "ORPHAN",
-      "severity": "WARN",
-      "note": "registry에 등록되지 않은 cache — registry entry 추가 필요"
-    },
-    {
-      "path": ".cache/fundamental_xlsx.parquet",
-      "tier": null,
-      "schedule": null,
-      "registered": false,
-      "status": "ORPHAN",
-      "severity": "WARN",
-      "note": "registry에 등록되지 않은 cache — registry entry 추가 필요"
-    },
-    {
-      "path": ".cache/fundamental_xlsx_derived.parquet",
-      "tier": null,
-      "schedule": null,
-      "registered": false,
-      "status": "ORPHAN",
-      "severity": "WARN",
-      "note": "registry에 등록되지 않은 cache — registry entry 추가 필요"
-    },
-    {
-      "path": ".cache/fundamental_xlsx_ttm.parquet",
-      "tier": null,
-      "schedule": null,
-      "registered": false,
-      "status": "ORPHAN",
-      "severity": "WARN",
-      "note": "registry에 등록되지 않은 cache — registry entry 추가 필요"
-    },
-    {
-      "path": ".cache/indices.parquet",
-      "tier": null,
-      "schedule": null,
-      "registered": false,
-      "status": "ORPHAN",
-      "severity": "WARN",
-      "note": "registry에 등록되지 않은 cache — registry entry 추가 필요"
-    },
-    {
-      "path": ".cache/kr_factor_returns_v2.parquet",
-      "tier": null,
-      "schedule": null,
-      "registered": false,
-      "status": "ORPHAN",
-      "severity": "WARN",
-      "note": "registry에 등록되지 않은 cache — registry entry 추가 필요"
-    },
-    {
-      "path": ".cache/lens2_liq_sweep.rds",
-      "tier": null,
-      "schedule": null,
-      "registered": false,
-      "status": "ORPHAN",
-      "severity": "WARN",
-      "note": "registry에 등록되지 않은 cache — registry entry 추가 필요"
-    },
-    {
-      "path": ".cache/macro_fred.parquet",
-      "tier": null,
-      "schedule": null,
-      "registered": false,
-      "status": "ORPHAN",
-      "severity": "WARN",
-      "note": "registry에 등록되지 않은 cache — registry entry 추가 필요"
-    },
-    {
-      "path": ".cache/ml_momentum_pred.parquet",
-      "tier": null,
-      "schedule": null,
-      "registered": false,
-      "status": "ORPHAN",
-      "severity": "WARN",
-      "note": "registry에 등록되지 않은 cache — registry entry 추가 필요"
-    },
-    {
-      "path": ".cache/promote_diag_20260703.csv",
-      "tier": null,
-      "schedule": null,
-      "registered": false,
-      "status": "ORPHAN",
-      "severity": "WARN",
-      "note": "registry에 등록되지 않은 cache — registry entry 추가 필요"
-    },
-    {
-      "path": ".cache/RAWDATA_bmfix_bak_20260705.parquet",
-      "tier": null,
-      "schedule": null,
-      "registered": false,
-      "status": "ORPHAN",
-      "severity": "WARN",
-      "note": "registry에 등록되지 않은 cache — registry entry 추가 필요"
-    },
-    {
-      "path": ".cache/RAWDATA_pin20260703.parquet",
-      "tier": null,
-      "schedule": null,
-      "registered": false,
-      "status": "ORPHAN",
-      "severity": "WARN",
-      "note": "registry에 등록되지 않은 cache — registry entry 추가 필요"
-    },
-    {
-      "path": ".cache/regime_daily_v2.parquet",
-      "tier": null,
-      "schedule": null,
-      "registered": false,
-      "status": "ORPHAN",
-      "severity": "WARN",
-      "note": "registry에 등록되지 않은 cache — registry entry 추가 필요"
-    },
-    {
-      "path": ".cache/regime_forecast_series.parquet",
-      "tier": null,
-      "schedule": null,
-      "registered": false,
-      "status": "ORPHAN",
-      "severity": "WARN",
-      "note": "registry에 등록되지 않은 cache — registry entry 추가 필요"
-    },
-    {
-      "path": ".cache/regime_forecast_series_v1vix.parquet",
-      "tier": null,
-      "schedule": null,
-      "registered": false,
-      "status": "ORPHAN",
-      "severity": "WARN",
-      "note": "registry에 등록되지 않은 cache — registry entry 추가 필요"
-    },
-    {
-      "path": ".cache/regime_forecast_series_v2.parquet",
-      "tier": null,
-      "schedule": null,
-      "registered": false,
-      "status": "ORPHAN",
-      "severity": "WARN",
-      "note": "registry에 등록되지 않은 cache — registry entry 추가 필요"
-    },
-    {
-      "path": ".cache/regime_forecast_series_v3.parquet",
-      "tier": null,
-      "schedule": null,
-      "registered": false,
-      "status": "ORPHAN",
-      "severity": "WARN",
-      "note": "registry에 등록되지 않은 cache — registry entry 추가 필요"
-    },
-    {
-      "path": ".cache/regime_jump_daily.parquet",
-      "tier": null,
-      "schedule": null,
-      "registered": false,
-      "status": "ORPHAN",
-      "severity": "WARN",
-      "note": "registry에 등록되지 않은 cache — registry entry 추가 필요"
-    },
-    {
-      "path": ".cache/shares_issued.parquet",
-      "tier": null,
-      "schedule": null,
-      "registered": false,
-      "status": "ORPHAN",
-      "severity": "WARN",
-      "note": "registry에 등록되지 않은 cache — registry entry 추가 필요"
-    },
-    {
-      "path": ".cache/stock_buyback.parquet",
-      "tier": null,
-      "schedule": null,
-      "registered": false,
-      "status": "ORPHAN",
-      "severity": "WARN",
-      "note": "registry에 등록되지 않은 cache — registry entry 추가 필요"
-    },
-    {
-      "path": ".cache/value_quality_spread.parquet",
-      "tier": null,
-      "schedule": null,
-      "registered": false,
-      "status": "ORPHAN",
-      "severity": "WARN",
-      "note": "registry에 등록되지 않은 cache — registry entry 추가 필요"
-    },
-    {
-      "path": ".cache/wt705_allscore.rds",
-      "tier": null,
-      "schedule": null,
-      "registered": false,
-      "status": "ORPHAN",
-      "severity": "WARN",
-      "note": "registry에 등록되지 않은 cache — registry entry 추가 필요"
-    },
-    {
-      "path": ".cache/wt705_cr11_cor.csv",
-      "tier": null,
-      "schedule": null,
-      "registered": false,
-      "status": "ORPHAN",
-      "severity": "WARN",
-      "note": "registry에 등록되지 않은 cache — registry entry 추가 필요"
-    },
-    {
-      "path": ".cache/wt705_recent_results.csv",
-      "tier": null,
-      "schedule": null,
-      "registered": false,
-      "status": "ORPHAN",
-      "severity": "WARN",
-      "note": "registry에 등록되지 않은 cache — registry entry 추가 필요"
-    },
-    {
-      "path": ".cache/wt705_screen_results.csv",
-      "tier": null,
-      "schedule": null,
-      "registered": false,
-      "status": "ORPHAN",
-      "severity": "WARN",
-      "note": "registry에 등록되지 않은 cache — registry entry 추가 필요"
-    },
-    {
-      "path": ".cache/wt705_snap.rds",
-      "tier": null,
-      "schedule": null,
-      "registered": false,
-      "status": "ORPHAN",
-      "severity": "WARN",
-      "note": "registry에 등록되지 않은 cache — registry entry 추가 필요"
     }
   ]
 }

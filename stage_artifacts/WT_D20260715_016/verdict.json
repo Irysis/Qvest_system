@@ -1,0 +1,66 @@
+{
+  "wt": "WT-D20260715_016",
+  "round": "R47",
+  "mode": "data-integrity 근원수리 (밤샘 무결성 라인 R42~R46 → R47 KRX 백필 리빌드)",
+  "title": "4월 이음매 microcap Close 구멍 KRX 백필 — recompute==stored parity 회복 (218 source-seam hole)",
+  "as_of_date": "2026-07-17",
+  "verdict_type": "capability_established",
+  "task_class": "rawdata_integrity_repair_krx_backfill",
+  "parent": "R46(WT-D20260715_015) next_probe#1 (KRX 백필 리빌드·armed). 근원=Close 시계열 구멍(seam krx_api_backfill→krx_api). ★rawdata 실변경 유일 작업.",
+
+  "what_was_done": {
+    "target": "R46 tripwire가 특정한 245 Close 연속성 구멍 中 218 source-seam(krx_api_backfill_20260711→krx_api 경계). 216 April-cluster(04-29→07-02, 결측 04-30~07-01) + 2 April-seam(A150840/A208340, 03-27→04-30). 전량 유니버스內 0(비-유니버스 우선주/REIT/SPAC/microcap — QuantiWise 미수출 종목이 05~06월 QW-only 창에서 결측).",
+    "root_cause": "이 218 종목은 KRX 소스(04-29 backfill, 07-02+ krx_api)에만 존재하고 05~06월 QuantiWise-only 창에선 QW가 미수출 → interior hole. 유니버스 종목은 QW로 05~06월 완전커버(그래서 유니버스內 0).",
+    "method": "KRX 일별 OHLCV 재수집(캐시 56/64일 재사용 + 8일 live API 수집: 06-18/19/23/24/25/26/29/30) → krx_transform_daily 정합으로 fill_set(부재 (Ticker,Date))로만 제한(inner join = APPEND-ONLY) → OHLCV=KRX/meta·flags=티커 pre-gap template carry-forward/BM_Ret=Date canonical/Ret=chained/source=krx_api_backfill_20260717 → interior merge(temp-rename).",
+    "backfill_counts": {
+      "fill_set_target": 8902,
+      "filled_rows": 8856,
+      "filled_tickers": 216,
+      "filled_dates": 41,
+      "residual_non_traded": 46,
+      "residual_tickers": ["A150840", "A208340"],
+      "krx_live_days_collected": 8,
+      "krx_cache_reused_days": 56
+    }
+  },
+
+  "guards_5": {
+    "note": "가드 전부 pre-write(실패 시 write 안 함·롤백). 4월 사고(불필요 full-rebuild가 유니버스 실데이터 삭제) 재발방지 = append-only + 아래 5종.",
+    "g0_backup": "rawdata_pre_r47_backup_20260715.parquet (421MB) 생성 — 롤백 지점",
+    "g1_rowcount_exact": "post = pre + fill 정확: 14,009,624 + 8,856 = 14,018,480 PASS",
+    "g2_no_decrease": "행수 증가만 PASS (삭제 0)",
+    "g3_universe_protection": "유니버스 행(K200|KQ150==1) 2,370,544 → 2,370,544 불변 PASS (fill 전량 K200=0·KQ150=0)",
+    "g4_maxdate_same": "max Date 2026-07-16 불변(interior만 추가) PASS",
+    "g5_mindate_same": "min Date 1990-01-05 불변(꼬리 소실 0) PASS",
+    "collision_gate": "fill∩existing (Date,Ticker) = 0 (기존 행 덮어쓸 위험 0)",
+    "book_overlap_gate": "fill∩book14 = 0"
+  },
+
+  "parity_4": {
+    "p1_existing_unchanged": "PASS — 백업 14,009,624행 전량 매칭, max|ΔClose|=0 · max|ΔRet|=0 · NA-mismatch=0 (구멍 外 무변경 실증)",
+    "p2_seam_parity_restored": "PASS — close_continuity_tripwire NEW: source-seam 218→2(잔여=penny A150840/A208340) · total holes 245→29. 216 April-cluster 07-02 seam-end: recompute(Close07-02/Close07-01−1)==stored Ret 216/216 match(mismatch 0). ★07-02 stored Ret은 원래 KRX 07-01 Close 대비로 정확했고(미영속), 07-01 채움으로 recompute==stored 자동 성립.",
+    "p3_universe_panel_unchanged": "PASS — 유니버스 행 2,370,544 백업==NEW, max|ΔClose|=0 · max|ΔRet|=0 (밤샘 라운드·라이브 base 불변)",
+    "p4_book_unchanged": "PASS — 현 북 STR_1715 14보유 71,125행 백업==NEW, max|ΔClose|=0 · max|ΔRet|=0"
+  },
+
+  "firewall_applied": {
+    "halt_resumption_na": "2행(A004415 05-21, A032685 05-26): 거래정지 재개 재평가로 |Ret|>1.0(물리불가 단일일). Close(참값 KRX) 보존 + Ret:=NA (R44/R46 ret_sanity_firewall HARD 규칙 + April fix '정직 NA' 선례). Vol=0 frozen→resume Vol>0 지문으로 halt 실증.",
+    "no_ret_gt_031_remaining": "채운 8,856행 중 |Ret|>0.31 = 0 (min −0.300·max +0.300 = KR ±30% 물리한계 內, 정지-재개 2행 NA 처리 후)"
+  },
+
+  "downstream": {
+    "factor_db": "재빌드 불요. factor_db는 stored Ret 직접소비(R45)이고 canonical 경로는 유니버스(K200/KQ150==1) 필터 → 이번 fill은 전량 non-universe라 소비되는 factor 값에 영향 0(개선도 non-universe 한정, 미선택). 4월 사고는 유니버스 momentum/vol 오염이었으나 이번 구멍은 비-유니버스 전용이라 오염 원천 부재. scoped 재빌드(216 종목)는 선택(저EV·미소비).",
+    "benchmark": "무변경 — BM_Ret은 기존 canonical Date값 join(독립 재계산 안 함, 07-05 BM 스케일 가드 정합).",
+    "book_state": "무변경", "production": "무변경(read-only)"
+  },
+
+  "residual": {
+    "source_seam_2": "A150840·A208340 (penny microcap 128~172원, 03-30~04-29 미거래 = KRX Close 부재 = 채울 데이터 없음). 정직 잔여 hole(illiquidity), seam 아티팩트 아님.",
+    "old_historical_27": "1999~2023 상폐/재상장 gap (source_seam=FALSE, R47 표적 아님) — 정당 delisting 경계."
+  },
+
+  "constraints_respected": "APPEND-ONLY(구멍만 채움·기존 무변경 max|Δ|=0) · 유니버스 보호(행 불변) · 백업 선행 · KRX API만(DART 0) · 단일스레드 · arrow io(2, io(1) HANG 회피) · temp-rename(mmap 1224 회피) · book_state/05_Production 무변경 · 판정 어휘 규약(종결어휘 미사용·verdict enum capability_established)",
+  "book_state_unchanged": true,
+  "production_unchanged": true,
+  "generated_at": "2026-07-17"
+}

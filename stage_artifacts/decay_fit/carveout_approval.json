@@ -1,0 +1,14 @@
+{
+  "carve_out": "C15_daily_factor_db_direct_read",
+  "rule_basis": ".claude/rules/python-policy.md §3 — 'ML daily parquet carve-out은 명시 승인 hypothesis만' + pit.md C15",
+  "approved_by": "도훈 (Dohoon Kim)",
+  "approved_at": "2026-07-17 (세션 실시간, 발화: '승인. carve-out 포함 착수해')",
+  "scope": {
+    "hypothesis": "FQ-055 감쇠 함수형 진단 — 일간 IC 계층(S-D) 한정",
+    "access_mode": "read-only (.cache/factor_db_daily/fdb_daily_*.parquet)",
+    "pit_obligation": "일간 granularity에서도 신호=t-1 이전 데이터만(Usable_Date 규약 동일), forward return은 신호 이후. col_select 필수·단일 io thread(세그폴트 3중버그 회피 패턴)",
+    "vintage": "재빌드(run_fdb_rebuild.R, 2026-07-17 19:56~ 타 세션 실행 중) 완료 + 무결성 게이트 후 pin_cache 스냅샷 고정분만 소비",
+    "exclusions": "본 carve-out은 자본/graduation 판정에 일간 수치를 쓰는 것을 허용하지 않음 — 진단 산출(기전 라벨·break-dating·monitoring 밴드) 전용"
+  },
+  "expiry": "FQ-055 종결 시 — 후속 hypothesis가 일간 소비를 원하면 별도 승인 필요"
+}

@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
-  "updated": "2026-07-15 (R46 — FQ-054 P2+P3 소비: ret_sanity_firewall date-gap 정련(stored 참값 보존·39건 복원) + Close 연속성 tripwire(gapdays>20 hole 사전감지) 배선. 6-test parity PASS(HARD 672→633·유니버스 분류 불변·월패널 max|Δ|=0·tripwire gate clean). 밤샘 무결성 라인 R42~R46 배선 완결. 잔여 근본수리=KRX 백필 리빌드(245 구멍·armed). R45 — 근원=Close 구멍·stored 참값. R44 — 방화벽 R1+R4 배선)",
+  "updated": "2026-07-17 (R47 — FQ-054 P1 소비: KRX 백필 근원수리 — 218 source-seam Close 구멍 APPEND-ONLY interior merge(8,856행·216종목)로 채움 → recompute==stored parity 회복·source-seam 218→2. 가드5종+parity4종 PASS(기존/유니버스/북 max|ΔRet|=0)·유니버스 라이브 무영향. 밤샘 무결성 라인 R42~R47 근원수리 완결. 잔여=penny 2 illiquidity. 2026-07-15 (R46 — FQ-054 P2+P3 소비: ret_sanity_firewall date-gap 정련(stored 참값 보존·39건 복원) + Close 연속성 tripwire(gapdays>20 hole 사전감지) 배선. 6-test parity PASS(HARD 672→633·유니버스 분류 불변·월패널 max|Δ|=0·tripwire gate clean). 밤샘 무결성 라인 R42~R46 배선 완결. 잔여 근본수리=KRX 백필 리빌드(245 구멍·armed). R45 — 근원=Close 구멍·stored 참값. R44 — 방화벽 R1+R4 배선)",
   "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
   "entries": [
     {
@@ -1097,9 +1097,9 @@
       "ev_rationale": "R42 data_hygiene_finding 소비. 데이터 무결성 위생(자본 아님). R1+R4 방화벽 배선 완료(R44) = 오염 상존해도 소비면 보호. 잔여 R2/R3 seam 근본수리는 별도 리빌드.",
       "wall_check": "read-only census(rawdata/book_state/05_Production 무변경)·DART API X. 현 북/유니버스 월패널 clean → 밤샘 판정 무영향. Ret winsorize 부재 → R44에서 방화벽 배선으로 해소(소비면 보호). seam 잔재는 R2/R3 리빌드.",
       "data_gate": "없음 (census는 rawdata 읽기만·방화벽은 함수 배선만). R2/R3 April-gap·LS ELECTRIC 분할 재수리는 별도 리빌드 태스크(rawdata 직접수정 금지, KRX 백필 경유).",
-      "owner": "Q-Lead (R43 census / R44 R1+R4 방화벽 배선·parity / R45 P3 근원 진단 / R46 P2+P3 배선 정련·6-test parity 2026-07-15 / R2·R3 KRX 백필 리빌드 armed — 착수 대기)",
-      "status": "capability_established (R1+R4 wired · P3 근원규명 · P2+P3 배선 정련·parity PASS · R2/R3 armed · 무결성 라인 R42~R46 완결)",
-      "next_action": "★R46(WT-D20260715_015) P2+P3 소비 완료: R45 근원 지식을 방화벽·게이트로 제도화. P3(ret_sanity_firewall date-gap 정련): |stored Ret|≤0.31이면 NA 대신 stored 참값 복원(RESTORE)·recompute magnitude 무관(date-gap>phys/zerodiv 우선). P2(close_continuity_tripwire): 리빌드 전 활성상장 Close gapdays>20 hole 사전감지(source seam 지문). Step4b/Step5 배선. 6-test parity PASS: HARD 672→633(seam 39 RESTORE 이관)·유니버스 분류 불변(iso 17=1phys+16suspect·restore_univ 0)·북 격리 0·유니버스 월패널 max|Δ|=0·canonical 가드 불변·tripwire 유니버스內 활성 구멍 0(gate clean). worked example A004415 recompute+489%→stored+2.93% 보존. rawdata/book/05_Production/factor_db 무변경(입력단 함수 배선만). ★잔여 근본수리(armed·별도 리빌드): tripwire 감지 245 활성 Close 구멍(2026-04-30→07-01 April + 07-03/06 July seam·218 source-seam·전량 비-유니버스) + 157 소폭 seam(|recompute|≤0.31) + R2 April-gap seam + R3 LS ELECTRIC 분할 = KRX 일별 재수집 동시(rawdata 직접수정 금지·KRX 백필 경유·P1). 선택: tripwire 리빌드 pre-hook 게이트화 + pre-2015 가격제한 시변 임계.",
+      "owner": "Q-Lead (R43 census / R44 R1+R4 방화벽 배선·parity / R45 P3 근원 진단 / R46 P2+P3 배선 정련·6-test parity 2026-07-15 / R47 KRX 백필 근원수리·parity 4종 PASS 2026-07-17 — P1 소비 완료)",
+      "status": "capability_established (R1+R4 wired · P3 근원규명 · P2+P3 배선 정련·parity PASS · R47 KRX 백필 P1 소비완료(218 seam→2·recompute==stored 회복) · 무결성 라인 R42~R47 근원수리 완결)",
+      "next_action": "★R47(WT-D20260715_016) P1 KRX 백필 근원수리 완료: R46 tripwire가 특정한 218 source-seam Close 구멍(216 April-cluster 04-30~07-01 + 2 April-seam·전량 비-유니버스)을 KRX 일별 재수집(캐시56+live8일)으로 APPEND-ONLY interior merge(fill_set inner-join·collision0). 8,856행 채움(216종목·41일) → recompute==stored parity 회복(216/216 07-02 match)·source-seam 218→2·total holes 245→29. ★가드 5종 PASS(행수 정확 14,009,624+8,856=14,018,480·유니버스 행 2,370,544 불변·maxDate 07-16 불변·collision0·book overlap0) + parity 4종 PASS(기존 14,009,624행 max|ΔRet|=0·유니버스 max|ΔRet|=0·북14 71,125행 max|ΔRet|=0). 정지-재개 2행(A004415·A032685 Vol=0→resume 지문)은 firewall NA(Close 참값 보존). rawdata 실변경이나 유니버스/라이브 무영향(factor_db 재빌드 불요=stored Ret 직접소비·canonical 유니버스 필터). ★잔여(정직): source-seam 2(A150840·A208340 penny 03-30~04-29 실미거래=KRX Close 부재) + 27 old delisting(source_seam=FALSE·표적 아님). next_probe: P1(잔여 2 penny 대체소스/상장상태 재확인)·P2(tripwire 리빌드 pre-hook 게이트화·이월)·P3(qw_refresh 수정주가 자동승격 검증). R46 이전 next_action(방화벽 배선 정련)은 완료.",
       "source_refs": [
         "verdict R46: stage_artifacts/WT_D20260715_015/verdict.json (P3 firewall 정련 + P2 tripwire·6-test parity)",
         "l_code R46: stage_artifacts/l_code/ramp/l_code_R46_firewall_dategap_refine_close_tripwire.json",
@@ -1117,6 +1117,26 @@
         "census: stage_artifacts/WT_D20260715_012/census_summary.json + isolation_list_*.csv",
         "parent R42: stage_artifacts/WT_D20260715_011/verdict.json (Ret max=66999 적발)",
         "precedent: project-rawdata-april-gap-incident-20260711"
+      ]
+    },
+    {
+      "id": "FQ-055",
+      "lane": "diagnostic_infra",
+      "title": "감쇠 함수형 진단 — hyperbolic/exponential/linear 3형 적합 + 기전 라벨링 (2계층: 월간 IC·PORT_t + 일간 IC carve-out)",
+      "hypothesis": "팩터별 감쇠 시계열에 3 함수형(K/(1+λt) · K·e^{-λt} · K−bt)을 적합하면 감쇠 기전이 {crowding-hyperbolic / absorbed-exponential / cycling-nofit / break-dominated}로 분류되고, (K,λ) 추정 + break-dating + 부활 트리거 밴드가 나온다. 이론 근거 arXiv 2512.11913 v1(★v2 저자 철회 — 이론부만 소비, 실증 수치 미검증 취급)",
+      "ev_rationale": "★자본 라운드 아님 — 산출은 라우팅(재고 3분류)·부활신호 기계화(INV-7 예측밴드 잔차)·monitoring 조기경보 밴드·dual-basis 시간축 보강(break-dating)·온보딩 prior. R13/FQ-027(감쇠속도를 자본 선별 재료로 소비 → F 종결)과 구분: 그 lane의 '시간-함수형 저EV' 경고는 자본 게이트 대상이며 본 라운드는 진단/배관 소비면. 도훈 승인 2026-07-17 (메리트 평가 후 'carve-out 포함 착수')",
+      "wall_check": "capital 주장 없음(PORT_t 2.95 무관·게이트 면제 요구 없음). 통계 정직성: rolling 시계열 자기상관 → R² 단독 판정 금지, AICc+블록부트스트랩 CI+신뢰등급 의무. crowding 잔차의 FR 타이밍 피처화는 외부 negative(2512.11913 §5)로 저순위 명시",
+      "data_gate": "일간 계층: fdb_daily 재빌드 실행 중(PID 33444, run_fdb_rebuild.R, 2026-07-17 19:56~, 수 시간) — 완료→무결성→pin 후 착수. 월간 계층(factor_ic_monthly.parquet + r6_factor_deployzone_active.parquet + r7 EW-basis): feasible now",
+      "carve_out_c15_daily": "도훈 명시 승인 2026-07-17 '승인. carve-out 포함 착수해' — fdb_daily parquet 직접 read-only 소비를 본 진단 hypothesis에 한정 허용(python-policy §3 명시승인 요건 충족). PIT: 일간 granularity에서도 Usable_Date/t-1 신호 규약 동일 적용. 기록: stage_artifacts/decay_fit/carveout_approval.json",
+      "owner": "Q-Lead (session 2026-07-17 저녁, 도훈 실시간 승인)",
+      "status": "in_progress_monthly_layer_first",
+      "next_action": "① 월간 2계층(S-M: factor_ic_monthly 신호 / C-M: r6 배포권 active cap-w+EW dual-basis) 사전등록→적합 ② fdb_daily 재빌드 완료 감시→무결성 게이트→pin→일간 IC 계층(S-D) ③ 산출: 팩터/family별 {best_form, 신뢰등급, K, λ, 잔여알파 외삽, 기전 라벨, break date, basis 괴리 플래그} 테이블 + 부활 트리거 밴드 armed + layer_bottleneck_map 갱신 + L-code(diagnostic)",
+      "source_refs": [
+        "memory: reference_alpha_trends_2024_2026 (07-17 갱신 §2 — 논문 철회 주석)",
+        "paper: scratchpad/downloads/2512.11913v1.pdf (v1 전문 확보)",
+        "related-not-dupe: FQ-026/FQ-027 (R13 감쇠속도 자본 선별 lane, F 종결 — 본 라운드는 진단 소비면)",
+        "asset: outputs/ramp/r6_factor_deployzone_active.parquet (102 승인팩터 × 월 active, 07-14 202606 연장) + .cache/factor_db/factor_ic_monthly.parquet",
+        "rebuild: 02_Infrastructure/factor_db/run_fdb_rebuild.R (타 세션 실행 중 — 중복발사 금지 확인 2026-07-17 20:0x)"
       ]
     }
   ]
