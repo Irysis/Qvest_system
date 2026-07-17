@@ -330,6 +330,19 @@ incremental_investor <- function() {
   setorder(combined, Date, Ticker, InvestorType)
   write_parquet(combined, all_file)
 
+  # [2026-07-17 배관수리] 파생 파일 동반 재생성 — 기존엔 investor_all만 갱신되고
+  # per-type 분리 파일(investor_foreign/institutional/individual/othercorp.parquet)과
+  # investor_wide.parquet는 full 파서(parse_investor_act)에서만 쓰여 영구 stale
+  # (실측: all=2026-07-01 vs 분리=2026-03-26 → flow_features_daily 113d stale의 원인).
+  for (itype in unique(combined$InvestorType)) {
+    split_path <- file.path(inv_cache_dir, sprintf("investor_%s.parquet", tolower(itype)))
+    write_parquet(combined[InvestorType == itype], split_path)
+  }
+  wide <- dcast(combined, Date + Ticker ~ InvestorType, value.var = "NetBuy", fill = 0)
+  write_parquet(wide, file.path(inv_cache_dir, "investor_wide.parquet"))
+  cat(sprintf("  파생 재생성: 분리 %d종 + wide (max: %s)\n",
+              uniqueN(combined$InvestorType), max(combined$Date)))
+
   cat(sprintf("[incr_investor] 완료: +%s rows → 총 %s rows (max: %s)\n",
               format(nrow(new_dt), big.mark = ","),
               format(nrow(combined), big.mark = ","),
