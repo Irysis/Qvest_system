@@ -1,6 +1,6 @@
 # 02_Infrastructure INDEX
 
-> 자동 생성 2026-07-15 01:39 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
+> 자동 생성 2026-07-16 01:42 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
 
 ## 데이터 (3)
 
@@ -71,7 +71,7 @@
 |---|---|---|---|---|
 | `attribution/` | research_philosophy ⑦ Attribution 모듈 — Brinson 분해 + Carhart 4팩터 귀속(분기 트리거) | active | 2026-06-07 | 16KB |
 | `report_templates/` | report_base.Rmd + report_style.css — LLM 보고 생성기 렌더링 소재 (구 KR/EN 템플릿 2건 2026-07-04 스윕 삭제) | active | 2026-06-07 | 29KB |
-| `reports/` | 보고 생성기 4건 — mrs_dashboard.R(모니터링 대시보드)·report_agent_llm.R·report_charts·report_narrative | active | 2026-07-14 | 115KB |
+| `reports/` | 보고 생성기 4건 — mrs_dashboard.R(모니터링 대시보드)·report_agent_llm.R·report_charts·report_narrative | active | 2026-07-14 | 161KB |
 
 ## 공리엔진 (1)
 
@@ -83,7 +83,7 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `contracts/` | 측정·계약 코어 16건 — build_bt_result/canonical_screen_bt/essence_score(Grade 권위)/register_module/holdout_falsification 등 실측-only 거버넌스의 구현체 | active | 2026-07-14 | 182KB |
+| `contracts/` | 측정·계약 코어 16건 — build_bt_result/canonical_screen_bt/essence_score(Grade 권위)/register_module/holdout_falsification 등 실측-only 거버넌스의 구현체 | active | 2026-07-14 | 183KB |
 | `schemas/` | JSON 스키마 계층 — certs/(5 certificate)·packages/(6 agent package)·state/(book_state·axiom 등) 스키마 정의 | active | 2026-06-07 | 20KB |
 
 ## 발굴 (1)
@@ -109,7 +109,7 @@
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
 | `judge/` | judge_lockbox_harness.R 단일 — judge의 lockbox 격리 검증 하네스(Gate 심사 시 forge 산출 재검) | active | 2026-06-07 | 12KB |
-| `prompts/` | agent spawn init 프롬프트 14건 — _shared_prefix.md(axiom derived cache) + alpha/risk/optimizer/forge/judge/qlead_init.md | active | 2026-07-14 | 207KB |
+| `prompts/` | agent spawn init 프롬프트 14건 — _shared_prefix.md(axiom derived cache) + alpha/risk/optimizer/forge/judge/qlead_init.md | active | 2026-07-14 | 219KB |
 | `worktask/` | WT 계약 계층 — common_charter.md·cert_rules.R·constraint_defaults.json(graduation severity)·run_all_template.R(현행 forge 템플릿)·lineage_utils | active | 2026-07-09 | 225KB |
 
 ## 메모리 (1)
