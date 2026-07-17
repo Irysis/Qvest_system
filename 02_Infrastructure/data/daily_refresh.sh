@@ -299,8 +299,13 @@ if [ "$DAY_OF_MONTH" = "01" ]; then
     tryCatch(dart_run_pipeline(years = as.integer(format(Sys.Date(), "%Y"))),
       error = function(e) cat(sprintf("DART Annual skipped: %s\n", e$message)))
   '
+  # fundamental_merged 월간 full rebuild (2026-07-17 배선 — registry는 monthly/35d SLA인데
+  # 어느 스케줄에도 연결돼 있지 않아 매월 STALE_WARN 재발(반복 알림의 한 축)하던 gap 봉합)
+  echo "[5a2/7] fundamental_merged monthly rebuild..."
+  "$RSCRIPT" --no-save "$INFRA/data/build_fundamental_derived.R" \
+    || echo "  [warn] build_fundamental_derived failed (fail-soft — 기존 cache 유지)"
 else
-  echo "[5a/7] DART Annual skipped (monthly 1st only, today=$DAY_OF_MONTH)"
+  echo "[5a/7] DART Annual + fundamental_merged skipped (monthly 1st only, today=$DAY_OF_MONTH)"
 fi
 
 # (b) + (c) Quarterly + Insider — daily incremental (도훈 mandate 2026-05-15)

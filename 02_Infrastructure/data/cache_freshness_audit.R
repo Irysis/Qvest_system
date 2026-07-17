@@ -288,6 +288,11 @@ cache_freshness_audit <- function(telegram_alert = TRUE,
     orphans <- orphans[!grepl("^\\.cache/(_|scout_|wt_|hr_v2|crisis_defense|stress_|factor_correlation|factor_overlap|factor_ic_|conditional_ic_|update_file_)",
                                 orphans)]
     orphans <- orphans[!grepl("(_corrupt|_backup_|_[0-9]{8}_[0-9]{6}|backfill_v8_audit)", orphans)]
+    # 2026-07-17 확장: vintage pin/백업 스냅샷(_pinYYYYMMDD/_bak_YYYYMMDD — 불변 스냅샷,
+    #   신선도 개념 부적용, project-cache-vintage-pinning 보존 대상) + WT/렌즈/진단 리서치
+    #   잔재(wtNNN_/lensN_/promote_diag_)를 orphan 노이즈에서 제외. 데이터 소스 아님.
+    orphans <- orphans[!grepl("(_pin[0-9]{8}|_bak_[0-9]{8})", orphans)]
+    orphans <- orphans[!grepl("^\\.cache/(wt[0-9]+_|lens[0-9]+_|promote_diag_)", orphans)]
     for (o in orphans) {
       results[[o]] <- list(
         path = o, tier = NA, schedule = NA,
@@ -354,7 +359,30 @@ cache_freshness_audit <- function(telegram_alert = TRUE,
   alert_crit  <- sum(vapply(alert_items, function(r) r$severity == "CRITICAL", logical(1)))
   alert_warn  <- sum(vapply(alert_items, function(r) r$severity == "WARN", logical(1)))
 
-  if (telegram_alert && length(alert_items) > 0) {
+  # ─── 반복알림 dedup (2026-07-17 도훈 지시 "왜 매번 같은 알림") ───────────────
+  # 알림 집합(path:status) 서명이 직전 발송과 동일한 WARN-only 상태면 발송 억제.
+  # 규칙: CRITICAL 존재 = 항상 발송 / 서명 변화 = 발송 / 동일 서명 = 7일마다 리마인더만.
+  # 상태 파일: .cache/freshness_alert_state.json {signature, last_sent_at}
+  alert_state_path <- file.path(PROJECT_ROOT, ".cache", "freshness_alert_state.json")
+  alert_sig <- paste(sort(vapply(alert_items, function(r) paste0(r$path, ":", r$status),
+                                  character(1))), collapse = "|")
+  prev_state <- if (file.exists(alert_state_path)) {
+    tryCatch(jsonlite::fromJSON(alert_state_path), error = function(e) NULL)
+  } else NULL
+  days_since_sent <- if (!is.null(prev_state$last_sent_at)) {
+    as.numeric(difftime(today_ts, as.POSIXct(prev_state$last_sent_at), units = "days"))
+  } else Inf
+  send_reason <- if (alert_crit > 0) "critical"
+    else if (is.null(prev_state) || !identical(prev_state$signature, alert_sig)) "changed"
+    else if (days_since_sent >= 7) "weekly_reminder"
+    else NA_character_
+
+  if (telegram_alert && length(alert_items) > 0 && is.na(send_reason)) {
+    cat(sprintf("[cache_freshness] 알림 집합 불변 (직전 발송 %.1f일 전) — 발송 억제 (7일 리마인더 대기)\n",
+                days_since_sent))
+  }
+
+  if (telegram_alert && length(alert_items) > 0 && !is.na(send_reason)) {
     tryCatch({
       source(file.path(PROJECT_ROOT, "02_Infrastructure/telegram/telegram_notify.R"))
       crit_list <- sapply(Filter(function(r) r$severity == "CRITICAL", alert_items),
@@ -363,15 +391,27 @@ cache_freshness_audit <- function(telegram_alert = TRUE,
                            function(r) sprintf("- %s (lag=%s, max=%s)", r$path, r$lag_used %||% "n/a", r$max_lag_days %||% "n/a"))
       orphan_note <- if (n_orphan > 0)
         sprintf("\n\n_(orphan %d건은 registry 미등재 — 로그만, 알림 제외)_", n_orphan) else ""
-      msg <- sprintf("🚨 *Cache Freshness Alert*\n\nCRITICAL %d / WARN %d (등록 캐시 stale 기준)\n\n*Critical:*\n%s\n\n*Warn:*\n%s%s",
+      reminder_tag <- if (identical(send_reason, "weekly_reminder"))
+        "\n_(동일 상태 지속 — 주간 리마인더)_" else ""
+      msg <- sprintf("🚨 *Cache Freshness Alert*\n\nCRITICAL %d / WARN %d (등록 캐시 stale 기준)\n\n*Critical:*\n%s\n\n*Warn:*\n%s%s%s",
                       alert_crit, alert_warn,
                       if (length(crit_list) > 0) paste(head(crit_list, 10), collapse = "\n") else "(none)",
                       if (length(warn_list) > 0) paste(head(warn_list, 10), collapse = "\n") else "(none)",
-                      orphan_note)
+                      reminder_tag, orphan_note)
       tg_send(msg, parse_mode = "Markdown")
+      write_json(list(signature = alert_sig,
+                      last_sent_at = format(today_ts, "%Y-%m-%dT%H:%M:%S%z"),
+                      reason = send_reason),
+                 alert_state_path, auto_unbox = TRUE)
     }, error = function(e) cat(sprintf("Telegram alert failed: %s\n", e$message)))
-  } else if (telegram_alert) {
+  } else if (telegram_alert && length(alert_items) == 0) {
     cat(sprintf("[cache_freshness] 등록 캐시 전부 fresh — 알림 생략 (orphan %d건은 로그만)\n", n_orphan))
+    # 상태 초기화: 다음 stale 재발 시 '변화'로 즉시 발송되도록 서명 리셋
+    if (file.exists(alert_state_path) && !is.null(prev_state) &&
+        !identical(prev_state$signature, "")) {
+      write_json(list(signature = "", last_sent_at = prev_state$last_sent_at %||% NULL),
+                 alert_state_path, auto_unbox = TRUE)
+    }
   }
 
   invisible(audit)

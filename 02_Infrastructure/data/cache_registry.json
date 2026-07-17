@@ -16,7 +16,7 @@
       "tier": "1=critical (regime/MSM/strategy), 2=important (factor/macro), 3=research",
       "value_checks": "OPTIONAL (2026-07-03 감사 DATA-P0-1) — 값-무결성 선언. cache_freshness_audit.R (1b) 섹션이 소비, 위반=VALUE_FAIL/CRITICAL. keys: abs_ret_max {col, threshold, max_violations} = |col|>threshold 건수 상한 (날짜 unique 기준) / required_cols [..] = 필수 컬럼 존재 (Layer2 strip 사고 탐지) / parity {against, col, against_col, min_monthly_cor} = 기준 캐시 대비 월수익(log1p 합) 상관 하한"
     },
-    "last_hygiene": "2026-07-14 Q (ic_matrix on_demand 재분류 + dart_raw_quarterly 계절 문턱)"
+    "last_hygiene": "2026-07-17 Q (orphan 17종 등재 + ic_matrix SLA null 완성 + 반복알림 dedup 동반 — 도훈 지시 '매번 같은 알림' 해소)"
   },
   "caches": [
     {
@@ -282,12 +282,12 @@
       "entry_fn": "(source)",
       "schedule": "on_demand",
       "date_col": "Date",
-      "max_lag_days": 35,
+      "max_lag_days": null,
       "depends_on": [
         ".cache/RAWDATA.parquet"
       ],
       "tier": 3,
-      "_note": "2026-07-14 재분류: legacy STR_1676 MetaRegime 전용(build_ic_matrix.R). 현행 파이프라인(P-pure/RAMP/QEPM/noLayer4 PG2) 미소비 — grep 확인. monthly→on_demand(CRITICAL 오탐 제거, legacy 미가동은 stall 아님). 현행 재소비 시 monthly 복귀"
+      "_note": "2026-07-14 재분류: legacy STR_1676 MetaRegime 전용(build_ic_matrix.R). 현행 파이프라인(P-pure/RAMP/QEPM/noLayer4 PG2) 미소비 — grep 확인. monthly→on_demand(CRITICAL 오탐 제거, legacy 미가동은 stall 아님). 현행 재소비 시 monthly 복귀. 2026-07-17: max_lag 35 잔존이 ON_DEMAND_STALE 영구 WARN(매일 동일 알림) 유발 → null 완성 (on_demand=소비 시점 생성물, stale 개념 부적용 — 07-14 재분류 취지 일관)"
     },
     {
       "path": ".cache/kr_factor_returns.parquet",
@@ -355,7 +355,224 @@
         ".cache/investor_stock/"
       ],
       "tier": 3,
-      "_note": "도훈 audit — research output, weekly catch-up. investor_stock source data ~60d lag = max_lag 14 → 90 (2026-05-24 정정)"
+      "_note": "도훈 audit — research output, weekly catch-up. investor_stock source data ~60d lag = max_lag 14 → 90 (2026-05-24 정정). 2026-07-17 배관수리: incr_investor가 investor_all만 갱신하고 분리 파일을 방치해 113d stale — 분리/wide 동반 재생성 배선 후 재빌드"
+    },
+    {
+      "path": ".cache/ecos_bond_rates.parquet",
+      "producer": "02_Infrastructure/data/data_collector_ecos.R",
+      "entry_fn": "ecos_fetch_bond_rates",
+      "schedule": "daily",
+      "date_col": "Date",
+      "max_lag_days": 7,
+      "depends_on": [],
+      "tier": 2,
+      "_note": "2026-07-17 orphan 등재. daily_refresh [4] 배선(2026-06-17)으로 이미 매일 갱신 중이었으나 registry 미등재. 소비: regime_forecaster_v3 / sharpe_standard / bearish_forecast. 연휴 클러스터 고려 max_lag 7"
+    },
+    {
+      "path": ".cache/macro_fred.parquet",
+      "producer": "02_Infrastructure/data/data_collector_fred.R",
+      "entry_fn": "fred_run_pipeline",
+      "schedule": "daily",
+      "date_col": "Date",
+      "max_lag_days": 7,
+      "depends_on": [],
+      "tier": 2,
+      "_note": "2026-07-17 orphan 등재. config.R FRED_MACRO_CACHE (long format, 22 series). 소비: factor_db compute_regime / phase6 / phase7. fred_macro.parquet(wide 계열)과 동일 파이프라인 산출"
+    },
+    {
+      "path": ".cache/regime_daily_v2.parquet",
+      "producer": "02_Infrastructure/ops/morning_steps/fred_regime.R",
+      "entry_fn": "(orchestrated — morning_run)",
+      "schedule": "daily",
+      "date_col": "Date",
+      "max_lag_days": 4,
+      "depends_on": [
+        ".cache/fred_macro.parquet"
+      ],
+      "tier": 2,
+      "_note": "2026-07-17 orphan 등재. 2026-06-19 morning_run 배선. 소비: factor_db_daily phase6/7/9b + RAMP regime + axiom overlay selfdev. bootstrap 검증 목록에도 포함"
+    },
+    {
+      "path": ".cache/value_quality_spread.parquet",
+      "producer": "02_Infrastructure/ops/derive_value_quality_spread.R",
+      "entry_fn": "derive_value_quality_spread",
+      "schedule": "daily",
+      "date_col": null,
+      "max_lag_days": 7,
+      "depends_on": [
+        ".cache/RAWDATA.parquet"
+      ],
+      "tier": 3,
+      "_note": "2026-07-17 orphan 등재. AX-003(value) 부활신호 substrate — morning_briefing.sh 배선으로 매일 재산출. 월간 시계열이므로 date_col 대신 mtime 기준(재산출 중단 감지)"
+    },
+    {
+      "path": ".cache/fundamental_dart_quarterly.parquet",
+      "producer": "02_Infrastructure/data/data_collector_dart_quarterly.R",
+      "entry_fn": "dart_compute_ttm",
+      "schedule": "daily",
+      "date_col": null,
+      "max_lag_days": 14,
+      "depends_on": [
+        ".cache/dart/dart_raw_quarterly.parquet"
+      ],
+      "tier": 2,
+      "_note": "2026-07-17 orphan 등재. DART_TTM_CACHE — dart_daily_incremental [1/2] 말미에 재산출. quarterly fetch(~41분)가 중단되면 TTM 미산출될 수 있어 여유 14d"
+    },
+    {
+      "path": ".cache/indices.parquet",
+      "producer": "02_Infrastructure/data/build_index_cache.py",
+      "entry_fn": "(source)",
+      "schedule": "on_demand",
+      "date_col": "Date",
+      "max_lag_days": null,
+      "depends_on": [],
+      "tier": 2,
+      "_note": "2026-07-17 orphan 등재. 벤치 IKS200 수리(2026-07-02)의 전 18지수 산출. 소비: contracts/aligned_metrics + panel_alignment_guard (KOSPI200 참조). 재빌드는 벤치 이슈 시 수동"
+    },
+    {
+      "path": ".cache/kr_factor_returns_v2.parquet",
+      "producer": "04_Research/worktask_scratch/WT-D20260425_009/step0_kr_ff5_backfill.R",
+      "entry_fn": "(source)",
+      "schedule": "monthly",
+      "date_col": "Date",
+      "max_lag_days": 180,
+      "depends_on": [
+        ".cache/RAWDATA.parquet",
+        ".cache/fundamental_merged.parquet"
+      ],
+      "tier": 3,
+      "_note": "2026-07-17 orphan 등재. FF5 v2 (active) — v1 entry의 '(source — writes v2)' 산출물인데 v2 자체는 미등재였음. PIT lag 동일(연결산 5월 적용 → ~5개월 behind)"
+    },
+    {
+      "path": ".cache/fundamental_xlsx.parquet",
+      "producer": "02_Infrastructure/data/parse_fundamental_xlsx.R",
+      "entry_fn": "(source)",
+      "schedule": "on_demand",
+      "date_col": null,
+      "max_lag_days": null,
+      "depends_on": [],
+      "tier": 2,
+      "_note": "2026-07-17 orphan 등재. QuantiWise Fundamental xlsx 파싱(41 raw items) — 도훈 수동 refresh 의존(automation 보류, project-quantiwise-refresh-automation). SLA 미설정: 수동 소스라 stale 알림이 액션 불가 소음이 됨"
+    },
+    {
+      "path": ".cache/fundamental_xlsx_derived.parquet",
+      "producer": "02_Infrastructure/data/parse_fundamental_xlsx.R",
+      "entry_fn": "(source)",
+      "schedule": "on_demand",
+      "date_col": null,
+      "max_lag_days": null,
+      "depends_on": [
+        ".cache/fundamental_xlsx.parquet"
+      ],
+      "tier": 2,
+      "_note": "2026-07-17 orphan 등재. xlsx 파생 140 items. 수동 소스 의존 — SLA 미설정 (fundamental_xlsx와 동일 사유)"
+    },
+    {
+      "path": ".cache/fundamental_xlsx_ttm.parquet",
+      "producer": "02_Infrastructure/data/parse_fundamental_xlsx.R",
+      "entry_fn": "(source)",
+      "schedule": "on_demand",
+      "date_col": null,
+      "max_lag_days": null,
+      "depends_on": [
+        ".cache/fundamental_xlsx.parquet"
+      ],
+      "tier": 2,
+      "_note": "2026-07-17 orphan 등재. xlsx TTM 파생. 수동 소스 의존 — SLA 미설정"
+    },
+    {
+      "path": ".cache/shares_issued.parquet",
+      "producer": "02_Infrastructure/data/parse_fundamental_xlsx.R",
+      "entry_fn": "(source)",
+      "schedule": "on_demand",
+      "date_col": null,
+      "max_lag_days": null,
+      "depends_on": [
+        ".cache/fundamental_xlsx.parquet"
+      ],
+      "tier": 3,
+      "_note": "2026-07-17 orphan 등재. ISSD 발행주식수 — QuantiWise 수동 소스 의존"
+    },
+    {
+      "path": ".cache/stock_buyback.parquet",
+      "producer": "02_Infrastructure/data/parse_fundamental_xlsx.R",
+      "entry_fn": "(source)",
+      "schedule": "on_demand",
+      "date_col": null,
+      "max_lag_days": null,
+      "depends_on": [
+        ".cache/fundamental_xlsx.parquet"
+      ],
+      "tier": 3,
+      "_note": "2026-07-17 orphan 등재. SBB 자사주 취득 — QuantiWise 수동 소스 의존. DART 보완 패널은 data_collector_dart_buyback.R 별도"
+    },
+    {
+      "path": ".cache/ml_momentum_pred.parquet",
+      "producer": "02_Infrastructure/ml_pipeline/ml_momentum_ensemble.py",
+      "entry_fn": "(source)",
+      "schedule": "on_demand",
+      "date_col": null,
+      "max_lag_days": null,
+      "depends_on": [
+        ".cache/factor_db_daily/"
+      ],
+      "tier": 3,
+      "_note": "2026-07-17 orphan 등재. ML 모멘텀 앙상블 예측 — 소비: alpha_search/fe_ml.R + register_research_outputs.R (ML register 다리). 리서치 재실행 시점 생성물"
+    },
+    {
+      "path": ".cache/regime_jump_daily.parquet",
+      "producer": "02_Infrastructure/regime/ (research output)",
+      "entry_fn": "(source)",
+      "schedule": "on_demand",
+      "date_col": null,
+      "max_lag_days": null,
+      "depends_on": [],
+      "tier": 3,
+      "_note": "2026-07-17 orphan 등재. Bear_Prob_lag 점프 신호 — 소비: RAMP regime bakeoff + axiom overlay selfdev r2. 리서치 생성물"
+    },
+    {
+      "path": ".cache/regime_forecast_series.parquet",
+      "producer": "02_Infrastructure/regime/regime_forecaster_v2.R",
+      "entry_fn": "(source)",
+      "schedule": "on_demand",
+      "date_col": null,
+      "max_lag_days": null,
+      "depends_on": [],
+      "tier": 3,
+      "_note": "2026-07-17 orphan 등재. regime forecaster 시계열 — 소비: RAMP regime bakeoff. v1vix/v2/v3 병행 버전 존재"
+    },
+    {
+      "path": ".cache/regime_forecast_series_v1vix.parquet",
+      "producer": "02_Infrastructure/regime/regime_forecaster_v2.R",
+      "entry_fn": "(source)",
+      "schedule": "on_demand",
+      "date_col": null,
+      "max_lag_days": null,
+      "depends_on": [],
+      "tier": 3,
+      "_note": "2026-07-17 orphan 등재. forecaster VIX 변형 — 리서치 생성물"
+    },
+    {
+      "path": ".cache/regime_forecast_series_v2.parquet",
+      "producer": "02_Infrastructure/regime/regime_forecaster_v3.R",
+      "entry_fn": "(source)",
+      "schedule": "on_demand",
+      "date_col": null,
+      "max_lag_days": null,
+      "depends_on": [],
+      "tier": 3,
+      "_note": "2026-07-17 orphan 등재. forecaster v2 시계열 — 리서치 생성물"
+    },
+    {
+      "path": ".cache/regime_forecast_series_v3.parquet",
+      "producer": "02_Infrastructure/regime/regime_forecaster_v4.R",
+      "entry_fn": "(source)",
+      "schedule": "on_demand",
+      "date_col": null,
+      "max_lag_days": null,
+      "depends_on": [],
+      "tier": 3,
+      "_note": "2026-07-17 orphan 등재. forecaster v3 시계열 — 리서치 생성물"
     }
   ]
 }
