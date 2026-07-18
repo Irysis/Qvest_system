@@ -146,10 +146,16 @@ tg_chart_pack <- function(period_returns, out_dir, title,
 #' @param values 실측 값 벡터 (예: paired NW-t, PORT_t) — 계약/실측 산출값만 전달
 #' @param hline 기준선 (예: 2.0 paired / 2.95 PORT_t), hline_label 기준선 라벨
 #' @param highlight 강조할 라벨 (예: 현직/승자)
+#' @param filename 출력 PNG 파일명. 미지정(NULL, 기본) 시
+#'   "sweep_<title슬러그>_<타임스탬프>_<PID>_<seq>.png" 유니크 자동생성해 충돌 방지
+#'   (동일 dir·동일 세션 복수 호출 시 서로 덮어쓰기 방지, FQ-057 실사고).
+#'   명시 시 그대로 사용 — 기존 동작 불변.
 tg_chart_sweep <- function(labels, values, out_dir, title,
                            value_label = "실측값", hline = NULL, hline_label = NULL,
-                           highlight = NULL, filename = "sweep_compare.png") {
+                           highlight = NULL, filename = NULL) {
   stopifnot(length(labels) == length(values))
+  # 기본 filename(NULL)만 유니크화 — 명시 filename을 주는 caller는 불변 (호환 계약, FQ-057)
+  if (is.null(filename)) filename <- paste0("sweep_", .tgcp_uniq(title), ".png")
   if (!dir.exists(out_dir)) dir.create(out_dir, recursive = TRUE)
   o <- order(values)
   lb <- labels[o]; vl <- values[o]
