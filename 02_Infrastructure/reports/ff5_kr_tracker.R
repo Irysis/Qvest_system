@@ -145,7 +145,7 @@ if (nrow(rets_mtd) > 200) {
       n_td <- sum(format(ud, "%Y-%m") == mtd_ym2)
       rf_v <- ecos[Series == "KR_CD91" & format(as.Date(Date), "%Y-%m") == mtd_ym2, Value]
       rf_mtd <- if (length(rf_v)) mean(rf_v, na.rm = TRUE) / 100 / 252 * n_td else NA_real_
-      MTD5 <- list(as_of = format(max(ud)), ym = mtd_ym2, n_days = n_td,
+      MTD5 <- list(as_of = format(max(ud)), ym = mtd_ym2, n_days = n_td, rf_mtd = rf_mtd,
                    MKT = rwm[, vw(ret, w)] - rf_mtd,
                    SMB = mean(vapply(parts, function(p) p$smb, numeric(1))),
                    HML = parts$g_bm$hml, RMW = parts$g_op$hml, CMA = parts$g_inv$hml)

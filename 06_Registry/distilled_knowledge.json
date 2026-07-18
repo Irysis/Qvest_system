@@ -1,6 +1,6 @@
 {
   "schema_version": "distilled_knowledge_v1",
-  "generated_at": "2026-07-18T08:47:59+00:00",
+  "generated_at": "2026-07-18T09:06:20+00:00",
   "note": "Axiom 엔진 ②Distilled 계층 통합 인덱스. lifecycle: pending_5axis→[자동초안+적대검증]→proposed→[도훈 배치승인]→distilled→promoted|expired. INV-6(2026-07-04 재정의: 무인 활성화 금지): 주입/truths 소비는 status=distilled만 — proposed·pending_5axis 초안 텍스트 주입 금지(안전속성 보존).",
   "n_entries": 82,
   "n_distilled": 15,
@@ -1765,7 +1765,7 @@
       "type": "methodological",
       "polarity": "conditional",
       "metric_type": "proxy",
-      "status": "distilled",
+      "status": "expired",
       "statement_refined": "KR alpha-search fast-validation 후보군(momentum 중심 + value/quality/defense/ML 혼재, 134 L-code, VALIDATED_HARD_FAIL)은 proxy 라벨상 grade A/B(예: CAGR 19.6%·Sharpe 0.90)로 보이나 계약 실측(essence PORT_t NW lag-3)으로 재측정하면 자본 자격 미달: 재측정된 41건 중 PORT_t 최대 2.52·중앙값 0.58로 자본 문턱 2.95를 통과한 건이 0건이고 essence 등급이 F/C로 붕괴하며 OOS retention이 IS 대비 -0.19로 감쇠. = alpha-search fast-validation의 proxy 등급/PG편입-권고 라벨은 자본 관련성의 근거가 아니다 (측정 정직성 명제 — 특정 방향/제약 귀속 아님).",
       "statement_draft": "[방법론 조건부 규칙 초안] family=momentum, tags=ALPHA_SEARCH,FAST_VALIDATION,VALIDATED_HARD_FAIL, supporting=134건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
       "retry_condition": "(1) 후보 재측정 시 계약 실측(canonical_screen_bt / build_bt_result, PORT_t NW lag-3)로 PORT_t>=2.95를 통과하는 개별 멤버가 나오면 그 멤버 한정 재도전. (2) 2017+ 감쇠는 시간-cohort 특성이므로(BSC vol-managed WML pre-2017 t=3.56 -> post-2017 t=0.18) KR 모멘텀 알파의 최근 국면이 회복되면 재검. (3) standalone long-only가 아닌 envelope-안 소비 경로(overlay / multi-sleeve long-leg / DPL feature)로 재사용은 이 규칙의 대상 아님 — 게이트는 standalone 자본 자격에만 적용.",
@@ -2608,16 +2608,34 @@
       "type": "methodological",
       "polarity": "conditional",
       "metric_type": "proxy",
-      "status": "pending_5axis",
-      "statement_refined": null,
+      "status": "distilled",
+      "statement_refined": "KR alpha-search fast-validation 후보군(momentum 중심 + value/quality/defense/ML 혼재, 134 L-code, VALIDATED_HARD_FAIL)은 proxy 라벨상 grade A/B(예: CAGR 19.6%·Sharpe 0.90)로 보이나 계약 실측(essence PORT_t NW lag-3)으로 재측정하면 자본 자격 미달: 재측정된 41건 중 PORT_t 최대 2.52·중앙값 0.58로 자본 문턱 2.95를 통과한 건이 0건이고 essence 등급이 F/C로 붕괴하며 OOS retention이 IS 대비 -0.19로 감쇠. = alpha-search fast-validation의 proxy 등급/PG편입-권고 라벨은 자본 관련성의 근거가 아니다 (측정 정직성 명제 — 특정 방향/제약 귀속 아님).",
       "statement_draft": "[방법론 조건부 규칙 초안] family=momentum, tags=ALPHA_SEARCH,FAST_VALIDATION,VALIDATED_HARD_FAIL, supporting=139건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
-      "retry_condition": null,
-      "adversarial_verdict": null,
-      "expiry": null,
-      "frontier": [],
-      "live_trigger": [],
+      "retry_condition": "(1) 후보 재측정 시 계약 실측(canonical_screen_bt / build_bt_result, PORT_t NW lag-3)로 PORT_t>=2.95를 통과하는 개별 멤버가 나오면 그 멤버 한정 재도전. (2) 2017+ 감쇠는 시간-cohort 특성이므로(BSC vol-managed WML pre-2017 t=3.56 -> post-2017 t=0.18) KR 모멘텀 알파의 최근 국면이 회복되면 재검. (3) standalone long-only가 아닌 envelope-안 소비 경로(overlay / multi-sleeve long-leg / DPL feature)로 재사용은 이 규칙의 대상 아님 — 게이트는 standalone 자본 자격에만 적용.",
+      "adversarial_verdict": "CLEAN",
+      "expiry": "2026-10-02",
+      "frontier": [
+        "proxy 등급 상위 후보를 계약 실측(canonical_screen_bt)으로 개별 재측정 — PORT_t>=2.95 통과 멤버만 별도 승격 경로",
+        "감쇠 견디는 후보를 overlay/DPL feature로 소비 (standalone 자본 게이트 우회 아닌 다른 표현공간)",
+        "essence PORT_t와 proxy 등급의 괴리가 큰 후보군을 라벨-교정 대상으로 우선 재측정(측정 인프라 개선)"
+      ],
+      "live_trigger": [
+        {
+          "type": "regime",
+          "condition": "KR 모멘텀 최근 국면 회복(unified_regime 확장 signal) 시 41건 재측정 재개",
+          "monitored_source": ".cache/unified_regime_signal.parquet + macro_regime.parquet"
+        },
+        {
+          "type": "time",
+          "condition": "expiry 2026-10-02 도달 시 재검토",
+          "monitored_source": "distilled.R expiry sweep"
+        }
+      ],
       "revival_spec": [],
-      "constraint_firewall": null,
+      "constraint_firewall": {
+        "mode": "backstop_passed",
+        "checked_at": "2026-07-04"
+      },
       "supporting_l_codes": [
         "L-AS-20260602_165334",
         "L-AS-20260602_171933",
@@ -2764,9 +2782,9 @@
       "cluster_key": "a42079968084",
       "promoted_to_axiom": null,
       "created_at": "2026-07-08T22:46:54+00:00",
-      "refined_at": null,
+      "refined_at": "2026-07-04T21:55:16+0900",
       "drafted_at": null,
-      "approved_at": null,
+      "approved_at": "2026-07-05T01:58:25+0900",
       "source_file": "DIST-AS-008.json"
     },
     {
@@ -3144,7 +3162,7 @@
       "type": "methodological",
       "polarity": "conditional",
       "metric_type": "estimated",
-      "status": "distilled",
+      "status": "expired",
       "statement_refined": "KR quality_earnings 팩터는 횡단면 IC/ICIR이 강해도(L-160 IC 0.22·ICIR 1.88·FM t 16.9, L-165 ICIR 0.74~0.94) standalone·naked long-only top-20 구성에서 MDD hard-fail로 포트폴리오 번역에 실패(L-137 61.9%·L-138 67.7%·L-160 67~95%·L-165 77~95%·L-166 58~67%, 다수 stress 0/3). 방어 역할은 특히 팩터타이밍/블렌딩만으로는 부족(L-130: 팩터 국면블렌딩 MDD 48->30% vs 포지션 오버레이 25%로 열위)하며, multi-sleeve/오버레이 결합 구조는 본 규칙 범위 밖(L-141·L-165·L-166 exclusion). = 이 envelope(naked long-only top-20) 안에서 quality_earnings 단독 번역이 MDD로 실패. [metric_type=estimated — 레거시 창(flat 비용·구벤치), 미재실측]",
       "statement_draft": "[방법론 조건부 규칙 초안] family=quality_earnings, tags=HARD_FAIL_MDD,DFA_OVERLAY,ANCHOR_INFERIOR, supporting=8건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
       "retry_condition": "(1) v2.4 delta-cost + canonical KOSPI200 벤치 하 대표전략 canonical_screen_bt 재실측(evidence_audit_20260704 remeasure_plan) — estimated->backtested 승급 전제; (2) multi-sleeve long-leg 편입 또는 position-level 오버레이 결합 = naked long-only 한정 규칙 밖이므로 재도전 대상(long-short 논문 차용 시 long leg만, 공매도 out-of-envelope); (3) IC-Return coupling gate(SR/ICIR>=0.3)+signal-direction 명확화(binary Z-flip/F-score)+sector-neutral 중 2개+ 채택 시 재실행(L-160 rev8-B 조건).",
@@ -3613,16 +3631,35 @@
       "type": "methodological",
       "polarity": "conditional",
       "metric_type": "estimated",
-      "status": "pending_5axis",
-      "statement_refined": null,
+      "status": "distilled",
+      "statement_refined": "KR quality_earnings 팩터는 횡단면 IC/ICIR이 강해도(L-160 IC 0.22·ICIR 1.88·FM t 16.9, L-165 ICIR 0.74~0.94) standalone·naked long-only top-20 구성에서 MDD hard-fail로 포트폴리오 번역에 실패(L-137 61.9%·L-138 67.7%·L-160 67~95%·L-165 77~95%·L-166 58~67%, 다수 stress 0/3). 방어 역할은 특히 팩터타이밍/블렌딩만으로는 부족(L-130: 팩터 국면블렌딩 MDD 48->30% vs 포지션 오버레이 25%로 열위)하며, multi-sleeve/오버레이 결합 구조는 본 규칙 범위 밖(L-141·L-165·L-166 exclusion). = 이 envelope(naked long-only top-20) 안에서 quality_earnings 단독 번역이 MDD로 실패. [metric_type=estimated — 레거시 창(flat 비용·구벤치), 미재실측]",
       "statement_draft": "[방법론 조건부 규칙 초안] family=quality_earnings, tags=HARD_FAIL_MDD,DFA_OVERLAY,ANCHOR_INFERIOR, supporting=9건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
-      "retry_condition": null,
-      "adversarial_verdict": null,
-      "expiry": null,
-      "frontier": [],
-      "live_trigger": [],
+      "retry_condition": "(1) v2.4 delta-cost + canonical KOSPI200 벤치 하 대표전략 canonical_screen_bt 재실측(evidence_audit_20260704 remeasure_plan) — estimated->backtested 승급 전제; (2) multi-sleeve long-leg 편입 또는 position-level 오버레이 결합 = naked long-only 한정 규칙 밖이므로 재도전 대상(long-short 논문 차용 시 long leg만, 공매도 out-of-envelope); (3) IC-Return coupling gate(SR/ICIR>=0.3)+signal-direction 명확화(binary Z-flip/F-score)+sector-neutral 중 2개+ 채택 시 재실행(L-160 rev8-B 조건).",
+      "adversarial_verdict": "CLEAN",
+      "expiry": "2026-10-02",
+      "frontier": [
+        "position-level regime overlay 결합 — 팩터-국면블렌딩(MDD 48->30%)보다 우월한 포지션 오버레이(25%)로 MDD 번역",
+        "multi-sleeve long-leg 편입 (naked standalone 아님) — quality_earnings를 core sleeve 보조 성분으로",
+        "IC-Return coupling gate + binary Z-flip/F-score signal-direction + sector-neutral 중 2+ 결합(L-160 rev8-B)",
+        "v2.4 delta-cost + canonical 벤치 재실측으로 estimated->backtested 승급 후 MDD structural 재판정(§3 drawdown 계층)"
+      ],
+      "live_trigger": [
+        {
+          "type": "regime",
+          "condition": "고변동/CRISIS 국면 진입 시 position overlay 결합 변형 우선 재검(MDD 번역 레버)",
+          "monitored_source": ".cache/unified_regime_signal.parquet + macro_regime.parquet"
+        },
+        {
+          "type": "time",
+          "condition": "expiry 2026-10-02 도달 시 재검토",
+          "monitored_source": "distilled.R expiry sweep"
+        }
+      ],
       "revival_spec": [],
-      "constraint_firewall": null,
+      "constraint_firewall": {
+        "mode": "backstop_passed",
+        "checked_at": "2026-07-04"
+      },
       "supporting_l_codes": [
         "L-130",
         "L-137",
@@ -3639,9 +3676,9 @@
       "cluster_key": "5c15885d429f",
       "promoted_to_axiom": null,
       "created_at": "2026-07-08T22:21:56+00:00",
-      "refined_at": null,
+      "refined_at": "2026-07-04T21:58:17+0900",
       "drafted_at": null,
-      "approved_at": null,
+      "approved_at": "2026-07-05T01:58:25+0900",
       "source_file": "DIST-QPM-014.json"
     },
     {

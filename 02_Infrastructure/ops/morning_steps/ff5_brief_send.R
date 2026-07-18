@@ -71,18 +71,19 @@ if (is.null(FF) || !nrow(FF)) { cat("[ff5_brief] FF 시리즈 없음 — skip\n"
     items_ff <- vapply(names(bn), function(ix) { b <- ib$betas[[ix]]
       v <- c(SMB = b$SMB, HML = b$HML, RMW = b$RMW, CMA = b$CMA)
       tk <- vapply(names(v), function(f) sprintf("%s %+.2f", f, v[f]), character(1))
-      tk[which.max(abs(v))] <- sprintf("<b>%s</b>", tk[which.max(abs(v))])   # 최대 민감도 볼드
+      tk[which.max(v)] <- sprintf("<b>%s</b>", tk[which.max(v)])   # 양수 최대 볼드 (도훈 07-18)
       sprintf("%s: %s (MKT %.2f)", bn[ix], paste(tk, collapse = " · "), b$MKT) }, character(1))
-    sections[[length(sections) + 1]] <- list(heading = "지수 팩터 민감도 (FF5·36개월 베타)",
+    sections[[length(sections) + 1]] <- list(heading = sprintf("지수 팩터 민감도 (FF5·%s)", ib$window %||% "36개월"),
                                              type = "bullet", items = unname(items_ff))
     charts <- c(charts, "outputs/ff5_kr/charts/index_factor_beta.png")
     if (!is.null(ib$sb_betas)) {
       krs <- c(VAL = "가치", QUAL = "퀄리티", MOM = "모멘텀", LOWVOL = "저변동성",
                SIZE = "소형주", DIV = "고배당", EREV = "이익전망수정")
-      items_sb <- vapply(names(bn), function(ix) { v <- unlist(ib$sb_betas[[ix]]); o <- order(-abs(v))[1:2]
-        sprintf("%s: <b>%s %+.2f</b> · %s %+.2f (상위 2)", bn[ix],
-                krs[names(v)[o[1]]], v[o[1]], krs[names(v)[o[2]]], v[o[2]]) }, character(1))
-      sections[[length(sections) + 1]] <- list(heading = "지수 스마트베타 민감도 (36개월·시장통제)",
+      items_sb <- vapply(names(bn), function(ix) { v <- unlist(ib$sb_betas[[ix]])
+        ip <- which.max(v); im <- which.min(v)                 # 양수 최대(볼드) + 음수 최대 병기
+        sprintf("%s: <b>%s %+.2f</b> · %s %+.2f", bn[ix],
+                krs[names(v)[ip]], v[ip], krs[names(v)[im]], v[im]) }, character(1))
+      sections[[length(sections) + 1]] <- list(heading = "지수 스마트베타 민감도 (양수최대·음수최대, 시장통제)",
                                                type = "bullet", items = unname(items_sb))
       charts <- c(charts, "outputs/ff5_kr/charts/index_smartbeta_beta.png")
     }

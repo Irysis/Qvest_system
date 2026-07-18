@@ -3,14 +3,14 @@
   "dist_id": "DIST-AS-008",
   "cluster_key": "a42079968084",
   "candidate_id": "CAND_20260718_alpha_search_momentum_conditional_L-AS-20260602_165334_L-AS-20260602_171933_L-AS-20260604_135520",
-  "status": "pending_5axis",
-  "statement_refined": null,
-  "retry_condition": null,
-  "refined_at": null,
+  "status": "distilled",
+  "statement_refined": "KR alpha-search fast-validation 후보군(momentum 중심 + value/quality/defense/ML 혼재, 134 L-code, VALIDATED_HARD_FAIL)은 proxy 라벨상 grade A/B(예: CAGR 19.6%·Sharpe 0.90)로 보이나 계약 실측(essence PORT_t NW lag-3)으로 재측정하면 자본 자격 미달: 재측정된 41건 중 PORT_t 최대 2.52·중앙값 0.58로 자본 문턱 2.95를 통과한 건이 0건이고 essence 등급이 F/C로 붕괴하며 OOS retention이 IS 대비 -0.19로 감쇠. = alpha-search fast-validation의 proxy 등급/PG편입-권고 라벨은 자본 관련성의 근거가 아니다 (측정 정직성 명제 — 특정 방향/제약 귀속 아님).",
+  "retry_condition": "(1) 후보 재측정 시 계약 실측(canonical_screen_bt / build_bt_result, PORT_t NW lag-3)로 PORT_t>=2.95를 통과하는 개별 멤버가 나오면 그 멤버 한정 재도전. (2) 2017+ 감쇠는 시간-cohort 특성이므로(BSC vol-managed WML pre-2017 t=3.56 -> post-2017 t=0.18) KR 모멘텀 알파의 최근 국면이 회복되면 재검. (3) standalone long-only가 아닌 envelope-안 소비 경로(overlay / multi-sleeve long-leg / DPL feature)로 재사용은 이 규칙의 대상 아님 — 게이트는 standalone 자본 자격에만 적용.",
+  "refined_at": "2026-07-04T21:55:16+0900",
   "refined_by": null,
   "promoted_to_axiom": null,
   "created_at": "2026-07-08T22:46:54+00:00",
-  "updated_at": "2026-07-18T08:47:58+00:00",
+  "updated_at": "2026-07-18T09:06:19+00:00",
   "research_mode": "alpha_search",
   "metric_type": "proxy",
   "type": "methodological",
@@ -459,5 +459,32 @@
     "oos_effect_vs_is": -0.126,
     "note": "L-code oos_retention 실값 88건 median (IS65/OOS35 활성SR retention) — oos_months 실값 무 → None 유지 — promote.R essence_score 경유 재확정"
   },
-  "cluster_members_count": 139
+  "cluster_members_count": 139,
+  "approved_at": "2026-07-05T01:58:25+0900",
+  "approved_by": "dohoon",
+  "frontier": [
+    "proxy 등급 상위 후보를 계약 실측(canonical_screen_bt)으로 개별 재측정 — PORT_t>=2.95 통과 멤버만 별도 승격 경로",
+    "감쇠 견디는 후보를 overlay/DPL feature로 소비 (standalone 자본 게이트 우회 아닌 다른 표현공간)",
+    "essence PORT_t와 proxy 등급의 괴리가 큰 후보군을 라벨-교정 대상으로 우선 재측정(측정 인프라 개선)"
+  ],
+  "live_trigger": [
+    {
+      "type": "regime",
+      "condition": "KR 모멘텀 최근 국면 회복(unified_regime 확장 signal) 시 41건 재측정 재개",
+      "monitored_source": ".cache/unified_regime_signal.parquet + macro_regime.parquet"
+    },
+    {
+      "type": "time",
+      "condition": "expiry 2026-10-02 도달 시 재검토",
+      "monitored_source": "distilled.R expiry sweep"
+    }
+  ],
+  "adversarial_verdict": "CLEAN",
+  "expiry": "2026-10-02",
+  "constraint_firewall": {
+    "mode": "backstop_passed",
+    "checked_at": "2026-07-04"
+  },
+  "migrated_from": "DIST-AS-003",
+  "migration_note": "engine forward-migration 20260718: cluster grew 134->139; refinement inherited from DIST-AS-003. INV-6: 승인문 재배치(신규 활성화 아님, 주입문 불변)."
 }

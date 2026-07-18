@@ -20,7 +20,8 @@ me <- unique(as.Date(vapply(mgrid, function(d) { m0 <- as.Date(cut(d, "month"));
 me <- sort(me[!is.na(me)])
 me <- me[format(me, "%Y-%m") < format(max(ud), "%Y-%m")]     # 완결월 월말만
 me <- tail(me, N_M)
-wf("backfill 대상 월말 %d개 (%s..%s)", length(me), format(min(me)), format(max(me)))
+me <- unique(c(me, max(ud)))                                  # + 직전영업일 (MTD 회귀점용, 도훈 지시 07-18)
+wf("backfill 대상 %d개 (%s..%s, 마지막=직전영업일)", length(me), format(min(me)), format(max(me)))
 
 get_board <- function(d, board) {
   ds <- format(d, "%Y%m%d")
