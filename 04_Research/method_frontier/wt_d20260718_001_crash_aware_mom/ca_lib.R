@@ -195,12 +195,29 @@ assemble_inputs_ca <- function(store, penalty_def = "none", lambda = 0) {
 }
 
 # ---- run canonical screen (top-25, 15bps, liq 2e8) --------------------------
-run_canon <- function(inp, top_n = 25L, size_dt = NULL, run_id = "ca") {
+run_canon <- function(inp, top_n = 25L, size_dt = NULL, run_id = "ca", diag = TRUE) {
   canonical_screen_bt(
     scores_dt = inp$scores, returns_dt = inp$returns, bench_dt = inp$bench,
     top_n = top_n, cost_bps_oneway = 15, liq_dt = inp$liq, liq_min = 2e8,
     run_id = run_id, strategy_id = run_id, periods_per_year = 12L,
-    diag_dual_basis = TRUE, size_dt = size_dt)
+    diag_dual_basis = diag, size_dt = size_dt)
+}
+
+# window-sliced metrics from a canonical result's period_returns (no re-run)
+window_metrics_ca <- function(res, date_lo = NULL, date_hi = NULL) {
+  pr <- as.data.table(res$period_returns)
+  if (!is.null(date_lo)) pr <- pr[date >= date_lo]
+  if (!is.null(date_hi)) pr <- pr[date <= date_hi]
+  if (nrow(pr) < 10L) return(list(n=nrow(pr), port_t=NA, calmar=NA, mdd=NA, net_sr=NA))
+  pr[, active := ret_net - benchmark_ret]
+  pt <- nw_t_f(pr$active)
+  net_x <- xts(pr$ret_net, order.by = pr$date)
+  cagr <- as.numeric(Return.annualized(net_x, scale = 12, geometric = TRUE))
+  mdd  <- as.numeric(maxDrawdown(net_x))
+  list(n = nrow(pr), port_t = round(pt$t,4), mean_active_m = round(pt$mean_m,5),
+       calmar = round(cagr/mdd,4), cagr = round(cagr,4), mdd = round(mdd,4),
+       net_sr = round(ann_sr_f(pr$ret_net),4),
+       active_sr = round(ann_sr_f(pr$active),4))
 }
 
 # ---- calmar / structural DD from canonical period_returns (net) -------------
