@@ -27,7 +27,9 @@ t0 <- Sys.time()
 ##   컨센서스 캐시 직접 계산(SIZE의 rawdata 직접 소비와 동일 경로, 팩터 DB 미경유).
 ##   월말 기준 최근 92일 내 최신 컨센서스 LOCF(과거 방향만 = PIT-safe)·bps>0 가드.
 ##   포워드 스위트 완성: VAL(컴포지트)·QUAL(fROE)·DIV(fDY)·EREV(전망수정). F-Score판은 git 이력.
-STYLES <- list(VAL = list(f = "V12_Composite_Value", hi = TRUE), QUAL = list(f = "__froe", hi = TRUE),
+## v2.3 (07-18 도훈): VAL = 순수 포워드 컴포지트 __fval = mean( z(eps_1y/P), z(bps_1y/P), z(dps_1y/P) )
+##   — V12의 trailing CFP 혼입 제거, 컨센서스 캐시 직접 계산(3지표 중 2개 이상 있으면 산출).
+STYLES <- list(VAL = list(f = "__fval", hi = TRUE), QUAL = list(f = "__froe", hi = TRUE),
                MOM = list(f = "M01_Mom_12_1", hi = TRUE), LOWVOL = list(f = "D03_RealVol", hi = FALSE),
                SIZE = list(f = NA_character_, hi = FALSE), DIV = list(f = "V06_fDY", hi = TRUE),
                EREV = list(f = "C03_EPS_Chg_3m", hi = TRUE))
@@ -37,12 +39,26 @@ FNAMES <- FNAMES[!is.na(FNAMES) & !startsWith(FNAMES, "__")]
 ## fROE 재료: 컨센서스 캐시 직접 소비 (도훈 지시 — 팩터 DB 미경유 직접 산출)
 CONS_EPS <- as.data.table(read_parquet(".cache/consensus/eps_1y.parquet")); CONS_EPS[, Date := as.Date(Date)]; setkey(CONS_EPS, Ticker, Date)
 CONS_BPS <- as.data.table(read_parquet(".cache/consensus/bps_1y.parquet")); CONS_BPS[, Date := as.Date(Date)]; setkey(CONS_BPS, Ticker, Date)
+CONS_DPS <- as.data.table(read_parquet(".cache/consensus/dps_1y.parquet")); CONS_DPS[, Date := as.Date(Date)]; setkey(CONS_DPS, Ticker, Date)
 get_froe <- function(tickers, sig_d, max_stale = 92) {
   q <- data.table(Ticker = tickers, Date = as.Date(sig_d))
   e <- CONS_EPS[q, on = .(Ticker, Date), roll = max_stale][, .(Ticker, eps = eps_1y)]
   b <- CONS_BPS[q, on = .(Ticker, Date), roll = max_stale][, .(Ticker, bps = bps_1y)]
   m <- merge(e, b, by = "Ticker")
   m[!is.na(eps) & !is.na(bps) & bps > 0, .(Ticker, froe = eps / bps)]
+}
+get_fval <- function(tickers, close, sig_d, max_stale = 92) {  # 순수 포워드 밸류 컴포지트
+  q <- data.table(Ticker = tickers, Date = as.Date(sig_d))
+  e <- CONS_EPS[q, on = .(Ticker, Date), roll = max_stale][, .(Ticker, eps = eps_1y)]
+  b <- CONS_BPS[q, on = .(Ticker, Date), roll = max_stale][, .(Ticker, bps = bps_1y)]
+  dv <- CONS_DPS[q, on = .(Ticker, Date), roll = max_stale][, .(Ticker, dps = dps_1y)]
+  m <- Reduce(function(a, b2) merge(a, b2, by = "Ticker"), list(data.table(Ticker = tickers, Close = close), e, b, dv))
+  m[Close > 0, `:=`(ey = eps / Close, by_ = bps / Close, dy = dps / Close)]
+  zz <- function(x) { mu <- mean(x, na.rm = TRUE); s <- sd(x, na.rm = TRUE); if (!is.finite(s) || s == 0) return(rep(NA_real_, length(x))); (x - mu) / s }
+  m[, `:=`(z1 = zz(ey), z2 = zz(by_), z3 = zz(dy))]
+  m[, nz := rowSums(!is.na(cbind(z1, z2, z3)))]
+  m[, fval := rowMeans(cbind(z1, z2, z3), na.rm = TRUE)]
+  m[nz >= 2, .(Ticker, fval)]
 }
 
 ## ── 1) 월말 유니버스 패널 + forward 1m (유니버스=K200∪KQ150) ───────────────
@@ -113,6 +129,7 @@ style_actives <- function(u) {
     cfg <- STYLES[[st]]
     v <- if (st == "SIZE") -u$Size
          else if (identical(cfg$f, "__froe")) u$froe
+         else if (identical(cfg$f, "__fval")) u$fval
          else { if (is.na(cfg$f) || !cfg$f %in% names(u)) NA else (if (cfg$hi) 1 else -1) * u[[cfg$f]] }
     if (length(v) == 1 && is.na(v)) { out[[st]] <- NA_real_; next }
     ok <- !is.na(v)
@@ -133,6 +150,8 @@ for (sd_ in sig_dates) {
   u <- merge(u, fz, by = "Ticker", all.x = TRUE)
   fr <- tryCatch(get_froe(u$Ticker, sd_), error = function(e) NULL)
   if (!is.null(fr) && nrow(fr)) u <- merge(u, fr, by = "Ticker", all.x = TRUE) else u[, froe := NA_real_]
+  fv <- tryCatch(get_fval(u$Ticker, u$Close, sd_), error = function(e) NULL)
+  if (!is.null(fv) && nrow(fv)) u <- merge(u, fv, by = "Ticker", all.x = TRUE) else u[, fval := NA_real_]
   out <- c(list(ym = rym_map[sig == sd_, rym]), style_actives(u))   # 실현월 라벨
   nmov <- nmov + 1L
   rows[[format(sd_)]] <- as.data.table(out)

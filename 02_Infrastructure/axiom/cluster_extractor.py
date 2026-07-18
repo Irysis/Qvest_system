@@ -551,20 +551,91 @@ def _backfill_expiry_all(dist_dir: str) -> int:
     return n_filled
 
 
+# 정제 지식을 앞으로 옮길 때 승계하는 필드 (draft 필드 아님 — main loop가 안 건드림).
+_MIGRATE_REFINE_FIELDS = (
+    "statement_refined", "retry_condition", "refined_at", "refined_by",
+    "approved_at", "approved_by", "frontier", "live_trigger",
+    "adversarial_verdict", "adversarial_note", "expiry",
+    "constraint_firewall", "revival_spec",
+)
+
+
+def _plan_forward_migrations(existing: dict, cand_list: list) -> tuple[dict, dict]:
+    """Forward-migration planner (2026-07-18 엔진-갭 수리, 도훈 mandate).
+
+    cluster_key = sha1(정확한 멤버셋)이라 클러스터가 멤버 성장 시 key drift → 구 refined
+    카드가 orphan + 신규 unrefined pending 중복이 생기던 갭을 닫는다. refined(status=distilled
+    ∧ statement_refined) 카드의 멤버셋이 어떤 live CAND의 **진부분집합**(같은 research_mode
+    ∧ polarity)이면 = 그 클러스터가 정제 후 성장한 것 → 승인 정제를 앞으로 옮긴다.
+
+    **정확히 1개**의 refined 조상을 가진 cand_key만 채택(accepted) — 2개 이상은 무손실
+    자동병합 불가라 flagged(수동 /cleaner). 각 refined 카드는 가장 가까운(최소 증가) superset
+    CAND 1개에만 귀속(collision-free).
+
+    반환 (accepted, flagged):
+      accepted: {cand_key: (rid, cf, cand, S)}   # 1:1 적용 대상
+      flagged:  {cand_key: [rid, ...]}           # 조상 2개+ — 자동병합 안 함
+    """
+    refined = []
+    for _key, (_path, d) in existing.items():
+        if d.get("status") == "distilled" and d.get("statement_refined"):
+            refined.append((d.get("dist_id"),
+                            frozenset(d.get("supporting_l_codes") or []),
+                            d.get("research_mode"), d.get("polarity")))
+    plans: dict = {}  # cand_key -> [(rid, cf, cand, S)]
+    for (rid, rset, rmode, rpol) in refined:
+        if not rset:
+            continue
+        best = None  # (added, cand_key, cf, cand, S)
+        for (cf, cand, S, ckey) in cand_list:
+            # 이 CAND가 이미 R 자신에 매핑(동일 셋)이면 성장 아님 → skip
+            tgt = existing.get(ckey)
+            if tgt is not None and tgt[1].get("dist_id") == rid:
+                continue
+            if not (rset < S):                                   # 진부분집합(성장)만
+                continue
+            if (cand.get("research_mode") or None) != rmode:     # 같은 모드
+                continue
+            if (cand.get("polarity") or None) != rpol:           # 같은 극성(neg→pos 병합 금지)
+                continue
+            added = len(S) - len(rset)
+            if best is None or (added, ckey) < (best[0], best[1]):
+                best = (added, ckey, cf, cand, S)
+        if best is not None:
+            plans.setdefault(best[1], []).append((rid, best[2], best[3], best[4]))
+    accepted, flagged = {}, {}
+    for ckey, lst in plans.items():
+        if len(lst) == 1:
+            accepted[ckey] = lst[0]
+        else:
+            flagged[ckey] = [x[0] for x in lst]
+    return accepted, flagged
+
+
 def build_distilled(cand_dir: str, dist_dir: str, index_path: str) -> tuple[int, int]:
-    """pending CAND 전건 → DIST 초안 생성/갱신 + 통합 인덱스 재작성. 반환 (n_new, n_updated)."""
+    """pending CAND 전건 → DIST 초안 생성/갱신 + 통합 인덱스 재작성. 반환 (n_new, n_updated).
+
+    2026-07-18 엔진-갭 수리: main loop 앞에 forward-migration 선-패스를 둔다 —
+    정제 후 성장한 클러스터의 승인 정제를 live-key 카드로 옮겨(consolidate) 또는 rekey해
+    orphan-refined + pending-중복 누적을 원천 차단(idempotent). 상세: _plan_forward_migrations.
+    """
     os.makedirs(dist_dir, exist_ok=True)
     now = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
     existing: dict[str, tuple[str, dict]] = {}  # cluster_key -> (path, dist)
+    by_id: dict[str, tuple[str, dict]] = {}     # dist_id -> (path, dist)
     taken_ids: set[str] = set()
     for f in glob.glob(os.path.join(dist_dir, "DIST-*.json")):
         d = _load(f)
         if isinstance(d, dict) and d.get("cluster_key"):
             existing[d["cluster_key"]] = (f, d)
             taken_ids.add(d.get("dist_id") or "")
+            if d.get("dist_id"):
+                by_id[d["dist_id"]] = (f, d)
 
-    n_new = n_upd = 0
+    # CAND 1회 파싱 (migration 계획 + main loop 공용)
+    cand_list: list = []
     for cf in sorted(glob.glob(os.path.join(cand_dir, "CAND_*.json"))):
         cand = _load(cf)
         if not isinstance(cand, dict):
@@ -572,7 +643,62 @@ def build_distilled(cand_dir: str, dist_dir: str, index_path: str) -> tuple[int,
         sup = cand.get("supporting_l_codes") or []
         if not sup:
             continue
-        key = _cluster_key(sup)
+        cand_list.append((cf, cand, frozenset(sup), _cluster_key(sup)))
+
+    # ── forward-migration 선-패스 (엔진-갭 수리) ──
+    n_migrated = n_consolidated = 0
+    accepted, flagged = _plan_forward_migrations(existing, cand_list)
+    for ckey, (rid, cf, cand, S) in accepted.items():
+        if rid not in by_id:
+            continue
+        rpath, rd = by_id[rid]
+        rset = frozenset(rd.get("supporting_l_codes") or [])
+        old_key = rd.get("cluster_key")
+        tgt = existing.get(ckey)
+        if tgt is not None and tgt[1].get("dist_id") != rid:
+            # CONSOLIDATE: 성장 key에 pending 중복 T가 이미 있음 → T가 승인 정제 상속, R은 expire
+            tpath, td = tgt
+            if td.get("status") == "distilled" and td.get("statement_refined"):
+                continue  # T도 이미 정제됨 → 애매(자동병합 안 함)
+            for fld in _MIGRATE_REFINE_FIELDS:
+                if fld in rd:
+                    td[fld] = rd[fld]
+            td["status"] = "distilled"
+            td["migrated_from"] = rid
+            td["migration_note"] = (
+                f"engine forward-migration 20260718: cluster grew {len(rset)}->{len(S)}; "
+                f"refinement inherited from {rid}. INV-6: 승인문 재배치(신규 활성화 아님, 주입문 불변).")
+            # T는 main loop가 draft 갱신하며 기록 — 여기선 미기록. R(조상)만 expire 기록.
+            rd["status"] = "expired"
+            rd["expired_at"] = today
+            rd["migrated_to"] = td.get("dist_id")
+            rd["expire_reason"] = (
+                f"superseded_by_forward_migration -> {td.get('dist_id')} "
+                f"(cluster grew {len(rset)}->{len(S)}; 승인 refinement carried forward; "
+                f"engine-gap fix 20260718). INV-7 부활: migrated_to 카드 참조.")
+            with open(rpath, "w", encoding="utf-8") as fh:
+                json.dump(rd, fh, indent=2, ensure_ascii=False)
+            if old_key in existing and existing[old_key][1].get("dist_id") == rid:
+                del existing[old_key]
+            n_consolidated += 1
+        elif tgt is None:
+            # REKEY: 성장 key에 카드 없음 → R을 앞으로 이동(승인 정제 유지). main loop가 기록.
+            rd["cluster_key"] = ckey
+            rd["candidate_id"] = cand.get("candidate_id")
+            rd["migrated_from_key"] = old_key
+            rd["migration_note"] = (
+                f"engine forward-migration 20260718: cluster grew {len(rset)}->{len(S)}; "
+                f"rekeyed {old_key}->{ckey} (승인 refinement 유지).")
+            for fld in _DIST_DRAFT_FIELDS:
+                if fld in cand:
+                    rd[fld] = cand[fld]
+            if old_key in existing:
+                del existing[old_key]
+            existing[ckey] = (rpath, rd)
+            n_migrated += 1
+
+    n_new = n_upd = 0
+    for cf, cand, S, key in cand_list:
         if key in existing:
             path, dist = existing[key]
             for fld in _DIST_DRAFT_FIELDS:  # draft만 갱신 — 정제/상태 필드 절대 보존
@@ -612,6 +738,12 @@ def build_distilled(cand_dir: str, dist_dir: str, index_path: str) -> tuple[int,
     # negative 공백 카드에도 INV-7 시간부활 바닥을 깐다 (기존 값 보존·멱등).
     _backfill_expiry_all(dist_dir)
     _write_distilled_index(dist_dir, index_path)
+    if n_consolidated or n_migrated or flagged:
+        print(f"[distilled] forward-migration: {n_consolidated} consolidated / "
+              f"{n_migrated} rekeyed / {len(flagged)} multi-ancestor flagged")
+        for fckey, rids in flagged.items():
+            print(f"  [multi-ancestor] cand_key {fckey[:8]} <- {rids} "
+                  f"(수동 /cleaner 필요 — 자동병합 안 함)")
     return n_new, n_upd
 
 
