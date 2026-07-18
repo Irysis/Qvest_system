@@ -43,3 +43,27 @@ No HIGH-severity ≥5, no AX axiom hard-FAIL, no PIT C1 (lockbox/lookahead) viol
 - Verdict held at MIXED (not upgraded to positive [C1], not downgraded to clean-kill [C2/C3/C4 rebut the negatives]).
 - Added: fire-rate-mismatch caveat + τ-rematch NP (C2), prominent paired-insignificance statement (C1), 2008-robustness table (C4), AEpt-loses disclosure (C5), sharp-vs-slow scope + ensemble rationale (C6).
 - All landed in alpha_package.challenge_flags + alpha_validation + this note (no silent override — Charter §8).
+
+---
+
+# Self-Adversarial Challenge — r2 정밀화 라운드 (paired-return 유의화)
+
+**Object**: 3 PIT-clean directions (τ re-match / grind / ensemble) to push paired NW-t to significant-positive. Result: RETURN-GRADUATION NOT ACHIEVED (best D3 intersection +0.49); D3 intersection = Pareto-dominant calmar-only refinement.
+
+## R2-C1 — "D3 intersection is cherry-picked from 9 variants (multiple-testing)" — **PARTIAL, mitigated**
+9 constructions tried; only intersection helped. But: (a) intersection is a **parameter-free** rule (de-risk iff both fire) — no IS fitting, nothing to overfit; (b) it was a **pre-specified** ensemble form (coordinator D3), not a post-hoc grid pick; (c) the claim I make on it is NOT significance (+0.49 << +2) — no overclaim to over-fit. D1/D2 failures reported in full. DSR advisory (chain, n_variants=9 recorded). Honest.
+
+## R2-C2 — "Intersection's +0.49 is noise; you're dressing up a null" — **ACCEPT (return), REBUT (calmar)**
+ACCEPT on return: +0.49 is not significant; I explicitly state return-graduation NOT achieved and do NOT recommend forge for a return claim. REBUT on the book-dominance: the intersection is better than base on SR (1.815>1.809), calmar (2.284>2.069), MDD (-0.170>-0.187) AND CAGR (0.388>0.386) — Pareto-dominant, not a null, and paired is sign-flipped positive & consistent full(+0.49)/OOS(+0.50, excludes 2008). That is a real (if modest, non-significant-on-return) overlay-construction improvement, correctly routed as a CALMAR candidate, not a return claim.
+
+## R2-C3 — "τ re-match (D1) should have helped if budget was the confound — it didn't, so your r1 confound caveat was wrong" — **ACCEPT (updates prior)**
+Correct. D1 budget-matching WORSENED paired (-1.49 -> -1.62) and calmar; even the look-ahead ceiling (-1.55) doesn't help. This **falsifies** the r1 "exposure-budget confound" hypothesis — the AE's extra firing is part of its value, not drag. I updated the validation to state the confound is REJECTED. No self-rationalization; the negative is reported as informative.
+
+## R2-C4 — "grind (D2) covers 2018/2022 correctly yet paired got WORSE — is the grind signal broken?" — **REBUT (signal ok, conclusion is the finding)**
+The grind signal works (2018 2/4, 2022 7/10 after fixing the ATH-drawdown bug -> rolling-252d-high). The WORSE paired (-2.21) is the genuine finding: de-risking slow KR grinds does not pay on THIS book because the AR/R05 layers already cushion them, so grind de-risking mostly forfeits recovery upside. Clean negative, not a bug. (The first grind attempt WAS buggy — all-time-high dd_dur=948d never fired — caught and fixed before drawing any conclusion.)
+
+## R2-C5 — "IS/OOS split leakage in D3 blend weight selection" — **REBUT**
+The convex-blend weight was selected on IS (2008-2019) only and it collapsed to w(M4)=1.0 (pure incumbent). The intersection (the actual winner) needs NO selection (parameter-free), so there is no weight-leakage surface. paired reported on both full and OOS.
+
+## Self-rationalization scan: none. The "Pareto-dominant" claim is backed by all-4-metrics dominance (checked), not a hand-wave; the return-insignificance is stated as a hard NOT-achieved, not minimized.
+## Escalation triggers: none fired.

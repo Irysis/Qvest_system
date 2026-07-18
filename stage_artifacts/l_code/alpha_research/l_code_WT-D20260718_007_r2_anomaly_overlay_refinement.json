@@ -1,0 +1,50 @@
+{
+  "l_code": "L-AR-20260719_005642",
+  "strategy_id": "WT-D20260718_007_r2_anomaly_overlay_refinement",
+  "grade": "B",
+  "core_reference": "qepm/mailbox/worktask/WT-D20260718_007/alpha_validation.json(refinement_round_r2) + challenge_note.md",
+  "lesson_text": "WT-D20260718_007 r2 정밀화 (비지도 AE 오버레이 조건부양성의 paired-return 갭 유의화 시도, 2026-07-19): return-graduation 상한 확정 + D3 교집합 파레토 지배. 3방향 전부 paired NW-t ≥+2 미달(IS-only 선택·PIT clean·동일 M4 incumbent): ①τ 재매칭(발화율 0.172→0.145) paired −1.62(악화) — ★과잉발화는 drag 아닌 신호값(r1 가설 반증, 매칭하면 위기포착 깎임) ②grind 신호(rolling-252d 낙폭 지속) M4⊕AE⊕grind paired −2.21(악화) — grind 방어가 수익손실(AR/R05가 이미 grind 완충, 깨끗한 negative). 첫 시도 all-time-high 버그 검거·수정 ③**교집합 M4∩AE(양자 합의 시에만 방어) paired +0.49/+0.50(부호반전·비유의) = 파레토 지배**: SR 1.809→1.815·calmar 2.069→**2.284**·MDD −18.7→−17.0%·무수(parameter-free)=과적합 없음. ★판정: **비지도 이상탐지·앙상블 = 꼬리위험(calmar/MDD) 정제 한정, 통계적 수익 win 불가**. 단 D3 교집합은 **calmar-graduation 후보**(calmar 0.64 게이트 여유 통과·return-중립 tail 개선). forge 권고=수익 아닌 손익비-graduation only. ★★아크 함의(r1 단독 + r2 3방향 전부 <+2): **타이밍 오버레이의 return-graduation은 이 book서 상한 확정 — 수익 상승은 selection 계층에서, 타이밍 계층 아님.** 배포(M4∩AE)=book 수정=도훈 수동.",
+  "tags": "QEPM,WT,ANOMALY,OVERLAY,R2-REFINE,RETURN-GRAD-CEILING,D3-INTERSECTION,CALMAR-ONLY",
+  "created_at": "2026-07-19",
+  "research_mode": "alpha_research",
+  "created_by": "emit:alpha_research",
+  "metric_type": "backtested",
+  "construction_type": "dynamic_timing_overlay",
+  "mechanism_hypothesis": "비지도 AE의 위기방어는 실재하나 방어=수익 트레이드오프라 paired-return 비유의 — AE 과잉발화는 신호값(τ 매칭 시 악화)·grind 방어는 수익손실(AR/R05 기완충). M4∩AE 교집합(양자 합의)만 false-positive 발화 제거로 파레토 개선(calmar↑·수익 중립)이나 여전히 return win 아님=타이밍 계층 return 상한.",
+  "lcode_schema_version": 2,
+  "pin_tag": "WT-D20260718_007_r1",
+  "d1_tau_paired": -1.62,
+  "d2_grind_paired": -2.21,
+  "d3_intersect_paired": 0.49,
+  "d3_calmar": 2.284,
+  "d3_sr": 1.815,
+  "d3_mdd": -0.17,
+  "note": "grade B=D3 교집합 calmar-graduation 후보(return 아님). metric_type=backtested. 타이밍 오버레이 return 상한 확정·수익은 selection 계층. 배포=도훈",
+  "falsification_attempts": [
+    {
+      "test": "D1 τ 재매칭(exposure-budget confound 제거)",
+      "result": "falsified",
+      "effect_retained": "paired −1.62 악화=과잉발화는 신호값"
+    },
+    {
+      "test": "D2 grind 낙폭지속 신호 결합",
+      "result": "falsified",
+      "effect_retained": "paired −2.21 악화=grind 방어 수익손실"
+    },
+    {
+      "test": "D3 교집합 M4∩AE",
+      "result": "survived",
+      "effect_retained": "파레토 지배(calmar 2.284·부호반전 +0.49)이나 비유의=calmar-only"
+    },
+    {
+      "test": "paired ≥+2 유의화(3방향 종합)",
+      "result": "falsified",
+      "effect_retained": "전부 <+2=타이밍 오버레이 return-graduation 상한 확정"
+    }
+  ],
+  "oos_months": 221,
+  "portfolio_alpha_t": 4.223,
+  "selection_type": "chain",
+  "family": "overlay_regime",
+  "record_type": "performance"
+}

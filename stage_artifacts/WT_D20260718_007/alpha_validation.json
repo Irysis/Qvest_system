@@ -1,10 +1,40 @@
 {
   "task_id": "WT-D20260718_007",
-  "as_of_date": "2026-07-18",
+  "as_of_date": "2026-07-19",
   "surface": "timing_overlay_detector_swap",
   "not_cross_sectional": true,
-  "verdict": "VALIDATED_MIXED_CONDITIONAL_POSITIVE",
-  "verdict_rationale": "Root-cause SOLVED (unsupervised AE fires on OOD crashes the WT-004 transformer missed) + overlay objective (calmar/MDD) IMPROVED and PIT-clean and persistent ex-2008, BUT paired monthly-return test insignificant -> tail-risk detector improvement, not a statistically-robust book-return win. No pre-registered kill fires cleanly. Route to risk-research.",
+  "verdict": "VALIDATED_MIXED_CONDITIONAL_POSITIVE (r1) -> r2 refinement: RETURN-GRADUATION NOT ACHIEVED, calmar-only refinement (D3 intersection Pareto-dominant)",
+  "refinement_round_r2": {
+    "goal": "Close the ONLY graduation gap = insignificant paired-return, via 3 PIT-clean directions on the existing harness (pin WT-D20260718_007_r1, same M4 incumbent). Decision rule: does paired NW-t cross to significant positive (>=+2) while keeping calmar/MDD + PIT clean?",
+    "window": "221 months 2008-02..2026-06 (clean common window; base_M4 SR 1.809 / calmar 2.069 / MDD -0.187, matches r1)",
+    "is_oos_split": "IS 2008-02..2019-01 (n=132, weight/threshold selection ONLY) | OOS 2019-02..2026-06 (n=89)",
+    "D1_tau_rematch": {
+      "method": "expanding realized-quantile threshold on frozen ae_seq targeting M4 fire-rate 0.145 (PIT-safe; bootstrap first 36mo w/ IS fire to preserve 2008); + non-PIT global-quantile ceiling as diagnostic",
+      "result": {"AE_rematch_fire": 0.154, "paired_t_full": -1.62, "calmar": 1.956, "global_ceiling_paired_t": -1.55},
+      "verdict": "FAILS — budget-matching WORSENS paired (-1.49 -> -1.62) and calmar (2.196 -> 1.956). Even the look-ahead exact-match ceiling is -1.55. The AE over-firing (0.172) was NOT the return drag; trimming fires removes genuine crisis coverage. Exposure-budget confound REJECTED as the cause."
+    },
+    "D2_grind": {
+      "method": "slow-decline signal from rolling-252d-high drawdown duration (NOT all-time-high: KOSPI didn't reclaim 2007 ATH for ~10y) + trailing 6M return < -5%; IS-calibrated dd_dur threshold; union M4(+)AE(+)grind",
+      "grind_coverage": {"2011Euro": "0/5", "2018sell": "2/4", "2022": "7/10", "note": "grind now correctly fires on the slow declines AE misses"},
+      "result": {"M4_AE_grind_paired_t_full": -2.21, "M4_AE_grind_calmar": 2.120, "avg_exp": 0.743, "grind_only_paired_t": -1.49},
+      "verdict": "FAILS on paired — grind correctly identifies slow declines but de-risking there costs more return than it saves (paired -1.49 -> -2.21, avg_exp drops to 0.743). Slow-grind de-risking does not pay on this book (AR/R05 layers already handle grinds). calmar mildly up (2.120) but return worse."
+    },
+    "D3_ensemble": {
+      "intersection": {"rule": "de-risk ONLY when BOTH M4 & AE fire (parameter-free agreement)",
+        "SR": 1.815, "calmar": 2.284, "MDD": -0.170, "CAGR": 0.388, "PORT_t": 4.221, "avg_exp": 0.790,
+        "paired_t_full": 0.49, "paired_t_oos": 0.50,
+        "verdict": "BEST variant + ONLY one that improves paired. Pareto-DOMINANT on the book (better SR/calmar/MDD/CAGR than base AND vs standalone AE) with paired SIGN-FLIPPED to positive, consistent full(+0.49)/OOS(+0.50). Mechanism: de-risk only on high-confidence (both-agree) crashes (2008) -> keeps AE crisis coverage while removing AE's false-positive drag. BUT +0.49 is FAR below the +2 significance bar."},
+      "is_optimal_blend": {"w_M4_selected_IS": 1.0, "note": "IS-calibrated convex blend collapsed to pure M4 (best IS calmar 2.732) -> no smooth AE blend beats the incumbent; the AE value is only unlocked by the NONLINEAR agreement (intersection), not a linear weight."}
+    },
+    "pit_refinement": {"grind_assert_overlay_pit": "PASS (grind_cutoff < holding-month start)", "D2_lag1_stress": "1.806->1.800 no collapse", "note": "all refined signals use PIT-clean inputs (M4 incumbent + validated AE + past-price-only grind); intersection is parameter-free (no overfit)."},
+    "r2_verdict": "RETURN-GRADUATION NOT ACHIEVED — NO direction crosses paired >=+2 (best = D3 intersection +0.49/+0.50). Per decision rule -> confirm: unsupervised AE (and its ensembles) improve TAIL-SHAPE (calmar/MDD) only, NOT statistically-robust monthly-return. HOWEVER the D3 intersection is a Pareto-DOMINANT calmar/tail refinement of the incumbent overlay (best on every book metric, paired sign-flipped non-negative) -> route to risk-research as a CALMAR-graduation candidate (forge for authoritative calmar/oos_retention), explicitly NOT a return claim. Clean knowledge either way (coordinator mandate).",
+    "next_probes": [
+      "risk-research: forge-authoritative calmar/oos_retention graduation of the D3 INTERSECTION overlay (M4∩AE both-agree de-risk) — it clears calmar>=0.64 handily (2.284) and is a return-neutral tail improvement; distinct from return-graduation.",
+      "the intersection's value is 2008-weighted but paired +0.50 holds OOS (post-2019) too -> a dedicated crash-agreement ensemble across M4 + AE + a 3rd unsupervised detector may sharpen it.",
+      "return-graduation via overlay timing appears capped on this book (r1 standalone + r2 3-direction all <+2) -> return uplift must come from the SELECTION layer, not the timing overlay (consistent with the arc's book-timing ceiling)."
+    ]
+  },
+  "verdict_rationale": "Root-cause SOLVED (unsupervised AE fires on OOD crashes the WT-004 transformer missed) + overlay objective (calmar/MDD) IMPROVED and PIT-clean and persistent ex-2008, BUT paired monthly-return test insignificant -> tail-risk detector improvement, not a statistically-robust book-return win. r2 refinement (tau-rematch/grind/ensemble) confirms return-graduation not achievable (best paired +0.49); D3 intersection is a Pareto-dominant calmar-only refinement. Route to risk-research (calmar-graduation candidate, not return).",
   "kill_criteria_evaluation": {
     "kill_1_no_calmar_mdd_improvement": "NOT MET — AEseq calmar 2.196 > M4 2.069, MDD -0.170 vs -0.187, persistent across subperiods. (Paired-return IS <0/insignificant, which is the parenthetical arbiter — hence MIXED not clean-positive, but the primary condition 'no calmar/MDD improvement' is false.)",
     "kill_2_pit_violation": "NOT MET — assert_overlay_pit PASS (0/221), strict-PIT inflation +0.2%/-0.7% (<5%), lag1 no collapse, parity exact. Result genuine.",
