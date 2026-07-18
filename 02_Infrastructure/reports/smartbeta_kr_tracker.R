@@ -23,8 +23,9 @@ t0 <- Sys.time()
 
 STYLES <- list(VAL = list(f = "V01_BM", hi = TRUE), QUAL = list(f = "Q01_GPA", hi = TRUE),
                MOM = list(f = "M01_Mom_12_1", hi = TRUE), LOWVOL = list(f = "D03_RealVol", hi = FALSE),
-               SIZE = list(f = NA, hi = FALSE), DIV = list(f = "V11_Shareholder_Yield", hi = TRUE))
-FNAMES <- na.omit(unique(vapply(STYLES, `[[`, "", "f")))
+               SIZE = list(f = NA_character_, hi = FALSE), DIV = list(f = "V11_Shareholder_Yield", hi = TRUE))
+FNAMES <- unique(unlist(lapply(STYLES, function(x) x$f)))
+FNAMES <- FNAMES[!is.na(FNAMES)]
 
 ## ── 1) 월말 유니버스 패널 + forward 1m (유니버스=K200∪KQ150) ───────────────
 ud <- sort(unique(as.Date(as.data.table(read_parquet(".cache/rawdata.parquet", col_select = "Date"))$Date)))

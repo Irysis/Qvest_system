@@ -1,43 +1,66 @@
 ##=============================================================================
-## ff5_brief_send.R — 모닝브리핑 FF5 스타일 국면 블록 (mrs_daily_briefing.sh 스텝)
-## 흐름: 트래커 재빌드(~10초, 게이트 내장) → 최근월+rolling 12m 국면 판독 → tg 발송
-## 라벨: diagnostic_monitoring — L/S 스프레드는 시장 리뷰 전용(전략/자본 인용 금지)
+## ff5_brief_send.R — 모닝브리핑 스타일 국면 블록: FF5 + 스마트베타 통합 (v2)
+## 흐름: FF5 재빌드(~10초) + SB 증분 갱신(신규월만) → 국면 판독 → tg 1건 발송
+## 라벨: diagnostic_monitoring — 시장 리뷰 전용(전략/자본 인용 금지)
 ##=============================================================================
 suppressMessages({ library(arrow); library(data.table) })
 setDTthreads(1)
 ROOT <- Sys.getenv("QM_ROOT", "C:/Users/99922/OneDrive/Quant_Module_Moltbot")
 setwd(ROOT)
 
-ok_build <- tryCatch({ source("02_Infrastructure/reports/ff5_kr_tracker.R"); TRUE },
-                     error = function(e) { cat("[ff5_brief] build FAIL:", conditionMessage(e), "\n"); FALSE })
+ok_ff <- tryCatch({ source("02_Infrastructure/reports/ff5_kr_tracker.R"); TRUE },
+                  error = function(e) { cat("[ff5_brief] FF5 build FAIL:", conditionMessage(e), "\n"); FALSE })
+ok_sb <- tryCatch({ source("02_Infrastructure/reports/smartbeta_kr_tracker.R"); TRUE },
+                  error = function(e) { cat("[ff5_brief] SB build FAIL:", conditionMessage(e), "\n"); FALSE })
 
 FF <- tryCatch(as.data.table(read_parquet("outputs/ff5_kr/ff5_kr_monthly.parquet")), error = function(e) NULL)
-if (is.null(FF) || !nrow(FF)) { cat("[ff5_brief] series 없음 — skip\n") } else {
+SB <- tryCatch(as.data.table(read_parquet("outputs/smartbeta_kr/smartbeta_kr_monthly.parquet")), error = function(e) NULL)
+if (is.null(FF) || !nrow(FF)) { cat("[ff5_brief] FF 시리즈 없음 — skip\n") } else {
   setorder(FF, ym)
   for (cc in c("MKT", "SMB", "HML", "RMW", "CMA")) FF[, (paste0("r12_", cc)) := frollmean(get(cc), 12)]
   L <- FF[.N]
-  arrow_of <- function(x) if (is.na(x)) "?" else if (x > 0) "+" else "-"
+  fmt <- function(v) if (is.na(v)) "NA" else sprintf("%+.4f", v)
   regime_line <- sprintf("%s 주도 / %s 우위 / 퀄리티 %s",
-    ifelse(L$r12_SMB < 0, "대형", "소형"), ifelse(L$r12_HML < 0, "성장", "가치"), arrow_of(L$r12_RMW))
-  revive_watch <- if (L$r12_SMB > 0 && L$r12_HML > 0) "SMB·HML rolling 동반 양전 — 소형/가치 반전 신호, 매장 팩터 un-bury 검토 발화" else "반전 신호 없음 (SMB·HML rolling 동반 양전 시 발화)"
-  fmt <- function(v) sprintf("%+.4f", v)
+    ifelse(L$r12_SMB < 0, "대형", "소형"), ifelse(L$r12_HML < 0, "성장", "가치"),
+    ifelse(is.na(L$r12_RMW), "?", ifelse(L$r12_RMW > 0, "강세", "약세")))
+  revive_watch <- if (!is.na(L$r12_SMB) && !is.na(L$r12_HML) && L$r12_SMB > 0 && L$r12_HML > 0)
+    "SMB·HML rolling 동반 양전 — 소형/가치 반전 신호, 매장 팩터 un-bury 검토 발화"
+  else "반전 신호 없음 (SMB·HML rolling 동반 양전 시 발화)"
+
+  sections <- list(
+    list(heading = "FF5 최근월", type = "kv", kv = list(
+      "시장초과 MKT" = fmt(L$MKT), "소형-대형 SMB" = fmt(L$SMB), "가치-성장 HML" = fmt(L$HML),
+      "수익성 RMW" = fmt(L$RMW), "투자보수 CMA" = fmt(L$CMA))),
+    list(heading = "FF5 최근 12개월 평균", type = "kv", kv = list(
+      "시장초과 MKT" = fmt(L$r12_MKT), "소형-대형 SMB" = fmt(L$r12_SMB), "가치-성장 HML" = fmt(L$r12_HML),
+      "수익성 RMW" = fmt(L$r12_RMW), "투자보수 CMA" = fmt(L$r12_CMA))))
+  charts <- "outputs/ff5_kr/charts/ff5_rolling12.png"
+
+  sb_line <- NULL
+  if (!is.null(SB) && nrow(SB) >= 12) {
+    setorder(SB, ym)
+    sty <- c("VAL", "QUAL", "MOM", "LOWVOL", "SIZE", "DIV")
+    r12 <- vapply(sty, function(s) mean(tail(SB[[s]], 12), na.rm = TRUE), numeric(1))
+    kv_names <- c(VAL = "가치 VAL", QUAL = "퀄리티 QUAL", MOM = "모멘텀 MOM",
+                  LOWVOL = "저변동 LOWVOL", SIZE = "소형 SIZE", DIV = "주주환원 DIV")
+    kvl <- as.list(vapply(r12, fmt, character(1))); names(kvl) <- kv_names[sty]
+    sections[[length(sections) + 1]] <- list(heading = "스마트베타 최근 12개월 평균 초과수익", type = "kv", kv = kvl)
+    top <- sty[which.max(r12)]; bot <- sty[which.min(r12)]
+    sb_line <- sprintf("스마트베타: %s 최강 / %s 최약 (최근 12개월 유니버스 대비)", kv_names[top], kv_names[bot])
+    charts <- c(charts, "outputs/smartbeta_kr/charts/smartbeta_rolling12.png")
+  }
+  sections[[length(sections) + 1]] <- list(heading = "국면 판독", type = "bullet", items = c(
+    sprintf("현 국면: %s", regime_line),
+    if (!is.null(sb_line)) sb_line,
+    sprintf("부활조건 워치: %s", revive_watch)))
+
   source("02_Infrastructure/telegram/telegram_notify.R")
   res <- tg_agent_brief(
     agent = "Q-Lead",
-    title = sprintf("FF5 스타일 국면 (%s 기준)", L$ym),
-    sections = list(
-      list(heading = "최근월 팩터 수익", type = "kv", kv = list(
-        "시장초과 MKT" = fmt(L$MKT), "소형-대형 SMB" = fmt(L$SMB), "가치-성장 HML" = fmt(L$HML),
-        "수익성 RMW" = fmt(L$RMW), "투자보수 CMA" = fmt(L$CMA))),
-      list(heading = "최근 12개월 평균", type = "kv", kv = list(
-        "시장초과 MKT" = fmt(L$r12_MKT), "소형-대형 SMB" = fmt(L$r12_SMB), "가치-성장 HML" = fmt(L$r12_HML),
-        "수익성 RMW" = fmt(L$r12_RMW), "투자보수 CMA" = fmt(L$r12_CMA))),
-      list(heading = "국면 판독", type = "bullet", items = c(
-        sprintf("현 국면: %s", regime_line),
-        sprintf("부활조건 워치: %s", revive_watch)))
-    ),
-    charts = "outputs/ff5_kr/charts/ff5_rolling12.png",
-    footer = "diagnostic_monitoring · 시장 리뷰 전용(전략/자본 인용 금지) · ff5_kr_tracker"
+    title = sprintf("스타일 국면 브리핑 — FF5 + 스마트베타 (%s 기준)", L$ym),
+    sections = sections,
+    charts = charts[file.exists(charts)],
+    footer = "diagnostic_monitoring · 시장 리뷰 전용(전략/자본 인용 금지) · ff5_kr + smartbeta_kr"
   )
-  cat("[ff5_brief] sent ok=", isTRUE(res$ok), " build_ok=", ok_build, "\n", sep = "")
+  cat("[ff5_brief] sent ok=", isTRUE(res$ok), " ff_build=", ok_ff, " sb_build=", ok_sb, "\n", sep = "")
 }
