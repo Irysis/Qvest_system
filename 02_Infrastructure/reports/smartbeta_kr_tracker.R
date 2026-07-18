@@ -179,7 +179,7 @@ bp <- barplot(M, beside = TRUE, horiz = TRUE, names.arg = KRN[sty[ord]], las = 1
               xlab = "월 active %", xlim = range(0, M, na.rm = TRUE) * 1.25)
 abline(v = 0, lty = 1)
 text(x = M + sign(M) * max(abs(M), na.rm = TRUE) * 0.05, y = bp, labels = sprintf("%+.1f", M), cex = 0.75, xpd = TRUE)
-legend("topright", rev(rownames(M)), fill = rev(c("gray75", "gray45", "black")), bty = "n", cex = 0.95)
+legend("bottomright", rev(rownames(M)), fill = rev(c("gray75", "gray45", "black")), bty = "n", cex = 0.95)
 dev.off()
 wf("chart written: smartbeta_recent_bars.png")
 

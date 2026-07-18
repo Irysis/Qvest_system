@@ -1,0 +1,375 @@
+{
+  "id": "FQ-057",
+  "lane": "method_frontier",
+  "round_type": "independent_research_round_not_WT",
+  "agent": "risk-research",
+  "finalized_at": "2026-07-18 17:26:08",
+  "pin_tag": "fq057_20260718_171024",
+  "hypothesis": "cap-tier block Sigma (MEGA/MID/SMALL blocks + cross-tier 1-factor, LW-2020 analytical NLS inner) improves estimation quality vs plain shrinkage estimators on K200|KQ150 monthly panel (rolling 60m, 2010-2026)",
+  "verdict": "NEGATIVE_config_scoped_for_block_composite__POSITIVE_for_lw_nls_lane_output",
+  "metric_type": "estimation_quality_diagnostic",
+  "selection_objective": "shrinkage_quality",
+  "selection_rule": "equal-weight rank composite over {cond, psd_violation, frob_fwd12, cor_rmse_fwd12, stability, mvp_oos_vol}; NO return/SR/IR metrics used",
+  "design": {
+    "windows": "rolling 60m, est end 200912..202605, eval next month (198 windows)",
+    "universe_rule": "K200|KQ150 members at window end, complete 60 obs, size known (p 280~320)",
+    "tier_rule": "size-rank at window end: MEGA<=30 (TOP30_N deployment convention R37/R39) / MID 31..150 / SMALL >150",
+    "mvp_note": "unconstrained MVP = estimation-quality instrument (Ledoit-Wolf horse-race convention), NOT an allocation proposal",
+    "hard_rule_compliance": "R4 P3: no SR/IR/alpha anywhere in comparison or selection"
+  },
+  "method_shopping_log": {
+    "candidates_tried": 5,
+    "cap": 5,
+    "parallel_exec": false,
+    "n_workers": 1,
+    "method_log": [
+      {
+        "est": "lw_nls",
+        "n_windows": 198,
+        "cond_median": 98.31232776,
+        "cond_inf_rate": 0,
+        "psd_viol_rate": 0,
+        "frob_fwd12_mean": 0.00645952,
+        "cor_rmse_fwd12_mean": 0.33795477,
+        "stability_rel_median": 0.07131652,
+        "mvp_gross_leverage_median": 2.17343451,
+        "mvp_oos_vol_ann": 0.14195638,
+        "r_cond": 2,
+        "r_psd": 2,
+        "r_frob": 4,
+        "r_cor": 2,
+        "r_stab": 2,
+        "r_vol": 1,
+        "composite_rank": 2.16666667
+      },
+      {
+        "est": "lw_linear",
+        "n_windows": 198,
+        "cond_median": 1,
+        "cond_inf_rate": 0,
+        "psd_viol_rate": 0,
+        "frob_fwd12_mean": 0.00644203,
+        "cor_rmse_fwd12_mean": 0.3760957,
+        "stability_rel_median": 0.00779064,
+        "mvp_gross_leverage_median": 1,
+        "mvp_oos_vol_ann": 0.19203336,
+        "r_cond": 1,
+        "r_psd": 2,
+        "r_frob": 2,
+        "r_cor": 5,
+        "r_stab": 1,
+        "r_vol": 3,
+        "composite_rank": 2.33333333
+      },
+      {
+        "est": "block_lw",
+        "n_windows": 198,
+        "cond_median": 10000002114.070267,
+        "cond_inf_rate": 0,
+        "psd_viol_rate": 1,
+        "frob_fwd12_mean": 0.00615198,
+        "cor_rmse_fwd12_mean": 0.34930391,
+        "stability_rel_median": 0.09327311,
+        "mvp_gross_leverage_median": 5.89022408,
+        "mvp_oos_vol_ann": 0.54869585,
+        "r_cond": 4,
+        "r_psd": 4.5,
+        "r_frob": 1,
+        "r_cor": 3,
+        "r_stab": 4,
+        "r_vol": 4,
+        "composite_rank": 3.41666667
+      },
+      {
+        "est": "sample",
+        "n_windows": 198,
+        "cond_median": "NA",
+        "cond_inf_rate": 1,
+        "psd_viol_rate": 0,
+        "frob_fwd12_mean": 0.0069551,
+        "cor_rmse_fwd12_mean": 0.35209214,
+        "stability_rel_median": 0.09200096,
+        "mvp_gross_leverage_median": 2.47565777,
+        "mvp_oos_vol_ann": 0.17491381,
+        "r_cond": 5,
+        "r_psd": 2,
+        "r_frob": 5,
+        "r_cor": 4,
+        "r_stab": 3,
+        "r_vol": 2,
+        "composite_rank": 3.5
+      },
+      {
+        "est": "block_nls",
+        "n_windows": 198,
+        "cond_median": 10000001696.72076,
+        "cond_inf_rate": 0,
+        "psd_viol_rate": 1,
+        "frob_fwd12_mean": 0.00644407,
+        "cor_rmse_fwd12_mean": 0.3376774,
+        "stability_rel_median": 0.15245953,
+        "mvp_gross_leverage_median": 9.85040991,
+        "mvp_oos_vol_ann": 0.95946505,
+        "r_cond": 3,
+        "r_psd": 4.5,
+        "r_frob": 3,
+        "r_cor": 1,
+        "r_stab": 5,
+        "r_vol": 5,
+        "composite_rank": 3.58333333
+      }
+    ]
+  },
+  "candidates": [
+    {
+      "est": "lw_nls",
+      "n_windows": 198,
+      "cond_median": 98.31232776,
+      "cond_inf_rate": 0,
+      "psd_viol_rate": 0,
+      "frob_fwd12_mean": 0.00645952,
+      "cor_rmse_fwd12_mean": 0.33795477,
+      "stability_rel_median": 0.07131652,
+      "mvp_gross_leverage_median": 2.17343451,
+      "mvp_oos_vol_ann": 0.14195638,
+      "r_cond": 2,
+      "r_psd": 2,
+      "r_frob": 4,
+      "r_cor": 2,
+      "r_stab": 2,
+      "r_vol": 1,
+      "composite_rank": 2.16666667
+    },
+    {
+      "est": "lw_linear",
+      "n_windows": 198,
+      "cond_median": 1,
+      "cond_inf_rate": 0,
+      "psd_viol_rate": 0,
+      "frob_fwd12_mean": 0.00644203,
+      "cor_rmse_fwd12_mean": 0.3760957,
+      "stability_rel_median": 0.00779064,
+      "mvp_gross_leverage_median": 1,
+      "mvp_oos_vol_ann": 0.19203336,
+      "r_cond": 1,
+      "r_psd": 2,
+      "r_frob": 2,
+      "r_cor": 5,
+      "r_stab": 1,
+      "r_vol": 3,
+      "composite_rank": 2.33333333
+    },
+    {
+      "est": "block_lw",
+      "n_windows": 198,
+      "cond_median": 10000002114.070267,
+      "cond_inf_rate": 0,
+      "psd_viol_rate": 1,
+      "frob_fwd12_mean": 0.00615198,
+      "cor_rmse_fwd12_mean": 0.34930391,
+      "stability_rel_median": 0.09327311,
+      "mvp_gross_leverage_median": 5.89022408,
+      "mvp_oos_vol_ann": 0.54869585,
+      "r_cond": 4,
+      "r_psd": 4.5,
+      "r_frob": 1,
+      "r_cor": 3,
+      "r_stab": 4,
+      "r_vol": 4,
+      "composite_rank": 3.41666667
+    },
+    {
+      "est": "sample",
+      "n_windows": 198,
+      "cond_inf_rate": 1,
+      "psd_viol_rate": 0,
+      "frob_fwd12_mean": 0.0069551,
+      "cor_rmse_fwd12_mean": 0.35209214,
+      "stability_rel_median": 0.09200096,
+      "mvp_gross_leverage_median": 2.47565777,
+      "mvp_oos_vol_ann": 0.17491381,
+      "r_cond": 5,
+      "r_psd": 2,
+      "r_frob": 5,
+      "r_cor": 4,
+      "r_stab": 3,
+      "r_vol": 2,
+      "composite_rank": 3.5
+    },
+    {
+      "est": "block_nls",
+      "n_windows": 198,
+      "cond_median": 10000001696.72076,
+      "cond_inf_rate": 0,
+      "psd_viol_rate": 1,
+      "frob_fwd12_mean": 0.00644407,
+      "cor_rmse_fwd12_mean": 0.3376774,
+      "stability_rel_median": 0.15245953,
+      "mvp_gross_leverage_median": 9.85040991,
+      "mvp_oos_vol_ann": 0.95946505,
+      "r_cond": 3,
+      "r_psd": 4.5,
+      "r_frob": 3,
+      "r_cor": 1,
+      "r_stab": 5,
+      "r_vol": 5,
+      "composite_rank": 3.58333333
+    }
+  ],
+  "selected": "lw_nls",
+  "sanity_checks": {
+    "S1": {
+      "p": 10,
+      "n": 480,
+      "rel_frob_nls_vs_sample": 0.0519164,
+      "trace_ratio": 1.00052039,
+      "pass": true
+    },
+    "S2": {
+      "disp_sample": 0.16606471,
+      "disp_nls": 0.00538568,
+      "mean_ev_nls": 0.97311847,
+      "pass": true
+    },
+    "S3": {
+      "p": 300,
+      "n": 60,
+      "min_ev": 0.00332082,
+      "full_rank": true,
+      "cond": 1.96331654,
+      "pass": true
+    },
+    "S4": {
+      "window_end": 201912,
+      "p": 302,
+      "n": 60,
+      "cond_sample": "Inf",
+      "cond_lw": 1,
+      "cond_nls": 72.22832079,
+      "pass": true
+    },
+    "S5": {
+      "psd_violated_pre": true,
+      "min_ev_pre": -0.19554227,
+      "min_ev_post": 2.883969e-11,
+      "within_block_max_abs_dev": 0.00363261,
+      "note": "within-block deviation reflects PSD repair only",
+      "tier_counts": {
+        "MEGA": 30,
+        "MID": 120,
+        "SMALL": 152
+      },
+      "pass": true
+    },
+    "all_pass": true
+  },
+  "tier_boundary_sensitivity": {
+    "100": {
+      "capw": [0.9982, 0.0084, -0.0066],
+      "ew": [0.0292, 0.2332, 0.7375]
+    },
+    "150": {
+      "capw": [0.9982, -0.0101, 0.0119],
+      "ew": [0.0292, 0.3689, 0.6019]
+    },
+    "200": {
+      "capw": [0.9982, -0.0044, 0.0062],
+      "ew": [0.0292, 0.5153, 0.4555]
+    }
+  },
+  "cap_tier_decomposition": {
+    "basis": "cap_w_and_ew_uni",
+    "as_of_ym": 202606,
+    "book": "STR_1715_on_M4_R05_noLayer4_PG2 (holdings 2026-07-01, invested 0.30 / cash 0.70 CRISIS)",
+    "sigma_estimator": "lw_nls (Ledoit-Wolf 2020 analytical NLS; FQ-057 Phase B estimation-quality winner)",
+    "sigma_cond": 146.5,
+    "pin_tag": "fq057_20260718_171024",
+    "tier_rule": "size-rank at 202606 month-end: MEGA<=30 (TOP30_N deployment convention R37/R39) / MID 31..150 / SMALL >150",
+    "active_vol_ann_capw_basis": 0.2761,
+    "active_vol_ann_ew_basis": 0.183,
+    "tiers": [
+      {
+        "tier": "MEGA",
+        "n_names_universe": 30,
+        "n_names_held": 3,
+        "active_risk_share": 0.9982,
+        "active_risk_share_ew_basis": 0.0292,
+        "active_risk_share_equity_sleeve": 0.289,
+        "alpha_share": 0.5371,
+        "alpha_share_basis": "book LinearTilt weight share (alpha-proportional allocation), not realized alpha",
+        "signal_alive": false,
+        "signal_alive_t36m": -1.671
+      },
+      {
+        "tier": "MID",
+        "n_names_universe": 120,
+        "n_names_held": 6,
+        "active_risk_share": -0.0101,
+        "active_risk_share_ew_basis": 0.3689,
+        "active_risk_share_equity_sleeve": 0.7025,
+        "alpha_share": 0.4253,
+        "alpha_share_basis": "book LinearTilt weight share (alpha-proportional allocation), not realized alpha",
+        "signal_alive": false,
+        "signal_alive_t36m": -1.507
+      },
+      {
+        "tier": "SMALL",
+        "n_names_universe": 168,
+        "n_names_held": 4,
+        "active_risk_share": 0.0119,
+        "active_risk_share_ew_basis": 0.6019,
+        "active_risk_share_equity_sleeve": 0.0085,
+        "alpha_share": 0.0376,
+        "alpha_share_basis": "book LinearTilt weight share (alpha-proportional allocation), not realized alpha",
+        "signal_alive": false,
+        "signal_alive_t36m": -2.179
+      }
+    ],
+    "dual_basis_divergence_flag": true,
+    "dual_basis_max_tier_share_divergence": 0.969,
+    "signal_alive_basis": "trailing 36m EW-of-tier active return vs cap-w K200|KQ150 bench, t-stat>0; generic tier carrier diagnostic, NOT strategy signal. Prior posterior: mega signal-dead (project-captier-alpha-localization-20260706)",
+    "metric_type": "estimation_quality_diagnostic",
+    "note_role_boundary": "diagnostic only — no weight proposal; tier-exposure constraint design is optimizer scope"
+  },
+  "mechanism_diagnosis": {
+    "block_negative": "Hard assembly of independently-shrunk PSD blocks with 1-factor cross-block replacement is not a PSD-preserving operator: psd_viol_rate 100% (198/198), min_ev ~ -0.196 scale; eigen-clip repair leaves cond ~1e10 and MVP explodes (gross leverage 5.9/9.9, OOS realized vol 0.549/0.959 vs lw_nls 0.142).",
+    "tier_signal_partial": "block_nls attains the BEST cor_rmse_fwd12 (0.33768 vs lw_nls 0.33795 vs lw_linear 0.37610) - tier prior does contribute to correlation- structure fit, but the gain cannot offset the PSD defect. Concept not falsified; this composite operator is (INV-7 config-scoped).",
+    "incumbent_finding": "hrp_core .get_cor_cov linear LW degenerates to mu*I when p>n (rho cap=1 binding): cond=1, all correlation structure destroyed, MVP collapses to EW. Harmless at WT scale (p<=25); must NOT be consumed for large-universe Sigma.",
+    "dual_basis_risk_layer": "First risk-layer quantification of FQ-055 dual-basis divergence: book (70% cash CRISIS) active risk is 99.8% MEGA-tier on cap-w basis (mega underweight dominates) but 2.9% MEGA / 36.9% MID / 60.2% SMALL on EW-uni basis - the axis of active risk inverts with basis (max tier share divergence 0.969, flag TRUE). Robust to MID/SMALL boundary choice (MEGA share invariant across cut 100/150/200)."
+  },
+  "limitations": ["fwd-12m sample-cov loss target is itself noisy (n=12): frob/cor differences are weak evidence; only paired ordering used", "MVP is unconstrained (estimation-quality instrument, Ledoit-Wolf horse-race convention) - not an allocation, long-only behavior may differ", "lw_nls is own port of analytical_shrinkage.m; sanity S1-S3 PASS but no numerical parity vs official implementation yet (nlshrink absent)", "signal_alive_t36m measures EW-of-tier vs cap-w bench (breadth-vs-concentration regime diagnostic), NOT strategy signal aliveness; all tiers t<0 consistent with 2025-26 mega-cap concentration regime", "A402340 (listed 2021-11, 55m history) excluded from Sigma universe by complete-60m rule (weight 0.0056)", "MID/SMALL individual shares are boundary-conditional (cut=150); MEGA headline is boundary-robust", "45 warnings in A/B loop = cov2cor(S_fwd) near-zero-variance names in the loss target (non-differential across estimators, verified)"],
+  "next_probes": [
+    {
+      "id": "NP1",
+      "title": "PSD-guaranteed tier embedding A: Schur/Hadamard tier-damping",
+      "detail": "M = delta*J + (1-delta)*blockdiag(J) mask, Sigma_tier = M (Hadamard) cor_NLS scaled back - Schur product theorem guarantees PSD for delta in [0,1]; delta chosen by estimation-quality enum only"
+    },
+    {
+      "id": "NP2",
+      "title": "PSD-guaranteed tier embedding B: tier-factor Sigma = B Omega B' + D",
+      "detail": "factors = market + tier dummies (+size); PSD by construction, aligns with risk_research_init base frame; compare vs lw_nls on same A/B harness"
+    },
+    {
+      "id": "NP3",
+      "title": "lw_nls productionization gate",
+      "detail": "numerical parity vs official analytical_shrinkage implementation, then register into .get_cor_cov (WT-time consumption eligibility); requires Q-Lead/dohoon confirm - not done in this round"
+    },
+    {
+      "id": "NP4",
+      "title": "MVO Sigma-input swap paired canonical PORT_t (FQ-057 next_action residual)",
+      "detail": "optimizer-lane round: swap Sigma input lw_linear -> lw_nls in MVO, paired canonical PORT_t measurement; separate round, graduation rules apply"
+    }
+  ],
+  "revival_or_followup_conditions": ["hard block-replacement composites: retry ONLY with a PSD-preserving assembly operator (NP1/NP2 are the sanctioned paths)", "WT-time consumption of lw_nls: gated on NP3 (parity + .get_cor_cov registration + confirm)", "cap_tier_decomposition field: wire into regular risk_package emission from next QEPM WT (schema v83_dual_basis_captier, this round = reference implementation)", "large-universe consumers of .get_cor_cov ledoit_wolf: audit for p>n degeneracy before reuse"],
+  "artifacts": {
+    "runner_dir": "04_Research/method_frontier/fq057_captier_sigma/",
+    "ab_metrics": "stage_artifacts/method_frontier/fq057_ab_metrics.parquet",
+    "mvp_oos_returns": "stage_artifacts/method_frontier/fq057_mvp_oos_returns.parquet",
+    "ab_summary": "stage_artifacts/method_frontier/fq057_ab_summary.json",
+    "cap_tier_decomposition": "stage_artifacts/method_frontier/fq057_cap_tier_decomposition.json",
+    "sanity": "stage_artifacts/method_frontier/fq057_sanity.json",
+    "tier_boundary_sensitivity": "stage_artifacts/method_frontier/fq057_tier_boundary_sensitivity.json",
+    "challenge_note": "stage_artifacts/method_frontier/fq057_challenge_note.md",
+    "monthly_panel": ["stage_artifacts/method_frontier/fq057_monthly_returns.parquet", "stage_artifacts/method_frontier/fq057_monthly_snapshot.parquet"]
+  }
+}
