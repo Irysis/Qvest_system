@@ -1,0 +1,98 @@
+{
+  "test": "cleaner_distill_claim_preemption_smoke",
+  "wt": "WT_D20260718_001",
+  "ran_at": "2026-07-18 10:17:10",
+  "helper": "02_Infrastructure/ops/cleaner_claim.R",
+  "scratch_root": "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/WT_D20260718_001/smoke_root",
+  "n_checks": 17,
+  "n_pass": 17,
+  "all_pass": true,
+  "headline": "2회 claim 시 2번째 in_progress 감지 (핵심) + release/stale/v1-호환/owner-보호",
+  "checks": [
+    {
+      "check": "claim1 = TRUE (session_main 점유)",
+      "pass": true,
+      "detail": "reason=claimed owner=session_main"
+    },
+    {
+      "check": "claim2 = FALSE (중복 차단)",
+      "pass": true,
+      "detail": "reason=in_progress"
+    },
+    {
+      "check": "claim2 reason = in_progress",
+      "pass": true,
+      "detail": "이미 다른 세션이 증류 중 (owner=session_main, 0.0h전 claim) — 중복 회피. 병합 정합만 수행(SKILL §0.2 fallback)."
+    },
+    {
+      "check": "claim2가 소유자 보고 (session_main)",
+      "pass": true,
+      "detail": "owner=session_main"
+    },
+    {
+      "check": "state = in_progress + digest_path 보존",
+      "pass": true,
+      "detail": "distill_status=in_progress"
+    },
+    {
+      "check": "release = TRUE",
+      "pass": true,
+      "detail": "release 성공 — distill_status=done (status=distilled 동기화)."
+    },
+    {
+      "check": "distill_status = done",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "status = distilled 동기화",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "재claim = FALSE / already_done",
+      "pass": true,
+      "detail": "이미 증류 완료(done) — 재실행 불필요."
+    },
+    {
+      "check": "불일치 release 거부",
+      "pass": true,
+      "detail": "distill_owner=owner_A ≠ owner_B — force=TRUE 아니면 해제 거부."
+    },
+    {
+      "check": "force release 허용",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "stale(10h>6h) 재점유 성공",
+      "pass": true,
+      "detail": "reason=stale_reclaim prev_owner=crashed_session"
+    },
+    {
+      "check": "fresh(1h<6h) 재점유 거부",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "v1 awaiting_distill → claim 가능",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "v1 distilled → state=done",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "v1 distilled → claim 차단(already_done)",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "check": "pending 부재 → no_pending",
+      "pass": true,
+      "detail": ""
+    }
+  ]
+}

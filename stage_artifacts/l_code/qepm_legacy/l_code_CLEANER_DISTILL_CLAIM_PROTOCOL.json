@@ -1,0 +1,19 @@
+{
+  "l_code": "L-QPM-20260718_101841",
+  "strategy_id": "CLEANER_DISTILL_CLAIM_PROTOCOL",
+  "grade": "",
+  "core_reference": "W29 next_probe #4 (2026-07-18 도훈 mandate)",
+  "lesson_text": "Cleaner 증류 2-pass 중복실행 방지 = cleaner_pending.json에 distill_status(pending/in_progress/done) + distill_owner + distill_claimed_at 선점 필드 추가하고 cleaner_claim.R(atomic claim: mutex-dir 직렬화 + temp/rename 원자쓰기 + 6h stale 재점유 + v1 하위호환)로 착수를 직렬화. status는 bootstrap 마커용 불변 — distill_status가 그 사이 in_progress 중간상태를 담아 두 소비자 동시 착수를 차단. 스모크 17/17 PASS (2회 claim 시 2번째 in_progress 감지 등). 07-06 병렬 중복실행 사고의 ops 재발방지.",
+  "tags": ["infra_process", "cleaner", "continuity", "concurrency", "distill_claim"],
+  "created_at": "2026-07-18",
+  "research_mode": "qepm_legacy",
+  "created_by": "emit:qepm_legacy",
+  "metric_type": "unavailable",
+  "construction_type": "structural_limit",
+  "mechanism_hypothesis": "동시성 경합의 근인은 공유 상태에 '점유 중' 표현이 없는 것 — 착수 직렬화 프리미티브(claim)로 해소. 지속 소유권은 JSON distill_status에, 짧은 read-check-write 임계구역만 mutex-dir로 원자화.",
+  "lcode_schema_version": 2,
+  "next_probe": ["stale in_progress claim(>6h, 크래시 세션)의 bootstrap 가시성 배선 — 현재 자동 steal은 되나 '증류가 막혀 있다'는 표면이 없어 조용히 재점유될 뿐. bootstrap WARN(distill_status=in_progress ∧ claimed_at>stale)로 노출", "타 공유상태 소비자의 동일 2-pass 경합 감사 — stage_artifacts/paper_recharge/daily.lock · morning_steps 큐 등 메인+스폰 병행 소비 지점 점검 → 2번째 사례 확인 시 cleaner_claim 패턴 일반화(공용 claim 헬퍼)"],
+  "smoke_result": "17/17 PASS",
+  "files": ["02_Infrastructure/ops/cleaner_claim.R", "02_Infrastructure/ops/weekly_cleaner_sweep.R", ".claude/skills/cleaner/SKILL.md"],
+  "record_type": "infra"
+}
