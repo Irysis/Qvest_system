@@ -115,14 +115,14 @@ for (t_ym in reb_months) {
   a_capw <- setNames(rep(0, length(elig)), elig); a_capw[names(w_capw)] <- a_capw[names(w_capw)] + w_capw
   a_capw <- a_capw - w_bench
 
-  # Σ arms (elig x elig)
+  # Σ arms (elig x elig) — lw_linear 은 attr(lw_degenerate) 보존 위해 직접 호출
+  ccA <- withCallingHandlers(.get_cor_cov(ret60, "ledoit_wolf"),
+                             warning = function(w) invokeRestart("muffleWarning"))
+  if (!is.null(attr(ccA, "lw_degenerate"))) lw_degen <- lw_degen + 1L
   Sig_list <- list(
-    lw_linear   = est_lw_linear_p1(ret60),
+    lw_linear   = ccA$cov,
     lw_nls      = est_lw_nls_p1(ret60),
     ewma_struct = est_ewma_struct_p1(ret60, EWMA_LAMBDA))
-  # lw degeneracy 진단(재산출 attr)
-  degA <- attr(.get_cor_cov(ret60, "ledoit_wolf"), "lw_degenerate")
-  if (!is.null(degA)) lw_degen <- lw_degen + 1L
 
   for (arm in names(Sig_list)) {
     Sig <- Sig_list[[arm]]
