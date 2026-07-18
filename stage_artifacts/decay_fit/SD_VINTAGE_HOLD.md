@@ -1,4 +1,10 @@
-# S-D 계층 vintage 보류 → **해제 (2026-07-18 10:55 재검증 완료)**
+# S-D 계층 vintage 보류 → 해제(10:55) → **결함 정체 판명 + 확장 재실행 (07-18 오후)**
+
+## ★결함 정체 확정 (타 세션 메모리 07-18: project-fdb-daily-rebuild-procedure / benchmark-parquet-date32)
+결함 = benchmark.parquet Date dtype(POSIXct/date32 writer 불일치) → phase7 재merge 조인 silent all-NA → **β-계열 팩터 ~54종 전멸**. 함의 재해석:
+- 그 전멸 세트는 **내 IC 패널에 애초 진입한 적 없음**(all-NA → min-pairs 규칙 자동 제외) → **적합된 169팩터 결과는 무오염**(2회 스냅샷 bit-identical과 정합 — 둘 다 phase6 값 기반). "identical" 판정 유지, 단 의미 = "적합 커버리지(169) 위 안정"이지 전체 174 아님.
+- 실제 문제는 **커버리지 공백**: build1/2에 부재하던 β 54 + 추가 팩터들 = 미적합.
+- **정본 3차 빌드(run_fdb_rebuild.sh, 07-18 15:40 registry, n_factors=298·rows 동일) 완주 확인** → S-D를 298팩터 fixed vintage로 확장 재실행(v3, build2 산출은 `*_build2_169f` 아카이브). 기대: 기존 169 라벨 재안정 확인 + β 54·M08/Q07/Q25·INV 등 129 신규 커버.
 
 ## ★해제 판정 (sd_vintage_diff_20260718.json)
 재빌드 파이프라인 정온(전 phase 종료·10분 확인) 후 신 vintage(fdb_daily 20260718T1024, phase6 재실행분·phase7은 fdb parquet 무수정 확인)로 **S-D 전체 재실행 + 신구 diff**:
