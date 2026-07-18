@@ -1,0 +1,121 @@
+{
+  "id": "FQ-058",
+  "lane": "method_frontier",
+  "title": "structural-drawdown-aware construction (MinCDaR/MinCVaR) — calmar·structural MDD 게이트 직접 공략",
+  "agent": "optimizer-research",
+  "round_type": "independent_research_round_not_WT",
+  "round_tag": "fq058_20260718_191740",
+  "pin_consumed": "fq057_20260718_171024",
+  "measured_at": "2026-07-18",
+  "metric_type": "canonical_screen (construction_ab_diagnostic)",
+  "capital_claim": false,
+  "graduation_claim": false,
+  "verdict_type": "config_scoped_negative",
+  "headline": "위험 measure 를 분산→drawdown(CDaR)/tail(CVaR)로 바꾼 WEIGHTING 목적함수는 이 재료/config 에서 structural DD·calmar 을 개선하지 못했고 EW(1/N)에 열위하며 turnover 상한을 초과. construction(weighting) 은 systematic-crash 성 calmar-FAIL 의 MDD 레버가 아니다.",
+
+  "step0_prior_differentiation": {
+    "priors_checked": ["WT-D20260424_011", "WT-D20260425_001", "WT-D20260425_007", "idea-registry CVaR 4건", "DIST-AR-001(defense 별개)"],
+    "what_is_different": "선행 3건은 pre-v8.x·단일전략(STR_1631_MEGA) optimizer 교체(regime-Sigma·rolling MinCVaR)로 v8.x structural-drawdown 게이트 대상 체계 A/B 가 아님. FQ-058 = calmar-FAIL & screen_pass 재료를 사전등록 규칙으로 선정 + MinCDaR vs MinVar 위험 measure 격리 paired + canonical PORT_t·structural DD·oos·DSR 게이트 판정. construction-method-frontier 체계 진단(전략-특정 아님).",
+    "relation_to_construction_ceiling": "R10~R13·RAMP R1 은 '수익' construction 천장. 본 라운드는 'drawdown 형상 통제'가 표적 — 다른 목적함수·판정축(calmar/structural DD)."
+  },
+
+  "design": {
+    "materials_selection": {
+      "rule": "candidate 5팩터 canonical top-25 EW screen → {screen_pass ∧ calmar<0.64} MDD desc 상위<=3 (사전등록 fq058_preregistration.json). 결과-선택 금지, 게이트-실패 메타데이터만.",
+      "candidate_screen": {
+        "mom_12_1": {"net_sr": 0.7195, "cagr": 0.1754, "mdd": 0.4169, "calmar": 0.4206, "port_t": 1.3384, "screen_pass": true, "selected": true},
+        "mom_6_1":  {"net_sr": 0.7251, "cagr": 0.1747, "mdd": 0.4400, "calmar": 0.3971, "port_t": 1.4627, "screen_pass": true, "selected": true},
+        "low_vol":  {"net_sr": 0.4124, "cagr": 0.0506, "mdd": 0.4522, "calmar": 0.1120, "port_t": -1.2600, "screen_pass": false, "selected": false},
+        "reversal_1m": {"net_sr": 0.2237, "cagr": 0.0248, "mdd": 0.4591, "calmar": 0.0539, "port_t": -1.3112, "screen_pass": false, "selected": false},
+        "small_size": {"net_sr": 0.6828, "cagr": 0.1591, "mdd": 0.6263, "calmar": 0.2540, "port_t": 0.7987, "screen_pass": false, "selected": false}
+      },
+      "selected": ["mom_6_1", "mom_12_1"],
+      "relaxed": false,
+      "selection_note": "순수 screen_pass ∧ calmar<0.64 재료 2종(둘 다 momentum, crash-prone). 완화 불요. n=2·momentum-국한은 한계로 기록(config-scoped)."
+    },
+    "arms": ["EW(1/N ref)", "MVO(alpha+60m lw_nls var ref)", "MinVar(daily-120 var — PRIMARY baseline)", "MinCDaR(daily-120 CDaR cccp — PRIMARY treatment)", "MinCVaR(daily-120 CVaR cccp — secondary treatment)"],
+    "primary_axis": "MinCDaR vs MinVar — 동일 top-25 basket·동일 daily-120 표본·동일 제약, 위험 MEASURE만 상이(alpha-drop 교란 제거)",
+    "walk_forward": "월간 재해석 201001..202605 (197 rebalance), holding t+1, IS-lock. 벤치 cap-w K200|KQ150 fresh(Size).",
+    "cost": "15bps one-way delta 과금 (|BOP - EOP_lag|*0.0015)",
+    "hard_constraints_audit": "1970 weight cell violations=0 (종목<=25·[0,0.20]·Σw=1·long-only). RF-O5/O6/O7 clean.",
+    "lp_integrity": "cccp 설치 후 fallback summary 5arm×394cell 전부 0 — CDaR/CVaR LP status=optimal 매 rebalance 실해(폴백 오염 없음)."
+  },
+
+  "results": {
+    "mom_12_1": {
+      "arms": {
+        "EW":      {"port_t": 1.34, "calmar": 0.421, "mdd": 0.417, "net_sr": 0.72, "to_oneway_yr": 7.5,  "ep45": 0, "underwater_occ": 0.79, "longest_uw_m": 66, "oos_med": -0.239},
+        "MVO":     {"port_t": 1.15, "calmar": 0.378, "mdd": 0.441, "net_sr": 0.64, "to_oneway_yr": 9.3,  "ep45": 0, "underwater_occ": 0.80, "longest_uw_m": 36, "oos_med": -0.151},
+        "MinVar":  {"port_t": 0.82, "calmar": 0.273, "mdd": 0.526, "net_sr": 0.64, "to_oneway_yr": 12.6, "ep45": 1, "underwater_occ": 0.81, "longest_uw_m": 123, "oos_med": -0.894},
+        "MinCDaR": {"port_t": 0.94, "calmar": 0.347, "mdd": 0.452, "net_sr": 0.65, "to_oneway_yr": 13.8, "ep45": 1, "underwater_occ": 0.77, "longest_uw_m": 67, "oos_med": -0.401},
+        "MinCVaR": {"port_t": 0.94, "calmar": 0.295, "mdd": 0.516, "net_sr": 0.65, "to_oneway_yr": 14.3, "ep45": 1, "underwater_occ": 0.81, "longest_uw_m": 48, "oos_med": -0.608}
+      },
+      "paired_MinCDaR_vs_MinVar": {"ann_diff": 0.0157, "nw_t_lag3": 0.49},
+      "paired_MinCVaR_vs_MinVar": {"ann_diff": 0.0104, "nw_t_lag3": 0.35},
+      "dsr": {"n_trials": 5, "best_arm": "EW", "dsr_best": 0.8803, "dsr_MinCDaR": 0.7802},
+      "structural_dd_MinCDaR_vs_MinVar": "MinCDaR 개선(MDD 0.452<0.526·occ 0.77<0.81·longest_uw 67<123) — 이 재료에선 CDaR 목적이 분산 목적보다 DD 낮춤"
+    },
+    "mom_6_1": {
+      "arms": {
+        "EW":      {"port_t": 1.46, "calmar": 0.397, "mdd": 0.440, "net_sr": 0.73, "to_oneway_yr": 9.8,  "ep45": 0, "underwater_occ": 0.77, "longest_uw_m": 68, "oos_med": 0.085},
+        "MVO":     {"port_t": 1.27, "calmar": 0.339, "mdd": 0.538, "net_sr": 0.68, "to_oneway_yr": 11.2, "ep45": 1, "underwater_occ": 0.80, "longest_uw_m": 66, "oos_med": -0.150},
+        "MinVar":  {"port_t": 1.63, "calmar": 0.354, "mdd": 0.501, "net_sr": 0.74, "to_oneway_yr": 14.9, "ep45": 1, "underwater_occ": 0.77, "longest_uw_m": 69, "oos_med": 1.455},
+        "MinCDaR": {"port_t": 1.03, "calmar": 0.307, "mdd": 0.532, "net_sr": 0.67, "to_oneway_yr": 15.5, "ep45": 1, "underwater_occ": 0.78, "longest_uw_m": 61, "oos_med": -0.168},
+        "MinCVaR": {"port_t": 1.52, "calmar": 0.359, "mdd": 0.538, "net_sr": 0.78, "to_oneway_yr": 15.8, "ep45": 1, "underwater_occ": 0.73, "longest_uw_m": 68, "oos_med": 0.362}
+      },
+      "paired_MinCDaR_vs_MinVar": {"ann_diff": -0.0067, "nw_t_lag3": -0.15},
+      "paired_MinCVaR_vs_MinVar": {"ann_diff": 0.0163, "nw_t_lag3": 0.42},
+      "dsr": {"n_trials": 5, "best_arm": "MinVar", "dsr_best": 0.9171, "dsr_MinCDaR": 0.7997},
+      "structural_dd_MinCDaR_vs_MinVar": "MinCDaR 열위(MDD 0.532>0.501·occ 0.78>0.77) — 이 재료에선 CDaR 목적이 DD 개선 못 함"
+    }
+  },
+
+  "gate_evaluation": {
+    "g1_structural_dd_majority": "FAIL — MinCDaR<MinVar on structural DD 는 1/2 재료만(mom_12_1 개선·mom_6_1 열위). 다수(>=2/3) 미충족.",
+    "g2_paired_nw_t": "FAIL — MinCDaR-MinVar paired NW-t +0.49 / -0.15 (|t|<0.5). 위험 measure swap 이 활성수익을 유의 변화시키지 못함.",
+    "g3_oos_retention": "FAIL — MinCDaR oos_retention v2 median -0.401 / -0.168 (전 arm 대부분 음). 0.7 미달.",
+    "g4_dsr": "PASS(형식) — best_arm DSR 0.88/0.92 >=0.5. 단 DSR-best arm = EW/MinVar (드로우다운 treatment 아님). MinCDaR DSR 0.78/0.80.",
+    "g5_calmar_064": "FAIL — 어떤 arm 도 calmar 0.64 미도달(최고 EW ~0.42/0.40). 드로우다운 레버가 calmar 갭 미봉합.",
+    "implementation_discipline": "FAIL(드로우다운 arm) — MinVar/MinCDaR/MinCVaR one-way 연 12.6~15.8 (round-trip 25~32) > TO 11.0 상한. EW 7.5~9.8 만 통과. 회전강화(15bps delta 함정) 확증 — qvest-opt-style turnover-cap 위반 method disqualify.",
+    "ew_dominance": "EW(1/N) 이 5 arm 중 calmar·port_t 최고(양 재료)·turnover 최저 — DeMiguel-Garlappi-Uppal 2009 1/N OOS 우위 재현(Cycle-2 교훈)."
+  },
+
+  "mechanism_diagnosis": "long-only 25종 momentum basket 의 structural drawdown 은 systematic common-factor 사건(momentum crash — 고모멘텀 종목 동반 급락)이다. WEIGHTING 목적함수를 분산→CDaR→CVaR 로 바꿔도 동반-급락 종목 사이에서 비중을 재배치할 뿐 systematic crash 를 분산하지 못하며, risk-optimizer 는 오히려 회전·비용을 늘린다. calmar-FAIL 은 crash-prone momentum 종목을 '보유'하는 SELECTION 에서 발생하므로 WEIGHTING 레버는 잡을 지점이 없다. EW 의 breadth(Grinold IR=IC√breadth) + 저회전이 지배. 확립된 진실 재확인 — long-only 유일 실증 MDD 레버는 overlay/timing(defense-factor-survey-settled)이지 construction weighting 이 아니다.",
+
+  "limitations": [
+    "재료 n=2·둘 다 momentum (선정규칙 결정론적 산출 — low_vol/reversal/small_size 는 screen_pass FAIL). family 판결 아님 → config_scoped_negative 명시.",
+    "드로우다운 arm 은 pure risk-min(basket 내 alpha 미사용). alpha 유지 mean-CDaR(max α′w−κ·CDaR)은 미측정 — objective swap 의 return-tradeoff 갈래 open(단 pure=DD-통제 최대치라 DD-축 결론은 robust).",
+    "CDaR 추정창 daily-120(~6mo) — 다년 crash 를 목적함수가 부분만 관측. 장기창 미검.",
+    "turnover 절대상한 규약(one-way vs round-trip) 모호 — 둘 다 병기. 상대 결론(드로우다운 arm>EW churn·calmar 이득 0)은 규약 무관 robust."
+  ],
+
+  "next_probes": [
+    "P1(selection-측 drawdown 통제): 고정 basket 재가중 대신 SELECTION 단계에서 ex-ante crash 노출(하방베타·과거 drawdown·downside-vol) 상위 종목을 제외/감점 — MDD 레버가 weighting 이 아니라 membership 에 있는지 검증. FQ-059(soft-membership) 와 직접 연계.",
+    "P2(mean-CDaR + regime overlay): alpha 유지 mean-CDaR 을 CRISIS 국면에만 적용(EW otherwise) — 유일 실증 long-only MDD 레버(overlay/timing)와 결합. FQ-006 overlay lane 정합, PIT C5 가드 의무.",
+    "P3(crash-risk factor as alpha): momentum + 하방위험 페널티를 SELECTION 신호에 합성(단일 목적함수 tilt 아닌 cross-sectional 신호 결합)."
+  ],
+
+  "consumer_surfaces": [
+    "risk-model: 'long-only momentum structural DD = systematic common-factor(비분산성)' 실측 — risk_package tail/crowding 진단에 반영(drawdown 은 종목-특이 아님).",
+    "FQ-059(soft-membership/selection construction): 본 라운드가 '레버는 weighting 아닌 selection' 실증 → FQ-059 premise 강화, selection-측 crash 통제 우선순위 상향.",
+    "선별 라벨: momentum 재료 calmar-FAIL 은 construction 으로 미봉합 → screen-tier 라벨 유지(overlay/timing 소비만)."
+  ],
+
+  "revival_conditions_INV7": [
+    "drawdown 이 systematic-crash 이 아니라 종목-특이(idiosyncratic·저 cross-correlation) 인 calmar-FAIL 재료가 등장 시 — weighting-측 drawdown 통제가 분산 여지를 가짐.",
+    "mean-CDaR-with-alpha + regime-conditional overlay lane(FQ-006 연계) 가 열릴 때 return-tradeoff 축 재측정.",
+    "P1(selection-측 crash 통제)이 양성이면 construction 층 MDD 레버가 membership 에 존재함을 확립 → weighting 축 재조명."
+  ],
+
+  "layer": "⑤비중/④구성 (construction/weighting) — MDD 레버 부재 실측(overlay/timing 이 유일 레버 재확인)",
+  "artifacts": [
+    "stage_artifacts/method_frontier/fq058_preregistration.json",
+    "stage_artifacts/method_frontier/fq058_material_selection.json",
+    "stage_artifacts/method_frontier/fq058_weights.parquet",
+    "stage_artifacts/method_frontier/fq058_weight_meta.parquet",
+    "stage_artifacts/method_frontier/fq058_series.parquet",
+    "stage_artifacts/method_frontier/fq058_metrics.json",
+    "stage_artifacts/method_frontier/fq058_challenge_note.md",
+    "04_Research/method_frontier/fq058_cdar_construction/ (run_00..run_04)"
+  ]
+}

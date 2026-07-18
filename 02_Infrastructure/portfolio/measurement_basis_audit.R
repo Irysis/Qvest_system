@@ -44,7 +44,11 @@ suppressPackageStartupMessages({
   # inherit_pointer.json declares full cert lineage chain back to M4 base (WT-P20260429_002 + WT-D20260430_001).
   # alias 자체는 lineage-aware audit가 primary forge_pkg 부재 시 lineage_origin_wt 우선 도달하도록
   # fallback. 동시에 v1.9 inherit_pointer recognition이 정확한 source path 따라감.
-  "STR_1715_AR_on_M4_PG2"                              = "STR_1715_AR_threshold_overlay_PG2"
+  "STR_1715_AR_on_M4_PG2"                              = "STR_1715_AR_threshold_overlay_PG2",
+  # v1.10 (2026-07-18) — WT-D20260702_002 Layer4 제거 전환이 수동 book_state mutate(신규 ga 미발급)로
+  # 이뤄져 현 book id가 NO_WT(0/100 DRIFTED) — lineage source = R05 overlay admit ga
+  # (동일 alpha×M4×R05 체인, Layer4만 제거). 도훈이 신규 ga 발급을 선호하면 본 alias 제거.
+  "STR_1715_on_M4_R05_noLayer4_PG2"                    = "STR_1715_AR_on_M4_R05_overlay_PG2"
 )
 
 # v1.8: cash_allocation role audit 면제 prefix (v55 lawbook + Charter §10 Role Card)

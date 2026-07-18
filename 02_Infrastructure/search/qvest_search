@@ -82,4 +82,5 @@ if [ "$REBUILD" -eq 1 ] && [ ${#PASS_ARGS[@]} -eq 0 ]; then
   exit 0
 fi
 
-exec python3 "$QUERY_PY" "${PASS_ARGS[@]}"
+# bare python3 = Windows Store 스텁(rc 49) — QVEST_PY 우선 (2026-07-18 수리, readiness qvest_search FAIL 근원)
+exec "${QVEST_PY:-python3}" "$QUERY_PY" "${PASS_ARGS[@]}"

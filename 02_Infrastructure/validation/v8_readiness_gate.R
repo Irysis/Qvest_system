@@ -235,7 +235,9 @@ check_router_selftest <- function(project_root, no_write = FALSE) {
     return(mk_check("router_selftest", "Router selftest",
                     "FAIL", "qvest_hook_router.py 부재"))
   }
-  out <- run_cmd("python3", c(router_rel, "selftest"), wd = project_root)
+  # bare python3 = Windows Store 스텁(rc 9009/49) — QVEST_PY 우선 (2026-07-18 수리)
+  py_bin <- Sys.getenv("QVEST_PY", "python3")
+  out <- run_cmd(py_bin, c(router_rel, "selftest"), wd = project_root)
   status <- if (out$rc == 0) "PASS" else "FAIL"
   mk_check("router_selftest", "Router selftest",
            status,

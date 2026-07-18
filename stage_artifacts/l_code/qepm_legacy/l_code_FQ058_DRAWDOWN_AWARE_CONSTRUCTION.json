@@ -1,0 +1,51 @@
+{
+  "l_code": "L-QPM-20260718_201043",
+  "strategy_id": "FQ058_DRAWDOWN_AWARE_CONSTRUCTION",
+  "grade": "C",
+  "core_reference": "stage_artifacts/method_frontier/fq058_verdict.json + fq058_challenge_note.md + fq058_metrics.json",
+  "lesson_text": "FQ-058 method-frontier(2026-07-18, round fq058_20260718_191740, pin 상속 fq057): drawdown-aware WEIGHTING(MinCDaR/MinCVaR cccp, daily-120) = config-scoped negative. 재료(사전등록 규칙 산출) = calmar-FAIL & screen_pass 2종(mom_6_1/mom_12_1, 둘 다 momentum crash-prone). 5-arm(EW/MVO/MinVar/MinCDaR/MinCVaR) 197 rebalance walk-forward, hard constraint 1970셀 위반 0, LP fallback 0. 게이트: structural DD 다수개선 FAIL(1/2 재료 — mom_12_1 개선·mom_6_1 열위) · paired NW-t +0.49/-0.15 비유의 · oos_retention 음수(-0.40/-0.17) · calmar 0.64 전 arm 미달(최고 EW 0.42) · 위험최적화 arm one-way 회전 12.6~15.8/yr > 상한 11.0 = implementation disqualify. ★EW(1/N) 5-arm 지배(calmar·PORT_t 최고·회전 최저 — DeMiguel 2009 재현). 기전: momentum crash = systematic common-factor 동반급락 → 비중 재배치는 분산 불가, calmar-FAIL은 crash-prone 종목 '보유'(SELECTION)에서 발생 = weighting 레버 잡을 지점 부재. long-only 실증 MDD 레버 = overlay/timing 유일 재확인 + 레버 소재 = membership(FQ-059 premise 강화). 미검 갈래: alpha-유지 mean-CDaR(return-tradeoff)·장기 CDaR 창·selection-측 crash 통제(P1~P3).",
+  "tags": "METHOD_FRONTIER,CONSTRUCTION,DRAWDOWN,FQ-058,MINCDAR",
+  "created_at": "2026-07-18",
+  "research_mode": "qepm_legacy",
+  "created_by": "emit:qepm_legacy",
+  "metric_type": "canonical_screen",
+  "construction_type": "single_sleeve_long_only_topN",
+  "mechanism_hypothesis": "long-only 25종 momentum basket의 structural drawdown은 고모멘텀 종목의 동반 급락(systematic)이라 동일 basket 내 위험 measure 교체(분산→CDaR/CVaR)는 재배치 marginal만 남고 crash 노출 자체를 못 줄임. 위험최적화는 회전·비용만 증가. breadth+저회전의 EW가 지배(Grinold IR=IC*sqrt(breadth)).",
+  "lcode_schema_version": 2,
+  "round_tag": "fq058_20260718_191740",
+  "paired_nw_t_mom12": 0.49,
+  "paired_nw_t_mom6": -0.15,
+  "calmar_best_arm": 0.421,
+  "calmar_gate": 0.64,
+  "turnover_oneway_risk_arms": "12.6~15.8/yr (cap 11.0)",
+  "ew_dominance": true,
+  "note": "portfolio_alpha_t=0.94는 treatment(MinCDaR mom_12_1) — 자본 주장 아님(진단). oos_retention 음수=전 arm 공통(재료 자체 post-감쇠)",
+  "falsification_attempts": [
+    {
+      "test": "위험 measure 격리(MinCDaR vs MinVar — alpha-drop 교란 제거 동일 basket)",
+      "result": "falsified",
+      "effect_retained": "DD 개선 1/2 재료뿐·paired 비유의 — measure 효과 부재"
+    },
+    {
+      "test": "2-재료 교차(mom_6_1/mom_12_1)",
+      "result": "falsified",
+      "effect_retained": "mom_12_1 개선이 mom_6_1서 반전 — 재료-강건성 없음"
+    },
+    {
+      "test": "DSR 5-trial sweep 보정",
+      "result": "survived",
+      "effect_retained": "best arm=EW/MinVar 0.88/0.92 — 단 treatment arm 아님(형식 PASS의 실질 = 대조군 우위)"
+    },
+    {
+      "test": "hard constraint/LP 무결성 감사(1970셀·fallback 0)",
+      "result": "survived",
+      "effect_retained": "negative가 구현 결함 아닌 실측임을 지지"
+    }
+  ],
+  "oos_retention": -0.4,
+  "oos_months": 60,
+  "portfolio_alpha_t": 0.94,
+  "selection_type": "sweep",
+  "record_type": "process",
+  "family": "drawdown_aware_construction"
+}
