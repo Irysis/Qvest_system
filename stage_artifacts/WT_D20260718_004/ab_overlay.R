@@ -44,6 +44,9 @@ setorder(per, eval_date)
 per[, tf_lag1 := shift(tf_m, 1L)]; per[is.na(tf_lag1), tf_lag1 := 1.0]
 
 cat(sprintf("[ab] common months=%d  %s..%s\n", nrow(per), min(per$eval_date), max(per$eval_date)))
+# restrict ALL series to common overlay window (avoid pre-2008 bare-in-both contamination)
+cw <- per$eval_date
+returns_dt <- returns_dt[Date %in% cw]; W_strat <- W_strat[Date %in% cw]; bench_dt <- bench_dt[Date %in% cw]
 
 # ---- HARD PIT guard: TF last_feat_date < holding-month start (decision_date) ----
 assert_overlay_pit(as.Date(per$tf_lfd), as.Date(per$decision_date), label="transformer_regime")
