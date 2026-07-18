@@ -73,16 +73,19 @@ def run(tmp):
     # (b) REKEY: refined R{d1,d2}, no card at {d1,d2,d3}, CAND{d1,d2,d3}
     wdist(dd, "DIST-XX-003", ["d1", "d2"], "distilled", M, "negative", refined="APPROVED-D")
     wcand(cd, "rekey", ["d1", "d2", "d3"], M, "negative")
-    # (c) MULTI-ANCESTOR: refined {g1,g2} + refined {g1,g2,g3} + CAND{g1,g2,g3,g4}
+    # (c) MULTI-ANCESTOR: refined {g1,g2} + refined {g1,g3} + CAND{g1,g2,g3} (both strict-majority subsets)
     wdist(dd, "DIST-XX-004", ["g1", "g2"], "distilled", M, "negative", refined="APPROVED-G1")
-    wdist(dd, "DIST-XX-005", ["g1", "g2", "g3"], "distilled", M, "negative", refined="APPROVED-G2")
-    wcand(cd, "multi", ["g1", "g2", "g3", "g4"], M, "negative")
+    wdist(dd, "DIST-XX-005", ["g1", "g3"], "distilled", M, "negative", refined="APPROVED-G2")
+    wcand(cd, "multi", ["g1", "g2", "g3"], M, "negative")
     # (d) POLARITY MISMATCH: refined {k1,k2} negative + CAND{k1,k2,k3} positive
     wdist(dd, "DIST-XX-006", ["k1", "k2"], "distilled", M, "negative", refined="APPROVED-K")
     wcand(cd, "polmis", ["k1", "k2", "k3"], M, "positive")
     # (f) EXACT-KEY baseline: pending {x1,x2} + CAND{x1,x2} (same set)
     wdist(dd, "DIST-XX-007", ["x1", "x2"], "pending_5axis", M, "negative")
     wcand(cd, "exact", ["x1", "x2"], M, "negative")
+    # (g) LOW-JACCARD guard: refined {p1,p2} + CAND{p1..p5} (2 of 5 = minority → absorption, not growth)
+    wdist(dd, "DIST-XX-008", ["p1", "p2"], "distilled", M, "conditional", refined="APPROVED-P")
+    wcand(cd, "lowjac", ["p1", "p2", "p3", "p4", "p5"], M, "conditional")
 
     idx = os.path.join(tmp, "idx.json")
     ce.build_distilled(cd, dd, idx)
@@ -111,8 +114,15 @@ def run(tmp):
     print("\n[c] MULTI-ANCESTOR (flagged, not migrated)")
     m1 = load(dd, "DIST-XX-004"); m2 = load(dd, "DIST-XX-005")
     check(m1["status"] == "distilled" and m2["status"] == "distilled", "both ancestors stay distilled (no auto-merge)")
-    newp = find_by_members(dd, ["g1", "g2", "g3", "g4"])
+    newp = find_by_members(dd, ["g1", "g2", "g3"])
     check(newp is not None and newp["status"] == "pending_5axis", "grown cluster -> new pending (normal path)")
+
+    print("\n[g] LOW-JACCARD guard (absorption not migrated)")
+    r7 = load(dd, "DIST-XX-008")
+    check(r7["status"] == "distilled" and r7.get("cluster_key") == CK(["p1", "p2"]),
+          "R7 unchanged (minority-of-bigger cluster not migrated)")
+    pj = find_by_members(dd, ["p1", "p2", "p3", "p4", "p5"])
+    check(pj is not None and pj["status"] == "pending_5axis", "absorbing cluster -> new pending (no scope creep)")
 
     print("\n[d] POLARITY MISMATCH (guarded)")
     r5 = load(dd, "DIST-XX-006")

@@ -594,6 +594,11 @@ def _plan_forward_migrations(existing: dict, cand_list: list) -> tuple[dict, dic
                 continue
             if not (rset < S):                                   # 진부분집합(성장)만
                 continue
+            # ★스코프 가드: 구 멤버가 새 클러스터의 strict majority(2·|old|>|new|)일 때만.
+            #   = "같은 클러스터가 성장"(예: 134→139 jac 0.96)만 승계하고, 소수 멤버가
+            #   훨씬 큰 grab-bag에 흡수된 경우(예: 9⊂31 jac 0.29)는 스코프 오이관이라 제외.
+            if 2 * len(rset) <= len(S):
+                continue
             if (cand.get("research_mode") or None) != rmode:     # 같은 모드
                 continue
             if (cand.get("polarity") or None) != rpol:           # 같은 극성(neg→pos 병합 금지)

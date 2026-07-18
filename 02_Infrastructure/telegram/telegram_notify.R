@@ -1260,7 +1260,11 @@ tg_agent_brief <- function(agent,
           }
         }
         # relaxed(페이퍼 적재 브리핑) → 항목 사이 빈 줄 삽입(긴 영어 제목 모바일 가독, 도훈 2026-06-18). 일반은 단일 줄바꿈.
-        paste0("  • ", tg_html_escape(item_chars), collapse = if (isTRUE(relaxed)) "\n\n" else "\n")
+        # [2026-07-18 도훈] caller가 넣은 <b></b> 강조는 escape 후 복원 (그 외 <,>는 안전하게 escape 유지)
+        .items_esc <- tg_html_escape(item_chars)
+        .items_esc <- gsub("&lt;b&gt;", "<b>", .items_esc, fixed = TRUE)
+        .items_esc <- gsub("&lt;/b&gt;", "</b>", .items_esc, fixed = TRUE)
+        paste0("  • ", .items_esc, collapse = if (isTRUE(relaxed)) "\n\n" else "\n")
       },
       "kv" = {
         kv <- s$kv
