@@ -63,7 +63,9 @@
 #' @param date_col/ret_col/bm_col 컬럼명 오버라이드
 #' @param bm_label 벤치 라벨 (기본 "KOSPI200")
 #' @param metrics_note 계약 산출 수치 1줄 (호출자 책임 — 예: "PORT_t 2.35 · oos 0.71 · calmar 0.66 (forge)")
-#' @param prefix 파일명 접두 (동일 dir 다중 전략 구분)
+#' @param prefix 파일명 접두 (동일 dir 다중 전략 구분). 미지정(빈 문자열, 기본) 시
+#'   "<title슬러그>_<타임스탬프>_<PID>_<seq>_" 유니크 접두를 자동생성해 충돌 방지.
+#'   명시(비어있지 않게) 시 그대로 사용 — 기존 동작 불변.
 #' @return 생성된 PNG 절대경로 벡터 (tg_agent_brief charts= 직결)
 tg_chart_pack <- function(period_returns, out_dir, title,
                           date_col = "date", ret_col = "ret_net",
@@ -71,6 +73,8 @@ tg_chart_pack <- function(period_returns, out_dir, title,
                           metrics_note = NULL, prefix = "") {
   pr <- as.data.frame(period_returns)
   stopifnot(all(c(date_col, ret_col) %in% names(pr)))
+  # 기본값(빈 prefix)만 유니크화 — 명시 prefix를 주는 caller는 불변 (호환 계약, FQ-057)
+  if (!nzchar(prefix)) prefix <- paste0(.tgcp_uniq(title), "_")
   has_bm <- bm_col %in% names(pr) && any(!is.na(pr[[bm_col]]))
   pr <- pr[order(as.Date(pr[[date_col]])), ]
   d  <- as.Date(pr[[date_col]])
