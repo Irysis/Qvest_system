@@ -1,0 +1,90 @@
+{
+  "task_id": "WT-D20260718_006",
+  "hypothesis": "Direct E[r_factor,t+1] forecasting from rich exogenous variables (ML combination discovery across 6 economic-logic backbones) beats static composite AND the WT-005 factor-momentum baseline in canonical cap-w top-25 PORT_t and oos_retention.",
+  "verdict": "NEGATIVE_config_scoped",
+  "as_of": "2026-07-18",
+  "pin_tag": "RAWDATA_pin20260703+benchmark_pin20260703+exog_pin20260718wt006",
+  "measurement_frame": {
+    "universe": "KOSPI200_KOSDAQ150_intersection (~313 names/mo)",
+    "portfolio": "canonical top-25 EW long-only",
+    "benchmark": "cap-w KOSPI200 total return (canonical HARD basis)",
+    "cost": "15bps one-way (v2.4_kr_retail_15bps)",
+    "liq_floor": "2e8 KRW 20d ADV (canonical HARD basis; request 5e7 noted, paired-delta basis-invariant)",
+    "period_full": "2005-01 .. 2026-06 (258 mo)",
+    "oos_window": "2012-12 .. 2026-06 (163 mo, identical to WT-005 walk-forward for comparability)"
+  },
+  "dohoon_directive_compliance": {
+    "multi_economic_logic_backbones": "6 parallel logics with candidate variable groups + per-logic rationale (L1 crowding/L2 dispersion/L3 funding-credit/L4 crash-risk/L5 cross-factor/L6 macro-conditioning).",
+    "ml_combination_discovery": "elastic-net (glmnet alpha=0.5, sparse combo selection, family-invariant x family interactions) per-logic AND combined + lightgbm (native gain importance = interaction discovery, 3 seeds). Boruta-style shadow implicit via EN sparsity + GBM gain.",
+    "overfitting_firewall": "combo-search = sweep -> DSR HARD 0.5 applied (n_trials=9, Bailey-LdP approx = 0.419 FAIL). Feature/combo selection IS-ONLY (lambda by inner CV on train fold; beta temperature FIXED=2, no OOS tuning). walk-forward rolling refit (12mo). PIT: macro conditioning-only, factor lag C4, no look-ahead.",
+    "beat_factor_momentum_baseline": "MANDATED bar retained: factor-momentum (WT-005) port_t 1.277, oos_ret -0.251. RESULT: no config beats it (all paired_vs_mom_t<0)."
+  },
+  "discovered_combos_by_logic": {
+    "note": "ML-selected feature combinations (EN nonzero freq across 14 refits + GBM gain) — 도훈 ask: which variable COMBINATION under each logic predicts E[r_factor].",
+    "combined_EN_top": ["StL_Fin_Stress x value", "term_chg3 x size", "term_chg3 x value", "tr_vol12", "Term_Spread x size"],
+    "gbm_top_gain": ["cs_aa_chg3", "avg_corr24", "complex_mom12", "cs_bbb_chg3", "disp_ret12", "term_chg3", "corr_shift", "tr_1m"],
+    "L1_crowding": ["vs_z", "val_spread"],
+    "L2_dispersion": ["tr_vol12", "disp_ret12 x size", "VIX x value"],
+    "L3_funding": ["term_chg3 x {size,value,dividend,quality}", "cs_aa_chg3 x value", "cd_call x value"],
+    "L4_crashrisk": ["tr_downdev12", "tr_kurt12", "avg_corr24 x families"],
+    "L5_crossfactor": ["tr_3m", "corr_shift x families", "rel_rank12", "complex_mom12"],
+    "L6_macro": ["StL_Fin_Stress x {value,size}", "Term_Spread x size"],
+    "interpretation": "ML found genuinely different combos than simple factor-momentum (credit-spread-change, cross-factor correlation, dispersion dominate GBM gain) — but none translate to OOS-realized alpha over the momentum tilt."
+  },
+  "canonical_ab_oos_163mo": {
+    "note": "paired NW-t lag3 of (config active - reference active) on identical months. reference = static AND factor-momentum.",
+    "static_EW": {"port_t": -0.047, "oos_ret": -0.934},
+    "factor_momentum_baseline": {"port_t": 1.277, "oos_ret": -0.251, "paired_vs_static_t": 2.249, "turn": 7.33},
+    "valuation_arnott": {"port_t": -0.288, "oos_ret": -1.219, "paired_vs_mom_t": -2.444},
+    "EN_combined": {"port_t": 0.064, "oos_ret": -1.168, "paired_vs_static_t": 0.208, "paired_vs_mom_t": -2.079, "turn": 5.76},
+    "EN_L1_crowding": {"port_t": -0.127, "oos_ret": -1.386, "paired_vs_mom_t": -2.316},
+    "EN_L2_dispersion": {"port_t": 0.150, "oos_ret": -1.017, "paired_vs_mom_t": -1.904},
+    "EN_L3_funding": {"port_t": -0.037, "oos_ret": -1.325, "paired_vs_mom_t": -2.377},
+    "EN_L4_crashrisk": {"port_t": 0.373, "oos_ret": -0.939, "paired_vs_mom_t": -1.691},
+    "EN_L5_crossfactor": {"port_t": 0.639, "oos_ret": -0.788, "paired_vs_mom_t": -1.381},
+    "EN_L6_macro": {"port_t": 0.419, "oos_ret": -0.937, "paired_vs_mom_t": -1.587},
+    "GBM_ensemble": {"port_t": 0.999, "oos_ret": -0.331, "paired_vs_static_t": 1.851, "paired_vs_mom_t": -0.736, "turn": 13.41},
+    "GBM_seed0_best": {"port_t": 1.127, "oos_ret": -0.066, "paired_vs_static_t": 1.916, "paired_vs_mom_t": -0.359},
+    "GBM_per_seed_paired_vs_mom_t": [-0.359, -1.218, -0.855],
+    "conclusion": "GBM (nonlinear multi-logic) is the least-bad forecast: beats static (paired 1.85) with least-negative oos_ret, but every seed is DOMINATED by trivial momentum (paired_vs_mom<0) + adds turnover (13.4 vs 7.3). EN combined/per-logic all far worse (regularized combos underperform static-to-momentum gap). Order robust on dual-basis EW-uni too."
+  },
+  "oos_retention": {
+    "gate": ">=0.7 HARD (forge-authoritative; here screening diag). v2 anchored 3-split {55/65/75} median.",
+    "verdict": "ALL FAIL (<0.5 unconditional). best GBM_seed0 -0.066, ensemble -0.331, factor-momentum -0.251, static -0.934. Post-2020 decay-pattern (cohort-wide, not strategy-specific). Rich exog does NOT restore OOS realizability."
+  },
+  "dsr_sweep": {
+    "note": "ML combination discovery = sweep -> DSR HARD applies. n_trials=9 (7 EN configs + 1 GBM + valuation). Bailey-Lopez de Prado approx on best config monthly active SR.",
+    "monthly_SR": 0.1022, "E_max_under_null": 0.1191, "dsr": 0.419,
+    "verdict": "FAIL (<0.5). Combo-search does not survive multiple-testing hurdle — consistent with oos_retention FAIL."
+  },
+  "lag1_pit_stress": {
+    "note": "mandated for timing signals (same-month leak detector).",
+    "base_port_t": 1.127, "lag1_port_t": 0.766,
+    "verdict": "gentle decay, NO collapse -> no same-month look-ahead. PIT-clean (a leak would collapse to ~0)."
+  },
+  "ax001_v2": {
+    "note": "conditional evaluation — does multi-logic forecast improve crisis defense vs momentum.",
+    "crisis_states": [3, 4], "n_crisis": 28,
+    "gbm_crisis_active": 0.0029, "momentum_crisis_active": 0.0010,
+    "gbm_normal_active": 0.0070, "momentum_normal_active": 0.0101,
+    "verdict": "GBM modestly improves crisis active (+0.19%/mo over momentum by conditioning on credit/dispersion stress) but underperforms in normal months — net dominated by momentum. Does not change graduation verdict."
+  },
+  "kill_criteria_evaluation": {
+    "kill_1_no_baseline_improvement": "TRIGGERED — no config beats factor-momentum baseline OOS (all paired_vs_mom_t<0; best -0.359). Beats static but the WT-005-mandated bar is momentum.",
+    "kill_2_oos_retention_fail": "TRIGGERED — all oos_retention < 0 (unconditional FAIL). Post-2020 cohort-wide factor decay.",
+    "kill_3_pit_lookahead": "NOT triggered — lag-1 stress clean, macro conditioning-only, IS-only walk-forward selection, C4 lag inherited.",
+    "dsr_sweep_gate": "FAIL 0.419 < 0.5 (combo-search multiple-testing).",
+    "decision": "NEGATIVE (config-scoped) for direct multi-logic exogenous factor-return forecasting. Early-termination (v8.3 M1) — no risk-research handoff. Comprehensive characterization: factor-timing-via-prediction in KR is bounded by OOS realizability / post-2020 factor decay, NOT by predictor availability (rich credit/dispersion/crash/cross-factor/macro combos all measured)."
+  },
+  "step0_differentiation": {
+    "vs_smartbeta_JM_BL": "JM/SJM = same-time vol-feature regime CLASSIFICATION -> BL bucket allocation. WT-006 = direct fitted E[r_factor] FORECASTING (not buckets), rich exog, ML combo discovery.",
+    "vs_WT005": "WT-005 = valuation-only + from-scratch transformer (narrow (b)). WT-006 = 6-logic rich exog (broad (b) + (a) cross-factor regime prediction) + parsimonious ML (EN/GBM, deliberately NOT transformer given HKS overfit lesson).",
+    "vs_prior_alpha_search": "STR_AS_20260613 (mislabeled fe_factor_combo, sharpe grading). WT-006 = canonical cap-w PORT_t paired A/B + direct forecasting + oos_retention gate.",
+    "vs_WT003_WT004": "WT-003 cross-sectional stock return; WT-004 regime book-timing overlay. WT-006 = factor-level meta-timing via prediction."
+  },
+  "next_probe": [
+    "factor-momentum (still the only real, if decaying, timing signal) as OVERLAY / FR regime input — inherited from WT-005; test EW-uni / regime-conditional revival of oos_retention (is post-2020 decay a mega-cap regime artifact?).",
+    "Non-return exogenous sources at the factor level (DART insider aggregate positioning, short-interest by factor bucket) — factor-timing predictors NOT derived from returns/valuation, the remaining un-tried class (FQ frontier). Return/valuation/credit/dispersion-derived timing is now comprehensively characterized as OOS-bounded."
+  ],
+  "revival_condition": "Any factor-timing config oos_retention >= 0.7 under EW-uni or regime-conditional framing, OR a non-return factor-timing predictor beats factor-momentum paired_vs_mom_t > 1.7."
+}

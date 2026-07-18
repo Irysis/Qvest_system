@@ -1,0 +1,100 @@
+{
+  "task_id": "WT-D20260718_006",
+  "wt_type": "discovery",
+  "as_of_date": "2026-06-30",
+  "forecast_horizon": "1M",
+  "verdict": "NEGATIVE_config_scoped",
+  "verdict_summary": "Direct E[r_factor,t+1] forecasting from rich exogenous variables, discovered via ML across 6 independent economic-logic backbones (crowding/dispersion/funding-credit/crash-risk/cross-factor/macro), FAILS to beat the WT-005 factor-momentum baseline OOS and fails oos_retention. On the identical 163-mo OOS window (2012-12..2026-06): NO forecasting config beats factor-momentum (best GBM_seed0 paired_vs_mom_t=-0.359<0; ensemble -0.736; EN-combined -2.079). Every economic logic's ML-selected combo has oos_retention<0 (all <0.5 unconditional FAIL). ML combo-search DSR sweep 0.419<0.5 (n_trials=9). PIT-clean (lag-1 stress 1.127->0.766 gentle, no collapse; macro conditioning-only; walk-forward IS-only selection). Honest nuance: GBM (nonlinear, credit-spread-change + cross-factor-correlation + dispersion combos) clearly beats STATIC (paired_vs_static 1.85) and modestly improves crisis defense (AX-001 crisis active 0.29% vs momentum 0.10%/mo) — exogenous forecasting is informative but DOMINATED by the parameter-free momentum tilt and cannot cross oos_retention. This completes the comprehensive characterization: factor-timing-via-prediction in KR is bounded by OOS realizability / post-2020 cohort-wide factor decay (smart-beta 13-agent finding confirmed at the forecasting-model level), not by a lack of predictors.",
+  "selection_objective": "canonical_port_t",
+  "alpha_discovery_certificate": "NOT_ISSUED",
+  "certificate_rationale": "Graduation HARD 미달 + WT-005-mandated bar 미충족: best forecasting config cap-w PORT_t < factor-momentum baseline (paired_vs_mom_t<0 all configs), oos_retention < 0 (all). discovery certificate 미발급 (정상 — NEGATIVE finding, early-termination v8.3 M1, no risk-research handoff).",
+  "candidate_primary": "ML_multi_logic_exog_forecast (EN combined + GBM ensemble)",
+  "alpha_vector_note": "NEGATIVE — no capital handoff. 아래는 documentary top scores at as_of 2026-06-30 from GBM multi-logic forecast composite (score_gbm_forecast). 유니버스 348명 전수 3-score(gbm_forecast/momentum/static) = stage_artifacts/WT_D20260718_006/alpha_scores.parquet.",
+  "alpha_vector": {},
+  "confidence_vector_note": "NEGATIVE finding — no confidence assignment (no capital path).",
+  "factor_specs": [
+    {
+      "factor_family": "factor_timing_meta",
+      "proxy": "direct_Er_forecast_multi_logic (EN elastic-net + GBM)",
+      "formula": "E[r_k,t+1] = f(exog_k,t) fitted walk-forward (expanding, refit 12mo, train-only std, IS-only selection); theta_k,t = softmax(2*z(E[r_k,t+1])); composite score_i,t = sum_k theta_k,t * z_i,k,t. exog = 6 economic logics: L1 crowding(val_spread,vs_z), L2 dispersion(disp_ret12,tr_vol12,VIX), L3 funding(KR cs_bbb/cs_aa credit spread, term, cd_call + 3m chg), L4 crash-risk(tr_kurt12,tr_downdev12,avg_corr24), L5 cross-factor(tr_1..12m,complex_mom12,rel_rank12,corr_shift), L6 macro-conditioning(Term_Spread,StL_Fin_Stress,KRW_USD,Chi_Fin_Cond). family-invariant features x family (family-specific slope so macro drives rotation).",
+      "lag_rule": "features known at t: factor_db@t PIT (Z_Score_Aligned), trailing family returns shift(1) realized<t, macro = month-end level observable at t (conditioning-only, NO forward-macro prediction). C4 fundamental lag inherited from factor_db.",
+      "winsorization": "family z cross-sectionally standardized; predictors train-only standardized within walk-forward fold",
+      "neutralization": "none (family composite of IC-aligned z)",
+      "economic_rationale": "credit/funding conditions, cross-factor correlation regime, dispersion, and crowding jointly predict which style factors win next month (Haddad-Kozak-Santosh Factor Timing / Gupta-Kelly Factor Momentum / Asness funding-liquidity). ML (elastic-net + gradient boosting) discovers the combination. RESULT: discovered combos (GBM top gain: cs_aa_chg3, avg_corr24, complex_mom12, disp_ret12, term_chg3, corr_shift) beat STATIC but do NOT beat the trivial factor-momentum tilt OOS and decay post-2020.",
+      "weight_theta": null,
+      "references": ["Haddad-Kozak-Santosh 2020 (Factor Timing)", "Gupta-Kelly 2019 (Factor Momentum Everywhere)", "Arnott-Beck-Kalesnik 2016 (factor valuation)", "Asness-Frazzini-Pedersen 2013 (funding liquidity / BAB)", "Daniel-Moskowitz 2016 (Momentum Crashes)"],
+      "redundancy_cluster_id": "factor_timing_exog_forecast",
+      "economic_rationale_verdict": "NEGATIVE — rich exog ML forecasting dominated by parameter-free factor-momentum; no combo survives oos_retention."
+    },
+    {
+      "factor_family": "factor_timing_meta",
+      "proxy": "factor_momentum_tilt (WT-005 baseline, retained for A/B)",
+      "formula": "theta_k,t = softmax(2*z(trailing_12m_family_return_k, realized<t)); composite = sum_k theta_k z_i,k,t",
+      "lag_rule": "trailing family returns shift(1) (realized before t); lag-1 stress robust",
+      "winsorization": "family z standardized", "neutralization": "none",
+      "economic_rationale": "factor momentum (Gupta-Kelly 2019). In WT-006 = the mandated OOS bar. port_t 1.277, paired_vs_static 2.249, but oos_retention -0.251 (itself FAILS 0.7). No exog forecast beats it.",
+      "weight_theta": null,
+      "references": ["Gupta-Kelly 2019", "Ehsani-Linnainmaa 2022"],
+      "redundancy_cluster_id": "factor_momentum_timing",
+      "screen_route": "OVERLAY_CANDIDATE / FR_RCMA (regime-conditional revival — inherited from WT-005)"
+    }
+  ],
+  "diagnostics": {
+    "canonical_port_t_nw_lag3": 0.999,
+    "canonical_port_t_note": "GBM_ensemble (representative multi-logic forecast). best single seed 1.127. ALL < factor-momentum baseline 1.277 and < HARD 2.95.",
+    "canonical_port_t_pvalue": null,
+    "canonical_n_months": 163,
+    "canonical_basis": "cap-w KOSPI200 benchmark, top-25 EW long-only, 15bps, liq 2e8 (canonical HARD basis)",
+    "static_base_port_t_oos": -0.047,
+    "factor_momentum_baseline_port_t_oos": 1.277,
+    "factor_momentum_baseline_oos_retention": -0.251,
+    "best_forecast_config": "GBM_seed0",
+    "best_forecast_port_t_oos": 1.127,
+    "best_forecast_oos_retention": -0.066,
+    "best_forecast_paired_vs_momentum_t": -0.359,
+    "en_combined_port_t_oos": 0.064,
+    "en_combined_paired_vs_momentum_t": -2.079,
+    "gbm_ensemble_paired_vs_momentum_t": -0.736,
+    "dsr_sweep": 0.419,
+    "dsr_n_trials": 9,
+    "lag1_pit_stress": "1.127 -> 0.766 (gentle, no collapse = PIT-clean)",
+    "rank_ic": null, "icir": null,
+    "note_rank_ic": "팩터-레벨 timing meta-layer — rank-IC(종목 횡단) 해당 축 아님. 선택 권위 = canonical PORT_t (v8.3 M1)."
+  },
+  "method_shopping_log": {
+    "alpha_agent": {
+      "candidates_tried": 9,
+      "selection_type": "sweep (ML combination discovery over economic-logic feature groups) -> DSR HARD applies",
+      "method_log": [
+        {"name": "static_EW (base)", "port_t_oos": -0.047, "selected": false},
+        {"name": "factor_momentum (WT005 baseline)", "port_t_oos": 1.277, "oos_retention": -0.251, "selected": "A/B baseline (mandated bar)"},
+        {"name": "EN_combined (all 6 logics)", "port_t_oos": 0.064, "paired_vs_mom_t": -2.079, "selected": false},
+        {"name": "GBM_ensemble (nonlinear, all logics)", "port_t_oos": 0.999, "paired_vs_mom_t": -0.736, "oos_retention": -0.331, "selected": "primary_NEGATIVE"},
+        {"name": "EN_L1_crowding (valuation)", "port_t_oos": -0.127, "paired_vs_mom_t": -2.316, "selected": false},
+        {"name": "EN_L2_dispersion", "port_t_oos": 0.150, "paired_vs_mom_t": -1.904, "selected": false},
+        {"name": "EN_L3_funding (credit spread)", "port_t_oos": -0.037, "paired_vs_mom_t": -2.377, "selected": false},
+        {"name": "EN_L4_crashrisk", "port_t_oos": 0.373, "paired_vs_mom_t": -1.691, "selected": false},
+        {"name": "EN_L5_crossfactor", "port_t_oos": 0.639, "paired_vs_mom_t": -1.381, "selected": false},
+        {"name": "EN_L6_macro", "port_t_oos": 0.419, "paired_vs_mom_t": -1.587, "selected": false}
+      ]
+    }
+  },
+  "challenge_flags": [
+    "PRIMARY NEGATIVE: NO exogenous-forecasting config beats factor-momentum baseline OOS (paired_vs_mom_t<0 for every config; best GBM_seed0 -0.359).",
+    "oos_retention HARD FAIL for all configs (best -0.066, most <-0.7; factor-momentum baseline itself -0.251) — post-2020 cohort-wide factor decay = binding wall (smart-beta 13-agent finding confirmed).",
+    "ML combo-search DSR sweep 0.419 < 0.5 (n_trials=9) — discovered combos do not survive multiple-testing hurdle.",
+    "Per-logic decomposition: EVERY economic logic (crowding/dispersion/funding-credit/crash-risk/cross-factor/macro) has oos_ret<0. L3 funding (KR credit spread = genuinely new lever) paired_vs_mom -2.377 — does NOT rescue.",
+    "Honest nuance (NOT a pass): GBM nonlinear multi-logic forecast beats STATIC (paired_vs_static 1.85) + modestly improves crisis defense (AX-001 crisis active 0.29% vs mom 0.10%) — informative but dominated + non-graduating.",
+    "PIT-clean: lag-1 stress gentle (1.127->0.766), macro conditioning-only, walk-forward IS-only feature/combo selection, train-only standardization. kill_3 not triggered.",
+    "Step 0 differentiation: distinct from JM+BL regime-classification (smart-beta), WT-005 valuation-only transformer, and prior alpha-search STR_AS_20260613 (mislabeled fe_factor_combo). First canonical cap-w paired A/B of direct multi-logic exogenous E[r_factor] forecasting vs factor-momentum on oos_retention."
+  ],
+  "pit_pin_tag": "RAWDATA_pin20260703+benchmark_pin20260703+exog_pin20260718wt006",
+  "artifacts": {
+    "alpha_scores": "stage_artifacts/WT_D20260718_006/alpha_scores.parquet",
+    "alpha_validation": "stage_artifacts/WT_D20260718_006/alpha_validation.json",
+    "challenge_note": "qepm/mailbox/worktask/WT-D20260718_006/challenge_note.md",
+    "chart_perlogic_survival": "stage_artifacts/WT_D20260718_006/wt006_chart1_perlogic_oos_survival.png",
+    "chart_equity_vs_momentum": "stage_artifacts/WT_D20260718_006/wt006_chart2_equity_forecast_vs_momentum.png",
+    "harness_dir": "04_Research/method_frontier/wt006_exog_forecast/"
+  }
+}

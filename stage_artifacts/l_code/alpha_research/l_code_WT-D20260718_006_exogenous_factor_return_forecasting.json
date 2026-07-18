@@ -1,0 +1,51 @@
+{
+  "l_code": "L-AR-20260718_235244",
+  "strategy_id": "WT-D20260718_006_exogenous_factor_return_forecasting",
+  "grade": "F",
+  "core_reference": "stage_artifacts/WT_D20260718_006/alpha_validation.json + qepm/mailbox/worktask/WT-D20260718_006/challenge_note.md",
+  "lesson_text": "WT-D20260718_006 (팩터 기대수익 직접 forecasting·외생변수 ML 조합발굴, 도훈 지적+강화지시, 2026-07-18): NEGATIVE config-scoped. ★도훈 정밀타깃 답: 다른 외생변수(신용스프레드·dispersion·cross-factor 동학·macro conditioning)의 ML 조합발굴이 **factor-momentum baseline을 oos_retention에서 못 이김**(6/6 경제논리 조합 전부 oos<0·paired_vs_mom<0, best GBM −0.359). 도훈 강화지시 이행: 6 독립 경제논리(crowding/dispersion/funding-KR신용스프레드/crash-risk/cross-factor/macro-conditioning) 각 candidate 변수군 + ElasticNet/LightGBM 조합발굴(HKS 과적합 교훈으로 transformer 회피·parsimonious ML). ★진짜 non-momentum 조합 발굴됨(GBM top gain: cs_aa_chg3·avg_corr24·complex_mom12·disp_ret12=신용·상관·분산)이나 OOS 전이 실패. canonical(cap-w top-25, 163mo OOS): static −0.047·factor-momentum 1.277·GBM best 1.127(oos −0.066)·EN combined 0.064·funding −0.037. DSR sweep 0.419<0.5 FAIL(n_trials=9). kill_1+kill_2 발화·PIT clean(lag1 무붕괴·macro conditioning-only). ★★factor-timing-via-prediction 종합 특성화: valuation(WT-005+L1)·momentum(WT-005 유일 실신호이나 감쇠)·rich 외생 ML조합(본 WT) 전부 실패. **KR 벽=재료 부족 아닌 OOS realizability/post-2020 cohort-wide 감쇠**(smart-beta 13-agent 발견을 forecasting-model 레벨서 재확인). ★transformer/팩터-타이밍 아크 5라운드(003/004/005/006) 종합: 지도학습·예측 방법 KR OOS/감쇠 벽 불변. 미탐색 class = 수익률 비파생 factor-timing predictor(DART insider 포지셔닝·팩터별 공매도잔고).",
+  "tags": "QEPM,WT,FACTOR-FORECASTING,ML-COMBO,EXOGENOUS,HKS,OOS-WALL,ARC-CHARACTERIZED",
+  "created_at": "2026-07-18",
+  "research_mode": "alpha_research",
+  "created_by": "emit:alpha_research",
+  "metric_type": "canonical_screen",
+  "construction_type": "regime_rotation",
+  "mechanism_hypothesis": "팩터 timing headroom은 실재(oracle 12.9)이나 KR OOS realizability가 벽 — 외생변수(신용/분산/상관)로 감쇠팩터의 일시부활을 예측해도 post-2020 cohort-wide 감쇠가 예측을 OOS서 무효화. ML 조합발굴이 진짜 non-momentum 신호를 IS서 찾아도 OOS 전이 실패=HKS OOS-취약의 KR 발현. return/valuation/credit 파생 predictor class 소진, 비파생(포지셔닝/공매도) 미탐색.",
+  "lcode_schema_version": 2,
+  "pin_tag": "exog_pin20260718wt006",
+  "static_port_t": -0.047,
+  "momentum_port_t": 1.277,
+  "gbm_best_port_t": 1.127,
+  "gbm_best_oos": -0.066,
+  "gbm_paired_vs_mom": -0.359,
+  "dsr": 0.419,
+  "note": "grade F=자본 미달·momentum baseline 미돌파. metric_type=canonical_screen. factor-timing-via-prediction 아크 종합 특성화(valuation/momentum/rich-ML 전부 OOS 벽)",
+  "falsification_attempts": [
+    {
+      "test": "6 경제논리 × ML 조합발굴(EN+GBM) paired vs factor-momentum",
+      "result": "falsified",
+      "effect_retained": "6/6 oos<0·paired_vs_mom<0(best −0.359)"
+    },
+    {
+      "test": "DSR sweep(n_trials=9, 조합탐색)",
+      "result": "falsified",
+      "effect_retained": "0.419<0.5 FAIL"
+    },
+    {
+      "test": "PIT(macro conditioning-only·C4·lag1)",
+      "result": "survived",
+      "effect_retained": "lag1 무붕괴·미래 macro 없음=genuine negative"
+    },
+    {
+      "test": "static baseline 대비",
+      "result": "survived",
+      "effect_retained": "GBM paired_vs_static 1.85=static은 이김(단 mandated bar=momentum)"
+    }
+  ],
+  "oos_retention": -0.066,
+  "oos_months": 163,
+  "portfolio_alpha_t": 1.127,
+  "selection_type": "sweep",
+  "family": "factor_timing",
+  "record_type": "performance"
+}
