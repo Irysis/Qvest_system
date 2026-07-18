@@ -85,13 +85,19 @@ recover_raw_z <- function(sig_d, fnames) {
 }
 
 ## ── 3) 월간 리밸: 스타일 top-tercile VW active ─────────────────────────────
-sig_dates <- me[format(me, "%Y-%m") >= "2005-01" & me < max(me)]   # 마지막 월말은 fwd 미실현
+## 완결월 가드 (07-18 수리): forward 홀딩월이 진행 중인 달이면 부분월 수익이 됨 — 다음 월말의
+##   달(ym)이 데이터 최신달보다 과거인 신호월만 발행 (구판: 2026-06 신호가 7/16까지 11일 부분월로 발행됐던 오염)
+last_ym <- format(max(ud), "%Y-%m")
+sig_dates <- me[format(me, "%Y-%m") >= "2005-01" & me < max(me)]
+sig_dates <- sig_dates[vapply(sig_dates, function(d) { nx <- me[me > d][1]
+  !is.na(nx) && format(nx, "%Y-%m") < last_ym }, logical(1))]
 ## 증분 갱신: 기존 parquet 존재 시 미계산 월만 (SB_FORCE_REBUILD=1로 전량 재빌드)
 SB_prev <- NULL
 pq <- file.path(OUT_DIR, "smartbeta_kr_monthly.parquet")
 if (file.exists(pq) && !nzchar(Sys.getenv("SB_FORCE_REBUILD", ""))) {
   SB_prev <- as.data.table(read_parquet(pq))
   invisible(gc())                                   # mmap 해제 (Windows arrow 1224 회피 1/2)
+  SB_prev <- SB_prev[ym %in% format(sig_dates, "%Y-%m")]   # 구판의 부분월 잔재 자동 제거
   sig_dates <- sig_dates[!format(sig_dates, "%Y-%m") %in% SB_prev$ym]
   wf("incremental: 기존 %d개월 스킵, 신규 %d개월", nrow(SB_prev), length(sig_dates))
 }
@@ -153,21 +159,65 @@ wf("[정합게이트] MOM 2024+ 양: %s | SIZE 2024+ 음: %s | (정보) VAL_comp
    TAB[period == "2024-01~2026-12", VAL])
 if (!all(g1, g2, na.rm = TRUE)) wf("[!!] 부호/구성 재점검 필요")
 
-## ── 5) 차트 (rolling 12m, 범례 플롯 밖 우측) ───────────────────────────────
+## ── 5) 차트 v3 (도훈 지시 07-18: 최근동향 가독성 — 정렬 막대 + 히트맵 + 소형패널) ──
+KRN <- c(VAL = "가치컴포지트", QUAL = "퀄리티(fROE)", MOM = "모멘텀", LOWVOL = "저변동성",
+         SIZE = "소형주", DIV = "고배당", EREV = "이익전망수정")
+cols <- c(VAL = "steelblue", QUAL = "darkgreen", MOM = "firebrick", LOWVOL = "purple",
+          SIZE = "darkorange", DIV = "gray40", EREV = "deeppink3")
+
+## (A) 최근 성과 정렬 막대 — 1M / 3M평균 / 12M평균
+a1  <- vapply(sty, function(s) tail(SB[[s]], 1) * 100, numeric(1))
+a3  <- vapply(sty, function(s) mean(tail(SB[[s]], 3), na.rm = TRUE) * 100, numeric(1))
+a12 <- vapply(sty, function(s) mean(tail(SB[[s]], 12), na.rm = TRUE) * 100, numeric(1))
+ord <- order(a12)
+M <- rbind(`1M` = a1[ord], `3M avg` = a3[ord], `12M avg` = a12[ord])
+png(file.path(OUT_DIR, "charts", "smartbeta_recent_bars.png"), width = 1150, height = 520)
+par(mar = c(4, 9, 3, 6))
+bp <- barplot(M, beside = TRUE, horiz = TRUE, names.arg = KRN[sty[ord]], las = 1,
+              col = c("gray75", "gray45", "black"), border = NA,
+              main = sprintf("스마트베타 최근 성과 — 월 active %% (vs 유니버스 VW, %s 기준)", max(SB$ym)),
+              xlab = "월 active %", xlim = range(0, M, na.rm = TRUE) * 1.25)
+abline(v = 0, lty = 1)
+text(x = M + sign(M) * max(abs(M), na.rm = TRUE) * 0.05, y = bp, labels = sprintf("%+.1f", M), cex = 0.75, xpd = TRUE)
+legend("topright", rev(rownames(M)), fill = rev(c("gray75", "gray45", "black")), bty = "n", cex = 0.95)
+dev.off()
+wf("chart written: smartbeta_recent_bars.png")
+
+## (B) 24개월 로테이션 히트맵 — 스타일 x 월, 적청 발산 팔레트
+n_hm <- min(24, nrow(SB))
+H <- sapply(sty, function(s) tail(SB[[s]], n_hm)) * 100      # n_hm x styles
+ymv <- tail(SB$ym, n_hm)
+Hm <- t(H)[length(sty):1, , drop = FALSE]                     # rows=styles(역순: 위가 첫 스타일)
+brk <- max(abs(Hm), na.rm = TRUE)
+pal <- colorRampPalette(c("#2166AC", "#F7F7F7", "#B2182B"))(64)
+png(file.path(OUT_DIR, "charts", "smartbeta_heatmap24.png"), width = 1150, height = 460)
+par(mar = c(4.5, 9, 3, 2))
+image(x = 1:n_hm, y = 1:length(sty), z = t(Hm), col = pal, zlim = c(-brk, brk),
+      axes = FALSE, xlab = "", ylab = "", main = "스마트베타 로테이션 — 최근 24개월 월 active % (청=마이너스 / 적=플러스)")
+axis(2, at = 1:length(sty), labels = KRN[rev(sty)], las = 1, tick = FALSE, cex.axis = 0.95)
+sel <- seq(1, n_hm, by = 2)
+axis(1, at = sel, labels = ymv[sel], las = 2, cex.axis = 0.8, tick = FALSE)
+for (i in 1:n_hm) for (j in 1:length(sty))
+  text(i, j, sprintf("%.0f", t(Hm)[i, j]), cex = 0.55, col = ifelse(abs(t(Hm)[i, j]) > brk * 0.55, "white", "gray25"))
+abline(h = (0:length(sty)) + 0.5, col = "white", lwd = 2)
+dev.off()
+wf("chart written: smartbeta_heatmap24.png")
+
+## (C) 장기 rolling 12m — 스타일별 소형 패널 (겹침 제거)
 SBc <- copy(SB)
 for (st in sty) SBc[, (paste0("r12_", st)) := frollmean(get(st), 12)]
 SBc[, d := as.Date(paste0(ym, "-01"))]
-cols <- c(VAL = "steelblue", QUAL = "darkgreen", MOM = "firebrick", LOWVOL = "purple", SIZE = "darkorange", DIV = "gray40", EREV = "deeppink3")
-png(file.path(OUT_DIR, "charts", "smartbeta_rolling12.png"), width = 1150, height = 480)
-par(mar = c(3, 4, 2.5, 8))
+png(file.path(OUT_DIR, "charts", "smartbeta_rolling12.png"), width = 1150, height = 900)
+par(mfrow = c(4, 2), mar = c(2.5, 4, 2.2, 1))
 rng <- range(SBc[, paste0("r12_", sty), with = FALSE], na.rm = TRUE) * 100
-plot(SBc$d, SBc$r12_VAL * 100, type = "l", lwd = 2, col = cols["VAL"], ylim = rng,
-     main = "KR 스마트베타 6스타일 — active(vs 유니버스 VW) rolling 12m mean", xlab = "", ylab = "월평균 active %")
-for (st in setdiff(sty, "VAL")) lines(SBc$d, SBc[[paste0("r12_", st)]] * 100, lwd = 2, col = cols[st])
-abline(h = 0, lty = 3)
-legend(x = par("usr")[2], y = par("usr")[4], legend = sty, col = cols[sty], lwd = 2, cex = 0.9, xpd = TRUE, bty = "n")
+for (st in sty) {
+  plot(SBc$d, SBc[[paste0("r12_", st)]] * 100, type = "l", lwd = 2.2, col = cols[st], ylim = rng,
+       main = KRN[st], xlab = "", ylab = "r12 %")
+  abline(h = 0, lty = 3); polygon(c(SBc$d, rev(SBc$d)),
+    c(pmax(SBc[[paste0("r12_", st)]] * 100, 0), rep(0, nrow(SBc))), col = adjustcolor(cols[st], 0.15), border = NA)
+}
 dev.off()
-wf("chart written: smartbeta_rolling12.png")
+wf("chart written: smartbeta_rolling12.png (small multiples)")
 
 rec <- SB[(.N - 11):.N]
 write_json(list(runtag = RUNTAG, metric_type = "diagnostic_monitoring",

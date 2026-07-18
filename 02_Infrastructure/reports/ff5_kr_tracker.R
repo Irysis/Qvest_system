@@ -49,6 +49,7 @@ rets <- pn[!is.na(Close_p) & i_p == i - 1 & !is.na(Size_p) & Size_p > 0]
 rets[, ret := Close / Close_p - 1]
 rets <- rets[ret <= 5.0 & ret >= -1.0]                     # R44 sanity
 rets[, ym := format(Date, "%Y-%m")]
+rets <- rets[ym < format(max(ud), "%Y-%m")]                # 진행 중인 달(부분월) 제외 — 완결월만 발행 (07-18 수리)
 wf("returns panel: %d rows, %d months (%s..%s)", nrow(rets), uniqueN(rets$ym), min(rets$ym), max(rets$ym))
 
 ## ── 2) formation별 버킷 배정 ────────────────────────────────────────────────
@@ -69,7 +70,7 @@ recover_raw_z <- function(sig_d, fnames) {
   dcast(f, Ticker ~ Factor_Name, value.var = "z_raw")
 }
 
-fy_years <- 2005:2025
+fy_years <- 2005:max(year(me[format(me, "%m") == "05"]))   # 최신 5월 formation까지 동적 (구판 2025 고정 = 2026-06+ 누락 버그, 07-18 수리)
 assign_rows <- list()
 for (y in fy_years) {
   sig <- me[format(me, "%Y-%m") == sprintf("%d-05", y)]

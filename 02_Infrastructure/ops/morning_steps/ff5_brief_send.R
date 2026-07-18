@@ -47,7 +47,9 @@ if (is.null(FF) || !nrow(FF)) { cat("[ff5_brief] FF 시리즈 없음 — skip\n"
     sections[[length(sections) + 1]] <- list(heading = "스마트베타 최근 12개월 평균 초과수익", type = "kv", kv = kvl)
     top <- sty[which.max(r12)]; bot <- sty[which.min(r12)]
     sb_line <- sprintf("스마트베타: %s 최강 / %s 최약 (최근 12개월 유니버스 대비)", kv_names[top], kv_names[bot])
-    charts <- c(charts, "outputs/smartbeta_kr/charts/smartbeta_rolling12.png")
+    ## v3 최근동향 차트 (도훈 지시): 정렬 막대 + 24개월 히트맵 (장기 소형패널은 rolling12 파일로 별도 보관)
+    charts <- c(charts, "outputs/smartbeta_kr/charts/smartbeta_recent_bars.png",
+                "outputs/smartbeta_kr/charts/smartbeta_heatmap24.png")
   }
   sections[[length(sections) + 1]] <- list(heading = "국면 판독", type = "bullet", items = c(
     sprintf("현 국면: %s", regime_line),

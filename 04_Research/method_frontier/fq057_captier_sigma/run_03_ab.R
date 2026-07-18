@@ -16,6 +16,7 @@ suppressPackageStartupMessages({
   library(data.table); library(arrow); library(xts); library(PerformanceAnalytics)
   library(jsonlite)
 })
+options(warn = 1)   # print warnings when they occur (provenance audit)
 data.table::setDTthreads(1)
 ROOT <- "C:/Users/99922/OneDrive/Quant_Module_Moltbot"
 setwd(ROOT)
