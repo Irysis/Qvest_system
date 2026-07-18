@@ -95,12 +95,11 @@ Common Charter 8원칙 준수 (Point-in-time / Research Process / Family vs Prox
 - Soft penalties (turnover_cap_annual, beta_target, style_exposure_cap)
 - No-trade region 설정 (current_portfolio 참조)
 
-### Step 4: Cost-Aware Optimization — **자율 탐색**
-- 방법론 후보 10+ 선정 (scope 참조)
-- Walk-forward OOS SR 측정
-- Grid / Bayesian / RL hyperparam
-- 각 방법론 결과 → method_comparison 기록
-- SR 최대 1개 선택 (method_selected)
+### Step 4: Cost-Aware Optimization — **posterior-드리븐 선택 + 트리거 sweep** (v1.3 이원화, 도훈 승인 2026-07-18)
+- **기본 경로 (default)**: Axiom/L-code posterior 확인(hypothesis_index — 해당 method family의 DIST/실측 이력) 후 경량 선택 — 현행 posterior 기본값 = 알파비례 tilt 계열(07-03 HRP frontier 24변형 실측 지배) + confidence-aware MVO 1종 paired 비교. method_shopping_log에 `posterior_default: true` + 트리거 판정 결과 기록
+- **sweep 에스컬레이션 (아래 트리거 ≥1 충족 시)**: full 방법론 비교(상한 10, walk-forward OOS, net_ir enum, DSR) — ① risk_package heavy-tail/regime 진단 임계(TDC·stress) ② multi-sleeve book 성립(admitted sleeves ≥2 — HRP 계열 부활 조건, INV-7) ③ alpha 구조 특이(비선형·불확실성 신규 재료) ④ 직전 동형 WT에서 method 간 net_ir 격차 실측
+- **신규 방법론 '발굴'은 본 Step이 아님** — method_frontier lane(FQ-057~059, §v83_method_dualization) 전용. WT-시점은 weight_method_registry 등재분만 소비, frontier 라운드 산출은 L-code 환류 → 본 Step posterior 갱신
+- 각 시도 → method_comparison 기록, 선택 근거 → weight_method_selected.md
 
 ### Step 5: Sensitivity Report
 - 선택된 방법론의 constraint dual variable 점검
