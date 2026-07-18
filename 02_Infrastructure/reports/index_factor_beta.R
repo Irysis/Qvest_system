@@ -69,7 +69,7 @@ wf("chart written: index_factor_beta.png")
 ## 설계: 7스타일 동시회귀는 공선성 왜곡 → 스타일별 lm(지수초과 ~ MKT + style_active) 계수.
 SBm <- as.data.table(read_parquet("outputs/smartbeta_kr/smartbeta_kr_monthly.parquet")); setorder(SBm, ym)
 sty <- c("VAL", "QUAL", "MOM", "LOWVOL", "SIZE", "DIV", "EREV")
-KRS <- c(VAL = "가치컴포지트", QUAL = "퀄리티(fROE)", MOM = "모멘텀", LOWVOL = "저변동성",
+KRS <- c(VAL = "가치포워드", QUAL = "퀄리티(fROE)", MOM = "모멘텀", LOWVOL = "저변동성",
          SIZE = "소형주", DIV = "고배당", EREV = "이익전망수정")
 D2 <- merge(D, SBm[, c("ym", sty), with = FALSE], by = "ym")
 SB_B <- matrix(NA_real_, nrow = length(IDXN), ncol = length(sty), dimnames = list(IDXN, sty))
