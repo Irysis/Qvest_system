@@ -99,7 +99,8 @@ for (sd_ in sig_dates) {
   rows[[format(sd_)]] <- as.data.table(out)
   if (nmov %% 48 == 0) wf("  %s (%.1f min)", format(sd_), as.numeric(difftime(Sys.time(), t0, units = "mins")))
 }
-SB <- rbindlist(rows, fill = TRUE)[order(ym)]
+SB <- rbindlist(c(if (!is.null(SB_prev)) list(SB_prev), rows), fill = TRUE)
+SB <- unique(SB, by = "ym")[order(ym)]
 wf("SB series: %d months (%s..%s)", nrow(SB), min(SB$ym), max(SB$ym))
 write_parquet(SB, file.path(OUT_DIR, "smartbeta_kr_monthly.parquet"))
 
