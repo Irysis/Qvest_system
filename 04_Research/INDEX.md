@@ -1,6 +1,6 @@
 # 04_Research INDEX
 
-> 자동 생성 2026-07-18 18:18 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
+> 자동 생성 2026-07-18 18:57 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
 
 <details><summary><b>strategy-legacy</b> (3)</summary>
 
@@ -185,7 +185,7 @@
 | `decay_fit` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-18 | 56KB |
 | `factor_selection_program` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-13 | 13KB |
 | `insider` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-10 | 34KB |
-| `method_frontier` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-18 | 94KB |
+| `method_frontier` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-18 | 160KB |
 | `pg2_carry_convention` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-11 | 184KB |
 | `pg2_overlay_beyond_r05m4_20260705.md` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-05 | 7KB |
 

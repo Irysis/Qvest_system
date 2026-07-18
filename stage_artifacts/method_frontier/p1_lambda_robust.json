@@ -1,0 +1,342 @@
+{
+  "pin_tag": "fq057_20260718_171024",
+  "measured_at": "2026-07-18 18:55:53",
+  "purpose": "prereg ewma_lambda_note 이행 — λ=0.97 robustness 진단 (선택 아님·판정 불변). 운용 TE 기준선(te_baseline ewma97)과의 λ 정합 확인.",
+  "parity_guard": {
+    "n": 792,
+    "max_rel_diff": 0,
+    "pass": true
+  },
+  "lambda": {
+    "judged": 0.94,
+    "robustness": 0.97
+  },
+  "results": {
+    "capw_tilt_top25/te": {
+      "common_set": {
+        "n": 186,
+        "holding_range": [201101, 202606],
+        "arm_summary": {
+          "ewma_struct97": {
+            "mean_qlike": 0.20392,
+            "rmse_vol_ann": 0.08712,
+            "median_pred_vol_ann": 0.2494,
+            "mz_b": 0.4092
+          },
+          "ewma_direct97": {
+            "mean_qlike": 0.31381,
+            "rmse_vol_ann": 0.08131,
+            "median_pred_vol_ann": 0.1986,
+            "mz_b": 0.553
+          },
+          "ewma_struct": {
+            "mean_qlike": 0.27106,
+            "rmse_vol_ann": 0.11264,
+            "median_pred_vol_ann": 0.2807,
+            "mz_b": 0.2982
+          },
+          "ewma_direct": {
+            "mean_qlike": 0.29666,
+            "rmse_vol_ann": 0.08029,
+            "median_pred_vol_ann": 0.2039,
+            "mz_b": 0.6096
+          },
+          "lw_nls": {
+            "mean_qlike": 0.24376,
+            "rmse_vol_ann": 0.07221,
+            "median_pred_vol_ann": 0.1886,
+            "mz_b": 0.9367
+          }
+        },
+        "paired": {
+          "direct97_vs_direct94": {
+            "pair": "ewma_direct97 - ewma_direct",
+            "mean_qlike_diff": 0.01715,
+            "dm_nw_t_lag3": 1.5691,
+            "n": 186,
+            "verdict": "tie"
+          },
+          "struct97_vs_struct94": {
+            "pair": "ewma_struct97 - ewma_struct",
+            "mean_qlike_diff": -0.06714,
+            "dm_nw_t_lag3": -6.4867,
+            "n": 186,
+            "verdict": "ewma_struct97_better"
+          },
+          "lwnls_vs_direct97": {
+            "pair": "lw_nls - ewma_direct97",
+            "mean_qlike_diff": -0.07004,
+            "dm_nw_t_lag3": -1.6348,
+            "n": 186,
+            "verdict": "tie"
+          },
+          "lwnls_vs_struct97": {
+            "pair": "lw_nls - ewma_struct97",
+            "mean_qlike_diff": 0.03984,
+            "dm_nw_t_lag3": 0.9549,
+            "n": 186,
+            "verdict": "tie"
+          }
+        }
+      },
+      "structural_fullset": {
+        "n": 198,
+        "paired": {
+          "lwnls_vs_struct97": {
+            "pair": "lw_nls - ewma_struct97",
+            "mean_qlike_diff": 0.03861,
+            "dm_nw_t_lag3": 0.9847,
+            "n": 198,
+            "verdict": "tie"
+          }
+        }
+      }
+    },
+    "capw_tilt_top25/total": {
+      "common_set": {
+        "n": 186,
+        "holding_range": [201101, 202606],
+        "arm_summary": {
+          "ewma_struct97": {
+            "mean_qlike": 0.289,
+            "rmse_vol_ann": 0.12607,
+            "median_pred_vol_ann": 0.33,
+            "mz_b": 0.7051
+          },
+          "ewma_direct97": {
+            "mean_qlike": 0.38905,
+            "rmse_vol_ann": 0.12803,
+            "median_pred_vol_ann": 0.2692,
+            "mz_b": 2.5333
+          },
+          "ewma_struct": {
+            "mean_qlike": 0.32922,
+            "rmse_vol_ann": 0.14771,
+            "median_pred_vol_ann": 0.3529,
+            "mz_b": 0.51
+          },
+          "ewma_direct": {
+            "mean_qlike": 0.37484,
+            "rmse_vol_ann": 0.12614,
+            "median_pred_vol_ann": 0.2733,
+            "mz_b": 1.6886
+          },
+          "lw_nls": {
+            "mean_qlike": 0.41283,
+            "rmse_vol_ann": 0.12115,
+            "median_pred_vol_ann": 0.2432,
+            "mz_b": 1.4871
+          }
+        },
+        "paired": {
+          "direct97_vs_direct94": {
+            "pair": "ewma_direct97 - ewma_direct",
+            "mean_qlike_diff": 0.01421,
+            "dm_nw_t_lag3": 1.0456,
+            "n": 186,
+            "verdict": "tie"
+          },
+          "struct97_vs_struct94": {
+            "pair": "ewma_struct97 - ewma_struct",
+            "mean_qlike_diff": -0.04022,
+            "dm_nw_t_lag3": -2.9027,
+            "n": 186,
+            "verdict": "ewma_struct97_better"
+          },
+          "lwnls_vs_direct97": {
+            "pair": "lw_nls - ewma_direct97",
+            "mean_qlike_diff": 0.02378,
+            "dm_nw_t_lag3": 0.2781,
+            "n": 186,
+            "verdict": "tie"
+          },
+          "lwnls_vs_struct97": {
+            "pair": "lw_nls - ewma_struct97",
+            "mean_qlike_diff": 0.12383,
+            "dm_nw_t_lag3": 1.558,
+            "n": 186,
+            "verdict": "tie"
+          }
+        }
+      },
+      "structural_fullset": {
+        "n": 198,
+        "paired": {
+          "lwnls_vs_struct97": {
+            "pair": "lw_nls - ewma_struct97",
+            "mean_qlike_diff": 0.10742,
+            "dm_nw_t_lag3": 1.4283,
+            "n": 198,
+            "verdict": "tie"
+          }
+        }
+      }
+    },
+    "ew_top25/te": {
+      "common_set": {
+        "n": 186,
+        "holding_range": [201101, 202606],
+        "arm_summary": {
+          "ewma_struct97": {
+            "mean_qlike": 0.24679,
+            "rmse_vol_ann": 0.08731,
+            "median_pred_vol_ann": 0.2545,
+            "mz_b": 0.4594
+          },
+          "ewma_direct97": {
+            "mean_qlike": 0.2843,
+            "rmse_vol_ann": 0.07177,
+            "median_pred_vol_ann": 0.1922,
+            "mz_b": 0.559
+          },
+          "ewma_struct": {
+            "mean_qlike": 0.33509,
+            "rmse_vol_ann": 0.11211,
+            "median_pred_vol_ann": 0.287,
+            "mz_b": 0.3774
+          },
+          "ewma_direct": {
+            "mean_qlike": 0.24408,
+            "rmse_vol_ann": 0.06942,
+            "median_pred_vol_ann": 0.1966,
+            "mz_b": 0.7739
+          },
+          "lw_nls": {
+            "mean_qlike": 0.22918,
+            "rmse_vol_ann": 0.06619,
+            "median_pred_vol_ann": 0.1773,
+            "mz_b": 1.008
+          }
+        },
+        "paired": {
+          "direct97_vs_direct94": {
+            "pair": "ewma_direct97 - ewma_direct",
+            "mean_qlike_diff": 0.04022,
+            "dm_nw_t_lag3": 2.7391,
+            "n": 186,
+            "verdict": "ewma_direct_better"
+          },
+          "struct97_vs_struct94": {
+            "pair": "ewma_struct97 - ewma_struct",
+            "mean_qlike_diff": -0.08831,
+            "dm_nw_t_lag3": -8.7824,
+            "n": 186,
+            "verdict": "ewma_struct97_better"
+          },
+          "lwnls_vs_direct97": {
+            "pair": "lw_nls - ewma_direct97",
+            "mean_qlike_diff": -0.05512,
+            "dm_nw_t_lag3": -1.8466,
+            "n": 186,
+            "verdict": "tie"
+          },
+          "lwnls_vs_struct97": {
+            "pair": "lw_nls - ewma_struct97",
+            "mean_qlike_diff": -0.01761,
+            "dm_nw_t_lag3": -0.4487,
+            "n": 186,
+            "verdict": "tie"
+          }
+        }
+      },
+      "structural_fullset": {
+        "n": 198,
+        "paired": {
+          "lwnls_vs_struct97": {
+            "pair": "lw_nls - ewma_struct97",
+            "mean_qlike_diff": -0.0281,
+            "dm_nw_t_lag3": -0.7523,
+            "n": 198,
+            "verdict": "tie"
+          }
+        }
+      }
+    },
+    "ew_top25/total": {
+      "common_set": {
+        "n": 186,
+        "holding_range": [201101, 202606],
+        "arm_summary": {
+          "ewma_struct97": {
+            "mean_qlike": 0.34246,
+            "rmse_vol_ann": 0.13123,
+            "median_pred_vol_ann": 0.3392,
+            "mz_b": 0.9304
+          },
+          "ewma_direct97": {
+            "mean_qlike": 0.38792,
+            "rmse_vol_ann": 0.12075,
+            "median_pred_vol_ann": 0.2478,
+            "mz_b": 2.3
+          },
+          "ewma_struct": {
+            "mean_qlike": 0.38933,
+            "rmse_vol_ann": 0.14933,
+            "median_pred_vol_ann": 0.3701,
+            "mz_b": 0.7278
+          },
+          "ewma_direct": {
+            "mean_qlike": 0.37257,
+            "rmse_vol_ann": 0.11963,
+            "median_pred_vol_ann": 0.2638,
+            "mz_b": 1.7807
+          },
+          "lw_nls": {
+            "mean_qlike": 0.4785,
+            "rmse_vol_ann": 0.12147,
+            "median_pred_vol_ann": 0.2333,
+            "mz_b": 1.302
+          }
+        },
+        "paired": {
+          "direct97_vs_direct94": {
+            "pair": "ewma_direct97 - ewma_direct",
+            "mean_qlike_diff": 0.01535,
+            "dm_nw_t_lag3": 1.1367,
+            "n": 186,
+            "verdict": "tie"
+          },
+          "struct97_vs_struct94": {
+            "pair": "ewma_struct97 - ewma_struct",
+            "mean_qlike_diff": -0.04687,
+            "dm_nw_t_lag3": -3.548,
+            "n": 186,
+            "verdict": "ewma_struct97_better"
+          },
+          "lwnls_vs_direct97": {
+            "pair": "lw_nls - ewma_direct97",
+            "mean_qlike_diff": 0.09058,
+            "dm_nw_t_lag3": 0.9715,
+            "n": 186,
+            "verdict": "tie"
+          },
+          "lwnls_vs_struct97": {
+            "pair": "lw_nls - ewma_struct97",
+            "mean_qlike_diff": 0.13604,
+            "dm_nw_t_lag3": 1.2993,
+            "n": 186,
+            "verdict": "tie"
+          }
+        }
+      },
+      "structural_fullset": {
+        "n": 198,
+        "paired": {
+          "lwnls_vs_struct97": {
+            "pair": "lw_nls - ewma_struct97",
+            "mean_qlike_diff": 0.113,
+            "dm_nw_t_lag3": 1.1392,
+            "n": 198,
+            "verdict": "tie"
+          }
+        }
+      }
+    }
+  },
+  "decision_b_at_lambda97": {
+    "rule": "capw/te DM(lw_nls - ewma_direct97) t<=-2 ∧ diff<0 이면 λ=0.97에서도 lw_nls 우월 (판정 아님 — 보고)",
+    "dm_t": -1.6348,
+    "qlike_diff": -0.07004,
+    "consistent_with_decision_b_keep_ewma": true
+  }
+}

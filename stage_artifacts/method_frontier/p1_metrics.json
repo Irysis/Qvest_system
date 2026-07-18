@@ -1,0 +1,473 @@
+{
+  "pin_tag": "fq057_20260718_171024",
+  "measured_at": "2026-07-18 18:45:09",
+  "metric_type": "risk_forecast_accuracy_diagnostic",
+  "loss": "QLIKE (Patton 2011) primary; RMSE(vol_ann) secondary; MZ calibration",
+  "paired_test": "Diebold-Mariano NW HAC lag3 on per-month QLIKE diffs (neg t = left arm better)",
+  "ewma_lambda": 0.94,
+  "results": {
+    "capw_tilt_top25/te": {
+      "portfolio": "capw_tilt_top25",
+      "target": "te",
+      "common_set": {
+        "n": 186,
+        "holding_range": [201101, 202606],
+        "realized_vol_ann": 0.1869,
+        "arm_summary": {
+          "lw_linear": {
+            "mean_qlike": 0.38859,
+            "rmse_vol_ann": 0.08321,
+            "median_pred_vol_ann": 0.1812,
+            "mz_a": 0.001024,
+            "mz_b": 1.119,
+            "mz_r2": 0.0476
+          },
+          "lw_nls": {
+            "mean_qlike": 0.24376,
+            "rmse_vol_ann": 0.07221,
+            "median_pred_vol_ann": 0.1886,
+            "mz_a": 0.0011,
+            "mz_b": 0.9367,
+            "mz_r2": 0.1495
+          },
+          "ewma_struct": {
+            "mean_qlike": 0.27106,
+            "rmse_vol_ann": 0.11264,
+            "median_pred_vol_ann": 0.2807,
+            "mz_a": 0.001833,
+            "mz_b": 0.2982,
+            "mz_r2": 0.2397
+          },
+          "ewma_direct": {
+            "mean_qlike": 0.29666,
+            "rmse_vol_ann": 0.08029,
+            "median_pred_vol_ann": 0.2039,
+            "mz_a": 0.001737,
+            "mz_b": 0.6096,
+            "mz_r2": 0.0352
+          }
+        },
+        "paired": {
+          "a_lwnls_vs_lwlinear": {
+            "pair": "lw_nls - lw_linear",
+            "mean_qlike_diff": -0.14482,
+            "dm_nw_t_lag3": -3.0569,
+            "n": 186,
+            "verdict": "lw_nls_better"
+          },
+          "lwnls_vs_ewma_struct": {
+            "pair": "lw_nls - ewma_struct",
+            "mean_qlike_diff": -0.02729,
+            "dm_nw_t_lag3": -0.5548,
+            "n": 186,
+            "verdict": "tie"
+          },
+          "b_lwnls_vs_ewma_direct": {
+            "pair": "lw_nls - ewma_direct",
+            "mean_qlike_diff": -0.0529,
+            "dm_nw_t_lag3": -1.2363,
+            "n": 186,
+            "verdict": "tie"
+          }
+        }
+      },
+      "structural_fullset": {
+        "n": 198,
+        "holding_range": [201001, 202606],
+        "arm_summary": {
+          "lw_linear": {
+            "mean_qlike": 0.38031,
+            "rmse_vol_ann": 0.08238,
+            "median_pred_vol_ann": 0.1824,
+            "mz_a": 0.001774,
+            "mz_b": 0.7848,
+            "mz_r2": 0.0265
+          },
+          "lw_nls": {
+            "mean_qlike": 0.23757,
+            "rmse_vol_ann": 0.0708,
+            "median_pred_vol_ann": 0.1873,
+            "mz_a": 0.000964,
+            "mz_b": 0.9536,
+            "mz_r2": 0.1539
+          },
+          "ewma_struct": {
+            "mean_qlike": 0.2641,
+            "rmse_vol_ann": 0.10983,
+            "median_pred_vol_ann": 0.27,
+            "mz_a": 0.001765,
+            "mz_b": 0.3028,
+            "mz_r2": 0.2498
+          }
+        },
+        "paired": {
+          "a_lwnls_vs_lwlinear": {
+            "pair": "lw_nls - lw_linear",
+            "mean_qlike_diff": -0.14274,
+            "dm_nw_t_lag3": -3.2021,
+            "n": 198,
+            "verdict": "lw_nls_better"
+          },
+          "lwnls_vs_ewma_struct": {
+            "pair": "lw_nls - ewma_struct",
+            "mean_qlike_diff": -0.02653,
+            "dm_nw_t_lag3": -0.5739,
+            "n": 198,
+            "verdict": "tie"
+          }
+        }
+      }
+    },
+    "capw_tilt_top25/total": {
+      "portfolio": "capw_tilt_top25",
+      "target": "total",
+      "common_set": {
+        "n": 186,
+        "holding_range": [201101, 202606],
+        "realized_vol_ann": 0.2531,
+        "arm_summary": {
+          "lw_linear": {
+            "mean_qlike": 2.10005,
+            "rmse_vol_ann": 0.18176,
+            "median_pred_vol_ann": 0.149,
+            "mz_a": -0.000265,
+            "mz_b": 4.1113,
+            "mz_r2": 0.0604
+          },
+          "lw_nls": {
+            "mean_qlike": 0.41283,
+            "rmse_vol_ann": 0.12115,
+            "median_pred_vol_ann": 0.2432,
+            "mz_a": -0.000156,
+            "mz_b": 1.4871,
+            "mz_r2": 0.2168
+          },
+          "ewma_struct": {
+            "mean_qlike": 0.32922,
+            "rmse_vol_ann": 0.14771,
+            "median_pred_vol_ann": 0.3529,
+            "mz_a": 0.001572,
+            "mz_b": 0.51,
+            "mz_r2": 0.293
+          },
+          "ewma_direct": {
+            "mean_qlike": 0.37484,
+            "rmse_vol_ann": 0.12614,
+            "median_pred_vol_ann": 0.2733,
+            "mz_a": -0.003433,
+            "mz_b": 1.6886,
+            "mz_r2": 0.1475
+          }
+        },
+        "paired": {
+          "a_lwnls_vs_lwlinear": {
+            "pair": "lw_nls - lw_linear",
+            "mean_qlike_diff": -1.68722,
+            "dm_nw_t_lag3": -5.8814,
+            "n": 186,
+            "verdict": "lw_nls_better"
+          },
+          "lwnls_vs_ewma_struct": {
+            "pair": "lw_nls - ewma_struct",
+            "mean_qlike_diff": 0.08361,
+            "dm_nw_t_lag3": 0.9133,
+            "n": 186,
+            "verdict": "tie"
+          },
+          "b_lwnls_vs_ewma_direct": {
+            "pair": "lw_nls - ewma_direct",
+            "mean_qlike_diff": 0.03799,
+            "dm_nw_t_lag3": 0.4787,
+            "n": 186,
+            "verdict": "tie"
+          }
+        }
+      },
+      "structural_fullset": {
+        "n": 198,
+        "holding_range": [201001, 202606],
+        "arm_summary": {
+          "lw_linear": {
+            "mean_qlike": 1.98198,
+            "rmse_vol_ann": 0.17665,
+            "median_pred_vol_ann": 0.1508,
+            "mz_a": 0.003314,
+            "mz_b": 2.109,
+            "mz_r2": 0.0235
+          },
+          "lw_nls": {
+            "mean_qlike": 0.40075,
+            "rmse_vol_ann": 0.11959,
+            "median_pred_vol_ann": 0.2505,
+            "mz_a": 0.000141,
+            "mz_b": 1.3545,
+            "mz_r2": 0.1877
+          },
+          "ewma_struct": {
+            "mean_qlike": 0.33367,
+            "rmse_vol_ann": 0.14781,
+            "median_pred_vol_ann": 0.3582,
+            "mz_a": 0.001376,
+            "mz_b": 0.5113,
+            "mz_r2": 0.2922
+          }
+        },
+        "paired": {
+          "a_lwnls_vs_lwlinear": {
+            "pair": "lw_nls - lw_linear",
+            "mean_qlike_diff": -1.58123,
+            "dm_nw_t_lag3": -5.7317,
+            "n": 198,
+            "verdict": "lw_nls_better"
+          },
+          "lwnls_vs_ewma_struct": {
+            "pair": "lw_nls - ewma_struct",
+            "mean_qlike_diff": 0.06708,
+            "dm_nw_t_lag3": 0.7756,
+            "n": 198,
+            "verdict": "tie"
+          }
+        }
+      }
+    },
+    "ew_top25/te": {
+      "portfolio": "ew_top25",
+      "target": "te",
+      "common_set": {
+        "n": 186,
+        "holding_range": [201101, 202606],
+        "realized_vol_ann": 0.184,
+        "arm_summary": {
+          "lw_linear": {
+            "mean_qlike": 0.50692,
+            "rmse_vol_ann": 0.08128,
+            "median_pred_vol_ann": 0.1503,
+            "mz_a": 0.000351,
+            "mz_b": 1.6858,
+            "mz_r2": 0.072
+          },
+          "lw_nls": {
+            "mean_qlike": 0.22918,
+            "rmse_vol_ann": 0.06619,
+            "median_pred_vol_ann": 0.1773,
+            "mz_a": 0.000836,
+            "mz_b": 1.008,
+            "mz_r2": 0.0871
+          },
+          "ewma_struct": {
+            "mean_qlike": 0.33509,
+            "rmse_vol_ann": 0.11211,
+            "median_pred_vol_ann": 0.287,
+            "mz_a": 0.000887,
+            "mz_b": 0.3774,
+            "mz_r2": 0.1536
+          },
+          "ewma_direct": {
+            "mean_qlike": 0.24408,
+            "rmse_vol_ann": 0.06942,
+            "median_pred_vol_ann": 0.1966,
+            "mz_a": 0.001124,
+            "mz_b": 0.7739,
+            "mz_r2": 0.0314
+          }
+        },
+        "paired": {
+          "a_lwnls_vs_lwlinear": {
+            "pair": "lw_nls - lw_linear",
+            "mean_qlike_diff": -0.27774,
+            "dm_nw_t_lag3": -3.5092,
+            "n": 186,
+            "verdict": "lw_nls_better"
+          },
+          "lwnls_vs_ewma_struct": {
+            "pair": "lw_nls - ewma_struct",
+            "mean_qlike_diff": -0.10591,
+            "dm_nw_t_lag3": -2.2476,
+            "n": 186,
+            "verdict": "lw_nls_better"
+          },
+          "b_lwnls_vs_ewma_direct": {
+            "pair": "lw_nls - ewma_direct",
+            "mean_qlike_diff": -0.0149,
+            "dm_nw_t_lag3": -0.5425,
+            "n": 186,
+            "verdict": "tie"
+          }
+        }
+      },
+      "structural_fullset": {
+        "n": 198,
+        "holding_range": [201001, 202606],
+        "arm_summary": {
+          "lw_linear": {
+            "mean_qlike": 0.48636,
+            "rmse_vol_ann": 0.07947,
+            "median_pred_vol_ann": 0.1503,
+            "mz_a": 0.000244,
+            "mz_b": 1.6848,
+            "mz_r2": 0.0705
+          },
+          "lw_nls": {
+            "mean_qlike": 0.22819,
+            "rmse_vol_ann": 0.06536,
+            "median_pred_vol_ann": 0.1764,
+            "mz_a": 0.000656,
+            "mz_b": 1.0439,
+            "mz_r2": 0.0931
+          },
+          "ewma_struct": {
+            "mean_qlike": 0.34608,
+            "rmse_vol_ann": 0.11172,
+            "median_pred_vol_ann": 0.2804,
+            "mz_a": 0.000757,
+            "mz_b": 0.3883,
+            "mz_r2": 0.1653
+          }
+        },
+        "paired": {
+          "a_lwnls_vs_lwlinear": {
+            "pair": "lw_nls - lw_linear",
+            "mean_qlike_diff": -0.25817,
+            "dm_nw_t_lag3": -3.4365,
+            "n": 198,
+            "verdict": "lw_nls_better"
+          },
+          "lwnls_vs_ewma_struct": {
+            "pair": "lw_nls - ewma_struct",
+            "mean_qlike_diff": -0.11789,
+            "dm_nw_t_lag3": -2.6306,
+            "n": 198,
+            "verdict": "lw_nls_better"
+          }
+        }
+      }
+    },
+    "ew_top25/total": {
+      "portfolio": "ew_top25",
+      "target": "total",
+      "common_set": {
+        "n": 186,
+        "holding_range": [201101, 202606],
+        "realized_vol_ann": 0.2301,
+        "arm_summary": {
+          "lw_linear": {
+            "mean_qlike": 5.70597,
+            "rmse_vol_ann": 0.20393,
+            "median_pred_vol_ann": 0.1006,
+            "mz_a": -0.000526,
+            "mz_b": 9.1281,
+            "mz_r2": 0.0252
+          },
+          "lw_nls": {
+            "mean_qlike": 0.4785,
+            "rmse_vol_ann": 0.12147,
+            "median_pred_vol_ann": 0.2333,
+            "mz_a": 0.000588,
+            "mz_b": 1.302,
+            "mz_r2": 0.1143
+          },
+          "ewma_struct": {
+            "mean_qlike": 0.38933,
+            "rmse_vol_ann": 0.14933,
+            "median_pred_vol_ann": 0.3701,
+            "mz_a": -0.001383,
+            "mz_b": 0.7278,
+            "mz_r2": 0.2431
+          },
+          "ewma_direct": {
+            "mean_qlike": 0.37257,
+            "rmse_vol_ann": 0.11963,
+            "median_pred_vol_ann": 0.2638,
+            "mz_a": -0.003462,
+            "mz_b": 1.7807,
+            "mz_r2": 0.1078
+          }
+        },
+        "paired": {
+          "a_lwnls_vs_lwlinear": {
+            "pair": "lw_nls - lw_linear",
+            "mean_qlike_diff": -5.22747,
+            "dm_nw_t_lag3": -6.403,
+            "n": 186,
+            "verdict": "lw_nls_better"
+          },
+          "lwnls_vs_ewma_struct": {
+            "pair": "lw_nls - ewma_struct",
+            "mean_qlike_diff": 0.08917,
+            "dm_nw_t_lag3": 0.766,
+            "n": 186,
+            "verdict": "tie"
+          },
+          "b_lwnls_vs_ewma_direct": {
+            "pair": "lw_nls - ewma_direct",
+            "mean_qlike_diff": 0.10593,
+            "dm_nw_t_lag3": 1.1868,
+            "n": 186,
+            "verdict": "tie"
+          }
+        }
+      },
+      "structural_fullset": {
+        "n": 198,
+        "holding_range": [201001, 202606],
+        "arm_summary": {
+          "lw_linear": {
+            "mean_qlike": 5.43992,
+            "rmse_vol_ann": 0.1993,
+            "median_pred_vol_ann": 0.1013,
+            "mz_a": 0.001719,
+            "mz_b": 6.0395,
+            "mz_r2": 0.0128
+          },
+          "lw_nls": {
+            "mean_qlike": 0.47236,
+            "rmse_vol_ann": 0.12147,
+            "median_pred_vol_ann": 0.2364,
+            "mz_a": 0.001447,
+            "mz_b": 1.045,
+            "mz_r2": 0.0819
+          },
+          "ewma_struct": {
+            "mean_qlike": 0.40787,
+            "rmse_vol_ann": 0.15322,
+            "median_pred_vol_ann": 0.372,
+            "mz_a": -0.001455,
+            "mz_b": 0.71,
+            "mz_r2": 0.2308
+          }
+        },
+        "paired": {
+          "a_lwnls_vs_lwlinear": {
+            "pair": "lw_nls - lw_linear",
+            "mean_qlike_diff": -4.96755,
+            "dm_nw_t_lag3": -6.3694,
+            "n": 198,
+            "verdict": "lw_nls_better"
+          },
+          "lwnls_vs_ewma_struct": {
+            "pair": "lw_nls - ewma_struct",
+            "mean_qlike_diff": 0.06449,
+            "dm_nw_t_lag3": 0.5852,
+            "n": 198,
+            "verdict": "tie"
+          }
+        }
+      }
+    }
+  },
+  "decision": {
+    "a_risk_package_large_universe_sigma": {
+      "rule": "capw/te DM(lw_nls-lw_linear) t<=-2 ∧ mean_qlike_diff<0 ∧ EW control 동일방향",
+      "primary_dm_t": -3.0569,
+      "primary_qlike_diff": -0.14482,
+      "control_qlike_diff": -0.27774,
+      "verdict": "ADOPT_lw_nls_for_large_universe_sigma"
+    },
+    "b_monitoring_te_baseline": {
+      "rule": "capw/te DM(lw_nls-ewma_direct) t<=-2 ∧ mean_qlike_diff<0 → lw_nls 채택; 아니면 EWMA-direct 유지",
+      "primary_dm_t": -1.2363,
+      "primary_qlike_diff": -0.0529,
+      "verdict": "KEEP_ewma_direct_baseline"
+    }
+  }
+}

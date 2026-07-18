@@ -381,6 +381,8 @@ bootstrap_ic_fast(alpha, ret, B = 1000L)                  # factor check 시
 근거: 알파 tier-국소화(07-06)·post-2017 감쇠 상당분=cap-w 벤치 아티팩트(07-05)·FQ-055 dual-basis 괴리 34건 — '알파가 어느 tier에 사는가'는 공동위험 구조의 질문이므로 risk가 산출을 소유한다. judge/alpha의 dual-basis 진단(v8.3 M2 — 기각 전 EW-대비·cap-tier 분해 확인 의무)이 이 필드를 소비한다.
 
 **Σ estimator 이원화** (optimizer Step 4와 동일 원칙, 도훈 승인 2026-07-18): WT-시점은 posterior-드리븐(method shopping 상한 5·estimation-quality enum 불변) — 신규 estimator(analytical NLS·graphical·cap-tier block Σ) '발굴'은 method_frontier lane(FQ-057) 전용 라운드로 실측하고, `.get_cor_cov` 등재분만 WT-시점 소비 자격.
+
+**현행 posterior (2026-07-18 FQ-057 계열 실측 — r1/NP3/NP4/P1)**: ① **대형-유니버스(p>n) Σ = lw_nls ADOPT** — linear LW는 p>n에서 μI 퇴화(상관구조 전멸·총분산까지 오염, P1 DM 검정 유의), `.get_cor_cov(method="lw_nls")` 사용 + p>n 가드 warning 존중 ② WT-시점 소규모(p≤25) Σ = 기존 posterior 유지(linear LW 무해) ③ Σ 품질은 **위험-축 레버이지 평균-축 레버 아님**(NP4 paired NULL) — Σ 개선을 성과 개선 논거로 쓰지 말 것 ④ 단일-포트 TE 추적은 EWMA-direct가 기준선(P1 tie·⑧행 확정) — 구조모델 Σ로 대체 제안 금지. 근거: `stage_artifacts/method_frontier/{fq057,np4,p1}_verdict.json`.
 </v83_dual_basis_captier>
 
 <telegram_protocol_v6 enforce="HOOK+STOP+SOT" updated="2026-05-07">

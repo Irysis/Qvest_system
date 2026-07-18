@@ -1,0 +1,391 @@
+{
+  "id": "FQ-057-NP4-P1",
+  "lane": "method_frontier",
+  "round_type": "independent_research_round_not_WT",
+  "agent": "risk-research",
+  "finalized_at": "2026-07-18 18:52:29",
+  "pin_tag": "fq057_20260718_171024",
+  "preregistration_ref": "stage_artifacts/method_frontier/p1_preregistration.json",
+  "metric_type": "risk_forecast_accuracy_diagnostic",
+  "selection_objective": "estimation_quality (QLIKE 예측손실 — R4 P3, SR/IR/alpha 미사용)",
+  "capital_claim": false,
+  "graduation_claim": false,
+  "weight_proposal": false,
+  "hypothesis": "대형-유니버스(p>n, ~300종·60m) rolling Σ 에서 lw_nls 가 linear LW(퇴화) 대비 위험 예측 정확도(predicted vs realized 월간 vol/TE-분산)를 유의 개선하며, ⑧행 TE 기준선(EWMA-direct) 대비 실소비 가치가 있는가. NP4 '위험-축 우위'의 소비면 판정.",
+  "verdict": "SPLIT — (a) risk_package 대형-유니버스 Σ: ADOPT lw_nls (linear LW 대비 TE-분산 QLIKE capw -0.14482 DM-t -3.0569 / ew DM-t -3.5092, 총분산은 더 극적 DM-t -5.8814/-6.403). (b) monitoring TE 기준선: KEEP EWMA-direct — lw_nls 가 univariate EWMA-direct 를 유의 초과 못함(capw/te DM-t -1.2363 tie / ew DM-t -0.5425 tie). NP4 위험-축 우위는 '퇴화 incumbent 대비' 참이나 '직접 EWMA 대비'는 아님.",
+  "scored_set": {
+    "common": [201101, 202606],
+    "n_common": 186,
+    "structural_fullset_n": 198,
+    "ewma_lambda": 0.94,
+    "note": "공통 4-arm 셋은 ewma_direct 12m warmup 바인딩(201101~202606)"
+  },
+  "sigma_diagnostics": {
+    "lw_linear": {
+      "arm": "lw_linear",
+      "cond_median": 1,
+      "min_ev_median": 0.021384,
+      "psd_rate": 1
+    },
+    "lw_nls": {
+      "arm": "lw_nls",
+      "cond_median": 98.14,
+      "min_ev_median": 0.009889,
+      "psd_rate": 1
+    },
+    "ewma_struct": {
+      "arm": "ewma_struct",
+      "cond_median": "Inf",
+      "min_ev_median": -0,
+      "psd_rate": 1
+    }
+  },
+  "arms": {
+    "capw_te": {
+      "lw_linear": {
+        "mean_qlike": 0.38859,
+        "rmse_vol_ann": 0.08321,
+        "median_pred_vol_ann": 0.1812,
+        "mz_a": 0.001024,
+        "mz_b": 1.119,
+        "mz_r2": 0.0476
+      },
+      "lw_nls": {
+        "mean_qlike": 0.24376,
+        "rmse_vol_ann": 0.07221,
+        "median_pred_vol_ann": 0.1886,
+        "mz_a": 0.0011,
+        "mz_b": 0.9367,
+        "mz_r2": 0.1495
+      },
+      "ewma_struct": {
+        "mean_qlike": 0.27106,
+        "rmse_vol_ann": 0.11264,
+        "median_pred_vol_ann": 0.2807,
+        "mz_a": 0.001833,
+        "mz_b": 0.2982,
+        "mz_r2": 0.2397
+      },
+      "ewma_direct": {
+        "mean_qlike": 0.29666,
+        "rmse_vol_ann": 0.08029,
+        "median_pred_vol_ann": 0.2039,
+        "mz_a": 0.001737,
+        "mz_b": 0.6096,
+        "mz_r2": 0.0352
+      }
+    },
+    "ew_te": {
+      "lw_linear": {
+        "mean_qlike": 0.50692,
+        "rmse_vol_ann": 0.08128,
+        "median_pred_vol_ann": 0.1503,
+        "mz_a": 0.000351,
+        "mz_b": 1.6858,
+        "mz_r2": 0.072
+      },
+      "lw_nls": {
+        "mean_qlike": 0.22918,
+        "rmse_vol_ann": 0.06619,
+        "median_pred_vol_ann": 0.1773,
+        "mz_a": 0.000836,
+        "mz_b": 1.008,
+        "mz_r2": 0.0871
+      },
+      "ewma_struct": {
+        "mean_qlike": 0.33509,
+        "rmse_vol_ann": 0.11211,
+        "median_pred_vol_ann": 0.287,
+        "mz_a": 0.000887,
+        "mz_b": 0.3774,
+        "mz_r2": 0.1536
+      },
+      "ewma_direct": {
+        "mean_qlike": 0.24408,
+        "rmse_vol_ann": 0.06942,
+        "median_pred_vol_ann": 0.1966,
+        "mz_a": 0.001124,
+        "mz_b": 0.7739,
+        "mz_r2": 0.0314
+      }
+    },
+    "capw_total": {
+      "lw_linear": {
+        "mean_qlike": 2.10005,
+        "rmse_vol_ann": 0.18176,
+        "median_pred_vol_ann": 0.149,
+        "mz_a": -0.000265,
+        "mz_b": 4.1113,
+        "mz_r2": 0.0604
+      },
+      "lw_nls": {
+        "mean_qlike": 0.41283,
+        "rmse_vol_ann": 0.12115,
+        "median_pred_vol_ann": 0.2432,
+        "mz_a": -0.000156,
+        "mz_b": 1.4871,
+        "mz_r2": 0.2168
+      },
+      "ewma_struct": {
+        "mean_qlike": 0.32922,
+        "rmse_vol_ann": 0.14771,
+        "median_pred_vol_ann": 0.3529,
+        "mz_a": 0.001572,
+        "mz_b": 0.51,
+        "mz_r2": 0.293
+      },
+      "ewma_direct": {
+        "mean_qlike": 0.37484,
+        "rmse_vol_ann": 0.12614,
+        "median_pred_vol_ann": 0.2733,
+        "mz_a": -0.003433,
+        "mz_b": 1.6886,
+        "mz_r2": 0.1475
+      }
+    },
+    "ew_total": {
+      "lw_linear": {
+        "mean_qlike": 5.70597,
+        "rmse_vol_ann": 0.20393,
+        "median_pred_vol_ann": 0.1006,
+        "mz_a": -0.000526,
+        "mz_b": 9.1281,
+        "mz_r2": 0.0252
+      },
+      "lw_nls": {
+        "mean_qlike": 0.4785,
+        "rmse_vol_ann": 0.12147,
+        "median_pred_vol_ann": 0.2333,
+        "mz_a": 0.000588,
+        "mz_b": 1.302,
+        "mz_r2": 0.1143
+      },
+      "ewma_struct": {
+        "mean_qlike": 0.38933,
+        "rmse_vol_ann": 0.14933,
+        "median_pred_vol_ann": 0.3701,
+        "mz_a": -0.001383,
+        "mz_b": 0.7278,
+        "mz_r2": 0.2431
+      },
+      "ewma_direct": {
+        "mean_qlike": 0.37257,
+        "rmse_vol_ann": 0.11963,
+        "median_pred_vol_ann": 0.2638,
+        "mz_a": -0.003462,
+        "mz_b": 1.7807,
+        "mz_r2": 0.1078
+      }
+    }
+  },
+  "paired_tests": {
+    "capw_te": {
+      "a_lwnls_vs_lwlinear": {
+        "pair": "lw_nls - lw_linear",
+        "mean_qlike_diff": -0.14482,
+        "dm_nw_t_lag3": -3.0569,
+        "n": 186,
+        "verdict": "lw_nls_better"
+      },
+      "lwnls_vs_ewma_struct": {
+        "pair": "lw_nls - ewma_struct",
+        "mean_qlike_diff": -0.02729,
+        "dm_nw_t_lag3": -0.5548,
+        "n": 186,
+        "verdict": "tie"
+      },
+      "b_lwnls_vs_ewma_direct": {
+        "pair": "lw_nls - ewma_direct",
+        "mean_qlike_diff": -0.0529,
+        "dm_nw_t_lag3": -1.2363,
+        "n": 186,
+        "verdict": "tie"
+      }
+    },
+    "ew_te": {
+      "a_lwnls_vs_lwlinear": {
+        "pair": "lw_nls - lw_linear",
+        "mean_qlike_diff": -0.27774,
+        "dm_nw_t_lag3": -3.5092,
+        "n": 186,
+        "verdict": "lw_nls_better"
+      },
+      "lwnls_vs_ewma_struct": {
+        "pair": "lw_nls - ewma_struct",
+        "mean_qlike_diff": -0.10591,
+        "dm_nw_t_lag3": -2.2476,
+        "n": 186,
+        "verdict": "lw_nls_better"
+      },
+      "b_lwnls_vs_ewma_direct": {
+        "pair": "lw_nls - ewma_direct",
+        "mean_qlike_diff": -0.0149,
+        "dm_nw_t_lag3": -0.5425,
+        "n": 186,
+        "verdict": "tie"
+      }
+    },
+    "capw_total": {
+      "a_lwnls_vs_lwlinear": {
+        "pair": "lw_nls - lw_linear",
+        "mean_qlike_diff": -1.68722,
+        "dm_nw_t_lag3": -5.8814,
+        "n": 186,
+        "verdict": "lw_nls_better"
+      },
+      "lwnls_vs_ewma_struct": {
+        "pair": "lw_nls - ewma_struct",
+        "mean_qlike_diff": 0.08361,
+        "dm_nw_t_lag3": 0.9133,
+        "n": 186,
+        "verdict": "tie"
+      },
+      "b_lwnls_vs_ewma_direct": {
+        "pair": "lw_nls - ewma_direct",
+        "mean_qlike_diff": 0.03799,
+        "dm_nw_t_lag3": 0.4787,
+        "n": 186,
+        "verdict": "tie"
+      }
+    },
+    "ew_total": {
+      "a_lwnls_vs_lwlinear": {
+        "pair": "lw_nls - lw_linear",
+        "mean_qlike_diff": -5.22747,
+        "dm_nw_t_lag3": -6.403,
+        "n": 186,
+        "verdict": "lw_nls_better"
+      },
+      "lwnls_vs_ewma_struct": {
+        "pair": "lw_nls - ewma_struct",
+        "mean_qlike_diff": 0.08917,
+        "dm_nw_t_lag3": 0.766,
+        "n": 186,
+        "verdict": "tie"
+      },
+      "b_lwnls_vs_ewma_direct": {
+        "pair": "lw_nls - ewma_direct",
+        "mean_qlike_diff": 0.10593,
+        "dm_nw_t_lag3": 1.1868,
+        "n": 186,
+        "verdict": "tie"
+      }
+    },
+    "structural_fullset_te": {
+      "capw": {
+        "a_lwnls_vs_lwlinear": {
+          "pair": "lw_nls - lw_linear",
+          "mean_qlike_diff": -0.14274,
+          "dm_nw_t_lag3": -3.2021,
+          "n": 198,
+          "verdict": "lw_nls_better"
+        },
+        "lwnls_vs_ewma_struct": {
+          "pair": "lw_nls - ewma_struct",
+          "mean_qlike_diff": -0.02653,
+          "dm_nw_t_lag3": -0.5739,
+          "n": 198,
+          "verdict": "tie"
+        }
+      },
+      "ew": {
+        "a_lwnls_vs_lwlinear": {
+          "pair": "lw_nls - lw_linear",
+          "mean_qlike_diff": -0.25817,
+          "dm_nw_t_lag3": -3.4365,
+          "n": 198,
+          "verdict": "lw_nls_better"
+        },
+        "lwnls_vs_ewma_struct": {
+          "pair": "lw_nls - ewma_struct",
+          "mean_qlike_diff": -0.11789,
+          "dm_nw_t_lag3": -2.6306,
+          "n": 198,
+          "verdict": "lw_nls_better"
+        }
+      }
+    }
+  },
+  "mechanism_diagnosis": {
+    "lw_linear_degeneracy_poisons_all": "incumbent linear LW 는 p>n 에서 ρ-cap→1 로 Σ≈μI (cond 중앙값 1.00, 상관구조 전멸). 이는 TE 뿐 아니라 25종 총분산 sub-block 까지 대각화 → 총분산 QLIKE 폭발(capw 2.10 / ew 5.71, 예측 vol 0.149/0.101 vs 실현 0.253/0.230, ~40% 과소예측). '대형 Σ 하나로 total·TE 다 읽는' risk_package 관례에선 total 도 오염 — 사전등록 'total 은 arm 수렴' 가설은 이 소비형태에서 부분 반증(FQ-057 incumbent_finding 실증 강화).",
+    "lw_nls_best_calibrated": "lw_nls cond 중앙값 98.1·PSD 100%·full-rank. MZ slope b: TE capw 0.937/ew 1.008(~1 완벽 캘리브), total 1.487/1.302(고변동월 소폭 과소). 예측 vol 이 실현에 최근접(TE 0.187/0.177 vs 실현 0.187/0.184). QLIKE 전 4셀 최저 또는 tie-최저 → NP4 위험-축 우위가 forecast-accuracy 로 확증.",
+    "ewma_struct_shape_not_level": "RiskMetrics 다변량 EWMA 는 p>n 특이(cond Inf) — 예측 vol 과대(0.28~0.37, ~40% 과대예측)이나 vol-clustering 시변을 최고로 추적(MZ r2 TE 0.24·total 0.29 최고). QLIKE 는 과대예측을 과소예측보다 덜 벌하므로 total 에서 lw_nls 와 tie(형태는 좋으나 레벨 미스캘리브) — RMSE(vol)로는 lw_nls 가 명확 우월(0.121 vs 0.148).",
+    "ewma_direct_competitive_for_single_port_te": "univariate EWMA-direct(포트 자기 실현 TE 의 λ-EWMA)는 구조 Σ 불요인데도 capw/te QLIKE 0.297·ew/te 0.244 로 lw_nls(0.244/0.229)와 통계적 tie(DM-t -1.24/-0.54). 한 포트의 자기 TE 추적엔 직접법이 구조모델을 이기기 어렵다 = monitoring TE 기준선은 EWMA 유지가 합리(단순·⑧행 확정).",
+    "risk_axis_only": "NP4 평균-축 NULL 과 정합: Σ 품질은 분산-축 레버. 단 그 위험-축 우위조차 '누가 대상인가'에 조건적 — 퇴화 incumbent·다변량 EWMA 대비는 유의 우월(risk_package), 단일-포트 직접 EWMA 대비는 tie(monitoring)."
+  },
+  "consumption_recommendation": {
+    "risk_package": {
+      "adopt": true,
+      "target": "대형-유니버스(p>n) cross-sectional Σ / TE 예측 입력",
+      "basis": "TE-분산 QLIKE: lw_nls < linear LW, DM-t capw -3.0569 / ew -3.5092 (동일방향), 총분산 DM-t -5.8814/-6.403 · PSD 100%·cond 98 · MZ b≈1. linear LW 는 p>n 에서 μI 퇴화라 대형 Σ 소비 금지(incumbent 가드 재확인) — lw_nls(NP3 등재)가 대체.",
+      "scope_caveat": "p≤25 소-유니버스 Σ 에서는 linear LW 비퇴화·무해(가드 attr 기존). 본 권고는 p>n 대형 Σ 소비자 한정."
+    },
+    "monitoring": {
+      "adopt": false,
+      "keep": "EWMA-direct (univariate 실현-TE λ-EWMA, ⑧행 확정 후보 유지)",
+      "basis": "lw_nls-예측 TE 가 EWMA-direct 를 유의 초과 못함(capw/te DM-t -1.2363 · ew/te -0.5425, 둘 다 tie). 단일 포트 자기 TE 추적은 직접법이 이미 충분·더 단순. λ 튜닝은 EWMA 를 더 유리하게만 하므로 KEEP 보수적으로 강건.",
+      "caveat": "ewma_struct(다변량)의 형태-추적 r2 우위는 regime-timed TE 경보엔 잠재 가치 — next_probe."
+    }
+  },
+  "limitations": [
+    "벤치 = cap-w over elig(유동성·60m-완전 members) — 실 index 아님. 단 예측/실현 동일 벤치·paired DM 는 벤치 선택 불변(arm 상대비교 robust).",
+    "실현분산 = 홀딩월 일간 제곱합(월간 Σ 예측과 스케일 정합은 lw_nls MZ b≈0.94~1.01 로 실증). paired 비교는 공통 realized 라 스케일 불변.",
+    "capw_tilt_top25 = book FORM proxy(cap-w LinearTilt top-25), 실 production STR_1715 홀딩/스코어 아님 — anachronism·저장패널 look-ahead caveat 회피(의도적).",
+    "현 book 보유 active weights(book_state) 고정벡터 short-window 판독은 미실시 — form proxy 로 대체(next_probe).",
+    "lw_linear 총분산 오염은 '대형 Σ 하나 소비' 전제 하 — 25-only Σ 별도 추정 시 비퇴화(본 라운드 scope=대형 Σ, FQ-057 incumbent_finding 정합).",
+    "ewma λ=0.94 사전고정(RiskMetrics canonical); 0.97 은 KEEP 방향 강화라 미보고(보수적).",
+    "MVP/포트는 진단 instrument(FQ-057 관례) — allocation 제안 아님(role boundary)."
+  ],
+  "next_probes": [
+    {
+      "id": "P1a",
+      "title": "tier-factor Σ (NP2) vs lw_nls TE-forecast A/B",
+      "detail": "risk_research_init base frame Σ=BΩB'+D (market+tier+size factors, PSD by construction)를 동일 QLIKE 하네스로 lw_nls 와 비교 — 구조 Σ 가 lw_nls 를 넘는지(FQ-057 NP2 sanctioned path)."
+    },
+    {
+      "id": "P1b",
+      "title": "regime-conditional TE: ewma_struct/GARCH 형태-추적을 monitoring 경보에",
+      "detail": "ewma_struct MZ r2(TE 0.24) 우위는 vol-clustering 추적 — CRISIS 진입 TE 급증 조기경보에 잠재. lw_nls(레벨) + ewma_struct(형태) 결합 예측이 QLIKE 개선하는지 실측."
+    },
+    {
+      "id": "P1c",
+      "title": "현 book 고정 active vector predicted-vs-realized short-window",
+      "detail": "book_state 현 홀딩 active 벡터를 최근 60m 고정 판독 — form proxy 결론(ADOPT/KEEP)이 실 book 구성에서도 유지되는지 확인(small-n honest caveat)."
+    },
+    {
+      "id": "P1d",
+      "title": "risk_package 배선: .get_cor_cov('lw_nls') 대형-유니버스 소비 경로 + cap_tier_decomposition 동시산출",
+      "detail": "ADOPT 결정 실배선 — WT-시점 risk_package 가 p>n 유니버스 Σ 에서 lw_nls 를 기본 소비하고 predicted TE 를 emit, EWMA-direct 를 monitoring 대조로 병기."
+    }
+  ],
+  "revival_or_followup_conditions": [
+    "monitoring lw_nls-TE 채택 재검토: tier-factor/GARCH 결합이 EWMA-direct 를 QLIKE 유의 초과(DM-t≤-2) 시(P1b).",
+    "risk_package lw_nls 소비는 WT-시점 posterior-driven Σ 이원화(§v83) 하에서 대형-유니버스 경로에 한해 default — NP3 등재 유지가 전제.",
+    "engine: turnover_penalty 미배선(NP4 task_89b2050e)·HHI max_names 누출(task_1b9e50a3) 수리는 optimizer lane 소관(위험 예측 판정과 무관)."
+  ],
+  "self_adversarial": {
+    "accept": [
+      "form proxy ≠ production book 명시(P1c 로 보완)",
+      "현 book 고정벡터 판독 미실시 인정"
+    ],
+    "partial": [
+      "벤치 risk-universe 제한(paired 불변으로 verdict robust)",
+      "total 오염은 대형-Σ-소비 전제(scope 명시)"
+    ],
+    "rebuttal": [
+      "스케일 정합 = lw_nls MZ b≈1 실증",
+      "λ=0.94 고정은 KEEP 방향 보수 강화",
+      "QLIKE=Patton 2011 표준 robust loss·TE-레벨 경보에 decision-appropriate"
+    ]
+  },
+  "artifacts": {
+    "runner_dir": "04_Research/method_frontier/fq057_p1_risk_accuracy/",
+    "preregistration": "stage_artifacts/method_frontier/p1_preregistration.json",
+    "pairs": "stage_artifacts/method_frontier/p1_pairs.parquet",
+    "sigma_diag": "stage_artifacts/method_frontier/p1_sigma_diag.parquet",
+    "metrics": "stage_artifacts/method_frontier/p1_metrics.json",
+    "daily": "stage_artifacts/method_frontier/p1_daily_returns.parquet",
+    "challenge_note": "stage_artifacts/method_frontier/p1_challenge_note.md",
+    "charts": ["C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/method_frontier/p1_chart_predvol_capw_te.png", "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/method_frontier/p1_chart_qlike_bars.png", "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/method_frontier/p1_sweep_qlike_te.png"]
+  }
+}
