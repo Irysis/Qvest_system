@@ -127,10 +127,49 @@ TESTS = [
 ]
 
 
+# ── 실블록 재현(영구 회귀): 07-17 19:28 FP(텔레그램 브리핑) / 07-15 07:33 TP(완결 프레이밍) ──
+FP_19_28_TURN = (
+    "검증 로직의 면제 목록을 확인합니다.\n"
+    "✅ 텔레그램 발송 완료했습니다 (`ok=TRUE`, 3,190 bytes).\n\n"
+    "**발송 내용 — Qvest v8.3 최신 아키텍처 총정리**:\n"
+    "- **요약**: 리서치 모드 4개가 전략을 생산하고, 실측 관문 3종 통과분만 자본 자격을 얻는 구조\n"
+    "- **쉬운 설명 섹션** (v7 원칙 8-② 의무): 구조·검증·관문·현황 각 1줄 평문\n"
+    "- **리서치 모드 4개**: ① QEPM 6-에이전트 풀파이프라인 ② alpha-search 경량 검증 "
+    "③ factor-rotation 국면배합 ④ RAMP 팩터배분 — 생산/소비 lifecycle 구분 포함\n"
+    "- **자본 졸업 관문**: 다중검정 t값 ≥2.95 · 표본외 유지율 ≥0.7 · 칼마 ≥0.64 + 운용 제약"
+    "(25종목·long-only·15bps)\n"
+    "- **거버넌스 최근 강화**: 실측-only, dual-basis 진단(v8.3), 연속성 방화벽(07-15), "
+    "production 코드 기준 권위(07-14)\n"
+    "- **현재 방향**: SR 2.5 목표, PIT 제1목표, 비-수익률 원천 주력(DART 임원거래 등) + screen-tier 회수\n\n"
+    "용어 풀이 footer는 `tg_agent_brief()`가 자동 부착했고, 아키텍처 상태 정리(신규 실측 수치 없음)라 "
+    "차트 의무는 면제 대상입니다. 발송 스크립트는 scratchpad에 있어 프로젝트 산출물을 오염시키지 않았습니다."
+)
+TP_07_33_TURN = (
+    "R45 판정 — **근원 규명, 그리고 반전**: stored Ret이 **참값**이고, \"stored 오염 의심\"이 "
+    "뒤집혔습니다. recompute(Close/전일Close−1)가 결측 거래일(hole)을 gap 넘어 stale 값으로 계산한 "
+    "artifact였습니다 — 196 종목-일 전부 비-유니버스(4월 이음매 잔여 + 소형 seam)이고, stored Ret은 "
+    "물리타당 100%입니다. **factor_db는 stored Ret을 직접 소비하므로 오염 아님**, 현 북 7팩터는 "
+    "유니버스 필터로 196건 미선택 → **라이브 factor 영향 ZERO 확정**.\n\n"
+    "데이터 무결성 라인(R42~R45)이 라이브 완전 무영향으로 완결됐습니다. 무결성 배선을 완성하는 "
+    "R46(Close 연속성 tripwire + firewall 정련)을 발사합니다:\n"
+    "밤샘 데이터 무결성 라인(R42~R46)이 라이브 완전 무영향 + stored Ret 참값 규명으로 완결 중입니다. "
+    "이 발견은 재사용 지식이라 메모리에 등재합니다."
+)
+REPLAY_TESTS = [
+    # (name, text, expect_block, marker, verdict_artifact)
+    ("RP_fp_20260717_1928_briefing_no_artifact", FP_19_28_TURN, False, None, False),
+    ("RP_fp_20260717_1928_briefing_if_verdict_turn", FP_19_28_TURN, True, None, True),
+    ("RP_tp_20260715_0733_finality_ops_turn", TP_07_33_TURN, True, None, False),
+    ("RP_tp_20260715_0733_finality_verdict_turn", TP_07_33_TURN, True, None, True),
+]
+
+
 def main():
     fails = []
-    for name, text, expect_block, marker in TESTS:
-        res = judge(text, marker=marker)
+    for t in TESTS + REPLAY_TESTS:
+        name, text, expect_block, marker = t[0], t[1], t[2], t[3]
+        va = t[4] if len(t) > 4 else None
+        res = judge(text, marker=marker, verdict_artifact=va)
         got = res["block"]
         ok = (got == expect_block)
         tag = "PASS" if ok else "**FAIL**"
@@ -149,6 +188,22 @@ def main():
     p0 = G._count_next_probes("결과를 정리했습니다.")
     assert not p0["ok"], "no next_probe should be not-ok"
     print("count_next_probes none:", p0)
+
+    # C3 유닛: suppression 문맥 구절 추출 + 마스킹(양방향 루프) — registry 무변경 순수함수만
+    ph = G._context_phrases("자본 졸업 관문 3종과 screen-tier 회수 방향을 정리했습니다", "screen-tier")
+    assert ph and all("screen-tier" in x and len(x) > len("screen-tier") + 3 for x in ph), \
+        "context phrase must carry token + context"
+    print("context_phrases:", ph)
+    fake_cases = {"suppressions": [{"token": "screen-tier", "phrase": ph[0]}]}
+    masked = G._apply_suppressions("보고: 자본 졸업 관문 3종과 screen-tier 회수 방향을 정리했습니다", fake_cases)
+    assert "screen-tier" not in masked, "suppression phrase must mask the token"
+    bare = G._apply_suppressions("screen-tier 확정", {"suppressions": [{"token": "screen-tier", "phrase": "screen-tier"}]})
+    assert "screen-tier" in bare, "bare-token suppression must be rejected (min-length guard)"
+    print("suppression masking: ok (bare-token guard ok)")
+    hint_fp = G._triage_hint("R34 측정 중입니다. 다음 큐: FQ-038.", CASES)
+    hint_tp = G._triage_hint("이 계열은 종착입니다. 재시도 가치 없음.", CASES)
+    assert hint_fp.startswith("FP성") and hint_tp.startswith("TP성"), "triage hints must separate FP/TP"
+    print("triage hints: FP=", hint_fp[:30], "... / TP=", hint_tp[:30], "...")
 
     print("\n" + "=" * 56)
     if fails:
