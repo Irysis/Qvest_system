@@ -1,0 +1,58 @@
+{
+  "l_code": "L-AR-20260718_212326",
+  "strategy_id": "WT-D20260718_001_crash_aware_momentum",
+  "grade": "F",
+  "core_reference": "stage_artifacts/WT_D20260718_001/alpha_validation.json + challenge_note.md + alpha_package.json",
+  "lesson_text": "WT-D20260718_001 (FQ-058 P3 승격, 2026-07-18, pin wt_d20260718_001_20260718_205815): crash-aware momentum SELECTION(종목-레벨 하방위험 페널티 횡단면 감점, score=z(mom_12_1)-lambda*z(crash)) = config-scoped NEGATIVE terminal. 페널티 축 4종(downside_beta/downside_semivol/crash_exposure/ncskew)+composite, lambda 4수준, 197m walk-forward, canonical cap-w PORT_t 1급. 판정: (1) 사전등록 primary(crash penalty가 momentum alpha 보존하며 drawdown 개선)=OOS 실패 — 20변형 전부 OOS PORT_t<base(-0.074), IS-best(composite l=1.0 IS calmar 0.618)=OOS-worst(-1.02) 명백 과적합. (2) 유일 MDD 레버=downside_semivol=위장 de-risking(저변동 tilt) — calmar 0.51->0.522 미미 개선을 momentum premium 비례 희생으로만(OOS alpha -0.074->-0.146). 진짜 crash-risk 축(downside_beta OOS -0.51/ncskew -0.257)은 무효 → momentum crash=ex-ante 종목식별 불가한 common-factor 사건. (3) base momentum 자체 OOS-dead(cap-w PORT_t 1.909<2.95, OOS -0.074, post-2020 KR momentum decay) → 자본 graduation 불가. dual-basis: base EW-uni +2.28 vs cap-w 1.909, cap-tier 91% OTHER(small-cap), treatment 양 basis 공히 base 열위 → cap-w 아티팩트 아님. AX-001 v2 조건부: crisis-loss 소폭 감소하나 bad_sr(~-3.1) 불변·premium 훼손 상쇄 → 방어 sleeve 미달(de-risking이지 crash-avoidance 아님). ★FQ-058 확장 확인: long-only momentum structural DD의 free MDD 레버는 weighting(FQ-058)도 selection(본 WT)도 아니며 유일 실증 레버는 overlay/timing. ★부수 발견: 벤치 look-ahead 버그(contemporaneous 월말 시총 가중=winner-overweight, 초안 CAGR 22.5%)를 측정 중 자가적발·Return.portfolio lagged로 정정(10.79%, FQ-058 재현). FQ-058/FQ-057 P1은 이미 Return.portfolio(clean) 검증 확인. risk-research 미진행(v8.3 M1 조기종결). next_probe: P1 regime-conditional semivol de-risking(CRISIS 국면-only=overlay/timing 수렴, PIT C5)·P3 바인딩 제약=momentum decay 자체→비-return 원천 라우팅.",
+  "tags": "QEPM,WT,MOMENTUM,CRASH,SELECTION,FQ-058-P3,BENCH-LOOKAHEAD",
+  "created_at": "2026-07-18",
+  "research_mode": "alpha_research",
+  "created_by": "emit:alpha_research",
+  "metric_type": "canonical_screen",
+  "construction_type": "single_factor_long_only",
+  "mechanism_hypothesis": "long-only 모멘텀 크래시는 고-모멘텀 winner의 동반 급락(systematic common-factor)이라 ex-ante 종목-레벨 하방위험 지표로 crash 종목을 개별 식별 불가 — 페널티가 잡는 것은 crash-avoidance가 아니라 저변동 de-risking(premium 비례 희생). Daniel-Moskowitz short-leg 반등 기전은 long-only 비적용. MDD 레버는 selection이 아니라 timing(국면 스케일링, Barroso-Santa-Clara)에만 존재.",
+  "lcode_schema_version": 2,
+  "pin_tag": "wt_d20260718_001_20260718_205815",
+  "base_full_port_t": 1.909,
+  "base_oos_port_t": -0.074,
+  "base_calmar": 0.51,
+  "best_defensive_semivol_oos": -0.146,
+  "downside_beta_oos": -0.51,
+  "ncskew_oos": -0.257,
+  "dual_basis_ew_uni": 2.28,
+  "cap_tier_other_pct": 91,
+  "note": "grade F=자본 미달(terminal negative). portfolio_alpha_t=base 1.909(<2.95)·oos_retention=base OOS PORT_t 음수. metric_type=canonical_screen",
+  "falsification_attempts": [
+    {
+      "test": "4 crash 축 개별 + composite × 4 lambda (20변형)",
+      "result": "falsified",
+      "effect_retained": "전부 OOS PORT_t<base"
+    },
+    {
+      "test": "dual-basis(EW-uni·cap-tier 분해)",
+      "result": "survived",
+      "effect_retained": "양 basis 공히 treatment<base = cap-w 아티팩트 아님"
+    },
+    {
+      "test": "IS(65%)-only lambda 선택 후 OOS 확인",
+      "result": "falsified",
+      "effect_retained": "IS-best=OOS-worst 과적합 노출"
+    },
+    {
+      "test": "AX-001 v2 조건부(crisis_alpha·bad/normal IC)",
+      "result": "falsified",
+      "effect_retained": "crisis-loss 미미↓·bad_sr 불변=de-risking, sleeve 미달"
+    },
+    {
+      "test": "벤치 look-ahead 자가적발(contemporaneous→lagged)",
+      "result": "survived",
+      "effect_retained": "정정 후 FQ-058 재현, 판정 무결성 확보"
+    }
+  ],
+  "oos_retention": -0.074,
+  "oos_months": 69,
+  "portfolio_alpha_t": 1.909,
+  "selection_type": "chain",
+  "family": "momentum_crash_selection",
+  "record_type": "performance"
+}
