@@ -2,7 +2,7 @@
   "metric_type": "diagnostic_monitoring",
   "window": "36m ~2026-06",
   "source": "KRX OPEN API 실지수 월말 (krx_index_monthend.parquet)",
-  "note": "y = 지수 월수익 - CD91월할, X = KR FF5. 교차검증: KRX 코스피200 vs IKS200 benchmark",
+  "note": "FF5: y=지수월수익-CD91, X=KR FF5 다변량 / SB: 스타일별 이변량(MKT 통제). 교차검증: KRX 코스피200 vs IKS200",
   "betas": {
     "KOSPI200": {
       "MKT": 1.025,
@@ -39,5 +39,49 @@
     "KOSPI": "RMW +0.15",
     "KOSDAQ": "RMW -1.35"
   },
-  "generated_at": "2026-07-18T17:50:04+0900"
+  "sb_betas": {
+    "KOSPI200": {
+      "VAL": -0.147,
+      "QUAL": 0.046,
+      "MOM": 0.303,
+      "LOWVOL": -0.198,
+      "SIZE": -0.171,
+      "DIV": -0.195,
+      "EREV": 0.437
+    },
+    "KOSDAQ150": {
+      "VAL": 0.456,
+      "QUAL": -0.263,
+      "MOM": -1.022,
+      "LOWVOL": 0.867,
+      "SIZE": 0.745,
+      "DIV": 0.639,
+      "EREV": -1.927
+    },
+    "KOSPI": {
+      "VAL": -0.035,
+      "QUAL": 0.011,
+      "MOM": 0.076,
+      "LOWVOL": -0.083,
+      "SIZE": -0.075,
+      "DIV": -0.054,
+      "EREV": 0.16
+    },
+    "KOSDAQ": {
+      "VAL": 0.533,
+      "QUAL": -0.229,
+      "MOM": -1.041,
+      "LOWVOL": 0.697,
+      "SIZE": 0.734,
+      "DIV": 0.675,
+      "EREV": -1.529
+    }
+  },
+  "sb_top": {
+    "KOSPI200": "이익전망수정 +0.44",
+    "KOSDAQ150": "이익전망수정 -1.93",
+    "KOSPI": "이익전망수정 +0.16",
+    "KOSDAQ": "이익전망수정 -1.53"
+  },
+  "generated_at": "2026-07-18T17:53:40+0900"
 }

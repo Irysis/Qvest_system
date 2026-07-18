@@ -65,10 +65,25 @@ if (is.null(FF) || !nrow(FF)) { cat("[ff5_brief] FF 시리즈 없음 — skip\n"
   }
   ## 지수 팩터 민감도 (도훈 지시 07-18)
   ib <- tryCatch(jsonlite::fromJSON("outputs/ff5_kr/index_factor_beta.json"), error = function(e) NULL)
-  if (!is.null(ib) && !is.null(ib$top_nonmkt)) {
-    sections[[length(sections) + 1]] <- list(heading = "지수 팩터 민감도 (36개월 베타·비시장 최대)", type = "kv",
-      kv = setNames(as.list(unlist(ib$top_nonmkt)), c("코스피200", "코스닥150", "코스피", "코스닥")))
+  if (!is.null(ib) && !is.null(ib$betas)) {
+    bn <- c(KOSPI200 = "코스피200", KOSDAQ150 = "코스닥150", KOSPI = "코스피", KOSDAQ = "코스닥")
+    ## 전체 프로파일 표기 (도훈 정정 07-18 — "RMW만 나옴": 최대 1개 → 4팩터 전체)
+    items_ff <- vapply(names(bn), function(ix) { b <- ib$betas[[ix]]
+      sprintf("%s: SMB %+.2f · HML %+.2f · RMW %+.2f · CMA %+.2f (MKT %.2f)",
+              bn[ix], b$SMB, b$HML, b$RMW, b$CMA, b$MKT) }, character(1))
+    sections[[length(sections) + 1]] <- list(heading = "지수 팩터 민감도 (FF5·36개월 베타)",
+                                             type = "bullet", items = unname(items_ff))
     charts <- c(charts, "outputs/ff5_kr/charts/index_factor_beta.png")
+    if (!is.null(ib$sb_betas)) {
+      krs <- c(VAL = "가치", QUAL = "퀄리티", MOM = "모멘텀", LOWVOL = "저변동성",
+               SIZE = "소형주", DIV = "고배당", EREV = "이익전망수정")
+      items_sb <- vapply(names(bn), function(ix) { v <- unlist(ib$sb_betas[[ix]]); o <- order(-abs(v))[1:2]
+        sprintf("%s: %s %+.2f · %s %+.2f (상위 2)", bn[ix],
+                krs[names(v)[o[1]]], v[o[1]], krs[names(v)[o[2]]], v[o[2]]) }, character(1))
+      sections[[length(sections) + 1]] <- list(heading = "지수 스마트베타 민감도 (36개월·시장통제)",
+                                               type = "bullet", items = unname(items_sb))
+      charts <- c(charts, "outputs/ff5_kr/charts/index_smartbeta_beta.png")
+    }
   }
   sections[[length(sections) + 1]] <- list(heading = "국면 판독", type = "bullet", items = c(
     sprintf("현 국면: %s", regime_line),

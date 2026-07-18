@@ -65,10 +65,49 @@ legend(x = par("usr")[2] + diff(par("usr")[1:2]) * 0.01, y = par("usr")[4],
 dev.off()
 wf("chart written: index_factor_beta.png")
 
+## ── 지수 x 스마트베타 7스타일 민감도 (도훈 지시 07-18 — 시장통제 이변량) ──
+## 설계: 7스타일 동시회귀는 공선성 왜곡 → 스타일별 lm(지수초과 ~ MKT + style_active) 계수.
+SBm <- as.data.table(read_parquet("outputs/smartbeta_kr/smartbeta_kr_monthly.parquet")); setorder(SBm, ym)
+sty <- c("VAL", "QUAL", "MOM", "LOWVOL", "SIZE", "DIV", "EREV")
+KRS <- c(VAL = "가치컴포지트", QUAL = "퀄리티(fROE)", MOM = "모멘텀", LOWVOL = "저변동성",
+         SIZE = "소형주", DIV = "고배당", EREV = "이익전망수정")
+D2 <- merge(D, SBm[, c("ym", sty), with = FALSE], by = "ym")
+SB_B <- matrix(NA_real_, nrow = length(IDXN), ncol = length(sty), dimnames = list(IDXN, sty))
+for (ix in IDXN) for (st in sty) {
+  ok <- complete.cases(D2[[ix]], D2$MKT, D2[[st]])
+  if (sum(ok) >= 30) {
+    m2 <- lm(D2[[ix]][ok] - D2$rf_m[ok] ~ D2$MKT[ok] + D2[[st]][ok])
+    SB_B[ix, st] <- round(coef(m2)[3], 3)
+  }
+}
+SB_TOPS <- lapply(IDXN, function(ix) { v <- SB_B[ix, ]; top <- names(v)[which.max(abs(v))]
+  sprintf("%s %+.2f", KRS[top], v[top]) })
+names(SB_TOPS) <- IDXN
+for (ix in IDXN) wf("%-10s SB-beta: %s | 최대 %s", ix, paste(sprintf("%s %+.2f", sty, SB_B[ix, ]), collapse = " "), SB_TOPS[[ix]])
+
+## 차트 2: 4지수 x 7스타일 베타 히트맵
+brk2 <- max(abs(SB_B), na.rm = TRUE)
+pal2 <- colorRampPalette(c("#2166AC", "#F7F7F7", "#B2182B"))(64)
+png(file.path(OUT_DIR, "charts", "index_smartbeta_beta.png"), width = 1250, height = 440)
+par(mar = c(7, 8, 3.5, 2), cex.main = 1.45)
+Hm2 <- SB_B[rev(seq_len(nrow(SB_B))), , drop = FALSE]
+image(x = seq_len(ncol(SB_B)), y = seq_len(nrow(SB_B)), z = t(Hm2), col = pal2, zlim = c(-brk2, brk2),
+      axes = FALSE, xlab = "", ylab = "",
+      main = sprintf("지수 x 스마트베타 민감도 — trailing 36개월·시장통제 베타 (~%s)", max(D2$ym)))
+axis(2, at = seq_len(nrow(SB_B)), labels = KRL[rev(rownames(SB_B))], las = 1, tick = FALSE, cex.axis = 1.25)
+axis(1, at = seq_len(ncol(SB_B)), labels = KRS[colnames(SB_B)], las = 2, tick = FALSE, cex.axis = 1.1)
+for (i in seq_len(ncol(SB_B))) for (j in seq_len(nrow(SB_B)))
+  text(i, j, sprintf("%+.2f", t(Hm2)[i, j]), cex = 1.05, col = ifelse(abs(t(Hm2)[i, j]) > brk2 * 0.55, "white", "gray20"))
+abline(h = (0:nrow(SB_B)) + 0.5, col = "white", lwd = 2)
+dev.off()
+wf("chart written: index_smartbeta_beta.png")
+
 write_json(list(metric_type = "diagnostic_monitoring", window = sprintf("36m ~%s", max(D$ym)),
                 source = "KRX OPEN API 실지수 월말 (krx_index_monthend.parquet)",
-                note = "y = 지수 월수익 - CD91월할, X = KR FF5. 교차검증: KRX 코스피200 vs IKS200 benchmark",
+                note = "FF5: y=지수월수익-CD91, X=KR FF5 다변량 / SB: 스타일별 이변량(MKT 통제). 교차검증: KRX 코스피200 vs IKS200",
                 betas = B, top_nonmkt = TOPS,
+                sb_betas = setNames(lapply(seq_len(nrow(SB_B)), function(i) as.list(SB_B[i, ])), rownames(SB_B)),
+                sb_top = SB_TOPS,
                 generated_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z")),
            file.path(OUT_DIR, "index_factor_beta.json"), auto_unbox = TRUE, pretty = TRUE, digits = 4)
 wf("[index_factor_beta] done")
