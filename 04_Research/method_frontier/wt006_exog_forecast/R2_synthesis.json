@@ -1,0 +1,62 @@
+{
+  "lane": "WT-006 R2 style-factor forecast (6-family monthly allocation theta)",
+  "date": "2026-07-19",
+  "measurement": "canonical_screen_bt cap-w KOSPI200 top-25 EW long-only, 15bps, liq 2e8, portfolio_alpha_t_nw_lag3 (eval_harness.R eval_theta). OOS 163m 2012-12~2026-06. metric_type=backtested.",
+  "baseline": {"momentum_port_t": 1.277, "momentum_oos_ret": -0.251, "static_EW_port_t": -0.047, "GBM_seed0_R1_port_t": 1.127, "HARD_gate_port_t": 2.95},
+
+  "q1_who_beat_momentum": {
+    "answer": "NONE (CONFIRMED). verification result = []. beats_momentum = FALSE for all 6 lanes.",
+    "closest": "captier_translate port_t 1.362 > baseline 1.277 (+0.085) BUT paired_vs_mom_t = 0.751 < 1.0 (not significant) and oos_ret -0.249 (negative, overfit-gate FAIL). The +0.085 edge is inside noise; NOT a real beat.",
+    "ranking_port_t": [
+      {"m": "captier_translate", "port_t": 1.362, "paired_mom": 0.751, "oos_ret": -0.249, "lag1": 0.911, "verdict": "closest, edge in noise, NOT sig"},
+      {"m": "mom_residual", "port_t": 1.129, "paired_mom": -0.715, "oos_ret": -0.389, "lag1": 0.954, "verdict": "below momentum"},
+      {"m": "rank_target", "port_t": 0.743, "paired_mom": -1.188, "oos_ret": -0.693, "lag1": 0.367, "verdict": "beats static only"},
+      {"m": "logic_stack", "port_t": 0.396, "paired_mom": -1.665, "oos_ret": -0.932, "lag1": 0.318, "verdict": "collapses to equal, below mom"},
+      {"m": "interaction_en", "port_t": 0.26, "paired_mom": -1.901, "oos_ret": -0.864, "lag1": 0.319, "verdict": "conditioning degrades raw signal"},
+      {"m": "sign_prob", "port_t": -0.062, "paired_mom": -2.255, "oos_ret": -0.906, "lag1": -0.075, "verdict": "worst, sign loses magnitude info"}
+    ]
+  },
+
+  "q2_wall_moved": {
+    "answer": "NO. The IC->PORT_t transition wall did NOT move. ew_uni_t reaches 3.209 (captier) / 2.64 (mom_residual) / 2.234 (rank) — real cross-sectional signal — but cap-w port_t stays pinned at 1.1-1.36, same as R1 (ew_uni_t~3 -> cap-w~1.1).",
+    "NEW_ANGLE_captier": "The captier_translate ORACLE probe re-localizes the wall. Look-ahead family tilt (perfect translatability foresight) ceiling = oracle_soft_k0.5 port_t 1.248 < momentum 1.277 (paired -0.121); hard-gate concentration collapses to 0.443. => Even PERFECT family timing cannot beat momentum. Therefore the wall is NOT at the family-allocation/timing layer. It sits one layer below: stock x cap-tier selection.",
+    "why": "Per-family one-hot static: EVERY family shows ew_uni_t >> cap-w port_t (gap 0.26-2.20; value gap 2.20 = value alpha ~entirely small-cap localized). Only momentum & value are cap-w positive; size/dividend/quality/low_vol are cap-w NEGATIVE. Momentum baseline's residual cap-w alpha (~1.28) comes from cross-family diversification of the top-25 basket (6-factor dimensional spread), not any single family's cap-w translatability. Concentrating on 'translatable' families destroys that diversification and DROPS cap-w port_t. Any long-only top-25 drifts toward bench-heavy mega-caps in cap-w space regardless of factor mix.",
+    "memory_link": "Confirms & EXTENDS [[project-captier-alpha-localization-20260706]] from stock-level to family-level: 'long-only cross-sectional selection cannot escape cap-w' now proven at the factor-family allocation layer too."
+  },
+
+  "q3_mechanism": {
+    "verdict": "PREDICTION WORKS, TRANSITION FAILS — and the binding transition is BELOW family allocation.",
+    "prediction_works": "ew_uni_t 2.234-3.209 (real EW-universe predictive power). mom_residual train-CV corr positive (rho 0.05-0.25, kappa path 0.14-0.76). rank_target beats static (paired_vs_static 1.527). Signal is genuinely there in EW space.",
+    "transition_fails": "Signal does not survive IC->PORT_t into cap-w top-25 long-only. Families with positive EW residual have non-positive cap-w (mega-cap) realized contribution => family weight shifts the wrong way in cap-w => port_t falls below the momentum anchor.",
+    "wall_is_below_family_layer": "Oracle ceiling 1.248 < 1.277 proves family-timing (even perfect) is capped below momentum. The residual alpha lives in cross-family stock diversification, which any concentration destroys. So the frontier that could still move the wall is cap-tier-conditional STOCK selection, not family timing.",
+    "secondary_caps": "logic_stack: 6 EN base learners collinear (trailing IS active Sharpe near-identical per anchor => softmax collapses to ~equal; convex hull trapped below momentum which is a-priori outside). interaction_en: conditional-momentum slopes overfit IS, degrade OOS family ranking. sign_prob: rank/sign compression discards the magnitude of tr_12m which is the single strongest family fwd_ret predictor."
+  },
+
+  "pit_integrity": {
+    "clean": "All lanes PIT-clean (walk-forward, IS-only selection). lag1_port_t < base port_t for rank(0.367<0.743), logic_stack(0.318<0.396), mom_residual(0.954<1.129), captier(0.911<1.362), sign_prob(-0.075<-0.062) => no same-month look-ahead inflation (a leak would push base ABOVE lag1).",
+    "interaction_en_note": "interaction_en lag1 0.319 marginally ABOVE base 0.26, but base is NOT inflated (base<lag1 is the opposite of leak signature) and both are near-null far below momentum — not a contamination flag."
+  },
+
+  "q4_next_probes": [
+    "P1 (only remaining wall-moving angle, OUT of timing lane): cap-tier-conditional STOCK selection. Since the wall is at stock x cap-tier, build tier-partitioned baskets (MEGA top-N + MID top-N as separate sleeves) with a predicted tier-weight, instead of one cap-w top-25. Route to RAMP/QEPM stock layer (cap_tier_decomposition mandate). Measure residual/signal DIRECTLY in cap-w universe, not EW.",
+    "P2 (isolate basis gap for mom_residual): re-estimate the residual correction using cap-w-universe realized residual (not EW). Restrict the tilt to families whose cap-w residual is consistently positive (momentum, value) and DROP the tilt for mega-cap-decoupled families (dividend, low_vol) where the EW->cap-w gap is largest. Tests whether the loss is purely the EW->cap-w basis gap vs genuine no-cap-w-alpha.",
+    "P3 (break logic_stack collinearity): replace the 6 collinear EN base learners with genuinely orthogonal learners — residualize each economic logic against the others before stacking, OR add a NON-RETURN-sourced learner (crowding/insider/dispersion) so the convex hull is no longer a common bull-tilt on the same 6 families. theta-space stacking is hull-bound; test stock-score residual-space stacking instead.",
+    "P4 (diversification-preserving bounded tilt, LOW-EV): since concentration kills the cross-family diversification that carries momentum's cap-w alpha, test a hard-bounded deviation-from-momentum tilt (max |theta - theta_mom| cap) to keep the 6-factor spread while nudging. Flag LOW-EV: oracle ceiling ~1.248 caps any family-layer tilt below momentum.",
+    "P5 (translatability drift predictor, LOW-EV monitoring): predict the time-variation of per-family cap-w translatability (size pre-2017 translatable 5.51 -> post-2017 0.69 decay) from crowding/dispersion exog. LOW-EV as an alpha (oracle fails) but viable as a monitoring/regime tripwire signal (see consumer surfaces)."
+  ],
+
+  "q5_consumer_surfaces": [
+    "factor_ranking: the per-family one-hot cap-w-vs-EW translatability table (momentum/value cap-w+; size/dividend/quality/low_vol cap-w-) is a reusable factor-ranking input — down-weight cap-w-dead families in any cap-w deployment. Route to factor ranking layer.",
+    "universe_filter: value alpha is ~entirely small-cap localized (cap-w gap 2.20) — feed cap-tier-conditional universe construction (MID-tier value sleeve) into RAMP/FQ, not the cap-w top-25 line.",
+    "monitoring: translatability drift (size pre-2017 -> post-2017 decay) as a regime/decay tripwire — monitoring-only signal, not capital.",
+    "other_mode_RAMP_QEPM: cap-tier-conditional STOCK selection (P1) is the live hand-off — matches the risk cap_tier_decomposition mandate ([[feedback-qepm-method-frontier-dualization]]). This lane's negative localizes exactly where RAMP/QEPM should probe.",
+    "overlay: factor_momentum remains the uncontested family-timing allocator (nothing beats it) — no overlay change. The mom_residual IS-adaptive-kappa wrapper (collapses to momentum when train skill is absent) is a safe pattern to reuse for any future family-tilt so it can never stray far from the winner.",
+    "selection_label: mom_residual & captier_translate = config-scoped negative at the family-allocation layer (NOT structural — cap-tier stock layer un-tested = revival condition). No screen-tier / no capital. rank_target = weak positive vs static only, not deployable."
+  ],
+
+  "honest_verdict": "R2 does NOT beat factor-momentum. 6 lanes, best captier_translate 1.362 with paired_vs_mom 0.751 (<1.0, not significant, oos_ret negative). The KR IC->PORT_t transition wall held. NEW ANGLE (captier oracle): the wall is below the family-timing layer — even perfect family foresight (ceiling 1.248) cannot beat momentum, because momentum's cap-w residual alpha is carried by cross-family top-25 diversification that concentration destroys. Binding frontier = cap-tier-conditional stock selection, outside the timing lane. Config-scoped negative, not structural verdict; revival = P1/P2 cap-w-native measurement.",
+  "beats_momentum_confirmed": false,
+  "best_config": "captier_translate",
+  "best_port_t": 1.362,
+  "wall_moved": false
+}
