@@ -1,12 +1,12 @@
 # 06_Registry INDEX
 
-> 자동 생성 2026-07-18 18:57 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
+> 자동 생성 2026-07-19 01:15 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
 
 ## 데이터 (10)
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `index_descriptions.json` | 존별 INDEX 큐레이션 DB (본 파일 — 사람 수동 보완, build_artifact_index.R이 소비해 INDEX.md 4개 생성) | active | 2026-07-09 | 39KB |
+| `index_descriptions.json` | 존별 INDEX 큐레이션 DB (본 파일 — 사람 수동 보완, build_artifact_index.R이 소비해 INDEX.md 4개 생성) | active | 2026-07-18 | 39KB |
 | `hygiene_report.json` | 일간 파일위생 감사 리포트 (ops/artifact_hygiene_audit.R 산출 — 자동정리 삭제 기록 + artifact-storage.md 위반 감지) | active | 2026-07-18 | 4KB |
 | `artifact_index.json` | build_artifact_index.R이 daily_refresh 말미 자동 재생성하는 전체 산출물 기계가독 인덱스 | active | 2026-07-18 | 319KB |
 | `book_carrier/` | PG2 book 수익 캐리어(carrier_STR_1715_*) + H1/H1b/H2 오버레이·가중 A/B 실측 결과 저장소 | active | 2026-06-18 | 727KB |
@@ -15,7 +15,7 @@
 | `live_track/STR_1715_FaithTrend_on_M4_R05_overlay_PG2/` | 제거된 구 FaithTrend 오버레이 라이브트랙 — look-ahead 판명 후 rollback 보존분(도훈 지시) | legacy | 2026-07-13 | 5KB |
 | `strategy_grades.json` | 전략 등급 레지스트리 — 검색 인덱스와 v8 readiness gate가 소비 (06-08 이후 정지 상태이나 게이트 의존) | active | 2026-06-07 | 79KB |
 | `strategy_registry.json` | 전략 마스터 레지스트리(178+ STR 메타) — telegram·strategy_registry.R 소비, 06-21 갱신 | active | 2026-07-08 | 275KB |
-| `alpha_frontier_queue.json` | 상설 알파 프론티어 큐 SOT — '다음에 뭘 시도할지' EV순 (발굴 착수 전 확인·owner 표기 의무, dohoon_decision 항목 임의 착수 금지. v8.3 §4) | active | 2026-07-18 | 158KB |
+| `alpha_frontier_queue.json` | 상설 알파 프론티어 큐 SOT — '다음에 뭘 시도할지' EV순 (발굴 착수 전 확인·owner 표기 의무, dohoon_decision 항목 임의 착수 금지. v8.3 §4) | active | 2026-07-18 | 165KB |
 
 ## 계약 (5)
 
@@ -77,7 +77,7 @@
 | `knowledge_index.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-18 | 101KB |
 | `knowledge_index.md` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-18 | 62KB |
 | `knowledge_recheck_queue.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-18 | 8KB |
-| `layer_bottleneck_map.md` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-18 | 45KB |
+| `layer_bottleneck_map.md` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-18 | 47KB |
 | `lcode_distill_execution_20260704.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-04 | 1.0MB |
 | `lcode_distill_manifest_20260704.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-04 | 8KB |
 | `lcode_distill_plan_20260704.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-04 | 726KB |

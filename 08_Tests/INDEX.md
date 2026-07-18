@@ -1,12 +1,14 @@
 # 08_Tests INDEX
 
-> 자동 생성 2026-07-18 18:57 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
+> 자동 생성 2026-07-19 01:15 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
 
-## 계약 (1)
+## 계약 (3)
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
 | `contract_regression/` | 핵심 계약코드(essence_score·canonical_screen_bt·register_module·hurdle_gate) 회귀 스위트 — 07-04 신설, 실행 실측 PASS | active | 2026-07-03 | 38KB |
+| `portfolio/test_optimizer_breadth.R` | mean_variance_optimizer 종목폭(breadth)+RF-O5 HHI-projection 회귀 — Test1~5(min_names/hhi/winsor/infeasible/compat) + Test6/6b/7/8(p>max_names 누출·Σw보존·min>max precheck). worktree-aware proj_root. v2.4 통합엔진 대상 PASS | active | 2026-07-18 | 19KB |
+| `portfolio/test_mvo_turnover_penalty.R` | mvo_weights TC-aware 배선(phi·\|x−x_prev\| L1 확장 QP) 회귀 — 비활성 경로 bit-parity 계약 + 단조성/no-trade region/n=2 해석해 대조 24 asserts. worktree-aware proj_root (FQ-057 NP4 dead-parameter 수리 검증) | active | 2026-07-18 | 15KB |
 
 ## 훅 (3)
 
@@ -27,12 +29,6 @@
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
 | `baseline/` | v6.4.0 기준선 스냅샷(v6_4_0_baseline.json, Session 76 Sprint 0 preflight) + hook 의존성 감사 기록 — 비교 기준 결과 기록물 | report | 2026-07-03 | 18KB |
-
-## 정리 후보 (status=dead) (1)
-
-| 항목 | 정체 | 카테고리 | 최근 | 크기 |
-|---|---|---|---|---|
-| `portfolio/test_optimizer_breadth.R` | mean_variance_optimizer 종목폭(breadth) 단발 테스트 — 대상 코드는 현존하나 참조 0 + 구 머신 경로 하드코딩 | 훅 | 2026-06-07 | 10KB |
 
 ## 미분류 (1) — index_descriptions.json에 추가하세요
 

@@ -1,6 +1,6 @@
 # 02_Infrastructure INDEX
 
-> 자동 생성 2026-07-18 18:57 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
+> 자동 생성 2026-07-19 01:15 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
 
 ## 데이터 (3)
 
@@ -14,7 +14,7 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `backtest_harness.R` | 공용 백테스트 하네스(시뮬레이션 엔진 62KB) — alpha_search 드라이버·contracts·data 빌더가 공통 source하는 실행 코어 | active | 2026-06-12 | 61KB |
+| `backtest_harness.R` | 공용 백테스트 하네스(시뮬레이션 엔진 62KB) — alpha_search 드라이버·contracts·data 빌더가 공통 source하는 실행 코어 | active | 2026-07-18 | 64KB |
 | `factor_portfolios.R` | KR FF3/FF5/Carhart-4F 팩터 회귀(NW HAC alpha t) — strategy_analyzer의 Multi-Factor Regression 공급자(2026-06-04 재작성) | active | 2026-06-07 | 6KB |
 | `strategy_analyzer.R` | 전략 진단 분석기 — 백테 후 IC/rolling/stress/sector/holdings CSV + analysis_report.md 생성(FF 회귀 포함) | active | 2026-06-12 | 34KB |
 
@@ -109,7 +109,7 @@
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
 | `judge/` | judge_lockbox_harness.R 단일 — judge의 lockbox 격리 검증 하네스(Gate 심사 시 forge 산출 재검) | active | 2026-06-07 | 12KB |
-| `prompts/` | agent spawn init 프롬프트 14건 — _shared_prefix.md(axiom derived cache) + alpha/risk/optimizer/forge/judge/qlead_init.md | active | 2026-07-18 | 213KB |
+| `prompts/` | agent spawn init 프롬프트 14건 — _shared_prefix.md(axiom derived cache) + alpha/risk/optimizer/forge/judge/qlead_init.md | active | 2026-07-18 | 214KB |
 | `worktask/` | WT 계약 계층 — common_charter.md·cert_rules.R·constraint_defaults.json(graduation severity)·run_all_template.R(현행 forge 템플릿)·lineage_utils | active | 2026-07-09 | 225KB |
 
 ## 메모리 (1)
@@ -138,13 +138,13 @@
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
 | `observability/` | 관측 CLI — qvest_observe/qvest_wt(WT 타임라인 조회)·emit_event.sh(이벤트 로그)·wt_timeline.R | active | 2026-06-11 | 27KB |
-| `search/` | qvest_search CLI — 세션/artifact 검색 인덱스 빌드(build_index.R)·질의(_query.py) | active | 2026-07-03 | 36KB |
+| `search/` | qvest_search CLI — 세션/artifact 검색 인덱스 빌드(build_index.R)·질의(_query.py) | active | 2026-07-18 | 36KB |
 
 ## 포트폴리오 (1)
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `portfolio/` | 포트폴리오·거버넌스 계층 31건 — portfolio_governor.R(PG1 book-marginal admission)·book_optimizer·s5_mutation_runner·measurement_basis_audit | active | 2026-07-18 | 735KB |
+| `portfolio/` | 포트폴리오·거버넌스 계층 31건 — portfolio_governor.R(PG1 book-marginal admission)·book_optimizer·s5_mutation_runner·measurement_basis_audit | active | 2026-07-18 | 743KB |
 
 ## 모드-RAMP (1)
 
@@ -169,7 +169,7 @@
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
 | `sanity_checks/` | bear_date_audit.R 단일 — forward label 방향 PIT 의무 감사(Cycle 50 lookahead 재발 방지 게이트) | active | 2026-06-07 | 12KB |
-| `validation/` | 검증 계층 26건 — pit_enforcement.R·lookahead_detector.R(PIT Level 0 구현)·v8_readiness_gate.R·preflight_check·stage_artifact_schemas | active | 2026-07-06 | 311KB |
+| `validation/` | 검증 계층 26건 — pit_enforcement.R·lookahead_detector.R(PIT Level 0 구현)·v8_readiness_gate.R·preflight_check·stage_artifact_schemas | active | 2026-07-18 | 312KB |
 
 ## 설계 SOT (1)
 
