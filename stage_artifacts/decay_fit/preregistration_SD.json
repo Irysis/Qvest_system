@@ -1,0 +1,33 @@
+{
+  "round_id": "FQ-055_decay_fit_daily_SD",
+  "registered_at": "2026-07-18T09:45:00+0900",
+  "parent_prereg": "stage_artifacts/decay_fit/preregistration.json (sha256 8e4f4d6bb408217874e406e0557f218f737c2b8b5371537959d3b51cf1f0c192)",
+  "carve_out": "stage_artifacts/decay_fit/carveout_approval.json — fdb_daily read-only, 본 진단 한정 (도훈 2026-07-17)",
+  "input_vintage": {
+    "fdb_daily": ".cache/factor_db_daily/fdb_daily_*.parquet — registry v6.0.0 created 2026-07-17T20:25:55, n_factors=174, n_months=439, total_rows=14018027, zero_size_files=0. 13.83GB라 byte-copy pin 대신 registry+본 기록 = vintage 증빙(§7 비례 원칙, 비-HARD 진단). 다음 쓰기는 내일 일간 증분뿐 — 본 라운드 소비 기간 무변경",
+    "rawdata": ".cache/rawdata.parquet rows=14018480 maxDate=2026-07-16 mtime=2026-07-18T09:23 (아침 refresh 후, R47 행수 정확 일치 검증)"
+  },
+  "stage1_ic_panel": {
+    "signal": "fdb_daily 팩터 raw 값 at day t (registry factor_list 174종)",
+    "forward": "fwd1d = 다음 거래일 stored Ret (Ticker별 lead-shift). PIT: 신호=t 일자 DB(≤t 데이터로 빌드), 수익=t+1 — 겹침 없는 1일 horizon (월간 IC의 1M horizon과 상보, 동일시 금지)",
+    "shift_validation": "shift(type=lead) 방향 기계 검증 — 표본 티커에서 fwd1(t)==Ret(next trading date) assert, FAIL 시 abort (data_table_shift_convention 준수)",
+    "universe": "rawdata K200|KQ150 flags at t (liq 필터 없음 — 신호계층 진단, 명시 기록)",
+    "ic": "cross-sectional Spearman(rank Pearson), min pairs 100, else NA",
+    "orientation": "factor별 부호 = pinned 월간 IC 패널 mean IC의 sign (고정 상수 — shape 불변·양의 초기수준 정렬용. C13 주: 신호 조작 아닌 진단 orientation, 명시 라벨)",
+    "output": "stage_artifacts/decay_fit/sd_ic_daily_panel_20260718.parquet (재사용 자산)"
+  },
+  "stage2_fit": {
+    "series": "per factor: rolling 252d mean(daily IC), min 200 non-NA",
+    "eligibility": "daily IC obs >= 2500 (~10y)",
+    "t_scale": "t/21 → 월 단위 환산 (LGRID 범위 재사용, λ per-month 해석 통일)",
+    "min_n_fit": 1000, "n_boot": 60, "block": 63,
+    "early_gate": "첫 756 거래일(≈36개월) 평균 <= 0 → no_initial_signal",
+    "models_and_labels": "본 prereg 부모 문서와 동일 (M0~M4, AICc 2-margin, break margin max(24, 10% n))",
+    "deliverable_join": "C-M capw break_dominated 팩터와 S-D break date 대조 (모델 매핑: fdb 174 ∩ r6 102 교집합) — 신호계층 vs 자본계층 단절 시점 정합성"
+  },
+  "honesty": {
+    "metric_type": "diagnostic_fit — 자본 수치 인용 금지",
+    "horizon_caveat": "S-D=1d horizon IC, S-M=1M horizon IC — 수평 다름, 감쇠 모양 비교는 계층 내에서만",
+    "runtime_env": "daily_refresh DART 단계(타 프로세스)와 병행 — fdb_daily/rawdata는 read-only 소비"
+  }
+}

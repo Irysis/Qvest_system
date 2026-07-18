@@ -1,27 +1,23 @@
 ##=============================================================================
-## run_fdb_rebuild.R -- fdb_daily full rebuild runner (phase6+7+8, hours)
+## run_fdb_rebuild.R -- DO NOT source phases 6/7/8 in ONE R process.
 ##
-## Why this file exists (2026-07-17):
-##   phase6/7/8 + incremental resolve their own location via
-##   dirname(sys.frame(1)$ofile). sys.frame(1) is the OUTERMOST call frame,
-##   so ofile only exists when the top-level call is source() of a file, and
-##   the resolved dir is that file's dir. Calling update_daily_fdb_current()
-##   directly from Rscript -e (as daily_refresh.sh [6b] does) leaves frame 1
-##   without ofile -> tryCatch fallback to a dead /mnt/c WSL path -> abort at
-##   config.R load (before any file deletion; verified 2026-07-17).
-##   Sourcing THIS file (which lives in factor_db/) from cwd=02_Infrastructure
-##   keeps ofile="factor_db/..." so .SELF_DIR/INFRA_DIR resolve correctly for
-##   every nested phase script.
+## 2026-07-18 postmortem: the 2026-07-17 run sourced phase6 -> phase7 in a
+##   single Rscript session and died at phase7 [5/6] first read with
+##   [Windows error 1224] (arrow mmap section from phase6's write_parquet of
+##   the same file still open in-process). The historically successful
+##   2026-06-08 build ran each phase as its own Rscript process.
 ##
-## Usage:
+## Correct full-rebuild entrypoint (separate process per phase):
+##   bash 02_Infrastructure/factor_db/run_fdb_rebuild.sh
+## or equivalently:
 ##   cd 02_Infrastructure
-##   Rscript -e 'source("factor_db/run_fdb_rebuild.R")'
+##   Rscript -e 'source("factor_db/factor_db_daily_phase6.R")'
+##   Rscript -e 'source("factor_db/factor_db_daily_phase7.R")'
+##   Rscript -e 'source("factor_db/factor_db_daily_phase8.R")'
 ##
 ## WARNING: phase6 step [0/8] deletes ALL fdb_daily parquet before rebuild.
-##   Run only on AC power, no sleep; take a backup first; must run to end.
+##   AC power + no sleep + backup + run-to-completion required.
 ##=============================================================================
-Sys.setenv(QVEST_FDB_DAILY_AUTOREBUILD = "1")
-cat(sprintf("[run_fdb_rebuild] start %s\n", format(Sys.time(), "%Y-%m-%d %H:%M:%S")))
-source("factor_db/factor_db_daily_incremental.R")
-update_daily_fdb_current()
-cat(sprintf("[run_fdb_rebuild] ALL PHASES DONE %s\n", format(Sys.time(), "%Y-%m-%d %H:%M:%S")))
+stop(paste0(
+  "run_fdb_rebuild.R is a guard stub (Windows 1224 arrow-mmap: phases must run ",
+  "in separate R processes). Use: bash 02_Infrastructure/factor_db/run_fdb_rebuild.sh"))

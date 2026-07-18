@@ -44,7 +44,7 @@ wf("rawdata: size=%.2fGB mtime=%s (R47 parity 상태 — 유니버스 행 불변
 ## ── EW-uni 벤치 구성 (r13 동일 lineage, arrow pushdown으로 월말 행만) ──────
 source("02_Infrastructure/ramp/factor_validation.R")   # build_monthly_forward_returns (K200|KQ150 필터 + R44 방화벽 내장)
 sigs <- sort(unique(as.Date(r6_dt$signal_date)))
-month_end <- function(d) { m0 <- as.Date(cut(d, "month")); seq(m0, by = "2 months", length.out = 2)[2] - 1 }
+month_end <- function(d) { m0 <- as.Date(cut(d, "month")); seq(m0, by = "1 month", length.out = 2)[2] - 1 }  # 해당 월의 말일 (버그수정 20260718: 구판 by="2 months"는 다음달 말 반환 → 터미널월 오염)
 sigs_ext <- c(sigs, month_end(max(sigs) + 1))          # 터미널 forward 커버용: 다음 달 월말(2026-06-30)
 ud <- unique(as.data.table(read_parquet(".cache/rawdata.parquet", col_select = "Date"))$Date)
 ud <- sort(as.Date(ud))
