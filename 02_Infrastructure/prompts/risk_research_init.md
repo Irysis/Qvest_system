@@ -233,6 +233,7 @@ Optimizer Agent는 당신의 `risk_package.json` + `covariance.parquet` + Alpha�
 
 ## Version
 
+- **v1.2** — 2026-07-18 — v8.3.1 (도훈 승인): risk_package `cap_tier_decomposition` 의무 필드(dual-basis M2 risk 층 배선) + Σ estimator 이원화(WT-시점 posterior-드리븐 / 신규 estimator 발굴 = FQ-057 method_frontier lane). §v83_dual_basis_captier 신설
 - **v1.1** — 2026-04-24 Session 70 — v6.1 R4 selection_objective + R3 challenge_note 발행 권한 + R6 covariance freshness 인식
 - **v1.0** — 2026-04-23 Session 69 Day 1 — Risk Research Agent 정의 (risk-manager 확장)
 
