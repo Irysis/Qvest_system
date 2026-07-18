@@ -12,6 +12,8 @@ ok_ff <- tryCatch({ source("02_Infrastructure/reports/ff5_kr_tracker.R"); TRUE }
                   error = function(e) { cat("[ff5_brief] FF5 build FAIL:", conditionMessage(e), "\n"); FALSE })
 ok_sb <- tryCatch({ source("02_Infrastructure/reports/smartbeta_kr_tracker.R"); TRUE },
                   error = function(e) { cat("[ff5_brief] SB build FAIL:", conditionMessage(e), "\n"); FALSE })
+ok_ib <- tryCatch({ source("02_Infrastructure/reports/index_factor_beta.R"); TRUE },
+                  error = function(e) { cat("[ff5_brief] index-beta build FAIL:", conditionMessage(e), "\n"); FALSE })
 
 FF <- tryCatch(as.data.table(read_parquet("outputs/ff5_kr/ff5_kr_monthly.parquet")), error = function(e) NULL)
 SB <- tryCatch(as.data.table(read_parquet("outputs/smartbeta_kr/smartbeta_kr_monthly.parquet")), error = function(e) NULL)
@@ -58,6 +60,13 @@ if (is.null(FF) || !nrow(FF)) { cat("[ff5_brief] FF 시리즈 없음 — skip\n"
     ## v3 최근동향 차트 (도훈 지시): 정렬 막대 + 24개월 히트맵 (장기 소형패널은 rolling12 파일로 별도 보관)
     charts <- c(charts, "outputs/smartbeta_kr/charts/smartbeta_recent_bars.png",
                 "outputs/smartbeta_kr/charts/smartbeta_heatmap24.png")
+  }
+  ## 지수 팩터 민감도 (도훈 지시 07-18)
+  ib <- tryCatch(jsonlite::fromJSON("outputs/ff5_kr/index_factor_beta.json"), error = function(e) NULL)
+  if (!is.null(ib) && !is.null(ib$top_nonmkt)) {
+    sections[[length(sections) + 1]] <- list(heading = "지수 팩터 민감도 (36개월 베타·비시장 최대)", type = "kv",
+      kv = setNames(as.list(unlist(ib$top_nonmkt)), c("코스피200", "코스닥150", "코스피", "코스닥")))
+    charts <- c(charts, "outputs/ff5_kr/charts/index_factor_beta.png")
   }
   sections[[length(sections) + 1]] <- list(heading = "국면 판독", type = "bullet", items = c(
     sprintf("현 국면: %s", regime_line),
