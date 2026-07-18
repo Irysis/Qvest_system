@@ -1,6 +1,6 @@
 # Weekly Digest — 2026-W28 (2026-07-04 ~ 2026-07-11)
 
-**생성**: 2026-07-11 /cleaner (첫 주간 다이제스트 — W27 마커는 미소비로 W28 스윕이 대체). 전 수치 = 해당 런 실기록 인용, metric_type 병기. 원천: `.cache/cleaner_pending.json` W28 + L-code corpus(주간 신규 46건) + 각 WT/stage_artifacts.
+**생성**: 2026-07-11 /cleaner (첫 주간 다이제스트 — W27 마커는 미소비로 W28 스윕이 대체). [정정 2026-07-17: 괄호 안 계보 서술은 오류 — W27 digest(`weekly_digest_20260705.md`)는 2026-07-05 10:31 실존·소비 완료(git 6538dea6), 본 W28은 두 번째 다이제스트. 원문은 정직 기록 원칙으로 보존.] 전 수치 = 해당 런 실기록 인용, metric_type 병기. 원천: `.cache/cleaner_pending.json` W28 + L-code corpus(주간 신규 46건) + 각 WT/stage_artifacts.
 
 ## 0. 주간 헤드라인
 

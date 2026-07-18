@@ -37,6 +37,7 @@ suppressWarnings(suppressMessages({
 .rev_registry_path <- function(root) file.path(root, "06_Registry", "revival_signals.json")
 .rev_dist_dir      <- function(root) file.path(root, "qepm", "memory", "axioms", "distilled")
 .rev_flags_path    <- function(root) file.path(root, ".cache", "failure_revival_flags.json")
+.rev_history_path  <- function(root) file.path(root, ".cache", "failure_revival_history.jsonl")
 
 # ── 레지스트리 로드 ─────────────────────────────────────────────────────────
 .rev_load_registry <- function(root) {
@@ -337,6 +338,19 @@ revival_monitor_run <- function(root = .rev_root(), write_flags = TRUE, verbose 
       fp <- .rev_flags_path(root)
       dir.create(dirname(fp), showWarnings = FALSE, recursive = TRUE)
       write_json(payload, fp, pretty = TRUE, auto_unbox = TRUE, null = "null")
+      # 발화 이력 append-only 보존(JSONL 1행=1발화·detected_at 포함) — flags는 매 실행
+      #   덮어쓰기라 최초 발화일/재발 여부(지속기간) 감사가 불가하던 것을 이력으로 보완.
+      if (length(fired)) {
+        tryCatch({
+          hp <- .rev_history_path(root)
+          dir.create(dirname(hp), showWarnings = FALSE, recursive = TRUE)
+          con <- file(hp, open = "a", encoding = "UTF-8")
+          try(for (fd in fired)
+            writeLines(as.character(toJSON(fd, auto_unbox = TRUE, null = "null")), con),
+            silent = TRUE)
+          close(con)   # try 후 무조건 close — 커넥션 누수 방지
+        }, error = function(e) NULL)   # 이력 실패는 본 산출(flags)에 영향 없음(fail-soft)
+      }
     }
 
     if (verbose) {

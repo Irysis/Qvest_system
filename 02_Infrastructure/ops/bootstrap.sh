@@ -508,7 +508,7 @@ fi
 
 # 8h2. (2026-07-17 B4) deadman-lite — 무인 paper_recharge 라인 결손 사후 인지 (07-16 결측 실사례:
 #      머신-오프 공백을 어느 표면도 알리지 않음). 최신 .done/mcp_discovery 파일명 날짜 vs 오늘 갭>1일 = WARN.
-DM_LAST=$(ls "$PROJECT"/stage_artifacts/paper_recharge/paper_recharge_*.done "$PROJECT"/stage_artifacts/paper_recharge/mcp_discovery_*.json 2>/dev/null | grep -oE '20[0-9]{6}' | sort | tail -1)
+DM_LAST=$(ls "$PROJECT"/stage_artifacts/paper_recharge/paper_recharge_*.done "$PROJECT"/stage_artifacts/paper_recharge/mcp_discovery_*.json 2>/dev/null | grep -oE '(paper_recharge|mcp_discovery)_20[0-9]{6}' | grep -oE '20[0-9]{6}' | sort | tail -1)
 DM_TS=""; [ -n "$DM_LAST" ] && DM_TS=$(date -d "$DM_LAST" +%s 2>/dev/null || echo "")
 if [ -n "$DM_TS" ]; then
   DM_GAP=$(( ($(date +%s) - DM_TS) / 86400 ))

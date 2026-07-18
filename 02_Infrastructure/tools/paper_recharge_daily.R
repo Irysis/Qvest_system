@@ -280,6 +280,10 @@ run_mcp_probe <- function() {
 
 mcp <- run_mcp_probe()
 log_line("[paper-recharge] MCP probe: status=%s candidates=%s out=%s", mcp$status, mcp$candidates, relative_path(mcp$out))
+if (identical(mcp$status, "mcp_suspect_empty")) {
+  log_line("[paper-recharge] WARN: MCP 탐색 후보 0 붕괴 — 직전 실행은 prefilter>0 (상류 의심). %s errors 필드 확인 필요",
+           relative_path(mcp$out))
+}
 
 mcp_candidate_sources <- function(mcp_out) {
   obj <- tryCatch(fromJSON(mcp_out, simplifyDataFrame = FALSE), error = function(e) list())
@@ -701,7 +705,10 @@ if (send_tg) {
           heading = "탐색·링크 상태",
           type = "bullet",
           items = c(
-            sprintf("MCP 탐색 상태: %s", mcp$status),
+            sprintf("MCP 탐색 상태: %s%s", mcp$status,
+                    if (identical(mcp$status, "mcp_suspect_empty"))
+                      " ⚠ WARN — 직전 실행 대비 탐색 후보 0 붕괴(상류 의심). mcp_discovery 리포트의 errors 확인 필요"
+                    else ""),
             sprintf("탐색 후보 수: %s건", mcp$candidates),
             sprintf("기관논문 링크: %d/%d 정상%s", n_curated - n_curated_dead, n_curated,
                     if (n_curated_dead > 0L)

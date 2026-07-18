@@ -33,7 +33,7 @@ import os
 import re
 import sys
 from collections import Counter
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from itertools import combinations
 
 METHODOLOGY_TAG_KEYWORDS = {
@@ -444,6 +444,21 @@ _DIST_DRAFT_FIELDS = (
     "mechanism_draft", "oos_validation_draft", "cluster_members_count",
 )
 
+# negative DIST 기본 expiry (일): INV-7 'expiry = 보편 시간부활 바닥' — expiry 공백 negative는
+# revival monitor의 expiry 폴백 부활조차 불가하므로 초안 단계에서 바닥을 깐다.
+_DIST_DEFAULT_EXPIRY_DAYS = 90
+
+
+def _fill_default_expiry(dist: dict) -> None:
+    """negative 카드에 한해 expiry 공백만 +90일로 채움 — 기존 값 절대 덮어쓰기 금지(멱등)."""
+    if dist.get("polarity") != "negative":
+        return
+    if dist.get("expiry"):
+        return
+    dist["expiry"] = (
+        datetime.now(timezone.utc) + timedelta(days=_DIST_DEFAULT_EXPIRY_DAYS)
+    ).strftime("%Y-%m-%d")
+
 
 def build_distilled(cand_dir: str, dist_dir: str, index_path: str) -> tuple[int, int]:
     """pending CAND 전건 → DIST 초안 생성/갱신 + 통합 인덱스 재작성. 반환 (n_new, n_updated)."""
@@ -498,6 +513,7 @@ def build_distilled(cand_dir: str, dist_dir: str, index_path: str) -> tuple[int,
             path = os.path.join(dist_dir, f"{dist_id}.json")
             existing[key] = (path, dist)
             n_new += 1
+        _fill_default_expiry(dist)  # negative 공백만 +90d (신규/기존 공통 — 기존 값 보존)
         with open(path, "w", encoding="utf-8") as fh:
             json.dump(dist, fh, indent=2, ensure_ascii=False)
 

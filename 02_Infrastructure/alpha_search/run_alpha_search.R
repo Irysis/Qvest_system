@@ -1307,10 +1307,13 @@ run_alpha_search <- function(strategy_name,
   #   cluster_extractor._draft_falsification이 실기록만 집계). 형식: 문자열 list.
   sdef_lc <- tryCatch(hg$verdict$statistical_defense, error = function(e) NULL) %||% list()
   # [2026-07-04 G-mode-wiring] 구조체 형식 전환: character 벡터 → [{test, result, effect_retained}].
-  #   promote.R .axis_falsification 소비 규약 정합: result = 정확 토큰 {survived|falsified|diagnostic}
-  #   (identical(result,"falsified") / result!="survived" 정확매칭 — 서술은 detail 필드에 분리),
-  #   survived는 effect_retained 수치 필수(%||% 0 처리로 결측 시 hurdle 보수 FAIL),
-  #   effect_retained = 효과 잔존 비율 실값(결측 시 NA — 수치 창작 금지). 그 외 기배선 유지.
+  #   promote.R .axis_falsification 소비 규약 정합 (2026-07-17 A2 정정): result = SOT
+  #   axiom-engine.md §3d 정규 토큰 {survived, falsified, weakened} — promote는
+  #   .fals_norm_result 정규화 소비(미상 토큰 = falsified 취급 보수, INV-4).
+  #   'diagnostic'은 게이트-비적용 진단 산출(DSR 등)로 정규화에서 중립 처리 — 서술은
+  #   detail 필드에 분리. survived는 effect_retained 수치 필수(비수치 = retained-pass
+  #   불인정 보수 FALSE), effect_retained = 효과 잔존 비율 실값(결측 시 NA — 수치 창작
+  #   금지). 그 외 기배선 유지.
   .fals_entry <- function(test, result, effect_retained = NA_real_, detail = "")
     list(test = test, result = result, effect_retained = effect_retained, detail = detail)
   fals <- list()
@@ -1368,6 +1371,7 @@ run_alpha_search <- function(strategy_name,
     created_by     = "AlphaSearch",
     metric_type       = "proxy",              # alpha_search = run_hurdle_gate proxy → INV-1: mode-local 한정
     construction_type = construction_type,    # r7 Independence 축
+    lcode_schema_version = if (exists("LCODE_SCHEMA_VERSION")) LCODE_SCHEMA_VERSION else 2L,  # [2026-07-17 A3] v2 태깅 (07-09 배치 5건 sv 결측 봉합)
     cagr_pct          = .as_num(m$CAGR),
     sharpe            = .as_num(m$Sharpe),
     mdd_pct           = abs(.as_num(m$MDD)),
@@ -1392,6 +1396,10 @@ run_alpha_search <- function(strategy_name,
     if (is.finite(.as_num(auth$contract$sharpe))) lcode$sharpe   <- round(.as_num(auth$contract$sharpe), 3)
     if (is.finite(.as_num(auth$contract$mdd)))    lcode$mdd_pct  <- round(abs(.as_num(auth$contract$mdd)) * 100, 2)
     if (is.finite(.as_num(auth$essence$oos_retention))) lcode$oos_retention <- .as_num(auth$essence$oos_retention)
+    # [2026-07-17 A3] portfolio_alpha_t 1급 병기 — nested(authoritative.*)에만 두면
+    # promote.R .lc_get(top-level 조회) Rigor 축에서 NA 유실 (실측 48건 갭 봉합)
+    if (is.finite(.as_num(auth$essence$portfolio_alpha_t_nw_lag3)))
+      lcode$portfolio_alpha_t <- .as_num(auth$essence$portfolio_alpha_t_nw_lag3)
     lcode$authoritative <- list(
       essence_grade             = auth$essence_grade,
       portfolio_alpha_t_nw_lag3 = .as_num(auth$essence$portfolio_alpha_t_nw_lag3),

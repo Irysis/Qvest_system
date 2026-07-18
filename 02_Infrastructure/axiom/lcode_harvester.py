@@ -49,6 +49,7 @@ from __future__ import annotations
 import argparse
 import glob
 import json
+import math
 import os
 import re
 import sys
@@ -268,6 +269,10 @@ def _infer_construction(data: dict) -> str:
     return "single_factor_long_only"
 
 
+# lcode_schema.R LCODE_VALID_METRIC_TYPES 정합 (measurement-graduation §1 enum)
+_VALID_METRIC_TYPES = ("proxy", "estimated", "canonical_screen", "backtested", "unavailable")
+
+
 def _infer_metric_type(data: dict, mode: str) -> str:
     """metric_type 추론(INV-1 게이트 입력). explicit 우선, 없으면 모드 기반 보수 추론."""
     mt = data.get("metric_type")
@@ -278,6 +283,21 @@ def _infer_metric_type(data: dict, mode: str) -> str:
     if mode in ("factor_rotation", "regime_research"):
         return "backtested"
     return "estimated"  # 불명확 → 보수적(mode-local 한정)
+
+
+def _normalize_metric_type(mt_raw: str, source_file: str) -> tuple[str, str | None]:
+    """[2026-07-17 운영감사 A4] 비enum metric_type 정규화 (grade normalize 선례 동형).
+
+    emit 경로 밖에서 직접 착지한 비enum 신조어('observational_monitoring', l_code_R42
+    실물)가 corpus에 그대로 유입되던 갭. 원장 파일 원문은 불변(정직 원장) — corpus
+    엔트리만 canonical 'unavailable'(보수: 실측 권위 불인정)로 정규화하고 원값을
+    metric_type_raw로 보존 + WARN. 반환: (canonical, raw|None — 정규화 발생분만)."""
+    if mt_raw in _VALID_METRIC_TYPES:
+        return mt_raw, None
+    print(f"[lcode_harvester][WARN] non-enum metric_type '{mt_raw}' ({source_file}) — "
+          f"canonical 'unavailable' 정규화 (원값 metric_type_raw 보존, 원장 파일 불변)",
+          file=sys.stderr)
+    return "unavailable", mt_raw
 
 
 def _check_promoted(l_code: str, project_dir: str) -> str | None:
@@ -357,6 +377,8 @@ def harvest(project_dir: str) -> dict:
         # v2: grade 정규화 (plan grade_normalization_map) + record_type 분리
         grade_raw = data.get("grade")
         grade_norm, record_type = _normalize_grade(grade_raw, data.get("record_type"), grade_map)
+        # A4: metric_type enum 정규화 (비enum → 'unavailable' 보수 + 원값 보존 + WARN)
+        mt_norm, mt_raw = _normalize_metric_type(_infer_metric_type(data, mode), source_file)
 
         entry = {
             "l_code": l_code,
@@ -366,7 +388,7 @@ def harvest(project_dir: str) -> dict:
             "family": family,
             "research_mode": mode,
             "construction_type": _infer_construction(data),
-            "metric_type": _infer_metric_type(data, mode),
+            "metric_type": mt_norm,
             "grade": grade_norm,          # canonical A/B/C/F | None(비성과) | 원문(unmappable)
             "grade_raw": grade_raw,       # 원문 보존 (정직 원장)
             "record_type": record_type,   # performance/process/infra/summary
@@ -377,6 +399,8 @@ def harvest(project_dir: str) -> dict:
         }
         if collision_with:
             entry["id_collision_with"] = collision_with
+        if mt_raw is not None:
+            entry["metric_type_raw"] = mt_raw  # A4: 비enum 원값 보존 (정직 원장)
         # v8.1 트랙C+D: 학습/실측 필드 pass-through (있을 때만 — 없는 구 L-code는 그대로 = 정직성).
         # cluster_extractor가 mechanism_draft/oos_validation_draft/falsification_draft 실값 매핑에 사용.
         # v8.2.1 (2026-07-03 아키텍처 감사 AXM-06/GOV-01): oos_months·oos_effect_vs_is는 External 축,
@@ -390,6 +414,20 @@ def harvest(project_dir: str) -> dict:
             v = data.get(opt)
             if v not in (None, "", [], {}):
                 entry[opt] = v
+        # [2026-07-17 운영감사 A3] authoritative.* nested 실측값 top-level lift —
+        # alpha_search emit이 portfolio_alpha_t를 authoritative.portfolio_alpha_t_nw_lag3
+        # 에만 기록한 48건이 promote.R .lc_get(top-level 조회)에서 NA 유실되던 갭.
+        # top-level 기존값이 있으면 보존(lift 미적용). oos_retention도 동일 nested 소스.
+        auth = data.get("authoritative")
+        if isinstance(auth, dict):
+            for top_key, nested_key in (("portfolio_alpha_t", "portfolio_alpha_t_nw_lag3"),
+                                        ("oos_retention", "oos_retention")):
+                if top_key in entry:
+                    continue  # top-level 기존값 우선 보존
+                v = auth.get(nested_key)
+                if isinstance(v, (int, float)) and not isinstance(v, bool) and math.isfinite(v):
+                    entry[top_key] = v
+                    entry[f"{top_key}_source"] = f"authoritative.{nested_key}"
         lcodes.append(entry)
 
     lcodes.sort(key=lambda x: x["l_code"])

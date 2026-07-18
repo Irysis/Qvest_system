@@ -101,7 +101,7 @@ wf("S-D done: %d rows. label dist: %s", nrow(SD),
 CM <- as.data.table(read_parquet(file.path(OUT, "decay_fit_CM_20260717.parquet")))
 cmp <- merge(SD[label == "break_dominated", .(factor, sd_break = break_date)],
              CM[basis == "capw" & label == "break_dominated", .(factor, cm_break = break_date)], by = "factor")
-if (nrow(cmp)) { cmp[, gap_m := round(as.numeric(difftime(as.Date(sd_break), as.Date(cm_break), units = "days")) / 30.44, 1) }
+if (nrow(cmp)) { cmp[, gap_m := round(as.numeric(difftime(as.Date(sd_break), as.Date(cm_break), units = "days")) / 30.44, 1)] }
 wf("break 대조: 교집합 %d건", nrow(cmp))
 summ <- list(round_id = "FQ-055_decay_fit_daily_SD", runtag = RUNTAG, metric_type = "diagnostic_fit",
              n_series = nrow(SD), labels = SD[, .N, by = label][order(-N)],

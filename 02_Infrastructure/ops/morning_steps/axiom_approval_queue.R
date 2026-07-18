@@ -96,14 +96,20 @@ suppressWarnings(suppressMessages(tryCatch({
       suppressMessages(source("02_Infrastructure/ops/failure_revival_monitor.R", local = TRUE)),
       message = function(m) invokeRestart("muffleMessage"))
     flags_path <- file.path(".cache", "failure_revival_flags.json")
-    fired <- list()
+    fired <- list(); np_spec <- 0L
     if (exists("revival_monitor_run", mode = "function")) {
       pay <- tryCatch(revival_monitor_run(write_flags = TRUE, verbose = FALSE),
                       error = function(e) NULL)
-      if (!is.null(pay)) fired <- pay$fired %||% list()
+      if (!is.null(pay)) {
+        fired <- pay$fired %||% list()
+        np_spec <- suppressWarnings(as.integer(pay$n_pending_spec %||% 0L)) %||% 0L
+      }
     } else if (file.exists(flags_path)) {
       pay <- tryCatch(jsonlite::fromJSON(flags_path, simplifyVector = FALSE), error = function(e) NULL)
-      if (!is.null(pay)) fired <- pay$fired %||% list()
+      if (!is.null(pay)) {
+        fired <- pay$fired %||% list()
+        np_spec <- suppressWarnings(as.integer(pay$n_pending_spec %||% 0L)) %||% 0L
+      }
     }
     nf <- length(fired)
     if (nf == 0) {
@@ -122,6 +128,11 @@ suppressWarnings(suppressMessages(tryCatch({
       }
       cat("  (재부상 ≠ 자동 재실행. 도훈/Q 판단으로 봉투 안 차별점 명시 후 진행 — 제약 완화 레버 금지)\n")
     }
+    # 승인대기와 동렬 노출: revival_spec 원소가 pending(참조 signal_id 명부 미확정/미배선 스텁)이면
+    # 자동감시가 안 도는 상태 — verbose 전용 경고를 모닝 표면으로 승격.
+    if (np_spec > 0L)
+      cat(sprintf("\n[부활신호 미배선 스텁 %d건] — revival_spec 원소의 참조 signal_id가 pending 스텁(자동감시 미가동). revival_signals.json 신호원 확정(active 등록) + draft_proposed 재작성 시 활성화\n",
+                  np_spec))
   }, error = function(e) {
     cat(sprintf("[재도전 시점] 재부상 섹션 실패(fail-soft): %s\n", conditionMessage(e)))
   })

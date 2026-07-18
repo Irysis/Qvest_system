@@ -136,22 +136,63 @@ suppressPackageStartupMessages({ library(jsonlite); library(data.table) })
 #   → mode-wiring 배선 가동(문자열 falsification 적립분) 즉시 터질 latent 결함(A2-F2②).
 #   보수 처리: 문자열 = n 카운트만 (none_falsified 판정 근거 없음 → TRUE 유지,
 #   retained_ok 판정 불가 → 구조체 분만 평가). 구조체 [{test,result,effect_retained}] 권장.
+# 2026-07-17 운영감사 수리 A1+A2 (5축 hurdle 정의 불변: attempts>=1 ∧ none_falsified ∧
+#   survived건 retained>=0.5):
+#   A1 crash-safe — result=survived ∧ effect_retained 비수치 → as.numeric NA → if(NA) crash
+#     (07-11 스윕 2/40 후보 침묵 실패 실측). 비수치는 retained-pass 불인정(보수 FALSE)+WARN.
+#   A2 result 토큰 정규화 — identical() 정확일치가 비정규 토큰('mechanism_falsified'/
+#     'negative'/'passed' 등 원장 8건 실측)을 none_falsified=TRUE로 방치(관대 방향 누락,
+#     L-RAMP-20260711_152314 실사례) → .fals_norm_result 소비. 미상 토큰 = 보수 방향
+#     (falsified 취급 = 승격 차단 쪽, INV-4: 불확실은 승격 금지 쪽)+WARN.
+#     'diagnostic'은 emit 규약(run_alpha_search DSR 등 게이트-비적용 진단 산출)상
+#     기존 중립 의미 유지 — 반증도 생존도 아님(retained 요건 비적용).
+.fals_norm_result <- function(res) {
+  s <- tolower(trimws(as.character(res %||% "")[1]))
+  if (is.na(s) || !nzchar(s)) return("unknown")
+  if (grepl("falsif", s, fixed = TRUE) || identical(s, "negative")) return("falsified")
+  if (grepl("surviv", s, fixed = TRUE) || identical(s, "passed")) return("survived")
+  if (grepl("weaken", s, fixed = TRUE)) return("weakened")
+  if (identical(s, "diagnostic")) return("diagnostic")
+  "unknown"
+}
+
 .axis_falsification <- function(candidate) {
   attempts_raw <- candidate$falsification_draft$attempts %||% list()
   if (is.character(attempts_raw)) attempts_raw <- as.list(attempts_raw)  # 최상위 chr vector 수용
   structured <- Filter(function(a) is.list(a), attempts_raw)
   n_string <- length(attempts_raw) - length(structured)
   n <- length(attempts_raw)
-  retained_ok <- if (length(structured)) all(vapply(structured, function(a)
-    (a$result %||% "") != "survived" || (suppressWarnings(as.numeric(a$effect_retained %||% 0)) >= .HURDLE$fals_min_retained),
-    logical(1))) else TRUE
-  none_falsified <- !any(vapply(structured, function(a) identical(a$result %||% "", "falsified"), logical(1)))
+  raw_tok <- vapply(structured, function(a) as.character(a$result %||% "")[1], character(1))
+  res_norm <- vapply(raw_tok, .fals_norm_result, character(1), USE.NAMES = FALSE)
+  n_nonstd <- sum(!(tolower(trimws(raw_tok)) %in% c("survived", "falsified", "weakened", "diagnostic")))
+  n_unknown <- sum(res_norm == "unknown")
+  if (n_unknown) {
+    cat(sprintf("[promote][WARN] falsification result 미상 토큰 %d건(%s) — 보수 처리(falsified 취급, INV-4)\n",
+                n_unknown, paste(unique(raw_tok[res_norm == "unknown"]), collapse = " | ")))
+    res_norm[res_norm == "unknown"] <- "falsified"
+  }
+  retained_vec <- vapply(seq_along(structured), function(i) {
+    if (!identical(res_norm[[i]], "survived")) return(TRUE)
+    er <- suppressWarnings(tryCatch(as.numeric(structured[[i]]$effect_retained %||% NA)[1],
+                                    error = function(e) NA_real_))
+    if (!is.finite(er)) return(NA)  # 비수치 표식 → 아래 보수 FALSE (A1 crash-safe)
+    er >= .HURDLE$fals_min_retained
+  }, logical(1))
+  n_retained_nonnum <- sum(is.na(retained_vec))
+  if (n_retained_nonnum) {
+    cat(sprintf("[promote][WARN] survived건 effect_retained 비수치 %d건 — retained-pass 불인정(보수 FALSE, crash-safe)\n",
+                n_retained_nonnum))
+    retained_vec[is.na(retained_vec)] <- FALSE
+  }
+  retained_ok <- if (length(retained_vec)) all(retained_vec) else TRUE
+  none_falsified <- !any(res_norm == "falsified")
   score <- min(1.0, (if (n >= 1) 0.5 else 0) + (if (n >= 3) 0.3 else 0) + (if (retained_ok && n >= 1) 0.2 else 0))
   list(score = round(score, 3),
        hurdle_pass = (n >= .HURDLE$fals_min_attempts && none_falsified && retained_ok),
        n_attempts = n, n_unstructured = n_string,
-       reason = sprintf("active attempts=%d (unstructured=%d) none_falsified=%s retained_ok=%s%s",
-                        n, n_string, none_falsified, retained_ok,
+       n_result_nonstandard = n_nonstd, n_retained_nonnumeric = n_retained_nonnum,
+       reason = sprintf("active attempts=%d (unstructured=%d, nonstd_result=%d, retained_nonnum=%d) none_falsified=%s retained_ok=%s%s",
+                        n, n_string, n_nonstd, n_retained_nonnum, none_falsified, retained_ok,
                         if (n_string) " [문자열 기록 — 구조체 전환 권장]" else ""))
 }
 

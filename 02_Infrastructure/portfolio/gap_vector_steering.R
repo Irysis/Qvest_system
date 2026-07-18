@@ -46,7 +46,7 @@ suppressPackageStartupMessages({
 if (!exists("%||%")) `%||%` <- function(a, b) if (!is.null(a)) a else b
 
 # ─── Constants ───────────────────────────────────────────────────────────────
-.GVS_VERSION       <- "1.1.0"   # M10 2026-07-11: 실book 연결(book_context/championship) + v8.3 enum 현행화
+.GVS_VERSION       <- "1.1.1"   # M10 2026-07-11: 실book 연결(book_context/championship) + v8.3 enum 현행화 / 1.1.1 2026-07-17: incumbent_book_ir_basis 라벨 병기(값 무변경)
 .GVS_GAP_PATH      <- file.path(.gvs_proj, ".cache", "portfolio_gap_vector.json")
 .GVS_BOOK_STATE    <- file.path(.gvs_proj, "qepm", "mailbox", "governor", "book_state.json")
 .GVS_MAX_AGE_DAYS  <- 30L
@@ -237,6 +237,14 @@ steer_gap_vector <- function(gap_path = .GVS_GAP_PATH,
     book_context <- list(
       book_id           = book_id,
       incumbent_book_ir = as.numeric(bs$incumbent_book_ir %||% NA),
+      # basis 라벨 병기 필드 — 값 자체 무변경 (measurement-graduation §4 basis 라벨 의무).
+      # 재산출은 FQ-044 후속(도훈 결정) 대기이므로 여기서는 라벨만 붙인다.
+      incumbent_book_ir_basis = list(
+        basis            = "stored embedded-BM: book_state.json 저장값 (recon NAV net-active vs 저장 벤치, ir_convention=net_active_recon_v1)",
+        computed_at      = as.character(bs$updated_at %||% NA),
+        computed_at_note = "book_state updated_at 기준 (산출 실체 = WT-D20260702_002 step3_clean_recompute_meta)",
+        caution          = "window-matched clean-basis 재산출 = FQ-044 후속(도훈 결정) 대기 — 저장 패널 same-month vintage 사고(§7b) 이후 stored 수치 인용 시 basis 라벨 의무. 본 필드는 라벨 병기이며 값은 무변경"
+      ),
       ir_convention     = bs$ir_convention %||% NA,
       metric_type       = "backtested",
       source            = "qepm/mailbox/governor/book_state.json (read-only)"

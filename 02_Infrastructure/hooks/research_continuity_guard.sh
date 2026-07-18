@@ -47,12 +47,11 @@ if [ -f "$GATE" ]; then
   [ -n "$GATE_OUT" ] || GATE_OUT='{}'
 fi
 
-# block 발행 시 그대로 전달(이빨) + 차단 이력 감사 append(자가발전 연료)
+# block 발행 시 그대로 전달(이빨). 차단 이력 감사는 gate 내부(_log_block)가 확장 스키마
+# ({ts,tp,categories,verdict_tokens,matched_terms,reason,span_hash})로 continuity_blocks.jsonl에
+# 직접 기록 — 여기서 {ts,tp} 중복 append 하지 않음(C4 정합). pass 분모는 gate가
+# .cache/continuity_gate_counters/passes_YYYYMMDD.json 일자 카운트로 확보.
 if printf '%s' "$GATE_OUT" | grep -q '"decision"'; then
-  {
-    TS=$(date +%Y-%m-%dT%H:%M:%S)
-    printf '{"ts":"%s","tp":"%s"}\n' "$TS" "$TP" >> "$DIR/.cache/continuity_blocks.jsonl"
-  } 2>/dev/null || true
   printf '%s\n' "$GATE_OUT"
   exit 0
 fi

@@ -335,6 +335,17 @@
           }
         ]
       }
+    ],
+    "SessionStart": [
+      {
+        "_doc_boot_canary": "2026-07-17 B2 (아키텍처 2주 운영 감사) — 부트 카나리아: bootstrap.sh 완주 스탬프(.cache/boot_stamp.json) 부재/24h+ stale 시 '/qvest 권장' 컨텍스트 경고. warn-only(차단 아님). 07-05 이후 12일 무부트 세션 가동 실측 대응.",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/boot_stamp_check.sh\" 2>>/tmp/boot_stamp_check.log || true"
+          }
+        ]
+      }
     ]
   },
   "enabledPlugins": {

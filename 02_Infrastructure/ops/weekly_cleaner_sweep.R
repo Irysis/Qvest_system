@@ -58,6 +58,22 @@ registry_zone <- if (dir.exists(file.path(root, "06_Registry"))) "06_Registry" e
 cat(sprintf("[cleaner] weekly sweep start @ %s root=%s dry_run=%s\n",
             format(now, "%Y-%m-%d %H:%M:%S"), root, DRY))
 
+# ---- 스윕 실행 lock (bootstrap 6b 검사 인터페이스) ----
+#   pid·ts(epoch) 기록 — 비정상 종료 잔존 lock은 소비측이 ts 기준 stale(>2h) 무시.
+#   정상/오류 종료 공통 삭제: 말미 명시 unlink + R 종료 finalizer(top-level stop 대비) 이중.
+sweep_lock_path <- file.path(root, ".cache", "cleaner_sweep.lock")
+try({
+  dir.create(dirname(sweep_lock_path), showWarnings = FALSE, recursive = TRUE)
+  writeLines(as.character(toJSON(list(
+    pid = Sys.getpid(), ts = as.numeric(now),
+    ts_human = format(now, "%Y-%m-%d %H:%M:%S"),
+    script = "02_Infrastructure/ops/weekly_cleaner_sweep.R"), auto_unbox = TRUE)),
+    sweep_lock_path)
+}, silent = TRUE)
+reg.finalizer(globalenv(),
+              local({ lp <- sweep_lock_path; function(e) suppressWarnings(unlink(lp)) }),
+              onexit = TRUE)
+
 # ---- fail-soft 실행기: 단계별 오류를 status에 기록하고 계속 ----
 #   주의: expr(promise)은 호출부(global) 환경에서 평가됨 — expr 안에서는 일반 `<-`로
 #   전역을 직접 갱신한다 (`x$y <<-`는 global의 부모(패키지 경로)를 탐색해 not-found 오류).
@@ -254,6 +270,8 @@ run_step("inv_git_log", {
 #       engine-core 스크립트 호출만 (fail-soft run_step 규약). DRY 시 promote 생략.
 # =============================================================================
 axiom_candidates_summary <- NULL
+promote_failures <- list()   # promote 순회 PASS/FAIL 미매칭(침묵 crash 의심) 보존 — pending JSON 노출
+promote_n_crash <- 0L
 run_step("axiom_weekly_cycle", {
   ax_dir <- file.path(root, "02_Infrastructure", "axiom")
   # bare python 금지 — venv(qvest_ml) 우선, QVEST_PY 환경변수로 override
@@ -280,8 +298,23 @@ run_step("axiom_weekly_cycle", {
       out <- suppressWarnings(system2("Rscript", c(shQuote(promote_r), shQuote(cand)),
                                       stdout = TRUE, stderr = TRUE))
       hit <- grep("\\[promote\\].*(PASS|FAIL)", out, value = TRUE)
+      if (!length(hit)) {
+        # PASS/FAIL 미매칭 = 침묵 crash 의심 — stderr tail을 로그 + pending JSON에 보존
+        #   (진단면 독립 확보: 원인 수리 여부와 무관하게 침묵 소실 재발 방지)
+        st_code <- attr(out, "status")
+        tail_txt <- paste(tail(out[nzchar(out)], 6), collapse = " | ")
+        promote_n_crash <- promote_n_crash + 1L
+        promote_failures[[length(promote_failures) + 1L]] <- list(
+          candidate = basename(cand),
+          exit = if (is.null(st_code)) 0L else as.integer(st_code),
+          output_tail = substr(tail_txt, 1, 800),
+          at = format(Sys.time(), "%Y-%m-%d %H:%M:%S"))
+      }
       cat(sprintf("  | [axiom] promote %s: %s\n", basename(cand),
-                  if (length(hit)) hit[1] else "출력 미확인 (fail-soft)"))
+                  if (length(hit)) hit[1]
+                  else sprintf("출력 미확인 (fail-soft) — exit=%s tail: %s",
+                               if (is.null(attr(out, "status"))) "0" else attr(out, "status"),
+                               substr(paste(tail(out[nzchar(out)], 3), collapse = " | "), 1, 300))))
     }
   }
   invisible(TRUE)
@@ -311,7 +344,7 @@ run_step("axiom_candidates_summary", {
     sc <- aj$promotion$source_candidate %||% NULL
     if (!is.null(sc)) promoted_ids <- c(promoted_ids, as.character(sc))
   }
-  hist_tab <- list(); near_miss <- list(); n_pending <- 0L
+  hist_tab <- list(); near_miss <- list(); n_pending <- 0L; confirm_flags <- list()
   for (cf in cand_fs) {
     cj <- tryCatch(fromJSON(cf, simplifyVector = FALSE), error = function(e) NULL)
     if (is.null(cj)) next
@@ -322,8 +355,8 @@ run_step("axiom_candidates_summary", {
     rls <- list.files(rl_dir, pattern = paste0("^AX-PENDING_", gsub("([][{}()+*^$|\\\\?.])", "\\\\\\1", cid), "_"),
                       full.names = TRUE)
     if (!length(rls)) next
-    rl <- tryCatch(fromJSON(rls[order(rls, decreasing = TRUE)][1], simplifyVector = FALSE),
-                   error = function(e) NULL)
+    rl_path <- rls[order(rls, decreasing = TRUE)][1]
+    rl <- tryCatch(fromJSON(rl_path, simplifyVector = FALSE), error = function(e) NULL)
     if (is.null(rl)) next
     failing <- unlist(rl$failing_hurdles %||% list())
     for (ax in failing) hist_tab[[ax]] <- (hist_tab[[ax]] %||% 0L) + 1L
@@ -332,16 +365,51 @@ run_step("axiom_candidates_summary", {
         candidate_id = cid, failing_axis = failing[1],
         weighted_score = rl$weighted_score %||% NA,
         statement_draft = substr(as.character(cj$statement_draft %||% ""), 1, 160))
+    # confirm_flags: within_condition_axis(direction_consistency 2026-07-04 재정의) 적용 후보 —
+    #   주간 confirm 의무(axiom-engine §5)의 도훈 표면 도달 경로 (review_log 실기록만 소비)
+    dc_def <- as.character(rl$axes$independence$direction_consistency_definition %||% "")
+    if (grepl("within_condition_axis", dc_def, fixed = TRUE))
+      confirm_flags[[length(confirm_flags) + 1L]] <- list(
+        candidate_id = cid,
+        item = "conditional direction_consistency 재정의(within_condition_axis) 적용 — 주간 도훈 confirm 대상",
+        detail = dc_def,
+        review_log = basename(rl_path))
+  }
+  # Distilled 계층 잔량: pending_5axis(정제 대기) 최고령 + quarantined_evidence — 적체 가시화
+  dist_dir <- file.path(root, "qepm", "memory", "axioms", "distilled")
+  n_p5 <- 0L; p5_oldest_days <- NA_real_; p5_oldest_id <- NA_character_; n_quar <- 0L
+  for (df_ in list.files(dist_dir, pattern = "^DIST-.*\\.json$", full.names = TRUE)) {
+    dj <- tryCatch(fromJSON(df_, simplifyVector = FALSE), error = function(e) NULL)
+    if (is.null(dj)) next
+    dst <- dj$status %||% ""
+    if (identical(dst, "pending_5axis")) {
+      n_p5 <- n_p5 + 1L
+      ca <- suppressWarnings(tryCatch(as.Date(substr(as.character(dj$created_at %||% ""), 1, 10)),
+                                      error = function(e) NA))
+      if (!is.na(ca)) {
+        age <- as.numeric(Sys.Date() - ca)
+        if (is.na(p5_oldest_days) || age > p5_oldest_days) {
+          p5_oldest_days <- age
+          p5_oldest_id <- dj$dist_id %||% basename(df_)
+        }
+      }
+    } else if (identical(dst, "quarantined_evidence")) n_quar <- n_quar + 1L
   }
   axiom_candidates_summary <- list(
     n_candidates_total = length(cand_fs),
     n_pending = n_pending,
+    n_promote_crash = promote_n_crash,
+    promote_failures = promote_failures,
     failing_axis_histogram = hist_tab,
     near_miss = near_miss,
+    confirm_flags = confirm_flags,
+    pending_5axis = list(n = n_p5, oldest_age_days = p5_oldest_days, oldest_dist_id = p5_oldest_id),
+    n_quarantined_evidence = n_quar,
     source = "promote.R review_log(AX-PENDING failing_hurdles) 실기록 집계 — 리뷰 없는 candidate는 histogram 미포함(정직)",
     note = if (DRY) "dry-run — promote 미실행, 기존 review_log 스냅샷 집계" else "step 3.5 promote 진단 직후 집계")
-  cat(sprintf("[cleaner] axiom 후보 현황: total=%d pending=%d near_miss=%d (failing axes: %s)\n",
-              length(cand_fs), n_pending, length(near_miss),
+  cat(sprintf("[cleaner] axiom 후보 현황: total=%d pending=%d promote_crash=%d near_miss=%d confirm_flags=%d p5axis=%d(최고령 %s일) quarantined=%d (failing axes: %s)\n",
+              length(cand_fs), n_pending, promote_n_crash, length(near_miss), length(confirm_flags),
+              n_p5, as.character(p5_oldest_days), n_quar,
               if (length(hist_tab)) paste(sprintf("%s=%d", names(hist_tab), unlist(hist_tab)), collapse = " ") else "리뷰기록 없음"))
   invisible(TRUE)
 })
@@ -449,3 +517,6 @@ cat(sprintf("[cleaner] done — steps: %s%s\n",
             paste(sprintf("%s=%s", names(step_status),
                           sub(":.*$", "", unlist(step_status))), collapse = " "),
             if (length(fails)) sprintf(" (FAIL %d단계 — fail-soft 계속됨)", length(fails)) else ""))
+
+# 스윕 lock 해제 (정상 종료 경로 — 오류 종료는 상단 finalizer가 처리)
+try(unlink(sweep_lock_path), silent = TRUE)

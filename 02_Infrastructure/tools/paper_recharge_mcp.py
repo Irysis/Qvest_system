@@ -140,19 +140,28 @@ class McpClient:
         self.proc.stdin.flush()
 
 
-def _normalize_arxiv_results(raw: Any, query: str) -> list[dict[str, Any]]:
+def _normalize_arxiv_results(raw: Any, query: str, errors: list | None = None) -> list[dict[str, Any]]:
     if isinstance(raw, dict):
         # MCP tool responses wrap payloads in content blocks: {"type":"text","text":"<json>"}.
         # arxiv-mcp-server returns the paper list as a JSON string inside such a block, so
         # unwrap + re-parse before looking for the papers array (else 0 usable candidates).
         if raw.get("type") == "text" and isinstance(raw.get("text"), str):
             try:
-                return _normalize_arxiv_results(json.loads(raw["text"]), query)
-            except (json.JSONDecodeError, ValueError):
+                return _normalize_arxiv_results(json.loads(raw["text"]), query, errors)
+            except (json.JSONDecodeError, ValueError) as exc:
+                # text 블록이 JSON이 아니면 대개 상류 서버의 에러 텍스트 — 무음 폐기 대신
+                # errors에 보존해 인입 0 붕괴가 '정상 완료'로 위장되지 않게 한다.
+                if errors is not None:
+                    errors.append({
+                        "query": query,
+                        "kind": "text_block_parse_error",
+                        "error": f"{type(exc).__name__}: {exc}",
+                        "text_head": raw["text"][:400],
+                    })
                 return []
         for key in ("papers", "results", "items", "content"):
             if key in raw:
-                return _normalize_arxiv_results(raw[key], query)
+                return _normalize_arxiv_results(raw[key], query, errors)
         return []
     if isinstance(raw, list):
         rows = []
@@ -160,7 +169,7 @@ def _normalize_arxiv_results(raw: Any, query: str) -> list[dict[str, Any]]:
             if isinstance(item, dict):
                 # A content block can also arrive as a list element (result.content[]).
                 if item.get("type") == "text" and isinstance(item.get("text"), str):
-                    rows.extend(_normalize_arxiv_results(item, query))
+                    rows.extend(_normalize_arxiv_results(item, query, errors))
                     continue
                 title = item.get("title") or item.get("name") or ""
                 arxiv_id = item.get("arxiv_id") or item.get("id") or item.get("paper_id") or ""
@@ -186,6 +195,24 @@ def _normalize_arxiv_results(raw: Any, query: str) -> list[dict[str, Any]]:
                 )
         return rows
     return []
+
+
+def _prev_prefilter(out_path: Path) -> tuple[int | None, str | None]:
+    """직전 run 리포트의 candidates_prefilter — 같은 디렉토리 mcp_discovery_*.json 중
+    오늘분 제외 최신(파일명 YYYYMMDD = 사전순 = 시간순). 인입 붕괴(prefilter>0 → 0) 대조용."""
+    try:
+        sibs = sorted(p for p in out_path.parent.glob("mcp_discovery_*.json")
+                      if p.name != out_path.name)
+    except OSError:
+        return None, None
+    for p in reversed(sibs):
+        prev = _load_json(p, None)
+        if isinstance(prev, dict) and "candidates_prefilter" in prev:
+            try:
+                return int(prev["candidates_prefilter"]), p.name
+            except (TypeError, ValueError):
+                continue
+    return None, None
 
 
 def _call_search_tool(client: McpClient, tool_name: str, query: str, categories: list[str], max_results: int,
@@ -304,7 +331,7 @@ def main() -> int:
             ok, result = _call_search_tool(client, search_tool, query, categories, max_results,
                                            date_from=date_from, sort_by="date")
             if ok:
-                candidates.extend(_normalize_arxiv_results(result, query))
+                candidates.extend(_normalize_arxiv_results(result, query, report["errors"]))
             else:
                 report["errors"].append({"query": query, "response": result})
         seen = set()
@@ -326,6 +353,13 @@ def main() -> int:
         report["candidates_dropped_out_of_scope"] = len(fin) - len(kept)
         report["candidates"] = kept
         report["status"] = "mcp_ok" if kept else "mcp_ok_no_candidates"
+        # 인입 붕괴 분리 라벨: 직전 run엔 prefilter>0 이었는데 이번 run prefilter=0 이면
+        # '정상 완료(no_candidates)'가 아니라 상류 의심 상태로 기록 (fail-open 라벨링 해소).
+        prev_n, prev_name = _prev_prefilter(out_path)
+        report["prev_prefilter"] = prev_n
+        report["prev_report"] = prev_name
+        if len(uniq) == 0 and prev_n is not None and prev_n > 0:
+            report["status"] = "mcp_suspect_empty"
     except Exception as exc:
         report["status"] = "mcp_error"
         report["errors"].append(f"{type(exc).__name__}: {exc}")

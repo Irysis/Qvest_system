@@ -23,11 +23,14 @@ import continuity_gate as G  # noqa: E402
 CASES = G.load_cases(ROOT)
 
 
-def judge(text, marker=None):
-    return G.judge_text(text, "", CASES, ROOT, marker_override=marker)
+def judge(text, marker=None, verdict_artifact=None):
+    return G.judge_text(text, "", CASES, ROOT, marker_override=marker,
+                        verdict_artifact_override=verdict_artifact)
 
 
-# (name, text, expect_block, marker_override)
+# (name, text, expect_block, marker_override[, verdict_artifact_override])
+# verdict_artifact_override: C1 운영-턴 판별 강제 — False=이번 턴 신규 판정 산출물 없음(보고/운영 턴),
+#   True=판정 생산 턴, None=기본(판별 불가 시 재현율 보존 True).
 TESTS = [
     # ── BLOCK: 역대 실제 적발 우회어 + 계속 결측 ──────────────────────────────
     ("B1_arc_completion",
@@ -97,6 +100,30 @@ TESTS = [
      "밸류 아크는 실측이 끝났으니 이 책은 덮고 다른 데이터원으로 넘어갑니다.", True, None),
     ("ADV_nextprobe_mentioned_but_none",
      "cap-w 미달. next_probe 후보를 봤으나 실질 next_probe는 없습니다. 종료합니다.", True, None),
+
+    # ── C1/C2 회귀 (07-17 감사 HIGH-1 수리): 운영/보고/진행중 턴 오탐 제거 + 재현율 불변 ──
+    ("C1a_report_turn_quoting_past_verdict_tokens",
+     # 과거 판정 어휘 인용하는 보고 턴(신규 판정 산출물 없음) — 07-17 19:28 실블록 유형
+     "텔레그램 발송 완료했습니다. 발송 내용: 자본 졸업 관문 3종(다중검정 t값 2.95·표본외 유지율 0.7·칼마 "
+     "0.64)과 screen-tier 회수 방향 등 아키텍처 상태 정리(신규 실측 수치 없음)입니다.",
+     False, None, False),
+    ("C2a_inprogress_report_with_neg_tokens",
+     # NEG 토큰 포함 진행중 상태보고 — 07-15 01:18/02:37/03:07 실블록 유형
+     "밤샘 연쇄 정상 진행 중입니다. R33은 config-scoped negative로 close_round 마감했고, "
+     "R34(insider 소비면 전환)가 측정 중입니다. 다음 큐: FQ-038 소형 filer coverage.",
+     False, None, None),
+    ("C1b_true_verdict_turn_tokens_only_still_blocks",
+     # 실제 판정 턴(신규 산출물 有) + NEG-토큰 종결 + 계속-산출물 결측 → 여전히 BLOCK
+     "R41 판정 산출: cap-w PORT_t 1.9로 미달, screen-tier 확정입니다. 추가로 볼 계획은 없습니다.",
+     True, None, True),
+    ("C1c_ops_turn_explicit_finality_still_blocks",
+     # 운영 턴(산출물 無)이라도 명시 종결어휘 + 계속 결측이면 BLOCK — C1은 verdict_close만 판별
+     "배관 점검 중 확인: 이 팩터 방향은 종착이라 판단합니다. 알파 쪽은 더 볼 것이 없습니다.",
+     True, None, False),
+    ("C2b_progress_marker_with_finality_still_blocks",
+     # 진행 마커가 있어도 종결어휘 실재면 C2 예외 미적용 → BLOCK
+     "다른 측정이 백그라운드 진행 중이지만, 이 라운드의 밸류 계열은 완결로 정리합니다. cap-w 미달.",
+     True, None, True),
 ]
 
 

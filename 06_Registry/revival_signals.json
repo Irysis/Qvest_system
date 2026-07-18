@@ -61,11 +61,24 @@
     {
       "signal_id": "dart_insider_present",
       "kind": "file_exists",
+      "source_path": ".cache/dart/insider_backfill/202606.csv",
+      "value_col": null,
+      "sort_col": null,
+      "extractor": "DART exec-insider 역사 backfill 완주 마커 — 터미널월 202606.csv 존재 여부(2026-07-14 백필 258/258 도착 실측, .cache/dart/insider_backfill/). file_exists 로더가 TRUE/FALSE 반환. 디렉토리가 아닌 터미널월 파일을 마커로 써서 부분 도착을 '가용'으로 오판하지 않는다.",
+      "description": "비-return 신규 데이터원(DART insider) 가용 신호원. 예 condition: 'x == TRUE' — insider 역사 데이터 도착 = 관련 실패지식(비-return 재도전, DIST live_trigger type=data) 재부상 트리거.",
+      "registered_at": "2026-07-04",
+      "activated_at": "2026-07-17",
+      "status": "active",
+      "note": "구 pending 스텁(source_path null) → 2026-07-17 active 승격 (07-14 데이터 도착 실측 근거). 기존 DIST revival_spec의 status='pending' 원소는 draft_proposed 재작성 시 자동 active 전환(.dist_ensure_signal_registered)."
+    },
+    {
+      "signal_id": "filing_delay_watch_present",
+      "kind": "file_exists",
       "source_path": null,
       "value_col": null,
       "sort_col": null,
       "status": "pending",
-      "note": "신규 데이터원 가용 플래그(monitored_source: 06_Registry 신규 데이터원 등재(DART insider 등))."
+      "note": "신규 데이터원 가용 플래그(monitored_source: filing_delay_watch tripwire + FQ-038/FQ-003 산출)."
     }
   ],
   "not_yet_registered": {

@@ -1,0 +1,41 @@
+{
+  "l_code": "L-AR-20260718_103500",
+  "round": "FQ-055 감쇠 함수형 진단 (decay functional-form diagnostic)",
+  "mode": "AR(Q-Lead diagnostic, alpha-search 계열)",
+  "date": "2026-07-18",
+  "metric_type": "diagnostic_fit",
+  "polarity": "informative",
+  "selection_type": "diagnostic (자본 선택 아님 — DSR 게이트 비대상)",
+  "hypothesis": "팩터 감쇠 시계열에 hyperbolic/exponential/linear/break 함수형을 적합하면 기전 분류·(K,λ)·break-dating·부활밴드가 나온다 (이론: arXiv 2512.11913 v1 Nash K/N — v2 저자 철회로 이론부만 소비)",
+  "design": "3계층 x 5모형: S-M(월간 rank-IC 327팩터, roll 36m) / C-M(r6 배포권 active 102팩터 x {capw, ewuni} dual-basis, roll 60m SR) / S-D(일간 1d-IC 174팩터, fdb_daily carve-out 도훈 승인, roll 252d). AICc 2-margin + MBB 부트스트랩 재현율 신뢰등급. 사전등록 2건 + pin(decay_fit_20260717) + bench parity Δ=0 검증",
+  "key_findings": [
+    "F1 (모양): smooth 감쇠 3형(hyperbolic/exp/linear) = 부트스트랩 전패(low, 재현율 ~0) / break(계단 단절)만 전량 high(158+77+83) — KR 팩터 감쇠는 crowding smooth curve가 아니라 구조 단절. 외부 hyperbolic 프레임 형태 기각, '얇은 양(+) 꼬리 잔존' 예측만 정성 부합(post-break 중앙값 롤링IC 0.015·active SR +0.12, 음전 24%/35%)",
+    "F2 (날짜): C-M capw 단절 2018-19 집중(47/77) → 60m 롤링 지연 보정 시 기저 전환 2016-17 = post-2017 cohort 벽의 최초 날짜 고정. S-M은 2015-17 + 2011-12 2웨이브",
+    "F3 (dual-basis): 괴리 40/102, 지배형 34건 = capw break ↔ ewuni no_initial_signal — 초기 전성기 알파가 EW-유니버스 대비론 애초 부재 = cap-w 벤치-구성 아티팩트 새 각도. M08 역방향 괴리(capw 2019-02 음전 vs ewuni 생존)",
+    "F4 (horizon): S-D 1d-IC 단절은 1997-98·2021 집중, C-M과 일치 5%(교집합 21) — monthly-horizon 감쇠 != 1d 신호력 죽음 = 벽은 전이(IC→PORT_t)·벤치(cap-w) 계층 국소 (기존 벽 진단의 독립 확증)",
+    "F5 (북 팩터): Q07/Q25 S-M 단절 2015-08/09이나 IC 여전히 양(Q25 상승 단절) — 북 방어 슬리브 신호 생존"
+  ],
+  "consumption": [
+    "부활 트리거 밴드 241건 armed: revival_bands_20260718.parquet (post-break 레벨 + 2σ 잔차 밴드 — smooth 곡선 밴드 설계는 F1로 기각). monitoring 배선 = next_probe",
+    "layer_bottleneck_map v18 부기 07-18 (갭 귀속 ①재료 불변 + 벽 날짜 고정)",
+    "온보딩 prior: 신규 팩터는 mechanical/judgment 이분법 아닌 단절-감수성(cap-w 노출·2016-17 cohort 여부) 기준"
+  ],
+  "next_probe": [
+    "P1: revival_bands → monitoring 월간 소비 배선 (trailing 창이 밴드 상향 돌파 시 un-bury flag — failure_revival_monitor 연계, feasible now)",
+    "P2: C-M capw 단절 2018-19 vs KR factor-ETF/스마트베타 AUM·공매도금지 이벤트 시계열 대조 (기저 2016-17 전환의 원인 후보 판별 — 외부 데이터 수집 소요)",
+    "P3: S-D 2021 단절 클러스터(17팩터) 명단 기전 분해 — 공매도 전면금지(2020-03~2021-05)·리테일 참여 급증과의 정합 (1d-horizon 신호 소비면은 우리 봉투 밖이나 monitoring/집행 참고)"
+  ],
+  "honesty": [
+    "diagnostic_fit — 자본/graduation 수치 아님. rolling 자기상관으로 R² 단독 판정 금지(AICc+부트스트랩만 권위)",
+    "S-D no_initial_signal 74/162는 1d-horizon 고유(일간 reversal 지배) — 월간 신호력과 동일시 금지",
+    "러너 결함 2건 당일 수리: month_end 버그(터미널월 6주 오염 → 수정 후 parity Δ=0, 라벨 불변) / SD 요약 문법(적합 산출 무영향, consolidate로 보완)"
+  ],
+  "evidence": {
+    "prereg": ["stage_artifacts/decay_fit/preregistration.json (sha256 8e4f4d6b...)", "stage_artifacts/decay_fit/preregistration_SD.json"],
+    "carve_out": "stage_artifacts/decay_fit/carveout_approval.json",
+    "outputs": ["decay_fit_SM_20260717.parquet", "decay_fit_CM_20260717.parquet", "decay_fit_SD_20260718.parquet", "sd_ic_daily_panel_20260718.parquet (재사용 자산: 174팩터 일간 IC 패널)", "revival_bands_20260718.parquet", "decay_fit_summary_20260717.json", "decay_fit_SD_summary_20260718.json"],
+    "runners": ["04_Research/decay_fit/run_decay_fit_monthly.R", "run_decay_fit_daily.R", "decay_fit_engine.R", "run_decay_consolidate.R"],
+    "charts": "stage_artifacts/decay_fit/charts/ (label_distribution, break_year_hist, fit exemplars)"
+  },
+  "fq_ref": "FQ-055 (06_Registry/alpha_frontier_queue.json)"
+}

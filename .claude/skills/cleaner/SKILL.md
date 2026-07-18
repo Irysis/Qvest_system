@@ -61,6 +61,11 @@ pending_5axis → [자동초안 에이전트 + 적대검증] → proposed(주입
 - **활성화(도훈 승인 게이트, 무인 금지)**: 도훈이 `Rscript -e 'source("02_Infrastructure/axiom/distilled.R"); approve_proposed(c("DIST-..."))'` 로 배치 승인 → status=proposed → distilled 전환 시에만 주입 3배선(inject/hypothesis_index/strategic_truths)이 소비. **proposed·pending_5axis 초안은 절대 주입 안 됨**(INV-6 안전속성 보존).
 - **불변**: 주입 3배선은 status=distilled만 소비. active AX JSON 무변경(DIST 계층 작업). `quarantined_evidence`(현 6건, 07-04 증거계보 감사 TAINTED)는 초안·정제·활성화 대상 제외.
 
+**★ 백로그 드레인 + stale 대조 규약 (2026-07-17 도훈 승인 수리 — 2주 운영 감사)**:
+- **① pending_5axis 드레인 의무**: 매 /cleaner 세션 시작 시 `06_Registry/distilled_knowledge.json`에서 `status="pending_5axis"` **잔량 + 최고령 `created_at`** 확인(실측 2026-07-17: 49건, 최고령 2026-07-08 등재분). 세션당 **최소 초안 처리량 = 권장 5건+** — 우선순위는 **supporting L-code 수 상위**(pending → proposed 자동초안 + 위 적대검증 5체크). near-miss만 집고 백로그 전체를 이월하는 패턴 금지(W28 "잔여 pending_5axis 백로그 차주 이월" 반복이 49건 적체의 원인 — 이월 시 사유·잔량 명기).
+- **② quarantined_evidence 잔량 확인**: `status="quarantined_evidence"` 잔량·정체일 1줄 보고(실측 2026-07-17: 6건, 07-04 TAINTED 이후 13일 정체) — 초안 대상 제외는 불변, 잔량 방치는 관측 대상.
+- **③ distilled ↔ settled-negative 주기 대조 (§0.1 원리5 — 메커니즘·카드도 Cleaner 리뷰 대상)**: 승인된 `status="distilled"` 카드의 `frontier`/`statement_refined`를 최신 settled-negative 목록(measurement-graduation §5·§6 + 메모리 settled 항목)과 대조 — settled-negative를 '미검증 레버'로 광고 중인 stale 카드는 **재정제 대상 등재**(`refine_distilled`). 실사례: **DIST-RAMP-006**이 frontier에 DPL(2026-06-26 settled-negative — 재제안 금지)을 미검증 레버로 광고 중이며 잔차 sleeve 스태킹 항목도 07-05 RAMP R1 config-scoped 미달 실측 미반영 — **07-18 재정제 대상**.
+
 ### ③ 엑기스 적립 (L-code + 메모리)
 
 - digest 작성 중 발견한 **미적립 학습**(L-code 없는 유의미한 교훈)은 `02_Infrastructure/axiom/lcode_emit.R::emit_lcode()`로 발행 (모드별 prefix 자동, `metric_type` 정직 라벨 — proxy 결과에 backtested 금지).

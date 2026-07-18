@@ -162,6 +162,19 @@ emit_lcode <- function(mode, strategy_id, grade, lesson_text,
     if (!isTRUE(v$promotion_ready))
       cat(sprintf("[emit_lcode][WARN] %s: 승격축 입력 미완(promotion_ready=FALSE) — missing: %s\n",
                   l_code, paste(v$missing_promotion_fields, collapse = ", ")))
+  } else {
+    # [2026-07-17 운영감사 A4] validate fail-open 봉합 — lcode_schema.R 미로드 시에도
+    # 최소 게이트(metric_type enum)는 실경유. 비enum 신조어('observational_monitoring',
+    # l_code_R42 실물)가 BLOCKED 없이 디스크 착지하던 갭. fail-soft 보존: enum 통과분은
+    # WARN 후 emit 계속 (전체 스키마 검증은 schema 복구 후 harvester 재검증이 담당).
+    cat(sprintf("[emit_lcode][WARN] lcode_schema.R 미로드(%s) — metric_type enum 폴백 게이트로 검증\n", schema_src))
+    .mt_enum <- c("proxy", "estimated", "canonical_screen", "backtested", "unavailable")
+    mt_chk <- as.character(lcode$metric_type %||% "")
+    if (!(mt_chk %in% .mt_enum)) {
+      cat(sprintf("[emit_lcode][BLOCKED] %s/%s: metric_type='%s' 비표준 (허용: %s) — 폴백 enum 게이트\n",
+                  mode, strategy_id, mt_chk, paste(.mt_enum, collapse = "/")))
+      return(invisible(NULL))
+    }
   }
   if (isTRUE(dry_run)) {
     cat(sprintf("[emit_lcode][dry-run] %s (%s, %s)\n", lcode$l_code, mode, metric_type))

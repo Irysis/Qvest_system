@@ -128,6 +128,75 @@ def _tail(text, frac=0.4, floor=600):
     return text[-k:] if n > k else text
 
 
+def _span_of(text):
+    """차단/pending 공용 span (hash join 키의 단일 정의 — C4)."""
+    return _tail(text or "", 0.4, 600).strip()[:400]
+
+
+def _span_hash(span):
+    return hashlib.sha1((span or "").encode("utf-8", "replace")).hexdigest()[:12]
+
+
+def _ts_to_epoch(user_ts):
+    if not user_ts:
+        return None
+    try:
+        import datetime
+        return datetime.datetime.fromisoformat(user_ts.replace("Z", "+00:00")).timestamp()
+    except Exception:
+        return None
+
+
+def _apply_suppressions(text, cases):
+    """C3-②: dismissed 오탐(--review/--dismiss)에서 학습된 suppression 구절을 마스킹 —
+    결정론 판정 한정(오탐도 학습되는 양방향 루프). 구절은 반드시 문맥 포함 — bare 토큰
+    whitelisting으로 재현율이 새는 것을 최소 길이 가드로 차단."""
+    sup = cases.get("suppressions", [])
+    if not sup:
+        return text
+    for s in sup:
+        ph = s.get("phrase", "")
+        tok = s.get("token", "")
+        if not ph or len(ph) < max(len(tok) + 3, 8):
+            continue
+        if ph in text:
+            text = text.replace(ph, " ")
+    return text
+
+
+def _ops_progress(tail, cases):
+    """C2 입력: 진행/운영 마커(케이스 파일 ops_context_terms — 하드코딩 아닌 열린 스키마)."""
+    return [t for t in cases.get("ops_context_terms", []) if t and t in tail]
+
+
+def turn_verdict_artifacts(root, user_ts):
+    """C1 운영-턴 판별: 이번 턴(user_ts 이후)에 신규 '판정 산출물'이 실재하는가.
+    판정 산출물 = stage_artifacts/l_code/** 신규 파일 · .cache/round_closures.jsonl append
+    (close_round 원장) · qepm/mailbox/**/verdict.json 신규 write.
+    부재 = 이 턴은 판정 생산 턴이 아님(보고/브리핑/운영) → verdict_close(간접 NEG-토큰
+    신호)를 차단 근거에서 제외. 명시 종결어휘(category backstop)는 이 판별과 무관하게 유효.
+    user_ts 불명·스캔 오류 = 판별 불가 → True(기존 재현율 보존, fail-toward-recall)."""
+    ref = _ts_to_epoch(user_ts)
+    if ref is None:
+        return True, ["user_ts_unknown"]
+    ref -= 2
+    ev = []
+    try:
+        for f in (os.path.join(root, ".cache", "round_closures.jsonl"),
+                  os.path.join(root, ".cache", "last_round_closure.json")):
+            if os.path.isfile(f) and os.path.getmtime(f) >= ref:
+                ev.append(os.path.basename(f))
+        for pat in (os.path.join(root, "stage_artifacts", "l_code", "**", "*.json"),
+                    os.path.join(root, "qepm", "mailbox", "**", "verdict.json")):
+            for f in glob.glob(pat, recursive=True):
+                if os.path.isfile(f) and os.path.getmtime(f) >= ref:
+                    ev.append(os.path.relpath(f, root))
+                    break
+    except Exception:
+        return True, ["scan_error"]
+    return (len(ev) > 0), ev
+
+
 def research_context(text, cases):
     terms = cases.get("research_context_terms", [])
     hit = [t for t in terms if t and t in text]
@@ -157,6 +226,7 @@ _NEG_TOKENS = [
 
 
 def detect_closure(text, cases):
+    text = _apply_suppressions(text, cases)  # C3-② dismissed-오탐 학습분 마스킹
     tail = _tail(text)
     matched_cats, matched_terms = [], []
     has_waiting = False
@@ -181,6 +251,7 @@ def detect_closure(text, cases):
         "has_finality": has_finality,
         "verdict_close": verdict_close,
         "verdict_tokens": verdict_hit,
+        "ops_progress": _ops_progress(tail, cases),  # C2 입력(진행/운영 마커)
     }
 
 
@@ -207,15 +278,7 @@ def marker_fresh(root, user_ts):
         mt = os.path.getmtime(p)
     except Exception:
         return False, None
-    ref = None
-    if user_ts:
-        try:
-            # ISO8601 → epoch (Z 처리)
-            ts = user_ts.replace("Z", "+00:00")
-            import datetime
-            ref = datetime.datetime.fromisoformat(ts).timestamp()
-        except Exception:
-            ref = None
+    ref = _ts_to_epoch(user_ts)
     if ref is not None:
         fresh = mt >= (ref - 2)  # user 프롬프트 이후 작성 = 이번 턴
     else:
@@ -325,7 +388,9 @@ def _reframe_hint(cases, categories):
 
 
 def judge_text(text, tool_inputs, cases, root, user_ts=None, marker_override=None,
-               use_llm=False):
+               use_llm=False, verdict_artifact_override=None):
+    # tool_inputs: 의도적 판정 제외(미소비 유지) — tool 호출 인자는 코드/경로/과거-판정 인용
+    # 노이즈라 종결 어휘 오탐만 늘림. 판정 대상 = assistant 서술 텍스트만.
     diag = {"research_context": False, "detected": False}
     if not text or not text.strip():
         return {"block": False, "diag": diag}
@@ -333,10 +398,28 @@ def judge_text(text, tool_inputs, cases, root, user_ts=None, marker_override=Non
         return {"block": False, "diag": diag}
     diag["research_context"] = True
     cl = detect_closure(text, cases)
+    # ── C1 운영-턴 판별: verdict_close(간접 NEG-토큰 신호)는 '이번 턴 신규 판정 산출물'이
+    #    실재할 때만 차단 근거. 없으면 보고/브리핑/운영 턴 — 과거 판정 어휘 인용은 종결이 아님.
+    #    명시 종결어휘(has_finality)·대기-마감(has_waiting)은 이 판별과 무관하게 유효(재현율 불변).
+    if cl["verdict_close"]:
+        if verdict_artifact_override is None:
+            va, va_ev = turn_verdict_artifacts(root, user_ts)
+        else:
+            va, va_ev = bool(verdict_artifact_override), ["override"]
+        diag["verdict_artifacts"] = {"produced": va, "evidence": va_ev[:5]}
+        if not va:
+            cl["verdict_close"] = False
+            cl["verdict_close_suppressed"] = "no_new_verdict_artifact"
+        elif cl["ops_progress"] and not cl["has_finality"]:
+            # ── C2 in-progress 예외(케이스 파일 '진행 중 리서치 실재 시 허용' 일반화의 코드화):
+            #    진행/운영 마커 실재 ∧ 종결어휘(backstop) 부재 → NEG-토큰 서술은 상태보고.
+            cl["verdict_close"] = False
+            cl["verdict_close_suppressed"] = "in_progress_context"
     # 선택적 LLM: detection만 확장(계약 게이트는 불변)
     llm = llm_verdict(text, cases) if use_llm else None
     llm_flag = bool(llm and llm.get("is_giving_up_closure"))
-    detected = cl["detected"] or llm_flag
+    detected = cl["has_finality"] or cl["has_waiting"] or cl["verdict_close"] or llm_flag
+    cl["detected"] = detected
     diag.update({"detected": detected, "closure": cl, "llm": llm})
     if not detected:
         return {"block": False, "diag": diag}
@@ -405,7 +488,7 @@ def _capture_pending(root, tail_span, closure):
     except Exception:
         data = {"pending": []}
     span = (tail_span or "").strip()[:400]
-    h = hashlib.sha1(span.encode("utf-8", "replace")).hexdigest()[:12]
+    h = _span_hash(span)
     if any(e.get("hash") == h for e in data.get("pending", [])):
         return
     data.setdefault("pending", []).append({
@@ -424,6 +507,66 @@ def _capture_pending(root, tail_span, closure):
         pass
 
 
+def _count_pass(root, res, forced=None):
+    """C4: 게이트 검사 pass 경량 카운트(FP율 분모 확보). 일자 파일 —
+    .cache/continuity_gate_counters/passes_YYYYMMDD.json (per-turn cap 키 파일과 접두사 분리)."""
+    try:
+        d = os.path.join(root, ".cache", "continuity_gate_counters")
+        os.makedirs(d, exist_ok=True)
+        p = os.path.join(d, "passes_" + time.strftime("%Y%m%d") + ".json")
+        try:
+            with open(p, encoding="utf-8") as f:
+                data = json.load(f)
+        except Exception:
+            data = {"date": time.strftime("%Y-%m-%d"), "n_pass": 0, "by": {}}
+        data["n_pass"] = int(data.get("n_pass", 0)) + 1
+        diag = res.get("diag", {}) if res else {}
+        if forced:
+            k = forced
+        elif not diag.get("research_context"):
+            k = "non_research"
+        elif not diag.get("detected"):
+            sup = diag.get("closure", {}).get("verdict_close_suppressed")
+            k = ("suppressed:" + sup) if sup else "no_closure_detected"
+        elif diag.get("contract", {}).get("satisfied"):
+            k = "contract_satisfied"
+        else:
+            k = "other"
+        by = data.setdefault("by", {})
+        by[k] = int(by.get(k, 0)) + 1
+        with open(p, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False)
+    except Exception:
+        pass
+
+
+def _log_block(root, tp, turn, res):
+    """C4 차단 감사 스키마: 무엇이(categories/verdict_tokens/matched_terms) 왜(reason) 막았는지
+    + span_hash(pending_cases와 join 키). guard.sh의 {ts,tp} 최소 기록을 대체 —
+    guard.sh는 중복 append하지 않는다(정합)."""
+    try:
+        diag = res.get("diag", {})
+        cl = diag.get("closure", {})
+        ct = diag.get("contract", {})
+        span = _span_of(turn.get("text", ""))
+        rec = {
+            "ts": time.strftime("%Y-%m-%dT%H:%M:%S"),
+            "tp": tp,
+            "decision": "block",
+            "categories": cl.get("categories", []),
+            "verdict_tokens": cl.get("verdict_tokens", []),
+            "matched_terms": cl.get("matched_terms", []),
+            "reason": "; ".join(ct.get("missing", []))[:300],
+            "span_hash": _span_hash(span),
+        }
+        p = os.path.join(root, ".cache", "continuity_blocks.jsonl")
+        os.makedirs(os.path.dirname(p), exist_ok=True)
+        with open(p, "a", encoding="utf-8") as f:
+            f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+    except Exception:
+        pass
+
+
 def run_transcript(tp, cap=3):
     root = project_root()
     cases = load_cases(root)
@@ -431,6 +574,7 @@ def run_transcript(tp, cap=3):
     res = judge_text(turn["text"], turn["tool_inputs"], cases, root,
                      user_ts=turn["user_ts"], use_llm=True)
     if not res["block"]:
+        _count_pass(root, res)  # C4: FP율 분모
         return {}
     # 자가발전: 신어 차단이면 pending 케이스 자동 포착
     try:
@@ -443,12 +587,85 @@ def run_transcript(tp, cap=3):
     if n > cap:
         sys.stderr.write(f"[continuity_gate] cap {cap} 초과 — pass (loop 방지). "
                          "계속-산출물 미충족이 반복됨: 수동 확인 필요.\n")
+        _count_pass(root, res, forced="cap_exceeded")
         return {}
+    _log_block(root, tp, turn, res)  # C4: 차단 감사(스키마 확장)
     return {"decision": "block", "reason": res["reason"]}
 
 
+def _triage_hint(span, cases):
+    """C3-③ /cleaner 판별 힌트 1줄: FP성(진행보고·브리핑) vs TP성(종결 프레이밍) 구분."""
+    span = span or ""
+    has_fin = any(t and t in span
+                  for cat in cases.get("categories", [])
+                  for t in cat.get("backstop_terms", []))
+    ops = [t for t in cases.get("ops_context_terms", []) if t and t in span]
+    if not has_fin and ops:
+        return ("FP성 추정 — 진행/운영 마커(" + ", ".join(ops[:3]) +
+                ") 실재·종결어휘 무 → --dismiss 후보")
+    if not has_fin:
+        return ("FP성 가능 — NEG-토큰 인용만·종결어휘 무. 보고/브리핑이면 --dismiss, "
+                "완곡 종결 신어면 --append-case --term 승격")
+    return "TP성 추정 — 종결어휘 backstop 실재 → --append-case 승격 검토"
+
+
+def _context_phrases(span, tok, win=18, limit=3):
+    """dismissed span에서 트리거 토큰의 문맥 구절 추출(±win자, 원문 substring 보존 —
+    마스킹 매칭이 깨지지 않도록 내부 공백 정규화 금지)."""
+    out = []
+    if not tok or not span:
+        return out
+    i = span.find(tok)
+    while i != -1 and len(out) < limit:
+        ph = span[max(0, i - win): i + len(tok) + win].strip()
+        if len(ph) >= max(len(tok) + 3, 8):
+            out.append(ph)
+        i = span.find(tok, i + 1)
+    return out
+
+
+def _learn_suppressions_from_dismissed(root):
+    """C3-②: pending의 status=dismissed 항목에서 트리거 어휘 문맥 구절을
+    continuity_cases.json `suppressions`로 기록(결정론 판정이 매칭 시 마스킹) —
+    오탐도 학습되는 양방향 루프. 처리분은 suppression_recorded=True 마킹(1회성)."""
+    pend_p = os.path.join(root, ".cache", "continuity_pending_cases.json")
+    if not os.path.exists(pend_p):
+        return 0
+    try:
+        pend = json.load(open(pend_p, encoding="utf-8"))
+    except Exception:
+        return 0
+    cases = load_cases(root)
+    existing = {(s.get("token"), s.get("phrase")) for s in cases.get("suppressions", [])}
+    new_sups, changed_pend = [], False
+    for e in pend.get("pending", []):
+        if e.get("status") != "dismissed" or e.get("suppression_recorded"):
+            continue
+        span = e.get("caught_span", "")
+        for tok in e.get("verdict_tokens", []):
+            for ph in _context_phrases(span, tok):
+                if (tok, ph) not in existing:
+                    new_sups.append({"span_hash": e.get("hash"), "token": tok, "phrase": ph,
+                                     "added_at": time.strftime("%Y-%m-%d"),
+                                     "source": "review_dismissed"})
+                    existing.add((tok, ph))
+        e["suppression_recorded"] = True
+        changed_pend = True
+    if new_sups:
+        cp = os.path.join(root, "06_Registry", "continuity_cases.json")
+        data = json.load(open(cp, encoding="utf-8"))
+        data.setdefault("suppressions", []).extend(new_sups)
+        with open(cp, "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+    if changed_pend:
+        with open(pend_p, "w", encoding="utf-8") as f:
+            json.dump(pend, f, ensure_ascii=False, indent=2)
+    return len(new_sups)
+
+
 def review(root):
-    """주간 /cleaner 소비: 차단 이력 + pending 신어 후보 통계·목록."""
+    """주간 /cleaner 소비: 차단 이력 + pending 신어 후보 통계·목록(+FP/TP 판별 힌트)
+    + dismissed→suppression 학습(C3-② 양방향 루프)."""
     blocks_p = os.path.join(root, ".cache", "continuity_blocks.jsonl")
     pend_p = os.path.join(root, ".cache", "continuity_pending_cases.json")
     n_blocks = 0
@@ -458,6 +675,11 @@ def review(root):
                 n_blocks = sum(1 for ln in f if ln.strip())
         except Exception:
             pass
+    n_new_sup = 0
+    try:
+        n_new_sup = _learn_suppressions_from_dismissed(root)
+    except Exception:
+        pass
     pending = []
     if os.path.exists(pend_p):
         try:
@@ -468,19 +690,25 @@ def review(root):
     return {
         "n_blocks_logged": n_blocks,
         "n_cases": len(cases.get("cases", [])),
+        "n_suppressions": len(cases.get("suppressions", [])),
+        "n_new_suppressions_learned": n_new_sup,
         "n_pending_novel": len([p for p in pending if p.get("status") == "await_review"]),
-        "pending": [{"caught_span": p.get("caught_span"), "tokens": p.get("verdict_tokens"),
-                     "captured_at": p.get("captured_at")} for p in pending
-                    if p.get("status") == "await_review"],
-        "action": "await_review 항목을 category/why/reframe 정제 후 --append-case로 승격 "
-                  "(자가발전: 잡을수록 강해짐). 오탐 후보는 status=dismissed로.",
+        "pending": [{"hash": p.get("hash"),
+                     "caught_span": p.get("caught_span"), "tokens": p.get("verdict_tokens"),
+                     "captured_at": p.get("captured_at"),
+                     "triage_hint": _triage_hint(p.get("caught_span"), cases)}
+                    for p in pending if p.get("status") == "await_review"],
+        "action": "await_review 항목: TP성은 --append-case [--term <lexeme>]로 승격(결정론 "
+                  "backstop 즉시 소비), FP성은 --dismiss <hash>(suppression 학습 — 같은 FP "
+                  "재차단 방지). (자가발전: 양방향 모두 잡을수록 강해짐)",
     }
 
 
 # ──────────────────────────────────────────────────────────────────────────
 # append_case (자가발전: 새 우회 → 라이브러리)
 # ──────────────────────────────────────────────────────────────────────────
-def append_case(root, category, caught_text, why, reframed_to, missing=None, source="manual"):
+def append_case(root, category, caught_text, why, reframed_to, missing=None, source="manual",
+                terms=None):
     p = os.path.join(root, "06_Registry", "continuity_cases.json")
     with open(p, encoding="utf-8") as f:
         data = json.load(f)
@@ -494,9 +722,28 @@ def append_case(root, category, caught_text, why, reframed_to, missing=None, sou
         "reframed_to": reframed_to, "added_at": time.strftime("%Y-%m-%d"),
         "seed": False, "source": source,
     })
+    # C3-①: --term lexeme을 해당 category backstop_terms에 동시 주입 — 결정론 경로가 실제
+    # 소비(케이스만 쌓이고 판정이 안 강해지는 'L4 무영향' 구멍 폐쇄).
+    added_terms, term_note = [], None
+    if terms:
+        cat_found = False
+        for cat in data.get("categories", []):
+            if cat.get("id") == category:
+                cat_found = True
+                bt = cat.setdefault("backstop_terms", [])
+                for t in terms:
+                    if t and t not in bt:
+                        bt.append(t)
+                        added_terms.append(t)
+                break
+        if not cat_found:
+            term_note = f"category '{category}' 미존재 — term 미주입(케이스만 등재)"
     with open(p, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
-    return {"appended": True, "n_cases": len(data["cases"])}
+    out = {"appended": True, "n_cases": len(data["cases"]), "added_terms": added_terms}
+    if term_note:
+        out["term_note"] = term_note
+    return out
 
 
 # ──────────────────────────────────────────────────────────────────────────
@@ -521,17 +768,51 @@ def _main():
         print(json.dumps(out, ensure_ascii=False))
         return
     if args[0] == "--text":
-        text = args[1] if len(args) > 1 else sys.stdin.read()
-        marker = "--marker-fresh" in args
+        rest = args[1:]
+        marker = "--marker-fresh" in rest
+        no_va = "--no-verdict-artifact" in rest  # C1 판별 강제(운영-턴 재현 테스트용)
+        pos = [a for a in rest if a not in ("--marker-fresh", "--no-verdict-artifact")]
+        text = pos[0] if pos else sys.stdin.read()
         cases = load_cases(root)
-        res = judge_text(text, "", cases, root, marker_override=(True if marker else None))
+        res = judge_text(text, "", cases, root, marker_override=(True if marker else None),
+                         verdict_artifact_override=(False if no_va else None))
         print(json.dumps({"block": res["block"], "reason": res.get("reason"),
                           "diag": res["diag"]}, ensure_ascii=False, indent=2))
         return
     if args[0] == "--append-case":
-        # --append-case <category> <caught_text> <why> <reframed_to>
-        r = append_case(root, args[1], args[2], args[3], args[4] if len(args) > 4 else "")
+        # --append-case <category> <caught_text> <why> <reframed_to> [--term <lexeme> ...]
+        rest, terms, pos = args[1:], [], []
+        i = 0
+        while i < len(rest):
+            if rest[i] == "--term" and i + 1 < len(rest):
+                terms.append(rest[i + 1])
+                i += 2
+            else:
+                pos.append(rest[i])
+                i += 1
+        r = append_case(root, pos[0], pos[1], pos[2], pos[3] if len(pos) > 3 else "",
+                        terms=terms)
         print(json.dumps(r, ensure_ascii=False))
+        return
+    if args[0] == "--dismiss":
+        # --dismiss <span_hash> — pending 오탐을 dismissed 표기 + suppression 즉시 학습(C3-②)
+        h = args[1] if len(args) > 1 else ""
+        pend_p = os.path.join(root, ".cache", "continuity_pending_cases.json")
+        found = False
+        try:
+            pend = json.load(open(pend_p, encoding="utf-8"))
+            for e in pend.get("pending", []):
+                if e.get("hash") == h and e.get("status") == "await_review":
+                    e["status"] = "dismissed"
+                    found = True
+            if found:
+                with open(pend_p, "w", encoding="utf-8") as f:
+                    json.dump(pend, f, ensure_ascii=False, indent=2)
+        except Exception:
+            pass
+        n_sup = _learn_suppressions_from_dismissed(root) if found else 0
+        print(json.dumps({"dismissed": found, "hash": h,
+                          "n_suppressions_learned": n_sup}, ensure_ascii=False))
         return
     if args[0] == "--review":
         print(json.dumps(review(root), ensure_ascii=False, indent=2))
