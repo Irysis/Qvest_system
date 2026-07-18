@@ -1,0 +1,56 @@
+{
+  "task_id": "WT-D20260718_001",
+  "registered_at": "2026-07-18 20:24:35",
+  "pin_tag": "fq057_20260718_171024",
+  "hypothesis": "Crash-aware momentum selection — momentum 신호에 종목-레벨 ex-ante 하방위험 페널티를 횡단면 합성해 crash-prone 종목을 선별 단계에서 감점/회피하면, 동일 momentum 알파에서 structural DD·calmar가 개선되는가 (FQ-058 P3: 레버는 weighting이 아니라 membership).",
+  "frame": {
+    "universe": "K200∪KQ150 fresh membership (fq057_monthly_snapshot member==1)",
+    "liquidity": "avgtv20 >= 2e8 KRW at signal month t (np4_liq_snapshot, t월 관측 = 월말 t 기지 정보, C10)",
+    "signal_months": "200511..202605 (holding 200512..202606, 247 months — 데이터 가용 최장)",
+    "top_n": 25,
+    "cost_bps_oneway": 15,
+    "bench_primary": "cap-w member fresh (Size, forward 1M) — HARD 판정 권위",
+    "dual_basis": "diag_ew_universe + diag_cap_tier(MEGA/MID/OTHER) 병기 의무 (v8.3 M2)",
+    "measurement": "canonical_screen_bt() 계약 경유 실측만 (metric_type=canonical_screen). proxy 손계산 금지.",
+    "eligibility": "member==1 ∧ avgtv20>=2e8 ∧ mom_12_1 window(t-11..t-1) 11개월 전부 non-NA ∧ 일간 크래시 피처 n_daily>=200 (직전 12개월 일간)"
+  },
+  "features": {
+    "mom_12_1": "expm1(sum(log1p(ret_m[t-11..t-1]))) — skip-month momentum (base alpha)",
+    "mom_6_1": "expm1(sum(log1p(ret_m[t-6..t-1]))) — robustness material (선택 대상 아님)",
+    "dbeta": "downside beta (Ang-Chen-Xing 2006): 직전 12개월 일간, market down day = bench mret < window mean, cov(r_i,m)/var(m) on down days, min 60 down-day obs",
+    "semivol": "downside semivol: sd(daily ret | ret<0), 직전 12개월, min 30 down obs",
+    "ncskew": "NCSKEW (Chen-Hong-Stein 2001): -[n(n-1)^1.5 * S3] / [(n-1)(n-2) * S2^1.5], daily demeaned, 직전 12개월",
+    "mdd12": "trailing 12개월 일간 누적 max drawdown magnitude",
+    "crash_z": "CRASH_z = 횡단면 mean of {zw3(dbeta), zw3(semivol), zw3(ncskew), zw3(mdd12)} (winsor 3sd 후 z). 4개 중 결측 있으면 가용 z 평균(최소 3개), 미만 시 해당 종목 제외",
+    "pit_note": "모든 피처 = 월말 t 이하 데이터만 (직전 12개월 window, t월 포함 허용 — 월말 t 기지). 신호 t → 보유월 t+1."
+  },
+  "variants": {
+    "V0": "baseline: score = zw3(mom_12_1)",
+    "V1": "score = zw3(mom_12_1) - 0.3 * CRASH_z",
+    "V2": "score = zw3(mom_12_1) - 0.6 * CRASH_z",
+    "V3": "hard exclusion: elig에서 CRASH_z 상위 20%(quintile) 제외 후 score = zw3(mom_12_1)",
+    "V4": "asymmetric: score = zw3(mom_12_1) - 0.6 * pmax(CRASH_z, 0) (crash-prone 절반만 감점 — 저변동 tilt 보상 차단)"
+  },
+  "n_trials": 5,
+  "selection_type": "sweep (열거 4-variant argmax — DSR 진단 산출·기록 의무)",
+  "is_lock": {
+    "is_signal_months": "200511..201812 (158 signals, ~64%)",
+    "oos_signal_months": "201901..202605 (89 signals)",
+    "rule": "variant 선택은 IS-구간 canonical 실측만 사용. OOS/full-frame은 선택 확정 후 1회 측정. 선택 이후 어떤 변경도 금지.",
+    "selection_rule": "selected = argmax_{V1..V4} IS net-계열 calmar (CAGR/|MDD| of net series), 단 자격조건: IS canonical cap-w PORT_t >= V0_IS_PORT_t - 0.30 (momentum 알파 사수 게이트). 자격 충족 variant 없으면 K1 발동.",
+    "tie_break": "IS PORT_t 높은 쪽"
+  },
+  "kill_rules": {
+    "K1": "IS에서 V1..V4 전부 PORT_t < V0_IS_PORT_t - 0.30 → 페널티 합성이 momentum 알파만 훼손. 즉시 종결(NEGATIVE), full-frame treatment 측정은 투명성 위해 수행하되 판정 불변.",
+    "K2": "full-frame에서 selected variant가 {MDD 감소, calmar 개선, crisis_alpha 개선} 셋 다 실패 → crash-통제 효과 부재. NEGATIVE.",
+    "K3": "PIT 위반 징후(look-ahead) 발견 시 즉시 중단·결과 무효·재실행"
+  },
+  "verdict_rules": {
+    "POSITIVE": "full-frame: calmar_sel >= calmar_V0 + 0.05 AND mdd_sel < mdd_V0 AND PORT_t_sel >= PORT_t_V0 - 0.15. crisis-조건부(AX-001 v2: crisis_alpha·Core 대비 MDD·bad/normal IC ratio)는 기전 증거로 병기(판정 AND 아님).",
+    "NEGATIVE": "POSITIVE 미충족 또는 K1/K2 발동 — config-scoped negative로 정직 보고 + 기전 진단 + next_probe >= 2",
+    "capital_path": "selected full cap-w canonical PORT_t < 2.0 → verdict 무관 ALPHA_DONE terminal 권고(risk/optimizer 미진행, v8.3 M1 조기 종결 설계). >= 2.0 ∧ POSITIVE → risk-research 진행 권고 검토. graduation 판정 권위는 어떤 경우에도 forge (canonical로 graduation 선언 금지).",
+    "ax001_v2": "crisis 정의: 보유월 bench 수익 <= -5%. crisis_alpha = 해당 월 active 평균 + NW t. bad/normal IC ratio: bad = bench 월수익 < 0. 전기간 SR 단독 기각 금지.",
+    "dual_basis": "기각 전 EW-유니버스 대비 + cap-tier(MEGA/MID) 분해 확인 의무 — cap-w 단독 기각 금지(기각 유지하더라도 분해 기록)"
+  },
+  "prior_differentiation": "본 설계는 (a) standalone 하방위험 팩터 아님(DownsideBeta_ACX2006/Coskewness_HS2000/RealizedSkew/LowVol standalone 전부 FAIL 실측, 07-03 defense survey + FQ-058 스크린 low_vol port_t -1.26), (b) sleeve-레벨 방어 배합 아님(2-sleeve tail paired -2.8), (c) 비중/sizing 레벨 아님(Inverse-DD sizing·FQ-058 MinCDaR weighting NEG), (d) 시계열 vol-scaling 아님(BSC RiskManaged Momentum PASS는 포트 자체 vol로 노출 스케일 — 오버레이 계열). 본 WT = momentum 횡단면 '선별' 단계의 종목-레벨 ex-ante crash conditioning — FQ-058 mechanism 진단(calmar-FAIL은 SELECTION에서 발생)의 직접 검증."
+}
