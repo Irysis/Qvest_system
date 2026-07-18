@@ -91,14 +91,18 @@ last_ym <- format(max(ud), "%Y-%m")
 sig_dates <- me[format(me, "%Y-%m") >= "2005-01" & me < max(me)]
 sig_dates <- sig_dates[vapply(sig_dates, function(d) { nx <- me[me > d][1]
   !is.na(nx) && format(nx, "%Y-%m") < last_ym }, logical(1))]
+## ★ym 라벨 = 실현(홀딩)월 (07-18 도훈 정정 "완결월은 6월" — 구판 신호월 라벨이 FF5 실현월 라벨과 불일치.
+##   북 realized_ym 규약 정합: 2026-05 신호 행 → ym "2026-06"으로 표기)
+rym_map <- data.table(sig = sig_dates,
+                      rym = vapply(sig_dates, function(d) format(me[me > d][1], "%Y-%m"), character(1)))
 ## 증분 갱신: 기존 parquet 존재 시 미계산 월만 (SB_FORCE_REBUILD=1로 전량 재빌드)
 SB_prev <- NULL
 pq <- file.path(OUT_DIR, "smartbeta_kr_monthly.parquet")
 if (file.exists(pq) && !nzchar(Sys.getenv("SB_FORCE_REBUILD", ""))) {
   SB_prev <- as.data.table(read_parquet(pq))
   invisible(gc())                                   # mmap 해제 (Windows arrow 1224 회피 1/2)
-  SB_prev <- SB_prev[ym %in% format(sig_dates, "%Y-%m")]   # 구판의 부분월 잔재 자동 제거
-  sig_dates <- sig_dates[!format(sig_dates, "%Y-%m") %in% SB_prev$ym]
+  SB_prev <- SB_prev[ym %in% rym_map$rym]                  # 부분월·구라벨 잔재 자동 제거 (실현월 기준)
+  sig_dates <- rym_map[!rym %in% SB_prev$ym, sig]
   wf("incremental: 기존 %d개월 스킵, 신규 %d개월", nrow(SB_prev), length(sig_dates))
 }
 ## 스타일 active 산출 공용 헬퍼 (월간 시계열 + 진행월 MTD 공용)
@@ -129,7 +133,7 @@ for (sd_ in sig_dates) {
   u <- merge(u, fz, by = "Ticker", all.x = TRUE)
   fr <- tryCatch(get_froe(u$Ticker, sd_), error = function(e) NULL)
   if (!is.null(fr) && nrow(fr)) u <- merge(u, fr, by = "Ticker", all.x = TRUE) else u[, froe := NA_real_]
-  out <- c(list(ym = format(sd_, "%Y-%m")), style_actives(u))
+  out <- c(list(ym = rym_map[sig == sd_, rym]), style_actives(u))   # 실현월 라벨
   nmov <- nmov + 1L
   rows[[format(sd_)]] <- as.data.table(out)
   if (nmov %% 48 == 0) wf("  %s (%.1f min)", format(sd_), as.numeric(difftime(Sys.time(), t0, units = "mins")))
