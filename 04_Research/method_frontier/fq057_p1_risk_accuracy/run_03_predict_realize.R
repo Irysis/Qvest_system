@@ -156,34 +156,35 @@ cat("[wf] pred rows:", nrow(PRED), " lw_degenerate months:", lw_degen, "\n")
 # =============================================================================
 # 실현분산: Return.portfolio 로 일간 포트/벤치 수익 구성 → 홀딩월 RV
 # =============================================================================
-reb_dates <- last_td[.(sapply(held_store, function(s) s$reb_ym)), reb_date]
-# 각 포트 weights xts (union columns), 벤치 weights xts
-build_wxts <- function(getter, universe_names) {
-  M <- matrix(0, nrow=length(held_store), ncol=length(universe_names),
-              dimnames=list(NULL, universe_names))
-  for (i in seq_along(held_store)) {
-    w <- getter(held_store[[i]]); M[i, names(w)] <- as.numeric(w)
-  }
-  xts(M, order.by = reb_dates)
-}
-ew_names   <- sort(unique(unlist(lapply(held_store, function(s) names(s$w_ew)))))
-capw_names <- sort(unique(unlist(lapply(held_store, function(s) names(s$w_capw)))))
-bench_names<- sort(unique(unlist(lapply(held_store, function(s) names(s$w_bench)))))
-Wxts_ew   <- build_wxts(function(s) s$w_ew,   ew_names)
-Wxts_capw <- build_wxts(function(s) s$w_capw, capw_names)
-Wxts_bench<- build_wxts(function(s) s$w_bench,bench_names)
-
+reb_ym_vec <- as.integer(sapply(held_store, function(s) s$reb_ym))
+reb_dates  <- last_td[.(reb_ym_vec), reb_date]     # keyed join, i-order 보존
+stopifnot(!anyNA(reb_dates))
 Dx <- xts(Dmat, order.by = as.Date(rownames(Dmat)))
-# Return.portfolio: weights 날짜(월말 t) 이후(홀딩월 t+1) 일간수익에 적용
-port_daily <- function(Wx, cols) {
-  R <- Dx[, cols, drop=FALSE]
-  pf <- Return.portfolio(R, weights = Wx, verbose = FALSE)
-  data.table(Date = index(pf), r = as.numeric(pf$portfolio.returns %||% pf))
+DCOLS <- colnames(Dmat)
+# 각 포트/벤치 weights xts (union columns ∩ 일간패널 존재 종목)
+build_wxts <- function(getter) {
+  uni <- sort(unique(unlist(lapply(held_store, function(s) names(getter(s))))))
+  uni <- intersect(uni, DCOLS)
+  M <- matrix(0, nrow=length(held_store), ncol=length(uni), dimnames=list(NULL, uni))
+  for (i in seq_along(held_store)) {
+    w <- getter(held_store[[i]]); nm <- intersect(names(w), uni)
+    M[i, nm] <- as.numeric(w[nm])
+  }
+  M <- M / rowSums(M)                              # 일간 부재 종목 제외 후 재정규화
+  list(wx = xts(M, order.by = reb_dates), cols = uni)
 }
-`%||%` <- function(a,b) if (is.null(a)) b else a
-pd_ew    <- port_daily(Wxts_ew,   ew_names)
-pd_capw  <- port_daily(Wxts_capw, capw_names)
-pd_bench <- port_daily(Wxts_bench,bench_names)
+b_ew <- build_wxts(function(s) s$w_ew)
+b_capw <- build_wxts(function(s) s$w_capw)
+b_bench <- build_wxts(function(s) s$w_bench)
+
+# Return.portfolio: weights 날짜(월말 t) 이후(홀딩월 t+1) 일간수익에 적용
+port_daily <- function(b) {
+  pf <- Return.portfolio(Dx[, b$cols, drop=FALSE], weights = b$wx, verbose = FALSE)
+  data.table(Date = index(pf), r = as.numeric(pf))
+}
+pd_ew    <- port_daily(b_ew)
+pd_capw  <- port_daily(b_capw)
+pd_bench <- port_daily(b_bench)
 setnames(pd_ew,   "r", "r_ew");   setnames(pd_capw, "r", "r_capw"); setnames(pd_bench,"r","r_bench")
 D <- Reduce(function(a,b) merge(a,b,by="Date",all=TRUE), list(pd_ew, pd_capw, pd_bench))
 D[, ym := as.integer(format(Date,"%Y"))*100L + as.integer(format(Date,"%m"))]
