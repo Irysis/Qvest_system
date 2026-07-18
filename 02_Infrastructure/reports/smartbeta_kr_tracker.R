@@ -21,9 +21,14 @@ nwt <- function(x) { x <- x[is.finite(x)]; if (length(x) < 12) return(NA_real_)
   m <- lm(x ~ 1); as.numeric(lmtest::coeftest(m, vcov = sandwich::NeweyWest(m, lag = 3, prewhite = FALSE))[1, 3]) }
 t0 <- Sys.time()
 
-STYLES <- list(VAL = list(f = "V01_BM", hi = TRUE), QUAL = list(f = "Q01_GPA", hi = TRUE),
+## v2 (2026-07-18 도훈 지시): QUAL=F-Score / VAL=컴포지트(V12 = mean z(-fPER,-fPBR,+fDY,+CFP) — 포워드 중심) /
+##   DIV=포워드 고배당(fDY). 구판(GPA/BM/V11)은 git 이력 보존. fDY 초기연도 커버 얇음 → <100 종목 월은 NA(정직).
+## v2.1: EREV(컨센서스 이익전망 3개월 수정 — 포워드 스타일) 7번째 추가. QUAL 포워드 대체는 DB에
+##   기성 fROE 부재로 보류(F-Score 유지) — fROE(eps_1y/bps_1y) add_factor 온보딩 = 후속 제안.
+STYLES <- list(VAL = list(f = "V12_Composite_Value", hi = TRUE), QUAL = list(f = "Q04_Piotroski_F", hi = TRUE),
                MOM = list(f = "M01_Mom_12_1", hi = TRUE), LOWVOL = list(f = "D03_RealVol", hi = FALSE),
-               SIZE = list(f = NA_character_, hi = FALSE), DIV = list(f = "V11_Shareholder_Yield", hi = TRUE))
+               SIZE = list(f = NA_character_, hi = FALSE), DIV = list(f = "V06_fDY", hi = TRUE),
+               EREV = list(f = "C03_EPS_Chg_3m", hi = TRUE))
 FNAMES <- unique(unlist(lapply(STYLES, function(x) x$f)))
 FNAMES <- FNAMES[!is.na(FNAMES)]
 
@@ -123,16 +128,19 @@ for (p in per) {
 }
 TAB <- rbindlist(tab, fill = TRUE)
 print(TAB[, lapply(.SD, function(x) if (is.numeric(x)) round(x, 4) else x)])
-g1 <- TAB[period == "2024-01~2026-12", VAL] < 0     # 밸류-vs-mega 역전 정합
+## v2 게이트: VAL이 forward-yield 중심 컴포지트로 바뀌어 "2024+ 음" 기대는 정의-특이(BM/EV배수 죽고
+##   yield 생존 실측 — value arc)라 게이트에서 제외, 정보성 로그만. SIZE·MOM이 구성 검증 담당.
+g1 <- TAB[period == "2024-01~2026-12", MOM] > 0     # mega 레짐 모멘텀 강세 정합
 g2 <- TAB[period == "2024-01~2026-12", SIZE] < 0    # mega 레짐 정합
-wf("[정합게이트] VAL 2024+ 음: %s | SIZE 2024+ 음: %s", g1, g2)
+wf("[정합게이트] MOM 2024+ 양: %s | SIZE 2024+ 음: %s | (정보) VAL_composite 2024+ = %+.4f", g1, g2,
+   TAB[period == "2024-01~2026-12", VAL])
 if (!all(g1, g2, na.rm = TRUE)) wf("[!!] 부호/구성 재점검 필요")
 
 ## ── 5) 차트 (rolling 12m, 범례 플롯 밖 우측) ───────────────────────────────
 SBc <- copy(SB)
 for (st in sty) SBc[, (paste0("r12_", st)) := frollmean(get(st), 12)]
 SBc[, d := as.Date(paste0(ym, "-01"))]
-cols <- c(VAL = "steelblue", QUAL = "darkgreen", MOM = "firebrick", LOWVOL = "purple", SIZE = "darkorange", DIV = "gray40")
+cols <- c(VAL = "steelblue", QUAL = "darkgreen", MOM = "firebrick", LOWVOL = "purple", SIZE = "darkorange", DIV = "gray40", EREV = "deeppink3")
 png(file.path(OUT_DIR, "charts", "smartbeta_rolling12.png"), width = 1150, height = 480)
 par(mar = c(3, 4, 2.5, 8))
 rng <- range(SBc[, paste0("r12_", sty), with = FALSE], na.rm = TRUE) * 100
@@ -147,7 +155,7 @@ wf("chart written: smartbeta_rolling12.png")
 rec <- SB[(.N - 11):.N]
 write_json(list(runtag = RUNTAG, metric_type = "diagnostic_monitoring",
                 usage_label = "시장 스타일 리뷰 전용 — 전략 판정/자본 인용 금지·비용 미반영",
-                construction = "K200∪KQ150·월간 리밸·top-tercile VW·active=vs 유니버스 VW",
+                construction = "v2: K200∪KQ150·월간 리밸·top-tercile VW·active=vs 유니버스 VW. QUAL=Piotroski F / VAL=V12 composite(forward 중심) / DIV=fDY(forward 고배당)",
                 styles = lapply(STYLES, function(x) x$f %||% "Size(low)"),
                 n_months = nrow(SB), period_table = TAB, recent12 = rec,
                 sanity_gates = list(val_2024_neg = g1, size_2024_neg = g2),

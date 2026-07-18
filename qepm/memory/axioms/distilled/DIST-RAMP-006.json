@@ -4,10 +4,10 @@
   "cluster_key": "0d1162acffef",
   "candidate_id": "CAND_20260704_ramp_value_conditional_L-RAMP-20260618_131316B_L-RAMP-20260619_140656_L-RAMP-20260619_150531",
   "status": "distilled",
-  "statement_refined": "KR 시장에서 value/국면-조건부 팩터배분은 배포 envelope(25종 long-only)에서 실현 PORT_t 천장이 ~2.85로, 모든 regime 변형(AR+MSM 2.73·Cascade 2.85·Shu-Mulvey 그룹 0.83)이 이 이하다 — 이는 국면엔진 한계가 아니라 알파 자체 한계(2017+ cohort decay로 OOS 음수 도처 + long-only β≈0.99 시장성분 불가피). 졸업 수준(pt 2.95+)은 Shu-Mulvey 인덱스/ETF-배분 형태(인과 워크포워드 pt_capwt 7.72·oos 0.54밴드 3/3, 단 MINY=5 GFC-훈련 의존·cap-w 5bps vs KR 15bps idealized)에서만 도달하며, 25종 종목선택으로 전이하면 엣지 소멸(4접근 전부 음수 PORT_t). = 이 envelope 안에서 천장-초과 유일 레버는 overlay-on-tuned-base다 (잔차-직교 sleeve 스태킹·DPL은 envelope-안 후속 레버 — 미검증).",
-  "retry_condition": "재도전 대상(전부 envelope-안): (1) active(−BM) basis 잔차 직교가 실재하므로(core↔def 0.45), 25종 envelope 안에서 잔차-직교 sleeve 스태킹으로 decorrelation을 실현하고 PORT_t 통과분만 book 기여시키는 경로 — decorrelation은 봉투 안 잔차 sleeve로 실현하는 것(제약 밖 out-of-scope 아님). (2) 2017+ decay를 견디는 신규 알파원 확보 — 비-return 정보원·ML 종목스코어(xgb/lgbm 팩터패널)·DPL end-to-end 25종 net Sharpe 직접최적화. 금지: 인덱스-배분 졸업수치(pt 7.72)를 25종 배포로 재시도(L-RAMP-20260619_173504 전이소멸 실증) — MINY=5 GFC-훈련 의존·cap-w 5bps idealized라는 차별점 해소 없이는 재도전 불가(INV-7).",
-  "refined_at": "2026-07-04T22:01:03+0900",
-  "refined_by": null,
+  "statement_refined": "KR 시장에서 value/국면-조건부 팩터배분은 배포 envelope(25종 long-only)에서 실현 PORT_t 천장이 ~2.85로, 모든 regime 변형(AR+MSM 2.73·Cascade 2.85·Shu-Mulvey 그룹 0.83)이 이 이하다 — 이는 국면엔진 한계가 아니라 알파 자체 한계(2017+ cohort decay로 OOS 음수 도처 + long-only β≈0.92 시장성분 불가피(07-05 IKS200 교정벤치, 구 0.99=IKS001 버그벤치 산물)). 졸업 수준(pt 2.95+)은 Shu-Mulvey 인덱스/ETF-배분 형태(인과 워크포워드 pt_capwt 7.72·oos 0.54밴드 3/3, 단 MINY=5 GFC-훈련 의존·cap-w 5bps vs KR 15bps idealized)에서만 도달하며, 25종 종목선택으로 전이하면 엣지 소멸(4접근 전부 음수 PORT_t). = 이 envelope 안에서 천장-초과 레버 = overlay(주역·유일한 long-only β 레버)·비-return 신규 원천이다. DPL은 06-26 settled-negative(8config+GPU SR 0.75~0.89 ≪ PG2 1.52, 재제안 금지)·잔차-직교 sleeve 스태킹은 07-05 RAMP R1 config-scoped negative(11 직교 sleeve best stack 2.54<2.95·survivors 0, 구조판결 아님·frontier 조건부)로 — 둘 다 '미검증 후속 레버'가 아니라 실측 negative다.",
+  "retry_condition": "재도전 대상(전부 envelope-안): (1) 잔차-직교 sleeve 스태킹은 07-05 RAMP R1에서 이 측정프레임(top-25 EW·15bps·cap-w active·256m) config-scoped negative(survivors 0) — 재도전은 차별화된 구성에서만(soft-membership ML 앙상블·cost-optimized top-N sweep·holdout CV, measurement-graduation §6 frontier). active(−BM) 잔차 직교는 실재(core↔def 0.53, 07-05 교정)하나 그 자체가 PORT_t 통과를 뜻하지 않음. (2) 2017+ decay를 견디는 신규 알파원 = 비-return 정보원(DART insider 등 — v8.3 주력)·ML 종목스코어(xgb/lgbm 팩터패널; 단 국면조건부 lightgbm은 07-05 RAMP R2 config-scoped negative). 금지: ① 인덱스-배분 졸업수치(pt 7.72)를 25종 배포로 재시도(L-RAMP-20260619_173504 전이소멸 실증, MINY=5 GFC-훈련·cap-w 5bps idealized 차별점 미해소 시 INV-7). ② DPL end-to-end 재제안(06-26 settled-negative, §5 재제안 금지).",
+  "refined_at": "2026-07-18T17:12:22+0900",
+  "refined_by": "cleaner_orphan_reconcile_20260718",
   "promoted_to_axiom": null,
   "created_at": "2026-07-04T04:09:16+00:00",
   "updated_at": "2026-07-04T04:26:22+00:00",
@@ -88,11 +88,10 @@
   "adversarial_note": "CLEAN(정제문 기준). 3반증 통과: (a) 과장無 — '~2.85 천장'·'2017+ decay OOS 음수'·'pt 7.72 인덱스형만·25종목 전이소멸'은 전부 supporting 실측(L-140656/180008/193015·L-152736·L-173504) 직접인용, '구조적 불가' 격상 없이 조건부 천장+명시 레버(overlay)+재도전조건으로 기술. (b) 모든 주장 특정 L-code 근거有. (c) AX-000 위반無 — retry_condition에 재도전 경로 명시. ★승인 주의(RECHECK_QUEUED 잔존): 멤버 L-RAMP-20260620_171915(RAMP_03B, grade A)는 evidence_audit_20260704가 DEF-03/11(realized_ym 오정렬 철회클래스)로 quarantine-flag한 상태 — 본 statement는 그 'book_momcons pt 3.05 > 배포Book' 주장을 의도적으로 배제(천장/decay는 타 멤버 근거). DEF-01(벤치 IKS001 오염)은 negative 판정을 강화만 하므로 본 조건부/negative 결론 전복 불가. promote(승격) 시에는 RAMP_03B 재실측 또는 drop 후 클러스터 재발행 필요 — 본 draft는 proposed(비활성)이라 허용.",
   "expiry": "2026-10-02",
   "frontier": [
-    "25종 envelope 안 잔차-직교 sleeve 스태킹으로 active-basis decorrelation 실현 (PORT_t 통과분만 book 기여)",
-    "DPL end-to-end 25종 net Sharpe 직접최적화 — 국면배분 엣지를 종목선택 전이손실 없이 학습",
-    "ML 종목스코어(xgb/lgbm 팩터패널)로 2017+ decay 견디는 비선형 재조합",
-    "비-return 정보원으로 value/국면 신호 보강 (return-derived cohort decay 회피)",
-    "overlay-on-tuned-base 재튜닝 — 천장-초과 실증 레버(유일한 long-only β 레버)"
+    "비-return 정보원(DART insider 역사·계약금액·공매도/대차 등)으로 value/국면 신호 보강 — return-derived cohort decay 회피 (v8.3 주력 프론티어, 06_Registry/alpha_frontier_queue.json FQ-001~005)",
+    "overlay-on-tuned-base 재튜닝 — 천장-초과 주역 레버(유일한 long-only β 레버)",
+    "잔차-직교 sleeve 스태킹 재구성: soft-membership ML 앙상블 / cost-optimized top-N sweep / holdout CV — 07-05 RAMP R1 config-scoped negative(best stack 2.54<2.95·survivors 0)의 차별화 경로만",
+    "cap-tier(MEGA/MID) 분해·EW-유니버스 대비 재라우팅 — post-2017 감쇠 상당부분이 mega-cap 벤치 아티팩트 실측(measurement-graduation §6)"
   ],
   "live_trigger": [
     {
