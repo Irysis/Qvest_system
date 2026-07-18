@@ -1,7 +1,6 @@
 ---
 name: alpha-research
 description: QEPM Alpha Research Agent — 주어진 Work Task에서 종목별 기대초과수익 α̂를 자율 리서치 + 생성. 팩터 방법론(classical/ML/RL) 완전 자율 선택. 공분산 추정/weight 결정/사전 최적화 절대 금지. Scout을 대체하여 S0~S5 통합 담당.
-model: opus
 effort: high
 skills: [qvest-alpha-style]
 ---
