@@ -1,0 +1,54 @@
+{
+  "l_code": "L-AR-20260719_003748",
+  "strategy_id": "WT-D20260718_007_unsupervised_anomaly_overlay",
+  "grade": "B",
+  "core_reference": "qepm/mailbox/worktask/WT-D20260718_007/alpha_validation.json + challenge_note.md",
+  "lesson_text": "WT-D20260718_007 (비지도 오토인코더 이상탐지 regime detector → timing 오버레이, WT-004 NP1, 2026-07-18): VALIDATED_MIXED_CONDITIONAL_POSITIVE — 아크 첫 긍정. ★근본원인 해결(decisive): 비지도 AE가 **2008 GFC 9/9개월 전부 방어**(M4 6/9·WT-004 지도학습 transformer 0/9) + crisis 발화 10/36 vs M4 7/36·상관 AE 0.124~0.148 vs M4 0.062(~2배). **지도학습이 OOD 폭락서 실패한 지점을 비지도 이탈탐지가 구조적 해결**(라벨 없이 '정상 이탈' 감지=OOD 회피). book A/B(carrier STR_1715 fixed·weighted_screen·221mo): AEseq calmar **2.196 > M4 2.069**·MDD −17.0% vs −18.7%·SR 1.809=1.809(동률). 전 부기간 robust(excl2008 AE 2.39 vs M4 2.229). AX-001 v2 crisis cushion AE −2.75% vs M4 −2.84%(개선, WT-004 −2.93% 악화의 역전). PIT 3종 clean(0/221·strict-PIT 인플레 <5%·lag1 무붕괴·표본외 발화율↑=외삽=누출반증). ★정직 한계: **paired 월별 초과수익 NW-t 전 부기간 음·비유의**(AEseq−M4 −1.49·ENS −1.86) → **꼬리위험(calmar/MDD) 개선은 실재하나 통계적으로 견고한 수익 개선은 아님**. graduation-ready standalone 아님 = tail-risk/calmar 오버레이 refinement이지 return alpha 아님. ★★함의: 아크(WT-003~006 부정) 후 **비지도 이상탐지가 proven 레버(overlay)서 유일 실질 진전** — M4 대비 calmar/MDD 개선 + OOD 구조해결. ★book 오버레이 개선 후보(M4→AE 또는 M4⊕AE 앙상블)이나 **배포=book 수정=도훈 수동 결정**. next: ① 앙상블 꼬리보완(M4 광범위+AE 급성OOD 상보: 2008 AE9/M4 6, 2011 M4 2/AE 0)·τ 정확 재매칭(발화율 M4 0.126) ② 완만 하락(2011/2018/2022 grind) 커버 신호 보완 ③ forge-authoritative calmar/oos graduation.",
+  "tags": "QEPM,WT,UNSUPERVISED,AUTOENCODER,ANOMALY,OVERLAY,OOD-SOLVED,CALMAR-IMPROVE,CONDITIONAL-POSITIVE",
+  "created_at": "2026-07-19",
+  "research_mode": "alpha_research",
+  "created_by": "emit:alpha_research",
+  "metric_type": "backtested",
+  "construction_type": "dynamic_timing_overlay",
+  "mechanism_hypothesis": "비지도 오토인코더는 라벨 없이 '정상 시장 동학'을 학습하고 이탈도(reconstruction error)로 regime 이상을 감지 — crash를 학습에서 본 적 없어도 '정상에서의 급이탈'로 포착하므로 지도학습의 OOD-analog 문제를 원천 회피. M4 BOCPD(단변량 통계 change-point)의 광범위 포착 + AE(학습형 다변량 급성 OOD 전문)의 상보성. 단 calmar/MDD 개선은 return이 아닌 tail-shape 개선이라 paired-return은 비유의.",
+  "lcode_schema_version": 2,
+  "pin_tag": "WT-D20260718_007_r1",
+  "m4_calmar": 2.069,
+  "ae_calmar": 2.196,
+  "m4_mdd": -0.1868,
+  "ae_mdd": -0.1697,
+  "paired_nw_t": -1.49,
+  "crisis_fire_ae": 10,
+  "crisis_fire_m4": 7,
+  "gfc2008_ae": 9,
+  "gfc2008_m4": 6,
+  "gfc2008_transformer": 0,
+  "note": "grade B=실질 capability(OOD 해결+calmar 개선)이나 paired-return 비유의=return-graduation 아님. metric_type=backtested. 배포=도훈 수동",
+  "falsification_attempts": [
+    {
+      "test": "crisis 발화 root-cause(WT-004 실패 지점)",
+      "result": "survived",
+      "effect_retained": "2008 9/9·10/36 crisis·상관 2배=OOD 구조해결"
+    },
+    {
+      "test": "book calmar/MDD paired(AE vs M4)",
+      "result": "survived",
+      "effect_retained": "calmar 2.196>2.069·전 부기간 robust(excl2008도)"
+    },
+    {
+      "test": "paired 월별 초과수익 NW-t",
+      "result": "falsified",
+      "effect_retained": "−1.49 비유의=return win 아님(tail-risk만)"
+    },
+    {
+      "test": "PIT 3종(assert_overlay_pit·strict·lag1)",
+      "result": "survived",
+      "effect_retained": "0/221 clean·표본외 발화율↑=외삽=genuine"
+    }
+  ],
+  "oos_months": 221,
+  "portfolio_alpha_t": 4.223,
+  "selection_type": "chain",
+  "family": "overlay_regime",
+  "record_type": "performance"
+}
