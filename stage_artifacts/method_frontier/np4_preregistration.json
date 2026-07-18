@@ -1,0 +1,66 @@
+{
+  "id": "FQ-057-NP4",
+  "lane": "method_frontier",
+  "round_type": "independent_research_round_not_WT",
+  "agent": "optimizer-research",
+  "preregistered_at": "2026-07-18 19:05:00",
+  "status": "PREREGISTERED_BEFORE_MEASUREMENT",
+  "immutable": "이 파일은 측정 전 기록되었으며 측정 후 수정 금지. 측정 후 판정은 아래 decision_rule을 그대로 적용한다.",
+  "hypothesis": "동일 알파(12-1 모멘텀)·동일 제약·동일 MVO 파이프라인에서 Sigma 입력만 {lw_linear(.get_cor_cov ledoit_wolf, 현행) vs lw_nls(LW 2020 analytical NLS, FQ-057 승자/NP3 등재)} 교체 시 실현 net active PORT_t(NW lag-3)가 유의하게 개선되는가 — 즉 p>n에서 lw_linear가 mu*I로 퇴화해 상관구조가 전멸하는 것(FQ-057 incumbent_finding)이 MVO 구성의 실전 성과 손실로 이어지는가의 실측.",
+  "bottleneck_ref": "06_Registry/layer_bottleneck_map.md 5행(비중) — 'Sigma-입력 하위축 미검'(R10~R13 construction 천장은 EW 기반이라 Sigma 자체를 미사용). FQ-057 NP4 armed 직접 소비.",
+  "pin_tag": "fq057_20260718_171024",
+  "pin_note": "FQ-057 pin 상속(동일 vintage). daily_refresh(qm_refresh) 활성 확인(PID 19780/29556) — 원본 .cache 직접 재로드 금지, read_pinned 경유만.",
+  "design": {
+    "alpha": {
+      "definition": "mom_12_1: 리밸 월말 t 기준, 월 t-11..t-1(11개 월간수익, 최신월 t 제외) 누적수익률의 횡단면 z-score. alpha_hat = 0.01 * z (월간 기대초과수익 스케일).",
+      "source": "FQ-057 월간 패널(fq057_monthly_returns.parquet, pinned rawdata 파생) — 저장 알파 패널(alpha_scores_*) 재사용 금지(measurement-graduation 7b) 준수. rawdata 직접 파생이라 C15 비대상.",
+      "selection_reason": "단순·투명·재현가능·양 arm 완전 공유 — 알파 우열이 아니라 Sigma 효과가 관심사"
+    },
+    "arms": {
+      "A_incumbent": "Sigma = hrp_core.R::.get_cor_cov(ret60, 'ledoit_wolf') — 인라인 linear LW. p>n에서 rho-cap=1 바인딩 -> mu*I 퇴화(사실상 ridge/알파-정렬 MVO).",
+      "B_candidate": "Sigma = hrp_core.R::.get_cor_cov(ret60, 'lw_nls') — LW 2020 analytical NLS (NP3 등재본, parity PASS). full-rank PSD, 상관구조 보존.",
+      "shared": "동일 알파, 동일 mvo_weights(mean_variance_optimizer.R) 호출, 동일 파라미터, 동일 유니버스/스케줄/비용/벤치. Sigma만 교체."
+    },
+    "optimizer_params_fixed": {
+      "engine": "mean_variance_optimizer.R::mvo_weights (quadprog solve.QP — 자체 QP 합성 없음)",
+      "lambda": 2.0,
+      "psi": 0.3,
+      "confidence": "NULL (c=1 -> FU penalty 0)",
+      "bounds": [0, 0.20],
+      "max_names": 25,
+      "min_names": 15,
+      "hhi_cap": 0.10,
+      "alpha_winsor": 2.0,
+      "turnover_penalty": 0.0,
+      "active": false,
+      "note": "사전 고정. 측정 후 변경 금지(변경 시 exploratory 라벨로만 별도 보고). lambda sweep 없음(2-arm 가설주도, sweep 아님)."
+    },
+    "scenarios": {
+      "S1_universe_pgtn": "PRIMARY. 리밸 t 시점 유니버스-레벨 MVO: 멤버(K200|KQ150 at t) AND 60m 완전 수익 AND AvgTV20(t)>=2e8. p≈280~320 > n=60 — lw_linear 퇴화 실전 조건.",
+      "S2_prescreen_pltn": "SECONDARY. 동일 eligible에서 알파 상위 50 pre-screen -> 그 50종목 수익행렬로 Sigma 재추정(p=50<n=60, 비퇴화 영역) -> MVO 25."
+    },
+    "schedule": "월간 walk-forward. Sigma·알파 추정창 rolling 60m. 리밸 월말 t = 200912..202605 (198 리밸), 홀딩월 t+1 = 201001..202606. FQ-057 윈도 규약 미러.",
+    "constraints_hard": "max 25 / long-only / [0,0.20] / sum(w)=1 / AvgTV20(과거 20일 평균 거래대금 Close*Vol, t 시점까지 데이터만) >= 2e8 / 15bps one-way delta 과금",
+    "portfolio_construction": "PerformanceAnalytics::Return.portfolio(verbose=TRUE)만 사용(월말 t 비중 -> 월 t+1 적용 컨벤션). 자체합성(prod/cumprod/w*r 손계산) 금지. cost_t = 0.0015 * one-way turnover_t(BOP vs 전월 EOP drift 차이), 해당 홀딩월 수익에서 차감.",
+    "benchmark": "cap-w K200|KQ150 fresh 계산(rawdata.BM_Ret 미사용 선례 준수): 월말 t 멤버의 Size 비례 비중을 Return.portfolio로 월간 재적용.",
+    "failure_handling": "특정 월 QP 실패/infeasible 시 그 월은 양 arm 모두 제외(paired 무결성) + 카운트 기록. 조용한 제약 완화 금지 — 발생 시 infeasibility 기록."
+  },
+  "decision_rule": {
+    "primary": "S1(p>n)에서 diff_t = (net active_B − net active_A)의 NW lag-3 paired t-stat (lm(diff~1) + sandwich::NeweyWest(lag=3)).",
+    "mapping": {
+      "t >= +2.0": "POSITIVE — lw_nls Sigma가 MVO 실현 성과를 유의 개선(상관구조의 실전 가치 실증). WT-시점 소비 권고로 승격 제안(도훈 confirm 게이트).",
+      "t <= -2.0": "NEGATIVE_reversal — 상관구조 사용이 오히려 해로움(estimation-quality 우위가 성과로 비전이).",
+      "|t| < 2.0": "NULL_config_scoped — 이 구성(단일 모멘텀 알파, 월간, top-25)에서 Sigma-입력 개선의 성과 전이 미검출."
+    },
+    "secondary_recorded_not_gating": [
+      "S2 paired NW lag-3 t",
+      "각 arm PORT_t(NW lag-3, net active), 연율 active SR/IR, 절대 net SR, calmar(CAGR/|MDD|), oos_retention v2(anchored {0.55,0.65,0.75} 3분할 active SR 비율 중앙값), 연간 one-way/round-trip 회전율(캘린더 연 실합산 — x12 연율화 금지)",
+      "DSR: 2-arm 가설주도라 게이트 비대상 — 진단 수치만 기록(n_trials=2 analytic deflated Sharpe)"
+    ],
+    "no_peeking_clause": "판정 기준·파라미터는 본 파일 기록 시점에 고정. 결과 열람 후 arm/파라미터/기간/판정선 변경 금지."
+  },
+  "metric_type": "optimizer_lane_ab_diagnostic",
+  "capital_claim": false,
+  "graduation_claim": false,
+  "n_trials_declared": {"arms": 2, "scenarios": 2, "selection_type": "paired_hypothesis_ab_not_sweep"}
+}
