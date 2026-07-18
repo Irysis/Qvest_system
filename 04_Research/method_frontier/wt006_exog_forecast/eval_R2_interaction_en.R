@@ -1,0 +1,8 @@
+suppressMessages({library(data.table); library(arrow)})
+root <- "C:/Users/99922/OneDrive/Quant_Module_Moltbot"; Sys.setenv(QM_ROOT=root); setwd(root)
+source("04_Research/method_frontier/wt006_exog_forecast/eval_harness.R")
+th <- as.data.table(read_parquet("04_Research/method_frontier/wt006_exog_forecast/theta_R2_interaction_en.parquet"))
+m <- eval_theta(th, "interaction_en")
+cat("\n==== interaction_en RESULT ====\n")
+for(k in names(m)) cat(sprintf("  %-20s %s\n", k, as.character(m[[k]])))
+saveRDS(m, "04_Research/method_frontier/wt006_exog_forecast/R2_interaction_en_metrics.rds")

@@ -1,0 +1,8 @@
+suppressMessages({library(data.table); library(arrow)})
+root <- "C:/Users/99922/OneDrive/Quant_Module_Moltbot"; setwd(root)
+source("04_Research/method_frontier/wt006_exog_forecast/eval_harness.R")
+th <- as.data.table(read_parquet("04_Research/method_frontier/wt006_exog_forecast/theta_R2_mom_residual.parquet"))
+m <- eval_theta(th, "mom_residual")
+cat("\n===== mom_residual eval =====\n")
+for(k in names(m)) cat(sprintf("  %-20s : %s\n", k, as.character(m[[k]])))
+jsonlite::write_json(m, "04_Research/method_frontier/wt006_exog_forecast/R2_mom_residual_eval.json", pretty=TRUE, auto_unbox=TRUE)
