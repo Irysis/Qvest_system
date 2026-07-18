@@ -36,6 +36,26 @@
   graphics::par(mar = c(4, 4.4, 3.2, 1), family = "")
 }
 
+# 내부: 기본 파일명 충돌 방지용 유니크 토큰 (2026-07-18 도훈 승인 — FQ-057 실사고)
+#   ★호환 계약: 명시 filename(sweep) / 비어있지 않은 prefix(pack)를 주는 caller는
+#   이 경로를 타지 않는다. 오직 "기본값(default)"만 유니크화한다.
+#   RNG-중립: sample() 미사용(caller set.seed 재현성 보존). 프로세스 내 monotonic
+#   카운터 + PID + 초-타임스탬프 결합 → 동일-초 연속 호출도 충돌 불가.
+#   ASCII 슬러그: 한글 파일명 인코딩 회피(헌법 R Execution Pattern) — 유니크성은
+#   타임스탬프/PID/seq가 보장하므로 슬러그는 가독용 접두일 뿐.
+.tgcp_seq <- local({ i <- 0L; function() { i <<- i + 1L; i } })
+.tgcp_slug <- function(title) {
+  if (is.null(title) || !nzchar(title)) return("chart")
+  s <- gsub("[^A-Za-z0-9]+", "_", title)
+  s <- gsub("^_+|_+$", "", s)
+  s <- substr(s, 1, 32)
+  if (nzchar(s)) s else "chart"
+}
+.tgcp_uniq <- function(title = NULL) {
+  paste0(.tgcp_slug(title), "_", format(Sys.time(), "%Y%m%d_%H%M%S"),
+         "_", Sys.getpid(), "_", sprintf("%03d", .tgcp_seq()))
+}
+
 #' 표준 3종 차트팩
 #' @param period_returns data.frame/data.table — date, ret_net(전략 net), benchmark_ret(BM) 컬럼
 #' @param out_dir 출력 디렉토리 (없으면 생성)
