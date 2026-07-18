@@ -39,18 +39,18 @@ res <- tg_agent_brief(
            "M4 미포착 급성월"= sprintf("AE_ACUTE_ALERT %d건 = M4가 놓친 급성 OOD를 AE가 단독 포착", cw08$ae_acute_alert),
            "2022 bear"       = sprintf("AE %d vs M4 %d (전량 AE_ACUTE_ALERT — M4 완전 미발화)", cw22$ae_fire %||% 0, cw22$m4_fire %||% 0),
            "노출 중립성"     = "AE 발화율이 M4 0.126에 IS-매칭 → 타이밍 품질 격리(de-risk 예산 아님)")),
-    list(emoji = "🚨", heading = sprintf("역사 3-state 분포 (%d개월 매칭)", H$n_months_matched), type = "kv",
+    list(emoji = "🚨", heading = sprintf("역사 국면 분포 (%d개월 매칭)", H$n_months_matched), type = "kv",
          kv = list(
-           "CALM (양자 미발화)"        = sprintf("%d개월", sc$CALM),
-           "AE_ACUTE_ALERT (AE만)"     = sprintf("%d개월 = M4가 놓칠 급성 OOD", sc$AE_ACUTE_ALERT),
-           "BOTH_CONFIRM (AE∧M4)"      = sprintf("%d개월 = 강confirm", sc$BOTH_CONFIRM),
-           "M4_ONLY (M4만)"            = sprintf("%d개월 = M4 소관(완만 de-risk)", sc$M4_ONLY))),
+           "정상 (양자 미발화)"   = sprintf("%d개월 · CALM", sc$CALM),
+           "AE 단독 급성"         = sprintf("%d개월 · AE_ACUTE_ALERT (M4가 놓칠 급성 OOD)", sc$AE_ACUTE_ALERT),
+           "AE·M4 동시"           = sprintf("%d개월 · BOTH_CONFIRM (강confirm)", sc$BOTH_CONFIRM),
+           "M4 단독 (완만 de-risk)" = sprintf("%d개월 · M4_ONLY", sc$M4_ONLY))),
     list(emoji = "➡️", heading = "규율 · 다음", type = "bullet",
          items = c(
-           "임계 사전 고정(sweep 금지) · idempotent(재실행 register 0·dedup) · PIT self-check 미래참조 0",
-           "산출: qepm/observability/ae_crisis_tripwire_latest.json (발화월·이탈도·M4 대비·급성도·dedup 원장)",
-           "AE 신호 신선화(신규 월) = ae_regime_walkforward.py 재실행 후 본 tripwire가 신규 발화 register",
-           "★자본/배포 절대 미상정 — book_state/05_Production 무변경. 급성 crisis 감시 계층 배선일 뿐"))
+           "임계 사전 고정(sweep 금지) · idempotent(재실행 register 0·dedup) · PIT 미래참조 0",
+           "산출: ae_crisis_tripwire_latest.json (발화월·이탈도·M4 대비·급성도·dedup 원장)",
+           "AE 신호 신선화 = ae_regime_walkforward.py 재실행 후 신규 발화 자동 register",
+           "★자본/배포 절대 미상정 · book_state/05_Production 무변경 (급성 감시 계층 배선)"))
   ),
   charts = chart,
   footer = sprintf("AE·M4 동일 pin(%s) apples-to-apples · monitoring 배관 · 자본 아님 · 자동조치 없음(도훈 재료)",
