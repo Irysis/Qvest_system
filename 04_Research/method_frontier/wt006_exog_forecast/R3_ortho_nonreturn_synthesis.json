@@ -1,0 +1,46 @@
+{
+  "lane": "WT-006 R3 ortho_nonreturn_stack — break R2 logic_stack collinearity",
+  "date": "2026-07-19",
+  "measurement": "canonical_screen_bt cap-w KOSPI200 top-25 EW long-only, 15bps, liq 2e8, portfolio_alpha_t_nw_lag3 (eval_harness.R eval_theta). OOS 163m 2012-12~2026-06. metric_type=canonical (backtested).",
+  "baseline_momentum_port_t": 1.277,
+  "hard_gate": 2.95,
+
+  "core_question": "Do orthogonal / non-return base learners escape the common bull-tilt convex hull and beat factor-momentum? beats_momentum=(paired_vs_mom_t>1.0).",
+  "answer": "NO (CONFIRMED, decisive). Every variant FAILS, and orthogonalization made it strictly WORSE than R2's collinear stack (0.396). beats_momentum=FALSE for all.",
+
+  "results": {
+    "ortho_nonreturn_stack_DELIVERABLE": {"port_t": -0.057, "ew_uni_t": 1.497, "oos_ret": -1.040, "net_sr": -0.018, "calmar": 0.246, "turnover": 5.44, "paired_vs_mom_t": -2.498, "paired_vs_static_t": -0.025, "lag1_port_t": -0.018},
+    "nonreturn_only":  {"port_t": 0.297, "ew_uni_t": 1.664, "oos_ret": -0.958, "net_sr": 0.098, "calmar": 0.267, "turnover": 5.72, "paired_vs_mom_t": -1.792, "paired_vs_static_t": 0.696, "lag1_port_t": 0.197},
+    "ortho_stack":     {"port_t": -0.044, "ew_uni_t": 1.472, "oos_ret": -1.051, "paired_vs_mom_t": -2.430, "paired_vs_static_t": 0.018, "lag1_port_t": -0.193},
+    "ortho_equal":     {"port_t": -0.005, "ew_uni_t": 1.617, "oos_ret": -1.007, "paired_vs_mom_t": -2.346, "paired_vs_static_t": 0.166, "lag1_port_t": -0.068},
+    "reference_R2_logic_stack_collinear": {"port_t": 0.396, "note": "collapsed to equal, below momentum"}
+  },
+
+  "mechanism": {
+    "orthogonalization_removes_signal_not_noise": "The R2 collinearity of the 6 EN logic thetas was NOT a defect to strip — it WAS the alpha. All 6 learners are collinear precisely because they share the same profitable family tilt (toward momentum/value). Gram-Schmidt residualizing each tilt against the others removes that shared bull-tilt component and keeps only the idiosyncratic residual, which is near-zero/negative cap-w alpha. Result: ortho_equal (-0.005) and ortho_stack (-0.044) fall BELOW even the R2 collinear equal-collapse (0.396). This is the same wall seen from the reverse direction — the common component carries the modest positive signal; the orthogonal complement is noise.",
+    "nonreturn_has_weak_real_signal_below_momentum": "The non-return learner (crowding val_spread/vs_z + dispersion disp_ret12/avg_corr24, momentum EXCLUDED) has genuine but weak EW cross-sectional signal (ew_uni_t 1.664) and BEATS static-EW (paired_vs_static 0.696) — so crowding/dispersion is not empty — but it is far below momentum (paired_vs_mom -1.792, port_t 0.297). Its trailing IS active Sharpe tracks the crowding learner O1 nearly 1:1 (anchor table), i.e. the non-return channel is essentially the crowding tilt; dispersion (family-invariant, interacted) adds little cross-sectional lift.",
+    "hull_not_escaped": "Neither orthogonal base nor non-return base escapes the bull-tilt hull to reach momentum. The combined-stack softmax over near-identical per-learner Sharpes (anchor table: O1..O6,NR all within 2.5-3.4 early, 0.25-0.47 late) collapses toward equal weights on the 6 bad ortho learners, dragging the deliverable to -0.057 (below the standalone non-return 0.297). Adding a genuinely orthogonal / non-return learner did NOT lift the hull above momentum — it diluted it.",
+    "consistent_with_R2_oracle": "Fully consistent with R2's oracle ceiling (even PERFECT family timing 1.248 < momentum 1.277). The binding wall is BELOW the family-allocation layer (stock x cap-tier selection). No family-layer re-basing (orthogonal or non-return) can clear a ceiling that sits under it."
+  },
+
+  "pit_integrity": {
+    "clean": "All learners walk-forward IS-only (residualization betas from history<anchor annual refit; EN expanding refit; stack weights from active<anchor). lag1 self-check: deliverable base -0.057 vs lag1 -0.018 (base NOT inflated above lag1); ortho_stack -0.044 vs -0.193; ortho_equal -0.005 vs -0.068; nonreturn base 0.297 vs lag1 0.197 (base>=lag1 = healthy fresh>stale ordering, gap 0.10 tiny & near-null, no decision impact). No same-month look-ahead inflation signature anywhere."
+  },
+
+  "next_probes": [
+    "P1 (inherited, still the only wall-mover, OUT of family-timing lane): cap-tier-conditional STOCK selection — the wall is at stock x cap-tier, not family allocation. R3 re-confirms family-layer re-basing (orthogonal/non-return) cannot clear the sub-family ceiling. Route non-return crowding/dispersion signal into the STOCK-level cap-tier sleeve (RAMP/QEPM cap_tier_decomposition), measured in cap-w universe directly.",
+    "P2 (crowding at stock level): the non-return learner's genuine EW signal (paired_static 0.696) survives as a STOCK-level crowding tilt inside the cross-family top-25 basket rather than a family-allocation theta. Test crowding (val_spread/vs_z analog per stock) as a de-crowding overlay on the momentum basket that PRESERVES the cross-family diversification (which R2 showed carries momentum's cap-w residual alpha), instead of reallocating family weights."
+  ],
+
+  "consumer_surfaces": [
+    "factor_ranking / selection_label: ortho_stack & ortho_nonreturn_stack = config-scoped negative at family-allocation layer (NOT structural — stock x cap-tier layer untested = revival condition). No screen-tier, no capital. nonreturn_only = weak-positive vs static only, not deployable as family allocator.",
+    "overlay: factor_momentum remains the uncontested family-timing allocator; orthogonalization actively HARMS it — do not orthogonalize collinear economic-logic thetas (the collinearity is the shared profitable tilt). Reusable rule for any future family-tilt ensemble.",
+    "other_mode_RAMP_QEPM: non-return crowding/dispersion channel (ew_uni_t 1.66, beats static) is the live hand-off to the STOCK cap-tier sleeve (P1/P2), where R2/R3 localize the only remaining frontier."
+  ],
+
+  "revival_condition": "cap-tier-conditional STOCK selection (P1) untested in cap-w universe; non-return crowding as stock-level de-crowding overlay preserving diversification (P2) untested. Family-allocation orthogonal/non-return path is config-scoped negative, not a structural verdict.",
+
+  "beats_momentum": false,
+  "best_by_paired_mom": "nonreturn_only",
+  "wall_moved": false
+}

@@ -1,0 +1,85 @@
+{
+  "lane": "WT-006 R3 style-factor forecast — 3-frontier (P1 cap-tier STOCK selection / P2 cap-w-native family alpha / P3 orthogonal+non-return stack)",
+  "date": "2026-07-19",
+  "measurement": "canonical_screen_bt cap-w KOSPI200 top-25 EW long-only, 15bps, liq 2e8, portfolio_alpha_t_nw_lag3 (eval_harness.R). OOS 163m 2012-12~2026-06. metric_type=canonical (backtested). PIT: walk-forward IS-only, annual refit, expanding.",
+  "baseline_momentum_port_t": 1.277,
+  "hard_gate_port_t": 2.95,
+  "wall_broken": false,
+
+  "P1_captier_stock": {
+    "question": "cap-tier-conditional STOCK selection (K200=MEGA / KQ150=MID) — does moving DOWN to the stock x cap-tier layer (where R2 localized the wall) break cap-w?",
+    "best_captier_variant": {"m": "mid_pure_mv", "port_t": 0.491, "lag1": 0.573},
+    "best_overall_variant": {"m": "whole_universe_momentum (allmom)", "port_t": 0.508, "ew_uni_t": 1.742, "lag1": 0.264},
+    "mega_pure_mom_port_t": -0.275,
+    "mid_pure_mom_port_t": 0.430,
+    "n_variants": 9,
+    "paired_vs_mom_t_range": [-2.71, -1.19],
+    "beats_momentum": false,
+    "wall_broken": false,
+    "verdict": "FAIL. All 9 variants << baseline 1.277 (best 0.508), paired_vs_mom 9/9 significantly negative. cap-w TRAP re-confirmed: alpha localizes to MID tier (mid_pure 0.430 > mega_pure -0.275, exact reproduction of [[project-captier-alpha-localization-20260706]]) but long-only cross-sectional selection cannot realize it because the cap-w K200 benchmark rewards MEGA that the top-25 basket does not hold. Structuring by cap-tier (a/b/c) DESTROYS the cross-family diversification that carries momentum's residual alpha -> lower, not higher. The wall is NOT at family-allocation NOR at cap-tier-structuring; it is the top-25 long-only cap-w TRANSLATION layer itself, invariant to signal and construction."
+  },
+
+  "P2_capw_native": {
+    "question": "Is R2's EW->cap-w gap a recoverable BASIS ARTIFACT (fixable by re-basing family signal on cap-w-realized active) or genuine cap-w family alpha ABSENCE?",
+    "best_pit": {"m": "capw_drop", "port_t": 1.222, "ew_uni_t": 2.977, "oos_ret": -0.278, "paired_vs_mom_t": -0.441, "lag1": 0.736},
+    "best_oracle": {"m": "momval2_oracle_capwopt", "port_t": 0.648, "paired_vs_mom_t": -1.198, "note": "full-sample look-ahead ceiling"},
+    "fullmean_capw_active_x1e4": {"momentum": 33.1, "value": 18.4, "size": -11.6, "dividend": -24.4, "quality": -31.1, "low_vol": -68.4},
+    "beats_momentum": false,
+    "wall_broken": false,
+    "leak_suspect": false,
+    "verdict": "CAPW_FAMILY_ALPHA_ABSENT (basis artifact HYPOTHESIS REJECTED). cap-w양성 family = momentum·value뿐. cap-w-native re-basing PIT판 capw_drop 1.222 < momentum 1.277 AND even the ORACLE (full-sample cap-w-native family foresight) 0.648 < 1.277. Since even perfect cap-w-native family selection cannot beat momentum, the EW->cap-w gap is NOT a recoverable basis artifact at the family layer — it is genuine cap-w family alpha absence. Strengthens R2 oracle (1.248<1.277). Mechanism: dropping cap-w-decoupled families (quality/low_vol/dividend/size) destroys the cross-family diversification carrying momentum's cap-w residual -> ortho harm from a 2nd angle. lag1 gap (0.486) matches PIT-clean momentum baseline gap (0.448) = inherited family-rotation staleness, not same-month leak."
+  },
+
+  "P3_ortho_nonreturn": {
+    "question": "Do orthogonal (Gram-Schmidt residualized) or non-return (crowding/dispersion, momentum-EXCLUDED) base learners escape the shared bull-tilt hull and beat momentum?",
+    "deliverable_stack": {"m": "ortho_nonreturn_stack", "port_t": -0.057, "paired_vs_mom_t": -2.498, "oos_ret": -1.040, "lag1": -0.018},
+    "nonreturn_only": {"m": "nonreturn_only", "port_t": 0.297, "ew_uni_t": 1.664, "paired_vs_mom_t": -1.792, "paired_vs_static_t": 0.696, "lag1": 0.197},
+    "ortho_stack": {"port_t": -0.044, "paired_vs_mom_t": -2.430},
+    "reference_R2_collinear_logic_stack": {"port_t": 0.396},
+    "beats_momentum": false,
+    "wall_broken": false,
+    "verdict": "NO (CONFIRMED, decisive). Orthogonalization made it strictly WORSE (ortho_equal -0.005, ortho_stack -0.044) than R2's collinear stack (0.396). KEY MECHANISM: the R2 collinearity of the 6 EN logic thetas was NOT a defect — it WAS the alpha. The 6 learners are collinear because they share the same profitable family tilt; Gram-Schmidt strips that shared bull-tilt and keeps only near-zero/negative idiosyncratic residual (common component = signal, orthogonal complement = noise — same wall from the reverse direction). Non-return learner (crowding+dispersion) HAS genuine but weak EW signal (ew_uni_t 1.664, beats static +0.696) yet cap-w 0.297 << momentum; softmax stack over near-identical Sharpes dilutes the standalone non-return down to -0.057. REUSABLE RULE: do NOT orthogonalize collinear economic-logic thetas."
+  },
+
+  "meta_judgment_overnight_R1_R2_R3": {
+    "scope": "R1 (6 economic-logic EN thetas + GBM ensemble) + R2 (6 forecasting approaches + family-timing ORACLE) + R3 (3 frontiers: cap-tier stock / cap-w-native / orthogonal+non-return).",
+    "can_style_forecasting_produce_KR_capw_alpha": "NO within this measurement frame (cap-w K200 benchmark, top-25 EW long-only, 15bps, 163m). Nothing across R1/R2/R3 beat the factor-momentum baseline (cap-w port_t 1.277), and momentum itself is far below the 2.95 HARD gate. best-ever = R2 captier_translate 1.362 (paired_vs_mom 0.751, edge inside noise, oos_ret negative — NOT a real beat). R3 best = P2 capw_drop 1.222 (< 1.277).",
+    "wall_location_CONFIRMED_multilayer": [
+      "L1 family-allocation/timing: NO exploitable cap-w family alpha — R2 oracle (perfect family timing) 1.248 < 1.277 AND R3 P2 oracle (perfect cap-w-native family foresight) 0.648 < 1.277. EW->cap-w gap is genuine alpha absence, NOT a recoverable basis artifact.",
+      "L2 stock x cap-tier selection: alpha localizes to MID tier (cap-w trap) but long-only cross-sectional selection cannot realize it (benchmark rewards un-held MEGA). R3 P1 best 0.508 << 1.277.",
+      "L3 the actual binding wall = top-25 long-only cap-w TRANSLATION layer. Momentum's ~1.28 residual alpha comes ONLY from cross-family diversification in the top-25 basket — destroyed by concentration (P1 b/c), tier-structuring (P1 a/c), orthogonalization (P3), or family-dropping (P2). It is a byproduct of basket breadth, not of any forecast/timing skill."
+    ],
+    "verdict": "SETTLED-NEGATIVE (config-scoped, NOT structural). Style-factor FORECASTING is settled-negative at both the family-allocation and stock x cap-tier layers within the cap-w top-25 long-only frame. This is a config-scoped negative on the forecasting APPROACH, not a structural verdict on KR alpha — the frontier remains open along axes that leave the cap-w return-derived translation layer.",
+    "consistency_with_prior_knowledge": "Exact reproduction of [[project-captier-alpha-localization-20260706]] (MID>MEGA, cap-w trap), [[project-megacap-anchor-construction-discovery]] (cap-w artifact / EW-대비 확인 의무 — allmom ew_uni 1.74 & non-return ew_uni 1.66 both live in EW space but die in cap-w), and [[feedback-qepm-method-frontier-dualization]] (binding = momentum decay itself, not drawdown — -> 비-return)."
+  },
+
+  "next_probes": [
+    "비-return 신규 원천 (최우선, cap-w return-derived 벽 밖 유일 경로): DART exec-insider 역사 / 계약금액 magnitude / 공매도·대차 (FQ-001~005 lane). R1/R2/R3 전부 return-derived style signal이 cap-w translation 벽에 막힘을 실증 — 신호 원천 자체를 return 밖으로 옮겨야 함. [[project-dart-insider-exec-nonreturn-frontier]]와 정합.",
+    "cap-tier 심화 = MID-tilt를 SELECTION 아닌 CONSTRUCTION/OVERLAY 레버로: (a) MID-tier value sleeve를 유니버스 구성 pre-filter 입력으로 FQ 등재 (value가 MID-국소, EW-cap gap 2.20). (b) MID-tilt를 overlay/timing 레버로 측정 (cross-sectional 선택이 아닌 방식) — cap-w 트랩은 선택층 특유이므로 구성/타이밍층에선 다를 수 있음. RAMP/QEPM stock층 cap_tier_decomposition mandate 하에 cap-w 유니버스 직접 측정.",
+    "타모드 이식 = non-return crowding/dispersion channel을 STOCK-level de-crowding overlay로: P3 non-return learner의 genuine EW 신호(ew_uni 1.66, beats static +0.70)를 family-reallocation이 아니라 momentum basket 위 stock-level de-crowding overlay로 hand-off — cross-family diversification(momentum cap-w 잔차 알파 원천)을 PRESERVE하면서. RAMP/QEPM cap_tier sleeve로 이식.",
+    "벤치마크 재정의 probe (도훈 결정 항목): cap-w K200 벤치를 EW/factor-neutral로 재정의한 유니버스에서 style forecasting 재측정 (allmom ew_uni 1.74·non-return ew_uni 1.66 실재). 배포 벤치 변경이므로 자율 착수 아님 — mrs_daily SMB/HML 동반 양전 un-bury 워치와 연동."
+  ],
+
+  "consumer_surfaces": [
+    "factor_ranking / selection_label: R1/R2/R3 style-forecast thetas (family & stock x cap-tier, orthogonal, cap-w-native) = config-scoped negative. NO capital, NO screen-tier. Reusable rule 발행: 경제로직 collinear theta를 orthogonalize 금지(collinearity=shared profitable tilt).",
+    "overlay: factor_momentum = uncontested family-timing allocator (전 R1/R2/R3서 무패). MID-tilt를 overlay/timing 레버 후보로 (SELECTION 아님).",
+    "universe_filter: MID-tier value sleeve를 유니버스 구성 입력으로 FQ 등재 (value EW-cap gap 2.20, MID-국소).",
+    "risk_model: 모든 stock-layer 측정에 cap_tier_decomposition mandate (cap-w 트랩 진단 의무) — [[feedback-qepm-method-frontier-dualization]] risk 계약.",
+    "monitoring / other_mode: non-return crowding/dispersion channel(ew_uni 1.66)을 RAMP/QEPM stock cap-tier sleeve로 live hand-off. SMB/HML style-rotation 반전 = revival trigger (mrs_daily un-bury 워치).",
+    "hypothesis_index: WT-006 R1/R2/R3 = style-factor forecasting family+stock-layer settled-negative로 인덱싱 (병렬 중복실행 방지)."
+  ],
+
+  "revival_conditions": [
+    "cap-tier MID-tilt를 CONSTRUCTION/OVERLAY 레버로 재측정 (SELECTION 밖) — 미검.",
+    "non-return novel data source (DART/계약/공매도)로 신호 원천을 return 밖으로 이동 — cap-w translation 벽 밖.",
+    "벤치마크 cap-w->EW/factor-neutral 재정의 (도훈 결정) — allmom/non-return EW 신호 실재.",
+    "KR 스타일 로테이션 반전 (mrs_daily SMB/HML 동반 양전) — value/small-cap un-bury 신호."
+  ],
+
+  "pit_integrity": "all learners walk-forward IS-only, annual refit, expanding, strictly-past active. lag1 self-checks: P1 mid_pure_mv 0.491->0.573 & allmom 0.508->0.264 (noise≈0.5, 동월 forward 미사용); P2 capw_drop gap 0.486 ≈ momentum baseline gap 0.448 (family-rotation staleness, not leak); P3 deliverable -0.057 vs lag1 -0.018 (base not inflated). No same-month look-ahead signature anywhere. metric_type=canonical.",
+
+  "beats_momentum": false,
+  "wall_moved": false,
+  "best_config_R3": "P2 capw_native/capw_drop (PIT walk-forward)",
+  "best_port_t_R3": 1.222
+}

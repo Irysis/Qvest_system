@@ -1,0 +1,43 @@
+{
+  "lane": "R3 capw_native (P2)",
+  "date": "2026-07-19",
+  "baseline_momentum_port_t": 1.277,
+  "best_pit": {
+    "tier": "PIT_walkforward",
+    "variant": "capw_drop",
+    "port_t": 1.222,
+    "ew_uni_t": 2.977,
+    "oos_ret": -0.278,
+    "net_sr": 0.419,
+    "calmar": 0.469,
+    "turnover": 7.33,
+    "paired_vs_mom_t": -0.441,
+    "paired_vs_static_t": 2.187,
+    "lag1_port_t": 0.736,
+    "n": 163
+  },
+  "best_oracle": {
+    "tier": "ORACLE_lookahead",
+    "variant": "momval2_oracle_capwopt",
+    "port_t": 0.648,
+    "ew_uni_t": 2.194,
+    "oos_ret": -0.529,
+    "net_sr": 0.205,
+    "calmar": 0.346,
+    "turnover": 8.37,
+    "paired_vs_mom_t": -1.198,
+    "paired_vs_static_t": 0.954,
+    "lag1_port_t": 0.607,
+    "n": 163
+  },
+  "beats_momentum": false,
+  "wall_broken": false,
+  "leak_suspect": false,
+  "verdict": "CAPW_FAMILY_ALPHA_ABSENT: even oracle cap-w-native family selection cannot beat momentum -> no exploitable cap-w family alpha at family-allocation layer (confirms R2 oracle 1.248<1.277)",
+  "fullmean_capw_active_x1e4": [18.386, -31.112, 33.096, -68.368, -11.636, -24.444],
+  "lag1_calibration": {
+    "capw_drop_gap": 0.486,
+    "momentum_baseline_gap": 0.448,
+    "note": "base>lag1 gap(0.486) matches PIT-clean momentum baseline gap(0.448) -> inherited family-rotation staleness, NOT same-month look-ahead. Construction PIT-clean by design (annual-refit translatability from strictly-past cap-w active + tr_12m base)."
+  }
+}
