@@ -265,16 +265,40 @@
   },
   "tier_boundary_sensitivity": {
     "100": {
-      "capw": [0.9982, 0.0084, -0.0066],
-      "ew": [0.0292, 0.2332, 0.7375]
+      "capw": [
+        0.9982,
+        0.0084,
+        -0.0066
+      ],
+      "ew": [
+        0.0292,
+        0.2332,
+        0.7375
+      ]
     },
     "150": {
-      "capw": [0.9982, -0.0101, 0.0119],
-      "ew": [0.0292, 0.3689, 0.6019]
+      "capw": [
+        0.9982,
+        -0.0101,
+        0.0119
+      ],
+      "ew": [
+        0.0292,
+        0.3689,
+        0.6019
+      ]
     },
     "200": {
-      "capw": [0.9982, -0.0044, 0.0062],
-      "ew": [0.0292, 0.5153, 0.4555]
+      "capw": [
+        0.9982,
+        -0.0044,
+        0.0062
+      ],
+      "ew": [
+        0.0292,
+        0.5153,
+        0.4555
+      ]
     }
   },
   "cap_tier_decomposition": {
@@ -337,7 +361,15 @@
     "incumbent_finding": "hrp_core .get_cor_cov linear LW degenerates to mu*I when p>n (rho cap=1 binding): cond=1, all correlation structure destroyed, MVP collapses to EW. Harmless at WT scale (p<=25); must NOT be consumed for large-universe Sigma.",
     "dual_basis_risk_layer": "First risk-layer quantification of FQ-055 dual-basis divergence: book (70% cash CRISIS) active risk is 99.8% MEGA-tier on cap-w basis (mega underweight dominates) but 2.9% MEGA / 36.9% MID / 60.2% SMALL on EW-uni basis - the axis of active risk inverts with basis (max tier share divergence 0.969, flag TRUE). Robust to MID/SMALL boundary choice (MEGA share invariant across cut 100/150/200)."
   },
-  "limitations": ["fwd-12m sample-cov loss target is itself noisy (n=12): frob/cor differences are weak evidence; only paired ordering used", "MVP is unconstrained (estimation-quality instrument, Ledoit-Wolf horse-race convention) - not an allocation, long-only behavior may differ", "lw_nls is own port of analytical_shrinkage.m; sanity S1-S3 PASS but no numerical parity vs official implementation yet (nlshrink absent)", "signal_alive_t36m measures EW-of-tier vs cap-w bench (breadth-vs-concentration regime diagnostic), NOT strategy signal aliveness; all tiers t<0 consistent with 2025-26 mega-cap concentration regime", "A402340 (listed 2021-11, 55m history) excluded from Sigma universe by complete-60m rule (weight 0.0056)", "MID/SMALL individual shares are boundary-conditional (cut=150); MEGA headline is boundary-robust", "45 warnings in A/B loop = cov2cor(S_fwd) near-zero-variance names in the loss target (non-differential across estimators, verified)"],
+  "limitations": [
+    "fwd-12m sample-cov loss target is itself noisy (n=12): frob/cor differences are weak evidence; only paired ordering used",
+    "MVP is unconstrained (estimation-quality instrument, Ledoit-Wolf horse-race convention) - not an allocation, long-only behavior may differ",
+    "lw_nls is own port of analytical_shrinkage.m; sanity S1-S3 PASS but no numerical parity vs official implementation yet (nlshrink absent)",
+    "signal_alive_t36m measures EW-of-tier vs cap-w bench (breadth-vs-concentration regime diagnostic), NOT strategy signal aliveness; all tiers t<0 consistent with 2025-26 mega-cap concentration regime",
+    "A402340 (listed 2021-11, 55m history) excluded from Sigma universe by complete-60m rule (weight 0.0056)",
+    "MID/SMALL individual shares are boundary-conditional (cut=150); MEGA headline is boundary-robust",
+    "45 warnings in A/B loop = cov2cor(S_fwd) near-zero-variance names in the loss target (non-differential across estimators, verified)"
+  ],
   "next_probes": [
     {
       "id": "NP1",
@@ -360,7 +392,12 @@
       "detail": "optimizer-lane round: swap Sigma input lw_linear -> lw_nls in MVO, paired canonical PORT_t measurement; separate round, graduation rules apply"
     }
   ],
-  "revival_or_followup_conditions": ["hard block-replacement composites: retry ONLY with a PSD-preserving assembly operator (NP1/NP2 are the sanctioned paths)", "WT-time consumption of lw_nls: gated on NP3 (parity + .get_cor_cov registration + confirm)", "cap_tier_decomposition field: wire into regular risk_package emission from next QEPM WT (schema v83_dual_basis_captier, this round = reference implementation)", "large-universe consumers of .get_cor_cov ledoit_wolf: audit for p>n degeneracy before reuse"],
+  "revival_or_followup_conditions": [
+    "hard block-replacement composites: retry ONLY with a PSD-preserving assembly operator (NP1/NP2 are the sanctioned paths)",
+    "WT-time consumption of lw_nls: gated on NP3 (parity + .get_cor_cov registration + confirm)",
+    "cap_tier_decomposition field: wire into regular risk_package emission from next QEPM WT (schema v83_dual_basis_captier, this round = reference implementation)",
+    "large-universe consumers of .get_cor_cov ledoit_wolf: audit for p>n degeneracy before reuse"
+  ],
   "artifacts": {
     "runner_dir": "04_Research/method_frontier/fq057_captier_sigma/",
     "ab_metrics": "stage_artifacts/method_frontier/fq057_ab_metrics.parquet",
@@ -370,6 +407,14 @@
     "sanity": "stage_artifacts/method_frontier/fq057_sanity.json",
     "tier_boundary_sensitivity": "stage_artifacts/method_frontier/fq057_tier_boundary_sensitivity.json",
     "challenge_note": "stage_artifacts/method_frontier/fq057_challenge_note.md",
-    "monthly_panel": ["stage_artifacts/method_frontier/fq057_monthly_returns.parquet", "stage_artifacts/method_frontier/fq057_monthly_snapshot.parquet"]
+    "monthly_panel": [
+      "stage_artifacts/method_frontier/fq057_monthly_returns.parquet",
+      "stage_artifacts/method_frontier/fq057_monthly_snapshot.parquet"
+    ],
+    "charts": [
+      "stage_artifacts/method_frontier/fq057_sweep_mvp_vol.png",
+      "stage_artifacts/method_frontier/fq057_sweep_cor_rmse.png",
+      "stage_artifacts/method_frontier/fq057_sweep_dualbasis.png"
+    ]
   }
 }

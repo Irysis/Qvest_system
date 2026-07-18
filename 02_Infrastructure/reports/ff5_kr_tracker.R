@@ -122,6 +122,39 @@ wf("FF5 series: %d months (%s..%s), MKT non-NA=%d", nrow(FF), min(FF$ym), max(FF
 write_parquet(FF, file.path(OUT_DIR, "ff5_kr_monthly.parquet"))
 fwrite(FF, file.path(OUT_DIR, sprintf("ff5_kr_monthly_%s.csv", RUNTAG)))
 
+## ── 진행월 MTD — 직전영업일까지 (시계열 미포함 별도 산출, 도훈 지시 07-18) ──
+mtd_ym2 <- format(max(ud), "%Y-%m")
+MTD5 <- NULL
+rets_mtd <- pn[!is.na(Close_p) & i_p == i - 1 & !is.na(Size_p) & Size_p > 0 & format(Date, "%Y-%m") == mtd_ym2]
+if (nrow(rets_mtd) > 200) {
+  rets_mtd[, ret := Close / Close_p - 1]
+  rets_mtd <- rets_mtd[ret <= 5.0 & ret >= -1.0]
+  rets_mtd[, fy := fifelse(month(Date) >= 6, year(Date), year(Date) - 1L)]
+  rwm <- merge(rets_mtd[, .(Ticker, ret, w = Size_p, fy)], ASG, by = c("Ticker", "fy"))
+  if (nrow(rwm) > 200) {
+    parts <- list()
+    for (sv in c("g_bm", "g_op", "g_inv")) {
+      b <- rwm[!is.na(get(sv)), .(pr = vw(ret, w)), by = .(size_grp, g = get(sv))]
+      vals <- setNames(b$pr, paste(b$size_grp, b$g, sep = "_"))
+      need <- c("S_H", "S_M", "S_L", "B_H", "B_M", "B_L")
+      if (all(need %in% names(vals)))
+        parts[[sv]] <- list(smb = mean(vals[c("S_H", "S_M", "S_L")]) - mean(vals[c("B_H", "B_M", "B_L")]),
+                            hml = mean(vals[c("S_H", "B_H")]) - mean(vals[c("S_L", "B_L")]))
+    }
+    if (length(parts) == 3) {
+      n_td <- sum(format(ud, "%Y-%m") == mtd_ym2)
+      rf_v <- ecos[Series == "KR_CD91" & format(as.Date(Date), "%Y-%m") == mtd_ym2, Value]
+      rf_mtd <- if (length(rf_v)) mean(rf_v, na.rm = TRUE) / 100 / 252 * n_td else NA_real_
+      MTD5 <- list(as_of = format(max(ud)), ym = mtd_ym2, n_days = n_td,
+                   MKT = rwm[, vw(ret, w)] - rf_mtd,
+                   SMB = mean(vapply(parts, function(p) p$smb, numeric(1))),
+                   HML = parts$g_bm$hml, RMW = parts$g_op$hml, CMA = parts$g_inv$hml)
+      write_json(MTD5, file.path(OUT_DIR, "ff5_kr_mtd.json"), auto_unbox = TRUE, digits = 6)
+      wf("FF5 MTD(%s ~%s, %d거래일) 산출·저장", mtd_ym2, MTD5$as_of, n_td)
+    }
+  }
+}
+
 ## ── 4) 기간 요약 + 사후 정합 게이트 ─────────────────────────────────────────
 per <- list(c("2005-06", "2009-12"), c("2010-01", "2014-12"), c("2015-01", "2015-12"),
             c("2016-01", "2019-12"), c("2020-01", "2021-12"), c("2022-01", "2023-12"), c("2024-01", "2026-12"))
@@ -149,16 +182,17 @@ if (!all(g1, g2, g3, na.rm = TRUE)) wf("[!!] 부호/구성 재점검 필요 — 
 FFc <- copy(FF)
 for (cc in c("MKT", "SMB", "HML", "RMW", "CMA")) FFc[, (paste0("r12_", cc)) := frollmean(get(cc), 12)]
 FFc[, d := as.Date(paste0(ym, "-01"))]
-png(file.path(OUT_DIR, "charts", "ff5_rolling12.png"), width = 1150, height = 640)
-par(mfrow = c(2, 1), mar = c(3, 4, 2.5, 7))          # 우측 여백 확보 — 범례 플롯 밖 배치(최신 구간 가림 방지)
-plot(FFc$d, FFc$r12_MKT * 100, type = "l", lwd = 2, col = "black", main = "KR FF5 rolling 12m mean — MKT(excess)",
+png(file.path(OUT_DIR, "charts", "ff5_rolling12.png"), width = 1250, height = 700)
+par(mfrow = c(2, 1), mar = c(3, 5, 2.8, 9), cex.main = 1.45, cex.axis = 1.15, cex.lab = 1.2)  # 우측 여백 — 범례 플롯 밖
+plot(FFc$d, FFc$r12_MKT * 100, type = "l", lwd = 2.4, col = "black", main = "KR FF5 rolling 12m mean — MKT(excess)",
      xlab = "", ylab = "월평균 %"); abline(h = 0, lty = 3)
 cols <- c(SMB = "firebrick", HML = "steelblue", RMW = "darkgreen", CMA = "purple")
-plot(FFc$d, FFc$r12_SMB * 100, type = "l", lwd = 2, col = cols["SMB"], ylim = range(FFc[, .(r12_SMB, r12_HML, r12_RMW, r12_CMA)], na.rm = TRUE) * 100,
+plot(FFc$d, FFc$r12_SMB * 100, type = "l", lwd = 2.4, col = cols["SMB"], ylim = range(FFc[, .(r12_SMB, r12_HML, r12_RMW, r12_CMA)], na.rm = TRUE) * 100,
      main = "SMB / HML / RMW / CMA rolling 12m mean", xlab = "", ylab = "월평균 %")
-for (cc in c("HML", "RMW", "CMA")) lines(FFc$d, FFc[[paste0("r12_", cc)]] * 100, lwd = 2, col = cols[cc])
+for (cc in c("HML", "RMW", "CMA")) lines(FFc$d, FFc[[paste0("r12_", cc)]] * 100, lwd = 2.4, col = cols[cc])
 abline(h = 0, lty = 3)
-legend(x = par("usr")[2], y = par("usr")[4], legend = names(cols), col = cols, lwd = 2, cex = 0.9, xpd = TRUE, bty = "n")
+legend(x = par("usr")[2] + diff(par("usr")[1:2]) * 0.01, y = par("usr")[4], legend = names(cols), col = cols,
+       lwd = 2.6, cex = 1.2, xpd = TRUE, bty = "n")
 dev.off()
 wf("chart written: ff5_rolling12.png")
 

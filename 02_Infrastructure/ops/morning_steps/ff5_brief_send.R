@@ -34,6 +34,14 @@ if (is.null(FF) || !nrow(FF)) { cat("[ff5_brief] FF 시리즈 없음 — skip\n"
     list(heading = "FF5 최근 12개월 평균", type = "kv", kv = list(
       "시장초과 MKT" = fmt(L$r12_MKT), "소형-대형 SMB" = fmt(L$r12_SMB), "가치-성장 HML" = fmt(L$r12_HML),
       "수익성 RMW" = fmt(L$r12_RMW), "투자보수 CMA" = fmt(L$r12_CMA))))
+  ## 진행월 MTD (직전영업일까지 — 도훈 지시 07-18)
+  mtd5 <- tryCatch(jsonlite::fromJSON("outputs/ff5_kr/ff5_kr_mtd.json"), error = function(e) NULL)
+  if (!is.null(mtd5) && !is.null(mtd5$as_of)) {
+    sections[[length(sections) + 1]] <- list(
+      heading = sprintf("진행월 MTD (직전영업일 %s, %d거래일)", mtd5$as_of, mtd5$n_days), type = "kv", kv = list(
+        "시장초과 MKT" = fmt(mtd5$MKT), "소형-대형 SMB" = fmt(mtd5$SMB), "가치-성장 HML" = fmt(mtd5$HML),
+        "수익성 RMW" = fmt(mtd5$RMW), "투자보수 CMA" = fmt(mtd5$CMA)))
+  }
   charts <- "outputs/ff5_kr/charts/ff5_rolling12.png"
 
   sb_line <- NULL

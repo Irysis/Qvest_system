@@ -101,18 +101,10 @@ if (file.exists(pq) && !nzchar(Sys.getenv("SB_FORCE_REBUILD", ""))) {
   sig_dates <- sig_dates[!format(sig_dates, "%Y-%m") %in% SB_prev$ym]
   wf("incremental: 기존 %d개월 스킵, 신규 %d개월", nrow(SB_prev), length(sig_dates))
 }
-rows <- list(); nmov <- 0L
-for (sd_ in sig_dates) {
-  sd_ <- as.Date(sd_, origin = "1970-01-01")
-  u <- uni[Date == sd_]
-  if (nrow(u) < 150) next
-  fz <- tryCatch(recover_raw_z(sd_, FNAMES), error = function(e) NULL)
-  if (is.null(fz)) next
-  u <- merge(u, fz, by = "Ticker", all.x = TRUE)
-  fr <- tryCatch(get_froe(u$Ticker, sd_), error = function(e) NULL)
-  if (!is.null(fr) && nrow(fr)) u <- merge(u, fr, by = "Ticker", all.x = TRUE) else u[, froe := NA_real_]
+## 스타일 active 산출 공용 헬퍼 (월간 시계열 + 진행월 MTD 공용)
+style_actives <- function(u) {
   bench <- u[, sum(fwd * Size) / sum(Size)]
-  out <- list(ym = format(sd_, "%Y-%m"), BENCH = bench)
+  out <- list(BENCH = bench)
   for (st in names(STYLES)) {
     cfg <- STYLES[[st]]
     v <- if (st == "SIZE") -u$Size
@@ -125,6 +117,19 @@ for (sd_ in sig_dates) {
     sel <- ok & v >= thr
     out[[st]] <- u[sel, sum(fwd * Size) / sum(Size)] - bench
   }
+  out
+}
+rows <- list(); nmov <- 0L
+for (sd_ in sig_dates) {
+  sd_ <- as.Date(sd_, origin = "1970-01-01")
+  u <- uni[Date == sd_]
+  if (nrow(u) < 150) next
+  fz <- tryCatch(recover_raw_z(sd_, FNAMES), error = function(e) NULL)
+  if (is.null(fz)) next
+  u <- merge(u, fz, by = "Ticker", all.x = TRUE)
+  fr <- tryCatch(get_froe(u$Ticker, sd_), error = function(e) NULL)
+  if (!is.null(fr) && nrow(fr)) u <- merge(u, fr, by = "Ticker", all.x = TRUE) else u[, froe := NA_real_]
+  out <- c(list(ym = format(sd_, "%Y-%m")), style_actives(u))
   nmov <- nmov + 1L
   rows[[format(sd_)]] <- as.data.table(out)
   if (nmov %% 48 == 0) wf("  %s (%.1f min)", format(sd_), as.numeric(difftime(Sys.time(), t0, units = "mins")))
@@ -136,6 +141,26 @@ wf("SB series: %d months (%s..%s)", nrow(SB), min(SB$ym), max(SB$ym))
 write_parquet(SB, .tmp_pq)
 if (file.exists(pq)) invisible(file.remove(pq))
 invisible(file.rename(.tmp_pq, pq))
+
+## ── 3b) 진행월 MTD — 직전영업일까지 (시계열 미포함 별도 산출, 도훈 지시 07-18) ──
+mtd_ym <- format(max(ud), "%Y-%m")
+mtd_sig <- max(me[format(me, "%Y-%m") < mtd_ym])
+SB_MTD <- NULL
+if (format(max(me), "%Y-%m") == mtd_ym && max(me) > mtd_sig) {
+  um <- uni[Date == mtd_sig]                                  # uni의 fwd = mtd_sig→최신 월중일 (부분월 = MTD 정의 그 자체)
+  if (nrow(um) >= 150) {
+    fzm <- tryCatch(recover_raw_z(mtd_sig, FNAMES), error = function(e) NULL)
+    if (!is.null(fzm)) {
+      um <- merge(um, fzm, by = "Ticker", all.x = TRUE)
+      frm <- tryCatch(get_froe(um$Ticker, mtd_sig), error = function(e) NULL)
+      if (!is.null(frm) && nrow(frm)) um <- merge(um, frm, by = "Ticker", all.x = TRUE) else um[, froe := NA_real_]
+      SB_MTD <- c(list(as_of = format(max(ud)), sig = format(mtd_sig),
+                       n_days = sum(format(ud, "%Y-%m") == mtd_ym)), style_actives(um))
+      write_json(SB_MTD, file.path(OUT_DIR, "smartbeta_kr_mtd.json"), auto_unbox = TRUE, digits = 6)
+      wf("MTD %s~%s (%d거래일) 산출·저장", mtd_ym, SB_MTD$as_of, SB_MTD$n_days)
+    }
+  }
+}
 
 ## ── 4) 기간 요약 + 정합 게이트 ──────────────────────────────────────────────
 sty <- names(STYLES)
@@ -171,15 +196,21 @@ a3  <- vapply(sty, function(s) mean(tail(SB[[s]], 3), na.rm = TRUE) * 100, numer
 a12 <- vapply(sty, function(s) mean(tail(SB[[s]], 12), na.rm = TRUE) * 100, numeric(1))
 ord <- order(a12)
 M <- rbind(`1M` = a1[ord], `3M avg` = a3[ord], `12M avg` = a12[ord])
-png(file.path(OUT_DIR, "charts", "smartbeta_recent_bars.png"), width = 1150, height = 520)
-par(mar = c(4, 9, 3, 6))
+if (!is.null(SB_MTD)) {
+  mtd_v <- vapply(sty[ord], function(s) { x <- SB_MTD[[s]]; if (is.null(x) || is.na(x)) NA_real_ else x * 100 }, numeric(1))
+  M <- rbind(M, matrix(mtd_v, nrow = 1, dimnames = list(sprintf("MTD~%s", substr(SB_MTD$as_of, 6, 10)), NULL)))
+  M <- M[c(nrow(M), 1:(nrow(M) - 1)), , drop = FALSE]        # MTD를 맨 앞(그룹 최하단 막대)으로
+}
+bar_cols <- if (nrow(M) == 4) c("lightsteelblue", "gray75", "gray45", "black") else c("gray75", "gray45", "black")
+png(file.path(OUT_DIR, "charts", "smartbeta_recent_bars.png"), width = 1250, height = 620)
+par(mar = c(5, 11.5, 3.5, 8), cex.main = 1.45, cex.lab = 1.25)
 bp <- barplot(M, beside = TRUE, horiz = TRUE, names.arg = KRN[sty[ord]], las = 1,
-              col = c("gray75", "gray45", "black"), border = NA,
-              main = sprintf("스마트베타 최근 성과 — 월 active %% (vs 유니버스 VW, %s 기준)", max(SB$ym)),
-              xlab = "월 active %", xlim = range(0, M, na.rm = TRUE) * 1.25)
+              col = bar_cols, border = NA, cex.names = 1.25, cex.axis = 1.15,
+              main = sprintf("스마트베타 최근 성과 — 월 active %% (완결월 %s 기준 + 진행월 MTD)", max(SB$ym)),
+              xlab = "월 active %", xlim = range(0, M, na.rm = TRUE) * 1.38)
 abline(v = 0, lty = 1)
-text(x = M + sign(M) * max(abs(M), na.rm = TRUE) * 0.05, y = bp, labels = sprintf("%+.1f", M), cex = 0.75, xpd = TRUE)
-legend("bottomright", rev(rownames(M)), fill = rev(c("gray75", "gray45", "black")), bty = "n", cex = 0.95)
+text(x = M + sign(M) * max(abs(M), na.rm = TRUE) * 0.06, y = bp, labels = sprintf("%+.1f", M), cex = 0.98, xpd = TRUE)
+legend("bottomright", rev(rownames(M)), fill = rev(bar_cols), bty = "n", cex = 1.15, inset = c(0.01, 0.02))
 dev.off()
 wf("chart written: smartbeta_recent_bars.png")
 
@@ -190,15 +221,15 @@ ymv <- tail(SB$ym, n_hm)
 Hm <- t(H)[length(sty):1, , drop = FALSE]                     # rows=styles(역순: 위가 첫 스타일)
 brk <- max(abs(Hm), na.rm = TRUE)
 pal <- colorRampPalette(c("#2166AC", "#F7F7F7", "#B2182B"))(64)
-png(file.path(OUT_DIR, "charts", "smartbeta_heatmap24.png"), width = 1150, height = 460)
-par(mar = c(4.5, 9, 3, 2))
+png(file.path(OUT_DIR, "charts", "smartbeta_heatmap24.png"), width = 1250, height = 540)
+par(mar = c(5.5, 11, 3.5, 2), cex.main = 1.45)
 image(x = 1:n_hm, y = 1:length(sty), z = t(Hm), col = pal, zlim = c(-brk, brk),
       axes = FALSE, xlab = "", ylab = "", main = "스마트베타 로테이션 — 최근 24개월 월 active % (청=마이너스 / 적=플러스)")
-axis(2, at = 1:length(sty), labels = KRN[rev(sty)], las = 1, tick = FALSE, cex.axis = 0.95)
+axis(2, at = 1:length(sty), labels = KRN[rev(sty)], las = 1, tick = FALSE, cex.axis = 1.2)
 sel <- seq(1, n_hm, by = 2)
-axis(1, at = sel, labels = ymv[sel], las = 2, cex.axis = 0.8, tick = FALSE)
+axis(1, at = sel, labels = ymv[sel], las = 2, cex.axis = 1.05, tick = FALSE)
 for (i in 1:n_hm) for (j in 1:length(sty))
-  text(i, j, sprintf("%.0f", t(Hm)[i, j]), cex = 0.55, col = ifelse(abs(t(Hm)[i, j]) > brk * 0.55, "white", "gray25"))
+  text(i, j, sprintf("%.0f", t(Hm)[i, j]), cex = 0.85, col = ifelse(abs(t(Hm)[i, j]) > brk * 0.55, "white", "gray25"))
 abline(h = (0:length(sty)) + 0.5, col = "white", lwd = 2)
 dev.off()
 wf("chart written: smartbeta_heatmap24.png")
@@ -207,11 +238,11 @@ wf("chart written: smartbeta_heatmap24.png")
 SBc <- copy(SB)
 for (st in sty) SBc[, (paste0("r12_", st)) := frollmean(get(st), 12)]
 SBc[, d := as.Date(paste0(ym, "-01"))]
-png(file.path(OUT_DIR, "charts", "smartbeta_rolling12.png"), width = 1150, height = 900)
-par(mfrow = c(4, 2), mar = c(2.5, 4, 2.2, 1))
+png(file.path(OUT_DIR, "charts", "smartbeta_rolling12.png"), width = 1250, height = 980)
+par(mfrow = c(4, 2), mar = c(2.8, 4.5, 2.8, 1), cex.main = 1.5, cex.axis = 1.15, cex.lab = 1.2)
 rng <- range(SBc[, paste0("r12_", sty), with = FALSE], na.rm = TRUE) * 100
 for (st in sty) {
-  plot(SBc$d, SBc[[paste0("r12_", st)]] * 100, type = "l", lwd = 2.2, col = cols[st], ylim = rng,
+  plot(SBc$d, SBc[[paste0("r12_", st)]] * 100, type = "l", lwd = 2.4, col = cols[st], ylim = rng,
        main = KRN[st], xlab = "", ylab = "r12 %")
   abline(h = 0, lty = 3); polygon(c(SBc$d, rev(SBc$d)),
     c(pmax(SBc[[paste0("r12_", st)]] * 100, 0), rep(0, nrow(SBc))), col = adjustcolor(cols[st], 0.15), border = NA)
