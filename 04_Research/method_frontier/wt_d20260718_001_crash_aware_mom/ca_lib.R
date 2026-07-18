@@ -18,23 +18,34 @@ OUT_MF  <- file.path(ROOT_CA, "stage_artifacts/method_frontier")   # fq057 panel
 OUT_CA  <- file.path(ROOT_CA, "stage_artifacts/WT_D20260718_001")   # 본 WT 산출
 PIN_UPSTREAM_CA <- "fq057_20260718_171024"   # 소비 panel vintage (fq057 pin)
 
-# canonical_screen_bt (1급 측정 helper) + contract
+# canonical_screen_bt (1급 측정 helper) + contract (명시 source — 상대경로 auto-load 실패 방지)
+source(file.path(ROOT_CA, "02_Infrastructure/contracts/backtest_result_contract.R"))
 source(file.path(ROOT_CA, "02_Infrastructure/contracts/canonical_screen_bt.R"))
 # fq058 lib 재사용 (load_panels/elig/signal(mom)/nw_t/ann_sr/oos_v2/structural_dd)
 source(file.path(ROOT_CA, "04_Research/method_frontier/fq058_cdar_construction/fq058_lib.R"))
 
 # ---- ym helpers (fq058_lib에 ym_next_f/ym2date_f 존재) ----------------------
 
-# ---- contemporaneous cap-w benchmark monthly series (by ym) -----------------
-#   month ym의 실현 cap-w 수익 = Σ_member (size_i/Σsize) * ret_i (월별 리셋).
-#   Return.portfolio(monthly reset) 등가. 하방베타 market series + BM_Ret 원천.
+# ---- PIT cap-w benchmark monthly series (by ym) — FQ-058 정합 --------------
+#   ★PIT: month t 의 벤치 수익 = Σ (size_{t-1} normalized) * ret_i[t].
+#   size 는 월말 시총 → 그 달 수익을 그 달 시총으로 가중하면 winner-overweight look-ahead
+#   (실측: contemporaneous 22.5% vs lagged 10.79%). Return.portfolio 가 weights 를 내부
+#   1-period lag 적용 → PIT-safe realized cap-w market return (FQ-058 bench 재현 CAGR 10.79%).
 build_bench_m <- function(P) {
-  bs <- P$snap[member == 1L & !is.na(size) & size > 0, .(ym, Ticker, size)]
-  bs <- merge(bs, P$mr[, .(ym, Ticker, ret_m)], by = c("ym","Ticker"))
-  bs <- bs[is.finite(ret_m)]
-  bs[, wb := size / sum(size), by = ym]
-  bench_m <- bs[, .(bm_ret = sum(wb * ret_m)), by = ym][order(ym)]
-  bench_m
+  Mw <- dcast(P$mr, ym ~ Ticker, value.var = "ret_m")
+  yms <- Mw$ym
+  Rmat <- as.matrix(Mw[, -1, drop = FALSE]); Rmat[is.na(Rmat)] <- 0
+  R_all <- xts(Rmat, order.by = ym2date_f(yms))
+  bsnap <- P$snap[member == 1L & !is.na(size) & size > 0, .(ym, Ticker, size)]
+  bsnap <- bsnap[Ticker %in% colnames(R_all)]
+  bsnap[, wb := size / sum(size), by = ym]
+  Bw <- dcast(bsnap, ym ~ Ticker, value.var = "wb", fill = 0)
+  Bx <- xts(as.matrix(Bw[, -1, drop = FALSE]), order.by = ym2date_f(Bw$ym))
+  cols <- intersect(colnames(Bx), colnames(R_all))
+  bench_pf <- Return.portfolio(R_all[, cols, drop = FALSE], weights = Bx[, cols, drop = FALSE],
+                               verbose = FALSE)
+  data.table(ym = as.integer(format(index(bench_pf), "%Y%m")),
+             bm_ret = as.numeric(bench_pf))[order(ym)]
 }
 
 # ---- crash-penalty signals (PIT, z over elig; HIGHER = more crash-prone) -----
@@ -49,7 +60,8 @@ z_of_ca <- function(v) {
 crash_signal_ca <- function(P, t_ym, elig, axis, market_by_ym,
                             win_beta = 36L, win_semi = 24L, win_skew = 36L,
                             win_crash = 12L) {
-  idx <- match(t_ym, P$yms)
+  # holding month = t_ym(idx). 모든 crash window는 holding 전 month(idx-1)에 끝난다(PIT).
+  idx <- match(t_ym, P$yms) - 1L   # idx = 마지막 관측월 (h-1). mom_12_1(signal_f58)과 동일 기준.
   M   <- P$mat  # rows = ym, cols = ticker
 
   if (axis == "downside_beta") {
@@ -143,27 +155,28 @@ build_canon_inputs <- function(P, reb_yms, score_fun, market_by_ym) {
 #   변형(axis/lambda) 간 재계산 회피. returns/bench/size/liq는 변형 무관 공통.
 AXES_CA <- c("downside_beta","downside_semivol","crash_exposure","ncskew")
 precompute_store_ca <- function(P, reb_yms, market_by_ym) {
+  # holding month h = t_ym (idx). 신호는 모두 h-1 이하 데이터(mom: idx-11..idx-1, crash: window ends idx-1).
+  # forward realized = 홀딩월 h 수익 = P$mat[idx]. 벤치 = 홀딩월 h cap-w 수익. FQ-058 timing과 동일.
   store <- list()
   for (t_ym in reb_yms) {
-    idx <- match(t_ym, P$yms); nxt <- idx + 1L
-    if (is.na(nxt) || nxt > length(P$yms)) next
+    idx <- match(t_ym, P$yms)
+    if (is.na(idx) || idx < 60L) next
     elig <- elig_at_f(P, t_ym, win = 60L, liq_min = 2e8)
     if (length(elig) < 30L) next
-    z_mom <- signal_f58(P, t_ym, elig, "mom_12_1")     # base momentum z (fq058 def)
+    z_mom <- signal_f58(P, t_ym, elig, "mom_12_1")     # base momentum z (fq058 def, idx-11..idx-1)
     z_ax <- lapply(AXES_CA, function(a) crash_signal_ca(P, t_ym, elig, a, market_by_ym))
     names(z_ax) <- AXES_CA
     Zm <- do.call(cbind, z_ax)                          # elig x axes
     z_comp <- rowMeans(Zm, na.rm = TRUE); z_comp[!is.finite(z_comp)] <- 0
-    keep <- intersect(elig, colnames(P$mat))
-    fwd <- P$mat[nxt, elig]
-    dt_sig <- ym2date_f(t_ym)
+    fwd <- P$mat[idx, elig]                             # holding month h return
+    dt_h <- ym2date_f(t_ym)                             # label = holding month end
     ssz <- P$snap[ym == t_ym & Ticker %in% elig, .(Ticker, size)]
     lqm <- P$liq[ym == t_ym & Ticker %in% elig, .(Ticker, avgtv20)]
     store[[as.character(t_ym)]] <- list(
-      t_ym = t_ym, date = dt_sig, elig = elig,
+      t_ym = t_ym, date = dt_h, elig = elig,
       z_mom = z_mom, z_axis = z_ax, z_comp = setNames(z_comp, elig),
       fwd = setNames(as.numeric(fwd), elig),
-      bm_fwd = as.numeric(market_by_ym[as.character(P$yms[nxt])]),
+      bm_fwd = as.numeric(market_by_ym[as.character(t_ym)]),   # holding month h benchmark
       size = ssz, liq = lqm)
   }
   store
