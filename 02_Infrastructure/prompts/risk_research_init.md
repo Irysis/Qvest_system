@@ -107,6 +107,7 @@ Point-in-time / Research Process / Factor vs Proxy / 논문 출발점 / Data Min
   - 산출: factor_name × {crowding_score [0~1], hhi_top, vol_concentration, passive_overlap_proxy, demand_elasticity_proxy}
   - threshold: crowding_score ≥ 0.75 → risk_summary.crowding_flags 자동 등재
   - 3m delta ≥ 0.15 → "RAPID_INCREASE" alert (decay/crowding emergence 사전 감지)
+- **Cap-tier / dual-basis 분해 (v8.3.1 의무, 도훈 승인 2026-07-18)**: active 노출·알파 기여를 cap-tier(MEGA/MID/SMALL)로 분해 + cap-w vs EW-uni 이중 기준 진단 → `risk_summary.cap_tier_decomposition` 등재 (§v83_dual_basis_captier — v8.3 M2의 risk 층 배선)
 - Liquidity 진단 (capacity pressure)
 - Regime correlation 측정 (각 regime에서 종목 간 상관 shift)
 - `risk_package.json` 저장 + Q-Lead 알림
@@ -354,6 +355,32 @@ bootstrap_ic_fast(alpha, ret, B = 1000L)                  # factor check 시
 - `gerber_statistic_fast` (Gerber 2015 robust)
 - `stress_simulation_fast` (4-regime parallel Monte Carlo)
 </v61_rcpp_hotspots_risk>
+
+<v83_dual_basis_captier>
+## v8.3.1 — dual-basis/cap-tier 의무 필드 + Σ 이원화 (도훈 mandate 2026-07-18)
+
+**risk_package.json 추가 의무 필드** (output_contract 확장):
+
+```json
+{
+  "risk_summary": {
+    "cap_tier_decomposition": {
+      "basis": "cap_w_and_ew_uni",
+      "tiers": [
+        {"tier": "MEGA", "active_risk_share": 0.41, "alpha_share": 0.08, "signal_alive": false},
+        {"tier": "MID", "active_risk_share": 0.37, "alpha_share": 0.55, "signal_alive": true},
+        {"tier": "SMALL", "active_risk_share": 0.22, "alpha_share": 0.37, "signal_alive": true}
+      ],
+      "dual_basis_divergence_flag": true
+    }
+  }
+}
+```
+
+근거: 알파 tier-국소화(07-06)·post-2017 감쇠 상당분=cap-w 벤치 아티팩트(07-05)·FQ-055 dual-basis 괴리 34건 — '알파가 어느 tier에 사는가'는 공동위험 구조의 질문이므로 risk가 산출을 소유한다. judge/alpha의 dual-basis 진단(v8.3 M2 — 기각 전 EW-대비·cap-tier 분해 확인 의무)이 이 필드를 소비한다.
+
+**Σ estimator 이원화** (optimizer Step 4와 동일 원칙, 도훈 승인 2026-07-18): WT-시점은 posterior-드리븐(method shopping 상한 5·estimation-quality enum 불변) — 신규 estimator(analytical NLS·graphical·cap-tier block Σ) '발굴'은 method_frontier lane(FQ-057) 전용 라운드로 실측하고, `.get_cor_cov` 등재분만 WT-시점 소비 자격.
+</v83_dual_basis_captier>
 
 <telegram_protocol_v6 enforce="HOOK+STOP+SOT" updated="2026-05-07">
 ## Telegram Brief — v6 SOT

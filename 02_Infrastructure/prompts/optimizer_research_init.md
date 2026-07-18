@@ -235,6 +235,7 @@ Forge는 당신의 `optimization_package.json` + `weights.csv` + Alpha의 alpha_
 
 ## Version
 
+- **v1.3** — 2026-07-18 — 이원화 (도훈 승인): Step 4 = posterior-드리븐 기본 + 4-트리거 sweep 에스컬레이션 / 신규 방법론 발굴 = method_frontier lane(FQ-057~059) 분리 / 부활 조건 명문화(INV-7). §v83_method_dualization 신설
 - **v1.2.1** — 2026-07-18 — 헌법 정합 수리: RF-O5·완료보고 20→25 (도훈 mandate 2026-05-29) + breadth bounds 0.10 잔재 → [0, 0.20] (도훈 confirm 2026-06-13 v2.4, constraint_defaults 동기). 훅은 기존부터 현행값 강제 — 프롬프트-훅 불일치만 해소. (이원화 개정 — WT-시점 선택 vs method-frontier lane — 은 도훈 승인 대기, 본 정정과 별건)
 - **v1.2** — 2026-04-24 Task#26 (L-192 Remediation) — Grinold breadth 강화: bounds 0.20→0.10, min_names 15, hhi_cap 0.10, alpha_winsor 2σ
 - **v1.1** — 2026-04-24 Session 70 — v6.1 R4 confidence 필수 반영 + selection_objective + R3 challenge_note 발행 + method_shopping 상한 10
@@ -412,6 +413,17 @@ dsr <- bootstrap_dsr_fast(backtest_returns, n_trials = n_methods, B = 1000L)
 - `cvar_lp_fast` (custom CVaR linear programming)
 - `ppo_rl_forward_fast` (deep portfolio forward pass)
 </v61_rcpp_hotspots_opt>
+
+<v83_method_dualization>
+## v8.3.1 이원화 — WT-시점 선택 vs Method-Frontier 발굴 (도훈 mandate 2026-07-18)
+
+**mandate 취지**: QEPM은 Axiom 엔진이 주는 교훈을 발판 삼아 새로운 방법들을 거침없이 도전해 고퀄리티 알파를 창출하는 모드다. 신규성 탐색은 늘리고(전용 lane), 알려진 메뉴의 반복 재비교는 줄인다.
+
+- **(A) WT-시점 선택** (Step 4): posterior-드리븐 — 착수 전 hypothesis_index로 method family 실측 이력(DIST/L-code) 확인 의무. 알려진 negative의 차별점 없는 재탕 sweep 금지, 부활 조건 충족 시에만 재편입(INV-7). method_shopping_log에 posterior 참조 기록.
+- **(B) Method-Frontier 발굴** (별도 리서치 lane): 신규 estimator/construction 기법은 `06_Registry/alpha_frontier_queue.json` method_frontier lane(FQ-057 cap-tier block Σ / FQ-058 Min-CDaR / FQ-059 soft-membership top-N — 이후 증설)에서 전용 라운드로 실측. canonical 측정 + L-code 적립 + `weight_method_registry.R` 등재를 거친 방법만 WT-시점 소비 자격.
+- **부활 조건 (INV-7)**: full-sweep 상시화 재승격 = 트리거 ④(method 간 net_ir 격차) 반복 발화 시. HRP/위험기반 배분 = multi-sleeve book 성립 시. uncertainty sizing = 전이 벽 이동 신호(cap-w PORT_t 2.95 통과 슬리브 등장) 또는 비-return σ̂ 재료 등장 시.
+- **불변**: net_ir enum 선택 잣대 / shopping 상한 10 / DSR sweep 게이트 / Hard Constraints / no silent override.
+</v83_method_dualization>
 
 <telegram_protocol_v6 enforce="HOOK+STOP+SOT" updated="2026-05-07">
 ## Telegram Brief — v6 SOT
