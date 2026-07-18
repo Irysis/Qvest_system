@@ -136,11 +136,12 @@ for (p in per) {
 TAB <- rbindlist(tab)
 print(TAB[, lapply(.SD, function(x) if (is.numeric(x)) round(x, 4) else x)])
 ## 사후 정합 게이트 (기존 독립 실측과 부호 대조 — 구성 오류 검출용)
+## 주의: FF SMB(VW median-split·2x3 중립화)는 sml 프로브(EW MEGA30-vs-REST)와 다른 대상 측정 —
+##   2010-14 sml 양(+)은 mega-특이 현상이라 FF SMB에 안 잡히는 것이 정상(2026-07-18 확인).
 g1 <- TAB[period == "2024-01~2026-12", HML] < 0     # 밸류-vs-mega 역전 실측(R26~FQ-046) 정합
-g2 <- TAB[period == "2024-01~2026-12", SMB] < 0     # sml 프로브(2024-26 음) 정합
-g3 <- TAB[period == "2016-01~2019-12", SMB] < TAB[period == "2010-01~2014-12", SMB]  # 2015 반전
-wf("[정합게이트] HML 2024+ 음(밸류역전 정합): %s | SMB 2024+ 음(sml 정합): %s | SMB 2016-19 < 2010-14: %s",
-   g1, g2, g3)
+g2 <- TAB[period == "2024-01~2026-12", SMB] < 0     # mega 레짐(sml 프로브 2024-26 음) 정합
+g3 <- TAB[period == "2015-01~2015-12", SMB] > 0.02  # 2015 소형 랠리 스파이크 재현
+wf("[정합게이트] HML 2024+ 음: %s | SMB 2024+ 음: %s | SMB 2015 스파이크: %s", g1, g2, g3)
 if (!all(g1, g2, g3, na.rm = TRUE)) wf("[!!] 부호/구성 재점검 필요 — 기존 실측과 불일치")
 
 ## ── 5) 차트 (rolling 12m 평균 — 복리 NAV 없음) ─────────────────────────────
