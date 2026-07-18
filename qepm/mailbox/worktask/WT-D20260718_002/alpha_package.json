@@ -1,0 +1,51 @@
+{
+  "task_id": "WT-D20260718_002",
+  "as_of_date": "2026-07-18",
+  "forecast_horizon": "1M",
+  "wt_type": "discovery",
+  "status": "ALPHA_DONE_NEGATIVE",
+  "alpha_discovery_certificate": "NOT_ISSUED",
+  "certificate_rationale": "exclusion filter FALSIFIED — no positive PORT_t contribution; paired diff negative across 21/21 configs",
+  "alpha_vector": {},
+  "confidence_vector": {},
+  "alpha_vector_note": "No standalone selection alpha emitted — hypothesis was an EXCLUSION overlay, which is falsified. alpha_scores.parquet holds the tested exclusion signal (sell_intensity_off6) for audit.",
+  "factor_specs": [
+    {
+      "factor_family": "Insider_Trading",
+      "proxy": "officer on-market net-sell intensity (exclusion filter)",
+      "formula": "sell_intensity = -sum(qty_change*price over L=6mo, officer 장내 trades)/market_cap; exclude top-P% net sellers from universe",
+      "lag_rule": "rcept_dt month <= formation month (C5 overlay timing)",
+      "winsorization": "none (raw net value)",
+      "neutralization": "none (universe exclusion, not cross-sectional score)",
+      "economic_rationale": "Miller-1977: KR short-sale constraint prevents short-side correction of insider-signalled overvaluation; excluding heavy insider sellers from long-only universe hypothesized to harvest avoided overvaluation. FALSIFIED — insider-sold momentum names outperform replacements.",
+      "weight_theta": 0,
+      "references": [
+        "Miller 1977 JF",
+        "Cohen-Malloy-Pomorski 2012 (routine vs opportunistic)",
+        "R9/R33 internal (KR insider frames)"
+      ]
+    }
+  ],
+  "diagnostics": {
+    "canonical_port_t_nw_lag3": 0.771452,
+    "base_canonical_port_t_nw_lag3": 1.17103,
+    "paired_diff_t_nw_lag3": -1.350355,
+    "canonical_n_months": 259,
+    "sweep_all_negative": true,
+    "metric_type": "canonical_screen"
+  },
+  "selection_objective": "canonical_port_t",
+  "challenge_flags": [
+    "FALSIFIED: exclusion degrades base momentum PORT_t (paired t=-1.35, 21/21 configs negative)",
+    "R33 sell-side t~0 triangulated across selection/monitoring/exclusion frames",
+    "SCOPE-LIMIT (frontier): exclusion untested on value/incumbent multi-factor base",
+    "no crisis defense (AX-001 v2 crisis diff still negative)"
+  ],
+  "next_probe": [
+    "value/incumbent-book base exclusion (different overvaluation clustering than momentum) — low prior given base-agnostic null",
+    "insider-sell as DOWN-WEIGHT (soft) rather than hard exclusion within a sleeve — but that re-enters R9 selection wall",
+    "non-return, non-insider frontier per layer_bottleneck_map (momentum decay bottleneck unresolved by insider material)"
+  ],
+  "revival_condition": "if a future KR short-sale regime change or a insider-sell frame shows forward-underperformance signal (currently null across 3 frames), revisit exclusion.",
+  "pin_tag": "wt002_20260718_214215"
+}

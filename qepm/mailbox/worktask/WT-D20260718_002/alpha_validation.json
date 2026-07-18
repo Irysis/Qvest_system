@@ -1,0 +1,62 @@
+{
+  "task_id": "WT-D20260718_002",
+  "as_of_date": "2026-07-18",
+  "hypothesis": "Insider-selling universe EXCLUSION filter (Miller-1977 long-only overvaluation harvest)",
+  "design": "exclusion overlay paired A/B — base mom_12_1 top-25 EW vs base with insider net-seller tickers removed; canonical_screen_bt cap-w PORT_t 1급; top_n=25, liq 2e8, 15bps delta cost; period 2004-12..2026-06 (259 mo)",
+  "verdict": "FALSIFIED",
+  "pin_tag": "wt002_20260718_214215",
+  "metric_type": "canonical_screen",
+  "canonical_paired": {
+    "base_port_t_capw": 1.17103,
+    "treatment_port_t_capw": 0.771452,
+    "paired_diff_annualized": -0.021471,
+    "paired_t_nw_lag3": -1.350355,
+    "interpretation": "exclusion DEGRADES base momentum (paired diff negative, t=-1.35). Kill criterion (paired_t<2) met — in fact negative.",
+    "avg_excluded_per_month": 29.957364,
+    "n_months": 259
+  },
+  "sweep_robustness": {
+    "n_cells": 18,
+    "n_cells_negative_t": 18,
+    "all_negative": true,
+    "best_cell_paired_t": -0.203363,
+    "note": "18 sweep cells (scope off/all x L 3/6/12 x P 5/10/20) + 3 alt-intensity (gross/breadth/gross-P20) = 21/21 negative paired_t"
+  },
+  "dual_basis": {
+    "base_ew_uni_port_t": 1.856924,
+    "treatment_ew_uni_port_t": 1.44225,
+    "negative_holds_in_ew_basis": true,
+    "excluded_median_size_pct": 0.283668,
+    "excluded_tier_mix": {
+      "MEGA": 570,
+      "MID": 821,
+      "OTHER": 6338
+    },
+    "conclusion": "excluded names upper-third by size (median size-pct 0.284), NOT small-cap-localized; negative holds in both cap-w (1.171->0.771) and EW-uni (1.857->1.442) => not a benchmark-construction artifact"
+  },
+  "ax001_v2": {
+    "crisis_diff_annualized": -0.009932,
+    "normal_diff_annualized": -0.024096,
+    "crisis_defense": false,
+    "note": "crisis-period paired diff still negative (-0.99%/yr); exclusion provides no defensive value"
+  },
+  "is_oos": {
+    "is_diff_ann": -0.020001,
+    "is_t": -1.480651,
+    "oos_diff_ann": -0.023341,
+    "oos_t": -0.734058
+  },
+  "pit": {
+    "overlay_pit_guard": "PASS (formation month-end < holding-month start)",
+    "lag1_stress": {
+      "lag1_diff_ann": -0.009696,
+      "lag1_t": -0.626608,
+      "lookahead_suspected": false,
+      "note": "primary MORE negative than lag1 => no upward look-ahead; signal genuinely lagged"
+    },
+    "signal_timing": "rcept_dt month <= formation month; holding = formation+1; C5 clean"
+  },
+  "differentiation": "R9 = insider as long-side SELECTION signal (config-scoped neg); R33/R37 = MONITORING per-holding hold-safety (sell direction t~0); THIS = EXCLUSION from base universe (Miller harvest). Distinct mechanism, convergent null => triangulation.",
+  "selection_objective": "canonical_port_t",
+  "kill_registered": true
+}
