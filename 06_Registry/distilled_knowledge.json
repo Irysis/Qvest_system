@@ -1,10 +1,10 @@
 {
   "schema_version": "distilled_knowledge_v1",
-  "generated_at": "2026-07-18T09:45:06+0900",
+  "generated_at": "2026-07-18T09:59:37+0900",
   "note": "Axiom 엔진 ②Distilled 계층 통합 인덱스. lifecycle: pending_5axis→[자동초안+적대검증]→proposed→[도훈 배치승인]→distilled→promoted|expired. INV-6(2026-07-04 재정의: 무인 활성화 금지): 주입/truths 소비는 status=distilled만 — proposed·pending_5axis 초안 텍스트 주입 금지(안전속성 보존).",
   "n_entries": 69,
   "n_distilled": 13,
-  "n_proposed": 2,
+  "n_proposed": 3,
   "entries": [
     {
       "dist_id": "DIST-AR-001",
@@ -833,7 +833,7 @@
       "type": "methodological",
       "polarity": "positive",
       "metric_type": "estimated",
-      "status": "pending_5axis",
+      "status": "expired",
       "statement_refined": null,
       "statement_draft": "[방법론 성공 규칙 초안] family=quality_profitability, tags=ew_survivor,benchmark_artifact,cap_tier_trap, supporting=3건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
       "retry_condition": null,
@@ -3381,16 +3381,40 @@
       "type": "methodological",
       "polarity": "conditional",
       "metric_type": "estimated",
-      "status": "pending_5axis",
-      "statement_refined": null,
+      "status": "proposed",
+      "statement_refined": "KR value family는 '조건부'로만 소비한다 — 방향-사멸 단정도, standalone 자본 레버도 아니다. 실측 수렴 3계열(supporting 14 L-code·13 독립 전략): (1) value 감쇠의 성격 — '무형자산 mismeasurement 아티팩트' 가설 반증: R&D/SG&A 자본화 무형조정이 재순위(Spearman 0.987)·large-cap 재분류(순위이동 −0.001) 둘 다 실패, tilt 강제 시 악화 = 대형 tier value 감쇠는 측정 아티팩트가 아닌 실재 감쇠. (2) 파생 소비형태 반증 누적 — accrual-quality composite(AC18/22/23) PORT_t<2.95 · crowding CR07~11 최선 0.52~0.79(직교게이트 FAIL) · CR09 full +0.461=pre-2015 아티팩트 · AND-gate 교집합 IS +3.44→OOS −2.27(가산 control 열위, 축교체·OOS-split에도 IS+/OOS− 구조 재현) = 수익-파생 재조합으로는 회복 안 됨. (3) 실재 알파의 위치 — 소형 tier 국소(size 상관 −0.705): 신호는 실재하나 위치가 소형이라 cap-w 자본 게이트 미달이 구조적. 조건부 소비 규약: value는 EW/소형-tier basis 진단·OVERLAY_CANDIDATE feature·tier/레짐-조건부 소비면에서만 실신호로 취급하고, cap-w standalone 재도전은 부활신호 발화 시에만.",
       "statement_draft": "[방법론 조건부 규칙 초안] family=value, tags=AX-000_honest,QEPM_DISCOVERY,CLEAN_NEGATIVE, supporting=14건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
-      "retry_condition": null,
-      "adversarial_verdict": null,
-      "expiry": null,
-      "frontier": [],
-      "live_trigger": [],
-      "revival_spec": [],
-      "constraint_firewall": null,
+      "retry_condition": "① value_quality_spread 극단/스타일 로테이션(value-vs-mega) 반전 관측 시 (revival_signals 체계, DIST-QPM-006 부활신호와 정렬) ② 대형 tier value 실현 알파(EBIT/EV 등 정의축)의 trailing 재점화 관측 시 ③ 비-return 원천과의 교차에서 value 조건부 신호의 대형 tier 전이 관측 시",
+      "adversarial_verdict": "PASS 5/5 — (a)과장: conditional 서술·수치 전부 DIST falsification/mechanism draft 실기록 전재(창작 0). (b)근거: supporting 14 L-code·13 독립 전략, falsification 시도 9건+ 실값 기록(무형조정/accrual/crowding/AND-gate/축교체). (c)AX-000: '방향-사멸 단정 아님' 명문·조건부 소비 규약 + frontier 3건 — 탐색 계속 형태. (d)제약 방화벽(semantic, load_firewall_context 선수행): 미달 귀속 = 알파의 소형 tier 국소성(신호 속성)이지 고정 제약 아님·완화 레버 제시 없음. (e)frontier 3건 + live_trigger(spread) + expiry 완비. 비고: DIST-QPM-006(EP standalone negative)과 구분 — 본 건은 family-수준 조건부 소비 규약(넓은 scope)·중복 아닌 상보.",
+      "expiry": "2027-07-18",
+      "frontier": [
+        "value 정의-로테이션 monitoring — 기업가치배수(EBIT/EV) vs 매출/이익 yield 상대성과 tripwire (조기감지)",
+        "OVERLAY_CANDIDATE value_z feature 소비 (non-mega slotting 보존분)",
+        "tier-조건부(EW/소형-tier basis) 재분류 소비 — cap-w 게이트 밖 스크리닝 라벨"
+      ],
+      "live_trigger": {
+        "type": "spread",
+        "condition": "value_quality_spread 극단 또는 value-vs-mega 스타일 로테이션 반전",
+        "monitored_source": "06_Registry/revival_signals.json (value_quality_spread) + 밸류 정의-로테이션 tripwire"
+      },
+      "revival_spec": [
+        {
+          "signal_id": "wall_clock_date",
+          "condition": "x >= as.Date('2027-07-18')",
+          "from_trigger": "expiry",
+          "status": "active"
+        },
+        {
+          "signal_id": "value_quality_spread",
+          "condition": "x >= 0.90",
+          "from_trigger": "spread",
+          "status": "active"
+        }
+      ],
+      "constraint_firewall": {
+        "mode": "backstop_passed",
+        "checked_at": "2026-07-18"
+      },
       "supporting_l_codes": [
         "L-132",
         "L-135",
@@ -3413,7 +3437,7 @@
       "promoted_to_axiom": null,
       "created_at": "2026-07-08T22:21:56+00:00",
       "refined_at": null,
-      "drafted_at": null,
+      "drafted_at": "2026-07-18T09:59:36+0900",
       "approved_at": null,
       "source_file": "DIST-QPM-015.json"
     },

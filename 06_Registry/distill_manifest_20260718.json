@@ -2,40 +2,70 @@
   "schema": "distill_manifest_v1",
   "cleaner_date": "20260718",
   "week_of": "2026-W29",
-  "trigger": "manual /cleaner (도훈)",
+  "trigger": "manual /cleaner (도훈) — 2-pass: 메인 세션(09:32~09:50) + task #89 증류 에이전트(09:33~10:05) 병행 후 본 manifest로 정합(10:05 최종)",
   "digest_path": "04_Research/01_reports/weekly/weekly_digest_20260718.md",
   "sweep_deleted_n": 29,
   "sweep_deleted_note": "기계 스윕(weekly_cleaner_sweep)이 .cache RAMP R1/R2 probe·run 스크래치 29건 삭제 (cleaner_pending.json::sweep_detail.weekly_cache_scratch_7d 기록). hygiene_manifest.log 참조.",
-  "manual_deleted": [],
+  "manual_deleted": [
+    {"path": "0)", "reason": "0-byte shell-redirect 사고 잔재 (07-13). hygiene_report root_unauthorized 플래그", "ref_check": "0건 (hygiene 경고 목록 언급뿐 — 소비자 아님)"},
+    {"path": "_ul", "reason": "Windows python 스텁 stdout 리다이렉트 잔재 (내용 'Python', 7B)", "ref_check": "0건"},
+    {"path": "AppData_p5_inspect.txt", "reason": "0-byte 검사 잔재 (07-10). root_unauthorized", "ref_check": "0건"},
+    {"path": "recon.err", "reason": "0-byte 출력 잔재 (07-06). root_unauthorized. 1차 grep 매치는 unescaped-dot 오탐(recon_err류) — escaped 재검 0건", "ref_check": "0건 (escaped-dot 재검증)"},
+    {"path": "recon.out", "reason": "0-byte 출력 잔재 (07-06). root_unauthorized", "ref_check": "0건 (escaped-dot 재검증)"},
+    {"path": "Rplots.pdf", "reason": "R 플로팅 부작용 파일 (07-17). cleanup.sh가 junk 대상으로 지정", "ref_check": "0건 (cleanup.sh 참조는 삭제-대상 지정이지 소비 아님)"},
+    {"path": "pit_audit_script.R", "reason": "일회성 감사 스크립트(07-05) 루트 방치 — 루트 13항목 고정 위반. git 추적이라 역사 보존", "ref_check": "0건 (hygiene 경고뿐)"},
+    {"path": "02_Infrastructure/axiom/lcode_harvester.py.bak_20260713b", "reason": "07-13 편집 백업 — 원본 git 관리, 죽은 중복", "ref_check": "0건 (전 프로젝트 grep)"},
+    {"path": "02_Infrastructure/tools/hypothesis_index.R.bak_20260713b", "reason": "07-13 편집 백업 — 동일", "ref_check": "0건 (전 프로젝트 grep)"},
+    {"path": "02_Infrastructure/memory/memory_knowledge_health.R.bak_20260713b", "reason": "07-13 편집 백업 — 동일", "ref_check": "0건 (code/config/registry 스코프)"},
+    {"path": "02_Infrastructure/prompts/monitoring_init.md.bak_20260713b", "reason": "07-13 편집 백업 — 동일", "ref_check": "0건"},
+    {"path": "02_Infrastructure/prompts/monitoring_init.md.bak_20260713c", "reason": "07-13 편집 백업 — 동일", "ref_check": "0건"},
+    {"path": ".claude/agents/monitoring.md.bak_20260713b", "reason": "07-13 편집 백업 — 동일 (git 추적)", "ref_check": "0건"}
+  ],
   "preserved_deferred": [
     {
       "pattern": ".cache/_* (라운드 스크래치 106건: _ramp_r3~r15, _r9_insider 밤샘, _ppure_paper_track, _insider_panel_build, _tg_*, _wt705_monthly parquet 등)",
       "reason": "활성 RAMP 러너 30개(run_ramp_r3~r15·run_ramp_r9_insider_ext·run_ramp_r6_portt_boruta·ppure_paper_track·debug/*)가 입출력으로 참조. §4 참조≥1 보존 규칙.",
       "ref_check": "Grep(ripgrep) 활성 코드에서 30 files matched — 참조 실재",
       "note": "러너 자체가 재검증/pin-재고정 재사용 자산(RAMP 라운드 지도). 짝 스크래치 보존이 churn 방지에 정합."
-    }
+    },
+    {"path": "OPTIMIZER_DONE", "reason": "내용은 worktask_manager.R stdout 잔재(07-05)이나 파일명이 WT 계약 아티팩트 용어와 동명 — state_transitions.json·artifact_contract.json·schema.json이 동명 문자열 참조. '판단이 갈리면 보존' 규약. 다음 스윕에서 루트-경로 glob 소비자 부재 확인 후 정리"},
+    {"path": "02_Infrastructure/monitoring/extend_nolayer4_series.R.bak_20260713", "reason": "07-13 live-hygiene 수리 롤백 백업 — stage_artifacts/live_hygiene_20260713/repair_log.md·repair_meta_item1.json이 롤백 지점으로 참조. 참조>0 → 보존"},
+    {"path": "02_Infrastructure/regime/regime_signal.R.bak_20260713", "reason": "동일 (live-hygiene 롤백 백업, 참조>0)"},
+    {"path": ".claude/worktrees/hungry-hugle-f61812/ + upbeat-lederberg-207d55/", "reason": "스테일 agent 워크트리 전체 사본 — 활성/변경 여부 미확정, 정리는 메인 세션·도훈 판단 (본 스킬 범위 밖)"},
+    {"path": "06_Registry/*.bak (alpha_frontier_queue.json.bak 등)", "reason": "절대 보존 경로(06_Registry)"},
+    {"path": "rawdata pin/백업 일체 (R9_RAWDATA_PIN 등 pin_cache 스냅샷·R47 백업)", "reason": "§7 vintage pinning 자산 — 보존 (task #89 프롬프트 명시)"},
+    {"path": "stage_artifacts/ 전체 (신규 866건 포함)", "reason": "불변 런 기록 — 인벤토리 소스일 뿐, 이동·수정·삭제 금지 (SKILL §2)"}
   ],
-  "note": "수동 추가 삭제 0건 — 후보 106건 전량 활성 러너 참조로 보존. sweep 29건이 이번 주 스크래치 처리분. answer-principles '판단 갈리면 보존' 정합.",
+  "note": "1-pass(메인 세션)는 .cache/_* 106건 활성러너 참조 보존을 판정하고 manual_deleted 0으로 기록 — 2-pass(task #89)가 hygiene root_unauthorized 7건 + .bak 편집백업 6건을 참조0 검증 후 추가 삭제(계 13건). 두 pass 판정은 상충 아님(대상 집합이 다름).",
   "continuity_novel_review": {
     "n_pending": 6,
-    "verdict": "전량 오탐/정상로깅 — append-case 승격 0",
-    "reason": "6건 모두 기존 토큰(negative/screen_tier/소진/screen-tier)에 걸린 것이고, 해당 턴에 next_probe/close_round 계약이 실재해 firewall이 block 아닌 로깅만 수행. gate가 놓친 새 우회어 아님 → backstop 추가 시 정상 표현 과잉차단 위험.",
-    "spans_reviewed": [
-      "07-15 00:48 negative (R9 config-scoped, 소비면 caveat+밤샘 큐 명시)",
-      "07-15 01:18 negative (R33 측정 중, 다음 큐 SP yield→FQ-038)",
-      "07-15 02:37 negative (R35 진행 중, 남은 큐)",
-      "07-15 03:07 screen_tier (R36 진행 중)",
-      "07-15 03:55 소진 (insider 프론티어 언급이나 R38 next 명시 — 기존 금칙어)",
-      "07-17 19:28 screen-tier (시스템 설명 브리핑, 리서치 마감 아님)"
+    "verdict": "최종(2-pass 정합): 3 promoted (violation 1 + pass 2) / 3 dismissed — 1-pass '승격 0' 기록을 대체",
+    "reason": "정정: pending 캡처는 continuity_gate.py::_capture_pending이 res['block']==True일 때만 발생 — 6건 전부 실블록이었음('로깅만'은 오기). 이 중 4건은 진행-중 보고가 '다음 큐' 등 marker-사전 밖 어휘로 계속-산출물 결측 오판된 false-block → pass 케이스 2건(진행-중 중간보고·브리핑 텍스트)으로 대표 승격 + next_probe_markers에 '다음 큐'/'남은 큐' 등재(오탐 기계 수리). 07-15 03:55 '고EV 프론티어 소진…마지막 정교화'는 EV-랭킹을 빌린 신어 종결 프레이밍으로 violation 승격(exhaustion_verdict). 승격 후 게이트 스모크: 동형 신어 재차단 확인.",
+    "final_actions": [
+      "violation 승격: '고EV 재료 프론티어 소진…마지막 정교화' (exhaustion_verdict, 2026-07-15T03:55 실블록)",
+      "pass 승격: '밤샘 연쇄 진행 중…다음 큐' (진행-중 보고 오탐 방지, 01:18 실블록)",
+      "pass 승격: '리서치 모드 4개…' 시스템 브리핑 텍스트 (07-17 19:28 실블록 오탐 방지)",
+      "dismissed 3건: 00:48/02:37/03:07 — 01:18과 동일 '밤샘 진행-중 보고' 패턴 중복",
+      "next_probe_markers += ['다음 큐','남은 큐'] (케이스 파일 데이터-레벨 수리)",
+      "케이스 라이브러리 8→11건 · .cache/continuity_pending_cases.json 6건 전량 review 상태 반영"
     ]
   },
   "axiom_near_miss_review": {
     "n_near_miss": 3,
-    "action": "실제 candidate 파일 대조 완료 — #2만 오분류(dismiss+chip), #1/#3 정당(도훈 승인/검토 대상). '3건 모두 점검 선행'은 파일 확인 전 보수 서술이었고 정정됨.",
+    "action": "최종(2-pass 정합): #1 DIST-AR-018 proposed 초안 발행 + #3 DIST-QPM-015 proposed 초안 발행 + #2 DIST-AR-022 expired(오분류). 활성화는 도훈 배치 승인 게이트(INV-6) — approve_proposed() 대기.",
     "items": [
-      {"cand": "distress_smallcap_wall", "axis": "external(0.80)", "verdict": "LEGITIMATE", "note": "이미 status=proposed(2026-07-14 발행)·도훈 axiom_approval_queue 노출 중. external 0.80 = '배포 유니버스 밖 소형 국소'라는 external validity 한계의 정직 반영(버그 아님). family=distress_fingerprint_nonreturn 일관·부활조건 3종 명시(FQ-038 중대형 표본·벤치 재정의·공매도 교차). → 도훈 승인 대상."},
-      {"cand": "quality_profitability_positive", "axis": "independence(0.94)", "verdict": "REJECTED_MISCLUSTERED", "note": "★오분류 CONFIRMED(파일 대조). supporting 3건 이질(value/EP·챔피언십·timing-luck), 공유는 tags뿐. family/polarity 오귀속. status→rejected_misclustered, 근본원인 chip task_07f3ac0e."},
-      {"cand": "legacy_value_conditional", "axis": "falsification(0.83)", "verdict": "LEGITIMATE", "note": "family=value 일관·supporting 14건 전부 value·falsification_draft 22개 반증 실값 충실(accrual/crowding/AND-gate/무형조정 등). falsification 0.83 미달 = oos_months null 등 필드 결측이지 근거 부실 아님. DIST-QPM-006(EP 단독)과 차별점 명시(넓은 value conditional). → 도훈 promote 검토 대상."}
-    ]
+      {"cand": "distress_smallcap_wall", "dist_id": "DIST-AR-018", "axis": "external(0.80)", "verdict": "PROPOSED", "note": "task #89가 5체크 적대검증(과장/근거/AX-000/제약방화벽 semantic/frontier) 후 draft_proposed 발행(09:45). frontier 3건(FQ-038 중대형 표본·재료별 개별 필터·공매도 교차) + live_trigger(data) + expiry 2027-07-18. 원 후보 부활조건 중 '배포 유니버스 mandate/벤치 재정의'는 제약-완화성으로 제외(INV-7). 1-pass note의 '이미 07-14 proposed 발행'은 오기 — 09:40 시점 status=pending_5axis 실측(proposed는 JG-001뿐이었음)."},
+      {"cand": "quality_profitability_positive", "dist_id": "DIST-AR-022", "axis": "independence(0.94)", "verdict": "EXPIRED_MISCLUSTERED", "note": "★오분류 양 pass 독립 CONFIRM. supporting 3건 이질(dual-basis 스크린/챔피언십 재검증/timing-luck), polarity=positive 오라벨(112721 실측은 quality 진짜 죽음=AX-004 재확증으로 정반대). expire_distilled 실행(1-pass의 'status→rejected_misclustered'는 미반영 상태였음 — expired로 확정). 개별 지식은 L-code Ledger 보존. 근본원인 chip task_07f3ac0e."},
+      {"cand": "legacy_value_conditional", "dist_id": "DIST-QPM-015", "axis": "falsification(0.83)", "verdict": "PROPOSED", "note": "1-pass LEGITIMATE 판정 승계 — falsification_draft 9건+ 실값(무형조정 반증·accrual·crowding·AND-gate·축교체) 충실 확인 후 draft_proposed 발행(09:59). 'value=조건부 소비(방향-사멸 아님·소형 tier 국소)' + 부활신호 value_quality_spread 정렬. DIST-QPM-006(EP standalone)과 상보(중복 아님) 명기."}
+    ],
+    "approval_queue_status": "list_proposed() 3건 노출 확인: DIST-AR-018·DIST-JG-001·DIST-QPM-015 — 모닝브리핑 axiom_approval_queue.R(스텝 5b/5)가 list_proposed() 소비 배선 확인"
+  },
+  "hypothesis_index_reharvest": {
+    "before": "905 entries (07-13 stale — L-AR-20260715_*·L-RAMP-20260717_* 미포함 실측)",
+    "after": "950 entries (build_hypothesis_index 10:00 재수확: lcode 315·module 266·distilled 69·wt_inflight 117·parse_fail 0)"
+  },
+  "lcode_gap_scan": {
+    "n_emitted": 0,
+    "note": "W29 라운드 전수 emit 확인 — alpha_research R26~R40 + ramp R33~R47(insider wiring·ret 무결성·KRX 백필) + RAMP R9~R15 + judge WT-D20260714_006 전부 L-code 실재. fq018 rebase·d3 dossier도 기존 L-code 체계에서 참조됨. 재발행 금지 규칙 준수."
   }
 }

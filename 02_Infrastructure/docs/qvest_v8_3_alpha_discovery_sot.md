@@ -50,7 +50,7 @@ Dead-end 배선 전체 목록·보존 대상 목록은 조사 원자료(workflow
 | M1 | alpha 단계 목적함수 PORT_t-정합 (enum+guard+프롬프트, stale 졸업기준 §3 정합화) | **구현 (본 세션)** | `worktask/schema.json` · `hooks/role_objective_guard.sh` · `prompts/alpha_research_init.md` |
 | M2 | canonical_screen_bt에 diag_ew_universe + diag_cap_tier 비파괴 추가 + judge/alpha "기각 전 확인" 지시 | **구현 (본 세션)** — cap-w HARD 권위 불변, 진단 병기만 | `contracts/canonical_screen_bt.R` · `agents/judge.md` · `prompts/alpha_research_init.md` |
 | M3 | alpha-search 실측 트리거를 proxy 총수익에서 분리(active-basis 경로 추가) | staged — M2 diag 실사용 관찰 후 | `alpha_search/run_alpha_search.R` · `hurdle_gate.R` |
-| M4 | 인입 체인: 라우터 백로그 합류 + 침묵 정지 경보화 + reboot locale 수리 | **구현 (본 세션)**. ⚠ 근본 원인(헤드리스 claude 월 지출한도)은 도훈 결정 — §5 | `ops/paper_router_run.sh` · `ops/alpha_search_queue_run.sh` · MorningReboot |
+| M4 | 인입 체인: 라우터 백로그 합류 + 침묵 정지 경보화 + reboot locale 수리 | **구현 (본 세션)**. 근본 원인(구독 월 한도)은 외생 변수 — 경보 배선으로 감지, 아키텍처 결정 대상 아님(2026-07-18) | `ops/paper_router_run.sh` · `ops/alpha_search_queue_run.sh` · MorningReboot |
 | M5 | 상설 프론티어 큐 신설 + 소비 규약 | **레지스트리 구현 (본 세션)**: `06_Registry/alpha_frontier_queue.json`. 부팅 노출(research_pool_status 확장)은 staged | `06_Registry/alpha_frontier_queue.json` |
 | M6 | hypothesis_index in-flight 원천 + stale 자동 재빌드 | **구현 (본 세션)** | `tools/hypothesis_index.R` |
 | M7 | 주입면 갱신: inject frontier axis 현행화(settled-neg 3종 제거) + revival flags 주입 + strategic_truths 확립사실 3건 | **구현 (본 세션)** | `hooks/axiom_context_inject.sh` · `prompts/strategic_truths.md` |
@@ -80,9 +80,10 @@ Dead-end 배선 전체 목록·보존 대상 목록은 조사 원자료(workflow
 
 ## 5. 운영 제약 — 도훈 결정 대기 (정직 기록)
 
+> D1(헤드리스 claude 월 지출한도)은 2026-07-18 삭제(도훈 지시) — 한도는 Anthropic 구독 외생 변수라 아키텍처 결정 대상 아님. 무인 실패 감지 경보 배선(paper_router/alpha_search_queue)은 유지. D2~D4 번호는 참조 안정성 위해 유지.
+
 | # | 사안 | 내용 |
 |---|---|---|
-| D1 | **헤드리스 claude 월 지출한도** | 무인 논문 라우팅/알파큐가 07-08부터 정지. 선택지: (a) 한도 상향 (b) 월 리셋 대기(경보 배선은 완료 — 재정지 시 24h 내 인지) (c) 라우팅을 대화 세션 내 처리로 이관 |
 | D2 | **비-return 신규 데이터 취득** | 공매도/대차잔고(KRX 포털 스크레이핑) · DART 담보/질권·감사의견(document.xml 파서 확장) · QuantiWise crowding(로그인) — hypothesis_index 700 전수 기준 진짜 0-coverage lane. frontier 큐 FQ-003/004/005 |
 | D3 | **mid-cap 국소 알파 활용 프레임** | 알파가 MID tier에 국소인데 게이트 basis는 cap-w — 벤치-상대(배포성) vs 절대수익(SR 2.5) 관점 정리 필요. 게이트 변경이 아니라 소비 경로(overlay/RAMP/벤치-상대 구성) 설계 논의 |
 | D4 | grade_a_catalog v53 착시 34건 격리 (M10) | milestone_commit.sh 등 소비자 11파일 확인 후 실행 — 승인 시 다음 세션 |

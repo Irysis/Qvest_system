@@ -57,9 +57,11 @@
 
 ---
 
-## 후속 (이번 증류에서 이어지는 것)
+## 후속 — 증류 완료 결과 (10:05 최종 정합, task #89)
 
-- **near-miss 정제 → proposed 초안**: §1② INV-6 흐름으로 draft_proposed 시도(적대검증 5체크). #2는 극성 오분류 의심으로 초안 보류·재확인 우선. 활성화는 도훈 배치 승인 게이트(무인 금지).
-- **continuity 신어 후보 6건**: caught_span 검토 → 오탐(close_round 마감/next_probe 있음)은 dismiss, 진짜 신어는 `--append-case` 승격.
-- **잔재 삭제**: sweep 29건 외 추가 후보 참조0 검증 후 distill_manifest 기록.
-- **미해소 상위 대기**(도훈 결정): book 6.130 재산출 · 월 지출한도 D1(에이전트 리서치 차단 중) · 공매도 QW export(FQ-003, 최고 EV 비-return lane) · G2 캐리 실주문.
+- **near-miss 정제 → proposed 초안 [완료]**: ① `DIST-AR-018`(distress 소형벽, negative) **proposed** — 5체크 적대검증 PASS, frontier 3건(FQ-038 중대형 표본·재료별 개별 필터·공매도 교차)+live_trigger+expiry 2027-07-18. 원 후보 부활조건 중 '유니버스/벤치 재정의'는 제약-완화성으로 제외(INV-7). ② `DIST-QPM-015`(value 조건부) **proposed** — falsification_draft 9건+ 실값(무형조정 반증·accrual·crowding·AND-gate·축교체) 확인, DIST-QPM-006(EP standalone)과 상보 명기. ③ `DIST-AR-022`(quality_profitability "positive") **expired** — 클러스터 오귀속 확정(supporting 3건 이질: dual-basis 스크린/챔피언십 재검증/timing-luck·polarity 오라벨), 개별 지식은 L-code Ledger 보존, 근본원인 chip task_07f3ac0e. **approval queue 3건 노출**(AR-018·JG-001·QPM-015, `list_proposed()` 확인) — 활성화는 도훈 `approve_proposed()` 배치 승인 게이트(INV-6).
+- **continuity 신어 후보 6건 [완료]**: 6건 전부 실블록이었음(pending 캡처는 `_capture_pending`이 block 시에만 발동). violation 1건 승격("고EV 프론티어 소진…마지막 정교화" = exhaustion_verdict 신어, 07-15 03:55) + pass 2건 승격(진행-중 중간보고·브리핑 텍스트 = 오탐 방지 few-shot) + 3건 중복 dismiss. `next_probe_markers += ['다음 큐','남은 큐']`(오탐 4건 공통 결측 어휘 기계 수리). 승격 후 게이트 스모크: 동형 신어 재차단 확인. 케이스 라이브러리 8→11건.
+- **잔재 삭제 [완료]**: sweep 29건 + 수동 13건(hygiene root_unauthorized 7 + `.bak_20260713` 편집백업 6 — 전건 참조0 검증) — `06_Registry/distill_manifest_20260718.json` 기록. 보존-deferred: OPTIMIZER_DONE(WT 계약 아티팩트 동명)·live-hygiene 롤백 .bak 2건·`.cache/_*` 106건(활성러너 참조)·스테일 워크트리 2본·pin/rawdata 백업 일체.
+- **hypothesis_index 재수확 [완료]**: 905→**950** 엔트리(07-13 stale 해소 — 이번 주 L-code 반영·wt_inflight 117·parse_fail 0).
+- **L-code 갭 [해당 없음]**: W29 라운드 전수 emit 확인(alpha R26~R40·ramp R33~R47 무결성 라인·RAMP R9~R15·judge) — 신규 발행 0건(재발행 금지 준수).
+- **미해소 상위 대기**(도훈 결정): axiom proposed 3건 배치 승인 · book 6.130 재산출 · 공매도 QW export(FQ-003, 최고 EV 비-return lane) · G2 캐리 실주문. (월 지출한도 D1은 2026-07-18 삭제 — 한도는 Anthropic 구독 외생 변수, 아키텍처 관리 대상 아님. 무인 실패 감지 경보는 유지)

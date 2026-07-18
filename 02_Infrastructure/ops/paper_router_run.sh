@@ -61,7 +61,7 @@ res <- tryCatch(tg_agent_brief(
          body = "무인 파이프라인 ${comp} 가 ${reason} 사유로 정지했습니다. 수동 확인 필요."),
     list(type = "bullet", emoji = "\U0001F4A1", heading = "조치 안내",
          items = c("실패분은 백로그 합류 로직이 다음 성공 런에서 자동 재처리됩니다",
-                   "지출한도 등 외부 원인은 수동 해제가 필요합니다")),
+                   "spend limit 등 외부 구독 한도는 월 리셋 시 자동 해소 — 무인 런이 차기 사이클 자동 재시도")),
     list(type = "kv", emoji = "\U0001F4CB", heading = "상세",
          kv = list("구성요소" = "${comp}",
                    "사유" = "${reason}",
