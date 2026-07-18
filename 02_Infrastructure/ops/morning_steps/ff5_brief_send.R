@@ -19,7 +19,7 @@ if (is.null(FF) || !nrow(FF)) { cat("[ff5_brief] FF 시리즈 없음 — skip\n"
   setorder(FF, ym)
   for (cc in c("MKT", "SMB", "HML", "RMW", "CMA")) FF[, (paste0("r12_", cc)) := frollmean(get(cc), 12)]
   L <- FF[.N]
-  fmt <- function(v) if (is.na(v)) "NA" else sprintf("%+.4f", v)
+  fmt <- function(v) if (is.na(v)) "NA" else sprintf("%+.2f%%", v * 100)   # 월 수익률 % 표기 (도훈 지시 07-18)
   regime_line <- sprintf("%s 주도 / %s 우위 / 퀄리티 %s",
     ifelse(L$r12_SMB < 0, "대형", "소형"), ifelse(L$r12_HML < 0, "성장", "가치"),
     ifelse(is.na(L$r12_RMW), "?", ifelse(L$r12_RMW > 0, "강세", "약세")))
@@ -60,7 +60,8 @@ if (is.null(FF) || !nrow(FF)) { cat("[ff5_brief] FF 시리즈 없음 — skip\n"
     title = sprintf("스타일 국면 브리핑 — FF5 + 스마트베타 (%s 기준)", L$ym),
     sections = sections,
     charts = charts[file.exists(charts)],
-    footer = "diagnostic_monitoring · 시장 리뷰 전용(전략/자본 인용 금지) · ff5_kr + smartbeta_kr"
+    footer = "diagnostic_monitoring · 시장 리뷰 전용(전략/자본 인용 금지) · ff5_kr + smartbeta_kr",
+    force = nzchar(Sys.getenv("FF5_BRIEF_FORCE", ""))   # 수동 재발송용(쿨다운 우회) — 크론은 기본 FALSE
   )
   cat("[ff5_brief] sent ok=", isTRUE(res$ok), " ff_build=", ok_ff, " sb_build=", ok_sb, "\n", sep = "")
 }

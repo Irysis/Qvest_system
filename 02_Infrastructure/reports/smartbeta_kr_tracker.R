@@ -135,10 +135,10 @@ SBc[, d := as.Date(paste0(ym, "-01"))]
 cols <- c(VAL = "steelblue", QUAL = "darkgreen", MOM = "firebrick", LOWVOL = "purple", SIZE = "darkorange", DIV = "gray40")
 png(file.path(OUT_DIR, "charts", "smartbeta_rolling12.png"), width = 1150, height = 480)
 par(mar = c(3, 4, 2.5, 8))
-rng <- range(SBc[, paste0("r12_", sty), with = FALSE], na.rm = TRUE)
-plot(SBc$d, SBc$r12_VAL, type = "l", lwd = 2, col = cols["VAL"], ylim = rng,
-     main = "KR 스마트베타 6스타일 — active(vs 유니버스 VW) rolling 12m mean", xlab = "", ylab = "월평균 active")
-for (st in setdiff(sty, "VAL")) lines(SBc$d, SBc[[paste0("r12_", st)]], lwd = 2, col = cols[st])
+rng <- range(SBc[, paste0("r12_", sty), with = FALSE], na.rm = TRUE) * 100
+plot(SBc$d, SBc$r12_VAL * 100, type = "l", lwd = 2, col = cols["VAL"], ylim = rng,
+     main = "KR 스마트베타 6스타일 — active(vs 유니버스 VW) rolling 12m mean", xlab = "", ylab = "월평균 active %")
+for (st in setdiff(sty, "VAL")) lines(SBc$d, SBc[[paste0("r12_", st)]] * 100, lwd = 2, col = cols[st])
 abline(h = 0, lty = 3)
 legend(x = par("usr")[2], y = par("usr")[4], legend = sty, col = cols[sty], lwd = 2, cex = 0.9, xpd = TRUE, bty = "n")
 dev.off()

@@ -150,12 +150,12 @@ for (cc in c("MKT", "SMB", "HML", "RMW", "CMA")) FFc[, (paste0("r12_", cc)) := f
 FFc[, d := as.Date(paste0(ym, "-01"))]
 png(file.path(OUT_DIR, "charts", "ff5_rolling12.png"), width = 1150, height = 640)
 par(mfrow = c(2, 1), mar = c(3, 4, 2.5, 7))          # 우측 여백 확보 — 범례 플롯 밖 배치(최신 구간 가림 방지)
-plot(FFc$d, FFc$r12_MKT, type = "l", lwd = 2, col = "black", main = "KR FF5 rolling 12m mean — MKT(excess)",
-     xlab = "", ylab = "월평균"); abline(h = 0, lty = 3)
+plot(FFc$d, FFc$r12_MKT * 100, type = "l", lwd = 2, col = "black", main = "KR FF5 rolling 12m mean — MKT(excess)",
+     xlab = "", ylab = "월평균 %"); abline(h = 0, lty = 3)
 cols <- c(SMB = "firebrick", HML = "steelblue", RMW = "darkgreen", CMA = "purple")
-plot(FFc$d, FFc$r12_SMB, type = "l", lwd = 2, col = cols["SMB"], ylim = range(FFc[, .(r12_SMB, r12_HML, r12_RMW, r12_CMA)], na.rm = TRUE),
-     main = "SMB / HML / RMW / CMA rolling 12m mean", xlab = "", ylab = "월평균")
-for (cc in c("HML", "RMW", "CMA")) lines(FFc$d, FFc[[paste0("r12_", cc)]], lwd = 2, col = cols[cc])
+plot(FFc$d, FFc$r12_SMB * 100, type = "l", lwd = 2, col = cols["SMB"], ylim = range(FFc[, .(r12_SMB, r12_HML, r12_RMW, r12_CMA)], na.rm = TRUE) * 100,
+     main = "SMB / HML / RMW / CMA rolling 12m mean", xlab = "", ylab = "월평균 %")
+for (cc in c("HML", "RMW", "CMA")) lines(FFc$d, FFc[[paste0("r12_", cc)]] * 100, lwd = 2, col = cols[cc])
 abline(h = 0, lty = 3)
 legend(x = par("usr")[2], y = par("usr")[4], legend = names(cols), col = cols, lwd = 2, cex = 0.9, xpd = TRUE, bty = "n")
 dev.off()
