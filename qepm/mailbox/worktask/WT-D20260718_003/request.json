@@ -1,0 +1,85 @@
+{
+  "task_id": "WT-D20260718_003",
+  "wt_type": "discovery",
+  "pg1_eligibility": "certificate_required",
+  "discovery_of": null,
+  "graduation_criteria": {
+    "description": "Discovery → Deployment 전환 조건. discovery_graduation_gate.sh 강제. v8.x WS2 재설계(2026-05-29): rank-IC 계열은 long-only 실현 alpha와 어긋나(16후보 calibration 실측: rank_ic가 FLOW 거짓탈락+NN/TECH 거짓통과) advisory로 강등, portfolio-alpha t(forge NW lag-3)를 hard로. DSR hard는 sweep형 selection만(2026-06-10 개정 — chain/단일은 advisory). hard 기준은 forge-authoritative 값(alpha-stage proxy 아님)에 적용.",
+    "min_rank_ic": 0.04,
+    "min_rank_ic_rationale": "KR top-universe benchmark. <0.04는 IC 약함. (v8.x severity=advisory — long-only 실현 alpha 미전이)",
+    "min_icir": 0.2,
+    "min_icir_rationale": "Alpha Lab Gate. (v8.x severity=advisory)",
+    "min_subperiod_stability": 0.5,
+    "min_subperiod_stability_rationale": "3개 subperiod 안정성. (v8.x severity=advisory)",
+    "max_drawdown_days": 100,
+    "max_drawdown_days_rationale": "100일 이상 drawdown 지속 시 alpha decay 의심. (severity=advisory)",
+    "min_harvey_t_stat": 3,
+    "min_harvey_t_stat_rationale": "rank-IC Harvey-t. (v8.x severity=advisory — rank-IC t는 portfolio-alpha t와 구분, 후자가 권위)",
+    "min_deflated_sharpe_ratio": 0.5,
+    "min_deflated_sharpe_ratio_rationale": "Bailey-Lopez de Prado DSR — multi-testing 보정 SR. (severity=HARD는 sweep형 selection만 — ML스윕/optimizer서치/앙상블·사전등록 grid. 가설주도 chain/단일검증은 advisory 강등+진단산출. 도훈 mandate 2026-05-31/2026-06-10, measurement-graduation §3)",
+    "min_portfolio_alpha_t_nw": 2.95,
+    "min_portfolio_alpha_t_nw_rationale": "★v8.x 신규 HARD. forge-authoritative 실현 portfolio-alpha t (NW lag-3, forge_package.portfolio_alpha_t_nw_lag3). Harvey-Liu-Zhu 2016 hurdle. rank-IC t 아님. 게이트 핵심 판별(16후보 중 FLOW만 통과=정확).",
+    "min_oos_retention": 0.7,
+    "min_oos_retention_rationale": "★v2.5 HARD 배선(문턱은 measurement-graduation §3 2026-05-31/06-10 기존값). 활성 Sharpe OOS/IS retention — anchored 3분할 {55/65/75} 중앙값(essence_score.R oos_stat_version=v2). ≥0.7 단독 PASS / <0.5 무조건 FAIL / [0.5,0.7) band는 보강증거 2/3 조건부 PASS(판정 권위=essence_score.R, 훅은 warn). forge-authoritative 값에만 적용 — 단일전략 과적합 방어 주책임.",
+    "min_calmar": 0.64,
+    "min_calmar_rationale": "★v2.5 HARD 배선(문턱은 measurement-graduation §3 2026-05-31 기존값). Calmar = CAGR/|MDD| ≥ 0.64 (=16%/25%, 제2목표 CAGR16·MDD25에서 도출한 위험조정 게이트). forge-authoritative 값에만 적용.",
+    "severity": {
+      "rank_ic": "advisory",
+      "icir": "advisory",
+      "subperiod_stability": "advisory",
+      "harvey_t_stat": "advisory",
+      "deflated_sharpe_ratio": "hard",
+      "portfolio_alpha_t_nw": "hard",
+      "oos_retention": "hard",
+      "calmar": "hard"
+    },
+    "severity_rationale": "hard = block(우회불가), advisory = warn(screening). hard 4종(DSR/portfolio_alpha_t_nw/oos_retention/calmar)은 forge-authoritative 값에만 적용 — alpha-stage proxy로 graduation 선언 금지(v8.x WS1 정합). DSR hard는 sweep형 selection 한정, oos_retention은 <0.5 무조건 block + [0.5,0.7) band 조건부(measurement-graduation §3)."
+  },
+  "theme": null,
+  "hypothesis_title": "Transformer/foundation-model asset pricing (KR) — 외부 pre-training이 KR-fit 6방법 벽에 직교 신호를 더하는가",
+  "hypothesis_description": "[기전] Transformer/foundation-model 자산가격결정을 KR long-only에 적용. [★핵심 차별 — 재실행 금지] 슈퍼팩터 6방법(estimator 5: KNS/IPCA/BMA/E2E-gate/SPO+ 1 + cross-sectional attention XATTN)이 이미 실측: **전부 oos_retention<0.7 FAIL, 벽=방법론/아키텍처 아닌 KR 횡단면 구조**(post-2017 cohort 감쇠+마이크로캡). XATTN(forge 2.36→judge FAIL→REJECT, ad-hoc 5.14=유니버스위반 proxy). **from-scratch KR-fit 아키텍처 교체는 벽 못 넘음 확립 — 단순 재탕 금지.** [유일한 새 각도 2] ① **외부 pre-training**: 6방법은 전부 KR 데이터 from-scratch 학습. Foundation model(pre-trained TS/financial transformer — TimesFM/Chronos/Moirai zero-shot 또는 LoRA-adapt, 또는 LLM-agent 자산가격 Cheng-Chin 2024)은 KR 제한 데이터로 못 배우는 외부 패턴을 가져옴 → **incumbent+6방법에 직교 신호를 더하는가**(return-예측 벽 정면돌파 아니라 orthogonal info 검증). ② **XATTN 유동성-강건 이점**: 6방법 중 XATTN만 seed-robust 유동성-강건(5×=1e9 threshold서 port_t 3.25 PASS·중형주 지속·마이크로캡 탈피) — 명시된 잔여 EV='XATTN을 유동성-큰 유니버스+overlay 결합'. [expected_role] incumbent 대비 orthogonal 신호 원천(book-marginal ΔIR) 또는 유동성-강건 배포 sleeve. return-예측 벽 정면돌파는 낮은 prior(정직). [why_now] 도훈 지시 '신규 방법론 거침없는 도전'(QEPM 이원화). insider 비-return 3-프레임 삼각-null 후 novel-method 축. [외부 문헌 — mixed-to-skeptical 정직 반영] 긍정: Fallahgoul 2025(interpretable transformers=pricing kernel universal approx)·Rahimikia-Ni-Wang 2025(TimesFM cross-section)·Cheng-Chin 2024(LLM-agent 자산가격, arxiv 2409.17266). **회의 (kill 근거로 사전등록)**: Karaouli 2025(2510.00742 'How Foundational are FMs for TS?'=zero-shot은 pretraining 도메인 종속·fine-tuned FM이 전용 소형모델 대비 크기 대비 이득 불확실)·'When Directional Accuracy Lies'(LoRA-TimesFM base-rate-honest 회의). [feasibility] venv `.venv_qvest_ml`(PyTorch/cu124) 확인. FM 다운로드(HuggingFace) 가부 평가 — 불가 시 XATTN 유동성-강건+overlay(②, all-local·기존 xattn_score.py 재사용)로 pivot. [측정 프레임] canonical cap-w PORT_t 1급 + dual-basis(EW-uni·cap-tier — XATTN은 유동성 threshold sweep 필수: 2e8/1e9/5e9) + **book-marginal 직교성**(ΔIR·|cor|<0.30, incumbent+KNS/IPCA/E2E 대비) + AX-001 v2. [kill 사전등록] ① FM 신호가 incumbent+6방법에 직교 아니거나(|cor|>0.5) ② 같은 전이 벽(oos_retention<0.7·cap-w<2.95) ③ 마이크로캡 의존(유동성 threshold 상향 시 붕괴) → 종결. seed 규율(≥3 seed, 평균 판정·seed0 운 배제 — XATTN 교훈). external 회의 사전 반영: FM zero-shot이 KR 도메인서 무효면 정직 종결.",
+  "hypothesis_source": "user_defined",
+  "as_of_date": "2026-07-18",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KOSPI200_KOSDAQ150_intersection",
+    "liquidity_min_won_20d_avg": 50000000,
+    "max_names_total": 500
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d (재무제표 발표 지연)",
+    "fundamental_annual": "annual May (연간 재무제표 5월 리밸런싱)",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement (QuantiWise)",
+    "macro": "t-1 FRED (외부 매크로 lag)",
+    "ic_history": "Usable_Date <= sig_date (Factor DB 강제)"
+  },
+  "cost_model_version": "v2.4_kr_retail_15bps",
+  "current_portfolio": "STR_1631_80_STR_1656_20",
+  "hard_mandate": {
+    "pit_enforcement": "C1-C15 all enforced",
+    "liquidity_floor_won_20d_avg": 50000000,
+    "mandate_restrictions": {
+      "no_short_legal_kr": true,
+      "no_cross_market": true,
+      "kr_domestic_only": true
+    },
+    "long_only_mandate": "configurable"
+  },
+  "hard_constraints": {
+    "max_names": null,
+    "weight_bounds": [
+      0,
+      1
+    ],
+    "sector_active_weight_cap": null,
+    "liquidity_min_won_20d_avg": 50000000
+  },
+  "soft_penalties": [],
+  "capacity_limits": {
+    "adv_multiplier": 0.1,
+    "capacity_max_aum_won": 100000000000
+  }
+}

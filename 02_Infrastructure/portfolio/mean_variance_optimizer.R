@@ -19,6 +19,24 @@
 #   - hhi_cap:   Σ w_i² ≤ 0.10 (집중 방지)
 #   - bounds:    default 0.20 → 0.10 (per-name 상한 축소)
 #   - winsor:    alpha ±2σ clip (outlier 집중 방지)
+#
+# v2.4 (2026-07-18, FQ-057 NP4 — 병행 두 수리를 단일 파일로 통합):
+#  ── RF-O5 (HHI projection 누출, task_1b9e50a3) ──
+#   (1) max_names 절단(D > max_names) 시 HHI projection 을 support(non-zero) 부분벡터로
+#       제한. 구코드 .project_hhi absorber(w<bounds[2])가 w=0 유니버스 종목을 포함해
+#       top-N 밖 비중 누출 → n_names > max_names (p≈300 실측). D ≤ max_names 는 전체벡터 유지.
+#   (2) .project_hhi absorber 부재 판정을 감액 *전*으로 이동 → Σw=target_sum 보존
+#       (감액-후-break Σw=0.995 잠복버그; box-vertex 포트폴리오는 D ≤ max_names 에서도 노출 —
+#       "전체벡터 경로엔 w=0 absorber 항상 존재" 가정은 거짓, 적대검증 L3. NEW 가 Σw=1 로 더 정확).
+#   (3) min_names > max_names 모순 config 를 fail-loud infeasible 로 반환.
+#  ── dead-parameter (turnover_penalty φ 배선, task_89b2050e) ──
+#   current_weights·turnover_penalty(φ)를 QP에 실배선 — 종전엔 시그니처·method 라벨에만 존재하고
+#   목적함수(Dmat/dvec) 미반영(no-op)이었음. TC(x)=Σ_i |x_i − x_prev,i| (L1)를 z=[x;u;v] 변수분리
+#   확장 QP로 정확 표현(등식 x − u + v = x_prev, u,v ≥ 0, 선형비용 φ·1'(u+v), meq = 1+D).
+#   φ=0 또는 current_weights=NULL 이면 v2.2 경로·반환객체 완전 불변(parity 65/65 identical).
+#   φ 단위 = 알파와 동일 기간수익 단위 레그당 비용률(15bps=0.0015, cost_model v2.4_kr_retail_15bps 정합).
+#  ── 통합 노트: 두 수리는 코드 영역이 직교(RF-O5=.project_hhi+post-QP projection+precheck /
+#   dead-param=QP Dmat/dvec/Amat 확장) — 헤더·배너만 수동 reconcile. 각 수리는 독립 검증 통과.
 #==============================================================================
 
 suppressPackageStartupMessages({
@@ -46,6 +64,16 @@ suppressPackageStartupMessages({
 # HHI = sum(w^2). Cap 초과 시 top weight 0.01 감소 → 나머지 non-cap 종목에
 # 균등 재분배 → HHI 재계산. 수렴 혹은 max_iter 도달까지 반복.
 # long-only + bounds + 합=target_sum 유지.
+#
+# ★Σw 보존 (2026-07-18): absorber(상한 여유 종목) 부재 시 종료를 top weight
+# 감액 *전*에 판정한다. 구버전은 감액 후 break 하여 Σw = target - dec 로 파손됐다.
+# 이 no-absorber 케이스는 (a) RF-O5 support-제한 projection 의 소규모 support(예:
+# 2종), 그리고 (b) box-vertex 고정 포트폴리오(D×bounds[2] ≈ target_sum → 전 종목이
+# 상한에 고정, w=0 종목 부재)에서 발생한다 — 후자는 D ≤ max_names 전체벡터 경로
+# 에서도 발생하므로 "전체벡터 경로엔 w=0 absorber 가 항상 존재"는 거짓이다
+# (적대검증 L3 실측). absorber SET 은 top_idx 를 setdiff 로 제외하므로 감액 전/후
+# 동일 — 재분배 케이스는 bit-불변, no-absorber 케이스만 "감액 없이 종료
+# (Σw=target 보존, converged=FALSE)"로 교정한다.
 .project_hhi <- function(w,
                           cap = 0.15,
                           bounds = c(0, 0.15),
@@ -73,12 +101,13 @@ suppressPackageStartupMessages({
     dec <- min(step, w[top_idx] - bounds[1])
     if (dec <= tol) break
 
-    w[top_idx] <- w[top_idx] - dec
-
-    # 나머지 종목(상한 여유 있는)에 균등 분배
-    absorber <- which(w < bounds[2] - tol)
-    absorber <- setdiff(absorber, top_idx)
+    # 상한 여유 있는 다른 종목(absorber) 존재를 *감액 전*에 확인 —
+    # 부재 시 감액 없이 종료해 Σw=target_sum 을 보존한다. (top_idx 제외 후 set 은
+    # 감액 전/후 동일하므로 재분배 대상엔 영향 없음.)
+    absorber <- setdiff(which(w < bounds[2] - tol), top_idx)
     if (length(absorber) == 0) break
+
+    w[top_idx] <- w[top_idx] - dec
 
     # 각 absorber에 배분 시 상한 고려 (iterative fill)
     remaining <- dec
@@ -200,6 +229,24 @@ mvo_weights <- function(alpha,
   # Forecast Uncertainty Penalty: FU(x, c) = Σ_i x_i² (1-c_i)²
   fu_diag <- psi * (1 - c_vec)^2
 
+  # ── v2.3 Turnover penalty 활성 판정 ─────────────────────
+  # 활성 조건: current_weights 제공 ∧ φ>0. current_weights 없이 φ>0 이면
+  # long-only Σx=1 하에서 Σ|x_i−0|=1 상수 → argmax 불변이므로 기존 경로가
+  # 그대로 정확해(근사 아님). 비활성 시 v2.2 QP 경로·반환 객체 완전 불변.
+  tc_active <- !is.null(current_weights) && length(turnover_penalty) == 1L &&
+    isTRUE(is.finite(turnover_penalty) && turnover_penalty > 0)
+  w_prev <- NULL
+  if (tc_active) {
+    if (is.null(names(current_weights))) {
+      stop("[mvo_weights] current_weights must be a named vector (Ticker align)")
+    }
+    # 유니버스 정렬: 신규 진입 종목은 이전 비중 0. 유니버스 탈락 종목의 강제
+    # 청산 비용은 이 QP 밖(외생) — walk-forward A/B에서 양 arm 동일하게 발생.
+    w_prev <- as.numeric(current_weights)[match(common, names(current_weights))]
+    w_prev[is.na(w_prev)] <- 0
+    names(w_prev) <- common
+  }
+
   # quadprog formulation:
   #   min  (1/2) x'Dmat x - d_vec'x
   # MVO v2: max x'α̃ - (λ/2) x'Σx - ψ·x' diag((1-c)²) x
@@ -227,6 +274,23 @@ mvo_weights <- function(alpha,
   #   실제로 infeasible 한 경우는 min_names × bounds[2] < target_sum 이 엄격히 맞을 때.
   target_sum <- if (active) 0 else 1
   min_names_eff <- if (is.null(min_names) || is.na(min_names)) 1L else as.integer(min_names)
+
+  # RF-O5 정합 (2026-07-18): min_names > max_names 는 모순 config — min_names 보충
+  # (post-QP)이 max_names 절단 *뒤*에 실행되어 n_names 를 하드캡 위로 밀어 올린다.
+  # 조용한 위반 대신 fail-loud infeasible 로 반환. (registry/NP4 기본 min<=max 는 무영향.)
+  if (!is.null(max_names) && !is.na(max_names) && min_names_eff > max_names) {
+    return(list(
+      weights = NULL,
+      method = "mvo",
+      infeasible = TRUE,
+      reason = sprintf("min_names (%d) > max_names (%d)", min_names_eff, as.integer(max_names)),
+      infeasibility_report = list(
+        violated_constraints = c("min_names", "max_names"),
+        suggested_resolution = "Set min_names <= max_names"
+      )
+    ))
+  }
+
   if (!active && min_names_eff > 1) {
     # min_names 종목에 고르게 분배 시 종목당 target_sum/min_names_eff 필요
     per_name_need <- target_sum / min_names_eff
@@ -260,13 +324,42 @@ mvo_weights <- function(alpha,
   }
 
   # Solve QP (1st attempt)
+  # v2.3: tc_active 시 z=[x;u;v] 확장 QP. 등식 x−u+v=w_prev + u,v≥0 하에서
+  #   min (1/2)x'Dmat_i x − α̃'x + φ·1'(u+v) 는 φ·Σ|x−w_prev| L1의 정확 표현
+  #   (φ>0 최적해에서 min(u_i,v_i)=0 — u,v 동시 감소가 목적함수를 엄격 개선).
+  #   u,v 블록의 eps ridge는 quadprog PD 요건용 — φ 대비 무시가능 스케일.
   mvo_solve <- function(lam_val) {
     Dmat_i <- lam_val * Sigma + diag(2 * fu_diag)
     diag(Dmat_i) <- diag(Dmat_i) + 1e-8
-    tryCatch(
-      solve.QP(Dmat_i, dvec, Amat, bvec, meq = meq),
+    if (!tc_active) {
+      return(tryCatch(
+        solve.QP(Dmat_i, dvec, Amat, bvec, meq = meq),
+        error = function(e) NULL
+      ))
+    }
+    eps_uv <- max(1e-10, 1e-6 * mean(diag(Dmat_i)))
+    Dz <- diag(rep(eps_uv, 3 * D))
+    Dz[seq_len(D), seq_len(D)] <- Dmat_i
+    dz <- c(dvec, rep(-turnover_penalty, 2 * D))
+    ID <- diag(D)
+    Z0 <- matrix(0, D, D)
+    Az <- cbind(
+      c(rep(1, D), rep(0, 2 * D)),   # Σx = target (등식)
+      rbind(ID, -ID, ID),            # x − u + v = w_prev (등식 D개)
+      rbind(ID, Z0, Z0),             # x ≥ lb
+      rbind(-ID, Z0, Z0),            # −x ≥ −ub
+      rbind(Z0, ID, Z0),             # u ≥ 0
+      rbind(Z0, Z0, ID)              # v ≥ 0
+    )
+    bz <- c(if (active) 0 else 1, as.numeric(w_prev),
+            rep(bounds[1], D), rep(-bounds[2], D), rep(0, 2 * D))
+    sol <- tryCatch(
+      solve.QP(Dz, dz, Az, bz, meq = 1L + D),
       error = function(e) NULL
     )
+    if (is.null(sol)) return(NULL)
+    sol$solution <- sol$solution[seq_len(D)]
+    sol
   }
 
   sol <- mvo_solve(lambda)
@@ -298,8 +391,13 @@ mvo_weights <- function(alpha,
     }
   }
 
+  # v2.3: QP 단계 회전 L1 (max_names/HHI post-stage 이전 시점) — 감사용
+  trade_l1_qp <- if (tc_active) sum(abs(w_full - w_prev)) else NA_real_
+
   # max_names hard cap: top-N by |weight|
+  max_names_truncated <- FALSE
   if (length(w_full) > max_names) {
+    max_names_truncated <- TRUE
     top_idx <- order(abs(w_full), decreasing = TRUE)[seq_len(max_names)]
     w_sparse <- numeric(length(w_full))
     w_sparse[top_idx] <- w_full[top_idx]
@@ -358,18 +456,28 @@ mvo_weights <- function(alpha,
   }
 
   # ── v2.1 HHI cap projection ──
+  # v2.3 (RF-O5 수리): max_names 절단이 있었던 경우 projection을 support(non-zero)
+  # 부분벡터로 제한 — 전체벡터 호출은 .project_hhi absorber가 w=0 종목을 포함해
+  # top-N 밖 비중 누출 = max_names 하드캡 위반 (FQ-057 NP4, task_1b9e50a3).
+  # D ≤ max_names(절단 미발생)는 기존 전체벡터 경로 유지 → max_names 위반은 구조적
+  # 불가(support ≤ D ≤ max_names)이며 일반 케이스는 OLD 와 bit-identical. 단
+  # box-vertex 고정 포트폴리오는 .project_hhi Σw-보존 교정으로 OLD 와 소폭 상이(NEW 가
+  # Σw=1 로 더 정확, header 참조).
+  # support가 작아 cap 미도달(min HHI = 1/n_support > cap)이면 support 확장 대신
+  # hhi_converged=FALSE + infeasibility_report로 정직 보고한다.
   hhi_applied <- FALSE
   hhi_converged <- TRUE
   if (!active && !is.null(hhi_cap) && !is.na(hhi_cap) && hhi_cap > 0) {
     current_hhi <- sum(w_full^2)
     if (current_hhi > hhi_cap + 1e-6) {
-      proj <- .project_hhi(w_full,
+      proj_idx <- if (max_names_truncated) which(abs(w_full) > 1e-6) else seq_along(w_full)
+      proj <- .project_hhi(w_full[proj_idx],
                             cap = hhi_cap,
                             bounds = bounds,
                             target_sum = target_sum,
                             step = 0.005,
                             max_iter = 500)
-      w_full <- proj$w
+      w_full[proj_idx] <- proj$w
       names(w_full) <- common
       hhi_applied <- TRUE
       hhi_converged <- isTRUE(proj$converged)
@@ -407,7 +515,7 @@ mvo_weights <- function(alpha,
     )
   }
 
-  list(
+  out <- list(
     weights = w_out,
     method = sprintf("MVO_lambda_%.2f_psi_%.2f_phi_%.2f",
                      lambda_used, psi, turnover_penalty),
@@ -428,9 +536,18 @@ mvo_weights <- function(alpha,
     infeasibility_report = infeasibility_report,
     selection_objective = "net_ir"  # R4 P3: Optimizer는 net_ir로 선택
   )
+  # v2.3: TC 필드는 tc_active 시에만 부가 — 비활성 반환 객체는 v2.2와 identical 유지
+  if (tc_active) {
+    out$tc_penalty_active <- TRUE
+    out$phi_used <- turnover_penalty
+    out$trade_l1_qp <- trade_l1_qp
+    out$trade_l1_final <- sum(abs(w_full - w_prev))
+  }
+  out
 }
 
 # ─── MVO Grid Search (lambda + phi 탐색) ─────────────────
+# v2.3: current_weights 관통 추가 — 미제공(NULL) 시 phi_grid는 종전처럼 no-op.
 mvo_grid_search <- function(alpha, cov_matrix,
                              lambda_grid = c(0.5, 1.0, 2.0, 5.0),
                              phi_grid = c(0.0, 0.2, 0.5),
@@ -438,7 +555,8 @@ mvo_grid_search <- function(alpha, cov_matrix,
                              max_names = 25,
                              min_names = 20L,
                              hhi_cap = 0.15,
-                             alpha_winsor = 2.0) {
+                             alpha_winsor = 2.0,
+                             current_weights = NULL) {
   results <- list()
   i <- 0
   for (lam in lambda_grid) {
@@ -448,6 +566,7 @@ mvo_grid_search <- function(alpha, cov_matrix,
                         lambda = lam, bounds = bounds, max_names = max_names,
                         min_names = min_names, hhi_cap = hhi_cap,
                         alpha_winsor = alpha_winsor,
+                        current_weights = current_weights,
                         turnover_penalty = ph)
       r$lambda <- lam
       r$phi <- ph
@@ -467,7 +586,8 @@ mvo_grid_search <- function(alpha, cov_matrix,
   )
 }
 
-cat("[mean_variance_optimizer.R] v2.2 (n=20 hard + max_w 0.15) Loaded. Functions:\n")
+cat("[mean_variance_optimizer.R] v2.4 (RF-O5 HHI-projection support-restrict + TC-aware phi*|x-x_prev| L1 into QP) Loaded. Functions:\n")
 cat("  mvo_weights(alpha, cov, confidence=NULL, lambda=1.0, psi=0.3,\n")
-cat("              bounds=c(0,0.15), max_names=25, min_names=20, hhi_cap=0.15, alpha_winsor=2.0)\n")
-cat("  mvo_grid_search(alpha, cov, lambda_grid, phi_grid)\n")
+cat("              bounds=c(0,0.15), max_names=25, min_names=20, hhi_cap=0.15, alpha_winsor=2.0,\n")
+cat("              current_weights=NULL, turnover_penalty=0.0)\n")
+cat("  mvo_grid_search(alpha, cov, lambda_grid, phi_grid, current_weights=NULL)\n")
