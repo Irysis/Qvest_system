@@ -113,7 +113,7 @@ QEPM Codex Critic Round(외부 codex auto-spawn)는 **2026-06-30 v8.2에서 폐�
 
 - `02_Infrastructure/hooks/*.sh` (현재 55개 — Phase 1/2 hooks 신규 5건 포함)
 - ~~`02_Infrastructure/hooks/_archive_v55/`~~ (Tier 1 cleanup 2026-05-16 삭제 — legacy v55 hooks 6건 영구 폐기)
-- `.claude/settings.json` Hook 등록 (47 distinct .sh — v8.1.2 2026-06-11 기준, 아래 정합 절 참조. **v8.2 2026-06-30: codex_round_pre_enforcer + codex_round_auto_trigger 2건 등록 해제 → 45 distinct .sh**)
+- `.claude/settings.json` Hook 등록 (47 distinct .sh — v8.1.2 2026-06-11 기준, 아래 정합 절 참조. **v8.2 2026-06-30: codex_round_pre_enforcer + codex_round_auto_trigger 2건 등록 해제 → 45 distinct .sh**. **현행 2026-07-17: 49 distinct .sh** — 직접 31 + 라우터 dispatch 17 실측 + `boot_stamp_check.sh` 신규 등록, 아래 2026-07-17 정합 절)
 - `02_Infrastructure/docs/qvest_v8_1_sot.md` + `02_Infrastructure/docs/qvest_modes_sot.md` (active SOT)
 - `02_Infrastructure/docs/qvest_v6_4_sot.md` Section 5 (historical Hook + Cert Matrix. QEPM Codex Round 절은 v8.2에서 폐지 — 현재 미적용, 사료용)
 
@@ -141,6 +141,12 @@ QEPM Codex Critic Round(외부 codex auto-spawn)는 **2026-06-30 v8.2에서 폐�
 - **안전한 경로 (오탐 방지)**: bash가 스크립트 파일 내 한글 literal을 **직접 echo**하는 것은 안전 (python text 레이어 없음 — Node가 UTF-8로 정상 디코딩). Bash tool의 일반 커맨드 CP949 출력도 Node lossy decode가 U+FFFD로 안전 처리 (400 원인 아님 — 가독성만 손실, safe_run.sh 권장).
 - **환경 영구화**: `setx PYTHONUTF8 1` 적용(2026-06-11, user env) — Claude Code 재시작 후 모든 hook/python에 전파. hook 내 export는 재시작 전에도 유효한 2중 방어.
 - **오염 세션 복구**: lone surrogate가 박힌 transcript는 해당 세션 영구 400. 복구 = jsonl 백업 후 string 값 내 surrogate → '?' 스크럽 (06-11 8개 세션 실시, `*.surrogate_bak` 보존).
+
+## 정합 (2026-07-17 — 2주 운영 감사 카운트 실측 + 신규 훅 등재, 도훈 승인 수리)
+
+- **등록 실측 (2026-07-17)**: settings.json **48 distinct .sh** = **직접 31** + **qvest_hook_router dispatch 경유 17**(`02_Infrastructure/hooks/policies/router_dispatch.json` 18건 − `safety_guard.sh` 직접등록 중복 1). 여기에 2026-07-17 `boot_stamp_check.sh` 신규 등록 포함 → **49 distinct .sh** (구 표기 45는 v8.2 시점, CLAUDE.md 구 표기 46은 research_continuity_guard까지만 반영한 드리프트 — 본 절로 정합).
+- **v8.2(45) 이후 신규 3건**: `artifact_placement_guard.sh`(2026-07-04, PreToolUse[W/E] 라우터 dispatch — artifact-storage.md 저장위치 advisory warn only) / `overlay_pit_grep.sh`(2026-07-06, PostToolUse[W/E] — pit.md C5 오버레이 신호 타이밍 Level 2 soft advisory) / `research_continuity_guard.sh`(2026-07-13, Stop — 리서치 연속성 가드. 2026-07-15 Continuity Firewall warn→block 승격, SubagentStop `agent_stop_continuity_check.sh` 동반).
+- **hook_e2e_battery 결과 영속화**: 배터리 실행 결과를 `.cache/hook_e2e_battery_latest.json`에 영속 기록 (2026-07-17 구현 — 최근 판정의 세션 간 관측성).
 
 ## v8.2 정합 (2026-06-30 — QEPM Codex Critic Round 제거, 도훈 mandate)
 

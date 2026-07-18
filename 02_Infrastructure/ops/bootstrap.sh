@@ -228,11 +228,19 @@ echo "[boot] L-code harvester 백그라운드 (QVEST_PY — bare python3 stub �
 #     bootstrap 7일 게이트(신뢰 트리거)가 canonical weekly_cleaner_sweep.R(hygiene+inventory+
 #     axiom step[3.5]+digest)를 실행. Qvest_WeeklyCleaner Sat task는 백업(공유 cleaner_pending
 #     7일 게이트가 이중실행 방지). 구 axiom_weekly.sh/run_axiom_weekly.R 자동실행 제거 → manual-only.
+#     (2026-07-17 인터페이스 계약) weekly_cleaner_sweep.R가 시작 시 .cache/cleaner_sweep.lock 생성 /
+#     종료 시 삭제 — lock 존재 ∧ mtime<2h면 스윕 기동 스킵 (Sat task ↔ boot 게이트 동시 기동 race ~80초 실측).
 LAST_CLEAN="$PROJECT/.cache/cleaner_pending.json"
 LASTC_T=0; [ -f "$LAST_CLEAN" ] && LASTC_T=$(stat -c %Y "$LAST_CLEAN" 2>/dev/null || echo 0)
 if [ $(( ($(date +%s) - LASTC_T) / 86400 )) -ge 7 ]; then
-  (cd "$PROJECT" && PYTHONUTF8=1 LANG=C.UTF-8 LC_ALL="English_United States.utf8" Rscript "$PROJECT/02_Infrastructure/ops/weekly_cleaner_sweep.R") >/tmp/cleaner_boot.log 2>&1 &
-  echo "[boot] 주간 Cleaner 사이클(axiom step3.5 포함) 백그라운드 (7일+ 경과 · Sat task 백업)"
+  CSW_LOCK="$PROJECT/.cache/cleaner_sweep.lock"
+  CSW_LOCK_T=0; [ -e "$CSW_LOCK" ] && CSW_LOCK_T=$(stat -c %Y "$CSW_LOCK" 2>/dev/null || echo 0)
+  if [ "$CSW_LOCK_T" -gt 0 ] && [ $(( $(date +%s) - CSW_LOCK_T )) -lt 7200 ]; then
+    echo "[boot] 주간 Cleaner 사이클 스킵 — cleaner_sweep.lock 활성 (<2h, 타 프로세스 스윕 진행 중)"
+  else
+    (cd "$PROJECT" && PYTHONUTF8=1 LANG=C.UTF-8 LC_ALL="English_United States.utf8" Rscript "$PROJECT/02_Infrastructure/ops/weekly_cleaner_sweep.R") >/tmp/cleaner_boot.log 2>&1 &
+    echo "[boot] 주간 Cleaner 사이클(axiom step3.5 포함) 백그라운드 (7일+ 경과 · Sat task 백업)"
+  fi
 fi
 
 # 7. Hook health check (v8.1.1 — 침묵 삼킴 금지: 빈 결과 = ERROR)
@@ -498,6 +506,17 @@ else
   MORNING_STATUS="MorningRun:  $(date +%Y-%m-%d) 미실행 (오늘 lock 부재 — 스케줄러 미발화/미도래. 수동: bash 02_Infrastructure/ops/morning_run.sh manual)"
 fi
 
+# 8h2. (2026-07-17 B4) deadman-lite — 무인 paper_recharge 라인 결손 사후 인지 (07-16 결측 실사례:
+#      머신-오프 공백을 어느 표면도 알리지 않음). 최신 .done/mcp_discovery 파일명 날짜 vs 오늘 갭>1일 = WARN.
+DM_LAST=$(ls "$PROJECT"/stage_artifacts/paper_recharge/paper_recharge_*.done "$PROJECT"/stage_artifacts/paper_recharge/mcp_discovery_*.json 2>/dev/null | grep -oE '20[0-9]{6}' | sort | tail -1)
+DM_TS=""; [ -n "$DM_LAST" ] && DM_TS=$(date -d "$DM_LAST" +%s 2>/dev/null || echo "")
+if [ -n "$DM_TS" ]; then
+  DM_GAP=$(( ($(date +%s) - DM_TS) / 86400 ))
+  [ "$DM_GAP" -gt 1 ] && echo "[boot] WARN: 무인 paper_recharge 라인 결손 — 최신 산출 ${DM_LAST} (오늘과 ${DM_GAP}일 갭, 머신-오프/스케줄러 미발화 의심 — /tmp/qm_paper_recharge_boot.log 확인)"
+else
+  echo "[boot] WARN: paper_recharge .done/mcp_discovery 산출물 0건 — 무인 적재 라인 미가동 의심"
+fi
+
 # 8i. (v8.1.4) 부팅 상태-라인 스모크 가드 — 하단 상태 라인을 산출하는 모든 리더를 실행 +
 #      inline-path( python3 -c "...$PROJECT..." ) 정적 린트. 새 상태 라인이 이 머신에서 검증 없이
 #      출고돼 사용자가 부팅 때 발견하던 회귀(class A 백슬래시 -c unicodeescape '?' / class B JSON
@@ -509,13 +528,23 @@ if [ -f "$SMOKE_SCRIPT" ] && python3 -c 'import sys' >/dev/null 2>&1; then
   SMOKE_STATUS=$(QM_ROOT="$CLAUDE_PROJECT_DIR" python3 "$(cygpath -m "$SMOKE_SCRIPT" 2>/dev/null || echo "$SMOKE_SCRIPT")" "$CLAUDE_PROJECT_DIR" 2>&1 | tail -1 || true)
 fi
 
-# hypothesis_index 재빌드 (2026-07-05) — 검색면 자동 정합. bootstrap이 lcode_corpus는 매 세션
-#   무조건 regen하나 hypothesis_index는 안 해 다음 세션 첫 조회부터 stale 배너 상시 발화하던 갭 수리.
-#   .R 파일 경유 CLI(한글 -e 아님). lcode_corpus 백그라운드 job 이후 실행되도록 부트 말미 배치. fail-soft.
+# hypothesis_index 재빌드 (2026-07-05 / 2026-07-17 B1 관측성) — 검색면 자동 정합. bootstrap이
+#   lcode_corpus는 매 세션 무조건 regen하나 hypothesis_index는 안 해 다음 세션 첫 조회부터 stale
+#   배너 상시 발화하던 갭 수리. .R 파일 경유 CLI(한글 -e 아님). lcode_corpus 백그라운드 job 이후
+#   실행되도록 부트 말미 배치. (B1) 침묵 fail-open 폐지 — 실패 시 BOOT_FAILS 계상 + 사유 1줄
+#   (부트 전체 중단 아님, 기존 BOOT_FAILS DEGRADED 패턴. 실측: 07-13 이후 4일 침묵 정지).
 HI_R="$PROJECT/02_Infrastructure/tools/hypothesis_index.R"
 if [ -f "$HI_R" ]; then
-  HI_OUT=$(cd "$PROJECT" && Rscript "$HI_R" build 2>&1 | grep -oE '\[hypothesis_index\].*entries.*' | tail -1 || true)
-  [ -n "$HI_OUT" ] && echo "[boot] hypothesis_index rebuilt: $HI_OUT"
+  HI_FULL=$(cd "$PROJECT" && Rscript "$HI_R" build 2>&1)
+  HI_RC=$?
+  HI_OUT=$(echo "$HI_FULL" | grep -oE '\[hypothesis_index\].*entries.*' | tail -1 || true)
+  if [ "$HI_RC" -eq 0 ] && [ -n "$HI_OUT" ]; then
+    echo "[boot] hypothesis_index rebuilt: $HI_OUT"
+  else
+    HI_ERR=$(echo "$HI_FULL" | grep -iE 'error|오류|fail' | head -1)
+    echo "[boot] ERROR: hypothesis_index 재빌드 실패 (rc=$HI_RC) — ${HI_ERR:-$(echo "$HI_FULL" | tail -1)} (중복실험 방지 게이트 stale 위험)"
+    BOOT_FAILS=$((BOOT_FAILS+1))
+  fi
 fi
 
 # 지식 순차 인덱스 재생성 (2026-07-05 도훈 — 안정 ID 불변, 활성 집합 1..N 뷰). fail-soft.
@@ -532,6 +561,11 @@ if [ "${BOOT_FAILS:-0}" -gt 0 ]; then
 else
   echo "=== 부트스트랩 완료 (Qvest v8.1 — Opus 4.8 Native · 4-Mode +RAMP · 실측 거버넌스) ==="
 fi
+
+# (2026-07-17 B2) 부트 스탬프 — SessionStart 카나리아(hooks/boot_stamp_check.sh)의 신선도 판정 원천.
+#   07-05 이후 12일 무부트 세션 가동 실측 대응. fail-soft (스탬프 기록 실패가 부트를 죽이지 않음).
+mkdir -p "$PROJECT/.cache" 2>/dev/null || true
+printf '{"ts":"%s","ts_epoch":%s,"boot_fails":%s}\n' "$(date '+%Y-%m-%dT%H:%M:%S%z')" "$(date +%s)" "${BOOT_FAILS:-0}" > "$PROJECT/.cache/boot_stamp.json" 2>/dev/null || true
 if [ -n "$PG2_INFO" ]; then
   echo "$PG2_INFO"
 fi

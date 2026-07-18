@@ -9,6 +9,7 @@
 실행: PYTHONUTF8=1 python3 02_Infrastructure/ops/hook_e2e_battery.py
 프로젝트 루트에서 실행 (hook 상대경로 전제).
 """
+import datetime
 import json
 import os
 import shutil
@@ -144,6 +145,19 @@ def main():
     shutil.rmtree(TMP_WT, ignore_errors=True)
     n_fail = sum(1 for _, ok, _ in results if not ok)
     print(f"\nRESULT: {len(results) - n_fail}/{len(results)} PASS" + (f" ({n_fail} FAIL)" if n_fail else ""))
+    # (2026-07-17 B3) 결과 영속화 — print 전용이라 부트/감사가 최근 배터리 상태를 소급 확인 못 하던 갭.
+    #   stdout 계약 불변 · 기록 실패는 배터리 판정에 불계상 (fail-soft).
+    try:
+        os.makedirs(".cache", exist_ok=True)
+        with open(".cache/hook_e2e_battery_latest.json", "w", encoding="utf-8") as f:
+            json.dump({
+                "ran_at": datetime.datetime.now().astimezone().isoformat(timespec="seconds"),
+                "cases": [{"name": name, "result": "PASS" if ok else "FAIL"} for name, ok, _ in results],
+                "n_pass": len(results) - n_fail,
+                "n_fail": n_fail,
+            }, f, ensure_ascii=False, indent=2)
+    except OSError as e:
+        print(f"WARN: hook_e2e_battery_latest.json 기록 실패 ({e}) — 판정 불계상")
     return 1 if n_fail else 0
 
 

@@ -115,19 +115,20 @@ R-side helper: `02_Infrastructure/axiom/distilled.R` — `lookup_distilled()` / 
 - `result` ∈ {survived, falsified, weakened}. `effect_retained` = 반증 시도 후 잔존 효과 비율(0~1).
 - hurdle: attempts ≥ 1 ∧ none_falsified ∧ (survived건 effect_retained ≥ 0.5).
 - 문자열(비구조체) 기록도 수용(n 카운트 보수 처리)하되 WARN — 신규 emit은 구조체 의무 지향.
+- **result 토큰 정규화 (2026-07-17)**: 비-canonical `result` 토큰은 축 판정 전 정규화 — `falsif` 포함(예: `falsification_failed`)·`negative` → `falsified`, 미상 토큰 → 보수 처리(승격 우호 방향 해석 금지).
 
-## §3e. 주간 사이클
+## §3e. 주간 사이클 (2026-07-17 실배선 현행화 — 07-06 정정 SOT 반영)
 
-- **단일 진입**: `02_Infrastructure/axiom/run_axiom_weekly.R` — harvester → cluster_extractor(+DIST/인덱스) → promote 전 후보 fail-soft 순회 → distilled 인덱스/truths 동기화 → **진단 `.cache/axiom_weekly_diag.json`** ({n_pending, n_promoted, failing_axis_histogram, **near_miss**(1축만 미달 — /cleaner 정제 우선순위), confirm_flags(conditional 재정의 적용 후보 등 도훈 confirm 대상)}).
-- **Cleaner 통합**: weekly_cleaner_sweep.R(토 09:00) step 3.5가 본 스크립트를 호출하고 cleaner_pending.json 다이제스트에 axiom_candidates 섹션 포함 (배선 = mode-wiring). `/cleaner` 세션이 near-miss statement 정제(INV-6 해소 → distilled 승격) 전담 — LLM 정제는 /cleaner 세션 전담(무인 배제).
-- `ops/axiom_weekly.sh`는 수동 경로 retain (Cleaner 통합이 정규 경로).
+- **정규 주간 경로**: `ops/weekly_cleaner_sweep.R`(토 09:00 Qvest_WeeklyCleaner + bootstrap 7일게이트) **step 3.5가 engine-core를 직접 호출** — `lcode_harvester.py` → `cluster_extractor.py` → `promote.R`(pending candidate 순회, INV-4 5축 hurdle). run_axiom_weekly.R 경유 아님.
+- **진단**: `.cache/cleaner_pending.json`의 **`axiom_candidates` 섹션** ({n_pending, failing_axis_histogram, **near_miss**(1축만 미달 — /cleaner 정제 우선순위)} + `confirm_flags`(conditional 재정의 적용 후보 등 도훈 confirm 대상 — 2026-07-17 주간 배관 배선)). `/cleaner` 세션이 near-miss statement 정제(INV-6 해소 → distilled 승격) 전담 — LLM 정제는 /cleaner 세션 전담(무인 배제).
+- **수동 경로**: `run_axiom_weekly.R` + `ops/axiom_weekly.sh` = **수동 재현/디버그 전용, 자동 트리거 없음** (구 "단일 진입 — Cleaner가 본 스크립트를 호출" 서술은 거짓 — 2026-07-06 도훈 confirm, 스크립트 헤더 정정). `.cache/axiom_weekly_diag.json`은 이 수동 경로의 산출물 — live 소비자 0.
 
 ## §4. 파일
 
 - 엔진: `02_Infrastructure/axiom/{lcode_schema,lcode_emit,distilled,run_axiom_weekly,promote,promote_global,review,inject,axiom_rollback,axiom_weekly_report}.R` + `{lcode_harvester,cluster_extractor}.py`
-- 파이프라인: `run_axiom_weekly.R`(정규 — Cleaner step 3.5) · `ops/axiom_weekly.sh`(수동 retain) · bootstrap(harvest)
+- 파이프라인: `ops/weekly_cleaner_sweep.R` step 3.5(정규 — engine-core 직접 호출) · `run_axiom_weekly.R`/`ops/axiom_weekly.sh`(수동 재현/디버그 전용, 자동 트리거 없음) · bootstrap(harvest)
 - consumer: `hooks/{axiom_context_inject,axiom_enforcement_hook}.sh` · `tools/hypothesis_index.R` · `prompts/strategic_truths.md`(DISTILLED 블록) · `memory/memory_knowledge_health.R` · `qepm/R/axiom_dashboard.R`
-- 데이터: `qepm/memory/axioms/{active/,active/modes/<mode>/,candidates/,**distilled/**,deprecated/,review_log/,axiom_sot_map.json}` · `06_Registry/{distilled_knowledge.json,hypothesis_index.json,lcode_distill_plan_20260704.json}` · `.cache/{lcode_corpus.json,axiom_weekly_diag.json}`
+- 데이터: `qepm/memory/axioms/{active/,active/modes/<mode>/,candidates/,**distilled/**,deprecated/,review_log/,axiom_sot_map.json}` · `06_Registry/{distilled_knowledge.json,hypothesis_index.json,lcode_distill_plan_20260704.json}` · `.cache/{lcode_corpus.json,cleaner_pending.json(axiom_candidates — 정규 진단),axiom_weekly_diag.json(수동 경로 산출물 — live 소비자 0)}`
 - 실행(Windows): `PY=%QVEST_PY%` (venv `.venv_qvest_ml/Scripts/python.exe` — bare python 금지) · `RS=C:/Program Files/R/R-4.5.2/bin/Rscript.exe` · `CLAUDE_PROJECT_DIR` + `PYTHONUTF8=1`
 
 ## §5. 운영 규칙
@@ -138,6 +139,7 @@ R-side helper: `02_Infrastructure/axiom/distilled.R` — `lookup_distilled()` / 
 - b434 규약: CL-B434 fallback 통합 L-code의 '미검증 잔존 가설 백로그'는 **어떤 개별 가설의 기각 증거로도 인용 금지** (AX-000 — 미검증→기각 둔갑 방지가 failure-ledger 신뢰의 전제).
 
 ## Change log
+- 2026-07-17 (도훈 승인 수리 — 07-06 정정 SOT 반영 + confirm_flags 주간 배관 + result 토큰 정규화): §3e 실배선 재서술 — 정규 주간 경로 = `weekly_cleaner_sweep.R` step 3.5의 engine-core(`lcode_harvester.py`→`cluster_extractor.py`→`promote.R`) **직접 호출**, 진단 = `cleaner_pending.json` `axiom_candidates` 섹션(+`confirm_flags` 주간 배관 2026-07-17 배선), `run_axiom_weekly.R`/`ops/axiom_weekly.sh` = 수동 재현/디버그 전용·자동 트리거 없음(구 "Cleaner가 호출" 서술은 거짓 — 07-06 스크립트 헤더 정정의 SOT 반영. `.cache/axiom_weekly_diag.json` = 수동 경로 산출물·live 소비자 0). §4 파일 목록 동기 수정. §3d에 `result` 비-canonical 토큰 정규화 규칙 1줄(falsif-포함/negative→falsified, 미상→보수 처리). **5축 hurdle 수치·INV-1~7·AX-008 2/3·active AX 의미론 전부 불변.**
 - 2026-07-05 (INV-7 부활 기구 finalize — 도훈 지시 "지속가능한 성공"): INV-7 산출 §에 **부활 기구 실가동** 절 추가(계획서 §Ⅱ.G 실현). 사람용 `live_trigger`(산문) → 기계 `revival_spec`(배열 {signal_id,condition}) **자동번역**(draft_proposed, type→신호명부 매핑 time/regime/spread/data, 미등록 신호 pending 스텁 자기증식) → `failure_revival_monitor.R`가 열린 신호명부(`revival_signals.json`) 경유 매일 대조·능동 재부상. expiry=보편 시간부활 바닥. **표시용(live_trigger)·실행용(revival_spec) 이원이나 후자는 전자에서 자동생성 → 신규 카드도 손 없이 배선(지속가능·DURABLE 실증)**. 신호명부에 value_quality_spread(V02_EP 월간 IQR 백분위 PIT-safe deriver) active 등록 + regime_category/wall_clock_date 기존. E2E: 4 negative 카드 revival_spec 자동 retrofill·CRISIS 국면 실발화 3건·battery 11/11·health HARD 0. commit `da055c90`. INV-1~6·AX-008 2/3·5축 hurdle·active AX 의미론 불변.
 - 2026-07-04 (§0.1 메커니즘 비-ossification 원리 신설 — 도훈 mandate "딱 한 번 작동하는 하드코딩된 멍청이가 아닌, 유동적으로 작동하며 발전하는 아키텍처"): §0.1 신설 — 엔진이 관리하는 **메커니즘 자체(방화벽·트리거·게이트·판정 규칙)도 지식과 동일한 학습 루프 대상**. 구현 5원리: ①의미(LLM) 우선(정규식 아님) ②결정론적 규칙=backstop 전용(비-소진적 명시) ③케이스 축적 자기발전(few-shot 소비) ④트리거·신호원=열린 스키마(등록형·enum 아님) ⑤메커니즘도 Cleaner 리뷰 대상. INV-7 제약 방화벽에 '의미판단 우선·케이스 학습' 판정 원리 1줄 배선. **INV-1~7·AX-008 2/3·5축 hurdle 수치·active AX 의미론 = Law이지 backstop 아님, 본 원리로 불변.** 계획서 META원리. CLAUDE.md Production Constraints/AX-000 따름정리 정합.
 - 2026-07-04 (INV-7 재정의 — 도훈 confirm "실패는 성공의 어머니. 실패를 금지 아닌 탐색지도로. 제약을 레버로 삼지 말 것"): INV-7 "provisional failure-ledger" → **"Distilled 탐색-지도(exploration-map)"**. 5축 게이트 면제 명문화 / 단위=경로(방향-family 판결 금지) / **제약 방화벽**(고정 제약 7종+PIT 귀속·완화-레버 = 초안 REJECT) / 산출={탐색됨·frontier·live_trigger}(금지 아님) / 필수필드 expiry+live_trigger+frontier / 주입 자격 바(backtested OR clean-재확인 ∧ N≥2 ∧ 방화벽 통과분만, 기록은 무조건) / positive축(External oos≥0.5·Indep≥3) negative 부적용 / process(polarity 없음, AX-001)만 Law 잔존. §2 소비배선 hypothesis_index '재시도 금지' 문안 → '탐색됨+frontier+live_trigger' 지도. **INV-1~6·AX-008 2/3·5축 hurdle 수치·active AX 8건 의미론·주입 3배선 status=distilled-only(INV-6) 전부 불변.** 계획서: `04_Research/01_reports/failure_knowledge_architecture_plan_20260704.md`(A).
