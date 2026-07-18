@@ -177,6 +177,8 @@ if (format(max(me), "%Y-%m") == mtd_ym && max(me) > mtd_sig) {
       um <- merge(um, fzm, by = "Ticker", all.x = TRUE)
       frm <- tryCatch(get_froe(um$Ticker, mtd_sig), error = function(e) NULL)
       if (!is.null(frm) && nrow(frm)) um <- merge(um, frm, by = "Ticker", all.x = TRUE) else um[, froe := NA_real_]
+      fvm <- tryCatch(get_fval(um$Ticker, um$Close, mtd_sig), error = function(e) NULL)
+      if (!is.null(fvm) && nrow(fvm)) um <- merge(um, fvm, by = "Ticker", all.x = TRUE) else um[, fval := NA_real_]
       SB_MTD <- c(list(as_of = format(max(ud)), sig = format(mtd_sig),
                        n_days = sum(format(ud, "%Y-%m") == mtd_ym)), style_actives(um))
       write_json(SB_MTD, file.path(OUT_DIR, "smartbeta_kr_mtd.json"), auto_unbox = TRUE, digits = 6)
@@ -208,7 +210,7 @@ wf("[정합게이트] MOM 2024+ 양: %s | SIZE 2024+ 음: %s | (정보) VAL_comp
 if (!all(g1, g2, na.rm = TRUE)) wf("[!!] 부호/구성 재점검 필요")
 
 ## ── 5) 차트 v3 (도훈 지시 07-18: 최근동향 가독성 — 정렬 막대 + 히트맵 + 소형패널) ──
-KRN <- c(VAL = "가치컴포지트", QUAL = "퀄리티(fROE)", MOM = "모멘텀", LOWVOL = "저변동성",
+KRN <- c(VAL = "가치포워드", QUAL = "퀄리티(fROE)", MOM = "모멘텀", LOWVOL = "저변동성",
          SIZE = "소형주", DIV = "고배당", EREV = "이익전망수정")
 cols <- c(VAL = "steelblue", QUAL = "darkgreen", MOM = "firebrick", LOWVOL = "purple",
           SIZE = "darkorange", DIV = "gray40", EREV = "deeppink3")
