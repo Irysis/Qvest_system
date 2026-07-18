@@ -205,11 +205,12 @@ def main():
     assert hint_fp.startswith("FP성") and hint_tp.startswith("TP성"), "triage hints must separate FP/TP"
     print("triage hints: FP=", hint_fp[:30], "... / TP=", hint_tp[:30], "...")
 
+    total = len(TESTS) + len(REPLAY_TESTS)
     print("\n" + "=" * 56)
     if fails:
-        print(f"BATTERY: {len(TESTS)-len(fails)}/{len(TESTS)} pass — FAILURES: {fails}")
+        print(f"BATTERY: {total-len(fails)}/{total} pass — FAILURES: {fails}")
         sys.exit(1)
-    print(f"BATTERY: {len(TESTS)}/{len(TESTS)} pass — ALL GREEN")
+    print(f"BATTERY: {total}/{total} pass — ALL GREEN")
     sys.exit(0)
 
 
