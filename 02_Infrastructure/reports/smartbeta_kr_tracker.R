@@ -222,6 +222,11 @@ wf("chart written: smartbeta_recent_bars.png")
 n_hm <- min(24, nrow(SB))
 H <- sapply(sty, function(s) tail(SB[[s]], n_hm)) * 100      # n_hm x styles
 ymv <- tail(SB$ym, n_hm)
+if (!is.null(SB_MTD)) {                                       # 진행월 MTD 컬럼 추가 (도훈 지시 07-18)
+  H <- rbind(H, vapply(sty, function(s) { x <- SB_MTD[[s]]; if (is.null(x) || is.na(x)) NA_real_ else x * 100 }, numeric(1)))
+  ymv <- c(ymv, sprintf("%s MTD", substr(SB_MTD$as_of, 6, 10)))
+  n_hm <- n_hm + 1L
+}
 Hm <- t(H)[length(sty):1, , drop = FALSE]                     # rows=styles(역순: 위가 첫 스타일)
 brk <- max(abs(Hm), na.rm = TRUE)
 pal <- colorRampPalette(c("#2166AC", "#F7F7F7", "#B2182B"))(64)
@@ -230,8 +235,9 @@ par(mar = c(5.5, 11, 3.5, 2), cex.main = 1.45)
 image(x = 1:n_hm, y = 1:length(sty), z = t(Hm), col = pal, zlim = c(-brk, brk),
       axes = FALSE, xlab = "", ylab = "", main = "스마트베타 로테이션 — 최근 24개월 월 active % (청=마이너스 / 적=플러스)")
 axis(2, at = 1:length(sty), labels = KRN[rev(sty)], las = 1, tick = FALSE, cex.axis = 1.2)
-sel <- seq(1, n_hm, by = 2)
+sel <- unique(c(seq(1, n_hm, by = 2), n_hm))                  # MTD 컬럼 라벨 항상 표기
 axis(1, at = sel, labels = ymv[sel], las = 2, cex.axis = 1.05, tick = FALSE)
+if (!is.null(SB_MTD)) abline(v = n_hm - 0.5, col = "black", lwd = 2.5, lty = 2)   # 완결월|MTD 경계
 for (i in 1:n_hm) for (j in 1:length(sty))
   text(i, j, sprintf("%.0f", t(Hm)[i, j]), cex = 0.85, col = ifelse(abs(t(Hm)[i, j]) > brk * 0.55, "white", "gray25"))
 abline(h = (0:length(sty)) + 0.5, col = "white", lwd = 2)
