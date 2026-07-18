@@ -70,9 +70,9 @@ try({
     script = "02_Infrastructure/ops/weekly_cleaner_sweep.R"), auto_unbox = TRUE)),
     sweep_lock_path)
 }, silent = TRUE)
-reg.finalizer(globalenv(),
-              local({ lp <- sweep_lock_path; function(e) suppressWarnings(unlink(lp)) }),
-              onexit = TRUE)
+invisible(reg.finalizer(globalenv(),
+                        local({ lp <- sweep_lock_path; function(e) suppressWarnings(unlink(lp)) }),
+                        onexit = TRUE))
 
 # ---- fail-soft 실행기: 단계별 오류를 status에 기록하고 계속 ----
 #   주의: expr(promise)은 호출부(global) 환경에서 평가됨 — expr 안에서는 일반 `<-`로
