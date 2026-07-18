@@ -87,10 +87,37 @@ if (is.null(FF) || !nrow(FF)) { cat("[ff5_brief] FF 시리즈 없음 — skip\n"
       charts <- c(charts, "outputs/ff5_kr/charts/index_smartbeta_beta.png")
     }
   }
-  sections[[length(sections) + 1]] <- list(heading = "국면 판독", type = "bullet", items = c(
-    sprintf("현 국면: %s", regime_line),
-    if (!is.null(sb_line)) sb_line,
-    sprintf("부활조건 워치: %s", revive_watch)))
+  ## 국면 판독 v2 — FF5·스타일·MTD·지수 민감도 종합 (도훈 지시 07-18)
+  sbm <- tryCatch(jsonlite::fromJSON("outputs/smartbeta_kr/smartbeta_kr_mtd.json"), error = function(e) NULL)
+  jd <- sprintf("FF5 12개월: %s 주도(SMB %s)·%s 우위(HML %s)·퀄리티 %s(RMW %s)",
+                ifelse(L$r12_SMB < 0, "대형", "소형"), fmt(L$r12_SMB),
+                ifelse(L$r12_HML < 0, "성장", "가치"), fmt(L$r12_HML),
+                ifelse(!is.na(L$r12_RMW) && L$r12_RMW > 0, "강세", "약세"), fmt(L$r12_RMW))
+  if (exists("r12") && length(r12)) {
+    top12 <- names(r12)[which.max(r12)]; bot12 <- names(r12)[which.min(r12)]
+    jd <- c(jd, sprintf("스타일 12개월: 최강 %s %s · 최약 %s %s",
+                        kv_names[top12], fmt(r12[top12]), kv_names[bot12], fmt(r12[bot12])))
+    if (!is.null(sbm)) {
+      mv <- vapply(names(r12), function(s) { x <- sbm[[s]]; if (is.null(x) || is.na(x)) NA_real_ else as.numeric(x) }, numeric(1))
+      topm <- names(mv)[which.max(mv)]
+      flip <- names(mv)[!is.na(mv) & !is.na(r12) & sign(mv) != sign(r12) & abs(mv) > 0.02]
+      fl_txt <- if (!length(flip)) "없음" else paste(head(kv_names[flip], 3), collapse = "·")
+      if (length(flip) > 3) fl_txt <- sprintf("%s 외%d", fl_txt, length(flip) - 3)
+      jd <- c(jd, sprintf("진행월 MTD(~%s): 최강 %s %s · 12개월 대비 부호반전 %d개(%s)",
+                          substr(sbm$as_of, 6, 10), kv_names[topm], fmt(mv[topm]), length(flip), fl_txt))
+    }
+    if (!is.null(ib) && !is.null(ib$sb_betas)) {
+      bt <- vapply(names(bn), function(ix) as.numeric(unlist(ib$sb_betas[[ix]])[top12]), numeric(1))
+      jd <- c(jd, sprintf("지수 함의: %s 국면 지속 시 %s 우위(β%+.1f)·%s 역풍(β%+.1f) — 반전 시 역전",
+                          kv_names[top12], bn[names(bn)[which.max(bt)]], max(bt), bn[names(bn)[which.min(bt)]], min(bt)))
+    }
+  }
+  early <- !is.null(mtd5) && !is.na(mtd5$SMB) && !is.na(mtd5$HML) && mtd5$SMB > 0 && mtd5$HML > 0
+  jd <- c(jd, if (!is.na(L$r12_SMB) && !is.na(L$r12_HML) && L$r12_SMB > 0 && L$r12_HML > 0)
+    "부활 워치: <b>발화</b> — SMB·HML 12개월 동반 양전(매장 팩터 un-bury 검토)"
+  else if (early) "부활 워치: <b>MTD 조기신호 점등</b> — 진행월 SMB·HML 양전(완결 시 발화 후보)"
+  else "부활 워치: 반전 신호 없음(SMB·HML 12개월 동반 양전 시 발화)")
+  sections[[length(sections) + 1]] <- list(heading = "국면 판독", type = "bullet", items = jd)
 
   source("02_Infrastructure/telegram/telegram_notify.R")
   res <- tg_agent_brief(

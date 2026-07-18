@@ -124,14 +124,16 @@ def run(tmp):
     xk = load(dd, "DIST-XX-007")
     check(xk["status"] == "pending_5axis", "exact-key pending stays pending (no spurious migration)")
 
-    print("\n[e] IDEMPOTENCY (second run = no state change)")
-    t_before = json.dumps(load(dd, "DIST-XX-002"), sort_keys=True)
-    r_before = json.dumps(load(dd, "DIST-XX-001"), sort_keys=True)
+    print("\n[e] IDEMPOTENCY (second run = no re-migration; stable fields unchanged, updated_at may bump)")
     r2_before = load(dd, "DIST-XX-003").get("cluster_key")
+    n_dist_before = len(glob.glob(os.path.join(dd, "DIST-*.json")))
     ce.build_distilled(cd, dd, idx)
-    check(json.dumps(load(dd, "DIST-XX-002"), sort_keys=True) == t_before, "consolidated T stable on rerun (except updated_at ok)")
+    t2 = load(dd, "DIST-XX-002")
+    check(t2["status"] == "distilled" and t2.get("statement_refined") == "APPROVED-A"
+          and t2.get("migrated_from") == "DIST-XX-001", "consolidated T stable on rerun")
     check(load(dd, "DIST-XX-001")["status"] == "expired", "expired ancestor stays expired")
     check(load(dd, "DIST-XX-003").get("cluster_key") == r2_before, "rekeyed card stable (no re-migration)")
+    check(len(glob.glob(os.path.join(dd, "DIST-*.json"))) == n_dist_before, "no new cards spawned on rerun")
 
 if __name__ == "__main__":
     tmp = tempfile.mkdtemp(prefix="fwdmig_")
