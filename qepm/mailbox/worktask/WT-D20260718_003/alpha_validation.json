@@ -1,0 +1,81 @@
+{
+  "task_id": "WT-D20260718_003",
+  "as_of_date": "2026-07-18",
+  "hypothesis": "Transformer/foundation-model asset pricing (KR) — 외부 pre-training이 KR-fit 6방법 벽에 직교 신호를 더하는가",
+  "verdict": "NEGATIVE (config-scoped) → SCREEN-TIER (FR_RCMA / OVERLAY_CANDIDATE). capital-graduation FAIL.",
+  "pin_tag": "frozen_inputs_XATTNscores_Jul5_knsRetLiqBench_Jul3; md5 XATTN_ENS=a158204d194e ret=0ec29decab9c bench=026764e5c39d liq=40f3ed9c3b20 IPCA_K4=160cf414ba5e E2E=1b93d114b7e1 KNS_L2=8bbdb35bb1f6 incumbent_L5=c43609b4bc97",
+  "step0_differentiation": {
+    "prior_settled": "6 methods (KNS/IPCA/BMA/E2E-gate/SPO+ estimator/decision + XATTN cross-sectional attention) ALL oos_retention<0.7 FAIL. Wall = KR cross-section structure (post-2017 cohort decay + microcap), NOT method/architecture. XATTN standalone formal 6-agent revalidation (WT-D20260705_001) forge-authoritative 2.362<2.95 REJECT.",
+    "this_wt_new_vs_6methods": "본 WT는 standalone graduation 재시험이 아님(그건 settled REJECT). 2개 미측정 각도만: ① 외부 pre-training FM(6방법 全 KR from-scratch — orthogonal-info 프레이밍) ② XATTN 유동성-강건 이점의 배포-유니버스 검증 + book-marginal 직교성(WT-D20260705_001서 PG1 triple-fail로 §4 ΔIR 경로 미개방 → 본 WT가 그 미개방 관문을 직접 측정).",
+    "retread_check": "PASS — standalone 2.36 재현이 아니라 (a) liq-sweep on deployment universe (b) book-marginal ΔIR·직교성 (c) FM feasibility 3개 신규 측정."
+  },
+  "feasibility_angle1_foundation_model": {
+    "verdict": "INFEASIBLE without approval — PIVOTED to angle ② (all-local). NOT falsified (capacity-gated).",
+    "venv": ".venv_qvest_ml Python 3.12.10, torch OK",
+    "missing_libs": ["transformers", "timesfm", "chronos", "gluonts", "huggingface_hub"],
+    "blocker": "FM weights require large HuggingFace downloads (approval-gated per WT instruction '승인 없이 대량 다운로드 금지'). Libraries not installed.",
+    "external_skeptic_prior": "Karaouli 2025 (arxiv 2510.00742): FM zero-shot = pretraining-domain-dependent. 'When Directional Accuracy Lies': LoRA-TimesFM base-rate illusion. Low prior on KR monthly cross-section.",
+    "revival_condition": "HuggingFace download approval → lightweight zero-shot TimesFM/Chronos probe on incumbent-residual (orthogonal-info framing only, not frontal return prediction)."
+  },
+  "canonical_measurement_angle2_xattn": {
+    "universe": "KOSPI200_KOSDAQ150 (deployment/canonical), 197 months 2010-01..2026-06",
+    "method": "canonical_screen_bt top-25 EW long-only, 15bps one-way, NW lag-3",
+    "metric_type": "canonical_screen (cap-w KOSPI200 benchmark = authoritative)",
+    "primary_capw_port_t_ENS_liq2e8": 1.31,
+    "net_sr": 0.35,
+    "oos_retention": -0.64,
+    "calmar": 0.49,
+    "graduation_hard3": {"port_t_ge_2.95": "FAIL (1.31)", "oos_retention_ge_0.7": "FAIL (-0.64)", "calmar_ge_0.64": "FAIL (0.49)"}
+  },
+  "liq_threshold_sweep_ENS_capw": {
+    "note": "★핵심 반증: XATTN 유동성-강건 이점(broad-universe allliq서 5×=1e9 → 3.25 PASS)이 DEPLOYMENT 유니버스서는 역전 — liq floor 상향이 alpha를 붕괴시킴(kill ③ 실측).",
+    "liq_2e8": {"port_t": 1.31, "oos": -0.64, "calmar": 0.49},
+    "liq_1e9": {"port_t": 0.79, "oos": -0.91, "calmar": 0.39},
+    "liq_5e9": {"port_t": -0.01, "oos": -2.03, "calmar": 0.29},
+    "interpretation": "prior '3.25 at 5×' was BROAD-universe (allliq, non-index mid/small) mid-cap positioning artifact. On K200∪KQ150 (already large-cap-tilted) higher liq floor removes the OTHER-tier names XATTN relies on → collapse."
+  },
+  "dual_basis_ENS_liq2e8": {
+    "cap_w_port_t": 1.31,
+    "ew_universe_port_t": 2.72,
+    "ew_universe_post2017_t": 1.72,
+    "ew_universe_oos_retention_approx": 1.41,
+    "ew_universe_net_sr": 0.80,
+    "cap_tier_weight_share": {"MEGA_rank1_10": 0.072, "MID_rank11_30": 0.069, "OTHER_rank31plus": 0.859},
+    "cap_tier_contrib_gross_annualized": {"MEGA": 0.023, "MID": 0.019, "OTHER": 0.171},
+    "interpretation": "★M2 dual-basis 발화: cap-w FAIL(1.31)이나 EW-uni 생존(2.72, oos-approx +1.41 양수) + OTHER-tier 86% → post-2017 감쇠 상당분 = mega-cap 벤치 아티팩트 + capacity-제약 소형 신호. 순수 노이즈 아님. 단 배포 벤치=cap-w이고 liq-sweep 붕괴 + ΔIR<0.05로 capital 불가 → screen-route.",
+    "metric_type": "canonical_screen_diag (non-binding)"
+  },
+  "seed_discipline": {
+    "note": "≥3 seed, 평균 판정 (XATTN seed0-운 교훈)",
+    "seeds": {"s0": 0.80, "s1": 1.12, "s2": 0.56, "s3": 1.69, "s4": -0.29},
+    "mean_port_t": 0.78, "sd": 0.73, "min": -0.29, "max": 1.69,
+    "all_seeds_oos_negative": true,
+    "ensemble_denoise": "ENS 1.31 > seed-mean 0.78 (modest denoise, consistent with prior). All still << 2.95, oos<0."
+  },
+  "book_marginal_orthogonality": {
+    "note": "★각도① reframe / 각도② 핵심 관문 — WT-D20260705_001서 미개방(triple-fail). 본 WT가 직접 측정.",
+    "cross_sectional_score_rank_corr": {"vs_KNS_L2": 0.479, "vs_IPCA_K4": 0.120, "vs_E2E": 0.621},
+    "return_level_active_corr_vs_incumbent": 0.297,
+    "orthogonality_gate": "|cor|<0.30 AND dIR>=0.05",
+    "incumbent_active_ir_window": 0.795,
+    "blend_dIR_diagnostic_fixed_weights": {"w0.10": 0.008, "w0.15": 0.011, "w0.20": 0.014, "w0.30": 0.017},
+    "diagnostic_note": "fixed-weight blend = orthogonality DIAGNOSTIC (not a sizing proposal — governor does admission ΔIR). 절대 role boundary: 공분산/weight 결정 금지.",
+    "verdict": "FAIL — return-corr 0.297 barely orthogonal, BUT E2E score-corr 0.62>0.5 (kill ① vs E2E redundant), AND blend ΔIR 0.008~0.017 << 0.05 at all weights (weak sleeve adds no book IR)."
+  },
+  "kill_rules_evaluation": {
+    "kill1_not_orthogonal_cor_gt_0.5": "PARTIAL TRIGGER — vs E2E score 0.62>0.5 (redundant); return-corr vs incumbent 0.297<0.30 (borderline pass).",
+    "kill2_same_transition_wall_oos_lt_0.7_capw_lt_2.95": "TRIGGERED — cap-w 1.31<2.95, oos -0.64<0.7.",
+    "kill3_microcap_dependence_threshold_collapse": "TRIGGERED — liq 2e8→5e9: port_t 1.31→-0.01.",
+    "conclusion": "kill ②③ fully fire + book-marginal ΔIR<0.05 → NEGATIVE (screen-tier). Not benchmark-artifact salvageable for cap-w book."
+  },
+  "ax_001_v2_defense_conditional": {
+    "applicable": "XATTN is not a defense factor (no crisis-alpha design). Conditional eval N/A as graduation lever.",
+    "observed": "2022+ active IR negative across all seeds (-0.25 to -0.63); no crisis-alpha. Not a defensive sleeve."
+  },
+  "consumption_and_next_probes": {
+    "screen_route": "FR_RCMA (factor-rotation RCMA regime-conditional pool) + OVERLAY_CANDIDATE — XATTN OTHER-tier signal is real vs EW-uni but capacity-constrained; belongs to broad-universe/regime layer, not cap-w deployment sleeve. (Consistent with WT-D20260705_001 screen-route conclusion; DPL_FEATURE discontinued v8.3 → FR/OVERLAY only.)",
+    "next_probe_1": "FQ (capacity-gated): FM angle ① — on HuggingFace download approval, lightweight zero-shot TimesFM/Chronos on incumbent-residual (orthogonal-info only). Feasibility-blocked, NOT falsified.",
+    "next_probe_2": "XATTN on BROAD universe (allliq) + regime overlay + capacity-constrained top-N — the mid-cap positioning alpha (EW-uni 2.72, OTHER-tier) lives in allliq, out of cap-w deployment scope → route to factor-rotation/RAMP consumption, not QEPM deployment.",
+    "layer_bottleneck": "confirms bottleneck = CONSTRUCTION/transition layer (cap-w top-25 long-only translation), not signal layer — EW-uni signal exists, cap-w translation kills it. Update layer_bottleneck_map."
+  }
+}
