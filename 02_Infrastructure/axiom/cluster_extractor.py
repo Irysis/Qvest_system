@@ -154,6 +154,17 @@ def _polarity(cluster: dict) -> str:
     'positive'로 오분류되는 왜곡. → ① grade 정규화(REJECT→F 등) ② record_type ≠
     performance(process/infra/summary) 멤버는 성과 증거가 아니므로 polarity 집계 제외
     ③ 성과 grade가 하나도 없으면 'unknown' (positive 오귀속 금지).
+
+    v3 수리 (2026-07-18, W29 /cleaner 근본원인 — task_07f3ac0e 계승): 구 구현의
+    마지막 fallthrough(`return "positive"`)가 **grade-A(실측된 성공)가 하나도 없는**
+    클러스터({C,B,B}·all-B류)를 'positive 성공 규칙'으로 오라벨. supporting L-code가
+    substring 오귀속(예: 'FQ011' → 'q01' → quality_profitability)으로 family-접착돼
+    한 CAND로 묶이면, 실측 성공이 전무한데도 '긍정 규칙'으로 라벨링돼 DIST-AR-022/016
+    오귀속을 유발했다. **polarity 일치 검증**: 성공(positive/conditional) 규칙은
+    supporting L-code에 최소 1건의 실측 grade-A가 있어야 성립한다. A 부재 시:
+      · 실패(F/C) 우세/동수 → 'negative' (실패 지도 — curated negative 보존)
+      · B 우세 → 'unknown' (성공 미입증·명확한 실패도 아님. 정직·비주입).
+    ★A 보유·전건 실패 케이스의 출력은 v2와 비트-동일 — no-A 분기만 교정한다.
     """
     grades = []
     for m in cluster["members"]:
@@ -166,12 +177,17 @@ def _polarity(cluster: dict) -> str:
         return "unknown"  # 성과 증거 無 — positive 폴백 금지 (구 왜곡 수리)
     gc = Counter(grades)
     has_a = gc.get("A", 0) >= 1
-    only_fail = gc.get("F", 0) + gc.get("C", 0) == len(grades) and not has_a
-    if only_fail:
-        return "negative"   # "이 조건에서는 실패한다"
-    if has_a and (gc.get("F", 0) >= 1 or gc.get("C", 0) >= 1):
-        return "conditional"  # "이 조건에서만 성공한다"
-    return "positive"  # "이 조건에서 성공한다"
+    n_fail = gc.get("F", 0) + gc.get("C", 0)
+    n_b = gc.get("B", 0)
+    if has_a:
+        # 실측 성공(grade A) 존재 → 성공 규칙. 실패 혼재면 조건부.
+        return "conditional" if n_fail >= 1 else "positive"
+    # ── grade-A 부재 = 실측된 성공 증거 없음 → 'positive' 오라벨 금지 (v3 근본원인 수리) ──
+    if n_b == 0:
+        return "negative"       # 전건 실패(F/C) — 구 only_fail 경로 (동일)
+    if n_fail >= n_b:
+        return "negative"       # 실패 우세/동수·A 부재 = 실패 지도
+    return "unknown"            # B 우세·A 부재 = 성공 미입증(정직·비주입)
 
 
 def _draft_statement(cluster: dict, cand_type: str, polarity: str) -> str:
