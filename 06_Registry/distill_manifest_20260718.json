@@ -1,0 +1,41 @@
+{
+  "schema": "distill_manifest_v1",
+  "cleaner_date": "20260718",
+  "week_of": "2026-W29",
+  "trigger": "manual /cleaner (도훈)",
+  "digest_path": "04_Research/01_reports/weekly/weekly_digest_20260718.md",
+  "sweep_deleted_n": 29,
+  "sweep_deleted_note": "기계 스윕(weekly_cleaner_sweep)이 .cache RAMP R1/R2 probe·run 스크래치 29건 삭제 (cleaner_pending.json::sweep_detail.weekly_cache_scratch_7d 기록). hygiene_manifest.log 참조.",
+  "manual_deleted": [],
+  "preserved_deferred": [
+    {
+      "pattern": ".cache/_* (라운드 스크래치 106건: _ramp_r3~r15, _r9_insider 밤샘, _ppure_paper_track, _insider_panel_build, _tg_*, _wt705_monthly parquet 등)",
+      "reason": "활성 RAMP 러너 30개(run_ramp_r3~r15·run_ramp_r9_insider_ext·run_ramp_r6_portt_boruta·ppure_paper_track·debug/*)가 입출력으로 참조. §4 참조≥1 보존 규칙.",
+      "ref_check": "Grep(ripgrep) 활성 코드에서 30 files matched — 참조 실재",
+      "note": "러너 자체가 재검증/pin-재고정 재사용 자산(RAMP 라운드 지도). 짝 스크래치 보존이 churn 방지에 정합."
+    }
+  ],
+  "note": "수동 추가 삭제 0건 — 후보 106건 전량 활성 러너 참조로 보존. sweep 29건이 이번 주 스크래치 처리분. answer-principles '판단 갈리면 보존' 정합.",
+  "continuity_novel_review": {
+    "n_pending": 6,
+    "verdict": "전량 오탐/정상로깅 — append-case 승격 0",
+    "reason": "6건 모두 기존 토큰(negative/screen_tier/소진/screen-tier)에 걸린 것이고, 해당 턴에 next_probe/close_round 계약이 실재해 firewall이 block 아닌 로깅만 수행. gate가 놓친 새 우회어 아님 → backstop 추가 시 정상 표현 과잉차단 위험.",
+    "spans_reviewed": [
+      "07-15 00:48 negative (R9 config-scoped, 소비면 caveat+밤샘 큐 명시)",
+      "07-15 01:18 negative (R33 측정 중, 다음 큐 SP yield→FQ-038)",
+      "07-15 02:37 negative (R35 진행 중, 남은 큐)",
+      "07-15 03:07 screen_tier (R36 진행 중)",
+      "07-15 03:55 소진 (insider 프론티어 언급이나 R38 next 명시 — 기존 금칙어)",
+      "07-17 19:28 screen-tier (시스템 설명 브리핑, 리서치 마감 아님)"
+    ]
+  },
+  "axiom_near_miss_review": {
+    "n_near_miss": 3,
+    "action": "초안 생성 보류 — 도훈 confirm 선행 (INV-6 활성화 게이트)",
+    "items": [
+      {"cand": "distress_smallcap_wall", "axis": "external(0.80)", "note": "negative 규칙 후보 — R24/R25/R9 3라운드 동일 벽. 단 [[project-latefiling-severe-event-arc]]+distress 메모리로 이미 지식 커버, DIST-AR 계열 중복 점검 선행."},
+      {"cand": "quality_profitability_positive", "axis": "independence(0.94)", "note": "★극성 오분류 의심 — supporting(L-AR-20260710_112721 FQ-008 EW생존자·223505 챔피언십·20260711_164659 timing-luck)이 quality positive가 아님. promote.R clustering 재확인 선행, 초안 금지."},
+      {"cand": "legacy_value_conditional", "axis": "falsification(0.83)", "note": "value 조건부, supporting 14건(L-132/135/142). DIST-QPM-006 중복 가능성 점검 선행."}
+    ]
+  }
+}
