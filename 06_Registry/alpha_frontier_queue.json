@@ -1129,7 +1129,8 @@
       "data_gate": "일간 계층: fdb_daily 재빌드 실행 중(PID 33444, run_fdb_rebuild.R, 2026-07-17 19:56~, 수 시간) — 완료→무결성→pin 후 착수. 월간 계층(factor_ic_monthly.parquet + r6_factor_deployzone_active.parquet + r7 EW-basis): feasible now",
       "carve_out_c15_daily": "도훈 명시 승인 2026-07-17 '승인. carve-out 포함 착수해' — fdb_daily parquet 직접 read-only 소비를 본 진단 hypothesis에 한정 허용(python-policy §3 명시승인 요건 충족). PIT: 일간 granularity에서도 Usable_Date/t-1 신호 규약 동일 적용. 기록: stage_artifacts/decay_fit/carveout_approval.json",
       "owner": "Q-Lead (session 2026-07-17 저녁~07-18 오전, 도훈 실시간 승인)",
-      "status": "done_diagnostic",
+      "status": "done_diagnostic_SD_vintage_hold",
+      "vintage_hold_20260718": "S-D 일간 계층(F4·SD 부활밴드 83·일간 IC 패널)은 소비 fdb_daily vintage(20260717T2025)가 타 세션 결함 판정·전면 재빌드 중이라 보류 — stage_artifacts/decay_fit/SD_VINTAGE_HOLD.md. 월간 2계층(F1/F2/F3/F5·SM 밴드 158)은 fdb_daily 무관(pinned 월간 IC+r6+rawdata)이라 유효 불변. 재빌드 완료 시 S-D 재실행+diff(워처 armed)",
       "next_action": "완료(2026-07-18). 핵심: 감쇠=smooth 곡선 전패·계단 단절만 고신뢰(318건 high) / C-M capw 단절 2018-19→기저 2016-17 날짜 확정 / dual-basis 괴리 34건=초기 알파도 EW-대비 부재(cap-w 아티팩트 새 각도) / S-D 1d-horizon 단절(1997-98·2021)은 C-M과 불일치 5%=벽은 전이·벤치 계층 국소 재확증. next_probe: P1 revival_bands 241건 monitoring 배선(feasible now) · P2 단절원인 외부 시계열 대조(ETF/공매도) · P3 S-D 2021 클러스터 기전 분해",
       "result_ref": "L-AR-20260718_103500 (stage_artifacts/l_code/ar/l_code_FQ055_decay_fit_20260718.json) + stage_artifacts/decay_fit/{decay_fit_SM_20260717,decay_fit_CM_20260717,decay_fit_SD_20260718,revival_bands_20260718,sd_ic_daily_panel_20260718}.parquet + layer_bottleneck_map v18 부기 07-18",
       "source_refs": [
