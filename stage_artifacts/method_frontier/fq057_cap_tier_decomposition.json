@@ -1,0 +1,54 @@
+{
+  "basis": "cap_w_and_ew_uni",
+  "as_of_ym": 202606,
+  "book": "STR_1715_on_M4_R05_noLayer4_PG2 (holdings 2026-07-01, invested 0.30 / cash 0.70 CRISIS)",
+  "sigma_estimator": "lw_nls (Ledoit-Wolf 2020 analytical NLS; FQ-057 Phase B estimation-quality winner)",
+  "sigma_cond": 146.5,
+  "pin_tag": "fq057_20260718_171024",
+  "tier_rule": "size-rank at 202606 month-end: MEGA<=30 (TOP30_N deployment convention R37/R39) / MID 31..150 / SMALL >150",
+  "active_vol_ann_capw_basis": 0.2761,
+  "active_vol_ann_ew_basis": 0.183,
+  "tiers": [
+    {
+      "tier": "MEGA",
+      "n_names_universe": 30,
+      "n_names_held": 3,
+      "active_risk_share": 0.9982,
+      "active_risk_share_ew_basis": 0.0292,
+      "active_risk_share_equity_sleeve": 0.289,
+      "alpha_share": 0.5371,
+      "alpha_share_basis": "book LinearTilt weight share (alpha-proportional allocation), not realized alpha",
+      "signal_alive": false,
+      "signal_alive_t36m": -1.671
+    },
+    {
+      "tier": "MID",
+      "n_names_universe": 120,
+      "n_names_held": 6,
+      "active_risk_share": -0.0101,
+      "active_risk_share_ew_basis": 0.3689,
+      "active_risk_share_equity_sleeve": 0.7025,
+      "alpha_share": 0.4253,
+      "alpha_share_basis": "book LinearTilt weight share (alpha-proportional allocation), not realized alpha",
+      "signal_alive": false,
+      "signal_alive_t36m": -1.507
+    },
+    {
+      "tier": "SMALL",
+      "n_names_universe": 168,
+      "n_names_held": 4,
+      "active_risk_share": 0.0119,
+      "active_risk_share_ew_basis": 0.6019,
+      "active_risk_share_equity_sleeve": 0.0085,
+      "alpha_share": 0.0376,
+      "alpha_share_basis": "book LinearTilt weight share (alpha-proportional allocation), not realized alpha",
+      "signal_alive": false,
+      "signal_alive_t36m": -2.179
+    }
+  ],
+  "dual_basis_divergence_flag": true,
+  "dual_basis_max_tier_share_divergence": 0.969,
+  "signal_alive_basis": "trailing 36m EW-of-tier active return vs cap-w K200|KQ150 bench, t-stat>0; generic tier carrier diagnostic, NOT strategy signal. Prior posterior: mega signal-dead (project-captier-alpha-localization-20260706)",
+  "metric_type": "estimation_quality_diagnostic",
+  "note_role_boundary": "diagnostic only — no weight proposal; tier-exposure constraint design is optimizer scope"
+}
