@@ -197,22 +197,42 @@ def _normalize_arxiv_results(raw: Any, query: str, errors: list | None = None) -
     return []
 
 
+# 인입붕괴 baseline lookback (유효 리포트 건수): 직전 1건만 보면 붕괴 리포트(prefilter=0)가
+# 남은 다음 실행부터 prev=0 → 경보 불성립 — 지속 outage가 '정상 완료'로 계속 위장된다.
+# 최근 N건 중 가장 최근의 prefilter>0 리포트를 baseline으로 잡아 전이·지속 붕괴를 모두 잡되,
+# N을 유한으로 묶어 pool 장기 포화(정당한 0 연속 N건+) 시 영구 경보 오탐은 차단한다.
+_PREFILTER_LOOKBACK = 7
+
+
 def _prev_prefilter(out_path: Path) -> tuple[int | None, str | None]:
-    """직전 run 리포트의 candidates_prefilter — 같은 디렉토리 mcp_discovery_*.json 중
-    오늘분 제외 최신(파일명 YYYYMMDD = 사전순 = 시간순). 인입 붕괴(prefilter>0 → 0) 대조용."""
+    """최근 유효 리포트 _PREFILTER_LOOKBACK건(오늘분 제외, 최신순 — 파일명 YYYYMMDD =
+    사전순 = 시간순) 중 가장 최근의 candidates_prefilter>0 을 baseline으로 반환.
+    lookback 내 양수가 없으면 최신 유효 1건의 값(0 포함)을 반환 — 판정부의 prev_n>0
+    조건이 자연 불성립해 경보가 꺼진다. prefilter 키 없는 리포트(runtime_unavailable 등
+    비-탐색 실행)는 lookback 소모 없이 건너뜀."""
     try:
         sibs = sorted(p for p in out_path.parent.glob("mcp_discovery_*.json")
                       if p.name != out_path.name)
     except OSError:
         return None, None
+    latest: tuple[int, str] | None = None
+    seen_valid = 0
     for p in reversed(sibs):
+        if seen_valid >= _PREFILTER_LOOKBACK:
+            break
         prev = _load_json(p, None)
-        if isinstance(prev, dict) and "candidates_prefilter" in prev:
-            try:
-                return int(prev["candidates_prefilter"]), p.name
-            except (TypeError, ValueError):
-                continue
-    return None, None
+        if not (isinstance(prev, dict) and "candidates_prefilter" in prev):
+            continue
+        try:
+            n = int(prev["candidates_prefilter"])
+        except (TypeError, ValueError):
+            continue
+        seen_valid += 1
+        if latest is None:
+            latest = (n, p.name)
+        if n > 0:
+            return n, p.name
+    return latest if latest is not None else (None, None)
 
 
 def _call_search_tool(client: McpClient, tool_name: str, query: str, categories: list[str], max_results: int,
@@ -353,8 +373,9 @@ def main() -> int:
         report["candidates_dropped_out_of_scope"] = len(fin) - len(kept)
         report["candidates"] = kept
         report["status"] = "mcp_ok" if kept else "mcp_ok_no_candidates"
-        # 인입 붕괴 분리 라벨: 직전 run엔 prefilter>0 이었는데 이번 run prefilter=0 이면
-        # '정상 완료(no_candidates)'가 아니라 상류 의심 상태로 기록 (fail-open 라벨링 해소).
+        # 인입 붕괴 분리 라벨: 최근 lookback 내 prefilter>0 실행이 있는데 이번 run
+        # prefilter=0 이면 '정상 완료(no_candidates)'가 아니라 상류 의심 상태로 기록
+        # (전이일 + 지속 outage 공통 — fail-open 라벨링 해소. lookback 소진 시 자연 해제).
         prev_n, prev_name = _prev_prefilter(out_path)
         report["prev_prefilter"] = prev_n
         report["prev_report"] = prev_name

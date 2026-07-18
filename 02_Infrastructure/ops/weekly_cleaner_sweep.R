@@ -18,9 +18,13 @@
 #       lcode_harvester → cluster_extractor → promote 진단(candidate 순회, INV-4 hurdle)
 #       + cleaner_pending.json에 axiom_candidates 섹션{n_pending, failing_axis_histogram, near_miss}
 #       (engine-core 스크립트 호출만 — 중복 구현 금지. DRY 시 promote 생략·현황 집계만)
-#   [4] .cache/cleaner_pending.json 기록
-#       {week_of, sweep_deleted_n, inventory, status:"awaiting_distill"}
-#       → bootstrap.sh가 마커 감지해 "/cleaner 실행" WARN 노출 (증류는 세션에서)
+#   [4] .cache/cleaner_pending.json 기록 (schema cleaner_pending_v2)
+#       {week_of, sweep_deleted_n, inventory, status:"awaiting_distill",
+#        distill_status:"pending", distill_owner:null, distill_claimed_at:null}
+#       → bootstrap.sh가 status 마커 감지해 "/cleaner 실행" WARN 노출 (증류는 세션에서)
+#       → distill_status(pending/in_progress/done) = 증류 착수 선점 표시. /cleaner 세션이
+#         cleaner_claim.R::cleaner_claim_distill()로 in_progress 점유해 2-pass 중복실행 방지
+#         (W29 next_probe #4, 2026-07-18. 07-06 병렬 중복실행 사고 ops 재현).
 #   [5] 텔레그램 알림 (tg_agent_brief 규약 재사용, 실패 fail-soft)
 #
 # 모든 삭제는 .cache/hygiene_manifest.log 에 kind=weekly_* 로 기록 (일간 감사와 동일 매니페스트).
@@ -447,12 +451,19 @@ sweep_deleted_n <- length(weekly_deleted$cache_scratch) + length(weekly_deleted$
 pending_path <- file.path(root, ".cache", "cleaner_pending.json")
 run_step("write_pending", {
   pending <- list(
-    schema        = "cleaner_pending_v1",
+    schema        = "cleaner_pending_v2",   # v2 (2026-07-18): distill 선점 필드 3종 추가 (W29 2-pass 방지)
     week_of       = format(as.Date(now), "%G-W%V"),
     generated_at  = format(now, "%Y-%m-%d %H:%M:%S"),
     generator     = "02_Infrastructure/ops/weekly_cleaner_sweep.R",
     rule_sot      = "02_Infrastructure/docs/rules/artifact-storage.md §8",
     dry_run       = DRY,
+    # ── 증류 선점(claim) 필드 (cleaner_claim.R 소비 — 2-pass 중복실행 방지, W29 next_probe #4) ──
+    #   초기값 pending. /cleaner 세션이 cleaner_claim_distill()로 in_progress 점유 → done 해제.
+    #   status(awaiting_distill→distilled)는 bootstrap 마커용 불변; distill_status는 그 사이
+    #   in_progress 중간상태를 표현해 두 소비자의 동시 착수를 차단한다.
+    distill_status     = "pending",
+    distill_owner      = NULL,
+    distill_claimed_at = NULL,
     sweep_deleted_n = sweep_deleted_n,
     sweep_detail  = list(
       hygiene_audit_deleted_n     = hygiene_deleted_n,

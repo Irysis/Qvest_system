@@ -460,6 +460,25 @@ def _fill_default_expiry(dist: dict) -> None:
     ).strftime("%Y-%m-%d")
 
 
+def _backfill_expiry_all(dist_dir: str) -> int:
+    """기존 negative DIST 전수 순회 — expiry 공백만 기본 +90d 충전. CAND 매칭 순회는
+    현행 candidate와 cluster_key가 일치하는 카드만 지나므로, candidate가 소멸한 고아
+    카드에는 INV-7 시간부활 바닥이 영구 미충전 — 전수 pass로 바닥을 보장한다.
+    기존 값 절대 보존(멱등) · expiry 외 필드 무변경 · 변경 카드만 재기록. 반환 n_filled."""
+    n_filled = 0
+    for f in sorted(glob.glob(os.path.join(dist_dir, "DIST-*.json"))):
+        d = _load(f)
+        if not isinstance(d, dict):
+            continue
+        before = d.get("expiry")
+        _fill_default_expiry(d)
+        if d.get("expiry") != before:
+            with open(f, "w", encoding="utf-8") as fh:
+                json.dump(d, fh, indent=2, ensure_ascii=False)
+            n_filled += 1
+    return n_filled
+
+
 def build_distilled(cand_dir: str, dist_dir: str, index_path: str) -> tuple[int, int]:
     """pending CAND 전건 → DIST 초안 생성/갱신 + 통합 인덱스 재작성. 반환 (n_new, n_updated)."""
     os.makedirs(dist_dir, exist_ok=True)
@@ -517,6 +536,9 @@ def build_distilled(cand_dir: str, dist_dir: str, index_path: str) -> tuple[int,
         with open(path, "w", encoding="utf-8") as fh:
             json.dump(dist, fh, indent=2, ensure_ascii=False)
 
+    # candidate 소멸 고아 카드 포함 전수 expiry 바닥 — CAND 매칭 순회가 못 미치는
+    # negative 공백 카드에도 INV-7 시간부활 바닥을 깐다 (기존 값 보존·멱등).
+    _backfill_expiry_all(dist_dir)
     _write_distilled_index(dist_dir, index_path)
     return n_new, n_upd
 

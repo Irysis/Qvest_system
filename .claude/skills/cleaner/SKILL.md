@@ -21,9 +21,36 @@ pending 파일이 없으면: "증류 대기 없음" 보고 후 종료 (기계 �
 
 ---
 
+## §0.2 선점 프로토콜 (claim — 2-pass 중복실행 방지, 2026-07-18 도훈 mandate W29 next_probe #4)
+
+**사건**: W29 증류에서 스폰된 Cleaner(task#89)와 메인 세션 자동 증류가 같은 `cleaner_pending.json`을 **병행 소비 → 2-pass 중복실행**(07-06 병렬 중복실행 사고 ops 재현). 착수 선점 표시 부재가 원인.
+
+**규약 (§1 절차 착수 *전* 의무)**: `cleaner_pending.json`의 `distill_status`(pending/in_progress/done)를 **claim 트랜잭션으로 점유**한다. `status`(awaiting_distill→distilled)는 bootstrap 마커용으로 불변 — `distill_status`가 그 사이 `in_progress` 중간상태를 표현해 두 소비자의 동시 착수를 차단한다.
+
+1. **착수 claim (atomic)** — §1 ① 직전 실행. owner는 세션/태스크 식별자(예: 메인 세션 = `session_main`, 스폰 Cleaner = `task#<id>`):
+   ```
+   Rscript -e 'source("02_Infrastructure/ops/cleaner_claim.R"); print(cleaner_claim_distill("<owner>"))'
+   ```
+   - **`claimed=TRUE`** (reason=claimed 또는 stale_reclaim) → 내가 점유. §1 ①~⑤ 진행. (stale_reclaim = 이전 owner의 claim이 6h 초과 = 크래시 세션 재점유.)
+   - **`claimed=FALSE, reason="in_progress"`** → **이미 다른 세션이 증류 중**. 신규 증류(digest 작성·L-code 발행·삭제) **금지** — 아래 3항 병합 정합만 수행하고 종료.
+   - **`claimed=FALSE, reason="already_done"`** → 이미 완료. "증류 완료됨" 보고 후 종료.
+   - **`reason="contended"`** → claim 임계구역 경합. 잠시 후 1회 재시도.
+2. **완료 release** — §1 ⑤ 마커 소거 *직후* 실행 (읽기-수정-쓰기로 ⑤가 쓴 digest_path/distill_summary 등 전부 보존):
+   ```
+   Rscript -e 'source("02_Infrastructure/ops/cleaner_claim.R"); print(cleaner_release_distill("<owner>"))'
+   ```
+   `distill_status=done` + `status=distilled` 동기화. owner 불일치 시 거부(force=TRUE 예외).
+3. **2-pass 병합 정합 fallback (둘 다 돌아버린 경우 — W29 실사례)**: claim이 `in_progress`를 반환했는데도 이미 부분 산출물을 만들었거나, 사후에 두 pass가 병행 실행된 흔적(같은 week_of digest 2본·중복 L-code)이 확인되면 — **재증류 금지**, 대신 **파일-레벨 재검 후 최종본 병합**: ① digest는 더 완전한 1본 유지·타본 삭제 ② L-code는 `new_lcodes` 원장 대조로 중복 제거(재발행 금지) ③ distill_manifest는 두 pass의 deleted/preserved 합집합으로 정합. 병합 후 owner가 `cleaner_release_distill(force=TRUE)`로 마감.
+
+**정직 경계**: claim은 소비자 간 *착수 직렬화*일 뿐, 증류 판단·삭제는 여전히 LLM+도훈 감독(§2). stale 6h 상한은 증류 세션이 sweep-lock 2h보다 길 수 있음을 반영(관대). 필드 결측 v1 파일은 `status=="distilled"→done`, else `pending`으로 하위호환.
+
+---
+
 ## §1 절차 (① → ⑤ 순서 고정)
 
 ### ① pending 인벤토리 로드
+
+**⚠ 착수 전 §0.2 claim 의무** — `cleaner_claim_distill("<owner>")` 호출해 `claimed=TRUE` 확인 후에만 아래 진행 (in_progress/already_done이면 §0.2 규약대로 중단·병합).
 
 ```
 .cache/cleaner_pending.json
@@ -81,7 +108,8 @@ pending_5axis → [자동초안 에이전트 + 적대검증] → proposed(주입
 
 ### ⑤ 마커 소거 + 완료 보고
 
-- `.cache/cleaner_pending.json`의 `status`를 `"distilled"`로 갱신 + `distilled_at`·`digest_path` 필드 추가 (bootstrap WARN 해제 조건 = `awaiting_distill` 소거).
+- `.cache/cleaner_pending.json`의 `status`를 `"distilled"`로 갱신 + `distilled_at`·`digest_path` 필드 추가 (bootstrap WARN 해제 조건 = `awaiting_distill` 소거). **claim 필드(distill_status/distill_owner/distill_claimed_at)는 보존** — 덮어쓰기 금지.
+- **§0.2 release 실행** (status 갱신 직후): `cleaner_release_distill("<owner>")` → `distill_status=done` + `status=distilled` 동기화. 읽기-수정-쓰기라 위 ⑤ 기록분(digest_path/distill_summary 등)은 전부 보존된다.
 - 텔레그램 완료 보고: `tg_agent_brief()` (qvest-telegram SOT 준수 — 첫 섹션 한글 연구 컨텍스트. agent는 화이트리스트 내 `"Q-Lead"` 사용 — 전용 "Cleaner" 미등재). 내용: digest 경로 / 신규 L-code n건 / 삭제 n건·manifest 경로 / deferred n건.
 
 ---
@@ -89,6 +117,7 @@ pending_5axis → [자동초안 에이전트 + 적대검증] → proposed(주입
 ## §2 금지·주의
 
 - **증류(digest·삭제 판단) 자동화 금지** — 본 스킬은 항상 대화 세션에서 실행 (④ 삭제 판단은 LLM+도훈 감독 하).
+- **§0.2 claim 없이 증류 착수 금지** — claim `claimed=TRUE` 확인 전 digest 작성·L-code 발행·삭제 금지 (2-pass 중복실행 방지). in_progress면 병합 정합만.
 - **DIST 초안 무인 *활성화* 금지 (INV-6 재정의 2026-07-04)** — 자동초안(pending→proposed)+적대검증은 허용되나, proposed → distilled 활성화(주입 스트림 개방)는 **도훈 배치 승인 게이트 필수**. 본 스킬의 axiom 역할 = ① 자동초안 검토/재정제 ② 도훈 승인 대행 실행(`approve_proposed`) — 무인 활성화 아님. proposed·pending 초안은 주입되지 않는다.
 - digest에 proxy/추정 수치를 실측처럼 기재 금지 (answer-principles 회피표현 grep 대상).
 - `stage_artifacts/` 내부는 인벤토리 소스일 뿐 — 어떤 파일도 이동·수정·삭제 금지 (§6 불변 런 기록).
