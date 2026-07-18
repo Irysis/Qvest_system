@@ -1139,6 +1139,23 @@
         "asset: outputs/ramp/r6_factor_deployzone_active.parquet (102 승인팩터 × 월 active, 07-14 202606 연장) + .cache/factor_db/factor_ic_monthly.parquet",
         "rebuild: 02_Infrastructure/factor_db/run_fdb_rebuild.R (타 세션 실행 중 — 중복발사 금지 확인 2026-07-17 20:0x)"
       ]
+    },
+    {
+      "id": "FQ-056",
+      "lane": "recovery",
+      "title": "M10 잔여 — FR 레지스트리 회수 재개 (build_module_performance 06-13 이후 34일 정지)",
+      "hypothesis": "screen-tier/모듈 재고의 FR 소비 배관 정체 해소 — 06_Registry/module_performance.json generated=2026-06-13 이후 미갱신(34일 정지 실측, 07-17 운영 감사). module_catalog의 fr_eligible 신규 등재분(contract_pass+frozen+hash floor 통과)이 factor-rotation 국면배합 소비면에 도달하지 못하는 상태",
+      "ev_rationale": "v8.3 M10 'FR 회수 재개' staged 항목의 미이행 잔여 + 진단 P4 회수-우선 원칙('이미 실측 완료 재고 = 가장 싼 발굴 소스', FR 회수 4주 정지 실측). 신규 측정이 아니라 기존 배관 재가동 — 한계비용 낮음",
+      "wall_check": "게이트 무관(인프라 배관) — build_module_performance는 FR input-floor allowlist만 소비(등급 무관), 계약 floor·graduation HARD 불변. book_state/자본 무변경",
+      "data_gate": "없음 (build_module_performance.R 재실행 + module_catalog 현행 대조)",
+      "owner": {},
+      "status": "queued",
+      "next_action": "build_module_performance 재실행 → module_performance.json 현행화 → run_factor_rotation 신선도 자동인식 경로 정상화 확인. 정지 원인(호출 스케줄 부재 vs 실행 실패) 진단 병행",
+      "source_refs": [
+        "sot: 02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md M10 + P4 (FR 회수 4주 정지)",
+        "registry: 06_Registry/module_performance.json (generated 2026-06-13) + 06_Registry/module_catalog.json",
+        "audit: 2026-07-17 아키텍처 2주 운영 감사 (수리 패키지 E8)"
+      ]
     }
   ]
 }
