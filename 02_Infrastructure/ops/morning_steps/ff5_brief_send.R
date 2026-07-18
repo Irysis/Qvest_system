@@ -41,8 +41,8 @@ if (is.null(FF) || !nrow(FF)) { cat("[ff5_brief] FF 시리즈 없음 — skip\n"
     setorder(SB, ym)
     sty <- c("VAL", "QUAL", "MOM", "LOWVOL", "SIZE", "DIV")
     r12 <- vapply(sty, function(s) mean(tail(SB[[s]], 12), na.rm = TRUE), numeric(1))
-    kv_names <- c(VAL = "가치 VAL", QUAL = "퀄리티 QUAL", MOM = "모멘텀 MOM",
-                  LOWVOL = "저변동 LOWVOL", SIZE = "소형 SIZE", DIV = "주주환원 DIV")
+    kv_names <- c(VAL = "가치", QUAL = "퀄리티", MOM = "모멘텀",
+                  LOWVOL = "저변동성", SIZE = "소형주", DIV = "주주환원")
     kvl <- as.list(vapply(r12, fmt, character(1))); names(kvl) <- kv_names[sty]
     sections[[length(sections) + 1]] <- list(heading = "스마트베타 최근 12개월 평균 초과수익", type = "kv", kv = kvl)
     top <- sty[which.max(r12)]; bot <- sty[which.min(r12)]

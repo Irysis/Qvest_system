@@ -73,6 +73,7 @@ SB_prev <- NULL
 pq <- file.path(OUT_DIR, "smartbeta_kr_monthly.parquet")
 if (file.exists(pq) && !nzchar(Sys.getenv("SB_FORCE_REBUILD", ""))) {
   SB_prev <- as.data.table(read_parquet(pq))
+  invisible(gc())                                   # mmap 해제 (Windows arrow 1224 회피 1/2)
   sig_dates <- sig_dates[!format(sig_dates, "%Y-%m") %in% SB_prev$ym]
   wf("incremental: 기존 %d개월 스킵, 신규 %d개월", nrow(SB_prev), length(sig_dates))
 }
@@ -103,7 +104,10 @@ for (sd_ in sig_dates) {
 SB <- rbindlist(c(if (!is.null(SB_prev)) list(SB_prev), rows), fill = TRUE)
 SB <- unique(SB, by = "ym")[order(ym)]
 wf("SB series: %d months (%s..%s)", nrow(SB), min(SB$ym), max(SB$ym))
-write_parquet(SB, file.path(OUT_DIR, "smartbeta_kr_monthly.parquet"))
+.tmp_pq <- file.path(OUT_DIR, ".smartbeta_kr_monthly.tmp.parquet")   # temp-rename (1224 회피 2/2)
+write_parquet(SB, .tmp_pq)
+if (file.exists(pq)) invisible(file.remove(pq))
+invisible(file.rename(.tmp_pq, pq))
 
 ## ── 4) 기간 요약 + 정합 게이트 ──────────────────────────────────────────────
 sty <- names(STYLES)

@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
-  "updated": "2026-07-17 (E8 — FQ-056 등재: M10 잔여 FR 레지스트리 회수 재개, module_performance 06-13 이후 34일 정지 실측·infra/회수 lane·미착수) / 2026-07-17 (R47 — FQ-054 P1 소비: KRX 백필 근원수리 — 218 source-seam Close 구멍 APPEND-ONLY interior merge(8,856행·216종목)로 채움 → recompute==stored parity 회복·source-seam 218→2. 가드5종+parity4종 PASS(기존/유니버스/북 max|ΔRet|=0)·유니버스 라이브 무영향. 밤샘 무결성 라인 R42~R47 근원수리 완결. 잔여=penny 2 illiquidity. 2026-07-15 (R46 — FQ-054 P2+P3 소비: ret_sanity_firewall date-gap 정련(stored 참값 보존·39건 복원) + Close 연속성 tripwire(gapdays>20 hole 사전감지) 배선. 6-test parity PASS(HARD 672→633·유니버스 분류 불변·월패널 max|Δ|=0·tripwire gate clean). 밤샘 무결성 라인 R42~R46 배선 완결. 잔여 근본수리=KRX 백필 리빌드(245 구멍·armed). R45 — 근원=Close 구멍·stored 참값. R44 — 방화벽 R1+R4 배선)",
+  "updated": "2026-07-18 (method_frontier lane 신설 — FQ-057/058/059 등재, 도훈 승인: 'QEPM = Axiom 엔진 교훈 발판 + 신규 방법론 거침없는 도전 + 고퀄리티 알파 창출' mandate. QEPM 이원화(WT-시점 posterior-드리븐 선택 / method-frontier 발굴 lane 분리, optimizer_research_init v1.3·risk_research_init v1.2)와 동반) / 2026-07-17 (E8 — FQ-056 등재: M10 잔여 FR 레지스트리 회수 재개, module_performance 06-13 이후 34일 정지 실측·infra/회수 lane·미착수) / 2026-07-17 (R47 — FQ-054 P1 소비: KRX 백필 근원수리 — 218 source-seam Close 구멍 APPEND-ONLY interior merge(8,856행·216종목)로 채움 → recompute==stored parity 회복·source-seam 218→2. 가드5종+parity4종 PASS(기존/유니버스/북 max|ΔRet|=0)·유니버스 라이브 무영향. 밤샘 무결성 라인 R42~R47 근원수리 완결. 잔여=penny 2 illiquidity. 2026-07-15 (R46 — FQ-054 P2+P3 소비: ret_sanity_firewall date-gap 정련(stored 참값 보존·39건 복원) + Close 연속성 tripwire(gapdays>20 hole 사전감지) 배선. 6-test parity PASS(HARD 672→633·유니버스 분류 불변·월패널 max|Δ|=0·tripwire gate clean). 밤샘 무결성 라인 R42~R46 배선 완결. 잔여 근본수리=KRX 백필 리빌드(245 구멍·armed). R45 — 근원=Close 구멍·stored 참값. R44 — 방화벽 R1+R4 배선)",
   "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
   "entries": [
     {
@@ -1156,6 +1156,60 @@
         "sot: 02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md M10 + P4 (FR 회수 4주 정지)",
         "registry: 06_Registry/module_performance.json (generated 2026-06-13) + 06_Registry/module_catalog.json",
         "audit: 2026-07-17 아키텍처 2주 운영 감사 (수리 패키지 E8)"
+      ]
+    },
+    {
+      "id": "FQ-057",
+      "lane": "method_frontier",
+      "title": "cap-tier block Σ + nonlinear shrinkage — Risk 층 method-frontier 1호 (dual-basis 구조를 추정기에 내장)",
+      "hypothesis": "공분산을 cap-tier 블록 구조(MEGA/MID/SMALL 블록 + 교차항, Ledoit-Wolf 2020 analytical NLS를 블록-사전 위에 적용)로 추정하면, 알파 tier-국소화 실측(mega signal-dead·post-2017 감쇠 상당분=cap-w 벤치 아티팩트)과 정합하는 Σ가 되어 tier-노출 통제·MVO 입력 개선 경유로 cap-w PORT_t 전이 손실이 줄어드는지",
+      "ev_rationale": "v8.3 M2 dual-basis가 '진단'으로 확립한 구조를 '추정기'에 내장하는 첫 시도 — hypothesis_index 0-hit 미탐색 (2026-07-18 대조). NLS는 Rcpp v2 대기목록(cov_ledoit_wolf_nls_fast)으로 로드맵 기존재. Axiom 교훈 소비: cap-tier 국소화(07-06)·감쇠=벤치 아티팩트(07-05)·FQ-055 dual-basis 괴리 34건",
+      "wall_check": "Σ 개선이 PORT_t로 전이되는지가 관문. 위험기반 '배분'은 single-cluster book NO-GO(07-03 HRP 24변형 — 부활=multi-sleeve 성립 시) — 소비면은 배분이 아니라 (a) risk_package cap_tier_decomposition 진단 필드 (b) MVO Σ 입력 (c) tier-노출 제약 설계. R4 P3 selection_objective(estimation quality enum) 불변 — 성과 기반 추정기 선택 금지",
+      "data_gate": "없음 (rawdata/factor_db 기존 캐시 — pin_cache 스냅샷 소비, measurement-graduation §7)",
+      "owner": {},
+      "status": "ready",
+      "next_action": "블록 Σ 프로토타입(hrp_core .get_cor_cov 확장) → 기존 LW 대비 추정품질 A/B(condition_number/PSD/shrinkage_quality) → risk_package cap_tier_decomposition 필드 시범 산출 → MVO 입력 교체 시 canonical PORT_t 변화 paired 실측",
+      "source_refs": [
+        "memory: project-captier-alpha-localization-20260706",
+        "memory: project-megacap-anchor-construction-discovery",
+        "prompt: 02_Infrastructure/prompts/risk_research_init.md (Rcpp v2 대기 — cov_ledoit_wolf_nls_fast/gerber_statistic_fast)",
+        "mandate: 도훈 2026-07-18 QEPM 이원화 승인"
+      ]
+    },
+    {
+      "id": "FQ-058",
+      "lane": "method_frontier",
+      "title": "structural-drawdown-aware construction (Min-CDaR/CVaR-LP 계열) — calmar·structural MDD 게이트 직접 공략",
+      "hypothesis": "목적함수를 분산(MVO)에서 drawdown-aware(Min-CDaR·CVaR-LP, Rockafellar-Uryasev)로 바꾸면 06-13 게이트가 정의한 structural drawdown(에피소드 빈도·점유·최장 수중기간)이 표적 개선되어 동일 알파에서 calmar 0.64 HARD 통과율이 오르는지 — construction-레벨 MDD 레버의 체계 검증은 미실시",
+      "ev_rationale": "calmar는 graduation HARD 3종인데 현 시스템의 실증 MDD 레버는 overlay뿐(defense 팩터 부재 07-03) — construction 층에서 이 게이트를 직접 겨냥한 검증이 빈 칸. cvar_lp_weights/Rglpk·Rsolnp 인터페이스 기존재로 구현 한계비용 낮음. 재료: admission FAIL pool 중 calmar-사유 탈락분 paired A/B",
+      "wall_check": "turnover 증가의 15bps delta-과금 함정(회전강화 주장은 |Δinv|×15bps 실과금 필수 — 06-24) + drawdown IS 과적합(oos_retention 게이트·walk-forward 의무). PORT_t 2.95 관문 동일. 다중 method 비교는 sweep형 → DSR HARD 적용",
+      "data_gate": "없음",
+      "owner": {},
+      "status": "ready",
+      "next_action": "재료 선정(탈락 pool calmar-단독 FAIL 후보) → MVO vs Min-CDaR vs CVaR-LP paired A/B(canonical·동일 알파·동일 유니버스·pin 고정) → structural drawdown 지표 표적 개선 여부 + paired NW-t + oos_retention",
+      "source_refs": [
+        "memory: feedback-gate-relaxation-confirm-2026-06-13 (structural MDD 정의)",
+        "memory: project-defense-factor-db-survey-settled (방어=overlay만)",
+        "prompt: 02_Infrastructure/prompts/optimizer_research_init.md FRM Ch12 (Min CVaR/CDaR)",
+        "mandate: 도훈 2026-07-18 QEPM 이원화 승인"
+      ]
+    },
+    {
+      "id": "FQ-059",
+      "lane": "method_frontier",
+      "title": "soft-membership / cost-optimized top-N construction — IC→PORT_t 전이 벽 직접 공략",
+      "hypothesis": "hard top-25 컷 대신 soft-membership(경계 종목 완충 밴드/hysteresis 확률 가중)과 cost-optimized top-N sweep(N∈{15..25} 비용-인지 최적화)이 슬롯 제약×전이 벽이 만드는 실현-중복(밸류 아크 active corr 0.98)·경계 churn 손실을 줄여 cap-w PORT_t를 개선하는지",
+      "ev_rationale": "RAMP R1(07-05) 판정문이 명시한 열린 frontier + measurement-graduation §6 레버 목록 기재 항목 — 시스템 첫 양성(R4~R8 PORT_t-정렬 선별)과 같은 선별/구성 축의 전개. 전이 벽=바인딩 층 실측(16/16 FAIL 해부: 신호 실재·cap-w PORT_t 사망)에 정면 정합",
+      "wall_check": "max 25=고정 축(INV-7) — soft-membership은 25 '안'의 경계 처리로 설계(제약 완화 아님: 최종 보유 ≤25·[0,0.20]·Σw=1·유동성 floor 불변). N sweep은 selection operator=sweep형 → DSR HARD 적용. turnover 절감 주장은 |Δinv|×15bps 실과금 기준",
+      "data_gate": "없음",
+      "owner": {},
+      "status": "ready",
+      "next_action": "① 현 book 리밸 경계 종목의 turnover 기여 분해(churn 실측) ② soft-membership 프로토타입(완충 밴드 hysteresis) vs hard-cut paired A/B ③ N∈{15..25} cost-aware sweep + DSR",
+      "source_refs": [
+        "memory: project-ramp-r1-residual-sleeve-stack-20260705 (frontier 명시)",
+        "memory: project-value-factor-arc-20260714 (슬롯제약×전이벽)",
+        "memory: project-selection-discipline-arc-r4r5r6 (PORT_t-정렬 선별 첫 양성)",
+        "mandate: 도훈 2026-07-18 QEPM 이원화 승인"
       ]
     }
   ]
