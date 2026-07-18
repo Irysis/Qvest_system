@@ -1,0 +1,54 @@
+# run_00: 사전등록 (측정 전 판정 규칙 불변 기록) — WT-D20260718_001
+source("C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/method_frontier/wt_d20260718_001_crash_aware_mom/ca_lib.R")
+
+PIN_TAG_CA <- paste0("wt_d20260718_001_", format(Sys.time(), "%Y%m%d_%H%M%S"))
+
+prereg <- list(
+  task_id = "WT-D20260718_001",
+  hypothesis = "Crash-aware momentum selection — momentum core(z_mom_12_1)에 종목-레벨 ex-ante 하방위험 페널티(z_pen)를 횡단면 차감(score = z_mom - lambda*z_pen)해 crash-prone 종목을 SELECTION 단계에서 감점 → 동일 momentum 알파에서 structural DD/calmar/crisis-behavior 개선 여부.",
+  registered_at = format(Sys.time(), "%Y-%m-%d %H:%M:%S"),
+  pin_tag = PIN_TAG_CA,
+  pin_upstream = PIN_UPSTREAM_CA,
+  panels_consumed = c("fq057_monthly_returns.parquet","fq057_monthly_snapshot.parquet","np4_liq_snapshot.parquet"),
+  measurement = list(
+    engine = "canonical_screen_bt (cap-w PORT_t 1급) + dual-basis diag(EW-uni/cap-tier) + AX-001 v2 crisis-conditional",
+    base = "mom_12_1 top-25 canonical (FQ-058 mom_12_1 재현: cap-w PORT_t ~1.34, calmar ~0.42, MDD ~0.417)",
+    treatment_score = "z(mom_12_1) - lambda * z(crash_penalty)",
+    penalty_axes = AXES_CA,
+    penalty_defs = c("composite(primary — 4축 EW 평균)", AXES_CA),
+    lambda_grid = c(0.25, 0.5, 0.75, 1.0),
+    top_n = 25L, cost_bps = 15, liq_min = 2e8,
+    universe = "KOSPI200 ∪ KOSDAQ150 member ∩ liq>=2e8 ∩ 60m history",
+    reb_range = c(201002L, 202606L),  # holding months (signal 201001..202605)
+    holding = "t+1 forward (PIT: 신호 month-end t 데이터만)"
+  ),
+  selection_procedure = list(
+    is_oos_split = "IS = 앞 65% 개월, OOS = 뒤 35% (anchored, IS-lock). lambda 선택은 IS canonical PORT_t/calmar로만 (chain 자격요건 ② OOS 미조회).",
+    primary = "composite penalty. lambda* = IS calmar 최대화 s.t. IS canonical PORT_t >= 0.85 * base IS PORT_t (momentum-보존 가드).",
+    guard_rationale = "페널티가 momentum 알파를 희석만 하면 crash-robust 목적 미달 — PORT_t 보존이 성공의 필요조건.",
+    secondary = "각 단일 axis @ lambda=0.5 진단 (primary 판정 아님).",
+    n_trials_record = "lambda grid 4 × penalty_defs 5 = 20 (audit용 기록; alpha-stage=canonical screening, DSR HARD는 forge-authoritative graduation에만)."
+  ),
+  kill_rules_preregistered = list(
+    K1 = "selected variant 전기간 cap-w PORT_t < base PORT_t - 0.5 (material momentum 훼손) AND Δcalmar <= 0 → KILL (페널티가 알파만 훼손).",
+    K2 = "어떤 lambda도 IS PORT_t 가드(>=0.85*base) 미충족 → 페널티 순수 희석 → KILL.",
+    K3 = "전기간 structural DD(MDD/occupancy/longest_underwater) 전부 base 대비 미개선 → selection 레버 부재 → screen-tier negative (FQ-058 mechanism 선별층 확인).",
+    terminal_report = "K1/K2/K3 발화 시 risk-research 진행 없이 ALPHA_DONE terminal 보고 (v8.3 M1 조기종결 설계 — 실패 아님)."
+  ),
+  success_criteria = list(
+    advance_to_risk = "selected variant가 PORT_t 보존(가드 내) AND (calmar 또는 MDD/occupancy/longest_underwater 다수 개선) AND AX-001 v2 crisis active > base crisis active — OOS+전기간 모두. 개선분은 crisis-조건부 실측으로만 주장.",
+    graduation_note = "base momentum PORT_t ~1.34 << HARD 2.95 → 본 WT는 자본 graduation claim 아님. crash-robust momentum sleeve(overlay/screen 소비) 개선 여부가 표적. 자본 판정은 forge-authoritative(향후)."
+  ),
+  ax001_v2_frame = "방어형 조건부 평가: crisis_alpha(benchmark 하위20% 월 active) + Core(base) 대비 MDD 완화 + bad/normal 비율. 전기간 SR 단독 기각 금지.",
+  dual_basis_mandate = "기각 전 EW-유니버스 대비(diag_ew_universe) + cap-tier(MEGA/MID/OTHER) 분해(diag_cap_tier) 확인·기록 (post-2017 감쇠 = mega-cap 벤치 아티팩트 방어).",
+  prior_differentiation = list(
+    checked = c("DownsideBeta_ACX2006(FAIL, family=defense standalone)","crashdyn_20260706(FAIL, overlay_regime)","DIST-AR-005(crash_protection+regime, DISTILLED_NEG)","low_vol standalone port_t -1.26(FQ-058)","2-sleeve tail paired -2.8(L-AR-20260710_150153_02)","Inverse-DD sizing(비중레벨)","DIST-AR-001(defense composite)"),
+    differentiation = "선행은 (a) 하방위험을 standalone alpha/defense factor로 쓰거나(ACX2006/low_vol — long-only alpha 부재 확인) (b) regime overlay로 쓰거나(crashdyn — timing) (c) sleeve/비중 레벨. 본 WT = momentum-INTERNAL, SELECTION-layer 횡단면 conditioning: 하방위험을 alpha가 아닌 momentum 선택의 감점 필터로 사용(FQ-058 P1/P3 직계, weighting이 아닌 membership에 MDD 레버가 있는지). 미측정 축.",
+    reuse_note = "ACX2006 standalone FAIL은 오히려 정합 — 하방베타 자체엔 long-only alpha 없음 → 페널티는 순수 subtractive(crash 재형성 목적), 알파 추가 목적 아님."
+  )
+)
+
+write_json(prereg, file.path(OUT_CA, "ca_preregistration.json"),
+           auto_unbox = TRUE, pretty = TRUE, digits = 6)
+writeLines(PIN_TAG_CA, file.path(OUT_CA, "PIN_TAG.txt"))
+cat("[run_00] preregistration written. PIN_TAG =", PIN_TAG_CA, "\n")

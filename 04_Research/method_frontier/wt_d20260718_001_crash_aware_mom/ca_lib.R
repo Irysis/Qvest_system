@@ -139,6 +139,61 @@ build_canon_inputs <- function(P, reb_yms, score_fun, market_by_ym) {
        size = rbindlist(sz), liq = rbindlist(lq))
 }
 
+# ---- precompute per-month store (momentum + penalty z once) -----------------
+#   변형(axis/lambda) 간 재계산 회피. returns/bench/size/liq는 변형 무관 공통.
+AXES_CA <- c("downside_beta","downside_semivol","crash_exposure","ncskew")
+precompute_store_ca <- function(P, reb_yms, market_by_ym) {
+  store <- list()
+  for (t_ym in reb_yms) {
+    idx <- match(t_ym, P$yms); nxt <- idx + 1L
+    if (is.na(nxt) || nxt > length(P$yms)) next
+    elig <- elig_at_f(P, t_ym, win = 60L, liq_min = 2e8)
+    if (length(elig) < 30L) next
+    z_mom <- signal_f58(P, t_ym, elig, "mom_12_1")     # base momentum z (fq058 def)
+    z_ax <- lapply(AXES_CA, function(a) crash_signal_ca(P, t_ym, elig, a, market_by_ym))
+    names(z_ax) <- AXES_CA
+    Zm <- do.call(cbind, z_ax)                          # elig x axes
+    z_comp <- rowMeans(Zm, na.rm = TRUE); z_comp[!is.finite(z_comp)] <- 0
+    keep <- intersect(elig, colnames(P$mat))
+    fwd <- P$mat[nxt, elig]
+    dt_sig <- ym2date_f(t_ym)
+    ssz <- P$snap[ym == t_ym & Ticker %in% elig, .(Ticker, size)]
+    lqm <- P$liq[ym == t_ym & Ticker %in% elig, .(Ticker, avgtv20)]
+    store[[as.character(t_ym)]] <- list(
+      t_ym = t_ym, date = dt_sig, elig = elig,
+      z_mom = z_mom, z_axis = z_ax, z_comp = setNames(z_comp, elig),
+      fwd = setNames(as.numeric(fwd), elig),
+      bm_fwd = as.numeric(market_by_ym[as.character(P$yms[nxt])]),
+      size = ssz, liq = lqm)
+  }
+  store
+}
+
+# assemble canonical inputs for a given penalty definition + lambda
+#   penalty_def: "none" | "composite" | one of AXES_CA
+assemble_inputs_ca <- function(store, penalty_def = "none", lambda = 0) {
+  sc <- list(); rr <- list(); bd <- list(); sz <- list(); lq <- list()
+  for (nm in names(store)) {
+    s <- store[[nm]]; elig <- s$elig
+    zpen <- switch(penalty_def,
+      none = rep(0, length(elig)),
+      composite = s$z_comp[elig],
+      s$z_axis[[penalty_def]][elig])
+    zpen[!is.finite(zpen)] <- 0
+    score <- s$z_mom[elig] - lambda * as.numeric(zpen)
+    ok <- is.finite(score) & is.finite(s$fwd[elig])
+    if (sum(ok) < 25L) next
+    el <- elig[ok]; d <- s$date
+    sc[[length(sc)+1L]] <- data.table(Date = d, Ticker = el, score = as.numeric(score[ok]))
+    rr[[length(rr)+1L]] <- data.table(Date = d, Ticker = el, Ret_1m = as.numeric(s$fwd[el]))
+    bd[[length(bd)+1L]] <- data.table(Date = d, BM_Ret = s$bm_fwd)
+    sz[[length(sz)+1L]] <- data.table(Date = d, Ticker = s$size$Ticker, Size = s$size$size)
+    lq[[length(lq)+1L]] <- data.table(Date = d, Ticker = s$liq$Ticker, adv = s$liq$avgtv20)
+  }
+  list(scores = rbindlist(sc), returns = rbindlist(rr), bench = unique(rbindlist(bd)),
+       size = rbindlist(sz), liq = rbindlist(lq))
+}
+
 # ---- run canonical screen (top-25, 15bps, liq 2e8) --------------------------
 run_canon <- function(inp, top_n = 25L, size_dt = NULL, run_id = "ca") {
   canonical_screen_bt(
