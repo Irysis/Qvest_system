@@ -125,7 +125,8 @@ pending_5axis → [자동초안 에이전트 + 적대검증] → proposed(주입
 
 ## 참조
 
-- `02_Infrastructure/ops/weekly_cleaner_sweep.R` (무인 기계 스윕 — pending 생산자)
+- `02_Infrastructure/ops/weekly_cleaner_sweep.R` (무인 기계 스윕 — pending 생산자, schema cleaner_pending_v2)
+- `02_Infrastructure/ops/cleaner_claim.R` (§0.2 선점 프로토콜 — `cleaner_claim_distill`/`cleaner_release_distill`/`cleaner_distill_state`. 2-pass 중복실행 방지)
 - `02_Infrastructure/ops/scheduler/Qvest_WeeklyCleaner.bat` + Task Scheduler `Qvest_WeeklyCleaner`
 - `02_Infrastructure/docs/rules/artifact-storage.md` §3.1 / §4 / §8
 - `02_Infrastructure/axiom/lcode_emit.R` · `.claude/skills/qvest-telegram/SKILL.md`
