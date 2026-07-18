@@ -1,0 +1,90 @@
+{
+  "task_id": "WT-D20260718_005",
+  "hypothesis": "Transformer/FM factor-valuation -> time-varying factor weights (timing) beats static factor composite in canonical cap-w top-25 PORT_t/calmar",
+  "verdict": "NEGATIVE_config_scoped",
+  "as_of": "2026-07-18",
+  "pin_tag": "RAWDATA_pin20260703+benchmark_pin20260703",
+  "measurement_frame": {
+    "universe": "KOSPI200_KOSDAQ150_intersection (~313 names/mo)",
+    "portfolio": "canonical top-25 EW long-only",
+    "benchmark": "cap-w KOSPI200 total return (canonical HARD basis)",
+    "cost": "15bps one-way (cost_model_version v2.4_kr_retail_15bps)",
+    "liq_floor": "2e8 KRW 20d ADV (canonical HARD basis; request 5e7 noted, paired-delta basis-invariant)",
+    "period_full": "2005-01 .. 2026-07 (258 mo)",
+    "oos_window": "2012-12 .. 2026-06 (163 mo, transformer walk-forward test months)"
+  },
+  "step0_differentiation": {
+    "vs_WT003_6methods_XATTN": "종목 횡단 return prediction (다른 표면). 본 WT = 팩터-레벨 timing.",
+    "vs_factor_rotation_RCMA": "국면조건부 모듈 배합. 본 WT = 밸류에이션/momentum-드리븐 raw 팩터 timing (모듈 아님).",
+    "vs_prior_alpha_search": "STR_AS_20260613_094148 'Transformer 팩터 배분' = alpha-search SCREEN_TIER(IR 0.235), fe_factor_combo.R 사용(genuine transformer 아님·mislabeled combo 의심). STR_AS_20260613_080218 '팩터 밸류에이션 스프레드' = MARGINAL grade C. → request의 '미측정' 주장은 부정확(측정됨)이나, 본 WT가 canonical cap-w PORT_t paired A/B + genuine from-scratch transformer + HKS OOS 규율로 첫 rigorous 측정.",
+    "vs_FQ061": "FM(pre-trained TS) = capacity-gated 별개. 본 WT from-scratch transformer = feasible-now."
+  },
+  "oracle_ceiling_test": {
+    "purpose": "HKS/Arnott prior 1차 검증 — perfect-foresight family rotation ceiling",
+    "oracle_rotation_port_t": 12.894,
+    "oracle_net_sr": 3.080,
+    "oracle_calmar": 4.348,
+    "interpretation": "timing headroom EXISTS (ceiling >> static 1.20). 따라서 벽은 headroom 부재가 아니라 OOS realizability (HKS). kill '무-headroom' 미발화."
+  },
+  "canonical_paired_ab": {
+    "note": "paired NW-t lag3 of (timed active - static active) on identical months",
+    "full_sample": {
+      "static_EW_port_t": 1.202,
+      "factor_momentum_timing": {"port_t": 2.487, "paired_vs_static_t": 2.414, "diff_bps_mo": 72.8, "net_sr": 0.652, "calmar": 0.447, "ew_uni_t": 4.036},
+      "factor_valuation_timing_vs_z": {"port_t_softmax_b1": 0.798, "paired_t_softmax_b1": -0.069, "port_t_top2": 1.438, "paired_t_top2": 1.046, "verdict": "FAIL (valuation timing no edge — Arnott/HKS)"},
+      "placebo_reversal": {"paired_t": -2.736, "verdict": "strongly negative = internal validity confirm"},
+      "transformer_full_port_t": 0.911
+    },
+    "oos_window_163mo": {
+      "static_EW_port_t": -0.047,
+      "simple_momentum_port_t": 1.277, "simple_momentum_paired_vs_static_t": 2.249,
+      "transformer_ensemble_port_t": 0.911, "transformer_paired_vs_static_t": 1.855, "transformer_paired_vs_momentum_t": -0.673,
+      "transformer_per_seed_port_t": [0.590, 0.476, 0.853],
+      "transformer_per_seed_paired_vs_momentum_t": [-1.209, -1.697, -0.650],
+      "conclusion": "transformer beats static weakly but is DOMINATED by trivial momentum rule (paired_vs_momentum<0 all seeds); adds turnover (10.2 vs 7.3)."
+    }
+  },
+  "dual_basis_diag": {
+    "note": "v8.3 M2 — cap-w HARD 권위 불변; EW-uni 병기",
+    "oos_ew_universe_t": {"static": 1.387, "momentum": 3.030, "transformer_ens": 2.639},
+    "interpretation": "EW-uni서도 transformer(2.64) < momentum(3.03); cap-w attenuation = mega-cap 벤치 아티팩트 일부이나 method 순서 불변."
+  },
+  "oos_retention": {
+    "gate": ">=0.7 HARD (forge-authoritative; 여기선 screening 진단)",
+    "static_oos_window": -0.934,
+    "momentum_oos_window": -0.251,
+    "momentum_full_sample": -0.145,
+    "transformer_ens": -0.391,
+    "transformer_per_seed": [-0.306, -0.695, -0.417],
+    "verdict": "ALL FAIL (<0.5 unconditional). factor-momentum decays post-2020 (decay-pattern, cohort-wide). HKS OOS-fragility confirmed even for the IS-winner."
+  },
+  "dsr_sweep": {
+    "note": "factor-momentum side-finding, N_trials=12 (rules tried), Bailey-Lopez de Prado approx",
+    "monthly_sr": 0.1882, "ann_sr": 0.652, "skew": -0.07, "kurt": 6.94,
+    "sr0_threshold": 0.1098, "dsr": 0.883, "verdict": "survives sweep IS (>0.5) — but oos_retention is binding, not DSR."
+  },
+  "lag1_pit_stress": {
+    "note": "mandated for timing signals (same-month leak detector)",
+    "momentum_port_t_lag0": 2.487, "lag1": 2.066, "lag2": 1.962,
+    "verdict": "gentle decay, NO collapse -> no same-month look-ahead (a leak would collapse to ~0). PIT-clean."
+  },
+  "ax001_v2": {
+    "note": "conditional evaluation — does factor-momentum timing improve crisis defense",
+    "crisis_months": 28, "normal_months": 218,
+    "momentum_mean_active_crisis": 0.0262, "static_mean_active_crisis": 0.0132,
+    "crisis_improvement": 0.0131, "benchmark_mean_crisis": -0.0064,
+    "verdict": "momentum-timing modestly improves crisis active (+1.31%/mo) by rotating away from crashing factors — but does not change graduation verdict."
+  },
+  "seed_discipline": {"seeds": [0, 1, 2], "transformer_port_t_dispersion": "0.476-0.853 (unstable = overfit signature)"},
+  "kill_criteria_evaluation": {
+    "kill_1_no_static_improvement": "PARTIAL — momentum beats static (paired 2.25), but transformer(WT method) dominated by momentum + valuation fails.",
+    "kill_2_oos_retention_fail": "TRIGGERED — all oos_retention < 0.7 (unconditional FAIL). HKS overfit/decay.",
+    "kill_3_pit_lookahead": "NOT triggered — lag-1 stress clean, features PIT-verified.",
+    "decision": "NEGATIVE (config-scoped) for transformer/valuation timing. factor-momentum = screen-tier side-finding. Early-termination (v8.3 M1) — no risk-research handoff."
+  },
+  "next_probe": [
+    "factor-momentum timing as OVERLAY / FR regime input — test regime-conditional revival of the decaying signal (is post-2020 decay a mega-cap regime artifact? EW-uni oos_retention recheck).",
+    "FM (pre-trained TS, TimesFM/Chronos) angle — capacity-gated FQ-061 (venv package absent); distinct from from-scratch."
+  ],
+  "revival_condition": "factor-momentum oos_retention >= 0.7 recovers under EW-uni or regime-conditional framing."
+}

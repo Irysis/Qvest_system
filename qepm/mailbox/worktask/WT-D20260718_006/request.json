@@ -1,0 +1,85 @@
+{
+  "task_id": "WT-D20260718_006",
+  "wt_type": "discovery",
+  "pg1_eligibility": "certificate_required",
+  "discovery_of": null,
+  "graduation_criteria": {
+    "description": "Discovery → Deployment 전환 조건. discovery_graduation_gate.sh 강제. v8.x WS2 재설계(2026-05-29): rank-IC 계열은 long-only 실현 alpha와 어긋나(16후보 calibration 실측: rank_ic가 FLOW 거짓탈락+NN/TECH 거짓통과) advisory로 강등, portfolio-alpha t(forge NW lag-3)를 hard로. DSR hard는 sweep형 selection만(2026-06-10 개정 — chain/단일은 advisory). hard 기준은 forge-authoritative 값(alpha-stage proxy 아님)에 적용.",
+    "min_rank_ic": 0.04,
+    "min_rank_ic_rationale": "KR top-universe benchmark. <0.04는 IC 약함. (v8.x severity=advisory — long-only 실현 alpha 미전이)",
+    "min_icir": 0.2,
+    "min_icir_rationale": "Alpha Lab Gate. (v8.x severity=advisory)",
+    "min_subperiod_stability": 0.5,
+    "min_subperiod_stability_rationale": "3개 subperiod 안정성. (v8.x severity=advisory)",
+    "max_drawdown_days": 100,
+    "max_drawdown_days_rationale": "100일 이상 drawdown 지속 시 alpha decay 의심. (severity=advisory)",
+    "min_harvey_t_stat": 3,
+    "min_harvey_t_stat_rationale": "rank-IC Harvey-t. (v8.x severity=advisory — rank-IC t는 portfolio-alpha t와 구분, 후자가 권위)",
+    "min_deflated_sharpe_ratio": 0.5,
+    "min_deflated_sharpe_ratio_rationale": "Bailey-Lopez de Prado DSR — multi-testing 보정 SR. (severity=HARD는 sweep형 selection만 — ML스윕/optimizer서치/앙상블·사전등록 grid. 가설주도 chain/단일검증은 advisory 강등+진단산출. 도훈 mandate 2026-05-31/2026-06-10, measurement-graduation §3)",
+    "min_portfolio_alpha_t_nw": 2.95,
+    "min_portfolio_alpha_t_nw_rationale": "★v8.x 신규 HARD. forge-authoritative 실현 portfolio-alpha t (NW lag-3, forge_package.portfolio_alpha_t_nw_lag3). Harvey-Liu-Zhu 2016 hurdle. rank-IC t 아님. 게이트 핵심 판별(16후보 중 FLOW만 통과=정확).",
+    "min_oos_retention": 0.7,
+    "min_oos_retention_rationale": "★v2.5 HARD 배선(문턱은 measurement-graduation §3 2026-05-31/06-10 기존값). 활성 Sharpe OOS/IS retention — anchored 3분할 {55/65/75} 중앙값(essence_score.R oos_stat_version=v2). ≥0.7 단독 PASS / <0.5 무조건 FAIL / [0.5,0.7) band는 보강증거 2/3 조건부 PASS(판정 권위=essence_score.R, 훅은 warn). forge-authoritative 값에만 적용 — 단일전략 과적합 방어 주책임.",
+    "min_calmar": 0.64,
+    "min_calmar_rationale": "★v2.5 HARD 배선(문턱은 measurement-graduation §3 2026-05-31 기존값). Calmar = CAGR/|MDD| ≥ 0.64 (=16%/25%, 제2목표 CAGR16·MDD25에서 도출한 위험조정 게이트). forge-authoritative 값에만 적용.",
+    "severity": {
+      "rank_ic": "advisory",
+      "icir": "advisory",
+      "subperiod_stability": "advisory",
+      "harvey_t_stat": "advisory",
+      "deflated_sharpe_ratio": "hard",
+      "portfolio_alpha_t_nw": "hard",
+      "oos_retention": "hard",
+      "calmar": "hard"
+    },
+    "severity_rationale": "hard = block(우회불가), advisory = warn(screening). hard 4종(DSR/portfolio_alpha_t_nw/oos_retention/calmar)은 forge-authoritative 값에만 적용 — alpha-stage proxy로 graduation 선언 금지(v8.x WS1 정합). DSR hard는 sweep형 selection 한정, oos_retention은 <0.5 무조건 block + [0.5,0.7) band 조건부(measurement-graduation §3)."
+  },
+  "theme": null,
+  "hypothesis_title": "팩터 기대수익 직접 forecasting(외생변수) + 팩터-움직임 레짐예측 → 예측비례 베팅 — JM+BL과 다른 방법 (도훈 지적)",
+  "hypothesis_description": "[동기 — 도훈 지적] smart-beta는 **JM/SJM을 레짐엔진으로**(팩터별 vol feature 동시점 *분류*→BL 국면-버킷 배분) 빡세게 소진. 미측정 2방법: **(a) 스타일 팩터의 움직임(cross-factor 동학·로테이션·상관 shift)으로 forward 레짐을 *예측*** / **(b) 다른(외생) 변수로 각 스타일 팩터의 기대수익 E[r_factor,t+1]를 직접 *forecasting*해서 예측치에 비례 베팅**(fitted 모델, 국면-버킷 아님). [가설] 외생 변수(팩터 밸류에이션 스프레드·팩터 모멘텀·dispersion·크레딧/매크로 조건·cross-factor 동학)로 E[r_factor]를 직접 예측하는 forecasting 모델이, static composite 및 JM+BL(smart-beta 기록)보다 canonical cap-w PORT_t/oos를 개선하는가. (a)는 팩터-움직임 레짐예측을 forecasting feature/gating으로 통합. [expected_role] 팩터 composite의 예측-드리븐 시변 타이밍(어느 팩터가 다음 기 오를지 직접 예측). Haddad-Kozak-Santosh 'Factor Timing'(밸류에이션→팩터수익 예측) 계열. [why_now] 도훈이 짚은 방법 공백. smart-beta는 regime-classification+conditional-allocation(JM+BL)이지 direct forecasting 아님 — 미탐색. 팩터 수익 패널(k200_factor_returns_monthly/v3)+factor DB 외생변수 기존재=feasible-now. [★선행 차별 — 재실행 금지] ① smart-beta JM/SJM=동시점 vol-feature 레짐분류→BL 국면-버킷 spread 배분(본 WT=direct E[r] forecasting, 방법 상이) ② WT-005(진행중)=transformer 밸류에이션-only 좁은 (b)(본 WT=rich 외생변수 broad (b)+(a)) ③ hypothesis_index 'ML 팩터배분·팩터밸류에이션 스프레드'=idea 미측정(본 WT 첫 실측) ④ WT-004=regime overlay(팩터 아닌 book timing). hypothesis_index로 factor forecasting/timing 재조회 Step 0. [★정밀 타깃 — WT-005(2026-07-18) 실측이 준 것] oracle(perfect-foresight) rotation port_t **12.894** ≫ static 1.202 = **타이밍 headroom 실재**(벽은 headroom 아닌 OOS realizability). WT-005서 valuation timing FAIL·transformer는 factor-momentum tilt에 지배·**factor-momentum이 유일 실신호(paired_vs_static 2.487 port_t)이나 non-graduating(<2.95)+post-2020 감쇠(oos −0.145)**. **본 WT의 정확한 질문 = 다른 외생변수(dispersion·credit·cross-factor 동학·macro conditioning)가 factor-momentum baseline을 *oos_retention에서* 이기는가**. momentum을 못 이기거나 oos<0.7이면 factor-timing-via-prediction 종합 특성화(valuation FAIL·momentum 감쇠·rich predictor 실패=OOS realizability가 KR 근본 벽). [★★정직 caveat — kill 근거] smart-beta 13-agent 분해 실측: **2017+ cohort-wide 팩터 감쇠가 근본 벽**·'팩터가중 3-gate 순기여 ≈0'. **이는 JM+BL 프레임 실측이지 direct forecasting(b) 판정 아님** — 외생변수가 감쇠팩터의 일시 부활을 잡으면 다를 여지 legitimate. 단 3개 transformer 라운드(WT-003 cross-sectional·WT-004 regime overlay·WT-005 factor timing) 연속 부정 = supervised/learned 방법 KR OOS/OOD 벽 강한 헤드윈드. HKS OOS-취약(Arnott)·forward-macro 예측 settled-null([[project-predictive-crisis-timer-forward-macro-null]])이라 macro는 forward-예측 아닌 conditioning으로만. [측정 프레임] paired A/B: base = static composite(고정가중) + JM+BL 참조(smart-beta 기록 대비). treatment = forecasting-비례 composite(E[r_factor] 예측→weight ∝ 예측, confidence shrinkage·long-only). 예측 composite → 종목 score → canonical_screen_bt top-25 cap-w PORT_t 1급 + dual-basis + oos_retention v2 + DSR(sweep) + AX-001 v2. [kill 사전등록] ① forecasting-비례가 static·JM+BL 대비 canonical 개선 없음(paired<0/비유의) ② oos_retention<0.7·OOS 붕괴(HKS 과적합·2017+ 감쇠) ③ 예측 feature PIT 위반/look-ahead(walk-forward 학습 엄격·rolling refit·재무 lag C4·macro conditioning-only) → 종결. 강한 감쇠 prior 정직 반영 — 개선 주장은 oos 통과분만. [feasibility] from-scratch(transformer 또는 gradient-boosting/regression — 방법 자율, 저차원 팩터 forecasting). venv PyTorch. FM 각도 capacity-gated(FQ-061).",
+  "hypothesis_source": "user_defined",
+  "as_of_date": "2026-07-18",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KOSPI200_KOSDAQ150_intersection",
+    "liquidity_min_won_20d_avg": 50000000,
+    "max_names_total": 500
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d (재무제표 발표 지연)",
+    "fundamental_annual": "annual May (연간 재무제표 5월 리밸런싱)",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement (QuantiWise)",
+    "macro": "t-1 FRED (외부 매크로 lag)",
+    "ic_history": "Usable_Date <= sig_date (Factor DB 강제)"
+  },
+  "cost_model_version": "v2.4_kr_retail_15bps",
+  "current_portfolio": "STR_1631_80_STR_1656_20",
+  "hard_mandate": {
+    "pit_enforcement": "C1-C15 all enforced",
+    "liquidity_floor_won_20d_avg": 50000000,
+    "mandate_restrictions": {
+      "no_short_legal_kr": true,
+      "no_cross_market": true,
+      "kr_domestic_only": true
+    },
+    "long_only_mandate": "configurable"
+  },
+  "hard_constraints": {
+    "max_names": null,
+    "weight_bounds": [
+      0,
+      1
+    ],
+    "sector_active_weight_cap": null,
+    "liquidity_min_won_20d_avg": 50000000
+  },
+  "soft_penalties": [],
+  "capacity_limits": {
+    "adv_multiplier": 0.1,
+    "capacity_max_aum_won": 100000000000
+  }
+}

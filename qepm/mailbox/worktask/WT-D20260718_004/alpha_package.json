@@ -1,0 +1,64 @@
+{
+  "task_id": "WT-D20260718_004",
+  "as_of_date": "2026-07-18",
+  "wt_type": "discovery",
+  "surface": "timing_overlay_detector_swap (NOT cross-sectional return prediction)",
+  "verdict": "VALIDATED_NEGATIVE",
+  "alpha_discovery_certificate": "NOT_ISSUED",
+  "certificate_rationale": "Detector-swap failed the book A/B: transformer regime timing overlay does not beat incumbent M4 BOCPD (paired NW-t treat-base = -0.863, non-significant, negative sign). Correctly no certificate. This is an overlay/timing detector, not a cross-sectional alpha_vector — the discovery role-card's factor_specs/alpha_inheritance_cor fields are N/A by surface; the produced object is a regime timing SIGNAL and its contract-grade A/B measurement.",
+  "forecast_horizon": "1M_timing_overlay",
+  "alpha_vector": {},
+  "confidence_vector": {},
+  "alpha_vector_note": "Empty by design — this WT tests a book-level TIMING overlay (regime exposure scalar), not per-stock cross-sectional alpha. No covariance / no portfolio weights produced (role boundary respected: carrier strategy weights held FIXED; only a regime exposure scalar was A/B'd via the established weighted_screen_bt screening harness).",
+  "signal_matrix_ref": "stage_artifacts/WT_D20260718_004/tf_regime_signal.parquet",
+  "factor_specs": [
+    {
+      "factor_family": "Regime_Timing_Overlay",
+      "proxy": "Transformer P(next-21d KOSPI200 < 0)",
+      "formula": "tiny temporal Transformer encoder (d_model=32, 2L, 2H, L=60 daily) over 11 market-priced daily features; walk-forward expanding-window annual refit; IS-threshold exposure map matched to M4 firing freq/depth",
+      "lag_rule": "signal seq ends strictly before holding-month start (Date < decision_date); walk-forward PIT training",
+      "winsorization": "per-refit training-window standardization (frozen)",
+      "neutralization": "n/a (index-level timing signal)",
+      "economic_rationale": "Test whether a learned temporal-attention sequence model produces better de-risk timing than the unsupervised M4 BOCPD change-point detector. Result: it does not — supervised learned timing requires in-sample regime analogs and misses OOD crash onsets.",
+      "weight_theta": null,
+      "references": ["Vaswani et al 2017 (attention)", "Adams-MacKay 2007 (BOCPD, incumbent)"]
+    }
+  ],
+  "diagnostics": {
+    "canonical_port_t_nw_lag3": 4.304,
+    "canonical_port_t_pvalue": null,
+    "canonical_n_months": 221,
+    "metric_type": "weighted_screen",
+    "base_M4_port_t": 4.223,
+    "treat_TF_SR": 1.796,
+    "base_M4_SR": 1.809,
+    "treat_TF_calmar": 1.993,
+    "base_M4_calmar": 2.069,
+    "paired_nw_t_treat_minus_base": -0.863,
+    "paired_nw_t_detector_only": -0.381,
+    "strict_pit_ab_inflation_SR": -0.003,
+    "lag1_stress_SR": 1.814,
+    "crisis_cushion_treat_vs_base": "-0.09pp (worse)",
+    "rank_ic": null,
+    "note": "PORT_t here is contract-grade screening (weighted_screen), NOT forge-authoritative. Book objective for an overlay = calmar/MDD/SR, on which TF loses. rank_ic N/A (not cross-sectional)."
+  },
+  "selection_objective": "canonical_port_t",
+  "n_trials": 1,
+  "selection_type": "chain",
+  "challenge_flags": [
+    "VERDICT_NEGATIVE: transformer regime detector does not beat M4 BOCPD on book calmar/SR/MDD; paired NW-t non-significant & negative.",
+    "MECHANISM: TF firing anti-correlated with real crises (missed 2008/2011/2018/2020-COVID/2022; fired during 2017 bull) — supervised learned timing needs in-sample analogs.",
+    "SCOPE (INV-7): negative scoped to from-scratch SUPERVISED sequence detector w/ symmetric down-month label; unsupervised sequence anomaly (NP1) + pretrained-TS-FM (NP2) + asymmetric label (NP3) not tested.",
+    "PIT CLEAN: assert_overlay_pit PASS, strict-PIT A/B inflation <1%, lag1 no collapse — negative is genuine, not a leakage artifact.",
+    "PRODUCTION PARITY EXACT: incumbent base reconstructed = build_overlay_exposure native (SR 1.8088, PORT_t 4.223)."
+  ],
+  "step0_differentiation": {
+    "vs_WT-003_and_6methods_XATTN": "Those apply transformer to CROSS-SECTIONAL return prediction (the dead surface / IC→PORT_t transition wall). This WT applies transformer to the REGIME/TIMING layer (a different layer that the wall does not gate) via a detector-swap A/B — no cross-sectional stock selection.",
+    "vs_project-pg2-offense-overlay-settled": "That settled overlay CONSTRUCTION (max-cash/offense layering on R05xM4) = 'market-timing no value'. This WT tests detector QUALITY (replace the M4 detector input with a learned sequence model), holding AR+R05 fixed — a distinct question. Result reinforces the prior for the specific case of supervised learned detectors, with a NEW mechanistic reason.",
+    "vs_M4_BOCPD_and_faith": "M4 BOCPD + faith are statistical change-point detectors (unsupervised). The transformer is a learned supervised sequence classifier. The detector-swap isolates exactly this difference; the unsupervised incumbent wins."
+  },
+  "handoff": {
+    "risk_research": "NOT recommended — clear kill (per v8.3 M1 early-termination authority). Forge/Risk only needed to confirm a positive for graduation.",
+    "next_probes": ["NP1 unsupervised transformer-autoencoder change-point (root-cause-targeted)", "NP2 pretrained-TS-FM regime prior (FQ-061)", "NP3 asymmetric crash-label"]
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "l_code": "L-AR-20260718_232144",
+  "strategy_id": "WT-D20260718_004_transformer_regime_overlay",
+  "grade": "F",
+  "core_reference": "qepm/mailbox/worktask/WT-D20260718_004/alpha_validation.json + challenge_note.md",
+  "lesson_text": "WT-D20260718_004 (transformer 시계열 regime → timing 오버레이 detector-swap, 2026-07-18): VALIDATED_NEGATIVE/KILL. from-scratch tiny temporal transformer(d32/2L/L60, 11 macro feature, walk-forward 18 refit)로 book M4 BOCPD detector 교체 A/B(carrier STR_1715 fixed, 221mo). 결과: base M4×AR×R05 SR 1.809/calmar 2.069/MDD −18.68% vs treat TF×AR×R05 SR 1.796/calmar 1.993/MDD −18.98% = **transformer 열위**(d_SR −0.013·d_calmar −0.076). paired NW-t −0.863(비유의 음). PIT clean(0/221·lag1 무붕괴·strict-PIT A/B inflation −0.3%). ★기전(정보적): transformer 발화가 실제 crisis와 anti-correlated — 2008 GFC·2011·2018·**COVID 2020(p_bad 최저 0.33/0.27)**·2022 전부 놓치고 2017 강세장·2023 회복서 방어. 근본=**supervised 학습 타이밍은 in-sample analog 필요, crash=rare OOD라 benign macro 패턴 과적합→전례없는 위기에 full long**. M4 BOCPD(unsupervised change-point)는 training analog 무관 구조break 실시간 포착=de-risk 오버레이에 구조적 우월. capacity 아티팩트 아님(확신하며 틀린 시점 발화). ★슈퍼팩터/transformer arc 확장: WT-003(cross-sectional)·WT-005(factor timing)·본 WT(regime overlay) 3개 transformer 라운드 = **supervised/learned 방법 KR OOS/OOD 실패 패턴**. M4 BOCPD incumbent 유지. next_probe: NP1 unsupervised transformer-autoencoder anomaly detector(M4 unsupervised 강점 보존+path 모델링, 최고 EV·failure 정면공략)·NP2 pretrained-TS FM regime prior(FQ-061 capacity-gated)·NP3 asymmetric crash label.",
+  "tags": "QEPM,WT,TRANSFORMER,REGIME,OVERLAY,SUPERVISED-OOD-FAIL,DETECTOR-SWAP",
+  "created_at": "2026-07-18",
+  "research_mode": "alpha_research",
+  "created_by": "emit:alpha_research",
+  "metric_type": "backtested",
+  "construction_type": "dynamic_timing_overlay",
+  "mechanism_hypothesis": "supervised 학습 detector는 학습창에 존재한 regime의 analog에만 발화 — KR crash는 희소 OOD(GFC/COVID 전례없음)라 down-month 대칭 분류기가 benign macro-feature 패턴에 과적합하고 미증유 위기엔 full long 유지. unsupervised change-point(M4 BOCPD)/anomaly는 training analog 무관 구조break 포착이라 de-risk 오버레이에 적합.",
+  "lcode_schema_version": 2,
+  "pin_tag": "WT-D20260718_004_r1",
+  "base_sr": 1.809,
+  "treat_sr": 1.796,
+  "paired_nw_t": -0.863,
+  "note": "grade F=book 미개선 KILL. metric_type=backtested(book A/B). M4 BOCPD incumbent 유지·DIST overlay_regime supervised-detector-swap settled-neg",
+  "falsification_attempts": [
+    {
+      "test": "book A/B paired NW-t(TF vs M4, 221mo)",
+      "result": "falsified",
+      "effect_retained": "−0.863 비유의 음·SR/calmar 전부 열위"
+    },
+    {
+      "test": "PIT 3종(assert_overlay_pit·lag1·strict-PIT A/B)",
+      "result": "survived",
+      "effect_retained": "0/221 clean=genuine negative(leakage 아님)"
+    },
+    {
+      "test": "detector-only(TF_only vs M4_only)",
+      "result": "falsified",
+      "effect_retained": "TF_only MDD −40.7%=bare 수준(crash 못 자름)"
+    },
+    {
+      "test": "crisis 발화 상관 진단(36 crisis month)",
+      "result": "falsified",
+      "effect_retained": "TF가 COVID/GFC/2022 미발화·강세장 방어=anti-correlated"
+    }
+  ],
+  "oos_months": 221,
+  "portfolio_alpha_t": 4.304,
+  "selection_type": "chain",
+  "family": "overlay_regime",
+  "record_type": "performance"
+}

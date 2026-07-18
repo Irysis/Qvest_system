@@ -1,0 +1,64 @@
+{
+  "task_id": "WT-D20260718_004",
+  "as_of_date": "2026-07-18",
+  "surface": "timing_overlay_detector_swap",
+  "not_cross_sectional": true,
+  "verdict": "VALIDATED_NEGATIVE",
+  "kill_criterion_met": "① no book improvement (paired NW-t negative & non-significant) + ② PIT clean (negative is genuine, not leakage)",
+  "metric_type": "weighted_screen",
+  "measurement_note": "Contract-grade screening via weighted_screen_bt/build_benchmark_compare (NW lag-3). NOT forge-authoritative 'backtested'. Clear kill → no forge handoff required (forge only needed to confirm a positive for graduation).",
+  "pin_tag": "WT-D20260718_004_r1",
+  "window": {"start": "2008-02-01", "end": "2026-06-01", "n_months": 221},
+  "design": {
+    "base": "M4_BOCPD x AR x R05 (incumbent book_L5, STR_1715_AR_on_M4_R05_overlay_PG2)",
+    "treatment": "Transformer_regime x AR x R05 (swap ONLY the M4 detector; AR + R05 held fixed) = detector-quality isolation",
+    "carrier_weights": "STR_1715 strategy weights FIXED (no weight decisions by alpha agent)",
+    "transformer": "from-scratch tiny temporal Transformer encoder (d_model=32, 2 layers, 2 heads, L=60 daily seq), predicts P(next 21-trading-day KOSPI200 index return < 0) from 11 market-priced daily features (KOSPI ret/vol/mom + VIX/Term_Spread/KRW/US2Y/US10Y/StL_FinStress/Chi_FinCond).",
+    "walk_forward": "expanding-window annual refit; training pairs require label fully realized before year boundary; per-refit standardization frozen on training window; internal val = last ~12mo (IS-only); score seq ends strictly before holding-month start.",
+    "exposure_mapping": "IS-calibrated threshold matched to incumbent M4 firing frequency (0.126) and depth (0.70) — isolates TIMING quality, not de-risk budget. 2-tier variant gave identical result.",
+    "oos_window": "2008-2026 (2008 GFC is genuine OOS: initial model trained only on 2000-2007)"
+  },
+  "scenario_table": {
+    "bare":               {"SR": 1.601, "CAGR": 0.464, "MDD": -0.4074, "calmar": 1.140, "PORT_t": 6.454, "avg_exp": 1.000},
+    "base_M4xARxR05":     {"SR": 1.809, "CAGR": 0.386, "MDD": -0.1868, "calmar": 2.069, "PORT_t": 4.223, "avg_exp": 0.786},
+    "treat_TFxARxR05":    {"SR": 1.796, "CAGR": 0.378, "MDD": -0.1898, "calmar": 1.993, "PORT_t": 4.304, "avg_exp": 0.765},
+    "m4_only":            {"SR": 1.640, "MDD": -0.3397, "calmar": 1.322, "PORT_t": 6.037},
+    "tf_only":            {"SR": 1.562, "MDD": -0.4074, "calmar": 1.079, "PORT_t": 6.101}
+  },
+  "book_delta_treat_vs_base": {
+    "d_SR": -0.013, "d_CAGR": -0.008, "d_MDD": -0.0030, "d_calmar": -0.076,
+    "interpretation": "Transformer detector is WORSE on the book objective (SR, CAGR, calmar) and no better on MDD. PORT_t marginally higher (+0.08) but PORT_t is active-t, not the overlay's calmar/MDD objective."
+  },
+  "paired_nw_t_lag3": {
+    "treat_minus_base_mean_monthly_net": -0.00054, "t": -0.863, "n": 221,
+    "detector_only_TF_minus_M4": {"mean": -0.00035, "t": -0.381},
+    "conclusion": "No statistically distinguishable improvement; sign is negative both for the full overlay swap and the isolated detector."
+  },
+  "pit_three_tests": {
+    "assert_overlay_pit": "PASS — all TF feature cutoffs strictly < holding-month start (0/221 violations); python self-check 0/221 last_feat_date >= decision_date",
+    "strict_pit_ab_loose_vs_strict": {"SR_inflation": -0.003, "PORT_t_inflation": 0.001, "verdict": "CLEAN — loose(look-ahead) ≈ strict; no exploitable same-month information → the negative is genuine, not a faith-bug"},
+    "lag1_stress": {"treat_SR": 1.796, "lag1_SR": 1.814, "verdict": "NO COLLAPSE (improves marginally) — confirms (a) no same-month leakage, (b) signal carries ~no genuine month-specific timing content (staleness does not hurt)"}
+  },
+  "ax001_v2_crisis_conditional": {
+    "crisis_def": "KOSPI200 monthly return < -5%", "n_crisis_months": 36,
+    "mean_monthly_net": {"bare": -0.0562, "base_M4": -0.0284, "treat_TF": -0.0293},
+    "conclusion": "TF marginally WORSE at cushioning crises than M4; the crisis cushion in treatment comes from the shared AR x R05 layers, not the TF detector. No crisis-defense improvement."
+  },
+  "mechanism": {
+    "firing_pattern": "TF fired (de-risk) 30/221 months but ANTI-correlated with real crises: MISSED 2008 GFC (p_bad 0.61<tau 0.66), 2011 Euro (p_bad 0.29), 2018-10 selloff (0.50), COVID 2020-02/03 (p_bad 0.33/0.27 — its LOWEST readings), 2022 (0.41); instead fired during the 2017 BULL market and 2023 recovery.",
+    "root_cause": "Supervised learned timing requires in-sample analogs of the regime being predicted. Crashes are rare, out-of-distribution events; a symmetric down-month classifier overfits benign macro-feature configurations that historically preceded mild down months, and stays fully invested into unprecedented crises. M4 BOCPD is UNSUPERVISED change-point detection — it flags structural breaks in real time regardless of training analogs, which is structurally better-suited for a de-risking overlay.",
+    "capacity_rebuttal": "Not an under-training artifact: the model fired CONFIDENTLY at the wrong times (2017 bull) and stayed long into COVID. That is a wrong-signal problem, not a weak-signal problem; more capacity deepens the overfit to seen benign regimes rather than improving extrapolation to unseen crises."
+  },
+  "production_parity": {"base_recon_SR": 1.8088, "base_native_SR": 1.8088, "base_recon_PORT_t": 4.223, "base_native_PORT_t": 4.223, "status": "EXACT (ym-join to build_overlay_exposure native) — incumbent base validated against production code"},
+  "single_seed": 20260718,
+  "next_probes": [
+    "NP1 (root-cause-targeted): UNSUPERVISED sequence model — transformer autoencoder reconstruction-error / sequence anomaly score as a learned change-point detector, preserving M4's unsupervised advantage while adding path modeling. Directly attacks the identified failure (supervised needs analogs; unsupervised does not).",
+    "NP2: pretrained TS foundation-model regime prior (FQ-061, capacity-gated, separate track) — broad cross-regime priors may extrapolate to unseen crises better than from-scratch supervised.",
+    "NP3: asymmetric/crash-specific label (forward max-drawdown or tail-loss > threshold) instead of symmetric down-month — the overlay cares about tails; caveat: the supervised-rarity problem (few crash labels) persists and may not resolve the OOD extrapolation issue."
+  ],
+  "consumption": {
+    "overlay_frontier": "from-scratch SUPERVISED transformer timing detector = settled-negative for detector-swap; M4 BOCPD retains incumbent role. Route to DIST (overlay_regime family).",
+    "monitoring": "no change to book overlay",
+    "reusable_lesson": "KR overlay layer: supervised learned timing detectors fail at unseen crisis onsets; unsupervised change-point (M4) structurally superior for de-risk overlays."
+  }
+}

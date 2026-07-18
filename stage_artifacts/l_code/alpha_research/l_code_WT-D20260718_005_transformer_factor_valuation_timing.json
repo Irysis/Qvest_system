@@ -1,0 +1,56 @@
+{
+  "l_code": "L-AR-20260718_232148",
+  "strategy_id": "WT-D20260718_005_transformer_factor_valuation_timing",
+  "grade": "C",
+  "core_reference": "stage_artifacts/WT_D20260718_005/alpha_validation.json + qepm/mailbox/worktask/WT-D20260718_005/challenge_note.md",
+  "lesson_text": "WT-D20260718_005 (transformer/FM 팩터 밸류에이션 → 팩터 timing, 도훈 제안, 2026-07-18): NEGATIVE config-scoped + factor-momentum screen-tier 부수발견. ★oracle(perfect-foresight) rotation port_t **12.894** ≫ static 1.202 = **타이밍 headroom 실재**(벽은 headroom 아닌 OOS realizability=HKS). valuation timing(Arnott/HKS 핵심): paired_t ≤1.05 = **FAIL**. transformer(WT method): paired_vs_static 1.855이나 **paired_vs_momentum 전 seed 음(−0.67)=trivial factor-momentum tilt에 지배**+turnover↑+seed불안정. oos_retention: static −0.934·momentum −0.145/−0.251·transformer −0.391 = **전부 <0.7 HARD FAIL**(HKS overfit/2017+ decay 확증)=kill②발화. lag1 무붕괴(동월누출 없음). ★부수발견 factor-momentum timing = **screen-tier**: 실재(paired_vs_static 2.487 port_t·+72.8bps/mo·DSR 0.883·placebo −2.9)하나 non-graduating(cap-w <2.95)+post-2020 감쇠(oos −0.145) → OVERLAY_CANDIDATE/FR_RCMA. ★Step0 정정(에이전트 정직): 'Transformer 팩터배분·밸류에이션 스프레드 미측정' 부정확 — prior alpha-search 측정 실재(STR_AS_20260613 SCREEN_TIER/MARGINAL, 단 fe_factor_combo mislabeled·sharpe grading). 본 WT가 canonical cap-w PORT_t paired + 진짜 self-attention + HKS 규율 첫 rigorous 측정. ★함의: 팩터 timing headroom 실재하나 KR OOS realizability가 벽(valuation·transformer·momentum 전부 oos<0.7). factor-momentum이 유일 실신호이나 감쇠.",
+  "tags": "QEPM,WT,TRANSFORMER,FACTOR-TIMING,VALUATION,HKS,MOMENTUM-SCREEN-TIER,OOS-WALL",
+  "created_at": "2026-07-18",
+  "research_mode": "alpha_research",
+  "created_by": "emit:alpha_research",
+  "metric_type": "canonical_screen",
+  "construction_type": "regime_rotation",
+  "mechanism_hypothesis": "팩터 timing headroom은 크나(oracle 12.9) OOS realizability가 벽 — valuation 신호 무효·transformer는 factor-momentum tilt로 붕괴·momentum조차 post-2020 감쇠. HKS OOS-취약(Arnott)이 KR 2017+ 감쇠와 결합해 어떤 예측기도 oos_retention 0.7 미달.",
+  "lcode_schema_version": 2,
+  "pin_tag": "RAWDATA_pin20260703",
+  "oracle_port_t": 12.894,
+  "static_port_t": 1.202,
+  "momentum_port_t": 2.487,
+  "momentum_paired_vs_static_t": 2.414,
+  "momentum_oos": -0.145,
+  "dsr": 0.883,
+  "note": "grade C=screen-tier(momentum 실신호 non-graduating). metric_type=canonical_screen. valuation/transformer FAIL·momentum OVERLAY_CANDIDATE",
+  "falsification_attempts": [
+    {
+      "test": "oracle ceiling(perfect-foresight rotation)",
+      "result": "survived",
+      "effect_retained": "port_t 12.9=headroom 실재, no-headroom kill 미발화"
+    },
+    {
+      "test": "valuation timing paired(Arnott/HKS)",
+      "result": "falsified",
+      "effect_retained": "paired_t ≤1.05 FAIL"
+    },
+    {
+      "test": "transformer vs factor-momentum baseline",
+      "result": "falsified",
+      "effect_retained": "paired_vs_momentum 전 seed 음=momentum tilt에 지배"
+    },
+    {
+      "test": "oos_retention v2(3-seed)",
+      "result": "falsified",
+      "effect_retained": "전부 <0.7 HARD FAIL=HKS/decay"
+    },
+    {
+      "test": "lag1 PIT + placebo(reversal)",
+      "result": "survived",
+      "effect_retained": "lag1 무붕괴·placebo −2.9=내부타당성"
+    }
+  ],
+  "oos_retention": -0.145,
+  "oos_months": 163,
+  "portfolio_alpha_t": 2.487,
+  "selection_type": "sweep",
+  "family": "factor_timing",
+  "record_type": "performance"
+}

@@ -1,0 +1,91 @@
+{
+  "task_id": "WT-D20260718_005",
+  "wt_type": "discovery",
+  "as_of_date": "2026-06-30",
+  "forecast_horizon": "1M",
+  "verdict": "NEGATIVE_config_scoped",
+  "verdict_summary": "Transformer/factor-valuation timing = NEGATIVE: valuation-spread timing fails (paired<=1.05, mostly negative), from-scratch transformer is DOMINATED by a trivial parameter-free factor-momentum tilt on the identical OOS window (paired_vs_momentum_t negative for every seed), seed-unstable, higher turnover, and fails oos_retention 0.7 (HKS overfit confirmed). Side-finding: factor-momentum timing is a real (DSR 0.88, placebo/lag robust) but non-graduating, decaying screen-tier signal (cap-w port_t 1.28-2.49 < 2.95, oos_retention -0.145 HARD FAIL).",
+  "selection_objective": "canonical_port_t",
+  "alpha_discovery_certificate": "NOT_ISSUED",
+  "certificate_rationale": "Graduation HARD 미달: primary method(transformer) cap-w PORT_t 0.911 < 2.95, oos_retention < 0.7. discovery certificate 미발급 (정상 — NEGATIVE finding).",
+  "candidate_primary": "transformer_ensemble_timed_composite",
+  "alpha_vector_note": "아래는 as_of 2026-06-30 transformer-ensemble 시변-composite score top-25 (documentary — NEGATIVE 판정이라 risk 진행 없음). 유니버스 348명 전수 score = stage_artifacts/WT_D20260718_005/alpha_scores.parquet(score_transformer/score_momentum/score_static 3열).",
+  "alpha_vector": {
+    "A015750": 3.0987, "A073240": 1.9598, "A200130": 1.5452, "A088350": 1.5371,
+    "A041190": 1.5305, "A194480": 1.4423, "A025900": 1.4384, "A018290": 1.4183,
+    "A101360": 1.3384, "A079370": 1.3220, "A108860": 1.2816, "A001680": 1.2779,
+    "A215000": 1.2650, "A304100": 1.2245, "A069080": 1.2201, "A058970": 1.1543,
+    "A352480": 1.1438, "A101730": 1.1222
+  },
+  "confidence_vector_note": "NEGATIVE finding — confidence는 signal-strength 상대 rank (졸업 신뢰 아님). 상세는 alpha_scores.parquet.",
+  "factor_specs": [
+    {
+      "factor_family": "factor_timing_meta",
+      "proxy": "transformer_ensemble_family_weights",
+      "formula": "score_i,t = sum_k theta_k,t * z_i,k,t ; theta_k,t = softmax(2*zscore(transformer_pred_k,t)) ; transformer = 2-layer self-attention encoder over 6 family tokens, features=[tr_1m,tr_3m,tr_6m,tr_12m,tr_vol12,val_spread,vs_z]",
+      "lag_rule": "features known at t (factor_db@t PIT + return-seq shift(1)); walk-forward expanding refit(12mo), train-only standardization, seeds{0,1,2}",
+      "winsorization": "family z-scores cross-sectionally standardized within universe",
+      "neutralization": "none (family composite of IC-aligned proxy z-scores)",
+      "economic_rationale": "attention learns factor co-movement/rotation to time family weights (Haddad-Kozak-Santosh Factor Timing / Arnott factor valuation). RESULT: does not beat trivial momentum tilt OOS.",
+      "weight_theta": null,
+      "references": ["Haddad-Kozak-Santosh 2020 (Factor Timing)", "Arnott-Beck-Kalesnik 2016 (factor valuation debate)", "Gupta-Kelly 2019 (Factor Momentum Everywhere)"],
+      "redundancy_cluster_id": "factor_timing_transformer",
+      "economic_rationale_verdict": "NEGATIVE — valuation signal (vs_z) fails; only factor-momentum (tr_12m) works and it decays."
+    },
+    {
+      "factor_family": "factor_timing_meta",
+      "proxy": "factor_momentum_tilt (side-finding, screen-tier)",
+      "formula": "theta_k,t = softmax(2*zscore(trailing_12m_family_return_k, realized<t)) ; composite score = sum_k theta_k z_i,k,t",
+      "lag_rule": "trailing family returns shift(1) (realized before t); lag-1 stress robust (2.49->2.07->1.96)",
+      "winsorization": "family z standardized",
+      "neutralization": "none",
+      "economic_rationale": "factor momentum (tilt to recently-winning factors) — Gupta-Kelly 2019. Real but decaying in KR post-2020.",
+      "weight_theta": null,
+      "references": ["Gupta-Kelly 2019 (Factor Momentum Everywhere)", "Ehsani-Linnainmaa 2022"],
+      "redundancy_cluster_id": "factor_momentum_timing",
+      "screen_route": "OVERLAY_CANDIDATE / FR_RCMA (regime-conditional revival)"
+    }
+  ],
+  "diagnostics": {
+    "canonical_port_t_nw_lag3": 0.911,
+    "canonical_port_t_pvalue": null,
+    "canonical_n_months": 163,
+    "canonical_basis": "cap-w KOSPI200 benchmark, top-25 EW long-only, 15bps, liq 2e8 (canonical HARD basis)",
+    "static_base_port_t_full": 1.202,
+    "static_base_port_t_oos": -0.047,
+    "momentum_timing_port_t_full": 2.487,
+    "momentum_timing_port_t_oos": 1.277,
+    "transformer_port_t_full": 0.911,
+    "transformer_port_t_oos": 0.911,
+    "oracle_rotation_ceiling_port_t": 12.894,
+    "rank_ic": null,
+    "icir": null,
+    "note_rank_ic": "본 WT는 팩터-레벨 timing meta-layer — rank-IC(종목 횡단)는 해당 진단축 아님. 선택 권위 = canonical PORT_t (v8.3 M1)."
+  },
+  "method_shopping_log": {
+    "alpha_agent": {
+      "candidates_tried": 5,
+      "method_log": [
+        {"name": "static_EW_composite (base)", "port_t_full": 1.202, "selected": false},
+        {"name": "factor_momentum_timing", "port_t_full": 2.487, "oos_retention": -0.145, "selected": "side_finding_screen_tier"},
+        {"name": "factor_valuation_timing (Arnott vs_z)", "paired_t": -0.069, "selected": false},
+        {"name": "transformer_ensemble (primary WT method)", "port_t_oos": 0.911, "paired_vs_momentum_t": -0.673, "selected": "primary_NEGATIVE"},
+        {"name": "placebo (reversal / expensive)", "paired_t": -2.9, "selected": false}
+      ]
+    }
+  },
+  "challenge_flags": [
+    "PRIMARY NEGATIVE: transformer dominated by trivial factor-momentum tilt OOS (paired_vs_momentum_t<0 all seeds).",
+    "Valuation-spread timing (WT core Arnott/HKS hypothesis) FAILS — paired_t<=1.05, mostly negative.",
+    "oos_retention HARD FAIL for all variants (transformer -0.31~-0.70, momentum full -0.145) — HKS OOS-fragility confirmed.",
+    "Side-finding factor-momentum: real (DSR 0.88, placebo/lag robust) but decaying (post-2020) + non-graduating (port_t<2.95) -> screen-tier only, NOT capital.",
+    "Step 0: prior alpha-search STR_AS_20260613_094148 'Transformer factor allocation' existed (SCREEN_TIER, fe_factor_combo.R = likely mislabeled combo) — NOT idea-only as request stated; this WT is first canonical cap-w PORT_t paired A/B."
+  ],
+  "pit_pin_tag": "RAWDATA_pin20260703+benchmark_pin20260703",
+  "artifacts": {
+    "alpha_scores": "stage_artifacts/WT_D20260718_005/alpha_scores.parquet",
+    "alpha_validation": "stage_artifacts/WT_D20260718_005/alpha_validation.json",
+    "challenge_note": "qepm/mailbox/worktask/WT-D20260718_005/challenge_note.md",
+    "harness_dir": "04_Research/method_frontier/wt005_factor_timing/"
+  }
+}

@@ -1,0 +1,25 @@
+# Self-Adversarial Challenge — WT-D20260718_004 (Transformer regime timing overlay, detector-swap)
+
+Opus 4.8 native adversarial review of the VALIDATED_NEGATIVE verdict. Charter §8 (No Silent Override) + AX-008 (self-adversarial = 1 of 3 verification sources). Devil's-advocate self-critique before finalize.
+
+## Concern 1 — "The negative is a leakage-free artifact of a look-ahead bug (faith/BearProb repeat)" [PIT — highest priority]
+Devil's advocate: prior overlay 'discoveries' (faith, BearProb) were same-month look-ahead that placebo/OOS/DSR missed; only lag1 + strict-PIT A/B caught them. Could this A/B be contaminated the OTHER way — i.e., am I reporting a leaked number?
+- **Classification: REBUTTAL.** The verdict is NEGATIVE, so leakage would only *inflate* the treatment; a leaked treatment still LOSES to base → leakage cannot manufacture this negative. Empirically all three mandated probes are clean: (a) `assert_overlay_pit` PASS, 0/221 violations; python self-check 0/221 rows with feature-date ≥ decision-date; (b) strict-PIT A/B loose-vs-strict inflation −0.3% SR / +0.1% PORT_t (<5% threshold) → CLEAN; (c) lag1 stress SR 1.796→1.814 (no collapse). Signal cutoff = Date < first-day-of-holding-month (decision_date), never anchor/realized label. Standardization + label pairs are training-window-only. Evidence: `alpha_validation.json::pit_three_tests`.
+
+## Concern 2 — "The transformer is under-trained/too small; a bigger model would beat M4 → capacity artifact, not structural"
+Devil's advocate: 22 epochs, d_model=32, single seed. The negative may reflect a weak model, not a real limit of learned timing.
+- **Classification: PARTIAL (rebutted on core, caveat retained).** The firing pattern (`mechanism.firing_pattern`) refutes the "weak model" reading: the model fired CONFIDENTLY at the wrong times — de-risked through the entire 2017 bull, stayed fully long into COVID 2020 (p_bad 0.27, its lowest), missed 2008/2011/2018/2022. That is a *wrong-signal* problem, not a *weak-signal* one; adding capacity deepens overfit to seen benign regimes rather than fixing OOD extrapolation to unseen crashes. **Honest caveat retained**: the negative is scoped to "from-scratch SUPERVISED sequence detector with a symmetric down-month label," NOT "all transformers." Pretrained-TS-FM (broad priors) and unsupervised sequence models are explicitly out-of-scope and logged as next_probes (NP1/NP2). This is why the verdict is VALIDATED_NEGATIVE (this construction) not a family death sentence (INV-7). Self-rationalization check: I did NOT use "미미/관행적/보수적이면 OK" — the caveat is a scoped, testable next_probe, not a hand-wave.
+
+## Concern 3 — "Label & exposure-mapping choices rigged the comparison against TF"
+Devil's advocate: I chose P(down month) and matched fire-freq/depth to M4. A crash-specific label or a free mapping might let TF win.
+- **Classification: PARTIAL.** On the *mapping*: REBUTTAL — matching frequency AND depth to M4 is the correct way to isolate TIMING quality (the stated hypothesis = detector-swap); a free mapping would confound de-risk budget with timing, and the 2-tier variant + the raw detector-only paired-t (t=−0.381) both agree. On the *label*: legitimate — a symmetric down-month label is not tail-focused; an asymmetric drawdown label might align better with a de-risk overlay. Logged as **NP3**, with the honest caveat that the supervised-rarity problem likely persists. Not a rig; a scoped design axis surfaced as next_probe.
+
+## Concern 4 — "Single seed / 2008-OOS start could flip the sign"
+Devil's advocate: one seed (20260718); starting OOS in 2008 handicaps TF (initial train = 2000-2007, no GFC).
+- **Classification: PARTIAL (minor).** The 2008 handicap is *intentional and honest* — it is the fair test of whether a learned detector generalizes to an unseen crisis; even so, later OOS crises (2011/2018/2020/2022, all with GFC in the training set) were ALSO missed, so the finding does not hinge on 2008. Single-seed is a genuine limitation, but the deficit is consistent and multi-metric (SR −0.013, calmar −0.076, crisis-cushion −0.09pp, detector-only SR −0.078) — a seed flip is very unlikely to convert a broad-based negative into a *significant* positive. Noted as a limitation; a seed-robustness sweep is low-EV given the consistency and is not blocking.
+
+## Q-Lead escalation triggers — NOT met
+No HIGH-severity ≥5, no AX axiom hard FAIL, no PIT C1 (lockbox/lookahead) violation. PIT is clean (Concern 1). No escalation.
+
+## Continuity (answer-principles §리서치 연속성)
+Negative completed with mechanism (supervised timing needs in-sample analogs; unsupervised change-point does not) + next_probes ≥2 (NP1 unsupervised sequence anomaly detector = root-cause-targeted; NP2 pretrained-TS-FM; NP3 asymmetric label). Consumption face: overlay_regime DIST (supervised-timing-detector-swap = settled-negative), M4 retains incumbent role. Layer bottleneck: overlay/timing detector-quality is not improvable via from-scratch supervised sequence models; the binding lever within the overlay layer remains unsupervised change-point sensitivity, near-saturated by M4.
