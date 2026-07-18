@@ -1,0 +1,112 @@
+{
+  "task_id": "WT-D20260718_007",
+  "measurement": "D3_intersection_overlay_calmar_graduation",
+  "as_of": "2026-07-19",
+  "pin_tag": "WT-D20260718_007_r1",
+  "metric_type": "backtested (build_bt_result 10-component, PerformanceAnalytics)",
+  "incumbent_base": "M4 overlay (carrier x m4 x AR x R05) = production STR_1715_on_M4_R05; r1 production_parity EXACT SR 1.8088",
+  "vintage_caveat": "measured vs production-code-derived incumbent overlay (T-1); NOT a derived same-month stored panel. base parity verified r1.",
+  "metrics": {
+    "book": ["M4_incumbent", "D3_intersection"],
+    "Sharpe": [1.808797, 1.81477],
+    "CAGR": [0.387225, 0.388498],
+    "MDD": [0.186774, 0.169725],
+    "Calmar": [2.073223, 2.288992],
+    "PORT_t": [4.223424, 4.220696],
+    "IR": [1.100055, 1.098889]
+  },
+  "gates": {
+    "calmar_hard_0.64": {
+      "value": 2.288992,
+      "pass": true
+    },
+    "calmar_vs_incumbent": {
+      "d3": 2.288992,
+      "m4": 2.073223,
+      "improved": true
+    },
+    "oos_retention_v2_0.7": {
+      "value": {},
+      "pass": false,
+      "band_lo": 0.5
+    },
+    "dsr": {
+      "value": {},
+      "n_trials": 9,
+      "selection_type": "chain",
+      "note": "chain -> DSR advisory (measurement-graduation §3); value recorded"
+    },
+    "holdout": {
+      "verdict": "PASS_LOW_INFO",
+      "realized_sr": 1.7924,
+      "q05": 1.4356,
+      "q95": 2.6489
+    },
+    "return_axis": {
+      "paired_nw_t": 0.49,
+      "note": "return-graduation NOT claimed (paired <+2 fixed r1/r2); this measures CALMAR axis only"
+    }
+  },
+  "n_trials_cumulative": 9,
+  "single_seed": 20260718,
+  "incumbent_comparison": {
+    "calmar": {
+      "D3": 2.289,
+      "M4": 2.073,
+      "delta": "+0.216 (+10.4%)"
+    },
+    "MDD": {
+      "D3": -0.17,
+      "M4": -0.187,
+      "delta": "+1.7pp better"
+    },
+    "Sharpe": {
+      "D3": 1.815,
+      "M4": 1.809
+    },
+    "CAGR": {
+      "D3": 0.388,
+      "M4": 0.387
+    },
+    "PORT_t": {
+      "D3": 4.221,
+      "M4": 4.223
+    },
+    "IR": {
+      "D3": 1.099,
+      "M4": 1.1
+    },
+    "oos_retention_v2": {
+      "D3": 0.283,
+      "M4": 0.282,
+      "note": "IDENTICAL -> oos gate failure is a shared CARRIER property (STR_1715 active-alpha decay post-2019), NOT overlay-attributable"
+    }
+  },
+  "verdict": "CALMAR GATE PASS but COMPOSITE CAPITAL-GRADUATION FAIL. D3 intersection is forge-authoritative Pareto-dominant over the M4 incumbent overlay on every book metric (calmar 2.073->2.289, MDD -0.187->-0.170, SR/CAGR marginally up, PORT_t/IR equal). calmar HARD>=0.64 PASS (2.289); holdout NOT falsified (PASS_LOW_INFO). HOWEVER oos_retention v2 = 0.283 < 0.7 (<0.5 band-fail) -> composite HARD graduation FAILS. This oos failure is IDENTICAL for the M4 incumbent (0.282) = a shared CARRIER property (STR_1715 active-alpha decays post-2019, KR post-2017 decay), NOT caused by nor fixable by the overlay. RETURN axis: paired <+2 (fixed r1/r2) -> no return claim. CONCLUSION: D3 is a legitimate CALMAR/tail refinement of the incumbent overlay (strict-dominant swap-in candidate), but it does NOT newly qualify the book for capital graduation (oos_retention gate, carrier-driven, unchanged by the swap). Deployment = 도훈 manual book decision; measurement only.",
+  "graduation_gate_summary": {
+    "calmar_hard": {
+      "threshold": 0.64,
+      "D3": 2.289,
+      "pass": true,
+      "improved_vs_incumbent": true
+    },
+    "oos_retention_v2_hard": {
+      "threshold": 0.7,
+      "D3": 0.283,
+      "band_lo": 0.5,
+      "pass": false,
+      "incumbent": 0.282,
+      "attributable": "carrier (not overlay)"
+    },
+    "dsr": {
+      "applied": false,
+      "reason": "selection_type=chain (hypothesis-driven mechanism probes, IS-only); advisory",
+      "n_trials": 9
+    },
+    "holdout": {
+      "verdict": "PASS_LOW_INFO",
+      "falsified": false
+    },
+    "composite_capital_graduation": "FAIL (oos_retention) — but D3 is a strict calmar-dominant swap over incumbent"
+  }
+}

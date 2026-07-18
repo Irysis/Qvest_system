@@ -1,0 +1,55 @@
+{
+  "l_code": "L-AR-20260719_020140",
+  "strategy_id": "WT-D20260718_007_D3_forge_calmar_graduation",
+  "grade": "B",
+  "core_reference": "qepm/mailbox/worktask/WT-D20260718_007/D3_forge_graduation.json",
+  "lesson_text": "WT-D20260718_007 #1 D3 교집합(M4∩AE) 오버레이 forge-authoritative calmar-graduation (도훈 지시, 2026-07-19): CALMAR GATE PASS·복합 졸업 FAIL(carrier 병목). build_bt_result 10-component(PerformanceAnalytics·production STR_1715_on_M4_R05 인컴번트 대비, r1 parity EXACT): ★**D3 = forge-authoritative 파레토 지배** — calmar 2.073→**2.289**(+10.4%)·MDD −18.7→−17.0%·SR 1.809→1.815·PORT_t 4.221≈4.223, 전 book 지표 ≥ 인컴번트(무수 규칙=과적합 표면 없음). 게이트: **calmar ≥0.64 HARD PASS(2.289, 인컴번트 지배)** · **oos_retention v2 ≥0.7 HARD FAIL(0.283)** · DSR advisory(chain n_trials=9) · holdout PASS_LOW_INFO(실측 SR 1.792 ∈ 봉인 [1.436,2.649]). ★핵심: **oos 미달=carrier(STR_1715) alpha 2019+ 감쇠 병목이지 오버레이 스왑 유발/해결 아님**(인컴번트도 0.282 동일 실패, 0.282→0.283 불변) → oos는 D3-vs-M4 판별자 아님. 판정: D3 = **인컴번트 오버레이의 무비용 calmar 향상 swap-in 후보**(순수 손익비 개선)이나 **book에 자본 졸업 자격 신설 못함**(oos=carrier alpha 감쇠, 오버레이 계층 밖). paired-return <+2 불변=return-graduation 주장 안 함. ★★확정: 타이밍/오버레이 계층 return-graduation 상한(r1 단독+r2 3방향+D3 forge oos 전부) — **수익 상승은 selection 계층 과제**(carrier alpha 감쇠가 진짜 병목). 배포(M4→M4∩AE)=도훈 수동 book 결정. 봉인 holdout `06_Registry/live_track/WT-D20260718_007_D3/`.",
+  "tags": "QEPM,WT,D3,INTERSECTION,FORGE,CALMAR-PASS,OOS-CARRIER-FAIL,PARETO,DOHOON-ADMIT-MATERIAL",
+  "created_at": "2026-07-19",
+  "research_mode": "alpha_research",
+  "created_by": "emit:alpha_research",
+  "metric_type": "backtested",
+  "construction_type": "dynamic_timing_overlay",
+  "mechanism_hypothesis": "D3 교집합(M4∩AE 양자 합의)은 false-positive 발화 제거로 오버레이 calmar/MDD를 무비용 개선(파레토)하나, book oos_retention 병목은 carrier STR_1715의 2019+ active-alpha 감쇠(KR post-2017 decay)라 오버레이 계층에서 해결 불가 — D3/M4 동일 미달. 수익 졸업은 carrier alpha(selection 계층) 문제.",
+  "lcode_schema_version": 2,
+  "pin_tag": "WT-D20260718_007_r1",
+  "d3_calmar": 2.289,
+  "m4_calmar": 2.073,
+  "d3_mdd": -0.17,
+  "m4_mdd": -0.187,
+  "d3_oos": 0.283,
+  "m4_oos": 0.282,
+  "d3_sr": 1.815,
+  "calmar_gate": "PASS",
+  "oos_gate": "FAIL_carrier",
+  "holdout": "PASS_LOW_INFO",
+  "note": "grade B=파레토 오버레이 개선(무비용 calmar)이나 복합졸업 미달(carrier oos). metric_type=backtested. 배포=도훈 수동. 수익축=selection 계층",
+  "falsification_attempts": [
+    {
+      "test": "build_bt_result forge-authoritative calmar vs 인컴번트",
+      "result": "survived",
+      "effect_retained": "D3 2.289>M4 2.073 파레토 지배·PASS 0.64"
+    },
+    {
+      "test": "oos_retention v2 HARD",
+      "result": "falsified",
+      "effect_retained": "0.283<0.5 FAIL·단 인컴번트 0.282 동일=carrier 병목(오버레이 판별자 아님)"
+    },
+    {
+      "test": "holdout 사전등록 반증검정",
+      "result": "survived",
+      "effect_retained": "PASS_LOW_INFO(SR 1.792 ∈ 봉인구간)"
+    },
+    {
+      "test": "production parity(인컴번트 base)",
+      "result": "survived",
+      "effect_retained": "r1 EXACT SR 1.8088·동월 vintage 미사용"
+    }
+  ],
+  "oos_retention": 0.283,
+  "oos_months": 221,
+  "portfolio_alpha_t": 4.221,
+  "selection_type": "chain",
+  "family": "overlay_regime",
+  "record_type": "performance"
+}
