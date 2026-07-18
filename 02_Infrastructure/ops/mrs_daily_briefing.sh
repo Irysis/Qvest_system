@@ -63,5 +63,9 @@ echo "$TS [mrs_daily] start briefing v2.8" >> "$LOG"
 #   morning_steps/mrs_regime_send.R 로 분리 + 단일줄 source 호출로 회피(전 줄 실행 + UTF-8 정상).
 Rscript --no-save -e 'source("02_Infrastructure/ops/morning_steps/mrs_regime_send.R")' >> "$LOG" 2>&1
 
+# [2026-07-18 도훈 지시] FF5 스타일 국면 블록 — MRS 브리핑 뒤 sibling 발송 (v2.8 확정 양식 불변).
+#   트래커 재빌드(~10초) + 최근월/rolling12 국면 판독 + 부활조건 워치. 실패해도 브리핑 본체 무영향.
+Rscript --no-save -e 'source("02_Infrastructure/ops/morning_steps/ff5_brief_send.R")' >> "$LOG" 2>&1
+
 echo "$TS [mrs_daily] done" >> "$LOG"
 exit 0
