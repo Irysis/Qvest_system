@@ -28,10 +28,19 @@ safe_div <- function(a, b, min_b=0) fifelse(!is.na(a) & !is.na(b) & abs(b) > min
 cat("[1/6] 데이터 로드...\n")
 RW <- as.data.table(read_parquet(RAWDATA_CACHE))
 setkey(RW, Ticker, Date); RW <- RW[Date >= START]
-BM <- as.data.table(read_parquet(file.path(CACHE_DIR, "benchmark.parquet")))
-setnames(BM, "Ret", "BM_Ret", skip_absent = TRUE)
-if("BM_Ret" %in% names(RW)) RW[, BM_Ret := NULL]
-RW <- BM[, .(Date, BM_Ret)][RW, on = "Date"]
+# BM_Ret: prefer RAWDATA's own (Date-class, populated) — phase6 uses the same guard.
+# 2026-07-18 fix: benchmark.parquet was rebuilt with POSIXct Date (09:00:00) + a
+# BM_Ret column (not "Ret"), so the old UNCONDITIONAL re-merge joined POSIXct vs
+# RAWDATA's Date class -> BM_Ret ALL-NA -> every beta-derived phase7 factor
+# (M08_Residual_Mom / D09_Dimson_Beta / RE02..09 ~54 factors) went all-NA while
+# phase6 (guarded) stayed correct. Guard on RAWDATA BM_Ret + coerce Date on re-merge.
+if (!"BM_Ret" %in% names(RW) || all(is.na(RW$BM_Ret))) {
+  BM <- as.data.table(read_parquet(file.path(CACHE_DIR, "benchmark.parquet")))
+  setnames(BM, "Ret", "BM_Ret", skip_absent = TRUE)
+  BM[, Date := as.Date(Date)]
+  if("BM_Ret" %in% names(RW)) RW[, BM_Ret := NULL]
+  RW <- BM[, .(Date, BM_Ret)][RW, on = "Date"]
+}
 tk_counts <- RW[, .N, by=Ticker]
 RW <- RW[Ticker %in% tk_counts[N >= 30L, Ticker]]
 cat(sprintf("  RAWDATA: %s rows, %d tickers\n", format(nrow(RW),big.mark=","), length(unique(RW$Ticker))))
