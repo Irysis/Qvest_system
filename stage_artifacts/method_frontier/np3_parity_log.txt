@@ -1,0 +1,29 @@
+== FQ-057 NP3 parity / guard verification ==
+ROOT=C:/Users/99922/OneDrive/Quant_Module_Moltbot  TOL=1e-10
+[src] env_old(HEAD), env_new(edited), runner est_lw_nls loaded
+
+-- A2 known-case parity (sample/ledoit_wolf/gerber_rmt, p<n) --
+[A2] n=120 p=15 sample       identical=TRUE  max|dcov|=0.00e+00 max|dcor|=0.00e+00 attr_absent=TRUE  -> PASS
+[A2] n=120 p=15 ledoit_wolf  identical=TRUE  max|dcov|=0.00e+00 max|dcor|=0.00e+00 attr_absent=TRUE  -> PASS
+[A2] n=120 p=15 gerber_rmt   identical=TRUE  max|dcov|=0.00e+00 max|dcor|=0.00e+00 attr_absent=TRUE  -> PASS
+[A2] n=252 p=20 sample       identical=TRUE  max|dcov|=0.00e+00 max|dcor|=0.00e+00 attr_absent=TRUE  -> PASS
+[A2] n=252 p=20 ledoit_wolf  identical=TRUE  max|dcov|=0.00e+00 max|dcor|=0.00e+00 attr_absent=TRUE  -> PASS
+[A2] n=252 p=20 gerber_rmt   identical=TRUE  max|dcov|=0.00e+00 max|dcor|=0.00e+00 attr_absent=TRUE  -> PASS
+[A2] n= 60 p= 8 sample       identical=TRUE  max|dcov|=0.00e+00 max|dcor|=0.00e+00 attr_absent=TRUE  -> PASS
+[A2] n= 60 p= 8 ledoit_wolf  identical=TRUE  max|dcov|=0.00e+00 max|dcor|=0.00e+00 attr_absent=TRUE  -> PASS
+[A2] n= 60 p= 8 gerber_rmt   identical=TRUE  max|dcov|=0.00e+00 max|dcor|=0.00e+00 attr_absent=TRUE  -> PASS
+[A2] overall: PASS
+
+-- A1 runner parity (lw_nls registered vs estimators.R::est_lw_nls) --
+[A1] small  p<n  n=480 p=10   max_abs=0.000e+00 rel_frob=0.000e+00 -> PASS
+[A1] window p>n  n=60 p=302  max_abs=0.000e+00 rel_frob=0.000e+00 -> PASS
+[A1] registered lw_nls@p>n : min_ev=9.154e-03 cond=72.23 (full-rank PSD, non-degenerate)
+[A1] overall: PASS
+[A1] registered cor: diag==1 TRUE, symmetric TRUE
+
+-- B p>n degeneracy guard --
+[B] p>n  n=60 p=302 : warning=TRUE attr=TRUE schema_intact=TRUE values_unchanged=TRUE
+[B] p>n  degenerate cond(ledoit_wolf cov)=1.0000 (rho=1.000000 cap_binding=TRUE) — defect the guard flags
+[B] warning msg: [.get_cor_cov] ledoit_wolf p>n degeneracy: p(302) > n(60), rho=1.000000 [cap binding] -> Sigma collapses toward mu*I (cond~1, correlation structure destroyed). Do NOT use for large-universe Sigma; prefer cov_method='lw_nls'. [attr 'lw_degenerate' attached]
+[B] p<n control (n=120 p=15): no_warning=TRUE no_attr=TRUE -> clean
+[B] overall: PASS

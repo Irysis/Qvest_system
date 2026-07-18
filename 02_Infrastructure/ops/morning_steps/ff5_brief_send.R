@@ -53,7 +53,7 @@ if (is.null(FF) || !nrow(FF)) { cat("[ff5_brief] FF 시리즈 없음 — skip\n"
     setorder(SB, ym)
     sty <- intersect(c("VAL", "QUAL", "MOM", "LOWVOL", "SIZE", "DIV", "EREV"), names(SB))
     r12 <- vapply(sty, function(s) mean(tail(SB[[s]], 12), na.rm = TRUE), numeric(1))
-    kv_names <- c(VAL = "가치컴포지트", QUAL = "퀄리티", MOM = "모멘텀",
+    kv_names <- c(VAL = "가치포워드", QUAL = "퀄리티", MOM = "모멘텀",
                   LOWVOL = "저변동성", SIZE = "소형주", DIV = "고배당", EREV = "이익전망수정")
     kvl <- as.list(vapply(r12, fmt, character(1))); names(kvl) <- kv_names[sty]
     sections[[length(sections) + 1]] <- list(heading = "스마트베타 최근 12개월 평균 초과수익", type = "kv", kv = kvl)
@@ -69,8 +69,10 @@ if (is.null(FF) || !nrow(FF)) { cat("[ff5_brief] FF 시리즈 없음 — skip\n"
     bn <- c(KOSPI200 = "코스피200", KOSDAQ150 = "코스닥150", KOSPI = "코스피", KOSDAQ = "코스닥")
     ## 전체 프로파일 표기 (도훈 정정 07-18 — "RMW만 나옴": 최대 1개 → 4팩터 전체)
     items_ff <- vapply(names(bn), function(ix) { b <- ib$betas[[ix]]
-      sprintf("%s: SMB %+.2f · HML %+.2f · RMW %+.2f · CMA %+.2f (MKT %.2f)",
-              bn[ix], b$SMB, b$HML, b$RMW, b$CMA, b$MKT) }, character(1))
+      v <- c(SMB = b$SMB, HML = b$HML, RMW = b$RMW, CMA = b$CMA)
+      tk <- vapply(names(v), function(f) sprintf("%s %+.2f", f, v[f]), character(1))
+      tk[which.max(abs(v))] <- sprintf("<b>%s</b>", tk[which.max(abs(v))])   # 최대 민감도 볼드
+      sprintf("%s: %s (MKT %.2f)", bn[ix], paste(tk, collapse = " · "), b$MKT) }, character(1))
     sections[[length(sections) + 1]] <- list(heading = "지수 팩터 민감도 (FF5·36개월 베타)",
                                              type = "bullet", items = unname(items_ff))
     charts <- c(charts, "outputs/ff5_kr/charts/index_factor_beta.png")
@@ -78,7 +80,7 @@ if (is.null(FF) || !nrow(FF)) { cat("[ff5_brief] FF 시리즈 없음 — skip\n"
       krs <- c(VAL = "가치", QUAL = "퀄리티", MOM = "모멘텀", LOWVOL = "저변동성",
                SIZE = "소형주", DIV = "고배당", EREV = "이익전망수정")
       items_sb <- vapply(names(bn), function(ix) { v <- unlist(ib$sb_betas[[ix]]); o <- order(-abs(v))[1:2]
-        sprintf("%s: %s %+.2f · %s %+.2f (상위 2)", bn[ix],
+        sprintf("%s: <b>%s %+.2f</b> · %s %+.2f (상위 2)", bn[ix],
                 krs[names(v)[o[1]]], v[o[1]], krs[names(v)[o[2]]], v[o[2]]) }, character(1))
       sections[[length(sections) + 1]] <- list(heading = "지수 스마트베타 민감도 (36개월·시장통제)",
                                                type = "bullet", items = unname(items_sb))

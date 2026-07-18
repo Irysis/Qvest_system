@@ -1,0 +1,200 @@
+{
+  "id": "FQ-057-NP3",
+  "task": "register analytical NLS (lw_nls) into hrp_core .get_cor_cov + p>n degeneracy guard",
+  "finalized_at": "2026-07-18 17:59:37.590152",
+  "tolerance": 1e-10,
+  "target_file": "02_Infrastructure/portfolio/hrp_core.R",
+  "parity_result": {
+    "description": "A1 runner parity: registered lw_nls == estimators.R::est_lw_nls",
+    "small_p_lt_n": {
+      "n": 480,
+      "p": 10,
+      "max_abs": 0,
+      "rel_frob": 0,
+      "pass": true
+    },
+    "real_window_p_gt_n": {
+      "window_end": 201912,
+      "p": 302,
+      "n": 60,
+      "max_abs": 0,
+      "rel_frob": 0,
+      "registered_cov_min_ev": 0.009154328125107,
+      "registered_cov_cond": 72.228320789737,
+      "pass": true
+    },
+    "registered_cor_diag_unit": true,
+    "registered_cor_symmetric": true,
+    "overall_pass": true
+  },
+  "known_case_parity": {
+    "description": "A2 existing methods bit-identical old(HEAD) vs new(edited), p<n (기존 소비자 무영향)",
+    "cases": [
+      {
+        "n": 120,
+        "p": 15,
+        "method": "sample",
+        "identical": true,
+        "max_abs_cov": 0,
+        "max_abs_cor": 0,
+        "attr_absent": true,
+        "pass": true
+      },
+      {
+        "n": 120,
+        "p": 15,
+        "method": "ledoit_wolf",
+        "identical": true,
+        "max_abs_cov": 0,
+        "max_abs_cor": 0,
+        "attr_absent": true,
+        "pass": true
+      },
+      {
+        "n": 120,
+        "p": 15,
+        "method": "gerber_rmt",
+        "identical": true,
+        "max_abs_cov": 0,
+        "max_abs_cor": 0,
+        "attr_absent": true,
+        "pass": true
+      },
+      {
+        "n": 252,
+        "p": 20,
+        "method": "sample",
+        "identical": true,
+        "max_abs_cov": 0,
+        "max_abs_cor": 0,
+        "attr_absent": true,
+        "pass": true
+      },
+      {
+        "n": 252,
+        "p": 20,
+        "method": "ledoit_wolf",
+        "identical": true,
+        "max_abs_cov": 0,
+        "max_abs_cor": 0,
+        "attr_absent": true,
+        "pass": true
+      },
+      {
+        "n": 252,
+        "p": 20,
+        "method": "gerber_rmt",
+        "identical": true,
+        "max_abs_cov": 0,
+        "max_abs_cor": 0,
+        "attr_absent": true,
+        "pass": true
+      },
+      {
+        "n": 60,
+        "p": 8,
+        "method": "sample",
+        "identical": true,
+        "max_abs_cov": 0,
+        "max_abs_cor": 0,
+        "attr_absent": true,
+        "pass": true
+      },
+      {
+        "n": 60,
+        "p": 8,
+        "method": "ledoit_wolf",
+        "identical": true,
+        "max_abs_cov": 0,
+        "max_abs_cor": 0,
+        "attr_absent": true,
+        "pass": true
+      },
+      {
+        "n": 60,
+        "p": 8,
+        "method": "gerber_rmt",
+        "identical": true,
+        "max_abs_cov": 0,
+        "max_abs_cor": 0,
+        "attr_absent": true,
+        "pass": true
+      }
+    ],
+    "overall_pass": true
+  },
+  "guard_test": {
+    "description": "B p>n guard: warning + attr('lw_degenerate'); values unchanged; schema intact; p<n control clean",
+    "p_gt_n": {
+      "p": 302,
+      "n": 60,
+      "warning_emitted": true,
+      "warning_msg": "[.get_cor_cov] ledoit_wolf p>n degeneracy: p(302) > n(60), rho=1.000000 [cap binding] -> Sigma collapses toward mu*I (cond~1, correlation structure destroyed). Do NOT use for large-universe Sigma; prefer cov_method='lw_nls'. [attr 'lw_degenerate' attached]",
+      "attr_present": true,
+      "attr": {
+        "degenerate": true,
+        "method": "ledoit_wolf",
+        "reason": "p>n: inline LW shrinkage cap (rho->1) collapses Sigma toward mu*I",
+        "p": 302,
+        "n_obs": 60,
+        "rho": 1,
+        "rho_cap_binding": true,
+        "guidance": "do NOT consume for large-universe Sigma; use cov_method='lw_nls' or a factor model"
+      },
+      "values_unchanged_vs_pre_guard": true,
+      "schema_intact": true,
+      "degenerate_cond": 1
+    },
+    "p_lt_n_control": {
+      "no_warning": true,
+      "no_attr": true,
+      "clean": true
+    },
+    "auto_fallback_applied": false,
+    "overall_pass": true
+  },
+  "callers_audit": {
+    "scope_note": "hrp_core.R .get_cor_cov (standalone fallback) modified. A SECOND .get_cor_cov exists in 02_Infrastructure/backtest_harness.R:414 (uses .ledoit_wolf_shrink, a different LW formula that ALSO caps at alpha=1 -> analogous p>n isotropic collapse). The harness copy takes precedence when backtest_harness.R is sourced (hrp_core skips its own defs); it does NOT receive lw_nls or the p>n guard from this task (out of scope). FOLLOW-UP: mirror registration+guard into harness if WT-time Sigma consumption routes through the harness rather than a direct source() of hrp_core.R.",
+    "live_infra_consumers": [
+      {
+        "path": "02_Infrastructure/ops/auto_sigma_weighting_ab.R:84",
+        "methods": "sample/ledoit_wolf",
+        "universe": "book holdings top-N (p<=25)",
+        "lookback": "LOOKBACK_DAYS(120+)",
+        "p_gt_n": false
+      },
+      {
+        "path": "02_Infrastructure/factor_db/covariance_cache.R:71,75",
+        "methods": "gerber_rmt ONLY via .get_cor_cov",
+        "note": "its ledoit_wolf path uses corpcor::cov.shrink, NOT .get_cor_cov; select_cov_method returns ledoit_wolf when D>=N but that bypasses this fn",
+        "p_gt_n": false
+      },
+      {
+        "path": "04_Research/composition_search/cycle1b_trackW/trackw_engine.R:171",
+        "methods": "sample/ledoit_wolf/gerber_rmt",
+        "universe": "top-N tickers",
+        "lookback": "n_days=756",
+        "p_gt_n": false
+      },
+      {
+        "path": "02_Infrastructure/prompts/risk_research_init.md:206",
+        "methods": "documents hrp_core .get_cor_cov (Sample/LW/Gerber-RMT)",
+        "universe": "WT-time top-25 (p<=25)",
+        "p_gt_n": false
+      }
+    ],
+    "historical_or_perWT_pattern": [
+      {
+        "path": "qepm/mailbox/worktask/WT-D20260606_001/risk_build.R:263",
+        "call": ".get_cor_cov(facMat,'ledoit_wolf')",
+        "note": "factor covariance; p=#factors can approach/exceed n"
+      },
+      {
+        "path": "qepm/mailbox/worktask/WT-D20260508_009|010/challenge_note_risk.md",
+        "note": "self-caught inline LW isotropic collapse at n_obs(252) < p(348) and n_obs(252) ~ p(241) -> p>=n degeneracy ACTUALLY OCCURRED historically; motivates this guard"
+      }
+    ],
+    "conclusion": "No always-on/live infra consumer currently sends p>n to hrp_core inline ledoit_wolf (all top-N, p<n). Guard is protective for the recurring factor-level covariance usage pattern (historically confirmed to silently degenerate). Matches FQ-057 verdict revival condition #4 (audit large-universe .get_cor_cov ledoit_wolf consumers for p>n)."
+  },
+  "overall_pass": true
+}
