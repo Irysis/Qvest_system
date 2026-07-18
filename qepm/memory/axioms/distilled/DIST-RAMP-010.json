@@ -1,0 +1,71 @@
+{
+  "schema_version": "distilled_v1",
+  "dist_id": "DIST-RAMP-010",
+  "cluster_key": "f41215fc7f23",
+  "candidate_id": "CAND_20260718_ramp_infra_process_positive_L-RAMP-20260618_131316C_L-RAMP-20260618_131800_L-RAMP-20260618_175207",
+  "status": "pending_5axis",
+  "statement_refined": null,
+  "retry_condition": null,
+  "refined_at": null,
+  "refined_by": null,
+  "promoted_to_axiom": null,
+  "created_at": "2026-07-18T00:23:16+00:00",
+  "updated_at": "2026-07-18T00:23:16+00:00",
+  "research_mode": "ramp",
+  "metric_type": "estimated",
+  "type": "empirical",
+  "polarity": "positive",
+  "statement_draft": "[실증 성공 규칙 초안] family=infra_process, tags=R,A,M, supporting=5건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
+  "supporting_l_codes": [
+    "L-RAMP-20260618_131316C",
+    "L-RAMP-20260618_131800",
+    "L-RAMP-20260618_175207",
+    "L-RAMP-20260715_072549",
+    "L-RAMP-20260715_075509"
+  ],
+  "scope_draft": {
+    "market": "KR",
+    "factor_family": "infra_process",
+    "regime": null,
+    "construction_types": null
+  },
+  "evidence_draft": {
+    "independent_l_codes": 5,
+    "independent_strategies": 5,
+    "strategies": [
+      "R45_stored_ret_vs_recompute_rootcause",
+      "RAMP_M0_COMBINE_20260618",
+      "RAMP_GRADUATION_20260618",
+      "RAMP_GATE6_BEST_20260618",
+      "R46_firewall_dategap_refine_close_tripwire"
+    ],
+    "effect_direction_consistency": null,
+    "note": "evidence_draft — promote.R 5축 검증에서 hurdle_result/grade_a_catalog 교차검증으로 확정",
+    "n_eff_signatures": 3,
+    "independent_constructions": 3,
+    "constructions": [
+      "chain",
+      "ret_sanity_firewall date-gap 참값보존(P3) 배선 + close_continuity_tripwire(P2) 신규 배선 + sanitize Step4b/Step5 배선 + 6-test 회귀 parity",
+      "stored Ret vs recompute(Close/shift(Close)-1) 전수 census(14M행) + 2-cluster gap-seam 근원 진단 + factor_db/canonical 소비경로 추적 + 라이브 북 hole 점검"
+    ],
+    "metric_types": [
+      "backtested",
+      "canonical_screen"
+    ]
+  },
+  "falsification_draft": {
+    "attempts": [],
+    "note": "promote.R 5축(r7 적극 반증)에서 kr-inverse-pattern-miner 역가설 + role_honesty로 채움"
+  },
+  "mechanism_draft": {
+    "economic_explanation": "R45 근원(date-gap 불일치=Close-hole span recompute 스퓨리어스·stored 참값)을 방화벽에 반영: date-gap ∧ stored 물리타당이면 stored 복원(RESTORE)이 date-gap ∧ stored 무효(HARD)·연속일 phys/zerodiv(HARD)와 분리되는가. 실증: 6-test parity — HARD 672→633(seam 39 RESTORE 이관)·유니버스 분류 불변·유니버스 월패널 max|Δ|=0·A004415 recompute+489%→stored+2.93% 보존. tripwire 245 구멍 감지·유니버스 활성 0(gate clean). 정련·게이트 배선만·rawdata 무변경. (멤버 가설 4건 — promote.R에서 일치성 재검증)",
+    "mechanism_type": "unknown",
+    "causal_plausibility": null
+  },
+  "oos_validation_draft": {
+    "oos_months": null,
+    "oos_effect_vs_is": 0.149,
+    "note": "L-code oos_retention 실값 1건 median (IS65/OOS35 활성SR retention) — oos_months 실값 무 → None 유지 — promote.R essence_score 경유 재확정"
+  },
+  "cluster_members_count": 5
+}

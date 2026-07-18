@@ -1,0 +1,212 @@
+{
+  "schema_version": "v54_ax_p0_mode",
+  "candidate_id": "CAND_20260718_judge_gate_value_conditional_L-149_L-150_L-151",
+  "research_mode": "judge_gate",
+  "metric_type": "estimated",
+  "type": "empirical",
+  "polarity": "conditional",
+  "statement_draft": "[실증 조건부 규칙 초안] family=value, tags=G,E,J, supporting=13건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
+  "supporting_l_codes": [
+    "L-149",
+    "L-150",
+    "L-151",
+    "L-152",
+    "L-154",
+    "L-155",
+    "L-156",
+    "L-159",
+    "L-JG-20260705_123317",
+    "L-JG-20260705_200604",
+    "L-JG-20260705_201906",
+    "L-JG-20260706_102102",
+    "L-JG-20260714_214259"
+  ],
+  "scope_draft": {
+    "market": "KR",
+    "factor_family": "value",
+    "regime": null,
+    "construction_types": null
+  },
+  "evidence_draft": {
+    "independent_l_codes": 13,
+    "independent_strategies": 13,
+    "strategies": [
+      "WT-D20260705_004",
+      "STR_1682",
+      "STR_1439",
+      "ADMISSION_RULE_V3_0",
+      "STR_1435",
+      "WT-D20260705_001",
+      "STR_1060",
+      "WT-D20260714_006",
+      "SWEEP_V3_TIER2",
+      "WT-D20260705_009",
+      "STR_1679v2",
+      "WT-D20260706_MIDCAP",
+      "SWEEP_V3_TIER3"
+    ],
+    "effect_direction_consistency": null,
+    "note": "evidence_draft — promote.R 5축 검증에서 hurdle_result/grade_a_catalog 교차검증으로 확정",
+    "n_eff_signatures": 7,
+    "independent_constructions": 5,
+    "constructions": [
+      "composite",
+      "ml_sizing",
+      "quality",
+      "single_factor_long_only",
+      "value"
+    ],
+    "metric_types": [
+      "backtested",
+      "estimated"
+    ]
+  },
+  "falsification_draft": {
+    "attempts": [
+      {
+        "test": "look-ahead toggle (lag0 concurrent vs realization-aligned benchmark)",
+        "result": "survived",
+        "effect_retained": 1.41
+      },
+      {
+        "test": "placebo (shuffled labels, percentile)",
+        "result": "survived",
+        "effect_retained": 1
+      },
+      {
+        "test": "seed-instability (5-seed per-seed PORT_t range)",
+        "result": "weakened",
+        "effect_retained": null
+      },
+      {
+        "test": "post-2022 subperiod PORT_t",
+        "result": "falsified",
+        "effect_retained": -0.31
+      },
+      {
+        "test": "oos_retention (3 anchored splits median)",
+        "result": "falsified",
+        "effect_retained": 0.037
+      },
+      {
+        "test": "like-for-like variant sweep (A point vs B mu/sigma vs D shrink, 196/112m)",
+        "result": "falsified",
+        "effect_retained": -0.404
+      },
+      {
+        "test": "optimizer aware-vs-blind (9 methods x D1/D2 designs, common-subsample paired)",
+        "result": "falsified",
+        "effect_retained": -0.1605
+      },
+      {
+        "test": "24-cell adversarial hyperparam grid (lambda/kappa/gamma) argmax check",
+        "result": "falsified",
+        "effect_retained": -1.0122
+      },
+      {
+        "test": "PIT look-ahead signature (mu_hat IC 0.031 <= score_eff mean IC 0.036, strict expanding window)",
+        "result": "survived",
+        "effect_retained": null
+      },
+      {
+        "test": "sigma_hat calibration (within-month corr(sigma, |realized active|))",
+        "result": "survived",
+        "effect_retained": 0.207
+      },
+      {
+        "test": "paired NW-t(lag3) of ArmB-ArmA active diff, full period",
+        "result": "falsified",
+        "effect_retained": -0.42
+      },
+      {
+        "test": "paired NW-t(lag3) of ArmB-ArmA active diff, post2017",
+        "result": "weakened",
+        "effect_retained": 0.45
+      },
+      {
+        "test": "raw known-good composite (rank-IC t=6.30) direct top-25 long-only base (NGBoost-attenuation control)",
+        "result": "survived",
+        "effect_retained": -0.87
+      },
+      {
+        "test": "sigma_hat vs log_ADV correlation (liquidity/size-proxy confound control)",
+        "result": "survived",
+        "effect_retained": 0.082
+      },
+      {
+        "test": "top-half rank-IC t (long-only-relevant region) vs full-universe t=3.38",
+        "result": "falsified",
+        "effect_retained": 1.89
+      },
+      {
+        "test": "GROSS (pre-cost) top-25 active t (edge-before-costs control)",
+        "result": "falsified",
+        "effect_retained": 0.66
+      },
+      {
+        "test": "universe inner-join fix (87.7%-zeroing bug), full re-measurement on 777 in-univ tickers",
+        "result": "survived",
+        "effect_retained": null
+      },
+      {
+        "test": "lag+1 PIT stress (real IC 0.0435 t5.74 vs lookahead 0.0289)",
+        "result": "survived",
+        "effect_retained": 1
+      },
+      {
+        "test": "placebo shuffled-alpha IC (-0.004 t-0.88)",
+        "result": "survived",
+        "effect_retained": null
+      },
+      {
+        "test": "post2017 vs cap-w KOSPI200 active t",
+        "result": "falsified",
+        "effect_retained": -0.49
+      },
+      {
+        "test": "book-marginal ΔIR vs PG2 (net_active_recon proxy + lag1)",
+        "result": "falsified",
+        "effect_retained": -0.0074
+      },
+      {
+        "test": "optimizer κ cap-w-shrink sweep (TE-control bridge)",
+        "result": "falsified",
+        "effect_retained": -1.13
+      },
+      {
+        "test": "placebo value-shuffle N=40 (alpha 단계)",
+        "result": "survived",
+        "effect_retained": 2.378
+      },
+      {
+        "test": "lag1 signal shift stress (동월 look-ahead 판별)",
+        "result": "survived",
+        "effect_retained": 2.473
+      },
+      {
+        "test": "lockbox frozen deploy-extension OOS (2024-01+ 실측, judge 권위)",
+        "result": "falsified",
+        "effect_retained": -1.6715
+      },
+      {
+        "test": "sweep 재분류 DSR sensitivity (N_trials=41 deflate)",
+        "result": "survived",
+        "effect_retained": 0.729
+      }
+    ],
+    "note": "L-code 기록 반증 시도 실값 집계"
+  },
+  "mechanism_draft": {
+    "economic_explanation": "Down-weighting high-forecast-uncertainty (high sigma_hat) names should improve IC->PORT_t transfer by avoiding noisy top-region picks. FALSIFIED: mechanism fires (low-sigma tilt achieved) but realized long-only alpha unchanged because the KR IC is carried by the un-harvestable short side, not by top-region ordering. (멤버 가설 5건 — promote.R에서 일치성 재검증)",
+    "mechanism_type": "structural",
+    "causal_plausibility": null
+  },
+  "oos_validation_draft": {
+    "oos_months": 71.5,
+    "oos_effect_vs_is": -0.604,
+    "note": "L-code oos_retention 실값 5건 median (IS65/OOS35 활성SR retention) + oos_months 실값 2건 median — promote.R essence_score 경유 재확정"
+  },
+  "cluster_members_count": 13,
+  "status": "pending_5axis",
+  "created_at": "2026-07-18T00:23:15+00:00"
+}

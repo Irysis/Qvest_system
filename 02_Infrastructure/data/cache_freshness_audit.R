@@ -40,6 +40,21 @@ cache_freshness_audit <- function(telegram_alert = TRUE,
   today <- Sys.Date()
   today_ts <- Sys.time()
 
+  # ─── 거래일 캘린더 (2026-07-17 주말/휴일 오탐 제거) ─────────────────────────
+  # tight-SLA daily 캐시(max_lag ≤ 7)의 data_lag를 "완결 거래일 수"로 측정.
+  # 근거: 토/일·휴장일(예: 2026-07-17)마다 RAWDATA/benchmark/MSM lag=2 false-WARN
+  # 재발(07-12 일요일 실증) — 캘린더-일 기준이라 비거래일을 지연으로 오인.
+  # (last_d, today) 개구간의 거래일 수 = 실제로 놓친 완결 세션 수. 캘린더 커버리지
+  # 밖(스테일)이면 기존 캘린더-일 계산으로 fallback (lag를 늘리는 일은 없음).
+  .tcal <- tryCatch({
+    p <- file.path(PROJECT_ROOT, ".cache", "trading_calendar.parquet")
+    if (file.exists(p)) sort(unique(as.Date(as.data.table(read_parquet(p))$Date))) else NULL
+  }, error = function(e) NULL)
+  .trading_lag <- function(last_d, cal_lag) {
+    if (is.null(.tcal) || is.na(last_d) || max(.tcal) < today - 3L) return(cal_lag)
+    sum(.tcal > last_d & .tcal < today)
+  }
+
   results <- list()
   registered_paths <- sapply(caches, function(c) c$path)
 
@@ -133,6 +148,12 @@ cache_freshness_audit <- function(telegram_alert = TRUE,
 
     # Pick worse of mtime_lag and data_lag for evaluation
     lag <- if (!is.na(data_lag)) data_lag else mtime_lag
+    # tight-SLA daily 캐시(max_lag ≤ 7)는 거래일-기준 lag — 주말/휴장일 false-WARN 제거
+    if (!is.na(data_lag) && isTRUE(c$schedule == "daily") &&
+        !is.null(c$max_lag_days) && c$max_lag_days <= 7) {
+      lag <- .trading_lag(today - data_lag, lag)
+      res$lag_basis <- "trading_days"
+    }
     res$mtime_lag <- mtime_lag
     res$data_lag <- data_lag
     res$lag_used <- lag
