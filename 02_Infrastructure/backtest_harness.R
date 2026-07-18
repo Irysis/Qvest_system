@@ -409,9 +409,57 @@ calc_ivol_weights <- function(tickers, ret_dt, n_days = 60, max_w = 0.15) {
   cor_clean
 }
 
+# ── Ledoit-Wolf (2020) analytical nonlinear shrinkage (NLS) — hrp_core 미러 ──────
+#   FQ-057 NP3(2026-07-18 도훈 승인). backtest_harness.R:414 별도 .get_cor_cov가
+#   lw_nls/p>n 가드 미적용이라 shadowing 시 silent sample 폴백하던 갭 배선(#1b).
+#   hrp_core.R::.lw_nls_cov 와 동일 로직(analytical_shrinkage.m 포트, run_np3_parity
+#   검증 대상 — 본체 수정 금지). p>n 에서도 full-rank PSD.
+.lw_nls_cov <- function(R) {
+  n <- nrow(R); p <- ncol(R)
+  X <- scale(R, center = TRUE, scale = FALSE)
+  n_eff <- n - 1
+  S <- crossprod(X) / n_eff
+  eg <- eigen(S, symmetric = TRUE)
+  lambda_all <- rev(eg$values)
+  u <- eg$vectors[, rev(seq_len(p)), drop = FALSE]
+  keep <- max(1, p - n_eff + 1):p
+  lambda <- lambda_all[keep]
+  lambda[lambda < .Machine$double.eps] <- .Machine$double.eps
+  m <- length(lambda)
+  L  <- matrix(lambda, nrow = m, ncol = m)
+  Ht <- (n_eff^(-1/3)) * t(L)
+  x  <- (L - t(L)) / Ht
+  ftilde <- (3 / (4 * sqrt(5))) * rowMeans(pmax(1 - x^2 / 5, 0) / Ht)
+  Hftemp <- (-3 / (10 * pi)) * x +
+            (3 / (4 * sqrt(5) * pi)) * (1 - x^2 / 5) *
+            log(abs((sqrt(5) - x) / (sqrt(5) + x)))
+  sel <- abs(x) == sqrt(5)
+  if (any(sel)) Hftemp[sel] <- (-3 / (10 * pi)) * x[sel]
+  Hftemp[!is.finite(Hftemp)] <- 0
+  Hftilde <- rowMeans(Hftemp / Ht)
+  c_ratio <- p / n_eff
+  if (p <= n_eff) {
+    dtilde <- lambda / ((pi * c_ratio * lambda * ftilde)^2 +
+                        (1 - c_ratio - pi * c_ratio * lambda * Hftilde)^2)
+  } else {
+    h <- n_eff^(-1/3)
+    Hftilde0 <- (1 / pi) * (3 / (10 * h^2) +
+                 3 / (4 * sqrt(5) * h) * (1 - 1 / (5 * h^2)) *
+                 log((1 + sqrt(5) * h) / (1 - sqrt(5) * h))) * mean(1 / lambda)
+    dtilde0 <- 1 / (pi * (p - n_eff) / n_eff * Hftilde0)
+    dtilde1 <- lambda / (pi^2 * lambda^2 * (ftilde^2 + Hftilde^2))
+    dtilde  <- c(rep(dtilde0, p - n_eff), dtilde1)
+  }
+  Sig <- u %*% diag(dtilde) %*% t(u)
+  Sig <- (Sig + t(Sig)) / 2
+  dimnames(Sig) <- dimnames(S)
+  Sig
+}
+
 #' Dispatch covariance/correlation pre-processing
-#' @param cov_method "sample" | "ledoit_wolf" | "gerber_rmt"
+#' @param cov_method "sample" | "ledoit_wolf" | "lw_nls" | "gerber_rmt"
 .get_cor_cov <- function(ret_mat, cov_method = "sample") {
+  .lw_degenerate_info <- NULL
   if (cov_method == "gerber_rmt") {
     q_ratio <- nrow(ret_mat) / ncol(ret_mat)
     cor_mat <- .gerber_cor(ret_mat)
@@ -424,13 +472,33 @@ calc_ivol_weights <- function(tickers, ret_dt, n_days = 60, max_w = 0.15) {
     sds <- sqrt(diag(cov_mat))
     cor_mat <- cov_mat / outer(sds, sds)
     diag(cor_mat) <- 1.0
+    # ── p>n 퇴화 가드 (FQ-057 NP3 미러, 2026-07-18) ─────────────────────────────
+    # LW 축소는 p>n 에서 Σ→μ·I 로 퇴화(cond≈1·상관구조 전멸). 차원 기반 경고 +
+    # attr("lw_degenerate")만 — 값/기본동작 불변(자동 폴백 아님). 대안=cov_method="lw_nls".
+    p_ <- ncol(ret_mat); n_ <- nrow(ret_mat)
+    if (p_ > n_) {
+      .lw_degenerate_info <- list(
+        degenerate = TRUE, method = "ledoit_wolf", p = p_, n_obs = n_,
+        reason = "p>n: LW shrinkage collapses Sigma toward mu*I",
+        guidance = "do NOT consume for large-universe Sigma; use cov_method='lw_nls' or a factor model")
+      warning(sprintf(
+        "[.get_cor_cov] ledoit_wolf p>n degeneracy: p(%d) > n(%d) -> Sigma collapses toward mu*I. Prefer cov_method='lw_nls'. [attr 'lw_degenerate' attached]",
+        p_, n_), call. = FALSE)
+    }
+  } else if (cov_method == "lw_nls") {
+    cov_mat <- .lw_nls_cov(ret_mat)
+    sds <- sqrt(diag(cov_mat))
+    cor_mat <- cov_mat / outer(sds, sds)
+    diag(cor_mat) <- 1.0
   } else {
     cor_mat <- cor(ret_mat, use = "pairwise.complete.obs")
     cov_mat <- cov(ret_mat, use = "pairwise.complete.obs")
   }
   cor_mat[is.na(cor_mat)] <- 0
   cov_mat[is.na(cov_mat)] <- 0
-  list(cor = cor_mat, cov = cov_mat)
+  out <- list(cor = cor_mat, cov = cov_mat)
+  if (!is.null(.lw_degenerate_info)) attr(out, "lw_degenerate") <- .lw_degenerate_info
+  out
 }
 
 #==============================================================================
