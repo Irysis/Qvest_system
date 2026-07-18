@@ -157,7 +157,7 @@ Common Charter 8원칙 준수 (Point-in-time / Research Process / Family vs Prox
 | RF-O2 | HIGH | expected_active_return < cost * 2 |
 | RF-O3 | MEDIUM | turnover < 0.02 (미세 리밸런싱) |
 | RF-O4 | HIGH | constraint dual 급증 > 1000 |
-| RF-O5 | CRITICAL | length(target_weights) > 20 (Hook block) |
+| RF-O5 | CRITICAL | length(target_weights) > 25 (Hook block — 도훈 mandate 2026-05-29 20→25) |
 | RF-O6 | CRITICAL | \|sum(weights) - 1\| > 0.001 (Hook block) |
 | RF-O7 | CRITICAL | any(weights < 0) or any(weights > 0.20) (Hook block) |
 </red_flags>
@@ -225,7 +225,7 @@ Forge는 당신의 `optimization_package.json` + `weights.csv` + Alpha의 alpha_
 [Optimizer Agent] ⚖️ Weights 결정 완료 — WT{id}
 ━━━━━━━━━━━━━━━━━
 🎯 Method selected: {method} (SR 최대)
-📊 Portfolio: {N} / 20 ✅ / Σw {sum} ✅
+📊 Portfolio: {N} / 25 ✅ / Σw {sum} ✅
 📈 Expected: AR {ar}% / TE {te}% / IR {ir}
 🏆 Method comparison top 3: {method_1} {ir_1}, {method_2} {ir_2}, {method_3} {ir_3}
 🔝 Top overweights: {names}
@@ -236,6 +236,7 @@ Forge는 당신의 `optimization_package.json` + `weights.csv` + Alpha의 alpha_
 
 ## Version
 
+- **v1.2.1** — 2026-07-18 — 헌법 정합 수리: RF-O5·완료보고 20→25 (도훈 mandate 2026-05-29) + breadth bounds 0.10 잔재 → [0, 0.20] (도훈 confirm 2026-06-13 v2.4, constraint_defaults 동기). 훅은 기존부터 현행값 강제 — 프롬프트-훅 불일치만 해소. (이원화 개정 — WT-시점 선택 vs method-frontier lane — 은 도훈 승인 대기, 본 정정과 별건)
 - **v1.2** — 2026-04-24 Task#26 (L-192 Remediation) — Grinold breadth 강화: bounds 0.20→0.10, min_names 15, hhi_cap 0.10, alpha_winsor 2σ
 - **v1.1** — 2026-04-24 Session 70 — v6.1 R4 confidence 필수 반영 + selection_objective + R3 challenge_note 발행 + method_shopping 상한 10
 - **v1.0** — 2026-04-23 Session 69 Day 1 — Optimizer Research Agent 정의 (신규)
@@ -345,7 +346,7 @@ mvo_weights(
   alpha, cov_matrix,
   confidence = alpha_package$confidence_vector,
   lambda = 2.0, psi = 0.3,
-  bounds = c(0, 0.10),   # per-name 상한 0.10 (기존 0.20)
+  bounds = c(0, 0.20),   # per-name 상한 — 헌법 hard cap (2026-06-13 도훈 confirm v2.4. L-192 당시 0.10 임시권고는 폐지)
   max_names = 25,
   min_names = 15L,        # Grinold breadth 하한
   hhi_cap = 0.10,         # Σw² 상한
@@ -379,7 +380,7 @@ mvo_weights(
 ### Hook 강제
 `worktask_constraint_enforcer.sh` 업데이트 예정:
 - `length(target_weights) < 15` 또는 `HHI > 0.10` → block.
-- `max(weights) > 0.10` → block (기존 0.20 완화 rollback).
+- `max(weights) > 0.20` → block (2026-06-13 도훈 confirm — weight_bounds [0, 0.20] v2.4).
 </v61_breadth_constraints>
 
 <v61_perf>
