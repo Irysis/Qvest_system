@@ -40,18 +40,28 @@ t0 <- proc.time()
 lag_n <- function(x, n) { m <- length(x); if(m<=n) rep(NA_real_,m) else c(rep(NA_real_,n), x[1:(m-n)]) }
 
 # ─── 0. 기존 일간 DB 전체 삭제 (fdb_daily + factor_db_daily 모두) ────────────
-cat("[0/8] 기존 일간 parquet 전체 삭제...\n")
-old <- list.files(FDB_DIR, pattern = "\\.parquet$", full.names = TRUE)
-if (length(old) > 0) { file.remove(old); cat(sprintf("  %d 파일 삭제\n", length(old))) }
-old_reg <- file.path(FDB_DIR, "factor_db_daily_registry.json")
-if (file.exists(old_reg)) file.remove(old_reg)
+# 단일월 증분 모드(FDB_INCR_YM=YYYYMM): 삭제·registry 재작성 스킵 + RW 윈도우 + 단일월 출력.
+# 미설정 시 기존 full-rebuild 동작 완전 불변. (2026-07-18 task#5)
+INCR_YM <- Sys.getenv("FDB_INCR_YM", "")
+INCR_ON <- nzchar(INCR_YM)
+if (INCR_ON) {
+  cat(sprintf("[0/8] 증분 모드 FDB_INCR_YM=%s — 전체삭제 스킵(additive 단일월)\n", INCR_YM))
+} else {
+  cat("[0/8] 기존 일간 parquet 전체 삭제...\n")
+  old <- list.files(FDB_DIR, pattern = "\\.parquet$", full.names = TRUE)
+  if (length(old) > 0) { file.remove(old); cat(sprintf("  %d 파일 삭제\n", length(old))) }
+  old_reg <- file.path(FDB_DIR, "factor_db_daily_registry.json")
+  if (file.exists(old_reg)) file.remove(old_reg)
+}
 cat("\n")
 
 # ─── 1. 데이터 로드 ──────────────────────────────────────────────────────��──
 cat("[1/8] 전체 데이터 로드...\n")
 RW <- as.data.table(read_parquet(RAWDATA_CACHE))
 setkey(RW, Ticker, Date)
-RW <- RW[Date >= START]
+# 증분: 룩백 창 ≥1300 거래일(M12_LR_Reversal=1260d 롤링) → ~2200 캘린더일. full: START(1989).
+.load_start <- if (INCR_ON) max(START, as.Date(paste0(INCR_YM, "01"), format = "%Y%m%d") - 2200) else START
+RW <- RW[Date >= .load_start]
 if (!"BM_Ret" %in% names(RW) || all(is.na(RW$BM_Ret))) {
   BM <- as.data.table(read_parquet(file.path(CACHE_DIR, "benchmark.parquet")))
   setnames(BM, "Ret", "BM_Ret", skip_absent = TRUE)
@@ -350,6 +360,7 @@ cat("  Part A 월별 저장 (메모리 절약)...\n")
 PART_A <- PART_A[Date >= OUT_START]
 setkey(PART_A, Date, Ticker)
 PART_A[, YM := format(Date, "%Y%m")]
+if (INCR_ON) PART_A <- PART_A[YM == INCR_YM]   # 증분: 해당 월만 출력
 a_months <- sort(unique(PART_A$YM))
 TEMP_DIR <- file.path(FDB_DIR, "_temp_a")
 dir.create(TEMP_DIR, showWarnings = FALSE)
@@ -680,16 +691,18 @@ cat(sprintf("  저장: %d months (%.1fs)\n\n", length(a_months), (proc.time()-t6
 # ─── 8. Registry ────────────────────────────────────────────────────────────
 cat("[8/8] Registry...\n")
 fac_cols <- if(!is.null(all_fac_cols)) all_fac_cols else character(0)
-registry <- list(
-  version = "6.0.0",
-  created = format(Sys.time(), "%Y-%m-%dT%H:%M:%S"),
-  n_factors = length(fac_cols),
-  n_months = length(a_months),
-  total_rows = total_rows,
-  factor_list = sort(fac_cols),
-  naming = "monthly_db_compatible"
-)
-write(toJSON(registry, pretty=TRUE, auto_unbox=TRUE), file.path(FDB_DIR, "factor_db_daily_registry.json"))
+if (!INCR_ON) {   # 증분: 글로벌 registry(전 439월 factor_list) 보존 — 재작성 스킵
+  registry <- list(
+    version = "6.0.0",
+    created = format(Sys.time(), "%Y-%m-%dT%H:%M:%S"),
+    n_factors = length(fac_cols),
+    n_months = length(a_months),
+    total_rows = total_rows,
+    factor_list = sort(fac_cols),
+    naming = "monthly_db_compatible"
+  )
+  write(toJSON(registry, pretty=TRUE, auto_unbox=TRUE), file.path(FDB_DIR, "factor_db_daily_registry.json"))
+}
 
 total_min <- (proc.time()-t0)["elapsed"]/60
 cat(sprintf("\n══════════════════════════════════════════════════════\n"))

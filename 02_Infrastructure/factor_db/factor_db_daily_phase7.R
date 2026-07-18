@@ -27,7 +27,9 @@ safe_div <- function(a, b, min_b=0) fifelse(!is.na(a) & !is.na(b) & abs(b) > min
 # ═══ 1. RAWDATA 로드 ════════════════════════════════════════════════════════
 cat("[1/6] 데이터 로드...\n")
 RW <- as.data.table(read_parquet(RAWDATA_CACHE))
-setkey(RW, Ticker, Date); RW <- RW[Date >= START]
+INCR_YM <- Sys.getenv("FDB_INCR_YM", ""); INCR_ON <- nzchar(INCR_YM)  # 증분 단일월 모드 (2026-07-18 task#5)
+.load_start <- if (INCR_ON) max(START, as.Date(paste0(INCR_YM, "01"), format = "%Y%m%d") - 2200) else START  # ≥1300 거래일 룩백
+setkey(RW, Ticker, Date); RW <- RW[Date >= .load_start]
 # BM_Ret: prefer RAWDATA's own (Date-class, populated) — phase6 uses the same guard.
 # 2026-07-18 fix: benchmark.parquet was rebuilt with POSIXct Date (09:00:00) + a
 # BM_Ret column (not "Ret"), so the old UNCONDITIONAL re-merge joined POSIXct vs
@@ -364,6 +366,7 @@ reg_cols <- setdiff(names(REG_F), c("Date","Ticker","YM"))
 
 files <- list.files(FDB_DIR, pattern="fdb_daily_.*parquet", full.names=TRUE)
 months <- gsub(".*fdb_daily_(\\d+)\\.parquet","\\1", basename(files))
+if (INCR_ON) { .keep <- months == INCR_YM; files <- files[.keep]; months <- months[.keep] }  # 증분: 단일월만 merge
 pb <- max(1L, length(files) %/% 20L)
 
 for(i in seq_along(files)) {
@@ -404,15 +407,18 @@ cat(sprintf("  merge 완료 (%.1fs)\n\n", (proc.time()-t4)["elapsed"]))
 
 # ═══ 6. Registry 업데이트 ══════════════════════════════════════════════════
 cat("[6/6] Registry...\n")
-reg_path <- file.path(FDB_DIR, "factor_db_daily_registry.json")
-reg <- if(file.exists(reg_path)) fromJSON(reg_path) else list()
 new_facs <- c(r_cols, inv_cols, reg_cols)
-reg$version <- "7.0.0"
-reg$updated <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S")
-reg$n_factors <- reg$n_factors + length(new_facs)
-reg$phase7 <- list(n_factors = length(new_facs), factors = new_facs)
-reg$factor_list <- c(reg$factor_list, new_facs)
-write(toJSON(reg, pretty=TRUE, auto_unbox=TRUE), reg_path)
+reg <- list(n_factors = NA_integer_)
+if (!INCR_ON) {   # 증분: 글로벌 registry(전 439월 factor_list) 보존 — n_factors 중복가산·version 하향 방지
+  reg_path <- file.path(FDB_DIR, "factor_db_daily_registry.json")
+  reg <- if(file.exists(reg_path)) fromJSON(reg_path) else list()
+  reg$version <- "7.0.0"
+  reg$updated <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S")
+  reg$n_factors <- reg$n_factors + length(new_facs)
+  reg$phase7 <- list(n_factors = length(new_facs), factors = new_facs)
+  reg$factor_list <- c(reg$factor_list, new_facs)
+  write(toJSON(reg, pretty=TRUE, auto_unbox=TRUE), reg_path)
+}
 
 total_min <- (proc.time()-t0)["elapsed"]/60
 cat(sprintf("\n═══ Phase 7 완료 ═══\n  추가: %d팩터 (RAWDATA %d + INV %d + REG %d)\n  총 누적: %d팩터\n  소요: %.1f분\n",

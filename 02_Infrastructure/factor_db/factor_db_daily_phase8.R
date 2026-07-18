@@ -79,8 +79,15 @@ for(item in c("target_price","eps_1y","bps_1y","dps_1y","sue","eps_chg_1m","eps_
 }
 
 # RAWDATA Close/Size
-RW <- as.data.table(read_parquet(RAWDATA_CACHE))
-RW_PRICE <- RW[Date >= OUT_START, .(Ticker, Date, Close, Size, Ret)]
+INCR_YM <- Sys.getenv("FDB_INCR_YM", ""); INCR_ON <- nzchar(INCR_YM)  # 증분 단일월 모드 (2026-07-18 task#5)
+if (INCR_ON) {   # phase8는 월내 계산 — RW를 col_select+윈도우로 경량 로드(버퍼 400d)
+  RW <- as.data.table(read_parquet(RAWDATA_CACHE, col_select=c("Ticker","Date","Close","Size","Ret")))
+  .p8_start <- max(OUT_START, as.Date(paste0(INCR_YM, "01"), format = "%Y%m%d") - 400)
+  RW_PRICE <- RW[Date >= .p8_start, .(Ticker, Date, Close, Size, Ret)]
+} else {
+  RW <- as.data.table(read_parquet(RAWDATA_CACHE))
+  RW_PRICE <- RW[Date >= OUT_START, .(Ticker, Date, Close, Size, Ret)]
+}
 RW_PRICE[, YM := format(Date, "%Y%m")]
 setkey(RW_PRICE, Ticker, Date)
 rm(RW, FUND, fund_sub); gc(verbose=FALSE)
@@ -92,6 +99,7 @@ t1 <- proc.time()
 
 files <- sort(list.files(FDB_DIR, pattern="fdb_daily_.*parquet", full.names=TRUE))
 months <- gsub(".*fdb_daily_(\\d+)\\.parquet","\\1", basename(files))
+if (INCR_ON) { .keep <- months == INCR_YM; files <- files[.keep]; months <- months[.keep] }  # 증분: 단일월만
 pb <- max(1L, length(files) %/% 20L)
 
 for(i in seq_along(files)) {
@@ -292,15 +300,17 @@ cat(sprintf("  완료 (%.1fs)\n\n", (proc.time()-t1)["elapsed"]))
 
 # ═══ 3. Registry ═══════════════════════════════════════════════════════════
 cat("[3/4] Registry...\n")
-reg_path <- file.path(FDB_DIR, "factor_db_daily_registry.json")
-reg <- if(file.exists(reg_path)) fromJSON(reg_path) else list()
 all_new <- c(gap_cols, cons_gap)
-reg$version <- "8.0.0"
-reg$updated <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S")
-reg$n_factors <- reg$n_factors + length(all_new)
-reg$phase8 <- list(n_factors=length(all_new), factors=all_new)
-reg$factor_list <- c(reg$factor_list, all_new)
-write(toJSON(reg, pretty=TRUE, auto_unbox=TRUE), reg_path)
+if (!INCR_ON) {   # 증분: 글로벌 registry(전 439월 factor_list·v8.0.0) 보존 — 재작성 스킵
+  reg_path <- file.path(FDB_DIR, "factor_db_daily_registry.json")
+  reg <- if(file.exists(reg_path)) fromJSON(reg_path) else list()
+  reg$version <- "8.0.0"
+  reg$updated <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S")
+  reg$n_factors <- reg$n_factors + length(all_new)
+  reg$phase8 <- list(n_factors=length(all_new), factors=all_new)
+  reg$factor_list <- c(reg$factor_list, all_new)
+  write(toJSON(reg, pretty=TRUE, auto_unbox=TRUE), reg_path)
+}
 
 total_min <- (proc.time()-t0)["elapsed"]/60
 cat(sprintf("\n═══ Phase 8 완료 ═══\n  추가: %d팩터 (Fund %d + Consensus %d)\n  소요: %.1f분\n",
