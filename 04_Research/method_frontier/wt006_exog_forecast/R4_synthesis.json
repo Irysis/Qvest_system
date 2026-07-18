@@ -1,0 +1,82 @@
+{
+  "lane": "WT-006 R4 synthesis — style-factor prediction/timing arc final (R1 6-logic + R2 6-approach + R3 3-frontier + R4 3 non-selection levers)",
+  "date": "2026-07-19",
+  "measurement_frame": "canonical/weighted_screen_bt, top-25 long-only, cap-w KOSPI200 benchmark, 15bps one-way, NW lag-3, liq>=2e8, 163m OOS 2012-12~2026-06. metric_type=weighted_screen. IS-only walk-forward, fixed a-priori hyperparams (chain, DSR n/a).",
+  "baseline_momentum_port_t": 1.277,
+  "hard_gate_port_t": 2.95,
+
+  "core_question": "cap-w 트랩이 횡단 SELECTION 특유인가(R1-R3), 아니면 CONSTRUCTION/OVERLAY로도 못 벗어나는 구조적 벽인가? = 남은 유일 미검 메커니즘. 3 non-selection 레버(WEIGHT/CONSTRUCTION/OVERLAY) 검증.",
+
+  "three_levers": {
+    "1_WEIGHT_benchmark_aware": {
+      "best_deployable": "size_prop_cap",
+      "port_t": 2.1,
+      "ir": 0.635, "calmar": 0.576, "oos_ret": 0.374, "max_w": 0.20, "turnover": 8.92,
+      "paired_vs_mom_t": 1.224, "lag1": 2.048, "leak_suspect": false,
+      "beats_mom": true, "wall_broken": false,
+      "verified": "CONFIRMED (독립 재측정 bit-exact; TE 0.237->0.242 상승·alpha_ann 0.1425->0.1646 상승 → t-inflation 아닌 실경제+IR 이득)",
+      "verdict": "PARTIAL_ESCAPE — 동일 momentum 25종목을 제약준수([0,0.20]) cap-tilt 재가중만으로 1.277->2.100. 전이층 갭의 큰 부분이 EW의 벤치-상대 소형주 틸트 아티팩트(신호 아닌 WEIGHT basis). ★단 HARD 2.95 미달·oos_ret 0.374<0.7·calmar 0.576<0.64 → 자본 미졸업. lift front-loaded(pre-2020 active t=1.95 vs 2020+ t=0.99) = regime-conditional mega-beta 베팅 성격, 신규 알파 생성 아님."
+    },
+    "2_CONSTRUCTION_mid_universe": {
+      "best_capw": "mega_drop10", "port_t": 1.044, "ew_uni_t": 2.768,
+      "oos_ret": -0.325, "paired_vs_mom_t": -1.118, "lag1": 0.496, "leak_suspect": false,
+      "beats_mom": false, "wall_broken": false,
+      "verdict": "STRUCTURAL_BENCH_WALL — 유니버스 재구성 7변형 전부 cap-w<1.277. MID 좁힐수록 cap-w는 음(-1.106)이나 EW-uni는 양(+1.526)으로 발산 = 순수 벤치-미스매치 지문. 알파는 EW-basis서 실재하나 cap-w 벤치 고정하 tier-beta(MID-minus-mega, 2017+ mega 레짐서 음)가 지배 → 실현 불가."
+    },
+    "3_OVERLAY_decrowding": {
+      "deliverable": "decrowd+exposure", "port_t": 0.77,
+      "best_by_paired": "trim_extended_mom", "best_paired_port_t": 1.34, "best_paired_vs_mom_t": 0.468,
+      "exposure_only_port_t": 1.053, "exposure_paired_vs_mom_t": -2.454,
+      "leak_suspect": false,
+      "beats_mom": false, "wall_broken": false,
+      "verdict": "NO_ESCAPE (config-scoped) — basket+breadth PRESERVE한 de-crowd/exposure-timer 전부 momentum 미돌파. value/lowvol de-crowd tilt 유의 음(-2.4~-2.6, momentum 알파 캐리 종목서 mass 이탈=희석). trim-only만 ~중립(+0.468 노이즈). 비-return crowding percentile exposure timer도 어느 달 net-active underperform하는지 예측 못함(-2.454). 단 구조판결 아닌 config-scoped negative(INV-7)."
+    }
+  },
+
+  "trap_is_structural": true,
+  "trap_verdict_nuanced": "자본-급 벽(HARD 2.95)은 return-derived 全 레버에 구조적 — signal/selection(R1-R3)·construction·overlay 어느 것도 미돌파. ★R4의 핵심 신규 발견: 전이층 갭(1.277)의 상당부분은 신호 벽이 아니라 EW-vs-cap-w WEIGHT-basis 아티팩트 — cap-tilt 재가중으로 2.100까지 상승(기존 아크 '신호·구성 무관 전이층 벽' 주장을 WEIGHT 차원에서 부분 반증). 그러나 이 lift는 (a)HARD 미돌파 (b)regime-conditional mega-beta 베팅 (c)자체 oos_ret 0.374 fail → 자본 돌파 아님. 결론: 벽의 위치가 재프레이밍됨(sub-2.1은 벤치-basis 아티팩트, 2.1~2.95는 return-space 구조적). 신규 알파는 return-space를 벗어나거나(비-return) 벤치를 재정의해야(도훈) 함.",
+
+  "arc_final_synthesis": {
+    "statement": "style-factor 예측/타이밍 아크 = 측정프레임(top-25 long-only cap-w) 내 자본 돌파 불가. 15+ 접근(R1 6-logic 예측 + R2 6-approach + R3 3-frontier 구성/선별 + R4 3 non-selection 레버) 전부 factor-momentum(1.277)의 자본-급 벽(2.95)을 미돌파. ORACLE(완벽 family 예지)조차 1.248<1.277 → momentum 우위=예측스킬 아닌 top-25 cross-family 분산폭.",
+    "binding_wall": "top-25 long-only cap-w benchmark translation layer 자체 (신호·구성·오버레이 불변). L2 확립: 알파는 MID tier 국소(mid 0.430>mega -0.275)이나 long-only 횡단 선택/구성/오버레이로 실현 불가.",
+    "not_a_kr_structural_verdict": "measurement-frame-scoped negative이지 KR 구조판결 아님(INV-7). 벽을 떠나는 축(비-return origin·벤치 재정의)은 미검 → 부활 조건부.",
+    "reframe_of_prior_arc": "기존 아크 결론 '벽=25종목 long-only cap-w 전이층(신호·구성 무관)'은 WEIGHT 차원에서 부분 반증. 전이층의 큰 부분=EW-vs-cap-w 가중 선택(벤치-상대 소형주 페널티)이었음. HARD-급 잔여 벽만 return-space 구조적."
+  },
+
+  "frontier_handoff": {
+    "autonomous_Q_lead": [
+      "regime-attribution: cap-tilt lift(1.277->2.100)를 pre-2017 vs 2024-26 mega 레짐 분해 → regime-conditional 비중 정량화(oos 0.374·front-loading이 대부분 recent임을 시사). mega-beta 베팅이면 오버레이/β-예산으로 라우팅, standalone 아님. (저비용·고가치)",
+      "signal-agnostic 검증: deployable cap-tilt WEIGHT(size_prop_cap)를 non-momentum(R3 families) + 비-return(FQ-057) 선택신호에 적용 → cap-tilt가 그들 port_t도 유사 lift하면 'signal-agnostic construction default' → optimizer/RAMP 기본가중 이식(소비면⑦).",
+      "비-return novel origin: DART exec-insider 역사·계약금액 magnitude·공매도/대차 (FQ-057~059) — 모든 return-derived 채널이 forecast+construction+overlay 3면서 cap-w 벽에 falsify됨 → 신호 ORIGIN을 return-space 밖으로. (단 WT-002 insider exclusion=삼각-null 실측 반영, 순매수 클러스터 monitoring만 유효)"
+    ],
+    "dohoon_decision": [
+      "벤치 재정의 (거버넌스): cap-w KOSPI200 -> EW-uni 또는 cap-tier-neutral을 admission basis로 승격? EW-uni 알파 실재(2.77~3.03)·cap-w서만 사멸. 벤치 basis 변경은 자본 게이트 정의 변경이라 Q-Lead 자율 불가. gate to mrs_daily SMB/HML 동반 양전 un-bury watch.",
+      "D2 ΔIR / 가중 default 채택 (book_state 접촉): deployable cap-tilt(size_prop_cap)를 book 기본가중(EW 대신)으로 채택하고 book-marginal ΔIR>=0.05 측정? construction default 변경이나 book β-exposure(mega-beta) 증가 수반 → 도훈 confirm 필요. governor 정지 불변."
+    ]
+  },
+
+  "next_probes": [
+    "regime-attribution of cap-tilt lift (pre-2017 vs 2024-26 mega): 1.277->2.100의 regime-conditional 분율 정량화 → mega-beta 베팅이면 소비면③오버레이/④β-예산 라우팅 (autonomous)",
+    "signal-agnostic cap-tilt: deployable size_prop_cap WEIGHT를 R3 families + FQ-057 비-return 신호에 적용 → construction-default 여부 검증, optimizer/RAMP 이식 (autonomous, 소비면⑦)",
+    "비-return novel origin FQ-057~059 (DART insider/계약 magnitude/공매도): return-derived 3면 falsify 후 신호 ORIGIN을 return-space 밖으로 이동 (autonomous FQ lane)",
+    "(도훈) 벤치 재정의: EW-uni/cap-tier-neutral admission basis 승격 여부 — EW-uni 알파 실재·cap-w서만 사멸, SMB/HML 양전 un-bury watch에 게이팅"
+  ],
+
+  "consumer_surfaces": [
+    "①팩터 랭킹: momentum cross-family가 최상위 신호 유지 (R4가 순위 변경 없음)",
+    "③오버레이/국면 입력: cap-tilt lift가 regime-conditional mega-beta면 regime/β-timing 입력으로 소비 (standalone 아님)",
+    "④위험모델·β예산: cap-tilt = size-tier-beta exposure → book β-budget / cap-tier exposure model 입력",
+    "⑥선별 라벨: deployable cap-tilt(size_prop_cap, port_t 2.100, [0,0.20] 준수) = construction 후보 default 가중 라벨",
+    "⑦타 모드 이식(최대 전이): optimizer-research / RAMP 기본가중을 EW -> deployable cap-tilt construction step으로 (signal-agnostic 검증 통과 시)",
+    "비-return FQ lane: FQ-057~059 등재 (return-derived 소진 posterior 반영)"
+  ],
+
+  "wall_broken": false,
+  "best_config": "size_prop_cap (benchmark-aware WEIGHT, [0,0.20]-compliant)",
+  "best_port_t": 2.1,
+  "artifacts": [
+    "R4_bench_aware_weight_summary.json / R4_bench_aware_weight_results.csv / weights_R4_best_bench_aware.parquet / run_R4_bench_aware_weight.R",
+    "R4_mid_construction_summary.json / R4_mid_construction_results.csv / R4_mid_construction.rds / run_R4_mid_construction.R",
+    "R4_decrowd_overlay_results.json / W_R4_decrowd_composite.parquet / R4_exposure_scalar.parquet / run_R4_decrowd_overlay.R"
+  ]
+}
