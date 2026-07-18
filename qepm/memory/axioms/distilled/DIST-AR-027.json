@@ -1,0 +1,119 @@
+{
+  "schema_version": "distilled_v1",
+  "dist_id": "DIST-AR-027",
+  "cluster_key": "fc0112778ad7",
+  "candidate_id": "CAND_20260718_alpha_research_consensus_negative_L-AR-20260621_154524_L-AR-20260705_190548_L-AR-20260706_095035",
+  "status": "pending_5axis",
+  "statement_refined": null,
+  "retry_condition": null,
+  "refined_at": null,
+  "refined_by": null,
+  "promoted_to_axiom": null,
+  "created_at": "2026-07-18T08:47:58+00:00",
+  "updated_at": "2026-07-18T08:47:58+00:00",
+  "research_mode": "alpha_research",
+  "metric_type": "estimated",
+  "type": "empirical",
+  "polarity": "negative",
+  "statement_draft": "[실증 실패 규칙 초안] family=consensus, tags=MOMENTUM,FLOW,CONSENSUS, supporting=3건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
+  "supporting_l_codes": [
+    "L-AR-20260621_154524",
+    "L-AR-20260705_190548",
+    "L-AR-20260706_095035"
+  ],
+  "scope_draft": {
+    "market": "KR",
+    "factor_family": "consensus",
+    "regime": null,
+    "construction_types": null
+  },
+  "evidence_draft": {
+    "independent_l_codes": 3,
+    "independent_strategies": 3,
+    "strategies": [
+      "C21_FLOWCONF_REVISION_WT-D20260621_003",
+      "WT-D20260706_010_revenue_revision",
+      "WT-D20260705_003_fwd_consensus_level"
+    ],
+    "effect_direction_consistency": null,
+    "note": "evidence_draft — promote.R 5축 검증에서 hurdle_result/grade_a_catalog 교차검증으로 확정",
+    "n_eff_signatures": 3,
+    "independent_constructions": 3,
+    "constructions": [
+      "consensus_revenue_forecast_revision",
+      "flow_confirmed_revision_interaction",
+      "single_sleeve_long_only_top25_ew"
+    ],
+    "metric_types": [
+      "backtested",
+      "canonical_screen"
+    ]
+  },
+  "falsification_draft": {
+    "attempts": [
+      {
+        "test": "clean-window subperiod 2005-2016 vs 2017-2024",
+        "result": "falsified",
+        "effect_retained": "PORT_t +3.24 -> +0.25 flat; real-2025 포함시 음"
+      },
+      {
+        "test": "oos_retention 3-split median",
+        "result": "falsified",
+        "effect_retained": "0.253 << 0.7, <0.5 무조건 탈락"
+      },
+      {
+        "test": "calmar gate",
+        "result": "falsified",
+        "effect_retained": "0.276 << 0.64 (MDD 58.7%)"
+      },
+      {
+        "test": "book-marginal ΔIR vs STR_1715 modern-regime",
+        "result": "falsified",
+        "effect_retained": "-0.008 음 (full +0.087은 2005-2016 산물)"
+      },
+      {
+        "test": "orthogonality vs STR_1715",
+        "result": "survived",
+        "effect_retained": "active-cor -0.075 직교이나 직교≠수익(§6)"
+      },
+      {
+        "test": "PIT 정밀개정(fwd-fill vs 실갱신)",
+        "result": "survived",
+        "effect_retained": "window robust·placebo p=0.01 = 신호 진짜"
+      },
+      {
+        "test": "FY-roll 경계 clean(4월 롤포워드 제거)",
+        "result": "survived",
+        "effect_retained": "mega LS 2.46->2.71 강화, FAIL 구조적"
+      },
+      {
+        "test": "LS-leg 분해(long/short)",
+        "result": "falsified",
+        "effect_retained": "long +2.71 AND short -2.69 대칭 = LS not long-only"
+      },
+      {
+        "test": "mega-inclusive 구성 canonical",
+        "result": "falsified",
+        "effect_retained": "PORT_t 음(-0.54~-0.77)"
+      },
+      {
+        "test": "enhanced-index cap-w 틸트",
+        "result": "weakened",
+        "effect_retained": "active t 2.38 but >25종 봉투밖"
+      }
+    ],
+    "note": "L-code 기록 반증 시도 실값 집계"
+  },
+  "mechanism_draft": {
+    "economic_explanation": "forward analyst-consensus level yield는 forward value/quality proxy — KR에서 2005-2016 강했으나 2017+ cohort 감쇠 + 2025-2026 초대형주 집중 레짐에서 diversified 소형-가치 틸트 포트가 cap-weighted 벤치(삼성/하이닉스 지배)에 구조적 열위. envelope-안 관찰: 신호는 실재하나 top-25 long-only 실현초과로 전이 실패(구성/레짐 문제, 제약 문제 아님). (멤버 가설 3건 — promote.R에서 일치성 재검증)",
+    "mechanism_type": "structural",
+    "causal_plausibility": null
+  },
+  "oos_validation_draft": {
+    "oos_months": 297.0,
+    "oos_effect_vs_is": -0.21,
+    "note": "L-code oos_retention 실값 2건 median (IS65/OOS35 활성SR retention) + oos_months 실값 1건 median — promote.R essence_score 경유 재확정"
+  },
+  "cluster_members_count": 3,
+  "expiry": "2026-10-16"
+}

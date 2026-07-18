@@ -47,6 +47,7 @@ Usage: python3 lcode_harvester.py [--project-dir PATH]
 from __future__ import annotations
 
 import argparse
+import functools
 import glob
 import json
 import math
@@ -123,6 +124,30 @@ def _load(path: str):
         return None
 
 
+@functools.lru_cache(maxsize=4096)
+def _kw_pattern(kw_lower: str) -> "re.Pattern[str]":
+    r"""팩터 키워드의 단어경계 매처 (2026-07-18 W29 /cleaner 근본원인 수리 — task_07f3ac0e).
+
+    구 구현의 substring 매칭(`kw.lower() in text_lower`)이 짧은 팩터코드 키워드
+    (Q01/GPA/EP/BP/M01/C19/D29…)를 무관 토큰에 오매치해 family를 오귀속하던 결함:
+      · 'FQ011'(챔피언십 캐리어 전략명) ⊃ 'q01' → quality_profitability 오귀속
+        (L-AR-20260710_223505 챔피언십 reval, L-AR-20260711_164659 timing-luck —
+         quality 내용 전무한데 FQ011 *참조*만으로 오분류 → DIST-AR-022/016 오귀속 연쇄)
+      · 'deep'/'step'/'repo'/'concept' ⊃ 'ep'/'bp' → value 오귀속(코퍼스 전반)
+      · '2012-11'(날짜) ⊃ '12-1' → momentum 오귀속
+    경계 `(?<![a-z0-9])…(?![a-z0-9])`: ASCII/alnum 키워드는 단어경계로 격리하되,
+    한글 문맥 문자는 [a-z0-9]가 아니므로 경계가 항상 성립 → 한글 키워드('모멘텀'/'추세'/
+    '앙상블'…)는 종전 substring 의미 그대로 유지(한국어=공백 없는 교착어 — substring이 옳음).
+    밑줄('_')은 alnum이 아니므로 팩터코드 구분자 경계로 취급('Q07_D29' 내 'Q07' 매치 유지).
+    """
+    return re.compile(r"(?<![a-z0-9])" + re.escape(kw_lower) + r"(?![a-z0-9])")
+
+
+def _kw_hit(kw: str, text_lower: str) -> bool:
+    """단어경계 기반 키워드 히트. text_lower·kw 모두 소문자 전제 (한글은 case 없음)."""
+    return _kw_pattern(kw.lower()).search(text_lower) is not None
+
+
 def _infer_family(strategy_id: str, tags: list[str], lesson_text: str,
                   core_reference: str = "") -> str | None:
     text = ((strategy_id or "") + " " + " ".join(tags or []) + " "
@@ -131,7 +156,7 @@ def _infer_family(strategy_id: str, tags: list[str], lesson_text: str,
     best = None
     best_hits = 0
     for fam, kws in FAMILY_KEYWORDS.items():
-        hits = sum(1 for kw in kws if kw.lower() in text_lower)
+        hits = sum(1 for kw in kws if _kw_hit(kw, text_lower))
         if hits > best_hits:
             best_hits = hits
             best = fam
@@ -140,7 +165,7 @@ def _infer_family(strategy_id: str, tags: list[str], lesson_text: str,
     # v2: 기본 8군 무매치분만 확장 15군 순차 적용 (기존 분류 불변 — dict 순서 = 우선순위,
     # infra_process가 최우선. best-hits가 아닌 first-match: 확장군은 상호 배타 키워드).
     for fam, kws in FAMILY_KEYWORDS_EXT.items():
-        if any(kw.lower() in text_lower for kw in kws):
+        if any(_kw_hit(kw, text_lower) for kw in kws):
             return fam
     return None
 
@@ -194,6 +219,30 @@ def _load_plan_family_map(project_dir: str) -> dict:
             fam = d.get("family")
             if f and fam and fam != "unknown":
                 out[f] = str(fam)
+    return out
+
+
+def _load_family_override(project_dir: str) -> dict:
+    """큐레이션된 per-L-code family override (게이트-리뷰된 재분류) 소비.
+
+    우선순위: explicit `family` 필드 > **이 override** > 키워드 추론(word-boundary) >
+    distill-plan 폴백. plan family_reclassification 선례와 동형이나(06_Registry에 per-lcode
+    확정 분류), 그 폴백맵(_load_plan_family_map)과 결정적으로 다르다: **키워드 매치가 있어도
+    override가 우선**한다. substring→word-boundary 전환(2026-07-18)이 유발하는 90/315
+    재분류 중 ① 신규 추론도 신뢰 못 하거나 ② 신규 추론이 unknown으로 떨어지는 케이스를
+    게이트 리뷰 후 여기에 고정해 '추론 자체가 틀린' 케이스를 결정론적으로 교정한다.
+    key = l_code(안정 식별자 — [[reference-code-identity-stability]]) 우선, source_file 허용.
+    파일 부재 시 빈 맵 → 순수 word-boundary 추론(신규 L-code 일반화 유지).
+    """
+    path = os.path.join(project_dir, "06_Registry", "lcode_family_override.json")
+    data = _load(path)
+    out: dict[str, str] = {}
+    if isinstance(data, dict):
+        ov = data.get("overrides")
+        if isinstance(ov, dict):
+            for k, v in ov.items():
+                if isinstance(v, str) and v.strip():
+                    out[str(k).replace("\\", "/")] = v.strip()
     return out
 
 
@@ -324,6 +373,7 @@ def harvest(project_dir: str) -> dict:
     seen: set[str] = set()  # dedup by absolute path
     grade_map = _load_grade_map(project_dir)
     plan_family = _load_plan_family_map(project_dir)
+    family_override = _load_family_override(project_dir)  # 큐레이션 재분류 (키워드보다 우선)
     id_first_file: dict[str, str] = {}  # v2: l_code ID 충돌 감지 (A1-F6)
     n_id_collisions = 0
 
@@ -357,9 +407,25 @@ def harvest(project_dir: str) -> dict:
         lesson_text = data.get("lesson_text", "") or ""
         core_reference = data.get("core_reference", "")
         source_file = os.path.relpath(p, project_dir)
-        family = _infer_family(strategy_id, tags, lesson_text, core_reference)
-        if family is None:  # v2: 키워드 무매치 → plan 확정 분류 폴백 (unknown 146→8)
-            family = plan_family.get(source_file.replace("\\", "/"))
+        # family 결정 4단 우선순위 (2026-07-18 prefer-explicit + override 수리):
+        #   ① explicit `family` 필드(emit-time 고정) → ② 큐레이션 override(게이트-리뷰 재분류)
+        #   → ③ word-boundary 키워드 추론 → ④ distill-plan 폴백(키워드 무매치분).
+        # family_source를 함께 기록해 재분류 감사·게이트 리뷰가 가능하게 한다.
+        src_key = source_file.replace("\\", "/")
+        family_explicit = data.get("family")
+        if isinstance(family_explicit, str) and family_explicit.strip():
+            family = family_explicit.strip()
+            family_source = "explicit"
+        elif l_code in family_override or src_key in family_override:
+            family = family_override.get(l_code) or family_override.get(src_key)
+            family_source = "override"
+        else:
+            family = _infer_family(strategy_id, tags, lesson_text, core_reference)
+            if family is not None:
+                family_source = "keyword"
+            else:  # v2: 키워드 무매치 → plan 확정 분류 폴백 (unknown 146→8)
+                family = plan_family.get(src_key)
+                family_source = "plan_fallback" if family else None
         mode = _infer_mode(data, source_file)
         mode = _MODE_ALIASES.get(mode, mode)  # v2: qepm→qepm_legacy normalize
         promoted = _check_promoted(l_code, project_dir)
@@ -386,6 +452,7 @@ def harvest(project_dir: str) -> dict:
             "lesson_text": lesson_text,
             "tags": tags,
             "family": family,
+            "family_source": family_source,  # explicit|override|keyword|plan_fallback|None (감사)
             "research_mode": mode,
             "construction_type": _infer_construction(data),
             "metric_type": mt_norm,

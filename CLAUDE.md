@@ -59,7 +59,7 @@ Qvest 시스템 전체 구동. bootstrap.sh 실행 → 플러그인 리로드 �
 세션 종료 시:
 - 메모리 파일 modified 시 `# 최종 업데이트:` date 갱신
 - 새 L-code 추가 시 methodology_active.md 등재 + MEMORY.md 헤더 갱신
-- infra 변경 시 infrastructure_state.md 갱신
+- infra 변경 시 관련 SOT/rules 문서 갱신 + 메모리 적립 (구 `infrastructure_state.md` 참조는 파일 부재 확인으로 2026-07-18 정정 — 도훈 승인)
 
 ---
 

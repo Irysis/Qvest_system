@@ -12,6 +12,8 @@ ok_ff <- tryCatch({ source("02_Infrastructure/reports/ff5_kr_tracker.R"); TRUE }
                   error = function(e) { cat("[ff5_brief] FF5 build FAIL:", conditionMessage(e), "\n"); FALSE })
 ok_sb <- tryCatch({ source("02_Infrastructure/reports/smartbeta_kr_tracker.R"); TRUE },
                   error = function(e) { cat("[ff5_brief] SB build FAIL:", conditionMessage(e), "\n"); FALSE })
+ok_bf <- tryCatch({ source("02_Infrastructure/reports/krx_index_monthend_backfill.R"); TRUE },
+                  error = function(e) { cat("[ff5_brief] index backfill FAIL:", conditionMessage(e), "\n"); FALSE })
 ok_ib <- tryCatch({ source("02_Infrastructure/reports/index_factor_beta.R"); TRUE },
                   error = function(e) { cat("[ff5_brief] index-beta build FAIL:", conditionMessage(e), "\n"); FALSE })
 

@@ -57,6 +57,7 @@ emit_lcode <- function(mode, strategy_id, grade, lesson_text,
                        oos_retention = NULL, oos_months = NULL,
                        portfolio_alpha_t = NULL,
                        selection_type = NULL, record_type = NULL,
+                       family = NULL,
                        core_reference = "",
                        tags = NULL, metrics = list(), project_root = NULL,
                        l_code = NULL, dry_run = FALSE) {
@@ -82,9 +83,12 @@ emit_lcode <- function(mode, strategy_id, grade, lesson_text,
   portfolio_alpha_t      <- .pick(portfolio_alpha_t, "portfolio_alpha_t")
   selection_type         <- .pick(selection_type, "selection_type")
   record_type            <- .pick(record_type, "record_type")
+  # prefer-explicit family (2026-07-18): 명시 전달 시 harvester가 키워드 추론보다 우선 소비
+  # (lcode_harvester._infer_family 폴백화). substring 오귀속(FQ011→q01) 방어의 emit-side 절반.
+  family                 <- .pick(family, "family")
   metrics <- metrics[setdiff(names(metrics),
     c("mechanism_hypothesis", "falsification_attempts", "oos_retention", "oos_months",
-      "portfolio_alpha_t", "selection_type", "record_type"))]
+      "portfolio_alpha_t", "selection_type", "record_type", "family"))]
 
   # construction_type 미전달 → 키워드 추론 폴백 (WARN — 승격축 정확도는 명시 전달이 우선)
   ct_inferred <- FALSE
@@ -121,6 +125,7 @@ emit_lcode <- function(mode, strategy_id, grade, lesson_text,
   if (!is.null(portfolio_alpha_t))      lcode$portfolio_alpha_t <- portfolio_alpha_t
   if (!is.null(selection_type))         lcode$selection_type <- selection_type
   if (!is.null(record_type))            lcode$record_type <- record_type
+  if (!is.null(family) && nzchar(as.character(family))) lcode$family <- as.character(family)
 
   # P0#5 emit 방화벽 backstop 게이트 — 제약-귀속/완화-레버 위반 오염표식 부착 (emit 비차단)
   if (exists("check_constraint_firewall", mode = "function")) {
