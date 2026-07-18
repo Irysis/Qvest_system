@@ -59,7 +59,7 @@ chk("재claim = FALSE / already_done",   isFALSE(c3$claimed) && identical(c3$rea
 
 cat("=== Scenario 3: owner 불일치 release 거부 ===\n")
 .mk_pending()
-cleaner_claim_distill("owner_A", root = scratch)
+invisible(cleaner_claim_distill("owner_A", root = scratch))
 rmis <- cleaner_release_distill("owner_B", root = scratch)      # 불일치 → 거부
 rfrc <- cleaner_release_distill("owner_B", root = scratch, force = TRUE)  # force → 허용
 chk("불일치 release 거부",   isFALSE(rmis$released) && identical(rmis$reason, "owner_mismatch"), rmis$message)
