@@ -1,0 +1,113 @@
+{
+  "lane": "R5 regime_beta_attribution",
+  "date": "2026-07-19",
+  "cap_tilt_port_t": 2.1,
+  "ew_active_t": 1.277,
+  "cap_tilt_active_mean_ann": 0.15363,
+  "lift_mean_ann": 0.05082,
+  "lift_t": 1.224,
+  "period_decomp": [
+    {
+      "period": "pre2017",
+      "n": 49,
+      "ew_mean_ann": 0.425762,
+      "ew_t": 2.699005,
+      "ct_mean_ann": 0.393529,
+      "ct_t": 2.541648,
+      "lift_mean_ann": -0.032233,
+      "lift_t": -1.663093
+    },
+    {
+      "period": "2017-2020",
+      "n": 36,
+      "ew_mean_ann": -0.068211,
+      "ew_t": -1.231677,
+      "ct_mean_ann": -0.057564,
+      "ct_t": -1.035348,
+      "lift_mean_ann": 0.010647,
+      "lift_t": 0.205943
+    },
+    {
+      "period": "2020-2026",
+      "n": 78,
+      "ew_mean_ann": -0.02114,
+      "ew_t": -0.185315,
+      "ct_mean_ann": 0.100398,
+      "ct_t": 0.990615,
+      "lift_mean_ann": 0.121539,
+      "lift_t": 1.526005
+    }
+  ],
+  "reg_cap_tilt": {
+    "tag": "cap_tilt_active ~ MKT + LMS",
+    "r2": 0.022,
+    "n": 163,
+    "alpha_coef": 0.012963,
+    "alpha_t": 2.252,
+    "MKT_coef": -0.049926,
+    "MKT_t": -0.72,
+    "LMS_coef": -0.232814,
+    "LMS_t": -1.043,
+    "alpha_ann": 0.15556
+  },
+  "reg_ew": {
+    "tag": "EW_active ~ MKT + LMS",
+    "r2": 0.233,
+    "n": 163,
+    "alpha_coef": 0.009637,
+    "alpha_t": 1.956,
+    "MKT_coef": -0.200134,
+    "MKT_t": -2.096,
+    "LMS_coef": -0.69388,
+    "LMS_t": -3.412,
+    "alpha_ann": 0.11564
+  },
+  "reg_lift": {
+    "tag": "LIFT(ct-ew) ~ MKT + LMS",
+    "r2": 0.33,
+    "n": 163,
+    "alpha_coef": 0.003327,
+    "alpha_t": 1.4,
+    "MKT_coef": 0.150207,
+    "MKT_t": 1.812,
+    "LMS_coef": 0.461067,
+    "LMS_t": 3.814,
+    "alpha_ann": 0.03992
+  },
+  "captilt_decomp": {
+    "mean_ann": 0.15363,
+    "size_beta_ann": 0.00495,
+    "mkt_beta_ann": -0.00688,
+    "resid_alpha_ann": 0.15556,
+    "frac_size": 0.032,
+    "frac_alpha": 1.013
+  },
+  "lift_decomp": {
+    "mean_ann": 0.05082,
+    "size_beta_ann": -0.00981,
+    "size_frac": -0.193,
+    "resid_alpha_ann": 0.03992,
+    "resid_alpha_t": 1.4
+  },
+  "flags": {
+    "lift_size_dominant": false,
+    "regime_concentrated": true,
+    "lift_alpha_sig": false,
+    "ct_alpha_sig": true,
+    "size_dominant": false
+  },
+  "verdict": "MIXED",
+  "key_numbers": "cap-tilt active port_t=2.10 mean_ann=0.1536; EW port_t=1.28; LIFT ann=0.0508 t=1.22. Period lift_t: pre2017=-1.66 2017-20=0.21 2020-26=1.53. cap-tilt active decomp: size_beta=3% mkt_beta=-4% resid_alpha=101%(t=2.25). LIFT decomp: size_beta=-19% resid_alpha ann=0.0399(t=1.40). beta_LMS(ct)=-0.233(t=-1.04).",
+  "method_note": "regime_beta_attribution: deployable cap-tilt momentum(size_prop_cap, R4 weights_R4_best_bench_aware.parquet, [0,0.20] cap) active vs cap-w KOSPI200(.BMg BM_Ret), n=163 months(2012-12-28~2026-06-30). EW momentum active=harness .a_mom. SIZE factor LMS=유니버스 K200∪KQ150 Size 상위테르셀 EW ret - 하위테르셀 EW ret(t-observable, PIT-safe). MKT=BM_Ret(active-return 회귀라 rf 상쇄). NW lag-3 회귀(sandwich::NeweyWest). weighted_screen_bt contract-grade(build_benchmark_compare). 판정 기준: lift의 과반이 size-beta ∧ 2020+ 집중 ∧ lift 잔차α 비유의 → REGIME_MEGA_BETA / 균등 ∧ 잔차α 유의 → ROBUST_CONSTRUCTION.",
+  "mechanical_flag_verdict": "MIXED",
+  "conditional_size_evidence": {
+    "LMS_by_period": "pre2017=-20.5%/yr(t=-2.58,소형승) | 2017-2020=-0.9% | 2020-2026=+8.9%/yr(t=1.52,대형승)",
+    "corr_lift_LMS_by_period": "0.199 -> 0.441 -> 0.604 (단조 상승)",
+    "corr_lift_LMS_full": 0.519,
+    "lift_when_large_wins_ann": 0.1588,
+    "lift_when_small_wins_ann": -0.0558,
+    "note": "size premium 부호가 레짐마다 뒤집혀(pre2017 소형 -20.5% vs 2020+ 대형 +8.9%) 전기간 mean(LMS)이 ~0으로 상쇄 -> 기계적 beta×mean(LMS) 귀속이 size 기여를 -19%로 과소평가. 조건부 증거(corr 0.52·단조 0.60·대형승월 +15.9% vs 소형승월 -5.6%·pre2017 lift 음수)는 lift=조건부 size/mega-beta 방향베팅임을 확정."
+  },
+  "verdict_economic": "REGIME_MEGA_BETA",
+  "verdict_final_note": "핵심질문 답: cap-tilt lift(1.277->2.100)는 (ii)robust construction 아님·(i)regime mega/size-beta 베팅. 근거: ①lift 전량 2020-2026 집중(pre2017 -3.2%/yr t=-1.66 HURT·2020+ +12.2%/yr t=1.53) ②lift가 large-minus-small에 유의 양(+)로딩(beta_LMS +0.461 t=3.81) ③lift 잔차 α 비유의(t=1.40)·lift 자체 full-period t=1.22 비유의 ④조건부: 대형우위월 lift +15.9% vs 소형우위월 -5.6%. => EW->cap-tilt를 optimizer/RAMP/book 범용 signal-agnostic 기본가중으로 이식하면 pre-2017·소형 레짐에서 손실. β-예산/regime-overlay 라우팅 대상(standalone 자본졸업 아님). ⚠주의: cap-tilt active port_t 2.25(t) 잔차α는 lift가 아니라 밑깔린 momentum 신호 자체의 pre-2017 알파(EW·cap-tilt 공유·2017+ 소멸)—weighting lift와 별개."
+}

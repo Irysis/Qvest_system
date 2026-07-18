@@ -1,0 +1,161 @@
+{
+  "lane": "R5 signal_agnostic_captilt",
+  "date": "2026-07-19",
+  "question": "cap-tilt lift가 momentum-특유인가 모든 신호 공통(mega-beta construction default)인가",
+  "weight_rule": "run_R4 size_prop_cap (Size 비례 후 cap_w [0,0.20] 반복캡+renorm) 정확 재사용",
+  "n_signals": 8,
+  "n_months": 163,
+  "delta_stats": {
+    "mean": -0.13,
+    "sd": 0.529,
+    "min": -0.8,
+    "max": 1.019,
+    "momentum": 1.019,
+    "random_null": -0.247,
+    "real_signal_mean": -0.113
+  },
+  "mom_is_outlier": true,
+  "null_lifts": false,
+  "results": [
+    {
+      "signal": "momentum",
+      "ew_port_t": 0.508,
+      "capw_port_t": 1.527,
+      "delta_lift": 1.019,
+      "ew_net_sr": 0.156,
+      "capw_net_sr": 0.413,
+      "ew_oos": -0.472,
+      "capw_oos": 0.838,
+      "ew_calmar": 0.294,
+      "capw_calmar": 0.385,
+      "capw_maxw": 0.2,
+      "capw_turnover": 9.96,
+      "n": 163
+    },
+    {
+      "signal": "composite",
+      "ew_port_t": -0.047,
+      "capw_port_t": -0.044,
+      "delta_lift": 0.003,
+      "ew_net_sr": -0.016,
+      "capw_net_sr": -0.014,
+      "ew_oos": -0.934,
+      "capw_oos": -0.999,
+      "ew_calmar": 0.3,
+      "capw_calmar": 0.275,
+      "capw_maxw": 0.2,
+      "capw_turnover": 7.34,
+      "n": 163
+    },
+    {
+      "signal": "size",
+      "ew_port_t": -0.154,
+      "capw_port_t": -0.21,
+      "delta_lift": -0.056,
+      "ew_net_sr": -0.051,
+      "capw_net_sr": -0.069,
+      "ew_oos": -1.406,
+      "capw_oos": -1.453,
+      "ew_calmar": 0.128,
+      "capw_calmar": 0.118,
+      "capw_maxw": 0.062,
+      "capw_turnover": 5.87,
+      "n": 163
+    },
+    {
+      "signal": "quality",
+      "ew_port_t": -0.675,
+      "capw_port_t": -0.821,
+      "delta_lift": -0.146,
+      "ew_net_sr": -0.197,
+      "capw_net_sr": -0.199,
+      "ew_oos": -2.647,
+      "ew_calmar": 0.154,
+      "capw_calmar": 0.163,
+      "capw_maxw": 0.2,
+      "capw_turnover": 3.39,
+      "n": 163
+    },
+    {
+      "signal": "random_null",
+      "ew_port_t": -1.701,
+      "capw_port_t": -1.948,
+      "delta_lift": -0.247,
+      "ew_net_sr": -0.52,
+      "capw_net_sr": -0.549,
+      "ew_oos": -160.152,
+      "ew_calmar": 0.041,
+      "capw_calmar": 0.046,
+      "capw_maxw": 0.2,
+      "capw_turnover": 22.4,
+      "n": 163
+    },
+    {
+      "signal": "low_vol",
+      "ew_port_t": -1.179,
+      "capw_port_t": -1.549,
+      "delta_lift": -0.37,
+      "ew_net_sr": -0.363,
+      "capw_net_sr": -0.451,
+      "ew_oos": -7.668,
+      "ew_calmar": 0.106,
+      "capw_calmar": 0.078,
+      "capw_maxw": 0.2,
+      "capw_turnover": 4.36,
+      "n": 163
+    },
+    {
+      "signal": "dividend",
+      "ew_port_t": -0.489,
+      "capw_port_t": -0.929,
+      "delta_lift": -0.44,
+      "ew_net_sr": -0.149,
+      "capw_net_sr": -0.286,
+      "ew_oos": -1.374,
+      "capw_oos": -11.781,
+      "ew_calmar": 0.238,
+      "capw_calmar": 0.169,
+      "capw_maxw": 0.2,
+      "capw_turnover": 4.52,
+      "n": 163
+    },
+    {
+      "signal": "value",
+      "ew_port_t": 0.376,
+      "capw_port_t": -0.424,
+      "delta_lift": -0.8,
+      "ew_net_sr": 0.11,
+      "capw_net_sr": -0.125,
+      "ew_oos": -0.729,
+      "capw_oos": -1.585,
+      "ew_calmar": 0.309,
+      "capw_calmar": 0.181,
+      "capw_maxw": 0.2,
+      "capw_turnover": 4.5,
+      "n": 163
+    }
+  ],
+  "lag1_checks": {
+    "momentum": {
+      "base_capw": 1.527,
+      "lag1_capw": 1.454,
+      "leak_suspect": false
+    },
+    "size": {
+      "base_capw": -0.21,
+      "lag1_capw": -0.416,
+      "leak_suspect": false
+    },
+    "random_null": {
+      "base_capw": -1.948,
+      "lag1_capw": -2.089,
+      "leak_suspect": false
+    },
+    "composite": {
+      "base_capw": -0.044,
+      "lag1_capw": -0.048,
+      "leak_suspect": false
+    }
+  },
+  "verdict": "MOMENTUM_SPECIFIC: cap-tilt lift가 momentum에 유의 집중(random-null·타 신호는 소폭) — 신호 상호작용"
+}

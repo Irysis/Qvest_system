@@ -1,0 +1,84 @@
+{
+  "id": "R5_synthesis",
+  "date": "2026-07-19",
+  "mode": "method_frontier / style-factor overnight self-development (R5)",
+  "question": "R4 cap-tilt lift (momentum EW top-25 port_t 1.277 -> size_prop_cap 2.100, [0,0.20] cap): (i) regime mega-beta directional bet, (ii) signal-agnostic construction default worth transplanting as book/optimizer/RAMP base weighting, or (iii) robust alpha?",
+  "answer_captilt_nature": {
+    "verdict": "REGIME-CONDITIONAL MOMENTUM x LARGE-CAP INTERACTION (i, not ii, not robust alpha)",
+    "is_robust_alpha": false,
+    "is_signal_agnostic_default": false,
+    "is_regime_mega_beta": true,
+    "detail": "Two independent lanes converge and jointly reject both the signal-agnostic-default hypothesis and the robust-alpha hypothesis. The lift is real economics but conditional on (a) the momentum signal specifically and (b) the 2020+ mega/semiconductor regime.",
+    "lane1_regime_beta_attribution": {
+      "verdict": "REGIME_MEGA_BETA",
+      "cap_tilt_active_port_t": 2.100,
+      "ew_active_port_t": 1.277,
+      "full_period_lift_ann": 0.0508,
+      "full_period_lift_t": 1.22,
+      "period_lift_t": {"pre2017": -1.66, "2017-2020": 0.21, "2020-2026": 1.53},
+      "period_lift_mean_ann": {"pre2017": -0.032, "2017-2020": 0.011, "2020-2026": 0.122},
+      "regression_lift": {"beta_LMS": 0.461, "t_LMS": 3.81, "beta_MKT": 0.150, "t_MKT": 1.81, "alpha_ann": 0.040, "t_alpha": 1.40, "R2": 0.330},
+      "size_premium_LMS_by_period_ann": {"pre2017": -0.205, "2017-2020": -0.009, "2020-2026": 0.089},
+      "corr_lift_LMS_by_period": {"pre2017": 0.199, "2017-2020": 0.441, "2020-2026": 0.604, "full": 0.519},
+      "conditional_lift_ann": {"large_win_months": 0.159, "small_win_months": -0.056},
+      "lag1_stress_port_t": 2.048,
+      "reading": "Lift loads +0.461 (t=3.81) on large-minus-small: removing EW's benchmark-relative small-cap overweight = taking on size beta. Lift realized entirely in 2020-2026 (+12.2%/yr, t=1.53); same cap-tilt HURT pre-2017 (-3.2%/yr, t=-1.66) when size premium favored small caps (-20.5%/yr). The port_t=2.25 residual alpha of cap-tilt active belongs to the shared underlying momentum signal (pre2017 alpha, 2017+ decayed), NOT to the weighting lift."
+    },
+    "lane2_signal_agnostic_captilt": {
+      "verdict": "MOMENTUM_SPECIFIC",
+      "delta_capw_minus_ew_port_t": {"momentum": 1.019, "composite": 0.003, "size": -0.056, "quality": -0.146, "random_null": -0.247, "low_vol": -0.370, "dividend": -0.440, "value": -0.800},
+      "delta_mean_all_signals": -0.130,
+      "delta_mean_real_signals": -0.113,
+      "decisive_falsifier": "random_null delta = -0.247 (NEGATIVE). A pure mega-beta construction default would lift random selection too; it does not. So the R4 lift is NOT a signal-free WEIGHT artifact ('remove EW small-cap penalty') but a momentum x large-cap interaction (recent winners concentrate in large caps in the KR mega/tech regime).",
+      "value_opposite": "value delta = -0.800 (large-value = value trap / benchmark hugging destroys it).",
+      "lag1_stress": "no leak across all 8 signals (momentum capw 1.527->1.454)."
+    }
+  },
+  "deploy_recommendation": {
+    "transplant_ew_to_captilt_as_book_optimizer_ramp_default": "NO",
+    "rationale": "Signal-agnostic transplant is falsified: 6/8 signals (incl. random-null -0.247, value -0.800, low_vol -0.370, dividend -0.440) LOSE under cap-tilt; only momentum gains (+1.019), composite/size ~0. A global default weighting would inject size beta and hurt in pre-2017 / small-cap-favoring regimes. Standalone capital graduation also FAILS (cap-tilt momentum capw port_t 1.527 and even R4 2.100 both < HARD 2.95; oos_retention 0.374 < 0.7; lift front-loaded to 2020+).",
+    "allowed_route": "Momentum-sleeve-specific large-cap reweight ONLY, consumed as a beta-budget / regime-overlay exposure (large-cap-momentum tilt), NOT as new standalone alpha and NOT as a universal base weighting. Book-marginal ΔIR must be measured before any admission (governor manual, per §4).",
+    "metric_type": "weighted_screen"
+  },
+  "overnight_arc_R1_R5_one_line": "R1-R5 arc: the momentum transition wall (IC->PORT_t) is a WEIGHT-basis phenomenon, but the cure is neither free nor general — EW->cap-tilt recovers ~0.8 port_t only for momentum and only in the 2020+ large-cap regime (loads +0.46 on size beta, hurts pre-2017 and every non-momentum signal incl. random-null), so it is a regime-conditional momentum x large-cap bet routable to beta-budget/overlay, not a signal-agnostic construction default and not standalone capital-grade alpha (< HARD 2.95).",
+  "next_probes": [
+    "Cap-tier decompose the momentum top-25 into MEGA/MID/small buckets and attribute the lift by tier (per project-captier-alpha-localization): confirm lift lives in the MEGA tier and quantify how much survives if the mega tier is capped, to separate 'large-cap-momentum alpha' from 'benchmark-hugging beta'.",
+    "Route cap-tilt momentum as a beta-budget / regime-overlay exposure onto the incumbent PG2 book and measure book-marginal ΔIR (net-active recon basis, §4) with |corr|<0.30 gate — standalone HARD is missed so the only viable consumer surface is marginal contribution, not admission.",
+    "Regime-gate the cap-tilt: apply the large-cap reweight only in large-cap-favoring months (LMS>0 or a PIT large-minus-small momentum-of-size proxy) and measure whether conditional application lifts full-period oos_retention above 0.7, testing whether the front-loaded lift is harvestable out-of-sample or is a look-back regime artifact.",
+    "Test intermediate weightings (sqrt-size, capped-linear at [0,0.10] vs [0,0.20], inverse-vol) on the momentum sleeve to find whether a milder size tilt captures most of the lift with less regime/size-beta exposure (dose-response of the size-beta bet vs the momentum-concentration effect)."
+  ],
+  "consumer_surfaces": [
+    "beta-budget / regime-overlay: large-cap-momentum tilt as an exposure, NOT standalone alpha (primary viable surface given HARD miss)",
+    "momentum sleeve weighting (sleeve-local): size_prop_cap reweight applied only to momentum selection, gated on cap-tier attribution",
+    "monitoring tripwire: LMS (large-minus-small) sign + corr(lift,LMS) as a regime indicator — cap-tilt lift is a mega-regime coincident signal",
+    "FQ etiquette / frontier queue: register 'signal-agnostic cap-tilt default' as FALSIFIED (do not re-propose global base-weighting transplant); register 'cap-tier lift attribution + regime-gated cap-tilt' as open frontier",
+    "NOT ROUTED (falsified): optimizer / RAMP / book universal default base weighting — random-null/value/low_vol/dividend all lose under cap-tilt"
+  ],
+  "handoff_to_dohoon": {
+    "summary": "R4 발견(동일 momentum 25종목을 Size 비례 재가중 size_prop_cap, [0,0.20] cap만으로 EW port_t 1.277->2.100)의 본질을 R5 2-lane으로 규명. Lane1(β-귀속): 이 lift는 large-minus-small에 +0.461(t=3.81) 유의 로딩 = size-beta 노출이고, 실현 전량이 2020-2026 mega/반도체 레짐 집중(+12.2%/yr, t=1.53)이며 pre-2017엔 오히려 HURT(-3.2%/yr, t=-1.66). lift 잔차α는 t=1.40으로 비유의(cap-tilt active의 port_t 2.25 잔차α는 lift가 아니라 밑깔린 momentum 신호). Lane2(신호-불문): 8개 선택신호 중 momentum만 Δ=+1.019 양수, ★random-null Δ=-0.247 음수 → 순수 mega-beta construction default 반증. value -0.800, low_vol/dividend도 손해. 즉 signal-agnostic 기본가중 이식가치 아님.",
+    "verdict": "cap-tilt lift = regime-conditional momentum x large-cap 상호작용 (mega-beta 방향베팅). robust alpha 아님, signal-agnostic 기본가중 아님.",
+    "deploy_recommendation": "EW->cap-tilt를 optimizer/RAMP/book 전역 기본가중으로 이식 = NO (6/8 신호서 손해). momentum sleeve 한정 large-cap 재가중 or β-예산/overlay 노출로만 라우팅. standalone 자본졸업 미달(capw 1.527·R4 2.100 둘 다 < HARD 2.95, oos 0.374 < 0.7).",
+    "honesty_flags": "front-loaded(pre2020 t 1.95 vs 2020+ 0.99, 본 R5 재현) + oos_retention 0.374 + random-null lift 음수 = 전부 mega-beta 방향 증거. 과대해석 금지 — 신규 알파 생성 아님.",
+    "decision_items_for_dohoon": [
+      "cap-tilt momentum을 β-예산/overlay 소비면으로 라우팅 착수 승인 여부 (book-marginal ΔIR 측정 = governor 수동, 도훈 confirm 필요)",
+      "next_probe #1(cap-tier 분해) + #3(regime-gated cap-tilt oos 회복 테스트)를 즉시 착수 vs FQ 등재 후 capacity-대기",
+      "'signal-agnostic cap-tilt 전역 기본가중 이식' = FALSIFIED 확정 및 frontier 큐 재제안 차단 승인"
+    ]
+  },
+  "artifacts": [
+    "04_Research/method_frontier/wt006_exog_forecast/R5_regime_beta_attribution_summary.json",
+    "04_Research/method_frontier/wt006_exog_forecast/R5_period_decomp.csv",
+    "04_Research/method_frontier/wt006_exog_forecast/R5_regression_panel.csv",
+    "04_Research/method_frontier/wt006_exog_forecast/run_R5_regime_beta_attribution.R",
+    "04_Research/method_frontier/wt006_exog_forecast/R5_signal_agnostic_captilt_summary.json",
+    "04_Research/method_frontier/wt006_exog_forecast/R5_signal_agnostic_captilt_results.csv",
+    "04_Research/method_frontier/wt006_exog_forecast/run_R5_signal_agnostic_captilt.R",
+    "04_Research/method_frontier/wt006_exog_forecast/R5_synthesis.json"
+  ],
+  "references": [
+    "reference-kr-2025-megacap-semi-regime",
+    "project-captier-alpha-localization-20260706",
+    "project-mdd-lever-overlay-only-3rounds-20260718",
+    "learning-gate-calibration-longonly"
+  ]
+}
