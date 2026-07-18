@@ -70,9 +70,25 @@ est_lw_nls <- function(R) {
   Sig
 }
 
+# ---- robust symmetric eigen (dsyevr fails on some clustered-eigenvalue
+#      matrices, LAPACK error code 1; observed wi=32 t_end=201207) -------------
+safe_eigen <- function(Sig, only.values = FALSE) {
+  r <- tryCatch(eigen(Sig, symmetric = TRUE, only.values = only.values),
+                error = function(e) NULL)
+  if (!is.null(r)) return(r)
+  jit <- diag(1e-10 * mean(abs(diag(Sig))), nrow(Sig))
+  r <- tryCatch(eigen(Sig + jit, symmetric = TRUE, only.values = only.values),
+                error = function(e) NULL)
+  if (!is.null(r)) return(r)
+  r <- eigen(Sig, symmetric = FALSE)          # dgeev fallback (slow, robust)
+  ord <- order(Re(r$values), decreasing = TRUE)
+  list(values = Re(r$values)[ord],
+       vectors = if (!only.values) Re(r$vectors)[, ord, drop = FALSE] else NULL)
+}
+
 # ---- PSD repair (eigenvalue clip) + violation report ------------------------
 psd_repair <- function(Sig, eps_rel = 1e-10) {
-  eg <- eigen(Sig, symmetric = TRUE)
+  eg <- safe_eigen(Sig)
   min_ev <- min(eg$values)
   max_ev <- max(eg$values)
   violated <- min_ev < -1e-8 * max(1, max_ev)
@@ -117,7 +133,7 @@ est_block <- function(R, tier, mkt, inner = c("lw", "nls")) {
 
 # ---- diagnostics helpers ----------------------------------------------------
 cond_number <- function(Sig) {
-  ev <- eigen(Sig, symmetric = TRUE, only.values = TRUE)$values
+  ev <- safe_eigen(Sig, only.values = TRUE)$values
   if (min(ev) <= 0) return(Inf)
   max(ev) / min(ev)
 }

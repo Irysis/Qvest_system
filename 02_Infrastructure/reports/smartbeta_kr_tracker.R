@@ -23,14 +23,27 @@ t0 <- Sys.time()
 
 ## v2 (2026-07-18 도훈 지시): QUAL=F-Score / VAL=컴포지트(V12 = mean z(-fPER,-fPBR,+fDY,+CFP) — 포워드 중심) /
 ##   DIV=포워드 고배당(fDY). 구판(GPA/BM/V11)은 git 이력 보존. fDY 초기연도 커버 얇음 → <100 종목 월은 NA(정직).
-## v2.1: EREV(컨센서스 이익전망 3개월 수정 — 포워드 스타일) 7번째 추가. QUAL 포워드 대체는 DB에
-##   기성 fROE 부재로 보류(F-Score 유지) — fROE(eps_1y/bps_1y) add_factor 온보딩 = 후속 제안.
-STYLES <- list(VAL = list(f = "V12_Composite_Value", hi = TRUE), QUAL = list(f = "Q04_Piotroski_F", hi = TRUE),
+## v2.2 (07-18 도훈 정정 지시 "캐시에 다 있다"): QUAL = **fROE(포워드 ROE = eps_1y/bps_1y)** —
+##   컨센서스 캐시 직접 계산(SIZE의 rawdata 직접 소비와 동일 경로, 팩터 DB 미경유).
+##   월말 기준 최근 92일 내 최신 컨센서스 LOCF(과거 방향만 = PIT-safe)·bps>0 가드.
+##   포워드 스위트 완성: VAL(컴포지트)·QUAL(fROE)·DIV(fDY)·EREV(전망수정). F-Score판은 git 이력.
+STYLES <- list(VAL = list(f = "V12_Composite_Value", hi = TRUE), QUAL = list(f = "__froe", hi = TRUE),
                MOM = list(f = "M01_Mom_12_1", hi = TRUE), LOWVOL = list(f = "D03_RealVol", hi = FALSE),
                SIZE = list(f = NA_character_, hi = FALSE), DIV = list(f = "V06_fDY", hi = TRUE),
                EREV = list(f = "C03_EPS_Chg_3m", hi = TRUE))
 FNAMES <- unique(unlist(lapply(STYLES, function(x) x$f)))
-FNAMES <- FNAMES[!is.na(FNAMES)]
+FNAMES <- FNAMES[!is.na(FNAMES) & !startsWith(FNAMES, "__")]
+
+## fROE 재료: 컨센서스 캐시 직접 소비 (도훈 지시 — 팩터 DB 미경유 직접 산출)
+CONS_EPS <- as.data.table(read_parquet(".cache/consensus/eps_1y.parquet")); CONS_EPS[, Date := as.Date(Date)]; setkey(CONS_EPS, Ticker, Date)
+CONS_BPS <- as.data.table(read_parquet(".cache/consensus/bps_1y.parquet")); CONS_BPS[, Date := as.Date(Date)]; setkey(CONS_BPS, Ticker, Date)
+get_froe <- function(tickers, sig_d, max_stale = 92) {
+  q <- data.table(Ticker = tickers, Date = as.Date(sig_d))
+  e <- CONS_EPS[q, on = .(Ticker, Date), roll = max_stale][, .(Ticker, eps = eps_1y)]
+  b <- CONS_BPS[q, on = .(Ticker, Date), roll = max_stale][, .(Ticker, bps = bps_1y)]
+  m <- merge(e, b, by = "Ticker")
+  m[!is.na(eps) & !is.na(bps) & bps > 0, .(Ticker, froe = eps / bps)]
+}
 
 ## ── 1) 월말 유니버스 패널 + forward 1m (유니버스=K200∪KQ150) ───────────────
 ud <- sort(unique(as.Date(as.data.table(read_parquet(".cache/rawdata.parquet", col_select = "Date"))$Date)))
@@ -90,11 +103,15 @@ for (sd_ in sig_dates) {
   fz <- tryCatch(recover_raw_z(sd_, FNAMES), error = function(e) NULL)
   if (is.null(fz)) next
   u <- merge(u, fz, by = "Ticker", all.x = TRUE)
+  fr <- tryCatch(get_froe(u$Ticker, sd_), error = function(e) NULL)
+  if (!is.null(fr) && nrow(fr)) u <- merge(u, fr, by = "Ticker", all.x = TRUE) else u[, froe := NA_real_]
   bench <- u[, sum(fwd * Size) / sum(Size)]
   out <- list(ym = format(sd_, "%Y-%m"), BENCH = bench)
   for (st in names(STYLES)) {
     cfg <- STYLES[[st]]
-    v <- if (st == "SIZE") -u$Size else { if (is.na(cfg$f) || !cfg$f %in% names(u)) NA else (if (cfg$hi) 1 else -1) * u[[cfg$f]] }
+    v <- if (st == "SIZE") -u$Size
+         else if (identical(cfg$f, "__froe")) u$froe
+         else { if (is.na(cfg$f) || !cfg$f %in% names(u)) NA else (if (cfg$hi) 1 else -1) * u[[cfg$f]] }
     if (length(v) == 1 && is.na(v)) { out[[st]] <- NA_real_; next }
     ok <- !is.na(v)
     if (sum(ok) < 100) { out[[st]] <- NA_real_; next }
