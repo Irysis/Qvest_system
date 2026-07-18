@@ -1,0 +1,85 @@
+{
+  "task_id": "WT-D20260718_004",
+  "wt_type": "discovery",
+  "pg1_eligibility": "certificate_required",
+  "discovery_of": null,
+  "graduation_criteria": {
+    "description": "Discovery → Deployment 전환 조건. discovery_graduation_gate.sh 강제. v8.x WS2 재설계(2026-05-29): rank-IC 계열은 long-only 실현 alpha와 어긋나(16후보 calibration 실측: rank_ic가 FLOW 거짓탈락+NN/TECH 거짓통과) advisory로 강등, portfolio-alpha t(forge NW lag-3)를 hard로. DSR hard는 sweep형 selection만(2026-06-10 개정 — chain/단일은 advisory). hard 기준은 forge-authoritative 값(alpha-stage proxy 아님)에 적용.",
+    "min_rank_ic": 0.04,
+    "min_rank_ic_rationale": "KR top-universe benchmark. <0.04는 IC 약함. (v8.x severity=advisory — long-only 실현 alpha 미전이)",
+    "min_icir": 0.2,
+    "min_icir_rationale": "Alpha Lab Gate. (v8.x severity=advisory)",
+    "min_subperiod_stability": 0.5,
+    "min_subperiod_stability_rationale": "3개 subperiod 안정성. (v8.x severity=advisory)",
+    "max_drawdown_days": 100,
+    "max_drawdown_days_rationale": "100일 이상 drawdown 지속 시 alpha decay 의심. (severity=advisory)",
+    "min_harvey_t_stat": 3,
+    "min_harvey_t_stat_rationale": "rank-IC Harvey-t. (v8.x severity=advisory — rank-IC t는 portfolio-alpha t와 구분, 후자가 권위)",
+    "min_deflated_sharpe_ratio": 0.5,
+    "min_deflated_sharpe_ratio_rationale": "Bailey-Lopez de Prado DSR — multi-testing 보정 SR. (severity=HARD는 sweep형 selection만 — ML스윕/optimizer서치/앙상블·사전등록 grid. 가설주도 chain/단일검증은 advisory 강등+진단산출. 도훈 mandate 2026-05-31/2026-06-10, measurement-graduation §3)",
+    "min_portfolio_alpha_t_nw": 2.95,
+    "min_portfolio_alpha_t_nw_rationale": "★v8.x 신규 HARD. forge-authoritative 실현 portfolio-alpha t (NW lag-3, forge_package.portfolio_alpha_t_nw_lag3). Harvey-Liu-Zhu 2016 hurdle. rank-IC t 아님. 게이트 핵심 판별(16후보 중 FLOW만 통과=정확).",
+    "min_oos_retention": 0.7,
+    "min_oos_retention_rationale": "★v2.5 HARD 배선(문턱은 measurement-graduation §3 2026-05-31/06-10 기존값). 활성 Sharpe OOS/IS retention — anchored 3분할 {55/65/75} 중앙값(essence_score.R oos_stat_version=v2). ≥0.7 단독 PASS / <0.5 무조건 FAIL / [0.5,0.7) band는 보강증거 2/3 조건부 PASS(판정 권위=essence_score.R, 훅은 warn). forge-authoritative 값에만 적용 — 단일전략 과적합 방어 주책임.",
+    "min_calmar": 0.64,
+    "min_calmar_rationale": "★v2.5 HARD 배선(문턱은 measurement-graduation §3 2026-05-31 기존값). Calmar = CAGR/|MDD| ≥ 0.64 (=16%/25%, 제2목표 CAGR16·MDD25에서 도출한 위험조정 게이트). forge-authoritative 값에만 적용.",
+    "severity": {
+      "rank_ic": "advisory",
+      "icir": "advisory",
+      "subperiod_stability": "advisory",
+      "harvey_t_stat": "advisory",
+      "deflated_sharpe_ratio": "hard",
+      "portfolio_alpha_t_nw": "hard",
+      "oos_retention": "hard",
+      "calmar": "hard"
+    },
+    "severity_rationale": "hard = block(우회불가), advisory = warn(screening). hard 4종(DSR/portfolio_alpha_t_nw/oos_retention/calmar)은 forge-authoritative 값에만 적용 — alpha-stage proxy로 graduation 선언 금지(v8.x WS1 정합). DSR hard는 sweep형 selection 한정, oos_retention은 <0.5 무조건 block + [0.5,0.7) band 조건부(measurement-graduation §3)."
+  },
+  "theme": null,
+  "hypothesis_title": "Transformer 시계열 regime 모델 → timing 오버레이(proven 레버) 적용 — cross-sectional 아닌 새 표면",
+  "hypothesis_description": "[동기 — 도훈 지적] WT-003이 transformer를 XATTN(6방법 중 cross-sectional return prediction)에 재적용해 죽은 표면에 머묾. transformer의 native 강점(시계열/경로-의존 패턴)을 벽이 안 걸리는 표면(overlay/timing=3-라운드 확증 유일 MDD/SR 레버)에 적용. [가설] 일간 시장/매크로 시계열에 대한 transformer(temporal self-attention) regime 모델이 incumbent M4 BOCPD 탐지기보다 나은 timing 신호를 내어 book calmar/MDD/SR을 개선하는가. ★cross-sectional 종목선택 아님(전이 벽 회피) — regime 탐지 품질(detector-swap) A/B. [expected_role] 현 book(STR_1715 alpha × M4 BOCPD × R05)의 M4 오버레이 입력을 transformer-regime으로 교체 시 개선 여부. [why_now] 6방법(cross-sectional)+FQ-058(weighting)+insider(비-return) 소진 → overlay가 유일 proven 레버(project-mdd-lever-overlay-only-3rounds). transformer는 월간 스냅샷 아닌 일간 경로를 소비하는 첫 시도. [★선행 차별 — 재실행 금지] ① 6방법+XATTN(WT-003)=cross-sectional return, 본 WT=regime/timing(다른 layer) ② project-pg2-offense-overlay-settled '시장타이밍=R05×m4 이상 가치無'는 오버레이 *구성*(max-cash/offense) 판정 — 본 WT는 detector *품질*(transformer regime vs M4 BOCPD 신호 교체) ③ M4 BOCPD·faith 오버레이는 통계적 change-point, transformer는 학습된 시퀀스 패턴 ④ DPL(settled)·uncertainty(settled)와 무관. hypothesis_index 재조회로 보강. [★PIT 최우선 — faith 오버레이 동월 look-ahead 재발 방지] 오버레이 신호는 홀딩월 시작 *전* 데이터만(C5). `overlay_pit_guard.R::assert_overlay_pit` HARD 통과 의무 + lag1 스트레스(신호 shift(1) 붕괴 시 동월 누출) + strict-PIT A/B(Date<홀딩월 첫날). transformer 학습창도 PIT(미래 데이터 학습 금지·rolling refit). [측정 프레임] book 오버레이 A/B: (M4 BOCPD 오버레이=base) vs (transformer-regime 오버레이=treatment), 동일 alpha·R05·유니버스. 실측 = build_bt_result/canonical, book calmar/MDD/SR_geo + paired. AX-001 v2 조건부(crisis 방어 개선). [feasibility] from-scratch 소형 transformer(PyTorch venv, HF 다운로드 불요). FM(pre-trained TS) 각도는 capacity-gated(FQ-061)라 별개. [kill 사전등록] ① transformer regime이 M4 대비 book calmar/MDD 개선 없음(paired<0 또는 비유의) ② PIT 위반/lag1 붕괴/strict-PIT A/B 인플레>5% ③ 학습 look-ahead → 종결. '시장타이밍 가치無' 강한 prior 정직 반영 — 개선 주장은 strict-PIT 통과분만.",
+  "hypothesis_source": "user_defined",
+  "as_of_date": "2026-07-18",
+  "forecast_horizon": "1M",
+  "rebalance_frequency": "monthly",
+  "universe_definition": {
+    "label": "KOSPI200_KOSDAQ150_intersection",
+    "liquidity_min_won_20d_avg": 50000000,
+    "max_names_total": 500
+  },
+  "benchmark_definition": "KOSPI200_total_return",
+  "data_lag_rules": {
+    "fundamental": "quarterly 45d (재무제표 발표 지연)",
+    "fundamental_annual": "annual May (연간 재무제표 5월 리밸런싱)",
+    "price": "t-1 close",
+    "investor_flow": "t-1 settlement (QuantiWise)",
+    "macro": "t-1 FRED (외부 매크로 lag)",
+    "ic_history": "Usable_Date <= sig_date (Factor DB 강제)"
+  },
+  "cost_model_version": "v2.4_kr_retail_15bps",
+  "current_portfolio": "STR_1631_80_STR_1656_20",
+  "hard_mandate": {
+    "pit_enforcement": "C1-C15 all enforced",
+    "liquidity_floor_won_20d_avg": 50000000,
+    "mandate_restrictions": {
+      "no_short_legal_kr": true,
+      "no_cross_market": true,
+      "kr_domestic_only": true
+    },
+    "long_only_mandate": "configurable"
+  },
+  "hard_constraints": {
+    "max_names": null,
+    "weight_bounds": [
+      0,
+      1
+    ],
+    "sector_active_weight_cap": null,
+    "liquidity_min_won_20d_avg": 50000000
+  },
+  "soft_penalties": [],
+  "capacity_limits": {
+    "adv_multiplier": 0.1,
+    "capacity_max_aum_won": 100000000000
+  }
+}
