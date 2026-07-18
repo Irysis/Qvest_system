@@ -1,0 +1,87 @@
+{
+  "id": "FQ-057-NP4",
+  "lane": "method_frontier",
+  "round_type": "independent_research_round_not_WT",
+  "agent": "optimizer-research",
+  "finalized_at": "2026-07-18 18:40:00",
+  "pin_tag": "fq057_20260718_171024",
+  "preregistration_ref": "stage_artifacts/method_frontier/np4_preregistration.json",
+  "hypothesis": "동일 알파(12-1 모멘텀)·동일 제약·동일 MVO 파이프라인에서 Sigma 입력만 {lw_linear(현행 .get_cor_cov ledoit_wolf) vs lw_nls(FQ-057 승자/NP3 등재)} 교체 시 실현 net active PORT_t(NW lag-3)가 유의 개선되는가",
+  "verdict": "NULL_config_scoped — 사전등록 매핑 그대로. S1(p>n, PRIMARY) paired NW lag-3 t = -0.719, S2(p<n) = -0.886, 둘 다 |t| < 2.0. 방향은 미미하게 음(lw_nls 연 -1.61% / -0.46% active, 비유의). Sigma-입력 품질 개선의 성과(평균)-축 전이 미검출.",
+  "metric_type": "optimizer_lane_ab_diagnostic",
+  "capital_claim": false,
+  "graduation_claim": false,
+  "selection_objective": "paired_net_active_port_t (사전등록 단일 판정 — sweep 아님, n_arms=2)",
+  "scenarios": {
+    "S1_universe_pgtn": {
+      "role": "PRIMARY",
+      "p_range": "약 280~320 eligible, n=60 — linear LW 퇴화 경고 198/198 리밸 전량 발화 (FQ-057 incumbent_finding 실전 재현)",
+      "paired_nw_t_lag3": -0.7191,
+      "paired_ann_diff": -0.0161,
+      "arms": {
+        "lw_linear": {"port_t_nw_lag3": 1.1836, "active_sr_ann": 0.3171, "net_sr_ann": 0.6511, "cagr": 0.1678, "mdd": 0.4926, "calmar": 0.3406, "oos_retention_v2_median": -0.2004, "turnover_oneway_annual": 8.672, "turnover_roundtrip_annual": 17.345},
+        "lw_nls":    {"port_t_nw_lag3": 0.9399, "active_sr_ann": 0.2641, "net_sr_ann": 0.6296, "cagr": 0.1542, "mdd": 0.4700, "calmar": 0.3281, "oos_retention_v2_median": -0.2342, "turnover_oneway_annual": 10.347, "turnover_roundtrip_annual": 20.694}
+      }
+    },
+    "S2_prescreen_pltn": {
+      "role": "SECONDARY (비퇴화 대조군: p=50 < n=60)",
+      "paired_nw_t_lag3": -0.8862,
+      "paired_ann_diff": -0.0046,
+      "arms": {
+        "lw_linear": {"port_t_nw_lag3": 1.0237, "active_sr_ann": 0.2666, "net_sr_ann": 0.6041, "cagr": 0.1510, "mdd": 0.4502, "calmar": 0.3354, "oos_retention_v2_median": -0.2599, "turnover_oneway_annual": 8.831},
+        "lw_nls":    {"port_t_nw_lag3": 0.9642, "active_sr_ann": 0.2513, "net_sr_ann": 0.5952, "cagr": 0.1469, "mdd": 0.4824, "calmar": 0.3045, "oos_retention_v2_median": -0.3102, "turnover_oneway_annual": 8.840}
+      },
+      "note": "arm 간 포트 거의 동일(mean L1 0.03, overlap 15/15) — 비퇴화 영역에서 두 추정기의 MVO 해 자체가 수렴. paired -0.89는 미세 차이의 누적."
+    }
+  },
+  "dsr_diagnostic": {"note": "2-arm 가설주도 — 게이트 비대상, 수치 기록", "S1_dsr_better_arm": 0.8869, "S2_dsr_better_arm": 0.8556},
+  "mechanism_diagnosis": {
+    "risk_transfers_return_does_not": "lw_nls는 위험-축 약속을 실전에서도 이행: S1 실현 net vol 31.4%→30.0%, active vol 26.3%→25.5% (FQ-057 MVP OOS vol 최저와 정합). 그러나 실현 평균이 그보다 크게 감소(gross paired t -0.60, 연 -1.34%)해 IR 개선으로 비전이. Sigma 품질은 분산-축 레버이지 평균-축 레버가 아님이 이 config의 실측.",
+    "constraint_envelope_dominates": "long-only·[0,0.20]·top-25·min_names 15의 제약 봉투에서 QP는 corner 해로 가고 min_names fill이 상시 바인딩(S2 mean_n 정확히 15.0) — 공분산 정보가 최종 비중 형상에 개입할 여지가 기계적으로 작음. 측정 대상은 'registry에 배포된 그대로의 MVO'.",
+    "alpha_decay_wall_signal_invariant": "양 arm 공히 pre-2017만 생존(S1 A_pre_t 2.53 / B_pre_t 2.09, post-2017 둘 다 음수) — post-2017 감쇠 벽은 Sigma-입력과 무관하게 재현. oos_retention_v2 음수(모멘텀 cohort decay)도 arm 무관.",
+    "correlation_awareness_adds_churn": "S1에서 lw_nls arm 회전율 +1.7/yr one-way(8.7→10.3) — Sigma 시변이 turnover penalty 부재(엔진 미배선 발견) 하에서 그대로 거래로 전이, 연 약 0.26% 추가 비용. 격차의 주인은 gross(-1.34%/yr)이고 비용은 부차.",
+    "pre2017_control": "알파 생존 구간(pre-2017)만 잘라도 paired -0.88 — '알파가 죽어서 못 본 것' 가설로 NULL을 전부 설명할 수 없음."
+  },
+  "engine_defects_discovered": [
+    {"id": "task_1b9e50a3", "finding": "mvo_weights hhi_cap projection(.project_hhi)이 absorber를 w=0 포함 전체 유니버스에서 선택 -> p>25 유니버스에서 max_names 하드캡(RF-O5) 누출. WT 규모(p<=25)에서는 발현 불가라 잠복. 본 라운드는 support-제한 projection으로 우회(HHI<=0.10 의미 보존·양 arm 동일·challenge_note C6 공개 기록)."},
+    {"id": "task_89b2050e", "finding": "mvo_weights turnover_penalty/current_weights 인자가 QP에 미배선(dead parameter) — 문서화된 목적함수의 phi*TC(x) 항 미구현. TC-aware MVO는 실제로는 미검 상태."}
+  ],
+  "hard_constraints_audit": {
+    "max_names_25": "PASS (792셀 전량 stopifnot 감사)",
+    "long_only": "PASS", "weight_bounds_0_020": "PASS", "sum_w_1": "PASS",
+    "liquidity_t1_2e8": "PASS (AvgTV20 = 과거 20일 Close*Vol 평균, 리밸월말까지 데이터만)",
+    "cost_model": "15bps one-way delta 과금 (BOP vs 전월 EOP drift)",
+    "turnover_oneway_annual": "8.67~10.35/yr <= 11.0 (캘린더 연 실합산 — x12 연율화 미사용, round-trip = x2 별도 기록)"
+  },
+  "limitations": [
+    "단일 알파(12-1 모멘텀) config — 알파-족 일반화 아님. 단 pre-2017 통제로 '죽은 알파 아티팩트' 단독 설명은 배제 (challenge_note C1)",
+    "S1 arm A는 p>n 퇴화로 사실상 알파비례 MVO — 'Sigma A/B'가 아니라 '상관구조 무시 vs 보존' A/B이나, 그것이 incumbent 실동작이며 S2 대조군이 혼재 없는 영역에서 동일 결론 (C2)",
+    "60m 윈도·lambda 2.0 사전 고정 — 미검 축 (sweep은 사전등록 위반이라 의도적 미실시) (C3)",
+    "min_names 15 fill·HHI projection 등 registry 기계가 포트 형상 지배 — 'Sigma 정보의 원리적 가치' 판정 아님, '배포된 MVO에서의 실전 가치' 판정 (C4)",
+    "NA->0 27,705셀(전 행렬 기준, 대부분 비보유) — 양 arm·벤치 동일 적용, paired 중립 (C5)",
+    "벤치는 cap-w K200|KQ150 fresh(Size 비례, Return.portfolio) — 유동성 필터 미적용 지수 관례"
+  ],
+  "next_probes": [
+    {"id": "NP4-P1", "title": "lw_nls 소비면 재라우팅: 성과-축 -> 위험-축", "detail": "실증 가치는 위험 예측(실현 vol 감소 + FQ-057 MVP vol 최저)이므로 risk lane 소비로 라우팅: risk_package의 대형-유니버스/cross-sectional Sigma·TE 예측 입력에 lw_nls 사용(NP3 등재로 배관 완료), predicted-vs-realized TE 정확도 A/B로 측정. optimizer 성과-축 재탕 아님."},
+    {"id": "NP4-P2", "title": "multi-sleeve 성립 시 Sigma-swap 재측정", "detail": "Sigma의 평균-축 가치는 이질 sleeve 간 배분에서 발생 여지 — single-alpha top-25 corner 해에서는 기계적으로 억제. HRP/위험기반 배분 부활 조건(admitted sleeves >=2, INV-7)과 동일 트리거로 묶음."},
+    {"id": "NP4-P3", "title": "TC-aware MVO 실측 (turnover_penalty 배선 후)", "detail": "task_89b2050e 수리 후 no-trade region 있는 MVO로 재측정 — lw_nls의 +1.7/yr 회전 초과가 억제되면 순-격차 일부 회복 가능(단 gross가 주인이라 판정 반전 기대는 낮음, 정직 기록)."}
+  ],
+  "revival_or_followup_conditions": [
+    "optimizer 성과-축 Sigma-swap 재측정: multi-sleeve book 성립(NP4-P2) 또는 cap-w PORT_t 2.95 통과 알파 등장(전이 벽 이동) 시에만 — 그 전 동형 재탕 금지 (INV-7)",
+    "lw_nls WT-시점 소비 자격(NP3 등재)은 유지 — 단 근거는 estimation-quality/위험-축이며 성과-축 개선 주장 불가 (본 라운드가 그 라벨의 실측 경계)",
+    "engine 수리 2건(task_1b9e50a3 HHI 누출 / task_89b2050e turnover_penalty) 완료 시 run_02_ab.R workaround 제거 가능"
+  ],
+  "bottleneck_map_update_proposal": "5행(비중): 'Sigma-입력 하위축 미검' -> '실측 완료(NP4): Sigma-swap 평균-축 NULL(S1 -0.72/S2 -0.89)·위험-축만 전이(net vol -1.4%p) — EW/통계 sizing 천장 결론 유지·강화. 잔여 미검 = TC-aware MVO(P3)·multi-sleeve 조건부(P2)'. 갭 귀속(1 재료) 불변.",
+  "artifacts": {
+    "runner_dir": "04_Research/method_frontier/fq057_np4_sigma_swap/",
+    "preregistration": "stage_artifacts/method_frontier/np4_preregistration.json",
+    "weights": "stage_artifacts/method_frontier/np4_weights.parquet",
+    "cell_meta": "stage_artifacts/method_frontier/np4_cell_meta.parquet",
+    "series": "stage_artifacts/method_frontier/np4_series.parquet",
+    "metrics": "stage_artifacts/method_frontier/np4_metrics.json",
+    "mechanism": "stage_artifacts/method_frontier/np4_mechanism.json",
+    "liq_snapshot": "stage_artifacts/method_frontier/np4_liq_snapshot.parquet",
+    "challenge_note": "stage_artifacts/method_frontier/np4_challenge_note.md",
+    "charts": ["stage_artifacts/method_frontier/np4_chart_s1_lwnls*.png", "stage_artifacts/method_frontier/np4_sweep_port_t.png"]
+  }
+}
