@@ -88,7 +88,56 @@ if (.hrp_core_already_loaded) {
   # ─────────────────────────────────────────────────────────────────────────────
   # 공분산/상관 전처리 디스패처
   # ─────────────────────────────────────────────────────────────────────────────
+  # ── Ledoit-Wolf (2020) analytical nonlinear shrinkage (NLS) 헬퍼 ──────────────
+  #   analytical_shrinkage.m 포트 (Ledoit & Wolf 2020, Annals of Statistics 48(5)).
+  #   Epanechnikov 커널 밀도 + 표본 고유값 Hilbert 변환. p>n에서도 full-rank PSD.
+  #   FQ-057 (2026-07-18) 5-estimator estimation-quality 1위 → NP3로 등재.
+  #   ★러너 원본 04_Research/method_frontier/fq057_captier_sigma/estimators.R::
+  #     est_lw_nls 와 수치 파리티(bit) 유지 — 본체 로직 수정 금지(run_np3_parity.R 검증).
+  .lw_nls_cov <- function(R) {
+    n <- nrow(R); p <- ncol(R)
+    X <- scale(R, center = TRUE, scale = FALSE)
+    n_eff <- n - 1                              # effective sample size (paper)
+    S <- crossprod(X) / n_eff
+    eg <- eigen(S, symmetric = TRUE)
+    lambda_all <- rev(eg$values)                # ascending
+    u <- eg$vectors[, rev(seq_len(p)), drop = FALSE]
+    keep <- max(1, p - n_eff + 1):p
+    lambda <- lambda_all[keep]
+    lambda[lambda < .Machine$double.eps] <- .Machine$double.eps
+    m <- length(lambda)                         # = min(p, n_eff)
+    L  <- matrix(lambda, nrow = m, ncol = m)    # lambda in rows repeated cols
+    Ht <- (n_eff^(-1/3)) * t(L)                 # bandwidth matrix H = h * lambda_j
+    x  <- (L - t(L)) / Ht
+    ftilde <- (3 / (4 * sqrt(5))) * rowMeans(pmax(1 - x^2 / 5, 0) / Ht)
+    Hftemp <- (-3 / (10 * pi)) * x +
+              (3 / (4 * sqrt(5) * pi)) * (1 - x^2 / 5) *
+              log(abs((sqrt(5) - x) / (sqrt(5) + x)))
+    sel <- abs(x) == sqrt(5)
+    if (any(sel)) Hftemp[sel] <- (-3 / (10 * pi)) * x[sel]
+    Hftemp[!is.finite(Hftemp)] <- 0
+    Hftilde <- rowMeans(Hftemp / Ht)
+    c_ratio <- p / n_eff
+    if (p <= n_eff) {
+      dtilde <- lambda / ((pi * c_ratio * lambda * ftilde)^2 +
+                          (1 - c_ratio - pi * c_ratio * lambda * Hftilde)^2)
+    } else {
+      h <- n_eff^(-1/3)
+      Hftilde0 <- (1 / pi) * (3 / (10 * h^2) +
+                   3 / (4 * sqrt(5) * h) * (1 - 1 / (5 * h^2)) *
+                   log((1 + sqrt(5) * h) / (1 - sqrt(5) * h))) * mean(1 / lambda)
+      dtilde0 <- 1 / (pi * (p - n_eff) / n_eff * Hftilde0)
+      dtilde1 <- lambda / (pi^2 * lambda^2 * (ftilde^2 + Hftilde^2))
+      dtilde  <- c(rep(dtilde0, p - n_eff), dtilde1)
+    }
+    Sig <- u %*% diag(dtilde) %*% t(u)
+    Sig <- (Sig + t(Sig)) / 2
+    dimnames(Sig) <- dimnames(S)
+    Sig
+  }
+
   .get_cor_cov <- function(ret_mat, cov_method = "sample") {
+    .lw_degenerate_info <- NULL
     if (cov_method == "gerber_rmt") {
       q_ratio <- nrow(ret_mat) / ncol(ret_mat)
       cor_mat <- .gerber_cor(ret_mat)
@@ -104,13 +153,41 @@ if (.hrp_core_already_loaded) {
       cov_mat <- (1 - rho) * S + rho * mu * diag(p)
       sds     <- sqrt(diag(cov_mat))
       cor_mat <- cov_mat / outer(sds, sds); diag(cor_mat) <- 1
+      # ── p>n 퇴화 가드 (FQ-057 NP3, 2026-07-18 도훈 승인) ───────────────────────
+      # 인라인 LW(OAS 변형)는 p>n에서 rho→1(cap 바인딩) → Σ≈μ·I (cond≈1, 상관구조
+      # 전멸, MVP=EW 붕괴). WT 규모(p≤25)는 비바인딩·무해하나 대형 유니버스는 금지.
+      # ★경고 + 진단 attr("lw_degenerate")만 부여 — 값/기본동작 변경 없음(자동 폴백 아님).
+      #   대안: cov_method="lw_nls"(analytical NLS, full-rank PSD) 또는 factor Σ.
+      if (p > n_obs) {
+        .lw_degenerate_info <- list(
+          degenerate      = TRUE,
+          method          = "ledoit_wolf",
+          reason          = "p>n: inline LW shrinkage cap (rho->1) collapses Sigma toward mu*I",
+          p               = p,
+          n_obs           = n_obs,
+          rho             = rho,
+          rho_cap_binding = isTRUE(rho >= 1 - 1e-12),
+          guidance        = "do NOT consume for large-universe Sigma; use cov_method='lw_nls' or a factor model"
+        )
+        warning(sprintf(
+          "[.get_cor_cov] ledoit_wolf p>n degeneracy: p(%d) > n(%d), rho=%.6f%s -> Sigma collapses toward mu*I (cond~1, correlation structure destroyed). Do NOT use for large-universe Sigma; prefer cov_method='lw_nls'. [attr 'lw_degenerate' attached]",
+          p, n_obs, rho,
+          if (isTRUE(rho >= 1 - 1e-12)) " [cap binding]" else ""),
+          call. = FALSE)
+      }
+    } else if (cov_method == "lw_nls") {
+      cov_mat <- .lw_nls_cov(ret_mat)
+      sds     <- sqrt(diag(cov_mat))
+      cor_mat <- cov_mat / outer(sds, sds); diag(cor_mat) <- 1
     } else {
       cor_mat <- cor(ret_mat, use = "pairwise.complete.obs")
       cov_mat <- cov(ret_mat, use = "pairwise.complete.obs")
     }
     cor_mat[is.na(cor_mat)] <- 0
     cov_mat[is.na(cov_mat)] <- 0
-    list(cor = cor_mat, cov = cov_mat)
+    out <- list(cor = cor_mat, cov = cov_mat)
+    if (!is.null(.lw_degenerate_info)) attr(out, "lw_degenerate") <- .lw_degenerate_info
+    out
   }
 
   # ─────────────────────────────────────────────────────────────────────────────
