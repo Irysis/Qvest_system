@@ -1,0 +1,56 @@
+{
+  "l_code": "L-AR-20260718_215751",
+  "strategy_id": "WT-D20260718_002_insider_sell_exclusion",
+  "grade": "F",
+  "core_reference": "qepm/mailbox/worktask/WT-D20260718_002/alpha_validation.json + challenge_note.md",
+  "lesson_text": "WT-D20260718_002 (자가발전 비-return, 2026-07-18, pin wt002_20260718_214215): insider-selling 유니버스 배제 필터(Miller-1977 long-only 과대평가 하베스트) = FALSIFIED terminal. base(mom_12_1 top-25 EW)에서 임원 장내 순매도 종목 배제 후 재선정 vs base, 259m paired canonical(cap-w 1급). 판정: **배제가 base를 훼손** — cap-w PORT_t 1.171→0.771, paired diff −2.15%/yr t=−1.35(음수). sweep 21/21 셀 전부 음성(best t −0.20). dual-basis: 배제종목 median size-pct 0.284(상위3분위·소형 아님)·EW-uni도 음(1.857→1.442)=벤치 아티팩트 아님. IS/OOS 공히 음(−1.48/−0.73). AX-001 v2: crisis diff −0.99%/yr=방어값 없음. PIT assert_overlay_pit PASS·lag1 primary가 더 음(상향 look-ahead 없음). ★기전: KR 유동 유니버스서 임원 순매도한 momentum winner가 대체 종목보다 오히려 outperform → 배제가 해. 순매도=악재 신호 아님(강세에 매도=차익실현). ★triangulation(재탕 아님): R9(insider selection null)·R33/R37(monitoring net-sell t≈0)·본 WT(exclusion)=3독립 프레임 수렴 음성. **KR insider net-sell는 forward-underperformance 신호 부재** 확립. **비-return insider 축 전량 characterized-null.** momentum-decay 병목은 insider로 미해소 → 다음은 비-insider 비-return(FQ-003 공매도잔고·FQ-005 crowding, 도훈 QW export 게이트) 또는 novel-method. risk-research 미진행(v8.3 M1).",
+  "tags": "QEPM,WT,INSIDER,NON-RETURN,EXCLUSION,MILLER-1977,FALSIFIED,TRIANGULATION",
+  "created_at": "2026-07-18",
+  "research_mode": "alpha_research",
+  "created_by": "emit:alpha_research",
+  "metric_type": "canonical_screen",
+  "construction_type": "single_factor_long_only",
+  "mechanism_hypothesis": "KR 임원 장내 순매도는 대개 강세 구간 차익실현이라 forward-underperformance를 예측하지 못함 — 오히려 순매도된 momentum winner가 대체 종목 대비 초과수익 지속. Miller-1977 과대평가 해소 가설은 공매도-수요(대차/공매도잔고)엔 성립할 수 있으나 insider-sell 프록시엔 부재(신호원 불일치).",
+  "lcode_schema_version": 2,
+  "pin_tag": "wt002_20260718_214215",
+  "base_capw": 1.171,
+  "treat_capw": 0.771,
+  "paired_t": -1.35,
+  "sweep_neg": "21/21",
+  "excluded_size_pct": 0.284,
+  "crisis_diff": -0.0099,
+  "note": "grade F=자본 미달 terminal. portfolio_alpha_t=base 1.171(배제 전)·oos_retention=OOS t 음. metric_type=canonical_screen",
+  "falsification_attempts": [
+    {
+      "test": "sweep 21셀(scope×L×P + alt-intensity gross/breadth)",
+      "result": "falsified",
+      "effect_retained": "21/21 음성 paired-t"
+    },
+    {
+      "test": "dual-basis(cap-w vs EW-uni + size-tier)",
+      "result": "survived",
+      "effect_retained": "양 basis 음·배제종목 상위3분위=소형 아티팩트 아님"
+    },
+    {
+      "test": "IS/OOS split + AX-001 v2 crisis",
+      "result": "falsified",
+      "effect_retained": "IS/OOS/crisis 전부 음=방어값 없음"
+    },
+    {
+      "test": "PIT assert_overlay_pit + lag1 스트레스",
+      "result": "survived",
+      "effect_retained": "lag1 primary가 더 음=상향 look-ahead 없음, 신호 진성 lagged"
+    },
+    {
+      "test": "R9/R33/R37 3-프레임 triangulation",
+      "result": "survived",
+      "effect_retained": "selection·monitoring·exclusion 독립 수렴 음=재탕 아닌 삼각검증"
+    }
+  ],
+  "oos_retention": -0.734,
+  "oos_months": 52,
+  "portfolio_alpha_t": 1.171,
+  "selection_type": "sweep",
+  "family": "insider_nonreturn",
+  "record_type": "performance"
+}
