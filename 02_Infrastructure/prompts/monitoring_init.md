@@ -34,6 +34,7 @@ Monitoring Agent — admitted Deployment WT 지속 감시. predicted vs realized
     - Part C-live: insider SAFE/SAFE_FADING **live OOS 추적** (task #73 R42, 2026-07-15 — FQ-053 P2, R41 소비면·현 SAFE_FADING 2건 발화로 armed→active): `02_Infrastructure/reports/insider_safe_live_track.R` source 실행 (**filing_delay_watch.R 실행 *후*** — 상류 = filing_delay_watch_latest.json insider_net_buy_safe) → `qepm/observability/insider_safe_live_track.json` 갱신 → monitoring_report에 `insider_safe_live_track` 섹션 기록. 동작: **① 발화 register**(현 홀딩월 NET_BUY_SAFE/SAFE_FADING 보유를 발화월·종목·상태·mso·tier·발화시점 INS02 z로 등록, 기존 active episode는 갱신·idempotent) / **② 익월 실현위험 append**(각 트랙의 *완료된* fading/SAFE 홀딩월만 — Ret_1m 동월 실현=prod(1+Ret)-1 per Ticker×월, R40-identical 단일자산 월수익·포트 합성 아님 → downside=mean(r<0)·tail=P(r<-0.15)·vol. 당월/미래월 pending) / **③ mso auto-clear 로그**(active 트랙이 현 홀딩월 fired 집합에서 사라짐=mso 1→2 → cleared 기록, R40 transient horizon 실증 누적). **OOS 대조**: protection 창(mso∈{0,1}) 실현 tail-hit 누적이 R40 baseline OFF 7.9% 미만이면(h0 5.2%·h1 3.5% 예측) 라이브 protection 재현 — **표본 축적 전 판정 금지·자동조치 없음(도훈 재료)**. **★자본/sizing 아님**(monitoring 배관, R34 cohort-path 분산 아티팩트 불변). 현 발화 2건(LG이노텍 A011070·신세계 A004170, SAFE_FADING@202607 mso=1 MID_OTHER)은 익월(202608) 202607 홀딩월 실현위험 append 예정(현재 pending — 홀딩월 미완결). **★데이터 위생: live rawdata 전역 Ret max=66999(오염) 실측 → writer에 KR ±30% 가격제한 가드(RET_LIMIT=0.31) 내장. 익월 1차 실현 obs는 `source_verified=FALSE` — R40 production-basis(uni$Ret_1m) cohort 스팟체크 정합 후 신뢰(§7b), OOS 판정은 검증 후.** DART API 0·insider 패널 재사용·book_state/05_Production/outputs.ramp 무변경.
     - **공통: 월간·보고만·자동조치 없음·텔레그램 단독 발송 금지 (도훈 판단 재료). 문턱/키워드 sweep 금지(사전 고정). book_state/weights/05_Production 무변경**
   - P-pure D3 페이퍼 트랙 (task #62, 2026-07-13 — dossier §7 병행안, 도훈 승인): 월간 러너 `02_Infrastructure/portfolio/ppure_paper_track.R` source 실행 → `06_Registry/live_track/{PPURE_BASE_W36K20, PPURE_D2_DECAYEXIT}/paper_nav.csv` append + trailing 실측 vs 봉인 구간(`holdout_interval.json` [q05,q95], `judge_holdout()` trailing 공용·최소 6개월) 대조 → monitoring_report에 `ppure_paper_track` 섹션 기록. FAIL_FALSIFIED(하단 침범) 시 "봉인 하단 침범" WARN 보고만 — **자동 퇴출 없음**(도훈 수동, STR_1715 규약 동일). **페이퍼 전용 — book_state 쓰기 금지·자본 게이트 무관**(cap-w HARD 3종 FAIL 불변, 벤치-상대 EW-uni 채점 트랙). D-2 보고 시 선택편향 라벨(후보 선택 2026-07-13, R13 게이트 산출 사후 지목) 병기 의무. 러너 parity-guard 실패로 append 중단 시 = "업스트림 데이터 변형" 경보(도훈 판단 재료, [[project-cache-vintage-pinning]]). 러너 [WARN] scores stale 시 RAMP score refresh 필요 보고
+  - AE crisis tripwire (비지도 오토인코더 regime 이상탐지 → 급성 crisis 조기경보, WT-D20260718_007 소비면 — 2026-07-19, 도훈 지시): `02_Infrastructure/reports/ae_crisis_tripwire.R` source 실행 → `qepm/observability/ae_crisis_tripwire_latest.json` 소비 → monitoring_report에 `ae_crisis_tripwire` 섹션 기록. 상류 AE 신호 = `stage_artifacts/WT_D20260718_007/ae_regime_signal.parquet`(walk-forward AE recon-error 이탈도, 소비. 신선화=`ae_regime_walkforward.py` 재실행·무거움·온디맨드). M4 = 동일 pin `period_returns_layer5.csv` `m4_weight_lag<1`(apples-to-apples §7 vintage-pin). **3-state**: AE_ACUTE_ALERT(AE 발화∧M4 미발화="M4가 놓칠 급성 OOD", 2008 GFC 3건·2022 3건 실적) / BOTH_CONFIRM(AE∧M4=강confirm) / M4_ONLY(M4 소관) / CALM. **AE fire = fire_seq|fire_pt**(recon-error>IS-calibrated τ, τ가 M4 fire rate 0.126에 노출 중립 매칭). 급성도 ELEVATED/ACUTE/EXTREME(초과배율 max(ae/τ), 사전 고정). **실측 근거**: AE 2008 GFC 9/9 방어(M4 6/9·지도학습 transformer 0/9·2022 AE 3 vs M4 0). **★자본/배포 아님·자동조치 없음·governor 무관**(도훈 판단 재료 — 감시 계층 급성 crisis 조기경보). 임계 사전 고정(sweep 금지)·idempotent(재실행 register 0)·PIT self-check 미래참조 0. **텔레그램 = 신규 발화(최신월 ae_fire∧미발송)에만** `ae_crisis_tripwire_tg.R` 발송(dedup 원장 `telegram_sent_for`, 발송 후 `AE_MARK_SENT=<date>`로 기록·spam 방지). 차트 = `ae_crisis_tripwire_chart.R`(AE 이탈 vs M4 발화 타임라인). book_state/05_Production 무변경.
   - 모든 alert은 monitoring_report.json + Telegram 동시 기록
   </required>
 </constraints>
@@ -117,6 +118,20 @@ if (isTRUE(lt$oos_rollup$n_protection_window > 0) && isTRUE(lt$oos_rollup$confir
 if (ppt$judge_net == "FAIL_FALSIFIED" || ppt$judge_ew == "FAIL_FALSIFIED")
   flag_alerts(track_id, "paper_track_interval_breach")   # WARN "봉인 하단 침범" — 보고만, 자동 퇴출 없음(도훈 수동)
 if (ppt$parity_guard_failed) flag_alerts(track_id, "paper_track_upstream_mutation")  # append 중단 = 업스트림 데이터 변형 의심
+
+# AE crisis tripwire (WT-D20260718_007 소비면 — 비지도 AE regime 이상탐지 급성 조기경보. 자본 아님·자동조치 없음. 사전 고정, sweep 금지)
+# 실행: cd 02_Infrastructure/reports && Rscript -e 'source("ae_crisis_tripwire.R")'
+# → qepm/observability/ae_crisis_tripwire_latest.json 소비 (idempotent register + 3-state + dedup 원장)
+# 3-state: AE_ACUTE_ALERT(AE 발화∧M4 미발화=급성 OOD) / BOTH_CONFIRM(AE∧M4) / M4_ONLY / CALM. ae_fire=fire_seq|fire_pt
+ae_cr <- fromJSON("qepm/observability/ae_crisis_tripwire_latest.json")
+if (ae_cr$latest$state == "AE_ACUTE_ALERT")
+  flag_alerts(book_id, "ae_acute_ood_alert")   # AE 급성 이상 발화 ∧ M4 미발화 = M4가 놓칠 급성 OOD (도훈 재료·자본 아님)
+if (ae_cr$latest$state == "BOTH_CONFIRM")
+  flag_alerts(book_id, "ae_m4_both_confirm")    # AE∧M4 동시 = 강confirm 급락 (도훈 재료·자본 아님)
+# 텔레그램 = 신규 발화(telegram_pending)에만: Rscript 02_Infrastructure/reports/ae_crisis_tripwire_tg.R
+#   → 발송 후 dedup: AE_MARK_SENT=<latest decision_date> Rscript -e 'source("ae_crisis_tripwire.R")'
+if (isTRUE(ae_cr$alert_dedup$telegram_pending))
+  flag_alerts(book_id, "ae_crisis_new_firing")  # 신규 급성 발화 — tg 발송 대상(dedup·spam 방지). ★자본/배포 미상정, book_state 무변경
 ```
 </metrics_computation>
 
@@ -222,6 +237,16 @@ if (ppt$parity_guard_failed) flag_alerts(track_id, "paper_track_upstream_mutatio
     "oos_rollup": {"n_protection_window": 0, "realized_tail_hit_rate": null, "baseline_off_tail": 0.07946, "confirms_protection": null, "status": "pending (익월부터 — 현 발화 홀딩월 미완결)"},
     "rule": "발화(NET_BUY_SAFE/SAFE_FADING) 등록 + 완료 홀딩월 Ret_1m 실현위험(downside/tail/vol) append + mso 1->2 auto-clear 로그. protection 창(mso 0/1) 실현 tail-hit이 R40 baseline OFF 7.9% 미만 누적 = 라이브 protection 재현(표본 축적 전 판정 금지·자동조치 없음·자본 아님)",
     "source_json": "qepm/observability/insider_safe_live_track.json"
+  },
+  "ae_crisis_tripwire": {
+    "as_of": "2026-07-19",
+    "book": "STR_1715_on_M4_R05_noLayer4_PG2",
+    "metric_type": "regime_anomaly_monitoring",
+    "latest": {"decision_date": "2026-05-01", "state": "BOTH_CONFIRM", "acuity": "EXTREME", "exceed_max": 3.775, "dual_detector": true, "m4_fire": 1, "consecutive_ae_fire_months": 7},
+    "historical_validation": {"n_months_matched": 221, "state_counts": {"CALM": 157, "AE_ACUTE_ALERT": 31, "BOTH_CONFIRM": 18, "M4_ONLY": 15}, "crisis_2008_gfc": {"ae_fire": 9, "m4_fire": 6, "ae_acute_alert": 3}, "crisis_2022": {"ae_fire": 3, "m4_fire": 0}},
+    "alert_dedup": {"telegram_pending": false, "telegram_sent_for": ["2026-05-01"]},
+    "rule": "AE recon-error 이탈(fire_seq|fire_pt > τ, τ=M4 fire rate 0.126 노출 중립) → 3-state(AE_ACUTE_ALERT=M4가 놓칠 급성 OOD / BOTH_CONFIRM / M4_ONLY / CALM). 2008 GFC AE 9/9 vs M4 6/9 실측. ★자본/배포 아님·자동조치 없음(도훈 재료)·governor 무관. 임계 사전 고정·idempotent·dedup. AE 신선화=ae_regime_walkforward.py 재실행",
+    "source_json": "qepm/observability/ae_crisis_tripwire_latest.json"
   },
   "te_baseline": {
     "baseline_estimator": "ewma97",

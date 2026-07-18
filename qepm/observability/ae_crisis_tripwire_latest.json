@@ -4,7 +4,7 @@
   "book": "STR_1715_on_M4_R05_noLayer4_PG2",
   "metric_type": "regime_anomaly_monitoring",
   "created_at": "2026-07-19T01:58:50+0900",
-  "updated_at": "2026-07-19T01:59:10+0900",
+  "updated_at": "2026-07-19T02:03:36+0900",
   "as_of": "2026-07-19",
   "upstream": {
     "ae_signal": "stage_artifacts/WT_D20260718_007/ae_regime_signal.parquet (walk-forward AE recon-error, 소비)",
@@ -189,9 +189,11 @@
     "headline": "2008 GFC: AE 9/9 방어(M4 6/9·transformer 0/9) — AE_ACUTE_ALERT 3건이 M4 미포착 급성월. 2022 bear: AE 3 vs M4 0(전량 AE_ACUTE_ALERT)."
   },
   "alert_dedup": {
-    "telegram_pending": true,
-    "pending_decision_date": "2026-05-01",
-    "telegram_sent_for": [],
+    "telegram_pending": false,
+    "pending_decision_date": null,
+    "telegram_sent_for": [
+      "2026-05-01"
+    ],
     "dedup_rule": "신규 발화(최신월 ae_fire==1 ∧ decision_date ∉ telegram_sent_for)에만 텔레그램. AE_MARK_SENT env로 발송 후 원장 기록. spam 방지"
   },
   "run_summary": {
@@ -200,7 +202,7 @@
     "n_both_confirm_total": 18,
     "n_new_this_run": 0,
     "new_firing_dates": [],
-    "marked_sent_this_run": null
+    "marked_sent_this_run": "2026-05-01"
   },
   "firings": [
     {
