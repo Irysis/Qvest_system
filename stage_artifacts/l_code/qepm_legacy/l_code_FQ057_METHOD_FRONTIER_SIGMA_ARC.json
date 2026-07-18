@@ -1,0 +1,53 @@
+{
+  "l_code": "L-QPM-20260718_190624",
+  "strategy_id": "FQ057_METHOD_FRONTIER_SIGMA_ARC",
+  "grade": "B",
+  "core_reference": "stage_artifacts/method_frontier/{fq057_verdict,np4_verdict,p1_verdict}.json + p1_challenge_note.md + p1_lambda_robust.json + np3_registration_report.json",
+  "lesson_text": "FQ-057 method-frontier 1호 아크(R1→NP3→NP4→P1, 2026-07-18, pin fq057_20260718_171024) 수렴 — (1) cap-tier 블록 하드-조립 Σ = config-scoped negative: 독립 tier-블록 + 교차 1-factor 치환은 PSD 비보존 연산(위반 198/198·eigen-clip 후 cond~1e10·MVP 폭주). tier 개념은 미기각 — block_nls가 상관 RMSE 1위(0.3377). 재도전은 PSD-보존 연산자만(NP1 Hadamard tier-damping / NP2 tier-factor BΩB'+D). (2) 승자 lw_nls(Ledoit-Wolf 2020 analytical NLS): 추정품질 5지표 1위·cond 98·PSD 100%. NP3에서 .get_cor_cov 정식 등재(parity bit-identical·p>n 가드). (3) incumbent linear LW는 p>n에서 rho-cap 바인딩 → μI 완전 퇴화(cond=1) — 대형-유니버스 Σ 소비 금지. 유니버스-스케일(p≈301>n=60)로 추정한 Σ는 25×25 서브블록 소비도 오염(총분산 vol 스케일 ~40% 과소예측 실측 — 퇴화는 적용 스케일이 아닌 추정 스케일에서 발생). (4) MVO Σ-swap 평균-축 전이 NULL(NP4: S1 paired NW-t -0.719 / S2 -0.886) — 위험-축만 전이(net vol 31.4→30.0%). 기전: 제약 조건 지배(corner 해)+2017+ 감쇠 벽 Σ-무관. (5) P1 위험예측 정확도(QLIKE·DM·MZ, 186/198m) SPLIT 판정: (a) 대형-유니버스 Σ = ADOPT lw_nls — TE-분산 DM capw -3.06/EW control -3.51/fullset -3.20·-3.44 전 셀 동방향, MZ slope b≈0.94~1.05로 유일 calibration 정합, λ=0.97 robustness에서도 불변. (b) 단일-포트 TE 추적 = KEEP EWMA-direct — lw_nls tie(-1.24@λ0.94·-1.63@λ0.97, 방향 우세이나 미달) → 더 단순한 현행 기준선 유지(운용 te_baseline ewma97 정합·혁신항 상이 주의: P1은 일간-RV, 운용은 월간 제곱). 종합: Σ 품질의 가치는 소비 대상에 조건적 — 위험-축 레버(예측 정확도·cap_tier_decomposition·TE 진단)이지 평균-축(PORT_t) 레버 아님. 잔여 프론티어 P1a~P1d + NP1/NP2. 자본·graduation·weight 주장 없음(진단 아크).",
+  "tags": "METHOD_FRONTIER,RISK_SIGMA,FQ-057,LW_NLS,QLIKE",
+  "created_at": "2026-07-18",
+  "research_mode": "qepm_legacy",
+  "created_by": "emit:qepm_legacy",
+  "metric_type": "estimated",
+  "construction_type": "sigma_estimation_method",
+  "mechanism_hypothesis": "linear LW의 상관 축소계수 rho-cap이 p>n에서 1로 바인딩되어 Σ→μI 퇴화(상관구조 전멸+분산 균질화 — 고분산 top-25의 분산까지 평균분산으로 눌림). analytical NLS는 고유값 스펙트럼별 보정으로 full-rank PSD 유지 → 예측 calibration 회복(MZ b≈1). 평균-축 미전이는 long-only·[0,0.20]·top-25 제약이 해를 corner로 몰아 Σ 정보 개입 여지를 기계적으로 축소하는 것과 2017+ 감쇠 벽이 Σ-무관인 것의 결합.",
+  "lcode_schema_version": 2,
+  "pin_tag": "fq057_20260718_171024",
+  "dm_nw_t_capw_te": -3.0569,
+  "dm_nw_t_ew_te": -3.5092,
+  "dm_nw_t_vs_ewma_direct": -1.2363,
+  "dm_nw_t_vs_ewma_direct_lambda97": -1.6348,
+  "np4_paired_nw_t_s1": -0.719,
+  "np4_paired_nw_t_s2": -0.886,
+  "mz_slope_lw_nls_capw_te": 0.9367,
+  "mz_slope_lw_linear_capw_total": 4.1113,
+  "n_common_months": 186,
+  "n_structural_months": 198,
+  "consumption": "risk_research_init v83 현행 posterior(대형 Σ=lw_nls·p<=25 기존 유지·단일-포트 TE=EWMA) + hrp_core .get_cor_cov lw_nls 등재 + cap_tier_decomposition 의무필드",
+  "note": "각 라운드 사전등록 판정·성과-기반 추정기 선택 없음(R4 P3 estimation-quality enum) — chain",
+  "falsification_attempts": [
+    {
+      "test": "EW control 포트(상반 active 프로파일, 사전등록)",
+      "result": "survived",
+      "effect_retained": "TE-분산 DM -3.51 동방향 — form-특이 아님"
+    },
+    {
+      "test": "structural fullset 198m 재현(warmup 무관 셋)",
+      "result": "survived",
+      "effect_retained": "DM -3.20/-3.44 동일 방향"
+    },
+    {
+      "test": "λ=0.94→0.97 robustness (사전등록 이행 — 병렬세션 실측 p1_lambda_robust.json, parity 가드 max_rel_diff=0)",
+      "result": "survived",
+      "effect_retained": "decision A는 λ-무관·decision B는 0.97에서도 KEEP(t -1.63). ewma_struct는 월간 λ=0.97이 적정(94 대비 DM -6.5/-8.8) 병기"
+    },
+    {
+      "test": "Self-Adversarial 6건(벤치=elig cap-w 정의·스케일 정합·book-FORM proxy·straw-man 의혹·QLIKE 적합성·λ 고정)",
+      "result": "survived",
+      "effect_retained": "판정 반전 0 — C4는 scope-조건부 정직화(p<=25 소-유니버스 linear LW 무해 병기)"
+    }
+  ],
+  "selection_type": "chain",
+  "record_type": "process",
+  "family": "risk_sigma_method"
+}
