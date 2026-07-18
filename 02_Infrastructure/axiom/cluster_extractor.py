@@ -155,16 +155,14 @@ def _polarity(cluster: dict) -> str:
     performance(process/infra/summary) 멤버는 성과 증거가 아니므로 polarity 집계 제외
     ③ 성과 grade가 하나도 없으면 'unknown' (positive 오귀속 금지).
 
-    v3 수리 (2026-07-18, W29 /cleaner 근본원인 — task_07f3ac0e 계승): 구 구현의
-    마지막 fallthrough(`return "positive"`)가 **grade-A(실측된 성공)가 하나도 없는**
-    클러스터({C,B,B}·all-B류)를 'positive 성공 규칙'으로 오라벨. supporting L-code가
-    substring 오귀속(예: 'FQ011' → 'q01' → quality_profitability)으로 family-접착돼
-    한 CAND로 묶이면, 실측 성공이 전무한데도 '긍정 규칙'으로 라벨링돼 DIST-AR-022/016
-    오귀속을 유발했다. **polarity 일치 검증**: 성공(positive/conditional) 규칙은
-    supporting L-code에 최소 1건의 실측 grade-A가 있어야 성립한다. A 부재 시:
-      · 실패(F/C) 우세/동수 → 'negative' (실패 지도 — curated negative 보존)
-      · B 우세 → 'unknown' (성공 미입증·명확한 실패도 아님. 정직·비주입).
-    ★A 보유·전건 실패 케이스의 출력은 v2와 비트-동일 — no-A 분기만 교정한다.
+    v3 수리 (2026-07-18 도훈 mandate, default-positive 폴백 왜곡): A(검증된 성공)가
+    없고 전부-실패도 아닌 grade 혼재(예: B/B/C)를 'positive'로 폴백하던 결함.
+    유령 카드(alpha_research quality_profitability_positive, grades C/B/B)의
+    오귀속 근본 원인 — B(archive)/C(marginal)뿐이면 성공 근거가 없다.
+    → 'positive'는 A 존재+실패 0에서만. 나머지 graded-혼재 = 'mixed'(방향 불명).
+    (W29 /cleaner task_07f3ac0e — DIST-AR-022/016 오귀속의 label 계열: substring
+     오탐 'FQ011'→'q01'→quality_profitability로 family-접착된 3건이 A 부재인데도
+     'positive'로 라벨되던 것을 'mixed'로 교정 + 아래 _is_spurious_family_only disband.)
     """
     grades = []
     for m in cluster["members"]:
@@ -178,16 +176,74 @@ def _polarity(cluster: dict) -> str:
     gc = Counter(grades)
     has_a = gc.get("A", 0) >= 1
     n_fail = gc.get("F", 0) + gc.get("C", 0)
-    n_b = gc.get("B", 0)
+    if n_fail == len(grades) and not has_a:
+        return "negative"   # 모든 성과 grade가 실패(F/C) — "이 조건에서는 실패한다"
+    if has_a and n_fail >= 1:
+        return "conditional"  # 성공(A)+실패 혼재 — "이 조건에서만 성공한다"
     if has_a:
-        # 실측 성공(grade A) 존재 → 성공 규칙. 실패 혼재면 조건부.
-        return "conditional" if n_fail >= 1 else "positive"
-    # ── grade-A 부재 = 실측된 성공 증거 없음 → 'positive' 오라벨 금지 (v3 근본원인 수리) ──
-    if n_b == 0:
-        return "negative"       # 전건 실패(F/C) — 구 only_fail 경로 (동일)
-    if n_fail >= n_b:
-        return "negative"       # 실패 우세/동수·A 부재 = 실패 지도
-    return "unknown"            # B 우세·A 부재 = 성공 미입증(정직·비주입)
+        return "positive"   # 검증된 성공(A) 존재 + 실패 0 — "이 조건에서 성공한다"
+    # graded이나 A 부재 + 전부-실패도 아님(B/B/C 등): 근거 없는 positive 금지 → mixed.
+    return "mixed"  # 방향 불명 — promote.R/human 판정 대상 (v3, 도훈 2026-07-18)
+
+
+# ── 유령 클러스터 방지 + family 이질 판별 (2026-07-18 도훈 mandate) ──────────
+# 근본 원인(실측): _similarity에서 family 일치(+0.4)만으로 min_sim(0.35)을 넘겨,
+# tag/lesson 공통성이 0인 이질 L-code가 'family 버킷'만으로 병합됨
+# (유령 3건 pairwise tag_jac=0.000, nonfam<0.016). verdict 코히런스(polarity)와
+# family 외 코로보레이션(tag/lesson)로 판별해 disband → 멤버는 singleton으로 보존.
+_SPURIOUS_NONFAM_FLOOR = 0.05   # family 외(tag+lesson) 유사도 하한.
+#   보정근거(corpus 315 L-code 실측): 유령 클러스터 max_nonfam=0.0158 vs
+#   잔존 mixed 클러스터 min 0.0949 — 6× 분리마진. coherent(neg/cond/pos)는
+#   polarity 조건에서 면제되므로 이 floor는 'mixed'(방향불명)에만 적용된다.
+
+
+def _pair_nonfamily_sim(a: dict, b: dict) -> float:
+    """_similarity의 family 외 성분(tag jaccard + lesson jaccard, 각 ×0.3)."""
+    ta, tb = set(a.get("tags") or []), set(b.get("tags") or [])
+    tj = (len(ta & tb) / max(1, len(ta | tb))) if (ta and tb) else 0.0
+    la, lb = _tokenize(a.get("lesson_text", "")), _tokenize(b.get("lesson_text", ""))
+    xj = (len(la & lb) / max(1, len(la | lb))) if (la and lb) else 0.0
+    return 0.3 * tj + 0.3 * xj
+
+
+def _max_nonfamily_sim(cluster: dict) -> float:
+    best = 0.0
+    for a, b in combinations(cluster["members"], 2):
+        best = max(best, _pair_nonfamily_sim(a, b))
+    return best
+
+
+def _is_spurious_family_only(cluster: dict) -> bool:
+    """family 버킷만으로 묶인 방향-불명 클러스터인가 (병합 자체가 오류).
+
+    disband 조건 (둘 다 충족):
+      1) polarity == 'mixed' — coherent verdict(negative/conditional/positive)가
+         아님 = '이 family는 X한다'는 공통 결론이 없음.
+      2) max_nonfamily_sim < floor — 어떤 멤버쌍도 tag/lesson 공통성이 없음
+         = family 라벨 외 결합 근거 부재.
+    coherent negative(전부-실패)는 1)에서 면제 — distinct construction 다수의
+    실패는 오히려 강한 독립 증거이므로 유지(legit L-133/134/139/140 카드).
+    disband 시 build_candidates가 멤버를 singleton 경로로 흘려 지식 보존.
+    """
+    if len(cluster["members"]) < 2:
+        return False
+    if _polarity(cluster) != "mixed":
+        return False
+    return _max_nonfamily_sim(cluster) < _SPURIOUS_NONFAM_FLOOR
+
+
+def _dominant_family(cluster: dict):
+    """멤버 factor_family의 엄격 과반(>50%)만 대표. 이질(과반 없음)이면 'mixed'.
+
+    (2026-07-18 도훈 mandate dir#1) 종전 Counter.most_common(1)[0][0]은 2:1:1 등
+    과반 없는 split도 top을 무근거 대표로 삼고, 전원 null이면 IndexError crash.
+    엄격 과반 없으면 'mixed', 유효 family 없으면 None.
+    """
+    fams = [m.get("family") for m in cluster["members"] if m.get("family")]
+    if not fams:
+        return None
+    top, n = Counter(fams).most_common(1)[0]
+    return top if n * 2 > len(fams) else "mixed"
 
 
 def _draft_statement(cluster: dict, cand_type: str, polarity: str) -> str:
@@ -200,7 +256,8 @@ def _draft_statement(cluster: dict, cand_type: str, polarity: str) -> str:
     top_tags = [t for t, _ in all_tags.most_common(3)]
 
     prefix = {"negative": "실패 규칙", "conditional": "조건부 규칙",
-              "positive": "성공 규칙"}.get(polarity, "규칙(성과증거 미분류)")
+              "positive": "성공 규칙", "mixed": "혼재(방향불명) 규칙"}.get(
+                  polarity, "규칙(성과증거 미분류)")
     type_str = "실증" if cand_type == "empirical" else "방법론"
     return (
         f"[{type_str} {prefix} 초안] family={fam}, tags={','.join(top_tags)}, "
@@ -222,10 +279,9 @@ def _draft_evidence(cluster: dict) -> dict:
 
 
 def _draft_scope(cluster: dict) -> dict:
-    families = Counter(m.get("family") for m in cluster["members"] if m.get("family"))
     return {
         "market": "KR",
-        "factor_family": families.most_common(1)[0][0] if families else None,
+        "factor_family": _dominant_family(cluster),  # 엄격 과반만 — 이질 시 'mixed'
         "regime": None,     # promote.R에서 r4_regime_payoff로 채움
         "construction_types": None,
     }
@@ -360,7 +416,7 @@ def _draft_falsification(cluster: dict) -> dict:
 def _build_one_candidate(cl: dict, mode: str, today: str):
     cand_type = _classify_type(cl)
     polarity = _polarity(cl)
-    family = Counter(m.get("family") for m in cl["members"]).most_common(1)[0][0]
+    family = _dominant_family(cl)  # 엄격 과반만 대표 — 이질 클러스터는 'mixed' (crash-safe)
     cluster_key = f"{mode}_{family or 'unknown'}_{polarity}_{'_'.join(sorted(cl['l_codes'])[:3])}"
     candidate_id = f"CAND_{today}_{cluster_key}"
 
@@ -653,12 +709,22 @@ def build_candidates(corpus: dict, out_dir: str) -> list[str]:
     new_cands: list = []
     for mode, mode_lcodes in by_mode.items():
         clusters = cluster_lcodes(mode_lcodes)
+        # 유령 클러스터 disband (2026-07-18 도훈 mandate): family 버킷만으로 묶인
+        #   방향-불명(mixed) 클러스터는 초안화하지 않는다. 멤버는 아래 singleton
+        #   경로로 흘러 각자 독립 초안이 됨(지식 보존). coherent(neg/cond/pos)는 유지.
+        kept = []
+        for cl in clusters:
+            if _is_spurious_family_only(cl):
+                print(f"  [disband] family-only mixed cluster -> singletons: {cl['l_codes']}")
+            else:
+                kept.append(cl)
+        clusters = kept
         clustered_ids = {lid for cl in clusters for lid in cl["l_codes"]}
         for cl in clusters:
             new_cands.append(_build_one_candidate(cl, mode, today))
-        # 콜드스타트(P1): 클러스터에 못 들어간 단독 L-code도 pending_5axis 초안으로.
-        #   기존 클러스터링은 무변경 — 단독분만 추가. (superset dedup이 이후 진짜
-        #   클러스터가 형성되면 subset singleton을 자동 대체한다.)
+        # 콜드스타트(P1): 클러스터에 못 들어간(또는 disband된) 단독 L-code도
+        #   pending_5axis 초안으로. (superset dedup이 이후 진짜 클러스터가 형성되면
+        #   subset singleton을 자동 대체한다.)
         for lc in mode_lcodes:
             if lc.get("l_code") and lc["l_code"] not in clustered_ids:
                 new_cands.append(_build_one_candidate(_singleton_cluster(lc), mode, today))

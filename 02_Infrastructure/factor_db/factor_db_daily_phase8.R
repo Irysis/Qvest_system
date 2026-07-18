@@ -279,7 +279,12 @@ for(i in seq_along(files)) {
   chunk <- merge(chunk, fd_out, by=c("Date","Ticker"), all.x=TRUE)
   chunk <- merge(chunk, cp_out, by=c("Date","Ticker"), all.x=TRUE)
 
-  write_parquet(chunk, files[i], compression="snappy")
+  # temp-rename write (arrow Windows mmap 1224 회피 — read_parquet(files[i]) mmap이
+  # 같은 경로 write_parquet과 충돌. factor_db_builder.R:901-904 검증 패턴)
+  .tmp_out <- paste0(files[i], ".tmp")
+  write_parquet(chunk, .tmp_out, compression="snappy")  # tmp write (mmap 1224 회피)
+  gc()                                                   # read mmap 해제 (Windows 파일락)
+  file.copy(.tmp_out, files[i], overwrite=TRUE); file.remove(.tmp_out)
   if(i %% pb == 0 || i == length(files))
     cat(sprintf("  [%d/%d] %s (%d cols)\n", i, length(files), ym, ncol(chunk)))
 }
