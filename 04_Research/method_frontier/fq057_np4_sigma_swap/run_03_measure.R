@@ -42,8 +42,8 @@ Rmat[is.na(Rmat)] <- 0   # NA->0 (양 arm·벤치 동일 적용; 카운트 기�
 R_all <- xts(Rmat, order.by = Rdates)
 
 # ---- 전략 포트 (scenario x arm) --------------------------------------------
-build_port <- function(sc, arm) {
-  wsub <- W[scenario == sc & arm == !!arm]
+build_port <- function(sc, arm_) {
+  wsub <- W[scenario == sc & arm == arm_]
   tks <- sort(unique(wsub$Ticker))
   Wmw <- dcast(wsub, ym ~ Ticker, value.var = "w", fill = 0)
   wm <- as.matrix(Wmw[, -1, drop = FALSE])

@@ -10,8 +10,8 @@
 ##   - formation: 매년 5월말(연간 재무 C4 확정 후 = FF June-formation의 KR 등가),
 ##     보유 6월~익년 5월. 2×3 VW(월별 직전월말 시총 가중)
 ##   - Size 분할: 전체 상장 시총 median / 2nd 변수 30~70 분위(전체 상장)
-##   - HML: V01_BM(高=Value) / RMW: Q01_GPA(高=Robust, ★FF OP/BE 아닌 GPA proxy 라벨)
-##     / CMA: Q06_Asset_Growth(低=Conservative)
+##   - HML: V01_BM(高=Value) / RMW: **OP/BE 원전**(영업이익−순이자비용)/자본총계, fundamental_merged 직접
+##     (07-18 도훈 지시 — GPA proxy 폐기) / CMA: Q06_Asset_Growth(低=Conservative)
 ##   - 팩터값: load_month_factors(C15 경유) → Z_raw = Z_Score_Aligned × ic_sign 복원
 ##     (IC-정렬 해제 → 원값 단조 방향, 경제 부호는 본 스크립트가 FF 정의로 부여)
 ##   - MKT: VW 전체시장 − CD91(월평균/12). CD91 이전 구간 MKT_excess=NA(정직)
@@ -70,23 +70,43 @@ recover_raw_z <- function(sig_d, fnames) {
   dcast(f, Ticker ~ Factor_Name, value.var = "z_raw")
 }
 
+## RMW 원전 정합 (07-18 도훈 지시): OP/BE = (OperatingProfit − NetInterestExp) / TotalEquity
+##   — fundamental_merged 직접 계산(GPA proxy 폐기). KR 영업이익=Rev−COGS−SGA = FF pre-interest OP,
+##   FF 정의대로 이자비용 차감(순이자비용 사용 — gross 이자비용 미분리 정직 라벨). PIT=Factor_Date.
+FUND <- as.data.table(read_parquet(".cache/fundamental_merged.parquet",
+          col_select = c("Ticker", "Period_Date", "Factor_Date", "Item", "Value")))
+FUND <- FUND[Item %in% c("OperatingProfit", "NetInterestExp", "TotalEquity")]
+FUND[, `:=`(Period_Date = as.Date(Period_Date), Factor_Date = as.Date(Factor_Date))]
+FUND <- dcast(FUND, Ticker + Period_Date + Factor_Date ~ Item, value.var = "Value", fun.aggregate = mean)
+setkey(FUND, Ticker, Factor_Date)
+get_opbe <- function(tickers, d) {
+  el <- FUND[Ticker %in% tickers & Factor_Date <= d & month(Period_Date) == 12 &
+             Period_Date >= d - 550 & !is.na(OperatingProfit) & !is.na(TotalEquity) & TotalEquity > 0]
+  if (!nrow(el)) return(NULL)
+  el <- el[order(Ticker, Period_Date)][, .SD[.N], by = Ticker]      # 티커별 최신 연간
+  el[, opbe := (OperatingProfit - fifelse(is.na(NetInterestExp), 0, NetInterestExp)) / TotalEquity]
+  el[, .(Ticker, opbe)]
+}
 fy_years <- 2005:max(year(me[format(me, "%m") == "05"]))   # 최신 5월 formation까지 동적 (구판 2025 고정 = 2026-06+ 누락 버그, 07-18 수리)
 assign_rows <- list()
 for (y in fy_years) {
   sig <- me[format(me, "%Y-%m") == sprintf("%d-05", y)]
   if (!length(sig)) next
-  fz <- recover_raw_z(sig, c("V01_BM", "Q01_GPA", "Q06_Asset_Growth"))
+  fz <- recover_raw_z(sig, c("V01_BM", "Q06_Asset_Growth"))
   sz <- pn[Date == sig & !is.na(Size) & Size > 0, .(Ticker, Size)]
   fz <- merge(fz, sz, by = "Ticker")
+  ob <- get_opbe(fz$Ticker, sig)
+  fz <- if (!is.null(ob)) merge(fz, ob, by = "Ticker", all.x = TRUE) else fz[, opbe := NA_real_]
   if (nrow(fz) < 200) { wf("  [skip] fy=%d n=%d", y, nrow(fz)); next }
   fz[, size_grp := fifelse(Size <= median(Size), "S", "B")]
   mk3 <- function(v, flip = FALSE) {                        # flip=TRUE: 낮을수록 상위(CMA)
+    if (all(is.na(v))) return(rep(NA_character_, length(v)))
     q <- quantile(v, c(0.3, 0.7), na.rm = TRUE)
     g <- fifelse(v <= q[1], "L", fifelse(v >= q[2], "H", "M"))
     if (flip) g <- chartr("LH", "HL", g)                    # C(=low growth)를 H로 라벨
     g
   }
-  fz[, `:=`(g_bm = mk3(V01_BM), g_op = mk3(Q01_GPA), g_inv = mk3(Q06_Asset_Growth, flip = TRUE))]
+  fz[, `:=`(g_bm = mk3(V01_BM), g_op = mk3(opbe), g_inv = mk3(Q06_Asset_Growth, flip = TRUE))]   # RMW=OP/BE 원전
   assign_rows[[as.character(y)]] <- fz[, .(Ticker, fy = y, size_grp, g_bm, g_op, g_inv)]
   if (y %% 5 == 0) wf("  formation fy=%d n=%d (%.1f min)", y, nrow(fz), as.numeric(difftime(Sys.time(), t0, units = "mins")))
 }

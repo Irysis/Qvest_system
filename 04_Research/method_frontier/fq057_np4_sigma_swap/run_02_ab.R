@@ -55,12 +55,30 @@ cat("[schedule] rebalance months:", length(reb_months), "\n")
 rows_list <- list(); meta_rows <- list(); failed <- list()
 lw_degen_count <- 0L
 
+# ★엔진 결함 우회 (2026-07-18 실측, spawn_task task_1b9e50a3):
+#   mvo_weights 내부 hhi_cap projection(.project_hhi)은 absorber를 w=0 포함 전체
+#   유니버스에서 골라 top-25 support 밖으로 비중 누출 -> max_names 하드캡(RF-O5) 위반
+#   (p>25 유니버스에서만 발현). 우회: 엔진에는 hhi_cap=NA로 끄고, 동일 .project_hhi를
+#   25-name support 벡터에만 적용(HHI<=0.10 의미 보존·양 arm 완전 동일). 완화 아님.
 run_mvo <- function(alpha_vec, Sigma) {
-  mvo_weights(alpha = alpha_vec, cov_matrix = Sigma, confidence = NULL,
-              lambda = LAMBDA, psi = PSI, bounds = BOUNDS,
-              max_names = MAX_NAMES, min_names = MIN_NAMES,
-              hhi_cap = HHI_CAP, alpha_winsor = ALPHA_WINSOR,
-              turnover_penalty = 0.0, active = FALSE)
+  res <- mvo_weights(alpha = alpha_vec, cov_matrix = Sigma, confidence = NULL,
+                     lambda = LAMBDA, psi = PSI, bounds = BOUNDS,
+                     max_names = MAX_NAMES, min_names = MIN_NAMES,
+                     hhi_cap = NA, alpha_winsor = ALPHA_WINSOR,
+                     turnover_penalty = 0.0, active = FALSE)
+  if (is.null(res$weights)) return(res)
+  w <- res$weights
+  if (sum(w^2) > HHI_CAP + 1e-6) {
+    pr <- .project_hhi(w, cap = HHI_CAP, bounds = BOUNDS, target_sum = 1,
+                       step = 0.005, max_iter = 500)
+    w2 <- pr$w; names(w2) <- names(w)
+    res$weights <- w2
+    res$hhi <- sum(w2^2)
+    res$hhi_enforced <- TRUE
+    res$hhi_converged_support <- isTRUE(pr$converged)
+    res$n_names <- sum(abs(w2) > 1e-6)
+  }
+  res
 }
 
 t0 <- Sys.time()
