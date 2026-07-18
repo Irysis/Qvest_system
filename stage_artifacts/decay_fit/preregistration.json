@@ -1,0 +1,62 @@
+{
+  "round_id": "FQ-055_decay_fit_monthly",
+  "registered_at": "2026-07-17T20:15:00+0900",
+  "owner": "Q-Lead (도훈 승인 세션 2026-07-17)",
+  "purpose": "진단 라운드 — 자본/graduation 판정 아님. 산출 = 기전 라벨(라우팅)·부활 트리거 밴드·monitoring 조기경보·break-dating(dual-basis 시간축). metric_type=diagnostic_fit 고정.",
+  "theory_ref": "arXiv 2512.11913 v1 (v2 저자 철회 — 이론부만 소비: Nash K/N + Poisson 진입 → K/(1+λt))",
+  "layers": {
+    "SM_signal_monthly": {
+      "input": ".cache/factor_db/factor_ic_monthly.parquet (pinned)",
+      "series": "per Factor_Name: rolling 36m mean(IC), right-aligned, min 30 non-NA in window",
+      "eligibility": "IC obs >= 180 months",
+      "underlying": "monthly rank-IC (Z_Score_Aligned convention, C14 Usable_Date 준수 저장분)"
+    },
+    "CM_capital_monthly": {
+      "input": "outputs/ramp/r6_factor_deployzone_active.parquet (pinned) + EW-uni bench(ewb) from build_monthly_forward_returns(rawdata month-end rows, universe K200|KQ150, R44 firewall)",
+      "series": "per factor_id x basis{capw: active_bm, ewuni: ret_net - ew}: rolling 60m annualized SR = frollmean/frollsd * sqrt(12), min 54 obs; sensitivity 36m 병기",
+      "eligibility": "active obs >= 120 months"
+    },
+    "SD_signal_daily": {
+      "status": "DEFERRED — fdb_daily 재빌드(타 세션 PID 33444) 완료 + 무결성 게이트 + pin 후 별도 실행. carve-out: stage_artifacts/decay_fit/carveout_approval.json"
+    }
+  },
+  "models": {
+    "M0_null": "y = c (baseline — decay 라벨의 필요조건: best decay model이 M0 대비 dAICc >= 2)",
+    "M1_linear": "y = K - b*t, b>=0 (양의 기울기면 infeasible)",
+    "M2_exponential": "y = K*exp(-lambda*t), lambda>=0, K>0",
+    "M3_hyperbolic": "y = K/(1+lambda*t), lambda>=0, K>0",
+    "M4_break": "y = c1*(t<tau) + c2*(t>=tau), tau interior grid margin>=24m",
+    "estimation": "lambda/tau 그리드 프로파일(logspace 5e-4..0.5 per-month, 60pt + golden refine) + 조건부 K/b/c closed-form OLS. nls 미사용(수렴 취약성 회피, 결정론적)",
+    "selection": "AICc (gaussian). k: M0=2, M1/M2/M3=3, M4=4",
+    "t_axis": "months since first valid rolling obs (t=0 anchor = fit-domain start)"
+  },
+  "labels": {
+    "no_initial_signal": "underlying 최초 36m mean <= 0 (decay 프레임 부적용)",
+    "cycling_nofit": "best decay dAICc vs M0 < 2",
+    "break_dominated": "M4 best AND margin vs best smooth >= 2 (break_date 산출)",
+    "crowding_hyperbolic | absorbed_exponential | linear_trend": "best smooth, margin vs 2nd smooth >= 2",
+    "ambiguous_decay": "decay는 유의하나 형태 간 margin < 2 (순위 기록)",
+    "min_n_fit": 96
+  },
+  "uncertainty": {
+    "method": "moving-block bootstrap on underlying monthly series, block=12, rebuild rolling stat, refit+reselect",
+    "n_boot": {"SM": 120, "CM": 200},
+    "sel_stability": "share of resamples reproducing point label",
+    "conf_tier": {"high": ">=0.70", "med": ">=0.50", "low": "<0.50"}
+  },
+  "outputs": {
+    "tables": ["stage_artifacts/decay_fit/decay_fit_SM_20260717.parquet", "stage_artifacts/decay_fit/decay_fit_CM_20260717.parquet"],
+    "summary": "stage_artifacts/decay_fit/decay_fit_summary_20260717.json",
+    "charts": "stage_artifacts/decay_fit/charts/*.png (exemplar curves + label distribution)",
+    "fields": "best_form, mech_label, conf_tier, sel_stability, dAICc_null, dAICc_second, K, rate(lambda|b), fitted_now, fitted_plus24m, break_date, r2, n_fit, early36_mean, last36_mean, basis, divergence_flag(CM)"
+  },
+  "honesty_gates": {
+    "metric_type": "diagnostic_fit (canonical/backtested 아님 — 자본 수치로 인용 금지)",
+    "autocorr_caveat": "rolling 시계열 중첩 자기상관 → R^2 단독 판정 금지, AICc+bootstrap stability만 권위",
+    "no_capital_claim": "graduation/HARD 게이트 필드 산출 자체를 하지 않음. crowding 잔차의 FR 타이밍 피처화는 외부 negative(2512.11913 §5)로 본 라운드 범위 외",
+    "selection_type": "diagnostic (자본 선택 sweep 아님 — DSR 게이트 비대상)",
+    "vintage": "소형 입력 2종 pin_cache(tag=decay_fit_20260717). rawdata는 2.5GB 복사 대신 {rows, maxDate, size, mtime} prereg 기록 — 비-HARD 진단 라운드 비례 원칙(§7 취지 기록). R47 parity: 기존 행 max|dRet|=0, 유니버스 무영향 확인분",
+    "dual_basis": "C-M capw vs ewuni 라벨/break 괴리 flag = 벤치-구성 전환 증거(v8.3 M2 정합)"
+  },
+  "consumers_on_success": ["재고 3분류 라우팅(hypothesis triage prior)", "부활 트리거 밴드 armed(INV-7 기계화 — 후속 배선)", "monitoring 감쇠 조기경보 밴드(후속 배선)", "layer_bottleneck_map signal-decay 계층 행 갱신", "L-code (L-AR, diagnostic)"]
+}
