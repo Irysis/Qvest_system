@@ -1,0 +1,98 @@
+{
+  "fq": "FQ-062",
+  "hypothesis": "lw_nls의 잔차 고유값 dispersion 보존이 RMT-detone(.rmt_denoise)·sample과 실제로 다른 detoned 잔차-crowding 시계열을 낳는가 (falsification-first: near-identical이면 lw_nls incidental→KILL)",
+  "metric_type": "spectral_diagnostic",
+  "pin_tag": "fq062_20260719_130727",
+  "window_rule": "monthly 60m rolling, PC1-detone residual spectrum, universe = PIT index members with complete 60m; k_info = n-2 shared informative residual rank",
+  "universe": "K200∪KQ150 PIT index members with complete 60m; monthly 60m rolling; p 180-318, n=60 (p>n all windows)",
+  "n_windows": 201,
+  "estimator_divergence": {
+    "basis_note": "correlation = monitoring-standard object; covariance = lw_nls eigenvector-EXACT (faithful test of 'residual dispersion preservation' claim)",
+    "rmt_status": {
+      "rmt_noop_all_windows": true,
+      "n_windows": 201,
+      "note": ".rmt_denoise returns sample unchanged for q_ratio<1 (p>n) -> RMT-detone == sample-detone; 'RMT flattens residual' premise FALSE in mandated universe-scale regime"
+    },
+    "covariance_lwnls_vs_sample": {
+      "pc1_absorption": {
+        "pearson": 0.999771,
+        "spearman": 0.999288,
+        "sign_agree": 0.975,
+        "event_jaccard_z2": 1
+      },
+      "resid_mfix": {
+        "pearson": 0.958317,
+        "spearman": 0.915561,
+        "sign_agree": 0.83,
+        "event_jaccard_z2": 0.785714
+      },
+      "resid_neff": {
+        "pearson": 0.962675,
+        "spearman": 0.897043
+      }
+    },
+    "correlation_lwnls_vs_sample": {
+      "pc1_absorption": {
+        "pearson": 0.975247,
+        "spearman": 0.983591,
+        "event_jaccard_z2": 0
+      },
+      "resid_mfix": {
+        "pearson": 0.532184,
+        "spearman": 0.617531,
+        "sign_agree": 0.7,
+        "event_jaccard_z2": 0
+      },
+      "resid_mfull": {
+        "pearson": 0.782718,
+        "level_ratio_median": 0.382309
+      }
+    },
+    "sample_vs_rmt_correlation": {
+      "pc1_pearson": 1,
+      "note": "== 1.0 by construction (RMT no-op)"
+    },
+    "diagonal_control_probe": {
+      "cor_mfix_lwnls_vs_sample": {
+        "pearson": 0.532184,
+        "spearman": 0.617531
+      },
+      "cor_mfix_ctrl_vs_sample": {
+        "pearson": 0.644452,
+        "spearman": 0.696313
+      },
+      "interpretation": "sample-vol rescale only recovers 0.53->0.64: correlation divergence is a cov2cor-of-shrinkage effect (eigenvector rotation from heterogeneous variance shrink), only partly diagonal-driven; NOT the hypothesized residual co-movement preservation"
+    }
+  },
+  "verdict": "KILL_lw_nls_incidental",
+  "mechanism_diagnosis": "lw_nls를 detoned 잔차-crowding의 '유일 unlock'으로 지목한 두 기둥이 모두 무너짐. (1) 전제 'RMT가 잔차를 flatten': mandated 유니버스-규모 p>n(q_ratio 0.19-0.33)에서 .rmt_denoise는 201/201 윈도 no-op — flatten할 baseline 자체가 없음. RMT-detone ≡ sample-detone. (2) 기전 '잔차 dispersion 보존이 다른 시계열': lw_nls가 고유벡터를 정확 보존하는 공분산 축(가설의 실제 claim 축)에서 detoned 잔차 concentration은 sample과 near-identical — PC1 흡수율(고전 Absorption Ratio) pearson 1.000·완전 동일, 잔차 mfix pearson 0.958. 비선형 수축은 detoned 잔차 concentration 시계열을 실질적으로 재편하지 못함. (3) 상관 축의 발산(mfix pearson 0.53, 대각통제 후 0.64)은 cov2cor-of-shrinkage(이질적 분산수축이 잔차 부분공간을 회전)의 산물 — 가설이 주장한 'dispersion 보존' 기전이 아니며, 어떤 공분산 수축 추정기든 cov2cor에서 sample과 갈리므로 lw_nls 특이성도 아니고, 정보성(비-중복 monitoring 신호)은 미입증. ∴ lw_nls는 detoned 잔차-crowding 신호에 incidental. 순 가치로 제시된 '⑧risk/monitoring 소비면 1건'은 lw_nls 특이 능력으로 성립하지 않음.",
+  "limitations": [
+    "판정은 basis-split(공분산 near-identical vs 상관 발산)을 기전으로 해소한 JUDGMENT — 리터럴하게 상관 mfix 0.53<0.95만 보면 자동 규칙상 DIVERGENT로 읽힐 수 있음(투명 병기). 반증 우선 규율상 가설의 실제 claim 축(공분산)과 전제(RMT flatten)의 붕괴를 결정적으로 봄.",
+    "월간 60m·p>n 단일 측정틀. 일간 63d 롤링(더 조밀한 monitoring cadence)에서 재현 미검(값싼 후속 가능하나 estimator 대수는 동일 — 결론 이식 예상).",
+    "z>2 이벤트 자카드는 201개월서 이벤트 3-14개로 검정력 부족(단일 값 취약) — pearson/spearman 주력, jaccard는 보조.",
+    "상관-발산의 '정보성 없음'은 본 라운드서 미증명(different≠uninformative). 단 lw_nls 특이 기전이 아님은 확립 — 정보성 입증은 별개 목적-빌드 후보의 몫.",
+    "AR 베이스라인(regime_absorption_ratio.R)이 main 미병합(병렬 세션 in-flight)이라 PC1-AR 대비 incremental-info 실증(다음 단계)은 본 라운드 범위 밖 — falsification-first는 여기까지."
+  ],
+  "next_probes": [
+    "P1 (followup, lw_nls 아님): detoned 잔차-CORRELATION co-crowding monitor가 필요하면 목적-빌드 잔차-상관 denoiser(상관 객체 직접 p>n eigenvalue-clip 또는 상관 shrinkage)로 구성하고, 고전 Absorption Ratio(PC1) z-score 대비 INCREMENTAL 이벤트 실증으로 자격 판정. lw_nls는 이 역할의 특권 없음.",
+    "P2: 일간 63d 롤링(monitoring cadence)로 본 3-estimator 발산 재현 — 결론 이식 여부 값싸게 확인(월간과 estimator 대수 동일하여 KILL 이식 예상).",
+    "P3 (별개 lane): crowding 신규 차원이 목표면, 비-holdings·비-co-movement 축(신용/대차 crowding = FQ-005, passive overlap) 실측이 crowding_score_per_factor 갭(co-movement 차원 전무)을 더 직접 메움."
+  ],
+  "revival_or_followup_conditions": {
+    "lw_nls_revival": "원칙적 없음(lw_nls 특이 기전 반증). 예외 = lw_nls 잔차 dispersion 보존이 실질 차이를 낳는 '새 측정틀'(예: tail-conditional 잔차 스펙트럼 — 정상국면 아닌 극단국면 조건부) 등장 시에만 재검토. 자본 승격은 위험-축 진단이라 원칙적 불가(INV-7 성과 방화벽).",
+    "followup_owner": "P1/P3는 crowding lane(FQ-005) 또는 monitoring 개선 라운드로 등재 — lw_nls 부활 아님"
+  },
+  "honesty_note": "본 라운드는 위험-축(공동위험 구조) 진단. SR/자본 전이 ZERO(설계상). 어떤 발산이 유의해도 성과/자본으로 포장 금지 — mechanism_diagnosis는 lw_nls의 detoned 잔차-crowding 특이능력 부재만 확립.",
+  "charts": [
+    "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/method_frontier/fq062/charts/fq062_cov_mfix.png",
+    "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/method_frontier/fq062/charts/fq062_cov_ar_pc1.png",
+    "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/method_frontier/fq062/charts/fq062_cor_mfix.png",
+    "C:/Users/99922/OneDrive/Quant_Module_Moltbot/stage_artifacts/method_frontier/fq062/charts/fq062_divergence_bar.png"
+  ],
+  "source_runners": [
+    "04_Research/method_frontier/fq062_detoned_crowding/run_01_pin_panel.R",
+    "04_Research/method_frontier/fq062_detoned_crowding/run_02_divergence.R",
+    "04_Research/method_frontier/fq062_detoned_crowding/run_02b_diag_control.R",
+    "04_Research/method_frontier/fq062_detoned_crowding/run_03_verdict_charts.R"
+  ]
+}
