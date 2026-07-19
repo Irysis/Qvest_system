@@ -1,0 +1,109 @@
+{
+  "meta": {
+    "title": "Dohoon 2026-07-19 items 2,3 이행 리서치 종합",
+    "date": "2026-07-19",
+    "mode": "method_frontier / QEPM measurement",
+    "gates": {"PORT_t": ">=2.95", "oos_retention": ">=0.7", "calmar": ">=0.64", "book_marginal_dIR": ">=0.05", "book_marginal_active_corr": "<0.30"},
+    "book_authoritative": {"path": "qepm/mailbox/worktask/WT-D20260702_002/output/bt_result_C_noL4_CLEAN_ann12.rds", "net_active_IR": 1.416, "capw_PORT_t": 6.21},
+    "harness": "04_Research/method_frontier/wt006_exog_forecast/eval_harness.R (OOS 163~164m, 2012-12~2026-06)",
+    "corroborating_artifacts": [
+      "04_Research/method_frontier/wt006_exog_forecast/item2_benchredef_ewuni.rds",
+      "04_Research/method_frontier/wt006_exog_forecast/item3a_captilt_beta_budget.rds",
+      "04_Research/factor_rotation/smartbeta_allstock/D2_book_marginal_delta_ir_{FINAL,OFFSET}.rds"
+    ],
+    "sanity": {"book_capw_IR_reproduced": 1.416, "book_align_corr": 0.952, "momentum_ew_t_reproduced": 3.030, "captilt_offset_scan_bench_corr": 0.954, "d2_sleeve_offset_corr": 0.348, "metric_type": "canonical_screen / weighted_screen (contract build_benchmark_compare, NW lag-3)"}
+  },
+
+  "item2_benchredef_ewuni": {
+    "question": "EW-universe 벤치 재정의로 스타일팩터 lane에 신규 자본졸업 후보가 생기나?",
+    "verdict": "NO — 벤치 재정의 단독으로 신규 졸업후보 생성 불가. 벤치를 cap-w K200에서 EW-universe로 바꾸면 PORT_t 게이트만 통과하고, 나머지 2개 HARD(oos_retention·calmar)가 독립적으로 바인딩. ★결정적: calmar는 포트 절대수익(ret_net)/MDD 기반이라 벤치-불변 — 벤치를 어떻게 재정의해도 값이 안 바뀜. 즉 3개 HARD 중 calmar는 재정의로 원천적으로 못 고치고, oos_retention도 EW-uni active로 재산출해도 <0.7. EW-uni서 3게이트 다 통과하는 유일 전략은 STR_1715 현 book인데 이미 cap-w에서 졸업한 인큐번트라 신규 졸업 아님. 벽은 벤치 basis가 아니라 25종목 long-only 포트의 절대 위험조정성과(calmar)+OOS 유지력.",
+    "measurements": {
+      "gate_effect_by_strategy": {
+        "factor_momentum": {"capw_t": 1.277, "ew_t": 3.030, "ew_t_gate": "PASS", "ew_oos": 0.640, "oos_gate": "FAIL", "calmar": 0.478, "calmar_gate": "FAIL", "ew_grad": false},
+        "R2_captier_translate": {"capw_t": 1.362, "ew_t": 3.209, "ew_t_gate": "PASS", "ew_oos": 0.587, "oos_gate": "FAIL", "calmar": 0.509, "calmar_gate": "FAIL", "ew_grad": false},
+        "static_EW": {"ew_t": 1.387, "ew_t_gate": "FAIL", "ew_oos": -0.310, "calmar": 0.300, "ew_grad": false},
+        "STR_1715_book_OOS163": {"capw_t": 4.573, "ew_t": 5.421, "ew_oos": 1.867, "calmar": 2.046, "ew_grad": true, "note": "이미 cap-w 졸업 인큐번트(IR 1.416)"},
+        "STR_1715_book_full256": {"ew_t": 5.906, "ew_oos": 1.359, "calmar": 1.967, "ew_grad": true}
+      },
+      "calmar_bench_invariance": "calmar = abs ret_net / abs MDD, 벤치 미포함 → 벤치 재정의로 불변. 3 HARD 중 재정의로 못 고치는 게이트.",
+      "n_OOS": 163
+    },
+    "honest_caveat": "EW-uni PORT_t 상승분은 소형주 틸트 효과 — EW 유니버스가 mega-cap cap-w K200을 하회하는 2024-26 레짐에서 상대적으로 커 보이는 것. 실제 배포 벤치=cap-w K200이므로 EW-uni active는 실현 불가(소형주 유동성·배포 벤치 미스매치). PORT_t는 벤치-상대 지표라 basis 바꾸면 움직이지만 실현가능성은 배포 벤치에 종속.",
+    "grad": false,
+    "decision_type": "GOVERNANCE — 벤치 재정의는 자본게이트 정의 변경이므로 도훈 승인 필요. 본 리서치는 찬반 실측만 제공.",
+    "dohoon_decision_material": {
+      "for": "벤치를 EW-universe로 정의하면 momentum·R2 lane의 PORT_t가 2.95를 넘음(각 3.030·3.209) — cap-w 벤치 아티팩트(mega 레짐)를 제거한 팩터 순수신호력 관점.",
+      "against": "① calmar·oos_retention 2개 HARD가 벤치와 무관하게 여전히 FAIL이라 재정의해도 졸업 안 됨(신규 후보 0). ② EW-uni active는 배포 벤치(cap-w K200) 미스매치·소형주 유동성으로 실현 불가. ③ 유일 EW-uni 3게이트 통과 전략은 이미 cap-w 졸업한 book이라 재정의 편익이 신규 알파로 이어지지 않음.",
+      "recommendation": "벤치 재정의는 스타일팩터 lane 졸업 병목을 풀지 못함 — PORT_t 한 게이트만 통과시키고 calmar/oos가 독립적으로 막음. 자본게이트 정의를 EW-uni로 바꾸는 것은 실측상 신규 편입 이득 없음(위험조정·OOS 벽 그대로). 정의변경 채택 여부는 도훈 결정이나, '졸업후보 생성' 목적으로는 실측이 지지하지 않음."
+    }
+  },
+
+  "item3a_captilt_beta_budget": {
+    "question": "cap-tilt momentum sleeve를 현 book(STR_1715)에 β-예산/오버레이로 붙이면 book-marginal 기여하나? mega-regime 조건부?",
+    "verdict": "NO-GO (book-marginal). max ΔIR = +0.023 < 0.05 hurdle. 직교 게이트는 통과(active corr 0.290 < 0.30)하나 ΔIR hurdle 미달. ★결정적: 미세한 양의 marginal은 stale-era only — 전량 pre-2020(dIR +0.045), 2020+ mega 레짐서 zero(dIR -0.001) → forward-usable 레버 아님. 자체 알파가 감쇠한 mega-beta sleeve(ct active IR 1.03→0.31). R5 확증: 이미 β0.71인 book에 β를 더해도 momentum decay 순net으로 얻는 게 없음.",
+    "measurements": {
+      "captilt_standalone": {"port_t": 2.100, "IR": 0.635, "net_sr": 0.635, "turnover_yr": 8.92, "abs_MDD": -0.472, "note": "R4 cap-tilt 1.277->2.100 재현, standalone <2.95 FAIL"},
+      "basis_alignment": {"best_k": 2, "bench_corr_at_best_k": 0.954, "naive_k0_corr": -0.046, "note": "naive-ym 병합 오정렬 방지 offset scan PASS"},
+      "book_captilt_active_corr": 0.290,
+      "dIR_sweep": {"lambda_grid": "[0,1] step 0.05", "max_at_lambda": 0.15, "blend_IR": 1.347, "overlap_book_IR": 1.324, "max_dIR": 0.023, "gate": "FAIL (<0.05)", "overlap_n": 161},
+      "period_decomp_at_lambda_0.15": {
+        "early_81m": {"book_ir": 2.004, "dIR": 0.052, "ct_ir": 1.096},
+        "late_80m": {"book_ir": 0.848, "dIR": -0.005, "ct_ir": 0.279},
+        "pre2020_83m": {"dIR": 0.045, "ct_ir": 1.034},
+        "2020plus_78m": {"dIR": -0.001, "ct_ir": 0.314}
+      }
+    },
+    "grad": false,
+    "decision_type": "AUTONOMOUS measurement — book-marginal admission 게이트 실측 판정. NO-GO 확정.",
+    "dohoon_decision_material": {
+      "conclusion": "cap-tilt β-예산 sleeve는 현 book에 붙일 가치 없음. 최대 ΔIR +0.023이 hurdle 0.05의 절반이고, 그마저도 2020+ mega 레짐서 소멸(dIR -0.001) — forward 배포 관점에서 순수 stale-era 잔재. mega-regime 조건부 편익 가설은 오히려 반대(양의 기여는 pre-2020에만).",
+      "action": "reject as book sleeve. R5 '이미 β틸트된 book에 β추가=무가치' 결론과 정합."
+    }
+  },
+
+  "item3b_d2_filter_overlay": {
+    "question": "D2(smart-beta value/quality/lowvol composite)를 현 book의 종목-EXCLUSION 필터로 쓰면 book이 개선되나?",
+    "verdict": "FAILED — D2를 stock-exclusion 필터로 book(STR_1715 noL4 PG2, top-20 .tilt)에 적용해도 개선 전무. 모든 usable D2-score 임계에서 anchored book active-IR이 하락 또는 중립(d2<0: dIR -0.528; d2<-0.5: -0.113; d2<-1.0: -0.057; d2<-1.5: -0.002 no-op), tail5/MDD도 모든 active 임계서 악화, mean-active-bps 단조 하락(194.8->158.7 at d2<0). 기전이 사전 우려(알파 희석) 확증: D2가 book 자체 top-20 earnings-revision/momentum 픽의 62.2%를 'loser'(d2<0)로 플래그하나, 플래그 픽 fwd-ret(0.0142)이 kept(0.0162)와 ~20bps/mo 차이뿐, cor(score_eff,D2)=0.020 — D2 랭킹은 book 내에서 직교하되 무정보 → 필터링은 tail/MDD 보상 없이 알파-보유 종목만 제거. 유일 비파괴 임계(d2<-1.5)는 픽의 0.7%만 건드림 = 사실상 무필터.",
+    "measurements": {
+      "sanity": {"sleeve_top25_capw_PORT_t": 3.058, "sleeve_top25_IR": 0.663, "sleeve_top20_tilt_PORT_t": 3.706, "book_active_IR_RDS_direct_269m": 1.416, "book_2015plus_base_IR": 1.284, "note": "production-parity exact"},
+      "d2_signal": "scores_3methods_composite score_ew (all-stock z, 2015-2026, 135m, book-pick coverage 0.999)",
+      "overlay_beta": "beta_t = 1 - cash_weight from production 03_period_returns (regime step; 100/268 months beta<1), selection-invariant, applied via weighted_screen_bt exposure_dt",
+      "filter_anchored_book_2015plus": {
+        "base": {"IR": 1.284, "calmar": 1.928, "mdd": 0.221, "tail5": -0.049, "active_bps": 194.8},
+        "excl_d2_lt_0": {"IR": 0.756, "calmar": 0.934, "mdd": 0.383, "tail5": -0.095, "active_bps": 158.7, "dIR": -0.528},
+        "excl_d2_lt_-0.5": {"IR": 1.171, "calmar": 1.506, "tail5": -0.066, "dIR": -0.113},
+        "excl_d2_lt_-1.0": {"IR": 1.227, "calmar": 1.573, "tail5": -0.051, "dIR": -0.057},
+        "excl_d2_lt_-1.5": {"IR": 1.282, "dIR": -0.002, "note": "no-op, 0.7% picks touched"}
+      },
+      "d2_flags_pct_of_book_picks": {"d2_lt_0": 62.2, "d2_lt_-1": 0.7},
+      "d2_sleeve_admit_crosscheck": {"dIR": 0.018, "active_corr": 0.348, "note": "orthogonal but non-additive — filter FAIL과 정합"},
+      "metric_type": "weighted_screen (contract build_benchmark_compare, NW lag-3)"
+    },
+    "grad": false,
+    "decision_type": "AUTONOMOUS measurement — filter-form book improvement 실측 판정. FAILED 확정.",
+    "dohoon_decision_material": {
+      "conclusion": "D2는 exclusion 필터로도 sleeve로도 book 개선 없음. 필터형은 book IR이 authoritative 1.416을 절대 초과 못 하고 tail/MDD도 개선 없이 수익만 악화. 'orthogonal != additive' 재확인(D2 랭킹이 book 내에서 무정보).",
+      "action": "reject. D2를 현 book에 어떤 형태로도 붙이지 않음."
+    }
+  },
+
+  "synthesis": {
+    "headline": "items 2,3 세 접근 모두 신규 자본졸업/book-marginal 기여 실패. 스타일팩터 lane의 벽은 (1)벤치 basis가 아니라 25종목 long-only 포트의 절대 위험조정성과(calmar, 벤치-불변)+OOS 유지력, (2)이미 β틸트된 book에 β/composite sleeve 추가는 momentum decay·무정보 직교로 순net 무가치.",
+    "gate_binding_map": {
+      "item2_EWuni": "PORT_t만 통과(재정의 효과) — calmar·oos_retention 독립 바인딩(벤치-불변). 정의변경으로 못 뚫음.",
+      "item3a_captilt": "직교 통과(corr 0.29) — ΔIR hurdle 바인딩(+0.023<0.05), 2020+ zero.",
+      "item3b_d2filter": "필터·sleeve 양형 모두 무정보-직교로 dIR 음수/미달."
+    },
+    "confirms_prior": ["project-stylefactor-prediction-arc-settled-20260719 (벽=25종목 long-only cap-w translation층)", "project-captier-alpha-localization-20260706 (cap-w 트랩)", "R5 (이미 β0.71 book에 β추가 무가치)"],
+    "governance_vs_autonomous": {
+      "governance_dohoon": ["item2 벤치 재정의 (자본게이트 정의 변경) — 단 실측상 신규 졸업 이득 0, PORT_t 외 2게이트 독립 바인딩"],
+      "autonomous_settled": ["item3a cap-tilt β-예산 NO-GO", "item3b D2 필터/sleeve FAILED"]
+    }
+  },
+
+  "next_probes": [
+    "FQ: 스타일팩터 lane의 calmar 병목 직접 공격 — 벤치 재정의가 못 고치는 절대 위험조정성과(calmar)를 25종목 내에서 올리려면 overlay/timing(유일 실증 long-only β 레버)이 필요. momentum sleeve에 crash-aware overlay(wt_d20260718 crash_aware_mom 자산) 결합 시 calmar 0.478→게이트(0.64) 도달 여부 실측. selection/weighting은 3-라운드에서 소진(project-mdd-lever-overlay-only) → overlay만 미검.",
+    "FQ: EW-uni PORT_t 상승이 순수 소형주 틸트인지 cap-tier 분해로 확정 — momentum·R2의 EW-uni active를 MEGA/MID/SMALL cap-tier로 분해해, 상승분이 SMALL tier 국소인지(=배포 벤치 실현불가) 확인. 소형주 국소면 벤치 재정의 채택해도 배포 무익 확증; broad하면 재정의 재고 여지.",
+    "FQ-057~059 비-return 원천으로 전환 — items 2,3이 return-derived 스타일팩터 재구성(벤치·β·composite 필터)의 자본 미달을 재확인. 프론티어는 비-return(insider magnitude·계약금액·공매도/대차) lane. book-marginal 직교+PORT_t 동시통과는 return-공간 밖에서만 남음."
+  ]
+}
