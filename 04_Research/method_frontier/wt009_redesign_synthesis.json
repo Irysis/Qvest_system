@@ -1,0 +1,97 @@
+{
+  "wt_id": "wt009_redesign_synthesis",
+  "title": "Factor design-level reconstruction — economic-hypothesis family redesign vs current fixed-proxy construction",
+  "date": "2026-07-19",
+  "mandate": "도훈 2026-07-19: 스타일팩터 자체 구성 변경 = 설계레벨(경우의 수 무한) → DSR 부적용. family를 경제가설로 재설계해 canonical top-25 long-only cap-w KOSPI200(15bps, liq 2e8)서 현 구성 대비 PORT_t·calmar·oos 개선하나, 특히 cap-w-realizable alpha 획득 여부.",
+  "selection_rule": "chain (DSR N/A): 각 재구성=1 경제가설, proxy 선택은 문헌/경제논리 사전등록(OOS-argmax 아님, 열거-후-최선선택 금지). oos_retention>=0.7 + placebo(lag1) 과적합 방어. n_hypotheses=5.",
+  "hard_gates": {"port_t": 2.95, "oos_retention": 0.7, "calmar": 0.64},
+  "measurement": {
+    "engine": "canonical_screen_bt (top_n=25, cost 15bps one-way, liq_min 2e8, cap-w KOSPI200, diag_dual_basis=TRUE, size_dt)",
+    "windows": {
+      "A_oos_restricted_163m": "2012-12~2026-06 (eval_harness .canon; matches task baselines: static -0.047, momentum 1.277 reproduced exactly). Headline OOS-window fields.",
+      "B_full_consistent_258m": "all Rg dates, apples-to-apples across configs (static_6fam/static_4fam/mom_only/REDES_composite)."
+    },
+    "pit": "proxy=load_month_factors (C13 Z_Score_Aligned only, no NEGATE). lag1_port_t 0.598 < base 0.868 => no same-month look-ahead. proxy coverage 0.98-1.00."
+  },
+  "family_redesigns": [
+    {
+      "family": "quality_GPA",
+      "hypothesis": "현 quality(Q02_ROE·Q03_ROA·Q17_ROIC·GR05_ROE_Growth = net-income bottom-line)는 leverage·일회성·회계조정·세금 교란으로 small-cap 국소(cap-w −0.675). Novy-Marx(2013) GPA=(매출−매출원가)/자산 = 가장 깨끗한 수익성 → 대형주-강건 cap-w-realizable 기대. 재설계 = Q01_GPA(핵심)+Q10_Gross_Margin(DuPont 마진)+Q12_Asset_Turnover(DuPont 회전)+Q09_CFOA(cash-based, accrual 제거)+Q05_Accrual(이익질 틸트) EW-z.",
+      "cur_port_t": 0.385,
+      "redes_port_t": -0.592,
+      "cap_w_realizable": false,
+      "improves": false
+    },
+    {
+      "family": "momentum_residual",
+      "hypothesis": "현 momentum(M01/M02/M03 raw price 12-1/6-1/3-1)는 market·size·sector·vol 베타를 신호에 실어 winner가 고베타·소형주 편향 → cap-w 낮음. 잔차화하면 idiosyncratic underreaction alpha만 남아 대형주 실현 기대(Blitz-Huij-Martens 2011). 재설계 = M08_Residual_Mom(팩터모델 시계열 잔차)+M24_Sector_Rel_Mom(섹터-상대)+M13_VolAdj_Mom(변동성-조정) EW-z.",
+      "cur_port_t": 0.508,
+      "redes_port_t": 0.659,
+      "cap_w_realizable": false,
+      "improves": false,
+      "artifact": "04_Research/method_frontier/wt006_exog_forecast/.residmom_result.rds"
+    },
+    {
+      "family": "value_sectorneutral",
+      "hypothesis": "현 value(EW{V01_BM,V02_EP,V03_CFP,V20_SP,V14_EBIT_EV}→full-universe CS z)는 (1) 구조적 저PBR 섹터(은행/보험/철강/조선 = KR 밸류트랩) 과중 섹터편향 + (2) book cheapness 섹터간 비교불가로 cap-w 국소. 재설계 = ① 27섹터 내 sector-neutral z(idiosyncratic mispricing 격리) ② cash-return tilt·drop-BM({V02_EP,V03_CFP,V14_EBIT_EV,V20_SP,V11_Shareholder_Yield,V10_FCF_Yield}, BM 제거).",
+      "cur_port_t": 1.857,
+      "redes_port_t": 1.001,
+      "cap_w_realizable": false,
+      "improves": false,
+      "artifact": "scratchpad/measure_out.rds (H1_value_secneut), sn_H1.parquet"
+    },
+    {
+      "family": "low_vol",
+      "hypothesis": "저변동(IdioVol/Beta/RealVol/Downside_Beta EW, cap-w 최악 −1.18 소형주 편향) → BAB·MAX·downside 중심 재설계로 대형주-강건 방어. (1) BAB(Frazzini-Pedersen, D18_BAB_Rank+D02_Beta) rank-based cap-robust (2) MAX 복권성(Bali-Cakici-Whitelaw, D05_MaxRet) 리테일 과대평가 (3) downside(Ang-Chen-Xing, D04_Downside_Beta+D45_Downside_Dev).",
+      "cur_port_t": -1.179,
+      "redes_port_t": -1.258,
+      "cap_w_realizable": false,
+      "improves": false
+    }
+  ],
+  "composite": {
+    "config": "REDES_composite_4fam = EW blend of 4 family cross-sectional z (require >=2 present) -> final CS z",
+    "window_A_163m": {"port_t": -0.387, "ew_uni_t": 0.690, "calmar": 0.302},
+    "window_B_258m": {"port_t": 0.868, "ew_uni_t": 2.01, "net_sr": 0.219, "calmar": 0.481, "oos_ret": -0.663, "turnover": 6.33, "lag1": 0.598, "mega_w": 0.017, "mid_w": 0.055},
+    "baseline_compare_258m": {
+      "CUR_static_6fam": {"port_t": 1.202, "calmar": 0.347, "oos_ret": -0.572, "mega_w": 0.007},
+      "CUR_static_4fam": {"port_t": 1.412, "calmar": 0.389, "oos_ret": -0.474, "mega_w": 0.025},
+      "CUR_momentum_only": {"port_t": 1.111, "calmar": 0.292, "oos_ret": -0.281, "mega_w": 0.034},
+      "REDES_composite_4fam": {"port_t": 0.868, "calmar": 0.481, "oos_ret": -0.663, "mega_w": 0.017}
+    },
+    "composite_port_t": -0.387,
+    "composite_calmar": 0.302,
+    "composite_oos": -0.663,
+    "wall_broken": false,
+    "verdict": "NO"
+  },
+  "conclusions": {
+    "q1_which_family_gained_capw": "NONE. All 4 redesigns cap_w_realizable=false. mega weight-share stays ~0.017 (composite), <=0.034 across all configs. GPA/residual-mom/sector-neutral-value/BAB each individually failed to become cap-w-realizable.",
+    "q2_composite_near_wall": "NO. Window A PORT_t -0.387 (worse than static -0.047 & momentum 1.277). Window B PORT_t 0.868 < static-4fam 1.412 < static-6fam 1.202 < mom-only 1.111. All axes far below HARD (2.95/0.7/0.64). Only calmar moved favorably (0.347->0.481 on 258m) via BAB/low-vol de-risking channel — but trades away PORT_t (de-risking != alpha, per WT-001/semivol).",
+    "q3_where_is_the_wall": "BINDING LAYER is NOT family construction/definition — it is the cap-w top-25 long-only TRANSLATION layer. Redesigning proxy definitions does not manufacture cap-w alpha; composite inherits the shared small-cap localization of its constituents (mega weight-share unchanged). ew_uni collapse (0.690 OOS A vs static 1.387) shows redesigned proxies carry LESS raw KR cross-sectional signal than incumbent bottom-line/raw constructions, especially post-2013. Consistent with project-captier-alpha-localization (alpha lives in benchmark-underweight tiers, mega-cap signal-dead) and project-stylefactor-prediction-arc-settled.",
+    "q4_onboarding_candidates": "NONE qualify for factor-db onboarding + dossier promotion. No redesigned family reached cap-w-realizability or improved PORT_t over incumbent; residual_mom (0.508->0.659) and low_vol calmar are directionally interesting but sub-gate and not cap-w-realizable."
+  },
+  "next_probes": [
+    "재구성 x 비-return 결합: cap-w-realizable가 안 되는 근본이 return-derived 신호의 cap-tier localization이면, 재설계 proxy를 non-return 원천(FQ-057~059: DART exec-insider·buyback·distress index)과 결합해 대형주 신호를 외생 주입 — 재구성이 못 준 mega-tier alpha를 데이터원에서 조달.",
+    "벤치 재정의(도훈): cap-w KOSPI200 translation층이 벽이면 measurement basis 자체(EW-uni / cap-tier-neutral / benchmark 재정의)를 도훈 mandate로 바꿔 재구성 family의 EW-uni 신호(residual_mom·GPA)를 다른 소비면에서 실현.",
+    "추가 설계축(정보성): DuPont 채널 분해(마진 vs 회전)를 family가 아닌 cap-tier-conditional로 — 대형주에는 회전(asset_turnover)·소형주에는 마진 채널이 다르게 실현되는지 cap-tier interaction 재설계.",
+    "de-risking 채널 분리 소비: composite calmar 개선(0.347->0.481)은 BAB/low-vol 채널 실재 — PORT_t와 분리해 overlay/timing 입력(유일 검증된 cap-w β 레버)으로 라우팅, family-alpha가 아닌 risk-model 입력으로 소비."
+  ],
+  "consumer_surfaces_checked": [
+    "팩터 랭킹: 재구성 family 4종 모두 cap-w PORT_t 미개선 — 랭킹 교체 후보 없음",
+    "위험모델/β예산: low_vol 재설계(BAB) calmar 채널 → risk-model 입력 후보(de-risking, alpha 아님)",
+    "오버레이/국면: composite calmar 레버 → overlay/timing 라우팅(검증된 유일 cap-w β 레버)",
+    "타 모드 이식: residual_mom EW-uni 신호(0.659) → EW-basis 소비면(RAMP/factor-rotation) 조건부 — 단 cap-w 미달로 자본 graduation 불가"
+  ],
+  "frontier_status": "unchanged: non-return sources (FQ-057~059) or benchmark redefinition (도훈). Family-proxy redesign is NOT the missing lever — config-scoped negative, not structural (AX-000/INV-7): this proxy set + window; revival on non-return combination or benchmark-basis change.",
+  "artifacts": [
+    "scratchpad/composite_redesign_result.rds",
+    "scratchpad/comp4_score.parquet",
+    "scratchpad/composite_redesign.R",
+    "scratchpad/composite_oos_reconcile.R",
+    "scratchpad/measure_out.rds",
+    "scratchpad/gpa_redesign.R",
+    "scratchpad/build_sn.R (sn_H1/D1/D2.parquet)",
+    "04_Research/method_frontier/wt006_exog_forecast/.residmom_result.rds"
+  ]
+}
