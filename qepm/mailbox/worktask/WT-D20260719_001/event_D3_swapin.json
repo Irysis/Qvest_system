@@ -1,0 +1,46 @@
+{
+  "event": "D3_SWAPIN_EXECUTED",
+  "wt_id": "WT-D20260719_001",
+  "executed_at": "2026-07-19T05:20:00+09:00",
+  "executed_by": "Q-Lead (도훈 승인 2026-07-19, 비가역 자본게이트 manual confirm)",
+  "decision": "오버레이 regime 승수 m4(연속 BOCPD) → M4∩AE 게이트로 교체. gate = 0.70 if (m4<0.999 AND ae_fire==1) else 1.00. Layer4 없음·R05 꼬리 불변·SELECTION 불변.",
+  "book_transition": {
+    "from": "STR_1715_on_M4_R05_noLayer4_PG2",
+    "to": "STR_1715_on_M4gAE_R05_noLayer4_PG2",
+    "book_weight": 1.0,
+    "admission_tier": "PG2_CORE_ALPHA"
+  },
+  "evidence": {
+    "measurement": "WT-D20260718_007 R2/R3 — D3 = noLayer4 정본 재측정 파레토 지배(calmar 2.089→2.341·MDD −22.1→−19.8%·CAGR/SR 중립·검증 CONFIRMED). 비지도 AE가 지도학습(transformer) OOD 실패 구조해결(2008 GFC 9/9 방어 vs M4 6/9·transformer 0/9). AE 8개월+ 연속 발화(EXTREME).",
+    "incumbent_book_ir_unchanged": 1.416,
+    "ir_note": "D3=PG2 return-neutral (오버레이 부품 교체, 신규 알파 아님). incumbent_book_ir 불변."
+  },
+  "inert_verification_2026_07": {
+    "m4_scalar": 1.0,
+    "m4_fires": 0,
+    "ae_fire_seq": 1,
+    "gate": 1.0,
+    "beta_R05": 0.30,
+    "invested": 0.30,
+    "cash": 0.70,
+    "note": "m4=1.0(미발화)→gate=1.0 → 현 noLayer4 book과 동일 weights(삼성전자 0.06 등 정확 재현). swap 실효 0. D3 첫 실효=M4 발화 첫 달.",
+    "verified_by": "forward_weights_R05_noLayer4_M4gAE.R 실행 (2026-07-01), 05_Production 2-4 + WT staging 양쪽 일치"
+  },
+  "pit": {
+    "ae_last_feat_date": "2026-06-30",
+    "ae_pit_ok": true,
+    "note": "AE fire_seq는 last_feat_date < AS_OF(walk-forward). PIT self-check 0."
+  },
+  "files": {
+    "book_state": "qepm/mailbox/governor/book_state.json (schema v2.6_post_WT_D20260719_001_D3_M4gAE_SWAPIN, admitted_ids/book_weights/schedule_logic_version 갱신)",
+    "generator_canonical": "02_Infrastructure/portfolio/forward_weights_D3_M4gAE.R",
+    "generator_production": "05_Production/2.Factor_Model/2-4.STR_1715_on_M4gAE_R05_noLayer4_PG2/01_reproducible_code/forward_weights_R05_noLayer4_M4gAE.R",
+    "production_weights_2026_07": "05_Production/2.Factor_Model/2-4.STR_1715_on_M4gAE_R05_noLayer4_PG2/02_holdings_universe/20260701_M4gAE_weights_cap_0p20.csv",
+    "live_track": "06_Registry/live_track/STR_1715_on_M4gAE_R05_noLayer4_PG2/",
+    "ae_signal": "stage_artifacts/WT_D20260718_007/ae_regime_signal_ext.parquet (ae_regime_extend.py 월간 갱신 필요)"
+  },
+  "operational_note": {
+    "next_rebalance": "각 리밸 전 ae_regime_extend.py 실행해 ae_regime_signal_ext.parquet를 해당 decision까지 연장(fire_seq 제공) 후 D3 생성기 실행. 실주문=도훈 수동 2버튼 불변(governor 정지).",
+    "ae_monthly_refresh_required": true
+  }
+}
