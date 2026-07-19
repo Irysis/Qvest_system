@@ -1,0 +1,84 @@
+{
+  "id": "WT012_mathphysics_synthesis",
+  "date": "2026-07-19",
+  "mandate": "수리·물리 축 (AX-000: 한계는 방법의 한계). KR cap-w top-25 long-only 벽 우회를 확률/구조(EVT/network/info-theory)로 겨냥 — overlay(calmar 개선) 또는 signal-selection dissociation 탈출.",
+  "base": {
+    "book_overlay_baseline": "STR_1715 book = alpha x M4∩AE gate x R05(꼬리), calmar ~2.3 (book)",
+    "standalone_base": "family-momentum top-25 cap-w long-only, calmar 0.478, PORT_t 1.277",
+    "hard_gate_calmar": 0.64,
+    "hard_gate_port_t": 2.95,
+    "measurement": "eval_harness.R (.FAM/.Rg/.BMg/.LQg/.oos_dates) + canonical_screen_bt / weighted_screen_bt, calmar via PerformanceAnalytics maxDrawdown (벤치-불변), metric_type 라벨"
+  },
+  "probes": [
+    {
+      "probe": "evt_tail_overlay",
+      "family": "extreme_value_theory",
+      "verdict": "NEGATIVE (config-scoped, PIT-clean)",
+      "port_t": 1.277,
+      "calmar_base": 0.478,
+      "calmar_new": 0.402,
+      "improves": false,
+      "gate_reached": false,
+      "mechanism": "GPD daily-market tail-severity de-risk가 MDD(46.66→41.57%)는 줄이나 CAGR(22.30→16.73%)을 비례 이상으로 깎아 calmar 악화. plain vol-target(0.399)과 동급 — GPD tail shape가 ordinary vol 넘는 정보 無. gate 위 EVT+gate 0.397 < gate-only 0.471. corr(de-risk, next-month active)=-0.086, 가장 de-risk한 tercile이 오히려 최고 수익(+3.01%/mo). 광범위 exposure 축소(67% months)로 upside 상실·비례 방어 미확보.",
+      "binding_wall": "de-risk TIMING — market tail-ES는 momentum 포트 자체 crash를 타이밍하지 못함(신호 가용성 아님 정합성 문제)."
+    },
+    {
+      "probe": "network_crowding",
+      "family": "graph_structure_return_correlation",
+      "verdict": "NEGATIVE (config-scoped, both surfaces)",
+      "port_t": -0.615,
+      "calmar_base": 0.292,
+      "calmar_new": 0.229,
+      "improves": false,
+      "gate_reached": false,
+      "mechanism": "(a) selection tilt(low-centrality/uncrowded, detoned+raw, eigenvector+weighted-degree) 8변형 全 cap-w PORT_t 음수(-0.47~-1.60)·calmar 0.081~0.141·ew_uni_t도 음수 → cap-w 아티팩트 아님, 진짜 나쁜 선택신호. low-centrality tilt는 mega와 dissociate(mega_w ~0.011~0.035 vs 0.40)하나 탈출처가 전패 소형주 → dissociation buys nothing. (b) de-risk overlay(crowding spike systemic-timing, PIT expanding-z)는 momentum book 악화(calmar 0.292→0.22, MDD 0.543→0.576). EW-book MDD 감축은 대부분 기계적 exposure 축소·random placebo 대비 modest·lag1-fragile·net active SR 악화. 근본: KR서 corr(crowding_t, ret_{t+1})=+0.065, crowded months가 오히려 higher next-month → systemic-risk-timing premise falsified.",
+      "binding_wall": "signal-selection lane 벽 재확인 — network/graph 구조가 return-space escape 미제공, crowding 선행성 반증."
+    },
+    {
+      "probe": "info_theoretic_selection",
+      "family": "information_theory_entropy",
+      "verdict": "NEGATIVE (config-scoped, 자본 미달)",
+      "port_t": -0.635,
+      "calmar_base": 0.300,
+      "calmar_new": 0.357,
+      "improves": true,
+      "gate_reached": false,
+      "mechanism": "(a) MI-기반 선별(비선형 정보구조)이 선형 팩터 선별 미달(오히려 최악): MI-weighted port_t=-0.635·calmar=0.181, momentum 대비 paired_t=-2.967 유의 열위. MI가 부호/단조성 무시 → 비단조 의존 family 과가중 → long-only top-25 방향 전이 실패. IC-weighted(선형)도 momentum 미달(paired_t=-2.191). (b) entropy/다각화 가중은 modest MDD 감축 실증(minvar 40.3→34.2%, calmar 0.300→0.357 / invvol 0.350)이나 (i)zero-alpha EW 선택 base 위 (ii)momentum baseline 0.478 미달 (iii)HARD 0.64 far. maxdiv는 고변동 diversifier 집중으로 악화(0.238). entropy-max=EW 수렴·작동 방향은 min-var/inv-vol 위험재편이지 알파 생성 아님.",
+      "binding_wall": "정보이론 각도서도 signal-selection lane 벽 재확인. weighting은 FQ-058(비유의)·project-mdd-lever-overlay-only(MDD 레버=overlay/timing, weighting 아님)와 정합."
+    }
+  ],
+  "questions": {
+    "q1_calmar_gate_reached_via_overlay": {
+      "answer": false,
+      "detail": "3축 어느 것도 calmar HARD 0.64 미도달·미접근. info-theoretic entropy/min-var weighting만 calmar 개선(0.300→0.357)이나 zero-alpha EW 선택 base 위이며 momentum baseline 0.478조차 미달. EVT overlay는 오히려 악화(0.478→0.402)."
+    },
+    "q2_dissociation_bypassed": {
+      "answer": false,
+      "detail": "network low-centrality tilt가 mega와 실제 dissociate(mega_w 0.40→0.011~0.035)했으나 탈출처가 전패 소형주 → dissociation이 아무것도 사지 못함. 확률/구조로 return-space 벽 우회 실패 — 이 세션 신호-선택 lane 벽 재확인."
+    },
+    "q3_dossier_candidate": {
+      "answer": false,
+      "detail": "3축 全 config-scoped negative, capital gate(PORT_t 2.95·calmar 0.64·oos 0.7) 어느 것도 미접근. dossier 부적격."
+    }
+  },
+  "consumer_surfaces": [
+    "overlay/monitoring tripwire: EVT tail-ES·crowding-z를 자본 게이트 아닌 monitoring 신호로만 (선행성 약하나 극단 spike 경보 라벨)",
+    "FQ frontier queue: 비-return 원천(FQ-057~059) 재우선 — return-공간 확률/구조 3축 소진, 벽=IC→PORT_t top-25 translation층",
+    "risk model: info-theoretic min-var/inv-vol 위험재편은 알파 아니나 weighting 진단용 retain(FQ-058 정합, book 미기여)",
+    "factor ranking: MI 비단조 각도는 long-only 방향선택 미전이 — 랭킹 소비 부적합, 폐기 라벨"
+  ],
+  "next_probes": [
+    "portfolio-own-crash timer (self-exciting): Hawkes/rough-vol(fBM) 자기여기 과정으로 momentum 포트 *자체* 급락 clustering을 타이밍 — EVT가 실패한 이유(market tail-ES corr -0.086)를 정면 해결. de-risk TIMING이 유일 binding lever이므로 포트-내생 crash 예측에 확률과정 집중. base=STR_1715 overlay, lag1 스트레스 의무.",
+    "entropy-weighting x momentum-selection 결합: info-theoretic min-var/inv-vol weighting(calmar +0.057 실증)을 zero-alpha EW가 아닌 momentum top-25 선택 base 위에 재측정 — selection alpha + weighting de-risk 결합이 calmar 0.478 초과·gate 접근하나. weighting은 selection 미대체이나 결합 미측정.",
+    "regime-switching overlay (HMM/optimal-transport): market tail-ES·crowding-z 대신 잠재 regime state를 Wasserstein distance/HMM으로 추정해 de-risk 타이밍 — 단일 spike threshold 대신 분포-거리 전이 신호. 병목=timing 정합성이므로 latent-state 각도.",
+    "topological/persistent-homology 시장구조: TDA persistence로 correlation network의 위상 붕괴(pre-crash topology change)를 crowding-z보다 선행 신호로 — network probe가 crowding 선행성 반증했으므로 topology(구조 변화율) 각도로 재시도.",
+    "cross-bottleneck: 확률/구조 3축 全 return-공간이라 top-25 long-only translation 벽 공유 — 다음 라운드는 비-return lane(FQ-057~059)의 sigma/cap-tier 분해로 병목 이동(layer_bottleneck_map 갱신)."
+  ],
+  "revival_conditions": [
+    "스타일 로테이션 반전(momentum decay 완화) 시 EVT/entropy overlay 재측정",
+    "비-return 신호가 IC→PORT_t 전이 벽을 뚫으면 그 신호 위 확률/구조 overlay 재적층",
+    "multi-sleeve book 성립 시 network low-centrality tilt = sleeve diversifier 재검토(single-sleeve서만 소형주 전패)"
+  ],
+  "ax000_note": "3축 전부 config-scoped negative(구조판결 아님). 남은 확률/구조 축(Hawkes/rough-vol·HMM/optimal-transport·TDA·entropy x momentum 결합) armed — de-risk TIMING이 유일 열린 lever로 좁혀짐(EVT/network가 market-wide 신호로 실패한 진단이 다음 라운드를 portfolio-own-crash 확률과정으로 조준).",
+  "best_probe": "info_theoretic_selection (유일하게 calmar 개선 0.300→0.357, 단 zero-alpha base·momentum 미달)"
+}
