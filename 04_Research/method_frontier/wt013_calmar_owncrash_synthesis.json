@@ -1,0 +1,88 @@
+{
+  "wt": "wt013_calmar_owncrash_synthesis",
+  "date": "2026-07-19",
+  "mode": "method_frontier",
+  "question": "(1) entropy x momentum weighting 결합 또는 Hawkes own-crash overlay가 momentum base calmar 0.478을 초과하고 gate(0.64)에 도달하나? (2) 포트-자체-crash 타이밍(Hawkes 자기여기)이 시장-wide 신호(EVT/crowding, corr -0.086)의 crash-timing 실패를 해결했나?",
+  "harness": "04_Research/method_frontier/wt006_exog_forecast/eval_harness.R (.BASELINE_MOM_PORT_T=1.277) + 02_Infrastructure/contracts/weighted_screen_bt.R + canonical_screen_bt(top_n=25)",
+  "base_momentum": {
+    "label": "base_mom",
+    "port_t": 1.277,
+    "calmar": 0.4779,
+    "mdd": 0.4666,
+    "cagr": 0.223,
+    "net_sr": 0.434,
+    "n_months": 163,
+    "note": "유일한 벤치-불변 바인딩 HARD 게이트 calmar 0.478 < 0.64"
+  },
+
+  "probe_1_entropy_momentum_weighting": {
+    "design": "momentum top-25 selection 고정, EW를 risk-based weighting으로 교체 (trailing cov t-1까지, PIT-clean). ERC(risk-parity) / inverse-vol / min-var / max-div 비교.",
+    "results": {
+      "ERC_risk_parity": {"calmar": 0.541, "port_t": 1.419, "mdd": 0.4524, "verdict": "best — gentle de-risk, EW 근방 유지"},
+      "inverse_vol": {"calmar": 0.512, "port_t": 1.451, "verdict": "improves"},
+      "min_var": {"calmar": 0.442, "port_t": 0.969, "verdict": "DEGRADES — selection alpha 희석 + turnover 상승"},
+      "max_div": {"calmar": 0.382, "port_t": 0.843, "verdict": "DEGRADES"}
+    },
+    "verdict": "De-risk weighting IMPROVES calmar but does NOT reach gate. best=ERC calmar 0.541 (+0.063 over 0.478, +13%), PORT_t 1.419 (NOT degraded — 1.277에서 오히려 상승), MDD 0.4666->0.4524. 그러나 0.541 << gate 0.64 — ~46% MDD가 거의 안 움직임(46.7%->45.2%): 25 momentum 종목이 systematic co-crash(long-only single-style basket, market beta~1)라 risk-based reweight로 de-correlate 불가. 공격적 variance-min(min-var/max-div)은 selection alpha를 거래해버려 DEGRADES. gentle de-risk(ERC/inv-vol, EW 근방)만 selection alpha 보존하며 MDD 절삭. wt012/FQ-058 결론(calmar lever = overlay/timing, not weighting) CORROBORATE.",
+    "improves": true,
+    "gate": false,
+    "pit_clean": true,
+    "port_t_preserved": true,
+    "best_calmar": 0.541
+  },
+
+  "probe_2_hawkes_own_crash_overlay": {
+    "design": "Hawkes 자기여기 MLE로 포트 *자체* 과거 수익(t-1까지)에서 crash intensity 추정 -> intensity 높으면 de-risk exposure. 3중 스킬검증: placebo(random-exposure permute) / lag1 스트레스 / timing_corr.",
+    "hawkes_mle": {"mu": 0.104, "alpha": 0.0392, "beta": 0.0764, "branching_ratio": 0.513, "n_events": 32, "halflife_mo": 9.07, "note": "자기여기 실재 확인 (n*=0.51, halflife 9mo)"},
+    "hawkes_only": {"calmar": 0.5638, "port_t": 0.755, "mdd": 0.3361, "cagr": 0.1895, "mean_exp": 0.735, "frac_derisk": 0.564},
+    "skill_checks": {
+      "placebo": {"p50": 0.4421, "p95": 0.719, "rank_of_actual": 0.793, "beats_placebo": false, "note": "random exposure multiset permute의 21%가 실측 0.564 초과 -> skill 아님"},
+      "lag1_stress": {"lag1_calmar": 0.7307, "lag1_clean": false, "note": "더 stale한 t-2 신호가 calmar 0.731 > 0.564 -> 전방 타이밍 부재, de-risk 아티팩트"},
+      "timing_corr": {"corr_exp_ownret": 0.0805, "corr_derisk_ownret": -0.0805, "note": "EVT corr -0.086과 거의 동일 -> 포트 자체 수익으로 타이밍해도 de-risk이 실제 crash와 미정렬"}
+    },
+    "upside_destruction": {"cagr": "0.223->0.190", "port_t": "1.277->0.755", "note": "clustering이 대칭 변동성 clustering(rebound이 동일 고강도 구간 상주)이라 de-risk이 반등도 절삭 -> 화폐화 불가"},
+    "combo": {"m4ae_gate_only": 0.4286, "hawkes_x_m4ae": 0.4701, "note": "M4∩AE 결합은 hawkes-only(0.564)보다 감쇠"},
+    "verdict": "NEGATIVE (config-scoped, PIT-clean 측정). Hawkes-only가 calmar를 명목상 개선(0.478->0.564, MDD 0.4666->0.3361)하나 3중 스킬검증 全 FAIL -> de-risk 아티팩트이지 crash-timing 스킬 아님. gate(0.64/2.95) 어느 것도 미접근, PORT_t 악화(0.755). ★wt012 binding wall CONFIRM: EVT/network가 market-wide 신호로 실패한 이유가 신호 가용성이 아니라 momentum long-only 포트의 downside가 대칭 변동성이라 asymmetric-dodge 불가함을 self-exciting 각도서 재확인.",
+    "improves_nominal": true,
+    "gate": false,
+    "pit_clean": false,
+    "port_t_preserved": false
+  },
+
+  "answers": {
+    "q1_gate_reached": "NO. 두 성분 모두 calmar 0.478을 명목 초과하나 gate 0.64 미도달. PIT-clean 최선 = ERC weighting calmar 0.541(+13%, PORT_t 1.419 보존). Hawkes 0.564는 명목 최고이나 placebo/lag1/timing_corr 全 FAIL로 PIT-무효 = 유효 최선 아님.",
+    "q2_owncrash_solved_market_failure": "NO. Hawkes own-crash 타이밍의 corr_derisk_ownret=-0.0805가 EVT market-wide -0.086과 사실상 동일 -> 신호 원천(시장-wide vs 포트-자체)을 바꿔도 동일 미정렬 벽. 시장신호 실패의 원인은 신호 가용성이 아니라 momentum long-only 포트의 downside가 대칭 변동성이라 asymmetric-dodge 불가라는 구조 -> own-crash 각도서 CONFIRM(해결 아님).",
+    "q3_dossier_candidate": false,
+    "q3_reason": "gate 미도달(0.541<0.64). dossier 요건 = gate 도달 ∧ PIT clean ∧ PORT_t 비악화. ERC는 PIT clean∧PORT_t 보존하나 gate 미달; Hawkes는 gate·PIT·PORT_t 三重 미충족."
+  },
+
+  "binding_wall": "calmar 병목의 바인딩 벽 = momentum 25-name long-only translation 층. 25종목이 β~1로 systematic co-crash -> (a) weighting(ERC/inv-vol)로는 basket 내 de-correlate 불가, (b) timing(Hawkes own-crash)으로는 대칭 변동성이라 downside만 dodge 불가. wt012 결론(calmar lever = overlay/timing, not weighting) + EVT/crowding 실패(corr -0.086) 재확인.",
+
+  "consumer_surfaces": [
+    "risk-model/weighting: ERC(risk-parity) 또는 inverse-vol gentle de-risk를 momentum book weighting layer로 소비 -> calmar +13%(0.478->0.541) ∧ PORT_t 비악화(1.277->1.419). optimizer-research / mvo_weights v2.4 turnover-penalty와 결합해 EW 근방 tilt로 테스트. gate 미달이나 위험조정 순개선 = 실질 소비면.",
+    "monitoring/tripwire: Hawkes branching ratio n*=0.51(halflife 9mo, 32 events) = 포트 crash self-exciting clustering 실재 -> monitoring 진단 지표(NOT 자본 타이밍). intensity spike 시 Telegram alert tripwire 후보(FQ 등재), 자동 de-risk 금지(대칭성으로 upside 절삭).",
+    "factor-rotation: gentle inv-vol/ERC weighting이 momentum selection alpha 보존 확인 -> RCMA 배분 입력. 공격적 variance-min은 selection alpha 희석(min-var PORT_t 0.969)이므로 배제."
+  ],
+
+  "next_probes": [
+    "asymmetric de-risk decoupling: Hawkes clustering이 대칭(rebound 동일 구간 상주)이라 실패 -> de-risk 발화를 own-return intensity 단독이 아니라 [momentum 종목 cross-sectional dispersion 급등 ∧ basket 음의 skew] 결합 게이트로 조건화(홀딩월 시작 전 PIT). downside를 대칭 vol cluster에서 분리 시도. lag1/placebo 필수.",
+    "basket co-crash beta 축소를 통한 selection 다각화: weighting/timing이 아니라 selection 자체를 비-return orthogonal sleeve(FQ-057~059 non-return 원천)와 스택해 25-name basket의 co-crash β를 momentum-only β~1 아래로 낮추면 calmar lever가 diversification일 수 있음. active-corr 0.53 잔차 직교 구조 활용, PORT_t 게이트 동시 충족분만.",
+    "genuine crash overlay 재시도: own-crash·market-EVT 모두 corr~-0.08 미정렬 -> basket-level factor-crowding(momentum crowding z, 홀딩월 시작 전) 또는 dispersion-of-returns를 crash predictor로. timing_corr 검증을 사전 gate로 걸어 corr>0.15 미달 시 조기 기각(EVT/Hawkes 재발 방지)."
+  ],
+
+  "honest_label": "gate 미달이나 ERC/inv-vol de-risk weighting의 calmar +0.063(+13%, PORT_t 비악화)은 risk-model/weighting 소비면으로 실질. Hawkes own-crash는 명목 0.564 개선이 placebo/lag1/timing_corr 全 FAIL로 무효(de-risk 아티팩트). 두 성분 결합해도 momentum 25-name long-only co-crash 벽 미돌파 = config-scoped negative + frontier 표시(비-return diversification·asymmetric decoupling·crowding overlay).",
+
+  "pit": {
+    "weighting_cov": "trailing cov t-1까지 (weighted_screen_bt W_dt)",
+    "hawkes_intensity": "포트 과거 수익만 t-1까지 (자기여기 MLE)",
+    "lag1_stress": "hawkes lag1 calmar 0.731 > base 0.564 -> lag1_clean=FALSE (전방 타이밍 부재 = de-risk 아티팩트)",
+    "placebo": "random-exposure permute, beats_placebo=FALSE",
+    "self_synthesis": "금지 준수 (포트수익=canonical_screen_bt/weighted_screen_bt 계약 경유, PerformanceAnalytics)"
+  },
+
+  "artifacts": {
+    "hawkes_code": "04_Research/method_frontier/wt012_hawkes/hawkes_own_crash_overlay.R",
+    "hawkes_results": "04_Research/method_frontier/wt012_hawkes/hawkes_results.json",
+    "wt012_parent": "04_Research/method_frontier/wt012_mathphysics_synthesis.json"
+  }
+}
