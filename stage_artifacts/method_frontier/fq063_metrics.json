@@ -1,6 +1,6 @@
 {
   "pin_tag": "fq057_20260718_171024",
-  "measured_at": "2026-07-19 13:26:29",
+  "measured_at": "2026-07-19 13:30:03",
   "metric_type": "optimizer_lane_ab_diagnostic",
   "na_to_zero_cells": 27705,
   "bench": "cap-w K200|KQ150 fresh (Size, Return.portfolio) PRIMARY; EW-uni dual",
@@ -10,41 +10,43 @@
   "incumbent_ref": "A_prodLT20",
   "baseline_best": "A_LinearTilt",
   "baseline_best_port_t": 1.7565,
-  "best_overall": "B_MaxDiv_lwnls_alpha",
-  "best_A": [],
-  "best_B": "B_MaxDiv_lwnls_alpha",
-  "best_overall_port_t": 0.0512,
+  "best_overall": "A_CVaR",
+  "best_A": "A_CVaR",
+  "best_B": "B_HRP_lwlin_alpha",
+  "best_overall_port_t": 0.9062,
+  "best_overall_to_oneway_annual": 16.817,
+  "turnover_note": "월간 top-25 리밸 스케줄 특성상 mode A 전 방법(baseline LinearTilt 포함, TO~15/yr)이 TO>11 -> TO는 방법-판별자 아님(스케줄 속성). mode B pure-risk는 저-TO(1.4~4.9)이나 PORT_t 음수. binding 게이트=PORT_t.",
   "paired_best_vs_baseline": {
     "A_EW": {
       "baseline": "A_EW",
-      "best": "B_MaxDiv_lwnls_alpha",
-      "diff_def": "B_MaxDiv_lwnls_alpha - A_EW (net active, capw)",
-      "mean_diff_m": -0.00134,
-      "nw_t_lag3": -0.4669,
+      "best": "A_CVaR",
+      "diff_def": "A_CVaR - A_EW (net active, capw)",
+      "mean_diff_m": 0.00216,
+      "nw_t_lag3": 0.866,
       "n": 198,
-      "ann_diff": -0.0161
+      "ann_diff": 0.0259
     },
     "A_LinearTilt": {
       "baseline": "A_LinearTilt",
-      "best": "B_MaxDiv_lwnls_alpha",
-      "diff_def": "B_MaxDiv_lwnls_alpha - A_LinearTilt (net active, capw)",
-      "mean_diff_m": -0.007157,
-      "nw_t_lag3": -1.9279,
+      "best": "A_CVaR",
+      "diff_def": "A_CVaR - A_LinearTilt (net active, capw)",
+      "mean_diff_m": -0.003658,
+      "nw_t_lag3": -1.0717,
       "n": 198,
-      "ann_diff": -0.0859
+      "ann_diff": -0.0439
     }
   },
   "dsr": {
     "note": "sweep형 argmax -> HARD 적용",
     "n_trials": 24,
     "sr_star_monthly": 0.1145,
-    "dsr_best": 0.0614,
+    "dsr_best": 0.2474,
     "pass": false
   },
   "graduation_gate_best": {
-    "port_t_capw": 0.0512,
-    "oos_v2_median": -0.9026,
-    "calmar": 0.3581,
+    "port_t_capw": 0.9062,
+    "oos_v2_median": -0.2869,
+    "calmar": 0.3785,
     "hard_pass": false
   },
   "dual_basis": {
@@ -80,24 +82,34 @@
           "SMALL": 0.4815
         }
       },
-      "B_MaxDiv_lwnls_alpha": {
-        "cell": "B_MaxDiv_lwnls_alpha",
-        "port_t_capw": 0.0512,
-        "port_t_ew": 0.7915,
+      "A_CVaR": {
+        "cell": "A_CVaR",
+        "port_t_capw": 0.9062,
+        "port_t_ew": 1.813,
         "captier": {
-          "MEGA": 0.2081,
-          "MID": 0.4619,
-          "SMALL": 0.33
+          "MEGA": 0.1952,
+          "MID": 0.4033,
+          "SMALL": 0.4015
         }
       },
-      "B_MaxDiv_lwnls_alpha.1": {
-        "cell": "B_MaxDiv_lwnls_alpha",
-        "port_t_capw": 0.0512,
-        "port_t_ew": 0.7915,
+      "B_HRP_lwlin_alpha": {
+        "cell": "B_HRP_lwlin_alpha",
+        "port_t_capw": 0.0758,
+        "port_t_ew": 1.0552,
         "captier": {
-          "MEGA": 0.2081,
-          "MID": 0.4619,
-          "SMALL": 0.33
+          "MEGA": 0.1165,
+          "MID": 0.3871,
+          "SMALL": 0.4964
+        }
+      },
+      "A_CVaR.1": {
+        "cell": "A_CVaR",
+        "port_t_capw": 0.9062,
+        "port_t_ew": 1.813,
+        "captier": {
+          "MEGA": 0.1952,
+          "MID": 0.4033,
+          "SMALL": 0.4015
         }
       }
     }

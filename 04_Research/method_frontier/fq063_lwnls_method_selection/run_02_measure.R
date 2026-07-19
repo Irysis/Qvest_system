@@ -114,12 +114,13 @@ baselines<-c("A_EW","A_LinearTilt"); incumbent_ref<-"A_prodLT20"
 sweep_cells<-setdiff(cells, c(baselines, incumbent_ref))
 base_pt<-sapply(baselines, function(b) res[[b]]$port_t_capw)
 baseline_best<-baselines[which.max(base_pt)]
-# best-of-sweep: TO 준수(disqualify TO>11) 셀 중 최고 PORT_t
+# best-of-sweep = 최고 canonical PORT_t (TO는 별도 보고 — 월간 top-25 스케줄 특성상
+#   baseline LinearTilt(TO 15.2)도 TO>11이라 TO는 방법-판별자 아님; binding 게이트=PORT_t).
 sweep_dt<-tbl[cell%in%sweep_cells]
-sweep_valid<-sweep_dt[to_ok==TRUE]
-best_overall<-sweep_valid[which.max(port_t_capw), cell]
-best_A<-sweep_valid[startsWith(cell,"A_")][which.max(port_t_capw), cell]
-best_B<-sweep_valid[startsWith(cell,"B_")][which.max(port_t_capw), cell]
+best_overall<-sweep_dt[which.max(port_t_capw), cell]
+dtA<-sweep_dt[startsWith(cell,"A_")]; best_A<-if(nrow(dtA)) dtA[which.max(port_t_capw),cell] else NA_character_
+dtB<-sweep_dt[startsWith(cell,"B_")]; best_B<-if(nrow(dtB)) dtB[which.max(port_t_capw),cell] else NA_character_
+best_overall_to<-tbl[cell==best_overall, to_oneway_annual]
 
 # paired NW-t: best vs baseline (동일 date)
 paired<-function(cA, cB){  # cB - cA (active_capw), rebuilt from SER
@@ -165,6 +166,9 @@ metrics<-list(pin_tag="fq057_20260718_171024", measured_at=format(Sys.time(),"%Y
   baseline_best=baseline_best, baseline_best_port_t=res[[baseline_best]]$port_t_capw,
   best_overall=best_overall, best_A=best_A, best_B=best_B,
   best_overall_port_t=res[[best_overall]]$port_t_capw,
+  best_overall_to_oneway_annual=best_overall_to,
+  turnover_note=paste0("월간 top-25 리밸 스케줄 특성상 mode A 전 방법(baseline LinearTilt 포함, TO~15/yr)이 ",
+    "TO>11 -> TO는 방법-판별자 아님(스케줄 속성). mode B pure-risk는 저-TO(1.4~4.9)이나 PORT_t 음수. binding 게이트=PORT_t."),
   paired_best_vs_baseline=paired_best_vs_base,
   dsr=list(note="sweep형 argmax -> HARD 적용", n_trials=Ntr, sr_star_monthly=round(sr_star,4),
            dsr_best=round(dsr_best,4), pass=dsr_best>=0.5),

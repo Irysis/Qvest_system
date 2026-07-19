@@ -1,0 +1,61 @@
+{
+  "wt_id": "wt010_quality_ideas_synthesis",
+  "title": "Quality factor redesign 2-idea — mega weight-share as the wt009 wall test (does the signal raise large-cap top-selection to get cap-w-realizable alpha)",
+  "date": "2026-07-19",
+  "mandate": "도훈 2026-07-19: wt009 showed quality reconstruction leaves mega weight-share invariant (~0.017-0.042) so the wall = selection layer. Decisive question for these 2 ideas: does the signal raise mega_w (large-cap top selection) to obtain cap-w-realizable alpha. Baseline: quality cap-w PORT_t=0.385 (mega_w 0.042), full-univ momentum 1.277.",
+  "selection_rule": "chain (DSR N/A): each idea = 1 economic hypothesis; proxy/spec chosen by literature/economic logic pre-registration (no OOS-argmax, no enumerate-then-pick). oos_retention defends overfit.",
+  "hard_gates": {"port_t": 2.95, "oos_retention": 0.7, "calmar": 0.64},
+  "baseline": {
+    "quality_current": {"cap_w_port_t": 0.385, "mega_w": 0.042},
+    "momentum_full_univ_port_t": 1.277,
+    "book": {"tag": "STR_1715_on_M4_R05_noLayer4_PG2 (bt_result_C_noL4_CLEAN_ann12.rds)", "book_ir": 1.405}
+  },
+  "measurement": {
+    "engine": "canonical_screen_bt (top_n=25, cost 15bps one-way, liq_min 2e8, cap-w KOSPI200 union KQ150, diag_dual_basis=TRUE, size_dt) via 04_Research/method_frontier/wt006_exog_forecast/eval_harness.R (.FAM/.Rg/.BMg/.LQg/.size_dt/.oos_dates)",
+    "mega_w": "share of selected top-25 held by K200-mega (Size-top) names; compared to current quality 0.042 and cap-w benchmark 0.042",
+    "pit": "재무/컨센 lag (공시·추정 갱신일+1 이후만), FX-베타 trailing window(t-1). lag1>base = leakage check."
+  },
+  "ideas": [
+    {
+      "idea": "forward_fscore_consensus",
+      "status": "ok",
+      "hypothesis": "Forward-looking profitability/quality (forward F-score built on consensus forward earnings) has large-cap information advantage (analyst coverage concentrated in mega) -> raises mega weight-share and yields cap-w-realizable quality alpha unlike backward net-income quality (small-cap local).",
+      "cap_w_realizable": true,
+      "cap_w_port_t": 1.243,
+      "mega_w": 0.0764,
+      "mega_move": "quality baseline 0.042 -> 0.0764 (+0.0344, ~1.82x). Decomposition: ffs_LEVEL mega_w 0.0954 (HIGHEST tilt but PORT_t -1.187 anti-alpha) ; ffs_REVISION mega_w 0.067 (PORT_t +1.500). Mega tilt mostly from LEVEL (coverage/size bias) which is negative alpha; positive alpha carried entirely by REVISION which itself already has mega_w 0.067>0.042.",
+      "ew_uni_note": "cap-w improvement is real (not a cap-w artifact reversed); but level component is genuinely anti-alpha in cap-w.",
+      "hard_gates": {"oos_retention": -0.342, "calmar": 0.314, "port_t": 1.243, "all_fail": true, "below_momentum_1.277": true},
+      "book_orthogonality": {"active_corr": 0.567, "book_marginal_dIR": "all weights negative (-0.046 to -0.178)", "book_additive": false},
+      "mechanism_verdict": "REFUTES stated hypothesis. NOT a forward-quality-level information edge (ffs_LEVEL is anti-alpha, same cap-w-negative sign as trailing quality). The positive alpha is consensus REVISION momentum already present in factor DB C01~C05 — a repackaging, not a new orthogonal source.",
+      "verdict": "capw_realizable PASS (breaks wt009 mega_w-invariant wall via the REVISION axis) but capital-graduation IMPOSSIBLE (HARD 3 all fail + below momentum) and NOT book-additive. Consumption = factor DB revision-momentum standalone screen / OVERLAY_CANDIDATE only, not a new quality onboarding."
+    },
+    {
+      "idea": "fx_robust_downside_quality",
+      "status": "ok",
+      "hypothesis": "Quality names with robust downside performance under adverse FX (low downside FX-beta) are mega large-cap survivors -> raises mega weight-share and gives crash-robust cap-w quality.",
+      "cap_w_realizable": false,
+      "cap_w_port_t": -0.738,
+      "mega_w": 0.0212,
+      "mega_move": "quality baseline 0.042 -> 0.0212 (-0.021, EXACTLY OPPOSITE to hypothesis). Large exporters ARE the FX-sensitive names, so an FX-insensitive filter moves selection to small/mid domestic defensive names — away from mega.",
+      "ew_uni_note": "ew_uni_t -2.905 = genuine negative, not a cap-w artifact.",
+      "book_orthogonality": {"active_corr": 0.329},
+      "mechanism_verdict": "Hypothesis core prediction (mega_w up) realized in reverse. The signal does not attack the selection-layer wall — it moves further from it.",
+      "verdict": "REJECT (capw_realizable FALSE, both cap-w PORT_t and ew_uni_t negative). config-scoped negative + frontier note (revive only if downside-FX exposure redefined by sign-alignment not magnitude, or used as within-mega reordering filter — both low-EV posterior)."
+    }
+  ],
+  "answers": {
+    "q1_which_broke_wt009_wall": "forward_fscore_consensus broke it: mega_w 0.042->0.0764 (~1.8x) and cap-w PORT_t 0.385->1.243. This is the first demonstration that a redesign CAN move mega weight-share (wt009 quality reconstructions all left it invariant). BUT the mega-tilt that carries alpha is the REVISION component (mega_w 0.067, +1.500), not the quality-LEVEL component (mega_w 0.0954 but -1.187 anti-alpha). fx_robust moved mega_w the OPPOSITE way (0.042->0.021) and is rejected.",
+    "q2_improve_and_orthogonal": "forward_fscore improves cap-w PORT_t (0.385->1.243) but is NOT orthogonal to the book (active corr 0.567, book-marginal dIR negative at all weights, book IR 1.405>>ffs) — the alpha is repackaged factor-DB revision momentum (C01~C05). fx_robust does not improve (-0.738<0.385).",
+    "q3_data_gap": "No hard data gap for the measurement (proxies via load_month_factors + consensus revision from factor DB C01~C05). Open item: a genuine forward-earnings (FY1/FY2 consensus estimate) panel with proper announcement-lag PIT was proxied by existing revision factors — the LEVEL/REVISION split shows the level info-edge premise unsupported, so a true forward-EPS panel is unlikely to change the verdict (low priority, autonomous). The benchmark-redefinition question (cap-w KOSPI200 vs EW-universe / mega-benchmark) is a 도훈 decision (recurring cap-w-trap theme).",
+    "q4_promising_onboarding": "Neither is dossier/onboarding-ready. forward_fscore fails HARD 3 + non-orthogonal; its only live signal (revision momentum) already exists in factor DB, so no new factor onboarding — route the revision axis to standalone screen-tier / OVERLAY_CANDIDATE if incremental over C01~C05. fx_robust REJECT. No dossier spawned.",
+    "q5_next_probes": [
+      "Isolate forward_fscore's REVISION component (mega_w 0.067, +1.500) standalone and test incrementality vs factor DB C01~C05 revision factors (partial-out): if incremental in cap-w and mega-realizable, route to revision screen; if fully redundant, close as repackaging.",
+      "Same redesign on estimate-change family (SUE / earnings-surprise / estimate-revision breadth): test whether ANY level-based fundamental redesign can lift mega_w or whether only change/revision-type (price or estimate delta) signals move the selection layer toward mega — the wt010 finding is that the mover was revision, not level.",
+      "Non-return combination: gate the revision-momentum mega-tilt selection with a non-return orthogonal source (DART insider / short-interest, FQ-057~059) to see if book-marginal dIR turns positive (revision-alone dIR is negative because redundant with the incumbent book).",
+      "(low-EV frontier) fx_robust reframe: redefine downside-FX exposure by sign-alignment rather than magnitude, or apply FX-robustness only as a within-mega reordering filter (conditional), not a universe-wide selector."
+    ]
+  },
+  "mega_w_moved": true,
+  "ax_000_note": "Both results are config-scoped, not structural verdicts. fx_robust negative = config-scoped negative + frontier (INV-7 revival conditions listed). forward_fscore establishes a POSITIVE capability (revision axis lifts mega weight-share and yields cap-w-realizable alpha) even though it does not graduate — this is the load-bearing wt010 finding: the wt009 'mega_w invariant' wall is breakable, and the breaker is change/revision-type signals, not quality-level redesign."
+}
