@@ -213,7 +213,6 @@ for(t_ym in reb_months){
   for(sg in mB_sig) for(mth in mB_methods){
     w25<-tryCatch(risk_select25(mth, Sig_full[[sg]], ret60), error=function(e) NULL)
     if(is.null(w25)){ B_ok<-FALSE; next }
-    if(!is.null(attr(Sig_full[[sg]],"x"))) NULL
     # pure_risk
     wB[[paste0("B_",mth,"_",sg,"_pure")]] <- w25
     # alpha_combined: 위험선택 25종 × LinearTilt(score)
@@ -223,9 +222,6 @@ for(t_ym in reb_months){
       wB[[paste0("B_",mth,"_",sg,"_alpha")]]<-wa
     } else B_ok<-FALSE
   }
-  # sample p>n regularization flag
-  if(any(sapply(Sig_full,function(S) min(eigen(S,symmetric=TRUE,only.values=TRUE)$values)< -1e-10))) NULL
-
   if(!B_ok || length(wB)!=length(mB_sig)*length(mB_methods)*length(mB_var)){
     skipped[[length(skipped)+1L]]<-list(ym=t_ym,reason="modeB_incomplete",n=length(wB)); next }
 
