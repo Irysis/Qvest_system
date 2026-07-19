@@ -1277,6 +1277,25 @@
         "code: 02_Infrastructure/factor_db/crowding_score_per_factor.R (holdings-only 확인)",
         "related: FQ-057 (lw_nls 확립) · project-superfactor-4method-program"
       ]
+    },
+    {
+      "id": "FQ-063",
+      "lane": "method_frontier",
+      "title": "옵티마이저 lw_nls 방법선택 A/B — 비중결정 모델을 lw_nls로 고르면 유의한가 (NP4 MVO-only→전방법 실측)",
+      "hypothesis": "도훈 질문: 옵티마이저가 lw_nls 기반으로 비중결정 *모델*을 선택하면 유의미한가. NP4는 고정 MVO에 Σ만 swap해 NULL이었고 나머지 방법(HRP/ERC/MaxDiv/GMV)은 논증(외삽)만 됐음 — 8-방법 스윕 + 대형-유니버스 위험선택(Σ 3-A/B: sample/linear LW/lw_nls) 27셀로 canonical PORT_t 실측해 settle",
+      "ev_rationale": "도훈 지적이 NP4의 실측-외삽 갭을 정확히 겨냥 — 논증 아닌 측정으로 판정. 결과: config_scoped_negative(전방법 미달 확정)",
+      "wall_check": "best-of-sweep(A_CVaR 0.906)가 baseline(LinearTilt 1.756·incumbent prodLT20 2.082) 미달, paired NW-t −1.072·DSR 0.247 FAIL·graduation HARD 0/27. ★Mode B(lw_nls 퇴화교정 물리는 유일 셀): lw_nls는 실제로 μI 퇴화 교정(GMV≠MaxDiv, linear LW는 동일=위험선택 불능)하나 그 min-var 포트가 알파 edge 부재→PORT_t 더 음수. lw_nls '작동'하나 위험선택=알파포기라 미달. dual-basis 양 basis 강건",
+      "data_gate": "없음 (완료)",
+      "owner": "Q-Lead session 2026-07-19 (도훈 질문 실측)",
+      "status": "config_scoped_negative_20260719",
+      "next_action": "완료. ⑤비중 소진을 MVO-only(NP4)→전방법 실측 확정. 기전: 알파비례(LinearTilt) 전방법 지배(single-cluster 북서 위험배분=알파희석)·위험선택=알파선택 대체·최대레버=종목수(top-20 vs 25 +0.33 Grinold breadth)지 비중방법 아님",
+      "live_trigger": "비중방법 재측정 = multi-sleeve book 성립 시(위험배분이 sleeve간에선 의미, NP1) 또는 turnover_penalty QP 배선 수리 후 TC-aware MVO(NP2). lw_nls 방법선택 재탕은 이 두 조건 없인 저EV",
+      "source_refs": [
+        "stage_artifacts/method_frontier/fq063_verdict.json (config_scoped_negative)",
+        "stage_artifacts/method_frontier/fq063_shopping_log.json (27셀 전수)",
+        "related: NP4(MVO-only Σ-swap NULL) · FQ-057(lw_nls) · project-hrp-frontier-weighting-settled",
+        "pin: fq057_20260718_171024 (상속)"
+      ]
     }
   ]
 }
