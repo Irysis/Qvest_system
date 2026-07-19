@@ -1,0 +1,89 @@
+{
+  "wt_id": "wt011_revision_axis_synthesis",
+  "title": "Revision/estimate-change axis — incrementality vs factor DB C01~C05, mega-realizability decomposition, non-return gating",
+  "date": "2026-07-19",
+  "mandate": "wt010서 컨센 revision momentum이 wt009 'mega_w 팩터정의 불변' 벽을 처음 깸(mega_w 0.042->0.067, cap-w PORT_t +1.500). 심화: (1) ffs_REVISION이 기존 factor DB C01~C05 대비 incremental 새알파인가 재포장인가 (2) estimate-change 계열 전반이 mega-realizable인가 (3) 비-return 게이팅으로 book-직교+book-marginal 양전 되는가 (4) dossier_candidate 여부.",
+  "selection_rule": "chain (DSR N/A): partial-out/게이팅은 경제논리 사전등록, OOS-argmax 금지. PIT: 컨센 as-of, lag1 검증. SANITY book IR 1.416 재현.",
+  "hard_gates": {"port_t": 2.95, "oos_retention": 0.7, "calmar": 0.64, "book_marginal_dIR": 0.05},
+  "baselines": {"quality": {"port_t": 0.385, "mega_w": 0.042}, "momentum": {"port_t": 1.277, "mega_w": 0.034}, "book_ir_full": 1.416},
+
+  "probe1_revision_incrementality": {
+    "question": "ffs_REVISION이 factor DB C01~C05(SUE/EPS_Chg_1m/EPS_Chg_3m/ESBR/ESCR)에 대해 incremental 새알파인가 재포장인가",
+    "method": "ffs_REVISION cap-w 알파(+1.500)/mega-tilt(0.067)를 C01~C05에 횡단 partial-out -> 잔차 e의 cap-w PORT_t / mega_w 측정",
+    "residual_port_t": -0.042,
+    "residual_mega_w": 0.0269,
+    "dIR": -0.036,
+    "cap_w_realizable": false,
+    "incremental": false,
+    "verdict": "REPACKAGING. ffs_REVISION의 cap-w 알파와 mega-tilt는 factor DB C01~C05(ffs_REVISION의 5개 원천 계열과 1:1 동일)에 전부 흡수된다. C01~C05 partial-out 잔차 cap-w PORT_t=-0.042(null), mega_w=0.0269(quality baseline 0.042 아래로 붕괴) -> 잔차는 알파-공(空) 노이즈 = 새 알파 아님. 단 revision/estimate-change family 자체는 mega-realizable=TRUE(C01~05 composite mega_w 0.1666, ffs_REVISION 0.067 -> wt009 'mega_w 불변' 벽을 selection층에서 실제로 깸)이나 실현 알파 sub-graduation(0.98~1.50 << 2.95, momentum 1.277 미만), book 비직교(active_corr 0.49~0.53, dIR 음)."
+  },
+
+  "probe2_estimate_change_family": {
+    "question": "estimate-change 계열 전반이 mega-realizable(mega-selection이 alpha를 나르는 의미에서)인가",
+    "family_composite_mega_w": 0.1626,
+    "family_composite_port_t": 0.692,
+    "decomposition": {
+      "mega_lift_carrier": {"signal": "ESCR (consistency)", "mega_w": 0.242, "port_t": -0.555, "oos": -8.4, "note": "ANTI-ALPHA — mega-lift 전량을 이 신호가 나름"},
+      "alpha_carriers": [
+        {"signal": "EPS_Chg_1m", "cap_w_port_t": 1.757, "mega_w": "0.033-0.045 (baseline)"},
+        {"signal": "ESBR", "cap_w_port_t": 1.779, "mega_w": "baseline"},
+        {"signal": "target_price_revision", "cap_w_port_t": 1.761, "mega_w": "baseline"}
+      ]
+    },
+    "incrementality_check": "target-price-revision(유일 non-C0x 신호) cap-w PORT_t 1.761 -> C01~C05 partial-out 후 0.339 (~81% redundant = repackaging)",
+    "lag1_signflip": {"base": 0.692, "lag1": -0.485, "note": "fast ~1m revision decay"},
+    "cap_w_realizable_meaningful": false,
+    "incremental": false,
+    "book_additive": false,
+    "verdict": "cap_w_realizable=FALSE in the meaningful (mega-selection carries alpha) sense. 계열은 composite mega_w를 0.042->0.163으로 올릴 수 있으나 mega-lift 전량이 ESCR consistency(mega_w 0.242, PORT_t -0.555 anti-alpha, oos -8.4)가 나른다. 알파를 나르는 change 신호(EPS_Chg_1m 1.757 / ESBR 1.779 / target-price-rev 1.761 — 전부 cap-w momentum 1.111 상회)는 BASELINE mega_w 0.033-0.045에서 선택하며 selection을 mega로 옮기지 않는다. => wt010 hunch('revision이 selection을 mega로 옮기고 alpha도 나른다')는 ESCR을 ffs_REVISION에 번들링한 composition artifact로 반증 (wt010 ffs_LEVEL과 동일한 LEVEL-vs-alpha 해리). family는 non-incremental(target-price-rev 81% redundant) + non book-additive(aligned active_cor ~0.55, 모든 weight/variant에서 dIR 음) + graduation IMPOSSIBLE(HARD 3 전부 fail, composite<momentum, lag1 sign-flip). 실재하는 횡단 신호이나 factor DB C01~C05 + incumbent book에 이미 완전 포착 = 신규 온보딩 없음."
+  },
+
+  "probe3_revision_nonreturn_gating": {
+    "question": "revision(mega+alpha) + non-return(DART officer insider net-buy, orthogonal) gating -> book-marginal dIR>=0.05 양전?",
+    "non_return_source": "DART officer insider net-buy (trailing 6m, PIT usable_month). coverage 7.2% of revision universe.",
+    "gated_variants": {
+      "REVISION_base": {"port_t": 1.500, "mega_w": 0.067, "active_corr": 0.544, "best_w": 0.0, "dIR": 0.000},
+      "G_excl_drop_sellers": {"active_corr": 0.533, "best_w": 0.0, "dIR": 0.000},
+      "G_tilt": {"active_corr": 0.535, "best_w": 0.0, "dIR": 0.000},
+      "G_intersect_buyers_only": {"port_t": 0.285, "active_corr": 0.256, "oos": -2.187, "dIR": 0.000, "note": "직교 달성되나 alpha-dead + sparse(40mo)"}
+    },
+    "book_marginal_positive": false,
+    "verdict": "NEGATIVE (config-scoped, not structural). Insider gating은 book-marginal dIR을 양전으로 돌리지 못함 — 모든 full-coverage variant에서 0.000(best blend weight=0). 메커니즘: revision alpha의 book redundancy는 insider 신호 없는 ~93% 이름이 나르므로 7.2% coverage 게이팅이 active_corr을 거의 못 움직임(0.544->0.533). 직교 달성되는 곳(intersection 0.256)은 alpha 붕괴(1.500->0.285). redundant 신호를 null-alpha non-return 원천으로 게이팅 = redundant-or-null, orthogonal-alpha 주입 불가. 게이팅 레버는 구조적으로 잘못된 방향."
+  },
+
+  "synthesis": {
+    "q1_incremental_vs_repackaging": "REPACKAGING (incremental=FALSE). ffs_REVISION은 factor DB C01~C05의 재포장 — partial-out 잔차 PORT_t -0.042 null, mega_w 0.0269 붕괴.",
+    "q2_family_mega_realizable": "NO in meaningful sense. change/revision이 selection층을 mega로 옮기는 능력은 확립(wt009 벽 깸)되나, mega를 옮기는 신호(ESCR consistency)는 anti-alpha이고, alpha를 나르는 신호(EPS_Chg_1m/ESBR/TP-rev)는 mega로 옮기지 않음 = LEVEL-vs-alpha 해리. mega-mover != alpha-carrier.",
+    "q3_gating_book_positive": "NO. dIR 0.000 (모든 full-coverage variant, best weight=0). 게이팅은 구조적으로 잘못된 레버.",
+    "q4_dossier_candidate": false,
+    "established_capability": "'change/revision이 selection층을 mega로 옮기는 mega-breaker'는 확립된 능력(wt009 'mega_w 팩터정의 불변' 벽을 실측으로 깸). 단 이 능력은 alpha와 해리(mega-mover ESCR=anti-alpha) + 이미 factor DB C01~C05가 포착 = 새 자본경로 아님.",
+    "binding_wall": "cap-w top-25 long-only translation층 (wt009/wt010/project-stylefactor-prediction-arc-settled와 정합). selection을 mega로 옮겨도(=mega_w 상승) 실현 알파 미증 — 병목은 selection-tier가 아니라 translation."
+  },
+
+  "is_incremental_alpha": false,
+  "book_marginal_positive": false,
+  "dossier_candidate": false,
+
+  "consumer_surfaces": [
+    "선별 라벨(selection): 'change/revision = mega-selection 레버'는 문서화된 selection-층 속성이나 alpha와 해리(ESCR anti-alpha) — screen-tier 라벨만, 자본경로 아님",
+    "팩터 랭킹: revision family는 factor DB C01~C05가 이미 포착 — 랭킹 교체/온보딩 후보 없음(target-price-rev조차 81% redundant)",
+    "monitoring 신호: revision fast ~1m decay(lag1 sign-flip 0.692->-0.485) — 느린 팩터 아닌 빠른 timing 신호로 monitoring/overlay tripwire 소비 후보",
+    "위험모델/β예산·오버레이/국면: N/A — book 비직교(active_corr ~0.55)로 β/timing 입력 부적합",
+    "타 모드 이식: EW-uni revision 신호는 이미 C01~C05로 캡처 — RAMP/factor-rotation 추가 이식 비-additive"
+  ],
+
+  "next_probes": [
+    "LEVEL-vs-alpha 해리 분해(chain, IS-only): revision을 mega 이름 SELECT용으로만 쓰고 momentum/quality로 within-mega RANK — ESCR anti-alpha drag 없이 mega-selection 능력만 추출해 알파 회복 가능한지. mega-mover(ESCR)와 alpha-carrier(EPS_Chg_1m/ESBR)를 분리 배선.",
+    "revision fast-decay를 팩터 아닌 timing으로 소비: lag1 sign-flip이 ~1m 반감 revision decay면, slow book-factor가 아니라 monitoring/overlay 입력(신호 감쇠 tripwire)으로 라우팅 — FQ 등재해 유일 검증된 cap-w β 레버(overlay/timing)와 결합 시험.",
+    "revision 축 종결, 표준 프론티어 복귀: revision/estimate-change 전 계열이 factor DB C01~C05 + incumbent book에 완전 흡수 확인 -> 남은 레버는 standalone book-orthogonal AND alpha-bearing 비-return 원천(FQ-057~059: DART exec-insider·buyback·distress) 또는 벤치 재정의(도훈 mandate). 게이팅 아닌 standalone 원천 탐색."
+  ],
+
+  "frontier_status": "config-scoped negative (AX-000/INV-7): revision/estimate-change 축은 이 measurement frame(cap-w top-25 EW long-only, 15bps, liq 2e8, C01~C05 대비)서 재포장·non-additive. 'change/revision = mega breaker'는 확립 능력이나 alpha-decoupled. 구조판결 아님 — 부활: LEVEL-vs-alpha 분리 추출 성공 시, 또는 standalone book-orthogonal 비-return 원천 발견 시 revision-mega와 결합 재검토.",
+  "revival_condition": "(a) mega-mover(ESCR)와 alpha-carrier 분리로 anti-alpha drag 없이 mega-selection 능력이 cap-w PORT_t>momentum 실현, 또는 (b) corr<0.30 AND PORT_t>0인 standalone 비-return 원천 발견 -> revision-mega tilt와 결합.",
+  "artifacts": [
+    "04_Research/method_frontier/wt010_revision_nonreturn_gating.json",
+    "04_Research/method_frontier/wt006_exog_forecast/eval_harness.R",
+    ".cache/consensus/*.parquet (consensus_parser.R)",
+    "bt_result_C_noL4_CLEAN_ann12.rds (incumbent book IR 1.416)"
+  ]
+}

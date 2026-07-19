@@ -1,0 +1,26 @@
+{
+  "probe": "revision_nonreturn_gating",
+  "date": "2026-07-19",
+  "question": "revision(mega+alpha) + non-return(insider, orthogonal) gating -> book-marginal dIR positive (>=0.05)?",
+  "sanity": {"book_ir_full": 1.4160, "revision_standalone_port_t": 1.500, "revision_mega_w": 0.067, "quality_ref": {"port_t":0.385,"mega_w":0.042}},
+  "non_return_source": "DART officer insider net-buy (trailing 6m, PIT usable_month). coverage 7.2% of revision universe (20.5/284 names/mo).",
+  "canonical": {
+    "REVISION_base": {"port_t":1.500,"ew_uni":3.046,"mega_w":0.0670,"oos":-0.424,"calmar":0.346,"n":258},
+    "G_excl_drop_sellers": {"port_t":1.455,"mega_w":0.0627,"n":258},
+    "G_tilt": {"port_t":1.555,"mega_w":0.0655,"n":258},
+    "G_intersect_buyers_only": {"port_t":0.285,"mega_w":0.1044,"oos":-2.187,"n_months":40}
+  },
+  "book_marginal": {
+    "REVISION_base": {"active_corr":0.544,"best_w":0.00,"dIR":0.000},
+    "G_excl": {"active_corr":0.533,"best_w":0.00,"dIR":0.000},
+    "G_tilt": {"active_corr":0.535,"best_w":0.00,"dIR":0.000},
+    "G_intersect": {"active_corr":0.256,"best_w":0.00,"dIR":0.000,"n":40,"note":"orthogonal but alpha-dead + sparse"}
+  },
+  "verdict": "NEGATIVE (config-scoped). Insider gating does NOT turn book-marginal dIR positive; stays 0.000 (best blend weight=0) for all full-coverage variants. Mechanism: revision alpha redundancy with book is carried by the ~93% of names WITHOUT insider signal, so 7.2%-coverage gating barely moves active_corr (0.544->0.533). Where orthogonality IS achieved (intersection active_corr 0.256) the alpha collapses (PORT_t 1.500->0.285, 40 mo). Gating a redundant signal with a null-alpha non-return source yields redundant-or-null, never orthogonal-alpha.",
+  "next_probes": [
+    "Reframe: stop GATING revision; seek a STANDALONE non-return source that is book-orthogonal AND alpha-bearing (insider intersection proved orthogonal-but-dead). That is the FQ-001/057~059 standalone frontier, not a gating question.",
+    "Stock-level foreign-vs-institution flow divergence panel (naver/QW collector) as alt non-return source -- low EV (same structural wall) but only untested source; register FQ if collected.",
+    "Estimate-change family standalone incrementality vs factor DB C01~C05 (partial-out): revision-mega may still be screen-tier OVERLAY_CANDIDATE even though not book-additive."
+  ],
+  "revival_condition": "if a non-return source is found that carries standalone book-orthogonal alpha (corr<0.30 AND PORT_t>0), revisit combining it with revision-mega for cap-w tilt."
+}

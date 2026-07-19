@@ -1,0 +1,40 @@
+{
+  "probe": "estimate_change_family",
+  "date": "2026-07-19",
+  "mandate": "wt010 load-bearing: consensus REVISION component broke the wt009 mega_w-invariant wall (mega_w 0.042->0.067, +1.500) but non-orthogonal (corr 0.567, dIR neg) and suspected repackaging of factor DB C01~C05. This probe: build estimate-change family (SUE / EPS-revision / breadth / consistency / target-price-revision), decompose mega-move vs alpha, test (1) incremental-vs-repackaging (2) family-wide mega-realizable (3) book-orthogonality.",
+  "basis": "canonical_screen_bt top_n=25 15bps liq_min 2e8 cap-w K200uKQ150, diag_dual_basis, size_dt(Size cap fix); FULL FAM window 258m (2005-01..2026-06) to match wt010 baseline. PIT: C01~C05 via load_month_factors (IC-direction-aligned, PIT-safe); target_price via as-of Date<=sig_date roll join. book-marginal: offset-scan alignment (canonical rebalance-date vs book realized-month => true offset +2), incumbent IR recon 1.416 SANITY-passed.",
+  "baseline_reconcile": {"quality_cap_w_port_t": 0.385, "quality_mega_w": 0.042, "momentum_port_t": 1.111, "note": "quality 0.385/0.042 reproduces wt010 exactly -> basis correct"},
+  "individual_signals": {
+    "C01_SUE":        {"port_t": 0.991, "ew_uni": 2.974, "mega_w": 0.0445, "oos_ret": -0.559, "calmar": 0.387},
+    "C02_EPS_Chg_1m": {"port_t": 1.757, "ew_uni": 3.749, "mega_w": 0.0443, "oos_ret": -0.383, "calmar": 0.382},
+    "C03_EPS_Chg_3m": {"port_t": 0.749, "ew_uni": 2.282, "mega_w": 0.0406, "oos_ret": -0.716, "calmar": 0.296},
+    "C04_ESBR_breadth":{"port_t": 1.779, "ew_uni": 4.412, "mega_w": 0.0331, "oos_ret": -0.065, "calmar": 0.394},
+    "C05_ESCR_consistency": {"port_t": -0.555, "ew_uni": -0.046, "mega_w": 0.2422, "oos_ret": -8.403, "calmar": 0.222, "note": "ONLY mega-mover but ANTI-ALPHA"},
+    "target_price_rev_3m": {"port_t": 1.761, "ew_uni": 2.754, "mega_w": 0.0446, "oos_ret": -0.076, "calmar": 0.329, "note": "not a C0x factor; the one genuinely-beyond-DB estimate-change signal"}
+  },
+  "composites": {
+    "COMPOSITE5_EW": {"port_t": 0.692, "ew_uni": 1.195, "mega_w": 0.1626, "oos_ret": -0.360, "calmar": 0.310, "lag1_port_t": -0.485},
+    "COMPOSITE6_plus_tprev": {"port_t": 1.503, "mega_w": 0.1554, "oos_ret": -0.220, "calmar": 0.317}
+  },
+  "incrementality": {
+    "tprev_standalone_port_t": 1.761,
+    "tprev_residual_after_C01C05_port_t": 0.339,
+    "collapse": "1.761 -> 0.339 (~81% of target-price-revision alpha is redundant with factor DB C01~C05)",
+    "verdict": "REPACKAGING — the one non-DB estimate-change signal (TP revision) is ~80% redundant with the existing C01~C05 revision family; no meaningful incremental orthogonal alpha."
+  },
+  "book_marginal": {
+    "alignment": "offset +2 (canonical rebalance-date vs book realized-month); scan decisive (+2 corr 0.48-0.58 vs next +1 ~0.18)",
+    "active_cor_aligned": {"COMPOSITE5": 0.496, "C_EPS1m": 0.580, "C_ESBR": 0.549, "C_SUE": 0.567, "target_price_rev": 0.578, "COMPOSITE6": 0.477},
+    "dIR_best_all_negative": {"COMPOSITE5": -0.017, "C_EPS1m": -0.018, "C_ESBR": -0.017, "C_SUE": -0.025, "target_price_rev": -0.020, "COMPOSITE6": -0.010},
+    "note": "every signal, every weight -> dIR negative. active_cor ~0.55 reproduces wt010 ffs 0.567. NOT book-additive: revision content already embedded in incumbent STR_1715 book."
+  },
+  "mechanism": "The estimate-change family CAN raise composite mega_w (0.042->0.163) but the mega-lift is carried ENTIRELY by ESCR (consistency, mega_w 0.242) which is ANTI-ALPHA (port_t -0.555, oos -8.4). The alpha-carrying change signals (EPS_Chg_1m 1.757 / ESBR 1.779 / TP-rev 1.761 — all ABOVE momentum 1.111 in cap-w) select at BASELINE mega_w (0.033-0.045), i.e. they do NOT move selection to mega. This decomposes/refutes the wt010 hunch that 'revision moves the selection layer to mega AND carries alpha' — that was a composition artifact of bundling ESCR into ffs_REVISION. Same LEVEL-vs-alpha dissociation as wt010 ffs_LEVEL, now shown at the family level.",
+  "verdict": "capw_realizable FALSE (in the mega-selection sense): alpha components do not move mega_w; the only mega-mover (ESCR) is anti-alpha. NON-incremental (repackaging of C01~C05). NON book-additive (active_cor ~0.55, dIR<0 everywhere). Graduation IMPOSSIBLE: HARD 3 all fail (port_t<2.95, oos_ret negative, calmar<0.64), composite below momentum, lag1 sign-flip (fast decay). Real cross-sectional signal (EPS-rev/ESBR/TP-rev cap-w port_t ~1.76 > momentum) but already fully captured by factor DB C01~C05 + incumbent book -> no new onboarding.",
+  "consumption": "No dossier. Revision content lives in factor DB C01~C05 and in the book; route as already-captured, not a new factor. If any use: standalone revision screen-tier / OVERLAY_CANDIDATE conditional on incremental-over-C01C05 (shown negative here).",
+  "next_probes": [
+    "Non-return gating (NOT yet run): gate the EPS-revision/ESBR selection with a non-return orthogonal source (DART insider / short-interest, FQ-057~059) to test if book-marginal dIR turns positive — the ungated revision alpha is negative-dIR because redundant with the book, so only a non-return orthogonal overlay could rescue book-additivity. Low posterior but untested.",
+    "Isolate within-mega reordering: since the alpha components do NOT move to mega and the mega-mover is anti-alpha, test estimate-change as a WITHIN-mega reordering filter (conditional on already-mega selection) rather than a universe-wide selector — could the revision signal add inside the mega slice where the book concentrates.",
+    "Horizon/decay: composite lag1 sign-flips (0.692->-0.485) = ~1-month revision decay. Test higher-frequency (bi-weekly) rebalance vs cost, or a decay-weighted revision blend, to see if the fast-decaying alpha survives 15bps."
+  ],
+  "ax_000_note": "config-scoped negative + frontier (INV-7), not a structural verdict. Load-bearing correction: the wt010 'change/revision lifts mega + carries alpha' claim is refuted under decomposition — the mega-mover (ESCR) is anti-alpha and the alpha-carriers (EPS-rev/ESBR/TP-rev) select at baseline mega_w. Estimate-change is a real cap-w signal (beats momentum standalone) but non-orthogonal, non-incremental, non-mega-localizing, non-graduating."
+}
