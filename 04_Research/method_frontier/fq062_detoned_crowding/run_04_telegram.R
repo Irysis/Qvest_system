@@ -16,7 +16,7 @@ tg_agent_brief(
   as_of = format(Sys.Date(), "%Y-%m-%d"),
   sections = list(
     list(type="summary", emoji="📌",
-      body="detoned 잔차-crowding이 lw_nls 고유 능력인지 반증검증 — lw_nls는 sample과 사실상 동일(incidental), 후보 KILL. 위험-축 진단, 성과·자본 ZERO."),
+      body="detoned 잔차-crowding이 lw_nls 고유 능력인지 반증검증 — sample과 사실상 동일(incidental), KILL. 위험-축 진단, 성과 ZERO."),
     list(type="bullet", emoji="📖", heading="쉬운 설명",
       items=c(
         "가설: 정교한 공분산 추정기(lw_nls)가 '잔차 분산 구조'를 보존해, 단순 방법(sample)이나 잡음제거(RMT)로는 안 보이는 새 과밀(crowding) 경보를 만드는가",
