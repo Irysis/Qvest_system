@@ -382,7 +382,7 @@ bootstrap_ic_fast(alpha, ret, B = 1000L)                  # factor check 시
 
 **Σ estimator 이원화** (optimizer Step 4와 동일 원칙, 도훈 승인 2026-07-18): WT-시점은 posterior-드리븐(method shopping 상한 5·estimation-quality enum 불변) — 신규 estimator(analytical NLS·graphical·cap-tier block Σ) '발굴'은 method_frontier lane(FQ-057) 전용 라운드로 실측하고, `.get_cor_cov` 등재분만 WT-시점 소비 자격.
 
-**현행 posterior (2026-07-18 FQ-057 계열 실측 — r1/NP3/NP4/P1)**: ① **대형-유니버스(p>n) Σ = lw_nls ADOPT** — linear LW는 p>n에서 μI 퇴화(상관구조 전멸·총분산까지 오염, P1 DM 검정 유의), `.get_cor_cov(method="lw_nls")` 사용 + p>n 가드 warning 존중 ② WT-시점 소규모(p≤25) Σ = 기존 posterior 유지(linear LW 무해) ③ Σ 품질은 **위험-축 레버이지 평균-축 레버 아님**(NP4 paired NULL) — Σ 개선을 성과 개선 논거로 쓰지 말 것 ④ 단일-포트 TE 추적은 EWMA-direct가 기준선(P1 tie·⑧행 확정) — 구조모델 Σ로 대체 제안 금지. 근거: `stage_artifacts/method_frontier/{fq057,np4,p1}_verdict.json`.
+**현행 posterior (2026-07-18 FQ-057 계열 실측 — r1/NP3/NP4/P1/P1c)**: ① **대형-유니버스(p>n) Σ = lw_nls ADOPT** — linear LW는 p>n에서 μI 퇴화(상관구조 전멸), `.get_cor_cov(method="lw_nls")` 사용 + p>n 가드 warning 존중. **★P1c 정정(실 book 재확인)**: lw_nls는 어디서도 열등하지 않고 **총분산 채널**에선 실 book도 강건 우월(DM-t -4.0, μI 25% 과소예측) — 소비 권고 존속. 단 P1이 headline으로 강조한 **TE-채널 유의성은 FORM-proxy 아티팩트**(cap-w-mom 집중이 μI 페널티 증폭) — 실 book LinearTilt active(분산·HHI 0.115)의 TE 예측에선 lw_nls vs linear LW = tie(DM-t -0.73/-1.47). ∴ lw_nls 채택 정당화는 '단일-book TE 모니터링 개선'이 아니라 '총분산·집중-active 안전'으로 서술. 신규 book active가 고분산이면 linear LW TE 무해(P1c-i 규칙). ② WT-시점 소규모(p≤25) Σ = 기존 posterior 유지(linear LW 무해) ③ Σ 품질은 **위험-축 레버이지 평균-축 레버 아님**(NP4 paired NULL) — Σ 개선을 성과 개선 논거로 쓰지 말 것 ④ 단일-포트 TE 추적은 EWMA-direct가 기준선(P1·P1c tie·⑧행 확정) — 구조모델 Σ로 대체 제안 금지. 근거: `stage_artifacts/method_frontier/{fq057,np4,p1,p1c}_verdict.json`.
 </v83_dual_basis_captier>
 
 <telegram_protocol_v6 enforce="HOOK+STOP+SOT" updated="2026-05-07">
