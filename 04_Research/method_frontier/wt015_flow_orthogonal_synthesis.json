@@ -1,0 +1,89 @@
+{
+  "wt": "wt015_flow_orthogonal_synthesis",
+  "date": "2026-07-19",
+  "question": "Can investor flow (foreign/institutional net-buy) be consumed as an overlay/timing, foreign-inst divergence, or flow-confirmed-momentum signal to become a book-orthogonal (|corr|<0.30) positive = a 2nd-sleeve/overlay origin, thereby satisfying the multi-sleeve premise?",
+  "premise": "Single-alpha book frontier exhausted (wt008: flow is a strong signal |t| up to 2.05 cross-sectionally, but as a canonical top-25 direct selector the sign inverts -> chase net-buy = price-impact-then-mean-revert, 13/13 PORT_t<0). Only remaining alpha path = a non-return orthogonal 2nd sleeve or overlay. Flow is the strongest available non-return signal, so it is tested here as the multi-sleeve gatekeeper.",
+  "measurement_frame": {
+    "harness": "04_Research/method_frontier/wt006_exog_forecast/eval_harness.R (canonical_screen_bt / weighted_screen_bt)",
+    "universe": "KOSPI200 cap-w, top-25 long-only, 15bps",
+    "baseline_mom_port_t": 1.277,
+    "book": "bt_result_C_noL4_CLEAN_ann12.rds (IR 1.416)",
+    "book_orthogonality_gate": "active-corr |corr| < 0.30 AND book-marginal dIR > 0",
+    "graduation_gate": "PORT_t >= 2.95, calmar >= 0.64",
+    "data": "outputs/ramp/gate8_investor_series.csv + naver_investor_collector.R / parse_investor_quantiwise.R (foreign 824 tickers, 2000+, 9.36M rows)",
+    "pit": "flow t-1 only; signal computed before holding-month start (C5); lag1>base = leak check; placebo permutation; metric_type labeled; no self-synthesis"
+  },
+  "probes": [
+    {
+      "probe": "flow_overlay_timing",
+      "verdict": "NEGATIVE (config-scoped, PIT-clean)",
+      "metric_type": "backtested",
+      "port_t": 4.26,
+      "active_corr": 0.973,
+      "dIR": null,
+      "calmar_effect": 0.024,
+      "orthogonal_positive": false,
+      "detail": "Market-level foreign/institutional net-buy as an exposure overlay/timing signal on STR_1715 does NOT deliver significant calmar improvement or a book-orthogonal positive. Under correct PIT (flow month M-2 aligned to return dated M, holding starts ~first trading day of M-1): best-of-grid calmar effect only +0.024 (18/20 variants negative), SR flat-to-worse (1.83 vs base 1.898), PORT_t diluted 6.21->4.26, placebo p=0.086 (real 1.967 < placebo p95 2.035). The eye-catching +0.376 calmar gain appears ONLY under M-1 (contemporaneous) alignment = one-month look-ahead artifact, identical to the riskoverlay-bearprob 동월 look-ahead pattern. Contrarian direction (de-risk on inflow) fails in both clean and leaky PIT.",
+      "mechanism": "Foreign outflow is contemporaneous/lagging to KR crashes (it happens DURING the crash month), so flow cannot time momentum crashes ahead of market-EVT."
+    },
+    {
+      "probe": "flow_divergence",
+      "verdict": "NEGATIVE (config-scoped)",
+      "metric_type": "backtested",
+      "port_t": -1.778,
+      "active_corr": 0.524,
+      "dIR": 0,
+      "calmar": null,
+      "orthogonal_positive": false,
+      "detail": "Foreign-vs-institutional divergence is NOT a better cross-sectional signal than raw flow. Every divergence/consensus construction stays negative in canonical top-25 long-only cap-w KOSPI200 (13/13 PORT_t<0, best divergence variant -1.778); none is book-orthogonal (active-corr 0.49-0.60 >> 0.30, dIR_max=0 for all).",
+      "mechanism": "Divergence does not escape the same top-25 long-only translation wall; disagreement between foreign/inst carries no incremental realized alpha."
+    },
+    {
+      "probe": "flow_confirmed_momentum",
+      "verdict": "NEGATIVE (config-scoped, INV-7)",
+      "metric_type": "backtested",
+      "port_t": 0.54,
+      "active_corr": 0.499,
+      "dIR": 0,
+      "calmar": 0.003,
+      "orthogonal_positive": false,
+      "detail": "Confirming momentum winners with smart-money net-buying fails on BOTH gates. (1) PORT_t not improved: best flow-confirm variant 0.540 ~ stock-mom baseline 0.508, placebo-indistinguishable (permuted-flow band [0.191,0.597], p=0.20); strongest genuine smart-money confirm (foreign>0 AND inst>0) goes sharply negative -0.717; flow-as-selector-within-momentum-pool (top60/100 -> flow rank) -0.366/-0.643. (2) NOT book-orthogonal: every variant active-corr 0.49-0.55 (>0.30), book-marginal dIR_max=0 with best-blend lambda=0 (zero weight to signal). None clears 2.95, none clears calmar 0.64 (0.13-0.30).",
+      "mechanism": "Institutional-herding-persistence hypothesis falsified in KR top-25 long-only: smart-money confirmation marks the CROWDED late-stage top (price impact already in -> subsequent mean-revert), reproducing the wt008 flow-reversal wall inside the confirmation frame rather than escaping it. Same binding wall as all wt008 axes: cap-w top-25 long-only translation layer."
+    }
+  ],
+  "answers": {
+    "q1_any_book_orthogonal_positive": "NO. All three consumption modes (overlay/timing, divergence, flow-confirmed momentum) are NEGATIVE. None achieves |active-corr|<0.30 (best is 0.499, still >0.30) AND positive book-marginal dIR (all dIR=0). No 2nd-sleeve/overlay origin established via flow.",
+    "q2_multisleeve_premise_satisfied": "NO. The multi-sleeve path requires an orthogonal alpha source. Flow — the strongest available non-return signal — fails to be one across all three angles. Every flow construction stays crowded/co-linear with the book (active-corr 0.49-0.97) and dies in the top-25 long-only cap-w translation layer, the identical binding wall documented across wt008 and the stylefactor-prediction arc.",
+    "q3_data_gap": "NOT a data gap. Data is adequate (foreign/inst 824 tickers, 2000+, 9.36M rows; gate8 series present). The wall is structural-to-this-signal-and-frame, not missing data. What is needed is a DIFFERENT non-return source, not more flow data. Two candidates: (a) DART-granular non-return (exec-insider transaction history / contract-amount magnitude / pledge disclosures) at FQ-001~005 in the frontier queue; (b) short-interest / securities-lending balance — currently a 도훈-decision gate, not session-launchable.",
+    "q4_multisleeve_viable_via_flow": false,
+    "q5_next_probes": [
+      "DART exec-insider transaction-history sleeve (FQ-001~005): test whether insider net-buy magnitude — a genuinely non-price, non-crowded signal — clears the top-25 long-only translation wall that flow could not, and whether its active-corr to STR_1715 falls below 0.30. This is the leading remaining non-return origin per v8.3 재편.",
+      "Short-interest / securities-lending balance as an orthogonal de-risking overlay (도훈-gate: surface as FQ, do not session-launch): unlike flow, short-side positioning may lead rather than coincide with crashes; register for 도훈 decision with the wt015 flow-timing null as the motivating evidence.",
+      "Re-frame the wall itself, not the signal: quantify how much of every flow/return sleeve's failure is the cap-w top-25 long-only translation layer (active-corr floor ~0.49) vs the signal — a benchmark-redefinition / EW-universe control probe (도훈 gate on benchmark change), since wt008 + stylefactor arc + wt015 now triangulate the SAME translation-layer wall across independent signals."
+    ]
+  },
+  "honest_conclusion": "Flow is NOT an orthogonal source in any of the three consumption modes. Because flow is the strongest available non-return signal and it fails, the multi-sleeve path is BLOCKED via this signal in this measurement frame. This is config-scoped / signal-scoped, NOT a structural verdict (INV-7): the frontier stays open for other non-return sources — DART-granular (session-launchable, FQ-001~005) and short-interest/lending (도훈 gate). The recurring binding wall across wt008, the stylefactor-prediction arc, and now wt015 is the same: the cap-w top-25 long-only translation layer, where crowded/co-linear signals cannot both stay orthogonal to the book AND realize positive net active. Multi-sleeve viability therefore depends on finding a non-return signal whose economic origin is NOT price/flow crowding — the DART-insider and short-interest probes are the live next steps.",
+  "consumer_surfaces_checked": [
+    "factor-ranking-selector (wt008 direct + flow_confirmed selector-within-pool): NEGATIVE",
+    "universe-filter (flow-confirm gating of momentum pool): NEGATIVE",
+    "overlay/regime-input (flow_overlay_timing market-level): NEGATIVE",
+    "risk-model/beta-budget (divergence as risk signal): NEGATIVE (dIR=0)",
+    "monitoring-signal (flow as tripwire): NOT alpha-generating, retained only as descriptive monitoring, not a book origin",
+    "selection-label: n/a",
+    "cross-mode-transplant: blocked — no positive to transplant"
+  ],
+  "provenance": {
+    "inputs": [
+      "wt008 (foreign/inst net-buy direct selector, 13/13 PORT_t<0, sign-inverted)",
+      "outputs/ramp/gate8_investor_series.csv",
+      "04_Research/method_frontier/wt006_exog_forecast/eval_harness.R (BASELINE_MOM_PORT_T=1.277)",
+      "bt_result_C_noL4_CLEAN_ann12.rds (book IR 1.416)"
+    ],
+    "related_memory": [
+      "project-captier-alpha-localization-20260706 (cap-w top-25 translation trap)",
+      "project-stylefactor-prediction-arc-settled-20260719 (same translation-layer wall)",
+      "project-riskoverlay-multilayer-bearprob (동월 look-ahead pattern reproduced in flow_overlay M-1)",
+      "feedback-qepm-method-frontier-dualization (FQ-057~059 non-return lane)"
+    ]
+  }
+}
