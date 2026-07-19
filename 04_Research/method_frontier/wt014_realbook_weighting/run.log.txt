@@ -1,0 +1,46 @@
+=== WT-014 realbook weighting A/B ===
+[ap] rows=62483 dates=271 2004-01-01~2026-07-01
+[L5] rows=269 return_ym 200401~202605 realized_ym 200402~202606
+[liq] precomputing eligibility for 271 signal dates...
+[liq] done (0.4 min)
+
+--- STAGE 1: alignment / SANITY (LinearTilt) ---
+[HARNESS-SANITY] ACTUAL book (from L5 ret_orig directly): BOOK IR=1.4055 (book 1.4160) PORT_t=6.166 (6.214) calmar=1.940 (1.941) MDD=0.2329 (0.2329) n=269
+                 ACTUAL bare (ret_orig, no overlay):     BARE IR=1.4921 PORT_t=6.479 calmar=1.118 MDD=0.4074
+  N=20 OFF=0  corr(recon LT, ret_orig[joined])=0.0360  n=266
+  N=20 OFF=1  corr(recon LT, ret_orig[joined])=0.0325  n=267
+  N=20 OFF=2  corr(recon LT, ret_orig[joined])=0.7986  n=267
+  N=20 OFF=3  corr(recon LT, ret_orig[joined])=0.1020  n=267
+  N=25 OFF=0  corr(recon LT, ret_orig[joined])=0.0359  n=266
+  N=25 OFF=1  corr(recon LT, ret_orig[joined])=0.0316  n=267
+  N=25 OFF=2  corr(recon LT, ret_orig[joined])=0.8085  n=267
+  N=25 OFF=3  corr(recon LT, ret_orig[joined])=0.1016  n=267
+[SANITY] chosen N_BOOK=25 L5_OFF=2 (best LinearTilt parity corr=0.8085)
+[SANITY] recon LinearTilt BARE: IR=0.6909 PORT_t=3.312 calmar=0.585 MDD=0.4144 (actual bare 1.4921/6.479/1.118/0.4074)
+[SANITY] recon LinearTilt BOOK: IR=0.7216 (book 1.4160 / actual 1.4055) PORT_t=3.453 (6.214/6.166) calmar=0.855 (1.941/1.940) MDD=0.3007 (0.2329/0.2329) n=267
+[cov] building daily-cov cache (clean cutoff = holding-month start) + lag1 (staler)...
+[cov] months with cov=267 / 267 (0.6 min)
+
+--- STAGE 2: weighting A/B @ N=25 ---
+  LinearTilt  | BARE calmar=0.585 PORT_t=3.312 MDD=0.414 IR=0.691 | BOOK calmar=0.855 PORT_t=3.453 MDD=0.3007 IR=0.7216 (n=267)
+  ERC         | BARE calmar=0.632 PORT_t=3.048 MDD=0.355 IR=0.663 | BOOK calmar=0.983 PORT_t=3.134 MDD=0.2404 IR=0.6727 (n=267)
+  invvol      | BARE calmar=0.597 PORT_t=3.218 MDD=0.379 IR=0.682 | BOOK calmar=0.922 PORT_t=3.301 MDD=0.2578 IR=0.6920 (n=267)
+  EW          | BARE calmar=0.575 PORT_t=3.402 MDD=0.405 IR=0.704 | BOOK calmar=0.851 PORT_t=3.510 MDD=0.2881 IR=0.7237 (n=267)
+
+[common months] 267
+[book-marginal on common months, vs LinearTilt book]
+  LinearTilt  | BOOK calmar=0.8546 PORT_t=3.453 MDD=0.3007 IR=0.7216  dIR=+0.0000 dcalmar=+0.0000
+  ERC         | BOOK calmar=0.9825 PORT_t=3.134 MDD=0.2404 IR=0.6727  dIR=-0.0489 dcalmar=+0.1280
+  invvol      | BOOK calmar=0.9224 PORT_t=3.301 MDD=0.2578 IR=0.6920  dIR=-0.0296 dcalmar=+0.0678
+  EW          | BOOK calmar=0.8512 PORT_t=3.510 MDD=0.2881 IR=0.7237  dIR=+0.0021 dcalmar=-0.0033
+
+--- PIT lag1 stress (ERC/invvol weights from cov 1mo staler) ---
+  ERC         staler-cov BOOK calmar=0.9772 IR=0.6795 (clean-cov calmar 0.9825, LinearTilt 0.8546)
+  invvol      staler-cov BOOK calmar=0.9226 IR=0.6960 (clean-cov calmar 0.9224, LinearTilt 0.8546)
+
+--- placebo: random capped weights book (100 draws, common months) ---
+  placebo calmar p50=0.7081 p95=1.0142 | ERC rank=0.94 invvol rank=0.89 LinearTilt rank=0.84
+  placebo IR p50=0.6158 p95=0.7302 | LinearTilt rank=0.93
+
+[VERDICT] NO_IMPROVEMENT_DEGRADES | dIR_erc=-0.0489 dIR_invvol=-0.0296 dcalmar_erc=+0.1280 dcalmar_invvol=+0.0678 (0.7 min)
+[done] saved wt014_summary.json + rds

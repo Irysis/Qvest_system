@@ -1,0 +1,207 @@
+{
+  "wt": "WT-014_realbook_weighting",
+  "date": "2026-07-19",
+  "metric_type": "weighted",
+  "question": "실 STR_1715 book SELECTION 고정, WEIGHTING LinearTilt->ERC/inv-vol/EW 시 book 위험조정(calmar/IR/MDD) 개선 + book-marginal dIR",
+  "book_ref": {
+    "strategy": "STR_1715_on_M4gAE_R05_noLayer4_PG2",
+    "IR": 1.416,
+    "PORT_t": 6.214,
+    "calmar": 1.941,
+    "mdd": 0.2329,
+    "n": 269
+  },
+  "N_BOOK": 25,
+  "L5_join_offset": 2,
+  "sanity_lineartilt_parity_corr": 0.8085,
+  "harness_sanity_actual_book": {
+    "IR": 1.4055,
+    "PORT_t": 6.166,
+    "calmar": 1.94,
+    "mdd": 0.2329,
+    "n": 269,
+    "note": "L5 ret_orig 직접 → 계약 harness. book 1.4160/6.214/1.941/0.2329 재현 = harness+benchmark 검증"
+  },
+  "actual_bare": {
+    "IR": 1.4921,
+    "PORT_t": 6.479,
+    "calmar": 1.118,
+    "mdd": 0.4074
+  },
+  "sanity_recon_bare": {
+    "IR": 0.6909,
+    "PORT_t": 3.312,
+    "calmar": 0.585,
+    "mdd": 0.4144
+  },
+  "sanity_recon_book": {
+    "IR": 0.7216,
+    "PORT_t": 3.453,
+    "calmar": 0.855,
+    "mdd": 0.3007,
+    "n": 267
+  },
+  "n_common_months": 267,
+  "weightings": {
+    "LinearTilt": {
+      "method": "LinearTilt",
+      "n_book": 267,
+      "bare": {
+        "IR": 0.6909,
+        "PORT_t": 3.3116,
+        "calmar": 0.5852,
+        "mdd": 0.4144,
+        "cagr": 0.2425,
+        "net_sr": 0.9523
+      },
+      "book": {
+        "IR": 0.7216,
+        "PORT_t": 3.4531,
+        "calmar": 0.8546,
+        "mdd": 0.3007,
+        "cagr": 0.257,
+        "net_sr": 1.0904,
+        "alpha_ann": 0.167
+      }
+    },
+    "ERC": {
+      "method": "ERC",
+      "n_book": 267,
+      "bare": {
+        "IR": 0.6633,
+        "PORT_t": 3.0475,
+        "calmar": 0.6325,
+        "mdd": 0.3555,
+        "cagr": 0.2248,
+        "net_sr": 1.0181
+      },
+      "book": {
+        "IR": 0.6727,
+        "PORT_t": 3.1344,
+        "calmar": 0.9825,
+        "mdd": 0.2404,
+        "cagr": 0.2362,
+        "net_sr": 1.1658,
+        "alpha_ann": 0.1531
+      }
+    },
+    "invvol": {
+      "method": "invvol",
+      "n_book": 267,
+      "bare": {
+        "IR": 0.6819,
+        "PORT_t": 3.2185,
+        "calmar": 0.5968,
+        "mdd": 0.379,
+        "cagr": 0.2262,
+        "net_sr": 0.9994
+      },
+      "book": {
+        "IR": 0.692,
+        "PORT_t": 3.3013,
+        "calmar": 0.9224,
+        "mdd": 0.2578,
+        "cagr": 0.2378,
+        "net_sr": 1.1432,
+        "alpha_ann": 0.152
+      }
+    },
+    "EW": {
+      "method": "EW",
+      "n_book": 267,
+      "bare": {
+        "IR": 0.7044,
+        "PORT_t": 3.4023,
+        "calmar": 0.5745,
+        "mdd": 0.4047,
+        "cagr": 0.2325,
+        "net_sr": 0.9785
+      },
+      "book": {
+        "IR": 0.7237,
+        "PORT_t": 3.5098,
+        "calmar": 0.8512,
+        "mdd": 0.2881,
+        "cagr": 0.2452,
+        "net_sr": 1.1231,
+        "alpha_ann": 0.1558
+      }
+    }
+  },
+  "book_marginal_common": [
+    {
+      "method": "LinearTilt",
+      "IR": 0.7216,
+      "PORT_t": 3.453,
+      "calmar": 0.8546,
+      "mdd": 0.3007,
+      "net_sr": 1.0904,
+      "dIR_vs_lineartilt": 0,
+      "dcalmar_vs_lineartilt": 0
+    },
+    {
+      "method": "ERC",
+      "IR": 0.6727,
+      "PORT_t": 3.134,
+      "calmar": 0.9825,
+      "mdd": 0.2404,
+      "net_sr": 1.1658,
+      "dIR_vs_lineartilt": -0.0489,
+      "dcalmar_vs_lineartilt": 0.128
+    },
+    {
+      "method": "invvol",
+      "IR": 0.692,
+      "PORT_t": 3.301,
+      "calmar": 0.9224,
+      "mdd": 0.2578,
+      "net_sr": 1.1432,
+      "dIR_vs_lineartilt": -0.0296,
+      "dcalmar_vs_lineartilt": 0.0678
+    },
+    {
+      "method": "EW",
+      "IR": 0.7237,
+      "PORT_t": 3.51,
+      "calmar": 0.8512,
+      "mdd": 0.2881,
+      "net_sr": 1.1231,
+      "dIR_vs_lineartilt": 0.0021,
+      "dcalmar_vs_lineartilt": -0.0033
+    }
+  ],
+  "pit": {
+    "cov": "trailing daily rawdata Ret, Date < holding-month start (signal-derived cutoff, PIT-clean/no look-ahead, C5), <=252d lw_nls; lag1_stress = weights from 1mo-staler cov (robustness: calmar unchanged => genuine de-risk not cov-freshness artifact)",
+    "lag1_stress": {
+      "ERC": {
+        "calmar": 0.9772,
+        "IR": 0.6795
+      },
+      "invvol": {
+        "calmar": 0.9226,
+        "IR": 0.696
+      }
+    },
+    "placebo": {
+      "calmar": {
+        "p50": 0.70813,
+        "p95": 1.014248,
+        "erc_rank": 0.94,
+        "invvol_rank": 0.89,
+        "lineartilt_rank": 0.84
+      },
+      "ir": {
+        "p50": 0.615819,
+        "p95": 0.730225,
+        "lineartilt_rank": 0.93
+      }
+    },
+    "self_synthesis": "build_benchmark_compare 계약 경유(PerformanceAnalytics)"
+  },
+  "verdict": "NO_IMPROVEMENT_DEGRADES",
+  "improves_book": false,
+  "dIR_erc": -0.0489,
+  "dIR_invvol": -0.0296,
+  "dcalmar_erc": 0.128,
+  "dcalmar_invvol": 0.0678
+}
