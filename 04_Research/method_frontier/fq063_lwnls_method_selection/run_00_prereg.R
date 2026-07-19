@@ -67,7 +67,7 @@ prereg <- list(
       cardinality = "위험방법 full-universe 해 -> top-25 by weight 선택 -> 재정규화/재해(GMV·MaxDiv 서브셋 재해, HRP top25 renorm)",
       prior = paste0("미달 예상 — 위험선택은 알파선택 대체(직교≠수익 + min-var-settled 벽). lw_nls는 GMV를 well-conditioned로 ",
         "만들어 실제 min-var 포트 생성(linear LW는 μI->EW 붕괴)하나 그 포트는 저변동/방어틸트로 알파 edge 부재 예상. ",
-        "-> lw_nls '작동'하나 PORT_t는 기준선 미달 예상. 단 측정으로 판정.")),
+        "-> lw_nls '작동'하나 PORT_t는 기준선 미달 예상. 단 측정으로 판정."))),
 
   hard_constraints = "max_names<=25 / long-only / weight [0,0.20] / Σw=1 / LIQ 2e8 t-1 / 15bps one-way delta / PIT C1~C15. 위반 시 stopifnot 감사 + infeasibility_report.",
   cost_model = "15bps one-way delta (BOP_m vs EOP_{m-1}); round-trip = x2. 캘린더 연 실합산(x12 금지). TO 상한 11.0/yr 준수 확인, 초과 시 disqualify.",
