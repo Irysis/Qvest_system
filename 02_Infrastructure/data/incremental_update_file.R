@@ -172,6 +172,11 @@ incremental_ohlcvs <- function() {
 
   # BM_Ret 매핑
   bm <- as.data.table(read_parquet(file.path(CACHE_DIR, "benchmark.parquet")))
+  # [guard 2026-07-18] benchmark.parquet Date가 writer(naver_benchmark_update.py)에 따라
+  # POSIXct(timestamp)일 수 있음 → Date-class인 raw$Date와 by="Date" 조인 시 silent all-NA →
+  # RAWDATA.BM_Ret 14M행 전멸 후 write-back 위험. 양측 Date를 Date-class로 강제(build_cache/phase7 동일).
+  bm[, Date := as.Date(Date)]
+  raw[, Date := as.Date(Date)]
   raw[, BM_Ret := NULL]
   raw <- merge(raw, bm[, .(Date, BM_Ret)], by = "Date", all.x = TRUE)
 

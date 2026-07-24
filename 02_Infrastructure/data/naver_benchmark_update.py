@@ -23,6 +23,8 @@ from pathlib import Path
 from datetime import datetime
 
 import pandas as pd
+import pyarrow as pa
+import pyarrow.parquet as pq
 import requests
 
 
@@ -56,6 +58,27 @@ def fetch_naver_kospi(start_yyyymmdd: str, end_yyyymmdd: str, symbol: str = 'KOS
     df = df[['Date', 'Close']].sort_values('Date').reset_index(drop=True)
     df['Close'] = df['Close'].astype(float)
     return df
+
+
+def _write_bm_parquet(df: pd.DataFrame, path) -> None:
+    """benchmark.parquet 저장 단일점 — Date를 date32(day)로 정규화해 기록.
+
+    ★2026-07-18 도훈 mandate (writer 단일점 수리):
+      기존 df.to_parquet(...)은 Date를 datetime64(=timestamp[ns], R에서 POSIXct
+      09:00:00)로 저장했는데, build_index_cache.py는 date32(R에서 Date class)로 저장한다.
+      두 writer가 번갈아 쓰면서 벤치 Date 타입이 실행 순서에 따라 바뀌었고,
+      Date-class를 기대하는 소비자가 벤치를 Date로 재조인하면 "Ops.POSIXt vs Ops.Date"
+      불일치로 조인이 조용히 all-NA가 됐다(fdb_daily phase7 베타 파생 팩터 ~54개 전멸 사건).
+      → build_index_cache.py `_write_parquet`와 동일하게 date32로 통일한다.
+      combined 컬럼은 [Date, BM_Close, BM_Ret]로 고정(patch_benchmark_parquet 참조).
+    """
+    d = pd.to_datetime(df['Date']).dt.date  # datetime64/Timestamp → python date → date32
+    table = pa.table({
+        'Date': pa.array(d, type=pa.date32()),
+        'BM_Close': pa.array(df['BM_Close'].astype('float64')),
+        'BM_Ret': pa.array(df['BM_Ret'].astype('float64')),
+    })
+    pq.write_table(table, str(path))
 
 
 def patch_benchmark_parquet(start_date: str = '2026-04-01',
@@ -97,7 +120,7 @@ def patch_benchmark_parquet(start_date: str = '2026-04-01',
     recent_max = combined[combined.Date >= cutoff]['BM_Close'].max()
     if recent_max > 3000:
         raise RuntimeError(f"[naver_benchmark] 벤치 sanity FAIL: 최근 {recent_max:.0f} — 코스피200 아닌 코스피 종합 의심 (symbol=KPI200 확인)")
-    combined.to_parquet(BM_PATH)
+    _write_bm_parquet(combined, BM_PATH)  # ★date32 정규화 (build_index_cache와 통일, POSIXct 회귀 차단)
 
     return {
         'patched_rows_from': len(bm_pre),
