@@ -16,7 +16,7 @@
       "tier": "1=critical (regime/MSM/strategy), 2=important (factor/macro), 3=research",
       "value_checks": "OPTIONAL (2026-07-03 감사 DATA-P0-1) — 값-무결성 선언. cache_freshness_audit.R (1b) 섹션이 소비, 위반=VALUE_FAIL/CRITICAL. keys: abs_ret_max {col, threshold, max_violations} = |col|>threshold 건수 상한 (날짜 unique 기준) / required_cols [..] = 필수 컬럼 존재 (Layer2 strip 사고 탐지) / parity {against, col, against_col, min_monthly_cor} = 기준 캐시 대비 월수익(log1p 합) 상관 하한"
     },
-    "last_hygiene": "2026-07-17 Q (orphan 17종 등재 + ic_matrix SLA null 완성 + 반복알림 dedup 동반 — 도훈 지시 '매번 같은 알림' 해소)"
+    "last_hygiene": "2026-07-25 Q (국면 캐시 리프레시 배선 — regime_jump_daily on_demand→daily/3d + conditional_ic_matrix.csv 신규 등재 weekly/10d + regime_daily_v2 이중 배선·depends_on 정정. AST 리프 맵 §3-3 스테일 3건 후속. 직전: 2026-07-17 orphan 17종 등재 + ic_matrix SLA null 완성)"
   },
   "caches": [
     {
@@ -381,16 +381,19 @@
     },
     {
       "path": ".cache/regime_daily_v2.parquet",
-      "producer": "02_Infrastructure/ops/morning_steps/fred_regime.R",
-      "entry_fn": "(orchestrated — morning_run)",
+      "producer": "02_Infrastructure/regime/regime_engine_daily.R",
+      "entry_fn": "build_daily_regime",
+      "args": {
+        "use_cache": false
+      },
       "schedule": "daily",
       "date_col": "Date",
       "max_lag_days": 4,
       "depends_on": [
-        ".cache/fred_macro.parquet"
+        ".cache/macro_fred.parquet"
       ],
       "tier": 2,
-      "_note": "2026-07-17 orphan 등재. 2026-06-19 morning_run 배선. 소비: factor_db_daily phase6/7/9b + RAMP regime + axiom overlay selfdev. bootstrap 검증 목록에도 포함"
+      "_note": "2026-07-17 orphan 등재. 2026-06-19 morning_run 배선 + 2026-07-25 daily_refresh [4] FRED 직후 이중 배선 (머신 지연 기상/주말에 morning-only rebuild가 수영업일 뒤처지던 갭 봉합 — AST 리프 맵 §3-3). depends_on을 실소스 macro_fred.parquet(config.R FRED_MACRO_CACHE, long format)로 정정 (구 fred_macro.parquet 오기). 소비: factor_db_daily phase6/7/9b + RAMP regime + axiom overlay selfdev + SJM VIX_z. bootstrap 검증 목록에도 포함"
     },
     {
       "path": ".cache/value_quality_spread.parquet",
@@ -521,14 +524,31 @@
     },
     {
       "path": ".cache/regime_jump_daily.parquet",
-      "producer": "02_Infrastructure/regime/ (research output)",
-      "entry_fn": "(source)",
-      "schedule": "on_demand",
+      "producer": "02_Infrastructure/regime/regime_jump_model.R",
+      "entry_fn": "refit_jm_daily",
+      "schedule": "daily",
+      "date_col": "Date",
+      "max_lag_days": 3,
+      "depends_on": [
+        ".cache/benchmark.parquet",
+        ".cache/regime_daily_v2.parquet"
+      ],
+      "tier": 2,
+      "_note": "2026-07-25 정기 배선 (구 on_demand/SLA null → daily/3d). SJM(Shu 2024) walk-forward online BearProb — PIT-legitimate 확정 자산인데 리프레시 미배선으로 ~7주 스테일 방치 실측 (AST 리프 맵 §3-3, 종점 06-04). daily_refresh [4] regime 블록 말미 배선 (regime_daily_v2 VIX_z 뒤). 전량 재계산 결정적 seed, 실측 2.0분. 종점=benchmark T-1 추종 → daily+lag3 = 거래일 기준. 소비: RAMP regime bakeoff + axiom overlay selfdev + FR Track1"
+    },
+    {
+      "path": ".cache/conditional_ic_matrix.csv",
+      "producer": "02_Infrastructure/stage_gate_engine.R",
+      "entry_fn": "sg_compute_conditional_ic",
+      "schedule": "weekly",
       "date_col": null,
-      "max_lag_days": null,
-      "depends_on": [],
-      "tier": 3,
-      "_note": "2026-07-17 orphan 등재. Bear_Prob_lag 점프 신호 — 소비: RAMP regime bakeoff + axiom overlay selfdev r2. 리서치 생성물"
+      "max_lag_days": 10,
+      "depends_on": [
+        ".cache/factor_db/factor_ic_monthly.parquet",
+        ".cache/RAWDATA.parquet"
+      ],
+      "tier": 2,
+      "_note": "2026-07-25 신규 등재 + 주간 배선 (daily_refresh [6c] 월요일). pit.md V6 Gap-Directed 가설 조향 캐시 (횡단면 스냅샷 — date_col 없음, mtime 기준). 구 producer 경로(memory/monthly_distill.sh)는 스케줄러 task 미등록 + 기본 base STR_1375 holdings 소실 이중 결함으로 2026-06-08 이후 스테일. base fallback 체인(STR_1469_cons4f_5sleeve 등)은 stage_gate_engine.R 2026-07-25 수리 참조. 실측 1.2분/328팩터"
     },
     {
       "path": ".cache/regime_forecast_series.parquet",
