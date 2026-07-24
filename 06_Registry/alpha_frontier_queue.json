@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
-  "updated": "2026-07-24 (discovery wf_1880d1fd-16e 등재 FQ-064~072)",
+  "updated": "2026-07-25 (sector negative FQ-066/067·TRASS FQ-072 조사·firm-level in-flight·FQ-073 신규)",
   "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
   "entries": [
     {
@@ -1300,7 +1300,7 @@
     },
     {
       "id": "FQ-064",
-      "status": "frontier_open_key_gated",
+      "status": "build_in_flight_key_live_20260725",
       "owner": "{}",
       "lane": "non_return",
       "signal_type": "cross_sectional_selection",
@@ -1314,11 +1314,12 @@
       "source_refs": [
         "2026-07-24 discovery workflow wf_1880d1fd-16e (도훈 지시: 공공데이터포털·TRASS·ECOS·FRED 신규 알파소스)",
         "discovery rank #1 (high)"
-      ]
+      ],
+      "scaffold_note": "★DART crosswalk 실구축 완료(474 상장사 K200∪KQ150·bizr_no 474/474 결측0)·PIT_plan·러너 템플릿 준비. data.go.kr 키 발급+전파 완료(게이트웨이 수락 확인). firm-level 빌드 wf_6c1b1736-b24 in-flight. ★리스크=국민연금 API backfill depth(현재 스냅샷만이면 insufficient_history)."
     },
     {
       "id": "FQ-065",
-      "status": "frontier_open_key_gated",
+      "status": "build_in_flight_key_live_20260725",
       "owner": "{}",
       "lane": "non_return",
       "signal_type": "cross_sectional_selection",
@@ -1332,11 +1333,12 @@
       "source_refs": [
         "2026-07-24 discovery workflow wf_1880d1fd-16e (도훈 지시: 공공데이터포털·TRASS·ECOS·FRED 신규 알파소스)",
         "discovery rank #2 (high)"
-      ]
+      ],
+      "scaffold_note": "crosswalk+PIT_plan 준비. 나라장터 게이트웨이 키 유효 확인(필수파라미터 필요). firm-level 빌드 wf_6c1b1736-b24 in-flight. ★미검=낙찰기업 사업자번호 필드 실존·계열매핑 커버리지."
     },
     {
       "id": "FQ-066",
-      "status": "frontier_open_autonomous",
+      "status": "config_scoped_negative_20260725",
       "owner": "{}",
       "lane": "sector",
       "signal_type": "sector_rotation",
@@ -1346,15 +1348,16 @@
       "ev_rationale": "후보 중 novelty 최상. 심리(BSI)보다 이익률 사이클 직결. ECOS_API_KEY 보유=즉시 착수. PPI 원계열 미인입.",
       "wall_check": "sector-level(SELECTION 아님, EV 상한). 종목 원가노출 가중 시 준-종목레벨 가능. first-release vintage 보존(PPI 개정).",
       "data_gate": "없음(ECOS OpenAPI 404Y014 생산자물가 + 401Y 수입물가, ECOS_API_KEY 보유).",
-      "next_action": "자율 착수 가능: ECOS PPI pull→업종별 산출-투입 스프레드→WICS 섹터 매핑→sector tilt canonical. macro regime 재탕 아님(마진 사이클).",
+      "next_action": "분기-horizon·regime-interacted IC = 저EV 부활조건(INV-7). 종목선별 lane 우선.",
       "source_refs": [
         "2026-07-24 discovery workflow wf_1880d1fd-16e (도훈 지시: 공공데이터포털·TRASS·ECOS·FRED 신규 알파소스)",
         "discovery rank #4 (medium)"
-      ]
+      ],
+      "result_20260725": "ECOS 산출-투입 PPI 마진 스프레드(11 제조섹터, 2000-2026 실검증) sector-rotation 실측 = NEGATIVE. sector rank-IC -0.0145(t -0.67)·canonical cap-w PORT_t -0.371(p0.71)≪2.95·calmar 0.10≪0.64. ★dual-basis EW-universe도 null(PORT_t 0.03~0.47) = cap-w 아티팩트 아님. 2신호형x4horizon 전부 |t|<1. 마진 신호 자체는 경제적 valid(화학 유가급락 마진확대 등)이나 KR 익월 섹터수익 무예측=macro 재탕(이미 가격 반영). sector-rotation EV상한 재확인(수익 갭=종목선별). PIT clean(2m lag·LAG1 병행 둘다 null). harness fq066_harness.R"
     },
     {
       "id": "FQ-067",
-      "status": "frontier_open_autonomous",
+      "status": "config_scoped_negative_20260725",
       "owner": "{}",
       "lane": "sector",
       "signal_type": "sector_rotation",
@@ -1364,11 +1367,12 @@
       "ev_rationale": "KR 지수 dispersion 단일 최대축을 실물 재고로 조건화. forward-macro 위기예측 아님(물리 재고=coincident-lead)→settled-null 회피. FRED_API_KEY 보유=즉시.",
       "wall_check": "sector/regime tilt. ALFRED vintage 정렬 필수(발표시차·개정). 크로스마켓 아님(US자산 트레이딩 아님, KR신호 재료).",
       "data_gate": "없음(FRED A34SIS/A34SVS, FRED_API_KEY + mcp__fred 보유).",
-      "next_action": "자율 착수: FRED 재고/출하 pull(ALFRED vintage)→KR 반도체 섹터 조건부 tilt canonical. #7 chip PPI와 병행(채널 상이).",
+      "next_action": "daily-horizon 또는 risk-overlay beta-scale 재측정(top-25 long-only 전이가 벽) = 저EV 부활조건.",
       "source_refs": [
         "2026-07-24 discovery workflow wf_1880d1fd-16e (도훈 지시: 공공데이터포털·TRASS·ECOS·FRED 신규 알파소스)",
         "discovery rank #5 (medium)"
-      ]
+      ],
+      "result_20260725": "FRED A34SIS US IT 재고/출하 사이클(ALFRED vintage 2011+ PIT-clean) → KR 반도체 조건부 tilt 실측 = NEGATIVE(decisive). sector rank-IC -0.0004·canonical cap-w PORT_t -2.23(< static-semi-OW -2.03, incrementality t -1.80=조건화가 오히려 감산)·regime split WRONG-SIGNED. ★PIT-vintage 정렬 후 coincident-lead 가설 반증. top-25 EW base 자체가 cap-w mega 벤치 대비 음(-2.0~-2.3)=문서화된 KR mega-cap 아티팩트(삼성+하이닉스 ~30% cap-w). 정적 semi tilt=순수 beta, 조건화 개선 실패. next_probe(INV-7): daily/weekly horizon·risk-overlay beta-scale·A34SNO new-orders(lead)·inverse(wrong-sign 검증). harness fq067."
     },
     {
       "id": "FQ-068",
@@ -1444,7 +1448,7 @@
     },
     {
       "id": "FQ-072",
-      "status": "dohoon_decision",
+      "status": "dohoon_decision_paid_not_recommended_20260725",
       "owner": "{}",
       "lane": "non_return",
       "signal_type": "cross_sectional_selection",
@@ -1454,10 +1458,29 @@
       "ev_rationale": "기전상 최고 on-target(firm-level 수출). 단 유료 구독+벤더가 스스로 '대체데이터'로 규정(카드·물류 alt 번들)해 '공식통계만' 제약 경계선.",
       "wall_check": "유료(수출바우처/도훈 계정)+매핑 로직·vintage 불투명. 무료 firm-level 대안(FQ-064/065) 착수 쉬워 우선순위 하향. alt-data 경계=도훈 결정.",
       "data_gate": "도훈 결정 — 유료 구독/계정 + 벤더 커버리지·vintage 실접근 검증.",
-      "next_action": "도훈 alt-data 경계·유료 결정. 무료 firm-level(FQ-064/065) 선행 권고.",
+      "next_action": "유료 결정 보류. FQ-073 무료 자체구축 우선. 유료 결정 시 벤더 직접 견적+샘플+커버% 실검증 선행.",
       "source_refs": [
         "2026-07-24 discovery workflow wf_1880d1fd-16e (도훈 지시: 공공데이터포털·TRASS·ECOS·FRED 신규 알파소스)",
         "discovery rank #3 (medium mechanism, dohoon-gated)"
+      ],
+      "result_20260725": "TRASS 접근 3-tier 실조사: (A)관세청 공식 HS-level 무료(data.go.kr, 기업단위 아님) (B)TRASS 유료 세분HS (C)Aicel 종목-레벨 추정=★대체데이터 번들 마케팅→'대체데이터 금지' 위반 소지. ★유료 즉시 비권고: 종목-레벨은 공식 미공개→추정 필수, 유일 턴키(Aicel)=alt-data 위반 소지·가격/커버리지 미검증·해외생산 누락으로 K200 저커버 위험. 권고 = 무료 자체구축(FQ-073). 실검증 미완 5건(가격·커버·언번들·개정·바우처자격) caveats."
+    },
+    {
+      "id": "FQ-073",
+      "status": "frontier_open",
+      "owner": "{}",
+      "lane": "sector",
+      "signal_type": "sector_rotation",
+      "access_gate": "none_datagokr_public",
+      "title": "관세청 HS 수출 × DART 사업부문 매핑 = 자체구축 종목-레벨 수출 프록시 (TRASS 유료 대안)",
+      "hypothesis": "관세청 공식 HS코드 수출(data.go.kr 무료) + DART 사업부문/제품별 매출·공장주소(공식)로 HS×종목 매핑을 자체 구축 → 종목-레벨 수출 nowcast를 공식-파생으로 획득(대체데이터 회피).",
+      "ev_rationale": "TRASS 유료·alt-data 경계 회피. 전부 공식 통계(관세청+DART)라 제약 안. firm-level 수출=기전상 최고 on-target(실적 선행).",
+      "wall_check": "HS×지역 귀속 모호(집중형 대형주만 클린)·해외생산 누락→저커버. sector-level에서 시작(집계 HS→섹터 tilt) 후 firm 확장. FQ-066/067 sector-rotation negative와 동일 EV상한 리스크.",
+      "data_gate": "없음(data.go.kr 관세청 품목별 수출입 15101609 + DART_API_KEY 사업부문 매출). 관세청 GW API는 별도 활용신청 필요(무료).",
+      "next_action": "1단 집계 HS 수출→섹터 tilt(FQ-066/067 대비 증분 검증) → 양성 시 2단 HS×DART 종목 매핑. TRASS 유료 전 무료 상한 확인.",
+      "source_refs": [
+        "FQ-072 TRASS 조사 recommendation 1순위",
+        "discovery wf_1880d1fd-16e"
       ]
     }
   ]
