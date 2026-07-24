@@ -27,10 +27,12 @@ CONTENT=$(echo "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; d=json.load(sys.s
 # request.json만 검증
 case "$FILE_PATH" in
   */worktask/WT*/request.json)
-    "$QVEST_PY_BIN" <<PYEOF
-import json, re, sys
+    # (2026-07-24 Fable5 하네스 감사) content는 env 경유 + heredoc 인용 — 소스 보간('''$CONTENT''')은
+    # triple-quote/backslash content에서 python 소스가 깨져 ERR trap '{}' fail-open (v8.1.2 constraint_enforcer 동일 수리)
+    WSV_CONTENT="$CONTENT" "$QVEST_PY_BIN" <<'PYEOF'
+import json, os, re, sys
 
-content = '''$CONTENT'''
+content = os.environ.get("WSV_CONTENT", "")
 try:
     req = json.loads(content)
 except Exception as e:

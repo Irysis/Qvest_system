@@ -37,12 +37,14 @@ case "$FILE_PATH" in
     ;;
 esac
 
-"$QVEST_PY_BIN" <<PYEOF
-import json, sys
+# (2026-07-24 Fable5 하네스 감사) content는 env 경유 + heredoc 인용 — 소스 보간('''$CONTENT''')은
+# triple-quote/backslash content에서 python 소스가 깨져 ERR trap '{}' fail-open (v8.1.2 constraint_enforcer 동일 수리)
+MSL_CONTENT="$CONTENT" MSL_PKG_TYPE="$pkg_type" MSL_LIMIT="$limit" "$QVEST_PY_BIN" <<'PYEOF'
+import json, os, sys
 
-pkg_type = "$pkg_type"
-limit = $limit
-content = '''$CONTENT'''
+pkg_type = os.environ.get("MSL_PKG_TYPE", "")
+limit = int(os.environ.get("MSL_LIMIT", "999"))
+content = os.environ.get("MSL_CONTENT", "")
 
 try:
     pkg = json.loads(content)
