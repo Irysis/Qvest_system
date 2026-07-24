@@ -2,7 +2,9 @@
 <!-- DO NOT duplicate this content into individual init files. Reference only. -->
 <!-- 갱신 시 .cache/axiom_core.json ↔ CLAUDE.md §Axioms와 동기화 필수. -->
 <!-- cache_control: stable prefix. ephemeral 1h breakpoint 권장 위치 (Anthropic API 호출 시). -->
-<!-- 본 파일 변경 = prefix cache invalidation. 변경은 axiom 승격/폐기 시점만 허용. -->
+<!-- 본 파일 변경 = prefix cache invalidation. 변경은 axiom 승격/폐기 또는 세션 경계 정합 개정 시점만 (2026-07-24 C6). -->
+<!-- (2026-07-24 도훈 승인 C6) 중복 대수술: answer_principles·backtest_contract·telegram = rule/SOT 포인터 스텁 전환 -->
+<!--   (드리프트 방지 — 전문 사본 재생성 금지, rule 파일이 유일 전문). stage_order·s0_debate = v6.0/v55 사멸로 삭제. -->
 
 <axioms level="0" immutable="true" injection="hook-authoritative">
 <!-- (P0 이중주입 소거 2026-07-04 감사) axiom 본문(statement)의 *실주입*은 PreToolUse[Agent] 훅 -->
@@ -53,55 +55,16 @@
 상세: `02_Infrastructure/docs/qvest_research_philosophy.md` (Charter-level SOT 본문) + `02_Infrastructure/docs/rules/research_philosophy.md` (Q-Lead autoload). L-321 ~ L-323 적립.
 </research_philosophy>
 
-<answer_principles level="0" version="v1.0" enforce="HOOK+L_CODE+AX_002" effective="2026-04-29">
-모든 에이전트의 모든 비단순 작업에 적용. 위반 = AX-002 동급 (프로세스 우회 = 미래참조).
+<answer_principles level="0" version="v2.0-stub" enforce="HOOK+L_CODE+AX_002" effective="2026-04-29" updated="2026-07-24">
+**SOT = `.claude/rules/answer-principles.md` — 비단순 작업 착수 전 Read 의무.** 위반 = AX-002 동급. (2026-07-24 도훈 승인 C6: 전문 사본이 rule 대비 드리프트(07-13 리서치 연속성 6항·금칙표현 누락) 발생해 포인터화 — 사본 유지 금지, rule 파일이 유일 전문.)
 
-**목표**: 쉬운/빠른/그럴듯한 답변 ❌ → 정확/완결/실행가능 답변 ✓
+핵심 인덱스: 8원칙(실제 목적·분해·명시 처리·구체성·리스크 점검·생략 금지·불확실 라벨·실행가능 결론) + 5금지(조용한 단순화/TODO 대체/hallucination/무검증 완료/얕은 마무리) + 회피표현 grep + 백테스트 자체합성 금지(PerformanceAnalytics 표준만) + 리서치 연속성(next_probe≥2·종결어휘 금지) + 금칙표현.
 
-**8원칙**:
-1. 표면 질문 아닌 실제 목적 파악
-2. 문제를 필요한 하위 과제로 분해
-3. 각 하위 과제 명시적 처리 (skip 시 사유 명시)
-4. 일반론 회피, 구체적 (파일경로 + line + 수치 + 출처)
-5. 핵심 가정/예외/실패가능성/리스크 점검 (≥1건 명시)
-6. 복잡/어려운 부분 생략 ❌ (TBD/추상화 대체 ❌)
-7. 불확실 부분 명확히 표시 ("검증 안 됨"/"미실행" 라벨)
-8. 실행 가능한 결론 또는 다음 행동으로 마무리
-
-**5금지**: 조용한 단순화 ❌ / TODO·추상화 대체 ❌ / hallucination(없는 사실/함수/근거) ❌ / 검증 없이 완료 보고 ❌ / 얕고 그럴듯한 마무리 ❌
-
-**자가체크 (제출 전 필수)**: "나는 실제 문제를 해결했는가, 아니면 쉬운 답변을 만든 것인가?" → 쉬운 답변에 가까우면 수정 후 제출.
-
-**비단순 작업 boundary** (8원칙 강제 대상):
-- 다중 검증 / 의사결정 영향 / 메모리 commit (L-code, methodology, gap_vector, book_state)
-- 백테스트 결과 보고 (특히 metric 인용)
-- 팀 공유 파일 수정 (lawbook, _shared_prefix, prompts/*)
-- 비교/회귀/분해 분석 / WT 단계 전이 / 사용자 비판·정정 응답
-- **경계 모호 시 비단순으로 분류** (보수적 판단)
-
-단순 작업 (면제): trivial query, 단일 파일 1줄 확인, 명백한 즉시 계산.
-
-**회피 표현 grep 대상** (검증 증거 없이 사용 시 위반):
-- 가정 회피: "유사하므로/동일하므로/거의 같다/대략/근사" / "similar/approximately/roughly"
-- 추정 회피: "추정/예상/기대/아마/보통" / "estimated/likely/probably/expected"
-- 보류 회피: "추후 검증/다음 step/TBD/나중에" / "TBD/to be verified/later"
-- 단순화 회피: "이 정도면/충분/관행적/관례상" / "good enough/conventional"
-- 합리화 회피: "영향 미미/보수적이면/이미 반영/상쇄" / "negligible/conservative enough"
-
-명시 라벨링은 허용: "검증 안 됨 (가정 사용)", "추정치 — 본 simulation 미실행", "TBD — task #N 처리 예정".
-
-**백테스트 자체 합성 금지** (Plan §"백테스트 자체 합성 금지" + Charter v1.4 §9 정합):
-- 허용: `PerformanceAnalytics::Return.portfolio(R, weights, rebalance_on, verbose=TRUE)` / `Return.cumulative` / `apply.monthly(R, Return.cumulative)` / `table.AnnualizedReturns` / `maxDrawdown` / `SharpeRatio.annualized`
-- 금지: `prod(1+r)-1` / `cumprod(1+r)` / `0.8*str1 + 0.2*str2` / `r[, .(prod(1+r)-1), by=YM]` 자체 합성
-- 예외: Charter v1.4 §12 ER-based `mean(ER)/sd(ER)*sqrt(N)` (학술 표준)
-
-위반 시 절차:
+위반 시 절차 (prefix 고유 — 보존):
 - L1 자가 발견: 즉시 정정 + 회피 부분 명시
 - L2 사용자 지적: 즉시 인정 + 시정 path + 시정 + L-code 등재
 - L3 3회 반복: Hook L3 hard block 검토
-
-세부: @00_Lawbook/Multi_Agent/qvest_answer_principles.md
-근거 L-code: L-247 (Q-Lead 3회 연속 회피 — SYN_06 proxy / daily-monthly 혼동 / PerformanceAnalytics 우회)
+근거 L-code: L-247.
 </answer_principles>
 
 <execution_style level="0" version="v8.3.1" effective="2026-05-29" updated="2026-07-24">
@@ -114,51 +77,15 @@
 - **모델**: frontmatter model 핀 금지(세션 모델 상속 — 2026-07-24). 한도/스폰 실패 시 opus 폴백(도훈 07-14).
 </execution_style>
 
-<backtest_contract level="0" version="v1.0" enforce="HOOK_L3_HARD_BLOCK" effective="2026-04-29">
-모든 전략 백테스트는 동일한 10-component bt_result list 표준 산출. 추정 vs 백테스트 분리. 위반 = AX-002 동급.
+<backtest_contract level="0" version="v2.0-stub" enforce="HOOK_L3_HARD_BLOCK" effective="2026-04-29" updated="2026-07-24">
+**SOT = `.claude/rules/backtest-contract.md`(10-component 계약) + `.claude/rules/measurement-graduation.md` §1~§4(real-computation·graduation HARD) — 백테/측정 작업 착수 전 Read 의무.** 위반 = AX-002 동급. (2026-07-24 도훈 승인 C6: 축자 사본 포인터화 — rule 파일이 유일 전문.)
 
-**10-Component bt_result**:
-manifest / strategy_spec / nav / period_returns / holdings / benchmark_returns / metrics / benchmark_compare / rolling_metrics / drawdowns / audit
-**제외**: trades + costs (도훈 2026-04-29 — Qvest는 리서치 시스템, commission=0.0015 백테스트 입력 단계 차감 → ret_net 반영)
-
-**핵심 함수** (Lawbook §1):
-- `build_bt_result(sim_result, strategy_spec, ...)` — 10-component 빌드
-- `audit_bt_result(bt_result)` — 10 checks (Lawbook §20). Critical FAIL 시 metric_type='unavailable' + integrity='FAIL'
-- `save_bt_result(bt_result, output_dir)` — RDS + CSV × 10 + JSON × 2 + XLSX 11-sheet
-- `register_bt_result(bt_result)` — qepm/registry/backtest_registry.csv append (audit FAIL 차단)
-
-**자체 합성 금지** (답변 원칙 §8 정합):
-- 허용: PerformanceAnalytics::Return.cumulative / apply.monthly / maxDrawdown / table.AnnualizedReturns / Return.portfolio
-- 금지: prod(1+r)-1 / cumprod(1+r) / 자체 blending / r[, prod(1+r)-1, by=YM]
-- 예외: Charter v1.4 §12 학술 표준 Sharpe = mean(ER)/sd(ER)*sqrt(N)
-
-**metric_type 분류** (Lawbook §12):
-- backtested: 실제 백테스트 산출 (official 성과표 포함)
-- estimated: 추정치 (official 제외)
-- proxy: 대리 산출 (official 제외)
-- unavailable: 검증 부재 또는 audit FAIL (official 제외)
-
-**Audit 10 checks** (Lawbook §20):
-realized_return_vector_exists / nav_path_exists / rebalance_path_executed / transaction_cost_param_recorded / benchmark_aligned / risk_free_rate_defined / point_in_time_checked / lookahead_bias_checked / survivorship_bias_checked / estimated_metrics_separated_from_backtested
-
-**L3 hard block** (PreToolUse[Write]):
-- backtest_registry.csv 등재 시도 시 audit_status=FAIL 차단
-- methodology_active.md L-code 등재 시도 시 동일 차단
-- Hook: 02_Infrastructure/hooks/backtest_contract_audit.sh
-
-**적용 범위** (도훈 결정):
-- 신규 전략: 의무 (build_bt_result 부재 시 PG2 admission 차단)
-- STR_1631_SYN_06 + STR_1715: 즉시 retrofit
-- 나머지 178개: 사용 시점 wave-by-wave
-
-세부: @00_Lawbook/Multi_Agent/backtest_result_contract.md
-모듈: 02_Infrastructure/contracts/{backtest_result_contract,save_bt_result,audit_bt_result,excel_report_writer,registry_writer}.R
-
-**★ v8.x WS1 — Real-Computation 의무 (alpha/risk/optimizer 공통)**:
-- 성능 수치(portfolio-alpha t / SR / IR / active 등)를 **proxy 손계산 금지**(top-quintile EW + turnover×bps 인라인 근사 등). 반드시 **`02_Infrastructure/contracts/canonical_screen_bt.R::canonical_screen_bt()`**(canonical top-N EW long-only, contract `build_benchmark_compare` 경유) 또는 forge `build_bt_result` 경유.
-- **모든 의사결정 수치에 `metric_type` 라벨 의무**: `canonical_screen`(alpha/risk 스크리닝 실측) / `backtested`(forge 최적화 weights, authoritative) / `estimated` / `proxy`. 라벨 없는 "backtested" 주장 금지.
-- **portfolio-alpha t**는 forge-authoritative(`forge_package.portfolio_alpha_t_nw_lag3`, NW lag-3). **rank-IC t와 구분**(후자는 advisory). graduation Gate C = portfolio-alpha t ≥ 2.95(Harvey-Liu-Zhu).
-- alpha 단계 portfolio-alpha t는 `canonical_screen`(top-N EW, 최적화 weights 아님) — admission binding 아님. binding은 forge.
+절대 최소 인덱스 (상세·예외는 SOT):
+- **10-component `bt_result`**는 `02_Infrastructure/contracts/build_bt_result()` 경유만. audit FAIL 시 metric_type='unavailable'.
+- **자체합성 금지**: `prod(1+r)-1`/`cumprod`/자체 blending 금지 — PerformanceAnalytics 표준 함수만.
+- **Real-Computation 의무**: 성능 수치 proxy 손계산 금지 — `canonical_screen_bt()` 또는 forge `build_bt_result` 경유 + 모든 의사결정 수치에 `metric_type` 라벨(canonical_screen/backtested/estimated/proxy).
+- **portfolio-alpha t = forge-authoritative**(NW lag-3, graduation Gate C ≥ 2.95). rank-IC t는 advisory. alpha 단계 수치는 canonical_screen 라벨 — admission binding은 forge.
+- Hook: `backtest_contract_audit.sh` (L3 hard block — registry/L-code 등재 시 audit FAIL 차단).
 </backtest_contract>
 
 <pit_core level="0">
@@ -178,44 +105,14 @@ realized_return_vector_exists / nav_path_exists / rebalance_path_executed / tran
 금지 합리화 표현 (자동 감지): "영향 미미", "관행적 허용", "보수적이면 괜찮다", "이미 반영되어 있을 것", "백테스트 기간이 길어 상쇄"
 </pit_core>
 
-<stage_order>
-V6.0 순서: S0(Scout) → S1(Forge) → S2(Forge) → S3(Scout) → S4(auto) → S5/S6 → S7 → PG0~PG3.
-- Forge는 Scout s0_record 없이 자체 가설 생성 금지.
-- S3(직교성) + S4(한계기여) 산출물 없이 S6(Judge) 진입 불가.
-- S4 완료 시 pipeline driver가 sg_determine_role() + sg_role_admission() 자동 호출.
-- Stage skip 금지. sg_can_advance(factor_id, target) FALSE 반환 시 진행 금지.
-- S5 진입 시 sg_generate_research_slate() 4슬롯 자동 생성.
-</stage_order>
+<!-- (2026-07-24 도훈 승인 C6) <stage_order>·<s0_debate_consensus> v6.0/v55 legacy 블록 삭제 —
+     S0~S7 stage 스킬 8종은 2026-07-05 삭제·/scout 2026-06-10 제거로 절차 실체 부재.
+     역사 = git + qvest_legacy_boundary.md. 현행 진입점 = CLAUDE.md Active Entrypoints(4-Mode). -->
 
-<s0_debate_consensus level="0" version="v55">
-- 점수제 폐기. stance(APPROVE/APPROVE_CONDITIONAL/REVISE/REJECT) + veto_flag + critical_concerns/supporting_arguments 기반.
-- Full 5인 또는 Compact 3인(QVEST_DEBATE_MODE=compact).
-- 필수 역할: codex_critic(flag only, no veto) / risk_manager(veto: tail_risk) / governor(veto: admission_rule|gap_misaligned) / quant(veto: PIT|kr_empirical_hard_fail) / academic(veto: mechanism). Compact는 judge(veto: PIT) 대체 가능.
-- S0_VERDICT 필수 필드: verdict, consensus_tier(UNANIMOUS/MAJORITY/MINORITY/DEADLOCK), consensus_tally{approve,approve_conditional,revise,reject,veto_count}, final_stances(role별 r1/final/stance_change/veto_flag), transcript.rounds(R1+R2 이상), consensus_points + unresolved_disputes, debaters[N].
-- Q-Lead가 debaters에 포함되면 REJECT. Q-Lead는 집계만.
-- 세부: @.claude/skills/s0-debate/SKILL.md, @02_Infrastructure/hooks/s0_verdict_router.sh
-</s0_debate_consensus>
-
-<telegram_protocol version="v6.5 SOT" updated="2026-05-15">
-**SOT (단일 규칙)**: `.claude/skills/qvest-telegram/SKILL.md` Read 필수. 양식·약어 풀이·예시 6종 모두 그곳.
-
-- **`tg_agent_brief()` 만** 호출. 직접 `tg_send*()` / `tg_format_table()` 호출 시 PreToolUse[Bash] Hook deny + R stop() (`02_Infrastructure/hooks/telegram_direct_call_guard.sh`).
-- 의무 인자: `agent`, `title`, `sections` (≥`MIN_SECTIONS`=2 nonempty). 옵셔널: `charts`, `footer`, `decode_jargon`(default TRUE), `decode_mode`("inline_first"/"footer"/"off"), `smart_break`(default TRUE).
-- 자동 처리: 약어 한글 풀이 / 개조식 줄바꿈 / CJK width / HTML escape / Single-Dispatch lock / Skeleton 차단(`MIN_BYTES`=400).
-- Section type 6종: `summary`(1줄 헤드라인) / `text`(≥30자) / `bullet`(≥2) / `kv`(≥2 named) / `table`(nrow≥2, ncol≤3, width≤32) / `code`(≥20자).
-- 표준 4섹션 권장: 📌 summary → 📊 metrics(kv/table) → 🚩 risks(bullet) → ➡️ next(bullet).
-- Agent 1 spawn = 단일 호출. 차트는 `charts=c(...)` 인자만. 중간 발송 금지.
-
-**v6.5 용어 규칙 (도훈 mandate 2026-05-15) — 모든 agent 텔레그램 의무 정합**:
-- **통상 영어 표기 retain** (자의적 한글 풀이 절대 금지):
-  - ML 모델: `LightGBM` / `XGBoost` / `Ridge` / `LASSO` / `ElasticNet` / `Ensemble`
-  - 알고리즘: `Pareto` / `Sharpe` / `Newey-West` / `HRP` / `MVO` / `CVaR` / `ERC` / `GARCH` / `HMM`
-  - 메트릭: `TDC` / `MDD` / `IC` / `ICIR` / `DSR` / `TE` / `VaR` / `CAGR` / `FF3` / `FF5` / `MRS`
-  - Agent 이름: `Forge` / `Codex` / `Architect` / `Q-Lead` (자의적 한글 변형 금지)
-- **구어체 줄임말 금지**: 리밸→리밸런싱 / 벡테→백테스팅 / 옵티→옵티마이저 / 디플로이→배포
-- **자의적 한글 변형 금지** (사례): 라이트지비엠 / 다각화비 / 앙상블풀이 / 포지·코덱스·아키텍트 → 영어 원어 retain
-- **이미 정통 한글인 용어 retain**: 공분산 / 왜도 / 첨도 / 정보계수 / 샤프지수 / 최대낙폭 / 연복리수익률 / 회전율
-- 함수 레벨 enforcement: `telegram_notify.R` v6.5 exempt_pattern 자동 면제. 자의적 한글 풀이 시 함수 통과하지만 도훈 시각 거부.
+<telegram_protocol version="v7-stub" updated="2026-07-24">
+**SOT = `.claude/skills/qvest-telegram/SKILL.md` (v7) — 텔레그램 발송 전 Read 의무.** 양식·섹션 타입·약어/용어 규칙·비전공자 3장치·예시 전부 그곳. (2026-07-24 도훈 승인 C6: 구 v6.5 축자 사본 포인터화 — 버전 불일치 드리프트 해소.)
+- **`tg_agent_brief()` 만** 호출 — 직접 `tg_send*()` 호출은 PreToolUse[Bash] Hook deny(`telegram_direct_call_guard.sh`).
+- Agent 1 spawn = 단일 호출. 차트는 `charts=c(...)` 인자만. 용어는 통상 영어 표기 retain(자의적 한글 풀이 금지 — 상세 SOT).
 </telegram_protocol>
 
 <spawn_prompt_guidelines version="v1.0" updated="2026-04-24">

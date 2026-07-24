@@ -4,7 +4,7 @@
 
 **Qvest v8.3 — Fable 5-Native · 4-Mode 헌법 · 실측 거버넌스 · 알파 발굴 중심 재편** (2026-07-10 / 2026-07-24 Fable 5 정합 패치 — 세션 모델 `claude-fable-5`, 에이전트 model 핀 제거·상속 전환, 폴백 = 한도 시 opus 재시도)
 
-**계보**: v6.4.0 → v7.0.0 → v7.0.1 → v7.1.0-lite → v7.2.0 → v7.2.1 → v8.0.0 → v8.1.0 → v8.2 → **v8.3** (현재 active)
+**계보**: **v8.3** (현재 active) — 전체 계보(v6.4.0~)·릴리스 상세·검증 이력 = `02_Infrastructure/docs/CHANGELOG_constitution.md` (2026-07-24 C5 이관)
 **Branch**: `main` (Qvest active — GitHub default)
 
 **v8.3 핵심 (알파 발굴 중심 재편, 도훈 mandate 2026-07-10)** — SOT `02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md`:
@@ -14,14 +14,8 @@
 - **불변**: Graduation HARD 3종 · cap-w 게이트 권위 · 6-agent(슬림화 재제안 금지) · Production Constraints(INV-7) · governor 수동
 - **텔레그램 v7 동반**: 비전공자 가독 3장치(쉬운 설명 섹션 + 판정 평문 + 자동 용어풀이 footer), 전문용어 유지
 
-**v8.1 핵심** (3-Mode 정립 + 실측-only + 모듈 자동흐름, 도훈 mandate 2026-06-05):
-- **3-Mode 헌법**: alpha-search 제1원칙(**논문 완전 복제** + 유니버스 K200∪KQ150 고정 + 기간 2005~ 고정) · factor-rotation Lane3(모듈 국면배합, RCMA 등급무관 양방향) · Axiom **r7 원전 복원**(5축 boolean-AND + 3-mode 2-tier + INV-1~7)
-- **실측-only 거버넌스**: measurement-graduation(real-computation 의무 · portfolio-α t forge-authoritative · oos_retention≥0.7·calmar≥0.64 HARD · DSR 다중검정스타일only · book-marginal ΔIR≥0.05). proxy 손계산 graduation 폐지
-- **모듈 표준화 + 자동흐름**: `register_module` 공용계약(**contract_pass+backtested+frozen+hash/build/cost floor 필수, 등급은 무관**) · 계약 미충족 산출은 `module_quarantine` 보존 · `build_module_performance`는 FR input-floor allowlist 소비 · run_factor_rotation 신선도 자동인식 · ML/DPL register 다리(register_research_outputs) · **E2E 4축 배선 닫힘**(자본게이트 book confirm+실주문 2버튼만 수동)
-- **KR 데이터 한계 reference**: value/BM 2002-08~ · M08_ResidMom 1995~ · factor DB 1990~ (`feedback-alpha-search-paper-replication`)
-- **부팅 패치(v8.1)**: bootstrap에 RAWDATA K200/KQ150 컬럼 검증 + 데이터 캐시 존재·신선도 검증 추가
-- **v8.0 흡수(retain)**: R+Python 1급 · SR 2.5 · agent effort(judge/gov xhigh) · axiom_context_inject · harness_perf_eval · artifact-naming
-- **미완(후속)**: residual momentum 사이클 register/factor_analysis 디버깅 · WT_WT-* cleanup · axiom global 실가동
+**v8.1 핵심 (흡수 — 8불릿 상세는 CHANGELOG_constitution.md 이관 아카이브 + `qvest_v8_1_sot.md`)**: 3-Mode 헌법(alpha-search **논문 완전 복제** + 유니버스 K200∪KQ150 고정 + 기간 2005~ 고정 · FR Lane3 · Axiom r7 복원) + 실측-only 거버넌스(measurement-graduation) + `register_module` 표준화·자동흐름(자본게이트 book confirm+실주문 2버튼만 수동).
+**KR 데이터 한계 reference**: value/BM 2002-08~ · M08_ResidMom 1995~ · factor DB 1990~ (`feedback-alpha-search-paper-replication`)
 
 **★ Active SOT (단일 진실)**: `02_Infrastructure/docs/qvest_v8_1_sot.md` (v8.1 설계 SOT) + `qvest_v8_3_alpha_discovery_sot.md` (v8.3 발굴 재편 SOT) + `qvest_v8_0_upgrade_plan.md` (v8.0 base 흡수, retain)
 **전임 SOT (흡수됨)**: `02_Infrastructure/docs/qvest_v6_4_sot.md` (v6.4 base 흡수, read-only retain)
@@ -232,7 +226,7 @@ cd qepm && Rscript -e 'source("scripts/hybrid_mode.R")'
 | `/worktask` | WorkTask CRUD |
 | `/alpha-search` · `/factor-rotation` · `/ramp` | 모드 진입 (Active Entrypoints 표 참조) |
 | `/qlead` | Q-Lead session dashboard |
-| (삭제됨 2026-07-05) | `/forge` `/judge` `/governor` `/launch-team` (v53/v55 팀 파이프라인 래퍼) + `/alpha-research` `/optimizer-research` `/risk-research` (QEPM 에이전트 spawn 래퍼) — 미사용 레거시 커맨드 삭제. **동명 AGENT(.claude/agents/)·HOOK·SKILL은 현역 유지**. 역사는 git·DEPRECATION.md·qvest_legacy_boundary.md 보존. `/scout`은 2026-06-10 제거 |
+| (삭제 이력) | 커맨드 래퍼 8종 삭제(2026-07-05 `/forge` 등 7종 · 2026-06-10 `/scout`) — **동명 AGENT(.claude/agents/)·HOOK·SKILL은 현역 유지**. 상세 = DEPRECATION.md·CHANGELOG_constitution.md |
 
 ---
 
@@ -267,14 +261,6 @@ cd qepm && Rscript -e 'source("scripts/hybrid_mode.R")'
 
 ---
 
-## Multi-Agent Team v53 (legacy — 2026-06-10 hook 등록 해제)
-
-v53 TeamCreate 패턴은 v8.1에서 Agent tool spawn으로 대체됨. TeammateIdle/TaskCompleted hook은 settings.json에서 등록 해제 (스크립트는 FS retain — `02_Infrastructure/docs/rules/harness.md` 참조). tmux rc listener는 v8.0에서 폐지.
-
-상세: `.claude/skills/qvest-worktask/SKILL.md` Section 7.
-
----
-
 ## Safety Rules
 
 - NEVER modify `05_Production/` (promote_to_production() 만 예외)
@@ -288,7 +274,5 @@ v53 TeamCreate 패턴은 v8.1에서 Agent tool spawn으로 대체됨. TeammateId
 ## Release Status + 변경 이력
 
 **SOT 분리 (2026-06-10 P2 다이어트)**: 버전 연혁·릴리스 상세는 `02_Infrastructure/docs/CHANGELOG_constitution.md` — CLAUDE.md는 현행 헌법만 담는다.
-- 현행: **v8.3** (2026-07-10 도훈 mandate — 알파 발굴 중심 재편. 5축 조사→F1~F10 진단→M1~M11: alpha 단계 canonical PORT_t 1급화 · dual-basis(EW/cap-tier) 진단 계약화 · 상설 frontier 큐 · hypothesis_index in-flight · 주입면 현행화 · screen-tier 회수 배관 · 인입 경보화 + 텔레그램 v7 비전공자 가독. SOT `qvest_v8_3_alpha_discovery_sot.md`)
-- 이전: **v8.2** (2026-06-30 도훈 mandate — Codex Critic Round 제거, Opus 4.8 자체 적대검증 대체. 훅 3개 archive · AX-008 Codex→Self-Adversarial 3-source 2/3 불변 · state_transitions codex required 제거 · qvest-codex-round skill 삭제 · codex-round.md DEPRECATED. 별개 S0/RAMP Codex 유지)
-- 이전: **v8.1.1** (2026-06-10 완벽 수리 + P2 구조 개편 — hook 47/47 부활(당시 기준) · OneDrive canonical · 게이트 2계층 · rules autoload 6 코어). **현행 hook 등록 = settings.json 48 distinct .sh** (직접 32 + 라우터 dispatch 16 — 2026-07-24 Fable 5 하네스 감사: sr_provenance_pre_certifier dispatch 해제(전 경로 `{}` no-op 실증) · 주입취약 하드게이트 4훅 env-경유 수리 · 전달 0 훅 6종 additionalContext 복원 · Read/W·E advisory 조기-exit 도입 · axiom_context_inject SyntaxError 수리(07-13 이후 Agent 공리주입 침묵 결손 복원) · 배터리 11/11 PASS. 상세 `harness.md`)
-- 최근 검증: (v8.2) router selftest PASS · hook_e2e_battery 10/11(codex 케이스 제거, 잔여 FAIL=python3 환경) · health HARD-fail 0 (2026-06-30) / (v8.1.1) hook 차단 4종 실증 · readiness pass 12/fail 0 · bootstrap BOOT_FAILS=0 (2026-06-10)
+- 현행: **v8.3** (2026-07-10 알파 발굴 중심 재편, SOT `qvest_v8_3_alpha_discovery_sot.md`) + **2026-07-24 Fable 5 정합 패치**(도훈 승인 C1/C5/C6 포함). 이전 버전·검증 이력 상세 = `CHANGELOG_constitution.md`.
+- **현행 hook 등록 = settings.json 48 distinct .sh** (직접 32 + 라우터 dispatch 16 — 2026-07-24 Fable 5 하네스 감사: 주입취약 하드게이트 4훅 env-경유 수리 · 전달 0 훅 6종 additionalContext 복원 · Read/W·E 조기-exit · axiom_context_inject 침묵 결손 복원 · 배터리 11/11 PASS. 상세 `harness.md` 2026-07-24 정합 절)

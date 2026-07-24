@@ -88,7 +88,9 @@ Hidden dependency 0 확인 후:
 
 QEPM 파이프라인에서 **외부 Codex Critic Round를 완전 제거**. 메인 에이전트가 Opus 4.8로 자체 적대검증(self-adversarial challenge)을 수행하므로 외부 codex spawn은 중복. AX-008은 `Forge + Codex + Architect` → `Forge + Self-Adversarial + Architect`로 치환(3-source 2/3 불변). draft→codex→challenge_note→final 5단계 → in-agent self-adversarial로 reframe.
 
-**범위 한정**: 본 제거는 **QEPM Codex Critic Round 전용**. **S0 Debate codex**(codex_critic / s0_enforcer / s0_debate_*) · **RAMP "Codex"**(K_RAMP·ramp-orchestrator의 Q-Lead+agent 역할명) · 텔레그램 용어집 do-not-translate "Codex" · enabledPlugins `codex@openai-codex`(S0/RAMP가 codex CLI 사용)는 **별개 시스템으로 유지**.
+**범위 한정**: 본 제거는 **QEPM Codex Critic Round 전용**. **S0 Debate codex**(codex_critic / s0_enforcer / s0_debate_*) · **RAMP "Codex"**(K_RAMP·ramp-orchestrator의 Q-Lead+agent 역할명) · 텔레그램 용어집 do-not-translate "Codex"는 **별개 시스템으로 유지**.
+
+**[개정 2026-07-24 — 도훈 승인 C1]** enabledPlugins `codex@openai-codex` 항목은 **해제**. Fable 5 하네스 감사 실측: `~/.claude/plugins/installed_plugins.json` 빈 상태(플러그인 미설치·codex-companion.mjs 디스크 부재)로 런타임 무효과인 **유령 설정**이었고, 원 보존 근거 "S0/RAMP가 codex CLI 사용"도 실체 부재(RAMP Codex=역할명, `run_pit_intent_scan.sh` v2는 로컬 codex CLI로 이관 완료 — 플러그인 비의존, S0 stage 스킬은 2026-07-05 삭제). 로컬 codex CLI(`C:/Users/99922/AppData/Roaming/npm/codex`)와 debate_helpers 스크립트는 FS retain — 플러그인 설정과 무관하게 동작. 근거: `04_Research/01_reports/fable5_harness_audit_20260724.md` §3 C1.
 
 | 자산 | 이전 위치 | Action | Replacement |
 |---|---|---|---|

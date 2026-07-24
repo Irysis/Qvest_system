@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
-  "updated": "2026-07-18 (method_frontier lane 신설 — FQ-057/058/059 등재, 도훈 승인: 'QEPM = Axiom 엔진 교훈 발판 + 신규 방법론 거침없는 도전 + 고퀄리티 알파 창출' mandate. QEPM 이원화(WT-시점 posterior-드리븐 선택 / method-frontier 발굴 lane 분리, optimizer_research_init v1.3·risk_research_init v1.2)와 동반) / 2026-07-17 (E8 — FQ-056 등재: M10 잔여 FR 레지스트리 회수 재개, module_performance 06-13 이후 34일 정지 실측·infra/회수 lane·미착수) / 2026-07-17 (R47 — FQ-054 P1 소비: KRX 백필 근원수리 — 218 source-seam Close 구멍 APPEND-ONLY interior merge(8,856행·216종목)로 채움 → recompute==stored parity 회복·source-seam 218→2. 가드5종+parity4종 PASS(기존/유니버스/북 max|ΔRet|=0)·유니버스 라이브 무영향. 밤샘 무결성 라인 R42~R47 근원수리 완결. 잔여=penny 2 illiquidity. 2026-07-15 (R46 — FQ-054 P2+P3 소비: ret_sanity_firewall date-gap 정련(stored 참값 보존·39건 복원) + Close 연속성 tripwire(gapdays>20 hole 사전감지) 배선. 6-test parity PASS(HARD 672→633·유니버스 분류 불변·월패널 max|Δ|=0·tripwire gate clean). 밤샘 무결성 라인 R42~R46 배선 완결. 잔여 근본수리=KRX 백필 리빌드(245 구멍·armed). R45 — 근원=Close 구멍·stored 참값. R44 — 방화벽 R1+R4 배선)",
+  "updated": "2026-07-24 (discovery wf_1880d1fd-16e 등재 FQ-064~072)",
   "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
   "entries": [
     {
@@ -1296,6 +1296,168 @@
         "stage_artifacts/method_frontier/fq063_shopping_log.json (27셀 전수)",
         "related: NP4(MVO-only Σ-swap NULL) · FQ-057(lw_nls) · project-hrp-frontier-weighting-settled",
         "pin: fq057_20260718_171024 (상속)"
+      ]
+    },
+    {
+      "id": "FQ-064",
+      "status": "frontier_open_key_gated",
+      "owner": "{}",
+      "lane": "non_return",
+      "signal_type": "cross_sectional_selection",
+      "access_gate": "dohoon_register_datagokr",
+      "title": "국민연금 사업장 가입자수 = 기업 고용 증감 프록시 (virgin firm-level SELECTION)",
+      "hypothesis": "사업장별 국민연금 가입자수 월별 증감 = 기업 고용 순증감 → 확장/구조조정을 재무공시 전 포착. 3M/6M 헤드카운트 모멘텀 횡단 랭킹.",
+      "ev_rationale": "★최고-EV firm-level 비-return SELECTION(수익 병목=선별 계층 직접 작용). hypothesis_index 965 전수 virgin. insider(FQ-001)와 독립 원천.",
+      "wall_check": "IC→PORT_t top-25 cap-w 전이 벽이 최종 관문. 대기업 다-사업장 법인합산·자회사 귀속 노이즈. 정규직 위주(노동집약 편향 정규화). data.go.kr 3046071/15071659, 대안 고용보험 15002150.",
+      "data_gate": "data.go.kr 무료 서비스키 등록(도훈) — DATA_GO 키 부재. crosswalk=DART 기업개황 API(15034604, DART_API_KEY 보유).",
+      "next_action": "도훈 data.go.kr 키 발급 시: 가입자수 pull→사업자번호↔DART고유번호↔종목 crosswalk→헤드카운트 모멘텀→canonical_screen_bt. ★usable_date=M+1 15일(자격취득 마감, C4 유사) 엄수·PIT 스냅샷 보존.",
+      "source_refs": [
+        "2026-07-24 discovery workflow wf_1880d1fd-16e (도훈 지시: 공공데이터포털·TRASS·ECOS·FRED 신규 알파소스)",
+        "discovery rank #1 (high)"
+      ]
+    },
+    {
+      "id": "FQ-065",
+      "status": "frontier_open_key_gated",
+      "owner": "{}",
+      "lane": "non_return",
+      "signal_type": "cross_sectional_selection",
+      "access_gate": "dohoon_register_datagokr",
+      "title": "나라장터 낙찰/계약 = 정부조달 수주 (매출 선행 이벤트)",
+      "hypothesis": "정부·공공 조달 낙찰/계약 금액은 상장사 향후 분기 매출 선행 이벤트. 수주 YoY 증가·신규 대형계약 magnitude 종목 랭킹(건설·방산·IT/SI·의료기기).",
+      "ev_rationale": "firm-level SELECTION 최고-EV lane. 발표시차≈0(PIT 안전). 데이터 원천 virgin.",
+      "wall_check": "⚠FQ-002(DART 자체공시 계약금액 magnitude, parser_gated)와 같은 '수주→매출 선행' family이나 원천(정부조달 vs 자체공시)·커버리지 독립·파서 재사용 가능. 승자 상당수 비상장 자회사→상장모기업 귀속 계열매핑. 낙찰기업 사업자번호 필드 API 스펙 실존 확인 의무(추측 금지).",
+      "data_gate": "data.go.kr 무료키(도훈). 나라장터 15129397/15129427/15129466. 백필 이력 범위 측정 필요.",
+      "next_action": "키 발급 시: 낙찰기업 사업자번호 필드 실존+상장 커버리지%+백필 확인→최초 낙찰일 스냅샷(계약변경 vintage 고정)→canonical. FQ-002 파서 통합.",
+      "source_refs": [
+        "2026-07-24 discovery workflow wf_1880d1fd-16e (도훈 지시: 공공데이터포털·TRASS·ECOS·FRED 신규 알파소스)",
+        "discovery rank #2 (high)"
+      ]
+    },
+    {
+      "id": "FQ-066",
+      "status": "frontier_open_autonomous",
+      "owner": "{}",
+      "lane": "sector",
+      "signal_type": "sector_rotation",
+      "access_gate": "none_ecos_keyed",
+      "title": "PPI 산업별 마진 스프레드 (산출-투입 PPI, novelty 최상)",
+      "hypothesis": "산출 PPI − 투입(원재료·수입) PPI = 업종 마진 압력 프록시 → 마진 개선 업종 tilt. return·심리·금리 어디에도 없는 신규 펀더멘털 각도.",
+      "ev_rationale": "후보 중 novelty 최상. 심리(BSI)보다 이익률 사이클 직결. ECOS_API_KEY 보유=즉시 착수. PPI 원계열 미인입.",
+      "wall_check": "sector-level(SELECTION 아님, EV 상한). 종목 원가노출 가중 시 준-종목레벨 가능. first-release vintage 보존(PPI 개정).",
+      "data_gate": "없음(ECOS OpenAPI 404Y014 생산자물가 + 401Y 수입물가, ECOS_API_KEY 보유).",
+      "next_action": "자율 착수 가능: ECOS PPI pull→업종별 산출-투입 스프레드→WICS 섹터 매핑→sector tilt canonical. macro regime 재탕 아님(마진 사이클).",
+      "source_refs": [
+        "2026-07-24 discovery workflow wf_1880d1fd-16e (도훈 지시: 공공데이터포털·TRASS·ECOS·FRED 신규 알파소스)",
+        "discovery rank #4 (medium)"
+      ]
+    },
+    {
+      "id": "FQ-067",
+      "status": "frontier_open_autonomous",
+      "owner": "{}",
+      "lane": "sector",
+      "signal_type": "sector_rotation",
+      "access_gate": "none_fred_keyed",
+      "title": "US tech inventory-to-shipments 사이클 → KR 반도체/tech 로테이션",
+      "hypothesis": "미 IT 재고/출하 비율(Census M3)이 글로벌 반도체 재고사이클 coincident-lead → KR 지수 dispersion 지배축(삼성전자+SK하이닉스 ~25-30%) 조건화 tilt.",
+      "ev_rationale": "KR 지수 dispersion 단일 최대축을 실물 재고로 조건화. forward-macro 위기예측 아님(물리 재고=coincident-lead)→settled-null 회피. FRED_API_KEY 보유=즉시.",
+      "wall_check": "sector/regime tilt. ALFRED vintage 정렬 필수(발표시차·개정). 크로스마켓 아님(US자산 트레이딩 아님, KR신호 재료).",
+      "data_gate": "없음(FRED A34SIS/A34SVS, FRED_API_KEY + mcp__fred 보유).",
+      "next_action": "자율 착수: FRED 재고/출하 pull(ALFRED vintage)→KR 반도체 섹터 조건부 tilt canonical. #7 chip PPI와 병행(채널 상이).",
+      "source_refs": [
+        "2026-07-24 discovery workflow wf_1880d1fd-16e (도훈 지시: 공공데이터포털·TRASS·ECOS·FRED 신규 알파소스)",
+        "discovery rank #5 (medium)"
+      ]
+    },
+    {
+      "id": "FQ-068",
+      "status": "frontier_open_autonomous",
+      "owner": "{}",
+      "lane": "sector",
+      "signal_type": "sector_rotation",
+      "access_gate": "none_fred_keyed",
+      "title": "반도체 chip PPI(ASP) → KR 메모리 섹터 tilt",
+      "hypothesis": "반도체 생산자물가(chip ASP) 모멘텀 → KR semi(메모리 DRAM/NAND 지배)의 매출/마진 선행. 가격 함수 어닝모멘텀 nowcast.",
+      "ev_rationale": "KR semi 매출≈가격 함수라 chip price 모멘텀이 지배섹터 어닝 선행. FRED 즉시. #5(재고)와 채널 상이(가격 vs 재고) 병행 가능.",
+      "wall_check": "sector tilt. FRED PPI는 US ASP proxy(KR 현물 DRAM/NAND가 더 직결이나 무료 아님). ALFRED vintage.",
+      "data_gate": "없음(FRED PCU334413334413, FRED_API_KEY).",
+      "next_action": "자율 착수: chip PPI 모멘텀→KR 메모리(삼성/하이닉스+소부장) tilt canonical.",
+      "source_refs": [
+        "2026-07-24 discovery workflow wf_1880d1fd-16e (도훈 지시: 공공데이터포털·TRASS·ECOS·FRED 신규 알파소스)",
+        "discovery rank #7 (medium)"
+      ]
+    },
+    {
+      "id": "FQ-069",
+      "status": "frontier_open_autonomous",
+      "owner": "{}",
+      "lane": "sector",
+      "signal_type": "sector_rotation",
+      "access_gate": "none_ecos_keyed",
+      "title": "BSI 업종별 (기업경기실사지수 산업 세분 횡단)",
+      "hypothesis": "업종별 업황BSI 횡단(섹터 cross-section) → 업황 개선 업종 tilt. 집계 심리(macro_regime)가 못 쓰는 세분 각도.",
+      "ev_rationale": "virgin(섹터 BSI 미인입). ECOS 즉시. PIT 우수(당월말 발표·개정 거의 없음, ~24-27일 이후 값만).",
+      "wall_check": "sector tilt. 집계 BSI를 regime_overlay로 쓰면 macro_regime 재탕(저EV) — 섹터 횡단으로만. 심리 약IC.",
+      "data_gate": "없음(ECOS 512Y 계열, ECOS_API_KEY).",
+      "next_action": "자율 착수: 업종 BSI→섹터 tilt canonical. usable_date=발표일(24-27일) 이후.",
+      "source_refs": [
+        "2026-07-24 discovery workflow wf_1880d1fd-16e (도훈 지시: 공공데이터포털·TRASS·ECOS·FRED 신규 알파소스)",
+        "discovery rank #6 (medium)"
+      ]
+    },
+    {
+      "id": "FQ-070",
+      "status": "frontier_open_key_gated",
+      "owner": "{}",
+      "lane": "sector",
+      "signal_type": "sector_rotation",
+      "access_gate": "dohoon_register_datagokr",
+      "title": "국가산업단지 업종별 가동률 (제조 실물 coincident)",
+      "hypothesis": "업종별 산업단지 가동률 월별 변화 = 제조 실물수요 coincident → 가동률 상승 업종 tilt.",
+      "ev_rationale": "virgin. 통계청 생산지수보다 빠른 실물 방향. 단 sector-level(SELECTION 아님).",
+      "wall_check": "업종 집계(종목 아님). #20 전력사용량과 신호 중복 가능(가동률 coincident)→하나 채택 후 증분. 발표시차 1-2개월 vintage.",
+      "data_gate": "data.go.kr 무료키(도훈). 산업단지공단 15085895/15085889.",
+      "next_action": "키 발급 시: 가동률→WICS 섹터 tilt. #20 전력과 증분 비교.",
+      "source_refs": [
+        "2026-07-24 discovery workflow wf_1880d1fd-16e (도훈 지시: 공공데이터포털·TRASS·ECOS·FRED 신규 알파소스)",
+        "discovery rank #8 (medium)"
+      ]
+    },
+    {
+      "id": "FQ-071",
+      "status": "frontier_open_key_gated",
+      "owner": "{}",
+      "lane": "non_return",
+      "signal_type": "cross_sectional_selection",
+      "access_gate": "dohoon_register_datagokr",
+      "title": "특허/실용신안 출원인 권리 = R&D 산출 (KIPRISPlus)",
+      "hypothesis": "상장사 특허 출원/등록·기술분야 집중·인용 증가 = 혁신·제품파이프라인 선행 → 성장 tilt.",
+      "ev_rationale": "virgin(patent 0-hit). CS_selection이나 slow-moving(연 단위)→고회전 25종 전이 벽 리스크.",
+      "wall_check": "등록일/공개일을 이벤트로 써야 PIT 안전(출원일=18개월 look-ahead). 출원인명↔종목 문자열 매칭 부정확. 저회전 tilt 또는 sector 집계가 현실적.",
+      "data_gate": "data.go.kr 무료키(도훈). KIPRISPlus 15057547/15058788/15057851.",
+      "next_action": "키 발급 시: 등록공보 기반 특허 모멘텀(저회전)→성장 tilt. 우선순위 후순위(전이 벽).",
+      "source_refs": [
+        "2026-07-24 discovery workflow wf_1880d1fd-16e (도훈 지시: 공공데이터포털·TRASS·ECOS·FRED 신규 알파소스)",
+        "discovery rank #12 (low-med)"
+      ]
+    },
+    {
+      "id": "FQ-072",
+      "status": "dohoon_decision",
+      "owner": "{}",
+      "lane": "non_return",
+      "signal_type": "cross_sectional_selection",
+      "access_gate": "dohoon_paid",
+      "title": "TRASS 기업(종목)-레벨 수출 nowcast (상용 marketplace)",
+      "hypothesis": "종목-레벨 통관 수출 nowcast = 순수 firm-level SELECTION. 통관은 어닝(45일+)보다 선행.",
+      "ev_rationale": "기전상 최고 on-target(firm-level 수출). 단 유료 구독+벤더가 스스로 '대체데이터'로 규정(카드·물류 alt 번들)해 '공식통계만' 제약 경계선.",
+      "wall_check": "유료(수출바우처/도훈 계정)+매핑 로직·vintage 불투명. 무료 firm-level 대안(FQ-064/065) 착수 쉬워 우선순위 하향. alt-data 경계=도훈 결정.",
+      "data_gate": "도훈 결정 — 유료 구독/계정 + 벤더 커버리지·vintage 실접근 검증.",
+      "next_action": "도훈 alt-data 경계·유료 결정. 무료 firm-level(FQ-064/065) 선행 권고.",
+      "source_refs": [
+        "2026-07-24 discovery workflow wf_1880d1fd-16e (도훈 지시: 공공데이터포털·TRASS·ECOS·FRED 신규 알파소스)",
+        "discovery rank #3 (medium mechanism, dohoon-gated)"
       ]
     }
   ]

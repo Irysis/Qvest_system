@@ -52,7 +52,12 @@ Fable 5 전환과 무관하게 **설계 의도대로 작동 실증**된 표면:
 - 수정 훅 18종 `bash -n` 전부 OK · router selftest OK · router_dispatch.json 파싱 OK(17 엔트리)
 - 주입 페이로드 테스트 4/4 block · advisory 전달 3종 JSON 스키마 확인 · 조기-exit 타이밍 실측
 
-## 3. 도훈 confirm 대기 큐 (기록된 결정의 번복이라 자율 실행 보류)
+## 3. 도훈 confirm 큐 — **C1·C5·C6 승인·실행 완료 (2026-07-24 당일)**, 잔여 대기
+
+**실행 완료 (도훈 승인)**:
+- **C1 ✅**: enabledPlugins `codex@openai-codex` 해제 (settings.json `{}` — JSON 유효성 검증 PASS) + harness.md:158·00_Lawbook/DEPRECATION.md 동시 개정 (로컬 codex CLI·debate_helpers는 FS retain).
+- **C5 ✅**: CLAUDE.md 역사 블록 이관 — 계보 10단·v8.1 8불릿·Release Status 이전버전/검증이력·v53 절·삭제 커맨드 행 상세 → `CHANGELOG_constitution.md` "이관 아카이브" 절에 verbatim 보존 + 본문 포인터화. CLAUDE.md 24.2→21.8KB (Fable 5 패치 신규 내용 추가분 상쇄 포함).
+- **C6 ✅**: _shared_prefix.md 중복 대수술 — answer_principles(rule 대비 드리프트 실증)·backtest_contract 축자 사본 → "Read 의무 + 절대 최소 인덱스" 스텁, telegram v6.5 → v7 SOT 스텁, stage_order·s0_debate_consensus v6.0/v55 블록 삭제(tombstone 주석). 위반절차 L1~L3 등 prefix-고유 내용 보존. 21.9→**15.2KB** (agent spawn당 −6.7KB). 검증: memory_knowledge_health **Hard fail 0** (axioms 블록 무변경).
 
 | # | 항목 | 근거 | 권고 |
 |---|---|---|---|
