@@ -1,66 +1,16 @@
 ---
 name: optimizer-research
-description: QEPM Optimizer Research Agent 자율 리서치 루프. Alpha의 α̂ + Risk의 Σ로 target weights 결정. 방법론 자율 탐색(MVO/HRP/CVaR/ERC/BL/Genetic/PPO RL/Ensemble). SR 최대화 방법론을 스스로 발견. 25종 hard + long-only + Σw=1 Hook 강제. Alpha/Risk 재해석 절대 금지.
+description: (수동 진입 스텁) QEPM optimizer-research 에이전트 수동 spawn 진입점. 절차 SOT = qvest-worktask §3 Step 3 + optimizer_research_init.md — 본 스텁은 리다이렉트만.
 ---
 
 # /optimizer-research {WT_id}
 
-Optimizer Research Agent를 Work Task에 spawn하여 optimization_package.json을 자율 생성.
+(2026-07-24 도훈 승인 C3 — 리다이렉트 스텁. 구 본문은 init 프롬프트의 축약 사본이라 드리프트 위험으로 제거, settings.json skillOverrides `user-invocable-only`로 모델 목록에서 제외. 역사 = git.)
 
-## Prerequisite
+QEPM optimizer-research 단계 수동 트리거. **절차 정본 (Read 후 진행)**:
 
-- `qepm/mailbox/worktask/{WT_id}/alpha_package.json`
-- `qepm/mailbox/worktask/{WT_id}/risk_package.json`
+1. `.claude/skills/qvest-worktask/SKILL.md` §3 Step 3 — Agent tool spawn 패턴 (`subagent_type="optimizer-research"`)
+2. `02_Infrastructure/prompts/optimizer_research_init.md` — 에이전트 시스템 프롬프트 SOT (method_comparison ≥3·net-of-cost objective·selection_objective=net_ir)
 
-둘 다 존재 필수. `worktask_sequence_enforcer.sh` Hook이 선행 검증.
-
-## Usage
-
-```
-/optimizer-research WT20260423_001
-```
-
-## 6-Step Pipeline
-
-1. Feasibility check
-2. Objective construction (max x'α̂ - λ/2 x'Σx - φTC(x))
-3. Constraint binding (hard + soft + no-trade)
-4. **Cost-aware optimization — 방법론 자율 탐색 10+**
-5. Sensitivity report
-6. Optimization package emission
-
-## 방법론 자율 탐색
-
-Agent가 주어진 Alpha + Risk에서 SR 최대화 방법론 **스스로 발견**:
-
-- Classical MVO / Black-Litterman
-- Risk-parity (ERC, HRP)
-- Robust (Shrinkage, Worst-case MVO)
-- Tail-aware (CVaR LP, CDaR LP)
-- Entropy (Max Div, Entropy Pooling)
-- ML (Neural portfolio)
-- RL (PPO/SAC policy gradient, Genetic)
-- Ensemble (meta-weight)
-
-각 방법론 결과 `method_comparison` 기록 (SR/TE/IR/turnover/cost).
-
-## 산출
-
-- `qepm/mailbox/worktask/{WT_id}/optimization_package.json`
-- `stage_artifacts/WT_{id}/weights.csv` (monthly)
-- `stage_artifacts/WT_{id}/weight_method_selected.md`
-
-## Hard Constraints (Hook 강제)
-
-- max_names ≤ 25
-- long-only (weights ≥ 0)
-- weight_bounds [0, 0.20]
-- Σw = 1 (absolute) / = 0 (active)
-
-## 실패 시
-
-`infeasibility_report` 출력 (제약 완화 금지). HOLD 권고 가능.
-
-## 완료 후
-
-`Forge` spawn → 3-agent 산출물 통합 → backtest.
+입력: `alpha_package.json` + `risk_package.json` · 산출: `optimization_package.json`(+weights.csv) + `challenge_note.md`.
+경계: alpha 재해석·Σ 재정의 절대 금지. 25종·long-only·[0,0.20]·Σw=1 hard (Hook block — worktask_constraint_enforcer).
