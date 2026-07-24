@@ -5,7 +5,8 @@
 ## 모델 라우팅 (2026-07-24 Fable 5 정합 개정)
 
 - **세션 모델 = Claude Fable 5** (`claude-fable-5`, Mythos-class — Opus 4.8 상위 tier).
-- **에이전트 frontmatter `model` 핀 = 전면 제거** (2026-07-24 실측 11종 제거): 핀 부재 = 세션 모델 상속(공식 스펙 기본값 inherit). 구 `model: opus`는 "자동 최신"이 아니라 **Opus 4.8 고정**이라, Fable 5 세션에서 spawn 에이전트가 메인보다 하위 모델로 강등되던 결함.
+- **에이전트 frontmatter `model` 핀 = 원칙 제거** (2026-07-24 실측 11종 제거): 핀 부재 = 세션 모델 상속(공식 스펙 기본값 inherit). 구 `model: opus`는 "자동 최신"이 아니라 **Opus 4.8 고정**이라, Fable 5 세션에서 spawn 에이전트가 메인보다 하위 모델로 강등되던 결함.
+- **예외 2종 (2026-07-24 도훈 승인 C7 — 비용 차등 재핀)**: `execution`·`monitoring`은 `model: opus` 유지 — 기계적 역할(주문 schedule 분해·월간 drift 임계 비교)로 판정-critical 아님. 이 2종 외 신규 핀 추가 금지.
 - **폴백 정책 (도훈 2026-07-14, memory: feedback-model-fallback-fable-opus)**: Fable 5 한도/스폰 실패 시 Agent tool 호출에 `model: "opus"` 명시 재시도. 상태가 FS(mailbox/stage_artifacts) 외부화라 모델 전환 무손실.
 - 구 "전 모델 통일 최신 Opus" 정책(2026-04-30 Block A — Forge Sonnet fabrication L-249 재발방지)의 취지는 **"세션 모델 미만 강등 핀 금지"** 원칙으로 계승.
 - **effort 배치 (유효값 low/medium/high/xhigh/max)**: judge/governor/dispatch-orchestrator/ramp-orchestrator = `xhigh`(판정-critical), alpha-research/alpha-search/forge/risk-research/optimizer-research = `high`(Fable 5 기본 권고 정합). 미지정 = 세션 상속.
