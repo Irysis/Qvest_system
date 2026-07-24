@@ -48,12 +48,17 @@ firm <- nps[, .(member_cnt = sum(member_cnt, na.rm = TRUE)), by = .(Ticker, data
 setorder(firm, Ticker, data_ym)
 firm[, ln_hc := log(pmax(member_cnt, 1))]
 firm[, mom3 := ln_hc - shift(ln_hc, 3L), by = Ticker]   # 3M Δln headcount
-#   usable_date: data_ym 말 기준 → 신고마감 M+1 15일 이후에만 관측 가능 →
-#   신호를 그 다음 월말(sig month-end)에 배정(C4-유사, 보수적 lag). 아래 map으로 Date 부여.
-firm[, sig_date := as.Date(paste0(data_ym, "-01")) ]           # data_ym 시작
-#   ★실배선 시: sig_date = data_ym에서 usable_date(M+1 15일) 이후 첫 month-end로 매핑.
-#     여기선 템플릿상 자리표시(랜딩 시 build_pit_map()로 교체 — PIT_plan §2).
-scores <- firm[is.finite(mom3), .(Date = sig_date, Ticker, score = mom3)]
+firm[, mom6 := ln_hc - shift(ln_hc, 6L), by = Ticker]   # 6M Δln headcount (대체 horizon)
+#   ★PIT(FQ064 실측 수리 2026-07-25): data_ym=M 신호는 자격취득 신고마감(M+1월 15일) 이후에만
+#     완전 관측 가능(PIT_plan §1). 따라서 신호를 홀딩월 M+1의 month-end에 배정하고
+#     그 스코어로 M+2월 수익을 측정한다(usable(M+1 15일) < 홀딩월 M+1 말 → look-ahead 없음).
+#     구 plac 자리표시(sig_date = data_ym-01, data월 시작)는 ~1.5개월 look-ahead → 제거.
+#     sig_ym = data_ym + 1개월. 실 Date(거래월말)는 STEP 4의 me_map으로 부여(STEP 5 직전).
+{
+  .y <- as.integer(substr(firm$data_ym, 1, 4)); .m <- as.integer(substr(firm$data_ym, 6, 7)) + 1L
+  .y <- .y + (.m > 12L); .m <- ifelse(.m > 12L, 1L, .m)
+  firm[, sig_ym := sprintf("%04d-%02d", .y, .m)]        # 홀딩월(=data월 M+1) ym
+}
 
 # ─── STEP 4. 표준 forward returns + benchmark + liq (실존 인프라 재사용) ────────
 RAW <- as.data.table(read_parquet(".cache/RAWDATA.parquet",
@@ -75,6 +80,14 @@ bench_dt <- bm_m[is.finite(BM_fwd), .(Date, BM_Ret = BM_fwd)]
 RAW[, dv := Vol * Close]; RAW[, adv20 := frollmean(dv, 20, align = "right"), by = Ticker]
 RAW[, adv20_l1 := shift(adv20, 1L), by = Ticker]
 liq_dt <- RAW[Date %in% .MEND, .(Date, Ticker, adv = adv20_l1)]
+
+# ─── STEP 4b. PIT Date 부여: sig_ym(홀딩월=M+1) → 그 달 거래 month-end ────────────
+#   me_map: ym → month-end 거래일(.MEND). 신호를 홀딩월 말에 배정 → canonical이 다음달 수익 측정.
+me_map <- data.table(ym = format(.MEND, "%Y-%m"), sig_date = .MEND)
+firm <- merge(firm, me_map, by.x = "sig_ym", by.y = "ym", all.x = TRUE)
+#   sig_ym이 RAWDATA 커버리지 밖(예: 최신월 홀딩월 미도래)이면 sig_date=NA → 자동 제외(보수적).
+scores <- firm[is.finite(mom3) & !is.na(sig_date), .(Date = sig_date, Ticker, score = mom3)]
+if (nrow(scores) == 0L) stop("[fq064] scores 0행 — PIT map/커버리지 확인 필요")
 
 # ─── STEP 5. canonical_screen_bt (계약 경유 — PORT_t/IR/SR 자체합성 없음) ───────
 source("02_Infrastructure/contracts/backtest_result_contract.R")

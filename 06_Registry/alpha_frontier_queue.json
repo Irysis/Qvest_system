@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
-  "updated": "2026-07-25 (sector negative FQ-066/067·TRASS FQ-072 조사·firm-level in-flight·FQ-073 신규)",
+  "updated": "2026-07-25 (firm-level 빌드: FQ-064 data_blocked→15083277 활용신청·FQ-065 throughput 프로브)",
   "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
   "entries": [
     {
@@ -1300,7 +1300,7 @@
     },
     {
       "id": "FQ-064",
-      "status": "build_in_flight_key_live_20260725",
+      "status": "data_blocked_dohoon_apply_15083277_20260725",
       "owner": "{}",
       "lane": "non_return",
       "signal_type": "cross_sectional_selection",
@@ -1310,16 +1310,17 @@
       "ev_rationale": "★최고-EV firm-level 비-return SELECTION(수익 병목=선별 계층 직접 작용). hypothesis_index 965 전수 virgin. insider(FQ-001)와 독립 원천.",
       "wall_check": "IC→PORT_t top-25 cap-w 전이 벽이 최종 관문. 대기업 다-사업장 법인합산·자회사 귀속 노이즈. 정규직 위주(노동집약 편향 정규화). data.go.kr 3046071/15071659, 대안 고용보험 15002150.",
       "data_gate": "data.go.kr 무료 서비스키 등록(도훈) — DATA_GO 키 부재. crosswalk=DART 기업개황 API(15034604, DART_API_KEY 보유).",
-      "next_action": "도훈 data.go.kr 키 발급 시: 가입자수 pull→사업자번호↔DART고유번호↔종목 crosswalk→헤드카운트 모멘텀→canonical_screen_bt. ★usable_date=M+1 15일(자격취득 마감, C4 유사) 엄수·PIT 스냅샷 보존.",
+      "next_action": "★도훈: data.go.kr 데이터셋 15083277(국민연금 가입 사업장 내역_날짜) 활용신청. 승인 후 1커맨드 canonical 측정. (최종 관문=IC→PORT_t top-25 cap-w 전이 벽)",
       "source_refs": [
         "2026-07-24 discovery workflow wf_1880d1fd-16e (도훈 지시: 공공데이터포털·TRASS·ECOS·FRED 신규 알파소스)",
         "discovery rank #1 (high)"
       ],
-      "scaffold_note": "★DART crosswalk 실구축 완료(474 상장사 K200∪KQ150·bizr_no 474/474 결측0)·PIT_plan·러너 템플릿 준비. data.go.kr 키 발급+전파 완료(게이트웨이 수락 확인). firm-level 빌드 wf_6c1b1736-b24 in-flight. ★리스크=국민연금 API backfill depth(현재 스냅샷만이면 insufficient_history)."
+      "scaffold_note": "★DART crosswalk 실구축 완료(474 상장사 K200∪KQ150·bizr_no 474/474 결측0)·PIT_plan·러너 템플릿 준비. data.go.kr 키 발급+전파 완료(게이트웨이 수락 확인). firm-level 빌드 wf_6c1b1736-b24 in-flight. ★리스크=국민연금 API backfill depth(현재 스냅샷만이면 insufficient_history).",
+      "build_result_20260725": "firm-level 빌드(wf_6c1b1736-b24)=data_blocked(negative 아님, 미측정). ★강한 준비상태: 엔드포인트 확정(odcloud fileData API base api.odcloud.kr/api/15083277/v1/uddi:{월uuid}, 128 endpoint). backfill 124개월(2015-12~2026-05, 결측 2월)=현재-스냅샷 우려 해소, 백테 이력 풍부. 스키마 확인=BZOWR_RGST_NO(사업자 10자리 비마스킹)+JNNGP_CNT(가입자수)+신규/상실+업종+법인구분. PIT 버그 수리(구 placeholder sig=data_ym-01 ~1.5mo look-ahead → sig_ym=data_ym+1, usable M+1 15일). crosswalk 100%. ★유일 블로커=활용신청 ID 정정: 도훈이 신청한 3046071(OpenAPI 랜딩)이 아니라 fileData→odcloud 실역사 패널 **15083277** 활용신청 필요(현 키는 나라장터 1230000엔 유효, odcloud 15083277엔 -401). 활용신청 후 1커맨드: pull_nps.py → run_fq064_headcount.R(STEP2~5 자동 canonical)."
     },
     {
       "id": "FQ-065",
-      "status": "build_in_flight_key_live_20260725",
+      "status": "data_blocked_throughput_probe_running_20260725",
       "owner": "{}",
       "lane": "non_return",
       "signal_type": "cross_sectional_selection",
@@ -1329,12 +1330,13 @@
       "ev_rationale": "firm-level SELECTION 최고-EV lane. 발표시차≈0(PIT 안전). 데이터 원천 virgin.",
       "wall_check": "⚠FQ-002(DART 자체공시 계약금액 magnitude, parser_gated)와 같은 '수주→매출 선행' family이나 원천(정부조달 vs 자체공시)·커버리지 독립·파서 재사용 가능. 승자 상당수 비상장 자회사→상장모기업 귀속 계열매핑. 낙찰기업 사업자번호 필드 API 스펙 실존 확인 의무(추측 금지).",
       "data_gate": "data.go.kr 무료키(도훈). 나라장터 15129397/15129427/15129466. 백필 이력 범위 측정 필요.",
-      "next_action": "키 발급 시: 낙찰기업 사업자번호 필드 실존+상장 커버리지%+백필 확인→최초 낙찰일 스냅샷(계약변경 vintage 고정)→canonical. FQ-002 파서 통합.",
+      "next_action": "프로브 결과(공사 K200∪KQ150 매치율/금액점유) 판정 → 충분하면 배치 pull(공사+물품 우선) + 계열매핑. 낮으면 monitoring-only/screen-tier 라우팅.",
       "source_refs": [
         "2026-07-24 discovery workflow wf_1880d1fd-16e (도훈 지시: 공공데이터포털·TRASS·ECOS·FRED 신규 알파소스)",
         "discovery rank #2 (high)"
       ],
-      "scaffold_note": "crosswalk+PIT_plan 준비. 나라장터 게이트웨이 키 유효 확인(필수파라미터 필요). firm-level 빌드 wf_6c1b1736-b24 in-flight. ★미검=낙찰기업 사업자번호 필드 실존·계열매핑 커버리지."
+      "scaffold_note": "crosswalk+PIT_plan 준비. 나라장터 게이트웨이 키 유효 확인(필수파라미터 필요). firm-level 빌드 wf_6c1b1736-b24 in-flight. ★미검=낙찰기업 사업자번호 필드 실존·계열매핑 커버리지.",
+      "build_result_20260725": "firm-level 빌드=data_blocked(insufficient_history 아님). 엔드포인트 live(resultCode 00), bizno 인라인(사용자정보 불필요), backfill 216개월(2008~). ★진짜 벽=THROUGHPUT: 서버측 낙찰기업 필터 부재(bidwinnrBizno 파라미터 무시)→전체 원장 client-side 필터 필수. 볼륨 용역~8000/물품~4600/월×4category×216월≈5M+행. 월간창 999초과 504 timeout→일별창만 안정. 세션내 canonical 불가, 배치 pull(수시간~일) 필요. ★상장사 매치율 미지(대부분 SME/지방 소형업체 예상)=신호 구성가능성 관문 → 공사 매치율 프로브 백그라운드 실행 중(fq065_matchrate_probe). 러너/PIT(최초낙찰일 usable·계약변경 소급금지) 배선 완비."
     },
     {
       "id": "FQ-066",
