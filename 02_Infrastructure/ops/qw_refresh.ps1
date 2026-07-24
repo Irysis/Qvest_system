@@ -42,7 +42,7 @@ $Only = @($Only | ForEach-Object { "$_" -split ',' } | Where-Object { $_ -ne '' 
 $FILES = @(
   @{ name="Benchmark";        path=(Join-Path $UNIV "Benchmark_price.xlsx");         cache=(Join-Path $ROOT ".cache\benchmark.parquet") }
   @{ name="OHLCVS";           path=(Join-Path $UPD  "OHLCVS_update.xlsx");           cache=$null }  # cache=null(스킵 방지). B5는 Get-QwBaseNext(base xlsx max+1)로 설정 — 구 '기존 From 유지'가 base(~03-27)/update(04-30~) 이음매 구멍을 만들어 2026-04 rawdata 소실 사고 유발 (incident 20260711)
-  @{ name="Universe_Support"; path=(Join-Path $UPD  "Universe_Support_update.xlsx"); cache=(Join-Path $ROOT ".cache\universe.parquet") }
+  @{ name="Universe_Support"; path=(Join-Path $UPD  "Universe_Support_update.xlsx"); cache=(Join-Path $ROOT ".cache\universe_support\us_k200.parquet") }  # B5 기준을 이 xlsx가 실제 먹이는 us_* 패널로 정렬 (2026-07-25 D1). 구 universe.parquet(KRX 일간층, max가 us_*보다 앞섬) 기준은 B5가 us_* 종점을 건너뛰어 월말 스냅샷 구멍 유발 — incident 20260711 동형 (실측: 07-01 런 B5=20260603 → 2026-04/05 월말이 base에도 update에도 부재)
   @{ name="Investor_Act";     path=(Join-Path $UPD  "Investor_Act_update.xlsx");     cache=(Join-Path $ROOT ".cache\investor_stock\investor_all.parquet") }
   @{ name="Consensus";        path=(Join-Path $UPD  "Consensus_update.xlsx");        cache=(Join-Path $ROOT ".cache\consensus\eps_1y.parquet") }
 )
