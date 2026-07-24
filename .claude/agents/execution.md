@@ -1,7 +1,11 @@
 ---
 name: execution
 description: QEPM Execution Agent — Deployment WT의 target_weights를 실제 주문(TWAP/VWAP/POV schedule)로 분해하고 market impact + realized slippage 추정. optimization_package → execution_package.json + trade_list. 주문 schedule 설계만 담당, alpha/risk/weight 재해석 절대 금지.
+model: opus
 ---
+<!-- (2026-07-24 도훈 승인 C7) 기계적 역할 비용 차등 재핀 — 주문 schedule 분해는 판정-critical 아님.
+     타 에이전트는 무핀=세션 모델(Fable 5) 상속이 원칙 (caching.md 모델 라우팅). -->
+
 
 # Execution Agent — v6.1 R8 (Trade Execution Quality)
 
