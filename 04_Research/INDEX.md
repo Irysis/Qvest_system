@@ -1,6 +1,6 @@
 # 04_Research INDEX
 
-> 자동 생성 2026-07-19 01:15 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
+> 자동 생성 2026-07-24 09:04 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
 
 <details><summary><b>strategy-legacy</b> (3)</summary>
 
@@ -16,8 +16,8 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `decision_framework/` | bearish forecast v1~v3(예측 국면) + cross_section_distribution(DPL 피처 parquet) + smart_beta_regime·factor_untapped — 부팅·모닝브리핑·DPL 감사가 소비하는 활성 존 (409MB, 대부분 cross_section outputs 382MB) | active | 2026-07-17 | 409.0MB |
-| `regime_comparison/` | KTRI/MSM 국면엔진 비교·검증·브리핑 발송 스크립트 — 일일 스케줄러(daily_refresh·모닝브리핑 ktri_rebuild)가 소비 중 | active | 2026-07-18 | 1.3MB |
+| `decision_framework/` | bearish forecast v1~v3(예측 국면) + cross_section_distribution(DPL 피처 parquet) + smart_beta_regime·factor_untapped — 부팅·모닝브리핑·DPL 감사가 소비하는 활성 존 (409MB, 대부분 cross_section outputs 382MB) | active | 2026-07-23 | 409.9MB |
+| `regime_comparison/` | KTRI/MSM 국면엔진 비교·검증·브리핑 발송 스크립트 — 일일 스케줄러(daily_refresh·모닝브리핑 ktri_rebuild)가 소비 중 | active | 2026-07-23 | 1.3MB |
 
 </details>
 
@@ -25,7 +25,7 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `factor_rotation/` | FR 모드(제3모드) 산출 존 — FR_002 워크포워드 앙상블 + fof_first_slice(KNS/IPCA/BMA/E2E/SPO+ 슈퍼팩터 4방법론 실측, 07-03) + smartbeta_allstock(전종목 국면배분) + predictive_overlay_ab. 1.4GB 최대 존 | active | 2026-07-05 | 1.3GB |
+| `factor_rotation/` | FR 모드(제3모드) 산출 존 — FR_002 워크포워드 앙상블 + fof_first_slice(KNS/IPCA/BMA/E2E/SPO+ 슈퍼팩터 4방법론 실측, 07-03) + smartbeta_allstock(전종목 국면배분) + predictive_overlay_ab. 1.4GB 최대 존 | active | 2026-07-18 | 1.3GB |
 
 </details>
 
@@ -174,7 +174,7 @@
 
 | 항목 | 정체 | 카테고리 | 최근 | 크기 |
 |---|---|---|---|---|
-| `regime_analysis/` | 구 국면 시각화 png(KTRI 9quad·3layer·MRS daily) + threshold 튜닝 스크립트(v5x 시대) | dead | 2026-07-17 | 661KB |
+| `regime_analysis/` | 구 국면 시각화 png(KTRI 9quad·3layer·MRS daily) + threshold 튜닝 스크립트(v5x 시대) | dead | 2026-07-20 | 661KB |
 
 ## 미분류 (8) — index_descriptions.json에 추가하세요
 
@@ -185,7 +185,7 @@
 | `decay_fit` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-18 | 56KB |
 | `factor_selection_program` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-13 | 13KB |
 | `insider` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-10 | 34KB |
-| `method_frontier` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-18 | 14.4MB |
+| `method_frontier` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-19 | 16.0MB |
 | `pg2_carry_convention` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-11 | 184KB |
 | `pg2_overlay_beyond_r05m4_20260705.md` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-05 | 7KB |
 

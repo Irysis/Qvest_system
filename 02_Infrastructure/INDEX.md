@@ -1,6 +1,6 @@
 # 02_Infrastructure INDEX
 
-> 자동 생성 2026-07-19 01:15 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
+> 자동 생성 2026-07-24 09:04 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
 
 ## 데이터 (3)
 
@@ -71,7 +71,7 @@
 |---|---|---|---|---|
 | `attribution/` | research_philosophy ⑦ Attribution 모듈 — Brinson 분해 + Carhart 4팩터 귀속(분기 트리거) | active | 2026-06-07 | 16KB |
 | `report_templates/` | report_base.Rmd + report_style.css — LLM 보고 생성기 렌더링 소재 (구 KR/EN 템플릿 2건 2026-07-04 스윕 삭제) | active | 2026-06-07 | 29KB |
-| `reports/` | 보고 생성기 4건 — mrs_dashboard.R(모니터링 대시보드)·report_agent_llm.R·report_charts·report_narrative | active | 2026-07-18 | 206KB |
+| `reports/` | 보고 생성기 4건 — mrs_dashboard.R(모니터링 대시보드)·report_agent_llm.R·report_charts·report_narrative | active | 2026-07-18 | 232KB |
 
 ## 공리엔진 (1)
 
@@ -109,7 +109,7 @@
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
 | `judge/` | judge_lockbox_harness.R 단일 — judge의 lockbox 격리 검증 하네스(Gate 심사 시 forge 산출 재검) | active | 2026-06-07 | 12KB |
-| `prompts/` | agent spawn init 프롬프트 14건 — _shared_prefix.md(axiom derived cache) + alpha/risk/optimizer/forge/judge/qlead_init.md | active | 2026-07-18 | 214KB |
+| `prompts/` | agent spawn init 프롬프트 14건 — _shared_prefix.md(axiom derived cache) + alpha/risk/optimizer/forge/judge/qlead_init.md | active | 2026-07-19 | 218KB |
 | `worktask/` | WT 계약 계층 — common_charter.md·cert_rules.R·constraint_defaults.json(graduation severity)·run_all_template.R(현행 forge 템플릿)·lineage_utils | active | 2026-07-09 | 225KB |
 
 ## 메모리 (1)
@@ -144,7 +144,7 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `portfolio/` | 포트폴리오·거버넌스 계층 31건 — portfolio_governor.R(PG1 book-marginal admission)·book_optimizer·s5_mutation_runner·measurement_basis_audit | active | 2026-07-18 | 743KB |
+| `portfolio/` | 포트폴리오·거버넌스 계층 31건 — portfolio_governor.R(PG1 book-marginal admission)·book_optimizer·s5_mutation_runner·measurement_basis_audit | active | 2026-07-19 | 751KB |
 
 ## 모드-RAMP (1)
 

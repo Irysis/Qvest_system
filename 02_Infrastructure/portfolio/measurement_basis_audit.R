@@ -48,7 +48,15 @@ suppressPackageStartupMessages({
   # v1.10 (2026-07-18) — WT-D20260702_002 Layer4 제거 전환이 수동 book_state mutate(신규 ga 미발급)로
   # 이뤄져 현 book id가 NO_WT(0/100 DRIFTED) — lineage source = R05 overlay admit ga
   # (동일 alpha×M4×R05 체인, Layer4만 제거). 도훈이 신규 ga 발급을 선호하면 본 alias 제거.
-  "STR_1715_on_M4_R05_noLayer4_PG2"                    = "STR_1715_AR_on_M4_R05_overlay_PG2"
+  "STR_1715_on_M4_R05_noLayer4_PG2"                    = "STR_1715_AR_on_M4_R05_overlay_PG2",
+  # v1.11 (2026-07-24) — WT-D20260719_001 D3 swap-in(m4 schedule → M4∩AE gate)이 수동 book_state
+  # mutate(신규 ga 미발급, return-neutral 오버레이 부품 교체)로 이뤄져 admitted_id가
+  # STR_1715_on_M4_R05_noLayer4_PG2 → STR_1715_on_M4gAE_R05_noLayer4_PG2 변경 → 현 book id가
+  # NO_WT(0/100 DRIFTED) 재발(v1.10과 동일 class). D3 = 동일 alpha×R05 체인(Layer4 제거 불변),
+  # m4→M4∩AE 게이트만 교체·PG2 대비 return-neutral(도훈 confirm 2026-07-19)이므로 lineage source는
+  # 직전 noLayer4 id와 동일(R05 overlay admit ga). alias 단일-레벨 lookup이라 terminal id로 직접 매핑.
+  # 도훈이 신규 ga 발급을 선호하면 본 alias 제거.
+  "STR_1715_on_M4gAE_R05_noLayer4_PG2"                 = "STR_1715_AR_on_M4_R05_overlay_PG2"
 )
 
 # v1.8: cash_allocation role audit 면제 prefix (v55 lawbook + Charter §10 Role Card)
