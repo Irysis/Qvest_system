@@ -170,12 +170,28 @@ fi
 #      월별 거래일이면 WARN (블록 아님 — 성과수치 산출 전 복구 의무).
 #      ⚠ Windows Rscript 멀티라인 -e는 첫 줄만 실행되는 함정 (daily_refresh run_r 참조) — 반드시 단일 라인 유지.
 if [ -f "$RAWDATA_PARQUET" ] && [ -f "$PROJECT/.cache/benchmark.parquet" ]; then
-  CONT_CHECK=$(cd "$PROJECT" && Rscript -e 'suppressMessages({library(arrow); library(data.table)}); rd <- unique(as.Date(as.data.table(read_parquet(".cache/rawdata.parquet", col_select="Date"))$Date)); bm <- unique(as.Date(as.data.table(read_parquet(".cache/benchmark.parquet", col_select="Date"))$Date)); lo <- Sys.Date() - 400; r <- data.table(ym = format(rd[rd >= lo], "%Y-%m"))[, .N, by = ym]; b <- data.table(ym = format(bm[bm >= lo], "%Y-%m"))[, .N, by = ym]; m <- merge(b, r, by = "ym", all.x = TRUE, suffixes = c("_bm", "_rd")); m[is.na(N_rd), N_rd := 0L]; bad <- m[N_rd < N_bm]; if (nrow(bad) > 0) cat("CONTINUITY_FAIL:", paste(sprintf("%s(rawdata=%d/bm=%d)", bad$ym, bad$N_rd, bad$N_bm), collapse = " "), "\n") else cat("CONTINUITY_OK\n")' 2>/dev/null | grep -E 'CONTINUITY_(OK|FAIL)')
+  #      [2026-07-25 계단 분리] 구판은 '월별 거래일 카운트 차이'만 봐서 말단-지연(벤더가
+  #      아직 어제치를 안 준 정상 상태)과 월중 내부-결손(2026-04형 소실 사고)을 같은
+  #      ⛔WARN 문구로 경보 → 오탐 피로. 이제 결손일이 max(rawdata)보다 앞이면 내부 공백
+  #      (FAIL, KRX 백필 지시), 뒤면 말단 지연(LAG)으로 분리. LAG는 2거래일까지 INFO,
+  #      3거래일 이상이면 벤더 파이프라인 정지 의심 WARN. 판정 근거 = close_round
+  #      BOOT-20260725_data_hygiene (live_trigger 3종).
+  CONT_CHECK=$(cd "$PROJECT" && Rscript -e 'suppressMessages({library(arrow); library(data.table)}); rd <- unique(as.Date(as.data.table(read_parquet(".cache/rawdata.parquet", col_select="Date"))$Date)); bm <- unique(as.Date(as.data.table(read_parquet(".cache/benchmark.parquet", col_select="Date"))$Date)); lo <- Sys.Date() - 400; rdmax <- max(rd); miss <- as.Date(setdiff(bm[bm >= lo], rd), origin = "1970-01-01"); inner <- miss[miss < rdmax]; lag <- miss[miss > rdmax]; if (length(inner) > 0) cat("CONTINUITY_FAIL:", paste(format(inner), collapse = " "), "\n") else if (length(lag) > 0) cat("CONTINUITY_LAG:", length(lag), format(rdmax), format(max(bm)), "\n") else cat("CONTINUITY_OK\n")' 2>/dev/null | grep -E 'CONTINUITY_(OK|LAG|FAIL)')
   if echo "$CONT_CHECK" | grep -q "CONTINUITY_OK"; then
     echo "[boot] 거래일 연속성 (rawdata vs benchmark, 13개월): OK"
+  elif echo "$CONT_CHECK" | grep -q "CONTINUITY_LAG"; then
+    LAG_N=$(echo "$CONT_CHECK" | awk '{print $2}')
+    LAG_RD=$(echo "$CONT_CHECK" | awk '{print $3}')
+    LAG_BM=$(echo "$CONT_CHECK" | awk '{print $4}')
+    if [ "${LAG_N:-0}" -le 2 ]; then
+      echo "[boot] 거래일 연속성: OK (내부 공백 0 · 말단 지연 ${LAG_N}거래일 — rawdata=$LAG_RD / bm=$LAG_BM, daily_refresh가 병합 예정)"
+    else
+      echo "[boot] ⛔ WARN: rawdata 말단 지연 ${LAG_N}거래일 (rawdata=$LAG_RD / bm=$LAG_BM) — 내부 공백은 아니나 벤더 파이프라인 정지 의심"
+      echo "[boot]    → bash 02_Infrastructure/data/daily_refresh.sh 수동 재기동 후 재확인"
+    fi
   elif [ -n "$CONT_CHECK" ]; then
-    echo "[boot] ⛔ WARN: rawdata 월별 거래일 결손 감지 — $CONT_CHECK"
-    echo "[boot]    → 내부 공백 의심. build_trading_calendar(force=TRUE) 후 KRX 백필 필요 (실사고: 2026-04 소실, 04_Research/01_reports/rawdata_april_gap_incident_20260711.md 참조)"
+    echo "[boot] ⛔ WARN: rawdata 월중 내부 결손 감지 — $CONT_CHECK"
+    echo "[boot]    → 2026-04형 소실 사고 신호. build_trading_calendar(force=TRUE) 후 KRX 백필 필요 (04_Research/01_reports/rawdata_april_gap_incident_20260711.md 참조)"
   else
     echo "[boot] 거래일 연속성 체크: SKIP (R 실행 실패)"
   fi
