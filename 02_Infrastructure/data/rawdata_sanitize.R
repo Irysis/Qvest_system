@@ -411,6 +411,13 @@ sanitize_rawdata <- function(dry_run = FALSE) {
     write_parquet(raw, .raw_tmp)
     if (file.exists(RAWDATA_CACHE)) file.remove(RAWDATA_CACHE)
     file.rename(.raw_tmp, RAWDATA_CACHE)
+    # [정규화 2026-07-25] Date를 Date-class로 강제 후 기록 → on-disk date32[day] 보장.
+    #   종전 passthrough는 읽은 dtype을 그대로 되썼기에, 상류가 timestamp를 남기면 그대로
+    #   유통시켰다(오염원은 아니나 정규화 지점도 아님). writer 4곳(build_index_cache.py /
+    #   naver_benchmark_update.py / krx_build_rawdata.R / 본 함수) 전부를 정규화 지점으로
+    #   승격해 실행 순서와 무관하게 date32로 수렴시킨다. dtype 이탈은 소비자에서 silent
+    #   all-NA 조인으로만 드러나므로(phase7 β-파생 ~54팩터 전멸, 2026-07-18) 쓰기 측에서 닫는다.
+    if (!inherits(bm$Date, "Date")) bm[, Date := as.Date(Date)]
     .bm_tmp <- paste0(BM_CACHE, ".tmp")
     write_parquet(bm, .bm_tmp)
     if (file.exists(BM_CACHE)) file.remove(BM_CACHE)

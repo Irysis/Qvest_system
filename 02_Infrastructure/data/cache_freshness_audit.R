@@ -222,6 +222,36 @@ cache_freshness_audit <- function(telegram_alert = TRUE,
       }
     }
 
+    # (a2) dtype_checks — on-disk 물리 타입 불변식 (2026-07-25)
+    #   benchmark.parquet Date가 writer에 따라 date32[day] ↔ timestamp로 흔들려, Date-class를
+    #   전제한 R 소비자의 by="Date" 조인이 경고 없이 전부 NA가 된 사고 재발 감지
+    #   (fdb_daily phase7 β-파생 팩터 ~54개 전멸, 2026-07-18). 값·신선도는 정상이라
+    #   기존 두 축(1)(1b a/b/c)이 구조적으로 못 잡는 실패 모드 — 물리 스키마만이 판별.
+    #   실측 표기(2026-07-25): R Date-class·pa.date32() → "date32[day]" /
+    #   R POSIXct → "timestamp[us, tz=UTC]" / pandas to_parquet → "timestamp[ns]".
+    #   오염 표기가 writer마다 다르므로 blacklist가 아닌 기대값 일치로 판정한다.
+    if (!is.null(vc$dtype_checks)) {
+      if (is.null(sch)) {
+        viol <- c(viol, "dtype_checks: 스키마 read 실패")
+      } else {
+        dmis <- character(0); obs <- character(0)
+        for (cn in names(vc$dtype_checks)) {
+          want <- vc$dtype_checks[[cn]]
+          fld  <- tryCatch(sch$GetFieldByName(cn), error = function(e) NULL)
+          got  <- if (is.null(fld)) NA_character_ else fld$type$ToString()
+          obs[[cn]] <- got
+          if (is.na(got)) {
+            dmis <- c(dmis, sprintf("%s: 컬럼 부재", cn))
+          } else if (!identical(got, want)) {
+            dmis <- c(dmis, sprintf("%s: %s (기대 %s)", cn, got, want))
+          }
+        }
+        vres$dtype_observed <- as.list(obs)
+        if (length(dmis) > 0)
+          viol <- c(viol, sprintf("dtype 불일치: %s", paste(dmis, collapse = "; ")))
+      }
+    }
+
     # 대상 컬럼 read helper — Date + 지정 컬럼만, 날짜별 unique (RAWDATA는
     # BM_Ret가 종목 행마다 반복이므로 날짜 단위로 축약)
     .read_date_col <- function(path, col) {

@@ -74,12 +74,16 @@
           "threshold": 0.15,
           "max_violations": 0
         },
+        "dtype_checks": {
+          "Date": "date32[day]"
+        },
         "required_cols": [
           "Date",
           "BM_Close",
           "BM_Ret"
         ]
-      }
+      },
+      "_dtype_note": "2026-07-25: Date=date32[day] 불변식. writer 4곳(build_index_cache.py/naver_benchmark_update.py/krx_build_rawdata.R/rawdata_sanitize.R)이 전부 정규화 지점이나, 이탈은 예외 없이 silent all-NA 조인으로만 드러나므로(2026-07-18 fdb_daily phase7 β-파생 ~54팩터 전멸) 물리 스키마를 직접 감시한다. 값·신선도 축은 이 실패를 구조적으로 통과시킴."
     },
     {
       "path": ".cache/universe.parquet",
