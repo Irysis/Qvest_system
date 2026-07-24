@@ -12,7 +12,15 @@ SCRIPT_DIR <- tryCatch({ d <- dirname(sys.frame(1)$ofile); if (d == ".") getwd()
   error = function(e) { args <- commandArgs(trailingOnly = FALSE); file_arg <- grep("--file=", args, value = TRUE)
     if (length(file_arg) > 0) { p <- sub("--file=", "", file_arg[1]); p <- gsub("~+~", " ", p, fixed = TRUE); dirname(p) } else getwd() })
 
-PROJECT_ROOT <- dirname(SCRIPT_DIR)
+# 2026-07-25 수리: ① memory/는 root 2단계 아래인데 dirname 1회만 올라가 PROJECT_ROOT가
+# 항상 "02_Infrastructure"였음(전략 폴더 0개의 원인). ② 중첩 source(monthly_distill.R 경유)
+# 시 sys.frame(1)$ofile이 바깥 스크립트 경로 → 전역 PROJECT_ROOT 오염 실측.
+# 실존 검증 실패 시 env 루트 폴백.
+PROJECT_ROOT <- dirname(dirname(SCRIPT_DIR))
+if (!dir.exists(file.path(PROJECT_ROOT, "02_Infrastructure"))) {
+  PROJECT_ROOT <- Sys.getenv("QM_ROOT", unset = Sys.getenv("CLAUDE_PROJECT_DIR",
+                  "C:/Users/99922/OneDrive/Quant_Module_Moltbot"))
+}
 MEMORY_DIR   <- local({ .c <- c("C:/Users/99922/.claude/projects/C--Users-99922-OneDrive-Quant-Module-Moltbot/memory", "/home/quant/.claude/projects/-mnt-c-Users-User-OneDrive-------Quant-Module-Moltbot/memory"); .e <- .c[dir.exists(.c)]; if (length(.e)) .e[1] else .c[1] })  # 2026-06-10 현 경로 1순위
 STRAT_DIR    <- file.path(PROJECT_ROOT, "04_Research", "strategies")
 
@@ -54,9 +62,10 @@ if (length(top_strategies) > 0) {
 }
 
 ## ── 2. MEMORY.md staleness 체크 ────────────────────────────────────────────
+# 2026-07-25: evolution_roadmap.md / infrastructure_state.md 체크 제거 — 두 파일은
+# 의도적 제거 확인된 legacy(CLAUDE.md 2026-07-18 정정). 부재 파일의 days_stale=NULL이
+# §5 if(NA) 크래시("missing value where TRUE/FALSE needed")의 원인이기도 했음.
 memory_file <- file.path(MEMORY_DIR, "MEMORY.md")
-roadmap_file <- file.path(MEMORY_DIR, "evolution_roadmap.md")
-infra_file   <- file.path(MEMORY_DIR, "infrastructure_state.md")
 
 check_staleness <- function(filepath) {
   if (!file.exists(filepath)) return(list(exists = FALSE))
@@ -76,8 +85,6 @@ check_staleness <- function(filepath) {
 }
 
 mem_status  <- check_staleness(memory_file)
-road_status <- check_staleness(roadmap_file)
-infra_status <- check_staleness(infra_file)
 
 ## ── 3. MEMORY.md에 기록된 수치 vs 실제 수치 비교 ──────────────────────────
 mem_lines <- if (file.exists(memory_file)) readLines(memory_file, warn = FALSE) else character(0)
@@ -117,14 +124,12 @@ print_status <- function(name, status) {
   }
 }
 print_status("MEMORY.md", mem_status)
-print_status("evolution_roadmap.md", road_status)
-print_status("infrastructure_state.md", infra_status)
 
 ## ── 5. 수치 괴리 진단 ────────────────────────────────────────────────────
 cat("\n[수치 괴리 진단]\n")
 drift_detected <- FALSE
 
-if (!is.na(mem_grade_a)) {
+if (length(mem_grade_a) == 1 && !is.na(mem_grade_a)) {
   diff <- grade_counts$A - mem_grade_a
   if (abs(diff) > 5) {
     cat(sprintf("  !! Grade A: MEMORY.md=%d vs 실제=%d (차이 %+d) → 갱신 필요\n",
@@ -141,9 +146,8 @@ if (mem_status$exists && !is.na(mem_status$n_lines) && mem_status$n_lines > 200)
 }
 
 stale_files <- c()
-if (!is.na(mem_status$days_stale) && mem_status$days_stale > 3) stale_files <- c(stale_files, "MEMORY.md")
-if (!is.na(road_status$days_stale) && road_status$days_stale > 3) stale_files <- c(stale_files, "evolution_roadmap.md")
-if (!is.na(infra_status$days_stale) && infra_status$days_stale > 3) stale_files <- c(stale_files, "infrastructure_state.md")
+if (length(mem_status$days_stale) == 1 && !is.na(mem_status$days_stale) &&
+    mem_status$days_stale > 3) stale_files <- c(stale_files, "MEMORY.md")
 
 if (length(stale_files) > 0) {
   cat(sprintf("  !! Stale files (3일+): %s\n", paste(stale_files, collapse = ", ")))

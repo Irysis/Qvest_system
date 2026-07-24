@@ -70,7 +70,7 @@ tryCatch({
   active_ax <- list.files(file.path(PROJECT_ROOT, "qepm/memory/axioms/active"),
                           pattern = "^AX-\\d+\\.json$")
   source("02_Infrastructure/telegram/telegram_notify.R")
-  tg_send(sprintf("[Q-Lead] Monthly Audit %s\nL-codes: %d\nActive Axioms: %d\nTracked: %d\nGap: SR %.3f",
+  tg_send(sprintf("🧠 [Q-Lead] Monthly Audit %s\nL-codes: %d\nActive Axioms: %d\nTracked: %d\nGap: SR %.3f",
     format(Sys.Date(), "%Y-%m"),
     mem_stat$count, length(active_ax), nrow(db),
     if (!is.null(gap)) gap$gap_vector$sharpe_gap else 0))
