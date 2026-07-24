@@ -23,14 +23,15 @@ OUT  <- file.path(SCAF, "fq064_out"); dir.create(OUT, recursive = TRUE, showWarn
 #   (data.go.kr 3046071 / 15071659). 반환 firm-month 원장 스키마(기대):
 #     bizr_no(사업자등록번호), data_ym(기준월), member_cnt(가입자수), plan_name(사업장명)
 #   ★PIT: pull 시점의 vintage를 그대로 스냅샷 저장(개정 소급 금지). usable_date=data_ym M+1 15일.
-NPS_RAW <- file.path(SCAF, "data_pull", "nps_headcount_raw.parquet")   # ← 키 랜딩 시 생성물
+#   FQ064_NPS_RAW env로 경로 override 가능 (합성 패널 배관 스모크용 — 실판정엔 기본 경로만).
+NPS_RAW <- Sys.getenv("FQ064_NPS_RAW", file.path(SCAF, "data_pull", "nps_headcount_raw.parquet"))
 if (!file.exists(NPS_RAW)) {
   cat("[fq064] ★KEY-GATED: NPS pull 산출 부재:", NPS_RAW, "\n")
-  cat("[fq064]   data.go.kr 키 랜딩 후 pull 스크립트(pull_nps.R, 미작성)가 이 parquet 생성 →\n")
+  cat("[fq064]   data.go.kr 15083277 활용신청 승인 후 pull_nps.py가 이 parquet 생성 →\n")
   cat("[fq064]   본 러너 재실행 시 STEP 2~5 자동 진행. 지금은 배관 검증(dry) 종료.\n")
-  # dry-run 배관 검증: crosswalk·RAWDATA·benchmark 실존 확인만
+  # dry-run 배관 검증: crosswalk·rawdata·benchmark 실존 확인만
   stopifnot(file.exists(file.path(SCAF, "firm_crosswalk.parquet")),
-            file.exists(".cache/RAWDATA.parquet"), file.exists(".cache/benchmark.parquet"))
+            file.exists(".cache/rawdata.parquet"), file.exists(".cache/benchmark.parquet"))
   cat("[fq064] dry-run OK — crosswalk/RAWDATA/benchmark 실존. STEP 2~5 배선 준비 완료.\n")
   quit(save = "no", status = 0)
 }
@@ -60,26 +61,32 @@ firm[, mom6 := ln_hc - shift(ln_hc, 6L), by = Ticker]   # 6M Δln headcount (대
   firm[, sig_ym := sprintf("%04d-%02d", .y, .m)]        # 홀딩월(=data월 M+1) ym
 }
 
-# ─── STEP 4. 표준 forward returns + benchmark + liq (실존 인프라 재사용) ────────
-RAW <- as.data.table(read_parquet(".cache/RAWDATA.parquet",
-  col_select = c("Date","Ticker","Close","Vol","K200","KQ150")))
-RAW[, Date := as.Date(Date)]; setorder(RAW, Ticker, Date)
+# ─── STEP 4. 표준 forward returns + benchmark + liq (frozen 규약 재사용) ────────
+#   ★2026-07-25 수리(키 랜딩 前 사전검증에서 적발): 손수 만든 month-end 수익/벤치를
+#   표준 build_monthly_forward_returns로 교체. 구판 결함 2건 —
+#   (a) ★유니버스 PIT 멤버십 미적용: K200/KQ150 플래그를 로드만 하고 필터에 쓰지 않아
+#       유니버스를 static crosswalk(474사, 시점 컬럼 전무)가 결정 → C6 survivorship
+#       (과거 상폐사 결측) + 비-PIT 멤버십(후행 편입사를 전기간 편입 취급). 표준 함수는
+#       신호일 d0 시점 플래그로 필터한다(factor_validation.R:39).
+#   (b) 벤치 월간화에 prod(1+BM_Ret)-1 자체합성 사용 → backtest-contract 명시 금지 패턴이며,
+#       표준 벤치(유니버스 시총가중 단일구간 forward, compounding 없음)와 basis도 불일치
+#       → realized_ym 정렬 offset 리스크(reference-book-benchmark-alignment-realized-ym).
+#   표준 경유로 두 결함 동시 해소 + 기존 라운드와 basis parity 확보.
+#   ※ Close 기반 Ret_1m은 표준도 동일 규약(factor_validation.R:40) + R44 sanity 방화벽
+#     (표준 내부 + canonical_screen_bt 입력단 이중) → 결함 아님.
+source("02_Infrastructure/ramp/factor_validation.R")   # build_monthly_forward_returns (frozen)
+RAW <- as.data.table(read_parquet(".cache/rawdata.parquet",
+  col_select = c("Date","Ticker","Close","Vol","Size","K200","KQ150")))
+RAW[, Date := as.Date(Date)]
 RAW[, ym := format(Date, "%Y-%m")]
 .MEND <- sort(RAW[, .(Date = max(Date)), by = ym]$Date)
-ME <- RAW[Date %in% .MEND, .(Date, Ticker, Close, K200, KQ150)]
-setorder(ME, Ticker, Date); ME[, Close_next := shift(Close, -1L), by = Ticker]
-ME[, Ret_1m := Close_next / Close - 1]
-returns_dt <- ME[is.finite(Ret_1m), .(Date, Ticker, Ret_1m)]
-# benchmark: .cache/benchmark.parquet forward-month
-bm <- as.data.table(read_parquet(".cache/benchmark.parquet"))[, .(Date = as.Date(Date), BM_Ret)][!is.na(BM_Ret)]
-bm[, ym := format(Date, "%Y-%m")]
-bm_m <- bm[, .(BM_Ret = prod(1 + BM_Ret) - 1, Date = max(Date)), by = ym]
-setorder(bm_m, Date); bm_m[, BM_fwd := shift(BM_Ret, -1L)]
-bench_dt <- bm_m[is.finite(BM_fwd), .(Date, BM_Ret = BM_fwd)]
-# liq (t-1 ADV20)
-RAW[, dv := Vol * Close]; RAW[, adv20 := frollmean(dv, 20, align = "right"), by = Ticker]
-RAW[, adv20_l1 := shift(adv20, 1L), by = Ticker]
-liq_dt <- RAW[Date %in% .MEND, .(Date, Ticker, adv = adv20_l1)]
+RAWME <- RAW[Date %in% .MEND]                       # 월말만 (표준 함수 asof 스캔 비용 절감)
+fwd <- build_monthly_forward_returns(RAWME, .MEND)
+returns_dt <- fwd$returns_dt; bench_dt <- fwd$bench_dt; liq_dt <- fwd$liq_dt
+#   ⚠ 표준 루프는 seq_len(n-1)이라 마지막 sig_date에 forward 짝이 없어 드롭 → 그 달 liq 공백
+#     (기지: reference-forward-returns-terminal-month-liq-gap). STEP 4b의 sig_date NA 제외가 흡수.
+#   ⚠ 표준 liq = Vol0*Close0(당월말 1일 거래대금). 헌법 LIQ_THRESHOLD는 20일 ADV 기준이라
+#     보수성 방향이 다를 수 있음 → 본판정 후 ADV20 변형으로 robustness 재확인 대상.
 
 # ─── STEP 4b. PIT Date 부여: sig_ym(홀딩월=M+1) → 그 달 거래 month-end ────────────
 #   me_map: ym → month-end 거래일(.MEND). 신호를 홀딩월 말에 배정 → canonical이 다음달 수익 측정.
