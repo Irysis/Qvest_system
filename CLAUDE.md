@@ -97,14 +97,14 @@ Qvest 시스템 전체 구동. bootstrap.sh 실행 → 플러그인 리로드 �
 
 - **PIT C1~C15**: `.claude/rules/pit.md`
 - **Lockbox / Frozen Alpha Scope**: `02_Infrastructure/docs/rules/lockbox-scope.md` (정규 리서치 alpha/risk/optimizer만 적용. forge/monitoring/Q-Lead/execution = 폐기. 도훈 mandate 2026-05-09)
-- **Self-Adversarial Challenge (Codex Round 대체)**: `02_Infrastructure/docs/rules/codex-round.md` (v8.2 — 외부 Codex Round 제거, 메인 Opus 4.8 자체 적대검증으로 finalize 직전 약점 자가제기 + `challenge_note.md` 기록. AX-008 3-source 중 1개)
+- **Self-Adversarial Challenge (Codex Round 대체)**: `02_Infrastructure/docs/rules/codex-round.md` (v8.2 — 외부 Codex Round 제거, 메인 세션 모델(현행 Fable 5) 자체 적대검증으로 finalize 직전 약점 자가제기 + `challenge_note.md` 기록. AX-008 3-source 중 1개)
 - **Backtest Result Contract v1.0**: `.claude/rules/backtest-contract.md` (PerformanceAnalytics 표준 함수만)
 - **Measurement Integrity + Graduation 허들 (v8.x)**: `.claude/rules/measurement-graduation.md` ⭐ (위반 = AX-002 동급. 실측 처리(canonical_screen_bt/build_bt_result + metric_type 라벨, proxy 손계산 금지) / portfolio-alpha t = forge-authoritative(NW lag-3) / graduation severity: PORT_t 2.95·DSR hard, rank-IC계열 advisory / admission = book-marginal ΔIR≥0.05 / DPL 구성레이어. E2E: FLOW proxy 3.55→forge 2.35)
 - **Axiom Engine 2-Tier (v8.0)**: `02_Infrastructure/docs/rules/axiom-engine.md` ⭐ (원전 r7 복원 + 3-mode 2-tier(AS proxy→mode-local / QPM·FR backtested→global) + INV-1~7. mode-local AX-&lt;MODE&gt;-NNN / global AX-NNN. negative=provisional failure-ledger. 자동승격=documented·hook block은 주간 confirm. E2E 10/10. 위반=AX-002 동급)
 - **Qvest 답변 원칙 (8원칙 + 5금지)**: `.claude/rules/answer-principles.md` (위반 = AX-002 동급)
 - **Continuity Firewall (포기 원천차단, 2026-07-15 도훈 mandate)**: `02_Infrastructure/docs/rules/continuity-firewall.md` ⭐ (누적 실패 후 '끝남 표현'으로 라운드 마감 = Stop 훅 **block 강제속행**. 4레이어: L1 차단 이빨 + L2 독립 semantic 판정(`continuity_gate.py`) + L3 건설적 종료계약(`close_round()` — next_probe≥2·소비면·부활조건 강제) + L4 자가발전(`continuity_cases.json`). ★어휘가 아니라 계약이 게이트 — 종결 단어를 지워도 통과 못 함, 계속을 *생산*해야 함. 판정 자체는 불차단(AX-000·INV-7 정합). 위반 = AX-002 동급)
 - **Telegram v7 SOT**: `.claude/skills/qvest-telegram/SKILL.md` (단일 규칙. `tg_agent_brief()` 진입점, 약어 풀이 + **비전공자 3장치**(쉬운 설명 섹션·판정 평문·자동 용어풀이 footer — 전문용어 유지) 자동, 표준 5섹션 권장)
-- **Caching Discipline**: `02_Infrastructure/docs/rules/caching.md` (Anthropic 5분 TTL, ScheduleWakeup ≤270s)
+- **Caching + Model Routing Discipline**: `02_Infrastructure/docs/rules/caching.md` (2026-07-24 Fable 5 개정 — 1h TTL 실측·모델 핀 제거/상속·폴백 opus·wakeup은 대상-기반, 구 ≤270s 규칙 폐기)
 - **Harness Engineering (Hooks Tier 1~6)**: `02_Infrastructure/docs/rules/harness.md`
 - **Factor DB + Forge 자원**: `02_Infrastructure/docs/rules/factor-db.md` (C13~C15 + load_month_factors 경유)
 - **Axioms (AX-000~008)**: `.claude/rules/axioms.md`
@@ -197,10 +197,7 @@ Qvest 시스템 전체 구동. bootstrap.sh 실행 → 플러그인 리로드 �
   - **따름정리(제약=고정 축, 2026-07-04)**: Production Constraints(고정 제약 7종+PIT)는 **문제의 고정 축이지 실패의 원인/레버가 아니다** — 실패를 제약에 귀속하거나 제약 완화를 레버로 제시 금지(실패지식 제약 방화벽, axiom-engine INV-7). 창의 부담은 봉투-안 방법에.
 - **AX-001 v2** [IMMUTABLE]: 방어형 팩터 조건부 평가 (crisis_alpha + Core 대비 MDD + bad/normal IC ratio)
 - **AX-002** [IMMUTABLE]: 하네스 내 성과만 유효. 프로세스 우회 = 미래참조
-- **AX-003** [empirical]: KR value EP_STANDALONE 실패. L-132/135
-- **AX-004** [methodological]: KR quality_profitability single-signal long-only 실패
-- **AX-005 v1.2** [methodological]: KR defense top20 long-only 실패. EXCLUSION necessary not sufficient
-- **AX-007** [methodological]: single-sleeve top20 mechanism break. 예외 4종 (multi-sleeve / long-short / 50+ / ML sizing)
+- **AX-003 / AX-004 / AX-005 / AX-007** [Distilled 강등 2026-07-05 — active Law 아님]: negative 공리 4종은 Distilled 탐색지도 이관(INV-7 재도전 대상, enforcement 대상 아님). 상세: `.claude/rules/axioms.md` Demoted 절 (DIST-QPM-006 / QPM-003 / AR-001 / AR-003)
 - **AX-008** [process]: Verification Triangulation (Forge + Self-Adversarial + Architect 2/3 PASS)
 
 위반 시 즉시 중단. Hook `axiom_enforcement_hook.sh` 자동 차단.
@@ -293,5 +290,5 @@ v53 TeamCreate 패턴은 v8.1에서 Agent tool spawn으로 대체됨. TeammateId
 **SOT 분리 (2026-06-10 P2 다이어트)**: 버전 연혁·릴리스 상세는 `02_Infrastructure/docs/CHANGELOG_constitution.md` — CLAUDE.md는 현행 헌법만 담는다.
 - 현행: **v8.3** (2026-07-10 도훈 mandate — 알파 발굴 중심 재편. 5축 조사→F1~F10 진단→M1~M11: alpha 단계 canonical PORT_t 1급화 · dual-basis(EW/cap-tier) 진단 계약화 · 상설 frontier 큐 · hypothesis_index in-flight · 주입면 현행화 · screen-tier 회수 배관 · 인입 경보화 + 텔레그램 v7 비전공자 가독. SOT `qvest_v8_3_alpha_discovery_sot.md`)
 - 이전: **v8.2** (2026-06-30 도훈 mandate — Codex Critic Round 제거, Opus 4.8 자체 적대검증 대체. 훅 3개 archive · AX-008 Codex→Self-Adversarial 3-source 2/3 불변 · state_transitions codex required 제거 · qvest-codex-round skill 삭제 · codex-round.md DEPRECATED. 별개 S0/RAMP Codex 유지)
-- 이전: **v8.1.1** (2026-06-10 완벽 수리 + P2 구조 개편 — hook 47/47 부활(당시 기준) · OneDrive canonical · 게이트 2계층 · rules autoload 6 코어). **현행 hook 등록 = settings.json 49 distinct .sh** (직접 31 + 라우터 dispatch 17 = 48 실측 2026-07-17, 2026-07-17 `boot_stamp_check.sh` 추가 포함. v8.2 codex 2건 해제 + 2026-07-04 `artifact_placement_guard.sh`(라우터 dispatch — 저장위치 advisory) + 2026-07-06 `overlay_pit_grep.sh`(PostToolUse — C5 오버레이 타이밍) + 2026-07-13 `research_continuity_guard.sh`(Stop warn — 리서치 연속성 가드) 추가 — `harness.md` 정합)
+- 이전: **v8.1.1** (2026-06-10 완벽 수리 + P2 구조 개편 — hook 47/47 부활(당시 기준) · OneDrive canonical · 게이트 2계층 · rules autoload 6 코어). **현행 hook 등록 = settings.json 48 distinct .sh** (직접 32 + 라우터 dispatch 16 — 2026-07-24 Fable 5 하네스 감사: sr_provenance_pre_certifier dispatch 해제(전 경로 `{}` no-op 실증) · 주입취약 하드게이트 4훅 env-경유 수리 · 전달 0 훅 6종 additionalContext 복원 · Read/W·E advisory 조기-exit 도입 · axiom_context_inject SyntaxError 수리(07-13 이후 Agent 공리주입 침묵 결손 복원) · 배터리 11/11 PASS. 상세 `harness.md`)
 - 최근 검증: (v8.2) router selftest PASS · hook_e2e_battery 10/11(codex 케이스 제거, 잔여 FAIL=python3 환경) · health HARD-fail 0 (2026-06-30) / (v8.1.1) hook 차단 4종 실증 · readiness pass 12/fail 0 · bootstrap BOOT_FAILS=0 (2026-06-10)
