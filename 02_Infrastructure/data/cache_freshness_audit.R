@@ -205,9 +205,9 @@ cache_freshness_audit <- function(telegram_alert = TRUE,
     vc <- c$value_checks
     viol <- character(0)
 
-    # 스키마 (lazy scan — full read 없이 컬럼명만)
-    sch_names <- tryCatch(arrow::open_dataset(cache_path)$schema$names,
-                          error = function(e) NULL)
+    # 스키마 (lazy scan — full read 없이 컬럼명·물리타입만)
+    sch <- tryCatch(arrow::open_dataset(cache_path)$schema, error = function(e) NULL)
+    sch_names <- if (!is.null(sch)) sch$names else NULL
 
     # (a) required_cols — K200/KQ150 등 Layer2 컬럼 strip 사고 탐지
     if (!is.null(vc$required_cols)) {
