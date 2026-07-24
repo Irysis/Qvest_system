@@ -112,7 +112,8 @@ Track1은 **각종 학술논문·헤지펀드 페이퍼를 참고해 국면 정�
 ## 11. 구현 상태 (정직)
 
 - **빌드 완료**: Track2 전부(`module_dispatcher`/`run_wf_ensemble`/`build_module_performance` 광역화) · Track1 판별검증(`regime_engine_research`) · **Track1 SJM PoC(`regime_jump_model.R` — SOTA jump model, churn 33→7%, crisis 신속탐지·신호품질↑·앙상블SR 로버스트이득 無)** · **공용 `register_module`** · **RCMA `regime_module_admission`** · FR_001(grade C 실측).
-- **미빌드(후속)**: `regime_forecaster.R`(T1-B 예측 — 지표는 §8 정의) · `/factor-rotation` command · `dispatch-orchestrator` agent · `02_Infrastructure/docs/rules/factor-rotation.md` · 3 hooks · `factor_rotation_registry.json` · CLAUDE.md 3-mode 명문화 · QEPM의 register_module 일원화. (L-code mode 태깅 = 빌드 완료 — §6 emit 지점, 2026-07-04.) → **현재는 직접 스크립트 실행**(Q-Lead).
+- **빌드 완료 (2026-07-24 정정 — 구 "미빌드" 목록이 역-stale)**: `/factor-rotation` command(.claude/commands/) · `dispatch-orchestrator` agent(.claude/agents/) · `02_Infrastructure/docs/rules/factor-rotation.md` · FR hooks 3종(factor_rotation_pit_guard / dispatch_measurement_gate / dispatch_allocation_auditor — 등록 실측) · `06_Registry/factor_rotation_registry.json` · CLAUDE.md 4-mode 명문화 · L-code mode 태깅(§6 emit).
+- **미빌드(후속) 잔여**: `regime_forecaster.R`(T1-B 예측 — 지표는 §8 정의) · QEPM의 register_module 일원화.
 
 ## 12. 참조 · 실행 메모
 

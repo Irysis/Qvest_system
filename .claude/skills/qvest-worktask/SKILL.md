@@ -189,11 +189,9 @@ Agent(subagent_type="governor", prompt="WT{id} PG0~PG3 admission")
 - ❌ weight 결정 / 공분산 계산 → Optimizer / Risk agent 위임
 - ❌ Alpha/Risk/Opt 경계 침범 (Hook L3 자동 차단)
 
-## 7. Multi-Agent Team v53 (legacy retain — TeamCreate)
+## 7. Multi-Agent 실행 (v8.1+ — Agent tool spawn 단일 패턴)
 
-연구 사이클 동안 Scout / Forge / Judge / Governor teammate 4인 Q-Lead 세션 spawn. 모든 Hook (SubagentStop / FileChanged / TeammateIdle / TaskCompleted)이 Q-Lead 세션 내 자동 발동.
-
-추가 역할은 Agent tool로 spawn (Risk Manager / Architect / Blender 등 ondemand). (v8.2 — Codex Critic ondemand 역할 제거, 각 agent가 Opus 4.8 self-adversarial challenge 내장)
+v53 TeamCreate/teammate 패턴은 **폐지됨** (v8.1 Agent tool spawn 대체 — TeammateIdle/TaskCompleted hook 등록 해제 2026-06-10, 스크립트 FS retain). 6-agent(alpha/risk/optimizer/forge/judge/governor)는 Agent tool로 개별 spawn, 추가 역할(Architect / Blender / Execution / Monitoring)은 ondemand spawn. (v8.2 — Codex Critic 역할 제거, 각 agent가 세션 모델(현행 Fable 5) self-adversarial challenge 내장. 2026-07-24 모델 핀 제거 — 전 에이전트 세션 모델 상속.)
 
 ## 8. WT 진행 상태 확인
 
