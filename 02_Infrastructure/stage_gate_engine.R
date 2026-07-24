@@ -18,9 +18,15 @@
 suppressPackageStartupMessages(library(jsonlite))
 
 # ─── Source schemas ───────────────────────────────────────────────────────────
-.sg_root <- tryCatch(dirname(sys.frame(1)$ofile), error = function(e) {
-  file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")), "02_Infrastructure")
-})
+# 2026-07-25: 중첩 source(본 엔진을 다른 .R이 source하는 경우 — monthly_distill.R 등)에서
+# sys.frame(1)$ofile이 *바깥* 스크립트 경로를 가리켜 .sg_root 오해석 → 스키마 실존 검증
+# 실패 시 env 루트 폴백. 직접 source/기존 동작 경로는 불변.
+.sg_root <- tryCatch(dirname(sys.frame(1)$ofile), error = function(e) NULL)
+if (is.null(.sg_root) ||
+    (!file.exists(file.path(.sg_root, "validation", "stage_artifact_schemas.R")) &&
+     !file.exists(file.path(.sg_root, "stage_artifact_schemas.R")))) {
+  .sg_root <- file.path(Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot")), "02_Infrastructure")
+}
 # Try validation/ subdirectory first, then root
 .sg_schema_path <- file.path(.sg_root, "validation", "stage_artifact_schemas.R")
 if (!file.exists(.sg_schema_path)) .sg_schema_path <- file.path(.sg_root, "stage_artifact_schemas.R")
@@ -808,12 +814,20 @@ STAGE_ORDER_V6 <- STAGE_ORDER  # backward compat alias
 sg_compute_gap_vector <- function(base_strategy_id = "STR_1375_5sleeve_cons_heavy") {
 
   proj <- if (exists("PROJECT_ROOT")) PROJECT_ROOT else dirname(.sg_root)
-  pf_path <- file.path(proj, "04_Research", "strategies",
-                        base_strategy_id, "output", "performance.csv")
-
-  if (!file.exists(pf_path)) {
-    stop(sprintf("[v6] performance.csv not found: %s", pf_path))
+  # [2026-07-25] 기본 base STR_1375 디렉토리 소실 실측 (cond_ic 07-25 수리와 동일 사유) —
+  # 동일 5-sleeve 계보 생존 후보로 fallback. 선택 base는 콘솔+산출 JSON(base_strategy)에
+  # 명시 (silent swap 금지). cond_ic의 base_candidates와 동일 목록 유지.
+  base_candidates <- unique(c(base_strategy_id,
+                              "STR_1469_cons4f_5sleeve",
+                              "STR_1435_5sleeve_dd620_repair"))
+  pf_path <- NULL
+  for (.bs in base_candidates) {
+    .p <- file.path(proj, "04_Research", "strategies", .bs, "output", "performance.csv")
+    if (file.exists(.p)) { pf_path <- .p; base_strategy_id <- .bs; break }
   }
+  if (is.null(pf_path)) stop("[v6] performance.csv not found (candidates: ",
+                             paste(base_candidates, collapse = ", "), ")")
+  cat(sprintf("[v6] gap vector base strategy = %s\n", base_strategy_id))
 
   pf <- data.table::fread(pf_path)
   strat <- pf[1]  # 첫 행 = 전략 행
