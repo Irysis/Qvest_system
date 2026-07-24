@@ -1,0 +1,30 @@
+[
+  {
+    "id": "NPS_Headcount_Mom_3M",
+    "fq": "FQ-064",
+    "name": "National Pension headcount momentum 3M",
+    "category": "employment_growth",
+    "direction": "higher_better",
+    "source": "data.go.kr:국민연금 사업장 가입자수 (3046071/15071659) + 대안 고용보험 15002150",
+    "join_key": "bizr_no (10자리) ↔ firm_crosswalk.parquet ↔ Ticker",
+    "pit_usable_date": "M+1월 15일 (자격취득 신고마감; 자격취득=익월 15일까지 신고) — C4 유사 lag",
+    "definition": "delta_ln( plan-level 가입자수 합산, firm-aggregated ), 3M momentum. 대기업 다-사업장 법인합산 필수. 정규직 편향 정규화(sector/size-residualize).",
+    "compute_path": "external: run_fq064_headcount.R (crosswalk join → firm headcount panel → 3M/6M Δln momentum → z-score)",
+    "evidence_tier": "D",
+    "landing_call": "add_factor(id='NPS_Headcount_Mom_3M', name='NPS headcount mom 3M', category='employment_growth', template=NA_external, direction='higher_better', source='data.go.kr_nps', evidence_tier='D', note='external panel; compute via run_fq064_headcount.R'); # ★template 엔진 미적용 — sync_registry=FALSE로 메타만, compute는 러너"
+  },
+  {
+    "id": "GovProc_Award_MagYoY",
+    "fq": "FQ-065",
+    "name": "Government procurement award magnitude YoY",
+    "category": "revenue_lead_event",
+    "direction": "higher_better",
+    "source": "data.go.kr:나라장터 낙찰/계약 (15129397/15129427/15129466)",
+    "join_key": "bizno(낙찰기업 사업자번호) ↔ firm_crosswalk.parquet ↔ Ticker (비상장 자회사→상장모기업 계열매핑 별도)",
+    "pit_usable_date": "최초 낙찰일(공표시차≈0) — 계약변경분은 최초일 스냅샷 vintage 고정(변경금액 소급 반영 금지)",
+    "definition": "TTM 수주금액(낙찰금액 합산, firm+계열 귀속) / 시총, 및 YoY 증가율. 신규 대형계약 magnitude. 건설·방산·IT/SI·의료기기 sector 편중 정규화.",
+    "compute_path": "external: run_fq065_procurement.R (crosswalk+계열 join → firm award panel → TTM/시총 + YoY → z-score)",
+    "evidence_tier": "D",
+    "landing_call": "add_factor(id='GovProc_Award_MagYoY', name='Gov procurement award mag YoY', category='revenue_lead_event', template=NA_external, direction='higher_better', source='data.go.kr_g2b', evidence_tier='D', note='external panel; compute via run_fq065_procurement.R; FQ-002 파서 통합'); # ★수주 magnitude=directional long-side, occurrence-only(FQ-002 t=0.59 null)와 구분"
+  }
+]
