@@ -255,6 +255,44 @@ run_r '
     error = function(e) cat(sprintf("Regime signal (daily) skipped: %s\n", e$message)))
 '
 
+# ─── regime_daily_v2 (9-axis daily MRS) rebuild — FRED 직후 (2026-07-25 배선) ─────
+#   기존엔 morning_briefing(07:10)만 rebuild → 머신 지연 기상/주말이면 macro_fred만 갱신되고
+#   regime_daily_v2가 수영업일 뒤처짐 (AST 리프 맵 §3-3 실측 ~4영업일 — 07-25 실사례:
+#   00:03 미스 후 07:17 지연 기동으로 FRED는 갱신, v2는 전일 채로 방치). daily_refresh에도
+#   배선해 이중화 (idempotent full rebuild, 실측 소요 <1분). 소비: factor_db daily
+#   phase6/7/9b + RAMP regime + SJM(VIX_z) + forecaster 계열.
+cd "$BASE"
+run_r '
+  setwd("'"$BASE"'")
+  source("02_Infrastructure/config.R")
+  source("02_Infrastructure/regime/regime_engine_daily.R")
+  tryCatch({
+    rd <- build_daily_regime(use_cache = FALSE)
+    cat(sprintf("[daily_refresh] regime_daily_v2 rebuilt: %d rows, max Date=%s\n",
+                nrow(rd), max(as.Date(rd$Date))))
+  }, error = function(e) cat(sprintf("regime_daily_v2 rebuild skipped: %s\n", e$message)))
+'
+
+# ─── SJM (Statistical Jump Model) BearProb 일간 refresh (2026-07-25 배선) ─────────
+#   .cache/regime_jump_daily.parquet — walk-forward online(PIT-legitimate) 확정 자산인데
+#   정기 리프레시 미배선으로 ~7주 스테일 방치 실측 (AST 리프 맵 §3-3, 종점 2026-06-04).
+#   전량 walk-forward 재계산(restart별 고정 seed = 결정적, 실측 소요 2.0분/72 refit).
+#   소비: RAMP regime bakeoff + axiom overlay selfdev + FR Track1. regime_daily_v2(VIX_z
+#   feature) 뒤에 배치. refit_jm_daily 내부 tryCatch — 실패 시 기존 cache 유지 (fail-soft).
+cd "$BASE"
+run_r '
+  setwd("'"$BASE"'")
+  source("02_Infrastructure/config.R")
+  source("02_Infrastructure/regime/regime_jump_model.R")
+  jm <- refit_jm_daily()
+  if (!is.null(jm)) {
+    cat(sprintf("[daily_refresh] regime_jump_daily refreshed: %d rows, max Date=%s\n",
+                nrow(jm), max(as.Date(jm$Date))))
+  } else {
+    cat("[daily_refresh][WARN] SJM regime_jump refresh FAILED (기존 cache 유지)\n")
+  }
+'
+
 # ─── ECOS KRW/USD + Bond rates (도훈 audit 2026-05-15 KRW + 2026-06-17 bond 누락 fix) ──
 #   bond rates(국고채/회사채/CD/CPI 7 series)는 ecos_fetch_bond_rates()가 따로 존재하나
 #   daily_refresh가 호출하지 않아 ecos_bond_rates.parquet 30일 stale(05-18) 방치됨.
@@ -381,6 +419,34 @@ run_r '
     }
   }
 '
+
+# ──────────────────────────────────────────────────────────────────────────────
+# [6c] conditional_ic_matrix 주간 재계산 (월요일) — 2026-07-25 배선
+#   .cache/conditional_ic_matrix.csv — pit.md V6 Gap-Directed 가설 조향 캐시.
+#   기존 producer 경로(memory/monthly_distill.sh)는 ① Windows 스케줄러 task 미등록
+#   ② 기본 base STR_1375 holdings 소실의 이중 결함으로 2026-06-08 이후 스테일
+#   (AST 리프 맵 §3-3). daily_refresh 주간 배선 + base fallback(stage_gate_engine.R
+#   2026-07-25 수리)으로 봉합. upstream factor_ic_monthly가 월간 갱신이라 주간이면 충분.
+#   실측 소요 1.2분 (RAWDATA full read 포함).
+# ──────────────────────────────────────────────────────────────────────────────
+DAY_OF_WEEK=$(date +%u)
+if [ "$DAY_OF_WEEK" = "1" ]; then
+  echo "[6c/7] conditional_ic_matrix weekly recompute (Monday)..."
+  cd "$BASE"
+  run_r '
+    setwd("'"$BASE"'")
+    suppressMessages({
+      source("02_Infrastructure/config.R")
+      source("02_Infrastructure/stage_gate_engine.R")
+    })
+    tryCatch({
+      cond <- sg_compute_conditional_ic()
+      cat(sprintf("[daily_refresh] conditional_ic_matrix refreshed: %d factors\n", nrow(cond)))
+    }, error = function(e) cat(sprintf("conditional_ic recompute skipped: %s\n", e$message)))
+  '
+else
+  echo "[6c/7] conditional_ic_matrix skipped (weekly Monday only, today=$DAY_OF_WEEK)"
+fi
 
 # ──────────────────────────────────────────────────────────────────────────────
 # [6.5] Forward Weights Orchestrator (월말/리밸런싱 sig_date)

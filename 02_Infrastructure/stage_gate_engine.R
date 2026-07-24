@@ -888,9 +888,20 @@ sg_compute_conditional_ic <- function(base_strategy_id = "STR_1375_5sleeve_cons_
   ic[, Date := as.Date(Date)]
 
   # 2. Portfolio monthly returns 복원 (holdings + RAWDATA)
-  hd_path <- file.path(proj, "04_Research", "strategies",
-                        base_strategy_id, "output", "holdings_detail.csv")
-  if (!file.exists(hd_path)) stop("[v6] holdings_detail.csv not found")
+  #    [2026-07-25] 기본 base STR_1375_5sleeve_cons_heavy holdings_detail.csv 부재 실측
+  #    (파일 정리로 소실 — monthly_distill 경유 재계산이 매번 fail-soft로 죽던 원인).
+  #    동일 5-sleeve 계보 생존 후보로 fallback. 선택된 base는 콘솔에 명시 (silent swap 금지).
+  base_candidates <- unique(c(base_strategy_id,
+                              "STR_1469_cons4f_5sleeve",
+                              "STR_1435_5sleeve_dd620_repair"))
+  hd_path <- NULL
+  for (.bs in base_candidates) {
+    .p <- file.path(proj, "04_Research", "strategies", .bs, "output", "holdings_detail.csv")
+    if (file.exists(.p)) { hd_path <- .p; base_strategy_id <- .bs; break }
+  }
+  if (is.null(hd_path)) stop("[v6] holdings_detail.csv not found (candidates: ",
+                             paste(base_candidates, collapse = ", "), ")")
+  cat(sprintf("[v6] conditional IC base strategy = %s\n", base_strategy_id))
   hd <- fread(hd_path)
   hd[, Signal_Date := as.Date(Signal_Date)]
 
