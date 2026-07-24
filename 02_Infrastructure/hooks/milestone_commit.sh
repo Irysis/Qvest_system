@@ -84,30 +84,9 @@ except: print('')" "$FILE" 2>/dev/null)
     COMMIT_MSG="feat(axiom): $AX_ID 승격 — $STMT"
     PUSH_IMMEDIATE=1
     ;;
-  */stage_artifacts/s7_disposition_*.json|stage_artifacts/s7_disposition_*.json)
-    # Grade A/A_NOVEL/A_DEF만
-    GRADE=$("$QVEST_PY_BIN" -c "
-import json, sys
-try:
-    d = json.load(open(sys.argv[1], encoding='utf-8'))
-    print(d.get('grade') or d.get('final_grade') or '')
-except: print('')" "$FILE" 2>/dev/null)
-    case "$GRADE" in
-      A|A_NOVEL|A_DEF)
-        STR_ID=$(basename "$FILE" .json | sed 's/^s7_disposition_//')
-        MILESTONE="GRADE_A"
-        COMMIT_MSG="feat(strategy): $STR_ID Grade $GRADE 확정"
-        PUSH_IMMEDIATE=1
-        ;;
-      *) echo '{}'; exit 0 ;;
-    esac
-    ;;
-  */stage_artifacts/pg2_allocation_*.json|stage_artifacts/pg2_allocation_*.json)
-    MILESTONE="PG2_ALLOC"
-    BN=$(basename "$FILE" .json | sed 's/^pg2_allocation_//')
-    COMMIT_MSG="feat(portfolio): PG2 배분 갱신 — $BN"
-    PUSH_IMMEDIATE=1
-    ;;
+  # (2026-07-24 도훈 승인 C10) legacy 레인 2종 제거 — s7_disposition_*(v55 S7, 최신 2026-06-08)·
+  # pg2_allocation_*(매치 파일 0건 실측). Grade A/PG2 마일스톤은 현행 경로에서 auto_commit(Stop)이 수습.
+  # 부활 시 v8.3 SOT D4(grade_a_catalog) 결정과 묶어 재설계할 것. 역사 = git.
   */stage_artifacts/l_code/*/*.json|stage_artifacts/l_code/*/*.json|*/stage_artifacts/l_code_STR_*.json|stage_artifacts/l_code_STR_*.json)
     # (2026-07-24 Fable5 하네스 감사) 현행 L-code 계층 레이아웃 stage_artifacts/l_code/<mode>/*.json 매치 추가
     # (research_continuity_guard.sh:69 glob과 정합 — 구 flat l_code_STR_* 패턴은 backward-compat 유지)
