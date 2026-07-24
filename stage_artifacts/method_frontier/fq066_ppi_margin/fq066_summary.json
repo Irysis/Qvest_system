@@ -1,0 +1,42 @@
+{
+  "fq": "FQ-066",
+  "generated": "2026-07-25 00:10:51.191555",
+  "data_verified": true,
+  "series_used": {
+    "output_PPI": "404Y014 생산자물가지수(기본분류)",
+    "input_price": "401Y015 수입물가지수(기본분류, 원화기준 W)",
+    "out_codes": ["301AA", "302AA", "304AA", "305AA", "306AA", "307AA", "309AA", "311AA", "312AA"],
+    "in_codes": ["101AA", "201AA", "305AA", "307AA", "2012AA"]
+  },
+  "construction": "margin_spread = output_PPI_YoY - import_price_YoY(W), per sector via sell-buy PPI map; stock score = its sector margin",
+  "n_sectors_mapped": 11,
+  "pit_handling": "PUB_LAG=2mo base (ref month t-2 at sig month-end t; PPI released ~+1mo mid-month, +1mo buffer for first-release revisions). LAG=1 sensitivity. sector membership & Size time-varying PIT. forward return via build_monthly_forward_returns (contract).",
+  "sector_ic_lag2": {
+    "mean": -0.014453,
+    "ir": -0.145207,
+    "t": -0.666743,
+    "n_months": 253
+  },
+  "sector_ic_lag1": {
+    "mean": 0.002979,
+    "t": 0.146633,
+    "n_months": 253
+  },
+  "canonical_lag2": {
+    "port_t": -0.370964,
+    "ir": -0.077454,
+    "net_sr": -0.077454,
+    "alpha_ann": -0.005949,
+    "turnover": 7.005354,
+    "n_months": 253,
+    "diag_ew_port_t": 0.02663,
+    "calmar": 0.10048,
+    "mdd": 0.650606,
+    "oos_retention": -1.573332
+  },
+  "canonical_lag1": {
+    "port_t": -0.057088,
+    "net_sr": -0.012484,
+    "n_months": 253
+  }
+}
