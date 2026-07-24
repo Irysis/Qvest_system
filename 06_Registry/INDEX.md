@@ -1,21 +1,21 @@
 # 06_Registry INDEX
 
-> 자동 생성 2026-07-24 09:04 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
+> 자동 생성 2026-07-25 08:50 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
 
 ## 데이터 (10)
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `index_descriptions.json` | 존별 INDEX 큐레이션 DB (본 파일 — 사람 수동 보완, build_artifact_index.R이 소비해 INDEX.md 4개 생성) | active | 2026-07-18 | 39KB |
-| `hygiene_report.json` | 일간 파일위생 감사 리포트 (ops/artifact_hygiene_audit.R 산출 — 자동정리 삭제 기록 + artifact-storage.md 위반 감지) | active | 2026-07-24 | 4KB |
-| `artifact_index.json` | build_artifact_index.R이 daily_refresh 말미 자동 재생성하는 전체 산출물 기계가독 인덱스 | active | 2026-07-18 | 320KB |
+| `index_descriptions.json` | 존별 INDEX 큐레이션 DB (본 파일 — 사람 수동 보완, build_artifact_index.R이 소비해 INDEX.md 4개 생성) | active | 2026-07-24 | 44KB |
+| `hygiene_report.json` | 일간 파일위생 감사 리포트 (ops/artifact_hygiene_audit.R 산출 — 자동정리 삭제 기록 + artifact-storage.md 위반 감지) | active | 2026-07-24 | 3KB |
+| `artifact_index.json` | build_artifact_index.R이 daily_refresh 말미 자동 재생성하는 전체 산출물 기계가독 인덱스 | active | 2026-07-24 | 326KB |
 | `book_carrier/` | PG2 book 수익 캐리어(carrier_STR_1715_*) + H1/H1b/H2 오버레이·가중 A/B 실측 결과 저장소 | active | 2026-06-18 | 727KB |
 | `idea_registry.json` | 구 S0 아이디어 소싱 레지스트리 — telegram_notify.R이 아직 참조하나 갱신은 06-08 정지 | legacy | 2026-06-07 | 40KB |
 | `live_track/STR_1715_on_M4_R05_noLayer4_PG2/` | 현행 PG2 book(noLayer4) 라이브 페이퍼트래킹 — daily_nav/paper_nav/holdout_interval, TaskScheduler 월간 소비 | active | 2026-07-23 | 155KB |
 | `live_track/STR_1715_FaithTrend_on_M4_R05_overlay_PG2/` | 제거된 구 FaithTrend 오버레이 라이브트랙 — look-ahead 판명 후 rollback 보존분(도훈 지시) | legacy | 2026-07-13 | 5KB |
 | `strategy_grades.json` | 전략 등급 레지스트리 — 검색 인덱스와 v8 readiness gate가 소비 (06-08 이후 정지 상태이나 게이트 의존) | active | 2026-06-07 | 79KB |
 | `strategy_registry.json` | 전략 마스터 레지스트리(178+ STR 메타) — telegram·strategy_registry.R 소비, 06-21 갱신 | active | 2026-07-08 | 275KB |
-| `alpha_frontier_queue.json` | 상설 알파 프론티어 큐 SOT — '다음에 뭘 시도할지' EV순 (발굴 착수 전 확인·owner 표기 의무, dohoon_decision 항목 임의 착수 금지. v8.3 §4) | active | 2026-07-19 | 173KB |
+| `alpha_frontier_queue.json` | 상설 알파 프론티어 큐 SOT — '다음에 뭘 시도할지' EV순 (발굴 착수 전 확인·owner 표기 의무, dohoon_decision 항목 임의 착수 금지. v8.3 §4) | active | 2026-07-24 | 190KB |
 
 ## 계약 (5)
 
@@ -37,7 +37,7 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `hypothesis_index.json` | alpha-search 가설/검증 이력 인덱스(중복 가설 방지용) — 07-04 갱신 중 | active | 2026-07-23 | 608KB |
+| `hypothesis_index.json` | alpha-search 가설/검증 이력 인덱스(중복 가설 방지용) — 07-04 갱신 중 | active | 2026-07-24 | 608KB |
 | `paper_registry.json` | 논문 리서치 파이프라인 레지스트리(수집→라우터→alpha-search 큐) — 07-03 갱신 | active | 2026-07-18 | 265KB |
 
 ## 모드-FR (3)
@@ -60,32 +60,42 @@
 |---|---|---|---|---|
 | `ramp/` | RAMP 모드 레지스트리 존 — approved_factor_library.parquet(102 승인팩터)·CCS 13-score·Gate3/5 summary·ramp_registry·roadmap_status (07-04 갱신 중) | active | 2026-07-03 | 116KB |
 
-## 미분류 (22) — index_descriptions.json에 추가하세요
+## 지식-Axiom엔진 (8)
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `alpha_frontier_queue.json.bak` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-14 | 97KB |
-| `axiom_recert_queue_20260704.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-04 | 7KB |
-| `cache_cleanup_manifest_20260704.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-04 | 16KB |
-| `cleanup_manifest_20260704.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-03 | 7KB |
-| `continuity_cases.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-18 | 24KB |
-| `distill_manifest_20260704.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-04 | 7KB |
-| `distill_manifest_20260711.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-11 | 812B |
-| `distill_manifest_20260718.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-18 | 9KB |
-| `distilled_knowledge.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-18 | 203KB |
-| `firewall_cases.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-04 | 16KB |
-| `knowledge_index.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-23 | 105KB |
-| `knowledge_index.md` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-23 | 64KB |
-| `knowledge_recheck_queue.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-18 | 8KB |
-| `layer_bottleneck_map.md` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-19 | 52KB |
-| `lcode_distill_execution_20260704.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-04 | 1.0MB |
-| `lcode_distill_manifest_20260704.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-04 | 8KB |
-| `lcode_distill_plan_20260704.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-04 | 726KB |
-| `lcode_family_override.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-18 | 52KB |
-| `overlay_candidate_queue.json.bak` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-10 | 23KB |
-| `README.md` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-03 | 1KB |
-| `research_ev_map.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-10 | 9KB |
-| `revival_signals.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-18 | 7KB |
+| `{knowledge_index.json, knowledge_index.md}` | 지식 순차 인덱스(Law/Distilled/L-code 1..N 뷰) — weekly_cleaner_sweep [3.6] build_knowledge_index가 주간 재생성 | active | 2026-07-24 | 168KB |
+| `distilled_knowledge.json` | Distilled 탐색지도 카드 SOT(DIST-*) — negative 지식의 재도전 대상 보관(INV-7) | active | 2026-07-18 | 203KB |
+| `knowledge_recheck_queue.json` | 지식 재검 큐 — 부활신호/재도전 후보 대기열 | active | 2026-07-18 | 8KB |
+| `revival_signals.json` | 부활신호 정의·발화 상태(INV-7) — settled-negative를 시스템이 먼저 un-bury하는 트리거 | active | 2026-07-18 | 7KB |
+| `lcode_family_override.json` | L-code family 수동 오버라이드 — 하버스터 word-boundary 추론 보정(07-18 substring FP 수리 동반) | active | 2026-07-18 | 52KB |
+| `research_ev_map.json` | 리서치 EV 지도 — 라운드 선택 우선순위 입력 | active | 2026-07-10 | 9KB |
+| `layer_bottleneck_map.md` | 계층 병목 지도(상시 실측) — 목표 갭이 어느 계층에 막혀 있나. answer-principles 연속성 5호 의무 갱신 대상 | active | 2026-07-19 | 52KB |
+| `{distill_manifest_*.json, lcode_distill_*.json, cleanup_manifest_*.json, cache_cleanup_manifest_*.json, axiom_recert_queue_*.json} (날짜 스탬프 증류/정리 매니페스트)` | 주간 cleaner·증류 사이클이 실행마다 남기는 날짜 스탬프 매니페스트(감사 추적용, 1회성 기록) | archive | 2026-07-18 | 1.8MB |
+
+## 하네스-Continuity (1)
+
+| 항목 | 정체 | status | 최근 | 크기 |
+|---|---|---|---|---|
+| `{continuity_cases.json, firewall_cases.json}` | Continuity Firewall 자가발전 케이스 저장소 — continuity_gate.py --append-case 소비(우회어 학습) | active | 2026-07-18 | 40KB |
+
+## 레지스트리 (1)
+
+| 항목 | 정체 | status | 최근 | 크기 |
+|---|---|---|---|---|
+| `*.bak (큐 백업본)` | 큐 파일 편집 전 백업본(alpha_frontier_queue·overlay_candidate_queue) — 원본이 정본 | archive | 2026-07-14 | 120KB |
+
+## 문서 (1)
+
+| 항목 | 정체 | status | 최근 | 크기 |
+|---|---|---|---|---|
+| `README.md` | 레지스트리 존 진입 설명 | active | 2026-07-03 | 1KB |
+
+## AST-v1.1 (1)
+
+| 항목 | 정체 | status | 최근 | 크기 |
+|---|---|---|---|---|
+| `ast_field_map_v0.json` | AST 계층 v1.1 field_dictionary 정본 — 전 데이터 58그룹 실측 리프 맵(FIELD 22·PTR 11·STORED 15·LLM 2·EXT 5). SOT: docs/qvest_ast_v1_1_sot.md | active | 2026-07-24 | 134KB |
 
 ## stale 큐레이션 키 (4) — 디스크 부재, index_descriptions.json에서 제거 권장
 
