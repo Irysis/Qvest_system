@@ -1,7 +1,6 @@
 ---
 name: monitoring
 description: QEPM Monitoring Agent — admitted Deployment WT의 live drift 감지. Realized α vs predicted + TE ratio + crowding drift + signal decay + regime shift. monitoring_report.json + Telegram. Cron 월간 또는 Q-Lead 온디맨드.
-model: opus
 ---
 
 # Monitoring Agent — v6.1 R9 (Post-Admission Drift Detection)

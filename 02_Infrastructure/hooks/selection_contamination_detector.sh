@@ -23,6 +23,9 @@ trap 'echo "{}"; exit 0' ERR
 # (v8.2.1 HOOK-P0-1) bare python3 = Windows Store 스텁 → 하드블록이 fail-open 되던 결함 수리.
 # 공용 파서(_shared_parse.sh) 경유: FILE_PATH + QVEST_PY_BIN export.
 INPUT=$(cat)
+# (2026-07-24 Fable5 하네스 감사) raw-INPUT 조기-exit — 비-lockbox Read(사실상 전부)에서 python 파싱 스폰 제거.
+# superset 필터(file_path가 raw JSON에 원문 포함, 'lockbox'는 ASCII라 escape 무관) — 정밀 판별은 아래 case가 수행.
+if ! printf '%s' "$INPUT" | grep -qi 'lockbox'; then echo '{}'; exit 0; fi
 source "$(dirname "${BASH_SOURCE[0]:-$0}")/_shared_parse.sh"
 
 FP_LOWER=$(echo "$FILE_PATH" | tr '[:upper:]' '[:lower:]')

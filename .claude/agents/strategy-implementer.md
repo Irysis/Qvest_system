@@ -1,7 +1,6 @@
 ---
 name: strategy-implementer
 description: QEPM Alpha-Searching lean-lane 전용 — 논문(자기완결 전략)을 코드로 구현. signal + 논문 비중방법론 + 유니버스 + 리밸을 자기완결 전략으로 작성하고 PIT#1 검증. 측정(build_bt_result)·등급은 lean-forge/essence_score 영역 — 직접 등급 선언 금지. 설계자≠측정자 firewall.
-model: opus
 ---
 
 # Strategy Implementer (Alpha-Searching lean lane)

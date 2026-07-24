@@ -101,7 +101,7 @@ axis = ('[문제의 고정 축 — 변수 아님, 이 안에서 풀 것]' + chr(
         '  long-only(w>=0)·<=25종·K200∪KQ150·15bps(v2.4 delta)·[0,0.20]·Σw=1 + PIT C1~C15.' + chr(10) +
         '  이건 배포 현실이 정의한 문제의 고정 축이다. \"long-only라서/25종이라서 실패\"식 제약-귀속 금지.' + chr(10) +
         '  봉투 안 레버 프론티어(07-10 실측): ①비-return 원천(DART exec-insider 역사·계약금액 magnitude — document.xml 파서 계열) ②screen-tier 재고 회수(overlay 큐) ③EW-대비/cap-tier 재분류(기각 후보 벤치-아티팩트 재진단). DPL·regime-conditional 교차결합·ML sizing은 settled-negative — 레버 아님.' + chr(10) +
-        '  [판정 어휘 규약 — 도훈 mandate 07-13] negative 판정 = "config-scoped negative + 프론티어 표시"로만. "소진/폐쇄/dead-end" 종결 어휘 금지. negative여도 기전 진단에서 next_probe >=2 도출 = 보고 완성 요건 (실패 = 다음 가설의 생성기).')
+        '  [판정 어휘 규약 — 도훈 mandate 07-13] negative 판정 = \"config-scoped negative + 프론티어 표시\"로만. \"소진/폐쇄/dead-end\" 종결 어휘 금지. negative여도 기전 진단에서 next_probe >=2 도출 = 보고 완성 요건 (실패 = 다음 가설의 생성기).')
 # ②Distilled negative/conditional top-K (K=5, 정제 완료분만 — INV-6)
 #   (E+F 2026-07-04) '이건 실패' 톤 → '탐색됨 + 봉투 안 프론티어' 지도-프레임 톤.
 dist = ''

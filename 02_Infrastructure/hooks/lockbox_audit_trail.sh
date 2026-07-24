@@ -12,6 +12,8 @@ trap 'exit 0' ERR
 # (v8.2.1 HOOK-P0-1) bare python3 = Windows Store 스텁 → 로깅 무발화 결함 수리.
 # 공용 파서(_shared_parse.sh) 경유: FILE_PATH + QVEST_PY_BIN export.
 INPUT=$(cat)
+# (2026-07-24 Fable5 하네스 감사) raw-INPUT 조기-exit — 비-lockbox Read에서 python 파싱 스폰 제거 (superset 필터)
+if ! printf '%s' "$INPUT" | grep -qi 'lockbox'; then exit 0; fi
 source "$(dirname "${BASH_SOURCE[0]:-$0}")/_shared_parse.sh"
 
 FP_LOWER=$(echo "$FILE_PATH" | tr '[:upper:]' '[:lower:]')

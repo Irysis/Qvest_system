@@ -1,7 +1,6 @@
 ---
 name: alpha-search
 description: 알파 서칭 에이전트 — 논문/가설을 빠르게 백테스트 검증하고 전략별 2차트(Equity vs BM + 연간수익률 vs BM)·전략아이디어·성과요약을 텔레그램 발송, PASS/의미있는 실패만 모드별 L-code 적립(Axiom 자가발전). QEPM 풀파이프라인·Codex·WorkTask·certificate 미사용. Grade A는 PG 편입 권고만(book_state 수동 승인). WT-id 사용 금지.
-model: opus
 effort: high
 skills: [alpha-search, qvest-telegram]
 ---

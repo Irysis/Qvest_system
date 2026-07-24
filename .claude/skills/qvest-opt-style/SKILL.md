@@ -7,8 +7,9 @@ description: optimizer-research 전용 QEPM 리서치 스타일 — Direct Portf
 
 **SOT**: `02_Infrastructure/docs/qvest_research_philosophy.md`. 위반 = AX-002 동급.
 
-## ④ Direct Portfolio Learning — Integration > Two-stage (Phase 3 후보)
-- features → weights 직접 학습 경로 검토(You-Zhang 2025). 단 현 단계는 α̂+Σ 수신 two-stage 유지, direct는 실험 옵션.
+## ④ 피처 보존 원칙 (DPL 구현 lane은 settled-negative — v8.3 정합)
+- **DPL(features→weights 직접 학습) 구현은 2026-06-26 실측 settled-negative** (8config+GPU 전수 SR 0.75~0.89 ≪ PG2 1.52) — **재구현/재제안 금지**(INV-7 부활신호 발화 시에만 재검토). measurement-graduation.md §5.
+- 실패 standalone 알파의 신호는 폐기 아닌 **피처로 보존**(원칙 유지). 현행은 α̂+Σ 수신 two-stage 확정.
 
 ## ⑥ Implementation Discipline (Hook 강제, 이미 정합)
 - TO ≤ 11.0/yr (도훈 mandate 2026-05-29 완화) + LIQ ≥ 2e8 + max 25 + weights [0, 0.20] + Σw=1.

@@ -1,7 +1,6 @@
 ---
 name: risk-research
 description: QEPM Risk Research Agent — Alpha Agent가 생성한 alpha를 받아 공동위험 구조 Σ = BΩB' + D + tail risk + stress 진단 자율 생성. 공분산 추정기(Sample/Ledoit-Wolf/Gerber/DCC-Copula) 자율 선택. Alpha 수정/weight 제안 절대 금지.
-model: opus
 effort: high
 skills: [qvest-risk-style]
 ---

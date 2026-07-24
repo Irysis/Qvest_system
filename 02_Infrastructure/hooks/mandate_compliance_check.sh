@@ -20,6 +20,8 @@ set -euo pipefail
 trap 'echo "{}"; exit 0' ERR
 
 INPUT=$(cat)
+# (2026-07-24 Fable5 하네스 감사) raw-INPUT 조기-exit — 6분기 대상 파일 무관 W/E에서 python 3스폰 제거 (superset 필터)
+if ! printf '%s' "$INPUT" | grep -qE 'optimization_package\.json|forge_package|judge_verdict\.json|governor_admission\.json|request\.json'; then echo '{}'; exit 0; fi
 TOOL=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_name",""))' 2>/dev/null || echo "")
 FILE_PATH=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
 
@@ -102,14 +104,13 @@ if [[ ${#WARN_MSGS[@]} -gt 0 ]]; then
   COUNT=$((COUNT + 1))
   echo "$COUNT" > "$COUNTER_FILE"
 
-  if [[ $COUNT -ge 3 ]]; then
-    ESCALATE_MSG="MANDATE_RETRY_CAP (3+ warns on same file) — escalate to Q-Lead. file=$(basename "$FILE_PATH")"
-    echo "{}"
-    exit 0
-  fi
-
   COMBINED=$(IFS=' || '; echo "${WARN_MSGS[*]}")
-  echo "{}"
+  if [[ $COUNT -ge 3 ]]; then
+    COMBINED="MANDATE_RETRY_CAP (동일 파일 3+ warns — Q-Lead escalate 필요): $COMBINED"
+  fi
+  # (2026-07-24 Fable5 하네스 감사) 전달 복원 — 0ab8b039(2026-05-29)가 무효 decision:"allow" 래퍼를
+  # 제거하며 warning 페이로드까지 소실(no-op 회귀). additionalContext로 실전달(공식 PostToolUse 스키마).
+  MCC_MSG="$COMBINED" "$QVEST_PY_BIN" -c 'import json,os; print(json.dumps({"hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":"[mandate_compliance_check] "+os.environ.get("MCC_MSG","")}}))' 2>/dev/null || echo '{}'
 else
   echo '{}'
 fi

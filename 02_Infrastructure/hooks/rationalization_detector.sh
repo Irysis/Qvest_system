@@ -16,6 +16,8 @@ set -euo pipefail
 trap 'echo "{}"; exit 0' ERR
 
 INPUT=$(cat)
+# (2026-07-24 Fable5 하네스 감사) raw-INPUT 조기-exit — 비대상 W/E에서 python 2스폰 제거 (superset 필터)
+if ! printf '%s' "$INPUT" | grep -qE 'challenge_note|_verdict\.json|judge_verdict|_admission\.json|governor_admission'; then echo '{}'; exit 0; fi
 TOOL=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_name",""))' 2>/dev/null || echo "")
 FILE_PATH=$(printf '%s' "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
 
@@ -96,11 +98,13 @@ if [[ ${#DETECTED[@]} -gt 0 ]]; then
   echo "$COUNT" > "$COUNTER_FILE"
 
   PHRASE_LIST=$(IFS=','; echo "${DETECTED[*]}")
+  RD_MSG="합리화 표현 감지: [$PHRASE_LIST] — 3축 근거(학술 인용 + L-code + 정량 데이터) 보강 또는 표현 제거 (answer-principles 회피표현 조항)"
   if [[ $COUNT -ge 3 ]]; then
-    echo "{}"
-  else
-    echo "{}"
+    RD_MSG="RATIONALIZATION_RETRY_CAP (동일 파일 3+ 감지 — Q-Lead escalate 필요): $RD_MSG"
   fi
+  # (2026-07-24 Fable5 하네스 감사) 전달 복원 — 0ab8b039(2026-05-29) 회귀로 감지 결과가 어떤 채널에도
+  # 도달하지 않던 no-op 상태 수리 (challenge_note 카운터 52회 누적·전달 0 실측). additionalContext 실전달.
+  RD_MSG="$RD_MSG" "$QVEST_PY_BIN" -c 'import json,os; print(json.dumps({"hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":"[rationalization_detector] "+os.environ.get("RD_MSG","")}}))' 2>/dev/null || echo '{}'
 else
   echo '{}'
 fi

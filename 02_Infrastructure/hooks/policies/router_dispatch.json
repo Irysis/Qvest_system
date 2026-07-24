@@ -1,7 +1,9 @@
 {
   "_doc": "HOOK-P1-4 (2026-07-04) — PreToolUse Write/Edit 게이트 훅 라우터 dispatch 등록 SOT. .claude/settings.json의 개별 17 command를 qvest_hook_router.py dispatch 1-command로 통합. 순서 = 구 settings.json 등록 순서 (first-block 결정론). tools = 구 matcher의 Write/Edit 부분집합 (safety_guard의 Bash 분은 settings.json 개별 entry 유지). soft_fail = 구 command의 '|| true' 여부 (true = exit code 무시). stderr_log = 구 command의 '2>>' 리다이렉트 경로 보존 (null = dispatcher 공용 로그로). 변경 시 settings.json 재등록 불필요 — 본 파일만 수정.",
-  "version": "1.0",
+  "version": "1.1",
   "created": "2026-07-04",
+  "updated": "2026-07-24",
+  "_doc_v11": "2026-07-24 Fable5 하네스 감사: sr_provenance_pre_certifier.sh dispatch 해제 — 전 경로 echo '{}'만 가능한 구조적 no-op 실증(GUIDE_MSG 미전달·로그 write 0·cert 발급은 PostToolUse sr_provenance_check.sh 전담). 스크립트 파일은 FS retain(hook_e2e_battery 직접호출 호환). 재등록 시 출력 배선(additionalContext)부터 수리할 것. dispatch 17→16.",
   "source_settings_backup": ".claude/settings.json.bak_20260704",
   "events": {
     "PreToolUse": {
@@ -24,12 +26,6 @@
           "tools": ["Write", "Edit"],
           "soft_fail": false,
           "stderr_log": null
-        },
-        {
-          "script": "sr_provenance_pre_certifier.sh",
-          "tools": ["Write", "Edit"],
-          "soft_fail": true,
-          "stderr_log": "/tmp/sr_provenance_pre_certifier.log"
         },
         {
           "script": "legacy_write_block.sh",

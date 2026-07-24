@@ -1,7 +1,6 @@
 ---
 name: architect
 description: "시스템 아키텍처 설계·진단·개선 — Hook/Pipeline/Layer/에이전트 통신 구조 설계. 온디맨드 스폰. Q-Lead와 토론하여 아키텍처 결정."
-model: opus
 allowed-tools: Read Grep Glob Bash(ls*) Bash(cat*) Bash(git*)
 ---
 

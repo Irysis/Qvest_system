@@ -88,7 +88,7 @@ if direct_calls and not has_brief:
         f"[telegram_direct_call_guard v3] 직접 호출 차단: {detected} — "
         "반드시 tg_agent_brief(agent, title, sections) 단일 진입점 사용. "
         "표 nrow≥2 ncol≥2 + emoji 5+ + sections 4+ + bytes ≥1200 자동 강제. "
-        "차트는 charts=c(...) 인자만. 참조: .claude/skills/telegram-protocol/SKILL.md (v4 ENFORCE)."
+        "차트는 charts=c(...) 인자만. 참조: .claude/skills/qvest-telegram/SKILL.md (v7 SOT)."
     )
     print(json.dumps({
         "hookSpecificOutput": {

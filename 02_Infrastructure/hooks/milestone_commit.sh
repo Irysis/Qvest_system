@@ -108,7 +108,9 @@ except: print('')" "$FILE" 2>/dev/null)
     COMMIT_MSG="feat(portfolio): PG2 배분 갱신 — $BN"
     PUSH_IMMEDIATE=1
     ;;
-  */stage_artifacts/l_code_STR_*.json|stage_artifacts/l_code_STR_*.json)
+  */stage_artifacts/l_code/*/*.json|stage_artifacts/l_code/*/*.json|*/stage_artifacts/l_code_STR_*.json|stage_artifacts/l_code_STR_*.json)
+    # (2026-07-24 Fable5 하네스 감사) 현행 L-code 계층 레이아웃 stage_artifacts/l_code/<mode>/*.json 매치 추가
+    # (research_continuity_guard.sh:69 glob과 정합 — 구 flat l_code_STR_* 패턴은 backward-compat 유지)
     LC=$("$QVEST_PY_BIN" -c "
 import json, sys
 try:
@@ -182,7 +184,9 @@ if [ $? -eq 0 ]; then
 
   # ─── Push (background, non-blocking) ─────────────────────────────
   if [ "$PUSH_IMMEDIATE" -eq 1 ]; then
-    ( git push origin master >> "$LOG" 2>&1 && \
+    # (2026-07-24 Fable5 하네스 감사) 'git push origin master' 버그 수리 — 현 브랜치는 main이라
+    # stale master ref만 밀려 milestone 커밋이 원격 미도달이던 결함. 현재 브랜치 기준 push.
+    ( git push origin "$(git branch --show-current)" >> "$LOG" 2>&1 && \
         echo "$TS PUSH_OK $HASH" >> "$LOG" || \
         echo "$TS PUSH_FAIL $HASH (daily_push가 재시도)" >> "$LOG"
     ) &

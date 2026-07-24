@@ -10,6 +10,8 @@ trap 'echo "{}"; exit 0' ERR
 #==============================================================================
 
 INPUT=$(cat)
+# (2026-07-24 Fable5 하네스 감사) raw-INPUT 조기-exit — .cache/ 무관 W/E에서 python 파싱 스폰 제거 (superset 필터)
+if ! printf '%s' "$INPUT" | grep -q '\.cache/'; then echo '{}'; exit 0; fi
 source "$(dirname "${BASH_SOURCE[0]:-$0}")/_shared_parse.sh"
 
 if [ "$TOOL_NAME" != "Write" ] && [ "$TOOL_NAME" != "Edit" ]; then
@@ -48,5 +50,7 @@ done <<< "$NEW_CACHE_PATHS"
 
 echo "$(date +%H:%M:%S) UNREGISTERED_WRITE: $FILE_PATH writes to$UNREGISTERED" >> "$LOG"
 
-printf '{}' "$FILE_PATH" "$UNREGISTERED"
+# (2026-07-24 Fable5 하네스 감사) 2026-07-03 감사 quick-win P2-2 이행 — advisory 실전달(라우터 context 채널).
+# 종전 printf '{}' "$FILE_PATH" ... 는 인자 무시 잔재 코드로 무전달이었음.
+CRE_MSG="[cache_registry_enforce L4] 미등록 .cache 쓰기 감지: $FILE_PATH →$UNREGISTERED — 02_Infrastructure/data/cache_registry.json 등재 필요 (도훈 mandate 2026-05-15)." "$QVEST_PY_BIN" -c 'import json,os; print(json.dumps({"additionalContext": os.environ.get("CRE_MSG","")}, ensure_ascii=False))' 2>/dev/null || echo '{}'
 exit 0

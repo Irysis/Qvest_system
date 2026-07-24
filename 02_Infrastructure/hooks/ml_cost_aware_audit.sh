@@ -9,6 +9,8 @@ trap 'echo "{}"; exit 0' ERR
 #==============================================================================
 
 INPUT=$(cat)
+# (2026-07-24 Fable5 하네스 감사) raw-INPUT 조기-exit — 비-summary_metrics W/E에서 python 파싱 스폰 제거 (superset 필터)
+if ! printf '%s' "$INPUT" | grep -q 'summary_metrics\.json'; then echo '{}'; exit 0; fi
 source "$(dirname "${BASH_SOURCE[0]:-$0}")/_shared_parse.sh"
 
 if [ "$TOOL_NAME" != "Write" ] && [ "$TOOL_NAME" != "Edit" ]; then

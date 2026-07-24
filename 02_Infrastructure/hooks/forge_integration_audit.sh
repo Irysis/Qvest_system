@@ -33,7 +33,10 @@ if [[ -z "$WT_ID" ]]; then
   exit 0
 fi
 
-WT_DIR="qepm/mailbox/worktask/$WT_ID"
+# (2026-07-24 Fable5 하네스 감사) 상대경로 → 절대경로 앵커 — Bash cwd가 프로젝트 루트가 아니면
+# 스냅샷이 0-byte로 기록되던 결함 수리 (실측: post 3건 중 2건 0-byte)
+QM_BASE="${CLAUDE_PROJECT_DIR:-${QM_ROOT:-/c/Users/99922/OneDrive/Quant_Module_Moltbot}}"
+WT_DIR="$QM_BASE/qepm/mailbox/worktask/$WT_ID"
 
 # 3-package hash 계산
 HASH_FILE="/tmp/qvest_forge_hash_${WT_ID}_post.sha256"

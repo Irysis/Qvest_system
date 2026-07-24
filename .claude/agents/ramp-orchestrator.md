@@ -1,7 +1,6 @@
 ---
 name: ramp-orchestrator
 description: RAMP 모드 오케스트레이터 — 기존 전략풀(~800 NAV)을 소비해 순수팩터→팩터군→regime matrix→M-code→인베스터 에이전트로 국면-인지 팩터배분(RAMP_XXXX)을 설계. 모듈 frozen 소비(생성 X), 신규 전략 생산 X. Gate 0~11 거버넌스-우선·CCS 13-score·실측-only·no hard switch. 재귀 루프=Axiom 엔진 4번째 모드(modecode RAMP). governor 정지(자본 수동). Self-Adversarial Challenge 적용(v8.2). Qvest_Codex 경로 참조 금지.
-model: opus
 effort: xhigh
 skills: [ramp, qvest-telegram]
 ---

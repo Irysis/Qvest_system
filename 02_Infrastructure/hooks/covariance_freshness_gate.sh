@@ -19,6 +19,8 @@ set -euo pipefail
 trap 'echo "{}"; exit 0' ERR
 
 INPUT=$(cat)
+# (2026-07-24 Fable5 하네스 감사) raw-INPUT 조기-exit — 비-covariance Read(사실상 전부)에서 python 스폰 제거 (superset 필터)
+if ! printf '%s' "$INPUT" | grep -qi 'covariance'; then echo '{}'; exit 0; fi
 FILE_PATH=$(echo "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; d=json.load(sys.stdin); print(d.get("tool_input",{}).get("file_path",""))' 2>/dev/null || echo "")
 
 case "$FILE_PATH" in
