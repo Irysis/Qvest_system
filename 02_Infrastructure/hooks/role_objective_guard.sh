@@ -46,12 +46,14 @@ case "$FILE_PATH" in
     ;;
 esac
 
-"$QVEST_PY_BIN" <<PYEOF
-import json, sys
+# (2026-07-24 Fable5 하네스 감사) content는 env 경유 + heredoc 인용 — 소스 보간('''$CONTENT''')은
+# triple-quote/backslash content(일상 JSON escape 포함)에서 python 소스가 깨져 fail-open (v8.1.2 constraint_enforcer 동일 수리)
+ROG_CONTENT="$CONTENT" ROG_PKG_TYPE="$pkg_type" ROG_ALLOWED="$allowed_objectives" "$QVEST_PY_BIN" <<'PYEOF'
+import json, os, sys
 
-pkg_type = "$pkg_type"
-allowed = set("$allowed_objectives".split(","))
-content = '''$CONTENT'''
+pkg_type = os.environ.get("ROG_PKG_TYPE", "")
+allowed = set(os.environ.get("ROG_ALLOWED", "").split(","))
+content = os.environ.get("ROG_CONTENT", "")
 
 try:
     pkg = json.loads(content)

@@ -24,11 +24,13 @@ CONTENT=$(echo "$INPUT" | "$QVEST_PY_BIN" -c 'import json,sys; d=json.load(sys.s
 # status.json 또는 challenge_history 포함 파일만
 case "$FILE_PATH" in
   */status.json|*/governance_log.json)
-    "$QVEST_PY_BIN" <<PYEOF
+    # (2026-07-24 Fable5 하네스 감사) content/fp는 env 경유 + heredoc 인용 — 소스 보간('''$CONTENT''')은
+    # triple-quote/backslash content에서 python 소스가 깨져 ERR trap '{}' fail-open (v8.1.2 constraint_enforcer 동일 수리)
+    CLL_CONTENT="$CONTENT" CLL_FP="$FILE_PATH" "$QVEST_PY_BIN" <<'PYEOF'
 import json, os, sys
 
-content = '''$CONTENT'''
-fp = '''$FILE_PATH'''
+content = os.environ.get("CLL_CONTENT", "")
+fp = os.environ.get("CLL_FP", "")
 
 try:
     data = json.loads(content)
