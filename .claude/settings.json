@@ -79,25 +79,7 @@
         ]
       },
       {
-        "matcher": "Read",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/selection_contamination_detector.sh\" 2>>/tmp/lockbox_contamination.log || true"
-          }
-        ]
-      },
-      {
-        "matcher": "Read",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/covariance_freshness_gate.sh\" 2>>/tmp/cov_freshness.log || true"
-          }
-        ]
-      },
-      {
-        "_doc_telegram": "Block direct tg_send/tg_send_rich/tg_send_photo. Force tg_agent_brief() single entry point.",
+        "_doc_telegram": "Block direct tg_send/tg_send_rich/tg_send_photo. Force tg_agent_brief() single entry point. (2026-07-24 도훈 승인 C2: 구 PreToolUse[Read] 2건 — selection_contamination_detector(marker writer 부재로 구조적 상시 allow)·covariance_freshness_gate(advisory 무전달+유물 캐시) 등록 해제. 파일 FS retain, 실방어선 = R 계약+게이트급 훅+lockbox_audit_trail(PostToolUse Read 유지)+수동 confirm.)",
         "matcher": "Bash",
         "hooks": [
           {
@@ -289,16 +271,6 @@
           {
             "type": "command",
             "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/ml_cost_aware_audit.sh\" 2>>/tmp/ml_cost_aware_audit.log || true"
-          }
-        ]
-      }
-    ],
-    "SubagentStop": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; bash \"$DIR/02_Infrastructure/hooks/agent_stop_continuity_check.sh\""
           }
         ]
       }
