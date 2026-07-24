@@ -22,7 +22,7 @@
 | C1 | full-sample 통계 사용 (rolling/expanding window만) |
 | C2 | same-day circular reference |
 | C3 | 같은 기간 집계 → 적용 |
-| C4 | 재무제표 lag 위반 (annual 5월, quarterly 45일+) |
+| C4 | 재무제표 lag 위반 (annual = **익년 3/31**, quarterly 45일+ / DART 분기 고정일 5/15·8/15·11/15 — 2026-07-25 도훈 확정, 현 구현(data_collector_dart.R:840) 정합. 구 표기 'annual 5월' 폐기. ⚠ xlsx 경로의 Q4 일률 +45d(≈익년 2/14)는 3/31 대비 공격적 — 수리 항목, AST v1.1 SOT §3 참조) |
 | C5 | overlay signal 타이밍 위반 — 신호는 **홀딩월 시작 전** 데이터만 (§ 오버레이 신호 타이밍) |
 | C6 | survivorship bias |
 | C7 | 자동 탐지 패턴 (lookahead_detector.R) |
