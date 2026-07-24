@@ -314,7 +314,7 @@ record_package_lineage(
 - `covariance_asof` > 30일 → stale → 재계산
 - `regime_tag` vs `.cache/regime_current.json` 불일치 → stale
 
-`compute_and_cache_covariance()`가 자동 meta 작성. Hook `covariance_freshness_gate.sh` warn.
+`compute_and_cache_covariance()`가 자동 meta 작성. **SLA 준수는 에이전트 자가확인 의무** — 구 Hook `covariance_freshness_gate.sh`는 2026-07-24 C2로 등록 해제(advisory 무전달 실증), 위 meta.json 직접 확인이 유일 경로.
 </v61_covariance_freshness>
 
 <v61_method_shopping_log>

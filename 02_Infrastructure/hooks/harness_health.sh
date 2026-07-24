@@ -63,7 +63,7 @@ REQUIRED_HOOKS=(
   "discovery_graduation_gate.sh"
 
   # v6.1 R2 Selection/Test Isolation + Method Shopping
-  "selection_contamination_detector.sh"
+  # (2026-07-24 도훈 승인 C2) selection_contamination_detector.sh = 등록 해제(구조적 상시-allow 실증), FS retain — 목록 제외
   "lockbox_audit_trail.sh"
   "lockbox_post_judge_seal.sh"
   "method_shopping_limiter.sh"
@@ -75,7 +75,7 @@ REQUIRED_HOOKS=(
   "role_objective_guard.sh"
 
   # v6.1 R6 Covariance Freshness
-  "covariance_freshness_gate.sh"
+  # (2026-07-24 도훈 승인 C2) covariance_freshness_gate.sh = 등록 해제(advisory 무전달+유물 캐시), FS retain — 목록 제외
 
   # v6.1 R11 Lineage + Reproducibility
   "lineage_recorder.sh"

@@ -75,11 +75,7 @@
 
 **상세 SOT**: `02_Infrastructure/docs/rules/lockbox-scope.md`
 
-**Hook 강제**: `02_Infrastructure/hooks/selection_contamination_detector.sh` v6.5
-- alpha / risk / optimizer / opt_ → block (정규 리서치 lockbox 차단)
-- judge / forge / monitoring / execution → allow + audit log
-- Q-Lead / unidentified → allow
-- ⚠ **실커버리지 (2026-07-03 도훈 confirm, 아키텍처 감사)**: 본 훅과 역할경계 훅(`agent_role_guard`)은 agent marker(`/tmp/qvest_current_agent_{pid}`) 존재 시에만 발화하며, marker 자동 기록 메커니즘은 부재 — marker 미존재 시 allow. 실제 방어선 = R 계약(essence_score/registry_writer) + 게이트급 훅(safety_guard·backtest_contract_audit·legacy_write_block·discovery_graduation_gate) + 수동 confirm.
+**Hook 계층 (2026-07-24 도훈 승인 C2 개정)**: 구 `selection_contamination_detector.sh`(PreToolUse Read)는 **등록 해제** — 2026-07-03 감사가 확정한 대로 agent marker(`/tmp/qvest_current_agent_{pid}`) writer 부재 + subagent가 별도 OS 프로세스가 아니라 PPID 식별 자체가 불가한 구조적 상시-allow였음(파일 FS retain, 재등록 시 식별 메커니즘부터 재설계). lockbox 접근 기록은 `lockbox_audit_trail.sh`(PostToolUse Read, **유지**)가 전담. **실제 방어선(불변)** = R 계약(essence_score/registry_writer) + 게이트급 훅(safety_guard·backtest_contract_audit·legacy_write_block·discovery_graduation_gate) + judge 유일 lockbox 심사 + 수동 confirm. `agent_role_guard`(라우터 W/E)는 등록 유지 — 동일 marker 한계는 07-03 문서화대로 인지 상태(AGT-01 env-주입 수리가 후속 큐).
 
 ## V6 Gap-Directed 가설
 

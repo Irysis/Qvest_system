@@ -106,7 +106,8 @@ PF="$BASE/02_Infrastructure/ops/alpha_search_queue_prompt.md"
 [ -f "$PF" ] || { log "prompt 없음 — skip"; exit 0; }
 MAXA="${QVEST_ALPHA_QUEUE_MAX:-2}"
 log "start alpha-search queue (pending=$N, MAX_ALPHA=$MAXA)"
-timeout 3000 "$CLAUDE_BIN" -p "$(printf 'TODAY=%s  MAX_ALPHA=%s\n\n%s\n' "$TODAY" "$MAXA" "$(cat "$PF")")" \
+PROMPT_TEXT="$(printf 'TODAY=%s  MAX_ALPHA=%s\n\n%s\n' "$TODAY" "$MAXA" "$(cat "$PF")")"
+timeout 3000 "$CLAUDE_BIN" -p "$PROMPT_TEXT" \
   --dangerously-skip-permissions >> "$LOG" 2>&1
 rc=$?
 log "claude -p exit=$rc"
@@ -114,6 +115,17 @@ log "claude -p exit=$rc"
 if [ "$rc" -ne 0 ]; then
   reason="exit_${rc}"
   tail -n 30 "$LOG" 2>/dev/null | grep -qi "spend limit" && reason="spend_limit"
-  scheduler_alert "alpha_queue" "$reason" "claude -p exit=$rc (pending=$N MAX_ALPHA=$MAXA) — 큐 pending은 done 미기록이라 차기 런에서 재소비"
+  # (2026-07-24 도훈 승인 C8) Fable 한도 폴백 — spend_limit 감지 시 --model opus 1회 재시도
+  # (도훈 07-14 정책: 상태 FS 외부화라 모델 전환 무손실. 폴백 성공=로그만, 실패 시에만 경보 — 한도는 외생변수)
+  if [ "$reason" = "spend_limit" ]; then
+    log "spend_limit 감지 — --model opus 폴백 재시도"
+    timeout 3000 "$CLAUDE_BIN" -p "$PROMPT_TEXT" --model opus \
+      --dangerously-skip-permissions >> "$LOG" 2>&1
+    rc=$?; log "fallback(opus) exit=$rc"
+    [ "$rc" -ne 0 ] && reason="spend_limit_fallback_exit_${rc}"
+  fi
+  if [ "$rc" -ne 0 ]; then
+    scheduler_alert "alpha_queue" "$reason" "claude -p exit=$rc (pending=$N MAX_ALPHA=$MAXA) — 큐 pending은 done 미기록이라 차기 런에서 재소비"
+  fi
 fi
 exit 0

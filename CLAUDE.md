@@ -275,4 +275,4 @@ cd qepm && Rscript -e 'source("scripts/hybrid_mode.R")'
 
 **SOT 분리 (2026-06-10 P2 다이어트)**: 버전 연혁·릴리스 상세는 `02_Infrastructure/docs/CHANGELOG_constitution.md` — CLAUDE.md는 현행 헌법만 담는다.
 - 현행: **v8.3** (2026-07-10 알파 발굴 중심 재편, SOT `qvest_v8_3_alpha_discovery_sot.md`) + **2026-07-24 Fable 5 정합 패치**(도훈 승인 C1/C5/C6 포함). 이전 버전·검증 이력 상세 = `CHANGELOG_constitution.md`.
-- **현행 hook 등록 = settings.json 48 distinct .sh** (직접 32 + 라우터 dispatch 16 — 2026-07-24 Fable 5 하네스 감사: 주입취약 하드게이트 4훅 env-경유 수리 · 전달 0 훅 6종 additionalContext 복원 · Read/W·E 조기-exit · axiom_context_inject 침묵 결손 복원 · 배터리 11/11 PASS. 상세 `harness.md` 2026-07-24 정합 절)
+- **현행 hook 등록 = settings.json 45 distinct .sh** (직접 29 + 라우터 dispatch 16 — 2026-07-24 Fable 5 하네스 감사 + C1~C10 승인 실행: 주입취약 하드게이트 4훅 env-경유 수리 · 전달 0 훅 6종 additionalContext 복원 · Read/W·E 조기-exit · axiom_context_inject 침묵 결손 복원 · dead 훅 4건 등록 해제(sr_provenance_pre_certifier/selection_contamination/covariance_freshness/agent_stop_continuity — 파일 retain) · 배터리 11/11 PASS. 상세 `harness.md` 2026-07-24 정합 절)

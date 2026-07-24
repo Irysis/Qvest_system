@@ -139,7 +139,8 @@ CAP="${QVEST_PAPER_ROUTER_MAX_ALPHA:-2}"
 log "start (downloaded=$DL, AUTORUN=$AUTORUN, MAX_ALPHA=$CAP, BACKLOG_DATES=${BACKLOG_DATES:-none})"
 HEADER="TODAY=${TODAY}  AUTORUN=${AUTORUN}  MAX_ALPHA=${CAP}  BACKLOG_DATES=${BACKLOG_DATES:-none}"
 # 헤드리스 1-shot. timeout 가드(자동 alpha-search 포함 시 길어질 수 있어 50분).
-timeout 3000 "$CLAUDE_BIN" -p "$(printf '%s\n\n%s\n' "$HEADER" "$(cat "$PROMPT_FILE")")" \
+PROMPT_TEXT="$(printf '%s\n\n%s\n' "$HEADER" "$(cat "$PROMPT_FILE")")"
+timeout 3000 "$CLAUDE_BIN" -p "$PROMPT_TEXT" \
   --dangerously-skip-permissions >> "$LOG" 2>&1
 rc=$?
 log "claude -p exit=$rc"
@@ -147,7 +148,17 @@ log "claude -p exit=$rc"
 if [ "$rc" -ne 0 ]; then
   reason="exit_${rc}"
   tail -n 30 "$LOG" 2>/dev/null | grep -qi "spend limit" && reason="spend_limit"
-  scheduler_alert "paper_router" "$reason" "claude -p exit=$rc (downloaded=$DL backlog=${BACKLOG_DATES:-none}) — 실패일 다운로드분은 백로그 스캔이 차기 성공 런에 합류"
+  # (2026-07-24 도훈 승인 C8) Fable 한도 폴백 — spend_limit 감지 시 --model opus 1회 재시도 (07-14 정책)
+  if [ "$reason" = "spend_limit" ]; then
+    log "spend_limit 감지 — --model opus 폴백 재시도"
+    timeout 3000 "$CLAUDE_BIN" -p "$PROMPT_TEXT" --model opus \
+      --dangerously-skip-permissions >> "$LOG" 2>&1
+    rc=$?; log "fallback(opus) exit=$rc"
+    [ "$rc" -ne 0 ] && reason="spend_limit_fallback_exit_${rc}"
+  fi
+  if [ "$rc" -ne 0 ]; then
+    scheduler_alert "paper_router" "$reason" "claude -p exit=$rc (downloaded=$DL backlog=${BACKLOG_DATES:-none}) — 실패일 다운로드분은 백로그 스캔이 차기 성공 런에 합류"
+  fi
 fi
 # v3.1 (2026-07-10 F-4, v8.3 적대검증): exit-0 무산출 백로그 만료 임박 경보.
 #   기존엔 claude가 exit 0인데 route JSON을 안 쓴 백로그 날짜는 7일 고정 창을 지나면

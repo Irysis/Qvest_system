@@ -113,7 +113,7 @@ QEPM Codex Critic Round(외부 codex auto-spawn)는 **2026-06-30 v8.2에서 폐�
 
 - `02_Infrastructure/hooks/*.sh` (톱레벨 61개, s0_enforcer/ 서브디렉토리 포함 64 — 2026-07-24 실측. 구 표기 55는 stale)
 - ~~`02_Infrastructure/hooks/_archive_v55/`~~ (Tier 1 cleanup 2026-05-16 삭제 — legacy v55 hooks 6건 영구 폐기)
-- `.claude/settings.json` Hook 등록 (47 distinct .sh — v8.1.2 2026-06-11 기준, 아래 정합 절 참조. **v8.2 2026-06-30: codex_round_pre_enforcer + codex_round_auto_trigger 2건 등록 해제 → 45 distinct .sh**. **현행 2026-07-24: 48 distinct .sh** — 직접 32 + 라우터 dispatch 16, 아래 2026-07-24 정합 절)
+- `.claude/settings.json` Hook 등록 (47 distinct .sh — v8.1.2 2026-06-11 기준, 아래 정합 절 참조. **v8.2 2026-06-30: codex_round_pre_enforcer + codex_round_auto_trigger 2건 등록 해제 → 45 distinct .sh**. **현행 2026-07-24: 45 distinct .sh** — 직접 29 + 라우터 dispatch 16, 아래 2026-07-24 정합 절)
 - `02_Infrastructure/docs/qvest_v8_1_sot.md` + `02_Infrastructure/docs/qvest_modes_sot.md` (active SOT)
 - `02_Infrastructure/docs/qvest_v6_4_sot.md` Section 5 (historical Hook + Cert Matrix. QEPM Codex Round 절은 v8.2에서 폐지 — 현재 미적용, 사료용)
 
@@ -144,18 +144,19 @@ QEPM Codex Critic Round(외부 codex auto-spawn)는 **2026-06-30 v8.2에서 폐�
 
 ## 정합 (2026-07-24 — Fable 5 하네스 전수 감사, 57-agent 워크플로우 + 2-렌즈 적대검증)
 
-- **등록 실측 (2026-07-24)**: settings.json **48 distinct .sh** = 직접 32 + 라우터 dispatch 16 (`sr_provenance_pre_certifier.sh` dispatch 해제 — 전 경로 `{}` 출력만 가능한 구조적 no-op 실증, 파일 FS retain·router_dispatch.json v1.1 _doc 참조).
+- **등록 실측 (2026-07-24, 2차 반영 현행 = 45 distinct)**: 1차 감사 시점 48 distinct .sh(직접 32 + 라우터 16, `sr_provenance_pre_certifier.sh` dispatch 해제 — 전 경로 `{}` no-op 실증) → 동일자 2차 C2/C9로 직접 29 + 라우터 16 = **45 distinct** (아래 2차 항목).
 - **주입취약 하드게이트 4훅 수리**: `worktask_spec_validator` · `method_shopping_limiter` · `challenge_loop_limiter` · `role_objective_guard` — `'''$CONTENT'''` 소스 보간이 triple-quote/백슬래시 content에서 fail-open이던 결함을 env-경유 + quoted heredoc으로 수리(v8.1.2 constraint_enforcer 선례 패턴). 적대 페이로드 실증 테스트 4/4 block 유지.
 - **전달 0 훅 6종 복원**: `mandate_compliance_check` · `rationalization_detector`(0ab8b039 2026-05-29 회귀 — 감지하고도 `{}`만 출력) → PostToolUse `hookSpecificOutput.additionalContext` 실전달. `feature_registry_economic_rationale_check` · `risk_crowding_score_check` · `cache_registry_enforce`(감사 quick-win P2-2 이행) → 라우터 context 채널(`additionalContext` 단일키) 격상.
 - **조기-exit 도입 (성능)**: Read 3훅(`selection_contamination_detector`/`covariance_freshness_gate`/`lockbox_audit_trail`) + W/E advisory 7훅에 python 파싱 전 raw-INPUT superset 필터 — 비매치 이벤트에서 python 스폰 0 (비매치 Read 실측 0.16s, 종전 ~0.8s/훅).
 - **axiom_context_inject SyntaxError 수리**: 07-13 판정 어휘 규약 추가분의 미이스케이프 따옴표로 python -c 인자가 절단 → 전 Agent spawn 공리 주입이 `{}` 침묵 결손이던 결함 복원 (배터리 axiom_inject.context PASS, 2,482자 주입 확인).
 - **milestone_commit 수리**: `git push origin master`(stale ref — milestone 커밋 원격 미도달) → 현재 브랜치 push. L-code 매치에 현행 계층 `stage_artifacts/l_code/<mode>/*.json` 추가. `forge_integration_audit` WT_DIR 절대경로 앵커(0-byte 스냅샷 수리).
 - **검증**: `hook_e2e_battery` **11/11 PASS** (종전 10/11 — axiom_inject FAIL 포함).
+- **[동일자 2차 — 도훈 승인 C2~C4·C7~C10 실행]**: ① **C2** selection_contamination_detector·covariance_freshness_gate (PreToolUse Read 2건) 등록 해제 — 구조적 상시-allow/무전달 실증, 파일 FS retain, harness_health REQUIRED_HOOKS·pit.md Lockbox 절 동기 개정. lockbox_audit_trail(PostToolUse Read)만 잔존 = Read 이벤트 훅 3→1. ② **C9** agent_stop_continuity_check (SubagentStop) 등록 해제 — 생애 발화 0·escalate 무전달·Continuity Firewall SOT 미등재. SubagentStop 이벤트 등록 0. ③ **C10** milestone_commit s7_disposition·pg2_allocation legacy 레인 제거(AX·L-code 레인 보존). ④ **C7** execution·monitoring `model: opus` 재핀(기계적 역할 비용 차등 — caching.md 예외 2종). ⑤ **C3** 스킬 정리: execution/monitoring=skillOverrides off · 리서치 3종=user-invocable-only+리다이렉트 스텁 · bootstrap 라벨 갱신. ⑥ **C4** kr-inverse-pattern-miner 현행 경로 재작성(hypothesis_index+Distilled+FQ 등재, INV-7 규약 내장). ⑦ **C8** 무인 스케줄러 3종(alpha_search_queue/paper_router/factor_deep_recheck) spend_limit 감지 시 `--model opus` 폴백 배선. → **등록 = 45 distinct .sh (직접 29 + 라우터 16)**.
 
 ## 정합 (2026-07-17 — 2주 운영 감사 카운트 실측 + 신규 훅 등재, 도훈 승인 수리)
 
 - **등록 실측 (2026-07-17)**: settings.json **48 distinct .sh** = **직접 31** + **qvest_hook_router dispatch 경유 17**(`02_Infrastructure/hooks/policies/router_dispatch.json` 18건 − `safety_guard.sh` 직접등록 중복 1). 여기에 2026-07-17 `boot_stamp_check.sh` 신규 등록 포함 → **49 distinct .sh** (구 표기 45는 v8.2 시점, CLAUDE.md 구 표기 46은 research_continuity_guard까지만 반영한 드리프트 — 본 절로 정합).
-- **v8.2(45) 이후 신규 3건**: `artifact_placement_guard.sh`(2026-07-04, PreToolUse[W/E] 라우터 dispatch — artifact-storage.md 저장위치 advisory warn only) / `overlay_pit_grep.sh`(2026-07-06, PostToolUse[W/E] — pit.md C5 오버레이 신호 타이밍 Level 2 soft advisory) / `research_continuity_guard.sh`(2026-07-13, Stop — 리서치 연속성 가드. 2026-07-15 Continuity Firewall warn→block 승격, SubagentStop `agent_stop_continuity_check.sh` 동반).
+- **v8.2(45) 이후 신규 3건**: `artifact_placement_guard.sh`(2026-07-04, PreToolUse[W/E] 라우터 dispatch — artifact-storage.md 저장위치 advisory warn only) / `overlay_pit_grep.sh`(2026-07-06, PostToolUse[W/E] — pit.md C5 오버레이 신호 타이밍 Level 2 soft advisory) / `research_continuity_guard.sh`(2026-07-13, Stop — 리서치 연속성 가드. 2026-07-15 Continuity Firewall warn→block 승격. 구 동반 표기였던 SubagentStop `agent_stop_continuity_check.sh`는 2026-07-24 C9로 등록 해제 — Firewall SOT에 미등재·발화 0이던 별개 v6.2 산물).
 - **hook_e2e_battery 결과 영속화**: 배터리 실행 결과를 `.cache/hook_e2e_battery_latest.json`에 영속 기록 (2026-07-17 구현 — 최근 판정의 세션 간 관측성).
 
 ## v8.2 정합 (2026-06-30 — QEPM Codex Critic Round 제거, 도훈 mandate)

@@ -52,7 +52,19 @@ Fable 5 전환과 무관하게 **설계 의도대로 작동 실증**된 표면:
 - 수정 훅 18종 `bash -n` 전부 OK · router selftest OK · router_dispatch.json 파싱 OK(17 엔트리)
 - 주입 페이로드 테스트 4/4 block · advisory 전달 3종 JSON 스키마 확인 · 조기-exit 타이밍 실측
 
-## 3. 도훈 confirm 큐 — **C1·C5·C6 승인·실행 완료 (2026-07-24 당일)**, 잔여 대기
+## 3. 도훈 confirm 큐 — **C1~C10 전량 승인·실행 완료** (C1·C5·C6 = 07-24 / C2~C4·C7~C10 = 07-25)
+
+**2차 실행 (C2~C4·C7~C10, 도훈 일괄 승인)**:
+- **C2 ✅**: selection_contamination_detector·covariance_freshness_gate (PreToolUse Read 2건) 등록 해제 — Read 이벤트 훅 3→1(lockbox_audit_trail만 잔존). 파일 FS retain. 동기 개정: pit.md Lockbox 절(실방어선 재서술)·harness_health REQUIRED_HOOKS·risk_research_init R6(SLA 자가확인 의무로).
+- **C9 ✅**: agent_stop_continuity_check (SubagentStop) 등록 해제 — 생애 발화 0·escalate 무전달 실증. SubagentStop 이벤트 등록 0.
+- **C10 ✅**: milestone_commit s7_disposition(v55)·pg2_allocation(매치 0건) legacy 레인 제거 — AX 승격·L-code 레인 보존.
+- **C7 ✅**: execution·monitoring `model: opus` 재핀 (기계적 역할 비용 차등 — caching.md 예외 2종 명문화, 그 외 신규 핀 금지).
+- **C3 ✅**: skillOverrides 도입 — execution/monitoring=`off`, 리서치 3종(alpha/risk/optimizer-research)=`user-invocable-only` + 본문 리다이렉트 스텁(qvest-worktask §3 + init 프롬프트 정본 지시, 드리프트 사본 제거). bootstrap.sh 라벨 갱신. (07-05 "동명 SKILL 현역 유지" 결정의 승인된 개정 — 수동 슬래시 표면은 보존.)
+- **C4 ✅**: kr-inverse-pattern-miner 현행 경로 재작성 — 입력 hypothesis_index/Distilled 카드/deprecated AX, INV-7 재도전 규약(차별점·revival_spec·settled-negative 금지 목록·제약 비귀속) 내장, 출력 = alpha_frontier_queue FQ 등재 제안.
+- **C8 ✅**: 무인 스케줄러 3종(alpha_search_queue_run·paper_router_run·factor_deep_recheck_run) spend_limit 감지 시 `--model opus` 1회 폴백 재시도 배선 — 폴백 성공=로그만(한도=외생변수 원칙), 실패 시에만 scheduler_alert.
+- **최종 등록 = 45 distinct .sh (직접 29 + 라우터 16)**. 검증: settings.json 유효(PreToolUse 5·SubagentStop 제거·skillOverrides 적용) · 수정 스크립트 6종 bash -n OK · battery **11/11 PASS** · harness_health **27/27 PASS**.
+
+### (기록) 1차 실행분 — C1·C5·C6
 
 **실행 완료 (도훈 승인)**:
 - **C1 ✅**: enabledPlugins `codex@openai-codex` 해제 (settings.json `{}` — JSON 유효성 검증 PASS) + harness.md:158·00_Lawbook/DEPRECATION.md 동시 개정 (로컬 codex CLI·debate_helpers는 FS retain).

@@ -61,7 +61,16 @@ CLAUDE_BIN="$(command -v claude || echo /c/Users/99922/AppData/Roaming/npm/claud
 PF="$BASE/02_Infrastructure/ops/factor_deep_recheck_prompt.md"
 [ -f "$PF" ] || { log "prompt 없음 — skip"; exit 0; }
 log "start deep recheck (N=$N)"
-timeout 3000 "$CLAUDE_BIN" -p "$(printf 'TODAY=%s\n\n%s\n' "$TODAY" "$(cat "$PF")")" \
+PROMPT_TEXT="$(printf 'TODAY=%s\n\n%s\n' "$TODAY" "$(cat "$PF")")"
+timeout 3000 "$CLAUDE_BIN" -p "$PROMPT_TEXT" \
   --dangerously-skip-permissions >> "$LOG" 2>&1
-log "claude -p exit=$?"
+rc=$?
+log "claude -p exit=$rc"
+# (2026-07-24 도훈 승인 C8) Fable 한도 폴백 — spend_limit 감지 시 --model opus 1회 재시도 (07-14 정책)
+if [ "$rc" -ne 0 ] && tail -n 30 "$LOG" 2>/dev/null | grep -qi "spend limit"; then
+  log "spend_limit 감지 — --model opus 폴백 재시도"
+  timeout 3000 "$CLAUDE_BIN" -p "$PROMPT_TEXT" --model opus \
+    --dangerously-skip-permissions >> "$LOG" 2>&1
+  log "fallback(opus) exit=$?"
+fi
 exit 0
