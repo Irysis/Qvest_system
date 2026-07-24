@@ -2,7 +2,7 @@
 
 ## Active Version
 
-**Qvest v8.3 — Opus 4.8-Native · 4-Mode 헌법 · 실측 거버넌스 · 알파 발굴 중심 재편** (2026-07-10)
+**Qvest v8.3 — Fable 5-Native · 4-Mode 헌법 · 실측 거버넌스 · 알파 발굴 중심 재편** (2026-07-10 / 2026-07-24 Fable 5 정합 패치 — 세션 모델 `claude-fable-5`, 에이전트 model 핀 제거·상속 전환, 폴백 = 한도 시 opus 재시도)
 
 **계보**: v6.4.0 → v7.0.0 → v7.0.1 → v7.1.0-lite → v7.2.0 → v7.2.1 → v8.0.0 → v8.1.0 → v8.2 → **v8.3** (현재 active)
 **Branch**: `main` (Qvest active — GitHub default)
