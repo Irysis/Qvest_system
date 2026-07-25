@@ -46,6 +46,8 @@ CHANGELOG.md  CLAUDE.md   (+ ARTIFACTS.md 대시보드)
 - `02_Infrastructure/`에는 **재사용 코드·설정·문서만**. 산출물(결과 json/parquet/로그)·1회용 스크립트 저장 금지.
 - 스크래치(임시 파일·중간 덤프)는 **`.cache/scratch/`**(2026-07-04 기준 미생성 — 최초 사용 시 생성) 또는 세션 scratchpad 디렉토리만 사용.
 - `_` 접두 1회용 디버그 스크립트(`_probe_*.R`, `_vfy_*.R`, `_debug_*.txt` 류)는 인프라 디렉토리에 두지 않는다 — 실험 소속이면 `stage_artifacts/<mode>/<run_id>/`, 순수 스크래치면 `.cache/scratch/`. (기존 잔존분은 2026-07-04 재편에서 일괄 정리 — 신규 생성분부터 본 규칙 hard.)
+- **예외: `_` = private 모듈 (2026-07-25 도훈 confirm)**. 본 조항이 표적하는 것은 *1회용 디버그*이지 `_` 접두 자체가 아니다. 실소비자가 있는 private 헬퍼·내부 모듈은 `_` 접두를 유지하며, 감사(`artifact_hygiene_audit.R`)의 **`UNDERSCORE_OK_PATHS`(상대경로 매칭)** 에 소비자와 함께 등재한다. 현행 5건 — `ops/morning_steps/_root.R`(morning_steps 9종이 source) · `search/_query.py`(qvest_search CLI) · `observability/_wt_pretty.py`(qvest_wt CLI) · `ramp/debug/_cache_pool.rds`(run_ramp_gate3_4.R CACHE_POOL) · `portfolio/frontier_hrp/_validate_dynamic_regime_rp.R`(dynamic_regime_rp.R:46 재현 검증본). **판별 기준 = 참조 유무**(`git grep` 소비자 0건이면 스크래치, 실코드 소비자가 있으면 private 모듈) — 파일명 형태가 아니다. 위치 무관 공용 모듈 2건은 종전대로 basename 매칭(`UNDERSCORE_OK`).
+- **테스트 결과 등 재생성 가능한 산출물은 코드 존에 쓰지 않는다** — `08_Tests/` 안에 결과 json을 쓰던 하네스 3종은 `.cache/test_results/`로 writer를 수정했다(2026-07-25). 파일만 옮기면 재실행 시 되살아나므로 **정정 대상은 파일이 아니라 writer 경로**다.
 
 ### §3.1 리서치 모드 중간 산출물 (RAMP / QEPM / alpha-search)
 - **canonical(모드 최종 산출)은 `outputs/<mode>/`** (예: RAMP 순수팩터·팩터군 = `outputs/ramp/*.parquet`). 이것만이 "이 모드의 결과"이며 보존 대상.
@@ -115,6 +117,7 @@ CHANGELOG.md  CLAUDE.md   (+ ARTIFACTS.md 대시보드)
 - `CLAUDE.md` Key Paths / Safety Rules · `.claude/rules/backtest-contract.md`(save_bt_result 산출 위치) · `02_Infrastructure/docs/rules/artifact-naming.md`(파일명 규약 — 본 문서는 *위치*, 그쪽은 *이름*) · `02_Infrastructure/contracts/registry_writer.R`
 
 ## Change log
+- 2026-07-25: §3 예외 2조항 신설 — (a) `_` = private 모듈 예외(`UNDERSCORE_OK_PATHS` 상대경로 매칭, 현행 5건. 판별 기준 = 실코드 참조 유무) (b) 재생성 산출물의 writer 경로 정정 원칙(테스트 결과 3종 → `.cache/test_results/`). 주간 hygiene 경고 55건 정리에서 확정 — 47건 git rm(참조0 검증), 5건은 삭제 시 파이프라인 파손이라 예외 등재. 동반 수리: `telegram_notify.R` `.tg_lock_root()` PROJECT_ROOT 오염 가드(락이 엉뚱한 root에 생성돼 **직렬화가 무력화**되던 정합성 버그 — `02_Infrastructure/stage_artifacts/telegram_locks` 잔재가 그 증상이었음. 실측 3/3 PASS). 감사 재실행 실측 **경고 55 → 0**. 도훈 confirm.
 - 2026-07-04: §8 3선 신설 — 주간 Cleaner (weekly_cleaner_sweep.R 무인 기계 스윕 토 09:00 StartWhenAvailable + /cleaner 스킬 증류 세션 + bootstrap pending 마커 WARN). 도훈 mandate "정크 삭제 + 위클리 리서치 엑기스 추출·탑재".
 - 2026-07-04: 04_Research 내부 재편 — §2 네이밍 컨벤션 조항 신설(NN_명칭+README 1줄, 신규 토픽은 01_reports/02_experiments 하위 우선) + §7 이동 로그 3행(01_reports/02_experiments/90_legacy) + 부기 4. index_descriptions.json 키 27건 remap + 1건 분할.
 - 2026-07-04: §8 집행 신설 — artifact_placement_guard.sh(advisory 훅) + artifact_hygiene_audit.R(일간 자동정리·리포트) + daily_refresh [7.9] 배선 (파일위생 mandate).
