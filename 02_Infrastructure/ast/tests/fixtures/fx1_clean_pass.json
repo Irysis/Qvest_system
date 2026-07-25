@@ -1,0 +1,28 @@
+{
+  "strategy_id": "FX1_CLEAN_MOM",
+  "_fixture_note": "① clean AST — 21일 lag 가격 모멘텀 CS_RANK + registry 잔차모멘텀 결합. 기대 PASS (A1/M08 모두 vintage 보유 — restatement 경고 없음)",
+  "pit": { "sig_date": "2026-05-31", "decision_ts": "2026-06-01" },
+  "ast": {
+    "op": "ADD",
+    "children": [
+      {
+        "op": "CS_RANK",
+        "children": [
+          {
+            "op": "TS_MEAN",
+            "window": 231,
+            "children": [
+              {
+                "op": "TS_LAG", "k": 21, "unit": "d",
+                "children": [
+                  { "leaf": "FIELD", "group_id": "A1_RAWDATA_OHLCVS_daily", "field": "Ret" }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      { "leaf": "REGISTRY", "factor": "M08_Residual_Mom" }
+    ]
+  }
+}

@@ -359,7 +359,9 @@ load_universe_support <- function(
     if (!is.null(end_date))   dt <- dt[Date <= as.Date(end_date)]
 
     # Value 컬럼을 의미있는 이름으로 변경
-    setnames(dt, "Value", meta$value_col)
+    # (2026-07-25 W3: D1 merge 이후 디스크 정본 = 시맨틱 컬럼명('K200' 등).
+    #  레거시 'Value' 패널만 rename — skip_absent로 양쪽 호환)
+    setnames(dt, "Value", meta$value_col, skip_absent = TRUE)
 
     loaded[[meta$value_col]] <- dt
     cat(sprintf("[universe_support] Loaded %-20s : %s rows\n",
@@ -435,7 +437,7 @@ load_us_sheet <- function(
   if (!is.null(start_date)) dt <- dt[Date >= as.Date(start_date)]
   if (!is.null(end_date))   dt <- dt[Date <= as.Date(end_date)]
 
-  setnames(dt, "Value", meta$value_col)
+  setnames(dt, "Value", meta$value_col, skip_absent = TRUE)  # W3: 시맨틱/레거시 양쪽 호환
   setkey(dt, Date, Ticker)
 
   cat(sprintf("[universe_support] Loaded %s: %s rows (%s ~ %s)\n",

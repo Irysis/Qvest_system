@@ -355,22 +355,49 @@ incremental_investor <- function() {
 }
 
 # ─── Universe_Support 증분 ───────────────────────────────────────────────────
-incremental_universe_support <- function() {
+# [2026-07-25 W3 재작성 — D1 적발 결함 수리]
+#   구 구현 = parse_universe_support(us_update) 호출:
+#     · force=FALSE(기본) → 캐시 존재 시 전 시트 skip = 영구 no-op (증분 미반영)
+#     · force=TRUE → update xlsx(스냅샷 수 개)만으로 패널 통째 덮어쓰기
+#       = 1990~ 역사 소실 clobber
+#   신 구현 = us_update_merge.py (openpyxl 스트리밍 — 484MB XML-bloat xlsx라
+#   R openxlsx/readxl 회피, D1 실측 완주 경로) 위임:
+#     ① cache-hit 판정 = 시트별 update max Date > 패널 max Date일 때만 진행
+#     ② merge = 겹침 날짜만 교체 후 rbind (역사 보존)
+#     ③ 디스크 시맨틱 컬럼명('K200' 등) 기준 정합 (레거시 'Value' 자동 정규화)
+#     ④ temp-rename 쓰기
+incremental_universe_support <- function(force = FALSE) {
   us_update <- file.path(UPDATE_DIR, "Universe_Support_update.xlsx")
   if (!file.exists(us_update)) {
     cat("[incr_universe_support] Universe_Support_update.xlsx 없음. 스킵.\n")
     return(invisible(NULL))
   }
 
-  cat("[incr_universe_support] Universe_Support_update.xlsx 증분 처리...\n")
-  source(file.path(DATA_DIR, "parse_universe_support.R"))
+  cat("[incr_universe_support] Universe_Support_update.xlsx 증분 merge...\n")
 
-  tryCatch({
-    parse_universe_support(us_update)
+  # python 선택: pyarrow+openpyxl 필요 → 표준 venv(.venv_qvest_ml, python-policy §2)
+  # 우선. QVEST_PY(시스템 Python312)는 pyarrow 부재 실측(2026-07-25) — fallback만.
+  venv_py <- file.path(PROJECT_ROOT, ".venv_qvest_ml/Scripts/python.exe")
+  pyexe <- if (file.exists(venv_py)) venv_py else Sys.getenv("QVEST_PY", venv_py)
+  helper <- file.path(DATA_DIR, "us_update_merge.py")
+  us_cache <- if (exists("UNIVERSE_SUPPORT_CACHE")) UNIVERSE_SUPPORT_CACHE
+              else file.path(CACHE_DIR, "universe_support")
+
+  args <- c(shQuote(helper),
+            "--xlsx", shQuote(us_update),
+            "--cache", shQuote(us_cache))
+  if (isTRUE(force)) args <- c(args, "--force")
+
+  out <- suppressWarnings(system2(pyexe, args = args, stdout = TRUE, stderr = TRUE))
+  rc <- attr(out, "status") %||% 0L
+  cat(paste(out, collapse = "\n"), "\n")
+
+  if (rc != 0) {
+    cat(sprintf("[incr_universe_support] 오류: us_update_merge.py 실패 (rc=%d)\n", rc))
+  } else {
     cat("[incr_universe_support] 완료.\n")
-  }, error = function(e) {
-    cat(sprintf("[incr_universe_support] 오류: %s\n", e$message))
-  })
+  }
+  invisible(rc == 0)
 }
 
 # ─── 전체 증분 실행 ──────────────────────────────────────────────────────────

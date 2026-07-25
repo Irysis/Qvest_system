@@ -1,0 +1,21 @@
+{
+  "strategy_id": "FX3_STORED_SAMEMONTH",
+  "_fixture_note": "③ 실사고 2 재현 — 저장 패널 동월 vintage 소비 형상 (project-stored-panel-samemonth-lookahead). provenance/parity 전부 갖췄어도 embedded_data_through(06-30) > t_d-1(05-31) = ~1개월 look-ahead. 기대 FAIL_LOOKAHEAD",
+  "pit": { "sig_date": "2026-05-31", "decision_ts": "2026-06-01" },
+  "ast": {
+    "op": "CS_RANK",
+    "children": [
+      {
+        "leaf": "STORED_SCORE",
+        "id": "alpha_scores_panel_268m",
+        "provenance": {
+          "store_build_hash": "20260711174753_98ec4022",
+          "generator_code_path": "02_Infrastructure/ml_pipeline/build_alphasearch_feature_panel.R",
+          "generated_at": "2026-07-14T09:00:00"
+        },
+        "production_parity_verified": true,
+        "embedded_data_through": "2026-06-30"
+      }
+    ]
+  }
+}

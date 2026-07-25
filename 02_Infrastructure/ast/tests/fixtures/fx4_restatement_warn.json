@@ -1,0 +1,17 @@
+{
+  "strategy_id": "FX4_FUND_ASOF_WARN",
+  "_fixture_note": "④ restatement 리프 — 재무 병합 패널을 AS_OF(factor_date<=t)로 정상 소비. look-ahead 없음(클램프)이나 restatement_prone ∧ vintage 無 → 기대 WARN_RESTATEMENT + 스펙 플래그",
+  "pit": { "sig_date": "2026-05-31", "decision_ts": "2026-06-01" },
+  "ast": {
+    "op": "CS_RANK",
+    "children": [
+      {
+        "op": "AS_OF",
+        "rule": "factor_date<=t",
+        "children": [
+          { "leaf": "FIELD", "group_id": "C-FUND-MERGED", "field": "TotalEquity", "period": "quarterly" }
+        ]
+      }
+    ]
+  }
+}

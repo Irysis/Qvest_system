@@ -98,6 +98,7 @@ wt_id <- wt_create(
 ```
 Agent(subagent_type="alpha-research", prompt="WT{id} Alpha Research...")
   → 자율 hypothesis discovery + factor specs
+  → AST v1.1 산출 계약 (2026-07-25): alpha_package에 spec_version="ast_v1.1" + 3층(hypothesis{mechanism 주체·마찰·경로 + falsification + regime_scope} / factors[] AST(𝒪+escape 리프 4종) / combination_rule enum) + verdict(designed|economic_void|blocked_by_capability) + self_pit_check 의무 — schema.json conditional + 프롬프트 <ast_spec_v1_1> 절, SOT qvest_ast_v1_1_sot.md §1
   → alpha_package_draft.json (Write tool, _draft suffix)
   → Self-Adversarial Challenge (v8.2 — Codex Round 제거, Opus 4.8 자체 적대검증)
   → challenge_note.md (self-adversarial record: 5 ACCEPT + REBUTTAL 학술/L-code/정량 3축)

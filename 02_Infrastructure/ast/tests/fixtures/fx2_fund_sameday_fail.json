@@ -1,0 +1,11 @@
+{
+  "strategy_id": "FX2_FUND_SAMEDAY",
+  "_fixture_note": "② 재무 리프를 t_d 당일 직접 참조 (AS_OF/TS_LAG 없음) — 분기 데이터 avail = ref+45d > t_d. 기대 FAIL_LOOKAHEAD (위반 리프·경로 명시)",
+  "pit": { "sig_date": "2026-05-31", "decision_ts": "2026-06-01" },
+  "ast": {
+    "op": "ZSCORE",
+    "children": [
+      { "leaf": "FIELD", "group_id": "C-FUND-MERGED", "field": "OperatingProfit", "period": "quarterly" }
+    ]
+  }
+}

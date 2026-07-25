@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "qvest://worktask/schema/v1",
   "title": "QEPM Work Task Schema v1",
-  "description": "1 Work Task = QEPM Full Pipeline 1회 = 1 리서치 사이클. Alpha → Risk → Optimizer 3-agent 순차 실행 후 Forge 통합 → Judge 검증 → Governor admission.",
+  "description": "1 Work Task = QEPM Full Pipeline 1회 = 1 리서치 사이클. Alpha → Risk → Optimizer 3-agent 순차 실행 후 Forge 통합 → Judge 검증 → Governor admission. (2026-07-25: alpha_package에 AST v1.1 3층 확장 — spec_version='ast_v1.1' conditional, SOT 02_Infrastructure/docs/qvest_ast_v1_1_sot.md §1·§2)",
 
   "definitions": {
     "work_task_request": {
@@ -127,14 +127,232 @@
       }
     },
 
+    "ast_node": {
+      "description": "AST v1.1 팩터 식 노드 (SOT: 02_Infrastructure/docs/qvest_ast_v1_1_sot.md §2). leaf 노드 또는 op 노드 재귀 구조. LEAD/FUTURE_* 연산자는 문법적 부재 (표현 불가 = 실수 불가 — Cycle 50 double-negation 유형의 문법적 제거). leaf와 op 동시 보유 노드는 oneOf 위반으로 invalid.",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["leaf"],
+          "properties": {
+            "leaf": {
+              "type": "string",
+              "minLength": 1,
+              "description": "리프 식별자: ast_field_map_v0.json 등재 리프 그룹(group_id 또는 group_id:field) / factor_registry.json factor_id / escape 리프 4종(MODEL_SCORE|STORED_SCORE|LLM_SCORE|SPECIAL_OP). escape 리프는 escape_contract 의무."
+            },
+            "escape_contract": {"$ref": "#/definitions/escape_contract"}
+          },
+          "allOf": [
+            {
+              "if": {"properties": {"leaf": {"enum": ["MODEL_SCORE", "STORED_SCORE", "LLM_SCORE", "SPECIAL_OP"]}}},
+              "then": {"required": ["escape_contract"]}
+            }
+          ]
+        },
+        {
+          "type": "object",
+          "required": ["op", "args"],
+          "properties": {
+            "op": {
+              "type": "string",
+              "enum": [
+                "CS_RANK", "CS_ZSCORE", "CS_WINSORIZE", "CS_NEUTRALIZE", "CS_DEMEAN",
+                "TS_LAG", "TS_DELTA", "TS_MEAN", "TS_STD", "TS_RANK", "TS_MIN", "TS_MAX", "TS_SUM", "TS_CORR", "TS_BETA",
+                "ADD", "SUB", "MUL", "DIV_GUARD", "LOG", "ABS", "SIGN", "SQRT",
+                "CLIP", "IF_ELSE", "WHERE",
+                "AS_OF", "VINTAGE"
+              ],
+              "description": "연산자 라이브러리 𝒪 초기 최소집합 (SOT §2 — 원안 v1.0 §2 그대로 채택). 조건(CLIP/IF_ELSE/WHERE)은 complexity 별도 카운트. 𝒪 확장은 06_Registry/ast_operator_backlog.json에 blocked_by_capability verdict 적립분만 근거 (선제 확장 금지). 𝒪 밖 연산자 = ast_spec_gate.sh ④ block."
+            },
+            "args": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "oneOf": [
+                  {"$ref": "#/definitions/ast_node"},
+                  {"type": "number"},
+                  {"type": "string"},
+                  {"type": "boolean"}
+                ]
+              },
+              "description": "피연산자: 하위 ast_node 또는 스칼라 파라미터(윈도우 길이·클립 경계 등). 윈도우/lag는 부호 없는 명시적 양수 (SOT §4-3)."
+            }
+          }
+        }
+      ]
+    },
+
+    "escape_contract": {
+      "type": "object",
+      "description": "escape 리프 4종 PIT 계약 (SOT §2 — AST 환원 불가 산출 수용, 헌장 자율성 보존). escape_type별 conditional required. 파생 패널을 FIELD로 위장 금지 (§4-1).",
+      "required": ["escape_type"],
+      "properties": {
+        "escape_type": {"type": "string", "enum": ["MODEL_SCORE", "STORED_SCORE", "LLM_SCORE", "SPECIAL_OP"]},
+        "train_window_end": {"type": "string", "format": "date", "description": "MODEL_SCORE: 학습창 종점 선언 — t_d − 1 이하 의무"},
+        "training_leaf_refs": {"type": "array", "items": {"type": "string"}, "minItems": 1, "description": "MODEL_SCORE: 학습 데이터 리프 목록 (각 리프는 ast_field_map 검증 대상)"},
+        "provenance": {
+          "type": "object",
+          "required": ["store_build_hash", "generator_code_path", "generated_at"],
+          "properties": {
+            "store_build_hash": {"type": "string"},
+            "generator_code_path": {"type": "string"},
+            "generated_at": {"type": "string"}
+          },
+          "description": "STORED_SCORE: provenance 3필드 (기반 store build_hash + 생성 코드 경로 + 생성 시각)"
+        },
+        "production_parity_verified": {"type": "boolean", "description": "STORED_SCORE: measurement-graduation §7b 기계화 — false면 incumbent base 소비 불가 (저장 패널 동월 look-ahead 실사고 2026-07-14)"},
+        "doc_rcept_dt_max": {"type": "string", "description": "LLM_SCORE: 채점 대상 문서 rcept_dt 최댓값 — t_d 이하 의무"},
+        "prompt_sha": {"type": "string", "description": "LLM_SCORE: 프롬프트 sha 동결"},
+        "model_sha": {"type": "string", "description": "LLM_SCORE: 모델 sha 동결"},
+        "op_code_path": {"type": "string", "description": "SPECIAL_OP: 연산 정의 코드 경로 (TE/Kalman 등)"},
+        "walk_forward": {"type": "boolean", "description": "SPECIAL_OP: walk-forward 여부 선언"}
+      },
+      "allOf": [
+        {"if": {"properties": {"escape_type": {"const": "MODEL_SCORE"}}}, "then": {"required": ["train_window_end", "training_leaf_refs"]}},
+        {"if": {"properties": {"escape_type": {"const": "STORED_SCORE"}}}, "then": {"required": ["provenance", "production_parity_verified"]}},
+        {"if": {"properties": {"escape_type": {"const": "LLM_SCORE"}}}, "then": {"required": ["doc_rcept_dt_max", "prompt_sha", "model_sha"]}},
+        {"if": {"properties": {"escape_type": {"const": "SPECIAL_OP"}}}, "then": {"required": ["op_code_path", "walk_forward"]}}
+      ]
+    },
+
+    "ast_hypothesis": {
+      "type": "object",
+      "required": ["statement", "mechanism", "falsification", "regime_scope"],
+      "description": "AST v1.1 가설층 — 구조화 JSON (SOT §1). spec_version='ast_v1.1' 패키지에만 적용 (alpha_package allOf 조건부 참조). '시장이 비효율적' 류(주체·마찰 무명명)는 기계 반려 (ast_spec_gate.sh ①).",
+      "properties": {
+        "statement": {"type": "string", "minLength": 20, "description": "가설 1~3문장 서술"},
+        "mechanism": {
+          "type": "object",
+          "required": ["agent", "friction", "path"],
+          "properties": {
+            "agent": {"type": "string", "minLength": 5, "description": "누가 — 오류/제약의 주체를 실명 특정 (예: '개인 순매수 군집', '연기금 리밸런싱 캘린더')"},
+            "friction": {"type": "string", "minLength": 5, "description": "왜 차익거래로 안 지워지는가 — 마찰 특정 (예: 공매도 제약, 유동성 하한, 공시 지연)"},
+            "path": {"type": "string", "minLength": 5, "description": "신호→수익 전달 경로 — 어느 시점·어떤 형태로 가격 반영되는지"}
+          }
+        },
+        "falsification": {
+          "type": "string",
+          "minLength": 10,
+          "description": "반증 조건 — 성과 동어반복 금지. field_dictionary(06_Registry/ast_field_map_v0.json) 내 필드로 확인 가능한 부수 관측만 (ast_spec_gate.sh ② — 밖 필드 참조 = block)"
+        },
+        "regime_scope": {
+          "type": "object",
+          "required": ["holds_in", "weakens_or_reverses_in"],
+          "properties": {
+            "holds_in": {"type": "array", "items": {"type": "string"}, "minItems": 1, "description": "성립 국면"},
+            "weakens_or_reverses_in": {"type": "array", "items": {"type": "string"}, "minItems": 1, "description": "약화/반전 국면 — 빈 배열 금지 (보편타당 주장 반려, ast_spec_gate.sh ③)"},
+            "boundary_rationale": {"type": "string", "description": "경계가 메커니즘에서 도출되는 근거 (judge Claude 축 4 advisory 대상 — SOT §7)"}
+          }
+        }
+      }
+    },
+
     "alpha_package": {
       "type": "object",
-      "description": "Alpha Agent 산출물. 기대초과수익 α̂만.",
+      "description": "Alpha Agent 산출물. 기대초과수익 α̂만. v1.1 (2026-07-25, SOT qvest_ast_v1_1_sot.md §1): spec_version='ast_v1.1' 선언 시 3층 구조(가설 구조화 JSON + 팩터 AST + 결합 enum) conditional required. spec_version 부재 = 구식(pre-AST) 패키지 — 유효 유지 (backward compat, hypothesis/verdict 자유형 역사 용례 무제약).",
       "required": ["task_id", "as_of_date", "forecast_horizon", "alpha_vector", "factor_specs", "diagnostics"],
+      "allOf": [
+        {
+          "if": {"required": ["spec_version"], "properties": {"spec_version": {"const": "ast_v1.1"}}},
+          "then": {
+            "required": ["hypothesis", "verdict"],
+            "properties": {
+              "hypothesis": {"$ref": "#/definitions/ast_hypothesis"},
+              "verdict": {
+                "type": "string",
+                "enum": ["designed", "economic_void", "blocked_by_capability"],
+                "description": "설계 판정 (SOT §1·§6): designed = 3층 스펙 완성 / economic_void = 메커니즘 부재 판단(void_rationale required → §6 confirmed_voids 교차 등재) / blocked_by_capability = 𝒪/데이터로 표현 불가(blocker+unblock_requirement required → ast_operator_backlog 적립, 𝒪 확장 근거)"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": ["spec_version", "verdict"],
+            "properties": {"spec_version": {"const": "ast_v1.1"}, "verdict": {"const": "designed"}}
+          },
+          "then": {"required": ["factors", "combination_rule", "self_pit_check"]}
+        },
+        {
+          "if": {
+            "required": ["spec_version", "verdict"],
+            "properties": {"spec_version": {"const": "ast_v1.1"}, "verdict": {"const": "blocked_by_capability"}}
+          },
+          "then": {"required": ["blocker", "unblock_requirement"]}
+        },
+        {
+          "if": {
+            "required": ["spec_version", "verdict"],
+            "properties": {"spec_version": {"const": "ast_v1.1"}, "verdict": {"const": "economic_void"}}
+          },
+          "then": {"required": ["void_rationale"]}
+        }
+      ],
       "properties": {
         "task_id": {"type": "string"},
         "as_of_date": {"type": "string", "format": "date"},
         "forecast_horizon": {"type": "string"},
+        "spec_version": {
+          "type": "string",
+          "enum": ["ast_v1.1"],
+          "description": "AST 계층 버전 선언 (SOT qvest_ast_v1_1_sot.md). 부재 = 구식 패키지 (유효 — 신필드 미요구). 'ast_v1.1' 선언 시 hypothesis+verdict required, verdict=designed면 factors+combination_rule+self_pit_check 추가 required."
+        },
+        "hypothesis": {
+          "description": "가설층. spec_version='ast_v1.1'이면 allOf 조건부로 #/definitions/ast_hypothesis 구조화 JSON 강제. 구식(spec_version 부재) 패키지의 자유형(문자열 등) 역사 용례는 유효 유지 — 여기서 타입 무제약 (backward compat, 실물 183건 중 자유형 hypothesis 다수 실측 2026-07-25)."
+        },
+        "factors": {
+          "type": "array",
+          "minItems": 1,
+          "description": "팩터 정의층 — AST formulaic lane (SOT §1·§2). 구층 factor_specs(family/proxy/rationale 서술)와 병행 — factors는 기계가독 식. factor_specs 항목과 factor_id 대응 권장.",
+          "items": {
+            "type": "object",
+            "required": ["factor_id", "role", "restatement_exposure"],
+            "oneOf": [
+              {"required": ["ast"]},
+              {"required": ["leaf_ref"]}
+            ],
+            "properties": {
+              "factor_id": {"type": "string", "minLength": 1, "description": "패키지 내 유일 식별자 (factor_specs 대응 키)"},
+              "ast": {"$ref": "#/definitions/ast_node", "description": "연산 합성 식 (𝒪 + 리프)"},
+              "leaf_ref": {"type": "string", "minLength": 1, "description": "단일 리프 직결 시 (연산 합성 없음) ast 대신 허용 — ast_field_map group_id(:field) 또는 factor_registry factor_id"},
+              "role": {"type": "string", "minLength": 3, "description": "결합 내 역할 (예: core_signal / conditioning / interaction / diagnostic)"},
+              "restatement_exposure": {"type": "integer", "minimum": 0, "description": "restatement_prone 리프 개수 (registry restatement_prone 기준 — verify() WARN_RESTATEMENT 소스, Phase 2 사이드카 ast_features.restatement_exposure 집계)"}
+            }
+          }
+        },
+        "combination_rule": {
+          "type": "string",
+          "enum": ["single_factor", "z_score_aligned_weighted_sum", "z_score_aligned_equal_weight", "rank_average", "model_internal"],
+          "description": "결합 규칙층 enum (SOT §1 — 기존 Z_Score_Aligned 결합 컨벤션 계승, 트리 기계장치 불요). z_score_aligned_weighted_sum = α̂=Σθ_k·z⊥ 선형 합성(θ는 factor_specs.weight_theta). model_internal = 결합이 escape 리프(MODEL_SCORE 등) 내부 수행. enum 확장은 SOT 개정 경유."
+        },
+        "verdict": {
+          "description": "설계 판정. spec_version='ast_v1.1'이면 allOf 조건부로 enum(designed|economic_void|blocked_by_capability) 강제. 구식 패키지의 자유형 verdict(문자열/객체 — CLEAN_NEGATIVE 등 역사 용례 56건 실측) 유효 유지 — 여기서 타입 무제약."
+        },
+        "blocker": {"type": "string", "minLength": 10, "description": "blocked_by_capability 시: 표현 불가한 필요 연산/데이터 서술"},
+        "unblock_requirement": {"type": "string", "minLength": 10, "description": "blocked_by_capability 시: 해소 요건 (신규 연산자 / 데이터 원천 / 접근자) — 06_Registry/ast_operator_backlog.json 적립 근거"},
+        "void_rationale": {"type": "string", "minLength": 10, "description": "economic_void 시: 메커니즘 부재 판단 근거 — §6 confirmed_voids + hypothesis_index 교차 등재용"},
+        "self_pit_check": {
+          "type": "object",
+          "required": ["performed", "leaves_checked", "verdict"],
+          "description": "리프 자가 가용성 점검 (SOT §1 AST 구성 규칙). 정적 verify()는 Step 3 별도 계층 — 본 필드는 alpha 자가 선점검 기록.",
+          "properties": {
+            "performed": {"type": "boolean"},
+            "leaves_checked": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "required": ["leaf", "availability_rule"],
+                "properties": {
+                  "leaf": {"type": "string"},
+                  "availability_rule": {"type": "string", "description": "registry 승격 availability 확인값 (예: 'regulatory: 연간 익년 3/31 — C4 2026-07-25 확정', 'fixed: 45d')"},
+                  "restatement_prone": {"type": "boolean"}
+                }
+              }
+            },
+            "verdict": {"type": "string", "enum": ["clean", "warn_restatement", "fail_lookahead_suspected"]},
+            "notes": {"type": "string"}
+          }
+        },
         "alpha_vector": {
           "type": "object",
           "description": "Ticker → expected active return (decimal)",

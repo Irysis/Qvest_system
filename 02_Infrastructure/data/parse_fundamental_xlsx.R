@@ -195,8 +195,18 @@ parse_fundamental_xlsx <- function(
 
   # Period → Date 변환
   dt[, Period_Date := yyyymm_to_qtr_end(Period)]
-  # Factor_Date: 분기말 + 45일 (PIT compliance)
-  dt[, Factor_Date := Period_Date + 45L]
+  # Factor_Date (PIT compliance — Q4 lag repair 2026-07-25, 도훈 승인):
+  #   Q1~Q3 (Period 말월 != 12): 분기말 + 45일 (분기보고서 법정기한 45일)
+  #   Q4    (Period 말월 == 12): 익년 3/31 명시 고정 (사업보고서 법정기한 90일 —
+  #     +90d 산식은 윤년에 3/30~3/31로 흔들리므로 명시 3/31. DART 파이프라인
+  #     90/91d와 규약 정합. 근거: 04_Research/01_reports/q4_lag_repair_plan_20260725.md §2(a))
+  #   12월 외 결산(Period 말월=3/6/9 연간) semantics: 계획서 caveat ② — 본 수리는
+  #     Period 말월=12만 대상(변경 없음 = 기존 +45d 유지, 신규 공격성 미도입).
+  dt[, Factor_Date := fifelse(
+    month(Period_Date) == 12L,
+    as.Date(paste0(year(Period_Date) + 1L, "-03-31")),
+    Period_Date + 45L
+  )]
 
   cat("\n========================================\n")
   cat("Total rows:", format(nrow(dt), big.mark = ","), "\n")

@@ -1,0 +1,303 @@
+{
+  "_meta": {
+    "name": "qvest_ast_operator_library",
+    "version": "1.1.0",
+    "created": "2026-07-25",
+    "sot": "02_Infrastructure/docs/qvest_ast_v1_1_sot.md §2 (원안 v1.0 §2 초기 최소집합 그대로 채택)",
+    "compiler": "02_Infrastructure/ast/ast_compile.R",
+    "principles": [
+      "LEAD/FUTURE_* 연산자 부재 — 표현 불가 = 실수 불가 (Cycle 50 double-negation 유형의 문법적 제거, SOT §4-3). 컴파일러는 ^(LEAD|FUTURE) 접두 연산자를 라이브러리 조회 전에 하드 거부한다.",
+      "모든 lag/offset 파라미터는 부호 없는 명시적 양수 — 음수(=lead 등가) 컴파일 거부.",
+      "𝒪 확장 규율: 06_Registry/ast_operator_backlog.json 의 blocked_by_capability verdict 적립분만 근거로 확장. 선제 확장 금지 (SOT §2).",
+      "조건 연산자(CLIP/IF_ELSE/WHERE)는 complexity_weight 2 — Phase 2 conditional_op_count 별도 집계 대상 (SOT §5).",
+      "AS_OF/VINTAGE 는 PIT 배관 연산자 — complexity_weight 0 (신호 복잡도 아님).",
+      "본 라이브러리+컴파일러는 팩터 신호 계산까지만 담당 — 포트폴리오 수익 구성은 기존 계약(canonical_screen_bt / build_bt_result / Return.portfolio) 불변. 자체합성 금지 (backtest-contract.md)."
+    ],
+    "free_param_definition": "free_param_count = op 노드에 공급된 수치 파라미터(window/k/p/lo/hi/eps/extra_lag_days) 개수 + const 노드 개수 (Phase 2 ast_features)."
+  },
+
+  "grammar": {
+    "node_types": {
+      "op": {
+        "fields": {
+          "type": "'op'",
+          "op": "연산자명 — operators 키 중 하나 (대문자)",
+          "args": "[node, ...] — arity 개수 일치 의무",
+          "params": "{이름: 값} — 해당 연산자 params 스펙 준수 (미선언 파라미터 = 컴파일 거부)"
+        }
+      },
+      "leaf": {
+        "fields": {
+          "type": "'leaf'",
+          "class": "FIELD(기본) | FIELD_REGISTRY_PTR | MODEL_SCORE | STORED_SCORE | LLM_SCORE | SPECIAL_OP",
+          "source": "leaf_sources 키 중 하나 (canonical 리프 의무 — escape 리프는 class 가 우선)",
+          "field": "리프 필드/팩터/스코어 이름 (필수)",
+          "contract": "escape 리프 계약 필드 (escape_leaves 참조 — 누락 시 컴파일 거부)",
+          "avail_offset_days": "선택. 관측 Date 대비 가용 지연일 (avail_ts = Date + offset). 미지정 시 소스 기본값",
+          "restatement_prone": "선택. 미지정 시 leaf_sources 기본값"
+        }
+      },
+      "const": { "fields": { "type": "'const'", "value": "단일 유한 수치" } }
+    },
+    "panel_contract": {
+      "internal": "(Date, Ticker, value, avail_ts) — avail_ts = 해당 행이 의사결정에 사용 가능해지는 최초 시각. 불변식: avail_ts >= Date (모든 연산자가 보존 — 관측일보다 이른 가용시각 = 라벨 방향 오류로 거부)",
+      "output": "(Date, Ticker, value) 표준 신호 패널 — canonical_screen_bt(scores_dt) 의 (Date, Ticker, score) 로 직결",
+      "cond_semantics": "IF_ELSE/WHERE 의 cond 패널은 value > 0 을 TRUE 로 해석. NA cond = NA 출력. 비교 연산자는 𝒪 밖 — SIGN(SUB(x,y)) 조합으로 표현"
+    },
+    "as_of_discipline": "리프 로드·조인·시점 정렬은 컴파일러 소유 (SOT §4-2). 이항 연산 그리드 = 좌측 피연산자 그리드, 우측은 AS_OF(avail_ts <= left.Date) LOCF. 최종 산출은 eval_dates 그리드에 AS_OF(avail_ts <= eval_date) 조인. 수기 merge 금지 — 백테=배포 단일 경로."
+  },
+
+  "operators": {
+
+    "CS_RANK": {
+      "class": "cross_section", "grouping": "by=Date",
+      "arity": 1, "args": [{ "name": "x", "type": "panel" }], "params": [],
+      "output": { "range": "[0,1]", "definition": "date별 횡단면 백분위 (frank ties=average − 1)/(n−1). non-NA n=1 → 0.5. NA 입력 → NA" },
+      "complexity_weight": 1, "r_impl": "op_cs_rank"
+    },
+    "CS_ZSCORE": {
+      "class": "cross_section", "grouping": "by=Date",
+      "arity": 1, "args": [{ "name": "x", "type": "panel" }], "params": [],
+      "output": { "definition": "(x − mean)/sd by Date (non-NA 기준). sd<=0 또는 n<2 → NA" },
+      "complexity_weight": 1, "r_impl": "op_cs_zscore"
+    },
+    "CS_WINSORIZE": {
+      "class": "cross_section", "grouping": "by=Date",
+      "arity": 1, "args": [{ "name": "x", "type": "panel" }],
+      "params": [{ "name": "p", "type": "num", "required": true, "min": 0, "max": 0.5, "exclusive": true, "desc": "양측 분위 절단폭 (0,0.5) — quantile type 7" }],
+      "output": { "definition": "date별 [q_p, q_{1-p}] 클램프" },
+      "complexity_weight": 1, "r_impl": "op_cs_winsorize"
+    },
+    "CS_NEUTRALIZE": {
+      "class": "cross_section", "grouping": "by=Date,group",
+      "arity": 2, "args": [{ "name": "x", "type": "panel" }, { "name": "group", "type": "panel", "desc": "범주형 값 패널 (예: rawdata Sector). AS_OF 로 x 그리드에 정렬" }],
+      "params": [],
+      "output": { "definition": "그룹 내 demean: x − mean(x) by (Date, group). group 결측 → NA" },
+      "complexity_weight": 1, "r_impl": "op_cs_neutralize"
+    },
+    "CS_DEMEAN": {
+      "class": "cross_section", "grouping": "by=Date",
+      "arity": 1, "args": [{ "name": "x", "type": "panel" }], "params": [],
+      "output": { "definition": "x − mean(x) by Date (non-NA 기준)" },
+      "complexity_weight": 1, "r_impl": "op_cs_demean"
+    },
+
+    "TS_LAG": {
+      "class": "time_series", "grouping": "by=Ticker (Date 오름차순 보장)",
+      "arity": 1, "args": [{ "name": "x", "type": "panel" }],
+      "params": [{ "name": "k", "type": "int", "required": true, "min": 1, "desc": "양의 정수 lag. 음수/0 컴파일 거부 (lead 문법적 제거)" }],
+      "output": { "definition": "value[t] = x[t−k]. avail_ts 는 emission-time 의미론: 행 자신의 avail_ts 유지(pmax) — AS_OF 최종 조인에서 lag 이 소거되지 않도록 보장" },
+      "complexity_weight": 1, "r_impl": "op_ts_lag"
+    },
+    "TS_DELTA": {
+      "class": "time_series", "grouping": "by=Ticker",
+      "arity": 1, "args": [{ "name": "x", "type": "panel" }],
+      "params": [{ "name": "k", "type": "int", "required": true, "min": 1 }],
+      "output": { "definition": "x[t] − x[t−k]" },
+      "complexity_weight": 1, "r_impl": "op_ts_delta"
+    },
+    "TS_MEAN": {
+      "class": "time_series", "grouping": "by=Ticker",
+      "arity": 1, "args": [{ "name": "x", "type": "panel" }],
+      "params": [{ "name": "window", "type": "int", "required": true, "min": 2, "desc": "우측정렬 롤링 창. 불완전 창 / 창 내 NA → NA" }],
+      "output": { "definition": "frollmean 우측정렬" },
+      "complexity_weight": 1, "r_impl": "op_ts_mean"
+    },
+    "TS_STD": {
+      "class": "time_series", "grouping": "by=Ticker",
+      "arity": 1, "args": [{ "name": "x", "type": "panel" }],
+      "params": [{ "name": "window", "type": "int", "required": true, "min": 2 }],
+      "output": { "definition": "롤링 표본표준편차 (n−1 분모)" },
+      "complexity_weight": 1, "r_impl": "op_ts_std"
+    },
+    "TS_RANK": {
+      "class": "time_series", "grouping": "by=Ticker",
+      "arity": 1, "args": [{ "name": "x", "type": "panel" }],
+      "params": [{ "name": "window", "type": "int", "required": true, "min": 2 }],
+      "output": { "range": "[0,1]", "definition": "창 내 현재값 백분위: (sum(v<last) + 0.5*(ties−1))/(w−1). 창 내 NA → NA" },
+      "complexity_weight": 1, "r_impl": "op_ts_rank"
+    },
+    "TS_MIN": {
+      "class": "time_series", "grouping": "by=Ticker",
+      "arity": 1, "args": [{ "name": "x", "type": "panel" }],
+      "params": [{ "name": "window", "type": "int", "required": true, "min": 2 }],
+      "output": { "definition": "롤링 최솟값" }, "complexity_weight": 1, "r_impl": "op_ts_min"
+    },
+    "TS_MAX": {
+      "class": "time_series", "grouping": "by=Ticker",
+      "arity": 1, "args": [{ "name": "x", "type": "panel" }],
+      "params": [{ "name": "window", "type": "int", "required": true, "min": 2 }],
+      "output": { "definition": "롤링 최댓값" }, "complexity_weight": 1, "r_impl": "op_ts_max"
+    },
+    "TS_SUM": {
+      "class": "time_series", "grouping": "by=Ticker",
+      "arity": 1, "args": [{ "name": "x", "type": "panel" }],
+      "params": [{ "name": "window", "type": "int", "required": true, "min": 2 }],
+      "output": { "definition": "frollsum 우측정렬" }, "complexity_weight": 1, "r_impl": "op_ts_sum"
+    },
+    "TS_CORR": {
+      "class": "time_series", "grouping": "by=Ticker",
+      "arity": 2, "args": [{ "name": "x", "type": "panel" }, { "name": "y", "type": "panel" }],
+      "params": [{ "name": "window", "type": "int", "required": true, "min": 3 }],
+      "output": { "range": "[-1,1]", "definition": "롤링 Pearson 상관. 창 내 NA 또는 어느 쪽 sd=0 → NA. y 는 x 그리드에 AS_OF 정렬" },
+      "complexity_weight": 1, "r_impl": "op_ts_corr"
+    },
+    "TS_BETA": {
+      "class": "time_series", "grouping": "by=Ticker",
+      "arity": 2, "args": [{ "name": "x", "type": "panel" }, { "name": "y", "type": "panel" }],
+      "params": [{ "name": "window", "type": "int", "required": true, "min": 3 }],
+      "output": { "definition": "롤링 회귀 기울기 x~y = cov(x,y)/var(y). var(y)=0 → NA" },
+      "complexity_weight": 1, "r_impl": "op_ts_beta"
+    },
+
+    "ADD": {
+      "class": "arithmetic", "arity": 2,
+      "args": [{ "name": "a", "type": "panel_or_const" }, { "name": "b", "type": "panel_or_const" }],
+      "params": [], "output": { "definition": "a + b (원소별. 패널-패널은 AS_OF 정렬 후)" },
+      "complexity_weight": 1, "r_impl": ".arith2(+)"
+    },
+    "SUB": {
+      "class": "arithmetic", "arity": 2,
+      "args": [{ "name": "a", "type": "panel_or_const" }, { "name": "b", "type": "panel_or_const" }],
+      "params": [], "output": { "definition": "a − b" }, "complexity_weight": 1, "r_impl": ".arith2(-)"
+    },
+    "MUL": {
+      "class": "arithmetic", "arity": 2,
+      "args": [{ "name": "a", "type": "panel_or_const" }, { "name": "b", "type": "panel_or_const" }],
+      "params": [], "output": { "definition": "a * b" }, "complexity_weight": 1, "r_impl": ".arith2(*)"
+    },
+    "DIV": {
+      "class": "arithmetic", "arity": 2,
+      "args": [{ "name": "a", "type": "panel_or_const" }, { "name": "b", "type": "panel_or_const" }],
+      "params": [{ "name": "eps", "type": "num", "required": false, "min": 0, "exclusive": true, "default": 1e-12, "desc": "0-분모 가드 임계 — |b| < eps → NA (Inf 생산 금지)" }],
+      "output": { "definition": "a / b, |b| < eps → NA" }, "complexity_weight": 1, "r_impl": "op_div"
+    },
+    "LOG": {
+      "class": "arithmetic", "arity": 1, "args": [{ "name": "x", "type": "panel" }], "params": [],
+      "output": { "definition": "자연로그. x <= 0 → NA (가드)" }, "complexity_weight": 1, "r_impl": "op_log"
+    },
+    "ABS": {
+      "class": "arithmetic", "arity": 1, "args": [{ "name": "x", "type": "panel" }], "params": [],
+      "output": { "definition": "|x|" }, "complexity_weight": 1, "r_impl": "op_abs"
+    },
+    "SIGN": {
+      "class": "arithmetic", "arity": 1, "args": [{ "name": "x", "type": "panel" }], "params": [],
+      "output": { "range": "{-1,0,1}", "definition": "부호" }, "complexity_weight": 1, "r_impl": "op_sign"
+    },
+    "SQRT": {
+      "class": "arithmetic", "arity": 1, "args": [{ "name": "x", "type": "panel" }], "params": [],
+      "output": { "definition": "제곱근. x < 0 → NA (가드)" }, "complexity_weight": 1, "r_impl": "op_sqrt"
+    },
+
+    "CLIP": {
+      "class": "conditional", "arity": 1, "args": [{ "name": "x", "type": "panel" }],
+      "params": [
+        { "name": "lo", "type": "num", "required": true },
+        { "name": "hi", "type": "num", "required": true, "desc": "lo <= hi 검증" }
+      ],
+      "output": { "definition": "pmin(pmax(x, lo), hi)" },
+      "complexity_weight": 2, "r_impl": "op_clip",
+      "phase2_note": "conditional_op_count 집계 대상 (complexity 가중 2)"
+    },
+    "IF_ELSE": {
+      "class": "conditional", "arity": 3,
+      "args": [
+        { "name": "cond", "type": "panel", "desc": "value > 0 = TRUE. NA → NA" },
+        { "name": "a", "type": "panel_or_const" },
+        { "name": "b", "type": "panel_or_const" }
+      ],
+      "params": [],
+      "output": { "definition": "cond>0 이면 a, 아니면 b. 그리드 = cond 그리드, a/b 는 AS_OF 정렬. avail_ts = 3자 보수 max" },
+      "complexity_weight": 2, "r_impl": "op_if_else",
+      "phase2_note": "conditional_op_count 집계 대상"
+    },
+    "WHERE": {
+      "class": "conditional", "arity": 2,
+      "args": [
+        { "name": "x", "type": "panel" },
+        { "name": "cond", "type": "panel", "desc": "value > 0 = TRUE" }
+      ],
+      "params": [],
+      "output": { "definition": "cond>0 인 곳만 x, 나머지 NA. 그리드 = x 그리드" },
+      "complexity_weight": 2, "r_impl": "op_where",
+      "phase2_note": "conditional_op_count 집계 대상"
+    },
+
+    "AS_OF": {
+      "class": "pit_alignment", "arity": 1, "args": [{ "name": "x", "type": "panel" }],
+      "params": [{ "name": "extra_lag_days", "type": "int", "required": true, "min": 0, "desc": "가용시각 보수 이동 (avail_ts += k일). 음수 = lead 등가 — 컴파일 거부" }],
+      "output": { "definition": "값 불변, avail_ts 만 +k일. 리프 기본 AS_OF 규율(컴파일러 소유)은 명시 노드 없이도 항상 적용 — 본 연산자는 추가 보수화 전용" },
+      "complexity_weight": 0, "r_impl": "(dispatcher 내장)"
+    },
+    "VINTAGE": {
+      "class": "pit_alignment", "arity": 1,
+      "args": [{ "name": "leaf", "type": "leaf_only", "desc": "직접 리프만 감쌀 수 있음 (연산 결과 vintage 고정은 무의미)" }],
+      "params": [{ "name": "tag", "type": "str", "required": true, "desc": "pin 스냅샷 태그 (measurement-graduation §7 pin_cache 규약). provider 가 태그별 vintage 를 공급 — 미지원 provider 는 명시 에러 (침묵 무시 금지)" }],
+      "output": { "definition": "리프를 지정 vintage 스냅샷으로 고정 로드" },
+      "complexity_weight": 0, "r_impl": "(dispatcher 내장)"
+    }
+  },
+
+  "escape_leaves": {
+    "_note": "AST 환원 불가 산출 수용 4종 (SOT §2 — 헌장 자율성 보존). Phase 2 구조특징 사전분포 대상 외 — escape_leaf_count 만큼 커버리지 절단 명시. 계약 필드 누락 = 컴파일 거부.",
+    "MODEL_SCORE": {
+      "target": "ML 학습 스코어 (LightGBM 등)",
+      "contract_fields_required": ["train_window_end", "train_leaf_list"],
+      "contract_fields_recommended": ["model_code_path", "model_sha"],
+      "pit_contract": "학습창 종점(train_window_end) <= t_d − 1 선언 의무 + 학습 데이터 리프 목록(train_leaf_list) 첨부 — 각 리프는 ast_field_map 검증 대상"
+    },
+    "STORED_SCORE": {
+      "target": "저장 파생 패널 (insider 패널·국면 신호 등)",
+      "contract_fields_required": ["store_build_hash", "generator_code_path", "generated_at", "production_parity_verified"],
+      "contract_fields_recommended": ["path", "avail_offset_days"],
+      "pit_contract": "provenance 3필드 {store_build_hash, generator_code_path, generated_at} + production_parity_verified 라벨 (measurement-graduation §7b 기계화). 파생 패널의 FIELD 위장 금지 (사고2 유형). 가용시각 = 패널 내 avail_ts 컬럼 또는 contract.avail_offset_days 명시 의무 (암묵 0 금지)"
+    },
+    "LLM_SCORE": {
+      "target": "텍스트 LLM 채점 (사업보고서 등)",
+      "contract_fields_required": ["doc_rcept_dt_max", "prompt_sha", "model_sha"],
+      "contract_fields_recommended": [],
+      "pit_contract": "채점 대상 문서 rcept_dt <= t_d + 프롬프트/모델 sha 동결"
+    },
+    "SPECIAL_OP": {
+      "target": "TE/Kalman 등 특수연산",
+      "contract_fields_required": ["op_code_path", "walk_forward"],
+      "contract_fields_recommended": [],
+      "pit_contract": "연산 정의 코드 경로 + walk-forward 여부 선언"
+    }
+  },
+
+  "leaf_sources": {
+    "factor_db_monthly": {
+      "accessor": "load_month_factors() — 02_Infrastructure/factor_db/factor_db_connector.R:189 (C15: parquet 직접 read 금지)",
+      "unit": "monthly (sig_date)",
+      "value_semantics": "Z_Score_Aligned (C13 방향정렬, higher=better)",
+      "avail_rule": "at_date — avail_ts = sig_date (빌더 pre-slice [sig_d−1400d, sig_d] 가 입력 PIT 보장)",
+      "avail_offset_days_default": 0,
+      "restatement_prone_default": true,
+      "vintage_note": "canonical provider 는 vintage 태그 미지원 — pin_cache 스냅샷 경유 필요 시 명시 에러 (measurement-graduation §7)"
+    },
+    "factor_db_daily": {
+      "accessor": "load_daily_factors() v2.3 — factor_db_connector.R:303 (C15 carve-out 해소 접근자)",
+      "unit": "daily",
+      "value_semantics": "winsorized RAW value x ic_sign — z 아님. 팩터 간 결합 전 CS_ZSCORE/CS_RANK 표준화는 AST 작성자 책임",
+      "avail_rule": "at_date — avail_ts = Date (connector 가 Date <= pit_max 하드 강제)",
+      "avail_offset_days_default": 0,
+      "restatement_prone_default": true
+    },
+    "rawdata": {
+      "accessor": "load_rawdata() — 02_Infrastructure/backtest_harness.R:166 (RAWDATA.parquet, A1 그룹)",
+      "unit": "daily",
+      "value_semantics": "원천 컬럼 (Close/Vol/Size/Ret/Open/High/Low/Float/Sector 등 — ast_field_map A1). 저장 Ret = 참값, 재계산 금지",
+      "avail_rule": "at_date — avail_ts = Date (장마감 확정치, 신호일 semantics: sig_date 신호 → forward-return 소비는 canonical_screen_bt 소관). C10 유동성 t-1 규칙은 소비면 필터 책임",
+      "avail_offset_days_default": 0,
+      "restatement_prone_default": true,
+      "note": "수정주가 원장 = 전기간 재작성 (restatement). 다중라운드 판정은 pin_cache 스냅샷 의무"
+    },
+    "stored_panel": {
+      "accessor": "STORED_SCORE 전용 — contract.path parquet (컴파일러가 읽되 provenance 3필드 + parity 라벨 검증 후)",
+      "unit": "패널 선언 따름",
+      "avail_rule": "명시 의무 — 패널 내 avail_ts 컬럼 또는 contract.avail_offset_days. 암묵 0 금지 (저장 패널 동월 look-ahead 실사고 재발 방지)",
+      "restatement_prone_default": null
+    }
+  }
+}
