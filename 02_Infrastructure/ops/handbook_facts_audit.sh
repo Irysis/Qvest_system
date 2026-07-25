@@ -50,8 +50,10 @@ except Exception: print(0)
 # ── L1 데이터
 RAW="$PROJECT/.cache/RAWDATA.parquet"
 DATA_RAW_MB=0; [ -f "$RAW" ] && DATA_RAW_MB=$(( $(stat -c %s "$RAW" 2>/dev/null || echo 0) / 1048576 ))
-FDB_M=$(ls "$PROJECT"/.cache/factor_db/* 2>/dev/null | wc -l); FDB_M=$(n "$FDB_M")
-FDB_D=$(ls "$PROJECT"/.cache/factor_db_daily/* 2>/dev/null | wc -l); FDB_D=$(n "$FDB_D")
+# ⚠ `ls dir/*` 는 하위 디렉터리를 한 단계 전개해 파일수를 부풀린다(2026-07-25 실측: 446 → 3260 오계수).
+#   최상위 파일만 세려면 find -maxdepth 1 -type f.
+FDB_M=$(find "$PROJECT/.cache/factor_db" -maxdepth 1 -type f 2>/dev/null | wc -l); FDB_M=$(n "$FDB_M")
+FDB_D=$(find "$PROJECT/.cache/factor_db_daily" -maxdepth 1 -type f 2>/dev/null | wc -l); FDB_D=$(n "$FDB_D")
 FDB_GB=$(du -sm "$PROJECT/.cache/factor_db" "$PROJECT/.cache/factor_db_daily" 2>/dev/null | awk '{s+=$1} END{printf "%.1f", s/1024}')
 [ -z "$FDB_GB" ] && FDB_GB=0
 
