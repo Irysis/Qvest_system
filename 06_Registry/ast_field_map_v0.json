@@ -18,7 +18,8 @@
    "LLM_SCORE": "텍스트 LLM 채점 계열 (AST v1.1 escape 리프)",
    "EXTERNAL": "외부 조회형·미확보·제약 충돌 — 리프 부적격(정본 인입 시 재분류)",
    "NOT_LEAF": "운용 산출/메타 — 리프 제외 (단 cache_registry·pin_cache는 availability/vintage 필드의 1차 소스로 재사용)"
-  }
+  },
+  "updated": "2026-07-25 (v0.1 — 데이터 트랙 수리 반영: 멤버십/수급/컨센서스 현행화, factor_db 당월, IC 프론티어, fdb_daily 접근자 신설)"
  },
  "summary": {
   "total_groups": 58,
@@ -39,18 +40,25 @@
    "NOT_LEAF": 3
   },
   "operational_issues_index": [
-   "A3 멤버십(K200/KQ150) 데이터 종점 2026-03-31 — 2026-06 정기변경 미반영 (유니버스 제약 원천 스테일, Universe_Support.xlsx 재export 필요)",
+   "A3 멤버십(K200/KQ150) 데이터 종점 2026-03-31 — 2026-06 정기변경 미반영 (유니버스 제약 원천 스테일, Universe_Support.xlsx 재export 필요) → ✅해소 07-25 (QW 리프레시 자체 배선 — 도훈 지적대로 재export 불요)",
    "A4 benchmark.parquet Date dtype = timestamp[ns] 실측 — date32 통일 수리 미병합 (RAWDATA date32와 조인 silent all-NA 전력)",
    "C4 availability 3-way 불일치: pit.md '연간 5월' vs DART 연간 3/31 vs xlsx 일률 +45d(Q4≈2/14) — AST Step 0 도훈 결정 대상",
-   "factor_db_202607 = 2026-07-03 단일 스냅샷 (intra-month stale, load_month_factors 침묵 전달)",
-   "factor_ic_monthly max 2026-05 — 월간 DB 대비 2개월 lag (방향추론 최근월 stale)",
+   "factor_db_202607 = 2026-07-03 단일 스냅샷 (intra-month stale, load_month_factors 침묵 전달) → ✅해소 07-25 (재빌드 + 주간 트리거)",
+   "factor_ic_monthly max 2026-05 — 월간 DB 대비 2개월 lag (방향추론 최근월 stale) → ✅판정 07-25 (2026-05=구조 프론티어, stale vintage 교정 + guard)",
    "E6 SJM BearProb 2026-06-04 STALE ~7주 (리프레시 미배선) / E9 conditional_ic_matrix 2026-06-08 STALE / E4 regime_daily_v2 ~4영업일 지연",
-   "A6 투자자수급 실효 지연 ~22일 (수동 export — 설계안 '0~1일 확인 필요'의 실측 답) / A8 시장수급 2026-03-13 수집 정지·registry 미등재 orphan",
+   "A6 투자자수급 실효 지연 ~22일 (수동 export — 설계안 '0~1일 확인 필요'의 실측 답) / A8 시장수급 2026-03-13 수집 정지·registry 미등재 orphan → ✅일회 해소 07-25 (07-24 현행, 케이던스는 잔존)",
    "'value/BM 2002-08~' 선언 vs 실측 V01_BM onset 2000-07 — CLAUDE.md KR 한계 reference 갱신 후보 (2002-08 = 336팩터 full-set 시점으로 재해석)",
-   "fdb_daily 전용 접근자 부재 (C15 carve-out) — AST 편입 시 최우선 배관 갭",
+   "fdb_daily 전용 접근자 부재 (C15 carve-out) — AST 편입 시 최우선 배관 갭 → ✅해소 07-25 (load_daily_factors v2.3)",
    "fundamental_dart_quarterly 고아(소비자 부재) / valuation.parquet 참조되나 파일 부재 / soft_mrs.json 0-byte orphan"
   ],
-  "gap_ledger_pointer": "misc.domain_notes — FQ가 원하는 미확보 데이터 게이트별 목록 (공매도/대차·신용잔고·NPS·계약금액 파서·담보 역사 등 9건)"
+  "gap_ledger_pointer": "misc.domain_notes — FQ가 원하는 미확보 데이터 게이트별 목록 (공매도/대차·신용잔고·NPS·계약금액 파서·담보 역사 등 9건)",
+  "resolutions_20260725": {
+   "A3": "해소(07-25): QW 리프레시(B5=20260401 이음매 가드)로 8패널 max 2026-07-24. 6월 정기변경 반영(K200 4편입/4편출·KQ150 15/16). RAWDATA 재투영 완료(스위치 06-30 정확). 파서 결함(incremental_universe_support no-op/clobber)은 chip task_d48b8f4d — 수리 전 차기 증분은 우회 merge 필요",
+   "A6": "해소(07-25): investor_all max 2026-07-24 (구 ~22일 지연 일회 해소 — 수동 export 케이던스는 구조 잔존)",
+   "C-CONSENSUS-QW": "해소(07-25): 12 metric 전부 max 2026-07-24 (ticker_map은 Date 무관 매핑테이블 — incr 말미 검사 오류는 무해)",
+   "FDB-B6": "갱신(07-25): factor_db_202607 Date=2026-07-24·855,571행·338팩터(build_hash 20260725125206). intra-month 스테일 주간 트리거 배선(>7일 lag 시 재빌드). 전용 접근자 load_daily_factors() 신설 — C15 carve-out 해소",
+   "FDB-B7": "갱신(07-25): 114,292행/327팩터/max Date 2026-05-29(구 05-31 일요일 stale vintage 교정). 2026-05 = 구조적 프론티어 판정(2개월 lag 아님 — 6월 IC는 7월 완결 후 자동). incomplete-terminal-pair guard 추가"
+  }
  },
  "domains": {
   "rawdata": {

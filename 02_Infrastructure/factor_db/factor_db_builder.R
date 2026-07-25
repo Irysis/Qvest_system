@@ -1249,11 +1249,48 @@ update_factor_db_daily <- function() {
   }
 
   # ── Current month ───────────────────────────────────────────────────────────
-  if (!file.exists(fpath) || is_month_end) {
-    cat(sprintf("[update_factor_db_daily] Building/updating %s...\n", ym_tag))
-    build_factor_db(today, save = TRUE, force = is_month_end)
+  # D2 2026-07-25: intra-month freshness. The current-month file is a single-
+  # sig_date snapshot; before this patch it froze at its first build date until
+  # month-end (measured: factor_db_202607 stuck at Date=2026-07-03 for ~3 weeks
+  # while RAWDATA ran to 2026-07-24 — silent staleness for load_month_factors
+  # consumers). Weekly cadence via staleness check (snapshot Date lags latest
+  # RAWDATA trading day > 7 calendar days -> force rebuild at that trading day),
+  # not a weekday gate: self-heals if a scheduled run is missed. Daily force
+  # was rejected as over-wiring: one build = ~2.3 min measured (2026-07-25,
+  # 135.4s) x ~21 trading days/month for consumers that read monthly snapshots.
+  rebuild_current <- !file.exists(fpath) || is_month_end
+  force_current   <- is_month_end
+  build_sig       <- today
+  if (!rebuild_current) {
+    stale_chk <- tryCatch({
+      snap_d <- max(as.Date(as.data.table(
+        read_parquet(fpath, col_select = "Date"))$Date), na.rm = TRUE)
+      raw_d  <- max(as.Date(as.data.table(
+        read_parquet(RAWDATA_CACHE, col_select = "Date"))$Date), na.rm = TRUE)
+      list(snap_d = snap_d, raw_d = raw_d)
+    }, error = function(e) NULL)
+    if (!is.null(stale_chk) &&
+        is.finite(as.numeric(stale_chk$raw_d - stale_chk$snap_d)) &&
+        as.integer(stale_chk$raw_d - stale_chk$snap_d) > 7L &&
+        format(stale_chk$raw_d, "%Y%m") == ym_tag) {
+      # Guard: only refresh when latest RAWDATA date is IN the current month —
+      # otherwise (RAWDATA itself stale) a rebuild buys nothing and a wrong
+      # ym could clobber a prior month-end snapshot.
+      cat(sprintf(paste0("[update_factor_db_daily] %s snapshot stale: ",
+                         "Date=%s vs RAWDATA max=%s (lag %d d > 7) — weekly refresh\n"),
+                  ym_tag, format(stale_chk$snap_d), format(stale_chk$raw_d),
+                  as.integer(stale_chk$raw_d - stale_chk$snap_d)))
+      rebuild_current <- TRUE
+      force_current   <- TRUE
+      build_sig       <- stale_chk$raw_d  # real trading day -> Date label = real sig_date
+    }
+  }
+  if (rebuild_current) {
+    cat(sprintf("[update_factor_db_daily] Building/updating %s (sig_date=%s)...\n",
+                ym_tag, format(build_sig)))
+    build_factor_db(build_sig, save = TRUE, force = force_current)
   } else {
-    cat(sprintf("[update_factor_db_daily] %s already cached. Skipping.\n", ym_tag))
+    cat(sprintf("[update_factor_db_daily] %s already cached & fresh. Skipping.\n", ym_tag))
   }
 
   # ── IC auto-refresh ─────────────────────────────────────────────────────────
@@ -1502,6 +1539,19 @@ compute_all_factor_ic_monthly <- function() {
 
       sig_d_t  <- dt_t$Date[1]
       sig_d_t1 <- dt_t1$Date[1]
+
+      # Incomplete-terminal-pair guard (2026-07-25): the t+1 file may be an
+      # in-progress current-month build (sig = latest trading day, not month-end).
+      # IC[t] over a truncated forward window would silently change at the
+      # month-end rebuild (vintage instability) — skip until the calendar month
+      # of sig_d_t1 is finished. Month-end cron (calendar last day) passes.
+      cal_end_t1 <- seq(as.Date(format(sig_d_t1, "%Y-%m-01")),
+                        by = "month", length.out = 2L)[2L] - 1L
+      if (cal_end_t1 > Sys.Date()) {
+        cat(sprintf("  [skip] pair %d: forward month %s incomplete (calendar end %s > today %s)\n",
+                    i, format(sig_d_t1, "%Y-%m"), cal_end_t1, Sys.Date()))
+        next
+      }
 
       # Forward 1-month return per ticker
       ret_data <- raw[Date > sig_d_t & Date <= sig_d_t1,

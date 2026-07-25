@@ -38,6 +38,26 @@ suppressPackageStartupMessages({ library(jsonlite) })
 }
 .af_read_spec <- function() { p<-.af_spec(); if (!file.exists(p)) return(list()); x<-fromJSON(p, simplifyVector=FALSE); if (is.null(x)) list() else x }
 
+# ── AST v1.1 §3-2: 신규 엔트리 기계가독 availability 4필드 도출 ──────────────
+# SOT = registry 자체(마이그레이션 완료분). 동일 data_source 선례 엔트리에서 4필드를
+# 복사 — registry_migrate_ast_v11.py DOMAIN_MAP과 자동 정합. 선례 없는 data_source는
+# 등록 거부(fail-loud): DOMAIN_MAP 확장 + 마이그레이션 재실행이 선행 절차.
+.AF_AVAIL_FIELDS <- c("availability","restatement_prone","vintage_available","refresh_mode")
+.af_availability_fields <- function(source) {
+  for (rp in .af_regs()) if (file.exists(rp)) {
+    r <- fromJSON(rp, simplifyVector = FALSE)
+    for (e in r) {
+      if (identical(e$data_source, source) &&
+          all(.AF_AVAIL_FIELDS %in% names(e))) {
+        return(e[.AF_AVAIL_FIELDS])
+      }
+    }
+  }
+  stop("[add_factor] data_source '", source, "' 의 availability 선례가 registry에 없음 — ",
+       "registry_migrate_ast_v11.py DOMAIN_MAP 확장 + 재실행 후 등록하세요 ",
+       "(AST v1.1 §3-2: 기계가독 선언 없는 등록 거부. 검증: registry_validate_availability.py)")
+}
+
 # ── registry 타겟 편집 (전체 reformat 없이 최소 diff; backup+validate+실패시 원복) ──
 # registry는 373+ 엔트리 대형 파일. 전체 round-trip은 13k줄 reformat → diff·동시성 치명.
 # 라인 기반: 루트 '}' 앞에 새 엔트리 append / 특정 id 블록만 삭제.
@@ -99,8 +119,11 @@ add_factor <- function(id, name, category, template, params = list(),
 
   # 2) registry 동기화 (backup + round-trip + validate; 실패 시 복원)
   if (isTRUE(sync_registry)) {
+    af <- .af_availability_fields(source)   # AST v1.1: 4필드 없는 신규 엔트리 등록 금지
     entry <- list(name=name, category=category, definition=def, direction=direction,
       data_source=source, lag_rule="Factor_Date <= sig_d", update_freq="monthly",
+      availability=af$availability, restatement_prone=af$restatement_prone,
+      vintage_available=af$vintage_available, refresh_mode=af$refresh_mode,
       labels=list(economic_family=category, construction="custom_template", neutrality="raw",
                   horizon="monthly", evidence_tier=evidence_tier, template=template),
       lifecycle=list(status="active", research_stage="S0", mutation_count=0, added_date=today,

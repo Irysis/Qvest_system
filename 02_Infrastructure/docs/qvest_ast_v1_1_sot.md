@@ -105,8 +105,15 @@
 
 ```
 Step 0 ✅ C4 연간 = 3/31 확정 (2026-07-25 도훈. pit.md 개정 완료)
-Step 1 리프 기반: factor_registry 기계가독 승격(§3-2, 라인-타겟 패턴) + 정합 검증 체크
-        + fdb_daily 접근자 신설 + xlsx Q4 +45d 수리 계획서(판정영향 A/B 동반)
+Step 1 ✅ 완료 (2026-07-25 — wf_6e8ece74 S1/S2/S3):
+        · registry 승격 373/373 (availability{type,rule,known_discrepancy 171}+restatement+vintage+refresh_mode,
+          멱등 migrate + validator 2스크립트 + add_factor 템플릿 4필드 — 구식 append는 validator가 검거)
+        · fdb_daily 접근자 load_daily_factors() (connector v2.3 — pushdown·C13 월간 ic_sign·PIT 이중강제.
+          ⚠일간 값 = winsorized raw, z 아님 — 결합 전 표준화 caller 책임)
+        · Q4 +45d 수리 계획서 (04_Research/01_reports/q4_lag_repair_plan_20260725.md — 노출 본체 pre-2015
+          1,095,004행, 권고 (a) parse Q4→3/31 + 전기간 재빌드 ~15분 + pin/shadow A/B. **착수 = 도훈 confirm 대기**)
+        · 동반 데이터 트랙: 멤버십 8패널·수급·컨센서스 2026-07-24 현행화 + factor_db 당월 재빌드
+          (855,571행·주간 스테일 트리거) + IC 프론티어 판정(2026-05 = 구조적, guard 추가)
 Step 2 alpha 출력 스키마 3층화(schema.json 개정 + alpha_research_init.md 개정 + escape 리프 계약)
         + forge AST→R 컴파일러(𝒪 연산자당 R 함수 1 — 산출은 기존 계약 canonical_screen_bt/
         build_bt_result 입력으로 접속, 자체합성 금지·Return.portfolio 경유 불변)
