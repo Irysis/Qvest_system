@@ -304,13 +304,23 @@ for (f in rl_files) {
   if (is.null(d)) next
   schemas <- c(schemas, paste(sort(names(d)), collapse = ","))
 }
-n_variants <- length(unique(schemas))
-if (n_variants > 10) {
+# 2026-07-25: "키셋 종류 수"는 스키마 드리프트의 대리지표로 부적합 — 실측 23종 중
+# 20종이 **1건짜리 일회성 문서**(AX-005/006/007 리뷰 도시에·CAND 제안·calibration 초안)로,
+# 고정 스키마를 기대할 대상이 아니다. 반복 발생 스키마(≥2건)만이 드리프트 신호다.
+#   실측: 반복 3종(게이트로그 274 · 그 선행형 10 · 파이프라인 스냅샷 5) + 싱글턴 20.
+# ★이 검사가 놓치고 있던 진짜 손상은 키셋 수가 아니라 **소비자-생산자 필드명 불일치**였다
+#   (search/build_index.R 이 created_at 조회 → 309건 중 299건 timestamp 유실, 2026-07-25 수리).
+#   그 부류는 소비자 측 자기진단으로 잡는다(build_index 의 timestamp 커버리지 경고).
+tab <- table(schemas)
+recurring <- sum(tab >= 2L)
+singletons <- sum(tab == 1L)
+if (recurring > 10) {
   add_warn("WARN_3_review_log_variants",
-           sprintf("review_log %d schema variants (recommend < 10)",
-                   n_variants))
+           sprintf("review_log 반복 스키마 %d종 (권고 < 10) — 싱글턴 %d건은 제외 계상",
+                   recurring, singletons))
 } else {
-  cat(sprintf("  %d schema variants\n", n_variants))
+  cat(sprintf("  반복 스키마 %d종 (권고 <10) · 싱글턴 일회성 문서 %d건 · 총 파일 %d\n",
+              recurring, singletons, length(schemas)))
 }
 
 # ─── INFO 4: external memory not indexed (격하) ──────────────────

@@ -239,10 +239,22 @@ build_axiom_review <- function() {
     data <- tryCatch(fromJSON(f, simplifyVector = FALSE),
                      error = function(e) NULL)
     if (is.null(data)) next
+    # 2026-07-25: review_log 필드명 실측 정합 (종전 = 소수파 필드만 조회).
+    #   식별자: candidate_id 287 / axiom_id_candidate 6 / axiom 3 / axiom_id 2  (구 체인은 8/309만 커버)
+    #   시각  : logged_at 288 / created_at 10 / generated_at 5 / reviewed_at 3 / 기타 4  (구 체인은 10/309)
+    # 결과적으로 299/309(97%)가 timestamp NULL·제목 "(review log)"로 색인되고 있었다.
     rid <- data$memory_id %||% data$axiom_id_candidate %||% data$axiom_id %||%
+      data$candidate_id %||% data$axiom %||%
       tools::file_path_sans_ext(basename(f))
+    # 게이트-리뷰 로그(지배 스키마)는 purpose/status 가 없으므로 판정 요약으로 대체.
+    verdict <- if (!is.null(data$all_hurdles_pass))
+      sprintf("hurdles %s%s",
+              if (isTRUE(data$all_hurdles_pass)) "PASS" else "FAIL",
+              if (!is.null(data$weighted_score))
+                sprintf(" (score %s)", format(data$weighted_score)) else "")
+      else NULL
     title <- sprintf("[REVIEW] %s — %s", rid,
-                     data$purpose %||% data$status %||% "(review log)")
+                     data$purpose %||% data$status %||% verdict %||% "(review log)")
     body <- toJSON(data, auto_unbox = TRUE, pretty = FALSE)
     rows <- emit_row(rows, id = sprintf("review-%s",
                                         tools::file_path_sans_ext(basename(f))),
@@ -250,9 +262,12 @@ build_axiom_review <- function() {
                      title = title, body = body,
                      source_path = file.path("qepm/memory/axioms/review_log",
                                              basename(f)),
-                     timestamp = data$created_at %||% NULL,
+                     timestamp = data$created_at %||% data$logged_at %||%
+                       data$generated_at %||% data$reviewed_at %||%
+                       data$decided_at %||% data$prepared_at %||%
+                       data$timestamp %||% NULL,
                      tags = list("axiom_review",
-                                 data$status %||% "",
+                                 data$status %||% data$mode %||% "",
                                  "authority:audit"))
   }
   rows
@@ -386,7 +401,10 @@ build_critic <- function() {
                         source_path = file.path("qepm/mailbox/worktask",
                                                  wt_id, basename(cf)),
                         wt_id = wt_id,
-                        timestamp = data$reviewed_at %||% NULL,
+                        # 2026-07-25: reviewed_at 은 실제 산출물에 없는 필드였다(0/315).
+                        # 실측 원천 필드 = timestamp 186 · generated_at 2 · executed_at 1.
+                        timestamp = data$reviewed_at %||% data$timestamp %||%
+                          data$generated_at %||% data$executed_at %||% NULL,
                         tags = list("critic", role, stance))
     }
   }
@@ -636,3 +654,28 @@ for (r in all_rows) {
 
 cat(sprintf("\n[OK] index written: %s (%d rows)\n",
             OUT_PATH, length(all_rows)))
+
+# ── 자기진단: type 별 timestamp 커버리지 (2026-07-25 신설) ────────────────────
+# 배경: axiom_review 가 created_at 만 조회해 309건 중 299건(97%)을 timestamp 없이
+# 색인해 왔는데, 생산자는 logged_at 을 쓰고 있었다. 필드명 불일치는 **조용히** 빈 값을
+# 만들 뿐 오류를 내지 않으므로 감지 장치가 없으면 무기한 방치된다(실제로 그랬다).
+# 소비자가 자기 눈먼 구간을 스스로 신고하게 한다. 판정 불차단(경고만).
+.ts_cov <- list()
+for (r in all_rows) {
+  ty <- r$type %||% "?"
+  prev <- .ts_cov[[ty]] %||% c(0, 0)
+  .ts_cov[[ty]] <- c(prev[1] + 1, prev[2] + as.integer(!is.null(r$timestamp) &&
+                                                        nzchar(as.character(r$timestamp))))
+}
+low <- character(0)
+for (ty in names(.ts_cov)) {
+  n <- .ts_cov[[ty]][1]; k <- .ts_cov[[ty]][2]
+  if (n >= 20 && k / n < 0.5)
+    low <- c(low, sprintf("%s %d/%d(%.0f%%)", ty, k, n, 100 * k / n))
+}
+if (length(low) > 0) {
+  cat(sprintf("[WARN] timestamp 커버리지 저조 — 생산자 필드명과 조회 체인 불일치 의심: %s\n",
+              paste(low, collapse = " · ")))
+} else {
+  cat("[OK] timestamp 커버리지 정상 (20행 이상 type 전부 >=50%)\n")
+}
