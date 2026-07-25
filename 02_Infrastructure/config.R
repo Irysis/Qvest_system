@@ -144,17 +144,50 @@ QEPM_AUTO_COMMIT <- TRUE
 #' Allocate next STR number (thread-safe via lockfile)
 #' @param name_slug Character: strategy name slug (e.g., "flow_reversal")
 #' @return Character: full strategy ID (e.g., "STR_1426_flow_reversal")
-allocate_str <- function(name_slug) {
-  dirs <- list.dirs(file.path(PROJECT_ROOT, "04_Research", "strategies"),
-                    recursive = FALSE, full.names = FALSE)
-  nums <- suppressWarnings(
-    as.integer(gsub("^STR_(\\d+)_.*", "\\1", dirs[grepl("^STR_\\d+", dirs)]))
-  )
+#'
+#' 2026-07-25 수리: 주석은 "thread-safe via lockfile"인데 `.STR_LOCK`이 **정의만 되고
+#'   어디서도 쓰이지 않았다**(전역 grep 1히트 = 정의부). 병렬 세션/에이전트가 동시에
+#'   호출하면 같은 max+1을 계산해 **같은 번호를 서로 다른 전략이 점유**한다 — 실측 7건
+#'   (STR_1435×3·STR_1622×4·STR_1570/1571/1332/1562/1563×2). CLAUDE.md가 병렬 spawn을
+#'   의무화하므로 재발 조건이 상시 존재. → `dir.create()`의 원자성으로 실제 뮤텍스 구현.
+#'   번호 파싱도 접미사 없는 `STR_1234` 형태를 포함하도록 교정(종전 gsub는 NA 반환).
+allocate_str <- function(name_slug, lock_timeout_sec = 30, lock_stale_sec = 300) {
+  lock_dir <- .STR_LOCK
+  dir.create(dirname(lock_dir), recursive = TRUE, showWarnings = FALSE)
+
+  # ── 잠금 획득 (dir.create = 원자적. 이미 있으면 FALSE) ──
+  t0 <- Sys.time(); acquired <- FALSE
+  repeat {
+    if (isTRUE(suppressWarnings(dir.create(lock_dir, showWarnings = FALSE)))) {
+      acquired <- TRUE; break
+    }
+    # 죽은 프로세스가 남긴 잠금 회수 (교착 방지)
+    age <- tryCatch(as.numeric(difftime(Sys.time(), file.info(lock_dir)$mtime, units = "secs")),
+                    error = function(e) NA_real_)
+    if (!is.na(age) && age > lock_stale_sec) {
+      warning(sprintf("[config] STR 잠금 %.0f초 경과 — stale 판정 후 회수", age), call. = FALSE)
+      unlink(lock_dir, recursive = TRUE, force = TRUE)
+      next
+    }
+    if (as.numeric(difftime(Sys.time(), t0, units = "secs")) > lock_timeout_sec)
+      stop(sprintf("[config] STR 번호 잠금 획득 실패(%ds 대기) — 다른 세션이 할당 중. 재시도하세요.",
+                   lock_timeout_sec), call. = FALSE)
+    Sys.sleep(0.2)
+  }
+  if (acquired) on.exit(unlink(lock_dir, recursive = TRUE, force = TRUE), add = TRUE)
+
+  strat_base <- file.path(PROJECT_ROOT, "04_Research", "strategies")
+  dirs <- list.dirs(strat_base, recursive = FALSE, full.names = FALSE)
+  hits <- dirs[grepl("^STR_\\d+($|_)", dirs)]
+  nums <- suppressWarnings(as.integer(sub("^STR_(\\d+).*$", "\\1", hits)))
   next_num <- max(c(nums, 1000L), na.rm = TRUE) + 1L
+
+  # 방어: 계산된 번호가 이미 점유돼 있으면(경합·수동 생성) 빈 번호까지 전진
+  while (any(grepl(sprintf("^STR_%d($|_)", next_num), dirs))) next_num <- next_num + 1L
+
   strat_id <- sprintf("STR_%d_%s", next_num, name_slug)
-  # Create directory to "claim" the number
-  dir.create(file.path(PROJECT_ROOT, "04_Research", "strategies", strat_id),
-             recursive = TRUE, showWarnings = FALSE)
+  # Create directory to "claim" the number (잠금 보유 중에 점유 확정)
+  dir.create(file.path(strat_base, strat_id), recursive = TRUE, showWarnings = FALSE)
   cat(sprintf("[config] Allocated: %s\n", strat_id))
   strat_id
 }
