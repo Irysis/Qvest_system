@@ -267,6 +267,38 @@ if command -v git >/dev/null 2>&1 && git -C "$PROJECT" rev-parse --git-dir >/dev
     [ "$WTV_STALE" -gt 0 ] && echo "    → 방치분은 '수리했는데 main에 없음' 실사고 패턴(date32 writer·lcode harvester). 병합 여부 확인 필요"
     [ "$WTV_DIRTY" -gt 0 ] && echo "    → 확인: git -C <worktree경로> status  ·  목록: git worktree list"
   fi
+
+  # [4h-2] worktree venv 가용성 (2026-07-25) — qvest_hook_router 등록 커맨드가
+  #   $CLAUDE_PROJECT_DIR/.venv_qvest_ml 에서 검증기를 찾는다. worktree엔 venv가 없어
+  #   **보호패턴(05_Production 등) 편집이 fail-closed로 차단**되는 실사고 발생(07-25).
+  #   게이트 약화가 아니라 '검증기 부재'가 원인이므로 junction으로 복구한다(내용 복사 아님).
+  #   Windows junction = 관리자 권한 불필요. 실패해도 부팅 진행(읽기 전용 경고).
+  if [ -x "$PROJECT/.venv_qvest_ml/Scripts/python.exe" ]; then
+    WTV_FIXED=0; WTV_MISS=0
+    while IFS='|' read -r wt br; do
+      [ -z "$wt" ] && continue
+      case "$wt" in *worktrees*) ;; *) continue ;; esac
+      [ -d "$wt" ] || continue
+      if [ ! -e "$wt/.venv_qvest_ml" ]; then
+        WTV_MISS=$((WTV_MISS + 1))
+        # 함정 2종 (07-25 실측):
+        #   ★`< /dev/null` — cmd.exe가 while 루프의 stdin(here-string)을 소비해 첫 항목
+        #     처리 후 루프가 조기 종료됨(14개 중 1개만 처리).
+        #   ★`MSYS_NO_PATHCONV=1` — Git Bash가 `/c`·`/J`를 경로로 변환해 cmd가 실행 대신
+        #     대화형 배너만 찍고 exit 0 반환(성공 오보 13건). 변환 차단 필수.
+        if command -v cmd.exe >/dev/null 2>&1 &&
+           MSYS_NO_PATHCONV=1 cmd.exe /c mklink /J \
+             "$(cygpath -w "$wt/.venv_qvest_ml" 2>/dev/null || echo "$wt/.venv_qvest_ml")" \
+             "$(cygpath -w "$PROJECT/.venv_qvest_ml" 2>/dev/null || echo "$PROJECT/.venv_qvest_ml")" \
+             >/dev/null 2>&1 < /dev/null &&
+           [ -e "$wt/.venv_qvest_ml" ]   # ★생성 실증 — exit 0을 믿지 않는다
+        then WTV_FIXED=$((WTV_FIXED + 1)); fi
+      fi
+    done <<< "$(git -C "$PROJECT" worktree list --porcelain 2>/dev/null | awk '/^worktree /{w=$2} /^branch /{print w"|"$2}')"
+    if [ "$WTV_MISS" -gt 0 ]; then
+      echo "[boot] Worktree venv: 부재 ${WTV_MISS}건 → junction 복구 ${WTV_FIXED}건$([ "$WTV_FIXED" -lt "$WTV_MISS" ] && echo " · ★$((WTV_MISS - WTV_FIXED))건 실패 — 해당 worktree에서 보호패턴 편집이 차단됨")"
+    fi
+  fi
 fi
 
 # 5. 데이터 리프레시 (백그라운드 — xlsx 증분 + KRX/FRED/ECOS)
