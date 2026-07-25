@@ -21,9 +21,16 @@ suppressPackageStartupMessages({
 # source()가 "No such file or directory"로 halt → 두 스위트가 단 1건의 assertion도
 # 실행하지 못한 채 exit 1. dir.exists()만으로는 이 잔재를 걸러내지 못하므로
 # marker 파일 존재로 검증한다 (config.R 후보 순서와 동형, 검증만 강화).
+# ★후보 순서는 CLAUDE_PROJECT_DIR 우선 — 본 스위트가 source하는 모듈들
+# (cert_rules.R `.qvest_find_root` · essence_backfill.R · distilled.R)이 전부
+# CLAUDE_PROJECT_DIR→QM_ROOT 순이다. 여기서 QM_ROOT를 앞에 두면 worktree 실행 시
+# 테스트 PROJ(=main)와 모듈 PROJ_ROOT(=worktree)가 갈려 존재하는 파일이
+# "package not found"로 기각된다(split root). config.R만 반대 순서인 예외.
+# 주의: ~/.Renviron이 QM_ROOT를 고정하므로 쉘 export로는 덮이지 않는다 —
+# 실행 루트를 바꾸려면 CLAUDE_PROJECT_DIR를 쓸 것.
 .resolve_proj <- function() {
-  cands <- c(Sys.getenv("QM_ROOT", unset = ""),
-             Sys.getenv("CLAUDE_PROJECT_DIR", unset = ""),
+  cands <- c(Sys.getenv("CLAUDE_PROJECT_DIR", unset = ""),
+             Sys.getenv("QM_ROOT", unset = ""),
              "C:/Users/99922/OneDrive/Quant_Module_Moltbot",
              "/mnt/c/Users/99922/OneDrive/Quant_Module_Moltbot")
   cands <- cands[nzchar(cands)]
@@ -57,6 +64,20 @@ PASS_COUNT <- 0L
 FAIL_COUNT <- 0L
 RESULTS <- list()
 
+# ─── Cleanup 등록 ────────────────────────────────────────────────────────────
+# [fix 2026-07-25] 구 코드는 최상위에서 on.exit(unlink(...))로 정리를 등록했으나,
+# on.exit는 *함수 프레임*에 등록되므로 스크립트 최상위에서는 조용히 no-op이다
+# (실측: 정상종료/error halt/quit(status=1) 3경로 전부 미발화) → synthetic WT가
+# production qepm/mailbox/worktask/ 에 실행마다 누적됐다.
+# reg.finalizer(onexit=TRUE)는 3경로 전부에서 발화(실측)하므로 이걸로 교체한다.
+.CLEANUP_PATHS <- character(0)
+register_cleanup <- function(p) .CLEANUP_PATHS <<- unique(c(.CLEANUP_PATHS, p))
+invisible(reg.finalizer(globalenv(), function(e) {
+  for (p in .CLEANUP_PATHS) if (dir.exists(p) || file.exists(p)) {
+    unlink(p, recursive = TRUE)
+  }
+}, onexit = TRUE))
+
 mark_pass <- function(name, msg = "") {
   PASS_COUNT <<- PASS_COUNT + 1L
   RESULTS[[name]] <<- list(status = "PASS", message = msg)
@@ -81,7 +102,7 @@ suppressMessages(source("02_Infrastructure/worktask/worktask_manager.R"))
 fake_wt <- "WT-D99999999_999"
 fake_dir <- file.path("qepm/mailbox/worktask", fake_wt)
 dir.create(fake_dir, recursive = TRUE, showWarnings = FALSE)
-on.exit(unlink(fake_dir, recursive = TRUE), add = TRUE)
+register_cleanup(fake_dir)
 
 writeLines('{"current_phase":"SPEC_APPROVED","task_id":"WT-D99999999_999"}',
            file.path(fake_dir, "status.json"))
@@ -126,9 +147,12 @@ suppressMessages(source("02_Infrastructure/worktask/cert_rules.R"))
 suppressMessages(source("02_Infrastructure/ops/cert_backfill_audit.R"))
 
 # Synthetic alpha_package fixtures
-fixtures_dir <- "/tmp/v70_sprint1_fixtures"
-dir.create(fixtures_dir, showWarnings = FALSE)
-on.exit(unlink(fixtures_dir, recursive = TRUE), add = TRUE)
+# [fix 2026-07-25] 구 "/tmp/v70_sprint1_fixtures"는 Windows에서 "C:/tmp/..."로
+# 해석돼 프로젝트 밖에 잔재를 남겼다(정리도 dead on.exit이라 미발화).
+# tempfile() = 프로세스별 격리 + 세션 종료 시 자동 회수 (e2e 스위트 동형).
+fixtures_dir <- tempfile("v70_sprint1_fixtures_")
+dir.create(fixtures_dir, recursive = TRUE, showWarnings = FALSE)
+register_cleanup(fixtures_dir)
 
 # (b.1) Eligible alpha_package (4 AND condition 충족)
 positive_pkg <- list(

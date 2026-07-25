@@ -427,7 +427,13 @@ cr_validate_schema <- function(schema_name, package_path) {
     return(list(valid = FALSE, reason = "router not found"))
   }
   # Normalize to absolute path (한글 경로 escape 회피)
-  if (!startsWith(package_path, "/")) {
+  # [fix 2026-07-25] 구 검사 startsWith(package_path, "/")는 Windows drive-letter
+  # 절대경로("C:/...", "C:\...")를 상대경로로 오판해 PROJ_ROOT를 덧붙였다 →
+  # 존재하는 파일도 "package not found"로 기각(절대경로 호출자 전건 실패).
+  .is_abs <- function(p) {
+    grepl("^([A-Za-z]:)?[/\\\\]", p) || grepl("^~", p)
+  }
+  if (!.is_abs(package_path)) {
     package_path <- file.path(PROJ_ROOT, package_path)
   }
   if (!file.exists(package_path)) {
@@ -436,12 +442,22 @@ cr_validate_schema <- function(schema_name, package_path) {
   # [fix 2026-07-05] bare "python3" Windows Store 스텁(9009) → QVEST_PY 우선 (state_machine.R 동형)
   py_bin <- Sys.getenv("QVEST_PY", unset = "")
   if (!nzchar(py_bin) || !file.exists(py_bin)) py_bin <- "python3"
+  # [fix 2026-07-25] system2(env=)는 Windows에서 환경변수를 설정하지 않고 문자열을
+  # *첫 인자로 앞에 붙인다* → python이 "CLAUDE_PROJECT_DIR=..."를 스크립트 경로로
+  # 오인(rc 2). 그 에러문이 stderr로 out에 담겨 length(out)==0 가드를 통과하므로
+  # 실패가 "router output parse fail"이라는 엉뚱한 사유로 위장됐다.
+  # → Sys.setenv + 복원 (state_machine.R:248-252 동형).
+  .old_cpd <- Sys.getenv("CLAUDE_PROJECT_DIR", unset = NA)
+  Sys.setenv(CLAUDE_PROJECT_DIR = PROJ_ROOT)
+  on.exit({
+    if (is.na(.old_cpd)) Sys.unsetenv("CLAUDE_PROJECT_DIR")
+    else Sys.setenv(CLAUDE_PROJECT_DIR = .old_cpd)
+  }, add = TRUE)
   out <- tryCatch(
     system2(py_bin,
             args = c(shQuote(router), "validate-schema",
                      "--schema", schema_name,
                      "--package", shQuote(package_path)),
-            env = sprintf("CLAUDE_PROJECT_DIR=%s", shQuote(PROJ_ROOT)),
             stdout = TRUE, stderr = TRUE),
     error = function(e) NULL
   )

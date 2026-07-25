@@ -27,9 +27,16 @@ suppressPackageStartupMessages({
 # source()가 "No such file or directory"로 halt → 본 스위트가 단 1건의 assertion도
 # 실행하지 못한 채 exit 1. dir.exists()만으로는 이 잔재를 걸러내지 못하므로
 # marker 파일 존재로 검증한다 (config.R 후보 순서와 동형, 검증만 강화).
+# ★후보 순서는 CLAUDE_PROJECT_DIR 우선 — 본 스위트가 source하는 모듈들
+# (cert_rules.R `.qvest_find_root` · state_machine.R)이 CLAUDE_PROJECT_DIR→QM_ROOT
+# 순이다. 여기서 QM_ROOT를 앞에 두면 worktree 실행 시 테스트 PROJ(=main)와
+# 모듈 PROJ_ROOT(=worktree)가 갈려, 상대경로로 쓴 패키지가 다른 트리에서 조회돼
+# 존재하는 파일이 "package not found"로 기각된다(split root 실측).
+# 주의: ~/.Renviron이 QM_ROOT를 고정하므로 쉘 export로는 덮이지 않는다 —
+# 실행 루트를 바꾸려면 CLAUDE_PROJECT_DIR를 쓸 것.
 .resolve_proj <- function() {
-  cands <- c(Sys.getenv("QM_ROOT", unset = ""),
-             Sys.getenv("CLAUDE_PROJECT_DIR", unset = ""),
+  cands <- c(Sys.getenv("CLAUDE_PROJECT_DIR", unset = ""),
+             Sys.getenv("QM_ROOT", unset = ""),
              "C:/Users/99922/OneDrive/Quant_Module_Moltbot",
              "/mnt/c/Users/99922/OneDrive/Quant_Module_Moltbot")
   cands <- cands[nzchar(cands)]
@@ -109,18 +116,33 @@ cleanup_all <- function() {
   # v7.1-lite Sprint 0.1: post-test cleanup guard
   guard <- "08_Tests/integration/_e2e_cleanup_guard.sh"
   if (file.exists(guard)) {
-    out <- tryCatch(
+    # [fix 2026-07-25] guard는 ${CLAUDE_PROJECT_DIR:-$(pwd)}를 앵커로 쓴다 —
+    # 명시 주입해 wd 의존을 없앤다.
+    out <- with_project_dir(tryCatch(
       system2("bash", c(guard, "--force"), stdout = TRUE, stderr = TRUE),
       error = function(e) NULL
-    )
+    ))
     # Best-effort: log but never fail test on cleanup
     if (!is.null(out)) {
       cat(paste(out, collapse = "\n"), "\n", sep = "")
     }
+    # [fix 2026-07-25] residue 0 자체 강제 — 정리가 실제로 됐는지 확인까지 해야
+    # "cleanup obligation"이 계약이 된다(종전엔 --force 출력만 찍고 미검증).
+    chk <- with_project_dir(tryCatch(
+      system2("bash", c(guard, "--check"), stdout = TRUE, stderr = TRUE),
+      error = function(e) NULL
+    ))
+    if (!is.null(chk)) cat(paste(chk, collapse = "\n"), "\n", sep = "")
   }
   unlink(TEST_GOV_DIR, recursive = TRUE)
 }
-on.exit(cleanup_all(), add = TRUE)
+# [fix 2026-07-25] 구 코드는 on.exit(cleanup_all())로 등록했으나 on.exit는
+# *함수 프레임*에 등록되므로 스크립트 최상위에서는 조용히 no-op이다 — 실측 결과
+# 정상종료/error halt/quit(status=1) 3경로 전부 미발화. 그래서 "cleanup obligation"
+# 주석과 _e2e_cleanup_guard.sh 호출이 있음에도 synthetic WT가 production
+# qepm/mailbox/worktask/ 에 실행마다 누적됐다(실측 5건 잔류).
+# reg.finalizer(onexit=TRUE)는 3경로 전부에서 발화(실측)하므로 이걸로 교체한다.
+invisible(reg.finalizer(globalenv(), function(e) cleanup_all(), onexit = TRUE))
 
 # Fixture builders
 build_alpha_pkg <- function(wt_id, harvey_t = 4L, cor = 0.10) {
@@ -178,6 +200,12 @@ build_forge_pkg <- function(wt_id) {
     task_id = wt_id,
     backtest_summary = list(SR = 1.5, CAGR = 0.18, MDD = -0.20),
     sr_realized_share_based = 1.5,
+    # [fix 2026-07-25] forge_package_schema.json required에 포함된 필드인데
+    # 본 fixture(v7.0 Sprint 4)가 누락 → happy path 스키마 체인이 계속 INVALID였다.
+    # (종전엔 cr_validate_schema의 env= 결함에 가려 "parse fail"로 보고돼 미검출.)
+    # WS1 v8.x forge-authoritative portfolio-alpha t (NW lag-3), graduation HARD 2.95
+    # 위 값으로 happy path 일관성 유지. cert 로직은 이 필드를 소비하지 않음(확인).
+    portfolio_alpha_t_nw_lag3 = 3.10,
     measurement_basis_primary = "forge_realized_share_based",
     weights_csv_unique_dates_count = 100L,
     alpha_sig_dates_count = 100L,

@@ -6,7 +6,30 @@ suppressPackageStartupMessages({
   library(jsonlite)
 })
 
-PROJ <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+# ─── Project root ────────────────────────────────────────────────────────────
+# [fix 2026-07-25] 구 하드코딩 PROJ = "/mnt/c/Users/User/OneDrive/바탕 화면/..."
+# (WSL 전용 경로)는 Windows R에서 현재 드라이브 기준 "C:/mnt/..."로 해석된다.
+# 그 위치에 빈 디렉토리 잔재가 남아 있어 setwd()가 *조용히 성공*하고, 이후 상대경로
+# source()가 전부 파일 부재로 실패 → 0 pass / 1 fail. dir.exists()만으로는 이 잔재를
+# 걸러내지 못하므로 marker 파일 존재로 검증한다.
+# (test_execution_path_unified.R · test_wt_lifecycle_e2e.R 동형)
+# ★후보 순서는 CLAUDE_PROJECT_DIR 우선 — 모듈측 관례(cert_rules.R `.qvest_find_root`
+# 등)와 맞춘다. QM_ROOT를 앞에 두면 worktree 실행 시 split root가 발생한다.
+# 주의: ~/.Renviron이 QM_ROOT를 고정하므로 쉘 export로는 덮이지 않는다.
+.resolve_proj <- function() {
+  cands <- c(Sys.getenv("CLAUDE_PROJECT_DIR", unset = ""),
+             Sys.getenv("QM_ROOT", unset = ""),
+             "C:/Users/99922/OneDrive/Quant_Module_Moltbot",
+             "/mnt/c/Users/99922/OneDrive/Quant_Module_Moltbot")
+  cands <- cands[nzchar(cands)]
+  marker <- "02_Infrastructure/hooks/qvest_hook_router.py"
+  hit <- cands[file.exists(file.path(cands, marker))]
+  if (length(hit) == 0L) {
+    stop("project root 미발견 — QM_ROOT 환경변수를 설정하세요 (marker: ", marker, ")")
+  }
+  hit[1]
+}
+PROJ <- .resolve_proj()
 setwd(PROJ)
 
 cat("\n", strrep("=", 70), "\n", sep = "")
