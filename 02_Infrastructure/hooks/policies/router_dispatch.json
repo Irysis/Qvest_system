@@ -1,9 +1,10 @@
 {
   "_doc": "HOOK-P1-4 (2026-07-04) — PreToolUse Write/Edit 게이트 훅 라우터 dispatch 등록 SOT. .claude/settings.json의 개별 17 command를 qvest_hook_router.py dispatch 1-command로 통합. 순서 = 구 settings.json 등록 순서 (first-block 결정론). tools = 구 matcher의 Write/Edit 부분집합 (safety_guard의 Bash 분은 settings.json 개별 entry 유지). soft_fail = 구 command의 '|| true' 여부 (true = exit code 무시). stderr_log = 구 command의 '2>>' 리다이렉트 경로 보존 (null = dispatcher 공용 로그로). 변경 시 settings.json 재등록 불필요 — 본 파일만 수정.",
-  "version": "1.1",
+  "version": "1.2",
   "created": "2026-07-04",
-  "updated": "2026-07-24",
+  "updated": "2026-07-25",
   "_doc_v11": "2026-07-24 Fable5 하네스 감사: sr_provenance_pre_certifier.sh dispatch 해제 — 전 경로 echo '{}'만 가능한 구조적 no-op 실증(GUIDE_MSG 미전달·로그 write 0·cert 발급은 PostToolUse sr_provenance_check.sh 전담). 스크립트 파일은 FS retain(hook_e2e_battery 직접호출 호환). 재등록 시 출력 배선(additionalContext)부터 수리할 것. dispatch 17→16.",
+  "_doc_v12": "2026-07-25 AST v1.1 Step 3 (S2d): ast_spec_gate.sh 등재 — alpha_package*.json Write 시 v1.1 스펙 기계 게이트(mechanism 3필드/falsification field_dictionary/regime_scope/𝒪 밖 연산자/ast_verify FAIL_LOOKAHEAD block + 구식 패키지 advisory 통과). SOT qvest_ast_v1_1_sot.md par.7. dispatch 16→17.",
   "source_settings_backup": ".claude/settings.json.bak_20260704",
   "events": {
     "PreToolUse": {
@@ -111,6 +112,13 @@
           "soft_fail": true,
           "stderr_log": "/tmp/artifact_placement_guard.log",
           "_doc": "2026-07-04 파일위생 mandate — 저장위치 advisory (additionalContext warn only, block 금지. 규칙 SOT: docs/rules/artifact-storage.md)"
+        },
+        {
+          "script": "ast_spec_gate.sh",
+          "tools": ["Write"],
+          "soft_fail": true,
+          "stderr_log": "/tmp/ast_spec_gate.log",
+          "_doc": "2026-07-25 AST v1.1 Step 3 (SOT qvest_ast_v1_1_sot.md par.7) — alpha_package*.json Write 게이트: v1.1은 mechanism/falsification/regime_scope/𝒪/FAIL_LOOKAHEAD block, 구식은 advisory 통과. 3의무 준수(stdin-bytes 전달·raw-INPUT 조기-exit·additionalContext 실전달)"
         }
       ]
     }

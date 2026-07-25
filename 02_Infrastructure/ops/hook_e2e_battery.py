@@ -56,7 +56,8 @@ def judge(out, expect):
     elif expect == "deny":
         ok = hso.get("permissionDecision") == "deny"
     elif expect == "context":
-        ok = bool(hso.get("additionalContext"))
+        # hookSpecificOutput 채널(직접등록 훅) + top-level 단일키 채널(라우터 dispatch 훅) 양쪽 수용
+        ok = bool(hso.get("additionalContext")) or bool(d.get("additionalContext"))
     else:  # allow
         ok = d == {} or (d.get("decision") in (None, "approve") and not hso.get("permissionDecision"))
     return ok, ("OK" if ok else f"UNEXPECTED: {out[:80]!r}")
@@ -141,6 +142,60 @@ def main():
             "except: print('')", ax], capture_output=True)
         stmt = p.stdout.decode("utf-8", errors="replace").strip()
         case("milestone.stmt_extract_kr", len(stmt) > 0, f"statement len={len(stmt)}")
+
+    # ── ast_spec_gate: AST v1.1 스펙 게이트 (2026-07-25 S2d — SOT qvest_ast_v1_1_sot.md §7)
+    #    block(mechanism 결측) / allow(정상 v1.1) / 구식 통과(advisory context) +
+    #    ast_verify FAIL_LOOKAHEAD 픽스처(fx2 재무 당일참조) 1건.
+    #    QVEST_AST_GATE_BATTERY=1 — registry 경보 append만 억제 (판정 동일).
+    os.environ["QVEST_AST_GATE_BATTERY"] = "1"
+    AP = "qepm/mailbox/worktask/WT-D20990101_001/alpha_package.json"
+    ast_ok = {"op": "ADD", "children": [
+        {"op": "CS_RANK", "children": [{"op": "TS_MEAN", "window": 231, "children": [
+            {"op": "TS_LAG", "k": 21, "unit": "d", "children": [
+                {"leaf": "FIELD", "group_id": "A1_RAWDATA_OHLCVS_daily", "field": "Ret"}]}]}]},
+        {"leaf": "REGISTRY", "factor": "M08_Residual_Mom"}]}
+    hyp_ok = {"mechanism": {"agent": "기관 수급 주체", "friction": "공매도 제약 하 가격반영 지연",
+                            "path": "수급 지속 → 잔차모멘텀"},
+              "falsification": [{"field": "M08_Residual_Mom", "observation": "잔차모멘텀 rank-IC 음전 시 기각"}],
+              "regime_scope": {"weakens_or_reverses_in": ["crisis"]}}
+    pit_ok = {"sig_date": "2026-05-31", "decision_ts": "2026-06-01"}
+
+    def ap_payload(pkg):
+        return {"tool_name": "Write", "tool_input": {
+            "file_path": AP, "content": json.dumps(pkg, ensure_ascii=False)}}
+
+    # block 1 — v1.1 mechanism 결측
+    out = run_hook("ast_spec_gate.sh", ap_payload({
+        "spec_version": "ast_v1.1", "strategy_id": "BATTERY_NOMECH",
+        "hypothesis": {"falsification": hyp_ok["falsification"],
+                       "regime_scope": hyp_ok["regime_scope"]},
+        "pit": pit_ok, "ast": ast_ok}))
+    case("ast_spec_gate.block_no_mechanism", *judge(out, "block"))
+
+    # allow — 정상 v1.1 (mechanism 3필드 + falsification field_dictionary 내 + regime + 𝒪 내 + verify PASS)
+    out = run_hook("ast_spec_gate.sh", ap_payload({
+        "spec_version": "ast_v1.1", "strategy_id": "BATTERY_V11_PASS",
+        "hypothesis": hyp_ok, "pit": pit_ok, "ast": ast_ok}))
+    case("ast_spec_gate.allow_v11_clean", *judge(out, "allow"))
+
+    # 구식(spec_version 부재) — 통과 + advisory additionalContext (v1.1 전환 권고)
+    out = run_hook("ast_spec_gate.sh", ap_payload({
+        "strategy_id": "BATTERY_LEGACY", "diagnostics": {"메모": KR}}))
+    case("ast_spec_gate.context_legacy_pass", *judge(out, "context"))
+
+    # block 2 — ast_verify FAIL_LOOKAHEAD 픽스처 (fx2 재무 당일참조 AST 재사용 — 사고2 계열)
+    fx2_path = "02_Infrastructure/ast/tests/fixtures/fx2_fund_sameday_fail.json"
+    with open(fx2_path, encoding="utf-8") as f:
+        fx2 = json.load(f)
+    out = run_hook("ast_spec_gate.sh", ap_payload({
+        "spec_version": "ast_v1.1", "strategy_id": "BATTERY_LOOKAHEAD",
+        "hypothesis": hyp_ok, "pit": fx2["pit"], "ast": fx2["ast"]}))
+    ok, note = judge(out, "block")
+    if ok:
+        ok = "FAIL_LOOKAHEAD" in out
+        note = "OK" if ok else f"block인데 FAIL_LOOKAHEAD 사유 아님: {out[:80]!r}"
+    case("ast_spec_gate.block_verify_lookahead", ok, note)
+    os.environ.pop("QVEST_AST_GATE_BATTERY", None)
 
     shutil.rmtree(TMP_WT, ignore_errors=True)
     n_fail = sum(1 for _, ok, _ in results if not ok)

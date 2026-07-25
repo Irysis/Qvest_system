@@ -114,12 +114,18 @@ Step 1 ✅ 완료 (2026-07-25 — wf_6e8ece74 S1/S2/S3):
           1,095,004행, 권고 (a) parse Q4→3/31 + 전기간 재빌드 ~15분 + pin/shadow A/B. **착수 = 도훈 confirm 대기**)
         · 동반 데이터 트랙: 멤버십 8패널·수급·컨센서스 2026-07-24 현행화 + factor_db 당월 재빌드
           (855,571행·주간 스테일 트리거) + IC 프론티어 판정(2026-05 = 구조적, guard 추가)
-Step 2 alpha 출력 스키마 3층화(schema.json 개정 + alpha_research_init.md 개정 + escape 리프 계약)
-        + forge AST→R 컴파일러(𝒪 연산자당 R 함수 1 — 산출은 기존 계약 canonical_screen_bt/
-        build_bt_result 입력으로 접속, 자체합성 금지·Return.portfolio 경유 불변)
-        ★ 컴파일러가 조인/정렬을 AS_OF 규율로 소유 (§4-2 — 회수의 본체)
-Step 3 PIT 정적검증 삽입(alpha 직후) + ast_spec_gate.sh 등록
-        ─── 손익분기 (§4 3중 예방 포함 조건) ───
+Step 2 ✅ 완료 (2026-07-25 — wf_1c333719 S2a/S2b):
+        · schema.json alpha_package v1.1 conditional(3층+escape 계약, 구식 하위호환 — 실물 183건 회귀 0,
+          픽스처 11/11) + alpha_research_init.md v1.4 <ast_spec_v1_1> + qvest-worktask §3 계약 반영
+        · 02_Infrastructure/ast/ 신설: operator_library.json(𝒪 28연산자+escape 4종, LEAD 부재)
+          + ast_compile.R(리프 로드·AS_OF 조인 컴파일러-소유, ast_features manifest 산출 — 테스트 81/81)
+Step 3 ✅ 완료 (2026-07-25 — S2c/S2d):
+        · ast_verify.py 정적검증기(승격 registry+리프 맵 이중 소스, 상향 전파, 픽스처 5/5+적대엣지 8종
+          — 실사고2 동월 vintage 형상 FAIL_LOOKAHEAD 검거 실증)
+        · ast_spec_gate.sh 라우터 등재(dispatch 17, 3의무 준수) + hook_e2e_battery 15/15 PASS
+        · parity(신규 컴파일러 vs factor DB): M01 rank corr ~0.95-0.97·M04 ~1.0(ic_sign 부호)·V01 1.0
+        · 𝒪 확장 규율 첫 가동: BL-001(fundamental 리프 소스 부재) → 06_Registry/ast_operator_backlog.json
+        ─── 손익분기 도달 (§4 3중 예방 + verify() + 게이트 실배선) ───
 Step 4 essence_score 사이드카 로깅 개시 (ast_structure_log.jsonl)
 Step 5 N≥30 후 complexity_prior 추정 → alpha 프롬프트 주입
 Step 6 커버리지 지도 (저비용 후순위)

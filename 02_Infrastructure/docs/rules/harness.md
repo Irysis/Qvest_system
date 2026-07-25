@@ -28,6 +28,7 @@
 |---|---|
 | worktask_constraint_enforcer | 25종 + bounds [0, 0.20] + Σw=1 + long-only |
 | worktask_spec_validator | request.json schema (task_id format / universe / cost_model_version) |
+| ast_spec_gate | AST v1.1 스펙 게이트 (2026-07-25 신설, 라우터 dispatch[Write]) — alpha_package*.json: v1.1은 mechanism 3필드·falsification(field_dictionary 내)·regime_scope·𝒪 밖 연산자·ast_verify FAIL_LOOKAHEAD(+검증계층 경보 `06_Registry/ast_gate_alerts.jsonl`) block / 구식 패키지는 advisory 통과. SOT `qvest_ast_v1_1_sot.md` §7 |
 | ~~forge_code_guard~~ | ❌ **DEPRECATED 2026-05-16** (`_archive_v55/` 삭제 — Tier 1 cleanup. OPT-1~11 강제는 axiom_enforcement_hook + worktask_spec_validator로 대체) |
 | backtest_contract_audit | Backtest Result Contract v1.0 audit |
 | ~~milestone_commit~~ | ⚠️ **FS retain / settings 미등록 2026-05-16** — auto_commit_on_stop으로 대체. 활성화 필요 시 settings.json PreToolUse 추가 |
@@ -143,7 +144,7 @@ QEPM Codex Critic Round(외부 codex auto-spawn)는 **2026-06-30 v8.2에서 폐�
 
 - `02_Infrastructure/hooks/*.sh` (톱레벨 61개, s0_enforcer/ 서브디렉토리 포함 64 — 2026-07-24 실측. 구 표기 55는 stale)
 - ~~`02_Infrastructure/hooks/_archive_v55/`~~ (Tier 1 cleanup 2026-05-16 삭제 — legacy v55 hooks 6건 영구 폐기)
-- `.claude/settings.json` Hook 등록 (47 distinct .sh — v8.1.2 2026-06-11 기준, 아래 정합 절 참조. **v8.2 2026-06-30: codex_round_pre_enforcer + codex_round_auto_trigger 2건 등록 해제 → 45 distinct .sh**. **현행 2026-07-24: 45 distinct .sh** — 직접 29 + 라우터 dispatch 16, 아래 2026-07-24 정합 절)
+- `.claude/settings.json` Hook 등록 (47 distinct .sh — v8.1.2 2026-06-11 기준, 아래 정합 절 참조. **v8.2 2026-06-30: codex_round_pre_enforcer + codex_round_auto_trigger 2건 등록 해제 → 45 distinct .sh**. **현행 2026-07-25: 46 distinct .sh** — 직접 29 + 라우터 dispatch 17 (2026-07-25 `ast_spec_gate.sh` dispatch 등재, AST v1.1 Step 3 — settings.json 재등록 불필요·router_dispatch.json만 개정). 2026-07-24 정합 절 참조)
 - `02_Infrastructure/docs/qvest_v8_1_sot.md` + `02_Infrastructure/docs/qvest_modes_sot.md` (active SOT)
 - `02_Infrastructure/docs/qvest_v6_4_sot.md` Section 5 (historical Hook + Cert Matrix. QEPM Codex Round 절은 v8.2에서 폐지 — 현재 미적용, 사료용)
 

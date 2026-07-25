@@ -1,0 +1,20 @@
+{
+  "_meta": {
+    "name": "ast_operator_backlog",
+    "sot": "02_Infrastructure/docs/qvest_ast_v1_1_sot.md par.2 — 확장 규율: blocked_by_capability verdict 적립분만 근거로 𝒪/리프소스 확장. 선제 확장 금지.",
+    "created": "2026-07-25",
+    "note": "escape 리프 비중·backlog 적립은 Phase 2 사이드카에서 분기별 집계 (SOT par.2)"
+  },
+  "entries": [
+    {
+      "id": "BL-001",
+      "ts": "2026-07-25",
+      "kind": "leaf_source_gap",
+      "verdict": "blocked_by_capability",
+      "what": "fundamental_merged 재무 리프 소스가 ast_compile canonical provider leaf_sources에 부재 (factor_db_monthly/factor_db_daily/rawdata/stored_panel만) — 재무 원천 필드(TotalEquity 등)로부터의 팩터 정의-레벨 컴파일 불가",
+      "evidence": "S2d parity 실측: V01_BM = TotalEquity/Size (compute_value.R:126-130) 를 AST 정의-레벨로 재합성 불가 → FIELD_REGISTRY_PTR passthrough parity(rho=1.0)로 대체. 02_Infrastructure/ast/tests/parity_factor_db_result.json definition_gaps 참조",
+      "unblock_condition": "leaf_sources에 fundamental_merged 소스 추가 (avail 규칙 = quarterly+45d / annual 익년 3/31 Step 0 확정치, Factor_Date 기반 avail_ts 공급) — Q4 전기간 재빌드(도훈 confirm 대기) 이후 착수 권장",
+      "consumer": "Step 2 후속 (컴파일러 리프 소스 확장)"
+    }
+  ]
+}

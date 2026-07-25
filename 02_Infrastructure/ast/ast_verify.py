@@ -101,8 +101,14 @@ EVENT_DATE_REPORT_LAG_DAYS = 7    # DART 임원거래 법정 보고기한 5영�
 CONSENSUS_DISC_LAG_DAYS = 1       # T-1 선언 vs 코드 same-day(제공시각 미상) → 보수 T-1 = +1d
 
 # ----------------------------------------------------------------------------- 𝒪 연산자 (SOT §2 — 원안 v1.0 §2 채택)
-CS_OPS = {"CS_RANK", "ZSCORE", "WINSORIZE", "NEUTRALIZE", "DEMEAN"}
-ROLLING_OPS = {"TS_MEAN", "TS_STD", "TS_RANK", "TS_MIN", "TS_MAX", "TS_SUM", "DELTA"}
+# (S2d 정합 2026-07-25) operator_library.json(기계 SOT) canonical 명칭 병기 수용:
+#   CS_ZSCORE/CS_WINSORIZE/CS_NEUTRALIZE/CS_DEMEAN/TS_DELTA — SOT §2 축약 표기
+#   (ZSCORE/DELTA 등)와 라이브러리 canonical 표기가 검증기에서 갈라지던 dialect 갭 봉합.
+#   의미론 동일(CS=children max / TS_DELTA=롤링류 t 구속)이라 판정 무영향·수용만 확장.
+CS_OPS = {"CS_RANK", "ZSCORE", "WINSORIZE", "NEUTRALIZE", "DEMEAN",
+          "CS_ZSCORE", "CS_WINSORIZE", "CS_NEUTRALIZE", "CS_DEMEAN"}
+ROLLING_OPS = {"TS_MEAN", "TS_STD", "TS_RANK", "TS_MIN", "TS_MAX", "TS_SUM", "DELTA",
+               "TS_DELTA"}
 PAIR_OPS = {"TS_CORR", "TS_BETA"}
 ARITH_OPS = {"ADD", "SUB", "MUL", "DIV", "LOG", "ABS", "SIGN", "SQRT"}
 COND_OPS = {"CLIP", "IF_ELSE", "WHERE"}

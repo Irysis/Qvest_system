@@ -1,0 +1,72 @@
+{
+  "schema": "ast_parity/v1",
+  "ran_at": "2026-07-25 14:05:17",
+  "purpose": "AST v1.1 Step 2 컴파일러 parity (SOT §8 검증 기준 — S2d-1)",
+  "metric": "cross-sectional Spearman rank corr (AST raw signal vs DB Z_Score_Aligned)",
+  "db_vintage": [
+    {
+      "month": "202605",
+      "mtime": "2026-07-02 02:51:42.992828"
+    },
+    {
+      "month": "202606",
+      "mtime": "2026-07-02 03:12:59.937195"
+    }
+  ],
+  "q4_note": "202605/202606 parquet = 2026-07-02 빌드(Q4 수리 이전 vintage). Q4 전기간 재빌드는 도훈 confirm 대기 — P1/P2 가격계·P3 passthrough 라 rho 무영향.",
+  "definition_gaps": [
+    "M01/M04: AST=sum(log(1+r)) 단조변환(EXP 부재) — rank 동일; NA창 처리 차이로 커버리지 차이; DB측 winsorize+z 꼬리 동률",
+    "M04 rho 음수 = C13 방향정렬(align_factor_direction ic_sign=-1, KR 단기모멘텀=반전팩터)의 기대 부호 — AST raw 대비 DB Z_Score_Aligned 부호 반전. |rho| 로 해석",
+    "V01_BM: 정의-레벨 재합성 불가(canonical provider 에 fundamental 리프 소스 부재) — passthrough parity 로 배관만 검증. leaf-source 확장 백로그 등재(06_Registry/ast_operator_backlog.json BL-001)"
+  ],
+  "rows": [
+    {
+      "factor": "M01_Mom_12_1",
+      "sig_date": "2026-05-31",
+      "n_ast": 2486,
+      "n_db": 2574,
+      "n_common": 2485,
+      "spearman": 0.9707
+    },
+    {
+      "factor": "M04_Mom_1",
+      "sig_date": "2026-05-31",
+      "n_ast": 2759,
+      "n_db": 2654,
+      "n_common": 2546,
+      "spearman": -0.9806
+    },
+    {
+      "factor": "V01_BM",
+      "sig_date": "2026-05-31",
+      "n_ast": 2126,
+      "n_db": 2126,
+      "n_common": 2126,
+      "spearman": 1
+    },
+    {
+      "factor": "M01_Mom_12_1",
+      "sig_date": "2026-06-30",
+      "n_ast": 2494,
+      "n_db": 2571,
+      "n_common": 2484,
+      "spearman": 0.95
+    },
+    {
+      "factor": "M04_Mom_1",
+      "sig_date": "2026-06-30",
+      "n_ast": 2761,
+      "n_db": 2652,
+      "n_common": 2545,
+      "spearman": -1
+    },
+    {
+      "factor": "V01_BM",
+      "sig_date": "2026-06-30",
+      "n_ast": 2123,
+      "n_db": 2123,
+      "n_common": 2123,
+      "spearman": 1
+    }
+  ]
+}
