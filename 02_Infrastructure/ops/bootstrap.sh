@@ -229,6 +229,46 @@ if [ -f "$CLEANER_PENDING" ] && grep -q '"status"[[:space:]]*:[[:space:]]*"await
   echo "[boot] WARN: [cleaner] 주간 증류 대기 (cleaner_pending.json awaiting_distill) — /cleaner 실행 (기계 스윕 완료·엑기스 증류/L-code 적립/잔재 삭제 미완)"
 fi
 
+# 4h. (2026-07-25) Worktree 가시성 — 병렬 세션 미병합/미커밋 감지. WARN-only (블록 아님).
+#     근본: bootstrap 전문에 git 점검이 0건이라 "수리는 됐는데 worktree에 갇힘" 상태가 부팅에 안 보였음.
+#     동일 패턴 실사고 2건 — benchmark date32 writer(미커밋 7일 방치 후 07-25 재적용) ·
+#     lcode_harvester substring 수리(미병합=게이트). 감지 장치 부재가 공통 근본원인.
+#     읽기 전용(status/rev-list/log만). 실패해도 부팅 진행.
+WT_STALE_DAYS=3
+if command -v git >/dev/null 2>&1 && git -C "$PROJECT" rev-parse --git-dir >/dev/null 2>&1; then
+  WTV_AHEAD=0; WTV_DIRTY=0; WTV_STALE=0; WTV_N=0
+  WTV_LINES=""
+  while IFS='|' read -r wt br; do
+    [ -z "$wt" ] && continue
+    case "$wt" in *worktrees*) ;; *) continue ;; esac
+    WTV_N=$((WTV_N + 1))
+    sb="${br#refs/heads/}"
+    ahead=$(git -C "$PROJECT" rev-list --count "main..$sb" 2>/dev/null || echo 0)
+    dirty=$(git -C "$wt" --no-optional-locks status --porcelain 2>/dev/null | wc -l | tr -d ' ')
+    ct=$(git -C "$PROJECT" log -1 --format=%ct "$sb" 2>/dev/null || echo 0)
+    age=$(( ct > 0 ? ($(date +%s) - ct) / 86400 : -1 ))
+    [ "${ahead:-0}" -gt 0 ] 2>/dev/null && WTV_AHEAD=$((WTV_AHEAD + 1))
+    [ "${dirty:-0}" -gt 0 ] 2>/dev/null && WTV_DIRTY=$((WTV_DIRTY + 1))
+    if [ "${dirty:-0}" -gt 0 ] 2>/dev/null && [ "${age:-0}" -ge "$WT_STALE_DAYS" ] 2>/dev/null; then
+      WTV_STALE=$((WTV_STALE + 1))
+      WTV_LINES="${WTV_LINES}    [방치 ${age}d] $(basename "$sb"): 미커밋 ${dirty}파일$([ "${ahead:-0}" -gt 0 ] && echo " + 미병합 ${ahead}커밋")\n"
+    elif [ "${ahead:-0}" -gt 0 ] 2>/dev/null || [ "${dirty:-0}" -gt 0 ] 2>/dev/null; then
+      WTV_LINES="${WTV_LINES}    [활동 ${age}d] $(basename "$sb"): $([ "${dirty:-0}" -gt 0 ] && echo "미커밋 ${dirty}파일 ")$([ "${ahead:-0}" -gt 0 ] && echo "미병합 ${ahead}커밋")\n"
+    fi
+  done <<< "$(git -C "$PROJECT" worktree list --porcelain 2>/dev/null | awk '/^worktree /{w=$2} /^branch /{print w"|"$2}')"
+
+  if [ "$WTV_N" -eq 0 ]; then
+    echo "[boot] Worktree: 없음 (단일 세션)"
+  elif [ "$WTV_AHEAD" -eq 0 ] && [ "$WTV_DIRTY" -eq 0 ]; then
+    echo "[boot] Worktree: OK — ${WTV_N}개 전부 병합·클린"
+  else
+    echo "[boot] WARN: Worktree ${WTV_N}개 중 미커밋 ${WTV_DIRTY} / 미병합 ${WTV_AHEAD}$([ "$WTV_STALE" -gt 0 ] && echo " · ★${WTV_STALE}건 ${WT_STALE_DAYS}일+ 방치")"
+    printf "%b" "$WTV_LINES"
+    [ "$WTV_STALE" -gt 0 ] && echo "    → 방치분은 '수리했는데 main에 없음' 실사고 패턴(date32 writer·lcode harvester). 병합 여부 확인 필요"
+    [ "$WTV_DIRTY" -gt 0 ] && echo "    → 확인: git -C <worktree경로> status  ·  목록: git worktree list"
+  fi
+fi
+
 # 5. 데이터 리프레시 (백그라운드 — xlsx 증분 + KRX/FRED/ECOS)
 REFRESH_LOG="/tmp/qm_boot_refresh_$(date +%Y%m%d_%H%M).log"
 (cd "$PROJECT/02_Infrastructure" && bash "$PROJECT/02_Infrastructure/data/daily_refresh.sh") > "$REFRESH_LOG" 2>&1 &
