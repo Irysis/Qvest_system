@@ -55,10 +55,20 @@ build_knowledge_index <- function(root = .ki_root(), verbose = TRUE) {
   lc_p <- file.path(root, ".cache/lcode_corpus.json")
   lc <- tryCatch(fromJSON(lc_p, simplifyVector = FALSE), error = function(e) NULL)
   lcodes <- if (!is.null(lc)) (lc$lcodes %||% list()) else list()
-  lrows <- lapply(lcodes, function(e) list(
-    id = e$l_code %||% "?", mode = e$research_mode %||% e$mode %||% "unknown",
-    family = e$family %||% "?", grade = e$grade %||% e$grade_raw %||% "?",
-    gist = .ki_trim(e$lesson_text %||% e$statement %||% "", 90)))
+  # 2026-07-25: id_collision_with / source_file 전달 (종전 드롭).
+  # 같은 id 로 서로 다른 기록이 존재할 때 소비면(DIST supporting·hypothesis_index·
+  # inverse-miner)이 어느 쪽을 인용하는지 분기할 수 없었다 — 실제로 DIST-QPM-001 의
+  # "L-160 ID 재발급 오링크"(knowledge_recheck_queue, 07-04)가 이 경로로 발생했다.
+  # 재번호(REASSIGN_ID)는 기존 인용을 끊으므로, 식별 정보를 전달해 분기 가능하게 한다.
+  lrows <- lapply(lcodes, function(e) {
+    row <- list(
+      id = e$l_code %||% "?", mode = e$research_mode %||% e$mode %||% "unknown",
+      family = e$family %||% "?", grade = e$grade %||% e$grade_raw %||% "?",
+      gist = .ki_trim(e$lesson_text %||% e$statement %||% "", 90),
+      source_file = e$source_file %||% "?")
+    if (!is.null(e$id_collision_with)) row$id_collision_with <- e$id_collision_with
+    row
+  })
   # 정렬: mode → l_code (결정론). 모드 내 순번 + 글로벌 순번.
   ord <- order(vapply(lrows, function(x) x$mode, ""), vapply(lrows, function(x) x$id, ""))
   lrows <- lrows[ord]
