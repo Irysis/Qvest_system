@@ -53,6 +53,17 @@ if [ -f "$SETTINGS" ] && grep -q 'QM_ROOT//' "$SETTINGS" 2>/dev/null; then
   FALLBACK="적용"
 fi
 
+# ── 관측 축적 (2026-07-25 next_probe ③) ────────────────────────────────────
+# 열화가 **간헐적**이라는 가설이 재현 실패로 미확정 상태다. 매 발화를 append 해 두면
+# 다음 발생 시 DIR/py 후보 상태가 로그로 남아 가설을 확정하거나 기각할 수 있다.
+# (판정 자체는 stdout, 여기는 사후 분석용 원장)
+LOGDIR="$DIR/.cache"
+if [ -d "$LOGDIR" ] || mkdir -p "$LOGDIR" 2>/dev/null; then
+  printf '%s\trouter_ok=%s\tdispatch=%s\tfallback=%s\tDIR=%s\tpy=%s\n' \
+    "$(date -Iseconds)" "$ROUTER_OK" "$N_DISPATCH" "$FALLBACK" "$DIR" "${PYX:-}" \
+    >> "$LOGDIR/hook_integrity_log.tsv" 2>/dev/null || true
+fi
+
 # ── 판정 ───────────────────────────────────────────────────────────────────
 if [ "$ROUTER_OK" = "1" ]; then
   echo "[hook-integrity] router=OK dispatch=${N_DISPATCH}훅 · worktree폴백=${FALLBACK} · py=$(basename "$PYX")"

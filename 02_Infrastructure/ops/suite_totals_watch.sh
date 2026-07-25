@@ -73,9 +73,24 @@ check() {
   [ -x "$PY" ] || { echo "[suite-totals] python 해석 실패 — 비교 생략"; return 0; }
 
   "$PY" - "$BASELINE" "$LATEST" <<'PYEOF'
-import io, json, sys
+import datetime, io, json, sys
 b = json.load(io.open(sys.argv[1], encoding="utf-8"))
 l = json.load(io.open(sys.argv[2], encoding="utf-8"))
+
+# 신선도: stale 한 latest 를 비교하면 '과거를 현재로 착각'한다 — 감시가 조용히 무의미해지는
+# 형태라 이 아크가 고쳐온 계열과 같다. 수집은 daily_refresh 가 매일 돌린다.
+ts = l.get("collected_at")
+if ts:
+    try:
+        age_h = (datetime.datetime.now(datetime.timezone.utc)
+                 - datetime.datetime.fromisoformat(ts).astimezone(datetime.timezone.utc)
+                 ).total_seconds() / 3600.0
+        if age_h >= 48:
+            print("[suite-totals] ⚠ 수집 %.0fh 경과(48h+) — 이 비교는 과거값 기준입니다. "
+                  "--collect 재실행 또는 daily_refresh 동작 확인" % age_h, file=sys.stderr)
+    except Exception:
+        pass
+
 keys = [k for k in b if k not in ("collected_at", "note")]
 drops, unknown, ok = [], [], []
 for k in keys:

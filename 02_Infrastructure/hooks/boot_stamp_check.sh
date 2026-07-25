@@ -35,6 +35,30 @@ else
   fi
 fi
 
+# ── 훅 집행 무결성 (2026-07-25 next_probe ②) ───────────────────────────────
+# bootstrap 배선만으로는 /qvest 를 돌린 세션에서만 찍힌다 — worktree 를 만들고 바로
+# 작업하면 라우터가 빠진 채로 진행될 수 있다(dispatch 18훅 무발화 = 게이트급 다수).
+# SessionStart 는 모든 세션에서 발화하므로 여기서 열화만 경고한다(정상이면 침묵).
+# 도구 탐색도 폴백한다 — 진단이 가장 필요한 트리(아직 main 을 병합 안 한 worktree)에
+# 정작 도구가 없어 침묵하는 자기모순을 막는다(실측: worktree 에서 스킵됨).
+HIC="$DIR/02_Infrastructure/ops/hook_integrity_check.sh"
+if [ ! -f "$HIC" ]; then
+  _QMR="${QM_ROOT:-}"; _QMR="${_QMR//\\//}"
+  [ -n "$_QMR" ] && HIC="$_QMR/02_Infrastructure/ops/hook_integrity_check.sh"
+fi
+if [ -f "$HIC" ]; then
+  HIC_OUT=$(bash "$HIC" 2>&1) || true
+  case "$HIC_OUT" in
+    *"ROUTER 열화"*)
+      HL=$(printf '%s' "$HIC_OUT" | head -1)
+      MSG="${MSG:+$MSG }[hook-integrity] $HL — 이 세션은 게이트 다수가 무발화 상태입니다. QM_ROOT/QVEST_PY 확인 또는 /qvest 실행."
+      ;;
+    *"폴백이 없습니다"*)
+      MSG="${MSG:+$MSG }[hook-integrity] 이 트리 settings.json 에 worktree 폴백 미적용 — main 병합 권장(현재 라우터는 env 덕에 동작 중)."
+      ;;
+  esac
+fi
+
 if [ -n "$MSG" ]; then
   ESC=$(printf '%s' "$MSG" | sed 's/\\/\\\\/g; s/"/\\"/g')
   echo "{\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"additionalContext\":\"$ESC\"}}"

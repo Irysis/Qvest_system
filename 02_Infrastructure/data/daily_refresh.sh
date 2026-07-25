@@ -553,4 +553,10 @@ if (!is.null(r)) cat(sprintf("[distill] 최근 1일 판정 %d건 [%s]\n", r$n, q
 # [8] Artifact index 재생성 (fail-soft — 실패해도 refresh 전체는 계속. 2026-07-04 저장규칙 재편)
 "$RSCRIPT" --no-save "$INFRA/tools/build_artifact_index.R" || echo "[warn] artifact index rebuild failed (fail-soft)"
 
+# [9] 스위트 총계 수집 (2026-07-25) — 계측 사망은 '실패'가 아니라 '총계 감소'로 온다.
+#     여기서 매일 수집해야 bootstrap 의 --check 가 최신값을 비교한다(수동 수집 의존 제거).
+#     fail-soft: 러너가 죽어도 refresh 전체는 계속 — 다만 그 경우 null 로 기록되어
+#     다음 --check 가 "수치 없음은 정상이 아니다"로 경고한다.
+bash "$INFRA/ops/suite_totals_watch.sh" --collect || echo "[warn] suite totals collect failed (fail-soft)"
+
 echo "=== Daily Refresh v2 Done @ $(date) ==="
