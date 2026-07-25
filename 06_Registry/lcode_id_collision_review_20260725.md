@@ -51,3 +51,7 @@
 | C 순수 중복 | ID 1개 | 파일 1개 정리 | 판정 부담 없음 |
 
 **감지 배선(완료)**: `weekly_cleaner_sweep.R` `axiom_candidates_summary`에 `lcode_integrity` 추가 — 중복 존재 시 콘솔 WARN + pending JSON + 텔레그램 섹션으로 표면화. 종전에는 harvester stderr WARN만이라 매주 찍히고도 도달 0이었음.
+
+**자동 분류기(완료)**: 위 3갈래를 결정적 규칙으로 판정해 다이제스트에 실음 — `strategy_id` 2종 이상 → `cross_strategy` / 같은 전략·같은 디렉토리 → `same_dir_duplicate` / 같은 전략·다른 디렉토리 → `cross_zone_variant`. **수동 판정 5/5 재현 검증 완료**(A 2 · B 2 · C 1). ID를 자동으로 바꾸지는 않음 — 조치 *종류*만 판정해 반복 분류 노동을 제거.
+
+**텔레그램 도달 사전검증(완료)**: `tg_agent_brief(dry_run=TRUE)`로 실제 렌더링 확인 — ok=TRUE, 728바이트, 4-bullet 정상 출력. ⚠ 표시 아티팩트 1건: 자동 용어풀이가 목록 첫 ID에 붙어 `L-160 (교훈), L-166, ...`로 렌더됨(내용 오류 아님, 비전공자 3장치 설계 동작).
