@@ -399,11 +399,38 @@ run_step("axiom_candidates_summary", {
       }
     } else if (identical(dst, "quarantined_evidence")) n_quar <- n_quar + 1L
   }
+  # L-code corpus ID 무결성 (2026-07-25) — harvester가 충돌을 stderr WARN으로만 흘려
+  #   매주 로그에 찍히고도 아무도 안 보는 구조였음(07-25 적발 시 5건 누적: L-160/166/601/602/789).
+  #   충돌 시 harvester는 양쪽 레코드를 다 적재하므로 내용 손실은 없으나 ID 조회가 모호해짐.
+  #   corpus 산출물의 n_id_collisions를 다이제스트에 실어 도훈 표면 도달을 보장.
+  lc_corpus <- tryCatch(fromJSON(file.path(root, ".cache", "lcode_corpus.json"),
+                                 simplifyVector = FALSE), error = function(e) NULL)
+  lcode_integrity <- if (is.null(lc_corpus)) {
+    list(status = "corpus_unreadable", n_entries = NA, n_unique_ids = NA, n_id_collisions = NA,
+         duplicate_ids = list())
+  } else {
+    .ids <- vapply(lc_corpus$lcodes %||% list(),
+                   function(x) as.character(x$l_code %||% x$id %||% "")[1], character(1))
+    .dup <- names(which(table(.ids) > 1))
+    list(status = if (length(.dup)) "COLLISIONS_PRESENT" else "clean",
+         n_entries = length(.ids), n_unique_ids = length(unique(.ids)),
+         n_id_collisions = as.integer(lc_corpus$n_id_collisions %||% length(.dup)),
+         duplicate_ids = as.list(.dup),
+         action = if (length(.dup)) "REASSIGN_ID 판정 필요 (교차전략 충돌은 신규 ID 발급, 동일전략 중복은 병합)" else NA,
+         corpus_last_updated = as.character(lc_corpus$last_updated %||% NA))
+  }
+  if (!is.null(lcode_integrity$duplicate_ids) && length(lcode_integrity$duplicate_ids))
+    cat(sprintf("[cleaner][WARN] L-code ID 중복 %d건 — %s (corpus %d항목/고유 %d)\n",
+                length(lcode_integrity$duplicate_ids),
+                paste(unlist(lcode_integrity$duplicate_ids), collapse = ", "),
+                lcode_integrity$n_entries, lcode_integrity$n_unique_ids))
+
   axiom_candidates_summary <- list(
     n_candidates_total = length(cand_fs),
     n_pending = n_pending,
     n_promote_crash = promote_n_crash,
     promote_failures = promote_failures,
+    lcode_integrity = lcode_integrity,
     failing_axis_histogram = hist_tab,
     near_miss = near_miss,
     confirm_flags = confirm_flags,
@@ -514,6 +541,19 @@ if (Sys.getenv("QVEST_CLEANER_NO_TG", "0") != "1") {
                 if (DRY) "dry-run — 실삭제 없음" else "실삭제")
       ))
     )
+    # L-code ID 무결성 — 충돌 있을 때만 섹션 추가 (2026-07-25. 종전 harvester stderr WARN만이라
+    #   매주 로그에 찍히고도 표면 도달 0이었음)
+    .li <- axiom_candidates_summary$lcode_integrity %||% NULL
+    if (!is.null(.li) && length(.li$duplicate_ids %||% list()) > 0) {
+      secs[[length(secs) + 1L]] <- list(
+        type = "bullet", heading = "L-code ID 무결성 경고", items = c(
+          sprintf("중복 ID %d건: %s", length(.li$duplicate_ids),
+                  paste(unlist(.li$duplicate_ids), collapse = ", ")),
+          sprintf("corpus %s항목 / 고유 %s (내용 손실은 없음 — 양쪽 다 적재됨)",
+                  as.character(.li$n_entries), as.character(.li$n_unique_ids)),
+          "조치: 교차전략 충돌 = 신규 ID 발급 / 동일전략 중복 = 병합 (REASSIGN_ID 판정)"
+        ))
+    }
     # agent는 telegram_notify.R 화이트리스트 내 값만 허용 — 전용 "Cleaner" 미등재라 Q-Lead 사용
     tg_agent_brief(agent = "Q-Lead", title = "주간 클리너 — 기계 스윕 완료·증류 대기",
                    relaxed = TRUE, force = TRUE,
