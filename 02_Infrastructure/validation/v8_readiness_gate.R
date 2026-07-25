@@ -338,7 +338,12 @@ check_schema_active_wt <- function(project_root, no_write = FALSE) {
       # Relative path from project_root (한글 absolute path 회피)
       alpha_pkg_rel <- sub(paste0(project_root, "/?"), "", alpha_pkg_abs)
       router_rel2 <- "02_Infrastructure/hooks/qvest_hook_router.py"
-      out <- run_cmd("python3",
+      # bare python3 = Windows Store 스텁(rc 9009/49) — QVEST_PY 우선.
+      # [2026-07-25] :240 은 07-18 에 수리됐으나 같은 파일의 이 지점이 누락돼 있었다.
+      # 여기서 스텁이 잡히면 rc!=0 → alpha_package 가 전부 "INVALID" 로 계상돼
+      # readiness 판정이 **스키마 문제로 오귀속**된다(계측이 아니라 판정의 오염).
+      py_bin2 <- Sys.getenv("QVEST_PY", "python3")
+      out <- run_cmd(py_bin2,
                       c(router_rel2, "validate-schema",
                         "--schema", "alpha_package",
                         "--package", alpha_pkg_rel), wd = project_root)

@@ -53,8 +53,28 @@ warn_missing <- function(label, path) {
                          sprintf("[MISSING] %s — %s", label, path))
 }
 
+# [2026-07-25] 스칼라 문자열 계약 강제.
+#   registry 의 title 은 `it$name %||% it$title %||% ...` 로 뽑는데, 원천 항목의 그 필드가
+#   **중첩 객체**면 dict 가 그대로 JSONL 에 실린다(실측 2건: lcode_distill_execution/manifest
+#   20260704 의 name = {entries, lcode_indexed, ...}). 소비자 `_query.py:81` 은
+#   `row.get("title") + " "` 를 하므로 **검색 CLI 전체가 TypeError 로 죽는다**
+#   — 색인 2행의 형 오염이 도구 전체를 멈추는 구조였다(readiness qvest_search FAIL rc=1).
+#   생산 지점에서 스칼라로 눌러 계약을 지킨다(길이>1 이면 첫 원소, 객체면 JSON 직렬화).
+.as_scalar_chr <- function(x, fallback = "") {
+  if (is.null(x)) return(fallback)
+  if (is.character(x) && length(x) == 1L) return(x)
+  if (is.list(x) || length(x) > 1L) {
+    s <- tryCatch(toJSON(x, auto_unbox = TRUE), error = function(e) NULL)
+    return(if (is.null(s)) fallback else substr(as.character(s), 1, 300))
+  }
+  as.character(x)[1]
+}
+
 emit_row <- function(rows, id, type, title, body, source_path,
                       wt_id = NULL, timestamp = NULL, tags = list()) {
+  title <- .as_scalar_chr(title, fallback = as.character(id))
+  body <- .as_scalar_chr(body, fallback = "")
+  timestamp <- if (is.null(timestamp)) NULL else .as_scalar_chr(timestamp, fallback = NULL)
   body_truncated <- if (nchar(body) > 4000) {
     paste0(substr(body, 1, 4000), " ... [truncated]")
   } else body
