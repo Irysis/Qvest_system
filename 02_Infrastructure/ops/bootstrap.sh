@@ -667,6 +667,11 @@ echo "Hooks:      settings.json 등록 (harness_health 결과 위 참조)"
 if [ -f "$PROJECT/02_Infrastructure/ops/hook_integrity_check.sh" ]; then
   bash "$PROJECT/02_Infrastructure/ops/hook_integrity_check.sh" 2>&1 | sed 's/^/            /' || true
 fi
+# (2026-07-25) 스위트 총계 회귀 감시 — 계측 사망은 '실패'가 아니라 '총계 감소'로 온다.
+# check 는 파일 비교만이라 빠르다(수집은 --collect, 무인/수동).
+if [ -f "$PROJECT/02_Infrastructure/ops/suite_totals_watch.sh" ]; then
+  bash "$PROJECT/02_Infrastructure/ops/suite_totals_watch.sh" --check 2>&1 | sed 's/^/            /' || true
+fi
 echo "WT Active:  $WT_ACTIVE건"
 echo "Inbox:      alpha=$ALPHA_T risk=$RISK_T optimizer=$OPT_T forge=$FORGE_T judge=$JUDGE_T governor=$GOV_T"
 echo "Axioms:     active=$AX_ACTIVE candidates=$AX_CAND (sot_map documented=$AX_DOC_ACTIVE: documented=$AX_DOCUMENTED_MODE / block=$AX_BLOCK_MODE / advisory=$AX_ADVISORY_MODE)"
