@@ -415,8 +415,7 @@ sg_sync_methodology_memory <- function() {
   # (cf. [[project-lcode-family-substring-rootcause-fix]] 동일 부류).
   to_append <- list()
   for (lc_name in names(new_lcodes)) {
-    present <- grepl(sprintf("(^|[^A-Za-z0-9_-])%s([^A-Za-z0-9_-]|$)",
-                             gsub("([.\\\\|()\\[\\]{}^$*+?])", "\\\\\\1", lc_name)),
+    present <- grepl(sprintf("(^|[^A-Za-z0-9_-])\\Q%s\\E([^A-Za-z0-9_-]|$)", lc_name),
                      mm_content, perl = TRUE)
     if (present) {
       already_present <- already_present + 1L
