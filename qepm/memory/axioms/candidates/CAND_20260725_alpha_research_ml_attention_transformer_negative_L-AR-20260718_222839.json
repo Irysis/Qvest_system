@@ -1,0 +1,78 @@
+{
+  "schema_version": "v54_ax_p0_mode",
+  "candidate_id": "CAND_20260725_alpha_research_ml_attention_transformer_negative_L-AR-20260718_222839",
+  "research_mode": "alpha_research",
+  "metric_type": "estimated",
+  "type": "empirical",
+  "polarity": "negative",
+  "statement_draft": "[실증 실패 규칙 초안] family=ml_attention_transformer, tags=E,T,,, supporting=1건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
+  "supporting_l_codes": [
+    "L-AR-20260718_222839"
+  ],
+  "scope_draft": {
+    "market": "KR",
+    "factor_family": "ml_attention_transformer",
+    "regime": null,
+    "construction_types": null
+  },
+  "evidence_draft": {
+    "independent_l_codes": 1,
+    "independent_strategies": 1,
+    "strategies": [
+      "WT-D20260718_003_transformer_fm_asset_pricing"
+    ],
+    "effect_direction_consistency": null,
+    "note": "evidence_draft — promote.R 5축 검증에서 hurdle_result/grade_a_catalog 교차검증으로 확정",
+    "n_eff_signatures": 1,
+    "independent_constructions": 1,
+    "constructions": [
+      "single_factor_long_only"
+    ],
+    "metric_types": [
+      "canonical_screen"
+    ]
+  },
+  "falsification_draft": {
+    "attempts": [
+      {
+        "test": "유동성 threshold sweep(2e8/1e9/5e9)",
+        "result": "falsified",
+        "effect_retained": "1.31→0.79→−0.01 단조붕괴=liq-robust 배포 미성립"
+      },
+      {
+        "test": "5-seed 규율(XATTN 교훈)",
+        "result": "falsified",
+        "effect_retained": "mean 0.78 전 seed oos 음"
+      },
+      {
+        "test": "book-marginal ΔIR(vs incumbent)",
+        "result": "falsified",
+        "effect_retained": "ΔIR 0.008~0.017≪0.05 북 기여 없음"
+      },
+      {
+        "test": "dual-basis(cap-w vs EW-uni·cap-tier)",
+        "result": "survived",
+        "effect_retained": "EW-uni 2.72 생존=순수 노이즈 아님·screen-route"
+      },
+      {
+        "test": "FM feasibility(venv 패키지)",
+        "result": "weakened",
+        "effect_retained": "INFEASIBLE=capacity-gated·falsified 아님(FQ 부활)"
+      }
+    ],
+    "note": "L-code 기록 반증 시도 실값 집계"
+  },
+  "mechanism_draft": {
+    "economic_explanation": "XATTN cross-sectional attention의 유동성-강건성은 broad-universe(전종목 mid/small)에서 mid-cap relative-positioning 알파를 잡던 것 — 배포 유니버스(K200∪KQ150)는 이미 대형주 틸트라 liq floor 상향 시 신호원(OTHER-tier 소형)이 제거되어 붕괴. 외부 pre-training FM은 KR 데이터 부재 정보를 가져올 잠재력이나 venv 미비로 미검(capacity-gated).",
+    "mechanism_type": "friction",
+    "causal_plausibility": null
+  },
+  "oos_validation_draft": {
+    "oos_months": 52.0,
+    "oos_effect_vs_is": -0.64,
+    "note": "L-code oos_retention 실값 1건 median (IS65/OOS35 활성SR retention) + oos_months 실값 1건 median — promote.R essence_score 경유 재확정"
+  },
+  "cluster_members_count": 1,
+  "status": "pending_5axis",
+  "created_at": "2026-07-25T00:00:49+00:00"
+}

@@ -1,0 +1,87 @@
+{
+  "schema_version": "distilled_v1",
+  "dist_id": "DIST-AR-036",
+  "cluster_key": "f182c82ffd9f",
+  "candidate_id": "CAND_20260725_alpha_research_momentum_crash_selection_negative_L-AR-20260718_212326",
+  "status": "pending_5axis",
+  "statement_refined": null,
+  "retry_condition": null,
+  "refined_at": null,
+  "refined_by": null,
+  "promoted_to_axiom": null,
+  "created_at": "2026-07-25T00:00:50+00:00",
+  "updated_at": "2026-07-25T00:00:50+00:00",
+  "research_mode": "alpha_research",
+  "metric_type": "estimated",
+  "type": "empirical",
+  "polarity": "negative",
+  "statement_draft": "[실증 실패 규칙 초안] family=momentum_crash_selection, tags=E,,,M, supporting=1건 L-code. (promote.R 5축 검증에서 범위·메커니즘·OOS 확정 필요)",
+  "supporting_l_codes": [
+    "L-AR-20260718_212326"
+  ],
+  "scope_draft": {
+    "market": "KR",
+    "factor_family": "momentum_crash_selection",
+    "regime": null,
+    "construction_types": null
+  },
+  "evidence_draft": {
+    "independent_l_codes": 1,
+    "independent_strategies": 1,
+    "strategies": [
+      "WT-D20260718_001_crash_aware_momentum"
+    ],
+    "effect_direction_consistency": null,
+    "note": "evidence_draft — promote.R 5축 검증에서 hurdle_result/grade_a_catalog 교차검증으로 확정",
+    "n_eff_signatures": 1,
+    "independent_constructions": 1,
+    "constructions": [
+      "single_factor_long_only"
+    ],
+    "metric_types": [
+      "canonical_screen"
+    ]
+  },
+  "falsification_draft": {
+    "attempts": [
+      {
+        "test": "4 crash 축 개별 + composite × 4 lambda (20변형)",
+        "result": "falsified",
+        "effect_retained": "전부 OOS PORT_t<base"
+      },
+      {
+        "test": "dual-basis(EW-uni·cap-tier 분해)",
+        "result": "survived",
+        "effect_retained": "양 basis 공히 treatment<base = cap-w 아티팩트 아님"
+      },
+      {
+        "test": "IS(65%)-only lambda 선택 후 OOS 확인",
+        "result": "falsified",
+        "effect_retained": "IS-best=OOS-worst 과적합 노출"
+      },
+      {
+        "test": "AX-001 v2 조건부(crisis_alpha·bad/normal IC)",
+        "result": "falsified",
+        "effect_retained": "crisis-loss 미미↓·bad_sr 불변=de-risking, sleeve 미달"
+      },
+      {
+        "test": "벤치 look-ahead 자가적발(contemporaneous→lagged)",
+        "result": "survived",
+        "effect_retained": "정정 후 FQ-058 재현, 판정 무결성 확보"
+      }
+    ],
+    "note": "L-code 기록 반증 시도 실값 집계"
+  },
+  "mechanism_draft": {
+    "economic_explanation": "long-only 모멘텀 크래시는 고-모멘텀 winner의 동반 급락(systematic common-factor)이라 ex-ante 종목-레벨 하방위험 지표로 crash 종목을 개별 식별 불가 — 페널티가 잡는 것은 crash-avoidance가 아니라 저변동 de-risking(premium 비례 희생). Daniel-Moskowitz short-leg 반등 기전은 long-only 비적용. MDD 레버는 selection이 아니라 timing(국면 스케일링, Barroso-Santa-Clara)에만 존재.",
+    "mechanism_type": "structural",
+    "causal_plausibility": null
+  },
+  "oos_validation_draft": {
+    "oos_months": 69.0,
+    "oos_effect_vs_is": -0.074,
+    "note": "L-code oos_retention 실값 1건 median (IS65/OOS35 활성SR retention) + oos_months 실값 1건 median — promote.R essence_score 경유 재확정"
+  },
+  "cluster_members_count": 1,
+  "expiry": "2026-10-23"
+}
