@@ -4,13 +4,16 @@
 #   (근본원인 = reference-rscript-e-korean-segfault, 수리 패턴 = 외부 .R + source() 경유)
 # 동반 수리 2건:
 #   ① 구 §4 mem_path가 구 WSL 경로(/home/quant/...) 하드코딩 → Windows에서 항상 부재.
-#      update_memory_summary()가 동일 L-code 합산을 현행 MEMORY_DIR에서 이미 수행 — 반환값 사용.
+#      (후속 재배선으로 §4는 knowledge_index/hypothesis_index 카운트로 대체됨 — 아래 07-25 절)
 #   ② 구 §7 tg 블록이 미정의 변수(active, l_codes) 참조 → 매월 silent fail. 명시 정의로 교체.
+# 2026-07-25 소스 재배선(weekly와 동일): update_memory_summary()는 구 경로 부재 no-op이자
+#   MEMORY.md 정규식 덮어쓰기 함수 → 무인 루틴에서 호출 제거. 현행 Ledger 카운트로 교체
+#   (`distill_stats.R` — knowledge_index/hypothesis_index). "L-codes: 0" 오보의 원인이었음.
 
 suppressMessages({
   source("02_Infrastructure/config.R")
   source("02_Infrastructure/stage_gate_engine.R")
-  source("02_Infrastructure/memory/memory_logger.R")
+  source("02_Infrastructure/memory/distill_stats.R")
 })
 
 cat("=== Monthly Audit ===\n")
@@ -51,13 +54,19 @@ tryCatch({
   }
 }, error = function(e) cat("[axiom] Review failed:", conditionMessage(e), "\n"))
 
-# 4+5. methodology 통계 + MEMORY.md 전면 갱신
-#      (update_memory_summary가 active/archive/experiment_log L-code 합산 스캔 겸함)
-mem_stat <- tryCatch(update_memory_summary(), error = function(e) {
-  cat("[memory] Summary failed:", conditionMessage(e), "\n")
-  list(max_l = 0L, count = 0L)
+# 4+5. 지식 Ledger 카운트 + 월간 리서치 판정 요약 (현행 소스)
+ls_ <- tryCatch(qv_ledger_stats(), error = function(e) {
+  cat("[ledger] Failed:", conditionMessage(e), "\n")
+  list(law = NA, distilled = NA, lcode = NA, archived = NA, source = "error")
 })
-cat(sprintf("L-codes: %d total (max L-%d)\n", mem_stat$count, mem_stat$max_l))
+cat(sprintf("Ledger: Law %s · Distilled %s · L-code %s · archived %s (src=%s)\n",
+            ls_$law, ls_$distilled, ls_$lcode, ls_$archived, ls_$source))
+rr <- tryCatch(qv_recent_research(days = 30L), error = function(e) {
+  cat("[research] Failed:", conditionMessage(e), "\n")
+  list(n = 0L, verdicts = integer(0), since = NA, source = "error")
+})
+cat(sprintf("Last 30d (since %s): %d entries [%s]\n",
+            rr$since, rr$n, qv_verdict_line(rr)))
 
 # 6. Stage Gate 현황
 db <- tryCatch(sg_get_dashboard(), error = function(e) {
@@ -70,8 +79,13 @@ tryCatch({
   active_ax <- list.files(file.path(PROJECT_ROOT, "qepm/memory/axioms/active"),
                           pattern = "^AX-\\d+\\.json$")
   source("02_Infrastructure/telegram/telegram_notify.R")
-  tg_send(sprintf("🧠 [Q-Lead] Monthly Audit %s\nL-codes: %d\nActive Axioms: %d\nTracked: %d\nGap: SR %.3f",
+  tg_send(sprintf(paste0("🧠 [Q-Lead] Monthly Audit %s\n",
+                         "L-code %s / Distilled %s / Active Axioms: %d\n",
+                         "Last 30d: %d entries (%s)\n",
+                         "Tracked: %d\nGap: SR %.3f"),
     format(Sys.Date(), "%Y-%m"),
-    mem_stat$count, length(active_ax), nrow(db),
+    ls_$lcode, ls_$distilled, length(active_ax),
+    rr$n, qv_verdict_line(rr, k = 3L),
+    nrow(db),
     if (!is.null(gap)) gap$gap_vector$sharpe_gap else 0))
 }, error = function(e) cat("[telegram] Failed:", conditionMessage(e), "\n"))

@@ -476,6 +476,22 @@ fi
 # ──────────────────────────────────────────────────────────────────────────────
 # [7] Telegram + NAV Tracking + Memory
 # ──────────────────────────────────────────────────────────────────────────────
+echo "[6c/7] 비-return 원천 리프레시 (FQ-064 국민연금 · FQ-073 관세청)..."
+# 2026-07-25 도훈 지시 "지금 수집하는 데이터들 모두 자동 리프레시되도록 배선".
+#   두 원천 모두 **월간** 갱신이라 매일 호출해도 대부분 no-op이다(멱등):
+#     - NPS   : 파일 이력 목록에 신규 월이 있을 때만 다운로드 → append (기존 월 덮어쓰기 금지)
+#     - 관세청: 이번 달 스냅샷이 이미 있으면 skip. 없으면 append-only vintage 스냅샷 적립
+#   ★관세청은 개정이 무기한 반복(매월 15일경 과거 전체 현행화)되므로 최신판 덮어쓰기는
+#     소급 정보주입이다 — vintage_store 스냅샷이 권위이고 latest는 파생이다
+#     (PIT_plan_fq073 §2-b2). 스냅샷 2개↑ 쌓이면 개정폭을 자동 실측한다(§2-c).
+#   실패해도 파이프라인을 멈추지 않는다(비-핵심 원천, advisory).
+if [ -n "$QVENV_PY" ]; then
+  ( cd "$BASE" && "$QVENV_PY" 02_Infrastructure/data/refresh_nonreturn_sources.py --source all ) \
+    || echo "  비-return 리프레시 skipped (다음 실행에서 재시도 — status JSON 참조)"
+else
+  echo "  QVENV_PY 부재 — 비-return 리프레시 skip"
+fi
+
 echo "[7/7] Telegram + NAV + Memory..."
 cd "$INFRA"
 run_r '
@@ -511,15 +527,25 @@ if [ -f "$WATCHLIST" ] && [ "$(cat "$WATCHLIST" | wc -c)" -gt 5 ]; then
 fi
 
 # Memory Distillation
+# 2026-07-25 수리: 구 블록은 update_memory_summary()(현행 경로 부재 no-op이자 MEMORY.md
+#   정규식 덮어쓰기 함수)를 호출하고 결과와 무관하게 "MEMORY.md updated"를 출력 —
+#   침묵 성공 위장. 현행 Ledger(knowledge_index/hypothesis_index) 카운트 보고로 교체.
 cd "$BASE"
 run_r '
 suppressMessages({
   source("02_Infrastructure/config.R")
-  source("02_Infrastructure/memory/memory_logger.R")
+  source("02_Infrastructure/memory/distill_stats.R")
 })
-tryCatch(update_memory_summary(), error = function(e) NULL)
-cat("[distill] MEMORY.md updated\n")
-' 2>/dev/null
+s <- tryCatch(qv_ledger_stats(), error = function(e) NULL)
+r <- tryCatch(qv_recent_research(1L), error = function(e) NULL)
+if (is.null(s) || identical(s$source, "missing")) {
+  cat("[distill] ledger 카운트 불가 — knowledge_index.json 부재/파싱실패\n")
+} else {
+  cat(sprintf("[distill] Ledger: Law %s / Distilled %s / L-code %s (idx %s)\n",
+              s$law, s$distilled, s$lcode, substr(s$generated_at %||% "NA", 1, 10)))
+}
+if (!is.null(r)) cat(sprintf("[distill] 최근 1일 판정 %d건 [%s]\n", r$n, qv_verdict_line(r, 3L)))
+' 2>&1
 
 # [7.9] Artifact hygiene audit (자동정리 log90d/scratch30d/빈디렉토리 + 위반감지 → 06_Registry/hygiene_report.json. fail-soft. 2026-07-04 파일위생 mandate)
 "$RSCRIPT" --no-save "$INFRA/ops/artifact_hygiene_audit.R" || echo "[warn] artifact hygiene audit failed (fail-soft)"
