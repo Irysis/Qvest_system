@@ -40,8 +40,8 @@ VALID_REFRESH = ("auto", "manual")
 # 코드 강제점 정의: (파일 상대경로, 존재해야 하는 정규식, 설명)
 CODE_ENFORCEMENT_POINTS = [
     ("02_Infrastructure/data/parse_fundamental_xlsx.R",
-     r"Factor_Date\s*:=\s*Period_Date\s*\+\s*45L",
-     "xlsx: Factor_Date = Period_Date + 45d (전분기 일률)"),
+     r'month\(Period_Date\)\s*==\s*12L[\s\S]{0,120}"-03-31"[\s\S]{0,120}Period_Date\s*\+\s*45L',
+     "xlsx: Q4(말월=12)=익년 3/31 명시 고정, Q1~Q3=+45d (Q4 lag repair 2026-07-25 — C4 확정 정합)"),
     ("02_Infrastructure/data/data_collector_dart.R",
      r'Factor_Date\s*:=\s*as\.Date\(paste0\(bsns_year\s*\+\s*1,\s*"-03-31"\)\)',
      "DART annual: Factor_Date = 익년 3/31"),
@@ -68,7 +68,10 @@ EXPECTED_DECLARATION = {
 # 코드 강제와 선언이 어긋나는 도메인 → known_discrepancy 보유 의무
 # (xlsx: 연간도 +45d vs 선언 annual_3/31 / fundamental: 혼합 basis /
 #  consensus: 코드 same-day vs 선언 T-1 / macro: 1일 근사 vs 실제 발표 lag)
-DOMAINS_REQUIRING_KD = ("fundamental", "fundamental_xlsx", "consensus", "macro")
+# (2026-07-25 Q4 lag repair 반영) fundamental/fundamental_xlsx는 코드가 Q4=3/31로 수리되어
+# 선언≠코드 불일치 해소 — known_discrepancy 의무 목록에서 해제. consensus(코드 same-day vs 선언 T-1)·
+# macro(발표 lag 1일 근사)는 잔존.
+DOMAINS_REQUIRING_KD = ("consensus", "macro")
 
 
 def check_structure(reg):

@@ -56,7 +56,7 @@
 3. **파싱 하드코딩과의 정합 검증**: 등록 시 선언값 ↔ 강제점(파일:라인) 대조를 CI-성 체크로.
 
 **Step 0 확정값 (C4)**: 연간(사업보고서 계열) availability = **익년 3/31** (DART 구현 기준, pit.md 개정 완료). 분기 = 45일 / DART 분기 고정일(5/15·8/15·11/15).
-**⚠ 수리 항목 (판정영향 — 별도 사이클)**: xlsx 경로 Q4 일률 +45d(≈익년 2/14)는 3/31 대비 ~6주 공격적 = 잠재 look-ahead. 수리 = parse_fundamental_xlsx.R Q4 Factor_Date를 3/31로 상향 → **factor DB 재빌드 유발 + 기존 graduation 판정 변동 가능** — pin_cache 규약(§7) + 전후 A/B 계획과 함께 실행하고, 수리 전까지 Q4-민감 팩터 판정에 이 노출을 주석.
+**✅ Q4 수리 완료 (2026-07-25 도훈 승인·집행)**: parse Q4→3/31 + 전기간 재빌드(월간 439 + fdb_daily + IC) + pin/A/B 완주 — **판정 tipping 0건 확정**, diff는 예측대로 pre-2015 재무-성장 계열 FEB 스냅샷에 국소화. registry 124엔트리 rule 정규형+discrepancy 해소, validator 전체 PASS. 상세 = `q4_lag_repair_plan_20260725.md` §5. (잔여: consensus 계열 저상관의 입력-드리프트 분리 귀속 1건)
 
 **리프 계약 불변식 6종** (ast_field_map §5 권고 승격):
 ① `refresh_mode: manual` 리프는 cache_registry `max_lag_days` 연동 스테일 경보 의무 (멤버십 3/31 종점 사고 재발 방지) ② Date dtype(date32)·심볼 sanity 불변식 (벤치 실사고 계열) ③ STORED_SCORE provenance 3필드 ④ 국면/오버레이 도메인 리프는 `apply_cutoff: first_day_of_holding_month` 속성 내장 (C5 — BearProb 실사고) ⑤ DART 계열 corp_code≠stock_code 조인 가드 + rank-IC advisory/PORT_t 권위 그룹 라벨 (전이 벽 실측 도메인) ⑥ fdb_daily 전용 접근자 신설 후에만 일간 리프 허용 (C15 carve-out 해소).

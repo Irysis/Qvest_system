@@ -19,7 +19,7 @@
    "EXTERNAL": "외부 조회형·미확보·제약 충돌 — 리프 부적격(정본 인입 시 재분류)",
    "NOT_LEAF": "운용 산출/메타 — 리프 제외 (단 cache_registry·pin_cache는 availability/vintage 필드의 1차 소스로 재사용)"
   },
-  "updated": "2026-07-25 (v0.1 — 데이터 트랙 수리 반영: 멤버십/수급/컨센서스 현행화, factor_db 당월, IC 프론티어, fdb_daily 접근자 신설)"
+  "updated": "2026-07-25 (v0.2 — Q4 lag 수리 반영: 재무 availability 3/31 정합, 전 스토어 신-vintage 단일화)"
  },
  "summary": {
   "total_groups": 58,
@@ -57,7 +57,8 @@
    "A6": "해소(07-25): investor_all max 2026-07-24 (구 ~22일 지연 일회 해소 — 수동 export 케이던스는 구조 잔존)",
    "C-CONSENSUS-QW": "해소(07-25): 12 metric 전부 max 2026-07-24 (ticker_map은 Date 무관 매핑테이블 — incr 말미 검사 오류는 무해)",
    "FDB-B6": "갱신(07-25): factor_db_202607 Date=2026-07-24·855,571행·338팩터(build_hash 20260725125206). intra-month 스테일 주간 트리거 배선(>7일 lag 시 재빌드). 전용 접근자 load_daily_factors() 신설 — C15 carve-out 해소",
-   "FDB-B7": "갱신(07-25): 114,292행/327팩터/max Date 2026-05-29(구 05-31 일요일 stale vintage 교정). 2026-05 = 구조적 프론티어 판정(2개월 lag 아님 — 6월 IC는 7월 완결 후 자동). incomplete-terminal-pair guard 추가"
+   "FDB-B7": "갱신(07-25): 114,292행/327팩터/max Date 2026-05-29(구 05-31 일요일 stale vintage 교정). 2026-05 = 구조적 프론티어 판정(2개월 lag 아님 — 6월 IC는 7월 완결 후 자동). incomplete-terminal-pair guard 추가",
+   "C-QWXLSX-Q4-REPAIR": "Q4 lag 수리 집행(도훈 승인): xlsx Q4 Factor_Date +45d(≈2/14)→익년 3/31 — C-QWXLSX-RAW/DERIVED availability 갱신. 전기간 재빌드(월간 7.9h+fdb_daily 46m) + A/B: tipping 0건, diff는 pre-2015 재무-성장 FEB 스냅샷 국소(예측 정합). registry 124 rule=quarterly+45d;annual_3/31, validator PASS"
   }
  },
  "domains": {
