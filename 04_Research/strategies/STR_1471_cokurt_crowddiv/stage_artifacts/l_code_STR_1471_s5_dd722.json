@@ -1,0 +1,10 @@
+{
+  "l_code": "L-613",
+  "strategy_id": "STR_1471_cokurt_crowddiv_s5_dd722",
+  "factor_id": "Cokurtosis_CrowdDiv",
+  "date": "2026-03-26",
+  "verdict": "C / Discard",
+  "lesson": "DD 7/22 brake on weak-alpha cokurtosis strategy destroys more value than it protects. SR dropped 58% (0.645->0.272) while MDD only improved 19% (50.9%->41.3%). The 7% DD_START threshold is too sensitive — it triggers on normal market pullbacks and reduces exposure prematurely, killing compounding. When the parent strategy already has MDD>50% and SR<0.7, DD overlay cannot rescue it. Ref: Dittmar (2002) cokurtosis pricing shows the factor is priced but weak in Korean equities; Hwang & Satchell (1999) higher moment estimation requires long estimation windows that reduce timeliness. The R10_Cokurtosis bottom-10% gate adds marginal value over D01_IdioVol alone. DD calibration lesson: DD_START should be >= 2x the strategy's normal drawdown volatility (here ~15%), suggesting DD_START >= 12-15% for this alpha level.",
+  "tags": ["cokurtosis", "crowd_diversity", "dd_calibration", "s5_mutation", "overlay_destruction", "weak_parent"],
+  "reusable": true
+}

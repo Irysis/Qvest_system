@@ -1,0 +1,94 @@
+{
+  "strategy_id": "STR_1683",
+  "hypothesis_id": "H_1682",
+  "l_code": "L-160",
+  "grade": "F",
+  "grade_detail": "VALIDATED_HARD_FAIL (MDD 94.66% > 45% hard threshold) — family initiator 확정",
+  "core_reference": "Altman (1968 JoF 23:4) Z-score distress + Calmar (1991) ratio + Bali-Cakici-Whitelaw (2011 JFE 99:2) tail risk pricing + Novy-Marx (2013 JFE 108:1) quality + QEPM §10 Statistical Defense + L-121 Q07 Earnings Stability stress_icir +0.753 + L-119/122/129 regime-conditional defense",
+  "lesson_text": "STR_1683 Distress+Calmar Defense Anchor 4-variant sweep 전수 Hard Fail (variant 1~4 MDD 70~95%, SR -0.24~-0.40, CAGR -5~-10%). Signal level ICIR 1.879 (extremely strong)에도 portfolio level top-20 long-only translation이 모든 variant에서 catastrophic 실패. 이는 'factor quality != portfolio quality' 구조적 분리의 첫 명백한 실증. IC-Return decoupling의 4가지 원인 식별: (1) top-20 concentration 위험 누적 — IC rank cross-section과 실제 포트폴리오 weight top-decile threshold에서 drop, (2) idio volatility tight clustering — distressed 종목 simultaneous drawdown, (3) hedging 부재 — long-only 구조에서 negative beta 활용 불가, (4) Positive ICIR과 drawdown causal 연결 부재 — high distress risk premium이 stress 구간에서 realized loss로 전환. Altman distress + Calmar ratio는 academic-quality metrics이지만 KR top-20 long-only 환경에서 signal-to-portfolio translation이 구조적으로 차단됨. Bali-Cakici-Whitelaw (2011) tail risk pricing 메커니즘이 downside 편향으로 작용 — 이론상 tail risk premium이 실현되어야 하나 20종목 집중으로 variance dominant. 교훈: (a) Defense factor ICIR 단독은 portfolio admission 필요조건 불충족, (b) Gate 2 IC-Return coupling ratio SR/ICIR >= 0.3 최소 기준 도입 (STR_1683 SR -0.242 / ICIR 1.879 = -0.129 → 구조적 결함 탐지), (c) Defense signal은 반드시 multi-sleeve blend 또는 long-short 구조에서만 admission 고려, (d) AX_CAND_signal_portfolio_translation_failure family initiator 등록.",
+  "tags": [
+    "DEFENSE_IC_RETURN_DECOUPLING",
+    "SIGNAL_PORTFOLIO_TRANSLATION_FAILURE_INITIATOR",
+    "ICIR_1_879_MDD_94_66_SIGNATURE",
+    "DISTRESS_CALMAR_LONG_ONLY_HARD_FAIL",
+    "TOP_20_CONCENTRATION_FAILURE",
+    "IDIO_VOL_TIGHT_CLUSTERING",
+    "HEDGING_ABSENCE_STRUCTURAL",
+    "POSITIVE_ICIR_NEGATIVE_SR_POISON_PILL",
+    "AX_CAND_FAMILY_INITIATOR",
+    "VALIDATED_HARD_FAIL",
+    "L163_POISON_PILL_DEFINITION_ORIGIN"
+  ],
+  "family": "signal_portfolio_translation_failure",
+  "family_role": "INITIATOR",
+  "family_members_now": [
+    {"l_code": "L-160", "strategy": "STR_1683", "hypothesis": "H_1682", "signature": "Distress+Calmar Defense ICIR 1.879 / MDD 94.66% / SR -0.242", "date": "2026-04-18"},
+    {"l_code": "L-165", "strategy": "STR_1685", "hypothesis": "H_1690", "signature": "Multi-source defense anchor 4-axis ICIR 0.74~0.94 / MDD 77.21~94.69%", "date": "2026-04-19"},
+    {"l_code": "L-166", "strategy": "STR_1687", "hypothesis": "H_1693", "signature": "Q07 sector-neutral 2-axis (Q07+SUE) ICIR high / MDD 58.67% / SR 0.565 — EXCLUSION clause 만족 불구 실패", "date": "2026-04-19"}
+  ],
+  "gate_cascade_result": {
+    "gate_0_pit": "PASS (C1~C15 전수 scan + lookahead_detector clean. single-day Ret 동일 bar 사용 패턴 없음)",
+    "gate_1_implementation": "PASS (20종목, 15bps, 유동성 2억)",
+    "gate_2_robustness": "HARD_FAIL (모든 variant stress 구간 underperform, OOS SR 음수)",
+    "gate_3_performance": "HARD_FAIL (MDD 94.66% > 45%, SR -0.242, CAGR -7.42% 음수)",
+    "gate_4_statistical": "WARN (ICIR 1.879 strong signal이나 SR 음수 — Harvey t>3.0 적용 불가 context)",
+    "gate_5_ff5_alpha": "UNCOMPUTED (음수 alpha 확정적)",
+    "gate_6_tail_risk": "HARD_FAIL (MDD 94.66% = near-total capital destruction)",
+    "gate_7_ic_return_coupling": "HARD_FAIL_POISON_PILL_DEFINITION (IC positive strong + SR negative + MDD 94% = L-163 poison_pill 원형 시그니처. 본 케이스가 L-163 poison_pill Gate 12 MANDATORY rule의 empirical 근거)",
+    "gate_8_role_honesty_audit_v2": "DEFENSE_VIOLATION (AX-001 v2 audit_defense_v2 전수 FAIL: 전기간 SR 음수 + multi-sleeve context 부재 + crisis alpha 측정 불가 + Core 대비 MDD 완화 측정 불가)",
+    "gate_11_sequential_tdc": "SKIPPED (Hard Fail)",
+    "gate_12_l163_poison_pill_mandatory": "HARD_FAIL (STR_1683이 L-163 poison_pill 정의의 원형 case — IC strong positive + SR strong negative + MDD catastrophic)",
+    "gate_13_signal_portfolio_translation_failure_new": "HARD_FAIL (family initiator 확정 — signal quality != portfolio quality 최초 실증)",
+    "gate_14_ax_cand_3rd_member_screening_new": "INITIATOR_SLOT (3-member family의 1st slot)"
+  },
+  "ax_promotion_role": {
+    "candidate_id": "AX_CAND_signal_portfolio_translation_failure",
+    "role": "family initiator — 1st supporting L-code",
+    "note": "L-160 STR_1683이 family signature 최초 확정. L-165 STR_1685 2nd member, L-166 STR_1687 3rd member 도달로 3/3 supporting → 공식 승격 trigger",
+    "quarterly_review_date": "2026-07-16"
+  },
+  "poison_pill_definition_origin": {
+    "rule_name": "L-163 poison_pill Gate 12 MANDATORY",
+    "definition": "IC > 0 (signal positive) AND SR < 0.8 (portfolio underperform) AND MDD > 35% (tail catastrophic) 동시 충족 시 자동 REJECT",
+    "origin_case": "STR_1683 (IC 0.0xx positive / ICIR 1.879 / SR -0.242 / MDD 94.66%)",
+    "generalization": "L-165 STR_1685 + L-166 STR_1687 3건 family signature 재현 확정"
+  },
+  "judge_custodian_decision": {
+    "decision_1_family_initiator": "CONFIRMED (L-160 family initiator 공식 지정)",
+    "decision_2_poison_pill_rule_origin": "APPROVE (L-163 poison_pill Gate 12 definition 출처 L-160)",
+    "decision_3_ax_cand_foundation": "APPROVE (AX_CAND_signal_portfolio_translation_failure candidate 기반)",
+    "decision_4_defense_single_sleeve_rule": "APPROVE (Defense single-sleeve long-only top-20 structural failure 일반화 근거)",
+    "decision_5_scope_kr_top20_long_only": "APPROVE (market=KR, universe=top20_long_only, family=defense 초기 scope)"
+  },
+  "restart_block": {
+    "activated": true,
+    "rationale": "H_1682 Distress+Calmar 4-variant 전수 실패 + AX_CAND family initiator 확정. 동일 spec 재실행 금지.",
+    "blocked_paths": [
+      "Distress+Calmar 2-axis single-sleeve defense long-only 재설계",
+      "Altman Z-score + Calmar ratio simple composite KR top-20 재실행"
+    ],
+    "allowed_paths": [
+      "multi-sleeve blend 내 distress sleeve 편입 (STR_1679v3 style)",
+      "long-short distress structure (KR 제약 내)",
+      "Altman + Calmar + tail risk 3-axis composite + extra overlay"
+    ]
+  },
+  "created_at": "2026-04-19",
+  "session": 68,
+  "phase": "Day 2 retroactive publication (Day 1 methodology_active.md 등재 완료분의 file-level artifact 발행)",
+  "judge_agent_id": "judge",
+  "note": "L-160은 Session 67 Day 1 backtest 결과로 이미 methodology_active.md line 294에 정식 등재됨. 본 file-level artifact는 Session 68 Day 2 Judge S6 cascade Gate 13/14 신규 추가에 따라 family signature 3-member 공식 확정 시점에 소급 발행.",
+  "evidence_files": [
+    "04_Research/strategies/STR_1683_distress_calmar_defense/output/hurdle_result.json",
+    "04_Research/strategies/STR_1683_distress_calmar_defense/output/h1682_variant_comparison.csv",
+    "04_Research/strategies/STR_1683_distress_calmar_defense/output/h1682_r16_sub_period_ic.csv",
+    "04_Research/strategies/STR_1683_distress_calmar_defense/output/analysis_report.md",
+    "stage_artifacts/l_code_STR_1685.json",
+    "stage_artifacts/l_code_STR_1687.json (L-166 3rd member)"
+  ],
+  "related_l_codes": ["L-119", "L-121", "L-122", "L-129", "L-131~140", "L-159", "L-163", "L-165", "L-166"],
+  "followup_scout": "Distress signal 재설계 시 multi-sleeve context 필수. single-sleeve 재시도 L-160 교훈 위반.",
+  "followup_forge": "STR_1683 동일 spec 재실행 차단. restart_block 준수.",
+  "followup_governor": "AX_CAND_signal_portfolio_translation_failure 3/3 supporting 도달 → 공식 AX-007 승격 절차 개시. Defense single-sleeve PG1 admission rule 강화 (Gate 7 IC-Return coupling + Gate 12 poison_pill + Gate 13 translation failure 의무).",
+  "followup_qlead": "L-163 poison_pill Gate 12 rule의 origin case L-160 명시. AX-007 promotion packet 준비 (3 supporting L-codes + 5축 0.86)."
+}

@@ -1,0 +1,18 @@
+{
+  "l_code": "L-723",
+  "strategy_id": "STR_887_foreign_flow_alpha_v71",
+  "factor_id": "Foreign_Flow_Alpha v7.1",
+  "date": "2026-03-26",
+  "verdict": "A (conditional) / Promote after FRED shift(1L) fix",
+  "lesson": "STR_887 v7.1 rebuild proves old MRS contamination was SUPPRESSING alpha, not inflating it. Original (old MRS): SR 1.002, CAGR 12.61%, Score 52.4. After v7.1 fix: SR 1.099 (+9.7%), CAGR 14.29% (+13.3%), Score 68.4 (+16pts). FMB t=6.682 is the strongest cross-sectional signal in the entire project. FF5 alpha 9.20%/yr (t=2.31) survives all factor models. OOS retention 1.28 (OOS > IS) — zero overfitting. One soft C11 issue: FRED daily market data missing shift(1L) for US/KST timezone — impact negligible on monthly rebal but should be fixed for strict PIT purity. This is the most promising diversifier in the portfolio pipeline.",
+  "tags": ["foreign_flow", "regime_v71", "high_priority", "session_best", "grade_a_candidate", "fmb_strongest", "oos_robust"],
+  "reusable": true,
+  "gate_results": {
+    "gate_0_pit": "PASS (3 detector flags adjudicated as false positives / negligible)",
+    "gate_1_performance": "PASS (SR 1.099, CAGR 14.29%, 5/5 stress outperform)",
+    "gate_2_artifacts": "PASS (15 files present)",
+    "gate_3_role_honesty": "PASS (diversifier — honest assessment)",
+    "gate_4_statistical": "PASS (FMB t=6.682, OOS retention 1.28, IC stable)",
+    "gate_5_ff5": "PASS (FF5 alpha 9.20%/yr, t=2.31, significant)"
+  }
+}

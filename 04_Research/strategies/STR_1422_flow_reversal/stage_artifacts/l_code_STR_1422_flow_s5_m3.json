@@ -1,0 +1,20 @@
+{
+  "l_code": "L-635",
+  "title": "Tighter buffer (40/20) INCREASES turnover on flow reversal — confirms signal-level failure",
+  "strategy": "STR_1422 S5-M3 (FlowRev_DD8_20_TightBuf)",
+  "date": "2026-03-26",
+  "judge_verdict": "REJECT",
+  "grade": "C",
+  "score": 22.9,
+
+  "lesson": "Tighter buffer zone (keep=40, entry=20) on flow reversal signal actually increased turnover to 3218% (vs 3205% with 50/25 buffer). This is counterintuitive but logical: tighter entry threshold forces more frequent replacements when signal ranks shift dramatically. DD 8/20 (tighter than M1's 10/25) marginally reduced MDD (46.3% vs 48.2%) but still above 45% cap. OOS retention went NEGATIVE (-0.087).",
+
+  "root_cause": "Buffer zones work by retaining existing holdings that remain within the 'keep' band. When the signal is so unstable that rank changes exceed any reasonable buffer width, the buffer mechanism breaks down entirely. Tighter entry (20 vs 25) means only top-20 new entrants qualify, but the massive rank churn still pushes most holdings outside the keep band.",
+
+  "implication": "Three S5 mutations (m1/m2/m3) conclusively prove STR_1422 flow reversal is structurally unsuitable for monthly rebalancing. All produce ~3200% turnover, sub-4% CAGR, and near-zero or negative OOS retention. The entire STR_1422 family should be archived. If flow reversal is revisited, it must use signal smoothing or quarterly+ rebalancing frequency.",
+
+  "cross_reference": ["L-634 (s5_m1 same conclusion)", "s5_m2 judge REJECT (same turnover)"],
+  "tags": ["flow_reversal", "turnover_pathology", "buffer_zone_failure", "signal_instability", "STR_1422"],
+  "family": "INV01_FlowReversal",
+  "severity": "structural_fail"
+}

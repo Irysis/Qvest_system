@@ -6,7 +6,14 @@
 
 # === Strategy outputs (regeneratable) ===
 04_Research/strategies/*/output/
-04_Research/strategies/*/stage_artifacts/
+# ⚠ 디렉터리(.../stage_artifacts/)가 아니라 *내용*(/*)을 무시한다 — git 은 제외된
+#   디렉터리 안의 파일을 재포함할 수 없으므로, 아래 negation 이 먹으려면 이 형태여야 한다.
+04_Research/strategies/*/stage_artifacts/*
+# L-code 원장은 재생성 불가 지식 — 예외 추적 (2026-07-25 도훈 승인).
+# 근거: 원본 아티팩트·.cache 가 모두 비추적이라 git 에는 91자 gist 만 남고 lesson 전문이
+# 보존되지 않았다(L-604 실측: 전문 666자 vs 인덱스 gist 91자 말줄임).
+# 대소문자 변형 실재(L_code_STR_1571.json) — [Ll] 로 함께 잡는다.
+!04_Research/strategies/*/stage_artifacts/[Ll]_code*.json
 
 # === Data formats ===
 *.xlsx

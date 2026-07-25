@@ -1,0 +1,17 @@
+{
+  "l_code": "L-616",
+  "strategy_id": "STR_1511_liquid_income",
+  "factor_id": "Liquid_Income",
+  "factors": ["L04_Bid_Ask_Proxy", "V17_Payout_Ratio"],
+  "date": "2026-03-26",
+  "verdict": "C (35.9) / Archive — S5 mutation priority HIGH",
+  "lesson": "Bid-ask proxy (Amihud & Mendelson 1986) + payout ratio (Fama & French 1993 HML adjacent, Pontiff & Woodgate 2008 issuance/payout) composite in Korean market yields SR 0.513, MDD 51.6% — hard fail on drawdown but 4/4 stress outperformance (including GFC +6.68%, EuDebt +17.77%). FF5 alpha near zero (t=-0.108) meaning returns are fully explained by standard factors. However recent 3Y IC 0.051 (vs full 0.018) signals strengthening factor. Cross-category Liquidity x Income is novel and untested — orthogonality value for portfolio construction. Key mutation path: DD brake to cap MDD + possible 3rd factor for alpha boost. The factor combination captures 'cheap-to-trade income stocks' but needs overlay engineering to convert defensive signal into actionable alpha.",
+  "tags": ["liquid_income", "dividend", "liquidity", "bid_ask", "payout_ratio", "cross_category", "s5_candidate", "stress_resilient"],
+  "reusable": true,
+  "mutation_priority": "HIGH",
+  "suggested_mutations": [
+    "DD brake 6/20 or 8/25 to cap MDD",
+    "Vol target expanding window for risk normalization",
+    "Add 3rd factor (momentum or quality) for alpha injection"
+  ]
+}

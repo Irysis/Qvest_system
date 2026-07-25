@@ -1,0 +1,11 @@
+{
+  "l_code": "L-643",
+  "strategy_id": "STR_791_orthogonal",
+  "factor_id": "Orthogonal composite (Defense + Residual Momentum)",
+  "date": "2026-03-26",
+  "verdict": "B_CONDITIONAL / Discard (rerun required)",
+  "lesson": "STR_791 orthogonal residual scoring concept is sound (cross-sectional regression removes Defense overlap from momentum), but implementation has 6 PIT violations: same-day VT/DD (C2/C9), old MRS without lag (C5/C11), FM tilt using today's cum returns (C8), liquidity frollmean without shift (C10). Estimated SR inflation 25-50% from VT/DD/FM same-day plus ~18% from old MRS (L-441). Post-correction SR likely ~0.6-0.7. FF5 alpha t=1.47 not significant. CAGR already below target. Concept worth reimplementing with regime_engine v7.1 + all lag fixes applied.",
+  "tags": ["orthogonal", "legacy", "composite", "pit_violation", "C2", "C5", "C8", "C9", "C10", "C11", "old_mrs", "vt_dd_sameday"],
+  "reusable": true,
+  "reuse_note": "Orthogonal residual decomposition (regress factor A on factor B, use residual as independent alpha) is a valid technique. Apply to new Factor DB strategies with PIT-clean infrastructure."
+}

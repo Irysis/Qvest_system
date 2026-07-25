@@ -1,0 +1,10 @@
+{
+  "l_code": "L-795",
+  "strategy_id": "STR_1562",
+  "stage": "S6",
+  "grade": "A",
+  "lesson_text": "C11 수정(FRED 동월 접근 -> t-1월 접근)이 성과를 개선한 사례. STR_1028 대비 SR 1.300->1.333, OOS 0.906->1.09 향상. 동월 MRS가 IS에서만 유효한 가짜 위기 타이밍을 제공했음을 확인. 단, MDD는 26.01%->31.78%로 악화 — 미래참조 제거 시 방어력 감소는 정직한 비용. .prev_ym() 함수에서 -32일 방식은 2월에 1월 FRED를 건너뛰는 엣지케이스 존재(12월 데이터 사용). lubridate 기반 수정 권장. 또한 sim_result의 HOLDINGS_LOG가 defense sleeve만 반영하고 실제 5-sleeve 합산 포트폴리오 보유내역이 누락됨 — 30종목 제한 검증 불가. Gerber+DCC+HRP 가중방식의 알파는 FMB Score가 아닌 포트폴리오 구성에 존재(Intercept t=3.86).",
+  "core_reference": "Gerber et al. (2022) 'The Gerber Statistic: A Robust Co-Movement Measure for Correlation Matrix Estimation'; Lopez de Prado (2016) 'Building Diversified Portfolios that Outperform Out-of-Sample' (HRP); Engle (2002) DCC-GARCH",
+  "tags": ["C11_fix", "FRED_lag", "Gerber_statistic", "DCC", "HRP", "PIT_compliance", "MDD_tradeoff", "holdings_audit_gap", "portfolio_construction_alpha"],
+  "timestamp": "2026-03-29T10:15:00+09:00"
+}

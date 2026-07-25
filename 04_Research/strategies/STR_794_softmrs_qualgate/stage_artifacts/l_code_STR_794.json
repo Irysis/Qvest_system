@@ -1,0 +1,9 @@
+{
+  "l_code": "L-650",
+  "strategy": "STR_794_softmrs_qualgate",
+  "timestamp": "2026-03-26",
+  "tags": ["softmrs", "quality_gate", "legacy", "mrs_check"],
+  "lesson": "STR_794 Soft MRS + Quality Gate: Gate 0 REJECT. Uses deprecated old MRS (FRED_REGIME_CACHE Macro_Risk_Score same-month join, L-441 pattern). Both main overlay (line 204) and indmom_sleeve (line 72) are contaminated. Lookahead detector confirmed C11_MRS + C10_LIQ. Even without PIT issues, fundamentals weak: SR 0.944, CAGR 12.25%, MDD 28.12%, FF5 alpha t=0.648 (insignificant), FMB Score t=0.85 (insignificant). Quality gate concept (bottom 20% QMJ exclusion) is sound and PIT-clean in isolation, but cannot salvage a tainted MRS base. Any future Soft MRS strategy must use regime_engine v7.1 with expanding percentile thresholds, not raw Macro_Risk_Score.",
+  "actionable": "Archive as F_PIT. Quality gate pattern reusable on clean base strategies. Do NOT reference STR_794 performance metrics as baseline.",
+  "related": ["L-441", "L-450", "STR_789", "STR_770"]
+}

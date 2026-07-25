@@ -1,0 +1,10 @@
+{
+  "l_code": "L-606",
+  "strategy_id": "STR_1425_adaptive_ic_rotation_s5_m3",
+  "factor_id": "Adaptive_IC_Rotation",
+  "date": "2026-03-26",
+  "verdict": "B (43.9) / Keep-Diversifier-Pool",
+  "lesson": "Aggressive DD brake (5%/15%, min_exp=35%) on adaptive IC-weighted rotation: MDD compressed from ~35% to 24.76% but CAGR dropped to 10.09% (below 16% target). OOS retention only 57.1% (IS SR 0.977 vs OOS 0.557), suggesting expanding ICIR weighting with MIN_IC_MONTHS=12 captures noise. The 2-month IC lag (C14 PIT-safe) is correct but insufficient to fix OOS decay -- the issue is ICIR instability with 5 factors over short windows. Key insight: DD overlay cannot rescue weak base alpha; the OOS problem originates in factor_engine.R not in the S5 mutation. Compare to base output (Grade B, 44.3) -- M3 barely changed score (43.9), confirming DD aggression is neutral-to-negative for this strategy.",
+  "tags": ["adaptive_ic", "factor_rotation", "s5_mutation", "dd_brake", "oos_decay", "icir_instability"],
+  "reusable": true
+}

@@ -1,0 +1,213 @@
+{
+  "_override": "FREEZE_OVERRIDE_APPROVED_BY_QLEAD=true",
+  "_override_reason": "STR_1692 post-L168-fix 첫 정식 Judge S6 cascade. L-170 candidate 발행.",
+
+  "strategy_id": "STR_1692",
+  "hypothesis_id": "H_1692_v2",
+  "l_code": "L-170",
+  "l_code_note": "L-169는 weight_sum arithmetic assert 교훈으로 이미 발행됨 (Governor rev churn 실증). STR_1692는 L-170로 assign.",
+  "grade": "F",
+  "grade_detail": "VALIDATED_HARD_FAIL_POST_L168_FIX — first post-fix formal verdict (MDD 68.4% + Turnover 849% 이중 breach)",
+  "core_reference": "Carhart (1997 JoF 52:1) momentum premium + Grinblatt-Moskowitz (2004 JFE 71:3) industry momentum + Fama-French (1993) residualization + Novy-Marx (2012 JFE 103:3) fresh momentum + L-168 (infra PIT fix) + L-166 (AX-005/007 ANTI-PATTERN precedent) + L-119 (static factor blend alpha dilution) + AX-007 signal-portfolio translation failure",
+  "lesson_text": "STR_1692 H_1692 v2 industry momentum residualized (M18) Core_Secondary **post-L168-fix 첫 정식 Judge 심사에서 HARD FAIL 확정**. C13 fix 적용(FLIP_SIGN 제거, Z_Score_Aligned 직접 사용) + load_month_factors 경유 (factor_db_connector v2.0 PIT-safe path)로 infra contamination 완전 해소됐음에도 구조적 실패 재현. Metrics: SR 0.261 / CAGR 8.64% / AnnVol 33.06% / MDD 68.4% / Turnover 849% / Worst 6M -52.44% / ES99_m 30.00% / MaxConsecNegAlpha 7개월. 이중 hard_fail (MDD>45% AND Turnover>600%). **핵심 발견 3건**: (1) Alpha Trend ratio 1.658× improving (recent 3Y SR > full SR) + IC Stability 6/6 max score에도 total score 36.5 / Grade F — signal level monotonic improvement이 portfolio level MDD 구조적 실패로 전환되지 않음. L-166 signal-portfolio translation failure family signature 재현. (2) Industry momentum residualized 가설의 ultra-high turnover 849%는 design inherent property — 월간 industry ranking sweep이 top-20 holdings churn을 구조적으로 유발. Core_Secondary role claim 자체가 realistic turnover cost (15bps × 849% = 127bps/yr alpha erosion) 정면 충돌. (3) BM_Corr 0.607은 Core_Secondary alpha source 독립성 claim 미충족. AX-007 scope signal-portfolio translation failure family 4th member 후보 — 단 L-166과 family-level 차이 있음 (L-166은 defense Q07 sector-neutral, L-170은 core_secondary industry momentum residualized). 교훈: (a) post-L168-fix 경로 정확 적용돼도 가설 structural design flaw 해결 불가 — infra fix는 필요조건이지 충분조건 아님, (b) turnover > 400% momentum residual family는 Core_Secondary role 자체 부적합. Sequential filter 또는 regime-conditional overlay로 turnover 축소 S5 mutation 필수, (c) AX-007 Gate 14 scope determination: single_sleeve_long_only top-20 Core_Secondary 해당 → HARD_REJECT 적용 자동 가능, (d) H_1692 v2 standalone 재설계 금지 — multi-sleeve blend context에서 industry momentum sleeve로만 재검토 허용 (restart_block 활성화).",
+  "tags": [
+    "POST_L168_FIX_FIRST_FORMAL_VERDICT",
+    "C13_FIX_APPLIED_FLIP_SIGN_REMOVED",
+    "LOAD_MONTH_FACTORS_V2_0_USED",
+    "INFRA_CONTAMINATION_RESOLVED",
+    "INDUSTRY_MOMENTUM_RESIDUALIZED_HARD_FAIL",
+    "DOUBLE_HARD_FAIL_MDD_TURNOVER",
+    "TURNOVER_849_STRUCTURAL_DESIGN_FLAW",
+    "MDD_68_4_POISON_PILL",
+    "ALPHA_TREND_1_66_IMPROVING_BUT_PORTFOLIO_FAIL",
+    "L166_L170_FAMILY_SIGNATURE_DIFFERENT",
+    "AX_007_GATE14_CORE_SECONDARY_SINGLE_SLEEVE",
+    "H_1692_V2_RESTART_BLOCK_ACTIVATED",
+    "VALIDATED_HARD_FAIL"
+  ],
+  "family": "industry_momentum_residualized_core_secondary_fail",
+  "family_role": "INITIATOR_OR_2ND_MEMBER",
+  "family_relationship_to_l166": "L-166과 **signal-portfolio translation failure** 공통 family signature이나 sub-family 다름. L-166: defense + Q07 sector-neutral 2-axis. L-170: core_secondary + industry momentum residualized. AX-007 scope 양쪽 모두 해당하나 empirical sub-pattern 차이.",
+
+  "gate_cascade_result": {
+    "gate_0_pit": {
+      "verdict": "PASS",
+      "note": "C13 fix 적용 (FLIP_SIGN 제거 + Z_Score_Aligned 직접 사용). load_month_factors v2.0 경유. Pre-L168-fix invalid flag 해제. Codex rescue 통과 완료 (Task #15 기반)"
+    },
+    "gate_1_implementation": {
+      "verdict": "PASS",
+      "note": "20종목, 15bps, 유동성 2억원 기준 준수. params=20"
+    },
+    "gate_2_robustness": {
+      "verdict": "MIXED",
+      "note": "Rolling3Y_Pos 65.6% borderline. stress 2/3 outperform. OOS retention NA (계산 불가). IC Stability 6/6 max. Alpha Trend ratio 1.658 improving. 단 MaxConsecNegAlpha 7개월 warn"
+    },
+    "gate_3_performance": {
+      "verdict": "HARD_FAIL_DOUBLE",
+      "breaches": ["MDD 68.4% > 45%", "Turnover 849% > 600%"],
+      "note": "Sharpe 0.261 < 0.8, CAGR 8.64% < 16%, Calmar 0.126 < 0.5"
+    },
+    "gate_4_statistical": {
+      "verdict": "WEAK",
+      "note": "Harvey t-stat 계산 불가 (다중검정 보정 전제 data 부족). DSR NA. BM_Corr 0.607 Core_Secondary independence 미달"
+    },
+    "gate_5_ff5_alpha": {
+      "verdict": "UNCOMPUTED",
+      "note": "Core_Secondary role baseline 부재. Carhart momentum exposure 예상 positive but alpha significance 미측정"
+    },
+    "gate_6_tail_risk": {
+      "verdict": "HARD_FAIL",
+      "note": "tail_risk_result.json 미발견. ES99_m 30.00% + Worst 6M -52.44% 수동 확인. CDaR/CVaR 산출 시 강한 FAIL 예상"
+    },
+    "gate_7_ic_return_coupling": {
+      "verdict": "HARD_FAIL_POISON_PILL_DEFINITION_ORIGIN_L163",
+      "note": "IC Stability 6/6 (signal strong) + SR 0.261 (SR/ICIR ratio 계산 시 1.0 미만일 가능성) + MDD 68.4% (>35%) = L-163 poison_pill 정의 충족. Gate 12 MANDATORY hard_block"
+    },
+    "gate_8_role_honesty_audit_v2": {
+      "verdict": "CORE_SECONDARY_ROLE_REJECTED",
+      "note": "provisional_role=core_secondary. 실측 BM_Corr 0.607 — Core_Secondary role 전형적 독립성(BM_Corr<0.5) 미충족. Role Honesty Audit에서 '위장된 Core Alpha momentum exposure' 판정. single-sleeve이므로 multi-sleeve embedding 증명 경로 없음"
+    },
+    "gate_11_sequential_tdc": {
+      "verdict": "SKIPPED",
+      "note": "Hard Fail 상태이므로 TDC 측정 불필요. 단 PASS 가정 시 STR_1631 (Core_Primary) + STR_1656 (Diversifier_ML) pairwise TDC<0.30 사전 확인 필요했음"
+    },
+    "gate_12_l163_poison_pill_mandatory": {
+      "verdict": "HARD_FAIL",
+      "note": "IC positive strong + SR 0.261 < 0.8 + MDD 68.4% > 35% 3-조건 전수 충족. STR_1683 L-160이 L-163 poison_pill origin. STR_1692가 post-L168-fix 정식 첫 재현 case"
+    },
+    "gate_13_signal_portfolio_translation_failure": {
+      "verdict": "HARD_FAIL",
+      "note": "signal (IC 6/6 + Alpha Trend 1.658 improving) → portfolio (MDD 68.4% + Turnover 849%) 구조적 분리. L-166 family signature 재현. single_sleeve_long_only + core_secondary + ICIR PASS + SR<0.8 + MDD>35% = AX-007 scope 전수 충족"
+    },
+    "gate_14_ax_007_auto_reject": {
+      "verdict": "HARD_REJECT",
+      "note": "AX-007 scope trigger 자동 활성화: role=core_secondary + universe=top20_long_only + single_sleeve=TRUE + signal IC strong + MDD>35%. EXCLUSION 4-attribute 전수 미해당: multi-sleeve blend 없음 / long-short 아님 / 50+ 분산 아님 / ML-based sizing 아님. Admission Rule v3.5.3-patch1 Gate 14 AUTO_REJECT 집행"
+    },
+    "gate_15_infra_pit_scan": {
+      "verdict": "PASS",
+      "note": "post-L168-fix factor_db_connector v2.0 경유. align_factor_direction sig_date 자동 전달. Z_Score_Aligned 직접 사용 (C13 compliance)"
+    }
+  },
+
+  "ax_007_scope_determination_final": {
+    "scope_trigger_check": {
+      "role": "core_secondary",
+      "universe": "top20_long_only",
+      "single_sleeve": true,
+      "signal_icir_positive_strong": true,
+      "sr_below_0_8": true,
+      "mdd_above_35pct": true,
+      "all_6_conditions_met": true
+    },
+    "exclusion_check": {
+      "multi_sleeve_blend": "FALSE (standalone)",
+      "long_short": "FALSE (long-only)",
+      "diversified_50_plus": "FALSE (top-20)",
+      "ml_based_3gate": "FALSE (residual regression이 ML 아님, feature_concentration single feature)"
+    },
+    "ax_007_verdict": "SCOPE_IN — AUTO_REJECT 적용. restart_block 활성화."
+  },
+
+  "family_analysis_ax_007_4th_member_vs_separate": {
+    "option_a_ax_007_family_4th_member": {
+      "rationale": "L-160 + L-165 + L-166 + L-170 = 4 members. signal-portfolio translation failure family signature 공통 재현",
+      "pros": "AX-007 axiom supporting L-code count 증가 → 5축 promotion confidence 상승 (I 0.82 → 0.85 추정)",
+      "cons": "L-170 sub-family가 Defense가 아닌 Core_Secondary — L-160/165/166 모두 defense family. sub-family 이질성으로 family_consistency(F) 축 저하 가능 (1.00 → 0.85 추정)",
+      "net_5axis_effect": "total 0.86 → 0.88 추정 (net +0.02)"
+    },
+    "option_b_separate_core_secondary_family": {
+      "rationale": "L-170 독립 family — industry momentum residualized core_secondary standalone long-only. Defense family와 sub-pattern 명확 구분",
+      "pros": "family_consistency 유지, sub-pattern 정확성",
+      "cons": "AX_CAND_core_secondary_single_sleeve_fail 신규 candidate 1/3 supporting. 추가 2건 대기 필요"
+    },
+    "judge_custodian_recommendation": "option_a (AX-007 4th member) 편입 권고 — '정확한 sub-family'는 detailed comment로 유지하되 AX-007 family 통합. AX-005 v1.2 L-166 편입 선례와 일관. AX-007 scope는 'defense or core_secondary'로 이미 core_secondary 포함됨 — family_consistency 저하 우려는 original scope가 이미 core_secondary 포함했으므로 과장",
+    "final_decision": "L-170은 AX-007 4th supporting member로 편입 APPROVE"
+  },
+
+  "ax_007_supporting_update_proposed": {
+    "v1_0_supporting": ["L-160", "L-165", "L-166"],
+    "v1_1_supporting_after_l170": ["L-160", "L-165", "L-166", "L-170"],
+    "version_bump": "AX-007 v1.0 → v1.1 (extension packet 별도 발행 예정, v3.5.4 발효 후)",
+    "five_axis_recalibration_proposed": {
+      "independence": {"from": 0.82, "to": 0.85, "rationale": "4 cases independent factor families (distress + multi-source + sector-neutral + industry momentum)"},
+      "repeatability": {"from": 1.00, "to": 1.00, "rationale": "전수 hard_fail 재현"},
+      "family_consistency": {"from": 0.90, "to": 0.92, "rationale": "core_secondary case 추가로 original scope(defense+core_secondary) 양쪽 cover"},
+      "explainability": {"from": 0.75, "to": 0.78, "rationale": "turnover 800%+ structural design flaw 추가 mechanism"},
+      "mechanism_clarity": {"from": 0.85, "to": 0.85, "rationale": "maintained"},
+      "total_proposed": 0.88,
+      "confidence_uplift": "+0.02 margin"
+    }
+  },
+
+  "restart_block_activated": {
+    "status": true,
+    "rationale": "H_1692 v2 standalone 재실행 = L-170 교훈 위반. 동일 spec 재실행 시 동일 hard_fail 필연적 (L-166 STR_1687 precedent 동일).",
+    "blocked_redesign_paths": [
+      "Industry momentum residualized 2-axis composite single-sleeve long-only top-20",
+      "C13 fix + L-168 post-fix만 적용하고 turnover control 없이 재실행",
+      "AX-007 EXCLUSION 없이 재설계"
+    ],
+    "allowed_redesign_paths": [
+      "S5 mutation: DD/VT overlay로 turnover 축소 (S1 무관 S5에서만)",
+      "multi-sleeve blend 내 industry momentum sleeve로 재편입",
+      "50+ 분산 universe로 concentration 완화",
+      "long-short structure 적용 (KR 제약 내)"
+    ]
+  },
+
+  "scenario_d_v4_2_impact": {
+    "h_1692_v2_10pct_slot": "HARD_DROP 확정 필요",
+    "governor_action_required": "rev-v4.3 patch 발행 권고 — H_1692 v2 slot 제거 + 10%p 재분배",
+    "redistribution_recommendation": {
+      "option_1": "Reserve 9% → 11% (+2%) + misc 6% → 8% (+2%) + STR_1679v3 12% → 14% (+2%) + H_1689 v3 17% → 21% (+4%)",
+      "option_2": "Defense cluster 보강 — H_1689 v3 17% → 22% (+5%) + Reserve +5%",
+      "option_3": "Core_Secondary slot 유지 + 신규 Scout S0 가설 필요 (H_1694/H_1695 진행 중)",
+      "judge_recommendation": "option_1 (분산 재분배)이 Gate 16 weight_sum arithmetic 오류 risk 최소. option_3은 신규 가설 Debate 완료 후"
+    },
+    "projected_sr_impact": "v4.2 conservative 1.71 → v4.3 예상 1.65~1.68 (H_1692 v2 기여분 0.03~0.05 상실, 재분배 효과 상쇄)"
+  },
+
+  "pattern_observation_forge_claim": {
+    "forge_claim": "STR_1692/1679v3 모두 Turnover>600% + MDD>45% 동일 구조. momentum 계열 standalone long-only 한국시장 hard_fail 패턴 반복. S5 mutation overlay 없이는 Grade A 불가.",
+    "judge_evaluation": {
+      "partial_agreement": "STR_1692 post-fix hard_fail 확정은 사실. momentum 계열 standalone long-only 위험성 empirical support",
+      "disagreement": "STR_1679v3은 **pre-L168-fix invalid 결과**. post-fix 재실행 결과 없이 family signature 재현 주장 불가 — AX-002 premature generalization 위험",
+      "l_170_separate_from_1679v3": "STR_1679v3 pre-fix는 L-code 대상 아님. post-fix 재실행 완료 시 별도 판정",
+      "s5_mutation_overlay_necessity": "APPROVE — turnover 849% 구조적 설계 결함은 S5 DD/VT overlay로만 mitigation 가능. S0/S1 수정으로는 해결 불가"
+    }
+  },
+
+  "judge_custodian_decisions": [
+    {"decision_id": "D1", "content": "STR_1692 VALIDATED_HARD_FAIL 확정 — post-L168-fix 첫 정식 판정"},
+    {"decision_id": "D2", "content": "L-170 정식 발행 (L-169 weight_sum assert이미 사용됨)"},
+    {"decision_id": "D3", "content": "AX-007 4th supporting L-code로 L-170 편입 APPROVE — family_consistency 유지 (defense + core_secondary)"},
+    {"decision_id": "D4", "content": "AX-007 v1.0 → v1.1 extension packet 발행 권고 (v3.5.4 발효 후)"},
+    {"decision_id": "D5", "content": "H_1692 v2 restart_block 활성화"},
+    {"decision_id": "D6", "content": "Gate 14 AUTO_REJECT scope 증명 — AX-007 Admission Rule 첫 실전 집행"},
+    {"decision_id": "D7", "content": "Forge pattern claim 부분 APPROVE — momentum turnover structural flaw 수용, STR_1679v3 family 결합은 post-fix 재실행 후 판정"}
+  ],
+
+  "created_at": "2026-04-19",
+  "session": 68,
+  "phase": "Day 2",
+  "judge_agent_id": "judge",
+  "note": "STR_1692는 post-L168-fix factor_db_connector v2.0 경로를 사용한 첫 정식 Judge 심사 case. pre-fix 4건(STR_1679v3/STR_1686/STR_1687/STR_1689)과 구분. Gate 0 PIT + Gate 15 Infra PIT 모두 PASS하여 infra contamination 없이 evaluation 완료.",
+
+  "evidence_files": [
+    "04_Research/strategies/STR_1692_industry_mom_rsi_residual/output/hurdle_result.json",
+    "stage_artifacts/l_code_STR_1687.json (L-166 AX-007 family precedent)",
+    "stage_artifacts/ax_promotion_packet_ax007_signal_portfolio_translation_failure.json",
+    "02_Infrastructure/factor_db/factor_db_connector.R v2.0 (L-168 fix)",
+    "stage_artifacts/judge_infra_fix_verification_signoff_l168_m3_1.json"
+  ],
+  "related_l_codes": ["L-119 (static blend alpha dilution)", "L-121 (Q07 stress_icir)", "L-160 (L-163 poison_pill origin)", "L-163 (poison_pill rule)", "L-165 (multi-source defense)", "L-166 (AX-007 3rd member)", "L-168 (infra PIT fix)", "L-169 (weight_sum assert)"],
+
+  "followup_actions": [
+    {"actor": "Governor", "action": "rev-v4.3 patch 발행 — H_1692 v2 slot HARD_DROP + 10%p 재분배 (option_1 권고)", "priority": "HIGH"},
+    {"actor": "Governor", "action": "AX-007 v1.0 → v1.1 extension packet 수락 + CLAUDE.md line 361 supporting L-codes 업데이트", "priority": "MEDIUM"},
+    {"actor": "Scout", "action": "H_1692 v2 구조적 실패 분석 반영 — industry momentum residualized + multi-sleeve context 재설계 or 별도 family 검토", "priority": "MEDIUM"},
+    {"actor": "Forge", "action": "H_1692 v2 restart_block 준수. 동일 spec 재실행 금지", "priority": "STRICT"},
+    {"actor": "Judge (본인)", "action": "STR_1686/STR_1689 post-fix 재실행 완료 시 Gate 0~15 cascade 연속 진입. STR_1679v3 post-fix 결과로 L-170 family membership 재확인", "priority": "STANDBY"},
+    {"actor": "Judge (본인)", "action": "AX-007 v1.1 extension promotion packet 발행 (v3.5.4 Gate 15 C17 patch 완료 후)", "priority": "NEXT"}
+  ]
+}

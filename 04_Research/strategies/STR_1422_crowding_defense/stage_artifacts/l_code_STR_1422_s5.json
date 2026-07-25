@@ -1,0 +1,23 @@
+{
+  "l_code": "L-631",
+  "strategy_id": "STR_1422_crowding_defense_s5",
+  "variant": "S5_VT18_DD7_22",
+  "created_at": "2026-03-26T18:00:00+09:00",
+  "judge_version": "v7",
+  "disposition": "REJECT",
+  "grade": "C",
+  "score": 17.1,
+  "lesson_title": "VT+DD overlay cannot rescue redundant factor pairs (corr 0.943)",
+  "lesson": "When the underlying 2-factor blend has cross-factor correlation of 0.943 (CR08 Volume-Price Divergence + D01 IdioVol), VT and DD overlays can only reduce MDD marginally (31.77% -> 26.76%) while destroying already-insufficient CAGR (7.98% -> 7.33%). The overlay optimization problem is fundamentally constrained: overlays manage risk but do not create alpha. With base SR 0.633 and negative IR, no overlay parameterization can elevate this to Grade A territory. The 4-variant S5 mutation experiment (S5, M1, M2, M3) across different VT/DD combinations confirms a flat SR surface (0.566-0.646) -- the parameter space is exhausted. Future lesson: when S3 orthogonality shows factor corr > 0.90, skip S5 overlay mutations entirely. The redundancy is structural and cannot be fixed by risk management.",
+  "tags": ["overlay_futility", "factor_redundancy", "crowding", "vt_dd", "alpha_insufficient"],
+  "metrics": {
+    "sharpe": 0.616,
+    "cagr_pct": 7.33,
+    "mdd_pct": 26.76,
+    "ir": -0.098,
+    "oos_retention": 0.294,
+    "alpha_trend_ratio": 0.485,
+    "factor_corr": 0.943
+  },
+  "actionable_rule": "When S3 factor_mean_max_corr > 0.90 AND base SR < 0.80, SKIP all S5 overlay mutations. Redirect effort to factor substitution (replace one factor in the pair) or abandon the combination."
+}

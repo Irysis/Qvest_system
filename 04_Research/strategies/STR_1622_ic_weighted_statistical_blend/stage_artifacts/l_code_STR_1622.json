@@ -1,0 +1,24 @@
+{
+  "strategy_id": "STR_1622",
+  "grade": "C",
+  "core_reference": "Arnott et al. 2019 (How Can Smart Beta Go Horribly Wrong?), DeMiguel et al. 2009 (Optimal Versus Naive Diversification: How Inefficient is the 1/N Portfolio Strategy?)",
+  "lesson_text": "STR_1622는 C19+V14+Q01+D01+M25 5팩터 IC-weighted blend로, expanding 12M rolling IC 기반 shrinkage weighting(0.5*IC_norm + 0.5*EW, floor 5%, cap 40%)을 적용했다. MDD 50.5% hard fail + OOS retention 0.30(IS SR 1.016 vs OOS 0.304)으로 심각한 과적합이 확인되었다. 핵심 교훈: (1) IC 기반 동적 가중은 이론적으로 우월하나, 한국시장 IC의 높은 시변성(IC ratio 0.78, 최근 감소)으로 12M rolling window가 충분하지 않다. (2) shrinkage(50% EW)에도 과적합을 막지 못함 — DeMiguel(2009)의 1/N 우위 결론과 일치. (3) C15 위반(open_dataset 직접 접근) + C13 부분 위반(Z_Score rename)은 코드 리뷰에서 반드시 걸러야 할 패턴. (4) 5팩터 IC weighting보다 3팩터 EW가 OOS에서 더 안정적일 수 있다(STR_1621 대비).",
+  "tags": [
+    "ic_weighting",
+    "statistical_blend",
+    "5_factor",
+    "shrinkage",
+    "overfitting",
+    "oos_degradation",
+    "C15_violation",
+    "C13_partial",
+    "hard_fail_mdd",
+    "discard",
+    "demiguel_1n"
+  ],
+  "created_at": "2026-03-29",
+  "l_code": "L-1622",
+  "l_code_assigned_at": "2026-07-25",
+  "l_code_assigned_by": "lcode-triage-20260725 (도훈 승인)",
+  "l_code_retroactive": true
+}

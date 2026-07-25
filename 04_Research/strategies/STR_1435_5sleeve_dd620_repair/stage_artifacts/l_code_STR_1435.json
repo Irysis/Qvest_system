@@ -1,0 +1,22 @@
+{
+  "strategy_id": "STR_1435",
+  "grade": "A_CONDITIONAL",
+  "lesson_text": "STR_1435 S6 검증에서 이전 Judge v4.0의 PIT 판정 오류를 발견함. defense_sleeve.R(STR_686)의 fred_monthly exposure에 shift(n=1L) lag가 누락되어 C3 위반이 존재하며, STR_824 factor_engine.R은 sig_ym(동일 월) FRED regime을 사용하여 C11 위반에 해당함. 두 위반 모두 alpha signal 자체가 아닌 regime_scale/exposure sizing에만 영향을 미치므로 SR 과대추정은 2-5% 수준으로 추정되나, PIT 규칙은 impact 크기와 무관하게 적용됨. 교훈: (1) 멀티슬리브 전략에서 각 sleeve 소스 파일의 PIT를 개별 검증해야 함 -- 공유 코드(STR_686)의 위반이 파생 전략으로 전파됨. (2) Judge 자동 검증의 'FALSE POSITIVE' 판정을 맹신하지 말 것. (3) defense_sleeve와 indmom_sleeve는 동일 FRED 구조를 사용하나 lag 적용 여부가 다름 -- 코드 복사 시 lag fix 누락 패턴.",
+  "core_reference": "QEPM C3 (같은 기간 집계-적용 금지), C11 (데이터 시간축 검증), L-450 (C11 가장 중요한 미래참조 체크), L-565 (C11 fix pattern)",
+  "tags": [
+    "PIT",
+    "C3",
+    "C11",
+    "FRED_lag",
+    "multi_sleeve",
+    "defense_sleeve",
+    "judge_error_correction",
+    "code_propagation_bug"
+  ],
+  "created_at": "2026-03-28 14:30:00",
+  "created_by": "Judge_v6.0",
+  "l_code": "L-1435",
+  "l_code_assigned_at": "2026-07-25",
+  "l_code_assigned_by": "lcode-triage-20260725 (도훈 승인)",
+  "l_code_retroactive": true
+}

@@ -1,0 +1,11 @@
+{
+  "l_code": "L-722",
+  "strategy_id": "STR_1506_ownership_concentration_DD620",
+  "date": "2026-03-26",
+  "session": 46,
+  "category": "s3_redundancy_override",
+  "lesson": "STR_1506 CR04_Ownership_Concentration + DD 6/20: Hurdle scored B/42.5 (MDD 31.9%, stress 3/3, OOS 0.74, FMB t=3.04). Metrics look strong. But S3 max_corr=1.000 with L02_Turnover — perfect duplicate. DD overlay improves risk-return but cannot fix factor identity. Judge must override hurdle when S3 = CRITICAL_FAIL. Lesson: ALWAYS check S3 before investing S5 compute. DD overlay on a duplicate factor wastes resources and produces misleading results. The compute_CR04.R module needs debugging — it produces output identical to L02_Turnover.",
+  "tags": ["s3_override", "duplicate_factor", "dd_overlay", "db_bug", "resource_waste"],
+  "severity": "high",
+  "actionable": "1) Fix compute_CR04.R module to produce genuine ownership concentration scores. 2) Add S3 pre-check before S5 mutations — never run DD overlay on S3 CRITICAL_FAIL factors. 3) Judge override protocol: S3 max_corr >= 0.95 = automatic REJECT regardless of score."
+}

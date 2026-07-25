@@ -1,0 +1,23 @@
+{
+  "l_code": "L-633",
+  "strategy_id": "STR_1422_crowding_defense_s5_m3",
+  "variant": "S5_M3_VT15_DD8_20",
+  "created_at": "2026-03-26T18:00:00+09:00",
+  "judge_version": "v7",
+  "disposition": "REJECT",
+  "grade": "C",
+  "score": 16.8,
+  "lesson_title": "Aggressive overlays on weak alpha expose the paradox: best MDD = worst CAGR",
+  "lesson": "VT 15% + DD 8/20 is the tightest overlay in the STR_1422 family, achieving the best MDD (23.75%) but worst CAGR (6.25%) and most negative IR (-0.161). This reveals the overlay paradox for weak-alpha strategies: tighter risk management improves the metric you optimize (MDD) while degrading everything else disproportionately. When base alpha is insufficient (SR 0.633), tighter overlays compress exposure below the level needed to generate meaningful returns. The strategy spends too much time at reduced exposure (DD brake activated whenever drawdown > 8%). Compare with M2 (DD 5/15, SR 0.646): even more aggressive DD start but without VT, M2 at least preserves some exposure. M3's dual compression (VT + aggressive DD) is doubly punitive. This family conclusively demonstrates: overlays are a multiplier on alpha, not a substitute. 0.633 * any_overlay < 1.0.",
+  "tags": ["overlay_paradox", "mdd_cagr_tradeoff", "aggressive_overlay", "alpha_compression"],
+  "metrics": {
+    "sharpe": 0.598,
+    "cagr_pct": 6.25,
+    "mdd_pct": 23.75,
+    "ir": -0.161,
+    "oos_retention": 0.230,
+    "alpha_trend_ratio": 0.288,
+    "factor_corr": 0.943
+  },
+  "actionable_rule": "Do not apply VT < 18% + DD_START < 10% simultaneously on strategies with base SR < 0.80. Dual aggressive overlays guarantee CAGR destruction without sufficient SR improvement. If MDD is the primary concern, use single overlay (DD only with tight params) rather than dual compression."
+}

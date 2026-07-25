@@ -1,0 +1,23 @@
+{
+  "l_code": "L-632",
+  "strategy_id": "STR_1422_crowding_defense_s5_m1",
+  "variant": "S5_M1_DD10_25",
+  "created_at": "2026-03-26T18:00:00+09:00",
+  "judge_version": "v7",
+  "disposition": "REJECT",
+  "grade": "C",
+  "score": 16.0,
+  "lesson_title": "DD-only overlay without VT is strictly inferior for weak-alpha strategies",
+  "lesson": "Removing VT and using only DD brake (10/25) on a weak base signal (SR 0.633) produces the worst outcome in the STR_1422 mutation family: SR 0.566, OOS retention 15.8%, alpha trend ratio 0.21 (near-zero recent alpha). Without VT's vol compression, the DD brake must activate more frequently against raw volatility, creating a worse timing signal. The DD-only hypothesis -- that simpler overlays are more robust -- is disproven for this factor pair. DD-only works better when the base signal has strong alpha (SR > 1.0) where vol compression would waste good returns. For weak signals (SR < 0.8), VT's vol compression at least maintains a marginally positive SR by reducing the denominator.",
+  "tags": ["dd_only_inferior", "overlay_comparison", "vt_necessity", "weak_alpha"],
+  "metrics": {
+    "sharpe": 0.566,
+    "cagr_pct": 6.91,
+    "mdd_pct": 26.9,
+    "ir": -0.124,
+    "oos_retention": 0.158,
+    "alpha_trend_ratio": 0.211,
+    "factor_corr": 0.943
+  },
+  "actionable_rule": "DD-only overlays should be reserved for base signals with SR > 1.0. For SR < 0.8, always combine DD with VT to at least maintain the SR through vol compression."
+}

@@ -1,0 +1,19 @@
+{
+  "l_code": "L-634",
+  "title": "Flow reversal signal inherently unstable — DD 10/25 overlay cannot rescue 3200% turnover",
+  "strategy": "STR_1422 S5-M1 (FlowRev_DD10_25)",
+  "date": "2026-03-26",
+  "judge_verdict": "REJECT",
+  "grade": "C",
+  "score": 22.5,
+
+  "lesson": "Flow reversal signal produces ~3200% annual turnover regardless of DD overlay parameters. DD 10/25 with min_exp=30% reduced MDD from base ~55% to 48.2% but did not touch turnover because the signal itself (not the overlay) drives portfolio churn. SR 0.214, CAGR 3.26%, OOS retention 0.034. Buffer zone 50/25 insufficient.",
+
+  "root_cause": "Flow reversal Z-scores are extremely noisy month-to-month, causing near-complete portfolio turnover at each rebalancing. This is a property of the alpha source, not the overlay.",
+
+  "implication": "DD overlay is irrelevant when the underlying signal flips the entire portfolio monthly. Any future flow-reversal strategy must either: (1) use quarterly rebalancing to reduce turnover, (2) apply heavy signal smoothing (e.g., 3-month trailing average), or (3) abandon flow reversal as a standalone signal.",
+
+  "tags": ["flow_reversal", "turnover_pathology", "dd_brake", "signal_instability", "STR_1422"],
+  "family": "INV01_FlowReversal",
+  "severity": "structural_fail"
+}

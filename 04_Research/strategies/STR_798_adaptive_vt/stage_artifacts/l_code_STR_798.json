@@ -1,0 +1,10 @@
+{
+  "l_code": "L-646",
+  "strategy_id": "STR_798_adaptive_vt",
+  "factor_id": "Adaptive_VT",
+  "date": "2026-03-26",
+  "verdict": "F / Discard",
+  "lesson": "Adaptive VT (VIX-regime dynamic vol target) uses same-month VIX to set VT level — this is circular because the VIX value at month-end is applied to decisions within that month. VT/DD overlays themselves are correctly lagged (t-1), but the VIX REGIME SIGNAL feeding the VT target is same-month (C11 violation). Additionally uses deprecated Soft MRS same-month pattern (L-441: ~18% SR overestimation). Defense sleeve FRED exposure lacks 1-month lag (contrast: indmom sleeve has shift(1)). All FF alpha t-stats <1.0 — no statistical alpha even before PIT correction. Concept of regime-adaptive VT is sound but requires previous-month VIX and Regime Engine v7.1.",
+  "tags": ["adaptive_vt", "legacy", "vt_lag_check", "C11_FRED", "C11_MRS", "same_month_vix", "pit_fail"],
+  "reusable": true
+}

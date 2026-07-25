@@ -1,0 +1,14 @@
+{
+  "l_code": "L-789",
+  "strategy_id": "STR_1563",
+  "parent": "STR_943",
+  "timestamp": "2026-03-29",
+  "grade": "B",
+  "lesson_text": "STR_943의 C9(DD same-day)+C11(MRS same-month FRED) 미래참조 수정 결과, SR이 1.312에서 0.988로 약 25% 하락하였으나 OOS retention은 0.80에서 0.85로 오히려 개선됨. 이는 오버레이가 성과를 과대추정했을 뿐 기저 alpha source(EPS revision momentum + OtherCorp flow)는 진정한 신호임을 확인. ICIR 0.547, FMB t=4.75(>Harvey 3.0)로 통계적 방어력 우수. C9 fix 패턴: dd_lag <- c(0, dd_pct[-n]); C11 fix 패턴: shift(MRS, 1, type='lag'). lookahead_detector가 변수명 패턴으로 false positive 2건 보고 -- 실제 로직은 정상. 조건: DD brake + MRS overlay 사용 시 반드시 양쪽 모두 t-1 lag 적용해야 하며, 한쪽만 수정하면 나머지에서 여전히 과대추정 발생.",
+  "core_reference": "STR_943 (OtherCorp + EPS Change), QEPM C9 (DD/VT lag enforcement), QEPM C11 (data time-axis verification), Harvey et al. (2016) t>3.0 multiple testing threshold",
+  "tags": ["c9_fix", "c11_fix", "dd_brake_lag", "mrs_lag", "overlay_inflation", "eps_revision", "othercorp_flow", "false_positive_detector", "pit_compliance"],
+  "conditions": "DD brake + MRS overlay 동시 사용 시 반드시 C9+C11 양쪽 lag 적용. 단독 수정은 잔여 과대추정 유발. detector false positive는 변수명 패턴 한계 -- prev_ 접두사 shift 패턴을 인식하지 못함.",
+  "family": "consensus_flow",
+  "created_at": "2026-03-29",
+  "created_by": "Judge_v7.0"
+}
