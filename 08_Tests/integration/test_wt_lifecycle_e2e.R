@@ -20,8 +20,52 @@ suppressPackageStartupMessages({
   library(jsonlite)
 })
 
-PROJ <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+# ─── Project root ────────────────────────────────────────────────────────────
+# [fix 2026-07-25] 구 하드코딩 PROJ = "/mnt/c/Users/User/OneDrive/바탕 화면/..."
+# (WSL 전용 경로)는 Windows R에서 현재 드라이브 기준 "C:/mnt/..."로 해석된다.
+# 그 위치에 빈 디렉토리 잔재가 남아 있어 setwd()가 *조용히 성공*하고, 이후 모든
+# source()가 "No such file or directory"로 halt → 본 스위트가 단 1건의 assertion도
+# 실행하지 못한 채 exit 1. dir.exists()만으로는 이 잔재를 걸러내지 못하므로
+# marker 파일 존재로 검증한다 (config.R 후보 순서와 동형, 검증만 강화).
+.resolve_proj <- function() {
+  cands <- c(Sys.getenv("QM_ROOT", unset = ""),
+             Sys.getenv("CLAUDE_PROJECT_DIR", unset = ""),
+             "C:/Users/99922/OneDrive/Quant_Module_Moltbot",
+             "/mnt/c/Users/99922/OneDrive/Quant_Module_Moltbot")
+  cands <- cands[nzchar(cands)]
+  marker <- "02_Infrastructure/hooks/qvest_hook_router.py"
+  hit <- cands[file.exists(file.path(cands, marker))]
+  if (length(hit) == 0L) {
+    stop("project root 미발견 — QM_ROOT 환경변수를 설정하세요 (marker: ", marker, ")")
+  }
+  hit[1]
+}
+PROJ <- .resolve_proj()
 setwd(PROJ)
+
+# ─── Python 인터프리터 ───────────────────────────────────────────────────────
+# [fix 2026-07-25] bare "python3"는 Windows에서 Store 스텁으로 해석돼 "Python"만
+# 출력하고 rc 49로 종료한다 — cert_eval / router가 아예 실행되지 않는다.
+# QVEST_PY(부트 검증된 실인터프리터) → venv 순으로 해석
+# (state_machine.R:256 · cert_rules.R:437 동형).
+PY_BIN <- Sys.getenv("QVEST_PY", unset = "")
+if (!nzchar(PY_BIN) || !file.exists(PY_BIN)) {
+  PY_BIN <- file.path(PROJ, ".venv_qvest_ml/Scripts/python.exe")
+}
+if (!file.exists(PY_BIN)) PY_BIN <- "python3"
+
+# [fix 2026-07-25] system2(env=)는 Windows에서 환경변수를 설정하지 않고 문자열을
+# *첫 인자로 앞에 붙인다* ("CLAUDE_PROJECT_DIR=..."를 스크립트 경로로 오인 → rc 2).
+# Sys.setenv + 복원으로 대체 (state_machine.R:248-252 동형).
+with_project_dir <- function(expr) {
+  .old <- Sys.getenv("CLAUDE_PROJECT_DIR", unset = NA)
+  Sys.setenv(CLAUDE_PROJECT_DIR = PROJ)
+  on.exit({
+    if (is.na(.old)) Sys.unsetenv("CLAUDE_PROJECT_DIR")
+    else Sys.setenv(CLAUDE_PROJECT_DIR = .old)
+  }, add = TRUE)
+  force(expr)
+}
 
 cat("\n", strrep("=", 70), "\n", sep = "")
 cat("v7.0 Sprint 4 — E2E Kernel Tests (4 synthetic WT scenarios)\n")
@@ -205,15 +249,14 @@ write_json(build_governor_admission(wt1, str_id = wt1),
 # Issue per-WT certs (synthetic via cert_eval issue)
 issue_cert_local <- function(cert, pkg_path, wt_dir) {
   cert_path <- file.path(wt_dir, paste0(cert, "_certificate.json"))
-  out <- tryCatch(
-    system2("python3",
+  out <- with_project_dir(tryCatch(
+    system2(PY_BIN,
             args = c(shQuote(file.path(PROJ, CERT_EVAL)), "issue", cert,
                      shQuote(pkg_path), shQuote(cert_path),
                      "e2e_test_v7.0_sprint4"),
-            env = sprintf("CLAUDE_PROJECT_DIR=%s", shQuote(PROJ)),
             stdout = TRUE, stderr = TRUE),
     error = function(e) NULL
-  )
+  ))
   file.exists(cert_path)
 }
 
@@ -434,16 +477,15 @@ writeLines(c(
 ), chal_path)
 
 # Verify codex round complete check via router
-resp <- tryCatch(
-  system2("python3",
+resp <- with_project_dir(tryCatch(
+  system2(PY_BIN,
           args = c(shQuote(file.path(PROJ, ROUTER)),
                    "check-codex-round-complete",
                    "--wt-id", wt4,
                    "--role", "alpha"),
-          env = sprintf("CLAUDE_PROJECT_DIR=%s", shQuote(PROJ)),
           stdout = TRUE, stderr = TRUE),
   error = function(e) NULL
-)
+))
 parsed_resp <- tryCatch(fromJSON(paste(resp, collapse = "\n"), simplifyVector = TRUE),
                          error = function(e) NULL)
 if (!is.null(parsed_resp) && isTRUE(parsed_resp$complete)) {
