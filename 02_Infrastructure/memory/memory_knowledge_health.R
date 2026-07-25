@@ -441,7 +441,19 @@ raw_lc_files <- c(Sys.glob(file.path(PROJ_ROOT, "stage_artifacts/l_code/*/l_code
 if (length(raw_lc_files) == 0) {
   cat("  L-code 원본 파일 없음 — skip\n")
 } else {
-  newest_lc_mt <- suppressWarnings(max(file.info(raw_lc_files)$mtime, na.rm = TRUE))
+  # 2026-07-25: 신선도 기준을 파일 mtime → L-code created_at 으로 교정.
+  # 구 구현은 "연구 최신성"을 파일 타임스탬프로 대리했다. 그 결과 ① 기존 기록을
+  # 구조적으로 손대기만 해도(예: next_probe 소급 구조화) 지도가 stale 로 오탐되고,
+  # ② 반대로 mtime 이 오래된 신규 L-code 는 놓친다. created_at 이 실제 라운드 시각이다.
+  # created_at 부재 기록만 mtime 으로 폴백(정직 원장 — 판정 자체는 불차단).
+  .lc_research_time <- function(f) {
+    ca <- tryCatch(jsonlite::fromJSON(f, simplifyVector = FALSE)$created_at, error = function(e) NULL)
+    ts <- suppressWarnings(as.POSIXct(sub("T", " ", sub("Z$", "", ca %||% NA_character_)),
+                                      tz = "", optional = TRUE))
+    if (is.null(ca) || is.na(ts)) file.info(f)$mtime else ts
+  }
+  newest_lc_mt <- suppressWarnings(max(do.call(c, lapply(raw_lc_files, .lc_research_time)),
+                                       na.rm = TRUE))
   if (!file.exists(lbm_path)) {
     add_warn("WARN_8_bottleneck_map_missing",
              "06_Registry/layer_bottleneck_map.md 부재 — 병목지도 현행화 필요")

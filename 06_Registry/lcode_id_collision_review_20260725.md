@@ -2,7 +2,8 @@
 
 **출처**: `lcode_harvester.py` 재실행 시 `REASSIGN_ID 대상 검토` WARN 5건.
 **전제**: harvester는 충돌 시 **양쪽 레코드를 모두 적재**한다(dedup 키 = 절대경로). 따라서 **내용 손실은 없고**, 문제는 ID로 조회할 때 어느 기록인지 모호해지는 것.
-**실측**: corpus 416항목 / 고유 ID 410 → 중복 6항목(5개 ID, L-601은 3-way).
+**실측**: corpus 416항목 / 고유 ID 410. **중복 ID 5개, 여분 레코드 6건**(L-601이 3-way라 이벤트 2회).
+⚠ 두 숫자는 다른 것을 센다 — harvester `n_id_collisions`(=6)는 *충돌 이벤트 수*(= 여분 레코드), `duplicate_ids`(=5)는 *중복된 ID 개수*. 코드 확인: `lcode_harvester.py:483` 루프에서 이미 본 ID를 만날 때마다 +1이므로 3-way는 2 증가. 다이제스트 문구에 둘을 병기하도록 수정 완료.
 **제약**: 하드 리넘버 금지([[reference-code-identity-stability]]) — 기존 ID 보존이 기본값. 아래 "신규 발급"은 리넘버가 아니라 **미발급 번호를 새로 주는 것**이라 blast 없음.
 
 ---

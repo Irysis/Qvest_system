@@ -419,9 +419,13 @@ run_step("axiom_candidates_summary", {
          action = if (length(.dup)) "REASSIGN_ID 판정 필요 (교차전략 충돌은 신규 ID 발급, 동일전략 중복은 병합)" else NA,
          corpus_last_updated = as.character(lc_corpus$last_updated %||% NA))
   }
+  # ★두 숫자는 다른 것을 센다 (2026-07-25 확인): n_id_collisions = harvester의 *충돌 이벤트*
+  #   수(= 여분 레코드 수, 3-way면 2 증가) / duplicate_ids = 중복된 *ID 개수*.
+  #   실측 예: ID 5개(L-601 3-way 포함) → 여분 레코드 6 = 416-410. 혼동 방지를 위해 병기.
   if (!is.null(lcode_integrity$duplicate_ids) && length(lcode_integrity$duplicate_ids))
-    cat(sprintf("[cleaner][WARN] L-code ID 중복 %d건 — %s (corpus %d항목/고유 %d)\n",
+    cat(sprintf("[cleaner][WARN] L-code ID 중복: ID %d개 / 여분 레코드 %d건 — %s (corpus %d항목, 고유 ID %d)\n",
                 length(lcode_integrity$duplicate_ids),
+                lcode_integrity$n_entries - lcode_integrity$n_unique_ids,
                 paste(unlist(lcode_integrity$duplicate_ids), collapse = ", "),
                 lcode_integrity$n_entries, lcode_integrity$n_unique_ids))
 
@@ -547,9 +551,10 @@ if (Sys.getenv("QVEST_CLEANER_NO_TG", "0") != "1") {
     if (!is.null(.li) && length(.li$duplicate_ids %||% list()) > 0) {
       secs[[length(secs) + 1L]] <- list(
         type = "bullet", heading = "L-code ID 무결성 경고", items = c(
-          sprintf("중복 ID %d건: %s", length(.li$duplicate_ids),
+          sprintf("중복 ID %d개 (여분 레코드 %s건): %s", length(.li$duplicate_ids),
+                  as.character(.li$n_entries - .li$n_unique_ids),
                   paste(unlist(.li$duplicate_ids), collapse = ", ")),
-          sprintf("corpus %s항목 / 고유 %s (내용 손실은 없음 — 양쪽 다 적재됨)",
+          sprintf("corpus %s항목 / 고유 ID %s (내용 손실은 없음 — 양쪽 다 적재됨)",
                   as.character(.li$n_entries), as.character(.li$n_unique_ids)),
           "조치: 교차전략 충돌 = 신규 ID 발급 / 동일전략 중복 = 병합 (REASSIGN_ID 판정)"
         ))
