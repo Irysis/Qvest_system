@@ -109,6 +109,36 @@ QEPM Codex Critic Round(외부 codex auto-spawn)는 **2026-06-30 v8.2에서 폐�
 
 → 각 hook이 정규식 중복 보유 안 함, 동일 policy JSON 참조.
 
+## Worktree 생명주기 + 좌초 수리 감시 (2026-07-25 신규 — 도훈 승인 next_probe ②③)
+
+**문제**: 병렬 세션이 worktree에서 수리를 완료하고도 커밋·병합하지 않으면 세션 종료와 함께 사실상 유실된다. `bootstrap.sh`에 git 점검이 **0건**이라 이 상태가 어디에도 안 보였고, 동일 패턴 실사고 2건(benchmark date32 writer 6일 방치 · lcode_harvester family 수리)의 공통 근본원인이었다.
+
+**2단 감시**:
+| 계층 | 위치 | 시점 | 범위 |
+|---|---|---|---|
+| 부팅 WARN | `bootstrap.sh` §4h | 세션 시작 | 존재/개수/방치일 (경량, ~6s) |
+| 감사 + 경보 | `ops/stranded_repairs_audit.sh` | 무인 daily 12:00·20:00 (`Qvest_StrandedRepairs`) | 파일 단위 triage + 충돌 + prune 후보 (~16s) |
+
+**triage 판정** (worktree 로컬 변경의 추가 라인이 main 파일에 존재하는가):
+- `merged_upstream` — 전량 존재. worktree는 stale 사본, 정리 가능
+- `lost` — 전무. main에 없는 진짜 유실 ★조치
+- `mostly_lost` — 80%+ 미존재. 사실상 유실 ★조치
+- `partial` — 일부만. 별도 경로 반영 또는 충돌 — 수동 확인
+- `deletion_only` — 삭제만
+
+**충돌 탐지**: 2개 이상 worktree가 같은 파일을 main 밖에서 수정 중이면 `collisions`에 등재. 병합 순서를 정하지 않으면 뒤에 병합되는 쪽이 앞을 덮는다. 미커밋 + 미병합 커밋 양쪽 모두 대상.
+
+**생명주기 규약**:
+1. worktree 작업이 끝나면 **커밋까지가 완료**다. 미커밋 = 미완료.
+2. 방치 임계 **3일** — 초과 시 부팅 WARN + 감사 경보.
+3. prune 대상 = 미커밋 0 ∧ 미병합 0 (작업이 전부 main에 있음).
+4. **자동 prune 금지** — 클린해도 활동 중 세션의 cwd일 수 있다. `--prune` 명시 실행만. `git worktree remove`가 dirty면 자체 거부(2중 안전).
+5. 감사기는 worktree에 **절대 쓰지 않는다**(status/diff/rev-list/log만). 타 세션 무간섭.
+
+**산출**: `06_Registry/stranded_repairs.json` (레지스트리) · `.cache/scheduler_logs/stranded_repairs.log` (heartbeat — `--quiet`여도 요약 1줄은 항상 기록. 무인 로그가 비면 침묵 실패와 구분 불가).
+
+**경보**: 유실 또는 충돌 감지 시 `tg_agent_brief()` 경유 텔레그램, 같은 날 1회 스로틀(`.cache/stranded_alert_YYYYMMDD.marker`).
+
 ## 참조
 
 - `02_Infrastructure/hooks/*.sh` (톱레벨 61개, s0_enforcer/ 서브디렉토리 포함 64 — 2026-07-24 실측. 구 표기 55는 stale)
