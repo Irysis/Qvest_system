@@ -33,7 +33,22 @@ else
   export QVEST_PY_BIN
 fi
 
-PROJ_DIR="${CLAUDE_PROJECT_DIR:-$(ls -d /mnt/c/Users/*/OneDrive/바탕*화면/Quant_Module_Moltbot 2>/dev/null | head -1)}"
+# PROJ_DIR 해석 (2026-07-25 수리): 구 폴백은 WSL 전용 glob 이라 이 머신에선 빈 문자열이
+# 되고 TEST_DIR="/08_Tests/hooks" 로 전 suite 가 죽었다. 후보를 **표지 검증**으로 확인한다
+# ("있다"가 "그것이다"를 뜻하지 않는다 — dir.exists 신뢰 사고와 같은 기전).
+_MARKER="08_Tests/hooks/run_all_hooks.sh"
+_pick_proj_dir() {
+  local c
+  for c in "${CLAUDE_PROJECT_DIR:-}" "${QM_ROOT:-}" "$_SELF_DIR/../.." "$PWD"; do
+    if [[ -n "$c" && -f "$c/$_MARKER" ]]; then (cd "$c" && pwd); return 0; fi
+  done
+  return 1
+}
+if ! PROJ_DIR="$(_pick_proj_dir)"; then
+  echo "❌ PROJECT_ROOT 해석 실패 — 표지 '$_MARKER' 를 가진 후보 없음" >&2
+  echo "   CLAUDE_PROJECT_DIR='${CLAUDE_PROJECT_DIR:-}' QM_ROOT='${QM_ROOT:-}' PWD='$PWD'" >&2
+  exit 2
+fi
 TEST_DIR="$PROJ_DIR/08_Tests/hooks"
 # 결과는 재생성 가능한 산출물 → 코드 존(08_Tests) 밖 캐시에 쓴다
 # (artifact-storage.md §1·§3, 2026-07-25 도훈 confirm).

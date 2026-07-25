@@ -7,12 +7,60 @@ suppressPackageStartupMessages({
   library(jsonlite)
 })
 
-PROJ_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", unset = "")
-if (PROJ_ROOT == "" || !dir.exists(PROJ_ROOT)) {
-  PROJ_ROOT <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+#──────────────────────────────────────────────────────────────────────────────
+# PROJECT_ROOT 해석 (2026-07-25 수리)
+#
+# 구: CLAUDE_PROJECT_DIR 미설정 시 하드코딩 WSL 경로 "/mnt/c/Users/User/..." 폴백.
+#     이 머신엔 없는 경로라 source() 가 즉시 죽어 `Execution halted`(assertion 0건)
+#     — 러너가 env 를 넘겨줄 때만 우연히 살아 있던 구조였다.
+#     (integration/*.R 하드코딩 PROJ 수리 f18f6c90 과 같은 계열)
+#
+# 신: 후보를 순회하되 **존재검사가 아니라 표지(marker) 검증**으로 정체를 확인한다.
+#     dir.exists() 만으로 루트를 신뢰하다 직렬화가 무력화된 tg_lock 사고와 같은
+#     기전을 피한다 — "있다"가 "그것이다"를 뜻하지 않는다.
+#     전부 실패하면 조용한 폴백 대신 진단 가능한 stop().
+#──────────────────────────────────────────────────────────────────────────────
+.MARKER <- "02_Infrastructure/worktask/cert_rules.R"   # 이 테스트가 실제로 소비하는 파일
+
+.is_proj_root <- function(p) {
+  nzchar(p) && dir.exists(p) && file.exists(file.path(p, .MARKER))
 }
 
-source(file.path(PROJ_ROOT, "02_Infrastructure/worktask/cert_rules.R"))
+# Rscript 호출 시 --file= 인자에서 자기 위치를 얻는다(없으면 "").
+# 경로 정규화 함수는 한글 경로에서 불안정해 쓰지 않는다 (python-policy §2 정합).
+.script_dir <- function() {
+  a <- commandArgs(trailingOnly = FALSE)
+  m <- grep("^--file=", a, value = TRUE)
+  if (length(m) == 0L) return("")
+  dirname(sub("^--file=", "", m[1L]))
+}
+
+.sd <- .script_dir()
+.CANDIDATES <- c(
+  Sys.getenv("CLAUDE_PROJECT_DIR", unset = ""),
+  Sys.getenv("QM_ROOT",            unset = ""),
+  if (nzchar(.sd)) file.path(.sd, "..", "..") else "",  # 08_Tests/hooks → root
+  getwd(),
+  file.path(getwd(), "..", "..")
+)
+
+PROJ_ROOT <- ""
+for (.c in .CANDIDATES) {
+  if (.is_proj_root(.c)) { PROJ_ROOT <- .c; break }
+}
+if (!nzchar(PROJ_ROOT)) {
+  stop(sprintf(paste0(
+    "[test_cert_rules] PROJECT_ROOT 해석 실패 — 표지 '%s' 를 가진 후보가 없음.\n",
+    "  시도한 후보: %s\n",
+    "  cwd=%s / CLAUDE_PROJECT_DIR='%s' / QM_ROOT='%s'"),
+    .MARKER,
+    paste(sprintf("'%s'", .CANDIDATES[nzchar(.CANDIDATES)]), collapse = ", "),
+    getwd(),
+    Sys.getenv("CLAUDE_PROJECT_DIR", unset = ""),
+    Sys.getenv("QM_ROOT", unset = "")))
+}
+
+source(file.path(PROJ_ROOT, .MARKER))
 
 PASS <- 0
 FAIL <- 0

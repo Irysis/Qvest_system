@@ -32,7 +32,19 @@ else
   export QVEST_PY_BIN
 fi
 
-PROJ_DIR="${CLAUDE_PROJECT_DIR:-$(ls -d /mnt/c/Users/*/OneDrive/바탕*화면/Quant_Module_Moltbot 2>/dev/null | head -1)}"
+# PROJ_DIR 해석 (2026-07-25 수리): 구 폴백 = WSL 전용 glob → 이 머신에선 빈 문자열 →
+# ROUTER 경로가 깨져 8/8 FAIL. 후보를 **표지 검증**으로 확인한다(표지 = 실제 소비 대상).
+_MARKER="02_Infrastructure/hooks/qvest_hook_router.py"
+_pick_proj_dir() {
+  local c
+  for c in "${CLAUDE_PROJECT_DIR:-}" "${QM_ROOT:-}" "$_SELF_DIR/../.." "$PWD"; do
+    if [[ -n "$c" && -f "$c/$_MARKER" ]]; then (cd "$c" && pwd); return 0; fi
+  done
+  return 1
+}
+# 해석 실패해도 여기서 죽지 않는다 — PROJ_DIR 오설정은 이 suite 가 *보고해야 할* 실패라,
+# 케이스를 전부 FAIL 로 돌리고 요약 JSON 은 반드시 발행해 집계 누락을 막는다.
+PROJ_DIR="$(_pick_proj_dir || echo "${CLAUDE_PROJECT_DIR:-}")"
 ROUTER="$PROJ_DIR/02_Infrastructure/hooks/qvest_hook_router.py"
 
 PASS=0
