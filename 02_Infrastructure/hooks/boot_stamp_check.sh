@@ -46,8 +46,16 @@ if [ ! -f "$HIC" ]; then
   _QMR="${QM_ROOT:-}"; _QMR="${_QMR//\\//}"
   [ -n "$_QMR" ] && HIC="$_QMR/02_Infrastructure/ops/hook_integrity_check.sh"
 fi
-if [ -f "$HIC" ]; then
+# ★감시의 감시(next_probe ④): 이 호출부는 '정상=침묵'이 설계라, 도구가 사라지거나
+#   무출력이어도 침묵과 구분되지 않는다 — 감시가 조용히 없어지는 바로 그 형태다.
+#   부재·무출력을 명시 경고로 분리한다(둘 다 드물어야 정상이므로 노이즈가 아니다).
+if [ ! -f "$HIC" ]; then
+  MSG="${MSG:+$MSG }[hook-integrity] 감시 도구 부재 — 훅 집행 상태를 확인할 수 없습니다(main 병합 또는 도구 복구 필요)."
+else
   HIC_OUT=$(bash "$HIC" 2>&1) || true
+  if [ -z "$HIC_OUT" ]; then
+    MSG="${MSG:+$MSG }[hook-integrity] 감시 도구 무출력 — 정상이면 항상 1줄 이상 출력합니다(도구 이상)."
+  fi
   case "$HIC_OUT" in
     *"ROUTER 열화"*)
       HL=$(printf '%s' "$HIC_OUT" | head -1)

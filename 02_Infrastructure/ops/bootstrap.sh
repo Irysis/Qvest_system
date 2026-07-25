@@ -662,16 +662,32 @@ echo "v8.0 base:  R+Python 1급 / SR목표 2.5 / agent effort(judge·gov xhigh) 
 echo "Modes:      ① QEPM(/worktask) ② alpha-search ③ factor-rotation ④ RAMP(/ramp · Gate0~11·CCS 13-score · governor 정지/자본 수동) — CLAUDE.md 4-Mode 헌법(RAMP 2026-06-17)"
 echo "Skills:     $(ls "$PROJECT"/.claude/skills/*/SKILL.md 2>/dev/null | wc -l)개 (2026-07-24 C3: exec/mon=off 은닉·리서치 3종=user-invocable 스텁·구 worktask/telegram-protocol 삭제)"
 echo "Hooks:      settings.json 등록 (harness_health 결과 위 참조)"
-# (2026-07-25) 훅 *집행*이 이 트리에서 실제로 사는지 1줄 자가진단. 라우터가 조용히
-# 빠져도 종전엔 아무 신호가 없었다 — 열화는 간헐적일 수 있어 세션마다 찍는다.
-if [ -f "$PROJECT/02_Infrastructure/ops/hook_integrity_check.sh" ]; then
-  bash "$PROJECT/02_Infrastructure/ops/hook_integrity_check.sh" 2>&1 | sed 's/^/            /' || true
-fi
-# (2026-07-25) 스위트 총계 회귀 감시 — 계측 사망은 '실패'가 아니라 '총계 감소'로 온다.
-# check 는 파일 비교만이라 빠르다(수집은 --collect, 무인/수동).
-if [ -f "$PROJECT/02_Infrastructure/ops/suite_totals_watch.sh" ]; then
-  bash "$PROJECT/02_Infrastructure/ops/suite_totals_watch.sh" --check 2>&1 | sed 's/^/            /' || true
-fi
+# ── 감시 probe 2종 (2026-07-25) ────────────────────────────────────────────
+#   hook_integrity_check : 훅 *집행*이 이 트리에서 실제로 사는가 (라우터 열화 탐지)
+#   suite_totals_watch   : 계측 사망은 '실패'가 아니라 '총계 감소'로 온다
+#
+# ★감시의 감시 (next_probe ④): 종전 배선은 `[ -f ... ] && bash ... || true` 라
+#   **스크립트가 사라지거나 무출력이면 아무 흔적 없이 조용히 없어졌다.** 이 아크가
+#   내내 고쳐온 구조(가드가 빠져도 신호가 없음)를 감시 도구 자신이 갖고 있던 셈이다.
+#   → 부재·무출력·비정상종료를 전부 **가시적 경고**로 바꾼다. 여전히 부트는 안 깬다.
+_run_probe() {
+  local name="$1"; shift
+  local path="$PROJECT/02_Infrastructure/ops/$name.sh"
+  if [ ! -f "$path" ]; then
+    echo "            ⚠ [$name] 감시 도구 부재 — 이 트리에 파일이 없습니다(감시 무력화)."
+    return 0
+  fi
+  local out rc
+  out=$(bash "$path" "$@" 2>&1); rc=$?
+  if [ -z "$out" ]; then
+    echo "            ⚠ [$name] 무출력 (rc=$rc) — 감시 도구 이상. 정상이면 항상 1줄 이상 출력합니다."
+  else
+    printf '%s\n' "$out" | sed 's/^/            /'
+  fi
+  return 0
+}
+_run_probe hook_integrity_check
+_run_probe suite_totals_watch --check
 echo "WT Active:  $WT_ACTIVE건"
 echo "Inbox:      alpha=$ALPHA_T risk=$RISK_T optimizer=$OPT_T forge=$FORGE_T judge=$JUDGE_T governor=$GOV_T"
 echo "Axioms:     active=$AX_ACTIVE candidates=$AX_CAND (sot_map documented=$AX_DOC_ACTIVE: documented=$AX_DOCUMENTED_MODE / block=$AX_BLOCK_MODE / advisory=$AX_ADVISORY_MODE)"
