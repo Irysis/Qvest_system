@@ -1,13 +1,13 @@
 # 02_Infrastructure INDEX
 
-> 자동 생성 2026-07-25 08:55 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
+> 자동 생성 2026-07-25 10:37 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
 
 ## 데이터 (3)
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
 | `F1. QT_to_xts.r` | 퀀티와이즈 엑셀 시계열을 xts로 변환하는 헬퍼 함수 2종(QT_to_xts / QT_to_xts_macro) — 데이터 인제스트 빌더들의 공용 유틸 | active | 2026-06-07 | 643B |
-| `data/` | 데이터 인제스트/캐시 계층 42건 — build_cache.R·build_index_cache.py·daily_refresh.sh·퀀티와이즈 파서(RAWDATA/benchmark parquet 생산) | active | 2026-07-24 | 10.1MB |
+| `data/` | 데이터 인제스트/캐시 계층 42건 — build_cache.R·build_index_cache.py·daily_refresh.sh·퀀티와이즈 파서(RAWDATA/benchmark parquet 생산) | active | 2026-07-25 | 10.2MB |
 | `factor_db/` | Factor DB 계층 43건 — 월간 373팩터 + 일간 팩터 빌더·load_month_factors(C15 유일 진입점)·registry | active | 2026-07-18 | 1.0MB |
 
 ## 백테스트 (3)
@@ -57,13 +57,13 @@
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
 | `R/` | hook_batch_runner.R 단일 파일 — 훅 R 로직을 세션 1회 source로 통합하는 배치 래퍼(Block C 토큰/spawn 최적화) | active | 2026-07-03 | 13KB |
-| `hooks/` | 하네스 강제 계층 64건 — qvest_hook_router.py + 47 훅(axiom_enforcement·graduation gate·backtest audit) + _archive_v55/_archive_4_6 격리분 | active | 2026-07-24 | 425KB |
+| `hooks/` | 하네스 강제 계층 64건 — qvest_hook_router.py + 47 훅(axiom_enforcement·graduation gate·backtest audit) + _archive_v55/_archive_4_6 격리분 | active | 2026-07-25 | 447KB |
 
 ## 모드-alpha-search (1)
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `alpha_search/` | ② alpha-search 모드 실행 계층(91건) — run_alpha_search.R + 논문 복제 드라이버(run_qmj_paper·run_residmom_paper 등)·캐시 빌더·검증 스크립트 | active | 2026-07-18 | 648KB |
+| `alpha_search/` | ② alpha-search 모드 실행 계층(91건) — run_alpha_search.R + 논문 복제 드라이버(run_qmj_paper·run_residmom_paper 등)·캐시 빌더·검증 스크립트 | active | 2026-07-18 | 646KB |
 
 ## 보고 (3)
 
@@ -77,7 +77,7 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `axiom/` | Axiom 자가발전 엔진 구현 — L-code emit/schema/harvester·promote(mode-local→global)·rollback·weekly report·inject | active | 2026-07-18 | 447KB |
+| `axiom/` | Axiom 자가발전 엔진 구현 — L-code emit/schema/harvester·promote(mode-local→global)·rollback·weekly report·inject | active | 2026-07-25 | 456KB |
 
 ## 계약 (2)
 
@@ -96,7 +96,7 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `docs/` | 설계 SOT·확장 룰·CHANGELOG 계층 — qvest_v8_1_sot.md(Active SOT)·rules/ 확장 9·legacy_boundary·reference_textbooks | active | 2026-07-24 | 368KB |
+| `docs/` | 설계 SOT·확장 룰·CHANGELOG 계층 — qvest_v8_1_sot.md(Active SOT)·rules/ 확장 9·legacy_boundary·reference_textbooks | active | 2026-07-25 | 375KB |
 | `README.md` | 인프라 존 진입 설명 (상세 목록은 INDEX.md) | active | 2026-07-03 | 1KB |
 
 ## 측정 (1)
@@ -111,27 +111,27 @@
 |---|---|---|---|---|
 | `judge/` | judge_lockbox_harness.R 단일 — judge의 lockbox 격리 검증 하네스(Gate 심사 시 forge 산출 재검) | active | 2026-06-07 | 12KB |
 | `prompts/` | agent spawn init 프롬프트 14건 — _shared_prefix.md(axiom derived cache) + alpha/risk/optimizer/forge/judge/qlead_init.md | active | 2026-07-24 | 212KB |
-| `worktask/` | WT 계약 계층 — common_charter.md·cert_rules.R·constraint_defaults.json(graduation severity)·run_all_template.R(현행 forge 템플릿)·lineage_utils | active | 2026-07-09 | 225KB |
+| `worktask/` | WT 계약 계층 — common_charter.md·cert_rules.R·constraint_defaults.json(graduation severity)·run_all_template.R(현행 forge 템플릿)·lineage_utils | active | 2026-07-25 | 226KB |
 
 ## 메모리 (1)
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `memory/` | 메모리·지식 헬스 파이프라인 — memory_knowledge_health.R(axiom 헬스게이트 hard6+warn6)·weekly/monthly_distill.sh·lcode_corpus_rebuild | active | 2026-07-24 | 134KB |
+| `memory/` | 메모리·지식 헬스 파이프라인 — memory_knowledge_health.R(axiom 헬스게이트 hard6+warn6)·weekly/monthly_distill.sh·lcode_corpus_rebuild | active | 2026-07-25 | 147KB |
 
 ## ML (1)
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `ml_pipeline/` | ML/DPL 파이프라인 — dpl_portfolio.py(DPL pilot, §5 구성레이어)·PIT audit 스크립트·feature panel 빌더(venv qvest_ml 소비) | active | 2026-06-18 | 470KB |
+| `ml_pipeline/` | ML/DPL 파이프라인 — dpl_portfolio.py(DPL pilot, §5 구성레이어)·PIT audit 스크립트·feature panel 빌더(venv qvest_ml 소비) | active | 2026-06-18 | 469KB |
 
 ## 운영 (4)
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
 | `monitoring/` | 라이브 페이퍼트래킹 — noLayer4 일별 마킹(mark_nolayer4_daily.R)·월간(run_nolayer4_monthly.sh)·holdout 대조(monitor_nolayer4_paper.R). 구 faithtrend 스크립트+.bak = deprecated rollback 보존 | active | 2026-07-13 | 45KB |
-| `ops/` | 운영 계층 54건 — bootstrap.sh(/qvest 진입)·cleanup.sh·scheduler/(.bat 태스크)·헬스체크·paper router | active | 2026-07-24 | 511KB |
-| `telegram/` | 텔레그램 계층 4건 — telegram_notify.R(발송)·telegram_listener.py·telegram_commands.R·start_listener.sh (qvest-telegram SOT의 구현체) | active | 2026-07-18 | 217KB |
+| `ops/` | 운영 계층 54건 — bootstrap.sh(/qvest 진입)·cleanup.sh·scheduler/(.bat 태스크)·헬스체크·paper router | active | 2026-07-25 | 546KB |
+| `telegram/` | 텔레그램 계층 4건 — telegram_notify.R(발송)·telegram_listener.py·telegram_commands.R·start_listener.sh (qvest-telegram SOT의 구현체) | active | 2026-07-25 | 218KB |
 | `tools/` | 운영 도구 16건 — build_artifact_index.R·paper_recharge_daily.R(논문 수집)·debate_helpers 등 | active | 2026-07-18 | 283KB |
 
 ## 관측 (2)
@@ -151,7 +151,7 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `ramp/` | ④ RAMP 모드 구현 — 순수팩터 추출(_extract_*)·ccs_evaluator.R(CCS 13-score)·graduation·진단 스크립트 | active | 2026-07-14 | 18.4MB |
+| `ramp/` | ④ RAMP 모드 구현 — 순수팩터 추출(_extract_*)·ccs_evaluator.R(CCS 13-score)·graduation·진단 스크립트 | active | 2026-07-25 | 18.2MB |
 
 ## 국면 (1)
 
@@ -182,13 +182,7 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `tests` | 인프라 단위 테스트 — test_continuity_gate.py(Continuity Firewall L2 판정기 회귀) | active | 2026-07-18 | 27KB |
-
-## 미분류 (1) — index_descriptions.json에 추가하세요
-
-| 항목 | 정체 | status | 최근 | 크기 |
-|---|---|---|---|---|
-| `stage_artifacts` | (미분류 — index_descriptions.json에 추가하세요) | - | - | 0B |
+| `tests` | 인프라 단위 테스트 — test_continuity_gate.py(Continuity Firewall L2 판정기 회귀) | active | 2026-07-25 | 28KB |
 
 ## stale 큐레이션 키 (4) — 디스크 부재, index_descriptions.json에서 제거 권장
 

@@ -12,19 +12,40 @@ test_continuity_gate.py — Continuity Firewall 회귀 배터리.
 
 실행: python 02_Infrastructure/tests/test_continuity_gate.py
 """
+import atexit
 import os
+import shutil
 import sys
+import tempfile
 
 ROOT = os.environ.get("CLAUDE_PROJECT_DIR") or os.environ.get("QM_ROOT") \
     or "C:/Users/99922/OneDrive/Quant_Module_Moltbot"
 sys.path.insert(0, os.path.join(ROOT, "02_Infrastructure", "axiom"))
 import continuity_gate as G  # noqa: E402
 
+# 케이스 사전은 실제 저장소 것을 쓴다 (자가발전 케이스 포함 회귀 검증이 목적).
 CASES = G.load_cases(ROOT)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# [fix 2026-07-25] 판정용 root 격리 — 배터리가 **실환경 상태를 읽지 않도록** 한다.
+#
+# 결함: judge_text(root=ROOT) 로 실제 저장소를 넘기면 marker_fresh() 가 운영 마커
+# `.cache/last_round_closure.json` 을 조회한다. 정상 운영 중(close_round 직후)에는
+# 마커가 fresh 라 contract.satisfied=True 가 되어 **차단 케이스 22건이 전부 통과**,
+# 배터리가 9/31 로 떨어지면서도 "게이트가 멀쩡하다"는 거짓 확신을 준다.
+# 실측(2026-07-25): 마커 존재 시 9/31, 마커 격리 시 31/31 — 게이트가 아니라 배터리가
+# 오염된 것이었다. turn_verdict_artifacts() 도 같은 이유로 실환경 산출물을 훑는다.
+#
+# 원칙: **테스트 결과가 운영 상태에 의존해선 안 된다.** 마커/산출물 조회는 빈 임시
+# 디렉토리를 향하게 하고, 마커가 필요한 케이스는 marker_override 로 명시 주입한다
+# (P6_marker_override_paved_path 가 그 경로를 이미 검증).
+# ─────────────────────────────────────────────────────────────────────────────
+JUDGE_ROOT = tempfile.mkdtemp(prefix="continuity_battery_")
+atexit.register(lambda: shutil.rmtree(JUDGE_ROOT, ignore_errors=True))
 
 
 def judge(text, marker=None, verdict_artifact=None):
-    return G.judge_text(text, "", CASES, ROOT, marker_override=marker,
+    return G.judge_text(text, "", CASES, JUDGE_ROOT, marker_override=marker,
                         verdict_artifact_override=verdict_artifact)
 
 

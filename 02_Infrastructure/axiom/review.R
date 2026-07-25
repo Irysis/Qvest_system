@@ -71,12 +71,24 @@ suppressPackageStartupMessages({
   if (length(strategies) == 0L) return(list(degraded = FALSE, reason = "no strategies"))
 
   # 최근 hurdle_result에서 rolling_sharpe_positive_ratio 확인
+  # 2026-07-25 수리: 종전 `grepl(s, basename(d), fixed=TRUE)` = substring 매칭이라
+  #   ① 접두 오매칭(STR_146 ⊂ STR_1469) ② 같은 STR 번호를 쓰는 **서로 다른 전략**
+  #   (실측 7건 — 예: STR_1571_bayesian_bl_c11fix vs STR_1571_c19_v14_d01_l22_dd_regime)
+  #   양쪽을 다 주워 담아 무관한 전략의 ratio를 평균에 섞었다. 열화 판정이 조용히 틀어지는 경로.
+  #   → 토큰경계 매칭으로 ①을 제거하고, ②(진짜 모호)는 **평균에 섞지 않고 스킵 + 기록**한다
+  #     (틀린 수치보다 입력이 적은 정직한 수치가 낫다).
   ratios <- numeric(0)
+  ambiguous <- character(0)
+  all_dirs <- list.dirs(file.path(root, "04_Research", "strategies"),
+                        recursive = FALSE, full.names = TRUE)
   for (s in strategies) {
-    dirs <- list.dirs(file.path(root, "04_Research", "strategies"),
-                      recursive = FALSE, full.names = TRUE)
-    for (d in dirs) {
-      if (!grepl(s, basename(d), fixed = TRUE)) next
+    bn <- basename(all_dirs)
+    hit <- all_dirs[bn == s | startsWith(bn, paste0(s, "_"))]
+    if (length(hit) > 1L) {
+      ambiguous <- c(ambiguous, sprintf("%s(%d dirs)", s, length(hit)))
+      next
+    }
+    for (d in hit) {
       hf <- list.files(d, pattern = "^hurdle_result\\.json$",
                         recursive = TRUE, full.names = TRUE)
       if (length(hf) == 0L) next
@@ -87,6 +99,9 @@ suppressPackageStartupMessages({
       if (!is.na(rs)) ratios <- c(ratios, as.numeric(rs))
     }
   }
+  if (length(ambiguous))
+    cat(sprintf("[review][WARN] strategy_id 모호 %d건 — 평균에서 제외: %s\n",
+                length(ambiguous), paste(ambiguous, collapse = ", ")))
 
   if (length(ratios) == 0L) return(list(degraded = FALSE, reason = "no rolling metrics"))
   mean_ratio <- mean(ratios)
@@ -96,6 +111,7 @@ suppressPackageStartupMessages({
     degraded = degraded,
     mean_rolling_sharpe_positive_ratio = round(mean_ratio, 3),
     n_strategies = length(ratios),
+    ambiguous_strategy_ids = as.list(ambiguous),   # 2026-07-25: 평균 제외분 정직 기록
     reason = sprintf("mean rolling_sharpe_positive_ratio=%.3f (%s 0.5)",
                      mean_ratio, if (degraded) "<" else ">=")
   )
