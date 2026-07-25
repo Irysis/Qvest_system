@@ -355,49 +355,130 @@ incremental_investor <- function() {
 }
 
 # ─── Universe_Support 증분 ───────────────────────────────────────────────────
-# [2026-07-25 W3 재작성 — D1 적발 결함 수리]
-#   구 구현 = parse_universe_support(us_update) 호출:
-#     · force=FALSE(기본) → 캐시 존재 시 전 시트 skip = 영구 no-op (증분 미반영)
-#     · force=TRUE → update xlsx(스냅샷 수 개)만으로 패널 통째 덮어쓰기
-#       = 1990~ 역사 소실 clobber
-#   신 구현 = us_update_merge.py (openpyxl 스트리밍 — 484MB XML-bloat xlsx라
-#   R openxlsx/readxl 회피, D1 실측 완주 경로) 위임:
-#     ① cache-hit 판정 = 시트별 update max Date > 패널 max Date일 때만 진행
-#     ② merge = 겹침 날짜만 교체 후 rbind (역사 보존)
-#     ③ 디스크 시맨틱 컬럼명('K200' 등) 기준 정합 (레거시 'Value' 자동 정규화)
-#     ④ temp-rename 쓰기
-incremental_universe_support <- function(force = FALSE) {
-  us_update <- file.path(UPDATE_DIR, "Universe_Support_update.xlsx")
-  if (!file.exists(us_update)) {
+# [2026-07-25 D1 수리] 구 구현은 parse_universe_support(us_update)를 force=FALSE로 호출 —
+# 기존 캐시 존재 시 전 시트 "Cache hit" 스킵 = 증분 no-op이었고, force=TRUE로 바꾸면 merge
+# 없이 update-기간만으로 통째 덮어쓰기 = 1990~ 역사 패널 소실. D1 우회(openpyxl 스트리밍 +
+# 겹침날짜 교체 merge, 검증 PASS)를 표준 경로로 승격:
+#   ① 파싱 = us_update_stream_parse.py (openpyxl read_only 스트리밍 조기종료 — update xlsx
+#      시트 XML이 스타일 잔재로 420~560MB bloat라 openxlsx/readxl 통짜 로드는 메모리 리스크)
+#   ② merge = incremental_investor()와 동형: existing[!Date %in% new_dates] + new rbind
+#      (update 첫 스냅샷이 기존 종점과 겹쳐도 최신 export가 이김 — idempotent 재실행 안전)
+#   ③ 스키마 = 디스크 시맨틱 컬럼명(Date/Ticker/K200 등) 기준 통일. legacy 'Value' 파일은
+#      merge 시 시맨틱명으로 승격 저장
+#   ④ 쓰기 = temp-rename (Windows arrow mmap 잠금 1224 회피 — incremental_consensus 06-17 패턴)
+# 실패는 stop() 전파(fail-closed) — 구현 전처럼 삼켜서 no-op을 "완료"로 위장하지 않는다.
+incremental_universe_support <- function(
+    update_path = file.path(UPDATE_DIR, "Universe_Support_update.xlsx"),
+    cache_dir   = UNIVERSE_SUPPORT_CACHE,
+    parser_py   = file.path(DATA_DIR, "us_update_stream_parse.py"),
+    py_exec     = NULL
+) {
+  if (!file.exists(update_path)) {
     cat("[incr_universe_support] Universe_Support_update.xlsx 없음. 스킵.\n")
     return(invisible(NULL))
   }
+  cat("[incr_universe_support] Universe_Support_update.xlsx 증분 처리...\n")
 
-  cat("[incr_universe_support] Universe_Support_update.xlsx 증분 merge...\n")
+  # 시트 메타(UNIVERSE_SUPPORT_SHEET_META)만 필요 — 전체 파서는 호출하지 않는다
+  if (!exists("UNIVERSE_SUPPORT_SHEET_META")) source(file.path(DATA_DIR, "parse_universe_support.R"))
+  if (!file.exists(parser_py)) stop("[incr_universe_support] 파서 부재: ", parser_py)
 
-  # python 선택: pyarrow+openpyxl 필요 → 표준 venv(.venv_qvest_ml, python-policy §2)
-  # 우선. QVEST_PY(시스템 Python312)는 pyarrow 부재 실측(2026-07-25) — fallback만.
-  venv_py <- file.path(PROJECT_ROOT, ".venv_qvest_ml/Scripts/python.exe")
-  pyexe <- if (file.exists(venv_py)) venv_py else Sys.getenv("QVEST_PY", venv_py)
-  helper <- file.path(DATA_DIR, "us_update_merge.py")
-  us_cache <- if (exists("UNIVERSE_SUPPORT_CACHE")) UNIVERSE_SUPPORT_CACHE
-              else file.path(CACHE_DIR, "universe_support")
-
-  args <- c(shQuote(helper),
-            "--xlsx", shQuote(us_update),
-            "--cache", shQuote(us_cache))
-  if (isTRUE(force)) args <- c(args, "--force")
-
-  out <- suppressWarnings(system2(pyexe, args = args, stdout = TRUE, stderr = TRUE))
-  rc <- attr(out, "status") %||% 0L
-  cat(paste(out, collapse = "\n"), "\n")
-
-  if (rc != 0) {
-    cat(sprintf("[incr_universe_support] 오류: us_update_merge.py 실패 (rc=%d)\n", rc))
-  } else {
-    cat("[incr_universe_support] 완료.\n")
+  # ① Python 스트리밍 파싱 → stage CSV (QVEST_PY = openpyxl 보유 확인됨. pyarrow 불요)
+  if (is.null(py_exec)) {
+    py_candidates <- c(Sys.getenv("QVEST_PY", ""),
+                       file.path(PROJECT_ROOT, ".venv_qvest_ml/Scripts/python.exe"))
+    py_candidates <- py_candidates[nzchar(py_candidates) & file.exists(py_candidates)]
+    if (length(py_candidates) == 0)
+      stop("[incr_universe_support] python 실행경로 미발견 (QVEST_PY / .venv_qvest_ml)")
+    py_exec <- py_candidates[1]
   }
-  invisible(rc == 0)
+  stage_dir <- file.path(tempdir(), paste0("us_incr_", format(Sys.time(), "%Y%m%d_%H%M%S")))
+  dir.create(stage_dir, recursive = TRUE, showWarnings = FALSE)
+  on.exit(unlink(stage_dir, recursive = TRUE), add = TRUE)
+
+  # env= 미사용 (Windows system2 env는 인자 주입 트랩) — 경로는 argv로 전달
+  py_out <- suppressWarnings(system2(py_exec,
+              args = c(shQuote(parser_py), shQuote(update_path), shQuote(stage_dir)),
+              stdout = TRUE, stderr = TRUE))
+  py_status <- attr(py_out, "status"); if (is.null(py_status)) py_status <- 0L
+  cat(paste0("  py| ", py_out, collapse = "\n"), "\n")
+  if (py_status != 0 || !any(grepl("PARSE_OK", py_out)))
+    stop("[incr_universe_support] 스트리밍 파싱 실패 (exit=", py_status,
+         ", PARSE_OK 센티널 부재) — 증분 중단")
+
+  # ② 시트별 merge (겹침 날짜 교체 후 rbind) + ④ temp-rename 쓰기
+  n_merged <- 0L
+  for (s in names(UNIVERSE_SUPPORT_SHEET_META)) {
+    meta    <- UNIVERSE_SUPPORT_SHEET_META[[s]]
+    vcol    <- meta$value_col
+    new_csv <- file.path(stage_dir, sprintf("us_new_%s.csv", meta$cache_name))
+    pq_path <- file.path(cache_dir, sprintf("us_%s.parquet", meta$cache_name))
+
+    if (!file.exists(new_csv)) {
+      cat(sprintf("  ⚠ %s: 파서 산출물 부재 — 스킵\n", meta$cache_name)); next
+    }
+    if (!file.exists(pq_path)) {
+      cat(sprintf(paste0("  ⚠ %s: 기존 패널 부재 — update xlsx(증분 기간만)로는 역사 패널을 만들 수 없음. ",
+                         "base Universe_Support.xlsx로 parse_universe_support() 선행 필요. 스킵.\n"),
+                  meta$cache_name)); next
+    }
+
+    new_dt <- fread(new_csv, encoding = "UTF-8", colClasses = "character")
+    if (nrow(new_dt) == 0) { cat(sprintf("  ⚠ %s: 신규 0행 — 스킵\n", meta$cache_name)); next }
+    if (!identical(names(new_dt), c("Date", "Ticker", vcol)))
+      stop(sprintf("[incr_universe_support] %s: 파서 CSV 헤더 불일치: %s",
+                   meta$cache_name, paste(names(new_dt), collapse = ",")))
+    new_dt[, Date := as.Date(Date)]
+    if (meta$value_type == "numeric") new_dt[, (vcol) := as.numeric(get(vcol))]
+
+    existing <- as.data.table(read_parquet(pq_path))
+    setnames(existing, "Value", vcol, skip_absent = TRUE)   # legacy 'Value' 스키마 → 시맨틱명 승격
+    existing[, Date := as.Date(Date)]                        # timestamp 혼입 방어 (date32 통일)
+    if (!identical(sort(names(existing)), sort(names(new_dt))))
+      stop(sprintf("[incr_universe_support] %s: 스키마 불일치 existing={%s} vs new={%s}",
+                   meta$cache_name, paste(names(existing), collapse = ","),
+                   paste(names(new_dt), collapse = ",")))
+
+    upd_dates  <- unique(new_dt$Date)
+    n_prev     <- nrow(existing)
+    max_prev   <- max(existing$Date)
+    n_replaced <- existing[Date %in% upd_dates, .N]
+    combined   <- rbind(existing[!Date %in% upd_dates], new_dt, use.names = TRUE)
+    setorder(combined, Date, Ticker)
+
+    rm(existing); gc()                       # mmap 해제 후 temp-rename
+    tmp_out <- paste0(pq_path, ".tmp")
+    write_parquet(combined, tmp_out)
+    if (file.exists(pq_path)) file.remove(pq_path)
+    file.rename(tmp_out, pq_path)
+
+    cat(sprintf("  %s: %s → %s rows (겹침교체 %s | 신규날짜 %d개 %s~%s | 기존 max %s)\n",
+                meta$cache_name, format(n_prev, big.mark = ","),
+                format(nrow(combined), big.mark = ","), format(n_replaced, big.mark = ","),
+                length(upd_dates), min(upd_dates), max(upd_dates), max_prev))
+
+    # 멤버십 sanity (K200 ~200 / KQ150 ~150) — warn-only, 원본 export 이상 조기 가시화
+    if (vcol %in% c("K200", "KQ150")) {
+      exp_n <- if (vcol == "K200") 200 else 150
+      chk <- new_dt[, .(msum = sum(get(vcol), na.rm = TRUE)), by = Date]
+      for (j in seq_len(nrow(chk)))
+        cat(sprintf("    %s %s: sum=%g\n", vcol, chk$Date[j], chk$msum[j]))
+      bad <- chk[abs(msum - exp_n) > exp_n * 0.25]
+      if (nrow(bad) > 0)
+        cat(sprintf("  ⚠ %s: 멤버십 합 이상(기대 ~%d): %s — 원본 export 확인 필요\n",
+                    vcol, exp_n, paste(sprintf("%s=%g", bad$Date, bad$msum), collapse = ", ")))
+    }
+    n_merged <- n_merged + 1L
+    rm(combined, new_dt); gc()
+  }
+
+  if (n_merged == 0L) {
+    cat("[incr_universe_support] ⚠ merge된 시트 0개 — 증분 미반영. 위 스킵 사유 확인 필요.\n")
+  } else {
+    cat(sprintf("[incr_universe_support] 완료: %d/%d 시트 merge.\n",
+                n_merged, length(UNIVERSE_SUPPORT_SHEET_META)))
+  }
+  invisible(list(n_merged = n_merged))
 }
 
 # ─── 전체 증분 실행 ──────────────────────────────────────────────────────────

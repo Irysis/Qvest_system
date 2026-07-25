@@ -54,7 +54,9 @@ source(file.path(FUNC_PATH, "F1. QT_to_xts.r"))
 # 시트 메타데이터 정의
 #   cache_name  : 저장 파일명 (parquet suffix)
 #   value_type  : "character" 또는 "numeric"
-#   value_col   : 출력 data.table의 Value 컬럼 의미 (문서화용)
+#   value_col   : 값 컬럼명 (디스크 시맨틱명 — 2026-07-25부터 파일에 이 이름으로 저장.
+#                 구 파일의 'Value' 컬럼은 로더가 skip_absent 리네임으로 호환)
+#   ※ 이 META는 us_update_stream_parse.py의 SHEETS와 1:1 — 변경 시 양쪽 동기 의무
 #==============================================================================
 UNIVERSE_SUPPORT_SHEET_META <- list(
   Sector_Lv1 = list(
@@ -171,29 +173,32 @@ parse_one_us_sheet <- function(xlsx_path, sheet_name, meta) {
     dt[, Date := as.Date(Date)]
   }
 
-  # Melt wide → long: (Date, Ticker, Value)
+  # Melt wide → long: (Date, Ticker, <시맨틱 컬럼명>)
+  # [2026-07-25] 값 컬럼명을 'Value'가 아닌 디스크 시맨틱명(meta$value_col — K200/Float 등)으로
+  # 통일. 기존 디스크 us_*.parquet 실측 스키마 및 증분 경로(incremental_universe_support)와 정합.
   cat("  Melting wide → long...\n")
   stock_cols <- setdiff(names(dt), "Date")
+  vcol <- meta$value_col
 
   long <- melt(
     dt,
     id.vars      = "Date",
     measure.vars = stock_cols,
     variable.name = "Ticker",
-    value.name    = "Value",
+    value.name    = vcol,
     variable.factor = FALSE
   )
   rm(dt); gc()
 
   # 타입 강제
   if (meta$value_type == "numeric") {
-    long[, Value := suppressWarnings(as.numeric(Value))]
+    long[, (vcol) := suppressWarnings(as.numeric(get(vcol)))]
     # NA 및 무효값 제거
-    long <- long[!is.na(Value)]
+    long <- long[!is.na(get(vcol))]
   } else {
-    long[, Value := as.character(Value)]
+    long[, (vcol) := as.character(get(vcol))]
     # NA-유사 문자값 제거
-    long <- long[!is.na(Value) & Value != "" & Value != "NA"]
+    long <- long[!is.na(get(vcol)) & get(vcol) != "" & get(vcol) != "NA"]
   }
 
   setkey(long, Date, Ticker)
@@ -226,6 +231,15 @@ parse_universe_support <- function(
     ))
     cat("[universe_support] Place Universe_Support.xlsx in 03_Universe/ and re-run.\n")
     return(invisible(NULL))
+  }
+
+  # [2026-07-25 D1 재발방지 가드] update xlsx는 전체 파서 대상이 아니다.
+  # update 파일은 증분 기간만 담고 있어 force=FALSE면 캐시 히트 no-op, force=TRUE면
+  # 1990~ 역사 패널이 update 기간으로 통째 덮어써져 소실된다(D1 실적발 결함).
+  if (grepl("_update\\.xlsx$", basename(xlsx_path), ignore.case = TRUE)) {
+    stop("[universe_support] update xlsx는 전체 파서로 처리 금지 (증분 기간만 포함 — ",
+         "force=TRUE 시 역사 소실). incremental_update_file.R::incremental_universe_support() 사용: ",
+         basename(xlsx_path))
   }
 
   if (!dir.exists(output_dir)) {
@@ -358,10 +372,13 @@ load_universe_support <- function(
     if (!is.null(start_date)) dt <- dt[Date >= as.Date(start_date)]
     if (!is.null(end_date))   dt <- dt[Date <= as.Date(end_date)]
 
-    # Value 컬럼을 의미있는 이름으로 변경
-    # (2026-07-25 W3: D1 merge 이후 디스크 정본 = 시맨틱 컬럼명('K200' 등).
-    #  레거시 'Value' 패널만 rename — skip_absent로 양쪽 호환)
+    # legacy 'Value' 스키마 호환 리네임 — 현행 파일은 시맨틱명 저장이라 no-op (2026-07-25)
     setnames(dt, "Value", meta$value_col, skip_absent = TRUE)
+    if (!meta$value_col %in% names(dt)) {
+      cat(sprintf("[universe_support] WARN: %s에 %s/Value 컬럼 부재 — 스킵\n",
+                  basename(pq_path), meta$value_col))
+      next
+    }
 
     loaded[[meta$value_col]] <- dt
     cat(sprintf("[universe_support] Loaded %-20s : %s rows\n",
@@ -437,7 +454,12 @@ load_us_sheet <- function(
   if (!is.null(start_date)) dt <- dt[Date >= as.Date(start_date)]
   if (!is.null(end_date))   dt <- dt[Date <= as.Date(end_date)]
 
-  setnames(dt, "Value", meta$value_col, skip_absent = TRUE)  # W3: 시맨틱/레거시 양쪽 호환
+  # legacy 'Value' 스키마 호환 리네임 — 현행 파일은 시맨틱명 저장이라 no-op (2026-07-25)
+  setnames(dt, "Value", meta$value_col, skip_absent = TRUE)
+  if (!meta$value_col %in% names(dt)) {
+    stop("[universe_support] ", basename(pq_path), "에 ", meta$value_col,
+         "/Value 컬럼 부재 — 파일 스키마 확인 필요")
+  }
   setkey(dt, Date, Ticker)
 
   cat(sprintf("[universe_support] Loaded %s: %s rows (%s ~ %s)\n",
