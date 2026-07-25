@@ -103,6 +103,47 @@ emit_lcode <- function(mode, strategy_id, grade, lesson_text,
   if (auto_id)
     l_code <- sprintf("L-%s-%s", prefix, format(Sys.time(), "%Y%m%d_%H%M%S"))
 
+  # ── ID 충돌 사전 차단 (2026-07-25 도훈 승인) ─────────────────────────────────
+  #   배경: 2026-06-08 배치가 명시 l_code를 재사용해 교차전략 충돌 5건 발생 → 07-25에
+  #   수작업 해소(재발급 3 + 병합 3). 발급 *시점*에 막지 않으면 같은 부류가 재발한다.
+  #   판정 소스 = .cache/lcode_corpus.json (harvester 산출). 부재/파싱실패 시 검사 skip(fail-soft).
+  #   정책: 다른 전략이 쓰는 번호 = 즉시 중단(호출자 오류) / 같은 전략 = 재적립이므로 WARN 통과.
+  #   자동 ID가 같은 초에 겹치면 접미사로 자동 회피(발급 실패로 교훈을 잃지 않게).
+  .corpus_owner <- function(id) {
+    cp <- file.path(root, ".cache", "lcode_corpus.json")
+    if (!file.exists(cp)) return(NULL)
+    j <- tryCatch(jsonlite::fromJSON(cp, simplifyVector = FALSE), error = function(e) NULL)
+    if (is.null(j) || is.null(j$lcodes)) return(NULL)
+    for (r in j$lcodes) {
+      rid <- as.character(r$l_code %||% r$id %||% "")[1]
+      if (identical(rid, id)) return(as.character(r$strategy_id %||% "")[1])
+    }
+    NULL
+  }
+  .owner <- .corpus_owner(l_code)
+  if (!is.null(.owner) && nzchar(.owner)) {
+    if (auto_id) {
+      .n <- 1L
+      repeat {
+        .cand <- sprintf("%s_%02d", l_code, .n)
+        if (is.null(.corpus_owner(.cand))) break
+        .n <- .n + 1L
+      }
+      warning(sprintf("[emit_lcode] 자동 ID %s 가 이미 사용중(strategy=%s) — %s 로 회피 발급",
+                      l_code, .owner, .cand), call. = FALSE)
+      l_code <- .cand
+    } else if (!identical(.owner, strategy_id)) {
+      stop(sprintf(paste0("[emit_lcode] ID 충돌 차단: %s 는 이미 strategy=%s 가 사용중입니다 ",
+                          "(요청 strategy=%s). 교차전략 ID 재사용은 지식 조회를 모호하게 만듭니다 — ",
+                          "l_code=NULL 로 자동 발급하거나 미사용 번호를 지정하세요. ",
+                          "판정 근거: 06_Registry/lcode_id_collision_review_20260725.md"),
+                  l_code, .owner, strategy_id), call. = FALSE)
+    } else {
+      warning(sprintf("[emit_lcode] %s 재적립(동일 strategy=%s) — 기존 기록 갱신 의도인지 확인",
+                      l_code, .owner), call. = FALSE)
+    }
+  }
+
   lcode <- c(list(
     l_code            = l_code,
     strategy_id       = strategy_id,

@@ -416,6 +416,7 @@ def harvest(project_dir: str) -> dict:
     plan_family = _load_plan_family_map(project_dir)
     family_override = _load_family_override(project_dir)  # 큐레이션 재분류 (키워드보다 우선)
     id_first_file: dict[str, str] = {}  # v2: l_code ID 충돌 감지 (A1-F6)
+    id_first_strategy: dict[str, str] = {}  # v3: 충돌 유형 판정용 (cross_strategy 여부)
     n_id_collisions = 0
 
     # Flat (back-compat) + mode-separated subdirectories (stage_artifacts/l_code/<mode>/)
@@ -479,14 +480,29 @@ def harvest(project_dir: str) -> dict:
         promoted = _check_promoted(l_code, project_dir)
 
         # v2: ID 충돌 감지 (같은 l_code가 서로 다른 파일 — WARN + 마킹, 원장 정직 보존)
+        # v3 (2026-07-25): 충돌 *유형*까지 판정해 조치를 즉시 알려준다. 종전 "REASSIGN_ID 대상
+        #   검토"는 막연해서 매주 찍히고도 아무 조치로 이어지지 않았음(5건 누적 후 적발).
+        #   판별은 결정적 — 전략 다름=신규 발급 / 같은 전략·같은 폴더=정본 선택 / 다른 폴더=병합.
         collision_with = None
+        collision_kind = None
         if l_code in id_first_file:
             collision_with = id_first_file[l_code]
             n_id_collisions += 1
-            print(f"[lcode_harvester][WARN] l_code ID collision: {l_code} "
-                  f"({source_file} vs {collision_with}) — REASSIGN_ID 대상 검토", file=sys.stderr)
+            prev_strategy = id_first_strategy.get(l_code)
+            if prev_strategy and strategy_id and prev_strategy != strategy_id:
+                collision_kind = "cross_strategy"
+                advice = f"서로 다른 전략({prev_strategy} vs {strategy_id}) — 후행 기록에 미발급 번호 신규 발급"
+            elif os.path.dirname(source_file) == os.path.dirname(collision_with):
+                collision_kind = "same_dir_duplicate"
+                advice = "같은 전략·같은 폴더 이중 기록 — 정본 1개 선택 후 나머지 superseded/ 이관"
+            else:
+                collision_kind = "cross_zone_variant"
+                advice = "같은 전략·다른 위치(루트 vs 전략트리) — 정본에 내용 병합 후 superseded/ 이관"
+            print(f"[lcode_harvester][WARN] l_code ID collision [{collision_kind}]: {l_code} "
+                  f"({source_file} vs {collision_with}) — {advice}", file=sys.stderr)
         else:
             id_first_file[l_code] = source_file
+            id_first_strategy[l_code] = strategy_id
 
         # v2: grade 정규화 (plan grade_normalization_map) + record_type 분리
         grade_raw = data.get("grade")
@@ -514,6 +530,7 @@ def harvest(project_dir: str) -> dict:
         }
         if collision_with:
             entry["id_collision_with"] = collision_with
+            entry["id_collision_kind"] = collision_kind  # v3: cross_strategy/same_dir_duplicate/cross_zone_variant
         if mt_raw is not None:
             entry["metric_type_raw"] = mt_raw  # A4: 비enum 원값 보존 (정직 원장)
         # v8.1 트랙C+D: 학습/실측 필드 pass-through (있을 때만 — 없는 구 L-code는 그대로 = 정직성).
