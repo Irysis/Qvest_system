@@ -31,14 +31,30 @@ promote_to_production <- function(strategy_id, slot_name = NULL, send_telegram =
   cat(sprintf("\n[promote] Starting promotion for %s...\n", strategy_id))
 
   # ── 1. Find strategy directory ──
+  # 2026-07-25 수리: 종전 substring 매칭 + `which.max(file.mtime())` 선택은
+  #   ① 접두 오매칭(STR_146 ⊂ STR_1469) ② 같은 STR 번호를 쓰는 서로 다른 전략(실측 7건,
+  #      예 STR_1571_bayesian_bl_c11fix vs STR_1571_c19_v14_d01_l22_dd_regime)에서
+  #   **엉뚱한 전략을 승격**시킬 수 있었다. mtime은 선택 근거가 못 된다 — 저장소 이관으로
+  #   전 디렉토리 mtime이 같은 날짜로 눌려 사실상 임의 선택이었음.
+  #   → 정확 일치 우선 → 토큰경계 매칭 → **모호하면 조용히 고르지 말고 중단**(비가역 경로).
   strat_base <- file.path(PROJECT_ROOT, "04_Research", "strategies")
   candidates <- list.dirs(strat_base, recursive = FALSE, full.names = TRUE)
-  matched <- candidates[grepl(strategy_id, basename(candidates), fixed = TRUE)]
+  bn <- basename(candidates)
+  exact <- candidates[bn == strategy_id]
+  matched <- if (length(exact)) exact else candidates[startsWith(bn, paste0(strategy_id, "_"))]
 
   if (length(matched) == 0) {
     stop(sprintf("[promote] Strategy %s not found in 04_Research/strategies/", strategy_id))
   }
-  strat_dir <- matched[which.max(file.mtime(matched))]
+  if (length(matched) > 1) {
+    stop(sprintf(paste0("[promote] strategy_id '%s' 가 %d개 디렉토리에 매칭 — 승격 대상이 모호합니다.\n",
+                        "  후보: %s\n",
+                        "  → 디렉토리명 전체를 strategy_id로 전달하세요 (mtime 자동 선택은 ",
+                        "이관으로 mtime이 균일해져 임의 선택이 됩니다)."),
+                 strategy_id, length(matched),
+                 paste(basename(matched), collapse = ", ")))
+  }
+  strat_dir <- matched[1]
   output_dir <- file.path(strat_dir, "output")
 
   # ── 2. Verify Grade A ──

@@ -50,12 +50,21 @@ cat("[daily_nav] Loaded.\n")
   if (dir.exists(exact)) return(exact)
 
   # Pattern match: STR_905 -> STR_905_*
+  # 2026-07-25 수리: substring → 토큰경계. 종전엔 STR_146 ⊂ STR_1469 접두 오매칭 +
+  #   같은 번호 다른 전략(실측 7건)을 함께 주웠고, 선택은 mtime 최댓값이었다.
+  #   mtime은 저장소 이관으로 균일해져 선택 근거가 못 됨 → 모호하면 WARN 후 NULL
+  #   (NAV를 엉뚱한 전략으로 조용히 계산하느니 값이 없는 편이 정직).
   candidates <- list.dirs(strat_base, recursive = FALSE, full.names = TRUE)
-  matched <- candidates[grepl(strategy_id, basename(candidates), fixed = TRUE)]
+  bn <- basename(candidates)
+  matched <- candidates[startsWith(bn, paste0(strategy_id, "_"))]
   if (length(matched) == 0) return(NULL)
-  # Return the most recently modified
-  mtimes <- file.mtime(matched)
-  matched[which.max(mtimes)]
+  if (length(matched) > 1) {
+    warning(sprintf("[nav] strategy_id '%s' 가 %d개 디렉토리에 매칭 — 모호하여 NULL 반환: %s",
+                    strategy_id, length(matched), paste(basename(matched), collapse = ", ")),
+            call. = FALSE)
+    return(NULL)
+  }
+  matched[1]
 }
 
 
