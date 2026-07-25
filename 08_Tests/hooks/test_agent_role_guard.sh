@@ -6,11 +6,29 @@
 
 set -uo pipefail
 
-# (2026-07-25) bare python3 → $QVEST_PY_BIN (Windows Store 스텁 = router 미실행 → 전 케이스 actual 공백).
-if [ -z "${QVEST_PY_BIN:-}" ]; then
-  QVEST_PY_BIN="${QVEST_PY:-}"
-  { [ -n "$QVEST_PY_BIN" ] && [ -x "$QVEST_PY_BIN" ]; } || QVEST_PY_BIN="/c/Users/99922/OneDrive/Quant_Module_Moltbot/.venv_qvest_ml/Scripts/python.exe"
-  [ -x "$QVEST_PY_BIN" ] || QVEST_PY_BIN="$(command -v python.exe 2>/dev/null || echo python3)"
+#──────────────────────────────────────────────────────────────────────────────
+# (2026-07-25) bare python3 → $QVEST_PY_BIN. PATH의 python3는 Windows Store 스텁이라
+# router가 아예 실행되지 않는다 → 전 케이스 actual 공백 → 8/8 FAIL(또는 요약 JSON
+# 증발로 러너 집계에서 통째 누락). 정본 해석기 경유.
+# (reference-python3-windows-stub-use-qvest-py / _shared_parse.sh HOOK-P0-1)
+#
+# ★ QVEST_PARSE_TRAP=caller 필수: 미지정 시 _shared_parse.sh가 fail-open ERR trap
+#   ('{}' 출력 후 exit 0)을 설치한다 → 실패 케이스가 있는 순간 테스트가 조용히
+#   성공 종료. 테스트 하네스는 fail-open을 받아들이면 안 된다.
+# ★ 앵커는 PROJ_DIR이 아니라 BASH_SOURCE (PROJ_DIR 오설정 = 이 suite가 보고할 실패).
+#──────────────────────────────────────────────────────────────────────────────
+_SELF_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+_SHARED_PARSE="$_SELF_DIR/../../02_Infrastructure/hooks/_shared_parse.sh"
+if [[ -f "$_SHARED_PARSE" ]]; then
+  QVEST_PARSE_TRAP=caller
+  QVEST_PARSE_RESOLVE_ONLY=1
+  # shellcheck source=/dev/null
+  source "$_SHARED_PARSE"
+  unset QVEST_PARSE_RESOLVE_ONLY QVEST_PARSE_TRAP
+else
+  _QP="${QVEST_PY:-}"          # set -u 대비 기본값
+  QVEST_PY_BIN="${_QP//\\//}"  # 백슬래시 → 슬래시 (Git Bash 실행 호환)
+  [[ -x "$QVEST_PY_BIN" ]] || QVEST_PY_BIN="$(command -v python.exe 2>/dev/null || echo python3)"
   export QVEST_PY_BIN
 fi
 

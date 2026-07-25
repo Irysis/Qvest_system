@@ -6,14 +6,6 @@
 
 set -uo pipefail
 
-# (2026-07-25) bare python3 → $QVEST_PY_BIN (Windows Store 스텁 = 요약 JSON 미발행 → 러너 집계 누락).
-if [ -z "${QVEST_PY_BIN:-}" ]; then
-  QVEST_PY_BIN="${QVEST_PY:-}"
-  { [ -n "$QVEST_PY_BIN" ] && [ -x "$QVEST_PY_BIN" ]; } || QVEST_PY_BIN="/c/Users/99922/OneDrive/Quant_Module_Moltbot/.venv_qvest_ml/Scripts/python.exe"
-  [ -x "$QVEST_PY_BIN" ] || QVEST_PY_BIN="$(command -v python.exe 2>/dev/null || echo python3)"
-  export QVEST_PY_BIN
-fi
-
 PROJ_DIR="${CLAUDE_PROJECT_DIR:-$(ls -d /mnt/c/Users/*/OneDrive/바탕*화면/Quant_Module_Moltbot 2>/dev/null | head -1)}"
 
 PASS=0
@@ -34,28 +26,16 @@ check() {
 }
 
 # Test cases via Rscript
-RESULT=$(cd "$PROJ_DIR" && Rscript -e '
-source("02_Infrastructure/worktask/state_machine.R")
-suppressMessages({
-  cases <- list(
-    list(from="SPEC_APPROVED", to="ALPHA_DONE", expect=TRUE),
-    list(from="ALPHA_DONE", to="RISK_DONE", expect=TRUE),
-    list(from="RISK_DONE", to="OPTIMIZER_DONE", expect=TRUE),
-    list(from="SPEC_APPROVED", to="FORGE_DONE", expect=FALSE),
-    list(from="ALPHA_DONE", to="GOVERNOR_ADMITTED", expect=FALSE),
-    list(from="COMPLETED", to="ALPHA_DONE", expect=FALSE),
-    list(from="OPTIMIZER_DONE", to="FORGE_DONE", expect=TRUE),
-    list(from="FORGE_DONE", to="JUDGE_PASSED", expect=TRUE),
-    list(from="JUDGE_FAILED", to="FORGE_DONE", expect=TRUE),
-    list(from="GOVERNOR_ADMITTED", to="COMPLETED", expect=TRUE)
-  )
-  for (c in cases) {
-    res <- sm_check_transition(c$from, c$to)
-    actual <- if (res$allowed) "TRUE" else "FALSE"
-    cat(sprintf("CASE|%s_%s|%s|%s\n", c$from, c$to, c$expect, actual))
-  }
-})
-' 2>&1)
+# ★ 인라인 `Rscript -e` 다중행 금지 — 한글 포함 state_machine.R source 시 segfault
+#   (exit 139, stdout 0) → 케이스 증발 = "0 pass / 0 fail" 위장.
+#   .R 파일 경유가 유일한 정본. (reference-rscript-e-korean-segfault)
+TEST_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CASES_R="$TEST_DIR/_worktask_sequence_cases.R"
+
+# tr -d '\r': Windows Rscript stdout이 CRLF라 마지막 필드에 \r이 붙어
+# "TRUE" != "TRUE\r" 전량 오탐이 난다 (pipefail이라 Rscript rc는 그대로 전파).
+RESULT=$(cd "$PROJ_DIR" && Rscript "$CASES_R" 2>&1 | tr -d '\r')
+RSCRIPT_RC=$?
 
 while IFS='|' read -r prefix name expect actual; do
   if [[ "$prefix" == "CASE" ]]; then
@@ -63,10 +43,42 @@ while IFS='|' read -r prefix name expect actual; do
   fi
 done <<< "$RESULT"
 
+# 계측 사망 방어: 케이스가 0건이면 성공이 아니라 harness 고장이다.
+if (( PASS + FAIL == 0 )); then
+  FAIL=$((FAIL+1))
+  RESULTS+=("FAIL: harness (0 cases executed — Rscript rc=$RSCRIPT_RC, CASE| 출력 없음)")
+  echo "--- Rscript raw output (rc=$RSCRIPT_RC) ---" >&2
+  echo "$RESULT" >&2
+fi
+
 # Summary
 echo "=== test_worktask_sequence_gate.sh ==="
 for r in "${RESULTS[@]}"; do echo "  $r"; done
 echo "TOTAL: $PASS pass / $FAIL fail"
+
+# bare python3 = Windows Store 스텁("Python" 출력 + exit 9) → JSON 라인 증발로
+# run_all_hooks.sh 집계에서 이 suite가 통째로 누락된다. 정본 해석기 경유.
+# (reference-python3-windows-stub-use-qvest-py / _shared_parse.sh HOOK-P0-1)
+# PROJ_DIR이 아니라 TEST_DIR 기준으로 찾는다 — PROJ_DIR 오설정이야말로 이 suite가
+# 보고해야 할 실패라, 그 경우에도 JSON 라인은 나와야 집계에서 누락되지 않는다.
+#
+# ★ QVEST_PARSE_TRAP=caller 필수 (2026-07-25 실측): 미지정 시 _shared_parse.sh가
+#   resolve-only 모드에서도 fail-open ERR trap('{}' 출력 후 exit 0)을 이 셸에 설치한다.
+#   그러면 FAIL 케이스가 하나라도 있을 때 마지막 `exit $FAIL`이 trap에 삼켜져
+#   요약 JSON 대신 '{}'가 나가고 러너 집계에서 누락 = 실패가 조용히 사라진다.
+#   (지금 고치는 버그와 같은 계측-사망 계열이라 trap 설치를 명시 거부한다.)
+_SHARED_PARSE="$TEST_DIR/../../02_Infrastructure/hooks/_shared_parse.sh"
+if [[ -f "$_SHARED_PARSE" ]]; then
+  QVEST_PARSE_TRAP=caller
+  QVEST_PARSE_RESOLVE_ONLY=1
+  # shellcheck source=/dev/null
+  source "$_SHARED_PARSE"
+  unset QVEST_PARSE_RESOLVE_ONLY QVEST_PARSE_TRAP
+else
+  _QP="${QVEST_PY:-}"          # set -u 대비 기본값
+  QVEST_PY_BIN="${_QP//\\//}"  # 백슬래시 → 슬래시 (Git Bash 실행 호환)
+  [[ -x "$QVEST_PY_BIN" ]] || QVEST_PY_BIN="$(command -v python.exe 2>/dev/null || echo python3)"
+fi
 
 "$QVEST_PY_BIN" - "$PASS" "$FAIL" <<PYEOF
 import json, sys
