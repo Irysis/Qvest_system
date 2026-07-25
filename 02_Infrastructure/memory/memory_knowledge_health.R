@@ -12,9 +12,10 @@
 #   6) promote.R helper compatibility selftest 실패
 #
 # Warning:
-#   1) L-code gap/outlier
+#   1) L-code corpus 무결성 — 중복 ID · 미수확 아티팩트
+#      (2026-07-25 교체: 구 gap>50 outlier 는 마크다운 인용 희소성을 재던 지표라 폐기)
 #   2) stale candidate 90+ days
-#   3) review_log schema variant 과다 (현재 17종)
+#   3) review_log 반복 스키마 과다 (싱글턴 일회성 문서 제외 계상)
 #   4) external memory not indexed → INFO (audit v3 권고 B 격하)
 #   5) enforcement claim ↔ hook 실제 강제력 불일치 (AX-003~005)
 #   6) regime_validation parse fail (soft_mrs.json) + .cache/axiom_core.json STALE
@@ -247,28 +248,59 @@ if (!dir.exists(harness_mem)) {
 }
 cat("\n")
 
-# ─── WARN 1: L-code corpus outliers ──────────────────────────────
-cat("[W1/6] L-code corpus outliers\n")
-# v8.0: outlier(L-code gap>50)는 rebuild(v7.2.1_lcode_corpus)의 summary.outliers에만 존재.
-# harvester corpus(v53_ax_p0)엔 그 필드가 없어 과거 본 체크가 inert였음(clobber race로 harvester가
-# canonical 차지). methodology corpus 우선, 없으면 canonical fallback.
-corpus_path <- file.path(PROJ_ROOT, ".cache/lcode_corpus_methodology.json")
-if (!file.exists(corpus_path)) corpus_path <- file.path(PROJ_ROOT, ".cache/lcode_corpus.json")
-if (file.exists(corpus_path)) {
-  corpus <- fromJSON(corpus_path, simplifyVector = FALSE)
-  # null-safe (이 파일의 %||%는 multi-element 벡터를 logical(1)로 강제하다 깨짐 —
-  # 과거 outliers가 항상 NULL[inert]이라 미노출됐던 잠재버그. 직접 NULL 처리.)
-  outliers <- corpus$summary$outliers
-  outliers <- if (is.null(outliers)) character(0) else as.character(unlist(outliers))
-  if (length(outliers) > 0) {
-    add_warn("WARN_1_lcode_outliers",
-             sprintf("L-code gap>50: %s",
-                     paste(outliers, collapse = ",")))
-  } else {
-    cat("  no outliers\n")
-  }
-} else {
+# ─── WARN 1: L-code corpus 무결성 ────────────────────────────────
+# 2026-07-25 교체 (도훈 승인). 구 지표 = `lcode_corpus_methodology.json` 의 gap>50 outlier.
+# 폐기 사유: 그 코퍼스는 정본(414건)이 아니라 **Lawbook 마크다운에 인용된 L-code 27건**을
+# 긁어모은 부분 추출물이라, 그 안의 번호 간격(L-25→L-123, L-192→L-244)은 번호체계 무결성이
+# 아니라 **문서 인용 희소성**을 잰다. 게다가 현 ID 체계는 L-AS-*/L-RAMP-* 등 modern 형식이
+# 섞여 "간격" 자체가 정의되지 않는다 → 어떤 코퍼스로 바꿔도 의미가 서지 않음.
+# 교체 지표 = 코퍼스가 아티팩트를 충실히 반영하는가의 두 축(둘 다 이번 세션 실측 결함):
+#   ① 중복 ID — 서로 다른 기록이 같은 번호(2026-07-25 실측 5건). 인용 오링크 유발
+#      (knowledge_recheck_queue 의 DIST-QPM-001 "L-160 ID 재발급 오링크"가 그 사례).
+#      생산자 측 가드(lcode_emit.R 교차전략 stop())와 짝을 이루는 사후 검출기.
+#   ② 미수확 아티팩트 — 디스크에 lesson 은 있으나 ID 부재 등으로 코퍼스에 못 들어간 기록
+#      (2026-07-25 실측 87건 → 적립 후 0). 침묵 유실의 직접 지표.
+# 판정 불차단(WARN) — AX-000/INV-7 정합.
+cat("[W1/6] L-code corpus 무결성 (중복 ID · 미수확 아티팩트)\n")
+corpus_path <- file.path(PROJ_ROOT, ".cache/lcode_corpus.json")
+if (!file.exists(corpus_path)) {
   add_warn("WARN_1_lcode_corpus_missing", "lcode_corpus.json 부재")
+} else {
+  corpus <- fromJSON(corpus_path, simplifyVector = FALSE)
+  entries <- corpus$lcodes
+  if (is.null(entries)) entries <- list()
+  ids <- vapply(entries, function(e) as.character(e$l_code %||% ""), character(1))
+  ids <- ids[nzchar(ids)]
+  dup_tab <- table(ids)
+  dup_ids <- names(dup_tab)[dup_tab >= 2L]
+
+  # 미수확: 디스크 아티팩트 중 코퍼스 source_file 집합에 없는 것 (superseded 제외)
+  src <- vapply(entries, function(e) gsub("\\\\", "/", as.character(e$source_file %||% "")),
+                character(1))
+  art <- c(Sys.glob(file.path(PROJ_ROOT, "stage_artifacts/l_code_*.json")),
+           Sys.glob(file.path(PROJ_ROOT, "stage_artifacts/l_code/*/l_code_*.json")),
+           Sys.glob(file.path(PROJ_ROOT,
+                              "04_Research/strategies/*/stage_artifacts/[Ll]_code*.json")))
+  # 경로 접두 제거는 고정문자열로 (PROJ_ROOT 를 정규식화하면 드라이브/괄호에서 깨진다)
+  root_fwd <- paste0(gsub("\\\\", "/", PROJ_ROOT), "/")
+  art_rel <- sub(root_fwd, "", gsub("\\\\", "/", art), fixed = TRUE)
+  art_rel <- art_rel[!grepl("/superseded/", art_rel, fixed = TRUE)]
+  unharvested <- setdiff(art_rel, src)
+
+  msgs <- character(0)
+  if (length(dup_ids) > 0)
+    msgs <- c(msgs, sprintf("중복 ID %d건(%s)", length(dup_ids),
+                            paste(head(dup_ids, 6), collapse = ",")))
+  if (length(unharvested) > 0)
+    msgs <- c(msgs, sprintf("미수확 아티팩트 %d건(%s)", length(unharvested),
+                            paste(basename(head(unharvested, 4)), collapse = ",")))
+  if (length(msgs) > 0) {
+    add_warn("WARN_1_lcode_corpus_integrity",
+             sprintf("%s — 코퍼스가 아티팩트를 충실히 반영하지 못함", paste(msgs, collapse = " · ")))
+  } else {
+    cat(sprintf("  무결 (코퍼스 %d건 · 고유 ID %d · 미수확 0)\n",
+                length(entries), length(unique(ids))))
+  }
 }
 
 # ─── WARN 2: stale candidate 90+ days ────────────────────────────
