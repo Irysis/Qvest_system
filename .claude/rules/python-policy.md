@@ -1,5 +1,7 @@
 # Python Policy (Level 1)
 
+> **자매 규칙 — R 측 호출 규약**: 본 문서는 Python 측을 규율한다. R에서 `system2`/`system`을 호출하거나 cleanup을 등록하거나 프로젝트 루트를 해석할 때는 **`02_Infrastructure/docs/rules/r-portability.md`**(금칙 4종 · 2026-07-25 승격, 위반 = AX-002 동급)를 함께 로드할 것. 두 문서가 언어별로 같은 층을 덮는다.
+
 **발효**: 2026-05-29 (v8.0 Phase 2, 도훈 mandate). 기존 헌법 "R only" 폐지.
 **원칙**: R과 Python은 도구적으로 동등하게 허용한다. **언어는 PIT·계약·제약을 면제하지 않는다.**
 
