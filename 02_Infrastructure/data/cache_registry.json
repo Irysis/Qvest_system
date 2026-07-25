@@ -16,7 +16,9 @@
       "tier": "1=critical (regime/MSM/strategy), 2=important (factor/macro), 3=research",
       "value_checks": "OPTIONAL (2026-07-03 감사 DATA-P0-1) — 값-무결성 선언. cache_freshness_audit.R (1b) 섹션이 소비, 위반=VALUE_FAIL/CRITICAL. keys: abs_ret_max {col, threshold, max_violations} = |col|>threshold 건수 상한 (날짜 unique 기준) / required_cols [..] = 필수 컬럼 존재 (Layer2 strip 사고 탐지) / parity {against, col, against_col, min_monthly_cor} = 기준 캐시 대비 월수익(log1p 합) 상관 하한"
     },
-    "last_hygiene": "2026-07-25 Q (국면 캐시 리프레시 배선 — regime_jump_daily on_demand→daily/3d + conditional_ic_matrix.csv 신규 등재 weekly/10d + regime_daily_v2 이중 배선·depends_on 정정. AST 리프 맵 §3-3 스테일 3건 후속. 직전: 2026-07-17 orphan 17종 등재 + ic_matrix SLA null 완성)"
+    "last_hygiene": "2026-07-25 Q (국면 캐시 리프레시 배선 — regime_jump_daily on_demand→daily/3d + conditional_ic_matrix.csv 신규 등재 weekly/10d + regime_daily_v2 이중 배선·depends_on 정정. AST 리프 맵 §3-3 스테일 3건 후속. 직전: 2026-07-17 orphan 17종 등재 + ic_matrix SLA null 완성)",
+    "last_updated": "2026-07-25",
+    "last_change": "FQ-064 NPS · FQ-073 관세청 비-return 원천 2건 등록 (도훈 지시 자동 리프레시 배선)"
   },
   "caches": [
     {
@@ -597,6 +599,26 @@
       "depends_on": [],
       "tier": 3,
       "_note": "2026-07-17 orphan 등재. forecaster v3 시계열 — 리서치 생성물"
+    },
+    {
+      "path": "stage_artifacts/method_frontier/firm_level_scaffold/data_pull/nps_headcount_raw.parquet",
+      "producer": "02_Infrastructure/data/refresh_nonreturn_sources.py",
+      "entry_fn": "refresh_nps() (daily_refresh step 6c · 최초 전량은 data_pull/pull_nps_files.py)",
+      "schedule": "monthly",
+      "max_lag_days": 75,
+      "depends_on": [],
+      "tier": 3,
+      "_note": "FQ-064 국민연금 사업장 패널. data.go.kr 15083277 파일데이터(무인증) 월별 CSV를 상장사 prefix로 필터해 적립. ★기존 월 덮어쓰기 금지(first-release 보존, PIT_plan §2) — 리프레시는 신규 월 append만. date_col 미지정: data_ym이 Date가 아닌 YYYY-MM 문자열이라 mtime 기반 감시만 수행. max_lag 75일 = 월간 갱신(익월 말 게시) + 여유."
+    },
+    {
+      "path": "stage_artifacts/method_frontier/firm_level_scaffold/fq073/customs_hs_monthly.parquet",
+      "producer": "02_Infrastructure/data/refresh_nonreturn_sources.py",
+      "entry_fn": "refresh_customs() (daily_refresh step 6c)",
+      "schedule": "monthly",
+      "max_lag_days": 45,
+      "depends_on": [],
+      "tier": 3,
+      "_note": "FQ-073 관세청 품목별 HS 수출입. ★이 파일은 latest-revised **파생물**이며 권위는 fq073/vintage_store/customs_hs_<PULLDATE>.parquet 스냅샷이다 — API에 vintage 파라미터가 없고 개정이 무기한 반복(매월 15일경 과거 전체 현행화)되므로 최신판 덮어쓰기는 소급 정보주입이다(PIT_plan_fq073 §2). 게이트 판정은 pinned 스냅샷 기준 + vintage_basis 라벨 의무."
     }
   ]
 }
