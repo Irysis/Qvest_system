@@ -107,4 +107,5 @@
 - 메모리: [[project-continuity-firewall-20260715]]
 
 ## Change log
+- 2026-07-25: §4.1 추가 — 적용 범위가 리서치 턴 한정이 아님을 실측 판정(도훈 승인 next_probe ④). 하네스 수리 턴 발화 = 정발화 실증(대기-모드 마감을 막아 regime 0-total 위장 + 사전 분류 오류 2건 적발). 기존 enum(`capability_established`+`layer="harness"`)으로 표현 가능해 인프라용 별도 enum 미도입.
 - 2026-07-15: 신규. warn→block 승격 + L2 독립 semantic 판정 + L3 건설적 종료계약(close_round) + L4 자가발전. 12/12 배터리·E2E(block/pass/paved-path)·cleaner 통합 검증. 도훈 mandate.
