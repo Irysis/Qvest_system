@@ -172,10 +172,17 @@ cleanup_old_reports <- function(strategy_id) {
 #' Called after Reporter Agent writes narrative JSON
 render_report <- function(strategy_id, output_dir = NULL, lang = "en") {
 
+  # 2026-07-25: substring+mtime → 토큰경계 + 모호 시 중단 (동일 부류 수리)
   strat_base <- file.path(PROJECT_ROOT, "04_Research", "strategies")
   candidates <- list.dirs(strat_base, recursive = FALSE, full.names = TRUE)
-  matched <- candidates[grepl(strategy_id, basename(candidates), fixed = TRUE)]
-  strat_dir <- matched[which.max(file.mtime(matched))]
+  .bn <- basename(candidates)
+  .ex <- candidates[.bn == strategy_id]
+  matched <- if (length(.ex)) .ex else candidates[startsWith(.bn, paste0(strategy_id, "_"))]
+  if (length(matched) == 0) stop(sprintf("Strategy %s not found", strategy_id))
+  if (length(matched) > 1)
+    stop(sprintf("strategy_id '%s' 가 %d개 디렉토리에 매칭 — 디렉토리명 전체를 지정하세요: %s",
+                 strategy_id, length(matched), paste(basename(matched), collapse = ", ")))
+  strat_dir <- matched[1]
 
   if (is.null(output_dir)) {
     out_candidates <- c(
@@ -234,7 +241,11 @@ render_report <- function(strategy_id, output_dir = NULL, lang = "en") {
     prod_base <- file.path(PROJECT_ROOT, "05_Production", "2.Factor_Model")
     if (dir.exists(prod_base)) {
       prod_dirs <- list.dirs(prod_base, recursive = FALSE, full.names = TRUE)
-      prod_match <- prod_dirs[grepl(strategy_id, basename(prod_dirs))]
+      # 2026-07-25: substring → 토큰경계. 종전엔 무관한 프로덕션 디렉토리에
+      #   리포트를 overwrite 복사할 수 있었다.
+      .pb <- basename(prod_dirs)
+      .pe <- prod_dirs[.pb == strategy_id]
+      prod_match <- if (length(.pe)) .pe else prod_dirs[startsWith(.pb, paste0(strategy_id, "_"))]
       for (pd in prod_match) {
         file.copy(out_html, file.path(pd, basename(out_html)), overwrite = TRUE)
         file.copy(out_html, file.path(pd, "output", basename(out_html)), overwrite = TRUE)
