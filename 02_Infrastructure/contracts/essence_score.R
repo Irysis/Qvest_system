@@ -189,7 +189,16 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
                           selection_type = NULL,
                           oos_stat_version = "v2",
                           escalation_evidence = NULL,
-                          oos_fail_pattern = NULL) {
+                          oos_fail_pattern = NULL,
+                          # (AST v1.1 Step 4, 2026-07-25 — SOT §5) 구조특징 사이드카 로깅.
+                          #  ast_features: ast_compile manifest의 구조특징 list(node_count/free_param_count/
+                          #  conditional_op_count/window_variety/escape_leaf_count 등). NULL = 비-AST 산출
+                          #  (NULL 여부 자체가 escape 커버리지 정보라 전 판정 로깅 — 생존편향 방지).
+                          #  기록은 append-only 사이드카(06_Registry/ast_structure_log.jsonl), 채점 계산 무관여,
+                          #  실패 시 침묵 skip(fail-soft — 로깅 장애가 graduation 판정을 막지 않는다).
+                          #  judge/governor verdict는 채점 시점 미존재 — strategy_id 키로 사후 조인.
+                          ast_features = NULL, strategy_id = NULL, active_regime = NULL,
+                          sidecar_log = TRUE) {
   .nz <- function(x) { v <- suppressWarnings(as.numeric(if (is.null(x) || length(x) == 0L) NA else x[[1]])); v }
   stopifnot(is.list(bt_result),
             !is.null(bt_result$metrics), !is.null(bt_result$benchmark_compare))
@@ -331,7 +340,7 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
     reasons <- "Ensemble: positive alpha이나 B 미달 (블렌드에서만 가치)"
   }
 
-  list(
+  .res <- list(
     grade = grade,
     metric_type = if (contract_ok) "backtested" else "uncertain",
     essence = list(
@@ -369,6 +378,39 @@ essence_score <- function(bt_result, n_trials_cumulative = NULL,
     oos_fail_pattern = if (is.null(oos_fail_pattern)) NA_character_ else as.character(oos_fail_pattern),
     reasons = reasons
   )
+
+  # ── AST v1.1 Step 4 사이드카 (SOT §5) — append-only, 채점 무관여, fail-soft ──
+  if (isTRUE(sidecar_log)) {
+    try({
+      if (requireNamespace("jsonlite", quietly = TRUE)) {
+        .root <- Sys.getenv("QM_ROOT", unset = Sys.getenv("CLAUDE_PROJECT_DIR", unset = "."))
+        .reg  <- file.path(.root, "06_Registry")
+        if (dir.exists(.reg)) {
+          .sid <- strategy_id
+          if (is.null(.sid)) .sid <- tryCatch(as.character(bt_result$manifest$strategy_id[[1]]),
+                                              error = function(e) NA_character_)
+          .rec <- list(
+            ts = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
+            strategy_id = if (is.null(.sid) || !length(.sid)) NA_character_ else .sid,
+            ast_features = ast_features,           # NULL이면 JSON에서 결측 — 비-AST 산출 표식
+            grade = grade,
+            metric_type = .res$metric_type,
+            port_t = .rn(port_t), oos_retention = .rn(oos_retention),
+            oos_retention_splits = round(oos_retention_splits, 3),
+            dsr = .rn(dsr), calmar = .rn(calmar), net_ir = .rn(net_ir),
+            sharpe = .rn(sharpe), cagr = .rn(cagr), mdd = .rn(mdd),
+            selection_type = selection_type, n_trials_cumulative = n_trials_cumulative,
+            active_regime = active_regime,
+            hard_fail = hard_fail
+          )
+          cat(jsonlite::toJSON(.rec, auto_unbox = TRUE, null = "null", na = "null"), "\n",
+              sep = "", file = file.path(.reg, "ast_structure_log.jsonl"), append = TRUE)
+        }
+      }
+    }, silent = TRUE)
+  }
+
+  .res
 }
 
 if (sys.nframe() == 0) cat("[essence_score] Loaded — essence_score(bt_result, n_trials_cumulative, selection_type).\n")
