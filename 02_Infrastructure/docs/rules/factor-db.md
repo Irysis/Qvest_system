@@ -8,7 +8,9 @@
 |---|---|
 | **C13** | NEGATE_FACTORS / FLIP_SIGN 절대 금지. Z_Score_Aligned only |
 | **C14** | IC 접근 시 Usable_Date <= sig_date만 허용 |
-| **C15** | Factor DB parquet 직접 load 금지. `load_month_factors()` 경유 |
+| **C15** | Factor DB parquet 직접 load 금지. 월간 = `load_month_factors()` / 일간(fdb_daily) = `load_daily_factors()` 경유 (2026-07-25 carve-out 해소) |
+
+**일간 접근자** (`load_daily_factors(ym | date_range, factors=NULL, align_direction=TRUE)`, connector v2.3): `.cache/factor_db_daily/fdb_daily_YYYYMM.parquet` 관문 — Arrow dataset pushdown(요청 월만·전체 441파일 스캔 금지) + C13 방향정렬(월간 ic_sign 경로 재사용 — 일간 IC 패널은 Usable_Date 부재로 방향추론 불가, 한계 문서화) + PIT `Date <= 요청 상한` 하드 강제. 값 semantics = **winsorized raw (z-score 아님)** — 횡단면 표준화는 caller 책임. ⚠ 증분 갱신월의 누산계열 팩터(R13_NCSKEW 등)는 bit-parity 미보장(rank 290/298 보존 — memory project-fdb-daily-incremental-parity).
 
 ## Forge 자원 활용 (컴퓨팅 최적화)
 
@@ -56,10 +58,11 @@
 
 ## 참조
 
-- `02_Infrastructure/factor_db/factor_db_connector.R` (load_month_factors)
+- `02_Infrastructure/factor_db/factor_db_connector.R` (load_month_factors / load_daily_factors)
 - `02_Infrastructure/backtest_harness.R` (load_rawdata 정의 — 2026-06-10 링크 정정)
 - `infrastructure_state.md` (구체적 코딩 패턴 + L-code 누적)
 
 ## 변경 이력
 
+- **2026-07-25**: `load_daily_factors()` 신설 (AST v1.1 §3 불변식 ⑥ — fdb_daily C15 carve-out 해소). C15 행에 일간 관문 병기 + 일간 접근자 절 추가. 실측: 202606+202607 90,389행 x 316팩터 / 월말 대조 M01 pearson 0.9987·spearman 0.9952 (차이 = 일간 winsorize cap + 월간 Raw_Value 미캡 — 정의 차이 문서화).
 - **2026-06-10**: "Factor DB 현황" 실측 전면 갱신 — 모집단 5종 구분 (등록 373 / 월간 수록 342·최신월 315 / 일간 수록 304 / census 327 / curated ~94). 구 stale 수치(월간·일간 팩터 수, "활용률" 표기) 전부 제거. 2026-06-10 Z 재계산(winsorize 1/99) — Raw_Value/Rank_Pct 불변, 가역 (트랙 A — 본 rule의 게이트·PIT 규칙과 무관).

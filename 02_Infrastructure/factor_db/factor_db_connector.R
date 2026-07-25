@@ -11,6 +11,7 @@
 #
 # Functions:
 #   load_month_factors(sig_date, coverage_min, factor_names)
+#   load_daily_factors(ym | date_range, factors, align_direction)   [v2.3 — C15 daily 관문]
 #   compute_rolling_ic_all(sig_date, min_months, max_months)
 #   group_factors_by_family(registry)
 #   align_factor_direction(factor_dt, registry)
@@ -51,6 +52,7 @@ if (!exists("CACHE_DIR")) {
 }
 
 FACTOR_DB_DIR <- file.path(CACHE_DIR, "factor_db")
+FACTOR_DB_DAILY_DIR <- file.path(CACHE_DIR, "factor_db_daily")
 FACTOR_IC_MONTHLY_PATH <- file.path(FACTOR_DB_DIR, "factor_ic_monthly.parquet")
 FACTOR_REG_PATH <- file.path(FACTOR_DB_DIR, "factor_registry.json")
 
@@ -250,6 +252,190 @@ load_month_factors <- function(sig_date, coverage_min = 0.05, factor_names = NUL
   attr(result, "factor_db_build_hash") <- build_hash
 
   result
+}
+
+
+#==============================================================================
+# 1b. load_daily_factors()  [v2.3, 2026-07-25 — AST v1.1 §3 불변식 ⑥ C15 carve-out 해소]
+#==============================================================================
+
+#' Load daily factor DB (fdb_daily_YYYYMM.parquet) through the PIT-safe connector.
+#'
+#' 일간 팩터 DB 전용 관문 — .cache/factor_db_daily/ parquet 직접 read 금지(C15)의
+#' 일간 등가. 월간 load_month_factors()와의 구조 차이(정의 차이 — 실측 2026-07-25):
+#'   * 스키마: 일간 DB = WIDE (Date, Ticker, 팩터 1열씩. 202607 = 318 cols /
+#'     199001 = 277 cols — 초기 vintage는 컨센서스·수급 등 부재, unify로 NA 채움).
+#'     월간 DB = LONG (Ticker, Factor_Name, Z_Score, Coverage).
+#'   * 값 semantics: 일간 = **winsorized RAW value** (phase10: 날짜별 1%/99% cap,
+#'     SKIP 컬럼 예외 — S01_Size/L26_Log_MktCap/PTR·RE_* 등은 미캡). 월간 = 횡단면
+#'     Z_Score. 따라서 본 함수의 방향정렬은 부호 flip만 수행하며(순서 보존),
+#'     팩터 간 결합 전 횡단면 표준화는 caller 책임.
+#'   * Coverage 컬럼 부재 — coverage 필터 없음 (NA가 곧 미커버).
+#'
+#' C13 방향정렬: align_direction=TRUE 시 **월간 ic_sign 경로 재사용**
+#'   (.load_ic_direction_cached — factor_ic_monthly.parquet의 Usable_Date <=
+#'   pit_max expanding window, 36개월 burn-in, registry fallback). 일간 IC 패널
+#'   (analysis/daily_ic_panel 계열)은 Usable_Date 체계가 없어 PIT-safe 방향추론에
+#'   쓸 수 없음 — 한계로 문서화하고 월간 ic_sign을 적용한다 (방향은 저빈도
+#'   속성이라 월간 추론으로 충분하다는 가정, 명시 라벨).
+#'
+#' PIT: 반환 전 Date <= pit_max(요청 상한) 하드 강제. ic_sign 추론도 동일
+#'   pit_max 기준 expanding window (미래 IC 미참조).
+#'
+#' ⚠ Incremental parity caveat (memory: project-fdb-daily-incremental-parity,
+#'   2026-07-18): update_daily_fdb(ym) 단일월 증분 재빌드는 전량 재빌드와
+#'   bit-parity가 아님 — rcpp 롤링 누산이 경로-의존 (실측: R13_NCSKEW 증분 0 vs
+#'   전량 9.87e9 급 괴리 사례). 횡단면 rank는 290/298 팩터 보존. 도훈 채택 A
+#'   (caveat 유지 + AUTOREBUILD ON). 즉 증분 갱신월의 누산계열 팩터
+#'   (R13_NCSKEW 등)는 값-레벨 재현성을 보장하지 않음 — rank 기반 소비 권장.
+#'
+#' @param ym Character/numeric vector. "YYYYMM" 월 태그 (예: c("202606","202607")).
+#'   date_range와 택일 (둘 다 주면 ym 우선 + date_range로 행 필터).
+#' @param date_range Date/character length-2. c(start, end) — 해당 구간이 걸치는
+#'   월 파일만 로드 (전체 441파일 스캔 금지, Arrow dataset column/row pushdown).
+#' @param factors Optional character vector. 팩터 컬럼명 선택 (NULL = 전 팩터).
+#'   스키마에 없는 요청은 WARN 후 제외.
+#' @param align_direction Logical. TRUE(기본) = C13 방향정렬 (value * ic_sign,
+#'   higher = better). ic_sign map은 attr "ic_sign_map"으로 첨부.
+#' @return data.table (wide): Date, Ticker, <factor cols>. attrs:
+#'   pit_max / months_loaded / value_semantics / direction_aligned /
+#'   ic_sign_map (정렬 시) / fdb_daily_registry_version
+load_daily_factors <- function(ym = NULL, date_range = NULL, factors = NULL,
+                               align_direction = TRUE) {
+  if (is.null(ym) && is.null(date_range)) {
+    stop("[load_daily_factors] ym 또는 date_range 중 하나는 필수입니다.")
+  }
+
+  # ---- Resolve months + PIT upper bound ----
+  d_lo <- NULL; d_hi <- NULL
+  if (!is.null(date_range)) {
+    if (length(date_range) != 2L) stop("[load_daily_factors] date_range는 c(start, end) length-2.")
+    d_lo <- as.Date(date_range[1]); d_hi <- as.Date(date_range[2])
+    if (is.na(d_lo) || is.na(d_hi) || d_lo > d_hi) {
+      stop("[load_daily_factors] date_range 파싱 실패 또는 start > end.")
+    }
+  }
+  if (!is.null(ym)) {
+    ym_tags <- sort(unique(sprintf("%06d", as.integer(as.character(ym)))))
+    if (any(!grepl("^\\d{6}$", ym_tags))) stop("[load_daily_factors] ym은 YYYYMM 형식.")
+  } else {
+    mseq <- seq(as.Date(format(d_lo, "%Y-%m-01")),
+                as.Date(format(d_hi, "%Y-%m-01")), by = "month")
+    ym_tags <- format(mseq, "%Y%m")
+  }
+
+  # PIT 상한: date_range 상한 우선, 없으면 최대 요청월의 말일
+  pit_max <- if (!is.null(d_hi)) d_hi else {
+    last_ym <- max(ym_tags)
+    first_next <- as.Date(paste0(last_ym, "01"), format = "%Y%m%d")
+    seq(first_next, by = "month", length.out = 2L)[2L] - 1L
+  }
+
+  # ---- File resolution (요청 월만 — 전체 스캔 금지) ----
+  fpaths <- file.path(FACTOR_DB_DAILY_DIR, paste0("fdb_daily_", ym_tags, ".parquet"))
+  missing_f <- !file.exists(fpaths)
+  if (all(missing_f)) {
+    stop("[load_daily_factors] 요청 월 parquet 전무: ",
+         paste(ym_tags, collapse = ", "), " (dir=", FACTOR_DB_DAILY_DIR, ")")
+  }
+  if (any(missing_f)) {
+    cat(sprintf("[load_daily_factors] WARN: %d개 월 파일 부재 — 제외: %s\n",
+                sum(missing_f), paste(ym_tags[missing_f], collapse = ", ")))
+    fpaths <- fpaths[!missing_f]; ym_tags <- ym_tags[!missing_f]
+  }
+
+  # ---- Arrow dataset: column + row pushdown (unify_schemas — vintage별 열 차이) ----
+  ds <- open_dataset(fpaths, format = "parquet", unify_schemas = TRUE)
+  all_cols <- names(ds)
+  fac_avail <- setdiff(all_cols, c("Date", "Ticker"))
+
+  if (!is.null(factors)) {
+    factors <- unique(as.character(factors)); factors <- factors[nzchar(factors)]
+    not_found <- setdiff(factors, fac_avail)
+    if (length(not_found)) {
+      cat(sprintf("[load_daily_factors] WARN: 스키마 부재 팩터 %d건 제외: %s\n",
+                  length(not_found), paste(not_found, collapse = ", ")))
+    }
+    sel_facs <- intersect(factors, fac_avail)
+    if (!length(sel_facs)) stop("[load_daily_factors] 요청 팩터가 스키마에 하나도 없습니다.")
+  } else {
+    sel_facs <- fac_avail
+  }
+
+  q <- ds %>% select(tidyselect::all_of(c("Date", "Ticker", sel_facs)))
+  # row pushdown: PIT 상한 (+ 하한이 있으면 함께)
+  q <- q %>% filter(Date <= pit_max)
+  if (!is.null(d_lo)) q <- q %>% filter(Date >= d_lo)
+  dt <- as.data.table(collect(q))
+  dt[, Date := as.Date(Date)]
+
+  # ---- PIT hard enforcement (반환 전 재확인 — pushdown 실패 대비 이중 방어) ----
+  n_viol <- dt[Date > pit_max, .N]
+  if (n_viol > 0L) {
+    cat(sprintf("[load_daily_factors] PIT: Date > %s %d행 제거 (pushdown 미적용분)\n",
+                pit_max, n_viol))
+    dt <- dt[Date <= pit_max]
+  }
+
+  # ---- C13 direction alignment (월간 ic_sign 경로 재사용) ----
+  ic_sign_map <- NULL
+  if (isTRUE(align_direction) && nrow(dt) > 0L) {
+    ic_dir <- .load_ic_direction_cached(pit_max, min_ic_months = 36L)
+    registry <- .load_registry()
+    reg_sign <- if (!is.null(registry) && length(registry)) {
+      data.table(
+        Factor_Name = names(registry),
+        sign = sapply(registry, function(x) {
+          d <- x$direction %||% "higher_better"
+          if (identical(d, "lower_better")) -1L else 1L
+        }),
+        src = "registry"
+      )
+    } else NULL
+
+    ic_sign_map <- data.table(Factor_Name = sel_facs, sign = 1L, src = "default")
+    if (!is.null(reg_sign)) {
+      ic_sign_map[reg_sign, on = "Factor_Name", `:=`(sign = i.sign, src = i.src)]
+    }
+    if (!is.null(ic_dir) && nrow(ic_dir[!is.na(ic_sign)])) {
+      ic_sign_map[ic_dir[!is.na(ic_sign)], on = "Factor_Name",
+                  `:=`(sign = i.ic_sign, src = "ic")]
+    }
+    flip <- ic_sign_map[sign == -1L, Factor_Name]
+    if (length(flip)) {
+      dt[, (flip) := lapply(.SD, function(x) -x), .SDcols = flip]
+    }
+    cat(sprintf(
+      "[load_daily_factors] C13 정렬(월간 ic_sign 재사용, pit_max=%s): IC=%d / registry=%d / default=%d | flip=%d\n",
+      pit_max, ic_sign_map[src == "ic", .N], ic_sign_map[src == "registry", .N],
+      ic_sign_map[src == "default", .N], length(flip)))
+    if (ic_sign_map[src == "default", .N] > 0L) {
+      .dnames <- ic_sign_map[src == "default", Factor_Name]
+      cat(sprintf("[load_daily_factors] WARN: IC/registry 부재 %d열 — sign=+1 가정 (PTR/RE_* 시장레벨 열 포함 가능): %s%s\n",
+                  length(.dnames), paste(head(.dnames, 8L), collapse = ", "),
+                  if (length(.dnames) > 8L) sprintf(" ... (+%d)", length(.dnames) - 8L) else ""))
+    }
+  }
+
+  # ---- Attrs ----
+  reg_path <- file.path(FACTOR_DB_DAILY_DIR, "factor_db_daily_registry.json")
+  reg_ver <- if (file.exists(reg_path)) {
+    tryCatch({ r <- fromJSON(reg_path); paste0(r$version %||% "?", "@", r$created %||% "?") },
+             error = function(e) "unknown")
+  } else "unknown"
+  setattr(dt, "pit_max", pit_max)
+  setattr(dt, "months_loaded", ym_tags)
+  setattr(dt, "value_semantics", "winsorized_raw (NOT z-score — 횡단면 표준화는 caller 책임)")
+  setattr(dt, "direction_aligned", isTRUE(align_direction))
+  if (!is.null(ic_sign_map)) setattr(dt, "ic_sign_map", ic_sign_map)
+  setattr(dt, "fdb_daily_registry_version", reg_ver)
+
+  cat(sprintf("[load_daily_factors] %d행 x %d팩터 | %s~%s | months=%s\n",
+              nrow(dt), length(sel_facs),
+              if (nrow(dt)) format(min(dt$Date)) else "NA",
+              if (nrow(dt)) format(max(dt$Date)) else "NA",
+              paste(ym_tags, collapse = ",")))
+  dt
 }
 
 
@@ -465,5 +651,5 @@ group_factors_by_family <- function(registry = NULL) {
 }
 
 
-cat("[factor_db_connector] Loaded. Functions: load_month_factors(), compute_rolling_ic_all(),\n")
-cat("  group_factors_by_family(), align_factor_direction()\n")
+cat("[factor_db_connector] Loaded. Functions: load_month_factors(), load_daily_factors(),\n")
+cat("  compute_rolling_ic_all(), group_factors_by_family(), align_factor_direction()\n")
