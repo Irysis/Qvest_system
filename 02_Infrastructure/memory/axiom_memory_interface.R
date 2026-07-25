@@ -295,18 +295,27 @@ sg_sync_methodology_memory <- function() {
 
   if (length(l_code_files) == 0) {
     cat("[axiom_interface] No l_code files found in stage_artifacts/.\n")
-    return(list(synced = 0L, already_present = 0L, errors = errors))
+    return(list(status = "OK_NOTHING_FOUND", synced = 0L, already_present = 0L,
+                errors = errors))
   }
 
   cat(sprintf("[axiom_interface] Found %d l_code file(s) to scan.\n", length(l_code_files)))
 
   # Extract L-codes from JSON files
+  # 2026-07-25 침묵 드롭 수리: 전략트리 아티팩트는 2개 스키마가 공존한다.
+  #   구: l_code       / lesson      / factor_id      (2026-03 QEPM 배치, 42건)
+  #   신: l_code_id    / lesson_text / core_reference (26건)
+  # 종전 코드는 `l_code`+`lesson`만 읽어 신스키마 ID를 통째로 버리고(=미적립),
+  # 구스키마 외 lesson을 빈 문자열로 만들었다. 두 스키마 모두 인식한다.
   new_lcodes <- list()
+  skipped_no_id <- character(0)
   for (lf in l_code_files) {
     tryCatch({
       content <- fromJSON(lf, simplifyVector = FALSE)
-      l_code <- content$l_code %||% content$code %||% NULL
-      l_text <- content$lesson %||% content$text %||% content$description %||% ""
+      l_code <- content$l_code %||% content$l_code_id %||% content$lcode %||%
+                content$code %||% NULL
+      l_text <- content$lesson_text %||% content$lesson %||% content$text %||%
+                content$description %||% ""
 
       if (!is.null(l_code) && nchar(l_code) > 0) {
         new_lcodes[[l_code]] <- list(
@@ -315,25 +324,36 @@ sg_sync_methodology_memory <- function() {
           source = basename(dirname(dirname(lf))),  # strategy ID
           file = basename(lf)
         )
+      } else {
+        # ID 미발급 아티팩트 — 어떤 파이프라인도 잡을 수 없으므로 조용히 흘리지 않고 계상한다.
+        skipped_no_id <- c(skipped_no_id,
+                           file.path(basename(dirname(dirname(lf))), basename(lf)))
       }
     }, error = function(e) {
       errors <<- c(errors, sprintf("Error reading %s: %s", basename(lf), e$message))
     })
   }
 
+  if (length(skipped_no_id) > 0) {
+    warning(sprintf(
+      "[axiom_interface] l_code 아티팩트 %d건에 L-code ID가 없어 적립 불가: %s",
+      length(skipped_no_id), paste(head(skipped_no_id, 5), collapse = ", ")),
+      call. = FALSE)
+    errors <- c(errors, sprintf("%d artifact(s) without l_code id", length(skipped_no_id)))
+  }
+
   if (length(new_lcodes) == 0) {
     cat("[axiom_interface] No valid L-codes extracted.\n")
-    return(list(synced = 0L, already_present = 0L, errors = errors))
+    return(list(status = "OK_NOTHING_EXTRACTED", synced = 0L, already_present = 0L,
+                skipped_no_id = skipped_no_id, errors = errors))
   }
 
   # Check which L-codes already exist in methodology_memory.md
-  # Try multiple possible paths for methodology_memory.md
-  mm_paths <- c(
+  # 2026-07-25: 죽은 WSL 경로(/home/quant/...) 제거 — 다른 머신의 레거시 경로였다.
+  mm_paths <- unique(c(
     .AMI_METHODOLOGY_MD,
-    file.path(PROJECT_ROOT, "qepm", "memory", "methodology_memory.md"),
-    file.path("/home/quant/.claude/projects/-mnt-c-Users-User-OneDrive-------Quant-Module-Moltbot",
-              "memory", "methodology_memory.md")
-  )
+    file.path(PROJECT_ROOT, "qepm", "memory", "methodology_memory.md")
+  ))
 
   mm_path <- NULL
   mm_content <- ""
@@ -349,20 +369,56 @@ sg_sync_methodology_memory <- function() {
     }
   }
 
+  # ── 침묵 드롭 차단 (2026-07-25) ────────────────────────────────────────────
+  # 종전: sink 부재 시 synced=0 을 정상 반환 → 호출부(hook_batch_runner.R:67/113)가
+  # 반환값을 보지 않으므로 "적립됨"과 구분 불가. 실측 결과 L-code 68건 + ID미발급
+  # 14건이 이 경로로 유실됐다. 이제 명시 실패로 승격한다.
+  #   · warning() — 훅의 tryCatch(error=)는 warning 을 잡지 않으므로 하류(PG0 gap /
+  #     Scout TODO)를 죽이지 않으면서 표면화된다.
+  #   · 결손 원장을 .cache 에 남겨 세션이 끝나도 증거가 사라지지 않게 한다.
   if (is.null(mm_path)) {
-    cat("[axiom_interface] methodology_memory.md not found. Cannot sync.\n")
+    defect <- list(
+      detected_at   = as.character(Sys.time()),
+      defect        = "sink_absent",
+      expected_sink = mm_paths,
+      dropped_n     = length(new_lcodes),
+      dropped       = names(new_lcodes),
+      skipped_no_id = skipped_no_id
+    )
+    tryCatch({
+      write_json(defect,
+                 file.path(.AMI_CACHE_DIR, "lcode_sync_defect.json"),
+                 auto_unbox = TRUE, pretty = TRUE)
+    }, error = function(e) invisible(NULL))
+
+    msg <- sprintf(paste0(
+      "[axiom_interface] SYNC FAILED — sink 부재로 L-code %d건 적립 불가. ",
+      "기대 경로: %s. 결손 원장: .cache/lcode_sync_defect.json"),
+      length(new_lcodes), paste(mm_paths, collapse = " | "))
+    cat(msg, "\n")
+    warning(msg, call. = FALSE)
+
     return(list(
-      synced = 0L,
+      status          = "FAILED_NO_SINK",
+      synced          = 0L,
       already_present = 0L,
-      new_lcodes = names(new_lcodes),
-      errors = c(errors, "methodology_memory.md not found")
+      dropped         = length(new_lcodes),
+      new_lcodes      = names(new_lcodes),
+      skipped_no_id   = skipped_no_id,
+      errors          = c(errors, "methodology_memory.md not found — L-codes dropped")
     ))
   }
 
   # Filter to only new L-codes
+  # 2026-07-25: fixed=TRUE substring 매칭은 L-17 이 L-170 에 오매칭돼 미적립을
+  # "이미 있음"으로 위장했다. 토큰 경계로 판정한다
+  # (cf. [[project-lcode-family-substring-rootcause-fix]] 동일 부류).
   to_append <- list()
   for (lc_name in names(new_lcodes)) {
-    if (grepl(lc_name, mm_content, fixed = TRUE)) {
+    present <- grepl(sprintf("(^|[^A-Za-z0-9_-])%s([^A-Za-z0-9_-]|$)",
+                             gsub("([.\\\\|()\\[\\]{}^$*+?])", "\\\\\\1", lc_name)),
+                     mm_content, perl = TRUE)
+    if (present) {
       already_present <- already_present + 1L
     } else {
       to_append[[lc_name]] <- new_lcodes[[lc_name]]
@@ -372,7 +428,9 @@ sg_sync_methodology_memory <- function() {
   if (length(to_append) == 0) {
     cat(sprintf("[axiom_interface] All %d L-codes already present. Nothing to sync.\n",
                 already_present))
-    return(list(synced = 0L, already_present = already_present, errors = errors))
+    return(list(status = "OK_UP_TO_DATE", synced = 0L,
+                already_present = already_present,
+                skipped_no_id = skipped_no_id, errors = errors))
   }
 
   # Append new L-codes to methodology_memory.md
@@ -398,9 +456,11 @@ sg_sync_methodology_memory <- function() {
   })
 
   list(
+    status          = if (length(errors) > 0) "PARTIAL" else "OK_SYNCED",
     synced          = synced,
     already_present = already_present,
     new_lcodes      = names(to_append),
+    skipped_no_id   = skipped_no_id,
     errors          = errors
   )
 }
