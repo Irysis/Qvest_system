@@ -111,11 +111,26 @@ fi
 SUMMARY="$(git diff --cached --shortstat 2>/dev/null | head -1)"
 SESSION_TAG="${QVEST_SESSION_TAG:-Session $(date +%Y%m%d)}"
 
+# (2026-07-25) 하네스/규범 변경 감사성 보강.
+#   auto-commit 이 하네스 파일을 먼저 집어가면 이력에 "[auto-commit] N files" 로만 남아
+#   **변경 근거·검증이 사라진다**(실측: 감시 probe 수리 2파일이 그렇게 커밋됨 → 별도
+#   --allow-empty 근거 커밋으로 보강해야 했다). 근거 없는 하네스 변경은 나중에 인용·감사가
+#   불가하므로, 대상 경로가 섞이면 파일 목록과 함께 후속 근거 커밋을 요구하는 표시를 남긴다.
+#   ★제외(add 대상에서 빼기)는 하지 않는다 — 그러면 수리가 커밋되지 않고 worktree 에
+#     갇히는 재발 패턴(이 저장소에서 3회 관측)이 되살아난다. 보존이 우선, 표시로 보완.
+GUARDED=$(git diff --cached --name-only 2>/dev/null \
+          | grep -E '^(02_Infrastructure/(hooks|ops|contracts|validation)/|\.claude/(settings|rules|agents)|00_Lawbook/)' || true)
+GUARD_NOTE=""
+if [ -n "$GUARDED" ]; then
+  GUARD_NOTE="$(printf '\n⚠ 하네스/규범 경로 포함 — 근거 미기록 커밋입니다.\n  후속으로 `git commit --allow-empty` 근거 커밋(기전·검증 실측)을 붙이세요.\n  대상:\n%s\n' \
+                "$(printf '%s\n' "$GUARDED" | sed 's/^/    - /' | head -20)")"
+fi
+
 git commit -m "$(cat <<COMMIT_EOF
 [auto-commit] $TS — $STAGED files
 
 $SUMMARY
-
+$GUARD_NOTE
 자동 생성 (Stop hook). $SESSION_TAG 세션 변경분 보존.
 Secret 스캔 통과. Push는 milestone hook 또는 daily cron.
 
