@@ -292,6 +292,10 @@ build_evidence_summary <- function() {
                      title = title, body = body,
                      source_path = file.path("qepm/memory/evidence_summary",
                                              basename(f)),
+                     # 2026-07-25: timestamp 인자를 아예 넘기지 않아 319행 전부 무시각이었다.
+                     # 실측 원천 필드 = summarized_at 210/250 · committed_at 40/250.
+                     timestamp = data$summarized_at %||% data$committed_at %||%
+                       data$created_at %||% NULL,
                      tags = list("evidence_summary", "authority:audit"))
   }
   rows
