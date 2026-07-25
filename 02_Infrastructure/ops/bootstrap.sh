@@ -662,6 +662,11 @@ echo "v8.0 base:  R+Python 1급 / SR목표 2.5 / agent effort(judge·gov xhigh) 
 echo "Modes:      ① QEPM(/worktask) ② alpha-search ③ factor-rotation ④ RAMP(/ramp · Gate0~11·CCS 13-score · governor 정지/자본 수동) — CLAUDE.md 4-Mode 헌법(RAMP 2026-06-17)"
 echo "Skills:     $(ls "$PROJECT"/.claude/skills/*/SKILL.md 2>/dev/null | wc -l)개 (2026-07-24 C3: exec/mon=off 은닉·리서치 3종=user-invocable 스텁·구 worktask/telegram-protocol 삭제)"
 echo "Hooks:      settings.json 등록 (harness_health 결과 위 참조)"
+# (2026-07-25) 훅 *집행*이 이 트리에서 실제로 사는지 1줄 자가진단. 라우터가 조용히
+# 빠져도 종전엔 아무 신호가 없었다 — 열화는 간헐적일 수 있어 세션마다 찍는다.
+if [ -f "$PROJECT/02_Infrastructure/ops/hook_integrity_check.sh" ]; then
+  bash "$PROJECT/02_Infrastructure/ops/hook_integrity_check.sh" 2>&1 | sed 's/^/            /' || true
+fi
 echo "WT Active:  $WT_ACTIVE건"
 echo "Inbox:      alpha=$ALPHA_T risk=$RISK_T optimizer=$OPT_T forge=$FORGE_T judge=$JUDGE_T governor=$GOV_T"
 echo "Axioms:     active=$AX_ACTIVE candidates=$AX_CAND (sot_map documented=$AX_DOC_ACTIVE: documented=$AX_DOCUMENTED_MODE / block=$AX_BLOCK_MODE / advisory=$AX_ADVISORY_MODE)"
