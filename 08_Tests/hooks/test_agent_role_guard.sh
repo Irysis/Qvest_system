@@ -6,6 +6,14 @@
 
 set -uo pipefail
 
+# (2026-07-25) bare python3 → $QVEST_PY_BIN (Windows Store 스텁 = router 미실행 → 전 케이스 actual 공백).
+if [ -z "${QVEST_PY_BIN:-}" ]; then
+  QVEST_PY_BIN="${QVEST_PY:-}"
+  { [ -n "$QVEST_PY_BIN" ] && [ -x "$QVEST_PY_BIN" ]; } || QVEST_PY_BIN="/c/Users/99922/OneDrive/Quant_Module_Moltbot/.venv_qvest_ml/Scripts/python.exe"
+  [ -x "$QVEST_PY_BIN" ] || QVEST_PY_BIN="$(command -v python.exe 2>/dev/null || echo python3)"
+  export QVEST_PY_BIN
+fi
+
 PROJ_DIR="${CLAUDE_PROJECT_DIR:-$(ls -d /mnt/c/Users/*/OneDrive/바탕*화면/Quant_Module_Moltbot 2>/dev/null | head -1)}"
 ROUTER="$PROJ_DIR/02_Infrastructure/hooks/qvest_hook_router.py"
 
@@ -27,29 +35,29 @@ check() {
 }
 
 # ─── classify tests ───
-ROLE1=$(python3 "$ROUTER" classify --file-path "/path/qepm/mailbox/worktask/WT-D20260601_001/alpha_package.json" 2>/dev/null | python3 -c 'import json,sys; print(json.load(sys.stdin).get("role"))' 2>/dev/null)
+ROLE1=$("$QVEST_PY_BIN" "$ROUTER" classify --file-path "/path/qepm/mailbox/worktask/WT-D20260601_001/alpha_package.json" 2>/dev/null | "$QVEST_PY_BIN" -c 'import json,sys; print(json.load(sys.stdin).get("role"))' 2>/dev/null)
 check "classify_alpha_package_final" "alpha" "$ROLE1"
 
-ROLE2=$(python3 "$ROUTER" classify --file-path "/path/qepm/mailbox/worktask/WT-D20260601_001/optimization_package_draft.json" 2>/dev/null | python3 -c 'import json,sys; print(json.load(sys.stdin).get("role"))' 2>/dev/null)
+ROLE2=$("$QVEST_PY_BIN" "$ROUTER" classify --file-path "/path/qepm/mailbox/worktask/WT-D20260601_001/optimization_package_draft.json" 2>/dev/null | "$QVEST_PY_BIN" -c 'import json,sys; print(json.load(sys.stdin).get("role"))' 2>/dev/null)
 check "classify_optimization_draft" "optimizer" "$ROLE2"
 
-ROLE3=$(python3 "$ROUTER" classify --file-path "/path/qepm/mailbox/governor/book_state.json" 2>/dev/null | python3 -c 'import json,sys; print(json.load(sys.stdin).get("role"))' 2>/dev/null)
+ROLE3=$("$QVEST_PY_BIN" "$ROUTER" classify --file-path "/path/qepm/mailbox/governor/book_state.json" 2>/dev/null | "$QVEST_PY_BIN" -c 'import json,sys; print(json.load(sys.stdin).get("role"))' 2>/dev/null)
 check "classify_book_state_governor" "governor" "$ROLE3"
 
-ROLE4=$(python3 "$ROUTER" classify --file-path "/path/qepm/mailbox/worktask/WT-D20260601_001/forge_package_draft.json" 2>/dev/null | python3 -c 'import json,sys; print(json.load(sys.stdin).get("role"))' 2>/dev/null)
+ROLE4=$("$QVEST_PY_BIN" "$ROUTER" classify --file-path "/path/qepm/mailbox/worktask/WT-D20260601_001/forge_package_draft.json" 2>/dev/null | "$QVEST_PY_BIN" -c 'import json,sys; print(json.load(sys.stdin).get("role"))' 2>/dev/null)
 check "classify_forge_draft" "forge" "$ROLE4"
 
-ROLE5=$(python3 "$ROUTER" classify --file-path "/path/qepm/mailbox/worktask/WT-D20260601_001/codex_critic_response_alpha.json" 2>/dev/null | python3 -c 'import json,sys; print(json.load(sys.stdin).get("role"))' 2>/dev/null)
+ROLE5=$("$QVEST_PY_BIN" "$ROUTER" classify --file-path "/path/qepm/mailbox/worktask/WT-D20260601_001/codex_critic_response_alpha.json" 2>/dev/null | "$QVEST_PY_BIN" -c 'import json,sys; print(json.load(sys.stdin).get("role"))' 2>/dev/null)
 check "classify_codex_response" "codex_response" "$ROLE5"
 
-ROLE6=$(python3 "$ROUTER" classify --file-path "/path/qepm/mailbox/worktask/WT-D20260601_001/risk_challenge_note.md" 2>/dev/null | python3 -c 'import json,sys; print(json.load(sys.stdin).get("role"))' 2>/dev/null)
+ROLE6=$("$QVEST_PY_BIN" "$ROUTER" classify --file-path "/path/qepm/mailbox/worktask/WT-D20260601_001/risk_challenge_note.md" 2>/dev/null | "$QVEST_PY_BIN" -c 'import json,sys; print(json.load(sys.stdin).get("role"))' 2>/dev/null)
 check "classify_role_specific_challenge_note" "challenge_note" "$ROLE6"
 
 # ─── stage tests ───
-STAGE1=$(python3 "$ROUTER" classify --file-path "/path/qepm/mailbox/worktask/WT-D20260601_001/risk_package.json" 2>/dev/null | python3 -c 'import json,sys; print(json.load(sys.stdin).get("stage"))' 2>/dev/null)
+STAGE1=$("$QVEST_PY_BIN" "$ROUTER" classify --file-path "/path/qepm/mailbox/worktask/WT-D20260601_001/risk_package.json" 2>/dev/null | "$QVEST_PY_BIN" -c 'import json,sys; print(json.load(sys.stdin).get("stage"))' 2>/dev/null)
 check "stage_risk_final" "final" "$STAGE1"
 
-STAGE2=$(python3 "$ROUTER" classify --file-path "/path/qepm/mailbox/worktask/WT-D20260601_001/judge_verdict_draft.json" 2>/dev/null | python3 -c 'import json,sys; print(json.load(sys.stdin).get("stage"))' 2>/dev/null)
+STAGE2=$("$QVEST_PY_BIN" "$ROUTER" classify --file-path "/path/qepm/mailbox/worktask/WT-D20260601_001/judge_verdict_draft.json" 2>/dev/null | "$QVEST_PY_BIN" -c 'import json,sys; print(json.load(sys.stdin).get("stage"))' 2>/dev/null)
 check "stage_judge_draft" "draft" "$STAGE2"
 
 # Summary
@@ -57,7 +65,7 @@ echo "=== test_agent_role_guard.sh ==="
 for r in "${RESULTS[@]}"; do echo "  $r"; done
 echo "TOTAL: $PASS pass / $FAIL fail"
 
-python3 - "$PASS" "$FAIL" <<PYEOF
+"$QVEST_PY_BIN" - "$PASS" "$FAIL" <<PYEOF
 import json, sys
 print(json.dumps({
   "test": "agent_role_guard",

@@ -6,6 +6,14 @@
 
 set -uo pipefail
 
+# (2026-07-25) bare python3 → $QVEST_PY_BIN (Windows Store 스텁 = 요약 JSON 미발행 → 러너 집계 누락).
+if [ -z "${QVEST_PY_BIN:-}" ]; then
+  QVEST_PY_BIN="${QVEST_PY:-}"
+  { [ -n "$QVEST_PY_BIN" ] && [ -x "$QVEST_PY_BIN" ]; } || QVEST_PY_BIN="/c/Users/99922/OneDrive/Quant_Module_Moltbot/.venv_qvest_ml/Scripts/python.exe"
+  [ -x "$QVEST_PY_BIN" ] || QVEST_PY_BIN="$(command -v python.exe 2>/dev/null || echo python3)"
+  export QVEST_PY_BIN
+fi
+
 PROJ_DIR="${CLAUDE_PROJECT_DIR:-$(ls -d /mnt/c/Users/*/OneDrive/바탕*화면/Quant_Module_Moltbot 2>/dev/null | head -1)}"
 
 PASS=0
@@ -60,7 +68,7 @@ echo "=== test_worktask_sequence_gate.sh ==="
 for r in "${RESULTS[@]}"; do echo "  $r"; done
 echo "TOTAL: $PASS pass / $FAIL fail"
 
-python3 - "$PASS" "$FAIL" <<PYEOF
+"$QVEST_PY_BIN" - "$PASS" "$FAIL" <<PYEOF
 import json, sys
 print(json.dumps({
   "test": "worktask_sequence_gate",

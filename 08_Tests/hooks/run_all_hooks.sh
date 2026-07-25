@@ -6,6 +6,16 @@
 
 set -uo pipefail
 
+# (2026-07-25) bare python3 → $QVEST_PY_BIN. Windows Store 스텁은 "Python"만 찍고
+# 스크립트를 실행하지 않아 PASS/FAIL 캡처가 공백 → 총계 0 위장(FINAL 0/0/0).
+# 해석 체인은 02_Infrastructure/hooks/*.sh와 동일 (reference-python3-windows-stub-use-qvest-py).
+if [ -z "${QVEST_PY_BIN:-}" ]; then
+  QVEST_PY_BIN="${QVEST_PY:-}"
+  { [ -n "$QVEST_PY_BIN" ] && [ -x "$QVEST_PY_BIN" ]; } || QVEST_PY_BIN="/c/Users/99922/OneDrive/Quant_Module_Moltbot/.venv_qvest_ml/Scripts/python.exe"
+  [ -x "$QVEST_PY_BIN" ] || QVEST_PY_BIN="$(command -v python.exe 2>/dev/null || echo python3)"
+  export QVEST_PY_BIN
+fi
+
 PROJ_DIR="${CLAUDE_PROJECT_DIR:-$(ls -d /mnt/c/Users/*/OneDrive/바탕*화면/Quant_Module_Moltbot 2>/dev/null | head -1)}"
 TEST_DIR="$PROJ_DIR/08_Tests/hooks"
 # 결과는 재생성 가능한 산출물 → 코드 존(08_Tests) 밖 캐시에 쓴다
@@ -33,7 +43,7 @@ run_test() {
   echo ""
   # Extract last JSON line
   JSON=$(echo "$RESULT" | tail -1)
-  echo "$JSON" | python3 -c '
+  echo "$JSON" | "$QVEST_PY_BIN" -c '
 import json, sys
 try:
     d = json.loads(sys.stdin.read())
@@ -64,9 +74,9 @@ for test_script in test_worktask_sequence_gate.sh test_agent_role_guard.sh test_
   else
     OUT=$(bash "$TEST_DIR/$test_script" 2>&1 | tail -1)
   fi
-  if echo "$OUT" | python3 -c 'import json,sys; d=json.loads(sys.stdin.read()); exit(0 if "test" in d else 1)' 2>/dev/null; then
-    PASS=$(echo "$OUT" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("pass",0))')
-    FAIL=$(echo "$OUT" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("fail",0))')
+  if echo "$OUT" | "$QVEST_PY_BIN" -c 'import json,sys; d=json.loads(sys.stdin.read()); exit(0 if "test" in d else 1)' 2>/dev/null; then
+    PASS=$(echo "$OUT" | "$QVEST_PY_BIN" -c 'import json,sys; print(json.load(sys.stdin).get("pass",0))')
+    FAIL=$(echo "$OUT" | "$QVEST_PY_BIN" -c 'import json,sys; print(json.load(sys.stdin).get("fail",0))')
     TOTAL_PASS=$((TOTAL_PASS + PASS))
     TOTAL_FAIL=$((TOTAL_FAIL + FAIL))
     if [[ -n "$TESTS_JSON" ]]; then TESTS_JSON+=","; fi
