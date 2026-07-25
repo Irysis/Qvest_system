@@ -434,6 +434,21 @@ if (file.exists(settings_path)) {
 # WARN_8 (2026-07-13 task#54-3ⓐ): layer_bottleneck_map.md 신선도 — 최신 L-code 대비 24h+ 뒤처짐.
 # 배경: 신선도 사슬 구조 감사 — 병목지도가 L-code 적립을 따라가지 못하면 프론티어 판단이
 # stale 지도 위에서 이뤄짐 (corpus 정체와 동형의 지식환류 단절).
+# ── 공유 헬퍼 (2026-07-25): L-code 의 "연구 시각" = created_at, 파일 mtime 아님 ────────
+# 구 구현(W8·W9 공통)은 연구 최신성을 파일 타임스탬프로 대리했다. 그 결과
+#   ① 기존 기록을 구조적으로 손대기만 해도(next_probe 소급 구조화·ID 병합·재발급)
+#      W8은 지도 stale 오탐, W9는 "최근 7일 negative"로 오탐 — 후자는 없던 next_probe를
+#      **소급 창작하도록 압박**하므로 지식 날조 위험까지 있다.
+#   ② 반대로 mtime 이 오래된 신규 L-code 는 양쪽 다 놓친다.
+# created_at 부재 기록만 mtime 폴백(정직 원장 — 판정 자체는 불차단, AX-000/INV-7 정합).
+.lc_research_time <- function(f) {
+  ca <- tryCatch(jsonlite::fromJSON(f, simplifyVector = FALSE)$created_at,
+                 error = function(e) NULL)
+  ts <- suppressWarnings(as.POSIXct(sub("T", " ", sub("Z$", "", ca %||% NA_character_)),
+                                    tz = "", optional = TRUE))
+  if (is.null(ca) || is.na(ts)) file.info(f)$mtime else ts
+}
+
 cat("[W8] layer_bottleneck_map freshness vs newest L-code\n")
 lbm_path <- file.path(PROJ_ROOT, "06_Registry/layer_bottleneck_map.md")
 raw_lc_files <- c(Sys.glob(file.path(PROJ_ROOT, "stage_artifacts/l_code/*/l_code_*.json")),
@@ -441,17 +456,6 @@ raw_lc_files <- c(Sys.glob(file.path(PROJ_ROOT, "stage_artifacts/l_code/*/l_code
 if (length(raw_lc_files) == 0) {
   cat("  L-code 원본 파일 없음 — skip\n")
 } else {
-  # 2026-07-25: 신선도 기준을 파일 mtime → L-code created_at 으로 교정.
-  # 구 구현은 "연구 최신성"을 파일 타임스탬프로 대리했다. 그 결과 ① 기존 기록을
-  # 구조적으로 손대기만 해도(예: next_probe 소급 구조화) 지도가 stale 로 오탐되고,
-  # ② 반대로 mtime 이 오래된 신규 L-code 는 놓친다. created_at 이 실제 라운드 시각이다.
-  # created_at 부재 기록만 mtime 으로 폴백(정직 원장 — 판정 자체는 불차단).
-  .lc_research_time <- function(f) {
-    ca <- tryCatch(jsonlite::fromJSON(f, simplifyVector = FALSE)$created_at, error = function(e) NULL)
-    ts <- suppressWarnings(as.POSIXct(sub("T", " ", sub("Z$", "", ca %||% NA_character_)),
-                                      tz = "", optional = TRUE))
-    if (is.null(ca) || is.na(ts)) file.info(f)$mtime else ts
-  }
   newest_lc_mt <- suppressWarnings(max(do.call(c, lapply(raw_lc_files, .lc_research_time)),
                                        na.rm = TRUE))
   if (!file.exists(lbm_path)) {
@@ -477,7 +481,10 @@ np_cutoff <- Sys.time() - as.difftime(7, units = "days")
 missing_np <- character(0)
 n_recent_neg <- 0L
 for (f in raw_lc_files) {
-  mt <- file.info(f)$mtime
+  # 2026-07-25: mtime → created_at (W8과 동일 교정, 공유 헬퍼).
+  # 구 기준은 04월 기록을 병합·재발급으로 손대기만 해도 "최근 7일"로 잡아
+  # next_probe 소급 창작을 압박했다 (L-160/L-166/L-1682 실사례).
+  mt <- .lc_research_time(f)
   if (is.na(mt) || mt < np_cutoff) next
   d <- tryCatch(fromJSON(f, simplifyVector = FALSE), error = function(e) NULL)
   if (is.null(d)) next
