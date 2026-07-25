@@ -223,8 +223,25 @@ if (!nzchar(.TG_TOKEN) || !nzchar(.TG_CHAT_ID)) {
 .tg_lock_held <- function() identical(Sys.getenv("QVEST_TG_LOCK_HELD", ""), "1")
 
 .tg_lock_root <- function() {
-  root <- if (exists("PROJECT_ROOT")) get("PROJECT_ROOT") else Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", ""))
-  if (nzchar(root) && dir.exists(root)) normalizePath(root, winslash = "/", mustWork = FALSE) else tempdir()
+  # 2026-07-25 수리: 구현은 전역 PROJECT_ROOT를 dir.exists()만으로 신뢰했다. 그 검사는
+  #   *어떤* 디렉토리에도 통과하므로, PROJECT_ROOT가 하위 디렉토리로 오염되면(중첩 source의
+  #   sys.frame(1)$ofile 오염 — memory_health_check.R 2026-07-25 수리와 동일 계열) 락이
+  #   <오염root>/stage_artifacts/telegram_locks 에 생성된다. 결과는 단순 잔재가 아니라
+  #   **직렬화 무력화** — root가 서로 다른 두 프로세스가 각자 다른 락을 잡고 동시 발송한다.
+  #   (실측: 02_Infrastructure/stage_artifacts/telegram_locks 생성)
+  #   → 프로젝트 루트 표지(02_Infrastructure)로 검증한 후보만 채택한다.
+  #   경로 정규화는 슬래시 치환으로만 한다 (한글경로 정책 — 경로 정규화 함수 미사용).
+  .valid <- function(p) {
+    length(p) == 1L && !is.na(p) && nzchar(p) &&
+      dir.exists(p) && dir.exists(file.path(p, "02_Infrastructure"))
+  }
+  cands <- c(
+    if (exists("PROJECT_ROOT")) tryCatch(as.character(get("PROJECT_ROOT")), error = function(e) "") else "",
+    Sys.getenv("CLAUDE_PROJECT_DIR", ""),
+    Sys.getenv("QM_ROOT", "")
+  )
+  for (p in cands) if (.valid(p)) return(sub("/+$", "", gsub("\\\\", "/", p)))
+  tempdir()
 }
 
 tg_with_serial_lock <- function(scope = "telegram_global", expr,
@@ -1104,8 +1121,10 @@ tg_agent_brief <- function(agent,
     }
     # tg lock: /tmp(Windows는 C:/tmp로 해석·TTL 없어 영구잔존) → 프로젝트 .cache/tg_locks + TTL.
     #   run_id 고유화로 scope 충돌은 이미 해결됐고, 본 변경은 경로 크로스플랫폼화 + stale 자동 무시(위생). 2026-06-05.
-    .tg_lock_root <- if (exists("PROJECT_ROOT")) get("PROJECT_ROOT") else Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", tempdir()))
-    .tg_lock_dir  <- file.path(.tg_lock_root, ".cache", "tg_locks")
+    #   2026-07-25: 같은 PROJECT_ROOT 오염 취약점의 두 번째 실례였다(위 .tg_lock_root() 주석 참조).
+    #   검증된 루트 해석기를 재사용한다 — 지역 변수명이 그 함수를 가리지 않도록 이름을 분리.
+    .tg_lock_base <- .tg_lock_root()
+    .tg_lock_dir  <- file.path(.tg_lock_base, ".cache", "tg_locks")
     dir.create(.tg_lock_dir, recursive = TRUE, showWarnings = FALSE)
     lock_file <- file.path(.tg_lock_dir, sprintf("qvest_tg_lock_%s.lock", scope_key))
     .TG_LOCK_TTL_SEC <- 1800L   # 30분 — 이보다 오래된 lock은 stale로 간주, 차단하지 않음(영구잔존 방지)
