@@ -517,8 +517,19 @@ build_registry <- function() {
         title <- it$name %||% it$title %||% it$strategy_name %||%
                   it$hypothesis %||% paste(reg_name, item_id)
         body <- toJSON(it, auto_unbox = TRUE, pretty = FALSE)
-        ts <- it$created_at %||% it$updated_at %||%
-               it$registered_at %||% NULL
+        # [2026-07-25] 조회 체인 확장 — 종전 3필드(created_at/updated_at/registered_at)는
+        # 06_Registry 생산자들이 실제로 쓰는 이름과 어긋나 1451행 중 3행만 시각을 얻었다.
+        # ★"원천에 시각 필드 부재"라는 앞선 진단은 오측정이었다 — 필드명 불일치가 원인.
+        # 값-유효(문자열 "None"·빈값 제외) 기준 실측:
+        #   hypothesis_index date 965/965 · distilled_knowledge created_at 89/89 ·
+        #   paper_registry date_added 211/458 · strategy_registry committed_at 86+created 16 = 114/389 ·
+        #   idea_registry date_added 23+date_found 13 = 23/62 · frontier_queue verdict_date 7/73
+        # ※키 존재 수로 세면 paper_registry가 458/458로 보인다(값이 "None" 문자열) — 키 카운트는
+        #   커버리지 지표가 아니다. 진짜 부재는 strategy_grades(257, 15키 전부 성과지표)뿐.
+        ts <- it$created_at %||% it$updated_at %||% it$registered_at %||%
+               it$date_added %||% it$committed_at %||% it$created %||%
+               it$date_found %||% it$date %||% it$logged_at %||%
+               it$approved_at %||% it$verdict_date %||% NULL
         tag_list <- list("registry", reg_name)
         if (!is.null(it$grade)) tag_list <- c(tag_list, it$grade)
         rows <- emit_row(rows,
@@ -542,6 +553,29 @@ build_paper <- function() {
     warn_missing("paper", pn_dir)
     return(rows)
   }
+  # [2026-07-25] 시각 원천 2경로 (종전엔 timestamp 인자를 아예 안 넘겨 198행 전부 무시각).
+  #   ① 노트 front-matter `registered_at:` — 신규 노트 등재 규약(소급 채우기 안 함)
+  #   ② paper_registry.json 의 date_added 상속 (id = P### 로 1:1, 노트 198/198 매칭됨)
+  # ★현 시점 실효 = 0/198: 노트 보유 P001~ 구간은 registry date_added 가 값 "None" 이고
+  #   값-유효 211건은 노트가 없는 후기 논문이다(실측). 즉 이 배선은 **신규분부터** 효력이
+  #   생긴다 — 지금 커버리지가 오르지 않는다고 배선이 틀린 게 아니며, 반대로 "고쳤다"고
+  #   보고할 근거도 아니다. 자기진단이 실제 수치로 계속 신고한다.
+  .paper_reg_dates <- tryCatch({
+    rp <- file.path(PROJ_ROOT, "06_Registry/paper_registry.json")
+    if (!file.exists(rp)) list() else {
+      pr <- fromJSON(rp, simplifyVector = FALSE)
+      pr <- if (!is.null(names(pr))) pr else pr
+      out <- list()
+      for (it in pr) {
+        if (!is.list(it)) next
+        v <- it$date_added %||% it$registered_at %||% NULL
+        s <- if (is.null(v)) "" else trimws(as.character(v))
+        if (nzchar(s) && !s %in% c("None", "none", "null", "NA", "-"))
+          out[[as.character(it$id)]] <- s
+      }
+      out
+    }
+  }, error = function(e) list())
   for (pf in list.files(pn_dir, pattern = "^P[0-9]+.*\\.md$",
                           full.names = TRUE, recursive = FALSE)) {
     lines <- tryCatch(readLines(pf, warn = FALSE, n = 30),
@@ -557,10 +591,20 @@ build_paper <- function() {
                       error = function(e) character())
     body <- substr(paste(full, collapse = " "), 1, 500)
     paper_id <- sub("^(P[0-9]+).*", "\\1", basename(pf))
+    # front-matter `registered_at:` 우선 → 없으면 paper_registry date_added 상속
+    ts <- NULL
+    fm <- grep("^\\s*registered_at\\s*:", lines, value = TRUE)
+    if (length(fm) > 0) {
+      cand <- trimws(sub("^\\s*registered_at\\s*:\\s*", "", fm[1]))
+      cand <- gsub('^["\']|["\']$', "", cand)
+      if (nzchar(cand)) ts <- cand
+    }
+    if (is.null(ts)) ts <- .paper_reg_dates[[paper_id]] %||% NULL
     rows <- emit_row(rows, id = paper_id, type = "paper",
                       title = title, body = body,
                       source_path = file.path("04_Research/paper_notes",
                                                 basename(pf)),
+                      timestamp = ts,
                       tags = list("paper"))
   }
   rows
@@ -649,12 +693,20 @@ if (DRY_RUN) {
 }
 
 # Write JSONL
+# [2026-07-25] 최상위 on.exit(close(con)) 제거 — r-portability 금칙 ② 실사례.
+#   `Rscript build_index.R`(진짜 최상위)에서는 on.exit 가 no-op 이라 무해했으나,
+#   프로젝트 표준 실행 경로인 `source()` 로 돌리면 on.exit 가 source() 내부 프레임에
+#   등록돼 **그 표현식 직후 즉시 발화** → 연결이 닫힌 뒤 writeLines 가
+#   "invalid connection" 으로 죽었다(실측: 3509행 집계까지 정상 → 쓰기에서 halt).
+#   즉 실행 방식에 따라 결과가 갈리는 상태였다. 명시 close() 로 교체 + 실패 시에도
+#   닫히도록 tryCatch(finally=) 사용.
 dir.create(dirname(OUT_PATH), recursive = TRUE, showWarnings = FALSE)
 con <- file(OUT_PATH, "w", encoding = "UTF-8")
-on.exit(close(con), add = TRUE)
-for (r in all_rows) {
-  writeLines(toJSON(r, auto_unbox = TRUE, null = "null"), con)
-}
+tryCatch({
+  for (r in all_rows) {
+    writeLines(toJSON(r, auto_unbox = TRUE, null = "null"), con)
+  }
+}, finally = close(con))
 
 cat(sprintf("\n[OK] index written: %s (%d rows)\n",
             OUT_PATH, length(all_rows)))
@@ -671,15 +723,61 @@ for (r in all_rows) {
   .ts_cov[[ty]] <- c(prev[1] + 1, prev[2] + as.integer(!is.null(r$timestamp) &&
                                                         nzchar(as.character(r$timestamp))))
 }
-low <- character(0)
+# [2026-07-25] 시각 개념이 설계상 없는 type = 면제. 단 **조용히 빼지 않고 명시 보고**한다 —
+# 오탐 제거와 검사 사망은 겉보기가 같아서, 면제분을 숨기면 나중에 "왜 안 잡혔나"를 되물을 수
+# 없다. 면제 근거는 여기 적힌 것이 전부이며, 새 type 을 면제에 넣으려면 근거를 함께 적을 것.
+#   lawbook = 00_Lawbook/**.md 법령 문서. 등재(registration) 사건 자체가 없고 파일 mtime 은
+#             편집 시각이라 연구/등재 시각의 대리가 될 수 없다(금일 W8/W9 mtime 오측정 계열).
+.TS_EXEMPT <- c(lawbook = "법령 md — 등재 사건 부재, mtime은 시각 대리 불가")
+
+# 구조적 하한이 있는 type = 절대 임계(50%) 대신 **회귀 감시**로 판정한다.
+# 이유: 하한 때문에 절대 기준을 영원히 못 넘으면 WARN 이 매번 울려 경보 피로가 되고,
+# 그러면 진짜 신규 결손이 소음에 묻힌다(= 감시가 조용히 무의미해지는 계열).
+# 그렇다고 면제하면 회귀를 못 잡으므로, **떨어지면 잡는다**로 바꾼다(suite_totals_watch 원칙).
+.TS_FLOOR <- c(
+  registry = paste0("구조적 하한: strategy_grades 257(2026-06-08 이후 동결·writer 부재) + ",
+                    "paper_registry 역사분 date_added=\"None\" 247(소급 채우기 안 함 — 도훈 방침) + ",
+                    "strategy_registry 역사분. 신규 등재는 date_added/committed_at 로 정상 유입")
+)
+.TS_BASE_PATH <- file.path(PROJ_ROOT, ".cache/search_index_ts_coverage.json")
+.ts_prev <- tryCatch(
+  if (file.exists(.TS_BASE_PATH)) fromJSON(.TS_BASE_PATH, simplifyVector = FALSE) else list(),
+  error = function(e) list())
+
+low <- character(0); exempt <- character(0); regressed <- character(0); floors <- character(0)
+.ts_now <- list()
 for (ty in names(.ts_cov)) {
   n <- .ts_cov[[ty]][1]; k <- .ts_cov[[ty]][2]
-  if (n >= 20 && k / n < 0.5)
-    low <- c(low, sprintf("%s %d/%d(%.0f%%)", ty, k, n, 100 * k / n))
+  .ts_now[[ty]] <- list(n = n, k = k, pct = round(100 * k / max(n, 1), 1))
+  if (n < 20) next
+  pct <- k / n
+  if (ty %in% names(.TS_EXEMPT)) {
+    exempt <- c(exempt, sprintf("%s %d/%d — %s", ty, k, n, .TS_EXEMPT[[ty]]))
+    next
+  }
+  # 회귀 판정 (모든 type 공통): 직전 대비 절대 커버리지 2%p 이상 하락 = 신규 결손 의심
+  pv <- .ts_prev[[ty]]
+  if (!is.null(pv) && !is.null(pv$pct) && (pct * 100) < (as.numeric(pv$pct) - 2))
+    regressed <- c(regressed, sprintf("%s %.0f%%→%.0f%%", ty, as.numeric(pv$pct), pct * 100))
+  if (ty %in% names(.TS_FLOOR)) {
+    floors <- c(floors, sprintf("%s %d/%d(%.0f%%) — %s", ty, k, n, pct * 100, .TS_FLOOR[[ty]]))
+  } else if (pct < 0.5) {
+    low <- c(low, sprintf("%s %d/%d(%.0f%%)", ty, k, n, pct * 100))
+  }
 }
+if (length(regressed) > 0)
+  cat(sprintf("[WARN] timestamp 커버리지 회귀 — 직전 실행 대비 하락(신규 결손 의심): %s\n",
+              paste(regressed, collapse = " · ")))
 if (length(low) > 0) {
   cat(sprintf("[WARN] timestamp 커버리지 저조 — 생산자 필드명과 조회 체인 불일치 의심: %s\n",
               paste(low, collapse = " · ")))
-} else {
-  cat("[OK] timestamp 커버리지 정상 (20행 이상 type 전부 >=50%)\n")
+} else if (length(regressed) == 0) {
+  cat("[OK] timestamp 커버리지 정상 (회귀 없음 · 하한/면제 type 제외 전부 >=50%)\n")
 }
+if (length(floors) > 0)
+  cat(sprintf("[INFO] 하한 type (회귀 감시로 판정): %s\n", paste(floors, collapse = " · ")))
+if (length(exempt) > 0)
+  cat(sprintf("[INFO] 시각 면제 type (설계상 부재 — 은폐 아님): %s\n",
+              paste(exempt, collapse = " · ")))
+tryCatch(write(toJSON(.ts_now, auto_unbox = TRUE, pretty = TRUE), .TS_BASE_PATH),
+         error = function(e) cat("[WARN] 커버리지 기준선 기록 실패:", conditionMessage(e), "\n"))
