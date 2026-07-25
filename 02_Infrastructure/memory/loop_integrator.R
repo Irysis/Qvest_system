@@ -74,26 +74,41 @@ loop_session_brief <- function() {
   cat("  ", format(Sys.time(), "%Y-%m-%d %H:%M KST"), "\n")
   cat("===================================================================\n\n")
 
-  # --- A. L-code summary from methodology_memory.md ---
+  # --- A. L-code summary (2026-07-25 재배선) ---
+  #   구: methodology_memory.md 스캔 → v2 Ledger 이관으로 파일 부재 → 매번 "Total: 0" 오보.
+  #   신: 06_Registry/knowledge_index.json counts (weekly cleaner가 주간 재생성).
+  #   구 파일이 남아있는 환경에선 그쪽을 우선(하위호환).
   meth_path <- file.path(.LI_CLAUDE_MEM, "methodology_memory.md")
-  l_codes <- list(total = 0, recent = character(0))
+  l_codes <- list(total = 0, recent = character(0), src = "none")
   if (file.exists(meth_path)) {
     lines <- tryCatch(readLines(meth_path, warn = FALSE), error = function(e) character(0))
     l_lines <- grep("^### L-\\d+:", lines, value = TRUE)
     l_codes$total <- length(l_lines)
-    # Last 5 L-codes
-    if (length(l_lines) > 0) {
-      last_n <- tail(l_lines, 5)
-      l_codes$recent <- gsub("^### ", "", last_n)
+    l_codes$src <- "methodology_memory.md"
+    if (length(l_lines) > 0) l_codes$recent <- gsub("^### ", "", tail(l_lines, 5))
+  } else {
+    ds <- file.path(.LI_BASE, "02_Infrastructure", "memory", "distill_stats.R")
+    if (file.exists(ds)) {
+      st <- tryCatch({ source(ds, local = TRUE); qv_ledger_stats(root = .LI_BASE) },
+                     error = function(e) NULL)
+      if (!is.null(st) && !identical(st$source, "missing") && !is.na(st$lcode)) {
+        l_codes$total <- st$lcode
+        l_codes$src <- "knowledge_index.json"
+        l_codes$ledger <- st
+      }
     }
   }
-  cat("[L-codes] Total:", l_codes$total, "lessons recorded\n")
+  cat("[L-codes] Total:", l_codes$total, "lessons recorded (src:", l_codes$src, ")\n")
+  if (!is.null(l_codes$ledger))
+    cat("  Ledger: Law", l_codes$ledger$law, "| Distilled", l_codes$ledger$distilled,
+        "| archived", l_codes$ledger$archived, "\n")
   if (length(l_codes$recent) > 0) {
     cat("  Recent:\n")
     for (lc in l_codes$recent) cat("    ", lc, "\n")
   }
 
   # --- B. Strategy registry summary ---
+  #   2026-07-25: experiments.json 부재 시(현행) hypothesis_index Ledger 최근 30일로 대체 보고.
   exp_path <- file.path(.LI_REGISTRY, "experiments.json")
   exps <- .li_read_json(exp_path)
   if (is.null(exps)) exps <- list()
@@ -102,11 +117,24 @@ loop_session_brief <- function() {
   grades <- sapply(exps, function(e) e$grade %||% "F")
   grade_counts <- table(factor(grades, levels = c("A", "B", "C", "F")))
 
-  cat("\n[Registry] Total:", n_total, "experiments\n")
-  cat("  Grade A:", grade_counts["A"],
-      "| B:", grade_counts["B"],
-      "| C:", grade_counts["C"],
-      "| F:", grade_counts["F"], "\n")
+  if (n_total > 0) {
+    cat("\n[Registry] Total:", n_total, "experiments\n")
+    cat("  Grade A:", grade_counts["A"],
+        "| B:", grade_counts["B"],
+        "| C:", grade_counts["C"],
+        "| F:", grade_counts["F"], "\n")
+  } else {
+    rr <- tryCatch({
+      ds <- file.path(.LI_BASE, "02_Infrastructure", "memory", "distill_stats.R")
+      if (file.exists(ds)) { source(ds, local = TRUE); qv_recent_research(30L, root = .LI_BASE) } else NULL
+    }, error = function(e) NULL)
+    if (!is.null(rr) && !identical(rr$source, "missing")) {
+      cat("\n[Ledger] 최근 30일 판정", rr$n, "건 (experiments.json 미사용 — hypothesis_index)\n")
+      cat("  ", qv_verdict_line(rr, 5L), "\n")
+    } else {
+      cat("\n[Registry] experiments.json 부재 + Ledger 조회 실패 — 카운트 없음\n")
+    }
+  }
 
   # Top 3 by score
   if (n_total > 0) {

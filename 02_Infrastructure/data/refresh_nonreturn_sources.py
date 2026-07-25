@@ -105,13 +105,37 @@ def refresh_nps():
     pks = list(dict.fromkeys(re.findall(r"uddi:[0-9a-f\-]+(?:_\d+)?", landing)))
     hist = _post(f"{BASE_DG}/tcs/dss/selectHistAndCsvData.do",
                  {"publicDataPk": "15083277", "publicDataDetailPk": pks[0]})
-    # 이력 블록에서 (uddi, 연월 타이틀) 쌍 추출
-    pairs = re.findall(r"(uddi:[0-9a-f\-]+(?:_\d+)?)(.{0,400}?)(20\d\d)년\s*(\d{1,2})월", hist, re.S)
-    cand = {}
-    for uddi, _mid, y, m in pairs:
-        cand.setdefault(f"{int(y):04d}-{int(m):02d}", uddi)
+    hist_uddi = list(dict.fromkeys(re.findall(r"uddi:[0-9a-f\-]+(?:_\d+)?", hist)))
+
+    # ★uddi→연월 해석은 manifest 우선, 미등재분만 상세페이지 조회.
+    #   (구판은 hist HTML에서 uddi와 '20NN년 N월'이 400자 내에 인접하다고 가정한 정규식을 썼는데
+    #    실측 127월 중 53월만 매칭됐다 — 나머지 74월은 영영 신규로 인식되지 못하는 침묵 결손.
+    #    2026-07-25 적발·수리. 신규 월은 정의상 manifest에 없으므로 상세 조회가 유일 경로다.)
+    man_path = os.path.join(PULL, "nps_endpoint_manifest.json")
+    known = {}
+    if os.path.exists(man_path):
+        for e in json.load(open(man_path, encoding="utf-8"))["endpoints"]:
+            known[e["path"].split("/")[-1]] = e["data_ym"]
+
+    cand, unresolved = {}, []
+    for u in hist_uddi:
+        if u in known:
+            cand.setdefault(known[u], u)
+        else:
+            unresolved.append(u)
+    for u in unresolved:                      # manifest 미등재 = 신규 후보만 상세 조회
+        try:
+            d = _post(f"{BASE_DG}/tcs/dss/selectDpkDetailInfo.do",
+                      {"publicDataPk": "15083277", "publicDataDetailPk": u})
+            mm = re.search(r"(20\d\d)년\s*(\d{1,2})월", d)
+            if mm:
+                cand.setdefault(f"{int(mm.group(1)):04d}-{int(mm.group(2)):02d}", u)
+        except Exception as ex:
+            log(f"NPS: uddi 해석 실패 {u[:20]} {type(ex).__name__}")
     new = sorted(ym for ym in cand if ym not in have_set)
-    log(f"NPS: 이력 {len(cand)}월 / 보유 {len(have_set)}월 / 신규 {len(new)}월")
+    log(f"NPS: 이력 uddi {len(hist_uddi)} → 해석 {len(cand)}월 "
+        f"(manifest {len(hist_uddi) - len(unresolved)} + 신규조회 {len(unresolved)}) / "
+        f"보유 {len(have_set)}월 / 신규 {len(new)}월")
     if not new:
         return {"source": "nps", "action": "noop", "months_have": len(have_set)}
 
