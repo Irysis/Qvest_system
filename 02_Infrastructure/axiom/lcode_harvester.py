@@ -246,6 +246,15 @@ def _load_family_override(project_dir: str) -> dict:
     return out
 
 
+# 구스키마 verdict 자유문("Grade B (44.4) / Discard", "C (Archive)", "F / Archive_Priority")
+# 에서 선두 등급 토큰만 canonical 로 뽑는다. 뒤따르는 처분(Discard/Keep/Archive)은 등급이
+# 아니므로 버리되 원문은 grade_raw 로 보존한다(정직 원장).
+# _CONDITIONAL 접미(B_CONDITIONAL / Keep 등)는 canonical 등급이 아니라 조건부 꼬리표이므로
+# 기저 문자만 canonical 로 취하고 조건부 여부는 grade_raw 에 남긴다(canonical = A/B/C/F 설계 유지).
+RE_VERDICT_GRADE = re.compile(r"^\s*(?:Grade\s*)?([ABCDF])(?:_CONDITIONAL)?\b",
+                              re.IGNORECASE)
+
+
 def _normalize_grade(grade_raw, record_type_explicit, grade_map: dict):
     """반환: (grade_norm | None, record_type). PROCESS-class는 grade=None + record_type 분리."""
     rt = str(record_type_explicit) if record_type_explicit else None
@@ -257,6 +266,10 @@ def _normalize_grade(grade_raw, record_type_explicit, grade_map: dict):
         return None, (rt or _PROCESS_RECORD_TYPE.get(g, "process"))
     if mapped in ("A", "B", "C", "F"):
         return mapped, (rt or "performance")
+    # 구스키마 verdict 자유문 파싱 (2026-07-25 전략트리 편입)
+    m = RE_VERDICT_GRADE.match(g)
+    if m:
+        return m.group(1).upper(), (rt or "performance")
     # unmappable(예: 'unknown') — 원문 보존 + performance 취급 (정직 원장)
     return g, (rt or "performance")
 
@@ -367,6 +380,34 @@ def _check_promoted(l_code: str, project_dir: str) -> str | None:
 _MODE_ALIASES = {"qepm": "qepm_legacy"}  # lcode_schema.R LCODE_MODE_ALIASES 정합 (promote GEN 폴백 봉합)
 
 
+# 전략트리 아티팩트는 2개 스키마가 공존한다 (2026-07-25 실측):
+#   구(42건): l_code    / lesson      / verdict / factor_id      — 2026-03 QEPM 배치
+#   신(44건): l_code_id / lesson_text / grade   / core_reference
+# 종전 harvester 는 신 필드명만 읽어 구스키마를 lesson_text="" 로 만들었다.
+# 원본은 건드리지 않고 읽는 시점에만 canonical 필드로 투영한다 (원 필드도 그대로 남김).
+_LEGACY_FIELD_MAP = [
+    ("l_code", ("l_code_id", "lcode")),
+    ("lesson_text", ("lesson", "text", "description")),
+    ("grade", ("verdict",)),
+    ("core_reference", ("factor_id",)),
+    ("created_at", ("date",)),
+]
+
+
+def _adapt_legacy_schema(data: dict) -> dict:
+    """구스키마 필드를 canonical 이름으로 투영 (비파괴 — 원 필드 보존)."""
+    out = dict(data)
+    for canon, aliases in _LEGACY_FIELD_MAP:
+        if out.get(canon):
+            continue
+        for a in aliases:
+            v = data.get(a)
+            if v:
+                out[canon] = v
+                break
+    return out
+
+
 def harvest(project_dir: str) -> dict:
     arts = os.path.join(project_dir, "stage_artifacts")
     lcodes: list[dict] = []
@@ -377,10 +418,16 @@ def harvest(project_dir: str) -> dict:
     id_first_file: dict[str, str] = {}  # v2: l_code ID 충돌 감지 (A1-F6)
     n_id_collisions = 0
 
-    # Flat (back-compat) + mode-separated subdirectories (stage_artifacts/l_code/<mode>/).
+    # Flat (back-compat) + mode-separated subdirectories (stage_artifacts/l_code/<mode>/)
+    # + 전략트리 (2026-07-25 도훈 승인 — 스캔범위 확장).
+    #   04_Research/strategies/<STR>/stage_artifacts/l_code*.json 은 종전 어느 스캐너에도
+    #   잡히지 않아 86 아티팩트가 미적립 상태였다. 원본을 SOT 로 유지한 채 여기서 직접 읽는다.
+    #   (구 운반 경로 sg_sync_methodology_memory→methodology_memory.md 는 sink 부재로 무효.)
     patterns = [
         os.path.join(arts, "l_code_*.json"),
         os.path.join(arts, "l_code", "**", "l_code_*.json"),
+        os.path.join(project_dir, "04_Research", "strategies", "*",
+                     "stage_artifacts", "l_code*.json"),
     ]
     paths: list[str] = []
     for pat in patterns:
@@ -394,6 +441,7 @@ def harvest(project_dir: str) -> dict:
         data = _load(p)
         if not isinstance(data, dict):
             continue
+        data = _adapt_legacy_schema(data)
         l_code = data.get("l_code")
         if not l_code:
             # try to extract from filename

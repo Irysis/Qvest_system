@@ -52,7 +52,7 @@ Qvest 시스템 전체 구동. bootstrap.sh 실행 → 플러그인 리로드 �
 
 세션 종료 시:
 - 메모리 파일 modified 시 `# 최종 업데이트:` date 갱신
-- 새 L-code 추가 시 methodology_active.md 등재 + MEMORY.md 헤더 갱신
+- 새 L-code 추가 시 **아티팩트 emit → harvester 재수확** + MEMORY.md 헤더 갱신 (2026-07-25 도훈 승인 정정 — 구 표기 `methodology_active.md 등재`는 **부재 파일** 지시였음. 해당 md는 `methodology_archive.md`·`qepm/memory/methodology_memory.md`와 함께 저장소·메모리 어디에도 없으며, 현행 적립 경로는 `l_code*.json` 아티팩트 → `02_Infrastructure/axiom/lcode_harvester.py` → `.cache/lcode_corpus.json` → `ops/build_knowledge_index.R` → `06_Registry/knowledge_index.json`. harvester 스캔범위 = 루트 `stage_artifacts/` + `04_Research/strategies/*/stage_artifacts/`)
 - infra 변경 시 관련 SOT/rules 문서 갱신 + 메모리 적립 (구 `infrastructure_state.md` 참조는 파일 부재 확인으로 2026-07-18 정정 — 도훈 승인)
 
 ---

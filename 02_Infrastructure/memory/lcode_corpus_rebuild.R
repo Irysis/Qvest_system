@@ -47,6 +47,10 @@ LAWBOOK_DIR <- file.path(PROJ_ROOT, "00_Lawbook")
 
 extract_lcodes_from_file <- function(path) {
   if (!file.exists(path)) {
+    # 2026-07-25: 조용한 빈 반환 금지 — 부재 소스가 "0건 추출"과 구분되지 않아
+    # 선언 소스 4개 중 3개가 사라진 채로 코퍼스가 정상 재구축된 것처럼 보였다.
+    warning(sprintf("[lcode_corpus_rebuild] 소스 부재 — 추출 생략: %s", path),
+            call. = FALSE)
     return(list())
   }
   lines <- tryCatch(
@@ -136,15 +140,43 @@ if (dir.exists(LAWBOOK_DIR)) {
 
 cat(sprintf("Source files: %d\n", length(all_sources)))
 
+# ── 명시 결손 승격 (2026-07-25 도훈 승인) ──────────────────────────────────
+# 종전: 선언 소스가 없어도 조용히 건너뛰어, 4개 중 3개 부재 상태에서도 재구축이
+# "성공"으로 보였다. sg_sync_methodology_memory 와 동일 부류 결함이라 동일하게 수리한다.
+# 판정 자체는 불차단(AX-000/INV-7 정합) — 표면화 + 결손 원장까지만.
+.report_missing_sources <- function(missing_declared) {
+  if (length(missing_declared) == 0) return(invisible(NULL))
+  msg <- sprintf(
+    "[lcode_corpus_rebuild] 선언 소스 %d/%d 부재 — 코퍼스가 부분 소스로 재구축됨: %s",
+    length(missing_declared), length(SOURCE_FILES),
+    paste(basename(missing_declared), collapse = ", "))
+  cat(msg, "\n")
+  warning(msg, call. = FALSE)
+  tryCatch({
+    dir.create(file.path(PROJ_ROOT, ".cache"), recursive = TRUE, showWarnings = FALSE)
+    writeLines(jsonlite::toJSON(list(
+      detected_at       = as.character(Sys.time()),
+      defect            = "declared_source_absent",
+      declared_sources  = SOURCE_FILES,
+      missing           = missing_declared,
+      surviving         = setdiff(SOURCE_FILES, missing_declared)
+    ), auto_unbox = TRUE, pretty = TRUE),
+    file.path(PROJ_ROOT, ".cache", "lcode_rebuild_defect.json"))
+  }, error = function(e) invisible(NULL))
+}
+
 # ─── Merge ─────────────────────────────────────────────────────
 
 merged <- list()  # named list keyed by l_code
 source_map <- list()
 source_counts <- list()
 
+missing_declared <- character(0)   # 선언 소스(SOURCE_FILES) 중 부재분 — 명시 결손 대상
+
 for (src in all_sources) {
   if (!file.exists(src)) {
     cat(sprintf("  MISSING: %s\n", src))
+    if (src %in% SOURCE_FILES) missing_declared <- c(missing_declared, src)
     next
   }
   rel_src <- if (startsWith(src, PROJ_ROOT)) {
@@ -170,6 +202,8 @@ for (src in all_sources) {
     source_map[[lc]] <- unique(c(source_map[[lc]], rel_src))
   }
 }
+
+.report_missing_sources(missing_declared)
 
 # ─── Convert merged map → list-of-objects (CRITICAL: promote.R 호환) ───
 
