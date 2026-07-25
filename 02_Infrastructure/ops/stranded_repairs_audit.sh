@@ -43,6 +43,9 @@ for a in "$@"; do
   esac
 done
 say() { [ "$QUIET" -eq 1 ] || echo "$@"; }
+# hb = heartbeat: --quiet 여도 반드시 남긴다. 무인 로그가 비면 "돌긴 했나"를 답할 수 없고,
+#      그건 본 스크립트가 고치려는 문제(침묵 실패)와 같은 부류다.
+hb()  { echo "[$(date '+%F %T')] $*"; }
 
 command -v git >/dev/null 2>&1 || { echo "[stranded] git 없음 — skip" >&2; exit 0; }
 git -C "$PROJECT" rev-parse --git-dir >/dev/null 2>&1 || { echo "[stranded] git repo 아님 — skip" >&2; exit 0; }
@@ -223,8 +226,9 @@ cat > "$OUT" <<JSON
 JSON
 
 say ""
-say "[stranded] worktree ${N_WT} · 미커밋 ${N_DIRTY} · 미병합 ${N_AHEAD} · ${STALE_DAYS}일+ 방치 ${N_STALE}"
-say "[stranded] 파일 판정 — 유실 ${N_LOST}(lost+mostly_lost) · 부분 ${N_PARTIAL} · 충돌후보 ${N_COLL} · prune 후보 ${N_PRUNE}"
+hb "worktree ${N_WT} · 미커밋 ${N_DIRTY} · 미병합 ${N_AHEAD} · ${STALE_DAYS}일+ 방치 ${N_STALE} | 유실 ${N_LOST} · 부분 ${N_PARTIAL} · 충돌 ${N_COLL} · prune후보 ${N_PRUNE}"
+[ "$N_LOST" -gt 0 ] && hb "★ 유실 대상: ${LOST_SUMMARY}"
+[ "$N_COLL" -gt 0 ] && hb "★ 동시수정 충돌: ${COLL_SUMMARY}"
 say "[stranded] → $OUT"
 
 # ── ③ worktree 생명주기: prune 후보 정리 (--prune 명시 시에만 실제 제거)
