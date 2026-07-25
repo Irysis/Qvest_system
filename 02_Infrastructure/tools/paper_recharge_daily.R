@@ -47,17 +47,35 @@ if (file.exists(stamp) && !force) {
 }
 
 lock_dir <- file.path(stage_root, "daily.lock")
+# LOCK_OWNED = "이 프로세스가 잠금을 취득했는가". 남의 잠금을 해제하면 안 되므로 구분한다.
+LOCK_OWNED <- FALSE
 if (!dir.create(lock_dir, showWarnings = FALSE) && !force) {
   info <- suppressWarnings(file.info(lock_dir))
   age <- if (nrow(info) == 1L) as.numeric(difftime(Sys.time(), info$mtime, units = "secs")) else Inf
   if (is.finite(age) && age < 3600) {
     log_line("[paper-recharge] another run is active (age %.0fs)", age)
-    quit(status = 0)
+    quit(status = 0)   # ← 남의 잠금이므로 해제하지 않는다
   }
   unlink(lock_dir, recursive = TRUE, force = TRUE)
   dir.create(lock_dir, showWarnings = FALSE)
+  LOCK_OWNED <- TRUE
+} else {
+  LOCK_OWNED <- TRUE
 }
-on.exit(unlink(lock_dir, recursive = TRUE, force = TRUE), add = TRUE)
+
+# [2026-07-25] 종전엔 여기가 최상위 `on.exit(unlink(lock_dir, ...))` 였다 —
+# r-portability 금칙 ②: on.exit 는 함수 프레임에 등록되므로 스크립트 최상위에선 **no-op**.
+# 결과: 잠금이 영구 미해제되어, 1시간 내 재실행이 "another run is active" 로 **조용히 skip**
+# 됐다(실측 증거: stage_artifacts/paper_recharge/daily.lock 이 07-25 07:08 실행분 그대로 잔존).
+# 대체 = 명시 호출 + reg.finalizer 백스톱(예기치 못한 종료 대비).
+release_lock <- function() {
+  if (isTRUE(LOCK_OWNED) && dir.exists(lock_dir)) {
+    unlink(lock_dir, recursive = TRUE, force = TRUE)
+  }
+  invisible(NULL)
+}
+.lock_guard <- new.env(parent = emptyenv())
+reg.finalizer(.lock_guard, function(e) release_lock(), onexit = TRUE)
 
 read_sources <- function(path) {
   if (!file.exists(path)) return(data.frame())
@@ -791,3 +809,8 @@ log_line("[paper-recharge] done downloaded=%d present=%d failed=%d registry_adde
          sum(summary_df$status == "already_present"),
          sum(summary_df$status == "failed"),
          registry_added_total)
+
+# 명시 해제 (금칙 ② 대체 — 최상위 on.exit 은 발화하지 않는다).
+release_lock()
+if (dir.exists(lock_dir))
+  log_line("[paper-recharge] WARN: 잠금 해제 실패 — 다음 실행이 1시간 내면 skip 됨: %s", lock_dir)
