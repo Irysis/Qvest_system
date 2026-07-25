@@ -1,5 +1,23 @@
 # -*- coding: utf-8 -*-
 #==============================================================================
+# ★★ SUPERSEDED (2026-07-25) — 이 파일은 더 이상 호출되지 않는다. 참조 금지.
+#
+#   같은 D1 결함(no-op/clobber)을 두 세션이 각자 수리해 경쟁 구현이 생겼고,
+#   병합 시 아래 실측 3건으로 us_update_stream_parse.py 경로가 채택됐다:
+#     ① 의존성 — 본 파일은 pyarrow를 import 하는데 QVEST_PY(시스템 Python)에
+#        pyarrow가 없다(실측: pyarrow=N openpyxl=Y). 호출부는 venv python을
+#        우선 쓰므로 main 트리에선 돌지만, **worktree 세션엔 venv가 없어**
+#        QVEST_PY 폴백 → ImportError. 채택안은 CSV 핸드오프라 openpyxl만으로 동작.
+#     ② 실패 처리 — 본 경로의 R 호출부는 rc!=0 을 cat() 후 FALSE 반환(침묵 실패).
+#        채택안은 stop() 전파 + PARSE_OK 센티널(fail-closed).
+#     ③ 커버리지 — 동명 함수 2번째(incremental_cache_update.R:172, daily_refresh가
+#        실제 소비)의 ref 오파일명·"rebuilt" 위장 로그는 본 경로에서 미수리.
+#
+#   현행 경로: incremental_update_file.R::incremental_universe_support()
+#              → us_update_stream_parse.py (파싱) → R 측 겹침날짜 교체 merge
+#   삭제하지 않고 표지만 남기는 이유 = 커밋 e08c8379 판단과 동일(제외가 아니라 표시).
+#   로직 자체는 유효하므로 참고용 사료로 retain.
+#==============================================================================
 # us_update_merge.py — Universe_Support_update.xlsx 증분 merge (W3, 2026-07-25)
 #
 # incremental_universe_support() (incremental_update_file.R)의 실행 엔진.
