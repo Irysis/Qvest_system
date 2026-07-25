@@ -17,7 +17,31 @@ suppressPackageStartupMessages({
 })
 
 if (!exists("PROJECT_ROOT")) {
-  PROJECT_ROOT <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
+  # [fix 2026-07-25] 구 하드코딩 WSL 폴백 제거. 이 가드는 환경변수를 보지 않아
+  # 단독 실행 시 무조건 없는 경로로 가 source(config.R) 가 죽었고,
+  # 그 결과 러너가 "0 passed / 0 failed (of 0 total)" 을 성공처럼 냈다.
+  # 후보를 **표지 파일 검증**으로 확인한다 — 존재검사로 정체성검사를 대체하지 않는다.
+  .qv_marker <- "02_Infrastructure/config.R"
+  .qv_argv <- commandArgs(trailingOnly = FALSE)
+  .qv_f <- grep("^--file=", .qv_argv, value = TRUE)
+  .qv_sd <- if (length(.qv_f)) dirname(sub("^--file=", "", .qv_f[1])) else ""
+  for (.qv_c in c(Sys.getenv("CLAUDE_PROJECT_DIR", unset = ""),
+                  Sys.getenv("QM_ROOT", unset = ""),
+                  if (nzchar(.qv_sd)) file.path(.qv_sd, "..", "..") else "",
+                  getwd())) {
+    if (nzchar(.qv_c) && file.exists(file.path(.qv_c, .qv_marker))) {
+      PROJECT_ROOT <- .qv_c
+      break
+    }
+  }
+  if (!exists("PROJECT_ROOT")) {
+    stop(sprintf(paste0("[regime] PROJECT_ROOT 해석 실패 — 표지 '%s' 를 가진 후보 없음.\n",
+                        "  cwd=%s / CLAUDE_PROJECT_DIR='%s' / QM_ROOT='%s'"),
+                 .qv_marker, getwd(),
+                 Sys.getenv("CLAUDE_PROJECT_DIR", unset = ""),
+                 Sys.getenv("QM_ROOT", unset = "")))
+  }
+  rm(list = intersect(ls(), c(".qv_marker", ".qv_argv", ".qv_f", ".qv_sd", ".qv_c")))
 }
 
 # ── Source telegram module (must not actually send in this test) ────

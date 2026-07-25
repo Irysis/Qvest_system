@@ -20,10 +20,33 @@ suppressPackageStartupMessages({
   library(jsonlite)
 })
 
-PROJ <- "/mnt/c/Users/User/OneDrive/바탕 화면/Quant_Module_Moltbot"
-setwd(PROJ)
-
+# [fix 2026-07-25] 구 하드코딩 PROJ = WSL 전용 경로 → setwd() 가 빗나가 cert_rules.R 을
+# 못 찾고 즉사(Execution halted). 후보를 **표지 파일 검증**으로 확인한다
+# — 존재검사로 정체성검사를 대체하지 않는다. 실패 시 조용한 폴백 대신 진단 stop().
 CERT_RULES_PATH <- "02_Infrastructure/worktask/cert_rules.R"
+
+.qv_argv <- commandArgs(trailingOnly = FALSE)
+.qv_f <- grep("^--file=", .qv_argv, value = TRUE)
+.qv_sd <- if (length(.qv_f)) dirname(sub("^--file=", "", .qv_f[1])) else ""
+PROJ <- ""
+for (.qv_c in c(Sys.getenv("CLAUDE_PROJECT_DIR", unset = ""),
+                Sys.getenv("QM_ROOT", unset = ""),
+                if (nzchar(.qv_sd)) file.path(.qv_sd, "..", "..") else "",
+                getwd())) {
+  if (nzchar(.qv_c) && file.exists(file.path(.qv_c, CERT_RULES_PATH))) {
+    PROJ <- .qv_c
+    break
+  }
+}
+if (!nzchar(PROJ)) {
+  stop(sprintf(paste0("[cert_threshold_audit] PROJECT_ROOT 해석 실패 — 표지 '%s' 를 가진 후보 없음.\n",
+                      "  cwd=%s / CLAUDE_PROJECT_DIR='%s' / QM_ROOT='%s'"),
+               CERT_RULES_PATH, getwd(),
+               Sys.getenv("CLAUDE_PROJECT_DIR", unset = ""),
+               Sys.getenv("QM_ROOT", unset = "")))
+}
+setwd(PROJ)
+rm(list = intersect(ls(), c(".qv_argv", ".qv_f", ".qv_sd", ".qv_c")))
 TARGET_FUNCTIONS <- c("cr_check_alpha_discovery",
                      "cr_check_sr_provenance",
                      "cr_check_forge_package_validated",
