@@ -1,6 +1,7 @@
 # debug_five_inputs.R — verify sim_result path existence rate + rawdata cache + factor-DB FWL inputs
 suppressMessages({ library(data.table); library(jsonlite) })
-sink("02_Infrastructure/ramp/debug/_debug_inputs.txt")
+dir.create(".cache/scratch/ramp_debug", recursive = TRUE, showWarnings = FALSE)
+sink(".cache/scratch/ramp_debug/debug_inputs.txt")
 
 # 1) catalog sim_result_path existence rate
 mc <- fromJSON("06_Registry/module_catalog.json", simplifyVector=FALSE)

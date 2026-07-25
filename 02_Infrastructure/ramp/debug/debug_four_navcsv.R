@@ -1,6 +1,7 @@
 # debug_four_navcsv.R — confirm 02_nav.csv schema + bt_contract$return_series + metric_type
 suppressMessages({ library(data.table) })
-sink("02_Infrastructure/ramp/debug/_debug_navcsv.txt")
+dir.create(".cache/scratch/ramp_debug", recursive = TRUE, showWarnings = FALSE)
+sink(".cache/scratch/ramp_debug/debug_navcsv.txt")
 translate <- function(p) sub("^/mnt/c/", "C:/", p)
 
 b <- list.files("stage_artifacts/batch_434", pattern="_result\\.rds$", recursive=TRUE, full.names=TRUE)

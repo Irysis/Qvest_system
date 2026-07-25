@@ -1,6 +1,7 @@
 # debug_three_navsource.R — pin down the NAV source for batch_434 result objects
 suppressMessages({ library(data.table); library(xts) })
-sink("02_Infrastructure/ramp/debug/_debug_navsource.txt")
+dir.create(".cache/scratch/ramp_debug", recursive = TRUE, showWarnings = FALSE)
+sink(".cache/scratch/ramp_debug/debug_navsource.txt")
 
 translate <- function(p) {
   if (is.null(p) || is.na(p)) return(NA_character_)

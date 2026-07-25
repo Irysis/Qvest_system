@@ -12,7 +12,8 @@ if (file.exists(cache)) {
   saveRDS(pool, cache); cat("[debug2] cached -> ", cache, "\n")
 }
 
-sink("02_Infrastructure/ramp/debug/_debug_gate3_cluster.txt", split = TRUE)
+dir.create(".cache/scratch/ramp_debug", recursive = TRUE, showWarnings = FALSE)
+sink(".cache/scratch/ramp_debug/debug_gate3_cluster.txt", split = TRUE)
 cat(sprintf("pool: %d x %d ; kept=%d\n", nrow(pool$R), ncol(pool$R), pool$n_kept))
 
 sim <- compute_strategy_similarity(pool$R, min_overlap = 252L)

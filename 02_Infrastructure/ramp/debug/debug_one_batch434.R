@@ -8,7 +8,7 @@ args <- commandArgs(trailingOnly = TRUE)
 if (length(args) < 2) {
   # interactive default: probe first file + dump structure
   b <- list.files("stage_artifacts/batch_434", pattern="_result\\.rds$", recursive=TRUE, full.names=TRUE)
-  rds <- b[1]; out <- "02_Infrastructure/ramp/debug/_debug_batch434_probe.txt"
+  rds <- b[1]; out <- ".cache/scratch/ramp_debug/debug_batch434_probe.txt"
   sink(out)
   cat("PROBE:", rds, "\n")
   obj <- tryCatch(readRDS(rds), error=function(e){cat("ERROR:",conditionMessage(e),"\n"); NULL})

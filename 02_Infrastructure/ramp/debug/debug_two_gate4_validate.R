@@ -1,6 +1,7 @@
 # debug_two_gate4_validate.R — Gate 4.3 validation (canonical_screen_bt) on pure factors, longer window
 suppressMessages({ library(data.table); library(arrow) })
-sink("02_Infrastructure/ramp/debug/_debug_gate4_validate.txt", split = TRUE)
+dir.create(".cache/scratch/ramp_debug", recursive = TRUE, showWarnings = FALSE)
+sink(".cache/scratch/ramp_debug/debug_gate4_validate.txt", split = TRUE)
 t0 <- Sys.time()
 
 source("02_Infrastructure/ramp/pure_factor_extraction.R")

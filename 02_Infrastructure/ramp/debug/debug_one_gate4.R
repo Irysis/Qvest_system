@@ -1,7 +1,8 @@
 # debug_one_gate4.R — debug-first Gate 4: latent (PCA) + pure-factor FWL + validation
 # Small scope to verify mechanics: 1 PCA on cached pool + FWL on a handful of factors over a few months.
 suppressMessages({ library(data.table); library(arrow) })
-sink("02_Infrastructure/ramp/debug/_debug_gate4_out.txt", split = TRUE)
+dir.create(".cache/scratch/ramp_debug", recursive = TRUE, showWarnings = FALSE)
+sink(".cache/scratch/ramp_debug/debug_gate4_out.txt", split = TRUE)
 t0 <- Sys.time()
 
 source("02_Infrastructure/ramp/latent_factor_extraction.R")

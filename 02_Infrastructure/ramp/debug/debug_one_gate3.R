@@ -1,7 +1,8 @@
 # debug_one_gate3.R — debug-first Gate 3 on the REAL pool (264 + batch_434)
 # Run: Rscript --vanilla -e 'source("02_Infrastructure/ramp/debug/debug_one_gate3.R")'
 suppressMessages({ library(data.table) })
-sink("02_Infrastructure/ramp/debug/_debug_gate3_out.txt", split = TRUE)
+dir.create(".cache/scratch/ramp_debug", recursive = TRUE, showWarnings = FALSE)
+sink(".cache/scratch/ramp_debug/debug_gate3_out.txt", split = TRUE)
 t0 <- Sys.time()
 
 source("02_Infrastructure/ramp/strategy_return_matrix.R")

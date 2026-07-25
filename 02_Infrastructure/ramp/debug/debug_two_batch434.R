@@ -1,6 +1,7 @@
 # debug_two_batch434.R — survey structure variety across batch_434 + locate NAV source
 suppressMessages({ library(data.table); library(xts) })
-sink("02_Infrastructure/ramp/debug/_debug_batch434_survey.txt")
+dir.create(".cache/scratch/ramp_debug", recursive = TRUE, showWarnings = FALSE)
+sink(".cache/scratch/ramp_debug/debug_batch434_survey.txt")
 
 b <- list.files("stage_artifacts/batch_434", pattern="_result\\.rds$", recursive=TRUE, full.names=TRUE)
 cat("total:", length(b), "\n")
