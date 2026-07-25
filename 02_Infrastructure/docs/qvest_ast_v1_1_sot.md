@@ -126,7 +126,10 @@ Step 3 ✅ 완료 (2026-07-25 — S2c/S2d):
         · parity(신규 컴파일러 vs factor DB): M01 rank corr ~0.95-0.97·M04 ~1.0(ic_sign 부호)·V01 1.0
         · 𝒪 확장 규율 첫 가동: BL-001(fundamental 리프 소스 부재) → 06_Registry/ast_operator_backlog.json
         ─── 손익분기 도달 (§4 3중 예방 + verify() + 게이트 실배선) ───
-Step 4 essence_score 사이드카 로깅 개시 (ast_structure_log.jsonl)
+Step 4 ✅ 배선 완료 (2026-07-25): essence_score()에 ast_features/strategy_id/active_regime 인자 +
+        06_Registry/ast_structure_log.jsonl append-only 사이드카 — 채점 무관여(양 모드 identical 실증)·
+        fail-soft·비-AST 산출도 전량 로깅(ast_features null = escape 커버리지 표식, 생존편향 방지).
+        judge/governor verdict는 strategy_id 사후 조인. **분석은 N≥30부터** (§5 규율 불변)
 Step 5 N≥30 후 complexity_prior 추정 → alpha 프롬프트 주입
 Step 6 커버리지 지도 (저비용 후순위)
 ```
