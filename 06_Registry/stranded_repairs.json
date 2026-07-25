@@ -1,6 +1,6 @@
 {
   "_doc": "좌초 수리 감사 — worktree에 갇혀 main에 도달하지 못한 수리 탐지. 생성기 02_Infrastructure/ops/stranded_repairs_audit.sh. verdict: merged_upstream=worktree가 stale 사본(정리 가능) / lost=main에 전무(조치 필요) / mostly_lost=80%+ 미존재(사실상 유실) / partial=일부만 반영(수동 확인) / deletion_only=삭제만. collisions=2개 이상 worktree가 같은 파일을 main 밖에서 수정 중(병합 순서 결정 필요).",
-  "generated_at": "2026-07-25 10:21:14",
+  "generated_at": "2026-07-25 12:00:30",
   "main_ref": "main",
   "stale_threshold_days": 3,
   "summary": {
@@ -9,8 +9,8 @@
     "with_unmerged": 0,
     "stale_over_threshold": 3,
     "files_lost": 3,
-    "files_partial": 2,
-    "collisions": 1,
+    "files_partial": 1,
+    "collisions": 3,
     "prune_candidates": 8
   },
   "worktrees": [
@@ -45,12 +45,15 @@
       "branch":"claude/angry-bhabha-b50a41",
       "path":"C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/worktrees/frosty-torvalds-5e24f0",
       "ahead_of_main":0,
-      "dirty_files":12,
+      "dirty_files":15,
       "last_commit_age_days":0,
       "stale":false,
       "lost":0,
-      "partial":1,
+      "partial":0,
       "files":[
+        {"path":"02_Infrastructure/axiom/lcode_emit.R","state":"M","added_lines":36,"missing_in_main":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/axiom/lcode_harvester.py","state":"M","added_lines":62,"missing_in_main":0,"verdict":"merged_upstream"},
+        {"path":"02_Infrastructure/axiom/review.R","state":"M","added_lines":20,"missing_in_main":0,"verdict":"merged_upstream"},
         {"path":"02_Infrastructure/data/daily_refresh.sh","state":"M","added_lines":14,"missing_in_main":0,"verdict":"merged_upstream"},
         {"path":"02_Infrastructure/memory/loop_integrator.R","state":"M","added_lines":35,"missing_in_main":0,"verdict":"merged_upstream"},
         {"path":"02_Infrastructure/memory/memory_health_check.R","state":"M","added_lines":15,"missing_in_main":0,"verdict":"merged_upstream"},
@@ -58,11 +61,11 @@
         {"path":"02_Infrastructure/memory/weekly_distill.sh","state":"M","added_lines":8,"missing_in_main":0,"verdict":"merged_upstream"},
         {"path":"02_Infrastructure/ops/weekly_cleaner_sweep.R","state":"M","added_lines":70,"missing_in_main":0,"verdict":"merged_upstream"},
         {"path":"02_Infrastructure/stage_gate_engine.R","state":"M","added_lines":22,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"06_Registry/index_descriptions.json","state":"M","added_lines":56,"missing_in_main":0,"verdict":"merged_upstream"},
+        {"path":"06_Registry/index_descriptions.json","state":"M","added_lines":63,"missing_in_main":0,"verdict":"merged_upstream"},
         {"path":"02_Infrastructure/memory/distill_stats.R","state":"??","added_lines":1,"missing_in_main":0,"verdict":"merged_upstream"},
         {"path":"02_Infrastructure/memory/monthly_distill.R","state":"??","added_lines":1,"missing_in_main":0,"verdict":"merged_upstream"},
         {"path":"02_Infrastructure/memory/weekly_distill.R","state":"??","added_lines":1,"missing_in_main":0,"verdict":"merged_upstream"},
-        {"path":"06_Registry/lcode_id_collision_review_20260725.md","state":"??","added_lines":1,"missing_in_main":1,"verdict":"partial"}
+        {"path":"06_Registry/lcode_id_collision_review_20260725.md","state":"??","added_lines":1,"missing_in_main":0,"verdict":"merged_upstream"}
       ]
     },
     {
@@ -83,7 +86,7 @@
       "path":"C:/Users/99922/OneDrive/Quant_Module_Moltbot/.claude/worktrees/nostalgic-wescoff-b89c27",
       "ahead_of_main":0,
       "dirty_files":5,
-      "last_commit_age_days":6,
+      "last_commit_age_days":7,
       "stale":true,
       "lost":0,
       "partial":1,
@@ -110,6 +113,8 @@
     }
   ],
   "collisions": [
+      {"path":"02_Infrastructure/axiom/lcode_emit.R","worktree_count":2,"branches":["angry-bhabha-b50a41","nostalgic-wescoff-b89c27"]},
+      {"path":"02_Infrastructure/axiom/lcode_harvester.py","worktree_count":2,"branches":["angry-bhabha-b50a41","nostalgic-wescoff-b89c27"]},
       {"path":"02_Infrastructure/portfolio/measurement_basis_audit.R","worktree_count":2,"branches":["great-burnell-e15c26","suspicious-diffie-76e162"]}
   ],
   "prune_candidates": [

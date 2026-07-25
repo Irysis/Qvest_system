@@ -33,11 +33,18 @@ cat("[report_agent_llm] Loaded.\n")
 #' Collects all data the LLM needs into a single JSON
 prepare_report_bundle <- function(strategy_id, output_dir = NULL) {
 
+  # 2026-07-25: substring+mtime 선택 → 토큰경계 + 모호 시 중단 (mtime은 저장소 이관으로
+  #   균일해져 선택 근거가 못 됨 — 엉뚱한 전략 리포트를 만들 수 있었다)
   strat_base <- file.path(PROJECT_ROOT, "04_Research", "strategies")
   candidates <- list.dirs(strat_base, recursive = FALSE, full.names = TRUE)
-  matched <- candidates[grepl(strategy_id, basename(candidates), fixed = TRUE)]
+  .bn <- basename(candidates)
+  .ex <- candidates[.bn == strategy_id]
+  matched <- if (length(.ex)) .ex else candidates[startsWith(.bn, paste0(strategy_id, "_"))]
   if (length(matched) == 0) stop(sprintf("Strategy %s not found", strategy_id))
-  strat_dir <- matched[which.max(file.mtime(matched))]
+  if (length(matched) > 1)
+    stop(sprintf("strategy_id '%s' 가 %d개 디렉토리에 매칭 — 디렉토리명 전체를 지정하세요: %s",
+                 strategy_id, length(matched), paste(basename(matched), collapse = ", ")))
+  strat_dir <- matched[1]
 
   # Find output dir
   out_candidates <- c(
@@ -109,13 +116,23 @@ prepare_report_bundle <- function(strategy_id, output_dir = NULL) {
 }
 
 #' Cleanup old reports from strategy directory
+#' 2026-07-25 수리: 삭제 대상 수집이 substring 매칭이었다 — `STR_146`이 `STR_1469`의
+#'   디렉토리를, 같은 번호를 쓰는 다른 전략(실측 7건)의 디렉토리를 함께 주워
+#'   **무관한 전략의 리포트 파일을 삭제**할 수 있었다(아래 file.remove). 프로덕션
+#'   디렉토리도 같은 방식으로 수집되므로 영향면이 05_Production까지 닿았다.
+#'   → 토큰경계 매칭으로 교체 (정확 일치 또는 `<id>_` 접두만).
 cleanup_old_reports <- function(strategy_id) {
   dirs_to_clean <- c()
+  .match_dirs <- function(dirs, sid) {
+    b <- basename(dirs)
+    ex <- dirs[b == sid]
+    if (length(ex)) ex else dirs[startsWith(b, paste0(sid, "_"))]
+  }
 
   # Research output
   strat_base <- file.path(PROJECT_ROOT, "04_Research", "strategies")
   candidates <- list.dirs(strat_base, recursive = FALSE, full.names = TRUE)
-  matched <- candidates[grepl(strategy_id, basename(candidates), fixed = TRUE)]
+  matched <- .match_dirs(candidates, strategy_id)
   if (length(matched) > 0) {
     dirs_to_clean <- c(dirs_to_clean,
                        file.path(matched, "output"),
@@ -126,7 +143,7 @@ cleanup_old_reports <- function(strategy_id) {
   prod_base <- file.path(PROJECT_ROOT, "05_Production", "2.Factor_Model")
   if (dir.exists(prod_base)) {
     prod_dirs <- list.dirs(prod_base, recursive = FALSE, full.names = TRUE)
-    prod_match <- prod_dirs[grepl(strategy_id, basename(prod_dirs))]
+    prod_match <- .match_dirs(prod_dirs, strategy_id)   # 2026-07-25: substring → 토큰경계
     for (pd in prod_match) {
       dirs_to_clean <- c(dirs_to_clean, pd, file.path(pd, "output"))
     }
