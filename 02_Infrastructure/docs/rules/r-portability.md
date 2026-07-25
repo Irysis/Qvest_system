@@ -81,7 +81,11 @@ Windows R은 `/mnt/c/...`를 **현재 드라이브 기준** `C:/mnt/c/...`로 �
 **정본 = `08_Tests/hooks/_r_portability_baseline.json`** (기계 생성, 재생성 `Rscript 08_Tests/hooks/test_r_portability.R --write-baseline`).
 스캔 범위 = **라이브 존** `02_Infrastructure` · `08_Tests` · `qepm/scripts` (531 .R). 아카이브 존(`stage_artifacts/` · `qepm/mailbox/` · `04_Research/strategies/`)은 재실행 대상이 아니므로 제외.
 
-**발효 시점 원장 = 60건.** 금칙별 분포는 baseline 파일 참조. ★수치가 초기 육안 grep(≈12건)보다 5배 큰 이유: 육안 스캔은 `/mnt/c/Users/User|바탕 화면`만 봤고, 계약 검출기는 `"/tmp/` 리터럴과 resolver 우선순위 역전까지 본다. **검사기를 만들고 나서야 표면의 실제 크기를 알았다** — 이것이 문서-only 규칙을 인정하지 않는 이유다.
+**발효 시점 원장 = 54건**(main 기준, `73a8e95b` 병합 직후 재생성).
+
+> ⚠ **운영 특성 — baseline은 트리에 종속이다.** worktree에서 생성한 원장을 그대로 main에 병합하면 그새 움직인 main과 어긋나 즉시 FAIL한다(실증: worktree 60건 → main 재생성 54건. 다른 세션이 `/tmp` writer 7건을 수리해 축소 + `essence_score.R` 1건 추가). **병합 후 대상 브랜치에서 `--write-baseline`을 한 번 돌려 커밋할 것.** 이 어긋남 자체는 버그가 아니라 래칫이 의도대로 작동한 신호다 — 원장이 조용히 늘거나 수리분이 남는 것을 막는다.
+
+**발효 시점 원장 = 60건(worktree 생성분, 위 사유로 폐기).** 금칙별 분포는 baseline 파일 참조. ★수치가 초기 육안 grep(≈12건)보다 5배 큰 이유: 육안 스캔은 `/mnt/c/Users/User|바탕 화면`만 봤고, 계약 검출기는 `"/tmp/` 리터럴과 resolver 우선순위 역전까지 본다. **검사기를 만들고 나서야 표면의 실제 크기를 알았다** — 이것이 문서-only 규칙을 인정하지 않는 이유다.
 
 아래 표는 그중 **판단이 필요한 항목**만 발췌한다(전량은 baseline).
 
