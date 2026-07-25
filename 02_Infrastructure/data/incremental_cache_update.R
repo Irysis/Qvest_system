@@ -168,7 +168,12 @@ incremental_fundamental <- function() {
 }
 
 # ─── 5. Universe Support (Universe_Support.xlsx) ────────────────────────────
-# Phase B: xlsx 준비 완료 후 활성화
+# [2026-07-25 수리] 구 코드 결함 2건: ① ref 파일명 오기("sector_lv1.parquet" — 실제는
+# "us_sector_lv1.parquet")로 상시-newer 판정 ② parse_universe_support() force=FALSE 호출은
+# 캐시 존재 시 전 시트 "Cache hit" 스킵 = 매 실행 no-op인데 "rebuilt"로 위장 로그.
+# 현행: base xlsx가 캐시보다 새 것이면 정직 WARN만 발행 — 전체 리파싱(force=TRUE)은 base
+# xlsx 통짜 로드(수백 MB 시트 XML)라 무인 daily 흐름에서 자동 실행하지 않는다(수동 판단).
+# 월간 스냅샷 증분은 incremental_update_file.R::incremental_universe_support()가 표준 경로.
 incremental_universe_support <- function() {
   if (!exists("UNIVERSE_SUPPORT_XLSX")) return(invisible(FALSE))
   support_xlsx <- UNIVERSE_SUPPORT_XLSX
@@ -179,20 +184,15 @@ incremental_universe_support <- function() {
     return(invisible(FALSE))
   }
 
-  ref_pq <- file.path(support_dir, "sector_lv1.parquet")
+  ref_pq <- file.path(support_dir, "us_sector_lv1.parquet")
   if (!.xlsx_newer(support_xlsx, ref_pq)) {
     cat("[incr] Universe_Support.xlsx not newer — skip.\n")
     return(invisible(FALSE))
   }
 
-  cat("[incr] Universe_Support.xlsx updated — parsing...\n")
-  tryCatch({
-    source(file.path(DATA_DIR, "parse_universe_support.R"), local = TRUE)
-    parse_universe_support()
-    cat("[incr] Universe_Support cache rebuilt.\n")
-  }, error = function(e) {
-    cat(sprintf("[incr] Universe_Support rebuild failed: %s\n", e$message))
-  })
+  cat("[incr] ⚠ Universe_Support.xlsx(base)가 캐시보다 최신 — 자동 리빌드 없음.\n")
+  cat("[incr]   전체 재파싱 = parse_universe_support(force = TRUE) 수동 실행 (메모리 大, base xlsx 전체 로드).\n")
+  cat("[incr]   월간 스냅샷 증분 = incremental_update_file.R::incremental_universe_support() (표준 경로).\n")
 
   invisible(TRUE)
 }
