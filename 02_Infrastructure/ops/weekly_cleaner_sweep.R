@@ -409,14 +409,39 @@ run_step("axiom_candidates_summary", {
     list(status = "corpus_unreadable", n_entries = NA, n_unique_ids = NA, n_id_collisions = NA,
          duplicate_ids = list())
   } else {
-    .ids <- vapply(lc_corpus$lcodes %||% list(),
-                   function(x) as.character(x$l_code %||% x$id %||% "")[1], character(1))
+    .rows <- lc_corpus$lcodes %||% list()
+    .ids <- vapply(.rows, function(x) as.character(x$l_code %||% x$id %||% "")[1], character(1))
     .dup <- names(which(table(.ids) > 1))
+    # 충돌 유형 자동 분류 (2026-07-25) — ID를 자동으로 바꾸지 않는다(위험). 조치 종류만 판정해
+    #   도훈이 매번 같은 분류 노동을 반복하지 않게 한다. 판별은 결정적:
+    #     서로 다른 strategy_id  → cross_strategy   : 최초 1건만 번호 유지, 나머지 신규 ID 발급
+    #     같은 전략·같은 디렉토리 → same_dir_duplicate: 같은 교훈 이중 기록 — 정본 파일 선택
+    #     같은 전략·다른 디렉토리 → cross_zone_variant: 루트 사본 vs 전략트리 사본 — 내용 병합
+    .classify <- function(id) {
+      idx <- which(.ids == id)
+      strat <- unique(vapply(idx, function(i) as.character(.rows[[i]]$strategy_id %||% "")[1], character(1)))
+      strat <- strat[nzchar(strat)]
+      srcs <- vapply(idx, function(i) as.character(.rows[[i]]$source_file %||% .rows[[i]]$file %||% "")[1],
+                     character(1))
+      dirs <- unique(dirname(gsub("\\\\", "/", srcs)))
+      kind <- if (length(strat) > 1) "cross_strategy"
+              else if (length(dirs) == 1) "same_dir_duplicate"
+              else "cross_zone_variant"
+      list(id = id, kind = kind, n_records = length(idx),
+           strategies = as.list(strat), source_dirs = as.list(dirs),
+           action = switch(kind,
+             cross_strategy     = "최초 1건만 번호 유지 · 나머지 미발급 번호로 신규 발급 (리넘버 아님)",
+             same_dir_duplicate = "같은 교훈 이중 기록 — 정본 파일 1개 선택",
+             cross_zone_variant = "루트 사본 vs 전략트리 사본 — 내용 병합 후 1건화"))
+    }
+    .cls <- lapply(.dup, .classify)
     list(status = if (length(.dup)) "COLLISIONS_PRESENT" else "clean",
          n_entries = length(.ids), n_unique_ids = length(unique(.ids)),
          n_id_collisions = as.integer(lc_corpus$n_id_collisions %||% length(.dup)),
          duplicate_ids = as.list(.dup),
-         action = if (length(.dup)) "REASSIGN_ID 판정 필요 (교차전략 충돌은 신규 ID 발급, 동일전략 중복은 병합)" else NA,
+         collisions = .cls,
+         kind_counts = as.list(table(vapply(.cls, function(z) z$kind, character(1)))),
+         review_doc = "06_Registry/lcode_id_collision_review_20260725.md",
          corpus_last_updated = as.character(lc_corpus$last_updated %||% NA))
   }
   # ★두 숫자는 다른 것을 센다 (2026-07-25 확인): n_id_collisions = harvester의 *충돌 이벤트*
@@ -556,7 +581,10 @@ if (Sys.getenv("QVEST_CLEANER_NO_TG", "0") != "1") {
                   paste(unlist(.li$duplicate_ids), collapse = ", ")),
           sprintf("corpus %s항목 / 고유 ID %s (내용 손실은 없음 — 양쪽 다 적재됨)",
                   as.character(.li$n_entries), as.character(.li$n_unique_ids)),
-          "조치: 교차전략 충돌 = 신규 ID 발급 / 동일전략 중복 = 병합 (REASSIGN_ID 판정)"
+          sprintf("유형: %s", if (length(.li$kind_counts %||% list()))
+                    paste(sprintf("%s %s건", names(.li$kind_counts), unlist(.li$kind_counts)),
+                          collapse = " / ") else "미분류"),
+          sprintf("판정표: %s", .li$review_doc %||% "06_Registry/")
         ))
     }
     # agent는 telegram_notify.R 화이트리스트 내 값만 허용 — 전용 "Cleaner" 미등재라 Q-Lead 사용
