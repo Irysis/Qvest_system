@@ -87,9 +87,9 @@ loop_session_brief <- function() {
     l_codes$src <- "methodology_memory.md"
     if (length(l_lines) > 0) l_codes$recent <- gsub("^### ", "", tail(l_lines, 5))
   } else {
-    ds <- file.path(.LI_BASE, "02_Infrastructure", "memory", "distill_stats.R")
+    ds <- file.path(.LI_ROOT, "02_Infrastructure", "memory", "distill_stats.R")
     if (file.exists(ds)) {
-      st <- tryCatch({ source(ds, local = TRUE); qv_ledger_stats(root = .LI_BASE) },
+      st <- tryCatch({ source(ds, local = TRUE); qv_ledger_stats(root = .LI_ROOT) },
                      error = function(e) NULL)
       if (!is.null(st) && !identical(st$source, "missing") && !is.na(st$lcode)) {
         l_codes$total <- st$lcode
@@ -125,8 +125,8 @@ loop_session_brief <- function() {
         "| F:", grade_counts["F"], "\n")
   } else {
     rr <- tryCatch({
-      ds <- file.path(.LI_BASE, "02_Infrastructure", "memory", "distill_stats.R")
-      if (file.exists(ds)) { source(ds, local = TRUE); qv_recent_research(30L, root = .LI_BASE) } else NULL
+      ds <- file.path(.LI_ROOT, "02_Infrastructure", "memory", "distill_stats.R")
+      if (file.exists(ds)) { source(ds, local = TRUE); qv_recent_research(30L, root = .LI_ROOT) } else NULL
     }, error = function(e) NULL)
     if (!is.null(rr) && !identical(rr$source, "missing")) {
       cat("\n[Ledger] 최근 30일 판정", rr$n, "건 (experiments.json 미사용 — hypothesis_index)\n")
