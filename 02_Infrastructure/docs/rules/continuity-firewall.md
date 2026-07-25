@@ -84,6 +84,22 @@
 - **LLM 토글**: `QVEST_CONTINUITY_LLM=1` + `ANTHROPIC_API_KEY` (§0.1 semantic-primary 완전체. 기본 OFF).
 - **fail-open**: 게이트/훅 오류는 전부 통과 — 원천차단이 목적이지 작업을 깨지 않는다.
 
+### 4.1 적용 범위 = 리서치 턴 한정이 아니다 (2026-07-25 실측 판정, 도훈 승인 next_probe ④)
+
+**판정: 인프라/하네스 턴에도 적용 유지.** 별도 인프라용 verdict enum은 만들지 않는다.
+
+이 SOT는 리서치 라운드를 전제로 쓰였으나, 하네스 수리 턴에서 발화한 실사례가 **오발화가 아니라 정발화**임을 실측으로 보였다. 사례(hook 테스트 계측 사망 수리, `89551963`~`d6f70fcf`):
+
+- Q-Lead가 승인 3건을 완료한 뒤 **잔여 8건을 "도훈 판단 대기"로 접고 마감**하려 했다 → 게이트 block(`finality_noun`, `waiting_posture_close`).
+- 막힌 덕에 그 8건을 **실제로 실행**했고, 그 결과:
+  - `08_Tests/regime/run_all.R` 이 `0 passed / 0 failed (of 0 total)` — 방금 고친 것과 **같은 계측 사망 위장이 현재 진행형으로 잔존**함을 발견(수리 → 5 total 복원).
+  - Q-Lead의 사전 분류 **2건이 실측으로 반증**됨: `test_v8_readiness_gate.R` "무조건 사망" → 실제 12/12 PASS / regime 6건 "env 있으면 동작" → 실제 env 무관 전멸(가드가 env를 안 봄).
+- 즉 게이트가 막지 않았다면 **현재 진행형 결함 1건 + 잘못된 보고 2건이 그대로 남았다.**
+
+★일반화: 위험한 것은 '리서치 라운드'라는 주제가 아니라 **"코드 형태만 보고 상태를 추정한 뒤 대기 목록으로 접는 자세"** 다. 이 자세는 인프라 턴에서 오히려 더 흔하다(실행이 싸고 빠른데도 안 돌려본다). 연속성 1호(대기-모드 마감 금지)·3호(next_probe≥2)는 도메인 무관하게 유효하다.
+
+**표현 방법**: 하네스 턴도 기존 enum으로 무리 없이 닫힌다 — `verdict_type="capability_established"` + `layer="harness"`, next_probe = 미측정 표면, live_trigger = 회귀 감시 조건(예: "배터리 총계가 직전 실측 대비 감소하면 회귀가 아니라 침묵 결손으로 의심"). 실제 발행 예: `HARNESS-20260725-hook-test-measurement`.
+
 ## 5. 참조
 - `.claude/rules/answer-principles.md` 리서치 연속성 6호(본 SOT가 6호의 집행 아키텍처)
 - `02_Infrastructure/docs/rules/axiom-engine.md` §0.1(메커니즘 비-ossification)·INV-7
