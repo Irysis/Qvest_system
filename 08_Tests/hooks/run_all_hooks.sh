@@ -8,7 +8,11 @@ set -uo pipefail
 
 PROJ_DIR="${CLAUDE_PROJECT_DIR:-$(ls -d /mnt/c/Users/*/OneDrive/바탕*화면/Quant_Module_Moltbot 2>/dev/null | head -1)}"
 TEST_DIR="$PROJ_DIR/08_Tests/hooks"
-RESULTS_FILE="$TEST_DIR/results.json"
+# 결과는 재생성 가능한 산출물 → 코드 존(08_Tests) 밖 캐시에 쓴다
+# (artifact-storage.md §1·§3, 2026-07-25 도훈 confirm).
+RESULTS_DIR="$PROJ_DIR/.cache/test_results"
+mkdir -p "$RESULTS_DIR"
+RESULTS_FILE="$RESULTS_DIR/hook_dryrun_results.json"
 
 echo "=== Qvest v6.4 Hook Test Suite ==="
 echo "Project: $PROJ_DIR"

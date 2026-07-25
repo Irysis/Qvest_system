@@ -243,7 +243,11 @@ cat(sprintf("STATUS: %s%s\n",
 cat(strrep("=", 70), "\n", sep = "")
 
 # JSON results
-out_json <- "08_Tests/integration/test_execution_path_unified_results.json"
+# 결과는 재생성 가능한 산출물 → 코드 존(08_Tests) 밖 캐시에 쓴다
+# (artifact-storage.md §1·§3, 2026-07-25 도훈 confirm).
+out_dir  <- ".cache/test_results"
+dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+out_json <- file.path(out_dir, "test_execution_path_unified_results.json")
 write_json(
   list(
     test = "execution_path_unified",

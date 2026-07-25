@@ -159,12 +159,22 @@ tops <- list.files(root, no.. = TRUE)          # dot항목은 기본 미포함
 warnings_out$root_unauthorized <- as.list(setdiff(tops, ALLOW_ROOT))
 
 # (b2) 02_Infrastructure 내 '_' 접두 파일/디렉토리 (공용 예외 + 아카이브 제외)
-UNDERSCORE_OK <- c("_shared_parse.sh", "_shared_prefix.md")
+UNDERSCORE_OK <- c("_shared_parse.sh", "_shared_prefix.md")   # 위치 무관 공용 모듈 (basename 매칭)
+# 라이브 의존 예외 (2026-07-25 도훈 confirm) — 상대경로 매칭.
+#   여기서 '_' 접두는 §3이 표적하는 '1회용 디버그'가 아니라 'private 모듈'을 뜻한다.
+#   전부 실소비자가 있어 삭제 시 파이프라인 파손 — 괄호 안이 소비자.
+UNDERSCORE_OK_PATHS <- c(
+  "ops/morning_steps/_root.R",                            # morning_steps 9종이 source()
+  "search/_query.py",                                     # search/qvest_search CLI
+  "observability/_wt_pretty.py",                          # observability/qvest_wt CLI
+  "ramp/debug/_cache_pool.rds",                           # 04_Research/ramp/run_ramp_gate3_4.R CACHE_POOL
+  "portfolio/frontier_hrp/_validate_dynamic_regime_rp.R"  # dynamic_regime_rp.R:46 재현 검증본
+)
 infra <- file.path(root, "02_Infrastructure")
 inf_all <- list.files(infra, recursive = TRUE, full.names = FALSE, include.dirs = TRUE)
 und <- inf_all[grepl("(^|/)_[^/_]", inf_all)]                      # '_x...' (‘__’ 계열 제외)
 und <- und[!grepl("(^|/)(__pycache__|_archive[^/]*)(/|$)", und)]   # 아카이브/캐시 제외
-und <- und[!basename(und) %in% UNDERSCORE_OK]
+und <- und[!(basename(und) %in% UNDERSCORE_OK | und %in% UNDERSCORE_OK_PATHS)]
 warnings_out$infra_underscore <- as.list(und)
 
 # (b3) 4대 산출물 존 밖 산출물성 파일 (results/output 명명 데이터 파일)
