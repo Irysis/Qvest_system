@@ -80,17 +80,38 @@ except Exception as e:
 run_test "worktask_sequence_gate" "bash \"$TEST_DIR/test_worktask_sequence_gate.sh\""
 run_test "agent_role_guard" "bash \"$TEST_DIR/test_agent_role_guard.sh\""
 run_test "cert_rules" "Rscript \"$TEST_DIR/test_cert_rules.R\""
+run_test "r_portability" "Rscript \"$TEST_DIR/test_r_portability.R\""
 
 # Aggregate (re-extract since subshells don't propagate)
 TOTAL_PASS=0
 TOTAL_FAIL=0
 TESTS_JSON=""
 UNREPORTED=()
-for test_script in test_worktask_sequence_gate.sh test_agent_role_guard.sh test_cert_rules.R; do
+# [fix 2026-07-25] 구현은 요약을 `tail -1`로 집었는데, 마지막 줄이 경고·stderr
+# 인터리브로 밀리면 그 suite 전체가 UNREPORTED(=1 fail)로 계상되고 통과 건수가
+# 통째로 사라진다 — 실측 1/7 빈도로 27/0/27 ↔ 17/1/18 (드롭분 = seq_gate 10건).
+# → 마지막 줄이 아니라 **뒤에서부터 첫 유효 요약 JSON 라인**을 집는다.
+_last_summary_json() {
+  "$QVEST_PY_BIN" -c '
+import json,sys
+pick=""
+for line in sys.stdin.read().splitlines():
+    s=line.strip()
+    if not (s.startswith("{") and s.endswith("}")): continue
+    try:
+        d=json.loads(s)
+    except Exception:
+        continue
+    if isinstance(d,dict) and "test" in d: pick=s
+print(pick)
+' 2>/dev/null
+}
+
+for test_script in test_worktask_sequence_gate.sh test_agent_role_guard.sh test_cert_rules.R test_r_portability.R; do
   if [[ "$test_script" == *.R ]]; then
-    OUT=$(Rscript "$TEST_DIR/$test_script" 2>&1 | tail -1)
+    OUT=$(Rscript "$TEST_DIR/$test_script" 2>&1 | _last_summary_json)
   else
-    OUT=$(bash "$TEST_DIR/$test_script" 2>&1 | tail -1)
+    OUT=$(bash "$TEST_DIR/$test_script" 2>&1 | _last_summary_json)
   fi
   if echo "$OUT" | "$QVEST_PY_BIN" -c 'import json,sys; d=json.loads(sys.stdin.read()); exit(0 if "test" in d else 1)' 2>/dev/null; then
     PASS=$(echo "$OUT" | "$QVEST_PY_BIN" -c 'import json,sys; print(json.load(sys.stdin).get("pass",0))')
