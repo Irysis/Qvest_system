@@ -61,14 +61,24 @@ fail_count <- 0L
 
 cat("\n── Test 1: tg_format_table ──\n")
 
+# [fix 2026-07-25] 구 픽스처는 3열(Layer/Status/Age)로 성공 반환을 기대했으나,
+# 현행 SOT는 ncol>2 를 거부한다(telegram_notify.R:398 — "v6 SOT: ncol=%d > %d cap.
+# 모바일 가독성"). 즉 프로덕션이 정본이고 픽스처가 스펙 변경을 못 따라간 stale 이었다.
+# 이 실패는 regime 러너의 0-total 위장 뒤에 숨어 있다가 계측 복원으로 드러났다.
+# 픽스처를 2열로 맞추되, **거부 동작 자체를 별도 케이스로 고정**한다(스펙 약화 아님).
 df <- data.frame(
   Layer  = c("L1 MSM", "L2 FRED", "L3 KTRI"),
   Status = c("OK", "STALE", "OK"),
-  Age    = c("2d", "8d", "0d"),
   stringsAsFactors = FALSE
 )
 
 block <- tg_format_table(df)
+
+# 2열 상한 회귀 방지 — 3열은 반드시 거부되어야 한다.
+.assert(inherits(try(tg_format_table(data.frame(A = "1", B = "2", C = "3",
+                                                stringsAsFactors = FALSE)),
+                     silent = TRUE), "try-error"),
+        "ncol>2 → 거부 (v6 SOT 2열 cap, 모바일 가독성)")
 
 .assert(is.character(block) && length(block) == 1,
         "tg_format_table returns single character string")

@@ -78,7 +78,8 @@
 
 ## 4. 운영 노트
 
-- **테스트**: `python 02_Infrastructure/tests/test_continuity_gate.py` (12/12 배터리 — 역대 우회어 BLOCK·정당종료 PASS·신어 anti-whack-a-mole·paved-path).
+- **테스트**: `"$QVEST_PY" 02_Infrastructure/tests/test_continuity_gate.py` — **31/31 배터리**(2026-07-25 실측 현행화. 구 "12/12"는 케이스 확장 전 수치) — 역대 우회어 BLOCK·정당종료 PASS·신어 anti-whack-a-mole·paved-path·ADV 우회 10종·회귀 재현(RP) 케이스. bare `python`은 이 환경에서 Store 스텁이라 실행되지 않는다([[reference-python3-windows-stub-use-qvest-py]]).
+  - **★배터리는 판정용 root를 임시 디렉토리로 격리한다** (2026-07-25 수리). 종전엔 `judge_text(root=<실제 저장소>)` 라 `marker_fresh()` 가 운영 마커 `.cache/last_round_closure.json` 을 조회했고, **마커가 fresh 인 동안 차단 케이스 22건이 전부 통과**했다(실측: 마커 존재 시 9/31 · 마커 격리 시 31/31). 게이트가 아니라 배터리가 오염된 것으로, 정상 운영 중 배터리를 돌리면 *"차단 능력이 있다"는 거짓 확신*을 준다 — 가드의 가드가 오염되는 계열이라 더 위험하다. 원칙: **테스트 결과가 운영 상태에 의존해선 안 된다.** 마커가 필요한 케이스는 `marker_override` 로 명시 주입(P6가 그 경로를 검증).
 - **stats/review**: `continuity_gate.py --stats` / `--review` (pending 신어 후보).
 - **수동 케이스 추가**: `continuity_gate.py --append-case <category> <caught_text> <why> <reframed_to>` (도훈이 새 우회 적발 시 즉시).
 - **LLM 토글**: `QVEST_CONTINUITY_LLM=1` + `ANTHROPIC_API_KEY` (§0.1 semantic-primary 완전체. 기본 OFF).
@@ -107,5 +108,6 @@
 - 메모리: [[project-continuity-firewall-20260715]]
 
 ## Change log
+- 2026-07-25 (2): 배터리 판정-root 격리 수리 + §4 현행화. 실측 마커존재 9/31 → 격리 후 **31/31**(마커 유무 무관 결정론). 구 문서 "12/12"는 케이스 확장 전 수치라 31로 정정, 실행 안내도 bare `python` → `$QVEST_PY` 로 교체. 도훈 승인 next_probe ①④.
 - 2026-07-25: §4.1 추가 — 적용 범위가 리서치 턴 한정이 아님을 실측 판정(도훈 승인 next_probe ④). 하네스 수리 턴 발화 = 정발화 실증(대기-모드 마감을 막아 regime 0-total 위장 + 사전 분류 오류 2건 적발). 기존 enum(`capability_established`+`layer="harness"`)으로 표현 가능해 인프라용 별도 enum 미도입.
 - 2026-07-15: 신규. warn→block 승격 + L2 독립 semantic 판정 + L3 건설적 종료계약(close_round) + L4 자가발전. 12/12 배터리·E2E(block/pass/paved-path)·cleaner 통합 검증. 도훈 mandate.
