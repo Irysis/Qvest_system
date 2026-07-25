@@ -2,7 +2,8 @@
 # Run: Rscript -e 'source("02_Infrastructure/ramp/debug/debug_one_catalog.R")'  (from QM_ROOT)
 suppressMessages({ library(jsonlite); library(data.table) })
 
-sink("02_Infrastructure/ramp/debug/_debug_catalog_out.txt")
+dir.create(".cache/scratch/ramp_debug", recursive = TRUE, showWarnings = FALSE)
+sink(".cache/scratch/ramp_debug/debug_catalog_out.txt")
 
 cat("===== module_catalog.json =====\n")
 mc <- fromJSON("06_Registry/module_catalog.json", simplifyVector = FALSE)
@@ -66,4 +67,4 @@ cat("n batch_434 rds:", length(b), "\n")
 cat("first 3:\n"); cat(paste(head(b,3), collapse="\n"), "\n")
 
 sink()
-cat("debug_one_catalog done -> 02_Infrastructure/ramp/debug/_debug_catalog_out.txt\n")
+cat("debug_one_catalog done -> .cache/scratch/ramp_debug/debug_catalog_out.txt\n")
