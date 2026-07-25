@@ -52,7 +52,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; PYX=\"$DIR/.venv_qvest_ml/Scripts/python.exe\"; if [ -x \"$PYX\" ]; then \"$PYX\" \"$DIR/02_Infrastructure/hooks/qvest_hook_router.py\" dispatch --event PreToolUse 2>>/tmp/qvest_hook_router_dispatch.stderr.log; else INPUT=$(cat); if printf '%s' \"$INPUT\" | grep -qE '05_Production|normalizePath' || { printf '%s' \"$INPUT\" | grep -q '01_Literature' && ! printf '%s' \"$INPUT\" | grep -q 'Korea_Research'; } || { printf '%s' \"$INPUT\" | grep -q 'WT-P' && printf '%s' \"$INPUT\" | grep -q 'request\\.json'; }; then echo '{\"decision\":\"block\",\"reason\":\"qvest_hook_router: python venv 부재 — 보호 대상 패턴 감지, 검증 불가 시 차단 (fail-closed)\"}'; else echo '{}'; fi; fi",
+            "command": "DIR=${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}; PYX=\"$DIR/.venv_qvest_ml/Scripts/python.exe\"; [ -x \"$PYX\" ] || PYX=\"${QM_ROOT//\\\\//}/.venv_qvest_ml/Scripts/python.exe\"; [ -x \"$PYX\" ] || PYX=\"${QVEST_PY//\\\\//}\"; if [ -x \"$PYX\" ]; then \"$PYX\" \"$DIR/02_Infrastructure/hooks/qvest_hook_router.py\" dispatch --event PreToolUse 2>>/tmp/qvest_hook_router_dispatch.stderr.log; else INPUT=$(cat); if printf '%s' \"$INPUT\" | grep -qE '05_Production|normalizePath' || { printf '%s' \"$INPUT\" | grep -q '01_Literature' && ! printf '%s' \"$INPUT\" | grep -q 'Korea_Research'; } || { printf '%s' \"$INPUT\" | grep -q 'WT-P' && printf '%s' \"$INPUT\" | grep -q 'request\\.json'; }; then echo '{\"decision\":\"block\",\"reason\":\"qvest_hook_router: python venv 부재 — 보호 대상 패턴 감지, 검증 불가 시 차단 (fail-closed)\"}'; else echo '{}'; fi; fi",
             "timeout": 120
           }
         ]
