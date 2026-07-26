@@ -474,6 +474,42 @@ P1의 원문 기전: *"달력이 끝났나"와 "이 파일이 그 달을 끝까�
 
 ---
 
+## 8. 수리 반영 현황 (2026-07-26 밤 — 통합 검증 T1~T4 + V)
+
+스캔(§2~§4)은 발견·판정만이었고, 그날 밤 4트랙이 P0 3건을 수리했습니다. 아래는 **통합 검증(임무 V) 실측**입니다.
+
+### 8.1 수리 완료 3건 (P0 전량)
+
+| ID | 수리 내용 | 위반 주입 테스트 (상설 편입) | 실측 검증 |
+|---|---|---|---|
+| **P2-01** | 후보집합을 달력연도 → **제출창 기반**으로 교체. `.dart_season_bounds()` 중복 정의 제거 → 신설 정본 `data/dart_submission_window.R`. 호출부 `daily_refresh.sh:364` = `dart_run_pipeline(max_calls=3000)` (years 인자 제거), `dart_daily_incremental.R:58` = `dart_fetch_quarterly(years=quarterly_years)` | `08_Tests/data/test_dart_candidate_years.R` — **29 assert PASS** (A 미수집 적발 / B 완결연도 오탐0 / C 제출창 미개시 차단 / D 구 규칙이면 A가 통과해버림 / E 호출부 배선 / F 11013=1Q·11014=3Q 매핑) | FY2025 백필 실행: `dart_raw_financials` corps **50 → 1,327**, `dart_raw_quarterly`(11011) **103 → 1,297**, `fundamental_dart` Ticker **50 → 1,326**, `fundamental_merged` Period=202512 DART 행 **6,462 → 139,045** |
+| **P2-02** | registry `.cache/factor_db/`에 `date_col:"Date"` 선언 → 파일 **내용**의 max(Date)로 lag 산출. SLA 40 → **14d** 동반 조정(내용 축은 RAWDATA를 따라 매일 움직임; 실측 근거 = 완료월 shortfall 0d + 월-전환 최대 lag ~10d) | `08_Tests/data/test_cache_content_reach.R` E3 (+A/D축) | 감사 실측: `.cache/factor_db/` **data_lag=2** (수리 전 구조상 당월 내내 0). 3주 동결이 이제 lag로 드러남 |
+| **P2-03** | 도달 축을 **선언**으로 승격: 4개 DART 계열 캐시에 `coverage_check{label_col, entity_col, due_rule, grace_days, min_ratio_vs_prior}` 신설. 선언 불가 캐시는 `no_content_check{reason}` **명시 라벨** → 감사가 `MTIME_ONLY`로 표기(“검사됨”과 구분). 미선언은 `NO_COVERAGE_CHECK/WARN` | `08_Tests/data/test_cache_content_reach.R` — **41 assert PASS** (A 결손 적발 / B 오탐0 / C 크래시 내성 / **D 판정부 무력화 시 A가 통과로 뒤집힘** / E 규약·배선) | 감사 실측: 4건 전부 `COVERAGE_PASS`. 백필 전 동일 검사가 `COVERAGE_FAIL/CRITICAL (FY2025 50 / FY2024 714 = 7.0% < 80%)`로 **실발화** 확인 |
+
+**부수 확인 — 검사가 살아 있다는 실증**: T1 백필 진행 중 `dart_raw_financials` corps가 50 → 450 → 1,050으로 차오르며 P2-03 검사가 `COVERAGE_FAIL → COVERAGE_PASS`로 **자동 전환**했습니다. 정적 통과가 아니라 상태를 따라가는 검사임이 실측됐습니다.
+
+### 8.2 통합 검증 실측 (2026-07-26 21:00~21:10)
+
+- **훅 배터리**: `08_Tests/hooks/run_all_hooks.sh` → **266 pass / 0 fail / 14 suite**, 회귀 0. 신규 편입 4종 = `dart_candidate_years`(29) · `cache_content_reach`(41) · `ic_frontier_check`(32) · `v8_readiness_hook_dryrun`(23)
+- **신선도 감사**: `cache_freshness_audit()` → **52 엔트리 전량 OK (WARN 0 / CRITICAL 0)**. **잔여 STALE 0건** — T1 백필 후 추가 결손 없음
+- **readiness gate**: `run_v8_readiness_gate(strict=TRUE)` → **15 PASS / 0 FAIL / 1 WARN**(3-day soak: `recent_3d=0`, 케이던스 요건이지 결함 아님). 직전 기록(2026-07-18)은 FAIL 4 — 게이트 FAIL 축 해소
+- **상호 간섭 0**: `cache_registry.json` JSON 유효 · 45 엔트리 · path 중복 0 · R parse OK(감사 실행이 증거). `SUITES` 배열 14개 중복 0 · 파일 전량 실재 — T1·T3 편입 충돌 없음
+- **suite_totals 래칫**: `--collect` → `--baseline` → `--check` 승격. **hooks 266 · regime 5 · contract_regression 54 · continuity 31**(fail 축 전부 0). 위반 주입(1 suite 제거 → 재수집)에서 **`hooks 266 → 225 (-41)` 경보 + exit 1** 실발화 확인 후 원복(diff 0)
+  - 래칫 이력: 27(07-25) → 34 → 57(16:41) → 157(18:17) → 182(19:44) → 225(19:49) → **266**(20:23~). 트랙 편입마다 재승격돼, 검증 시점엔 이미 실측과 정합
+
+### 8.3 잔여 미수리 (12건 + 파생 1건)
+
+- **P2-04 ~ P2-15 (12건 전량 미수리)** — 대상 파일 today-diff 0건으로 실측 확인(`factor_db_connector.R` / `ramp/factor_validation.R` / `refresh_nonreturn_sources.py` / `trading_calendar.R` / `krx_build_rawdata.R` / `incremental_update_file.R` / `incremental_cache_update.R` 전부 무변경). `.fdb_gap_months()`도 원문 그대로(`factor_db_builder.R:1337-1352`) — **P1 수리의 필수 후속(P2-04)이 여전히 열려 있음**
+- **★신규 파생 항목 — REPRT_MAP quarter 라벨 역전 (PIT 혐의, 별건 승인 대상)**: `data_collector_dart_quarterly.R:60-64`의 `REPRT_MAP`이 `11014→quarter 1` · `11013→quarter 3`로 매핑하는데, OpenDART 공식 + 저장데이터 실측(`thstrm_nm`: 11013 = "제 N 기 1분기", 11014 = "제 N 기 3분기") 모두 **반대**. T1이 `.dart_season_bounds()`(수집 레이어, PIT 무영향)는 정정했으나 `REPRT_MAP`은 명시 보류(같은 파일 `:92-95` 주석). 영향: `11014(실제 3분기) → quarter 1 → Factor_Date = bsns_year-05-15`이므로 **11월 제출 3분기 보고서가 5/15로 라벨** = `fundamental_dart_quarterly.parquet`에 약 6개월 look-ahead 혐의. 수리는 `dart_compute_ttm()` 전량 재생성 동반. T2도 독립적으로 같은 결론에 도달해 해당 캐시를 `no_content_check`(도달 축 선언 불가)로 가시화 — **두 트랙 판정 일치**
+
+### 8.4 다음 탐침 (§7 갱신)
+
+1. **P2-04 착수** — P1 수리가 "부분월 IC 오기록"을 "침묵 결손"으로 바꾼 상태이므로, 부분월 파일 자체를 고치는 주체가 여전히 없음. gap 판정을 존재 → **도달**로 (P1이 IC 쪽에 쓴 술어 재사용)
+2. **REPRT_MAP 역전의 하류 피해 정량** — `fundamental_dart_quarterly` 소비처에서 6개월 look-ahead가 실제 게이트 수치에 도달하는지. PIT C4 축이므로 우선순위 상위
+3. **§7-2 검사 실효 배터리 잔여 12건** — P2-04~15 각각에 위반 주입 케이스 1건씩. 현재 3/15만 상설 검사 보유
+
+---
+
 ## 참조
 
 - P1 수리분: `02_Infrastructure/factor_db/factor_db_builder.R:1543-1568`

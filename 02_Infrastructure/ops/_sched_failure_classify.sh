@@ -104,10 +104,42 @@ sched_usage_state() {
   echo "ok"
 }
 
+# ── sd 소진 예상 시각 (2026-07-26) — 임계에 닿아야 아는 것보다 미리 아는 게 낫다.
+#    최근 N시간 기울기로 100% 도달까지 남은 시간을 추정한다.
+#    ★추정일 뿐이다: 사용 패턴이 바뀌면 빗나간다. 판정(차단/감축)에는 쓰지 않고
+#      **안내 문구에만** 덧붙인다 — 추정치로 게이트를 움직이면 오차가 차단이 된다.
+#    반환: 정수 시간(<=0 이면 이미 소진 추세 아님/산출 불가는 빈 문자열)
+SCHED_FORECAST_WINDOW_H="${SCHED_FORECAST_WINDOW_H:-3}"
+sched_usage_forecast_hours() {
+  local f="${CLAUDE_USAGE_HISTORY:-$APPDATA/Claude/plan-usage-history.json}"
+  [ -f "$f" ] || return 0
+  local py; py=$(sched_resolve_python 2>/dev/null) || return 0
+  [ -n "$py" ] || return 0
+  "$py" - "$f" "$SCHED_FORECAST_WINDOW_H" <<'PY' 2>/dev/null
+import json,sys,io,time
+try:
+    d=json.load(io.open(sys.argv[1],encoding='utf-8'))
+    win=float(sys.argv[2])*3600*1000
+    s=[x for x in d.get('samples',[]) if 'u' in x and 'sd' in x['u']]
+    if len(s)<2: sys.exit(0)
+    now=s[-1]['t']
+    seg=[x for x in s if x['t']>=now-win]
+    if len(seg)<2: sys.exit(0)
+    dt=(seg[-1]['t']-seg[0]['t'])/3600000.0
+    dv=seg[-1]['u']['sd']-seg[0]['u']['sd']
+    if dt<=0 or dv<=0: sys.exit(0)          # 상승 아니면 예측 없음
+    rem=100-seg[-1]['u']['sd']
+    if rem<=0: print(0); sys.exit(0)
+    print(int(rem/(dv/dt)))
+except Exception: pass
+PY
+}
+
 sched_usage_guidance() {
   case "${1:-}" in
     sd_critical) echo "★7일 사용률 창이 임계(${SCHED_SD_CRIT}%+) — 이 창은 100% 도달 시 며칠 막히며 재시도로 풀리지 않습니다. 무거운 자동 리서치(alpha-search 등) 기동을 미루십시오." ;;
-    sd_high)     echo "7일 사용률 창 ${SCHED_SD_WARN}%+ — 여유가 적습니다. 병렬 alpha-search 편수를 줄이는 것을 권합니다." ;;
+    sd_high)     _f=$(sched_usage_forecast_hours 2>/dev/null)
+                 echo "주간 사용률 ${SCHED_SD_WARN}%+ — 여유가 적습니다. 병렬 alpha-search 편수를 줄이는 것을 권합니다.$([ -n "${_f:-}" ] && printf ' 현 추세라면 약 %s시간 후 소진(추정 — 사용량 변하면 달라짐).' "$_f")" ;;
     fh_high)     echo "5시간 창 ${SCHED_FH_WARN}%+ — 곧 차단될 수 있으나 5분 내 롤오버로 회복됩니다(재시도 유효)." ;;
     ok)            echo "사용률 여유 정상." ;;
     unknown_stale) echo "사용률 기록이 낡음(${SCHED_USAGE_MAX_AGE_SEC}초 초과 — 데스크톱 앱 미기동/절전 추정). 현재 소진도를 알 수 없으므로 판정을 신뢰하지 않습니다. 차단하지는 않되(fail-open) 무거운 작업 전 앱을 켜 갱신을 확인하십시오." ;;

@@ -98,6 +98,15 @@
 - `IC_FRONTIER_LAG` 1개월=WARN / 2개월+=CRITICAL, 산출가능일 +`grace_days`(기본 3) 이내는 OK. 기대보다 앞서면 `IC_FRONTIER_AHEAD`(WARN — 부분월 pair 기록 의심).
 - 실측(2026-07-26): IC max Date 2026-05-29 / 기대 2026-05 → CURRENT·OK, `guard_agrees=TRUE`. 위반 주입(IC를 2026-03로 강제) → CRITICAL 발화 확인.
 
+## factor_db 디렉토리 신선도 = 내용 축 (2026-07-26 수리, P2-02)
+
+`cache_registry.json`의 `.cache/factor_db/`는 `date_col` 미선언이라 **파일명 YYYYMM의 월말**로 lag를 추정했다 — `data_lag = max(0, today − 월말)`이므로 **당월 내내 0/FRESH**였고, 파일 내용을 한 번도 열지 않았다. 실사고: `factor_db_202607`이 `Date=2026-07-03`에 3주 동결된 동안 감사는 매일 FRESH를 보고했다(D2 주간 리프레시가 필요했던 이유 자체가 이 침묵).
+
+- 수리 = registry에 **`date_col: "Date"` 선언**(코드 무변경). 디렉토리형 집계 규약 = `file_pattern` 매칭 **사전순 max 파일 1개**의 `max(date_col)`.
+- **`max_lag_days` 40 → 14 동반 조정**: 40은 '파일명-월말' 축에서 "한 달 이상 미빌드"를 잡으려던 값이라 내용 축에는 과대(내용 lag은 RAWDATA를 따라 매일 움직임). 14의 실측 근거 = (a) 직전 14개 완료월 전부 content max == 그 달 최종 거래일(shortfall 0d), (b) 월-전환 구간 최대 lag ~10d. D2 강제 재빌드(7d 초과 지연 시 force)와 정합.
+- `date_col` 미선언 디렉토리는 이제 조용히 OK가 아니라 `FILENAME_ESTIMATE_ONLY/WARN` 표기. 내부 월의 구멍(D형)은 이 축 소관 아님 — **`.fdb_gap_months()`(P2-04)는 미수리**로 남아 있다(존재→완비 대리판정 + max 이전 구멍 불가시).
+- 실측(2026-07-26 21:00): `.cache/factor_db/` `data_lag=2`(수리 전 구조상 0). 상설 검사 = `08_Tests/data/test_cache_content_reach.R` E3.
+
 ## build_hash 계약 (2026-07-26 수리)
 
 `.cache/factor_db/build_hash.txt` 1행 = `<YYYYMMDDHHMMSS>_<rev>`. 소비자는 전부 n=1 읽기.
