@@ -207,6 +207,16 @@ QEPM Codex Critic Round(외부 codex auto-spawn)는 **2026-06-30 v8.2에서 폐�
 - **agent_role_guard 복원**: MSYS ps가 `-o` 미지원이라 PARENT_PID 식별이 항상 실패 → 역할 경계 가드가 이 머신에서 상시 allow였음. bash 내장 `$PPID`로 교체 수리 (battery 13/13 검증).
 - **회귀 배터리**: `02_Infrastructure/ops/hook_e2e_battery.py` — 등록 hook 한글 payload 블록/통과 13케이스. hook 파서/이스케이프 변경 시 실행 의무.
 
+## 스위트 총계 래칫 (2026-07-25 신설 · 07-26 갱신)
+
+계측 사망은 실패로 드러나지 않고 **총계가 조용히 줄어드는** 형태로 온다(실사고 3건: hooks 27→0이 "✅ ALL PASS"로 위장 / regime 5→0 / continuity 31→9). 잡히는 유일한 신호가 총계 감소다.
+
+- 감시기 `02_Infrastructure/ops/suite_totals_watch.sh` — `--collect`(4 러너 실행) → `--baseline`(승격) → `--check`(비교, exit 1 = 감소). 기준선 = `06_Registry/suite_totals_baseline.json`.
+- **fail 축 동시 수집**(2026-07-26): `total = pass + fail` 구조라 FAIL이 나도 총계는 불변 → 회귀가 감시를 그냥 통과했다. `*_fail > 0`도 exit 1.
+- 수집 실패는 **0이 아니라 null**로 기록하고, null 포함 시 **기준선 승격을 거부**한다(불완전 수집을 기준선으로 삼으면 이후 감소를 영영 못 잡는다).
+- **현행 기준선 실측 (2026-07-26 21:05)**: `hooks 266`(suite 14) · `regime 5` · `contract_regression 54` · `continuity 31`, fail 축 전부 0. 이력 27 → 34 → 57 → 157 → 182 → 225 → **266** (4트랙 SUITES 편입마다 재승격).
+- **차단 실효 실측**: SUITES에서 임의 1 suite 제거 후 재수집 → `hooks 266 → 225 (-41)` 경보 + exit 1 발화 확인, 원복(diff 0). ★기준선이 실측보다 낮으면 래칫은 조용히 무력하므로, **SUITES 편입 후 재승격은 의무**.
+
 ## v8.1.1 정합 (2026-06-10)
 
 - settings.json 46개 hook DIR = `${CLAUDE_PROJECT_DIR:-${QM_ROOT:-$PWD}}` 3중 fallback (구 경로 glob 폐기 — 46-hook 전수 침묵사망 사건 수리)

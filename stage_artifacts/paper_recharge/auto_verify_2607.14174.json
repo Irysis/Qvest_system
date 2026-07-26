@@ -1,0 +1,66 @@
+{
+  "paper_id": "2607.14174",
+  "paper_title": "How Much of a 10-K Matters? Aggregation-Dependent Value of Full-Text versus Risk-Factor Sentiment",
+  "factor_name": "dart_risk_section_sentiment",
+  "processed_date": "20260726",
+  "impl_attempted": false,
+  "quarantine_reason": "batch_434_data_structural_mismatch",
+  "L1_pit_pass": "SKIP_NOT_EXECUTED",
+  "L2_contract_pass": "SKIP_NOT_EXECUTED",
+  "L3_robustness_pass": "SKIP_NOT_EXECUTED",
+  "L4_fidelity_pass": "FAIL",
+  "L5_gate_decision": "QUARANTINE",
+  "port_t": null,
+  "grade": null,
+  "score": null,
+  "oos_retention": null,
+  "fidelity_fail_reason": {
+    "primary": "KR 사업보고서 구조적 비대칭 — 논문 핵심 입력(Item 1A 위험요인 섹션)의 KR 직접 대응물 부재",
+    "detail": [
+      "논문 핵심: US 10-K Item 1A 'Risk Factors' = full filing의 57% 분량인 전용 위험요인 섹션",
+      "KR 확인: 삼성전자 2022 사업보고서 54개 TOC 항목 전수 조회 — 독립 위험요인 섹션 없음",
+      "가장 유사 섹션: 'II.5. 위험관리 및 파생거래' = 실질 텍스트 2,550자(대부분 목차 텍스트) = 파생상품 헤지 정책 기술, 사업위험 서술 아님",
+      "대체 섹션 사용 시 (전문 or MD&A) = 다른 가설 검증 = impl_sketch 명시 신호와 불일치",
+      "batch_434 guard: '충실 구현 불가(데이터 없음)' 조건 충족"
+    ]
+  },
+  "infra_gaps": {
+    "dart_api_key": "OK — .env DART_API_KEY 확인, API 호출 성공(사업보고서 XML ZIP 취득 실증)",
+    "dart_fulltext_api": "OK — /api/document.xml 엔드포인트, ZIP→XML 3.9M자 파싱 성공",
+    "mecab_konlpy": "MISSING — venv_qvest_ml에 미설치. kiwipiepy pip 설치로 해결 가능",
+    "beautifulsoup4": "MISSING — venv_qvest_ml에 미설치. pip 설치로 즉시 해결",
+    "pandas_sklearn": "OK",
+    "kr_risk_section_equivalent": "BLOCKING — KR 사업보고서 = 미존재(구조적 원인, 단순 설치로 해결 불가)"
+  },
+  "corpus_build_estimate": {
+    "n_companies": "~350 (K200∪KQ150)",
+    "n_years": "~20 (2005-2024)",
+    "n_filings_total": "~7000",
+    "download_time_estimate": "6-12시간 (API 속도 제한 고려)",
+    "tokenization_estimate": "3-5시간 (kiwipiepy 기준)"
+  },
+  "next_probe_registered": [
+    {
+      "fq_id": "FQ-074",
+      "hypothesis": "DART 사업보고서 전문 지도학습 감성 (dart_fulltext_supervised_sentiment)",
+      "difference_from_quarantined": "위험요인 섹션 아닌 전체 사업보고서 텍스트 사용 — 논문의 full-filing 모델에 대응"
+    },
+    {
+      "fq_id": "FQ-075",
+      "hypothesis": "DART MD&A + 사업개요 지도학습 감성 (dart_biznarrative_supervised_sentiment)",
+      "difference_from_quarantined": "'IV. 이사의 경영진단 및 분석의견' + 'II.1~4 사업의 내용' — KR 사업서술 텍스트, 위험/사업 정보 집중 섹션"
+    }
+  ],
+  "revival_conditions": [
+    "KR 사업보고서에 독립 '위험요인' 또는 '사업위험' 전용 섹션 신설 확인 (FSC 공시규정 개정 후)",
+    "또는: 특정 섹션을 '사업위험 서술 부분'으로 자동 추출하는 KR-전용 파서 구축 + 10+ 기업 파일럿 검증"
+  ],
+  "verified_by": "Q-Lead 2607.14174 feasibility audit 20260726",
+  "api_test_evidence": {
+    "dart_api_call": "GET /api/list.json corp_code=00126380 bgn_de=20230101 → status:000, 사업보고서(2022.12) rcept_no=20230307000542",
+    "document_xml_call": "GET /api/document.xml rcept_no=20230307000542 → 585676 bytes ZIP → 3,900,326자 XML",
+    "toc_items_count": 54,
+    "risk_section_chars": 2550,
+    "conclusion": "DART API 완전 작동. 단 '위험요인 전용 섹션' 구조적 부재 확인"
+  }
+}

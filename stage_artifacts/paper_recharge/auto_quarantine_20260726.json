@@ -1,0 +1,30 @@
+[
+  {
+    "paper_id": "2607.14174",
+    "paper_title": "How Much of a 10-K Matters? Aggregation-Dependent Value of Full-Text versus Risk-Factor Sentiment",
+    "factor_name": "dart_risk_section_sentiment",
+    "gate_decision": "QUARANTINE",
+    "gate_failed_layers": "fidelity",
+    "gate_rule": "batch_434 guard — 충실 구현 불가(데이터 없음): KR 사업보고서에 논문 핵심 입력(Item 1A 위험요인 전용 섹션) 구조적 부재",
+    "layers": {
+      "pit_pass": "SKIP_NOT_EXECUTED",
+      "contract_pass": "SKIP_NOT_EXECUTED",
+      "robustness_pass": "SKIP_NOT_EXECUTED",
+      "fidelity_pass": false
+    },
+    "implementation_status": "impl_not_attempted",
+    "quarantine_reason": "batch_434_data_structural_mismatch",
+    "fidelity_fail_summary": "US 10-K Item 1A 위험요인 전용 섹션(filing의 57%)의 KR 직접 대응물 부재. 삼성전자 2022 사업보고서 54개 TOC 전수 확인 — '위험관리 및 파생거래' 2,550자(파생/헤지 정책, 위험서술 아님)가 가장 유사. 대체 섹션 사용 = 다른 가설. mecab-ko/konlpy 미설치.",
+    "infra_confirmed_ok": "DART API 키 .env 확인, /api/document.xml ZIP+XML 파싱 성공(3.9M자)",
+    "infra_blocked": "KR 위험요인 섹션 구조 부재(설치로 해결 불가), mecab-ko 미설치",
+    "port_t": null,
+    "grade": null,
+    "processed_date": "20260726",
+    "verify_path": "stage_artifacts/paper_recharge/auto_verify_2607.14174.json",
+    "next_probe": ["FQ-074 dart_fulltext_supervised_sentiment", "FQ-075 dart_biznarrative_supervised_sentiment"],
+    "revival_conditions": [
+      "KR 사업보고서 독립 위험요인 섹션 신설 + KR-전용 파서 구축",
+      "FQ-074/075 full-text 경로로 먼저 방법론 타당성 확인 후 재고"
+    ]
+  }
+]
