@@ -103,6 +103,7 @@ SUITES=(
   "08_Tests/hooks/test_cert_rules.R"
   "08_Tests/hooks/test_r_portability.R"
   "08_Tests/factor_db/test_ic_completion_guard.R"
+  "08_Tests/factor_db/test_build_hash_provenance.R"
 )
 
 _suite_cmd() {
