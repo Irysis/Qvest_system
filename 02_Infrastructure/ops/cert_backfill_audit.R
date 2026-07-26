@@ -89,8 +89,17 @@ CHARTER_REF <- "v1.2 §10 (backfilled by cert_backfill_audit.R)"
 #──────────────────────────────────────────────────────────────────────────────
 .cba_load_resolver <- function() {
   if (exists(".lineage_related", inherits = TRUE)) return(TRUE)
-  mba <- file.path(PROJECT_ROOT, "02_Infrastructure/portfolio/measurement_basis_audit.R")
-  if (!file.exists(mba)) return(FALSE)
+  # ★이 파일은 PROJECT_ROOT 를 정의하지 않는다(상대경로 스타일 — cert_rules.R 로드와 동일).
+  #   초판이 PROJECT_ROOT 를 썼다가 미정의로 조용히 폴백될 참이었다. 후보를 **표지 검증**으로
+  #   확인한다(r-portability 금칙 ③④ — 존재≠정체, CLAUDE_PROJECT_DIR 우선).
+  rel <- "02_Infrastructure/portfolio/measurement_basis_audit.R"
+  mba <- ""
+  for (cand in c(rel,
+                 file.path(Sys.getenv("CLAUDE_PROJECT_DIR", ""), rel),
+                 file.path(Sys.getenv("QM_ROOT", ""), rel))) {
+    if (nzchar(cand) && file.exists(cand)) { mba <- cand; break }
+  }
+  if (!nzchar(mba)) return(FALSE)
   ok <- tryCatch({ source(mba); exists(".lineage_related", inherits = TRUE) },
                  error = function(e) FALSE)
   isTRUE(ok)
