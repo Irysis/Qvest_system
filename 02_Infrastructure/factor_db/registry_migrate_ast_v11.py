@@ -47,7 +47,7 @@ KD_FUND = (
     "혼합 basis: fundamental_merged 내 XLSX-source 행은 전분기 일률 Period_Date+45d"
     "(Q4 포함, parse_fundamental_xlsx.R:199), DART-source 행은 연간 익년 3/31"
     "(data_collector_dart.R:840)·분기 고정일 5/15·8/15·11/15·3/31"
-    "(data_collector_dart_quarterly.R:497-501). 동일 키 충돌 시 DART 우선 dedupe"
+    "(data_collector_dart_quarterly.R:557-560, 라인 갱신 2026-07-26). 동일 키 충돌 시 DART 우선 dedupe"
     "(parse_fundamental_xlsx.R:349-358). C4 3-way(pit.md '연간 5월' vs DART 3/31 vs "
     "xlsx +45d) 불일치 — 도훈 결정 대기 (ast_field_map_v0 fundamentals)"
 )

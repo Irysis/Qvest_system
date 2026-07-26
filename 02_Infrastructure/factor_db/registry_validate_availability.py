@@ -15,7 +15,10 @@ registry_validate_availability.py — 선언 availability ↔ 코드 강제점 �
   코드 강제점 (2026-07-25 실측 라인):
     parse_fundamental_xlsx.R:199   Factor_Date := Period_Date + 45L   (전분기 일률 +45d)
     data_collector_dart.R:840      Factor_Date := bsns_year+1 "-03-31" (연간 3/31)
-    data_collector_dart_quarterly.R:497-501  Q1 5/15 Q2 8/15 Q3 11/15 Q4 3/31 (분기 고정일)
+    data_collector_dart_quarterly.R:557-560  Q1 5/15 Q2 8/15 Q3 11/15 Q4 3/31 (분기 고정일)
+      ※ 라인 갱신 2026-07-26 (REPRT_MAP 뒤집힘 수리로 상단 주석이 늘어 이동).
+        대조 자체는 아래 CODE_ENFORCEMENT_POINTS 정규식이 하므로 라인 표기는 참고용이다
+        — 라인으로 검사하지 말 것(주석 한 줄에 깨진다).
     compute_investor.R:100         inv[Date < sig_d]                  (strict t-1)
 
 종료코드: 0 = PASS(허용된 known_discrepancy만), 1 = FAIL(구조 위반 또는 미신고 불일치).

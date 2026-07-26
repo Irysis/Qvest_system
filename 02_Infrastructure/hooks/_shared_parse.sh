@@ -59,6 +59,77 @@ fi
 export QVEST_PY_BIN
 
 # 해석-only 모드: stdin 파싱 없이 종료 (source 전용)
+#──────────────────────────────────────────────────────────────────────────────
+# qvest_emit_event — 인라인 이벤트 원장 append (2026-07-26, 도훈 승인)
+#
+# 왜 여기인가: v7.0 Sprint 6 의 emit_event.sh 는 **외부 스크립트**였고, 이 머신에서
+#   `bash emit_event.sh` 1회 = 230ms(실측) — 그중 52ms 가 bash 프로세스 시동, 나머지는
+#   본문의 `$( )` 서브셸이다. 훅마다 이걸 부르면 세션에 수 초가 붙는다.
+#   반면 이 파일은 **훅 16종이 이미 source** 하므로 함수 호출은 추가 프로세스 0 =
+#   인라인 append 실측 1.4ms. 그래서 원장 배관을 여기에 둔다.
+#   (emit_event.sh 는 수동 CLI·외부 호출용으로 유지 — 같은 스키마)
+#
+# 설계 제약(원 설계 유지): 관측성은 guard 아님 — 실패해도 훅을 차단하지 않는다.
+#   모든 실패는 조용히 삼키지 않고 FAIL_LOG 에 남긴다(이 저장소의 fail-open 금지 규율).
+#
+# 성능 규율: `$( )` 서브셸을 쓰지 않는다. 이스케이프도 파라미터 확장으로만 처리한다.
+#   (구 emit_event.sh 가 `$(_esc ...)` 4~8회로 179ms 를 태웠다)
+#
+# Usage: qvest_emit_event <event_type> <hook_name> <decision> [wt_id] [agent_role] [latency_ms] [file_path] [context]
+#──────────────────────────────────────────────────────────────────────────────
+qvest_emit_event() {
+  # 비활성 스위치 — 무인 배치·성능 실측 시 끌 수 있게
+  [ "${QVEST_EVENT_LEDGER:-1}" = "0" ] && return 0
+
+  local _root="${CLAUDE_PROJECT_DIR:-${QM_ROOT:-}}"
+  [ -n "$_root" ] || return 0
+  local _led="$_root/qepm/observability/events.jsonl"
+  [ -d "$_root/qepm/observability" ] || return 0   # 디렉토리 없으면 조용히 skip(신규 클론)
+
+  local _et="${1:-unknown}" _hn="${2:-unknown}" _dc="${3:-allow}"
+  local _wt="${4:-}" _ar="${5:-}" _lm="${6:-0}" _fp="${7:-}" _cx="${8:-}"
+  case "$_lm" in (*[!0-9]*|"") _lm=0 ;; esac
+
+  # JSON 이스케이프 (서브셸 없이 파라미터 확장만)
+  local _e
+  # ★JSON 이스케이프 순서 고정: 백슬래시를 **먼저** 두 배로, 그 다음 인용부호.
+  #   역순이면 인용부호용으로 넣은 백슬래시까지 두 배가 된다.
+  #   (2026-07-26 실측 사고: 블록 이동 중 이 라인의 이스케이프가 한 단계 붕괴해
+  #    'C:\p' 가 그대로 나가 **무효 JSON** 이 100행 적재됐다 — 원장 정리 후 재작성)
+  _esc_inline() {
+    _e="$1"
+    _e="${_e//\\/\\\\}"
+    _e="${_e//\"/\\\"}"
+    _e="${_e//$'\t'/\\t}"
+    _e="${_e//$'\r'/}"
+    _e="${_e//$'\n'/\\n}"
+  }
+
+  local _ts
+  if ((BASH_VERSINFO[0] > 4 || (BASH_VERSINFO[0] == 4 && BASH_VERSINFO[1] >= 2))); then
+    printf -v _ts '%(%Y-%m-%dT%H:%M:%S%z)T' -1
+  else
+    _ts="$(date -Iseconds 2>/dev/null)"
+  fi
+
+  local _opt=""
+  if [ -n "$_wt" ]; then _esc_inline "$_wt"; _opt="$_opt,\"wt_id\":\"$_e\""; fi
+  if [ -n "$_ar" ]; then _esc_inline "$_ar"; _opt="$_opt,\"agent_role\":\"$_e\""; fi
+  if [ -n "$_fp" ]; then _esc_inline "$_fp"; _opt="$_opt,\"file_path\":\"$_e\""; fi
+  if [ -n "$_cx" ]; then _esc_inline "$_cx"; _opt="$_opt,\"context\":\"$_e\""; fi
+
+  local _t _h _d
+  _esc_inline "$_et"; _t="$_e"
+  _esc_inline "$_hn"; _h="$_e"
+  _esc_inline "$_dc"; _d="$_e"
+
+  printf '{"timestamp":"%s","event_type":"%s","hook_name":"%s","decision":"%s","latency_ms":%s%s}\n' \
+    "$_ts" "$_t" "$_h" "$_d" "$_lm" "$_opt" >> "$_led" 2>/dev/null \
+    || printf '[%s] qvest_emit_event append fail hook=%s\n' "$_ts" "$_hn" \
+         >> "${QVEST_EMIT_FAIL_LOG:-/tmp/emit_event_fail.log}" 2>/dev/null
+  return 0
+}
+
 if [ "${QVEST_PARSE_RESOLVE_ONLY:-0}" = "1" ]; then
   return 0 2>/dev/null || exit 0
 fi
@@ -100,3 +171,4 @@ export CONTENT=$(printf '%s\n' "$PARSED" | sed -n '4p')
 export AGENT_NAME=$(printf '%s\n' "$PARSED" | sed -n '5p')
 export AGENT_PROMPT=$(printf '%s\n' "$PARSED" | sed -n '6p')
 export AGENT_NAME_LC=$(printf '%s' "$AGENT_NAME" | tr 'A-Z' 'a-z')
+
