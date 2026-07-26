@@ -211,6 +211,41 @@ cache_freshness_audit <- function(telegram_alert = TRUE,
     } else {
       res$status <- "NO_THRESHOLD"; res$severity <- "OK"
     }
+
+    # ─── 도달 축 선언 감사 (2026-07-26 P2-02/P2-03) ────────────────────────────
+    #   "검사됐고 정상"과 "애초에 검사가 없어서 조용함"은 겉보기가 같다. 이 절이
+    #   그 둘을 상태값으로 갈라놓는다. 스케줄 갱신 대상(on_demand 아님 + SLA 있음)만
+    #   대상 — on_demand/SLA-null 은 stale 개념 자체가 부적용이라 소음이 된다.
+    res$reach_declared <- ccr_reach_declaration(c)
+    scheduled <- !isTRUE(c$schedule == "on_demand") && !is.null(c$max_lag_days)
+
+    if (identical(res$lag_basis, "filename_month_end_estimate") && scheduled) {
+      # 조용한 추정 금지 (P2-02). 내용을 한 번도 안 읽은 lag 은 OK 로 통과시키지 않는다.
+      res$note <- paste0("파일명 YYYYMM 월말 추정 lag — 내용 미열람 (당월 파일이 어느 날짜에 ",
+                         "얼어붙어도 lag=0). registry 에 date_col 선언 필요")
+      if (identical(res$severity, "OK")) {
+        res$status <- "FILENAME_ESTIMATE_ONLY"; res$severity <- "WARN"
+      }
+    } else if (is.na(data_lag) && scheduled) {
+      # date_col 로 내용을 못 읽은 경우 = mtime 만 남았다 (P2-03).
+      if (identical(res$reach_declared, "coverage_check")) {
+        res$lag_basis <- "mtime(+coverage_check)"
+        res$note <- "신선도는 mtime 축, 내용 도달은 <path>::coverage 항목이 판정"
+      } else if (identical(res$reach_declared, "mtime_only_declared")) {
+        res$lag_basis <- "mtime(declared)"
+        res$note <- sprintf("내용 도달 축 미선언(명시) — %s",
+                            c$no_content_check$reason %||% "(사유 미기재)")
+        if (identical(res$status, "FRESH")) res$status <- "MTIME_ONLY"
+      } else {
+        res$lag_basis <- "mtime(undeclared)"
+        res$note <- paste0("date_col / coverage_check / no_content_check 중 어느 것도 선언되지 ",
+                           "않음 — mtime 만으로 판정 중이라 내용 결손(빈 파일·잘린 파일·과거만 ",
+                           "담긴 파일)을 구조적으로 감지 못 함. registry 선언 필요")
+        if (identical(res$severity, "OK")) {
+          res$status <- "NO_COVERAGE_CHECK"; res$severity <- "WARN"
+        }
+      }
+    }
     results[[c$path]] <- res
   }
 
@@ -353,6 +388,37 @@ cache_freshness_audit <- function(telegram_alert = TRUE,
       vres$status <- "VALUE_PASS"; vres$severity <- "OK"
     }
     results[[vres$path]] <- vres
+  }
+
+  # ─── (1b2) 라벨-코호트 커버리지 — registry coverage_check 소비 (2026-07-26 P2-03) ──
+  #   신선도(mtime/max Date)가 구조적으로 못 잡는 축: **회계 라벨로 색인된 캐시**.
+  #   DART 재무제표는 Date 시계열이 없고(bsns_year), 파생 캐시의 Factor_Date 는 PIT
+  #   usable date 라 max 가 미래(2027-03-31)다 — 어느 쪽도 "차 있나"를 답하지 못한다.
+  #   실사고: fundamental_dart.parquet mtime 26일 → FRESH 인데 FY2025 corps 50 (정상 714),
+  #   4개월간 무보고. 여기서는 "제출기한이 지난 최신 라벨이 직전 라벨 대비 차 있나"를 잰다.
+  #   신선도와 독립인 별도 항목("<path>::coverage")으로 기록. 위반 = CRITICAL.
+  for (c in caches) {
+    if (is.null(c$coverage_check)) next
+    cache_path <- file.path(PROJECT_ROOT, c$path)
+    cres <- list(
+      path = paste0(c$path, "::coverage"),
+      tier = c$tier, schedule = c$schedule,
+      registered = TRUE, check = "label_cohort_coverage"
+    )
+    if (!file.exists(cache_path)) {
+      cres$status <- "COVERAGE_SKIP"; cres$severity <- "OK"
+      cres$note <- "파일 없음 — (1) freshness 결과 참조"
+      results[[cres$path]] <- cres
+      next
+    }
+    cc <- tryCatch(ccr_coverage_check(c$coverage_check, path = cache_path, today = today),
+                   error = function(e)
+                     list(status = "COVERAGE_UNKNOWN", severity = "WARN",
+                          note = sprintf("커버리지 판정 실행 실패: %s", conditionMessage(e)),
+                          groups = list()))
+    cres$status <- cc$status; cres$severity <- cc$severity
+    cres$note <- cc$note; cres$groups <- cc$groups
+    results[[cres$path]] <- cres
   }
 
   # ─── (1c) IC 월-프론티어 감시 (P3, 2026-07-26) ──────────────────────────────

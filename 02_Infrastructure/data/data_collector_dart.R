@@ -195,11 +195,25 @@ dart_update_corpcode <- function(force = FALSE) {
 
 
 # 유니버스 전체 티커에 대해 재무제표 수집
-dart_fetch_all <- function(years = 2018:2025,
+#
+# [2026-07-26 P2-01 수리] years 기본값 2018:2025 → NULL(= 제출창 기반 후보집합).
+#   구 호출부는 years = format(Sys.Date(), "%Y") 로 **달력 현재연도 1개**만 요청해
+#   FY2025 사업보고서(2026-03 제출)가 영구 미수집이었다(50/714 corps = 7.0%).
+#   NULL 이면 dart_due_annual_years() 가 "제출창이 열렸고 커버리지가 직전 완결연도
+#   대비 coverage_ratio 미만인 연도"만 뽑는다 → 도달하면 스스로 0 task 가 된다.
+#
+# 인자 추가:
+#   max_calls  일 10,000콜 한도 대비 이번 실행 예산 (fail-closed halt). 기본 Inf.
+#   prioritize 직전연도에 제출 이력이 있는 corp 를 앞으로 (예산이 잘려도 실제
+#              제출사는 먼저 채워진다 — 이 경로엔 EMPTY 원장이 없어 미제출사가
+#              매 실행 재조회되기 때문. 원장 도입은 별건)
+dart_fetch_all <- function(years = NULL,
                             reprt_code = "11011",
                             fs_div = "CFS",
                             delay = 0.7,
-                            resume = TRUE) {
+                            resume = TRUE,
+                            max_calls = Inf,
+                            prioritize = TRUE) {
   # corp_code 매핑 로드
   if (!file.exists(DART_CORPCODE)) dart_update_corpcode()
   corpmap <- as.data.table(read_parquet(DART_CORPCODE))
@@ -223,9 +237,24 @@ dart_fetch_all <- function(years = 2018:2025,
     cat(sprintf("[dart] Resuming: %d existing records loaded\n", nrow(existing)))
   }
 
+  # ── 후보 연도 결정 (P2-01) ────────────────────────────────────────────────
+  if (is.null(years)) {
+    years <- dart_due_annual_years(path = DART_RAW_CACHE)
+    if (length(years) == 0L) {
+      cat("[dart] 제출창 기준 수집 대상 연도 없음 — 전 연도 커버리지 도달.\n")
+      .dart_log_api_usage("dart_fetch_all", 0L, 0L, 0L, 0L, "", "no_due_year")
+      return(invisible(existing))
+    }
+    cat(sprintf("[dart] 후보 연도(제출창+커버리지 판정): %s\n",
+                paste(years, collapse = ", ")))
+  }
+
   # 수집 대상 목록 생성
   tasks <- CJ(corp_code = matched$corp_code, bsns_year = years, sorted = FALSE)
   tasks <- merge(tasks, matched[, .(corp_code, Ticker, corp_name)], by = "corp_code")
+
+  # 제출창 미개시 연도 제거 (명시 years 로 미래연도가 들어와도 낭비 차단)
+  tasks <- .dart_filter_tasks_by_window(tasks, today = Sys.Date(), default_reprt = reprt_code)
 
   # 이미 수집된 건 제외
   if (!is.null(existing) && nrow(existing) > 0) {
@@ -234,9 +263,22 @@ dart_fetch_all <- function(years = 2018:2025,
     cat(sprintf("[dart] Remaining tasks after resume: %d\n", nrow(tasks)))
   }
 
+  # 우선순위: 직전연도 제출 이력 corp 를 앞으로
+  if (isTRUE(prioritize) && nrow(tasks) > 0 && !is.null(existing) && nrow(existing) > 0) {
+    prev_keys <- unique(existing[, .(corp_code, prev_year = bsns_year + 1L)])
+    setnames(prev_keys, "prev_year", "bsns_year")
+    prev_keys[, has_prev := TRUE]
+    tasks <- merge(tasks, prev_keys, by = c("corp_code", "bsns_year"), all.x = TRUE)
+    tasks[is.na(has_prev), has_prev := FALSE]
+    setorder(tasks, -has_prev, corp_code)
+    cat(sprintf("[dart] 우선순위: 직전연도 제출 이력 corp %d / %d\n",
+                sum(tasks$has_prev), nrow(tasks)))
+  }
+
   total <- nrow(tasks)
   if (total == 0) {
     cat("[dart] All data already collected.\n")
+    .dart_log_api_usage("dart_fetch_all", 0L, 0L, 0L, 0L, "", "no_task")
     return(invisible(existing))
   }
 
