@@ -29,3 +29,28 @@ fi
 # 스크립트별 변수명 호환
 PROJECT_ROOT="$PROJECT"
 BASE="$PROJECT"
+
+# ── python3 shim (2026-07-26) — bare `python3` 가 Windows Store 스텁으로 해석되는 함정 차단.
+#    스텁은 "Python " 한 줄 찍고 종료한다 → 명령치환이 빈 문자열을 반환 →
+#    호출부의 ${VAR:-0} / 빈 판정이 이를 삼켜 **정상처럼 위장**한다.
+#    실사고: alpha_search_queue pending 이 참값 3 인데 0 으로 나와 큐가 조용히 skip.
+#    ★존재(command -v)로 판별 금지 — 스텁도 존재한다. 반드시 실행(-c 'import sys')으로 확인.
+#    ★resolve 는 함수 정의 *전에* 1회 수행한다. 정의 후엔 command -v python3 가 함수 자신을
+#      반환해 무한 재귀가 된다.
+if [ -z "${QVEST_PY_SHIM:-}" ]; then
+  _qpy=""
+  for _c in "${QVEST_PY:-}" \
+            "$PROJECT/.venv_qvest_ml/Scripts/python.exe" \
+            "/c/Users/99922/AppData/Local/Programs/Python/Python312/python.exe" \
+            "$(command -v python3 2>/dev/null)" \
+            "$(command -v python 2>/dev/null)"; do
+    [ -n "$_c" ] || continue
+    "$_c" -c 'import sys' >/dev/null 2>&1 && { _qpy="$_c"; break; }
+  done
+  if [ -n "$_qpy" ]; then
+    QVEST_PY_RESOLVED="$_qpy"; export QVEST_PY_RESOLVED
+    python3() { "$QVEST_PY_RESOLVED" "$@"; }
+    QVEST_PY_SHIM=1
+  fi
+  unset _qpy _c
+fi
