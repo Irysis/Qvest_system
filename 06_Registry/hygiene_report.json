@@ -1,22 +1,31 @@
 {
-  "generated_at": "2026-07-26 17:20:21",
+  "generated_at": "2026-07-26 20:08:47",
   "generator": "02_Infrastructure/ops/artifact_hygiene_audit.R",
   "rule_sot": "02_Infrastructure/docs/rules/artifact-storage.md",
-  "dry_run": false,
+  "dry_run": true,
   "retention_days": {
     "logs": 90,
     "scratch": 30
   },
   "cleanup": {
-    "n_deleted": 0,
+    "n_deleted": 5,
     "logs_deleted": [],
     "scratch_deleted": [],
-    "empty_dirs_removed": [],
+    "empty_dirs_removed": [
+      "C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/briefings",
+      "C:/Users/99922/OneDrive/Quant_Module_Moltbot/04_Research/logs",
+      "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/factor_db_daily/_temp_a",
+      "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/logs_archive/2026-07",
+      "C:/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/krx_derivatives"
+    ],
     "manifest": ".cache/hygiene_manifest.log"
   },
-  "n_warnings": 6,
+  "n_warnings": 10,
   "warnings": {
-    "root_unauthorized": [],
+    "root_unauthorized": [
+      "Rplots.pdf",
+      "run_spec_lowfreq_mass.R"
+    ],
     "infra_underscore": [
       "ops/_sched_failure_classify.sh"
     ],
@@ -31,6 +40,10 @@
         "ast_operator_backlog.json",
         "ast_structure_log.jsonl",
         "suite_totals_baseline.json"
+      ],
+      "08_Tests": [
+        "data",
+        "validation"
       ]
     }
   }

@@ -49,6 +49,22 @@ ccr_month_end <- function(d) {
   seq(as.Date(format(d, "%Y-%m-01")), by = "month", length.out = 2L)[2L] - 1L
 }
 
+#' 문자/숫자/Date/POSIXct → Date, **에러 없이**. 잘못된 값은 NA.
+#' ★as.Date(<character>) 는 기본 tryFormats 경로에서 잘못된 값에 warning 이 아니라
+#'   **error** 를 던진다(예: as.Date("2026-13-01")). suppressWarnings 로는 못 막는다 —
+#'   date_col 문자열 컬럼에 이상값 1건만 있어도 감사 전체가 죽는다(감시기 사망).
+#'   format 지정 파싱은 같은 입력에 NA 를 돌려주므로 그쪽을 쓴다. (2026-07-26 C축 적발)
+.ccr_as_date_safe <- function(x) {
+  if (inherits(x, "Date")) return(x)
+  if (inherits(x, "POSIXt")) return(as.Date(x))
+  if (is.numeric(x)) return(suppressWarnings(as.Date(x, origin = "1970-01-01")))
+  s <- as.character(x)
+  out <- suppressWarnings(as.Date(s, format = "%Y-%m-%d"))
+  need <- is.na(out) & !is.na(s) & nzchar(s)
+  if (any(need)) out[need] <- suppressWarnings(as.Date(s[need], format = "%Y/%m/%d"))
+  out
+}
+
 #' date_col 값 → Date 벡터. 파싱 불가는 NA (에러 아님 — 감시기는 죽으면 안 된다).
 #'
 #' @param kind "date" (기본, Date/POSIXct/표준 문자열) |
@@ -64,7 +80,8 @@ ccr_to_date <- function(x, kind = "date") {
     out <- rep(as.Date(NA), length(s))
     if (any(okm)) {
       yy <- sub(pat, "\\1", s[okm]); mm <- sub(pat, "\\2", s[okm])
-      first <- suppressWarnings(as.Date(paste0(yy, "-", mm, "-01")))
+      # format 지정 — "2026-13" 처럼 패턴은 맞지만 월이 불가능한 값은 NA (에러 아님)
+      first <- suppressWarnings(as.Date(paste0(yy, "-", mm, "-01"), format = "%Y-%m-%d"))
       good <- !is.na(first)
       # 월말 = 다음달 1일 − 1일.
       # ★고유값에만 적용한 뒤 match 로 되돌린다 (2026-07-26 성능 수리): 종전엔 행마다
@@ -81,12 +98,12 @@ ccr_to_date <- function(x, kind = "date") {
     }
     return(out)
   }
-  suppressWarnings(as.Date(x))
+  .ccr_as_date_safe(x)
 }
 
 #' 내용 lag (일). semantics="period_end" 면 음수 clamp (기간 라벨이 today 를 앞서는 것은 정상).
 ccr_lag_days <- function(last_date, today, semantics = "observation") {
-  last_date <- as.Date(last_date)
+  last_date <- .ccr_as_date_safe(last_date)
   if (length(last_date) != 1L || is.na(last_date)) return(NA_integer_)
   lag <- as.integer(as.Date(today) - last_date)
   if (identical(semantics %||% "observation", "period_end")) lag <- max(0L, lag)

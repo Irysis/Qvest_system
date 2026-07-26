@@ -76,6 +76,11 @@ TODAY <- as.Date("2026-07-26")           # 결정성 — 실사고 시점
 # `_` 접두 = ephemeral 컨벤션(hygiene/orphan 필터 대상). 종료 시 명시 삭제.
 TMP_REL <- file.path(".cache", sprintf("_test_ccr_%d", Sys.getpid()))
 TMP_ABS <- file.path(PROJ, TMP_REL)
+# ★기동 시 이전 실행의 잔재부터 지운다 (자기치유). 스크립트 최상위 on.exit() 는 발화하지
+#   않으므로(r-portability 금칙 ②) 본문이 중간에 죽으면 끝단 cleanup() 이 실행되지 않는다
+#   — 실제로 2026-07-26 C4 가 결함을 잡아 스크립트가 중단됐을 때 _test_ccr_40408 이 남았다.
+#   끝단 cleanup 만으로는 "크래시 → 잔재 누적"을 못 막으므로 양쪽에서 지운다.
+unlink(Sys.glob(file.path(PROJ, ".cache", "_test_ccr_*")), recursive = TRUE, force = TRUE)
 dir.create(TMP_ABS, recursive = TRUE, showWarnings = FALSE)
 cleanup <- function() unlink(TMP_ABS, recursive = TRUE, force = TRUE)
 
@@ -83,7 +88,7 @@ cleanup <- function() unlink(TMP_ABS, recursive = TRUE, force = TRUE)
   p <- file.path(PROJ, rel)
   dir.create(dirname(p), recursive = TRUE, showWarnings = FALSE)
   write_parquet(dt, p)
-  rel
+  invisible(rel)                          # 최상위 호출 시 자동출력 방지(요약 파싱 노이즈)
 }
 .entry <- function(path, ...) {
   modifyList(list(path = path, tier = 2L, schedule = "daily",
@@ -274,8 +279,19 @@ c3 <- ccr_coverage_check(SPEC, data = data.table(bsns_year = integer(0), corp = 
 chk("C3 0행 = NO_DATA (판정 제외, 죽지 않음)",
     identical(c3$groups[[1]]$status, "NO_DATA"),
     sprintf("status=%s", c3$status))
-chk("C4 파싱 불가 날짜 = NA (에러 아님)",
-    all(is.na(ccr_to_date(c("not-a-date", "2026-13"), "ym"))))
+# ★C4 는 실제로 결함을 잡아낸 케이스다 (2026-07-26): as.Date(<character>) 는 기본 경로에서
+#   잘못된 값에 error 를 던져(warning 아님) 감사 전체를 죽였다 — date_col 문자열 컬럼에
+#   이상값 1건이면 감시기 사망. 그래서 "NA 인가"가 아니라 "던지지 않는가"까지 본다.
+.no_throw <- function(expr) !inherits(tryCatch(force(expr), error = function(e) e), "error")
+chk("C4 kind='ym' 파싱 불가/불가능한 월 = NA, 예외 없음",
+    .no_throw(ccr_to_date(c("not-a-date", "2026-13"), "ym")) &&
+      all(is.na(ccr_to_date(c("not-a-date", "2026-13"), "ym"))))
+chk("C4b kind='date' 문자열 이상값 혼입 = 정상값 보존 + 이상값만 NA, 예외 없음",
+    .no_throw(ccr_to_date(c("2026-07-24", "garbage", "2026-02-30"), "date")) &&
+      identical(ccr_to_date(c("2026-07-24", "garbage", "2026-02-30"), "date"),
+                as.Date(c("2026-07-24", NA, NA))))
+chk("C4c ccr_lag_days 도 이상 문자열에 예외 없이 NA",
+    .no_throw(ccr_lag_days("garbage", TODAY)) && is.na(ccr_lag_days("garbage", TODAY)))
 chk("C5 ccr_lag_days 길이/NA 방어",
     is.na(ccr_lag_days(as.Date(NA), TODAY)) &&
       is.na(ccr_lag_days(as.Date(character(0)), TODAY)))
@@ -374,7 +390,10 @@ chk("E6 audit 이 주입 인자(caches_override/today/persist) 노출 — 검사
     sprintf("formals=%s", paste(fm, collapse = ",")))
 
 cleanup()
-chk("E7 임시 산출물 정리 (정본 트리 오염 없음)", !dir.exists(TMP_ABS))
+chk("E7 임시 산출물 정리 (정본 트리 오염 없음)",
+    !dir.exists(TMP_ABS) &&
+      length(Sys.glob(file.path(PROJ, ".cache", "_test_ccr_*"))) == 0L,
+    sprintf("잔재 %d건", length(Sys.glob(file.path(PROJ, ".cache", "_test_ccr_*")))))
 
 cat(sprintf("\n%s\n", strrep("=", 60)))
 cat(sprintf("cache_content_reach: %d pass / %d fail\n", PASS, FAIL))
