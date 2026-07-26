@@ -23,9 +23,35 @@ suppressPackageStartupMessages({
   library(jsonlite)
 })
 
-PROJ_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", unset = "")
-if (PROJ_ROOT == "" || !dir.exists(PROJ_ROOT)) {
-  PROJ_ROOT <- Sys.getenv("CLAUDE_PROJECT_DIR", Sys.getenv("QM_ROOT", "G:/Quant_Module_Moltbot"))
+#──────────────────────────────────────────────────────────────────────────────
+# (2026-07-26 WTL-3 수리, probe② 감사 확정 · 도훈 승인) 구 폴백은
+#   ① CLAUDE_PROJECT_DIR 를 두 번 읽고(둘째 줄이 첫째와 동일 — QM_ROOT 로 넘어가는
+#      의도였으나 실제로는 CPD 를 재조회) ② 최종 default 가 이 머신에 없는
+#      "G:/Quant_Module_Moltbot" 하드코딩(r-portability 금칙 ③)이라, 두 env 가 모두
+#      비면 존재하지 않는 루트를 조용히 채택하고 WT_ROOT 부재 → 매치 0 → "rebuilt 0" 을
+#      정상처럼 출력했다(상수 출력 = 관측 위장).
+#   수리: 후보 순회(CPD → QM_ROOT → 스크립트 상대) + **표지 검증** 후 채택,
+#         전부 무효면 조용한 폴백 대신 fail-closed 종료.
+#──────────────────────────────────────────────────────────────────────────────
+.wtl_marker <- "02_Infrastructure/observability/wt_timeline.R"
+.wtl_self_root <- local({
+  a <- commandArgs(trailingOnly = FALSE)
+  m <- grep("^--file=", a, value = TRUE)
+  if (length(m) == 0L) return("")
+  file.path(dirname(sub("^--file=", "", m[1L])), "..", "..")
+})
+PROJ_ROOT <- ""
+for (.cand in c(Sys.getenv("CLAUDE_PROJECT_DIR", ""), Sys.getenv("QM_ROOT", ""),
+                .wtl_self_root, getwd())) {
+  if (nzchar(.cand) && file.exists(file.path(.cand, .wtl_marker))) {
+    PROJ_ROOT <- .cand; break
+  }
+}
+if (!nzchar(PROJ_ROOT)) {
+  cat(sprintf(paste0("[FATAL] wt_timeline: PROJECT_ROOT 해석 실패 — 표지 '%s' 를 가진 후보 없음. ",
+                     "존재하지 않는 루트로 진행하면 '매치 0' 이 정상처럼 보인다(관측 위장).\n"),
+              .wtl_marker))
+  quit(status = 1)
 }
 
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0) b else a

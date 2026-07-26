@@ -299,6 +299,12 @@ def render(o):
         cd = _fmt_date(o["collect_date"]) if o["collect_date"] else "?"
         return ["ResearchPool: 수집만 collect=%s, 라우팅 산출 부재 (router 미실행 — paper_router_run.sh)" % cd]
 
+    if o.get("route_parse_error"):
+        # (RPS-02) 손상 산출물 — 아래 파생 숫자는 전부 0 이므로 "데이터 없음"으로 오독된다.
+        return ["ResearchPool: route=%s ★route json 판독 실패 (%s) — 아래 숫자 산출 불가. "
+                "숫자 0 은 '없음'이 아니라 '미측정'" % (
+                    _fmt_date(o["route_date"]), o["route_parse_error"])]
+
     cr = o["counts_by_route"]
     route_str = "a%s/o%s/r%s/rg%s/skip%s" % (
         cr.get("alpha", 0), cr.get("optimizer", 0), cr.get("risk", 0),
@@ -329,20 +335,34 @@ def render(o):
     # gap④ 자동백테 처리 결과 — 처리 N (ADOPT a / QUAR q)
     gate = ""
     if o["queue_done_n"] > 0 or o["gate_adopt"] > 0 or o["gate_quarantine"] > 0:
-        gate = " · 처리 %d (ADOPT %d/QUAR %d)" % (
+        # (2026-07-26 RPS-05 수리) 이 수치는 auto_verify_*.json 전량 glob = **누적**인데
+        #   라벨이 없어 '이번 런 실적'으로 읽혔다. 범위를 이름으로 밝힌다.
+        gate = " · 처리 누적 %d (ADOPT %d/QUAR %d)" % (
             o["queue_done_n"], o["gate_adopt"], o["gate_quarantine"])
     if o["n_factor_testable"] > 0 or o["alpha_queue_n"] > 0:
         names = ", ".join(o["factor_testable_names"][:3]) or aq_names or "?"
         lines.append("  AlphaQueue:  testable route %d / 소비큐 %d (%s) — %s%s%s" % (
             o["n_factor_testable"], o["alpha_queue_n"], ar_str, names, gate, stale))
     else:
-        lines.append("  AlphaQueue:  0 testable 대기 (신선 KR 횡단면 알파 희귀)%s" % gate)
+        # (2026-07-26 RPS-03 수리) 구현은 0 에 **연구 결론**("신선 KR 횡단면 알파 희귀")을
+        #   하드코딩했다 — 필드명 불일치로 파생이 0 이 됐던 실제 상황(testable 4건 존재)에서
+        #   그 문구가 그대로 나갔다. 해설은 측정이 건건할 때만, 근거를 함께 붙인다.
+        if o.get("testable_mismatch"):
+            lines.append("  AlphaQueue:  0 testable — ★측정 불일치(%s): 스키마 드리프트 의심%s"
+                         % (o["testable_mismatch"], gate))
+        else:
+            lines.append("  AlphaQueue:  0 testable 대기 (route n_testable=%s 확인)%s"
+                         % (o.get("n_factor_testable", 0), gate))
 
     # mode 큐 + dispatch
     mq = o["mode_queue"]
     disp = "DONE" if o["dispatch_done"] else "PENDING"
-    lines.append("  ModeQueue:   opt%s/risk%s/regime%s (QEPM 연료) · dispatch=%s · recheck잔여 %d" % (
-        mq["optimizer"], mq["risk"], mq["regime"], disp, o["recheck_pending"]))
+    mq_stale = ""
+    if o.get("mode_queue_date") and o["route_date"] and o["mode_queue_date"] != o["route_date"]:
+        # (RPS-04) 큐 stamp 가 route 보다 과거 = 현재 연료가 아니다(구판은 무표기)
+        mq_stale = " [큐 stamp %s — route보다 과거]" % _fmt_date(o["mode_queue_date"])
+    lines.append("  ModeQueue:   opt%s/risk%s/regime%s (QEPM 연료) · dispatch=%s · recheck잔여 %d%s" % (
+        mq["optimizer"], mq["risk"], mq["regime"], disp, o["recheck_pending"], mq_stale))
 
     # 라우팅 대기(수집 > 라우팅)
     if o["routing_pending"]:

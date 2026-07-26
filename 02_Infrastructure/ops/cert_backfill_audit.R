@@ -687,10 +687,22 @@ cert_backfill_main <- function(book_state_path,
     audit_script <- "02_Infrastructure/portfolio/measurement_basis_audit.R"
   }
   if (file.exists(audit_script)) {
-    audit_cmd <- sprintf("Rscript %s %s %s 2>&1 | grep -E 'Book score|Tier'",
-                         shQuote(audit_script), shQuote(book_state_path),
-                         shQuote(wt_root))
-    audit_out <- system(audit_cmd, intern = TRUE)
+    # (2026-07-26 CBA-06 수리, r-portability 기지 항목의 행동 실증) Windows R 의 system()
+    #   은 셸을 경유하지 않아 "2>&1 | grep -E ..." 가 내부 Rscript 의 **리터럴 argv** 로
+    #   전달됐다. measurement_basis_audit.R 이 args[3+] 를 무시해서 우연히 동작했고,
+    #   로그에는 grep 필터가 전혀 안 걸린 전체 출력이 남아 있었다(실증). 내부 스크립트가
+    #   argv 검증을 도입하는 순간 조용히 파손된다. 또 stderr 미캡처 + system() 실패는
+    #   warning 으로만 삼켜져 내부 감사가 'Tier:' 전에 죽으면 원인 추적이 불가했다.
+    #   → system2 인자 벡터 + stdout/stderr 캡처 + exit status 명시 검사, 필터는 R 에서.
+    audit_raw <- suppressWarnings(
+      system2("Rscript", args = c(audit_script, book_state_path, wt_root),
+              stdout = TRUE, stderr = TRUE))
+    audit_st <- attr(audit_raw, "status")
+    if (!is.null(audit_st) && audit_st != 0) {
+      log_msg(sprintf("  ★내부 coherence 감사 exit=%s — 아래 판정은 신뢰 불가 (출력 말미: %s)",
+                      audit_st, paste(utils::tail(audit_raw, 2), collapse = " | ")))
+    }
+    audit_out <- grep("Book score|Tier", audit_raw, value = TRUE)
     log_msg(paste(audit_out, collapse = "\n"))
   }
 

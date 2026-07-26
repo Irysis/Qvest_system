@@ -117,7 +117,14 @@ run_step("hygiene_audit", {
   rep_path <- file.path(root, registry_zone, "hygiene_report.json")
   if (file.exists(rep_path)) {
     rep <- tryCatch(fromJSON(rep_path, simplifyVector = FALSE), error = function(e) NULL)
-    if (!is.null(rep)) hygiene_deleted_n <- as.integer(rep$cleanup$n_deleted %||% NA)
+    if (!is.null(rep)) {
+      hygiene_deleted_n <- as.integer(rep$cleanup$n_deleted %||% NA)
+      # (2026-07-26 WCS-09 수리) 구현은 n_deleted 만 읽고 경고 필드를 버려, 일간 감사가
+      #   적발한 위생 위반이 주간 표면에서 **소멸**했다(부분 소비 = 정보 손실).
+      hygiene_warn_n <<- as.integer(rep$cleanup$n_warnings %||% rep$n_warnings %||% NA)
+      .hw <- rep$warnings %||% rep$cleanup$warnings %||% list()
+      hygiene_warn_top <<- as.list(head(unlist(lapply(.hw, function(x) as.character(x)[1])), 5))
+    }
   }
   invisible(TRUE)
 })
@@ -523,11 +530,17 @@ sweep_deleted_n <- length(weekly_deleted$cache_scratch) + length(weekly_deleted$
   # (2026-07-26 WCS-04) NA(=hygiene 감사 산출 미판독)를 0 으로 흡수하면 "삭제 0건" 과
   #   구분 불가. 합계에는 0 을 쓰되 미관측 사실은 아래 pending 에 별도 필드로 남긴다.
   (if (is.na(hygiene_deleted_n)) 0L else hygiene_deleted_n)
-pending_path <- file.path(root, ".cache", "cleaner_pending.json")
+# (2026-07-26 WCS-01 수리) DRY 에서도 canonical cleaner_pending.json 을 덮어써
+#   /cleaner 소비 상태·mtime 을 건드렸고, sweep_deleted_n 이 '실삭제'인지 '삭제 예정'인지
+#   구분되지 않았다. DRY 는 별 파일로 분기하고 집계 키를 이름으로 나눈다.
+pending_path <- if (DRY) file.path(root, ".cache", "cleaner_pending_dryrun.json")
+                else     file.path(root, ".cache", "cleaner_pending.json")
 run_step("write_pending", {
   pending <- list(
     schema        = "cleaner_pending_v2",   # v2 (2026-07-18): distill 선점 필드 3종 추가 (W29 2-pass 방지)
-    week_of       = format(as.Date(now), "%G-W%V"),
+    # (2026-07-26 WCS-07 수리) as.Date(POSIXct) 는 UTC 로 변환 — KST 새벽/심야 실행 시
+    #   주(week)·날짜 라벨이 하루/한 주 어긋난다. POSIXct 를 로컬 tz 로 직접 포맷.
+    week_of       = format(now, "%G-W%V"),
     generated_at  = format(now, "%Y-%m-%d %H:%M:%S"),
     generator     = "02_Infrastructure/ops/weekly_cleaner_sweep.R",
     rule_sot      = "02_Infrastructure/docs/rules/artifact-storage.md §8",
@@ -557,7 +570,9 @@ run_step("write_pending", {
     distill_status     = "pending",
     distill_owner      = NULL,
     distill_claimed_at = NULL,
-    sweep_deleted_n = sweep_deleted_n,
+    # WCS-01: DRY 는 삭제하지 않았으므로 실삭제 수를 null 로 두고 '예정' 을 별 키로 분리
+    sweep_deleted_n   = if (DRY) NA_integer_ else sweep_deleted_n,
+    would_delete_n    = if (DRY) sweep_deleted_n else NA_integer_,
     sweep_detail  = list(
       hygiene_audit_deleted_n     = hygiene_deleted_n,
       # (2026-07-26 WCS-04) 합계에 0 으로 들어간 것이 '삭제 0' 인지 '미관측' 인지 구분
@@ -632,11 +647,26 @@ if (Sys.getenv("QVEST_CLEANER_NO_TG", "0") != "1" && !DRY) {
     # agent는 telegram_notify.R 화이트리스트 내 값만 허용 — 전용 "Cleaner" 미등재라 Q-Lead 사용
     tg_agent_brief(agent = "Q-Lead", title = "주간 클리너 — 기계 스윕 완료·증류 대기",
                    relaxed = TRUE, force = TRUE,
-                   lock_scope = sprintf("weekly_cleaner_%s", format(as.Date(now), "%Y%m%d")),
+                   # (WCS-07) as.Date(POSIXct)=UTC 변환 → 로컬 tz 직접 포맷
+                   lock_scope = sprintf("weekly_cleaner_%s", format(now, "%Y%m%d")),
                    sections = secs)
     invisible(TRUE)
   })
 } else step_status$telegram <- if (DRY) "SKIP (DRY — 실발송 억제)" else "SKIP (QVEST_CLEANER_NO_TG=1)"
+
+# (2026-07-26 WCS-08 수리) pending 의 step_status 는 write_pending 스텝 *내부*에서
+#   직렬화되므로 그 뒤 스텝(telegram·최종 정리)의 성패를 **담을 수 없는 슬롯**이었다.
+#   전 스텝이 끝난 지금 시점 상태를 별 파일로 기록해 소비자가 최종본을 읽게 한다.
+try({
+  write_json(list(
+    week_of = format(now, "%G-W%V"),
+    finished_at = format(Sys.time(), "%Y-%m-%d %H:%M:%S"),
+    dry_run = DRY,
+    step_status = step_status,
+    n_fail_steps = length(names(step_status)[grepl("^FAIL", unlist(step_status))])),
+    file.path(root, ".cache", "cleaner_sweep_status.json"),
+    auto_unbox = TRUE, pretty = TRUE, null = "null", na = "null")
+}, silent = TRUE)
 
 fails <- names(step_status)[grepl("^FAIL", unlist(step_status))]
 cat(sprintf("[cleaner] done — steps: %s%s\n",
