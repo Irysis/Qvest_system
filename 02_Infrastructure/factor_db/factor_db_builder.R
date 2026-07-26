@@ -1547,9 +1547,23 @@ compute_all_factor_ic_monthly <- function() {
       # of sig_d_t1 is finished. Month-end cron (calendar last day) passes.
       cal_end_t1 <- seq(as.Date(format(sig_d_t1, "%Y-%m-01")),
                         by = "month", length.out = 2L)[2L] - 1L
-      if (cal_end_t1 > Sys.Date()) {
-        cat(sprintf("  [skip] pair %d: forward month %s incomplete (calendar end %s > today %s)\n",
-                    i, format(sig_d_t1, "%Y-%m"), cal_end_t1, Sys.Date()))
+      # (2026-07-26 강화) 달력 종료만으로는 부족하다 — 그것은 "그 달이 끝났나"이지
+      # "이 파일이 그 달을 끝까지 담았나"가 아니다. 월말 재빌드가 지연·실패하면
+      # sig_d_t1이 월중 스냅샷인 채로 달력만 넘어가, 부분월 forward return IC가
+      # '완결'로 기록되고 Usable_Date도 과소 기록된다. 파일의 sig가 해당 월
+      # RAWDATA 최종 거래일에 도달했는지 함께 확인한다.
+      .m_t1 <- format(sig_d_t1, "%Y-%m")
+      .raw_m_last <- suppressWarnings(max(raw[format(Date, "%Y-%m") == .m_t1, Date]))
+      .file_partial <- is.finite(.raw_m_last) && sig_d_t1 < .raw_m_last
+      if (cal_end_t1 > Sys.Date() || .file_partial) {
+        .why <- if (cal_end_t1 > Sys.Date()) {
+          sprintf("calendar end %s > today %s", cal_end_t1, Sys.Date())
+        } else {
+          sprintf("file sig %s < month last trading day %s (월말 재빌드 대기)",
+                  sig_d_t1, .raw_m_last)
+        }
+        cat(sprintf("  [skip] pair %d: forward month %s incomplete (%s)\n",
+                    i, .m_t1, .why))
         next
       }
 
