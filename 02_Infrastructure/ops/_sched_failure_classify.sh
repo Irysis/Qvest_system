@@ -71,7 +71,13 @@ sched_failure_streak() {
 #    ★토큰 값은 절대 출력하지 않는다. 존재/빈값/만료시각만 판정.
 #    반환: ok / no_refresh_token / expired / missing / unknown
 sched_check_credentials() {
-  local cred="${CLAUDE_CREDENTIALS_PATH:-$HOME/.claude/.credentials.json}"
+  # ★환경변수 인증이 최우선 — 파일 저장소를 통째로 우회한다(claude.exe 가 두 변수 모두 지원, 실측).
+  #   이 분기가 없으면 setup-token 을 env 로 쓰는 정상 구성에서 낡은 파일만 보고 오차단한다.
+  #   (2026-07-26: 본 함수 자체의 결함이었음 — 검사 대상을 잘못 잡는 계통의 재발)
+  [ -n "${CLAUDE_CODE_OAUTH_TOKEN:-}" ] && { echo "ok"; return 0; }
+  [ -n "${ANTHROPIC_API_KEY:-}" ]       && { echo "ok"; return 0; }
+  local cred="${CLAUDE_CREDENTIALS_PATH:-${CLAUDE_CONFIG_DIR:+$CLAUDE_CONFIG_DIR/.credentials.json}}"
+  cred="${cred:-$HOME/.claude/.credentials.json}"
   local acct="$HOME/.claude.json"
   [ -f "$cred" ] || { echo "missing"; return 0; }
   # ★저장소 분리 감지 (2026-07-26 실사고): 데스크톱 앱은 웹 세션(%APPDATA%/Claude 의 Cookies·
