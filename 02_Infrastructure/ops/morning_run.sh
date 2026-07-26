@@ -73,6 +73,20 @@ stage_result() {   # $1=표시명 $2=exit코드 $3=경보 컴포넌트명
         _cap=$(sched_retry_cap "$_alert_reason")
         [ -n "$_cap" ] && MORNING_MAX_RETRY="$_cap"
       fi
+      # 재시도 최소 간격 — 창 롤오버 전에 다시 때리면 같은 벽에 부딪힌다.
+      #   ★sleep 하지 않는다(스케줄 슬롯 점유·타임아웃 위험). 직전 시도 시각으로부터
+      #     간격이 안 지났으면 이번 트리거는 넘기고 다음 트리거(@reboot/cron)가 잡게 한다.
+      if command -v sched_retry_backoff_sec >/dev/null 2>&1; then
+        _bo=$(sched_retry_backoff_sec "$_alert_reason")
+        if [ "${_bo:-0}" -gt 0 ] 2>/dev/null; then
+          _last=$(stat -c %Y "$LOCK" 2>/dev/null || echo 0)
+          _since=$(( $(date +%s) - ${_last:-0} ))
+          if [ "$_since" -lt "$_bo" ] 2>/dev/null; then
+            echo "재시도 대기 중 — 직전 시도 ${_since}초 전, ${_alert_reason} 은 ${_bo}초 간격 필요 (다음 트리거에 재진입)"
+            exit 0
+          fi
+        fi
+      fi
     fi
     if [ -z "$_retry_reason" ]; then
       echo "already ran today ($LOCK exists, 완주·무경보) — skip"
