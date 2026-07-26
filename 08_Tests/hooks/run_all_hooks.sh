@@ -136,6 +136,13 @@ SUITES=(
   #   A축이 동결·코호트 결손을 주입하고, D축이 판정부를 무력화해 A가 통과로 뒤집히는지
   #   대조한다 — "경보 0건"이 건강인지 계측 사망인지는 그렇게만 갈린다.
   "08_Tests/data/test_cache_content_reach.R"
+  # 2026-07-26 추가(1단 수리 가드): 침묵 실패 3종 위반 주입 —
+  #   WCS-06 dry_run 라벨↔실제 부작용 1:1(구판은 DRY 에서 정본 인덱스 재작성+텔레그램 실발송) /
+  #   CBA-04 파손 governance_log 덮어쓰기 중단·사이드카 격리(비가역 이력 소실 방지) /
+  #   WTL-1·5 join 키 2세대 확장 + 매치0 WARN + save 성공만 계상.
+  #   ※ 등재가 늦은 이유: 병렬 세션의 [TEMP-VIOLATION-INJECTION 임무V]가 총계-감소 경보를
+  #     실측하는 동안 suite 추가는 총계를 올려 그 측정을 가린다 — 원복 확인 후 등재.
+  "08_Tests/ops/test_tier1_silent_failures.R"
 )
 
 _suite_cmd() {
