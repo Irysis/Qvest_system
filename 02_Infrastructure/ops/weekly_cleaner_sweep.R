@@ -328,9 +328,20 @@ run_step("axiom_weekly_cycle", {
 #   안정 ID 불변, 활성 집합(Law/Distilled/L-code)을 1..N 뷰로 갱신. blast radius 0.
 #   axiom 사이클 직후 실행 → 증류/강등 반영된 최신 활성 집합으로 재생성.
 run_step("knowledge_index", {
-  options(ki_no_autorun = TRUE)
-  source(file.path(root, "02_Infrastructure", "ops", "build_knowledge_index.R"))
-  build_knowledge_index(root = root)
+  # (2026-07-26 WCS-06 수리, 도훈 승인) DRY 에서 실행하면 06_Registry/knowledge_index.{json,md}
+  #   를 **실제로 재작성**한다(build_knowledge_index 에 dry 인자가 없음). 산출물 라벨이
+  #   dry_run:true 인데 부작용이 나가면 라벨이 안전성을 위장하는 것 — dry-run 을 믿고 돌린
+  #   사람이 정본 인덱스를 갈아버린다. DRY 에선 스킵하고 그 사실을 상태에 남긴다.
+  # ★run_step 의 expr 은 **지연평가 promise** — caller(최상위) 환경에서 평가되므로
+  #   블록 안 return() 은 "no function to return from" 으로 죽고(실측 2026-07-26),
+  #   step_status 직접 할당도 run_step 이 직후 "OK" 로 덮는다. 조건 분기로만 쓴다.
+  if (DRY) {
+    cat("[cleaner] knowledge_index: SKIP (DRY — 정본 06_Registry/knowledge_index.* 재작성 방지)\n")
+  } else {
+    options(ki_no_autorun = TRUE)
+    source(file.path(root, "02_Infrastructure", "ops", "build_knowledge_index.R"))
+    build_knowledge_index(root = root)
+  }
   invisible(TRUE)
 })
 
@@ -513,6 +524,24 @@ run_step("write_pending", {
     generator     = "02_Infrastructure/ops/weekly_cleaner_sweep.R",
     rule_sot      = "02_Infrastructure/docs/rules/artifact-storage.md §8",
     dry_run       = DRY,
+    # (2026-07-26 WCS-06) 단일 boolean 은 "무엇이 안 건드려졌나"를 말해주지 못했다 —
+    #   스텝마다 dry 범위가 달라(삭제·axiom state 는 스킵, knowledge_index·pending·telegram 은
+    #   실행) 산출물만 보고 부작용 집합을 알 수 없었다. 라벨이 실제와 1:1 대응하게 기록한다.
+    dry_run_scope = if (DRY) list(
+      deletions       = "skipped",
+      axiom_promote   = "skipped",
+      cleaner_state   = "skipped",
+      knowledge_index = "skipped",
+      telegram        = "skipped",
+      pending_file    = "WRITTEN (이 파일 자체 — DRY 에서도 갱신됨)"
+    ) else list(
+      deletions       = "executed",
+      axiom_promote   = "executed",
+      cleaner_state   = "written",
+      knowledge_index = "written",
+      telegram        = "sent",
+      pending_file    = "WRITTEN"
+    ),
     # ── 증류 선점(claim) 필드 (cleaner_claim.R 소비 — 2-pass 중복실행 방지, W29 next_probe #4) ──
     #   초기값 pending. /cleaner 세션이 cleaner_claim_distill()로 in_progress 점유 → done 해제.
     #   status(awaiting_distill→distilled)는 bootstrap 마커용 불변; distill_status는 그 사이
@@ -544,7 +573,9 @@ run_step("write_pending", {
 # =============================================================================
 # [5] 텔레그램 알림 — tg_agent_brief 규약 재사용 (fail-soft)
 # =============================================================================
-if (Sys.getenv("QVEST_CLEANER_NO_TG", "0") != "1") {
+# (2026-07-26 WCS-06) DRY 에서도 force=TRUE 로 **실발송**되던 경로 — dry-run 은 관측이지
+#   통보가 아니다. QVEST_CLEANER_NO_TG 와 별개로 DRY 자체가 억제 사유가 된다.
+if (Sys.getenv("QVEST_CLEANER_NO_TG", "0") != "1" && !DRY) {
   run_step("telegram", {
     owd <- getwd(); setwd(root); on.exit(setwd(owd), add = TRUE)
     tg_ok <- tryCatch({
@@ -594,7 +625,7 @@ if (Sys.getenv("QVEST_CLEANER_NO_TG", "0") != "1") {
                    sections = secs)
     invisible(TRUE)
   })
-} else step_status$telegram <- "SKIP (QVEST_CLEANER_NO_TG=1)"
+} else step_status$telegram <- if (DRY) "SKIP (DRY — 실발송 억제)" else "SKIP (QVEST_CLEANER_NO_TG=1)"
 
 fails <- names(step_status)[grepl("^FAIL", unlist(step_status))]
 cat(sprintf("[cleaner] done — steps: %s%s\n",
