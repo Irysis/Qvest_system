@@ -18,6 +18,24 @@ TODAY=$(date +%Y%m%d)
 LOCK="/tmp/qm_morning_run_${TODAY}.lock"
 DOW=$(date +%u)   # 1=Mon .. 7=Sun
 
+# (2026-07-26) 단계 결과를 exit 코드만으로 읽으면 안 된다.
+#   하위 러너들은 fail-soft 설계라 **실패해도 exit 0** 을 반환한다(경보만 발행).
+#   실사고: E2E 완주 테스트에서 체인 요약은 전부 exit=0 인데 alpha_queue 는 실제로
+#   spend_limit 으로 실패해 리서치가 한 건도 안 돌았다. 요약만 보면 성공으로 읽힌다.
+#   ∴ 각 단계 뒤에 그 컴포넌트가 **오늘 경보 마커를 남겼는지**를 함께 찍는다.
+stage_result() {   # $1=표시명 $2=exit코드 $3=경보 컴포넌트명
+  local name="$1" rc="$2" comp="${3:-}" mark="" reason=""
+  if [ -n "$comp" ]; then
+    mark=$(ls -1t "$BASE/.cache/scheduler_alerts/${comp}_"*"_$(date +%Y%m%d).alert" 2>/dev/null | head -1)
+  fi
+  if [ -n "$mark" ]; then
+    reason=$(grep -oE '^reason=.*' "$mark" 2>/dev/null | cut -d= -f2-)
+    echo "      $name exit=$rc  ★경보발행: ${reason:-unknown} (exit 0 이어도 실질 실패 — fail-soft)"
+  else
+    echo "      $name exit=$rc"
+  fi
+}
+
 {
   echo "================ morning_run @ $(date) (trigger=${TRIGGER}) ================"
 
@@ -40,7 +58,7 @@ DOW=$(date +%u)   # 1=Mon .. 7=Sun
   echo "[0/3] paper_recharge_daily.sh (논문풀 first-run 보강)"
   if [ "${QVEST_PAPER_RECHARGE_SKIP:-0}" != "1" ] && [ -f "$BASE/02_Infrastructure/ops/paper_recharge_daily.sh" ]; then
     bash "$BASE/02_Infrastructure/ops/paper_recharge_daily.sh" >> /tmp/qm_paper_recharge_morning.log 2>&1
-    echo "      paper_recharge exit=$?"
+    stage_result "paper_recharge" "$?" "paper_recharge"
   else
     echo "      paper_recharge skip (disabled or missing)"
   fi
@@ -49,7 +67,7 @@ DOW=$(date +%u)   # 1=Mon .. 7=Sun
   if [ -f "$BASE/02_Infrastructure/ops/paper_router_run.sh" ]; then
     # 내부 게이트: QVEST_PAPER_ROUTER_ENABLE=1 + 당일 신규 다운로드>0 일 때만 헤드리스 claude 라우터 실행.
     bash "$BASE/02_Infrastructure/ops/paper_router_run.sh" >> /tmp/qm_paper_router.log 2>&1
-    echo "      paper_router exit=$?"
+    stage_result "paper_router" "$?" "paper_router"
   else
     echo "      paper_router skip (missing)"
   fi
@@ -57,7 +75,7 @@ DOW=$(date +%u)   # 1=Mon .. 7=Sun
   echo "[0.55/3] factor_deep_recheck_run.sh (2축 tier-2: tier-1 uncertain 더미 심층 재검 → testable 승격, 도훈 mandate 2026-06-19)"
   if [ "${QVEST_FACTOR_RECHECK_ENABLE:-0}" = "1" ] && [ -f "$BASE/02_Infrastructure/ops/factor_deep_recheck_run.sh" ]; then
     bash "$BASE/02_Infrastructure/ops/factor_deep_recheck_run.sh" >> /tmp/qm_factor_recheck.log 2>&1
-    echo "      factor_recheck exit=$?"
+    stage_result "factor_recheck" "$?" "factor_recheck"
   else
     echo "      factor_recheck skip (QVEST_FACTOR_RECHECK_ENABLE!=1 or missing)"
   fi
@@ -65,7 +83,7 @@ DOW=$(date +%u)   # 1=Mon .. 7=Sun
   echo "[0.56/3] alpha_search_queue_run.sh (팩터추출 → alpha-search 모드 가동: 큐 testable 자동 백테 + 5층 게이트, 도훈 mandate 2026-06-19)"
   if [ "${QVEST_ALPHA_QUEUE_ENABLE:-0}" = "1" ] && [ -f "$BASE/02_Infrastructure/ops/alpha_search_queue_run.sh" ]; then
     bash "$BASE/02_Infrastructure/ops/alpha_search_queue_run.sh" >> /tmp/qm_alpha_queue.log 2>&1
-    echo "      alpha_queue exit=$?"
+    stage_result "alpha_queue" "$?" "alpha_queue"
   else
     echo "      alpha_queue skip (QVEST_ALPHA_QUEUE_ENABLE!=1 or missing)"
   fi
@@ -74,7 +92,7 @@ DOW=$(date +%u)   # 1=Mon .. 7=Sun
   if [ "${QVEST_PAPER_DISPATCH_ENABLE:-0}" = "1" ] && [ -f "$BASE/02_Infrastructure/ops/paper_research_dispatch.R" ]; then
     OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 ARROW_NUM_THREADS=1 R_DATATABLE_NUM_THREADS=1 \
       Rscript "$BASE/02_Infrastructure/ops/paper_research_dispatch.R" >> /tmp/qm_paper_dispatch.log 2>&1
-    echo "      paper_dispatch exit=$?"
+    stage_result "paper_dispatch" "$?" "paper_dispatch"
   else
     echo "      paper_dispatch skip (QVEST_PAPER_DISPATCH_ENABLE!=1 or missing)"
   fi

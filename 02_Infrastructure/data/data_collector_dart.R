@@ -153,6 +153,16 @@ dart_update_corpcode <- function(force = FALSE) {
   res
 }
 
+# .dart_fetch_single 반환 → 상태 분류 ("ok" / "empty" / "rate_limit" / "fail")
+# 단일 정본 (2026-07-26): 종전 data_collector_dart_quarterly.R 에 동일 구현이
+# 중복 정의돼 있었다. 이 attr 규약을 정의하는 곳(위 .dart_empty_result)에 붙인다.
+.dart_result_status <- function(res) {
+  if (is.null(res)) return("fail")
+  s <- attr(res, "dart_status", exact = TRUE)
+  if (!is.null(s)) return(s)
+  if (nrow(res) > 0) "ok" else "fail"
+}
+
 .dart_fetch_single <- function(corp_code, bsns_year, reprt_code = "11011",
                                 fs_div = "CFS") {
   url <- "https://opendart.fss.or.kr/api/fnlttSinglAcntAll.json"
@@ -290,14 +300,24 @@ dart_fetch_all <- function(years = NULL,
   n_success <- 0
   n_fail    <- 0
   n_empty   <- 0
+  n_calls   <- 0L      # 실제 발신 API 콜 수 (CFS + OFS fallback 각각 1콜)
+  halted    <- ""      # "" | "max_calls" | "rate_limit"
 
   for (i in seq_len(total)) {
     task <- tasks[i]
 
+    # 예산 소진 — 다음 task 는 최대 2콜(CFS+OFS)이 필요하므로 여유 없으면 중단
+    if (is.finite(max_calls) && n_calls + 2L > max_calls) {
+      cat(sprintf("  !! [%d/%d] max_calls 예산 소진(%d/%s) — 진행분 저장 후 종료\n",
+                  i, total, n_calls, format(max_calls)))
+      halted <- "max_calls"
+      break
+    }
+
     if (i %% 50 == 0 || i == 1) {
-      cat(sprintf("  [%d/%d] %s (%s) %d | OK:%d EMPTY:%d FAIL:%d\n",
+      cat(sprintf("  [%d/%d] %s (%s) %d | OK:%d EMPTY:%d FAIL:%d calls:%d\n",
                   i, total, task$corp_name, task$Ticker,
-                  task$bsns_year, n_success, n_empty, n_fail))
+                  task$bsns_year, n_success, n_empty, n_fail, n_calls))
     }
 
     dt <- tryCatch(
@@ -307,27 +327,47 @@ dart_fetch_all <- function(years = NULL,
         NULL
       }
     )
+    n_calls <- n_calls + 1L
+    st_primary  <- .dart_result_status(dt)
+    st_fallback <- NA_character_
 
-    if (is.null(dt) || nrow(dt) == 0) {
-      # 연결재무제표 없으면 개별재무제표 시도
-      if (fs_div == "CFS") {
-        dt <- tryCatch(
-          .dart_fetch_single(task$corp_code, task$bsns_year, reprt_code, "OFS"),
-          error = function(e) NULL
-        )
-        if (!is.null(dt) && nrow(dt) > 0) {
-          dt[, fs_div := "OFS"]
-        }
+    if (st_primary %in% c("empty", "fail") && fs_div == "CFS") {
+      # 연결재무제표 없으면 개별재무제표 시도 (비연결 법인은 OFS만 존재)
+      dt2 <- tryCatch(
+        .dart_fetch_single(task$corp_code, task$bsns_year, reprt_code, "OFS"),
+        error = function(e) NULL
+      )
+      n_calls <- n_calls + 1L
+      st_fallback <- .dart_result_status(dt2)
+      if (st_fallback == "ok") {
+        dt2[, fs_div := "OFS"]
+        dt <- dt2
       }
     }
 
-    if (!is.null(dt) && nrow(dt) > 0) {
+    st <- if (st_primary == "ok" || identical(st_fallback, "ok")) "ok"
+          else if (st_primary == "rate_limit" || identical(st_fallback, "rate_limit")) "rate_limit"
+          else if (st_primary == "empty" && (is.na(st_fallback) || st_fallback == "empty")) "empty"
+          else "fail"
+
+    # 쿼터 초과(status 020)는 즉시 중단 — 종전에는 0행을 empty 로 오분류해
+    # 잔여 수천 task 를 전부 헛발신했다 (일 10,000콜 한도 소진 위험).
+    if (st == "rate_limit") {
+      cat(sprintf("  !! [%d/%d] DART 일일 쿼터 초과(status 020) — 잔여 task 중단, 진행분 저장 후 종료\n",
+                  i, total))
+      halted <- "rate_limit"
+      break
+    }
+
+    if (st == "ok") {
       dt[, Ticker := task$Ticker]
       dt[, corp_code := task$corp_code]
       results[[length(results) + 1]] <- dt
       n_success <- n_success + 1
-    } else {
+    } else if (st == "empty") {
       n_empty <- n_empty + 1
+    } else {
+      n_fail <- n_fail + 1
     }
 
     # 중간 저장 (매 200건)
@@ -362,12 +402,20 @@ dart_fetch_all <- function(years = NULL,
     write_parquet(all_data, .dart_tmp)
     if (file.exists(DART_RAW_CACHE)) file.remove(DART_RAW_CACHE)
     file.rename(.dart_tmp, DART_RAW_CACHE)
-    cat(sprintf("\n[dart] DONE. Total records: %d | Success: %d | Empty: %d | Fail: %d\n",
-                nrow(all_data), n_success, n_empty, n_fail))
+    cat(sprintf("\n[dart] DONE. Total records: %d | Success: %d | Empty: %d | Fail: %d | calls: %d\n",
+                nrow(all_data), n_success, n_empty, n_fail, n_calls))
     cat(sprintf("[dart] Saved to: %s\n", DART_RAW_CACHE))
+    .dart_log_api_usage("dart_fetch_all", n_calls, n_success, n_empty, n_fail, halted,
+                        sprintf("years=%s", paste(years, collapse = "|")))
+    if (nzchar(halted)) {
+      cat(sprintf("[dart] 조기 종료(%s) — 잔여 task 는 다음 실행에서 자동 재개.\n", halted))
+    }
     invisible(all_data)
   } else {
-    cat("[dart] No new data fetched.\n")
+    cat(sprintf("[dart] No new data fetched. | Empty: %d | Fail: %d | calls: %d\n",
+                n_empty, n_fail, n_calls))
+    .dart_log_api_usage("dart_fetch_all", n_calls, 0L, n_empty, n_fail, halted,
+                        sprintf("years=%s|no_new_data", paste(years, collapse = "|")))
     invisible(existing)
   }
 }
@@ -999,7 +1047,10 @@ merge_fundamentals_to_signals <- function(FACTORS, fundamental_dt = NULL) {
 # 7. Master Pipeline — 전체 수집 + 팩터 계산
 #==============================================================================
 
-dart_run_pipeline <- function(years = 2018:2025, force_corpcode = FALSE) {
+# years = NULL (기본, 2026-07-26 P2-01) → dart_fetch_all 이 제출창+커버리지로
+#   후보 연도를 스스로 판정. 달력연도 1개를 넘기던 구 호출부(daily_refresh.sh:337)가
+#   FY2025 영구 미수집의 직접 원인이었으므로, 명시 years 는 수동 백필 전용으로 둔다.
+dart_run_pipeline <- function(years = NULL, force_corpcode = FALSE, max_calls = Inf) {
   cat("═══════════════════════════════════════════════\n")
   cat("[dart] Starting full DART data pipeline\n")
   cat("═══════════════════════════════════════════════\n\n")
@@ -1010,7 +1061,7 @@ dart_run_pipeline <- function(years = 2018:2025, force_corpcode = FALSE) {
 
   # Step 2: Fetch financial statements
   cat("\n── Step 2: Fetch financial statements ──\n")
-  dart_fetch_all(years = years)
+  dart_fetch_all(years = years, max_calls = max_calls)
 
   # Step 3: Compute factors
   cat("\n── Step 3: Compute fundamental factors ──\n")

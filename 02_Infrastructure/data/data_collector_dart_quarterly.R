@@ -77,28 +77,17 @@ REPRT_MAP <- data.table(
 
 DART_QUARTERLY_EMPTY_LEDGER <- file.path(DART_CACHE_DIR, "dart_quarterly_empty_ledger.parquet")
 
-# 보고서 제출 시즌 경계 (12월 결산 기준 — KR 상장사 대다수. 비12월 결산은 주간 재시도로 커버)
-#   11014 1Q (3/31 결산, 마감 5/15)        : 4/1 ~ 5/31
-#   11012 반기 (6/30 결산, 마감 8/14)       : 7/1 ~ 8/31
-#   11013 3Q (9/30 결산, 마감 11/14)        : 10/1 ~ 11/30
-#   11011 사업보고서 (12/31 결산, 마감 익년 3/31): 익년 1/1 ~ 4/15
-.dart_season_bounds <- function(bsns_year, reprt_code) {
-  start <- as.Date(fcase(
-    reprt_code == "11014", sprintf("%d-04-01", bsns_year),
-    reprt_code == "11012", sprintf("%d-07-01", bsns_year),
-    reprt_code == "11013", sprintf("%d-10-01", bsns_year),
-    reprt_code == "11011", sprintf("%d-01-01", bsns_year + 1L),
-    default = NA_character_
-  ))
-  end <- as.Date(fcase(
-    reprt_code == "11014", sprintf("%d-05-31", bsns_year),
-    reprt_code == "11012", sprintf("%d-08-31", bsns_year),
-    reprt_code == "11013", sprintf("%d-11-30", bsns_year),
-    reprt_code == "11011", sprintf("%d-04-15", bsns_year + 1L),
-    default = NA_character_
-  ))
-  list(start = start, end = end)
-}
+# 제출 시즌 경계 `.dart_season_bounds()` = dart_submission_window.R 단일 정본.
+# (2026-07-26 P2-01 수리) 종전 이 파일에 중복 정의돼 있었고 **11013/11014 매핑이
+# 뒤집혀** 있었다(11014를 1Q, 11013을 3Q로). OpenDART 공식 + 저장데이터 실측
+# (thstrm_nm: 11013 = "제 N 기 1분기", 11014 = "제 N 기 3분기") 모두 반대다.
+# 중복을 제거하고 정정본을 재사용한다 — 이 경계는 EMPTY 원장 재시도 cadence에만
+# 쓰이므로(수집 레이어) PIT 영향 없음.
+#
+# ⚠ 미수리 (별건 승인 대상): 아래 REPRT_MAP 의 quarter 라벨은 **여전히 뒤집힌 상태**.
+#    11014 → quarter 1 → Factor_Date = bsns_year-05-15 이므로, 11월 제출 3분기
+#    보고서가 5/15 로 라벨돼 fundamental_dart_quarterly.parquet 에 약 6개월
+#    look-ahead 혐의가 있다. 수리는 dart_compute_ttm() 전량 재생성을 동반한다.
 
 .dart_load_empty_ledger <- function() {
   if (!file.exists(DART_QUARTERLY_EMPTY_LEDGER)) return(NULL)
@@ -139,24 +128,29 @@ DART_QUARTERLY_EMPTY_LEDGER <- file.path(DART_CACHE_DIR, "dart_quarterly_empty_l
   invisible(merged)
 }
 
-# .dart_fetch_single 반환 → 상태 분류 ("ok" / "empty" / "rate_limit" / "fail")
-.dart_result_status <- function(res) {
-  if (is.null(res)) return("fail")
-  s <- attr(res, "dart_status", exact = TRUE)
-  if (!is.null(s)) return(s)
-  if (nrow(res) > 0) "ok" else "fail"
-}
+# `.dart_result_status()` = data_collector_dart.R 단일 정본 (attr 규약 정의처).
+# 2026-07-26: 여기 있던 동일 구현 삭제 (중복 제거).
 
 
 #==============================================================================
 # 1. Fetch Quarterly Financial Statements
 #==============================================================================
 
-dart_fetch_quarterly <- function(years = 2018:2025,
-                                  reprt_codes = c("11014", "11012", "11013", "11011"),
+# years = NULL (기본, 2026-07-26 P2-01 수리) → 제출창+커버리지 기반 (bsns_year,
+#   reprt_code) **쌍** 후보집합. 구 호출부(dart_daily_incremental.R)는 달력
+#   현재연도 1개만 넘겨 FY2025 사업보고서(11011)가 103/621 corps 에 머물렀다.
+#   연도 합집합이 아니라 쌍으로 걸러야 한다 — CJ(years x reprt_codes) 가
+#   이미 complete 인 조합까지 되살리기 때문(§dart_due_quarterly_pairs 주석).
+# max_calls: 일 10,000콜 한도 대비 이번 실행 예산 (fail-closed halt)
+# prioritize: 직전연도 동일 보고서 제출 이력 corp 를 앞으로 (예산이 잘려도
+#   실제 제출사가 먼저 채워진다)
+dart_fetch_quarterly <- function(years = NULL,
+                                  reprt_codes = c("11013", "11012", "11014", "11011"),
                                   fs_div = "CFS",
                                   delay = 0.7,
-                                  resume = TRUE) {
+                                  resume = TRUE,
+                                  max_calls = Inf,
+                                  prioritize = TRUE) {
   # corp_code 매핑 로드
   if (!file.exists(DART_CORPCODE)) dart_update_corpcode()
   corpmap <- as.data.table(read_parquet(DART_CORPCODE))
@@ -180,11 +174,33 @@ dart_fetch_quarterly <- function(years = 2018:2025,
     cat(sprintf("[dart_quarterly] Resuming: %d existing records\n", nrow(existing)))
   }
 
+  # ── 후보 (bsns_year, reprt_code) 쌍 결정 (P2-01) ──────────────────────────
+  due_pairs <- NULL
+  if (is.null(years)) {
+    due_pairs <- dart_due_quarterly_pairs(reprt_codes = reprt_codes,
+                                          path = DART_QUARTERLY_RAW)
+    if (nrow(due_pairs) == 0L) {
+      cat("[dart_quarterly] 제출창 기준 수집 대상 (연도,보고서) 없음 — 커버리지 도달.\n")
+      .dart_log_api_usage("dart_fetch_quarterly", 0L, 0L, 0L, 0L, "", "no_due_pair")
+      return(invisible(existing))
+    }
+    years <- sort(unique(due_pairs$bsns_year))
+    cat(sprintf("[dart_quarterly] 후보 쌍: %s\n",
+                paste(sprintf("FY%d/%s", due_pairs$bsns_year, due_pairs$reprt_code),
+                      collapse = ", ")))
+  }
+
   # 수집 대상: 모든 (corp_code, year, reprt_code) 조합
   tasks <- CJ(corp_code = matched$corp_code,
               bsns_year = years,
               reprt_code = reprt_codes,
               sorted = FALSE)
+  # 쌍 필터 — 연도 합집합만 쓰면 complete 조합이 되살아난다
+  if (!is.null(due_pairs)) {
+    tasks <- tasks[due_pairs, on = c("bsns_year", "reprt_code"), nomatch = 0L]
+  }
+  # 제출창 미개시분 제거 (명시 years 로 미래연도가 들어와도 낭비 차단)
+  tasks <- .dart_filter_tasks_by_window(tasks, today = Sys.Date())
   tasks <- merge(tasks, matched[, .(corp_code, Ticker, corp_name)], by = "corp_code")
 
   # 이미 수집된 건 제외

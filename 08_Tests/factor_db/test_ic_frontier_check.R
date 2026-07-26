@@ -276,6 +276,43 @@ if (STUB_OK) {
   else bad("D2_neutered_keeps_B_ok", "무력화판이 정상 케이스를 OK 로 못 냄 — 주입이 의도와 다르게 걸렸다")
 }
 
+# D4. 무력화 형태 ② — **문자 그대로 "항상 OK 반환"**.
+#   D0~D2 의 무력화는 lag 산식을 0 으로 만드는 *구조적* 형태다. 실제로 감시가 죽는
+#   또 다른 형태는 판정은 그대로 두고 **보고 severity 만 OK 로 뭉개는** 것이다
+#   (예: 소비처에서 severity 를 덮어쓰거나, 분기 끝에 res$severity <- "OK" 를 두는 것).
+#   이 형태는 소스 텍스트 주입이 아니라 래퍼로 재현한다 — 정본 파일을 건드리지 않으므로
+#   중단 시 복구 문제 자체가 없다(r-portability 금칙 ② 회피).
+{
+  always_ok <- function(...) {
+    r <- ic_frontier_check(...)
+    r$status <- "IC_FRONTIER_CURRENT"; r$severity <- "OK"; r
+  }
+  cases2 <- list(list(id = "A1", ic = A1$ic, today = A1$today),
+                 list(id = "A2", ic = A2$ic, today = A2$today),
+                 list(id = "A3", ic = A3$ic, today = A3$today),
+                 list(id = "A4", ic = A4$ic, today = A4$today),
+                 list(id = "A5", ic = A5$ic, today = A5$today))
+  slipped <- character(0)
+  for (cs in cases2) {
+    real <- run(cs$ic, cs$today)
+    fake <- tryCatch(always_ok(ic_max_date_override = cs$ic, raw_dates = RAW,
+                               today = D(cs$today)),
+                     error = function(e) list(severity = "ERROR"))
+    # 이 케이스가 판별자이려면: 진짜는 경보인데 무력화판은 OK 여야 한다
+    if (!identical(real$severity, "OK") && identical(fake$severity, "OK")) {
+      slipped <- c(slipped, cs$id)
+    }
+  }
+  if (identical(sort(slipped), c("A1", "A2", "A3", "A4", "A5"))) {
+    ok("D4_always_ok_neuter_slips_all_A",
+       "항상-OK 무력화판은 A1~A5 를 전부 통과 — 케이스가 severity 축도 판별한다")
+  } else {
+    bad("D4_always_ok_neuter_slips_all_A",
+        sprintf("판별되는 케이스가 {%s} 뿐 — A 가 severity 무력화를 못 잡는다",
+                paste(slipped, collapse = ",")))
+  }
+}
+
 # 정본 불변 실증 (사본만 건드렸는지)
 SRC_MD5_AFTER <- unname(tools::md5sum(SRC))
 if (identical(SRC_MD5_BEFORE, SRC_MD5_AFTER)) {
@@ -369,6 +406,44 @@ if (!file.exists(BOOT_SRC)) {
   ok("E5_bootstrap_reads_result", "bootstrap.sh 가 ic_month_frontier 결과를 조회")
 } else {
   bad("E5_bootstrap_reads_result", "부팅 경로가 프론티어 결과를 읽지 않는다 — 경보가 도달하지 않음")
+}
+
+# E6. 러너 편입 — 이 검사가 상설 배터리에서 실제로 도는가.
+#   P3 의 원래 갭이 "감시기는 있는데 검사가 없다" 였다면, 그 위층 갭은 "검사는 있는데
+#   러너에 안 걸려 있다" 다. 같은 기전(존재 → 발화 대체)이라 같이 막는다.
+#   ★한계 명시: 이 케이스는 자기-참조라, SUITES 에서 빠지면 배터리에서는 아예 실행되지
+#     않아 발화하지 못한다(그 경우의 검출자는 suite_totals_watch 의 총계 래칫 = hooks 감소).
+#     단독 실행·사후 감사에서는 발화한다. 그래서 형제 suite(P1)도 함께 확인한다 —
+#     둘 중 하나만 빠지면 남은 쪽이 배터리 안에서 잡는다.
+RUNNER <- "08_Tests/hooks/run_all_hooks.sh"
+if (!file.exists(RUNNER)) {
+  bad("E6_runner_registration", sprintf("%s 부재", RUNNER))
+} else {
+  rl <- readLines(RUNNER, warn = FALSE)
+  s_beg <- grep("^SUITES=\\(", rl)
+  s_end <- if (length(s_beg) == 1L) {
+    off <- grep("^\\)\\s*$", rl); off <- off[off > s_beg[1]]
+    if (length(off)) off[1] else NA_integer_
+  } else NA_integer_
+  if (length(s_beg) != 1L || is.na(s_end)) {
+    bad("E6_runner_registration",
+        sprintf("SUITES 배열 경계를 못 찾음 (begin=%d end=%s) — 러너 구조 변경",
+                length(s_beg), s_end))
+  } else {
+    body <- rl[(s_beg[1] + 1L):(s_end - 1L)]
+    body <- body[!grepl("^\\s*#", body)]                 # 주석 줄 제외(주석 언급 ≠ 등재)
+    want <- c(self    = "08_Tests/factor_db/test_ic_frontier_check.R",
+              sibling = "08_Tests/factor_db/test_ic_completion_guard.R")
+    miss <- want[!vapply(want, function(w) any(grepl(w, body, fixed = TRUE)), logical(1))]
+    if (length(miss) == 0L) {
+      ok("E6_runner_registration",
+         sprintf("SUITES(%d항목)에 본 검사 + P1 형제 검사 모두 등재", length(body)))
+    } else {
+      bad("E6_runner_registration",
+          sprintf("SUITES 미등재: %s — 검사가 상설로 돌지 않는다",
+                  paste(miss, collapse = ", ")))
+    }
+  }
 }
 
 #──────────────────────────────────────────────────────────────────────────────

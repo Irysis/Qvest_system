@@ -334,7 +334,11 @@ if [ "$DAY_OF_MONTH" = "01" ]; then
   run_r '
     source("config.R")
     source("data/data_collector_dart.R")
-    tryCatch(dart_run_pipeline(years = as.integer(format(Sys.Date(), "%Y"))),
+    # years 미지정 = 제출창+커버리지 기반 후보집합 (2026-07-26 P2-01 수리).
+    # 구 코드는 years = format(Sys.Date(), "%Y") 로 달력 현재연도 1개만 요청해
+    # FY2025 사업보고서(2026-03 제출)를 영구 미수집 상태로 남겼다.
+    # max_calls: 일 10,000콜 한도 중 이 스텝 예산 (fail-closed halt)
+    tryCatch(dart_run_pipeline(max_calls = 3000),
       error = function(e) cat(sprintf("DART Annual skipped: %s\n", e$message)))
   '
   # fundamental_merged 월간 full rebuild (2026-07-17 배선 — registry는 monthly/35d SLA인데

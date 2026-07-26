@@ -115,6 +115,11 @@ SUITES=(
   "08_Tests/portfolio/test_lineage_resolver.R"
   # 2026-07-26 추가: 부팅 자기-정합 검사(boot_currency_check) 위반 주입 — 부팅 최신화 자동 배선의 가드
   "08_Tests/hooks/test_boot_currency.sh"
+  # 2026-07-26 추가(T4): readiness gate 의 hook_dryrun 체크 위반 주입.
+  #   그 체크는 이 러너의 산출을 읽는다 — 즉 여기가 **자기 소비자를 감시하는 자리**다.
+  #   원 결함이 정확히 "러너가 산출 경로를 옮겼는데 게이트가 못 따라옴"이었으므로
+  #   E 축(배선 대조)이 이 러너의 RESULTS_FILE 과 게이트 상수를 매 실행 대조한다.
+  "08_Tests/validation/test_v8_readiness_hook_dryrun.R"
 )
 
 _suite_cmd() {
