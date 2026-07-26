@@ -67,6 +67,21 @@ sched_failure_guidance() {
   esac
 }
 
+# ── 사유별 당일 재시도 상한 (2026-07-26)
+#    상한을 사유와 무관하게 두면 **당일 안 풀리는 원인에 재시도를 낭비**한다.
+#    spend_limit 은 월 리셋까지 안 풀리므로 당일 재시도가 무의미하고,
+#    auth_expired 는 사람 조치가 있어야 풀리므로 1회만 열어 조치 후 다음 트리거가 잡게 한다.
+#    반대로 크래시·rate limit 은 즉시 재시도 가치가 크다.
+sched_retry_cap() {
+  case "${1:-}" in
+    spend_limit|spend_limit_fallback_*) echo 0 ;;   # 월 리셋까지 무의미
+    auth_expired|credentials_*)         echo 1 ;;   # 사람 조치 후 1회 기회
+    rate_limit)                         echo 3 ;;   # 일시적 — 적극 재시도
+    count_measurement_failed)           echo 1 ;;   # 환경 문제 — 반복해도 같음
+    *)                                  echo 3 ;;   # 미분류·크래시
+  esac
+}
+
 # ── 연속 실패 카운트 (같은 사유 N회 연속 = 학습된 무시 방지용 에스컬레이션)
 #    경보 마커 파일명 규칙 {comp}_{reason}_{YYYYMMDD}.alert 를 세어 추정.
 #    ★전기간 개수가 아니라 **오늘부터 거꾸로 이어지는 연속 일수**를 센다.

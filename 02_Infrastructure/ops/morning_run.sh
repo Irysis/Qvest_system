@@ -58,9 +58,21 @@ stage_result() {   # $1=표시명 $2=exit코드 $3=경보 컴포넌트명
   if ! ( set -o noclobber; echo "$$ @ $(date) trigger=$TRIGGER" > "$LOCK" ) 2>/dev/null; then
     _retry_reason=""
     [ ! -f "${LOCK}.done" ] && _retry_reason="직전 실행 미완주(.done 없음 — 중도 사망)"
+    _alert_reason=""
     if [ -z "$_retry_reason" ]; then
       _alert=$(ls -1 "$BASE/.cache/scheduler_alerts/"*"_${TODAY}.alert" 2>/dev/null | head -1)
-      [ -n "$_alert" ] && _retry_reason="직전 실행에 경보 발행($(basename "$_alert" | sed "s/_${TODAY}\.alert//"))"
+      if [ -n "$_alert" ]; then
+        _alert_reason=$(grep -oE '^reason=.*' "$_alert" 2>/dev/null | cut -d= -f2-)
+        _retry_reason="직전 실행에 경보 발행(${_alert_reason:-unknown})"
+      fi
+    fi
+    # 사유별 상한 — 당일 안 풀리는 원인에 재시도를 낭비하지 않는다.
+    if [ -n "$_alert_reason" ]; then
+      . "$BASE/02_Infrastructure/ops/_sched_failure_classify.sh" 2>/dev/null || true
+      if command -v sched_retry_cap >/dev/null 2>&1; then
+        _cap=$(sched_retry_cap "$_alert_reason")
+        [ -n "$_cap" ] && MORNING_MAX_RETRY="$_cap"
+      fi
     fi
     if [ -z "$_retry_reason" ]; then
       echo "already ran today ($LOCK exists, 완주·무경보) — skip"
