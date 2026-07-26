@@ -39,7 +39,7 @@
 | F9 | Distilled 파생 인덱스가 주간 재작성마다 frontier/live_trigger/revival_spec/expiry 소실 + revival 발화 last-mile 단절 | `axiom/cluster_extractor.py` vs `axiom/distilled.R` 스키마 드리프트 · `.cache/failure_revival_flags.json` 소비면 stdout뿐 |
 | F10 | 조준 계기판 형해화 — gap vector 빈 껍데기(n_strategies=0, 실 book 미반영) · grade_a_catalog v53 proxy A 39건 착시(essence 권위 A 0건) · FR 레지스트리 회수 4주 정지 | `.cache/portfolio_gap_vector.json` · `04_Research/grade_a_catalog.json` |
 
-Dead-end 배선 전체 목록·보존 대상 목록은 조사 원자료(workflow 산출) 참조. **보존/강화 확정**: 측정 프리미티브(canonical_screen_bt·essence 통계 규율·holdout_falsification), 게이트 이빨(discovery_graduation_gate fail-closed·overlay_pit_guard), 지식엔진 골격(lcode_emit v2·Distilled 카드·revival 레지스트리), register_module floor, DART insider backfill 라인.
+Dead-end 배선 전체 목록·보존 대상 목록은 조사 원자료(workflow 산출) 참조. **보존/강화 확정**: 측정 프리미티브(canonical_screen_bt·essence 통계 규율·holdout_falsification), 게이트 실효(discovery_graduation_gate fail-closed·overlay_pit_guard), 지식엔진 골격(lcode_emit v2·Distilled 카드·revival 레지스트리), register_module floor, DART insider backfill 라인.
 
 ---
 

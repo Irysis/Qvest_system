@@ -23,12 +23,12 @@
 
 | 레이어 | 무엇 | 파일 | 원천차단 기여 |
 |---|---|---|---|
-| **L1 차단 이빨** | Stop 훅이 `{"decision":"block"}` 발행 → 종결 턴을 되돌려 강제 속행 | `02_Infrastructure/hooks/research_continuity_guard.sh` | 사후 넛지가 아니라 그 턴을 못 끝내게 함 (T4 recommended_probe 집행) |
+| **L1 차단 실효** | Stop 훅이 `{"decision":"block"}` 발행 → 종결 턴을 되돌려 강제 속행 | `02_Infrastructure/hooks/research_continuity_guard.sh` | 사후 넛지가 아니라 그 턴을 못 끝내게 함 (T4 recommended_probe 집행) |
 | **L2 독립 semantic 판정** | 케이스 결정론 + verdict-close 일반화(신어 커버) + 선택적 Haiku | `02_Infrastructure/axiom/continuity_gate.py` | 신어로 우회 불가·편향 당사자 self-certify 차단 (T3 갭 메움) |
 | **L3 건설적 종료계약** | next_probe≥2 (+negative면 live_trigger)를 인자로 강제 | `02_Infrastructure/contracts/close_round.R` | "단어만 지우고 멈추기" 봉쇄 — 계속을 *생산*해야 종료 허용 |
 | **L4 자가발전** | 케이스 라이브러리 성장 + 차단감사 + 주간 cleaner 승격 | `06_Registry/continuity_cases.json` · `.cache/continuity_blocks.jsonl` · `.cache/continuity_pending_cases.json` | 새 우회를 잡을수록 강해짐 (§0.1 원리 3·4·5) |
 
-### L1 — 차단 이빨 (research_continuity_guard.sh, Stop hook)
+### L1 — 차단 실효 (research_continuity_guard.sh, Stop hook)
 - `continuity_gate.py --transcript`로 판정을 받아 block JSON이면 그대로 전달(강제 속행) + 차단 이력을 `.cache/continuity_blocks.jsonl`에 append.
 - pass면 W3(라운드 수집 후 layer_bottleneck_map 미갱신) warn만 잔존.
 - **무한루프 방지 3중**: 게이트 내부 per-turn cap(기본 3, user_ts 키) + `stop_hook_active` + ERR trap → `{}`(fail-open). 포기억제가 목적이지 작업차단이 아니므로 어떤 오류든 통과.

@@ -15,7 +15,7 @@ fi
 #     block 승격"의 집행 + 도훈 명시 mandate.
 #
 # 아키텍처(4레이어 — SOT 02_Infrastructure/docs/rules/continuity-firewall.md):
-#   L1 차단 이빨: 이 훅이 continuity_gate.py 판정을 받아 {"decision":"block"} 발행 →
+#   L1 차단 실효: 이 훅이 continuity_gate.py 판정을 받아 {"decision":"block"} 발행 →
 #                 종결 턴을 되돌려 강제 속행(사후 넛지가 아니라 현재 턴 개입).
 #   L2 독립 semantic 판정: continuity_gate.py = 케이스 결정론 + verdict-close 일반화(신어
 #                 커버) + 선택적 Haiku(QVEST_CONTINUITY_LLM=1). 편향 당사자 self-certify 차단.
@@ -47,7 +47,7 @@ if [ -f "$GATE" ]; then
   [ -n "$GATE_OUT" ] || GATE_OUT='{}'
 fi
 
-# block 발행 시 그대로 전달(이빨). 차단 이력 감사는 gate 내부(_log_block)가 확장 스키마
+# block 발행 시 그대로 전달(차단 실효). 차단 이력 감사는 gate 내부(_log_block)가 확장 스키마
 # ({ts,tp,categories,verdict_tokens,matched_terms,reason,span_hash})로 continuity_blocks.jsonl에
 # 직접 기록 — 여기서 {ts,tp} 중복 append 하지 않음(C4 정합). pass 분모는 gate가
 # .cache/continuity_gate_counters/passes_YYYYMMDD.json 일자 카운트로 확보.
