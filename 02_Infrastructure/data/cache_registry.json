@@ -348,7 +348,7 @@
         ".cache/factor_db/"
       ],
       "tier": 2,
-      "_note": "월간 factor IC (327팩터, C14 Usable_Date 게이트). freshness=max(Usable_Date), 전월 월말 기대 (예: 2026-06-10 시점 max=2026-05-31, lag 10). 기존 수동 재산출 전용이던 것을 registry monthly 등재 — cache_registry_run(schedule=monthly)로 실행 가능. 2026-06-10 P1 등재"
+      "_note": "월간 factor IC (327팩터, C14 Usable_Date 게이트). freshness=max(Usable_Date), 전월 월말 기대 (예: 2026-06-10 시점 max=2026-05-31, lag 10). 기존 수동 재산출 전용이던 것을 registry monthly 등재 — cache_registry_run(schedule=monthly)로 실행 가능. 2026-06-10 P1 등재. ★2026-07-26 P3: max_lag_days=40(Usable_Date 캘린더 lag)은 '며칠 지났나'만 재어 월말 재빌드 체인 전면 실패를 ~5주간 FRESH로 통과시킨다(실측 2026-07-26: lag 26 FRESH). 두 번째 축 = 월-프론티어 감시(ic_frontier_check.R, cache_freshness_audit 1c) — '산출 가능한 월을 다 산출했나'를 compute_all_factor_ic_monthly()의 incomplete-terminal-pair guard와 동일 operand로 판정하고 결과를 <path>::frontier 항목으로 낸다. 두 축 모두 이 엔트리 소관"
     },
     {
       "path": ".cache/flow_features_daily.parquet",
