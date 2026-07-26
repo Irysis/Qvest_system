@@ -1,56 +1,371 @@
 {
   "date": "20260726",
-  "autorun": 0,
+  "autorun": 1,
   "max_alpha": 2,
+  "routed_by": "paper_router_v2 full-sweep (20260726) — 20260724 런 대비 STEP2 팩터 추출 보강: 2607.19005·2607.19497 숨은 팩터 발굴",
   "counts_by_route": {
-    "alpha": 0,
-    "optimizer": 1,
-    "risk": 0,
-    "regime": 0,
-    "skip": 0
+    "alpha": 4,
+    "optimizer": 7,
+    "risk": 4,
+    "regime": 4,
+    "skip": 11
   },
-  "n_factor_candidates": 0,
-  "n_testable": 0,
-  "n_autorun": 0,
+  "n_factor_candidates": 6,
+  "n_testable": 4,
+  "n_uncertain": 2,
+  "n_infeasible": 1,
+  "n_autorun": 2,
   "curated_new_this_run": 0,
-  "previously_routed_count": 29,
-  "previously_routed_ref": "alpha_search_route_20260724.json",
-  "routed_by": "Q-Lead in-session (20260726 — 29/30 논문 어제 20260724에 이미 처리; 오늘 순수 신규 1편)",
+  "autorun_candidates": [
+    {
+      "priority": 1,
+      "factor_name": "vol_rank_stability",
+      "source_paper": "2607.19005",
+      "status": "spawned"
+    },
+    {
+      "priority": 2,
+      "factor_name": "spec_lowfreq_mass",
+      "source_paper": "2607.19497",
+      "status": "spawned"
+    }
+  ],
   "papers": [
     {
-      "title": "Portfolio Optimization under Dynamic Rebalancing via Topological Data Analysis and News Sentiments",
       "id": "2607.21170",
+      "title": "Portfolio Optimization under Dynamic Rebalancing via Topological Data Analysis and News Sentiments",
       "source": "arxiv",
       "route": "optimizer",
       "kr_feasible": false,
       "factor_candidate": {
-        "name": null,
-        "def": null,
-        "novel": null,
-        "kr_feasible": false,
-        "verdict": "infeasible",
-        "confidence": "high"
+        "name": "tda_isolation_score",
+        "verdict": "uncertain",
+        "note": "TDA topological isolation per stock — price-only portion feasible but no clear return predictor mechanism; FinBERT requires English news"
       },
-      "reason": "TDA 기반 자산 클러스터링 + FinBERT 뉴스 감성 오버레이로 포트폴리오 다각화 구성 (S&P 500 적용). 종목별 알파 신호 없음 — 자산 간 토폴로지 거리 기반 구성 방법론이 핵심. FinBERT 컴포넌트는 영어 뉴스 피드 필요 (KR 미적용). optimizer 참고자료로 적재."
+      "reason": "optimizer: TDA clustering + retention mechanism for portfolio construction. A/B: TDA-cluster weights vs current MVO."
+    },
+    {
+      "id": "2607.20343",
+      "title": "Path-Space Model Risk via Signature-Induced Optimal Transport",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "risk: path-space model risk theory. No per-stock ranking signal."
+    },
+    {
+      "id": "2607.20093",
+      "title": "Retail Trader's Ruin: An Anatomy of Popular Signal Failure",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Meta-analysis: 4/5 retail signals REFUTED; momentum INCONCLUSIVE. No new factor."
+    },
+    {
+      "id": "2607.19497",
+      "title": "The Science and Practice of Trend-Following Systems",
+      "source": "arxiv",
+      "route": "regime",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "spec_lowfreq_mass",
+        "def": "Spectral low-freq mass ratio = power(freq<1/60 cycles/day) / total_power, from 252d rolling FFT of normalized daily returns. High ratio = trending stock. Monthly signal, PIT lag 1M.",
+        "novel": true,
+        "kr_feasible": true,
+        "verdict": "testable",
+        "confidence": "high",
+        "priority": 2,
+        "autorun": true,
+        "note": "20260724 런 MISS — 오늘 STEP2 오버레이에서 발굴. 팩터DB 0-히트 신규."
+      },
+      "reason": "regime: TF system design. Hidden alpha: per-stock spectral mass ratio is a novel cross-sectional trend-persistence signal."
+    },
+    {
+      "id": "2607.19005",
+      "title": "Observable Matrix Dynamics of Stocks",
+      "source": "arxiv",
+      "route": "alpha",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "vol_rank_stability",
+        "def": "Volatility rank stability = -std(rank_pct_vol_20d, window=252d). rank_pct_vol = percentile rank of 20d realized vol within universe. High = stable vol rank (consistently low-vol defensive OR consistently high-vol). Monthly signal, PIT: vol computed t-21 to t-1, 252d window ending prior month-end.",
+        "novel": true,
+        "kr_feasible": true,
+        "verdict": "testable",
+        "confidence": "high",
+        "priority": 1,
+        "autorun": true,
+        "note": "20260724 런 MISS (route: regime, factor_candidate: null) — 오늘 STEP2 오버레이에서 발굴. 팩터DB 0-히트 신규."
+      },
+      "reason": "alpha: Volatility rank Markov chain analysis per stock. Vol chain 'far more persistent, financial-sector led, arrow of time at stress' → vol rank stability is actionable cross-sectional signal."
+    },
+    {
+      "id": "2607.18815",
+      "title": "Cloud failure and cyber insurance",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Insurance/cyber risk. No equity signal."
+    },
+    {
+      "id": "2607.18813",
+      "title": "Mixing-Law Uncertainty in Multivariate Normal Mean-Variance Mixtures",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "optimizer: distributional-robust portfolio optimization under mixing-law ambiguity."
+    },
+    {
+      "id": "2607.18623",
+      "title": "Dead Reckoning: Counting Your Customers Who Never Say Goodbye",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Customer lifetime / BTYD model. No equity signal."
+    },
+    {
+      "id": "2607.18616",
+      "title": "Prediction of bank transaction fraud using TabNet",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Bank fraud detection. No equity signal."
+    },
+    {
+      "id": "2607.18001",
+      "title": "AlphaZeroBeta: Deep Reinforcement Learning for Market-Neutral Portfolios",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "optimizer: CNN-GRU Recurrent PPO for portfolio allocation. Architecture-level; long-short structure incompatible with long-only mandate."
+    },
+    {
+      "id": "2607.17381",
+      "title": "Determining Insolvency Regions in Banks",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Bank insolvency model (Iranian banking). No equity signal."
+    },
+    {
+      "id": "2607.16801",
+      "title": "A Practical Guide to Simulating Correlated Binary Outcomes",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "risk: Bernoulli copula simulation for correlated defaults."
+    },
+    {
+      "id": "2607.16601",
+      "title": "The conditional higher moment risk measure: second-order asymptotics with FGM contagion",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "risk: CoHM risk measure theory. Insurance application."
+    },
+    {
+      "id": "2607.16450",
+      "title": "Portfolio Optimization under Heavy Tails and Asymmetric Volatility: Evidence from Taiwan-Exposed ETFs",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "hill_tail_index",
+        "def": "Hill estimator tail index per stock. alpha_hill = 1/mean(log(X_k)-log(X_k+1)), k=floor(sqrt(252)), X = sorted |daily_ret| descending. Rolling 252d window. Factor = negative of alpha_hill (fatter tail = lower index = higher extreme risk).",
+        "novel": true,
+        "kr_feasible": true,
+        "verdict": "testable",
+        "confidence": "medium",
+        "priority": 3,
+        "autorun": false,
+        "note": "Queue for next alpha-search run (priority 3). Direction ambiguous — test both."
+      },
+      "reason": "optimizer primary. Hill tail index per stock = novel cross-sectional factor (queue, not autorun today)."
+    },
+    {
+      "id": "2607.15195",
+      "title": "SciPhy Reinforcement Learning for Portfolio Optimization",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "optimizer: Physics-informed RL (HJB/PINN) for portfolio optimization. No per-stock signal."
+    },
+    {
+      "id": "2607.15317",
+      "title": "Asymptotic fractional-order stochastic dominance",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Pure theory on stochastic dominance. No implementable signal."
+    },
+    {
+      "id": "2607.13968",
+      "title": "Measuring Sentiment News with Transformer-Based Language Models",
+      "source": "arxiv",
+      "route": "alpha",
+      "kr_feasible": false,
+      "factor_candidate": {
+        "name": "finbert_news_sentiment",
+        "verdict": "infeasible",
+        "note": "Requires Korean financial news corpus. Not in RAWDATA/DART/FRED/ECOS. Alt-data prohibition."
+      },
+      "reason": "alpha: FinBERT sentiment outperforms dictionary vs human judgments. Infeasible KR due to news corpus requirement."
+    },
+    {
+      "id": "2607.14174",
+      "title": "How Much of a 10-K Matters? Aggregation-Dependent Value of Full-Text versus Risk-Factor Sentiment",
+      "source": "arxiv",
+      "route": "alpha",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "dart_risk_section_sentiment",
+        "def": "Supervised sentiment from DART 사업보고서 risk section (사업의 위험 등). Annual signal with C4 lag (3/31).",
+        "novel": true,
+        "kr_feasible": "uncertain",
+        "verdict": "uncertain",
+        "confidence": "medium",
+        "note": "DART annual reports accessible; Korean NLP model absent from current infra."
+      },
+      "reason": "alpha: Risk section firm-level sentiment predicts returns. DART analogy strong but KR NLP pipeline gap."
+    },
+    {
+      "id": "2607.13112",
+      "title": "Anchored Geodesic Analysis for Multivariate Extremes",
+      "source": "arxiv",
+      "route": "risk",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "risk: Extremal dependence dimension reduction (AGCA). Portfolio-level, no cross-sectional signal."
+    },
+    {
+      "id": "2607.12248",
+      "title": "When Directional Accuracy Lies: A Base-Rate-Honest Benchmark for LoRA-Adapted TimesFM",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "LoRA-TimesFM shows no directional skill over always-up base rate. No new factor."
+    },
+    {
+      "id": "2607.12205",
+      "title": "A Unified Credit Expansion Theory on Housing Cycle",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "US housing cycle / mortgage economics. No equity signal."
+    },
+    {
+      "id": "2607.16281",
+      "title": "A Novel Hybrid Quantum Reservoir Computing (nHQRC) for Phase Transition Detection",
+      "source": "arxiv",
+      "route": "regime",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "regime: quantum reservoir computing for phase transition detection. Quantum hardware required — infeasible."
+    },
+    {
+      "id": "2607.06502",
+      "title": "What Useful Alphas?",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Meta-analysis: published anomalies useless post-2005 for non-micro-cap. Confirms our established prior (return-derived factor zoo exhausted). No new signal."
+    },
+    {
+      "id": "2607.06153",
+      "title": "From Gravity to Confinement: Wealth Redistribution as Optimal Drift Design",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "Wealth distribution / tax policy physics model. No equity signal."
+    },
+    {
+      "id": "2606.29793",
+      "title": "Fund2Persona: A Framework for Building Financial Advisor Personas",
+      "source": "arxiv",
+      "route": "skip",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "LLM persona for financial advisors. No equity signal."
+    },
+    {
+      "id": "2606.15473",
+      "title": "Belief at Risk: Quantifying Agentic AI Model Risk with LLM-Inferred Bayesian State Filters",
+      "source": "arxiv",
+      "route": "regime",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "llm_bayesian_regime_belief",
+        "verdict": "uncertain",
+        "note": "LLM inference pipeline cost/reproducibility concerns. Not per-stock factor."
+      },
+      "reason": "regime: Bayesian filtering with LLM-inferred regime beliefs for VaR/CVaR."
+    },
+    {
+      "id": "2606.11318",
+      "title": "Mean-Variance Optimization in Ambiguous Financial Markets with Learning",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "optimizer: MVO under ambiguity aversion with Bayesian drift learning."
+    },
+    {
+      "id": "2606.09104",
+      "title": "Addressing Market Regime Changes via Bayesian VAR and Elliptical Black-Litterman",
+      "source": "arxiv",
+      "route": "optimizer",
+      "kr_feasible": false,
+      "factor_candidate": null,
+      "reason": "optimizer: BAVAR-BLED fat-tail Black-Litterman + VAR return forecasts."
+    },
+    {
+      "id": "2606.09025",
+      "title": "Continuous Cash-Overlay Filters for a Static Growth-Defensive Risk Sleeve",
+      "source": "arxiv",
+      "route": "regime",
+      "kr_feasible": true,
+      "factor_candidate": null,
+      "reason": "regime: slow-tail compensation + V-shape crash brake cash overlay. Portfolio-level timing — not cross-sectional factor."
+    },
+    {
+      "id": "2606.08141",
+      "title": "A Structural Matrix Autoregressive Model for the Joint Dynamics of Volume, Volatility, and Returns",
+      "source": "arxiv",
+      "route": "alpha",
+      "kr_feasible": true,
+      "factor_candidate": {
+        "name": "vol_adj_volume_surprise",
+        "def": "Vol-adjusted volume surprise: residual from AR(1)-vol model, log_vol_t ~ log_vol_t-1 + realized_vol_t-1, rolling 252d OLS. Residual = unexpected volume component after controlling for vol-driven baseline.",
+        "novel": true,
+        "kr_feasible": true,
+        "verdict": "testable",
+        "confidence": "medium",
+        "priority": 4,
+        "autorun": false,
+        "note": "Queue for future run (priority 4). Paper: vol is primary driver of trading; FOMC events show 'informative' volume surge. Surprise component may have information content."
+      },
+      "reason": "alpha: SMAR model shows vol drives volume. Vol-adjusted surprise as per-stock signal (queue)."
     }
   ],
-  "previously_routed_summary": {
-    "note": "mcp_discovery_20260726.json의 30편 중 29편이 20260724 런(동일 rolling 180일 창)에서 이미 처리됨. 순수 신규 = 2607.21170(2026-07-23 게재)만 해당.",
-    "alpha_candidates_already_processed": [
-      {
-        "id": "2607.14174",
-        "title": "How Much of a 10-K Matters? Aggregation-Dependent Value of Full-Text versus Risk-Factor Sentiment",
-        "route_20260724": "alpha",
-        "kr_feasible_20260724": false,
-        "verdict_20260724": "infeasible — DART 텍스트 NLP 파이프라인 미구축. FQ-012(DART-text 비-return 프론티어) 참조"
-      },
-      {
-        "id": "2607.13968",
-        "title": "Measuring Sentiment News with Transformer-Based Language Models",
-        "route_20260724": "skip",
-        "kr_feasible_20260724": false,
-        "verdict_20260724": "infeasible — KR 뉴스 FinBERT 파이프라인 없음"
-      }
-    ]
-  }
+  "factor_queue_summary": [
+    {"priority": 1, "name": "vol_rank_stability", "source": "2607.19005", "autorun": true},
+    {"priority": 2, "name": "spec_lowfreq_mass", "source": "2607.19497", "autorun": true},
+    {"priority": 3, "name": "hill_tail_index", "source": "2607.16450", "autorun": false},
+    {"priority": 4, "name": "vol_adj_volume_surprise", "source": "2606.08141", "autorun": false}
+  ]
 }

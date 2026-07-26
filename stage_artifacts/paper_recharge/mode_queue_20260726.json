@@ -1,15 +1,115 @@
 {
   "date": "20260726",
-  "queued_by": "paper_router_v2",
+  "queued_by": "paper_router_v2 full-sweep",
   "optimizer": [
     {
       "id": "2607.21170",
       "title": "Portfolio Optimization under Dynamic Rebalancing via Topological Data Analysis and News Sentiments",
       "provider": "arxiv",
-      "summary_ko": "TDA 기반 자산 클러스터링 + FinBERT 감성 오버레이. 토폴로지 유사도 기반 자산 선별 → retention 메커니즘(연속 리밸 간 우수 자산 보존)으로 회전율 절감. optimizer-research 에이전트가 alpha-고정 A/B 대상으로 소비 가능.",
-      "ab_test_memo": "α̂ 고정 A/B: 현행 MVO vs TDA-클러스터 기반 구성 비교 (retention weight 포함)"
+      "summary_ko": "TDA 기반 자산 클러스터링 + FinBERT 감성 오버레이. retention 메커니즘(연속 리밸 간 우수 자산 보존)으로 회전율 절감.",
+      "ab_test_memo": "α̂ 고정 A/B: 현행 MVO vs TDA-클러스터 기반 구성 비교"
+    },
+    {
+      "id": "2607.18813",
+      "title": "Mixing-Law Uncertainty in Multivariate Normal Mean-Variance Mixtures",
+      "provider": "arxiv",
+      "summary_ko": "혼합-법칙 불확실성 하 분포적 견고 포트폴리오 최적화. 최악-케이스 모델을 사전 선택이 아닌 최적화 단계에서 결정.",
+      "ab_test_memo": "α̂ 고정 A/B: 현행 MVO vs distributional-robust worst-case MVO"
+    },
+    {
+      "id": "2607.18001",
+      "title": "AlphaZeroBeta: Deep Reinforcement Learning for Market-Neutral Portfolios",
+      "provider": "arxiv",
+      "summary_ko": "CNN-GRU + Recurrent PPO 복합 보상함수(초과수익-벤치상관-비용). 롤링 워크포워드로 7개 지수 검증. long-short 아키텍처이나 reward 구조 참고.",
+      "ab_test_memo": "참고자료: RL 보상 함수 설계 (초과수익+비용) — long-only 적응 검토"
+    },
+    {
+      "id": "2607.16450",
+      "title": "Portfolio Optimization under Heavy Tails and Asymmetric Volatility",
+      "provider": "arxiv",
+      "summary_ko": "Hill tail-index + GJR-GARCH + CVaR vs MVO 비교 (Taiwan ETF). Sharpe vs STARR vs Rachev ratio 성과측도 비교.",
+      "ab_test_memo": "α̂ 고정 A/B: 현행 MVO vs CVaR 최적화. Rachev ratio 참고."
+    },
+    {
+      "id": "2607.15195",
+      "title": "SciPhy Reinforcement Learning for Portfolio Optimization",
+      "provider": "arxiv",
+      "summary_ko": "물리 정보 RL(HJB → PINN). 연속시간 비용-인지 Gibbs 정책. 오프라인 역사 데이터로 학습.",
+      "ab_test_memo": "참고자료: HJB 기반 cost-aware allocation. 현행 MVO 대비 개념 비교."
+    },
+    {
+      "id": "2606.11318",
+      "title": "Mean-Variance Optimization in Ambiguous Financial Markets with Learning",
+      "provider": "arxiv",
+      "summary_ko": "모호성 회피 투자자의 MVO — drift 불확실성에 Bayesian learning. 모호성 클수록 위험자산 축소. 시장리스크·모델모호성 분리 분산가중.",
+      "ab_test_memo": "α̂ 고정 A/B: 현행 MVO vs 모호성-가중 MVO (λ_ambiguity 파라미터)"
+    },
+    {
+      "id": "2606.09104",
+      "title": "Addressing Market Regime Changes via Bayesian VAR and Elliptical Black-Litterman",
+      "provider": "arxiv",
+      "summary_ko": "BAVAR-BLED: VAR 수익 예측 + Student-t 분포 BL 모델. 팻-테일 추정 + 국면-인지 분산 행렬. 29 DJIA 종목 10년 검증.",
+      "ab_test_memo": "α̂ 고정 A/B: 현행 MVO vs BAVAR-BLED 가중. 팻-테일 분산 행렬 교체 효과."
     }
   ],
-  "risk": [],
-  "regime": []
+  "risk": [
+    {
+      "id": "2607.20343",
+      "title": "Path-Space Model Risk via Signature-Induced Optimal Transport",
+      "provider": "arxiv",
+      "summary_ko": "서명 기반 최적운송으로 경로공간 모델 리스크 정량화. 기준모델 대비 robust expectation/probability bounds 유도.",
+      "use_memo": "모델 리스크 / 스트레스 테스트 프레임워크 참고"
+    },
+    {
+      "id": "2607.16801",
+      "title": "A Practical Guide to Simulating Correlated Binary Outcomes",
+      "provider": "arxiv",
+      "summary_ko": "correlated Bernoulli outcomes 시뮬레이션 — PMF 선형계획 정확 해법. Gaussian copula 오류 지적.",
+      "use_memo": "공분산 추정 보조: correlated default/event 시뮬레이션 (tail scenario)"
+    },
+    {
+      "id": "2607.16601",
+      "title": "The conditional higher moment risk measure: second-order asymptotics with FGM contagion",
+      "provider": "arxiv",
+      "summary_ko": "CoHM 위험측도 2차 점근 전개 (FGM 종속 구조). 극단값 이론 + 2차 정규변동. 보험 적용.",
+      "use_memo": "꼬리 리스크 측도 이론 참고 (risk-research 에이전트)"
+    },
+    {
+      "id": "2607.13112",
+      "title": "Anchored Geodesic Analysis for Multivariate Extremes",
+      "provider": "arxiv",
+      "summary_ko": "AGCA: 극단 의존 차원축소 (대각선 앵커, sine² 손실). 10 성분이 분산 91% 설명. VaR/CVaR 오차 1.25%.",
+      "use_memo": "꼬리 의존 구조 분석 (포트폴리오 VaR/CVaR 극단 시나리오)"
+    }
+  ],
+  "regime": [
+    {
+      "id": "2607.19497",
+      "title": "The Science and Practice of Trend-Following Systems",
+      "provider": "arxiv",
+      "summary_ko": "TF 시스템 통합 분류(유럽/미국/TSMOM). TF 알파 = 저주파수 스펙트럼 질량. 닫힌 형 Sharpe + 비용-최적 span 유도.",
+      "use_memo": "오버레이 타이밍 설계 참고. ★숨은 팩터: spec_lowfreq_mass (AUTORUN P2)"
+    },
+    {
+      "id": "2607.16281",
+      "title": "A Novel Hybrid Quantum Reservoir Computing for Phase Transition Detection",
+      "provider": "arxiv",
+      "summary_ko": "양자 저장소 컴퓨팅으로 비평형 위상전이 탐지. von Neumann entropy + QFI 얽힘 증인. 양자 하드웨어 필요.",
+      "use_memo": "이론 참고만. 실구현 불가 (양자 하드웨어)."
+    },
+    {
+      "id": "2606.15473",
+      "title": "Belief at Risk: Quantifying Agentic AI Model Risk with LLM-Inferred Bayesian State Filters",
+      "provider": "arxiv",
+      "summary_ko": "LLM을 POMDP 관측 모델로 사용. Bayesian filter로 국면 확률 추정 → VaR/CVaR 리스크 측도.",
+      "use_memo": "국면 감지 overlay 아이디어. LLM 추론 파이프라인 비용 검토 필요."
+    },
+    {
+      "id": "2606.09025",
+      "title": "Continuous Cash-Overlay Filters for a Static Growth-Defensive Risk Sleeve",
+      "provider": "arxiv",
+      "summary_ko": "슬로우-테일 보상 필터 + V-형 급락 브레이크 현금 오버레이. 5가지 연속 상태(VIX/금리/크레딧/낙폭/재진입). OOS 19.35% vs 17.59% BM, MDD -22 vs -34.",
+      "use_memo": "overlay 타이밍 설계 참고. 연속 상태 변수 → 현금비중 매핑 구조."
+    }
+  ]
 }
