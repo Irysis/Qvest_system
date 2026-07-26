@@ -105,6 +105,10 @@ log_deletion <- function(kind, path) {
 #     본 스크립트 전역과 섞임 — 시스템콜이 안전. dry 플래그 전파.
 # =============================================================================
 hygiene_deleted_n <- NA_integer_
+# (2026-07-26 WCS-09) 일간 감사의 경고 필드를 주간 표면까지 운반 — 부분 소비로 위반이
+#   소멸하던 경로. run_step 은 promise(global 평가)라 `<<-` 가 필요하므로 전역 선언.
+hygiene_warn_n <- NA_integer_
+hygiene_warn_top <- list()
 run_step("hygiene_audit", {
   audit_r <- file.path(root, "02_Infrastructure", "ops", "artifact_hygiene_audit.R")
   if (!file.exists(audit_r)) stop("artifact_hygiene_audit.R 부재")
@@ -575,6 +579,9 @@ run_step("write_pending", {
     would_delete_n    = if (DRY) sweep_deleted_n else NA_integer_,
     sweep_detail  = list(
       hygiene_audit_deleted_n     = hygiene_deleted_n,
+      # (WCS-09) 일간 감사 경고를 /cleaner 증류가 소비할 수 있게 운반
+      hygiene_n_warnings          = hygiene_warn_n,
+      hygiene_warnings_top        = hygiene_warn_top,
       # (2026-07-26 WCS-04) 합계에 0 으로 들어간 것이 '삭제 0' 인지 '미관측' 인지 구분
       hygiene_audit_status        = if (is.na(hygiene_deleted_n))
         "UNMEASURED (hygiene 감사 산출 미판독 — 합계에는 0으로 계상됨)" else "measured",
