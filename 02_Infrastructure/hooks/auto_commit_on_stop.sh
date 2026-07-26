@@ -96,7 +96,7 @@ if [ "$TOKEN_HITS" -gt 0 ] || [ "$GENERIC_HITS" -gt 0 ] || [ "$ENV_INCLUDED" -eq
   MSG="[WARN] [auto-commit] Secret 탐지로 자동 commit 중단."
   MSG+=" token=$TOKEN_HITS generic=$GENERIC_HITS env=$ENV_INCLUDED."
   MSG+=" /tmp/auto_commit.log 확인 후 수동 정리 필요."
-  MSG_ESC=$(printf '%s' "$MSG" | "$QVEST_PY_BIN" -c "import sys,json; s=sys.stdin.buffer.read().decode('utf-8','replace'); print(json.dumps(''.join(ch if not(0xD800<=ord(ch)<=0xDFFF) else '?' for ch in s)))")
+  MSG_ESC=$(_json_msg "$MSG")
   echo "{\"hookSpecificOutput\":{\"hookEventName\":\"Stop\",\"additionalContext\":$MSG_ESC}}"
   exit 0
 fi
@@ -104,25 +104,70 @@ fi
 # ─── Staging (gitignore 자동 적용) ──────────────────────────────────
 git add -A 2>>"$LOG"
 
-# 신규 파일 과다 시: 전체 abort → 코어 경로 선별 커밋으로 강등 (HYG-01, 2026-07-03)
-# 구 동작(전체 reset + abort)이 973회 연속 abort를 만들어 세션 변경분이 영영 미커밋되던 결함 수리.
-# 코어 경로(.claude/ 02_Infrastructure/ 00_Lawbook/ qepm/memory/ 06_Registry/ CLAUDE.md)만 스테이징,
-# 나머지 대량 신규 파일은 skip + 로그/마커 기록 (Telegram 배선은 후속 — 로그+마커까지만).
-NEW_COUNT=$(git diff --cached --name-status 2>/dev/null | awk '$1=="A"' | wc -l)
+# ─── 대량-신규 격리 밸브 v2 (2026-07-26 근본 재설계, 도훈 지시) ─────────────────────
+# v1(HYG-01 2026-07-03): NEW>100 → 전체 reset 후 CORE_PATHS만 재스테이징.
+#   ★실측 결함(2026-07-26): 문턱이 '이번 세션 신규'가 아니라 **누적 untracked 백로그**를 쟀고
+#   (fq073 dart_products 등 538건 상시 초과 → 밸브 영구 개방, CORE_ONLY_STAGED 171회),
+#   처벌이 dump가 아니라 코어 밖 **전부(M/D 포함)**에 떨어졌다 — git reset이 M/D까지 쓸어
+#   08_Tests 신규 회귀가드·04_Research 보고서·삭제 3건이 영영 미커밋. '수리가 git에 못 닿는'
+#   worktree 좌초와 같은 실패부류를 main에서 훅 스스로 재현. (검사가 잘못된 것을 잼 계통)
+# v2 원칙:
+#   ① M(수정)/D(삭제)는 절대 격리하지 않는다 — 추적 중인 파일의 변경·삭제는 dump가 아니다.
+#   ② 격리는 신규(A)만, 디렉터리 단위: 한 디렉터리에 A가 문턱 초과 집중 시 그 디렉터리의
+#      A만 unstage (대량 dump의 전형 서명 = 단일 디렉터리 집중. 확산형 유기 산출은 통과).
+#   ③ 조용한 격리 금지: 원장 .cache/auto_commit_quarantine.json → bootstrap §4h-3 부팅 WARN.
+#      bulk 미검출 턴에 원장 자동 제거(드레인 완료 시 WARN 자동 소등).
+BULK_DIR_THRESHOLD="${QVEST_AC_BULK_THRESHOLD:-100}"
+QUAR_LEDGER="$PROJECT/.cache/auto_commit_quarantine.json"
 PARTIAL_NOTE=""
-if [ "$NEW_COUNT" -gt 100 ]; then
-  echo "$TS TOO_MANY_NEW ($NEW_COUNT) — core-path selective staging fallback" >> "$LOG"
-  git reset HEAD -- . 2>>"$LOG" || true
-  CORE_PATHS=".claude 02_Infrastructure 00_Lawbook qepm/memory 06_Registry CLAUDE.md"
-  for p in $CORE_PATHS; do
-    if [ -e "$p" ]; then git add -- "$p" 2>>"$LOG" || true; fi
+A_FILES=()
+while IFS= read -r -d '' _f; do A_FILES+=("$_f"); done \
+  < <(git diff --cached --name-only --diff-filter=A -z 2>/dev/null || true)
+NEW_COUNT=${#A_FILES[@]}
+if [ "$NEW_COUNT" -gt "$BULK_DIR_THRESHOLD" ]; then
+  declare -A DIRCNT=()
+  for _f in ${A_FILES[@]+"${A_FILES[@]}"}; do
+    _d="${_f%/*}"; [ "$_d" = "$_f" ] && _d="."
+    DIRCNT["$_d"]=$(( ${DIRCNT["$_d"]:-0} + 1 ))
   done
-  SKIPPED=$(git status --porcelain 2>/dev/null | grep -c '^??' || true)
-  SKIPPED=${SKIPPED//[^0-9]/}; SKIPPED=${SKIPPED:-0}
-  echo "$TS CORE_ONLY_STAGED new=$NEW_COUNT untracked_skipped=$SKIPPED" >> "$LOG"
-  printf '%s TOO_MANY_NEW=%s untracked_skipped=%s (core-path selective commit)\n' \
-    "$TS" "$NEW_COUNT" "$SKIPPED" > /tmp/auto_commit_abort_marker.txt 2>/dev/null || true
-  PARTIAL_NOTE=" [PARTIAL: 신규 ${NEW_COUNT}개>100 — 코어 경로만 커밋, untracked ${SKIPPED}건 skip]"
+  QUAR_DIRS=()
+  for _d in "${!DIRCNT[@]}"; do
+    if [ "${DIRCNT[$_d]}" -gt "$BULK_DIR_THRESHOLD" ]; then QUAR_DIRS+=("$_d"); fi
+  done
+  if [ "${#QUAR_DIRS[@]}" -gt 0 ]; then
+    QUAR_N=0
+    for _f in ${A_FILES[@]+"${A_FILES[@]}"}; do
+      _d="${_f%/*}"; [ "$_d" = "$_f" ] && _d="."
+      for _q in "${QUAR_DIRS[@]}"; do
+        if [ "$_d" = "$_q" ]; then
+          git reset -q HEAD -- "$_f" 2>>"$LOG" || true
+          QUAR_N=$((QUAR_N + 1)); break
+        fi
+      done
+    done
+    {
+      printf '{"ts":"%s","threshold":%s,"total_new":%s,"quarantined":[' \
+        "$TS" "$BULK_DIR_THRESHOLD" "$NEW_COUNT"
+      _first=1
+      for _d in "${QUAR_DIRS[@]}"; do
+        _esc=$(printf '%s' "$_d" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g')
+        [ "$_first" -eq 0 ] && printf ','
+        printf '{"dir":"%s","n_new":%s}' "$_esc" "${DIRCNT[$_d]}"
+        _first=0
+      done
+      printf '],"drain_hint":"정상 산출물이면 git add <dir> 후 수동 커밋, dump면 정리 또는 .gitignore. M/D는 영향 없음(항상 커밋)."}\n'
+    } > "$QUAR_LEDGER" 2>>"$LOG" || true
+    echo "$TS BULK_QUARANTINE dirs=${#QUAR_DIRS[@]} files=$QUAR_N of_new=$NEW_COUNT" >> "$LOG"
+    printf '%s BULK_QUARANTINE dirs=%s files=%s (원장: %s)\n' \
+      "$TS" "${#QUAR_DIRS[@]}" "$QUAR_N" "$QUAR_LEDGER" > "$AC_MARKER" 2>/dev/null || true
+    PARTIAL_NOTE=" [QUARANTINE: ${#QUAR_DIRS[@]}개 디렉터리·신규 ${QUAR_N}건 격리 (M/D는 전량 커밋) — $QUAR_LEDGER]"
+  else
+    # 총량은 크나 단일-디렉터리 집중 없음 = 확산형 유기 산출 — 격리 없이 통과 (v1 과잉처벌 제거)
+    echo "$TS BULK_SPREAD_OK new=$NEW_COUNT (single-dir concentration 없음)" >> "$LOG"
+    rm -f "$QUAR_LEDGER" 2>/dev/null || true
+  fi
+else
+  rm -f "$QUAR_LEDGER" 2>/dev/null || true
 fi
 
 STAGED=$(git diff --cached --name-only 2>/dev/null | wc -l)
@@ -166,14 +211,14 @@ if [ $? -eq 0 ]; then
   HASH=$(git rev-parse --short HEAD)
   echo "$TS AUTO_COMMIT $HASH staged=$STAGED${PARTIAL_NOTE}" >> "$LOG"
   MSG="[OK] [auto-commit] $HASH - $STAGED files committed. Push는 milestone/cron으로 자동.${PARTIAL_NOTE}"
-  MSG_ESC=$(printf '%s' "$MSG" | "$QVEST_PY_BIN" -c "import sys,json; s=sys.stdin.buffer.read().decode('utf-8','replace'); print(json.dumps(''.join(ch if not(0xD800<=ord(ch)<=0xDFFF) else '?' for ch in s)))")
+  MSG_ESC=$(_json_msg "$MSG")
   echo "{\"hookSpecificOutput\":{\"hookEventName\":\"Stop\",\"additionalContext\":$MSG_ESC}}"
 else
   # 실패도 로그 + 마커에 남김 (HYG-01) — 조용한 실패 방지. Telegram 배선은 후속.
   echo "$TS COMMIT_FAILED${PARTIAL_NOTE}" >> "$LOG"
   cat /tmp/auto_commit_last.log >> "$LOG" 2>/dev/null || true
   printf '%s COMMIT_FAILED%s (detail: /tmp/auto_commit_last.log)\n' "$TS" "$PARTIAL_NOTE" \
-    > /tmp/auto_commit_abort_marker.txt 2>/dev/null || true
+    > "$AC_MARKER" 2>/dev/null || true
   echo '{}'
 fi
 exit 0
