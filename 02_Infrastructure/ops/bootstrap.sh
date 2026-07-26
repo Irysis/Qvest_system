@@ -599,6 +599,18 @@ try:
               + " (성과수치 산출 전 갱신 의무 — performance-real-code-only)")
     else:
         print("  핵심 연구캐시(rawdata/benchmark/regime): FRESH")
+    # IC 월-프론티어 (P3 2026-07-26): 월말 재빌드 체인 지연은 WARN 카운터에만 묻히면
+    #   안 되는 상시 감시 항목 — 상태를 항상 이름으로 노출한다(정상도 1줄).
+    #   판정 자체는 cache_freshness_audit(1c)/ic_frontier_check.R 소관, 여기선 읽기만.
+    fr = next((r for r in res if str(r.get('check')) == 'ic_month_frontier'), None)
+    if fr is not None:
+        if fr.get('severity') in ('WARN', 'CRITICAL'):
+            print("  %s: IC 프론티어 %s / 기대 %s — %s" % (
+                fr.get('severity'), fr.get('ic_month', '?'),
+                fr.get('expected_month', '?'), fr.get('note', '')))
+        else:
+            print("  IC 월-프론티어: %s = 기대치 (월말 재빌드 체인 정상)"
+                  % fr.get('ic_month', '?'))
 except Exception as e:
     print("DataFresh:  SKIP (parse %s)" % type(e).__name__)
 PYEOF

@@ -161,7 +161,8 @@ if command -v sched_check_credentials >/dev/null 2>&1; then
     scheduler_alert "paper_router" "credentials_${CRED_ST}" \
       "실행 전 차단 — $(sched_credentials_guidance "$CRED_ST") 백로그는 보존됨(재로그인 후 차기 런 합류)."
     exit 0
-  fi
+    ;;
+  esac
 fi
 timeout 3000 "$CLAUDE_BIN" -p "$PROMPT_TEXT" \
   --dangerously-skip-permissions >> "$LOG" 2>&1

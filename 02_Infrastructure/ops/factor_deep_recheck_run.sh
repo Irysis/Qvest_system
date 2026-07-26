@@ -81,7 +81,8 @@ if command -v sched_check_credentials >/dev/null 2>&1; then
     sched_alert_emit "factor_recheck" "credentials_${CRED_ST}" \
       "실행 전 차단 — $(sched_credentials_guidance "$CRED_ST")"
     exit 0
-  fi
+    ;;
+  esac
 fi
 log "start deep recheck (N=$N)"
 PROMPT_TEXT="$(printf 'TODAY=%s\n\n%s\n' "$TODAY" "$(cat "$PF")")"
