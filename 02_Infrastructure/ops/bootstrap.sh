@@ -409,6 +409,16 @@ else
   echo "[boot] WARN: boot_currency_check.sh 부재 — 부팅 자기-정합 검사 소실 (자동 최신화 배선 끊김)"
 fi
 
+# 7a-3. (2026-07-26 도훈 승인) 게이트급 훅 "발화 0회" 감지 — events.jsonl 원장 소비면.
+#   이 저장소 실패부류의 지문은 "경고 0"이 아니라 **"발화 0"**이다(harness_health 가 훅 등록
+#   0건을 INFO 로 통과·게이트가 조용히 미발화한 사례들). v7.0 Sprint 6 원장이 그 목적이었으나
+#   writer 가 죽어 49일 STALE 이었고, _shared_parse.sh 자동 emit(4.0ms/회)으로 배관을 살렸다.
+#   관측창이 요구 기간보다 짧으면 판정 보류(미측정 ≠ 0). WARN-only.
+HFC="$PROJECT/02_Infrastructure/ops/hook_fire_coverage.sh"
+if [ -f "$HFC" ]; then
+  bash "$HFC" --boot || true
+fi
+
 # 7b. v1.2 Charter §10 Measurement Coherence Health Score (Component D)
 BS_PATH="$PROJECT/qepm/mailbox/governor/book_state.json"
 MBA_R="$PROJECT/02_Infrastructure/portfolio/measurement_basis_audit.R"

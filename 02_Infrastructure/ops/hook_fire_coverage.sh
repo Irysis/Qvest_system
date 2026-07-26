@@ -44,6 +44,27 @@ read -r -a EXPECTED <<< "${QVEST_HFC_EXPECTED:-$EXPECTED_DEFAULT}"
 
 emit_line() { if [ "$MODE" = "--boot" ]; then echo "[boot] $1"; else echo "$1"; fi; }
 
+#──────────────────────────────────────────────────────────────────────────────
+# 원장 회전 (2026-07-26) — CHANGELOG:140 이 "events.jsonl rotation 90+ days = v7.2 이연"
+#   으로 남겨둔 항목. 07-26 자동 emit 배선으로 **실적재가 시작**되므로 지금 필요해졌다.
+#   훅 발화가 세션당 수십~수백 행이라 방치하면 무한 성장하고, 이 스크립트의 라인별 grep
+#   파싱도 함께 느려진다. ROTATE_MAX 행 초과 시 뒤쪽(최근) 절반만 남기고 .1 로 보존.
+#   ★판정 전에 회전한다 — 회전이 관측창을 줄이면 위 window 가드가 자동으로 보류로 돌린다.
+#──────────────────────────────────────────────────────────────────────────────
+ROTATE_MAX="${QVEST_HFC_ROTATE_MAX:-20000}"
+_n_now=$(grep -c . "$LEDGER" 2>/dev/null || echo 0)
+if [ "${_n_now:-0}" -gt "$ROTATE_MAX" ]; then
+  _keep=$(( ROTATE_MAX / 2 ))
+  if tail -n "$_keep" "$LEDGER" > "$LEDGER.rot.tmp" 2>/dev/null; then
+    cat "$LEDGER" >> "$LEDGER.1" 2>/dev/null || true
+    mv -f "$LEDGER.rot.tmp" "$LEDGER" 2>/dev/null \
+      && emit_line "hook-fire: 원장 회전 ${_n_now}행 → 최근 ${_keep}행 유지 (이전분 events.jsonl.1 누적)"
+  else
+    rm -f "$LEDGER.rot.tmp" 2>/dev/null || true
+    emit_line "WARN: 원장 회전 실패 (${_n_now}행) — 무한 성장 중"
+  fi
+fi
+
 # ── 원장 상태 먼저 (미측정 ≠ 0) ───────────────────────────────────────────────
 if [ ! -f "$LEDGER" ]; then
   emit_line "WARN: hook-fire 원장 부재 ($LEDGER) — 발화 0 이 아니라 **미측정**. _shared_parse.sh 자동 emit 배선 확인"
