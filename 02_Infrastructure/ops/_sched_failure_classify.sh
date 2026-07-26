@@ -146,7 +146,38 @@ sched_token_age_days() {
   echo $(( (now - prev_ts) / 86400 ))
 }
 
+# (2026-07-26) 프로세스 env ← User 스코프 브리지.
+#   기전: `setx` 는 **User 환경 레지스트리**에 쓴다. 그 시점에 *이미 떠 있던* 프로세스는
+#   낡은 환경을 그대로 들고 있고, 그 자식 셸도 마찬가지다. 그래서 같은 머신에서
+#     · Task Scheduler 가 새로 띄운 작업 → 토큰 상속됨 → 정상 (21:05 alpha_queue 성공)
+#     · 기존 앱에서 파생된 셸        → 토큰 없음   → ~/.claude/.credentials.json 로 폴백
+#   으로 갈린다. 그 파일은 refreshToken="" + 17일 전 만료 상태라 즉시 401 이고,
+#   메시지는 "Re-authenticate to continue" 라 **이미 재인증한 사용자를 다시 재인증으로 보낸다**.
+#   ∴ env 가 비었으면 User 스코프에서 끌어와 이 프로세스에만 export 한다.
+#   ★토큰 값은 로그·파일·stdout 어디에도 쓰지 않는다(지문만). 실패해도 조용히 통과 —
+#     여기서 막으면 원래 정상인 파일-인증 구성까지 죽는다.
+sched_resolve_oauth_token() {
+  [ -n "${CLAUDE_CODE_OAUTH_TOKEN:-}" ] && return 0
+  [ -n "${ANTHROPIC_API_KEY:-}" ] && return 0
+  command -v powershell.exe >/dev/null 2>&1 || return 1
+  local tok
+  tok=$(powershell.exe -NoProfile -NonInteractive -Command \
+        '[Environment]::GetEnvironmentVariable("CLAUDE_CODE_OAUTH_TOKEN","User")' 2>/dev/null | tr -d '\r\n')
+  case "$tok" in
+    sk-ant-*) export CLAUDE_CODE_OAUTH_TOKEN="$tok"; return 0 ;;
+    *)        return 1 ;;
+  esac
+}
+
+# 브리지가 실제로 발동했는지 사람이 볼 수 있는 지문 (값 아님). 로그용.
+sched_token_fingerprint() {
+  [ -n "${CLAUDE_CODE_OAUTH_TOKEN:-}" ] || { printf 'none'; return 1; }
+  printf '%s' "$CLAUDE_CODE_OAUTH_TOKEN" | sha256sum 2>/dev/null | cut -c1-12
+}
+
 sched_check_credentials() {
+  # 프로세스 env 가 비었으면 User 스코프에서 먼저 끌어온다 (위 함수 주석 참조).
+  sched_resolve_oauth_token >/dev/null 2>&1 || true
   # ★환경변수 인증이 최우선 — 파일 저장소를 통째로 우회한다(claude.exe 가 두 변수 모두 지원, 실측).
   #   이 분기가 없으면 setup-token 을 env 로 쓰는 정상 구성에서 낡은 파일만 보고 오차단한다.
   #   (2026-07-26: 본 함수 자체의 결함이었음 — 검사 대상을 잘못 잡는 계통의 재발)

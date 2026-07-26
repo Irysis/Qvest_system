@@ -63,19 +63,32 @@ emit_line() { if [ "$MODE" = "--boot" ]; then echo "[boot] $1"; else echo "$1"; 
 #──────────────────────────────────────────────────────────────────────────────
 SIDECAR="${QVEST_HFC_SIDECAR:-${LEDGER%.jsonl}_last_fired.tsv}"
 
-# 원장에서 훅별 max(timestamp) 를 뽑아 사이드카에 merge (append-then-dedup, 최신 유지)
+# 원장에서 훅별 max(timestamp) 를 뽑아 사이드카에 merge.
+# ★단일 awk 패스 — 라인당 `$( )` 서브셸을 띄우면 1279행에서 5분+ 걸린다(실측 타임아웃).
+#   이 세션이 emit_event 비용에서 이미 배운 것: Windows 에서 서브셸/프로세스가 지배 비용이다.
+#   awk 는 필드 추출도 정규식으로 하되 **자리수 산술 없이** match()+substr(RSTART,RLENGTH)로
+#   따내고 인용부호만 벗긴다(수동 오프셋 금지 규율 유지).
 _hfc_update_sidecar() {
   [ -f "$LEDGER" ] || return 0
+  # ★첫 실행: 사이드카가 없으면 awk 가 존재하지 않는 첫 인자로 **전체 실패**한다
+  #   (2>/dev/null 이 그 에러를 가려 빈 사이드카 + 발화 0 으로 보였다 — 실측).
+  [ -f "$SIDECAR" ] || : > "$SIDECAR" 2>/dev/null || return 0
   local tmp="$SIDECAR.tmp.$$"
-  {
-    [ -f "$SIDECAR" ] && cat "$SIDECAR"
-    grep '"event_type":"hook_fired"' "$LEDGER" 2>/dev/null | while IFS= read -r _l; do
-      _t=$(printf '%s' "$_l" | grep -oE '"timestamp":"[^"]+"' | head -1 | sed 's/.*:"//;s/"$//')
-      _h=$(printf '%s' "$_l" | grep -oE '"hook_name":"[^"]+"' | head -1 | sed 's/.*:"//;s/"$//')
-      [ -n "$_t" ] && [ -n "$_h" ] && printf '%s\t%s\n' "$_h" "$_t"
-    done
-  } 2>/dev/null | sort -t"$(printf '\t')" -k1,1 -k2,2r | awk -F'\t' '!seen[$1]++' > "$tmp" 2>/dev/null
-  [ -s "$tmp" ] && mv -f "$tmp" "$SIDECAR" 2>/dev/null || rm -f "$tmp" 2>/dev/null
+  awk -F'\t' '
+    function val(line, key,   m, s) {
+      if (!match(line, "\"" key "\":\"[^\"]*\"")) return ""
+      s = substr(line, RSTART, RLENGTH)
+      sub("^\"" key "\":\"", "", s); sub("\"$", "", s)
+      return s
+    }
+    FNR==NR && NF>=2 { if ($2 > last[$1]) last[$1] = $2; next }        # 기존 사이드카
+    /"event_type":"hook_fired"/ {
+      h = val($0, "hook_name"); t = val($0, "timestamp")
+      if (h != "" && t != "" && t > last[h]) last[h] = t
+    }
+    END { for (k in last) printf "%s\t%s\n", k, last[k] }
+  ' "$SIDECAR" "$LEDGER" 2>/dev/null | sort > "$tmp" 2>/dev/null
+  if [ -s "$tmp" ]; then mv -f "$tmp" "$SIDECAR" 2>/dev/null; else rm -f "$tmp" 2>/dev/null; fi
   return 0
 }
 
@@ -115,12 +128,10 @@ CUT=$(date -d "$DAYS days ago" +%Y-%m-%d 2>/dev/null || echo "0000-00-00")
 # ★수동 오프셋 산술 금지 (2026-07-26 실측: RSTART+14/RLENGTH-15 가 한 칸 어긋나 원장 49행에
 #   대해 발화 0 을 보고했다 — 이 세션이 반복해 겪은 '검사가 잘못된 것을 잼' 과 같은 부류).
 #   값 추출은 grep -o 로, 자리수 계산 없이.
-FIRED=$(grep '"event_type":"hook_fired"' "$LEDGER" 2>/dev/null \
-        | while IFS= read -r _ln; do
-            _ts=$(printf '%s' "$_ln" | grep -oE '"timestamp":"[^"]+"' | head -1 | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}')
-            _hn=$(printf '%s' "$_ln" | grep -oE '"hook_name":"[^"]+"' | head -1 | sed 's/.*:"//;s/"$//')
-            [ -n "$_ts" ] && [ -n "$_hn" ] && [ "$_ts" \> "$CUT" -o "$_ts" = "$CUT" ] && printf '%s\n' "$_hn"
-          done | sort -u)
+# 판정 입력 = **사이드카**(훅별 마지막 발화). 원장 깊이·회전과 무관하게 전 이력을 커버한다.
+#   (원장 라인 스캔은 회전 후 최근분만 보므로 판정창을 채울 수 없다 — 위 설계 충돌 절 참조)
+FIRED=$(awk -F'\t' -v cut="$CUT" 'NF>=2 && substr($2,1,10) >= cut {print $1}' \
+          "$SIDECAR" 2>/dev/null | sort -u)
 
 #──────────────────────────────────────────────────────────────────────────────
 # ★원장 관측창 검사 (2026-07-26 오탐 수리)
@@ -129,9 +140,11 @@ FIRED=$(grep '"event_type":"hook_fired"' "$LEDGER" 2>/dev/null \
 #   그건 이 스크립트 자신이 위에서 선언한 "미측정 ≠ 0" 을 이 축에 적용하지 않은 것이다.
 #   관측창이 요구 기간보다 짧으면 판정을 **보류**한다(WARN 아님, 사실 보고).
 #──────────────────────────────────────────────────────────────────────────────
-OLDEST=$(grep '"event_type":"hook_fired"' "$LEDGER" 2>/dev/null \
-         | grep -oE '"timestamp":"[^"]+"' | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:]{8}' \
-         | sort | head -1)
+# 관측창 = **관측을 시작한 시점**부터. 원장 최초 행이 아니다(회전이 그것을 지운다).
+#   사이드카 옆에 첫 관측 시각을 1회 기록해 회전과 무관하게 창을 센다.
+OBS_START_F="${SIDECAR%.tsv}_obs_start.txt"
+[ -f "$OBS_START_F" ] || date +%Y-%m-%dT%H:%M:%S > "$OBS_START_F" 2>/dev/null || true
+OLDEST=$(head -1 "$OBS_START_F" 2>/dev/null | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:]{8}')
 WINDOW_H=0
 if [ -n "$OLDEST" ]; then
   _o=$(date -d "${OLDEST/T/ }" +%s 2>/dev/null || echo 0)

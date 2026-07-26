@@ -56,7 +56,9 @@ run_chk() { # $1=ledger $2=days [$3=rotate_max]
   #   "VAR=x: command not found" 로 죽는다(bash 는 할당을 파싱 시점에 판별).
   #   이 세션 test_auto_commit_valve 에서 같은 함정을 이미 겪었는데 재발시켰다 —
   #   조건부 환경변수는 항상 env(1) 로 넘긴다.
-  local -a envs=("QVEST_HFC_LEDGER=$1" "QVEST_HFC_DAYS=$2" "QVEST_HFC_EXPECTED=a.sh b.sh")
+  # 사이드카·관측시작 파일도 픽스처 옆으로 격리 — 정본을 건드리면 그 검사는 증거가 아니다
+  local -a envs=("QVEST_HFC_LEDGER=$1" "QVEST_HFC_DAYS=$2" "QVEST_HFC_EXPECTED=a.sh b.sh"
+                 "QVEST_HFC_SIDECAR=${1%.jsonl}_sc.tsv")
   [ -n "${3:-}" ] && envs+=("QVEST_HFC_ROTATE_MAX=$3")
   OUT=$(env "${envs[@]}" bash "$CHK" --boot 2>&1)
   return $?
@@ -136,6 +138,26 @@ _LA=$(tail -1 "$_PA/qepm/observability/events.jsonl" 2>/dev/null | sed 's/"times
 _LB=$(tail -1 "$_PB/qepm/observability/events.jsonl" 2>/dev/null | sed 's/"timestamp":"[^"]*"/"timestamp":"T"/')
 if [ -n "$_LA" ] && [ "$_LA" = "$_LB" ]; then ok "T8 ★writer parity (외부 CLI ↔ 인라인 동일 스키마)"
 else bad "T8 ★writer parity" "A=${_LA:0:80} / B=${_LB:0:80}"; fi
+
+# T9 ★회전창 vs 판정창 — 회전으로 원장이 잘려도 사이드카가 판정을 유지해야 한다.
+#    실측 발화량 1279행/25분 → ROTATE_MAX 로 몇 시간마다 회전. 판정이 원장 스캔이었다면
+#    관측창을 못 채워 **영구 보류**(감시기 무기능)가 된다 — 이 축이 그 회귀를 잡는다.
+L="$FX/t9.jsonl"; mk_ledger "$L" 1 "a.sh" "b.sh"
+run_chk "$L" 7 >/dev/null 2>&1 || true          # 1회 실행 → 사이드카 생성
+# 원장을 통째로 비워 회전 극단(전부 잃음)을 모사
+: > "$L"
+if run_chk "$L" 7; then
+  bad "T9 ★회전 후 판정 유지" "원장 0행이면 '미측정' 이어야 하는데 통과"
+else
+  if echo "$OUT" | grep -q "미측정"; then ok "T9 원장 0행 → 미측정(사이드카 있어도 원장 소실은 보고)"
+  else bad "T9 원장 0행 판정" "${OUT:0:120}"; fi
+fi
+# 원장에 최신 1행만 남은 회전 상태 → 사이드카 덕에 a.sh/b.sh 판정 유지
+printf '{"timestamp":"%s","event_type":"hook_fired","hook_name":"z.sh","decision":"fired","latency_ms":0}
+'   "$(date +%Y-%m-%dT%H:%M:%S%z)" > "$L"
+if run_chk "$L" 7 && echo "$OUT" | grep -q "hook-fire: OK"; then
+  ok "T9b ★원장이 잘려도 사이드카로 판정 유지(설계 충돌 해소 실증)"
+else bad "T9b 사이드카 판정 유지" "${OUT:0:140}"; fi
 
 cleanup
 echo ""
