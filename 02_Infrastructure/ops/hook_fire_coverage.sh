@@ -51,6 +51,34 @@ emit_line() { if [ "$MODE" = "--boot" ]; then echo "[boot] $1"; else echo "$1"; 
 #   파싱도 함께 느려진다. ROTATE_MAX 행 초과 시 뒤쪽(최근) 절반만 남기고 .1 로 보존.
 #   ★판정 전에 회전한다 — 회전이 관측창을 줄이면 위 window 가드가 자동으로 보류로 돌린다.
 #──────────────────────────────────────────────────────────────────────────────
+#──────────────────────────────────────────────────────────────────────────────
+# ★설계 충돌 해소: 회전창 vs 판정창 (2026-07-26 실측 후 수리)
+#   실측 발화량 = **1279행 / 25분**(pipeline_trigger 604 · safety_guard 644 — 매 도구 호출).
+#   내 초판 주석의 "세션당 수십"은 오추정이었다. 이 속도면 ROTATE_MAX 20000 은 몇 시간마다
+#   회전하고, 회전 후 원장은 ~3시간분만 남는다. 그런데 판정은 168h(7일) 관측창을 요구하므로
+#   **영구 '보류'** 가 된다 — 감시기가 조용히 무기능해지는 설계 충돌(fail-open by design).
+#   해소: 판정에 필요한 정보는 "훅별 **마지막** 발화 시각" 1행씩뿐이다. 회전 전에 그것을
+#   사이드카(hook_last_fired.json)로 압축 누적하고, 판정은 사이드카를 본다 — 원장 깊이와
+#   무관하게 전 이력을 커버한다. 원장은 상세 조회(qvest_observe)용으로만 최근분을 유지.
+#──────────────────────────────────────────────────────────────────────────────
+SIDECAR="${QVEST_HFC_SIDECAR:-${LEDGER%.jsonl}_last_fired.tsv}"
+
+# 원장에서 훅별 max(timestamp) 를 뽑아 사이드카에 merge (append-then-dedup, 최신 유지)
+_hfc_update_sidecar() {
+  [ -f "$LEDGER" ] || return 0
+  local tmp="$SIDECAR.tmp.$$"
+  {
+    [ -f "$SIDECAR" ] && cat "$SIDECAR"
+    grep '"event_type":"hook_fired"' "$LEDGER" 2>/dev/null | while IFS= read -r _l; do
+      _t=$(printf '%s' "$_l" | grep -oE '"timestamp":"[^"]+"' | head -1 | sed 's/.*:"//;s/"$//')
+      _h=$(printf '%s' "$_l" | grep -oE '"hook_name":"[^"]+"' | head -1 | sed 's/.*:"//;s/"$//')
+      [ -n "$_t" ] && [ -n "$_h" ] && printf '%s\t%s\n' "$_h" "$_t"
+    done
+  } 2>/dev/null | sort -t"$(printf '\t')" -k1,1 -k2,2r | awk -F'\t' '!seen[$1]++' > "$tmp" 2>/dev/null
+  [ -s "$tmp" ] && mv -f "$tmp" "$SIDECAR" 2>/dev/null || rm -f "$tmp" 2>/dev/null
+  return 0
+}
+
 ROTATE_MAX="${QVEST_HFC_ROTATE_MAX:-20000}"
 # ★grep -c 는 대상이 여러 개거나 실패하면 여러 줄/비정수를 낸다 — 정수 비교가 깨진다
 #   (실측 에러: integer expected). 숫자만 남기고 기본값을 준다.
