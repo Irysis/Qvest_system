@@ -58,7 +58,7 @@ case "${QVEST_BOOT_SANITIZED:-}" in
   *)      echo "[boot] WARN: utf8_output_guard INACTIVE (python3/guard 부재 또는 외부 QVEST_BOOT_SANITIZED 선점) — 이모지 포함 출력 시 API 400 위험" ;;
 esac
 
-echo "=== Qvest v8.1 부트스트랩 (Opus 4.8 Native · 4-Mode +RAMP) ==="
+echo "=== Qvest v8.3 부트스트랩 (Fable 5-Native · 4-Mode +RAMP) ==="
 
 # 1. (제거됨 v8.0 2026-05-29) tmux rc telegram inbound listener — outbound tg_agent_brief()는
 #    영향 없음. inbound 명령 listener 불필요 판단(도훈). 필요 시 persistent_remote_control.sh 수동 기동.
@@ -141,7 +141,7 @@ if [ -f "$BEAR_AUDIT_R" ] && [ -f "$TARGET_PARQUET" ]; then
   if echo "$BEAR_OUT" | grep -q "ALL PASS"; then
     echo "[boot] bear_date_audit: ALL PASS (forward label semantics CLEAN)"
   else
-    echo "[boot] WARN: bear_date_audit FAIL — backward label bug suspected"
+    echo "[boot] WARN: bear_date_audit FAIL — 실패 축 확인 필요 (기지 4/4 = check_fwd_match vintage 완전일치 드리프트·backward 오염 아님. STATUS_BUGGY_ERA 외 신규 날짜/축이면 label 방향 회귀 의심)"
     echo "[boot] Refer to: 04_Research/decision_framework/bearish_forecast_v2_alt_data/STATUS_BUGGY_ERA.md"
     echo "$BEAR_OUT" | grep -E "FAIL$" | head -5
   fi
@@ -458,15 +458,21 @@ except Exception:
 fi
 
 # 8. 상태 보고 (v6 — 3-agent Work Task)
-ALPHA_T=$(ls "$PROJECT"/qepm/mailbox/alpha/inbox/TODO_*.json 2>/dev/null | wc -l)
-RISK_T=$(ls "$PROJECT"/qepm/mailbox/risk/inbox/TODO_*.json 2>/dev/null | wc -l)
-OPT_T=$(ls "$PROJECT"/qepm/mailbox/optimizer/inbox/TODO_*.json 2>/dev/null | wc -l)
-FORGE_T=$(ls "$PROJECT"/qepm/mailbox/forge/inbox/TODO_*.json 2>/dev/null | wc -l)
-JUDGE_T=$(ls "$PROJECT"/qepm/mailbox/judge/inbox/TODO_*.json 2>/dev/null | wc -l)
-GOV_T=$(ls "$PROJECT"/qepm/mailbox/governor/inbox/TODO_*.json 2>/dev/null | wc -l)
+# (2026-07-26 부팅감사 수리) inbox 디렉터리 부재 시 0이 아니라 n/a — 0은 "비었음"의 관측이어야
+# 하는데 구판은 경로가 없어도 0을 찍어 상수-0이 관측처럼 보였다 (계측 사망 부류).
+_inbox_cnt() {
+  local d="$PROJECT/qepm/mailbox/$1/inbox"
+  if [ -d "$d" ]; then ls "$d"/TODO_*.json 2>/dev/null | wc -l | tr -d ' '; else echo "n/a"; fi
+}
+ALPHA_T=$(_inbox_cnt alpha)
+RISK_T=$(_inbox_cnt risk)
+OPT_T=$(_inbox_cnt optimizer)
+FORGE_T=$(_inbox_cnt forge)
+JUDGE_T=$(_inbox_cnt judge)
+GOV_T=$(_inbox_cnt governor)
 
-# Work Task 상태
-WT_ACTIVE=$(ls -d "$PROJECT"/qepm/mailbox/worktask/WT*_*/ 2>/dev/null | wc -l)
+# Work Task 상태 — (2026-07-26 정직 라벨) 이 수는 역대 WT 디렉터리 누적 총수이지 진행중이 아니다.
+WT_ACTIVE=$(ls -d "$PROJECT"/qepm/mailbox/worktask/WT*_*/ 2>/dev/null | wc -l | tr -d ' ')
 
 # AX 상태 (v7.2.1 — sot_map 기반 documented_active count + enforcement_mode 분류)
 AX_ACTIVE=$(ls "$PROJECT"/qepm/memory/axioms/active/AX-*.json 2>/dev/null | wc -l)
@@ -490,7 +496,10 @@ AX_CACHE_STATUS="MISSING"
 if [ -f "$AX_CACHE_PATH" ]; then
   # (v8.1.3 fix) env-var 전달 — 백슬래시 경로 unicodeescape SyntaxError 회피 (위 AX_SOT_MAP 동일 사유)
   AX_CACHE_COUNT=$(AX_CACHE_PATH="$AX_CACHE_PATH" python3 -c 'import json,os; print(len(json.load(open(os.environ["AX_CACHE_PATH"],encoding="utf-8")).get("axioms",[])))' 2>/dev/null || echo "?")
-  if [ "$AX_CACHE_COUNT" = "$AX_DOC_ACTIVE" ]; then
+  if [ "$AX_CACHE_COUNT" = "?" ]; then
+    # (2026-07-26) 카운터 사망 시 "?" = "?" 비교가 FULL로 성립하던 트랩 — 미상은 일치가 아니다
+    AX_CACHE_STATUS="UNKNOWN (카운터 미가용 — python3/파싱 실패)"
+  elif [ "$AX_CACHE_COUNT" = "$AX_DOC_ACTIVE" ]; then
     AX_CACHE_STATUS="FULL ($AX_CACHE_COUNT)"
   else
     AX_CACHE_STATUS="STALE ($AX_CACHE_COUNT vs $AX_DOC_ACTIVE — derived cache, WARN only)"
@@ -694,7 +703,7 @@ echo ""
 if [ "${BOOT_FAILS:-0}" -gt 0 ]; then
   echo "=== 부트스트랩 DEGRADED — ${BOOT_FAILS}개 게이트 실패 (위 ERROR 라인 확인, '완료' 아님) ==="
 else
-  echo "=== 부트스트랩 완료 (Qvest v8.1 — Opus 4.8 Native · 4-Mode +RAMP · 실측 거버넌스) ==="
+  echo "=== 부트스트랩 완료 (Qvest v8.3 — Fable 5-Native · 4-Mode +RAMP · 알파 발굴 중심 · 실측 거버넌스) ==="
 fi
 
 # (2026-07-17 B2) 부트 스탬프 — SessionStart 카나리아(hooks/boot_stamp_check.sh)의 신선도 판정 원천.
@@ -704,7 +713,7 @@ printf '{"ts":"%s","ts_epoch":%s,"boot_fails":%s}\n' "$(date '+%Y-%m-%dT%H:%M:%S
 if [ -n "$PG2_INFO" ]; then
   echo "$PG2_INFO"
 fi
-echo "v8.1:       4-Mode 헌법(alpha-search 논문복제·K200∪KQ150·2005 / factor-rotation Lane3 / RAMP 팩터배분 Gate0~11 / Axiom r7 복원) / 실측 거버넌스(measurement-graduation) / register_module 자동흐름"
+echo "v8.3:       알파 발굴 중심 재편(canonical PORT_t 1급·dual-basis·frontier 큐 확인 의무) + Fable 5 정합(모델 핀 제거·상속) / 4-Mode 헌법(alpha-search 논문복제·K200∪KQ150·2005 / factor-rotation Lane3 / RAMP Gate0~11 / Axiom r7) / 실측 거버넌스 / register_module 자동흐름"
 echo "v8.0 base:  R+Python 1급 / SR목표 2.5 / agent effort(judge·gov xhigh) / axiom_context_inject / qvest-*-style skill"
 echo "Modes:      ① QEPM(/worktask) ② alpha-search ③ factor-rotation ④ RAMP(/ramp · Gate0~11·CCS 13-score · governor 정지/자본 수동) — CLAUDE.md 4-Mode 헌법(RAMP 2026-06-17)"
 echo "Skills:     $(ls "$PROJECT"/.claude/skills/*/SKILL.md 2>/dev/null | wc -l)개 (2026-07-24 C3: exec/mon=off 은닉·리서치 3종=user-invocable 스텁·구 worktask/telegram-protocol 삭제)"
@@ -735,7 +744,7 @@ _run_probe() {
 }
 _run_probe hook_integrity_check
 _run_probe suite_totals_watch --check
-echo "WT Active:  $WT_ACTIVE건"
+echo "WT 누적:    ${WT_ACTIVE}건 (역대 디렉터리 총수 — 진행중 아님. 진행 상태는 wt_list())"
 echo "Inbox:      alpha=$ALPHA_T risk=$RISK_T optimizer=$OPT_T forge=$FORGE_T judge=$JUDGE_T governor=$GOV_T"
 echo "Axioms:     active=$AX_ACTIVE candidates=$AX_CAND (sot_map documented=$AX_DOC_ACTIVE: documented=$AX_DOCUMENTED_MODE / block=$AX_BLOCK_MODE / advisory=$AX_ADVISORY_MODE)"
 echo "Cache_core: $AX_CACHE_STATUS"
@@ -754,6 +763,6 @@ fi
 command -v free >/dev/null 2>&1 && free -m | awk '/Mem:/ {printf "RAM:        %.0f%%\n", $3/$2*100}' || true
 # (Remote tmux rc 라인 제거 v8.0 — inbound listener 폐지)
 echo ""
-echo "다음: /qvest 5-B 절차 따라 Work Task 생성 + 3-agent 순차 spawn"
-echo "  wt_create('{hypothesis}') -> alpha-research -> risk-research -> optimizer-research"
+echo "다음: /qvest 5-B 절차 따라 Work Task 생성 + 6-agent 순차 spawn"
+echo "  wt_create('{hypothesis}') -> alpha -> risk -> optimizer -> forge(실측권위) -> judge -> governor(수동)"
 echo "===================================="

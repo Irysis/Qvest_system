@@ -21,8 +21,9 @@
 #   월말 재빌드가 정상 수행되면 factor_db_{F}.parquet 의 sig 가 m_last(F) 가 되어 guard 를
 #   통과하고, IC 는 Date = m_last(E) 까지 채워진다. 따라서 IC max(Date) < m_last(E) = 체인 지연.
 #
-#   ★중복 구현 금지: P1 이 guard 를 재사용 가능한 술어로 추출하면 그것을 위임 호출한다
-#     (아래 .ic_pair_complete 의 delegation 참조). 추출 전에는 위 규약을 그대로 미러링한다.
+#   ★중복 구현 금지: 정본 판정부는 factor_db/ic_pair_completeness.R (P1 추출분) 이며
+#     본 파일은 `.icfc_pair_complete` 로 **위임**한다(아래 .ICFC_GUARD 참조).
+#     전역 이름을 만들지 않는다 — 같은 이름 미러링이 실제 충돌을 냈다(그 절 주석 참조).
 #
 # 오탐 방지 (당월 진행 중 = 정상):
 #   오늘이 2026-07-26 이면 F=2026-06, E=2026-05 → IC 가 2026-05 에 서 있는 것이 정상이다.
@@ -55,17 +56,41 @@ if (!exists("%||%")) {
   seq(as.Date(format(d, "%Y-%m-01")), by = "month", length.out = 2L)[2L] - 1L
 }
 
-#' pair 완결 술어 — guard 2조건 OR 의 부정.
-#' P1 이 factor_db_builder.R 에서 동일 술어를 export 하면 그쪽으로 위임한다(중복 방지).
-.ic_pair_complete <- function(sig_d_t1, raw_dates, today = Sys.Date()) {
-  if (exists("fdb_ic_pair_complete", mode = "function")) {
-    return(isTRUE(get("fdb_ic_pair_complete")(sig_d_t1, raw_dates, today)))
-  }
+# ─── guard 술어 위임 (2026-07-26 통합검증에서 수리) ──────────────────────────
+# 이 파일은 P1 추출 전에 작성돼 술어를 `.ic_pair_complete` 라는 **같은 이름**으로
+# 미러링했고, 위임 훅은 존재하지도 않는 이름(`fdb_ic_pair_complete`)을 찾고 있었다.
+# P1 이 실제로 export 한 이름은 `.ic_pair_complete` — 즉 두 파일이 같은 이름을 서로
+# 다른 시그니처로 정의하는 상태였다(동명 함수 2파일 함정,
+# memory project-us-incremental-parser-promoted-20260725).
+#
+# 실측 충돌 (2026-07-26, 한 세션에 둘 다 source):
+#   · builder → audit 순: 빌더 호출부가 `ERROR: unused argument (raw_month_last=)`
+#     → pair 루프의 tryCatch 가 전건 삼켜 IC 전량 skip (이어서 setorder 에서 abort).
+#   · audit → builder 순: 프론티어의 위치인자 호출이 P1 시그니처에 잘못 바인딩돼
+#     반환 list 에 isTRUE() 가 걸려 `guard_agrees` 가 **항상 FALSE** (조용한 오판정).
+# 정본 판정부(ic_pair_completeness.R)를 **전용 환경에 적재해 위임**한다 — 전역
+# 이름을 만들지 않으므로 어느 순서로 source 해도 충돌하지 않고, 중복 구현도 사라진다.
+.ICFC_GUARD <- local({
+  e <- new.env(parent = globalenv())
+  p <- file.path(PROJECT_ROOT, "02_Infrastructure/factor_db/ic_pair_completeness.R")
+  if (file.exists(p)) {
+    ok <- tryCatch({ sys.source(p, envir = e); TRUE }, error = function(err) FALSE)
+    if (ok && exists(".ic_pair_complete", envir = e, inherits = FALSE)) e else NULL
+  } else NULL
+})
+
+#' pair 완결 술어 — guard 2조건 OR 의 부정. (전역 이름 미생성: `.icfc_` 접두)
+#' 정본이 있으면 위임, 없으면 같은 규약을 미러링(fail-safe).
+.icfc_pair_complete <- function(sig_d_t1, raw_dates, today = Sys.Date()) {
   sig_d_t1 <- as.Date(sig_d_t1)
-  cal_end_t1 <- .ic_cal_end(sig_d_t1)                                   # ①
   m_t1 <- format(sig_d_t1, "%Y-%m")
   in_m <- raw_dates[format(raw_dates, "%Y-%m") == m_t1]
   raw_m_last <- if (length(in_m) > 0L) max(in_m) else as.Date(NA)       # ②
+  if (!is.null(.ICFC_GUARD)) {
+    return(isTRUE(.ICFC_GUARD$.ic_pair_complete(
+      sig_d_t1, today = today, raw_month_last = raw_m_last)$complete))
+  }
+  cal_end_t1 <- .ic_cal_end(sig_d_t1)                                   # ①
   file_partial <- !is.na(raw_m_last) && sig_d_t1 < raw_m_last
   !(cal_end_t1 > today || file_partial)
 }
@@ -162,7 +187,7 @@ ic_frontier_check <- function(ic_path = NULL,
   }
 
   # 규약 자기검증: 기대 프론티어의 forward pair 는 guard 를 통과해야 한다.
-  res$guard_agrees <- .ic_pair_complete(exp_f$forward_sig_date, raw_dates, today)
+  res$guard_agrees <- .icfc_pair_complete(exp_f$forward_sig_date, raw_dates, today)
 
   ic_month <- format(ic_max, "%Y-%m")
   .mi <- function(m) {

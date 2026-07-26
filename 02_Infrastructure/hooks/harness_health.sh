@@ -95,6 +95,9 @@ REQUIRED_HOOKS=(
   "harness_health.sh"
   "auto_commit_on_stop.sh"
   "milestone_commit.sh"
+  # (2026-07-26 부팅감사 수리) Continuity Firewall Stop 게이트 — AX-002 동급 계약(2026-07-15
+  # 도훈 mandate)인데 required 목록에 없어 settings.json에서 빠져도 harness_health가 PASS였음
+  "research_continuity_guard.sh"
 
   # Active retain (v55 호환 — _archive_v55/ 미이동, settings.json 등록 retain)
   "trail_consistency_checker.sh"
@@ -120,16 +123,24 @@ for HOOK in "${REQUIRED_HOOKS[@]}"; do
 done
 
 # settings.json Hook 등록 확인
+# (2026-07-26 부팅감사 수리) 구현 2중 결함: ① open('$SETTINGS')에 MSYS 경로(/c/...)가 박혀
+# 네이티브 Windows python이 FileNotFoundError → ② `|| echo "0"` fail-open으로 "0 entries"가
+# INFO로 통과. settings.json hooks 블록을 통째로 비워도 부팅 출력이 동일했다(46-hook 침묵사망
+# 감지선 단절). 수리 = stdin 전달(경로 번역 무관) + 계측실패/0건 = FAIL(0은 정상 상태가 아니다).
 if [ -f "$SETTINGS" ]; then
-  REG_COUNT=$("$QVEST_PY_BIN" -c "
-import json
-with open('$SETTINGS') as f:
-    d = json.load(f)
+  REG_COUNT=$(cat "$SETTINGS" | "$QVEST_PY_BIN" -c "
+import json, sys
+d = json.load(sys.stdin)
 hooks = d.get('hooks', {})
 total = sum(len(v) for v in hooks.values())
 print(total)
-" 2>/dev/null || echo "0")
-  echo "  [INFO] settings.json: $REG_COUNT hook entries registered"
+" 2>/dev/null || echo "UNREPORTED")
+  if [ "$REG_COUNT" = "UNREPORTED" ] || [ "${REG_COUNT:-0}" = "0" ]; then
+    echo "  [FAIL] settings.json: hook 등록 계측 실패 또는 0건 (REG_COUNT=$REG_COUNT) — hooks 블록 소실/파서 사망 의심"
+    FAIL=$((FAIL + 1))
+  else
+    echo "  [INFO] settings.json: $REG_COUNT hook entries registered"
+  fi
 else
   echo "  [FAIL] settings.json not found"
   FAIL=$((FAIL + 1))
