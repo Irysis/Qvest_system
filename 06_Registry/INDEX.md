@@ -1,14 +1,14 @@
 # 06_Registry INDEX
 
-> 자동 생성 2026-07-26 01:10 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
+> 자동 생성 2026-07-26 15:32 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
 
 ## 데이터 (9)
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
 | `index_descriptions.json` | 존별 INDEX 큐레이션 DB (본 파일 — 사람 수동 보완, build_artifact_index.R이 소비해 INDEX.md 4개 생성) | active | 2026-07-25 | 45KB |
-| `hygiene_report.json` | 일간 파일위생 감사 리포트 (ops/artifact_hygiene_audit.R 산출 — 자동정리 삭제 기록 + artifact-storage.md 위반 감지) | active | 2026-07-25 | 875B |
-| `artifact_index.json` | build_artifact_index.R이 daily_refresh 말미 자동 재생성하는 전체 산출물 기계가독 인덱스 | active | 2026-07-25 | 327KB |
+| `hygiene_report.json` | 일간 파일위생 감사 리포트 (ops/artifact_hygiene_audit.R 산출 — 자동정리 삭제 기록 + artifact-storage.md 위반 감지) | active | 2026-07-26 | 921B |
+| `artifact_index.json` | build_artifact_index.R이 daily_refresh 말미 자동 재생성하는 전체 산출물 기계가독 인덱스 | active | 2026-07-25 | 328KB |
 | `book_carrier/` | PG2 book 수익 캐리어(carrier_STR_1715_*) + H1/H1b/H2 오버레이·가중 A/B 실측 결과 저장소 | active | 2026-06-18 | 727KB |
 | `idea_registry.json` | 구 S0 아이디어 소싱 레지스트리 — telegram_notify.R이 아직 참조하나 갱신은 06-08 정지 | legacy | 2026-06-07 | 40KB |
 | `live_track/STR_1715_on_M4_R05_noLayer4_PG2/` | 현행 PG2 book(noLayer4) 라이브 페이퍼트래킹 — daily_nav/paper_nav/holdout_interval, TaskScheduler 월간 소비 | active | 2026-07-23 | 155KB |
@@ -36,7 +36,7 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `hypothesis_index.json` | alpha-search 가설/검증 이력 인덱스(중복 가설 방지용) — 07-04 갱신 중 | active | 2026-07-24 | 608KB |
+| `hypothesis_index.json` | alpha-search 가설/검증 이력 인덱스(중복 가설 방지용) — 07-04 갱신 중 | active | 2026-07-26 | 649KB |
 | `paper_registry.json` | 논문 리서치 파이프라인 레지스트리(수집→라우터→alpha-search 큐) — 07-03 갱신 | active | 2026-07-18 | 265KB |
 
 ## 모드-FR (3)
@@ -70,7 +70,7 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `{knowledge_index.json, knowledge_index.md}` | 지식 순차 인덱스(Law/Distilled/L-code 1..N 뷰) — weekly_cleaner_sweep [3.6] build_knowledge_index가 주간 재생성 | active | 2026-07-25 | 246KB |
+| `{knowledge_index.json, knowledge_index.md}` | 지식 순차 인덱스(Law/Distilled/L-code 1..N 뷰) — weekly_cleaner_sweep [3.6] build_knowledge_index가 주간 재생성 | active | 2026-07-26 | 246KB |
 | `distilled_knowledge.json` | Distilled 탐색지도 카드 SOT(DIST-*) — negative 지식의 재도전 대상 보관(INV-7) | active | 2026-07-25 | 211KB |
 | `knowledge_recheck_queue.json` | 지식 재검 큐 — 부활신호/재도전 후보 대기열 | active | 2026-07-18 | 8KB |
 | `revival_signals.json` | 부활신호 정의·발화 상태(INV-7) — settled-negative를 시스템이 먼저 un-bury하는 트리거 | active | 2026-07-18 | 7KB |
@@ -91,7 +91,7 @@
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
 | `README.md` | 레지스트리 존 진입 설명 | active | 2026-07-03 | 1KB |
-| `handbook_facts.json` | 핸드북 사실 집합 — 세션 간 참조되는 확정 수치/규약 스냅샷 | active | 2026-07-25 | 1KB |
+| `handbook_facts.json` | 핸드북 사실 집합 — 세션 간 참조되는 확정 수치/규약 스냅샷 | active | 2026-07-26 | 1KB |
 
 ## AST-v1.1 (1)
 
@@ -103,14 +103,14 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `stranded_repairs.json` | worktree 미커밋 수리 감사 산출 — stranded_repairs_audit.sh(무인 12/20시)가 파일 triage·충돌탐지·prune 후보 기록 | active | 2026-07-25 | 9KB |
+| `stranded_repairs.json` | worktree 미커밋 수리 감사 산출 — stranded_repairs_audit.sh(무인 12/20시)가 파일 triage·충돌탐지·prune 후보 기록 | active | 2026-07-26 | 8KB |
 
 ## 미분류 (3) — index_descriptions.json에 추가하세요
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
 | `ast_operator_backlog.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-25 | 1KB |
-| `ast_structure_log.jsonl` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-25 | 14KB |
+| `ast_structure_log.jsonl` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-25 | 21KB |
 | `suite_totals_baseline.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-25 | 304B |
 
 ## stale 큐레이션 키 (4) — 디스크 부재, index_descriptions.json에서 제거 권장

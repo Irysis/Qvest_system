@@ -45,6 +45,10 @@ scheduler_alert(){
   local RS_BIN
   RS_BIN="$(command -v Rscript || echo '/c/Program Files/R/R-4.5.2/bin/Rscript')"
   [ -x "$RS_BIN" ] || { log "alert telegram skip: Rscript 없음 (마커는 보존)"; return 0; }
+  # (2026-07-25) R 문자열 리터럴 주입 가드: Windows 역슬래시 경로를 R 이 유니코드 이스케이프로
+  #   오해해(C:\Users → '\U' used without hex digits) 텔레그램만 조용히 죽던 잠복 버그.
+  #   마커는 남으므로 더 안 보인다. 주입 전 역슬래시 → 슬래시 정규화.
+  local LOG="${LOG//\\//}" detail="${detail//\\//}"
   local rfile="$adir/_tg_alert_${comp}_${TODAY}.R"
   cat > "$rfile" <<RS
 suppressWarnings(suppressMessages({
@@ -140,14 +144,31 @@ log "start (downloaded=$DL, AUTORUN=$AUTORUN, MAX_ALPHA=$CAP, BACKLOG_DATES=${BA
 HEADER="TODAY=${TODAY}  AUTORUN=${AUTORUN}  MAX_ALPHA=${CAP}  BACKLOG_DATES=${BACKLOG_DATES:-none}"
 # 헤드리스 1-shot. timeout 가드(자동 alpha-search 포함 시 길어질 수 있어 50분).
 PROMPT_TEXT="$(printf '%s\n\n%s\n' "$HEADER" "$(cat "$PROMPT_FILE")")"
+# (2026-07-25) 자격증명 사전 점검 — 무의미한 401 호출 회피 + 조치 즉시 안내
+source "$(dirname "${BASH_SOURCE[0]:-$0}")/_sched_failure_classify.sh" 2>/dev/null || true
+if command -v sched_check_credentials >/dev/null 2>&1; then
+  CRED_ST=$(sched_check_credentials)
+  if [ "$CRED_ST" != "ok" ] && [ "$CRED_ST" != "unknown" ]; then
+    log "자격증명 사전점검 실패: $CRED_ST — claude 호출 생략"
+    scheduler_alert "paper_router" "credentials_${CRED_ST}" \
+      "실행 전 차단 — $(sched_credentials_guidance "$CRED_ST") 백로그는 보존됨(재로그인 후 차기 런 합류)."
+    exit 0
+  fi
+fi
 timeout 3000 "$CLAUDE_BIN" -p "$PROMPT_TEXT" \
   --dangerously-skip-permissions >> "$LOG" 2>&1
 rc=$?
 log "claude -p exit=$rc"
 # v3 침묵 정지 경보화: 기존엔 실패가 로그에만 남고 exit 0 종료(07-08 spend-limit 5일 침묵 정지).
 if [ "$rc" -ne 0 ]; then
-  reason="exit_${rc}"
-  tail -n 30 "$LOG" 2>/dev/null | grep -qi "spend limit" && reason="spend_limit"
+  # (2026-07-25) 사유 판정 공통 헬퍼 이관 — auth_expired 를 spend_limit 과 분리(조치가 정반대).
+  source "$(dirname "${BASH_SOURCE[0]:-$0}")/_sched_failure_classify.sh" 2>/dev/null || true
+  if command -v sched_classify_failure >/dev/null 2>&1; then
+    reason=$(sched_classify_failure "$rc" "$LOG")
+  else
+    reason="exit_${rc}"
+    tail -n 30 "$LOG" 2>/dev/null | grep -qi "spend limit" && reason="spend_limit"
+  fi
   # (2026-07-24 도훈 승인 C8) Fable 한도 폴백 — spend_limit 감지 시 --model opus 1회 재시도 (07-14 정책)
   if [ "$reason" = "spend_limit" ]; then
     log "spend_limit 감지 — --model opus 폴백 재시도"
@@ -157,7 +178,12 @@ if [ "$rc" -ne 0 ]; then
     [ "$rc" -ne 0 ] && reason="spend_limit_fallback_exit_${rc}"
   fi
   if [ "$rc" -ne 0 ]; then
-    scheduler_alert "paper_router" "$reason" "claude -p exit=$rc (downloaded=$DL backlog=${BACKLOG_DATES:-none}) — 실패일 다운로드분은 백로그 스캔이 차기 성공 런에 합류"
+    _g=""; _a=""
+    if command -v sched_failure_guidance >/dev/null 2>&1; then
+      _g=$(sched_failure_guidance "$reason"); _a=$(sched_failure_autorecovers "$reason")
+    fi
+    scheduler_alert "paper_router" "$reason" \
+      "claude -p exit=$rc (downloaded=$DL backlog=${BACKLOG_DATES:-none}) | 자동복구=${_a:-unknown} | ${_g:-로그 확인 필요}"
   fi
 fi
 # v3.1 (2026-07-10 F-4, v8.3 적대검증): exit-0 무산출 백로그 만료 임박 경보.

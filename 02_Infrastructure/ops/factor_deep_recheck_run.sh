@@ -60,17 +60,44 @@ CLAUDE_BIN="$(command -v claude || echo /c/Users/99922/AppData/Roaming/npm/claud
 [ -x "$CLAUDE_BIN" ] || { log "claude CLI 없음 — skip"; exit 0; }
 PF="$BASE/02_Infrastructure/ops/factor_deep_recheck_prompt.md"
 [ -f "$PF" ] || { log "prompt 없음 — skip"; exit 0; }
+# (2026-07-25) 공통 사유분류·경보 헬퍼 + 자격증명 사전 점검
+source "$(dirname "${BASH_SOURCE[0]:-$0}")/_sched_failure_classify.sh" 2>/dev/null || true
+if command -v sched_check_credentials >/dev/null 2>&1; then
+  CRED_ST=$(sched_check_credentials)
+  if [ "$CRED_ST" != "ok" ] && [ "$CRED_ST" != "unknown" ]; then
+    log "자격증명 사전점검 실패: $CRED_ST — claude 호출 생략"
+    sched_alert_emit "factor_recheck" "credentials_${CRED_ST}" \
+      "실행 전 차단 — $(sched_credentials_guidance "$CRED_ST")"
+    exit 0
+  fi
+fi
 log "start deep recheck (N=$N)"
 PROMPT_TEXT="$(printf 'TODAY=%s\n\n%s\n' "$TODAY" "$(cat "$PF")")"
 timeout 3000 "$CLAUDE_BIN" -p "$PROMPT_TEXT" \
   --dangerously-skip-permissions >> "$LOG" 2>&1
 rc=$?
 log "claude -p exit=$rc"
-# (2026-07-24 도훈 승인 C8) Fable 한도 폴백 — spend_limit 감지 시 --model opus 1회 재시도 (07-14 정책)
-if [ "$rc" -ne 0 ] && tail -n 30 "$LOG" 2>/dev/null | grep -qi "spend limit"; then
-  log "spend_limit 감지 — --model opus 폴백 재시도"
-  timeout 3000 "$CLAUDE_BIN" -p "$PROMPT_TEXT" --model opus \
-    --dangerously-skip-permissions >> "$LOG" 2>&1
-  log "fallback(opus) exit=$?"
+# (2026-07-25) 사유 분류 + 경보 배선. 종전엔 사유는 판정하면서 발송이 없어 실패가 조용히 묻혔다
+#   (alpha/paper 는 경보 보유, 이 스크립트만 미보유 — 07-25 전수 점검서 적발).
+if [ "$rc" -ne 0 ]; then
+  if command -v sched_classify_failure >/dev/null 2>&1; then
+    reason=$(sched_classify_failure "$rc" "$LOG")
+  else
+    reason="exit_${rc}"
+    tail -n 30 "$LOG" 2>/dev/null | grep -qi "spend limit" && reason="spend_limit"
+  fi
+  # (2026-07-24 도훈 승인 C8) Fable 한도 폴백 — spend_limit 감지 시 --model opus 1회 재시도 (07-14 정책)
+  if [ "$reason" = "spend_limit" ]; then
+    log "spend_limit 감지 — --model opus 폴백 재시도"
+    timeout 3000 "$CLAUDE_BIN" -p "$PROMPT_TEXT" --model opus \
+      --dangerously-skip-permissions >> "$LOG" 2>&1
+    rc=$?; log "fallback(opus) exit=$rc"
+    [ "$rc" -ne 0 ] && reason="spend_limit_fallback_exit_${rc}"
+  fi
+  if [ "$rc" -ne 0 ] && command -v sched_alert_emit >/dev/null 2>&1; then
+    _g=$(sched_failure_guidance "$reason"); _a=$(sched_failure_autorecovers "$reason")
+    sched_alert_emit "factor_recheck" "$reason" \
+      "claude -p exit=$rc (N=$N) | 자동복구=${_a} | ${_g}"
+  fi
 fi
 exit 0

@@ -33,6 +33,10 @@ scheduler_alert(){
   local RS_BIN
   RS_BIN="$(command -v Rscript || echo '/c/Program Files/R/R-4.5.2/bin/Rscript')"
   [ -x "$RS_BIN" ] || { log "alert telegram skip: Rscript 없음 (마커는 보존)"; return 0; }
+  # (2026-07-25) R 문자열 리터럴 주입 가드: Windows 역슬래시 경로를 R 이 유니코드 이스케이프로
+  #   오해해(C:\Users → '\U' used without hex digits) 텔레그램만 조용히 죽던 잠복 버그.
+  #   마커는 남으므로 더 안 보인다. 주입 전 역슬래시 → 슬래시 정규화.
+  local LOG="${LOG//\\//}" detail="${detail//\\//}"
   local rfile="$adir/_tg_alert_${comp}_${TODAY}.R"
   cat > "$rfile" <<RS
 suppressWarnings(suppressMessages({
@@ -107,14 +111,33 @@ PF="$BASE/02_Infrastructure/ops/alpha_search_queue_prompt.md"
 MAXA="${QVEST_ALPHA_QUEUE_MAX:-2}"
 log "start alpha-search queue (pending=$N, MAX_ALPHA=$MAXA)"
 PROMPT_TEXT="$(printf 'TODAY=%s  MAX_ALPHA=%s\n\n%s\n' "$TODAY" "$MAXA" "$(cat "$PF")")"
+# (2026-07-25) 자격증명 사전 점검 — 실패하고 나서 알리지 말고 미리 알린다.
+#   실사고: refreshToken 이 빈 문자열이라 자동 갱신 불가 → 401 로 8일(07-19~26) 무인 정지.
+source "$(dirname "${BASH_SOURCE[0]:-$0}")/_sched_failure_classify.sh" 2>/dev/null || true
+if command -v sched_check_credentials >/dev/null 2>&1; then
+  CRED_ST=$(sched_check_credentials)
+  if [ "$CRED_ST" != "ok" ] && [ "$CRED_ST" != "unknown" ]; then
+    log "자격증명 사전점검 실패: $CRED_ST — claude 호출 생략(무의미한 401 회피)"
+    scheduler_alert "alpha_queue" "credentials_${CRED_ST}" \
+      "실행 전 차단 — $(sched_credentials_guidance "$CRED_ST") 큐 pending=$N 보존됨(재로그인 후 차기 런 자동 소비)."
+    exit 0
+  fi
+fi
+
 timeout 3000 "$CLAUDE_BIN" -p "$PROMPT_TEXT" \
   --dangerously-skip-permissions >> "$LOG" 2>&1
 rc=$?
 log "claude -p exit=$rc"
 # v3 침묵 정지 경보화 (paper_router_run.sh와 동일): 실패가 로그에만 남고 exit 0 종료되는 구조 보완.
 if [ "$rc" -ne 0 ]; then
-  reason="exit_${rc}"
-  tail -n 30 "$LOG" 2>/dev/null | grep -qi "spend limit" && reason="spend_limit"
+  # (2026-07-25) 사유 판정을 공통 헬퍼로 이관 — 구 구현은 "spend limit" 한 패턴만 특별취급해
+  #   자동복구되는 실패와 사람이 재인증해야 풀리는 실패를 같은 라벨로 뭉갰다(8일 정지 기전).
+  if command -v sched_classify_failure >/dev/null 2>&1; then
+    reason=$(sched_classify_failure "$rc" "$LOG")
+  else
+    reason="exit_${rc}"
+    tail -n 30 "$LOG" 2>/dev/null | grep -qi "spend limit" && reason="spend_limit"
+  fi
   # (2026-07-24 도훈 승인 C8) Fable 한도 폴백 — spend_limit 감지 시 --model opus 1회 재시도
   # (도훈 07-14 정책: 상태 FS 외부화라 모델 전환 무손실. 폴백 성공=로그만, 실패 시에만 경보 — 한도는 외생변수)
   if [ "$reason" = "spend_limit" ]; then
@@ -125,7 +148,12 @@ if [ "$rc" -ne 0 ]; then
     [ "$rc" -ne 0 ] && reason="spend_limit_fallback_exit_${rc}"
   fi
   if [ "$rc" -ne 0 ]; then
-    scheduler_alert "alpha_queue" "$reason" "claude -p exit=$rc (pending=$N MAX_ALPHA=$MAXA) — 큐 pending은 done 미기록이라 차기 런에서 재소비"
+    _g=""; _a=""
+    if command -v sched_failure_guidance >/dev/null 2>&1; then
+      _g=$(sched_failure_guidance "$reason"); _a=$(sched_failure_autorecovers "$reason")
+    fi
+    scheduler_alert "alpha_queue" "$reason" \
+      "claude -p exit=$rc (pending=$N MAX_ALPHA=$MAXA) | 자동복구=${_a:-unknown} | ${_g:-로그 확인 필요}"
   fi
 fi
 exit 0
