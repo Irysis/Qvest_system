@@ -211,6 +211,9 @@ sched_mark_resolved() {
     [ -f "$f" ] || continue
     mv -f "$f" "$arch/" 2>/dev/null && n=$((n + 1))
   done
+  # 아카이브 보관기한 — 무한 누적 방지. 사후 추적 가치가 남는 기간만 유지한다.
+  #   ★삭제는 아카이브(_resolved) 안에서만 일어난다. 활성 마커는 절대 지우지 않는다.
+  find "$arch" -maxdepth 1 -name '*.alert' -mtime "+${SCHED_RESOLVED_RETAIN_DAYS:-90}" -delete 2>/dev/null || true
   [ "$n" -gt 0 ] && printf '%s\n' "$n"
   return 0
 }
