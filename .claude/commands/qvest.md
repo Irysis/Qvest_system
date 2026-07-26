@@ -122,7 +122,7 @@ Step 6: Agent(subagent_type="governor",
 
 #### 5-C. 기존 Legacy 전략 호환
 
-PG2 active (STR_1631_SYN_05_2002 + STR_1656_MLRA_M05) **그대로 유지**.
+PG2 active book = **`book_state.json` admitted_ids가 유일 정본** (부팅 `PG2 admit:` 라인으로 확인 — 문서 하드코딩 금지. 2026-07-26 현재 `STR_1715_on_M4gAE_R05_noLayer4_PG2` 단독).
 신규 가설만 Work Task 방식 사용. 점진 마이그레이션.
 
 ---
@@ -181,7 +181,7 @@ PG2 active (STR_1631_SYN_05_2002 + STR_1656_MLRA_M05) **그대로 유지**.
 
 ---
 
-## 시스템 아키텍처 (v8.1)
+## 시스템 아키텍처 (구조 개요 — 버전 정본은 CLAUDE.md)
 
 ```
 ┌─ Q-Lead 세션 ───────────────────────────────────────┐
@@ -204,9 +204,9 @@ PG2 active (STR_1631_SYN_05_2002 + STR_1656_MLRA_M05) **그대로 유지**.
 │  OPTIMIZER_DONE → FORGE_DONE →                       │
 │  JUDGE_PASSED → GOVERNOR_ADMITTED → COMPLETED        │
 ├─ Legacy 유지 ──────────────────────────────────────┤
-│  PG2 active: STR_1631 + STR_1656                     │
+│  PG2 active: book_state.json 정본 (부팅 라인 참조)    │
 │  Governor / Judge / Forge 유지 (v8.2 Self-Adversarial)│
-│  Axiom 엔진 active 6건 + AX_CAND tracking            │
+│  Axiom 엔진 active Law 4건(000/001/002/008) + CAND   │
 └────────────────────────────────────────────────────┘
 ```
 
@@ -240,12 +240,12 @@ PG2 active (STR_1631_SYN_05_2002 + STR_1656_MLRA_M05) **그대로 유지**.
 
 1. ✅ `02_Infrastructure/worktask/` 존재 확인
 2. ✅ Agent registry에 `alpha-research`, `risk-research`, `optimizer-research` 등록 확인
-3. ✅ Skill 목록에 `worktask`, `alpha-research`, `risk-research`, `optimizer-research` 확인
-4. ✅ `qepm/mailbox/{worktask,alpha,risk,optimizer}/` 디렉토리 존재
-5. ✅ Hook **신규 9종** `settings.json` 등록 확인 (v6.31: alpha_discovery_certifier / sr_provenance_pre_certifier / governor_concord_certifier 신규 + sr_provenance_check / schedule_fidelity_check 강화)
+3. ✅ Skill 목록에 `qvest-worktask`(구 `worktask` 개명), `alpha-research`, `risk-research`, `optimizer-research` 확인
+4. ✅ `qepm/mailbox/worktask/` 존재 + 부팅 `Inbox:` 라인 확인 (alpha/risk/optimizer inbox는 현행 구조상 부재 = `n/a` 정상 — 2026-07-26 정직 라벨. n/a가 아닌 실수 0/N이면 해당 mailbox 활성)
+5. ✅ Hook 등록 실측 확인 — 부팅 `[hook-integrity]` 라인(router=OK·dispatch 수) + `harness_health` `hook entries registered` 수(0 또는 UNREPORTED = FAIL). 개수 하드코딩 금지, 전수 SOT = settings.json + harness.md (`sr_provenance_pre_certifier`는 2026-07-24 dispatch 해제)
 6. ✅ Charter `v1.2` 인용 확인 (`grep "v1.2" 02_Infrastructure/worktask/common_charter.md`)
 7. ✅ **Measurement Coherence Health Score** 부트 메시지 확인 (`[boot] Measurement coherence: ... Tier: HEALTHY/WARNING/DRIFTED`)
-8. ✅ `02_Infrastructure/hooks/_archive_v55/` 폐기 Hook 6종 archive 확인
+8. ✅ 폐기 Hook 아카이브 확인 — 현행 실존 아카이브는 `08_Tests/hooks/_archive_codex_round_v8_2/` (구 `_archive_v55/` 표기는 부재 경로였음, 2026-07-26 정정)
 9. ✅ Git tag `pre-qepm-3agent-migration` 존재 (rollback 지점)
 
 ### v7.2.1 신규 (4건)
@@ -275,7 +275,7 @@ PG2 active (STR_1631_SYN_05_2002 + STR_1656_MLRA_M05) **그대로 유지**.
 2. `next_session_task.md` 확인 → 직전 세션 carry + 현 과제
 3. `wt_list()` → 진행 중 WT 목록
 4. 신규 가설 → `/worktask create "{hypothesis}"` or 직접 `wt_create()`
-5. 3-agent pipeline 순차 실행 (Agent tool spawn)
+5. 6-agent pipeline 순차 실행 (Agent tool spawn — alpha→risk→optimizer→**forge(실측권위)→judge→governor(수동)**. 3-agent에서 멈추면 proxy 수치로 끝나 measurement-graduation 위반)
 
 ---
 
