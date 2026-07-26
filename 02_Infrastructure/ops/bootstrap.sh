@@ -655,6 +655,11 @@ try:
             line += "  ★audit 산출 자체가 %.0fh 낡음(36h+) — daily_refresh Step5 정지 의심, 아래 값은 과거 상태" % _age_h
     except Exception:
         line += "  ★audit ran_at 파싱 불가 — 나이 미상(신선 취급 금지)"
+    # (2026-07-26 CFA-04) 경보 채널 자신의 실패 노출 — stale이 실재하는데 텔레그램이
+    # 죽은 상태가 지금까지 어느 표면에도 안 남았다(무인 잡 stdout 소멸).
+    _ad = d.get('alert_delivery')
+    if _ad:
+        line += "  ★ALERT-DELIVERY %s — stale 경보가 도훈에게 도달하지 않았다" % str(_ad)[:70]
     if crit:
         line += " — crit: " + ", ".join((os.path.basename(c.rstrip('/')) or c) for c in crit[:4])
     print(line)

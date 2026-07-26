@@ -174,12 +174,32 @@ cache_freshness_audit <- function(telegram_alert = TRUE,
     }
     }
 
-    # Pick worse of mtime_lag and data_lag for evaluation
-    lag <- if (!is.na(data_lag)) data_lag else mtime_lag
+    #──────────────────────────────────────────────────────────────────────────
+    # (2026-07-26 CFA-02 수리, probe② 감사 확정) 주석은 "Pick worse of" 인데 구현은
+    #   data_lag 가 있으면 mtime_lag 를 **무조건 버렸다**. mtime > data 인 병리 케이스가
+    #   실재한다(2026-07-26 실측 3건):
+    #     .cache/macro_regime.parquet        data_lag=-5  mtime_lag=0
+    #     .cache/unified_regime_signal.parquet data_lag=-5 mtime_lag=0
+    #     .cache/factor_db/                  data_lag=0   mtime_lag=1
+    #   forward-dated 캐시(예측 지평이 미래 날짜)는 생성기가 죽어도 지평 소진 + max_lag
+    #   까지 음수/저 lag 로 FRESH 를 유지하고, 동결을 보여주는 유일한 축(mtime)이 폐기된다.
+    #   → 주석대로 worse-of 구현. 음수 data_lag 는 0-clamp 후 비교(미래 날짜가 신선도를
+    #   깎아주는 일 없게). 정상 monthly 캐시는 data_lag ≥ mtime_lag 라 판정 불변 —
+    #   max() 는 병리 케이스에서만 엄격해진다(실측: 위 3건 전부 여전히 OK, 사각만 소거).
+    #──────────────────────────────────────────────────────────────────────────
+    data_lag_eval <- if (!is.na(data_lag)) max(0L, as.integer(data_lag)) else NA_integer_
+    lag <- if (!is.na(data_lag_eval)) max(mtime_lag, data_lag_eval) else mtime_lag
+    if (!is.na(data_lag) && !is.na(mtime_lag) && mtime_lag > data_lag_eval) {
+      res$lag_note_worse_of <- sprintf(
+        "mtime_lag(%d) > data_lag(%s) — mtime 축 채택(동결 감지). 구판은 data_lag 를 써서 이 상태를 신선으로 보고했다",
+        mtime_lag, format(data_lag))
+    }
     # tight-SLA daily 캐시(max_lag ≤ 7)는 거래일-기준 lag — 주말/휴장일 false-WARN 제거
+    #   ★기준일은 채택된 lag 에 대응하는 날짜여야 한다(worse-of 로 mtime 이 채택됐는데
+    #     today-data_lag 를 기준일로 쓰면 다시 data 축으로 되돌아간다).
     if (!is.na(data_lag) && isTRUE(c$schedule == "daily") &&
         !is.null(c$max_lag_days) && c$max_lag_days <= 7) {
-      lag <- .trading_lag(today - data_lag, lag)
+      lag <- .trading_lag(today - lag, lag)
       # 합성 표기 — 내용 기준인지(content) 를 지우지 않는다
       res$lag_basis <- paste0(res$lag_basis %||% "mtime", "+trading_days")
     }
@@ -578,7 +598,22 @@ cache_freshness_audit <- function(telegram_alert = TRUE,
                       last_sent_at = format(today_ts, "%Y-%m-%dT%H:%M:%S%z"),
                       reason = send_reason),
                  alert_state_path, auto_unbox = TRUE)
-    }, error = function(e) cat(sprintf("Telegram alert failed: %s\n", e$message)))
+    }, error = function(e) {
+      #────────────────────────────────────────────────────────────────────────
+      # (2026-07-26 CFA-04 수리, probe② 감사 확정) 발송 실패를 cat 으로만 흘리면,
+      #   stale 경보가 실재하는데 경보 채널이 죽은 상태가 **어느 표면에도** 남지 않는다
+      #   (무인 백그라운드 잡의 stdout 은 아무도 안 본다 → 산출 JSON·exit 전부 정상으로 보임).
+      #   경보 시스템 자신의 실패는 감시 대상이어야 한다 → latest JSON 에 기록하고
+      #   부팅 DataFresh 리더가 읽어 노출한다(그 JSON 은 부팅이 이미 읽는다).
+      #────────────────────────────────────────────────────────────────────────
+      cat(sprintf("Telegram alert failed: %s\n", e$message))
+      .adf <- sprintf("FAILED: %s", e$message)
+      audit$alert_delivery <<- .adf
+      tryCatch(write_json(audit, latest_path, pretty = TRUE,
+                          auto_unbox = TRUE, na = "null"),
+               error = function(e2)
+                 cat(sprintf("alert_delivery 기록마저 실패: %s\n", e2$message)))
+    })
   } else if (telegram_alert && length(alert_items) == 0) {
     cat(sprintf("[cache_freshness] 등록 캐시 전부 fresh — 알림 생략 (orphan %d건은 로그만)\n", n_orphan))
     # 상태 초기화: 다음 stale 재발 시 '변화'로 즉시 발송되도록 서명 리셋
