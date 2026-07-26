@@ -156,7 +156,7 @@ PROMPT_TEXT="$(printf '%s\n\n%s\n' "$HEADER" "$(cat "$PROMPT_FILE")")"
 source "$(dirname "${BASH_SOURCE[0]:-$0}")/_sched_failure_classify.sh" 2>/dev/null || true
 if command -v sched_check_credentials >/dev/null 2>&1; then
   CRED_ST=$(sched_check_credentials)
-  if [ "$CRED_ST" != "ok" ] && [ "$CRED_ST" != "unknown" ]; then
+  case "$CRED_ST" in ok*|unknown) : ;; *)
     log "자격증명 사전점검 실패: $CRED_ST — claude 호출 생략"
     scheduler_alert "paper_router" "credentials_${CRED_ST}" \
       "실행 전 차단 — $(sched_credentials_guidance "$CRED_ST") 백로그는 보존됨(재로그인 후 차기 런 합류)."

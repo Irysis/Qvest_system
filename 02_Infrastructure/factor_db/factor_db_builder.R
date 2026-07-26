@@ -77,26 +77,155 @@ cat("[factor_db_builder] Loaded. FACTOR_DB_DIR:", FACTOR_DB_DIR, "\n")
 
 #==============================================================================
 # v54 Gate 13.1 — build_hash helpers
+#   (2026-07-26 P4 수리: '_unknown' 침묵 실패 근절 + 빌드 중 HEAD 이동 오귀속 제거)
+#
+# 실측 근거 — 2026-07-25 전기간 재빌드 로그(tasks/b6qidm6qn.output):
+#   ① 440 write 중 415건이 '_unknown'. 구현이 `system(intern=TRUE)` 를 썼는데
+#      명령 실패는 R 이 *warning* 으로만 신호한다 → tryCatch(error=) 는 잡지
+#      못하고 character(0) 이 그대로 "unknown" 으로 치환됐다. 게다가
+#      ignore.stderr=TRUE 가 원인 문자열을 버려 사후 진단이 불가능했고,
+#      경고는 "There were 50 or more warnings" 로 집계돼 사실상 보이지 않았다.
+#   ② 앞 25건 rev=1c70d27c, 이어진 4건 rev=4fbc3733 — 같은 프로세스가 13:49:56
+#      에 읽은 *같은 코드* 로 빌드하는 동안 auto-commit 이 HEAD 를 움직여 rev 가
+#      바뀌었다. rev 는 '쓰는 시점' 이 아니라 '코드를 읽은 시점' 에 한 번만
+#      확정해야 한다(부작용으로 git 호출이 440회 → 1회).
+#
+# 계약: build_hash.txt 1행 = "<YYYYMMDDHHMMSS>_<rev>" (소비자는 전부 n=1 읽기).
+#       rev 가 git 이 아닐 때만 2행에 진단이 붙는다(1행 계약 불변).
+#       rev 후보: <gitshort> | <gitshort>-dirty | nogit<8hex 코드 다이제스트>
+#                 | hashfail(둘 다 실패 — 반드시 경고 동반)
 #==============================================================================
 
-#' Write build_hash.txt to FACTOR_DB_DIR (timestamp + git short hash).
+.fdb_hash_env <- new.env(parent = emptyenv())
+
+#' git 호출 1회 — 종료코드/stderr 를 버리지 않고 함께 돌려준다.
+#' (r-portability: system2(env=) 미사용, Sys.which 로 실행파일 확인)
+.fdb_run_git <- function(args, repo = NULL) {
+  git <- Sys.which("git")
+  if (!nzchar(git)) {
+    return(list(ok = FALSE, out = character(0), status = -1L,
+                err = "git executable not found (Sys.which('git') empty)"))
+  }
+  a <- if (is.null(repo)) args else c("-C", repo, args)
+  errf <- tempfile("fdb_git_err_")
+  on.exit(unlink(errf), add = TRUE)   # 함수 내부 on.exit — 정상 발화
+  out <- tryCatch(
+    suppressWarnings(system2(git, a, stdout = TRUE, stderr = errf)),
+    error = function(e) structure(character(0), status = -2L)
+  )
+  st <- attr(out, "status"); if (is.null(st)) st <- 0L
+  err <- tryCatch(paste(readLines(errf, warn = FALSE), collapse = " | "),
+                  error = function(e) "")
+  out <- as.character(out)
+  list(ok = identical(as.integer(st), 0L) && length(out) > 0L && nzchar(out[1]),
+       out = out, status = as.integer(st), err = err)
+}
+
+#' 저장소 루트 해석 — 존재검사(dir.exists)가 아니라 git 정체성 질의로 판정.
+#' (worktree 는 .git 이 파일이므로 dir.exists 판정이 오답 — r-portability 금칙 ③)
+.fdb_resolve_repo <- function() {
+  cands <- c(Sys.getenv("CLAUDE_PROJECT_DIR", ""),      # 우선순위 ④: CPD 먼저
+             Sys.getenv("QM_ROOT", ""),
+             if (exists("PROJECT_ROOT")) PROJECT_ROOT else "",
+             tryCatch(dirname(dirname(.self_dir)), error = function(e) ""),
+             getwd())
+  cands <- unique(cands[nzchar(cands) & !is.na(cands)])
+  for (p in cands) {
+    if (!dir.exists(p)) next
+    r <- .fdb_run_git(c("rev-parse", "--show-toplevel"), repo = p)
+    if (r$ok) return(trimws(r$out[1]))
+  }
+  NULL
+}
+
+#' git 부재 시의 대체 코드-버전 식별자 (팩터 계산 코드 + registry 의 md5 요약).
+#' 'unknown' 처럼 정보가 0 인 토큰 대신 최소한 코드 버전은 구분되게 한다.
+.fdb_code_digest <- function() {
+  tryCatch({
+    files <- c(list.files(COMPUTE_MOD_DIR, pattern = "\\.R$", full.names = TRUE),
+               FACTOR_REG_PATH)
+    files <- sort(files[file.exists(files)])
+    if (!length(files)) return(NA_character_)
+    ms <- tools::md5sum(files)
+    tf <- tempfile("fdb_codedig_"); on.exit(unlink(tf), add = TRUE)
+    writeLines(paste(basename(files), as.character(ms), sep = ":"), tf)
+    substr(unname(tools::md5sum(tf)), 1, 8)
+  }, error = function(e) NA_character_)
+}
+
+#' 코드 버전 rev 확정 — 프로세스당 1회 (source 시점 = 코드를 읽은 시점).
+.fdb_init_code_rev <- function(force = FALSE, quiet = FALSE) {
+  if (!force && !is.null(.fdb_hash_env$code_rev)) return(invisible(.fdb_hash_env$code_rev))
+  reason <- ""
+  repo <- .fdb_resolve_repo()
+  res <- NULL
+  if (!is.null(repo)) {
+    r <- .fdb_run_git(c("rev-parse", "--short", "HEAD"), repo = repo)
+    if (r$ok) {
+      rev <- trimws(r$out[1])
+      d <- .fdb_run_git(c("status", "--porcelain", "--",
+                          "02_Infrastructure/factor_db"), repo = repo)
+      if (identical(d$status, 0L) && length(d$out) > 0L && any(nzchar(d$out)))
+        rev <- paste0(rev, "-dirty")
+      res <- list(rev = rev, source = "git", reason = "", repo = repo)
+    } else {
+      reason <- sprintf("git rev-parse failed (status=%s) %s", r$status, r$err)
+    }
+  } else {
+    reason <- "repo root unresolvable (git identity query failed for all candidates)"
+  }
+  if (is.null(res)) {
+    cd <- .fdb_code_digest()
+    res <- if (!is.na(cd))
+      list(rev = paste0("nogit", cd), source = "code_digest", reason = reason, repo = repo)
+    else
+      list(rev = "hashfail", source = "none",
+           reason = paste(reason, "| code digest also failed"), repo = repo)
+  }
+  .fdb_hash_env$code_rev <- res
+  if (!identical(res$source, "git") && !quiet) {
+    cat(sprintf(paste0(
+      "[factor_db_builder] !!! WARN: build_hash 의 git rev 산출 실패 — ",
+      "대체 식별자 '%s' 사용 (source=%s)\n",
+      "[factor_db_builder] !!!   사유: %s\n",
+      "[factor_db_builder] !!!   결과: 이 빌드의 코드 버전 추적이 약화됩니다. ",
+      "git 가용성/저장소 경로를 확인하세요.\n"), res$rev, res$source, res$reason))
+    warning(sprintf("factor_db build_hash: git rev 산출 실패 — %s (rev='%s')",
+                    res$reason, res$rev), call. = FALSE, immediate. = TRUE)
+  }
+  invisible(res)
+}
+
+#' Write build_hash.txt to FACTOR_DB_DIR (timestamp + code rev).
 #' Called at end of build_factor_db() and build_factor_db_monthly().
 .write_build_hash <- function() {
-  tryCatch({
-    git_rev <- tryCatch(
-      system("git rev-parse --short HEAD", intern = TRUE, ignore.stderr = TRUE),
-      error = function(e) "unknown"
-    )
-    if (length(git_rev) == 0 || nchar(git_rev) == 0) git_rev <- "unknown"
-    hash_str <- paste(format(Sys.time(), "%Y%m%d%H%M%S"), git_rev, sep = "_")
-    hash_path <- file.path(FACTOR_DB_DIR, "build_hash.txt")
-    writeLines(hash_str, hash_path)
+  cr <- .fdb_init_code_rev(quiet = TRUE)
+  hash_str <- paste(format(Sys.time(), "%Y%m%d%H%M%S"), cr$rev, sep = "_")
+  hash_path <- file.path(FACTOR_DB_DIR, "build_hash.txt")
+  lines <- hash_str
+  if (!identical(cr$source, "git")) {
+    lines <- c(hash_str,
+               sprintf("# rev_source=%s reason=%s", cr$source, cr$reason))
+    cat(sprintf(paste0("[factor_db_builder] !!! WARN: build_hash rev 가 git 이 아님 ",
+                       "(source=%s) — 사유: %s\n"), cr$source, cr$reason))
+    warning(sprintf("factor_db build_hash written with non-git rev '%s' (%s)",
+                    cr$rev, cr$reason), call. = FALSE, immediate. = TRUE)
+  }
+  ok <- tryCatch({ writeLines(lines, hash_path); TRUE },
+                 error = function(e) {
+                   cat(sprintf("[factor_db_builder] !!! WARN: build_hash 쓰기 실패: %s\n",
+                               conditionMessage(e)))
+                   warning(sprintf("factor_db build_hash write failed: %s",
+                                   conditionMessage(e)), call. = FALSE, immediate. = TRUE)
+                   FALSE
+                 })
+  if (ok)
     cat(sprintf("[factor_db_builder] build_hash written: %s -> %s\n", hash_str, hash_path))
-  }, error = function(e) {
-    cat(sprintf("[factor_db_builder] WARN: could not write build_hash: %s\n",
-                conditionMessage(e)))
-  })
+  invisible(ok)
 }
+
+# 코드 버전은 source 시점에 1회 확정 (빌드 도중 auto-commit 이 HEAD 를 움직여도 불변)
+.fdb_init_code_rev()
 
 #==============================================================================
 # Internal: Load base data (cached within session)

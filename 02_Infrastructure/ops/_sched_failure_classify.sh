@@ -255,6 +255,7 @@ sched_credentials_guidance() {
     expired)          echo "액세스 토큰이 만료됐습니다. claude 재로그인 필요." ;;
     missing)          echo "자격증명 파일이 없습니다. claude 로그인 필요." ;;
     ok)               echo "정상." ;;
+    ok_token_aging)   echo "정상이나 env 토큰을 ${SCHED_TOKEN_WARN_DAYS}일 이상 사용 중 — setup-token 토큰은 만료시각을 알 수 없어 만료 시 예고 없이 401 이 됩니다. 일반 터미널에서 claude setup-token 으로 갱신 권장(차단 아님)." ;;
     *)                echo "자격증명 상태 판별 불가 — 형식 변경 가능성." ;;
   esac
 }
