@@ -66,3 +66,15 @@
 
 - **2026-07-25**: `load_daily_factors()` 신설 (AST v1.1 §3 불변식 ⑥ — fdb_daily C15 carve-out 해소). C15 행에 일간 관문 병기 + 일간 접근자 절 추가. 실측: 202606+202607 90,389행 x 316팩터 / 월말 대조 M01 pearson 0.9987·spearman 0.9952 (차이 = 일간 winsorize cap + 월간 Raw_Value 미캡 — 정의 차이 문서화).
 - **2026-06-10**: "Factor DB 현황" 실측 전면 갱신 — 모집단 5종 구분 (등록 373 / 월간 수록 342·최신월 315 / 일간 수록 304 / census 327 / curated ~94). 구 stale 수치(월간·일간 팩터 수, "활용률" 표기) 전부 제거. 2026-06-10 Z 재계산(winsorize 1/99) — Raw_Value/Rank_Pct 불변, 가역 (트랙 A — 본 rule의 게이트·PIT 규칙과 무관).
+
+## IC 완결 판정 (C14 연계 — 2026-07-26 강화)
+
+`factor_ic_monthly`의 IC[t]는 pair (factor_db[t], factor_db[t+1])의 forward return으로 산출되므로, **t+1 파일이 그 달을 끝까지 담았을 때만 완결**이다. `compute_all_factor_ic_monthly()`의 incomplete-terminal-pair guard는 2조건 OR로 skip한다:
+
+1. **달력 미종료** — `sig_d_t1`의 달력 말일 > 오늘 (진행 중인 달)
+2. **파일 미도달** (2026-07-26 신설) — `sig_d_t1` < 그 달 RAWDATA 최종 거래일 (월말 재빌드 지연·실패)
+
+조건 2가 없으면 "달력은 넘었는데 factor_db 월말 재빌드가 안 된" 상태에서 **부분월 forward return IC가 완결로 기록**되고 `Usable_Date`도 과소 기록된다(예: 6/30 sig의 IC가 7/24까지만 반영된 채 확정). 검사 대상은 "그 달이 끝났나"가 아니라 "이 파일이 그 달을 끝까지 담았나"다.
+
+- RAWDATA 자체가 스테일한 경우는 이 guard의 책임 밖 — `cache_freshness_audit`가 담당(책임 분리).
+- 실무 함의: 월간 IC 프론티어는 **직전 완결월**이며, 당월 진행 중에는 전월 IC가 최신이다. 월말 cron이 factor_db 월말 빌드 → IC 갱신 순으로 자동 처리한다.
