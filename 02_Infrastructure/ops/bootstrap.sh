@@ -322,6 +322,20 @@ if command -v git >/dev/null 2>&1 && git -C "$PROJECT" rev-parse --git-dir >/dev
   fi
 fi
 
+# 4h-3. (2026-07-26) auto-commit 격리 가시성 — main 저장소 쪽 '수리가 git에 못 닿음' 감시.
+#   §4h(worktree 좌초)의 거울: Stop 훅 밸브 v2가 대량-신규 디렉터리를 격리하면
+#   .cache/auto_commit_quarantine.json 원장을 남기고, 여기서 부팅 WARN으로 노출한다.
+#   근거: v1 밸브가 171회 조용히 격리(CORE_ONLY_STAGED)하는 동안 아무 표면에도 안 보여
+#   08_Tests 회귀가드·04_Research 보고서가 영구 미커밋된 실사고(2026-07-26 적발). WARN-only.
+AC_QUAR="$PROJECT/.cache/auto_commit_quarantine.json"
+if [ -f "$AC_QUAR" ]; then
+  AC_TS=$(grep -oE '"ts":"[^"]*"' "$AC_QUAR" 2>/dev/null | head -1 | sed 's/.*:"//;s/"$//')
+  AC_DIRS=$(grep -oE '"dir":"[^"]*","n_new":[0-9]+' "$AC_QUAR" 2>/dev/null \
+            | sed 's/"dir":"//;s/","n_new":/ (/;s/$/건)/' | head -5 | tr '\n' ' ')
+  echo "[boot] WARN: auto-commit 격리 활성 (${AC_TS:-시각?}) — ${AC_DIRS:-원장 파싱 실패, 직접 확인: $AC_QUAR}"
+  echo "[boot]    → 정상 산출물이면 git add <해당 디렉터리> 후 수동 커밋으로 드레인 / dump면 정리·.gitignore (M/D는 영향 없음)"
+fi
+
 # 5. 데이터 리프레시 (백그라운드 — xlsx 증분 + KRX/FRED/ECOS)
 REFRESH_LOG="/tmp/qm_boot_refresh_$(date +%Y%m%d_%H%M).log"
 (cd "$PROJECT/02_Infrastructure" && bash "$PROJECT/02_Infrastructure/data/daily_refresh.sh") > "$REFRESH_LOG" 2>&1 &
