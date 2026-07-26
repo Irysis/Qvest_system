@@ -148,6 +148,19 @@ stage_result() {   # $1=표시명 $2=exit코드 $3=경보 컴포넌트명
     echo "      paper_dispatch skip (QVEST_PAPER_DISPATCH_ENABLE!=1 or missing)"
   fi
 
+  # (2026-07-26) 예약작업 *바깥 경계* 점검. 오늘 배선한 계측은 전부 스크립트 *안*이라
+  #   "작업이 아예 안 돌았다 / OS가 죽였다"를 볼 수 없다 — 실측 당시 작업 rc를 읽는 코드 0건이었고
+  #   그 상태로 InsiderBackfill이 매일 03:15경 rc=0xC000013A로 죽고 있었다.
+  #   ★담체를 StrandedRepairs 하나에 두지 않는 이유: 감시기가 자기가 실린 작업의 실패는 못 본다
+  #   (1단계에서 죽으면 3단계가 실행 자체를 안 함). MorningBrief(PT3H)를 2차 담체로 둔다.
+  echo "[0.7/3] scheduler_task_health.sh (예약작업 rc/정체 — 스크립트 바깥 한 겹)"
+  if [ -f "$BASE/02_Infrastructure/ops/scheduler_task_health.sh" ]; then
+    bash "$BASE/02_Infrastructure/ops/scheduler_task_health.sh" --quiet >> /tmp/qm_task_health.log 2>&1
+    stage_result "task_health" "$?" "task_health"
+  else
+    echo "      task_health skip (스크립트 없음)"
+  fi
+
   if [ "$IS_WEEKEND" = "1" ]; then
     echo "[1-2/3] 주말 — morning_briefing/mrs_daily(브리핑·데이터refresh·P3·regime) skip (논문 파이프라인만 매일)"
   else

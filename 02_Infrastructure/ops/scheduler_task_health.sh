@@ -1,0 +1,93 @@
+#!/bin/bash
+# scheduler_task_health.sh — 예약작업 *바깥 경계* 판정 + 경보 (2026-07-26 신설)
+#
+# 오늘(07-26) 무인 파이프라인 8일 정지 수리는 전부 스크립트 *안*을 고쳤다.
+# 그런데 실측해 보니 OS 작업이 아예 안 돌거나 중도에 죽는 경우를 읽는 코드가 저장소에 0건이었다:
+#   · InsiderBackfill  02:00  rc=0xC000013A  로그 파일 자체 없음 — 조용히 실패 중
+#   · StrandedRepairs  12:00/20:00           로그 한 줄 없이 사라짐
+# 스크립트가 실행되기만 하면 오늘 만든 계측이 다 작동하지만, *실행 자체가 없으면* 전부 무의미하다.
+# 이 스크립트가 그 바깥 한 겹을 덮는다.
+#
+# 판정 2종:
+#   rc≠0           — 마지막 실행이 실패/강제종료
+#   stale          — 주기 대비 실행이 끊김 (일간 2일 · 주간 9일 · 월간 35일 초과)
+# 둘 다 아니면 침묵. --quiet 는 요약 1줄만.
+#
+# 읽기 전용: 작업을 고치거나 재발화하지 않는다(자동 복구는 판단을 숨긴다 — 도훈 통지가 목적).
+set -uo pipefail
+source "$(dirname "${BASH_SOURCE[0]:-$0}")/resolve_project.sh"
+BASE="${BASE:-${PROJECT:-$PWD}}"; cd "$BASE" || exit 1
+source "$(dirname "${BASH_SOURCE[0]:-$0}")/_sched_failure_classify.sh" 2>/dev/null || true
+
+QUIET=0; for a in "$@"; do [ "$a" = "--quiet" ] && QUIET=1; done
+OUT="$BASE/06_Registry/scheduler_task_health.json"
+LOG="$BASE/.cache/scheduler_logs/task_health.log"; mkdir -p "$(dirname "$LOG")"
+log(){ echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >> "$LOG"; [ "$QUIET" = "1" ] || echo "[$(date '+%H:%M:%S')] $*"; }
+
+PS1BIN="$BASE/02_Infrastructure/ops/scheduler_task_health.ps1"
+[ -f "$PS1BIN" ] || { log "★ 수집기 없음: $PS1BIN"; exit 1; }
+
+# 1) 수집 (PowerShell). 실패를 0 으로 삼키지 않는다.
+powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass \
+  -File "$(cygpath -w "$PS1BIN" 2>/dev/null || echo "$PS1BIN")" \
+  -OutFile "$(cygpath -w "$OUT" 2>/dev/null || echo "$OUT")" >/dev/null 2>&1
+rc=$?
+if [ $rc -ne 0 ] || [ ! -s "$OUT" ]; then
+  log "★ 수집 실패 (powershell exit=$rc, 산출물 $( [ -s "$OUT" ] && echo 있음 || echo 없음 )) — 계측 사망. 0건으로 간주하지 않음."
+  command -v sched_alert_emit >/dev/null 2>&1 && command -v sched_is_unattended >/dev/null 2>&1 && sched_is_unattended \
+    && sched_alert_emit "task_health" "count_measurement_failed" "예약작업 수집기가 산출물을 못 냈음 (powershell exit=$rc)"
+  exit 1
+fi
+
+# 2) 판정
+PYBIN=""; command -v sched_resolve_python >/dev/null 2>&1 && PYBIN=$(sched_resolve_python || true)
+[ -n "$PYBIN" ] || PYBIN="python3"
+VERDICT=$("$PYBIN" - "$OUT" <<'PY'
+import json, sys, io
+d = json.load(io.open(sys.argv[1], encoding="utf-8-sig"))
+tasks = d.get("tasks") or []
+if isinstance(tasks, dict): tasks = [tasks]        # ConvertTo-Json 은 1건이면 객체로 낸다
+bad, stale = [], []
+for t in tasks:
+    if not t.get("enabled", True):
+        continue
+    if int(t.get("rc") or 0) != 0 and t.get("rc_label") not in ("still_running", "never_run"):
+        bad.append("%s(%s)" % (t.get("task"), t.get("rc_label")))
+    ms, ag = t.get("max_stale_days"), t.get("age_days")
+    if ms and ag is not None and ag > ms:
+        stale.append("%s(%.0f일>%s)" % (t.get("task"), ag, ms))
+print(json.dumps({"n": len(tasks), "bad": bad, "stale": stale}, ensure_ascii=False))
+PY
+)
+if [ -z "${VERDICT:-}" ]; then
+  log "★ 판정 실패 (PYBIN=$PYBIN 이 빈 출력) — 계측 사망."
+  command -v sched_alert_emit >/dev/null 2>&1 && command -v sched_is_unattended >/dev/null 2>&1 && sched_is_unattended \
+    && sched_alert_emit "task_health" "count_measurement_failed" "판정 단계 빈 출력 (PYBIN=$PYBIN)"
+  exit 1
+fi
+
+N=$(printf '%s' "$VERDICT"     | "$PYBIN" -c 'import json,sys;print(json.load(sys.stdin)["n"])')
+BAD=$(printf '%s' "$VERDICT"   | "$PYBIN" -c 'import json,sys;print(" ".join(json.load(sys.stdin)["bad"]))')
+STALE=$(printf '%s' "$VERDICT" | "$PYBIN" -c 'import json,sys;print(" ".join(json.load(sys.stdin)["stale"]))')
+if command -v sched_assert_count >/dev/null 2>&1 && ! sched_assert_count "$N"; then
+  log "★ 작업 수가 비숫자('$N') — 계측 사망."; exit 1
+fi
+[ "$N" -eq 0 ] && { log "★ Qvest_* 작업 0건 — 등록이 사라졌는지 확인 필요."; }
+
+nbad=$( [ -n "$BAD" ]   && echo "$BAD"   | wc -w || echo 0 )
+nst=$(  [ -n "$STALE" ] && echo "$STALE" | wc -w || echo 0 )
+log "예약작업 $N개 · 실패 ${nbad} · 정체 ${nst}"
+[ -n "$BAD" ]   && log "  ★실패: $BAD"
+[ -n "$STALE" ] && log "  ★정체: $STALE"
+
+# 3) 경보 — 무인 선언 시에만 (TTY 추론 아님. 내 시험 실행이 도훈 텔레그램으로 새는 사고 재발방지)
+if { [ -n "$BAD" ] || [ -n "$STALE" ]; } && command -v sched_is_unattended >/dev/null 2>&1 && sched_is_unattended; then
+  if command -v sched_alert_emit >/dev/null 2>&1; then
+    det=""
+    [ -n "$BAD" ]   && det="실패: $BAD"
+    [ -n "$STALE" ] && det="${det}${det:+ | }정체: $STALE"
+    sched_alert_emit "task_health" "scheduled_task_unhealthy" \
+      "$det | 상세 06_Registry/scheduler_task_health.json (작업 스크립트가 실행 자체를 못 한 경우 — 스크립트 내부 계측은 이 상황을 볼 수 없음)"
+  fi
+fi
+exit 0

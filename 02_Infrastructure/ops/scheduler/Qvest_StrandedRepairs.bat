@@ -9,3 +9,9 @@ REM Step 1: stranded repair audit (worktree -> main reachability)
 
 REM Step 2: handbook facts (system layer counts) - runs AFTER stranded so ops.* fields read fresh values
 "C:\Program Files\Git\bin\bash.exe" -c "export PATH='/c/Users/99922/AppData/Local/Programs/Python/Python312:/c/Program Files/R/R-4.5.2/bin:'$PATH; export CLAUDE_PROJECT_DIR=C:/Users/99922/OneDrive/Quant_Module_Moltbot; export QM_ROOT=C:/Users/99922/OneDrive/Quant_Module_Moltbot; export QVEST_UNATTENDED=1; export PYTHONUTF8=1; bash /c/Users/99922/OneDrive/Quant_Module_Moltbot/02_Infrastructure/ops/handbook_facts_audit.sh --diff >> /c/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/scheduler_logs/handbook_facts.log 2>&1"
+
+REM Step 3: scheduled-task outer boundary (2026-07-26). Everything else instrumented that day
+REM lives INSIDE the scripts and cannot see a run that never happened or that the OS killed.
+REM Measured 07-26: InsiderBackfill had been dying at ~03:15 nightly with rc=0xC000013A and
+REM nothing in the repo read task exit codes, so it went unseen. Read-only; never re-triggers.
+"C:\Program Files\Git\bin\bash.exe" -c "export PATH='/c/Users/99922/AppData/Local/Programs/Python/Python312:/c/Program Files/R/R-4.5.2/bin:'$PATH; export CLAUDE_PROJECT_DIR=C:/Users/99922/OneDrive/Quant_Module_Moltbot; export QM_ROOT=C:/Users/99922/OneDrive/Quant_Module_Moltbot; export QVEST_UNATTENDED=1; export PYTHONUTF8=1; bash /c/Users/99922/OneDrive/Quant_Module_Moltbot/02_Infrastructure/ops/scheduler_task_health.sh --quiet >> /c/Users/99922/OneDrive/Quant_Module_Moltbot/.cache/scheduler_logs/task_health.log 2>&1"

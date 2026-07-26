@@ -330,6 +330,49 @@ if command -v git >/dev/null 2>&1 && git -C "$PROJECT" rev-parse --git-dir >/dev
   fi
 fi
 
+# 4i. (2026-07-26) 예약작업 바깥 경계 — 이미 측정된 값을 *읽기만* 한다(부팅에서 재수집 금지: 느림).
+#     왜 필요: 07-26 실측 당시 저장소에 예약작업 rc를 읽는 코드가 0건이었고, 그 결과
+#     InsiderBackfill이 매일 02:00에 시작해 03:15경 rc=0xC000013A로 죽는 것을 아무도 보지 못했다.
+#     오늘 배선한 계측은 전부 스크립트 *안*이라 "실행 자체가 없었다"를 관측할 수 없다.
+#     수집 담체 = StrandedRepairs(12/20시) + MorningBrief(07:10). 부팅은 소비만.
+STH="$PROJECT/06_Registry/scheduler_task_health.json"
+if [ -f "$STH" ]; then
+  STH_LINE=$("${QVEST_PY:-python}" -c '
+import json, io, sys, datetime
+try:
+    d = json.load(io.open(sys.argv[1], encoding="utf-8-sig"))
+except Exception as e:
+    print("PARSE_FAIL %s" % type(e).__name__); raise SystemExit
+ts = d.get("measured_at", "")
+bad, stale = [], []
+for t in d.get("tasks") or []:
+    if not t.get("enabled", True): continue
+    if int(t.get("rc") or 0) and t.get("rc_label") not in ("still_running", "never_run"):
+        bad.append("%s=%s" % (t.get("task", "?").replace("Qvest_", ""), t.get("rc_label")))
+    ms, ag = t.get("max_stale_days"), t.get("age_days")
+    if ms and ag is not None and ag > ms:
+        stale.append("%s(%.0f일)" % (t.get("task", "?").replace("Qvest_", ""), ag))
+# 측정 자체가 오래됐으면 그것부터 알린다 — 낡은 GREEN이 제일 위험하다
+age_h = ""
+try:
+    dt = datetime.datetime.strptime(ts, "%Y-%m-%dT%H:%M:%S")
+    h = (datetime.datetime.now() - dt).total_seconds() / 3600.0
+    if h > 26: age_h = " ★측정 %.0f시간 전(수집 담체도 멈춤 의심)" % h
+except Exception: pass
+print("%s|%s|%s" % ("·".join(bad), "·".join(stale), age_h))
+' "$STH" 2>/dev/null)
+  if [ "${STH_LINE:-}" = "PARSE_FAIL" ] || [ -z "${STH_LINE:-}" ]; then
+    echo "[boot] ★예약작업 상태 판독 실패 — $STH 확인"
+  else
+    STH_BAD="${STH_LINE%%|*}"; STH_REST="${STH_LINE#*|}"
+    STH_STALE="${STH_REST%%|*}"; STH_AGE="${STH_REST#*|}"
+    if [ -n "$STH_BAD" ] || [ -n "$STH_STALE" ] || [ -n "$STH_AGE" ]; then
+      echo "[boot] 예약작업:${STH_BAD:+ ★실패 $STH_BAD}${STH_STALE:+ · ★정체 $STH_STALE}${STH_AGE}"
+      echo "    → 상세: 06_Registry/scheduler_task_health.json · 재측정: bash 02_Infrastructure/ops/scheduler_task_health.sh"
+    fi
+  fi
+fi
+
 # 4h-3. (2026-07-26) auto-commit 격리 가시성 — main 저장소 쪽 '수리가 git에 못 닿음' 감시.
 #   §4h(worktree 좌초)의 거울: Stop 훅 밸브 v2가 대량-신규 디렉터리를 격리하면
 #   .cache/auto_commit_quarantine.json 원장을 남기고, 여기서 부팅 WARN으로 노출한다.
