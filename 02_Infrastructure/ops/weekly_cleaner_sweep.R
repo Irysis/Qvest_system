@@ -537,8 +537,9 @@ sweep_deleted_n <- length(weekly_deleted$cache_scratch) + length(weekly_deleted$
 # (2026-07-26 WCS-01 수리) DRY 에서도 canonical cleaner_pending.json 을 덮어써
 #   /cleaner 소비 상태·mtime 을 건드렸고, sweep_deleted_n 이 '실삭제'인지 '삭제 예정'인지
 #   구분되지 않았다. DRY 는 별 파일로 분기하고 집계 키를 이름으로 나눈다.
-pending_path <- if (DRY) file.path(root, ".cache", "cleaner_pending_dryrun.json")
-                else     file.path(root, ".cache", "cleaner_pending.json")
+#   ★R 최상위에서 `else` 를 새 줄에 두면 파서가 끊는다(실측: unexpected 'else') — 한 줄 유지.
+pending_path <- file.path(root, ".cache",
+                          if (DRY) "cleaner_pending_dryrun.json" else "cleaner_pending.json")
 run_step("write_pending", {
   pending <- list(
     schema        = "cleaner_pending_v2",   # v2 (2026-07-18): distill 선점 필드 3종 추가 (W29 2-pass 방지)
