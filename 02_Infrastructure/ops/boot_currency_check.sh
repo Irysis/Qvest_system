@@ -49,7 +49,8 @@ ok()  { PASS=$((PASS+1)); [ "$MODE" != "--boot" ] && echo "  PASS  $1" || true; 
 bad() { FAIL=$((FAIL+1)); WARN_LINES+=("$1"); [ "$MODE" != "--boot" ] && echo "  FAIL  $1" || true; }
 
 # ── 정본 파생 (CLAUDE.md Active Version 절) ──────────────────────────────────
-AV_LINE=$(sed -n '/^## Active Version/,/^$/p' "$F_CLAUDE" 2>/dev/null | grep -m1 '^\*\*Qvest v')
+# (수리) 구 sed range는 헤더 직후 빈 줄에서 종료돼 본문을 못 잡았다 — awk로 헤더 후 첫 매치
+AV_LINE=$(awk '/^## Active Version/{f=1;next} f && /^\*\*Qvest v/{print;exit}' "$F_CLAUDE" 2>/dev/null)
 VER=$(printf '%s' "$AV_LINE" | grep -oE 'v[0-9]+\.[0-9]+' | head -1)
 MODEL_ID=$(printf '%s' "$AV_LINE" | grep -oE 'claude-[a-z0-9-]+' | head -1)     # 예: claude-fable-5
 N_MODE=$(printf '%s' "$AV_LINE" | grep -oE '[0-9]+-Mode' | head -1)             # 예: 4-Mode
@@ -128,9 +129,16 @@ fi
 # ── C6 훅 총계: CLAUDE.md 선언 ↔ 실측 (직접∪dispatch distinct) ───────────────
 CL_HOOKS=$(grep -oE 'settings\.json [0-9]+ distinct \.sh' "$F_CLAUDE" 2>/dev/null | head -1 | grep -oE '[0-9]+')
 if [ -f "$F_SETTINGS" ] && [ -f "$F_DISPATCH" ]; then
+  # (수리) dispatch 엔트리는 bare 파일명("script": "safety_guard.sh") — 경로절단 sed로는
+  #   접두사가 안 벗겨져 union이 부풀었다(48 오측). 접두사-절단 후 경로절단. 또 union을
+  #   02_Infrastructure/hooks/ 실존 파일로 필터 — 비-훅 토큰(bootstrap.sh)을 배제해
+  #   헌법 총계와 같은 모집단으로 비교.
   REAL_HOOKS=$( { grep -oE '[A-Za-z0-9_]+\.sh' "$F_SETTINGS"; \
-                  grep -oE '"script"[[:space:]]*:[[:space:]]*"[^"]*"' "$F_DISPATCH" | sed 's|.*/||;s/"$//'; } \
-                | sort -u | wc -l | tr -d ' ')
+                  grep -oE '"script"[[:space:]]*:[[:space:]]*"[^"]*"' "$F_DISPATCH" \
+                    | sed 's/.*"script"[^"]*"//;s/"$//;s|.*/||'; } \
+                | tr -d '\r' | sort -u \
+                | while IFS= read -r _h; do [ -f "$PROJECT/02_Infrastructure/hooks/$_h" ] && echo "$_h"; done \
+                | wc -l | tr -d ' ')
   if [ -z "$CL_HOOKS" ]; then
     bad "C6 CLAUDE.md에서 훅 총계 선언('NN distinct .sh')을 못 찾음 — 포맷 변경 시 파서 갱신"
   elif [ "$CL_HOOKS" = "$REAL_HOOKS" ]; then

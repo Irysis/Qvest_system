@@ -389,6 +389,18 @@ else
   BOOT_FAILS=$((BOOT_FAILS+1))
 fi
 
+# 7a-2. (2026-07-26 도훈 지시 "부팅 최신화 자동으로") 부팅 시퀀스 자기-정합 검사 —
+#   배너/체크리스트 기대값/인벤토리 스냅샷/훅 총계/PG2 참조가 헌법(CLAUDE.md)·실측보다
+#   낡으면 즉시 WARN. 기대값은 하드코딩 없이 매 부팅 CLAUDE.md/파일시스템에서 파생하므로,
+#   헌법이 바뀌는 순간(예: v8.4 승격) 다음 부팅이 낡은 곳을 전부 짚는다. WARN-only —
+#   수리는 세션 몫(WARN 발화 = 즉시 수리 의무, 수동 지시 불요 원칙).
+BCC="$PROJECT/02_Infrastructure/ops/boot_currency_check.sh"
+if [ -f "$BCC" ]; then
+  bash "$BCC" --boot || true
+else
+  echo "[boot] WARN: boot_currency_check.sh 부재 — 부팅 자기-정합 검사 소실 (자동 최신화 배선 끊김)"
+fi
+
 # 7b. v1.2 Charter §10 Measurement Coherence Health Score (Component D)
 BS_PATH="$PROJECT/qepm/mailbox/governor/book_state.json"
 MBA_R="$PROJECT/02_Infrastructure/portfolio/measurement_basis_audit.R"

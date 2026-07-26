@@ -250,7 +250,7 @@ PG2 active book = **`book_state.json` admitted_ids가 유일 정본** (부팅 `P
 
 ### v7.2.1 신규 (4건)
 
-10. ✅ **Memory Knowledge Health** 부트 메시지 확인 (`[boot] Memory health: hard=0 warn=W info=N`). 판정 = **hard=0** 필수, warn은 0이 현행 baseline(2026-07-25 W-슬롯 재배치 후) — **warn≥1이면 신규 발생이므로 조사**(구 "warn=3 정상" 폐기: 래칫을 3칸 되돌리는 기대값이었음). 출력: `qepm/observability/memory_health_latest.json`
+10. ✅ **Memory Knowledge Health** 부트 메시지 확인 (`[boot] Memory health: hard=0 warn=W info=N`). 판정 = **hard=0** 필수, warn은 0이 현행 baseline(2026-07-25 W-슬롯 재배치 후) — **warn≥1이면 신규 발생이므로 조사**(구 baseline-3건 서술 폐기: 래칫을 3칸 되돌리는 기대값이었음). 출력: `qepm/observability/memory_health_latest.json`
 11. ✅ **Axiom SOT 3축 동기화** 상태 라인 확인 (`Axioms:` 라인 — `active=N candidates=M (sot_map documented=N: ...)`. 상태 보고 블록 출력, `[boot]` prefix 없음). 판정은 개수 하드코딩이 아니라 **primary(`active/AX-*.json`) ↔ documented(`.claude/rules/axioms.md`) 동수 일치** = `memory_knowledge_health.R` HARD 3 PASS. 현행 active Law = 4건(000/001/002/008 — 2026-07-05 negative 4종 Distilled 강등. 8이 나오면 강등 역행 의심)
 12. ✅ **v8 Readiness Gate** 부트 메시지 확인 (`[boot] v8 readiness (--no-write, 16 check ...): ... — pass=P fail=0 [warn=W] skip=S`). 판정 기준 = **fail=0** (pass 개수 하드코딩 금지 — check 추가/soak로 변동). warn≥1이면 사유 확인(soak = human 확인 의무). e2e_kernel + timeline_generation은 no-write 시 SKIP 정상. `memory_health` cached read
 13. ✅ **Cache_core sync** 상태 라인 확인 (`Cache_core: FULL (n)` — n은 **documented_active와 동수**면 정상, 현행 4. `STALE (n vs m)` = derived cache WARN only, `UNKNOWN` = 카운터 사망(일치로 취급 금지). STALE은 hard fail 아님 — axiom_sot_map.json hard_fail_basis = primary↔documented만)
@@ -265,7 +265,7 @@ PG2 active book = **`book_state.json` admitted_ids가 유일 정본** (부팅 `P
 **v7.2.1 Memory Knowledge Health 의미**:
 - **HARD 6**: active axiom JSON parse / 필수 metadata 6 fields / sot_map active↔documented 일치 / dep+active duplicate / review --all dry-run 안전 / promote helper selftest
 - **WARN 6**: L-code outliers / stale candidate 90+d / review_log schema variants / external memory indexed (INFO 격하) / enforcement claim ↔ hook 강제력 / regime_validation parse + cache_core STALE
-- HARD ≥1 = bootstrap 중단 후 Q-Lead 즉시 수정. WARN은 정보 표시만 (현재 baseline: warn=3 정상)
+- HARD ≥1 = bootstrap 중단 후 Q-Lead 즉시 수정. WARN은 정보 표시만 — 현행 baseline 0건(2026-07-25 슬롯 재배치 후), warn≥1이면 신규 발생으로 조사
 
 ---
 
