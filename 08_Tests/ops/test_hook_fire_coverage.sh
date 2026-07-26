@@ -118,6 +118,25 @@ if echo "$OUT" | grep -q "discovery_graduation_gate.sh" && echo "$OUT" | grep -q
   ok "T7 미커버 게이트 이름 노출(조용히 빼지 않음)"
 else bad "T7 미커버 게이트 노출" "${OUT:0:140}"; fi
 
+# T8 ★writer parity — 외부 CLI(emit_event.sh)와 인라인(qvest_emit_event)이 **같은 스키마**를
+#    내야 한다. 갈라지면 같은 원장에 두 모양이 섞여 소비자(hook_fire_coverage·qvest_observe·
+#    wt_timeline)가 한쪽을 조용히 놓친다 — 이 세션이 반복 확인한 '필드명 불일치 = 조용한 빈 값'.
+_SRC="$_SELF/../.."
+_PA="$FX/pa"; _PB="$FX/pb"
+mkdir -p "$_PA/qepm/observability" "$_PB/qepm/observability"
+env CLAUDE_PROJECT_DIR="$_PA" bash "$_SRC/02_Infrastructure/observability/emit_event.sh" \
+  "parity" "h.sh" "block" "WT-1" "alpha" "42" 'C:\a\b"c".json' "ctx" >/dev/null 2>&1
+cat > "$FX/pb.sh" <<'PBEOF'
+QVEST_PARSE_TRAP=caller QVEST_PARSE_RESOLVE_ONLY=1
+source "$SRC/02_Infrastructure/hooks/_shared_parse.sh"
+qvest_emit_event "parity" "h.sh" "block" "WT-1" "alpha" "42" 'C:\a\b"c".json' "ctx"
+PBEOF
+env SRC="$_SRC" CLAUDE_PROJECT_DIR="$_PB" bash "$FX/pb.sh" >/dev/null 2>&1
+_LA=$(tail -1 "$_PA/qepm/observability/events.jsonl" 2>/dev/null | sed 's/"timestamp":"[^"]*"/"timestamp":"T"/')
+_LB=$(tail -1 "$_PB/qepm/observability/events.jsonl" 2>/dev/null | sed 's/"timestamp":"[^"]*"/"timestamp":"T"/')
+if [ -n "$_LA" ] && [ "$_LA" = "$_LB" ]; then ok "T8 ★writer parity (외부 CLI ↔ 인라인 동일 스키마)"
+else bad "T8 ★writer parity" "A=${_LA:0:80} / B=${_LB:0:80}"; fi
+
 cleanup
 echo ""
 echo "PASS=$PASS FAIL=$FAIL"
