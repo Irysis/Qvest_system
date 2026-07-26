@@ -67,6 +67,41 @@ sched_failure_guidance() {
   esac
 }
 
+# ── 사용률 창 사전 점검 (2026-07-26) — 차단당한 뒤 알지 말고 미리 안다.
+#    구조(plan-usage-history.json 733샘플 실측): u.fh = 5시간 롤링 창 %, u.sd = 7일 롤링 창 %.
+#    ★두 창은 회복 속도가 근본적으로 다르다:
+#      fh 100% → 0% 회복 = 5분 이내(2사례 실측) → 재시도로 해결 가능
+#      sd 는 7일 창이라 100% 도달 시 **며칠** 막힌다 → 재시도 무의미, 사전 회피만이 답
+#    실측 위험: 2026-07-26 하루에 sd 58%→89%(시간당 +5.5%p). 과거 최대 98%.
+#    반환: ok / fh_high / sd_high / sd_critical / unknown
+SCHED_FH_WARN="${SCHED_FH_WARN:-85}"
+SCHED_SD_WARN="${SCHED_SD_WARN:-85}"
+SCHED_SD_CRIT="${SCHED_SD_CRIT:-95}"
+sched_usage_state() {
+  local f="${CLAUDE_USAGE_HISTORY:-$APPDATA/Claude/plan-usage-history.json}"
+  [ -f "$f" ] || { echo "unknown"; return 0; }
+  local last fh sd
+  last=$(grep -oE '\{"t":[0-9]+,"org":"[^"]*","u":\{"fh":[0-9]+,"sd":[0-9]+\}\}' "$f" 2>/dev/null | tail -1)
+  [ -n "$last" ] || { echo "unknown"; return 0; }
+  fh=$(printf '%s' "$last" | grep -oE '"fh":[0-9]+' | grep -oE '[0-9]+')
+  sd=$(printf '%s' "$last" | grep -oE '"sd":[0-9]+' | grep -oE '[0-9]+')
+  [ -n "$fh" ] && [ -n "$sd" ] || { echo "unknown"; return 0; }
+  if [ "$sd" -ge "$SCHED_SD_CRIT" ] 2>/dev/null; then echo "sd_critical"; return 0; fi
+  if [ "$sd" -ge "$SCHED_SD_WARN" ]  2>/dev/null; then echo "sd_high";     return 0; fi
+  if [ "$fh" -ge "$SCHED_FH_WARN" ]  2>/dev/null; then echo "fh_high";     return 0; fi
+  echo "ok"
+}
+
+sched_usage_guidance() {
+  case "${1:-}" in
+    sd_critical) echo "★7일 사용률 창이 임계(${SCHED_SD_CRIT}%+) — 이 창은 100% 도달 시 며칠 막히며 재시도로 풀리지 않습니다. 무거운 자동 리서치(alpha-search 등) 기동을 미루십시오." ;;
+    sd_high)     echo "7일 사용률 창 ${SCHED_SD_WARN}%+ — 여유가 적습니다. 병렬 alpha-search 편수를 줄이는 것을 권합니다." ;;
+    fh_high)     echo "5시간 창 ${SCHED_FH_WARN}%+ — 곧 차단될 수 있으나 5분 내 롤오버로 회복됩니다(재시도 유효)." ;;
+    ok)          echo "사용률 여유 정상." ;;
+    *)           echo "사용률 판별 불가(기록 파일 부재·형식 변경)." ;;
+  esac
+}
+
 # ── 사유별 당일 재시도 상한 (2026-07-26)
 #    상한을 사유와 무관하게 두면 **당일 안 풀리는 원인에 재시도를 낭비**한다.
 #    spend_limit 은 월 리셋까지 안 풀리므로 당일 재시도가 무의미하고,

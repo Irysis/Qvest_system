@@ -132,6 +132,22 @@ CLAUDE_BIN="$(command -v claude || echo /c/Users/99922/AppData/Roaming/npm/claud
 PF="$BASE/02_Infrastructure/ops/alpha_search_queue_prompt.md"
 [ -f "$PF" ] || { log "prompt 없음 — skip"; exit 0; }
 MAXA="${QVEST_ALPHA_QUEUE_MAX:-2}"
+# (2026-07-26) 사용률 창 사전 점검 — 차단당한 뒤 알지 말고 미리 조절한다.
+#   ★7일 창(sd)은 100% 도달 시 며칠 막히며 **재시도로 풀리지 않는다**(5시간 창과 근본 차이).
+#     실측: 2026-07-26 하루에 sd 58%→89%(시간당 +5.5%p) — 병렬 alpha-search 가 주 소비원.
+#   임계면 기동을 미루고, 여유가 적으면 편수를 줄여 창을 보존한다.
+if command -v sched_usage_state >/dev/null 2>&1; then
+  USG=$(sched_usage_state)
+  case "$USG" in
+    sd_critical)
+      log "★사용률 임계($USG) — alpha-search 기동 보류. $(sched_usage_guidance "$USG")"
+      scheduler_alert "alpha_queue" "usage_${USG}" \
+        "실행 전 보류 — $(sched_usage_guidance "$USG") 큐 pending=$N 보존됨."
+      exit 0 ;;
+    sd_high)
+      [ "$MAXA" -gt 1 ] 2>/dev/null && { log "사용률 여유 부족($USG) — MAX_ALPHA $MAXA→1 감축(창 보존)"; MAXA=1; } ;;
+  esac
+fi
 log "start alpha-search queue (pending=$N, MAX_ALPHA=$MAXA)"
 PROMPT_TEXT="$(printf 'TODAY=%s  MAX_ALPHA=%s\n\n%s\n' "$TODAY" "$MAXA" "$(cat "$PF")")"
 # (2026-07-25) 자격증명 사전 점검 — 실패하고 나서 알리지 말고 미리 알린다.
