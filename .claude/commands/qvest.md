@@ -227,19 +227,19 @@ PG2 active (STR_1631_SYN_05_2002 + STR_1656_MLRA_M05) **그대로 유지**.
 24. ✅ **페이퍼 적재 리서치풀 인지** 상태 라인 — `ResearchPool: route=<date> [NEW|seen · Nd] papers N · route a/o/r/rg/skip` + `AlphaQueue:`(alpha-search 대기 testable · `처리 N (ADOPT a/QUAR q)` auto_alpha_gate 결과) + `ModeQueue:`(optimizer/risk/regime = QEPM 연료 · dispatch 소비여부 · recheck 잔여). Step 3b `paper_recharge`가 적재한 신규 리서치풀을 부팅이 인지(`02_Infrastructure/ops/research_pool_status.py`, `.cache/research_pool_last_seen.json` 마커로 NEW 판정). `Routing: PENDING — collect>route`는 수집됐으나 라우터 미반영(`paper_router_run.sh _FORCE=1`). 부팅 후 갱신 시 Q-Lead가 reader 직접 재실행 가능. SKIP 시 script/python3 점검.
 25. ✅ **데이터 freshness 인지** 상태 라인 — `DataFresh: <audit시각> · OK/WARN/CRITICAL N — crit: <paths>` + 핵심 연구캐시(rawdata/benchmark/regime) FRESH/stale 강조. `cache_freshness_audit.R`(daily_refresh Step 5 백그라운드 산출 `qepm/observability/cache_freshness_latest.json`, mtime+내부 max(Date) lag)를 boot이 읽어 노출 — 06-12 arrow freeze류 silent staleness 조기감지. **advisory(부팅 무중단, BOOT_FAILS 비계상)** — 핵심 캐시 stale 시 "성과수치 산출 전 갱신 의무" 경고([[feedback-performance-real-code-only]]). SKIP 시 daily_refresh 선행. ※ 표시값은 마지막 audit 시각 기준(boot Step 5 백그라운드 갱신 후 차회 부팅 반영).
 26. ✅ **모닝 파이프라인 ran-today** 상태 라인 — `MorningRun: <date> 실행됨 (<시각>)` 또는 `미실행 (오늘 lock 부재)`. `/tmp/qm_morning_run_<today>.lock`(morning_run.sh once-per-day 락) 확인 — 스케줄러 silent 무발화([[project-morning-brief-scheduling]] mrs_daily 트랩) 조기감지. 미실행 시 수동 `bash 02_Infrastructure/ops/morning_run.sh manual`.
-27. ✅ **4-Mode +RAMP 배너 정합** — 배너/완료배너/`v8.1:` 라인 `4-Mode +RAMP` + `Modes:` 라인(① QEPM ② alpha-search ③ factor-rotation ④ RAMP `/ramp` Gate0~11·CCS 13-score·governor 정지). CLAUDE.md "4-Mode 헌법(RAMP 2026-06-17)"과 사실 정합(구 "3-Mode" 폐기).
+27. ✅ **4-Mode +RAMP 배너 정합** — 배너/완료배너/버전 상태 라인(`v8.3:`) `4-Mode +RAMP` + `Modes:` 라인(① QEPM ② alpha-search ③ factor-rotation ④ RAMP `/ramp` Gate0~11·CCS 13-score·governor 정지). CLAUDE.md "4-Mode 헌법(RAMP 2026-06-17)"과 사실 정합(구 "3-Mode" 폐기).
 
 ### v8.1.2 신규 확인 (1건, 2026-06-11)
 23. ✅ **UTF-8 출력 가드** 부트 메시지 — `[boot] utf8_output_guard: ACTIVE`. INACTIVE WARN 시 python3 PATH 점검. 부트 외 이모지 출력 가능 커맨드는 `bash 02_Infrastructure/ops/safe_run.sh <cmd>` 경유 (API 400 invalid high surrogate 방지 — anthropics/claude-code#44230)
 
 ### v8.1 신규 확인 (4건, 2026-06-05)
-19. ✅ 완료 배너 `Qvest v8.1 — Opus 4.8 Native · 3-Mode · 실측 거버넌스` + `v8.1:` 상태 라인 출력
+19. ✅ 완료 배너·상태 라인이 **CLAUDE.md Active Version과 일치** (현행 v8.3 · Fable 5-Native · 4-Mode +RAMP — 항목 27과 동일 기준. 하드코딩 금지: 배너 버전이 헌법과 다르면 그쪽이 낡은 것)
 20. ✅ **데이터 캐시 검증(Step 4e)** 부트 메시지 — `[boot] 데이터 캐시: rawdata.parquet OK + K200/KQ150 멤버십 OK` (없으면 WARN: alpha-search `universe=K200_KQ150` stop 위험) + `kr_factor_returns_v2: OK`
 21. ✅ alpha-search 제1원칙 (`.claude/skills/alpha-search/SKILL.md` `## ★ 제1원칙`): 논문 완전 복제 + 유니버스 K200∪KQ150 고정(`run_alpha_search` universe 기본값) + 기간 2005~ 고정(start_date 기본값)
 22. ✅ 모듈 자동흐름: `register_module` 계약 floor(`contract_pass + backtested + frozen + hash/build/cost`) + `register_research_outputs`(ML/DPL 다리, 계약 없으면 quarantine) + `run_factor_rotation` allowlist / Axiom r7 복원(`02_Infrastructure/docs/rules/axiom-engine.md` 5축 boolean-AND + INV-1~7)
 
 ### v8.0 신규 확인 (5건)
-14. ✅ 완료 배너 `Qvest v8.1 — Opus 4.8 Native` + `v8.1:` 상태 라인 출력 확인
+14. ✅ 완료 배너 + 버전 상태 라인 출력 확인 (기대 문자열은 항목 19/27 기준 — CLAUDE.md Active Version 정합)
 15. ✅ PreToolUse[Agent] = `axiom_context_inject` + `worktask_sequence_enforcer` (unified_agent_guard 등록 해제 — `grep -c unified_agent_guard .claude/settings.json` = 0)
 16. ✅ agent effort frontmatter (judge/governor xhigh, alpha/risk/optimizer/forge high) — `grep -l 'effort:' .claude/agents/*.md`
 17. ✅ qvest-*-style skill 4종 + `skills:` frontmatter 부착 (alpha/risk/opt/judge/gov)
@@ -259,10 +259,10 @@ PG2 active (STR_1631_SYN_05_2002 + STR_1656_MLRA_M05) **그대로 유지**.
 
 ### v7.2.1 신규 (4건)
 
-10. ✅ **Memory Knowledge Health** 부트 메시지 확인 (`[boot] Memory health: hard=0 warn=≤6 info=N`). HARD ≥1 이면 즉시 중단. 출력: `qepm/observability/memory_health_latest.json`
-11. ✅ **Axiom SOT 3축 동기화** 상태 라인 확인 (`Axioms:` 라인 — `active=N candidates=M (sot_map documented=8: documented=3 / block=1 / advisory=4)`. 상태 보고 블록 출력, `[boot]` prefix 없음). primary (`active/AX-*.json`) ↔ documented (`.claude/rules/axioms.md`) 8:8 일치 = `memory_knowledge_health.R` HARD 3 PASS
-12. ✅ **v8 Readiness Gate** 부트 메시지 확인 (`[boot] v8 readiness (--no-write, 16 check incl v8_architecture): PASS — pass=13 fail=0 skip=2`). e2e_kernel + timeline_generation은 no-write 시 SKIP 정상. `memory_health` cached `memory_health_latest.json` read
-13. ✅ **Cache_core sync** 상태 라인 확인 (`Cache_core: FULL (8)` 또는 `STALE (n vs 8 — derived cache, WARN only)`. 상태 보고 블록 출력, `[boot]` prefix 없음). STALE은 hard fail 아님 (axiom_sot_map.json sot_definition.hard_fail_basis = primary↔documented만)
+10. ✅ **Memory Knowledge Health** 부트 메시지 확인 (`[boot] Memory health: hard=0 warn=W info=N`). 판정 = **hard=0** 필수, warn은 0이 현행 baseline(2026-07-25 W-슬롯 재배치 후) — **warn≥1이면 신규 발생이므로 조사**(구 "warn=3 정상" 폐기: 래칫을 3칸 되돌리는 기대값이었음). 출력: `qepm/observability/memory_health_latest.json`
+11. ✅ **Axiom SOT 3축 동기화** 상태 라인 확인 (`Axioms:` 라인 — `active=N candidates=M (sot_map documented=N: ...)`. 상태 보고 블록 출력, `[boot]` prefix 없음). 판정은 개수 하드코딩이 아니라 **primary(`active/AX-*.json`) ↔ documented(`.claude/rules/axioms.md`) 동수 일치** = `memory_knowledge_health.R` HARD 3 PASS. 현행 active Law = 4건(000/001/002/008 — 2026-07-05 negative 4종 Distilled 강등. 8이 나오면 강등 역행 의심)
+12. ✅ **v8 Readiness Gate** 부트 메시지 확인 (`[boot] v8 readiness (--no-write, 16 check ...): ... — pass=P fail=0 [warn=W] skip=S`). 판정 기준 = **fail=0** (pass 개수 하드코딩 금지 — check 추가/soak로 변동). warn≥1이면 사유 확인(soak = human 확인 의무). e2e_kernel + timeline_generation은 no-write 시 SKIP 정상. `memory_health` cached read
+13. ✅ **Cache_core sync** 상태 라인 확인 (`Cache_core: FULL (n)` — n은 **documented_active와 동수**면 정상, 현행 4. `STALE (n vs m)` = derived cache WARN only, `UNKNOWN` = 카운터 사망(일치로 취급 금지). STALE은 hard fail 아님 — axiom_sot_map.json hard_fail_basis = primary↔documented만)
 
 체크 실패 시 → `next_session_task.md` 참조 + 복구.
 
