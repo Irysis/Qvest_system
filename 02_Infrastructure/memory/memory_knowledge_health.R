@@ -184,8 +184,16 @@ git_status <- tryCatch({
   system2("git", c("status", "--porcelain",
                    "qepm/memory/axioms/active"),
           stdout = TRUE)
-}, error = function(e) character(),
+}, error = function(e) structure(character(), class = "mkh_git_fail"),
    finally = setwd(old_wd))
+# (2026-07-26 MKH-07 수리) git 실행 실패(git 부재·repo 손상)를 character() 로 흡수하면
+#   modified_active 가 빈 벡터가 되어 **침묵 통과**했다 — 이 체크의 전제(작업트리 상태를
+#   봤다)가 성립하지 않은 것이지 "깨끗하다"가 아니다. 실패를 이름으로 남긴다.
+if (inherits(git_status, "mkh_git_fail")) {
+  add_warn("HARD_5_git_unavailable",
+           "git status 실행 실패 — active dir 변경 여부 미관측(깨끗함이 아님)")
+  git_status <- character()
+}
 modified_active <- git_status[grepl("^.M", git_status)]
 if (length(modified_active) > 0) {
   add_warn("HARD_5_active_uncommitted",
@@ -309,20 +317,34 @@ cand_dir <- file.path(PROJ_ROOT, "qepm/memory/axioms/candidates")
 cand_files <- list.files(cand_dir, pattern = "\\.json$", full.names = TRUE)
 threshold <- Sys.time() - as.difftime(90, units = "days")
 stale_count <- 0
+undated_count <- 0   # (2026-07-26 MKH-06) created_at 결측/파손 → mtime 폴백으로 산정한 건수
 for (f in cand_files) {
   d <- tryCatch(fromJSON(f, simplifyVector = FALSE), error = function(e) NULL)
   if (is.null(d)) next
+  # (2026-07-26 MKH-06 수리) 구현은 parse 실패 시 Sys.time() 을 대입해 **무조건 신선**으로
+  #   판정했고(측정 불가 = 신선), created_at 필드가 아예 없는 후보는 nchar()>0 게이트에
+  #   걸려 **영구 미검사**였다(실물: CAND_20260714_alpha_research_distress_smallcap_wall_*
+  #   — 90일이 지나도 절대 stale 로 안 잡힘). '측정 불가 = mtime 정직 폴백' 으로 교체
+  #   (W8/W9 의 .lc_research_time 과 동일 원칙).
   created <- d$created_at %||% ""
-  if (nchar(created) > 0) {
-    ct <- tryCatch(as.POSIXct(created), error = function(e) Sys.time())
-    if (!is.na(ct) && ct < threshold) stale_count <- stale_count + 1
+  ct <- NA
+  if (nchar(created) > 0) ct <- tryCatch(as.POSIXct(created), error = function(e) NA)
+  if (is.na(ct)) {
+    ct <- tryCatch(file.info(f)$mtime, error = function(e) NA)
+    if (!is.na(ct)) undated_count <- undated_count + 1
   }
+  if (!is.na(ct) && ct < threshold) stale_count <- stale_count + 1
 }
 if (stale_count > 0) {
   add_warn("WARN_2_stale_candidate",
-           sprintf("%d candidates older than 90 days", stale_count))
+           sprintf("%d candidates older than 90 days%s", stale_count,
+                   if (undated_count > 0)
+                     sprintf(" (그중 %d건은 created_at 결측 → mtime 기준)", undated_count) else ""))
 } else {
-  cat("  no stale candidates\n")
+  cat(sprintf("  no stale candidates%s\n",
+              if (undated_count > 0)
+                sprintf(" (created_at 결측 %d건은 mtime 으로 산정 — 구판은 영구 미검사)",
+                        undated_count) else ""))
 }
 
 # ─── WARN 3: review_log schema variant ───────────────────────────
@@ -357,8 +379,13 @@ if (recurring > 10) {
 
 # ─── INFO 4: external memory not indexed (격하) ──────────────────
 cat("[I4/6] external memory indexed\n")
-external_base <- "/home/quant/.claude/projects/-mnt-c-Users-User-OneDrive-------Quant-Module-Moltbot/memory"
-if (dir.exists(external_base)) {
+# (2026-07-26 MKH-08 수리) Linux 절대경로 하드코딩 — Windows R 에서 dir.exists 항상 FALSE
+#   → 매 실행 "skip" 상수 출력으로 **영구 무기능**이었고 r-portability 금칙 ③(선행 / 경로
+#   하드코딩) 위반이다. 환경변수 경유로 전환하고, 미설정을 '없음' 이 아니라 '미설정' 으로 표기.
+external_base <- Sys.getenv("QVEST_EXTERNAL_MEMORY_DIR", "")
+if (!nzchar(external_base)) {
+  cat("  external memory: 미설정 (QVEST_EXTERNAL_MEMORY_DIR 미지정 — 검사 대상 없음)\n")
+} else if (dir.exists(external_base)) {
   ext_count <- length(list.files(external_base, pattern = "\\.md$"))
   add_info("INFO_4_external_memory_excluded",
            sprintf("external memory %d files — opt-in via --include-claude-memory",
@@ -372,6 +399,13 @@ cat("[W5/6] enforcement claim vs hook strength\n")
 hook_path <- file.path(PROJ_ROOT,
                        "02_Infrastructure/hooks/axiom_enforcement_hook.sh")
 unverified <- c()
+# (2026-07-26 MKH-03 수리) 루프 안 file.exists(hook_path) 에 else 가 없어, 강제 훅이
+#   삭제/이동되면 unverified 가 빈 채로 남고 "enforcement claims aligned" 가 출력됐다 —
+#   **검사 대상 소멸 = 검사 통과**(최악 상태가 warn=0 으로 위장). 선행 판정으로 분리.
+if (!file.exists(hook_path)) {
+  add_warn("WARN_5_hook_missing",
+           "axiom_enforcement_hook.sh 부재 — enforcement 정렬 검증 불가(정렬됨이 아님)")
+}
 for (fn in names(active_data)) {
   d <- active_data[[fn]]
   mode <- safe_str(d$enforcement_mode, "")
@@ -414,9 +448,16 @@ if (file.exists(rv_path)) {
 }
 cache_path <- file.path(PROJ_ROOT, ".cache/axiom_core.json")
 if (file.exists(cache_path)) {
+  # (2026-07-26 MKH-04 수리) parse 실패 시 NULL → if 블록 통째 skip → 경고 0.
+  #   손상 캐시는 STALE 보다 나쁜 상태(agent prefix 주입 소스 전손)인데 가장 심한 케이스가
+  #   비관측이었다. 손상을 명시 경고로 승격.
   cache <- tryCatch(fromJSON(cache_path, simplifyVector = FALSE),
-                    error = function(e) NULL)
-  if (!is.null(cache)) {
+                    error = function(e) structure(list(), class = "mkh_cache_corrupt"))
+  if (inherits(cache, "mkh_cache_corrupt")) {
+    add_warn("WARN_6_cache_core_corrupt",
+             ".cache/axiom_core.json parse 실패(손상) — STALE 보다 심각, bootstrap 재생성 필요")
+  }
+  if (!inherits(cache, "mkh_cache_corrupt") && !is.null(cache)) {
     cache_ids <- vapply(cache$axioms, function(x) safe_str(x$id),
                         character(1))
     json_ids <- vapply(active_data, function(d) {
@@ -493,8 +534,15 @@ if (file.exists(settings_path)) {
 
 cat("[W8] layer_bottleneck_map freshness vs newest L-code\n")
 lbm_path <- file.path(PROJ_ROOT, "06_Registry/layer_bottleneck_map.md")
+# (2026-07-26 MKH-05 수리) W8/W9 는 루트 stage_artifacts 만 glob 했으나 W1(:280-283)과
+#   harvester 정본 스캔범위(CLAUDE.md)는 04_Research/strategies/*/stage_artifacts/ 도 포함.
+#   QEPM 모드가 전략 디렉토리에 emit 한 negative L-code 는 next_probe 검사·최신성 기준에서
+#   **영구 비가시**였다(구조적 블라인드 = warn 0). W1 과 같은 3-glob 으로 통일.
 raw_lc_files <- c(Sys.glob(file.path(PROJ_ROOT, "stage_artifacts/l_code/*/l_code_*.json")),
-                  Sys.glob(file.path(PROJ_ROOT, "stage_artifacts/l_code_*.json")))
+                  Sys.glob(file.path(PROJ_ROOT, "stage_artifacts/l_code_*.json")),
+                  Sys.glob(file.path(PROJ_ROOT,
+                             "04_Research/strategies/*/stage_artifacts/[Ll]_code*.json")))
+raw_lc_files <- raw_lc_files[!grepl("/superseded/", raw_lc_files, fixed = TRUE)]
 if (length(raw_lc_files) == 0) {
   cat("  L-code 원본 파일 없음 — skip\n")
 } else {

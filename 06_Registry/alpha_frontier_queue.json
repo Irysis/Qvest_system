@@ -1511,6 +1511,41 @@
         "FQ-072 TRASS 조사 recommendation 1순위",
         "discovery wf_1880d1fd-16e"
       ]
+    },
+    {
+      "id": "FQ-074",
+      "lane": "text_non_return",
+      "title": "DART 사업보고서 전문 지도학습 감성 (Ke et al. 2020 방법론 KR 적용)",
+      "hypothesis": "사업보고서 전체 텍스트에서 Ke et al.(2020) 지도학습 어휘(수익률 레이블)로 산출한 per-firm 감성 점수 p̂∈[0,1]이 횡단 알파를 가짐. 논문(2607.14174) full-filing 모델에 직접 대응 — 위험요인 섹션이 아닌 전문 사용.",
+      "ev_rationale": "FQ-073까지 return-파생 소진. DART 텍스트는 비-return 원천이며, 사업보고서 전문에는 사업전략·시장환경·위험관리 등 선행 정보 함유. Ke et al. 방법론은 통계적으로 단순하고 PIT 준수 용이(3/31 C4 lag). 논문 실증: 전문 텍스트 → 섹터/포트폴리오 레벨 성과 양호. KR 개별종목 레벨 미검증.",
+      "wall_check": "비-return 원천 → return-파생 소진 벽 밖. IC→PORT_t 전이 벽은 KR 텍스트신호 특성 미검증.",
+      "data_gate": "DART API .env 키 확인, document.xml ZIP+XML 취득 성공. 필요 추가 설치: (1) kiwipiepy(pip install kiwipiepy — C deps 없음) 또는 형태소 없이 어절 분리, (2) beautifulsoup4(pip install). 코퍼스 빌드: ~350기업×20년=~7000건 DART API 호출, 약 6-12시간 배치 작업.",
+      "owner": {},
+      "status": "pending",
+      "next_action": "kiwipiepy + bs4 venv 설치 → DART 사업보고서 코퍼스 빌더 작성(~350기업×2005~2024 연도별) → Ke et al. 지도학습 어휘 추출 + 점수화 → canonical_screen_bt 실측",
+      "source_refs": [
+        "paper: 2607.14174 How Much of a 10-K Matters",
+        "quarantine: auto_quarantine_20260726.json dart_risk_section_sentiment → 전문 재경로",
+        "infra_evidence: DART document.xml 완전 작동 실증(20260726)"
+      ]
+    },
+    {
+      "id": "FQ-075",
+      "lane": "text_non_return",
+      "title": "DART 사업보고서 MD&A+사업개요 지도학습 감성 (KR 위험·사업서술 텍스트 집중)",
+      "hypothesis": "사업보고서 중 'IV. 이사의 경영진단 및 분석의견(MD&A)'과 'II. 사업의 내용 §1~4(사업개요·제품·원재료·매출)' 섹션의 Ke et al. 감성 점수가 횡단 알파를 가짐. US 10-K의 사업서술 본문(Items 1~7)에 대응 — 위험관리/재무제표 섹션 제외로 순수 사업서술 추출 효과 검증.",
+      "ev_rationale": "논문에서 full-filing이 개별종목 레벨에서 Item 1A보다 약함 → KR에서 사업서술 핵심 섹션만 추출하면 noise 감소 가능. IV(MD&A)는 경영진이 사업위험·전망을 직접 기술하는 KR 내 가장 '위험/전망' 밀도 높은 섹션. FQ-074(전문) 대비 증분: sectoral noise 감소 가설.",
+      "wall_check": "비-return 원천. FQ-074와 pipeline 공유 — FQ-074 코퍼스 빌드 완료 시 동일 인프라에서 섹션 추출만 달리하여 즉시 실행 가능.",
+      "data_gate": "FQ-074 코퍼스 빌드 이후 자동 가능. TOC 기반 섹션 추출: xml.findall('ATOC=Y')로 'II.' 및 'IV.' 시작 항목 추출 → 해당 XML 노드 텍스트 수집.",
+      "owner": {},
+      "status": "blocked_by_FQ-074",
+      "next_action": "FQ-074 코퍼스 빌드 완료 후 섹션 추출 로직 추가 → 동일 Ke et al. 파이프라인 재사용",
+      "source_refs": [
+        "paper: 2607.14174 How Much of a 10-K Matters",
+        "quarantine: auto_quarantine_20260726.json dart_risk_section_sentiment → MD&A 재경로",
+        "infra_evidence: TOC 추출 성공 실증(54 TOC items, III·IV 섹션 확인)"
+      ]
     }
-  ]
+  ],
+  "updated": "2026-07-26 (FQ-074/075 추가 — dart_risk_section_sentiment quarantine 후 재경로: 전문 vs MD&A+사업개요 지도학습 감성)"
 }
