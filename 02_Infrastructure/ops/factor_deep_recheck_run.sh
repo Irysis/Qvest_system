@@ -84,6 +84,16 @@ if command -v sched_check_credentials >/dev/null 2>&1; then
     ;;
   esac
 fi
+# (2026-07-26) 사용률 창 사전 점검 — 7일 창 임계면 보류(재시도로 안 풀리는 창).
+if command -v sched_usage_state >/dev/null 2>&1; then
+  USG=$(sched_usage_state)
+  if [ "$USG" = "sd_critical" ]; then
+    log "★사용률 임계($USG) — 심층 재검 보류. $(sched_usage_guidance "$USG")"
+    command -v sched_alert_emit >/dev/null 2>&1 && sched_alert_emit "factor_recheck" "usage_${USG}" \
+      "실행 전 보류 — $(sched_usage_guidance "$USG") uncertain 큐 보존됨."
+    exit 0
+  fi
+fi
 log "start deep recheck (N=$N)"
 PROMPT_TEXT="$(printf 'TODAY=%s\n\n%s\n' "$TODAY" "$(cat "$PF")")"
 timeout 3000 "$CLAUDE_BIN" -p "$PROMPT_TEXT" \

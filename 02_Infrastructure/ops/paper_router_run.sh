@@ -148,6 +148,23 @@ PROMPT_FILE="$BASE/02_Infrastructure/ops/paper_router_prompt.md"
 AUTORUN="${QVEST_PAPER_ROUTER_AUTORUN:-0}"
 CAP="${QVEST_PAPER_ROUTER_MAX_ALPHA:-2}"
 
+# (2026-07-26) 사용률 창 사전 점검 — 라우터도 claude -p 소비원이다(30편 분류 = 적지 않음).
+#   ★7일 창(sd)은 100% 도달 시 며칠 막히며 재시도로 안 풀린다 → 사전 회피만이 답.
+source "$(dirname "${BASH_SOURCE[0]:-$0}")/_sched_failure_classify.sh" 2>/dev/null || true
+if command -v sched_usage_state >/dev/null 2>&1; then
+  USG=$(sched_usage_state)
+  case "$USG" in
+    sd_critical)
+      log "★사용률 임계($USG) — 라우팅 보류. $(sched_usage_guidance "$USG")"
+      scheduler_alert "paper_router" "usage_${USG}" \
+        "실행 전 보류 — $(sched_usage_guidance "$USG") 백로그 보존됨(차기 런 합류)."
+      exit 0 ;;
+    sd_high)
+      if [ "${AUTORUN:-0}" = "1" ] && [ "${CAP:-0}" -gt 1 ] 2>/dev/null; then
+        log "사용률 여유 부족($USG) — 자동 alpha-search 상한 $CAP→1 감축(창 보존)"; CAP=1
+      fi ;;
+  esac
+fi
 log "start (downloaded=$DL, AUTORUN=$AUTORUN, MAX_ALPHA=$CAP, BACKLOG_DATES=${BACKLOG_DATES:-none})"
 HEADER="TODAY=${TODAY}  AUTORUN=${AUTORUN}  MAX_ALPHA=${CAP}  BACKLOG_DATES=${BACKLOG_DATES:-none}"
 # 헤드리스 1-shot. timeout 가드(자동 alpha-search 포함 시 길어질 수 있어 50분).
