@@ -77,9 +77,21 @@ sched_failure_guidance() {
 SCHED_FH_WARN="${SCHED_FH_WARN:-85}"
 SCHED_SD_WARN="${SCHED_SD_WARN:-85}"
 SCHED_SD_CRIT="${SCHED_SD_CRIT:-95}"
+#    ★신선도 검사 필수(2026-07-26 미검축): 이 파일은 **데스크톱 앱이 5분 주기로 갱신**한다.
+#      앱이 꺼져 있거나 PC 절전이면 기록이 멈추고, 검사기는 낡은 값을 현재로 오인한다.
+#      실측 공백: 07-21→07-24 4,705분(3.3일), 07-26 727분. 그 사이 실제 사용은 계속됐다.
+#      낡은 'ok' 를 믿는 것이 낡은 'high' 보다 위험하므로, 신선도 미달은 unknown 으로 떨어뜨린다.
+#      (unknown 은 호출부에서 보류가 아니라 통과 — fail-open. 감시 부재를 차단으로 바꾸지 않는다.)
+SCHED_USAGE_MAX_AGE_SEC="${SCHED_USAGE_MAX_AGE_SEC:-1800}"   # 30분 (갱신주기 5분의 6배)
 sched_usage_state() {
   local f="${CLAUDE_USAGE_HISTORY:-$APPDATA/Claude/plan-usage-history.json}"
   [ -f "$f" ] || { echo "unknown"; return 0; }
+  local mt age
+  mt=$(stat -c %Y "$f" 2>/dev/null || echo 0)
+  age=$(( $(date +%s) - ${mt:-0} ))
+  if [ "$age" -gt "$SCHED_USAGE_MAX_AGE_SEC" ] 2>/dev/null; then
+    echo "unknown_stale"; return 0
+  fi
   local last fh sd
   last=$(grep -oE '\{"t":[0-9]+,"org":"[^"]*","u":\{"fh":[0-9]+,"sd":[0-9]+\}\}' "$f" 2>/dev/null | tail -1)
   [ -n "$last" ] || { echo "unknown"; return 0; }
@@ -97,8 +109,9 @@ sched_usage_guidance() {
     sd_critical) echo "★7일 사용률 창이 임계(${SCHED_SD_CRIT}%+) — 이 창은 100% 도달 시 며칠 막히며 재시도로 풀리지 않습니다. 무거운 자동 리서치(alpha-search 등) 기동을 미루십시오." ;;
     sd_high)     echo "7일 사용률 창 ${SCHED_SD_WARN}%+ — 여유가 적습니다. 병렬 alpha-search 편수를 줄이는 것을 권합니다." ;;
     fh_high)     echo "5시간 창 ${SCHED_FH_WARN}%+ — 곧 차단될 수 있으나 5분 내 롤오버로 회복됩니다(재시도 유효)." ;;
-    ok)          echo "사용률 여유 정상." ;;
-    *)           echo "사용률 판별 불가(기록 파일 부재·형식 변경)." ;;
+    ok)            echo "사용률 여유 정상." ;;
+    unknown_stale) echo "사용률 기록이 낡음(${SCHED_USAGE_MAX_AGE_SEC}초 초과 — 데스크톱 앱 미기동/절전 추정). 현재 소진도를 알 수 없으므로 판정을 신뢰하지 않습니다. 차단하지는 않되(fail-open) 무거운 작업 전 앱을 켜 갱신을 확인하십시오." ;;
+    *)             echo "사용률 판별 불가(기록 파일 부재·형식 변경)." ;;
   esac
 }
 
