@@ -250,6 +250,10 @@ build_wt_timeline <- function(wt_id) {
   list(
     wt_id = wt_id,
     timeline_built_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
+    # (WTL-4) built_at 은 항상 신선하다 — 원천 ledger 의 상태를 함께 실어야
+    #   "낡은 픽스처가 현재 관측처럼" 보이는 것을 소비자가 알 수 있다.
+    ledger_status = ledger_status,
+    ledger_age_days = if (is.na(ledger_age_days)) NULL else round(ledger_age_days, 1),
     current_phase = current_status$current_phase %||% "UNKNOWN",
     events = events,
     phases = phases,
