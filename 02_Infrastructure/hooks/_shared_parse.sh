@@ -172,3 +172,28 @@ export AGENT_NAME=$(printf '%s\n' "$PARSED" | sed -n '5p')
 export AGENT_PROMPT=$(printf '%s\n' "$PARSED" | sed -n '6p')
 export AGENT_NAME_LC=$(printf '%s' "$AGENT_NAME" | tr 'A-Z' 'a-z')
 
+#──────────────────────────────────────────────────────────────────────────────
+# 자동 발화 기록 (2026-07-26, 도훈 승인 — v7.0 Sprint 6 원장 배관 부활)
+#
+# 왜 여기인가: 목표는 "이 훅이 실제로 발화했는가"를 사후에 확인하는 것이다(원 설계 목적 ①).
+#   훅 15종이 이미 이 파일을 source 하므로, 여기서 1회 emit 하면 **훅 파일을 하나도
+#   건드리지 않고** 그 15종의 발화가 기록된다. 게이트 로직에 손대지 않는 것이 안전하다.
+#   비용 실측: 인라인 4.0ms/회 (외부 스크립트 방식은 230ms — bash 프로세스 시동 52ms + 서브셸).
+#
+# decision="fired": 이 시점은 훅이 *판정하기 전*이다. 판정 결과가 아니라 **발화 사실**을
+#   남긴다 — 오늘 라운드가 확인한 계측 사망의 지문이 "발화 0회"이기 때문이다
+#   (harness_health 가 훅 등록 0건을 INFO 로 통과시킨 것·게이트가 조용히 미발화한 것 모두).
+#
+# ★커버리지 한계(명시): _shared_parse 를 source 하지 않는 게이트급 4종
+#   discovery_graduation_gate / backtest_contract_audit / legacy_write_block /
+#   worktask_constraint_enforcer 는 이 경로로 기록되지 않는다. 그 훅에 source 를 넣으면
+#   env export 부작용이 생기므로 별도 판단 사항으로 남긴다(부팅 WARN 이 기대목록으로 구분).
+#──────────────────────────────────────────────────────────────────────────────
+if [ "${QVEST_EVENT_LEDGER:-1}" != "0" ]; then
+  _qep_src="${BASH_SOURCE[1]:-unknown}"
+  _qep_hook="${_qep_src##*/}"
+  qvest_emit_event "hook_fired" "${_qep_hook:-unknown}" "fired" \
+                   "" "${AGENT_NAME_LC:-}" "0" "${FILE_PATH:-}" "${TOOL_NAME:-}"
+  unset _qep_src _qep_hook
+fi
+
