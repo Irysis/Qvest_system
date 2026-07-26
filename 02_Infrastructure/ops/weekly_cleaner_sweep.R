@@ -591,8 +591,9 @@ run_step("write_pending", {
   )
   write_json(pending, pending_path, auto_unbox = TRUE, pretty = TRUE,
              null = "null", na = "null")
-  cat(sprintf("[cleaner] pending → %s (sweep_deleted_n=%d, status=awaiting_distill)\n",
-              pending_path, sweep_deleted_n))
+  cat(sprintf("[cleaner] pending → %s (%s=%d, status=awaiting_distill)\n",
+              pending_path,
+              if (DRY) "would_delete_n" else "sweep_deleted_n", sweep_deleted_n))
   invisible(TRUE)
 })
 
