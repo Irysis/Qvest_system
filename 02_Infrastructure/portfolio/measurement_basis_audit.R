@@ -27,6 +27,16 @@
 #     primary WT forge_pkg에 없을 시 inherit_pointer 명시 source → lineage_wts 순서로 채움
 #   - STR_1715_AR_on_M4_PG2 (Session 79 re-certify single sleeve) HEALTHY 회복
 #
+# v1.10/v1.11 (2026-07-18/24): STR_1715 오버레이 부품 교체(Layer4 제거 / m4→M4∩AE D3 swap)로
+#   book_state 수동 mutate 시마다 별칭 손수 추가 (.SLEEVE_ALIASES). → v1.12에서 근절.
+#
+# v1.12 (2026-07-24): pattern-based lineage resolver (별칭 자동화 대체). find_latest_wt/
+#   find_lineage_wts의 str_id_root 절단 substring(첫 "_M"에서 잘려 오버레이 스왑마다 오매칭)을
+#   .lineage_anchor(선두 STR_<digits>) + .lineage_related(토큰 경계 계보 매칭)으로 교체.
+#   STR_1715 계열 하드코딩 별칭 4종 제거(정규화 대체 — 아래 .SLEEVE_ALIASES 근거 주석).
+#   비-STR/CASH/COMPOSITE 회귀 0 실측(test_resolver.R 16-id). 오버레이 부품 교체마다 별칭
+#   손수 추가할 필요 없음. STR_1715 != STR_17150 / "EQUITY_1715" 오매칭 없음(경계 규정).
+#
 # Reference: STR_1715 OVERRIDE_006 사후 — measurement_basis 미명시 산출물이 PG2 통과한 사고.
 #==============================================================================
 
@@ -38,29 +48,67 @@ suppressPackageStartupMessages({
 # 신규 발급 없이 book_state.json만 mutate되는 case 대응. ga_str_id ↔ str_id 매칭용.
 # 신규 alias 추가 시 lineage source WT의 governor_admission.json str_id 명시.
 .SLEEVE_ALIASES <- list(
-  "STR_1715_AR_threshold_overlay_PG2_v2_alpha_2026_04" = "STR_1715_AR_threshold_overlay_PG2",
-  "TSMOM_8_ETF_rotation_PG2_no_KR_bond_overlap"        = "TSMOM_ETF_rotation_PG2",
-  # v1.9 — Session 79 single sleeve re-certify (L-307). admit ga str_id 신규 발급되었으나
-  # inherit_pointer.json declares full cert lineage chain back to M4 base (WT-P20260429_002 + WT-D20260430_001).
-  # alias 자체는 lineage-aware audit가 primary forge_pkg 부재 시 lineage_origin_wt 우선 도달하도록
-  # fallback. 동시에 v1.9 inherit_pointer recognition이 정확한 source path 따라감.
-  "STR_1715_AR_on_M4_PG2"                              = "STR_1715_AR_threshold_overlay_PG2",
-  # v1.10 (2026-07-18) — WT-D20260702_002 Layer4 제거 전환이 수동 book_state mutate(신규 ga 미발급)로
-  # 이뤄져 현 book id가 NO_WT(0/100 DRIFTED) — lineage source = R05 overlay admit ga
-  # (동일 alpha×M4×R05 체인, Layer4만 제거). 도훈이 신규 ga 발급을 선호하면 본 alias 제거.
-  "STR_1715_on_M4_R05_noLayer4_PG2"                    = "STR_1715_AR_on_M4_R05_overlay_PG2",
-  # v1.11 (2026-07-24) — WT-D20260719_001 D3 swap-in(m4 schedule → M4∩AE gate)이 수동 book_state
-  # mutate(신규 ga 미발급, return-neutral 오버레이 부품 교체)로 이뤄져 admitted_id가
-  # STR_1715_on_M4_R05_noLayer4_PG2 → STR_1715_on_M4gAE_R05_noLayer4_PG2 변경 → 현 book id가
-  # NO_WT(0/100 DRIFTED) 재발(v1.10과 동일 class). D3 = 동일 alpha×R05 체인(Layer4 제거 불변),
-  # m4→M4∩AE 게이트만 교체·PG2 대비 return-neutral(도훈 confirm 2026-07-19)이므로 lineage source는
-  # 직전 noLayer4 id와 동일(R05 overlay admit ga). alias 단일-레벨 lookup이라 terminal id로 직접 매핑.
-  # 도훈이 신규 ga 발급을 선호하면 본 alias 제거.
-  "STR_1715_on_M4gAE_R05_noLayer4_PG2"                 = "STR_1715_AR_on_M4_R05_overlay_PG2"
+  # 비-STR cross-family rename — lineage anchor(STR_<digits>)로 표현 불가하므로 명시 별칭 유지.
+  # TSMOM_8_ETF_rotation_PG2_no_KR_bond_overlap 는 base id(TSMOM_ETF_rotation_PG2)와 stem 자체가
+  # 다르므로(8_/_no_KR_bond_overlap) anchor 정규화 대상 아님 → 하드코딩 별칭으로 남긴다.
+  "TSMOM_8_ETF_rotation_PG2_no_KR_bond_overlap"        = "TSMOM_ETF_rotation_PG2"
 )
+# v1.12 (2026-07-24) — STR_1715 계열 하드코딩 별칭 4종 제거 근거 (pattern-based resolver 대체):
+#   제거된 entries (모두 STR_1715 anchor 공유 · 오버레이 접미 변주만 다름):
+#     STR_1715_AR_threshold_overlay_PG2_v2_alpha_2026_04 -> STR_1715_AR_threshold_overlay_PG2  (v1.8)
+#     STR_1715_AR_on_M4_PG2                              -> STR_1715_AR_threshold_overlay_PG2  (v1.9)
+#     STR_1715_on_M4_R05_noLayer4_PG2                    -> STR_1715_AR_on_M4_R05_overlay_PG2  (v1.10)
+#     STR_1715_on_M4gAE_R05_noLayer4_PG2                 -> STR_1715_AR_on_M4_R05_overlay_PG2  (v1.11)
+#   → .lineage_anchor/.lineage_related 가 접미 변주를 STR_1715 계보로 정규화하므로, 별칭 없이도
+#     동일 WT(또는 cert 보유 lineage WT)로 resolve 된다. test_resolver.R 실측: 4 id 전부
+#     100/HEALTHY 유지, 비-STR/CASH/COMPOSITE 회귀 0. 앞으로 오버레이 부품 교체(m4→M4gAE·R05·
+#     noLayer4·FaithTrend 등)마다 손으로 별칭 추가할 필요 없음(v1.10/v1.11 재발 원천 차단).
+#   ※ 신규 별칭은 '비-STR cross-family rename' 인 경우에만 위 list에 추가.
 
 # v1.8: cash_allocation role audit 면제 prefix (v55 lawbook + Charter §10 Role Card)
 .CASH_ROLE_PREFIXES <- c("CASH_")
+
+#------------------------------------------------------------------------------
+# v1.12 (2026-07-24): pattern-based lineage resolver — 하드코딩 별칭 자동화 대체.
+#
+# 문제: STR_1715 오버레이 부품 교체(m4→M4gAE·R05·noLayer4·threshold·FaithTrend 등 접미
+#   변주)로 book_state.admitted_id가 바뀔 때마다, 아래 find_latest_wt/find_lineage_wts 의
+#   str_id_root <- sub("(_WT|_Iter|_M|_S|_v).*$","",str_id) 가 첫 "_M"에서 절단돼
+#   "STR_1715_on" / "STR_1715_AR_on" 이 되고, terminal ga str_id
+#   "STR_1715_AR_on_M4_R05_overlay_PG2" 와 substring 불일치 → NO_WT(0/100 DRIFTED).
+#   그래서 매 오버레이 스왑마다 .SLEEVE_ALIASES 에 손으로 신 id를 추가해야 했다(v1.10/v1.11).
+#
+# 해법: STR-family는 lineage anchor(선두 STR_<digits>)를 계보 키로 정규화 매칭.
+#   비-STR sleeve(TSMOM/KR_10y/COMPOSITE/S4/CASH 등)는 anchor=NA → 기존 substring 동작
+#   그대로 보존(오매칭 방지). anchor는 '토큰 경계' 매칭이라 STR_1715 가 STR_17150 이나
+#   "EQUITY_1715"(COMPOSITE_KR_EQUITY_1715_NEW_...)에 오매칭되지 않는다.
+#------------------------------------------------------------------------------
+
+# STR-family lineage anchor: 선두 STR_<digits> (예: STR_1715_on_M4gAE_R05... → "STR_1715").
+# 비-STR id는 NA 반환 → anchor 정규화 미적용, legacy substring fallback.
+.lineage_anchor <- function(id) {
+  id <- as.character(id)
+  if (length(id) == 0L || is.na(id)) return(NA_character_)
+  m <- regmatches(id, regexpr("^STR_[0-9]+", id))
+  if (length(m) == 1L && nzchar(m)) m else NA_character_
+}
+
+# str_id(book)와 후보 문자열(단일 ga_str_id 또는 discovery_of/lineage blob)의 계보 일치.
+#   - STR-family(anchor 존재): anchor가 후보에 '토큰 경계'로 등장하면 동일 계보.
+#       경계 = (시작|비영숫자) anchor (비숫자|끝) → STR_1715 != STR_17150, != EQUITY_1715.
+#       이로써 오버레이 접미 변주(_on_M4gAE_R05_noLayer4_PG2 등)를 무시하고 계보로만 매칭.
+#   - 비-STR: 기존 full-id / legacy_root substring 동작 보존(회귀 방지).
+# legacy_root = 기존 sub("(_WT|_Iter|_M|_S|_v).*$","") 절단 root — 비-STR fallback 전용.
+.lineage_related <- function(str_id, candidate, legacy_root) {
+  candidate <- as.character(candidate)
+  if (length(candidate) == 0L || !nzchar(candidate)) return(FALSE)
+  anchor <- .lineage_anchor(str_id)
+  if (!is.na(anchor)) {
+    return(grepl(paste0("(^|[^A-Za-z0-9])", anchor, "([^0-9]|$)"), candidate))
+  }
+  grepl(str_id, candidate, fixed = TRUE) ||
+    (nzchar(legacy_root) && grepl(legacy_root, candidate, fixed = TRUE))
+}
 
 audit_book_measurement_coherence <- function(book_state_path,
                                              wt_root = "qepm/mailbox/worktask",
@@ -112,11 +160,10 @@ audit_book_measurement_coherence <- function(book_state_path,
 
       if (identical(ga_str_id, str_id)) {
         primary[[length(primary) + 1]] <- list(wt_dir = wd, generated_at = gen_at)
-      } else if (nchar(ga_str_id) > 0 && (grepl(str_id, ga_str_id, fixed = TRUE) ||
-                  (nchar(str_id_root) > 0 && grepl(str_id_root, ga_str_id, fixed = TRUE)))) {
-        lineage[[length(lineage) + 1]] <- list(wt_dir = wd, generated_at = gen_at)
-      } else if (grepl(str_id, discovery_of, fixed = TRUE) ||
-                 (nchar(str_id_root) > 0 && grepl(str_id_root, discovery_of, fixed = TRUE))) {
+      } else if (.lineage_related(str_id, ga_str_id, str_id_root) ||
+                 .lineage_related(str_id, discovery_of, str_id_root)) {
+        # v1.12: str_id_root substring(절단 버그) → .lineage_related 로 교체.
+        # STR-family는 anchor 계보 매칭, 비-STR은 legacy substring 보존.
         lineage[[length(lineage) + 1]] <- list(wt_dir = wd, generated_at = gen_at)
       }
     }
@@ -153,13 +200,17 @@ audit_book_measurement_coherence <- function(book_state_path,
                        as.character(ga$wt_lifecycle$discovery_of %||% ""))
           # v7.2.2 — promotion_wt cross-strategy lineage (L-283)
           allocation <- ga$allocation_decided %||% list()
-          alloc_match <- str_id %in% names(allocation)
-          if (grepl(str_id, ga_str, fixed = TRUE) ||
-              grepl(str_id, dof, fixed = TRUE) ||
-              alloc_match ||
-              (nchar(str_id_root) > 0 &&
-                (grepl(str_id_root, ga_str, fixed = TRUE) ||
-                 grepl(str_id_root, dof, fixed = TRUE)))) {
+          alloc_names <- names(allocation)
+          if (is.null(alloc_names)) alloc_names <- character(0)
+          # v1.12: allocation key도 STR-family는 anchor 계보로 매칭(exact %in% 유지 + anchor OR).
+          #   비-STR은 exact %in% 만(legacy 동작 보존 — allocation 오매칭 방지).
+          anchor <- .lineage_anchor(str_id)
+          alloc_match <- (str_id %in% alloc_names) ||
+            (!is.na(anchor) && any(vapply(alloc_names,
+                function(k) .lineage_related(str_id, k, ""), logical(1))))
+          if (.lineage_related(str_id, ga_str, str_id_root) ||
+              .lineage_related(str_id, dof, str_id_root) ||
+              alloc_match) {
             hit <- TRUE
           }
         }
@@ -170,8 +221,7 @@ audit_book_measurement_coherence <- function(book_state_path,
         if (!is.null(fp)) {
           dl <- paste(unlist(fp$deployment_lineage %||% list()),
                       unlist(fp$alpha_lineage_chain %||% list()), collapse = " ")
-          if (grepl(str_id, dl, fixed = TRUE) ||
-              (nchar(str_id_root) > 0 && grepl(str_id_root, dl, fixed = TRUE))) {
+          if (.lineage_related(str_id, dl, str_id_root)) {  # v1.12
             hit <- TRUE
           }
         }
@@ -395,6 +445,10 @@ audit_book_measurement_coherence <- function(book_state_path,
     # 4. divergence < 0.3pp (+20)
     diverg <- forge_pkg$divergence_factor_engine_vs_realized_pp %||%
               forge_pkg$vs_factor_engine$divergence_pp %||% NA
+    # 방어적 수치 강제: divergence가 문자열 "NA"(JSON string) 등 비-수치로 저장된 경우
+    # is.na("NA")==FALSE → abs("NA") 에러. inherit_field predicate와 동일하게 coercion 후 판정.
+    # coercion 실패("NA"/"unavailable" 등) = divergence 미가용 → 해당 component 0점.
+    diverg <- suppressWarnings(as.numeric(diverg))
     if (!is.na(diverg) && abs(diverg) < 0.3) {
       score <- score + 20
       components$divergence_low <- 20
