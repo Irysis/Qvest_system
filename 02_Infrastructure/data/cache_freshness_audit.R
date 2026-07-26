@@ -325,6 +325,30 @@ cache_freshness_audit <- function(telegram_alert = TRUE,
     results[[vres$path]] <- vres
   }
 
+  # ─── (1c) IC 월-프론티어 감시 (P3, 2026-07-26) ──────────────────────────────
+  #   registry 엔트리 .cache/factor_db/factor_ic_monthly.parquet 의 신선도 축(Usable_Date
+  #   캘린더 lag ≤ 40일)은 "며칠 지났나"만 잰다. 월말 재빌드 체인(cron → factor_db 월말
+  #   스냅샷 → compute_all_factor_ic_monthly)이 통째로 실패해도 최대 ~5주간 FRESH 로
+  #   통과한다 — 실측(2026-07-26): Usable_Date max 2026-06-30, lag 26 → FRESH.
+  #   여기서는 같은 registry 엔트리에 "산출 가능한 월을 다 산출했나"(월-프론티어) 축을
+  #   덧붙인다. 판정 규약 = compute_all_factor_ic_monthly() 의 incomplete-terminal-pair
+  #   guard 와 동일 operand (달력 종료 · 그달 RAWDATA 최종 거래일) — 상세 및 유예 규칙은
+  #   02_Infrastructure/data/ic_frontier_check.R 헤더 참조.
+  #   당월 진행 중 전월 IC 가 최신인 상태는 정상(OK)으로 판정한다.
+  tryCatch({
+    source(file.path(PROJECT_ROOT, "02_Infrastructure/data/ic_frontier_check.R"))
+    fr <- ic_frontier_check(today = today)
+    results[[fr$path]] <- fr
+  }, error = function(e) {
+    results[[".cache/factor_db/factor_ic_monthly.parquet::frontier"]] <<- list(
+      path = ".cache/factor_db/factor_ic_monthly.parquet::frontier",
+      tier = 2L, schedule = "monthly", registered = TRUE,
+      check = "ic_month_frontier",
+      status = "IC_FRONTIER_UNKNOWN", severity = "WARN",
+      note = sprintf("frontier check 실행 실패: %s", conditionMessage(e))
+    )
+  })
+
   # ─── (2) Orphan detection: .cache files NOT in registry ─────────────────────
   cache_dir <- file.path(PROJECT_ROOT, ".cache")
   if (dir.exists(cache_dir)) {
@@ -436,10 +460,14 @@ cache_freshness_audit <- function(telegram_alert = TRUE,
   if (telegram_alert && length(alert_items) > 0 && !is.na(send_reason)) {
     tryCatch({
       source(file.path(PROJECT_ROOT, "02_Infrastructure/telegram/telegram_notify.R"))
-      crit_list <- sapply(Filter(function(r) r$severity == "CRITICAL", alert_items),
-                           function(r) sprintf("- %s (lag=%s, max=%s)", r$path, r$lag_used %||% "n/a", r$max_lag_days %||% "n/a"))
-      warn_list <- sapply(Filter(function(r) r$severity == "WARN", alert_items),
-                           function(r) sprintf("- %s (lag=%s, max=%s)", r$path, r$lag_used %||% "n/a", r$max_lag_days %||% "n/a"))
+      # note 동반 (2026-07-26): lag/max 만으로는 사유가 안 보이는 항목이 있다 —
+      #   value_sanity(VALUE_FAIL)·ic_month_frontier 는 lag 축이 없어 "lag=n/a, max=n/a"
+      #   로만 나가 무슨 일인지 알 수 없었다(조용한 실패). note 가 있으면 붙인다.
+      .fmt_alert <- function(r) sprintf("- %s (lag=%s, max=%s)%s",
+                                        r$path, r$lag_used %||% "n/a", r$max_lag_days %||% "n/a",
+                                        if (!is.null(r$note)) paste0("\n  ", r$note) else "")
+      crit_list <- sapply(Filter(function(r) r$severity == "CRITICAL", alert_items), .fmt_alert)
+      warn_list <- sapply(Filter(function(r) r$severity == "WARN", alert_items), .fmt_alert)
       orphan_note <- if (n_orphan > 0)
         sprintf("\n\n_(orphan %d건은 registry 미등재 — 로그만, 알림 제외)_", n_orphan) else ""
       reminder_tag <- if (identical(send_reason, "weekly_reminder"))

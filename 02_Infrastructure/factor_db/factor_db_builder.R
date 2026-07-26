@@ -52,6 +52,22 @@ FACTOR_IC_PATH   <- file.path(FACTOR_DB_DIR, "factor_ic_history.parquet")
 FACTOR_REG_PATH  <- file.path(FACTOR_DB_DIR, "factor_registry.json")
 COMPUTE_MOD_DIR  <- file.path(FUNC_PATH, "factor_db")
 
+# ─── IC pair 완결성 판정 (순수 함수, 2026-07-26 R-ICGUARD 분리) ──────────────
+# 인라인이던 판정을 별도 파일로 뺐다 — 단독 실행이 가능해야 위반 주입 테스트를
+# 걸 수 있고, 검사 없는 가드는 조용히 무력화된다.
+# 상설 검사: 08_Tests/factor_db/test_ic_completion_guard.R
+# 경로는 "있다"가 아니라 표지 파일 확인으로 고른다(r-portability ③④).
+.ic_guard_src <- NULL
+for (.c in c(file.path(COMPUTE_MOD_DIR, "ic_pair_completeness.R"),
+             file.path(.self_dir, "ic_pair_completeness.R"))) {
+  if (file.exists(.c)) { .ic_guard_src <- .c; break }
+}
+if (is.null(.ic_guard_src)) {
+  stop("[factor_db_builder] ic_pair_completeness.R 부재 — IC 완결성 가드 없이 진행 불가")
+}
+source(.ic_guard_src)
+rm(.c, .ic_guard_src)
+
 # Ensure output directory exists
 if (!dir.exists(FACTOR_DB_DIR)) {
   dir.create(FACTOR_DB_DIR, recursive = TRUE, showWarnings = FALSE)
@@ -1530,6 +1546,13 @@ compute_all_factor_ic_monthly <- function() {
   cat(sprintf("[IC_monthly] Computing IC for %d month-pairs...\n", length(avail) - 1))
   t0 <- Sys.time()
 
+  # 월별 RAWDATA 최종 거래일 — 루프 밖에서 1회만 만든다.
+  # (구현은 pair 마다 RAWDATA 전체에 format() 을 돌렸다: 300+ pair × 수백만 행.
+  #  가드가 느려서 뜯겨나가는 것도 가드가 무력화되는 경로다.)
+  # 이름 조회는 x[key] — x[[key]] 는 Date 클래스를 떨궈 비교가 조용히 틀어진다.
+  .rml <- raw[, .(.last = max(Date)), by = .(.ym = format(Date, "%Y-%m"))]
+  .raw_month_last_map <- setNames(as.Date(.rml$.last), .rml$.ym)
+
   ic_list <- vector("list", length(avail) - 1)
 
   for (i in seq_along(avail)[-length(avail)]) {
@@ -1540,30 +1563,17 @@ compute_all_factor_ic_monthly <- function() {
       sig_d_t  <- dt_t$Date[1]
       sig_d_t1 <- dt_t1$Date[1]
 
-      # Incomplete-terminal-pair guard (2026-07-25): the t+1 file may be an
-      # in-progress current-month build (sig = latest trading day, not month-end).
-      # IC[t] over a truncated forward window would silently change at the
-      # month-end rebuild (vintage instability) — skip until the calendar month
-      # of sig_d_t1 is finished. Month-end cron (calendar last day) passes.
-      cal_end_t1 <- seq(as.Date(format(sig_d_t1, "%Y-%m-01")),
-                        by = "month", length.out = 2L)[2L] - 1L
-      # (2026-07-26 강화) 달력 종료만으로는 부족하다 — 그것은 "그 달이 끝났나"이지
-      # "이 파일이 그 달을 끝까지 담았나"가 아니다. 월말 재빌드가 지연·실패하면
-      # sig_d_t1이 월중 스냅샷인 채로 달력만 넘어가, 부분월 forward return IC가
-      # '완결'로 기록되고 Usable_Date도 과소 기록된다. 파일의 sig가 해당 월
-      # RAWDATA 최종 거래일에 도달했는지 함께 확인한다.
+      # Incomplete-terminal-pair guard (2026-07-25 신설 / 2026-07-26 2조건 강화 /
+      # 2026-07-26 순수 함수 분리). 판정 본문·근거는 ic_pair_completeness.R,
+      # 상설 위반 주입 테스트는 08_Tests/factor_db/test_ic_completion_guard.R.
+      #   (a) 달력 종료  : 진행 중인 달의 부분 forward window 금지
+      #   (b) 파일 도달  : 월말 재빌드 지연 시 sig 가 월중인데 달력만 넘어간 상태 금지
       .m_t1 <- format(sig_d_t1, "%Y-%m")
-      .raw_m_last <- suppressWarnings(max(raw[format(Date, "%Y-%m") == .m_t1, Date]))
-      .file_partial <- is.finite(.raw_m_last) && sig_d_t1 < .raw_m_last
-      if (cal_end_t1 > Sys.Date() || .file_partial) {
-        .why <- if (cal_end_t1 > Sys.Date()) {
-          sprintf("calendar end %s > today %s", cal_end_t1, Sys.Date())
-        } else {
-          sprintf("file sig %s < month last trading day %s (월말 재빌드 대기)",
-                  sig_d_t1, .raw_m_last)
-        }
-        cat(sprintf("  [skip] pair %d: forward month %s incomplete (%s)\n",
-                    i, .m_t1, .why))
+      .chk <- .ic_pair_complete(sig_d_t1, today = Sys.Date(),
+                                raw_month_last = .raw_month_last_map[.m_t1])
+      if (!isTRUE(.chk$complete)) {
+        cat(sprintf("  [skip] pair %d: forward month %s incomplete (%s: %s)\n",
+                    i, .m_t1, .chk$reason, .chk$detail))
         next
       }
 
