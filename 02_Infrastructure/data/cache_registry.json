@@ -301,7 +301,15 @@
       "depends_on": [
         ".cache/dart/dart_raw_financials.parquet"
       ],
-      "tier": 2
+      "tier": 2,
+      "coverage_check": {
+        "label_col": "bsns_year",
+        "entity_col": "Ticker",
+        "due_rule": { "years": 1, "md": "03-31" },
+        "grace_days": 45,
+        "min_ratio_vs_prior": 0.8
+      },
+      "_coverage_note": "2026-07-26 P2-03 — **P2-01 이 4개월 침묵한 바로 그 지점**. 이 파일에 Factor_Date(date32)가 있지만 그것은 PIT usable date 라 max 가 2027-03-31(미래)이다 → date_col 로 선언하면 lag 이 음수가 되어 역시 영구 FRESH 다(가짜 수리). 도달 축은 회계 라벨 bsns_year 이어야 한다. 실측 2026-07-26: FY2025 Ticker 50 vs FY2024 714 = 7.0% → COVERAGE_FAIL 대상. 상류(dart_raw_financials)와 같은 due_rule(11011 = 익년 3/31, C4 정합) — 파생 캐시라 결손이 그대로 전파되므로 두 지점 모두에서 재는 것이 맞다."
     },
     {
       "path": ".cache/fundamental_merged.parquet",
@@ -315,7 +323,16 @@
         ".cache/fundamental_xlsx.parquet"
       ],
       "tier": 2,
-      "_note": "도훈 audit — incremental drift 우려. 월간 full rebuild"
+      "_note": "도훈 audit — incremental drift 우려. 월간 full rebuild",
+      "coverage_check": {
+        "label_col": "Period",
+        "entity_col": "Ticker",
+        "label_pattern": "^([0-9]{4})12$",
+        "due_rule": { "years": 1, "md": "03-31" },
+        "grace_days": 45,
+        "min_ratio_vs_prior": 0.8
+      },
+      "_coverage_note": "2026-07-26 P2-03. long-format(Ticker/Period/Item/Value)이라 시간축은 Period(YYYYMM 문자열)이고 Period_Date max 는 2026-12-31, Factor_Date max 는 2027-03-31 — 둘 다 미래 라벨이라 신선도로는 결손을 못 잡는다. label_pattern 으로 **연간 코호트(12월 결산)만** 뽑아 도달을 잰다. 실측 2026-07-26: 202512 Ticker 2,688 vs 202412 2,703 = 99.4% → PASS(정상 대조군). ★이 캐시는 XLSX-우선 병합이라 DART 전용 결손(FY2025 DART 50)이 여기선 가려진다 — Source 분해 실측 202512 = {XLSX 2688, xlsx_derived 2638, DART 50}. 즉 이 항목의 PASS 는 'XLSX 축이 살아 있다'는 뜻이지 DART 축의 건강이 아니다(그쪽은 fundamental_dart::coverage 소관). 두 항목을 함께 읽을 것."
     },
     {
       "path": ".cache/ic_matrix_expanding.parquet",
@@ -441,13 +458,14 @@
       "producer": "02_Infrastructure/ops/derive_value_quality_spread.R",
       "entry_fn": "derive_value_quality_spread",
       "schedule": "daily",
-      "date_col": null,
+      "date_col": "Date",
+      "date_semantics": "period_end",
       "max_lag_days": 7,
       "depends_on": [
         ".cache/RAWDATA.parquet"
       ],
       "tier": 3,
-      "_note": "2026-07-17 orphan 등재. AX-003(value) 부활신호 substrate — morning_briefing.sh 배선으로 매일 재산출. 월간 시계열이므로 date_col 대신 mtime 기준(재산출 중단 감지)"
+      "_note": "2026-07-17 orphan 등재. AX-003(value) 부활신호 substrate — morning_briefing.sh 배선으로 매일 재산출. 2026-07-26 P2-03: 구 노트('월간 시계열이므로 date_col 대신 mtime')는 date_semantics=period_end 도입으로 해소 — 월말 라벨이 today 를 앞서는 것만 clamp 되고 **정체는 그대로 lag 으로 잡힌다**. 실측 2026-07-26: max Date 2026-07-31 → raw lag −5 → clamp 0 → FRESH(정상). 2026-05-31 에 얼면 lag 56 > 7 → STALE. 즉 mtime 은 '재산출이 돌았나', 이 축은 '결과가 이번 달까지 왔나'로 서로 다른 실패를 잡는다."
     },
     {
       "path": ".cache/fundamental_dart_quarterly.parquet",
@@ -460,7 +478,10 @@
         ".cache/dart/dart_raw_quarterly.parquet"
       ],
       "tier": 2,
-      "_note": "2026-07-17 orphan 등재. DART_TTM_CACHE — dart_daily_incremental [1/2] 말미에 재산출. quarterly fetch(~41분)가 중단되면 TTM 미산출될 수 있어 여유 14d"
+      "_note": "2026-07-17 orphan 등재. DART_TTM_CACHE — dart_daily_incremental [1/2] 말미에 재산출. quarterly fetch(~41분)가 중단되면 TTM 미산출될 수 있어 여유 14d",
+      "no_content_check": {
+        "reason": "2026-07-26 P2-03 — 도달 축을 **현재 선언할 수 없음**(면제 아님, 가시화). 이 캐시의 코호트 축은 (bsns_year, quarter)인데 quarter 라벨 자체가 신뢰 불가다: data_collector_dart_quarterly.R 의 REPRT_MAP 이 11014→quarter 1, 11013→quarter 3 으로 매핑하는데, 접수일 실측(rcept_no 앞 8자리 median)은 11013=05-15(=1분기) · 11014=11-14(=3분기)로 **정반대**다. 그 결과 실측 2026-07-26 기준 bsns_year 2026 은 quarter3=614 / quarter1·2=부재 — 7월에 3분기가 차 있는 모순 형태다. 여기에 due_rule 을 붙이면 (a) 코드 매핑을 따르면 6개월 어긋난 기한으로 오탐/누락, (b) 실측 매핑을 따르면 **알려진 버그를 registry 에 박아 넣어** 나중에 코드가 고쳐지면 조용히 틀린 선언이 된다. quarter 라벨 결함이 해소되면 상류 dart_raw_quarterly 와 같은 due_rule 을 quarter 축으로 옮겨 선언할 것. 그때까지 결손 감지는 상류 두 캐시(dart_raw_quarterly::coverage / dart_raw_financials::coverage)가 담당한다."
+      }
     },
     {
       "path": ".cache/indices.parquet",
@@ -589,6 +610,9 @@
         ".cache/RAWDATA.parquet"
       ],
       "tier": 2,
+      "no_content_check": {
+        "reason": "2026-07-26 P2-03 — 횡단면 스냅샷이라 시간축 컬럼이 구조적으로 없다(실측 header: Factor_Name/ic_all/ic_bad/ic_good/conditional_value/recent_3y_icir/n_months/used/category). 라벨-코호트 축도 없음(회계 라벨 아님). 따라서 신선도 축은 mtime(주간 재산출이 멈췄나)이 정본이고, 내용 결손(팩터 수 급감·전 열 NA)은 이 축이 아니라 행/열 sanity 로 재야 한다 — 현행 value_checks 는 parquet 전용이라 .csv 에 미적용(VALUE_SKIP). 후속: value_checks 의 csv 지원 또는 producer 측 산출 검증."
+      },
       "_note": "2026-07-25 신규 등재 + 주간 배선 (daily_refresh [6c] 월요일). pit.md V6 Gap-Directed 가설 조향 캐시 (횡단면 스냅샷 — date_col 없음, mtime 기준). 구 producer 경로(memory/monthly_distill.sh)는 스케줄러 task 미등록 + 기본 base STR_1375 holdings 소실 이중 결함으로 2026-06-08 이후 스테일. base fallback 체인(STR_1469_cons4f_5sleeve 등)은 stage_gate_engine.R 2026-07-25 수리 참조. 실측 1.2분/328팩터"
     },
     {
@@ -640,20 +664,26 @@
       "producer": "02_Infrastructure/data/refresh_nonreturn_sources.py",
       "entry_fn": "refresh_nps() (daily_refresh step 6c · 최초 전량은 data_pull/pull_nps_files.py)",
       "schedule": "monthly",
+      "date_col": "data_ym",
+      "date_col_kind": "ym",
+      "date_semantics": "period_end",
       "max_lag_days": 75,
       "depends_on": [],
       "tier": 3,
-      "_note": "FQ-064 국민연금 사업장 패널. data.go.kr 15083277 파일데이터(무인증) 월별 CSV를 상장사 prefix로 필터해 적립. ★기존 월 덮어쓰기 금지(first-release 보존, PIT_plan §2) — 리프레시는 신규 월 append만. date_col 미지정: data_ym이 Date가 아닌 YYYY-MM 문자열이라 mtime 기반 감시만 수행. max_lag 75일 = 월간 갱신(익월 말 게시) + 여유."
+      "_note": "FQ-064 국민연금 사업장 패널. data.go.kr 15083277 파일데이터(무인증) 월별 CSV를 상장사 prefix로 필터해 적립. ★기존 월 덮어쓰기 금지(first-release 보존, PIT_plan §2) — 리프레시는 신규 월 append만. 2026-07-26 P2-03: 구 노트('data_ym이 Date가 아닌 YYYY-MM 문자열이라 mtime 기반 감시만')는 date_col_kind='ym' 도입으로 해소 — 이제 내용 기준이다. 실측 2026-07-26: data_ym max 2026-05 (고유 124개월) → 월말 2026-05-31 → lag 56 ≤ 75 FRESH. max_lag 75일 = 월간 갱신(익월 말 게시) + 여유."
     },
     {
       "path": "stage_artifacts/method_frontier/firm_level_scaffold/fq073/customs_hs_monthly.parquet",
       "producer": "02_Infrastructure/data/refresh_nonreturn_sources.py",
       "entry_fn": "refresh_customs() (daily_refresh step 6c)",
       "schedule": "monthly",
+      "date_col": "ym",
+      "date_col_kind": "ym",
+      "date_semantics": "period_end",
       "max_lag_days": 45,
       "depends_on": [],
       "tier": 3,
-      "_note": "FQ-073 관세청 품목별 HS 수출입. ★이 파일은 latest-revised **파생물**이며 권위는 fq073/vintage_store/customs_hs_<PULLDATE>.parquet 스냅샷이다 — API에 vintage 파라미터가 없고 개정이 무기한 반복(매월 15일경 과거 전체 현행화)되므로 최신판 덮어쓰기는 소급 정보주입이다(PIT_plan_fq073 §2). 게이트 판정은 pinned 스냅샷 기준 + vintage_basis 라벨 의무."
+      "_note": "2026-07-26 P2-03: date_col='ym'(kind=ym) 선언 — 종전 mtime-only. 실측 2026-07-26: ym max 2026-06 (고유 138개월) → 월말 2026-06-30 → lag 26 ≤ 45 FRESH. ★P2-07(부분 스냅샷이 그 달 vintage 로 확정)은 이 축이 잡지 못한다 — 그건 '몇 월까지 왔나'가 아니라 '그 달이 몇 품목까지 찼나'라서 별도 축(행수/HS 고유수) 소관. FQ-073 관세청 품목별 HS 수출입. ★이 파일은 latest-revised **파생물**이며 권위는 fq073/vintage_store/customs_hs_<PULLDATE>.parquet 스냅샷이다 — API에 vintage 파라미터가 없고 개정이 무기한 반복(매월 15일경 과거 전체 현행화)되므로 최신판 덮어쓰기는 소급 정보주입이다(PIT_plan_fq073 §2). 게이트 판정은 pinned 스냅샷 기준 + vintage_basis 라벨 의무."
     }
   ]
 }
