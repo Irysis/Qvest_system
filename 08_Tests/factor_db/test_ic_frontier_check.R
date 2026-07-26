@@ -170,25 +170,30 @@ if (!is.null(live$ic_month) && !is.null(live$expected_month)) {
 cat("\n=== C. 크래시 축 — 부재/파손/0행/월 부재에서 안전한가 ===\n")
 TD <- file.path(tempdir(), "icfc_test"); dir.create(TD, showWarnings = FALSE, recursive = TRUE)
 
-chk_unknown <- function(id, expr, note = "") {
+chk_unknown <- function(id, expr, note = "", want_note = NULL) {
   r <- tryCatch(expr, error = function(e) list(status = paste0("ERROR:", conditionMessage(e)),
                                                severity = "ERROR"))
   if (identical(r$severity, "ERROR")) { bad(id, sprintf("크래시: %s %s", r$status, note)); return(invisible()) }
-  if (identical(r$status, "IC_FRONTIER_UNKNOWN") && identical(r$severity, "WARN")) {
-    ok(id, r$note %||% "")
-  } else {
-    bad(id, sprintf("UNKNOWN/WARN 기대, 실제 %s/%s", r$status, r$severity))
+  if (!identical(r$status, "IC_FRONTIER_UNKNOWN") || !identical(r$severity, "WARN")) {
+    bad(id, sprintf("UNKNOWN/WARN 기대, 실제 %s/%s", r$status, r$severity)); return(invisible())
   }
+  # 사유가 뭉뚱그려지면 운영자가 "부재"와 "0행"을 구분하지 못한다(다른 고장·다른 조치)
+  if (!is.null(want_note) && !grepl(want_note, r$note %||% "")) {
+    bad(id, sprintf("note 에 '%s' 기대, 실제 '%s'", want_note, r$note %||% "")); return(invisible())
+  }
+  ok(id, r$note %||% "")
 }
 
 # ① IC 파일 부재
 chk_unknown("C1_ic_file_missing",
             ic_frontier_check(ic_path = file.path(TD, "nope.parquet"),
-                              raw_dates = RAW, today = D("2026-08-05")))
+                              raw_dates = RAW, today = D("2026-08-05")),
+            want_note = "부재")
 # ② 0바이트 파손 파일 (read_parquet 이 던진다)
-zb <- file.path(TD, "zero.parquet"); if (!file.exists(zb)) file.create(zb)
+zb <- file.path(TD, "zero.parquet"); if (!file.exists(zb)) invisible(file.create(zb))
 chk_unknown("C2_ic_file_corrupt_zero_byte",
-            ic_frontier_check(ic_path = zb, raw_dates = RAW, today = D("2026-08-05")))
+            ic_frontier_check(ic_path = zb, raw_dates = RAW, today = D("2026-08-05")),
+            want_note = "read 실패")
 # ③ 0행 parquet — read 는 성공하고 max(numeric(0)) = -Inf 가 흘러간다.
 #    2026-07-26 실측: 여기서 "missing value where TRUE/FALSE needed" 로 abort 했다.
 if (requireNamespace("arrow", quietly = TRUE)) {
@@ -196,7 +201,7 @@ if (requireNamespace("arrow", quietly = TRUE)) {
   arrow::write_parquet(data.frame(Date = as.Date(character(0))), ep)
   chk_unknown("C3_ic_parquet_zero_rows",
               ic_frontier_check(ic_path = ep, raw_dates = RAW, today = D("2026-08-05")),
-              note = "(0행 → -Inf 전파)")
+              note = "(0행 → -Inf 전파)", want_note = "0행")
 } else {
   bad("C3_ic_parquet_zero_rows", "arrow 미설치 — 0행 경로를 실증할 수 없음")
 }
@@ -283,8 +288,11 @@ if (identical(SRC_MD5_BEFORE, SRC_MD5_AFTER)) {
 #──────────────────────────────────────────────────────────────────────────────
 cat("\n=== E. 규약 일치 — P1 정본 판정과 같은 답을 내는가 + 배선 ===\n")
 # E1. 위임이 살아 있는가 (NULL 이면 미러 폴백 = 중복 구현이 조용히 가동 중)
-if (!is.null(.ICFC_GUARD)) ok("E1_delegation_live", "ic_pair_completeness.R 전용 env 위임 활성")
-else bad("E1_delegation_live", ".ICFC_GUARD 가 NULL — 정본 위임 끊김(미러 폴백 가동)")
+if (!is.null(.ICFC_GUARD)) {
+  ok("E1_delegation_live", "ic_pair_completeness.R 전용 env 위임 활성")
+} else {
+  bad("E1_delegation_live", ".ICFC_GUARD 가 NULL — 정본 위임 끊김(미러 폴백 가동)")
+}
 
 # E2. 그리드 대조: .icfc_pair_complete(프론티어) == .ic_pair_complete(P1 정본)$complete
 canon_env <- new.env(parent = globalenv())

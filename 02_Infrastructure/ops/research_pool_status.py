@@ -162,10 +162,17 @@ def collect(root):
         out["alpha_queue_n"] = len(cands)
         out["alpha_queue_date"] = aq_d
         out["alpha_queue_autorun"] = aj.get("autorun")
+        # (2026-07-26 probe① 수리) 생산자 스키마는 후보 최상위 factor_name/factor_title 이다
+        #   (실측 alpha_search_queue_20260726.json). 구판은 factor_candidate.name → id 만 봐서
+        #   두 키 모두 부재 → 전건 "?" → 부팅 AlphaQueue 라인이 이름 대신 "?"를 상시 표시했다.
+        #   (search-index created_at/logged_at 907행 사건과 동형 — 필드명 불일치는 예외 없이
+        #    조용한 빈 값이 된다.) 구 스키마도 폴백으로 계속 지원.
         names = []
         for c in cands:
             fc = c.get("factor_candidate") or {}
-            names.append(fc.get("name") or c.get("id", "?"))
+            nm = (c.get("factor_name") or c.get("factor_title")
+                  or fc.get("name") or c.get("id"))
+            names.append(nm if nm else "(무명 후보 — 생산자 스키마 확인 필요)")
         out["alpha_queue_names"] = names
 
     # 3b. (gap④) alpha 큐 자동백테 처리 결과 — alpha_search_queue_done + auto_verify gate

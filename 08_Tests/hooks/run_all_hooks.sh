@@ -103,6 +103,11 @@ SUITES=(
   "08_Tests/hooks/test_cert_rules.R"
   "08_Tests/hooks/test_r_portability.R"
   "08_Tests/factor_db/test_ic_completion_guard.R"
+  # 2026-07-26 추가(T3): IC 월-프론티어 감시(ic_frontier_check) 위반 주입 테스트.
+  #   감시기는 07-26 신설되며 ic_max_date_override 를 "주입용"으로 노출해 놓고도 케이스가
+  #   0건이었다 — 4트랙 중 유일하게 상설 검사가 없던 갭. 검사 없는 가드는 무력화돼도
+  #   "경보 0건"으로만 보인다.
+  "08_Tests/factor_db/test_ic_frontier_check.R"
   "08_Tests/factor_db/test_build_hash_provenance.R"
   # 2026-07-26 추가: auto-commit 밸브 v2(디렉터리-단위 A-only 격리 — v1 영구개방 사고 재발 방지)
   "08_Tests/hooks/test_auto_commit_valve.sh"

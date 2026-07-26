@@ -32,6 +32,8 @@ if (!exists("PROJECT_ROOT")) {
 }
 
 source(file.path(PROJECT_ROOT, "02_Infrastructure/data/cache_registry_runner.R"))
+# 내용-도달 판정부 (P2-02/P2-03 수리, 2026-07-26) — date_col kind/semantics + 라벨-코호트 커버리지.
+source(file.path(PROJECT_ROOT, "02_Infrastructure/data/cache_content_reach.R"))
 
 cache_freshness_audit <- function(telegram_alert = TRUE,
                                     warn_lag_multiplier = 1.0,
@@ -99,20 +101,39 @@ cache_freshness_audit <- function(telegram_alert = TRUE,
 
       data_lag <- NA_integer_
       if (!is.null(c$date_col)) {
+        # ── 내용 기준 (정본 경로) ─────────────────────────────────────────────
+        #   집계 규약(2026-07-26 P2-02 명문화): 디렉토리형 캐시의 내용 도달 =
+        #   **file_pattern 매칭 사전순 max 파일 1개**의 max(date_col).
+        #   (YYYYMM zero-pad 라 사전순 = 시간순. 파일당 1개월이고 완료월 파일은 그 달
+        #    최종 거래일에서 멈추므로, 전 파일 스캔 없이 최신 파일만으로 프론티어가 잡힌다 —
+        #    실측 2026-07-26: factor_db 439파일 전부 파일명 YYYYMM == 내용 max Date 월,
+        #    직전 12개월 전부 내용 max == 그 달 최종 거래일.)
+        #   ★내부 월의 구멍(D형)은 이 축의 대상이 아니다 — 별도 gap 검사 소관.
         dt <- tryCatch(as.data.table(read_parquet(latest_path, col_select = c$date_col)),
                        error = function(e)
                          tryCatch(as.data.table(read_parquet(latest_path)),
                                   error = function(e2) NULL))
         if (!is.null(dt) && c$date_col %in% names(dt)) {
-          last_d <- max(as.Date(dt[[c$date_col]]), na.rm = TRUE)
-          data_lag <- as.integer(today - last_d)
+          last_d <- suppressWarnings(max(ccr_to_date(dt[[c$date_col]], c$date_col_kind),
+                                         na.rm = TRUE))
+          if (length(last_d) == 1L && !is.na(last_d) && is.finite(as.numeric(last_d))) {
+            data_lag <- ccr_lag_days(last_d, today, c$date_semantics)
+            res$content_max_date <- format(last_d)
+            res$lag_basis <- "content"
+          }
         }
       } else {
+        # ── fallback: 파일명 YYYYMM 월말 추정 (P2-02 — 내용을 열지 않는다) ─────
+        #   이 경로는 date_col 미선언 시에만 남는 **추정**이다. max(0, today - 월말)
+        #   이므로 당월 내내 0 → 파일이 어느 날짜에 얼어붙어도 FRESH 가 된다
+        #   (실사고: factor_db_202607 이 Date=2026-07-03 에 3주 동결, 그동안 매일 FRESH).
+        #   조용한 추정 금지 — lag_basis 로 표기하고 아래에서 severity 를 WARN 으로 올린다.
         ym <- regmatches(latest_file, regexpr("[0-9]{6}", latest_file))
         if (length(ym) == 1) {
           m_start <- as.Date(paste0(ym, "01"), format = "%Y%m%d")
           m_end <- seq(m_start, by = "month", length.out = 2)[2] - 1
           data_lag <- max(0L, as.integer(today - m_end))
+          res$lag_basis <- "filename_month_end_estimate"
         }
       }
     } else {
@@ -140,8 +161,15 @@ cache_freshness_audit <- function(telegram_alert = TRUE,
         } else NULL
       }, error = function(e) NULL)
       if (!is.null(dt) && c$date_col %in% names(dt)) {
-        last_d <- max(as.Date(dt[[c$date_col]]), na.rm = TRUE)
-        data_lag <- as.integer(today - last_d)
+        # date_col_kind: "date"(기본) | "ym"("YYYY-MM") | "ym_compact"("YYYYMM")
+        # date_semantics: "observation"(기본) | "period_end"(기간 라벨 — 음수 lag clamp)
+        last_d <- suppressWarnings(max(ccr_to_date(dt[[c$date_col]], c$date_col_kind),
+                                       na.rm = TRUE))
+        if (length(last_d) == 1L && !is.na(last_d) && is.finite(as.numeric(last_d))) {
+          data_lag <- ccr_lag_days(last_d, today, c$date_semantics)
+          res$content_max_date <- format(last_d)
+          res$lag_basis <- "content"
+        }
       }
     }
     }
@@ -152,11 +180,13 @@ cache_freshness_audit <- function(telegram_alert = TRUE,
     if (!is.na(data_lag) && isTRUE(c$schedule == "daily") &&
         !is.null(c$max_lag_days) && c$max_lag_days <= 7) {
       lag <- .trading_lag(today - data_lag, lag)
-      res$lag_basis <- "trading_days"
+      # 합성 표기 — 내용 기준인지(content) 를 지우지 않는다
+      res$lag_basis <- paste0(res$lag_basis %||% "mtime", "+trading_days")
     }
     res$mtime_lag <- mtime_lag
     res$data_lag <- data_lag
     res$lag_used <- lag
+    if (is.null(res$lag_basis)) res$lag_basis <- "mtime"
 
     if (isTRUE(c$schedule == "on_demand")) {
       # [2026-07-14 Q] on_demand 캐시 = '요청 시 생성' 의미론 — stale 개념 부적용.

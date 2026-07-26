@@ -177,17 +177,29 @@ ic_frontier_check <- function(ic_path = NULL,
     registered = TRUE, check = "ic_month_frontier"
   )
 
-  # 실제 IC 프론티어
+  # 실제 IC 프론티어. 판정 불가 사유를 구분해 남긴다 — "부재"와 "0행"은 다른 고장이다
+  # (부재 = 파이프라인 미실행 / 0행 = 실행됐는데 아무 pair 도 살아남지 못함).
+  ic_reason <- NA_character_
   ic_max <- if (!is.null(ic_max_date_override)) {
     .icfc_as_date1(ic_max_date_override)
   } else if (file.exists(ic_path)) {
     tryCatch({
       d <- as.data.table(read_parquet(ic_path, col_select = "Date"))
+      if (!("Date" %in% names(d)) || nrow(d) == 0L) {
+        ic_reason <- sprintf("IC parquet 존재하나 사용 가능한 Date 0행 (nrow=%d) — 재계산이 전량 skip 됐을 가능성",
+                             nrow(d))
+      }
       suppressWarnings(max(as.Date(d$Date), na.rm = TRUE))
-    }, error = function(e) as.Date(NA))
-  } else as.Date(NA)
+    }, error = function(e) {
+      ic_reason <<- sprintf("IC parquet read 실패: %s", conditionMessage(e))
+      as.Date(NA)
+    })
+  } else {
+    ic_reason <- sprintf("IC parquet 부재: %s", ic_path)
+    as.Date(NA)
+  }
 
-  # 0행 parquet 은 read 에 성공한다 — max(numeric(0)) = **-Inf** 이고 is.na(-Inf) 는 FALSE 라
+  # 0행 parquet 은 read 에 **성공**한다 — max(numeric(0)) = -Inf 이고 is.na(-Inf) 는 FALSE 라
   # 그대로 흘러가 format() 이 "-Inf", .mi() 가 NA, `if (lag_months < 0L)` 에서 abort 했다
   # (실측 2026-07-26: "missing value where TRUE/FALSE needed"). 판정 불가는 크래시가 아니라
   # UNKNOWN 으로 떨어져야 한다 — 감시기가 죽으면 소비처 tryCatch 가 사유를 삼킨다.
@@ -195,7 +207,8 @@ ic_frontier_check <- function(ic_path = NULL,
 
   if (is.na(ic_max)) {
     res$status <- "IC_FRONTIER_UNKNOWN"; res$severity <- "WARN"
-    res$note <- "IC parquet 부재/read 실패 — Date max 판정 불가"
+    res$note <- if (!is.na(ic_reason)) ic_reason else
+      "IC Date max 판정 불가 (NA/비유한 값)"
     return(res)
   }
 

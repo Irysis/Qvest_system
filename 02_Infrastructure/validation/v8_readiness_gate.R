@@ -763,10 +763,25 @@ check_soak_record <- function(project_root, no_write = FALSE,
     return(mk_check("soak_record", "3-day soak record",
                     "WARN", "ran_at parse fail"))
   }
-  recent_3d <- sum(!is.na(ts_parsed) &
-                     as.numeric(now - ts_parsed, units = "days") <= 3)
-  critical_count <- sum(runs$critical_failure_count %||% 0L,
-                         na.rm = TRUE)
+  recent_idx <- !is.na(ts_parsed) &
+                  as.numeric(now - ts_parsed, units = "days") <= 3
+  recent_3d <- sum(recent_idx)
+  #──────────────────────────────────────────────────────────────────────────
+  # (2026-07-26 VRG-5 수리, probe② 감사 확정) critical 합산을 **최근 3일 창**으로 한정.
+  #   구현은 recent_3d 만 창을 적용하고 critical 은 soak_log 전 이력을 합산해,
+  #   06-26(3)+07-18(4)=누적 7 이 영구히 박혀 이후 clean 실행을 아무리 쌓아도
+  #   critical_count==0 이 성립 불가 → soak_record 영구 WARN(false-red).
+  #   "3-day soak record" 라는 체크 이름과 판정 모집단이 어긋나 있던 것.
+  # 컬럼 부재는 0 폴백(fail-open) 대신 schema invalid 로 승격 — 필드 개명 시
+  #   critical 전멸을 0 으로 오독하는 경로 차단(:645 ran_at 부재 처리와 동형).
+  #──────────────────────────────────────────────────────────────────────────
+  if (is.null(runs$critical_failure_count)) {
+    return(mk_check("soak_record", "3-day soak record",
+                    "WARN",
+                    "soak_log schema invalid — critical_failure_count 컬럼 부재(필드 개명 의심). 0 폴백 금지",
+                    soak_path))
+  }
+  critical_count <- sum(runs$critical_failure_count[recent_idx], na.rm = TRUE)
   if (recent_3d >= 2 && critical_count == 0) {
     return(mk_check("soak_record", "3-day soak record",
                     "PASS",

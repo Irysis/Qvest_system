@@ -51,6 +51,9 @@ DART_FACTOR_CACHE <- file.path(CACHE_DIR, "fundamental_dart.parquet")
 
 if (!dir.exists(DART_CACHE_DIR)) dir.create(DART_CACHE_DIR, recursive = TRUE)
 
+# 제출창 지식 + 수집 후보집합 판정 (2026-07-26 P2-01 수리 — 단일 정본)
+source(file.path(PROJECT_ROOT, "02_Infrastructure", "data", "dart_submission_window.R"))
+
 # ─── API Key ────────────────────────────────────────────────────────────────
 .load_dart_key <- function() {
   env_path <- file.path(PROJECT_ROOT, ".env")
