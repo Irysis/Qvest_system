@@ -222,11 +222,32 @@ else
   fi
 fi
 
-# 4g. (2026-07-04 Cleaner) 주간 증류 대기 마커 — weekly_cleaner_sweep(토 09:00 무인 기계 스윕)가
-#     남긴 cleaner_pending.json(awaiting_distill) 감지 시 /cleaner 증류 안내. WARN-only.
+# 4g. (2026-07-04 Cleaner) 주간 증류 대기 마커 + (2026-07-18 WT_D20260718_001 np#1) distill claim 정체 가시성.
+#     ① weekly_cleaner_sweep(토 09:00 무인 기계 스윕)가 남긴 cleaner_pending.json(awaiting_distill) 감지 시
+#        /cleaner 증류 안내.
+#     ② distill_status=in_progress ∧ distill_claimed_at 이 stale(>6h)이면 크래시 세션 stuck claim 노출 —
+#        cleaner_claim.R(cleaner_claim_distill)의 stale 자동 재점유는 조용하므로 "정체" 자체를 가시화.
+#     둘 다 WARN-only(차단 없음)·fail-soft. jq 미의존 — grep 추출 + date 파싱, 필드/타임스탬프 결측 시 조용히 skip.
 CLEANER_PENDING="$PROJECT/.cache/cleaner_pending.json"
-if [ -f "$CLEANER_PENDING" ] && grep -q '"status"[[:space:]]*:[[:space:]]*"awaiting_distill"' "$CLEANER_PENDING"; then
-  echo "[boot] WARN: [cleaner] 주간 증류 대기 (cleaner_pending.json awaiting_distill) — /cleaner 실행 (기계 스윕 완료·엑기스 증류/L-code 적립/잔재 삭제 미완)"
+CLEANER_STALE_HOURS=6   # cleaner_claim.R stale_hours 기본과 동기 (boot WARN ↔ helper stale_reclaim 정합)
+if [ -f "$CLEANER_PENDING" ]; then
+  if grep -q '"status"[[:space:]]*:[[:space:]]*"awaiting_distill"' "$CLEANER_PENDING"; then
+    echo "[boot] WARN: [cleaner] 주간 증류 대기 (cleaner_pending.json awaiting_distill) — /cleaner 실행 (기계 스윕 완료·엑기스 증류/L-code 적립/잔재 삭제 미완)"
+  fi
+  CL_DSTATUS=$(grep -oE '"distill_status"[[:space:]]*:[[:space:]]*"[^"]*"' "$CLEANER_PENDING" 2>/dev/null | head -1 | sed -E 's/.*:[[:space:]]*"([^"]*)"/\1/')
+  if [ "$CL_DSTATUS" = "in_progress" ]; then
+    CL_CLAIMED=$(grep -oE '"distill_claimed_at"[[:space:]]*:[[:space:]]*"[^"]*"' "$CLEANER_PENDING" 2>/dev/null | head -1 | sed -E 's/.*:[[:space:]]*"([^"]*)"/\1/')
+    CL_OWNER=$(grep -oE '"distill_owner"[[:space:]]*:[[:space:]]*"[^"]*"' "$CLEANER_PENDING" 2>/dev/null | head -1 | sed -E 's/.*:[[:space:]]*"([^"]*)"/\1/')
+    # 빈/결측 timestamp 가드: GNU date -d "" 는 오늘 자정을 반환(exit 0)해 거짓 stale를 유발하므로 비어있으면 skip.
+    CL_CLAIMED_S=""
+    [ -n "$CL_CLAIMED" ] && CL_CLAIMED_S=$(date -d "$CL_CLAIMED" +%s 2>/dev/null || echo "")
+    if [ -n "$CL_CLAIMED_S" ]; then
+      CL_AGE_H=$(( ($(date +%s) - CL_CLAIMED_S) / 3600 ))
+      if [ "$CL_AGE_H" -gt "$CLEANER_STALE_HOURS" ]; then
+        echo "[boot] WARN: [cleaner] 증류 claim이 in_progress로 ${CL_AGE_H}h 정체 (owner=${CL_OWNER:-?}) — 크래시 세션 의심, 다음 /cleaner claim이 stale 재점유"
+      fi
+    fi
+  fi
 fi
 
 # 4h. (2026-07-25) Worktree 가시성 — 병렬 세션 미병합/미커밋 감지. WARN-only (블록 아님).
