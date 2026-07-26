@@ -85,3 +85,8 @@ codex_*_raw_output.txt
 # HYG-08 (2026-07-03) — 루트 쓰레기 격리소 (rm 대신 이동 보존, 추적 제외)
 .trash_*/
 catboost_info/
+
+# (2026-07-26 auto-commit 밸브 사건 부수 발견) 미확장 %SystemDrive% 리터럴 디렉터리 —
+# 어떤 실행이 cmd 환경변수를 확장하지 못한 채 Windows 캐시를 저장소 루트에 복사(4개 .db, 984K).
+# 정크는 삭제했고, 재생성 시 git 유입만 차단 (근원 스크립트는 별도 추적).
+/%SystemDrive%/

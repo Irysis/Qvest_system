@@ -91,11 +91,33 @@ except Exception as e:
   done
 }
 
-# Run all 3 tests (codex_round_gate removed v8.2 — Codex Round 폐지)
-run_test "worktask_sequence_gate" "bash \"$TEST_DIR/test_worktask_sequence_gate.sh\""
-run_test "agent_role_guard" "bash \"$TEST_DIR/test_agent_role_guard.sh\""
-run_test "cert_rules" "Rscript \"$TEST_DIR/test_cert_rules.R\""
-run_test "r_portability" "Rscript \"$TEST_DIR/test_r_portability.R\""
+# ─── 스위트 목록 = 단일 정본 (2026-07-26) ───────────────────────────────────
+# 구현은 "실행 목록"과 "집계 목록"을 각각 하드코딩해 두 벌로 갖고 있었다 —
+# 한쪽에만 추가하면 실행은 되는데 총계에 안 잡히거나(침묵 결손) 그 반대가 된다.
+# 배열 하나로 합친다. 경로는 PROJ_DIR 기준 상대경로.
+# 훅 밖의 R 계약 검사도 여기서 상설로 돈다 (선례: test_r_portability.R,
+# 2026-07-26 추가: factor_db IC month-pair 완결성 가드 위반 주입 테스트).
+SUITES=(
+  "08_Tests/hooks/test_worktask_sequence_gate.sh"
+  "08_Tests/hooks/test_agent_role_guard.sh"
+  "08_Tests/hooks/test_cert_rules.R"
+  "08_Tests/hooks/test_r_portability.R"
+  "08_Tests/factor_db/test_ic_completion_guard.R"
+)
+
+_suite_cmd() {
+  local rel="$1"
+  if [[ "$rel" == *.R ]]; then
+    printf 'Rscript "%s/%s"' "$PROJ_DIR" "$rel"
+  else
+    printf 'bash "%s/%s"' "$PROJ_DIR" "$rel"
+  fi
+}
+
+for _s in "${SUITES[@]}"; do
+  _name="$(basename "$_s")"; _name="${_name%.*}"
+  run_test "$_name" "$(_suite_cmd "$_s")"
+done
 
 # Aggregate (re-extract since subshells don't propagate)
 TOTAL_PASS=0
@@ -122,11 +144,11 @@ print(pick)
 ' 2>/dev/null
 }
 
-for test_script in test_worktask_sequence_gate.sh test_agent_role_guard.sh test_cert_rules.R test_r_portability.R; do
+for test_script in "${SUITES[@]}"; do
   if [[ "$test_script" == *.R ]]; then
-    OUT=$(Rscript "$TEST_DIR/$test_script" 2>&1 | _last_summary_json)
+    OUT=$(Rscript "$PROJ_DIR/$test_script" 2>&1 | _last_summary_json)
   else
-    OUT=$(bash "$TEST_DIR/$test_script" 2>&1 | _last_summary_json)
+    OUT=$(bash "$PROJ_DIR/$test_script" 2>&1 | _last_summary_json)
   fi
   if echo "$OUT" | "$QVEST_PY_BIN" -c 'import json,sys; d=json.loads(sys.stdin.read()); exit(0 if "test" in d else 1)' 2>/dev/null; then
     PASS=$(echo "$OUT" | "$QVEST_PY_BIN" -c 'import json,sys; print(json.load(sys.stdin).get("pass",0))')

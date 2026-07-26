@@ -1,12 +1,12 @@
 # 04_Research INDEX
 
-> 자동 생성 2026-07-24 09:04 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
+> 자동 생성 2026-07-26 15:32 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
 
 <details><summary><b>strategy-legacy</b> (3)</summary>
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `strategies/ (STR_* 178+개 패턴 전체)` | QEPM 전 세대 전략 백테스트 결과 저장소(STR_XXX_name 178+) — 헌법·legacy boundary가 명시 보존하는 결과 아카이브 | legacy | 2026-07-13 | 396.6MB |
+| `strategies/ (STR_* 178+개 패턴 전체)` | QEPM 전 세대 전략 백테스트 결과 저장소(STR_XXX_name 178+) — 헌법·legacy boundary가 명시 보존하는 결과 아카이브 | legacy | 2026-07-25 | 396.6MB |
 | `90_legacy/run_dart_strategies.sh` | DART 전략 일괄 실행 셸(v5x 시대) — DART insider 백필은 02_Infrastructure/data로 이관 | legacy | 2026-06-07 | 2KB |
 | `90_legacy/` | [재편 2026-07-04] v55/S0-S7 등 legacy 러너·산출 격리 보존 카테고리 (삭제 아님·신규 사용 금지) | legacy | 2026-07-03 | 391KB |
 
@@ -17,7 +17,7 @@
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
 | `decision_framework/` | bearish forecast v1~v3(예측 국면) + cross_section_distribution(DPL 피처 parquet) + smart_beta_regime·factor_untapped — 부팅·모닝브리핑·DPL 감사가 소비하는 활성 존 (409MB, 대부분 cross_section outputs 382MB) | active | 2026-07-23 | 409.9MB |
-| `regime_comparison/` | KTRI/MSM 국면엔진 비교·검증·브리핑 발송 스크립트 — 일일 스케줄러(daily_refresh·모닝브리핑 ktri_rebuild)가 소비 중 | active | 2026-07-23 | 1.3MB |
+| `regime_comparison/` | KTRI/MSM 국면엔진 비교·검증·브리핑 발송 스크립트 — 일일 스케줄러(daily_refresh·모닝브리핑 ktri_rebuild)가 소비 중 | active | 2026-07-26 | 1.3MB |
 
 </details>
 
@@ -158,7 +158,7 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `01_reports/` | [재편 2026-07-04] 감사·검토·제안·로드맵 보고서와 그 증거 데이터 카테고리 (실행코드 참조 0 확인분 수용) | active | 2026-07-18 | 1.5MB |
+| `01_reports/` | [재편 2026-07-04] 감사·검토·제안·로드맵 보고서와 그 증거 데이터 카테고리 (실행코드 참조 0 확인분 수용) | active | 2026-07-25 | 1.5MB |
 
 </details>
 
@@ -170,24 +170,32 @@
 
 </details>
 
+<details><summary><b>리서치-작업존</b> (6)</summary>
+
+| 항목 | 정체 | status | 최근 | 크기 |
+|---|---|---|---|---|
+| `method_frontier` | method_frontier lane 작업존(FQ-057~059 등, 228파일 17MB) — 07-18 QEPM 이원화의 발굴 레인 산출 | active | 2026-07-19 | 16.0MB |
+| `decay_fit` | FQ-055 감쇠 함수형 진단 스크립트·산출(decay_fit_engine.R, break dating/cause probe) | active | 2026-07-18 | 56KB |
+| `{insider, dart_census}` | DART insider 비-return 원천 라인 — exec netbuy 신호 빌드/비교, pledge·census 감사(07-13~15) | active | 2026-07-12 | 255KB |
+| `factor_selection_program` | 선별-규율 아크 스펙(r5 selection comparison, r9 insider selection armed) | active | 2026-07-13 | 13KB |
+| `pg2_carry_convention` | PG2 carry 컨벤션 분해(a2 gap decomp·carry table) 작업 산출 | active | 2026-07-11 | 184KB |
+| `champions_revalidation` | champion 전략 재검증 슬롯(slot3_o3_midband) | active | 2026-07-10 | 8KB |
+
+</details>
+
+<details><summary><b>리서치-보고서</b> (1)</summary>
+
+| 항목 | 정체 | status | 최근 | 크기 |
+|---|---|---|---|---|
+| `pg2_overlay_beyond_r05m4_20260705.md` | M4xR05 초월 오버레이 16변형 negative 실측 보고(07-05) | archive | 2026-07-05 | 7KB |
+
+</details>
+
 ## 정리 후보 (status=dead) (1)
 
 | 항목 | 정체 | 카테고리 | 최근 | 크기 |
 |---|---|---|---|---|
 | `regime_analysis/` | 구 국면 시각화 png(KTRI 9quad·3layer·MRS daily) + threshold 튜닝 스크립트(v5x 시대) | dead | 2026-07-20 | 661KB |
-
-## 미분류 (8) — index_descriptions.json에 추가하세요
-
-| 항목 | 정체 | status | 최근 | 크기 |
-|---|---|---|---|---|
-| `champions_revalidation` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-10 | 8KB |
-| `dart_census` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-12 | 221KB |
-| `decay_fit` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-18 | 56KB |
-| `factor_selection_program` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-13 | 13KB |
-| `insider` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-10 | 34KB |
-| `method_frontier` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-19 | 16.0MB |
-| `pg2_carry_convention` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-11 | 184KB |
-| `pg2_overlay_beyond_r05m4_20260705.md` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-05 | 7KB |
 
 ## stale 큐레이션 키 (13) — 디스크 부재, index_descriptions.json에서 제거 권장
 

@@ -1,0 +1,1763 @@
+{
+  "_meta": {
+    "purpose": "KSIC(DART induty_code) → 교역가능성(class) + HS 章(chapter) 후보 + HS4 기본값",
+    "match": "longest-prefix (5→4→3→2자리). 키는 KSIC 접두사 문자열.",
+    "class": {
+      "GOODS": "제조업 — 관세청 HS 통계에 수출입이 직접 잡히는 재화 생산",
+      "TRADER": "종합상사/도매 — 재화 취급하나 자사 생산 아님(수출입 실적과 연동되나 마진 구조 상이)",
+      "NONTRADE": "서비스/금융/건설/운수/유틸리티 — HS 통계에 잡히는 재화 없음(a priori 제외)",
+      "HOLDCO": "지주회사 — KSIC는 금융이나 실질은 자회사 사업. 원문 텍스트로 재라우팅 필요",
+      "RND": "연구개발업(주로 임상단계 바이오) — 매출 자체가 미미/라이선스. 재화 수출 없음"
+    },
+    "note": "2자리(대분류)는 KSIC 표준분류에 대한 고신뢰 매핑. 3~5자리는 본 유니버스 실제 소속기업명으로 경험적 검증(build 로그의 ksic_rule_evidence 참조). 자기신고 코드라 4~5자리는 noisy(예: SK하이닉스 메모리가 2612로 신고) → 텍스트 레이어가 최종 판정."
+  },
+  "10": {
+    "class": "GOODS",
+    "chapters": [
+      "04",
+      "11",
+      "15",
+      "16",
+      "17",
+      "18",
+      "19",
+      "20",
+      "21",
+      "23"
+    ],
+    "hs4": null,
+    "label": "식료품 제조"
+  },
+  "104": {
+    "class": "GOODS",
+    "chapters": [
+      "04",
+      "15"
+    ],
+    "hs4": "0402",
+    "label": "유지/낙농"
+  },
+  "108": {
+    "class": "GOODS",
+    "chapters": [
+      "19",
+      "21",
+      "23"
+    ],
+    "hs4": null,
+    "label": "기타 식품/사료"
+  },
+  "109": {
+    "class": "GOODS",
+    "chapters": [
+      "23"
+    ],
+    "hs4": "2309",
+    "label": "사료"
+  },
+  "11": {
+    "class": "GOODS",
+    "chapters": [
+      "22"
+    ],
+    "hs4": "2202",
+    "label": "음료"
+  },
+  "111": {
+    "class": "GOODS",
+    "chapters": [
+      "22"
+    ],
+    "hs4": "2208",
+    "label": "주류"
+  },
+  "112": {
+    "class": "GOODS",
+    "chapters": [
+      "22"
+    ],
+    "hs4": "2202",
+    "label": "비알코올음료"
+  },
+  "12": {
+    "class": "GOODS",
+    "chapters": [
+      "24"
+    ],
+    "hs4": "2402",
+    "label": "담배"
+  },
+  "13": {
+    "class": "GOODS",
+    "chapters": [
+      "50",
+      "51",
+      "52",
+      "53",
+      "54",
+      "55",
+      "56",
+      "58",
+      "59",
+      "60"
+    ],
+    "hs4": null,
+    "label": "섬유제품"
+  },
+  "14": {
+    "class": "GOODS",
+    "chapters": [
+      "61",
+      "62"
+    ],
+    "hs4": "6110",
+    "label": "의복·의복액세서리"
+  },
+  "15": {
+    "class": "GOODS",
+    "chapters": [
+      "41",
+      "42",
+      "64"
+    ],
+    "hs4": "6404",
+    "label": "가죽·가방·신발"
+  },
+  "16": {
+    "class": "GOODS",
+    "chapters": [
+      "44"
+    ],
+    "hs4": "4411",
+    "label": "목재·나무제품"
+  },
+  "17": {
+    "class": "GOODS",
+    "chapters": [
+      "47",
+      "48"
+    ],
+    "hs4": "4823",
+    "label": "펄프·종이"
+  },
+  "18": {
+    "class": "GOODS",
+    "chapters": [
+      "49"
+    ],
+    "hs4": null,
+    "label": "인쇄"
+  },
+  "19": {
+    "class": "GOODS",
+    "chapters": [
+      "27"
+    ],
+    "hs4": "2710",
+    "label": "코크스·석유정제"
+  },
+  "20": {
+    "class": "GOODS",
+    "chapters": [
+      "28",
+      "29",
+      "32",
+      "33",
+      "34",
+      "38",
+      "39",
+      "40"
+    ],
+    "hs4": null,
+    "label": "화학물질·화학제품"
+  },
+  "201": {
+    "class": "GOODS",
+    "chapters": [
+      "28",
+      "29",
+      "39",
+      "40"
+    ],
+    "hs4": null,
+    "label": "기초화학물질"
+  },
+  "2011": {
+    "class": "GOODS",
+    "chapters": [
+      "29",
+      "40"
+    ],
+    "hs4": "2902",
+    "label": "석유화학계 기초화학"
+  },
+  "20111": {
+    "class": "GOODS",
+    "chapters": [
+      "29",
+      "39",
+      "40"
+    ],
+    "hs4": "2902",
+    "label": "석유화학계 기초화학"
+  },
+  "2012": {
+    "class": "GOODS",
+    "chapters": [
+      "28"
+    ],
+    "hs4": "2804",
+    "label": "무기화학/산업가스"
+  },
+  "20121": {
+    "class": "GOODS",
+    "chapters": [
+      "28"
+    ],
+    "hs4": "2804",
+    "label": "산업용 가스"
+  },
+  "20129": {
+    "class": "GOODS",
+    "chapters": [
+      "28"
+    ],
+    "hs4": null,
+    "label": "기타 기초무기화학"
+  },
+  "20119": {
+    "class": "GOODS",
+    "chapters": [
+      "28",
+      "29"
+    ],
+    "hs4": null,
+    "label": "기타 기초유기화학"
+  },
+  "202": {
+    "class": "GOODS",
+    "chapters": [
+      "39"
+    ],
+    "hs4": "3907",
+    "label": "합성수지·플라스틱물질"
+  },
+  "203": {
+    "class": "GOODS",
+    "chapters": [
+      "31"
+    ],
+    "hs4": "3105",
+    "label": "비료·질소화합물"
+  },
+  "204": {
+    "class": "GOODS",
+    "chapters": [
+      "32",
+      "33",
+      "34",
+      "38"
+    ],
+    "hs4": null,
+    "label": "기타 화학제품"
+  },
+  "2041": {
+    "class": "GOODS",
+    "chapters": [
+      "32"
+    ],
+    "hs4": "3208",
+    "label": "도료·잉크"
+  },
+  "20411": {
+    "class": "GOODS",
+    "chapters": [
+      "32"
+    ],
+    "hs4": "3208",
+    "label": "도료"
+  },
+  "2042": {
+    "class": "GOODS",
+    "chapters": [
+      "33",
+      "34"
+    ],
+    "hs4": "3304",
+    "label": "세제·화장품"
+  },
+  "20422": {
+    "class": "GOODS",
+    "chapters": [
+      "33"
+    ],
+    "hs4": "3304",
+    "label": "화장품"
+  },
+  "20423": {
+    "class": "GOODS",
+    "chapters": [
+      "33"
+    ],
+    "hs4": "3304",
+    "label": "화장품"
+  },
+  "2049": {
+    "class": "GOODS",
+    "chapters": [
+      "28",
+      "29",
+      "32",
+      "38"
+    ],
+    "hs4": null,
+    "label": "그 외 기타 화학제품"
+  },
+  "20494": {
+    "class": "GOODS",
+    "chapters": [
+      "36",
+      "93"
+    ],
+    "hs4": "3602",
+    "label": "화약·불꽃(방산 연계)"
+  },
+  "205": {
+    "class": "GOODS",
+    "chapters": [
+      "54",
+      "55",
+      "39"
+    ],
+    "hs4": "5402",
+    "label": "화학섬유"
+  },
+  "2050": {
+    "class": "GOODS",
+    "chapters": [
+      "54",
+      "55"
+    ],
+    "hs4": "5402",
+    "label": "화학섬유"
+  },
+  "20501": {
+    "class": "GOODS",
+    "chapters": [
+      "54",
+      "55"
+    ],
+    "hs4": "5402",
+    "label": "화학섬유"
+  },
+  "20202": {
+    "class": "GOODS",
+    "chapters": [
+      "39"
+    ],
+    "hs4": "3907",
+    "label": "합성수지"
+  },
+  "21": {
+    "class": "GOODS",
+    "chapters": [
+      "29",
+      "30"
+    ],
+    "hs4": null,
+    "label": "의료용 물질·의약품"
+  },
+  "211": {
+    "class": "GOODS",
+    "chapters": [
+      "29",
+      "30"
+    ],
+    "hs4": "2941",
+    "label": "기초 의약물질/생물학적제제"
+  },
+  "2110": {
+    "class": "GOODS",
+    "chapters": [
+      "30"
+    ],
+    "hs4": "3002",
+    "label": "기초 의약물질·생물학적제제"
+  },
+  "21100": {
+    "class": "GOODS",
+    "chapters": [
+      "30"
+    ],
+    "hs4": "3002",
+    "label": "기초 의약물질·생물학적제제"
+  },
+  "212": {
+    "class": "GOODS",
+    "chapters": [
+      "30"
+    ],
+    "hs4": "3004",
+    "label": "완제 의약품"
+  },
+  "213": {
+    "class": "GOODS",
+    "chapters": [
+      "30",
+      "38"
+    ],
+    "hs4": "3822",
+    "label": "한의약품/기타 의약 관련"
+  },
+  "2130": {
+    "class": "GOODS",
+    "chapters": [
+      "30",
+      "38"
+    ],
+    "hs4": "3822",
+    "label": "의약 관련"
+  },
+  "22": {
+    "class": "GOODS",
+    "chapters": [
+      "39",
+      "40"
+    ],
+    "hs4": null,
+    "label": "고무·플라스틱제품"
+  },
+  "221": {
+    "class": "GOODS",
+    "chapters": [
+      "40"
+    ],
+    "hs4": "4011",
+    "label": "고무제품"
+  },
+  "222": {
+    "class": "GOODS",
+    "chapters": [
+      "39"
+    ],
+    "hs4": "3926",
+    "label": "플라스틱제품"
+  },
+  "2221": {
+    "class": "GOODS",
+    "chapters": [
+      "39"
+    ],
+    "hs4": "3920",
+    "label": "플라스틱 필름·시트"
+  },
+  "2223": {
+    "class": "GOODS",
+    "chapters": [
+      "39",
+      "48"
+    ],
+    "hs4": "3923",
+    "label": "플라스틱 포장용기"
+  },
+  "23": {
+    "class": "GOODS",
+    "chapters": [
+      "25",
+      "68",
+      "69",
+      "70"
+    ],
+    "hs4": null,
+    "label": "비금속 광물제품"
+  },
+  "231": {
+    "class": "GOODS",
+    "chapters": [
+      "70"
+    ],
+    "hs4": "7005",
+    "label": "유리·유리제품"
+  },
+  "2312": {
+    "class": "GOODS",
+    "chapters": [
+      "70"
+    ],
+    "hs4": "7020",
+    "label": "산업용 유리(석영 등)"
+  },
+  "232": {
+    "class": "GOODS",
+    "chapters": [
+      "69"
+    ],
+    "hs4": "6909",
+    "label": "내화·도자기"
+  },
+  "233": {
+    "class": "GOODS",
+    "chapters": [
+      "25",
+      "68"
+    ],
+    "hs4": "2523",
+    "label": "시멘트·석회·콘크리트"
+  },
+  "2331": {
+    "class": "GOODS",
+    "chapters": [
+      "25"
+    ],
+    "hs4": "2523",
+    "label": "시멘트·석회"
+  },
+  "23311": {
+    "class": "GOODS",
+    "chapters": [
+      "25"
+    ],
+    "hs4": "2523",
+    "label": "시멘트"
+  },
+  "2332": {
+    "class": "GOODS",
+    "chapters": [
+      "68"
+    ],
+    "hs4": "6810",
+    "label": "콘크리트·레미콘"
+  },
+  "239": {
+    "class": "GOODS",
+    "chapters": [
+      "25",
+      "68"
+    ],
+    "hs4": null,
+    "label": "기타 비금속광물"
+  },
+  "2399": {
+    "class": "GOODS",
+    "chapters": [
+      "68"
+    ],
+    "hs4": "6815",
+    "label": "그 외 비금속광물(탄소·흑연 등)"
+  },
+  "24": {
+    "class": "GOODS",
+    "chapters": [
+      "72",
+      "73",
+      "74",
+      "75",
+      "76",
+      "78",
+      "79",
+      "80",
+      "81"
+    ],
+    "hs4": null,
+    "label": "1차 금속"
+  },
+  "241": {
+    "class": "GOODS",
+    "chapters": [
+      "72",
+      "73"
+    ],
+    "hs4": "7208",
+    "label": "1차 철강"
+  },
+  "2411": {
+    "class": "GOODS",
+    "chapters": [
+      "72"
+    ],
+    "hs4": "7208",
+    "label": "제철·제강"
+  },
+  "2412": {
+    "class": "GOODS",
+    "chapters": [
+      "72"
+    ],
+    "hs4": "7210",
+    "label": "철강 압연·도금"
+  },
+  "2413": {
+    "class": "GOODS",
+    "chapters": [
+      "73"
+    ],
+    "hs4": "7304",
+    "label": "철강관·강관"
+  },
+  "24133": {
+    "class": "GOODS",
+    "chapters": [
+      "73"
+    ],
+    "hs4": "7307",
+    "label": "관 연결구류(피팅)"
+  },
+  "2419": {
+    "class": "GOODS",
+    "chapters": [
+      "72",
+      "73"
+    ],
+    "hs4": null,
+    "label": "기타 1차 철강"
+  },
+  "242": {
+    "class": "GOODS",
+    "chapters": [
+      "74",
+      "75",
+      "76",
+      "78",
+      "79",
+      "80"
+    ],
+    "hs4": null,
+    "label": "비철금속 제련·정련"
+  },
+  "2421": {
+    "class": "GOODS",
+    "chapters": [
+      "74",
+      "79",
+      "78"
+    ],
+    "hs4": "7901",
+    "label": "비철 제련(아연·연·동)"
+  },
+  "24213": {
+    "class": "GOODS",
+    "chapters": [
+      "79",
+      "78",
+      "74"
+    ],
+    "hs4": "7901",
+    "label": "연·아연 제련"
+  },
+  "2422": {
+    "class": "GOODS",
+    "chapters": [
+      "74",
+      "76"
+    ],
+    "hs4": "7606",
+    "label": "비철 압연·압출"
+  },
+  "24222": {
+    "class": "GOODS",
+    "chapters": [
+      "76"
+    ],
+    "hs4": "7607",
+    "label": "알루미늄 압연·박"
+  },
+  "243": {
+    "class": "GOODS",
+    "chapters": [
+      "73",
+      "76"
+    ],
+    "hs4": null,
+    "label": "금속 주조"
+  },
+  "25": {
+    "class": "GOODS",
+    "chapters": [
+      "73",
+      "82",
+      "83"
+    ],
+    "hs4": null,
+    "label": "금속가공제품"
+  },
+  "251": {
+    "class": "GOODS",
+    "chapters": [
+      "73"
+    ],
+    "hs4": "7308",
+    "label": "구조용 금속제품·탱크"
+  },
+  "2511": {
+    "class": "GOODS",
+    "chapters": [
+      "73"
+    ],
+    "hs4": "7308",
+    "label": "구조용 금속(타워 등)"
+  },
+  "2512": {
+    "class": "GOODS",
+    "chapters": [
+      "73"
+    ],
+    "hs4": "7311",
+    "label": "금속탱크·저장용기"
+  },
+  "252": {
+    "class": "GOODS",
+    "chapters": [
+      "93",
+      "36"
+    ],
+    "hs4": "9306",
+    "label": "무기·총포탄"
+  },
+  "25200": {
+    "class": "GOODS",
+    "chapters": [
+      "93",
+      "88"
+    ],
+    "hs4": "9306",
+    "label": "무기·총포탄"
+  },
+  "259": {
+    "class": "GOODS",
+    "chapters": [
+      "73",
+      "82",
+      "83"
+    ],
+    "hs4": null,
+    "label": "기타 금속가공"
+  },
+  "26": {
+    "class": "GOODS",
+    "chapters": [
+      "85",
+      "90"
+    ],
+    "hs4": null,
+    "label": "전자부품·컴퓨터·영상·음향·통신장비"
+  },
+  "261": {
+    "class": "GOODS",
+    "chapters": [
+      "85"
+    ],
+    "hs4": "8542",
+    "label": "반도체"
+  },
+  "2611": {
+    "class": "GOODS",
+    "chapters": [
+      "85"
+    ],
+    "hs4": "8542",
+    "label": "전자집적회로"
+  },
+  "26112": {
+    "class": "GOODS",
+    "chapters": [
+      "85"
+    ],
+    "hs4": "8542",
+    "label": "전자집적회로"
+  },
+  "2612": {
+    "class": "GOODS",
+    "chapters": [
+      "85"
+    ],
+    "hs4": "8541",
+    "label": "다이오드·트랜지스터·반도체소자"
+  },
+  "262": {
+    "class": "GOODS",
+    "chapters": [
+      "85",
+      "90"
+    ],
+    "hs4": null,
+    "label": "전자부품(디스플레이·PCB 등)"
+  },
+  "2621": {
+    "class": "GOODS",
+    "chapters": [
+      "85",
+      "90"
+    ],
+    "hs4": "8524",
+    "label": "표시장치(디스플레이)"
+  },
+  "26211": {
+    "class": "GOODS",
+    "chapters": [
+      "85",
+      "90"
+    ],
+    "hs4": "8524",
+    "label": "액정 표시장치"
+  },
+  "26212": {
+    "class": "GOODS",
+    "chapters": [
+      "85",
+      "90"
+    ],
+    "hs4": "8524",
+    "label": "유기발광 표시장치"
+  },
+  "2622": {
+    "class": "GOODS",
+    "chapters": [
+      "85"
+    ],
+    "hs4": "8534",
+    "label": "인쇄회로기판"
+  },
+  "26221": {
+    "class": "GOODS",
+    "chapters": [
+      "85",
+      "39"
+    ],
+    "hs4": "8534",
+    "label": "인쇄회로기판용 적층판"
+  },
+  "26222": {
+    "class": "GOODS",
+    "chapters": [
+      "85"
+    ],
+    "hs4": "8534",
+    "label": "경성 인쇄회로기판"
+  },
+  "2629": {
+    "class": "GOODS",
+    "chapters": [
+      "85",
+      "90"
+    ],
+    "hs4": null,
+    "label": "기타 전자부품"
+  },
+  "26291": {
+    "class": "GOODS",
+    "chapters": [
+      "85"
+    ],
+    "hs4": "8532",
+    "label": "전자축전기·수동소자"
+  },
+  "26299": {
+    "class": "GOODS",
+    "chapters": [
+      "85"
+    ],
+    "hs4": null,
+    "label": "그 외 기타 전자부품"
+  },
+  "263": {
+    "class": "GOODS",
+    "chapters": [
+      "84",
+      "85"
+    ],
+    "hs4": "8471",
+    "label": "컴퓨터·주변장치"
+  },
+  "264": {
+    "class": "GOODS",
+    "chapters": [
+      "85"
+    ],
+    "hs4": "8517",
+    "label": "통신·방송장비"
+  },
+  "2641": {
+    "class": "GOODS",
+    "chapters": [
+      "85"
+    ],
+    "hs4": "8517",
+    "label": "유선 통신장비"
+  },
+  "2642": {
+    "class": "GOODS",
+    "chapters": [
+      "85"
+    ],
+    "hs4": "8517",
+    "label": "무선 통신장비"
+  },
+  "26429": {
+    "class": "GOODS",
+    "chapters": [
+      "85"
+    ],
+    "hs4": "8517",
+    "label": "기타 무선 통신장비"
+  },
+  "265": {
+    "class": "GOODS",
+    "chapters": [
+      "85"
+    ],
+    "hs4": "8528",
+    "label": "영상·음향기기"
+  },
+  "27": {
+    "class": "GOODS",
+    "chapters": [
+      "90",
+      "91"
+    ],
+    "hs4": null,
+    "label": "의료·정밀·광학기기·시계"
+  },
+  "271": {
+    "class": "GOODS",
+    "chapters": [
+      "90"
+    ],
+    "hs4": "9018",
+    "label": "의료용 기기"
+  },
+  "2711": {
+    "class": "GOODS",
+    "chapters": [
+      "90"
+    ],
+    "hs4": "9018",
+    "label": "의료용 기기"
+  },
+  "27112": {
+    "class": "GOODS",
+    "chapters": [
+      "90",
+      "38"
+    ],
+    "hs4": "9027",
+    "label": "의료용 진단기기"
+  },
+  "2719": {
+    "class": "GOODS",
+    "chapters": [
+      "90"
+    ],
+    "hs4": "9018",
+    "label": "기타 의료용 기기"
+  },
+  "27191": {
+    "class": "GOODS",
+    "chapters": [
+      "90"
+    ],
+    "hs4": "9021",
+    "label": "치과용 기기(임플란트)"
+  },
+  "27199": {
+    "class": "GOODS",
+    "chapters": [
+      "90"
+    ],
+    "hs4": "9018",
+    "label": "그 외 의료용 기기"
+  },
+  "272": {
+    "class": "GOODS",
+    "chapters": [
+      "90"
+    ],
+    "hs4": "9031",
+    "label": "측정·시험·항해·제어기기"
+  },
+  "2721": {
+    "class": "GOODS",
+    "chapters": [
+      "90"
+    ],
+    "hs4": "9031",
+    "label": "측정·시험기기"
+  },
+  "27212": {
+    "class": "GOODS",
+    "chapters": [
+      "90"
+    ],
+    "hs4": "9030",
+    "label": "전기 계측·시험기기"
+  },
+  "27219": {
+    "class": "GOODS",
+    "chapters": [
+      "90"
+    ],
+    "hs4": "9031",
+    "label": "기타 측정·시험기기"
+  },
+  "273": {
+    "class": "GOODS",
+    "chapters": [
+      "90"
+    ],
+    "hs4": "9002",
+    "label": "사진장비·광학기기"
+  },
+  "28": {
+    "class": "GOODS",
+    "chapters": [
+      "85"
+    ],
+    "hs4": null,
+    "label": "전기장비"
+  },
+  "281": {
+    "class": "GOODS",
+    "chapters": [
+      "85"
+    ],
+    "hs4": "8504",
+    "label": "전동기·발전기·변압기·배전기"
+  },
+  "2811": {
+    "class": "GOODS",
+    "chapters": [
+      "85"
+    ],
+    "hs4": "8501",
+    "label": "전동기·발전기"
+  },
+  "28111": {
+    "class": "GOODS",
+    "chapters": [
+      "85"
+    ],
+    "hs4": "8501",
+    "label": "전동기·발전기"
+  },
+  "28112": {
+    "class": "GOODS",
+    "chapters": [
+      "85"
+    ],
+    "hs4": "8504",
+    "label": "변압기"
+  },
+  "2812": {
+    "class": "GOODS",
+    "chapters": [
+      "85"
+    ],
+    "hs4": "8537",
+    "label": "배전·제어장치"
+  },
+  "28121": {
+    "class": "GOODS",
+    "chapters": [
+      "85"
+    ],
+    "hs4": "8537",
+    "label": "배전·제어장치"
+  },
+  "282": {
+    "class": "GOODS",
+    "chapters": [
+      "85"
+    ],
+    "hs4": "8507",
+    "label": "일차전지·축전지"
+  },
+  "28202": {
+    "class": "GOODS",
+    "chapters": [
+      "85"
+    ],
+    "hs4": "8507",
+    "label": "축전지(이차전지)"
+  },
+  "283": {
+    "class": "GOODS",
+    "chapters": [
+      "85"
+    ],
+    "hs4": "8544",
+    "label": "절연선·케이블"
+  },
+  "28302": {
+    "class": "GOODS",
+    "chapters": [
+      "85"
+    ],
+    "hs4": "8544",
+    "label": "절연선·케이블"
+  },
+  "284": {
+    "class": "GOODS",
+    "chapters": [
+      "85"
+    ],
+    "hs4": "8536",
+    "label": "전구·조명장치"
+  },
+  "285": {
+    "class": "GOODS",
+    "chapters": [
+      "84",
+      "85"
+    ],
+    "hs4": "8516",
+    "label": "가정용 기기"
+  },
+  "28519": {
+    "class": "GOODS",
+    "chapters": [
+      "84",
+      "85"
+    ],
+    "hs4": "8516",
+    "label": "기타 가정용 전기기기"
+  },
+  "289": {
+    "class": "GOODS",
+    "chapters": [
+      "85"
+    ],
+    "hs4": "8543",
+    "label": "기타 전기장비"
+  },
+  "29": {
+    "class": "GOODS",
+    "chapters": [
+      "84"
+    ],
+    "hs4": null,
+    "label": "기타 기계·장비"
+  },
+  "291": {
+    "class": "GOODS",
+    "chapters": [
+      "84"
+    ],
+    "hs4": null,
+    "label": "일반 목적용 기계"
+  },
+  "2911": {
+    "class": "GOODS",
+    "chapters": [
+      "84"
+    ],
+    "hs4": "8408",
+    "label": "내연기관·터빈"
+  },
+  "29111": {
+    "class": "GOODS",
+    "chapters": [
+      "84"
+    ],
+    "hs4": "8408",
+    "label": "내연기관(선박용 등)"
+  },
+  "29119": {
+    "class": "GOODS",
+    "chapters": [
+      "84"
+    ],
+    "hs4": "8406",
+    "label": "기타 기관·터빈"
+  },
+  "2912": {
+    "class": "GOODS",
+    "chapters": [
+      "84"
+    ],
+    "hs4": "8413",
+    "label": "펌프·압축기"
+  },
+  "2913": {
+    "class": "GOODS",
+    "chapters": [
+      "84"
+    ],
+    "hs4": "8483",
+    "label": "베어링·기어·동력전달"
+  },
+  "2916": {
+    "class": "GOODS",
+    "chapters": [
+      "84"
+    ],
+    "hs4": "8428",
+    "label": "운반·하역기계(승강기 등)"
+  },
+  "29162": {
+    "class": "GOODS",
+    "chapters": [
+      "84"
+    ],
+    "hs4": "8428",
+    "label": "승강기"
+  },
+  "2917": {
+    "class": "GOODS",
+    "chapters": [
+      "84"
+    ],
+    "hs4": "8415",
+    "label": "냉동·공조장치"
+  },
+  "29172": {
+    "class": "GOODS",
+    "chapters": [
+      "84",
+      "87"
+    ],
+    "hs4": "8415",
+    "label": "공조장치(차량용 포함)"
+  },
+  "29176": {
+    "class": "GOODS",
+    "chapters": [
+      "84"
+    ],
+    "hs4": "8402",
+    "label": "산업용 보일러·열교환기"
+  },
+  "292": {
+    "class": "GOODS",
+    "chapters": [
+      "84"
+    ],
+    "hs4": null,
+    "label": "특수 목적용 기계"
+  },
+  "2922": {
+    "class": "GOODS",
+    "chapters": [
+      "84"
+    ],
+    "hs4": "8462",
+    "label": "공작기계"
+  },
+  "29229": {
+    "class": "GOODS",
+    "chapters": [
+      "84"
+    ],
+    "hs4": "8486",
+    "label": "기타 특수 공작/반도체장비"
+  },
+  "2924": {
+    "class": "GOODS",
+    "chapters": [
+      "84"
+    ],
+    "hs4": "8429",
+    "label": "건설·광산용 기계"
+  },
+  "29241": {
+    "class": "GOODS",
+    "chapters": [
+      "84"
+    ],
+    "hs4": "8429",
+    "label": "건설·채광 기계"
+  },
+  "2927": {
+    "class": "GOODS",
+    "chapters": [
+      "84"
+    ],
+    "hs4": "8486",
+    "label": "반도체·디스플레이 제조용 기계"
+  },
+  "29271": {
+    "class": "GOODS",
+    "chapters": [
+      "84"
+    ],
+    "hs4": "8486",
+    "label": "반도체 제조용 기계"
+  },
+  "2928": {
+    "class": "GOODS",
+    "chapters": [
+      "84"
+    ],
+    "hs4": "8479",
+    "label": "산업용 로봇"
+  },
+  "29280": {
+    "class": "GOODS",
+    "chapters": [
+      "84"
+    ],
+    "hs4": "8479",
+    "label": "산업용 로봇"
+  },
+  "2929": {
+    "class": "GOODS",
+    "chapters": [
+      "84"
+    ],
+    "hs4": "8479",
+    "label": "기타 특수 목적용 기계"
+  },
+  "29299": {
+    "class": "GOODS",
+    "chapters": [
+      "84"
+    ],
+    "hs4": "8479",
+    "label": "그 외 기타 특수기계"
+  },
+  "30": {
+    "class": "GOODS",
+    "chapters": [
+      "87"
+    ],
+    "hs4": "8708",
+    "label": "자동차·트레일러"
+  },
+  "301": {
+    "class": "GOODS",
+    "chapters": [
+      "87"
+    ],
+    "hs4": "8703",
+    "label": "자동차용 엔진·자동차"
+  },
+  "3012": {
+    "class": "GOODS",
+    "chapters": [
+      "87"
+    ],
+    "hs4": "8703",
+    "label": "자동차 제조"
+  },
+  "30121": {
+    "class": "GOODS",
+    "chapters": [
+      "87"
+    ],
+    "hs4": "8703",
+    "label": "승용차·기타 여객용 자동차"
+  },
+  "303": {
+    "class": "GOODS",
+    "chapters": [
+      "87"
+    ],
+    "hs4": "8708",
+    "label": "자동차 부품"
+  },
+  "31": {
+    "class": "GOODS",
+    "chapters": [
+      "86",
+      "88",
+      "89"
+    ],
+    "hs4": null,
+    "label": "기타 운송장비"
+  },
+  "311": {
+    "class": "GOODS",
+    "chapters": [
+      "89"
+    ],
+    "hs4": "8901",
+    "label": "선박·보트"
+  },
+  "3111": {
+    "class": "GOODS",
+    "chapters": [
+      "89"
+    ],
+    "hs4": "8901",
+    "label": "강선 건조"
+  },
+  "31111": {
+    "class": "GOODS",
+    "chapters": [
+      "89"
+    ],
+    "hs4": "8901",
+    "label": "강선 건조"
+  },
+  "31113": {
+    "class": "GOODS",
+    "chapters": [
+      "89"
+    ],
+    "hs4": "8901",
+    "label": "선박 건조"
+  },
+  "31114": {
+    "class": "GOODS",
+    "chapters": [
+      "89"
+    ],
+    "hs4": "8906",
+    "label": "선박 구성부분품"
+  },
+  "312": {
+    "class": "GOODS",
+    "chapters": [
+      "86"
+    ],
+    "hs4": "8603",
+    "label": "철도장비"
+  },
+  "3131": {
+    "class": "GOODS",
+    "chapters": [
+      "88"
+    ],
+    "hs4": "8802",
+    "label": "항공기·우주선·부품"
+  },
+  "31311": {
+    "class": "GOODS",
+    "chapters": [
+      "88"
+    ],
+    "hs4": "8802",
+    "label": "항공기·부품"
+  },
+  "31321": {
+    "class": "GOODS",
+    "chapters": [
+      "88",
+      "93",
+      "84"
+    ],
+    "hs4": "8802",
+    "label": "항공·우주(방산)"
+  },
+  "319": {
+    "class": "GOODS",
+    "chapters": [
+      "87",
+      "73"
+    ],
+    "hs4": null,
+    "label": "그 외 기타 운송장비"
+  },
+  "31910": {
+    "class": "GOODS",
+    "chapters": [
+      "86"
+    ],
+    "hs4": "8603",
+    "label": "철도차량"
+  },
+  "32": {
+    "class": "GOODS",
+    "chapters": [
+      "94"
+    ],
+    "hs4": "9403",
+    "label": "가구"
+  },
+  "320": {
+    "class": "GOODS",
+    "chapters": [
+      "94"
+    ],
+    "hs4": "9404",
+    "label": "가구(매트리스 포함)"
+  },
+  "33": {
+    "class": "GOODS",
+    "chapters": [
+      "71",
+      "91",
+      "95",
+      "96"
+    ],
+    "hs4": null,
+    "label": "기타 제품"
+  },
+  "339": {
+    "class": "GOODS",
+    "chapters": [
+      "28",
+      "96"
+    ],
+    "hs4": null,
+    "label": "그 외 기타 제품"
+  },
+  "35": {
+    "class": "NONTRADE",
+    "chapters": [],
+    "hs4": null,
+    "label": "전기·가스·증기·공기조절 공급업"
+  },
+  "36": {
+    "class": "NONTRADE",
+    "chapters": [],
+    "hs4": null,
+    "label": "수도업"
+  },
+  "37": {
+    "class": "NONTRADE",
+    "chapters": [],
+    "hs4": null,
+    "label": "하수·폐수 처리"
+  },
+  "38": {
+    "class": "NONTRADE",
+    "chapters": [],
+    "hs4": null,
+    "label": "폐기물 수집·처리"
+  },
+  "39": {
+    "class": "NONTRADE",
+    "chapters": [],
+    "hs4": null,
+    "label": "환경 정화·복원"
+  },
+  "41": {
+    "class": "NONTRADE",
+    "chapters": [],
+    "hs4": null,
+    "label": "종합 건설업"
+  },
+  "42": {
+    "class": "NONTRADE",
+    "chapters": [],
+    "hs4": null,
+    "label": "전문직별 공사업"
+  },
+  "45": {
+    "class": "NONTRADE",
+    "chapters": [],
+    "hs4": null,
+    "label": "자동차 판매업"
+  },
+  "46": {
+    "class": "TRADER",
+    "chapters": [],
+    "hs4": null,
+    "label": "도매·상품중개업"
+  },
+  "461": {
+    "class": "TRADER",
+    "chapters": [],
+    "hs4": null,
+    "label": "상품 종합 도매(종합상사)"
+  },
+  "4610": {
+    "class": "TRADER",
+    "chapters": [],
+    "hs4": null,
+    "label": "종합상사"
+  },
+  "47": {
+    "class": "NONTRADE",
+    "chapters": [],
+    "hs4": null,
+    "label": "소매업"
+  },
+  "49": {
+    "class": "NONTRADE",
+    "chapters": [],
+    "hs4": null,
+    "label": "육상 운송업"
+  },
+  "50": {
+    "class": "NONTRADE",
+    "chapters": [],
+    "hs4": null,
+    "label": "수상 운송업"
+  },
+  "51": {
+    "class": "NONTRADE",
+    "chapters": [],
+    "hs4": null,
+    "label": "항공 운송업"
+  },
+  "52": {
+    "class": "NONTRADE",
+    "chapters": [],
+    "hs4": null,
+    "label": "창고·운송 관련 서비스업"
+  },
+  "55": {
+    "class": "NONTRADE",
+    "chapters": [],
+    "hs4": null,
+    "label": "숙박업"
+  },
+  "56": {
+    "class": "NONTRADE",
+    "chapters": [],
+    "hs4": null,
+    "label": "음식점·주점업"
+  },
+  "58": {
+    "class": "NONTRADE",
+    "chapters": [],
+    "hs4": null,
+    "label": "출판업(SW·게임 포함)"
+  },
+  "59": {
+    "class": "NONTRADE",
+    "chapters": [],
+    "hs4": null,
+    "label": "영상·오디오 제작·배급"
+  },
+  "60": {
+    "class": "NONTRADE",
+    "chapters": [],
+    "hs4": null,
+    "label": "방송업"
+  },
+  "61": {
+    "class": "NONTRADE",
+    "chapters": [],
+    "hs4": null,
+    "label": "우편·통신업"
+  },
+  "62": {
+    "class": "NONTRADE",
+    "chapters": [],
+    "hs4": null,
+    "label": "컴퓨터 프로그래밍·시스템 통합"
+  },
+  "63": {
+    "class": "NONTRADE",
+    "chapters": [],
+    "hs4": null,
+    "label": "정보서비스업"
+  },
+  "64": {
+    "class": "NONTRADE",
+    "chapters": [],
+    "hs4": null,
+    "label": "금융업"
+  },
+  "6499": {
+    "class": "HOLDCO",
+    "chapters": [],
+    "hs4": null,
+    "label": "기타 금융업(지주회사 다수)"
+  },
+  "64992": {
+    "class": "HOLDCO",
+    "chapters": [],
+    "hs4": null,
+    "label": "지주회사"
+  },
+  "65": {
+    "class": "NONTRADE",
+    "chapters": [],
+    "hs4": null,
+    "label": "보험·연금업"
+  },
+  "66": {
+    "class": "NONTRADE",
+    "chapters": [],
+    "hs4": null,
+    "label": "금융·보험 관련 서비스업"
+  },
+  "68": {
+    "class": "NONTRADE",
+    "chapters": [],
+    "hs4": null,
+    "label": "부동산업"
+  },
+  "70": {
+    "class": "RND",
+    "chapters": [],
+    "hs4": null,
+    "label": "연구개발업"
+  },
+  "701": {
+    "class": "RND",
+    "chapters": [],
+    "hs4": null,
+    "label": "자연과학·공학 연구개발업"
+  },
+  "71": {
+    "class": "NONTRADE",
+    "chapters": [],
+    "hs4": null,
+    "label": "전문서비스업"
+  },
+  "715": {
+    "class": "HOLDCO",
+    "chapters": [],
+    "hs4": null,
+    "label": "회사 본부·경영컨설팅(지주 포함)"
+  },
+  "72": {
+    "class": "NONTRADE",
+    "chapters": [],
+    "hs4": null,
+    "label": "건축기술·엔지니어링·과학기술 서비스"
+  },
+  "73": {
+    "class": "NONTRADE",
+    "chapters": [],
+    "hs4": null,
+    "label": "기타 전문·과학·기술 서비스"
+  },
+  "74": {
+    "class": "NONTRADE",
+    "chapters": [],
+    "hs4": null,
+    "label": "사업시설 관리·조경"
+  },
+  "75": {
+    "class": "NONTRADE",
+    "chapters": [],
+    "hs4": null,
+    "label": "사업지원 서비스업"
+  },
+  "76": {
+    "class": "NONTRADE",
+    "chapters": [],
+    "hs4": null,
+    "label": "임대업(부동산 제외)"
+  },
+  "85": {
+    "class": "NONTRADE",
+    "chapters": [],
+    "hs4": null,
+    "label": "교육 서비스업"
+  },
+  "86": {
+    "class": "NONTRADE",
+    "chapters": [],
+    "hs4": null,
+    "label": "보건업"
+  },
+  "91": {
+    "class": "NONTRADE",
+    "chapters": [],
+    "hs4": null,
+    "label": "스포츠·오락 관련 서비스업"
+  },
+  "94": {
+    "class": "NONTRADE",
+    "chapters": [],
+    "hs4": null,
+    "label": "협회·단체"
+  },
+  "95": {
+    "class": "NONTRADE",
+    "chapters": [],
+    "hs4": null,
+    "label": "수리업"
+  },
+  "96": {
+    "class": "NONTRADE",
+    "chapters": [],
+    "hs4": null,
+    "label": "기타 개인 서비스업"
+  }
+}

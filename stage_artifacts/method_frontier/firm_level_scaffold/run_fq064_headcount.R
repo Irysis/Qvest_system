@@ -35,21 +35,76 @@ if (!file.exists(NPS_RAW)) {
   cat("[fq064] dry-run OK — crosswalk/RAWDATA/benchmark 실존. STEP 2~5 배선 준비 완료.\n")
   quit(save = "no", status = 0)
 }
-nps <- as.data.table(read_parquet(NPS_RAW))   # bizr_no, data_ym, member_cnt
+nps <- as.data.table(read_parquet(NPS_RAW))   # data_ym, wkpl_nm, bizno6, hc, amt, acq, lss, wkpl_norm
 
-# ─── STEP 2. crosswalk join: bizr_no → Ticker ────────────────────────────────
+# ─── STEP 2. crosswalk join: bizno6 prefix + 사업장명 → Ticker ───────────────
+#   ★2026-07-25 실측: 국민연금 공표 사업자등록번호는 **앞 6자리 마스킹**(파일·API 공통).
+#     PIT_plan §3이 예고한 마스킹 분기가 실현됨 → full 10자리 exact join 불가.
+#     6자리는 세무서코드(3)+구분(2)+일련 첫자리(1)라 firm 고유키가 아니다
+#     (crosswalk 내부만도 충돌 prefix 69개 / 관여 상장사 190사).
+#   조인 전략: prefix로 후보 축소 → **사업장명 정규화 매칭**으로 확정.
+#     startsWith 우선, 실패분만 부분포함 폴백. 다중 상장사 충돌 시 **최장 corp_norm 우선**
+#     (예: '삼성전자'와 '삼성전자서비스'가 동시 후보면 더 긴 쪽이 정확한 매칭).
+#   census 실측(2026-06): prefix 존재 474/474 · 사업장명 매칭 436/474 · 매칭 사업장수 median 1.
+#   ⚠잔여 편향: 기업마다 신고구조가 달라 롤업 완전성이 불균일(삼성전자=전사 단일 신고 vs
+#     기아=공장 사업장이 별도 명칭으로 분리되어 이름매칭에서 누락). 레벨 횡단비교는 오염되나
+#     본 팩터가 Δln 모멘텀이라 시간-불변 누락은 차분에서 소거된다. 단 사업장 신설·분할은
+#     가짜 점프를 만들므로 STEP 3에 outlier 가드 필수.
 xw <- as.data.table(read_parquet(file.path(SCAF, "firm_crosswalk.parquet")))
-#   ★조인은 full bizr_no(10자리) 우선. 국민연금 공표가 6자리 마스킹이면 bizr_no6 조인은
-#     121건 충돌(crosswalk_coverage) → 사업장명+소재지 disambiguation 필요(PIT_plan §3).
-nps <- merge(nps, xw[, .(bizr_no, Ticker)], by = "bizr_no", all.x = FALSE)
+.norm <- function(s) gsub("[[:space:]\\-\\.,]", "", gsub("\\(주\\)|㈜|주식회사|\\(유\\)", "", s))
+xw[, bizno6 := substr(as.character(bizr_no), 1, 6)]
+xw[, corp_norm := .norm(as.character(corp_name))]
+nps[, bizno6 := sprintf("%06s", as.character(bizno6))]
+
+cand <- merge(nps, xw[, .(bizno6, Ticker, corp_norm)], by = "bizno6", allow.cartesian = TRUE)
+cand[, hit := startsWith(wkpl_norm, corp_norm)]
+cand[hit == FALSE, hit := mapply(grepl, corp_norm, wkpl_norm, MoreArgs = list(fixed = TRUE))]
+cand <- cand[hit == TRUE]
+#   한 사업장이 복수 상장사에 매칭되면 최장 corp_norm 하나만 채택(과대계상 방지)
+cand[, .nlen := nchar(corp_norm)]
+setorder(cand, data_ym, wkpl_nm, -.nlen)
+cand <- unique(cand, by = c("data_ym", "wkpl_nm", "bizno6"))
+cat(sprintf("[fq064] 매칭 사업장-월 %d행 / 상장사 %d사 / 월 %d\n",
+            nrow(cand), uniqueN(cand$Ticker), uniqueN(cand$data_ym)))
+
 #   법인-내 다-사업장 합산 (대기업 필수)
-firm <- nps[, .(member_cnt = sum(member_cnt, na.rm = TRUE)), by = .(Ticker, data_ym)]
+firm <- cand[, .(member_cnt = sum(hc, na.rm = TRUE),
+                 pay_amt    = sum(amt, na.rm = TRUE),
+                 acq_cnt    = sum(acq, na.rm = TRUE),
+                 lss_cnt    = sum(lss, na.rm = TRUE),
+                 n_wkpl     = .N), by = .(Ticker, data_ym)]
 
 # ─── STEP 3. 헤드카운트 모멘텀 팩터 (PIT usable_date = data_ym M+1 15일) ────────
 setorder(firm, Ticker, data_ym)
-firm[, ln_hc := log(pmax(member_cnt, 1))]
-firm[, mom3 := ln_hc - shift(ln_hc, 3L), by = Ticker]   # 3M Δln headcount
-firm[, mom6 := ln_hc - shift(ln_hc, 6L), by = Ticker]   # 6M Δln headcount (대체 horizon)
+#   FQ064_BASE 로 정보축 선택 — 국민연금 원장은 헤드카운트 말고도 축이 더 있다:
+#     hc  = 가입자수(고용 스톡)          pay = 당월고지금액(총보수 프록시, 質까지 반영)
+#     chn = (신규취득+상실)/가입자수      = 고용 churn 강도(방향 아닌 불안정성)
+#   base 자체는 이론적 선택이며 argmax 대상이 아니다. 각 측정은 n_trials에 누적 기록.
+.BASE <- Sys.getenv("FQ064_BASE", "hc")
+firm[, base_val := switch(.BASE,
+                          hc  = as.numeric(member_cnt),
+                          pay = as.numeric(pay_amt),
+                          chn = (as.numeric(acq_cnt) + as.numeric(lss_cnt)) / pmax(member_cnt, 1),
+                          stop("FQ064_BASE는 hc|pay|chn"))]
+firm[, ln_hc := log(pmax(base_val, 1e-6))]
+#   ★결측월 방어: 패널에 구멍이 있다(실측 결측 2020-03~05·2022-09~11). shift(3)은 행 기준이라
+#     구멍을 건너뛰어 실제로는 6개월 간격인 쌍을 3M으로 오인한다 → **달력 기준 명시 조인**.
+firm[, mi := as.integer(substr(data_ym, 1, 4)) * 12L + as.integer(substr(data_ym, 6, 7))]
+for (h in c(3L, 6L)) {
+  lagd <- firm[, .(Ticker, mi_t = mi + h, ln_lag = ln_hc, nw_lag = n_wkpl)]
+  firm <- merge(firm, lagd, by.x = c("Ticker", "mi"), by.y = c("Ticker", "mi_t"), all.x = TRUE)
+  set(firm, j = sprintf("mom%d", h), value = firm$ln_hc - firm$ln_lag)
+  set(firm, j = sprintf("nwchg%d", h), value = firm$n_wkpl != firm$nw_lag)
+  firm[, c("ln_lag", "nw_lag") := NULL]
+}
+#   ★outlier/구성변화 가드: 사업장 개수가 창 안에서 바뀌면 헤드카운트 점프가 신호가 아니라
+#     매칭 구성 변화(신설·분할·명칭변경)일 수 있다 → 해당 관측 제외. 추가로 |Δln|>log(2)
+#     (3개월 내 2배 변동)는 물리적으로 고용 신호로 보기 어려워 제외(정직: 진짜 대형 M&A도
+#     함께 잘리나, 오염 유입보다 보수적 손실을 택함).
+firm[nwchg3 == TRUE | abs(mom3) > log(2), mom3 := NA_real_]
+firm[nwchg6 == TRUE | abs(mom6) > log(2), mom6 := NA_real_]
+cat(sprintf("[fq064] mom3 유효 %d / 전체 %d (구성변화·극단 제외 후)\n",
+            sum(is.finite(firm$mom3)), nrow(firm)))
 #   ★PIT(FQ064 실측 수리 2026-07-25): data_ym=M 신호는 자격취득 신고마감(M+1월 15일) 이후에만
 #     완전 관측 가능(PIT_plan §1). 따라서 신호를 홀딩월 M+1의 month-end에 배정하고
 #     그 스코어로 M+2월 수익을 측정한다(usable(M+1 15일) < 홀딩월 M+1 말 → look-ahead 없음).
@@ -93,8 +148,18 @@ returns_dt <- fwd$returns_dt; bench_dt <- fwd$bench_dt; liq_dt <- fwd$liq_dt
 me_map <- data.table(ym = format(.MEND, "%Y-%m"), sig_date = .MEND)
 firm <- merge(firm, me_map, by.x = "sig_ym", by.y = "ym", all.x = TRUE)
 #   sig_ym이 RAWDATA 커버리지 밖(예: 최신월 홀딩월 미도래)이면 sig_date=NA → 자동 제외(보수적).
-scores <- firm[is.finite(mom3) & !is.na(sig_date), .(Date = sig_date, Ticker, score = mom3)]
+#   신호 방향·horizon은 env로 명시 선택(암묵 default 금지 — n_trials 감사 가능성).
+#   FQ064_SIGN=-1 : employment growth anomaly 방향(고용성장 低 롱). 문헌 사전 부호
+#     (Bazdresch-Belo-Lin 계열: low employment growth → high subsequent returns).
+#     ★부호는 자유 파라미터가 아니라 이론이 정하는 값 — sweep 아닌 사전-이론 선택으로 기록.
+#   FQ064_H=3|6 : 헤드카운트 모멘텀 horizon.
+.SIGN <- as.numeric(Sys.getenv("FQ064_SIGN", "1"))
+.H    <- Sys.getenv("FQ064_H", "3")
+.col  <- paste0("mom", .H)
+firm[, .sig := get(.col) * .SIGN]
+scores <- firm[is.finite(.sig) & !is.na(sig_date), .(Date = sig_date, Ticker, score = .sig)]
 if (nrow(scores) == 0L) stop("[fq064] scores 0행 — PIT map/커버리지 확인 필요")
+cat(sprintf("[fq064] signal=%s x sign(%+.0f) | scores %d행\n", .col, .SIGN, nrow(scores)))
 
 # ─── STEP 5. canonical_screen_bt (계약 경유 — PORT_t/IR/SR 자체합성 없음) ───────
 source("02_Infrastructure/contracts/backtest_result_contract.R")
@@ -103,9 +168,9 @@ stopifnot(exists("build_benchmark_compare"))
 res <- canonical_screen_bt(scores[, .(Date, Ticker, score)], returns_dt, bench_dt,
                            top_n = 25L, cost_bps_oneway = 15,
                            liq_dt = liq_dt, liq_min = 2e8,
-                           run_id = "FQ064_headcount", strategy_id = "NPS_Headcount_Mom_3M",
+                           run_id = sprintf("FQ064_hc_%s_%s", .H, ifelse(.SIGN < 0, "neg", "pos")), strategy_id = sprintf("NPS_HC_Mom_%sM_%s", .H, ifelse(.SIGN < 0, "neg", "pos")),
                            diag_dual_basis = TRUE)   # M2 dual-basis(EW-uni/cap-tier) 병기
 res$benchmark_compare <- NULL; res$period_returns <- NULL
-write_json(res, file.path(OUT, "fq064_canonical.json"), auto_unbox = TRUE, na = "null", pretty = TRUE)
+write_json(res, file.path(OUT, sprintf("fq064_canonical_%s_%sM_%s.json", .BASE, .H, ifelse(.SIGN < 0, "neg", "pos"))), auto_unbox = TRUE, na = "null", pretty = TRUE)
 cat(sprintf("[fq064] n_months=%s PORT_t=%.3f net_sr=%.3f IR=%.3f\n",
     res$n_months, res$portfolio_alpha_t_nw_lag3 %||% NA, res$net_sr %||% NA, res$information_ratio %||% NA))
