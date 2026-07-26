@@ -57,8 +57,20 @@ if (!exists("dart_due_quarterly_pairs")) {
 }
 
 # Report code → quarter mapping
+# ★ 2026-07-26 수리 (R1, 도훈 승인): 종전 11014→1 / 11013→3 으로 **뒤집혀** 있었다.
+#   정본 근거 2종 (양쪽 독립 확정):
+#     ① OpenDART 공식 코드 — 11013 = 1분기보고서 / 11014 = 3분기보고서
+#     ② 저장데이터 실측 (dart_raw_quarterly, thstrm_nm 라벨 · filing-key 27,515건)
+#          11013 → "제N기 1분기(말)" 1,392,677행 · 실접수 중앙값 05-15 (5월 8,276/8,526)
+#          11014 → "제N기 3분기(말)" 1,066,162행 · 실접수 중앙값 11-12 (11월 5,741/5,923)
+#   구 매핑의 피해: 11014(11월 접수)가 quarter 1 → Factor_Date = bsns_year-05-15
+#     → Factor_Date − 실접수일 중앙값 **−183일**, look-ahead 5,911/5,923 = **99.8%**.
+#     더해 dart_extract_individual_quarters() 의 누적차분(2Q=반기−1Q, 3Q=3Q누−반기,
+#     4Q=연간−3Q누)이 **엉뚱한 누적기간끼리 상계**돼 flow 값 자체가 산술 오염이었다
+#     (예: q2 = 6개월누적 − 9개월누적 < 0).
+#   상설 검사: 08_Tests/data/test_dart_reprt_quarter_map.R (위반 주입 + 차단 실효)
 REPRT_MAP <- data.table(
-  reprt_code = c("11014", "11012", "11013", "11011"),
+  reprt_code = c("11013", "11012", "11014", "11011"),
   quarter    = c(1L, 2L, 3L, 4L),
   label      = c("1Q", "반기", "3Q", "사업보고서")
 )
@@ -89,10 +101,8 @@ DART_QUARTERLY_EMPTY_LEDGER <- file.path(DART_CACHE_DIR, "dart_quarterly_empty_l
 # 중복을 제거하고 정정본을 재사용한다 — 이 경계는 EMPTY 원장 재시도 cadence에만
 # 쓰이므로(수집 레이어) PIT 영향 없음.
 #
-# ⚠ 미수리 (별건 승인 대상): 아래 REPRT_MAP 의 quarter 라벨은 **여전히 뒤집힌 상태**.
-#    11014 → quarter 1 → Factor_Date = bsns_year-05-15 이므로, 11월 제출 3분기
-#    보고서가 5/15 로 라벨돼 fundamental_dart_quarterly.parquet 에 약 6개월
-#    look-ahead 혐의가 있다. 수리는 dart_compute_ttm() 전량 재생성을 동반한다.
+# ✅ 후속 수리 완료 (2026-07-26 R1, 도훈 승인): 위 REPRT_MAP 의 quarter 라벨도 정정하고
+#    dart_compute_ttm() 을 전량 재생성했다. 상세 근거·피해 정량은 REPRT_MAP 주석 참조.
 
 .dart_load_empty_ledger <- function() {
   if (!file.exists(DART_QUARTERLY_EMPTY_LEDGER)) return(NULL)

@@ -31,12 +31,14 @@
 #     11013 → 2024-05 (595 corps) · thstrm_nm "제 N 기 1분기말"   = 1분기
 #     11014 → 2024-11 (601 corps) · thstrm_nm "제 N 기 3분기말"   = 3분기
 #     11012 → 2024-08 (591 corps) "반기말" / 11011 → 2025-03 (524 corps) 연간
-#   ⚠ 본 파일은 **제출창만** 정정한다. data_collector_dart_quarterly.R 의
-#     REPRT_MAP(quarter 라벨)·Factor_Date 부여는 여전히 뒤집힌 상태이며
-#     (11014→quarter 1→Factor_Date bsns_year-05-15 = 약 6개월 look-ahead 혐의),
-#     그 수리는 fundamental_dart_quarterly 재생성을 동반하므로 별건 승인 대상이다.
+#   ✅ (2026-07-26 R1, 도훈 승인) data_collector_dart_quarterly.R 의 REPRT_MAP·
+#     Factor_Date 부여도 정정 완료 + fundamental_dart_quarterly 전량 재생성.
+#     구 매핑 실측 피해: 11014 의 Factor_Date − 실접수일 중앙값 −183일,
+#     look-ahead 99.8%(5,911/5,923 filing key). 소비처는 생산자 자신뿐이라 실현 피해 0.
 #
-# 상설 검사: 08_Tests/data/test_dart_candidate_years.R (위반 주입 + 차단 실효)
+# 상설 검사: 08_Tests/data/test_dart_candidate_years.R (제출창 후보집합)
+#            08_Tests/data/test_dart_reprt_quarter_map.R (코드↔분기 매핑 — 이 파일과
+#              REPRT_MAP 의 **교차 합치**를 매 실행 대조: 한쪽만 뒤집혀도 FAIL)
 #==============================================================================
 
 suppressPackageStartupMessages({
