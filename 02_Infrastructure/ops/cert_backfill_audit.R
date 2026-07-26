@@ -567,12 +567,48 @@ record_governance_log <- function(governor_dir, run_summary, dry_run = FALSE) {
     return(invisible(NULL))
   }
 
-  existing <- if (file.exists(log_path)) {
-    tryCatch(fromJSON(log_path, simplifyVector = FALSE), error = function(e) list())
-  } else {
-    list()
+  #──────────────────────────────────────────────────────────────────────────────
+  # (2026-07-26 CBA-04 수리, probe② 감사 확정 · 도훈 승인) 구현은 파스 실패를
+  #   `error = function(e) list()` 로 흡수한 뒤 그 빈 list 를 **원본에 덮어썼다**.
+  #   governance_log.json 이 일시적으로 읽기 불가(OneDrive 자리표시자/락/부분 쓰기/파손)인
+  #   상태에서 백필이 1회 돌면 admission_log·event_* 등 **거버넌스 이력 전체가 무경고 소실**된다.
+  #   fail-open 중에서도 파괴적 부류 — 되돌릴 수 없다.
+  #   원칙: 읽을 수 없는 것은 덮어쓰지 않는다. 파스 실패/스키마 이상 시
+  #     ① 원본 무수정 ② 사이드카(governance_log_backfill_pending.json)에 엔트리 격리
+  #     ③ log_msg 로 명시 — 다음 실행이 아니라 사람이 판단할 문제.
+  #   정상 경로에서도 덮어쓰기 직전 원본 바이트 백업을 남긴다(.bak.<ts>).
+  #──────────────────────────────────────────────────────────────────────────────
+  .quarantine <- function(reason) {
+    side <- file.path(dirname(log_path), "governance_log_backfill_pending.json")
+    prev <- if (file.exists(side))
+      tryCatch(fromJSON(side, simplifyVector = FALSE), error = function(e) list()) else list()
+    if (!is.list(prev)) prev <- list()
+    prev[[length(prev) + 1]] <- list(quarantined_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"),
+                                     reason = reason, entry = entry)
+    tryCatch(write_json(prev, side, auto_unbox = TRUE, pretty = TRUE),
+             error = function(e) log_msg(sprintf("  ★사이드카 기록마저 실패: %s", conditionMessage(e))))
+    log_msg(sprintf(paste0("  ★governance_log 덮어쓰기 **중단** — %s. 원본 무수정 유지, ",
+                           "엔트리를 사이드카로 격리: %s (사람이 병합 판단)"), reason, side))
   }
-  if (!is.list(existing) || is.null(names(existing))) existing <- list()
+
+  if (file.exists(log_path)) {
+    parsed <- tryCatch(fromJSON(log_path, simplifyVector = FALSE),
+                       error = function(e) structure(list(msg = conditionMessage(e)),
+                                                     class = "gl_parse_fail"))
+    if (inherits(parsed, "gl_parse_fail")) {
+      .quarantine(sprintf("파스 실패(%s)", parsed$msg)); return(invisible(FALSE))
+    }
+    if (!is.list(parsed) || is.null(names(parsed))) {
+      .quarantine("스키마 이상(named list 아님 — 배열형/스칼라)"); return(invisible(FALSE))
+    }
+    existing <- parsed
+    # 덮어쓰기 전 원본 바이트 백업 (비가역 변경 직전 스냅샷)
+    bak <- sprintf("%s.bak.%s", log_path, format(Sys.time(), "%Y%m%d_%H%M%S"))
+    tryCatch(file.copy(log_path, bak, overwrite = FALSE),
+             error = function(e) log_msg(sprintf("  WARN: 백업 실패 %s", conditionMessage(e))))
+  } else {
+    existing <- list()   # 신규 생성 — 소실 위험 없음
+  }
 
   retro_logs <- existing$retroactive_cert_issuances %||% list()
   retro_logs[[length(retro_logs) + 1]] <- entry
