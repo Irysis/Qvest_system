@@ -42,6 +42,11 @@ scheduler_alert(){
     echo "log=$LOG"
   } > "$marker"
   log "alert marker 기록: $marker"
+  # (2026-07-26) 수동 실행 오경보 차단 — TTY 결합이면 마커만 남기고 텔레그램 생략.
+  if command -v sched_alert_should_send >/dev/null 2>&1 && ! sched_alert_should_send; then
+    log "alert telegram skip: 수동 실행(TTY) — 마커만 보존. 발송하려면 QVEST_ALERT_FORCE=1"
+    return 0
+  fi
   local RS_BIN
   RS_BIN="$(command -v Rscript || echo '/c/Program Files/R/R-4.5.2/bin/Rscript')"
   [ -x "$RS_BIN" ] || { log "alert telegram skip: Rscript 없음 (마커는 보존)"; return 0; }

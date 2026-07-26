@@ -148,6 +148,18 @@ sched_failure_annotate() {
 # ── 경보 발행 (마커 + 텔레그램). alpha/paper 의 검증된 scheduler_alert 와 동일 계약.
 #    ★기존 2곳의 자체 정의는 건드리지 않는다(작동 중) — 미보유 스크립트만 이 경로를 쓴다.
 #    caller 는 BASE / LOG / TODAY 를 정의해 두어야 한다.
+# ── 무인 실행인가 판별 (수동 디버깅 실행의 텔레그램 오경보 차단)
+#    2026-07-26 실사고: 토큰 없는 개발 셸에서 큐를 수동 실행하자 사전점검이 정상 차단하면서
+#    도훈 텔레그램에 경보가 갔다. 판정 자체는 옳았으나 **수신자에게는 오경보**다.
+#    → 대화형 TTY 에서 돈 실행은 마커만 남기고 발송을 생략한다(진단 정보는 보존).
+#    강제: QVEST_ALERT_FORCE=1 (수동인데도 보내고 싶을 때) / QVEST_NO_ALERT=1 (항상 억제)
+sched_alert_should_send() {
+  [ "${QVEST_NO_ALERT:-0}" = "1" ] && return 1
+  [ "${QVEST_ALERT_FORCE:-0}" = "1" ] && return 0
+  [ -t 0 ] || [ -t 1 ] && return 1     # TTY 결합 = 사람이 직접 실행 → 발송 생략
+  return 0
+}
+
 sched_alert_emit() {
   local comp="$1" reason="$2" detail="$3"
   local base="${BASE:-${PROJECT:-$PWD}}" today="${TODAY:-$(date +%Y%m%d)}"
@@ -158,6 +170,7 @@ sched_alert_emit() {
     echo "ts=$(date -Iseconds)"; echo "component=$comp"; echo "reason=$reason"
     echo "detail=$detail";      echo "log=${LOG:-}"
   } > "$marker"
+  sched_alert_should_send || return 0    # 수동 실행 = 마커만, 텔레그램 생략
   local rs; rs="$(command -v Rscript || true)"
   [ -x "$rs" ] || return 0              # Rscript 없으면 마커만 보존(fail-soft)
   local rfile="$adir/_tg_alert_${comp}_${today}.R"
