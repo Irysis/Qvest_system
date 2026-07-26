@@ -369,11 +369,14 @@ fi
 # 7. Hook health check (v8.1.1 — 침묵 삼킴 금지: 빈 결과 = ERROR)
 HH_OUT=$(bash "$PROJECT/02_Infrastructure/hooks/harness_health.sh" 2>&1)
 HH_SUMMARY=$(echo "$HH_OUT" | grep -E "Result:" | head -1)
+# (2026-07-26 부팅감사 수리) 등록 카운터 라인을 grep이 버려 "settings.json hooks 블록 소실"이
+# 부팅에서 불가시였음 — 등록 수를 함께 노출 + FAIL 라인 승격
+HH_REG=$(echo "$HH_OUT" | grep -E "hook entries registered|hook 등록 계측 실패" | head -1 | sed 's/^ *//')
 if [ -z "$HH_SUMMARY" ]; then
   echo "[boot] ERROR: harness_health 실행 불가 — hook 전수 점검 필요 (첫 줄: $(echo "$HH_OUT" | head -1))"
   BOOT_FAILS=$((BOOT_FAILS+1))
 else
-  echo "[boot] $HH_SUMMARY"
+  echo "[boot] $HH_SUMMARY${HH_REG:+ · $HH_REG}"
 fi
 
 # 7a. (v8.1.1 2026-06-10) Hook 카나리아 — 보호선 실작동 실증 (46-hook 전수 침묵사망 사건 재발 방지)
