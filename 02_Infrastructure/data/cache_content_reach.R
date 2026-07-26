@@ -110,6 +110,22 @@ ccr_read_cols <- function(path, cols) {
 
 # ─── 라벨-코호트 커버리지 ─────────────────────────────────────────────────────
 
+#' label_col 값 → 정수 라벨(연도).
+#'
+#' @param pattern NULL 이면 그대로 as.integer. 지정 시 **앵커된** 정규식이어야 하고
+#'   capture group 1 이 정수 라벨이다 (예: Period="YYYYMM" 에서 연간 코호트만 뽑을 때
+#'   "^([0-9]{4})12$"). 매칭 안 되는 행은 NA → 코호트 집계에서 제외된다.
+#'   ★이것이 "존재하는 것 중 최신"으로 후보를 잡는 것과 다른 점: 기대 라벨은 달력에서
+#'   따로 정하므로, 패턴이 걸러낸 뒤에도 통째로 빠진 코호트는 COVERAGE_MISSING 으로 남는다.
+.ccr_parse_label <- function(x, pattern = NULL) {
+  if (is.null(pattern)) return(suppressWarnings(as.integer(x)))
+  s <- as.character(x)
+  m <- grepl(pattern, s)
+  out <- rep(NA_integer_, length(s))
+  if (any(m)) out[m] <- suppressWarnings(as.integer(sub(pattern, "\\1", s[m])))
+  out
+}
+
 #' 라벨(연도 정수) → 제출기한 Date.
 #' @param rule list(years=<offset>, md="MM-DD")
 ccr_due_date <- function(label, rule) {
@@ -140,7 +156,7 @@ ccr_expected_label <- function(rule, today, grace_days) {
 #' 라벨-코호트 커버리지 판정.
 #'
 #' @param spec  registry 의 coverage_check 선언:
-#'   list(label_col, entity_col, group_col = NULL,
+#'   list(label_col, entity_col, group_col = NULL, label_pattern = NULL,
 #'        due_rule = list(years=, md=)  또는  list(by="<col>", map=list("<g>"=list(years=,md=), ...)),
 #'        grace_days = 45, min_ratio_vs_prior = 0.8)
 #' @param data  data.table (label_col/entity_col/[group_col] 보유). NULL 이면 path 에서 읽는다.
@@ -184,9 +200,10 @@ ccr_coverage_check <- function(spec, data = NULL, path = NULL, today = Sys.Date(
       next
     }
 
-    # 라벨별 고유 엔티티 수
-    cnt <- sub[, .(n = uniqueN(get(entity_col))), by = .(label = as.integer(get(label_col)))]
-    cnt <- cnt[!is.na(label)][order(label)]
+    # 라벨별 고유 엔티티 수 (label_pattern 이 있으면 그것으로 정수 라벨 추출)
+    .cnt_dt <- data.table(label = .ccr_parse_label(sub[[label_col]], spec$label_pattern),
+                          .ent  = as.character(sub[[entity_col]]))
+    cnt <- .cnt_dt[!is.na(label), .(n = uniqueN(.ent)), by = label][order(label)]
     if (nrow(cnt) == 0L) {
       groups[[gname]] <- list(group = gname, status = "NO_DATA", note = "라벨 0건")
       next

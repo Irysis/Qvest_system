@@ -46,9 +46,14 @@ DART_TTM_CACHE  <- file.path(CACHE_DIR, "fundamental_dart_quarterly.parquet")
 
 if (!dir.exists(DART_CACHE_DIR)) dir.create(DART_CACHE_DIR, recursive = TRUE)
 
-# Ensure base collector is loaded (for .dart_fetch_single and DART_API_KEY)
+# Ensure base collector is loaded (for .dart_fetch_single / DART_API_KEY /
+# .dart_result_status). data_collector_dart.R 이 dart_submission_window.R 도 source.
 if (!exists(".dart_fetch_single")) {
   source(file.path(dirname(sys.frame(1)$ofile %||% "."), "data_collector_dart.R"))
+}
+# 제출창 지식 단일 정본 — 직접 source 로도 후보집합 판정부가 반드시 로드되게 (fail-closed)
+if (!exists("dart_due_quarterly_pairs")) {
+  source(file.path(PROJECT_ROOT, "02_Infrastructure", "data", "dart_submission_window.R"))
 }
 
 # Report code → quarter mapping
@@ -226,11 +231,24 @@ dart_fetch_quarterly <- function(years = NULL,
                 if (is.null(ledger)) 0L else nrow(ledger),
                 if (is.null(skip_keys)) 0L else nrow(skip_keys)))
   }
+  # 우선순위: 직전연도 동일 보고서 제출 이력 corp 를 앞으로
+  if (isTRUE(prioritize) && nrow(tasks) > 0 && !is.null(existing) && nrow(existing) > 0) {
+    prev_keys <- unique(existing[, .(corp_code, reprt_code, bsns_year = bsns_year + 1L)])
+    prev_keys[, has_prev := TRUE]
+    tasks <- merge(tasks, prev_keys, by = c("corp_code", "bsns_year", "reprt_code"),
+                   all.x = TRUE)
+    tasks[is.na(has_prev), has_prev := FALSE]
+    setorder(tasks, -has_prev, bsns_year, reprt_code, corp_code)
+    cat(sprintf("[dart_quarterly] 우선순위: 직전연도 제출 이력 corp %d / %d\n",
+                sum(tasks$has_prev), nrow(tasks)))
+  }
+
   cat(sprintf("[dart_quarterly] Remaining tasks: %d\n", nrow(tasks)))
 
   total <- nrow(tasks)
   if (total == 0) {
     cat("[dart_quarterly] Nothing to fetch today (collected or EMPTY-ledger backoff).\n")
+    .dart_log_api_usage("dart_fetch_quarterly", 0L, 0L, 0L, 0L, "", "no_task")
     return(invisible(existing))
   }
 
@@ -242,15 +260,25 @@ dart_fetch_quarterly <- function(years = NULL,
   n_success <- 0; n_empty <- 0; n_fail <- 0
   last_data_ckpt <- 0L
   rate_limited <- FALSE
+  n_calls <- 0L
+  halted  <- ""
 
   for (i in seq_len(total)) {
     task <- tasks[i]
 
+    # 예산 소진 — 다음 task 는 최대 2콜(CFS+OFS) 필요
+    if (is.finite(max_calls) && n_calls + 2L > max_calls) {
+      cat(sprintf("  !! [%d/%d] max_calls 예산 소진(%d/%s) — 진행분 저장 후 종료\n",
+                  i, total, n_calls, format(max_calls)))
+      halted <- "max_calls"
+      break
+    }
+
     if (i %% 100 == 0 || i == 1) {
-      cat(sprintf("  [%d/%d] %s (%s) %d %s | OK:%d EMPTY:%d FAIL:%d\n",
+      cat(sprintf("  [%d/%d] %s (%s) %d %s | OK:%d EMPTY:%d FAIL:%d calls:%d\n",
                   i, total, task$corp_name, task$Ticker,
                   task$bsns_year, task$reprt_code,
-                  n_success, n_empty, n_fail))
+                  n_success, n_empty, n_fail, n_calls))
     }
 
     dt <- tryCatch(
@@ -258,6 +286,7 @@ dart_fetch_quarterly <- function(years = NULL,
                           task$reprt_code, fs_div),
       error = function(e) NULL
     )
+    n_calls <- n_calls + 1L
     st_primary  <- .dart_result_status(dt)
     st_fallback <- NA_character_
 
@@ -268,6 +297,7 @@ dart_fetch_quarterly <- function(years = NULL,
                             task$reprt_code, "OFS"),
         error = function(e) NULL
       )
+      n_calls <- n_calls + 1L
       st_fallback <- .dart_result_status(dt2)
       if (st_fallback == "ok") {
         dt2[, fs_div := "OFS"]
@@ -286,6 +316,7 @@ dart_fetch_quarterly <- function(years = NULL,
       cat(sprintf("  !! [%d/%d] DART 일일 쿼터 초과(status 020) — 잔여 task 중단, 진행분 저장 후 종료\n",
                   i, total))
       rate_limited <- TRUE
+      halted <- "rate_limit"
       break
     }
 
@@ -329,13 +360,15 @@ dart_fetch_quarterly <- function(years = NULL,
     ok_keys <- unique(all_new[, .(corp_code, bsns_year, reprt_code)])
     all_data <- if (!is.null(existing)) rbindlist(list(existing, all_new), fill = TRUE) else all_new
     write_parquet(all_data, DART_QUARTERLY_RAW)
-    cat(sprintf("\n[dart_quarterly] DONE. Total: %d | OK: %d | Empty: %d | Fail: %d\n",
-                nrow(all_data), n_success, n_empty, n_fail))
+    cat(sprintf("\n[dart_quarterly] DONE. Total: %d | OK: %d | Empty: %d | Fail: %d | calls: %d\n",
+                nrow(all_data), n_success, n_empty, n_fail, n_calls))
     out <- all_data
   } else {
-    cat(sprintf("[dart_quarterly] No new data. | OK: 0 | Empty: %d | Fail: %d\n",
-                n_empty, n_fail))
+    cat(sprintf("[dart_quarterly] No new data. | OK: 0 | Empty: %d | Fail: %d | calls: %d\n",
+                n_empty, n_fail, n_calls))
   }
+  .dart_log_api_usage("dart_fetch_quarterly", n_calls, n_success, n_empty, n_fail, halted,
+                      sprintf("years=%s", paste(years, collapse = "|")))
 
   ledger <- .dart_save_empty_ledger(ledger, empty_new, ok_keys = ok_keys)
   cat(sprintf("[dart_quarterly] EMPTY ledger saved: %d entries → %s\n",
@@ -676,7 +709,7 @@ dart_compute_ttm <- function(raw_dt = NULL) {
 # 5. Master Pipeline
 #==============================================================================
 
-dart_quarterly_pipeline <- function(years = 2018:2025) {
+dart_quarterly_pipeline <- function(years = NULL) {
   cat("═══════════════════════════════════════════════\n")
   cat("[dart_quarterly] Starting quarterly pipeline\n")
   cat("═══════════════════════════════════════════════\n\n")

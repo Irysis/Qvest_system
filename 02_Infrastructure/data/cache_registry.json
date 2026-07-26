@@ -9,7 +9,11 @@
       "entry_fn": "function name to call (or '(source)' if top-level script)",
       "schedule": "daily | weekly | monthly | on_demand",
       "date_col": "column name for max(Date) freshness check (null if not applicable)",
-      "file_pattern": "OPTIONAL (2026-06-10 P1) — set for directory caches (path=dir). regex matching member files; freshness = latest matching file. date_col set: max(date_col) of latest file / date_col null: month-end of YYYYMM in latest filename",
+      "file_pattern": "OPTIONAL (2026-06-10 P1) — set for directory caches (path=dir). regex matching member files; freshness = latest matching file. ★2026-07-26 P2-02 집계 규약 명문화: date_col 선언 시 = **file_pattern 매칭 사전순 max 파일 1개**의 max(date_col) (YYYYMM zero-pad → 사전순=시간순; 파일당 1개월이고 완료월은 그 달 최종 거래일에서 멈추므로 최신 파일만으로 프론티어가 잡힌다). date_col 미선언 시 = 파일명 YYYYMM 월말 **추정** — 내용을 한 번도 읽지 않으므로 당월 내내 lag=0 이 되고, 이제 조용히 OK 로 통과하지 않고 FILENAME_ESTIMATE_ONLY/WARN 으로 표기된다. 내부 월의 구멍(D형)은 이 축 소관이 아님(별도 gap 검사)",
+      "date_col_kind": "OPTIONAL (2026-07-26 P2-02/03) — date_col 값의 형식. 'date'(기본: Date/POSIXct/표준 문자열) | 'ym'('YYYY-MM' 문자열 → 그 달 말일) | 'ym_compact'('YYYYMM')",
+      "date_semantics": "OPTIONAL (2026-07-26 P2-02/03) — 'observation'(기본: 관측 시점) | 'period_end'(기간 라벨. 월말 라벨은 당월 진행 중 today 를 앞서므로 음수 lag 을 0 으로 clamp). ★period_end 는 '미래 라벨' 만 상쇄할 뿐 정체는 상쇄하지 않는다 — 시계열이 얼면 lag 은 정상적으로 증가한다",
+      "coverage_check": "OPTIONAL (2026-07-26 P2-03) — **시간축이 없거나(bsns_year) 있어도 미래 스탬프(PIT usable date)라 신선도로 답할 수 없는 캐시**의 내용-도달 축. cache_freshness_audit (1b2) 가 소비, 별도 항목 '<path>::coverage' 로 기록, 위반 = COVERAGE_FAIL/CRITICAL. keys: label_col(회계 라벨 컬럼) / entity_col(고유 개수를 셀 엔티티) / group_col(선택; 보고서 종류 등) / label_pattern(선택; 앵커된 정규식, capture group 1 = 정수 라벨. 예 Period 'YYYYMM' 에서 연간 코호트만 = '^([0-9]{4})12$') / due_rule = {years, md} 또는 {by:'<col>', map:{'<g>':{years,md}}} / grace_days / min_ratio_vs_prior. ★기대 라벨은 **달력(제출기한)에서 먼저** 정한다 — 데이터에 있는 것 중 최신을 쓰면 통째로 빠진 코호트가 영원히 안 보인다(그것이 B형 결함)",
+      "no_content_check": "OPTIONAL (2026-07-26 P2-03) — 내용 도달 축을 **선언할 수 없음을 명시**하는 슬롯. {reason}. 미선언(undeclared)은 NO_COVERAGE_CHECK/WARN 이 되지만, 이 슬롯이 있으면 MTIME_ONLY(OK) + note 로 기록된다. ★'검사됐고 정상'과 '애초에 검사가 없어 조용함'을 상태값으로 가르기 위한 것 — 면제가 아니라 **가시화된 면제**",
       "max_lag_days": "stale alert threshold (days). null if not applicable",
       "depends_on": "list of upstream cache files (topological order)",
       "args": "optional R named-list args passed to entry_fn",
@@ -228,7 +232,21 @@
       "date_col": null,
       "max_lag_days": 35,
       "depends_on": [],
-      "tier": 2
+      "tier": 2,
+      "coverage_check": {
+        "label_col": "bsns_year",
+        "entity_col": "corp_code",
+        "group_col": "reprt_code",
+        "due_rule": {
+          "by": "reprt_code",
+          "map": {
+            "11011": { "years": 1, "md": "03-31" }
+          }
+        },
+        "grace_days": 45,
+        "min_ratio_vs_prior": 0.8
+      },
+      "_coverage_note": "2026-07-26 P2-03. 이 파일엔 **시간축 컬럼이 아예 없다**(rcept_no/bsns_year/corp_code/…) — 그래서 종전엔 mtime 만으로 판정했고, mtime 26일 → FRESH 인 채로 FY2025 사업보고서 결손(corps 50 vs FY2024 714 = 7.0%)이 4개월간 무보고였다(P2-01). due_rule 은 11011(사업보고서) 제출기한 = 익년 3/31 (C4 정합). ★실측 검증(2026-07-26): rcept_no 앞 8자리(접수일) median 이 bsns_year+1 의 3월 중순 — 달력이 아니라 접수일로 확인함. grace 45d = 3/31 + 지각제출 여유(파이프라인 재시도 시즌 종료 4/15 포함)."
     },
     {
       "path": ".cache/dart/dart_raw_quarterly.parquet",
@@ -241,7 +259,24 @@
         ".cache/dart/corpcode_map.parquet"
       ],
       "tier": 2,
-      "_note": "2026-07-14: max_lag 3→100. 분기공시 = 이벤트성(Q1 5월·반기 8월·Q3 11월·연간 3~4월) — daily 수집은 유지하되 소강기(7월 등)에 새 행 부재는 정상. 3일 문턱은 계절성 무시로 CRITICAL 오탐. 100d = 분기 간격 여유(시즌 미갱신은 여전히 감지)"
+      "_note": "2026-07-14: max_lag 3→100. 분기공시 = 이벤트성(Q1 5월·반기 8월·Q3 11월·연간 3~4월) — daily 수집은 유지하되 소강기(7월 등)에 새 행 부재는 정상. 3일 문턱은 계절성 무시로 CRITICAL 오탐. 100d = 분기 간격 여유(시즌 미갱신은 여전히 감지)",
+      "coverage_check": {
+        "label_col": "bsns_year",
+        "entity_col": "corp_code",
+        "group_col": "reprt_code",
+        "due_rule": {
+          "by": "reprt_code",
+          "map": {
+            "11013": { "years": 0, "md": "05-15" },
+            "11012": { "years": 0, "md": "08-14" },
+            "11014": { "years": 0, "md": "11-14" },
+            "11011": { "years": 1, "md": "03-31" }
+          }
+        },
+        "grace_days": 45,
+        "min_ratio_vs_prior": 0.8
+      },
+      "_coverage_note": "2026-07-26 P2-03. mtime-only 판정이던 것을 라벨-코호트 도달로 보강. ★due_rule 은 코드가 아니라 **접수일 실측**에서 왔다: rcept_no 앞 8자리 median 이 11013=05-15 · 11012=08-14 · 11014=11-14 · 11011=익년 03월 중순 (2026-07-26 measured, bsns_year 2023~2025). 이는 DART 공식 코드 의미(11013=1분기 / 11014=3분기)와 일치하지만 **같은 저장소의 `data_collector_dart_quarterly.R::.dart_season_bounds()` 및 `REPRT_MAP` 은 11013↔11014 를 뒤바꿔 갖고 있다**(11014→1Q, 11013→3Q). 그 불일치는 본 registry 소관 밖의 별건 결함이므로 여기서는 **실측 기준**을 정본으로 쓴다 — 코드를 참조했다면 분기 마감을 6개월 어긋나게 선언해 오탐/누락을 동시에 만들었을 것."
     },
     {
       "path": ".cache/dart/insider_trades.parquet",

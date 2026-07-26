@@ -30,21 +30,33 @@ INSIDER_CACHE_PATH <- file.path(DART_CACHE_DIR, "insider_trades.parquet")
 INSIDER_BACKUP_DIR <- file.path(DART_CACHE_DIR, "insider_backup")
 dir.create(INSIDER_BACKUP_DIR, showWarnings = FALSE, recursive = TRUE)
 
+# quarterly_years = NULL (기본, 2026-07-26 P2-01 수리)
+#   → dart_fetch_quarterly 가 제출창+커버리지로 (bsns_year, reprt_code) 쌍을 판정.
+#   구 코드는 current_year(달력 현재연도) 1개만 넘겨, FY2025 사업보고서(2026-03 제출)가
+#   2025년엔 존재하지 않고 2026년엔 요청되지 않는 영구 결손을 만들었다.
+# current_year 는 insider 창 산정에만 남는다 (insider 는 달력 기준이 맞다 —
+#   공시일 자체가 축이라 회계연도 라벨 축이 없음).
+# quarterly_max_calls: 일 10,000콜 한도 중 이 스텝 예산 (fail-closed halt)
 dart_daily_incremental <- function(current_year = as.integer(format(Sys.Date(), "%Y")),
-                                   steps = c("quarterly", "insider")) {
+                                   steps = c("quarterly", "insider"),
+                                   quarterly_years = NULL,
+                                   quarterly_max_calls = 3000) {
 
-  cat(sprintf("\n=== DART Daily Incremental (year=%d, steps=%s) @ %s ===\n",
-              current_year, paste(steps, collapse = "+"),
+  cat(sprintf("\n=== DART Daily Incremental (insider_year=%d, quarterly_years=%s, steps=%s) @ %s ===\n",
+              current_year,
+              if (is.null(quarterly_years)) "auto(제출창+커버리지)" else paste(quarterly_years, collapse = ","),
+              paste(steps, collapse = "+"),
               format(Sys.time(), "%Y-%m-%d %H:%M:%S")))
 
   # ─── 1. Quarterly (resume=TRUE 정합) ────────────────────────────────────────
   if ("quarterly" %in% steps) {
-  cat("\n[1/2] Quarterly fetch (current year, resume=TRUE)...\n")
+  cat("\n[1/2] Quarterly fetch (제출창+커버리지 후보집합, resume=TRUE)...\n")
   source(file.path(PROJECT_ROOT, "02_Infrastructure", "data", "data_collector_dart.R"))
   source(file.path(PROJECT_ROOT, "02_Infrastructure", "data", "data_collector_dart_quarterly.R"))
 
   tryCatch({
-    dart_fetch_quarterly(years = current_year, resume = TRUE)
+    dart_fetch_quarterly(years = quarterly_years, resume = TRUE,
+                         max_calls = quarterly_max_calls)
     dart_compute_ttm()
     cat("[1/2] Quarterly: PASS\n")
   }, error = function(e) {
