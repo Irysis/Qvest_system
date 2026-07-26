@@ -78,3 +78,30 @@
 
 - RAWDATA 자체가 스테일한 경우는 이 guard의 책임 밖 — `cache_freshness_audit`가 담당(책임 분리).
 - 실무 함의: 월간 IC 프론티어는 **직전 완결월**이며, 당월 진행 중에는 전월 IC가 최신이다. 월말 cron이 factor_db 월말 빌드 → IC 갱신 순으로 자동 처리한다.
+
+**판정부 소재 (단일 정본, 2026-07-26)** — 인라인 중복 금지:
+
+| 역할 | 위치 |
+|---|---|
+| 판정 순수 함수 | `02_Infrastructure/factor_db/ic_pair_completeness.R::.ic_pair_complete(sig_d_t1, today, raw_month_last)` |
+| 소비 (빌더) | `factor_db_builder.R::compute_all_factor_ic_monthly()` — source 후 호출 1곳 |
+| 소비 (감시) | `02_Infrastructure/data/ic_frontier_check.R` — 전용 env 위임(`.ICFC_GUARD`), **전역 이름 미생성** |
+| 상설 검사 | `08_Tests/factor_db/test_ic_completion_guard.R` (23건, `run_all_hooks.sh` SUITES 편입) |
+
+⚠ 미러 구현 금지 — 같은 이름(`.ic_pair_complete`)을 다른 시그니처로 두 파일이 정의하면 한 세션에 둘 다 source될 때 나중 것이 이긴다. 2026-07-26 실측: 빌더→감시 순이면 pair 전건이 `unused argument`로 tryCatch에 삼켜져 IC 전량 skip, 감시→빌더 순이면 `guard_agrees`가 항상 FALSE(조용한 오판정). 소비처는 정본을 **위임 호출**만 한다.
+
+## IC 월-프론티어 감시 (2026-07-26 신설)
+
+신선도 축(`Usable_Date` 캘린더 lag ≤ 40일)은 "며칠 지났나"만 재므로, 월말 재빌드 체인(cron → factor_db 월말 스냅샷 → `compute_all_factor_ic_monthly`)이 통째로 실패해도 최대 ~5주간 FRESH로 통과한다. `ic_frontier_check()`가 같은 registry 엔트리에 **"산출 가능한 월을 다 산출했나"** 축을 `::frontier` 결과 1건으로 덧붙인다(소비: `cache_freshness_audit`).
+
+- 판정 operand = guard와 동일(달력 종료 · 그달 RAWDATA 최종 거래일)을 역방향으로 푼 기대 프론티어. 당월 진행 중 전월 IC가 최신인 상태는 `IC_FRONTIER_CURRENT`(OK) — 오탐 아님.
+- `IC_FRONTIER_LAG` 1개월=WARN / 2개월+=CRITICAL, 산출가능일 +`grace_days`(기본 3) 이내는 OK. 기대보다 앞서면 `IC_FRONTIER_AHEAD`(WARN — 부분월 pair 기록 의심).
+- 실측(2026-07-26): IC max Date 2026-05-29 / 기대 2026-05 → CURRENT·OK, `guard_agrees=TRUE`. 위반 주입(IC를 2026-03로 강제) → CRITICAL 발화 확인.
+
+## build_hash 계약 (2026-07-26 수리)
+
+`.cache/factor_db/build_hash.txt` 1행 = `<YYYYMMDDHHMMSS>_<rev>`. 소비자는 전부 n=1 읽기.
+
+- `rev` ∈ {`<gitshort>`, `<gitshort>-dirty`, `nogit<8hex 코드 다이제스트>`, `hashfail`}. git이 아닐 때만 2행에 진단(`# rev_source=… reason=…`)이 붙고 **경고를 동반**한다.
+- 구 구현은 `system(intern=TRUE)` 실패가 *warning*으로만 나 `tryCatch(error=)`가 못 잡았고 `ignore.stderr=TRUE`가 사유를 버려, 2026-07-25 전기간 재빌드 440 write 중 **415건이 `_unknown`**이었다. rev는 '쓰는 시점'이 아니라 **코드를 읽은 시점(source)** 에 1회 확정한다(빌드 중 auto-commit이 HEAD를 움직여 rev가 갈리던 오귀속 제거).
+- 상설 검사: `08_Tests/factor_db/test_build_hash_provenance.R` (17건, SUITES 편입).
