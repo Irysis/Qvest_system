@@ -212,7 +212,10 @@ PG2 active book = **`book_state.json` admitted_ids가 유일 정본** (부팅 `P
 
 ---
 
-## 부팅 직후 체크리스트 (v8.1.3 갱신 — 13 + v8.0 5 + v8.1 4 + v8.1.2 1 + v8.1.3 4건)
+## 부팅 직후 체크리스트 (v8.1.3 갱신 — 13 + v8.0 5 + v8.1 4 + v8.1.2 1 + v8.1.3 4건 + 2026-07-26 1건)
+
+### 2026-07-26 신규 확인 (1건 — 부팅 최신화 자동 배선, 도훈 지시)
+28. ✅ **boot-currency 자기-정합** 라인 — `[boot] boot-currency: OK — 부팅 시퀀스 ↔ 헌법(...) 정합 (N축)`. **WARN이면 나열된 항목을 그 세션이 즉시 수리**(수동 지시 불요 원칙). 기대값은 매 부팅 CLAUDE.md/파일시스템에서 파생(`02_Infrastructure/ops/boot_currency_check.sh` — 버전/모델/모드/낡은-기대값 래칫/인벤토리 스냅샷/훅 총계/PG2 참조 7축). 이 검사가 있으므로 본 체크리스트의 개수-스냅샷·배너 기대값 낡음은 자동 감지된다. 가드 = `08_Tests/hooks/test_boot_currency.sh`(위반 주입 10축).
 
 ### v8.1.3 신규 확인 (4건, 2026-06-20)
 24. ✅ **페이퍼 적재 리서치풀 인지** 상태 라인 — `ResearchPool: route=<date> [NEW|seen · Nd] papers N · route a/o/r/rg/skip` + `AlphaQueue:`(alpha-search 대기 testable · `처리 N (ADOPT a/QUAR q)` auto_alpha_gate 결과) + `ModeQueue:`(optimizer/risk/regime = QEPM 연료 · dispatch 소비여부 · recheck 잔여). Step 3b `paper_recharge`가 적재한 신규 리서치풀을 부팅이 인지(`02_Infrastructure/ops/research_pool_status.py`, `.cache/research_pool_last_seen.json` 마커로 NEW 판정). `Routing: PENDING — collect>route`는 수집됐으나 라우터 미반영(`paper_router_run.sh _FORCE=1`). 부팅 후 갱신 시 Q-Lead가 reader 직접 재실행 가능. SKIP 시 script/python3 점검.

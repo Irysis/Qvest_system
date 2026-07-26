@@ -108,6 +108,8 @@ SUITES=(
   "08_Tests/hooks/test_auto_commit_valve.sh"
   # 2026-07-26 추가: measurement_basis_audit v1.12 계보 resolver (worktree 좌초 회수분의 정본 회귀 가드)
   "08_Tests/portfolio/test_lineage_resolver.R"
+  # 2026-07-26 추가: 부팅 자기-정합 검사(boot_currency_check) 위반 주입 — 부팅 최신화 자동 배선의 가드
+  "08_Tests/hooks/test_boot_currency.sh"
 )
 
 _suite_cmd() {
