@@ -42,7 +42,16 @@ def _resolve_root(argv):
         if not a.startswith("--"):
             if os.path.isdir(a):
                 return a
-    for env in ("QM_ROOT", "CLAUDE_PROJECT_DIR"):
+    # (2026-07-26 RPS-07 수리) r-portability 금칙 ④ = resolver 는 CLAUDE_PROJECT_DIR 우선.
+    #   구 순서(QM_ROOT 먼저)는 두 값이 다른 트리를 가리킬 때 **다른 저장소의 산출**을
+    #   읽고도 정상 보고를 낸다. 또 존재검사만으론 정체를 못 보므로 표지로 확인한다
+    #   ("있다"가 "그것이다"를 뜻하지 않는다).
+    MARKER = os.path.join("02_Infrastructure", "ops", "research_pool_status.py")
+    for env in ("CLAUDE_PROJECT_DIR", "QM_ROOT"):
+        v = os.environ.get(env)
+        if v and os.path.isfile(os.path.join(v, MARKER)):
+            return v
+    for env in ("CLAUDE_PROJECT_DIR", "QM_ROOT"):   # 표지 없으면 존재검사로 폴백(구 동작)
         v = os.environ.get(env)
         if v and os.path.isdir(v):
             return v
@@ -64,11 +73,16 @@ def _latest(stage, pattern):
 
 
 def _load(path):
+    # (2026-07-26 RPS-02 수리) 구현은 파일 부재와 파싱/IO 실패를 모두 None 으로 융합해,
+    #   손상 산출물이 "데이터 없음"과 구분되지 않았다(계측 실패가 정상값 0 으로 위장).
+    #   부재 = None / 실패 = 센티넬. 소비측이 라인에 사유를 인쇄한다.
+    if not os.path.exists(path):
+        return None
     try:
         with open(path, "r", encoding="utf-8") as f:
             return json.load(f)
-    except Exception:
-        return None
+    except Exception as e:
+        return {"__load_error__": type(e).__name__}
 
 
 def _processed_list(obj):
@@ -132,6 +146,11 @@ def collect(root):
         out["route_date"] = route_d
         out["age_days"] = _age_days(route_d)
         rj = _load(route_path) or {}
+        if isinstance(rj, dict) and rj.get("__load_error__"):
+            # (RPS-02) 손상 산출물 — 아래 파생 숫자는 전부 0/None 이 되므로
+            #   "데이터 없음"으로 오독된다. 사유를 세워 render 가 숫자 대신 사유를 찍게.
+            out["route_parse_error"] = rj["__load_error__"]
+            rj = {}
         out["counts_by_route"] = rj.get("counts_by_route", {}) or {}
         # (2026-07-26 probe① 수리) 생산자 route json에 n_papers 키가 없다(실키 = papers 리스트).
         # 구판은 없는 키 조회 → None → 부팅 라인 "papers ?" 영구 표시 (필드명 불일치 =
@@ -218,7 +237,10 @@ def collect(root):
             out["gate_quarantine"] += 1
 
     # 4. mode 큐(최신) — QEPM 연료
-    mq_path, _ = _latest(stage, "mode_queue_*.json")
+    # (2026-07-26 RPS-04 수리) 구현은 날짜를 버려(`_`) mode 큐가 route 보다 과거여도
+    #   현재 연료처럼 보였다. alpha 큐와 동일하게 stamp 를 살려 stale 태그를 붙인다.
+    mq_path, mq_d = _latest(stage, "mode_queue_*.json")
+    out["mode_queue_date"] = mq_d
     if mq_path:
         mj = _load(mq_path) or {}
         for k in ("optimizer", "risk", "regime"):
