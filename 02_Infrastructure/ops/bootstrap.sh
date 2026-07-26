@@ -826,23 +826,7 @@ echo "WT 누적:    ${WT_ACTIVE}건 (역대 디렉터리 총수 — 진행중 �
 echo "Inbox:      alpha=$ALPHA_T risk=$RISK_T optimizer=$OPT_T forge=$FORGE_T judge=$JUDGE_T governor=$GOV_T"
 echo "Axioms:     active=$AX_ACTIVE candidates=$AX_CAND (sot_map documented=$AX_DOC_ACTIVE: documented=$AX_DOCUMENTED_MODE / block=$AX_BLOCK_MODE / advisory=$AX_ADVISORY_MODE)"
 echo "Cache_core: $AX_CACHE_STATUS"
-# (2026-07-26) 사용률 잔여 — 세션 **시작 전에** 안다. 실측: 하루 상승분의 절반가량이
-#   무인 파이프라인이 아니라 **대화형 세션**(병렬 포함) 소비였다(07-26 19~20시대 +11%p,
-#   그 시간 무인 잡 로그 7~12줄뿐). 주 소비원을 모르면 무인 감축만으로는 못 막는다.
-#   ★sd(주간 창)는 소진 시 정해진 리셋까지 며칠 막힌다 — fh(5시간, 5분 회복)와 성격이 다름.
-if [ -f "$PROJECT/02_Infrastructure/ops/_sched_failure_classify.sh" ]; then
-  . "$PROJECT/02_Infrastructure/ops/_sched_failure_classify.sh" 2>/dev/null || true
-  if command -v sched_usage_state >/dev/null 2>&1; then
-    _us=$(sched_usage_state 2>/dev/null); _uf=$(sched_usage_forecast_hours 2>/dev/null)
-    case "$_us" in
-      sd_critical) echo "Usage:      ★임계 — 주간 사용률 소진 임박. 무거운 리서치 보류 권고${_uf:+ (약 ${_uf}h 후 소진)}" ;;
-      sd_high)     echo "Usage:      주의 — 주간 사용률 여유 적음${_uf:+ · 현 추세 약 ${_uf}h 후 소진(추정)}. 병렬 세션·alpha-search 편수 조절 권고" ;;
-      fh_high)     echo "Usage:      5시간 창 높음 (수분 내 롤오버 회복 — 재시도 유효)" ;;
-      ok)          echo "Usage:      여유 정상" ;;
-      *)           echo "Usage:      판별 불가 ($_us — 데스크톱 앱 미기동/절전 시 기록 정지)" ;;
-    esac
-  fi
-fi
+# (2026-07-26 도훈 지시) 사용률 배너 제거 — 한도는 구독 외생 변수, 관리 변수로 취급 금지.
 if [ -n "$RESEARCH_POOL" ]; then
   echo "$RESEARCH_POOL"
 else
