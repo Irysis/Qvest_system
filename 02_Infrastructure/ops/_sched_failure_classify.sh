@@ -67,118 +67,28 @@ sched_failure_guidance() {
   esac
 }
 
-# ── 사용률 창 사전 점검 (2026-07-26) — 차단당한 뒤 알지 말고 미리 안다.
-#    구조(plan-usage-history.json 733샘플 실측): u.fh = 5시간 롤링 창 %, u.sd = 7일 롤링 창 %.
-#    ★두 창은 회복 속도가 근본적으로 다르다:
-#      fh 100% → 0% 회복 = 5분 이내(2사례 실측) → 재시도로 해결 가능
-#      sd 는 7일 창이라 100% 도달 시 **며칠** 막힌다 → 재시도 무의미, 사전 회피만이 답
-#    실측 위험: 2026-07-26 하루에 sd 58%→89%(시간당 +5.5%p). 과거 최대 98%.
-#    반환: ok / fh_high / sd_high / sd_critical / unknown
-SCHED_FH_WARN="${SCHED_FH_WARN:-85}"
-SCHED_SD_WARN="${SCHED_SD_WARN:-85}"
-SCHED_SD_CRIT="${SCHED_SD_CRIT:-95}"
-#    ★신선도 검사 필수(2026-07-26 미검축): 이 파일은 **데스크톱 앱이 5분 주기로 갱신**한다.
-#      앱이 꺼져 있거나 PC 절전이면 기록이 멈추고, 검사기는 낡은 값을 현재로 오인한다.
-#      실측 공백: 07-21→07-24 4,705분(3.3일), 07-26 727분. 그 사이 실제 사용은 계속됐다.
-#      낡은 'ok' 를 믿는 것이 낡은 'high' 보다 위험하므로, 신선도 미달은 unknown 으로 떨어뜨린다.
-#      (unknown 은 호출부에서 보류가 아니라 통과 — fail-open. 감시 부재를 차단으로 바꾸지 않는다.)
-SCHED_USAGE_MAX_AGE_SEC="${SCHED_USAGE_MAX_AGE_SEC:-1800}"   # 30분 (갱신주기 5분의 6배)
-sched_usage_state() {
-  local f="${CLAUDE_USAGE_HISTORY:-$APPDATA/Claude/plan-usage-history.json}"
-  [ -f "$f" ] || { echo "unknown"; return 0; }
-  local mt age
-  mt=$(stat -c %Y "$f" 2>/dev/null || echo 0)
-  age=$(( $(date +%s) - ${mt:-0} ))
-  if [ "$age" -gt "$SCHED_USAGE_MAX_AGE_SEC" ] 2>/dev/null; then
-    echo "unknown_stale"; return 0
-  fi
-  local last fh sd
-  last=$(grep -oE '\{"t":[0-9]+,"org":"[^"]*","u":\{"fh":[0-9]+,"sd":[0-9]+\}\}' "$f" 2>/dev/null | tail -1)
-  [ -n "$last" ] || { echo "unknown"; return 0; }
-  fh=$(printf '%s' "$last" | grep -oE '"fh":[0-9]+' | grep -oE '[0-9]+')
-  sd=$(printf '%s' "$last" | grep -oE '"sd":[0-9]+' | grep -oE '[0-9]+')
-  [ -n "$fh" ] && [ -n "$sd" ] || { echo "unknown"; return 0; }
-  if [ "$sd" -ge "$SCHED_SD_CRIT" ] 2>/dev/null; then echo "sd_critical"; return 0; fi
-  if [ "$sd" -ge "$SCHED_SD_WARN" ]  2>/dev/null; then echo "sd_high";     return 0; fi
-  if [ "$fh" -ge "$SCHED_FH_WARN" ]  2>/dev/null; then echo "fh_high";     return 0; fi
-  echo "ok"
-}
+# ── (2026-07-26 도훈 지시로 제거) 사용률 창 사전 점검·예측·보류/감축
+#    "한도소비 관련한 제약사항들, 방어형 조건들 모두 없애. 한도 소비하면 재충전 후 내가 재개"
+#    ★기존 mandate 재확인: [[feedback-spend-limit-external-not-gate]] — 지출한도는 구독 외생
+#      변수이지 아키텍처 게이트가 아니다. 한도를 관리 변수로 재취급 금지.
+#      오늘(07-26) 내가 그 mandate 를 어기고 보류·감축 게이트를 만들었다가 되돌린다.
+#    유지되는 것: 실패 사유 분류(진단) + 경보 발행(도훈이 재개 시점을 알기 위해).
 
-# ── sd 소진 예상 시각 (2026-07-26) — 임계에 닿아야 아는 것보다 미리 아는 게 낫다.
-#    최근 N시간 기울기로 100% 도달까지 남은 시간을 추정한다.
-#    ★추정일 뿐이다: 사용 패턴이 바뀌면 빗나간다. 판정(차단/감축)에는 쓰지 않고
-#      **안내 문구에만** 덧붙인다 — 추정치로 게이트를 움직이면 오차가 차단이 된다.
-#    반환: 정수 시간(<=0 이면 이미 소진 추세 아님/산출 불가는 빈 문자열)
-SCHED_FORECAST_WINDOW_H="${SCHED_FORECAST_WINDOW_H:-3}"
-sched_usage_forecast_hours() {
-  local f="${CLAUDE_USAGE_HISTORY:-$APPDATA/Claude/plan-usage-history.json}"
-  [ -f "$f" ] || return 0
-  local py; py=$(sched_resolve_python 2>/dev/null) || return 0
-  [ -n "$py" ] || return 0
-  "$py" - "$f" "$SCHED_FORECAST_WINDOW_H" <<'PY' 2>/dev/null
-import json,sys,io,time
-try:
-    d=json.load(io.open(sys.argv[1],encoding='utf-8'))
-    win=float(sys.argv[2])*3600*1000
-    s=[x for x in d.get('samples',[]) if 'u' in x and 'sd' in x['u']]
-    if len(s)<2: sys.exit(0)
-    now=s[-1]['t']
-    seg=[x for x in s if x['t']>=now-win]
-    if len(seg)<2: sys.exit(0)
-    dt=(seg[-1]['t']-seg[0]['t'])/3600000.0
-    dv=seg[-1]['u']['sd']-seg[0]['u']['sd']
-    if dt<=0 or dv<=0: sys.exit(0)          # 상승 아니면 예측 없음
-    rem=100-seg[-1]['u']['sd']
-    if rem<=0: print(0); sys.exit(0)
-    print(int(rem/(dv/dt)))
-except Exception: pass
-PY
-}
-
-sched_usage_guidance() {
-  case "${1:-}" in
-    sd_critical) echo "★7일 사용률 창이 임계(${SCHED_SD_CRIT}%+) — 이 창은 100% 도달 시 며칠 막히며 재시도로 풀리지 않습니다. 무거운 자동 리서치(alpha-search 등) 기동을 미루십시오." ;;
-    sd_high)     _f=$(sched_usage_forecast_hours 2>/dev/null)
-                 echo "주간 사용률 ${SCHED_SD_WARN}%+ — 여유가 적습니다. 병렬 alpha-search 편수를 줄이는 것을 권합니다.$([ -n "${_f:-}" ] && printf ' 현 추세라면 약 %s시간 후 소진(추정 — 사용량 변하면 달라짐).' "$_f")" ;;
-    fh_high)     echo "5시간 창 ${SCHED_FH_WARN}%+ — 곧 차단될 수 있으나 5분 내 롤오버로 회복됩니다(재시도 유효)." ;;
-    ok)            echo "사용률 여유 정상." ;;
-    unknown_stale) echo "사용률 기록이 낡음(${SCHED_USAGE_MAX_AGE_SEC}초 초과 — 데스크톱 앱 미기동/절전 추정). 현재 소진도를 알 수 없으므로 판정을 신뢰하지 않습니다. 차단하지는 않되(fail-open) 무거운 작업 전 앱을 켜 갱신을 확인하십시오." ;;
-    *)             echo "사용률 판별 불가(기록 파일 부재·형식 변경)." ;;
-  esac
-}
-
-# ── 사유별 당일 재시도 상한 (2026-07-26)
-#    상한을 사유와 무관하게 두면 **당일 안 풀리는 원인에 재시도를 낭비**한다.
-#    spend_limit 은 월 리셋까지 안 풀리므로 당일 재시도가 무의미하고,
-#    auth_expired 는 사람 조치가 있어야 풀리므로 1회만 열어 조치 후 다음 트리거가 잡게 한다.
-#    반대로 크래시·rate limit 은 즉시 재시도 가치가 크다.
-#    ★2026-07-26 정정: `spend limit` 을 "월 단위라 당일 회복 불가"로 보고 상한 0(재시도 금지)로
-#      뒀는데 **오답이었다**. 실측(plan-usage-history.json): 사용률은 fh(5시간 창)/sd(7일 창)
-#      **롤링 윈도우**이고, 18:18 fh=100% 로 막혔다가 **18:23 fh=0% 로 자동 롤오버**해 즉시 회복됐다.
-#      에러 문구가 "monthly spend limit" 이라 월 단위로 오독한 것 — 문구를 기전으로 착각했다.
-#      ∴ 이 사유야말로 **잠시 후 재시도가 가장 유효**하다. 상한을 넉넉히 준다.
+# ── 사유별 당일 재시도 상한
+#    (2026-07-26 도훈 지시) 한도 관련 특별취급 제거 — spend_limit/rate_limit 을
+#    다른 실패와 구분해 상한·대기를 두던 로직을 없앤다. 한도 소진 시 그냥 멈추고,
+#    재충전 후 도훈이 재개시킨다. 재시도는 크래시 등 일반 실패에만 남긴다.
 sched_retry_cap() {
   case "${1:-}" in
-    spend_limit|spend_limit_fallback_*) echo 4 ;;   # 5시간 창 롤오버로 자동 회복 — 재시도 유효
-    rate_limit)                         echo 4 ;;   # 동일 성격
-    auth_expired|credentials_*)         echo 1 ;;   # 사람 조치 필요 — 조치 후 1회 기회
-    count_measurement_failed)           echo 1 ;;   # 환경 문제 — 반복해도 같음
-    *)                                  echo 3 ;;   # 미분류·크래시
+    spend_limit|spend_limit_fallback_*|rate_limit) echo 0 ;;   # 한도 = 재시도 안 함(수동 재개)
+    auth_expired|credentials_*)                    echo 1 ;;   # 사람 조치 후 1회
+    count_measurement_failed)                      echo 1 ;;
+    *)                                             echo 3 ;;   # 크래시·미분류
   esac
 }
 
-# ── 재시도 최소 간격 (창 롤오버를 기다려야 의미가 있는 사유)
-#    즉시 재시도는 같은 벽에 부딪히므로 직전 시도로부터 이 시간이 지나야 재진입한다.
-#    ★값 근거(2026-07-26 plan-usage-history 732샘플 실측): fh 100% → 0% 회복이
-#      2사례 모두 5분(=샘플 해상도 한계, 실제는 그 이내). 단 90%+ 고부하 구간은
-#      15~115분 지속된 적이 있어 회복 직후 재차단 여지가 있다.
-#      ∴ 회복시간(≤5분)에 여유를 더해 600초. 구 900초는 근거 없는 임의값이었다.
-sched_retry_backoff_sec() {
-  case "${1:-}" in
-    spend_limit|spend_limit_fallback_*|rate_limit) echo 600 ;;
-    *)                                             echo 0 ;;
-  esac
-}
+# 재시도 대기 간격 — 한도 특별취급 제거로 전 사유 0(대기 없음).
+sched_retry_backoff_sec() { echo 0; }
 
 # ── 연속 실패 카운트 (같은 사유 N회 연속 = 학습된 무시 방지용 에스컬레이션)
 #    경보 마커 파일명 규칙 {comp}_{reason}_{YYYYMMDD}.alert 를 세어 추정.
