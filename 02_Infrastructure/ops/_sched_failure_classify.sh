@@ -72,7 +72,17 @@ sched_failure_streak() {
 #    반환: ok / no_refresh_token / expired / missing / unknown
 sched_check_credentials() {
   local cred="${CLAUDE_CREDENTIALS_PATH:-$HOME/.claude/.credentials.json}"
+  local acct="$HOME/.claude.json"
   [ -f "$cred" ] || { echo "missing"; return 0; }
+  # ★저장소 분리 감지 (2026-07-26 실사고): 데스크톱 앱은 웹 세션(%APPDATA%/Claude 의 Cookies·
+  #   IndexedDB·LocalStorage)에, npm CLI 는 ~/.claude/.credentials.json 에 각각 저장한다.
+  #   앱에서 재로그인해도 CLI 토큰은 그대로다 — "재로그인했는데 왜 여전히 401?" 의 정체.
+  #   계정 파일(~/.claude.json)만 최신이고 토큰 파일이 낡았으면 이 상태로 단정한다.
+  if [ -f "$acct" ] && [ "$acct" -nt "$cred" ]; then
+    if grep -qE '"refreshToken"[[:space:]]*:[[:space:]]*""' "$cred" 2>/dev/null; then
+      echo "app_login_only"; return 0
+    fi
+  fi
   # refreshToken 이 빈 문자열이면 자동 갱신 불가 = 만료 즉시 영구 실패 (2026-07 실사고 기전)
   if grep -qE '"refreshToken"[[:space:]]*:[[:space:]]*""' "$cred" 2>/dev/null; then
     echo "no_refresh_token"; return 0
@@ -141,7 +151,8 @@ RS
 
 sched_credentials_guidance() {
   case "${1:-}" in
-    no_refresh_token) echo "리프레시 토큰이 비어 있어 자동 갱신 경로가 없습니다 — 액세스 토큰 만료 시 헤드리스 실행이 영구 실패합니다. claude 재로그인 필요." ;;
+    app_login_only)   echo "★데스크톱 앱에서만 로그인됨 — 앱(웹 세션)과 npm CLI(~/.claude/.credentials.json)는 저장소가 분리돼 있어 앱 재로그인이 CLI 에 도달하지 않습니다. 반드시 '일반 터미널'에서 CLI 로 로그인하십시오: claude setup-token (완료 확인은 claude -p 왕복으로만 — auth status 는 존재만 검사)." ;;
+    no_refresh_token) echo "리프레시 토큰이 비어 있어 자동 갱신 경로가 없습니다 — 액세스 토큰 만료 시 헤드리스 실행이 영구 실패합니다. 일반 터미널에서 claude setup-token 실행 필요." ;;
     expired)          echo "액세스 토큰이 만료됐습니다. claude 재로그인 필요." ;;
     missing)          echo "자격증명 파일이 없습니다. claude 로그인 필요." ;;
     ok)               echo "정상." ;;
