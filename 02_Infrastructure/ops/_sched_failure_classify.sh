@@ -20,8 +20,16 @@
 sched_classify_failure() {
   local rc="${1:-0}" log="${2:-}"
   [ "${rc:-0}" -eq 0 ] && { echo "ok"; return 0; }
+  # ★로그는 당일 append-only 라 과거 실행의 실패 문구가 그대로 남는다.
+  #   구현이 tail 전체를 우선순위로만 훑어, **이미 해소된 과거 오류가 현재 실패를 가린다**.
+  #   실사고(2026-07-26 18:17): 현재 원인은 spend limit 인데 15:38 의 401 이 먼저 매칭돼
+  #   auth_expired 로 오분류 → "재인증하십시오"라는 정반대 조치를 안내했다.
+  #   ∴ 마지막 실행 구간(가장 최근 시작 마커 이후)만 본다. 마커가 없으면 짧은 꼬리로 제한.
   local tail_txt=""
-  [ -n "$log" ] && [ -f "$log" ] && tail_txt=$(tail -n 40 "$log" 2>/dev/null)
+  if [ -n "$log" ] && [ -f "$log" ]; then
+    tail_txt=$(awk '/\[(alpha_queue|router|recheck)\] (start|trigger)/{buf=""} {buf=buf $0 ORS} END{printf "%s", buf}' "$log" 2>/dev/null)
+    [ -z "$tail_txt" ] && tail_txt=$(tail -n 15 "$log" 2>/dev/null)
+  fi
 
   # ① 인증 만료 — 사람 개입 없이는 영구 실패. 최우선 판정.
   if printf '%s' "$tail_txt" | grep -qiE "OAuth access token has expired|Re-authenticate to continue|API Error: 401|invalid[_ ]token|unauthorized"; then
