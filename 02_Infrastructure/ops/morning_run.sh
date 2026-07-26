@@ -46,9 +46,34 @@ stage_result() {   # $1=표시명 $2=exit코드 $3=경보 컴포넌트명
   [ "$IS_WEEKEND" = "1" ] && echo "weekend (dow=$DOW) — 논문 파이프라인만 실행, 브리핑 skip"
 
   # 2) once-per-day 락 (atomic). 이미 오늘 실행됐으면 skip → @reboot+cron 중복 방지
+  #
+  # (2026-07-26 도훈 지시 "오류 나면 재시도할 수 있게") 실사고: 15:21 첫 실행이 인증 만료로
+  #   빈 통과했는데 15:24 cron 은 락 때문에 skip 됐고, 사람이 락을 지울 때까지 그날은 끝이었다.
+  #   ★락은 '중복 방지'용이지 '실패 확정'용이 아니다 — 실패한 실행이 하루를 소모하면 안 된다.
+  #   재시도 허용 조건(둘 중 하나):
+  #     ① .done 마커 없음        = 중도 사망(크래시·kill) → 완주 안 했으므로 재시도
+  #     ② 오늘 경보 마커 존재    = 어떤 단계가 실질 실패(fail-soft exit 0) → 재시도
+  #   무한 재시도 방지: 하루 MAX_RETRY 회까지만 (기본 3).
+  MORNING_MAX_RETRY="${MORNING_MAX_RETRY:-3}"
   if ! ( set -o noclobber; echo "$$ @ $(date) trigger=$TRIGGER" > "$LOCK" ) 2>/dev/null; then
-    echo "already ran today ($LOCK exists) — skip"
-    exit 0
+    _retry_reason=""
+    [ ! -f "${LOCK}.done" ] && _retry_reason="직전 실행 미완주(.done 없음 — 중도 사망)"
+    if [ -z "$_retry_reason" ]; then
+      _alert=$(ls -1 "$BASE/.cache/scheduler_alerts/"*"_${TODAY}.alert" 2>/dev/null | head -1)
+      [ -n "$_alert" ] && _retry_reason="직전 실행에 경보 발행($(basename "$_alert" | sed "s/_${TODAY}\.alert//"))"
+    fi
+    if [ -z "$_retry_reason" ]; then
+      echo "already ran today ($LOCK exists, 완주·무경보) — skip"
+      exit 0
+    fi
+    _n=$(cat "${LOCK}.retry" 2>/dev/null || echo 0)
+    if [ "${_n:-0}" -ge "$MORNING_MAX_RETRY" ] 2>/dev/null; then
+      echo "재시도 상한 도달 (${_n}/${MORNING_MAX_RETRY}) — skip. 사유: $_retry_reason"
+      exit 0
+    fi
+    echo $(( _n + 1 )) > "${LOCK}.retry"
+    rm -f "${LOCK}.done" 2>/dev/null
+    echo "★재시도 진입 ($(( _n + 1 ))/${MORNING_MAX_RETRY}) — $_retry_reason"
   fi
   # 오래된 락 정리 (7일+)
   find /tmp -maxdepth 1 -name "qm_morning_run_*.lock" -mtime +7 -delete 2>/dev/null || true
