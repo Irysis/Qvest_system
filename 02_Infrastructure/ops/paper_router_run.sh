@@ -170,6 +170,22 @@ rc=$?
 log "claude -p exit=$rc"
 # (2026-07-26) 성공하면 해당 컴포넌트의 미해소 마커를 아카이브 — 사유 해소 후에도 마커가
 #   남으면 다음 실패가 과거와 이어져 streak 을 부풀리고 가짜 격상을 낸다(삭제 아닌 이동).
+# (2026-07-26) ★실제 라우팅된 편수를 로그에 남긴다.
+#   `downloaded=N` 은 **레지스트리 등록 기준**이지 "신규 N편"이 아니다. 중복·기처리분이 포함돼
+#   있어 실제 라우팅 대상과 크게 다를 수 있다(오늘 실측: downloaded=16 인데 순수 신규 1편).
+#   이 라벨만 보고 "16편 대기"로 오독하는 사고가 실제로 났으므로, 결과 수를 함께 찍는다.
+if [ "$rc" -eq 0 ]; then
+  _rj="$BASE/stage_artifacts/paper_recharge/alpha_search_route_${TODAY}.json"
+  if [ -f "$_rj" ] && [ -n "${PYBIN:-}" ] || command -v sched_resolve_python >/dev/null 2>&1; then
+    _pb="${PYBIN:-$(sched_resolve_python 2>/dev/null || echo python3)}"
+    _routed=$("$_pb" -c "
+import json,io,sys
+try:
+    d=json.load(io.open(sys.argv[1],encoding='utf-8')); print(len(d.get('papers',[])))
+except Exception: print('?')" "$_rj" 2>/dev/null)
+    log "라우팅 결과: route JSON 수록 ${_routed:-?}편 (등록기준 downloaded=$DL — 중복·기처리 포함이라 신규수와 다름)"
+  fi
+fi
 if [ "$rc" -eq 0 ] && command -v sched_mark_resolved >/dev/null 2>&1; then
   _mv=$(sched_mark_resolved "paper_router" "$BASE/.cache/scheduler_alerts")
   [ -n "${_mv:-}" ] && log "해소: 미해소 마커 ${_mv}건 _resolved/ 로 아카이브"
