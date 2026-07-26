@@ -89,14 +89,39 @@ build_wt_timeline <- function(wt_id) {
     }
   }
 
+  #──────────────────────────────────────────────────────────────────────────────
+  # (2026-07-26 WTL-4 수리, probe② 감사 확정 · 도훈 승인) ledger 를 나이·내용 검증 없이
+  #   소비했다. 실물 qepm/observability/events.jsonl 은 **247바이트 test fixture 1건**
+  #   (event_type="test_event", hook_name="test_hook", file_path="/tmp/test.json",
+  #   2026-05-01자)뿐 — 실이벤트 적재가 멈춘 stub 인데 timeline 에 **실 이벤트로 편입**됐고
+  #   (실증: timelines/wt_WT-D20260501_003.json 에 test_hook 1건), timeline_built_at 이
+  #   Sys.time() 으로 신선한 스탬프를 찍어 낡은 픽스처가 현재 관측처럼 보였다.
+  #   수리: ① ledger 나이·행수를 timeline 에 기록 ② test_event/test_hook 은 편입 제외
+  #        ③ 비었거나 30일+ stale 이면 ledger_status 로 명시.
+  #──────────────────────────────────────────────────────────────────────────────
+  ledger_status <- "ABSENT"
+  ledger_age_days <- NA_real_
+  ledger_n_lines <- 0L
   if (file.exists(LEDGER_PATH)) {
     ledger_lines <- tryCatch(readLines(LEDGER_PATH, warn = FALSE),
                               error = function(e) character())
+    ledger_n_lines <- length(ledger_lines[nzchar(ledger_lines)])
+    ledger_age_days <- tryCatch(
+      as.numeric(difftime(Sys.time(), file.info(LEDGER_PATH)$mtime, units = "days")),
+      error = function(e) NA_real_)
+    ledger_status <- if (ledger_n_lines == 0L) "EMPTY"
+                     else if (!is.na(ledger_age_days) && ledger_age_days > 30)
+                       sprintf("STALE (%.0f일 미갱신, %d행) — 실이벤트 적재 정지 의심",
+                               ledger_age_days, ledger_n_lines)
+                     else sprintf("ok (%d행)", ledger_n_lines)
     for (line in ledger_lines) {
       if (!nzchar(line)) next
       entry <- tryCatch(fromJSON(line, simplifyVector = FALSE),
                          error = function(e) NULL)
       if (is.null(entry)) next
+      # test fixture 는 관측이 아니다 — 실 이벤트로 편입 금지
+      if (identical(entry$event_type %||% "", "test_event") ||
+          identical(entry$hook_name %||% "", "test_hook")) next
       if (!is.null(entry$wt_id) && entry$wt_id == wt_id) {
         events[[length(events) + 1]] <- list(
           source = "events_jsonl",

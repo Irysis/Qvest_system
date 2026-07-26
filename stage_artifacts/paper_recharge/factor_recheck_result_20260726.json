@@ -56,5 +56,36 @@
     "n_still_uncertain": 0,
     "promoted_factors": ["dart_risk_section_sentiment (2607.14174)"],
     "processing_note": "jina read_url 402 → arxiv MCP 전환. 2607.21170 전문(87,987자) 서브에이전트 분할독. 2607.14174/2606.15473 전문 메인 직접 정독."
+  },
+  "supplementary_qc": {
+    "note": "tier-2 큐 공백 → autorun 대기 후보 2건 교차검증(tier-1 'high confidence testable' 사후 검토). 배치434 가드 좁게 적용: 둘 다 날조 아님(메커니즘·입력 논문에 명확). 단 tier-1이 횡단면 수익 예측력을 과신. 신뢰도 정정.",
+    "items": [
+      {
+        "paper_id": "2607.19005",
+        "factor_name": "vol_rank_stability",
+        "tier1_verdict": "testable / confidence=high / autorun=true",
+        "tier2_qc_verdict": "testable_medium",
+        "batch434_guard": "해당 없음 — 논문이 per-stock vol rank Markov chain 메커니즘을 명확히 기술(Eq.7 P^V_{ab}). std(rank_pct_vol)는 충실한 재구성(persistence → stability).",
+        "correction": "논문은 집합(ensemble) N×N 전이행렬의 스펙트럼·엔트로피를 시장 레짐 진단에 사용. 개별 종목 vol_rank_stability → 횡단면 수익 IC/t-stat 직접 검정 전무(§7 outlook에서 미래 확장 언급만). 횡단면 수익 예측력은 '추가 가설 레이어'.",
+        "confidence_downgrade": "high → medium",
+        "redundancy_check": "기존 저변동성 팩터(D47_CVaR·D48_VaR·시리즈)와 상관 확인 필요. low-vol anomaly 변종 가능성.",
+        "direction": "empirical 양방향 필수 — 논문이 방향 주장 없음. 低vol 안정성(안전 프리미엄) vs 高vol 안정성(sector 특화 momentum) 양방향 모두 검정.",
+        "action": "autorun 진행 가능. 단 alpha-search 보고 시 '저자 미검정 횡단면 추론' 명시 + 기존 저변동성 팩터 corr 포함."
+      },
+      {
+        "paper_id": "2607.19497",
+        "factor_name": "spec_lowfreq_mass",
+        "tier1_verdict": "testable / confidence=high / autorun=true",
+        "tier2_qc_verdict": "testable_medium",
+        "batch434_guard": "해당 없음 — 논문이 스펙트럼 저주파 질량 계산(Poisson kernel 가중 자기상관 적분, Eq.5.4)과 TF 기대수익 관계를 명확히 기술. 이를 per-stock 횡단면 factor로 사상하는 것은 충실한 재구성.",
+        "correction": "논문 분석 단위는 선물 계약 1개에 적용한 TF 시스템 — 주식 유니버스 횡단면 적용이 아님. 크로스섹션 IC/t-stat 검정 전무. 선물→주식, 시스템-레벨→종목-레벨 이식은 추가 가설.",
+        "confidence_downgrade": "high → medium",
+        "redundancy_check": "모멘텀 팩터(M01_Mom6·M02_Mom12 계열)와 상관 확인 필수. spec_lowfreq_mass ≈ '추세지속성 지표'이므로 momentum redundant 가능성 高.",
+        "direction": "high spec_lowfreq_mass → 추세지속 → 모멘텀 수혜 가능성(양의 방향 prior). 단 empirical 양방향 검정 의무.",
+        "action": "autorun 진행 가능. 단 alpha-search 보고 시 '저자 미검정 횡단면 추론 + 선물→주식 이식' 명시 + 기존 모멘텀 팩터 corr 포함."
+      }
+    ],
+    "processed_by": "tier-2 post-hoc QC (20260726 연속성 작업)",
+    "batch434_summary": "2건 모두 날조 아님 — 논문 메커니즘 명확, 재구성 정당. tier-1 과신(high→medium 정정)이 이슈의 전부."
   }
 }
