@@ -48,7 +48,10 @@ scheduler_alert(){
   # (2026-07-25) R 문자열 리터럴 주입 가드: Windows 역슬래시 경로를 R 이 유니코드 이스케이프로
   #   오해해(C:\Users → '\U' used without hex digits) 텔레그램만 조용히 죽던 잠복 버그.
   #   마커는 남으므로 더 안 보인다. 주입 전 역슬래시 → 슬래시 정규화.
-  local LOG="${LOG//\\//}" detail="${detail//\\//}"
+  #   ⚠ ${v//\\//} 형태는 이 셸에서 '/' 를 지우고 '\' 를 남긴다(실측) — tr 로만 처리할 것.
+  local LOG_R detail_R
+  LOG_R=$(printf '%s' "$LOG" | tr '\\' '/')
+  detail_R=$(printf '%s' "$detail" | tr '\\' '/')
   local rfile="$adir/_tg_alert_${comp}_${TODAY}.R"
   cat > "$rfile" <<RS
 suppressWarnings(suppressMessages({
@@ -69,8 +72,8 @@ res <- tryCatch(tg_agent_brief(
     list(type = "kv", emoji = "\U0001F4CB", heading = "상세",
          kv = list("구성요소" = "${comp}",
                    "사유" = "${reason}",
-                   "내용" = "${detail}",
-                   "로그" = "${LOG}"))
+                   "내용" = "${detail_R}",
+                   "로그" = "${LOG_R}"))
   )
 ), error = function(e) { cat("tg fail:", conditionMessage(e), "\n"); NULL })
 RS
