@@ -87,6 +87,23 @@ sched_check_credentials() {
   echo "unknown"
 }
 
+# ── 경보 본문 주석 조립 (자동복구 축 + 연속실패 에스컬레이션 + 조치 안내) — 3 호출부 공통.
+#    ★에스컬레이션이 있어야 "같은 톤 반복 → 학습된 무시"가 끊긴다.
+#      실사고: alpha_queue 가 5회 연속 동일 401 경보를 같은 문구로 보내는 동안 8일 방치(07-19~26).
+#    streak 은 마커 파일({comp}_{reason}_YYYYMMDD.alert) 일자별 누적 개수로 센다.
+SCHED_ESCALATE_AT="${SCHED_ESCALATE_AT:-3}"
+sched_failure_annotate() {
+  local comp="${1:-}" reason="${2:-}" adir="${3:-}"
+  local streak guide auto esc=""
+  streak=$(sched_failure_streak "$comp" "$reason" "$adir")
+  guide=$(sched_failure_guidance "$reason")
+  auto=$(sched_failure_autorecovers "$reason")
+  if [ "${streak:-0}" -ge "$SCHED_ESCALATE_AT" ] 2>/dev/null; then
+    esc="★${streak}일째 동일 실패 — 자동 해소 기대를 중단하고 수동 개입하십시오. "
+  fi
+  printf '자동복구=%s | 연속=%s | %s%s' "$auto" "${streak:-0}" "$esc" "$guide"
+}
+
 # ── 경보 발행 (마커 + 텔레그램). alpha/paper 의 검증된 scheduler_alert 와 동일 계약.
 #    ★기존 2곳의 자체 정의는 건드리지 않는다(작동 중) — 미보유 스크립트만 이 경로를 쓴다.
 #    caller 는 BASE / LOG / TODAY 를 정의해 두어야 한다.

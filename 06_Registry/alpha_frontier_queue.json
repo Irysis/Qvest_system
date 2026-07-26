@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "sot": "02_Infrastructure/docs/qvest_v8_3_alpha_discovery_sot.md §4",
-  "updated": "2026-07-25 (firm-level 빌드: FQ-064 data_blocked→15083277 활용신청·FQ-065 throughput 프로브)",
+  "updated": "2026-07-26 (FQ-064 실측 재현 + 풀-귀속 분해 → config-scoped negative 확정; '풀 편향' 가설 실측 기각)",
   "consume_rule": "새 발굴 리서치 착수 전: hypothesis_index lookup → 본 큐 확인 → owner/status 갱신. 완료 시 result_ref(L-code/보고서) 기입. dohoon_decision 항목은 세션 임의 착수 금지.",
   "entries": [
     {
@@ -1300,8 +1300,8 @@
     },
     {
       "id": "FQ-064",
-      "status": "data_blocked_dohoon_apply_15083277_20260725",
-      "owner": "{}",
+      "status": "measured_config_scoped_negative_20260726",
+      "owner": "Q-Lead session 2026-07-26 (실측 재현 + 풀-귀속 분해)",
       "lane": "non_return",
       "signal_type": "cross_sectional_selection",
       "access_gate": "dohoon_register_datagokr",
@@ -1310,13 +1310,39 @@
       "ev_rationale": "★최고-EV firm-level 비-return SELECTION(수익 병목=선별 계층 직접 작용). hypothesis_index 965 전수 virgin. insider(FQ-001)와 독립 원천.",
       "wall_check": "IC→PORT_t top-25 cap-w 전이 벽이 최종 관문. 대기업 다-사업장 법인합산·자회사 귀속 노이즈. 정규직 위주(노동집약 편향 정규화). data.go.kr 3046071/15071659, 대안 고용보험 15002150.",
       "data_gate": "data.go.kr 무료 서비스키 등록(도훈) — DATA_GO 키 부재. crosswalk=DART 기업개황 API(15034604, DART_API_KEY 보유).",
-      "next_action": "★도훈: data.go.kr 데이터셋 15083277(국민연금 가입 사업장 내역_날짜) 활용신청. 승인 후 1커맨드 canonical 측정. (최종 관문=IC→PORT_t top-25 cap-w 전이 벽)",
+      "next_action": "실측 완료(07-26 재실행, 07-25 산출과 bit-일치). 판정 = config-scoped NEGATIVE. cap-w PORT_t -2.2156(p 0.0267) / 풀EW-상대 -2.1470 / 6 config 전부 음수. ★귀속 분해 실측(fq064_pool_attribution.json): NPS-매칭 풀 자체의 시장 대비 열위는 t_NW -1.267 (p 0.205, alpha_ann -1.80%/yr) = 비유의 → **'풀 편향' 가설 기각**. 신호는 자기 풀 EW 대비로도 유의하게 열위(-2.147)이며, 풀-내 random-25 null (EWuni t median -1.521, n=20)보다도 나쁜 쪽. 고용성장 모멘텀 방향(±)·horizon(3/6M)·base(hc/pay) 전 조합 무효. 부활 조건(INV-7): ① data.go.kr 15083277 승인으로 마스킹 없는 full 사업자번호 확보 시 crosswalk 정밀도 개선분 재측정(현 매칭은 사업장명 정규화 기반, 롤업 불균일 잔여편향) ② 고용 스톡/모멘텀이 아닌 축(임금-per-head = pay/hc 質 신호, 신규취득-상실 비대칭) ③ selection 아닌 exclusion·overlay 소비면. 잔여 미측정: cap-tier 분해(size_dt 미전달 — 러너에 size_dt 인자 추가 필요).",
       "source_refs": [
         "2026-07-24 discovery workflow wf_1880d1fd-16e (도훈 지시: 공공데이터포털·TRASS·ECOS·FRED 신규 알파소스)",
         "discovery rank #1 (high)"
       ],
       "scaffold_note": "★DART crosswalk 실구축 완료(474 상장사 K200∪KQ150·bizr_no 474/474 결측0)·PIT_plan·러너 템플릿 준비. data.go.kr 키 발급+전파 완료(게이트웨이 수락 확인). firm-level 빌드 wf_6c1b1736-b24 in-flight. ★리스크=국민연금 API backfill depth(현재 스냅샷만이면 insufficient_history).",
-      "build_result_20260725": "firm-level 빌드(wf_6c1b1736-b24)=data_blocked(negative 아님, 미측정). ★강한 준비상태: 엔드포인트 확정(odcloud fileData API base api.odcloud.kr/api/15083277/v1/uddi:{월uuid}, 128 endpoint). backfill 124개월(2015-12~2026-05, 결측 2월)=현재-스냅샷 우려 해소, 백테 이력 풍부. 스키마 확인=BZOWR_RGST_NO(사업자 10자리 비마스킹)+JNNGP_CNT(가입자수)+신규/상실+업종+법인구분. PIT 버그 수리(구 placeholder sig=data_ym-01 ~1.5mo look-ahead → sig_ym=data_ym+1, usable M+1 15일). crosswalk 100%. ★유일 블로커=활용신청 ID 정정: 도훈이 신청한 3046071(OpenAPI 랜딩)이 아니라 fileData→odcloud 실역사 패널 **15083277** 활용신청 필요(현 키는 나라장터 1230000엔 유효, odcloud 15083277엔 -401). 활용신청 후 1커맨드: pull_nps.py → run_fq064_headcount.R(STEP2~5 자동 canonical)."
+      "build_result_20260725": "firm-level 빌드(wf_6c1b1736-b24)=data_blocked(negative 아님, 미측정). ★강한 준비상태: 엔드포인트 확정(odcloud fileData API base api.odcloud.kr/api/15083277/v1/uddi:{월uuid}, 128 endpoint). backfill 124개월(2015-12~2026-05, 결측 2월)=현재-스냅샷 우려 해소, 백테 이력 풍부. 스키마 확인=BZOWR_RGST_NO(사업자 10자리 비마스킹)+JNNGP_CNT(가입자수)+신규/상실+업종+법인구분. PIT 버그 수리(구 placeholder sig=data_ym-01 ~1.5mo look-ahead → sig_ym=data_ym+1, usable M+1 15일). crosswalk 100%. ★유일 블로커=활용신청 ID 정정: 도훈이 신청한 3046071(OpenAPI 랜딩)이 아니라 fileData→odcloud 실역사 패널 **15083277** 활용신청 필요(현 키는 나라장터 1230000엔 유효, odcloud 15083277엔 -401). 활용신청 후 1커맨드: pull_nps.py → run_fq064_headcount.R(STEP2~5 자동 canonical).",
+      "measure_result_20260726": {
+        "metric_type": "canonical_screen (contract build_benchmark_compare 경유)",
+        "n_months": 118,
+        "period": "2016-03 ~ 2026-06",
+        "matched_pool": "상장사 447사 / 사업장-월 81,177행 / 124개월",
+        "signal_vs_mkt_capw_PORT_t": -2.2156,
+        "signal_vs_pool_EW_t": -2.147,
+        "pool_EW_vs_mkt_capw_t": -1.267,
+        "pool_EW_vs_mkt_pvalue": 0.205,
+        "pool_EW_vs_mkt_alpha_ann": -0.018,
+        "random25_null_capw_t_median": -1.9,
+        "random25_null_poolEW_t_median": -1.521,
+        "random25_null_n_seeds": 20,
+        "turnover_annual_signal_vs_random": "11.26 vs 22.22",
+        "attribution_verdict": "풀 편향 비유의(-1.267, p 0.205) → 음(-)의 주성분은 신호 자체. 구 서술 '풀 교란이 설명'은 07-26 실측으로 반증·정정됨.",
+        "artifacts": [
+          "fq064_out/fq064_canonical.json",
+          "fq064_out/fq064_random_null.json",
+          "fq064_out/fq064_pool_attribution.json"
+        ],
+        "runners": [
+          "run_fq064_headcount.R",
+          "fq064_random_null.R",
+          "run_fq064_pool_attrib.R"
+        ]
+      }
     },
     {
       "id": "FQ-065",

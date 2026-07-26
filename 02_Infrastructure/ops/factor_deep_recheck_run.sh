@@ -95,9 +95,9 @@ if [ "$rc" -ne 0 ]; then
     [ "$rc" -ne 0 ] && reason="spend_limit_fallback_exit_${rc}"
   fi
   if [ "$rc" -ne 0 ] && command -v sched_alert_emit >/dev/null 2>&1; then
-    _g=$(sched_failure_guidance "$reason"); _a=$(sched_failure_autorecovers "$reason")
+    _ann=$(sched_failure_annotate "factor_recheck" "$reason" "$BASE/.cache/scheduler_alerts")
     sched_alert_emit "factor_recheck" "$reason" \
-      "claude -p exit=$rc (N=$N) | 자동복구=${_a} | ${_g}"
+      "claude -p exit=$rc (N=$N) | ${_ann}"
   fi
 fi
 exit 0

@@ -181,12 +181,11 @@ if [ "$rc" -ne 0 ]; then
     [ "$rc" -ne 0 ] && reason="spend_limit_fallback_exit_${rc}"
   fi
   if [ "$rc" -ne 0 ]; then
-    _g=""; _a=""
-    if command -v sched_failure_guidance >/dev/null 2>&1; then
-      _g=$(sched_failure_guidance "$reason"); _a=$(sched_failure_autorecovers "$reason")
-    fi
+    _ann=""
+    command -v sched_failure_annotate >/dev/null 2>&1 && 
+      _ann=$(sched_failure_annotate "paper_router" "$reason" "$BASE/.cache/scheduler_alerts")
     scheduler_alert "paper_router" "$reason" \
-      "claude -p exit=$rc (downloaded=$DL backlog=${BACKLOG_DATES:-none}) | 자동복구=${_a:-unknown} | ${_g:-로그 확인 필요}"
+      "claude -p exit=$rc (downloaded=$DL backlog=${BACKLOG_DATES:-none}) | ${_ann:-로그 확인 필요}"
   fi
 fi
 # v3.1 (2026-07-10 F-4, v8.3 적대검증): exit-0 무산출 백로그 만료 임박 경보.

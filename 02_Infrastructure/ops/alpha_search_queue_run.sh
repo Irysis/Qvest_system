@@ -151,12 +151,11 @@ if [ "$rc" -ne 0 ]; then
     [ "$rc" -ne 0 ] && reason="spend_limit_fallback_exit_${rc}"
   fi
   if [ "$rc" -ne 0 ]; then
-    _g=""; _a=""
-    if command -v sched_failure_guidance >/dev/null 2>&1; then
-      _g=$(sched_failure_guidance "$reason"); _a=$(sched_failure_autorecovers "$reason")
-    fi
+    _ann=""
+    command -v sched_failure_annotate >/dev/null 2>&1 && 
+      _ann=$(sched_failure_annotate "alpha_queue" "$reason" "$BASE/.cache/scheduler_alerts")
     scheduler_alert "alpha_queue" "$reason" \
-      "claude -p exit=$rc (pending=$N MAX_ALPHA=$MAXA) | 자동복구=${_a:-unknown} | ${_g:-로그 확인 필요}"
+      "claude -p exit=$rc (pending=$N MAX_ALPHA=$MAXA) | ${_ann:-로그 확인 필요}"
   fi
 fi
 exit 0
