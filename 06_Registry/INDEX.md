@@ -1,20 +1,19 @@
 # 06_Registry INDEX
 
-> 자동 생성 2026-07-25 10:37 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
+> 자동 생성 2026-07-26 01:10 — 큐레이션 원본: `06_Registry/index_descriptions.json` (role/status/category 수동 보완처) · 재생성: `Rscript 02_Infrastructure/tools/build_artifact_index.R` (daily_refresh 말미 자동). 본 파일 직접 수정 금지 — 재생성 시 덮어씀.
 
-## 데이터 (10)
+## 데이터 (9)
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
 | `index_descriptions.json` | 존별 INDEX 큐레이션 DB (본 파일 — 사람 수동 보완, build_artifact_index.R이 소비해 INDEX.md 4개 생성) | active | 2026-07-25 | 45KB |
-| `hygiene_report.json` | 일간 파일위생 감사 리포트 (ops/artifact_hygiene_audit.R 산출 — 자동정리 삭제 기록 + artifact-storage.md 위반 감지) | active | 2026-07-25 | 597B |
-| `artifact_index.json` | build_artifact_index.R이 daily_refresh 말미 자동 재생성하는 전체 산출물 기계가독 인덱스 | active | 2026-07-24 | 326KB |
+| `hygiene_report.json` | 일간 파일위생 감사 리포트 (ops/artifact_hygiene_audit.R 산출 — 자동정리 삭제 기록 + artifact-storage.md 위반 감지) | active | 2026-07-25 | 875B |
+| `artifact_index.json` | build_artifact_index.R이 daily_refresh 말미 자동 재생성하는 전체 산출물 기계가독 인덱스 | active | 2026-07-25 | 327KB |
 | `book_carrier/` | PG2 book 수익 캐리어(carrier_STR_1715_*) + H1/H1b/H2 오버레이·가중 A/B 실측 결과 저장소 | active | 2026-06-18 | 727KB |
 | `idea_registry.json` | 구 S0 아이디어 소싱 레지스트리 — telegram_notify.R이 아직 참조하나 갱신은 06-08 정지 | legacy | 2026-06-07 | 40KB |
 | `live_track/STR_1715_on_M4_R05_noLayer4_PG2/` | 현행 PG2 book(noLayer4) 라이브 페이퍼트래킹 — daily_nav/paper_nav/holdout_interval, TaskScheduler 월간 소비 | active | 2026-07-23 | 155KB |
 | `live_track/STR_1715_FaithTrend_on_M4_R05_overlay_PG2/` | 제거된 구 FaithTrend 오버레이 라이브트랙 — look-ahead 판명 후 rollback 보존분(도훈 지시) | legacy | 2026-07-13 | 5KB |
 | `strategy_grades.json` | 전략 등급 레지스트리 — 검색 인덱스와 v8 readiness gate가 소비 (06-08 이후 정지 상태이나 게이트 의존) | active | 2026-06-07 | 79KB |
-| `strategy_registry.json` | 전략 마스터 레지스트리(178+ STR 메타) — telegram·strategy_registry.R 소비, 06-21 갱신 | active | 2026-07-08 | 275KB |
 | `alpha_frontier_queue.json` | 상설 알파 프론티어 큐 SOT — '다음에 뭘 시도할지' EV순 (발굴 착수 전 확인·owner 표기 의무, dohoon_decision 항목 임의 착수 금지. v8.3 §4) | active | 2026-07-24 | 190KB |
 
 ## 계약 (5)
@@ -60,6 +59,13 @@
 |---|---|---|---|---|
 | `ramp/` | RAMP 모드 레지스트리 존 — approved_factor_library.parquet(102 승인팩터)·CCS 13-score·Gate3/5 summary·ramp_registry·roadmap_status (07-04 갱신 중) | active | 2026-07-03 | 116KB |
 
+## 레지스트리 (2)
+
+| 항목 | 정체 | status | 최근 | 크기 |
+|---|---|---|---|---|
+| `strategy_registry.json` | 전략 레지스트리 — ★2세대 스키마 공존(2026-07-25 확인). 신세대 239건 = alpha_search register_strategy 산출(role/grade/score/committed_via, dir 필드 없음 = 설계). 구세대 150건 = v55 계보(id/name/dir/hurdle_*), dir 중 디스크 실재 2건뿐 — dir 신뢰 불가. 디스크 전략 디렉토리 429개를 담는 인덱스가 아니므로 '미등재'는 결손이 아님. 디렉토리 식별은 이 파일이 아니라 디렉토리명 전체로 할 것 | active | 2026-07-08 | 275KB |
+| `*.bak (큐 백업본)` | 큐 파일 편집 전 백업본(alpha_frontier_queue·overlay_candidate_queue) — 원본이 정본 | archive | 2026-07-14 | 120KB |
+
 ## 지식-Axiom엔진 (9)
 
 | 항목 | 정체 | status | 최근 | 크기 |
@@ -80,12 +86,6 @@
 |---|---|---|---|---|
 | `{continuity_cases.json, firewall_cases.json}` | Continuity Firewall 자가발전 케이스 저장소 — continuity_gate.py --append-case 소비(우회어 학습) | active | 2026-07-18 | 40KB |
 
-## 레지스트리 (1)
-
-| 항목 | 정체 | status | 최근 | 크기 |
-|---|---|---|---|---|
-| `*.bak (큐 백업본)` | 큐 파일 편집 전 백업본(alpha_frontier_queue·overlay_candidate_queue) — 원본이 정본 | archive | 2026-07-14 | 120KB |
-
 ## 문서 (2)
 
 | 항목 | 정체 | status | 최근 | 크기 |
@@ -97,13 +97,21 @@
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `ast_field_map_v0.json` | AST 계층 v1.1 field_dictionary 정본 — 전 데이터 58그룹 실측 리프 맵(FIELD 22·PTR 11·STORED 15·LLM 2·EXT 5). SOT: docs/qvest_ast_v1_1_sot.md | active | 2026-07-24 | 134KB |
+| `ast_field_map_v0.json` | AST 계층 v1.1 field_dictionary 정본 — 전 데이터 58그룹 실측 리프 맵(FIELD 22·PTR 11·STORED 15·LLM 2·EXT 5). SOT: docs/qvest_ast_v1_1_sot.md | active | 2026-07-25 | 136KB |
 
 ## 하네스-감시 (1)
 
 | 항목 | 정체 | status | 최근 | 크기 |
 |---|---|---|---|---|
-| `stranded_repairs.json` | worktree 미커밋 수리 감사 산출 — stranded_repairs_audit.sh(무인 12/20시)가 파일 triage·충돌탐지·prune 후보 기록 | active | 2026-07-25 | 7KB |
+| `stranded_repairs.json` | worktree 미커밋 수리 감사 산출 — stranded_repairs_audit.sh(무인 12/20시)가 파일 triage·충돌탐지·prune 후보 기록 | active | 2026-07-25 | 9KB |
+
+## 미분류 (3) — index_descriptions.json에 추가하세요
+
+| 항목 | 정체 | status | 최근 | 크기 |
+|---|---|---|---|---|
+| `ast_operator_backlog.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-25 | 1KB |
+| `ast_structure_log.jsonl` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-25 | 14KB |
+| `suite_totals_baseline.json` | (미분류 — index_descriptions.json에 추가하세요) | - | 2026-07-25 | 304B |
 
 ## stale 큐레이션 키 (4) — 디스크 부재, index_descriptions.json에서 제거 권장
 
