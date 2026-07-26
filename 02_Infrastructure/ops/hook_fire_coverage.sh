@@ -84,6 +84,7 @@ ROTATE_MAX="${QVEST_HFC_ROTATE_MAX:-20000}"
 #   (실측 에러: integer expected). 숫자만 남기고 기본값을 준다.
 _n_now=$(grep -c . "$LEDGER" 2>/dev/null | head -1 | tr -dc '0-9')
 _n_now=${_n_now:-0}
+_hfc_update_sidecar   # ★회전 전에 압축 — 회전이 잃을 정보를 먼저 건진다
 if [ "${_n_now:-0}" -gt "$ROTATE_MAX" ]; then
   _keep=$(( ROTATE_MAX / 2 ))
   if tail -n "$_keep" "$LEDGER" > "$LEDGER.rot.tmp" 2>/dev/null; then
