@@ -262,9 +262,15 @@ run_step("inv_git_log", {
                      "--oneline", "--no-color", "--no-merges"),
             stdout = TRUE, stderr = TRUE),
     error = function(e) character(0)))
+  # (2026-07-26 WCS-02 수리) git 실패를 character(0) 으로 흡수하면 n_commits=0 이
+  #   "커밋 없는 주"와 **구분 불가**(계측 실패를 정상값 0 으로 위장). 상태를 이름으로 남긴다.
   st <- attr(gl, "status")
-  if (!is.null(st) && st != 0) gl <- character(0)
-  inventory$git_log_7d <- list(n_commits = length(gl), head = as.list(head(gl, 30)))
+  git_ok <- is.null(st) || st == 0
+  if (!git_ok) gl <- character(0)
+  inventory$git_log_7d <- list(
+    n_commits = if (git_ok) length(gl) else NA_integer_,
+    collect_status = if (git_ok) "ok" else sprintf("FAILED (git status=%s) — 0 아님, 미관측", st),
+    head = as.list(head(gl, 30)))
   invisible(TRUE)
 })
 
@@ -514,6 +520,8 @@ run_step("continuity_review", {
 # [4] cleaner_pending.json 기록 — /cleaner 증류 세션이 소비, bootstrap이 마커 감지
 # =============================================================================
 sweep_deleted_n <- length(weekly_deleted$cache_scratch) + length(weekly_deleted$temp_logs) +
+  # (2026-07-26 WCS-04) NA(=hygiene 감사 산출 미판독)를 0 으로 흡수하면 "삭제 0건" 과
+  #   구분 불가. 합계에는 0 을 쓰되 미관측 사실은 아래 pending 에 별도 필드로 남긴다.
   (if (is.na(hygiene_deleted_n)) 0L else hygiene_deleted_n)
 pending_path <- file.path(root, ".cache", "cleaner_pending.json")
 run_step("write_pending", {
@@ -552,6 +560,9 @@ run_step("write_pending", {
     sweep_deleted_n = sweep_deleted_n,
     sweep_detail  = list(
       hygiene_audit_deleted_n     = hygiene_deleted_n,
+      # (2026-07-26 WCS-04) 합계에 0 으로 들어간 것이 '삭제 0' 인지 '미관측' 인지 구분
+      hygiene_audit_status        = if (is.na(hygiene_deleted_n))
+        "UNMEASURED (hygiene 감사 산출 미판독 — 합계에는 0으로 계상됨)" else "measured",
       weekly_cache_scratch_7d     = as.list(weekly_deleted$cache_scratch),
       weekly_temp_logs_30d        = as.list(weekly_deleted$temp_logs),
       manifest                    = ".cache/hygiene_manifest.log"

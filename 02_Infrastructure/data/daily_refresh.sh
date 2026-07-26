@@ -60,14 +60,37 @@ echo "[env] RSCRIPT=$RSCRIPT"
 
 # ── run_r: Windows Rscript 멀티라인 -e 함정(첫 줄만 실행) 회피 (v8.1.1) ──────
 #   temp .R 파일 경유 실행. R 코드 본문은 호출부 single-quote 블록 그대로 보존.
+#──────────────────────────────────────────────────────────────────────────────
+# (2026-07-26 DR-01 수리, probe② 감사 확정 · 도훈 승인) run_r 은 rc 를 성실히 반환하지만
+#   **검사하는 호출부가 0곳**이었다(22개 전부 미검사) + set -e 부재 + 마지막 명령이 echo
+#   → 스크립트는 **항상 exit 0**. tryCatch 밖 실패(config.R source 실패, library(arrow)
+#   로드 실패, Rscript 세그폴트 = 이 저장소의 실측 실패부류)가 나면 그 스텝의 R 에러만
+#   로그에 남고 [7] 이 "[Daily Refresh v2 완료]" 를 무조건 발송하고 exit 0 한다.
+#   소비자(.bat, bootstrap 백그라운드)는 exit code 를 안 읽으므로 실패 표면이 0개 —
+#   스텝 절반이 죽어도 크론 관점에선 매일 성공이었다.
+#   수리: 호출부 22곳을 건드리지 않고 run_r 자신이 실패를 누적한다(단일 지점).
+#         종료 시 실패 목록을 이름으로 출력 + 비-0 종료 + 텔레그램 본문에도 병기.
+#──────────────────────────────────────────────────────────────────────────────
+DR_FAILED=()
+DR_STEP=0
 run_r() {
   local _tmp _rc
-  _tmp=$(mktemp /tmp/qm_refresh_XXXX.R) || { echo "[run_r] mktemp failed"; return 1; }
+  DR_STEP=$((DR_STEP + 1))
+  _tmp=$(mktemp /tmp/qm_refresh_XXXX.R) || {
+    echo "[run_r] mktemp failed"; DR_FAILED+=("r${DR_STEP}:mktemp"); return 1; }
   printf '%s\n' "$1" > "$_tmp"
   "$RSCRIPT" --no-save "$_tmp"
   _rc=$?
   rm -f "$_tmp"
+  if [ "$_rc" -ne 0 ]; then
+    DR_FAILED+=("r${DR_STEP}(rc=$_rc)")
+    echo "[run_r] ★r${DR_STEP} FAILED rc=$_rc — 체인은 계속되나 최종 종료코드·요약에 반영됨"
+  fi
   return $_rc
+}
+# 실패 요약 문자열 (set -u 안전 — 빈 배열 확장 회피)
+dr_fail_summary() {
+  if [ "${#DR_FAILED[@]}" -eq 0 ]; then printf '없음'; else printf '%s' "${DR_FAILED[*]}"; fi
 }
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -498,6 +521,9 @@ fi
 
 echo "[7/7] Telegram + NAV + Memory..."
 cd "$INFRA"
+# (2026-07-26 DR-01) 지금까지의 실패 스텝을 R 로 넘겨 본문에 병기 — "완료" 만 보내던
+#   구판은 스텝 절반이 죽어도 성공 통보였다. 이 시점까지의 누적을 쓴다(이후 [8][9]는 별도).
+export DR_FAILED_SO_FAR="$(dr_fail_summary)"
 run_r '
   library(data.table)
   source("config.R")
@@ -505,8 +531,11 @@ run_r '
   raw <- as.data.table(arrow::read_parquet(RAWDATA_CACHE))
   last_d <- max(raw$Date)
   n_tickers <- uniqueN(raw[Date == last_d]$Ticker)
-  msg <- sprintf("[Daily Refresh v2 완료]\nRAWDATA: %s까지 (%d tickers)\n총 %s rows",
-                 last_d, n_tickers, format(nrow(raw), big.mark=","))
+  .fails <- Sys.getenv("DR_FAILED_SO_FAR", "없음")
+  .hdr <- if (identical(.fails, "없음")) "[Daily Refresh v2 완료]"
+          else sprintf("[Daily Refresh v2 ★부분실패 — %s]", .fails)
+  msg <- sprintf("%s\nRAWDATA: %s까지 (%d tickers)\n총 %s rows",
+                 .hdr, last_d, n_tickers, format(nrow(raw), big.mark=","))
   if (Sys.getenv("QVEST_REFRESH_TG", "0") == "1") {     # v8.1.1 telegram guard
     tryCatch(tg_send(msg), error = function(e) cat("TG send failed:", e$message, "\n"))
   } else {
@@ -563,4 +592,10 @@ if (!is.null(r)) cat(sprintf("[distill] 최근 1일 판정 %d건 [%s]\n", r$n, q
 #     다음 --check 가 "수치 없음은 정상이 아니다"로 경고한다.
 bash "$INFRA/ops/suite_totals_watch.sh" --collect || echo "[warn] suite totals collect failed (fail-soft)"
 
-echo "=== Daily Refresh v2 Done @ $(date) ==="
+# (2026-07-26 DR-01) 실패 스텝을 이름으로 표면화 + 종료코드 반영.
+#   "Done" 이 무조건 찍히던 구판은 크론·bootstrap 어느 쪽에도 실패 신호를 주지 못했다.
+if [ "${#DR_FAILED[@]}" -gt 0 ]; then
+  echo "=== Daily Refresh v2 Done — ★실패 ${#DR_FAILED[@]}스텝: $(dr_fail_summary) @ $(date) ==="
+  exit 1
+fi
+echo "=== Daily Refresh v2 Done (실패 0) @ $(date) ==="

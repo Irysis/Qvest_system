@@ -841,14 +841,50 @@ check_memory_health <- function(project_root, no_write = FALSE) {
                       "Memory Knowledge Health Gate (v7.2.1)",
                       "WARN", "memory_health_latest parse fail"))
     }
-    hard <- rep$summary$hard_fail_count %||% 0L
-    warn <- rep$summary$warning_count %||% 0L
-    status <- if (hard == 0) "PASS" else "FAIL"
+    #──────────────────────────────────────────────────────────────────────────
+    # (2026-07-26 MKH-01/VRG-4 수리, probe② 감사 확정 · 도훈 승인) 두 결함:
+    #  ① 캐시 나이 미검증 — 같은 파일의 soak_record 는 ran_at 을 검사하는데(:645) 이
+    #     체크만 누락. 헬스 파이프라인이 몇 주 멈춰도 낡은 스냅샷의 hard=0 을
+    #     "PASS (cached)" 로 **현재형** 보고했다.
+    #  ② `%||% 0L` 폴백 — summary 필드가 결측/개명되면 hard=0 → 무조건 PASS.
+    #     스키마 드리프트가 곧바로 거짓 초록(결측=미관측이지 0이 아니다).
+    #──────────────────────────────────────────────────────────────────────────
+    if (is.null(rep$summary$hard_fail_count)) {
+      return(mk_check("memory_health", "Memory Knowledge Health Gate (v7.2.1)",
+                      "WARN",
+                      "summary$hard_fail_count 필드 부재 — 스키마 드리프트 의심(0 폴백 금지)",
+                      report_path))
+    }
+    hard <- rep$summary$hard_fail_count
+    warn <- rep$summary$warning_count %||% NA_integer_
+    age_h <- NA_real_
+    ran <- rep$ran_at %||% rep$generated_at %||% NULL
+    if (!is.null(ran)) {
+      age_h <- tryCatch(as.numeric(difftime(Sys.time(),
+                          as.POSIXct(substr(as.character(ran)[1], 1, 19),
+                                     format = "%Y-%m-%dT%H:%M:%S"),
+                          units = "hours")),
+                        error = function(e) NA_real_)
+    }
+    MH_MAX_AGE_H <- 24   # 부팅이 매 세션 갱신하므로 24h 초과 = 파이프라인 정지 신호
+    if (hard != 0) {
+      status <- "FAIL"
+    } else if (is.na(age_h)) {
+      status <- "WARN"
+    } else if (age_h > MH_MAX_AGE_H) {
+      status <- "WARN"
+    } else {
+      status <- "PASS"
+    }
+    detail <- sprintf("hard=%s warn=%s (cached%s)", format(hard), format(warn),
+                      if (is.na(age_h)) ", ★나이 미상 — 신선 취급 금지"
+                      else sprintf(", %.1fh 경과%s", age_h,
+                                   if (age_h > MH_MAX_AGE_H)
+                                     sprintf(" ★>%dh: 낡은 스냅샷이라 현재 상태의 증거 아님",
+                                             MH_MAX_AGE_H) else ""))
     return(mk_check("memory_health",
                     "Memory Knowledge Health Gate (v7.2.1)",
-                    status,
-                    sprintf("hard=%d warn=%d (cached)", hard, warn),
-                    report_path))
+                    status, detail, report_path))
   }
   out <- run_cmd("Rscript",
                  c("02_Infrastructure/memory/memory_knowledge_health.R"),

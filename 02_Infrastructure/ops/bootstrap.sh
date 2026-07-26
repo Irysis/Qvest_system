@@ -93,11 +93,19 @@ fi
 #    + promote helper selftest + cache_core STALE 감지를 한 번에 처리.
 MKH_R="$PROJECT/02_Infrastructure/memory/memory_knowledge_health.R"
 if [ -f "$MKH_R" ]; then
-  MKH_OUT=$(cd "$PROJECT" && Rscript "$MKH_R" 2>&1 || true)
+  # (2026-07-26 MKH-02 수리) 구 `|| true` 가 exit code 를 전량 폐기했다. R 은 summary 를
+  #   먼저 출력(:553-556)하고 report 를 나중에 쓰므로(:575), write_json 실패(권한/디스크/
+  #   OneDrive 락)는 stdout 에 이미 "Hard fails: 0" 이 있어 **초록으로 위장**되고
+  #   memory_health_latest.json 은 이전 실행분으로 stale 잔존한다(그걸 readiness 가 재소비).
+  #   ${MKH_HARD:-99} fail-closed 는 summary 출력 *전* 크래시만 막는다.
+  MKH_OUT=$(cd "$PROJECT" && Rscript "$MKH_R" 2>&1); MKH_RC=$?
   MKH_HARD=$(echo "$MKH_OUT" | grep -oE 'Hard fails: [0-9]+' | awk '{print $3}')
   MKH_WARN=$(echo "$MKH_OUT" | grep -oE 'Warnings: +[0-9]+' | awk '{print $2}')
   MKH_INFO=$(echo "$MKH_OUT" | grep -oE 'Infos: +[0-9]+' | awk '{print $2}')
   echo "[boot] Memory health: hard=${MKH_HARD:-?} warn=${MKH_WARN:-?} info=${MKH_INFO:-?}"
+  if [ "${MKH_RC:-0}" != "0" ]; then
+    echo "[boot] WARN: memory health rc=${MKH_RC} — summary 는 나왔으나 스크립트가 비-0 종료 (report write 실패 의심: memory_health_latest.json 이 stale 일 수 있음)"
+  fi
   if [ "${MKH_HARD:-99}" != "0" ]; then
     echo "[boot] ERROR: memory_knowledge_health HARD FAIL — Q-Lead 즉시 수정 (qepm/observability/memory_health_latest.json 참조)"
     echo "$MKH_OUT" | grep -E '\[HARD FAIL\]' | head -10
@@ -406,13 +414,23 @@ BS_PATH="$PROJECT/qepm/mailbox/governor/book_state.json"
 MBA_R="$PROJECT/02_Infrastructure/portfolio/measurement_basis_audit.R"
 MBA_TIER=""
 if [ -f "$BS_PATH" ] && [ -f "$MBA_R" ]; then
-  MBA_OUT=$(Rscript "$MBA_R" "$BS_PATH" "$PROJECT/qepm/mailbox/worktask" 2>/dev/null \
-            | grep -E "(Book score:|Tier:)" | head -2 | tr '\n' ' ')
+  # (2026-07-26 CBA-02 수리) 구현은 stderr 를 /dev/null 로 버리고 빈 출력을 양성 톤
+  #   "SKIP (no admitted_ids or audit error)" 로 융합했다 — 감사가 크래시하면 MBA_TIER=""
+  #   가 되어 7c 게이트([[ DRIFTED || WARNING ]])가 **영영 미발화**하고, 실제로 DRIFTED 인
+  #   북이 계측 사망과 함께 '조용히 정상' 부팅으로 위장된다. 크래시와 admitted-0 을 구분한다.
+  MBA_RAW=$(Rscript "$MBA_R" "$BS_PATH" "$PROJECT/qepm/mailbox/worktask" 2>&1); MBA_RC=$?
+  MBA_OUT=$(printf '%s' "$MBA_RAW" | grep -E "(Book score:|Tier:)" | head -2 | tr '\n' ' ')
   if [ -n "$MBA_OUT" ]; then
     echo "[boot] Measurement coherence: $MBA_OUT"
     MBA_TIER=$(echo "$MBA_OUT" | grep -oE 'Tier: [A-Z]+' | awk '{print $2}' | head -1)
+  elif [ "$MBA_RC" != "0" ]; then
+    echo "[boot] WARN: coherence audit FAILED (exit $MBA_RC) — 판정 없음이지 정상 아님. 7c 백필 게이트도 미발화"
+    echo "[boot]    출력 말미: $(printf '%s' "$MBA_RAW" | tail -2 | tr '\n' ' ' | cut -c1-160)"
+  elif printf '%s' "$MBA_RAW" | grep -q "NO_ADMITTED_IDS"; then
+    echo "[boot] Measurement coherence: SKIP (admitted_ids 0건 — 판정 대상 없음)"
   else
-    echo "[boot] Measurement coherence: SKIP (no admitted_ids or audit error)"
+    echo "[boot] WARN: coherence 출력에 Book score/Tier 부재 (exit 0) — 출력 포맷 드리프트 의심"
+    echo "[boot]    출력 말미: $(printf '%s' "$MBA_RAW" | tail -2 | tr '\n' ' ' | cut -c1-160)"
   fi
 fi
 
@@ -420,7 +438,15 @@ fi
 CERT_BACKFILL_R="$PROJECT/02_Infrastructure/ops/cert_backfill_audit.R"
 if [[ "$MBA_TIER" == "DRIFTED" || "$MBA_TIER" == "WARNING" ]] && [ -f "$CERT_BACKFILL_R" ]; then
   echo "[boot] Coherence $MBA_TIER detected — cert_backfill_audit.R --auto 호출"
-  BACKFILL_OUT=$(cd "$PROJECT" && Rscript "$CERT_BACKFILL_R" --auto 2>&1)
+  BACKFILL_OUT=$(cd "$PROJECT" && Rscript "$CERT_BACKFILL_R" --auto 2>&1); BACKFILL_RC=$?
+  # (2026-07-26 CBA-03 수리) exit code 를 아무데서도 안 봐서, 스크립트가 기동 직후 죽어도
+  #   grep -c 가 0 을 내고 "0 cert(s) issued" 로 보고됐다 — 정상 실행·대상 0건과 형태가 동일.
+  #   ("총계 0 = 성공 아니라 계측 사망" 부류)
+  if [ "${BACKFILL_RC:-0}" != "0" ]; then
+    echo "[boot] WARN: backfill script FAILED (exit ${BACKFILL_RC}) — 아래 집계는 신뢰 불가"
+    echo "[boot]    출력 말미: $(printf '%s' "$BACKFILL_OUT" | tail -2 | tr '
+' ' ' | cut -c1-160)"
+  fi
   ISSUED_COUNT=$(echo "$BACKFILL_OUT" | grep -c '\[ISSUED\]' || true)
   PASS_AUTO_COUNT=$(echo "$BACKFILL_OUT" | grep -c '\[PASS_AUTO\]' || true)
   POST_TIER=$(echo "$BACKFILL_OUT" | grep -oE 'Tier: [A-Z]+' | tail -1 | awk '{print $2}')
