@@ -204,19 +204,21 @@ sched_failure_annotate() {
 #    도훈 텔레그램에 경보가 갔다. 판정 자체는 옳았으나 **수신자에게는 오경보**다.
 #    → 대화형 TTY 에서 돈 실행은 마커만 남기고 발송을 생략한다(진단 정보는 보존).
 #    강제: QVEST_ALERT_FORCE=1 (수동인데도 보내고 싶을 때) / QVEST_NO_ALERT=1 (항상 억제)
-# 대화형(사람이 직접 실행) 판별 — 별도 함수로 분리해 억제 분기를 시험 가능하게 둔다.
-#   (pty 를 만들 수 없는 환경에서도 이 함수를 덮어써 분기 자체를 검증할 수 있음)
-sched_is_interactive() { [ -t 0 ] || [ -t 1 ]; }
+# ── 발송 자격 판정 (2026-07-26 v2 — **선언 기반**)
+#    ★v1(TTY 유무 추론)은 틀렸다: 에이전트 도구·CI·서브셸 실행도 TTY 가 없어 "무인"으로
+#      오분류돼, 개발 중 검증 실행이 도훈 텔레그램에 실경보로 나갔다(실사고 16:41 auth_expired).
+#      존재/부재 추론으로 정체성을 판별하지 말 것 — 이 저장소가 반복 학습한 계통.
+#    ∴ 무인임을 **명시 선언**한 실행만 발송한다(allow-list). 스케줄러 .bat 이 QVEST_UNATTENDED=1
+#      을 export 하고, 그 표지가 없으면 마커만 남긴다. 추론이 아니라 계약.
+sched_is_unattended() { [ "${QVEST_UNATTENDED:-0}" = "1" ]; }
 
 sched_alert_should_send() {
-  [ "${QVEST_NO_ALERT:-0}" = "1" ] && return 1
-  [ "${QVEST_ALERT_FORCE:-0}" = "1" ] && return 0
-  # ⚠ `[ A ] || [ B ] && return 1` 은 (A||B)&&C 로 묶여 돌긴 하나 우선순위 의존이라 오해하기 쉽다.
-  #   이 분기가 "진짜 경보가 나가느냐"를 가르므로 명시 if 로 쓴다.
-  if sched_is_interactive; then
-    return 1                            # TTY 결합 = 사람이 직접 실행 → 발송 생략
+  [ "${QVEST_NO_ALERT:-0}" = "1" ]  && return 1   # 항상 억제
+  [ "${QVEST_ALERT_FORCE:-0}" = "1" ] && return 0  # 항상 발송(디버깅/수동 재발송)
+  if sched_is_unattended; then
+    return 0                            # 스케줄러가 선언한 무인 실행 → 발송
   fi
-  return 0
+  return 1                              # 선언 없음 = 수동/에이전트 → 마커만
 }
 
 sched_alert_emit() {
